@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2001/02/19 09:44:16  barbera
+Copy no.2 of volume ICO2 re-inserted
+
 Revision 1.17  2001/02/09 00:05:31  nilsen
 Added fMajor/MinorVersion variables and made other changes to better make
 use of the new code changes in AliITSgeom related classes.
@@ -284,19 +287,19 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   dgh[1] = 360.;
   dgh[2] = 12.;
   dgh[3] = -xltpc-5.-0.1;
-  dgh[4] = 44.9;
+  dgh[4] = 46;
   dgh[5] = 85.;
   dgh[6] = -xltpc;
-  dgh[7] = 44.9;
+  dgh[7] = 46;
   dgh[8] = 85.;
   dgh[9] = -xltpc;
-  dgh[10] = 44.9;
+  dgh[10] = 46;
   dgh[11] = 56.1;
   dgh[12] = -100.7;
-  dgh[13] = 44.9;
+  dgh[13] = 46;
   dgh[14] = 56.1;
   dgh[15] = -77.2;
-  dgh[16] = 44.9;
+  dgh[16] = 46;
   dgh[17] = 56.1;
   dgh[18] = -40.;
   dgh[19] = 3.295;
@@ -305,16 +308,16 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   dgh[22] = 3.295;
   dgh[23] = 56.1;
   dgh[24] = 77.2;
-  dgh[25] = 44.9;
+  dgh[25] = 46;
   dgh[26] = 56.1;
   dgh[27] = 100.7;
-  dgh[28] = 44.9;
+  dgh[28] = 46;
   dgh[29] = 56.1;
   dgh[30] = xltpc;
-  dgh[31] = 61.5;
-  dgh[32] = 61.5+4.;
+  dgh[31] = 62;
+  dgh[32] = 62+4.;
   dgh[33] = xltpc;
-  dgh[34] = 61.5;
+  dgh[34] = 62;
   dgh[35] = 85.;
   dgh[36] = xltpc+4.+0.1;
   dgh[37] = 62.4;
@@ -335,7 +338,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   dgh[1] = 360.;
   dgh[2] = 4.;
   dgh[3] = -77.2;
-  dgh[4] = 45.;
+  dgh[4] = 46.;
   dgh[5] = 56.;
   dgh[6] = -40.;     
   dgh[7] = 3.3;
@@ -344,7 +347,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   dgh[10] = 3.3;
   dgh[11] = 56.;
   dgh[12] = 77.2;
-  dgh[13] = 45.;
+  dgh[13] = 46.;
   dgh[14] = 56.;
   gMC->Gsvolu("ITSD", "PCON", idtmed[275], dgh, 15);
   
@@ -487,8 +490,8 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
     
   // --- DEFINE CABLES AT THE END OF THE ITS CONES - COPPER PART
   
-  dgh[0] = 45.;
-  dgh[1] = 45.+1.0;
+  dgh[0] = 46.;
+  dgh[1] = 46.+1.0;
   dgh[2] = 9.5;
   
   gMC->Gsvolu("ICCU", "TUBE", idtmed[279], dgh, 3);  
@@ -497,8 +500,8 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   
   // --- DEFINE CABLES AT THE END OF THE ITS CONES - CARBON PART
   
-  dgh[0] = 45.+1.0;
-  dgh[1] = 45.+1.0+1.5;
+  dgh[0] = 46.+1.0;
+  dgh[1] = 46.+1.0+1.5;
   dgh[2] = 9.5;
   
   gMC->Gsvolu("ICCC", "TUBE", idtmed[274], dgh, 3);  
@@ -507,7 +510,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   
   // --- DEFINE PATCH PANELS AT THE END OF THE ITS CONES
   
-  dgh[0] = 45.;
+  dgh[0] = 46.;
   dgh[1] = 56.;
   dgh[2] = 2.25;
   
@@ -519,10 +522,10 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   //     UPPER PART
   
   dgh[0] = (xltpc-100.7)/2.;
-  dgh[1] = 45.2;
-  dgh[2] = 45.2+1.0;
-  dgh[3] = 61.8;
-  dgh[4] = 61.8+1.0;
+  dgh[1] = 46.2;
+  dgh[2] = 46.2+1.0;
+  dgh[3] = 62.3;
+  dgh[4] = 62.3+1.0;
   dgh[5] = 12.;    
   dgh[6] = 168.;
   gMC->Gsvolu("ICU1", "CONS", idtmed[279], dgh, 7);    
@@ -532,10 +535,10 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   //     LOWER PART
   
   dgh[0] = (xltpc-100.7)/2.;
-  dgh[1] = 45.2;
-  dgh[2] = 45.2+1.0;
-  dgh[3] = 61.8;
-  dgh[4] = 61.8+1.0;
+  dgh[1] = 46.2;
+  dgh[2] = 46.2+1.0;
+  dgh[3] = 62.3;
+  dgh[4] = 62.3+1.0;
   dgh[5] = 192.;    
   dgh[6] = 348.;
   gMC->Gsvolu("ICU2", "CONS", idtmed[279], dgh, 7);    
@@ -545,10 +548,10 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
    //     UPPER PART
   
   dgh[0] = (xltpc-100.7)/2.;
-  dgh[1] = 45.2+1.0;
-  dgh[2] = 45.2+1.0+1.5;
-  dgh[3] = 61.8+1.0;
-  dgh[4] = 61.8+1.0+1.5;
+  dgh[1] = 46.2+1.0;
+  dgh[2] = 46.2+1.0+1.5;
+  dgh[3] = 62.3+1.0;
+  dgh[4] = 62.3+1.0+1.5;
   dgh[5] = 12.;    
   dgh[6] = 168.;  
   gMC->Gsvolu("ICC1", "CONS", idtmed[274], dgh, 7);    
@@ -558,10 +561,10 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   //     LOWER PART
   
   dgh[0] = (xltpc-100.7)/2.;
-  dgh[1] = 45.2+1.0;
-  dgh[2] = 45.2+1.0+1.5;
-  dgh[3] = 61.8+1.0;
-  dgh[4] = 61.8+1.0+1.5;
+  dgh[1] = 46.2+1.0;
+  dgh[2] = 46.2+1.0+1.5;
+  dgh[3] = 62.3+1.0;
+  dgh[4] = 62.3+1.0+1.5;
   dgh[5] = 192.;    
   dgh[6] = 348.;  
   gMC->Gsvolu("ICC2", "CONS", idtmed[274], dgh, 7);    
@@ -570,7 +573,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON THE ABSORBER SIDE - COPPER PART
   //     UPPER PART
     
-  dgh[0] = 62.5;
+  dgh[0] = 62.1;
   dgh[1] = 74.5;
   dgh[2] = 0.5;
   dgh[3] = 12.;
@@ -581,7 +584,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON THE ABSORBER SIDE - COPPER PART
   //     LOWER PART
   
-  dgh[0] = 62.5;
+  dgh[0] = 62.1;
   dgh[1] = 74.5;
   dgh[2] = 0.5;
   dgh[3] = 192.;
@@ -592,7 +595,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON THE ABSORBER SIDE - CARBON PART
   //     UPPER PART
 
-  dgh[0] = 62.5;
+  dgh[0] = 62.1;
   dgh[1] = 74.5;
   dgh[2] = 0.75;
   dgh[3] = 12.;
@@ -603,7 +606,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON THE ABSORBER SIDE - CARBON PART
   //     LOWER PART
 
-  dgh[0] = 62.5;
+  dgh[0] = 62.1;
   dgh[1] = 74.5;
   dgh[2] = 0.75;
   dgh[3] = 192.;
@@ -614,8 +617,8 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
   //     THE ABSORBER - COPPER PART - UPPER PART
   
-  dgh[0] = 45.;
-  dgh[1] = 45.+1.0;
+  dgh[0] = 46.;
+  dgh[1] = 46.+1.0;
   dgh[2] = (xltpc-100.7+1.5)/2.;
   dgh[3] = 12.;
   dgh[4] = 168.;
@@ -625,8 +628,8 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
   //     THE ABSORBER - COPPER PART - LOWER PART
   
-  dgh[0] = 45.;
-  dgh[1] = 45.+1.0;
+  dgh[0] = 46.;
+  dgh[1] = 46.+1.0;
   dgh[2] = (xltpc-100.7+1.5)/2.;
   dgh[3] = 192.;
   dgh[4] = 348.;  
@@ -636,8 +639,8 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
   //     THE ABSORBER - CARBON PART - UPPER PART
   
-  dgh[0] = 45.+1.0;
-  dgh[1] = 45.+1.0+1.5;
+  dgh[0] = 46.+1.0;
+  dgh[1] = 46.+1.0+1.5;
   dgh[2] = (xltpc-100.7)/2.;
   dgh[3] = 12.;
   dgh[4] = 168.;  
@@ -647,8 +650,8 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
   //     THE ABSORBER - CARBON PART - LOWER PART
   
-  dgh[0] = 45.+1.0;
-  dgh[1] = 45.+1.0+1.5;
+  dgh[0] = 46.+1.0;
+  dgh[1] = 46.+1.0+1.5;
   dgh[2] = (xltpc-100.7)/2.;
   dgh[3] = 192.;
   dgh[4] = 348.;  
@@ -658,7 +661,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
   //     COPPER PART - UPPER PART
     
-  dgh[0] = 45.;
+  dgh[0] = 46.;
   dgh[1] = 74.5;
   dgh[2] = 0.5;
   dgh[3] = 12.;
@@ -669,7 +672,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
   //     COPPER PART - LOWER PART
     
-  dgh[0] = 45.;
+  dgh[0] = 46.;
   dgh[1] = 74.5;
   dgh[2] = 0.5;
   dgh[3] = 192.;
@@ -680,7 +683,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
   //     CARBON PART - UPPER PART
   
-  dgh[0] = 45.+1.0;
+  dgh[0] = 46.+1.0;
   dgh[1] = 74.5;
   dgh[2] = 0.75;
   dgh[3] = 12.;
@@ -691,7 +694,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
   //     CARBON PART - LOWER PART
   
-  dgh[0] = 45.+1.0;
+  dgh[0] = 46.+1.0;
   dgh[1] = 74.5;
   dgh[2] = 0.75;
   dgh[3] = 192.;
