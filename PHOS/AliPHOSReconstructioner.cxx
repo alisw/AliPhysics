@@ -19,7 +19,7 @@
 //  Algorithm class for the reconstruction: clusterizer
 //                                          track segment maker
 //                                          particle identifier   
-//                  
+//*--
 //*-- Author: Gines Martinez & Yves Schutz (SUBATECH)
 
 
@@ -390,19 +390,19 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
 
   // mark the position of the RecPoints in the array
   AliPHOSEmcRecPoint * emcrp ; 
-  Int_t PHOSModule;
+  Int_t currentPHOSModule;
   for (index = 0 ; index < emccl->GetEntries() ; index++) {
     emcrp = (AliPHOSEmcRecPoint * )emccl->At(index) ; 
     emcrp ->SetIndexInList(index) ; 
     TVector3  locpos;  emcrp->GetLocalPosition(locpos);
-    PHOSModule = emcrp->GetPHOSMod();
+    currentPHOSModule = emcrp->GetPHOSMod();
   }
   AliPHOSEmcRecPoint * cpvrp ; 
   for (index = 0 ; index < cpvcl->GetEntries() ; index++) {
     cpvrp = (AliPHOSEmcRecPoint * )cpvcl->At(index) ; 
     cpvrp ->SetIndexInList(index) ; 
     TVector3  locpos;  cpvrp->GetLocalPosition(locpos);
-    PHOSModule = cpvrp->GetPHOSMod();
+    currentPHOSModule = cpvrp->GetPHOSMod();
   }
     
   if  (fDebugReconstruction)

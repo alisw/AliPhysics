@@ -7,10 +7,11 @@
 
 //_________________________________________________________________________
 // Geometry derived class for PHOS:PPSD (PHOS Preshower Detector)
-//
-//*-- Author  : Yves Schutz
-//    Modified: Yuri Kharlov (IHEP, Protvino)
-//    14 September 2000
+// Its data members provide geometry parametrization of PPSD
+// which can be changed in the constructor only.
+// Author  : Yves Schutz
+// Modified: Yuri Kharlov (IHEP, Protvino)
+// 7 November 2000
 
 #include <assert.h> 
 
@@ -25,49 +26,49 @@ public:
 
   // PPSD functions
 
-  Float_t GetAnodeThickness(void)          const { return  fAnodeThickness ;          }
-  Float_t GetAvalancheGap(void)            const { return  fAvalancheGap ;            }
-  Float_t GetCathodeThickness(void)        const { return  fCathodeThickness ;        }
-  Float_t GetCompositeThickness(void)      const { return  fCompositeThickness ;      }
-  Float_t GetConversionGap(void)           const { return  fConversionGap ;           }
-  Float_t GetLeadConverterThickness(void)  const { return  fLeadConverterThickness ;  }
-  Float_t GetLeadToMicro2Gap(void)         const { return  fLeadToMicro2Gap ;         }
-  Float_t GetLidThickness(void)            const { return  fLidThickness ;            }
-  Float_t GetMicromegas1Thickness(void)    const { return  fMicromegas1Thickness ;    }
-  Float_t GetMicromegas2Thickness(void)    const { return  fMicromegas2Thickness ;    }
-  Float_t GetMicromegasWallThickness(void) const { return  fMicromegasWallThickness ; }
-  Float_t GetMicro1ToLeadGap(void)         const { return  fMicro1ToLeadGap ;         }
-  Int_t   GetNumberOfPadsPhi(void)         const { return  fNumberOfPadsPhi ;         }
-  Int_t   GetNumberOfPadsZ(void)           const { return  fNumberOfPadsZ ;           }
-  Int_t   GetNumberOfModulesPhi(void)      const { return  fNumberOfModulesPhi ;      }
-  Int_t   GetNumberOfModulesZ(void)        const { return  fNumberOfModulesZ ;        }
-  Float_t GetPCThickness(void)             const { return  fPCThickness ;             }
-  Float_t GetPhiDisplacement(void)         const { return  fPhiDisplacement ;         }
-  Float_t GetCPVBoxSize(Int_t index)       const { return  fPPSDBoxSize[index] ;      }
-  Float_t GetPPSDModuleSize(Int_t index)   const { return  fPPSDModuleSize[index] ;   }
-  Float_t GetZDisplacement(void)           const { return  fZDisplacement ;           }
- 
+  virtual Float_t GetAnodeThickness(void)          { return  fAnodeThickness ;          }
+  virtual Float_t GetAvalancheGap(void)            { return  fAvalancheGap ;            }
+  virtual Float_t GetCathodeThickness(void)        { return  fCathodeThickness ;        }
+  virtual Float_t GetCompositeThickness(void)      { return  fCompositeThickness ;      }
+  virtual Float_t GetConversionGap(void)           { return  fConversionGap ;           }
+  virtual Float_t GetLeadConverterThickness(void)  { return  fLeadConverterThickness ;  }
+  virtual Float_t GetLeadToMicro2Gap(void)         { return  fLeadToMicro2Gap ;         }
+  virtual Float_t GetLidThickness(void)            { return  fLidThickness ;            }
+  virtual Float_t GetMicromegas1Thickness(void)    { return  fMicromegas1Thickness ;    }
+  virtual Float_t GetMicromegas2Thickness(void)    { return  fMicromegas2Thickness ;    }
+  virtual Float_t GetMicromegasWallThickness(void) { return  fMicromegasWallThickness ; }
+  virtual Float_t GetMicro1ToLeadGap(void)         { return  fMicro1ToLeadGap ;         }
+  virtual Int_t   GetNumberOfPadsPhi(void)         { return  fNumberOfPadsPhi ;         }
+  virtual Int_t   GetNumberOfPadsZ(void)           { return  fNumberOfPadsZ ;           }
+  virtual Int_t   GetNumberOfModulesPhi(void)      { return  fNumberOfModulesPhi ;      }
+  virtual Int_t   GetNumberOfModulesZ(void)        { return  fNumberOfModulesZ ;        }
+  virtual Float_t GetPCThickness(void)             { return  fPCThickness ;             }
+  virtual Float_t GetPhiDisplacement(void)         { return  fPhiDisplacement ;         }
+  virtual Float_t GetCPVBoxSize(Int_t index)       { return  fPPSDBoxSize[index] ;      }
+  virtual Float_t GetPPSDModuleSize(Int_t index)   { return  fPPSDModuleSize[index] ;   }
+  virtual Float_t GetZDisplacement(void)           { return  fZDisplacement ;           }
+  
   // CPV functions cannot be used for PPSD
-
-  Int_t   GetNumberOfCPVLayers(void)       { AssertCPV(); return 0; }
-  Bool_t  IsLeadConverterExists(void)      { AssertCPV(); return 0; }
-  Float_t GetCPVActiveSize(Int_t index)    { AssertCPV(); return 0; }
-  Int_t   GetNumberOfCPVChipsPhi(void)     { AssertCPV(); return 0; }
-  Int_t   GetNumberOfCPVChipsZ(void)       { AssertCPV(); return 0; }
-  Float_t GetGassiplexChipSize(Int_t index){ AssertCPV(); return 0; }
-  Float_t GetCPVGasThickness(void)         { AssertCPV(); return 0; }
-  Float_t GetCPVTextoliteThickness(void)   { AssertCPV(); return 0; }
-  Float_t GetCPVCuNiFoilThickness(void)    { AssertCPV(); return 0; }
-  Float_t GetFTPosition(Int_t index)       { AssertCPV(); return 0; }
-  Float_t GetCPVFrameSize(Int_t index)     { AssertCPV(); return 0; }
-  Float_t GetIPtoCPVDistance(void)         { AssertCPV(); return 0; }
+  
+  virtual Int_t   GetNumberOfCPVLayers(void)       { AssertCPV("GetNumberOfCPVLayers");     return 0; }
+  virtual Bool_t  IsLeadConverterExists(void)      { AssertCPV("IsLeadConverterExists");    return 0; }
+  virtual Float_t GetCPVActiveSize(Int_t index)    { AssertCPV("GetCPVActiveSize");         return 0; }
+  virtual Int_t   GetNumberOfCPVChipsPhi(void)     { AssertCPV("GetNumberOfCPVChipsPhi");   return 0; }
+  virtual Int_t   GetNumberOfCPVChipsZ(void)       { AssertCPV("GetNumberOfCPVChipsZ");     return 0; }
+  virtual Float_t GetGassiplexChipSize(Int_t index){ AssertCPV("GetGassiplexChipSize");     return 0; }
+  virtual Float_t GetCPVGasThickness(void)         { AssertCPV("GetCPVGasThickness");       return 0; }
+  virtual Float_t GetCPVTextoliteThickness(void)   { AssertCPV("GetCPVTextoliteThickness"); return 0; }
+  virtual Float_t GetCPVCuNiFoilThickness(void)    { AssertCPV("GetCPVCuNiFoilThickness");  return 0; }
+  virtual Float_t GetFTPosition(Int_t index)       { AssertCPV("GetFTPosition");            return 0; }
+  virtual Float_t GetCPVFrameSize(Int_t index)     { AssertCPV("GetCPVFrameSize");          return 0; }
+  virtual Float_t GetIPtoCPVDistance(void)         { AssertCPV("GetIPtoCPVDistance");       return 0; }
 
 private:
 
   Float_t fAnodeThickness ;          // Thickness of the copper layer which makes the anode 
   Float_t fAvalancheGap ;            // Thickness of the gas in the avalanche stage
-  Float_t fCathodeThickness ;        // Thickeness of composite material ensuring rigidity of cathode
-  Float_t fCompositeThickness ;      // Thickeness of composite material ensuring rigidity of anode
+  Float_t fCathodeThickness ;        // Thickness of composite material ensuring rigidity of cathode
+  Float_t fCompositeThickness ;      // Thickness of composite material ensuring rigidity of anode
   Float_t fConversionGap ;           // Thickness of the gas in the conversion stage
   Float_t fLeadConverterThickness ;  // Thickness of the Lead converter 
   Float_t fLeadToMicro2Gap ;         // Thickness of the air gap between the Lead and Micromegas 2        
@@ -88,8 +89,8 @@ private:
 
   Float_t fIPtoTopLidDistance ;      // Distance from interaction point to top lid of PPSD
 
-  void    AssertCPV() {
-    printf("Function %s should not be called for PPSD geometry\n",__PRETTY_FUNCTION__);
+  void    AssertCPV(char* name) {
+    printf("Function AliPPSDGeometry::%s should not be called for PPSD geometry\n",name);
     assert(0==1) ;
   }
 

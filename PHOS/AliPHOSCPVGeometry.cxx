@@ -15,12 +15,17 @@
 
 /*
   $Log$
+  Revision 1.1  2000/11/03 16:28:21  schutz
+  CPV geometry class to correct previous name-convetion rule violation
+
 */
 
 //_________________________________________________________________________
 // Geometry class  for PHOS : CPV (Charged particle veto, IHEP version)
-//                  
-//*-- Author   : Yuri Kharlov (IHEP, Protvino) 15 September 2000
+// Its data members provide geometry parametrization of CPV
+// which can be changed in the constructor only.
+// Author: Yuri Kharlov (IHEP, Protvino)
+// 15 September 2000
 //
 // --- ROOT system ---
 

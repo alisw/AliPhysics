@@ -10,9 +10,11 @@
 //                                            //
 //  Author: Yuri Kharlov, IHEP, Protvino      //
 //  e-mail: Yuri.Kharlov@cern.ch              //
-//  Last modified: 2 November 2000            //
+//  Last modified: 7 November 2000            //
 ////////////////////////////////////////////////
  
+#include <assert.h> 
+
 // --- ROOT system ---
 #include <TClonesArray.h> 
 #include <TLorentzVector.h>
@@ -25,7 +27,16 @@ public:
 
   virtual ~AliPHOSCPVModule(void);
            AliPHOSCPVModule(void);
+           AliPHOSCPVModule(const AliPHOSCPVModule & cpv) {
+	     // cpy ctor requested by Coding Convention but not yet needed
+	     assert(0==1) ;
+	   } 
   
+  AliPHOSCPVModule & operator = (const AliPHOSCPVModule  & rvalue) {
+    // assignement operator requested by coding convention but not needed
+    assert(0==1) ;
+    return *this ; 
+  }
   void     Clear(Option_t *opt="");
   void     Print(Option_t *opt="");
   void     AddHit(TLorentzVector p, Float_t *xy, Int_t ipart);

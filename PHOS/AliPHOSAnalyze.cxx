@@ -19,7 +19,7 @@
 // Algorythm class to analyze PHOSv1 events:
 // Construct histograms and displays them.
 // Use the macro EditorBar.C for best access to the functionnalities
-//
+//*--
 //*-- Author: Y. Schutz (SUBATECH) & Gines Martinez (SUBATECH)
 //////////////////////////////////////////////////////////////////////////////
 
@@ -118,16 +118,13 @@ AliPHOSAnalyze::~AliPHOSAnalyze()
 {
   // dtor
 
-  if (fRootFile->IsOpen() ) 
-    fRootFile->Close() ; 
-  if(fRootFile)
-    delete fRootFile ;  
-  if(fRootFile) {delete fRootFile ; fRootFile=0 ;}
-  if(fPHOS)     {delete fPHOS     ; fPHOS    =0 ;}
-  if(fClu)      {delete fClu      ; fClu     =0 ;}
-  if(fPID)      {delete fPID      ; fPID     =0 ;}
-  if(fRec)      {delete fRec      ; fRec     =0 ;}
-  if(fTrs)      {delete fTrs      ; fTrs     =0 ;}
+  if(fRootFile->IsOpen()) fRootFile->Close() ; 
+  if(fRootFile)   {delete fRootFile ; fRootFile=0 ;}
+  if(fPHOS)       {delete fPHOS     ; fPHOS    =0 ;}
+  if(fClu)        {delete fClu      ; fClu     =0 ;}
+  if(fPID)        {delete fPID      ; fPID     =0 ;}
+  if(fRec)        {delete fRec      ; fRec     =0 ;}
+  if(fTrs)        {delete fTrs      ; fTrs     =0 ;}
 
 }
 
@@ -311,8 +308,8 @@ void AliPHOSAnalyze::AnalyzeManyEvents(Int_t Nevents, Int_t module)
  void AliPHOSAnalyze::Reconstruct(Int_t Nevents,Int_t FirstEvent )    
 {     
 
-  // Perform reconstruction of EMC and CPV (GPS2 or IHEP) for <Nevents> events
-  // Yuri Kharlov. 19 October 2000
+  // Performs reconstruction of EMC and CPV (GPS2 or IHEP)
+  // for events from FirstEvent to Nevents
 
   Int_t ievent ;   
   for ( ievent=FirstEvent; ievent<Nevents; ievent++) {  
@@ -386,53 +383,53 @@ void AliPHOSAnalyze::ReadAndPrintCPV(Int_t Nevents)
     cout << endl <<  "==== ReadAndPrintCPV ====> Event is " << ievent+1 << endl ;
     
     //=========== Connects the various Tree's for evt
-    gAlice->GetEvent(ievent);
+    Int_t ntracks = gAlice->GetEvent(ievent);
 
-    //=========== Get the Hits Tree
-    gAlice->ResetHits();
-    gAlice->TreeH()->GetEvent(0);
-    
     //========== Creating branches ===================================
-    AliPHOSRecPoint::RecPointsList ** EmcRecPoints = fPHOS->EmcRecPoints() ;
-    gAlice->TreeR()->SetBranchAddress( "PHOSEmcRP" , EmcRecPoints  ) ;
+    AliPHOSRecPoint::RecPointsList ** emcRecPoints = fPHOS->EmcRecPoints() ;
+    gAlice->TreeR()->SetBranchAddress( "PHOSEmcRP" , emcRecPoints  ) ;
     
-    AliPHOSRecPoint::RecPointsList ** CpvRecPoints = fPHOS->PpsdRecPoints() ;
-    gAlice->TreeR()->SetBranchAddress( "PHOSPpsdRP", CpvRecPoints ) ;
-
-    //=========== Gets the Reconstruction TTree
-    gAlice->TreeR()->GetEvent(0) ;
+    AliPHOSRecPoint::RecPointsList ** cpvRecPoints = fPHOS->PpsdRecPoints() ;
+    gAlice->TreeR()->SetBranchAddress( "PHOSPpsdRP", cpvRecPoints ) ;
 
     // Read and print CPV hits
-
-    TClonesArray *CPVhits;
-    for (Int_t iModule=0; iModule < fGeom->GetNModules(); iModule++) {
-      AliPHOSCPVModule cpvModule = fPHOS->GetCPVModule(iModule);
-      CPVhits   = cpvModule.Hits();
-      Int_t nCPVhits  = CPVhits->GetEntriesFast();
-      for (Int_t ihit=0; ihit<nCPVhits; ihit++) {
-	AliPHOSCPVHit *cpvHit = (AliPHOSCPVHit*)CPVhits->UncheckedAt(ihit);
-	TLorentzVector p      = cpvHit->GetMomentum();
-	Float_t        xgen   = cpvHit->GetX();
-	Float_t        zgen   = cpvHit->GetY();
-	Int_t          ipart  = cpvHit->GetIpart();
-	printf("CPV hit in module %d: ",iModule+1);
-	printf(" p = (%f, %f, %f, %f) GeV,\n",
-	       p.Px(),p.Py(),p.Pz(),p.Energy());
-	printf("               xy = (%8.4f, %8.4f) cm, ipart = %d\n",
-	       xgen,zgen,ipart);
+      
+    for (Int_t itrack=0; itrack<ntracks; itrack++) {
+      //=========== Get the Hits Tree for the Primary track itrack
+      gAlice->ResetHits();
+      gAlice->TreeH()->GetEvent(itrack);
+      TClonesArray *cpvHits;
+      for (Int_t iModule=0; iModule < fGeom->GetNModules(); iModule++) {
+	AliPHOSCPVModule cpvModule = fPHOS->GetCPVModule(iModule);
+	cpvHits   = cpvModule.Hits();
+	Int_t nCPVhits  = cpvHits->GetEntriesFast();
+	for (Int_t ihit=0; ihit<nCPVhits; ihit++) {
+	  AliPHOSCPVHit *cpvHit = (AliPHOSCPVHit*)cpvHits->UncheckedAt(ihit);
+	  TLorentzVector p      = cpvHit->GetMomentum();
+	  Float_t        xgen   = cpvHit->GetX();
+	  Float_t        zgen   = cpvHit->GetY();
+	  Int_t          ipart  = cpvHit->GetIpart();
+	  printf("CPV hit in module %d: ",iModule+1);
+	  printf(" p = (%f, %f, %f, %f) GeV,\n",
+		 p.Px(),p.Py(),p.Pz(),p.Energy());
+	  printf("               xy = (%8.4f, %8.4f) cm, ipart = %d\n",
+		 xgen,zgen,ipart);
+	}
       }
     }
 
     // Read and print CPV reconstructed points
 
+    //=========== Gets the Reconstruction TTree
+    gAlice->TreeR()->GetEvent(0) ;
     TIter nextRP(*fPHOS->PpsdRecPoints() ) ;
     AliPHOSPpsdRecPoint *cpvRecPoint ;
     while( ( cpvRecPoint = (AliPHOSPpsdRecPoint *)nextRP() ) ) {
       TVector3  locpos;
       cpvRecPoint->GetLocalPosition(locpos);
-      Int_t PHOSModule = cpvRecPoint->GetPHOSMod();
+      Int_t phosModule = cpvRecPoint->GetPHOSMod();
       printf("CPV recpoint in module %d: (X,Y,Z) = (%f,%f,%f) cm\n",
-	     PHOSModule,locpos.X(),locpos.Y(),locpos.Z());
+	     phosModule,locpos.X(),locpos.Y(),locpos.Z());
     }
   }
 }
@@ -468,21 +465,21 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
     gAlice->TreeH()->GetEvent(0);
     
     //========== Creating branches ===================================
-    AliPHOSRecPoint::RecPointsList ** EmcRecPoints = fPHOS->EmcRecPoints() ;
-    gAlice->TreeR()->SetBranchAddress( "PHOSEmcRP" , EmcRecPoints  ) ;
+    AliPHOSRecPoint::RecPointsList ** emcRecPoints = fPHOS->EmcRecPoints() ;
+    gAlice->TreeR()->SetBranchAddress( "PHOSEmcRP" , emcRecPoints  ) ;
     
-    AliPHOSRecPoint::RecPointsList ** CpvRecPoints = fPHOS->PpsdRecPoints() ;
-    gAlice->TreeR()->SetBranchAddress( "PHOSPpsdRP", CpvRecPoints ) ;
+    AliPHOSRecPoint::RecPointsList ** cpvRecPoints = fPHOS->PpsdRecPoints() ;
+    gAlice->TreeR()->SetBranchAddress( "PHOSPpsdRP", cpvRecPoints ) ;
     //=========== Gets the Reconstruction TTree
     gAlice->TreeR()->GetEvent(0) ;
     TIter nextRP(*fPHOS->PpsdRecPoints() ) ;
     AliPHOSCpvRecPoint *cpvRecPoint ;
     AliPHOSCPVModule    cpvModule;
-    TClonesArray       *CPVhits;
+    TClonesArray       *cpvHits;
     while( ( cpvRecPoint = (AliPHOSCpvRecPoint *)nextRP() ) ) {
       TVector3  locpos;
       cpvRecPoint->GetLocalPosition(locpos);
-      Int_t PHOSModule = cpvRecPoint->GetPHOSMod();
+      Int_t phosModule = cpvRecPoint->GetPHOSMod();
       Int_t rpMult     = cpvRecPoint->GetDigitsMultiplicity();
       Int_t rpMultX, rpMultZ;
       cpvRecPoint->GetClusterLengths(rpMultX,rpMultZ);
@@ -491,11 +488,11 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
       Float_t dxmin = 1.e+10;
       Float_t dzmin = 1.e+10;
 
-      cpvModule = fPHOS->GetCPVModule(PHOSModule-1);
-      CPVhits   = cpvModule.Hits();
-      Int_t nCPVhits  = CPVhits->GetEntriesFast();
+      cpvModule = fPHOS->GetCPVModule(phosModule-1);
+      cpvHits   = cpvModule.Hits();
+      Int_t nCPVhits  = cpvHits->GetEntriesFast();
       for (Int_t ihit=0; ihit<nCPVhits; ihit++) {
-	AliPHOSCPVHit *cpvHit = (AliPHOSCPVHit*)CPVhits->UncheckedAt(ihit);
+	AliPHOSCPVHit *cpvHit = (AliPHOSCPVHit*)cpvHits->UncheckedAt(ihit);
 	Float_t        xgen   = cpvHit->GetX();
 	Float_t        zgen   = cpvHit->GetY();
 	if ( TMath::Abs(xgen-xrec) < TMath::Abs(dxmin) ) dxmin = xgen-xrec;
@@ -524,40 +521,40 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
 
   // Plot histograms
 
-  TCanvas *CPVcanvas = new TCanvas("CPV","CPV analysis",20,20,600,600);
+  TCanvas *cpvCanvas = new TCanvas("CPV","CPV analysis",20,20,800,400);
   gStyle->SetOptStat(111111);
   gStyle->SetOptFit(1);
   gStyle->SetOptDate(1);
-  CPVcanvas->Divide(3,3);
+  cpvCanvas->Divide(3,2);
 
-  CPVcanvas->cd(1);
+  cpvCanvas->cd(1);
   gPad->SetFillColor(10);
   hNrp->SetFillColor(16);
   hNrp->Draw();
 
-  CPVcanvas->cd(2);
+  cpvCanvas->cd(2);
   gPad->SetFillColor(10);
   hNrpX->SetFillColor(16);
   hNrpX->Draw();
 
-  CPVcanvas->cd(3);
+  cpvCanvas->cd(3);
   gPad->SetFillColor(10);
   hNrpZ->SetFillColor(16);
   hNrpZ->Draw();
 
-  CPVcanvas->cd(4);
+  cpvCanvas->cd(4);
   gPad->SetFillColor(10);
   hDx->SetFillColor(16);
   hDx->Fit("gaus");
   hDx->Draw();
 
-  CPVcanvas->cd(5);
+  cpvCanvas->cd(5);
   gPad->SetFillColor(10);
   hDz->SetFillColor(16);
   hDz->Fit("gaus");
   hDz->Draw();
 
-  CPVcanvas->Print("CPV.ps");
+  cpvCanvas->Print("CPV.ps");
 
 }
 

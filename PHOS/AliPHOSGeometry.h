@@ -6,10 +6,14 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-// Geometry class  for PHOS : singleton  
-// The EMC modules are parametrized so that any configuration can be easily implemented 
-// The title is used to identify the type of CPV used. PPSD and CPV are implemented
-//                  
+// Geometry class  for PHOS : singleton
+// PHOS consists of the electromagnetic calorimeter (EMCA)
+// and a charged particle veto either in the Subatech's version (PPSD)
+// or in the IHEP's one (CPV).
+// The EMCA/PPSD/CPV modules are parametrized so that any configuration
+// can be easily implemented 
+// The title is used to identify the version of CPV used.
+// 
 //*-- Author: Yves Schutz (SUBATECH)
 
 #include <assert.h> 

@@ -17,8 +17,12 @@
 
 //_________________________________________________________________________
 // Geometry class  for PHOS : singleton  
-// The EMC modules are parametrized so that any configuration can be easily implemented 
-// The title is used to identify the type of CPV used.
+// PHOS consists of the electromagnetic calorimeter (EMCA)
+// and a charged particle veto either in the Subatech's version (PPSD)
+// or in the IHEP's one (CPV).
+// The EMCA/PPSD/CPV modules are parametrized so that any configuration
+// can be easily implemented 
+// The title is used to identify the version of CPV used.
 //                  
 //*-- Author: Yves Schutz (SUBATECH)
 
@@ -60,7 +64,6 @@ void AliPHOSGeometry::Init(void)
 {
   // Initializes the PHOS parameters
 
-  cout << "PHOS geometry setup: parameters for option " << fName << " " << fTitle << endl ;
   if ( ((strcmp( fName, "default" )) == 0) || 
        ((strcmp( fName, "GPS2" ))    == 0) ||
        ((strcmp( fName, "IHEP" ))    == 0) ) {
@@ -446,6 +449,7 @@ void AliPHOSGeometry::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
   // Note: sign of z differs from that in the previous version (Yu.Kharlov, 12 Oct 2000)
   
   Int_t ppsdmodule  ; 
+  Float_t x0,z0;
   Int_t row        = relid[2] ; //offset along x axiz
   Int_t column     = relid[3] ; //offset along z axiz
 
@@ -463,8 +467,13 @@ void AliPHOSGeometry::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
       ppsdmodule =  relid[1] ;
     Int_t modrow = 1+(Int_t)TMath::Ceil( (Float_t)ppsdmodule / GetNumberOfModulesPhi()-1. ) ; 
     Int_t modcol = ppsdmodule -  ( modrow - 1 ) * GetNumberOfModulesPhi() ;     
-    Float_t x0 = (  GetNumberOfModulesPhi() / 2.  - modrow  + 0.5 ) * GetPPSDModuleSize(0) ;
-    Float_t z0 = (  GetNumberOfModulesZ()   / 2.  - modcol  + 0.5 ) * GetPPSDModuleSize(2)  ;     
+    if ( ((strcmp( fName, "GPS2" ))  == 0) ) {
+      x0 = (  GetNumberOfModulesPhi() / 2.  - modrow  + 0.5 ) * GetPPSDModuleSize(0) ;
+      z0 = (  GetNumberOfModulesZ()   / 2.  - modcol  + 0.5 ) * GetPPSDModuleSize(2)  ;     
+    } else {
+      x0 = 0;
+      z0 = 0;
+    }
     x = - ( GetNumberOfPadsPhi()/2. - row    - 0.5 ) * padsizeX + x0 ; // position of pad  with respect
     z =   ( GetNumberOfPadsZ()  /2. - column - 0.5 ) * padsizeZ - z0 ; // of center of PHOS module  
   }

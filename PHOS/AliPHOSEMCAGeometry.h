@@ -7,10 +7,13 @@
 
 //_________________________________________________________________________
 // Geometry class  for PHOS : EMCA (Electromagnetic Calirometer)
-//                  
-//*-- Author:   Yves Schutz (Subatech)
-//    Modified: Yuri Kharlov (IHEP, Protvino)
-//    15 September 2000
+// Its data members provide geometry parametrization of EMCA
+// which can be changed in the constructor only.
+// Author:   Yves Schutz (Subatech)
+// Modified: Yuri Kharlov (IHEP, Protvino)
+// 15 September 2000
+
+#include <assert.h> 
 
 // --- ROOT system ---
 
@@ -23,8 +26,17 @@ class AliPHOSEMCAGeometry : public TObject {
 public: 
 
            AliPHOSEMCAGeometry();
+           AliPHOSEMCAGeometry(const AliPHOSEMCAGeometry & cpv) {
+             // cpy ctor requested by Coding Convention but not yet needed
+             assert(0==1) ;
+           } 
   virtual ~AliPHOSEMCAGeometry(void) {}
 
+  AliPHOSEMCAGeometry & operator = (const AliPHOSEMCAGeometry  & rvalue) {
+    // assignement operator requested by coding convention but not needed
+    assert(0==1) ;
+    return *this ; 
+  }
   Float_t    GetAirFilledBoxSize(Int_t index)     const { 
     return fAirFilledBoxSize[index] ;}
   Float_t    GetCrystalHolderThickness(void)      const { 
@@ -88,7 +100,6 @@ private:
   Float_t fOuterBoxSize[3] ;              // Size of the outer  thermo insulating foam box
   Float_t fOuterBoxThickness[3] ;         // Thickness of the outer thermo insulating foam box
   Float_t fPinDiodeSize[3] ;              // Size of the PIN Diode 
-  TObjArray *  fRotMatrixArray ;          // Liste of rotation matrices (one per phos module)
   Float_t fSecondUpperPlateThickness ;    // Thickness of  upper polystyrene foam plate
   Float_t fSupportPlateThickness ;        // Thickness of the Aluminium support plate  
   Float_t fUpperCoolingPlateThickness ;   // Thickness of the upper cooling plate 
@@ -96,6 +107,7 @@ private:
   Float_t fTextolitBoxSize[3] ;           // Size of the Textolit box inside the insulating foam box
   Float_t fTextolitBoxThickness[3] ;      // Thicknesses of th Textolit box
   Float_t fXtlSize[3] ;                   // PWO4 crystal dimensions
+  TObjArray *fRotMatrixArray ;            // List of rotation matrices (one per phos module)
 
   ClassDef(AliPHOSEMCAGeometry,1)         // EMCA geometry class 
 

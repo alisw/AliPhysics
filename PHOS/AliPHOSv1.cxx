@@ -17,8 +17,12 @@
 
 //_________________________________________________________________________
 // Implementation version v1 of PHOS Manager class 
-// Layout EMC + PPSD has name GPS2  
+//---
+// Layout EMC + PPSD has name GPS2:
 // Produces cumulated hits (no hits) and digits                  
+//---
+// Layout EMC + CPV  has name IHEP:
+// Produces hits for CPV, cumulated hits and digits                  
 //*-- Author: Yves Schutz (SUBATECH)
 
 
@@ -549,11 +553,11 @@ void AliPHOSv1::StepManager(void)
 
       // Charged track has just entered to the CPV sensitive plane
       
-      AliPHOSv1 &PHOS = *(AliPHOSv1*)gAlice->GetModule("PHOS");
+      AliPHOSv1 &phos = *(AliPHOSv1*)gAlice->GetModule("PHOS");
       
-      Int_t ModuleNumber;
-      gMC->CurrentVolOffID(3,ModuleNumber);
-      ModuleNumber--;
+      Int_t moduleNumber;
+      gMC->CurrentVolOffID(3,moduleNumber);
+      moduleNumber--;
       
       // Current position of the hit in the CPV module ref. system
 
@@ -581,19 +585,21 @@ void AliPHOSv1::StepManager(void)
 
       // Add the current particle in the list of the CPV hits.
 
-      PHOS.GetCPVModule(ModuleNumber).AddHit(pmom,xyd,ipart);
+      phos.GetCPVModule(moduleNumber).AddHit(pmom,xyd,ipart);
 
-      printf("CPV hit added to module #%2d: p = (% .4f, % .4f, % .4f, % .4f) GeV,\n",
-  	     ModuleNumber,pmom.Px(),pmom.Py(),pmom.Pz(),pmom.E());
-      printf( "                            xy = (%8.4f, %8.4f) cm, ipart = %d\n",
-	      xyd[0],xyd[1],ipart);
+      if (fDebugLevel == 1) {
+	printf("CPV hit added to module #%2d: p = (% .4f, % .4f, % .4f, % .4f) GeV,\n",
+	       moduleNumber+1,pmom.Px(),pmom.Py(),pmom.Pz(),pmom.E());
+	printf( "                            xy = (%8.4f, %8.4f) cm, ipart = %d\n",
+		xyd[0],xyd[1],ipart);
+      }
 
       // Digitize the current CPV hit:
 
       // 1. find pad response and
       
       TClonesArray *cpvDigits = new TClonesArray("AliPHOSCPVDigit",0);   // array of digits for current hit
-      CPVDigitize(pmom,xyd,ModuleNumber,cpvDigits);
+      CPVDigitize(pmom,xyd,moduleNumber,cpvDigits);
       
       Float_t xmean = 0;
       Float_t zmean = 0;
@@ -625,7 +631,7 @@ void AliPHOSv1::StepManager(void)
       ndigits = cpvDigits->GetEntriesFast();
       for (Int_t idigit=0; idigit<ndigits; idigit++) {
 	AliPHOSCPVDigit  *cpvDigit = (AliPHOSCPVDigit*) cpvDigits->UncheckedAt(idigit);
-	relid[0] = ModuleNumber + 1 ;                             // CPV (or PHOS) module number
+	relid[0] = moduleNumber + 1 ;                             // CPV (or PHOS) module number
 	relid[1] =-1 ;                                            // means CPV
 	relid[2] = cpvDigit->GetXpad() ;                          // column number of a pad
 	relid[3] = cpvDigit->GetYpad() ;                          // row    number of a pad
@@ -689,12 +695,12 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumbe
   // 2 October 2000
   // ------------------------------------------------------------------------
 
-  const Float_t celWr  = fGeom->GetPadSizePhi()/2;  // Distance between wires (2 wires above 1 pad)
-  const Float_t detR   = 0.1;     // Relative energy fluctuation in track for 100 e-
-  const Float_t dEdx   = 4.0;     // Average energy loss in CPV;
-  const Int_t   ngamz  = 5;       // Ionization size in Z
-  const Int_t   ngamx  = 9;       // Ionization size in Phi
-  const Float_t qNoise = 0.03;    // charge noise in one pad
+  const Float_t kCelWr  = fGeom->GetPadSizePhi()/2;  // Distance between wires (2 wires above 1 pad)
+  const Float_t kDetR   = 0.1;     // Relative energy fluctuation in track for 100 e-
+  const Float_t kdEdx   = 4.0;     // Average energy loss in CPV;
+  const Int_t   kNgamz  = 5;       // Ionization size in Z
+  const Int_t   kNgamx  = 9;       // Ionization size in Phi
+  const Float_t kNoise = 0.03;    // charge noise in one pad
 
   Float_t rnor1,rnor2;
 
@@ -703,71 +709,64 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumbe
   // axis X goes across the beam in the module plane
   // axis Y is a normal to the module plane showing from the IP
 
-//    cout << __PRETTY_FUNCTION__ << ": YVK : Start digitization\n";
-
   Float_t hitX  = zxhit[0];
   Float_t hitZ  =-zxhit[1];
   Float_t pX    = p.Px();
   Float_t pZ    =-p.Pz();
   Float_t pNorm = p.Py();
-  Float_t E     = dEdx;
-
-//    cout << "CPVDigitize: YVK : "<<hitX<<" "<<hitZ<<" | "<<pX<<" "<<pZ<<" "<<pNorm<<endl;
+  Float_t eloss = kdEdx;
 
   Float_t dZY   = pZ/pNorm * fGeom->GetCPVGasThickness();
   Float_t dXY   = pX/pNorm * fGeom->GetCPVGasThickness();
   gRandom->Rannor(rnor1,rnor2);
-  E    *= (1 + detR*rnor1) *
-          TMath::Sqrt((1 + ( pow(dZY,2) + pow(dXY,2) ) / pow(fGeom->GetCPVGasThickness(),2)));
+  eloss *= (1 + kDetR*rnor1) *
+           TMath::Sqrt((1 + ( pow(dZY,2) + pow(dXY,2) ) / pow(fGeom->GetCPVGasThickness(),2)));
   Float_t zhit1 = hitZ + fGeom->GetCPVActiveSize(1)/2 - dZY/2;
   Float_t xhit1 = hitX + fGeom->GetCPVActiveSize(0)/2 - dXY/2;
   Float_t zhit2 = zhit1 + dZY;
   Float_t xhit2 = xhit1 + dXY;
 
-//    cout << "CPVDigitize: YVK : "<<xhit1<<" "<<xhit2<<" | "<<zhit1<<" "<<zhit2<<" | "
-//         << (Int_t)(xhit1/fGeom->GetPadSizePhi())<<" "<<(Int_t)(zhit1/fGeom->GetPadSizeZ())<<" "<<endl;
-
-  Int_t   iwht1 = (Int_t) (xhit1 / celWr);           // wire (x) coordinate "in"
-  Int_t   iwht2 = (Int_t) (xhit2 / celWr);           // wire (x) coordinate "out"
+  Int_t   iwht1 = (Int_t) (xhit1 / kCelWr);           // wire (x) coordinate "in"
+  Int_t   iwht2 = (Int_t) (xhit2 / kCelWr);           // wire (x) coordinate "out"
 
   Int_t   nIter;
   Float_t zxe[3][5];
   if (iwht1==iwht2) {                      // incline 1-wire hit
     nIter = 2;
     zxe[0][0] = (zhit1 + zhit2 - dZY*0.57735) / 2;
-    zxe[1][0] = (iwht1 + 0.5) * celWr;
-    zxe[2][0] =  E/2;
+    zxe[1][0] = (iwht1 + 0.5) * kCelWr;
+    zxe[2][0] =  eloss/2;
     zxe[0][1] = (zhit1 + zhit2 + dZY*0.57735) / 2;
-    zxe[1][1] = (iwht1 + 0.5) * celWr;
-    zxe[2][1] =  E/2;
+    zxe[1][1] = (iwht1 + 0.5) * kCelWr;
+    zxe[2][1] =  eloss/2;
   }
   else if (TMath::Abs(iwht1-iwht2) != 1) { // incline 3-wire hit
     nIter = 3;
     Int_t iwht3 = (iwht1 + iwht2) / 2;
-    Float_t xwht1 = (iwht1 + 0.5) * celWr; // wire 1
-    Float_t xwht2 = (iwht2 + 0.5) * celWr; // wire 2
-    Float_t xwht3 = (iwht3 + 0.5) * celWr; // wire 3
+    Float_t xwht1 = (iwht1 + 0.5) * kCelWr; // wire 1
+    Float_t xwht2 = (iwht2 + 0.5) * kCelWr; // wire 2
+    Float_t xwht3 = (iwht3 + 0.5) * kCelWr; // wire 3
     Float_t xwr13 = (xwht1 + xwht3) / 2;   // center 13
     Float_t xwr23 = (xwht2 + xwht3) / 2;   // center 23
     Float_t dxw1  = xhit1 - xwr13;
     Float_t dxw2  = xhit2 - xwr23;
-    Float_t egm1  = TMath::Abs(dxw1) / ( TMath::Abs(dxw1) + TMath::Abs(dxw2) + celWr );
-    Float_t egm2  = TMath::Abs(dxw2) / ( TMath::Abs(dxw1) + TMath::Abs(dxw2) + celWr );
-    Float_t egm3  =            celWr / ( TMath::Abs(dxw1) + TMath::Abs(dxw2) + celWr );
+    Float_t egm1  = TMath::Abs(dxw1) / ( TMath::Abs(dxw1) + TMath::Abs(dxw2) + kCelWr );
+    Float_t egm2  = TMath::Abs(dxw2) / ( TMath::Abs(dxw1) + TMath::Abs(dxw2) + kCelWr );
+    Float_t egm3  =           kCelWr / ( TMath::Abs(dxw1) + TMath::Abs(dxw2) + kCelWr );
     zxe[0][0] = (dXY*(xwr13-xwht1)/dXY + zhit1 + zhit1) / 2;
     zxe[1][0] =  xwht1;
-    zxe[2][0] =  E * egm1;
+    zxe[2][0] =  eloss * egm1;
     zxe[0][1] = (dXY*(xwr23-xwht1)/dXY + zhit1 + zhit2) / 2;
     zxe[1][1] =  xwht2;
-    zxe[2][1] =  E * egm2;
+    zxe[2][1] =  eloss * egm2;
     zxe[0][2] =  dXY*(xwht3-xwht1)/dXY + zhit1;
     zxe[1][2] =  xwht3;
-    zxe[2][2] =  E * egm3;
+    zxe[2][2] =  eloss * egm3;
   }
   else {                                   // incline 2-wire hit
     nIter = 2;
-    Float_t xwht1 = (iwht1 + 0.5) * celWr;
-    Float_t xwht2 = (iwht2 + 0.5) * celWr;
+    Float_t xwht1 = (iwht1 + 0.5) * kCelWr;
+    Float_t xwht2 = (iwht2 + 0.5) * kCelWr;
     Float_t xwr12 = (xwht1 + xwht2) / 2;
     Float_t dxw1  = xhit1 - xwr12;
     Float_t dxw2  = xhit2 - xwr12;
@@ -775,23 +774,22 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumbe
     Float_t egm2  = TMath::Abs(dxw2) / ( TMath::Abs(dxw1) + TMath::Abs(dxw2) );
     zxe[0][0] = (zhit1 + zhit2 - dZY*egm1) / 2;
     zxe[1][0] =  xwht1;
-    zxe[2][0] =  E * egm1;
+    zxe[2][0] =  eloss * egm1;
     zxe[0][1] = (zhit1 + zhit2 + dZY*egm2) / 2;
     zxe[1][1] =  xwht2;
-    zxe[2][1] =  E * egm2;
+    zxe[2][1] =  eloss * egm2;
   }
 
   // Finite size of ionization region
 
   Int_t nCellZ  = fGeom->GetNumberOfPadsZ();
   Int_t nCellX  = fGeom->GetNumberOfPadsPhi();
-  Int_t nz3     = (ngamz+1)/2;
-  Int_t nx3     = (ngamx+1)/2;
-  cpvDigits->Expand(nIter*ngamx*ngamz);
+  Int_t nz3     = (kNgamz+1)/2;
+  Int_t nx3     = (kNgamx+1)/2;
+  cpvDigits->Expand(nIter*kNgamx*kNgamz);
   TClonesArray &ldigits = *(TClonesArray *)cpvDigits;
 
   for (Int_t iter=0; iter<nIter; iter++) {
-//      cout << "CPVDigitize: YVK : iter="<<iter<<endl;
 
     Float_t zhit = zxe[0][iter];
     Float_t xhit = zxe[1][iter];
@@ -804,27 +802,24 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumbe
     Int_t ixcell = (Int_t) xcell;
     Float_t zc = zcell - izcell - 0.5;
     Float_t xc = xcell - ixcell - 0.5;
-    for (Int_t iz=1; iz<=ngamz; iz++) {
+    for (Int_t iz=1; iz<=kNgamz; iz++) {
       Int_t kzg = izcell + iz - nz3;
       if (kzg<=0 || kzg>nCellZ) continue;
       Float_t zg = (Float_t)(iz-nz3) - zc;
-      for (Int_t ix=1; ix<=ngamx; ix++) {
+      for (Int_t ix=1; ix<=kNgamx; ix++) {
 	Int_t kxg = ixcell + ix - nx3;
 	if (kxg<=0 || kxg>nCellX) continue;
 	Float_t xg = (Float_t)(ix-nx3) - xc;
 	
 	// Now calculate pad response
 	Float_t qpad = CPVPadResponseFunction(qhit,zg,xg);
-	qpad += qNoise*rnor2;
+	qpad += kNoise*rnor2;
 	if (qpad<0) continue;
 	
 	// Fill the array with pad response ID and amplitude
 	new(ldigits[cpvDigits->GetEntriesFast()]) AliPHOSCPVDigit(kxg,kzg,qpad);
-//  	printf("(%2d,%2d,%5.3f) ",kxg,kzg,qpad);
       }
-//        cout << endl;
     }
-//      cout << endl;
   }
 }
 
@@ -859,16 +854,16 @@ Double_t AliPHOSv1::CPVCumulPadResponse(Double_t x, Double_t y) {
   // 3 October 2000
   // ------------------------------------------------------------------------
 
-  const Double_t a=1.0;
-  const Double_t b=0.7;
+  const Double_t kA=1.0;
+  const Double_t kB=0.7;
 
   Double_t r2       = x*x + y*y;
   Double_t xy       = x*y;
   Double_t cumulPRF = 0;
   for (Int_t i=0; i<=4; i++) {
-    Double_t b1 = (2*i + 1) * b;
+    Double_t b1 = (2*i + 1) * kB;
     cumulPRF += TMath::Power(-1,i) * TMath::ATan( xy / (b1*TMath::Sqrt(b1*b1 + r2)) );
   }
-  cumulPRF *= a/(2*TMath::Pi());
+  cumulPRF *= kA/(2*TMath::Pi());
   return cumulPRF;
 }

@@ -24,12 +24,6 @@
 
 class AliPHOSCPVHit : public TObject {
   
-private:
-  TLorentzVector fMomentum;   // 4-momentum of the particle
-  Float_t        fXhit;       // Hit's X-coordinates
-  Float_t        fYhit;       // Hit's Y-coordinates
-  Int_t          fIpart;      // Hit's particle type
-  
 public:
   virtual ~AliPHOSCPVHit() {}
            AliPHOSCPVHit() {}
@@ -41,6 +35,12 @@ public:
   Int_t          GetIpart()     { return  fIpart;    }
   void           Print();
 
+private:
+  TLorentzVector fMomentum;   // 4-momentum of the particle
+  Float_t        fXhit;       // Hit's X-coordinates
+  Float_t        fYhit;       // Hit's Y-coordinates
+  Int_t          fIpart;      // Hit's particle type
+  
   ClassDef(AliPHOSCPVHit,1)  // Hit object in one CPV module
 };
  

@@ -18,10 +18,9 @@
 //_________________________________________________________________________
 //  RecPoint implementation for PHOS-CPV
 //  An CpvRecPoint is a cluster of digits   
-//           
-//*-- Author: Yuri Kharlov 30 October 2000 
-//          (after Dmitri Peressounko (RRC KI & SUBATECH))
-
+//*-- Author: Yuri Kharlov
+//  (after Dmitri Peressounko (RRC KI & SUBATECH))
+//  30 October 2000 
 
 // --- ROOT system ---
 #include "TPad.h"
@@ -441,8 +440,8 @@ void AliPHOSCpvRecPoint::GetClusterLengths(Int_t &lengX, Int_t &lengZ)
 
   AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
 
-  const Int_t maxleng=20;
-  Int_t idX[maxleng], idZ[maxleng];
+  const Int_t kMaxLeng=20;
+  Int_t idX[kMaxLeng], idZ[kMaxLeng];
   lengX = 0;
   lengZ = 0;
   Bool_t dejavu;
@@ -457,7 +456,7 @@ void AliPHOSCpvRecPoint::GetClusterLengths(Int_t &lengX, Int_t &lengZ)
     if (!dejavu) {
       idX[lengX]=relid[2];
       lengX++;
-      lengX = TMath::Min(lengX,maxleng);
+      lengX = TMath::Min(lengX,kMaxLeng);
     }
 
     dejavu=kFALSE;
@@ -465,7 +464,7 @@ void AliPHOSCpvRecPoint::GetClusterLengths(Int_t &lengX, Int_t &lengZ)
     if (!dejavu) {
       idZ[lengZ]=relid[3];
       lengZ++;
-      lengZ = TMath::Min(lengZ,maxleng);
+      lengZ = TMath::Min(lengZ,kMaxLeng);
     }
   }
   fLengX = lengX;

@@ -8,10 +8,9 @@
 //_________________________________________________________________________
 //  RecPoint implementation for PHOS-CPV
 //  An CpvRecPoint is a cluster of digits   
-//           
-//*-- Author: Yuri Kharlov 30 October 2000 
-//          (after Dmitri Peressounko (RRC KI & SUBATECH))
-
+//*-- Author: Yuri Kharlov
+//  (after Dmitri Peressounko (RRC KI & SUBATECH))
+//  30 October 2000 
 // --- ROOT system ---
 
 #include "TObject.h"
@@ -83,8 +82,7 @@ public:
   void        Print(Option_t * opt = "void") ; 
 
   AliPHOSCpvRecPoint & operator = (const AliPHOSCpvRecPoint & rvalue)  {
-    // assignement operator requested by coding convention
-    // but not needed
+    // assignement operator requested by coding convention but not needed
     assert(0==1) ;
     return *this ; 
   }

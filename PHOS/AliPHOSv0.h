@@ -6,7 +6,8 @@
 //_________________________________________________________________________
 // Implementation version v0 of PHOS Manager class 
 // Layout EMC + PPSD has name GPS2  
-//                  
+// Layout EMC + CPV  has name IHEP
+//*--                  
 //*-- Author: Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
@@ -64,8 +65,7 @@ class AliPHOSv0 : public AliPHOS {
   }
   
   AliPHOSv0 & operator = (const AliPHOSv0 & rvalue)  {
-    // assignement operator requested by coding convention
-    // but not needed
+    // assignement operator requested by coding convention but not needed
     assert(0==1) ;
     return *this ; 
   }

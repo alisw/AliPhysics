@@ -6,7 +6,10 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-//  Algorithm class to analyze PHOSv1 events    
+// Algorythm class to analyze PHOSv1 events:
+// Construct histograms and displays them.
+// Use the macro EditorBar.C for best access to the functionnalities
+//*--
 //*-- Author : Yves Schutz (SUBATECH)
 
 // --- ROOT system ---

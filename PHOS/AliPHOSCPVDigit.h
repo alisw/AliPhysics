@@ -1,5 +1,5 @@
-#ifndef ALIPHOSCPV_H
-#define ALIPHOSCPV_H
+#ifndef ALIPHOSCPVDIGIT_H
+#define ALIPHOSCPVDIGIT_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -18,11 +18,6 @@
 
 class AliPHOSCPVDigit : public TObject {
   
-private:
-  Int_t    fXpad;       // Digit's pad number in Phi
-  Int_t    fYpad;       // Digit's pad number in Z
-  Float_t  fQpad;       // Digit's pad amplitude
-  
 public:
   virtual ~AliPHOSCPVDigit() {}
            AliPHOSCPVDigit() {}
@@ -33,6 +28,11 @@ public:
   Int_t    GetYpad()          { return  fYpad; }
   Float_t  GetQpad()          { return  fQpad; }
 
+private:
+  Int_t    fXpad;       // Digit's pad number in Phi
+  Int_t    fYpad;       // Digit's pad number in Z
+  Float_t  fQpad;       // Digit's pad amplitude
+  
   ClassDef(AliPHOSCPVDigit,1)  // Digit object in one CPV pad
 };
  

@@ -17,10 +17,12 @@
 
 //_________________________________________________________________________
 // Geometry class  for PHOS : EMCA (Electromagnetic Calorimeter)  
-//                  
-//*-- Author   : Yves Schutz (SUBATECH)
-//    Modified : Yuri Kharlov (IHEP, Protvino) 13 September 2000
-//
+// Its data members provide geometry parametrization of EMCA
+// which can be changed in the constructor only.
+// Author   : Yves Schutz (SUBATECH)
+// Modified : Yuri Kharlov (IHEP, Protvino)
+// 13 September 2000
+
 // --- AliRoot header files ---
 
 #include "AliPHOSEMCAGeometry.h"

@@ -18,6 +18,7 @@
 //_________________________________________________________________________
 // Implementation version v0 of PHOS Manager class 
 // Layout EMC + PPSD has name GPS2  
+// Layout EMC + CPV  has name IHEP
 // An object of this class does not produce hits nor digits
 // It is the one to use if you do not want to produce outputs in TREEH or TREED
 //                  
@@ -923,7 +924,6 @@ void AliPHOSv0::CreateGeometryforPHOS()
 void AliPHOSv0::CreateGeometryforPPSD()
 {
   // Create the PHOS-PPSD geometry for GEANT
-
   //BEGIN_HTML
   /*
     <H2>
@@ -1127,7 +1127,6 @@ void AliPHOSv0::CreateGeometryforCPV()
 {
   // Create the PHOS-CPV geometry for GEANT
   // Author: Yuri Kharlov 11 September 2000
-
   //BEGIN_HTML
   /*
     <H2>

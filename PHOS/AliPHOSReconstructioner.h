@@ -9,7 +9,7 @@
 //  Algorithm class for the reconstruction: clusterizer
 //                                          track segment maker
 //                                          particle identifier   
-//                  
+//*--
 //*-- Author: Gines Martinez & Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
@@ -54,8 +54,7 @@ public:
   void SetDebugReconstruction(Bool_t deb) { fDebugReconstruction = deb; }
 
   AliPHOSReconstructioner & operator = (const AliPHOSReconstructioner & rvalue)  {
-    // assignement operator requested by coding convention
-    // but not needed
+    // assignement operator requested by coding convention but not needed
     assert(0==1) ;
     return *this ; 
   }

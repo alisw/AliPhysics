@@ -15,14 +15,19 @@
 
 /*
   $Log$
+  Revision 1.1  2000/11/03 16:29:02  schutz
+  PPSD geometry class to correct previous name-convetion rule violation
+
 */
 
 //_________________________________________________________________________
 // Geometry class  for PHOS : PPSD (PHOS Preshower Detector)
-//                  
-//*-- Author   : Yves Schutz (SUBATECH)
-//    Modified : Yuri Kharlov (IHEP, Protvino) 15 September 2000
-//
+// Its data members provide geometry parametrization of PPSD
+// which can be changed in the constructor only.
+// Author   : Yves Schutz (SUBATECH)
+// Modified : Yuri Kharlov (IHEP, Protvino)
+// 7 November 2000
+
 // --- ROOT system ---
 
 // --- Standard library ---
@@ -53,10 +58,10 @@ AliPHOSPPSDGeometry::AliPHOSPPSDGeometry()
   fMicromegasWallThickness  = 0.6 ; 
   fNumberOfModulesPhi       = 4 ; 
   fNumberOfModulesZ         = 4 ; 
-  fNumberOfPadsPhi          = 24 ; 
-  fNumberOfPadsZ            = 24 ;   
-  fPCThickness              = 0.1 ; 
-  fPhiDisplacement          = 0.8 ;  
+  fNumberOfPadsPhi          = 32 ;
+  fNumberOfPadsZ            = 32 ;
+  fPCThickness              = 0.1 ;
+  fPhiDisplacement          = 0.8 ;
   fZDisplacement            = 0.8 ;  
 
   fMicromegas1Thickness     = fLidThickness + 2 * fCompositeThickness + fCathodeThickness 
