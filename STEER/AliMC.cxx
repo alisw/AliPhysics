@@ -270,7 +270,7 @@ void AliMC::Stepping()
     //
     // write tracke reference for track which is dissapearing - MI
     if (gMC->IsTrackDisappeared()) {      
-      if (gMC->Etot()>0.05) AddTrackReference(GetCurrentTrackNumber());
+	if (gMC->Etot()>0.05) AddTrackReference(GetCurrentTrackNumber());
     }
   
     //Call the appropriate stepping routine;
@@ -481,6 +481,8 @@ void AliMC::FinishPrimary()
   //  static Int_t count=0;
   //  const Int_t times=10;
   // This primary is finished, purify stack
+  if (!(gMC->SecondariesAreOrdered()))
+       runloader->Stack()->ReorderKine();
   runloader->Stack()->PurifyKine();
   
   TIter next(gAlice->Modules());
