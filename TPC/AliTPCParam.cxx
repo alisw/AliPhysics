@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  1999/10/05 17:18:27  fca
+Correct GetWire check on even/odd fnWires
+
 Revision 1.4  1999/09/29 09:24:34  fca
 Introduction of the Copyright and cvs Log
 
@@ -48,14 +51,14 @@ const static  Int_t kMaxRows=600;
 const static   Int_t kMaxTBin =512; 
 
 
-const static  Float_t kInnerRadiusLow = 89.45;
-const static  Float_t kOuterRadiusLow = 143.725;
-const static  Float_t kInnerRadiusUp  = 134.55;
-const static  Float_t kOuterRadiusUp  = 248.275;
+const static  Float_t kInnerRadiusLow = 83.9;
+const static  Float_t kOuterRadiusLow = 146.9;
+const static  Float_t kInnerRadiusUp  = 141.3;
+const static  Float_t kOuterRadiusUp  = 249.4;
 
-const static  Float_t kInnerAngle = 0.523598775; // 30 degrees
+const static  Float_t kInnerAngle = 0.34906585; // 20 degrees
 const static  Float_t kInnerAngleShift = 0;
-const static  Float_t kOuterAngle = 0.261799387; //  15 degrees
+const static  Float_t kOuterAngle = 0.34906585; //  20 degrees
 const static  Float_t kOuterAngleShift = 0;
 
 const static Float_t kPadPitchLength = 2.05;
@@ -74,12 +77,12 @@ const static  Float_t  kAttCoef = 250.;
 const static  Float_t  kOxyCont = 5.e-6;
 
 
-const static  Float_t  kChipGain = 24;
-const static  Float_t  kGasGain = 1e4;
+const static  Float_t  kChipGain = 12;
+const static  Float_t  kGasGain = 2e4;
 const static  Float_t  kTSample = 2.e-7; //TSAMPLE
 const static  Float_t  kTFWHM   = 2.5e-7;  //fwhm of charge distribution
  
-const static  Float_t  kNoise = 500;  //default noise = 1000 el 
+const static  Float_t  kNoise = 1000;  //default noise = 1000 el 
 const static  Int_t    kZeroSup=5;
 const static  Float_t  kPadCoupling=0.5;
 // 
