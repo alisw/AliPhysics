@@ -67,8 +67,8 @@ ClassImp(AliPHOSFastRecParticle)
 {
   // ctor from a TParticle (crummy?!)
  
-  TParticle & pnoconst = const_cast<TParticle &>(pp) ;
-  AliPHOSFastRecParticle & p = static_cast<AliPHOSFastRecParticle&>(pnoconst) ;
+  TParticle & pnoconst = (TParticle &)(pp) ;
+  AliPHOSFastRecParticle & p = (AliPHOSFastRecParticle &)(pnoconst) ;
 
   fPdgCode     = p.fPdgCode;
   fStatusCode  = p.fStatusCode;

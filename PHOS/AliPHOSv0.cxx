@@ -164,35 +164,34 @@ void AliPHOSv0::AddHit(Int_t primary, Int_t Id, Float_t * hits)
   TClonesArray &ltmphits = *fTmpHits ;
   AliPHOSHit *newHit ;
   AliPHOSHit *curHit ;
+  //  AliPHOSHit *curHit2 ;
   Bool_t deja = kFALSE ;
 
   // In any case, fills the fTmpHit TClonesArray (with "accumulated hits")
 
   newHit = new AliPHOSHit(primary, Id, hits) ;
+  TClonesArray &lhits = *fHits;
 
   for ( hitCounter = 0 ; hitCounter < fNTmpHits && !deja ; hitCounter++ ) {
     curHit = (AliPHOSHit*) ltmphits[hitCounter] ;
-    if( *curHit == *newHit ) {
-     *curHit = *curHit + *newHit ;
-      deja = kTRUE ;
+    //    curHit2 = (AliPHOSHit*) lhits[hitCounter] ;  // ca plante dans PurifyKine !?
+  if( *curHit == *newHit ) {
+    *curHit = *curHit + *newHit ;
+    //    *curHit2 = *curHit2 + *newHit ;
+    deja = kTRUE ;
     }
   }
-       
+         
   if ( !deja ) {
     new(ltmphits[fNTmpHits]) AliPHOSHit(*newHit) ;
     fNTmpHits++ ;
+    new(lhits[fNhits]) AliPHOSHit(*newHit) ;    // will be saved on disk
+    fNhits++ ;
   }
 
   // Please note that the fTmpHits array must survive up to the
   // end of the events, so it does not appear e.g. in ResetHits() (
   // which is called at the end of each primary).  
-
-  //  if (IsTreeSelected('H')) {
-    // And, if we really want raw hits tree, have the fHits array filled also
-  //    TClonesArray &lhits = *fHits;
-  //    new(lhits[fNhits]) AliPHOSHit(*newHit) ;
-  //    fNhits++ ;
-  //  }
 
   delete newHit;
 
@@ -456,65 +455,67 @@ void AliPHOSv0:: BuildGeometryforPPSD(void)
     // inside the PPSD box: 
     //   1.   fNumberOfModulesPhi x fNumberOfModulesZ top micromegas
     x = ( fGeom->GetPPSDBoxSize(0) - fGeom->GetPPSDModuleSize(0) ) / 2. ;  
-    for ( Int_t iphi = 1; iphi <= fGeom->GetNumberOfModulesPhi(); iphi++ ) { // the number of micromegas modules in phi per PHOS module
-      Float_t z = ( fGeom->GetPPSDBoxSize(2) - fGeom->GetPPSDModuleSize(2) ) / 2. ;
-      TNode * micro1node ; 
-      for ( Int_t iz = 1; iz <= fGeom->GetNumberOfModulesZ(); iz++ ) { // the number of micromegas modules in z per PHOS module
-	y = ( fGeom->GetPPSDBoxSize(1) - fGeom->GetMicromegas1Thickness() ) / 2. ; 
-	sprintf(nodename, "%s%d%d%d", "Mic1", i, iphi, iz) ;
-	micro1node  = new TNode(nodename, nodename, "PPSDModule", x, y, z) ;
-	micro1node->SetLineColor(kColorPPSD) ;  
-	fNodes->Add(micro1node) ; 
-	// inside top micromegas
-	micro1node->cd() ; 
-	//      a. top lid
-	y = ( fGeom->GetMicromegas1Thickness() - fGeom->GetLidThickness() ) / 2. ; 
-	sprintf(nodename, "%s%d%d%d", "Lid", i, iphi, iz) ;
-	TNode * toplidnode = new TNode(nodename, nodename, "TopLid", 0, y, 0) ;
-	toplidnode->SetLineColor(kColorPPSD) ;  
-	fNodes->Add(toplidnode) ; 
-	//      b. composite panel
-	y = y - fGeom->GetLidThickness() / 2. - fGeom->GetCompositeThickness() / 2. ; 
-	sprintf(nodename, "%s%d%d%d", "CompU", i, iphi, iz) ;
-	TNode * compupnode = new TNode(nodename, nodename, "TopPanel", 0, y, 0) ;
-	compupnode->SetLineColor(kColorPPSD) ;  
-	fNodes->Add(compupnode) ; 
-	//      c. anode
-	y = y - fGeom->GetCompositeThickness() / 2. - fGeom->GetAnodeThickness()  / 2. ; 
-	sprintf(nodename, "%s%d%d%d", "Ano", i, iphi, iz) ;
-	TNode * anodenode = new TNode(nodename, nodename, "Anode", 0, y, 0) ;
-	anodenode->SetLineColor(kColorPHOS) ;  
-	fNodes->Add(anodenode) ; 
-	//      d.  gas 
-	y = y - fGeom->GetAnodeThickness() / 2. - ( fGeom->GetConversionGap() +  fGeom->GetAvalancheGap() ) / 2. ; 
-	sprintf(nodename, "%s%d%d%d", "GGap", i, iphi, iz) ;
-	TNode * ggapnode = new TNode(nodename, nodename, "GasGap", 0, y, 0) ;
-	ggapnode->SetLineColor(kColorGas) ;  
-	fNodes->Add(ggapnode) ;          
+    {
+      for ( Int_t iphi = 1; iphi <= fGeom->GetNumberOfModulesPhi(); iphi++ ) { // the number of micromegas modules in phi per PHOS module
+	Float_t z = ( fGeom->GetPPSDBoxSize(2) - fGeom->GetPPSDModuleSize(2) ) / 2. ;
+	TNode * micro1node ; 
+	for ( Int_t iz = 1; iz <= fGeom->GetNumberOfModulesZ(); iz++ ) { // the number of micromegas modules in z per PHOS module
+	  y = ( fGeom->GetPPSDBoxSize(1) - fGeom->GetMicromegas1Thickness() ) / 2. ; 
+	  sprintf(nodename, "%s%d%d%d", "Mic1", i, iphi, iz) ;
+	  micro1node  = new TNode(nodename, nodename, "PPSDModule", x, y, z) ;
+	  micro1node->SetLineColor(kColorPPSD) ;  
+	  fNodes->Add(micro1node) ; 
+	  // inside top micromegas
+	  micro1node->cd() ; 
+	  //      a. top lid
+	  y = ( fGeom->GetMicromegas1Thickness() - fGeom->GetLidThickness() ) / 2. ; 
+	  sprintf(nodename, "%s%d%d%d", "Lid", i, iphi, iz) ;
+	  TNode * toplidnode = new TNode(nodename, nodename, "TopLid", 0, y, 0) ;
+	  toplidnode->SetLineColor(kColorPPSD) ;  
+	  fNodes->Add(toplidnode) ; 
+	  //      b. composite panel
+	  y = y - fGeom->GetLidThickness() / 2. - fGeom->GetCompositeThickness() / 2. ; 
+	  sprintf(nodename, "%s%d%d%d", "CompU", i, iphi, iz) ;
+	  TNode * compupnode = new TNode(nodename, nodename, "TopPanel", 0, y, 0) ;
+	  compupnode->SetLineColor(kColorPPSD) ;  
+	  fNodes->Add(compupnode) ; 
+	  //      c. anode
+	  y = y - fGeom->GetCompositeThickness() / 2. - fGeom->GetAnodeThickness()  / 2. ; 
+	  sprintf(nodename, "%s%d%d%d", "Ano", i, iphi, iz) ;
+	  TNode * anodenode = new TNode(nodename, nodename, "Anode", 0, y, 0) ;
+	  anodenode->SetLineColor(kColorPHOS) ;  
+	  fNodes->Add(anodenode) ; 
+	  //      d.  gas 
+	  y = y - fGeom->GetAnodeThickness() / 2. - ( fGeom->GetConversionGap() +  fGeom->GetAvalancheGap() ) / 2. ; 
+	  sprintf(nodename, "%s%d%d%d", "GGap", i, iphi, iz) ;
+	  TNode * ggapnode = new TNode(nodename, nodename, "GasGap", 0, y, 0) ;
+	  ggapnode->SetLineColor(kColorGas) ;  
+	  fNodes->Add(ggapnode) ;          
 	  //      f. cathode
-	y = y - ( fGeom->GetConversionGap() +  fGeom->GetAvalancheGap() ) / 2. - fGeom->GetCathodeThickness()  / 2. ; 
-	sprintf(nodename, "%s%d%d%d", "Cathode", i, iphi, iz) ;
-	TNode * cathodenode = new TNode(nodename, nodename, "Cathode", 0, y, 0) ;
-	cathodenode->SetLineColor(kColorPHOS) ;  
-	fNodes->Add(cathodenode) ;        
-	//      g. printed circuit
-	y = y - fGeom->GetCathodeThickness() / 2. - fGeom->GetPCThickness()  / 2. ; 
-	sprintf(nodename, "%s%d%d%d", "PC", i, iphi, iz) ;
-	TNode * pcnode = new TNode(nodename, nodename, "PCBoard", 0, y, 0) ;
-	pcnode->SetLineColor(kColorPPSD) ;  
-	fNodes->Add(pcnode) ;        
-	//      h. composite panel
-	y = y - fGeom->GetPCThickness() / 2. - fGeom->GetCompositeThickness()  / 2. ; 
-	sprintf(nodename, "%s%d%d%d", "CompDown", i, iphi, iz) ;
-	TNode * compdownnode = new TNode(nodename, nodename, "BottomPanel", 0, y, 0) ;
-	compdownnode->SetLineColor(kColorPPSD) ;  
-	fNodes->Add(compdownnode) ;   
-	z = z - fGeom->GetPPSDModuleSize(2) ;
+	  y = y - ( fGeom->GetConversionGap() +  fGeom->GetAvalancheGap() ) / 2. - fGeom->GetCathodeThickness()  / 2. ; 
+	  sprintf(nodename, "%s%d%d%d", "Cathode", i, iphi, iz) ;
+	  TNode * cathodenode = new TNode(nodename, nodename, "Cathode", 0, y, 0) ;
+	  cathodenode->SetLineColor(kColorPHOS) ;  
+	  fNodes->Add(cathodenode) ;        
+	  //      g. printed circuit
+	  y = y - fGeom->GetCathodeThickness() / 2. - fGeom->GetPCThickness()  / 2. ; 
+	  sprintf(nodename, "%s%d%d%d", "PC", i, iphi, iz) ;
+	  TNode * pcnode = new TNode(nodename, nodename, "PCBoard", 0, y, 0) ;
+	  pcnode->SetLineColor(kColorPPSD) ;  
+	  fNodes->Add(pcnode) ;        
+	  //      h. composite panel
+	  y = y - fGeom->GetPCThickness() / 2. - fGeom->GetCompositeThickness()  / 2. ; 
+	  sprintf(nodename, "%s%d%d%d", "CompDown", i, iphi, iz) ;
+	  TNode * compdownnode = new TNode(nodename, nodename, "BottomPanel", 0, y, 0) ;
+	  compdownnode->SetLineColor(kColorPPSD) ;  
+	  fNodes->Add(compdownnode) ;   
+	  z = z - fGeom->GetPPSDModuleSize(2) ;
+	  ppsdboxnode->cd() ;
+	} // end of Z module loop     
+	x = x -  fGeom->GetPPSDModuleSize(0) ; 
 	ppsdboxnode->cd() ;
-      } // end of Z module loop     
-      x = x -  fGeom->GetPPSDModuleSize(0) ; 
-      ppsdboxnode->cd() ;
-    } // end of phi module loop
+      } // end of phi module loop
+    }
     //   2. air gap      
     ppsdboxnode->cd() ;
     y = ( fGeom->GetPPSDBoxSize(1) - 2 * fGeom->GetMicromegas1Thickness() - fGeom->GetMicro1ToLeadGap() ) / 2. ; 
@@ -536,17 +537,18 @@ void AliPHOSv0:: BuildGeometryforPPSD(void)
     fNodes->Add(gapdownnode) ;        
     //    5.  fNumberOfModulesPhi x fNumberOfModulesZ bottom micromegas
     x = ( fGeom->GetPPSDBoxSize(0) - fGeom->GetPPSDModuleSize(0) ) / 2. - fGeom->GetPhiDisplacement() ;  
-    for ( Int_t iphi = 1; iphi <= fGeom->GetNumberOfModulesPhi(); iphi++ ) { 
-      Float_t z = ( fGeom->GetPPSDBoxSize(2) - fGeom->GetPPSDModuleSize(2) ) / 2.  - fGeom->GetZDisplacement() ;;
-      TNode * micro2node ; 
-      for ( Int_t iz = 1; iz <= fGeom->GetNumberOfModulesZ(); iz++ ) { 
-	y = - ( fGeom->GetPPSDBoxSize(1) - fGeom->GetMicromegas2Thickness() ) / 2. ; 
-	sprintf(nodename, "%s%d%d%d", "Mic2", i, iphi, iz) ;
-	micro2node  = new TNode(nodename, nodename, "PPSDModule", x, y, z) ;
-	micro2node->SetLineColor(kColorPPSD) ;  
-	fNodes->Add(micro2node) ; 
-	// inside bottom micromegas
-	micro2node->cd() ; 
+    {
+      for ( Int_t iphi = 1; iphi <= fGeom->GetNumberOfModulesPhi(); iphi++ ) { 
+	Float_t z = ( fGeom->GetPPSDBoxSize(2) - fGeom->GetPPSDModuleSize(2) ) / 2.  - fGeom->GetZDisplacement() ;;
+	TNode * micro2node ; 
+	for ( Int_t iz = 1; iz <= fGeom->GetNumberOfModulesZ(); iz++ ) { 
+	  y = - ( fGeom->GetPPSDBoxSize(1) - fGeom->GetMicromegas2Thickness() ) / 2. ; 
+	  sprintf(nodename, "%s%d%d%d", "Mic2", i, iphi, iz) ;
+	  micro2node  = new TNode(nodename, nodename, "PPSDModule", x, y, z) ;
+	  micro2node->SetLineColor(kColorPPSD) ;  
+	  fNodes->Add(micro2node) ; 
+	  // inside bottom micromegas
+	  micro2node->cd() ; 
 	  //      a. top lid
 	  y = ( fGeom->GetMicromegas2Thickness() - fGeom->GetLidThickness() ) / 2. ; 
 	  sprintf(nodename, "%s%d", "Lidb", i) ;
@@ -594,10 +596,13 @@ void AliPHOSv0:: BuildGeometryforPPSD(void)
 	} // end of Z module loop     
 	x = x -  fGeom->GetPPSDModuleSize(0) ; 
 	ppsdboxnode->cd() ;
-       } // end of phi module loop
-     } // PHOS modules
- delete rotname ; 
- delete nodename ; 
+      } // end of phi module loop
+    }
+  } // PHOS modules
+ 
+  delete rotname ;  
+  delete nodename ; 
+
 }
 
 //____________________________________________________________________________
@@ -1125,11 +1130,12 @@ Int_t AliPHOSv0::Digitize(Float_t Energy)
 {
   // Applies the energy calibration
   
-  Float_t fB = 100000000. ;
+  Float_t fB = 100. ; // ; 100000000. ;
   Float_t fA = 0. ;
   Int_t chan = Int_t(fA + Energy*fB ) ;
   return chan ;
 }
+
 //___________________________________________________________________________
 void AliPHOSv0::FinishEvent()
 {
@@ -1178,15 +1184,16 @@ void AliPHOSv0::FinishEvent()
       if (energyandnoise < 0 ) 
 	energyandnoise = 0 ;
 
-      newdigit->SetAmp(energyandnoise) ;
-
       if ( newdigit->GetAmp() < fDigitThreshold ) // if threshold not surpassed, remove digit from list
 	fDigits->RemoveAt(i) ; 
     }
   }
+  
+
   fDigits->Compress() ; 
   fNTmpHits = 0 ;
   fTmpHits->Delete();
+  
 }
 
 //____________________________________________________________________________
@@ -1221,7 +1228,7 @@ void AliPHOSv0::MakeBranch(Option_t* opt)
   char *cdD = strstr(opt,"D");
   
   if (fDigits && gAlice->TreeD() && cdD) {
-    gAlice->TreeD()->Branch(branchname,&fDigits, fBufferSize);
+    gAlice->TreeD()->Branch(branchname, &fDigits, fBufferSize);
   }
 }
 

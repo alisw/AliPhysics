@@ -138,9 +138,9 @@ Bool_t AliPHOSDigit::operator==(AliPHOSDigit const & digit) const
 AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit) 
 {
   // Adds the amplitude of digits and completes the list of primary particles
-  
+
   fAmp += digit.fAmp ;
- 
+  
   // Here comes something crummy ... but I do not know how to stream pointers
   // because AliPHOSDigit is in a TCLonesArray
   
@@ -169,8 +169,12 @@ AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit)
     
     Int_t tempo3[3] ;
     Int_t index ; 
+    for (index = 0 ; index < 3 ; index++)
+      tempo3[index] = 0 ; 
+
     for (index = 0 ; index < max1 ; index++)
       tempo3[index] = tempo1[index] ;
+
     for (index = 0 ; index < max2 ; index++)
       tempo3[index+max1] = tempo2[index] ; 
     

@@ -14,7 +14,8 @@
 // --- ROOT system ---
 
 #include "TObject.h"
-
+#include "TArrayI.h"
+ 
 // --- Standard library ---
 
 // --- AliRoot header files ---
@@ -58,8 +59,9 @@ private:
 
   Float_t  fDelta ;        // parameter used to sort the clusters    
   Float_t  fLocMaxCut ;    // minimum energy difference to distinguish two maxima 
-  Float_t * fEnergyList ;  // energy of digits
+  Float_t  *fEnergyList ;  // energy of digits
   Float_t  fW0 ;           // logarithmic weight factor for center of gravity calculation
+  TArrayI *fTest ; 
 
   ClassDef(AliPHOSEmcRecPoint,1)  // EMC RecPoint (cluster)
 

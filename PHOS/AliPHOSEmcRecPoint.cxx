@@ -30,7 +30,8 @@
 
 // --- Standard library ---
 
-#include <iostream>
+#include <iostream> 
+#include <cassert>
 
 // --- AliRoot header files ---
 
@@ -182,8 +183,10 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
      AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
      Int_t iDigit;
      Int_t relid[4] ;
-     Float_t xi[fMulDigit] ;
-     Float_t zi[fMulDigit] ;
+     
+     const Int_t fMulDigit = AliPHOSEmcRecPoint::GetDigitsMultiplicity() ; 
+     Float_t * xi = new Float_t[fMulDigit] ; 
+     Float_t * zi = new Float_t[fMulDigit] ; 
 
      // create the histogram for the single cluster 
      // 1. gets histogram boundaries
@@ -244,6 +247,9 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
      histocanvas->Draw() ; 
      histo->Draw("lego1") ; 
 
+     delete[] xi ; 
+     delete[] zi ; 
+     
      break;
    }
 
@@ -401,7 +407,7 @@ Float_t AliPHOSEmcRecPoint::GetMaximalEnergy(void)
 }
 
 //____________________________________________________________________________
-Int_t AliPHOSEmcRecPoint::GetMultiplicityAtLevel(Float_t H) 
+Int_t AliPHOSEmcRecPoint::GetMultiplicityAtLevel(const Float_t H) 
 {
   // Calculates the multiplicity of digits with energy larger than H*energy 
   
@@ -539,6 +545,7 @@ void AliPHOSEmcRecPoint::Streamer(TBuffer &R__b)
   // Stream an object of class AliPHOSEmcRecPoint.
   // Needed because of the array fEnergyList
   
+  assert(0==1) ;
    if (R__b.IsReading()) {
       Version_t R__v = R__b.ReadVersion(); if (R__v) { }
       AliPHOSRecPoint::Streamer(R__b);

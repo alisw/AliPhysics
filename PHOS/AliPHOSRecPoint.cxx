@@ -100,8 +100,10 @@ void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
     AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
     Int_t iDigit;
     Int_t relid[4] ;
-    Float_t xi[fMulDigit] ;
-    Float_t zi[fMulDigit] ;
+  
+    const Int_t fMulDigit=AliPHOSRecPoint::GetDigitsMultiplicity() ;
+    Float_t * xi = new Float_t [fMulDigit] ; 
+    Float_t * zi = new Float_t [fMulDigit] ;
     
     for(iDigit=0; iDigit<fMulDigit; iDigit++) {
       digit = (AliPHOSDigit *) fDigitsList[iDigit];
@@ -131,9 +133,11 @@ void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
     }
     gPad->Update() ; 
     Print() ;
-  }
+    delete[] xi ; 
+    delete[] zi ; 
+   }
   
-  break;
+break;
   
   case kButton1Up:
     if (digitgraph) {

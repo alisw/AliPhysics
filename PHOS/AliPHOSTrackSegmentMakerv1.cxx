@@ -165,8 +165,8 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule(DigitsList * dl, RecPointsList *
        break ;
     
     Int_t nMultipl = emcRecPoint->GetMultiplicity() ; 
-    Int_t maxAt[nMultipl] ;
-    Float_t maxAtEnergy[nMultipl] ;
+    Int_t * maxAt = new Int_t[nMultipl] ;
+    Float_t * maxAtEnergy = new Float_t[nMultipl] ;
     Int_t nMax = emcRecPoint->GetNumberOfLocalMax(maxAt, maxAtEnergy) ;
 
     if(nMax <= 1 )     // if cluster is very flat (no pronounced maximum) then nMax = 0 
@@ -178,6 +178,9 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule(DigitsList * dl, RecPointsList *
       nEmcUnfolded-- ;
       index-- ;
     }
+    
+    delete[] maxAt ; 
+    delete[] maxAtEnergy ; 
   }
   emcStopedAt = index ;
 
@@ -439,12 +442,15 @@ void  AliPHOSTrackSegmentMakerv1::UnfoldClusters(DigitsList * dl, RecPointsList 
   // This is time consuming (use the (Un)SetUnfolFlag()  )
 
   Int_t nPar = 3 * nMax ;
-  Float_t fitparameters[nPar] ;
+  Float_t * fitparameters = new Float_t[nPar] ;
   AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
 
   Bool_t rv = FindFit(iniEmc, maxAt, maxAtEnergy, nPar, fitparameters) ;
-  if( !rv )  // Fit failed, return and remove cluster
+  if( !rv ) {
+    // Fit failed, return and remove cluster
+    delete[] fitparameters ; 
     return ;
+  }
   
   Float_t xDigit ;
   Float_t zDigit ;
@@ -456,7 +462,7 @@ void  AliPHOSTrackSegmentMakerv1::UnfoldClusters(DigitsList * dl, RecPointsList 
   Float_t epar  ;
   Float_t distance ;
   Float_t ratio ;
-  Float_t efit[nDigits] ;
+  Float_t * efit = new Float_t[nDigits] ;
   Int_t iparam ;
   Int_t iDigit ;
   
@@ -510,6 +516,10 @@ void  AliPHOSTrackSegmentMakerv1::UnfoldClusters(DigitsList * dl, RecPointsList 
     emcList->Add(emcRP) ;
 
   }
+  
+  delete[] fitparameters ; 
+  delete[] efit ; 
+
 }
 
 //______________________________________________________________________________

@@ -187,7 +187,7 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl, RecPointsList * e
   while ( (digit = (AliPHOSDigit *)nextdigit()) ) { // scan over the list of digits
     AliPHOSRecPoint * clu ; 
    
-    int * clusterdigitslist[dl->GetEntries()] ;   
+    int ** clusterdigitslist = new int * [dl->GetEntries()] ;   
     Int_t index ;
     if (( ( IsInEmc(digit) ) && ( Calibrate(digit->GetAmp() ) > fEmcClusteringThreshold ) ) || 
         ( ( !IsInEmc(digit) ) && ( Calibrate(digit->GetAmp() ) > fPpsdClusteringThreshold ) ) ) {
@@ -265,6 +265,8 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl, RecPointsList * e
  
    }  //below energy theshold  
   
+    delete[] clusterdigitslist ; 
+    
   } // while digit
 
   tempodigitslist.Clear() ; 

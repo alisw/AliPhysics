@@ -25,6 +25,7 @@ class AliPHOSHit : public AliHit {
 public:
 
   AliPHOSHit() {}
+  AliPHOSHit(const AliPHOSHit & hit) ; 
   AliPHOSHit(Int_t primary, Int_t id, Float_t *hits) ;
   virtual ~AliPHOSHit(void) {}  
   

@@ -38,6 +38,21 @@
 ClassImp(AliPHOSHit)
 
 //____________________________________________________________________________
+AliPHOSHit::AliPHOSHit(const AliPHOSHit & hit) 
+{
+   // copy ctor
+   
+  fId      = hit.fId ; 
+  fELOS    = hit.fELOS ;
+  fPrimary = hit.fPrimary ; 
+  fTrack   = hit.fTrack ; 
+  fX       = hit.fX ; 
+  fY       = hit.fY ; 
+  fZ       = hit.fZ ; 
+ 
+} 
+
+//____________________________________________________________________________
 AliPHOSHit::AliPHOSHit(Int_t primary, Int_t id, Float_t *hits)
 {
   // ctor

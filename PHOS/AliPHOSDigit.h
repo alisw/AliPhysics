@@ -37,7 +37,7 @@ public:
   Bool_t operator==(AliPHOSDigit const &rValue) const;
   AliPHOSDigit& operator+(AliPHOSDigit const &rValue) ;
   
-  friend ostream& operator << ( ostream& , const AliPHOSDigit&) ;
+  friend class ostream& operator << ( ostream& , const AliPHOSDigit&) ;
   
   Int_t   Compare(TObject * obj) ;  
   Int_t   GetNprimary() const { return fNprimary ; }
