@@ -11,7 +11,7 @@ protected:
                    kPMD=8192,kDIPO=16384,kEMCAL=32768,kVZERO=65536,kMUON=131072,kZDC=262144,kSHILD=524288};
   enum EProcesses {kDCAY=1,kPAIR=2,kCOMP=4,kPHOT=8,kPFIS=16,kDRAY=32,kANNI=64,kBREM=128,kMUNU=256,kCKOV=512,kHADR=1024,kLOSS=2048,kMULS=4096,
                    kRAYL=8192};
-  enum EGenTypes  {kGun1=100,kGun7,kPythia7,kHijing,kHijingPara};
+  enum EGenTypes  {kGun1=100,kGun7,kPythia7,kHijing,kHijingPara,kRichLib,kSignalHijing,kHijingPara2Proton};
   
   void    AddDetector(Int_t id)          {fDetectors+=id; if(id==kTRD || id==kTOF) fDetButGrp->SetButton(kFRAME);}
   void    RemoveDetector(Int_t id)       {fDetectors-=id; if(id==kFRAME) {fDetButGrp->SetButton(kTRD,kFALSE);fDetButGrp->SetButton(kTOF,kFALSE);}}
@@ -60,43 +60,37 @@ RichConfig::RichConfig(const char *sFileName)
   pGenGrpFrm->AddFrame(fGenTypeCombo=new TGComboBox(pGenGrpFrm,100));
   fGenTypeCombo->AddEntry("gun to single chamber",kGun1);  
   fGenTypeCombo->AddEntry("gun to all chambers",kGun7);
-  fGenTypeCombo->AddEntry("7 guns on top of Pythia",kPythia7);
+  fGenTypeCombo->AddEntry("7 guns+Pythia",kPythia7);
   fGenTypeCombo->AddEntry("HIJING",kHijing);
   fGenTypeCombo->AddEntry("parametrized HIJING",kHijingPara);
+  fGenTypeCombo->AddEntry("2 p+HIJING",kHijingPara2Proton);
   fGenTypeCombo->AddEntry("Sr90 source",kSr90);
+  fGenTypeCombo->AddEntry("RICH lib",kRichLib);
+  fGenTypeCombo->AddEntry("RICH lib+HIJING",kSignalHijing);
   fGenTypeCombo->Select(kHijingPara);
   fGenTypeCombo->Resize(160,20);
   
   pGenGrpFrm->AddFrame(fGenPartIdCombo=new TGComboBox(pGenGrpFrm,100)); //PID for guns
-  fGenPartIdCombo->AddEntry("Pion+",kPiPlus);
-  fGenPartIdCombo->AddEntry("Pion-",kPiMinus);
-  fGenPartIdCombo->AddEntry("Kaon+",kKPlus);
-  fGenPartIdCombo->AddEntry("Kaon-",kKMinus);
-  fGenPartIdCombo->AddEntry("Proton",kProton);
-  fGenPartIdCombo->AddEntry("AntiProton",kProtonBar);
+  fGenPartIdCombo->AddEntry("Pion+"     ,kPiPlus);
+  fGenPartIdCombo->AddEntry("Pion-"     ,kPiMinus);
+  fGenPartIdCombo->AddEntry("Kaon+"     ,kKPlus);
+  fGenPartIdCombo->AddEntry("Kaon-"     ,kKMinus);
+  fGenPartIdCombo->AddEntry("K0s"       ,kK0Short);    
+  fGenPartIdCombo->AddEntry("Proton"    ,kProton);
+  fGenPartIdCombo->AddEntry("ProtonBar" ,kProtonBar);
+  fGenPartIdCombo->AddEntry("Lambda"    ,kLambda0);
+  fGenPartIdCombo->AddEntry("LambdaBar" ,kLambda0Bar);
   fGenPartIdCombo->Select(kProton);  fGenPartIdCombo->Resize(160,20);
 
   pGenGrpFrm->AddFrame(fGenMinMomCombo=new TGComboBox(pGenGrpFrm,100)); //particle energy for guns
-  fGenMinMomCombo->AddEntry("0.5 GeV", 5);
-  fGenMinMomCombo->AddEntry("1.0 GeV",10);
-  fGenMinMomCombo->AddEntry("1.5 GeV",15);
-  fGenMinMomCombo->AddEntry("2.0 Gev",20);
-  fGenMinMomCombo->AddEntry("2.5 GeV",25);
-  fGenMinMomCombo->AddEntry("3.0 GeV",30);
-  fGenMinMomCombo->AddEntry("3.5 GeV",35);
-  fGenMinMomCombo->AddEntry("4.0 GeV",40);
-  fGenMinMomCombo->AddEntry("4.5 GeV",45);
-  fGenMinMomCombo->Select(10);  fGenMinMomCombo->Resize(160,20);
+  
+  for(Int_t i=5;i<=95;i+=5)
+    fGenMinMomCombo->AddEntry(Form("%3.1f GeV",0.1*i), i);
+  fGenMinMomCombo->Select(15);  fGenMinMomCombo->Resize(160,20);
   
   pGenGrpFrm->AddFrame(fGenMaxMomCombo=new TGComboBox(pGenGrpFrm,100)); //particle energy for guns
-  fGenMaxMomCombo->AddEntry("1.0 GeV",10);
-  fGenMaxMomCombo->AddEntry("1.5 GeV",15);
-  fGenMaxMomCombo->AddEntry("2.0 Gev",20);
-  fGenMaxMomCombo->AddEntry("2.5 GeV",25);
-  fGenMaxMomCombo->AddEntry("3.0 GeV",30);
-  fGenMaxMomCombo->AddEntry("3.5 GeV",35);
-  fGenMaxMomCombo->AddEntry("4.0 GeV",40);
-  fGenMaxMomCombo->AddEntry("4.5 GeV",45);
+  for(Int_t i=10;i<=95;i+=5)
+    fGenMaxMomCombo->AddEntry(Form("%3.1f GeV",0.1*i), i);
   fGenMaxMomCombo->Select(40);  fGenMaxMomCombo->Resize(160,20);
   
   pGenGrpFrm->AddFrame(fGenChamberCombo=new TGComboBox(pGenGrpFrm,100)); //chamber number in case of gun1
@@ -285,6 +279,50 @@ void RichConfig::CreateConfig()
       fprintf(fp,"  pGen->SetImpactParameterRange(0., 5.);\n");
       fprintf(fp,"  pGen->Init();\n");
     break;  
+    case kHijingPara2Proton:  
+      fprintf(fp,"  AliGenCocktail *pCocktail=new AliGenCocktail();\n");
+      fprintf(fp,"  for(int i=1;i<=7;i++){\n");
+      fprintf(fp,"    AliGenFixed *pProton1=new AliGenFixed(1);\n");
+      fprintf(fp,"    AliGenFixed *pProton2=new AliGenFixed(1);\n");
+      fprintf(fp,"    pProton1->SetPart(kProton); pProton1->SetMomentum(2.0+i*0.5); pProton1->SetOrigin(0,0,0);\n");
+      fprintf(fp,"    pProton2->SetPart(kProton); pProton2->SetMomentum(2.0+i*0.5); pProton2->SetOrigin(0,0,0);\n");
+      fprintf(fp,"    pProton1->SetPhiRange(pRICH->C(i)->PhiD()); pProton1->SetThetaRange(pRICH->C(i)->ThetaD());\n");                             
+      fprintf(fp,"    pProton2->SetPhiRange(pRICH->C(i)->PhiD()); pProton2->SetThetaRange(pRICH->C(i)->ThetaD()-4);\n");                             
+      fprintf(fp,"    pCocktail->AddGenerator(pProton1,Form(\"proton1 %i\",i),1);\n");  
+      fprintf(fp,"    pCocktail->AddGenerator(pProton2,Form(\"proton2 %i\",i),1);\n  }\n");  
+      
+      fprintf(fp,"  AliGenHIJINGpara *pHijingPara=new AliGenHIJINGpara(510);\n");
+      fprintf(fp,"  pHijingPara->SetMomentumRange(0,99); pHijingPara->SetThetaRange(60,120); pHijingPara->SetPhiRange(0,60);\n");
+      fprintf(fp,"  pHijingPara->SetOrigin(0,0,0);  pHijingPara->SetSigma(0,0,0);\n");
+      fprintf(fp,"  pCocktail->AddGenerator(pHijingPara,\"HijingPara\",1);\n");  
+      fprintf(fp,"  pCocktail->Init();\n");
+    break;  
+     case kRichLib:
+      fprintf(fp,"  AliGenParam *pGen=new AliGenParam(2,new AliGenRICHlib,%i,\"EXP\"); \n",fGenPartIdCombo->GetSelected());
+      fprintf(fp,"  pGen->SetPtRange(%3.1f,%3.1f); \n",fGenMinMomCombo->GetSelected()/10,fGenMaxMomCombo->GetSelected()/10);
+      fprintf(fp,"  pGen->SetYRange(-0.6,0.6); \n");
+      fprintf(fp,"  pGen->SetPhiRange(0.,60.); \n");
+      fprintf(fp,"  pGen->SetForceDecay(kAll); \n");
+      fprintf(fp,"  pGen->Init();\n");
+    break;
+   case kSignalHijing:
+      fprintf(fp,"  AliGenParam *pRichLib=new AliGenParam(2,new AliGenRICHlib,%i,\"FLAT\"); \n",fGenPartIdCombo->GetSelected());
+      fprintf(fp,"  pRichLib->SetPtRange(%3.1f,%3.1f); \n",fGenMinMomCombo->GetSelected()/10,fGenMaxMomCombo->GetSelected()/10);
+      fprintf(fp,"  pRichLib->SetYRange(-0.6,0.6); \n");
+      fprintf(fp,"  pRichLib->SetPhiRange(0.,60.); \n");
+      fprintf(fp,"  pRichLib->SetForceDecay(kPhiKK); \n");
+
+      fprintf(fp,"  AliGenHijing *pHijing=new AliGenHijing(-1); pHijing->SetEnergyCMS(5500); pHijing->SetReferenceFrame(\"CMS\");\n");
+      fprintf(fp,"  pHijing->SetProjectile(\"A\", 208, 82); pHijing->SetTarget(\"A\", 208, 82);\n");
+      fprintf(fp,"  pHijing->SetJetQuenching(0); pHijing->SetShadowing(0);\n");
+      fprintf(fp,"  pHijing->KeepFullEvent(); pHijing->SetSelectAll(0); \n");
+      fprintf(fp,"  pHijing->SetImpactParameterRange(0., 5.);\n");
+
+      fprintf(fp,"  AliGenCocktail *pCocktail=new AliGenCocktail();\n");
+      fprintf(fp,"  pCocktail->AddGenerator(pRichLib,\"RichLib\",1);\n");
+      fprintf(fp,"  pCocktail->AddGenerator(pHijing,\"Hijing\",1);\n");
+      fprintf(fp,"  pCocktail->Init();\n");
+    break;
   }
 //central before RICH detectors                  
   if(IsDetectorOn(kPIPE)) fprintf(fp,"\n  new AliPIPEv0(\"PIPE\",\"Beam Pipe\");\n");
