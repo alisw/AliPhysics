@@ -495,44 +495,44 @@ void AliITSv0::StepManager()
   Int_t         copy, id;
   Float_t       hits[7];
   Int_t         vol[3];
-  Float_t       position[3];
-  Float_t       momentum[4];
+  TLorentzVector position;
+  TLorentzVector momentum;
   TClonesArray &lhits = *fHits;
   //
   if(gMC->TrackCharge() && gMC->Edep()) {
     //
     // Only entering charged tracks
-    if((id=gMC->CurrentVol(0,copy))==fIdSens1) {  
+    if((id=gMC->CurrentVolID(copy))==fIdSens1) {  
       vol[0]=1;
-      id=gMC->CurrentVolOff(1,0,copy);      
+      id=gMC->CurrentVolOffID(1,copy);      
       vol[1]=copy;
-      id=gMC->CurrentVolOff(2,0,copy);
+      id=gMC->CurrentVolOffID(2,copy);
       vol[2]=copy;                       
     } else if(id==fIdSens2) {
       vol[0]=2;
-      id=gMC->CurrentVolOff(1,0,copy);       
+      id=gMC->CurrentVolOffID(1,copy);       
       vol[1]=copy;
-      id=gMC->CurrentVolOff(2,0,copy);
+      id=gMC->CurrentVolOffID(2,copy);
       vol[2]=copy;                    
     } else if(id==fIdSens3) {
       vol[0]=3;
       vol[1]=copy;
-      id=gMC->CurrentVolOff(1,0,copy);
+      id=gMC->CurrentVolOffID(1,copy);
       vol[2]=copy;             
     } else if(id==fIdSens4) {
       vol[0]=4;
       vol[1]=copy;
-      id=gMC->CurrentVolOff(1,0,copy);
+      id=gMC->CurrentVolOffID(1,copy);
       vol[2]=copy;                  
     } else if(id==fIdSens5) {
       vol[0]=5;
       vol[1]=copy;
-      id=gMC->CurrentVolOff(1,0,copy);
+      id=gMC->CurrentVolOffID(1,copy);
       vol[2]=copy;               
     } else if(id==fIdSens6) {
       vol[0]=6;
       vol[1]=copy;
-      id=gMC->CurrentVolOff(1,0,copy);
+      id=gMC->CurrentVolOffID(1,copy);
       vol[2]=copy;                      
     } else return;
     gMC->TrackPosition(position);
@@ -540,9 +540,9 @@ void AliITSv0::StepManager()
     hits[0]=position[0];
     hits[1]=position[1];
     hits[2]=position[2];          
-    hits[3]=momentum[0]*momentum[3];
-    hits[4]=momentum[1]*momentum[3];
-    hits[5]=momentum[2]*momentum[3];          
+    hits[3]=momentum[0];
+    hits[4]=momentum[1];
+    hits[5]=momentum[2];          
     hits[6]=gMC->Edep();
     new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,hits);
   }    

@@ -224,24 +224,33 @@ void AliTOFv1::Init()
 //______________________________________________________________________________
 void AliTOFv1::StepManager()
 {
+  TLorentzVector mom, pos;
   Float_t hits[8];
   Int_t vol[3];
-  Int_t copy, id;
+  Int_t copy, id, i;
   Int_t *idtmed = fIdtmed->GetArray()-499;
   if(gMC->GetMedium()==idtmed[510-1] && 
-     gMC->TrackEntering() && gMC->TrackCharge()
-     && (id=gMC->CurrentVol(0,copy))==fIdSens) {
+     gMC->IsTrackEntering() && gMC->TrackCharge()
+     && (id=gMC->CurrentVolID(copy))==fIdSens) {
     TClonesArray &lhits = *fHits;
 //
 // Record only charged tracks at entrance
     vol[2]=copy;
-    vol[1]=gMC->CurrentVolOff(1,0,copy);
+    vol[1]=gMC->CurrentVolOffID(1,copy);
     if(id==fIdFBT2) copy+=2; else 
       if(id==fIdFBT2) copy+=4;
     vol[0]=1;
-    gMC->TrackPosition(hits);
-    gMC->TrackMomentum(&hits[3]);
-    hits[7]=gMC->TrackTime();
+    gMC->TrackPosition(pos);
+    gMC->TrackMomentum(mom);
+    //
+    Double_t ptot=mom.Rho();
+    Double_t norm=1/ptot;
+    for(i=0;i<3;++i) {
+      hits[i]=pos[i];
+      hits[i+3]=mom[i]*norm;
+    }
+    hits[6]=ptot;
+    hits[7]=pos[3];
     new(lhits[fNhits++]) AliTOFhit(fIshunt,gAlice->CurrentTrack(),vol,hits);
   }
 }

@@ -213,17 +213,17 @@ void AliPHOSv3::StepManager()
 
   int cradle_number, cell_Z, cell_Phi;  // Variables that describe cell position.
 
-  if( gMC->GetMedium()==GetPHOS_IDTMED_PIN() && gMC->TrackEntering() && gMC->TrackCharge()!=0 )
+  if( gMC->GetMedium()==GetPHOS_IDTMED_PIN() && gMC->IsTrackEntering() && gMC->TrackCharge()!=0 )
   {
     // GEANT particle just have entered into PIN diode.
 
     AliPHOS &PHOS = *(AliPHOS*)gAlice->GetModule("PHOS");
 
-    gMC->CurrentVolOff(4,0,copy);
+    gMC->CurrentVolOffID(4,copy);
     cradle_number  = copy-1;
-    gMC->CurrentVolOff(1,0,copy);
+    gMC->CurrentVolOffID(1,copy);
     cell_Z         = copy-1;
-    gMC->CurrentVolOff(2,0,copy);
+    gMC->CurrentVolOffID(2,copy);
     cell_Phi       = copy-1;
 
     TH2S &h = PHOS.GetCradle(cradle_number).fChargedTracksInPIN;
@@ -243,11 +243,11 @@ void AliPHOSv3::StepManager()
 
     AliPHOS &PHOS = *(AliPHOS*)gAlice->GetModule("PHOS");
 
-    gMC->CurrentVolOff(5,0,copy);
+    gMC->CurrentVolOffID(5,copy);
     cradle_number  = copy-1;
-    gMC->CurrentVolOff(2,0,copy);
+    gMC->CurrentVolOffID(2,copy);
     cell_Z         = copy-1;
-    gMC->CurrentVolOff(3,0,copy);
+    gMC->CurrentVolOffID(3,copy);
     cell_Phi       = copy-1;
 
     TH2F &h = PHOS.GetCradle(cradle_number).fCellEnergy;
@@ -256,37 +256,37 @@ void AliPHOSv3::StepManager()
 
   //////////////////////////////////////////////////////////////////////////////
 
-  if( gMC->GetMedium()==GetPHOS_IDTMED_CPV() && gMC->TrackEntering() )
+  if( gMC->GetMedium()==GetPHOS_IDTMED_CPV() && gMC->IsTrackEntering() )
   {
     // GEANT particle just have entered into CPV detector.
 
     AliPHOS &PHOS = *(AliPHOS*)gAlice->GetModule("PHOS");
 
-    gMC->CurrentVolOff(1,0,cradle_number);
+    gMC->CurrentVolOffID(1,cradle_number);
     cradle_number--;
 
     // Save CPV x,y hits position of charged particles.
 
     AliPHOSCradle  &cradle = PHOS.GetCradle(cradle_number);
 
-    Float_t   xyz[3];
-    gMC->TrackPosition(xyz);
-    TVector3          p(xyz[0],xyz[1],xyz[2]),v;
+    TLorentzVector p;
+    gMC->TrackPosition(p);
+    TVector3          v;
 
     float x,y,l;
     float R = cradle.GetRadius() - cradle.GetCPV_PHOS_Distance() - cradle.GetCPV_Thikness();
-    cradle.GetXY(p,v,R,x,y,l);
+    cradle.GetXY(p.Vect(),v,R,x,y,l);
     if( PHOS.fDebugLevel>0 )
       if( l<0 )
         printf("PHOS_STEP:  warning: negative distance to CPV!! %f\n", l);
 
     // Store current particle in the list of Cradle particles.
-    Float_t  pmom[4];
+    TLorentzVector  pmom;
     gMC->TrackMomentum(pmom);
-    Float_t Px    = pmom[0] * pmom[3],
-            Py    = pmom[1] * pmom[3],
-            Pz    = pmom[2] * pmom[3];
-    Float_t Getot = gMC->Etot();
+    Float_t Px    = pmom[0],
+            Py    = pmom[1],
+            Pz    = pmom[2];
+    Float_t Getot = pmom[3];
     Int_t   Ipart = gMC->TrackPid();
 
     cradle.GetParticles().Add(new AliPHOSgamma(x,y,Getot,Px,Py,Pz,Ipart));
@@ -296,5 +296,5 @@ void AliPHOSv3::StepManager()
 
   }
 
-  inwold=gMC->TrackEntering();         // Save current status of GEANT variable.
+  inwold=gMC->IsTrackEntering();         // Save current status of GEANT variable.
 }

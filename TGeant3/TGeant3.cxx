@@ -557,31 +557,69 @@ Int_t TGeant3::NextVolUp(Text_t *name, Int_t &copy)
 }
 
 //_____________________________________________________________________________
-Int_t TGeant3::CurrentVol(Text_t *name, Int_t &copy) const
+Int_t TGeant3::CurrentVolID(Int_t &copy) const
 {
   //
-  // Returns the current volume ID, name and copy number
-  // if name=0 no name is returned
+  // Returns the current volume ID and copy number
   //
   Int_t i, gname;
   if( (i=fGcvolu->nlevel-1) < 0 ) {
-    printf("CurrentVol: stack depth %d\n",fGcvolu->nlevel);
+    Warning("CurrentVolID","Stack depth only %d\n",fGcvolu->nlevel);
   } else {
     gname=fGcvolu->names[i];
-    if(name) {
-      strncpy(name,(char *) &gname, 4);
-      name[4]='\0';
-    }
     copy=fGcvolu->number[i];
     i=fGcvolu->lvolum[i];   
     if(gname == fZiq[fGclink->jvolum+i]) return i;
-    else printf("CurrentVol: Volume %s not found in bank\n",name);
+    else Warning("CurrentVolID","Volume %4s not found\n",(char*)&gname);
   }
   return 0;
 }
 
 //_____________________________________________________________________________
-Int_t TGeant3::CurrentVolOff(Int_t off, Text_t *name, Int_t &copy) const
+Int_t TGeant3::CurrentVolOffID(Int_t off, Int_t &copy) const
+{
+  //
+  // Return the current volume "off" upward in the geometrical tree 
+  // ID and copy number
+  //
+  Int_t i, gname;
+  if( (i=fGcvolu->nlevel-off-1) < 0 ) {
+    Warning("CurrentVolOffID","Offset requested %d but stack depth %d\n",
+	    off,fGcvolu->nlevel);
+  } else {
+    gname=fGcvolu->names[i];
+    copy=fGcvolu->number[i];          
+    i=fGcvolu->lvolum[i];    
+    if(gname == fZiq[fGclink->jvolum+i]) return i;
+    else Warning("CurrentVolOffID","Volume %4s not found\n",(char*)&gname);
+  }
+  return 0;
+}
+
+//_____________________________________________________________________________
+const char* TGeant3::CurrentVolName() const
+{
+  //
+  // Returns the current volume name
+  //
+  Int_t i, gname;
+  char *name;
+  if( (i=fGcvolu->nlevel-1) < 0 ) {
+    Warning("CurrentVolName","Stack depth %d\n",fGcvolu->nlevel);
+  } else {
+    gname=fGcvolu->names[i];
+    name = new char[5];
+    strncpy(name,(char *) &gname, 4);
+    name[4]='\0';
+    i=fGcvolu->lvolum[i];   
+    if(gname == fZiq[fGclink->jvolum+i]) return name;
+    else Warning("CurrentVolName","Volume %4s not found\n",name);
+  }
+  return 0;
+}
+
+//_____________________________________________________________________________
+const char* TGeant3::CurrentVolOffName(Int_t off) const
 {
   //
   // Return the current volume "off" upward in the geometrical tree 
@@ -589,18 +627,18 @@ Int_t TGeant3::CurrentVolOff(Int_t off, Text_t *name, Int_t &copy) const
   // if name=0 no name is returned
   //
   Int_t i, gname;
+  char *name;
   if( (i=fGcvolu->nlevel-off-1) < 0 ) {
-    printf("CurrentVolOff: Offset requested %d but stack depth %d\n",off,fGcvolu->nlevel);
+    Warning("CurrentVolOffName",
+	    "Offset requested %d but stack depth %d\n",off,fGcvolu->nlevel);
   } else {
     gname=fGcvolu->names[i];
-    if(name) {
-      strncpy(name,(char *) &gname, 4);
-      name[4]='\0';
-    }
-    copy=fGcvolu->number[i];          
+    name = new char[5];
+    strncpy(name,(char *) &gname, 4);
+    name[4]='\0';
     i=fGcvolu->lvolum[i];    
-    if(gname == fZiq[fGclink->jvolum+i]) return i;
-    else printf("CurrentVolOff: Volume %s not found in bank\n",name);
+    if(gname == fZiq[fGclink->jvolum+i]) return name;
+    else Warning("CurrentVolOffName","Volume %4s not found\n",name);
   }
   return 0;
 }
@@ -920,7 +958,7 @@ const char* TGeant3::VolName(Int_t id) const
 }
 
 //_____________________________________________________________________________
-void TGeant3::TrackPosition(Float_t *xyz) const
+void TGeant3::TrackPosition(TLorentzVector &xyz) const
 {
   //
   // Return the current position in the master reference frame of the
@@ -929,6 +967,7 @@ void TGeant3::TrackPosition(Float_t *xyz) const
   xyz[0]=fGctrak->vect[0];
   xyz[1]=fGctrak->vect[1];
   xyz[2]=fGctrak->vect[2];
+  xyz[3]=fGctrak->tofg;
 }
 
 //_____________________________________________________________________________
@@ -941,16 +980,17 @@ Float_t TGeant3::TrackTime() const
 }
 
 //_____________________________________________________________________________
-void TGeant3::TrackMomentum(Float_t *xyz) const
+void TGeant3::TrackMomentum(TLorentzVector &xyz) const
 {
   //
   // Return the direction and the momentum (GeV/c) of the track
   // currently being transported
   //
-  xyz[0]=fGctrak->vect[3];
-  xyz[1]=fGctrak->vect[4];
-  xyz[2]=fGctrak->vect[5];
-  xyz[3]=fGctrak->vect[6];  
+  Double_t ptot=fGctrak->vect[6];
+  xyz[0]=fGctrak->vect[3]*ptot;
+  xyz[1]=fGctrak->vect[4]*ptot;
+  xyz[2]=fGctrak->vect[5]*ptot;
+  xyz[3]=fGctrak->getot;
 }
 
 //_____________________________________________________________________________
@@ -999,7 +1039,7 @@ Float_t TGeant3::TrackLength() const
 }
 
 //_____________________________________________________________________________
-Bool_t TGeant3::TrackInside() const
+Bool_t TGeant3::IsTrackInside() const
 {
   //
   // True if the track is not at the boundary of the current volume
@@ -1008,7 +1048,7 @@ Bool_t TGeant3::TrackInside() const
 }
 
 //_____________________________________________________________________________
-Bool_t TGeant3::TrackEntering() const
+Bool_t TGeant3::IsTrackEntering() const
 {
   //
   // True if this is the first step of the track in the current volume
@@ -1017,7 +1057,7 @@ Bool_t TGeant3::TrackEntering() const
 }
 
 //_____________________________________________________________________________
-Bool_t TGeant3::TrackExiting() const
+Bool_t TGeant3::IsTrackExiting() const
 {
   //
   // True if this is the last step of the track in the current volume
@@ -1026,7 +1066,7 @@ Bool_t TGeant3::TrackExiting() const
 }
 
 //_____________________________________________________________________________
-Bool_t TGeant3::TrackOut() const
+Bool_t TGeant3::IsTrackOut() const
 {
   //
   // True if the track is out of the setup
@@ -1035,7 +1075,7 @@ Bool_t TGeant3::TrackOut() const
 }
 
 //_____________________________________________________________________________
-Bool_t TGeant3::TrackStop() const
+Bool_t TGeant3::IsTrackStop() const
 {
   //
   // True if the track energy has fallen below the threshold 
@@ -1121,7 +1161,7 @@ void TGeant3::InitLego()
 }
 
 //_____________________________________________________________________________
-Bool_t TGeant3::TrackDisappear() const
+Bool_t TGeant3::IsTrackDisappeared() const
 {
   //
   // True if the current particle has disappered
@@ -1132,7 +1172,7 @@ Bool_t TGeant3::TrackDisappear() const
 }
 
 //_____________________________________________________________________________
-Bool_t TGeant3::TrackAlive() const
+Bool_t TGeant3::IsTrackAlive() const
 {
   //
   // True if the current particle is alive and will continue to be

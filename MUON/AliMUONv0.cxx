@@ -1298,12 +1298,10 @@ void AliMUONv0::StepManager()
   static Int_t   vol[2];
   Int_t          ipart;
   static Float_t hits[10];
-  Float_t        pos[3];
-  Float_t        mom[4];
-  Float_t        theta,phi;
   Float_t        destep, step;
   static Float_t eloss, xhit, yhit, tlength;
   const  Float_t big=1.e10;
+  TLorentzVector pos, mom;
   
   TClonesArray &lhits = *fHits;
 
@@ -1317,7 +1315,7 @@ void AliMUONv0::StepManager()
   // Only gas gap inside chamber
   // Tag chambers and record hits when track enters 
   idvol=-1;
-  id=gMC->CurrentVol(0,copy);
+  id=gMC->CurrentVolID(copy);
   
     for (Int_t i=1; i<=NCH; i++) {
       if(id==((AliMUONchamber*)(*fChambers)[i-1])->GetGid()){ 
@@ -1339,18 +1337,18 @@ void AliMUONv0::StepManager()
   
   //
   // record hits when track enters ...
-  if( gMC->TrackEntering()) {
+  if( gMC->IsTrackEntering()) {
       gMC->SetMaxStep(fMaxStepGas);
-      Double_t tc = mom[0]*mom[0]+mom[1]*mom[1];
-      Double_t rt = TMath::Sqrt(tc);
-      theta   = Float_t(TMath::ATan2(rt,Double_t(mom[2])))*kRaddeg;
-      phi     = Float_t(TMath::ATan2(Double_t(mom[1]),Double_t(mom[0])))*kRaddeg;
+      //      Double_t tc = mom[0]*mom[0]+mom[1]*mom[1];
+      //Double_t rt = TMath::Sqrt(tc);
+      //theta   = Float_t(TMath::ATan2(rt,Double_t(mom[2])))*kRaddeg;
+      //phi     = Float_t(TMath::ATan2(Double_t(mom[1]),Double_t(mom[0])))*kRaddeg;
       hits[0] = Float_t(ipart);         // Geant3 particle type
       hits[1] = pos[0];                 // X-position for hit
       hits[2] = pos[1];                 // Y-position for hit
       hits[3] = pos[2];                 // Z-position for hit
-      hits[4] = theta;                  // theta angle of incidence
-      hits[5] = phi;                    // phi angle of incidence 
+      hits[4] = mom.Theta()*kRaddeg;    // theta angle of incidence
+      hits[5] = mom.Phi()*kRaddeg;      // phi angle of incidence 
       hits[8] = (Float_t) fNclusters;   // first padhit
       hits[9] = -1;                     // last pad hit
       // phi angle of incidence
@@ -1374,7 +1372,7 @@ void AliMUONv0::StepManager()
   // Calculate the charge induced on a pad (disintegration) in case 
   //
   // Mip left chamber ...
-  if( gMC->TrackExiting() || gMC->TrackStop() || gMC->TrackDisappear()){
+  if( gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared()){
       gMC->SetMaxStep(big);
       eloss   += destep;
       tlength += step;

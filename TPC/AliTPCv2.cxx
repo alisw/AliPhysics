@@ -768,6 +768,7 @@ void AliTPCv2::StepManager()
   Float_t hits[4];
   Int_t vol[2];  
   TClonesArray &lhits = *fHits;
+  TLorentzVector pos;
   
   vol[1]=0;
 
@@ -775,14 +776,14 @@ void AliTPCv2::StepManager()
 
   gMC->SetMaxStep(big);
   
-  if(!gMC->TrackAlive()) return; // particle has disappeared
+  if(!gMC->IsTrackAlive()) return; // particle has disappeared
   
   Float_t charge = gMC->TrackCharge();
   
   if(TMath::Abs(charge)<=0.) return; // take only charged particles
   
   
-  id=gMC->CurrentVol(0, copy);
+  id=gMC->CurrentVolID(copy);
   
   // Check the sensitive volume
   
@@ -794,23 +795,29 @@ void AliTPCv2::StepManager()
     {
       vol[0] = copy; // S-sector number 
     }
-  else if(id == fIdSens3 && gMC->TrackEntering())
+  else if(id == fIdSens3 && gMC->IsTrackEntering())
     {
       vol[1] = copy;  // row number  
-      id = gMC->CurrentVolOff(1,0,copy);
+      id = gMC->CurrentVolOffID(1,copy);
       vol[0] = copy; // sector number (S-sector)
       
-      gMC->TrackPosition(hits);
+      gMC->TrackPosition(pos);
+      hits[0]=pos[0];
+      hits[1]=pos[1];
+      hits[2]=pos[2];
       hits[3]=0.; // this hit has no energy loss
       new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
     }
-  else if(id == fIdSens4 && gMC->TrackEntering())
+  else if(id == fIdSens4 && gMC->IsTrackEntering())
     {
       vol[1] = copy; // row number 
-      id = gMC->CurrentVolOff(1,0,copy);
+      id = gMC->CurrentVolOffID(1,copy);
       vol[0] = copy+24; // sector number (L-sector)
       
-      gMC->TrackPosition(hits);
+      gMC->TrackPosition(pos);
+      hits[0]=pos[0];
+      hits[1]=pos[1];
+      hits[2]=pos[2];
       hits[3]=0.; // this hit has no energy loss
       new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
     }
@@ -825,7 +832,10 @@ void AliTPCv2::StepManager()
     Int_t nel = (Int_t)(((gMC->Edep())-poti)/w_ion) + 1;
     nel=TMath::Min(nel,300); // 300 electrons corresponds to 10 keV
     
-    gMC->TrackPosition(hits);
+    gMC->TrackPosition(pos);
+    hits[0]=pos[0];
+    hits[1]=pos[1];
+    hits[2]=pos[2];
     hits[3]=(Float_t)nel;
     
     // Add this hit
@@ -837,10 +847,10 @@ void AliTPCv2::StepManager()
   // Stemax calculation for the next step
   
   Float_t pp;
-  Float_t vect[4];
-  gMC->TrackMomentum(vect);
-  Float_t ptot = vect[3];
-  Float_t beta_gamma = ptot/(gMC->TrackMass());
+  TLorentzVector mom;
+  gMC->TrackMomentum(mom);
+  Float_t ptot=mom.Rho();
+  Float_t beta_gamma = ptot/gMC->TrackMass();
   
   if(gMC->TrackPid() <= 3 && ptot > 0.002)
     { 

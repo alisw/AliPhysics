@@ -520,10 +520,11 @@ void AliTRDv2::StepManager()
   const Double_t kBig = 1.0E+12;
 
   Float_t        hits[4];
-  Float_t        mom[4];
   Float_t        random[1];
   Float_t        charge;
   Float_t        aMass;
+
+  TLorentzVector pos, mom;
 
   Double_t       pTot;
   Double_t       qTot;
@@ -552,11 +553,11 @@ void AliTRDv2::StepManager()
 
   // Use only charged tracks 
   if (( gMC->TrackCharge()   ) &&
-      (!gMC->TrackStop()     ) && 
-      (!gMC->TrackDisappear())) {
+      (!gMC->IsTrackStop()     ) && 
+      (!gMC->IsTrackDisappeared())) {
 
     // Find the sensitive volume
-    idSens = gMC->CurrentVol(0,icSens);
+    idSens = gMC->CurrentVolID(icSens);
     iPla   = 0;
     iOut   = 0;
     for (Int_t icham = 0; icham < ncham; ++icham) {
@@ -585,7 +586,7 @@ void AliTRDv2::StepManager()
       qTot = (Double_t) ((Int_t) (eDelta / kWion) + 1);
 
       // The sector number
-      id = gMC->CurrentVolOff(4,0,iSec);
+      id = gMC->CurrentVolOffID(4,iSec);
 
       // The chamber number
       //   1: outer left
@@ -593,7 +594,7 @@ void AliTRDv2::StepManager()
       //   3: inner
       //   4: neighbouring right
       //   5: outer right
-      id = gMC->CurrentVolOff(2,0,iCha);
+      id = gMC->CurrentVolOffID(2,iCha);
       if (iCha == 1) 
         iCha = 3 + iOut;
       else
@@ -614,13 +615,16 @@ void AliTRDv2::StepManager()
       if (addthishit) {
 
         // Add this hit
-        gMC->TrackPosition(hits);
+        gMC->TrackPosition(pos);
+	hits[0]=pos[0];
+	hits[1]=pos[1];
+	hits[2]=pos[2];
         hits[3] = qTot;
         new(lhits[fNhits++]) AliTRDhit(fIshunt,gAlice->CurrentTrack(),vol,hits);
 
         // The energy loss according to Bethe Bloch
         gMC->TrackMomentum(mom);
-        pTot = mom[3];
+        pTot = mom.Rho();
         iPid = gMC->TrackPid();
         if ( (iPid >  3) ||
 	    ((iPid <= 3) && (pTot < kPTotMax))) {

@@ -241,19 +241,21 @@ void AliPHOSv0::StepManager()
 {
 
   TClonesArray &lhits = *fHits;
+  TLorentzVector p;
   Int_t copy, i;
   Int_t vol[5];
   Float_t hits[4];
-  if(gMC->CurrentVol(0,copy) == fIdSens) {
+  if(gMC->CurrentVolID(copy) == fIdSens) {
     //
     //We are in the sensitive volume
     for(i=0;i<4;i++) {
-      gMC->CurrentVolOff(i+1,0,copy);
+      gMC->CurrentVolOffID(i+1,copy);
       vol[4-i]=copy;
     }
-    gMC->CurrentVolOff(7,0,copy);
+    gMC->CurrentVolOffID(7,copy);
     vol[0]=copy;
-    gMC->TrackPosition(hits);
+    gMC->TrackPosition(p);
+    for(i=0;i<3;++i) hits[i]=p[i];
     hits[3]=gMC->Edep();
     new(lhits[fNhits++]) AliPHOShit(fIshunt,gAlice->CurrentTrack(),vol,hits);
   }

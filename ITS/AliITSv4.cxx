@@ -4559,9 +4559,9 @@ void AliITSv4::StepManager()
     hits[0]=position[0];
     hits[1]=position[1];
     hits[2]=position[2];          
-    hits[3]=momentum[0]*momentum[3];
-    hits[4]=momentum[1]*momentum[3];
-    hits[5]=momentum[2]*momentum[3];        
+    hits[3]=momentum[0];
+    hits[4]=momentum[1];
+    hits[5]=momentum[2];        
     hits[6]=gMC->Edep();
     new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,hits);
   }      

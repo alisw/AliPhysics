@@ -9,6 +9,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TNamed.h>
+#include <TLorentzVector.h>
 
 class AliMC : public TNamed 
 {
@@ -24,28 +25,30 @@ public:
   static inline AliMC* GetMC() {return fgMC;}
   //
   virtual Int_t   CurrentMaterial(Float_t &a, Float_t &z, Float_t &dens, Float_t &radl, Float_t &absl) const =0;
-  virtual Int_t   CurrentVol(Text_t*, Int_t&) const =0;
-  virtual Int_t   CurrentVolOff(Int_t, Text_t*, Int_t& ) const =0;
+  virtual Int_t   CurrentVolID(Int_t&) const =0;
+  virtual Int_t   CurrentVolOffID(Int_t, Int_t& ) const =0;
+  virtual const char* CurrentVolName() const =0;
+  virtual const char* CurrentVolOffName(Int_t) const =0;
   virtual Int_t   NofVolumes() const =0;
   virtual Int_t   VolId(Text_t*) const =0;
   virtual Int_t   IdFromPDG(Int_t) const =0;
   virtual Int_t   PDGFromId(Int_t) const =0;
   virtual void    DefineParticles() = 0;
-  virtual void    TrackPosition(Float_t*) const =0;
-  virtual void    TrackMomentum(Float_t*) const =0;
+  virtual void    TrackPosition(TLorentzVector&) const =0;
+  virtual void    TrackMomentum(TLorentzVector&) const =0;
   virtual Float_t TrackCharge() const =0;
   virtual Float_t TrackMass() const =0;
   virtual Float_t TrackStep() const =0;
   virtual Int_t   TrackPid() const =0;
-  virtual Bool_t  TrackInside() const =0;
-  virtual Bool_t  TrackEntering() const =0;
-  virtual Bool_t  TrackExiting() const =0;
-  virtual Bool_t  TrackOut() const =0;
-  virtual Bool_t  TrackDisappear() const =0;
-  virtual Bool_t  TrackStop() const =0;
+  virtual Bool_t  IsTrackInside() const =0;
+  virtual Bool_t  IsTrackEntering() const =0;
+  virtual Bool_t  IsTrackExiting() const =0;
+  virtual Bool_t  IsTrackOut() const =0;
+  virtual Bool_t  IsTrackDisappeared() const =0;
+  virtual Bool_t  IsTrackStop() const =0;
   virtual Float_t TrackLength() const =0;
   virtual Float_t TrackTime() const =0;
-  virtual Bool_t  TrackAlive() const=0;
+  virtual Bool_t  IsTrackAlive() const=0;
   virtual Int_t   NSecondaries() const=0;
   virtual Int_t   CurrentEvent() const=0;
   virtual void    ProdProcess(char*) const=0;

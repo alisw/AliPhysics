@@ -705,25 +705,27 @@ void AliTPCv1::StepManager()
   //
   // Called at every step in the Time Projection Chamber
   //
-  Int_t         copy, id;
+  Int_t         copy, id, i;
   Float_t       hits[4];
   Int_t         vol[2];
+  TLorentzVector p;
   TClonesArray &lhits = *fHits;
 
   //
-  if(gMC->TrackCharge() && gMC->TrackEntering()) {
+  if(gMC->TrackCharge() && gMC->IsTrackEntering()) {
     //
     // Only entering charged tracks
-    if((id=gMC->CurrentVol(0, copy))==fIdSens1) {
+    if((id=gMC->CurrentVolID(copy))==fIdSens1) {
       vol[1]=copy+23;
-      id=gMC->CurrentVolOff(1,0,copy);
+      id=gMC->CurrentVolOffID(1,copy);
       vol[0]=copy+24;
     } else if(id==fIdSens2) {
       vol[1]=copy;
-      id=gMC->CurrentVolOff(1,0,copy);
+      id=gMC->CurrentVolOffID(1,copy);
       vol[0]=copy;
     } else return;
-    gMC->TrackPosition(hits);
+    gMC->TrackPosition(p);
+    for(i=0;i<3;++i) hits[i]=p[i];
     hits[3]=0;
     new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
   }

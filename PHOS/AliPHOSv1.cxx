@@ -207,17 +207,17 @@ void AliPHOSv1::StepManager()
 
   int cradle_number, cell_Z, cell_Phi;  // Variables that describe cell position.
 
-  if( gMC->GetMedium() == GetPHOS_IDTMED_PIN() && (gMC->TrackInside() || gMC->TrackExiting()==2) && inwold && gMC->TrackCharge()!=0 )
+  if( gMC->GetMedium() == GetPHOS_IDTMED_PIN() && (gMC->IsTrackInside() || gMC->IsTrackExiting()==2) && inwold && gMC->TrackCharge()!=0 )
   {
     // GEANT particle just have entered into PIN diode.
 
     AliPHOS &PHOS = *(AliPHOS*)gAlice->GetModule("PHOS");
 
-    gMC->CurrentVolOff(4,0,copy);
+    gMC->CurrentVolOffID(4,copy);
     cradle_number  = copy-1;
-    gMC->CurrentVolOff(1,0,copy);
+    gMC->CurrentVolOffID(1,copy);
     cell_Z         = copy-1;
-    gMC->CurrentVolOff(2,0,copy);
+    gMC->CurrentVolOffID(2,copy);
     cell_Phi       = copy-1;
 /*
         cradle_number  = cvolu->number[cvolu->nlevel-5]-1;
@@ -237,11 +237,11 @@ void AliPHOSv1::StepManager()
 
     AliPHOS &PHOS = *(AliPHOS*)gAlice->GetModule("PHOS");
 
-    gMC->CurrentVolOff(5,0,copy);
+    gMC->CurrentVolOffID(5,copy);
     cradle_number  = copy-1;
-    gMC->CurrentVolOff(2,0,copy);
+    gMC->CurrentVolOffID(2,copy);
     cell_Z         = copy-1;
-    gMC->CurrentVolOff(3,0,copy);
+    gMC->CurrentVolOffID(3,copy);
     cell_Phi       = copy-1;
 /*
         cradle_number  = cvolu->number[cvolu->nlevel-6]-1;
@@ -254,13 +254,13 @@ void AliPHOSv1::StepManager()
 
   //////////////////////////////////////////////////////////////////////////////
 
-  if( gMC->GetMedium()==GetPHOS_IDTMED_CPV() && (gMC->TrackInside() || gMC->TrackExiting()) && inwold )
+  if( gMC->GetMedium()==GetPHOS_IDTMED_CPV() && (gMC->IsTrackInside() || gMC->IsTrackExiting()) && inwold )
   {
     // GEANT particle just have entered into CPV detector.
 
     AliPHOS &PHOS = *(AliPHOS*)gAlice->GetModule("PHOS");
 
-    gMC->CurrentVolOff(1,0,cradle_number);
+    gMC->CurrentVolOffID(1,cradle_number);
     cradle_number--;
 //        cradle_number  = cvolu->number[cvolu->nlevel-2]-1;
 
@@ -268,23 +268,23 @@ void AliPHOSv1::StepManager()
 
     AliPHOSCradle  &cradle = PHOS.GetCradle(cradle_number);
 
-    Float_t   xyz[3];
+    TLorentzVector xyz;
+    TVector3 v;
     gMC->TrackPosition(xyz);
-    TVector3          p(xyz[0],xyz[1],xyz[2]),v;
 
     float x,y,l;
     float R = cradle.GetRadius() - cradle.GetCPV_PHOS_Distance() - cradle.GetCPV_Thikness();
-    cradle.GetXY(p,v,R,x,y,l);
+    cradle.GetXY(xyz.Vect(),v,R,x,y,l);
     if( PHOS.fDebugLevel>0 )
       if( l<0 )
         printf("PHOS_STEP:  warning: negative distance to CPV!! %f\n", l);
 
     // Store current particle in the list of Cradle particles.
-    Float_t  pmom[4];
+    TLorentzVector  pmom;
     gMC->TrackMomentum(pmom);
-    float     Px      =       pmom[0] * pmom[3],
-              Py      =       pmom[1] * pmom[3],
-              Pz      =       pmom[2] * pmom[3];
+    float     Px      =       pmom[0],
+              Py      =       pmom[1],
+              Pz      =       pmom[2];
     Int_t     Ipart   =       gMC->TrackPid();
 
 //     TClonesArray &P=cradle.GetParticles();
@@ -295,6 +295,6 @@ void AliPHOSv1::StepManager()
       cradle.AddCPVHit(x,y);
   }
 
-  inwold=gMC->TrackEntering();         // Save current status of GEANT variable.
+  inwold=gMC->IsTrackEntering();         // Save current status of GEANT variable.
 }
 

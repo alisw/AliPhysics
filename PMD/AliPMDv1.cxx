@@ -550,29 +550,30 @@ void AliPMDv1::StepManager()
   Float_t hits[4], destep;
   Float_t center[3] = {0,0,0};
   Int_t   vol[5];
-  Text_t namep[5];
+  //  char *namep;
   
   if(gMC->GetMedium() == fMedSens && (destep = gMC->Edep())) {
     
-//    gMC->CurrentVol(0, copy);
-    gMC->CurrentVol(namep, copy);
-//	printf("Current vol is %s \n",namep);
+    gMC->CurrentVolID(copy);
+//    namep=gMC->CurrentVolName();
+//    printf("Current vol is %s \n",namep);
     vol[0]=copy;
-//    gMC->CurrentVolOff(1,0,copy);
-    gMC->CurrentVolOff(1,namep,copy);
-//	printf("Current vol 11 is %s \n",namep);
+    gMC->CurrentVolOffID(1,copy);
+//    namep=gMC->CurrentVolOffName(1);
+//    printf("Current vol 11 is %s \n",namep);
     vol[1]=copy;
-//    gMC->CurrentVolOff(2,0,copy);
-    gMC->CurrentVolOff(2,namep,copy);
-//	printf("Current vol 22 is %s \n",namep);
+    gMC->CurrentVolOffID(2,copy);
+//    namep=gMC->CurrentVolOffName(2);
+//    printf("Current vol 22 is %s \n",namep);
     vol[2]=copy;
 //	if(strncmp(namep,"DW11",4))vol[2]=1;
-//    gMC->CurrentVolOff(3,0,copy);
-    gMC->CurrentVolOff(3,namep,copy);
-//	printf("Current vol 33 is %s \n",namep);
+    gMC->CurrentVolOffID(3,copy);
+//    namep=gMC->CurrentVolOffName(3);
+//    printf("Current vol 33 is %s \n",namep);
     vol[3]=copy;
-    gMC->CurrentVolOff(4,namep,copy);
-//	printf("Current vol 44 is %s \n",namep);
+    gMC->CurrentVolOffID(4,copy);
+//    namep=gMC->CurrentVolOffName(4);
+//    printf("Current vol 44 is %s \n",namep);
     vol[4]=copy;
 //	printf("volume number %d,%d,%d,%d,%d \n",vol[0],vol[1],vol[2],vol[3],vol[4]);
     gMC->Gdtom(center,hits,1);

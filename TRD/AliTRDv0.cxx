@@ -463,23 +463,24 @@ void AliTRDv0::StepManager()
   //
 
   Int_t         vol[3]; 
-  Int_t         icopy, idSens, icSens; 
+  Int_t         icopy, idSens, icSens, i; 
 
   Float_t       hits[4];
+  TLorentzVector p;
 
   TClonesArray &lhits = *fHits;
 
   // Use only charged tracks and count them only once per volume
-  if (gMC->TrackCharge() && gMC->TrackExiting()) {
+  if (gMC->TrackCharge() && gMC->IsTrackExiting()) {
     
     // Check on sensitive volume
-    idSens = gMC->CurrentVol(0,icSens);
+    idSens = gMC->CurrentVolID(icSens);
     if ((idSens == fIdSens1) || 
         (idSens == fIdSens2) ||
         (idSens == fIdSens3)) { 
       
       // The sector number
-      gMC->CurrentVolOff(5,0,icopy);
+      gMC->CurrentVolOffID(5,icopy);
       vol[0] = icopy;
       
       // The chamber number 
@@ -488,7 +489,7 @@ void AliTRDv0::StepManager()
       //   3: inner
       //   4: neighbouring right
       //   5: outer right
-      gMC->CurrentVolOff(3,0,icopy);
+      gMC->CurrentVolOffID(3,icopy);
       if      (idSens == fIdSens3)
         vol[1] = 4 * icopy - 3; 
       else if (idSens == fIdSens2)
@@ -497,7 +498,7 @@ void AliTRDv0::StepManager()
         vol[1] = 3;
       
       // The plane number
-      gMC->CurrentVolOff(1,0,icopy);
+      gMC->CurrentVolOffID(1,icopy);
       vol[2] = icopy;
 
       if (fSensSelect) {
@@ -506,13 +507,15 @@ void AliTRDv0::StepManager()
         if ((fSensChamber) && (vol[1] != fSensChamber)) addthishit = 0;
         if ((fSensSector)  && (vol[0] != fSensSector )) addthishit = 0;
         if (addthishit) {
-          gMC->TrackPosition(hits);
+          gMC->TrackPosition(p);
+	  for(i=0;i<3;++i) hits[i]=p[i];
           hits[3] = 0;
           new(lhits[fNhits++]) AliTRDhit(fIshunt,gAlice->CurrentTrack(),vol,hits);
 	}
       }
       else {      
-        gMC->TrackPosition(hits);
+	gMC->TrackPosition(p);
+	for(i=0;i<3;++i) hits[i]=p[i];
         hits[3] = 0;
         new(lhits[fNhits++]) AliTRDhit(fIshunt,gAlice->CurrentTrack(),vol,hits);
       }

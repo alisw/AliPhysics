@@ -13,10 +13,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliTOFv3.h"
-#include <TNode.h>
-#include <TTUBE.h>
 #include "AliRun.h"
-#include "AliMC.h"
  
 ClassImp(AliTOFv3)
  
@@ -300,37 +297,45 @@ void AliTOFv3::StepManager()
   //
   // Procedure called at each step in the Time Of Flight
   //
+  TLorentzVector mom, pos;
   Float_t hits[8];
   Int_t vol[3];
-  Int_t copy, id;
+  Int_t copy, id, i;
   Int_t *idtmed = fIdtmed->GetArray()-499;
   if(gMC->GetMedium()==idtmed[510-1] && 
-     gMC->TrackEntering() && gMC->TrackCharge()
-     && gMC->CurrentVol(0,copy)==fIdSens) {
+     gMC->IsTrackEntering() && gMC->TrackCharge()
+     && gMC->CurrentVolID(copy)==fIdSens) {
     TClonesArray &lhits = *fHits;
     //
     // Record only charged tracks at entrance
-    gMC->CurrentVolOff(1,0,copy);
+    gMC->CurrentVolOffID(1,copy);
     vol[2]=copy;
-    gMC->CurrentVolOff(3,0,copy);
+    gMC->CurrentVolOffID(3,copy);
     vol[1]=copy;
-    id=gMC->CurrentVolOff(6,0,copy);
+    id=gMC->CurrentVolOffID(6,copy);
     vol[0]=copy;
     if(id==fIdFTO3) {
       vol[0]+=22;
-      id=gMC->CurrentVolOff(4,0,copy);
+      id=gMC->CurrentVolOffID(4,copy);
       if(id==fIdFLT3) vol[1]+=6;
     } else if (id==fIdFTO2) {
       vol[0]+=20;
-      id=gMC->CurrentVolOff(4,0,copy);
+      id=gMC->CurrentVolOffID(4,copy);
       if(id==fIdFLT2) vol[1]+=8;
     } else {
-      id=gMC->CurrentVolOff(4,0,copy);
+      id=gMC->CurrentVolOffID(4,copy);
       if(id==fIdFLT1) vol[1]+=14;
     }
-    gMC->TrackPosition(hits);
-    gMC->TrackMomentum(&hits[3]);
-    hits[7]=gMC->TrackTime();
+    gMC->TrackPosition(pos);
+    gMC->TrackMomentum(mom);
+    Double_t ptot=mom.Rho();
+    Double_t norm=1/ptot;
+    for(i=0;i<3;++i) {
+      hits[i]=pos[i];
+      hits[i+3]=mom[i]*norm;
+    }
+    hits[6]=ptot;
+    hits[7]=pos[3];
     new(lhits[fNhits++]) AliTOFhit(fIshunt,gAlice->CurrentTrack(),vol,hits);
   }
 }

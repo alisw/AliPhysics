@@ -491,26 +491,27 @@ void AliTRDv1::StepManager()
   Int_t         vol[3]; 
   Int_t         icopy1, icopy2;
   Int_t         idSens, icSens; 
+  TLorentzVector pos;
   
   Float_t       hits[4];
   
   TClonesArray &lhits = *fHits;
 
   // Use only charged tracks and count them only once per volume
-  if (gMC->TrackCharge() && gMC->TrackExiting()) {
+  if (gMC->TrackCharge() && gMC->IsTrackExiting()) {
     
     // Check on sensitive volume
-    idSens = gMC->CurrentVol(0,icSens);
+    idSens = gMC->CurrentVolID(icSens);
 
     // Check on sensitive volume
-    idSens = gMC->CurrentVol(0,icSens);
+    idSens = gMC->CurrentVolID(icSens);
     if ((idSens == fIdSens1) || 
         (idSens == fIdSens2) ||
         (idSens == fIdSens3)) { 
       
       // The sector number
-      gMC->CurrentVolOff(5,0,icopy1);
-      gMC->CurrentVolOff(6,0,icopy2);
+      gMC->CurrentVolOffID(5,icopy1);
+      gMC->CurrentVolOffID(6,icopy2);
       if (icopy2 == 1)
         vol[0] =     icopy1;
       else
@@ -522,7 +523,7 @@ void AliTRDv1::StepManager()
       //   3: inner
       //   4: neighbouring right
       //   5: outer right
-      gMC->CurrentVolOff(3,0,icopy1);
+      gMC->CurrentVolOffID(3,icopy1);
       if      (idSens == fIdSens3)
         vol[1] = 4 * icopy1 - 3; 
       else if (idSens == fIdSens2)
@@ -531,7 +532,7 @@ void AliTRDv1::StepManager()
         vol[1] = 3;
       
       // The plane number
-      gMC->CurrentVolOff(1,0,icopy1);
+      gMC->CurrentVolOffID(1,icopy1);
       vol[2] = icopy1;
 
       if (fSensSelect) {
@@ -540,13 +541,19 @@ void AliTRDv1::StepManager()
         if ((fSensChamber) && (vol[1] != fSensChamber)) addthishit = 0;
         if ((fSensSector)  && (vol[0] != fSensSector )) addthishit = 0;
         if (addthishit) {
-          gMC->TrackPosition(hits);
+          gMC->TrackPosition(pos);
+	  hits[0] = pos[0];
+	  hits[1] = pos[1];
+	  hits[2] = pos[2];
           hits[3] = 0;
           new(lhits[fNhits++]) AliTRDhit(fIshunt,gAlice->CurrentTrack(),vol,hits);
 	}
       }
       else {      
-        gMC->TrackPosition(hits);
+	gMC->TrackPosition(pos);
+	hits[0] = pos[0];
+	hits[1] = pos[1];
+	hits[2] = pos[2];
         hits[3] = 0;
         new(lhits[fNhits++]) AliTRDhit(fIshunt,gAlice->CurrentTrack(),vol,hits);
       }

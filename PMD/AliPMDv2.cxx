@@ -952,21 +952,22 @@ void AliPMDv2::StepManager()
   Float_t hits[4], destep;
   Float_t center[3] = {0,0,0};
   Int_t   vol[5];
-  Text_t namep[5];
+  const char *namep;
   
   if(gMC->GetMedium() == fMedSens && (destep = gMC->Edep())) {
     
-    gMC->CurrentVol(namep, copy);
+    gMC->CurrentVolID(copy);
     vol[0]=copy;
-    gMC->CurrentVolOff(1,namep,copy);
+    gMC->CurrentVolOffID(1,copy);
     vol[1]=copy;
-    gMC->CurrentVolOff(2,namep,copy);
+    gMC->CurrentVolOffID(2,copy);
+    namep=gMC->CurrentVolOffName(2);
     vol[2]=copy;
     if(strncmp(namep,"DW11",4))vol[2]=1;
     if(strncmp(namep,"DV11",4))vol[2]=2;
-    gMC->CurrentVolOff(3,namep,copy);
+    gMC->CurrentVolOffID(3,copy);
     vol[3]=copy;
-    gMC->CurrentVolOff(4,namep,copy);
+    gMC->CurrentVolOffID(4,copy);
     vol[4]=copy;
     gMC->Gdtom(center,hits,1);
     hits[3] = destep*1e9; //Number in eV

@@ -28,11 +28,13 @@ void    TGeant3::Gfile(const char*, const char*) {}
 void    TGeant3::GeomIter() {}
 Int_t   TGeant3::CurrentMaterial(Float_t &, Float_t &, Float_t &, Float_t &, Float_t &) const {return 0;}
 Int_t   TGeant3::NextVolUp(Text_t*, Int_t&) {return 0;}
-Int_t   TGeant3::CurrentVol(Text_t*, Int_t&) const {return 0;}
+Int_t   TGeant3::CurrentVolID(Int_t&) const {return 0;}
+const char*  TGeant3::CurrentVolName() const {return 0;}
 Int_t   TGeant3::NofVolumes() const {return 0;}
-Int_t   TGeant3::CurrentVolOff(Int_t, Text_t*, Int_t&) const {return 0;}
-void    TGeant3::TrackPosition(Float_t*) const {}
-void    TGeant3::TrackMomentum(Float_t*) const {}
+Int_t   TGeant3::CurrentVolOffID(Int_t, Int_t&) const {return 0;}
+const char *TGeant3::CurrentVolOffName(Int_t) const {return 0;}
+void    TGeant3::TrackPosition(TLorentzVector&) const {}
+void    TGeant3::TrackMomentum(TLorentzVector&) const {}
 Int_t   TGeant3::IdFromPDG(Int_t pdg) const {return -1;}
 Int_t   TGeant3::PDGFromId(Int_t pdg) const {return -1;}
 void    TGeant3::DefineParticles() {}
@@ -40,12 +42,12 @@ Int_t   TGeant3::VolId(Text_t*) const {return 0;}
 const char*   TGeant3::VolName(Int_t ) const {return 0;}
 Float_t TGeant3::TrackCharge() const {return 0;}
 Float_t TGeant3::TrackMass() const {return 0;}
-Bool_t  TGeant3::TrackInside() const {return 0;}
-Bool_t  TGeant3::TrackEntering() const {return 0;}
-Bool_t  TGeant3::TrackExiting() const {return 0;}
-Bool_t  TGeant3::TrackOut() const {return 0;}
-Bool_t  TGeant3::TrackDisappear() const {return 0;}
-Bool_t  TGeant3::TrackStop() const {return 0;}
+Bool_t  TGeant3::IsTrackInside() const {return 0;}
+Bool_t  TGeant3::IsTrackEntering() const {return 0;}
+Bool_t  TGeant3::IsTrackExiting() const {return 0;}
+Bool_t  TGeant3::IsTrackOut() const {return 0;}
+Bool_t  TGeant3::IsTrackDisappeared() const {return 0;}
+Bool_t  TGeant3::IsTrackStop() const {return 0;}
 Int_t   TGeant3::NSecondaries() const {return 0;}
 void    TGeant3::ProdProcess(char*) const {}
 void    TGeant3::GetSecondary(Int_t, Int_t&, Float_t*, Float_t*){}
@@ -61,7 +63,7 @@ Float_t TGeant3::TrackStep() const {return 0;}
 Float_t TGeant3::TrackLength() const {return 0;}
 Float_t TGeant3::TrackTime() const {return 0;}
 Int_t   TGeant3::TrackPid() const {return 0;}
-Bool_t  TGeant3::TrackAlive() const {return 0;}
+Bool_t  TGeant3::IsTrackAlive() const {return 0;}
 void    TGeant3::StopTrack() {}
 void    TGeant3::StopEvent() {}
 void    TGeant3::SetMaxNStep(Int_t) {}

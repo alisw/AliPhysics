@@ -1372,7 +1372,7 @@ void AliRun::StepManager(Int_t id) const
     return;
   }
   //Update energy deposition tables
-  sEventEnergy[gMC->CurrentVol(0,copy)]+=gMC->Edep();
+  sEventEnergy[gMC->CurrentVolID(copy)]+=gMC->Edep();
   
   //Call the appropriate stepping routine;
   AliModule *det = (AliModule*)fModules->At(id);

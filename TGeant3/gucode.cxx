@@ -463,7 +463,7 @@ void gustep()
 //
 
 
-  Float_t x[3];
+  TLorentzVector x;
   Float_t r;
   Int_t ipp, jk, id, nt;
   Float_t polar[3]={0,0,0};
@@ -493,7 +493,7 @@ void gustep()
   }
 
   // --- Particle leaving the setup ?
-  if (!gMC->TrackOut()) 
+  if (!gMC->IsTrackOut()) 
     if ((id=gAlice->DetFromMate(geant3->Gctmed()->numed)) >= 0) gAlice->StepManager(id);
 }
 

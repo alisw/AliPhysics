@@ -602,10 +602,10 @@ void AliPHOSv2::StepManager(void)
     gMC->TrackPosition(xyze);
     xyze[3]=gMC->Edep();
     
-    gMC->CurrentVolOff(3, (Text_t*)NULL, blrc[0]);
+    gMC->CurrentVolOffID(3, blrc[0]);
     blrc[1]=1; // CPV corresponds to layer 1
-    gMC->CurrentVolOff(2, (Text_t*)NULL, blrc[2]);
-    gMC->CurrentVolOff(1, (Text_t*)NULL, blrc[3]);
+    gMC->CurrentVolOffID(2, blrc[2]);
+    gMC->CurrentVolOffID(1, blrc[3]);
     
     AddHit(gAlice->CurrentTrack(), blrc, xyze);
 
@@ -616,10 +616,10 @@ void AliPHOSv2::StepManager(void)
     gMC->TrackPosition(xyze);
     xyze[3]=gMC->Edep();
 
-    gMC->CurrentVolOff(9, (Text_t*)NULL, blrc[0]);
+    gMC->CurrentVolOffID(9, blrc[0]);
     blrc[1]=2; // PWO crystals correspond to layer 2
-    gMC->CurrentVolOff(4, (Text_t*)NULL, blrc[2]);
-    gMC->CurrentVolOff(3, (Text_t*)NULL, blrc[3]);
+    gMC->CurrentVolOffID(4, blrc[2]);
+    gMC->CurrentVolOffID(3, blrc[3]);
 
     AddHit(gAlice->CurrentTrack(), blrc, xyze);
 
