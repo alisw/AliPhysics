@@ -92,7 +92,7 @@ AliTOFHitMap::~AliTOFHitMap()
 //
 // Destructor
 //
-    if (fHitMap) delete[] fHitMap;
+    delete[] fHitMap;
 }
 
 ////////////////////////////////////////////////////////////////////////
