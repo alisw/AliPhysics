@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.7  2000/10/03 21:44:09  morsch
+  Use AliSegmentation and AliHit abstract base classes.
+
   Revision 1.6  2000/07/10 15:28:39  fca
   Correction of the inheritance scheme
 
@@ -110,22 +113,22 @@ AliRICHv1::AliRICHv1(const char *name, const char *title)
     AliRICHGeometry* geometry = new AliRICHGeometry;
     geometry->SetGapThickness(8);
     geometry->SetProximityGapThickness(.4);
-    geometry->SetQuartzLength(131);
-    geometry->SetQuartzWidth(126.2);
+    geometry->SetQuartzLength(133);
+    geometry->SetQuartzWidth(127.9);
     geometry->SetQuartzThickness(.5);
-    geometry->SetOuterFreonLength(131);
-    geometry->SetOuterFreonWidth(40.3);
-    geometry->SetInnerFreonLength(131);
-    geometry->SetInnerFreonWidth(40.3);
-    geometry->SetFreonThickness(1);
+    geometry->SetOuterFreonLength(133);
+    geometry->SetOuterFreonWidth(41.3);
+    geometry->SetInnerFreonLength(133);
+    geometry->SetInnerFreonWidth(41.3);
+    geometry->SetFreonThickness(1.5);
 //
 //  Response parameters
     AliRICHResponseV0*  responseV0   = new AliRICHResponseV0;
     responseV0->SetSigmaIntegration(5.);
-    responseV0->SetChargeSlope(40.);
+    responseV0->SetChargeSlope(27.);
     responseV0->SetChargeSpread(0.18, 0.18);
-    responseV0->SetMaxAdc(1024);
-    responseV0->SetAlphaFeedback(0.05);
+    responseV0->SetMaxAdc(4096);
+    responseV0->SetAlphaFeedback(0.036);
     responseV0->SetEIonisation(26.e-9);
     responseV0->SetSqrtKx3(0.77459667);
     responseV0->SetKx2(0.962);
@@ -234,4 +237,11 @@ void AliRICHv1::Init()
     printf("*********************************************************************************\n");
 
 }
+
+
+
+
+
+
+
 
