@@ -5,7 +5,7 @@
  *             sorts tracks for matching with the ITS,                      *
  *             calculates efficiency, resolutions etc.                      *
  *                                                                          *
- *           Origin: I.Belikov, CERN, Jouri.Belikov@cern.ch                 *
+ *           Origin: J.Belikov, CERN, Jouri.Belikov@cern.ch                 *
  * with several nice improvements by: M.Ivanov, GSI, m.ivanov@gsi.de        *
  ****************************************************************************/
 
