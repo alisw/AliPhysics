@@ -67,6 +67,7 @@ class AliEMCALGeometry : public AliGeometry {
     const Int_t   GetNZ() const {return fNZ ;}
     const Int_t   GetNEta() const {return fNZ ;}
     const Int_t   GetNPhi() const {return fNPhi ;}
+    const Int_t   GetNTowers() const {return fNPhi * fNZ ;}
     const Float_t GetPbRadThick(){ // returns Pb radiator thickness in cm.
 	return fPbRadThickness;
     }
@@ -91,6 +92,8 @@ class AliEMCALGeometry : public AliGeometry {
     void TowerIndexes(Int_t index,Int_t &iz,Int_t &iphi,Int_t &ipre) const;
     // for a given tower index it returns eta and phi of center of that tower.
     void EtaPhiFromIndex(Int_t index,Float_t &eta,Float_t &phi) const;
+    // returns x, y, and z (cm) on the inner surface of a given EMCAL Cell specified by relid.
+    void XYZFromIndex(const Int_t *relid,Float_t &x,Float_t &y, Float_t &z) const;
     // for a given eta and phi in the EMCAL it returns the tower index.
     Int_t TowerIndexFromEtaPhi(Float_t eta,Float_t phi) const;
     // for a given eta and phi in the EMCAL it returns the pretower index.

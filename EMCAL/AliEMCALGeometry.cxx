@@ -308,6 +308,43 @@ void AliEMCALGeometry::PosInAlice(const Int_t *relid,Float_t &theta,
 
     return;
 }
+
+//______________________________________________________________________
+void AliEMCALGeometry::XYZFromIndex(const Int_t *relid,Float_t &x,Float_t &y, Float_t &z) const {
+    // given the tower relative number it returns the X, Y and Z
+    // of the tower.
+    
+    // Outputs:
+    //   Float_t x  // x of center of tower in cm
+    //   Float_t y  // y of center of tower in cm
+    //   Float_t z  // z of centre of tower in cm
+    // Returned
+    //   none.
+    
+    Float_t eta,theta, phi,cyl_radius,kDeg2Rad;
+    
+    Int_t ieta   = relid[2]; // offset along x axis
+    Int_t iphi = relid[3]; // offset along z axis
+    Int_t ipre = relid[1]; // indicates -1 preshower, or 0 full tower.
+    Int_t index;
+    
+
+    if(ipre==-1) ipre = 1;
+    index = TowerIndex(ieta,iphi,ipre);
+    EtaPhiFromIndex(index,eta,phi);
+    theta = 180.*(2.0*TMath::ATan(TMath::Exp(-eta)))/TMath::Pi();
+
+ 
+    
+    kDeg2Rad = TMath::Pi() / static_cast<Double_t>(180) ; 
+    cyl_radius = GetIPDistance()+ GetAirGap() ;
+    x =  cyl_radius * TMath::Cos(phi * kDeg2Rad ) ;
+    y =  cyl_radius * TMath::Cos(phi * kDeg2Rad ) ; 
+    z =  cyl_radius / TMath::Tan(theta * kDeg2Rad ) ; 
+ 
+ return;
+} 
+
 //______________________________________________________________________
 /*
 Boot_t AliEMCALGeometry::AreNeighbours(Int_t index1,Int_t index2) const {
