@@ -366,7 +366,7 @@ Bool_t AliITSsimulationSDD::AddSDigitsToModule( TClonesArray *pItemArray, Int_t 
   // Add Summable digits to module maps.
   Int_t    nItems = pItemArray->GetEntries();
   Double_t maxadc = fResponse->MaxAdc();
-  //Bool_t sig = kFALSE;
+  Bool_t sig = kFALSE;
     
   // cout << "Adding "<< nItems <<" SDigits to module " << fModule << endl;
   for( Int_t i=0; i<nItems; i++ ) {
@@ -375,10 +375,10 @@ Bool_t AliITSsimulationSDD::AddSDigitsToModule( TClonesArray *pItemArray, Int_t 
       Error( "AliITSsimulationSDD",
 	     "Error reading, SDigits module %d != current module %d: exit\n",
 	     pItem->GetModule(), fModule );
-      return kFALSE;
+      return sig;
     } // end if
 
-      //  if(pItem->GetSignal()>0.0 ) sig = kTRUE;
+    if(pItem->GetSignal()>0.0 ) sig = kTRUE;
         
     fpList->AddItemTo( mask, pItem ); // Add SignalAfterElect + noise
     AliITSpListItem * pItem2 = fpList->GetpListItem( pItem->GetIndex() );
@@ -390,7 +390,7 @@ Bool_t AliITSsimulationSDD::AddSDigitsToModule( TClonesArray *pItemArray, Int_t 
     fHitMap2->SetHit( ia, it, sigAE );
     fAnodeFire[ia] = kTRUE;
   }
-  return kTRUE;
+  return sig;
 }
 //______________________________________________________________________
 void AliITSsimulationSDD::FinishSDigitiseModule() {

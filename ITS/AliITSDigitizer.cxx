@@ -251,7 +251,7 @@ void AliITSDigitizer::Exec(Option_t* opt){
             // add summable digits to module
             brchSDigits->GetEvent( module );
             lmod = sim->AddSDigitsToModule(sdig,mask);
-            if(ifiles==0)
+            if(fRegionOfInterest && (ifiles==0))
              {
                fModActive[module] = lmod;
              } // end if
