@@ -30,24 +30,31 @@
 ////
 
 #include "Riostream.h"
-
 #include <TVirtualMC.h>
-
 #include "AliConst.h" 
 #include "AliMagF.h" 
 #include "AliPMDv0.h"
 #include "AliRun.h"
 #include "AliMC.h"
- 
-static Int_t   kdet, ncell_sm, ncell_hole;
-static Float_t zdist, zdist1;
-static Float_t sm_length, sm_thick, cell_radius, cell_wall, cell_depth;
-static Float_t boundary, th_base, th_air, th_pcb;
-static Float_t th_lead, th_steel;
+
+const Int_t   AliPMDv0::fgkNcellHole  = 24;       // Hole dimension
+const Float_t AliPMDv0::fgkCellRadius = 0.25;     // Radius of a hexagonal cell
+const Float_t AliPMDv0::fgkCellWall   = 0.02;     // Thickness of cell Wall
+const Float_t AliPMDv0::fgkCellDepth  = 0.50;     // Gas thickness
+const Float_t AliPMDv0::fgkBoundary   = 0.7;      // Thickness of Boundary wall
+const Float_t AliPMDv0::fgkThBase     = 0.3;      // Thickness of Base plate
+const Float_t AliPMDv0::fgkThAir      = 0.1;      // Thickness of Air
+const Float_t AliPMDv0::fgkThPCB      = 0.16;     // Thickness of PCB
+const Float_t AliPMDv0::fgkThLead     = 1.5;      // Thickness of Pb
+const Float_t AliPMDv0::fgkThSteel    = 0.5;      // Thickness of Steel
+const Float_t AliPMDv0::fgkZdist      = 361.5;    // z-position of the detector
+const Float_t AliPMDv0::fgkSqroot3    = 1.7320508;// Square Root of 3
+const Float_t AliPMDv0::fgkSqroot3by2 = 0.8660254;// Square Root of 3 by 2
+const Float_t AliPMDv0::fgkPi         = 3.14159;  // pi
 
 ClassImp(AliPMDv0)
  
-  //_____________________________________________________________________________
+//_____________________________________________________________________________
   AliPMDv0::AliPMDv0()
 {
   //
@@ -162,45 +169,38 @@ void AliPMDv0::CreateSupermodule()
   Float_t xb, yb, zb;
   Int_t number;
   Int_t ihrotm,irotdm;
-  const Float_t root3_2 = TMath::Sqrt(3.) /2.; 
   Int_t *idtmed = fIdtmed->GetArray()-599;
  
   AliMatrix(ihrotm, 90., 30.,   90.,  120., 0., 0.);
   AliMatrix(irotdm, 90., 180.,  90.,  270., 180., 0.);
  
-  zdist = TMath::Abs(zdist1);
-
-
   //Subhasis, dimensional parameters of rhombus (dpara) as given to gsvolu
   // rhombus to accomodate 72 x 72 hexagons, and with total 1.2cm extension  
   //(1mm tolerance on both side and 5mm thick G10 wall)
   // 
-  
   // **** CELL SIZE 20 mm^2 EQUIVALENT
-
   // Inner hexagon filled with gas (Ar+CO2)
 
   Float_t hexd2[10] = {0.,360.,6,2,-0.25,0.,0.23,0.25,0.,0.23};
 
-  hexd2[4]= - cell_depth/2.;
-  hexd2[7]=   cell_depth/2.;
-  hexd2[6]=   cell_radius - cell_wall;
-  hexd2[9]=   cell_radius - cell_wall;
+  hexd2[4]=  -fgkCellDepth/2.;
+  hexd2[7]=   fgkCellDepth/2.;
+  hexd2[6]=   fgkCellRadius - fgkCellWall;
+  hexd2[9]=   fgkCellRadius - fgkCellWall;
   
- // Gas replaced by vacuum for v0(insensitive) version of PMD.
+  // Gas replaced by vacuum for v0(insensitive) version of PMD.
 
   gMC->Gsvolu("ECAR", "PGON", idtmed[697], hexd2,10);
   gMC->Gsatt("ECAR", "SEEN", 0);
-
+  
   // Outer hexagon made of Copper
-
+  
   Float_t hexd1[10] = {0.,360.,6,2,-0.25,0.,0.25,0.25,0.,0.25};
-  //total wall thickness=0.2*2
 
-  hexd1[4]= - cell_depth/2.;
-  hexd1[7]=   cell_depth/2.;
-  hexd1[6]=   cell_radius;
-  hexd1[9]=   cell_radius;
+  hexd1[4]=  -fgkCellDepth/2.;
+  hexd1[7]=   fgkCellDepth/2.;
+  hexd1[6]=   fgkCellRadius;
+  hexd1[9]=   fgkCellRadius;
 
   gMC->Gsvolu("ECCU", "PGON", idtmed[614], hexd1,10);
   gMC->Gsatt("ECCU", "SEEN", 1);
@@ -209,109 +209,106 @@ void AliPMDv0::CreateSupermodule()
 
   gMC->Gspos("ECAR", 1, "ECCU", 0., 0., 0., 0, "ONLY");
 
-// Rhombus shaped supermodules (defined by PARA) 
-
-// volume for SUPERMODULE 
+  // Rhombus shaped supermodules (defined by PARA) 
+  
+  // volume for SUPERMODULE 
    
-  Float_t dpara_sm1[6] = {12.5,12.5,0.8,30.,0.,0.};
-  dpara_sm1[0]=(ncell_sm+0.25)*hexd1[6] ;
-  dpara_sm1[1] = dpara_sm1[0] *root3_2;
-  dpara_sm1[2] = sm_thick/2.;
-
-//
-  gMC->Gsvolu("ESMA","PARA", idtmed[607], dpara_sm1, 6);
+  Float_t dparasm1[6] = {12.5,12.5,0.8,30.,0.,0.};
+  dparasm1[0] = (fNcellSM+0.25)*hexd1[6] ;
+  dparasm1[1] = dparasm1[0] *fgkSqroot3by2;
+  dparasm1[2] = fSMthick/2.;
+  
+  //
+  gMC->Gsvolu("ESMA","PARA", idtmed[607], dparasm1, 6);
   gMC->Gsatt("ESMA", "SEEN", 0);
   //
-  gMC->Gsvolu("ESMB","PARA", idtmed[607], dpara_sm1, 6);
+  gMC->Gsvolu("ESMB","PARA", idtmed[607], dparasm1, 6);
   gMC->Gsatt("ESMB", "SEEN", 0);
-
+  
   // Air residing between the PCB and the base
-
-  Float_t dpara_air[6] = {12.5,12.5,8.,30.,0.,0.};
-  dpara_air[0]= dpara_sm1[0];
-  dpara_air[1]= dpara_sm1[1];
-  dpara_air[2]= th_air/2.;
-
-  gMC->Gsvolu("EAIR","PARA", idtmed[698], dpara_air, 6);
+  
+  Float_t dparaair[6] = {12.5,12.5,8.,30.,0.,0.};
+  dparaair[0]= dparasm1[0];
+  dparaair[1]= dparasm1[1];
+  dparaair[2]= fgkThAir/2.;
+  
+  gMC->Gsvolu("EAIR","PARA", idtmed[698], dparaair, 6);
   gMC->Gsatt("EAIR", "SEEN", 0);
-
+  
   // volume for honeycomb chamber EHC1 
-
+  
   Float_t dpara1[6] = {12.5,12.5,0.4,30.,0.,0.};
-  dpara1[0] = dpara_sm1[0];
-  dpara1[1] = dpara_sm1[1];
-  dpara1[2] = cell_depth/2.;
+  dpara1[0] = dparasm1[0];
+  dpara1[1] = dparasm1[1];
+  dpara1[2] = fgkCellDepth/2.;
 
   gMC->Gsvolu("EHC1","PARA", idtmed[698], dpara1, 6);
   gMC->Gsatt("EHC1", "SEEN", 1);
   
-
-
   // Place hexagonal cells ECCU cells  inside EHC1 (72 X 72)
 
-  Int_t xrow=1;
+  Int_t xrow = 1;
 
-  yb = -dpara1[1] + (1./root3_2)*hexd1[6];
+  yb = -dpara1[1] + (1./fgkSqroot3by2)*hexd1[6];
   zb = 0.;
 
-  for (j = 1; j <= ncell_sm; ++j) {
+  for (j = 1; j <= fNcellSM; ++j) {
     xb =-(dpara1[0] + dpara1[1]*0.577) + 2*hexd1[6]; //0.577=tan(30deg)
     if(xrow >= 2){
       xb = xb+(xrow-1)*hexd1[6];
     }
-    for (i = 1; i <= ncell_sm; ++i) {
-      number = i+(j-1)*ncell_sm;
+    for (i = 1; i <= fNcellSM; ++i) {
+      number = i+(j-1)*fNcellSM;
       gMC->Gspos("ECCU", number, "EHC1", xb,yb,zb, ihrotm, "ONLY");
       xb += (hexd1[6]*2.);
     }
     xrow = xrow+1;
-    yb += (hexd1[6]*TMath::Sqrt(3.));
+    yb += (hexd1[6]*fgkSqroot3);
   }
 
 
   // Place EHC1 and EAIR into  ESMA and ESMB
 
-  Float_t z_air1,z_air2,z_gas; 
+  Float_t zAir1,zAir2,zGas; 
 
   //ESMA is normal supermodule with base at bottom, with EHC1
-  z_air1= -dpara_sm1[2] + th_base + dpara_air[2]; 
-  gMC->Gspos("EAIR", 1, "ESMA", 0., 0., z_air1, 0, "ONLY");
-  z_gas=z_air1+dpara_air[2]+ th_pcb + dpara1[2]; 
+  zAir1= -dparasm1[2] + fgkThBase + dparaair[2]; 
+  gMC->Gspos("EAIR", 1, "ESMA", 0., 0., zAir1, 0, "ONLY");
+  zGas=zAir1+dparaair[2]+ fgkThPCB + dpara1[2]; 
   //Line below Commented for version 0 of PMD routine
-  //  gMC->Gspos("EHC1", 1, "ESMA", 0., 0., z_gas, 0, "ONLY");
-  z_air2=z_gas+dpara1[2]+ th_pcb + dpara_air[2]; 
-  gMC->Gspos("EAIR", 2, "ESMA", 0., 0., z_air2, 0, "ONLY");
+  //  gMC->Gspos("EHC1", 1, "ESMA", 0., 0., zGas, 0, "ONLY");
+  zAir2=zGas+dpara1[2]+ fgkThPCB + dparaair[2]; 
+  gMC->Gspos("EAIR", 2, "ESMA", 0., 0., zAir2, 0, "ONLY");
 
   // ESMB is mirror image of ESMA, with base at top, with EHC1
 
-  z_air1= -dpara_sm1[2] + th_pcb + dpara_air[2]; 
-  gMC->Gspos("EAIR", 3, "ESMB", 0., 0., z_air1, 0, "ONLY");
-  z_gas=z_air1+dpara_air[2]+ th_pcb + dpara1[2]; 
+  zAir1= -dparasm1[2] + fgkThPCB + dparaair[2]; 
+  gMC->Gspos("EAIR", 3, "ESMB", 0., 0., zAir1, 0, "ONLY");
+  zGas=zAir1+dparaair[2]+ fgkThPCB + dpara1[2]; 
   //Line below Commented for version 0 of PMD routine
-  //  gMC->Gspos("EHC1", 2, "ESMB", 0., 0., z_gas, 0, "ONLY");
-  z_air2=z_gas+dpara1[2]+ th_pcb + dpara_air[2]; 
-  gMC->Gspos("EAIR", 4, "ESMB", 0., 0., z_air2, 0, "ONLY");
+  //  gMC->Gspos("EHC1", 2, "ESMB", 0., 0., zGas, 0, "ONLY");
+  zAir2=zGas+dpara1[2]+ fgkThPCB + dparaair[2]; 
+  gMC->Gspos("EAIR", 4, "ESMB", 0., 0., zAir2, 0, "ONLY");
 
 
-// special supermodule EMM2(GEANT only) containing 6 unit modules
+  // special supermodule EMM2(GEANT only) containing 6 unit modules
+  // volume for SUPERMODULE 
 
-// volume for SUPERMODULE 
+  Float_t dparasm2[6] = {12.5,12.5,0.8,30.,0.,0.};
+  dparasm2[0]=(fNcellSM+0.25)*hexd1[6] ;
+  dparasm2[1] = (fNcellSM - fgkNcellHole + 0.25) * fgkSqroot3by2 * hexd1[6];
+  dparasm2[2] = fSMthick/2.;
 
-  Float_t dpara_sm2[6] = {12.5,12.5,0.8,30.,0.,0.};
-  dpara_sm2[0]=(ncell_sm+0.25)*hexd1[6] ;
-  dpara_sm2[1] = (ncell_sm - ncell_hole + 0.25) * root3_2 * hexd1[6];
-  dpara_sm2[2] = sm_thick/2.;
-
-  gMC->Gsvolu("ESMX","PARA", idtmed[607], dpara_sm2, 6);
+  gMC->Gsvolu("ESMX","PARA", idtmed[607], dparasm2, 6);
   gMC->Gsatt("ESMX", "SEEN", 0);
   //
-  gMC->Gsvolu("ESMY","PARA", idtmed[607], dpara_sm2, 6);
+  gMC->Gsvolu("ESMY","PARA", idtmed[607], dparasm2, 6);
   gMC->Gsatt("ESMY", "SEEN", 0);
 
   Float_t dpara2[6] = {12.5,12.5,0.4,30.,0.,0.};
-  dpara2[0] = dpara_sm2[0];
-  dpara2[1] = dpara_sm2[1];
-  dpara2[2] = cell_depth/2.;
+  dpara2[0] = dparasm2[0];
+  dpara2[1] = dparasm2[1];
+  dpara2[2] = fgkCellDepth/2.;
 
   gMC->Gsvolu("EHC2","PARA", idtmed[698], dpara2, 6);
   gMC->Gsatt("EHC2", "SEEN", 1);
@@ -319,90 +316,86 @@ void AliPMDv0::CreateSupermodule()
 
   // Air residing between the PCB and the base
 
-  Float_t dpara2_air[6] = {12.5,12.5,8.,30.,0.,0.};
-  dpara2_air[0]= dpara_sm2[0];
-  dpara2_air[1]= dpara_sm2[1];
-  dpara2_air[2]= th_air/2.;
+  Float_t dpara2Air[6] = {12.5,12.5,8.,30.,0.,0.};
+  dpara2Air[0]= dparasm2[0];
+  dpara2Air[1]= dparasm2[1];
+  dpara2Air[2]= fgkThAir/2.;
 
-  gMC->Gsvolu("EAIX","PARA", idtmed[698], dpara2_air, 6);
+  gMC->Gsvolu("EAIX","PARA", idtmed[698], dpara2Air, 6);
   gMC->Gsatt("EAIX", "SEEN", 0);
 
   // Place hexagonal single cells ECCU inside EHC2
   // skip cells which go into the hole in top left corner.
 
   xrow=1;
-  yb = -dpara2[1] + (1./root3_2)*hexd1[6];
+  yb = -dpara2[1] + (1./fgkSqroot3by2)*hexd1[6];
   zb = 0.;
-  for (j = 1; j <= (ncell_sm - ncell_hole); ++j) {
+  for (j = 1; j <= (fNcellSM - fgkNcellHole); ++j) {
     xb =-(dpara2[0] + dpara2[1]*0.577) + 2*hexd1[6];
     if(xrow >= 2){
       xb = xb+(xrow-1)*hexd1[6];
     }
-    for (i = 1; i <= ncell_sm; ++i) {
-      number = i+(j-1)*ncell_sm;
+    for (i = 1; i <= fNcellSM; ++i) {
+      number = i+(j-1)*fNcellSM;
  	    gMC->Gspos("ECCU", number, "EHC2", xb,yb,zb, ihrotm, "ONLY");
       xb += (hexd1[6]*2.);
     }
     xrow = xrow+1;
-    yb += (hexd1[6]*TMath::Sqrt(3.));
+    yb += (hexd1[6]*fgkSqroot3);
   }
 
 
   // ESMX is normal supermodule with base at bottom, with EHC2
   
-  z_air1= -dpara_sm2[2] + th_base + dpara2_air[2]; 
-  gMC->Gspos("EAIX", 1, "ESMX", 0., 0., z_air1, 0, "ONLY");
-  z_gas=z_air1+dpara2_air[2]+ th_pcb + dpara2[2]; 
+  zAir1= -dparasm2[2] + fgkThBase + dpara2Air[2]; 
+  gMC->Gspos("EAIX", 1, "ESMX", 0., 0., zAir1, 0, "ONLY");
+  zGas=zAir1+dpara2Air[2]+ fgkThPCB + dpara2[2]; 
   //Line below Commented for version 0 of PMD routine
-  //  gMC->Gspos("EHC2", 1, "ESMX", 0., 0., z_gas, 0, "ONLY");
-  z_air2=z_gas+dpara2[2]+ th_pcb + dpara2_air[2]; 
-  gMC->Gspos("EAIX", 2, "ESMX", 0., 0., z_air2, 0, "ONLY");
+  //  gMC->Gspos("EHC2", 1, "ESMX", 0., 0., zGas, 0, "ONLY");
+  zAir2=zGas+dpara2[2]+ fgkThPCB + dpara2Air[2]; 
+  gMC->Gspos("EAIX", 2, "ESMX", 0., 0., zAir2, 0, "ONLY");
 
   // ESMY is mirror image of ESMX with base at bottom, with EHC2
   
-  z_air1= -dpara_sm2[2] + th_pcb + dpara2_air[2]; 
-  gMC->Gspos("EAIX", 3, "ESMY", 0., 0., z_air1, 0, "ONLY");
-  z_gas=z_air1+dpara2_air[2]+ th_pcb + dpara2[2]; 
+  zAir1= -dparasm2[2] + fgkThPCB + dpara2Air[2]; 
+  gMC->Gspos("EAIX", 3, "ESMY", 0., 0., zAir1, 0, "ONLY");
+  zGas=zAir1+dpara2Air[2]+ fgkThPCB + dpara2[2]; 
   //Line below Commented for version 0 of PMD routine
-  //  gMC->Gspos("EHC2", 2, "ESMY", 0., 0., z_gas, 0, "ONLY");
-  z_air2=z_gas+dpara2[2]+ th_pcb + dpara2_air[2]; 
-  gMC->Gspos("EAIX", 4, "ESMY", 0., 0., z_air2, 0, "ONLY");
+  //  gMC->Gspos("EHC2", 2, "ESMY", 0., 0., zGas, 0, "ONLY");
+  zAir2=zGas+dpara2[2]+ fgkThPCB + dpara2Air[2]; 
+  gMC->Gspos("EAIX", 4, "ESMY", 0., 0., zAir2, 0, "ONLY");
 
-//
+  //
+  // special supermodule EMM3 (GEANT only) containing 2 unit modules
+  // volume for SUPERMODULE 
+  //
+  Float_t dparaSM3[6] = {12.5,12.5,0.8,30.,0.,0.};
+  dparaSM3[0]=(fNcellSM - fgkNcellHole +0.25)*hexd1[6] ;
+  dparaSM3[1] = (fgkNcellHole + 0.25) * hexd1[6] * fgkSqroot3by2;
+  dparaSM3[2] = fSMthick/2.;
 
-
-// special supermodule EMM3 (GEANT only) containing 2 unit modules
-   
-// volume for SUPERMODULE 
-
-  Float_t dpara_sm3[6] = {12.5,12.5,0.8,30.,0.,0.};
-  dpara_sm3[0]=(ncell_sm - ncell_hole +0.25)*hexd1[6] ;
-  dpara_sm3[1] = (ncell_hole + 0.25) * hexd1[6] * root3_2;
-  dpara_sm3[2] = sm_thick/2.;
-
-  gMC->Gsvolu("ESMP","PARA", idtmed[607], dpara_sm3, 6);
+  gMC->Gsvolu("ESMP","PARA", idtmed[607], dparaSM3, 6);
   gMC->Gsatt("ESMP", "SEEN", 0);
   //
-  gMC->Gsvolu("ESMQ","PARA", idtmed[607], dpara_sm3, 6);
+  gMC->Gsvolu("ESMQ","PARA", idtmed[607], dparaSM3, 6);
   gMC->Gsatt("ESMQ", "SEEN", 0);
 
   Float_t dpara3[6] = {12.5,12.5,0.4,30.,0.,0.};
-  dpara3[0] = dpara_sm3[0];
-  dpara3[1] = dpara_sm3[1];
-  dpara3[2] = cell_depth/2.;
+  dpara3[0] = dparaSM3[0];
+  dpara3[1] = dparaSM3[1];
+  dpara3[2] = fgkCellDepth/2.;
 
   gMC->Gsvolu("EHC3","PARA", idtmed[698], dpara3, 6);
   gMC->Gsatt("EHC3", "SEEN", 1);
 
-
   // Air residing between the PCB and the base
 
-  Float_t dpara3_air[6] = {12.5,12.5,8.,30.,0.,0.};
-  dpara3_air[0]= dpara_sm3[0];
-  dpara3_air[1]= dpara_sm3[1];
-  dpara3_air[2]= th_air/2.;
+  Float_t dpara3Air[6] = {12.5,12.5,8.,30.,0.,0.};
+  dpara3Air[0]= dparaSM3[0];
+  dpara3Air[1]= dparaSM3[1];
+  dpara3Air[2]= fgkThAir/2.;
 
-  gMC->Gsvolu("EAIP","PARA", idtmed[698], dpara3_air, 6);
+  gMC->Gsvolu("EAIP","PARA", idtmed[698], dpara3Air, 6);
   gMC->Gsatt("EAIP", "SEEN", 0);
 
 
@@ -410,44 +403,44 @@ void AliPMDv0::CreateSupermodule()
   // skip cells which go into the hole in top left corner.
 
   xrow=1;
-  yb = -dpara3[1] + (1./root3_2)*hexd1[6];
+  yb = -dpara3[1] + (1./fgkSqroot3by2)*hexd1[6];
   zb = 0.;
-  for (j = 1; j <= ncell_hole; ++j) {
+  for (j = 1; j <= fgkNcellHole; ++j) {
     xb =-(dpara3[0] + dpara3[1]*0.577) + 2*hexd1[6];
     if(xrow >= 2){
       xb = xb+(xrow-1)*hexd1[6];
     }
-    for (i = 1; i <= (ncell_sm - ncell_hole); ++i) {
-      number = i+(j-1)*(ncell_sm - ncell_hole);
+    for (i = 1; i <= (fNcellSM - fgkNcellHole); ++i) {
+      number = i+(j-1)*(fNcellSM - fgkNcellHole);
       gMC->Gspos("ECCU", number, "EHC3", xb,yb,zb, ihrotm, "ONLY");
       xb += (hexd1[6]*2.);
     }
     xrow = xrow+1;
-    yb += (hexd1[6]*TMath::Sqrt(3.));
+    yb += (hexd1[6]*fgkSqroot3);
   }
 
   // ESMP is normal supermodule with base at bottom, with EHC3
   
-  z_air1= -dpara_sm3[2] + th_base + dpara3_air[2]; 
-  gMC->Gspos("EAIP", 1, "ESMP", 0., 0., z_air1, 0, "ONLY");
-  z_gas=z_air1+dpara3_air[2]+ th_pcb + dpara3[2]; 
+  zAir1= -dparaSM3[2] + fgkThBase + dpara3Air[2]; 
+  gMC->Gspos("EAIP", 1, "ESMP", 0., 0., zAir1, 0, "ONLY");
+  zGas=zAir1+dpara3Air[2]+ fgkThPCB + dpara3[2]; 
   //Line below Commented for version 0 of PMD routine
-  //  gMC->Gspos("EHC3", 1, "ESMP", 0., 0., z_gas, 0, "ONLY");
-  z_air2=z_gas+dpara3[2]+ th_pcb + dpara3_air[2]; 
-  gMC->Gspos("EAIP", 2, "ESMP", 0., 0., z_air2, 0, "ONLY");
-
+  //  gMC->Gspos("EHC3", 1, "ESMP", 0., 0., zGas, 0, "ONLY");
+  zAir2=zGas+dpara3[2]+ fgkThPCB + dpara3Air[2]; 
+  gMC->Gspos("EAIP", 2, "ESMP", 0., 0., zAir2, 0, "ONLY");
+  
   // ESMQ is mirror image of ESMP with base at bottom, with EHC3
   
-  z_air1= -dpara_sm3[2] + th_pcb + dpara3_air[2]; 
-  gMC->Gspos("EAIP", 3, "ESMQ", 0., 0., z_air1, 0, "ONLY");
-  z_gas=z_air1+dpara3_air[2]+ th_pcb + dpara3[2]; 
+  zAir1= -dparaSM3[2] + fgkThPCB + dpara3Air[2]; 
+  gMC->Gspos("EAIP", 3, "ESMQ", 0., 0., zAir1, 0, "ONLY");
+  zGas=zAir1+dpara3Air[2]+ fgkThPCB + dpara3[2]; 
   //Line below Commented for version 0 of PMD routine
-  //  gMC->Gspos("EHC3", 2, "ESMQ", 0., 0., z_gas, 0, "ONLY");
-  z_air2=z_gas+dpara3[2]+ th_pcb + dpara3_air[2]; 
-  gMC->Gspos("EAIP", 4, "ESMQ", 0., 0., z_air2, 0, "ONLY");
-
+  //  gMC->Gspos("EHC3", 2, "ESMQ", 0., 0., zGas, 0, "ONLY");
+  zAir2=zGas+dpara3[2]+ fgkThPCB + dpara3Air[2]; 
+  gMC->Gspos("EAIP", 4, "ESMQ", 0., 0., zAir2, 0, "ONLY");
+  
 }
- 
+
 //_____________________________________________________________________________
 
 void AliPMDv0::CreatePMD()
@@ -459,36 +452,25 @@ void AliPMDv0::CreatePMD()
   // -- Modified:    P.V.K.S.Baba(JU), 15-12-97. 
   // -- Modified:    For New Geometry YPV, March 2001.
 
-
-  const Float_t root3_2 = TMath::Sqrt(3.)/2.;
-  const Float_t pi = 3.14159;
-  Int_t i,j;
-
   Float_t  xp, yp, zp;
-
-  Int_t num_mod;
+  Int_t i,j;
+  Int_t nummod;
   Int_t jhrot12,jhrot13, irotdm;
-
   Int_t *idtmed = fIdtmed->GetArray()-599;
   
   //  VOLUMES Names : begining with "E" for all PMD volumes, 
   // The names of SIZE variables begin with S and have more meaningful
   // characters as shown below. 
-  
   // 		VOLUME 	SIZE	MEDIUM	: 	REMARKS 
   // 		------	-----	------	: --------------------------- 
-  
   // 		EPMD	GASPMD	 AIR	: INSIDE PMD  and its SIZE 
-  
   // *** Define the  EPMD   Volume and fill with air *** 
-
-
   // Gaspmd, the dimension of HEXAGONAL mother volume of PMD,
 
 
   Float_t gaspmd[10] = {0.,360.,6,2,-4.,12.,150.,4.,12.,150.};
 
-  gaspmd[5] = ncell_hole * cell_radius * 2. * root3_2;
+  gaspmd[5] = fgkNcellHole * fgkCellRadius * 2. * fgkSqroot3by2;
   gaspmd[8] = gaspmd[5];
 
   gMC->Gsvolu("EPMD", "PGON", idtmed[698], gaspmd, 10);
@@ -500,189 +482,175 @@ void AliPMDv0::CreatePMD()
   AliMatrix(jhrot13, 90., 240., 90., 330., 0., 0.);
 
 
-  Float_t dm_thick = 2. * sm_thick + th_lead + th_steel;
+  Float_t dmthick = 2. * fSMthick + fgkThLead + fgkThSteel;
 
-  // dpara_emm1 array contains parameters of the imaginary volume EMM1, 
+  // dparaemm1 array contains parameters of the imaginary volume EMM1, 
   // EMM1 is a master module of type 1, which has 24 copies in the PMD.
   // EMM1 : normal volume as in old cases
 
 
-  Float_t dpara_emm1[6] = {12.5,12.5,0.8,30.,0.,0.};
-  dpara_emm1[0] = sm_length/2.;
-  dpara_emm1[1] = dpara_emm1[0] *root3_2;
-  dpara_emm1[2] = dm_thick/2.;
+  Float_t dparaemm1[6] = {12.5,12.5,0.8,30.,0.,0.};
+  dparaemm1[0] = fSMLength/2.;
+  dparaemm1[1] = dparaemm1[0] *fgkSqroot3by2;
+  dparaemm1[2] = dmthick/2.;
 
-  gMC->Gsvolu("EMM1","PARA", idtmed[698], dpara_emm1, 6);
+  gMC->Gsvolu("EMM1","PARA", idtmed[698], dparaemm1, 6);
   gMC->Gsatt("EMM1", "SEEN", 1);
 
   //
   // --- DEFINE Modules, iron, and lead volumes 
-  
   //   Pb Convertor for EMM1
-  Float_t dpara_pb1[6] = {12.5,12.5,8.,30.,0.,0.};
-  dpara_pb1[0] = sm_length/2.;
-  dpara_pb1[1] = dpara_pb1[0] * root3_2;
-  dpara_pb1[2] = th_lead/2.;
 
-  gMC->Gsvolu("EPB1","PARA", idtmed[600], dpara_pb1, 6);
+  Float_t dparapb1[6] = {12.5,12.5,8.,30.,0.,0.};
+  dparapb1[0] = fSMLength/2.;
+  dparapb1[1] = dparapb1[0] * fgkSqroot3by2;
+  dparapb1[2] = fgkThLead/2.;
+
+  gMC->Gsvolu("EPB1","PARA", idtmed[600], dparapb1, 6);
   gMC->Gsatt ("EPB1", "SEEN", 0);
 
   //   Fe Support for EMM1
-  Float_t dpara_fe1[6] = {12.5,12.5,8.,30.,0.,0.};
-  dpara_fe1[0] = dpara_pb1[0];
-  dpara_fe1[1] = dpara_pb1[1];
-  dpara_fe1[2] = th_steel/2.;
+  Float_t dparafe1[6] = {12.5,12.5,8.,30.,0.,0.};
+  dparafe1[0] = dparapb1[0];
+  dparafe1[1] = dparapb1[1];
+  dparafe1[2] = fgkThSteel/2.;
 
-  gMC->Gsvolu("EFE1","PARA", idtmed[618], dpara_fe1, 6);
+  gMC->Gsvolu("EFE1","PARA", idtmed[618], dparafe1, 6);
   gMC->Gsatt ("EFE1", "SEEN", 0);
-
-
 
   //  
   // position supermodule ESMA, ESMB, EPB1, EFE1 inside EMM1
 
-  Float_t z_ps,z_pb,z_fe,z_cv; 
+  Float_t zps,zpb,zfe,zcv; 
   
-  z_ps = - dpara_emm1[2] + sm_thick/2.;
-  gMC->Gspos("ESMB", 1, "EMM1", 0., 0., z_ps, 0, "ONLY");
-  z_pb=z_ps+sm_thick/2.+dpara_pb1[2];
-  gMC->Gspos("EPB1", 1, "EMM1", 0., 0., z_pb, 0, "ONLY");
-  z_fe=z_pb+dpara_pb1[2]+dpara_fe1[2];
-  gMC->Gspos("EFE1", 1, "EMM1", 0., 0., z_fe, 0, "ONLY");
-  z_cv=z_fe+dpara_fe1[2]+sm_thick/2.;
-  gMC->Gspos("ESMA", 1, "EMM1", 0., 0., z_cv, 0, "ONLY");
-
-
+  zps = -dparaemm1[2] + fSMthick/2.;
+  gMC->Gspos("ESMB", 1, "EMM1", 0., 0., zps, 0, "ONLY");
+  zpb = zps+fSMthick/2.+dparapb1[2];
+  gMC->Gspos("EPB1", 1, "EMM1", 0., 0., zpb, 0, "ONLY");
+  zfe = zpb+dparapb1[2]+dparafe1[2];
+  gMC->Gspos("EFE1", 1, "EMM1", 0., 0., zfe, 0, "ONLY");
+  zcv = zfe+dparafe1[2]+fSMthick/2.;
+  gMC->Gspos("ESMA", 1, "EMM1", 0., 0., zcv, 0, "ONLY");
 
   // EMM2 : special master module having full row of cells but the number
   //        of rows limited by hole.
 
-  Float_t dpara_emm2[6] = {12.5,12.5,0.8,30.,0.,0.};
-  dpara_emm2[0] = sm_length/2.;
-  dpara_emm2[1] = (ncell_sm - ncell_hole + 0.25) * cell_radius * root3_2;
-  dpara_emm2[2] = dm_thick/2.;
+  Float_t dparaemm2[6] = {12.5,12.5,0.8,30.,0.,0.};
+  dparaemm2[0] = fSMLength/2.;
+  dparaemm2[1] = (fNcellSM - fgkNcellHole + 0.25)*fgkCellRadius*fgkSqroot3by2;
+  dparaemm2[2] = dmthick/2.;
 
-  gMC->Gsvolu("EMM2","PARA", idtmed[698], dpara_emm2, 6);
+  gMC->Gsvolu("EMM2","PARA", idtmed[698], dparaemm2, 6);
   gMC->Gsatt("EMM2", "SEEN", 1);
 
-
   //   Pb Convertor for EMM2
-  Float_t dpara_pb2[6] = {12.5,12.5,8.,30.,0.,0.};
-  dpara_pb2[0] = dpara_emm2[0];
-  dpara_pb2[1] = dpara_emm2[1];
-  dpara_pb2[2] = th_lead/2.;
+  Float_t dparapb2[6] = {12.5,12.5,8.,30.,0.,0.};
+  dparapb2[0] = dparaemm2[0];
+  dparapb2[1] = dparaemm2[1];
+  dparapb2[2] = fgkThLead/2.;
 
-  gMC->Gsvolu("EPB2","PARA", idtmed[600], dpara_pb2, 6);
+  gMC->Gsvolu("EPB2","PARA", idtmed[600], dparapb2, 6);
   gMC->Gsatt ("EPB2", "SEEN", 0);
 
   //   Fe Support for EMM2
-  Float_t dpara_fe2[6] = {12.5,12.5,8.,30.,0.,0.};
-  dpara_fe2[0] = dpara_pb2[0];
-  dpara_fe2[1] = dpara_pb2[1];
-  dpara_fe2[2] = th_steel/2.;
+  Float_t dparafe2[6] = {12.5,12.5,8.,30.,0.,0.};
+  dparafe2[0] = dparapb2[0];
+  dparafe2[1] = dparapb2[1];
+  dparafe2[2] = fgkThSteel/2.;
 
-  gMC->Gsvolu("EFE2","PARA", idtmed[618], dpara_fe2, 6);
+  gMC->Gsvolu("EFE2","PARA", idtmed[618], dparafe2, 6);
   gMC->Gsatt ("EFE2", "SEEN", 0);
-
-
 
   // position supermodule  ESMX, ESMY inside EMM2
 
-  z_ps = - dpara_emm2[2] + sm_thick/2.;
-  gMC->Gspos("ESMY", 1, "EMM2", 0., 0., z_ps, 0, "ONLY");
-  z_pb = z_ps + sm_thick/2.+dpara_pb2[2];
-  gMC->Gspos("EPB2", 1, "EMM2", 0., 0., z_pb, 0, "ONLY");
-  z_fe = z_pb + dpara_pb2[2]+dpara_fe2[2];
-  gMC->Gspos("EFE2", 1, "EMM2", 0., 0., z_fe, 0, "ONLY");
-  z_cv = z_fe + dpara_fe2[2]+sm_thick/2.;
-  gMC->Gspos("ESMX", 1, "EMM2", 0., 0., z_cv, 0, "ONLY");
+  zps = -dparaemm2[2] + fSMthick/2.;
+  gMC->Gspos("ESMY", 1, "EMM2", 0., 0., zps, 0, "ONLY");
+  zpb = zps + fSMthick/2.+dparapb2[2];
+  gMC->Gspos("EPB2", 1, "EMM2", 0., 0., zpb, 0, "ONLY");
+  zfe = zpb + dparapb2[2]+dparafe2[2];
+  gMC->Gspos("EFE2", 1, "EMM2", 0., 0., zfe, 0, "ONLY");
+  zcv = zfe + dparafe2[2]+fSMthick/2.;
+  gMC->Gspos("ESMX", 1, "EMM2", 0., 0., zcv, 0, "ONLY");
   // 
-
-
   // EMM3 : special master module having truncated rows and columns of cells 
   //        limited by hole.
 
-  Float_t dpara_emm3[6] = {12.5,12.5,0.8,30.,0.,0.};
-  dpara_emm3[0] = dpara_emm2[1]/root3_2;
-  dpara_emm3[1] = (ncell_hole + 0.25) * cell_radius *root3_2;
-  dpara_emm3[2] = dm_thick/2.;
+  Float_t dparaemm3[6] = {12.5,12.5,0.8,30.,0.,0.};
+  dparaemm3[0] = dparaemm2[1]/fgkSqroot3by2;
+  dparaemm3[1] = (fgkNcellHole + 0.25) * fgkCellRadius *fgkSqroot3by2;
+  dparaemm3[2] = dmthick/2.;
 
-  gMC->Gsvolu("EMM3","PARA", idtmed[698], dpara_emm3, 6);
+  gMC->Gsvolu("EMM3","PARA", idtmed[698], dparaemm3, 6);
   gMC->Gsatt("EMM3", "SEEN", 1);
 
-
   //   Pb Convertor for EMM3
-  Float_t dpara_pb3[6] = {12.5,12.5,8.,30.,0.,0.};
-  dpara_pb3[0] = dpara_emm3[0];
-  dpara_pb3[1] = dpara_emm3[1];
-  dpara_pb3[2] = th_lead/2.;
+  Float_t dparapb3[6] = {12.5,12.5,8.,30.,0.,0.};
+  dparapb3[0] = dparaemm3[0];
+  dparapb3[1] = dparaemm3[1];
+  dparapb3[2] = fgkThLead/2.;
 
-  gMC->Gsvolu("EPB3","PARA", idtmed[600], dpara_pb3, 6);
+  gMC->Gsvolu("EPB3","PARA", idtmed[600], dparapb3, 6);
   gMC->Gsatt ("EPB3", "SEEN", 0);
 
   //   Fe Support for EMM3
-  Float_t dpara_fe3[6] = {12.5,12.5,8.,30.,0.,0.};
-  dpara_fe3[0] = dpara_pb3[0];
-  dpara_fe3[1] = dpara_pb3[1];
-  dpara_fe3[2] = th_steel/2.;
+  Float_t dparafe3[6] = {12.5,12.5,8.,30.,0.,0.};
+  dparafe3[0] = dparapb3[0];
+  dparafe3[1] = dparapb3[1];
+  dparafe3[2] = fgkThSteel/2.;
 
-  gMC->Gsvolu("EFE3","PARA", idtmed[618], dpara_fe3, 6);
+  gMC->Gsvolu("EFE3","PARA", idtmed[618], dparafe3, 6);
   gMC->Gsatt ("EFE3", "SEEN", 0);
-
-
 
   // position supermodule  ESMP, ESMQ inside EMM3
 
-  z_ps = - dpara_emm3[2] + sm_thick/2.;
-  gMC->Gspos("ESMQ", 1, "EMM3", 0., 0., z_ps, 0, "ONLY");
-  z_pb = z_ps + sm_thick/2.+dpara_pb3[2];
-  gMC->Gspos("EPB3", 1, "EMM3", 0., 0., z_pb, 0, "ONLY");
-  z_fe = z_pb + dpara_pb3[2]+dpara_fe3[2];
-  gMC->Gspos("EFE3", 1, "EMM3", 0., 0., z_fe, 0, "ONLY");
-  z_cv = z_fe + dpara_fe3[2] + sm_thick/2.;
-  gMC->Gspos("ESMP", 1, "EMM3", 0., 0., z_cv, 0, "ONLY");
+  zps = -dparaemm3[2] + fSMthick/2.;
+  gMC->Gspos("ESMQ", 1, "EMM3", 0., 0., zps, 0, "ONLY");
+  zpb = zps + fSMthick/2.+dparapb3[2];
+  gMC->Gspos("EPB3", 1, "EMM3", 0., 0., zpb, 0, "ONLY");
+  zfe = zpb + dparapb3[2]+dparafe3[2];
+  gMC->Gspos("EFE3", 1, "EMM3", 0., 0., zfe, 0, "ONLY");
+  zcv = zfe + dparafe3[2] + fSMthick/2.;
+  gMC->Gspos("ESMP", 1, "EMM3", 0., 0., zcv, 0, "ONLY");
   // 
 
   // EHOL is a tube structure made of air
   //
   //Float_t d_hole[3];
   //d_hole[0] = 0.;
-  //d_hole[1] = ncell_hole * cell_radius *2. * root3_2 + boundary;
-  //d_hole[2] = dm_thick/2.;
+  //d_hole[1] = fgkNcellHole * fgkCellRadius *2. * fgkSqroot3by2 + boundary;
+  //d_hole[2] = dmthick/2.;
   //
   //gMC->Gsvolu("EHOL", "TUBE", idtmed[698], d_hole, 3);
   //gMC->Gsatt("EHOL", "SEEN", 1);
 
   //Al-rod as boundary of the supermodules
 
-  Float_t Al_rod[3] ;
-  Al_rod[0] = sm_length * 3/2. - gaspmd[5]/2 - boundary ;
-  Al_rod[1] = boundary;
-  Al_rod[2] = dm_thick/2.;
+  Float_t alRod[3] ;
+  alRod[0] = fSMLength * 3/2. - gaspmd[5]/2 - fgkBoundary ;
+  alRod[1] = fgkBoundary;
+  alRod[2] = dmthick/2.;
 
-  gMC->Gsvolu("EALM","BOX ", idtmed[698], Al_rod, 3);
+  gMC->Gsvolu("EALM","BOX ", idtmed[698], alRod, 3);
   gMC->Gsatt ("EALM", "SEEN", 1);
   Float_t xalm[3];
-  xalm[0]=Al_rod[0] + gaspmd[5] + 3.0*boundary;
+  xalm[0]=alRod[0] + gaspmd[5] + 3.0*fgkBoundary;
   xalm[1]=-xalm[0]/2.;
   xalm[2]=xalm[1];
 
   Float_t yalm[3];
   yalm[0]=0.;
-  yalm[1]=xalm[0]*root3_2;
+  yalm[1]=xalm[0]*fgkSqroot3by2;
   yalm[2]=-yalm[1];
 
   // delx = full side of the supermodule
-  Float_t delx=sm_length * 3.;
-  Float_t x1= delx*root3_2 /2.;
+  Float_t delx=fSMLength * 3.;
+  Float_t x1= delx*fgkSqroot3by2 /2.;
   Float_t x4=delx/4.; 
-
 
   // placing master modules and Al-rod in PMD
 
-  Float_t dx = sm_length;
-  Float_t dy = dx * root3_2;
-
+  Float_t dx = fSMLength;
+  Float_t dy = dx * fgkSqroot3by2;
   Float_t xsup[9] = {-dx/2., dx/2., 3.*dx/2., 
 		     -dx,    0.,       dx,
 		     -3.*dx/2., -dx/2., dx/2.};
@@ -693,24 +661,26 @@ void AliPMDv0::CreatePMD()
 
   // xpos and ypos are the x & y coordinates of the centres of EMM1 volumes
 
-  Float_t xoff = boundary * TMath::Tan(pi/6.);
-  Float_t xmod[3]={x4 + xoff , x4 + xoff, -2.*x4-boundary/root3_2};
-  Float_t ymod[3] = {-x1 - boundary, x1 + boundary, 0.};
+  Float_t xoff = fgkBoundary * TMath::Tan(fgkPi/6.);
+  Float_t xmod[3]={x4 + xoff , x4 + xoff, -2.*x4-fgkBoundary/fgkSqroot3by2};
+  Float_t ymod[3] = {-x1 - fgkBoundary, x1 + fgkBoundary, 0.};
   Float_t xpos[9], ypos[9], x2, y2, x3, y3;
 
-  Float_t xemm2 = sm_length/2. - 
-                  (ncell_sm + ncell_hole + 0.25) * cell_radius * 0.5
+  Float_t xemm2 = fSMLength/2. - 
+                  (fNcellSM + fgkNcellHole + 0.25) * fgkCellRadius * 0.5
                   + xoff;
-  Float_t yemm2 = -(ncell_sm + ncell_hole + 0.25) * cell_radius * root3_2
-                  - boundary;
+  Float_t yemm2 = -(fNcellSM + fgkNcellHole + 0.25)*fgkCellRadius*fgkSqroot3by2
+                  - fgkBoundary;
 
-  Float_t xemm3 = (ncell_sm + 0.5 * ncell_hole + 0.25) * cell_radius + xoff;
-  Float_t yemm3 = - (ncell_hole - 0.25) * cell_radius * root3_2 - boundary;
+  Float_t xemm3 = (fNcellSM + 0.5 * fgkNcellHole + 0.25) * fgkCellRadius +
+    xoff;
+  Float_t yemm3 = - (fgkNcellHole - 0.25) * fgkCellRadius * fgkSqroot3by2 -
+    fgkBoundary;
 
-  Float_t theta[3] = {0., 2.*pi/3., 4.*pi/3.};
+  Float_t theta[3] = {0., 2.*fgkPi/3., 4.*fgkPi/3.};
   Int_t irotate[3] = {0, jhrot12, jhrot13};
-
-  num_mod=0;
+  
+  nummod=0;
   for (j=0; j<3; ++j) {
      gMC->Gspos("EALM", j+1, "EPMD", xalm[j],yalm[j], 0., irotate[j], "ONLY");
      x2=xemm2*TMath::Cos(theta[j]) - yemm2*TMath::Sin(theta[j]);
@@ -724,29 +694,31 @@ void AliPMDv0::CreatePMD()
      gMC->Gspos("EMM3", j+4, "EPMD", x3,y3, 0., irotate[j], "ONLY");
 
      for (i=1; i<9; ++i) {
-	      xpos[i]=xmod[j] + xsup[i]*TMath::Cos(theta[j]) - ysup[i]*TMath::Sin(theta[j]);
-	      ypos[i]=ymod[j] + xsup[i]*TMath::Sin(theta[j]) + ysup[i]*TMath::Cos(theta[j]);
-	      if(fDebug) 
-	         printf("%s: %f %f \n", ClassName(), xpos[i], ypos[i]);
-
-	      num_mod = num_mod+1;
-
-	      if(fDebug) 
-	         printf("\n%s: Num_mod %d\n",ClassName(),num_mod);
-
-	      gMC->Gspos("EMM1", num_mod + 6, "EPMD", xpos[i],ypos[i], 0., irotate[j], "ONLY");
-
-	   }
+       xpos[i]=xmod[j] + xsup[i]*TMath::Cos(theta[j]) -
+	 ysup[i]*TMath::Sin(theta[j]);
+       ypos[i]=ymod[j] + xsup[i]*TMath::Sin(theta[j]) +
+	 ysup[i]*TMath::Cos(theta[j]);
+       if(fDebug) 
+	 printf("%s: %f %f \n", ClassName(), xpos[i], ypos[i]);
+       
+       nummod = nummod+1;
+       
+       if(fDebug) 
+	 printf("\n%s: nummod %d\n",ClassName(),nummod);
+       
+       gMC->Gspos("EMM1", nummod + 6, "EPMD", xpos[i],ypos[i], 0., irotate[j], "ONLY");
+       
+     }
   }
-
-	
+  
+  
   // place EHOL in the centre of EPMD
   // gMC->Gspos("EHOL", 1, "EPMD", 0.,0.,0., 0, "ONLY");
-
+  
   // --- Place the EPMD in ALICE 
   xp = 0.;
   yp = 0.;
-  zp = zdist1;
+  zp = fgkZdist;
   
   gMC->Gspos("EPMD", 1, "ALIC", xp,yp,zp, 0, "ONLY");
     
@@ -754,7 +726,7 @@ void AliPMDv0::CreatePMD()
 
  
 //_____________________________________________________________________________
-void AliPMDv0::DrawModule()
+void AliPMDv0::DrawModule() const
 {
   //
   // Draw a shaded view of the Photon Multiplicity Detector
@@ -928,7 +900,7 @@ void AliPMDv0::Init()
   // Initialises PMD detector after it has been built
   //
   Int_t i;
-  kdet=1;
+  //  kdet=1;
   //
   if(fDebug) {
       printf("\n%s: ",ClassName());
@@ -939,7 +911,7 @@ void AliPMDv0::Init()
       printf("                 PMD simulation package (v0) initialised\n");
       printf("%s: parameters of pmd\n", ClassName());
       printf("%s: %10.2f %10.2f %10.2f \
-      %10.2f\n",ClassName(),cell_radius,cell_wall,cell_depth,zdist1 );
+      %10.2f\n",ClassName(),fgkCellRadius,fgkCellWall,fgkCellDepth,fgkZdist );
       printf("%s: ",ClassName());
       for(i=0;i<80;i++) printf("*");
       printf("\n");
@@ -1009,40 +981,15 @@ void AliPMDv0::StepManager()
 
 void AliPMDv0::GetParameters()
 {
-  Int_t ncell_um, num_um;
-  ncell_um=24;
-  num_um=3;
-  ncell_hole=24;
-  cell_radius=0.25;
-  cell_wall=0.02;
-  cell_depth=0.25 * 2.;
+  // This gives all the parameters of the detector
+  // such as Length of Supermodules
+  // thickness of the Supermodule
   //
-  boundary=0.7;
-  ncell_sm=ncell_um * num_um;  //no. of cells in a row in one supermodule
-  sm_length= ((ncell_sm + 0.25 ) * cell_radius) * 2.;
-  //
-  th_base=0.3;
-  th_air=0.1;
-  th_pcb=0.16;
-  //
-  sm_thick = th_base + th_air + th_pcb + cell_depth + th_pcb + th_air + th_pcb;
-  //
-  th_lead=1.5;
-  th_steel=0.5;
-  //
-  zdist1 = -365.;
+  Int_t ncellum, numum;
+  ncellum  = 24;
+  numum    = 3;
+  fNcellSM  = ncellum * numum;  //no. of cells in a row in one supermodule
+  fSMLength = (fNcellSM + 0.25 )*fgkCellRadius*2.;
+  fSMthick  = fgkThBase + fgkThAir + fgkThPCB + fgkCellDepth +
+    fgkThPCB + fgkThAir + fgkThPCB;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
