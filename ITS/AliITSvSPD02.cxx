@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2003/04/08 08:16:50  morsch
+AliTrackReference constructor without passing pointer to VMC.
+
 Revision 1.3  2003/03/21 14:34:10  nilsen
 Removed warning from part of code not properly implimneted yet.
 
@@ -485,23 +488,24 @@ void AliITSvSPD02::InitAliITSgeom(){
 	return;
     } // end if
     cout << "Reading Geometry transformation directly from Geant 3." << endl;
-    const Int_t nlayers = 6;
+    const Int_t ltypess = 2;
+    const Int_t nlayers = 5;
     const Int_t ndeep = 5;
-    Int_t itsGeomTreeNames[nlayers][ndeep],lnam[20],lnum[20];
+    Int_t itsGeomTreeNames[ltypess][ndeep],lnam[20],lnum[20];
     Int_t nlad[nlayers],ndet[nlayers];
     Double_t t[3],r[10];
     Float_t  par[20],att[20];
     Int_t    npar,natt,idshape,imat,imed;
     AliITSGeant3Geometry *ig = new AliITSGeant3Geometry();
-    Int_t mod,lay,lad,det,i,j,k;
-    Char_t names[nlayers][ndeep][4];
-    Int_t itsGeomTreeCopys[nlayers][ndeep];
-    Char_t *namesA[nlayers][ndeep] = {
+    Int_t mod,typ,lay,lad,det,cpy,i,j,k;
+    Char_t names[ltypess][ndeep][4];
+    Int_t itsGeomTreeCopys[ltypess][ndeep];
+    Char_t *namesA[ltypess][ndeep] = {
      {"ALIC","ITSV","ITEL","IMB0","IMBS"}, // lay=1
      {"ALIC","ITSV","IDET","ITS0","ITST"}};// Test SPD
-    Int_t itsGeomTreeCopysA[nlayers][ndeep]= {{1,1,4,1,1},// lay=1
+    Int_t itsGeomTreeCopysA[ltypess][ndeep]= {{1,1,4,1,1},// lay=1
 					      {1,1,1,1,1}};//lay=2 TestSPD
-    for(i=0;i<nlayers;i++)for(j=0;j<ndeep;j++){
+    for(i=0;i<ltypess;i++)for(j=0;j<ndeep;j++){
 	for(k=0;k<4;k++) names[i][j][k] = namesA[i][j][k];
 	itsGeomTreeCopys[i][j] = itsGeomTreeCopysA[i][j];
     } // end for i,j
@@ -510,47 +514,33 @@ void AliITSvSPD02::InitAliITSgeom(){
     // tree its self.
     cout << "Reading Geometry informaton from Geant3 common blocks" << endl;
     for(i=0;i<20;i++) lnam[i] = lnum[i] = 0;
-    for(i=0;i<nlayers;i++)for(j=0;j<ndeep;j++) 
+    for(i=0;i<ltypess;i++)for(j=0;j<ndeep;j++) 
 	itsGeomTreeNames[i][j] = ig->StringToInt(names[i][j]);
-    mod = 0;
-    for(i=0;i<nlayers;i++){
-	k = 1;
-	for(j=0;j<ndeep;j++) if(itsGeomTreeCopys[i][j]!=0)
-	    k *= TMath::Abs(itsGeomTreeCopys[i][j]);
-	mod += k;
-    } // end for i
+    mod = 5;
 
     if(fITSgeom!=0) delete fITSgeom;
-    nlad[0]=20;nlad[1]=40;nlad[2]=14;nlad[3]=22;nlad[4]=34;nlad[5]=38;
-    ndet[0]=4;ndet[1]=4;ndet[2]=6;ndet[3]=8;ndet[4]=22;ndet[5]=25;
-    fITSgeom = new AliITSgeom(0,6,nlad,ndet,mod);
-    mod = -1;
-    for(lay=1;lay<=nlayers;lay++){
-	for(j=0;j<ndeep;j++) lnam[j] = itsGeomTreeNames[lay-1][j];
-	for(j=0;j<ndeep;j++) lnum[j] = itsGeomTreeCopys[lay-1][j];
-	switch (lay){
-	case 1: case 2: // layers 1 and 2 are a bit special
-	    lad = 0;
-	    for(j=1;j<=itsGeomTreeCopys[lay-1][4];j++){
-		lnum[4] = j;
-		for(k=1;k<=itsGeomTreeCopys[lay-1][5];k++){
-		    lad++;
-		    lnum[5] = k;
-		    for(det=1;det<=itsGeomTreeCopys[lay-1][6];det++){
-			lnum[6] = det;
-			mod++;
-			ig->GetGeometry(ndeep,lnam,lnum,t,r,idshape,npar,natt,
-					par,att,imat,imed);
-			fITSgeom->CreatMatrix(mod,lay,lad,det,kSPD,t,r);
-			if(!(fITSgeom->IsShapeDefined((Int_t)kSPD)))
-                             fITSgeom->ReSetShape(kSPD,
-                                         new AliITSgeomSPD425Short(npar,par));
-		    } // end for det
-		} // end for k
-            } // end for j
-	    break;
-	} // end switch
-    } // end for lay
+    nlad[0]=1;nlad[1]=1;nlad[2]=1;nlad[3]=1;nlad[4]=1;
+    ndet[0]=1;ndet[1]=1;ndet[2]=1;ndet[3]=1;ndet[4]=1;
+    fITSgeom = new AliITSgeom(0,nlayers,nlad,ndet,mod);
+    for(typ=1;typ<=ltypess;typ++){
+	for(j=0;j<ndeep;j++) lnam[j] = itsGeomTreeNames[typ-1][j];
+	for(j=0;j<ndeep;j++) lnum[j] = itsGeomTreeCopys[typ-1][j];
+	lad = 1;
+	det = 1;
+	for(cpy=1;cpy<=itsGeomTreeCopys[typ-1][2];cpy++){
+	    lnum[2] = cpy;
+	    lay = cpy;
+	    if(cpy>2 && typ==1) lay = cpy +1;
+	    if(typ==2) lay = 3;
+	    mod = lay-1;
+	    ig->GetGeometry(ndeep,lnam,lnum,t,r,idshape,npar,natt,par,att,
+			    imat,imed);
+	    fITSgeom->CreatMatrix(mod,lay,lad,det,kSPD,t,r);
+	    if(!(fITSgeom->IsShapeDefined((Int_t)kSPD)))
+		fITSgeom->ReSetShape(kSPD,
+				     new AliITSgeomSPD425Short(npar,par));
+	} // end for cpy
+    } // end for typ
     return;
 }
 //______________________________________________________________________
@@ -629,6 +619,14 @@ void AliITSvSPD02::SetDefaults(){
     else iDetType->ClassNames("AliITSdigitSPD","AliITSRawClusterSPD");
 //    SetSimulationModel(kSPD,new AliITSsimulationSPD(seg0,resp0));
 //    iDetType->ReconstructionModel(new AliITSClusterFinderSPD());
+
+    SetResponseModel(kSDD,new AliITSresponseSDD());
+    SetSegmentationModel(kSDD,new AliITSsegmentationSDD());
+    DetType(kSDD)->ClassNames("AliITSdigitSDD","AliITSRawClusterSDD");
+
+    SetResponseModel(kSSD,new AliITSresponseSSD());
+    SetSegmentationModel(kSSD,new AliITSsegmentationSSD());
+    DetType(kSSD)->ClassNames("AliITSdigitSSD","AliITSRawClusterSSD");
 
     if(kNTYPES>3){
 	Warning("SetDefaults",
@@ -715,17 +713,18 @@ void AliITSvSPD02::StepManager(){
     // Fill hit structure.
     if(!(gMC->TrackCharge())) return;
     id = gMC->CurrentVolID(copy);
-    if(id==fIdSens[0]){
-	vol[0] = vol[1] = 1; // Layer, ladder
+    if(id==fIdSens[0]){  // Volume name "IMBS"
+	vol[2] = vol[1] = 1; // Det, ladder
 	id = gMC->CurrentVolOffID(2,copy);
 	//detector copy in the ladder = 1<->4  (ITS1 < I101 < I103 < I10A)
-	vol[2] = copy; // detector
-    } else if(id == fIdSens[1]){
-	vol[0] = 1; // layer
-	vol[1] = 2; // ladder
+	vol[0] = copy; // Lay
+	if(copy>2) vol[0]++;
+    } else if(id == fIdSens[1]){ // Volume name "ITST"
+	vol[0] = 3; // layer
+	vol[1] = 1; // ladder
 	id = gMC->CurrentVolOffID(2,copy);
 	//detector copy in the ladder = 1<->4  (ITS2 < I1D1 < I1D3 < I20A)
-	vol[2] = copy;  // detector
+	vol[2] = 1;  // detector
     } else return; // end if
     //
     gMC->TrackPosition(position);
