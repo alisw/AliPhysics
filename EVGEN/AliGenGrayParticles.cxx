@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2002/10/14 14:55:35  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.1.2.1  2002/10/10 16:40:08  hristov
 Updating VirtualMC to v3-09-02
 
@@ -48,7 +51,9 @@ AliGenGrayParticles::AliGenGrayParticles(Int_t npart)
     SetPmax();
     SetTarget();
     SetNominalCmsEnergy();
+    SetCharge();
     SetTemperature();
+    SetBetaSource();
 }
 
 //____________________________________________________________
@@ -79,8 +84,10 @@ void AliGenGrayParticles::Generate()
     Float_t polar [3] = {0., 0., 0.};    
     Int_t nt, i;
     for(i = 0;i < fNpart; i++) {
-	Int_t kf = kProton;
-	GenerateSlow(1, fTemperature, 0., p);
+	Int_t kf;
+        if(fCharge==1) kf = kProton;
+                  else kf = kNeutron;
+	GenerateSlow(fCharge, fTemperature, fBetaSource, p);
 	
 	SetTrack(fTrackIt, -1, kf, p, origin, polar,
 		 0., kPNoProcess, nt, 1.);
