@@ -243,7 +243,7 @@ class TFluka : public AliMC
     // ----------------------------------------------
     //
     virtual AliMCGeomType GetMCGeomType() const
-	{printf("AliMCGeomType not yet implemented !\n"); return 0;}
+	{printf("AliMCGeomType not yet implemented !\n"); return kFluka;}
     
     //
     // Geant3 specific methods
