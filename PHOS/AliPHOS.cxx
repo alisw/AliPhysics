@@ -28,6 +28,9 @@
 // --- ROOT system ---
 class TFile;
 #include "TTree.h"
+#include "TTask.h"
+#include "TROOT.h"
+#include "TFolder.h"
 
 // --- Standard library ---
 
@@ -42,6 +45,24 @@ class TFile;
 
 ClassImp(AliPHOS)
 
+
+//____________________________________________________________________________
+  AliPHOS::AliPHOS():AliDetector()
+{
+  // ctor. creates task PHOS
+  TTask * phosTask = new TTask("PHOS","");
+  TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
+  roottasks->Add(phosTask) ; 
+}
+
+//____________________________________________________________________________
+  AliPHOS::AliPHOS(const char* name, const char* title=""):AliDetector(name, title)
+{
+  // ctor. creates task PHOS
+  TTask * phosTask = new TTask("PHOS","");
+  TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
+  roottasks->Add(phosTask) ; 
+}
 
 //____________________________________________________________________________
 void AliPHOS::CreateMaterials()
@@ -307,7 +328,6 @@ void AliPHOS::CreateMaterials()
 void AliPHOS::SetTreeAddress()
 { 
   // called by AliRun
-
   // TBranch *branch;
   //  AliDetector::SetTreeAddress();
 
