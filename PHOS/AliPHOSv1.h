@@ -37,7 +37,7 @@ public:
   }
   virtual ~AliPHOSv1(void) ;
 
-  virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) ; 
+  virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits, Int_t pid) ; 
   Int_t          Digitize(Float_t Energy);
   virtual void   FinishEvent(void) ;                               
   virtual Int_t  IsVersion(void) const {

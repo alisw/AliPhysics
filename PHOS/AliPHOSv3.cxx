@@ -112,6 +112,7 @@ void AliPHOSv3::StepManager(void)
 
   Int_t tracknumber =  gAlice->CurrentTrack() ; 
   Int_t primary =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
+  Int_t trackpid    =  gMC->TrackPid() ; 
 
   if ( name == "GPS2" ) { // the CPV is a PPSD
     if( gMC->CurrentVolID(copy) == gMC->VolId("GCEL") ) // We are inside a gas cell 
@@ -137,7 +138,7 @@ void AliPHOSv3::StepManager(void)
        	fGeom->RelToAbsNumbering(relid,absid) ; 
 	
 
-	AddHit(fIshunt, primary, tracknumber, absid, xyze);
+	AddHit(fIshunt, primary, tracknumber, absid, xyze, trackpid);
 
       } // there is deposited energy 
      } // We are inside the gas of the CPV  
@@ -175,7 +176,7 @@ void AliPHOSv3::StepManager(void)
 
 	  xyze[3] = nElectrons * fRecalibrationFactor ;
 	  // add current hit to the hit list
-	  AddHit(fIshunt, primary, tracknumber, absid, xyze);
+	  AddHit(fIshunt, primary, tracknumber, absid, xyze, trackpid);
 
        } // there is deposited energy
     } // we are inside a PHOS Xtal
@@ -205,7 +206,7 @@ void AliPHOSv3::StepManager(void)
 	  xyze[3] = nElectrons * fRecalibrationFactor ;
 
 	  // add current hit to the hit list
-	  AddHit(fIshunt, primary, tracknumber, absid, xyze);
+	  AddHit(fIshunt, primary, tracknumber, absid, xyze, trackpid);
 	  //printf("PIN volume is  %d, %d, %d, %d \n",relid[0],relid[1],relid[2],relid[3]);
 	  //printf("Lost energy in the PIN is %f \n",lostenergy) ;
        } // there is deposited energy

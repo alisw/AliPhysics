@@ -196,7 +196,7 @@ AliPHOSv1::~AliPHOSv1()
 }
 
 //____________________________________________________________________________
-void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, Float_t * hits)
+void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, Float_t * hits, Int_t trackpid)
 {
   // Add a hit to the hit list.
   // A PHOS hit is the sum of all hits in a single crystal
@@ -210,7 +210,7 @@ void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, 
 
   // In any case, fills the fTmpHit TClonesArray (with "accumulated hits")
 
-  newHit = new AliPHOSHit(shunt, primary, tracknumber, Id, hits) ;
+  newHit = new AliPHOSHit(shunt, primary, tracknumber, Id, hits, trackpid) ;
 
   // We do not want to save in TreeH the raw hits 
   //  TClonesArray &lhits = *fHits;
@@ -336,20 +336,21 @@ void AliPHOSv1::MakeBranch(Option_t* opt)
   AliDetector::MakeBranch(opt) ;
   
   char branchname[10];
+
+  // Create new branche PHOSCH in the current Root Tree in the Hit Tree for accumulated Hits
+  if ( ! (gAlice->IsLegoRun()) ) { // only when not in lego plot mode 
+    char *cdH = strstr(opt,"H");
+    if ( fTmpHits && gAlice->TreeH()  && cdH) {
+      sprintf(branchname, "%sCH", GetName()) ;
+      gAlice->TreeH()->Branch(branchname, &fTmpHits, fBufferSize) ;
+    }   
+  }
   sprintf(branchname,"%s",GetName());
   char *cdD = strstr(opt,"D");
   if (fDigits && gAlice->TreeD() && cdD) {
     gAlice->TreeD()->Branch(branchname, &fDigits, fBufferSize);
   }
 
-  // Create new branche PHOSCH in the current Root Tree in the digit Tree for accumulated Hits
-  if ( ! (gAlice->IsLegoRun()) ) { // only when not in lego plot mode 
-    if ( fTmpHits && gAlice->TreeD()  && cdD) {
-      char branchname[10] ;
-      sprintf(branchname, "%sCH", GetName()) ;
-      gAlice->TreeD()->Branch(branchname, &fTmpHits, fBufferSize) ;
-    }   
-  }
 
   // Create new branches CPV<i> for hits in CPV modules for IHEP geometry
   // Yuri Kharlov, 28 September 2000.
@@ -510,7 +511,7 @@ void AliPHOSv1::StepManager(void)
   Int_t tracknumber =  gAlice->CurrentTrack() ; 
   Int_t primary     =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
   TString name      =  fGeom->GetName() ; 
-
+  Int_t trackpid    =  gMC->TrackPid() ; 
   if ( name == "GPS2" ) {                                       // ======> CPV is a GPS' PPSD
 
     if( gMC->CurrentVolID(copy) == gMC->VolId("GCEL") ) // We are inside a gas cell 
@@ -534,7 +535,7 @@ void AliPHOSv1::StepManager(void)
        	fGeom->RelToAbsNumbering(relid, absid) ; 
 
 	// add current hit to the hit list      
-	AddHit(fIshunt, primary, tracknumber, absid, xyze);
+	AddHit(fIshunt, primary, tracknumber, absid, xyze, trackpid);
 
       } // there is deposited energy 
     } // We are inside the gas of the CPV  
@@ -643,7 +644,7 @@ void AliPHOSv1::StepManager(void)
 	xyze[2] = 0. ;
 	xyze[3] = cpvDigit->GetQpad() ;                           // amplitude in a pad
 	primary = -1;                                             // No need in primary for CPV
-	AddHit(fIshunt, primary, tracknumber, absid, xyze);
+	AddHit(fIshunt, primary, tracknumber, absid, xyze, trackpid);
 
 	if (cpvDigit->GetQpad() > 0.02) {
 	  xmean += cpvDigit->GetQpad() * (cpvDigit->GetXpad() + 0.5);
@@ -674,7 +675,7 @@ void AliPHOSv1::StepManager(void)
       
       // add current hit to the hit list
       
-      AddHit(fIshunt, primary,tracknumber, absid, xyze);
+      AddHit(fIshunt, primary,tracknumber, absid, xyze, trackpid);
       
     } // there is deposited energy
   } // we are inside a PHOS Xtal
@@ -713,6 +714,8 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumbe
   Float_t pZ    =-p.Pz();
   Float_t pNorm = p.Py();
   Float_t eloss = kdEdx;
+
+//    cout << "CPVDigitize: YVK : "<<hitX<<" "<<hitZ<<" | "<<pX<<" "<<pZ<<" "<<pNorm<<endl;
 
   Float_t dZY   = pZ/pNorm * fGeom->GetCPVGasThickness();
   Float_t dXY   = pX/pNorm * fGeom->GetCPVGasThickness();
@@ -865,3 +868,4 @@ Double_t AliPHOSv1::CPVCumulPadResponse(Double_t x, Double_t y) {
   cumulPRF *= kA/(2*TMath::Pi());
   return cumulPRF;
 }
+

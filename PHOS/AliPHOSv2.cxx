@@ -92,7 +92,7 @@ AliPHOSv2::~AliPHOSv2()
 }
 
 //____________________________________________________________________________
-void AliPHOSv2::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, Float_t * hits)
+void AliPHOSv2::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, Float_t * hits, Int_t pid)
 {
   // Add a hit to the hit list.
   // A PHOS hit is the sum of all hits in a single crystal
@@ -106,7 +106,7 @@ void AliPHOSv2::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, 
 
   // In any case, fills the fTmpHit TClonesArray (with "accumulated hits")
 
-  newHit = new AliPHOSHit(shunt, primary, tracknumber, Id, hits) ;
+  newHit = new AliPHOSHit(shunt, primary, tracknumber, Id, hits, pid) ;
 
   // We do want to save in TreeH the raw hits 
   TClonesArray &lhits = *fHits;
