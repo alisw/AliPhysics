@@ -38,6 +38,13 @@
 ClassImp( AliPHOSPIDv1) 
 
 //____________________________________________________________________________
+AliPHOSPIDv1::AliPHOSPIDv1():AliPHOSPID()
+{ 
+  fCutOnDispersion = 2.0; 
+  fCutOnRelativeDistance = 3.0 ;
+}
+
+//____________________________________________________________________________
 Float_t  AliPHOSPIDv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * emcclu,AliPHOSPpsdRecPoint * PpsdClu, Bool_t &toofar, Option_t *  Axis)
 {
   // Calculates the distance between the EMC RecPoint and the PPSD RecPoint
@@ -71,9 +78,6 @@ Float_t  AliPHOSPIDv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * emcclu,AliPHO
   return r ;
 }
 
-
-
-
 //____________________________________________________________________________
 void  AliPHOSPIDv1::MakeParticles(AliPHOSTrackSegment::TrackSegmentsList * trsl, 
 				  AliPHOSRecParticle::RecParticlesList * rpl)
@@ -87,8 +91,8 @@ void  AliPHOSPIDv1::MakeParticles(AliPHOSTrackSegment::TrackSegmentsList * trsl,
   Bool_t tDistance;
   Int_t type ; 
   Int_t showerprofile;  // 0 narrow and 1 wide
-  Int_t cpvdetector;  // 1 hit and 0 no hit
-  Int_t pcdetector;  // 1 hit and 0 no hit
+  Int_t cpvdetector ;   // 1 hit and 0 no hit
+  Int_t pcdetector ;    // 1 hit and 0 no hit
 
   while ( (tracksegment = (AliPHOSTrackSegment *)next()) ) {
     new( (*rpl)[index] ) AliPHOSRecParticle(tracksegment) ;
@@ -114,17 +118,26 @@ void  AliPHOSPIDv1::MakeParticles(AliPHOSTrackSegment::TrackSegmentsList * trsl,
     else      
       showerprofile = 1 ;// WIDE PROFILE
   
+
     // Looking at the photon conversion detector
     if( tracksegment->GetPpsdLowRecPoint() == 0 )   
       pcdetector = 0 ;  // No hit
-    else      
-      if (GetDistanceInPHOSPlane(recp, rppc, tDistance, "R")< fCutOnRelativeDistance)  pcdetector = 1 ;  // hit
+    else{      
+      if (GetDistanceInPHOSPlane(recp, rppc, tDistance, "R")  < fCutOnRelativeDistance) 
+	pcdetector = 1 ;  // hit
+      else
+	pcdetector = 0 ;
+    }
   
     // Looking at the photon conversion detector
     if( tracksegment->GetPpsdUpRecPoint() == 0 )
       cpvdetector = 0 ;  // No hit
-    else  
-      if (GetDistanceInPHOSPlane(recp, rpcpv, tDistance, "R")< fCutOnRelativeDistance) cpvdetector = 1 ;  // Hit
+    else{  
+      if (GetDistanceInPHOSPlane(recp, rpcpv, tDistance, "R")< fCutOnRelativeDistance) 
+	cpvdetector = 1 ;  // Hit
+      else
+	cpvdetector = 0 ;
+    }
      
     type = showerprofile + 2 * pcdetector + 4 * cpvdetector ;
     rp->SetType(type) ; 

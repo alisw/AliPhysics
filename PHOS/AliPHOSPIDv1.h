@@ -24,13 +24,9 @@ class  AliPHOSPIDv1 : public AliPHOSPID {
 
 public:
 
-  AliPHOSPIDv1() 
-  { 
-    fCutOnDispersion = 1.5; 
-    fCutOnRelativeDistance = 3.0 ;
-  }
+  AliPHOSPIDv1() ;
                      
-  virtual ~ AliPHOSPIDv1(){} ; // dtor
+  virtual ~AliPHOSPIDv1(){} ; // dtor
 
 
   Float_t GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * emcclu, AliPHOSPpsdRecPoint * PpsdClu, Bool_t &toofar, Option_t * Axis) ; // Relative Distance PPSD-EMC
