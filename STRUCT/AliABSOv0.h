@@ -1,5 +1,5 @@
-#ifndef ABSOv0_H
-#define ABSOv0_H
+#ifndef ALIABSOV0_H
+#define ALIABSOV0_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
