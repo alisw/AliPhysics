@@ -3,7 +3,7 @@
  ****************************************************************************/
 
 #ifndef __CINT__
-#include <iostream.h>
+#include <Riostream.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <TCanvas.h>
@@ -13,8 +13,7 @@
 #include <TGeometry.h>
 
 #include "AliTPCParam.h"
-#include "AliTPCClustersArray.h"
-#include "AliTPCClustersRow.h"
+#include "AliClusters.h"
 #include "AliTPCcluster.h"
 #endif
 
@@ -38,20 +37,26 @@ Int_t AliTPCDisplayClusters(Int_t eventn=0, Int_t noiseth=15) {
    c1->SetTheta(90.);
    c1->SetPhi(0.);
 
-   AliTPCClustersArray *ca=new AliTPCClustersArray;
-   ca->Setup(dig);
-   ca->SetClusterType("AliTPCcluster");
    char  cname[100];
    sprintf(cname,"TreeC_TPC_%d",eventn);
+   TTree *cTree=(TTree *)cf->Get(cname);
+   if (!cTree) {
+     cerr<<"Can't find tree : "<<cname<<endl;
+     return 1;
+   }
 
-   ca->ConnectTree(cname);
-   Int_t nrows=Int_t(ca->GetTree()->GetEntries());
+   AliClusters *clusters=new AliClusters(); 
+   clusters->SetClass("AliTPCcluster");
+
+   cTree->SetBranchAddress("Segment",&clusters);
+
+   Int_t nrows=Int_t(cTree->GetEntries());
    for (Int_t n=0; n<nrows; n++) {
-       AliSegmentID *s=ca->LoadEntry(n);
+       cTree->GetEvent(n);
        Int_t sec,row;
-       dig->AdjustSectorRow(s->GetID(),sec,row);
-       AliTPCClustersRow &clrow = *ca->GetRow(sec,row);
-       Int_t ncl=clrow.GetArray()->GetEntriesFast();
+       dig->AdjustSectorRow(clusters->GetID(),sec,row);
+       TClonesArray &clrow=*clusters->GetArray();
+       Int_t ncl=clrow.GetEntriesFast();
        TPolyMarker3D *pm=new TPolyMarker3D(ncl);
        while (ncl--) {
            AliTPCcluster *cl=(AliTPCcluster*)clrow[ncl];
@@ -62,11 +67,12 @@ Int_t AliTPCDisplayClusters(Int_t eventn=0, Int_t noiseth=15) {
            tmp = x*cs-y*sn; y= x*sn+y*cs; x=tmp;
            pm->SetPoint(ncl,x,y,z);
        }
-       ca->ClearRow(sec,row);
+       clrow.Clear();
        pm->SetMarkerSize(1); pm->SetMarkerColor(2); pm->SetMarkerStyle(1);
        pm->Draw();
    }
-   delete ca;
+   delete cTree;
+   delete dig;
    cf->Close();
 
    TGeometry *geom=(TGeometry*)file->Get("AliceGeom");
@@ -85,7 +91,6 @@ Int_t AliTPCDisplayClusters(Int_t eventn=0, Int_t noiseth=15) {
      
    
    geom->Draw("same");
-   //v->Draw();
    c1->Modified(); c1->Update(); 
 
    file->Close();

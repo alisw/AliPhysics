@@ -12,27 +12,25 @@
 //-------------------------------------------------------
 #include "AliTracker.h"
 #include "AliTPCtrack.h"
-#include "AliTPCClustersArray.h"
-
 #include "AliTPCreco.h"
+#include "AliTPCcluster.h"
 
 class TFile;
 class AliTPCParam;
+class TObjArray;
 
 class AliTPCtracker : public AliTracker {
 public:
    AliTPCtracker():AliTracker(),fkNIS(0),fkNOS(0) {
       fInnerSec=fOuterSec=0; fSeeds=0; 
    }
-   AliTPCtracker(const AliTPCParam *par, Int_t eventn=0);
+   AliTPCtracker(const AliTPCParam *par);
   ~AliTPCtracker();
 
    Int_t ReadSeeds(const TFile *in);
 
-   void LoadInnerSectors();
-   void UnloadInnerSectors();
-   void LoadOuterSectors();
-   void UnloadOuterSectors();
+   void LoadClusters();
+   void UnloadClusters();
 
    AliCluster *GetCluster(Int_t index) const;
    Int_t Clusters2Tracks(const TFile *in, TFile *out);
@@ -44,10 +42,19 @@ public:
 //**************** Internal tracker class ********************** 
    class AliTPCRow {
    public:
-     AliTPCRow() {fN=0;}
-     void InsertCluster(const AliTPCcluster *c, UInt_t index);
+     AliTPCRow() {
+       fN=0; 
+       fSize=kMaxClusterPerRow/8;
+       fClusterArray=new AliTPCcluster[fSize];
+     }
+     ~AliTPCRow() {delete[] fClusterArray;}
+     void InsertCluster(const AliTPCcluster *c, Int_t sec, Int_t row);
+     void ResetClusters() {fN=0;}
      operator int() const {return fN;}
-     const AliTPCcluster* operator[](Int_t i) const {return fClusters[i];}
+     const AliTPCcluster *operator[](Int_t i) const {return fClusters[i];}
+     const AliTPCcluster *GetUnsortedCluster(Int_t i) const {
+       return fClusterArray+i;
+     }
      UInt_t GetIndex(Int_t i) const {return fIndex[i];}
      Int_t Find(Double_t y) const; 
      void SetX(Double_t x) {fX=x;}
@@ -56,6 +63,8 @@ public:
    private:
      Int_t fN;                                          //number of clusters 
      const AliTPCcluster *fClusters[kMaxClusterPerRow]; //pointers to clusters
+     Int_t fSize;                                 //size of array of clusters
+     AliTPCcluster *fClusterArray;                      //array of clusters
      UInt_t fIndex[kMaxClusterPerRow];                  //indeces of clusters
      Double_t fX;                                 //X-coordinate of this row
 
@@ -107,8 +116,8 @@ public:
      Double_t fAlpha;                    //opening angle
      Double_t fAlphaShift;               //shift angle;
      Double_t fPadPitchWidth;            //pad pitch width
-     Double_t f1PadPitchLength;           //pad pitch length
-     Double_t f2PadPitchLength;            //pad pitch length 
+     Double_t f1PadPitchLength;          //pad pitch length
+     Double_t f2PadPitchLength;          //pad pitch length
    private:
      AliTPCSector(const AliTPCSector &s);           //dummy copy contructor
      AliTPCSector& operator=(const AliTPCSector &s);//dummy assignment operator
@@ -143,16 +152,14 @@ private:
    AliTPCtracker &operator=(const AliTPCtracker& r);//dummy assignment operator
 
    const Int_t fkNIS;        //number of inner sectors
-   AliTPCSector *fInnerSec;  //array of inner sectors;
+   AliTPCSector *fInnerSec;  //array of inner sectors
    const Int_t fkNOS;        //number of outer sectors
-   AliTPCSector *fOuterSec;  //array of outer sectors;
+   AliTPCSector *fOuterSec;  //array of outer sectors
 
-   Int_t fN;               //number of loaded sectors
-   AliTPCSector *fSectors; //pointer to loaded sectors;
+   Int_t fN;               //number of "active" sectors
+   AliTPCSector *fSectors; //pointer to "active" sectors;
 
-   Int_t fEventN;                      //event number
-   AliTPCClustersArray fClustersArray; //array of TPC clusters
-   TObjArray *fSeeds;                  //array of track seeds
+   TObjArray *fSeeds;          //array of track seeds
 };
 
 #endif
