@@ -798,15 +798,16 @@ void AliFRAMEv2::CreateGeometry()
   ptrap[8]  = ptrap[4];
   ptrap[9]  = ptrap[4];
   ptrap[10] = 0;
-  gMC->Gsvolu("B059", "TRAP", kSteel, ptrap, 11);
+//  gMC->Gsvolu("B059", "TRAP", kSteel, ptrap, 11);
   ptrap[0]  =  2.2;
   ptrap[4]  =  2.15;
   ptrap[5]  = ptrap[4];
   ptrap[7]  = ptrap[3];
   ptrap[8]  = ptrap[4];
   ptrap[9]  = ptrap[4];
-  gMC->Gsvolu("B062", "TRAP", kAir, ptrap, 11);
-  gMC->Gspos("B062", 1, "B059", 0.0, -0.3, 0., 0, "ONLY");
+  //gMC->Gsvolu("B062", "TRAP", kAir, ptrap, 11);
+  //gMC->Gspos("B062", 1, "B059", 0.0, 0., 0., 0, "ONLY");
+
 //
 // longitudinal bars (no TPC rails attached)
 // new specs: h x w x s = 60 x 60 x 3
