@@ -99,11 +99,20 @@ Bool_t AliObjectArray::SetClass(const char * classname)
   return (fClassInfo!=0);  
 }
 
-void   AliObjectArray::Dump(Int_t i)
+void   AliObjectArray::Dump(Int_t i) const
 {
   //dump object at position i 
   if (At(i)) fClassInfo->ObjectDump(At(i));
   else printf("index %d - out of range\n",i);
+}
+
+void   AliObjectArray::Dump() const
+{
+  //dump all objects 
+  for (Int_t i=0;i<fSize;i++) {
+    if (At(i)) fClassInfo->ObjectDump(At(i));
+    else printf("index %d - out of range\n",i);
+  }
 }
 
 void AliObjectArray::Streamer(TBuffer& R__b) 

@@ -29,7 +29,8 @@ public:
   //
   TClass * GetClass() {return fClassInfo->GetClass();}
   AliClassInfo  * GetClassInfo() const {return fClassInfo;} 
-  virtual void     Dump(Int_t i);
+  virtual void     Dump(Int_t i) const;
+  virtual void     Dump() const;
   // 
 protected :
  void  CTORBuffer(void * buffer, UInt_t size)

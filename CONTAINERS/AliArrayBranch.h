@@ -51,7 +51,7 @@ public:
     virtual Int_t   GetN() {return fN;}
     AliObjectArray    *GetList() {return fList;}
     Bool_t          IsFolder() {return kTRUE;}
-    virtual void    Print(Option_t *option="");
+    virtual void    Print(Option_t *option="") const;
     virtual void    Reset(Option_t *option="");
     virtual void    SetAddress(void *add);
     virtual void    SetBasketSize(Int_t buffsize);

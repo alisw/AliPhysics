@@ -36,7 +36,7 @@ public:
   virtual const char  * GetClassName(){ return 0;}
   virtual TClass *    GetClass(){return 0;} 
   virtual TDataType * GetDataType(){return 0;}
-  const UInt_t Size(){return fSize;}
+  UInt_t Size(){return fSize;}
   static AliClassInfo * FindClassInfo(const char * name);
   static AliClassInfo * GenerClassInfo(const char * clname);
   static void  GenerClassInfoCode(const char * clname, Bool_t load,

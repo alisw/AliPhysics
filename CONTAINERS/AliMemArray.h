@@ -36,8 +36,8 @@ public:
 
                                                         // return pointer to the object
   //    
-  const UInt_t  GetCapacity() const {return fCapacity;}     //return number of stored objects 
-  const UInt_t  GetSize() const {return fSize;}     //return number of stored objects        
+  UInt_t  GetCapacity() const {return fCapacity;}     //return number of stored objects 
+  UInt_t  GetSize() const {return fSize;}     //return number of stored objects        
   //
   void   Delete(Option_t *option=""); 
   //delete memory space occupated by the array   
@@ -46,12 +46,12 @@ public:
   void   Resize(UInt_t n);
   void   Reserve(UInt_t n);  
   //
-  const    UInt_t GetBufferSize() const {return fBufferSize;}
-  const    UInt_t GetObjectSize() const {return fObjectSize;}
-  const UInt_t  GetNBuffers() const {return fBufferSize? fCapacity/fBufferSize :1;} 
-  void     SetBufferSize(UInt_t bufsize); 
+  UInt_t GetBufferSize() const {return fBufferSize;}
+  UInt_t GetObjectSize() const {return fObjectSize;}
+  UInt_t GetNBuffers() const {return fBufferSize? fCapacity/fBufferSize :1;} 
+  void   SetBufferSize(UInt_t bufsize); 
 protected :  
-  void     SetObjectSize(UInt_t size);
+  void   SetObjectSize(UInt_t size);
   void   Delete2D(); //delete memory space occupated by the array  
   void   Clear2D();  //clear  memory space occupated by the array  
   void   Resize2D(UInt_t n);   

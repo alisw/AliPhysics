@@ -463,7 +463,7 @@ Int_t AliArrayBranch::GetEntry(Int_t entry, Int_t getall)
 }
 
 //______________________________________________________________________________
-void AliArrayBranch::Print(Option_t *option)
+void AliArrayBranch::Print(Option_t *option) const
 {
 //*-*-*-*-*-*-*-*-*-*-*-*Print TBranch parameters*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 //*-*                    ========================
