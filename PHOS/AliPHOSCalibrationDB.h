@@ -12,13 +12,12 @@
 
 // --- ROOT system ---
 #include "TNamed.h"
-#include "TArrayF.h" 
 #include "TString.h" 
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
-class AliPHOSConTableDB ;
+#include "AliPHOSCalibrationData.h" 
 
 class AliPHOSCalibrationDB:public TNamed {
 
@@ -30,30 +29,14 @@ public:
   //Main method: calibrates if gains are known, otherwise - returns 0
   Float_t Calibrate(Int_t amp, Int_t absId)const ;
 
-  //Read gains of pedestals from ascii file
-  void ReadCalibrationParameters(const char * filename = "gains.dat",Option_t* opt = "gains") ;
-
-  //Sets the same parameters for all channels  
-  void SetAll(Float_t pedestal = 0, Float_t slope = 0.01) ; 
-
-  //To know correspondance when reads list of gains from ascii file 
-  void SetConTableDB(AliPHOSConTableDB * ctdb){fctdb = ctdb; }
-
-  //Set parameters for particlular channel
-  void SetParameters(Int_t AbsId, Float_t pedestal = 0, Float_t slope = 0.01)
-    {if(fPedestals){fPedestals->AddAt(pedestal,AbsId-1) ; fSlopes->AddAt(slope,AbsId-1) ;} }
-
-  //To be replaced in real DB when updating will really be necessary
-  void Update(Int_t /*event*/,Int_t /*run*/){} 
+  //Get calibration parameters using AliPHOSCalibrManager
+  void GetParameters(void) ; 
 
   AliPHOSCalibrationDB & operator = (const AliPHOSCalibrationDB & ) ;
 private:
-  Int_t     fCurentRun ;       //! 
-  Int_t     fNChannels ;
-  TString   fFileName ;
-  TArrayF * fPedestals ;
-  TArrayF * fSlopes ;
-  AliPHOSConTableDB * fctdb ;  //!
+
+  AliPHOSCalibrationData fPedestals ;
+  AliPHOSCalibrationData fGains ;
 
   ClassDef(AliPHOSCalibrationDB,1)  // description 
 

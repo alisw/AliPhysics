@@ -32,26 +32,29 @@ public:
  
   virtual ~AliPHOSCalibrManager() ; // dtor
   static AliPHOSCalibrManager * GetInstance() ;
-  static AliPHOSCalibrManager * GetInstance(const char * dbfilename ) ; 
+  static AliPHOSCalibrManager * GetInstance(const char * filename,const char * kind = "root" ) ; 
 
-  //To know correspondance when reads list of gains from ascii file 
-  void SetConTableDB(AliPHOSConTableDB * ctdb){fctdb = ctdb; }
+  void GetParameters(AliPHOSCalibrationData &data) ; 
+  
+  void SetConTable(AliPHOSConTableDB * ct){fctdb = ct ;}
 
-  //Read gains of pedestals from ascii file
-  void ReadFromASCII(AliPHOSCalibrationData & data,const char * filename = "gains.dat") ;
-
-  void ReadFromRoot(AliPHOSCalibrationData &data,Int_t run) ;
-
-  void WriteData(AliPHOSCalibrationData *data) ;
+  void WriteData(AliPHOSCalibrationData &data) ;
 
   AliPHOSCalibrManager & operator = (const AliPHOSCalibrManager & right) ;
 
 private:
-  AliPHOSCalibrManager(const char* filename) ;          
+  //Read gains of pedestals from ascii file
+  void ReadFromASCII(AliPHOSCalibrationData & data) ;
+
+  void ReadFromRoot(AliPHOSCalibrationData &data) ;
+
+  AliPHOSCalibrManager(const char* filename,const char * kind = "root") ;          
 
 private:
   TString   fFileName ;        //Name of file with calibration data
-  AliPHOSConTableDB * fctdb ;  //! Connection table of PHOS
+  Int_t     fInputKind;        //Kind of input to read/write data
+  AliPHOSConTableDB * fctdb ;  //Connection table used to read from ASCII file
+  
   static AliPHOSCalibrManager * fgCaMa ; // pointer to the unique instance of singleton
 	    
  
