@@ -54,7 +54,6 @@
 #include "AliPDG.h"
 #include "AliDetector.h"
 #include "AliRICH.h"
-#include "AliRICHConst.h"
 #include "AliRICHDisplay.h"
 #include "AliRICHPoints.h"
 #include "AliHeader.h"
@@ -82,56 +81,6 @@ AliRICHDisplay::AliRICHDisplay()
 //_____________________________________________________________________________
 AliRICHDisplay::AliRICHDisplay(Int_t size)
 {
-// Create an event display object.
-// A canvas named "edisplay" is created with a vertical size in pixels
-//
-//    A QUICK Overview of the Event Display functions
-//    ===============================================
-//
-//  The event display can ve invoked by executing the macro "display.C"
-// A canvas like in the picture below will appear.
-//
-//  On the left side of the canvas, the following buttons appear:
-//   *Next*       to move to the next event
-//   *Previous*   to move to the previous event
-
-//   *Pick*       Select this option to be able to point on a track with the
-//                mouse. Once on the track, use the right button to select
-//                an action. For example, select SetMarkerAttributes to
-//                change the marker type/color/size for the track.
-//   *Zoom*       Select this option (default) if you want to zoom.
-//                To zoom, simply select the selected area with the left button.
-//   *UnZoom*     To revert to the previous picture size.
-//
-//   slider R     On the left side, the vertical slider can be used to
-//                set the default picture size.
-//
-//    When you are in Zoom mode, you can click on the black part of the canvas
-//  to select special options with the right mouse button.
-
-//
-//  When you are in pick mode, you can "Inspect" the object pointed by the mouse.
-//  When you are on a track, select the menu item "InspectParticle"
-//  to display the current particle attributes.
-//
-//  You can activate the Root browser by selecting the Inspect menu
-//  in the canvas tool bar menu. Then select "Start Browser"
-//  This will open a new canvas with the browser. At this point, you may want
-//  to display some histograms (from the Trees). Go to the "File" menu
-//  of the browser and click on "New canvas".
-//  In the browser, click on item "ROOT files" in the left pane.
-//  Click on galice.root.
-//  Click on TH
-//  Click on TPC for example
-//  Click on any variable (eg TPC.fX) to histogram the variable.
-//
-//   If you are lost, you can click on HELP in any Root canvas or browser.
-//Begin_Html
-/*
-  <img src="gif/AliRICHDisplay.gif">
-*/
-//End_Html
-    
     
     fPad = 0;
     

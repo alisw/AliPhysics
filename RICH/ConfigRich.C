@@ -55,7 +55,7 @@ void Config()
   }   
   switch(kGen){
 	case kPP7:          Pythia7(pid=kPiPlus,p=4);                break;
-        case kGun7:         Gun7(pid=kPiPlus,p=4);                   break;
+        case kGun7:         Gun7(pid=kProton);                       break;
         case kGun1:         Gun1(n=1,pid=kPiPlus,p=4,chamber=4);     break;
         case kGun0:         Gun1(n=1,pid=kNeutron,p=4,chamber=4);    break;
         default:            Fatal("Config","No generator");          break;
@@ -94,14 +94,14 @@ void Para()
 }
 
 
-void Gun7(Int_t iPID,Double_t p)
+void Gun7(Int_t iPID)
 {
-  ::Info("kir-Gun7","7 primaries of %i PID  with p=%f GeV",iPID,p);
+  ::Info("kir-Gun7","7 primaries of %i PID  with 1.5 < p < 4.5 GeV/c",iPID);
   AliGenCocktail *pCocktail=new AliGenCocktail();
   for(int i=1;i<=7;i++){
     AliGenFixed *pFixed=new AliGenFixed(1);
-    pFixed->SetMomentum(p);
-    pFixed->SetPhiRange(gRICH->C(i)->PhiD());
+    pFixed->SetMomentum(1.5+(i-1)*0.5);
+    pFixed->SetPhiRange(gRICH->C(i)->PhiD()+3);
     pFixed->SetThetaRange(gRICH->C(i)->ThetaD()+2);
     pFixed->SetOrigin(0,0,0);                 
     pFixed->SetPart(iPID);    

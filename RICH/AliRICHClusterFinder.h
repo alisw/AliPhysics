@@ -17,7 +17,8 @@ public:
   
   AliRICH *Rich() {return fRICH;}                                             //Pointer to RICH  
   void     Exec();                                                            //Loop on events and chambers  
-  void     FindRawClusters(Int_t iChamber);                                   //Find raw clusters  
+  void     FindClusters(Int_t iChamber);                                      //Find raw clusters
+  void     FindClusterContribs();                                             //Find CombiPid for the current cluster
   void     FormRawCluster(Int_t i, Int_t j);                                  //form a raw cluster
   void     FindLocalMaxima();                                                 //Find local maxima in a cluster
   void     ResolveCluster();                                                  //Try to resolve a cluster with maxima > 2

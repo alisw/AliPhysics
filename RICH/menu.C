@@ -1,66 +1,84 @@
+
+Int_t countContrib[7][3];
+
 void ControlPlots()
 {  
   Int_t iChamber=1;
   
-  TH1F *pCqH1=new TH1F("clusq","Cluster Charge;q [QDC]",AliRICHParam::MaxQdc(),0,AliRICHParam::MaxQdc());
-  TH1F *pDqH1=new TH1F("digq","Digit Charge;q [QDC]",AliRICHParam::MaxQdc(),0,AliRICHParam::MaxQdc());
-  al->LoadHeader();  al->LoadKinematics();
+  TFile *pFile = new TFile("$(HOME)/plots.root","RECREATE");   
+  TH1F *pCqH1=new TH1F("ClusQ",   "Cluster Charge all chambers;q [QDC]",r->P()->MaxQdc(),0,r->P()->MaxQdc());
+  TH1F *pCsH1=new TH1F("ClusSize","Cluster size all chambers;size [number of pads in cluster]",100,0,100);
+  TH2F *pCmH2=new TH2F("ClusMap", "Cluster map;x [cm];y [cm]",1000,-r->P()->PcSizeX()/2,r->P()->PcSizeX()/2,
+                                                             1000,-r->P()->PcSizeY()/2,r->P()->PcSizeY()/2);
   
-  Bool_t isHits=!rl->LoadHits();  
-    Bool_t isSDigits=!rl->LoadSDigits();  
-      Bool_t isClusters=!rl->LoadRecPoints();
-        Bool_t isDigits=!rl->LoadDigits();
+  TH1F *pCqMipH1=new TH1F("MipClusQ",   "MIP Cluster Charge all chambers;q [QDC]",r->P()->MaxQdc(),0,r->P()->MaxQdc());
+  TH1F *pCsMipH1=new TH1F("MipClusSize","MIP Cluster size all chambers;size [number of pads in cluster]",100,0,100);
+  TH2F *pCmMipH2=new TH2F("MipClusMap", "MIP Cluster map;x [cm];y [cm]",1000,-r->P()->PcSizeX()/2,r->P()->PcSizeX()/2,
+                                                             1000,-r->P()->PcSizeY()/2,r->P()->PcSizeY()/2);
   
+  TH1F *pCqCerH1=new TH1F("CerClusQ",   "Cerenkov Cluster Charge all chambers;q [QDC]",r->P()->MaxQdc(),0,r->P()->MaxQdc());
+  TH1F *pCsCerH1=new TH1F("CerClusSize","Cernekov Cluster size all chambers;size [number of pads in cluster]",100,0,100);
+  TH2F *pCmCerH2=new TH2F("CerClusMap", "Cerenkov Cluster map;x [cm];y [cm]",1000,-r->P()->PcSizeX()/2,r->P()->PcSizeX()/2,
+                                                             1000,-r->P()->PcSizeY()/2,r->P()->PcSizeY()/2);
+  TH1F *pCqFeeH1=new TH1F("FeeClusQ",   "Feedback Cluster Charge all chambers;q [QDC]",r->P()->MaxQdc(),0,r->P()->MaxQdc());
+  TH1F *pCsFeeH1=new TH1F("FeeClusSize","Feedback Cluster size all chambers;size [number of pads in cluster]",100,0,100);
+  TH2F *pCmFeeH2=new TH2F("FeeClusMap", "Feedback Cluster map;x [cm];y [cm]",1000,-r->P()->PcSizeX()/2,r->P()->PcSizeX()/2,
+                                                             1000,-r->P()->PcSizeY()/2,r->P()->PcSizeY()/2);
+  Bool_t isClusters=!rl->LoadRecPoints();
+  r->SetTreeAddress();  
   for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
     al->GetEvent(iEventN);    
-    if(isHits){
-      for(Int_t iPrimN=0;iPrimN<rl->TreeH()->GetEntries();iPrimN++){//prims loop
-        rl->TreeH()->GetEntry(iPrimN);      
-        Int_t iTotalHits=0,iTotalCerenkovs=0,iTotalSpecials=0;
-        iTotalHits+=r->Hits()->GetEntries();
-        iTotalCerenkovs+=r->Cerenkovs()->GetEntries();
-        iTotalSpecials+=r->Specials()->GetEntries();
-      }//prims loop
-    }//isHits
-    if(isSDigits){
-      rl->TreeS()->GetEntry(0);
-    }//isSdigits
-    if(isDigits){
-      rl->TreeD()->GetEntry(0);
-      Int_t iTotalDigits=0;
-      for(int i=1;i<=7;i++) iTotalDigits+=r->Clusters(i)->GetEntries();    
-      for(Int_t iDigitN=0;iDigitN<r->Digits(iChamber)->GetEntries();iDigitN++){
-        pDqH1->Fill(((AliRICHdigit*)r->Digits(iChamber)->At(iDigitN))->Q());
-      }//digits loop
-    }//isDigits
     if(isClusters){
       rl->TreeR()->GetEntry(0);
       Int_t iTotalClusters=0;
-      for(int i=1;i<=7;i++) iTotalClusters+=r->Clusters(i)->GetEntries();    
-      for(Int_t iClusterN=0;iClusterN<r->Clusters(iChamber)->GetEntries();iClusterN++){
-        pCqH1->Fill(((AliRICHcluster*)r->Clusters(iChamber)->At(iClusterN))->Q());
-      }//clusters loop
+      for(int i=1;i<=7;i++){//chambers loop
+        iTotalClusters+=r->Clusters(i)->GetEntries();    
+        for(Int_t iClusterN=0;iClusterN<r->Clusters(i)->GetEntries();iClusterN++){//clusters loop
+          AliRICHcluster *pClus=(AliRICHcluster*)r->Clusters(i)->At(iClusterN);
+          
+          countContrib[i-1][0] += pClus->Nmips();
+          countContrib[i-1][1] += pClus->Ncerenkovs();
+          countContrib[i-1][2] += pClus->Nfeedbacks();
+              
+          pCqH1->Fill(pClus->Q());             
+          pCsH1->Fill(pClus->Size());           
+          pCmH2->Fill(pClus->X(),pClus->Y());  
+          
+          if(pClus->IsPureMip()){ //Pure Mips
+            pCqMipH1->Fill(pClus->Q());
+            pCsMipH1->Fill(pClus->Size()); 
+            pCmMipH2->Fill(pClus->X(),pClus->Y());
+          }
+          if(pClus->IsPureCerenkov()){ //Pure Photons
+            pCqCerH1->Fill(pClus->Q());
+            pCsCerH1->Fill(pClus->Size()); 
+            pCmCerH2->Fill(pClus->X(),pClus->Y());
+          }
+          if(pClus->IsPureFeedback()){ //Pure Feedbacks
+            pCqFeeH1->Fill(pClus->Q());
+            pCsFeeH1->Fill(pClus->Size()); 
+            pCmFeeH2->Fill(pClus->X(),pClus->Y());
+          }
+        }//clusters loop
+      }//chambers loop
     }//isClusters
-    cout<<"Event "<<iEventN<<endl;
+    Info("ControlPlots","Event %i processed.",iEventN);
   }//events loop 
-  if(isHits) rl->UnloadHits();  
-    if(isSDigits) rl->UnloadSDigits(); 
-      if(isDigits) rl->UnloadDigits(); 
-        if(isClusters) rl->UnloadRecPoints();
-          al->UnloadHeader();  al->UnloadKinematics();
-  TCanvas *pC=new TCanvas("c","Control Plots",600,500);
-  pC->Divide(2,2);
-  pC->cd(1); pCqH1->Draw();
-  pC->cd(2); pDqH1->Draw();  
+  if(isClusters) rl->UnloadRecPoints();
+  
+  pFile->Write();
+  delete pFile;
+  for(Int_t i=0;i<7;i++)
+    cout <<" chamber " << i+1 << " n. mips " << countContrib[i][0] << " n. ckovs " << countContrib[i][1] << " n. fdbks " << countContrib[i][2] << endl;
 }//void ControlPlots()
 //__________________________________________________________________________________________________
 void MainTrank()
 {
   TStopwatch sw;TDatime time;
-  OLD_S_SD(); SD_D(); D_C();
+  OLD_S_SD(); SD_D();   AliRICHClusterFinder *z=new AliRICHClusterFinder(r); z->Exec();//delete z;  
   cout<<"\nInfo in <MainTrank>: Start time: ";time.Print();
-  cout<<"Info in <MainTrank>: Stop  time: ";time.Set();  time.Print();
-  cout<<"Info in <MainTrank>: Time  used: ";sw.Print();
+    cout<<"Info in <MainTrank>: Stop  time: ";time.Set();  time.Print();
+    cout<<"Info in <MainTrank>: Time  used: ";sw.Print();
 }
 //__________________________________________________________________________________________________
 void sh()
@@ -125,11 +143,7 @@ void sc()
 Double_t r2d = TMath::RadToDeg();
 Double_t d2r = TMath::DegToRad();
 
-void DisplFast()
-{
-  AliRICHDisplFast *d = new AliRICHDisplFast();
-  d->Exec();
-}  
+void DisplFast(){ AliRICHDisplFast *d = new AliRICHDisplFast();  d->Exec();}  
 
 
 void Digits2Recos()
@@ -148,20 +162,13 @@ void Digits2Recos()
 
 
 
-void D_C()
-{
-  AliRICHClusterFinder *z=new AliRICHClusterFinder(r);
-  z->Exec();  
-}
 //__________________________________________________________________________________________________
 void OLD_S_SD()
 {
-  Info("OLD_S_SD","Start.");
-  
-  rl->LoadHits(); 
-  
+  Info("OLD_S_SD","Start.");  
+  rl->LoadHits();   
   for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
-    al->GetEvent(iEventN);    cout<<"Event "<<iEventN<<endl;  
+    al->GetEvent(iEventN);    Info("OLD_S_SD","Processing event %i",iEventN);  
     
     rl->MakeTree("S");  r->MakeBranch("S");
     r->ResetSDigits();  r->ResetSpecialsOld();
@@ -172,13 +179,15 @@ void OLD_S_SD()
         Int_t padx=1+ ((AliRICHSDigit*)r->Specials()->At(i))->PadX()+r->Param()->NpadsX()/2;
         Int_t pady=1+ ((AliRICHSDigit*)r->Specials()->At(i))->PadY()+r->Param()->NpadsY()/2;
         Double_t q=  ((AliRICHSDigit*)r->Specials()->At(i))->QPad();
+        
         Int_t hitN= ((AliRICHSDigit*)r->Specials()->At(i))->HitNumber()-1;//!!! important -1
         Int_t chamber=((AliRICHhit*)r->Hits()->At(hitN))->C();
-        Int_t track=((AliRICHhit*)r->Hits()->At(hitN))->GetTrack();
+        Int_t tid=((AliRICHhit*)r->Hits()->At(hitN))->GetTrack();
+        Int_t pid=((AliRICHhit*)r->Hits()->At(hitN))->Pid();
         if(padx<1 || padx>r->Param()->NpadsX() ||pady<1 || pady>r->Param()->NpadsY())
           Warning("OLD_S_SD","pad is out of valid range padx= %i pady=%i event %i",padx,pady,iEventN);
         else
-          r->AddSDigit(chamber,padx,pady,q,track);
+          r->AddSDigit(chamber,padx,pady,q,pid,tid);
       }//specials loop
     }//prims loop
     rl->TreeS()->Fill();
@@ -230,7 +239,7 @@ void H_SD()
 void SD_D()
 {
   Info("SD_D","Start.");  
-
+  extern Int_t kBad; 
   r->Param()->GenSigmaThMap();
   rl->LoadSDigits();
   
@@ -240,32 +249,33 @@ void SD_D()
     r->ResetSDigits();r->ResetDigits();//reset lists of sdigits and digits
     rl->TreeS()->GetEntry(0);  
     r->SDigits()->Sort();
-  
-    Int_t kBad=-101;
-    Int_t chamber,x,y,tr[3],id;
-    Double_t q=kBad;
-    chamber=x=y=tr[0]=tr[1]=tr[2]=id=kBad;
-    Int_t iNdigitsPerPad=kBad;//how many sdigits for a given pad
-        
+      
+    Int_t combiPid,chamber,x,y,tid[3],id; Double_t q;
+    Int_t iNdigitsPerPad;//how many sdigits for a given pad
+    const int kBad=-101;//??? to be removed in code    
     for(Int_t i=0;i<r->SDigits()->GetEntries();i++){//sdigits loop (sorted)
       AliRICHdigit *pSdig=(AliRICHdigit*)r->SDigits()->At(i);
       if(pSdig->Id()==id){//still the same pad
         iNdigitsPerPad++;
         q+=pSdig->Q();
+        combiPid+=pSdig->CombiPid();
         if(iNdigitsPerPad<=3)
-          tr[iNdigitsPerPad-1]=pSdig->T(0);
+          tid[iNdigitsPerPad-1]=pSdig->Tid(0);
 //        else
 //          Info("","More then 3 sdigits for the given pad");
       }else{//new pad, add the pevious one
         if(id!=kBad&&r->Param()->IsOverTh(chamber,x,y,q))
-           r->AddDigit(chamber,x,y,q,tr[0],tr[1],tr[2]);//ch-xpad-ypad-qdc-tr1-2-3
-        chamber=pSdig->C();x=pSdig->X();y=pSdig->Y();q=pSdig->Q();tr[0]=pSdig->T(0);id=pSdig->Id();
-        iNdigitsPerPad=1;tr[1]=tr[2]=kBad;
+           r->AddDigit(chamber,x,y,q,combiPid,tid);
+        combiPid=pSdig->CombiPid();chamber=pSdig->C();id=pSdig->Id();
+        x=pSdig->X();y=pSdig->Y();
+        q=pSdig->Q();
+        tid[0]=pSdig->Tid(0);
+        iNdigitsPerPad=1;tid[1]=tid[2]=kBad;
       }
     }//sdigits loop (sorted)
   
     if(r->SDigits()->GetEntries()&&r->Param()->IsOverTh(chamber,x,y,q))
-      r->AddDigit(chamber,x,y,q,tr[0],tr[1],tr[2]);//add the last digit
+      r->AddDigit(chamber,x,y,q,combiPid,tid);//add the last digit
         
     rl->TreeD()->Fill();  
     rl->WriteDigits("OVERWRITE");

@@ -14,7 +14,6 @@
 //**************************************************************************
 
 #include "AliRICHv0.h"
-#include "AliRICHConst.h"
 #include "AliRICHChamber.h" 
 #include <AliRun.h>
 #include <AliMC.h>
@@ -46,14 +45,15 @@ void AliRICHv0::StepManager()
       sParticle="not known";break;
   }
 
-  Info("","event=%i hunt=%i tid=%i pid=%i(%s) m=%f q=%3.1f",
+  Info("","event=%i hunt=%i tid=%i pid=%i(%s) m=%f q=%3.1f dEdX=%9.3f",
                             gMC->CurrentEvent(),
                             fIshunt,
                             gAlice->GetMCApp()->GetCurrentTrackNumber(),
                             gMC->TrackPid(),
                             sParticle,
                             gMC->TrackMass(),
-                            gMC->TrackCharge());
+                            gMC->TrackCharge(),
+                            gMC->Edep());
   Info("","Flags:alive(%i) disap(%i) enter(%i) exit(%i) inside(%i) out(%i) stop(%i) new(%i)",
                             gMC->IsTrackAlive(),
                             gMC->IsTrackDisappeared(),

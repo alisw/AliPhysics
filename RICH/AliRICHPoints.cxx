@@ -210,7 +210,7 @@ void AliRICHPoints::ShowRing(Int_t highlight) {
      //printf("Particle %d belongs to ring %d \n", fTrackIndex, mdig->fTracks[1]);
 
     if (!points) continue;
-    if (fTrackIndex == mdig->T(0)) {
+    if (fTrackIndex == mdig->Tid(0)) {
 
 
       Int_t charge=(Int_t)mdig->Q();

@@ -33,23 +33,23 @@ ClassImp(AliRICHhit)
 //__________________________________________________________________________________________________
 void AliRICHhit::Print(Option_t*)const
 {
-  Info("","chamber=%2i, PID=%9i, TID=%6i, eloss=%8.3f eV",fChamber,fPid,fTrack,fEloss*1e9);
+  ::Info("hit","chamber=%2i, PID=%9i, TID=%6i, eloss=%8.3f eV",fChamber,fPid,fTrack,fEloss*1e9);
 }
 //__________________________________________________________________________________________________
 ClassImp(AliRICHdigit)
 //__________________________________________________________________________________________________
 void AliRICHdigit::Print(Option_t*)const
 {
-  Info("","ID=%6i, chamber=%2i, PadX=%3i, PadY=%3i, Q=%8.2f, TID1=%5i, TID2=%5i, TID3=%5i",
-         Id(),fChamber,fPadX,fPadY,fQdc,fTracks[0],fTracks[1],fTracks[2]);
+  ::Info("digit","ID=%6i, PID=%9i, c=%2i, x=%3i, y=%3i, q=%8.2f, TID1=%5i, TID2=%5i, TID3=%5i",
+           Id(),   fCombiPid,fChamber,fPadX,fPadY,fQdc,fTracks[0],fTracks[1],fTracks[2]);
 }
 //__________________________________________________________________________________________________
 ClassImp(AliRICHcluster)
 //__________________________________________________________________________________________________
 void AliRICHcluster::Print(Option_t*)const
 {
-  Info("","chamber=%2i,size=%3i,dim=%5i,x=%6.3f,y=%6.3f,Q=%4i,status=%i",
-            fChamber,fSize,fDimXY,fX,fY,fQdc,fStatus);
+  ::Info("cluster","CombiPid=%10i, c=%2i, size=%4i, dim=%5i, x=%7.3f, y=%7.3f, Q=%6i, st=%i",
+           fCombiPid,fChamber,fSize,fDimXY,fX,fY,fQdc,fStatus);
 }
 //__________________________________________________________________________________________________
 ClassImp(AliRICH)    
@@ -120,41 +120,6 @@ void AliRICH::Hits2SDigits()
 {
 //Create a list of sdigits corresponding to list of hits. Every hit generates one or more sdigits.
   if(GetDebug()) Info("Hit2SDigits","Start.");
-  GetLoader()->LoadHits(); 
-  
-  for(Int_t iEventN=0;iEventN<gAlice->GetEventsPerRun();iEventN++){//events loop
-    gAlice->GetRunLoader()->GetEvent(iEventN);
-    
-    if(!GetLoader()->TreeS()) GetLoader()->MakeTree("S");  
-    MakeBranch("S");
-    
-    ResetHits();  ResetSDigits();  
-    for(Int_t iPrimN=0;iPrimN<GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop
-      GetLoader()->TreeH()->GetEntry(iPrimN);
-      for(Int_t iHitN=0;iHitN<Hits()->GetEntries();iHitN++){//hits loop          
-        AliRICHhit *pHit=(AliRICHhit*)Hits()->At(iHitN);        
-        
-        TVector3 globX3(pHit->X(),pHit->Y(),pHit->Z());        
-        TVector3 locX3=C(pHit->C())->Glob2Loc(globX3);
-        
-        Int_t sector;
-        Int_t iTotQdc=Param()->Loc2TotQdc(locX3,pHit->Eloss(),pHit->Pid(),sector);
-        
-        Int_t iPadXmin,iPadXmax,iPadYmin,iPadYmax;
-        AliRICHParam::Loc2Area(locX3,iPadXmin,iPadYmin,iPadXmax,iPadYmax);
-        for(Int_t iPadY=iPadYmin;iPadY<=iPadYmax;iPadY++)
-          for(Int_t iPadX=iPadXmin;iPadX<=iPadXmax;iPadX++){
-            Double_t padQdc=iTotQdc*Param()->Loc2PadFrac(locX3,iPadX,iPadY);
-            if(padQdc>0.1) AddSDigit(pHit->C(),iPadX,iPadY,padQdc,pHit->GetTrack());
-          }            
-      }//specials loop
-    }//prims loop
-    GetLoader()->TreeS()->Fill();
-    GetLoader()->WriteSDigits("OVERWRITE");
-    if(GetDebug()) Info("Hit2SDigits","Event %i processed.",iEventN);
-  }//events loop  
-  GetLoader()->UnloadHits();   GetLoader()->UnloadSDigits();  
-  ResetHits();                 ResetSDigits();
   if(GetDebug()) Info("Hit2SDigits","Stop.");
 }//void AliRICH::Hits2SDigits()
 //__________________________________________________________________________________________________
@@ -162,47 +127,6 @@ void AliRICH::SDigits2Digits()
 {
 //Generate digits from sdigits.
   if(GetDebug()) Info("SDigits2Digits","Start.");
-
-  GetLoader()->LoadSDigits();
-  
-  for(Int_t iEventN=0;iEventN<gAlice->GetEventsPerRun();iEventN++){//events loop
-    gAlice->GetRunLoader()->GetEvent(iEventN);
-    
-    if(!GetLoader()->TreeD()) GetLoader()->MakeTree("D");  MakeBranch("D"); //create TreeD with RICH branches 
-    ResetSDigits();ResetDigits();//reset lists of sdigits and digits
-    GetLoader()->TreeS()->GetEntry(0);  
-    SDigits()->Sort();
-  
-    Int_t chamber,x,y,tr[3],id;
-    chamber=x=y=tr[0]=tr[1]=tr[2]=id=kBad;
-    Double_t q=kBad;
-    Int_t iNdigitsPerPad=kBad;//how many sdigits for a given pad
-        
-    for(Int_t i=0;i<SDigits()->GetEntries();i++){//sdigits loop (sorted)
-      AliRICHdigit *pSdig=(AliRICHdigit*)SDigits()->At(i);
-      if(pSdig->Id()==id){//still the same pad
-        iNdigitsPerPad++;
-        q+=pSdig->Q();
-        if(iNdigitsPerPad<=3)
-          tr[iNdigitsPerPad-1]=pSdig->T(0);
-        else
-          Info("","More then 3 sdigits for the given pad");
-      }else{//new pad, add the pevious one
-        if(id!=kBad) AddDigit(chamber,x,y,(Int_t)q,tr[0],tr[1],tr[2]);//ch-xpad-ypad-qdc-tr1-2-3
-        chamber=pSdig->C();x=pSdig->X();y=pSdig->Y();q=pSdig->Q();tr[0]=pSdig->T(0);id=pSdig->Id();
-        iNdigitsPerPad=1;tr[1]=tr[2]=kBad;
-      }
-    }//sdigits loop (sorted)
-  
-    if(SDigits()->GetEntries())AddDigit(chamber,x,y,(Int_t)q,tr[0],tr[1],tr[2]);//add the last digit
-        
-        
-    GetLoader()->TreeD()->Fill();  
-    GetLoader()->WriteDigits("OVERWRITE");
-    if(GetDebug()) Info("SDigits2Digits","Event %i processed.",iEventN);
-  }//events loop
-  GetLoader()->UnloadSDigits();  GetLoader()->UnloadDigits();  
-  ResetSDigits();                ResetDigits();
   if(GetDebug()) Info("SDigits2Digits","Stop.");
 }//SDigits2Digits()
 //__________________________________________________________________________________________________
@@ -607,7 +531,7 @@ void AliRICH::CreateGeometry()
   Float_t par[3];
     
 //External aluminium box 
-  par[0]=68.8*kcm;par[1]=13*kcm;par[2]=70.86*kcm;  gMC->Gsvolu("RICH", "BOX ", idtmed[1009], par, 3);
+  par[0]=68.8;par[1]=13;par[2]=70.86;  gMC->Gsvolu("RICH", "BOX ", idtmed[1009], par, 3);
 //Air 
   par[0]=66.3;   par[1] = 13; par[2] = 68.35;      gMC->Gsvolu("SRIC", "BOX ", idtmed[1000], par, 3); 
 //Air 2 (cutting the lower part of the box)
@@ -808,21 +732,17 @@ void AliRICH::CreateChambers()
 void AliRICH::GenerateFeedbacks(Int_t iChamber,Float_t eloss)
 {
 // Generate FeedBack photons
-  Int_t j;
-  Float_t cthf, phif, enfp = 0, sthf;
-  Float_t e1[3], e2[3], e3[3];
-  Float_t vmod, uswop;
-  Float_t dir[3], phi;
-  Float_t pol[3], mom[4];
 //Determine number of feedback photons
-  TLorentzVector globX4;
-  gMC->TrackPosition(globX4);  
+  TLorentzVector x4;
+  gMC->TrackPosition(x4);  
   Int_t sector;
-  Int_t iTotQdc=Param()->Loc2TotQdc(C(iChamber)->Glob2Loc(globX4),eloss,gMC->TrackPid(),sector);
-  Int_t iNphotons=gMC->GetRandom()->Poisson(Param()->AlphaFeedback(sector)*iTotQdc);    
-  Info("GenerateFeedbacks","N photons=%i",iNphotons);
+  Int_t iTotQdc=Param()->Loc2TotQdc(C(iChamber)->Glob2Loc(x4),eloss,gMC->TrackPid(),sector);
+  Int_t iNphotons=gMC->GetRandom()->Poisson(P()->AlphaFeedback(sector)*iTotQdc);    
+  if(GetDebug())Info("GenerateFeedbacks","N photons=%i",iNphotons);
+  Int_t j;
+  Float_t cthf, phif, enfp = 0, sthf, e1[3], e2[3], e3[3], vmod, uswop,dir[3], phi,pol[3], mom[4];
 //Generate photons
-  for(Int_t i=0;i<iNphotons;i++){
+  for(Int_t i=0;i<iNphotons;i++){//feddbacks loop
     Double_t ranf[2];
     gMC->GetRandom()->RndmArray(2,ranf);    //Sample direction
     cthf=ranf[0]*2-1.0;
@@ -863,15 +783,8 @@ void AliRICH::GenerateFeedbacks(Int_t iChamber,Float_t eloss)
       e3[j]=uswop;
     }
     
-    vmod=0;
-    for(j=0;j<3;j++) vmod+=e1[j]*e1[j];
-    vmod=TMath::Sqrt(1/vmod);
-    for(j=0;j<3;j++) e1[j]*=vmod;
-    
-    vmod=0;
-    for(j=0;j<3;j++) vmod+=e2[j]*e2[j];
-    vmod=TMath::Sqrt(1/vmod);
-    for(j=0;j<3;j++) e2[j]*=vmod;
+    vmod=0;  for(j=0;j<3;j++) vmod+=e1[j]*e1[j];  vmod=TMath::Sqrt(1/vmod);  for(j=0;j<3;j++) e1[j]*=vmod;    
+    vmod=0;  for(j=0;j<3;j++) vmod+=e2[j]*e2[j];  vmod=TMath::Sqrt(1/vmod);  for(j=0;j<3;j++) e2[j]*=vmod;
     
     phi = gMC->GetRandom()->Rndm()* 2 * TMath::Pi();
     for(j=0;j<3;j++) pol[j]=e1[j]*TMath::Sin(phi)+e2[j]*TMath::Cos(phi);
@@ -881,10 +794,11 @@ void AliRICH::GenerateFeedbacks(Int_t iChamber,Float_t eloss)
                      gAlice->GetMCApp()->GetCurrentTrackNumber(),//parent track 
                      kFeedback,                      //PID
 		     mom[0],mom[1],mom[2],mom[3],    //track momentum  
-                     globX4.X(),globX4.Y(),globX4.Z(),globX4.T(),    //track origin 
+                     x4.X(),x4.Y(),x4.Z(),x4.T(),    //track origin 
                      pol[0],pol[1],pol[2],           //polarization
-		     kPFeedBackPhoton,outputNtracksStored,1.0);
-    
-  }
-}//FeedBackPhotons()
+		     kPFeedBackPhoton,
+                     outputNtracksStored,
+                     1.0);    
+  }//feedbacks loop
+}//GenerateFeedbacks()
 //__________________________________________________________________________________________________

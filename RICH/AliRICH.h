@@ -11,34 +11,24 @@
 #include <AliHit.h>
 #include <AliDigit.h>
 
-#include "AliRICHConst.h"
-class AliRICHChamber;
 #include "AliRICHParam.h"
 
 #include "AliRICHSDigit.h"
 
 //__________________AliRICHhit______________________________________________________________________
-//__________________________________________________________________________________________________
-//__________________________________________________________________________________________________
 class AliRICHhit : public AliHit
 {
 public:
   inline   AliRICHhit();
   inline   AliRICHhit(Int_t fIshunt, Int_t track, Int_t *vol, Float_t *hits);
-  inline   AliRICHhit(Int_t track,Int_t iPID,Int_t iChamber,TLorentzVector x4,Float_t eloss);
+  inline   AliRICHhit(Int_t tid,TVector3 x3,Double_t eloss);
   virtual ~AliRICHhit()         {;}
     
   Int_t   C()                   const{return fChamber;}
   Int_t   Chamber()             const{return fChamber;}
   Int_t   Pid()                 const{return fPid;}    
   Int_t   Particle()            const{return fPid;}
-  Float_t Theta()               const{return fTheta;}
-  Float_t Phi()                 const{return fPhi;}
-  Float_t Tlength()             const{return fTlength;}
   Float_t Eloss()               const{return fEloss;}
-  Float_t Loss()                const{return fLoss;}
-  Float_t PHfirst()             const{return fPHfirst;}
-  Float_t PHlast()              const{return fPHlast;}
   Float_t MomX()                const{return fMomX;}
   Float_t MomY()                const{return fMomY;}
   Float_t MomZ()                const{return fMomZ;}
@@ -50,17 +40,12 @@ public:
 protected:
   Int_t     fChamber;                      //chamber number
   Int_t     fPid;                          //particle code
-  Float_t   fTheta,fPhi ;                  //incident theta phi angles in degrees
-  Float_t   fTlength;                      //track length inside the chamber
-  Float_t   fEloss;                        //ionisation energy loss in gas
-  Float_t   fPHfirst;                      //first padhit
-  Float_t   fPHlast;                       //last padhit
-  Float_t   fLoss;                         // did it hit the freon?
+  Double_t  fEloss;                        //ionisation energy loss in gas
   Float_t   fMomX,fMomY,fMomZ;             //momentum at photochatode entry point
   Float_t   fNPads;                        // Pads hit
   Float_t   fCerenkovAngle;                // Dummy cerenkov angle
   Float_t   fMomFreoX,fMomFreoY,fMomFreoZ; //momentum at freon entry point
-  ClassDef(AliRICHhit,1)                   //RICH hit class
+  ClassDef(AliRICHhit,2)                   //RICH hit class
 };//class AliRICHhit
 
   //__________________________________________________________________________________________________
@@ -68,40 +53,30 @@ AliRICHhit::AliRICHhit()
            :AliHit() 
 {//default ctor  
   fChamber=fPid=kBad;
-  fTheta=fPhi=fTlength=fEloss=fPHfirst=fPHlast=fLoss=kBad;
+  fEloss=kBad;
   fMomX=fMomY=fMomZ=fNPads=fCerenkovAngle=fMomFreoX=fMomFreoY=fMomFreoZ=kBad;
 }
 //__________________________________________________________________________________________________
-AliRICHhit::AliRICHhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hit):
-            AliHit(shunt, track)
+AliRICHhit::AliRICHhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hit)
+           :AliHit(shunt, track)
 {//ctor
   fChamber=vol[0];
   fPid=(Int_t)hit[0];
   fX=hit[1];fY=hit[2];fZ=hit[3];
-  fTheta=hit[4];fPhi=hit[5];
-  fTlength=hit[6];
   fEloss=hit[7];
-  fPHfirst=(Int_t)hit[8];
-  fPHlast=(Int_t)hit[9];
-  fLoss=hit[13];
   fMomX=hit[14];fMomY=hit[15];fMomZ=hit[16];
-  fNPads=hit[17];
   fCerenkovAngle=hit[18];
   fMomFreoX=hit[19];fMomFreoY=hit[20];fMomFreoZ=hit[21];
 }
 //__________________________________________________________________________________________________
-AliRICHhit::AliRICHhit(Int_t track,Int_t iPID,Int_t iChamber,TLorentzVector x4,Float_t eloss):
-            AliHit(0, track)
+AliRICHhit::AliRICHhit(Int_t tid,TVector3 x3,Double_t eloss)
+           :AliHit(0,tid)
 {//ctor
-  fChamber=iChamber;
-  fPid=iPID;
-  fX=x4.X();fY=x4.Y();fZ=x4.Z();
+  fX=x3.X();fY=x3.Y();fZ=x3.Z();
   fEloss=eloss;
 }
 
 //__________________AliRICHCerenkov_________________________________________________________________
-//__________________________________________________________________________________________________
-//__________________________________________________________________________________________________
 class AliRICHCerenkov: public AliHit 
 {
 public:
@@ -154,16 +129,18 @@ AliRICHCerenkov::AliRICHCerenkov(Int_t shunt, Int_t track, Int_t *vol, Float_t *
 }
 
 //__________________AliRICHdigit____________________________________________________________________
-//__________________________________________________________________________________________________
-//__________________________________________________________________________________________________
 class AliRICHdigit :public AliDigit
 {
 public:
-           AliRICHdigit() {fPadX=fPadY=fChamber=fTracks[0]=fTracks[1]=fTracks[2]=kBad;fQdc=kBad;}
-  inline   AliRICHdigit(Int_t iC,Int_t iX,Int_t iY,Double_t iQdc,Int_t iT1,Int_t iT2,Int_t iT3);
+           AliRICHdigit() {fCombiPid=fChamber=fPadX=fPadY=fTracks[0]=fTracks[1]=fTracks[2]=kBad;fQdc=kBad;}
+           AliRICHdigit(Int_t c,Int_t x,Int_t y,Double_t q,Int_t cpid,Int_t tid0,Int_t tid1,Int_t tid2)
+           {fPadX=x;fPadY=y;fQdc=q;fChamber=10*c+AliRICHParam::Pad2Sec(x,y);fCombiPid=cpid;fTracks[0]=tid0;fTracks[1]=tid1;fTracks[2]=tid2;}        
   virtual ~AliRICHdigit() {;}  
-  inline   Int_t    Compare(const TObject *pObj) const;                               //virtual
+  Int_t    Compare(const TObject *pObj) const                                         //virtual
+           {if(Id()==((AliRICHdigit*)pObj)->Id()) return 0; else if(Id()>((AliRICHdigit*)pObj)->Id()) return 1;  else return -1;} 
+           
            Bool_t   IsSortable()                                  const{return kTRUE;}//virtual
+           Int_t    CombiPid()                                    const{return fCombiPid;}
            Int_t    C()                                           const{return fChamber/10;}
            Int_t    S()                                           const{return fChamber-(fChamber/10)*10;} 
            Int_t    Chamber()                                     const{return C();}
@@ -172,41 +149,22 @@ public:
            Int_t    Y()                                           const{return fPadY;}
            Int_t    Id()                                          const{return fChamber*10000000+fPadX*1000+fPadY;}
            Double_t Q()                                           const{return fQdc;}
-           Int_t    T(Int_t i)                                    const{return fTracks[i];}
+           Int_t    Tid(Int_t i)                                  const{return fTracks[i];}
            void  Print(Option_t *option="")const;                 //virtual
 protected:
-  Int_t    fChamber;  //10*module number+ sector number 
+  Int_t    fCombiPid; //1000000*Ncerenkovs+1000*Nfeedbacks+Nmips  
+  Int_t    fChamber;  //10*chamber number+ sector number 
   Int_t    fPadX;     //pad number along X
   Int_t    fPadY;     //pad number along Y
-  Double_t fQdc;      //QDC value, fractions are permitted for summable procedure
-  ClassDef(AliRICHdigit,1) //RICH digit class       
+  Double_t fQdc;      //QDC value, fractions are permitted for summable procedure  
+  ClassDef(AliRICHdigit,2) //RICH digit class       
 };//class AliRICHdigit
-//__________________________________________________________________________________________________
-AliRICHdigit::AliRICHdigit(Int_t iC,Int_t iPadX,Int_t iPadY,Double_t q,Int_t iT0,Int_t iT1,Int_t iT2)
-{
-  fPadX=iPadX;fPadY=iPadY;fQdc=q;  
-  fChamber=10*iC+AliRICHParam::Pad2Sec(iPadX,iPadY);
-  fTracks[0]=iT0;fTracks[1]=iT1;fTracks[2]=iT2;
-}
-//__________________________________________________________________________________________________
-Int_t AliRICHdigit::Compare(const TObject *pObj)const
-{
-  if(Id()==((AliRICHdigit*)pObj)->Id()) 
-    return 0;
-  else if(Id()>((AliRICHdigit*)pObj)->Id()) 
-    return 1;
-  else
-    return -1;
-} 
+
 //__________________AliRICHcluster__________________________________________________________________
-//__________________________________________________________________________________________________
-
-enum ClusterStatus {kOK,kEdge,kShape,kSize,kRaw};
-
-//__________________________________________________________________________________________________
 class AliRICHcluster :public TObject
 {
 public:
+  enum ClusterStatus {kOK,kEdge,kShape,kSize,kRaw};
                     AliRICHcluster()                                 {fSize=fQdc=fStatus=fChamber=fDimXY=kBad;fX=fY=kBad;fDigits=0;}
   virtual          ~AliRICHcluster()                                 {delete fDigits;}  
   AliRICHcluster&   operator=(const AliRICHcluster&)                 {return *this;}
@@ -221,12 +179,20 @@ public:
          Double_t   Y()                                         const{return fY;}                          // 
          Int_t      Status()                                    const{return fStatus;}                     //
          void       SetStatus(Int_t status)                          {fStatus=status;}                     //
+         Int_t      Nmips()                                     const{return fCombiPid-1000000*Ncerenkovs()-1000*Nfeedbacks();}  //
+         Int_t      Ncerenkovs()                                const{return fCombiPid/1000000;}           //
+         Int_t      Nfeedbacks()                                const{return (fCombiPid-1000000*Ncerenkovs())/1000;}      //
+         Bool_t     IsPureMip()                                 const{return fCombiPid<1000;}   
+         Bool_t     IsPureCerenkov()                            const{return Nmips()==0&&Nfeedbacks()==0;} //
+         Bool_t     IsPureFeedback()                            const{return Nmips()==0&&Ncerenkovs()==0;} //
+         void       SetCombiPid(Int_t ckov,Int_t feeds,Int_t mips)   {fCombiPid=1000000*ckov+1000*feeds+mips;}            //
          TObjArray* Digits()                                    const{return fDigits;}                     //  
          void       Print(Option_t *option="")const;                                                       //virtual
   inline void       AddDigit(AliRICHdigit *pDig);                                                          //
   inline void       CoG();                                                                                 // 
-         void       Reset() {fSize=fQdc=fStatus=fChamber=fDimXY=kBad;fX=fY=kBad;delete fDigits;fDigits=0;} //                                                                               //
+         void       Reset() {fSize=fQdc=fStatus=fChamber=fDimXY=kBad;fX=fY=kBad;delete fDigits;fDigits=0;} //
 protected:
+  Int_t         fCombiPid;    //1000000*Ncerenkovs+1000*Nfeedbacks+Nmips  
   Int_t         fSize;        //how many digits belong to this cluster    
   Int_t         fDimXY;       //100*xdim+ydim box containing the cluster
   Int_t         fQdc;         //QDC value
@@ -235,12 +201,12 @@ protected:
   Double_t      fY;           //local y postion  
   Int_t         fStatus;      //flag to mark the quality of the cluster   
   TObjArray    *fDigits;      //! list of digits forming this cluster
-  ClassDef(AliRICHcluster,1)  //RICH cluster class       
+  ClassDef(AliRICHcluster,2)  //RICH cluster class       
 };//class AliRICHcluster
 //__________________________________________________________________________________________________
 void AliRICHcluster::AddDigit(AliRICHdigit *pDig)
 {//    
-  if(!fDigits) {fQdc=fSize=0;fDigits = new TObjArray;}
+  if(!fDigits) {fQdc=fSize=fCombiPid=0;fDigits = new TObjArray;}
   fQdc+=(Int_t)pDig->Q(); fDigits->Add(pDig);
   fChamber=10*pDig->C()+pDig->S();
   fSize++;
@@ -262,10 +228,10 @@ void AliRICHcluster::CoG()
    fDimXY = 100*(xmax-xmin+1)+ymax-ymin+1;//find box containing cluster
    fStatus=kRaw;
 }//CoG()
+
 //__________________AliRICH_________________________________________________________________________
-//__________________________________________________________________________________________________
-//__________________________________________________________________________________________________
 class AliRICHParam;
+class AliRICHChamber;
 class AliRICHSDigit;
 
 class AliRICH : public AliDetector 
@@ -285,14 +251,16 @@ public:
   inline  void    CreateSDigits();  
   inline  void    CreateDigits();  
   inline  void    CreateClusters();  
-  inline  void    AddHit(Int_t track, Int_t *vol, Float_t *hits);                                                 //virtual
-  inline  void    AddSDigit(Int_t iC,Int_t iX,Int_t iY,Double_t q,Int_t iT0,Int_t iT1=kBad,Int_t iT2=kBad);
-  inline  void    AddDigit (Int_t iC,Int_t iX,Int_t iY,Int_t iQ,Int_t iT0,Int_t iT1=kBad,Int_t iT2=kBad);     
-  inline  void    AddCluster(AliRICHcluster &clus);
-          void    ResetHits()     {AliDetector::ResetHits();fNcerenkovs=0;if(fCerenkovs)fCerenkovs->Clear();fNspecials=0;if(fSpecials)fSpecials->Clear();}  //virtual
-          void    ResetSDigits()  {fNsdigits=0;  if(fSdigits)  fSdigits ->Clear();}                                 
-          void    ResetDigits()   {if(fDigitsNew)for(int i=0;i<kNCH;i++){fDigitsNew->At(i)->Clear();fNdigitsNew[i]=0;}}
-          void    ResetClusters() {if(fClusters) for(int i=0;i<kNCH;i++){fClusters ->At(i)->Clear();fNclusters[i]=0;}}
+  void AddHit(Int_t track, Int_t *vol, Float_t *hits)     {TClonesArray &tmp=*fHits; new(tmp[fNhits++])AliRICHhit(fIshunt,track,vol,hits);}//virtual
+  void AddHit(Int_t tid,TVector3 x3,Double_t eloss=0)     {TClonesArray &tmp=*fHits;new(tmp[fNhits++])AliRICHhit(tid,x3,eloss);} 
+  inline void AddSDigit(int c,int x,int y,int q,int pid,int tid); 
+  void AddDigit(int c,int x,int y,int q,int cpid,int *tid){TClonesArray &tmp=*((TClonesArray*)fDigitsNew->At(c-1));new(tmp[fNdigitsNew[c-1]++])AliRICHdigit(c,x,y,q,cpid,tid[0],tid[1],tid[2]);}  
+  void AddCluster(AliRICHcluster &cl)                     {TClonesArray &tmp=*((TClonesArray*)fClusters->At(cl.C()-1));new(tmp[fNclusters[cl.C()-1]++])AliRICHcluster(cl);}
+  
+  void ResetHits()     {AliDetector::ResetHits();fNcerenkovs=0;if(fCerenkovs)fCerenkovs->Clear();fNspecials=0;if(fSpecials)fSpecials->Clear();}  //virtual  
+  void ResetSDigits()  {fNsdigits=0;  if(fSdigits)  fSdigits ->Clear();}                                 
+  void ResetDigits()   {if(fDigitsNew)for(int i=0;i<kNCH;i++){fDigitsNew->At(i)->Clear();fNdigitsNew[i]=0;}}
+  void ResetClusters() {if(fClusters) for(int i=0;i<kNCH;i++){fClusters ->At(i)->Clear();fNclusters[i]=0;}}
                   //Hits provided by AliDetector
   TClonesArray*   SDigits()             const{return fSdigits;}
   TClonesArray*   Digits(Int_t iC)      const{if(fDigitsNew) return (TClonesArray *)fDigitsNew->At(iC-1);else return 0;}
@@ -300,6 +268,7 @@ public:
           
   AliRICHChamber* C(Int_t iC)           const{return (AliRICHChamber*)fChambers->At(iC-1);}
   AliRICHParam*   Param()               const{return fpParam;}
+  AliRICHParam*   P()                   const{return fpParam;}
           void    CreateChambers();         
           void    CreateMaterials(); //virtual
   virtual void    BuildGeometry();   //virtual
@@ -349,31 +318,7 @@ protected:
     
   ClassDef(AliRICH,4)                        //Main RICH class 
 };//class AliRICH  
-//__________________________________________________________________________________________________
-void AliRICH::AddHit(Int_t track, Int_t *vol, Float_t *hits)
-{//Adds the current hit to the RICH hits list
-  TClonesArray &tmp=*fHits;
-  new(tmp[fNhits++])AliRICHhit(fIshunt,track,vol,hits);
-}
-//__________________________________________________________________________________________________
-void AliRICH::AddSDigit(Int_t iC,Int_t iX,Int_t iY,Double_t q,Int_t iT0,Int_t iT1,Int_t iT2)
-{//Adds the current Sdigit to the RICH list of Sdigits   
-  TClonesArray &tmp=*fSdigits;
-  new(tmp[fNsdigits++])AliRICHdigit(iC,iX,iY,q,iT0,iT1,iT2);
-} 
-//__________________________________________________________________________________________________
-void AliRICH::AddDigit(Int_t iC,Int_t iX,Int_t iY,Int_t iAdc,Int_t iT0,Int_t iT1,Int_t iT2)
-{//Adds the current digit to the corresponding RICH list of digits (individual list per chamber)
-  TClonesArray &tmp=*((TClonesArray*)fDigitsNew->At(iC-1));
-  new(tmp[fNdigitsNew[iC-1]++]) AliRICHdigit(iC,iX,iY,iAdc,iT0,iT1,iT2);
-}
-//__________________________________________________________________________________________________
-void AliRICH::AddCluster(AliRICHcluster &cluster)
-{//Adds the current cluster to the corresponding RICH list of clusters (individual list per chamber)
-  cluster.Print();
-  TClonesArray &tmp=*((TClonesArray*)fClusters->At(cluster.Chamber()-1));
-  new(tmp[fNclusters[cluster.Chamber()-1]++]) AliRICHcluster(cluster);
-}
+
 //__________________________________________________________________________________________________
 void AliRICH::CreateHits()
 {
@@ -404,10 +349,20 @@ void AliRICH::CreateClusters()
   fClusters = new TObjArray(kNCH);  
   for(Int_t i=0;i<kNCH;i++) {fClusters->AddAt(new TClonesArray("AliRICHcluster",10000), i); fNclusters[i]=0;}
 }
-
-
-
 //__________________________________________________________________________________________________
+void AliRICH::AddSDigit(int c,int x,int y,int q,int pid,int tid) 
+{   
+  switch(pid){
+    case 50000048: pid=1000000;break;
+    case 50000052: pid=1000;   break;
+    default:       pid=1;      break;
+  }   
+  TClonesArray &tmp=*fSdigits;
+  new(tmp[fNsdigits++])AliRICHdigit(c,x,y,q,pid,tid,kBad,kBad);
+}//AddSDigit()   
+
+
+//______OLD OLD OLD OLD_____________________________________________________________________________
 void AliRICH::CreateCerenkovsOld()
 {
   if(fCerenkovs) return;

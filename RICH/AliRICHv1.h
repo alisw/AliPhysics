@@ -14,7 +14,9 @@ public:
   virtual       ~AliRICHv1()                                                         {;}
   virtual void   Init()                                                              {;}
   virtual Int_t  IsVersion()                                                    const{return 1;}
+  
   virtual void   StepManager();
+          Bool_t IsFresnelLoss(); 
 private:
   ClassDef(AliRICHv1,1)//RICH full version for simulation
 };

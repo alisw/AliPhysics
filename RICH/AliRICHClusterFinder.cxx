@@ -17,8 +17,10 @@
 #include "AliRICHClusterFinder.h"
 #include "AliRICHMap.h"
 #include <TMinuit.h>
+#include <TParticle.h>
 #include <TVector3.h>
 #include <AliLoader.h>
+#include <AliStack.h>
 #include <AliRun.h>
 
 void RICHMinMathieson(Int_t &npar, Double_t *gin, Double_t &chi2, Double_t *par, Int_t iflag);
@@ -73,6 +75,9 @@ void AliRICHClusterFinder::Exec()
   
   Rich()->GetLoader()->LoadDigits(); 
   
+  Rich()->GetLoader()->GetRunLoader()->LoadHeader();
+  Rich()->GetLoader()->GetRunLoader()->LoadKinematics();
+
   for(Int_t iEventN=0;iEventN<gAlice->GetEventsPerRun();iEventN++){//events loop
     gAlice->GetRunLoader()->GetEvent(iEventN);
     
@@ -81,22 +86,25 @@ void AliRICHClusterFinder::Exec()
     
     Rich()->GetLoader()->TreeD()->GetEntry(0);
     for(Int_t iChamber=1;iChamber<=kNCH;iChamber++){//chambers loop
-     FindRawClusters(iChamber);
-        
+      FindClusters(iChamber);
     }//chambers loop
-    
     Rich()->GetLoader()->TreeR()->Fill();
     Rich()->GetLoader()->WriteRecPoints("OVERWRITE");
   }//events loop  
   Rich()->GetLoader()->UnloadDigits(); Rich()->GetLoader()->UnloadRecPoints();  
   Rich()->ResetDigits();  Rich()->ResetClusters();
+  
+  Rich()->GetLoader()->GetRunLoader()->UnloadHeader();
+  Rich()->GetLoader()->GetRunLoader()->UnloadKinematics();
+
   Info("Exec","Stop.");      
 }//Exec()
 //__________________________________________________________________________________________________
-void AliRICHClusterFinder::FindRawClusters(Int_t iChamber)
-{//finds neighbours and fill the tree with raw clusters
+void AliRICHClusterFinder::FindClusters(Int_t iChamber)
+{
+  //finds neighbours and fill the tree with raw clusters
   Int_t nDigits=Rich()->Digits(iChamber)->GetEntriesFast();
-  Info("FindRawClusters","Start for Chamber %i with %i digits.",iChamber,nDigits);  
+  Info("FindClusters","Start for Chamber %i with %i digits.",iChamber,nDigits);  
   if(nDigits==0)return;
 
   fHitMap=new AliRICHMap(Rich()->Digits(iChamber));//create digit map for the given chamber
@@ -112,17 +120,52 @@ void AliRICHClusterFinder::FindRawClusters(Int_t iChamber)
       ResolveCluster(); // ResolveCluster serialization will happen inside
     } else {
       WriteRawCluster(); // simply output of the RawCluster found without deconvolution
-    }    
+    }
     fCurrentCluster.Reset();
   }//digits loop
 
   delete fHitMap;
-  Info("FindRawClusters","Stop.");
+  Info("FindClusters","Stop.");
   
-}//FindRawClusters()
+}//FindClusters()
+//__________________________________________________________________________________________________
+void AliRICHClusterFinder::FindClusterContribs()
+{
+  //finds CombiPid for a given cluster
+  Info("FindClusterContribs","Start");
+  
+  TObjArray *pDigits = fCurrentCluster.Digits();
+  Int_t iNmips=0,iNckovs=0,iNfeeds=0;
+  TArrayI contribs(3*fCurrentCluster.Size());
+  Int_t *pindex = new Int_t[3*fCurrentCluster.Size()];
+  for(Int_t iDigN=0;iDigN<fCurrentCluster.Size();iDigN++) {//loop on digits of a given cluster
+    contribs[3*iDigN]  =((AliRICHdigit*)pDigits->At(iDigN))->Tid(0);
+    contribs[3*iDigN+1]=((AliRICHdigit*)pDigits->At(iDigN))->Tid(1);
+    contribs[3*iDigN+2]=((AliRICHdigit*)pDigits->At(iDigN))->Tid(2);
+    cout << "TID1 " << contribs[3*iDigN] << " TID2 " << contribs[3*iDigN+1] << " TID3 " << contribs[3*iDigN+2] << endl;
+  }//loop on digits of a given cluster
+  TMath::Sort(contribs.GetSize(),contribs.GetArray(),pindex);
+  for(Int_t iDigN=0;iDigN<3*fCurrentCluster.Size()-1;iDigN++) {//loop on digits to sort Tid
+    cout << " contrib " << contribs[pindex[iDigN]] << " digit " << iDigN << 
+            " contrib " << contribs[pindex[iDigN+1]] << " digit " << iDigN+1 << endl;
+    if(contribs[pindex[iDigN]]!=contribs[pindex[iDigN+1]]) {
+      Int_t code   = Rich()->GetLoader()->GetRunLoader()->Stack()->Particle(contribs[pindex[iDigN]])->GetPdgCode();
+      Double_t charge = Rich()->GetLoader()->GetRunLoader()->Stack()->Particle(contribs[pindex[iDigN]])->GetPDG()->Charge();
+
+      if(code==50000050) iNckovs++;
+      else if(code==50000051) iNfeeds++;
+      else if(charge!=0) iNmips++;
+      if (contribs[pindex[iDigN+1]]==kBad) break;
+    }
+  }//loop on digits to sort Tid
+  fCurrentCluster.SetCombiPid(iNckovs,iNfeeds,iNmips);
+  fCurrentCluster.Print();
+  delete [] pindex; 
+}// FindClusterContribs()
 //__________________________________________________________________________________________________
 void  AliRICHClusterFinder::FormRawCluster(Int_t i, Int_t j)
-{// Builder of the final Raw Cluster (before deconvolution)  
+{
+  // Builder of the final Raw Cluster (before deconvolution)  
   Info("FormRawCluster","Start with digit(%i,%i)",i,j);
   
   fCurrentCluster.AddDigit((AliRICHdigit*) fHitMap->GetHit(i,j));
@@ -157,6 +200,7 @@ void AliRICHClusterFinder::WriteRawCluster()
 {// out the current RawCluster
   Info("WriteRawCluster","Start.");
   
+  FindClusterContribs();
   Rich()->AddCluster(fCurrentCluster);
   
 }//WriteRawCluster()

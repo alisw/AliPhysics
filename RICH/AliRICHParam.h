@@ -1,21 +1,32 @@
 #ifndef AliRICHParam_h
 #define AliRICHParam_h
 
-#include "AliRICHConst.h"
 #include <TObject.h>
 #include <TMath.h>
 #include <TVector3.h>
 #include <TRandom.h>
+
+
+static const int kNCH=7;           //number of RICH chambers 
+static const int kNpadsX = 144;    //number of pads along X in single chamber
+static const int kNpadsY = 160;    //number of pads along Y in single chamber
+static const int kBad=-101;        //useful static const to mark initial (uninitalised) values
+
+
+static const int kadc_satm  = 4096;  //dynamic range (10 bits)
+static const int kCerenkov=50000050;  //??? go to something more general like TPDGCode
+static const int kFeedback=50000051;  //??? go to something more general like TPDGCode
+
 
 class AliRICHParam :public TObject  
 {
 public:
            AliRICHParam()                    {;}
   virtual ~AliRICHParam()                    {;}
-  static const Int_t   NpadsX()             {return kNpadsX;}
-  static const Int_t   NpadsY()             {return kNpadsY;}   
-  static Int_t   NpadsXsec()                {return NpadsX()/3;}   
-  static Int_t   NpadsYsec()                {return NpadsY()/2;}   
+  static const Int_t   NpadsX()              {return kNpadsX;}
+  static const Int_t   NpadsY()              {return kNpadsY;}   
+  static Int_t   NpadsXsec()                 {return NpadsX()/3;}   
+  static Int_t   NpadsYsec()                 {return NpadsY()/2;}   
   static Double_t DeadZone()                 {return 2.6;}
   static Double_t PadSizeX()                 {return 0.84;}
   static Double_t PadSizeY()                 {return 0.8;}
@@ -69,6 +80,7 @@ public:
   
   inline static Int_t   Loc2Sec(Double_t &x,Double_t &y); 
   inline static Int_t   Pad2Sec(Int_t &padx,Int_t &pady); 
+  static Int_t   Sector(Int_t padx,Int_t pady) {return Pad2Sec(padx,pady);}
   inline Bool_t IsOverTh(Int_t iChamber, Int_t x, Int_t y, Double_t q);
   static Int_t NsigmaTh() {return fgNsigmaTh;}
   static Float_t SigmaThMean() {return fgSigmaThMean;}
@@ -79,7 +91,7 @@ protected:
   static Bool_t  fgIsResolveClusters;                   //performs declustering or not
   static Int_t   fgHV;                                  //HV applied to anod wires
   static Double_t fgAngleRot;                           //rotation of RICH from up postion (0,0,490)cm
-  Float_t fSigmaThMap[kNCH][kNpadsX][kNpadsY];          // sigma of the pedestal distributions for all pads
+  static Float_t fSigmaThMap[kNCH][kNpadsX][kNpadsY];   // sigma of the pedestal distributions for all pads
   static Int_t fgNsigmaTh;                              // n. of sigmas to cut for zero suppression
   static Float_t fgSigmaThMean;                         // sigma threshold value
   static Float_t fgSigmaThSpread;                       // spread of sigma
@@ -89,10 +101,11 @@ protected:
 Int_t AliRICHParam::PadNeighbours(Int_t iPadX,Int_t iPadY,Int_t listX[4],Int_t listY[4])
 {
   Int_t nPads=0;
-  if(iPadY<NpadsY()){listX[nPads]=iPadX;   listY[nPads]=iPadY+1; nPads++;}       
-  if(iPadX<NpadsX()){listX[nPads]=iPadX+1; listY[nPads]=iPadY;   nPads++;}       
-  if(iPadY>1)       {listX[nPads]=iPadX;   listY[nPads]=iPadY-1; nPads++;}      
-  if(iPadX>1)       {listX[nPads]=iPadX-1; listY[nPads]=iPadY;   nPads++;}       
+  if(iPadY!=NpadsY()&&iPadY!=NpadsYsec())                      {listX[nPads]=iPadX;   listY[nPads]=iPadY+1; nPads++;}       
+  if(iPadX!=NpadsXsec()&&iPadX!=2*NpadsXsec()&&iPadX!=NpadsX()){listX[nPads]=iPadX+1; listY[nPads]=iPadY;   nPads++;}       
+  if(iPadY!=1&&iPadY!=NpadsYsec()+1)                           {listX[nPads]=iPadX;   listY[nPads]=iPadY-1; nPads++;}      
+  if(iPadX!=1&&iPadX!=NpadsXsec()+1&&iPadX!=2*NpadsXsec()+1)   {listX[nPads]=iPadX-1; listY[nPads]=iPadY;   nPads++;}
+
   return nPads;
 }//Pad2ClosePads()
 //__________________________________________________________________________________________________
@@ -165,12 +178,15 @@ void AliRICHParam::Pad2Loc(Int_t padx,Int_t pady,Double_t &x,Double_t &y)
 //__________________________________________________________________________________________________
 Double_t AliRICHParam::GainVariation(Double_t y,Int_t sector)
 {
+//returns % of gain degradation due to wire sagita  
   if(IsWireSag()){
     if(y>0) y-=SectorSizeY()/2; else  y+=SectorSizeY()/2; 
     switch(HV(sector)){
-      case 2150:
-      default:  
-        return 9e-6*TMath::Power(y,4)+2e-7*TMath::Power(y,3)-0.0316*TMath::Power(y,2)-3e-4*y+25.367;//%
+      case 2150: return 9e-6*TMath::Power(y,4)+2e-7*TMath::Power(y,3)-0.0316*TMath::Power(y,2)-3e-4*y+25.367;//%
+      case 2100: return 8e-6*TMath::Power(y,4)+2e-7*TMath::Power(y,3)-0.0283*TMath::Power(y,2)-2e-4*y+23.015;
+      case 2050: return 7e-6*TMath::Power(y,4)+1e-7*TMath::Power(y,3)-0.0254*TMath::Power(y,2)-2e-4*y+20.888;
+      case 2000: return 6e-6*TMath::Power(y,4)+8e-8*TMath::Power(y,3)-0.0227*TMath::Power(y,2)-1e-4*y+18.961;
+      default:   return 0;
     }
   }else
     return 0;

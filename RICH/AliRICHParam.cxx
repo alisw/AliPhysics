@@ -14,6 +14,7 @@
 //  **************************************************************************
 #include "AliRICHParam.h"
 
+ClassImp(AliRICHParam)
 Bool_t   AliRICHParam::fgIsWireSag            =kTRUE;
 Bool_t   AliRICHParam::fgIsResolveClusters    =kTRUE;
 Double_t AliRICHParam::fgAngleRot             =-60;
@@ -21,7 +22,7 @@ Int_t    AliRICHParam::fgHV                   =2150;
 Int_t    AliRICHParam::fgNsigmaTh             =4;
 Float_t  AliRICHParam::fgSigmaThMean          =1.5;
 Float_t  AliRICHParam::fgSigmaThSpread        =0.5;      
-ClassImp(AliRICHParam)
+Float_t  AliRICHParam::fSigmaThMap[kNCH][kNpadsX][kNpadsY];
 
 void AliRICHParam::GenSigmaThMap()
 {
