@@ -121,7 +121,7 @@ Int_t THijing::ImportParticles(TClonesArray *particles, Option_t *option)
   printf("\n THijing: Number of hard scatterings: %d     ", HIMAIN1.jatt);
   Int_t nump = 0;
   if (!strcmp(option,"") || !strcmp(option,"Final")) {
-      for (Int_t i = 0; i <= numpart; i++) {
+      for (Int_t i = 0; i < numpart; i++) {
 	  
 	  if (HIMAIN2.katt[3][i] == 1) {
 //
@@ -151,7 +151,7 @@ Int_t THijing::ImportParticles(TClonesArray *particles, Option_t *option)
   }
   else if (!strcmp(option,"All")) {
       nump = numpart; 
-      for (Int_t i = 0; i <= numpart; i++) {
+      for (Int_t i = 0; i < numpart; i++) {
 
 	  Int_t iParent = HIMAIN2.katt[2][i]-1;
 	  
