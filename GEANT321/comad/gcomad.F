@@ -90,13 +90,20 @@ C
 #include "geant321/gcxlun.inc"
 #include "geant321/gfkdis.inc"
 #include "geant321/gsecti.inc"
+*
+* Commons for GEANE
+#include "geant321/ertrio.inc"
+#include "geant321/eropts.inc"
+#include "geant321/erwork.inc"
+* Commons for GEANE
+*
       COMMON / QUEST / IQUEST(100)
 *
       CHARACTER *(*) CHCOMM
 #if defined(CERNLIB_DECS)
-      INTEGER*8 GCADDI, GCADDF, GCADDL, GCADDC, IADD
+      INTEGER*8 GCADDI, GCADDF, GCADDL, GCADDC, GCADDD, IADD
 #else          
-      INTEGER GCADDI, GCADDF, GCADDL, GCADDC
+      INTEGER GCADDI, GCADDF, GCADDL, GCADDC, GCADDD
 #endif
 *
       IF(CHCOMM.EQ.'GCASHO') THEN
@@ -239,6 +246,14 @@ C
          IADD=GCADDF(THRIND)
       ELSE IF(CHCOMM.EQ.'QUEST') THEN
          IADD=GCADDI(IQUEST)
+      ELSE IF(CHCOMM.EQ.'ERTRIO') THEN
+         IADD=GCADDD(ERDTRP)
+      ELSE IF(CHCOMM.EQ.'EROPTS') THEN
+         IADD=GCADDF(ERPLI)
+      ELSE IF(CHCOMM.EQ.'EROPTC') THEN
+         IADD=GCADDC(CHOPTI)
+      ELSE IF(CHCOMM.EQ.'ERWORK') THEN
+         IADD=GCADDD(EI)
       ELSE IF(CHCOMM.EQ.'GCBANK') THEN
          IADD=GCADDI(NZEBRA)
       ELSE

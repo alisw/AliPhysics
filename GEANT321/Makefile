@@ -9,7 +9,7 @@ PACKAGE = GEANT321
 
 GDIRS = gbase gcons gdraw geocad ggeom gheisha ghits ghrout ghutils giface \
         giopa gkine gparal gphys gscan gstrag gtrak matx55 miface miguti \
-        neutron peanut fiface cgpack fluka block comad
+        neutron peanut fiface cgpack fluka block comad erdecks erpremc
 
 XDIRS = gxint cdf
 
