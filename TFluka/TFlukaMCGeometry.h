@@ -37,9 +37,9 @@ class TFlukaMCGeometry :public TNamed {
     Int_t         GetFlukaMaterial(Int_t imed) const;
     Int_t         GetLastMaterialIndex() const {return fLastMaterial;}
     virtual Int_t NofVolumes() const;
-
    // FLUKA specific methods
     void          CreateFlukaMatFile(const char *fname=0);
+    void          CreatePemfFile();
     void          PrintHeader(ofstream &out, const char *text) const;
     Bool_t        IsDebugging() const {return fDebug;}
     void          SetDebugMode(Bool_t flag=kTRUE) {fDebug = flag;}
@@ -74,6 +74,7 @@ class TFlukaMCGeometry :public TNamed {
     Int_t        fNextRegion;             // next region number
     Int_t        fNextLattice;            // next lattice history
     Int_t       *fRegionList;             //! region list matching a given medium number
+    Int_t        fIndmat;                 // material index where pemf file creation starts
     TObjArray   *fMatList;                //! material list as known by FLUKA
     TObjArray   *fMatNames;               //! list of FLUKA material names
   ClassDef(TFlukaMCGeometry,1)  //Virtual MonteCarlo Interface

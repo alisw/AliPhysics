@@ -168,8 +168,11 @@ TFluka::~TFluka() {
 	fUserConfig->Delete();
 	delete fUserConfig;
     }
-
-
+    
+    if (fUserScore) {
+	fUserScore->Delete();
+	delete fUserScore;
+    }
 }
 
 //
@@ -188,14 +191,16 @@ void TFluka::Init() {
     gGeoManager->SetTopVolume(top);
     gGeoManager->CloseGeometry("di");
     gGeoManager->DefaultColors();  // to be removed
+    
+    // Now we have TGeo geometry created and we have to patch FlukaVmc.inp
+    // with the material mapping file FlukaMat.inp
+ 
     fNVolumes = fGeom->NofVolumes();
     fGeom->CreateFlukaMatFile("flukaMat.inp");   
     if (fVerbosityLevel >=3) {
        printf("== Number of volumes: %i\n ==", fNVolumes);
        cout << "\t* InitPhysics() - Prepare input file to be called" << endl; 
-    }   
-    // now we have TGeo geometry created and we have to patch FlukaVmc.inp
-    // with the material mapping file FlukaMat.inp
+    }
 }
 
 
@@ -219,8 +224,34 @@ void TFluka::BuildPhysics() {
     
     if (fVerbosityLevel >=3)
 	cout << "==> TFluka::BuildPhysics() called." << endl;
-// Prepare input file with the current physics settings
+
+    
+    if (fVerbosityLevel >=3) {
+	TList *medlist = gGeoManager->GetListOfMedia();
+	TIter next(medlist);
+	TGeoMedium*   med = 0x0;
+	TGeoMaterial* mat = 0x0;
+	Int_t ic = 0;
+	
+	while((med = (TGeoMedium*)next()))
+	{
+	    mat = med->GetMaterial();
+	    printf("Medium %5d %12s %5d %5d\n", ic, (med->GetName()), med->GetId(), mat->GetIndex());
+	    ic++;
+	}
+    }
+    
+    //
+    // At this stage we have the information on materials and cuts available.
+    // Now create the pemf file
+    
+    if (fGeneratePemf) fGeom->CreatePemfFile();
+    
+    //
+    // Prepare input file with the current physics settings
+    
     InitPhysics(); 
+    
     cout << "\t* InitPhysics() - Prepare input file was called" << endl; 
     
     if (fVerbosityLevel >=2)
@@ -231,6 +262,7 @@ void TFluka::BuildPhysics() {
     if (fVerbosityLevel >=2)
 	cout << "\t* Opening file " << fInputFileName << endl;
     const char* fname = fInputFileName;
+    
     fluka_openinp(lunin, PASSCHARA(fname));
     
     if (fVerbosityLevel >=2)
@@ -245,7 +277,6 @@ void TFluka::BuildPhysics() {
     
     if (fVerbosityLevel >=3)
 	cout << "<== TFluka::Init() called." << endl;
-    
     
     if (fVerbosityLevel >=3)
 	cout << "<== TFluka::BuildPhysics() called." << endl;
@@ -558,7 +589,7 @@ void TFluka::Gstpar(Int_t itmed, const char* param, Double_t parval) {
 //
 //
 // Check if material is used    
-   if (fVerbosityLevel >=3) 
+   if (fVerbosityLevel >= 3) 
        printf("Gstpar called with %6d %5s %12.4e %6d\n", itmed, param, parval, fGeom->GetFlukaMaterial(itmed));
    Int_t* reglist;
    Int_t nreg;

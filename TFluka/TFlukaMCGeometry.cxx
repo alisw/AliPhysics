@@ -27,6 +27,7 @@
 #include "TCallf77.h"
 #include "TFluka.h"
 #include "TFlukaMCGeometry.h"
+#include "TFlukaConfigOption.h"
 #include "TGeoManager.h" 
 #include "TGeoVolume.h" 
 #include "TObjString.h"
@@ -617,7 +618,8 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
       fMatNames->Add(objstr);
       nfmater++;
    }
-   Int_t indmat = nfmater;
+   
+   fIndmat = nfmater;
 //   TGeoMedium *med;
    // Adjust material names and add them to FLUKA list
    for (i=0; i<nmater; i++) {
@@ -801,56 +803,65 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
        if (gSystem->AccessPathName("FlukaVmc.pemf")) Fatal("CreateFlukaMatFile", "No pemf file in working directory");
        return;
    }
-   
-   // Write peg files
-   char number[20];
-   Int_t countMatOK = 0;
-   Int_t countElemError = 0;
-   Int_t countNoStern = 0;
-   Int_t countMixError = 0;
-   Int_t countGas = 0;
- //  Int_t countGasError = 0;
-   Int_t countPemfError = 0;
-   for (i=indmat; i<nfmater; i++) {
-      mat = (TGeoMaterial*)fMatList->At(i);
-      if (!mat->IsUsed()) continue;
-      sname = "mat";
-      sprintf(number, "%d", i);
-      sname.Append(number);
-      cout << endl;
-      cout << endl;
-      cout << "******************************************************************************" << endl;
-      cout << "******************************************************************************" << endl;
-      cout << endl;
-      WritePegFile(i, &countNoStern, &countElemError, &countMixError, &countGas);
-      sname.Prepend("$FLUPRO/pemf/rpemf peg/");
-      gSystem->Exec(sname.Data());
-      
-      // check if the pemf file was created
-      TString sname = Form("peg/mat%d.pemf", i);
-      ifstream in( sname.Data() );
-      if ( in ) {
-         countMatOK++;
-         in.close();
-      }
-      else {
-         cout << "ERROR Fail to create the pemf file " << sname << endl;
-         countPemfError++; 
-      }
-   }
-   cout << "Materials (pemf created)   " << countMatOK         << endl;
-   cout << "Not Sternheimer par. found  " << countNoStern   << endl;
-   cout << "Elements with error definitions (Z not integer)  " << countElemError      << endl;
-   cout << "Mixtures with error definitions (Z not integer) " << countMixError  << endl;
-   cout << "Posible Gas (rho < 0.01) " << countGas           << endl;
-  // cout << "Posible Gas (without pressure information) " << countGasError           << endl;
+}
+
+void TFlukaMCGeometry::CreatePemfFile()
+{
+    //
+    // Steering routine to write and process peg files producing the pemf input 
+    //
+    char number[20];
+    Int_t countMatOK     = 0;
+    Int_t countElemError = 0;
+    Int_t countNoStern   = 0;
+    Int_t countMixError  = 0;
+    Int_t countGas       = 0;
+    Int_t countPemfError = 0;
+    Int_t i;
+    TGeoMaterial* mat = 0x0;
+    TString sname;
+    
+    for (i = fIndmat; i < fLastMaterial - 2; i++) {
+	printf("Write Peg Files %d\n", i);
+	
+	mat = (TGeoMaterial*)fMatList->At(i);
+	if (!mat->IsUsed()) continue;
+	sname = "mat";
+	sprintf(number, "%d", i);
+	sname.Append(number);
+	cout << endl;
+	cout << endl;
+	cout << "******************************************************************************" << endl;
+	cout << "******************************************************************************" << endl;
+	cout << endl;
+	WritePegFile(i, &countNoStern, &countElemError, &countMixError, &countGas);
+	sname.Prepend("$FLUPRO/pemf/rpemf peg/");
+	gSystem->Exec(sname.Data());
+	
+	// check if the pemf file was created
+	TString sname = Form("peg/mat%d.pemf", i);
+	ifstream in( sname.Data() );
+	if ( in ) {
+	    countMatOK++;
+	    in.close();
+	} else {
+	    cout << "ERROR Fail to create the pemf file " << sname << endl;
+	    countPemfError++; 
+	}
+    }
+    cout << "Materials (pemf created)   " << countMatOK         << endl;
+    cout << "Not Sternheimer par. found  " << countNoStern   << endl;
+    cout << "Elements with error definitions (Z not integer)  " << countElemError      << endl;
+    cout << "Mixtures with error definitions (Z not integer) " << countMixError  << endl;
+    cout << "Posible Gas (rho < 0.01) " << countGas           << endl;
+    // cout << "Posible Gas (without pressure information) " << countGasError           << endl;
     cout << "Pemf files Error    " << countPemfError     << endl;
-   cout << endl << endl;
-   
-   sname = "cat peg/*.pemf > peg/FlukaVmc.pemf";         
-   gSystem->Exec(sname.Data());
-   sname = "mv peg/FlukaVmc.pemf FlukaVmc.pemf";
-   gSystem->Exec(sname.Data());
+    cout << endl << endl;
+    
+    sname = "cat peg/*.pemf > peg/FlukaVmc.pemf";         
+    gSystem->Exec(sname.Data());
+    sname = "mv peg/FlukaVmc.pemf FlukaVmc.pemf";
+    gSystem->Exec(sname.Data());
 }
 
 //_____________________________________________________________________________
@@ -996,8 +1007,35 @@ void TFlukaMCGeometry::WritePegFile(Int_t imat, Int_t *NoStern, Int_t *ElemError
       delete [] wt;
    }
    
+   Double_t ue = 3000000.; // [MeV]
+   Double_t up = 3000000.; // [MeV]
+   Double_t ae = -1.;
+   Double_t ap = -1.;
+   
+   
+   TObjArray* cutList = ((TFluka*) gMC)->GetListOfUserConfigs();
+   TIter next(cutList);
+   TFlukaConfigOption* proc;
+   
+   while((proc = (TFlukaConfigOption*)next()))
+   { 
+       if (proc->Medium() == mat->GetIndex()) {
+	   ap = proc->Cut(kCUTGAM);
+	   ae = proc->Cut(kCUTELE);
+	   if (ap == -1.) ap =  TFlukaConfigOption::DefaultCut(kCUTGAM);
+	   if (ae == -1.) ae =  TFlukaConfigOption::DefaultCut(kCUTELE);
+	   break;
+       }
+   }
+
+   if (ap == -1.) ap =  TFlukaConfigOption::DefaultCut(kCUTGAM);
+   if (ae == -1.) ae =  TFlukaConfigOption::DefaultCut(kCUTELE);
+
+   ap *= 1000.;                         // [MeV]
+   ae  = (ae + 0.00051099906) * 1000.;  // [MeV]
+   
    out << "ENER" << endl;
-   out << " $INP AE=0.56099906, UE=3000000., AP=.03, UP=3000000. $END" << endl;
+   out << " $INP AE=" << ae << ", UE=" << ue <<", AP=" << ap << ", UP=" << up << " $END" << endl;
    out << "PWLF" << endl;
    out << " $INP NALE=300, NALG=400, NALR=100 $END" << endl;
    out << "DECK" << endl;
@@ -1023,7 +1061,7 @@ Double_t * TFlukaMCGeometry::GetISSB(Double_t rho, Int_t nElem, Double_t *zelem,
       Double_t    wt[20];             //[nelems] weight fraction
       Double_t    density;            // g/cm3
       Double_t    iev;                // Average Ion potential (eV)
-                                   // ****   Sternheimer parameters  ****
+                                      // ****   Sternheimer parameters  ****
       Double_t    cbar;               // CBAR
       Double_t    x0;                 // X0
       Double_t    x1;                 // X1
