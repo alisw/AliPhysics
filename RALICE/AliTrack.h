@@ -60,14 +60,16 @@ class AliTrack : public TObject,public Ali4Vector
   Double_t GetRapidity();           // Provide rapidity value w.r.t. z-axis
   void SetImpactPoint(AliPosition p,TString q); // Set the impact-point in plane "q=0"
   AliPosition GetImpactPoint(TString q);        // Provide the impact-point in plane "q=0"
-  void SetId(Int_t id);             // Set the user defined identifier
-  Int_t GetId();                    // Provide the user defined identifier
+  void SetId(Int_t id);             // Set the user defined unique track identifier
+  Int_t GetId();                    // Provide the user defined unique track identifier
   void SetClosestPoint(AliPosition p); // Set position p as point of closest approach w.r.t. some reference
   AliPosition GetClosestPoint();       // Provide point of closest approach w.r.t. some reference
   void SetChi2(Float_t chi2);       // Set the chi-squared value of the track fit
   void SetNdf(Int_t ndf);           // Set the number of degrees of freedom for the track fit
   Float_t GetChi2();                // Provide the chi-squared value of the track fit
   Int_t GetNdf();                   // Provide the number of degrees of freedom for the track fit
+  void SetParticleCode(Int_t code); // Set the user defined particle id code (e.g. the PDF convention)
+  Int_t GetParticleCode();          // Provide the user defined particle id code
 
  
  protected:
@@ -90,10 +92,11 @@ class AliTrack : public TObject,public Ali4Vector
   AliPosition fClosest;  // The (extrapolated) point of closest approach w.r.t some reference
   Float_t fChi2;         // The Chi-squared of the track fit
   Int_t fNdf;            // The number of degrees of freedom of the track fit
+  Int_t fCode;           // The user defined particle id code
 
  private:
   void Dump(AliTrack* t,Int_t n,TString f); // Recursively print all decay levels
  
- ClassDef(AliTrack,1) // Handling of the attributes of a reconstructed particle track.
+ ClassDef(AliTrack,2) // Handling of the attributes of a reconstructed particle track.
 };
 #endif

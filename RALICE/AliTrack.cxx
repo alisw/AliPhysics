@@ -136,6 +136,7 @@ AliTrack::AliTrack(AliTrack& t)
  fChi2=t.GetChi2();
  fNdf=t.GetNdf();
  fUserId=t.GetId();
+ fCode=t.GetParticleCode();
  fNdec=t.GetNdecay();
  fNsig=t.GetNsignals();
  fNmasses=t.GetNMassHypotheses();
@@ -195,6 +196,7 @@ void AliTrack::Reset()
  fChi2=0;
  fNdf=0;
  fUserId=0;
+ fCode=0;
  fNdec=0;
  fNsig=0;
  fNmasses=0;
@@ -271,8 +273,8 @@ void AliTrack::Info(TString f)
 // Provide track information within the coordinate frame f
  Double_t m=GetMass();
  Double_t dm=GetResultError();
- cout << " *AliTrack::Info* Id : " << fUserId << " Mass : " << m
-      << " error : " << dm << " Charge : " << fQ
+ cout << " *AliTrack::Info* Id : " << fUserId << " Code : " << fCode
+      << " Mass : " << m << " error : " << dm << " Charge : " << fQ
       << " Momentum : " << GetMomentum() << " Nmass hyp. : " << fNmasses
       << " Ntracks : " << fNdec << " Nsignals : " << fNsig << endl;
  for (Int_t i=0; i<fNmasses; i++)
@@ -932,13 +934,13 @@ AliPosition AliTrack::GetImpactPoint(TString q)
 ///////////////////////////////////////////////////////////////////////////
 void AliTrack::SetId(Int_t id)
 {
-// Set a user defined identifier for this track.
+// Set a user defined unique identifier for this track.
  fUserId=id;
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliTrack::GetId()
 {
-// Provide the user defined identifier of this track.
+// Provide the user defined unique identifier of this track.
  return fUserId;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -990,5 +992,17 @@ Int_t AliTrack::GetNdf()
 {
 // Provide the number of degrees of freedom for the track fit.
  return fNdf;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTrack::SetParticleCode(Int_t code)
+{
+// Set the user defined particle id code (e.g. the PDF convention).
+ fCode=code;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliTrack::GetParticleCode()
+{
+// Provide the user defined particle id code.
+ return fCode;
 }
 ///////////////////////////////////////////////////////////////////////////
