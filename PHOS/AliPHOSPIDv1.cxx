@@ -568,10 +568,14 @@ void  AliPHOSPIDv1::MakePID()
   const Int_t kSPECIES = AliESDtrack::kSPECIESN ;
   Double_t pid[kSPECIES] = {0., 0., 0., 0., 0., 0.} ;  
   Int_t nparticles = AliPHOSGetter::Instance()->RecParticles()->GetEntriesFast() ;
-  const Int_t kMAXPARTICLES = 2000 ; 
-  if (nparticles >= kMAXPARTICLES) 
-    Error("MakePID", "Change size of MAXPARTICLES") ; 
-  Double_t stof[kSPECIES][kMAXPARTICLES] ;
+//   const Int_t kMAXPARTICLES = 2000 ; 
+//   if (nparticles >= kMAXPARTICLES) 
+//     Error("MakePID", "Change size of MAXPARTICLES") ; 
+//   Double_t stof[kSPECIES][kMAXPARTICLES] ;
+  Double_t * stof[kSPECIES];
+  for (Int_t i =0; i< kSPECIES; i++)
+    stof[i] = new Double_t[nparticles];
+
   // make the normalized distribution of pid for this event 
   // w(pid) in the Bayesian formulation
   for(index = 0 ; index < nparticles ; index ++) {
@@ -632,6 +636,8 @@ void  AliPHOSPIDv1::MakePID()
 	recpar->SetPID(jndex, stof[jndex][index] * pid[jndex] / wn) ; 
       }
   }
+  for (Int_t i =0; i< kSPECIES; i++)
+    delete [] stof[i];
 }
 
 //____________________________________________________________________________
