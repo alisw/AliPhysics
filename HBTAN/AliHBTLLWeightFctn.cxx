@@ -1,3 +1,5 @@
+//Author: Ludmila Malinina, JINR (malinina@sunhe.jinr.ru)
+
 #include "AliHBTLLWeightFctn.h"
 #include "AliHBTLLWeights.h"
 #include "AliHBTLLWeightsPID.h"
@@ -42,13 +44,5 @@ TH1* AliHBTLLWeightQInvFctn::GetResult()
 { 
 //returns ratio of numerator and denominator                                    
  TH1* res = GetRatio(Scale());                                                  
-  
- if(res)                                                                        
-    {                                                                             
-    res->GetXaxis()->SetTitle("Qinv [GeV/c]");                                       
-    res->GetYaxis()->SetTitle("C(Qinv)");                                          
-    res->SetTitle("Correlation function, method of weights(Lednicky's algorithm).");              
-     }                                                                             
-  return res;                                                                     
 }                    
                                                               
