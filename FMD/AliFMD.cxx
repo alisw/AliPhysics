@@ -15,170 +15,578 @@
 
 /* $Id$ */
 
- //////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-//  Forward Multiplicity Detector based on Silicon plates                    //
-//  This class contains the base procedures for the Forward Multiplicity     //
-//  detector                                                                 //
-//  Detector consists of 5 Si volumes covered pseudorapidity interval         //
-//  from 1.7 to 5.1.                                                         //
-//                                                                           //
+//////////////////////////////////////////////////////////////////////////////
+//                                                                          
+//  Forward Multiplicity Detector based on Silicon wafers This class
+//  contains the base procedures for the Forward Multiplicity detector
+//  Detector consists of 5 Si volumes covered pseudorapidity interval
+//  from 1.7 to 5.1.
+//                                                                           
+// The actual code is done by various separate classes.   Below is
+// diagram showing the relationship between the various FMD classes
+// that handles the geometry 
+//
+//
+//       +----------+   +----------+   
+//       | AliFMDv1 |	| AliFMDv1 |   
+//       +----------+   +----------+   
+//            |              |
+//       +----+--------------+
+//       |
+//       |           +------------+ 1  +---------------+
+//       |        +- | AliFMDRing |<>--| AliFMDPolygon | 
+//       V     2  |  +------------+    +---------------+   
+//  +--------+<>--+        |
+//  | AliFMD |             ^                       
+//  +--------+<>--+        V 1..2                     
+//	       3  | +-------------------+ 
+//	          +-| AliFMDSubDetector | 
+//	  	    +-------------------+
+//                           ^              
+//                           |
+//             +-------------+-------------+
+//             |             |             |	      
+//        +---------+   +---------+   +---------+
+//        | AliFMD1 |   | AliFMD2 |   | AliFMD3 |
+//        +---------+   +---------+   +---------+
+//      
+//
+// *  AliFMD 
+//    This defines the interface for the various parts of AliROOT that
+//    uses the FMD, like AliFMDDigitizer, AliFMDReconstructor, and so
+//    on. 
+//
+// *  AliFMDv1 
+//    This is a concrete implementation of the AliFMD interface. 
+//    It is the responsibility of this class to create the FMD
+//    geometry, process hits in the FMD, and serve hits and digits to
+//    the various clients. 
+//  
+//    It uses the objects of class AliFMDSubDetector to do the various
+//    stuff for FMD1, 2, and 3 
+//
+// *  AliFMDRing 
+//    This class contains all stuff needed to do with a ring.  It's
+//    used by the AliFMDSubDetector objects to instantise inner and
+//    outer rings.  The AliFMDRing objects are shared by the
+//    AliFMDSubDetector objects, and owned by the AliFMDv1 object. 
+//
+// *  AliFMDPolygon 
+//    The code I lifted from TGeoPolygon to help with the geometry of
+//    the modules, as well as to decide wether a hit is actually with
+//    in the real module shape.  The point is, that the shape of the
+//    various ring modules are really polygons (much like the lid of a
+//    coffin), but it's segmented at constant radius.  That is very
+//    hard to implement using GEANT 3.21 shapes, so instead the
+//    modules are implemented as TUBS (tube sections), and in the step
+//    procedure we do the test whether the track was inside the real
+//    shape of the module.  
+//
+// *  AliFMD1, AliFMD2, and AliFMD3 
+//    These are specialisation of AliFMDSubDetector, that contains the
+//    particularities of each of the sub-detector system.  It is
+//    envisioned that the classes should also define the support
+//    volumes and material for each of the detectors.                          
+//                                                                          
 //Begin_Html
 /*
-<img src="gif/AliFMDClass.gif">
-</pre>
-<br clear=left>
-<font size=+2 color=red>
-<p>The responsible person for this module is
-<a href="mailto:Alla.Maevskaia@cern.ch">Alla Maevskaia</a>.
-</font>
-<pre>
+   <img src="gif/AliFMDClass.gif">
+   </pre>
+   <br clear=left>
+   <p>
+     The responsible person for this module is
+     <a href="mailto:Alla.Maevskaia@cern.ch">Alla Maevskaia</a>.
+   </p>
+   <p>
+     Many modifications by <a href="mailto:cholm@nbi.dk">Christian
+       Holm Christensen</a>.
+   </p>
+   <pre>
 */
 //End_Html
-//                                                                           //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
 
-#define DEBUG
-
-#include <Riostream.h>
-#include <stdlib.h>
-
+#ifndef ROOT_TClonesArray
 #include <TClonesArray.h>
-#include <TFile.h>
-#include <TGeometry.h>
-#include <TNode.h>
-#include <TTUBE.h>
-#include <TTree.h>
-#include <TVirtualMC.h>
+#endif
+#ifndef ROOT_TGeomtry
+# include <TGeometry.h>
+#endif
+#ifndef ROOT_TNode
+# include <TNode.h>
+#endif
+#ifndef ROOT_TTUBE
+# include <TTUBE.h>
+#endif
+#ifndef ROOT_TTree
+# include <TTree.h>
+#endif
+#ifndef ROOT_TVirtualMC
+# include <TVirtualMC.h>
+#endif
+#ifndef ROOT_TBrowser
+# include <TBrowser.h>
+#endif
+#ifndef ROOT_TMath
+# include <TMath.h>
+#endif
 
-#include "AliDetector.h"
-#include "AliFMDdigit.h"
-#include "AliFMDhit.h"
-#include "AliFMDv1.h"
-#include "AliLoader.h"
-#include "AliRun.h"
-#include "AliMC.h"
-#include "AliFMDDigitizer.h"
+#ifndef ALIRUNDIGITIZER_H
+# include "AliRunDigitizer.h"
+#endif
+#ifndef ALILOADER_H
+# include "AliLoader.h"
+#endif
+#ifndef ALIRUN_H
+# include "AliRun.h"
+#endif
+#ifndef ALIMC_H
+# include "AliMC.h"
+#endif
+#ifndef ALILog_H
+# include "AliLog.h"
+#endif
+#ifndef ALIMAGF_H
+# include "AliMagF.h"
+#endif
+#ifndef ALIFMD_H
+# include "AliFMD.h"
+#endif
+#ifndef ALIFMDDIGIG_H
+# include "AliFMDDigit.h"
+#endif
+#ifndef ALIFMDHIT_H
+# include "AliFMDHit.h"
+#endif
+#ifndef ALIFMDDIGITIZER_H
+# include "AliFMDDigitizer.h"
+#endif
+#ifndef ALIFMD1_H
+# include "AliFMD1.h"
+#endif
+#ifndef ALIFMD2_H
+# include "AliFMD2.h"
+#endif
+#ifndef ALIFMD3_H
+# include "AliFMD3.h"
+#endif
+#ifndef ALIALTROBUFFER_H
+# include "AliAltroBuffer.h"
+#endif
 
-ClassImp (AliFMD)
-  //_____________________________________________________________________________
-AliFMD::AliFMD ():AliDetector ()
+//____________________________________________________________________
+ClassImp(AliFMD);
+
+//____________________________________________________________________
+AliFMD::AliFMD()
+  : fInner(0), 
+    fOuter(0),
+    fFMD1(0),
+    fFMD2(0), 
+    fFMD3(0)
 {
   //
   // Default constructor for class AliFMD
   //
-  fIshunt = 0;
+  AliDebug(0, "Default CTOR");
   fHits     = 0;
   fDigits   = 0;
+  fSDigits  = 0;
+  fNsdigits = 0;
+  fIshunt   = 0;
 }
 
-//_____________________________________________________________________________
-AliFMD::AliFMD (const char *name, const char *title):
-AliDetector (name, title)
+//____________________________________________________________________
+AliFMD::AliFMD(const char *name, const char *title, bool detailed)
+  : AliDetector (name, title),
+    fInner(0), 
+    fOuter(0),
+    fFMD1(0),
+    fFMD2(0), 
+    fFMD3(0)
 {
   //
   // Standard constructor for Forward Multiplicity Detector
   //
+  AliDebug(0, "Standard CTOR");
 
-  //
   // Initialise Hit array
-  fHits = new TClonesArray ("AliFMDhit", 1000);
-  // Digits for each Si disk
-  fDigits = new TClonesArray ("AliFMDdigit", 1000);
-  gAlice->GetMCApp()->AddHitList (fHits);
+  HitsArray();
+  gAlice->GetMCApp()->AddHitList(fHits);
 
+  // (S)Digits for the detectors disk
+  DigitsArray();
+  SDigitsArray();
+  
+  // CHC: What is this?
   fIshunt = 0;
-  //  fMerger = 0;
-  SetMarkerColor (kRed);
+  SetMarkerColor(kRed);
+  SetLineColor(kYellow);
+  SetSiDensity();
+
+  // Create sub-volume managers 
+  fInner = new AliFMDRing('I', detailed);
+  fOuter = new AliFMDRing('O', detailed);
+  fFMD1  = new AliFMD1();
+  fFMD2  = new AliFMD2();
+  fFMD3  = new AliFMD3();
+
+  // Specify parameters of sub-volume managers 
+  fFMD1->SetInner(fInner);
+  fFMD1->SetOuter(0);
+
+  fFMD2->SetInner(fInner);
+  fFMD2->SetOuter(fOuter);
+  
+  fFMD3->SetInner(fInner);
+  fFMD3->SetOuter(fOuter);
+
+  SetLegLength();
+  SetLegRadius();
+  SetLegOffset();
+  SetModuleSpacing();
+  
+  fInner->SetLowR(4.3);
+  fInner->SetHighR(17.2);
+  fInner->SetWaferRadius(13.4/2);
+  fInner->SetTheta(36/2);
+  fInner->SetNStrips(512);
+  fInner->SetSiThickness(.03);
+  fInner->SetPrintboardThickness(.11);
+  fInner->SetBondingWidth(.5);
+
+  fOuter->SetLowR(15.6);
+  fOuter->SetHighR(28.0);
+  fOuter->SetWaferRadius(13.4/2);
+  fOuter->SetTheta(18/2);
+  fOuter->SetNStrips( 256);
+  fOuter->SetSiThickness(.03);
+  fOuter->SetPrintboardThickness(.1);
+  fOuter->SetBondingWidth(.5);
+  
+  
+  fFMD1->SetHoneycombThickness(1);
+  fFMD1->SetInnerZ(340.0);
+  
+  fFMD2->SetHoneycombThickness(1);
+  fFMD2->SetInnerZ(83.4);
+  fFMD2->SetOuterZ(75.2);
+
+  fFMD3->SetHoneycombThickness(1);
+  fFMD3->SetInnerZ(-62.8);
+  fFMD3->SetOuterZ(-75.2);
 }
 
-//-----------------------------------------------------------------------------
+//____________________________________________________________________
 AliFMD::~AliFMD ()
 {
-  //destructor for base class AliFMD
-  if (fHits)
-    {
-      fHits->Delete ();
-      delete fHits;
-      fHits = 0;
-    }
-  if (fDigits)
-    {
-      fDigits->Delete ();
-      delete fDigits;
-      fDigits = 0;
-    }
-
+  // Destructor for base class AliFMD
+  if (fHits) {
+    fHits->Delete();
+    delete fHits;
+    fHits = 0;
+  }
+  if (fDigits) {
+    fDigits->Delete();
+    delete fDigits;
+    fDigits = 0;
+  }
+  if (fSDigits) {
+    fSDigits->Delete();
+    delete fSDigits;
+    fSDigits = 0;
+  }
 }
 
-//_____________________________________________________________________________
-void AliFMD::AddHit (Int_t track, Int_t * vol, Float_t * hits)
+//====================================================================
+//
+// GEometry ANd Traking
+//
+//____________________________________________________________________
+void 
+AliFMD::CreateGeometry()
+{
+ //
+  // Create the geometry of Forward Multiplicity Detector version 0
+  //
+  // DebugGuard guard("AliFMD::CreateGeometry");
+  AliDebug(10, "Creating geometry");
+
+  fInner->Init();
+  fOuter->Init();
+
+  TString name;
+  Double_t par[3];
+
+  par[0]      =  fLegRadius - .1;
+  par[1]      =  fLegRadius;
+  par[2]      =  fLegLength / 2;
+  name        =  "SLEG";
+  fShortLegId =  gMC->Gsvolu(name.Data(),"TUBE",(*fIdtmed)[kPlasticId],par,3);
+  
+  par[2]      += fModuleSpacing / 2;
+  name        = "LLEG";
+  fLongLegId  =  gMC->Gsvolu(name.Data(),"TUBE",(*fIdtmed)[kPlasticId],par,3);
+
+  fInner->SetupGeometry((*fIdtmed)[kAirId], 
+			(*fIdtmed)[kSiId], 
+			(*fIdtmed)[kPcbId], 
+			fPrintboardRotationId, 
+			fIdentityRotationId);
+  fOuter->SetupGeometry((*fIdtmed)[kAirId], 
+			(*fIdtmed)[kSiId], 
+			(*fIdtmed)[kPcbId], 
+			fPrintboardRotationId, 
+			fIdentityRotationId);
+
+  fFMD1->SetupGeometry((*fIdtmed)[kAirId], (*fIdtmed)[kKaptionId]);
+  fFMD2->SetupGeometry((*fIdtmed)[kAirId], (*fIdtmed)[kKaptionId]);
+  fFMD3->SetupGeometry((*fIdtmed)[kAirId], (*fIdtmed)[kKaptionId]);
+  
+  fFMD1->Geometry("ALIC", fPrintboardRotationId, fIdentityRotationId);
+  fFMD2->Geometry("ALIC", fPrintboardRotationId, fIdentityRotationId);
+  fFMD3->Geometry("ALIC", fPrintboardRotationId, fIdentityRotationId);    
+}    
+
+//____________________________________________________________________
+void AliFMD::CreateMaterials() 
+{
+  // Register various materials and tracking mediums with the
+  // backend.   
+  // 
+  // Currently defined materials and mediums are 
+  // 
+  //    FMD Air		Normal air 
+  //    FMD Si          Active silicon of sensors 
+  //    FMD Carbon      Normal carbon used in support, etc. 
+  //    FMD Kapton      Carbon used in Honeycomb
+  //    FMD PCB         Printed circuit board material 
+  //    FMD Plastic     Material for support legs 
+  // 
+  // Also defined are two rotation matricies. 
+  //
+  // DebugGuard guard("AliFMD::CreateMaterials");
+  AliDebug(10, "Creating materials");
+  Int_t    id;
+  Double_t a                = 0;
+  Double_t z                = 0;
+  Double_t density          = 0;
+  Double_t radiationLength  = 0;
+  Double_t absorbtionLength = 999;
+  Int_t    fieldType        = gAlice->Field()->Integ();     // Field type 
+  Double_t maxField         = gAlice->Field()->Max();     // Field max.
+  Double_t maxBending       = 0;     // Max Angle
+  Double_t maxStepSize      = 0.001; // Max step size 
+  Double_t maxEnergyLoss    = 1;     // Max Delta E
+  Double_t precision        = 0.001; // Precision
+  Double_t minStepSize      = 0.001; // Minimum step size 
+ 
+  // Silicon 
+  a                = 28.0855;
+  z                = 14.;
+  density          = fSiDensity;
+  radiationLength  = 9.36;
+  maxBending       = 1;
+  maxStepSize      = .001;
+  precision        = .001;
+  minStepSize      = .001;
+  id               = kSiId;
+  AliMaterial(id, "FMD Si$", a, z, density, radiationLength, absorbtionLength);
+  AliMedium(kSiId, "FMD Si$",id,1,fieldType,maxField,maxBending,
+	    maxStepSize,maxEnergyLoss,precision,minStepSize);
+
+
+  // Carbon 
+  a                = 12.011;
+  z                = 6.;
+  density          = 2.265;
+  radiationLength  = 18.8;
+  maxBending       = 10;
+  maxStepSize      = .01;
+  precision        = .003;
+  minStepSize      = .003;
+  id               = kCarbonId;
+  AliMaterial(id, "FMD Carbon$", a, z, density, radiationLength, 
+	      absorbtionLength);
+  AliMedium(kCarbonId, "FMD Carbon$",id,0,fieldType,maxField,maxBending,
+	    maxStepSize,maxEnergyLoss,precision,minStepSize);
+
+  // Silicon chip 
+  {
+    Float_t as[] = { 12.0107,      14.0067,      15.9994,
+		     1.00794,      28.0855,     107.8682 };
+    Float_t zs[] = {  6.,           7.,           8.,
+		      1.,          14.,          47. };
+    Float_t ws[] = {  0.039730642,  0.001396798,  0.01169634,
+		      0.004367771,  0.844665,     0.09814344903 };
+    density = 2.36436;
+    maxBending       = 10;
+    maxStepSize      = .01;
+    precision        = .003;
+    minStepSize      = .003;
+    id = kSiChipId;
+    AliMixture(id, "FMD Si Chip$", as, zs, density, 6, ws);
+    AliMedium(kSiChipId, "FMD Si Chip$", id, 0, fieldType, maxField, 
+	      maxBending, maxStepSize, maxEnergyLoss, precision, minStepSize);
+  }
+  
+
+  // Kaption 
+  {
+    Float_t as[] = { 1.00794,  12.0107,  14.010,   15.9994};
+    Float_t zs[] = { 1.,        6.,       7.,       8.};
+    Float_t ws[] = { 0.026362,  0.69113,  0.07327,  0.209235};
+    density          = 1.42;
+    maxBending       = 1;
+    maxStepSize      = .001;
+    precision        = .001;
+    minStepSize      = .001;
+    id               = kKaptionId;
+    AliMixture(id, "FMD Kaption$", as, zs, density, 4, ws);
+    AliMedium(kKaptionId, "FMD Kaption$",id,0,fieldType,maxField,maxBending,
+	      maxStepSize,maxEnergyLoss,precision,minStepSize);
+  }
+  
+  // Air
+  {
+    Float_t as[] = { 12.0107, 14.0067,   15.9994,  39.948 };
+    Float_t zs[] = {  6.,      7.,       8.,       18. };
+    Float_t ws[] = { 0.000124, 0.755267, 0.231781, 0.012827 }; 
+    density      = .00120479;
+    maxBending   = 1;
+    maxStepSize  = .001;
+    precision    = .001;
+    minStepSize  = .001;
+    id           = kAirId;
+    AliMixture(id, "FMD Air$", as, zs, density, 4, ws);
+    AliMedium(kAirId, "FMD Air$", id,0,fieldType,maxField,maxBending,
+	      maxStepSize,maxEnergyLoss,precision,minStepSize);
+  }
+  
+  // PCB
+  {
+    Float_t zs[] = { 14.,         20.,         13.,         12.,
+		      5.,         22.,         11.,         19.,
+		     26.,          9.,          8.,          6.,
+		      7.,          1.};
+    Float_t as[] = { 28.0855,     40.078,      26.981538,   24.305, 
+		     10.811,      47.867,      22.98977,    39.0983,
+		     55.845,      18.9984,     15.9994,     12.0107,
+		     14.0067,      1.00794};
+    Float_t ws[] = {  0.15144894,  0.08147477,  0.04128158,  0.00904554, 
+		      0.01397570,  0.00287685,  0.00445114,  0.00498089,
+		      0.00209828,  0.00420000,  0.36043788,  0.27529426,
+		      0.01415852,  0.03427566};
+    density      = 1.8;
+    maxBending   = 1;
+    maxStepSize  = .001;
+    precision    = .001;
+    minStepSize  = .001;
+    id           = kPcbId;
+    AliMixture(id, "FMD PCB$", as, zs, density, 14, ws);
+    AliMedium(kPcbId, "FMD PCB$", id,1,fieldType,maxField,maxBending,
+	      maxStepSize,maxEnergyLoss,precision,minStepSize);
+  }
+  
+  // Plastic 
+  {
+    Float_t as[] = { 1.01, 12.01 };
+    Float_t zs[] = { 1.,   6.    };
+    Float_t ws[] = { 1.,   1.    };
+    density      = 1.03;
+    maxBending   = 10;
+    maxStepSize  = .01;
+    precision    = .003;
+    minStepSize  = .003;
+    id           = kPlasticId;
+    AliMixture(id, "FMD Plastic$", as, zs, density, -2, ws);
+    AliMedium(kPlasticId, "FMD Plastic$", id,0,fieldType,maxField,maxBending,
+		maxStepSize,maxEnergyLoss,precision,minStepSize);
+  }
+  AliMatrix(fPrintboardRotationId, 90, 90, 0, 90, 90, 0);
+  AliMatrix(fIdentityRotationId, 90, 0, 90, 90, 0, 0);
+}
+
+//____________________________________________________________________
+void  
+AliFMD::Init()
 {
   //
-  // Add a hit to the list
+  // Initialis the FMD after it has been built
+  Int_t i;
   //
-  TClonesArray & lhits = *fHits;
-  new (lhits[fNhits++]) AliFMDhit (fIshunt, track, vol, hits);
+  if (fDebug) {
+    std::cout << "\n" << ClassName() << ": " << std::flush;
+    for (i = 0; i < 35; i++) std::cout << "*";
+    std::cout << " FMD_INIT ";
+    for (i = 0; i < 35; i++) std::cout << "*";
+    std::cout << "\n" << ClassName() << ": " << std::flush;
+    //
+    // Here the FMD initialisation code (if any!)
+    for (i = 0; i < 80; i++) std::cout << "*";
+    std::cout << std::endl;
+  }
+  //
+  //
 }
 
-//_____________________________________________________________________________
-void AliFMD::AddDigit (Int_t * digits)
-{
-  // add a real digit - as coming from data
-
-  if (fDigits == 0x0) fDigits = new TClonesArray ("AliFMDdigit", 1000);  
-  TClonesArray & ldigits = *fDigits;
-  new (ldigits[fNdigits++]) AliFMDdigit (digits);
-}
-
-//_____________________________________________________________________________
-void AliFMD::BuildGeometry ()
+//====================================================================
+//
+// Graphics and event display
+//
+//____________________________________________________________________
+void 
+AliFMD::BuildGeometry()
 {
   //
   // Build simple ROOT TNode geometry for event display
   //
-  TNode *node, *top;
-  const int kColorFMD = 5;
-  //
-  top = gAlice->GetGeometry ()->GetNode ("alice");
+  // Build a simplified geometry of the FMD used for event display  
+  // 
+  AliDebug(10, "Creating a simplified geometry");
 
-  // FMD define the different volumes
-  new TRotMatrix ("rot901", "rot901", 90, 0, 90, 90, 180, 0);
-
-  new TTUBE ("S_FMD0", "FMD  volume 0", "void", 4.2, 17.2, 1.5);
-  top->cd ();
-  node = new TNode ("FMD0", "FMD0", "S_FMD0", 0, 0, -62.8, "");
-  node->SetLineColor (kColorFMD);
-  fNodes->Add (node);
-
-  new TTUBE ("S_FMD1", "FMD  volume 1", "void", 15.4, 28.4, 1.5);
-  top->cd ();
-  node = new TNode ("FMD1", "FMD1", "S_FMD1", 0, 0, -75.2, "");
-  node->SetLineColor (kColorFMD);
-  fNodes->Add (node);
-
-  new TTUBE ("S_FMD2", "FMD  volume 2", "void", 4.2, 17.2, 1.5);
-  top->cd ();
-  node = new TNode ("FMD2", "FMD2", "S_FMD2", 0, 0, 83.2, "");
-  node->SetLineColor (kColorFMD);
-  fNodes->Add (node);
-
-  new TTUBE ("S_FMD3", "FMD  volume 3", "void", 15.4, 28.4, 1.5);
-  top->cd ();
-  node = new TNode ("FMD3", "FMD3", "S_FMD3", 0, 0, 75.2, "");
-  node->SetLineColor (kColorFMD);
-  fNodes->Add (node);
-
-  new TTUBE ("S_FMD4", "FMD  volume 4", "void", 4.2, 17.2, 1.5);
-  top->cd ();
-  node = new TNode ("FMD4", "FMD4", "S_FMD4", 0, 0, 340, "");
-  node->SetLineColor (kColorFMD);
-  fNodes->Add (node);
+  TNode* top = gAlice->GetGeometry()->GetNode("alice");
+  
+  fFMD1->SimpleGeometry(fNodes, top, GetLineColor(), 0);
+  fFMD2->SimpleGeometry(fNodes, top, GetLineColor(), 0);
+  fFMD3->SimpleGeometry(fNodes, top, GetLineColor(), 0);
 }
 
-//_____________________________________________________________________________
-const Int_t AliFMD::DistanceToPrimitive (Int_t /*px*/, Int_t /*py*/)
+//____________________________________________________________________
+void 
+AliFMD::DrawDetector()
+{
+  //
+  // Draw a shaded view of the Forward multiplicity detector version 0
+  //
+  // DebugGuard guard("AliFMD::DrawDetector");
+  AliDebug(10, "Draw detector");
+  
+  //Set ALIC mother transparent
+  gMC->Gsatt("ALIC","SEEN",0);
+
+  //Set volumes visible
+  fFMD1->Gsatt();
+  fFMD2->Gsatt();
+  fFMD3->Gsatt();
+  fInner->Gsatt();
+  fOuter->Gsatt();
+
+  //
+  gMC->Gdopt("hide", "on");
+  gMC->Gdopt("shad", "on");
+  gMC->Gsatt("*", "fill", 7);
+  gMC->SetClipBox(".");
+  gMC->SetClipBox("*", 0, 1000, -1000, 1000, -1000, 1000);
+  gMC->DefaultRange();
+  gMC->Gdraw("alic", 40, 30, 0, 12, 12, .055, .055);
+  gMC->Gdhead(1111, "Forward Multiplicity Detector");
+  gMC->Gdman(16, 10, "MAN");
+  gMC->Gdopt("hide", "off");
+}
+
+//____________________________________________________________________
+const Int_t 
+AliFMD::DistanceToPrimitive(Int_t, Int_t)
 {
   //
   // Calculate the distance from the mouse to the FMD on the screen
@@ -187,112 +595,752 @@ const Int_t AliFMD::DistanceToPrimitive (Int_t /*px*/, Int_t /*py*/)
   return 9999;
 }
 
-//___________________________________________
-void AliFMD::ResetHits ()
-{
-  // Reset number of clusters and the cluster array for this detector
-  AliDetector::ResetHits ();
-}
-
-//____________________________________________
-void AliFMD::ResetDigits ()
-{
-  //
-  // Reset number of digits and the digits array for this detector
-  AliDetector::ResetDigits ();
-  //
-}
-
-//-------------------------------------------------------------------------
-void  AliFMD::Init ()
-{
-  //
-  // Initialis the FMD after it has been built
-  Int_t i;
-  //
-  if (fDebug)
-    {
-      printf ("\n%s: ", ClassName ());
-      for (i = 0; i < 35; i++)
-	printf ("*");
-      printf (" FMD_INIT ");
-      for (i = 0; i < 35; i++)
-	printf ("*");
-      printf ("\n%s: ", ClassName ());
-      //
-      // Here the FMD initialisation code (if any!)
-      for (i = 0; i < 80; i++)
-	printf ("*");
-      printf ("\n");
-    }
-  //
-  //
- 
-}
-//---------------------------------------------------------------------
-void AliFMD::MakeBranch (Option_t * option)
+//====================================================================
+//
+// Hit and Digit managment 
+//
+//____________________________________________________________________
+void 
+AliFMD::MakeBranch(Option_t * option)
 {
   // Create Tree branches for the FMD.
-  char branchname[10];
   const Int_t kBufferSize = 16000;
-  sprintf (branchname, "%s", GetName ());
+  TString branchname(GetName());
+  TString opt(option);
   
-  const char *cH = strstr(option,"H");
-  const char *cD = strstr(option,"D");
-  
-  if (cH && (fHits == 0x0)) fHits = new TClonesArray ("AliFMDhit", 1000);
-
-  AliDetector::MakeBranch (option);
-  
-  if (cD){
-    if (fDigits == 0x0) fDigits = new TClonesArray ("AliFMDdigit", 1000);  
-    MakeBranchInTree(fLoader->TreeD(), branchname,&fDigits, kBufferSize, 0);
+  if (opt.Contains("H", TString::kIgnoreCase)) {
+    HitsArray();
+    AliDetector::MakeBranch(option); 
   }
-
+  if (opt.Contains("D", TString::kIgnoreCase)) { 
+    DigitsArray();
+    MakeBranchInTree(fLoader->TreeD(), branchname.Data(),
+		     &fDigits, kBufferSize, 0);
+  }
+  if (opt.Contains("S", TString::kIgnoreCase)) { 
+    SDigitsArray();
+    MakeBranchInTree(fLoader->TreeS(), branchname.Data(),
+		     &fSDigits, kBufferSize, 0);
+  }
 }
 
-//_____________________________________________________________________________
-void AliFMD::SetTreeAddress ()
+//____________________________________________________________________
+void 
+AliFMD::SetTreeAddress()
 {
   // Set branch address for the Hits and Digits Tree.
 
-  if (fLoader->TreeH() && (fHits == 0x0)) 
-    fHits = new TClonesArray ("AliFMDhit", 1000);  
+  if (fLoader->TreeH()) HitsArray();
+  AliDetector::SetTreeAddress();
 
-  AliDetector::SetTreeAddress ();
-
-  TBranch *branch;
   TTree *treeD = fLoader->TreeD();
+  if (treeD) {
+    DigitsArray();
+    TBranch* branch = treeD->GetBranch ("FMD");
+    if (branch) branch->SetAddress(&fDigits);
+  }
 
-  if (treeD)
-    {
-      if (fDigits == 0x0) fDigits = new TClonesArray ("AliFMDdigit", 1000);
-      branch = treeD->GetBranch ("FMD");
-      if (branch)
-       branch->SetAddress (&fDigits);
+  TTree *treeS = fLoader->TreeS();
+  if (treeS) {
+    SDigitsArray();
+    TBranch* branch = treeS->GetBranch ("FMD");
+    if (branch) branch->SetAddress(&fSDigits);
+  }
+}
+
+
+
+//____________________________________________________________________
+void 
+AliFMD::SetHitsAddressBranch(TBranch *b)
+{
+  b->SetAddress(&fHits);
+}
+
+//____________________________________________________________________
+void 
+AliFMD::AddHit(Int_t track, Int_t *vol, Float_t *hits) 
+{
+  // Add a hit to the hits tree 
+  // 
+  // The information of the two arrays are decoded as 
+  // 
+  // Parameters
+  //    track	 	     Track #
+  //    ivol[0]  [UShort_t ] Detector # 
+  //    ivol[1]	 [Char_t   ] Ring ID 
+  //    ivol[2]	 [UShort_t ] Sector #
+  //    ivol[3]	 [UShort_t ] Strip # 
+  //    hits[0]	 [Float_t  ] Track's X-coordinate at hit 
+  //    hits[1]	 [Float_t  ] Track's Y-coordinate at hit
+  //    hits[3]  [Float_t  ] Track's Z-coordinate at hit
+  //    hits[4]  [Float_t  ] X-component of track's momentum 	       	 
+  //    hits[5]	 [Float_t  ] Y-component of track's momentum	       	 
+  //    hits[6]	 [Float_t  ] Z-component of track's momentum	       	
+  //    hits[7]	 [Float_t  ] Energy deposited by track		       	
+  //    hits[8]	 [Int_t    ] Track's particle Id # 
+  //    hits[9]	 [Float_t  ] Time when the track hit 		       	
+  AddHit(track, 
+	 UShort_t(vol[0]),  // Detector # 
+	 Char_t(vol[1]),    // Ring ID
+	 UShort_t(vol[2]),  // Sector # 
+	 UShort_t(vol[3]),  // Strip # 
+	 hits[0],           // X
+	 hits[1],           // Y
+	 hits[2],           // Z
+	 hits[3],           // Px
+	 hits[4],           // Py
+	 hits[5],           // Pz
+	 hits[6],           // Energy loss 
+	 Int_t(hits[7]),    // PDG 
+	 hits[8]);          // Time
+}
+
+//____________________________________________________________________
+void 
+AliFMD::AddHit(Int_t    track, 
+	       UShort_t detector, 
+	       Char_t   ring, 
+	       UShort_t sector, 
+	       UShort_t strip, 
+	       Float_t  x, 
+	       Float_t  y, 
+	       Float_t  z,
+	       Float_t  px, 
+	       Float_t  py, 
+	       Float_t  pz,
+	       Float_t  edep,
+	       Int_t    pdg,
+	       Float_t  t)
+{
+  //
+  // Add a hit to the list
+  //
+  // Parameters:
+  // 
+  //    track	  Track #
+  //    detector  Detector # (1, 2, or 3)                      
+  //    ring	  Ring ID ('I' or 'O')
+  //    sector	  Sector # (For inner/outer rings: 0-19/0-39)
+  //    strip	  Strip # (For inner/outer rings: 0-511/0-255)
+  //    x	  Track's X-coordinate at hit
+  //    y	  Track's Y-coordinate at hit
+  //    z	  Track's Z-coordinate at hit
+  //    px	  X-component of track's momentum 
+  //    py	  Y-component of track's momentum
+  //    pz	  Z-component of track's momentum
+  //    edep	  Energy deposited by track
+  //    pdg	  Track's particle Id #
+  //    t	  Time when the track hit 
+  // 
+  TClonesArray& a = *(HitsArray());
+  // Search through the list of already registered hits, and see if we
+  // find a hit with the same parameters.  If we do, then don't create
+  // a new hit, but rather update the energy deposited in the hit.
+  // This is done, so that a FLUKA based simulation will get the
+  // number of hits right, not just the enerrgy deposition. 
+  for (Int_t i = 0; i < fNhits; i++) {
+    if (!a.At(i)) continue;
+    AliFMDHit* hit = static_cast<AliFMDHit*>(a.At(i));
+    if (hit->Detector() == detector 
+	&& hit->Ring() == ring
+	&& hit->Sector() == sector 
+	&& hit->Strip() == strip
+	&& hit->Track() == track) {
+      hit->SetEdep(hit->Edep() + edep);
+      return;
     }
+  }
+  // If hit wasn't already registered, do so know. 
+  new (a[fNhits]) AliFMDHit(fIshunt, track, detector, ring, sector, strip, 
+			    x, y, z, px, py, pz, edep, pdg, t);
+  fNhits++;
+}
+
+//____________________________________________________________________
+void 
+AliFMD::AddDigit(Int_t* digits)
+{
+  // Add a digit to the Digit tree 
+  // 
+  // Paramters 
+  //
+  //    digits[0]  [UShort_t] Detector #
+  //    digits[1]  [Char_t]   Ring ID
+  //    digits[2]  [UShort_t] Sector #
+  //    digits[3]  [UShort_t] Strip #
+  //    digits[4]  [UShort_t] ADC Count 
+  //    digits[5]  [Short_t]  ADC Count, -1 if not used
+  //    digits[6]  [Short_t]  ADC Count, -1 if not used 
+  // 
+  AddDigit(UShort_t(digits[0]),  // Detector #
+	   Char_t(digits[1]),    // Ring ID
+	   UShort_t(digits[2]),  // Sector #
+	   UShort_t(digits[3]),  // Strip #
+	   UShort_t(digits[4]),  // ADC Count1 
+	   Short_t(digits[5]), 	 // ADC Count2 
+	   Short_t(digits[6]));  // ADC Count3 
+}
+
+//____________________________________________________________________
+void 
+AliFMD::AddDigit(UShort_t detector, 
+		 Char_t   ring, 
+		 UShort_t sector, 
+		 UShort_t strip, 
+		 UShort_t count1, 
+		 Short_t  count2,
+		 Short_t  count3)
+{
+  // add a real digit - as coming from data
+  // 
+  // Parameters 
+  //
+  //    detector  Detector # (1, 2, or 3)                      
+  //    ring	  Ring ID ('I' or 'O')
+  //    sector	  Sector # (For inner/outer rings: 0-19/0-39)
+  //    strip	  Strip # (For inner/outer rings: 0-511/0-255)
+  //    count1    ADC count (a 10-bit word)
+  //    count2    ADC count (a 10-bit word), or -1 if not used
+  //    count3    ADC count (a 10-bit word), or -1 if not used
+  TClonesArray& a = *(DigitsArray());
+  
+  new (a[fNdigits++]) 
+    AliFMDDigit(detector, ring, sector, strip, count1, count2, count3);
+}
+
+//____________________________________________________________________
+void 
+AliFMD::AddSDigit(Int_t* digits)
+{
+  // Add a digit to the SDigit tree 
+  // 
+  // Paramters 
+  //
+  //    digits[0]  [UShort_t] Detector #
+  //    digits[1]  [Char_t]   Ring ID
+  //    digits[2]  [UShort_t] Sector #
+  //    digits[3]  [UShort_t] Strip #
+  //    digits[4]  [Float_t]  Total energy deposited 
+  //    digits[5]  [UShort_t] ADC Count 
+  //    digits[6]  [Short_t]  ADC Count, -1 if not used
+  //    digits[7]  [Short_t]  ADC Count, -1 if not used 
+  // 
+  AddSDigit(UShort_t(digits[0]),  // Detector #
+	    Char_t(digits[1]),    // Ring ID
+	    UShort_t(digits[2]),  // Sector #
+	    UShort_t(digits[3]),  // Strip #
+	    Float_t(digits[4]),   // Edep
+	    UShort_t(digits[5]),  // ADC Count1 
+	    Short_t(digits[6]),   // ADC Count2 
+	    Short_t(digits[7]));  // ADC Count3 
+}
+
+//____________________________________________________________________
+void 
+AliFMD::AddSDigit(UShort_t detector, 
+		  Char_t   ring, 
+		  UShort_t sector, 
+		  UShort_t strip, 
+		  Float_t  edep,
+		  UShort_t count1, 
+		  Short_t  count2,
+		  Short_t  count3)
+{
+  // add a summable digit
+  // 
+  // Parameters 
+  //
+  //    detector  Detector # (1, 2, or 3)                      
+  //    ring	  Ring ID ('I' or 'O')
+  //    sector	  Sector # (For inner/outer rings: 0-19/0-39)
+  //    strip	  Strip # (For inner/outer rings: 0-511/0-255)
+  //    edep      Total energy deposited
+  //    count1    ADC count (a 10-bit word)
+  //    count2    ADC count (a 10-bit word), or -1 if not used
+  //    count3    ADC count (a 10-bit word), or -1 if not used
+  TClonesArray& a = *(SDigitsArray());
+  
+  new (a[fNsdigits++]) 
+    AliFMDSDigit(detector, ring, sector, strip, edep, count1, count2, count3);
+}
+
+//____________________________________________________________________
+void 
+AliFMD::ResetSDigits()
+{
+  //
+  // Reset number of digits and the digits array for this detector
+  //
+  fNsdigits   = 0;
+  if (fSDigits) fSDigits->Clear();
 }
 
 
-
-//-----------------------------------------------------------------------
-
-void AliFMD::MakeBranchInTreeD(TTree *treeD, const char *file)
+//____________________________________________________________________
+TClonesArray*
+AliFMD::HitsArray() 
 {
-    //
-    // Create TreeD branches for the FMD
-    //
-    const Int_t kBufferSize = 4000;
-    char branchname[20];
-    sprintf(branchname,"%s",GetName());	
-    if(treeD)
-     {
-       MakeBranchInTree(treeD,  branchname,&fDigits, kBufferSize, file);
-     }
+  // Initialize hit array if not already, and return pointer to it. 
+  if (!fHits) { 
+    fHits = new TClonesArray("AliFMDHit", 1000);
+    fNhits = 0;
+  }
+  return fHits;
 }
 
-//____________________________________________________________________________
-AliDigitizer* AliFMD::CreateDigitizer(AliRunDigitizer* manager) const
+//____________________________________________________________________
+TClonesArray*
+AliFMD::DigitsArray() 
 {
+  // Initialize digit array if not already, and return pointer to it. 
+  if (!fDigits) { 
+    fDigits = new TClonesArray("AliFMDDigit", 1000);
+    fNdigits = 0;
+  }
+  return fDigits;
+}
+
+//____________________________________________________________________
+TClonesArray*
+AliFMD::SDigitsArray() 
+{
+  // Initialize digit array if not already, and return pointer to it. 
+  if (!fSDigits) { 
+    fSDigits = new TClonesArray("AliFMDSDigit", 1000);
+    fNsdigits = 0;
+  }
+  return fSDigits;
+}
+
+//====================================================================
+//
+// Digitization 
+//
+//____________________________________________________________________
+void 
+AliFMD::Hits2Digits() 
+{
+  AliRunDigitizer* manager = new AliRunDigitizer(1, 1);
+  manager->SetInputStream(0, "galice.root");
+  manager->SetOutputFile("H2Dfile");
+  
+  /* AliDigitizer* dig =*/ CreateDigitizer(manager);
+  manager->Exec("");
+}
+
+//____________________________________________________________________
+void 
+AliFMD::Hits2SDigits() 
+{
+  AliDigitizer* sdig = new AliFMDSDigitizer("galice.root");
+  sdig->Exec("");
+}
+
+  
+//____________________________________________________________________
+AliDigitizer* 
+AliFMD::CreateDigitizer(AliRunDigitizer* manager) const
+{
+  // Create a digitizer object 
   return new AliFMDDigitizer(manager);
 }
+
+//====================================================================
+//
+// Raw data simulation 
+//
+//__________________________________________________________________
+void 
+AliFMD::Digits2Raw() 
+{
+  AliFMD* fmd = static_cast<AliFMD*>(gAlice->GetDetector(GetName()));
+  fLoader->LoadDigits();
+  TTree* digitTree = fLoader->TreeD();
+  if (!digitTree) {
+    Error("Digits2Raw", "no digit tree");
+    return;
+  }
+  
+  TClonesArray* digits = new TClonesArray("AliFMDDigit", 1000);
+  fmd->SetTreeAddress();
+  TBranch* digitBranch = digitTree->GetBranch(GetName());
+  if (!digitBranch) {
+    Error("Digits2Raw", "no branch for %s", GetName());
+    return;
+  }
+  digitBranch->SetAddress(&digits);
+  
+  Int_t nEvents = digitTree->GetEntries();
+  for (Int_t event = 0; event < nEvents; event++) {
+    fmd->ResetDigits();
+    digitTree->GetEvent(event);
+    
+    Int_t nDigits = digits->GetEntries();
+    if (nDigits < 1) continue;
+
+
+    UShort_t prevDetector = 0;
+    Char_t   prevRing     = '\0';
+    UShort_t prevSector   = 0;
+    // UShort_t prevStrip    = 0;
+
+    // The first seen strip number for a channel 
+    UShort_t startStrip   = 0;
+    
+    // Which channel number in the ALTRO channel we're at 
+    UShort_t offset       = 0;
+
+    // How many times the ALTRO Samples one VA1_ALICE channel 
+    Int_t sampleRate = 1;
+
+    // A buffer to hold 1 ALTRO channel - Normally, one ALTRO channel
+    // holds 128 VA1_ALICE channels, sampled at a rate of `sampleRate' 
+    TArrayI channel(128 * sampleRate);
+    
+    // The Altro buffer 
+    AliAltroBuffer* altro = 0;
+    
+    // Loop over the digits in the event.  Note, that we assume the
+    // the digits are in order in the branch.   If they were not, we'd
+    // have to cache all channels before we could write the data to
+    // the ALTRO buffer, or we'd have to set up a map of the digits. 
+    for (Int_t i = 0; i < nDigits; i++) {
+      // Get the digit
+      AliFMDDigit* digit = static_cast<AliFMDDigit*>(digits->At(i));
+
+      UShort_t det    = digit->Detector();
+      Char_t   ring   = digit->Ring();
+      UShort_t sector = digit->Sector();
+      UShort_t strip  = digit->Strip();
+      if (det != prevDetector) {
+	AliDebug(10, Form("FMD: New DDL, was %d, now %d",
+			  kBaseDDL + prevDetector - 1,
+			  kBaseDDL + det - 1));
+	// If an altro exists, delete the object, flushing the data to
+	// disk, and closing the file. 
+	if (altro) { 
+	  // When the first argument is false, we write the real
+	  // header. 
+	  AliDebug(10, Form("New altro: Write channel at %d Strip: %d "
+			    "Sector: %d  Ring: %d", 
+			    i, startStrip, prevSector, prevRing));
+	  // TPC to FMD translations 
+	  // 
+	  //    TPC                FMD
+	  //    ----------+-----------
+	  //    pad       |      strip
+	  //    row       |     sector
+	  //    sector    |       ring
+	  // 
+	  altro->WriteChannel(Int_t(startStrip), 
+			      Int_t(prevSector), 
+			      Int_t((prevRing == 'I' ? 0 : 1)), 
+			      channel.fN, channel.fArray, 0);
+	  altro->Flush();
+	  altro->WriteDataHeader(kFALSE, kFALSE);
+	  delete altro;
+	  altro = 0;
+	}
+
+	prevDetector = det;
+	// Need to open a new DDL! 
+	Int_t ddlId = kBaseDDL + det - 1;
+	TString filename(Form("%s_%d.ddl", GetName(),  ddlId));
+
+	AliDebug(10, Form("New altro buffer with DDL file %s", 
+			  filename.Data()));
+	AliDebug(10, Form("New altro at %d", i));
+	// Create a new altro buffer - a `1' as the second argument
+	// means `write mode' 
+	altro = new AliAltroBuffer(filename.Data(), 1);
+	
+	// Write a dummy (first argument is true) header to the DDL
+	// file - later on, when we close the file, we write the real
+	// header
+	altro->WriteDataHeader(kTRUE, kFALSE);
+
+	// Figure out the sample rate 
+	if (digit->Count2() > 0) sampleRate = 2;
+	if (digit->Count3() > 0) sampleRate = 3;
+
+	channel.Set(128 * sampleRate);
+	offset     = 0;
+	prevRing   = ring;
+	prevSector = sector;
+	startStrip = strip;
+      }
+      else if (offset == 128                        
+	       || digit->Ring() != prevRing 
+	       || digit->Sector() != prevSector) {
+	// Force a new Altro channel
+	AliDebug(10, Form("Flushing channel to disk because %s",
+			  (offset == 128 ? "channel is full" :
+			   (ring != prevRing ? "new ring up" :
+			    "new sector up"))));
+	AliDebug(10, Form("New Channel: Write channel at %d Strip: %d "
+			  "Sector: %d  Ring: %d", 
+			  i, startStrip, prevSector, prevRing));
+	altro->WriteChannel(Int_t(startStrip), 
+			    Int_t(prevSector), 
+			    Int_t((prevRing == 'I' ? 0 : 1)), 
+			    channel.fN, channel.fArray, 0);
+	// Reset and update channel variables 
+	channel.Reset(0);
+	offset     = 0; 
+	startStrip = strip;
+	prevRing   = ring;
+	prevSector = sector;
+      }
+
+      // Store the counts of the ADC in the channel buffer 
+      channel[offset * sampleRate] = digit->Count1();
+      if (sampleRate > 1) 
+	channel[offset * sampleRate + 1] = digit->Count2();
+      if (sampleRate > 2) 
+	channel[offset * sampleRate + 2] = digit->Count3();
+      offset++;
+    }
+    // Finally, we need to close the final ALTRO buffer if it wasn't
+    // already 
+    if (altro) {
+      altro->Flush();
+      altro->WriteDataHeader(kFALSE, kFALSE);
+      delete altro;
+    }
+  }
+  fLoader->UnloadDigits();
+}
+
+//==================================================================
+//
+// Various setter functions for the common paramters 
+//
+
+//__________________________________________________________________
+void 
+AliFMD::SetLegLength(Double_t length) 
+{
+ // Set lenght of plastic legs that hold the hybrid (print board and
+  // silicon sensor) onto the honeycomp support
+  //
+  // DebugGuard guard("AliFMD::SetLegLength");
+   AliDebug(10, "AliFMD::SetLegLength");
+  fLegLength = length;
+  fInner->SetLegLength(fLegLength);
+  fOuter->SetLegLength(fLegLength);
+}
+
+//__________________________________________________________________
+void 
+AliFMD::SetLegOffset(Double_t offset) 
+{
+  // Set offset from edge of hybrid to plastic legs that hold the
+  // hybrid (print board and silicon sensor) onto the honeycomp
+  // support 
+  //
+  // DebugGuard guard("AliFMD::SetLegOffset");
+  AliDebug(10, "AliFMD::SetLegOffset");
+  fInner->SetLegOffset(offset);
+  fOuter->SetLegOffset(offset);
+}
+
+//__________________________________________________________________
+void 
+AliFMD::SetLegRadius(Double_t radius) 
+{
+  // Set the diameter of the plastic legs that hold the hybrid (print
+  // board and silicon sensor) onto the honeycomp support
+  //
+  // DebugGuard guard("AliFMD::SetLegRadius");
+  AliDebug(10, "AliFMD::SetLegRadius");
+  fLegRadius = radius;
+  fInner->SetLegRadius(fLegRadius);
+  fOuter->SetLegRadius(fLegRadius);
+}
+
+//__________________________________________________________________
+void 
+AliFMD::SetModuleSpacing(Double_t spacing) 
+{
+  // Set the distance between the front and back sensor modules
+  // (module staggering). 
+  //
+  // DebugGuard guard("AliFMD::SetModuleSpacing");
+  AliDebug(10, "AliFMD::SetModuleSpacing");  
+  fModuleSpacing = spacing;
+  fInner->SetModuleSpacing(fModuleSpacing);
+  fOuter->SetModuleSpacing(fModuleSpacing);
+}
+
+//====================================================================
+//
+// Utility 
+//
+//__________________________________________________________________
+void 
+AliFMD::Browse(TBrowser* b) 
+{
+  AliDebug(10, "AliFMD::Browse");
+  AliDetector::Browse(b);
+  if (fInner) b->Add(fInner, "Inner Ring");
+  if (fOuter) b->Add(fOuter, "Outer Ring");
+  if (fFMD1)  b->Add(fFMD1,  "FMD1 SubDetector");
+  if (fFMD2)  b->Add(fFMD2,  "FMD2 SubDetector");
+  if (fFMD3)  b->Add(fFMD3,  "FMD3 SubDetector");
+}
+
+
+//********************************************************************
+//
+// AliFMDv0
+//
+//__________________________________________________________________
+
+ClassImp(AliFMDv0);
+
+//********************************************************************
+//
+// AliFMDv1
+//
+//__________________________________________________________________
+
+ClassImp(AliFMDv1);
+
+
+//_//____________________________________________________________________
+void 
+AliFMDv1::StepManager()
+{
+  //
+  // Called for every step in the Forward Multiplicity Detector
+  //
+  // The procedure is as follows: 
+  // 
+  //   - IF NOT track is alive THEN RETURN ENDIF
+  //   - IF NOT particle is charged THEN RETURN ENDIF
+  //   - IF NOT volume name is "STRI" or "STRO" THEN RETURN ENDIF 
+  //   - Get strip number (volume copy # minus 1)
+  //   - Get phi division number (mother volume copy #)
+  //   - Get module number (grand-mother volume copy #)
+  //   - section # = 2 * module # + phi division # - 1
+  //   - Get ring Id from volume name 
+  //   - Get detector # from grand-grand-grand-mother volume name 
+  //   - Get pointer to sub-detector object. 
+  //   - Get track position 
+  //   - IF track is entering volume AND track is inside real shape THEN
+  //   -   Reset energy deposited 
+  //   -   Get track momentum 
+  //   -   Get particle ID # 
+  ///  - ENDIF
+  //   - IF track is inside volume AND inside real shape THEN 
+  ///  -   Update energy deposited 
+  //   - ENDIF 
+  //   - IF track is inside real shape AND (track is leaving volume,
+  //         or it died, or it is stopped  THEN
+  //   -   Create a hit 
+  //   - ENDIF
+  //     
+  //
+  // DebugGuard guard("AliFMDv1::StepManager");
+  AliDebug(10, "AliFMDv1::StepManager");
+  // return;
+
+  // If the track is gone, return
+  if (!gMC->IsTrackAlive()) return;
+  
+  // Only process charged particles 
+  if(TMath::Abs(gMC->TrackCharge()) <= 0) return; 
+
+  // Only do stuff is the track is in one of the strips. 
+  TString vol(gMC->CurrentVolName());
+  if (!vol.Contains("STR")) return;
+
+
+  // Get the strip number.  Note, that GEANT numbers divisions from 1,
+  // so we subtract one 
+  Int_t strip;             
+  gMC->CurrentVolID(strip);
+  strip--;                 
+
+  // Get the phi division of the module 
+  Int_t phiDiv;                         // * The phi division number (1 or 2)
+  gMC->CurrentVolOffID(1, phiDiv);      //   in the module  
+
+  // Active volume number - not used. 
+  // Int_t active;                         
+  // gMC->CurrentVolOffID(2, active);      
+
+  // Get the module number in the ring. 
+  Int_t module;                    
+  gMC->CurrentVolOffID(3, module); 
+  
+  // Ring copy number - the same as the detector number - not used
+  // Int_t ringCopy;                       // * Ring copy number
+  // gMC->CurrentVolOffID(4, ringCopy);    //   Same as detector number 
+  
+  // Get the detector number from the path name 
+  Int_t detector = Int_t((gMC->CurrentVolOffName(5)[3]) - 48);
+
+  // The sector number, calculated from module and phi division # 
+  Int_t  sector =  2 * module + phiDiv - 1;
+
+  // The ring ID is encoded in the volume name 
+  Char_t ring = vol[3];
+
+  // Get a pointer to the sub detector structure 
+  AliFMDSubDetector* det = 0;
+  switch (detector) {
+  case 1: det = fFMD1; break;
+  case 2: det = fFMD2; break;
+  case 3: det = fFMD3; break;
+  }
+  if (!det) return;
+
+  // Get the current track position 
+  TLorentzVector v;
+  gMC->TrackPosition(v);
+  // Check that the track is actually within the active area 
+  Bool_t isWithin = det->CheckHit(ring, module, v.X(), v.Y());
+  Bool_t entering = gMC->IsTrackEntering() && isWithin;
+  Bool_t inside   = gMC->IsTrackInside()   && isWithin;
+  Bool_t out      = (gMC->IsTrackExiting() 
+		     || gMC->IsTrackDisappeared() 
+		     || gMC->IsTrackStop() 
+		     || !isWithin);
+// Reset the energy deposition for this track, and update some of
+  // our parameters.
+  if (entering) {
+    fCurrentDeltaE = 0;
+
+    // Get production vertex and momentum of the track 
+    fCurrentV = v;
+    gMC->TrackMomentum(fCurrentP);
+    fCurrentPdg = gMC->IdFromPDG(gMC->TrackPid());
+
+    // if (fAnalyser) 
+    //   fAnalyser->Update(detector, ring, isWithin, v.X(), v.Y());
+  }
+  
+  // If the track is inside, then update the energy deposition
+  if (inside && fCurrentDeltaE >= 0) 
+    fCurrentDeltaE += 1000 * gMC->Edep();
+
+  // The track exits the volume, or it disappeared in the volume, or
+  // the track is stopped because it no longer fulfills the cuts
+  // defined, then we create a hit. 
+  if (out && fCurrentDeltaE >= 0) {
+    fCurrentDeltaE += 1000 * gMC->Edep();
+
+    AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),
+	   detector, ring,  sector, strip,
+	   fCurrentV.X(), fCurrentV.Y(), fCurrentV.Z(),
+	   fCurrentP.X(), fCurrentP.Y(), fCurrentP.Z(), 
+	   fCurrentDeltaE, fCurrentPdg, fCurrentV.T());
+    fCurrentDeltaE = -1;
+  }
+}
+//___________________________________________________________________
+//
+// EOF
+//

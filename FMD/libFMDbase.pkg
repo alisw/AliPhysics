@@ -1,10 +1,11 @@
 #-*- Mode: Makefile -*-
+#
 # $Id$
 
-SRCS= AliFMDdigit.cxx
+SRCS	=  AliFMDDigit.cxx
+HDRS	=  $(SRCS:.cxx=.h)
+DHDR	:= FMDbaseLinkDef.h
 
-
-HDRS= $(SRCS:.cxx=.h)
-
-DHDR:=FMDbaseLinkDef.h
-
+#
+# EOF
+#

@@ -12,28 +12,30 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include "AliFMDhit.h"
 
-ClassImp(AliFMDhit)
+/* $Id$ */
 
-AliFMDhit::AliFMDhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
-  AliHit(shunt, track)
+// Script to do test the FMD digitization class. 
+void 
+Digitize() 
 {
-//Normal FMD  hit ctor
-  fVolume = vol[0];
-  fNumberOfSector=vol[1];
-  fNumberOfRing=vol[2];
-  fX=hits[0];
-  fY=hits[1];
-  fZ=hits[2];
-  fPx=hits[3];
-  fPy=hits[4];
-  fPz=hits[5];
-  fEdep=hits[6];
-  fParticle=(Int_t)hits[7];
-  fTime=hits[8];
+  // Dynamically link some shared libs
+  if (gClassTable->GetID("AliRun") < 0) {
+    gROOT->LoadMacro("loadlibs.C");
+    loadlibs();
+  }
+  if (gAlice) {
+    delete gAlice;
+    gAlice = 0;
+  }
+
+  AliRunDigitizer * manager = new AliRunDigitizer(1,1);
+  manager->SetInputStream(0,"galice.root");
+  AliFMDDigitizer *FMD = new AliFMDDigitizer(manager);
+  manager->Exec("");
 }
- 
+
+
 
 
 

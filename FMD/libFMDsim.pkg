@@ -1,10 +1,20 @@
 #-*- Mode: Makefile -*-
+#
 # $Id$
 
-SRCS= AliFMD.cxx AliFMDv0.cxx AliFMDv1.cxx AliFMDhit.cxx  AliFMDDigitizer.cxx
+SRCS		=  AliFMD.cxx 			\
+		   AliFMDSubDetector.cxx 	\
+		   AliFMD1.cxx 			\
+		   AliFMD2.cxx 			\
+		   AliFMD3.cxx 			\
+		   AliFMDRing.cxx 		\
+		   AliFMDPolygon.cxx 		\
+		   AliFMDHit.cxx 		\
+		   AliFMDDigitizer.cxx
+HDRS		=  $(SRCS:.cxx=.h) AliFMDMap.h
+DHDR		:= FMDsimLinkDef.h
+EINCLUDE 	:= $(ALICE)/RAW
 
-
-HDRS= $(SRCS:.cxx=.h)
-
-DHDR:=FMDsimLinkDef.h
-
+#
+# EOF
+#

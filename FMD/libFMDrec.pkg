@@ -1,10 +1,14 @@
 #-*- Mode: Makefile -*-
+#
 # $Id$
 
-SRCS= AliFMDReconstructor.cxx AliFMDReconstParticles.cxx
+SRCS		=  AliFMDReconstructor.cxx \
+		   AliFMDRawStream.cxx  \
+		   AliFMDParticles.cxx
+HDRS		=  $(SRCS:.cxx=.h)
+DHDR		:= FMDrecLinkDef.h
+EINCLUDE 	:= $(ALICE)/RAW
 
-
-HDRS= $(SRCS:.cxx=.h)
-
-DHDR:=FMDrecLinkDef.h
-
+#
+# EOF
+#
