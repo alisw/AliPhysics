@@ -56,11 +56,6 @@ AliMonitorHLTHough& AliMonitorHLTHough::operator = (const AliMonitorHLTHough&
   return *this;
 }
 
-//_____________________________________________________________________________
-AliMonitorHLTHough::~AliMonitorHLTHough()
-{
-}
-
 
 //_____________________________________________________________________________
 void AliMonitorHLTHough::CreateHistos(TFolder* folder)

@@ -620,7 +620,7 @@ void AliMonitorProcess::CreateHLTHough(const char* fileName)
 
   fHLTHough = new AliL3Hough();
   fHLTHough->SetTransformerParams(64,64,0.1,30);
-//  fHLTHough->Init("./", kFALSE, 20, kFALSE,0,name);
+  fHLTHough->Init("./", kFALSE, 20, kFALSE,0,name);
   fHLTHough->SetAddHistograms();
   fHLTHough->GetMaxFinder()->SetThreshold(55000); // or 14000 ?
 
@@ -696,6 +696,11 @@ Bool_t AliMonitorProcess::ReconstructHLTHough(
       fHLTHough->FindTrackCandidates();
       fHLTHough->WriteTracks(i,"./hlt");
     }
+
+  // remove the event number from the file names
+  char command[256];
+  sprintf(command, "rename tracks_ho_%d tracks_ho hlt/*.raw", iEvent);
+  gSystem->Exec(command);
   return kTRUE;
 #endif
 }

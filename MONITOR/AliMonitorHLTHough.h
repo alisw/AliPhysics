@@ -13,7 +13,7 @@ public:
   AliMonitorHLTHough(AliTPCParam* param);
   AliMonitorHLTHough(const AliMonitorHLTHough& monitor);
   AliMonitorHLTHough& operator = (const AliMonitorHLTHough& monitor);
-  virtual ~AliMonitorHLTHough();
+  virtual ~AliMonitorHLTHough() {};
 
   virtual void     CreateHistos(TFolder* folder);
   virtual void     FillHistos(AliRunLoader* runLoader, 
