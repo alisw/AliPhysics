@@ -460,6 +460,7 @@ Bool_t AliRawReaderDate::Reset()
 
 #ifdef ALI_DATE
   fSubEvent = NULL;
+  fEquipment = NULL;
 #endif
   fCount = 0;
   fPosition = fEnd = NULL;
@@ -474,6 +475,7 @@ Bool_t AliRawReaderDate::NextEvent()
 #ifdef ALI_DATE
   if (!fFile) return kFALSE;
 
+  Reset();
   eventHeaderStruct header;
   UInt_t headerSize = sizeof(eventHeaderStruct);
   if (fEvent) delete[] fEvent;
