@@ -1,26 +1,19 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
-#include <Riostream.h>
-#include <TDirectory.h>
-#include <TFile.h>
-#include <TObjArray.h>
-#include <TPDGCode.h>
-#include <TTree.h> 
-#include <TMath.h>
-
-#include "AliRun.h"
-#include "AliRunDigitizer.h"
-#include "AliRunLoader.h"
-#include "AliLoader.h"
-
-#include "AliMUON.h"
-#include "AliMUONChamber.h"
-#include "AliMUONConstants.h"
-#include "AliMUONDigit.h"
-#include "AliMUONDigitizerv1.h"
-#include "AliMUONHit.h"
-#include "AliMUONHitMapA1.h"
-#include "AliMUONPadHit.h"
-#include "AliMUONTransientDigit.h"
+/* $Id$ */
 
 /////////////////////////////////////////////////////////////////////////////////
 //
@@ -34,6 +27,17 @@
 //       AliMUONSDigitizerv1 and AliMUONDigitizerv2.
 //
 /////////////////////////////////////////////////////////////////////////////////
+
+#include <TTree.h> 
+
+#include "AliMUON.h"
+#include "AliMUONData.h"
+#include "AliMUONLoader.h"
+#include "AliMUONChamber.h"
+#include "AliMUONConstants.h"
+#include "AliMUONDigitizerv1.h"
+#include "AliMUONHit.h"
+#include "AliMUONTransientDigit.h"
 
 ClassImp(AliMUONDigitizerv1)
 
@@ -62,7 +66,7 @@ void AliMUONDigitizerv1::GenerateTransientDigits()
 // MakeTransientDigitsFromHit for each hit. 
 // Note: Charge correlation is applied to the tracking chambers. 
 
-	TTree* treeH = gime->TreeH();
+	TTree* treeH = fGime->TreeH();
 	if (GetDebug() > 1)
 		Info("GenerateTransientDigits", "Generating transient digits using treeH = 0x%X"
 			, (void*)treeH);
@@ -72,11 +76,11 @@ void AliMUONDigitizerv1::GenerateTransientDigits()
 	for (Int_t itrack = 0; itrack < ntracks; itrack++) 
 	{
 		if (GetDebug() > 2) Info("GenerateTransientDigits", "Processing track %d...", itrack);
-		muondata->ResetHits();
+		fMUONData->ResetHits();
 		treeH->GetEvent(itrack);
 		//
 		//  Loop over hits
-		TClonesArray* hits = muondata->Hits();
+		TClonesArray* hits = fMUONData->Hits();
 		for (Int_t ihit = 0; ihit < hits->GetEntriesFast(); ihit++) 
 		{
 			AliMUONHit* mHit = static_cast<AliMUONHit*>( hits->At(ihit) );
@@ -98,7 +102,7 @@ void AliMUONDigitizerv1::GenerateTransientDigits()
 			}
 			// 
 			// Inititializing Correlation
-			AliMUONChamber& chamber = pMUON->Chamber(ichamber);
+			AliMUONChamber& chamber = fMUON->Chamber(ichamber);
 			chamber.ChargeCorrelationInit();
 			if (ichamber < AliMUONConstants::NTrackingCh()) 
 			{
@@ -132,7 +136,7 @@ void AliMUONDigitizerv1::MakeTransientDigitsFromHit(Int_t track, Int_t iHit, Ali
 	Float_t newdigit[6][500];  // Pad information
 	Int_t nnew=0;              // Number of touched Pads per hit
 	Int_t ichamber = mHit->Chamber()-1;
-	AliMUONChamber& chamber = pMUON->Chamber(ichamber);
+	AliMUONChamber& chamber = fMUON->Chamber(ichamber);
 	chamber.DisIntegration(mHit->Eloss(), mHit->Age(), mHit->X(), mHit->Y(), mHit->Z(), nnew, newdigit);
 
 	// Creating new TransientDigits from hit
@@ -174,7 +178,7 @@ void AliMUONDigitizerv1::MakeTransientDigitsFromHit(Int_t track, Int_t iHit, Ali
 void AliMUONDigitizerv1::AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[6])
 {
 // Derived to add digits to TreeD.
-	muondata->AddDigit(chamber, tracks, charges, digits);   
+	fMUONData->AddDigit(chamber, tracks, charges, digits);   
 };
 
 //------------------------------------------------------------------------
@@ -188,7 +192,7 @@ Int_t AliMUONDigitizerv1::GetSignalFrom(AliMUONTransientDigit* td)
 	//
 	//  Digit Response (noise, threshold, saturation, ...)
 	Int_t q = td->Signal(); 
-	AliMUONChamber& chamber = pMUON->Chamber(td->Chamber());
+	AliMUONChamber& chamber = fMUON->Chamber(td->Chamber());
 	AliMUONResponse* response = chamber.ResponseModel();
 	q = response->DigitResponse(q, td);
 	return q;
@@ -198,12 +202,12 @@ Int_t AliMUONDigitizerv1::GetSignalFrom(AliMUONTransientDigit* td)
 Bool_t AliMUONDigitizerv1::InitOutputData(AliMUONLoader* muonloader)
 {
 // Derived to initialize the output digits tree TreeD, create it if necessary
-// and sets the muondata tree address to treeD.
+// and sets the fMUONData tree address to treeD.
 
 	if (GetDebug() > 2)
 		Info("InitOutputData", "Creating digits branch and setting the tree address.");
 
-	muondata->SetLoader(muonloader);
+	fMUONData->SetLoader(muonloader);
 
 	// New branch per chamber for MUON digit in the tree of digits
 	if (muonloader->TreeD() == NULL)
@@ -216,8 +220,8 @@ Bool_t AliMUONDigitizerv1::InitOutputData(AliMUONLoader* muonloader)
 		};
 	};
 
-	muondata->MakeBranch("D");
-	muondata->SetTreeAddress("D");
+	fMUONData->MakeBranch("D");
+	fMUONData->SetTreeAddress("D");
 	
 	return kTRUE;
 };
@@ -225,11 +229,11 @@ Bool_t AliMUONDigitizerv1::InitOutputData(AliMUONLoader* muonloader)
 //------------------------------------------------------------------------
 void AliMUONDigitizerv1::FillOutputData()
 {
-// Derived to fill TreeD and resets the digit array in muondata.
+// Derived to fill TreeD and resets the digit array in fMUONData.
 
 	if (GetDebug() > 2) Info("FillOutputData", "Filling trees with digits.");
-	muondata->Fill("D");
-	muondata->ResetDigits();
+	fMUONData->Fill("D");
+	fMUONData->ResetDigits();
 };
 
 //------------------------------------------------------------------------
@@ -252,7 +256,7 @@ Bool_t AliMUONDigitizerv1::InitInputData(AliMUONLoader* muonloader)
 	if (GetDebug() > 2)
 		Info("InitInputData", "Loading hits in READ mode and setting the tree address.");
 
-	muondata->SetLoader(muonloader);
+	fMUONData->SetLoader(muonloader);
 
 	if (muonloader->TreeH() == NULL)
 	{
@@ -264,7 +268,7 @@ Bool_t AliMUONDigitizerv1::InitInputData(AliMUONLoader* muonloader)
 		};
 	};
 
-	muondata->SetTreeAddress("H");
+	fMUONData->SetTreeAddress("H");
 	return kTRUE;
 };
 
@@ -274,7 +278,7 @@ void AliMUONDigitizerv1::CleanupInputData(AliMUONLoader* muonloader)
 // Derived to release the loaded hits and unload them.
 
 	if (GetDebug() > 2) Info("CleanupInputData", "Releasing loaded hits.");
-	muondata->ResetHits();
+	fMUONData->ResetHits();
 	muonloader->UnloadHits();
 };
 

@@ -4,23 +4,24 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
+
+//----------------------------------------------
+//
+// Chamber segmentation for homogeneously segmented circular chamber
+//
 
 #include "AliSegmentation.h"
 
 class AliMUONChamber;
 class TF1;
 
-//----------------------------------------------
-//
-// Chamber segmentation for homogeneously segmented circular chamber
-//
-class AliMUONSegmentationV0 :
-public AliSegmentation {
+class AliMUONSegmentationV0 : public AliSegmentation 
+{
  public:
-    AliMUONSegmentationV0(){fCorr=0;fChamber=0;}
-    AliMUONSegmentationV0(const AliMUONSegmentationV0 & segmentation);
-    
+    AliMUONSegmentationV0();
     virtual ~AliMUONSegmentationV0(){}
+
     // Set Chamber Segmentation Parameters
     //
     // Pad size Dx*Dy 
@@ -107,11 +108,14 @@ dummy);
     virtual void SetCorrFunc(Int_t dum, TF1* func);
     // Get the correction Function
     virtual TF1* CorrFunc(Int_t) const {return fCorr;}
-    // assignment operator
-    AliMUONSegmentationV0& operator=(const AliMUONSegmentationV0& rhs);
     
     ClassDef(AliMUONSegmentationV0,1) //Class for homogeneous segmentation
-	protected:
+  
+  protected:
+    AliMUONSegmentationV0(const AliMUONSegmentationV0 & segmentation);
+    // assignment operator
+    AliMUONSegmentationV0& operator=(const AliMUONSegmentationV0& rhs);
+
     //
     // Implementation of the segmentation class:
     // Version 0 models rectangular pads with the same dimensions all

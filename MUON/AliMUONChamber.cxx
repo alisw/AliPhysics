@@ -15,44 +15,64 @@
 
 /* $Id$ */
 
+// --- ROOT includes ---
+#include <TRandom.h>
+#include <TMath.h>
+
 // --- MUON includes ---
 #include "AliMUONChamber.h"
 #include "AliMUONChamberGeometry.h"
 
-// --- ROOT includes ---
-
-#include "TRandom.h"
-#include "TMath.h"
-
 ClassImp(AliMUONChamber)	
 
-    AliMUONChamber::AliMUONChamber()
+AliMUONChamber::AliMUONChamber()
+  : TObject(), 
+    fId(0),
+    fdGas(0.),
+    fdAlu(0.),
+    fZ(0.),
+    fnsec(1),
+    frMin(0.),
+    frMax(0.),
+    fCurrentCorrel(1), // to avoid mistakes if ChargeCorrelInit is not called
+    fSegmentation(0),
+    fReconstruction(0),
+    fResponse(0),
+    fGeometry(0)
 {
 // Default constructor
-    fSegmentation = 0;
-    fResponse=0;
-    fnsec=1;
-    fReconstruction=0;
-    fGeometry = 0;
-    
-    fId=0;
-    // to avoid mistakes if ChargeCorrelInit is not called
-    fCurrentCorrel =1;
 }
 
-    AliMUONChamber::AliMUONChamber(Int_t id) 
+AliMUONChamber::AliMUONChamber(Int_t id) 
+  : TObject(), 
+    fId(id),
+    fdGas(0.),
+    fdAlu(0.),
+    fZ(0.),
+    fnsec(1),
+    frMin(0.),
+    frMax(0.),
+    fCurrentCorrel(1), // to avoid mistakes if ChargeCorrelInit is not called
+    fSegmentation(0),
+    fReconstruction(0),
+    fResponse(0),
+    fGeometry(0)
 {
 // Construtor with chamber id 
     fSegmentation = new TObjArray(2);
     fSegmentation->AddAt(0,0);
     fSegmentation->AddAt(0,1);
-    fResponse=0;
-    fnsec=1;
-    fReconstruction=0;
-    fId=id;
+
     fGeometry = new AliMUONChamberGeometry(fId);
-    // to avoid mistakes if ChargeCorrelInit is not called
-    fCurrentCorrel =1;
+}
+
+AliMUONChamber::AliMUONChamber(const AliMUONChamber& rChamber)
+  : TObject(rChamber)
+{
+// Protected copy constructor
+
+  Fatal("AliMUONMergerModule", "Not implemented.");
+ // Dummy copy constructor
 }
 
 AliMUONChamber::~AliMUONChamber() 
@@ -65,12 +85,16 @@ AliMUONChamber::~AliMUONChamber()
   delete fGeometry;
 }
 
-AliMUONChamber::AliMUONChamber(const AliMUONChamber& rChamber):TObject(rChamber)
+AliMUONChamber & AliMUONChamber::operator =(const AliMUONChamber& rhs)
 {
- // Dummy copy constructor
-     ;
-}
+// Protected assignement operator
 
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
+}
 
 Bool_t  AliMUONChamber::IsSensId(Int_t volId) const 
 {
@@ -214,8 +238,3 @@ void AliMUONChamber::InitGeo(Float_t /*zpos*/)
 }
 
 
-AliMUONChamber & AliMUONChamber::operator =(const AliMUONChamber& /*rhs*/)
-{
-// Dummy assignment operator
-    return *this;
-}

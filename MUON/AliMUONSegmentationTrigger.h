@@ -5,17 +5,21 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
-#include "AliMUONSegmentationV0.h"
-class AliMUONChamber;
 //----------------------------------------------
 //
 // Chamber segmentation virtual base class
 //
-class AliMUONSegmentationTrigger :
-public AliMUONSegmentationV0 {
+
+#include "AliMUONSegmentationV0.h"
+
+class AliMUONChamber;
+
+class AliMUONSegmentationTrigger : public AliMUONSegmentationV0 
+{
  public:
-    AliMUONSegmentationTrigger(){fChamber=0;}
+    AliMUONSegmentationTrigger();
     virtual ~AliMUONSegmentationTrigger(){}  
     virtual void Init(Int_t chamber);         // Initialization
     Int_t ModuleNumber(Int_t imodule);  // returns module number of ModuleId

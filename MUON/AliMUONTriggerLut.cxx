@@ -15,21 +15,22 @@
 
 /* $Id$ */
 
-#include "AliMUONTriggerCircuit.h"
+#include <TMath.h>
+#include <TFile.h>
+#include <TROOT.h>
+#include <TH3.h>
+
 #include "AliMUONTriggerLut.h"
-#include "TTree.h"
+#include "AliMUONTriggerCircuit.h"
 #include "AliRun.h"
 #include "AliMUON.h"
-#include "TMath.h"
-#include "TFile.h"
-#include "TROOT.h"
-#include "TH3.h"
-#include <Riostream.h>
 
 ClassImp(AliMUONTriggerLut)
 
 //----------------------------------------------------------------------
-AliMUONTriggerLut::AliMUONTriggerLut() {
+AliMUONTriggerLut::AliMUONTriggerLut() 
+  : TNamed()
+{
 // constructor
   fLptPlus = fLptMinu = fLptUnde = 0;
   fHptPlus = fHptMinu = fHptUnde = 0;
@@ -53,16 +54,25 @@ AliMUONTriggerLut::~AliMUONTriggerLut() {
 }
 
 //----------------------------------------------------------------------
-AliMUONTriggerLut::AliMUONTriggerLut (const AliMUONTriggerLut& MUONTriggerLut):TNamed(MUONTriggerLut)
+AliMUONTriggerLut::AliMUONTriggerLut (const AliMUONTriggerLut& theMUONTriggerLut)
+  : TNamed(theMUONTriggerLut)
 {
-// Dummy copy constructor
+// Protected copy constructor
+
+  Fatal("AliMUONTriggerLut", "Not implemented.");
 }
 
 //----------------------------------------------------------------------
-AliMUONTriggerLut & AliMUONTriggerLut::operator=(const AliMUONTriggerLut& /*MUONTriggerLut*/)
+AliMUONTriggerLut & 
+AliMUONTriggerLut::operator=(const AliMUONTriggerLut& rhs)
 {
-// Dummy assignment operator
-    return *this;
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
 }
 
 //----------------------------------------------------------------------

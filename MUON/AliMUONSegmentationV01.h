@@ -5,25 +5,26 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 /////////////////////////////////////////////////////
 //  Segmentation and Response classes version 01   //
 /////////////////////////////////////////////////////
-class AliMUON;
-class TObjArray;
+
+#include <TArrayF.h>  // needed for CINT
+#include <TArrayI.h>  // needed for CINT
 
 #include "AliMUONSegmentationV0.h"
-#include "TArrayI.h" // because the object, and not the pointer,
-#include "TArrayF.h" // belongs to the class
 
+class TObjArray;
 
-class AliMUONSegmentationV01 :
-public AliMUONSegmentationV0 {
+class AliMUON;
+
+class AliMUONSegmentationV01 : public AliMUONSegmentationV0 
+{
  public:
     AliMUONSegmentationV01();
     AliMUONSegmentationV01(Int_t nsec);
-    AliMUONSegmentationV01(const AliMUONSegmentationV01 & segmentation);
-    
     virtual ~AliMUONSegmentationV01();
     
     //    
@@ -89,10 +90,13 @@ public AliMUONSegmentationV0 {
     virtual void SetCorrFunc(Int_t dum, TF1* func);
     // Get the correction function
     virtual TF1* CorrFunc(Int_t iZone) const;
+    ClassDef(AliMUONSegmentationV01,1) // Segmentation approximating circular zones with different pad size
+
+  protected:
+    AliMUONSegmentationV01(const AliMUONSegmentationV01 & segmentation);
     // assignment operator
     AliMUONSegmentationV01& operator=(const AliMUONSegmentationV01& rhs);
-    ClassDef(AliMUONSegmentationV01,1) // Segmentation approximating circular zones with different pad size
- protected:
+
     //  Geometry
     //
     Int_t       fNsec;           // Number of sectors

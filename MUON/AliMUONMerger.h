@@ -4,9 +4,9 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
-// #include "AliMerger.h"
-// #include "AliMergable.h"
+class TTree;
 
 class AliMUONPadHit;
 class AliHitMap;
@@ -48,7 +48,7 @@ class AliMUONMerger {
  private:    
     // Open the bgr file
     TFile *InitBgr();
-    void SortTracks(Int_t *tracks,Int_t *charges,Int_t ntr);
+    void SortTracks(Int_t *tracks,Int_t *charges,Int_t ntr) const;
     
  private:
     TTree *fTrH1;                   //! Hits Tree for background event

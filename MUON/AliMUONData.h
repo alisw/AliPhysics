@@ -5,11 +5,14 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 // AliMUONData
 // Class containing MUON data: hits, digits, rawclusters, globaltrigger, localtrigger, etc ...
 // Gines Martinez, Subatech,  September 2003
 //
+
+#include <TNamed.h>
 
 #include "AliLoader.h"
 
@@ -17,7 +20,6 @@ class TClonesArray;
 class TNamed;
 class TObjArray;
 class TTree;
-
 
 class AliMUONConstants;
 class AliMUONRawCluster;
@@ -81,15 +83,15 @@ class AliMUONData : public TNamed
     TClonesArray*  RecTracks() {return fRecTracks;}
     TClonesArray*  RecTriggerTracks() {return fRecTriggerTracks;}
 
-    void           GetTrack(Int_t it) {fLoader->TreeH()->GetEvent(it);}
-    Int_t          GetNtracks()       {return (Int_t) fLoader->TreeH()->GetEntries();}
-    void           GetCathode(Int_t ic) {fLoader->TreeD()->GetEvent(ic);}
-    void           GetCathodeS(Int_t ic) {fLoader->TreeS()->GetEvent(ic);}
-    void           GetRawClusters() {fLoader->TreeR()->GetEvent(0);}
-    void           GetTrigger() {fLoader->TreeR()->GetEvent(0);}
-    Int_t          GetSplitLevel() {return fSplitLevel;}
-    void           GetRecTracks() {fLoader->TreeT()->GetEvent(0);}
-    void           GetRecTriggerTracks() {fLoader->TreeT()->GetEvent(0);}
+    void           GetTrack(Int_t it) const  {fLoader->TreeH()->GetEvent(it);}
+    Int_t          GetNtracks() const      {return (Int_t) fLoader->TreeH()->GetEntries();}
+    void           GetCathode(Int_t ic) const {fLoader->TreeD()->GetEvent(ic);}
+    void           GetCathodeS(Int_t ic) const {fLoader->TreeS()->GetEvent(ic);}
+    void           GetRawClusters() const {fLoader->TreeR()->GetEvent(0);}
+    void           GetTrigger() const {fLoader->TreeR()->GetEvent(0);}
+    Int_t          GetSplitLevel() const {return fSplitLevel;}
+    void           GetRecTracks() const {fLoader->TreeT()->GetEvent(0);}
+    void           GetRecTriggerTracks() const {fLoader->TreeT()->GetEvent(0);}
 
     Bool_t        IsRawClusterBranchesInTree();
     Bool_t        IsTriggerBranchesInTree();

@@ -3,28 +3,30 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include <TROOT.h>
+/* $Id$ */
+// Revision of includes 07/05/2004
+
+#include "AliMUONClusterFinderVS.h"
+
 class TH2F;
 class TH2D;
 class TClonesArray;
-class AliSegmentation;
-class AliMUONResponse;
 class TMinuit;
 class TMatrixD;
+
+class AliSegmentation;
+class AliMUONResponse;
 class AliMUONPixel;
-#include "AliMUONClusterFinderVS.h"
 
-//class AliMUONClusterFinderAZ : public TObject {
-class AliMUONClusterFinderAZ : public AliMUONClusterFinderVS {
-
- public:
-
-  AliMUONClusterFinderAZ(Bool_t draw, Int_t iReco);// Constructor
+class AliMUONClusterFinderAZ : public AliMUONClusterFinderVS 
+{
+public:
+  AliMUONClusterFinderAZ(Bool_t draw = 0, Int_t iReco = 0);// Constructor
   virtual ~AliMUONClusterFinderAZ(); // Destructor
 
   void     FindRawClusters(); // the same interface as for old cluster finder
   void     EventLoop(Int_t nev, Int_t ch); // first event 
-  Bool_t   TestTrack(Int_t t); // test if track was selected
+  Bool_t   TestTrack(Int_t t) const; // test if track was selected
  
 protected:
   AliMUONClusterFinderAZ(const AliMUONClusterFinderAZ& rhs);
@@ -84,7 +86,7 @@ protected:
   void  FlagLocalMax(TH2D *hist, Int_t i, Int_t j, Int_t *isLocalMax); // flag local max
   void  FindCluster(Int_t *localMax, Int_t iMax); // find cluster around local max
   // This function is used for fitting
-  void  fcn1(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
+  void  Fcn1(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 
   ClassDef(AliMUONClusterFinderAZ,0) // cluster finder in MUON arm of ALICE
 };

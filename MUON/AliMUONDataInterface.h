@@ -1,21 +1,27 @@
 #ifndef ALI_MUON_DATA_INTERFACE_H
 #define ALI_MUON_DATA_INTERFACE_H
+/*  Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+// Includes revised 07/05/2004
 
 // Author: Artur Szostak
 //  email: artur@alice.phy.uct.ac.za
 
 #include <TObject.h>
 #include <TString.h>
-#include <TParticle.h>
 
-#include "AliRunLoader.h"
-#include "AliLoader.h"
 #include "AliMUONData.h"
 
-#include "AliMUONHit.h"
-#include "AliMUONDigit.h"
-#include "AliMUONRawCluster.h"
-#include "AliMUONLocalTrigger.h"
+class TParticle;
+
+class AliRunLoader;
+class AliLoader;
+class AliMUONRawCluster;
+class AliMUONLocalTrigger;
+class AliMUONHit;
+class AliMUONDigit;
 
 
 // An easy to use interface to the MUON module data stored in TreeK, TreeH, TreeS, TreeD and TreeR
@@ -86,22 +92,22 @@ public:
 	
 	
 	// Returns the name of the currently selected file.
-	TString CurrentFile()     { return fFilename;    };
+	TString CurrentFile() const    { return fFilename;    };
 	
 	// Returns the name of the currently selected folder.
-	TString CurrentFolder()   { return fFoldername;  };
+	TString CurrentFolder() const   { return fFoldername;  };
 	
 	// Returns the number of the currently selected event.
-	Int_t   CurrentEvent()    { return fEventnumber; };
+	Int_t   CurrentEvent() const    { return fEventnumber; };
 	
 	// Returns the currently selected track.
-	Int_t   CurrentTrack()    { return fTrack;       };
+	Int_t   CurrentTrack() const    { return fTrack;       };
 	
 	// Returns the currently selected cathode in TreeS.
-	Int_t   CurrentSCathode() { return fSCathode;    };
+	Int_t   CurrentSCathode() const { return fSCathode;    };
 	
 	// Returns the currently selected cathode in TreeD.
-	Int_t   CurrentDCathode() { return fCathode;     };
+	Int_t   CurrentDCathode() const { return fCathode;     };
 
 protected:
         AliMUONDataInterface(const AliMUONDataInterface& rhs);

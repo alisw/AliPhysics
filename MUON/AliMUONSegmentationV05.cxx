@@ -19,16 +19,23 @@
 //  Segmentation and Response classes version 05   //
 /////////////////////////////////////////////////////
 
+#include <TMath.h>
+#include <TArrayF.h>
 
 #include "AliMUONSegmentationV05.h"
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
 #include "AliRun.h"
 
-#include <TMath.h>
 //___________________________________________
 ClassImp(AliMUONSegmentationV05)
 
+
+AliMUONSegmentationV05::AliMUONSegmentationV05()
+  : AliMUONSegmentationV02()
+{
+// Constructor
+}
 
 void AliMUONSegmentationV05::Init(Int_t chamber)
 {

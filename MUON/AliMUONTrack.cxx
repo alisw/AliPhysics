@@ -25,10 +25,9 @@
 //
 ///////////////////////////////////////////////////
 
-#include <Riostream.h> // for cout
 #include <stdlib.h> // for exit()
 
-#include <TClonesArray.h>
+#include <Riostream.h> // for cout
 #include <TMath.h>
 #include <TMatrixD.h>
 #include <TObjArray.h>
@@ -55,7 +54,8 @@ ClassImp(AliMUONTrack) // Class implementation in ROOT context
 TVirtualFitter* AliMUONTrack::fgFitter = NULL; 
 
   //__________________________________________________________________________
-AliMUONTrack::AliMUONTrack() 
+AliMUONTrack::AliMUONTrack()
+  : TObject() 
 {
   // Default constructor
   fgFitter = 0;
@@ -66,6 +66,7 @@ AliMUONTrack::AliMUONTrack()
 
   //__________________________________________________________________________
 AliMUONTrack::AliMUONTrack(AliMUONSegment* BegSegment, AliMUONSegment* EndSegment, AliMUONEventReconstructor* EventReconstructor)
+  : TObject()
 {
   // Constructor from two Segment's
   fEventReconstructor = EventReconstructor; // link back to EventReconstructor
@@ -89,6 +90,7 @@ AliMUONTrack::AliMUONTrack(AliMUONSegment* BegSegment, AliMUONSegment* EndSegmen
 
   //__________________________________________________________________________
 AliMUONTrack::AliMUONTrack(AliMUONSegment* Segment, AliMUONHitForRec* HitForRec, AliMUONEventReconstructor* EventReconstructor)
+  : TObject()
 {
   // Constructor from one Segment and one HitForRec
   fEventReconstructor = EventReconstructor; // link back to EventReconstructor
@@ -127,38 +129,51 @@ AliMUONTrack::~AliMUONTrack()
 }
 
   //__________________________________________________________________________
-AliMUONTrack::AliMUONTrack (const AliMUONTrack& MUONTrack):TObject(MUONTrack)
+AliMUONTrack::AliMUONTrack (const AliMUONTrack& theMUONTrack)
+  :  TObject(theMUONTrack)
 {
-  fEventReconstructor = new AliMUONEventReconstructor(*MUONTrack.fEventReconstructor); // is it right ?
-  fTrackParamAtVertex = MUONTrack.fTrackParamAtVertex;
-  fTrackHitsPtr     =  new TObjArray(*MUONTrack.fTrackHitsPtr);  // is it right ?
-  fTrackParamAtHit  =  new TClonesArray(*MUONTrack.fTrackParamAtHit);
-  fNTrackHits       =  MUONTrack.fNTrackHits;
-  fFitMCS           =  MUONTrack.fFitMCS;
-  fFitNParam        =  MUONTrack.fFitNParam;
-  fFitFMin          =  MUONTrack.fFitFMin;
-  fFitStart         =  MUONTrack.fFitStart;
-  fMatchTrigger     =  MUONTrack.fMatchTrigger;
-  fChi2MatchTrigger =  MUONTrack.fChi2MatchTrigger;
+  //fEventReconstructor = new AliMUONEventReconstructor(*MUONTrack.fEventReconstructor);
+                               // is it right ?
+			       // NO, because it would use dummy copy constructor
+			       // and AliMUONTrack is not the owner of its EventReconstructor 
+  fEventReconstructor = theMUONTrack.fEventReconstructor;
+  fTrackParamAtVertex = theMUONTrack.fTrackParamAtVertex;
+  fTrackHitsPtr     =  new TObjArray(*theMUONTrack.fTrackHitsPtr);  // is it right ?
+  fTrackParamAtHit  =  new TClonesArray(*theMUONTrack.fTrackParamAtHit);
+  fNTrackHits       =  theMUONTrack.fNTrackHits;
+  fFitMCS           =  theMUONTrack.fFitMCS;
+  fFitNParam        =  theMUONTrack.fFitNParam;
+  fFitFMin          =  theMUONTrack.fFitFMin;
+  fFitStart         =  theMUONTrack.fFitStart;
+  fMatchTrigger     =  theMUONTrack.fMatchTrigger;
+  fChi2MatchTrigger =  theMUONTrack.fChi2MatchTrigger;
 }
 
   //__________________________________________________________________________
-AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& MUONTrack)
+AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& theMUONTrack)
 {
-  if (this == &MUONTrack)
+
+  // check assignement to self
+  if (this == &theMUONTrack)
     return *this;
 
-  fEventReconstructor =  new AliMUONEventReconstructor(*MUONTrack.fEventReconstructor); // is it right ?
-  fTrackParamAtVertex =  MUONTrack.fTrackParamAtVertex;
-  fTrackHitsPtr       =  new TObjArray(*MUONTrack.fTrackHitsPtr); // is it right ?
-  fTrackParamAtHit    =  new TClonesArray(*MUONTrack.fTrackParamAtHit);
-  fNTrackHits         =  MUONTrack.fNTrackHits;
-  fFitMCS             =  MUONTrack.fFitMCS;
-  fFitNParam          =  MUONTrack.fFitNParam;
-  fFitFMin            =  MUONTrack.fFitFMin;
-  fFitStart           =  MUONTrack.fFitStart;
-  fMatchTrigger       =  MUONTrack.fMatchTrigger;
-  fChi2MatchTrigger   =  MUONTrack.fChi2MatchTrigger;
+  // base class assignement
+  TObject::operator=(theMUONTrack);
+
+  // fEventReconstructor =  new AliMUONEventReconstructor(*MUONTrack.fEventReconstructor); // is it right ?
+                               // is it right ? NO because it would use dummy copy constructor
+  fEventReconstructor =  theMUONTrack.fEventReconstructor;
+  fTrackParamAtVertex =  theMUONTrack.fTrackParamAtVertex;
+  fTrackHitsPtr       =  new TObjArray(*theMUONTrack.fTrackHitsPtr); // is it right ?
+  fTrackParamAtHit    =  new TClonesArray(*theMUONTrack.fTrackParamAtHit);
+  fNTrackHits         =  theMUONTrack.fNTrackHits;
+  fFitMCS             =  theMUONTrack.fFitMCS;
+  fFitNParam          =  theMUONTrack.fFitNParam;
+  fFitFMin            =  theMUONTrack.fFitFMin;
+  fFitStart           =  theMUONTrack.fFitStart;
+  fMatchTrigger       =  theMUONTrack.fMatchTrigger;
+  fChi2MatchTrigger   =  theMUONTrack.fChi2MatchTrigger;
+
   return *this;
 }
 
@@ -267,7 +282,7 @@ void AliMUONTrack::RecursiveDump(void) const
 }
 
   //__________________________________________________________________________
-Int_t AliMUONTrack::HitsInCommon(AliMUONTrack* Track)
+Int_t AliMUONTrack::HitsInCommon(AliMUONTrack* Track) const
 {
   // Returns the number of hits in common
   // between the current track ("this")

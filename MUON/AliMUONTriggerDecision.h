@@ -1,24 +1,30 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+
 /* $Id$ */
+// Revision of includes 07/05/2004
+
 #ifndef ALIMUONTRIGGERDECISION_H
 #define ALIMUONTRIGGERDECISION_H
+
 ////////////////////////////////////////////////
 //  MUON Trigger Decision Class               //
 ////////////////////////////////////////////////
-#include "TObject.h"
-#include "TObjArray.h"
+
+#include <TObject.h>
+
+//class TClonesArray;
 
 class AliLoader;
-class TClonesArray;
 class AliMUONData;
 class AliMUON;
 
 
-class AliMUONTriggerDecision :
-public TObject {
+class AliMUONTriggerDecision : public TObject 
+{
  public:
   AliMUONTriggerDecision(AliLoader* loader, Int_t iprint = 0); // constructor
+  AliMUONTriggerDecision(); // constructor
   ~AliMUONTriggerDecision();                  // destructor
   
   AliMUONData*   GetMUONData() {return fMUONData;}
@@ -49,14 +55,14 @@ public TObject {
 			Int_t coordY[5]);
 
   // return member data information
-  Int_t GetITrigger(Int_t icirc);
-  Int_t GetStripX11(Int_t icirc);
-  Int_t GetDev(Int_t icirc);
-  Int_t GetStripY11(Int_t icirc);
-  void GetLutOutput(Int_t icirc, Int_t lpt[2], Int_t hpt[2], Int_t apt[2]);
+  Int_t GetITrigger(Int_t icirc) const;
+  Int_t GetStripX11(Int_t icirc) const;
+  Int_t GetDev(Int_t icirc) const;
+  Int_t GetStripY11(Int_t icirc) const;
+  void GetLutOutput(Int_t icirc, Int_t lpt[2], Int_t hpt[2], Int_t apt[2]) const;
   void GetGlobalTrigger(Int_t singlePlus[3], Int_t singleMinus[3], 
 			Int_t singleUndef[3], Int_t pairUnlike[3], 
-			Int_t pairLike[3]);  
+			Int_t pairLike[3]) const;  
   
 
 // Add a new Local Trigger

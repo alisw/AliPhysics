@@ -27,7 +27,6 @@
 #include <TF1.h> 
 #include <TVector3.h> 
 #include <TObjArray.h>
-#include <Riostream.h>
 
 #include "AliMUONSegmentationV01.h"
 #include "AliMUON.h"
@@ -35,15 +34,20 @@
 #include "AliRun.h"
 
 
+
 //___________________________________________
 ClassImp(AliMUONSegmentationV01)
 
-  AliMUONSegmentationV01::AliMUONSegmentationV01(const AliMUONSegmentationV01& segmentation):AliMUONSegmentationV0(segmentation)
+AliMUONSegmentationV01::AliMUONSegmentationV01(const AliMUONSegmentationV01& segmentation)
+  : AliMUONSegmentationV0(segmentation)
 {
-// Dummy copy constructor
+// Protected copy constructor
+
+  Fatal("AliMUONSegmentationV01", "Not implemented.");
 }
 
 AliMUONSegmentationV01::AliMUONSegmentationV01() 
+  : AliMUONSegmentationV0()
 {
 // Default constructor
     fRSec = 0;
@@ -54,6 +58,7 @@ AliMUONSegmentationV01::AliMUONSegmentationV01()
 }
 
 AliMUONSegmentationV01::AliMUONSegmentationV01(Int_t nsec) 
+  : AliMUONSegmentationV0()
 {
 //  Non default constructor
 
@@ -193,6 +198,7 @@ void AliMUONSegmentationV01::Init(Int_t chamber)
     fId=chamber;
 }
 
+//______________________________________________________________________
 Int_t AliMUONSegmentationV01::Sector(Int_t ix, Int_t iy)
 {
 // Returns sector number for given pad position
@@ -208,6 +214,7 @@ Int_t AliMUONSegmentationV01::Sector(Int_t ix, Int_t iy)
     }
     return isec;
 }
+
 //______________________________________________________________________
 void AliMUONSegmentationV01::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
 {
@@ -354,7 +361,7 @@ void AliMUONSegmentationV01::FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Fl
     fIx=fIxmin;
     fIy=fIymin;
     GetPadC(fIx,fIy,fX,fY);
-    
+
     // added 
     if (fSector == -1) {
       fSector=Sector(fIx,fIy);
@@ -659,10 +666,15 @@ TF1* AliMUONSegmentationV01::CorrFunc(Int_t isec) const
     return (TF1*) fCorrA->At(isec);
 }
 
-AliMUONSegmentationV01& AliMUONSegmentationV01::operator 
-=(const AliMUONSegmentationV01 & /*rhs*/)
+AliMUONSegmentationV01& 
+AliMUONSegmentationV01::operator =(const AliMUONSegmentationV01 & rhs)
 {
-// Dummy assignment operator
-    return *this;
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
 }
 

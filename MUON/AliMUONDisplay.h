@@ -5,6 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
@@ -14,9 +15,6 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-//#ifndef ROOT_TObject
-#include <TObject.h>
-//#endif
 #include "AliDisplay.h"
 
 class AliLoader;
@@ -28,16 +26,16 @@ class TSlider;
 class TButton;
 class TArc;
 
-class AliMUONDisplay : /*splaypublic TObject,*/ public AliDisplay {
+class AliMUONDisplay : public AliDisplay 
+{
 public:
                      AliMUONDisplay();
                      AliMUONDisplay(Int_t size, AliLoader * loader=0x0);
-		     AliMUONDisplay(const AliMUONDisplay& display);
 		     
    virtual          ~AliMUONDisplay();
    virtual void      Clear(Option_t *option="");
    virtual void      DisplayButtons();
-   virtual void      CreateColors();
+   virtual void      CreateColors() const;
    virtual void      DisplayColorScale();
    virtual Int_t     DistancetoPrimitive(Int_t px, Int_t py);
    virtual void      Draw(Option_t *option="");
@@ -49,9 +47,9 @@ public:
    virtual void      DrawView(Float_t theta, Float_t phi, Float_t psi=0);
    virtual void      DrawP(Float_t,Float_t,Float_t,Float_t,Float_t,Int_t){}
    virtual void      ExecuteEvent(Int_t event, Int_t px, Int_t py);
-   Int_t             GetZoomMode() {return fZoomMode;}
-   Int_t             GetChamber() {return fChamber;}
-   Int_t             GetCathode() {return fCathode;}
+   Int_t             GetZoomMode() const {return fZoomMode;}
+   Int_t             GetChamber() const {return fChamber;}
+   Int_t             GetCathode() const {return fCathode;}
 
    AliMUONData*      GetMUONData() {return fMUONData;}
    AliLoader*        GetLoader()  {return fLoader;}
@@ -80,7 +78,10 @@ public:
    virtual void      NextChamber(Int_t delta=1);
    virtual void      NextCathode();
            void      Trigger();
-	   AliMUONDisplay& operator = (const AliMUONDisplay& rhs);
+
+protected:
+		     AliMUONDisplay(const AliMUONDisplay& display);
+   AliMUONDisplay&   operator = (const AliMUONDisplay& rhs);
 	   
 
 private:

@@ -15,20 +15,20 @@
 
 /* $Id$ */
 
+#include <TMath.h>
+
+#include "AliMUONTriggerCircuit.h"
 #include "AliRun.h"
 #include "AliMUON.h"
-#include "AliMUONTriggerCircuit.h"
 #include "AliMUONTriggerConstants.h"
 #include "AliSegmentation.h"
-#include "AliMUONResponse.h"
 #include "AliMUONChamber.h"
-#include "TMath.h"
-#include "Riostream.h"
 
 ClassImp(AliMUONTriggerCircuit)
 
 //----------------------------------------------------------------------
-AliMUONTriggerCircuit::AliMUONTriggerCircuit() 
+AliMUONTriggerCircuit::AliMUONTriggerCircuit()
+  : TObject() 
 {
 // Constructor
   fSegmentation=0;
@@ -49,16 +49,25 @@ AliMUONTriggerCircuit::AliMUONTriggerCircuit()
 }
 
 //----------------------------------------------------------------------
-AliMUONTriggerCircuit::AliMUONTriggerCircuit(const AliMUONTriggerCircuit& MUONTriggerCircuit):TObject(MUONTriggerCircuit)
+AliMUONTriggerCircuit::AliMUONTriggerCircuit(const AliMUONTriggerCircuit& theMUONTriggerCircuit)
+  : TObject(theMUONTriggerCircuit)
 {
-// Dummy copy constructor
+// Protected copy constructor
+
+  Fatal("AliMUONTriggerCircuit", "Not implemented.");
 }
 
 //----------------------------------------------------------------------
-AliMUONTriggerCircuit & AliMUONTriggerCircuit::operator=(const AliMUONTriggerCircuit& /*MUONTriggerCircuit*/)
+AliMUONTriggerCircuit & 
+AliMUONTriggerCircuit::operator=(const AliMUONTriggerCircuit& rhs)
 {
-// Dummy assignment operator
-    return *this;
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
 }
 
 //----------------------------------------------------------------------
@@ -73,7 +82,7 @@ void AliMUONTriggerCircuit::Init(Int_t iCircuit) {
 }
 
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerCircuit::CircuitNumber(Int_t idCircuit){
+Int_t AliMUONTriggerCircuit::CircuitNumber(Int_t idCircuit) const {
 // returns circuit number iCircuit (0-234) corresponding to circuit idCircuit
   Int_t iCircuit=0;
   for (Int_t i=0; i<234; i++) {
@@ -85,7 +94,7 @@ Int_t AliMUONTriggerCircuit::CircuitNumber(Int_t idCircuit){
   return iCircuit;
 }
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerCircuit::ModuleNumber(Int_t idModule){
+Int_t AliMUONTriggerCircuit::ModuleNumber(Int_t idModule) const {
 // returns module number imod (from 0 to 63) corresponding to module idmodule
   Int_t absidModule=TMath::Abs(idModule);
   Int_t iModule=0;
@@ -99,12 +108,12 @@ Int_t AliMUONTriggerCircuit::ModuleNumber(Int_t idModule){
 }
 
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerCircuit::Module(Int_t idCircuit) {
+Int_t AliMUONTriggerCircuit::Module(Int_t idCircuit) const {
 // returns ModuleId where Circuit idCircuit is sitting
   return Int_t(idCircuit/10);
 }
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerCircuit::Position(Int_t idCircuit) {
+Int_t AliMUONTriggerCircuit::Position(Int_t idCircuit) const {
 // returns position of idCircuit in correcponding Module
   return TMath::Abs(idCircuit)-TMath::Abs(Module(idCircuit))*10;
 }
@@ -385,39 +394,39 @@ Float_t AliMUONTriggerCircuit::PtCal(Int_t istripX, Int_t idev, Int_t istripY){
 //----------------------------------------------------------------------
 //--- methods which return member data related info
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerCircuit::GetIdCircuit(){ 
+Int_t AliMUONTriggerCircuit::GetIdCircuit() const { 
 // returns circuit Id
   return fIdCircuit;
 }
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerCircuit::GetIdModule(){ 
+Int_t AliMUONTriggerCircuit::GetIdModule() const { 
 // returns module Id
   return Module(fIdCircuit);
 }
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerCircuit::GetNstripX() { 
+Int_t AliMUONTriggerCircuit::GetNstripX() const { 
 // returns the number of X strips in the module where the circuit is sitting
   return AliMUONTriggerConstants::NstripX(ModuleNumber(Module(fIdCircuit)));
 }
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerCircuit::GetNstripY() { 
+Int_t AliMUONTriggerCircuit::GetNstripY() const { 
 // returns the number of Y strips in the module where the circuit is sitting
   return AliMUONTriggerConstants::NstripY(ModuleNumber(Module(fIdCircuit)));
 }
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerCircuit::GetPosCircuit() { 
+Int_t AliMUONTriggerCircuit::GetPosCircuit() const { 
 // returns the position of the circuit in its module
   return Position(fIdCircuit);
 }
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerCircuit::GetIdCircuitD(){
+Int_t AliMUONTriggerCircuit::GetIdCircuitD() const {
 // returns the Id of the circuit down 
   Int_t idModule=Module(fIdCircuit);
   Int_t idModuleD=(TMath::Abs(idModule)+10)*(TMath::Abs(idModule)/idModule); 
   return (TMath::Abs(idModuleD)*10+1)*(TMath::Abs(idModule)/idModule);
 }
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerCircuit::GetICircuitD(){
+Int_t AliMUONTriggerCircuit::GetICircuitD() const {
 // returns the number of the circuit down 
   Int_t idModule=Module(fIdCircuit);
   Int_t idModuleD=(TMath::Abs(idModule)+10)*(TMath::Abs(idModule)/idModule); 
@@ -426,14 +435,14 @@ Int_t AliMUONTriggerCircuit::GetICircuitD(){
   return CircuitNumber(idCircuitD);
 }
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerCircuit::GetIdCircuitU(){
+Int_t AliMUONTriggerCircuit::GetIdCircuitU() const {
 // returns the Id of the circuit up 
   Int_t idModule=Module(fIdCircuit);
   Int_t idModuleU=(TMath::Abs(idModule)-10)*(TMath::Abs(idModule)/idModule); 
   return (TMath::Abs(idModuleU)*10+1)*(TMath::Abs(idModule)/idModule);
 }
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerCircuit::GetICircuitU(){
+Int_t AliMUONTriggerCircuit::GetICircuitU() const {
 // returns the number of the circuit up 
   Int_t idModule=Module(fIdCircuit);
   Int_t idModuleU=(TMath::Abs(idModule)-10)*(TMath::Abs(idModule)/idModule); 
@@ -442,43 +451,43 @@ Int_t AliMUONTriggerCircuit::GetICircuitU(){
   return CircuitNumber(idCircuitU);
 }
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerCircuit::GetX2m(){ 
+Int_t AliMUONTriggerCircuit::GetX2m() const { 
 // returns fX2m
   return fX2m;
 }
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerCircuit::GetX2ud(){ 
+Int_t AliMUONTriggerCircuit::GetX2ud() const { 
 // returns fX2ud
   return fX2ud;
 }
 //----------------------------------------------------------------------
-void AliMUONTriggerCircuit::GetOrMud(Int_t orMud[2]){
+void AliMUONTriggerCircuit::GetOrMud(Int_t orMud[2]) const {
 // returns fOrMud 
   orMud[0]=fOrMud[0];
   orMud[1]=fOrMud[1];
 }
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerCircuit::GetXcode(Int_t chamber, Int_t istrip){
+Int_t AliMUONTriggerCircuit::GetXcode(Int_t chamber, Int_t istrip) const {
 // returns X code of circuit/chamber/istrip (warning : chamber in [0,3])
   return fXcode[chamber][istrip];
 }
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerCircuit::GetYcode(Int_t chamber, Int_t istrip){
+Int_t AliMUONTriggerCircuit::GetYcode(Int_t chamber, Int_t istrip) const {
 // returns Y code of circuit/chamber/istrip (warning : chamber in [0,3])
   return fYcode[chamber][istrip];
 }
 //----------------------------------------------------------------------
-Float_t AliMUONTriggerCircuit::GetY11Pos(Int_t istrip){
+Float_t AliMUONTriggerCircuit::GetY11Pos(Int_t istrip) const {
 // returns Y position of X strip istrip in MC11
   return fYpos11[istrip];
 }
 //----------------------------------------------------------------------
-Float_t AliMUONTriggerCircuit::GetY21Pos(Int_t istrip){
+Float_t AliMUONTriggerCircuit::GetY21Pos(Int_t istrip) const {
 // returns Y position of X strip istrip in MC21
   return fYpos21[istrip];
 }
 //----------------------------------------------------------------------
-Float_t AliMUONTriggerCircuit::GetX11Pos(Int_t istrip){
+Float_t AliMUONTriggerCircuit::GetX11Pos(Int_t istrip) const {
 // returns X position of Y strip istrip in MC11
   return fXpos11[istrip];
 }

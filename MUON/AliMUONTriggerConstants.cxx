@@ -21,6 +21,7 @@ ClassImp(AliMUONTriggerConstants)
 
 //----------------------------------------------------------------------
 AliMUONTriggerConstants::AliMUONTriggerConstants()
+  : TNamed()
 {
 // constructor
     ;
@@ -33,11 +34,11 @@ AliMUONTriggerConstants::~AliMUONTriggerConstants()
 }
 
 //----------------------------------------------------------------------
-const Int_t AliMUONTriggerConstants::fgNmodule = 126;
+const Int_t AliMUONTriggerConstants::fgkNmodule = 126;
 
 //----------------------------------------------------------------------
 // conv : line-column (line : from top to bottom, column : from left to right)
-const Int_t AliMUONTriggerConstants::fgModuleId[126] = 
+const Int_t AliMUONTriggerConstants::fgkModuleId[126] = 
 {11,12,13,14,15,16,17,         // right side of the chamber
  21,22,23,24,25,26,27,
  31,32,33,34,35,36,37,
@@ -58,7 +59,7 @@ const Int_t AliMUONTriggerConstants::fgModuleId[126] =
  -91,-92,-93,-94,-95,-96,-97};
 
 //----------------------------------------------------------------------
-const Int_t AliMUONTriggerConstants::fgNstripX[126]=
+const Int_t AliMUONTriggerConstants::fgkNstripX[126]=
 {16,16,16,16,16,16,16,  // right side of the chamber 
  32,32,32,32,32,32,16,
  32,32,32,32,32,32,16,
@@ -79,7 +80,7 @@ const Int_t AliMUONTriggerConstants::fgNstripX[126]=
  16,16,16,16,16,16,16};
 
 //----------------------------------------------------------------------  
-const Int_t AliMUONTriggerConstants::fgNstripY[126]=
+const Int_t AliMUONTriggerConstants::fgkNstripY[126]=
 { 8, 8, 8, 8, 8, 8,16,  // right side of the chamber
   8, 8, 8, 8, 8, 8,16,
   16,16,16,16,16, 8,16,
@@ -100,7 +101,7 @@ const Int_t AliMUONTriggerConstants::fgNstripY[126]=
   8, 8, 8, 8, 8, 8,16};
 
 //----------------------------------------------------------------------  
-const Float_t AliMUONTriggerConstants::fgXcMin[126]=
+const Float_t AliMUONTriggerConstants::fgkXcMin[126]=
 {-36.,-70.,-104.,-138.,-172.,-206.,-274., //right
  -36.,-70.,-104.,-138.,-172.,-206.,-274.,
  -36.,-70.,-104.,-138.,-172.,-206.,-274.,
@@ -122,7 +123,7 @@ const Float_t AliMUONTriggerConstants::fgXcMin[126]=
 };
 
 //----------------------------------------------------------------------  
-const Float_t AliMUONTriggerConstants::fgXcMax[126]=
+const Float_t AliMUONTriggerConstants::fgkXcMax[126]=
 {-2.,-36.,-70.,-104.,-138.,-172.,-206., // right
  -2.,-36.,-70.,-104.,-138.,-172.,-206.,
  -2.,-36.,-70.,-104.,-138.,-172.,-206.,
@@ -144,7 +145,7 @@ const Float_t AliMUONTriggerConstants::fgXcMax[126]=
 };
 
 //----------------------------------------------------------------------  
-const Int_t AliMUONTriggerConstants::fgCircuitId[234]=
+const Int_t AliMUONTriggerConstants::fgkCircuitId[234]=
 {111, 121, 131, 141, 151, 161, 171,
  211, 212, 221, 222, 231, 232, 241, 242, 251, 252, 261, 262, 271,
  311, 312, 321, 322, 331, 332, 341, 342, 351, 352, 361, 362, 371,
@@ -175,44 +176,44 @@ const Int_t AliMUONTriggerConstants::fgCircuitId[234]=
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerConstants::Nmodule()
 {
-// returns fgNmodule
-    return fgNmodule;    
+// returns fgkNmodule
+    return fgkNmodule;    
 }
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerConstants::ModuleId(Int_t imodule)
 {
-// returns fgModuleId
-    return fgModuleId[imodule];
+// returns fgkModuleId
+    return fgkModuleId[imodule];
 }
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerConstants::NstripX(Int_t imodule) 
 {
-// returns fgNstripX
-    return fgNstripX[imodule];
+// returns fgkNstripX
+    return fgkNstripX[imodule];
 }
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerConstants::NstripY(Int_t imodule)
 {
-// return fgNstripY
-    return fgNstripY[imodule];
+// return fgkNstripY
+    return fgkNstripY[imodule];
 }
 //----------------------------------------------------------------------
 Float_t AliMUONTriggerConstants::XcMin(Int_t imodule)
 {
-// returns fgXcMin
-    return fgXcMin[imodule];
+// returns fgkXcMin
+    return fgkXcMin[imodule];
 }
 //----------------------------------------------------------------------
 Float_t AliMUONTriggerConstants::XcMax(Int_t imodule)
 {
-// returns fgXcMax
-    return fgXcMax[imodule];
+// returns fgkXcMax
+    return fgkXcMax[imodule];
 }
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerConstants::CircuitId(Int_t icircuit)
 {
-// returns fgCircuitId
-    return fgCircuitId[icircuit];
+// returns fgkCircuitId
+    return fgkCircuitId[icircuit];
 }
 
 

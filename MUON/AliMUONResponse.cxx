@@ -19,3 +19,15 @@
 
 ClassImp(AliMUONResponse)
 
+AliMUONResponse::AliMUONResponse()
+  : TObject()
+{
+// Default constructor
+}
+
+
+AliMUONResponse::~AliMUONResponse()
+{
+// Destructor
+}
+

@@ -20,6 +20,7 @@
 /////////////////////////////////////////////////////////
 
 #include <TMath.h>
+
 #include "AliMUONChamber.h"
 #include "AliMUONSegmentationV1.h"
 #include "AliRun.h"
@@ -29,14 +30,17 @@
 //___________________________________________
 ClassImp(AliMUONSegmentationV1)
 
-  AliMUONSegmentationV1::AliMUONSegmentationV1(const AliMUONSegmentationV1& segmentation):AliSegmentation(segmentation)
+AliMUONSegmentationV1::AliMUONSegmentationV1(const AliMUONSegmentationV1& segmentation)
+  : AliSegmentation(segmentation)
 {
-// Dummy copy constructor
+// Protected copy constructor
+
+  Fatal("AliMUONSegmentationV1", "Not implemented.");
 }
 
 
 AliMUONSegmentationV1::AliMUONSegmentationV1()
-
+  : AliSegmentation()
 {
   // initizalize the class with default settings
     fNzone=1;
@@ -249,7 +253,7 @@ Int_t AliMUONSegmentationV1::MorePads()
     }
 }
 
-Int_t AliMUONSegmentationV1::IsParallel2(Int_t iX, Int_t iY)
+Int_t AliMUONSegmentationV1::IsParallel2(Int_t iX, Int_t iY) const
 {
 // test if the pad is read in parallel for zone 2
 // iX and iY are assumed to be positive and starting at 0 numbering (cF. iX)
@@ -266,7 +270,7 @@ Int_t AliMUONSegmentationV1::IsParallel2(Int_t iX, Int_t iY)
     return (iX%6)/3+1;
 }
 
-Int_t AliMUONSegmentationV1::IsParallel3(Int_t iX, Int_t iY)
+Int_t AliMUONSegmentationV1::IsParallel3(Int_t iX, Int_t iY) const
 {
 // test if the pad is read in parallel for zone 3
 // iX and iY are assumed to be positive and starting at 0 numbering (cF. iX)
@@ -283,7 +287,7 @@ Int_t AliMUONSegmentationV1::IsParallel3(Int_t iX, Int_t iY)
     return (iX%9)/3+1 - (iY%3==2 && iX%3==0);
 }
 
-Int_t AliMUONSegmentationV1::NParallel2(Int_t /*iX*/, Int_t iY)
+Int_t AliMUONSegmentationV1::NParallel2(Int_t /*iX*/, Int_t iY) const
 {
 // returns the number of pads connected in parallel for zone 2
 // iX and iY are assumed to be positive and starting at 0 numbering (cF. iX)
@@ -298,7 +302,7 @@ Int_t AliMUONSegmentationV1::NParallel2(Int_t /*iX*/, Int_t iY)
     return 2;
 }
 
-Int_t AliMUONSegmentationV1::NParallel3(Int_t iX, Int_t iY)
+Int_t AliMUONSegmentationV1::NParallel3(Int_t iX, Int_t iY) const
 {
 // test if the pad is read in parallel for zone 3
 // iX and iY are assumed to be positive and starting at 0 numbering (cF. iX)
@@ -539,8 +543,14 @@ void AliMUONSegmentationV1::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) con
     y[0]=x[0];
 }
 
-AliMUONSegmentationV1& AliMUONSegmentationV1::operator =(const AliMUONSegmentationV1 & /*rhs*/)
+AliMUONSegmentationV1& 
+AliMUONSegmentationV1::operator =(const AliMUONSegmentationV1 & rhs)
 {
-// Dummy assignment operator
-    return *this;
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
 }

@@ -70,31 +70,50 @@ extern "C" {
     Field[0] = b[0]; Field[1] = b[1]; Field[2] = b[2];
   }
 }
-  //_________________________________________________________________________
 
-AliMUONTrackParam& AliMUONTrackParam::operator=(const AliMUONTrackParam& MUONTrackParam)
+  //_________________________________________________________________________
+AliMUONTrackParam::AliMUONTrackParam()
+  : TObject()
 {
-  if (this == &MUONTrackParam)
+// Constructor
+
+  fInverseBendingMomentum = 0;
+  fBendingSlope = 0;
+  fNonBendingSlope = 0;
+  fZ = 0;
+  fBendingCoor = 0;
+  fNonBendingCoor = 0;
+}
+
+  //_________________________________________________________________________
+AliMUONTrackParam& 
+AliMUONTrackParam::operator=(const AliMUONTrackParam& theMUONTrackParam)
+{
+  if (this == &theMUONTrackParam)
     return *this;
 
-  fInverseBendingMomentum =  MUONTrackParam.fInverseBendingMomentum; 
-  fBendingSlope           =  MUONTrackParam.fBendingSlope; 
-  fNonBendingSlope        =  MUONTrackParam.fNonBendingSlope; 
-  fZ                      =  MUONTrackParam.fZ; 
-  fBendingCoor            =  MUONTrackParam.fBendingCoor; 
-  fNonBendingCoor         =  MUONTrackParam.fNonBendingCoor;
+  // base class assignement
+  TObject::operator=(theMUONTrackParam);
+
+  fInverseBendingMomentum =  theMUONTrackParam.fInverseBendingMomentum; 
+  fBendingSlope           =  theMUONTrackParam.fBendingSlope; 
+  fNonBendingSlope        =  theMUONTrackParam.fNonBendingSlope; 
+  fZ                      =  theMUONTrackParam.fZ; 
+  fBendingCoor            =  theMUONTrackParam.fBendingCoor; 
+  fNonBendingCoor         =  theMUONTrackParam.fNonBendingCoor;
 
   return *this;
 }
   //_________________________________________________________________________
-AliMUONTrackParam::AliMUONTrackParam(const AliMUONTrackParam& MUONTrackParam):TObject(MUONTrackParam)
+AliMUONTrackParam::AliMUONTrackParam(const AliMUONTrackParam& theMUONTrackParam)
+  : TObject(theMUONTrackParam)
 {
-  fInverseBendingMomentum =  MUONTrackParam.fInverseBendingMomentum; 
-  fBendingSlope           =  MUONTrackParam.fBendingSlope; 
-  fNonBendingSlope        =  MUONTrackParam.fNonBendingSlope; 
-  fZ                      =  MUONTrackParam.fZ; 
-  fBendingCoor            =  MUONTrackParam.fBendingCoor; 
-  fNonBendingCoor         =  MUONTrackParam.fNonBendingCoor;
+  fInverseBendingMomentum =  theMUONTrackParam.fInverseBendingMomentum; 
+  fBendingSlope           =  theMUONTrackParam.fBendingSlope; 
+  fNonBendingSlope        =  theMUONTrackParam.fNonBendingSlope; 
+  fZ                      =  theMUONTrackParam.fZ; 
+  fBendingCoor            =  theMUONTrackParam.fBendingCoor; 
+  fNonBendingCoor         =  theMUONTrackParam.fNonBendingCoor;
 }
 
   //__________________________________________________________________________

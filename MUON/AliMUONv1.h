@@ -4,23 +4,24 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 /////////////////////////////////////////////////////////
 //  Manager and hits classes for set:MUON version 1    //
 /////////////////////////////////////////////////////////
  
-#include "TLorentzVector.h"
+#include <TLorentzVector.h>
 
 #include "AliMUON.h"
 
 class TF1;
 class TGeoCombiTrans;
-
 class TString;
 class TGeoHMatrix;
 
-class AliMUONv1 : public AliMUON {
-public:
+class AliMUONv1 : public AliMUON 
+{
+ public:
    AliMUONv1();
    AliMUONv1(const char *name, const char *title);
    virtual  ~AliMUONv1();
@@ -36,7 +37,8 @@ public:
      { fAngleEffect = Opt; }
    void SetStepMaxInActiveGas(Float_t StepMax)
      {fStepMaxInActiveGas = StepMax; }
-protected:
+
+ protected:
    AliMUONv1(const AliMUONv1& right);
    AliMUONv1&  operator = (const AliMUONv1& right);
 
@@ -56,7 +58,7 @@ protected:
    TF1 *          fAngleEffectNorma;// Angle effect: Normalisation form theta=10 degres to theta between 0 and 10 (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis)
    TGeoCombiTrans* fGlobalTransformation; // global transformation 
                                   // applied to the whole geometry 
-private:
+ private:
    // method
    void PlaceVolume(const TString& name, const TString& mName, Int_t copyNo, 
              const TGeoHMatrix& matrix, Int_t npar, Double_t* param,

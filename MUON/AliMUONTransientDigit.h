@@ -5,15 +5,16 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 #include "AliMUONDigit.h"
-#include "TObjArray.h"
+
+class TObjArray;
 
 class AliMUONTransientDigit : public AliMUONDigit 
 {
   public:
-    AliMUONTransientDigit() {fTrackList=0;}
-    AliMUONTransientDigit(const AliMUONTransientDigit& digit);
+    AliMUONTransientDigit();
     AliMUONTransientDigit(Int_t rpad, Int_t *digits);
     virtual ~AliMUONTransientDigit();
 
@@ -23,9 +24,11 @@ class AliMUONTransientDigit : public AliMUONDigit
     Int_t GetCharge(Int_t i) const;
     void AddToTrackList(Int_t track, Int_t charge);
     void UpdateTrackList(Int_t track, Int_t charge);
-    AliMUONTransientDigit & operator =(const AliMUONTransientDigit & rhs);
     
   protected:
+    AliMUONTransientDigit(const AliMUONTransientDigit& digit);
+    AliMUONTransientDigit & operator =(const AliMUONTransientDigit & rhs);
+
     Int_t          fChamber;       // chamber number of pad
     TObjArray     *fTrackList;     // List of tracks contributing
 

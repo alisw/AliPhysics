@@ -13,14 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "AliMUONTrackK.h"
+#include <stdlib.h> // for exit()
 
 #include <Riostream.h>
 #include <TClonesArray.h>
-#include <TArrayD.h>
 #include <TMatrixD.h>
-#include <stdlib.h> // for exit()
 
+#include "AliMUONTrackK.h"
 #include "AliCallf77.h"
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
@@ -30,7 +29,7 @@
 #include "AliMUONRawCluster.h"
 #include "AliMUONTrackParam.h"
 #include "AliRun.h"
-#include "AliMagF.h"
+//#include "AliMagF.h"
 
 const Int_t AliMUONTrackK::fgkSize = 5;
 const Int_t AliMUONTrackK::fgkNSigma = 4; 
@@ -82,6 +81,7 @@ TClonesArray* AliMUONTrackK::fgHitForRec = NULL;
 
   //__________________________________________________________________________
 AliMUONTrackK::AliMUONTrackK()
+  : TObject()
 {
   // Default constructor
 
@@ -104,6 +104,7 @@ AliMUONTrackK::AliMUONTrackK()
 
   //__________________________________________________________________________
 AliMUONTrackK::AliMUONTrackK(AliMUONEventReconstructor *EventReconstructor, TClonesArray *hitForRec)
+  : TObject()
 {
   // Constructor
 
@@ -127,6 +128,7 @@ AliMUONTrackK::AliMUONTrackK(AliMUONEventReconstructor *EventReconstructor, TClo
 
   //__________________________________________________________________________
 AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
+  : TObject()
 {
   // Constructor from a segment
   Double_t dX, dY, dZ;
@@ -217,9 +219,12 @@ AliMUONTrackK::~AliMUONTrackK()
 }
 
   //__________________________________________________________________________
-AliMUONTrackK::AliMUONTrackK (const AliMUONTrackK& source):TObject(source)
+AliMUONTrackK::AliMUONTrackK (const AliMUONTrackK& source)
+  : TObject(source)
 {
-// Dummy copy constructor
+// Protected copy constructor
+
+  Fatal("AliMUONTrackK", "Not implemented.");
 }
 
   //__________________________________________________________________________
@@ -228,6 +233,10 @@ AliMUONTrackK & AliMUONTrackK::operator=(const AliMUONTrackK& source)
   // Assignment operator
   // Members
   if(&source == this) return *this;
+
+  // base class assignement
+  TObject::operator=(source);
+
   fStartSegment = source.fStartSegment;
   fNTrackHits = source.fNTrackHits;
   fChi2 = source.fChi2;
@@ -652,8 +661,8 @@ void AliMUONTrackK::WeightPropagation(Double_t zEnd)
   Int_t i, j;
   Double_t dPar;
 
-  TMatrixD Jacob(fgkSize,fgkSize);
-  Jacob = 0;
+  TMatrixD jacob(fgkSize,fgkSize);
+  jacob = 0;
 
   // Save initial and propagated parameters
   TMatrixD trackPar0 = *fTrackPar;
@@ -681,23 +690,23 @@ void AliMUONTrackK::WeightPropagation(Double_t zEnd)
     (*fTrackPar)(i,0) += dPar;
     ParPropagation(zEnd);
     for (j=0; j<fgkSize; j++) {
-      Jacob(j,i) = ((*fTrackParNew)(j,0)-trackPar0(j,0))/dPar;
+      jacob(j,i) = ((*fTrackParNew)(j,0)-trackPar0(j,0))/dPar;
     }
   }
 
-  //Jacob->Print();
+  //jacob->Print();
   //trackParNew0.Print();
-  //TMatrixD par1(Jacob,TMatrixD::kMult,trackPar0); //
+  //TMatrixD par1(jacob,TMatrixD::kMult,trackPar0); //
   //par1.Print();
   /*
-  if (Jacob.Determinant() != 0) {
-    //  Jacob.Invert();
+  if (jacob.Determinant() != 0) {
+    //  jacob.Invert();
   } else {
-    cout << " ***** Warning in WeightPropagation: Determinant Jacob=0:" << endl;
+    cout << " ***** Warning in WeightPropagation: Determinant jacob=0:" << endl;
   }
   */
-  TMatrixD weight1(*fWeight,TMatrixD::kMult,Jacob); // WD
-  *fWeight = TMatrixD(Jacob,TMatrixD::kTransposeMult,weight1); // DtWD
+  TMatrixD weight1(*fWeight,TMatrixD::kMult,jacob); // WD
+  *fWeight = TMatrixD(jacob,TMatrixD::kTransposeMult,weight1); // DtWD
   //fWeight->Print();
 
   // Restore initial and propagated parameters
@@ -714,12 +723,12 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
   // Picks up point within a window for the chamber No ichamb 
   // Split the track if there are more than 1 hit
   Int_t ihit, nRecTracks;
-  Double_t WindowB, WindowNonB, dChi2Tmp=0, dChi2, y, x, savePosition=0;
+  Double_t windowB, windowNonB, dChi2Tmp=0, dChi2, y, x, savePosition=0;
   TClonesArray *trackPtr;
   AliMUONHitForRec *hit, *hitLoop;
   AliMUONTrackK *trackK;
 
-  Bool_t Ok = kFALSE;
+  Bool_t ok = kFALSE;
   //sigmaB = fgEventReconstructor->GetBendingResolution(); // bending resolution
   //sigmaNonB = fgEventReconstructor->GetNonBendingResolution(); // non-bending resolution
   *fCovariance = *fWeight;
@@ -733,8 +742,8 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
   } else {
     cout << " ***** Warning in FindPoint: Determinant fCovariance=0:" << endl;
   }
-  //WindowB = fgkNSigma*TMath::Sqrt((*fCovariance)(0,0)+sigmaB*sigmaB);
-  //WindowNonB = fgkNSigma*TMath::Sqrt((*fCovariance)(1,1)+sigmaNonB*sigmaNonB);
+  //windowB = fgkNSigma*TMath::Sqrt((*fCovariance)(0,0)+sigmaB*sigmaB);
+  //windowNonB = fgkNSigma*TMath::Sqrt((*fCovariance)(1,1)+sigmaNonB*sigmaNonB);
   // Loop over all hits and take hits from the chamber
   TMatrixD pointWeight(fgkSize,fgkSize);
   TMatrixD saveWeight = pointWeight;
@@ -770,10 +779,10 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	}
 	y = hit->GetBendingCoor();
 	x = hit->GetNonBendingCoor();
-	WindowB = fgkNSigma*TMath::Sqrt((*fCovariance)(0,0)+hit->GetBendingReso2());
-	WindowNonB = fgkNSigma*TMath::Sqrt((*fCovariance)(1,1)+hit->GetNonBendingReso2());
-	if (TMath::Abs((*fTrackParNew)(0,0)-y) <= WindowB &&
-	    TMath::Abs((*fTrackParNew)(1,0)-x) <= WindowNonB) {
+	windowB = fgkNSigma*TMath::Sqrt((*fCovariance)(0,0)+hit->GetBendingReso2());
+	windowNonB = fgkNSigma*TMath::Sqrt((*fCovariance)(1,1)+hit->GetNonBendingReso2());
+	if (TMath::Abs((*fTrackParNew)(0,0)-y) <= windowB &&
+	    TMath::Abs((*fTrackParNew)(1,0)-x) <= windowNonB) {
 	  // Vector of measurements and covariance matrix
 	  point.Zero();
 	  point(0,0) = y;
@@ -782,7 +791,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	  pointWeight(1,1) = 1/hit->GetNonBendingReso2();
 	  TryPoint(point,pointWeight,trackPar,dChi2);
 	  if (TMath::Abs(1./(trackPar)(4,0)) < fgEventReconstructor->GetMinBendingMomentum()) continue; // p < p_min - next hit
-	  Ok = kTRUE;
+	  ok = kTRUE;
 	  nHitsOK++;
 	  //if (nHitsOK > -1) {
 	  if (nHitsOK == 1) {
@@ -839,7 +848,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
       }
     } else break; // different chamber
   } // for (ihit=currIndx;
-  if (Ok) {
+  if (ok) {
     *fTrackPar = trackParTmp;
     *fWeight = saveWeight;
     *fWeight += pointWeightTmp; 
@@ -847,7 +856,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
     // Restore members
     fPosition = savePosition;
   }
-  return Ok;
+  return ok;
 }
 
   //__________________________________________________________________________
@@ -995,7 +1004,7 @@ Int_t AliMUONTrackK::Compare(const TObject* trackK) const
 }
 
   //__________________________________________________________________________
-Bool_t AliMUONTrackK::KeepTrack(AliMUONTrackK* track0)
+Bool_t AliMUONTrackK::KeepTrack(AliMUONTrackK* track0) const
 {
   // Check whether or not to keep current track 
   // (keep, if it has less than half of common hits with track0)
@@ -1112,7 +1121,7 @@ void AliMUONTrackK::GoToVertex(void)
   // R > 1
   // R < 1
 
-  Double_t dZ, r0Norm, X0, deltaP, dChi2, pTotal, pOld;
+  Double_t dZ, r0Norm, x0, deltaP, dChi2, pTotal, pOld;
   AliMUONHitForRec *hit;
   AliMUONRawCluster *clus;
   TClonesArray *rawclusters;
@@ -1132,9 +1141,9 @@ void AliMUONTrackK::GoToVertex(void)
     ParPropagation(zPos[i]);
     WeightPropagation(zPos[i]);
     dZ = TMath::Abs (fPositionNew-fPosition);
-    if (r0Norm > 1) X0 = x01[i];
-    else X0 = x02[i];
-    MSLine(dZ,X0); // multiple scattering in the medium (linear approximation)
+    if (r0Norm > 1) x0 = x01[i];
+    else x0 = x02[i];
+    MSLine(dZ,x0); // multiple scattering in the medium (linear approximation)
     fPosition = fPositionNew;
     *fTrackPar = *fTrackParNew; 
     r0Norm = (*fTrackPar)(0,0)*(*fTrackPar)(0,0) + 
@@ -1259,7 +1268,7 @@ void AliMUONTrackK::GoToVertex(void)
 }
 
   //__________________________________________________________________________
-void AliMUONTrackK::MSLine(Double_t dZ, Double_t X0)
+void AliMUONTrackK::MSLine(Double_t dZ, Double_t x0)
 {
   // Adds multiple scattering in a thick layer for linear propagation
 
@@ -1274,7 +1283,7 @@ void AliMUONTrackK::MSLine(Double_t dZ, Double_t X0)
   Double_t step = TMath::Abs(dZ)/cosAlph/cosBeta; // step length
 
   // Projected scattering angle
-  Double_t theta0 = 0.0136/velo/momentum/TMath::Sqrt(X0)*(1+0.038*TMath::Log(step/X0)); 
+  Double_t theta0 = 0.0136/velo/momentum/TMath::Sqrt(x0)*(1+0.038*TMath::Log(step/x0)); 
   Double_t theta02 = theta0*theta0;
   Double_t dl2 = step*step/2*theta02;
   Double_t dl3 = dl2*step*2/3;

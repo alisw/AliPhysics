@@ -2,6 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
+// Revision of includes 07/05/2004
 //
 // Class AliMUONSt1GeometryBuilderV2
 // ---------------------------------
@@ -12,21 +13,7 @@
 #ifndef ALI_MUON_ST1_GEOMETRY_BUILDER_V2_H
 #define ALI_MUON_ST1_GEOMETRY_BUILDER_V2_H
 
-//#include "AliMUONSt1Containers.h"
 #include "AliMUONSt1Types.h"
-
-/*
-#ifdef ST1_WITH_STL
-  #include <map>
-  #ifdef __HP_aCC
-    using std::map;
-  #endif
-#endif
-
-#ifdef ST1_WITH_ROOT
-  #include "TExMap.h"
-#endif
-*/
 #include "AliMUONVGeometryBuilder.h"
 
 //typedef Float_t GReal_t; // for AliGeant3
@@ -56,16 +43,6 @@ class AliMUONSt1GeometryBuilderV2 : public AliMUONVGeometryBuilder
     AliMUONSt1GeometryBuilderV2& operator = (const AliMUONSt1GeometryBuilderV2& rhs);    
  
   private:
-    // Typedefs
-    //
-/*
-#ifdef ST1_WITH_STL
-    typedef map<Int_t , AliMUONSt1SpecialMotif> SpecialMap;
-#endif
-#ifdef ST1_WITH_ROOT
-    typedef  TExMap  SpecialMap;
-#endif
-*/
     // Constants
     //
     static const GReal_t fgkHzPadPlane;    // Pad plane

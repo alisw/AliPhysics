@@ -3,11 +3,15 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include <TROOT.h>
-class TArrayD;
+/*$Id$*/
+// Revision of includes 07/05/2004
+
+#include <TObject.h>
+
 class TMatrixD;
 class AliMUONEventReconstructor;
 class TClonesArray;
+class TObjArray;
 class AliMUONSegment;
 class AliMUON;
 class AliMUONHitForRec;
@@ -18,8 +22,6 @@ class AliMUONTrackK : public TObject {
 
   AliMUONTrackK(); // Default constructor
   virtual ~AliMUONTrackK(); // Destructor
-  AliMUONTrackK (const AliMUONTrackK& source); // copy constructor
-  AliMUONTrackK& operator=(const AliMUONTrackK& source); // assignment operator
 
   //AliMUONTrackK(const AliMUONEventReconstructor *EventReconstructor, const AliMUONHitForRec *hitForRec); // Constructor
   AliMUONTrackK(AliMUONEventReconstructor *EventReconstructor, TClonesArray *hitForRec); // Constructor
@@ -42,7 +44,7 @@ class AliMUONTrackK : public TObject {
   Bool_t KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, Double_t zDipole1, Double_t zDipole2); // Kalman filter
   void StartBack(void); // start backpropagator
   void SetTrackQuality(Int_t iChi2); // compute track quality or Chi2
-  Bool_t KeepTrack(AliMUONTrackK* track0); // keep or discard track 
+  Bool_t KeepTrack(AliMUONTrackK* track0) const; // keep or discard track 
   void Kill(void); // kill track candidate
   void Branson(void); // Branson correction
   void GoToZ(Double_t zEnd); // propagate track to given Z
@@ -55,6 +57,9 @@ class AliMUONTrackK : public TObject {
 
 
  protected:
+
+  AliMUONTrackK (const AliMUONTrackK& source); // copy constructor
+  AliMUONTrackK& operator=(const AliMUONTrackK& source); // assignment operator
 
  private:
  

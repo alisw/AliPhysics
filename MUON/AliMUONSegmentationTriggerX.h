@@ -5,16 +5,19 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
-#include "AliMUONSegmentationTrigger.h"
-
-class AliMUONChamber;
 //----------------------------------------------
 //
 // Chamber segmentation virtual base class
 //
-class AliMUONSegmentationTriggerX :
-public AliMUONSegmentationTrigger {
+
+#include "AliMUONSegmentationTrigger.h"
+
+class AliMUONChamber;
+
+class AliMUONSegmentationTriggerX : public AliMUONSegmentationTrigger 
+{
  public:
   AliMUONSegmentationTriggerX(){}
   virtual ~AliMUONSegmentationTriggerX(){}

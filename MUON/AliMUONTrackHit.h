@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 /*$Id$*/
+// Revision of includes 07/05/2004
 
 ///////////////////////////////////////////////////////
 // Reconstructed track hit in ALICE dimuon spectrometer
@@ -14,17 +15,11 @@
 
 class AliMUONHitForRec;
 
-class AliMUONTrackHit : public TObject {
+class AliMUONTrackHit : public TObject 
+{
  public:
-  AliMUONTrackHit(){
-    // Constructor
-    fHitForRecPtr = 0;
-    fNextTrackHitWithSameHitForRec = 0;
-    fPrevTrackHitWithSameHitForRec = 0;
-  } // Constructor
+  AliMUONTrackHit(); // Constructor
   virtual ~AliMUONTrackHit(); // Destructor
-  AliMUONTrackHit (const AliMUONTrackHit& AliMUONTrackHit); // copy constructor
-  AliMUONTrackHit& operator=(const AliMUONTrackHit& AliMUONTrackHit); // assignment operator
   AliMUONTrackHit(AliMUONHitForRec* Hit); // Constructor from one HitForRec
 
   // Inline functions for Get and Set
@@ -39,6 +34,9 @@ class AliMUONTrackHit : public TObject {
   Int_t Compare(const TObject* TrackHit) const; // "Compare" function for sorting
 
  protected:
+  AliMUONTrackHit (const AliMUONTrackHit& AliMUONTrackHit); // copy constructor
+  AliMUONTrackHit& operator=(const AliMUONTrackHit& AliMUONTrackHit); // assignment operator
+
  private:
   void SetNextTrackHitWithSameHitForRec(AliMUONTrackHit *Next) {fNextTrackHitWithSameHitForRec = Next;}
   void SetPrevTrackHitWithSameHitForRec(AliMUONTrackHit *Prev) {fPrevTrackHitWithSameHitForRec = Prev;}

@@ -4,14 +4,14 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 #include "AliSegmentation.h"
 
-class AliMUONSegmentationV1 :
-public AliSegmentation {
+class AliMUONSegmentationV1 : public AliSegmentation 
+{
  public:
     AliMUONSegmentationV1();
-    AliMUONSegmentationV1(const AliMUONSegmentationV1 & segmentation);
     virtual ~AliMUONSegmentationV1(){}
     //    
     // Set Chamber Segmentation Parameters
@@ -102,11 +102,11 @@ public AliSegmentation {
     virtual Int_t Sector(Int_t /*ix*/, Int_t /*iy*/)   {return 1;}
     virtual Int_t Sector(Float_t /*x*/, Float_t /*y*/) {return 1;}
     // Position of pad in perellel read-out
-    virtual Int_t IsParallel2(Int_t iX, Int_t iY);
-    virtual Int_t IsParallel3(Int_t iX, Int_t iY);
+    virtual Int_t IsParallel2(Int_t iX, Int_t iY) const;
+    virtual Int_t IsParallel3(Int_t iX, Int_t iY) const;
     // Number of pads read in parallel
-    virtual Int_t NParallel2(Int_t iX, Int_t iY);
-    virtual Int_t NParallel3(Int_t iX, Int_t iY);
+    virtual Int_t NParallel2(Int_t iX, Int_t iY) const;
+    virtual Int_t NParallel3(Int_t iX, Int_t iY) const;
     //
     // Number of pads read in parallel and offset to add to x
     virtual void GetNParallelAndOffset(Int_t iX, Int_t iY,
@@ -131,9 +131,12 @@ public AliSegmentation {
     // Get the correction function
     virtual TF1* CorrFunc(Int_t) const {return fCorr;}
     //
-    AliMUONSegmentationV1& operator=(const AliMUONSegmentationV1& rhs);
     ClassDef(AliMUONSegmentationV1,1) // Implementation of the Lyon type chamber segmentation with parallel read-out
- protected:
+
+  protected:
+    AliMUONSegmentationV1(const AliMUONSegmentationV1 & segmentation);
+    AliMUONSegmentationV1& operator=(const AliMUONSegmentationV1& rhs);
+
     //
     // Implementation of the segmentation data
     // Version This models rectangular pads with the same dimensions all

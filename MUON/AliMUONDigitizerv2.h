@@ -3,7 +3,13 @@
 /* Copyright(c) 1998-2001, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+// Revision of includes 07/05/2004
+
 #include "AliMUONDigitizerv1.h"
+#include "AliMUONDigit.h"
+
+class AliMUONLoader;
 
 class AliMUONDigitizerv2 : public AliMUONDigitizerv1
 {

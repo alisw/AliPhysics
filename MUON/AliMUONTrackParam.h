@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 /*$Id$*/
+// Revision of includes 07/05/2004
 
 ///////////////////////////////////////////////////
 // Track parameters in ALICE dimuon spectrometer
@@ -11,17 +12,10 @@
 
 #include <TObject.h>
 
-class AliMUONTrackParam : public TObject {
+class AliMUONTrackParam : public TObject 
+{
  public:
-  AliMUONTrackParam(){
-    fInverseBendingMomentum = 0;
-    fBendingSlope = 0;
-    fNonBendingSlope = 0;
-    fZ = 0;
-    fBendingCoor = 0;
-    fNonBendingCoor = 0;
-    // Constructor
-  } // Constructor
+  AliMUONTrackParam(); // Constructor
   virtual ~AliMUONTrackParam(){} // Destructor
   
   AliMUONTrackParam(const AliMUONTrackParam& rhs);// copy constructor (should be added per default !)

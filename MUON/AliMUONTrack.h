@@ -4,10 +4,14 @@
  * See cxx source for full Copyright notice                               */
 
 /*$Id$*/
+// Revision of includes 07/05/2004
+
 
 ///////////////////////////////////////////////////
 // Reconstructed track in ALICE dimuon spectrometer
 ///////////////////////////////////////////////////
+
+#include <TClonesArray.h>
 
 #include "AliMUONTrackParam.h" // object belongs to the class
 
@@ -15,13 +19,13 @@
         // not used
 
 class TObjArray;
-class TClonesArray;
 class TVirtualFitter;
 class AliMUONEventReconstructor;
 class AliMUONHitForRec;
 class AliMUONSegment;
 
-class AliMUONTrack : public TObject {
+class AliMUONTrack : public TObject 
+{
  public:
   AliMUONTrack(); // Default constructor
   virtual ~AliMUONTrack(); // Destructor
@@ -59,7 +63,7 @@ class AliMUONTrack : public TObject {
   void AddSegment(AliMUONSegment* Segment); // Add Segment
   void AddHitForRec(AliMUONHitForRec* HitForRec); // Add HitForRec
   void SetTrackParamAtHit(Int_t indexHit, AliMUONTrackParam *TrackParam) const;
-  Int_t HitsInCommon(AliMUONTrack* Track);
+  Int_t HitsInCommon(AliMUONTrack* Track) const;
   void MatchTriggerTrack(TClonesArray* TriggerTrackArray);
 
   static TVirtualFitter* Fitter(void) {return fgFitter;}

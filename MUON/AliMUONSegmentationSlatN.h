@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 /////////////////////////////////////////////////////
 //  Segmentation classes for slat modules          //
@@ -12,13 +13,13 @@
 
 #include "AliMUONSegmentationSlat.h"
 
-class TArrayF;
-class TList;
-class AliMUONSegmentationSlatModuleN;
+//class TArrayF;
+//class TList;
+//class AliMUONSegmentationSlatModuleN;
 
 
-class  AliMUONSegmentationSlatN :
-public AliMUONSegmentationSlat {
+class  AliMUONSegmentationSlatN : public AliMUONSegmentationSlat 
+{
  public:
     AliMUONSegmentationSlatN();
     AliMUONSegmentationSlatN(Int_t nsec);
@@ -39,11 +40,11 @@ public AliMUONSegmentationSlat {
     //
     // Class specific methods
     virtual void GlobalToLocal(
-	Int_t ix, Int_t iy, Int_t &islat, Int_t &ixlocal, Int_t &iylocal);
+	Int_t ix, Int_t iy, Int_t &islat, Int_t &ixlocal, Int_t &iylocal) const;
     virtual void LocalToGlobal(
-	 Int_t islat, Int_t ixlocal, Int_t iylocal, Int_t &ix, Int_t &iy);
+	 Int_t islat, Int_t ixlocal, Int_t iylocal, Int_t &ix, Int_t &iy) const;
     // Factory method for associated slat module class
-     AliMUONSegmentationSlatModule* CreateSlatModule();
+     AliMUONSegmentationSlatModule* CreateSlatModule() const;
  private:
     ClassDef(AliMUONSegmentationSlatN,1) // Segmentation for Muon Chamber built from Slat Modules
 	

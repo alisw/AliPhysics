@@ -4,6 +4,8 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
+
 /////////////////////////////////////////////////////
 //  Segmentation classes for slat modules          //
 //  to be used with AluMUONSegmentationSlat        //
@@ -13,12 +15,12 @@
 
 class TArrayI;
 class TObjArray;
+
 class AliMUONSegmentationSlatModule;
 class AliMUONChamber;
 
-
-class AliMUONSegmentationSlat :
-public AliSegmentation {
+class AliMUONSegmentationSlat : public AliSegmentation 
+{
  public:
     AliMUONSegmentationSlat();
     AliMUONSegmentationSlat(Int_t nsec);    
@@ -133,16 +135,16 @@ public AliSegmentation {
     virtual void GlobalToLocal(
 	Float_t x, Float_t y, Float_t z,  Int_t &islat, Float_t &xlocal, Float_t &ylocal);
     virtual void GlobalToLocal(
-	Int_t ix, Int_t iy, Int_t &islat, Int_t &ixlocal, Int_t &iylocal);
+	Int_t ix, Int_t iy, Int_t &islat, Int_t &ixlocal, Int_t &iylocal) const;
 
-    virtual void LocalToGlobal(
-	 Int_t islat, Float_t xlocal, Float_t ylocal, Float_t &x, Float_t  &y, Float_t &z);
-    virtual void LocalToGlobal(
-	 Int_t islat, Int_t ixlocal, Int_t iylocal, Int_t &ix, Int_t &iy);
+    virtual void LocalToGlobal (
+	 Int_t islat, Float_t xlocal, Float_t ylocal, Float_t &x, Float_t  &y, Float_t &z) const; 
+    virtual void LocalToGlobal (
+	 Int_t islat, Int_t ixlocal, Int_t iylocal, Int_t &ix, Int_t &iy) const;
     virtual void SetSymmetry(Int_t   ix);
     virtual void SetSymmetry(Float_t  x);
    // Factory method for associated slat module class  
-    virtual AliMUONSegmentationSlatModule* CreateSlatModule();
+    virtual AliMUONSegmentationSlatModule* CreateSlatModule() const;
     
  protected:
 

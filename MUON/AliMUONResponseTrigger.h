@@ -4,13 +4,14 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 #include "AliMUONResponseV0.h"
 
-class AliMUONResponseTrigger : 
-public AliMUONResponseV0 {
+class AliMUONResponseTrigger : public AliMUONResponseV0 
+{
  public:
-  AliMUONResponseTrigger(){};
+  AliMUONResponseTrigger();
   virtual ~AliMUONResponseTrigger(){} 
 
   virtual Int_t DigitResponse(Int_t digit, AliMUONTransientDigit* where);

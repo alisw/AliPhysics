@@ -4,55 +4,47 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
-#include "TObjArray.h"
+#include <TObject.h>
+#include <TObjArray.h>
+
 #include "AliSegmentation.h"
 #include "AliMUONResponse.h"
 
 class AliMUONClusterFinderVS;
-//class AliMUONResponse ;
-//class AliSegmentation ;
 class AliMUONChamberGeometry;
 
-class AliMUONChamber:
-public TObject
+class AliMUONChamber : public TObject
 {
  public:
     AliMUONChamber();
     AliMUONChamber(Int_t id);
-    AliMUONChamber(const AliMUONChamber & rChamber);
     virtual ~AliMUONChamber();
     
 //
 // Get chamber Id
-  virtual Int_t   GetId() {return fId;}
+  virtual Int_t   GetId() const {return fId;}
 //
 
 // Get chamber Id
   virtual Bool_t  IsSensId(Int_t volId) const;
-/*
-// Get GEANT id of sensitive volume
-  virtual Int_t   GetGid() {return fGid;}
-// Set GEANT id of sensitive volume
-  virtual void    SetGid(Int_t id) {fGid=id;}
-//
-*/
   
 // Initialisation
   virtual void    Init();
 // Set z-position of chamber  
   virtual void    SetZ(Float_t Z) {fZ = Z;}
 // Get z-position of chamber  
-  virtual Float_t Z(){return fZ;}
+  virtual Float_t Z() const {return fZ;}
 // Set inner radius of sensitive volume 
   virtual void SetRInner(Float_t rmin) {frMin=rmin;}
 // Set outer radius of sensitive volum  
   virtual void SetROuter(Float_t rmax) {frMax=rmax;}  
 
 // Return inner radius of sensitive volume 
-  virtual  Float_t RInner()            {return frMin;}
+  virtual  Float_t RInner() const      {return frMin;}
 // Return outer radius of sensitive volum  
-  virtual Float_t ROuter()            {return frMax;}  
+  virtual Float_t ROuter() const       {return frMax;}  
 //  
 // Set response model
   virtual void    SetResponseModel(AliMUONResponse* thisResponse) {fResponse=thisResponse;}
@@ -77,7 +69,7 @@ public TObject
 //  Get pointer to cluster reconstruction model
   virtual AliMUONClusterFinderVS* &ReconstructionModel(){return fReconstruction;}
 // Get number of segmentation sectors  
-  virtual Int_t Nsec()              {return fnsec;}
+  virtual Int_t Nsec() const        {return fnsec;}
 // Set number of segmented cathodes (1 or 2)  
   virtual void  SetNsec(Int_t nsec) {fnsec=nsec;}
 //
@@ -118,8 +110,8 @@ public TObject
 // Initialize geometry related parameters  
   virtual void    InitGeo(Float_t z);
 //
-  virtual Float_t DGas() {return fdGas;}
-  virtual Float_t DAlu() {return fdAlu;}  
+  virtual Float_t DGas() const {return fdGas;}
+  virtual Float_t DAlu() const {return fdAlu;}  
   virtual void SetDGas(Float_t DGas) {fdGas = DGas;}
   virtual void SetDAlu(Float_t DAlu) {fdAlu = DAlu;}  
   virtual void SetChargeCorrel(Float_t correl) {fResponse->SetChargeCorrel(correl);}
@@ -128,15 +120,15 @@ public TObject
   void SetGeometry(AliMUONChamberGeometry* geometry) {fGeometry = geometry;}
   AliMUONChamberGeometry* GetGeometry() const {return fGeometry; }
 
-// assignment operator  
-  AliMUONChamber& operator =(const AliMUONChamber& rhs);
   
  protected:
+  AliMUONChamber(const AliMUONChamber & rChamber);
+  // assignment operator  
+  AliMUONChamber& operator =(const AliMUONChamber& rhs);
+
   Int_t   fId;   // chamber number
   Float_t fdGas; // half gaz gap
   Float_t fdAlu; // half Alu width  
-  //Int_t   fGid;  // GEANT volume if for sensitive volume of this chamber
-                   // moved to AliMUONChamberGeometry
   Float_t fZ;    // Z position (cm)
   Int_t   fnsec; // number of semented cathode planes
   Float_t frMin; // innermost sensitive radius

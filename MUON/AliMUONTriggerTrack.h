@@ -4,16 +4,18 @@
  * See cxx source for full Copyright notice                               */
 
 /*$Id$*/
+// Revision of includes 07/05/2004
 
 ///////////////////////////////////////////////////
 // Reconstructed trigger track in ALICE dimuon spectrometer
 ///////////////////////////////////////////////////
 
+#include <TObject.h>
 
-class TObjArray;
 class AliMUONEventReconstructor;
 
-class AliMUONTriggerTrack : public TObject {
+class AliMUONTriggerTrack : public TObject 
+{
  public:
     AliMUONTriggerTrack(); // Constructor
     virtual ~AliMUONTriggerTrack(); // Destructor

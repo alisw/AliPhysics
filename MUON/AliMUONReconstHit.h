@@ -5,16 +5,14 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 #include <TObject.h>
 
 class AliMUONReconstHit : public TObject 
 {
   public:
-    AliMUONReconstHit() {
-       fCorrelIndex[0]=fCorrelIndex[1]=fCorrelIndex[2]=fCorrelIndex[3]=0;
-       fX[0]=fX[1]=fX[2]=fX[3]=0; fY[0]=fY[1]=fY[2]=fY[3]=0; 
-    }
+    AliMUONReconstHit();
     AliMUONReconstHit(Int_t *idx, Float_t *x, Float_t *y);
     virtual ~AliMUONReconstHit() {}
    

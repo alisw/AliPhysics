@@ -24,14 +24,10 @@
 #include "AliMUONChamber.h"
 #include "AliMUONResponseV0.h"
 #include "AliMUONResponseTrigger.h"
-#include "AliMUONSegmentationV0.h"
 #include "AliMUONSegmentationV01.h"
 #include "AliMUONSegmentationV02.h"
-#include "AliMUONSegmentationV04.h"
-#include "AliMUONSegmentationV05.h"
 #include "AliMUONSegmentationSlat.h"
 #include "AliMUONSegmentationSlatN.h"
-#include "AliMUONSegmentationTrigger.h"
 #include "AliMUONSegmentationTriggerX.h"
 #include "AliMUONSegmentationTriggerY.h"
 
@@ -52,10 +48,11 @@ AliMUONFactory::AliMUONFactory(const AliMUONFactory& rhs)
 {
 // Protected copy constructor
 
-  Fatal("AliMUONFactoryModule", "Not implemented.");
+  Fatal("AliMUONFactory", "Not implemented.");
 }
 
 //__________________________________________________________________________
+
 AliMUONFactory::~AliMUONFactory()
 {
 //

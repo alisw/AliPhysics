@@ -26,27 +26,14 @@
 ////////////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
-#include <AliRun.h>
-#include <TClonesArray.h>
-#include <TClass.h>
-
-#include <TFile.h>
-#include <TMatrixD.h>
-#include <TParticle.h>
 
 #include "AliMUONRecoTrack.h"
-#include "AliMUONEventReconstructor.h"
-#include "AliMUONTrack.h"
-#include "AliMUONTrackK.h"
-#include "AliMUONTrackParam.h"
-#include "AliMUONHitForRec.h"
-#include "AliMUONTrackHit.h"
-#include "AliHeader.h"
 
 ClassImp(AliMUONRecoTrack)
 
 //-------------------------------------------------------------------
 AliMUONRecoTrack::AliMUONRecoTrack(Bool_t active)
+  : TObject()
 {
 //Constructor of AliMUONRecoTrack
    fSign  = 0;

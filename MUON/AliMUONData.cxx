@@ -20,12 +20,9 @@
 // Gines Martinez, Subatech,  September 2003
 //
 
-//Root includes
-#include "TNamed.h"
 //AliRoot include
-#include "AliRun.h"
-#include "AliMC.h" 
-#include "AliLoader.h" 
+//#include "AliRun.h"
+//#include "AliMC.h" 
 #include "AliMUONConstants.h"
 #include "AliMUONData.h"
 #include "AliMUONDigit.h"
@@ -35,6 +32,7 @@
 #include "AliMUONRawCluster.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTriggerTrack.h"
+
 ClassImp(AliMUONData)
  
 //_____________________________________________________________________________
@@ -188,13 +186,13 @@ void AliMUONData::AddDigit(Int_t id, const AliMUONDigit& digit)
   new(ldigits[fNdigits[id]++]) AliMUONDigit(digit);
 }
 //_____________________________________________________________________________
-void AliMUONData::AddSDigit(Int_t id, Int_t *tracks, Int_t *charges, Int_t *Sdigits)
+void AliMUONData::AddSDigit(Int_t id, Int_t *tracks, Int_t *charges, Int_t *sdigits)
 {
   //
   // Add a MUON Sdigit to the list of SDigits of the detection plane id
   //
   TClonesArray &lSdigits = * SDigits(id) ; 
-  new(lSdigits[fNSdigits[id]++]) AliMUONDigit(tracks,charges,Sdigits);
+  new(lSdigits[fNSdigits[id]++]) AliMUONDigit(tracks,charges,sdigits);
 }
 //_____________________________________________________________________________
 void AliMUONData::AddSDigit(Int_t id, const AliMUONDigit& Sdigit)
@@ -567,9 +565,9 @@ void AliMUONData::MakeBranch(Option_t* option)
 	Info("MakeBranch","Branch %s is already in tree.",GetName());
 	return;
       }
-      TClonesArray * Sdigits = SDigits(iDetectionPlane); 
-      branch = TreeS()->Branch(branchname, &Sdigits, kBufferSize,1);
-      //Info("MakeBranch","Making Branch %s for Sdigits in detection plane %d\n",branchname,iDetectionPlane+1);
+      TClonesArray * sdigits = SDigits(iDetectionPlane); 
+      branch = TreeS()->Branch(branchname, &sdigits, kBufferSize,1);
+      //Info("MakeBranch","Making Branch %s for sdigits in detection plane %d\n",branchname,iDetectionPlane+1);
       }
   }
 
@@ -844,8 +842,8 @@ void AliMUONData::SetTreeAddress(Option_t* option)
       sprintf(branchname,"%sSDigits%d",GetName(),i+1);
       if (fSDigits) {
 	branch = TreeS()->GetBranch(branchname);
-	TClonesArray * Sdigits = SDigits(i);
-	if (branch) branch->SetAddress( &Sdigits );
+	TClonesArray * sdigits = SDigits(i);
+	if (branch) branch->SetAddress( &sdigits );
 	else Warning("SetTreeAddress","(%s) Failed for SDigits Detection plane %d. Can not find branch in tree.",GetName(),i);
       }
     }

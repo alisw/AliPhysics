@@ -21,16 +21,16 @@
 /////////////////////////////////////////////////////
 
 
-#include "AliMUONSegmentationSlatModuleN.h"
-#include <TMath.h>
-#include <Riostream.h>
+#include <TArrayI.h>
+#include <TArrayF.h>
 
-#include "AliMUONSegmentationV01.h"
+#include "AliMUONSegmentationSlatModuleN.h"
 
 //___________________________________________
 ClassImp(AliMUONSegmentationSlatModuleN)
 
 AliMUONSegmentationSlatModuleN::AliMUONSegmentationSlatModuleN() 
+  : AliMUONSegmentationSlatModule()
 {
 // Default constructor
 }

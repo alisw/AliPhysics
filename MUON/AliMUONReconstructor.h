@@ -4,10 +4,12 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 #include "AliReconstructor.h"
 
-class AliMUONReconstructor: public AliReconstructor {
+class AliMUONReconstructor: public AliReconstructor 
+{
   public:
     AliMUONReconstructor();
     virtual ~AliMUONReconstructor();

@@ -4,12 +4,13 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 ////////////////////////////////////////////////////////////
 //  Factory for muon chambers, segmentations and response //
 ////////////////////////////////////////////////////////////
-#include "AliDetector.h"
-// #include "AliMUONTriggerCircuit.h" // cp
+
+#include <TObject.h>
 
 class AliMUON;
 class AliMUONResponseV0;

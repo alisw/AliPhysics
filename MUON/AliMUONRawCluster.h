@@ -5,16 +5,17 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 // Class for the MUON RecPoint
 // It contains the propeorties of the physics cluters found in the tracking chambers
 // RawCluster contains also the information from the both cathode of the chambers.
 
 
-class TArrayF;
-
 #include <TObject.h>
 #include <TMath.h> // because of inline funtion GetRadius
+
+class TArrayF;
 
 class AliMUONRawCluster : public TObject {
 

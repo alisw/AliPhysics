@@ -52,7 +52,6 @@
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
 #include "AliMUONChamberGeometry.h"
-#include "AliMUONConstants.h"
 #include "AliRun.h"
 #include "AliMagF.h"
 

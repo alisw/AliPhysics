@@ -15,17 +15,29 @@
 
 /* $Id$ */
 
+#include <TArc.h>
+#include <TMath.h>
+
 #include "AliMUONSegmentationV0.h"
-#include "TArc.h"
-#include "TMath.h"
 #include "AliMUONChamber.h"
 #include "AliRun.h"
 #include "AliMUON.h"
 
 ClassImp(AliMUONSegmentationV0)
-  AliMUONSegmentationV0::AliMUONSegmentationV0(const AliMUONSegmentationV0& segmentation):AliSegmentation(segmentation)
+
+AliMUONSegmentationV0::AliMUONSegmentationV0()
+  : AliSegmentation()
 {
-  // Dummy copy constructor
+  fCorr=0;
+  fChamber=0;
+}
+
+AliMUONSegmentationV0::AliMUONSegmentationV0(const AliMUONSegmentationV0& segmentation)
+  : AliSegmentation(segmentation)
+{
+// Protected copy constructor
+
+  Fatal("AliMUONSegmentationV0", "Not implemented.");
 }
 
     void AliMUONSegmentationV0::Init(Int_t  chamber)
@@ -312,8 +324,14 @@ void AliMUONSegmentationV0::Draw(const char *) const
     circle->Draw();
 }
 
-AliMUONSegmentationV0& AliMUONSegmentationV0::operator =(const AliMUONSegmentationV0 & /*rhs*/)
+AliMUONSegmentationV0& 
+AliMUONSegmentationV0::operator =(const AliMUONSegmentationV0 & rhs)
 {
-// Dummy assignment operator
-    return *this;
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
 }

@@ -27,9 +27,8 @@
 // a range of gassiplex/MANAS numbers, in a given range of MANU addresses
 // Included in AliRoot 2003/01/28
 
-#include "AliMpPad.h"
-
 #include "AliMUONSt1ElectronicElement.h"
+#include "AliMpPad.h"
 
 ClassImp(AliMUONSt1ElectronicElement);
 

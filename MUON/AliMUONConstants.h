@@ -3,7 +3,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/*$Id $*/
+/* $Id $*/
+// Revision of includes 07/05/2004
 
 #include <TObject.h>
 
@@ -27,9 +28,11 @@ class AliMUONConstants : public TObject {
     static Float_t  Dmax(Int_t i) {return fgDmax[i];}
     // return maximum zoom for event display
     static Int_t    MaxZoom() {return fgMaxZoom;}
- private:
-    AliMUONConstants(){}
+
+ protected:
+    AliMUONConstants() : TObject() {}
     virtual ~AliMUONConstants(){}
+
  private:
     static Int_t  fgNCh;                //  Number of Chambers    
     static Int_t  fgNTrackingCh;        //  Number of Tracking Chambers

@@ -5,22 +5,21 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 #include "AliHitMap.h"
-class AliSegmentation;
+
 class TObjArray;
 
+class AliSegmentation;
 
-
-class AliMUONHitMapA1 :
-public AliHitMap 
+class AliMUONHitMapA1 : public AliHitMap 
 {
  public:
     AliMUONHitMapA1();
     AliMUONHitMapA1(AliSegmentation *seg, TObjArray *dig);
-    AliMUONHitMapA1(const AliMUONHitMapA1 & hitMap);
-    
     virtual ~AliMUONHitMapA1();
+
     // Fill hits from list of digits into hit map
     virtual  void  FillHits();
     // Clear the hit map
@@ -39,6 +38,9 @@ public AliHitMap
     virtual  Bool_t ValidateHit(Int_t ix, Int_t iy);
     // Test hit status
     virtual FlagType TestHit(Int_t ix, Int_t iy);
+
+ protected:
+    AliMUONHitMapA1(const AliMUONHitMapA1 & hitMap);
     // Assignment operator
     AliMUONHitMapA1& operator = (const AliMUONHitMapA1& rhs);
     

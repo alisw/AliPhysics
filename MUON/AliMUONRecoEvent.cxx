@@ -41,13 +41,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
-#include <AliRun.h>
 #include <TClonesArray.h>
-#include <TClass.h>
-
-#include <TFile.h>
 #include <TMatrixD.h>
-#include <TParticle.h>
 
 #include "AliMUONRecoEvent.h"
 #include "AliMUONRecoTrack.h"
@@ -57,6 +52,7 @@
 #include "AliMUONTrackParam.h"
 #include "AliMUONHitForRec.h"
 #include "AliMUONTrackHit.h"
+#include "AliRun.h"
 #include "AliHeader.h"
 
 ClassImp(AliMUONRecoEvent)

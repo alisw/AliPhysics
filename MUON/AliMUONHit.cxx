@@ -24,11 +24,19 @@
 // Incident fTheta and fPhi angle with respect of the wire plane of the chamber.
 //
 
-#include "TMath.h"
+#include <TMath.h>
+
 #include "AliMUONHit.h"
 
 ClassImp(AliMUONHit)
  
+//___________________________________________
+AliMUONHit::AliMUONHit()
+  : AliHit() 
+{
+// Default constructor
+}
+
 //___________________________________________
 AliMUONHit::AliMUONHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
 	AliHit(shunt, track)

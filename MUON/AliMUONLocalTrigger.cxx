@@ -13,15 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-
-*/
+/* $Id$ */
 
 #include "AliMUONLocalTrigger.h"
 
 ClassImp(AliMUONLocalTrigger);
 //----------------------------------------------------------------------
 AliMUONLocalTrigger::AliMUONLocalTrigger()
+  : TObject()
 {
 // constructor
   fLoCircuit = 0;
@@ -33,31 +32,35 @@ AliMUONLocalTrigger::AliMUONLocalTrigger()
   fLoApt     = 0;
 }
 //----------------------------------------------------------------------
-AliMUONLocalTrigger::AliMUONLocalTrigger(const AliMUONLocalTrigger& MUONLocalTrig):TObject(MUONLocalTrig)
+AliMUONLocalTrigger::AliMUONLocalTrigger(const AliMUONLocalTrigger& theMUONLocalTrig)
+  : TObject(theMUONLocalTrig)
 {
 // copy constructor (useful for TClonesArray)
-  fLoCircuit = MUONLocalTrig.fLoCircuit;
-  fLoStripX  = MUONLocalTrig.fLoStripX;         
-  fLoDev     = MUONLocalTrig.fLoDev;           
-  fLoStripY  = MUONLocalTrig.fLoStripY;           
-  fLoLpt     = MUONLocalTrig.fLoLpt;
-  fLoHpt     = MUONLocalTrig.fLoHpt;
-  fLoApt     = MUONLocalTrig.fLoApt;
+  fLoCircuit = theMUONLocalTrig.fLoCircuit;
+  fLoStripX  = theMUONLocalTrig.fLoStripX;         
+  fLoDev     = theMUONLocalTrig.fLoDev;           
+  fLoStripY  = theMUONLocalTrig.fLoStripY;           
+  fLoLpt     = theMUONLocalTrig.fLoLpt;
+  fLoHpt     = theMUONLocalTrig.fLoHpt;
+  fLoApt     = theMUONLocalTrig.fLoApt;
 }
 //----------------------------------------------------------------------
-AliMUONLocalTrigger& AliMUONLocalTrigger::operator=(const AliMUONLocalTrigger& MUONLocalTrig)
+AliMUONLocalTrigger& AliMUONLocalTrigger::operator=(const AliMUONLocalTrigger& theMUONLocalTrig)
 {
 // equal operator (useful for non-pointer member in TClonesArray)
-  if (this == &MUONLocalTrig)
+  if (this == &theMUONLocalTrig)
     return *this;
 
-  fLoCircuit = MUONLocalTrig.fLoCircuit;
-  fLoStripX  = MUONLocalTrig.fLoStripX;         
-  fLoDev     = MUONLocalTrig.fLoDev;           
-  fLoStripY  = MUONLocalTrig.fLoStripY;           
-  fLoLpt     = MUONLocalTrig.fLoLpt;
-  fLoHpt     = MUONLocalTrig.fLoHpt;
-  fLoApt     = MUONLocalTrig.fLoApt;
+  // base class assignement
+  TObject::operator=(theMUONLocalTrig);
+
+  fLoCircuit = theMUONLocalTrig.fLoCircuit;
+  fLoStripX  = theMUONLocalTrig.fLoStripX;         
+  fLoDev     = theMUONLocalTrig.fLoDev;           
+  fLoStripY  = theMUONLocalTrig.fLoStripY;           
+  fLoLpt     = theMUONLocalTrig.fLoLpt;
+  fLoHpt     = theMUONLocalTrig.fLoHpt;
+  fLoApt     = theMUONLocalTrig.fLoApt;
 
   return *this;
 }

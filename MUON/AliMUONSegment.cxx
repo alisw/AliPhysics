@@ -26,10 +26,10 @@
 //
 ///////////////////////////////////////////////////////////
 
+#include "AliMUONSegment.h" 
 #include "AliMUON.h"
 #include "AliMUONChamber.h" 
 #include "AliMUONHitForRec.h" 
-#include "AliMUONSegment.h" 
 #include "AliMUONTrackParam.h" 
 #include "AliRun.h" // for gAlice
 
@@ -37,6 +37,7 @@ ClassImp(AliMUONSegment) // Class implementation in ROOT context
 
   //__________________________________________________________________________
 AliMUONSegment::AliMUONSegment()
+  : TObject()
 {
   // Default constructor
   fHitForRecPtr1 = 0; // pointer to HitForRec in first chamber
@@ -62,6 +63,7 @@ AliMUONSegment::AliMUONSegment()
 
   //__________________________________________________________________________
 AliMUONSegment::AliMUONSegment(AliMUONHitForRec* Hit1, AliMUONHitForRec* Hit2)
+  : TObject()
 {
   // Constructor for AliMUONSegment from two HitForRec's,
   // one, in the first chamber of the station, pointed to by "Hit1",
@@ -97,15 +99,23 @@ AliMUONSegment::AliMUONSegment(AliMUONHitForRec* Hit1, AliMUONHitForRec* Hit2)
   return;
 }
 
-AliMUONSegment::AliMUONSegment (const AliMUONSegment& MUONSegment):TObject(MUONSegment)
+AliMUONSegment::AliMUONSegment (const AliMUONSegment& theMUONSegment)
+  : TObject(theMUONSegment)
 {
-// Dummy copy constructor
+// Protected copy constructor
+
+  Fatal("AliMUONSegment", "Not implemented.");
 }
 
-AliMUONSegment & AliMUONSegment::operator=(const AliMUONSegment& /*MUONSegment*/)
+AliMUONSegment & AliMUONSegment::operator=(const AliMUONSegment& rhs)
 {
-// Dummy assignment operator
-    return *this;
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
 }
 
   //__________________________________________________________________________
@@ -123,7 +133,7 @@ Int_t AliMUONSegment::Compare(const TObject* Segment) const
 }
 
   //__________________________________________________________________________
-Double_t AliMUONSegment::NormalizedChi2WithSegment(AliMUONSegment* Segment, Double_t Sigma2Cut)
+Double_t AliMUONSegment::NormalizedChi2WithSegment(AliMUONSegment* Segment, Double_t Sigma2Cut) const
 {
   // Calculate the normalized Chi2 between the current Segment (this)
   // and the Segment pointed to by "Segment",
@@ -165,7 +175,7 @@ Double_t AliMUONSegment::NormalizedChi2WithSegment(AliMUONSegment* Segment, Doub
 }
 
   //__________________________________________________________________________
-AliMUONSegment* AliMUONSegment::CreateSegmentFromLinearExtrapToStation (Int_t Station, Double_t MCSfactor)
+AliMUONSegment* AliMUONSegment::CreateSegmentFromLinearExtrapToStation (Int_t Station, Double_t MCSfactor) const
 {
   // Extrapolates linearly the current Segment (this) to station (0..) "Station".
   // Multiple Coulomb scattering calculated from "MCSfactor"
@@ -209,7 +219,7 @@ AliMUONSegment* AliMUONSegment::CreateSegmentFromLinearExtrapToStation (Int_t St
 }
 
   //__________________________________________________________________________
-AliMUONHitForRec* AliMUONSegment::CreateHitForRecFromLinearExtrapToChamber (Int_t Chamber, Double_t MCSfactor)
+AliMUONHitForRec* AliMUONSegment::CreateHitForRecFromLinearExtrapToChamber (Int_t Chamber, Double_t MCSfactor) const
 {
   // Extrapolates linearly the current Segment (this) to chamber(0..) "Chamber".
   // Multiple Coulomb scattering calculated from "MCSfactor"

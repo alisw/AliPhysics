@@ -15,28 +15,22 @@
 
 /* $Id$ */
 
-#include <Riostream.h>
-#include <TDirectory.h>
-#include <TPDGCode.h>
-
 #include "AliRun.h"
 #include "AliRunDigitizer.h"
 #include "AliRunLoader.h"
-#include "AliLoader.h"
 
 #include "AliMUONDigitizer.h"
 #include "AliMUONConstants.h"
 #include "AliMUONChamber.h"
 #include "AliMUONHitMapA1.h"
 #include "AliMUON.h"
+#include "AliMUONLoader.h"
 #include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
-#include "AliMUONDigit.h"
 #include "AliMUONDigitizer.h"
-#include "AliMUONHit.h"
-#include "AliMUONHitMapA1.h"
-#include "AliMUONPadHit.h"
 #include "AliMUONTransientDigit.h"
+#include "AliMUONHitMapA1.h"
+
 
 /////////////////////////////////////////////////////////////////////////////////////
 //
@@ -64,10 +58,10 @@ AliMUONDigitizer::AliMUONDigitizer() :
 // Default constructor.
 // Initializes all pointers to NULL.
 
-	runloader = NULL;
-	gime = NULL;
-	pMUON = NULL;
-	muondata = NULL;
+	fRunLoader = NULL;
+	fGime = NULL;
+	fMUON = NULL;
+	fMUONData = NULL;
 };
 
 //___________________________________________
@@ -83,10 +77,10 @@ AliMUONDigitizer::AliMUONDigitizer(AliRunDigitizer* manager) :
 // Constructor which should be used rather than the default constructor.
 // Initializes all pointers to NULL.
 
-	runloader = NULL;
-	gime = NULL;
-	pMUON = NULL;
-	muondata = NULL;
+	fRunLoader = NULL;
+	fGime = NULL;
+	fMUON = NULL;
+	fMUONData = NULL;
 };
 
 //___________________________________________
@@ -143,8 +137,8 @@ void AliMUONDigitizer::Exec(Option_t* option)
 		return;
 	};
 
-	if (! FetchLoaders(fManager->GetInputFolderName(0), runloader, gime) ) return;
-	if (! FetchGlobalPointers(runloader) ) return;
+	if (! FetchLoaders(fManager->GetInputFolderName(0), fRunLoader, fGime) ) return;
+	if (! FetchGlobalPointers(fRunLoader) ) return;
 
 	InitArrays();
 	
@@ -161,21 +155,21 @@ void AliMUONDigitizer::Exec(Option_t* option)
 
 		if (inputFile != 0)
 			// If this is the first file then we already have the loaders loaded.
-			if (! FetchLoaders(fManager->GetInputFolderName(inputFile), runloader, gime) )
+			if (! FetchLoaders(fManager->GetInputFolderName(inputFile), fRunLoader, fGime) )
 				continue;
 		else
 			// If this is not the first file then it is assumed to be background.
 			fSignal = kFALSE;
 
-		if (! InitInputData(gime) ) continue;
+		if (! InitInputData(fGime) ) continue;
 		GenerateTransientDigits();
-		CleanupInputData(gime);
+		CleanupInputData(fGime);
 	};
 
-	Bool_t ok = FetchLoaders(fManager->GetOutputFolderName(), runloader, gime);
-	if (ok) ok = InitOutputData(gime);
+	Bool_t ok = FetchLoaders(fManager->GetOutputFolderName(), fRunLoader, fGime);
+	if (ok) ok = InitOutputData(fGime);
 	if (ok) CreateDigits();
-	if (ok) CleanupOutputData(gime);
+	if (ok) CleanupOutputData(fGime);
 
 	CleanupArrays();
 };
@@ -291,13 +285,13 @@ void AliMUONDigitizer::CreateDigits()
 };
 
 //------------------------------------------------------------------------
-void AliMUONDigitizer::AddDigit(AliMUONTransientDigit* td, Int_t response_charge)
+void AliMUONDigitizer::AddDigit(AliMUONTransientDigit* td, Int_t responseCharge)
 {
 // Prepares the digits, track and charge arrays in preparation for a call to
 // AddDigit(Int_t, Int_t[kMAXTRACKS], Int_t[kMAXTRACKS], Int_t[6])
 // This method is called by CreateDigits() whenever a new digit needs to be added
 // to the output stream trees.
-// The response_charge value is used as the Signal of the new digit. 
+// The responseCharge value is used as the Signal of the new digit. 
 // The OnWriteTransientDigit method is also called just before the adding the 
 // digit to allow inheriting digitizers to be able to do some specific processing 
 // at this point. 
@@ -309,7 +303,7 @@ void AliMUONDigitizer::AddDigit(AliMUONTransientDigit* td, Int_t response_charge
 	digits[0] = td->PadX();
 	digits[1] = td->PadY();
 	digits[2] = td->Cathode() - 1;
-	digits[3] = response_charge;
+	digits[3] = responseCharge;
 	digits[4] = td->Physics();
 	digits[5] = td->Hit();
 	
@@ -344,7 +338,7 @@ void AliMUONDigitizer::AddDigit(AliMUONTransientDigit* td, Int_t response_charge
 		};
 	};
 
-	if (GetDebug() > 3) Info("AddDigit", "Adding digit with charge %d.", response_charge);
+	if (GetDebug() > 3) Info("AddDigit", "Adding digit with charge %d.", responseCharge);
 
 	OnWriteTransientDigit(td);
 	AddDigit(td->Chamber(), tracks, charges, digits);
@@ -414,14 +408,14 @@ Bool_t AliMUONDigitizer::FetchGlobalPointers(AliRunLoader* runloader)
 		Error("FetchGlobalPointers", "Could not find the AliRun object in runloader 0x%X.", (void*)runloader);
 		return kFALSE;
 	};
-	pMUON = (AliMUON*) gAlice->GetDetector("MUON");
-	if (pMUON == NULL)
+	fMUON = (AliMUON*) gAlice->GetDetector("MUON");
+	if (fMUON == NULL)
 	{
 		Error("FetchGlobalPointers", "Could not find the MUON module in runloader 0x%X.", (void*)runloader);
 		return kFALSE;
 	};
-	muondata = pMUON->GetMUONData();
-	if (muondata == NULL)
+	fMUONData = fMUON->GetMUONData();
+	if (fMUONData == NULL)
 	{
 		Error("FetchGlobalPointers", "Could not find AliMUONData object in runloader 0x%X.", (void*)runloader);
 		return kFALSE;
@@ -472,7 +466,7 @@ void AliMUONDigitizer::InitArrays()
 	for (Int_t i = 0; i < AliMUONConstants::NCh(); i++) 
 	{
 		if (GetDebug() > 3) Info("InitArrays", "Creating hit map for chamber %d, cathode 1.", i+1);
-		AliMUONChamber* chamber = &(pMUON->Chamber(i));
+		AliMUONChamber* chamber = &(fMUON->Chamber(i));
 		AliSegmentation* c1Segmentation = chamber->SegmentationModel(1); // Cathode plane 1
 		fHitMap[i] = new AliMUONHitMapA1(c1Segmentation, fTDList);
 		if (GetDebug() > 3) Info("InitArrays", "Creating hit map for chamber %d, cathode 2.", i+1);
@@ -503,7 +497,7 @@ void AliMUONDigitizer::CleanupArrays()
 };
 
 //------------------------------------------------------------------------
-void AliMUONDigitizer::SortTracks(Int_t *tracks, Int_t *charges, Int_t ntr)
+void AliMUONDigitizer::SortTracks(Int_t *tracks, Int_t *charges, Int_t ntr) const
 {
 //
 // Sort the list of tracks contributing to a given digit

@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 /*$Id$*/
+// Revision of includes 07/05/2004
 
 ////////////////////////////////////
 // MUON event reconstructor in ALICE
@@ -27,8 +28,6 @@ class AliMUONEventReconstructor : public TObject {
  public:
   AliMUONEventReconstructor(AliLoader* loader); // default Constructor
   virtual ~AliMUONEventReconstructor(void); // Destructor
-  AliMUONEventReconstructor (const AliMUONEventReconstructor& Reconstructor); // copy constructor
-  AliMUONEventReconstructor& operator=(const AliMUONEventReconstructor& Reconstructor); // assignment operator
 
   // Parameters for event reconstruction: public methods
   // Get and Set, Set to defaults
@@ -98,12 +97,14 @@ class AliMUONEventReconstructor : public TObject {
   AliMUONData*  GetMUONData() {return fMUONData;}
 
  protected:
+  AliMUONEventReconstructor (const AliMUONEventReconstructor& rhs); // copy constructor
+  AliMUONEventReconstructor& operator=(const AliMUONEventReconstructor& rhs); // assignment operator
 
  private:
 
   // Constants which should be elsewhere ????
   static const Int_t fgkMaxMuonTrackingChambers = 10; // Max number of Muon tracking chambers
-  static const Int_t kMaxMuonTrackingStations = 5; // Max number of Muon tracking stations
+  static const Int_t fgkMaxMuonTrackingStations = 5; // Max number of Muon tracking stations
 
   // Defaults parameters for reconstruction
   static const Double_t fgkDefaultMinBendingMomentum;
@@ -137,8 +138,8 @@ class AliMUONEventReconstructor : public TObject {
   Double_t fMaxSigma2Distance; // maximum square distance in units of the variance (maximum chi2)
   Double_t fRMin[fgkMaxMuonTrackingChambers]; // minimum radius (cm)
   Double_t fRMax[fgkMaxMuonTrackingChambers]; // maximum radius (cm)
-  Double_t fSegmentMaxDistBending[kMaxMuonTrackingStations]; // maximum distance (cm) for segments in bending plane
-  Double_t fSegmentMaxDistNonBending[kMaxMuonTrackingStations]; // maximum distance (cm) for segments in non bending plane
+  Double_t fSegmentMaxDistBending[fgkMaxMuonTrackingStations]; // maximum distance (cm) for segments in bending plane
+  Double_t fSegmentMaxDistNonBending[fgkMaxMuonTrackingStations]; // maximum distance (cm) for segments in non bending plane
   Double_t fBendingResolution; // chamber resolution (cm) in bending plane
   Double_t fNonBendingResolution; // chamber resolution (cm) in non bending plane
   Double_t fChamberThicknessInX0; // chamber thickness in number of radiation lengths
@@ -167,8 +168,8 @@ class AliMUONEventReconstructor : public TObject {
   Int_t fIndexOfFirstHitForRecPerChamber[fgkMaxMuonTrackingChambers]; // index (0...) of first HitForRec
 
   // Segments inside a station
-  TClonesArray *fSegmentsPtr[kMaxMuonTrackingStations]; // array of pointers to the segments for each station
-  Int_t fNSegments[kMaxMuonTrackingStations]; // number of segments for each station
+  TClonesArray *fSegmentsPtr[fgkMaxMuonTrackingStations]; // array of pointers to the segments for each station
+  Int_t fNSegments[fgkMaxMuonTrackingStations]; // number of segments for each station
 
   // Reconstructed tracks
   TClonesArray *fRecTracksPtr; // pointer to array of reconstructed tracks
@@ -226,7 +227,7 @@ class AliMUONEventReconstructor : public TObject {
   void FollowTracksK(void);
   void RemoveDoubleTracksK(void);
   void GoToVertex(void);
-  Bool_t CheckCandidateK(Int_t icand, Int_t nSeeds);
+  Bool_t CheckCandidateK(Int_t icand, Int_t nSeeds) const;
 
   ClassDef(AliMUONEventReconstructor, 0) // MUON event reconstructor in ALICE
     };

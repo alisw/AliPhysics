@@ -15,14 +15,23 @@
 
 /* $Id$ */
 
-#include "AliMUONResponseV0.h"
-#include "AliSegmentation.h"
 #include <TMath.h>
 #include <TRandom.h>
 
+#include "AliMUONResponseV0.h"
+#include "AliSegmentation.h"
 
 ClassImp(AliMUONResponseV0)
 	
+//__________________________________________________________________________
+AliMUONResponseV0::AliMUONResponseV0()
+  : AliMUONResponse() 
+{
+// Default constructor
+
+  fChargeCorrel = 0;
+}
+
   //__________________________________________________________________________
 void AliMUONResponseV0::SetSqrtKx3AndDeriveKx2Kx4(Float_t SqrtKx3)
 {

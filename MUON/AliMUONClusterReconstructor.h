@@ -4,12 +4,13 @@
  * See cxx source for full Copyright notice                               */
 
 /*$Id$*/
+// Revision of includes 07/05/2004
 
 ////////////////////////////////////
 // MUON event reconstructor in ALICE
 ////////////////////////////////////
-#include "TObjArray.h"
-#include "AliDetector.h"
+
+#include <TObject.h>
 
 class AliLoader;
 class AliMUON;
@@ -19,13 +20,11 @@ class AliMUONClusterFinderVS;
 class AliMUONData;
 
 
-class AliMUONClusterReconstructor : public TObject {
-
+class AliMUONClusterReconstructor : public TObject 
+{
  public:
   AliMUONClusterReconstructor(AliLoader* loader); // Constructor
   virtual ~AliMUONClusterReconstructor(void); // Destructor
-  AliMUONClusterReconstructor (const AliMUONClusterReconstructor& rhs); // copy constructor
-  AliMUONClusterReconstructor& operator=(const AliMUONClusterReconstructor& rhs); // assignment operator
 
   // Interface with AliMUONData
   virtual void       SetTreeAddress(){};
@@ -45,6 +44,9 @@ class AliMUONClusterReconstructor : public TObject {
   void SetPrintLevel(Int_t printLevel) {fPrintLevel = printLevel;}
 
  protected:
+  AliMUONClusterReconstructor();                  // Default constructor
+  AliMUONClusterReconstructor (const AliMUONClusterReconstructor& rhs); // copy constructor
+  AliMUONClusterReconstructor& operator=(const AliMUONClusterReconstructor& rhs); // assignment operator
 
  private:
   static const Int_t fgkDefaultPrintLevel;     // Default print level

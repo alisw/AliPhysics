@@ -15,13 +15,21 @@
 
 /* $Id$ */
 
+//#include <TMath.h>
+//#include <TRandom.h>
+//#include <Riostream.h> 
+
 #include "AliMUONResponseTrigger.h"
-#include "AliSegmentation.h"
-#include <TMath.h>
-#include <TRandom.h>
-#include <Riostream.h> 
+//#include "AliSegmentation.h"
 
 ClassImp(AliMUONResponseTrigger)
+
+//------------------------------------------------------------------   
+AliMUONResponseTrigger::AliMUONResponseTrigger()
+  : AliMUONResponseV0()
+{
+// Default constructor
+};
 
 //------------------------------------------------------------------   
 Int_t AliMUONResponseTrigger::SetGenerCluster(){

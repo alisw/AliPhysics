@@ -1,4 +1,9 @@
-// $Id$
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+// Revision of includes 07/05/2004
+
 //
 // Class AliMUONChamberGeometry
 // -----------------------------
@@ -25,12 +30,8 @@ class AliMUONChamberGeometry : public TObject
   public:
     AliMUONChamberGeometry(Int_t chamberId);
     AliMUONChamberGeometry();
-    AliMUONChamberGeometry(const AliMUONChamberGeometry& rhs);
     virtual ~AliMUONChamberGeometry();
 
-    // operators  
-    AliMUONChamberGeometry& operator = (const AliMUONChamberGeometry& rhs);
-  
     // methods
         
           // adding virtual envelopes 	
@@ -99,6 +100,11 @@ class AliMUONChamberGeometry : public TObject
     const TGeoCombiTrans*  GetTransformation() const;
     const TObjArray*       GetEnvelopes() const;
     Bool_t IsSensitiveVolume(Int_t volId) const; 
+
+  protected:
+    AliMUONChamberGeometry(const AliMUONChamberGeometry& rhs);
+    // operators  
+    AliMUONChamberGeometry& operator = (const AliMUONChamberGeometry& rhs);
 
   private:
     // methods

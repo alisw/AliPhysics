@@ -2,6 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
+// Revision of includes 07/05/2004
 //
 // Class AliMUONSt1GeometryBuilder
 // -----------------------------
@@ -21,17 +22,19 @@ class AliMUONSt1GeometryBuilder : public AliMUONVGeometryBuilder
 {
   public:
     AliMUONSt1GeometryBuilder(AliMUON* muon);
-    AliMUONSt1GeometryBuilder(const AliMUONSt1GeometryBuilder& rhs);
     AliMUONSt1GeometryBuilder();
     virtual ~AliMUONSt1GeometryBuilder();
-
-    // operators  
-    AliMUONSt1GeometryBuilder& operator = (const AliMUONSt1GeometryBuilder& rhs);
   
     // methods
     virtual void CreateGeometry();
     virtual void SetTransformations();
     virtual void SetSensitiveVolumes();
+    
+  protected:
+    AliMUONSt1GeometryBuilder(const AliMUONSt1GeometryBuilder& rhs);
+
+    // operators  
+    AliMUONSt1GeometryBuilder& operator = (const AliMUONSt1GeometryBuilder& rhs);
     
   private:
      AliMUON*  fMUON; // the MUON detector class 

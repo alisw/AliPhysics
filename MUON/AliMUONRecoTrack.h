@@ -10,11 +10,7 @@
 // Authors : M.Gheata, A.Gheata 09/10/00
 
 #include <TObject.h>
-//#include <TFile.h>
-//#include <TParticle.h>
-//#include <AliDetector.h>
-//#include "AliMUONHit.h"
-//class AliMUONEventReconstructor;
+#include <TMath.h>
 
 ////////////////////////////////////////////////////////////////////
 //                                                                //
@@ -24,7 +20,7 @@
 //                                                                //
 ////////////////////////////////////////////////////////////////////
 
-class AliMUONRecoTrack:public TObject 
+class AliMUONRecoTrack : public TObject 
 {
   public:
     AliMUONRecoTrack() { }
@@ -36,7 +32,7 @@ class AliMUONRecoTrack:public TObject
     const Double_t GetPosX(Int_t chamber) const {return fPosX[chamber];};
     const Double_t GetPosY(Int_t chamber) const {return fPosY[chamber];};
     const Double_t GetPosZ(Int_t chamber) const {return fPosZ[chamber];};
-    const Double_t GetVertexPos() { return fZvr;};
+    const Double_t GetVertexPos() const { return fZvr;};
     const Double_t P() {return TMath::Sqrt(fPr[0]*fPr[0] + fPr[1]*fPr[1] + fPr[2]*fPr[2]);};
     const Double_t Phi();
     void           SetChi2r(Double_t chi) { fChi2r = chi;};

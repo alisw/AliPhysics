@@ -15,39 +15,27 @@
 
 /* $Id$ */
 
+#include <TError.h>
+
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONTriggerDecision.h"
 #include "AliMUONTriggerLut.h"
-#include "AliMUONHitMapA1.h"
-#include "AliRun.h"
 #include "AliMUON.h"
-#include "AliRunLoader.h"
-#include "AliLoader.h"
-#include "AliSegmentation.h"
-#include "AliMUONResponse.h"
-#include "AliMUONChamber.h"
 #include "AliMUONDigit.h"
 #include "AliMUONConstants.h"
 #include "AliMUONGlobalTrigger.h"
 #include "AliMUONLocalTrigger.h"
+#include "AliRun.h"
+#include "AliRunLoader.h"
+#include "AliLoader.h"
 
-
-#include <TF1.h>
-#include <TTree.h>
-#include <TCanvas.h>
-#include <TH1.h>
-#include <TPad.h>
-#include <TGraph.h> 
-#include <TPostScript.h> 
-#include <TMinuit.h> 
-#include <Riostream.h> 
-#include <TError.h>
 
 //----------------------------------------------------------------------
 ClassImp(AliMUONTriggerDecision)
 
 //----------------------------------------------------------------------
 AliMUONTriggerDecision::AliMUONTriggerDecision(AliLoader* loader, Int_t iprint)
+  : TObject()
 {
 // Constructor 
   fDebug = iprint;            // print option
@@ -117,6 +105,17 @@ AliMUONTriggerDecision::AliMUONTriggerDecision(AliLoader* loader, Int_t iprint)
     pCir = &(fMUON->TriggerCircuit(icirc));
     fTriggerCircuit->AddAt(pCir, icirc);
   }
+}
+
+//----------------------------------------------------------------------
+AliMUONTriggerDecision::AliMUONTriggerDecision()
+  : TObject(),
+    fLoader(0),
+    fTriggerCircuit(0),
+    fMUONData(0),
+    fMUON(0)
+{
+// Default constructor
 }
 
 //----------------------------------------------------------------------
@@ -1306,28 +1305,28 @@ void AliMUONTriggerDecision::PrintLocalOutput(Int_t minDevStrip[5],
 //----------------------------------------------------------------------
 //--- methods which return member data related info
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerDecision::GetITrigger(Int_t icirc){
+Int_t AliMUONTriggerDecision::GetITrigger(Int_t icirc) const{
 // returns Local Trigger Status
   return fTrigger[icirc];
 }
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerDecision::GetStripX11(Int_t icirc){
+Int_t AliMUONTriggerDecision::GetStripX11(Int_t icirc) const{
 // returns fStripX11
   return fStripX11[icirc];
 }
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerDecision::GetDev(Int_t icirc){
+Int_t AliMUONTriggerDecision::GetDev(Int_t icirc) const{
 // returns idev
   return fDev[icirc];
 }
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerDecision::GetStripY11(Int_t icirc){
+Int_t AliMUONTriggerDecision::GetStripY11(Int_t icirc) const{
 // returns fStripY11;
    return fStripY11[icirc];
 }
 //----------------------------------------------------------------------
 void AliMUONTriggerDecision::GetLutOutput(Int_t icirc, Int_t lpt[2], 
-					  Int_t hpt[2], Int_t apt[2]){
+					  Int_t hpt[2], Int_t apt[2]) const {
 // returns Look up Table output
   for (Int_t i=0; i<2; i++) {
     lpt[i]=fLutLpt[icirc][i];
@@ -1340,7 +1339,7 @@ void AliMUONTriggerDecision::GetGlobalTrigger(Int_t singlePlus[3],
 					      Int_t singleMinus[3], 
 					      Int_t singleUndef[3],
 					      Int_t pairUnlike[3], 
-					      Int_t pairLike[3]){
+					      Int_t pairLike[3]) const {
 // returns Global Trigger information (0,1,2 : Lpt,Hpt,Apt)
 // should not be used anymore.
   for (Int_t i=0; i<3; i++) { 

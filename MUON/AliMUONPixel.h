@@ -3,15 +3,16 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include <TROOT.h>
-class TObjArray;
+/* $Id$ */
+// Revision of includes 07/05/2004
+
+#include <TObject.h>
 
 class AliMUONPixel : public TObject {
 
  public:
 
-  AliMUONPixel(){
-    ;} // Default constructor
+  AliMUONPixel();
   AliMUONPixel(Double_t xc, Double_t yc, Double_t wx, Double_t wy, Double_t charge); // constructor
   virtual ~AliMUONPixel(); // Destructor
 

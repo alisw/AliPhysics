@@ -4,8 +4,9 @@
  * See cxx source for full Copyright notice                               */
 
 /*$Id$*/
+// Revision of includes 07/05/2004
 
-#include <TROOT.h>
+#include <TObject.h>
 
 class AliMUONHit;
 class AliMUONRawCluster;
@@ -14,57 +15,53 @@ class AliMUONTrackParam;
 
 class AliMUONHitForRec : public TObject {
  public:
-  AliMUONHitForRec(){
-    // Constructor
-    fFirstTrackHitPtr = 0;
-    fLastTrackHitPtr = 0;
-  } // Constructor
-  virtual ~AliMUONHitForRec(){
-    // Destructor
-    ;} // Destructor
-  AliMUONHitForRec (const AliMUONHitForRec& AliMUONHitForRec); // copy constructor
-  AliMUONHitForRec& operator=(const AliMUONHitForRec& AliMUONHitForRec); // assignment operator
+  AliMUONHitForRec(); // Constructor
+  virtual ~AliMUONHitForRec(){} // Destructor
   AliMUONHitForRec(AliMUONHit* mHit); // Constructor from GEANT hit
-  AliMUONHitForRec(AliMUONRawCluster* RawCluster); // Constructor from raw cluster
+  AliMUONHitForRec(AliMUONRawCluster* theRawCluster); // Constructor from raw cluster
 
   // Inline functions for Get and Set
-  Double_t GetBendingCoor(void) { return fBendingCoor;}
+  Double_t GetBendingCoor(void) const { return fBendingCoor;}
   void SetBendingCoor(Double_t BendingCoor) { fBendingCoor = BendingCoor;}
-  Double_t GetNonBendingCoor(void) { return fNonBendingCoor;}
+  Double_t GetNonBendingCoor(void) const { return fNonBendingCoor;}
   void SetNonBendingCoor(Double_t NonBendingCoor) { fNonBendingCoor = NonBendingCoor;}
-  Double_t GetZ(void) { return fZ;}
+  Double_t GetZ(void) const { return fZ;}
   void SetZ(Double_t Z) { fZ = Z;}
-  Double_t GetBendingReso2(void) { return fBendingReso2;}
+  Double_t GetBendingReso2(void) const { return fBendingReso2;}
   void SetBendingReso2(Double_t BendingReso2) { fBendingReso2 = BendingReso2;}
-  Double_t GetNonBendingReso2(void) { return fNonBendingReso2;}
+  Double_t GetNonBendingReso2(void) const { return fNonBendingReso2;}
   void SetNonBendingReso2(Double_t NonBendingReso2) { fNonBendingReso2 = NonBendingReso2;}
-  Int_t GetChamberNumber(void) { return fChamberNumber;}
+  Int_t GetChamberNumber(void) const { return fChamberNumber;}
   void SetChamberNumber(Int_t ChamberNumber) { fChamberNumber = ChamberNumber;}
-  Int_t GetHitNumber(void) { return fHitNumber;}
+  Int_t GetHitNumber(void) const { return fHitNumber;}
   void SetHitNumber(Int_t HitNumber) { fHitNumber = HitNumber;}
-  Int_t GetTHTrack(void) { return fTHTrack;}
+  Int_t GetTHTrack(void) const { return fTHTrack;}
   void SetTHTrack(Int_t THTrack) { fTHTrack = THTrack;}
-  Int_t GetGeantSignal(void) { return fGeantSignal;}
+  Int_t GetGeantSignal(void) const { return fGeantSignal;}
   void SetGeantSignal(Int_t GeantSignal) { fGeantSignal = GeantSignal;}
-  Int_t GetIndexOfFirstSegment(void) { return fIndexOfFirstSegment;}
+  Int_t GetIndexOfFirstSegment(void) const { return fIndexOfFirstSegment;}
   void SetIndexOfFirstSegment(Int_t IndexOfFirstSegment) { fIndexOfFirstSegment = IndexOfFirstSegment;}
-  Int_t GetNSegments(void) { return fNSegments;}
+  Int_t GetNSegments(void) const { return fNSegments;}
   void SetNSegments(Int_t NSegments) { fNSegments = NSegments;}
-  AliMUONTrackHit* GetFirstTrackHitPtr(void) { return fFirstTrackHitPtr;}
+  AliMUONTrackHit* GetFirstTrackHitPtr(void) const { return fFirstTrackHitPtr;}
   void SetFirstTrackHitPtr(AliMUONTrackHit* FirstTrackHitPtr) { fFirstTrackHitPtr = FirstTrackHitPtr;}
-  AliMUONTrackHit* GetLastTrackHitPtr(void) { return fLastTrackHitPtr;}
+  AliMUONTrackHit* GetLastTrackHitPtr(void) const { return fLastTrackHitPtr;}
   void SetLastTrackHitPtr(AliMUONTrackHit* LastTrackHitPtr) { fLastTrackHitPtr = LastTrackHitPtr;}
-  Int_t GetNTrackHits(void) { return fNTrackHits;}
+  Int_t GetNTrackHits(void) const { return fNTrackHits;}
   void SetNTrackHits(Int_t NTrackHits) { fNTrackHits = NTrackHits;}
 
 
-  Double_t NormalizedChi2WithHitForRec(AliMUONHitForRec* Hit, Double_t Sigma2Cut);
+  Double_t NormalizedChi2WithHitForRec(AliMUONHitForRec* Hit, Double_t Sigma2Cut) const;
 /*   void UpdateFromChamberTrackParam(AliMUONTrackParam *TrackParam, Double_t MCSfactor); */
 
   // What is necessary for sorting TClonesArray's; sufficient too ????
   Bool_t IsSortable() const { return kTRUE; }
   Int_t Compare(const TObject* HitForRec) const; // "Compare" function for sorting
+
  protected:
+  AliMUONHitForRec (const AliMUONHitForRec& AliMUONHitForRec); // copy constructor
+  AliMUONHitForRec& operator=(const AliMUONHitForRec& AliMUONHitForRec); // assignment operator
+
  private:
   Double_t fBendingCoor; // coordinate (cm) in bending plane
   Double_t fNonBendingCoor; // coordinate (cm) in non bending plane

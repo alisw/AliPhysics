@@ -29,10 +29,10 @@
 #include <TRandom.h>
 #include <TF1.h>
 #include <TClonesArray.h>
-#include <TLorentzVector.h>   
+#include <TRandom.h> 
 #include <TVirtualMC.h>
-#include <TParticle.h>
 
+#include "AliMUONv3.h"
 #include "AliConst.h" 
 #include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
@@ -40,7 +40,6 @@
 #include "AliMUONHit.h"
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONChamberGeometry.h"
-#include "AliMUONv3.h"
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliMC.h"
@@ -48,8 +47,9 @@
 ClassImp(AliMUONv3)
  
 //___________________________________________
-AliMUONv3::AliMUONv3() : AliMUON()
-  ,fTrackMomentum(), fTrackPosition()
+AliMUONv3::AliMUONv3()
+ : AliMUON(),
+   fTrackMomentum(), fTrackPosition()
 {
 // Constructor
     fChambers   = 0;
@@ -65,7 +65,8 @@ AliMUONv3::AliMUONv3() : AliMUON()
 } 
 //___________________________________________
 AliMUONv3::AliMUONv3(const char *name, const char *title)
-  : AliMUON(name,title), fTrackMomentum(), fTrackPosition()
+  : AliMUON(name,title), 
+    fTrackMomentum(), fTrackPosition()
 {
 // Constructor
     // By default include all stations
@@ -1749,7 +1750,7 @@ void AliMUONv3::StepManager()
     //-------------- Angle effect 
     // Ratio between energy loss of particle and Mip as a function of BetaGamma of particle (Energy/Mass)
     
-    Float_t BetaxGamma    = fTrackMomentum.P()/mass;//  pc/mc2
+    Float_t betaxGamma    = fTrackMomentum.P()/mass;//  pc/mc2
     Float_t sigmaEffect10degrees;
     Float_t sigmaEffectThetadegrees;
     Float_t eLossParticleELossMip;
@@ -1758,9 +1759,9 @@ void AliMUONv3::StepManager()
 
 
     if (fAngleEffect){
-    if ( (BetaxGamma >3.2)   &&  (thetawires*kRaddeg<=15.) ) {
-      BetaxGamma=TMath::Log(BetaxGamma);
-      eLossParticleELossMip = fElossRatio->Eval(BetaxGamma);
+    if ( (betaxGamma >3.2)   &&  (thetawires*kRaddeg<=15.) ) {
+      betaxGamma=TMath::Log(betaxGamma);
+      eLossParticleELossMip = fElossRatio->Eval(betaxGamma);
       // 10 degrees is a reference for a model (arbitrary)
       sigmaEffect10degrees=fAngleEffect10->Eval(eLossParticleELossMip);// in micrometers
       // Angle with respect to the wires assuming that chambers are perpendicular to the z axis.

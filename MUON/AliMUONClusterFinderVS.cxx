@@ -15,6 +15,9 @@
 
 /* $Id$ */
 
+#include <TMinuit.h> 
+#include <TF1.h>
+
 #include "AliMUONClusterFinderVS.h"
 #include "AliMUONDigit.h"
 #include "AliMUONRawCluster.h"
@@ -22,20 +25,6 @@
 #include "AliMUONResponse.h"
 #include "AliMUONClusterInput.h"
 #include "AliMUONHitMapA1.h"
-#include "AliRun.h"
-#include "AliMUON.h"
-
-#include <TTree.h>
-#include <TCanvas.h>
-#include <TH1.h>
-#include <TPad.h>
-#include <TGraph.h> 
-#include <TPostScript.h> 
-#include <TMinuit.h> 
-#include <TF1.h>
-
-#include <stdio.h>
-#include <Riostream.h>
 
 //_____________________________________________________________________
 // This function is minimized in the double-Mathieson fit
@@ -47,6 +36,7 @@ void fcnCombiS2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
 ClassImp(AliMUONClusterFinderVS)
 
 AliMUONClusterFinderVS::AliMUONClusterFinderVS()
+  : TObject()
 {
 // Default constructor
     fInput=AliMUONClusterInput::Instance();
@@ -64,8 +54,6 @@ AliMUONClusterFinderVS::AliMUONClusterFinderVS()
     } 
     fRawClusters = new TClonesArray("AliMUONRawCluster",1000);
     fNRawClusters = 0;
-
-
 }
  //____________________________________________________________________________
 AliMUONClusterFinderVS::~AliMUONClusterFinderVS()
@@ -80,8 +68,9 @@ AliMUONClusterFinderVS::~AliMUONClusterFinderVS()
 
 AliMUONClusterFinderVS::AliMUONClusterFinderVS(const AliMUONClusterFinderVS & clusterFinder):TObject(clusterFinder)
 {
-// Dummy copy Constructor
-    ;
+// Protected copy constructor
+
+  Fatal("AliMUONClusterFinderAZModule", "Not implemented.");
 }
 //____________________________________________________________________________
 void AliMUONClusterFinderVS::ResetRawClusters()
@@ -2094,7 +2083,7 @@ void AliMUONClusterFinderVS::AddRawCluster(const AliMUONRawCluster& c)
 	fprintf(stderr,"\nfNRawClusters %d\n",fNRawClusters);
 }
 
-Bool_t AliMUONClusterFinderVS::TestTrack(Int_t t) {
+Bool_t AliMUONClusterFinderVS::TestTrack(Int_t t) const {
 // Test if track was user selected
     if (fTrack[0]==-1 || fTrack[1]==-1) {
 	return kTRUE;
@@ -2106,10 +2095,15 @@ Bool_t AliMUONClusterFinderVS::TestTrack(Int_t t) {
 }
 
 AliMUONClusterFinderVS& AliMUONClusterFinderVS
-::operator = (const AliMUONClusterFinderVS& /*rhs*/)
+::operator = (const AliMUONClusterFinderVS& rhs)
 {
-// Dummy assignment operator
-    return *this;
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
 }
 
 

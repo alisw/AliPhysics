@@ -15,18 +15,30 @@
 
 /* $Id$ */
 
-#include "AliMUONTransientDigit.h"
 #include <TObjArray.h>
-#include "TVector.h"
+#include <TVector.h>
+
+#include "AliMUONTransientDigit.h"
 
 ClassImp(AliMUONTransientDigit)
 
+//____________________________________________________________________________
+AliMUONTransientDigit::AliMUONTransientDigit()
+  : AliMUONDigit()
+{
+// Constructor
+
+  fTrackList=0;
+}
  
 //____________________________________________________________________________
 
-  AliMUONTransientDigit::AliMUONTransientDigit(const AliMUONTransientDigit& digit):AliMUONDigit(digit)
+  AliMUONTransientDigit::AliMUONTransientDigit(const AliMUONTransientDigit& digit)
+    : AliMUONDigit(digit)
 {
-// dummy copy constructor
+// Protected copy constructor
+
+  Fatal("AliMUONFTransientDigit", "Not implemented.");
 }
 
 
@@ -49,10 +61,16 @@ AliMUONTransientDigit::~AliMUONTransientDigit()
 }
 
 ////////////////////////////////////////////////////////////////////////
-AliMUONTransientDigit& AliMUONTransientDigit::operator =(const AliMUONTransientDigit& /*rhs*/)
+AliMUONTransientDigit& 
+AliMUONTransientDigit::operator =(const AliMUONTransientDigit& rhs)
 {
-// Dummy assignment operator
-    return *this;
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
 }
 
 ////////////////////////////////////////////////////////////////////////

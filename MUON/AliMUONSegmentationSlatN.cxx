@@ -15,18 +15,17 @@
 
 /* $Id$ */
 
+#include <TArrayI.h>
+#include <TMath.h>
+
 #include "AliMUONSegmentationSlatN.h"
 #include "AliMUONSegmentationSlatModuleN.h"
-#include "TArrayI.h"
-#include "TArrayF.h"
-#include "TObjArray.h"
-#include <TMath.h>
-#include <Riostream.h>
 
 //___________________________________________
 ClassImp(AliMUONSegmentationSlatN);
 
 AliMUONSegmentationSlatN::AliMUONSegmentationSlatN()
+  : AliMUONSegmentationSlat()
 {
 // Default constructor
 }
@@ -61,7 +60,7 @@ Float_t AliMUONSegmentationSlatN::Dpy(Int_t isec) const
 
 
 void AliMUONSegmentationSlatN::GlobalToLocal(
-    Int_t ix, Int_t iy, Int_t &islat, Int_t &ixlocal, Int_t &iylocal)
+    Int_t ix, Int_t iy, Int_t &islat, Int_t &ixlocal, Int_t &iylocal) const
 {
 //
 // Perform local to global transformation for pad coordinates
@@ -88,7 +87,7 @@ void AliMUONSegmentationSlatN::GlobalToLocal(
 }
 
 void AliMUONSegmentationSlatN::LocalToGlobal(
-    Int_t islat, Int_t ixlocal, Int_t iylocal, Int_t &ix, Int_t &iy)
+    Int_t islat, Int_t ixlocal, Int_t iylocal, Int_t &ix, Int_t &iy) const
 {
 // Local to global transformation for pad coordinates
     
@@ -131,7 +130,7 @@ GetPadI(Float_t x, Float_t y, Float_t z, Int_t &ix, Int_t &iy)
 }
 
 AliMUONSegmentationSlatModule* AliMUONSegmentationSlatN::
-CreateSlatModule()
+CreateSlatModule() const
 {
     // Factory method for slat module
     return new AliMUONSegmentationSlatModuleN(4);

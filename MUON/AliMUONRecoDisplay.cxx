@@ -44,31 +44,40 @@
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-#include <Riostream.h>
-
 #include <TROOT.h>
+#include <TApplication.h>
+#include <TFile.h>
+#include <TPolyLine3D.h>
+#include <TParticle.h>
+#include <TTree.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TCanvas.h>
+#include <TProfile.h>
 #include <TFolder.h>
 #include <TClonesArray.h>
-#include <TGeometry.h>
 #include <TSlider.h>
 #include <TGeometry.h>
 #include <TView.h>
+#include <Riostream.h>
 
-#include <AliRun.h>
-#include <AliConfig.h>
-#include <AliHeader.h>
-#include <AliPoints.h>
+#include "AliRun.h"
+#include "AliDetector.h"
+#include "AliConfig.h"
+#include "AliHeader.h"
+#include "AliPoints.h"
+#include "AliMC.h"
 
 #include "AliMUONRecoDisplay.h"
 #include "AliMUONRecoEvent.h"
 #include "AliMUONRecoTrack.h"
-#include "AliMC.h"
+#include "AliMUONHit.h"
 
 ClassImp(AliMUONRecoDisplay)
 
 //-------------------------------------------------------------------
 AliMUONRecoDisplay::AliMUONRecoDisplay(Int_t nevent)
-                  :AliDisplay(750)
+  : AliDisplay(750)
 {
 //************ Constructor of the reco. event display**********
    // get reconstructed event from file
@@ -467,7 +476,7 @@ void AliMUONRecoDisplay::ShowNextEvent(Int_t delta)
    if (gROOT->GetListOfCanvases()->FindObject("xy")) XYPlot();
 }
 //-------------------------------------------------------------------
-Bool_t AliMUONRecoDisplay::IsReconstructible(Int_t track)
+Bool_t AliMUONRecoDisplay::IsReconstructible(Int_t track) const
 {
 // true if at least three hits in first 2 stations, 3 in last 2 stations
 // and one in station 3
@@ -816,5 +825,3 @@ void AliMUONRecoDisplay::PolyLineInfo(TClonesArray *line3Dlist)
       }
    }
 }
-
-

@@ -1,4 +1,8 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
+// Revision of includes 07/05/2004
 //
 // Class AliMUONSt2GeometryBuilder
 // -----------------------------
@@ -17,17 +21,19 @@ class AliMUONSt2GeometryBuilder : public AliMUONVGeometryBuilder
 {
   public:
     AliMUONSt2GeometryBuilder(AliMUON* muon);
-    AliMUONSt2GeometryBuilder(const AliMUONSt2GeometryBuilder& rhs);
     AliMUONSt2GeometryBuilder();
     virtual ~AliMUONSt2GeometryBuilder();
-
-    // operators  
-    AliMUONSt2GeometryBuilder& operator = (const AliMUONSt2GeometryBuilder& rhs);
   
     // methods
     virtual void CreateGeometry();
     virtual void SetTransformations();
     virtual void SetSensitiveVolumes();
+    
+  protected:
+    AliMUONSt2GeometryBuilder(const AliMUONSt2GeometryBuilder& rhs);
+
+    // operators  
+    AliMUONSt2GeometryBuilder& operator = (const AliMUONSt2GeometryBuilder& rhs);
     
   private:
      AliMUON*  fMUON; // the MUON detector class 

@@ -21,25 +21,35 @@
 //__________________________________________________________________________
 
 #include "AliMUONHitForRec.h" 
-#include "AliMUONTrackParam.h" 
 #include "AliMUONRawCluster.h"
 #include "AliMUONHit.h"
 
 ClassImp(AliMUONHitForRec) // Class implementation in ROOT context
 
   //__________________________________________________________________________
-AliMUONHitForRec::AliMUONHitForRec(AliMUONHit* Ghit)
+AliMUONHitForRec::AliMUONHitForRec()
+  : TObject()
+{
+ // Default Constructor
+ 
+    fFirstTrackHitPtr = 0;
+    fLastTrackHitPtr = 0;
+}
+
+  //__________________________________________________________________________
+AliMUONHitForRec::AliMUONHitForRec(AliMUONHit* theGhit)
+  : TObject()
 {
   // Constructor for AliMUONHitForRec from a GEANT hit.
   // Fills the bending, non bending, and Z coordinates,
   // which are taken from the coordinates of the GEANT hit,
   // the track number (GEANT and not TH),
   // and the chamber number (0...).
-  fBendingCoor = Ghit->Y();
-  fNonBendingCoor = Ghit->X();
-  fZ = Ghit->Z();
-  // fTrack = Ghit->fTrack; ?????????
-  fChamberNumber = Ghit->Chamber() - 1;
+  fBendingCoor = theGhit->Y();
+  fNonBendingCoor = theGhit->X();
+  fZ = theGhit->Z();
+  // fTrack = theGhit->fTrack; ?????????
+  fChamberNumber = theGhit->Chamber() - 1;
   // other fields will be updated in
   // AliMUONEventReconstructor::NewHitForRecFromGEANT,
   // except the following ones
@@ -67,12 +77,13 @@ AliMUONHitForRec::AliMUONHitForRec(AliMUONHit* Ghit)
 // }
 
   //__________________________________________________________________________
-AliMUONHitForRec::AliMUONHitForRec(AliMUONRawCluster* RawCluster)
+AliMUONHitForRec::AliMUONHitForRec(AliMUONRawCluster* theRawCluster)
+  : TObject()
 {
   // Constructor for AliMUONHitForRec from a raw cluster.
   // Fills the bending and non bending coordinates.
-  fNonBendingCoor = RawCluster->GetX(0);
-  fBendingCoor = RawCluster->GetY(0);
+  fNonBendingCoor = theRawCluster->GetX(0);
+  fBendingCoor = theRawCluster->GetY(0);
   // other fields will be updated in
   // AliMUONEventReconstructor::AddHitsForRecFromRawClusters,
   // except the following ones
@@ -85,15 +96,25 @@ AliMUONHitForRec::AliMUONHitForRec(AliMUONRawCluster* RawCluster)
   return;
 }
 
-AliMUONHitForRec::AliMUONHitForRec (const AliMUONHitForRec& MUONHitForRec):TObject(MUONHitForRec)
+  //__________________________________________________________________________
+AliMUONHitForRec::AliMUONHitForRec (const AliMUONHitForRec& rhs)
+  : TObject(rhs)
 {
-// Dummy copy constructor
+// Protected copy constructor
+
+  Fatal("AliMUONHitForRec", "Not implemented.");
 }
 
-AliMUONHitForRec & AliMUONHitForRec::operator=(const AliMUONHitForRec& /*MUONHitForRec*/)
+  //__________________________________________________________________________
+AliMUONHitForRec & AliMUONHitForRec::operator=(const AliMUONHitForRec& rhs)
 {
-// Dummy assignment operator
-    return *this;
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
 }
   //__________________________________________________________________________
 /*AZ
@@ -119,10 +140,10 @@ Int_t AliMUONHitForRec::Compare(const TObject* Hit) const
 }
 
   //__________________________________________________________________________
-Double_t AliMUONHitForRec::NormalizedChi2WithHitForRec(AliMUONHitForRec* HitForRec, Double_t Sigma2Cut)
+Double_t AliMUONHitForRec::NormalizedChi2WithHitForRec(AliMUONHitForRec* hitForRec, Double_t Sigma2Cut) const
 {
-  // Calculate the normalized Chi2 between the current HitForRec (this)
-  // and the HitForRec pointed to by "HitForRec",
+  // Calculate the normalized Chi2 between the current hitForRec (this)
+  // and the hitForRec pointed to by "hitForRec",
   // i.e. the square deviations between the coordinates,
   // in both the bending and the non bending plane,
   // divided by the variance of the same quantities and by "Sigma2Cut".
@@ -134,15 +155,15 @@ Double_t AliMUONHitForRec::NormalizedChi2WithHitForRec(AliMUONHitForRec* HitForR
   chi2 = 0.0;
   chi2Max = 3.0;
   // coordinate in bending plane
-  diff = this->fBendingCoor - HitForRec->fBendingCoor;
+  diff = fBendingCoor - hitForRec->fBendingCoor;
   normDiff = diff * diff /
-    (this->fBendingReso2 + HitForRec->fBendingReso2) / Sigma2Cut;
+    (fBendingReso2 + hitForRec->fBendingReso2) / Sigma2Cut;
   if (normDiff > 1.0) return chi2Max;
   chi2 = chi2 + normDiff;
   // coordinate in non bending plane
-  diff = this->fNonBendingCoor - HitForRec->fNonBendingCoor;
+  diff = fNonBendingCoor - hitForRec->fNonBendingCoor;
   normDiff = diff * diff /
-    (this->fNonBendingReso2 + HitForRec->fNonBendingReso2) / Sigma2Cut;
+    (fNonBendingReso2 + hitForRec->fNonBendingReso2) / Sigma2Cut;
   if (normDiff > 1.0) return chi2Max;
   chi2 = chi2 + normDiff;
   return chi2;

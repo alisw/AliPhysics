@@ -37,6 +37,13 @@ ClassImp(AliMUONDigit)
 }
 
 //_____________________________________________________________________________
+ AliMUONDigit::AliMUONDigit()
+   : TObject()
+{
+// Default constructor
+}
+
+//_____________________________________________________________________________
 AliMUONDigit::AliMUONDigit(Int_t *digits)
 {
   //

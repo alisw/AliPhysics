@@ -1,25 +1,19 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
-#include <Riostream.h>
-#include <TDirectory.h>
-#include <TFile.h>
-#include <TObjArray.h>
-#include <TPDGCode.h>
-#include <TTree.h> 
-#include <TMath.h>
-
-#include "AliRun.h"
-#include "AliRunLoader.h"
-#include "AliLoader.h"
-
-#include "AliMUON.h"
-#include "AliMUONChamber.h"
-#include "AliMUONConstants.h"
-#include "AliMUONDigit.h"
-#include "AliMUONSDigitizerv1.h"
-#include "AliMUONHit.h"
-#include "AliMUONHitMapA1.h"
-#include "AliMUONPadHit.h"
-#include "AliMUONTransientDigit.h"
+/* $Id$ */
 
 /////////////////////////////////////////////////////////////////////////////////
 //
@@ -31,16 +25,24 @@
 //
 /////////////////////////////////////////////////////////////////////////////////
 
+#include "AliMUONSDigitizerv1.h"
+#include "AliMUONLoader.h"
+#include "AliMUONData.h"
+#include "AliMUONDigit.h"
+#include "AliMUONTransientDigit.h"
+
 ClassImp(AliMUONSDigitizerv1)
 
 //___________________________________________
-AliMUONSDigitizerv1::AliMUONSDigitizerv1() : AliMUONDigitizerv1()
+AliMUONSDigitizerv1::AliMUONSDigitizerv1() 
+  : AliMUONDigitizerv1()
 {
 	// Default ctor - don't use it
 }
 
 //___________________________________________
-AliMUONSDigitizerv1::AliMUONSDigitizerv1(AliRunDigitizer* manager) : AliMUONDigitizerv1(manager)
+AliMUONSDigitizerv1::AliMUONSDigitizerv1(AliRunDigitizer* manager) 
+  : AliMUONDigitizerv1(manager)
 {
 	// ctor which should be used
 }
@@ -56,7 +58,7 @@ void AliMUONSDigitizerv1::AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_
 {
 // Derived to write to the s-digit tree TreeS.
 
-	muondata->AddSDigit(chamber, tracks, charges, digits);   
+	fMUONData->AddSDigit(chamber, tracks, charges, digits);   
 };
 
 //------------------------------------------------------------------------
@@ -76,7 +78,7 @@ Bool_t AliMUONSDigitizerv1::InitOutputData(AliMUONLoader* muonloader)
 	if (GetDebug() > 2)
 		Info("InitOutputData", "Creating s-digits branch and setting the tree address.");
 
-	muondata->SetLoader(muonloader);
+	fMUONData->SetLoader(muonloader);
 
 	// New branch per chamber for MUON digit in the tree of digits
 	if (muonloader->TreeS() == NULL)
@@ -89,8 +91,8 @@ Bool_t AliMUONSDigitizerv1::InitOutputData(AliMUONLoader* muonloader)
 		};
 	};
 
-	muondata->MakeBranch("S");
-	muondata->SetTreeAddress("S");
+	fMUONData->MakeBranch("S");
+	fMUONData->SetTreeAddress("S");
 	
 	return kTRUE;
 };
@@ -101,8 +103,8 @@ void AliMUONSDigitizerv1::FillOutputData()
 // Overridden to fill TreeS rather than TreeD.
 
 	if (GetDebug() > 2) Info("FillOutputData", "Filling trees with s-digits.");
-	muondata->Fill("S");
-	muondata->ResetSDigits();
+	fMUONData->Fill("S");
+	fMUONData->ResetSDigits();
 };
 
 //------------------------------------------------------------------------
@@ -112,6 +114,6 @@ void AliMUONSDigitizerv1::CleanupOutputData(AliMUONLoader* muonloader)
 
 	if (GetDebug() > 2) Info("CleanupOutputData", "Writing s-digits and releasing pointers.");
 	muonloader->WriteSDigits("OVERWRITE");
-	muondata->ResetSDigits();
+	fMUONData->ResetSDigits();
 	muonloader->UnloadSDigits();
 };

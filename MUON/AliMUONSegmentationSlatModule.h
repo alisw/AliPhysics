@@ -4,20 +4,20 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 /////////////////////////////////////////////////////
 //  Segmentation classes for slat modules          //
 //  to be used with AluMUONSegmentationSlat        //
 /////////////////////////////////////////////////////
 
-class TArrayF;
-class TArrayI;
-class TObjArray;
-
 #include  "AliMUONSegmentationV0.h"
 
-class AliMUONSegmentationSlatModule :
-public AliMUONSegmentationV0 {
+class TArrayF;
+class TArrayI;
+
+class AliMUONSegmentationSlatModule : public AliMUONSegmentationV0 
+{
  public:
     AliMUONSegmentationSlatModule();
     AliMUONSegmentationSlatModule(Int_t nsec);

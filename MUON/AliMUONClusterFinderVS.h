@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 ////////////////////////////////////////////////
 //  MUON Cluster Finder Class                 //
@@ -11,11 +12,12 @@
 
 #include <TObject.h>
 
+class TClonesArray;
+
 class AliMUONClusterInput;
 class AliMUONHitMapA1;
 class AliMUONResponse;
 class AliSegmentation;
-class TClonesArray;
 class AliMUONRawCluster;
 class AliMUONDigit;
 
@@ -24,7 +26,6 @@ class AliMUONClusterFinderVS : public TObject
 {
  public:
     AliMUONClusterFinderVS();
-    AliMUONClusterFinderVS(const AliMUONClusterFinderVS& clusterFinder);
     virtual ~AliMUONClusterFinderVS();
 // Decluster ?
     virtual void SetDeclusterFlag(Int_t flag=1) {fDeclusterFlag =flag;}
@@ -55,9 +56,7 @@ class AliMUONClusterFinderVS : public TObject
     virtual void AddRawCluster(const AliMUONRawCluster& cluster);
 //  Set tracks for debugging    
     virtual void SetTracks(Int_t t1, Int_t t2) {fTrack[0]=t1; fTrack[1]=t2;}
-    virtual Bool_t TestTrack(Int_t t);
-//  Assignment operator
-    AliMUONClusterFinderVS & operator = (const AliMUONClusterFinderVS& rhs);
+    virtual Bool_t TestTrack(Int_t t) const;
 //  debug level
     void SetDebugLevel(Int_t level) {fDebugLevel = level;}
     void SetGhostChi2Cut(Float_t cut) {fGhostChi2Cut = cut;}
@@ -67,6 +66,10 @@ class AliMUONClusterFinderVS : public TObject
     void ResetRawClusters();
 
  protected:
+    AliMUONClusterFinderVS(const AliMUONClusterFinderVS& clusterFinder);
+//  Assignment operator
+    AliMUONClusterFinderVS & operator = (const AliMUONClusterFinderVS& rhs);
+
     AliMUONClusterInput*    fInput;              // ! AliMUONClusterInput instance
     AliMUONHitMapA1*        fHitMap[2];          // Hit Maps for cathode 1 and 2
     AliSegmentation*        fSeg[2];             // Segmentations for cathode 1 and 2

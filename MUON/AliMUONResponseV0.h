@@ -4,13 +4,14 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 #include "AliMUONResponse.h"
 
-class AliMUONResponseV0 : 
-public AliMUONResponse {
+class AliMUONResponseV0 : public AliMUONResponse 
+{
  public:
-    AliMUONResponseV0(){fChargeCorrel = 0;} // by default
+    AliMUONResponseV0();
     virtual ~AliMUONResponseV0(){}
     //
     // Configuration methods
@@ -18,18 +19,18 @@ public AliMUONResponse {
     // Set number of sigmas over which cluster didintegration is performed
     virtual void    SetSigmaIntegration(Float_t p1) {fSigmaIntegration=p1;}
     // Get number of sigmas over which cluster didintegration is performed   
-    virtual Float_t SigmaIntegration() {return fSigmaIntegration;}    
+    virtual Float_t SigmaIntegration() const {return fSigmaIntegration;}    
     // Set single electron pulse height (ADCcounts/e)
     virtual void    SetChargeSlope(Float_t p1) {fChargeSlope=p1;}
     // Get Set single electron pulse height (ADCcounts/e)
-    virtual Float_t ChargeSlope()      {return fChargeSlope;}
+    virtual Float_t ChargeSlope() const     {return fChargeSlope;}
     // Set sigmas of the charge spread function
     virtual void    SetChargeSpread(Float_t p1, Float_t p2)
 	{fChargeSpreadX=p1; fChargeSpreadY=p2;}
     // Get sigma_X of the charge spread function
-    virtual Float_t ChargeSpreadX()    {return fChargeSpreadX;}
+    virtual Float_t ChargeSpreadX() const    {return fChargeSpreadX;}
     // Get sigma_Y of the charge spread function
-    virtual Float_t ChargeSpreadY()    {return fChargeSpreadY;}        
+    virtual Float_t ChargeSpreadY() const    {return fChargeSpreadY;}        
     // Set maximum Adc-count value
     virtual void    SetMaxAdc(Int_t p1) {fMaxAdc=p1;}
     // Set saturation value
@@ -37,20 +38,20 @@ public AliMUONResponse {
     // Set zero suppression threshold
     virtual void    SetZeroSuppression(Int_t p1) {fZeroSuppression=p1;}
     // Get maximum Adc-count value   
-    virtual Int_t   MaxAdc()           {return fMaxAdc;}
+    virtual Int_t   MaxAdc() const          {return fMaxAdc;}
     // Get saturation value   
-    virtual Int_t   Saturation()           {return fSaturation;}
+    virtual Int_t   Saturation() const      {return fSaturation;}
 
     // Get zero suppression threshold
-    virtual Int_t   ZeroSuppression() {return fZeroSuppression;}
+    virtual Int_t   ZeroSuppression() const {return fZeroSuppression;}
     // Set anode cathode Pitch
-    virtual Float_t Pitch()            {return fPitch;}
+    virtual Float_t Pitch() const           {return fPitch;}
     // Get anode cathode Pitch
     virtual void    SetPitch(Float_t p1) {fPitch=p1;};
     // Set the charge correlation
     virtual void SetChargeCorrel(Float_t correl){fChargeCorrel = correl;}
     // Get the charge correlation
-    virtual Float_t ChargeCorrel(){return fChargeCorrel;}
+    virtual Float_t ChargeCorrel() const {return fChargeCorrel;}
     // Set Mathieson parameters
     // Mathieson \sqrt{Kx3} and derived Kx2 and Kx4
     virtual void SetSqrtKx3AndDeriveKx2Kx4(Float_t SqrtKx3);

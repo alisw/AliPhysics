@@ -4,7 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
-/* $Id$ */
+// Revision of includes 07/05/2004
 
 /////////////////////////////////////////////////////////
 //  Manager and hits classes for set:MUON version 3    //
@@ -15,13 +15,15 @@
 // are created using new geometry builders
 // (See ALIMUON*GeometryBuilder classes)
  
-#include "TLorentzVector.h"
+#include <TLorentzVector.h>
+
 #include "AliMUON.h"
 
 class TF1;
 
-class AliMUONv3 : public AliMUON {
-public:
+class AliMUONv3 : public AliMUON 
+{
+ public:
    AliMUONv3();
    AliMUONv3(const char *name, const char *title);
    virtual  ~AliMUONv3() {}
@@ -37,7 +39,8 @@ public:
      { fAngleEffect = Opt; }
    void SetStepMaxInActiveGas(Float_t StepMax)
      {fStepMaxInActiveGas = StepMax; }
-protected:
+
+ protected:
    AliMUONv3(const AliMUONv3& right);
    AliMUONv3&  operator = (const AliMUONv3& right);
    Int_t*  fStations;              //! allow to externally set which station to create
@@ -55,10 +58,8 @@ protected:
    TF1 *          fElossRatio;    // Ratio of particle mean eloss with respect MIP's 
    TF1 *          fAngleEffect10; // Angle effect in tracking chambers at theta =10 degres as a function of ElossRatio (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis) (in micrometers)  
    TF1 *          fAngleEffectNorma;// Angle effect: Normalisation form theta=10 degres to theta between 0 and 10 (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis)
-private:
+
    ClassDef(AliMUONv3,1)  // MUON Detector class Version 1
-
-
 };
 #endif
 

@@ -1,7 +1,22 @@
-#include "AliMUONClusterFinderAZ.h"
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
-#include <stdlib.h>
-#include <fcntl.h>
+/* $Id$ */
+
+// Clusterizer class developped by Zitchenko (Dubna)
+
 #include <Riostream.h>
 #include <TROOT.h>
 #include <TCanvas.h>
@@ -13,6 +28,7 @@
 #include <TMinuit.h>
 #include <TMatrixD.h>
 
+#include "AliMUONClusterFinderAZ.h"
 #include "AliHeader.h"
 #include "AliRun.h"
 #include "AliMUON.h"
@@ -25,21 +41,14 @@
 #include "AliMUONPixel.h"
 #include "AliMC.h"
 
-// Clusterizer class developped by Zitchenko (Dubna)
-//
-//
-//
-
-
 ClassImp(AliMUONClusterFinderAZ)
  
  const Double_t AliMUONClusterFinderAZ::fgkCouplMin = 1.e-3; // threshold on coupling 
  AliMUONClusterFinderAZ* AliMUONClusterFinderAZ::fgClusterFinder = 0x0;
  TMinuit* AliMUONClusterFinderAZ::fgMinuit = 0x0;
 
-
 //_____________________________________________________________________________
-AliMUONClusterFinderAZ::AliMUONClusterFinderAZ(Bool_t draw=0, Int_t iReco=0)
+AliMUONClusterFinderAZ::AliMUONClusterFinderAZ(Bool_t draw, Int_t iReco)
   : AliMUONClusterFinderVS()
 {
 // Constructor
@@ -93,19 +102,6 @@ AliMUONClusterFinderAZ::~AliMUONClusterFinderAZ()
   */
 }
 
-//_____________________________________________________________________________
-AliMUONClusterFinderAZ&  
-AliMUONClusterFinderAZ::operator=(const AliMUONClusterFinderAZ& rhs)
-{
-// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  Fatal("operator=", "Not implemented.");
-    
-  return *this;  
-}    
-          
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::FindRawClusters()
 {
@@ -2083,7 +2079,7 @@ Int_t AliMUONClusterFinderAZ::Fit(Int_t nfit, Int_t *clustFit, TObjArray **clust
 
     while (1) {
       max = !min;
-      fcn1(fNpar, gin, func0, param, 1); nCall++;
+      Fcn1(fNpar, gin, func0, param, 1); nCall++;
       //cout << " Func: " << func0 << endl;
 
       func2[max] = func0;
@@ -2092,7 +2088,7 @@ Int_t AliMUONClusterFinderAZ::Fit(Int_t nfit, Int_t *clustFit, TObjArray **clust
 	delta[j] = step0[j];
 	param[j] += delta[j] / 10;
 	if (j > 0) param[j-1] -= delta[j-1] / 10;
-	fcn1(fNpar, gin, func1, param, 1); nCall++;
+	Fcn1(fNpar, gin, func1, param, 1); nCall++;
 	deriv[max][j] = (func1 - func0) / delta[j] * 10; // first derivative
 	//cout << j << " " << deriv[max][j] << endl;
 	dder[j] = param0[0][j] != param0[1][j] ? (deriv[0][j] - deriv[1][j]) / 
@@ -2232,7 +2228,7 @@ Int_t AliMUONClusterFinderAZ::Fit(Int_t nfit, Int_t *clustFit, TObjArray **clust
 }  
 
 //_____________________________________________________________________________
-void AliMUONClusterFinderAZ::fcn1(Int_t & /*npar*/, Double_t * /*gin*/, Double_t &f, Double_t *par, Int_t /*iflag*/)
+void AliMUONClusterFinderAZ::Fcn1(Int_t & /*npar*/, Double_t * /*gin*/, Double_t &f, Double_t *par, Int_t /*iflag*/)
 {
   // Fit for one track
   AliMUONClusterFinderAZ& c = *(AliMUONClusterFinderAZ::fgClusterFinder);    
@@ -2300,7 +2296,7 @@ void AliMUONClusterFinderAZ::UpdatePads(Int_t /*nfit*/, Double_t *par)
 }  
 
 //_____________________________________________________________________________
-Bool_t AliMUONClusterFinderAZ::TestTrack(Int_t /*t*/) {
+Bool_t AliMUONClusterFinderAZ::TestTrack(Int_t /*t*/) const {
 // Test if track was user selected
   return kTRUE;
   /*
@@ -2493,3 +2489,17 @@ void AliMUONClusterFinderAZ::FindCluster(Int_t *localMax, Int_t iMax)
 
   delete [] used; used = 0;
 }
+
+//_____________________________________________________________________________
+AliMUONClusterFinderAZ&  
+AliMUONClusterFinderAZ::operator=(const AliMUONClusterFinderAZ& rhs)
+{
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
+}    
+          

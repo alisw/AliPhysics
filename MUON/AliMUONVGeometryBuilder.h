@@ -1,4 +1,8 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
+// Revision of includes 07/05/2004
 //
 // Class AliMUONVGeometryBuilder
 // -----------------------------
@@ -28,12 +32,8 @@ class AliMUONVGeometryBuilder : public TObject
                             AliMUONChamber* ch4 = 0,
                             AliMUONChamber* ch5 = 0,
                             AliMUONChamber* ch6 = 0);
-    AliMUONVGeometryBuilder(const AliMUONVGeometryBuilder& rhs);
     AliMUONVGeometryBuilder();
     virtual ~AliMUONVGeometryBuilder();
-
-    // operators  
-    AliMUONVGeometryBuilder& operator = (const AliMUONVGeometryBuilder& rhs);
   
     // methods
     virtual void CreateMaterials() {}  // make = 0; ?
@@ -62,6 +62,11 @@ class AliMUONVGeometryBuilder : public TObject
 		  // should be defined and set to its geometry class. 
 		   
   protected:
+    AliMUONVGeometryBuilder(const AliMUONVGeometryBuilder& rhs);
+
+    // operators  
+    AliMUONVGeometryBuilder& operator = (const AliMUONVGeometryBuilder& rhs);
+
     // methods
     AliMUONChamber* GetChamber(Int_t chamberId) const;
     

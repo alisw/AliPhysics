@@ -13,27 +13,29 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
+/* $Id$ */
 
-*/
+#include <TMath.h>
+#include <TRandom.h>
 
 #include "AliMUONResponseTriggerV1.h"
 #include "AliSegmentation.h"
-#include <TMath.h>
-#include <TRandom.h>
-#include <Riostream.h> 
 
 ClassImp(AliMUONResponseTriggerV1)
 
 //------------------------------------------------------------------   
-AliMUONResponseTriggerV1::AliMUONResponseTriggerV1(){
+AliMUONResponseTriggerV1::AliMUONResponseTriggerV1()
+  : AliMUONResponseTrigger() 
+{
 // default constructor 
   Float_t hv=9.2;
   SetParameters(hv);
 }
 
 //------------------------------------------------------------------   
-AliMUONResponseTriggerV1::AliMUONResponseTriggerV1(Float_t hv){
+AliMUONResponseTriggerV1::AliMUONResponseTriggerV1(Float_t hv)
+  : AliMUONResponseTrigger() 
+{
 // Constructor 
   SetParameters(hv);
 }

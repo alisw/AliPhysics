@@ -3,12 +3,16 @@
 //  email: artur@alice.phy.uct.ac.za
 
 #include <TError.h>
+#include <TParticle.h>
 
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 
 #include "AliMUONDataInterface.h"
-#include "AliMUONData.h"
+#include "AliMUONLocalTrigger.h"
+#include "AliMUONHit.h"
+#include "AliMUONDigit.h"
+#include "AliMUONRawCluster.h"
 
 
 ClassImp(AliMUONDataInterface)

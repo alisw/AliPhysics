@@ -1,28 +1,22 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
 
 //  Do the Digitization (Digit) from summable Digits (SDigit)
 //  Allow the merging of signal file with background file(s).
-
-#include <Riostream.h>
-#include <TDirectory.h>
-#include <TFile.h>
-#include <TObjArray.h>
-#include <TPDGCode.h>
-#include <TTree.h> 
-#include <TMath.h>
-
-#include "AliMUON.h"
-#include "AliMUONChamber.h"
-#include "AliMUONConstants.h"
-#include "AliMUONDigit.h"
-#include "AliMUONDigitizerv2.h"
-#include "AliMUONHit.h"
-#include "AliMUONHitMapA1.h"
-#include "AliMUONPadHit.h"
-#include "AliMUONTransientDigit.h"
-#include "AliRun.h"
-#include "AliRunDigitizer.h"
-#include "AliRunLoader.h"
-#include "AliLoader.h"
 
 /////////////////////////////////////////////////////////////////////////////////
 //
@@ -33,6 +27,13 @@
 // Chamber response is applied to the digits identically to AliMUONDigitizerv1.
 //
 /////////////////////////////////////////////////////////////////////////////////
+
+#include "AliMUONData.h"
+#include "AliMUONLoader.h"
+#include "AliMUONConstants.h"
+#include "AliMUONDigit.h"
+#include "AliMUONDigitizerv2.h"
+#include "AliMUONTransientDigit.h"
 
 ClassImp(AliMUONDigitizerv2)
 
@@ -70,18 +71,18 @@ void AliMUONDigitizerv2::GenerateTransientDigits()
 	TClonesArray* muonSDigits;
 	for (Int_t ich = 0; ich < AliMUONConstants::NCh(); ich++)  // loop over chamber
 	{
-		muondata->ResetSDigits();
-		muondata->GetCathodeS(0);
-		muonSDigits = muondata->SDigits(ich); 
+		fMUONData->ResetSDigits();
+		fMUONData->GetCathodeS(0);
+		muonSDigits = fMUONData->SDigits(ich); 
 		ndig = muonSDigits->GetEntriesFast();
 		for (k = 0; k < ndig; k++)
 		{
 			sDigit = (AliMUONDigit*) muonSDigits->UncheckedAt(k);
 			MakeTransientDigitFromSDigit(ich,sDigit);
 		}
-		muondata->ResetSDigits();
-		muondata->GetCathodeS(1);
-		muonSDigits = muondata->SDigits(ich); 
+		fMUONData->ResetSDigits();
+		fMUONData->GetCathodeS(1);
+		muonSDigits = fMUONData->SDigits(ich); 
 		ndig=muonSDigits->GetEntriesFast();
 		for (k = 0; k < ndig; k++)
 		{
@@ -137,20 +138,20 @@ void AliMUONDigitizerv2::MakeTransientDigitFromSDigit(Int_t iChamber, AliMUONDig
 void AliMUONDigitizerv2::AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[6])
 {
 // Override to add new digits to the digits tree TreeD.
-	muondata->AddDigit(chamber, tracks, charges, digits);   
+	fMUONData->AddDigit(chamber, tracks, charges, digits);   
 };
 
 //------------------------------------------------------------------------
 Bool_t AliMUONDigitizerv2::InitInputData(AliMUONLoader* muonloader)
 {
-// Overridden to initialize muondata to read from the s-digits tree TreeS. 
+// Overridden to initialize fMUONData to read from the s-digits tree TreeS. 
 // If the s-digits are not loaded then the muon loader is used to load the
 // s-digits into memory.
 
 	if (GetDebug() > 2)
 		Info("InitInputData", "Loading s-digits in READ mode and setting the tree address.");
 
-	muondata->SetLoader(muonloader);
+	fMUONData->SetLoader(muonloader);
 
 	if (muonloader->TreeS() == NULL)
 	{
@@ -162,7 +163,7 @@ Bool_t AliMUONDigitizerv2::InitInputData(AliMUONLoader* muonloader)
 		};
 	};
 
-	muondata->SetTreeAddress("S");
+	fMUONData->SetTreeAddress("S");
 	return kTRUE;
 };
 
@@ -172,6 +173,6 @@ void AliMUONDigitizerv2::CleanupInputData(AliMUONLoader* muonloader)
 // Overridden to release and unload s-digits from memory.
 
 	if (GetDebug() > 2) Info("CleanupInputData", "Releasing loaded s-digits.");
-	muondata->ResetSDigits();
+	fMUONData->ResetSDigits();
 	muonloader->UnloadSDigits();
 };

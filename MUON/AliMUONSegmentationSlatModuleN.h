@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 /////////////////////////////////////////////////////
 //  Segmentation classes for slat modules          //
@@ -12,8 +13,8 @@
 
 #include "AliMUONSegmentationSlatModule.h"
 
-class  AliMUONSegmentationSlatModuleN :
-public AliMUONSegmentationSlatModule {
+class  AliMUONSegmentationSlatModuleN : public AliMUONSegmentationSlatModule 
+{
  public:
     AliMUONSegmentationSlatModuleN();
     AliMUONSegmentationSlatModuleN(Int_t nsec);

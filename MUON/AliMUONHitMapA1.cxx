@@ -15,17 +15,17 @@
 
 /* $Id$ */
 
-#include "AliMUONHitMapA1.h"
-#include "AliSegmentation.h"
-#include "AliMUONResponse.h"
-#include "AliMUONDigit.h"
-
 #include <TObjArray.h>
 #include <TMath.h>
 
+#include "AliMUONHitMapA1.h"
+#include "AliSegmentation.h"
+#include "AliMUONDigit.h"
+
 ClassImp(AliMUONHitMapA1)
 
-    AliMUONHitMapA1::AliMUONHitMapA1()
+AliMUONHitMapA1::AliMUONHitMapA1()
+  : AliHitMap()
 {
     // Default constructor
     fNpx          = 0;
@@ -37,6 +37,7 @@ ClassImp(AliMUONHitMapA1)
 }
 
 AliMUONHitMapA1::AliMUONHitMapA1(AliSegmentation *seg, TObjArray *dig)
+  : AliHitMap()
 {
 // Constructor
     fNpx  = seg->Npx()+1;
@@ -48,10 +49,12 @@ AliMUONHitMapA1::AliMUONHitMapA1(AliSegmentation *seg, TObjArray *dig)
     Clear();
 }
 
-AliMUONHitMapA1::AliMUONHitMapA1(const AliMUONHitMapA1 & hitMap):AliHitMap(hitMap)
+AliMUONHitMapA1::AliMUONHitMapA1(const AliMUONHitMapA1 & hitMap)
+  : AliHitMap(hitMap)
 {
-// Dummy copy constructor
-    ;
+// Protected copy constructor
+
+  Fatal("AliMUONHitMapA1", "Not implemented.");
 }
 
  
@@ -155,10 +158,15 @@ FlagType AliMUONHitMapA1::TestHit(Int_t ix, Int_t iy)
     }
 }
 
-AliMUONHitMapA1 & AliMUONHitMapA1::operator = (const AliMUONHitMapA1 & /*rhs*/) 
+AliMUONHitMapA1 & AliMUONHitMapA1::operator = (const AliMUONHitMapA1 & rhs) 
 {
-// Dummy assignment operator
-    return *this;
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
 }
 
 

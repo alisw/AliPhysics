@@ -4,26 +4,19 @@
  * See cxx source for full Copyright notice                               */
 
 /*$Id$*/
+// Revision of includes 07/05/2004
 
 // Authors : M.Gheata, A.Gheata 09/10/00
 
-#include <TApplication.h>
-#include <TROOT.h>
-#include <TFile.h>
-#include <TPolyLine3D.h>
-#include <TParticle.h>
-#include <AliDisplay.h>
-#include <TTree.h>
-#include <TH1.h>
-#include <TH2.h>
-#include <TCanvas.h>
-#include <TProfile.h>
-#include <AliDetector.h>
-#include "AliMUONHit.h"
+#include "AliDisplay.h"
+
+class TTree;
+class TFile;
+class TClonesArray;
 
 class AliMUONRecoEvent;
 
-class AliMUONRecoDisplay:public AliDisplay 
+class AliMUONRecoDisplay : public AliDisplay 
 {
   public:
     AliMUONRecoDisplay(Int_t nevent=0);
@@ -50,7 +43,7 @@ class AliMUONRecoDisplay:public AliDisplay
     Int_t              GetBestMatch(Int_t indr, Float_t tolerance=3.0);
     TClonesArray*      MakePolyLines3D(TClonesArray *tracklist);
     void               MapEvent(Int_t nevent);
-    Bool_t             IsReconstructible(Int_t track);
+    Bool_t             IsReconstructible(Int_t track) const;
     //data members
     Int_t              fEvent;                   // current event number
     AliMUONRecoEvent  *fEvGen;                   // Geant event

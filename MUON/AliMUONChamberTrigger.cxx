@@ -16,24 +16,21 @@
 /* $Id$ */
 
 #include "AliMUONChamberTrigger.h"
-#include "AliMUONSegmentationTrigger.h"
 #include "AliMUONResponseTrigger.h"
-#include "AliMUONResponseTriggerV1.h"
-#include <TObjArray.h>
-#include <TMath.h>
-#include <Riostream.h>
 
 ClassImp(AliMUONChamberTrigger)
 
 //-------------------------------------------
 
 AliMUONChamberTrigger::AliMUONChamberTrigger()
+  : AliMUONChamber()
 {
 // Default constructor
 }
 
 
-AliMUONChamberTrigger::AliMUONChamberTrigger(Int_t id) : AliMUONChamber(id)
+AliMUONChamberTrigger::AliMUONChamberTrigger(Int_t id) 
+  : AliMUONChamber(id)
 {
 // Constructor using chamber id
 }

@@ -1,4 +1,8 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
+// Revision of includes 07/05/2004
 //
 // Class AliMUONSlatGeometryBuilder
 // -----------------------------
@@ -18,17 +22,19 @@ class AliMUONSlatGeometryBuilder : public AliMUONVGeometryBuilder
 {
   public:
     AliMUONSlatGeometryBuilder(AliMUON* muon);
-    AliMUONSlatGeometryBuilder(const AliMUONSlatGeometryBuilder& rhs);
     AliMUONSlatGeometryBuilder();
     virtual ~AliMUONSlatGeometryBuilder();
 
-    // operators  
-    AliMUONSlatGeometryBuilder& operator = (const AliMUONSlatGeometryBuilder& rhs);
-  
     // methods
     virtual void CreateGeometry();
     virtual void SetTransformations();
     virtual void SetSensitiveVolumes();
+
+  protected:
+    AliMUONSlatGeometryBuilder(const AliMUONSlatGeometryBuilder& rhs);
+
+    // operators  
+    AliMUONSlatGeometryBuilder& operator = (const AliMUONSlatGeometryBuilder& rhs);
     
   private:
     Int_t  ConvertSlatNum(Int_t numslat, Int_t quadnum, Int_t fspq) const;

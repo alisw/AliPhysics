@@ -39,6 +39,8 @@ AliMUONSt1GeometryBuilder::AliMUONSt1GeometryBuilder()
 AliMUONSt1GeometryBuilder::AliMUONSt1GeometryBuilder(const AliMUONSt1GeometryBuilder& rhs)
   : AliMUONVGeometryBuilder(rhs)
 {
+// Protected copy constructor
+
   Fatal("Copy constructor", 
         "Copy constructor is not implemented.");
 }
@@ -52,6 +54,8 @@ AliMUONSt1GeometryBuilder::~AliMUONSt1GeometryBuilder() {
 AliMUONSt1GeometryBuilder& 
 AliMUONSt1GeometryBuilder::operator = (const AliMUONSt1GeometryBuilder& rhs) 
 {
+// Protected assignement operator
+
   // check assignement to self
   if (this == &rhs) return *this;
 

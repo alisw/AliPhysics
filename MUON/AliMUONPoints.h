@@ -5,40 +5,43 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
-class AliMUONDigit;
-class AliMUONHit;
+#include "AliPoints.h"
 
 class TMatrix;
 class TMarker3DBox;
 
-#include "AliPoints.h"
+class AliMUONDigit;
+class AliMUONHit;
 
-class AliMUONPoints : public AliPoints {
-    public:
+class AliMUONPoints : public AliPoints 
+{
+public:
   AliMUONPoints();
   AliMUONPoints(Int_t npoints);
-  AliMUONPoints(const AliMUONPoints& points);  
   virtual ~AliMUONPoints();
 
-  Int_t                 GetHitIndex() {return fHitIndex;}
-  Int_t                 GetTrackIndex(); // *MENU*
-  Int_t                 GetDigitIndex() {return fDigitIndex;}
-  TMarker3DBox         *GetMarker(Int_t i) {return fMarker[i];}
+  Int_t                 GetHitIndex() const {return fHitIndex;}
+  Int_t                 GetTrackIndex() const; // *MENU*
+  Int_t                 GetDigitIndex() const {return fDigitIndex;}
+  TMarker3DBox         *GetMarker(Int_t i) const {return fMarker[i];}
   AliMUONHit           *GetHit() const;
   AliMUONDigit         *GetDigit() const;
   virtual void          InspectHit(); // *MENU*
-  virtual void          DumpHit(); // *MENU*
+  virtual void          DumpHit() const; // *MENU*
   virtual void          InspectDigit(); // *MENU*
-  virtual void          DumpDigit(); // *MENU*
+  virtual void          DumpDigit() const; // *MENU*
   virtual void          SetHitIndex(Int_t hitindex) {fHitIndex = hitindex;}
   virtual void          SetTrackIndex(Int_t trackindex) {fTrackIndex = trackindex;}
   virtual void          SetDigitIndex(Int_t digitindex) {fDigitIndex = digitindex;}
   virtual void          Set3DMarker(Int_t i,TMarker3DBox *marker) {fMarker[i] = marker;}
   virtual void          SetMatrix(TMatrix *matrix) {fMatrix = matrix;}
-  AliMUONPoints& operator = (const AliMUONPoints& rhs);
   
 protected:
+  AliMUONPoints(const AliMUONPoints& points);  
+  AliMUONPoints& operator = (const AliMUONPoints& rhs);
+
    Int_t            fHitIndex;         // Link to hit number 
    Int_t            fTrackIndex;       // Link to track number 
    Int_t            fDigitIndex;       // Link to digit 

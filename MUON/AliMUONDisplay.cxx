@@ -23,42 +23,30 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include <TROOT.h>
-#include <TTree.h>
 #include <TButton.h>
 #include <TColor.h>
 #include <TCanvas.h>
 #include <TView.h>
 #include <TText.h>
-#include <TPolyMarker3D.h>
 #include <TPaveLabel.h>
 #include <TPaveText.h>
-#include <TList.h>
 #include <TDiamond.h>
 #include <TNode.h>
 #include <TArc.h>
-#include <TTUBE.h>
 #include <TSlider.h>
-#include <TSliderBox.h>
-#include <TGaxis.h>
 #include <TVirtualX.h>
 #include <TMath.h>
-#include <TMatrix.h>
 #include <TGeometry.h>
-#include <X3DBuffer.h>
 #include <TMarker3DBox.h>
 
-#include "AliRun.h"
-#include "AliDetector.h"
-#include "AliMUON.h"
 #include "AliMUONDisplay.h"
+#include "AliRun.h"
+#include "AliMUON.h"
 #include "AliMUONPoints.h"
-#include "TParticle.h"
 #include "AliMUONGlobalTrigger.h"
 #include "AliHeader.h"
 
 #include "AliMUONHit.h"
-#include "AliMUONPadHit.h"
 #include "AliMUONDigit.h"
 #include "AliMUONRawCluster.h"
 
@@ -76,6 +64,7 @@ ClassImp(AliMUONDisplay)
 
 //_____________________________________________________________________________
 AliMUONDisplay::AliMUONDisplay()
+  : AliDisplay()
 {
 // Constructor
     fPoints = 0;
@@ -88,6 +77,7 @@ AliMUONDisplay::AliMUONDisplay()
 
 //_____________________________________________________________________________
 AliMUONDisplay::AliMUONDisplay(Int_t size, AliLoader * loader)
+  : AliDisplay()
 {
 // Create an event display object.
 // A canvas named "edisplay" is created with a vertical size in pixels
@@ -233,10 +223,12 @@ AliMUONDisplay::AliMUONDisplay(Int_t size, AliLoader * loader)
       fMUONData =0x0;
 }
 
-AliMUONDisplay::AliMUONDisplay(const AliMUONDisplay & display):AliDisplay(display)
+AliMUONDisplay::AliMUONDisplay(const AliMUONDisplay & display)
+  : AliDisplay(display)
 {
-// Dummy copy constructor    
-    ;
+// Protected copy constructor
+
+  Fatal("AliMUONDisplay", "Not implemented.");
 }
 
 
@@ -340,7 +332,7 @@ void AliMUONDisplay::DisplayButtons()
 }
 
 //_____________________________________________________________________________
-void AliMUONDisplay::CreateColors()
+void AliMUONDisplay::CreateColors() const
 {
 //    Create the colors palette used to display clusters
 
@@ -628,11 +620,11 @@ void AliMUONDisplay::DrawTitle(Option_t *option)
     Float_t dx   = xmax-xmin;
     Float_t dy   = ymax-ymin;
     
-    AliRunLoader * RunLoader;
+    AliRunLoader * runLoader;
     if (fLoader)
-      RunLoader = fLoader->GetRunLoader();
+      runLoader = fLoader->GetRunLoader();
     else
-      RunLoader = 0x0;
+      runLoader = 0x0;
 
 
     if (strlen(option) == 0) {
@@ -644,7 +636,7 @@ void AliMUONDisplay::DrawTitle(Option_t *option)
 	title->Draw();
 	char ptitle[100];
 	sprintf(ptitle, "Alice event:%d Run:%d Chamber:%d Cathode:%d",
-		RunLoader->GetEventNumber(),
+		runLoader->GetEventNumber(),
 		gAlice->GetHeader()->GetRun(),
 		fChamber,
 		fCathode);
@@ -1187,21 +1179,21 @@ void AliMUONDisplay::SetView(Float_t theta, Float_t phi, Float_t psi)
 //_____________________________________________________________________________
 void AliMUONDisplay::ShowNextEvent(Int_t delta)
 {
-  AliRunLoader * RunLoader;
+  AliRunLoader * runLoader;
   if (fLoader)
-    RunLoader = fLoader->GetRunLoader();
+    runLoader = fLoader->GetRunLoader();
   else
-    RunLoader = 0x0;
+    runLoader = 0x0;
     
 //  Display (current event_number + delta)
 //    delta =  1  shown next event
 //    delta = -1 show previous event
     if (delta) {
-      //RunLoader->CleanDetectors();
-      //RunLoader->CleanKinematics();
-      Int_t currentEvent = RunLoader->GetEventNumber();
+      //runLoader->CleanDetectors();
+      //runLoader->CleanKinematics();
+      Int_t currentEvent = runLoader->GetEventNumber();
       Int_t newEvent     = currentEvent + delta;
-      RunLoader->GetEvent(newEvent);
+      runLoader->GetEvent(newEvent);
       fEvent=newEvent;
     }
     LoadDigits(fChamber, fCathode);
@@ -1257,10 +1249,15 @@ void AliMUONDisplay::ResetRpoints()
     }
 }
 
-AliMUONDisplay & AliMUONDisplay::operator = (const AliMUONDisplay &)
+AliMUONDisplay & AliMUONDisplay::operator = (const AliMUONDisplay & rhs)
 {
-// Dummy assignment operator
-    return *this;
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
 }
 
 

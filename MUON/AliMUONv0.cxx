@@ -19,22 +19,15 @@
 //  Manager and hits classes for set:MUON version 0    //
 /////////////////////////////////////////////////////////
 
-#include <Riostream.h>
-
 #include <TLorentzVector.h> 
-#include <TNode.h> 
-#include <TRandom.h> 
-#include <TTUBE.h>
 #include <TVirtualMC.h>
 
-#include "AliCallf77.h"
 #include "AliConst.h" 
 #include "AliMUONChamber.h"
 #include "AliMUONChamberGeometry.h"
 #include "AliMUONConstants.h"
 #include "AliMUONFactory.h"
 #include "AliMUONHit.h"
-#include "AliMUONPadHit.h"
 #include "AliMUONv0.h"
 #include "AliMagF.h"
 #include "AliRun.h"
@@ -43,7 +36,8 @@
 ClassImp(AliMUONv0)
  
 //___________________________________________
-AliMUONv0::AliMUONv0() : AliMUON()
+AliMUONv0::AliMUONv0() 
+  : AliMUON()
 {
 // Constructor
     fChambers = 0;
@@ -51,13 +45,14 @@ AliMUONv0::AliMUONv0() : AliMUON()
  
 //___________________________________________
 AliMUONv0::AliMUONv0(const char *name, const char *title)
-       : AliMUON(name,title)
+  : AliMUON(name,title)
 {
 // Constructor
     AliMUONFactory factory;
     factory.Build(this, title);
 }
 
+//___________________________________________
 void AliMUONv0::CreateGeometry()
 {
 // Creates coarse geometry for hit density simulations

@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 /////////////////////////////////////////////////////
 //  Segmentation and Response classes version 04   //
@@ -11,10 +12,10 @@
  
 #include "AliMUONSegmentationV01.h"
 
-class AliMUONSegmentationV04 :
-public AliMUONSegmentationV01 {
+class AliMUONSegmentationV04 : public AliMUONSegmentationV01 
+{
  public:
-    AliMUONSegmentationV04(){}
+    AliMUONSegmentationV04();
     virtual ~AliMUONSegmentationV04(){}
     // Initialisation
     virtual void Init(Int_t chamber);

@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 // MUON classe for MonteCarlo Hits, inherited from AliHit for the 
 // In addition to the ALiHit data member fX, fY, fZ and fTrack, AliMUONHit contains some info about the particle crossing the chamber:
@@ -21,7 +22,7 @@ class AliMUONHit : public AliHit {
 
  public:
     
-    AliMUONHit() {}
+    AliMUONHit();
     AliMUONHit(Int_t fIshunt, Int_t track, Int_t *vol, Float_t *hits);
     AliMUONHit(Int_t fIshunt, Int_t track, Int_t iChamber, Int_t idpart, Float_t X, Float_t Y, Float_t Z, Float_t tof, Float_t momentum, Float_t theta, Float_t phi, Float_t length, Float_t destep);
     AliMUONHit(Int_t fIshunt, Int_t track, Int_t iChamber, Int_t idpart, 

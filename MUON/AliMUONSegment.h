@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 /*$Id$*/
+// Revision of includes 07/05/2004
 
 ///////////////////////////////////////////////////////////
 // Segment for reconstruction in ALICE dimuon  spectrometer
@@ -14,14 +15,11 @@
 class AliMUONHitForRec;
 class AliMUONTrackParam;
 
-class AliMUONSegment : public TObject {
+class AliMUONSegment : public TObject 
+{
  public:
   AliMUONSegment(); // default constructor
-  virtual ~AliMUONSegment(){
-    // Destructor
-    ;} // Destructor
-  AliMUONSegment (const AliMUONSegment& AliMUONSegment); // copy constructor
-  AliMUONSegment& operator=(const AliMUONSegment& AliMUONSegment); // assignment operator
+  virtual ~AliMUONSegment(){} // Destructor
   AliMUONSegment(AliMUONHitForRec* Hit1, AliMUONHitForRec* Hit2); // Constructor from two HitForRec's
 
   // Inline functions for Get and Set
@@ -43,15 +41,19 @@ class AliMUONSegment : public TObject {
   Bool_t GetInTrack(void) const {return fInTrack;}
   void SetInTrack(Bool_t InTrack) {fInTrack = InTrack;}
 
-  AliMUONSegment* CreateSegmentFromLinearExtrapToStation (Int_t Station, Double_t MCSfactor);
-  Double_t NormalizedChi2WithSegment(AliMUONSegment* Segment, Double_t Sigma2Cut);
-  AliMUONHitForRec* CreateHitForRecFromLinearExtrapToChamber (Int_t Chamber, Double_t MCSfactor);
+  AliMUONSegment* CreateSegmentFromLinearExtrapToStation (Int_t Station, Double_t MCSfactor) const;
+  Double_t NormalizedChi2WithSegment(AliMUONSegment* Segment, Double_t Sigma2Cut) const;
+  AliMUONHitForRec* CreateHitForRecFromLinearExtrapToChamber (Int_t Chamber, Double_t MCSfactor) const;
   void UpdateFromStationTrackParam(AliMUONTrackParam *TrackParam, Double_t MCSfactor, Double_t Dz1, Double_t Dz2, Double_t Dz3, Int_t Station, Double_t InverseMomentum);
 
   // What is necessary for sorting TClonesArray's; sufficient too ????
   Bool_t IsSortable() const { return kTRUE; }
   Int_t Compare(const TObject* Segment) const; // "Compare" function for sorting
+
  protected:
+  AliMUONSegment (const AliMUONSegment& AliMUONSegment); // copy constructor
+  AliMUONSegment& operator=(const AliMUONSegment& AliMUONSegment); // assignment operator
+
  private:
   AliMUONHitForRec* fHitForRecPtr1; // pointer to HitForRec in first chamber
   AliMUONHitForRec* fHitForRecPtr2; // pointer to HitForRec in second chamber
@@ -74,6 +76,6 @@ class AliMUONSegment : public TObject {
   Bool_t fInTrack; // TRUE if segment belongs to one track
   
   ClassDef(AliMUONSegment, 1) // Segment for reconstruction in ALICE dimuon spectrometer
-    };
+};
 	
 #endif

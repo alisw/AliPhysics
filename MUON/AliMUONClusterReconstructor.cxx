@@ -32,22 +32,15 @@
 //
 ////////////////////////////////////
 
-#include <Riostream.h> // for cout
-#include <stdlib.h> // for exit()
-
-#include <TTree.h>
-
-#include "AliMUON.h"
 #include "AliMUONClusterReconstructor.h"
+#include "AliMUON.h"
 #include "AliMUONDigit.h"
 #include "AliMUONConstants.h"
 #include "AliMUONData.h"
 #include "AliMUONClusterFinderVS.h"
-#include "AliMUONClusterFinderAZ.h"
 #include "AliMUONClusterInput.h"
 #include "AliMUONRawCluster.h"
 #include "AliRun.h" // for gAlice
-#include "AliConfig.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 
@@ -57,8 +50,9 @@ ClassImp(AliMUONClusterReconstructor) // Class implementation in ROOT context
 
 //__________________________________________________________________________
 AliMUONClusterReconstructor::AliMUONClusterReconstructor(AliLoader* loader)
+  : TObject()
 {
-  // Default Constructor
+  // Standard Constructor
  
   fDebug           = 0;
   fNCh             = 0;
@@ -82,9 +76,23 @@ AliMUONClusterReconstructor::AliMUONClusterReconstructor(AliLoader* loader)
 
   // getting MUON
   fMUON = (AliMUON*) gAlice->GetDetector("MUON");
-
-  return; 
 }
+
+//__________________________________________________________________________
+AliMUONClusterReconstructor::AliMUONClusterReconstructor()
+  : TObject(),
+    fNCh(0),
+    fNTrackingCh(0),
+    fMUONData(0),
+    fMUON(0),
+    fChambers(0),
+    fPrintLevel(fgkDefaultPrintLevel),
+    fDebug(0),
+    fLoader(0)
+{
+  // Default Constructor
+}
+
 //____________________________________________________________________
 void AliMUONClusterReconstructor::SetReconstructionModel(Int_t id, AliMUONClusterFinderVS *reconst)
 {
@@ -98,15 +106,25 @@ void AliMUONClusterReconstructor::SetReconstructionModel(Int_t id, AliMUONCluste
   ((AliMUONChamber*) fChambers->At(id))->SetReconstructionModel(reconst);
 }
 //_______________________________________________________________________
-AliMUONClusterReconstructor::AliMUONClusterReconstructor (const AliMUONClusterReconstructor& Reconstructor):TObject(Reconstructor)
+AliMUONClusterReconstructor::AliMUONClusterReconstructor (const AliMUONClusterReconstructor& rhs)
+  : TObject(rhs)
 {
-  // Dummy copy constructor
+// Protected copy constructor
+
+  Fatal("AliMUONClusterReconstructor", "Not implemented.");
 }
 
-AliMUONClusterReconstructor & AliMUONClusterReconstructor::operator=(const AliMUONClusterReconstructor& /*Reconstructor*/)
+//_______________________________________________________________________
+AliMUONClusterReconstructor & 
+AliMUONClusterReconstructor::operator=(const AliMUONClusterReconstructor& rhs)
 {
-  // Dummy assignment operator
-    return *this;
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
 }
 
 //__________________________________________________________________________

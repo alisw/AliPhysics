@@ -84,39 +84,61 @@
 //          for the first and second chambers in the station, respectively
 
 ClassImp(AliMUON)
+
 //__________________________________________________________________
 AliMUON::AliMUON()
+  : AliDetector(),
+    fNCh(0),
+    fNTrackingCh(0),
+    fMUONData(0),
+    fSplitLevel(0),
+    fChambers(0),
+    fGeometryBuilders(0),
+    fTriggerCircuits(0),
+    fAccCut(kFALSE),
+    fAccMin(0.),
+    fAccMax(0.),   
+    fMaxStepGas(0.),
+    fMaxStepAlu(0.),
+    fMaxDestepGas(0.),
+    fMaxDestepAlu(0.),
+    fMaxIterPad(0),
+    fCurIterPad(0),
+    fMerger(0)
 {
 // Default Constructor
 //
-    fNCh             = 0;
-    fNTrackingCh     = 0;
     fIshunt          = 0;
-    fChambers        = 0;
-    fGeometryBuilders = 0; 
-    fTriggerCircuits = 0;
-    fAccMin          = 0.;
-    fAccMax          = 0.;   
-    fAccCut          = kFALSE;
-    fMerger          = 0;
-    fMUONData        = 0;
-    fSplitLevel      = 0;
 }
+
 //__________________________________________________________________
 AliMUON::AliMUON(const char *name, const char *title)
-  : AliDetector(name,title)
+  : AliDetector(name,title),
+    fNCh(AliMUONConstants::NCh()),
+    fNTrackingCh(AliMUONConstants::NTrackingCh()),
+    fMUONData(0),
+    fSplitLevel(0),
+    fChambers(0),
+    fGeometryBuilders(0),
+    fTriggerCircuits(0),
+    fAccCut(kFALSE),
+    fAccMin(0.),
+    fAccMax(0.),   
+    fMaxStepGas(0.1),
+    fMaxStepAlu(0.1),
+    fMaxDestepGas(-1), // Negatives values are ignored by geant3 CONS200 
+    fMaxDestepAlu(-1), // in the calculation of the tracking parameters
+    fMaxIterPad(0),
+    fCurIterPad(0),
+    fMerger(0)
 {
 //Begin_Html
 /*
 <img src="gif/alimuon.gif">
 */
 //End_Html
-  fMUONData  = 0x0;
-  fSplitLevel= 0;
-  fIshunt     =  0;
 
-  fNCh             = AliMUONConstants::NCh(); 
-  fNTrackingCh     = AliMUONConstants::NTrackingCh();
+  fIshunt =  0;
 
   SetMarkerColor(kRed);//
 //
@@ -151,33 +173,22 @@ AliMUON::AliMUON(const char *name, const char *title)
       } // Chamber stCH (0, 1) in 
     }     // Station st (0...)
     
-    // Negatives values are ignored by geant3 CONS200 in the calculation of the tracking parameters
-    fMaxStepGas=0.1; 
-    fMaxStepAlu=0.1;  
-    fMaxDestepGas=-1;
-    fMaxDestepAlu=-1;
-    
-    fMaxIterPad   = 0;
-    fCurIterPad   = 0;
-    
-    fAccMin          = 0.;
-    fAccMax          = 0.;   
-    fAccCut          = kFALSE;
-    
     // cp new design of AliMUONTriggerDecision
     fTriggerCircuits = new TObjArray(AliMUONConstants::NTriggerCircuit());
     for (Int_t circ=0; circ<AliMUONConstants::NTriggerCircuit(); circ++) {
       fTriggerCircuits->AddAt(new AliMUONTriggerCircuit(),circ);          
     }
-    fMerger = 0;
 }
+
 //____________________________________________________________________
-AliMUON::AliMUON(const AliMUON& rMUON):AliDetector(rMUON)
+AliMUON::AliMUON(const AliMUON& rMUON)
+ : AliDetector(rMUON)
 {
-// Dummy copy constructor
-    ;
-    
+// Protected copy constructor
+
+  Fatal("AliMUONMergerModule", "Not implemented.");
 }
+
 //____________________________________________________________________
 AliMUON::~AliMUON()
 {
@@ -200,6 +211,19 @@ AliMUON::~AliMUON()
   }
   delete fMUONData;
 }
+
+//________________________________________________________________________
+AliMUON& AliMUON::operator = (const AliMUON& rhs)
+{
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
+}
+
 //_____________________________________________________________________________
 void AliMUON::AddGeometryBuilder(AliMUONVGeometryBuilder* geomBuilder)
 {
@@ -218,11 +242,6 @@ void AliMUON::BuildGeometry()
       this->Chamber(id-1).SegmentationModel(1)->Draw("eventdisplay");
     }
   }
-}
-//___________________________________________________________________
-Int_t AliMUON::DistancetoPrimitive(Int_t , Int_t )
-{
-  return 9999;
 }
 //__________________________________________________________________
 void  AliMUON::SetTreeAddress()
@@ -461,9 +480,9 @@ AliMUONPadHit* AliMUON::FirstPad(AliMUONHit*  hit, TClonesArray *clusters)
     TClonesArray *theClusters = clusters;
     Int_t nclust = theClusters->GetEntriesFast();
     if (nclust && hit->PHlast() > 0) {
-	AliMUON::fMaxIterPad=hit->PHlast();
-	AliMUON::fCurIterPad=hit->PHfirst();
-	return (AliMUONPadHit*) clusters->UncheckedAt(AliMUON::fCurIterPad-1);
+	fMaxIterPad=hit->PHlast();
+	fCurIterPad=hit->PHfirst();
+	return (AliMUONPadHit*) clusters->UncheckedAt(fCurIterPad-1);
     } else {
 	return 0;
     }
@@ -474,9 +493,9 @@ AliMUONPadHit* AliMUON::NextPad(TClonesArray *clusters)
   // To be removed
 // Get next pad (in iterator) 
 //
-    AliMUON::fCurIterPad++;
-    if (AliMUON::fCurIterPad <= AliMUON::fMaxIterPad) {
-	return (AliMUONPadHit*) clusters->UncheckedAt(AliMUON::fCurIterPad-1);
+    fCurIterPad++;
+    if (fCurIterPad <= fMaxIterPad) {
+	return (AliMUONPadHit*) clusters->UncheckedAt(fCurIterPad-1);
     } else {
 	return 0;
     }
@@ -512,13 +531,6 @@ AliMUONMerger*  AliMUON::Merger()
 {
 // Return pointer to merger
     return fMerger;
-}
-//________________________________________________________________________
-AliMUON& AliMUON::operator = (const AliMUON& /*rhs*/)
-{
-// copy operator
-// dummy version
-    return *this;
 }
 //________________________________________________________________________
 void AliMUON::RemapTrackHitIDs(Int_t* map)

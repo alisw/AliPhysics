@@ -3,6 +3,9 @@
 /* Copyright(c) 1998-2001, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+// Revision of includes 07/05/2004
+
 // The AliMUONDigitizer procees :
 // - Addition of hits from different tracks
 // - Merging of hits from different files
@@ -12,6 +15,11 @@
 // Gines MARTINEZ Subatech Feb 2003 
 
 #include "AliMUONDigitizer.h"
+#include "AliMUONDigit.h"
+
+class AliMUONLoader;
+class AliMUONHit;
+class AliMUONTransientDigit;
 
 class AliMUONDigitizerv1 : public AliMUONDigitizer 
 {

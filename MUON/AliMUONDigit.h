@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 #include <TObject.h>
 
@@ -12,7 +13,7 @@ static const Int_t kMAXTRACKS=10;
 class AliMUONDigit : public TObject {
 
  public:
-    AliMUONDigit() {}
+    AliMUONDigit();
     AliMUONDigit(const AliMUONDigit& rhs);
     AliMUONDigit(Int_t *digits);
     AliMUONDigit(Int_t *tracks, Int_t *charges, Int_t *digits);

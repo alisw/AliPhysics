@@ -15,24 +15,22 @@
 
 /* $Id$ */
 
-#include <Riostream.h> 
-#include <TTree.h> 
 #include <TObjArray.h>
 #include <TFile.h>
-#include <TDirectory.h>
-#include <TPDGCode.h>
+#include <TError.h>
+//#include <TTree.h> 
+//#include <TDirectory.h>
 
-#include "AliHitMap.h"
-#include "AliMUON.h"
-#include "AliMUONChamber.h"
-#include "AliMUONConstants.h"
-#include "AliMUONDigit.h"
-#include "AliMUONHit.h"
-#include "AliMUONHitMapA1.h"
 #include "AliMUONMerger.h"
+#include "AliMUON.h"
 #include "AliMUONPadHit.h"
 #include "AliMUONTransientDigit.h"
-#include "AliRun.h"
+#include "AliHitMap.h"
+//#include "AliMUONChamber.h"
+//#include "AliMUONConstants.h"
+//#include "AliMUONHit.h"
+//#include "AliMUONHitMapA1.h"
+//#include "AliRun.h"
 
 ClassImp(AliMUONMerger)
 
@@ -428,7 +426,7 @@ void AliMUONMerger::Digitise()
 
 
 
-void AliMUONMerger::SortTracks(Int_t *tracks,Int_t *charges,Int_t ntr)
+void AliMUONMerger::SortTracks(Int_t *tracks,Int_t *charges,Int_t ntr) const
 {
   //
   // Sort the list of tracks contributing to a given digit

@@ -15,17 +15,27 @@
 
 /* $Id$ */
 
+#include <TMath.h>
+//#include <TRandom.h>
+//#include <TArc.h>
+//#include <Riostream.h>
+
 #include "AliMUONSegmentationTrigger.h"
 #include "AliMUONTriggerConstants.h"
 #include "AliRun.h"
 #include "AliMUON.h"
-#include <TMath.h>
-#include <TRandom.h>
-#include <TArc.h>
 #include "AliMUONChamber.h"
-#include <Riostream.h>
 
 ClassImp(AliMUONSegmentationTrigger)
+
+//------------------------------------------------------------------
+AliMUONSegmentationTrigger::AliMUONSegmentationTrigger()
+  : AliMUONSegmentationV0()
+{
+// Constructor
+
+  fChamber=0;
+}
 
 //------------------------------------------------------------------
 void AliMUONSegmentationTrigger::Init(Int_t chamber)

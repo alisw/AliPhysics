@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* */
+/* $Id$*/
 
 ///////////////////////////////////////////////////
 //
@@ -26,20 +26,13 @@
 // no need for a AliMUONTriggerTrackParam
 ///////////////////////////////////////////////////
 
-#include <Riostream.h> // for cout
-#include <stdlib.h> // for exit()
-
-#include <TClonesArray.h>
-#include <TMath.h>
-#include <TMatrixD.h>
-#include <TObjArray.h>
-
-#include "AliMUONEventReconstructor.h" 
 #include "AliMUONTriggerTrack.h"
+#include "AliMUONEventReconstructor.h" 
 
 
 //__________________________________________________________________________
 AliMUONTriggerTrack::AliMUONTriggerTrack()
+  : TObject()
 {
     fEventReconstructor = 0;
     fx11 = 0.;
@@ -50,6 +43,7 @@ AliMUONTriggerTrack::AliMUONTriggerTrack()
 }
 //__________________________________________________________________________
 AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t thetax, Float_t thetay, Long_t theGTPattern,  AliMUONEventReconstructor* EventReconstructor)
+  : TObject()
 {
     fEventReconstructor = EventReconstructor; // link back to EventReconstructor
     fx11 = x11;
@@ -69,29 +63,36 @@ AliMUONTriggerTrack::~AliMUONTriggerTrack()
 }
 
 //__________________________________________________________________________
-AliMUONTriggerTrack::AliMUONTriggerTrack (const AliMUONTriggerTrack& MUONTriggerTrack):TObject(MUONTriggerTrack)
+AliMUONTriggerTrack::AliMUONTriggerTrack (const AliMUONTriggerTrack& theMUONTriggerTrack)
+  : TObject(theMUONTriggerTrack)
 {
-  fEventReconstructor = new AliMUONEventReconstructor(*MUONTriggerTrack.fEventReconstructor);
-  fx11 = MUONTriggerTrack.fx11;
-  fy11 = MUONTriggerTrack.fy11;
-  fthetax = MUONTriggerTrack.fthetax;
-  fthetay = MUONTriggerTrack.fthetay;
-  fGTPattern = MUONTriggerTrack.fGTPattern;
+  // fEventReconstructor = new AliMUONEventReconstructor(*MUONTriggerTrack.fEventReconstructor);
+  fEventReconstructor = theMUONTriggerTrack.fEventReconstructor;
+  fx11 = theMUONTriggerTrack.fx11;
+  fy11 = theMUONTriggerTrack.fy11;
+  fthetax = theMUONTriggerTrack.fthetax;
+  fthetay = theMUONTriggerTrack.fthetay;
+  fGTPattern = theMUONTriggerTrack.fGTPattern;
 }
       
 //__________________________________________________________________________
 AliMUONTriggerTrack & AliMUONTriggerTrack::operator=(const AliMUONTriggerTrack&
-MUONTriggerTrack)
+theMUONTriggerTrack)
 {
-    if (this == &MUONTriggerTrack)
+    // check assignement to self
+    if (this == &theMUONTriggerTrack)
 	return *this;
     
-    fEventReconstructor = new AliMUONEventReconstructor(*MUONTriggerTrack.fEventReconstructor);
-    fx11 = MUONTriggerTrack.fx11;
-    fy11 = MUONTriggerTrack.fy11;
-    fthetax = MUONTriggerTrack.fthetax;
-    fthetay = MUONTriggerTrack.fthetay;
-    fGTPattern = MUONTriggerTrack.fGTPattern;
+    // base class assignement
+    TObject::operator=(theMUONTriggerTrack);
+
+    //fEventReconstructor = new AliMUONEventReconstructor(*theMUONTriggerTrack.fEventReconstructor);
+    fEventReconstructor = theMUONTriggerTrack.fEventReconstructor;
+    fx11 = theMUONTriggerTrack.fx11;
+    fy11 = theMUONTriggerTrack.fy11;
+    fthetax = theMUONTriggerTrack.fthetax;
+    fthetay = theMUONTriggerTrack.fthetay;
+    fGTPattern = theMUONTriggerTrack.fGTPattern;
 
     return *this;
 }

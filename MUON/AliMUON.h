@@ -4,16 +4,21 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
-/* $Id$ */
-
+// Revision of includes 07/05/2004
 
 ////////////////////////////////////////////////
 //  AliDetector Class for MUON subsystem      //
 ////////////////////////////////////////////////
-#include "TObjArray.h"
+
+#include <TObjArray.h>
+
 #include "AliDetector.h"
 #include "AliMUONData.h"
 #include "AliMUONChamber.h"
+
+class TVector;
+class TFile;
+class TTree;
 
 class AliLoader;
 class AliSegmentation;
@@ -29,17 +34,15 @@ class AliMUONMerger;
 class AliMUONVGeometryBuilder;
 class AliESD;
 
-
-class AliMUON : public  AliDetector {
- public:
+class AliMUON : public  AliDetector 
+{
+  public:
     AliMUON();
     AliMUON(const char *name, const char *title);
-    AliMUON(const AliMUON& rMUON);
     virtual       ~AliMUON();
    
     void           AddGeometryBuilder(AliMUONVGeometryBuilder* geomBuilder);
     virtual void   BuildGeometry();
-    Int_t          DistancetoPrimitive(Int_t px, Int_t py);
     AliMUONData*   GetMUONData() {return fMUONData;}
     virtual Int_t  IsVersion()   const {return 0;}
 
@@ -106,13 +109,14 @@ class AliMUON : public  AliDetector {
     // Return pointers to digits
     AliMUONRawCluster    *RawCluster(Int_t ichamber, Int_t icathod,
 				     Int_t icluster);
-    // Copy Operator
-    AliMUON& operator = (const AliMUON& rhs);
-
-  // Inherited and overridden from AliModule:
+    // Inherited and overridden from AliModule:
     virtual void RemapTrackHitIDs(Int_t * map);
 
- protected:
+  protected:
+    AliMUON(const AliMUON& rMUON);
+    AliMUON& operator = (const AliMUON& rhs);
+
+
     Int_t                 fNCh;                // Number of chambers   
     Int_t                 fNTrackingCh;        // Number of tracking chambers*
     AliMUONData*          fMUONData;           // Data container for MUON subsystem  

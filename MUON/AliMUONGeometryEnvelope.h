@@ -1,4 +1,8 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
+// Revision of includes 07/05/2004
 //
 // Class AliMUONGeometryEnvelope
 // -----------------------------
@@ -24,11 +28,7 @@ class AliMUONGeometryEnvelope : public TNamed
     AliMUONGeometryEnvelope(const TString& name, Int_t copyNo,
                             const char* only); 
     AliMUONGeometryEnvelope();
-    AliMUONGeometryEnvelope(const AliMUONGeometryEnvelope& rhs);
     virtual ~AliMUONGeometryEnvelope();
-
-    // operators  
-    AliMUONGeometryEnvelope& operator = (const AliMUONGeometryEnvelope& rhs);
   
     // methods
     void  AddConstituent(const TString& name, Int_t copyNo); 
@@ -57,6 +57,12 @@ class AliMUONGeometryEnvelope : public TNamed
     Int_t                  GetCopyNo() const;  
     const TGeoCombiTrans*  GetTransformation() const;
     const TObjArray*       GetConstituents() const;
+
+  protected:
+    AliMUONGeometryEnvelope(const AliMUONGeometryEnvelope& rhs);
+
+    // operators  
+    AliMUONGeometryEnvelope& operator = (const AliMUONGeometryEnvelope& rhs);
 
   private:
     Bool_t           fIsVirtual;     // true if envelope is not represented

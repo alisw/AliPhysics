@@ -3,18 +3,21 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/*$Id $*/
+/* $Id $*/
+// Revision of includes 07/05/2004
+
+#include <TObject.h>
+#include <TClonesArray.h> // needed for inline function Digit
 
 class TMinuit;
+
 class AliMUONDigit;
 class AliMUONRawCluster;
 class AliSegmentation;
 class AliMUONResponse;
 
-#include <TClonesArray.h> // needed for inline function Digit
-
-
-class AliMUONClusterInput : public TObject {
+class AliMUONClusterInput : public TObject 
+{
  public:
     virtual ~AliMUONClusterInput();
     static AliMUONClusterInput* Instance();
@@ -23,20 +26,20 @@ class AliMUONClusterInput : public TObject {
     void SetDigits(Int_t chamber, TClonesArray* dig);
     void SetCluster(AliMUONRawCluster* cluster);
 // Access functions
-    Int_t Chamber()  {return fChamber;}
-    AliMUONDigit* Digit(Int_t cath, Int_t i) {return (AliMUONDigit*) (fDigits[cath]->UncheckedAt(i));}
-    TClonesArray* Digits(Int_t cath) {return fDigits[cath];}
-    Int_t NDigits(Int_t cath) {return fNDigits[cath];}
-    AliSegmentation* Segmentation(Int_t cath)  {return fSegmentation[cath];}
-    AliMUONResponse* Response()  {return fResponse;}    
+    Int_t Chamber() const {return fChamber;}
+    AliMUONDigit* Digit(Int_t cath, Int_t i) const {return (AliMUONDigit*) (fDigits[cath]->UncheckedAt(i));}
+    TClonesArray* Digits(Int_t cath) const {return fDigits[cath];}
+    Int_t NDigits(Int_t cath) const {return fNDigits[cath];}
+    AliSegmentation* Segmentation(Int_t cath) const {return fSegmentation[cath];}
+    AliMUONResponse* Response() const {return fResponse;}    
 // Fitting    
-    TMinuit*      Fitter() {return fgMinuit;}
+    TMinuit*      Fitter() const {return fgMinuit;}
 // Current cluster information    
-    Float_t       TotalCharge(Int_t cath) {return fChargeTot[cath];}
-    Float_t       Charge(Int_t dig, Int_t cath) {return fCharge[dig][cath];}
-    Int_t         Ix(Int_t dig, Int_t cath) {return fix[dig][cath];}
-    Int_t         Iy(Int_t dig, Int_t cath) {return fiy[dig][cath];}
-    Int_t         Nmul(Int_t cath)  {return fNmul[cath];}
+    Float_t       TotalCharge(Int_t cath) const {return fChargeTot[cath];}
+    Float_t       Charge(Int_t dig, Int_t cath) const {return fCharge[dig][cath];}
+    Int_t         Ix(Int_t dig, Int_t cath) const {return fix[dig][cath];}
+    Int_t         Iy(Int_t dig, Int_t cath) const {return fiy[dig][cath];}
+    Int_t         Nmul(Int_t cath) const {return fNmul[cath];}
 //  Helpers for Fit     
     Float_t DiscrChargeS1(Int_t i,Double_t *par);
     Float_t DiscrChargeCombiS1(Int_t i,Double_t *par, Int_t cath);

@@ -25,10 +25,20 @@
 //
 ///////////////////////////////////////////////////////
 
-#include "AliMUONHitForRec.h" 
 #include "AliMUONTrackHit.h" 
+#include "AliMUONHitForRec.h" 
 
 ClassImp(AliMUONTrackHit) // Class implementation in ROOT context
+
+  //__________________________________________________________________________
+AliMUONTrackHit::AliMUONTrackHit()
+  : TObject()
+{
+  // Default constructor
+  fHitForRecPtr = 0;
+  fNextTrackHitWithSameHitForRec = 0;
+  fPrevTrackHitWithSameHitForRec = 0;
+}
 
   //__________________________________________________________________________
 AliMUONTrackHit::AliMUONTrackHit(AliMUONHitForRec* Hit)
@@ -50,16 +60,24 @@ AliMUONTrackHit::AliMUONTrackHit(AliMUONHitForRec* Hit)
 }
 
   //__________________________________________________________________________
-AliMUONTrackHit::AliMUONTrackHit (const AliMUONTrackHit& MUONTrackHit):TObject(MUONTrackHit)
+AliMUONTrackHit::AliMUONTrackHit (const AliMUONTrackHit& theMUONTrackHit)
+  : TObject(theMUONTrackHit)
 {
-// Dummy copy constructor
+// Protected copy constructor
+
+  Fatal("AliMUONTrackHit", "Not implemented.");
 }
 
   //__________________________________________________________________________
-AliMUONTrackHit & AliMUONTrackHit::operator=(const AliMUONTrackHit& /*MUONTrackHit*/)
+AliMUONTrackHit & AliMUONTrackHit::operator=(const AliMUONTrackHit& rhs)
 {
-// Dummy assignment operator
-    return *this;
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
 }
 
 

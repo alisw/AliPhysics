@@ -21,12 +21,13 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 #include <TParticle.h>
-#include "TArrayF.h"
+#include <TArrayF.h>
+
 #include "AliRunLoader.h"
-#include "AliRun.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliESD.h"
+
 #include "AliMUONData.h"
 #include "AliMUONEventReconstructor.h"
 #include "AliMUONClusterReconstructor.h"
@@ -41,6 +42,7 @@
 ClassImp(AliMUONReconstructor)
 //_____________________________________________________________________________
 AliMUONReconstructor::AliMUONReconstructor()
+  : AliReconstructor()
 {
 }
 //_____________________________________________________________________________
@@ -67,9 +69,9 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
 
 
   for (Int_t i = 0; i < 10; i++) {
-    AliMUONClusterFinderVS *RecModel = new AliMUONClusterFinderVS();
-    RecModel->SetGhostChi2Cut(10);
-    recoCluster->SetReconstructionModel(i,RecModel);
+    AliMUONClusterFinderVS *recModel = new AliMUONClusterFinderVS();
+    recModel->SetGhostChi2Cut(10);
+    recoCluster->SetReconstructionModel(i,recModel);
   } 
 
   loader->LoadDigits("READ");
@@ -190,7 +192,7 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     }
   }
   // setting ESD MUON class
-  AliESDMuonTrack* ESDTrack = new  AliESDMuonTrack() ;
+  AliESDMuonTrack* theESDTrack = new  AliESDMuonTrack() ;
 
   //-------------------- trigger tracks-------------
   Long_t trigPat = 0;
@@ -235,20 +237,20 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     chi2MatchTrigger = recTrack->GetChi2MatchTrigger();
 
     // setting data member of ESD MUON
-    ESDTrack->SetInverseBendingMomentum(inverseBendingMomentum);
-    ESDTrack->SetThetaX(TMath::ATan(nonBendingSlope));
-    ESDTrack->SetThetaY(TMath::ATan(bendingSlope));
-    ESDTrack->SetZ(vertex[2]);
-    ESDTrack->SetBendingCoor(vertex[1]); // calculate vertex at ESD or Tracking level ?
-    ESDTrack->SetNonBendingCoor(vertex[0]);
-    ESDTrack->SetChi2(fitFmin);
-    ESDTrack->SetNHit(nTrackHits);
-    ESDTrack->SetMatchTrigger(matchTrigger);
-    ESDTrack->SetChi2MatchTrigger(chi2MatchTrigger);
+    theESDTrack->SetInverseBendingMomentum(inverseBendingMomentum);
+    theESDTrack->SetThetaX(TMath::ATan(nonBendingSlope));
+    theESDTrack->SetThetaY(TMath::ATan(bendingSlope));
+    theESDTrack->SetZ(vertex[2]);
+    theESDTrack->SetBendingCoor(vertex[1]); // calculate vertex at ESD or Tracking level ?
+    theESDTrack->SetNonBendingCoor(vertex[0]);
+    theESDTrack->SetChi2(fitFmin);
+    theESDTrack->SetNHit(nTrackHits);
+    theESDTrack->SetMatchTrigger(matchTrigger);
+    theESDTrack->SetChi2MatchTrigger(chi2MatchTrigger);
 
     // storing ESD MUON Track into ESD Event 
     if (nRecTracks != 0)  
-      esd->AddMuonTrack(ESDTrack);
+      esd->AddMuonTrack(theESDTrack);
   } // end loop tracks
 
   // add global trigger pattern
@@ -263,7 +265,7 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   loader->UnloadTracks(); 
   if (!header)
     runLoader->UnloadKinematics();
-  delete ESDTrack;
+  delete theESDTrack;
   delete muonData;
   // delete particle;
 }

@@ -4,19 +4,21 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
-
-#include "AliMUONSegmentationTrigger.h"
-
-class AliMUONChamber;
 //----------------------------------------------
 //
 // Chamber segmentation virtual base class
 //
-class AliMUONSegmentationTriggerY :
-public AliMUONSegmentationTrigger {
+
+#include "AliMUONSegmentationTrigger.h"
+
+class AliMUONChamber;
+
+class AliMUONSegmentationTriggerY : public AliMUONSegmentationTrigger 
+{
  public:
-  AliMUONSegmentationTriggerY(){}
+  AliMUONSegmentationTriggerY();
   virtual ~AliMUONSegmentationTriggerY(){}
   // Transform from pad to real coordinates
   virtual void    GetPadI(Float_t x,Float_t y,Int_t &ix,Int_t &iy);

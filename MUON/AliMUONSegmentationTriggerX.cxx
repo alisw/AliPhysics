@@ -23,12 +23,9 @@
 #include "AliMUON.h"
 #include "AliMUONSegmentationTriggerX.h"
 #include "AliMUONTriggerConstants.h"
-#include "TMath.h"
-#include "TRandom.h"
-#include "TArc.h"
 #include "AliMUONChamber.h"
 #include "AliRun.h"  // gAlice
-#include <Riostream.h> 
+
 ClassImp(AliMUONSegmentationTriggerX)
 
 //------------------------------------------------------------------

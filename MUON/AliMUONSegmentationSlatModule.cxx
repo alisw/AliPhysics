@@ -20,14 +20,10 @@
 //  to be used with AluMUONSegmentationSlat        //
 /////////////////////////////////////////////////////
 
+#include <TArrayI.h>
+#include <TArrayF.h>
 
 #include "AliMUONSegmentationSlatModule.h"
-#include "AliRun.h"
-#include "AliMUON.h"
-#include <TMath.h>
-#include <Riostream.h>
-
-#include "AliMUONSegmentationV01.h"
 
 //___________________________________________
 ClassImp(AliMUONSegmentationSlatModule)

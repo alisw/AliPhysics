@@ -21,13 +21,16 @@
 //
 //
 
-#include "AliMUONRawCluster.h"
 #include <TArrayF.h>
+
+#include "AliMUONRawCluster.h"
 
 ClassImp(AliMUONRawCluster);
 
 
-AliMUONRawCluster::AliMUONRawCluster() {
+AliMUONRawCluster::AliMUONRawCluster() 
+  : TObject()
+{
 // Constructor
     fTracks[0]=fTracks[1]=fTracks[2]=-1; 
     for (int j=0;j<2;j++) {

@@ -19,16 +19,22 @@
 //  Segmentation and Response classes version 02   //
 /////////////////////////////////////////////////////
 
+#include <TArrayF.h>
 
 #include "AliMUONSegmentationV02.h"
-#include "Riostream.h"
 
 //___________________________________________
 ClassImp(AliMUONSegmentationV02)
 
     
-AliMUONSegmentationV02::AliMUONSegmentationV02(Int_t nsec): 
-    AliMUONSegmentationV01(nsec) 
+AliMUONSegmentationV02::AliMUONSegmentationV02()
+  : AliMUONSegmentationV01() 
+{
+// Default constructor
+}
+
+AliMUONSegmentationV02::AliMUONSegmentationV02(Int_t nsec) 
+  : AliMUONSegmentationV01(nsec) 
 {
 // Non default constructor
 }

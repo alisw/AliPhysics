@@ -22,21 +22,17 @@
 #include <TRandom.h>
 #include <TF1.h>
 #include <TClonesArray.h>
-#include <TLorentzVector.h> 
-#include <TNode.h> 
 #include <TRandom.h> 
-#include <TTUBE.h>
 #include <TGeoMatrix.h>
 #include <TVirtualMC.h>
-#include <TParticle.h>
 
+#include "AliMUONv1.h"
 #include "AliConst.h" 
 #include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
 #include "AliMUONFactory.h"
 #include "AliMUONHit.h"
 #include "AliMUONTriggerCircuit.h"
-#include "AliMUONv1.h"
 #include "AliMUONVGeometryBuilder.h"	
 #include "AliMUONChamberGeometry.h"	
 #include "AliMUONGeometryEnvelope.h"	
@@ -48,8 +44,9 @@
 ClassImp(AliMUONv1)
  
 //___________________________________________
-AliMUONv1::AliMUONv1() : AliMUON()
-  ,fTrackMomentum(), fTrackPosition(),fGlobalTransformation(0) 
+AliMUONv1::AliMUONv1() 
+  : AliMUON(),
+    fTrackMomentum(), fTrackPosition(),fGlobalTransformation(0) 
 {
 // Constructor
     fChambers   = 0;
@@ -603,7 +600,7 @@ void AliMUONv1::StepManager()
     //-------------- Angle effect 
     // Ratio between energy loss of particle and Mip as a function of BetaGamma of particle (Energy/Mass)
     
-    Float_t BetaxGamma    = fTrackMomentum.P()/mass;//  pc/mc2
+    Float_t betaxGamma    = fTrackMomentum.P()/mass;//  pc/mc2
     Float_t sigmaEffect10degrees;
     Float_t sigmaEffectThetadegrees;
     Float_t eLossParticleELossMip;
@@ -612,9 +609,9 @@ void AliMUONv1::StepManager()
 
 
     if (fAngleEffect){
-    if ( (BetaxGamma >3.2)   &&  (thetawires*kRaddeg<=15.) ) {
-      BetaxGamma=TMath::Log(BetaxGamma);
-      eLossParticleELossMip = fElossRatio->Eval(BetaxGamma);
+    if ( (betaxGamma >3.2)   &&  (thetawires*kRaddeg<=15.) ) {
+      betaxGamma=TMath::Log(betaxGamma);
+      eLossParticleELossMip = fElossRatio->Eval(betaxGamma);
       // 10 degrees is a reference for a model (arbitrary)
       sigmaEffect10degrees=fAngleEffect10->Eval(eLossParticleELossMip);// in micrometers
       // Angle with respect to the wires assuming that chambers are perpendicular to the z axis.

@@ -5,6 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 // Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
 //
@@ -35,9 +36,8 @@ class AliMUONSt1ResponseParameter;
 
 class AliMUONSt1Response : public AliMUONResponseV0 
 {
-public:
+  public:
     AliMUONSt1Response(Int_t chamber=1);
-    AliMUONSt1Response(const AliMUONSt1Response& rhs);
     virtual ~AliMUONSt1Response();
     
     //
@@ -51,14 +51,16 @@ public:
     virtual Int_t DigitResponse(Int_t digit,AliMUONTransientDigit* where);
     void PrintStatistics() const;
 
-
-private:
-    // typedefs
-    typedef map<string, AliMUONSt1ResponseParameter*> ParamsMap;
-    typedef map<string, TList*>  ListMap;
+  protected:
+    AliMUONSt1Response(const AliMUONSt1Response& rhs);
 
     // operators
     AliMUONSt1Response& operator=(const AliMUONSt1Response & rhs);
+
+  private:
+    // typedefs
+    typedef map<string, AliMUONSt1ResponseParameter*> ParamsMap;
+    typedef map<string, TList*>  ListMap;
 
     // private methods
     AliMpZone* FindZone(AliMpSector* sector,Int_t posId) const; // to be moved in AliMpSector::

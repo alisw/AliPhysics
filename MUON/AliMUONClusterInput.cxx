@@ -15,24 +15,25 @@
 
 /* $Id$ */
 
+#include <TClonesArray.h>
+#include <TMinuit.h>
+
 #include "AliRun.h"
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
 #include "AliMUONClusterInput.h"
-#include "AliSegmentation.h"
 #include "AliMUONResponse.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONDigit.h"
-
-#include <TClonesArray.h>
-#include <TMinuit.h>
 
 ClassImp(AliMUONClusterInput)
 
 AliMUONClusterInput* AliMUONClusterInput::fgClusterInput = 0; 
 TMinuit* AliMUONClusterInput::fgMinuit = 0; 
 
-AliMUONClusterInput::AliMUONClusterInput(){
+AliMUONClusterInput::AliMUONClusterInput()
+  : TObject()
+{
   fgClusterInput = 0; 
   fgMinuit = 0; 
   fDigits[0]=0;
@@ -59,9 +60,12 @@ AliMUONClusterInput::~AliMUONClusterInput()
 // Destructor
     delete fgMinuit;
 }
+
 AliMUONClusterInput::AliMUONClusterInput(const AliMUONClusterInput& clusterInput):TObject(clusterInput)
 {
-  
+// Protected copy constructor
+
+  Fatal("AliMUONClusterInput", "Not implemented.");
 }
 
 void AliMUONClusterInput::SetDigits(Int_t chamber, TClonesArray* dig1, TClonesArray* dig2)
@@ -212,8 +216,13 @@ Float_t AliMUONClusterInput::DiscrChargeCombiS2(Int_t i,Double_t *par, Int_t cat
 }
 
 AliMUONClusterInput& AliMUONClusterInput
-::operator = (const AliMUONClusterInput& /*rhs*/)
+::operator = (const AliMUONClusterInput& rhs)
 {
-// Dummy assignment operator
-    return *this;
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
 }

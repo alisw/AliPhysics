@@ -14,27 +14,25 @@
 //   * Float_t slat_length
 //   * Float_t slat_number or Float_t slat_position
 
-
-
 #include <TVirtualMC.h>
 #include <TGeoMatrix.h>
-#include "AliRun.h"
+#include <Riostream.h>
 
 #include "AliMUONSlatGeometryBuilder.h"
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
 #include "AliMUONChamberGeometry.h"
+#include "AliRun.h"
 
 ClassImp(AliMUONSlatGeometryBuilder)
 
-Int_t   ConvertSlatNum(Int_t numslat, Int_t quadnum, Int_t fspq);
-
-
+//Int_t   ConvertSlatNum(Int_t numslat, Int_t quadnum, Int_t fspq);
 
 //______________________________________________________________________________
 AliMUONSlatGeometryBuilder::AliMUONSlatGeometryBuilder(AliMUON* muon)
- : AliMUONVGeometryBuilder(&muon->Chamber(4), &muon->Chamber(5), &muon->Chamber(6), &muon->Chamber(7), &muon->Chamber(8), &muon->Chamber(9)),
-//  : AliMUONVGeometryBuilder(&muon->Chamber(4), &muon->Chamber(5)),
+ : AliMUONVGeometryBuilder(&muon->Chamber(4), &muon->Chamber(5), 
+                           &muon->Chamber(6), &muon->Chamber(7), 
+			   &muon->Chamber(8), &muon->Chamber(9)),
    fMUON(muon)
 {
 // Standard constructor

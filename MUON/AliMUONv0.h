@@ -5,13 +5,16 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 /////////////////////////////////////////////////////////
 //  Manager and hits classes for set:MUON version 0    //
 /////////////////////////////////////////////////////////
  
 #include "AliMUON.h"
-class AliMUONv0 : public AliMUON {
+
+class AliMUONv0 : public AliMUON 
+{
 public:
    AliMUONv0();
    AliMUONv0(const char *name, const char *title);

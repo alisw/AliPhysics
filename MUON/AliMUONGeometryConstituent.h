@@ -1,4 +1,8 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // $Id$
+// Revision of includes 07/05/2004
 //
 // Class AliMUONGeometryConstituent
 // --------------------------------
@@ -29,17 +33,19 @@ class AliMUONGeometryConstituent : public TNamed
 	  	         const TGeoRotation& rotation,
 			 Int_t npar, Double_t* param);
     AliMUONGeometryConstituent();
-    AliMUONGeometryConstituent(const AliMUONGeometryConstituent& rhs);
     virtual ~AliMUONGeometryConstituent();
 
-    // operators  
-    AliMUONGeometryConstituent& operator = (const AliMUONGeometryConstituent& rhs);
-  
     // get methods
     Int_t                  GetCopyNo() const;  
     Int_t                  GetNpar() const;
     Double_t*              GetParam() const;
     const TGeoCombiTrans*  GetTransformation() const;
+
+  protected:
+    AliMUONGeometryConstituent(const AliMUONGeometryConstituent& rhs);
+
+    // operators  
+    AliMUONGeometryConstituent& operator = (const AliMUONGeometryConstituent& rhs);
 
   private:
     Int_t            fCopyNo;        // copy number

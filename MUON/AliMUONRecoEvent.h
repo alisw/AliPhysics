@@ -5,17 +5,15 @@
  * See cxx source for full Copyright notice                               */
 
 /*$Id$*/
-
+// Revision of includes 07/05/2004
 
 // Authors : M.Gheata, A.Gheata 09/10/00
 
 #include <TObject.h>
-#include <TFile.h>
-#include <TParticle.h>
-#include <AliDetector.h>
-#include "AliMUONHit.h"
-class AliMUONEventReconstructor;
 
+class TClonesArray;
+
+class AliMUONEventReconstructor;
 class AliMUONRecoTrack;
 
 /////////////////////////////////////////////////////////////////////

@@ -15,18 +15,18 @@
 
 /* $Id$ */
 
-#include "AliMUONSegmentationSlat.h"
-#include "AliMUONSegmentationSlatModule.h"
-#include "AliMUON.h"
-#include "AliMUONChamber.h"
-#include "TArrayI.h"
-#include "TObjArray.h"
-#include "AliRun.h"
+#include <TArrayI.h>
+#include <TObjArray.h>
 #include <TMath.h>
 #include <TBRIK.h>
 #include <TNode.h>
 #include <TGeometry.h>
-#include <Riostream.h>
+
+#include "AliMUONSegmentationSlat.h"
+#include "AliMUONSegmentationSlatModule.h"
+#include "AliMUON.h"
+#include "AliMUONChamber.h"
+#include "AliRun.h"
 
 //___________________________________________
 ClassImp(AliMUONSegmentationSlat)
@@ -191,7 +191,7 @@ void AliMUONSegmentationSlat::GlobalToLocal(
 }
 
 void AliMUONSegmentationSlat::GlobalToLocal(
-    Int_t ix, Int_t iy, Int_t &islat, Int_t &ixlocal, Int_t &iylocal)
+    Int_t ix, Int_t iy, Int_t &islat, Int_t &ixlocal, Int_t &iylocal) const
 {
 //
 // Perform global to local transformation for pad coordinates
@@ -206,18 +206,16 @@ void AliMUONSegmentationSlat::GlobalToLocal(
     for (Int_t i=0; i<fNSlats; i++) {
 	iytemp-=Slat(i)->Npy();
 	
-	
 	if (iytemp <= 0) break;
 	iylocal = iytemp;
 	index=i+1;
     }
-
     ixlocal=TMath::Abs(ix);
     islat=index;
 }
 
 void AliMUONSegmentationSlat::
-LocalToGlobal(Int_t islat, Float_t  xlocal, Float_t  ylocal, Float_t  &x, Float_t  &y, Float_t &z)
+LocalToGlobal(Int_t islat, Float_t  xlocal, Float_t  ylocal, Float_t  &x, Float_t  &y, Float_t &z) const
 {
 // Transform from local to global space coordinates
 //
@@ -237,8 +235,8 @@ LocalToGlobal(Int_t islat, Float_t  xlocal, Float_t  ylocal, Float_t  &x, Float_
 }
 
 
-void AliMUONSegmentationSlat::LocalToGlobal(
-    Int_t islat, Int_t ixlocal, Int_t iylocal, Int_t &ix, Int_t &iy)
+void AliMUONSegmentationSlat::LocalToGlobal (
+    Int_t islat, Int_t ixlocal, Int_t iylocal, Int_t &ix, Int_t &iy) const
 {
 // Transform from local to global pad coordinates
 //
@@ -432,11 +430,12 @@ Int_t  AliMUONSegmentationSlat::Ix()
     Int_t ixl,iyl,ix,iy;
     ixl=fCurrentSlat->Ix();
     iyl=fCurrentSlat->Iy();
-    
     LocalToGlobal(fSlatIndex, ixl, iyl, ix, iy);
+
     Int_t ixc, iyc, isc;
     Float_t xc, yc;
     GlobalToLocal(ix, iy, isc, ixc, iyc);
+    
     Slat(isc)->GetPadC(ixc,iyc,xc,yc);
     return ix;
 }
@@ -567,7 +566,7 @@ AliMUONSegmentationSlatModule*  AliMUONSegmentationSlat::Slat(Int_t index) const
 
 
 AliMUONSegmentationSlatModule* AliMUONSegmentationSlat::
-CreateSlatModule()
+CreateSlatModule() const
 {
     // Factory method for slat module
     return new AliMUONSegmentationSlatModule(4);

@@ -5,6 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 // Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
 //
@@ -30,7 +31,6 @@ class AliMUONSt1Segmentation : public AliSegmentation
 {
   public:
     AliMUONSt1Segmentation(const AliMpPlaneType planeType);
-    AliMUONSt1Segmentation(const AliMUONSt1Segmentation& rhs);
     AliMUONSt1Segmentation();
     
     virtual ~AliMUONSt1Segmentation();
@@ -134,10 +134,13 @@ class AliMUONSt1Segmentation : public AliSegmentation
     virtual TF1* CorrFunc(Int_t isec)  const;
                    // Get the correction Function
  
-  private:
+  protected:
+    AliMUONSt1Segmentation(const AliMUONSt1Segmentation& rhs);
+  
     // operators
     AliMUONSt1Segmentation& operator=(const AliMUONSt1Segmentation & rhs);
 
+  private:
     // methods
     void UpdateCurrentPadValues(const AliMpPad& pad);
   

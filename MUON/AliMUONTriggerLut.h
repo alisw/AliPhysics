@@ -1,24 +1,32 @@
 #ifndef ALIMUONTRIGGERLUT_H
 #define ALIMUONTRIGGERLUT_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
-#include "TNamed.h"
+/* $Id$ */
+// Revision of includes 07/05/2004
+
+#include <TNamed.h>
+
 class TH3S;
 
 //----------------------------------------------
-class AliMUONTriggerLut : 
-public TNamed {
+class AliMUONTriggerLut : public TNamed 
+{
  public: 
   AliMUONTriggerLut();    // constructor
   ~AliMUONTriggerLut();   // destructor
-  // copy constructor
-  AliMUONTriggerLut (const AliMUONTriggerLut& AliMUONTriggerLut); 
-  // assignment operator
-  AliMUONTriggerLut& operator=(const AliMUONTriggerLut& AliMUONTriggerLut); 
 
   void LoadLut();
   
   void GetLutOutput(Int_t circuit, Int_t xstrip, Int_t idev, Int_t ystrip, 
 		    Int_t lutLpt[2], Int_t lutHpt[2], Int_t lutApt[2]);
+
+ protected:
+  // copy constructor
+  AliMUONTriggerLut (const AliMUONTriggerLut& AliMUONTriggerLut); 
+  // assignment operator
+  AliMUONTriggerLut& operator=(const AliMUONTriggerLut& AliMUONTriggerLut); 
 		
  private:
   Int_t GetMask(Int_t ystrip);

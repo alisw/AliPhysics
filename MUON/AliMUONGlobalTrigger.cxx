@@ -13,15 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-
-*/
+/* $Id$ */
 
 #include "AliMUONGlobalTrigger.h"
 
 ClassImp(AliMUONGlobalTrigger);
 //----------------------------------------------------------------------
 AliMUONGlobalTrigger::AliMUONGlobalTrigger()
+  : TObject()
 {
 // constructor 
   fSinglePlusLpt = 0;
@@ -45,56 +44,60 @@ AliMUONGlobalTrigger::AliMUONGlobalTrigger()
   fPairLikeApt   = 0;
 }
 //----------------------------------------------------------------------
-AliMUONGlobalTrigger::AliMUONGlobalTrigger(const AliMUONGlobalTrigger& MUONGlobalTrig):TObject(MUONGlobalTrig)
+AliMUONGlobalTrigger::AliMUONGlobalTrigger(const AliMUONGlobalTrigger& theMUONGlobalTrig)
+  : TObject(theMUONGlobalTrig)
 {
 // copy constructor
-  fSinglePlusLpt  = MUONGlobalTrig.fSinglePlusLpt;
-  fSinglePlusHpt  = MUONGlobalTrig.fSinglePlusHpt;
-  fSinglePlusApt  = MUONGlobalTrig.fSinglePlusApt;
+  fSinglePlusLpt  = theMUONGlobalTrig.fSinglePlusLpt;
+  fSinglePlusHpt  = theMUONGlobalTrig.fSinglePlusHpt;
+  fSinglePlusApt  = theMUONGlobalTrig.fSinglePlusApt;
   
-  fSingleMinusLpt = MUONGlobalTrig.fSingleMinusLpt;
-  fSingleMinusHpt = MUONGlobalTrig.fSingleMinusHpt;
-  fSingleMinusApt = MUONGlobalTrig.fSingleMinusApt;
+  fSingleMinusLpt = theMUONGlobalTrig.fSingleMinusLpt;
+  fSingleMinusHpt = theMUONGlobalTrig.fSingleMinusHpt;
+  fSingleMinusApt = theMUONGlobalTrig.fSingleMinusApt;
   
-  fSingleUndefLpt = MUONGlobalTrig.fSingleUndefLpt;
-  fSingleUndefHpt = MUONGlobalTrig.fSingleUndefHpt;
-  fSingleUndefApt = MUONGlobalTrig.fSingleUndefApt;
+  fSingleUndefLpt = theMUONGlobalTrig.fSingleUndefLpt;
+  fSingleUndefHpt = theMUONGlobalTrig.fSingleUndefHpt;
+  fSingleUndefApt = theMUONGlobalTrig.fSingleUndefApt;
   
-  fPairUnlikeLpt  = MUONGlobalTrig.fPairUnlikeLpt;
-  fPairUnlikeHpt  = MUONGlobalTrig.fPairUnlikeHpt;
-  fPairUnlikeApt  = MUONGlobalTrig.fPairUnlikeApt;
+  fPairUnlikeLpt  = theMUONGlobalTrig.fPairUnlikeLpt;
+  fPairUnlikeHpt  = theMUONGlobalTrig.fPairUnlikeHpt;
+  fPairUnlikeApt  = theMUONGlobalTrig.fPairUnlikeApt;
   
-  fPairLikeLpt    = MUONGlobalTrig.fPairLikeLpt;
-  fPairLikeHpt    = MUONGlobalTrig.fPairLikeHpt;
-  fPairLikeApt    = MUONGlobalTrig.fPairLikeApt;
+  fPairLikeLpt    = theMUONGlobalTrig.fPairLikeLpt;
+  fPairLikeHpt    = theMUONGlobalTrig.fPairLikeHpt;
+  fPairLikeApt    = theMUONGlobalTrig.fPairLikeApt;
 }
 
 //----------------------------------------------------------------------
-AliMUONGlobalTrigger& AliMUONGlobalTrigger::operator=(const AliMUONGlobalTrigger& MUONGlobalTrig)
+AliMUONGlobalTrigger& AliMUONGlobalTrigger::operator=(const AliMUONGlobalTrigger& theMUONGlobalTrig)
 {
 // equal operator (useful for non-pointer member in TClonesArray)
-  if (this == &MUONGlobalTrig)
+  if (this == &theMUONGlobalTrig)
     return *this;
+    
+  // base class assignement
+  TObject::operator=(theMUONGlobalTrig);
 
-  fSinglePlusLpt  = MUONGlobalTrig.fSinglePlusLpt;
-  fSinglePlusHpt  = MUONGlobalTrig.fSinglePlusHpt;
-  fSinglePlusApt  = MUONGlobalTrig.fSinglePlusApt;
+  fSinglePlusLpt  = theMUONGlobalTrig.fSinglePlusLpt;
+  fSinglePlusHpt  = theMUONGlobalTrig.fSinglePlusHpt;
+  fSinglePlusApt  = theMUONGlobalTrig.fSinglePlusApt;
   
-  fSingleMinusLpt = MUONGlobalTrig.fSingleMinusLpt;
-  fSingleMinusHpt = MUONGlobalTrig.fSingleMinusHpt;
-  fSingleMinusApt = MUONGlobalTrig.fSingleMinusApt;
+  fSingleMinusLpt = theMUONGlobalTrig.fSingleMinusLpt;
+  fSingleMinusHpt = theMUONGlobalTrig.fSingleMinusHpt;
+  fSingleMinusApt = theMUONGlobalTrig.fSingleMinusApt;
   
-  fSingleUndefLpt = MUONGlobalTrig.fSingleUndefLpt;
-  fSingleUndefHpt = MUONGlobalTrig.fSingleUndefHpt;
-  fSingleUndefApt = MUONGlobalTrig.fSingleUndefApt;
+  fSingleUndefLpt = theMUONGlobalTrig.fSingleUndefLpt;
+  fSingleUndefHpt = theMUONGlobalTrig.fSingleUndefHpt;
+  fSingleUndefApt = theMUONGlobalTrig.fSingleUndefApt;
   
-  fPairUnlikeLpt  = MUONGlobalTrig.fPairUnlikeLpt;
-  fPairUnlikeHpt  = MUONGlobalTrig.fPairUnlikeHpt;
-  fPairUnlikeApt  = MUONGlobalTrig.fPairUnlikeApt;
+  fPairUnlikeLpt  = theMUONGlobalTrig.fPairUnlikeLpt;
+  fPairUnlikeHpt  = theMUONGlobalTrig.fPairUnlikeHpt;
+  fPairUnlikeApt  = theMUONGlobalTrig.fPairUnlikeApt;
   
-  fPairLikeLpt    = MUONGlobalTrig.fPairLikeLpt;
-  fPairLikeHpt    = MUONGlobalTrig.fPairLikeHpt;
-  fPairLikeApt    = MUONGlobalTrig.fPairLikeApt;
+  fPairLikeLpt    = theMUONGlobalTrig.fPairLikeLpt;
+  fPairLikeHpt    = theMUONGlobalTrig.fPairLikeHpt;
+  fPairLikeApt    = theMUONGlobalTrig.fPairLikeApt;
 
   return *this;
 }

@@ -4,16 +4,18 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
+
 #include "AliDigitizer.h"
-#include "AliRunLoader.h"
-#include "AliMUONLoader.h"
-#include "AliMUONTransientDigit.h"
-#include "AliMUON.h"
-#include "AliMUONData.h"
+#include "AliMUONDigit.h"
 
 class AliRunDigitizer;
+class AliRunLoader;
 class AliMUONHitMapA1;
-
+class AliMUON;
+class AliMUONData;
+class AliMUONLoader;
+class AliMUONTransientDigit;
 
 class AliMUONDigitizer : public AliDigitizer
 {
@@ -52,7 +54,7 @@ protected:
 	/* Digitizers inheriting from AliMUONDigitizer should implement this abstract method 
 	   so that TransientDigit objects are generated and put onto the fTDList.
 	   The method would be implemented as some loop over the input stream. The data can be
-	   fetched from the muondata pointer. To add to the fTDList once should use code similar
+	   fetched from the fMUONData pointer. To add to the fTDList once should use code similar
 	   to the following:
 	   
 	     TObject* source_object;  // Assume the object from which the transient digit
@@ -72,7 +74,7 @@ protected:
 	// Loops over the fTDList of transient digits to write them to the output stream.
 	virtual void CreateDigits();
 
-	/* Inheriting digitizers should implement this method to prepare the muondata
+	/* Inheriting digitizers should implement this method to prepare the fMUONData
 	   object before GenerateTransientDigits() is called. 
 	   If the initialization was successful then kTRUE should be returned otherwise
 	   kFALSE should be returned. 
@@ -84,17 +86,17 @@ protected:
 	 */
 	virtual void CleanupInputData(AliMUONLoader* muonloader) = 0;
 
-	/* Inheriting digitizers should implement this method to prepare the muondata
+	/* Inheriting digitizers should implement this method to prepare the fMUONData
 	   object before CreateDigits() is called.
 	   If the initialization was successful then kTRUE should be returned otherwise
 	   kFALSE should be returned. 
 	 */
 	virtual Bool_t InitOutputData(AliMUONLoader* muonloader) = 0;
 
-	/* When all the data is added to the muondata object and the trees need to be
+	/* When all the data is added to the fMUONData object and the trees need to be
 	   filled then this method is called by CreateDigits(). 
 	   Thus code like
-	       muondata->Fill("D")
+	       fMUONData->Fill("D")
 	   should go into this method.
 	 */
 	virtual void FillOutputData() = 0;
@@ -122,12 +124,12 @@ protected:
 	virtual void OnCreateTransientDigit(AliMUONTransientDigit* /*digit*/, TObject* /*source_object*/);
 
 	/* Called by AddDigit(AliMUONTransientDigit*, Int_t) when transient digit is added to the 
-	   muondata object ready for writing to the data trees.
+	   fMUONData object ready for writing to the data trees.
 	 */ 
 	virtual void OnWriteTransientDigit(AliMUONTransientDigit* digit);
 	
 	// Wrapper method for AddDigit(Int_t, Int_t[kMAXTRACKS], Int_t[kMAXTRACKS], Int_t[6])
-	void AddDigit(AliMUONTransientDigit* td, Int_t response_charge);
+	void AddDigit(AliMUONTransientDigit* td, Int_t responseCharge);
 
 	// Creates a new fTDList object, and creates and fills the fHitMap arrays.
 	// Note: this method assumes the array pointers are NULL when calling this method.
@@ -159,13 +161,13 @@ protected:
 	Bool_t ExistTransientDigit(AliMUONTransientDigit * mTD); 
 
 	// Sorts the 3 most significant tracks.    
-	void SortTracks(Int_t *tracks, Int_t *charges, Int_t ntr);
+	void SortTracks(Int_t *tracks, Int_t *charges, Int_t ntr) const;
 
 
-	AliRunLoader* runloader;        //! Global run loader.
-	AliMUONLoader* gime;            //! MUON specific loader.
-	AliMUON* pMUON;                 //! Pointer to MUON module.
-	AliMUONData* muondata;          //! muon data interface
+	AliRunLoader* fRunLoader;        //! Global run loader.
+	AliMUONLoader* fGime;            //! MUON specific loader.
+	AliMUON* fMUON;                 //! Pointer to MUON module.
+	AliMUONData* fMUONData;          //! muon data interface
 
 	AliMUONHitMapA1 **fHitMap;      //! pointer to array of pointers to hitmaps
 	TObjArray *fTDList;             //! list of AliMUONTransientDigits

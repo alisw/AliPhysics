@@ -108,7 +108,8 @@ AliMUONSt1Segmentation::AliMUONSt1Segmentation()
 }
 
 //______________________________________________________________________________
-AliMUONSt1Segmentation::AliMUONSt1Segmentation(const AliMUONSt1Segmentation& rhs) :AliSegmentation(rhs)
+AliMUONSt1Segmentation::AliMUONSt1Segmentation(const AliMUONSt1Segmentation& rhs) 
+  : AliSegmentation(rhs)
 {
 // Copy constructor
   Fatal("Copy constructor", 

@@ -20,7 +20,22 @@
 ClassImp(AliMUONPadHit)
  
 //___________________________________________
+AliMUONPadHit::AliMUONPadHit()
+  :  TObject(),
+     fHitNumber(0),
+     fCathode(0),
+     fQ(0),
+     fPadX(0),
+     fPadY(0),
+     fQpad(0),
+     fRSec(0)   
+{
+// Default constructor
+}
+
+//___________________________________________
 AliMUONPadHit::AliMUONPadHit(Int_t *clhits)
+  : TObject()
 {
 // Constructor
    fHitNumber=clhits[0];

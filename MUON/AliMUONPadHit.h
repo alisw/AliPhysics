@@ -4,18 +4,17 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Revision of includes 07/05/2004
 
 #include <TObject.h>
-
 
 class AliMUONPadHit : public TObject {
  
 public:
-   AliMUONPadHit() {
-      fHitNumber=fQ=fPadX=fPadY=fQpad=fRSec=0;   
-}
+   AliMUONPadHit();
    AliMUONPadHit(Int_t *clhits);
    virtual ~AliMUONPadHit() {;}
+
    Int_t   HitNumber() const {return fHitNumber;}
    Int_t   Cathode()   const {return fCathode;}
    Int_t   Q()         const {return fQ;}

@@ -32,17 +32,16 @@
 //
 ////////////////////////////////////
 
-#include <Riostream.h> // for cout
-#include <stdlib.h> // for exit()
+#include <Riostream.h>
+#include <TDirectory.h>
+#include <TFile.h>
+#include <TMatrixD.h> //AZ
 
-#include <TTree.h>
-
-#include "AliMUON.h"
-//#include "AliMUONChamber.h"
 #include "AliMUONEventReconstructor.h"
+#include "AliMUON.h"
+#include "AliMUONHit.h"
 #include "AliMUONHitForRec.h"
 #include "AliMUONTriggerTrack.h"
-//#include "AliMUONTriggerConstants.h"
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONLocalTrigger.h"
@@ -53,11 +52,9 @@
 #include "AliMUONTrackHit.h"
 #include "AliMagF.h"
 #include "AliRun.h" // for gAlice
-#include "AliConfig.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "AliMUONTrackK.h" //AZ
-#include <TMatrixD.h> //AZ
 #include "AliMC.h"
 
 //************* Defaults parameters for reconstruction
@@ -86,6 +83,7 @@ ClassImp(AliMUONEventReconstructor) // Class implementation in ROOT context
 
   //__________________________________________________________________________
 AliMUONEventReconstructor::AliMUONEventReconstructor(AliLoader* loader)
+  : TObject()
 {
   // Constructor for class AliMUONEventReconstructor
   SetReconstructionParametersToDefaults();
@@ -96,7 +94,7 @@ AliMUONEventReconstructor::AliMUONEventReconstructor(AliLoader* loader)
   fNHitsForRec = 0; // really needed or GetEntriesFast sufficient ????
   // Memory allocation for the TClonesArray's of segments in stations
   // Is 2000 the right size ????
-  for (Int_t st = 0; st < kMaxMuonTrackingStations; st++) {
+  for (Int_t st = 0; st < fgkMaxMuonTrackingStations; st++) {
     fSegmentsPtr[st] = new TClonesArray("AliMUONSegment", 2000);
     fNSegments[st] = 0; // really needed or GetEntriesFast sufficient ????
   }
@@ -155,15 +153,24 @@ AliMUONEventReconstructor::AliMUONEventReconstructor(AliLoader* loader)
   return;
 }
   //__________________________________________________________________________
-AliMUONEventReconstructor::AliMUONEventReconstructor (const AliMUONEventReconstructor& Reconstructor):TObject(Reconstructor)
+AliMUONEventReconstructor::AliMUONEventReconstructor (const AliMUONEventReconstructor& rhs)
+  : TObject(rhs)
 {
-  // Dummy copy constructor
+// Protected copy constructor
+
+  Fatal("AliMUONEventReconstructor", "Not implemented.");
 }
 
-AliMUONEventReconstructor & AliMUONEventReconstructor::operator=(const AliMUONEventReconstructor& /*Reconstructor*/)
+AliMUONEventReconstructor & 
+AliMUONEventReconstructor::operator=(const AliMUONEventReconstructor& rhs)
 {
-  // Dummy assignment operator
-    return *this;
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
 }
 
   //__________________________________________________________________________
@@ -177,7 +184,7 @@ AliMUONEventReconstructor::~AliMUONEventReconstructor(void)
 //  if (fEventTree) delete fEventTree;
   if (fRecoEvent) delete fRecoEvent;
   delete fHitsForRecPtr; // Correct destruction of everything ???? or delete [] ????
-  for (Int_t st = 0; st < kMaxMuonTrackingStations; st++)
+  for (Int_t st = 0; st < fgkMaxMuonTrackingStations; st++)
     delete fSegmentsPtr[st]; // Correct destruction of everything ????
   return;
 }
@@ -213,7 +220,7 @@ void AliMUONEventReconstructor::SetReconstructionParametersToDefaults(void)
   // Maximum distance in non bending plane
   // 5 * 0.22 just to remember the way it was made in TRACKF_STAT
   // SIGCUT*DYMAX(IZ)
-  for (Int_t st = 0; st < kMaxMuonTrackingStations; st++)
+  for (Int_t st = 0; st < fgkMaxMuonTrackingStations; st++)
     fSegmentMaxDistNonBending[st] = 5. * 0.22;
   // Maximum distance in bending plane:
   // values from TRACKF_STAT, corresponding to (J psi 20cm),
@@ -410,7 +417,7 @@ void AliMUONEventReconstructor::ResetSegments(void)
 {
   // To reset the TClonesArray of segments and the number of Segments
   // for all stations
-  for (Int_t st = 0; st < kMaxMuonTrackingStations; st++) {
+  for (Int_t st = 0; st < fgkMaxMuonTrackingStations; st++) {
     if (fSegmentsPtr[st]) fSegmentsPtr[st]->Clear();
     fNSegments[st] = 0;
   }
@@ -828,12 +835,12 @@ void AliMUONEventReconstructor::MakeSegments(void)
   ResetSegments();
   // Loop over stations
   Int_t nb = (fTrackMethod == 2) ? 3 : 0; //AZ
-  //AZ for (Int_t st = 0; st < kMaxMuonTrackingStations; st++)
-  for (Int_t st = nb; st < kMaxMuonTrackingStations; st++) //AZ
+  //AZ for (Int_t st = 0; st < fgkMaxMuonTrackingStations; st++)
+  for (Int_t st = nb; st < fgkMaxMuonTrackingStations; st++) //AZ
     MakeSegmentsPerStation(st); 
   if (fPrintLevel >= 10) {
     cout << "end of MakeSegments" << endl;
-    for (Int_t st = 0; st < kMaxMuonTrackingStations; st++) {
+    for (Int_t st = 0; st < fgkMaxMuonTrackingStations; st++) {
       cout << "station(0...): " << st
 	   << "  Segments: " << fNSegments[st]
 	   << endl;
@@ -1022,14 +1029,14 @@ Bool_t AliMUONEventReconstructor::MakeTriggerTracks(void)
     AliMUONTriggerCircuit *circuit;
     AliMUONTriggerTrack *recTriggerTrack = 0;
 
-    TTree* TR = fLoader->TreeR();
+    TTree* treeR = fLoader->TreeR();
     
     // Loading MUON subsystem
     AliMUON * pMUON = (AliMUON *) gAlice->GetDetector("MUON");
     
-    nTRentries = Int_t(TR->GetEntries());
+    nTRentries = Int_t(treeR->GetEntries());
      
-    TR->GetEvent(0); // only one entry  
+    treeR->GetEvent(0); // only one entry  
 
     if (!(fMUONData->IsTriggerBranchesInTree())) {
       cout << "Warning in AliMUONEventReconstructor::MakeTriggerTracks"
@@ -1733,7 +1740,7 @@ void AliMUONEventReconstructor::MakeTrackCandidatesK(void)
 void AliMUONEventReconstructor::FollowTracksK(void)
 {
   // Follow tracks using Kalman filter
-  Bool_t Ok;
+  Bool_t ok;
   Int_t icand, ichamBeg, ichamEnd, chamBits;
   Double_t zDipole1, zDipole2;
   AliMUONTrackK *trackK;
@@ -1787,14 +1794,14 @@ void AliMUONEventReconstructor::FollowTracksK(void)
 
     // Discard candidate which will produce the double track
     if (icand > 0) {
-      Ok = CheckCandidateK(icand,nSeeds);
-      if (!Ok) {
+      ok = CheckCandidateK(icand,nSeeds);
+      if (!ok) {
         //trackK->SetRecover(-1); // mark candidate to be removed
         //continue;
       }
     }
 
-    Ok = kTRUE;
+    ok = kTRUE;
     if (trackK->GetRecover() == 0) hit = (AliMUONHitForRec*) 
                                    trackK->GetHitOnTrack()->Last(); // last hit
     else hit = (AliMUONHitForRec*) (*trackK->GetHitOnTrack())[1]; // 2'nd hit
@@ -1803,13 +1810,13 @@ void AliMUONEventReconstructor::FollowTracksK(void)
     // Check propagation direction
     if (trackK->GetTrackDir() > 0) {
       ichamEnd = 9; // forward propagation
-      Ok = trackK->KalmanFilter(ichamBeg,ichamEnd,kFALSE,zDipole1,zDipole2);
-      if (Ok) {
+      ok = trackK->KalmanFilter(ichamBeg,ichamEnd,kFALSE,zDipole1,zDipole2);
+      if (ok) {
         ichamBeg = ichamEnd;
         ichamEnd = 6; // backward propagation
 	// Change weight matrix and zero fChi2 for backpropagation
         trackK->StartBack();
-        Ok = trackK->KalmanFilter(ichamBeg,ichamEnd,kTRUE,zDipole1,zDipole2);
+        ok = trackK->KalmanFilter(ichamBeg,ichamEnd,kTRUE,zDipole1,zDipole2);
         ichamBeg = ichamEnd;
         ichamEnd = 0;
       }
@@ -1819,18 +1826,18 @@ void AliMUONEventReconstructor::FollowTracksK(void)
         ichamEnd = 6; // backward propagation
 	// Change weight matrix and zero fChi2 for backpropagation
         trackK->StartBack();
-        Ok = trackK->KalmanFilter(ichamBeg,ichamEnd,kTRUE,zDipole1,zDipole2);
+        ok = trackK->KalmanFilter(ichamBeg,ichamEnd,kTRUE,zDipole1,zDipole2);
         ichamBeg = ichamEnd;
         ichamEnd = 0;
       }
     }
 
-    if (Ok) {
+    if (ok) {
       trackK->SetTrackDir(-1);
       trackK->SetBPFlag(kFALSE);
-      Ok = trackK->KalmanFilter(ichamBeg,ichamEnd,kFALSE,zDipole1,zDipole2);
+      ok = trackK->KalmanFilter(ichamBeg,ichamEnd,kFALSE,zDipole1,zDipole2);
     }
-    if (Ok) trackK->SetTrackQuality(0); // compute "track quality"
+    if (ok) trackK->SetTrackQuality(0); // compute "track quality"
     else trackK->SetRecover(-1); // mark candidate to be removed
 
     // Majority 3 of 4 in first 2 stations
@@ -1855,7 +1862,7 @@ void AliMUONEventReconstructor::FollowTracksK(void)
 }
 
 //__________________________________________________________________________
-Bool_t AliMUONEventReconstructor::CheckCandidateK(Int_t icand, Int_t nSeeds)
+Bool_t AliMUONEventReconstructor::CheckCandidateK(Int_t icand, Int_t nSeeds) const
 {
   // Discards track candidate if it will produce the double track (having
   // the same seed segment hits as hits of a good track found before)

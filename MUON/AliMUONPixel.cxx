@@ -13,12 +13,22 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 #include "AliMUONPixel.h"
 
 ClassImp(AliMUONPixel) // Class implementation in ROOT context
 
 //_____________________________________________________________________________
+AliMUONPixel::AliMUONPixel()
+  : TObject()
+{
+// Default constructor
+} 
+
+//_____________________________________________________________________________
 AliMUONPixel::AliMUONPixel(Double_t xc, Double_t yc, Double_t wx, Double_t wy, Double_t charge)
+  : TObject()
 {
   // Constructor
   fXY[0] = xc; fXY[1] = yc; fSize[0] = wx; fSize[1] = wy; fCharge = charge;

@@ -18,9 +18,20 @@
 #include "AliMUONReconstHit.h"
 
 ClassImp(AliMUONReconstHit)
-//___________________________________________
+
+//_____________________________________________________________________________
+AliMUONReconstHit::AliMUONReconstHit() 
+  : TObject()
+{
+// Default constructor
+
+  fCorrelIndex[0]=fCorrelIndex[1]=fCorrelIndex[2]=fCorrelIndex[3]=0;
+  fX[0]=fX[1]=fX[2]=fX[3]=0; fY[0]=fY[1]=fY[2]=fY[3]=0; 
+}
+
 //_____________________________________________________________________________
 AliMUONReconstHit::AliMUONReconstHit(Int_t *idx, Float_t *x, Float_t *y)
+  : TObject()
 {
     //
     // Creates a MUON correlation object

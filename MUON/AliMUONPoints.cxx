@@ -28,34 +28,25 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TROOT.h>
+#include <TPolyMarker3D.h>
+#include <TMatrix.h>
+#include <TVirtualPad.h>
+#include <TPaveText.h>
+#include <TMarker3DBox.h>
+ 
 #include "AliMUONPoints.h"
 #include "AliMUONDisplay.h"
 #include "AliRun.h"
 #include "AliMUON.h"
-#include "AliMUONChamber.h"
-#include "AliMUONResponse.h"
 #include "AliMUONHit.h"
-#include "AliMUONPadHit.h"
 #include "AliMUONDigit.h"
-#include "AliMUONRawCluster.h"
 
-
-#include <TROOT.h>
-#include <TTree.h>
-#include <TPolyMarker3D.h>
-#include <TMatrix.h>
-#include <TPad.h>
-#include <TVirtualPad.h>
-#include <TPolyLine3D.h>
-#include <TPaveText.h>
-#include <TView.h>
-#include <TMath.h>
-#include <TMarker3DBox.h>
- 
 ClassImp(AliMUONPoints)
 
 //_____________________________________________________________________________
 AliMUONPoints::AliMUONPoints()
+  : AliPoints()
 {
   //
   // Default constructor
@@ -81,9 +72,13 @@ AliMUONPoints::AliMUONPoints(Int_t npoints)
   fMatrix = 0;
 }
 
-AliMUONPoints::AliMUONPoints(const AliMUONPoints& points):AliPoints(points)
+//_____________________________________________________________________________
+AliMUONPoints::AliMUONPoints(const AliMUONPoints& points)
+  : AliPoints(points)
 {
-// Copy constructor
+// Protected copy constructor
+
+  Fatal("AliMUONPoints", "Not implemented.");
 }
 	 
 //_____________________________________________________________________________
@@ -102,7 +97,7 @@ AliMUONPoints::~AliMUONPoints()
 }
 
 //_____________________________________________________________________________
-void AliMUONPoints::DumpHit()
+void AliMUONPoints::DumpHit() const
 {
   //
   //   Dump hit corresponding to this point
@@ -112,7 +107,7 @@ void AliMUONPoints::DumpHit()
 }
 
 //_____________________________________________________________________________
-void AliMUONPoints::DumpDigit()
+void AliMUONPoints::DumpDigit() const
 {
   //
   //   Dump digit corresponding to this point
@@ -191,13 +186,13 @@ void AliMUONPoints::InspectDigit()
 }
 
 //_____________________________________________________________________________
-Int_t AliMUONPoints::GetTrackIndex()
+Int_t AliMUONPoints::GetTrackIndex() const
 {
   //
   //   Dump digit corresponding to this point
   //
 
-  this->Inspect();
+  Inspect();
   /*
   if (fDigitIndex != 0) {
     Int_t ncol=this->fMatrix->GetNcols();
@@ -246,7 +241,13 @@ AliMUONDigit *AliMUONPoints::GetDigit() const
 }
 //_____________________________________________________________________________
 
-AliMUONPoints& AliMUONPoints::operator= (const AliMUONPoints& /*rhs*/)
+AliMUONPoints& AliMUONPoints::operator= (const AliMUONPoints& rhs)
 {
-    return *this;
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
 }
