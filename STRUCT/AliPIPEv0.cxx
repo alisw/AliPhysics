@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2002/03/25 12:34:40  morsch
+Obsolete support rollers removed.
+
 Revision 1.18  2002/02/01 18:02:41  morsch
 Material of beam pipe between inner Be piece and forward detectors
 can be set by SetPipeMaterial(mat), mat = kInox, kAlu, kBe ...
@@ -134,531 +137,465 @@ void AliPIPEv0::CreateGeometry()
     idrotm[2011] = 0;
     AliMatrix(idrotm[2012],90.,180., 90., 90.,180.,  0.);
     AliMatrix(idrotm[2013],90.,  0., 90., 90.,180.,  0.);
-
+//
+//  Bellow
+//
 //  distance between bellows
-    const Float_t dzbb =  8.0;
-//  size of bellow
-    const Float_t dzb  = 11.4;
+    const Float_t dzbb =  9.0;
+//  total size of bellow section
+    const Float_t dzb  = 15.0;
+//  size of undulated region 
+    const Float_t dzub =  2.0;
 
+// half-lengths of various beam pipe sections
+// central Be-Pipe
+    Float_t hlenQbbe1 = 40.;
+    Float_t hlenQbbe2 = 36.5;
+    Float_t hlenQbbe  = (hlenQbbe1+hlenQbbe2)/2.;
+//
+//
+//    Float_t hlenQbt1 = 5.5/2.;
+//
+//  Pipe outside central region (non-absober side)
+    Float_t hlenQbab = 157.5;
+//
+//  Flange non-absorber side
+    Float_t hlenQb29 = 11.5/2.+1.75 + 5.0;
+//
+//  Bellow element 
+    Float_t hlenQbe0 = dzb;
+//
+//  Inox pipe between Be and Bellow (absorber side)
+    Float_t hlenQb24[3] = {10.5/2., 1.8, 3.3};
+//
+//
+    Float_t hlenQb28 = (800.-hlenQbbe1-2.*hlenQbab-4.*hlenQb29-2.*hlenQbe0)/2.;
+//
+//  Position of the pump
+    Float_t zPump = hlenQbbe1+2.*hlenQbab+2.*hlenQb29+dzb;
+//
+//  Inner beam pipe radius
+    Float_t RinBe = 2.9;
+    Float_t RinSt = 2.92;
+//
+//
+    Float_t RoutBe = 2.98;
+    Float_t RoutSt = 3.00;
+
+
+//
+    Float_t dz;
     
 //
 // The peam pipe up to the Front Absorber
 //
 // Mother Volume QBPM
-    const Float_t dbe1 = 15.;
-    const Float_t dbe2 = 15.;
-    ppcon[0]  =    0;
-    ppcon[1]  =  360;
-    ppcon[2]  =   25;
+    ppcon[0]  =   0;
+    ppcon[1]  = 360;
+    ppcon[2]  =  18;
 //  1: 
-    ppcon[3]  = - 90;
-    ppcon[4]  =    0;
-    ppcon[5]  =    5.8;
+    ppcon[3]  = -90.;
+    ppcon[4]  =   0.;
+    ppcon[5]  =   4.4;
 //  2
-    ppcon[6]  = - 81.6;
-    ppcon[7]  =    0.;
-    ppcon[8]  =    5.8;
+    ppcon[6]  = -90+2.*hlenQb24[2]+2.8+2.*hlenQb24[1];
+    ppcon[7]  =   0.;
+    ppcon[8]  =   4.4;
 //  3
-    ppcon[9]  = - 81.6;
-    ppcon[10]  =    0.;
-    ppcon[11] =    4.22;
+    ppcon[9]  = ppcon[6];
+    ppcon[10] =   0.;
+    ppcon[11] =   4.1;
 //  4 
-    ppcon[12] = - 81.6 + dzb; 
-    ppcon[13] =    0;
-    ppcon[14] =    4.22;
+    ppcon[12] = ppcon[9] + 2. + 2.*dzub+0.2; 
+    ppcon[13] =   0.;
+    ppcon[14] =   4.1;
 //  5 
-    ppcon[15] = - 81.6 + dzb; 
-    ppcon[16] =    0;
-    ppcon[17] =    3.2;
+    ppcon[15] = ppcon[12];
+    ppcon[16] =   0.;
+    ppcon[17] =   3.2;
 //  6 
-    ppcon[18] = - 81.6 + dzb + dzbb; 
-    ppcon[19] =    0;
-    ppcon[20] =    3.2;
+    ppcon[18] = ppcon[15] + 2.* dzbb-0.4; 
+    ppcon[19] =   0.;
+    ppcon[20] =   3.2;
 //  7
-    ppcon[21] = - 81.6 + dzb + dzbb; 
-    ppcon[22] =    0;
-    ppcon[23] =    4.22;
+    ppcon[21] = ppcon[18]; 
+    ppcon[22] =   0.;
+    ppcon[23] =   4.1;
 //  8
-    ppcon[24] = - 28.00-dbe2;
-    ppcon[25] =    0;
-    ppcon[26] =    4.22;
+    ppcon[24] = -44.;
+    ppcon[25] =   0.;
+    ppcon[26] =   4.1;
 //  9
-    ppcon[27] = - 28.00-dbe2;
+    ppcon[27] = -44.;
     ppcon[28] =    0;
-    ppcon[29] =    3.2;
+    ppcon[29] =    3.0;
 //  10
-    ppcon[30] =    0;
+    ppcon[30] =  38.;
     ppcon[31] =    0;
-    ppcon[32] =    3.2;
+    ppcon[32] =    3.0;
 //  11
-    ppcon[33] =    28.+dbe1;
+    ppcon[33] =  38.;
     ppcon[34] =    0;
-    ppcon[35] =    3.2;
+    ppcon[35] =    3.6;
 //  12
-    ppcon[36] =   28.+dbe1;
-    ppcon[37] =    0;
-    ppcon[38] =    4.22;
-//  13 
-    ppcon[39] =   28.+dbe1+6.0;
-    ppcon[40] =    0;
-    ppcon[41] =    4.22;
+    ppcon[36] = hlenQbbe1+2.*hlenQbab-0.1;
+    ppcon[37] =    0.;
+    ppcon[38] =    3.6;
+//  13
+    ppcon[39] = ppcon[36];
+    ppcon[40] =    0.;
+    ppcon[41] =    3.6;
 //  14
-    ppcon[42] =   28.+dbe1+6.0;
-    ppcon[43] =    0;
-    ppcon[44] =    3.2;
-//  15 
-    ppcon[45] =   250.;
-    ppcon[46] =    0;
-    ppcon[47] =    3.2;
+    ppcon[42] = ppcon[39]+2.*hlenQb29-5.;
+    ppcon[43] =    0.;
+    ppcon[44] =    3.6;
+//  15
+    ppcon[45] = ppcon[42];
+    ppcon[46] =    0.;
+    ppcon[47] =   56.;
 //  16
-    ppcon[48] =  250.;
-    ppcon[49] =    0;
-    ppcon[50] =    5;
+    ppcon[48] = ppcon[45]+2.*dzb+10.;
+    ppcon[49] =    0.;
+    ppcon[50] =   56.;
 //  17
-    ppcon[51] =   250.+4.4*2;
+    ppcon[51] =   ppcon[48];
     ppcon[52] =    0.;
-    ppcon[53] =    5.;
+    ppcon[53] =    3.6;
 //  18
-    ppcon[54] =   250.+4.4*2;
+    ppcon[54] =  800.;
     ppcon[55] =    0.;
-    ppcon[56] =    3.2;
-//  19
-    ppcon[57] =   365.4;
-    ppcon[58] =    0;
-    ppcon[59] =    3.2;
-//  20
-    ppcon[60] =   365.4;
-    ppcon[61] =    0;
-    ppcon[62] =    5.;
-//  21
-    ppcon[63] =   390.;
-    ppcon[64] =    0;
-    ppcon[65] =    5.;
-//  22
-    ppcon[66] =  390.;
-    ppcon[67] =    0.;
-    ppcon[68] =   56.;
-//  23
-    ppcon[69] =  435.;
-    ppcon[70] =    0.;
-    ppcon[71] =   56.;
-//  24
-    ppcon[72] =  435.;
-    ppcon[73] =    0.;
-    ppcon[74] =   5.;
-//  25
-    ppcon[75] =  800.;
-    ppcon[76] =    0.;
-    ppcon[77] =    5.;
+    ppcon[56] =    3.6;
     
-    gMC->Gsvolu("QBPM", "PCON", idtmed[kAir], ppcon, 78);
+    gMC->Gsvolu("QBPM", "PCON", idtmed[kAir], ppcon,57);
 
-//
-// The Vacuum 
-    ptube[0] =   0.0;
-    ptube[1] =   2.9;
-    ptube[2] = 445.0;
-    
-    gMC->Gsvolu("QBVA","TUBE", idtmed[kVac], ptube, 3);
-    gMC->Gspos ("QBVA", 1, "QBPM", 0., 0., 355., 0, "ONLY");
+
 //
 // volume definitions of various sections
 //
 
-    //half-lengths of various beam pipe sections
-    Float_t hlenQbbe = 43.3;
-    Float_t hlenQbt1 = 5.5/2.;
-    Float_t hlenQbab = (286.6+30.)/2.;
-    Float_t hlenQb29 = 4.4/2.;
-    Float_t hlenQbe0 = (2.* dzb + dzbb)/2.;
-    Float_t hlenQb26 = 20./2.;
-    Float_t hlenQb28 = (400.6-30.)/2.;
+//
+// The Vacuum 
+    gMC->Gsvolu("QBVA","TUBE", idtmed[kVac], ptube, 0);
+    ptube[0] =   0.0;
+    ptube[1] =   RinSt;
+    ptube[2] =   (90.-hlenQbbe2)/2.;
+    dz = -90. + ptube[2];
+    gMC->Gsposp ("QBVA", 1, "QBPM", 0., 0., dz , 0, "ONLY", ptube, 3);
+    dz = dz + ptube[2];
 
-// Be Pipe in central Alice : length 43.3 * 2
-    ptube[0] =  2.90;
-    ptube[1] =  3.00;
+    ptube[1] =   RinBe;
+    ptube[2] =   hlenQbbe+hlenQbab;
+    dz = dz + ptube[2];
+    gMC->Gsposp ("QBVA", 2, "QBPM", 0., 0., dz , 0, "ONLY", ptube, 3);
+    dz = dz + ptube[2];
+
+    ptube[1] =   RinSt;
+    ptube[2] =   (800.-hlenQbbe1-2.*hlenQbab)/2.;
+    dz = dz + ptube[2];
+    gMC->Gsposp ("QBVA", 3, "QBPM", 0., 0., dz , 0, "ONLY", ptube, 3);
+
+//
+// Be Pipe in central Alice 
+    ptube[0] = RinBe;
+    ptube[1] = RoutBe;
     ptube[2] = hlenQbbe;
     
     gMC->Gsvolu("QBBE","TUBE", idtmed[kBe], ptube, 3);
     
 //
-// Metal-Metal Transitions : non-absorber side
+//  Support Ring
 //
-//  Be-Al (or Be to Be-Al alloy)
-//  Mother Volume
-    ptube[0] = 2.900;
-    ptube[1] = 4.200;
-    ptube[2] = hlenQbt1;
-    gMC->Gsvolu("QBT1","TUBE", idtmed[kAir], ptube, 3);
+    //  Mother
+    ppcon[0]  =   0;
+    ppcon[1]  = 360;
+    ppcon[2]  =   6;
+//  1: 
+    ppcon[3]  = -1.;
+    ppcon[4]  = 3.0;
+    ppcon[5]  = 3.4;
+//  2
+    ppcon[6]  = -0.8;
+    ppcon[7]  = 3.0;
+    ppcon[8]  = 3.4;
+//  3
+    ppcon[9]  = -0.8;
+    ppcon[10] = 3.0;
+    ppcon[11] = 3.2;
+//  4 
+    ppcon[12] = 0.8;
+    ppcon[13] = 3.0;
+    ppcon[14] = 3.2;
+//  5 
+    ppcon[15] = 0.8;
+    ppcon[16] = 3.0;
+    ppcon[17] = 3.4;
+//  6 
+    ppcon[18] = 1.0;
+    ppcon[19] = 3.0;
+    ppcon[20] = 3.4;
 
-    ptube[0] = 2.900;
-    ptube[1] = 3.150;
-    ptube[2] = 0.375;
-    //
-    //  Be-part
-    gMC->Gsvolu("QB01","TUBE", idtmed[kAlu], ptube, 3);
-
-    ptube[1] = 3.000;
-    gMC->Gsvolu("QBA1","TUBE", idtmed[kBe], ptube, 3);
-
-    gMC->Gspos("QBA1", 1, "QB01", 0., 0., 0, 0, "ONLY");
-    gMC->Gspos("QB01", 1, "QBT1", 0., 0.,-2.75+ptube[2], 0, "ONLY");
-
-    //  Al-part
-    //
-    ptube[0] = 2.900;
-    ptube[1] = 3.150;
-    ptube[2] = 2.375;
-
-    gMC->Gsvolu("QB03","TUBE", idtmed[kAlu], ptube, 3);
-    gMC->Gspos("QB03", 1, "QBT1", 0., 0.,-2.+ptube[2], 0, "ONLY");
     
-    
-    ptube[0] = 3.15;
-    ptube[1] = 3.50;
-    ptube[2] = 0.10;
-
-    gMC->Gsvolu("QB05","TUBE", idtmed[kAlu], ptube, 3);
-    gMC->Gspos("QB05", 1, "QBT1", 0., 0., 2.55+ptube[2], 0, "ONLY");
-    
-    
-    // Fixations
-    ptube[0] = 0.0;
-    ptube[1] = 0.1;
-    ptube[2] = 0.5;
-    
-    gMC->Gsvolu("QB08","TUBE", idtmed[kInox], ptube, 3);
-    gMC->Gspos("QB08", 1 ,"QBT1",  0.000,  3.650, -1.25, idrotm[2002], "ONLY");
-    gMC->Gspos("QB08", 2 ,"QBT1",  3.161, -1.825, -1.25, idrotm[2001], "ONLY");
-    gMC->Gspos("QB08", 3 ,"QBT1", -3.161, -1.825, -1.25, idrotm[2003], "ONLY");
-    
-    // Carbon ring
-    ptube[0] = 3.15;
-    ptube[1] = 4.10;
-    ptube[2] = 0.55;
-    
-    gMC->Gsvolu("QB07","TUBE", idtmed[kC], ptube, 3);
-
-    ptube[0] = 3.15;
-    ptube[1] = 3.50;
-    ptube[2] = 0.10;
-    gMC->Gsvolu("QBA7","TUBE", idtmed[kInox], ptube, 3);
-    gMC->Gspos("QBA7", 1, "QB07", 0.0, 0.0, 0.55-0.2, 0, "ONLY");
-    gMC->Gspos("QB07", 1, "QBT1", 0.0, 0.0, 2., 0, "ONLY");
-
-
+    gMC->Gsvolu("QBSR", "PCON", idtmed[kC], ppcon,21);
+    gMC->Gspos("QBSR", 1, "QBPM", 0.0, 0.0,  40., 0, "ONLY");
+    gMC->Gspos("QBSR", 2, "QBPM", 0.0, 0.0, 150., 0, "ONLY");
+    gMC->Gspos("QBSR", 3, "QBPM", 0.0, 0.0, 260., 0, "ONLY");
+    gMC->Gspos("QBSR", 4, "QBPM", 0.0, 0.0,- 46., 0, "ONLY");
 //
-// Support rollers: non absorber side
+// Flange and Fixed Point: non absorber side
 //
-//  Mother volume
-    
-    ptube[0] = 3.2;
-    ptube[1] = 4.8;
-    ptube[2] = 3.0;
-    gMC->Gsvolu("QBRM","TUBE", idtmed[kAir], ptube, 3);
-
-    ptube[0] = 0.0;
-    ptube[1] = 0.7;
-    ptube[2] = 3.0;
-    
-    gMC->Gsvolu("QB30","TUBE", idtmed[kInox], ptube, 3);
-    
-    for (i=0; i<8; i++) {
-	Float_t phi = 45.+i*45.*kDegrad;
-	Float_t xpos = 4.*TMath::Sin(phi);
-	Float_t ypos = 4.*TMath::Cos(phi);
-	gMC->Gspos("QB30", i+1, "QBRM", xpos, ypos, 0, idrotm[2004+i], "ONLY");
-    }
-
+// ---------->
 //
-// Flanges: non absorber side
-    ptube[0] = 3.0;
-    ptube[1] = 4.9;
+//  Mother
+    ppcon[0]  =   0;
+    ppcon[1]  = 360;
+    ppcon[2]  =   4;
+//  1: 
+    ppcon[3]  = -hlenQb29;
+    ppcon[4]  = RinSt;
+    ppcon[5]  = 5.8;
+//  2
+    ppcon[6]  = ppcon[3]+3.6;
+    ppcon[7]  = RinSt;
+    ppcon[8]  = 5.8;
+//  3
+    ppcon[9]  = ppcon[6];
+    ppcon[10] = RinSt;
+    ppcon[11] = 3.6;
+//  4 
+    ppcon[12] = hlenQb29;
+    ppcon[13] = RinSt;
+    ppcon[14] = 3.6;
+    
+    gMC->Gsvolu("QB29", "PCON", idtmed[kAir], ppcon,15);
+    
+
+//    Flange
+    ptube[0] = RinSt;
+    ptube[1] = 5.7;
+    ptube[2] = 1.75;
+    gMC->Gsvolu("QF29","TUBE", idtmed[kInox], ptube, 3);
+    gMC->Gspos("QF29", 1, "QB29", 0.0, 0.0, -hlenQb29+1.75, 0, "ONLY");
+//    Pipe
+    ptube[0] = RinSt;
+    ptube[1] = 3.0;
     ptube[2] = hlenQb29;
+    gMC->Gsvolu("QS29","TUBE", idtmed[kInox], ptube, 3);
+    gMC->Gspos("QS29", 1, "QB29", 0.0, 0.0, 0., 0, "ONLY");
+//    Fixed point
+    ptube[0] = RinSt;
+    ptube[1] = 3.5;
+    ptube[2] = 0.3;
+    gMC->Gsvolu("QP29","TUBE", idtmed[kInox], ptube, 3);
+    gMC->Gspos("QP29", 1, "QB29", 0.0, 0.0, -hlenQb29+9.75+3., 0, "ONLY");
     
-    gMC->Gsvolu("QB29","TUBE", idtmed[kInox], ptube, 3);
-    
+//
 //
 // Inox beam pipe: final section on non-absorber side
 
-    ptube[0] =   2.90;
-    ptube[1] =   2.98;
+    ptube[0] =   RinSt;
+    ptube[1] =   RoutSt;
     ptube[2] =   hlenQb28;    
 
     gMC->Gsvolu("QB28","TUBE", idtmed[kInox], ptube, 3);
 
-//
-//  Undulated beam pipe
-// 
-/*
-    Float_t pitch=0.25;
-    Float_t thick=0.015;
-    Float_t zundul=171;
-    Float_t rundul=3.0;
-    char cn48[][5]={"QN21","QN22","QN23","QN24","QN25","QN26","QN27","QN28"};
-
-    Undulation("QUND",pitch,thick,zundul,rundul,cn48);
-    gMC->Gspos("QUND", 1, "QBPM", 0., 0., 335.+zundul, 0, "ONLY");
-*/
 
 //  Al-Be (40-60 wgt%, rho=2.7 g/cm**3) beam pipe
 //
-// This section is under study (A.M. 1/2/2002)
+//  This section is under study (A.M. 1/2/2002)
 //
 
-    ptube[0] = 2.9;
+    ptube[0] = RinBe;
     if (fPipeMaterial == kAlu) {
 	ptube[1] = 3.0;
     } else if (fPipeMaterial == kBe) {
-	ptube[1] = 3.02;
+	ptube[1] = RoutBe;
     } else if (fPipeMaterial == kInox){
-	ptube[1] = 2.98;
+	ptube[1] = RoutSt;
     }
     ptube[2] =   hlenQbab;    
 
     gMC->Gsvolu("QBAB","TUBE", idtmed[fPipeMaterial], ptube, 3);
 
-    
-//
-//  last piece : inox pipe from pump till end 
-//
-    //ptube[0] =   2.90;
-    //ptube[1] =   2.98;
-    //ptube[2] =  61.55;    
-
-    //gMC->Gsvolu("QB48","TUBE", idtmed[kInox], ptube, 3);
-
-/*
-    ptube[0] = 2.90;
-    ptube[1] = 2.98;
-    ptube[2] = 1.0;
-    
-    gMC->Gsvolu("QB27","TUBE", idtmed[kInox], ptube, 3);
-    gMC->Gspos("QB27", 1, "QBPM", 0.0, 0.0, 208.1, 0, "ONLY");
-*/
-//
-// Aluminium collar for support rollers
-    
-    gMC->Gsvolu("QB25","TUBE", idtmed[kAlu], ptube, 0);
-
-
 // 2.5 mm thick SS tube for hanging pump
-    ptube[0] = 2.90;
+/*
+    ptube[0] = Rin;
     ptube[1] = 3.15;
     ptube[2] = hlenQb26;
     
     gMC->Gsvolu("QB26","TUBE", idtmed[kInox], ptube, 3);
-
+*/
 //
 // Bellows
 //
 //
 // Mother Volume
-
-    Float_t pconQBE0[21];
-    pconQBE0[0]= 0;
-    pconQBE0[1]= 360;
-    pconQBE0[2]= 6;
-
-    pconQBE0[3]= -(2.*dzb+dzbb)/2.;
-    pconQBE0[4]= 0;
-    pconQBE0[5]= 4.22;
-    
-    pconQBE0[6]= -(2.*dzb+dzbb)/2.+dzb;
-    pconQBE0[7]= 0;
-    pconQBE0[8]= 4.22;
-    
-    pconQBE0[9]= -(2.*dzb+dzbb)/2.+dzb;
-    pconQBE0[10]= 0;
-    pconQBE0[11]= 3.2;
-    
-    pconQBE0[12]= -(2.*dzb+dzbb)/2.+dzb+dzbb;
-    pconQBE0[13]= 0;
-    pconQBE0[14]= 3.2;
-    
-    pconQBE0[15]= -(2.*dzb+dzbb)/2.+dzb+dzbb;
-    pconQBE0[16]= 0;
-    pconQBE0[17]= 4.22;
-    
-    pconQBE0[18]= -(2.*dzb+dzbb)/2.+dzb+dzbb+dzb;
-    pconQBE0[19]= 0;
-    pconQBE0[20]= 4.22;
-
-    gMC->Gsvolu("QBE0", "PCON", idtmed[kAir], pconQBE0, 21);
-
-    ptube[0] =  2.90;
-    ptube[1] =  3.75;
-    ptube[2] = dzb/2.;
-
+    Float_t pconQBE0[33];
+    pconQBE0[ 0]= 0;
+    pconQBE0[ 1]= 360;
+    pconQBE0[ 2]= 10;
+//  1
+    pconQBE0[ 3]= -dzb;
+    pconQBE0[ 4]= RinSt;
+    pconQBE0[ 5]= RoutSt;
+//  2    
+    pconQBE0[ 6]= -dzb+2.;
+    pconQBE0[ 7]= RinSt;
+    pconQBE0[ 8]= RoutSt;
+//  3
+    pconQBE0[ 9]= -dzb+2.;
+    pconQBE0[10]= RinSt;
+    pconQBE0[11]= 4.00;
+//  4
+    pconQBE0[12]= -dzb+2.+2.*dzub;
+    pconQBE0[13]= RinSt;
+    pconQBE0[14]= 4.00;
+//  5
+    pconQBE0[15]= -dzb+2.+2.*dzub;
+    pconQBE0[16]= RinSt;
+    pconQBE0[17]= RoutSt;
+//  6    
+    pconQBE0[18]= -dzb+2.+2.*dzub+2.*dzbb;
+    pconQBE0[19]= RinSt;
+    pconQBE0[20]= RoutSt;
+//  7    
+    pconQBE0[21]= -dzb+2.+2.*dzub+2.*dzbb;
+    pconQBE0[22]= RinSt;
+    pconQBE0[23]= 4.00;
+//  8
+    pconQBE0[24]= -dzb+2.+4.*dzub+2.*dzbb;
+    pconQBE0[25]= RinSt;
+    pconQBE0[26]= 4.00;
+//  9
+    pconQBE0[27]= -dzb+2.+4.*dzub+2.*dzbb;
+    pconQBE0[28]= RinSt;
+    pconQBE0[29]= RoutSt;
+//  10 
+    pconQBE0[30]= +dzb;
+    pconQBE0[31]= RinSt;
+    pconQBE0[32]= RoutSt;
+    gMC->Gsvolu("QBE0", "PCON", idtmed[kAir], pconQBE0, 33);
+//
+//  Undulated piece mother
+    ptube[0] =  RinSt;
+    ptube[1] =  4.00;
+    ptube[2] =  dzub;
     gMC->Gsvolu("QBEM","TUBE", idtmed[kAir], ptube, 3);
-    Float_t dz = (dzb+dzbb)/2.;
-    gMC->Gspos("QBEM", 2 ,"QBE0", 0.0, 0.0, -dz, 0 , "ONLY");
-    gMC->Gspos("QBEM", 1 ,"QBE0", 0.0, 0.0,  dz, idrotm[2012], "ONLY");
+    dz = -dzb+2.+dzub;
+    gMC->Gspos("QBEM", 2 ,"QBE0", 0.0, 0.0,   dz, 0 , "ONLY");
+    gMC->Gspos("QBEM", 1 ,"QBE0", 0.0, 0.0,  -dz, idrotm[2012], "ONLY");
+//  
+    Float_t pund[30];
+    Float_t uw = 0.02;
+    Float_t ur = 2.*dzub-12.*uw;
+    Float_t uz = ur/13.;
+    Float_t ut = uz+uw;
     
-    ptube[0] = 2.90;
-    ptube[1] = 3.25;
-    ptube[2] = 3.70;
-    
-    gMC->Gsvolu("QB19","TUBE", idtmed[kVac], ptube, 3);
-    gMC->Gspos("QB19", 1 ,"QBEM", 0.0, 0.0, 0.5, 0 , "ONLY");
-    
-    ptube[0] = 3.25;
-    ptube[1] = 3.74;
-    ptube[2] = 0.095;
-    
-    gMC->Gsvolu("QB18","TUBE", idtmed[kVac], ptube, 3);
-    for (i=0; i<15; i++) {
-	gMC->Gspos("QB18", i+1, "QBEM", 0.0, 0.0, 3.3-i*0.4, 0, "ONLY");
-    }
-    
-    ptube[0] = 2.90;
-    ptube[1] = 3.00;
-    ptube[2] = 1.20;
-    
-    gMC->Gsvolu("QB21","TUBE", idtmed[kVac], ptube, 3);
-    gMC->Gspos("QB21", 1 ,"QBEM", 0.0, 0.0, -4.5, 0 , "ONLY");
-    
-    ptube[0] = 3.250;
-    ptube[1] = 3.750;
-    ptube[2] = 0.005;
-    
-    gMC->Gsvolu("QB15","TUBE", idtmed[kInox], ptube, 3);
-    for (i=0; i<30; i++) {
-	gMC->Gspos("QB15", i+1, "QBEM", 0.0, 0.0, 3.4-i*0.2, 0, "ONLY");
-    }
-    
-    ptube[0] = 3.740;
-    ptube[1] = 3.750;
-    ptube[2] = 0.095;
-    
-    gMC->Gsvolu("QB16","TUBE", idtmed[kInox], ptube, 3);
-    for (i=0; i<15; i++) {
-	gMC->Gspos("QB16", i+1, "QBEM", 0.0, 0.0, 3.3-i*0.4, 0, "ONLY");
-    }
-    
-    ptube[0] = 3.250;
-    ptube[1] = 3.260;
-    ptube[2] = 0.095;
-    
-    gMC->Gsvolu("QB17","TUBE", idtmed[kInox], ptube, 3);
-    for (i=0; i<14; i++) {
-	gMC->Gspos("QB17", i+1, "QBEM", 0.0, 0.0, 3.1-i*0.4, 0, "ONLY");
-    }
-    
-    ptube[0] = 3.250;
-    ptube[1] = 3.260;
-    ptube[2] = 0.3975;
+    pund[ 0] = 0;
+    pund[ 1] = 360;
+    pund[ 2] =  9;
 
-    gMC->Gsvolu("QB14","TUBE", idtmed[kInox], ptube, 3);
-    gMC->Gspos("QB14", 2 ,"QBEM", 0.0, 0.0, -2.8025, 0 , "ONLY");
-    gMC->Gspos("QB14", 1 ,"QBEM", 0.0, 0.0,  3.8025, 0 , "ONLY");
+    pund[ 3] = -ut;
+    pund[ 4] = RinSt;
+    pund[ 5] = RinSt+uw;
     
-    ptube[0] = 2.900;
-    ptube[1] = 3.260;
-    ptube[2] = 0.050;
+    pund[ 6] = -ut+uz;
+    pund[ 7] = pund[4];
+    pund[ 8] = pund[5];
     
-    gMC->Gsvolu("QB13","TUBE", idtmed[kInox], ptube, 3);
-    gMC->Gspos("QB13", 2 ,"QBEM", 0.0, 0.0, -3.25, 0 , "ONLY");
-    gMC->Gspos("QB13", 1 ,"QBEM", 0.0, 0.0,  4.25, 0 , "ONLY");
+    pund[ 9] = pund[6];
+    pund[10] = pund[4];
+    pund[11] = 4.0;
     
-    ptube[0] = 2.900;
-    ptube[1] = 3.000;
-    ptube[2] = 0.700;
+    pund[12] = pund[9]+uw;
+    pund[13] = pund[10];
+    pund[14] = pund[11];
     
-    gMC->Gsvolu("QB12","TUBE", idtmed[kInox], ptube, 3);
-    gMC->Gspos("QB12", 1 ,"QBEM", 0.0, 0.0, 5.0, 0, "ONLY");
+    pund[15] = pund[12];
+    pund[16] = 4.0-uw;
+    pund[17] = pund[14];
+    
+    pund[18] = pund[12]+uz;
+    pund[19] = pund[16];
+    pund[20] = pund[17];
+    
+    pund[21] = pund[18];
+    pund[22] = RinSt;
+    pund[23] = pund[20];
+    
+    pund[24] = pund[21]+uw;
+    pund[25] = pund[22];
+    pund[26] = pund[23];
+    
+    pund[27] = pund[24];
+    pund[28] = pund[25];
+    pund[29] = RinSt+uw;
 
+    gMC->Gsvolu("QBEU", "PCON", idtmed[kInox], pund, 30);
 
+    for (i = 0; i < 6; i++)
+    {
+	dz = -dzub+(1+2*i)*ut;
+	gMC->Gspos("QBEU", i+1 ,"QBEM", 0.0, 0.0,   dz, 0 , "ONLY");
+    }
+    ptube[0] =  RinSt;
+    ptube[1] =  RinSt+uw;
+    ptube[2] =  uz;
+    gMC->Gsvolu("QBEW","TUBE", idtmed[kInox], ptube, 3);
+    gMC->Gspos("QBEW", 1 ,"QBEM", 0.0, 0.0,   dzub-uz, 0 , "ONLY");
 //
-//  pipe between Bellows
-    ptube[0] = 2.9;
-    ptube[1] = 3.0;
-    ptube[2] = dzbb/2.;
-    gMC->Gsvolu("QB23","TUBE", idtmed[kInox], ptube, 3);
-    gMC->Gspos("QB23", 1 ,"QBE0", 0.0, 0.0, 0.0, 0, "ONLY");
-    
+//  BeamPipe
+    gMC->Gsvolu("QBEP","TUBE", idtmed[kInox], ptube, 0);
+    ptube[0] =  RinSt;
+    ptube[1] =  RoutSt;
+    ptube[2] =  1.;
+    gMC->Gsposp("QBEP", 1 ,"QBE0", 0.0, 0.0, -dzb+1., 0 , "ONLY", ptube, 3);
+    gMC->Gsposp("QBEP", 2 ,"QBE0", 0.0, 0.0,  dzb-1., 0 , "ONLY", ptube, 3);    
+    ptube[2] = dzbb;
+    gMC->Gsposp("QBEP", 3 ,"QBE0", 0.0, 0.0,  0., 0 , "ONLY", ptube, 3);    
+//  
+//  End undulated part
 //
-// End Bellow
-
-// **** placement of various sections on non-absorber side ****
+//
+//  ----> End Bellow
+//
+// **** Placement of various sections on non-absorber side ****
+//
     //
-    // first the beryllium section : 43.3 cm long on both sides of IP
-    // zstart=0, zend=43.3, length=43.3 on one side
-    Float_t zpos=0;
+    // first the beryllium section
+    Float_t zpos = -(hlenQbbe2-hlenQbbe1)/2;
     gMC->Gspos("QBBE", 1, "QBPM", 0., 0., zpos, 0, "ONLY");
 
     // next meta-metal transition QBT1 on on-absorber side
-    // zstart=43.3, zend=48.8, length=5.5
-    zpos = zpos + hlenQbbe + hlenQbt1;
-    gMC->Gspos("QBT1", 1, "QBPM", 0., 0.,  zpos, 0, "ONLY");
+//    zpos = zpos + hlenQbbe + hlenQbt1;
+//    gMC->Gspos("QBT1", 1, "QBPM", 0., 0.,  zpos, 0, "ONLY");
     
     // Aluminium OR Al-be alloy section
-    //zpos=zpos + hlenQbt1 + hlenQb10;
-    //gMC->Gspos("QB10", 1, "QBPM", 0.0, 0.0, zpos, 0, "ONLY");
-    // zstart= 48.8, zend=335.4, length=286.6
-    zpos = zpos + hlenQbt1 + hlenQbab;
+    zpos = hlenQbbe1+hlenQbab;
     gMC->Gspos("QBAB", 1, "QBPM", 0.0, 0.0, zpos, 0, "ONLY");
-
+    //
     // inox flange at the start of bellow
-    // zstart=335.4, zend=339.8, length=4.4
-    cout<<" zpos 1 "<<zpos<<" hlenQbab "<<hlenQbab<<
-      " hlenQb29 "<< hlenQb29<<endl;
     zpos = zpos + hlenQbab + hlenQb29;
-     cout<<" zstart 1 "<<zpos-hlenQb29<<" zend 2 "<<zpos+hlenQb29<<endl;
-    gMC->Gspos("QB29", 1, "QBPM", 0.0, 0.0, zpos, 0, "ONLY");
-
+    gMC->Gspos("QB29", 1, "QBPM", 0.0, 0.0, zpos, idrotm[2012], "ONLY");
+    //
     // bellow section
-    // zstart=339.8, zend=370.6, length=30.9
-    //    zpos = zpos + hlenQb29 + hlenQbe0;
     zpos = zpos + hlenQb29 + hlenQbe0;
-     cout<<" zstart "<<zpos-hlenQbe0<<" zend "<<zpos-hlenQbe0<<endl;
-   gMC->Gspos("QBE0", 2 ,"QBPM", 0.0, 0.0, zpos, 0, "ONLY");
-
+    gMC->Gspos("QBE0", 2 ,"QBPM", 0.0, 0.0, zpos, 0, "ONLY");
+    // 
     // inox flange at the end of bellow and start of thick inox for pump
-    // zstart=370.6, zend=375.0, length=4.4
     zpos = zpos + hlenQbe0 + hlenQb29;
-     cout<<" zstart 1 "<<zpos-hlenQb29<<" zend 2 "<<zpos+hlenQb29<<endl;
-     gMC->Gspos("QB29", 2, "QBPM", 0.0, 0.0, zpos, 0, "ONLY");
-
-    // 2.5mm thick inox section to hang the pump
-    // zstart=375.0, zend=395.0, length=20.0
-    zpos = zpos + hlenQb29 + hlenQb26;
-     cout<<" zstart 1 "<<zpos-hlenQb29<<" zend 2 "<<zpos+hlenQb29<<endl;
-     gMC->Gspos("QB26", 1, "QBPM", 0.0, 0.0, zpos, 0, "ONLY");
-
-    //inox flange at the end of pump section to join to next pipe
-    // zstart=395.0, zend=399.4, length=4.4
-    zpos = zpos + hlenQb26 + hlenQb29;
-    gMC->Gspos("QB29", 3, "QBPM", 0.0, 0.0, zpos, 0, "ONLY");
-
+    gMC->Gspos("QB29", 2, "QBPM", 0.0, 0.0, zpos, 0, "ONLY");
+    //   
     //last inox section till 800 cm
-    // zstart=399.4, zend=800., length=400.6
     zpos = zpos + hlenQb29 + hlenQb28;
     gMC->Gspos("QB28", 1, "QBPM", 0.0, 0.0, zpos, 0, "ONLY"); 
-
-
-    // aluminium collars and support rollers at two places
-
-    ptube[0] = 3.0;
-    ptube[1] = 3.15;
-    ptube[2] = 2.75;
-
-    gMC->Gsposp("QB25", 1, "QBPM", 0., 0., 654.8, 0, "ONLY", ptube, 3);
-//    gMC->Gspos("QBRM", 1, "QBPM", 0., 0., 654.8, 0, "ONLY");
-
-    ptube[0] = 3.05;
-    ptube[1] = 3.20;
-    gMC->Gsposp("QB25", 2, "QBPM", 0., 0., 254.8, 0, "ONLY", ptube, 3);
-//    gMC->Gspos("QBRM", 2, "QBPM", 0., 0., 254.8, 0, "ONLY");
-
-
-
+    
 //******** end of placement on no-absorber side *********
 
     //
     // **** Absorber side *****   
     //
     //
+/*
     //  metal-metal transition :  Be-Alu on absorber side
     //  Mother Volume
     ptube[0] = 2.900;
@@ -722,76 +659,51 @@ void AliPIPEv0::CreateGeometry()
     gMC->Gsvolu("QBB7","TUBE", idtmed[kInox], ptube, 3);
     gMC->Gspos("QBB7", 1, "QB77", 0.0, 0.0, 0.55-0.2, 0, "ONLY");
     gMC->Gspos("QB77", 1, "QBT2", 0.0, 0.0, 2., 0, "ONLY");
-
-
-// beam pipe between metal-metal transition and bellows
-    ptube[0] = 2.9;
-    ptube[1] = 3.0;
-    ptube[2] = (81.7-(2.*dzb+dzbb)-(hlenQbbe+5.5))/2.;
-    
-
-    gMC->Gsvolu("QB24","TUBE", idtmed[kInox], ptube, 3);
-//  z = 48.8 - 50.9    
-    dz = (hlenQbbe+5.5)+ptube[2];
-    gMC->Gspos("QB24", 1 ,"QBPM", 0.0, 0.0, -dz, 0, "ONLY");
+ */
 //
-// beam pipe between flange and bellows    
-    ptube[0] = 2.90;
-    ptube[1] = 3.00;
-    ptube[2] = 0.45;
+// Beam pipes between elements
+//
 
-    gMC->Gsvolu("QB22","TUBE", idtmed[kInox], ptube, 3);
-    gMC->Gspos("QB22", 1 ,"QBPM", 0.0, 0.0, -82.15, 0, "ONLY");
-
-// 
+    gMC->Gsvolu("QB24","TUBE", idtmed[kInox], ptube, 0);
+    ptube[0] = RinSt;
+    ptube[1] = RoutSt;
+    ptube[2] = hlenQb24[0];
+    dz = hlenQbbe2 + ptube[2];
+    gMC->Gsposp("QB24", 1 ,"QBPM", 0.0, 0.0, -dz, 0, "ONLY", ptube, 3);
+//
+// Bellow on absorber side
+    dz = dz+hlenQb24[0] + dzb;
+    gMC->Gspos("QBE0", 1 ,"QBPM", 0.0, 0.0, -dz, 0, "ONLY");
+//
+    ptube[2] = hlenQb24[1];
+    dz = dz + dzb + ptube[2];
+    gMC->Gsposp("QB24", 2 ,"QBPM", 0.0, 0.0, -dz, 0, "ONLY", ptube, 3);
+    dz = dz + ptube[2];
+    
+//
 // Flange
 // 
 //  Mother Volume
-    ptube[0] = 2.900;
+    ptube[0] = RinSt;
     ptube[1] = 4.300;
-    ptube[2] = 1.400;
+    ptube[2] = 1.4;
     
-    gMC->Gsvolu("QFA0","TUBE", idtmed[kAlu], ptube, 3);
-    gMC->Gspos("QFA0", 1 ,"QBPM", 0.0, 0.0, -84.0, 0, "ONLY");
+    gMC->Gsvolu("QFA0","TUBE", idtmed[kInox], ptube, 3);
+    dz = dz + ptube[2];
+    gMC->Gspos("QFA0", 1 ,"QBPM", 0.0, 0.0, -dz, 0, "ONLY");
+    dz = dz + ptube[2];
 //
-//  inner Inox piece
-    ptube[0] = 2.900;
-    ptube[1] = 3.500;
-    ptube[2] = 0.450;
-    gMC->Gsvolu("QFA1","TUBE", idtmed[kInox], ptube, 3);
-    gMC->Gspos("QFA1", 1 ,"QFA0", 0.0, 0.0, 0.225, 0, "ONLY");
 //
-//  8 x M5 Inox
-    ptube[0] = 0.000;
-    ptube[1] = 0.250;
-    ptube[2] = 1.400;
-    gMC->Gsvolu("QFA2","TUBE", idtmed[kInox], ptube, 3);
-    for (i=0; i<8; i++) {
-	Float_t phi = i*45.*kDegrad;
-	Float_t xpos = 3.9*TMath::Sin(phi);
-	Float_t ypos = 3.9*TMath::Cos(phi);
-	gMC->Gspos("QFA2", i+1, "QFA0", xpos, ypos, 0., 0, "ONLY");
-    }
-
-
-    ptube[0] = 2.900;
-    ptube[1] = 3.000;
-    ptube[2] = 2.300;
-    
-    gMC->Gsvolu("QB32","TUBE", idtmed[kInox], ptube, 3);
-    gMC->Gspos("QB32", 1 ,"QBPM", 0.0, 0.0, -90.+2.3, 0, "ONLY");
-
-    //bellow on absorber side
-    ptube[2] = (2.*dzb+dzbb)/2.;
-    dz = (81.7-ptube[2]);
-    gMC->Gspos("QBE0", 1 ,"QBPM", 0.0, 0.0, -dz, 0, "ONLY");
+    ptube[0] = RinSt;
+    ptube[1] = RoutSt;
+    ptube[2] = hlenQb24[2];
+    dz = dz + ptube[2];
+    gMC->Gsposp("QB24", 3 ,"QBPM", 0.0, 0.0, -dz, 0, "ONLY", ptube, 3);
 
 
 // --- Place the PIPE ghost volume (QBPM) in its mother volume (ALIC)
 //    by rotating it to 180 deg. and make it invisible
 // 
-
-  
     gMC->Gspos("QBPM",1,"ALIC",0,0,0,idrotm[2013], "ONLY");
 
 
@@ -844,7 +756,6 @@ void AliPIPEv0::CreateGeometry()
     ptube[2] =  2.15;
     gMC->Gsvolu("QI35","TUBE", idtmed[kInox], ptube, 3);
 // <-
-    Float_t zPump = 415.;
     gMC->Gspos("QI32", 1, "QBPM", 0.0, -44.25, zPump, 0, "ONLY");
     gMC->Gspos("QI33", 1, "QBPM", 0.0, -35.00, zPump,idrotm[2002], "ONLY");
     gMC->Gspos("QI34", 1, "QBPM", 0.0, -17.90, zPump,idrotm[2002], "ONLY");
