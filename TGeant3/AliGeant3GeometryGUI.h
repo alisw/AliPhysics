@@ -15,7 +15,7 @@ class TRotMatrix;
 
 class AliGeant3GeometryGUI : public TObject {
  public:
-    AliGeant3GeometryGUI();
+    AliGeant3GeometryGUI(const char* opt = "");
     virtual ~AliGeant3GeometryGUI(){}
    private:
     AliGuiGeomMain *fPanel;      // the main gui panel
@@ -26,9 +26,9 @@ class AliGeant3GeometryGUI : public TObject {
     TClonesArray   *fMedia;      // array of materials
     TObjArray      *fRotations;  // Rotation Matrices
  private:
-   AliGeant3GeometryGUI(const AliGeant3GeometryGUI&) {}
-  AliGeant3GeometryGUI & operator=(const AliGeant3GeometryGUI&) 
-  {return *this;}
+    AliGeant3GeometryGUI(const AliGeant3GeometryGUI&) {}
+    AliGeant3GeometryGUI & operator=(const AliGeant3GeometryGUI&) 
+    {return *this;}
     
     ClassDef(AliGeant3GeometryGUI,1)  // GUI for Geant3 geometry visualisation
 };
