@@ -74,6 +74,11 @@ class AliMUONEventReconstructor : public TObject {
   void SetNRecTracks(Int_t NRecTracks) {fNRecTracks = NRecTracks;}
   TClonesArray* GetRecTracksPtr(void) const {return fRecTracksPtr;} // Array
 
+  // Reconstructed trigger tracks
+  Int_t GetNRecTriggerTracks() const {return fNRecTriggerTracks;} // Number
+  void SetNRecTriggerTracks(Int_t NRecTriggerTracks) {fNRecTriggerTracks = NRecTriggerTracks;}
+  TClonesArray* GetRecTriggerTracksPtr(void) const {return fRecTriggerTracksPtr;} // Array
+  
   // Hits on reconstructed tracks
   Int_t GetNRecTrackHits() const {return fNRecTrackHits;} // Number
   void SetNRecTrackHits(Int_t NRecTrackHits) {fNRecTrackHits = NRecTrackHits;}
@@ -83,7 +88,9 @@ class AliMUONEventReconstructor : public TObject {
   Double_t GetImpactParamFromBendingMomentum(Double_t BendingMomentum) const;
   Double_t GetBendingMomentumFromImpactParam(Double_t ImpactParam) const;
   void EventReconstruct(void);
+  void EventReconstructTrigger(void);
   void EventDump(void);  // dump reconstructed event
+  void EventDumpTrigger(void);  // dump reconstructed trigger event
   void FillEvent();      // fill and write tree of reconstructed events
   void SetTrackMethod(Int_t TrackMethod) {fTrackMethod = TrackMethod;} //AZ
   Int_t GetTrackMethod(void) const {return fTrackMethod;} //AZ
@@ -139,6 +146,10 @@ class AliMUONEventReconstructor : public TObject {
   TClonesArray *fRecTracksPtr; // pointer to array of reconstructed tracks
   Int_t fNRecTracks; // number of reconstructed tracks
 
+  // Reconstructed trigger tracks
+  TClonesArray *fRecTriggerTracksPtr; // pointer to array of reconstructed trigger tracks
+  Int_t fNRecTriggerTracks; // number of reconstructed trigger tracks
+
   // Track hits on reconstructed tracks
   TClonesArray *fRecTrackHitsPtr; // pointer to array of hits on reconstructed tracks
   Int_t fNRecTrackHits; // number of hits on reconstructed tracks
@@ -161,8 +172,10 @@ class AliMUONEventReconstructor : public TObject {
   void ResetSegments(void);
   void MakeSegmentsPerStation(Int_t Station);
   void MakeTracks(void);
+  void MakeTriggerTracks(void);
   void ResetTrackHits(void);
   void ResetTracks(void);
+  void ResetTriggerTracks(void);
   Int_t MakeTrackCandidatesWithTwoSegments(AliMUONSegment *BegSegment);
   Int_t MakeTrackCandidatesWithOneSegmentAndOnePoint(AliMUONSegment *BegSegment);
   void MakeTrackCandidates(void);

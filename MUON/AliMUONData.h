@@ -22,6 +22,7 @@ class TTree;
 class AliMUONConstants;
 class AliMUONRawCluster;
 class AliMUONTrack;
+class AliMUONTriggerTrack;
 class AliMUONDigit;
 class AliMUONHit;
 class AliMUONLocalTrigger;
@@ -64,13 +65,17 @@ class AliMUONData : public TNamed {
 
     virtual void   AddRawCluster(Int_t id, const AliMUONRawCluster& clust);
     virtual void   AddRecTrack(const AliMUONTrack& track);
+    virtual void   AddRecTriggerTrack(const AliMUONTriggerTrack& triggertrack);
 
     TClonesArray*  Hits() {return fHits;}
     TClonesArray*  Digits(Int_t DetectionPlane);
-    TClonesArray*  LocalTrigger() {return fLocalTrigger;}
-    TClonesArray*  GlobalTrigger() {return fGlobalTrigger;}
+//    TClonesArray*  LocalTrigger() {return fLocalTrigger;}
+//    TClonesArray*  GlobalTrigger() {return fGlobalTrigger;}
+    TClonesArray*  LocalTrigger();
+    TClonesArray*  GlobalTrigger();    
     TClonesArray*  RawClusters(Int_t DetectionPlane);
     TClonesArray*  RecTracks() {return fRecTracks;}
+    TClonesArray*  RecTriggerTracks() {return fRecTriggerTracks;}
 
     void           GetTrack(Int_t it) {fLoader->TreeH()->GetEvent(it);}
     Int_t          GetNtracks()       {return (Int_t) fLoader->TreeH()->GetEntries();}
@@ -79,9 +84,12 @@ class AliMUONData : public TNamed {
     void           GetTrigger() {fLoader->TreeR()->GetEvent(0);}
     Int_t          GetSplitLevel() {return fSplitLevel;}
     void           GetRecTracks() {fLoader->TreeT()->GetEvent(0);}
+    void           GetRecTriggerTracks() {fLoader->TreeT()->GetEvent(0);}
 
     Bool_t        IsRawClusterBranchesInTree();
     Bool_t        IsTriggerBranchesInTree();
+    Bool_t        IsTrackBranchesInTree();
+    Bool_t        IsTriggerTrackBranchesInTree();
 
     virtual AliLoader* GetLoader() {return fLoader;}
     virtual void       SetLoader(AliLoader * loader) {fLoader=loader;}    
@@ -98,6 +106,7 @@ class AliMUONData : public TNamed {
     virtual void   ResetTrigger();
     virtual void   ResetRawClusters();
     virtual void   ResetRecTracks();
+    virtual void   ResetRecTriggerTracks();
   
     TTree*         TreeH() {return fLoader->TreeH(); }
     TTree*         TreeD() {return fLoader->TreeD(); }
@@ -118,6 +127,7 @@ class AliMUONData : public TNamed {
     TClonesArray*   fGlobalTrigger;  // List of Global Trigger One event in TreeR/GlobalTriggerBranch
     TClonesArray*   fLocalTrigger;  // List of Local Trigger, One event in TreeR/LocalTriggerBranch
     TClonesArray*   fRecTracks; // pointer to array of reconstructed tracks
+    TClonesArray*   fRecTriggerTracks; // pointer to array of reconstructed trigger tracks
 
     Int_t           fNhits; //!  Number of Hits
     Int_t*          fNdigits;//! Number of Digits
@@ -125,6 +135,7 @@ class AliMUONData : public TNamed {
     Int_t           fNglobaltrigger;//! Number of Global trigger
     Int_t           fNlocaltrigger;//! Number of Local trigger
     Int_t           fNrectracks; //! Number of reconstructed tracks
+    Int_t           fNrectriggertracks; //! Number of reconstructed tracks
     Int_t           fSplitLevel; // Splitting of branches 0 no spitting (root files are smaller) 1 splitting (larger output files)
 
     ClassDef(AliMUONData,1)

@@ -41,7 +41,11 @@
 #include "AliMUONChamber.h"
 #include "AliMUONEventReconstructor.h"
 #include "AliMUONHitForRec.h"
+#include "AliMUONTriggerTrack.h"
+//#include "AliMUONTriggerConstants.h"
+#include "AliMUONTriggerCircuit.h"
 #include "AliMUONRawCluster.h"
+#include "AliMUONLocalTrigger.h"
 #include "AliMUONRecoEvent.h"
 #include "AliMUONSegment.h"
 #include "AliMUONTrack.h"
@@ -99,6 +103,9 @@ AliMUONEventReconstructor::AliMUONEventReconstructor(void)
   // Is 10 the right size ????
   fRecTracksPtr = new TClonesArray("AliMUONTrack", 10);
   fNRecTracks = 0; // really needed or GetEntriesFast sufficient ????
+// trigger tracks
+  fRecTriggerTracksPtr = new TClonesArray("AliMUONTriggerTrack", 10);
+  fNRecTriggerTracks = 0; // really needed or GetEntriesFast sufficient ????
   // Memory allocation for the TClonesArray of hits on reconstructed tracks
   // Is 100 the right size ????
   fRecTrackHitsPtr = new TClonesArray("AliMUONTrack", 100);
@@ -355,6 +362,15 @@ void AliMUONEventReconstructor::EventReconstruct(void)
   return;
 }
 
+//__________________________________________________________________________
+void AliMUONEventReconstructor::EventReconstructTrigger(void)
+{
+  // To reconstruct one event
+  if (fPrintLevel >= 1) cout << "enter EventReconstructTrigger" << endl;
+  MakeTriggerTracks();  
+  return;
+}
+
   //__________________________________________________________________________
 void AliMUONEventReconstructor::ResetHitsForRec(void)
 {
@@ -388,6 +404,17 @@ void AliMUONEventReconstructor::ResetTracks(void)
   // Delete in order that the Track destructors are called,
   // hence the space for the TClonesArray of pointers to TrackHit's is freed
   fNRecTracks = 0;
+  return;
+}
+
+  //__________________________________________________________________________
+void AliMUONEventReconstructor::ResetTriggerTracks(void)
+{
+  // To reset the TClonesArray of reconstructed trigger tracks
+    if (fRecTriggerTracksPtr) fRecTriggerTracksPtr->Delete();
+  // Delete in order that the Track destructors are called,
+  // hence the space for the TClonesArray of pointers to TrackHit's is freed
+    fNRecTriggerTracks = 0;
   return;
 }
 
@@ -937,6 +964,76 @@ void AliMUONEventReconstructor::MakeTracks(void)
 }
 
   //__________________________________________________________________________
+void AliMUONEventReconstructor::MakeTriggerTracks(void)
+{
+    // To make the trigger tracks from Local Trigger
+    if (fPrintLevel >= 1) cout << "enter MakeTriggerTracks" << endl;
+    ResetTriggerTracks();
+    
+    Int_t nTRentries;
+    TClonesArray *localTrigger;
+    AliMUONLocalTrigger *locTrg;
+    AliMUONTriggerCircuit *circuit;
+    AliMUONTriggerTrack *recTriggerTrack;
+    
+    TString evfoldname = AliConfig::fgkDefaultEventFolderName;//to be interfaced properly
+    AliRunLoader* rl = AliRunLoader::GetRunLoader(evfoldname);
+    if (rl == 0x0)
+    {
+	Error("MakeTriggerTracks",
+	      "Can not find Run Loader in Event Folder named %s.",
+	      evfoldname.Data());
+	return;
+    }
+    AliLoader* gime = rl->GetLoader("MUONLoader");
+    if (gime == 0x0)
+    {
+	Error("MakeTriggerTracks","Can not get MUON Loader from Run Loader.");
+	return;
+    }
+    TTree* TR = gime->TreeR();
+    
+    // Loading AliRun master
+    rl->LoadgAlice();
+    gAlice = rl->GetAliRun();
+    
+    // Loading MUON subsystem
+    AliMUON * pMUON = (AliMUON *) gAlice->GetDetector("MUON");
+    
+    nTRentries = Int_t(TR->GetEntries());
+    if (nTRentries != 1) {
+	cout << "Error in AliMUONEventReconstructor::MakeTriggerTracks"
+	     << endl;
+	cout << "nTRentries = " << nTRentries << " not equal to 1" << endl;
+	exit(0);
+    }
+    gime->TreeR()->GetEvent(0); // only one entry  
+
+    pMUON->GetMUONData()->SetTreeAddress("GLT");
+    pMUON->GetMUONData()->GetTrigger();
+    
+    localTrigger = pMUON->GetMUONData()->LocalTrigger();    
+    Int_t nlocals = (Int_t) (localTrigger->GetEntries());
+    Float_t z11 = ( &(pMUON->Chamber(10)) )->Z();
+    Float_t z21 = ( &(pMUON->Chamber(12)) )->Z();
+
+    for (Int_t i=0; i<nlocals; i++) { // loop on Local Trigger
+        locTrg = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(i);	
+	circuit = &(pMUON->TriggerCircuit(locTrg->LoCircuit()));
+	Float_t y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
+	Float_t y21 = circuit->GetY21Pos(locTrg->LoStripX());
+	Float_t x11 = circuit->GetX11Pos(locTrg->LoStripY());
+	Float_t thetax = TMath::ATan2( x11 , z11 );
+	Float_t thetay = TMath::ATan2( (y21-y11) , (z21-z11) );
+
+	recTriggerTrack = new ((*fRecTriggerTracksPtr)[fNRecTriggerTracks])
+	    AliMUONTriggerTrack(x11,y11,thetax,thetay,this);
+	fNRecTriggerTracks++;
+    } // end of loop on Local Trigger
+    return;    
+}
+
+  //__________________________________________________________________________
 Int_t AliMUONEventReconstructor::MakeTrackCandidatesWithTwoSegments(AliMUONSegment *BegSegment)
 {
   // To make track candidates with two segments in stations(1..) 4 and 5,
@@ -1470,6 +1567,31 @@ void AliMUONEventReconstructor::EventDump(void)
   return;
 }
 
+
+//__________________________________________________________________________
+void AliMUONEventReconstructor::EventDumpTrigger(void)
+{
+  // Dump reconstructed trigger event 
+  // and the particle parameters
+    
+  AliMUONTriggerTrack *triggertrack;
+  Int_t trackIndex;
+ 
+  if (fPrintLevel >= 1) cout << "****** enter EventDumpTrigger ******" << endl;
+  if (fPrintLevel >= 1) {
+      cout << " Number of Reconstructed tracks :" <<  fNRecTriggerTracks << endl;
+  }
+  // Loop over reconstructed tracks
+  for (trackIndex = 0; trackIndex < fNRecTriggerTracks; trackIndex++) {
+      triggertrack = (AliMUONTriggerTrack*) ((*fRecTriggerTracksPtr)[trackIndex]);
+      printf(" trigger track number %i x11=%f y11=%f thetax=%f thetay=%f \n",
+	     trackIndex,
+	     triggertrack->GetX11(),triggertrack->GetY11(),
+	     triggertrack->GetThetax(),triggertrack->GetThetay());      
+  } 
+}
+
+//__________________________________________________________________________
 void AliMUONEventReconstructor::FillEvent()
 {
 // Create a new AliMUONRecoEvent, fill its track list, then add it as a

@@ -20,7 +20,6 @@
 // Gines Martinez, Subatech,  September 2003
 //
 
-
 //Root includes
 #include "TNamed.h"
 //AliRoot include
@@ -33,7 +32,7 @@
 #include "AliMUONGlobalTrigger.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONTrack.h"
-
+#include "AliMUONTriggerTrack.h"
 ClassImp(AliMUONData)
  
 //_____________________________________________________________________________
@@ -48,6 +47,7 @@ AliMUONData::AliMUONData():TNamed()
   fGlobalTrigger = 0x0; //! List of Global Trigger 1st event in TreeR/GlobalTriggerBranch
   fLocalTrigger  = 0x0;  //! List of Local Trigger, 1st event in TreeR/LocalTriggerBranch
   fRecTracks     = 0x0;       
+  fRecTriggerTracks     = 0x0;       
   fSplitLevel    = 0;
 //default constructor
 }
@@ -64,10 +64,12 @@ AliMUONData::AliMUONData(AliLoader * loader, const char* name, const char* title
   fGlobalTrigger = 0x0; //! List of Global Trigger 1st event in TreeR/GlobalTriggerBranch
   fLocalTrigger  = 0x0;  //! List of Local Trigger, 1st event in TreeR/LocalTriggerBranch
   fRecTracks     = 0x0;    
+  fRecTriggerTracks     = 0x0;    
   fNhits         = 0;
   fNglobaltrigger =0;
   fNlocaltrigger = 0;
   fNrectracks    = 0;  
+  fNrectriggertracks    = 0;  
   fSplitLevel    = 0;
 //   fHits          = new TClonesArray("AliMUONHit",1000);
 //   fNhits         = 0;
@@ -126,6 +128,10 @@ AliMUONData::~AliMUONData()
   if (fRecTracks){
     fRecTracks->Delete();
     delete fRecTracks;
+  }
+  if (fRecTriggerTracks){
+    fRecTriggerTracks->Delete();
+    delete fRecTriggerTracks;
   }
   //detructor 
 }
@@ -231,6 +237,17 @@ void AliMUONData::AddRecTrack(const AliMUONTrack& track)
   new(lrectracks[fNrectracks++]) AliMUONTrack(track);
   //  printf("TTTTTT %d ,\n",((AliMUONTrack*)fRecTracks->At(fNrectracks-1))->GetNTrackHits());
 }
+//_____________________________________________________________________________
+void AliMUONData::AddRecTriggerTrack(const AliMUONTriggerTrack& triggertrack)
+{
+  //
+  // Add a MUON triggerrectrack
+  //
+  TClonesArray &lrectriggertracks = *fRecTriggerTracks;  
+  new(lrectriggertracks[fNrectriggertracks++]) AliMUONTriggerTrack(triggertrack);
+  //  printf("TTTTTT %d ,\n",((AliMUONTrack*)fRecTracks->At(fNrectracks-1))->GetNTrackHits());
+}
+
 //____________________________________________________________________________
 TClonesArray*  AliMUONData::Digits(Int_t DetectionPlane) 
 {
@@ -275,6 +292,40 @@ Bool_t   AliMUONData::IsTriggerBranchesInTree()
   }
 }
 //____________________________________________________________________________
+Bool_t   AliMUONData::IsTrackBranchesInTree()
+{
+  // Checking if there are Track Branches In TreeT
+  if (TreeT()==0x0) {
+    Error("TreeT","No treeT in memory");
+    return kFALSE;
+  }
+  else {
+     char branchname[30];
+     sprintf(branchname,"%sTrack",GetName());
+     TBranch * branch = 0x0;
+     branch = TreeT()->GetBranch(branchname);
+     if (branch)  return kTRUE;
+     else return kFALSE;    
+  }
+}
+//____________________________________________________________________________
+Bool_t   AliMUONData::IsTriggerTrackBranchesInTree()
+{
+  // Checking if there are TriggerTrack Branches In TreeT
+  if (TreeT()==0x0) {
+    Error("TreeT","No treeT in memory");
+    return kFALSE;
+  }
+  else {
+     char branchname[30];
+     sprintf(branchname,"%sTriggerTrack",GetName());
+     TBranch * branch = 0x0;
+     branch = TreeT()->GetBranch(branchname);
+     if (branch)  return kTRUE;
+     else return kFALSE;    
+  }
+}
+//____________________________________________________________________________
 void AliMUONData::Fill(Option_t* option)
 {
   // Method to fill the trees
@@ -283,6 +334,7 @@ void AliMUONData::Fill(Option_t* option)
   const char *cRC  = strstr(option,"RC");  // RawCluster branches in TreeR
   const char *cGLT = strstr(option,"GLT"); // Global and Local Trigger branches in TreeR
   const char *cRT  = strstr(option,"RT");  // Reconstructed Track in TreeT
+  const char *cRL = strstr(option,"RL");  // Reconstructed Trigger Track in TreeT
 
   //const char *cRP  = strstr(option,"RP");  // Reconstructed Particle in TreeP
   
@@ -331,10 +383,23 @@ void AliMUONData::Fill(Option_t* option)
   //
   // filling tracks
   if ( TreeT() && cRT ) {
-    sprintf(branchname,"%sTrack",GetName());  
-    TreeT()->Fill();
+    if (IsTriggerTrackBranchesInTree()) {
+	sprintf(branchname,"%sTrack",GetName());  
+	branch = TreeT()->GetBranch(branchname);
+	branch->Fill();
+    }
+    else  TreeT()->Fill();
   }
-//   if ( TreeT() && cRTT ) {
+  // filling trigger tracks
+  if ( TreeT() && cRL ) {
+    if (IsTrackBranchesInTree()) {
+	sprintf(branchname,"%sTriggerTrack",GetName());  
+	branch = TreeT()->GetBranch(branchname);
+	branch->Fill();
+    }    
+    else TreeT()->Fill();
+  }
+//   if ( TreeT() && cRL ) {
 //     sprintf(branchname,"%sTrackTrig",GetName());  
 //     TreeT()->Fill();
 //   }
@@ -348,13 +413,15 @@ void AliMUONData::MakeBranch(Option_t* option)
   const Int_t kBufferSize = 4000;
   char branchname[30];
   
+
   const char *cH   = strstr(option,"H");
   const char *cD   = strstr(option,"D");   // Digits branches in TreeD
   const char *cRC  = strstr(option,"RC");  // RawCluster branches in TreeR
   const char *cGLT = strstr(option,"GLT"); // Global and Local Trigger branches in TreeR
   const char *cRT  = strstr(option,"RT");  // Reconstructed Track in TreeT
+  const char *cRL  = strstr(option,"RL");  // Reconstructed Trigger Track in TreeT
   //const char *cRP  = strstr(option,"RP");  // Reconstructed Particle in TreeP
-  
+
   TBranch * branch = 0x0;
   
   // Creating Branches for Hits
@@ -481,6 +548,19 @@ void AliMUONData::MakeBranch(Option_t* option)
     branch = TreeT()->Branch(branchname,&fRecTracks,kBufferSize);
     Info("MakeBranch","Making Branch %s for tracks \n",branchname);
   }  
+// trigger tracks
+  if (TreeT() && cRL ) {
+    if (fRecTriggerTracks == 0x0)  fRecTriggerTracks = new TClonesArray("AliMUONTriggerTrack",100);
+    fNrectriggertracks = 0;
+    sprintf(branchname,"%sTriggerTrack",GetName());  
+    branch = TreeT()->GetBranch(branchname);
+    if (branch) {  
+      Info("MakeBranch","Branch %s is already in tree.",GetName());
+      return ;
+    }
+    branch = TreeT()->Branch(branchname,&fRecTriggerTracks,kBufferSize);
+    Info("MakeBranch","Making Branch %s for trigger tracks \n",branchname);
+  }  
 }
 //____________________________________________________________________________
 TClonesArray*  AliMUONData::RawClusters(Int_t DetectionPlane)
@@ -488,6 +568,24 @@ TClonesArray*  AliMUONData::RawClusters(Int_t DetectionPlane)
   // Getting Raw Clusters
   if (fRawClusters) 
     return ( (TClonesArray*) fRawClusters->At(DetectionPlane) );
+  else
+    return NULL;
+}
+//____________________________________________________________________________
+TClonesArray*  AliMUONData::LocalTrigger()
+{
+  // Getting Local Trigger
+  if (fLocalTrigger) 
+    return ( (TClonesArray*) fLocalTrigger );
+  else
+    return NULL;
+}
+//____________________________________________________________________________
+TClonesArray*  AliMUONData::GlobalTrigger()
+{
+  // Getting Global Trigger
+  if (fGlobalTrigger) 
+    return ( (TClonesArray*) fGlobalTrigger );
   else
     return NULL;
 }
@@ -536,6 +634,13 @@ void AliMUONData::ResetRecTracks()
   fNrectracks = 0;
   if (fRecTracks) fRecTracks->Clear();
 }
+//____________________________________________________________________________
+void AliMUONData::ResetRecTriggerTracks()
+{
+  // Reset tracks information
+  fNrectriggertracks = 0;
+  if (fRecTriggerTracks) fRecTriggerTracks->Clear();
+}
 //_____________________________________________________________________________
 void AliMUONData::SetTreeAddress(Option_t* option)
 {
@@ -545,6 +650,7 @@ void AliMUONData::SetTreeAddress(Option_t* option)
   const char *cRC  = strstr(option,"RC");  // RawCluster branches in TreeR
   const char *cGLT = strstr(option,"GLT"); // Global and Local Trigger branches in TreeR
   const char *cRT  = strstr(option,"RT");  // Reconstructed Track in TreeT
+  const char *cRL  = strstr(option,"RL");  // Reconstructed Trigger Track in TreeT
   //const char *cRP  = strstr(option,"RP");  // Reconstructed Particle in TreeP
   
   // Set branch address for the Hits, Digits, RawClusters, GlobalTrigger and LocalTrigger Tree.
@@ -648,6 +754,20 @@ void AliMUONData::SetTreeAddress(Option_t* option)
     if (branch) branch->SetAddress(&fRecTracks);
     else Warning("SetTreeAddress","(%s) Failed for Tracks. Can not find branch in tree.",GetName());
   }
+// trigger tracks
+  if ( TreeT() ) {
+    if (fRecTriggerTracks == 0x0 && cRL)  {
+      fRecTriggerTracks  = new TClonesArray("AliMUONTriggerTrack",100);
+    }
+
+  }
+  if ( TreeT() && fRecTriggerTracks && cRL ) {
+    sprintf(branchname,"%sTriggerTrack",GetName());  
+    branch = TreeT()->GetBranch(branchname);
+    if (branch) branch->SetAddress(&fRecTriggerTracks);
+    else Warning("SetTreeAddress","(%s) Failed for Trigger Tracks. Can not find branch in tree.",GetName());
+  }
+
 
 }
 //_____________________________________________________________________________
