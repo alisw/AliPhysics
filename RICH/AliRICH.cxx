@@ -134,12 +134,21 @@ void AliRICH::Hits2SDigits()
         TVector2 x2 = C(pHit->C())->Mrs2Pc(pHit->OutX3());//hit position in photocathode plane
         Int_t iTotQdc=P()->TotQdc(x2,pHit->Eloss());//total charge produced by hit, 0 if hit in dead zone
         if(iTotQdc==0) continue;
-        TVector area=P()->Loc2Area(x2);//determine affected pads, dead zones analysed inside
-        AliDebug(1,Form("hit(%6.2f,%6.2f)->area(%3.0f,%3.0f)-(%3.0f,%3.0f) QDC=%4i",x2.X(),x2.Y(),area[0],area[1],area[2],area[3],iTotQdc));
+        //
+        //need to quantize the anod....
+        TVector padHit=AliRICHParam::Loc2Pad(x2);
+        TVector2 padHitXY=AliRICHParam::Pad2Loc(padHit);
+        TVector2 anod;
+        if((x2.Y()-padHitXY.Y())>0) anod.Set(x2.X(),padHitXY.Y()+AliRICHParam::PitchAnod()/2);
+        else anod.Set(x2.X(),padHitXY.Y()-AliRICHParam::PitchAnod()/2);
+        //end to quantize anod
+        //
+        TVector area=P()->Loc2Area(anod);//determine affected pads, dead zones analysed inside
+        AliDebug(1,Form("hitanod(%6.2f,%6.2f)->area(%3.0f,%3.0f)-(%3.0f,%3.0f) QDC=%4i",anod.X(),anod.Y(),area[0],area[1],area[2],area[3],iTotQdc));
         TVector pad(2);
         for(pad[1]=area[1];pad[1]<=area[3];pad[1]++)//affected pads loop
           for(pad[0]=area[0];pad[0]<=area[2];pad[0]++){                    
-            Double_t padQdc=iTotQdc*P()->FracQdc(x2,pad);
+            Double_t padQdc=iTotQdc*P()->FracQdc(anod,pad);
             AliDebug(1,Form("current pad(%3.0f,%3.0f) with QDC  =%6.2f",pad[0],pad[1],padQdc));
             if(padQdc>0.1) AddSDigit(pHit->C(),pad,padQdc,GetLoader()->GetRunLoader()->Stack()->Particle(pHit->GetTrack())->GetPdgCode(),pHit->GetTrack());
           }//affected pads loop 

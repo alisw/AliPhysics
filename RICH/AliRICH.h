@@ -114,6 +114,8 @@ public:
           void      Fill(AliRICHcluster *pRaw,Double_t x,Double_t y,Double_t q,Int_t cfm)              //form new resolved cluster from raw one
                     {fCFM=cfm;fChamber=pRaw->Fchamber();fSize=pRaw->Fsize();fQdc=(Int_t)(q*pRaw->Q());fX=x;fY=y;fStatus=kResolved;} 
          Double_t   DistTo(TVector2 x)          const{return TMath::Sqrt((x.X()-fX)*(x.X()-fX)+(x.Y()-fY)*(x.Y()-fY));} //distance to given point 
+         Double_t   DistX(TVector2 x)           const{return (x.X()-fX);} //distance in x to given point 
+         Double_t   DistY(TVector2 x)           const{return (x.Y()-fY);} //distance to given point 
 protected:
   Int_t         fCFM;         //1000000*Ncerenkovs+1000*Nfeedbacks+Nmips  
   Int_t         fSize;        //10000*(how many digits belong to this cluster) + nLocalMaxima     

@@ -512,3 +512,17 @@ void ParticleContribs()
     distH1->Draw();
 
 }//ParticleContribs()
+//__________________________________________________________________________________________________
+void CheckPR()
+{
+//Pattern recognition wirh Stack particles
+  TFile *pFile = new TFile("$(HOME)/RPR.root","RECREATE","RICH Pattern Recognition");
+  TNtupleD *hn = new TNtupleD("hn","ntuple","Pmod:Charge:TrackTheta:TrackPhi:TrackX:TrackY:MinX:MinY:ChargeMIP:ThetaCerenkov:NPhotons:MipIndex");
+  for(Int_t iEvtN=0;iEvtN<R()->GetLoader()->GetRunLoader()->GetNumberOfEvents();iEvtN++) {
+    R()->GetLoader()->GetRunLoader()->GetEvent(iEvtN);
+    AliRICHTracker *tr = new AliRICHTracker();
+    tr->RecWithStack(hn);
+    Info("CheckPR","Pattern Recognition done for event %i",iEvtN);
+  }
+  pFile->Write();pFile->Close();
+}

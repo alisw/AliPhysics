@@ -109,7 +109,7 @@ void AliRICHClusterFinder::FindClusterContribs(AliRICHcluster *pCluster)
 //Finds cerenkov-feedback-mip mixture for a given cluster
   AliDebug(1,"Start.");ToAliDebug(1,pCluster->Print());
 
-  R()->GetLoader()->GetRunLoader()->LoadHeader();
+//  R()->GetLoader()->GetRunLoader()->LoadHeader();
   AliStack *pStack = R()->GetLoader()->GetRunLoader()->Stack();
   if(!pStack)
   {AliInfo("No Stack found!!! No contrib to cluster found.");return;}

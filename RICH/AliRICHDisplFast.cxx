@@ -21,12 +21,78 @@
 #include <TPolyLine.h>
 #include <TParticle.h>
 #include <TStyle.h>
-#include <TH2.h>
 #include <TMath.h>
 #include <TLatex.h>
 
 ClassImp(AliRICHDisplFast)
+//__________________________________________________________________________________________________
+void AliRICHDisplFast::ShowEvent(Int_t iEvtNmin,Int_t iEvtNmax)
+{
+  TH2F *pDigitsH2[8];
+  char titobj[11],titdisp[20];
 
+  AliRICH *pRich = (AliRICH*)gAlice->GetDetector("RICH");
+  Bool_t isDigits  =!pRich->GetLoader()->LoadDigits();
+  if(!isDigits){Error("ShoEvent","No digits. Nothing to display.");return;}
+  
+  TCanvas *canvas = new TCanvas("RICHDisplay","RICH Display",0,0,1226,900);
+//  TCanvas *canvas = (TCanvas*)gROOT->FindObjectAny("RICHDisplay");
+  
+  gStyle->SetPalette(1);
+
+  canvas->Divide(3,3);
+  
+  for(Int_t iChamber=1;iChamber<=7;iChamber++) {
+    sprintf(titobj,"pDigitsH2_%i",iChamber);
+    sprintf(titdisp,"Chamber  %i",iChamber);
+    pDigitsH2[iChamber] = new TH2F(titobj,titdisp,165,0,AliRICHParam::PcSizeX(),144,0,AliRICHParam::PcSizeY());
+    pDigitsH2[iChamber]->SetMarkerColor(kGreen); 
+    pDigitsH2[iChamber]->SetMarkerStyle(29); 
+    pDigitsH2[iChamber]->SetMarkerSize(0.4);
+    pDigitsH2[iChamber]->SetStats(kFALSE);
+  }
+  
+  if(iEvtNmax>gAlice->GetEventsPerRun()) iEvtNmax=gAlice->GetEventsPerRun();
+
+  TText *t = new TText();
+  t->SetTextSize(0.10);
+
+  TText *tit = new TText(0.1,0.6,"RICH Display");
+  tit->SetTextSize(0.10);
+
+  for(Int_t iEventN=iEvtNmin;iEventN<=iEvtNmax;iEventN++) {
+        
+    canvas->cd(1);
+    sprintf(titdisp,"Event Number %i",iEventN);
+    t->SetText(0.2,0.4,titdisp);
+    t->Draw();
+    tit->Draw();
+    pRich->GetLoader()->GetRunLoader()->GetEvent(iEventN);
+    pRich->GetLoader()->TreeD()->GetEntry(0);
+    for(Int_t iChamber=1;iChamber<=7;iChamber++) {
+      pDigitsH2[iChamber]->Reset();    
+      for(Int_t j=0;j<pRich->Digits(iChamber)->GetEntries();j++) {//digits loop
+        AliRICHdigit *pDig = (AliRICHdigit*)pRich->Digits(iChamber)->At(j);
+        TVector2 x2=AliRICHParam::Pad2Loc(pDig->Pad());
+        pDigitsH2[iChamber]->Fill(x2.X(),x2.Y());
+      }
+      if(iChamber==1) canvas->cd(7);
+      if(iChamber==2) canvas->cd(8);
+      if(iChamber==3) canvas->cd(4);
+      if(iChamber==4) canvas->cd(5);
+      if(iChamber==5) canvas->cd(6);
+      if(iChamber==6) canvas->cd(2);
+      if(iChamber==7) canvas->cd(3);
+      pDigitsH2[iChamber]->Draw();
+    }
+    canvas->Update();
+    canvas->Modified();
+    
+    if(iEvtNmin<iEvtNmax) gPad->WaitPrimitive();
+//    canvas->cd(3);
+//    gPad->Clear();
+  }
+}
 //__________________________________________________________________________________________________
 void AliRICHDisplFast::Exec(Option_t *)
 {
@@ -50,9 +116,6 @@ void AliRICHDisplFast::Exec(Option_t *)
                                                                       144,0,AliRICHParam::PcSizeY());
   if(isClusters) pClustersH2 = new TH2F("pClustersH2","Event Display",165,0,AliRICHParam::PcSizeX(),
                                                                       144,0,AliRICHParam::PcSizeY());
-
-    
-
   
   for(Int_t iEventN=0;iEventN<gAlice->GetEventsPerRun();iEventN++){//events Loop
     pRich->GetLoader()->GetRunLoader()->GetEvent(iEventN);

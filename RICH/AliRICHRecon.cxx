@@ -65,6 +65,8 @@ Double_t AliRICHRecon::ThetaCerenkov()
 
   if(fpClusters->GetEntries()==0) return kBad;//no clusters at all for a given track
   Bool_t kPatRec = kFALSE;  
+    
+  AliDebug(1,Form("---Track Parameters--- Theta: %f , Phi: %f ",GetTrackTheta()*TMath::RadToDeg(),GetTrackPhi()*TMath::RadToDeg()));
 
   Int_t candidatePhotons = 0;
 
@@ -88,7 +90,7 @@ Double_t AliRICHRecon::ThetaCerenkov()
     SetPhotonFlag(1);
     FindThetaPhotonCerenkov();
     Float_t thetaPhotonCerenkov = GetThetaPhotonCerenkov();
-    AliDebug(1,Form("THETA CERENKOV ---> %i",thetaPhotonCerenkov));
+    AliDebug(1,Form("THETA CERENKOV ---> %f",thetaPhotonCerenkov));
     SetPhotonEta(thetaPhotonCerenkov);
     candidatePhotons++;
   }//clusters loop
@@ -1009,7 +1011,7 @@ void AliRICHRecon::FlagPhotons()
   Int_t nPhotonHough = 0;
 
   Float_t thetaCerenkov = GetThetaCerenkov();
-  AliDebug(1,Form(" fThetaCerenkov ",thetaCerenkov));
+  AliDebug(1,Form(" fThetaCerenkov %f ",thetaCerenkov));
 
   Float_t thetaDist= thetaCerenkov - fThetaMin;
   Int_t steps = (Int_t)(thetaDist / fDTheta);
