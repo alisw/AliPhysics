@@ -83,7 +83,7 @@
 //=====================================================================
 //  At the beginning of calculation user should call FSIINI,
 //  which reads LL, NS, ITEST (and eventually ICH, IQS, ISI, I3C)
-//  and initializes various parameters.
+//  and ializes various parameters.
 //  In particular the constants in
 //    COMMON/FSI_CONS/PI,PI2,SPI,DR,W
 //  may be useful for the user:
@@ -357,6 +357,8 @@ void AliHBTLLWeights::Init()
      Fatal("Init","Particles types are not set");
      return;//pro forma
    }
+  
+  
   FSI_NS.LL = GetPairCode(fPID1,fPID2);
        
   if (FSI_NS.LL == 0) 
@@ -364,6 +366,8 @@ void AliHBTLLWeights::Init()
      Fatal("Init","Particles types are not supported");
      return;//pro forma
    }
+
+  Info("Init","Setting PIDs %d %d. LL Code is %d",fPID1,fPID2,FSI_NS.LL);
 
 
   TParticlePDG* tpart1 = TDatabasePDG::Instance()->GetParticle(fPID1);
