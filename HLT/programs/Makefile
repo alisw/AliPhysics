@@ -28,7 +28,7 @@ LIBS += $(RLIBS)
 endif
 
 ifeq ($(USEPACKAGE),ALIROOT)
-DEFSTR = -Duse_aliroot
+DEFSTR = -Duse_aliroot -Duse_root
 ALICELIBS = -L$(ALICE_ROOT)/lib/tgt_Linux -lCONTAINERS -lTPC -lSTEER
 #ALICELIBS := $(shell aliroot-config --libs)
 INCLUDES += -I$(ROOTSYS)/include -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/CONTAINERS -I$(ALICE_ROOT)/STEER

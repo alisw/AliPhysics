@@ -1,17 +1,21 @@
-/* $Id$
-   Author: Constantin Loizides <loizides@ikf.physik.uni-frankfurt.de>
-*/
+// $Id$
+
+// Author: Constantin Loizides <loizides@ikf.physik.uni-frankfurt.de>
+
 
 #include <stream.h>
 #include <libgen.h>
+
 #include "AliL3RootTypes.h"
 #include "AliL3Transform.h"
 #include "AliL3ClustFinderNew.h"
 #include "AliL3MemHandler.h"
 #include "AliL3SpacePointData.h"
+#include "AliL3Logging.h"
 #include "AliL3Logger.h"
 
 #define MAXCLUSTER 15000
+
 /**
  Example program how to run the "standalone" clusterfinder.
 
@@ -25,8 +29,9 @@ int main(int argc,char **argv)
   Int_t fm=4;
   Int_t th=10;
 
-  //AliL3Logger l;
-  //l.Set(AliL3Logger::kAll);
+  AliL3Logger l;
+  l.Set(AliL3Logger::kAll);
+  l.UseStderr();
   //l.UseStdout();
   //l.UseStream();
 

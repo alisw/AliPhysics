@@ -1,6 +1,7 @@
-/* $Id$
-Author: Constantin Loizides <mailto: loizides@ikf.physik.uni-frankfurt.de
-*/
+// $Id$
+
+// Author: Constantin Loizides <mailto: loizides@ikf.physik.uni-frankfurt.de
+
 
 #include <stream.h>
 #include <libgen.h>
@@ -10,6 +11,8 @@ Author: Constantin Loizides <mailto: loizides@ikf.physik.uni-frankfurt.de
 #include "AliL3AltroMemHandler.h"
 #include "AliL3DigitData.h"
 #include "AliL3Transform.h"
+#include "AliL3Logging.h"
+#include "AliL3Logger.h"
 
 /**
 Example program how to open and read a raw datafile.
@@ -24,15 +27,16 @@ int main(int argc,char **argv)
   Bool_t altroout=kFALSE;
   FILE *afile=0;
   
-  //AliL3Logger l;
-  //l.Set(AliL3Logger::kAll);
+  AliL3Logger l;
+  l.Set(AliL3Logger::kAll);
+  //l.UseStderr();
   //l.UseStdout();
   //l.UseStream();
 
   if(argc<2)
     {
       cout<<"Usage: read datafile [slice] [patch] [altrodatfile]"<<endl;
-      return -1;
+      exit(1);
     }
   if (argc>2) {
     slice=atoi(argv[2]);

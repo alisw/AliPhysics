@@ -1,6 +1,7 @@
-/* $Id$
-   Author: Constantin Loizides <loizides@ikf.physik.uni-frankfurt.de>
-*/
+// $Id$
+   
+// Author: Constantin Loizides <loizides@ikf.physik.uni-frankfurt.de>
+
 
 #include <stream.h>
 #include <libgen.h>
@@ -9,10 +10,11 @@
 #include "AliL3Transform.h"
 #include "AliL3VHDLClusterFinder.h"
 #include "AliL3AltroMemHandler.h"
+#include "AliL3Logging.h"
 #include "AliL3Logger.h"
 
 /**
- Example program how to run the vhdl clusterfinder.
+Example program how to run the vhdl clusterfinder.
 */
 
 int main(int argc,char **argv)
@@ -22,8 +24,9 @@ int main(int argc,char **argv)
   Int_t fm=4;
   Int_t th=10;
 
-  //AliL3Logger l;
-  //l.Set(AliL3Logger::kAll);
+  AliL3Logger l;
+  l.Set(AliL3Logger::kAll);
+  l.UseStderr();
   //l.UseStdout();
   //l.UseStream();
 
