@@ -15,6 +15,9 @@
  
 /*
 $Log$
+Revision 1.22  2002/10/22 14:45:36  alibrary
+Introducing Riostream.h
+
 Revision 1.21  2002/02/05 09:12:26  hristov
 Small mods for gcc 3.02
 
@@ -550,7 +553,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
     kkprov->SetConvConst(100/0.299792458/0.2/fFieldFactor);
 
     TFile *cf=TFile::Open("AliTPCclusters.root");  
-    AliTPCParam *digp= (AliTPCParam*)cf->Get("75x40_100x60");
+    AliTPCParam *digp= (AliTPCParam*)cf->Get("75x40_100x60_150x60");
     if (!digp) { cerr<<"TPC parameters have not been found !\n"; getchar();}
 
     cf->cd();

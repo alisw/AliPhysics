@@ -2,9 +2,76 @@
 #include "iostream.h"
 #endif
 
+Bool_t TPCSortTracks(Int_t event = 0)
+{
+   TFile *fileTracks   = TFile::Open("AliTPCtracks.root");
+   TFile *fileClusters = TFile::Open("AliTPCclusters.root");
+	TFile *fileEvent    = TFile::Open("galice.root");
+
+   // get TPC parameterization
+   AliTPCParam *param=(AliTPCParam *)fileEvent->Get("75x40_100x60_150x60");
+   if (!param) {
+		cerr << "(TPCSortTracks) ERROR: TPC parameters have not been found!" << endl;
+		return kFALSE;
+	}
+
+   // read and sort tracks
+   Int_t i;
+	TSortedList tracks_list;
+   AliTPCtrack *iotrack = 0;
+   TTree *tracktree = (TTree*)fileTracks->Get(Form("TreeT_TPC_%d", event));
+   Int_t nentr = (Int_t)tracktree->GetEntries();
+   for (i = 0; i < nentr; i++) {
+     iotrack = new AliTPCtrack;
+     tracktree->SetBranchAddress("tracks", &iotrack);
+     tracktree->GetEvent(i);
+     tracks_list.Add(iotrack);
+   }   
+	delete tracktree;
+	
+   // assign to each track its GEANT label
+   fileClusters->cd();
+	AliTPCtracker *tracker = new AliTPCtracker(param, event);
+   tracker->LoadInnerSectors();
+   tracker->LoadOuterSectors();
+	TListIter iter(&tracks_list);
+   for (i = 0; i < nentr; i++) {
+     iotrack = (AliTPCtrack*)iter.Next();
+	  if (!iotrack) {
+	     cerr << "(TPCSortTracks) WARNING: Track no. " << i << " is NULL!!!" << endl;
+		  continue;  
+	  }
+     tracker->CookLabel(iotrack, 0.1);
+   }   
+   delete tracker;
+	
+   // create the new TTree of TPC tracks sorted w.r. to Pt
+	tracktree = new TTree(Form("TreeT_TPC_%d", event),"Tree with TPC tracks sorted w.r to pt");
+   tracktree->Branch("tracks", "AliTPCtrack", &iotrack, 32000, 0);
+	iter.Reset();
+   for (i = 0; i < nentr; i++) {
+     iotrack = (AliTPCtrack*)iter.Next();
+	  if (!iotrack) {
+	     cerr << "(TPCSortTracks) WARNING: Track no. " << i << " is NULL!!!" << endl;
+		  continue;  
+	  }
+     tracktree->Fill();
+   }
+	
+	// save the new tree into new file
+	TFile *fileOutput = TFile::Open("AliTPCtracksSorted.root","recreate");
+   tracktree->Write();
+   fileOutput->Close();
+   fileEvent->Close();
+   fileClusters->Close();
+	fileTracks->Close();
+	
+	return kTRUE;
+}
+
+
 void AliITSTrackingV1(Int_t evNumber1=0,Int_t evNumber2=0, Int_t min_t=-1, Int_t max_t=0,Bool_t flagvert=1, Bool_t realmass=0, const char *filename="galice.root") {
 
-  
   ///////////////// Dynamically link some shared libs ////////////////////////////////
   
   if (gClassTable->GetID("AliRun") < 0) {
@@ -13,6 +80,16 @@ void AliITSTrackingV1(Int_t evNumber1=0,Int_t evNumber2=0, Int_t min_t=-1, Int_t
   } else {
     delete gAlice;
     gAlice=0;
+  }
+  
+  cout << "Sorting TPC tracks w.r. to transverse momentum...";
+  Bool_t success_sorting = TPCSortTracks();
+  if (success_sorting) {
+     cout << "DONE!" << endl;
+  }
+  else {
+	cout << "Some error occurred..." << endl;
+	return 1;
   }
 
 // Connect the Root Galice file containing Geometry, Kine and Hits
