@@ -45,6 +45,8 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "AliCRTv0.h"
+
 #include <TGeometry.h>
 #include <TBRIK.h>
 #include <TNode.h>
@@ -53,8 +55,8 @@
 #include "AliRun.h"
 #include "AliConst.h"
 
-#include "AliCRTv0.h"
 #include "AliCRTConstants.h"
+#include "AliCRTModule.h"
 
 ClassImp(AliCRTv0)
  
@@ -126,10 +128,12 @@ void AliCRTv0::BuildGeometry()
   // Find the top node alice.
   top = gAlice->GetGeometry()->GetNode("alice");
 
+  AliCRTConstants* crtConstants = AliCRTConstants::Instance();
+
   new TBRIK("S_CRT_A", "CRT box", "void", 
-	    AliCRTConstants::fgActiveAreaLenght/2., 
-	    AliCRTConstants::fgActiveAreaHeight/2., 
-	    AliCRTConstants::fgActiveAreaWidth/2.);
+	    crtConstants->ActiveAreaLenght()/2., 
+	    crtConstants->ActiveAreaHeight()/2., 
+	    crtConstants->ActiveAreaWidth()/2.);
 
   
   new TRotMatrix("Left", "Left", 90., 315., 90., 45., 0., 337.5);
@@ -139,7 +143,7 @@ void AliCRTv0::BuildGeometry()
 
   //
   // Put 4 modules on the top of the magnet
-  Float_t box = AliCRTConstants::fgCageWidth/2.;
+  Float_t box = crtConstants->CageWidth()/2.;
   top->cd();
   node = new TNode("upper1", "upper1", "S_CRT_A", 0., 790.,  3.*box, "Up");
   node->SetLineColor(kColorCRT);
@@ -217,89 +221,95 @@ void AliCRTv0::CreateGeometry()
   //
 
   Int_t  idrotm[2499];    // The rotation matrix.
-  Int_t* idtmed = fIdtmed->GetArray() - 1099 ;
-
-  // Create a mother volume.
-  Float_t pbox[3];
-  //pbox[0] = AliCRTConstants::fgDepth*TMath::Tan(67.5*kDegrad);
-  pbox[0] = 12073.;
-  pbox[1] = AliCRTConstants::fgDepth;
-  pbox[2] = pbox[0];
-  gMC->Gsvolu("CRT", "BOX", idtmed[1114], pbox, 3);
-  gMC->Gspos("CRT", 1, "ALIC", 0, 0, 0, 0, "ONLY");
-
-  // Create a big volume with air barrel above the magnet
-  Float_t barrel[10];
-  Float_t magnetSides = 3.;
-  Float_t planesPerpendicularToZ = 2.;
-  barrel[0] = 22.5;
-  barrel[1] = 45*magnetSides;
-  barrel[2] = magnetSides;
-  barrel[3] = planesPerpendicularToZ;
-  barrel[4] = -700.;
-  barrel[5] = AliCRTConstants::fgMagMinRadius;
-  barrel[6] = AliCRTConstants::fgMagMinRadius + 2.; // 2 cm width
-  barrel[7] = -barrel[4];
-  barrel[8] = barrel[5];
-  barrel[9] = barrel[6];
-  gMC->Gsvolu("CRT4", "PGON", idtmed[1112], barrel, 10);
-  gMC->Gspos("CRT4", 1 , "CRT", 0., -30., 0., 0, "MANY");
-
-  //
+  Int_t* idtmed = fIdtmed->GetArray() - 1099;
+  AliCRTConstants* crtConstants = AliCRTConstants::Instance();
+  // Create the mother volume.
+  // This volume can be seen as the volume which ACORDE will ocupate
+  // above the upper face of the L3 magnet. Inside this volume the detectors
+  // aboce the magnet will be, then there will be two copies of this volume,
+  // one for each side.
   Float_t box[3];
-  box[0] = AliCRTConstants::fgSinglePaletteLenght/4;
-  box[1] = AliCRTConstants::fgSinglePaletteHeight/2;
-  box[2] = AliCRTConstants::fgSinglePaletteWidth/2;
-  gMC->Gsvolu("CRT6", "BOX", idtmed[1112], box, 3);
+  box[0] = 2*crtConstants->MagMinRadius()*TMath::Sin(kDegrad*22.5);
+  box[1] = crtConstants->MagMaxRadius() - crtConstants->MagMinRadius();
+  box[2] = crtConstants->MagnetLenght();
+  gMC->Gsvolu("CRT1", "BOX", idtmed[1112], box, 3);
 
-  // In the right side side of the magnet
-  AliMatrix(idrotm[231], 90., 45., 90., 315., 180., 202.5);
-
-  // In the left side side of the magnet
-  AliMatrix(idrotm[232], 90., 315., 90., 315., 0.0000040, 263.0707092);
-
-  // Now put them into the volume created above
-  // First above the magnet.
-  const Float_t away = (2.*barrel[5]*TMath::Sin(kDegrad*22.5))/4.;
-  const Int_t nModules = 10;
-  for (Int_t i = 0; i < nModules; i++) {
-    Float_t zCoordinate = i*100 - 450;
-    // In the lef side
-    gMC->Gspos("CRT6", i, "CRT4", -away, barrel[5]+1., zCoordinate, 0, "MANY");
-    // In the rigth side
-    gMC->Gspos("CRT6",i+10,"CRT4", away, barrel[5]+1., zCoordinate, 0, "MANY");
-
-    // The most away part (left side)
-    gMC->Gspos("CRT6", i+20, "CRT4", 3*away, barrel[5]+31 - away, zCoordinate, idrotm[232], "MANY");
-    // The inner part (left side)
-    gMC->Gspos("CRT6", i+30, "CRT4", 4*away, barrel[5]+31 - 2*away, zCoordinate, idrotm[232], "MANY");
-
-    // The most away part (rigth side)
-    gMC->Gspos("CRT6", i+40, "CRT4", -3*away, barrel[5]+31 - away, zCoordinate, idrotm[231], "MANY");
-    // The inner part (rigth side)
-    gMC->Gspos("CRT6", i+50, "CRT4", -4*away, barrel[5]+31 - 2*away, zCoordinate, idrotm[231], "MANY");
+  // Check if the AliCRTModule instance hav been set, otherwise
+  // use the default values
+  if ( !fModule ) {
+    Info("CreateGeometry", "Using default dimensions");
+    fModule = new AliCRTModule("CRTmod", "Default module dimensions");
   }
 
-  // Now the magnet doors
-  magnetSides = 8.;
-  barrel[1] = 45*magnetSides;
-  barrel[2] = magnetSides;
-  barrel[4] = 700.;
-  barrel[5] = 0;
-  barrel[6] = 790;
-  barrel[7] = barrel[4] + 2.;
-  barrel[8] = barrel[5];
-  barrel[9] = barrel[6];
-  gMC->Gsvolu("CRT5", "PGON", idtmed[1111], barrel, 10);
-  gMC->Gspos("CRT5", 1, "CRT", 0., -30., 0., 0, "ONLY");
+  // The full module volume.
+  // This volume will be ocupied by all the material of the module
+  // the scintillators, the aluminium frame, etc.
+  box[0] = fModule->FrameLength()/2;
+  box[1] = fModule->FrameThickness()/2;
+  box[3] = fModule->FrameWidth()/2;
+  gMC->Gsvolu("CRT2", "BOX", idtmed[1114], box, 3);
 
-  AliMatrix(idrotm[300], 90., 0., 90., 90., 180., 0.);
-  gMC->Gspos("CRT5", 2, "CRT", 0., -30., 0., idrotm[300], "ONLY");
+  // The scintillators
+  box[0] = crtConstants->SinglePaletteLenght()/4;
+  box[1] = crtConstants->SinglePaletteHeight();
+  box[2] = crtConstants->SinglePaletteWidth()/2;
+  gMC->Gsvolu("CRT3", "BOX", idtmed[1112], box, 3);
+  gMC->Gspos("CRT3", 1, "CRT2", 0, 2, 0, 0, "ONLY");
+
+  // The metallic frame
+  box[0] = fModule->FrameLength()/2;
+  box[1] = fModule->FrameThickness()/2;
+  box[2] = 2;
+  gMC->Gsvolu("CRT4", "BOX", idtmed[1108], box, 3);
+  gMC->Gspos("CRT4", 1, "CRT2", 0, 0,  13 - box[2], 0, "MANY");
+  gMC->Gspos("CRT4", 2, "CRT2", 0, 0, -13 + box[2], 0, "MANY");
+
+  box[0] = 2;
+  box[1] = fModule->FrameThickness()/2;
+  box[2] = fModule->FrameWidth()/2;
+  gMC->Gsvolu("CRT5", "BOX", idtmed[1108], box, 3);
+  gMC->Gspos("CRT5", 1, "CRT2",  140 - box[0], 0, 0, 0, "MANY");
+  gMC->Gspos("CRT5", 2, "CRT2", -140 + box[0], 0, 0, 0, "MANY");
+
+  // The support bars
+  box[0] = 2;
+  box[1] = fModule->FrameThickness()/2;
+  box[2] = 500;
+  gMC->Gsvolu("CRT6", "BOX", idtmed[1108], box, 3);
+
+  // Now put into the volume CR11 all the above volumes.
+  // 20 scintillation modules
+  // 4 support bars
+  Int_t copyNumber = 0;
+  for ( Int_t k = 0; k < fModule->NumberOfRows(); k++ ) {
+  //for (Int_t k = 0; k < fModule->NumberOfModules(); k++ ) {
+    //Float_t zCoordinate = (k-(fModule->NumberOfColumns()-1)/2)*fModule->ZGap();
+    //Float_t zCoordinate = k*fModule->ZGap() - (fModule->NumberOfColums()-1)*fModule->ZGap()/2;
+    Float_t zCoordinate = k*fModule->ZGap() - 450;
+    gMC->Gspos("CRT2",++copyNumber,"CRT1",-150, 15, zCoordinate, 0, "MANY");
+    gMC->Gspos("CRT2",++copyNumber,"CRT1",150, 15, zCoordinate, 0, "MANY");
+  }
+  // Put the suppor bars
+  gMC->Gspos("CRT6", 1, "CRT1",  -75, 5, 0, 0, "ONLY");
+  gMC->Gspos("CRT6", 2, "CRT1", -225, 5, 0, 0, "ONLY");
+  gMC->Gspos("CRT6", 3, "CRT1",   75, 5, 0, 0, "ONLY");
+  gMC->Gspos("CRT6", 4, "CRT1",  225, 5, 0, 0, "ONLY");
+
+  // Now put a copy of CR11 on the 3 upper faces of the magnet
+  // In the right side side of the magnet
+  AliMatrix(idrotm[231], 90, 45, 90, 135, 0, 0);
+  // In the left side side of the magnet
+  AliMatrix(idrotm[232], 90, 315, 90, 45, 0, 0);
+
+  Float_t x = crtConstants->MagMinRadius()+10;
+  gMC->Gspos("CRT1", 1, "ALIC", 0, x, 0, 0, "MANY");
+  gMC->Gspos("CRT1", 2, "ALIC", -x*TMath::Sin(kDegrad*45), x*TMath::Cos(kDegrad*45), 0, idrotm[231], "MANY");
+  gMC->Gspos("CRT1", 3, "ALIC",  x*TMath::Sin(kDegrad*45), x*TMath::Cos(kDegrad*45), 0, idrotm[232], "MANY");
 
 }
 
 //_____________________________________________________________________________
-void AliCRTv0::DrawDetector()
+void AliCRTv0::DrawDetector() const
 {
   //
   // Draw a shaded view of the L3 magnet
@@ -308,25 +318,29 @@ void AliCRTv0::DrawDetector()
   Info("DrawDetector", "Drawing the module");
 
   gMC->Gsatt("*", "seen", -1);
-  gMC->Gsatt("alic", "seen", 0);
 
   gMC->Gsatt("ALIC","seen",0);
-  gMC->Gsatt("L3MO","seen",1); // L3 Magnet
-  gMC->Gsatt("CRT1","seen",1); // Scintillators
 
-  // Draw the molasse volumes
-  gMC->Gsatt("CMO1","seen",0); // Exactly above the HALL
-  gMC->Gsatt("CMO2","seen",0); // Molasse, along the PM25
-  gMC->Gsatt("CMO3","seen",0); // molasse along the PGC2
-  gMC->Gsatt("CMO4","seen",0); // Molasse, behind the PX24 upper part
-  gMC->Gsatt("CMO5","seen",0); // molasse behind px24, lower part
-  gMC->Gsatt("CMO6","seen",0); // behind the PX24
-  gMC->Gsatt("CMO7","seen",0); // behind the PGC2
-  gMC->Gsatt("CMO8","seen",0); // on the right side.
-  gMC->Gsatt("CMO9","seen",0); // on the left side.
-  gMC->Gsatt("CM10","seen",0); // betwen PX24 & PM25.
-  gMC->Gsatt("CM11","seen",0); // betwen PGC2 & PM25.
-  gMC->Gsatt("CM12","seen",0); // box above the hall.
+  gMC->Gsatt("L3MO","seen",0); // L3 Magnet, Mother
+  gMC->Gsatt("L3CO","seen",1); // Coils
+  gMC->Gsatt("L3C1","seen",1); // Coils
+  gMC->Gsatt("L3YO","seen",1); // Yoke
+  gMC->Gsatt("L3DO","seen",0); // return Yoke (DOOR)
+  gMC->Gsatt("L3FR","seen",1); // DOOR
+  gMC->Gsatt("L3IR","seen",0); // Inner layer
+  gMC->Gsatt("L3O1","seen",1); // Door opening
+  gMC->Gsatt("L3O2","seen",1); // Door opening
+
+  gMC->Gsatt("CRT1", "seen", 0); // CRT Mother
+  gMC->Gsatt("CRT2", "seen", 0); // Module air box
+  gMC->Gsatt("CRT3", "seen", 1); // Scintillators
+  gMC->Gsatt("CRT3", "colo", 2); // Scintillators
+  gMC->Gsatt("CRT4", "seen", 1); // Aluminium frame (long bars)
+  gMC->Gsatt("CRT4", "colo", 3); //
+  gMC->Gsatt("CRT5", "seen", 1); // Aluminium frame (short bars)
+  gMC->Gsatt("CRT5", "colo", 3); //
+  gMC->Gsatt("CRT6", "seen", 1); // Module support
+  gMC->Gsatt("CRT6", "colo", 3); //
 
   gMC->Gdopt("hide", "on");
   gMC->Gdopt("edge","off");
@@ -334,7 +348,8 @@ void AliCRTv0::DrawDetector()
   gMC->Gsatt("*", "fill", 7);
   gMC->SetClipBox("ALIC", 0, 3000, -3000, 3000, -6000, 6000);
   gMC->DefaultRange();
-  gMC->Gdraw("alic", 40, 30, 0, 10, 9.5, .009, .009);
+  //gMC->Gdraw("alic", 40, 30, 0, 10, 9.5, .009, .009);
+  gMC->Gdraw("alic", 30, 40, 0, -30, -60, .09, .09);
   gMC->Gdhead(1111, "View of CRT(ACORDE)");
   gMC->Gdman(18, 4, "MAN");
 }
