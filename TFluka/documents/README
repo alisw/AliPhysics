@@ -1,0 +1,22 @@
+Instructions on how to use TFLuka
+
+1) Download Fluka from http://pcfluka.mi.infn.it/ and install it
+
+2) Download geant4_vmc and install it (together with Geant4, CLHEP, etc)
+
+3) Set the path to Fluka in the environment variable FLUPRO
+
+4) In AliRoot do: 'gmake all-TFluka'
+
+5) In AliRoot do: 'gmake all-Flugg'
+
+6) replace macros/Config.C by TFluka/macro/FlukaConfig.C
+
+7) Execute the TFluka/scripts/runalifluka.csh
+
+8) [root] .x TFluka/macro/loadlibs.C
+
+9) [root] gAlice->RunMC();
+....
+
+This will run 50 particles from TGenerator.
