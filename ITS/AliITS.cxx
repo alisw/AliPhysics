@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.36  2001/03/02 19:44:11  barbera
+ modified to taking into account new version tracking v1
+
 Revision 1.35  2001/02/28 18:16:46  mariana
 Make the code compatible with the new AliRun
 
@@ -161,7 +164,7 @@ the AliITS class.
 #include <TFile.h>
 #include <TTree.h>
 #include <TString.h>
-
+#include <TParticle.h>
 
 
 #include "AliRun.h"
@@ -1340,7 +1343,19 @@ AliITStrack  AliITS::Tracking(AliITStrack &track, AliITStrack *reference,TObjArr
   for(lay=5; lay>=0; lay--) {
     TVector VecLabref(3); 
     VecLabref=(*reference).GetLabTrack(lay);
-    for(k=0; k<3; k++) {itot++; VecTotLabref(itot)=VecLabref(k);}    
+    Float_t ClustZ=(*reference).GetZclusterTrack( lay);   //modified il 5-3-2001	 
+    for(k=0; k<3; k++) { // {itot++; VecTotLabref(itot)=VecLabref(k);}  // modified 5-3-2002
+ 
+	Int_t lpp=(Int_t)VecLabref(k);
+	if(lpp>=0) {
+	  TParticle *p=(TParticle*) gAlice->Particle(lpp);
+	  Int_t pcode=p->GetPdgCode();
+	  if(pcode==11) VecLabref(k)=p->GetFirstMother();
+	}    
+    
+        itot++; VecTotLabref(itot)=VecLabref(k);
+        if(VecLabref(k)==0. && ClustZ == 0.) VecTotLabref(itot) =-3.;    
+    }    
   }
   Long_t labref;
   Int_t freq;  
