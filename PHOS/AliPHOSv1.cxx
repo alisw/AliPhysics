@@ -96,38 +96,6 @@ AliPHOSv0(name,title)
 }
 
 //____________________________________________________________________________
-// AliPHOSv1::AliPHOSv1(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title):
-//   AliPHOSv0(name,title)
-// {
-//   // ctor : title is used to identify the layout
-//   //        GPS2 = 5 modules (EMC + PPSD)   
-
-//   fPinElectronicNoise = 0.010 ;
-
-//   // We do not want to save in TreeH the raw hits
-
-//   fDigits = 0 ;
-//   fHits= new TClonesArray("AliPHOSHit",1000) ;
-
-//   fNhits = 0 ;
-
-//   fIshunt     =  1 ; // All hits are associated with primary particles
- 
-//   // gets an instance of the geometry parameters class  
-//   fGeom =  AliPHOSGeometry::GetInstance(title, "") ; 
-
-//   if (fGeom->IsInitialized() ) 
-//     cout << "AliPHOS" << Version() << " : PHOS geometry intialized for " << fGeom->GetName() << endl ;
-//   else
-//     cout << "AliPHOS" << Version() << " : PHOS geometry initialization failed !" << endl ;   
-
-//   // Defining the PHOS Reconstructioner
- 
-//  fReconstructioner = Reconstructioner ;
-
-// }
-
-//____________________________________________________________________________
 AliPHOSv1::~AliPHOSv1()
 {
   // dtor
@@ -171,7 +139,6 @@ void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, 
 }
 
 //____________________________________________________________________________
-
 void AliPHOSv1::StepManager(void)
 {
   // Accumulates hits as long as the track stays in a single crystal or PPSD gas Cell
@@ -347,8 +314,6 @@ void AliPHOSv1::StepManager(void)
 
     } // there is deposited energy
   } // we are inside a PHOS Xtal
-
-
 }
 
 //____________________________________________________________________________
