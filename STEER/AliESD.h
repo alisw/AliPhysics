@@ -33,6 +33,7 @@ public:
   }
 
   void SetEventNumber(Int_t n) {fEventNumber=n;}
+  void SetRunNumber(Int_t n) {fRunNumber=n;}
 
   AliESDtrack *GetTrack(Int_t i) const {
     return (AliESDtrack *)fTracks.UncheckedAt(i);
