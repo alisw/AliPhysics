@@ -6,13 +6,16 @@
 /* $Id$ */
 
 #include "AliMonitor.h"
-#include "AliMonitorHisto.h"
-#include "AliITSgeom.h"
+
+class AliITSgeom;
 
 
 class AliMonitorITS : public AliMonitor {
 public:
   AliMonitorITS(AliITSgeom* param);
+  AliMonitorITS(const AliMonitorITS& monitor);
+  AliMonitorITS& operator = (const AliMonitorITS& monitor);
+  virtual ~AliMonitorITS() {};
 
   virtual void     CreateHistos(TFolder* folder);
   virtual void     FillHistos(AliRunLoader* runLoader, 

@@ -6,24 +6,31 @@
 /* $Id$ */
 
 #include <TGFrame.h>
-#include <TGMenu.h>
-#include <TGButton.h>
-#include <TGLabel.h>
-#include <TGTextEntry.h>
-#include <TGToolBar.h>
-#include <TG3DLine.h>
-#include <TGNumberEntry.h>
-#include <TGCanvas.h>
-#include <TGSplitter.h>
-#include <TGListTree.h>
-#include <TRootEmbeddedCanvas.h>
-#include <TGTextView.h>
 #include <RQ_OBJECT.h>
-#include <TFolder.h>
-#include <TSocket.h>
-#include <TTimer.h>
-#include <TFile.h>
-#include "AliMonitorHisto.h"
+#include "AliMonitorDialog.h"
+
+class TGListTreeItem;
+class TGLayoutHints;
+class TGPopupMenu;
+class TGMenuBar;
+class TGHorizontal3DLine;
+class TGToolBar;
+class TGNumberEntry;
+class TGPicture;
+class TGButton;
+class TGCanvas;
+class TGListTree;
+class TGVSplitter;
+class TGHSplitter;
+class TRootEmbeddedCanvas;
+class TGTextView;
+class TGLabel;
+class TGTextEntry;
+class TSocket;
+class TFileHandler;
+class TFolder;
+class TTimer;
+class AliMonitorHisto;
 
 
 class AliMonitorClient : public TGMainFrame {
@@ -32,6 +39,8 @@ RQ_OBJECT("AliMonitorClient")
 
 public:
   AliMonitorClient();
+  AliMonitorClient(const AliMonitorClient& client);
+  AliMonitorClient& operator = (const AliMonitorClient& client);
   virtual ~AliMonitorClient();
 
   void               CloseWindow();
@@ -57,7 +66,7 @@ public:
   void               OnLoopTimer();
 
 private:
-  TFolder*           CreateTopFolder();
+  TFolder*           CreateTopFolder() const;
   AliMonitorHisto*   GetHisto(const char* folderName, const char* histoName);
   TGListTreeItem*    GetItem(TGListTreeItem* base, const char* folderName, 
 			     const char* histoName, Bool_t create);
@@ -97,7 +106,7 @@ private:
   void               UpdateItem(Bool_t highlight);
 
   Bool_t             CheckForNewData();
-  void               ClearItems(TGListTreeItem* base);
+  void               ClearItems(TGListTreeItem* base) const;
   void               CleanUpTree(TGListTreeItem* base);
   void               UpdateTree();
   void               UpdateFavoritesTree();
@@ -106,78 +115,131 @@ private:
   void               UpdateHisto();
   void               UpdateAll();
 
-  TGLayoutHints*     fMenuBarLayout;
-  TGLayoutHints*     fMenuBarItemLayout;
-  TGLayoutHints*     fMenuBarHelpLayout;
-  TGPopupMenu*       fMenuFile;
-  TGPopupMenu*       fMenuView;
-  TGPopupMenu*       fMenuFavorites;
-  TGPopupMenu*       fMenuReference;
-  TGPopupMenu*       fMenuOptions;
-  TGPopupMenu*       fMenuHelp;
-  TGMenuBar*         fMenuBar;
+  TGLayoutHints*     fMenuBarLayout;           // layout of the menu bar
+  TGLayoutHints*     fMenuBarItemLayout;       // layout of the menu items
+  TGLayoutHints*     fMenuBarHelpLayout;       // layout of the help menu
+  TGPopupMenu*       fMenuFile;                // the file menu
+  TGPopupMenu*       fMenuView;                // the view menu
+  TGPopupMenu*       fMenuFavorites;           // the favorites menu
+  TGPopupMenu*       fMenuReference;           // the reference menu
+  TGPopupMenu*       fMenuOptions;             // the options menu
+  TGPopupMenu*       fMenuHelp;                // the help menu
+  TGMenuBar*         fMenuBar;                 // the menu bar
 
-  TGLayoutHints*     fToolBarLayout;
-  TGHorizontal3DLine* fToolBarSep;
-  TGToolBar*         fToolBar;
-  TGLayoutHints*     fEventNumberLayout;
-  TGNumberEntry*     fEventNumber;
-  TGButton*          fEventButton;
-  TGButton*          fSumButton;
-  TGButton*          fRunButton;
-  TGButton*          fLoopButton;
-  const TGPicture*   fLoopOnPicture;
-  const TGPicture*   fLoopOffPicture;
-  TGButton*          fPreviousButton;
-  TGButton*          fNextButton;
-  TGButton*          fCopyButton;
-  TGButton*          fSaveButton;
-  TGButton*          fPrintButton;
+  TGLayoutHints*     fToolBarLayout;           // layout of the tool bar
+  TGHorizontal3DLine* fToolBarSep;             // separation of the tool bar
+  TGToolBar*         fToolBar;                 // the tool bar
+  TGLayoutHints*     fEventNumberLayout;       // layout of the event number
+  TGNumberEntry*     fEventNumber;             // the event number
+  TGButton*          fEventButton;             // the button for one event
+  TGButton*          fSumButton;               // the button for the sum of events
+  TGButton*          fRunButton;               // the button for a run
+  TGButton*          fLoopButton;              // the botton for the loop
+  const TGPicture*   fLoopOnPicture;           // the picture for running loop
+  const TGPicture*   fLoopOffPicture;          // the picture for stoped loop
+  TGButton*          fPreviousButton;          // the button for previous histo
+  TGButton*          fNextButton;              // the button for next histo
+  TGButton*          fCopyButton;              // the button for copy histo
+  TGButton*          fSaveButton;              // the button for save histo
+  TGButton*          fPrintButton;             // the button for print histo
 
-  TGLayoutHints*     fBottomLayout;
-  TGLayoutHints*     fLeftLayout;
-  TGLayoutHints*     fExpandLayout;
+  TGLayoutHints*     fBottomLayout;            // layout at bottom
+  TGLayoutHints*     fLeftLayout;              // layout at left
+  TGLayoutHints*     fExpandLayout;            // expanded layout
 
-  TGVerticalFrame*   fVerticalFrame;
-  TGHorizontalFrame* fHorizontalFrame;
+  TGVerticalFrame*   fVerticalFrame;           // frame for tree/histo and description
+  TGHorizontalFrame* fHorizontalFrame;         // frame for tree and histo
 
-  TGCompositeFrame*  fTreeFrame;
-  TGCanvas*          fTreeCanvas;
-  TGListTree*        fTree;
-  const TGPicture*   fHistoPicture;
-  TGListTreeItem*    fAllItem;
-  TGListTreeItem*    fFavoritesItem;
-  TGListTreeItem*    fComparisonItem;
+  TGCompositeFrame*  fTreeFrame;               // frame for tree
+  TGCanvas*          fTreeCanvas;              // canvas for tree
+  TGListTree*        fTree;                    // tree with histos
+  const TGPicture*   fHistoPicture;            // picture for histo item
+  TGListTreeItem*    fAllItem;                 // top item for all histos
+  TGListTreeItem*    fFavoritesItem;           // top item for favorites
+  TGListTreeItem*    fComparisonItem;          // top item for comparison
 
-  TGVSplitter*       fTreeSplitter;
+  TGVSplitter*       fTreeSplitter;            // splitter for tree and histo
 
-  TGCompositeFrame*  fDrawFrame;
-  TRootEmbeddedCanvas* fDrawCanvas;
+  TGCompositeFrame*  fDrawFrame;               // frame for histo
+  TRootEmbeddedCanvas* fDrawCanvas;            // canvas for histo
 
-  TGHSplitter*       fDescriptionSplitter;
+  TGHSplitter*       fDescriptionSplitter;     // splitter tree/histo and description
 
-  TGCompositeFrame*  fDescriptionFrame;
-  TGTextView*        fDescription;
+  TGCompositeFrame*  fDescriptionFrame;        // frame for description
+  TGTextView*        fDescription;             // description text
 
-  TString            fServerName;
-  TSocket*           fSocket;
-  TFileHandler*      fSocketHandler;
+  TString            fServerName;              // name of the monitor server
+  TSocket*           fSocket;                  // socket to the monitor server
+  TFileHandler*      fSocketHandler;           // handler for fSocket
 
-  TFolder*           fFolder;
+  TFolder*           fFolder;                  // folder with histos
 
-  TGListTreeItem*    fCurrentItem;
-  TGListTreeItem*    fBaseItem;
-  TTimer*            fLoopTimer;
-  Int_t              fLoopInterval;
+  TGListTreeItem*    fCurrentItem;             // current tree item
+  TGListTreeItem*    fBaseItem;                // base item of current item
+  TTimer*            fLoopTimer;               // timer for loop over histos
+  Int_t              fLoopInterval;            // loop interval
 
-  TString            fFavoritesFileName;
+  TString            fFavoritesFileName;       // file name of favorites
 
-  TString            fReferenceFileName;
-  TFolder*           fReference;
+  TString            fReferenceFileName;       // file name with reference histos
+  TFolder*           fReference;               // folder with reference histos
 
-  TString            fPrintCommand;
+  TString            fPrintCommand;            // print command
 
-  static const char* fgSettingsFileName;
+  static const char* fgSettingsFileName;       // file name of settings
+
+
+  class AliMonitorStringDlg : public AliMonitorDialog {
+
+  public:
+    AliMonitorStringDlg(TString& string, TGFrame* main, const char* title,
+			const char* label);
+    AliMonitorStringDlg(const AliMonitorStringDlg& dlg) : 
+      AliMonitorDialog(dlg), fString(dlg.fString) {
+      Fatal("AliMonitorStringDlg", "copy constructor not implemented");
+    }
+    AliMonitorStringDlg& operator = (const AliMonitorStringDlg& dlg) {
+      Fatal("operator =", "assignment operator not implemented");
+      return *this;
+    }
+    virtual ~AliMonitorStringDlg();
+
+    virtual void       OnOkClicked();
+
+  private:
+    TGLayoutHints*     fStringLayout;    // layout of the text entry
+    TGLabel*           fStringLabel;     // label for the text entry
+    TGTextEntry*       fStringEntry;     // the text enty
+
+    TString&           fString;          // result
+  };
+
+
+  class AliMonitorNumberDlg : public AliMonitorDialog {
+
+  public:
+    AliMonitorNumberDlg(Float_t& value, TGFrame* main, const char* title,
+			const char* label, Float_t min);
+    AliMonitorNumberDlg(const AliMonitorNumberDlg& dlg) : 
+      AliMonitorDialog(dlg), fNumber(dlg.fNumber) {
+      Fatal("AliMonitorNumberDlg", "copy constructor not implemented");
+    }
+    AliMonitorNumberDlg& operator = (const AliMonitorNumberDlg& dlg) {
+      Fatal("operator =", "assignment operator not implemented");
+      return *this;
+    }
+    virtual ~AliMonitorNumberDlg();
+
+    virtual void       OnOkClicked();
+
+  private:
+    TGLayoutHints*     fNumberLayout;    // layout of the number entry
+    TGLabel*           fNumberLabel;     // label for the number entry
+    TGNumberEntry*     fNumberEntry;     // the number entry
+
+    Float_t&           fNumber;          // result
+  };
+
 
   ClassDef(AliMonitorClient, 0)   // class for receiving and displaying monitor histograms
 };

@@ -24,11 +24,14 @@
 
 #include "AliMonitorITS.h"
 #include "AliMonitorHisto.h"
-#include "AliITSRawStreamSPD.h"
+#include "AliITSgeom.h"
 #include "AliITSRawStreamSDD.h"
 #include "AliITSRawStreamSSD.h"
 #include "AliITSclusterV2.h"
 #include "AliITStrackV2.h"
+#include "AliRunLoader.h"
+#include <TFolder.h>
+#include <TTree.h>
 
 
 ClassImp(AliMonitorITS) 
@@ -42,6 +45,20 @@ AliMonitorITS::AliMonitorITS(AliITSgeom* geom)
   fGeom = geom;
 }
 
+
+//_____________________________________________________________________________
+AliMonitorITS::AliMonitorITS(const AliMonitorITS& monitor) :
+  AliMonitor(monitor)
+{
+  Fatal("AliMonitorITS", "copy constructor not implemented");
+}
+
+//_____________________________________________________________________________
+AliMonitorITS& AliMonitorITS::operator = (const AliMonitorITS& /*monitor*/)
+{
+  Fatal("operator =", "assignment operator not implemented");
+  return *this;
+}
 
 //_____________________________________________________________________________
 void AliMonitorITS::CreateHistos(TFolder* folder)

@@ -23,53 +23,17 @@
 
 
 #include "AliMonitorTPC.h"
+#include "AliMonitorDataTPC.h"
+#include "AliMonitorHisto.h"
+#include "AliMonitorTrend.h"
+#include "AliTPCParam.h"
 #include "AliTPCRawStream.h"
 #include "AliTPCClustersRow.h"
 #include "AliTPCclusterMI.h"
 #include "AliTPCtrack.h"
-
-
-ClassImp(AliMonitorDataTPC) 
-
-
-//_____________________________________________________________________________
-AliMonitorDataTPC::AliMonitorDataTPC()
-{
-  fPt = fEta = fPhi = NULL;
-  fSize = 0;
-}
-
-//_____________________________________________________________________________
-AliMonitorDataTPC::AliMonitorDataTPC(Int_t size)
-{
-  fPt = new Float_t[size];
-  fEta = new Float_t[size];
-  fPhi = new Float_t[size];
-  fSize = size;
-}
-
-//_____________________________________________________________________________
-AliMonitorDataTPC::~AliMonitorDataTPC()
-{
-  delete[] fPt;
-  delete[] fEta;
-  delete[] fPhi;
-}
-
-//_____________________________________________________________________________
-void AliMonitorDataTPC::SetSize(Int_t size)
-{
-  if (size > fSize) {
-    delete[] fPt;
-    delete[] fEta;
-    delete[] fPhi;
-    fPt = new Float_t[size];
-    fEta = new Float_t[size];
-    fPhi = new Float_t[size];
-    fSize = size;
-  }
-}
-
+#include "AliRunLoader.h"
+#include <TFolder.h>
+#include <TTree.h>
 
 
 ClassImp(AliMonitorTPC) 
@@ -82,6 +46,20 @@ AliMonitorTPC::AliMonitorTPC(AliTPCParam* param)
 
   fParam = param;
   fData = new AliMonitorDataTPC(10000);
+}
+
+//_____________________________________________________________________________
+AliMonitorTPC::AliMonitorTPC(const AliMonitorTPC& monitor) :
+  AliMonitor(monitor)
+{
+  Fatal("AliMonitorTPC", "copy constructor not implemented");
+}
+
+//_____________________________________________________________________________
+AliMonitorTPC& AliMonitorTPC::operator = (const AliMonitorTPC& /*monitor*/)
+{
+  Fatal("operator =", "assignment operator not implemented");
+  return *this;
 }
 
 //_____________________________________________________________________________
@@ -209,10 +187,10 @@ void AliMonitorTPC::FillHistos(AliRunLoader* runLoader,
   AliTPCtrack* track = new AliTPCtrack;
   tracks->SetBranchAddress("tracks", &track);
 
-  fNTracks->Fill(tracks->GetEntries());
-  fData->fNTracks = (Int_t) tracks->GetEntries();
-  fData->SetSize(fData->fNTracks);
-  for (Int_t i = 0; i < tracks->GetEntries(); i++) {
+  Int_t nTracks = (Int_t) tracks->GetEntries();
+  fNTracks->Fill(nTracks);
+  fData->SetNTracks(nTracks);
+  for (Int_t i = 0; i < nTracks; i++) {
     tracks->GetEntry(i);
     fTrackPt->Fill(track->Pt());
     fTrackEta->Fill(track->Eta());
@@ -220,9 +198,8 @@ void AliMonitorTPC::FillHistos(AliRunLoader* runLoader,
     fTrackNCl->Fill(track->GetNumberOfClusters());
     fTrackDEdxVsP->Fill(track->P(), track->GetdEdx());
 
-    fData->fPt[i] = track->Pt();
-    fData->fEta[i] = track->Eta();
-    fData->fPhi[i] = track->Phi() * TMath::RadToDeg();
+    fData->SetData(i, track->Pt(), track->Eta(), 
+		   track->Phi() * TMath::RadToDeg());
   }
 
   delete track;

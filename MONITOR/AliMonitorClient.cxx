@@ -25,15 +25,30 @@
 
 
 #include "AliMonitorClient.h"
-#include "AliMonitorDialog.h"
 #include "AliMonitorProcess.h"
 #include <TGMsgBox.h>
 #include <TGFileDialog.h>
-#include <TSystem.h>
 #include <TMessage.h>
 #include <TCanvas.h>
 #include <TApplication.h>
 #include <TStyle.h>
+#include <TGMenu.h>
+#include <TGButton.h>
+#include <TGLabel.h>
+#include <TGTextEntry.h>
+#include <TGToolBar.h>
+#include <TG3DLine.h>
+#include <TGNumberEntry.h>
+#include <TGCanvas.h>
+#include <TGSplitter.h>
+#include <TGListTree.h>
+#include <TRootEmbeddedCanvas.h>
+#include <TGTextView.h>
+#include <TFolder.h>
+#include <TSocket.h>
+#include <TTimer.h>
+#include <TFile.h>
+#include "AliMonitorHisto.h"
 
 
 ClassImp(AliMonitorClient) 
@@ -41,29 +56,12 @@ ClassImp(AliMonitorClient)
 
 const char* AliMonitorClient::fgSettingsFileName = ".AliMonitorClient";
 
-//_____________________________________________________________________________
-class AliMonitorStringDlg : public AliMonitorDialog {
-
-public:
-  AliMonitorStringDlg(TString& string, TGFrame* main, const char* title,
-		      const char* label);
-  virtual ~AliMonitorStringDlg();
-
-  virtual void       OnOkClicked();
-
-private:
-  TGLayoutHints*     fStringLayout;
-  TGLabel*           fStringLabel;
-  TGTextEntry*       fStringEntry;
-
-  TString&           fString;
-};
-
 
 //_____________________________________________________________________________
-AliMonitorStringDlg::AliMonitorStringDlg(TString& string, TGFrame* main, 
-					 const char* title, 
-					 const char* label) :
+AliMonitorClient::AliMonitorStringDlg::AliMonitorStringDlg(TString& string, 
+							   TGFrame* main, 
+							   const char* title, 
+							   const char* label) :
   AliMonitorDialog(main, 300, 80), fString(string)
 {
 // create a dialog for connecting to a monitor process
@@ -84,7 +82,7 @@ AliMonitorStringDlg::AliMonitorStringDlg(TString& string, TGFrame* main,
 }
 
 //_____________________________________________________________________________
-AliMonitorStringDlg::~AliMonitorStringDlg()
+AliMonitorClient::AliMonitorStringDlg::~AliMonitorStringDlg()
 {
 // clean up
 
@@ -94,36 +92,18 @@ AliMonitorStringDlg::~AliMonitorStringDlg()
 }
 
 //_____________________________________________________________________________
-void AliMonitorStringDlg::OnOkClicked()
+void AliMonitorClient::AliMonitorStringDlg::OnOkClicked()
 {
   fString = fStringEntry->GetText();
 }
 
 
-
 //_____________________________________________________________________________
-class AliMonitorNumberDlg : public AliMonitorDialog {
-
-public:
-  AliMonitorNumberDlg(Float_t& value, TGFrame* main, const char* title,
-		      const char* label, Float_t min);
-  virtual ~AliMonitorNumberDlg();
-
-  virtual void       OnOkClicked();
-
-private:
-  TGLayoutHints*     fNumberLayout;
-  TGLabel*           fNumberLabel;
-  TGNumberEntry*     fNumberEntry;
-
-  Float_t&           fNumber;
-};
-
-
-//_____________________________________________________________________________
-AliMonitorNumberDlg::AliMonitorNumberDlg(Float_t& value, TGFrame* main, 
-					 const char* title, const char* label, 
-					 Float_t min) :
+AliMonitorClient::AliMonitorNumberDlg::AliMonitorNumberDlg(Float_t& value, 
+							   TGFrame* main, 
+							   const char* title, 
+							   const char* label, 
+							   Float_t min) :
   AliMonitorDialog(main, 250, 80), fNumber(value)
 {
 // create a dialog for getting a number
@@ -145,7 +125,7 @@ AliMonitorNumberDlg::AliMonitorNumberDlg(Float_t& value, TGFrame* main,
 }
 
 //_____________________________________________________________________________
-AliMonitorNumberDlg::~AliMonitorNumberDlg()
+AliMonitorClient::AliMonitorNumberDlg::~AliMonitorNumberDlg()
 {
 // clean up
 
@@ -155,7 +135,7 @@ AliMonitorNumberDlg::~AliMonitorNumberDlg()
 }
 
 //_____________________________________________________________________________
-void AliMonitorNumberDlg::OnOkClicked()
+void AliMonitorClient::AliMonitorNumberDlg::OnOkClicked()
 {
   fNumber = fNumberEntry->GetNumber();
 }
@@ -473,6 +453,21 @@ AliMonitorClient::AliMonitorClient():
 
   // load saved settings
   LoadSettings();
+}
+
+//_____________________________________________________________________________
+AliMonitorClient::AliMonitorClient(const AliMonitorClient& client) :
+  TGMainFrame(client)
+{
+  Fatal("AliMonitorClient", "copy constructor not implemented");
+}
+
+//_____________________________________________________________________________
+AliMonitorClient& AliMonitorClient::operator = (const AliMonitorClient& 
+						/*client*/)
+{
+  Fatal("operator =", "assignment operator not implemented");
+  return *this;
 }
 
 //_____________________________________________________________________________
@@ -938,7 +933,7 @@ void AliMonitorClient::OnLoopTimer()
 
 
 //_____________________________________________________________________________
-TFolder* AliMonitorClient::CreateTopFolder()
+TFolder* AliMonitorClient::CreateTopFolder() const
 {
 // create a top folder for monitor histograms
 
@@ -1001,7 +996,7 @@ Bool_t AliMonitorClient::ConnectToServer()
     if (serverName.IsNull()) return kFALSE;
 
     // connect to the server
-    fSocket = new TSocket(serverName, AliMonitorProcess::kgPort);
+    fSocket = new TSocket(serverName, AliMonitorProcess::GetPort());
     if (!fSocket || !fSocket->IsValid() || (fSocket->Send("client") <= 0)) {
       if (fSocket) delete fSocket;
       fSocket = NULL;
@@ -1894,7 +1889,7 @@ Bool_t AliMonitorClient::CheckForNewData()
 }
 
 //_____________________________________________________________________________
-void AliMonitorClient::ClearItems(TGListTreeItem* base)
+void AliMonitorClient::ClearItems(TGListTreeItem* base) const
 {
 // remove the references to the histograms from all subitems of the 
 // given tree item

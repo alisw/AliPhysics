@@ -42,19 +42,21 @@
 #include "AliITStrackerV2.h"
 #include "AliITSLoader.h"
 #include "AliV0vertexer.h"
-#include <TSystem.h>
+#include <TGrid.h>
 #include <TSocket.h>
+#include <TServerSocket.h>
 #include <TMessage.h>
 #include <TGridResult.h>
 #include <TROOT.h>
 #ifdef ALI_HLT
+#include <AliLevel3.h>
 #include <AliL3Transform.h>
 #endif
 
 ClassImp(AliMonitorProcess) 
 
 
-const Int_t AliMonitorProcess::kgPort = 9327;
+const Int_t AliMonitorProcess::fgkPort = 9327;
 
 
 //_____________________________________________________________________________
@@ -84,9 +86,9 @@ AliMonitorProcess::AliMonitorProcess(const char* alienDir,
   fRunLoader->LoadgAlice();
   gAlice = fRunLoader->GetAliRun();
   if (!gAlice) Fatal("AliMonitorProcess", "no gAlice object found");
-  AliITS* ITS = (AliITS*) gAlice->GetModule("ITS");
-  if (!ITS) Fatal("AliMonitorProcess", "no ITS detector found");
-  fITSgeom = ITS->GetITSgeom();
+  AliITS* its = (AliITS*) gAlice->GetModule("ITS");
+  if (!its) Fatal("AliMonitorProcess", "no ITS detector found");
+  fITSgeom = its->GetITSgeom();
   if (!fITSgeom) Fatal("AliMonitorProcess", "could not load ITS geometry");
 
 #ifdef ALI_HLT
@@ -132,7 +134,7 @@ AliMonitorProcess::AliMonitorProcess(const char* alienDir,
   }
   gROOT->cd();
 
-  fServerSocket = new TServerSocket(kgPort, kTRUE);
+  fServerSocket = new TServerSocket(fgkPort, kTRUE);
   fServerSocket->SetOption(kNoBlock, 1);
   fDisplaySocket = NULL;
   CheckForConnections();
@@ -142,6 +144,21 @@ AliMonitorProcess::AliMonitorProcess(const char* alienDir,
 
   SetStatus(kStopped);
   fStopping = kFALSE;
+}
+
+//_____________________________________________________________________________
+AliMonitorProcess::AliMonitorProcess(const AliMonitorProcess& process) :
+  TObject(process)
+{
+  Fatal("AliMonitorProcess", "copy constructor not implemented");
+}
+
+//_____________________________________________________________________________
+AliMonitorProcess& AliMonitorProcess::operator = (const AliMonitorProcess& 
+						  /*process*/)
+{
+  Fatal("operator =", "assignment operator not implemented");
+  return *this;
 }
 
 //_____________________________________________________________________________
@@ -180,6 +197,8 @@ const char* AliMonitorProcess::GetRevision()
 //_____________________________________________________________________________
 void AliMonitorProcess::SetStatus(EStatus status)
 {
+// set the current status and process system events
+
   fStatus = status;
   gSystem->ProcessEvents();
 }
@@ -377,7 +396,7 @@ void AliMonitorProcess::Reset()
 
 
 //_____________________________________________________________________________
-UInt_t AliMonitorProcess::GetEventPeriodNumber()
+UInt_t AliMonitorProcess::GetEventPeriodNumber() const
 {
 // get the period number from the event id
 
@@ -385,7 +404,7 @@ UInt_t AliMonitorProcess::GetEventPeriodNumber()
 }
 
 //_____________________________________________________________________________
-UInt_t AliMonitorProcess::GetEventOrbitNumber()
+UInt_t AliMonitorProcess::GetEventOrbitNumber() const
 {
 // get the orbit number from the event id
 
@@ -393,7 +412,7 @@ UInt_t AliMonitorProcess::GetEventOrbitNumber()
 }
 
 //_____________________________________________________________________________
-UInt_t AliMonitorProcess::GetEventBunchNumber()
+UInt_t AliMonitorProcess::GetEventBunchNumber() const
 {
 // get the bunch number from the event id
 
@@ -401,7 +420,7 @@ UInt_t AliMonitorProcess::GetEventBunchNumber()
 }
 
 //_____________________________________________________________________________
-Int_t AliMonitorProcess::GetNumberOfEvents(const char* fileName)
+Int_t AliMonitorProcess::GetNumberOfEvents(const char* fileName) const
 {
 // determine the number of events in the given raw data file
 
@@ -557,13 +576,13 @@ void AliMonitorProcess::CreateHLT(const char* fileName)
 
   fHLT->SetClusterFinderParam(0, 0, kTRUE);
   
-  Int_t phi_segments = 50;
-  Int_t eta_segments = 100;
+  Int_t phiSegments = 50;
+  Int_t etaSegments = 100;
   Int_t trackletlength = 3;
   Int_t tracklength = 40;//40 or 5
   Int_t rowscopetracklet = 2;
   Int_t rowscopetrack = 2;
-  Double_t min_pt_fit = 0;
+  Double_t minPtFit = 0;
   Double_t maxangle = 1.31;
   Double_t goodDist = 5;
   Double_t maxphi = 100;
@@ -571,10 +590,10 @@ void AliMonitorProcess::CreateHLT(const char* fileName)
   Double_t hitChi2Cut = 15;//100 or 15
   Double_t goodHitChi2 = 5;//20 or 5
   Double_t trackChi2Cut = 10;//50 or 10
-  fHLT->SetTrackerParam(phi_segments, eta_segments, 
+  fHLT->SetTrackerParam(phiSegments, etaSegments, 
 			trackletlength, tracklength,
 			rowscopetracklet, rowscopetrack,
-			min_pt_fit, maxangle, goodDist, hitChi2Cut,
+			minPtFit, maxangle, goodDist, hitChi2Cut,
 			goodHitChi2, trackChi2Cut, 50, maxphi, maxeta, kTRUE);
   
   fHLT->WriteFiles("./hlt/");  

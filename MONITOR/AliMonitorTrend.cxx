@@ -28,6 +28,7 @@
 
 
 #include "AliMonitorTrend.h"
+#include <TH1.h>
 #include <TVirtualPad.h>
 #include <TLine.h>
 
@@ -65,6 +66,26 @@ AliMonitorTrend::AliMonitorTrend(const AliMonitorTrend& trend) :
   fRefMean = trend.fRefMean;
   fRefSigma = trend.fRefSigma;
   fHistoCompare = NULL;
+}
+
+//_____________________________________________________________________________
+AliMonitorTrend& AliMonitorTrend::operator =(const AliMonitorTrend& trend)
+{
+// assignment operator
+
+  AliMonitorPlot::operator =(trend);
+
+  fLabel = trend.fLabel;
+  fMin = trend.fMin;
+  fMax = trend.fMax;
+  trend.fData.Copy(fData);
+
+  fHistoDraw = NULL;
+  fRefMean = trend.fRefMean;
+  fRefSigma = trend.fRefSigma;
+  fHistoCompare = NULL;
+
+  return *this;
 }
 
 //_____________________________________________________________________________
@@ -345,7 +366,7 @@ TH1* AliMonitorTrend::CreateHisto(Int_t nBins)
 }
 
 //_____________________________________________________________________________
-Double_t AliMonitorTrend::GetMean()
+Double_t AliMonitorTrend::GetMean() const
 {
 // get the mean value
 
@@ -359,7 +380,7 @@ Double_t AliMonitorTrend::GetMean()
 }
 
 //_____________________________________________________________________________
-Double_t AliMonitorTrend::GetSigma()
+Double_t AliMonitorTrend::GetSigma() const
 {
 // get the rms value
 

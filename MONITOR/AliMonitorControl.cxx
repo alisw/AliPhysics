@@ -24,37 +24,27 @@
 
 #include "AliMonitorControl.h"
 #include "AliMonitorHisto.h"
-#include "AliMonitorDialog.h"
 #include <TGNumberEntry.h>
 #include <TGTextView.h>
 #include <TGMsgBox.h>
 #include <TSystem.h>
-#include <TROOT.h>
+#include <TSocket.h>
+#include <TGFrame.h>
+#include <TGMenu.h>
+#include <TGButton.h>
+#include <TGLabel.h>
+#include <TGTextEntry.h>
+#include <TTimer.h>
+#include "AliMonitorProcess.h"
 
 
 ClassImp(AliMonitorControl) 
 
 
-//_____________________________________________________________________________
-class AliMonitorBufferDlg : public AliMonitorDialog {
-
-public:
-  AliMonitorBufferDlg(Int_t& size, TGFrame* main);
-  virtual ~AliMonitorBufferDlg();
-
-  virtual void       OnOkClicked();
-
-private:
-  TGLayoutHints*     fBufferLayout;
-  TGLabel*           fBufferLabel;
-  TGNumberEntry*     fBufferEntry;
-
-  Int_t&             fSize;
-};
-
 
 //_____________________________________________________________________________
-AliMonitorBufferDlg::AliMonitorBufferDlg(Int_t& size, TGFrame* main) :
+AliMonitorControl::AliMonitorBufferDlg::AliMonitorBufferDlg(Int_t& size, 
+							    TGFrame* main) :
   AliMonitorDialog(main, 250, 80), fSize(size)
 {
 // create a dialog for setting the size of the buffer for monitor histos
@@ -76,7 +66,7 @@ AliMonitorBufferDlg::AliMonitorBufferDlg(Int_t& size, TGFrame* main) :
 }
 
 //_____________________________________________________________________________
-AliMonitorBufferDlg::~AliMonitorBufferDlg()
+AliMonitorControl::AliMonitorBufferDlg::~AliMonitorBufferDlg()
 {
 // clean up
 
@@ -86,27 +76,15 @@ AliMonitorBufferDlg::~AliMonitorBufferDlg()
 }
 
 //_____________________________________________________________________________
-void AliMonitorBufferDlg::OnOkClicked()
+void AliMonitorControl::AliMonitorBufferDlg::OnOkClicked()
 {
   fSize = fBufferEntry->GetIntNumber();
 }
 
 
 //_____________________________________________________________________________
-class AliMonitorClientsDlg : public AliMonitorDialog {
-
-public:
-  AliMonitorClientsDlg(TObjArray* clients, TGFrame* main);
-  virtual ~AliMonitorClientsDlg();
-
-private:
-  TGLayoutHints*     fClientsLayout;
-  TGTextView*        fClients;
-};
-
-
-//_____________________________________________________________________________
-AliMonitorClientsDlg::AliMonitorClientsDlg(TObjArray* clients, TGFrame* main) :
+AliMonitorControl::AliMonitorClientsDlg::AliMonitorClientsDlg(TObjArray* clients, 
+							      TGFrame* main) :
   AliMonitorDialog(main, 450, 300, kFALSE)
 {
 // create a dialog to display the list of clients
@@ -144,7 +122,7 @@ AliMonitorClientsDlg::AliMonitorClientsDlg(TObjArray* clients, TGFrame* main) :
 }
 
 //_____________________________________________________________________________
-AliMonitorClientsDlg::~AliMonitorClientsDlg()
+AliMonitorControl::AliMonitorClientsDlg::~AliMonitorClientsDlg()
 {
 // clean up
 
@@ -316,6 +294,21 @@ AliMonitorControl::AliMonitorControl(AliMonitorProcess* process)
 
   fTimer = new TTimer(this, 10, kTRUE);
   fTimer->TurnOn();
+}
+
+//_____________________________________________________________________________
+AliMonitorControl::AliMonitorControl(const AliMonitorControl& control) :
+  TObject(control)
+{
+  Fatal("AliMonitorControl", "copy constructor not implemented");
+}
+
+//_____________________________________________________________________________
+AliMonitorControl& AliMonitorControl::operator = (const AliMonitorControl& 
+						  /*control*/)
+{
+  Fatal("operator =", "assignment operator not implemented");
+  return *this;
 }
 
 //_____________________________________________________________________________

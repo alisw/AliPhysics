@@ -5,15 +5,23 @@
 
 /* $Id$ */
 
-#include <TGFrame.h>
-#include <TGMenu.h>
-#include <TGButton.h>
-#include <TGLabel.h>
-#include <TGTextEntry.h>
+#include <TObject.h>
 #include <RQ_OBJECT.h>
-#include <TSysEvtHandler.h>
-#include <TTimer.h>
-#include "AliMonitorProcess.h"
+#include "AliMonitorDialog.h"
+
+class AliMonitorProcess;
+class TTimer;
+class TGMainFrame;
+class TGLayoutHints;
+class TGPopupMenu;
+class TGMenuBar;
+class TGVerticalFrame;
+class TGHorizontalFrame;
+class TGLabel;
+class TGTextEntry;
+class TGTextButton;
+class TGNumberEntry;
+class TGTextView;
 
 
 class AliMonitorControl : public TObject {
@@ -22,6 +30,8 @@ RQ_OBJECT("AliMonitorControl")
 
 public:
   AliMonitorControl(AliMonitorProcess* process);
+  AliMonitorControl(const AliMonitorControl& control);
+  AliMonitorControl& operator = (const AliMonitorControl& control);
   virtual ~AliMonitorControl();
 
   void               HandleMenu(Int_t id);
@@ -33,53 +43,99 @@ private:
 
   void               UpdateStatus();
 
-  AliMonitorProcess* fMonitorProcess;
+  AliMonitorProcess* fMonitorProcess;       // the controlled monitor process
 
-  ULong_t            fColorStatus;
-  ULong_t            fColorStart;
-  ULong_t            fColorStop;
+  ULong_t            fColorStatus;          // color for status info
+  ULong_t            fColorStart;           // color for start button
+  ULong_t            fColorStop;            // color for stop button
 
-  TGMainFrame*       fMain;
+  TGMainFrame*       fMain;                 // the main window
 
-  TGLayoutHints*     fMenuBarLayout;
-  TGLayoutHints*     fMenuBarItemLayout;
-  TGLayoutHints*     fMenuBarHelpLayout;
-  TGPopupMenu*       fMenuFile;
-  TGPopupMenu*       fMenuOptions;
-  TGPopupMenu*       fMenuHelp;
-  TGMenuBar*         fMenuBar;
+  TGLayoutHints*     fMenuBarLayout;        // layout of the menu bar
+  TGLayoutHints*     fMenuBarItemLayout;    // layout of the menu items
+  TGLayoutHints*     fMenuBarHelpLayout;    // layout of the help menu
+  TGPopupMenu*       fMenuFile;             // the file menu
+  TGPopupMenu*       fMenuOptions;          // the options menu
+  TGPopupMenu*       fMenuHelp;             // the help menu
+  TGMenuBar*         fMenuBar;              // the menu bar
 
-  TGLayoutHints*     fFrameLayout;
-  TGVerticalFrame*   fFrame;
-  TGLayoutHints*     fStatusLayout;
-  TGLayoutHints*     fStatusFrameLayout;
+  TGLayoutHints*     fFrameLayout;          // layout of the main frame
+  TGVerticalFrame*   fFrame;                // the main frame
+  TGLayoutHints*     fStatusLayout;         // layout of status info
+  TGLayoutHints*     fStatusFrameLayout;    // layout of status frames
 
-  TGHorizontalFrame* fStatus1Frame;
-  TGLabel*           fRunNumberLabel;
-  TGTextEntry*       fRunNumber;
-  TGLabel*           fEventNumberLabel;
-  TGTextEntry*       fEventNumber;
+  TGHorizontalFrame* fStatus1Frame;         // frame for run/event number
+  TGLabel*           fRunNumberLabel;       // label for run number
+  TGTextEntry*       fRunNumber;            // run number display
+  TGLabel*           fEventNumberLabel;     // label for event number
+  TGTextEntry*       fEventNumber;          // event number display
 
-  TGHorizontalFrame* fStatus2Frame;
-  TGLabel*           fStatusLabel;
-  TGTextEntry*       fStatus;
+  TGHorizontalFrame* fStatus2Frame;         // frame for current status
+  TGLabel*           fStatusLabel;          // label for status
+  TGTextEntry*       fStatus;               // current status display
 
-  TGHorizontalFrame* fStatus3Frame;
-  TGLabel*           fEventsLabel;
-  TGTextEntry*       fEvents;
-  TGLabel*           fClientsLabel;
-  TGTextEntry*       fClients;
+  TGHorizontalFrame* fStatus3Frame;         // frame for number of event/clients
+  TGLabel*           fEventsLabel;          // label for number of events
+  TGTextEntry*       fEvents;               // number of monitored events display
+  TGLabel*           fClientsLabel;         // label for number of clients
+  TGTextEntry*       fClients;              // number of clients display
 
-  TGLayoutHints*     fButtonFrameLayout;
-  TGHorizontalFrame* fButtonFrame;
-  TGLayoutHints*     fButtonLayout;
-  TGTextButton*      fResetButton;
-  TGTextButton*      fStartStopButton;
-  Bool_t             fStartButtonStatus;
+  TGLayoutHints*     fButtonFrameLayout;    // layout of frame with buttons
+  TGHorizontalFrame* fButtonFrame;          // frame for buttons
+  TGLayoutHints*     fButtonLayout;         // layout of buttons
+  TGTextButton*      fResetButton;          // the rest button
+  TGTextButton*      fStartStopButton;      // the start/stop button
+  Bool_t             fStartButtonStatus;    // current status of the start/stop button
 
-  Bool_t             fTerminating;
+  Bool_t             fTerminating;          // true if program will be terminated
 
-  TTimer*            fTimer;
+  TTimer*            fTimer;                // timer for X update
+
+
+  class AliMonitorBufferDlg : public AliMonitorDialog {
+
+  public:
+    AliMonitorBufferDlg(Int_t& size, TGFrame* main);
+    AliMonitorBufferDlg(const AliMonitorBufferDlg& dlg) : 
+      AliMonitorDialog(dlg), fSize(dlg.fSize) {
+      Fatal("AliMonitorBufferDlg", "copy constructor not implemented");
+    }
+    AliMonitorBufferDlg& operator = (const AliMonitorBufferDlg& dlg) {
+      Fatal("operator =", "assignment operator not implemented");
+      return *this;
+    }
+    virtual ~AliMonitorBufferDlg();
+
+    virtual void       OnOkClicked();
+
+  private:
+    TGLayoutHints*     fBufferLayout;       // layout of buffer entry
+    TGLabel*           fBufferLabel;        // label for buffer entry
+    TGNumberEntry*     fBufferEntry;        // buffer number entry
+
+    Int_t&             fSize;               // result
+  };
+
+
+  class AliMonitorClientsDlg : public AliMonitorDialog {
+
+  public:
+    AliMonitorClientsDlg(TObjArray* clients, TGFrame* main);
+    AliMonitorClientsDlg(const AliMonitorClientsDlg& dlg) : 
+      AliMonitorDialog(dlg) {
+      Fatal("AliMonitorClientsDlg", "copy constructor not implemented");
+    }
+    AliMonitorClientsDlg& operator = (const AliMonitorClientsDlg& dlg) {
+      Fatal("operator =", "assignment operator not implemented");
+      return *this;
+    }
+    virtual ~AliMonitorClientsDlg();
+
+  private:
+    TGLayoutHints*     fClientsLayout;      // layout of clients list
+    TGTextView*        fClients;            // list of clients
+  };
+
 
   ClassDef(AliMonitorControl, 0)   // class for controlling the AliMonitorProcess
 };

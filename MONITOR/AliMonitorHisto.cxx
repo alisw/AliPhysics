@@ -80,6 +80,35 @@ AliMonitorHisto::AliMonitorHisto(const AliMonitorHisto& histo) :
 }
 
 //_____________________________________________________________________________
+AliMonitorHisto& AliMonitorHisto::operator =(const AliMonitorHisto& histo)
+{
+// assignment operatore
+
+  AliMonitorPlot::operator =(histo);
+
+  Bool_t addStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+  fHisto = NULL;
+  if (histo.fHisto) fHisto = (TH1*) histo.fHisto->Clone();
+  fNHistos = histo.fNHistos;
+  TObjLink* link = histo.fHistoList.FirstLink();
+  for (Int_t i = 0; i < fNHistos; i++) {
+    fHistoList.Add(link->GetObject()->Clone());
+    link = link->Next();
+  }
+  fHistoRun = NULL;
+  if (histo.fHistoRun) fHistoRun = (TH1*) histo.fHistoRun->Clone();
+  fHistoDraw = NULL;
+  fHistoRef = NULL;
+  if (histo.fHistoRef) fHistoRef = (TH1*) histo.fHistoRef->Clone();
+  fHistoCompare = NULL;
+  fNorm = histo.fNorm;
+  TH1::AddDirectory(addStatus);
+
+  return *this;
+}
+
+//_____________________________________________________________________________
 AliMonitorHisto::AliMonitorHisto(TH1* histo, ENorm norm) :
   AliMonitorPlot(histo->GetName(), histo->GetTitle())
 {

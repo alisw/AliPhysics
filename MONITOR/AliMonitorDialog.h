@@ -5,10 +5,13 @@
 
 /* $Id$ */
 
-#include <TGFrame.h>
-#include <TGButton.h>
-#include <TGLabel.h>
 #include <RQ_OBJECT.h>
+
+class TGFrame;
+class TGTransientFrame;
+class TGLayoutHints;
+class TGHorizontalFrame;
+class TGTextButton;
 
 
 class AliMonitorDialog : public TObject {
@@ -18,23 +21,25 @@ RQ_OBJECT("AliMonitorDialog")
 public:
   AliMonitorDialog(TGFrame* main, Int_t width = 300, Int_t height = 80,
 		   Bool_t cancelBtn = kTRUE);
+  AliMonitorDialog(const AliMonitorDialog& dlg);
+  AliMonitorDialog& operator = (const AliMonitorDialog& dlg);
   virtual ~AliMonitorDialog();
 
-  void               CloseWindow();
+  void               CloseWindow() const;
   void               DoOk();
   virtual void       OnOkClicked() {};
   void               DoCancel();
   virtual void       OnCancelClicked() {};
 
 protected:
-  TGTransientFrame*  fMain;
-  TGLayoutHints*     fFrameLayout;
-  TGHorizontalFrame* fFrame;
-  TGLayoutHints*     fButtonFrameLayout;
-  TGHorizontalFrame* fButtonFrame;
-  TGLayoutHints*     fButtonLayout;
-  TGTextButton*      fOkButton;
-  TGTextButton*      fCancelButton;
+  TGTransientFrame*  fMain;                // the main window
+  TGLayoutHints*     fFrameLayout;         // layout of the main frame
+  TGHorizontalFrame* fFrame;               // the main frame
+  TGLayoutHints*     fButtonFrameLayout;   // layout of the buttons frame
+  TGHorizontalFrame* fButtonFrame;         // the frame for buttons
+  TGLayoutHints*     fButtonLayout;        // layout of the buttons
+  TGTextButton*      fOkButton;            // the Ok button
+  TGTextButton*      fCancelButton;        // the cancel button
 
   ClassDef(AliMonitorDialog, 0)   // base class for dialogs with ok and cancel button
 };

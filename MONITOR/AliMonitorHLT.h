@@ -6,15 +6,16 @@
 /* $Id$ */
 
 #include "AliMonitor.h"
-#include "AliMonitorHisto.h"
-#include "AliMonitorTrend.h"
-#include "AliTPCParam.h"
+
+class AliTPCParam;
 
 
 class AliMonitorHLT : public AliMonitor {
 public:
   AliMonitorHLT(AliTPCParam* param);
-  virtual ~AliMonitorHLT();
+  AliMonitorHLT(const AliMonitorHLT& monitor);
+  AliMonitorHLT& operator = (const AliMonitorHLT& monitor);
+  virtual ~AliMonitorHLT() {};
 
   virtual void     CreateHistos(TFolder* folder);
   virtual void     FillHistos(AliRunLoader* runLoader, 

@@ -23,6 +23,9 @@
 
 
 #include "AliMonitorHLT.h"
+#include "AliMonitorTrend.h"
+#include "AliTPCParam.h"
+#include <TFolder.h>
 #ifdef ALI_HLT
 #include <stdlib.h>
 #include "AliL3MemHandler.h"
@@ -41,8 +44,17 @@ AliMonitorHLT::AliMonitorHLT(AliTPCParam* param)
 }
 
 //_____________________________________________________________________________
-AliMonitorHLT::~AliMonitorHLT()
+AliMonitorHLT::AliMonitorHLT(const AliMonitorHLT& monitor) :
+  AliMonitor(monitor)
 {
+  Fatal("AliMonitorHLT", "copy constructor not implemented");
+}
+
+//_____________________________________________________________________________
+AliMonitorHLT& AliMonitorHLT::operator = (const AliMonitorHLT& /*monitor*/)
+{
+  Fatal("operator =", "assignment operator not implemented");
+  return *this;
 }
 
 
@@ -111,7 +123,6 @@ void AliMonitorHLT::CreateHistos(TFolder* folder)
 }
 
 
-#include <TCanvas.h>
 //_____________________________________________________________________________
 void AliMonitorHLT::FillHistos(AliRunLoader* /*runLoader*/, 
 			       AliRawReader* /*rawReader*/)

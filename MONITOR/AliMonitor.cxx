@@ -29,12 +29,34 @@
 
 
 #include "AliMonitor.h"
+#include "AliMonitorTrend.h"
+#include <TFolder.h>
 #include <TH1.h>
 #include <TH2.h>
 
 
 ClassImp(AliMonitor) 
 
+
+//_____________________________________________________________________________
+AliMonitor::AliMonitor()
+{
+  fFolder = NULL;
+}
+
+//_____________________________________________________________________________
+AliMonitor::AliMonitor(const AliMonitor& monitor) :
+  TObject(monitor)
+{
+  Fatal("AliMonitor", "copy constructor not implemented");
+}
+
+//_____________________________________________________________________________
+AliMonitor& AliMonitor::operator = (const AliMonitor& /*monitor*/)
+{
+  Fatal("operator =", "assignment operator not implemented");
+  return *this;
+}
 
 //_____________________________________________________________________________
 void AliMonitor::CreateBranches(TTree*)

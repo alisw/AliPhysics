@@ -26,6 +26,9 @@
 #include "AliMonitorHisto.h"
 #include "AliITSLoader.h"
 #include "AliV0vertex.h"
+#include "AliRunLoader.h"
+#include <TFolder.h>
+#include <TTree.h>
 #include <TPDGCode.h>
 
 
@@ -37,6 +40,20 @@ AliMonitorV0s::AliMonitorV0s()
 {
 // create a monitor object for V0s
 
+}
+
+//_____________________________________________________________________________
+AliMonitorV0s::AliMonitorV0s(const AliMonitorV0s& monitor) :
+  AliMonitor(monitor)
+{
+  Fatal("AliMonitorV0s", "copy constructor not implemented");
+}
+
+//_____________________________________________________________________________
+AliMonitorV0s& AliMonitorV0s::operator = (const AliMonitorV0s& /*monitor*/)
+{
+  Fatal("operator =", "assignment operator not implemented");
+  return *this;
 }
 
 

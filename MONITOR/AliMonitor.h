@@ -6,16 +6,22 @@
 /* $Id$ */
 
 #include <TObject.h>
-#include <TFolder.h>
-#include <TTree.h>
-#include "AliRunLoader.h"
-#include "AliRawReader.h"
 #include "AliMonitorHisto.h"
-#include "AliMonitorTrend.h"
+
+class TFolder;
+class TTree;
+class AliRunLoader;
+class AliRawReader;
+class AliMonitorTrend;
 
 
 class AliMonitor : public TObject {
 public:
+  AliMonitor();
+  AliMonitor(const AliMonitor& monitor);
+  AliMonitor& operator = (const AliMonitor& monitor);
+  virtual ~AliMonitor() {};
+
   virtual void     CreateHistos(TFolder* folder) = 0;
   virtual void     CreateBranches(TTree* tree);
   virtual void     FillHistos(AliRunLoader* runLoader, 

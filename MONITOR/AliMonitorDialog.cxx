@@ -23,6 +23,8 @@
 
 
 #include "AliMonitorDialog.h"
+#include <TGFrame.h>
+#include <TGButton.h>
 
 
 ClassImp(AliMonitorDialog) 
@@ -80,6 +82,21 @@ AliMonitorDialog::AliMonitorDialog(TGFrame* main, Int_t width, Int_t height,
 }
 
 //_____________________________________________________________________________
+AliMonitorDialog::AliMonitorDialog(const AliMonitorDialog& dlg) :
+  TObject(dlg)
+{
+  Fatal("AliMonitorDialog", "copy constructor not implemented");
+}
+
+//_____________________________________________________________________________
+AliMonitorDialog& AliMonitorDialog::operator = (const AliMonitorDialog& 
+						/*dlg*/)
+{
+  Fatal("operator =", "assignment operator not implemented");
+  return *this;
+}
+
+//_____________________________________________________________________________
 AliMonitorDialog::~AliMonitorDialog()
 {
 // clean up
@@ -96,7 +113,7 @@ AliMonitorDialog::~AliMonitorDialog()
 }
 
 //_____________________________________________________________________________
-void AliMonitorDialog::CloseWindow()
+void AliMonitorDialog::CloseWindow() const
 {
 // called when the window is closed
 

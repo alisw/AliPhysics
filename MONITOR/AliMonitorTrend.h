@@ -6,12 +6,14 @@
 /* $Id$ */
 
 #include "AliMonitorPlot.h"
+#include "TArrayD.h"
 
 
 class AliMonitorTrend : public AliMonitorPlot {
 public:
   AliMonitorTrend();
   AliMonitorTrend(const AliMonitorTrend& trend);
+  AliMonitorTrend& operator =(const AliMonitorTrend& trend);
   AliMonitorTrend(const char* name, const char* title,
 		  const char* label, Double_t min = 0, Double_t max = 0);
   virtual ~AliMonitorTrend();
@@ -26,8 +28,8 @@ public:
   virtual void    Reset();
   virtual void    ResetList();
 
-  Double_t        GetMean();
-  Double_t        GetSigma();
+  Double_t        GetMean() const;
+  Double_t        GetSigma() const;
 protected:
   virtual Bool_t  ComparePlot();
   virtual Bool_t  GetEvent(Int_t number = 1);

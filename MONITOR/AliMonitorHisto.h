@@ -6,9 +6,7 @@
 /* $Id$ */
 
 #include "AliMonitorPlot.h"
-#include <TH1.h>
 #include <TList.h>
-#include <TString.h>
 
 
 class AliMonitorHisto : public AliMonitorPlot {
@@ -17,6 +15,7 @@ public:
 
   AliMonitorHisto();
   AliMonitorHisto(const AliMonitorHisto& histo);
+  AliMonitorHisto& operator =(const AliMonitorHisto& histo);
   AliMonitorHisto(TH1* histo, ENorm norm = kNormIntegral);
   virtual ~AliMonitorHisto();
 

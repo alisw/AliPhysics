@@ -6,21 +6,22 @@
 /* $Id$ */
 
 #include <TObject.h>
-#include <TString.h>
-#include <TFolder.h>
-#include <TFile.h>
-#include <TTree.h>
-#include <TObjArray.h>
-#include <TServerSocket.h>
-#include <TTimer.h>
-#include <TGrid.h>
 #include <TSystem.h>
-#include "AliRunLoader.h"
-#include "AliRawReader.h"
-#include "AliTPCParam.h"
-#include "AliITSgeom.h"
+#include <TString.h>
+#include <TObjArray.h>
+
+class AliRawReader;
+class AliTPCParam;
+class AliITSgeom;
+class AliRunLoader;
+class TFile;
+class TGrid;
+class TTimer;
+class TServerSocket;
+class TFolder;
+class TTree;
 #ifdef ALI_HLT
-#include "AliLevel3.h"
+class AliLevel3;
 #endif
 
 
@@ -28,6 +29,8 @@ class AliMonitorProcess : public TObject {
 public:
   AliMonitorProcess(const char* alienDir,
 		    const char* fileNameGalice = "galice.root");
+  AliMonitorProcess(const AliMonitorProcess& process);
+  AliMonitorProcess& operator = (const AliMonitorProcess& process);
   virtual ~AliMonitorProcess();
 
   static const char* GetRevision();
@@ -38,32 +41,34 @@ public:
 
   void             ProcessFile(const char* fileName);
 
-  UInt_t           GetRunNumber() {return fRunNumber;};
-  UInt_t           GetEventPeriodNumber();
-  UInt_t           GetEventOrbitNumber();
-  UInt_t           GetEventBunchNumber();
+  UInt_t           GetRunNumber() const {return fRunNumber;};
+  UInt_t           GetEventPeriodNumber() const;
+  UInt_t           GetEventOrbitNumber() const;
+  UInt_t           GetEventBunchNumber() const;
 
   enum EStatus     {kStopped, kWaiting, kReading, kRecTPC, kRecITS, kRecV0s,
 		    kRecHLT, kFilling, kUpdating, kWriting, kResetting, 
 		    kConnecting, kBroadcasting};
-  EStatus          GetStatus() {gSystem->ProcessEvents();return fStatus;};
-  Bool_t           WillStop() {return fStopping;};
-  Bool_t           IsStopped() {return (fStatus == kStopped);};
+  EStatus          GetStatus() const 
+    {gSystem->ProcessEvents(); return fStatus;};
+  Bool_t           WillStop() const {return fStopping;};
+  Bool_t           IsStopped() const {return (fStatus == kStopped);};
 
-  Int_t            GetNumberOfEvents() {return fNEvents;};
-  Int_t            GetNumberOfClients() {return fSockets.GetEntriesFast();};
+  Int_t            GetNumberOfEvents() const {return fNEvents;};
+  Int_t            GetNumberOfClients() const 
+    {return fSockets.GetEntriesFast();};
   TObjArray*       GetListOfClients() {return &fSockets;};
-  Int_t            GetNEventsMin() {return fNEventsMin;};
+  Int_t            GetNEventsMin() const {return fNEventsMin;};
   void             SetNEventsMin(Int_t nEventsMin) {fNEventsMin = nEventsMin;};
   void             SetWriteHistoList(Bool_t writeHistoList = kTRUE) 
                                          {fWriteHistoList = writeHistoList;};
-  
-  static const Int_t kgPort;
 
+  static Int_t     GetPort() {return fgkPort;};
+  
 private:
   Bool_t           CheckForNewFile();
   Bool_t           ProcessFile();
-  Int_t            GetNumberOfEvents(const char* fileName);
+  Int_t            GetNumberOfEvents(const char* fileName) const;
   Bool_t           ReconstructTPC(AliRawReader* rawReader);
   Bool_t           ReconstructITS(AliRawReader* rawReader);
   Bool_t           ReconstructV0s();
@@ -79,34 +84,36 @@ private:
   void             BroadcastHistos();
   void             SetStatus(EStatus);
 
-  TGrid*           fGrid;
-  AliRunLoader*    fRunLoader;
-  AliTPCParam*     fTPCParam;
-  AliITSgeom*      fITSgeom;
-  TString          fLogicalFileName;
-  TString          fFileName;
+  static const Int_t fgkPort;          // port number for client connections
+
+  TGrid*           fGrid;               // pointer to AliEn
+  AliRunLoader*    fRunLoader;          // the current run loader
+  AliTPCParam*     fTPCParam;           // TPC parameters
+  AliITSgeom*      fITSgeom;            // ITS parameters
+  TString          fLogicalFileName;    // logical AliEn file name
+  TString          fFileName;           // physical file name
 #ifdef ALI_HLT
-  AliLevel3*       fHLT;
+  AliLevel3*       fHLT;                // the HLT tracker
 #endif
 
-  UInt_t           fRunNumber;
-  UInt_t           fSubRunNumber;
-  UInt_t           fEventNumber[2];
-  Int_t            fNEvents;
-  Int_t            fNEventsMin;
-  Bool_t           fWriteHistoList;
+  UInt_t           fRunNumber;          // current run number
+  UInt_t           fSubRunNumber;       // current part (=resets per run)
+  UInt_t           fEventNumber[2];     // current event number
+  Int_t            fNEvents;            // total number of monitored events
+  Int_t            fNEventsMin;         // threshold for writing
+  Bool_t           fWriteHistoList;     // write event histos or not
 
-  TFolder*         fTopFolder;
-  TObjArray        fMonitors;
-  TFile*           fFile;
-  TTree*           fTree;
+  TFolder*         fTopFolder;          // folder with histos
+  TObjArray        fMonitors;           // array of monitor objects
+  TFile*           fFile;               // file with tree
+  TTree*           fTree;               // monitor tree
 
-  TServerSocket*   fServerSocket;
-  TObjArray        fSockets;
-  TSocket*         fDisplaySocket;
+  TServerSocket*   fServerSocket;       // socket for client connections
+  TObjArray        fSockets;            // array of client sockets
+  TSocket*         fDisplaySocket;      // socket for an event display
 
-  EStatus          fStatus;
-  Bool_t           fStopping;
+  EStatus          fStatus;             // current status
+  Bool_t           fStopping;           // stop of process requested or not
 
   ClassDef(AliMonitorProcess, 0)   // class for performing the monitoring
 };

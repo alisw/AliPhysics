@@ -6,21 +6,26 @@
 /* $Id$ */
 
 #include <TNamed.h>
-#include <TH1.h>
 #include <TString.h>
+#include <Gtypes.h>
+
+
+class TH1;
 
 
 class AliMonitorPlot : public TNamed {
 public:
   AliMonitorPlot();
   AliMonitorPlot(const AliMonitorPlot& plot);
+  AliMonitorPlot& operator = (const AliMonitorPlot& plot);
   AliMonitorPlot(const char* name, const char* title);
+  virtual ~AliMonitorPlot() {};
 
   virtual void    SetReference(TH1* ref) = 0;
   virtual void    SetReference(AliMonitorPlot* ref) = 0;
-  inline void     SetDescription(TString description) 
+  void            SetDescription(TString description) 
                     {fDescription = description;};
-  inline TString  GetDescription() {return fDescription;};
+  TString         GetDescription() const {return fDescription;};
 
   virtual void    Update() = 0;
   virtual void    Add(AliMonitorPlot* plot) = 0;

@@ -55,6 +55,16 @@ AliMonitorPlot::AliMonitorPlot(const AliMonitorPlot& plot) :
 }
 
 //_____________________________________________________________________________
+AliMonitorPlot& AliMonitorPlot::operator =(const AliMonitorPlot& plot)
+{
+// assignment operator
+
+  TNamed::operator =(plot);
+  fNumberOfEvents = plot.fNumberOfEvents;
+  return *this;
+}
+
+//_____________________________________________________________________________
 AliMonitorPlot::AliMonitorPlot(const char* name, const char* title) :
   TNamed(name, title)
 {

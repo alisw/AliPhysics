@@ -6,33 +6,16 @@
 /* $Id$ */
 
 #include "AliMonitor.h"
-#include "AliMonitorHisto.h"
-#include "AliMonitorTrend.h"
-#include "AliTPCParam.h"
 
-
-class AliMonitorDataTPC : public TObject {
-public:
-  AliMonitorDataTPC();
-  AliMonitorDataTPC(Int_t size);
-  virtual ~AliMonitorDataTPC();
-  void     SetSize(Int_t size);
-
-  Int_t    fNTracks;   // number of TPC tracks
-  Float_t* fPt;        //[fNTracks]
-  Float_t* fEta;       //[fNTracks]
-  Float_t* fPhi;       //[fNTracks]
-
-private:
-  Int_t    fSize;      //! size of the arrays
-
-  ClassDef(AliMonitorDataTPC, 1)   // data structure for the TPC monitor tree branch
-};
+class AliTPCParam;
+class AliMonitorDataTPC;
 
 
 class AliMonitorTPC : public AliMonitor {
 public:
   AliMonitorTPC(AliTPCParam* param);
+  AliMonitorTPC(const AliMonitorTPC& monitor);
+  AliMonitorTPC& operator = (const AliMonitorTPC& monitor);
   virtual ~AliMonitorTPC();
 
   virtual void     CreateHistos(TFolder* folder);
