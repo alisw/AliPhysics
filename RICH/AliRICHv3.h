@@ -24,6 +24,8 @@ public:
    virtual void   StepManager();     // Processes the particle transport 
        
 private:
+   Double_t* RotateXY(const Double_t* r, Double_t a);
+   
     ClassDef(AliRICHv3,1)  //RICH full version, configurable with azimuthal rotation	
 };// class AliRICHv3
 
