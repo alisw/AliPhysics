@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.26  2003/10/03 06:04:10  bnandi
+z_psa and z_psb bugs fixed
+
 Revision 1.25  2003/10/01 11:08:04  bnandi
 changes for NewIO
 
@@ -546,7 +549,8 @@ void AliPMDv1::CreatePMD()
 
   // Gaspmd, the dimension of RECTANGULAR mother volume of PMD,
 
-  Float_t gaspmd[3] = {81.5,94.5,7.};
+  //  Float_t gaspmd[3] = {81.5,94.5,7.};
+  Float_t gaspmd[3] = {81.5,94.5,0.25};
   gaspmd[0] = sm_length_ax+sm_length_bx;
   gaspmd[1] = sm_length_ay+sm_length_by;
 
@@ -918,6 +922,6 @@ void AliPMDv1::GetParameters()
     th_lead=1.5;
     th_steel=0.5;
     
-    zdist1 = 361.5;
+    zdist1 = -361.5;
 
 }
