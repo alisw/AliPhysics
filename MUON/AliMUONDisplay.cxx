@@ -811,12 +811,12 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     
     Int_t npoints  = 1;
     Float_t adcmax = 1024;
-    if (response) adcmax = response->MaxAdc();
+    if (response&&chamber<11) adcmax = response->MaxAdc();
 
     for (Int_t digit = 0; digit < ndigits; digit++) {
         mdig    = (AliMUONDigit*)muonDigits->UncheckedAt(digit);
 	if (mdig->Cathode() != cathode-1) continue;
-
+	
         //
         // First get all needed parameters
         //
@@ -827,6 +827,7 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
         if (color > 282) color = 282;
 
 	if (chamber > 10) { // trigger chamber 
+
 	    Int_t sumCharge = 0;
 	    for (Int_t icharge = 0; icharge < 10; icharge++) {
 		sumCharge = sumCharge+mdig->TrackCharge(icharge);
@@ -865,8 +866,8 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
         points->SetHitIndex(-1);
         points->SetTrackIndex(-1);
         points->SetDigitIndex(digit);
-        points->SetPoint(0,xpad,ypad,zpos);	
-
+        points->SetPoint(0,xpad,ypad,zpos);
+	
 	Int_t lineColor = (zpad-zpos > 0) ? 2:3;
 	marker=new TMarker3DBox(xpad,ypad,zpos,dpx,dpy,0,0,0);
 

@@ -24,7 +24,7 @@ public AliMUONSegmentationTrigger {
   // Transform from real to pad coordinates
   virtual void    GetPadC(Int_t ix,Int_t iy,Float_t &x,Float_t &y);
   virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z) 
-      {z=0; GetPadC(ix, iy, x , y);}
+      {z=-10000.; GetPadC(ix, iy, x , y);}
   // Pad size Dx*Dy 
   virtual void SetPadSize(Float_t dp1, Float_t dp2);
   // Strip size by Module
