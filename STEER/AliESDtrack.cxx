@@ -175,11 +175,11 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):TObject(track){
   //
   for (Int_t i=0;i<3;i++) fPHOSpos[i]=track.fPHOSpos[i]; 
   fPHOSsignal=track.fPHOSsignal; 
-  for (Int_t i=0;i<kSPECIES;i++) fPHOSr[i]=track.fPHOSr[i]; 
+  for (Int_t i=0;i<kSPECIESN;i++) fPHOSr[i]=track.fPHOSr[i]; 
   //
   for (Int_t i=0;i<3;i++) fEMCALpos[i]=track.fEMCALpos[i]; 
   fEMCALsignal=track.fEMCALsignal; 
-  for (Int_t i=0;i<kSPECIES;i++) fEMCALr[i]=track.fEMCALr[i]; 
+  for (Int_t i=0;i<kSPECIESN;i++) fEMCALr[i]=track.fEMCALr[i]; 
   //
   fRICHsignal=track.fRICHsignal;     
   for (Int_t i=0;i<kSPECIES;i++) fRICHr[i]=track.fRICHr[i];
