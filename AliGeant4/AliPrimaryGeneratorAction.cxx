@@ -28,9 +28,9 @@
 
 //_____________________________________________________________________________
 AliPrimaryGeneratorAction::AliPrimaryGeneratorAction()
-  : fGenerator(kAliGenerator),
+  : AliVerbose("primaryGeneratorAction"),
+    fGenerator(kAliGenerator),
     fNofGunParticles(1),
-    fVerboseLevel(0),
     fMessenger(this),
     fParticleGun() {
 //
@@ -110,7 +110,7 @@ void AliPrimaryGeneratorAction::ConstructGeantinoGenerator(G4bool isCharged)
 
     fParticleGun.AddParticle(gunParticle);     
   } 
-  if (fVerboseLevel>1) { 
+  if (VerboseLevel() > 1) { 
     G4cout << "Geantino generator has been built." << G4endl; 
   }
 } 

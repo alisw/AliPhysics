@@ -25,8 +25,8 @@
 
 //_____________________________________________________________________________
 AliEventAction::AliEventAction()
-  : fMessenger(this),
-    fVerboseLevel(1), 
+  : AliVerbose("eventAction"),
+    fMessenger(this),
     fDrawFlag("CHARGED")
 {
 //
@@ -35,7 +35,8 @@ AliEventAction::AliEventAction()
 
 //_____________________________________________________________________________
 AliEventAction::AliEventAction(const AliEventAction& right)
-  : fMessenger(this) {
+  : AliVerbose(""),
+    fMessenger(this) {
 //
   AliGlobals::Exception("AliEventAction is protected from copying.");
 }
@@ -77,7 +78,7 @@ void AliEventAction::DisplayEvent(const G4Event* event) const
     if (trajectoryContainer)
       nofTrajectories = trajectoryContainer->entries(); 
   
-    if (fVerboseLevel>0 && nofTrajectories>0) {
+    if (VerboseLevel() > 0 && nofTrajectories > 0) {
       G4cout << "    " << nofTrajectories; 
       G4cout << " trajectories stored." << G4endl;
     }  
@@ -113,8 +114,9 @@ void AliEventAction::BeginOfEventAction(const G4Event* event)
   if(AliTrackingAction::Instance()) 
     AliTrackingAction::Instance()->PrepareNewEvent();   
 
-  if (fVerboseLevel>0)
+  if (VerboseLevel() > 0) {
     G4cout << ">>> Event " << event->GetEventID() << G4endl;
+  }  
 
   fTimer->Start();
 }
@@ -129,13 +131,12 @@ void AliEventAction::EndOfEventAction(const G4Event* event)
   AliTrackingAction* trackingAction = AliTrackingAction::Instance();
   if (trackingAction) trackingAction->FinishPrimaryTrack();   
 
-  // verbose output 
-  if (fVerboseLevel>0) {
+  if (VerboseLevel() > 0) {
     G4cout << G4endl;
     G4cout << ">>> End of Event " << event->GetEventID() << G4endl;
   }
 
-  if (fVerboseLevel>1) {
+  if (VerboseLevel() > 1) {
     //G4int nofPrimaryTracks = trackingAction->GetNofPrimaryTracks();
     G4int nofPrimaryTracks = gAlice->GetHeader()->GetNprimary();
     G4int nofSavedTracks = gAlice->GetNtrack();
@@ -157,7 +158,7 @@ void AliEventAction::EndOfEventAction(const G4Event* event)
   // aliroot finish event
   gAlice->FinishEvent();    
 
-  if (fVerboseLevel>1) {
+  if (VerboseLevel() > 1) {
     // print time
     fTimer->Stop();
     G4cout << "Time of this event: " << *fTimer << G4endl;

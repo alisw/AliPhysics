@@ -15,6 +15,7 @@
 #ifndef ALI_PRIMARY_GENERATOR_ACTION_H
 #define ALI_PRIMARY_GENERATOR_ACTION_H
 
+#include "AliVerbose.h"
 #include "AliPrimaryGenerator.h"
 #include "AliPrimaryGeneratorMessenger.h"
 #include "AliParticleGun.h"
@@ -26,7 +27,8 @@ class AliParticleGun;
 class G4ParticleGun;
 class G4Event;
 
-class AliPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
+class AliPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction,
+                                  public AliVerbose
 {
   public:
     AliPrimaryGeneratorAction();
@@ -38,12 +40,10 @@ class AliPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     // set methods
     void SetGenerator(AliPrimaryGenerator generator);
     void SetNofGunParticles(G4int nofParticles);
-    void SetVerboseLevel(G4int level);
 
     // get methods
     AliPrimaryGenerator GetGenerator() const;
     G4int GetNofGunParticles() const;
-    G4int GetVerboseLevel() const;
     
   private:
     // methods
@@ -55,24 +55,17 @@ class AliPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     // data members
     AliPrimaryGenerator  fGenerator;       //selected AliPrimaryGenerator
     G4int                fNofGunParticles; //number of gun particles
-    G4int                fVerboseLevel;    //verbose level
     AliParticleGun       fParticleGun;     //AliParticleGun
     AliPrimaryGeneratorMessenger  fMessenger; //messenger
 };
 
 // inline methods
 
-inline void AliPrimaryGeneratorAction::SetVerboseLevel(G4int level)
-{ fVerboseLevel = level; }
-
 inline AliPrimaryGenerator AliPrimaryGeneratorAction::GetGenerator() const
 { return fGenerator; }
 
 inline G4int AliPrimaryGeneratorAction::GetNofGunParticles() const
 { return fNofGunParticles; }
-
-inline G4int AliPrimaryGeneratorAction::GetVerboseLevel() const
-{ return fVerboseLevel; }
 
 #endif //ALI_PRIMARY_GENERATOR_ACTION_H
 

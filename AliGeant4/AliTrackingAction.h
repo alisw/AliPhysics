@@ -10,6 +10,7 @@
 #ifndef ALI_TRACKING_ACTION_H
 #define ALI_TRACKING_ACTION_H
 
+#include "AliVerbose.h"
 #include "AliTrackingActionMessenger.h"
 
 #include "TG4TrackingAction.h"
@@ -22,7 +23,8 @@ class G4Track;
 
 class TClonesArray;
 
-class AliTrackingAction : public TG4TrackingAction 
+class AliTrackingAction : public TG4TrackingAction,
+                          public AliVerbose
 {
   public:
     AliTrackingAction();
@@ -41,13 +43,11 @@ class AliTrackingAction : public TG4TrackingAction
     void SaveTrack(const G4Track* track);
 
     // set methods
-    void SetVerboseLevel(G4int level);
     void SetNewVerboseLevel(G4int level);
     void SetNewVerboseTrackID(G4int trackID);
     void SetSavePrimaries(G4bool savePrimaries);
 
     // get methods
-    G4int GetVerboseLevel() const;
     G4bool GetSavePrimaries() const;
     G4int GetNofTracks() const;
 
@@ -70,7 +70,6 @@ class AliTrackingAction : public TG4TrackingAction
     AliTrackingActionMessenger  fMessenger; //messenger
     G4int   fPrimaryTrackID;    //current primary track ID 
     G4bool  fSavePrimaries;     //control of saving primaries
-    G4int   fVerboseLevel;      //verbose level
     G4int   fNewVerboseLevel;   //new /tracking/verbose level
     G4int   fNewVerboseTrackID; //track ID for which new /tracking/verbose level
                                 // is applied
@@ -82,14 +81,8 @@ class AliTrackingAction : public TG4TrackingAction
 inline AliTrackingAction* AliTrackingAction::Instance() 
 { return fgInstance; }
 
-inline void AliTrackingAction::SetVerboseLevel(G4int level)
-{ fVerboseLevel = level; }
-
 inline void AliTrackingAction::SetSavePrimaries(G4bool savePrimaries)
 { fSavePrimaries = savePrimaries; }
-
-inline G4int AliTrackingAction::GetVerboseLevel() const
-{ return fVerboseLevel; }
 
 inline G4bool AliTrackingAction::GetSavePrimaries() const
 { return fSavePrimaries; }

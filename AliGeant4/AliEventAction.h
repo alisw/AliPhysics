@@ -10,6 +10,7 @@
 #ifndef ALI_EVENT_ACTION_H
 #define ALI_EVENT_ACTION_H 
 
+#include "AliVerbose.h"
 #include "AliEventActionMessenger.h"
 
 #include <G4UserEventAction.hh>
@@ -20,7 +21,8 @@ class G4Timer;
     // times system function this declaration must be the first
 class G4Event;
 
-class AliEventAction : public G4UserEventAction
+class AliEventAction : public G4UserEventAction,
+                       public AliVerbose
 {
   public:
     AliEventAction();
@@ -33,11 +35,9 @@ class AliEventAction : public G4UserEventAction
     virtual void EndOfEventAction(const G4Event* event);
     
     // set methods
-    void SetVerboseLevel(G4int level);
     void SetDrawFlag(G4String drawFlag);
     
     // get methods
-    G4int GetVerboseLevel() const;
     G4String GetDrawFlag() const;
     
   protected:
@@ -53,20 +53,13 @@ class AliEventAction : public G4UserEventAction
     // data members
     AliEventActionMessenger   fMessenger;    //messenger
     G4Timer*                  fTimer;        //G4Timer
-    G4int                     fVerboseLevel; //verbose level
     G4String                  fDrawFlag;     //control drawing of the event
 };
 
 // inline methods
 
-inline void AliEventAction::SetVerboseLevel(G4int level)
-{ fVerboseLevel = level; }
-
 inline void AliEventAction::SetDrawFlag(G4String drawFlag)
 { fDrawFlag = drawFlag; }
-
-inline G4int AliEventAction::GetVerboseLevel() const
-{ return fVerboseLevel; }
 
 inline G4String AliEventAction::GetDrawFlag() const
 { return fDrawFlag; }

@@ -27,8 +27,8 @@ AliTrackingAction* AliTrackingAction::fgInstance = 0;
 
 //_____________________________________________________________________________
 AliTrackingAction::AliTrackingAction()
-  : fPrimaryTrackID(0),
-    fVerboseLevel(2),
+  : AliVerbose("trackingAction",2),
+    fPrimaryTrackID(0),
     fNewVerboseLevel(0),
     fNewVerboseTrackID(-1),
     fSavePrimaries(true),
@@ -45,7 +45,8 @@ AliTrackingAction::AliTrackingAction()
 
 //_____________________________________________________________________________
 AliTrackingAction::AliTrackingAction(const AliTrackingAction& right) 
-  : fMessenger(this) {
+  : AliVerbose("trackingAction"),
+    fMessenger(this) {
 //
   AliGlobals::Exception("AliTrackingAction is protected from copying.");
 }
@@ -225,13 +226,13 @@ void AliTrackingAction::FinishPrimaryTrack()
   if (fPrimaryTrackID>0) {
 
     // verbose
-    if (fVerboseLevel == 3) { 
+    if (VerboseLevel() == 3) { 
       G4cout << "$$$ Primary track " << fPrimaryTrackID << G4endl;
     } 
-    else if ( fVerboseLevel == 2 &&  fPrimaryTrackID % 10 == 0 ) {
+    else if (VerboseLevel() == 2 &&  fPrimaryTrackID % 10 == 0 ) {
       G4cout << "$$$ Primary track " << fPrimaryTrackID  << G4endl;
     } 
-    else if ( fVerboseLevel == 1 &&  fPrimaryTrackID % 100 == 0 ) {
+    else if (VerboseLevel() == 1 &&  fPrimaryTrackID % 100 == 0 ) {
       G4cout << "$$$ Primary track " << fPrimaryTrackID  << G4endl;
     } 
 
