@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.71  2002/05/13 14:27:56  hristov
+TreeC created once per event (M.Masera)
+
 Revision 1.70  2002/05/10 22:28:30  nilsen
 Changes by Massimo Masera to allow the TTree of clusters to be written to a
 file otherthan the one with digits in it.
@@ -440,10 +443,10 @@ AliITS::~AliITS(){
     // Return:
     //      none.
 
-    delete fHits;
-    delete fSDigits;
-    delete fDigits;
-    delete fRecPoints;
+    delete fHits; fHits=0;
+    delete fSDigits; fSDigits=0;
+//    delete fDigits; fDigits=0;
+    delete fRecPoints; fRecPoints=0;
     if(fIdName!=0) delete[] fIdName;  // Array of TStrings
     if(fIdSens!=0) delete[] fIdSens;
     if(fITSmodules!=0) {
@@ -927,7 +930,7 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,
     // Return:
     //      none.
     static TTree *trH1;                 //Tree with background hits
-    static TClonesArray *fHits2;        //List of hits for one track only
+//    static TClonesArray *fHits2;        //List of hits for one track only
     static Bool_t first=kTRUE;
     static TFile *file;
     const char *addBgr = strstr(option,"Add");
@@ -935,13 +938,13 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,
     if (addBgr ) {
 	if(first) {
 	    file=new TFile(filename);
-	    fHits2     = new TClonesArray("AliITShit",1000  );
+//	    fHits2     = new TClonesArray("AliITShit",1000  );
 	} // end if first
 	first=kFALSE;
 	file->cd();
 	file->ls();
 	// Get Hits Tree header from file
-	if(fHits2) fHits2->Clear();
+//	if(fHits2) fHits2->Clear();
 	if(trH1) delete trH1;
 	trH1=0;
 
@@ -952,6 +955,7 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,
 	    Error("FillModules","cannot find Hits Tree for event:%d",bgrev);
 	} // end if !trH1
 	// Set branch addresses
+/*
 	TBranch *branch;
 	char branchname[20];
 	sprintf(branchname,"%s",GetName());
@@ -959,8 +963,11 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,
 	    branch = trH1->GetBranch(branchname);
 	    if (branch) branch->SetAddress(&fHits2);
 	} // end if trH1 && fHits
+*/
     } // end if addBgr
 
+    FillModules(gAlice->TreeH(),0); // fill from this file's tree.
+/*
     TClonesArray *itsHits = this->Hits();
     Int_t lay,lad,det,index;
     AliITShit *itsHit=0;
@@ -984,10 +991,12 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,
 	    mod->AddHit(itsHit,t,h);
 	} // end loop over hits 
     } // end loop over tracks
-
+*/
     // open the file with background
     
     if (addBgr ) {
+	FillModules(trH1,10000000); // Default mask 10M.
+/*
 	Int_t track,i;
 	ntracks =(Int_t)trH1->GetEntries();     
 	// Loop over tracks
@@ -1006,11 +1015,58 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,
 		mod->AddHit(itsHit,track,i);
 	    }  // end loop over hits
 	} // end loop over tracks
+*/
 	TTree *fAli=gAlice->TreeK();
 	TFile *fileAli=0;
 	if (fAli) fileAli =fAli->GetCurrentFile();
 	fileAli->cd();
     } // end if add
+}
+//______________________________________________________________________
+void AliITS::FillModules(TTree *treeH, Int_t mask) {
+    // fill the modules with the sorted by module hits; 
+    // can be called many times to do a merging
+    // Inputs:
+    //      TTree *treeH  The tree containing the hits to be copied into
+    //                    the modules.
+    //      Int_t mask    The track number mask to indecate which file
+    //                    this hits came from.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
+
+    Int_t lay,lad,det,index;
+    AliITShit *itsHit=0;
+    AliITSmodule *mod=0;
+    char branchname[20];
+    sprintf(branchname,"%s",GetName());
+    TBranch *branch = treeH->GetBranch(branchname);
+    if (!branch) {
+	Error("FillModules","%s branch in TreeH not found",branchname);
+	return;
+    } // end if !branch
+    branch->SetAddress(&fHits);
+    Int_t nTracks =(Int_t) treeH->GetEntries();
+    Int_t iPrimTrack,h;
+    for(iPrimTrack=0; iPrimTrack<nTracks; iPrimTrack++){
+	ResetHits();
+	Int_t nBytes = treeH->GetEvent(iPrimTrack);
+	if (nBytes <= 0) continue;
+	Int_t nHits = fHits->GetEntriesFast();
+	for(h=0; h<nHits; h++){
+	    itsHit = (AliITShit *)fHits->UncheckedAt(h);
+	    itsHit->GetDetectorID(lay,lad,det);
+	    if (fITSgeom) {
+		index = fITSgeom->GetModuleIndex(lay,lad,det);
+	    } else {
+		index=det-1; // This should not be used.
+	    } // end if [You must have fITSgeom for this to work!]
+	    mod = GetModule(index);
+	    itsHit->SetTrack(itsHit->GetTrack()+mask); // Set track mask.
+	    mod->AddHit(itsHit,iPrimTrack,h);
+	} // end loop over hits 
+    } // end loop over tracks
 }
 //______________________________________________________________________
 void AliITS::ClearModules(){
