@@ -196,9 +196,9 @@ void AliGenParam::Init()
     fdNdy0=fYParaFunc(&y1,&y2);
 //
 // Integral over generation region
-    Float_t intYS  = yPara.Integral(fYMin, fYMax);
-    Float_t intPt0 = ptPara.Integral(0,15);
-    Float_t intPtS = ptPara.Integral(fPtMin,fPtMax);
+    Float_t intYS  = yPara.Integral(fYMin, fYMax,(Double_t*) 0x0,1.e-6);
+    Float_t intPt0 = ptPara.Integral(0,15,(Double_t *) 0x0,1.e-6);
+    Float_t intPtS = ptPara.Integral(fPtMin,fPtMax,(Double_t*) 0x0,1.e-6);
     Float_t phiWgt=(fPhiMax-fPhiMin)/2./TMath::Pi();
     if (fAnalog == kAnalog) {
 	fYWgt  = intYS/fdNdy0;
@@ -473,8 +473,8 @@ Float_t AliGenParam::GetRelativeArea(Float_t ptMin, Float_t ptMax, Float_t yMin,
 // Normalisation for selected kinematic region
 //
   Float_t ratio =  
-    fPtPara->Integral(ptMin,ptMax) / fPtPara->Integral( fPtPara->GetXmin(), fPtPara->GetXmax()) *
-    fYPara->Integral(yMin,yMax)/fYPara->Integral(fYPara->GetXmin(),fYPara->GetXmax())   *
+    fPtPara->Integral(ptMin,ptMax,(Double_t *)0,1.e-6) / fPtPara->Integral( fPtPara->GetXmin(), fPtPara->GetXmax(),(Double_t *)0,1.e-6) *
+    fYPara->Integral(yMin,yMax,(Double_t *)0,1.e-6)/fYPara->Integral(fYPara->GetXmin(),fYPara->GetXmax(),(Double_t *)0,1.e-6)   *
     (phiMax-phiMin)/360.;
   return TMath::Abs(ratio);
 }
