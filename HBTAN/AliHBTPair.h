@@ -283,15 +283,30 @@ Double_t AliHBTPair::GetDeltaPz()
 inline 
 Double_t AliHBTPair::GetDeltaPhi()
  {
-   //returns difference of Pz
-   return fPart1->Phi()-fPart2->Phi();
+   //returns difference of Phi
+   Double_t phi1 = fPart1->Phi();
+   Double_t phi2 = fPart2->Phi();
+   Double_t diff = phi1-phi2;
+   if (TMath::Abs(diff) > TMath::Pi())
+    {
+      if (phi1 > TMath::Pi())
+       {
+         phi1-=TMath::Pi();
+       }
+      else
+       {
+         phi2-=TMath::Pi();
+       }
+      diff = phi1-phi2; 
+    }
+   return diff;
  }
 /****************************************************************/
 
 inline 
 Double_t AliHBTPair::GetDeltaTheta()
  {
-   //returns difference of Pz
+   //returns difference of Theta
    return fPart1->Theta()-fPart2->Theta();
  }
 /****************************************************************/

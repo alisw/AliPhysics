@@ -327,6 +327,19 @@ Double_t AliHBTPair::GetKStar()
 
     Double_t ptrans = fPxSum*fPxSum + fPySum*fPySum;
     Double_t mtrans = fESum*fESum - fPzSum*fPzSum;
+    if (ptrans > mtrans)
+     {
+       Error("GetKStar","Tranverse momentum bigger than transverse mass. Not normal for on-shell particles");
+       Error("GetKStar","Particle1:");
+       fPart1->Print();
+       Error("GetKStar","Particle2:");
+       fPart2->Print();
+       Error("GetKStar","");
+       
+       fKStar = 10e5;
+       fKStarNotCalc = kFALSE;
+       return fKStar;
+     }
     Double_t pinv =   TMath::Sqrt(mtrans - ptrans);
 
     Double_t q = (fPart1->GetMass()*fPart1->GetMass() - fPart2->GetMass()*fPart2->GetMass())/pinv;
@@ -336,10 +349,14 @@ Double_t AliHBTPair::GetKStar()
     q = q*q - fQInvL;
     if ( q < 0)
      {
-        Info("GetKStar","q = %f",q);
-        fPart1->Print();
-        fPart2->Print();
-        q = TMath::Abs(q);
+       Info("GetKStar","Sqrt of negative number q = %f",q);
+       Error("GetKStar","Particle1:");
+       fPart1->Print();
+       Error("GetKStar","Particle2:");
+       fPart2->Print();
+       fKStar = 10e5;
+       fKStarNotCalc = kFALSE;
+       return fKStar;
      }
      
     q = TMath::Sqrt(q);
