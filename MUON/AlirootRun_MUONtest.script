@@ -1,0 +1,25 @@
+aliroot -b << EOF  
+AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C")
+MuonSim.Run(10)
+.q
+EOF
+
+aliroot -b << EOF 
+TPluginManager* pluginManager = gROOT->GetPluginManager();
+pluginManager->AddHandler("AliReconstructor", "MUON","AliMUONReconstructor", "MUON","AliMUONReconstructor()")
+AliReconstruction MuonRec("galice.root") 
+MuonRec.SetRunTracking("")
+MuonRec.SetRunVertexFinder(kFALSE)
+MuonRec.SetRunLocalReconstruction("MUON")
+MuonRec.SetFillESD("MUON")
+MuonRec.Run() 
+.q
+EOF
+
+aliroot -b << EOF 
+.includepath $ALICE_ROOT/STEER
+.includepath $ALICE_ROOT/MUON
+.L $ALICE_ROOT/MUON/MUONmassPlot_ESD.C++
+MUONmassPlot("galice.root",0,24999);
+.q
+EOF
