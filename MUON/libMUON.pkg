@@ -1,6 +1,6 @@
 FSRCS= extrap.F
 
-SRCS         =   AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
+SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
 	       AliMUONSegmentationV0.cxx\
 	       AliMUONResponse.cxx AliMUONResponseV0.cxx \
 	       AliMUONSegmentationV01.cxx \
@@ -30,7 +30,6 @@ SRCS         =   AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
                AliMUONMerger.cxx AliMUONFactory.cxx AliMUONDigitizer.cxx \
                AliMUONTrackK.cxx AliMUONClusterFinderAZ.cxx AliMUONPixel.cxx
 
-
 HDRS         =  $(SRCS:.cxx=.h) 
 
 EHDRS        =	$(ROOTSYS)/include/TF1.h \
@@ -39,5 +38,21 @@ EHDRS        =	$(ROOTSYS)/include/TF1.h \
 		$(ROOTSYS)/include/TMatrix.h \
 		$(ROOTSYS)/include/TTree.h \
 
-
 DHDR:= MUONLinkDef.h
+
+ifneq ($(MINSTALL),)  	       
+
+SRCS     += AliMUONv2.cxx AliMUONSt1Segmentation.cxx AliMUONSt1Response.cxx \
+	    AliMUONSt1ElectronicElement.cxx AliMUONSt1SpecialMotif.cxx \
+	    AliMUONSt1ResponseParameter.cxx AliMUONSt1ResponseRule.cxx \
+	    AliMUONSt1IniReader.cxx AliMUONSt1Decoder.cxx \
+
+EHDRS    += $(ROOTSYS)/include/TArrayF.h \
+
+EINCLUDE := $(MINSTALL)/include
+ELIBSDIR := $(MINSTALL)/lib/$(G4SYSTEM)
+ELIBS    := basic graphics motif sector plane 
+
+CINTFLAGS += -DUSE_MUON_MAPPING
+
+endif	       
