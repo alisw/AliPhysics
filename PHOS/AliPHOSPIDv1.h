@@ -24,7 +24,7 @@ class AliPHOSEmcRecPoint ;
 class AliPHOSCpvRecPoint ;
 
 #include "AliPHOSPID.h"
-
+#include "AliESDtrack.h"
 class  AliPHOSPIDv1 : public AliPHOSPID {
   
 public:
@@ -45,6 +45,7 @@ public:
 
   // Get number of rec.particles in this run
   virtual Int_t GetRecParticlesInRun() const {return fRecParticlesInRun ;}  
+
 
   // Get PID parameters as they are defined in fParameters
   Float_t GetParameterCalibration    (Int_t i)               const;
@@ -81,7 +82,14 @@ private:
   virtual void  Init() ;
   virtual void  InitParameters() ;
   void          MakeRecParticles(void ) ;
-  void          MakePID(void ) ;
+  void          MakePID(void) ;
+
+  //Functions to calculate the PID probability 
+  //  Double_t ChargedHadronDistProb(Double_t  x, Double_t y, Double_t * parg, Double_t * parl) ;
+  Double_t GausF   (Double_t x, Double_t y, Double_t *par) ; //gaussian probability, parameter dependence a+b/(x*x)+c/x
+  Double_t GausPol2(Double_t x, Double_t y, Double_t *par) ; //gaussian probability, parameter dependence a+b*x+c*x*x
+  Double_t LandauF(Double_t x, Double_t y, Double_t *par) ; //gaussian probability, parameter dependence  a+b/(x*x)+c/x
+ Double_t LandauPol2(Double_t x, Double_t y, Double_t *par) ; //gaussian probability, parameter dependence a+b*x+c*x*x
  // Relative Distance CPV-EMC
   Float_t GetDistance     (AliPHOSEmcRecPoint * emc, AliPHOSCpvRecPoint * cpv, Option_t * axis)const ; 
   Int_t   GetCPVBit       (AliPHOSEmcRecPoint * emc, AliPHOSCpvRecPoint * cpv, Int_t EffPur, Float_t e) const;
@@ -94,8 +102,14 @@ private:
   void          SetParameters() ; //Fills the matrix of parameters
   void          Unload(); 
 
-private:
+  //Do bayesian PID
+  void SetBayesianPID(Bool_t set){ fBayesian = set ;}
+  //PID population
+  void SetInitPID(const Double_t * pid) ;
+  void GetInitPID(Double_t * pid) const ;
 
+private:
+  Bool_t      fBayesian ;                 //  Do PID bayesian
   Bool_t      fDefaultInit;              //! kTRUE if the task was created by defaut ctor (only parameters are initialized)
   Bool_t      fWrite ;                   //! To write result to file 
   Int_t       fNEvent ;                  //! current event number
@@ -109,17 +123,46 @@ private:
   Double_t   *fPPi0 ;                    //! Principal pi0 eigenvalues
   Int_t       fRecParticlesInRun ;       //! Total number of recparticles in one run
   TMatrix    *fParameters;               //! Matrix of identification Parameters
-  // response function parameters
-  // ToF
-  Double_t fTphoton[3] ;                 // gaussian response for photon
-  TFormula * fTFphoton ;                 // the formula   
-  Double_t fTelectron[3] ;               // gaussian response for electrons
-  TFormula * fTFelectron ;               // the formula   
-  Double_t fTchargedhadron[3] ;          // landau   response for charged hadrons
-  TFormula * fTFchargedhadron ;          // the formula   
-  Double_t fTneutralhadron[3] ;          // landau   response for neutral hadrons
-  TFormula * fTFneutralhadron ;          // the formula   
 
+  //Initial pid population
+  Double_t fInitPID[AliESDtrack::kSPECIESN] ;
+  // pid probability function parameters
+  // ToF
+  Double_t fTphoton[3] ;                // gaussian tof response for photon
+  TFormula * fTFphoton ;                // the formula   
+/*   Double_t fTelectron[3] ;              // gaussian tof response for electrons */
+/*   TFormula * fTFelectron ;              // the formula */
+/*   Double_t fTmuon[3] ;                  // gaussian tof response for muon */
+/*   TFormula * fTFmuon ;                  // the formula */
+  Double_t fTpiong[3] ;                 // gaussian tof response for pions
+  TFormula * fTFpiong ;                 // the formula
+/*   Double_t fTpionl[3] ;                 // gaussian tof response for pions */
+/*   TFormula * fTFpionl ;                 // the formula    */
+  Double_t fTkaong[3] ;                 // landau tof response for kaons
+  TFormula * fTFkaong ;                 // the formula
+  Double_t fTkaonl[3] ;                 // landau tof response for kaons
+  TFormula * fTFkaonl ;                 // the formula
+  Double_t fThhadrong[3] ;              // gaus   tof response for heavy hadrons
+  TFormula * fTFhhadrong ;              // the formula
+  Double_t fThhadronl[3] ;              // landau   tof response for heavy hadrons
+  TFormula * fTFhhadronl ;              // the formula
+ /*  Double_t fTpion[9] ;                     // gaussian tof response for pions */
+/*   Double_t fTkaon[9] ;                     // landau tof response for kaons */
+/*   Double_t fThhadron[9] ;                  // landau tof response for nucleons */
+
+  //Shower dispersion
+  Double_t fDmuon[3] ;                   // gaussian ss response for muon 
+  TFormula * fDFmuon ;                   // the formula 
+  Double_t fDphoton[9] ;                 // gaussian ss response for EM
+  Double_t fDpi0[9] ;                    // gaussian ss response for pi0
+  Double_t fDhadron[9] ;                 // gaussian ss response for hadrons
+
+                   // gaussian ss response for muons
+  //CPV-EMCAL distance
+  Double_t fCPVelectron[9] ;   // gaussian emc-cpv distance response for electron
+  Double_t fCPVcharged[9]  ;   // landau emc-cpv distance response for charged part (no elect) */
+/*   Double_t fCPVchargedg[9] ;         // gaussian emc-cpv distance response for charged part (no elect) */
+/*   Double_t fCPVchargedl[9] ;         // landau emc-cpv distance response for charged part (no elect) */
 
   ClassDef( AliPHOSPIDv1,10)  // Particle identifier implementation version 1
 
