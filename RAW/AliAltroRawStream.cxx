@@ -130,6 +130,7 @@ Bool_t AliAltroRawStream::Next()
       return kFALSE;
     }
     fBunchLength = Get10BitWord(fData, --fPosition) - 2;
+    fTimeBunch = fBunchLength;
     fCount--;
 
     if (fPosition <= 0) {

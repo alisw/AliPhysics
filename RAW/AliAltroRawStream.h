@@ -32,6 +32,7 @@ class AliAltroRawStream: public TObject {
     Int_t            fPrevPad;      // index of previous pad
     Int_t            fTime;         // index of current time bin
     Int_t            fSignal;       // signal in ADC counts
+    Int_t            fTimeBunch;    // total length of the current time bunch
 
     AliRawReader*    fRawReader;    // object for reading the raw data
 
