@@ -70,6 +70,7 @@ RichConfig::RichConfig(const char *sFileName)
   fGenPartIdCombo->Select(kPiPlus);  fGenPartIdCombo->Resize(160,20);
 
   pGenGrpFrm->AddFrame(fGenMinMomCombo=new TGComboBox(pGenGrpFrm,100)); //particle energy for guns
+  fGenMinMomCombo->AddEntry("1.0 GeV",10);
   fGenMinMomCombo->AddEntry("1.5 GeV",15);
   fGenMinMomCombo->AddEntry("2.0 Gev",20);
   fGenMinMomCombo->AddEntry("2.5 GeV",25);
@@ -77,9 +78,10 @@ RichConfig::RichConfig(const char *sFileName)
   fGenMinMomCombo->AddEntry("3.5 GeV",35);
   fGenMinMomCombo->AddEntry("4.0 GeV",40);
   fGenMinMomCombo->AddEntry("4.5 GeV",45);
-  fGenMinMomCombo->Select(15);  fGenMinMomCombo->Resize(160,20);
+  fGenMinMomCombo->Select(10);  fGenMinMomCombo->Resize(160,20);
   
   pGenGrpFrm->AddFrame(fGenMaxMomCombo=new TGComboBox(pGenGrpFrm,100)); //particle energy for guns
+  fGenMaxMomCombo->AddEntry("1.0 GeV",10);
   fGenMaxMomCombo->AddEntry("1.5 GeV",15);
   fGenMaxMomCombo->AddEntry("2.0 Gev",20);
   fGenMaxMomCombo->AddEntry("2.5 GeV",25);
