@@ -47,7 +47,14 @@ public:
 			TArrayI * ppsdOutLow, 
 			Int_t &PHOSModule, 
 			Int_t & emcStopedAt, 
-			Int_t & ppsdStopedAt) ; // Fills temporary arrais with clusters from one module  
+			Int_t & ppsdStopedAt) ; // Fills temporary arrais with clusters from one module EMC+PPSD
+  void    FillOneModule(AliPHOSRecPoint::RecPointsList * emcIn, 
+			TArrayI * emcOut, 
+			AliPHOSRecPoint::RecPointsList * cpvIn, 
+			TArrayI * cpvOut, 
+			Int_t & PHOSModule, 
+			Int_t & emcStopedAt, 
+			Int_t & cpvStopedAt) ;  // Fills temporary arrais with clusters from one module EMC+CPV
   Float_t GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * EmcClu , AliPHOSPpsdRecPoint * Ppsd , Bool_t & TooFar ) ; // see R0
 
   void    MakeLinks(TArrayI * EmcRecPoints, TArrayI * PpsdRecPointsUp, TArrayI * PpsdRecPointsLow, 
@@ -62,11 +69,14 @@ public:
 			    AliPHOSRecPoint::RecPointsList * emcl, 
 			    AliPHOSRecPoint::RecPointsList * ppsdl, 
 			    AliPHOSTrackSegment::TrackSegmentsList * trsl ) ; // does the job
+  void    MakeTrackSegmentsCPV(DigitsList * DL, 
+			    AliPHOSRecPoint::RecPointsList * emcl, 
+			    AliPHOSRecPoint::RecPointsList * ppsdl ) ; // just unfold EMC and CPV clusters
   virtual void SetMaxEmcPpsdDistance(Float_t r){ fR0 = r ;}
   virtual void    SetUnfoldFlag() { fUnfoldFlag = kTRUE ; } ; 
   static Double_t ShowerShape(Double_t r) ; // Shape of shower used in unfolding; class member function (not object member function)
   void    UnfoldAll(DigitsList * Dl, AliPHOSRecPoint::RecPointsList * emcIn) ; 
-                                             // Unfolds and sorts all EMC clusters
+                                            // Unfolds and sorts all EMC clusters
   void  UnfoldClusters(DigitsList * DL, 
 		       AliPHOSRecPoint::RecPointsList * emcIn, 
 		       AliPHOSEmcRecPoint * iniEmc, 

@@ -155,7 +155,7 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule(AliPHOSRecPoint::RecPointsList *
 						Int_t & emcStopedAt, 
 						Int_t & ppsdStopedAt)
 {
-  // Fill xxxOut arrays with clusters from one PHOS module
+  // Fill xxxOut arrays with clusters from one PHOS module EMC+PPSD
  
   AliPHOSEmcRecPoint *  emcRecPoint  ; 
   AliPHOSPpsdRecPoint * ppsdRecPoint ;
@@ -194,6 +194,48 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule(AliPHOSRecPoint::RecPointsList *
   ppsdOutLow->Set(inPpsdLow);
   ppsdOutUp->Set(inPpsdUp);
   ppsdStopedAt = index ;
+   
+}
+//____________________________________________________________________________
+void  AliPHOSTrackSegmentMakerv1::FillOneModule(AliPHOSRecPoint::RecPointsList * emcIn, 
+						TArrayI * emcOut, 
+						AliPHOSRecPoint::RecPointsList * cpvIn, 
+						TArrayI * cpvOut,
+						Int_t & phosmod, 
+						Int_t & emcStopedAt, 
+						Int_t & cpvStopedAt)
+{
+  // Fill xxxOut arrays with clusters from one PHOS module EMC+CPV
+ 
+  AliPHOSEmcRecPoint * emcRecPoint  ; 
+  AliPHOSEmcRecPoint * cpvRecPoint ;
+  Int_t index ;
+  
+  Int_t nEmcUnfolded = emcIn->GetEntries() ;
+  emcOut->Set(nEmcUnfolded);
+  Int_t inEmcOut = 0 ;
+  for(index = emcStopedAt; index < nEmcUnfolded; index++){
+    emcRecPoint = (AliPHOSEmcRecPoint *) emcIn->At(index) ;
+    if(emcRecPoint->GetPHOSMod() != phosmod )  
+      break ;
+    
+    emcOut->AddAt(emcRecPoint->GetIndexInList(),inEmcOut) ;
+    inEmcOut++ ; 
+  }
+  emcOut->Set(inEmcOut) ;
+  emcStopedAt = index ;
+
+  cpvOut->Set(cpvIn->GetEntries()) ;
+  Int_t inCpvOut = 0;
+  for(index = cpvStopedAt; index < cpvIn->GetEntries(); index++){
+    cpvRecPoint = (AliPHOSEmcRecPoint *) cpvIn->At(index) ;
+    if(cpvRecPoint->GetPHOSMod() != phosmod )   
+      break ;
+    else  
+      cpvOut->AddAt(index,inCpvOut++) ;
+  }
+  cpvOut->Set(inCpvOut);
+  cpvStopedAt = index ;
    
 }
 //____________________________________________________________________________
@@ -390,7 +432,7 @@ void  AliPHOSTrackSegmentMakerv1::MakeTrackSegments(DigitsList * dl,
 
 
   if(fUnfoldFlag){
-    UnfoldAll(dl, emcl) ; // Unfolds all EMC clusters
+    UnfoldAll(dl, emcl) ;      // Unfolds all EMC clusters
   }
 
 
@@ -432,6 +474,38 @@ void  AliPHOSTrackSegmentMakerv1::MakeTrackSegments(DigitsList * dl,
 }
 
 //____________________________________________________________________________
+void  AliPHOSTrackSegmentMakerv1::MakeTrackSegmentsCPV(DigitsList * dl, 
+						       AliPHOSRecPoint::RecPointsList * emcl, 
+						       AliPHOSRecPoint::RecPointsList * cpvl)
+{
+  // Unfold clusters in EMC and CPV and refill reconstructed point lists emcl and ppsdl
+  // Yuri Kharlov. 19 October 2000
+  
+  fNTrackSegments = 0 ; 
+
+  TArrayI * emcRecPoints     = new TArrayI(1000) ;  // these arrays keep indexes 
+  TArrayI * cpvRecPoints     = new TArrayI(1000) ;  // of RecPoints, which are kept in emcl and ppsdl
+  
+  if(fUnfoldFlag){
+    UnfoldAll(dl, emcl) ;   // Unfolds all EMC clusters
+    UnfoldAll(dl, cpvl) ;   // Unfolds all CPV clusters
+  }
+
+//    Int_t phosmod      = 1 ;
+//    Int_t emcStopedAt  = 0 ; 
+//    Int_t cpvStopedAt  = 0 ; 
+//    while(phosmod <= fGeom->GetNModules() ){
+//      FillOneModule(emcl, emcRecPoints, ppsdl, cpvRecPoints, phosmod, emcStopedAt, cpvStopedAt) ;
+//      emcRecPoints->Reset() ;
+//      cpvRecPoints->Reset() ;
+//      phosmod++ ; 
+//    }
+
+  delete emcRecPoints ; emcRecPoints = 0 ; 
+  delete cpvRecPoints ; cpvRecPoints = 0 ; 
+}
+
+//____________________________________________________________________________
 Double_t  AliPHOSTrackSegmentMakerv1::ShowerShape(Double_t r)
 { 
   // Shape of the shower (see PHOS TDR)
@@ -454,15 +528,14 @@ void  AliPHOSTrackSegmentMakerv1::UnfoldAll(DigitsList * dl, AliPHOSRecPoint::Re
   
   for(index = 0 ; index < nEmcUnfolded; index++){
 
-    emcRecPoint = (AliPHOSEmcRecPoint *) emcIn->At(index) ;
+    emcRecPoint   = (AliPHOSEmcRecPoint *) emcIn->At(index) ;
     
-    Int_t nMultipl = emcRecPoint->GetMultiplicity() ; 
-    Int_t * maxAt = new Int_t[nMultipl] ;
+    Int_t nMultipl        = emcRecPoint->GetMultiplicity() ; 
+    Int_t   * maxAt       = new Int_t[nMultipl] ;
     Float_t * maxAtEnergy = new Float_t[nMultipl] ;
     Int_t nMax = emcRecPoint->GetNumberOfLocalMax(maxAt, maxAtEnergy) ;
     
     if( nMax > 1 ) {     // if cluster is very flat (no pronounced maximum) then nMax = 0 
-      
       UnfoldClusters(dl, emcIn, emcRecPoint, nMax, maxAt, maxAtEnergy) ;
       emcIn->Remove(emcRecPoint); 
       emcIn->Compress() ;
@@ -478,9 +551,7 @@ void  AliPHOSTrackSegmentMakerv1::UnfoldAll(DigitsList * dl, AliPHOSRecPoint::Re
 
   // to set index to new and correct index of old RecPoints
   for( index = 0 ; index < emcIn->GetEntries() ; index++){
-    
     ((AliPHOSEmcRecPoint *) emcIn->At(index))->SetIndexInList(index) ;   
-    
   }
 
   emcIn->Sort() ;
