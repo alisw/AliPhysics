@@ -550,3 +550,7 @@
                 ListWaveform() and GetWaveformIndex() introduced in AliSignal.
 28-nov-2004 NvE User definable status word introduced in AliDevice to allow indication of different
                 versions of readout electronics etc... 
+29-nov-2004 NvE Additional sub-directories (e.g. wa98) introduced which contain Ralice implementations
+                to serve data analysis efforts for various experiments.
+01-dec-2004 NvE Install scripts like e.g. "gcclib" renamed to "gcclib.sh" etc... in /scripts.
+                The old scripts (i.e. without the .sh extension) will be deleted in due time.
