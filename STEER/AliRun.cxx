@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.51  2001/02/02 15:16:20  morsch
+SetHighWaterMark method added to mark last particle in event.
+
 Revision 1.50  2001/01/27 10:32:00  hristov
 Leave the loop when primaries are filled (I.Hrivnacova)
 
@@ -850,7 +853,16 @@ Int_t AliRun::GetEvent(Int_t event)
   if (!fTreeD) {
     // Warning("GetEvent","cannot find Digits Tree for event:%d\n",event);
   }
-  
+
+  file->cd();
+
+  // Get SDigits Tree header from file
+  sprintf(treeName,"TreeS%d",event);
+  fTreeS = (TTree*)gDirectory->Get(treeName);
+  if (!fTreeS) {
+    // Warning("GetEvent","cannot find SDigits Tree for event:%d\n",event);
+  }
+
   file->cd();
   
   // Get Reconstruct Tree header from file
@@ -889,7 +901,6 @@ TGeometry *AliRun::GetGeometry()
   TIter next(fModules);
   AliModule *detector;
   while((detector = (AliModule*)next())) {
-    detector->SetTreeAddress();
     TList *dnodes=detector->Nodes();
     Int_t j;
     TNode *node, *node1;
