@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2002/09/17 08:37:12  jchudoba
+Classes to create and store tracks maps - correcpondence between track label and entry number in the TreeH
+
 */
 
 ////////////////////////////////////////////////////////////////////////
@@ -87,6 +90,7 @@ Int_t  AliTrackMapper::CreateMap(Int_t eventNr, TFile* fileMap) {
 // create an AliTrackMap for a given event
 // correct gAlice must be already present in memory
 //
+
   Int_t nGenPrimPlusSecParticles = gAlice->GetEvent(eventNr);
   if (fDEBUG > 1) cout<<"nGenPrimPlusSecParticles = "<<nGenPrimPlusSecParticles<<endl;
   if (nGenPrimPlusSecParticles < 1) {
@@ -118,18 +122,16 @@ Int_t  AliTrackMapper::CreateMap(Int_t eventNr, TFile* fileMap) {
     return -1;
   }
   Int_t nModules = static_cast<Int_t>(modules->GetEntries());
-  for (Int_t iModule = 0; iModule < nModules; iModule++) {
-//  for (Int_t iModule = nModules-1; iModule >= 0; iModule--) {
-    AliDetector * detector = dynamic_cast<AliDetector*>(modules->At(iModule));
-    if (!detector) continue;
+  AliHit* hit;
+  for (Int_t treeHIndex = 0; treeHIndex < treeHEntries; treeHIndex++) {
+    gAlice->ResetHits();
+    treeH->GetEvent(treeHIndex);
+    for (Int_t iModule = 0; iModule < nModules; iModule++) {
+      AliDetector * detector = dynamic_cast<AliDetector*>(modules->At(iModule));
+      if (!detector) continue;
 // process only detectors with shunt = 0
-    if (detector->GetIshunt()) continue; 
-    if (fDEBUG > 0) cerr<<"Processing detector "<<detector->GetName()<<endl;
+      if (detector->GetIshunt()) continue; 
 
-    AliHit* hit;
-    for (Int_t treeHIndex = 0; treeHIndex < treeHEntries; treeHIndex++) {
-      detector->ResetHits();
-      treeH->GetEvent(treeHIndex);
       hit=(AliHit*)detector->FirstHit(-1);
       Int_t lastLabel=-1, label;
       for( ; hit; hit=(AliHit*)detector->NextHit() ) {
@@ -154,7 +156,7 @@ Int_t  AliTrackMapper::CreateMap(Int_t eventNr, TFile* fileMap) {
     }
   }
 
-  if (fDEBUG > 0) {
+  if (fDEBUG > 2) {
     for (Int_t i = 0; i < nAllParticles; i++) {
       cout<<eventNr<<"\t"<<i<<"\t"<<trackMap[i]<<endl;
     }
