@@ -1,4 +1,4 @@
-RICHdetect (Int_t evNumber1=0,Int_t evNumber2=0) {
+RICHdetect (Int_t evNumber1=0,Int_t evNumber2=0, Int_t type, Int_t version) {
 // Dynamically link some shared libs
  
     if (gClassTable->GetID("AliRun") < 0) {
@@ -36,8 +36,15 @@ RICHdetect (Int_t evNumber1=0,Int_t evNumber2=0) {
     AliRICH *RICH  = (AliRICH*) gAlice->GetDetector("RICH"); 
 
     // Create Recontruction algorithm object
-    AliRICHDetect *detect = new AliRICHDetect("RICH reconstruction algorithm","Reconstruction");
     
+    //V0
+    if(version == 0)
+      AliRICHDetect *detect = new AliRICHDetect("RICH reconstruction algorithm","Reconstruction");
+
+    if(version == 1)
+      AliRICHDetect *detect = new AliRICHDetectV1("RICH reconstruction algorithm","Reconstruction");
+    
+
 // Reconstruct
     // Event Loop
     //
@@ -47,7 +54,7 @@ RICHdetect (Int_t evNumber1=0,Int_t evNumber2=0) {
       printf("\nParticles       : %d\n",nparticles);
       if (nev < evNumber1) continue;
       if (nparticles <= 0) return;
-      if (RICH) detect->Detect(nev);
+      if (RICH) detect->Detect(nev, type);
       char hname[30];
       sprintf(hname,"TreeR%d",nev);
       gAlice->TreeR()->Write(hname);
