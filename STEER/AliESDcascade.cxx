@@ -25,6 +25,7 @@
 
 #include <TMath.h>
 
+#include "AliLog.h"
 #include "AliESDcascade.h"
 
 ClassImp(AliESDcascade)
@@ -81,8 +82,7 @@ Double_t AliESDcascade::ChangeMassHypothesis(Double_t &v0q, Int_t code) {
        bmass=0.49368; mass=1.67245; ps=0.211;
        break;
   default:
-       Info("AliCascadeVertex::ChangeMassHypothesis",
-            "Invalide PDG code !  Assuming XiMinus's...");
+       AliError("Invalide PDG code !  Assuming XiMinus's...");
        fPdgCode=kXiMinus;
     break;
   }

@@ -67,8 +67,8 @@ class AliESDVertex : public TNamed {
     { return fChi2/(2.*(Double_t)fNContributors-3.); }
   Int_t    GetNContributors() const { return fNContributors; }
 
-  void     PrintStatus() const;
-  void     SetDebug(Int_t dbg = 0) { fDebug = dbg; return; }
+  void     Print(Option_t* option = "") const;
+  void     PrintStatus() const {Print();}
   void SetTruePos(Double_t *tp){for(Int_t i=0;i<3;i++)fTruePos[i]=tp[i];}
   void GetTruePos(Double_t &x,Double_t &y,Double_t &z) const 
        {x=fTruePos[0]; y=fTruePos[1]; z=fTruePos[2];}
@@ -80,7 +80,6 @@ class AliESDVertex : public TNamed {
   Double_t fSNR[3];  // S/N ratio
   Double_t fChi2;  // chi2 of vertex fit
   Int_t    fNContributors;  // # of tracklets/tracks used for the estimate 
-  Int_t    fDebug;  //! for debugging
   Double_t fTruePos[3];   //true vertex position (for comparison purposes)
 
  private:

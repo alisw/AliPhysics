@@ -24,6 +24,7 @@
 
 #include "AliESDtrack.h"
 #include "AliKalmanTrack.h"
+#include "AliLog.h"
 
 ClassImp(AliESDtrack)
 
@@ -215,7 +216,7 @@ Double_t AliESDtrack::GetMass() const {
   if (k==2||k==-1) return 0.13957;
   if (k==3) return 0.49368;
   if (k==4) return 0.93827;
-  Warning("GetMass()","Undefined mass !");
+  AliWarning("Undefined mass !");
   return 0.13957;
 }
 
@@ -359,7 +360,7 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
   case kTRDStop:
     break;
   default: 
-    Error("UpdateTrackParams()","Wrong flag !\n");
+    AliError("Wrong flag !");
     return kFALSE;
   }
 
@@ -745,7 +746,7 @@ void AliESDtrack::GetESDpid(Double_t *p) const {
 void AliESDtrack::Print(Option_t *) const {
   // Prints info on the track
   
-  Info("Print","Track info") ; 
+  printf("ESD track info\n") ; 
   Double_t p[kSPECIESN] ; 
   Int_t index = 0 ; 
   if( IsOn(kITSpid) ){

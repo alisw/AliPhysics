@@ -145,8 +145,6 @@ void AliESDVertex::SetToZero() {
 
   fChi2          = 0;
   fNContributors = 0;
-
-  SetDebug();
 }
 //--------------------------------------------------------------------------
 AliESDVertex::~AliESDVertex() {
@@ -243,11 +241,11 @@ void AliESDVertex::GetSNR(Double_t snr[3]) const {
   return;
 }
 //--------------------------------------------------------------------------
-void AliESDVertex::PrintStatus() const {
+void AliESDVertex::Print(Option_t* /*option*/) const {
 //
 // Print out information on all data members
 //
-  printf(" Vertex position:\n");
+  printf("ESD vertex position:\n");
   printf("   x = %f +- %f\n",fPosition[0],TMath::Sqrt(fCovXX));
   printf("   y = %f +- %f\n",fPosition[1],TMath::Sqrt(fCovYY));
   printf("   z = %f +- %f\n",fPosition[2],TMath::Sqrt(fCovZZ));

@@ -74,7 +74,7 @@ void AliESD::Print(Option_t *) const
   //
   // Print header information of the event
   //
-  Info("Print","ESD run information");
+  printf("ESD run information\n");
   printf("Event # %d Run # %d Trigger %ld Magnetic field %f \n",
 	 GetEventNumber(),
 	 GetRunNumber(),

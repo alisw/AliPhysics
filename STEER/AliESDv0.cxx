@@ -27,6 +27,7 @@
 #include <TMath.h>
 #include <TPDGCode.h>
 
+#include "AliLog.h"
 #include "AliESDv0.h"
 
 ClassImp(AliESDv0)
@@ -59,8 +60,7 @@ Double_t AliESDv0::ChangeMassHypothesis(Int_t code) {
   case kK0Short: 
     break;
   default:
-    cerr<<"AliV0vertex::ChangeMassHypothesis: ";
-    cerr<<"invalide PDG code ! Assuming K0s...\n";
+    AliError("invalide PDG code ! Assuming K0s...");
     fPdgCode=kK0Short;
     break;
   }
