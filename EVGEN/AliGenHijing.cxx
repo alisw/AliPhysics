@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/06/09 20:47:27  morsch
+AliGenerator interface class to HIJING using THijing (test version)
+
 */
 
 #include "AliGenHijing.h"
@@ -48,6 +51,7 @@ AliGenHijing::AliGenHijing(Int_t npart)
     fDecaysOff=1;
     fEvaluate=0;
     fSelectAll=0;
+    fFlavor=0;
 }
 
 AliGenHijing::AliGenHijing(const AliGenHijing & Hijing)
@@ -96,7 +100,8 @@ void AliGenHijing::Generate()
     Int_t nt=0;
     Int_t jev=0;
     Int_t j, kf, ks, imo;
-
+    kf=0;
+    
     if(!particles) particles=new TClonesArray("TParticle",10000);
     
     fTrials=0;
@@ -126,9 +131,9 @@ void AliGenHijing::Generate()
 	if (np == 0 ) continue;
 	Int_t i;
 	Int_t * newPos = new Int_t[np];
-	for (i = 0; i<np-1; i++) *(newPos+i)=i;
+	for (i = 0; i<np; i++) *(newPos+i)=i;
 	
-	for (i = 0; i<np-1; i++) {
+	for (i = 0; i<np; i++) {
 	    TParticle *  iparticle       = (TParticle *) particles->At(i);
 
 	    Bool_t  hasMother            =  (iparticle->GetFirstMother()   >=0);
@@ -136,12 +141,9 @@ void AliGenHijing::Generate()
 	    Bool_t  selected             =  kTRUE;
 	    Bool_t  hasSelectedDaughters =  kFALSE;
 
-	    if (!fSelectAll) selected = KinematicSelection(iparticle);
-	    kf        = iparticle->GetPdgCode();
-//	    Int_t id1=iparticle->GetFirstDaughter();
-//	    Int_t id2=iparticle->GetLastDaughter();	    
-//	    printf("\n particle  %d %d %d %d %d %d\n",i, kf, id1, id2, hasDaughter, selected);
 
+	    kf        = iparticle->GetPdgCode();
+	    if (!fSelectAll) selected = KinematicSelection(iparticle)&&SelectFlavor(kf);
 	    if (hasDaughter && !selected) hasSelectedDaughters = DaughtersSelection(iparticle, particles);
 //
 // Put particle on the stack if it is either selected or it is the mother of at least one seleted particle
@@ -308,13 +310,10 @@ Bool_t AliGenHijing::DaughtersSelection(TParticle* iparticle, TClonesArray* part
     if (hasDaughters) {
 	imin=iparticle->GetFirstDaughter();
 	imax=iparticle->GetLastDaughter();       
-//	printf("\n Has daughters %d %d:", imin, imax);
 	for (i=imin; i<= imax; i++){
 	    TParticle *  jparticle       = (TParticle *) particles->At(i);	
-//	    Int_t ip=jparticle->GetPdgCode();
-//	    printf("\n consider daughter %d %d", i,ip);
-	    
-	    if (KinematicSelection(jparticle)) {selected=kTRUE; break;}
+	    Int_t ip=jparticle->GetPdgCode();
+	    if (KinematicSelection(jparticle)&&SelectFlavor(ip)) {selected=kTRUE; break;}
 	    if (DaughtersSelection(jparticle, particles)) {selected=kTRUE; break; }
 	}
     } else {
@@ -325,6 +324,20 @@ Bool_t AliGenHijing::DaughtersSelection(TParticle* iparticle, TClonesArray* part
 }
 
 
+Bool_t AliGenHijing::SelectFlavor(Int_t pid)
+{
+// Select flavor of particle
+// 0: all
+// 4: charm and beauty
+// 5: beauty
+    if (fFlavor == 0) return kTRUE;
+    
+    Int_t ifl=TMath::Abs(pid/100);
+    if (ifl > 10) ifl/=10;
+    return ((fFlavor==4 && (ifl==4 || ifl==5))  || 
+	    (fFlavor==5 &&  ifl==5));
+
+}
 
 AliGenHijing& AliGenHijing::operator=(const  AliGenHijing& rhs)
 {

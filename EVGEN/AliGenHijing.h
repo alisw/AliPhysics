@@ -45,13 +45,15 @@ class AliGenHijing : public AliGenerator
     virtual void    SetShadowing(Int_t flag=1)        {fShadowing = flag;}
     virtual void    SetDecaysOff(Int_t flag=1)        {fDecaysOff = flag;}
     virtual void    SetTrigger(Int_t flag=kNoTrigger) {fTrigger   = flag;}
+    virtual void    SetFlavor(Int_t flag=0)           {fFlavor    = flag;}    
     virtual void    SetEvaluate(Int_t flag=0)         {fEvaluate  = flag;}
     virtual void    SetSelectAll(Int_t flag=0)        {fSelectAll = flag;}    
-    AliGenHijing & operator=(const AliGenHijing & rhs);
+    AliGenHijing &  operator=(const AliGenHijing & rhs);
 // Physics Routines	    
     virtual void EvaluateCrossSections();
     
-    
+ protected:
+    Bool_t SelectFlavor(Int_t pid);
  protected:
     char       *fFrame;         // Reference frame 
     char       *fProjectile;    // Projectile
@@ -69,9 +71,7 @@ class AliGenHijing : public AliGenerator
     Int_t       fTrigger;       // Trigger type
     Int_t       fEvaluate;      // Evaluate total and partial cross-sections
     Int_t       fSelectAll;     // Flag to write the full event
-    
-    Process_t   fProcess;       // Process type
-    StrucFunc_t fStrucFunc;     // Structure Function
+    Int_t       fFlavor;        // Selected particle flavor 4: charm+beauty 5: beauty
     Decay_t     fForceDecay;    // Decay channel  are forced
     Float_t     fEnergyCMS;     // Centre of mass energy
     Float_t     fKineBias;      // Bias from kinematic selection
