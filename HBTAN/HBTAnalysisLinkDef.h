@@ -75,7 +75,6 @@
 
 #pragma link C++ class AliHBTInvMassCorrelFctn+;
 
-#pragma link C++ class AliHBTLLWeightTheorQInvFctn+;
 
 #pragma link C++ class AliHBTQInvResolVsQInvFctn+;
 #pragma link C++ class AliHBTQOutResolVsQInvFctn+;
@@ -137,6 +136,5 @@
 
 #pragma link C++ class AliHBTLLWeights+;
 #pragma link C++ class AliHBTLLWeightQInvFctn+;
-#pragma link C++ class AliHBTLLWeightsPID+;
 
 #endif
