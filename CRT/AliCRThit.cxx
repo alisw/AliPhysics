@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2002/10/09 15:00:17  gamez
+Bad operator= implementation on gcc-3.2 (Yves SCHUTZ)
+
 Revision 1.3  2002/10/07 11:19:18  gamez
 Changes requested by coding conventions
 
@@ -79,8 +82,8 @@ AliCRThit::AliCRThit(const AliCRThit & hit)
   fCRTRICH = hit.fCRTRICH;
   fCRTTPC = hit.fCRTTPC;
 
-  fCopy = hit.fCopy;
-  fVolume = hit.fVolume;
+  //fCopy = hit.fCopy;
+  //fVolume = hit.fVolume;
 
 }
 
