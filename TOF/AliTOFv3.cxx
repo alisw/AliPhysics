@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  1999/11/01 20:41:57  fca
+Added protections against using the wrong version of FRAME
+
 Revision 1.11  1999/10/22 08:04:14  fca
 Correct improper use of negative parameters
 
@@ -54,6 +57,8 @@ Introduction of the Copyright and cvs Log
 //End_Html
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+
+#include <stdlib.h>
 
 #include "AliTOFv3.h"
 #include "AliRun.h"
