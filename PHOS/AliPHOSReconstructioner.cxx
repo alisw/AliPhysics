@@ -18,7 +18,7 @@
 //_________________________________________________________________________
 //*--
 //*-- Author: Gines Martinez & Yves Schutz (SUBATECH) 
-//*-- Compleetely redisigned by Dmitri Peressounko (SUBATECH & RRC KI) March 2001
+//*-- Compleetely redesigned by Dmitri Peressounko (SUBATECH & RRC KI) March 2001
 /////////////////////////////////////////////////////////////////////////////////////
 //  Wrapping class for reconstruction. Allows to produce reconstruction from 
 //  different steps: from previously produced hits,sdigits, etc. Each new reconstruction
@@ -141,7 +141,6 @@ void AliPHOSReconstructioner::Exec(Option_t *option)
   gAlice->GetEvent(0) ;
 
   if(fSDigitizer->IsActive()&& gAlice->TreeS()){ //Will produce SDigits
-
     TBranch * sdigitsBranch = 0;
     TBranch * sdigitizerBranch = 0;
 
@@ -271,7 +270,6 @@ void AliPHOSReconstructioner::Exec(Option_t *option)
   }
   
   if(fTSMaker->IsActive() && gAlice->TreeR()){ //Produce TrackSegments
-
     TBranch * tsMakerBranch = 0;
     TBranch * tsBranch = 0;
     
