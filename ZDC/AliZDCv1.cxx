@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.22  2001/05/05 13:33:19  coppedis
+Changes in StepManager to speed simulation
+
 Revision 1.21  2001/05/02 11:54:34  enrico
 Minor change
 
@@ -145,8 +148,8 @@ AliZDCv1::AliZDCv1() : AliZDC()
   fMedSensZP  = 0;
   fMedSensZEM = 0;
   fMedSensGR  = 0;
-  fMedSensPI  = 0;
-  fMedSensTDI = 0;
+//  fMedSensPI  = 0;
+//  fMedSensTDI = 0;
 }
  
 //_____________________________________________________________________________
@@ -174,8 +177,8 @@ AliZDCv1::AliZDCv1(const char *name, const char *title)
   fMedSensZP  = 0;
   fMedSensZEM = 0;
   fMedSensGR  = 0;
-  fMedSensPI  = 0;
-  fMedSensTDI = 0;
+//  fMedSensPI  = 0;
+//  fMedSensTDI = 0;
 
   
   // Parameters for light tables
@@ -1029,19 +1032,19 @@ void AliZDCv1::CreateMaterials()
   Float_t epsil  = .01, stmin=0.01, stemax = 1.;
   Int_t   isxfld = gAlice->Field()->Integ();
 //  Float_t fieldm = gAlice->Field()->Max();
-  Float_t fieldm = 0;
+  Float_t fieldm = 0., tmaxfd = 0.;
   Int_t   ifield = 0, isvolActive = 1, isvol = 0, inofld = 0;
   
-  fieldm = 0.;
-  Float_t tmaxfd = 0.;
   AliMedium(1, "ZTANT", 1, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
 //  AliMedium(1, "ZW", 1, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(2, "ZBRASS",2, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(3, "ZSIO2", 3, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(4, "ZQUAR", 3, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(5, "ZLEAD", 5, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(6, "ZCOPP", 6, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(7, "ZIRON", 7, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+//  AliMedium(6, "ZCOPP", 6, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+//  AliMedium(7, "ZIRON", 7, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(6, "ZCOPP", 6, isvol, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(7, "ZIRON", 7, isvol, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(8, "ZIRONN",8, isvol, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(10,"ZVOID",10, isvol, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(12,"ZAIR", 12, 0, inofld, fieldm, tmaxfd, stemax,deemax, epsil, stmin);
@@ -1137,8 +1140,8 @@ void AliZDCv1::CreateMaterials()
   fMedSensF1  = idtmed[3];  // Sensitive volume: fibres type 1
   fMedSensF2  = idtmed[4];  // Sensitive volume: fibres type 2
   fMedSensZEM = idtmed[5];  // Sensitive volume: ZEM passive material
-  fMedSensTDI = idtmed[6];  // Sensitive volume: TDI Cu shield
-  fMedSensPI  = idtmed[7];  // Sensitive volume: beam pipes
+//  fMedSensTDI = idtmed[6];  // Sensitive volume: TDI Cu shield
+//  fMedSensPI  = idtmed[7];  // Sensitive volume: beam pipes
   fMedSensGR  = idtmed[12]; // Sensitive volume: air into the grooves
 } 
 
@@ -1460,6 +1463,7 @@ void AliZDCv1::StepManager()
       for(int i=1; i<=4; i++){
          if(xqZP>=(i-3) && xqZP<(i-2)){
  	   vol[1] = i;
+	   if(i==0) printf("\n!!! vol[1] = 0 -> xqZP = %f\n", xqZP);
  	   break;
  	 }
       }
