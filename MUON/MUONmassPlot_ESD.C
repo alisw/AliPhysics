@@ -17,6 +17,7 @@
 #include "AliHeader.h"
 #include "AliLoader.h"
 #include "AliStack.h"
+#include "AliMagF.h"
 #include "AliESD.h"
 
 // MUON includes
@@ -115,7 +116,10 @@ TH1F *hInvMassRes;
 
  
   TLorentzVector fV1, fV2, fVtot;
-  
+
+  // set off mag field 
+  AliMagF::SetReadField(kFALSE);
+
   // open run loader and load gAlice, kinematics and header
   AliRunLoader* runLoader = AliRunLoader::Open(filename);
   if (!runLoader) {
