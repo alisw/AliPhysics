@@ -72,7 +72,7 @@ $(DICT):				$(HDRS)
 
 depend:					$(SRCS)
 
-HEADERS 	= $(SRCS:.cxx=.h) AliPDG.h AliConst.h AliCallf77.h AliMCProcess.h AliConfig.h AliGenEventHeader.h
+HEADERS 	= $(SRCS:.cxx=.h) AliPDG.h AliConst.h AliCallf77.h AliMCProcess.h AliConfig.h AliGenEventHeader.h AliGausCorr.h
 
 TOCLEAN		= $(OBJS) *Cint.cxx *Cint.h
 
