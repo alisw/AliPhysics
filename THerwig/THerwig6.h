@@ -1,5 +1,5 @@
-#ifndef ROOT_THerwig
-#define ROOT_THerwig
+#ifndef THERWIG6_H
+#define THERWIG6_H
 
 // declaration of c++ Class THerwig6 to be used in ROOT
 // this is a c++ interface to the F77 Herwig6 program
@@ -57,7 +57,7 @@ C-----------------------------------------------------------------------
 
 /* declarations from ROOT */
 #include "TGenerator.h"
-#include "TObjArray.h"
+class TObjArray;
 
 // Translation of Fortran commons from the Herwig6
 // f77 program into c++ structures to be used in ROOT
@@ -68,7 +68,7 @@ C-----------------------------------------------------------------------
 
 int const NMXHEP = 2000;
 
-struct Hepevt_t {
+typedef struct {
   int NEVHEP;
   int NHEP;
   int ISTHEP[NMXHEP];
@@ -77,28 +77,28 @@ struct Hepevt_t {
   int JDAHEP[NMXHEP][2];
   double PHEP[NMXHEP][5];
   double VHEP[NMXHEP][4];
-};
+} Hepevt_t;
 
-struct Hwbeam_t {
+typedef struct {
   int IPART1;
   int IPART2;
-};
+} Hwbeam_t;
 
-struct Hwbmch_t {
+typedef struct {
   char PART1[8];
   char PART2[8];
-};
+} Hwbmch_t;
 
-struct Hwproc_t {
+typedef struct {
   double EBEAM1;
   double EBEAM2;
   double PBEAM1;
   double PBEAM2;
   int    IPROC;
   int    MAXEV;
-};
+} Hwproc_t;
 
-struct Hwpram_t {
+typedef struct {
   double AFCH[2][16];
   double ALPHEM;
   double B1LIM;
@@ -182,16 +182,16 @@ struct Hwpram_t {
   int PRNDEF;
   int PRNTEX;
   int PRNWEB;
-};
+} Hwpram_t;
 
-struct Hwprch_t {
+typedef struct {
   char AUTPDF[2][20];
   char BDECAY[4];
-};
+} Hwprch_t;
 
 int const NMXPAR = 500;
 
-struct Hwpart_t {
+typedef struct {
   int  NEVPAR;
   int  NPAR;
   int  ISTPAR[NMXPAR];
@@ -200,18 +200,18 @@ struct Hwpart_t {
   int  JDAPAR[NMXPAR][2];
   double  PPAR[NMXPAR][5];
   double  VPAR[NMXPAR][4];
-};
+} Hwpart_t;
 
-struct Hwparp_t {
+typedef struct {
   double DECPAR[NMXPAR][2];
   double PHIPAR[NMXPAR][2];
   double RHOPAR[NMXPAR][2];
   int TMPAR[NMXPAR];
-};
+} Hwparp_t;
 
 int const MODMAX = 5;
 
-struct Hwbosc_t {
+typedef struct {
   double  ALPFAC;
   double  BRHIG[12];
   double  ENHANC[12];
@@ -219,13 +219,13 @@ struct Hwbosc_t {
   double  RHOHEP[NMXHEP][3];
   int     IOPHIG;
   int     MODBOS[MODMAX];
-};
+} Hwbosc_t;
 
-struct Hwparc_t {
+typedef struct {
   int     JCOPAR[NMXPAR][4];
-};
+} Hwparc_t;
 
-struct Hwbrch_t {
+typedef struct {
   double ANOMSC[2][2];
   double HARDST;
   double PTINT[2][3];
@@ -237,9 +237,9 @@ struct Hwbrch_t {
   int    BREIT;
   int    FROST;
   int    USECMF;
-};
+} Hwbrch_t;
 
-struct Hwevnt_t {
+typedef struct {
   double AVWGT;
   double EVWGT;
   double GAMWT;
@@ -260,9 +260,9 @@ struct Hwevnt_t {
   int    NUMERU;
   int    NWGTS;
   int    GENSOF;
-};
+} Hwevnt_t;
 
-struct Hwhard_t {
+typedef struct {
   double ASFIXD;
   double CLQ[6][7];
   double COSS;
@@ -326,11 +326,11 @@ struct Hwhard_t {
   int    HVFCEN;
   int    TPOL;
   int     DURHAM;
-};
+} Hwhard_t;
 
 int const NMXRES = 500;
 
-struct Hwprop_t {
+typedef struct {
   double RLTIM[NMXRES+1];
   double RMASS[NMXRES+1];
   double RSPIN[NMXRES+1];
@@ -342,17 +342,17 @@ struct Hwprop_t {
   int    VTORDK[NMXRES+1];
   int    QORQQB[NMXRES+1];
   int    QBORQQ[NMXRES+1];
-};
+} Hwprop_t;
 
-struct Hwunam_t {
+typedef struct {
   char RNAME[NMXRES+1][8];
   char TXNAME[NMXRES+1][2][37];
-};
+} Hwunam_t;
 
 int const NMXDKS = 4000;
 int const NMXMOD = 200;
 
-struct Hwupdt_t {
+typedef struct {
   double BRFRAC[NMXDKS];
   double CMMOM[NMXDKS];
   double DKLTM[NMXRES];
@@ -366,20 +366,20 @@ struct Hwupdt_t {
   int    NPRODS[NMXDKS];
   int    DKPSET;
   int    RSTAB[NMXRES+1];
-};
+} Hwupdt_t;
 
-struct Hwuwts_t {
+typedef struct {
   double REPWT[5][4][4];
   double SNGWT;
   double DECWT;
   double QWT[3];
   double PWT[12];
   double SWTEF[NMXRES];
-};
+} Hwuwts_t;
 
 int const NMXCDK = 4000;
 
-struct Hwuclu_t {
+typedef struct {
   double CLDKWT[NMXCDK];
   double CTHRPW[12][12];
   double PRECO;
@@ -389,9 +389,9 @@ struct Hwuclu_t {
   int    NCLDK[NMXCDK];
   int    NRECO;
   int    CLRECO;
-};
+} Hwuclu_t;
 
-struct Hwdist_t {
+typedef struct {
   double EXAG;
   double GEV2MM;
   double HBAR;
@@ -406,20 +406,20 @@ struct Hwdist_t {
   int    MAXDKL;
   int    MIXING;
   int    PIPSMR;
-};
+} Hwdist_t;
 
 int const NMXQDK=20;
 
-struct Hwqdks_t {
+typedef struct {
   double VTXQDK[NMXQDK][4];
   int    IMQDK[NMXQDK];
   int    LOCQ[NMXQDK];
   int    NQDK;
-};
+} Hwqdks_t;
 
 int const NMXSUD = 1024;
 
-struct Hwusud_t {
+typedef struct {
   double ACCUR;
   double QEV[6][NMXSUD];
   double SUD[6][NMXSUD];
@@ -427,9 +427,9 @@ struct Hwusud_t {
   int    NQEV;
   int    NSUD;
   int    SUDORD;
-};
+} Hwusud_t;
 
-struct Hwsusy_t {
+typedef struct {
   double TANB;
   double ALPHAH;
   double COSBPA;
@@ -473,18 +473,18 @@ struct Hwsusy_t {
   double SENHNC[24];
   double SSPARITY;
   int    SUSYIN;
-};
+} Hwsusy_t;
 
-struct Hwrpar_t {
+typedef struct {
   double LAMDA1[3][3][3];
   double LAMDA2[3][3][3];
   double LAMDA3[3][3][3];
   int    HRDCOL[5][2];
   int    RPARTY;
   int    COLUPD;
-};
+} Hwrpar_t;
 
-struct Hwminb_t {
+typedef struct {
   double PMBN1;
   double PMBN2;
   double PMBN3;
@@ -495,15 +495,15 @@ struct Hwminb_t {
   double PMBP1;
   double PMBP2;
   double PMBP3;
-};
+} Hwminb_t;
 
 int const NMXCL = 500;
 
-struct Hwclus_t {
+typedef struct {
   double PPCL[NMXCL][5];
   int    IDCL[NMXCL];
   int    NCL;
-};
+} Hwclus_t;
 
 
 extern "C" {
@@ -531,52 +531,35 @@ extern "C" {
 
 /* THerwig6 class declaration */
 class THerwig6 : public TGenerator {
-protected:
-  // Standard hep common block
-  Hepevt_t* fHepevt;
-  // Herwig6 common-blocks
-  Hwbeam_t* fHwbeam;
-  Hwbmch_t* fHwbmch;
-  Hwproc_t* fHwproc;
-  Hwpram_t* fHwpram;
-  Hwprch_t* fHwprch;
-  Hwpart_t* fHwpart;
-  Hwparp_t* fHwparp;
-  Hwbosc_t* fHwbosc;
-  Hwparc_t* fHwparc;
-  Hwbrch_t* fHwbrch;
-  Hwevnt_t* fHwevnt;
-  Hwhard_t* fHwhard;
-  Hwprop_t* fHwprop;
-  Hwunam_t* fHwunam;
-  Hwupdt_t* fHwupdt;
-  Hwuwts_t* fHwuwts;
-  Hwuclu_t* fHwuclu;
-  Hwdist_t* fHwdist;
-  Hwqdks_t* fHwqdks;
-  Hwusud_t* fHwusud;
-  Hwsusy_t* fHwsusy;
-  Hwrpar_t* fHwrpar;
-  Hwminb_t* fHwminb;
-  Hwclus_t* fHwclus;
 //----------------------------------------------------------------------------
 //  functions:
 //----------------------------------------------------------------------------
 public:
 				// ****** constructors and destructor
   THerwig6();
+  THerwig6(const THerwig6 & source): TGenerator(source) {
+    Fatal("THerwig6","Copy constructor not implemented yet");
+  }
+  THerwig6 & operator=(const THerwig6 & /*source*/) {
+    Fatal("THerwig6","Assignment operator not implemented yet");
+    return *this;
+  }
   virtual ~THerwig6();
 
   // acces to hep common block
-  Hepevt_t*   GetHepevt        ()           { return fHepevt; }
-  int         GetNevhep        ()           { return fHepevt->NEVHEP; }
-  int         GetNhep          ()           { return fHepevt->NHEP; }
-  int         GetISTHEP    (int i)          { return fHepevt->ISTHEP[i-1]; }
-  int         GetIDHEP     (int i)          { return fHepevt->IDHEP[i-1]; }
-  int         GetJMOHEP (int i, int j) { return fHepevt->JMOHEP[i-1][j-1]; }
-  int         GetJDAHEP (int i, int j) { return fHepevt->JDAHEP[i-1][j-1]; }
-  double      GetPHEP   (int i, int j) { return fHepevt->PHEP[i-1][j-1]; }
-  double      GetVHEP   (int i, int j) { return fHepevt->VHEP[i-1][j-1]; }
+  Hepevt_t*   GetHepevt        () const     { return fHepevt; }
+  int         GetNevhep        () const     { return fHepevt->NEVHEP; }
+  int         GetNhep          () const     { return fHepevt->NHEP; }
+  int         GetISTHEP    (int i)const     { return fHepevt->ISTHEP[i-1]; }
+  int         GetIDHEP     (int i)const     { return fHepevt->IDHEP[i-1]; }
+  int         GetJMOHEP (int i, int j) const 
+    { return fHepevt->JMOHEP[i-1][j-1]; }
+  int         GetJDAHEP (int i, int j) const 
+    { return fHepevt->JDAHEP[i-1][j-1]; }
+  double      GetPHEP   (int i, int j) const
+    { return fHepevt->PHEP[i-1][j-1]; }
+  double      GetVHEP   (int i, int j) const
+    { return fHepevt->VHEP[i-1][j-1]; }
 
   // access to Herwig6 common-blocks
   // WARNING: Some arrays start in 1, others in 0. Look up the manual!
@@ -584,56 +567,56 @@ public:
   // /HWBEAM/
 
   Hwbeam_t*   GetHwbeam        ()           { return fHwbeam; }
-  int         GetIPART1        ()           { return fHwbeam->IPART1; }
-  int         GetIPART2        ()           { return fHwbeam->IPART2; }
+  int         GetIPART1        () const     { return fHwbeam->IPART1; }
+  int         GetIPART2        () const     { return fHwbeam->IPART2; }
 
   // /HWBMCH/
   Hwbmch_t*   GetHwbmch        ()           { return fHwbmch; }
-  char*       GetPART1         ()           { return fHwbmch->PART1; }
-  char*       GetPART2         ()           { return fHwbmch->PART2; }
+  char*       GetPART1         () const     { return fHwbmch->PART1; }
+  char*       GetPART2         () const     { return fHwbmch->PART2; }
   
   
   // /HWPROC/
   Hwproc_t*   GetHwproc        ()           { return fHwproc; }
-  double      GetEBEAM1        ()           { return fHwproc->EBEAM1; }
-  double      GetEBEAM2        ()           { return fHwproc->EBEAM2; }
-  double      GetPBEAM1        ()           { return fHwproc->PBEAM1; }
-  double      GetPBEAM2        ()           { return fHwproc->PBEAM2; }
-  int         GetIPROC         ()           { return fHwproc->IPROC; }
-  int         GetMAXEV         ()           { return fHwproc->MAXEV; }
+  double      GetEBEAM1        () const     { return fHwproc->EBEAM1; }
+  double      GetEBEAM2        () const     { return fHwproc->EBEAM2; }
+  double      GetPBEAM1        () const     { return fHwproc->PBEAM1; }
+  double      GetPBEAM2        () const     { return fHwproc->PBEAM2; }
+  int         GetIPROC         () const     { return fHwproc->IPROC; }
+  int         GetMAXEV         () const     { return fHwproc->MAXEV; }
 
   // /HWPRAM/
   Hwpram_t*   GetHwpram        ()           { return fHwpram; }
-  double      GetQCDLAM        ()           { return fHwpram->QCDLAM; }
+  double      GetQCDLAM        () const     { return fHwpram->QCDLAM; }
   void        SetQCDLAM   (double q)        { fHwpram->QCDLAM = q; }
-  double      GetVQCUT         ()           { return fHwpram->VQCUT; }
+  double      GetVQCUT         () const     { return fHwpram->VQCUT; }
   void        SetVQCUT    (double v)        { fHwpram->VQCUT = v; }
-  double      GetVGCUT         ()           { return fHwpram->VGCUT; }
+  double      GetVGCUT         () const     { return fHwpram->VGCUT; }
   void        SetVGCUT    (double v)        { fHwpram->VGCUT = v; }
-  double      GetVPCUT         ()           { return fHwpram->VPCUT; }
+  double      GetVPCUT         () const     { return fHwpram->VPCUT; }
   void        SetVPCUT    (double v)        { fHwpram->VPCUT = v; }
-  double      GetCLMAX         ()           { return fHwpram->CLMAX; }
+  double      GetCLMAX         () const     { return fHwpram->CLMAX; }
   void        SetCLMAX    (double c)        { fHwpram->CLMAX = c; }
-  double      GetCLPOW         ()           { return fHwpram->CLPOW; }
+  double      GetCLPOW         () const     { return fHwpram->CLPOW; }
   void        SetCLPOW    (double c)        { fHwpram->CLPOW = c; }
-  double      GetPSPLT    (int i)           { return fHwpram->PSPLT[i-1];}
+  double      GetPSPLT    (int i) const     { return fHwpram->PSPLT[i-1];}
   void        SetPSPLT    (int i, double p) { fHwpram->PSPLT[i-1] = p;}
-  double      GetQDIQK         ()           { return fHwpram->QDIQK; }
+  double      GetQDIQK         () const     { return fHwpram->QDIQK; }
   void        SetQDIQK    (double q)        { fHwpram->QDIQK = q; }
-  double      GetPDIQK         ()           { return fHwpram->PDIQK; }
+  double      GetPDIQK         () const     { return fHwpram->PDIQK; }
   void        SetPDIQK    (double p)        { fHwpram->PDIQK = p; }
-  double      GetQSPAC         ()           { return fHwpram->QSPAC; }
+  double      GetQSPAC         () const     { return fHwpram->QSPAC; }
   void        SetQSPAC    (double q)        { fHwpram->QSPAC = q; }
-  double      GetPTRMS         ()           { return fHwpram->PTRMS; }
+  double      GetPTRMS         () const     { return fHwpram->PTRMS; }
   void        SetPTRMS    (double p)        { fHwpram->PTRMS = p; }
-  double      GetENSOF         ()           { return fHwpram->ENSOF; }
+  double      GetENSOF         () const     { return fHwpram->ENSOF; }
   void        SetENSOF    (double e)        { fHwpram->ENSOF = e; } 
-  int         GetIPRINT         ()          { return fHwpram->IPRINT; }
-  void        SetIPRINT    (int i)          { fHwpram->IPRINT = i; }
-  int         GetMODPDF     (int i)         { return fHwpram->MODPDF[i-1];}
-  void        SetMODPDF     (int i, int j)  { fHwpram->MODPDF[i-1] = j; }
-  int         GetNSTRU         ()           { return fHwpram->NSTRU; }
-  void        SetNSTRU     (int i)          { fHwpram->NSTRU = i; }
+  int         GetIPRINT        () const     { return fHwpram->IPRINT; }
+  void        SetIPRINT   (int i)           { fHwpram->IPRINT = i; }
+  int         GetMODPDF   (int i) const     { return fHwpram->MODPDF[i-1];}
+  void        SetMODPDF   (int i, int j)  { fHwpram->MODPDF[i-1] = j; }
+  int         GetNSTRU         () const     { return fHwpram->NSTRU; }
+  void        SetNSTRU    (int i)          { fHwpram->NSTRU = i; }
 
   // /HWPRCH/
   Hwprch_t*   GetHwprch        ()           { return fHwprch; }
@@ -658,38 +641,38 @@ public:
 
   // /HWEVNT/
   Hwevnt_t*   GetHwevnt        ()           { return fHwevnt; }
-  double      GetAVWGT         ()           { return fHwevnt->AVWGT; }
-  int         GetMAXPR         ()           { return fHwevnt->MAXPR; }
+  double      GetAVWGT         () const     { return fHwevnt->AVWGT; }
+  int         GetMAXPR         () const     { return fHwevnt->MAXPR; }
   void        SetMAXPR    (int i)           { fHwevnt->MAXPR = i; }
-  int         GetMAXER         ()           { return fHwevnt->MAXER; }
+  int         GetMAXER         () const     { return fHwevnt->MAXER; }
   void        SetMAXER    (int i)           { fHwevnt->MAXER = i; }
-  int         GetNRN      (int i)           { return fHwevnt->NRN[i-1]; }
+  int         GetNRN      (int i) const     { return fHwevnt->NRN[i-1]; }
   void        SetNRN    (int i, int j)      { fHwevnt->NRN[i-1] = j; }
 
   // /HWHARD/
   Hwhard_t*   GetHwhard        ()           { return fHwhard; }
-  double      GetPTMIN         ()           { return fHwhard->PTMIN; }
+  double      GetPTMIN         () const     { return fHwhard->PTMIN; }
   void        SetPTMIN    (double d)        { fHwhard->PTMIN = d; }
-  double      GetPTPOW         ()           { return fHwhard->PTPOW; }
+  double      GetPTPOW         () const     { return fHwhard->PTPOW; }
   void        SetPTPOW    (double d)        { fHwhard->PTPOW = d; }
-  double      GetYJMIN         ()           { return fHwhard->YJMIN; }
+  double      GetYJMIN         () const     { return fHwhard->YJMIN; }
   void        SetYJMIN    (double d)        { fHwhard->YJMIN = d; }
-  double      GetYJMAX         ()           { return fHwhard->YJMAX; }
+  double      GetYJMAX         () const     { return fHwhard->YJMAX; }
   void        SetYJMAX    (double d)        { fHwhard->YJMAX = d; }
-  double      GetQ2MIN         ()           { return fHwhard->Q2MIN; }
+  double      GetQ2MIN         () const     { return fHwhard->Q2MIN; }
   void        SetQ2MIN    (double d)        { fHwhard->Q2MIN = d; }
-  double      GetQ2MAX         ()           { return fHwhard->Q2MAX; }
+  double      GetQ2MAX         () const     { return fHwhard->Q2MAX; }
   void        SetQ2MAX    (double d)        { fHwhard->Q2MAX = d; }
-  double      GetYBMIN         ()           { return fHwhard->YBMIN; }
+  double      GetYBMIN         () const     { return fHwhard->YBMIN; }
   void        SetYBMIN    (double d)        { fHwhard->YBMIN = d; }
-  double      GetYBMAX         ()           { return fHwhard->YBMAX; }
+  double      GetYBMAX         () const     { return fHwhard->YBMAX; }
   void        SetYBMAX    (double d)        { fHwhard->YBMAX = d; }
-  double      GetZJMAX        ()            { return fHwhard->ZJMAX; }
+  double      GetZJMAX        ()  const     { return fHwhard->ZJMAX; }
   void        SetZJMAX    (double d)        { fHwhard->ZJMAX = d; }
 
   // /HWPROP/
   Hwprop_t*   GetHwprop        ()           { return fHwprop; }
-  double      GetRMASS      (int i)         { return fHwprop->RMASS[i]; }
+  double      GetRMASS      (int i) const   { return fHwprop->RMASS[i]; }
   void        SetRMASS    (int i, double r) { fHwprop->RMASS[i] = r; }
 
   // /HWUNAM/
@@ -758,6 +741,34 @@ public:
   void             Hwufne();
   void             Hwefin();
   void             SetupTest();
+protected:
+
+  Hepevt_t* fHepevt; // Standard hep common block
+  // Herwig6 common-blocks
+  Hwbeam_t* fHwbeam; // Beams, process and number of events
+  Hwbmch_t* fHwbmch; // Beams, process and number of events
+  Hwproc_t* fHwproc; // Beams, process and number of events
+  Hwpram_t* fHwpram; // Basic parameters (and quantities derived from them)
+  Hwprch_t* fHwprch; // Basic parameters (and quantities derived from them)
+  Hwpart_t* fHwpart; // Parton shower common
+  Hwparp_t* fHwparp; // Parton polarization common
+  Hwbosc_t* fHwbosc; // Electroweak boson common
+  Hwparc_t* fHwparc; // Parton colour common
+  Hwbrch_t* fHwbrch; // Branching common 
+  Hwevnt_t* fHwevnt; // Event common 
+  Hwhard_t* fHwhard; // Hard subprocess common 
+  Hwprop_t* fHwprop; // Particle properties
+  Hwunam_t* fHwunam; // Particle properties
+  Hwupdt_t* fHwupdt; // Particle decays
+  Hwuwts_t* fHwuwts; // Weights used in cluster decays
+  Hwuclu_t* fHwuclu; // Parameters for cluster decays 
+  Hwdist_t* fHwdist; // Variables controling mixing and vertex information
+  Hwqdks_t* fHwqdks; // Arrays for temporarily storing heavy-b,c-hadrons decaying partonicaly
+  Hwusud_t* fHwusud; // Parameters for Sudakov form factors
+  Hwsusy_t* fHwsusy; // SUSY parameters
+  Hwrpar_t* fHwrpar; // R-Parity violating parameters and colours
+  Hwminb_t* fHwminb; // Parameters for minimum bias/soft underlying event
+  Hwclus_t* fHwclus; // Cluster common used by soft event routines
 
   ClassDef(THerwig6,0)  //Interface to Herwig6.1 Event Generator
 };

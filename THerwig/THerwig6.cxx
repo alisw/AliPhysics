@@ -1,12 +1,58 @@
-
 // definition of c++ Class THerwig6 to be used in ROOT
 // this is a c++ interface to the F77 Herwig6 program
 // author: j. g. contreras jgcn@moni.mda.cinvestav.mx
 // date: december 22, 2000
+//  Class THerwig6 is an interface to the Herwig program
+//
+// C-----------------------------------------------------------------------
+// C                           H E R W I G
+// C
+// C            a Monte Carlo event generator for simulating
+// C        +---------------------------------------------------+
+// C        | Hadron Emission Reactions With Interfering Gluons |
+// C        +---------------------------------------------------+
+// C I.G. Knowles(*), G. Marchesini(+), M.H. Seymour($) and B.R. Webber(#)
+// C-----------------------------------------------------------------------
+// C with Minimal Supersymmetric Standard Model Matrix Elements by
+// C                  S. Moretti($) and K. Odagiri($)
+// C-----------------------------------------------------------------------
+// C R parity violating Supersymmetric Decays and Matrix Elements by
+// C                          P. Richardson(&)
+// C-----------------------------------------------------------------------
+// C matrix element corrections to top decay and Drell-Yan type processes
+// C                         by G. Corcella(+)
+// C-----------------------------------------------------------------------
+// C Deep Inelastic Scattering and Heavy Flavour Electroproduction by
+// C                  G. Abbiendi(@) and L. Stanco(%)
+// C-----------------------------------------------------------------------
+// C and Jet Photoproduction in Lepton-Hadron Collisions by J. Chyla(~)
+// C-----------------------------------------------------------------------
+// C(*)  Department of Physics & Astronomy, University of Edinburgh
+// C(+)  Dipartimento di Fisica, Universita di Milano
+// C($)  Rutherford Appleton Laboratory
+// C(#)  Cavendish Laboratory, Cambridge
+// C(&)  Department of Physics, University of Oxford
+// C(@)  Dipartimento di Fisica, Universita di Bologna
+// C(%)  Dipartimento di Fisica, Universita di Padova
+// C(~)  Institute of Physics, Prague
+// C-----------------------------------------------------------------------
+// C                  Version 6.100 - 16th December 1999
+// C-----------------------------------------------------------------------
+// C Main reference:
+// C    G.Marchesini,  B.R.Webber,  G.Abbiendi,  I.G.Knowles,  M.H.Seymour,
+// C    and L.Stanco, Computer Physics Communications 67 (1992) 465.
+// C-----------------------------------------------------------------------
+// C Please send e-mail about  this program  to one of the  authors at the
+// C following Internet addresses:
+// C    I.Knowles@ed.ac.uk        Giuseppe.Marchesini@mi.infn.it
+// C    M.Seymour@rl.ac.uk        webber@hep.phy.cam.ac.uk
+// C-----------------------------------------------------------------------
+
 
 #include "THerwig6.h"
 #include "TClonesArray.h"
 #include "TParticle.h"
+#include "TObjArray.h"
 
 
 ClassImp(THerwig6)
@@ -273,8 +319,8 @@ Int_t THerwig6::ImportParticles(TClonesArray *particles, Option_t *option)
 //  If the option = "All", all the particles are stored.
 //
   if (particles == 0) return 0;
-  TClonesArray &Particles = *particles;
-  Particles.Clear();
+  TClonesArray &refParticles = *particles;
+  refParticles.Clear();
   Int_t numpart = fHepevt->NHEP;
   if (!strcmp(option,"") || !strcmp(option,"Final")) {
     for (Int_t i = 0; i< numpart; i++) {
@@ -282,7 +328,7 @@ Int_t THerwig6::ImportParticles(TClonesArray *particles, Option_t *option)
 //
 //  Use the common block values for the TParticle constructor
 //
-        new(Particles[i]) TParticle(
+        new(refParticles[i]) TParticle(
                                    fHepevt->IDHEP[i],
                                    fHepevt->ISTHEP[i],
                                    fHepevt->JMOHEP[i][0]-1,
@@ -303,7 +349,7 @@ Int_t THerwig6::ImportParticles(TClonesArray *particles, Option_t *option)
   }
   else if (!strcmp(option,"All")) {
     for (Int_t i = 0; i< numpart; i++) {
-      new(Particles[i]) TParticle(
+      new(refParticles[i]) TParticle(
                                    fHepevt->IDHEP[i],
                                    fHepevt->ISTHEP[i],
                                    fHepevt->JMOHEP[i][0]-1,
@@ -424,13 +470,13 @@ void THerwig6::SetupTest()
   // after you set your wished parameters
   // herwig can do its work
   PrepareRun();
-  int n_ev_to_generate=1;
-  for (int i=0;i<n_ev_to_generate;i++)
+  int nEvToGenerate=1;
+  for (int i=0;i<nEvToGenerate;i++)
     {
       GenerateEvent();
       // do your stuff. For ex:
-      int n_of_par=GetNumberOfParticles(); // from TGenerator
-      for (int j=0; j<n_of_par; j++)
+      int nOfPar=GetNumberOfParticles(); // from TGenerator
+      for (int j=0; j<nOfPar; j++)
 	{
 	  TParticle* p=GetParticle(j);
 	  // here you do whatever you want with the particle
