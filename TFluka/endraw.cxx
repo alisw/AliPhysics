@@ -18,9 +18,8 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
 {
   TFluka* fluka = (TFluka*) gMC;
   Int_t verbosityLevel = fluka->GetVerbosityLevel();
-  Bool_t debug = (verbosityLevel>=3)?kTRUE:kFALSE;
+  Bool_t debug = (verbosityLevel >= 3)? kTRUE : kFALSE;
   fluka->SetCaller(3);
-  fluka->SetIcode(icode);
   fluka->SetRull(rull);
   fluka->SetXsco(xsco);
   fluka->SetYsco(ysco);
@@ -44,8 +43,17 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
 	  }
       }
   }
+  if (debug) printf("endraw: Depositing energy for : %d %e icode: %d \n", TRACKR.ispusr[mkbmx2-1], rull, icode);
+
   (TVirtualMCApplication::Instance())->Stepping();
+  //
+  // for icode 21,22 the particle has fallen below thresshold 
+  // This has to be signalled to the StepManager() 
+  //
   fluka->SetTrackIsNew(kFALSE);
+  fluka->SetIcode(icode);
+  (TVirtualMCApplication::Instance())->Stepping();
+
 } // end of endraw
 } // end of extern "C"
 
