@@ -42,6 +42,7 @@ class AliFastGlauber : public TObject {
     TF1* Overlap() {return fWStaa;}
     void SimulateTrigger(Int_t n);
     void GetRandom(Float_t& b, Float_t& p, Float_t& mult);
+    void GetRandom(Int_t& bin, Bool_t& hard);
     Float_t GetRandomImpactParameter(Float_t bmin, Float_t bmax);
  protected:
     static TF1*    fWSb;      // Wood-Saxon Function (b)
