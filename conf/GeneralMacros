@@ -67,9 +67,11 @@ REVENGS       = $(patsubst %.viol,%.ii,$(CHECKS))
 
 reveng:		check/classDiagram.dot
 
-check/classDiagram.dot:	$(REVENGS)
+check/classDiagram.dot:	$(PREPROC)
 	@$(REV_ENG) $^
 	@-mv classDiagram.dot $@
 
 revdisp:	reveng
 	@$(IRST_INSTALLDIR)/scripts/revEngInterface.sh check/classDiagram.dot
+
+
