@@ -28,7 +28,7 @@ class AliVertexGenFile: public AliVertexGenerator {
   AliVertexGenFile(const AliVertexGenFile &vgf):    
     AliVertexGenerator(vgf)
     {Fatal("copy ctor","Not implemented\n");}
-  AliVertexGenFile & operator-(const AliVertexGenFile &)
+  AliVertexGenFile & operator=(const AliVertexGenFile &)
     {Fatal("= operator","Not implemented\n"); return *this;}
   TFile*           fFile;           //! galice file with vertices
   TTree*           fTree;           //! tree with headers

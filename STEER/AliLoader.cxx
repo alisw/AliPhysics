@@ -192,7 +192,9 @@ AliDataLoader* AliLoader::GetDataLoader(const char* name)
 /*****************************************************************************/ 
 void AliLoader::AddDataLoader(AliDataLoader* dl)
 {
-
+  //
+  // Adds a data loader
+  //
   if (dl == 0x0)
    {
      Error("AddDataLoader","Pointer is NULL");

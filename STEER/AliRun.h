@@ -12,7 +12,6 @@
 //
 
 #include <TError.h>
-//#include <TStopwatch.h>
 
 class TGeometry;
 class TParticle;
@@ -124,10 +123,7 @@ public:
    
   virtual  void  InitLoaders(); //prepares run (i.e. creates getters)
   static void Deprecated(TObject *obj, const char *method, const char *replace)
-    {
-      //
-      // Indicates deprecated method
-      //
+    {// Indicates deprecated method
       if (obj) ::Warning(Form("%s::%s", obj->ClassName(), method),
 		  "method is depricated\nPlease use: %s", replace);
       else ::Warning(method, "method is depricated\nPlease use: %s", replace);
