@@ -29,6 +29,8 @@
 #include "AliL3HoughTrack.h"
 
 
+/** /class AliL3Hough
+//<pre>
 //_____________________________________________________________
 // AliL3Hough
 //
@@ -42,6 +44,8 @@
 // hough->FindTrackCandidates();
 // 
 // AliL3TrackArray *tracks = hough->GetTracks(patch);
+//</pre>
+*/
 
 ClassImp(AliL3Hough)
 
@@ -73,7 +77,7 @@ AliL3Hough::AliL3Hough()
   SetThreshold();
 }
 
-AliL3Hough::AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit8=kFALSE,Int_t tv=0)
+AliL3Hough::AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments=100,Bool_t bit8=kFALSE,Int_t tv=0)
 {
   //Default ctor.
 
@@ -122,7 +126,7 @@ void AliL3Hough::CleanUp()
   */
 }
 
-void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit8=kFALSE,Int_t tv=0)
+void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t n_eta_segments=100,Bool_t bit8=kFALSE,Int_t tv=0)
 {
   fBinary = binary;
   strcpy(fPath,path);
@@ -149,17 +153,25 @@ void AliL3Hough::Init(Bool_t doit=kFALSE, Bool_t addhists=kFALSE)
 
   for(Int_t i=0; i<fNPatches; i++)
     {
+      //VESTBO: Changes here, slice information is in principle not needed
+      //by the HoughTransformers. You always gave here a one, I changed
+      //it to zero and have Init function with is called in ReadData (see
+      //a few lines below.). I did not have time to think about it longer
+      //as there was that strange bug, but we should either consider not
+      //to give slice at all or to give it correcty (thats what I am doing
+      //a the moment.) 
+
       switch (fVersion){ //choose Transformer
       case 1: 
-	fHoughTransformer[i] = new AliL3HoughTransformerVhdl(1,i,fNEtaSegments);
+	fHoughTransformer[i] = new AliL3HoughTransformerVhdl(0,i,fNEtaSegments);
 	break;
       default:
-	fHoughTransformer[i] = new AliL3HoughTransformer(1,i,fNEtaSegments);
+	fHoughTransformer[i] = new AliL3HoughTransformer(0,i,fNEtaSegments);
       }
-                  
+
       fHoughTransformer[i]->CreateHistograms(fNBinX,fLowPt,fNBinY,-fPhi,fPhi);
       fHoughTransformer[i]->SetLowerThreshold(fThreshold);
-      
+ 
       LOG(AliL3Log::kInformational,"AliL3Hough::Init","Version")
 	<<"Initializing Hough transformer version "<<fVersion<<ENDLOG;
       
@@ -238,6 +250,10 @@ void AliL3Hough::ReadData(Int_t slice,Int_t eventnr=0)
 #endif
 	}
       fHoughTransformer[i]->SetInputData(ndigits,digits);
+
+      //VESTBO: due to bug commented out!!!
+      //fHoughTransformer[i]->Init(slice,i,fNEtaSegments);
+      //fHoughTransformer[i]->Print();
     }
 }
 
@@ -368,7 +384,6 @@ void AliL3Hough::FindTrackCandidates()
   for(Int_t i=0; i<n_patches; i++)
     {
       AliL3HoughBaseTransformer *tr = fHoughTransformer[i];
-      Double_t eta_slice = (tr->GetEtaMax()-tr->GetEtaMin())/tr->GetNEtaSegments();
       fTracks[i]->Reset();
 
       for(Int_t j=0; j<fNEtaSegments; j++)
@@ -386,9 +401,7 @@ void AliL3Hough::FindTrackCandidates()
 	      AliL3HoughTrack *track = (AliL3HoughTrack*)fTracks[i]->NextTrack();
 	      track->SetTrackParameters(fPeakFinder->GetXPeak(k),fPeakFinder->GetYPeak(k),fPeakFinder->GetWeight(k));
 	      track->SetEtaIndex(j);
-	      Double_t eta = (Double_t)((j+0.5)*eta_slice);
-	      if(fCurrentSlice > 17) eta*=-1;
-	      track->SetEta(eta);
+	      track->SetEta(tr->GetEta(j));
 	      track->SetRowRange(AliL3Transform::GetFirstRow(0),AliL3Transform::GetLastRow(5));
 	    }
 	}
@@ -443,12 +456,14 @@ Int_t AliL3Hough::Evaluate(Int_t road_width,Int_t nrowstomiss)
 	}
     }
   
-  
   for(Int_t i=0; i<fNPatches; i++)
     EvaluatePatch(i,road_width,nrowstomiss);
   
-  
-  if(fAddHistograms) //Here we check the tracks globally; how many good rows (padrows with signal) did it cross in the slice
+  //Here we check the tracks globally; 
+  //how many good rows (padrows with signal) 
+  //did it cross in the slice
+  if(fAddHistograms) 
+
     {
       for(Int_t j=0; j<tracks->GetNTracks(); j++)
 	{
@@ -521,8 +536,6 @@ void AliL3Hough::EvaluatePatch(Int_t i,Int_t road_width,Int_t nrowstomiss)
 
 void AliL3Hough::EvaluateWithEta()
 {
-
-  
   if(!fTracks[0])
     {
       printf("AliL3Hough::EvaluateWithEta: NO TRACKS\n");

@@ -52,7 +52,7 @@ class AliL3Hough {
   AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments=100,Bool_t bit8=kFALSE,Int_t tv=0);
   virtual ~AliL3Hough();
   
-  void Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit8=kFALSE,Int_t tv=0);
+  void Init(Char_t *path,Bool_t binary,Int_t n_eta_segments=100,Bool_t bit8=kFALSE,Int_t tv=0);
   void Init(Bool_t doit=kFALSE, Bool_t addhists=kFALSE);
 
   void Process(Int_t minslice,Int_t maxslice);
