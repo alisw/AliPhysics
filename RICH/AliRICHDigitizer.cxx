@@ -13,7 +13,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Log$ */
+/* 
+   $Log$
+   Revision 1.1  2001/11/02 15:37:26  hristov
+   Digitizer class created. Code cleaning and bug fixes (J.Chudoba)
+*/
 #include <iostream> 
 
 #include <TTree.h> 
