@@ -319,33 +319,40 @@ if(iTPC) {
 //
 //-----------------------------------------------------------------------------
 
-AliTPC *TPC  = new AliTPCv1("TPC","Normal TPC");
+AliTPC *TPC  = new AliTPCv2("TPC","Normal TPC");
 AliTPCD *paramd = TPC->GetDigParam();
 AliTPCParam *param = &(paramd->GetParam());
 
 // Set geometrical parameters
 
-param->SetSectorAngles(40.,0.,20.,10.);
-param->SetInnerRadiusLow(83.7);
-param->SetInnerRadiusUp(132.9);
+param->SetSectorAngles(20.,0.,20.,0.);
+param->SetInnerRadiusLow(83.9);
+param->SetInnerRadiusUp(141.3);
 param->SetOuterRadiusLow(146.9);
 param->SetOuterRadiusUp(249.4);
 param->SetInSecLowEdge(81.6);
-param->SetInSecUpEdge(135.);
+param->SetInSecUpEdge(143.6);
 param->SetOuSecLowEdge(144.2);
 param->SetOuSecUpEdge(252.1);
 param->SetEdge(1.5);
 param->SetDeadZone(1.15);
+param->SetPadLength(2.0);
+param->SetPadWidth(0.3);
+param->SetPadPitchLength(2.05);
+param->SetPadPitchWidth(0.35);
 param->Update();
+
+if (TPC->IsVersion() != 2) paramd->Write("Param1");
 
 // set gas mixture
 
 TPC->SetGasMixt(2,20,10,-1,0.9,0.1,0.);
 TPC->SetSecAL(1);
 TPC->SetSecAU(1);
-TPC->SetSecLows(0, -1, -1, -1, -1, -1);
-TPC->SetSecUps(18, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
-TPC->SetSens(-1);
+TPC->SetSecLows(1, 2, 3, 1+18, 2+18, 3+18);
+TPC->SetSecUps(1+36, 2+36, 3+36, 1+38+18, 2+38+18, 3+38+18, -1,-1,-1,-1,-1,-1);
+TPC->SetSens(1);
+
 }
 
 if(iTOF) {
