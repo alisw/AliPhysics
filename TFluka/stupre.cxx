@@ -32,7 +32,6 @@ void stupre()
 //*  SeT User PRoperties for Emf particles                               *
 //*                                                                      *
 //*----------------------------------------------------------------------*
-    printf("stupre \n");
   Int_t lbhabh = 0;
   if (EVTFLG.ldltry == 1) {
     if (EMFSTK.ichemf[EMFSTK.npemf-1] * EMFSTK.ichemf[EMFSTK.npemf-2] < 0) lbhabh = 1;

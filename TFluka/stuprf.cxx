@@ -30,7 +30,6 @@ extern "C" {
 		Double_t& xx, Double_t& yy, Double_t& zz,
 		Int_t& numsec, Int_t& npprmr)
 {
-    printf("stuprf \n");
 //*----------------------------------------------------------------------*
 //*                                                                      *
 //*  SeT User PRoperties for Fluka particles                             *
