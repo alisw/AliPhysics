@@ -1601,5 +1601,20 @@ void AliRunLoader::SetDetectorAddresses()
    }
 }
 /*****************************************************************************/ 
+
+void AliRunLoader::Synchronize()
+{
+  //synchrinizes all writtable files 
+  TIter next(fLoaders);
+  AliLoader *loader;
+  while((loader = (AliLoader*)next()))
+   {
+     loader->Synchronize();
+   }
+  
+  fKineDataLoader->Synchronize();
+  fTrackRefsDataLoader->Synchronize();
+  
+}
 /*****************************************************************************/ 
 /*****************************************************************************/ 

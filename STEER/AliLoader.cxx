@@ -860,6 +860,19 @@ void AliLoader::SetTAddrInDet()
   det->SetTreeAddress();
 }
 /*****************************************************************************/ 
+
+void AliLoader::Synchronize()
+{
+  //synchrinizes all writtable files 
+ TIter next(fDataLoaders);
+ AliDataLoader* dl;
+ while ((dl = (AliDataLoader*)next()))
+  {
+    dl->Synchronize();
+  }
+  
+}
+/*****************************************************************************/ 
 /*****************************************************************************/ 
 /*****************************************************************************/ 
 

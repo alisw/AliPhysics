@@ -665,6 +665,13 @@ void AliDataLoader::SetBaseQATaskLoader(AliTaskLoader* bl)
   if (GetBaseQATaskLoader()) delete GetBaseQATaskLoader();
   fBaseLoaders->AddAt(bl,kQATask);
 }
+void AliDataLoader::Synchronize()
+{
+  //synchrinizes all writtable files 
+  if ( fFile == 0x0 ) return;
+  if ( fFile->IsWritable() == kFALSE ) return;
+  fFile->Write(0,TObject::kOverwrite);
+}
 
 /*****************************************************************************/ 
 /*****************************************************************************/ 

@@ -143,7 +143,8 @@ class AliRunLoader: public TNamed
     const TObjArray* GetArrayOfLoaders() const {return fLoaders;}
     Int_t GetDebug() const {return AliLoader::GetDebug();}
     void cd(){fgRunLoader = this;}
-
+    void Synchronize();
+    
   protected:
     /**********************************************/
     /************    PROTECTED      ***************/

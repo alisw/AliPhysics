@@ -96,6 +96,9 @@ class AliDataLoader: public TNamed
    Bool_t             IsFileWritable() const;
    Bool_t             IsFileOpen() const;
    Bool_t             IsOptionContrary(const TString& option) const;
+   
+   void Synchronize();
+
   protected:
    Int_t              GetDebug() const;
    AliRunLoader*      GetRunLoader();//gets the run-loader from event folder

@@ -429,7 +429,6 @@ void AliRun::FinishRun()
   // Called at the end of the run.
   //
   
-  
   if(fLego) 
    {
     if (GetDebug()) Info("FinishRun"," Finish Lego");
@@ -464,6 +463,8 @@ void AliRun::FinishRun()
   // Clean detector information
   if (GetDebug()) Info("FinishRun"," fGenerator->FinishRun()");
   fGenerator->FinishRun();
+  
+  fRunLoader->Synchronize();
 }
 
 //_______________________________________________________________________

@@ -202,6 +202,8 @@ class AliLoader: public TNamed
     void          SetDigitsFileNameSuffix(const TString& suffix);//adds the suffix before ".root", 
                                                           //e.g. TPC.Digits.root -> TPC.DigitsMerged.root
                                                               //made on Jiri Chudoba demand
+    void Synchronize();
+    
    protected:
 
     /*********************************************/
