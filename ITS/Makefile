@@ -37,14 +37,12 @@ SRCS          = AliITS.cxx AliITSv1.cxx AliITSv3.cxx AliITSv5.cxx \
 		AliITSclusterSSD.cxx AliITSpackageSSD.cxx \
 		AliITSdictSSD.cxx \
 		AliITSstatistics.cxx AliITSstatistics2.cxx \
-                AliITStrack.cxx AliITStracking.cxx AliITSiotrack.cxx \
-		AliITSRad.cxx \
+                AliITSTrackV1.cxx AliITSIOTrack.cxx \
+		AliITSRad.cxx AliITSgeoinfo.cxx AliITSTrackerV1.cxx\
 		AliITSvtest.cxx	\
-                AliITSTrackerV1.cxx AliITSgeoinfo.cxx \
                 AliITSclusterV2.cxx AliITStrackV2.cxx AliITStrackerV2.cxx \
 		AliITSVertex.cxx		
 #		AliITSAlignmentTrack.cxx AliITSAlignmentModule.cxx \
-#		AliITStrack.cxx
 
 # Fortran sources
 

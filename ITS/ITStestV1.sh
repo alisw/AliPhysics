@@ -1,6 +1,6 @@
 #!/bin/sh
 # delete eventual old files from the last run
-DeleteOldFiles
+./DeleteOldFiles
 # run the hit generation
 aliroot -q -b grun.C
 # digitize TPC
