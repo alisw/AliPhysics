@@ -26,34 +26,35 @@ Introduction of the Copyright and cvs Log
 //  This class contains the functions for version 1 of the Time Of Flight    //
 //  detector.                                                                //
 //
-//  VERSION WITH 5 MODULES AND TILTED STRIPS 
+//  VERSION WITH 5 MODULES AND FLAT PLATES 
 //  
-//   FULL COVERAGE VERSION
+//   WITH HOLES FOR PHOS AND HMPID inside the 
+//   SPACE FRAME WITH HOLES
 //
 //   Authors:
 //
 //   Alessio Seganti
-//   Domenico Vicinanza
+//   Domenico Vicinanza 
 //
 //   University of Salerno - Italy
 //
 //
 //Begin_Html
 /*
-<img src="picts/AliTOFv3Class.gif">
+<img src="picts/AliTOFv4Class.gif">
 */
 //End_Html
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliTOFv3.h"
+#include "AliTOFv4.h"
 #include "AliRun.h"
 #include "AliConst.h"
  
-ClassImp(AliTOFv3)
+ClassImp(AliTOFv4)
  
 //_____________________________________________________________________________
-AliTOFv3::AliTOFv3()
+AliTOFv4::AliTOFv4()
 {
   //
   // Default constructor
@@ -61,7 +62,7 @@ AliTOFv3::AliTOFv3()
 }
  
 //_____________________________________________________________________________
-AliTOFv3::AliTOFv3(const char *name, const char *title)
+AliTOFv4::AliTOFv4(const char *name, const char *title)
        : AliTOF(name,title)
 {
   //
@@ -70,14 +71,14 @@ AliTOFv3::AliTOFv3(const char *name, const char *title)
 }
  
 //_____________________________________________________________________________
-void AliTOFv3::CreateGeometry()
+void AliTOFv4::CreateGeometry()
 {
   //
   // Create geometry for Time Of Flight version 0
   //
   //Begin_Html
   /*
-    <img src="picts/AliTOFv3.gif">
+    <img src="picts/AliTOFv4.gif">
   */
   //End_Html
   //
@@ -87,22 +88,19 @@ void AliTOFv3::CreateGeometry()
 }
  
 //_____________________________________________________________________________
-void AliTOFv3::TOFpc(Float_t xtof, Float_t ytof, Float_t zlen1,
+void AliTOFv4::TOFpc(Float_t xtof, Float_t ytof, Float_t zlen1,
 		     Float_t zlen2, Float_t zlen3, Float_t ztof0)
 {
   //
   // Definition of the Time Of Fligh Resistive Plate Chambers
   // xFLT, yFLT, zFLT - sizes of TOF modules (large)
   
+  Int_t idrotm[100];
   Float_t  ycoor, zcoor;
   Float_t par[10];
+  Float_t yFREON, xp, yp, zp;
   
   Int_t *idtmed = fIdtmed->GetArray()-499;
-
-  Int_t idrotm[100];
-  Int_t nrot = 0;
-  
-
 
   par[0] =  xtof / 2.;
   par[1] =  ytof / 2.;
@@ -124,21 +122,17 @@ void AliTOFv3::TOFpc(Float_t xtof, Float_t ytof, Float_t zlen1,
    AliMatrix(idrotm[1], 90., 180., 0., 0., 90, 90.);
    gMC->Gspos("FTO1", 1, "BTO1", 0,  zcor1, 0, idrotm[0], "ONLY");
    gMC->Gspos("FTO1", 2, "BTO1", 0, -zcor1, 0, idrotm[1], "ONLY");
-   gMC->Gspos("FTO1", 1, "BTO2", 0,  zcor1, 0, idrotm[0], "ONLY");
-   gMC->Gspos("FTO1", 2, "BTO2", 0, -zcor1, 0, idrotm[1], "ONLY");
-   gMC->Gspos("FTO1", 1, "BTO3", 0,  zcor1, 0, idrotm[0], "ONLY");
-   gMC->Gspos("FTO1", 2, "BTO3", 0, -zcor1, 0, idrotm[1], "ONLY");
-
+   zcoor = (zlen1/2.);
+   gMC->Gspos("FTO1", 1, "BTO2", 0,  zcoor, 0, idrotm[0], "ONLY");
+   zcoor = 0.;
+   gMC->Gspos("FTO1", 1, "BTO3", 0,  zcoor, 0, idrotm[0], "ONLY");
+   
    gMC->Gspos("FTO2", 1, "BTO1", 0,  zcor2, 0, idrotm[0], "ONLY");
    gMC->Gspos("FTO2", 2, "BTO1", 0, -zcor2, 0, idrotm[1], "ONLY");
-   gMC->Gspos("FTO2", 1, "BTO2", 0,  zcor2, 0, idrotm[0], "ONLY");
-   gMC->Gspos("FTO2", 2, "BTO2", 0, -zcor2, 0, idrotm[1], "ONLY");
-   gMC->Gspos("FTO2", 1, "BTO3", 0,  zcor2, 0, idrotm[0], "ONLY");
-   gMC->Gspos("FTO2", 2, "BTO3", 0, -zcor2, 0, idrotm[1], "ONLY");
+   zcoor = -zlen2/2.;
+   gMC->Gspos("FTO2", 0, "BTO2", 0,  zcoor, 0, idrotm[0], "ONLY");
 
    gMC->Gspos("FTO3", 0, "BTO1", 0, zcor3,  0, idrotm[0], "ONLY");
-   gMC->Gspos("FTO3", 0, "BTO2", 0, zcor3,  0, idrotm[0], "ONLY");
-   gMC->Gspos("FTO3", 0, "BTO3", 0, zcor3,  0, idrotm[0], "ONLY");
 
 // Subtraction the distance to TOF module boundaries 
 
@@ -150,28 +144,46 @@ void AliTOFv3::TOFpc(Float_t xtof, Float_t ytof, Float_t zlen1,
   zFLT1 = zlen1 - db;
   zFLT2 = zlen2 - db;
   zFLT3 = zlen3 - db;
+  
+
+  
+// freon gaps in MRPC chamber 
+  yFREON = .11; //cm
 
 // Sizes of MRPC pads
 
-  Float_t yPad = 0.505; 
-  
-// Large not sensitive volumes with CO2 
+  xp = 3.0; 
+  yp = 12.3*0.05; // 5% X0 of glass 
+  zp = 3.0;
+
+//  Subtraction of dead boundaries in X=2 cm and Z=7/2 cm 
+
+cout <<"************************* TOF geometry **************************"<<endl;
+
+  Int_t nz1, nz2, nz3, nx; //- numbers of pixels
+  nx = Int_t (xFLT/xp);
+
+  printf("Number of pixel along x axis = %i",nx);
+
   par[0] = xFLT/2;
   par[1] = yFLT/2;
-
-  cout <<"************************* TOF geometry **************************"<<endl;
-
   par[2] = (zFLT1 / 2.);
+  nz1 = Int_t (par[2]*2/zp);
   gMC->Gsvolu("FLT1", "BOX ", idtmed[506], par, 3); // CO2
   gMC->Gspos("FLT1", 0, "FTO1", 0., 0., 0., 0, "ONLY");
+  printf("Number of pixel along z axis (module 1) = %i",nz1);
 
   par[2] = (zFLT2 / 2.);
+  nz2 = Int_t (par[2]*2/zp);
   gMC->Gsvolu("FLT2", "BOX ", idtmed[506], par, 3); // CO2
   gMC->Gspos("FLT2", 0, "FTO2", 0., 0., 0., 0, "ONLY");
+  printf("Number of pixel along z axis (module 2) = %i",nz2);
 
   par[2] = (zFLT3 / 2.); 
+  nz3 = Int_t (par[2]*2/zp);
   gMC->Gsvolu("FLT3", "BOX ", idtmed[506], par, 3); // CO2
   gMC->Gspos("FLT3", 0, "FTO3", 0., 0., 0., 0, "ONLY");
+  printf("Number of pixel along z axis (module 3) = %i",nz3);
 
 ////////// Layers before detector ////////////////////
 
@@ -202,163 +214,51 @@ void AliTOFv3::TOFpc(Float_t xtof, Float_t ytof, Float_t zlen1,
 
 ///////////////// Detector itself //////////////////////
 
-  const Float_t StripWidth = 7.81;//cm
-  const Float_t DeadBound = 1.;//cm non-sensitive between the pad edge and the boundary of the strip
-  const Int_t nx = 40; // number of pads along x
-  const Int_t nz = 2;  // number of pads along z
-  const Float_t Gap=4.; //cm  distance between the strip axis
-  const Float_t Space = 5.5; //cm distance from the front plate of the box
-
-  Float_t zSenStrip;
-  zSenStrip = StripWidth-2*DeadBound;//cm
+  const Float_t SpaceBefore=2.; // Space Beetween detector &  Front Panel
 
   par[0] = -1;
-  par[1] = yPad/2; 
-  par[2] = StripWidth/2.;
-  
-  // Glass Layer of detector
-  gMC->Gsvolu("FSTR","BOX",idtmed[514],par,3);
-
-  // Freon for non-sesitive boundaries
-  par[0] = -1;
-  par[1] = 0.110/2;
+  par[1] = yp/2; // 5 %X0 thick of glass  
   par[2] = -1;
-  gMC->Gsvolu("FNSF","BOX",idtmed[512],par,3);
-  gMC->Gspos("FNSF",0,"FSTR",0.,0.,0.,0,"ONLY");
-  // Mylar for non-sesitive boundaries
-  par[1] = 0.025;
-  gMC->Gsvolu("FMYI","BOX",idtmed[510],par,3); 
-  gMC->Gspos("FMYI",0,"FNSF",0.,0.,0.,0,"ONLY");
+  ycoor = -yFLT/2 + SpaceBefore;
+  gMC->Gsvolu("FLD1", "BOX ", idtmed[514], par, 3); // Glass
+  gMC->Gspos("FLD1", 0, "FLT1", 0., ycoor, 0., 0, "ONLY");
+  gMC->Gsvolu("FLD2", "BOX ", idtmed[514], par, 3); // Glass
+  gMC->Gspos("FLD2", 0, "FLT2", 0., ycoor, 0., 0, "ONLY");
+  gMC->Gsvolu("FLD3", "BOX ", idtmed[514], par, 3); // Glass
+  gMC->Gspos("FLD3", 0, "FLT3", 0., ycoor, 0., 0, "ONLY");
 
-  // Mylar for outer layers
-  par[1] = 0.035/2;
-  ycoor = -yPad/2.+par[1];
-  gMC->Gsvolu("FMYX","BOX",idtmed[510],par,3);
-  gMC->Gspos("FMYX",1,"FSTR",0.,ycoor,0.,0,"ONLY");
-  gMC->Gspos("FMYX",2,"FSTR",0.,-ycoor,0.,0,"ONLY");
-  ycoor += par[1];
- 
-  // Graphyte layers
-  par[1] = 0.003/2;
-  ycoor += par[1];
-  gMC->Gsvolu("FGRL","BOX",idtmed[502],par,3);
-  gMC->Gspos("FGRL",1,"FSTR",0.,ycoor,0.,0,"ONLY");
-  gMC->Gspos("FGRL",2,"FSTR",0.,-ycoor,0.,0,"ONLY");
+  gMC->Gsdvn("FLZ1", "FLD1", nz1, 3); //pixel size xp=zp=3
+  gMC->Gsdvn("FLZ2", "FLD2", nz2, 3); 
+  gMC->Gsdvn("FLZ3", "FLD3", nz3, 3); 
+  gMC->Gsdvn("FLX1", "FLZ1", nx, 1);
+  gMC->Gsdvn("FLX2", "FLZ2", nx, 1); 
+  gMC->Gsdvn("FLX3", "FLZ3", nx, 1); 
 
-  // Freon sensitive layer
+// MRPC pixel itself 
+  par[0] = -1;//xp/2;
+  par[1] = -1;//yp/2; // 5 %X0 thick of glass  
+  par[2] = -1;//zp/2;
+  gMC->Gsvolu("FPA0", "BOX ", idtmed[514], par, 3);// Glass
+  gMC->Gspos("FPA0", 1, "FLX1", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("FPA0", 2, "FLX2", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("FPA0", 3, "FLX3", 0., 0., 0., 0, "ONLY");
+
+// Freon gas sencitive vol.ume
   par[0] = -1;
-  par[1] = 0.110/2.;
-  par[2] = zSenStrip/2.;
-  gMC->Gsvolu("FCFC","BOX",idtmed[513],par,3);
-  gMC->Gspos("FCFC",0,"FNSF",0.,0.,0.,0,"ONLY");
-  
-  // Pad definition x & z
-  gMC->Gsdvn("FLZ","FCFC", nz, 3); 
-  gMC->Gsdvn("FLX","FLZ" , nx, 1); 
-
-  // MRPC pixel itself 
-  par[0] = -1;
-  par[1] = -1; 
+  par[1] = yFREON/2;
   par[2] = -1;
-  gMC->Gsvolu("FPAD", "BOX ", idtmed[513], par, 3);
-  gMC->Gspos("FPAD", 0, "FLX", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("FPAD", "BOX ", idtmed[513], par, 3);// Freon 
+  gMC->Gspos("FPAD", 0, "FPA0", 0., 0., 0., 0, "ONLY");
 
+////////// Layers after detector ////////////////////
 
-////  Positioning the Strips  (FSTR) in the FLT volumes  /////
-
- 
-  // 3 (Central) Plate 
-  Float_t t = zFLT1+zFLT2+zFLT3/2.+7.*2.5;//Half Width of Barrel
-  Float_t zpos = 0;
-  Float_t ang;
-  Float_t Offset;  
-  Float_t last;
-  nrot = 0;
-  Int_t i=1,j=1;
-  zcoor=0;
-  Int_t UpDown=-1; // UpDown=-1 -> Upper strip, UpDown=+1 -> Lower strip
- 
-  do{
-     ang = atan(zcoor/t);
-     ang = ang*180/3.141592654;
-     AliMatrix (idrotm[nrot], 90., 0., 90.-ang,90.,ang, 0.);
-     AliMatrix (idrotm[nrot+1], 90., 180., 90.+ang,90.,ang, 0);
-     ycoor = -29./2.+ Space; //2 cm over front plate
-     ycoor += (1-(UpDown+1)/2)*Gap;
-     gMC->Gspos("FSTR",j,"FLT3",0.,ycoor,zcoor,idrotm[nrot],"ONLY");
-     gMC->Gspos("FSTR",j+1,"FLT3",0.,ycoor,-zcoor,idrotm[nrot+1],"ONLY");
-     ang  = ang*3.141592654/180;     
-     zcoor=zcoor-(zSenStrip/2)/TMath::Cos(ang)+UpDown*Gap*TMath::Tan(ang)-(zSenStrip/2)/TMath::Cos(ang);
-     UpDown*= -1; // Alternate strips 
-     i++;
-     j+=2;
-  } while (zcoor-(StripWidth/2)*TMath::Cos(ang)>-t+zFLT1+zFLT2+7*2.5);
+  const Float_t SpaceAfter = 6.; //Space beetween detector & Back Panel
   
-  ycoor = -29./2.+ Space; //2 cm over front plate
-
-  // Plate  2
-  zpos = -zFLT3/2-7;
-  ang = atan(zpos/sqrt(2*t*t-zpos*zpos));
-  Offset = StripWidth*TMath::Cos(ang)/2;
-  zpos -= Offset;
-  nrot = 0;
-  i=1;
-  // UpDown has not to be reinitialized, so that the arrangement of the strips can continue coherently
-
-  do {
-     ang = atan(zpos/sqrt(2*t*t-zpos*zpos));
-     ang = ang*180/3.141592654;
-     AliMatrix (idrotm[nrot], 90., 0., 90.-ang,90.,ang, 0.);
-     ycoor = -29./2.+ Space ; //2 cm over front plate
-     ycoor += (1-(UpDown+1)/2)*Gap;
-     zcoor = zpos+(zFLT3/2.+7+zFLT2/2); // Moves to the system of the centre of the modulus FLT2
-     gMC->Gspos("FSTR",i, "FLT2", 0., ycoor, zcoor,idrotm[nrot], "ONLY");
-     ang  = ang*3.141592654/180;
-     zpos = zpos - (zSenStrip/2)/TMath::Cos(ang)+UpDown*Gap*TMath::Tan(ang)-(zSenStrip/2)/TMath::Cos(ang);
-     last = StripWidth*TMath::Cos(ang)/2;
-     UpDown*=-1;
-     i++; 
-  } while (zpos-(StripWidth/2)*TMath::Cos(ang)>-t+zFLT1+7);
-
-  // Plate  1
-  zpos = -t+zFLT1+3.5;
-  ang = atan(zpos/sqrt(2*t*t-zpos*zpos));
-  Offset = StripWidth*TMath::Cos(ang)/2.;
-  zpos -= Offset;
-  nrot = 0;
-  i=0;
-  ycoor= -29./2.+Space+Gap/2;
-
- do {
-     ang = atan(zpos/sqrt(2*t*t-zpos*zpos));
-     ang = ang*180/3.141592654;
-     AliMatrix (idrotm[nrot], 90., 0., 90.-ang,90.,ang, 0.);
-     i++;
-     zcoor = zpos+(zFLT1/2+zFLT2+zFLT3/2+7.*2.);
-     gMC->Gspos("FSTR",i, "FLT1", 0., ycoor, zcoor,idrotm[nrot], "ONLY");
-     ang  = ang *3.141592654/180;
-     zpos = zpos - zSenStrip/TMath::Cos(ang);
-     last = StripWidth*TMath::Cos(ang)/2.;
-  }  while (zpos>-t+7.+last);
-
-printf("#######################################################\n");
-printf("     Distance from the bound of the FLT3: zFLT3- %f cm \n", zpos+(zSenStrip/2)/TMath::Cos(ang));
-     ang = atan(zpos/sqrt(2*t*t-zpos*zpos));
-     zpos = zpos - zSenStrip/TMath::Cos(ang);
-printf("NEXT Distance from the bound of the FLT3: zFLT3- %f cm \n", zpos+(zSenStrip/2)/TMath::Cos(ang));
-printf("#######################################################\n");
-
-////////// Layers after detector /////////////////
-
 // Honeycomb layer after (3cm)
-
-  Float_t OverSpace = Space + 7.3;
-///  StripWidth*TMath::Sin(ang) + 1.3;
-
   par[0] = -1;
   par[1] = 0.6;
   par[2] = -1;
-  ycoor = -yFLT/2 + OverSpace + par[1];
+  ycoor = -yFLT/2 + SpaceAfter - par[1];
   gMC->Gsvolu("FPE1", "BOX ", idtmed[503], par, 3); // Hony
   gMC->Gspos("FPE1", 0, "FLT1", 0., ycoor, 0., 0, "ONLY");
   gMC->Gsvolu("FPE2", "BOX ", idtmed[503], par, 3); // Hony
@@ -367,11 +267,10 @@ printf("#######################################################\n");
   gMC->Gspos("FPE3", 0, "FLT3", 0., ycoor, 0., 0, "ONLY");
 
 // Electronics (Cu) after
-  ycoor += par[1];
   par[0] = -1;
   par[1] = 1.43*0.05 / 2.; // 5% of X0
   par[2] = -1;
-  ycoor += par[1];
+  ycoor = -yFLT/2 + SpaceAfter +par[1];
   gMC->Gsvolu("FEC1", "BOX ", idtmed[501], par, 3); // Cu
   gMC->Gspos("FEC1", 0, "FLT1", 0., ycoor, 0., 0, "ONLY");
   gMC->Gsvolu("FEC2", "BOX ", idtmed[501], par, 3); // Cu
@@ -380,11 +279,11 @@ printf("#######################################################\n");
   gMC->Gspos("FEC3", 0, "FLT3", 0., ycoor, 0., 0, "ONLY");
 
 // Cooling water after
-  ycoor += par[1];
+  ycoor = ycoor+par[1];
   par[0] = -1;
   par[1] = 36.1*0.02 / 2.; // 2% of X0
   par[2] = -1;
-  ycoor += par[1];
+  ycoor = ycoor+par[1];
   gMC->Gsvolu("FWA1", "BOX ", idtmed[515], par, 3); // Water
   gMC->Gspos("FWA1", 0, "FLT1", 0., ycoor, 0., 0, "ONLY");
   gMC->Gsvolu("FWA2", "BOX ", idtmed[515], par, 3); // Water
@@ -394,7 +293,7 @@ printf("#######################################################\n");
 
 //back plate honycomb (2cm)
   par[0] = -1;
-  par[1] = 2 / 2.;
+  par[1] = 1.;
   par[2] = -1;
   ycoor = yFLT/2 - par[1];
   gMC->Gsvolu("FEG1", "BOX ", idtmed[503], par, 3); // Hony
@@ -406,7 +305,7 @@ printf("#######################################################\n");
 }
 
 //_____________________________________________________________________________
-void AliTOFv3::DrawModule()
+void AliTOFv4::DrawModule()
 {
   //
   // Draw a shaded view of the Time Of Flight version 1
@@ -459,7 +358,7 @@ void AliTOFv3::DrawModule()
 }
 
 //_____________________________________________________________________________
-void AliTOFv3::CreateMaterials()
+void AliTOFv4::CreateMaterials()
 {
   //
   // Define materials for the Time Of Flight
@@ -468,7 +367,7 @@ void AliTOFv3::CreateMaterials()
 }
  
 //_____________________________________________________________________________
-void AliTOFv3::Init()
+void AliTOFv4::Init()
 {
   //
   // Initialise the detector after the geometry has been defined
@@ -482,7 +381,7 @@ void AliTOFv3::Init()
 }
  
 //_____________________________________________________________________________
-void AliTOFv3::StepManager()
+void AliTOFv4::StepManager()
 {
   //
   // Procedure called at each step in the Time Of Flight

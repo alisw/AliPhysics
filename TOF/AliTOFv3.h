@@ -30,7 +30,7 @@ public:
   virtual void   CreateMaterials();
   virtual void   Init();
   virtual Int_t  IsVersion() const {return 3;}
-  virtual void   TOFpc(Float_t, Float_t, Float_t, Float_t, Float_t);
+  virtual void   TOFpc(Float_t,Float_t,Float_t,Float_t,Float_t,Float_t);
   virtual void   StepManager();
   virtual void   DrawModule();
  
@@ -38,5 +38,3 @@ public:
 };
  
 #endif
-
-

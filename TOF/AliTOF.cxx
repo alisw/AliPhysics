@@ -15,21 +15,33 @@
 
 /*
 $Log$
-*/
+Revision 1.9  1999/09/29 09:24:33  fca
+Introduction of the Copyright and cvs Log
 
+*/
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  Time Of Flight                                                           //
+//  Time Of Flight                               FCA                         //
 //  This class contains the basic functions for the Time Of Flight           //
 //  detector. Functions specific to one particular geometry are              //
 //  contained in the derived classes                                         //
-//                                                                           //
-//Begin_Html
+//
+//  VERSIONE WITH 5 SYMMETRIC MODULES ALONG Z AXIS
+//  ==============================================
+//  
+//  VERSION WITH HOLES FOR PHOS AND TRD IN SPACEFRAME WITH HOLES
+//
+//  Volume sensibile : FPAD
+//
+//
+//
+// Begin_Html
 /*
 <img src="picts/AliTOFClass.gif">
 */
 //End_Html
-//                                                                           //
+//             
+//
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -121,235 +133,457 @@ void AliTOF::BuildGeometry()
   // Position the different copies
   const Float_t rtof=(399+370)/2;
   const Int_t ntof=18;
-  const Float_t angle=2*kPI/ntof;
+  const Float_t kPi = TMath::Pi();
+  const Float_t angle=2*kPi/ntof;
   Float_t ang;
   //
   // Define TOF basic volume
-  new TBRIK("S_TOF1","TOF box","void",130/2,29/2,190.);
+  
+  Float_t zlen1 = 152.5;
+  Float_t zlen2 = 147.0;
+  Float_t zlen3 = 117.0;
+  
+  new TBRIK("S_TOF1","TOF box","void",130/2,29/2,zlen1/2);
   //
   // Position it
+  //
+  Top->cd();
+  ang=3.5*angle;
+  Node = new TNode("FTO001","FTO001","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),299.15,"rot501");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  Node = new TNode("FTO101","FTO101","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-299.15,"rot501");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
   Top->cd();
   ang=2.5*angle;
-  Node = new TNode("FTO002","FTO02","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),190,"rot502");
+  Node = new TNode("FTO002","FTO002","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),299.15,"rot502");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
   Top->cd();
-  Node = new TNode("FTO102","FTO102","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-190,"rot502");
+  Node = new TNode("FTO102","FTO102","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-299.15,"rot502");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
-  //
   //
   Top->cd();
   ang=1.5*angle;
-  Node = new TNode("FTO003","FTO003","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),190,"rot503");
+  Node = new TNode("FTO003","FTO003","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),299.15,"rot503");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
   Top->cd();
-  Node = new TNode("FTO103","FTO103","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-190,"rot503");
+  Node = new TNode("FTO103","FTO103","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-299.15,"rot503");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
-  //
   Top->cd();  
   ang=0.5*angle;
-  Node = new TNode("FTO004","FTO004","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),190,"rot504");
+  Node = new TNode("FTO004","FTO004","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),299.15,"rot504");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node);
   //
   Top->cd();
-  Node = new TNode("FTO104","FTO104","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-190,"rot504");
+  Node = new TNode("FTO104","FTO104","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-299.15,"rot504");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
-  //
   //
   Top->cd();
   ang=-0.5*angle;
-  Node = new TNode("FTO005","FTO005","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),190,"rot505");
+  Node = new TNode("FTO005","FTO005","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),299.15,"rot505");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
   Top->cd();
-  Node = new TNode("FTO105","FTO105","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-190,"rot505");
+  Node = new TNode("FTO105","FTO105","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-299.15,"rot505");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
-  //
   //
   Top->cd();
   ang=-1.5*angle;
-  Node = new TNode("FTO006","FTO006","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),190,"rot506");
+  Node = new TNode("FTO006","FTO006","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),299.15,"rot506");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
   Top->cd();
-  Node = new TNode("FTO106","FTO106","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-190,"rot506");
+  Node = new TNode("FTO106","FTO106","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-299.15,"rot506");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
+  Top->cd();
+  ang=-2.5*angle;
+  Node = new TNode("FTO007","FTO006","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),299.15,"rot507");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  Node = new TNode("FTO107","FTO106","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-299.15,"rot507");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  ang=-3.5*angle;
+  Node = new TNode("FTO008","FTO006","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),299.15,"rot508");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  Node = new TNode("FTO108","FTO106","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-299.15,"rot508");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  ang=-4.5*angle;
+  Node = new TNode("FTO009","FTO006","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),299.15,"rot509");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  Node = new TNode("FTO109","FTO106","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-299.15,"rot509");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  ang=-5.5*angle;
+  Node = new TNode("FTO010","FTO006","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),299.15,"rot510");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  Node = new TNode("FTO110","FTO106","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-299.15,"rot510");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  ang=-6.5*angle;
+  Node = new TNode("FTO011","FTO006","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),299.15,"rot511");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  Node = new TNode("FTO111","FTO106","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-299.15,"rot511");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
   //
   Top->cd();  
-  ang=kPI+1.5*angle;
-  Node = new TNode("FTO012","FTO012","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),190,"rot512");
+  ang=-7.5*angle;
+  Node = new TNode("FTO012","FTO012","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),299.15,"rot512");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
   Top->cd();
-  Node = new TNode("FTO112","FTO112","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-190,"rot512");
-  Node->SetLineColor(kColorTOF);
-  fNodes->Add(Node); 
-  //
-  //
-  Top->cd();
-  ang=kPI+0.5*angle;
-  Node = new TNode("FTO013","FTO013","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),190,"rot513");
+  Node = new TNode("FTO112","FTO112","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-299.15,"rot512");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
   Top->cd();
-  Node = new TNode("FTO113","FTO113","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-190,"rot513");
+  ang=-8.5*angle;
+  Node = new TNode("FTO013","FTO013","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),299.15,"rot513");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
+  Top->cd();
+  Node = new TNode("FTO113","FTO113","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-299.15,"rot513");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
   //
   Top->cd();
   ang=kPI-0.5*angle;
-  Node = new TNode("FTO014","FTO04","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),190,"rot514");
+  Node = new TNode("FTO014","FTO04","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),299.15,"rot514");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
   Top->cd();
-  Node = new TNode("FTO114","FTO114","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-190,"rot514");
+  Node = new TNode("FTO114","FTO114","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-299.15,"rot514");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
-  //
   //
   Top->cd();
   ang=kPI-1.5*angle;
-  Node = new TNode("FTO015","FTO015","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),190,"rot515");
+  Node = new TNode("FTO015","FTO015","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),299.15,"rot515");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
   Top->cd();
-  Node = new TNode("FTO115","FTO115","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-190,"rot515");
+  Node = new TNode("FTO115","FTO115","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-299.15,"rot515");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
-  //
   //
   Top->cd();
   ang=kPI-2.5*angle;
-  Node = new TNode("FTO016","FTO016","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),190,"rot516");
+  Node = new TNode("FTO016","FTO016","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),299.15,"rot516");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
   Top->cd();
-  Node = new TNode("FTO116","FTO116","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-190,"rot516");
+  Node = new TNode("FTO116","FTO116","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-299.15,"rot516");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  ang=kPi-3.5*angle;
+  Node = new TNode("FTO017","FTO017","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),299.15,"rot517");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  Node = new TNode("FTO117","FTO117","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-299.15,"rot517");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  ang=kPi/2;
+  Node = new TNode("FTO018","FTO018","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),299.15,"rot518");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  Node = new TNode("FTO118","FTO118","S_TOF1",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-299.15,"rot518");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
   //
   // Define second TOF volume
-  new TBRIK("S_TOF2","TOF box","void",130/2,29/2,170.);
+  new TBRIK("S_TOF2","TOF box","void",130/2,29/2,zlen2/2);
   //
   // Position the volume
+  //
   Top->cd();
-  ang=-2.5*angle;
-  Node = new TNode("FTO007","FTO007","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),(2*190-170),"rot507");
+  ang=2.5*angle;
+  Node = new TNode("FTO202","FTO202","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),146.45,"rot502");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
   Top->cd();
-  Node = new TNode("FTO107","FTO107","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-(2*190-170),"rot507");
+  Node = new TNode("FTO402","FTO402","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-146.45,"rot502");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  ang=1.5*angle;
+  Node = new TNode("FTO203","FTO203","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),146.45,"rot503");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  Node = new TNode("FTO403","FTO403","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-146.45,"rot503");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  ang=0.5*angle;
+  Node = new TNode("FTO204","FTO204","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),146.45,"rot504");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  Node = new TNode("FTO404","FTO404","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-146.45,"rot504");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  ang=-0.5*angle;
+  Node = new TNode("FTO205","FTO205","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),146.45,"rot505");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  Node = new TNode("FTO405","FTO405","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-146.45,"rot505");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  ang=-1.5*angle;
+  Node = new TNode("FTO206","FTO206","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),146.45,"rot506");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  Node = new TNode("FTO406","FTO406","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-146.45,"rot506");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  ang=-2.5*angle;
+  Node = new TNode("FTO207","FTO207","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),146.45,"rot507");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  Node = new TNode("FTO407","FTO407","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-146.45,"rot507");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
   //
   Top->cd();
   ang=-3.5*angle;
-  Node = new TNode("FTO008","FTO008","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),(2*190-170),"rot508");
+  Node = new TNode("FTO208","FTO208","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),146.45,"rot508");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
   Top->cd();
-  Node = new TNode("FTO108","FTO108","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-(2*190-170),"rot508");
+  Node = new TNode("FTO408","FTO408","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-146.45,"rot508");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  ang=-kPi/2;
+  Node = new TNode("FTO209","FTO209","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),146.45,"rot509");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  Node = new TNode("FTO409","FTO409","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-146.45,"rot509");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  ang=-kPi/2-angle;
+  Node = new TNode("FTO210","FTO210","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),146.45,"rot510");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  Node = new TNode("FTO410","FTO410","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-146.45,"rot510");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  ang=-kPi/2-2*angle;
+  Node = new TNode("FTO211","FTO211","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),146.45,"rot511");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  Node = new TNode("FTO411","FTO411","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-146.45,"rot511");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  ang=-kPi/2-3*angle;
+  Node = new TNode("FTO212","FTO212","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),146.45,"rot512");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  Node = new TNode("FTO412","FTO412","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-146.45,"rot512");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
   //
   Top->cd();
-  ang=-kPI/2;
-  Node = new TNode("FTO009","FTO009","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),(2*190-170),"rot509");
+  ang=-kPi/2-4*angle;
+  Node = new TNode("FTO213","FTO213","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),146.45,"rot513");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
   Top->cd();
-  Node = new TNode("FTO109","FTO109","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-(2*190-170),"rot509");
-  Node->SetLineColor(kColorTOF);
-  fNodes->Add(Node); 
-  //
-  //
-  Top->cd();
-  ang=kPI+3.5*angle;
-  Node = new TNode("FTO010","FTO010","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),(2*190-170),"rot510");
+  Node = new TNode("FTO413","FTO413","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-146.45,"rot513");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
   Top->cd();
-  Node = new TNode("FTO110","FTO110","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-(2*190-170),"rot510");
-  Node->SetLineColor(kColorTOF);
-  fNodes->Add(Node); 
-  //
-  //
-  Top->cd();
-  ang=kPI+2.5*angle;
-  Node = new TNode("FTO011","FTO011","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),(2*190-170),"rot511");
+  ang=kPi-0.5*angle;
+  Node = new TNode("FTO214","FTO214","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),146.45,"rot514");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
   Top->cd();
-  Node = new TNode("FTO111","FTO111","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-(2*190-170),"rot511");
+  Node = new TNode("FTO414","FTO414","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-146.45,"rot514");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
+  Top->cd();
+  ang=kPi-1.5*angle;
+  Node = new TNode("FTO215","FTO215","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),146.45,"rot515");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
   //
+  Top->cd();
+  Node = new TNode("FTO415","FTO415","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-146.45,"rot515");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  ang=kPi-2.5*angle;
+  Node = new TNode("FTO216","FTO216","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),146.45,"rot516");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  Node = new TNode("FTO416","FTO416","S_TOF2",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-146.45,"rot516");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+
   // Define third TOF volume
-  new TBRIK("S_TOF3","TOF box","void",130/2.,29/2,75.);
+  new TBRIK("S_TOF3","TOF box","void",130/2.,29/2,zlen3/2.);
   //
   // Position it
+  //
   Top->cd();
-  ang=3.5*angle;
-  Node = new TNode("FTO001","FTO001","S_TOF3",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),(2*190-75),"rot501");
+  ang=2.5*angle;
+  Node = new TNode("FTO302","FTO302","S_TOF3",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),0.,"rot502");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
   Top->cd();
-  Node = new TNode("FTO101","FTO101","S_TOF3",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-(2*190-75),"rot501");
+  ang=1.5*angle;
+  Node = new TNode("FTO303","FTO303","S_TOF3",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),0.,"rot503");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  ang=0.5*angle;
+  Node = new TNode("FTO304","FTO304","S_TOF3",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),0.,"rot504");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  ang=-0.5*angle;
+  Node = new TNode("FTO305","FTO305","S_TOF3",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),0.,"rot505");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  ang=-1.5*angle;
+  Node = new TNode("FTO306","FTO306","S_TOF3",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),0.,"rot506");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
   //
   Top->cd();
-  ang=kPI-3.5*angle;
-  Node = new TNode("FTO017","FTO017","S_TOF3",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),(2*190-75),"rot517");
+  ang=kPi+1.5*angle;
+  Node = new TNode("FTO312","FTO312","S_TOF3",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),0.,"rot512");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
   Top->cd();
-  Node = new TNode("FTO117","FTO117","S_TOF3",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-(2*190-75),"rot517");
-  Node->SetLineColor(kColorTOF);
-  fNodes->Add(Node); 
-  //
-  //
-  Top->cd();
-  ang=kPI/2;
-  Node = new TNode("FTO018","FTO018","S_TOF3",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),(2*190-75),"rot518");
+  ang=kPi+0.5*angle;
+  Node = new TNode("FTO313","FTO313","S_TOF3",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),0.,"rot513");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
   //
   Top->cd();
-  Node = new TNode("FTO118","FTO118","S_TOF3",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),-(2*190-75),"rot518");
+  ang=kPi-0.5*angle;
+  Node = new TNode("FTO314","FTO314","S_TOF3",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),0.,"rot514");
   Node->SetLineColor(kColorTOF);
   fNodes->Add(Node); 
+  //
+  Top->cd();
+  ang=kPi-1.5*angle;
+  Node = new TNode("FTO315","FTO315","S_TOF3",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),0.,"rot515");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+  //
+  Top->cd();
+  ang=kPi-2.5*angle;
+  Node = new TNode("FTO316","FTO316","S_TOF3",rtof*TMath::Cos(ang),rtof*TMath::Sin(ang),0.,"rot516");
+  Node->SetLineColor(kColorTOF);
+  fNodes->Add(Node); 
+
 }
 
 //_____________________________________________________________________________
@@ -368,133 +602,30 @@ void AliTOF::CreateGeometry()
   const Double_t kPi=TMath::Pi();
   const Double_t kDegrad=kPi/180;
   //
-  Int_t lmax;
-  Float_t xtof, ytof, fil_step;
-  Float_t zcor1, zcor2, zcor3;
-  Float_t ztof0, ztof1, ztof2;
-  Float_t zl, rmin, rmax, xm, ym, dwall;
-  Int_t idrotm[18];
-  Float_t zm0, zm1, zm2;
-  Float_t par[10];
-  //
-  Int_t *idtmed = fIdtmed->GetArray()-499;
-  //
+  Float_t xtof, ytof;
+  Float_t ztof0;
+  Float_t rmin, rmax, dwall;
+
   // barrel iner radius 
-  rmin = 370.;
+  rmin = 370.;//cm
   // barrel outer radius 
   rmax = rmin+29;
-  // barrel length along Z axis
-  zl = (rmin+2/*distance to sencetive layer*/+7/2)*2;
-  //
+  
   // frame inbetween TOF modules
-  dwall = 4.;
+  dwall = 4.;//cm
   // Sizes of TOF module with its support etc..
-  xtof = 2 * (rmin*TMath::Tan(10*kDegrad)-dwall/2-.5);
+  xtof = 2.*(rmin*TMath::Tan(10*kDegrad)-dwall/2-.5);
   ytof = rmax-rmin;
-  ztof0 = zl/2;
-  // Is it full coverage version (3) or not
-  if (IsVersion() != 3) {
-  ztof1 = ztof0-rmax*TMath::Tan(7.8*kDegrad); // minus Z size of PHOS
-  ztof2 = ztof0-rmax*TMath::Tan(54.34/2*kDegrad); // minus Z size of HMPID;
-  } else {
-  ztof1 = ztof0;
-  ztof2 = ztof0;
-  }
-   // Number of TOF-modules 
-  lmax = 18;
-  //
-/*
-  //Some imitation of TRD
-  par[0] = 281;
-  par[1] = 350.282;
-  par[2] = zl/2;
-  gMC->Gsvolu("FTRD", "TUBE", idtmed[510], par, 3);
-  gMC->Gspos("FTRD", 1, "ALIC", 0., 0., 0., 0, "ONLY");
+  ztof0 = 375.5;//cm
 
-  par[0] = 0.;
-  par[1] = 360.;
-  par[2] = lmax;
-  par[3] = 2.;
-  par[4] = -zl/2;
-  par[5] = rmin;
-  par[6] = rmax;
-  par[7] = zl/2;
-  par[8] = rmin;
-  par[9] = rmax;
-  gMC->Gsvolu("FBAR", "PGON", idtmed[500], par, 10);
-  gMC->Gspos("FBAR", 1, "ALIC", 0., 0., 0., 0, "ONLY");
-*/
-  //
-  // TOF size  (CO2)
-  par[0] = xtof / 2.;
-  par[1] = ytof / 2.;
-  par[2] = ztof0 / 2.;
-  gMC->Gsvolu("FTO1", "BOX ", idtmed[506], par, 3);
-  par[2] = ztof1 / 2.;
-  gMC->Gsvolu("FTO2", "BOX ", idtmed[506], par, 3);
-  par[2] = ztof2 / 2.;
-  gMC->Gsvolu("FTO3", "BOX ", idtmed[506], par, 3);
-/*
-  // Frame wall
-  par[0]=dwall/2.;
-  par[1]=(rmax-rmin)/2.;
-  par[2]=ztof0/2.;
-  gMC->Gsvolu("FFR1", "BOX ", idtmed[508], par, 3);
-  gMC->Gsatt("FFR1", "SEEN", -2);
-  par[2]=ztof1/2.;
-  gMC->Gsvolu("FFR2", "BOX ", idtmed[508], par, 3);
-  gMC->Gsatt("FFR2", "SEEN", -2);
-  par[2]=ztof2/2.;
-  gMC->Gsvolu("FFR2", "BOX ", idtmed[508], par, 3);
-  gMC->Gsatt("FFR2", "SEEN", -2);
-*/  
-  //
-  // Subtraction the distanse to TOF module boundaries 
-  xm = xtof -(.5 +.5)*2;
-  ym = ytof;
-  zm0 = ztof0;
-  zm1 = ztof1;
-  zm2 = ztof2;
-  //  
-/////////////// TOF module internal definitions //////////////
-  TOFpc(xm, ym, zm0, zm1, zm2);
-/////////////////////////////////////////////////////////////
-  //
-  // Position of modules
-  fil_step = 360./lmax;
-  zcor1 = ztof0/2;
-  zcor2 = ztof0 - ztof1 / 2.;
-  zcor3 = ztof0 - ztof2 / 2.;
-/*
-  for (i = 1; i <= lmax; ++i) {
-    fil1 = fil_step * i;
-    xcor2 = (rmin+rmax)/2 * TMath::Sin(fil1 * kDegrad);
-    ycor2 = (rmin+rmax)/2 * TMath::Cos(fil1 * kDegrad);
-    lmax1 = i + lmax;
-    AliMatrix(idrotm[i], 90., -fil1, 90., 90. -fil1, 0., 0.);
-    if (i>=7 && i<=11) { // free space for PHOS
-      //    if (fil1 >= 180-50  && fil1 <= 180+50) {
-      gMC->Gspos("FTO2", i, "FBAR", xcor2, ycor2, zcor2, idrotm[i], "ONLY");
-      gMC->Gspos("FTO2", lmax1, "FBAR", xcor2, ycor2, -zcor2, idrotm[i], "ONLY");
-    } else if (i>=17 || i==1) { // free space for RICH
-      //    } else if (fil1 <= 30 || fil1 >= 360. - 30) {
-      gMC->Gspos("FTO3", i, "FBAR", xcor2, ycor2, zcor3, idrotm[i], "ONLY");
-      gMC->Gspos("FTO3", lmax1, "FBAR", xcor2, ycor2, -zcor3, idrotm[i], "ONLY");
-    } else {
-      gMC->Gspos("FTO1", i, "FBAR", xcor2, ycor2, zcor1, idrotm[i], "ONLY");
-      gMC->Gspos("FTO1", lmax1, "FBAR", xcor2, ycor2, -zcor1, idrotm[i], "ONLY");
-    }
-  }
-*/
-      AliMatrix(idrotm[0], 90., 0., 0., 0., 90, -90.);
-      gMC->Gspos("FTO2", 1, "BTO2", 0, zcor2, 0, idrotm[0], "ONLY");
-      gMC->Gspos("FTO2", 2, "BTO2", 0, -zcor2, 0, idrotm[0], "ONLY");
+// TOF size  (CO2)
 
-      gMC->Gspos("FTO3", 1, "BTO3", 0, zcor3, 0, idrotm[0], "ONLY");
-      gMC->Gspos("FTO3", 2, "BTO3", 0, -zcor3, 0, idrotm[0], "ONLY");
+  Float_t zlen1 = 159.5;//cm
+  Float_t zlen2 = 154.0;//cm
+  Float_t zlen3 = 124.0;//cm
 
-      gMC->Gspos("FTO1", 1, "BTO1", 0, zcor1, 0, idrotm[0], "ONLY");
-      gMC->Gspos("FTO1", 2, "BTO1", 0, -zcor1, 0, idrotm[0], "ONLY");
+//  TOF module internal definitions 
+  TOFpc(xtof, ytof, zlen1, zlen2, zlen3, ztof0);
 }
 
 //_____________________________________________________________________________
@@ -600,7 +731,6 @@ void AliTOF::CreateMaterials()
   Float_t dwa    = 1.0;
   Int_t nwa = -2;
   //
-  //
   //AliMaterial(0, "Vacuum$", 1e-16, 1e-16, 1e-16, 1e16, 1e16);
   AliMaterial(1, "Air$",14.61,7.3,0.001205,30423.24,67500.);
   AliMaterial(2, "Cu $",  63.54, 29.0, 8.96, 1.43, 14.8);
@@ -611,10 +741,7 @@ void AliTOF::CreateMaterials()
   AliMixture(7, "CO2$", ac, zc, dc, nc, wc);
   AliMixture(8, "ALUMINA$", aal, zal, densal, nlmatal, wmatal);
   AliMaterial(9, "Al $", 26.98, 13., 2.7, 8.9, 37.2);
-  // (TRD simulation) thickness = 69.282cm/18.8cm = 3.685 X/X0
-  //  AliMaterial(10, "C-TRD$", 12.01, 6., 2.265*18.8/69.282*10.2/100, 18.8, 74.4); // for 10.2% 
   AliMaterial(10, "C-TRD$", 12.01, 6., 2.265*18.8/69.282*15./100, 18.8, 74.4); // for 15%
-  //  AliMaterial(10, "C-TRD$", 12.01, 6., 2.265*18.8/69.282*20./100, 18.8, 74.4); // for 20%
   AliMixture(11, "Mylar$",  amy, zmy, dmy, nmy, wmy);
   AliMixture(12, "Freon$",  afre, zfre, densfre, nfre, wfre);
   AliMixture(13, "Quartz$", aq, zq, dq, nq, wq);
@@ -631,7 +758,7 @@ void AliTOF::CreateMaterials()
   stemax = -1.;
   deemax = -.3;
   stmin  = -.8;
-  //  AliMedium(0, "Vacuum  $", 0, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
+
   AliMedium(1, "Air$", 1, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
   AliMedium(2, "Cu $", 2, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
   AliMedium(3, "C  $", 3, 0, ISXFLD, SXMGMX, 10., stemax, deemax, epsil, stmin);
@@ -675,7 +802,7 @@ void AliTOF::Init()
   cout << "TOF version " << IsVersion() <<" initialized" << endl;
   //
   // Set id of TOF sensitive volume
-  if (IsVersion() !=0) fIdSens=gMC->VolId("FPG0");
+  if (IsVersion() !=0) fIdSens=gMC->VolId("FPAD");
   //
   for(i=0;i<80;i++) printf("*");
   printf("\n");
@@ -708,5 +835,4 @@ AliTOFhit::AliTOFhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
   // Time Of Flight
   fTof=hits[7];
 }
- 
- 
+

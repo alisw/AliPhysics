@@ -9,7 +9,7 @@ PACKAGE = TOF
 
 # C++ sources
 
-SRCS  = AliTOF.cxx	AliTOFv0.cxx      AliTOFv1.cxx    AliTOFv2.cxx AliTOFv3.cxx 
+SRCS  = AliTOF.cxx  AliTOFv0.cxx  AliTOFv1.cxx  AliTOFv2.cxx  AliTOFv3.cxx  AliTOFv4.cxx  AliTOFv5.cxx  AliTOFv6.cxx
 
 # C++ Headers
 
@@ -73,10 +73,3 @@ include $(ALICE_ROOT)/conf/GeneralMacros
 CHECKS        = $(patsubst %.cxx,check/%.viol,$(SRCS))
 
 check:          $(CHECKS)
-
-
-
-
-
-
-

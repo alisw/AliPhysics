@@ -13,6 +13,10 @@
 #pragma link C++ class  AliTOFv1;
 #pragma link C++ class  AliTOFv2;
 #pragma link C++ class  AliTOFv3;
+#pragma link C++ class  AliTOFv4;
+#pragma link C++ class  AliTOFv5;
+#pragma link C++ class  AliTOFv6;
+
 #pragma link C++ class  AliTOFhit;
 
 #endif

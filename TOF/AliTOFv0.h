@@ -6,7 +6,7 @@
 /* $Id$ */
 
 ///////////////////////////////////////////////////////
-//  Manager and hits classes for set:TOF  version 0  //
+//  Manager and hits classes for set:TOF  version 1  //
 ///////////////////////////////////////////////////////
  
 #include "AliTOF.h"
@@ -30,11 +30,11 @@ public:
   virtual void   CreateMaterials();
   virtual void   Init();
   virtual Int_t  IsVersion() const {return 0;}
-  virtual void   TOFpc(Float_t, Float_t, Float_t, Float_t, Float_t);
+  virtual void   TOFpc(Float_t,Float_t,Float_t,Float_t,Float_t,Float_t);
   virtual void   StepManager();
   virtual void   DrawModule();
  
-   ClassDef(AliTOFv0,1)  //Time Of Flight version 0
+   ClassDef(AliTOFv0,1)  //Time Of Flight version 1
 };
  
 #endif

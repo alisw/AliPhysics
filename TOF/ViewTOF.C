@@ -2,54 +2,18 @@
 {
    AliDetector *TOF  = gAlice->GetDetector("TOF");
    gMC->Gsatt("*","seen",0);
-   gMC->Gsatt("FBT1","seen",0);
-   gMC->Gsatt("FBT2","seen",0);
-   gMC->Gsatt("FBT3","seen",0);
+   gMC->Gsatt("BTO1","seen",0);
+   gMC->Gsatt("BTO2","seen",0);
+   gMC->Gsatt("BTO3","seen",0);
    gMC->Gsatt("FLT1","seen",1);
    gMC->Gsatt("FLT2","seen",1);
    gMC->Gsatt("FLT3","seen",1);
-   gMC->Gsatt("FMY1","seen",0);
-   gMC->Gsatt("FMY2","seen",0);
-   gMC->Gsatt("FMY3","seen",0);
-   gMC->Gsatt("FPG0","seen",0);
-   if (TOF->IsVersion() != 2) {  
-   gMC->Gsatt("FTO1","seen",0);
-   gMC->Gsatt("FTO2","seen",0);
-   gMC->Gsatt("FTO3","seen",0);
-   gMC->Gsatt("FDT1","seen",0);
-   gMC->Gsatt("FDT2","seen",0);
-   gMC->Gsatt("FDT3","seen",0);
-   gMC->Gsatt("FPL1","seen",0);
-   gMC->Gsatt("FPL2","seen",0);
-   gMC->Gsatt("FPL3","seen",0);
-   gMC->Gsatt("FLD1","seen",1);
-   gMC->Gsatt("FLD2","seen",1);
-   gMC->Gsatt("FLD3","seen",1);
-   gMC->Gsatt("FLZ1","seen",0);
-   gMC->Gsatt("FLZ2","seen",0);
-   gMC->Gsatt("FLZ3","seen",0);
-   gMC->Gsatt("FLX1","seen",0);
-   gMC->Gsatt("FLX2","seen",0);
-   gMC->Gsatt("FLX3","seen",0);
-   gMC->Gsatt("FPA0","seen",0);
-   } else {
-   gMC->Gsatt("FTO1","seen",1);
-   gMC->Gsatt("FTO2","seen",1);
-   gMC->Gsatt("FTO3","seen",1);
-   gMC->Gsatt("FPE1","seen",1);
-   gMC->Gsatt("FPE2","seen",1);
-   gMC->Gsatt("FPE3","seen",1);
-   gMC->Gsatt("FEC1","seen",1);
-   gMC->Gsatt("FEC2","seen",1);
-   gMC->Gsatt("FEC3","seen",1);
-   gMC->Gsatt("FEG1","seen",1);
-   gMC->Gsatt("FEG2","seen",1);
-   gMC->Gsatt("FEG3","seen",1);
-   gMC->Gsatt("FSP1","seen",1);
-   gMC->Gsatt("FSP2","seen",1);
-   gMC->Gsatt("FSP3","seen",1);
-   gMC->Gsatt("FLK0","seen",1);
-   gMC->Gsatt("FPP0","seen",0);
-   gMC->Gsatt("FPP0","seen",0);
-   }
+//   gMC->Gsatt("BTO1","fill",7);
+//   gMC->Gsatt("BTO2","fill",7);
+//   gMC->Gsatt("BTO3","fill",7);
+//   gMC->Gsatt("FLT1","fill",7);
+//   gMC->Gsatt("FLT2","fill",7);
+//   gMC->Gsatt("FLT3","fill",7);
+   gMC->Gsatt("FSTR","seen",1);
+//   gMC->Gsatt("FPAD","seen",0);
 }
