@@ -25,6 +25,9 @@ lib bin:
 
 alilibs:  lib
 	@for i in $(ALIROOT_DIRS) ; do \
+	   ${MAKE} -C $$i headers ; \
+	done
+	@for i in $(ALIROOT_DIRS) ; do \
 	   ${MAKE} -C $$i depend ; \
 	done
 	@for i in $(ALIROOT_DIRS) ; do \
