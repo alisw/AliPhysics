@@ -25,4 +25,4 @@ ifdef DATE_ROOT
 EINCLUDE+= ${DATE_COMMON_DEFS}
 endif
 
-EXPORT:=AliRawReader.h
+EXPORT:=AliRawReader.h AliRawDataHeader.h
