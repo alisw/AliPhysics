@@ -35,9 +35,6 @@ LDFLAGS       = $(OPT) -z
 SHLD	      = $(LD)
 SOFLAGS       = -b /usr/lib/libm.sl 
 
-G3LIBS        = -lgeant321
-CLIBS         = -lminicern
-
 LIBS          = $(ROOTLIBS) -lNew -lm
 GLIBS         = $(ROOTLIBS) $(ROOTGLIBS) -L/usr/lib/X11R6 -L/usr/local/lib \
                 -lX11 -lm -ldld 

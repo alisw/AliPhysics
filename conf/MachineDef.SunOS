@@ -37,9 +37,6 @@ SHLD	      = $(LD)
 SOFLAGS       = -G
 SHLIB         = -L/opt/SUNWspro/lib -lF77 -lM77 /opt/SUNWspro/lib/libsunmath.so.1
 
-G3LIBS        = -lgeant321
-CLIBS         = -lminicern
-
 LIBS          = $(ROOTLIBS) -lm -lgen -ldl -lsocket -lsunmath
 GLIBS         = $(ROOTLIBS) $(ROOTGLIBS) -L/usr/dt/lib -L/usr/openwin/lib \
                 -L/usr/ccs/lib -lXm -lXt -lX11 -lm -lgen -ldl -lsocket -lsunmath

@@ -1,8 +1,7 @@
 # $Id$
  
 # Which Machine 
-PLATFORM      = linux
-#en esperant que ca marche...
+PLATFORM      = HP-UX
 
 # The compilers
 CXX           = echo $*.cxx ; g++
@@ -10,20 +9,13 @@ F77	      = echo $*.F ; g77
 CC	      = echo $*.c ; gcc
 
 # Global optimisation
-OPT           = -O2
-OPT           = -g
+OPT           = -O
 
 # Shared library suffix
 SL	      = sl
 
 # The options
 CXXOPTS       = $(OPT) -Wall -fPIC
-
-#essai numero 2232...
-
-#CXXFLAGS      = -fPIC -I/usr/include/X11R5
-
-#fin essai
 
 COPT	      = $(OPT) -fPIC
 FOPT	      = $(OPT) -fPIC -fno-second-underscore
@@ -45,12 +37,8 @@ LD            = g++
 LDFLAGS       = $(OPT)
 
 SHLD	      = $(LD)
-#SOFLAGS       = -Wl,-b,/usr/lib/libm.sl
 SOFLAGS       = -shared -fPIC
 SHLIB         = 
-
-#LIBS          = $(ROOTLIBS) -lm -rdynamic
-#GLIBS         = $(ROOTLIBS) $(ROOTGLIBS) -L/usr/X11R6/lib -lX11 -lg2c -ldl -lcrypt -rdynamic
 
 LIBS          = $(ROOTLIBS) -lm
 GLIBS         = $(ROOTLIBS) $(ROOTGLIBS) -L/usr/X11R6/lib -lX11 -lg2c -lcrypt 

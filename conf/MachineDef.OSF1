@@ -37,8 +37,7 @@ SOFLAGS       = -L/usr/lib/cmplrs/cxx -rpath /usr/lib/cmplrs/cxx -expect_unresol
 	-g0 -O1 -msym -shared /usr/lib/cmplrs/cc/crt0.o /usr/lib/cmplrs/cxx/_main.o
 SHLIB        = -lcxxstd -lcxx -lexc -lots -lc -lUfor -lfor -lFutil -lm
 
-G3LIBS        = -lgeant321
-CLIBS         = -lminicern
-
 LIBS          = $(ROOTLIBS) -lNew -lm
 GLIBS         = $(ROOTLIBS) $(ROOTGLIBS)  -lXm -lXt -lX11 -lm -lPW -lUfor -lfor -lFutil -lm -lots
+
+CLIBS         = $(LIBDIR)/libminicern.a
