@@ -17,7 +17,7 @@ void AliITSspdTestBeam2Digits(const Char_t *filename="run001dat"){
     } // end if
 
     AliRunLoader *rl = AliRunLoader::Open("galice.root",
-                           AliConfig::fgkDefaultEventFolderName,"new");
+                           AliConfig::GetDefaultEventFolderName(),"new");
     gAlice->SetRunLoader(rl);
     rl->SetNumberOfEventsPerFile(1000);
 

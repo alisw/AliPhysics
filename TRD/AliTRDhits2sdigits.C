@@ -43,7 +43,7 @@ void AliTRDhits2sdigits()
   digitizer->WriteDigits();
 
   // Save the parameter object in the AliROOT file
-  AliRunLoader* rl = AliRunLoader::GetRunLoader(AliConfig::fgkDefaultEventFolderName);
+  AliRunLoader* rl = AliRunLoader::GetRunLoader(AliConfig::GetDefaultEventFolderName());
   rl->CdGAFile();
   parameter->Write();
 

@@ -20,7 +20,7 @@ void ConfigCommon(Bool_t interactiveSetup)
   // Create the output file
   AliRunLoader* rl = 0;
   rl = AliRunLoader::Open("galice.root",
-			   AliConfig::fgkDefaultEventFolderName,
+			   AliConfig::GetDefaultEventFolderName(),
 			   "recreate");
   if (!rl) {
     gAlice->Fatal("Config.C","Can not instatiate the Run Loader");

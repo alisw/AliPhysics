@@ -9,7 +9,7 @@
 
 void Config()
 {
-    AliRunLoader* runLoader = AliRunLoader::Open("galice.root", AliConfig::fgkDefaultEventFolderName, "recreate");
+    AliRunLoader* runLoader = AliRunLoader::Open("galice.root", AliConfig::GetDefaultEventFolderName(), "recreate");
     runLoader->SetCompressionLevel(2);
     runLoader->SetNumberOfEventsPerFile(1);
     gAlice->SetRunLoader(runLoader);

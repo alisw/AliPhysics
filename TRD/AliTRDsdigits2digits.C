@@ -26,7 +26,7 @@ void AliTRDsdigits2digits()
   // Initialize the geometry 
   digitizer->Open(fileName);
 
-  AliRunLoader* rl = AliRunLoader::GetRunLoader(AliConfig::fgkDefaultEventFolderName);
+  AliRunLoader* rl = AliRunLoader::GetRunLoader(AliConfig::GetDefaultEventFolderName());
   AliLoader* loader = rl->GetLoader("TRDLoader");
   // Define the parameter object
   // If no external parameter object is defined, 

@@ -26,7 +26,7 @@ Int_t TOFquickanal(Int_t eventNumber = 0)
 
   Int_t rc = 0;
   
-  AliRunLoader *rl =AliRunLoader::Open("galice.root",AliConfig::fgkDefaultEventFolderName,"update");
+  AliRunLoader *rl =AliRunLoader::Open("galice.root",AliConfig::GetDefaultEventFolderName(),"update");
   if (!rl) 
     {
       cerr << "Can't load RunLoader from file!\n";

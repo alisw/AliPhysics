@@ -18,7 +18,7 @@ void Config()
   AliRunLoader* rl=0x0;
   cout << "AliTRDconfig.C: Creating Run Loader ..." <<endl;
   rl = AliRunLoader::Open("TRD_test.root"
-                         ,AliConfig::fgkDefaultEventFolderName
+			  ,AliConfig::GetDefaultEventFolderName()
                          ,"recreate");
   if (rl == 0x0) {
     gAlice->Fatal("AliTRDconfig.C","Can not instatiate the Run Loader");

@@ -222,7 +222,7 @@ Int_t TPCFindTracks(Int_t n) {
      rl->GetEvent(i);
      printf("Processing event %d\n",i);
      
-     tracker = new AliTPCtracker(param, i, AliConfig::fgkDefaultEventFolderName.Data());
+     tracker = new AliTPCtracker(param, i, (AliConfig::GetDefaultEventFolderName()).Data());
      //Int_t rc=
      tracker->Clusters2Tracks();
      delete tracker;
@@ -562,7 +562,7 @@ Int_t ITSFindTracks(const Char_t *inname2, Int_t n)
    for (Int_t i=0;i<n;i++)
     {
       rl->GetEvent(i);
-      AliITStrackerV2 tracker(geom,i,AliConfig::fgkDefaultEventFolderName);
+      AliITStrackerV2 tracker(geom,i,AliConfig::GetDefaultEventFolderName());
       rc=tracker.Clusters2Tracks();
     }
 
@@ -618,7 +618,7 @@ Int_t TPCPropagateBack()
 //   param->Dump();
    param->Update();
 
-   AliTPCtracker *tracker = new AliTPCtracker(param, AliConfig::fgkDefaultEventFolderName);
+   AliTPCtracker *tracker = new AliTPCtracker(param, AliConfig::GetDefaultEventFolderName());
 
 //   TFile *out=TFile::Open(outname,"update");
 //   TFile *in =TFile::Open(inname);

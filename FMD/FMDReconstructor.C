@@ -15,7 +15,7 @@ void FMDReconstructor (Int_t evNumber=1)
   //TFile * f = new TFile("galice.root","UPDATE");
   //gAlice = (AliRun*) f->Get("gAlice") ;
   
-  AliRunLoader* rl = AliRunLoader::Open("galice.root",AliConfig::fgkDefaultEventFolderName,"read");
+  AliRunLoader* rl = AliRunLoader::Open("galice.root",AliConfig::GetDefaultEventFolderName(),"read");
   if (rl == 0x0)
    {
      cerr<<"Can not open session for file galice.root\n";

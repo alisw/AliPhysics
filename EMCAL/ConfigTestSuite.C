@@ -26,7 +26,7 @@ void Config()
     if (!gSystem->Getenv("CONFIG_FILE"))
     {
         cout<<"Config.C: Creating Run Loader ..."<<endl;
-        AliRunLoader* rl = AliRunLoader::Open("galice.root",AliConfig::fgkDefaultEventFolderName,
+        AliRunLoader* rl = AliRunLoader::Open("galice.root",AliConfig::GetDefaultEventFolderName(),
                                               "recreate");
         if (rl == 0x0)
          {

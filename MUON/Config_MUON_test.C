@@ -21,7 +21,7 @@ void Config(char directory[100]="", char option[6]="box")
   cout << ">>> Config_MUON_test.C: Creating Run Loader ..."<<endl;
   AliRunLoader* rl=0x0;
   rl = AliRunLoader::Open(
-	filename, AliConfig::fgkDefaultEventFolderName, "recreate");
+	filename, AliConfig::GetDefaultEventFolderName(), "recreate");
   if (rl == 0x0) {
     gAlice->Fatal("Config_MUON_test.C","Can not instatiate the Run Loader");
     return;

@@ -59,7 +59,7 @@ void Config()
     new     TGeant3("C++ Interface to Geant3");
 
     cout<<"Config.C: Creating Run Loader ..."<<endl;
-    AliRunLoader* rl = AliRunLoader::Open("galice.root",AliConfig::fgkDefaultEventFolderName,
+    AliRunLoader* rl = AliRunLoader::Open("galice.root",AliConfig::GetDefaultEventFolderName(),
                                               "recreate");
     if (rl == 0x0)
       {

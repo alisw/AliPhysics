@@ -72,7 +72,7 @@ Int_t AliTOFanalyzeHits(Int_t numberOfEvents=0, Bool_t drawing=kFALSE)
       gAlice = 0x0;
     }
 
-  AliRunLoader *rl = AliRunLoader::Open("galice.root",AliConfig::fgkDefaultEventFolderName,"read");
+  AliRunLoader *rl = AliRunLoader::Open("galice.root",AliConfig::GetDefaultEventFolderName(),"read");
   if (!rl)
     {
       cerr<<"Can't load RunLoader from file! \n";
