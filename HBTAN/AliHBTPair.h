@@ -24,6 +24,8 @@ class AliHBTPair: public TObject
    
    Double_t GetInvMass(); //returns invariant mass of the pair
    
+
+   Double_t GetQInv(); //returns Q invariant
    Double_t GetQSideCMSLC(); //returns Q Side CMS longitudionally co-moving
    Double_t GetQOutCMSLC(); //returns Q out CMS longitudionally co-moving
    Double_t GetQLongCMSLC(); //returns Q Long CMS longitudionally co-moving
@@ -31,11 +33,6 @@ class AliHBTPair: public TObject
    
    Double_t GetKt();  //returns K transverse
    Double_t GetKStar();
-   
-   Double_t GetQInv(); //returns Q invariant
-   Double_t GetQSide(); //returns Q side
-   Double_t GetQLong(); //returns Q long 
-   Double_t GetQOut(); //returns Q out
    
    Double_t GetDeltaP(); //return difference of momenta
    Double_t GetDeltaPx();

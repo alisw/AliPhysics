@@ -117,23 +117,6 @@ Double_t AliHBTPair::GetQInv()
 }
 
 /************************************************************************/
-Double_t  AliHBTPair::GetQSide()
-{
- //returns Q side
-  return fPart1->Py() - fPart1->Py();
-}
-
-Double_t  AliHBTPair::GetQLong()
-{
- //returns Q long
-  return fPart1->Pz() - fPart1->Pz();
-}
-
-Double_t  AliHBTPair::GetQOut()
-{
- //returns Q out
-  return fPart1->Px() - fPart1->Px();
-}
 /************************************************************************/
 
 /************************************************************************/
