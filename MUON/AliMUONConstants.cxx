@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.3  2000/10/02 16:58:29  egangler
+Cleaning of the code :
+-> coding conventions
+-> void Streamers
+-> some useless includes removed or replaced by "class" statement
+
 Revision 1.2  2000/06/27 09:46:57  morsch
 kMAXZOOM global constant now in AliMUONConstants
 
@@ -35,8 +41,9 @@ Int_t   AliMUONConstants::fgNTriggerCircuit = 234;
 Float_t AliMUONConstants::fgDefaultChamberZ[14] =
 {518., 538., 680., 700., 965., 985., 1239., 1259., 1439., 1459.,
 		   1610, 1625., 1710., 1725.}; 
-Float_t  AliMUONConstants::fgDmin[7] = { 35.,  47.,  66.,   80.,  80., 100., 100.};    
-Float_t  AliMUONConstants::fgDmax[7]  = {183., 245., 316.6,  520.,  520., 830., 880.};  
+
+Float_t  AliMUONConstants::fgDmin[7] = {  35.,  47.,  66.0,   80.,   80., 100., 100.};    
+Float_t  AliMUONConstants::fgDmax[7]  = {183., 245., 316.6,  560.,  560., 830., 880.};  
 
 Int_t   AliMUONConstants::fgMaxZoom = 20;
 
