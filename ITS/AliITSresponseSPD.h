@@ -101,7 +101,7 @@ class AliITSresponseSPD :  public AliITSresponse {
     Double_t fDeadPixels;      // the fraction of dead pixels
 
 
-    ClassDef(AliITSresponseSPD,2) // SPD response
+    ClassDef(AliITSresponseSPD,3) // SPD response
 };
 
 #endif

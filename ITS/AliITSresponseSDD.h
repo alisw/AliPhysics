@@ -188,7 +188,7 @@ class AliITSresponseSDD : public AliITSresponse {
     AliITSresponseSDD& operator=(const AliITSresponseSDD & /* source */); // ass. op.
 
 
-    ClassDef(AliITSresponseSDD,3) // SDD response 
+    ClassDef(AliITSresponseSDD,4) // SDD response 
     
     };
 #endif

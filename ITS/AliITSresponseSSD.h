@@ -133,6 +133,6 @@ class AliITSresponseSSD : public AliITSresponse {
     AliITSresponseSSD(const AliITSresponseSSD &source); // copy constructor
     AliITSresponseSSD& operator=(const AliITSresponseSSD &source); // ass. op.
 
-    ClassDef(AliITSresponseSSD,1) //Response class for SSD
+    ClassDef(AliITSresponseSSD,2) //Response class for SSD
 };
 #endif
