@@ -197,7 +197,7 @@ AliGenerator*  CreateGenerator()
         
     gener->SetMomentumRange(0,999);
     gener->SetPtRange(0,100.);
-    gener->SetPhiRange(-180, 180);
+    gener->SetPhiRange(0., 360.);
     gener->SetYRange(2.5,4);
     gener->SetCutOnChild(1);
     gener->SetChildThetaRange(2.0,9.);
