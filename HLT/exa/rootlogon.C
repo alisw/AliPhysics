@@ -9,7 +9,7 @@
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libCONTAINERS");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libTPC");
   gSystem->Load("/usr/local/franken/lib/MLUC/lib/linux-i386/libMLUC.so");
-  gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libAliL3");
+  gSystem->Load("$(ALICE)/mylibs/libAliL3");
   
   gStyle->SetStatBorderSize(1);
   gStyle->SetTitleBorderSize(0);
