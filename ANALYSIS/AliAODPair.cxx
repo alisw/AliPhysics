@@ -13,7 +13,6 @@
 
 #include "AliVAODParticle.h"
 #include "AliTrackPoints.h"
-
 ClassImp(AliAODPair)
 
 /************************************************************************/
@@ -515,4 +514,89 @@ Double_t AliAODPair::AvDistance()
    }
 
   return tpts1->AvarageDistance(*tpts2);
+}
+/************************************************************************/
+
+Double_t AliAODPair::GetR() 
+{
+//Returns distance between particles vertexes in thir CMS
+
+  CalculateDiffs();
+  return TMath::Sqrt( fPxDiff*fPxDiff + fPyDiff*fPyDiff + fPzDiff*fPzDiff);
+  
+}
+/************************************************************************/
+
+Double_t AliAODPair::GetRStar() 
+{
+//Returns distance between particles vertexes in thir CMS
+
+
+  CalculateSums();
+
+  Double_t klen =    fPxSum*fPxSum  + fPySum*fPySum  + fPzSum*fPzSum;
+  klen = TMath::Sqrt(klen);
+
+  Double_t aBeta  = klen/fESum;
+  Double_t aGamma = 1.0/TMath::Sqrt(1.0 - aBeta*aBeta);
+
+
+  Double_t alpha = -TMath::ATan2(fPySum,fPzSum);
+  Double_t beta =  TMath::ATan2(fPxSum,TMath::Hypot(fPySum,fPzSum));
+
+  Double_t sinalpha = TMath::Sin(alpha);
+  Double_t cosalpha = TMath::Cos(alpha);
+  Double_t sinbeta = TMath::Sin(beta);
+  Double_t cosbeta = TMath::Cos(beta);
+
+  Double_t v1xP = fPart1->Vx();
+  Double_t v2xP = fPart2->Vx();
+  Double_t v1yP = fPart1->Vy()*cosalpha + fPart1->Vz()*sinalpha;
+  Double_t v2yP = fPart2->Vy()*cosalpha + fPart2->Vz()*sinalpha;
+  Double_t v1zP =-fPart1->Vy()*sinalpha + fPart1->Vz()*cosalpha;
+  Double_t v2zP =-fPart2->Vy()*sinalpha + fPart2->Vz()*cosalpha;
+
+
+///////////////////////////////////////////////////
+
+//  Double_t p1yP = fPart1->Py()*cosalpha + fPart1->Pz()*sinalpha;
+//  Double_t p2yP = fPart2->Py()*cosalpha + fPart2->Pz()*sinalpha;
+//
+//  Double_t p1zP =-fPart1->Py()*sinalpha + fPart1->Pz()*cosalpha;
+//  Double_t p2zP =-fPart2->Py()*sinalpha + fPart2->Pz()*cosalpha;
+//
+//
+//  Double_t p1x = fPart1->Px()*cosbeta - p1zP*sinbeta;
+//  Double_t p2x = fPart2->Px()*cosbeta - p2zP*sinbeta;
+//  Double_t p1z = fPart1->Px()*sinbeta + p1zP*cosbeta;
+//  Double_t p2z = fPart2->Px()*sinbeta + p2zP*cosbeta;
+
+//  Info("","%f %f %f",p1yP,p2yP,p1yP+p2yP);
+//  Info("","%f %f %f",p1x,p2x,p1x+p2x);
+  
+//  Info("","%f %f ",p1x+p2x,p1yP+p2yP);
+  
+///////////////////////////////////////////////////
+  
+
+  Double_t v1x = v1xP*cosbeta - v1zP*sinbeta;
+  Double_t v2x = v2xP*cosbeta - v2zP*sinbeta;
+  Double_t v1y = v1yP;
+  Double_t v2y = v2yP;
+  Double_t v1z = v1xP*sinbeta + v1zP*cosbeta;
+  Double_t v2z = v2xP*sinbeta + v2zP*cosbeta;
+
+
+  Double_t v1zB=aGamma*(v1z-aBeta*fPart1->T());
+  Double_t v2zB=aGamma*(v2z-aBeta*fPart2->T());
+
+
+  
+  Double_t dx = v1x - v2x;
+  Double_t dy = v1y - v2y;
+  Double_t dz = v1zB - v2zB;
+  
+  Double_t rstar = TMath::Sqrt( dx*dx + dy*dy + dz*dz);
+
+  return rstar;
 }

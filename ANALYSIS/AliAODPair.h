@@ -69,6 +69,9 @@ class AliAODPair: public TObject
    virtual Double_t GetGammaToLCMS();
    virtual Double_t GetPIDProb() const {return fPart1->GetPidProb()*fPart2->GetPidProb();}
    
+   virtual Double_t GetRStar() ;
+   virtual Double_t GetR() ;//returns distance between particle production points   
+   
  protected:
    AliVAODParticle* fPart1;  //pointer to first particle
    AliVAODParticle* fPart2;  //pointer to second particle
