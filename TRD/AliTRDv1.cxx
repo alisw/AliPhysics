@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.37  2003/01/28 14:38:18  cblume
+Add track length to track references
+
 Revision 1.36  2002/11/21 22:38:47  alibrary
 Removing AliMC and AliMCProcess
 
@@ -547,6 +550,9 @@ void AliTRDv1::StepManager()
   TLorentzVector pos, mom;
 
   const Int_t    kNplan       = AliTRDgeometry::Nplan();
+  const Int_t    kNcham       = AliTRDgeometry::Ncham();
+  const Int_t    kNdetsec     = kNplan * kNcham;
+
   const Double_t kBig         = 1.0E+12;
 
   // Ionization energy
@@ -607,7 +613,7 @@ void AliTRDv1::StepManager()
       // The plane and chamber number
       cIdChamber[0] = cIdCurrent[2];
       cIdChamber[1] = cIdCurrent[3];
-      Int_t idChamber = atoi(cIdChamber);
+      Int_t idChamber = (atoi(cIdChamber) % kNdetsec);
       cha = ((Int_t) idChamber / kNplan);
       pla = ((Int_t) idChamber % kNplan);
 
