@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/11/01 16:01:22  kowal2
+Classes for handling the new hits structures
+
 */
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -27,7 +30,6 @@ $Log$
 
 
 #include "AliDataType.h"
-#include "AliCTypes.h"
 
 #include "TMath.h"
 #include "TClass.h"

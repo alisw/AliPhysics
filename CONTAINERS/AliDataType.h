@@ -29,7 +29,7 @@ protected:
   AliDataType(const AliDataType & type){;}
   AliDataType &operator = (const AliDataType & type){return *this;} //assignment operator
   TDataType * fDataType;  //root type information
-  ClassDefT(AliDataType,0)
+  ClassDef(AliDataType,0)
 };
 
 #endif
