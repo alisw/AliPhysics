@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.41  2000/12/18 11:33:50  alibrary
+New call frequence histograms per module and volume
+
 Revision 1.40  2000/12/06 10:06:58  morsch
 Add all D and B baryons produced by HIJING to PDG DataBase.
 
@@ -117,14 +120,18 @@ Introduction of the Copyright and cvs Log
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "TGeant3.h" 
-#include "TROOT.h" 
-#include "THIGZ.h" 
+#include "dlfcn.h"
 #include "ctype.h" 
-#include <TDatabasePDG.h>
+
+#include "TROOT.h" 
+#include "TDatabasePDG.h"
+#include "TLorentzVector.h"
+
+#include "THIGZ.h" 
+#include "TGeant3.h" 
+
 #include "AliCallf77.h" 
 #include "AliDecayer.h" 
-#include "TLorentzVector.h"
 
 #ifndef WIN32 
 # define gzebra  gzebra_ 
@@ -220,7 +227,6 @@ Introduction of the Copyright and cvs Log
  
 # define setbomb setbomb_
 # define setclip setclip_
-# define gcomad gcomad_
 
 # define gbrelm gbrelm_
 # define gprelm gprelm_
@@ -319,7 +325,6 @@ Introduction of the Copyright and cvs Log
  
 # define setbomb SETBOMB
 # define setclip SETCLIP
-# define gcomad  GCOMAD
  
 # define gbrelm GBRELM
 # define gprelm GPRELM
@@ -539,7 +544,6 @@ extern "C"
   void type_of_call setbomb(Float_t &);
   void type_of_call setclip(DEFCHARD, Float_t &,Float_t &,Float_t &,Float_t &,
 			    Float_t &, Float_t & DEFCHARL); 
-  void type_of_call gcomad(DEFCHARD, Int_t*& DEFCHARL); 
 
   void type_of_call ertrak(const Float_t *const x1, const Float_t *const p1,
 			   const Float_t *x2, const Float_t *p2,
@@ -637,42 +641,74 @@ void TGeant3::LoadAddress()
   // Assigns the address of the GEANT common blocks to the structures
   // that allow their access from C++
   //
-  Int_t *addr;
-  gcomad(PASSCHARD("QUEST"), (int*&) fQuest PASSCHARL("QUEST"));
-  gcomad(PASSCHARD("GCBANK"),(int*&) fGcbank  PASSCHARL("GCBANK"));
-  gcomad(PASSCHARD("GCLINK"),(int*&) fGclink  PASSCHARL("GCLINK"));
-  gcomad(PASSCHARD("GCCUTS"),(int*&) fGccuts  PASSCHARL("GCCUTS"));
-  gcomad(PASSCHARD("GCMULO"),(int*&) fGcmulo  PASSCHARL("GCMULO"));
-  gcomad(PASSCHARD("GCFLAG"),(int*&) fGcflag  PASSCHARL("GCFLAG"));
-  gcomad(PASSCHARD("GCKINE"),(int*&) fGckine  PASSCHARL("GCKINE"));
-  gcomad(PASSCHARD("GCKING"),(int*&) fGcking  PASSCHARL("GCKING"));
-  gcomad(PASSCHARD("GCKIN2"),(int*&) fGckin2  PASSCHARL("GCKIN2"));
-  gcomad(PASSCHARD("GCKIN3"),(int*&) fGckin3  PASSCHARL("GCKIN3"));
-  gcomad(PASSCHARD("GCMATE"),(int*&) fGcmate  PASSCHARL("GCMATE"));
-  gcomad(PASSCHARD("GCTMED"),(int*&) fGctmed  PASSCHARL("GCTMED"));
-  gcomad(PASSCHARD("GCTRAK"),(int*&) fGctrak  PASSCHARL("GCTRAK"));
-  gcomad(PASSCHARD("GCTPOL"),(int*&) fGctpol  PASSCHARL("GCTPOL"));
-  gcomad(PASSCHARD("GCVOLU"),(int*&) fGcvolu  PASSCHARL("GCVOLU"));
-  gcomad(PASSCHARD("GCNUM"), (int*&) fGcnum   PASSCHARL("GCNUM"));
-  gcomad(PASSCHARD("GCSETS"),(int*&) fGcsets  PASSCHARL("GCSETS"));
-  gcomad(PASSCHARD("GCPHYS"),(int*&) fGcphys  PASSCHARL("GCPHYS"));
-  gcomad(PASSCHARD("GCPHLT"),(int*&) fGcphlt  PASSCHARL("GCPHLT"));
-  gcomad(PASSCHARD("GCOPTI"),(int*&) fGcopti  PASSCHARL("GCOPTI"));
-  gcomad(PASSCHARD("GCTLIT"),(int*&) fGctlit  PASSCHARL("GCTLIT"));
-  gcomad(PASSCHARD("GCVDMA"),(int*&) fGcvdma  PASSCHARL("GCVDMA"));
+  void *handle = dlopen (NULL, RTLD_LAZY);
 
+#ifndef WIN32
+  fQuest  = (Quest_t *)  dlsym(handle,"quest_");
+  fGcbank = (Gcbank_t *) dlsym(handle,"gcbank_");
+  fGclink = (Gclink_t *) dlsym(handle,"gclink_");
+  fGccuts = (Gccuts_t *) dlsym(handle,"gccuts_");
+  fGcmulo = (Gcmulo_t *) dlsym(handle,"gcmulo_");
+  fGcflag = (Gcflag_t *) dlsym(handle,"gcflag_");
+  fGckine = (Gckine_t *) dlsym(handle,"gckine_");
+  fGcking = (Gcking_t *) dlsym(handle,"gcking_");
+  fGckin2 = (Gckin2_t *) dlsym(handle,"gckin2_");
+  fGckin3 = (Gckin3_t *) dlsym(handle,"gckin3_");
+  fGcmate = (Gcmate_t *) dlsym(handle,"gcmate_");
+  fGctmed = (Gctmed_t *) dlsym(handle,"gctmed_");
+  fGctrak = (Gctrak_t *) dlsym(handle,"gctrak_");
+  fGctpol = (Gctpol_t *) dlsym(handle,"gctpol_");
+  fGcvolu = (Gcvolu_t *) dlsym(handle,"gcvolu_");
+  fGcnum  = (Gcnum_t *)  dlsym(handle,"gcnum_");
+  fGcsets = (Gcsets_t *) dlsym(handle,"gcsets_");
+  fGcphys = (Gcphys_t *) dlsym(handle,"gcphys_");
+  fGcphlt = (Gcphlt_t *) dlsym(handle,"gcphlt_");
+  fGcopti = (Gcopti_t *) dlsym(handle,"gcopti_");
+  fGctlit = (Gctlit_t *) dlsym(handle,"gctlit_");
+  fGcvdma = (Gcvdma_t *) dlsym(handle,"gcvdma_");
+  
   // Commons for GEANE
-  gcomad(PASSCHARD("ERTRIO"),(int*&) fErtrio  PASSCHARL("ERTRIO"));
-  gcomad(PASSCHARD("EROPTS"),(int*&) fEropts  PASSCHARL("EROPTS"));
-  gcomad(PASSCHARD("EROPTC"),(int*&) fEroptc  PASSCHARL("EROPTC"));
-  gcomad(PASSCHARD("ERWORK"),(int*&) fErwork  PASSCHARL("ERWORK"));
-
+  fErtrio = (Ertrio_t *) dlsym(handle,"ertrio_");
+  fEropts = (Eropts_t *) dlsym(handle,"eropts_");
+  fEroptc = (Eroptc_t *) dlsym(handle,"eroptc_");
+  fErwork = (Erwork_t *) dlsym(handle,"erwork_");
+#else  
+  fQuest  = (Quest_t *)  dlsym(handle,"QUEST");
+  fGcbank = (Gcbank_t *) dlsym(handle,"GCBANK");
+  fGclink = (Gclink_t *) dlsym(handle,"GCLINK");
+  fGccuts = (Gccuts_t *) dlsym(handle,"GCCUTS");
+  fGcmulo = (Gcmulo_t *) dlsym(handle,"GCMULO");
+  fGcflag = (Gcflag_t *) dlsym(handle,"GCFLAG");
+  fGckine = (Gckine_t *) dlsym(handle,"GCKINE");
+  fGcking = (Gcking_t *) dlsym(handle,"GCKING");
+  fGckin2 = (Gckin2_t *) dlsym(handle,"GCKIN2");
+  fGckin3 = (Gckin3_t *) dlsym(handle,"GCKIN3");
+  fGcmate = (Gcmate_t *) dlsym(handle,"GCMATE");
+  fGctmed = (Gctmed_t *) dlsym(handle,"GCTMED");
+  fGctrak = (Gctrak_t *) dlsym(handle,"GCTRAK");
+  fGctpol = (Gctpol_t *) dlsym(handle,"GCTPOL");
+  fGcvolu = (Gcvolu_t *) dlsym(handle,"GCVOLU");
+  fGcnum  = (Gcnum_t *)  dlsym(handle,"GCNUM");
+  fGcsets = (Gcsets_t *) dlsym(handle,"GCSETS");
+  fGcphys = (Gcphys_t *) dlsym(handle,"GCPHYS");
+  fGcphlt = (Gcphlt_t *) dlsym(handle,"GCPHLT");
+  fGcopti = (Gcopti_t *) dlsym(handle,"GCOPTI");
+  fGctlit = (Gctlit_t *) dlsym(handle,"GCTLIT");
+  fGcvdma = (Gcvdma_t *) dlsym(handle,"GCVDMA");
+  
+  // Commons for GEANE
+  fErtrio = (Ertrio_t *) dlsym(handle,"ERTRIO");
+  fEropts = (Eropts_t *) dlsym(handle,"EROPTS");
+  fEroptc = (Eroptc_t *) dlsym(handle,"EROPTC");
+  fErwork = (Erwork_t *) dlsym(handle,"ERWORK");
+#endif
+  
   // Variables for ZEBRA store
-  gcomad(PASSCHARD("IQ"), addr  PASSCHARL("IQ"));
-  fZiq = addr;
-  gcomad(PASSCHARD("LQ"), addr  PASSCHARL("LQ"));
-  fZlq = addr;
-  fZq       = (float*)fZiq; 
+  //
+  fZlq = (Int_t *) &(fGcbank->lmain)-1;
+  fZiq = (Int_t *) &(fGcbank->lmain)+7;
+  fZq  = (Float_t *)fZiq; 
+
 } 
 
 //_____________________________________________________________________________
