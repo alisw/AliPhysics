@@ -22,6 +22,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
+#include <TError.h>
+
+#include "AliRunLoader.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDparameter.h"
 
@@ -486,4 +489,27 @@ void AliTRDgeometry::SetOldGeometry()
     }
   }
 
+}
+
+//_____________________________________________________________________________
+AliTRDgeometry* AliTRDgeometry::GetGeometry(AliRunLoader* runLoader)
+{
+  //
+  // load the geometry from the galice file
+  //
+
+  if (!runLoader) runLoader = AliRunLoader::GetRunLoader();
+  if (!runLoader) {
+    ::Error("AliTRDgeometry::GetGeometry", "No run loader");
+    return NULL;
+  }
+
+  TDirectory* saveDir = gDirectory;
+  runLoader->CdGAFile();
+
+  AliTRDgeometry* geom = (AliTRDgeometry*) gDirectory->Get("TRDgeometry");
+  if (!geom) ::Error("AliTRDgeometry::GetGeometry", "Geometry not found");
+
+  saveDir->cd();
+  return geom;
 }

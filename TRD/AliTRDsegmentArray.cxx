@@ -25,7 +25,6 @@
 
 #include "AliRun.h"
 
-#include "AliTRD.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDsegmentArray.h"
 #include "AliTRDdataArray.h"
@@ -202,7 +201,7 @@ AliTRDdataArray *AliTRDsegmentArray::GetDataArray(Int_t pla
 
   if (gAlice) {
 
-    AliTRDgeometry *geo = ((AliTRD*) gAlice->GetDetector("TRD"))->GetGeometry();  
+    AliTRDgeometry *geo = AliTRDgeometry::GetGeometry(gAlice->GetRunLoader());  
     Int_t det = geo->GetDetector(pla,cha,sec);
     return GetDataArray(det);
 

@@ -16,7 +16,6 @@ class AliTRDgeometry;
 class AliTRDparameter;
 class AliTRDtrack;
 class AliTRDcluster;
-class AliTRDmcTrack;
 class AliBarrelTrack;
 class AliESD;
 

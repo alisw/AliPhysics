@@ -36,7 +36,6 @@
 #include <TParticle.h>
 
 #include "AliRun.h"
-#include "AliTRD.h"
 #include "AliTRDpid.h"
 #include "AliTRDcluster.h"
 #include "AliTRDtrack.h"
@@ -312,14 +311,7 @@ Bool_t AliTRDpid::ReadKine(const Char_t *name, Int_t event)
   }
   gAlice->GetEvent(event);
 
-  AliTRD *trd = (AliTRD *) gAlice->GetDetector("TRD");
-  if (!trd) {
-    printf("AliTRDpid::ReadKine -- ");
-    printf("No TRD object found\n");    
-    return kFALSE;
-  }
-
-  fGeometry = trd->GetGeometry();
+  fGeometry = AliTRDgeometry::GetGeometry(gAlice->GetRunLoader());
   if (!fGeometry) {
     printf("AliTRDpid::ReadKine -- ");
     printf("No TRD geometry found\n");

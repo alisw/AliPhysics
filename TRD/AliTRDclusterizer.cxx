@@ -29,7 +29,6 @@
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 
-#include "AliTRD.h"
 #include "AliTRDclusterizer.h"
 #include "AliTRDcluster.h"
 #include "AliTRDrecPoint.h"
@@ -46,8 +45,7 @@ AliTRDclusterizer::AliTRDclusterizer():TNamed()
   //
 
   fClusterTree = NULL;
-  fTRD         = 0;
-  fEvent       = 0;
+  fRecPoints   = 0;
   fVerbose     = 0;
   fPar         = 0;
 
@@ -62,7 +60,7 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t* name, const Text_t* title)
   //
 
   fClusterTree = NULL;
-  fEvent       = 0;
+  fRecPoints   = 0;
   fVerbose     = 0;
   fPar         = 0;
 
@@ -86,6 +84,10 @@ AliTRDclusterizer::~AliTRDclusterizer()
   // AliTRDclusterizer destructor
   //
 
+  if (fRecPoints) {
+    fRecPoints->Delete();
+    delete fRecPoints;
+  }
 }
 
 //_____________________________________________________________________________
@@ -108,7 +110,7 @@ void AliTRDclusterizer::Copy(TObject &c)
   //
 
   ((AliTRDclusterizer &) c).fClusterTree = NULL;
-  ((AliTRDclusterizer &) c).fEvent       = 0;  
+  ((AliTRDclusterizer &) c).fRecPoints   = NULL;  
   ((AliTRDclusterizer &) c).fVerbose     = fVerbose;  
   ((AliTRDclusterizer &) c).fPar         = 0;
 
@@ -176,19 +178,9 @@ Bool_t AliTRDclusterizer::OpenInput(Int_t nEvent)
       }
   }
 
-  fEvent = nEvent;
-
   // Import the Trees for the event nEvent in the file
-  fRunLoader->GetEvent(fEvent);
+  fRunLoader->GetEvent(nEvent);
   
-  // Get the TRD object
-  fTRD = (AliTRD*) gAlice->GetDetector("TRD"); 
-  if (!fTRD) {
-    printf("AliTRDclusterizer::OpenInput -- ");
-    printf("No TRD detector object found\n");
-    return kFALSE;
-  }
-
   return kTRUE;
 
 }
@@ -216,11 +208,11 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
 
   if ((det >= 0) && (det < AliTRDgeometry::Ndet())) {
 
-    Int_t nRecPoints = fTRD->RecPoints()->GetEntriesFast();
+    Int_t nRecPoints = RecPoints()->GetEntriesFast();
     TObjArray *detRecPoints = new TObjArray(400);
 
     for (Int_t i = 0; i < nRecPoints; i++) {
-      AliTRDcluster *c = (AliTRDcluster *) fTRD->RecPoints()->UncheckedAt(i);
+      AliTRDcluster *c = (AliTRDcluster *) RecPoints()->UncheckedAt(i);
       if (det == c->GetDetector()) {
         detRecPoints->AddLast(c);
       }
@@ -242,7 +234,7 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
   if (det == -1) {
 
     Info("WriteClusters","Writing the cluster tree %s for event %d."
-	 ,fClusterTree->GetName(),fEvent);
+	 ,fClusterTree->GetName(),fRunLoader->GetEventNumber());
     /*
     fClusterTree->Write();
     AliTRDgeometry *geo = fTRD->GetGeometry();
@@ -268,4 +260,43 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
 }
 
 
+//_____________________________________________________________________________
+void AliTRDclusterizer::AddCluster(Float_t *pos, Int_t det, Float_t amp
+				   , Int_t *tracks, Float_t *sig, Int_t iType)
+{
+  //
+  // Add a cluster for the TRD
+  //
 
+  AliTRDcluster *c = new AliTRDcluster();
+
+  c->SetDetector(det);
+  c->AddTrackIndex(tracks);
+  c->SetQ(amp);
+  c->SetY(pos[0]);
+  c->SetZ(pos[1]);
+  c->SetSigmaY2(sig[0]);   
+  c->SetSigmaZ2(sig[1]);
+  c->SetLocalTimeBin(((Int_t) pos[2]));
+
+  switch (iType) {
+  case 0:
+    c->Set2pad();
+    break;
+  case 1:
+    c->Set3pad();
+    break;
+  case 2:
+    c->Set4pad();
+    break;
+  case 3:
+    c->Set5pad();
+    break;
+  case 4:
+    c->SetLarge();
+    break;
+  };
+
+  RecPoints()->Add(c);
+
+}

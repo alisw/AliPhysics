@@ -35,7 +35,6 @@
 #include "AliTRDdataArrayI.h"
 #include "AliTRDdigit.h"
 #include "AliTRDgeometry.h"
-#include "AliTRD.h"
 
 ClassImp(AliTRDdigitsManager)
 
@@ -186,8 +185,6 @@ Bool_t AliTRDdigitsManager::MakeBranch(TTree *tree)
 
   Bool_t status = kTRUE;
 
-  AliTRD *trd = (AliTRD *) gAlice->GetDetector("TRD") ;
-
   if (tree) {
     fTree = tree;
   }
@@ -196,8 +193,10 @@ Bool_t AliTRDdigitsManager::MakeBranch(TTree *tree)
   if (fDigits) {
     const AliTRDdataArray *kDigits = (AliTRDdataArray *) fDigits->At(0);
     if (kDigits) {
-      trd->MakeBranchInTree(fTree,"TRDdigits",kDigits->IsA()->GetName()
-                                 ,&kDigits,buffersize,99);
+      if (!fTree) return kFALSE;
+      TBranch* branch = fTree->GetBranch("TRDdigits");
+      if (!branch) fTree->Branch("TRDdigits",kDigits->IsA()->GetName(),
+                                 &kDigits,buffersize,99);
       if (fDebug > 0) {
         printf("<AliTRDdigitsManager::MakeBranch> ");
         printf("Making branch TRDdigits\n");
@@ -219,8 +218,10 @@ Bool_t AliTRDdigitsManager::MakeBranch(TTree *tree)
       const AliTRDdataArray *kDictionary = 
               (AliTRDdataArray *) fDictionary[iDict]->At(0);
       if (kDictionary) {
-        trd->MakeBranchInTree(fTree,branchname,kDictionary->IsA()->GetName()
-                             ,&kDictionary,buffersize,99);
+	if (!fTree) return kFALSE;
+	TBranch* branch = fTree->GetBranch(branchname);
+	if (!branch) fTree->Branch(branchname,kDictionary->IsA()->GetName(),
+				   &kDictionary,buffersize,99);
         if (fDebug > 0) {
           printf("<AliTRDdigitsManager::MakeBranch> ");
           printf("Making branch %s\n",branchname);

@@ -44,7 +44,7 @@
 ClassImp(AliTRDclusterizerV0)
 
 //_____________________________________________________________________________
-AliTRDclusterizerV0::AliTRDclusterizerV0():AliTRDclusterizer()
+  AliTRDclusterizerV0::AliTRDclusterizerV0():AliTRDclusterizer(), fTRD(NULL)
 {
   //
   // AliTRDclusterizerV0 default constructor
@@ -54,7 +54,7 @@ AliTRDclusterizerV0::AliTRDclusterizerV0():AliTRDclusterizer()
 
 //_____________________________________________________________________________
 AliTRDclusterizerV0::AliTRDclusterizerV0(const Text_t* name, const Text_t* title)
-                    :AliTRDclusterizer(name,title)
+                    :AliTRDclusterizer(name,title), fTRD(NULL)
 {
   //
   // AliTRDclusterizerV0 default constructor
@@ -93,6 +93,14 @@ Bool_t AliTRDclusterizerV0::MakeClusters()
   //
   // Generates the cluster
   //
+
+  // Get the TRD object
+  fTRD = (AliTRD*) gAlice->GetDetector("TRD"); 
+  if (!fTRD) {
+    printf("AliTRDclusterizerV0::makClusters -- ");
+    printf("No TRD detector object found\n");
+    return kFALSE;
+  }
 
   if (fTRD->IsVersion() != 0) {
     printf("AliTRDclusterizerV0::MakeCluster -- ");
@@ -278,7 +286,7 @@ Bool_t AliTRDclusterizerV0::MakeClusters()
           pos[0] = smear[1];
           pos[1] = smear[0];
           pos[2] = (time0 - smear[2]) / timeBinSize;
-          fTRD->AddCluster(pos,detector,0.0,tr,sigma,0);
+          AddCluster(pos,detector,0.0,tr,sigma,0);
 
 	}
 
@@ -290,7 +298,7 @@ Bool_t AliTRDclusterizerV0::MakeClusters()
   }
 
   printf("AliTRDclusterizerV0::MakeCluster -- ");
-  printf("Found %d points.\n",fTRD->RecPoints()->GetEntries());
+  printf("Found %d points.\n",RecPoints()->GetEntries());
   printf("AliTRDclusterizerV0::MakeCluster -- ");
   printf("Fill the cluster tree.\n");
   clusterTree->Fill();

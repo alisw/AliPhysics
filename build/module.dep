@@ -42,6 +42,7 @@ TMEVSIM/module.mk:	 TMEVSIM/libTMEVSIM.pkg
 TOF/module.mk:		 TOF/libTOF.pkg
 TPC/module.mk:		 TPC/libTPCbase.pkg TPC/libTPCsim.pkg TPC/libTPCrec.pkg TPC/libTPCfast.pkg
 TPHIC/module.mk:	 TPHIC/libTPHIC.pkg
-TRD/module.mk:		 TRD/libTRD.pkg
+TRD/module.mk:		 TRD/libTRDbase.pkg TRD/libTRDsim.pkg TRD/libTRDrec.pkg TRD/libTRDfast.pkg
 VZERO/module.mk:	 VZERO/libVZERO.pkg
 ZDC/module.mk:		 ZDC/libZDC.pkg
+TRACKING/module.mk:      TRACKING/libTRACKING.pkg

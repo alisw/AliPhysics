@@ -37,7 +37,6 @@
 #include <TParticle.h>
 
 #include "AliRun.h"
-#include "AliTRD.h"
 #include "AliTRDpidLQ.h"
 #include "AliTRDcluster.h"
 #include "AliTRDtrack.h"

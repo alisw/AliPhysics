@@ -404,7 +404,7 @@ void AliTRDdigitizer::Exec(Option_t* option)
 
   //Write parameters
   orl->CdGAFile();
-  if (!gFile->Get("TRDParameter")) GetParameter()->Write();
+  if (!gFile->Get("TRDparameter")) GetParameter()->Write();
 
   if (fDebug > 0) {
     printf("<AliTRDdigitizer::Exec> ");
@@ -1500,6 +1500,10 @@ Bool_t AliTRDdigitizer::WriteDigits() const
   //
   // Writes out the TRD-digits and the dictionaries
   //
+
+  //Write parameters
+  fRunLoader->CdGAFile();
+  if (!gFile->Get("TRDparameter")) GetParameter()->Write();
 
   // Store the digits and the dictionary in the tree
   return fDigitsManager->WriteDigits();

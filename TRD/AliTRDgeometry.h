@@ -13,6 +13,7 @@
 
 #include "AliGeometry.h"
 
+class AliRunLoader;
 class AliTRDparameter;
 
 class AliTRDgeometry : public AliGeometry {
@@ -83,6 +84,8 @@ class AliTRDgeometry : public AliGeometry {
   virtual void     GetGlobal(const AliRecPoint* , TVector3& ) const { };
  
   static  Double_t GetAlpha()  { return 2 * 3.14159265358979323846 / fgkNsect; }; 
+
+  static  AliTRDgeometry* GetGeometry(AliRunLoader* runLoader = NULL);
 
  protected:
  

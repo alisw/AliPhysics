@@ -25,7 +25,6 @@
 #include "AliTRDReconstructor.h"
 #include "AliRunLoader.h"
 #include "AliTRDparameter.h"
-#include "AliTRD.h"
 #include "AliTRDclusterizerV1.h"
 #include "AliTRDtracker.h"
 #include <TFile.h>

@@ -25,7 +25,6 @@
 
 #include "AliTRDgeometry.h"
 #include "AliTRDrecPoint.h"
-#include "AliTRD.h"
 
 ClassImp(AliTRDrecPoint)
 
@@ -38,14 +37,7 @@ AliTRDrecPoint::AliTRDrecPoint():AliRecPoint()
 
   fDetector = 0;
 
-  AliTRD *trd;
-  if ((gAlice) &&
-      (trd = ((AliTRD*) gAlice->GetDetector("TRD")))) {
-    fGeom = trd->GetGeometry();
-  }
-  else {
-    fGeom = NULL;
-  }
+  fGeom = AliTRDgeometry::GetGeometry();
 
 }
 
@@ -58,14 +50,7 @@ AliTRDrecPoint::AliTRDrecPoint(const char * opt):AliRecPoint(opt)
 
   fDetector = 0;
 
-  AliTRD *trd;
-  if ((gAlice) &&
-      (trd = ((AliTRD*) gAlice->GetDetector("TRD")))) {
-    fGeom = trd->GetGeometry();
-  }
-  else {
-    fGeom = NULL;
-  }
+  fGeom = AliTRDgeometry::GetGeometry();
 
 }
 

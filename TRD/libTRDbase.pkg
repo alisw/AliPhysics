@@ -1,0 +1,19 @@
+SRCS= AliTRDarrayI.cxx \
+      AliTRDarrayF.cxx \
+      AliTRDsegmentID.cxx \
+      AliTRDdataArray.cxx \
+      AliTRDdataArrayI.cxx \
+      AliTRDdataArrayF.cxx \
+      AliTRDsegmentArrayBase.cxx \
+      AliTRDsegmentArray.cxx \
+      AliTRDgeometry.cxx \
+      AliTRDgeometryFull.cxx \
+      AliTRDgeometryDetail.cxx \
+      AliTRDgeometryHole.cxx \
+      AliTRDparameter.cxx \
+      AliTRDdigit.cxx \
+      AliTRDdigitsManager.cxx
+
+HDRS= $(SRCS:.cxx=.h)                
+
+DHDR= TRDbaseLinkDef.h

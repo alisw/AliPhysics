@@ -41,7 +41,6 @@
 #include "AliRun.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDhit.h"
-#include "AliTRDmatrix.h"
 #include "AliTRDsim.h"
 #include "AliTRDv1.h"
 #include "AliMC.h"

@@ -1,0 +1,19 @@
+SRCS= AliTRDpixel.cxx \
+      AliTRDmatrix.cxx \
+      AliTRDrecPoint.cxx \
+      AliTRDcluster.cxx \
+      AliTRDclusterMI.cxx \
+      AliTRDclusterizer.cxx \
+      AliTRDclusterizerV1.cxx \
+      AliTRDclusterCorrection.cxx \
+      AliTRDclusterizerMI.cxx \
+      AliTRDtrack.cxx \
+      AliTRDtracker.cxx \
+      AliTRDpid.cxx \
+      AliTRDpidLQ.cxx \
+      AliTRDPartID.cxx \
+      AliTRDReconstructor.cxx
+
+HDRS= $(SRCS:.cxx=.h)                
+
+DHDR= TRDrecLinkDef.h

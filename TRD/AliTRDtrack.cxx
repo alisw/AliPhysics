@@ -21,7 +21,6 @@
 #include "AliTRDgeometry.h" 
 #include "AliTRDcluster.h" 
 #include "AliTRDtrack.h"
-#include "../TPC/AliTPCtrack.h" 
 #include "AliESDtrack.h" 
 #include "AliTRDclusterCorrection.h"
 

@@ -6,10 +6,13 @@
 /* $Id$ */
 
 #include <TNamed.h>
+#include <TObjArray.h>
 
 class TFile;
+class TTree;
 class AliRunLoader;
 class AliTRDparameter;
+class AliTRD;
 
 ///////////////////////////////////////////////////////
 //  Finds and handles cluster                        //
@@ -37,15 +40,20 @@ class AliTRDclusterizer : public TNamed {
 
   AliTRDparameter *GetParameter()                    const { return fPar;          };
 
+  TObjArray*      RecPoints() {if (!fRecPoints) fRecPoints = new TObjArray(400); return fRecPoints;}
+  virtual void    AddCluster(Float_t *pos, Int_t det, Float_t amp, Int_t *tracks
+			     , Float_t *sig, Int_t iType);
+  void            ResetRecPoints() {if (fRecPoints) fRecPoints->Delete();}
+
+
  protected:
 
   AliRunLoader * fRunLoader;       //! Run Loader
   
   TTree           *fClusterTree;   //! Tree with the cluster
-  AliTRD          *fTRD;           //! The TRD object
   AliTRDparameter *fPar;           //  TRD digitization parameter object
 
-  Int_t            fEvent;         //! Event number
+  TObjArray*       fRecPoints;     //! Array of clusters
   Int_t            fVerbose;       //  Sets the verbose level
 
   ClassDef(AliTRDclusterizer,3)    //  TRD-Cluster manager base class

@@ -1,0 +1,17 @@
+SRCS= AliTRDhit.cxx \
+      AliTRDtrackHits.cxx \
+      AliTRDpoints.cxx \
+      AliTRDsim.cxx \
+      AliTRD.cxx \
+      AliTRDv0.cxx \
+      AliTRDv1.cxx \
+      AliTRDv2.cxx \
+      AliTRDmcTrack.cxx \
+      AliTRDsimple.cxx \
+      AliTRDsimpleMC.cxx \
+      AliTRDsimpleGen.cxx \
+      AliTRDdigitizer.cxx
+
+HDRS= $(SRCS:.cxx=.h)                
+
+DHDR= TRDsimLinkDef.h

@@ -21,10 +21,11 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TRandom.h>
+
 #include "AliRun.h"
 #include "AliMagF.h"
 
-#include "AliTRD.h"
 #include "AliTRDparameter.h"
 #include "AliTRDgeometryFull.h"
 

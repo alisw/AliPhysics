@@ -30,6 +30,8 @@ class AliTRDclusterizerV0 : public AliTRDclusterizer {
 
  protected:
 
+  AliTRD       *fTRD;                //! The TRD object
+
   Float_t      fRphiSigma;           // Gaussian position smearing in rphi-direction
   Float_t      fRphiDist;            // Maximum distance for non-overlapping cluster
 

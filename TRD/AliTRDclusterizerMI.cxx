@@ -30,11 +30,9 @@
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 
-#include "AliTRD.h"
 #include "AliTRDclusterizerMI.h"
 #include "AliTRDmatrix.h"
 #include "AliTRDgeometry.h"
-#include "AliTRDdigitizer.h"
 #include "AliTRDdataArrayF.h"
 #include "AliTRDdataArrayI.h"
 #include "AliTRDdigitsManager.h"
@@ -132,18 +130,20 @@ Bool_t AliTRDclusterizerMI::MakeClusters()
 
   //////////////////////
   //STUPIDITY to be fixed later
-  fClusterContainer = fTRD->RecPoints();
+  fClusterContainer = RecPoints();
 
   Int_t row, col, time;
 
+  /*
   if (fTRD->IsVersion() != 1) {
     printf("<AliTRDclusterizerMI::MakeCluster> ");
     printf("TRD must be version 1 (slow simulator).\n");
     return kFALSE; 
   }
+  */
 
   // Get the geometry
-  AliTRDgeometry *geo = fTRD->GetGeometry();
+  AliTRDgeometry *geo = AliTRDgeometry::GetGeometry(fRunLoader);
 
   // Create a default parameter class if none is defined
   if (!fPar) {
@@ -195,16 +195,8 @@ Bool_t AliTRDclusterizerMI::MakeClusters()
 
   Int_t chamBeg = 0;
   Int_t chamEnd = AliTRDgeometry::Ncham();
-  if (fTRD->GetSensChamber()  >= 0) {
-    chamBeg = fTRD->GetSensChamber();
-    chamEnd = chamBeg + 1;
-  }
   Int_t planBeg = 0;
   Int_t planEnd = AliTRDgeometry::Nplan();
-  if (fTRD->GetSensPlane()    >= 0) {
-    planBeg = fTRD->GetSensPlane();
-    planEnd = planBeg + 1;
-  }
   Int_t sectBeg = 0;
   Int_t sectEnd = AliTRDgeometry::Nsect();
 
@@ -212,19 +204,6 @@ Bool_t AliTRDclusterizerMI::MakeClusters()
   for (Int_t icham = chamBeg; icham < chamEnd; icham++) {
     for (Int_t iplan = planBeg; iplan < planEnd; iplan++) {
       for (Int_t isect = sectBeg; isect < sectEnd; isect++) {
-
-        if (fTRD->GetSensSector() >= 0) {
-          Int_t sens1 = fTRD->GetSensSector();
-          Int_t sens2 = sens1 + fTRD->GetSensSectorRange();
-          sens2 -= ((Int_t) (sens2 / AliTRDgeometry::Nsect())) 
-                 * AliTRDgeometry::Nsect();
-          if (sens1 < sens2) {
-            if ((isect < sens1) || (isect >= sens2)) continue;
-	  }
-          else {
-            if ((isect < sens1) && (isect >= sens2)) continue;
-	  }
-	}
 
         Int_t idet = geo->GetDetector(iplan,icham,isect);
 
@@ -476,7 +455,7 @@ Bool_t AliTRDclusterizerMI::MakeClusters()
 
         // Write the cluster and reset the array
 	WriteClusters(idet);
-	fTRD->ResetRecPoints();
+	ResetRecPoints();
 
         if (fVerbose > 0) {
           printf("<AliTRDclusterizerMI::MakeCluster> ");

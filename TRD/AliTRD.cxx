@@ -43,7 +43,6 @@
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliTRD.h"
-#include "AliTRDcluster.h"
 #include "AliTRDdigit.h"
 #include "AliTRDdigitizer.h"
 #include "AliTRDdigitsManager.h"
@@ -51,7 +50,6 @@
 #include "AliTRDgeometryHole.h"
 #include "AliTRDhit.h"
 #include "AliTRDpoints.h"
-#include "AliTRDrecPoint.h"
 #include "AliTRDtrackHits.h"  
 #include "AliTrackReference.h"
 #include "AliMC.h"
@@ -69,9 +67,6 @@ AliTRD::AliTRD()
   fGasMix        = 0;
   fHits          = 0;
   fDigits        = 0;
-
-  fRecPoints     = 0;
-  fNRecPoints    = 0;
 
   fGeometry      = 0;
 
@@ -112,6 +107,12 @@ AliTRD::AliTRD(const char *name, const char *title)
     exit(1);
   }
 
+  // Save the geometry
+  TDirectory* saveDir = gDirectory;
+  gAlice->GetRunLoader()->CdGAFile();
+  fGeometry->Write("TRDgeometry");
+  saveDir->cd();
+
   // Allocate the hit array
   fHits           = new TClonesArray("AliTRDhit"     ,405);
   gAlice->GetMCApp()->AddHitList(fHits);
@@ -119,10 +120,6 @@ AliTRD::AliTRD(const char *name, const char *title)
   // Allocate the digits array
   fDigits         = 0;
 
-  // Allocate the rec point array
-  fRecPoints     = new TObjArray(400);
-  fNRecPoints    = 0;
-   
   fIshunt        = 0;
   fGasMix        = 1;
 
@@ -167,55 +164,14 @@ AliTRD::~AliTRD()
     delete fHits;
     fHits      = 0;
   }
-  if (fRecPoints) {
-    delete fRecPoints;
-    fRecPoints = 0;
-  }
+//  if (fRecPoints) {
+//    delete fRecPoints;
+//    fRecPoints = 0;
+//  }
   if (fTrackHits) {
     delete fTrackHits;
     fTrackHits = 0;
   }
-
-}
-
-//_____________________________________________________________________________
-void AliTRD::AddCluster(Float_t *pos, Int_t det, Float_t amp
-                      , Int_t *tracks, Float_t *sig, Int_t iType)
-{
-  //
-  // Add a cluster for the TRD
-  //
-
-  AliTRDcluster *c = new AliTRDcluster();
-
-  c->SetDetector(det);
-  c->AddTrackIndex(tracks);
-  c->SetQ(amp);
-  c->SetY(pos[0]);
-  c->SetZ(pos[1]);
-  c->SetSigmaY2(sig[0]);   
-  c->SetSigmaZ2(sig[1]);
-  c->SetLocalTimeBin(((Int_t) pos[2]));
-
-  switch (iType) {
-  case 0:
-    c->Set2pad();
-    break;
-  case 1:
-    c->Set3pad();
-    break;
-  case 2:
-    c->Set4pad();
-    break;
-  case 3:
-    c->Set5pad();
-    break;
-  case 4:
-    c->SetLarge();
-    break;
-  };
-
-  fRecPoints->Add(c);
 
 }
 
@@ -460,8 +416,6 @@ void AliTRD::Copy(TObject &trd)
 
   ((AliTRD &) trd).fGasMix      = fGasMix;
   ((AliTRD &) trd).fGeometry    = fGeometry;       
-  ((AliTRD &) trd).fRecPoints   = fRecPoints;
-  ((AliTRD &) trd).fNRecPoints  = fNRecPoints;
   ((AliTRD &) trd).fGasDensity  = fGasDensity;
   ((AliTRD &) trd).fFoilDensity = fFoilDensity;
   ((AliTRD &) trd).fDrawTR      = fDrawTR;
@@ -985,45 +939,14 @@ void AliTRD::ResetDigits()
 }
 
 //_____________________________________________________________________________
-void AliTRD::ResetRecPoints()
-{
-  //
-  // Reset number of reconstructed points and the point array
-  //
-
-  if (fRecPoints) {
-    fNRecPoints = 0;
-    Int_t nentr = fRecPoints->GetEntriesFast();
-    for (Int_t i = 0; i < nentr; i++) delete fRecPoints->RemoveAt(i);
-  }
-
-}
-
-//_____________________________________________________________________________
 void AliTRD::SetTreeAddress()
 {
   //
   // Set the branch addresses for the trees.
   //
 
-  Char_t branchname[15];
-
   if ( fLoader->TreeH() && (fHits == 0x0))  fHits = new TClonesArray("AliTRDhit",405);
   AliDetector::SetTreeAddress();
-
-  TBranch *branch;
-  TTree   *treeR = fLoader->TreeR();
-
-  if (treeR) {
-    sprintf(branchname,"%scluster",GetName());
-    if (fRecPoints == 0x0) fRecPoints  = new TObjArray(400);
-    if (fRecPoints) {
-      branch = treeR->GetBranch(branchname);
-      if (branch) {
-        branch->SetAddress(&fRecPoints);
-      }
-    }
-  }
 
   if (fHitType > 0) {
     SetTreeAddress2();    

@@ -37,8 +37,6 @@ class AliTRD : public AliDetector {
           AliTRD    &operator=(const AliTRD &trd);
 
   virtual void       AddHit(Int_t track, Int_t det, Float_t *hits, Int_t q, Bool_t inDrift); 
-  virtual void       AddCluster(Float_t *pos, Int_t det, Float_t amp, Int_t *tracks
-                              , Float_t *sig, Int_t iType);
   virtual void       BuildGeometry();
   virtual void       Copy(TObject &trd);
   virtual void       CreateGeometry();
@@ -46,12 +44,10 @@ class AliTRD : public AliDetector {
   virtual void       DrawModule() const;
   Int_t              DistancetoPrimitive(Int_t px, Int_t py) const;
   virtual void       LoadPoints(Int_t track);    
-  TObjArray         *RecPoints() const              { return fRecPoints;   };
   virtual void       Init();
   virtual Int_t      IsVersion() const = 0;
   virtual void       MakeBranch(Option_t* option);
   virtual void       ResetDigits();     
-  virtual void       ResetRecPoints();
   virtual void       StepManager() = 0; 
   virtual void       SetTreeAddress();
 
@@ -104,9 +100,6 @@ class AliTRD : public AliDetector {
   Int_t                fGasMix;             //  Gas mixture. 0: Xe/Isobutane 1: Xe/CO2
 
   AliTRDgeometry      *fGeometry;           //  The TRD geometry
-
-  TObjArray           *fRecPoints;          //  Array of reconstructed points / cluster
-  Int_t                fNRecPoints;         //! Number of reconstructed points / cluster
 
   Float_t              fGasDensity;         //  The density of the drift gas
   Float_t              fFoilDensity;        //  The density of the entrance window foil
