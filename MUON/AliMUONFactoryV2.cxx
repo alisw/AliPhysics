@@ -95,8 +95,8 @@ void AliMUONFactoryV2::BuildCommon()
   fResponse0->SetMaxAdc(4096);
   fResponse0->SetSaturation(3000);
   fResponse0->SetZeroSuppression(6);
-}	
-	
+}       
+        
 //__________________________________________________________________________
 void AliMUONFactoryV2::BuildStation1() 
 {
@@ -134,7 +134,7 @@ void AliMUONFactoryV2::BuildStation1()
 
     segmentation[0] = new AliMUONGeometrySegmentation(fMUON->Chamber(chamber).GetGeometry());
     segmentation[1] = new AliMUONGeometrySegmentation(fMUON->Chamber(chamber).GetGeometry());
-	
+        
     // id detection elt for chamber 1
     Int_t id0 = (chamber+1)*100;
 
@@ -148,8 +148,8 @@ void AliMUONFactoryV2::BuildStation1()
     segmentation[0]->Add(id0,      bendSt1);
     segmentation[0]->Add(id0 +  1, nonbendSt1);
     segmentation[0]->Add(id0 + 50, bendSt1);
-    segmentation[0]->Add(id0 + 51, nonbendSt1);	
-    fMUON->SetSegmentationModel(chamber, 1, segmentation[0]);	
+    segmentation[0]->Add(id0 + 51, nonbendSt1); 
+    fMUON->SetSegmentationModel(chamber, 1, segmentation[0]);   
 
     // cathode 1
     segmentation[1]->Add(id0,      nonbendSt1);
@@ -157,10 +157,10 @@ void AliMUONFactoryV2::BuildStation1()
     segmentation[1]->Add(id0 + 50, nonbendSt1);
     segmentation[1]->Add(id0 + 51, bendSt1);
     fMUON->SetSegmentationModel(chamber, 2, segmentation[1]);
-	
-    fMUON->SetResponseModel(chamber, responseSt1); // special response	    
+        
+    fMUON->SetResponseModel(chamber, responseSt1); // special response      
     fMUON->Chamber(chamber).SetChargeCorrel(0.11); // 11% charge spread
-	
+        
   }
 }
 
@@ -185,7 +185,7 @@ void AliMUONFactoryV2::BuildStation2()
 
     segmentation[0] = new AliMUONGeometrySegmentation(fMUON->Chamber(chamber).GetGeometry());
     segmentation[1] = new AliMUONGeometrySegmentation(fMUON->Chamber(chamber).GetGeometry());
-	
+        
     // id detection elt for chamber 1
     Int_t id0 = (chamber+1)*100;
 
@@ -199,8 +199,8 @@ void AliMUONFactoryV2::BuildStation2()
     segmentation[0]->Add(id0,      bendSt2);
     segmentation[0]->Add(id0 +  1, nonbendSt2);
     segmentation[0]->Add(id0 + 50, bendSt2);
-    segmentation[0]->Add(id0 + 51, nonbendSt2);	
-    fMUON->SetSegmentationModel(chamber, 1, segmentation[0]);	
+    segmentation[0]->Add(id0 + 51, nonbendSt2); 
+    fMUON->SetSegmentationModel(chamber, 1, segmentation[0]);   
 
     // cathode 1
     segmentation[1]->Add(id0,      nonbendSt2);
@@ -208,14 +208,14 @@ void AliMUONFactoryV2::BuildStation2()
     segmentation[1]->Add(id0 + 50, nonbendSt2);
     segmentation[1]->Add(id0 + 51, bendSt2);
     fMUON->SetSegmentationModel(chamber, 2, segmentation[1]);
-	
-    fMUON->SetResponseModel(chamber, fResponse0); // normal response	    
+        
+    fMUON->SetResponseModel(chamber, fResponse0); // normal response        
     fMUON->Chamber(chamber).SetChargeCorrel(0.11); // 11% charge spread
-	
+        
   }
-}	
-	
-	
+}       
+        
+        
 //__________________________________________________________________________
 void AliMUONFactoryV2::BuildStation3() 
 {
@@ -288,7 +288,7 @@ void AliMUONFactoryV2::BuildStation3()
 
     segmentation[0] = new AliMUONGeometrySegmentation(fMUON->Chamber(chamber).GetGeometry());
     segmentation[1] = new AliMUONGeometrySegmentation(fMUON->Chamber(chamber).GetGeometry());
-	
+        
     // id detection elt for chamber 1
     Int_t id0 = (chamber+1)*100;
 
@@ -321,7 +321,7 @@ void AliMUONFactoryV2::BuildStation3()
     segmentation[0]->Add(id0+53, slatsegB[0]);
     segmentation[0]->Add(id0+54, slatsegB[0]);     
     segmentation[0]->Add(id0+55, slatsegB[0]);
-    fMUON->SetSegmentationModel(chamber, 1, segmentation[0]);	
+    fMUON->SetSegmentationModel(chamber, 1, segmentation[0]);   
 
     // cathode 1
     // type 220000
@@ -353,7 +353,7 @@ void AliMUONFactoryV2::BuildStation3()
   }
 }
 
-	
+        
 //__________________________________________________________________________
 void AliMUONFactoryV2::BuildStation4() 
 {
@@ -462,7 +462,7 @@ void AliMUONFactoryV2::BuildStation4()
 
     segmentation[0] = new AliMUONGeometrySegmentation(fMUON->Chamber(chamber).GetGeometry());
     segmentation[1] = new AliMUONGeometrySegmentation(fMUON->Chamber(chamber).GetGeometry());
-	
+        
     // id detection elt for chamber 1
     Int_t id0 = (chamber+1)*100;
 
@@ -512,7 +512,7 @@ void AliMUONFactoryV2::BuildStation4()
     segmentation[0]->Add(id0+12, slatsegB[6]);  
     segmentation[0]->Add(id0+50, slatsegB[6]);
     segmentation[0]->Add(id0+62, slatsegB[6]);
-    fMUON->SetSegmentationModel(chamber, 1, segmentation[0]);	
+    fMUON->SetSegmentationModel(chamber, 1, segmentation[0]);   
 
     // cathode 1
     // type 122330
@@ -563,7 +563,7 @@ void AliMUONFactoryV2::BuildStation4()
 
 //__________________________________________________________________________
 void AliMUONFactoryV2::BuildStation5() 
-{	
+{       
   //--------------------------------------------------------
   // Configuration for Chamber TC9/10  (Station 5) ---------           
   //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -742,294 +742,182 @@ void AliMUONFactoryV2::BuildStation5()
     segmentation[1]->Add(id0+51, slatsegNB[5]);
     segmentation[1]->Add(id0+61, slatsegNB[5]);
     fMUON->SetSegmentationModel(chamber, 2, segmentation[1]);
-	
-    fMUON->SetResponseModel(chamber, fResponse0);	    
+        
+    fMUON->SetResponseModel(chamber, fResponse0);           
     fMUON->Chamber(chamber).SetChargeCorrel(0.11); // 11% charge spread
   }
 }
 
 //__________________________________________________________________________
 void AliMUONFactoryV2::BuildStation6() 
-{	
+{       
  // Create Trigger geometry segmentation for given chamber and cathod
 
  
-  AliMUONGeometrySegmentation *chamberSeg[2];
+    AliMUONGeometrySegmentation *chamberSeg[2];
 // Cluster-size off
-	AliMUONResponseTrigger* responseTrigger0 =  new AliMUONResponseTrigger;
+        AliMUONResponseTrigger* responseTrigger0 =  new AliMUONResponseTrigger;
 // Cluster-size on  
-// AliMUONResponseTriggerV1* responseTrigger0 =  new AliMUONResponseTriggerV1;
+//  AliMUONResponseTriggerV1* responseTrigger0 =  new AliMUONResponseTriggerV1;
 
-  for (Int_t chamber = 10; chamber < 14; chamber++) {
+    for (Int_t chamber = 10; chamber < 14; chamber++) {
 
-    //Trigger Segmentations
-    AliMUONTriggerSegmentation *trigSegX[9]; 
-    AliMUONTriggerSegmentation *trigSegY[9]; 
-    for(Int_t i=0; i<9; i++) {
-      trigSegX[i] = new AliMUONTriggerSegmentation(0);
-      trigSegY[i] = new AliMUONTriggerSegmentation(1);
-    }
+      //Trigger Segmentation
+      AliMUONTriggerSegmentation *trigSegX[9]; 
+      AliMUONTriggerSegmentation *trigSegY[9]; 
+      for(Int_t i=0; i<9; i++) {
+        trigSegX[i] = new AliMUONTriggerSegmentation(1);
+        trigSegY[i] = new AliMUONTriggerSegmentation(0);
+        trigSegX[i]->SetLineNumber(9-i);    
+        trigSegY[i]->SetLineNumber(9-i);    
+      }
 
-    AliMUONChamber *iChamber, *iChamber1;
-    iChamber1 = &fMUON->Chamber(10);
-    iChamber  = &fMUON->Chamber(chamber);
-    Float_t zpos1= - iChamber1->Z();  
-    Float_t zpos = - iChamber->Z();	     
-    Float_t zRatio = zpos / zpos1;
+      AliMUONChamber *iChamber, *iChamber1;
+      iChamber1 = &fMUON->Chamber(10);
+      iChamber  = &fMUON->Chamber(chamber);
+      Float_t zpos1= - iChamber1->Z();  
+      Float_t zpos = - iChamber->Z();        
+      Float_t zRatio = zpos / zpos1;
 
-    // init
-    Int_t nStrip[7]={0,0,0,0,0,0,0};	  
-    Float_t stripYsize[7]={0.,0.,0.,0.,0.,0.,0.};
-    Float_t stripXsize[7]={0.,0.,0.,0.,0.,0.,0.};
+      // init
+      Float_t stripWidth[3]={0.,0.,0.};     // 1.0625 2.125 4.25
+      Float_t stripLength[4]={0.,0.,0.,0.}; // 17. 34. 51. 68.
+      for (Int_t i=0; i<3; i++) 
+        stripWidth[i]=AliMUONTriggerConstants::StripWidth(i)*zRatio;
+      for (Int_t i=0; i<4; i++) 
+        stripLength[i]=AliMUONTriggerConstants::StripLength(i)*zRatio;
+      Int_t nStrip[7]={0,0,0,0,0,0,0};    
+      Float_t stripYsize[7]={0.,0.,0.,0.,0.,0.,0.};
+      Float_t stripXsize[7]={0.,0.,0.,0.,0.,0.,0.};
 
-    // chamber 8 cathode 0
-    for (Int_t i=0; i<7; i++) nStrip[i]=16;
-    for (Int_t i=0; i<7; i++) 
-      stripYsize[i]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    for (Int_t i=0; i<6; i++) 
-      stripXsize[i]=AliMUONTriggerConstants::StripLength(1)*zRatio;
-    stripXsize[6]=AliMUONTriggerConstants::StripLength(2)*zRatio; 
-    trigSegX[8]->Init(0,1,nStrip,stripYsize,stripXsize,0.);  
+      // chamber 8 0 cathode 0
+      for (Int_t i=0; i<7; i++) nStrip[i]=16;
+      for (Int_t i=0; i<7; i++) stripYsize[i]=stripWidth[2];
+      for (Int_t i=0; i<6; i++) stripXsize[i]=stripLength[1];
+      stripXsize[6]=stripLength[2];
+      trigSegX[8]->Init(0,nStrip,stripYsize,stripXsize,0.); 
+      trigSegX[0]->Init(0,nStrip,stripYsize,stripXsize,0.); 
+
+      // chamber 8 7 1 0 cathode 1
+      for (Int_t i=0; i<6; i++) nStrip[i]=8;
+      nStrip[7]=16;
+      for (Int_t i=0; i<7; i++) stripYsize[i]=stripLength[3];  
+      for (Int_t i=0; i<7; i++) stripXsize[i]=stripWidth[2];
+      trigSegY[8]->Init(0,nStrip,stripYsize,stripXsize,0.);  
+      trigSegY[7]->Init(0,nStrip,stripYsize,stripXsize,0.);
+      trigSegY[1]->Init(0,nStrip,stripYsize,stripXsize,0.);
+      trigSegY[0]->Init(0,nStrip,stripYsize,stripXsize,0.);
  
-    // chamber 8 cathode 1
-    for (Int_t i=0; i<6; i++) nStrip[i]=8;
-    nStrip[6]=16;
-    for (Int_t i=0; i<7; i++) 
-      stripYsize[i]=AliMUONTriggerConstants::StripLength(3)*zRatio;
-    for (Int_t i=0; i<7; i++) 
-      stripXsize[i]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    trigSegY[8]->Init(0,1,nStrip,stripYsize,stripXsize,0.);  
- 
-    // chamber 7 cathode 0
-    for (Int_t i=0; i<6; i++) nStrip[i]=32;
-    nStrip[7]=16;  
-    for (Int_t i=0; i<6; i++) 
-      stripYsize[i]=AliMUONTriggerConstants::StripWidth(1)*zRatio;
-    stripYsize[6]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    for (Int_t i=0; i<6; i++) 
-      stripXsize[i]=AliMUONTriggerConstants::StripLength(1)*zRatio;
-    stripXsize[6]=AliMUONTriggerConstants::StripLength(2)*zRatio;
-    trigSegX[7]->Init(0,2,nStrip,stripYsize,stripXsize,0.);  
+      // chamber 7 6 2 1 cathode 0
+      for (Int_t i=0; i<6; i++) nStrip[i]=32;
+      nStrip[6]=16;  
+      for (Int_t i=0; i<6; i++) stripYsize[i]=stripWidth[1];
+      stripYsize[6]=stripWidth[2];
+      for (Int_t i=0; i<6; i++) stripXsize[i]=stripLength[1];
+      stripXsize[6]=stripLength[2];
+      trigSegX[7]->Init(0,nStrip,stripYsize,stripXsize,0.);  
+      trigSegX[6]->Init(0,nStrip,stripYsize,stripXsize,0.);
+      trigSegX[2]->Init(0,nStrip,stripYsize,stripXsize,0.);  
+      trigSegX[1]->Init(0,nStrip,stripYsize,stripXsize,0.);
 
-    // chamber 7 cathode 1
-    for (Int_t i=0; i<6; i++) nStrip[i]=8;
-    nStrip[6]=16;
-    for (Int_t i=0; i<7; i++) 
-      stripYsize[i]=AliMUONTriggerConstants::StripLength(3)*zRatio;
-    for (Int_t i=0; i<7; i++) 
-      stripXsize[i]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    trigSegY[7]->Init(0,2,nStrip,stripYsize,stripXsize,0.);  
- 
-    // chamber 6 cathode 0
-    for (Int_t i=0; i<6; i++) nStrip[i]=32;
-    nStrip[7]=16;  
-    for (Int_t i=0; i<6; i++) 
-      stripYsize[i]=AliMUONTriggerConstants::StripWidth(1)*zRatio;
-    stripYsize[6]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    for (Int_t i=0; i<6; i++) 
-      stripXsize[i]=AliMUONTriggerConstants::StripLength(1)*zRatio;
-    stripXsize[6]=AliMUONTriggerConstants::StripLength(2)*zRatio;
-    trigSegX[6]->Init(0,3,nStrip,stripYsize,stripXsize,0.);  
+      // chamber 6 2 cathode 1
+      for (Int_t i=0; i<5; i++) nStrip[i]=16;
+      for (Int_t i=5; i<6; i++) nStrip[i]=8;
+      nStrip[6]=16;
+      for (Int_t i=0; i<7; i++) stripYsize[i]=stripLength[3];
+      for (Int_t i=0; i<5; i++) stripXsize[i]=stripWidth[1];
+      for (Int_t i=5; i<7; i++) stripXsize[i]=stripWidth[2];
+      trigSegY[6]->Init(0,nStrip,stripYsize,stripXsize,0.);  
+      trigSegY[2]->Init(0,nStrip,stripYsize,stripXsize,0.);  
 
-    // chamber 6 cathode 1
-    for (Int_t i=0; i<5; i++) nStrip[i]=16;
-    nStrip[5]=8;
-    nStrip[6]=16;  
-    for (Int_t i=0; i<7; i++) 
-      stripYsize[i]=AliMUONTriggerConstants::StripLength(3)*zRatio;  
-    for (Int_t i=0; i<5; i++) 
-      stripXsize[i]=AliMUONTriggerConstants::StripWidth(1)*zRatio;
-    stripXsize[5]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    stripXsize[6]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    trigSegY[6]->Init(0,3,nStrip,stripYsize,stripXsize,0.);  
+      // chamber 5 3 cathode 0
+      nStrip[0]=48;
+      for (Int_t i=1; i<3; i++) nStrip[i]=64;
+      for (Int_t i=3; i<6; i++) nStrip[i]=32;
+      nStrip[6]=16;  
+      for (Int_t i=0; i<3; i++) stripYsize[i]=stripWidth[0];
+      for (Int_t i=3; i<6; i++) stripYsize[i]=stripWidth[1];
+      stripYsize[6]=stripWidth[2];
+      for (Int_t i=0; i<6; i++) stripXsize[i]=stripLength[1];
+      stripXsize[6]=stripLength[2];
+      trigSegX[5]->Init(0,nStrip,stripYsize,stripXsize,stripLength[0]);  
+      trigSegX[3]->Init(0,nStrip,stripYsize,stripXsize,0.);
 
-    // chamber 5 cathode 0
-    nStrip[0]=48;
-    for (Int_t i=1; i<3; i++) nStrip[i]=64;  
-    for (Int_t i=3; i<6; i++) nStrip[i]=32;
-    nStrip[6]=16;
-    for (Int_t i=0; i<3; i++) 
-      stripYsize[i]=AliMUONTriggerConstants::StripWidth(0)*zRatio;
-    for (Int_t i=3; i<6; i++) 
-      stripYsize[i]=AliMUONTriggerConstants::StripWidth(1)*zRatio;
-    stripYsize[6]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    for (Int_t i=0; i<6; i++) 
-      stripXsize[i]=AliMUONTriggerConstants::StripLength(1)*zRatio;
-    stripXsize[6]=AliMUONTriggerConstants::StripLength(2)*zRatio;
-    trigSegX[5]->Init(0,4,nStrip,stripYsize,stripXsize,AliMUONTriggerConstants::StripLength(0)*zRatio);  
+      // chamber 5 3 cathode 1
+      for (Int_t i=0; i<5; i++) nStrip[i]=16;
+      for (Int_t i=5; i<6; i++) nStrip[5]=8;  
+      nStrip[6]=16;  
+      stripYsize[0]=stripLength[2];
+      for (Int_t i=1; i<8; i++) stripYsize[i]=stripLength[3];
+      for (Int_t i=0; i<5; i++) stripXsize[i]=stripWidth[1];
+      for (Int_t i=5; i<7; i++) stripXsize[i]=stripWidth[2];
+      trigSegY[5]->Init(0,nStrip,stripYsize,stripXsize,stripLength[0]);  
+      trigSegY[3]->Init(0,nStrip,stripYsize,stripXsize,0.);
 
-    // chamber 5 cathode 1
-    for (Int_t i=0; i<5; i++) nStrip[i]=16;
-    nStrip[5]=8;  
-    nStrip[6]=16;
-    stripYsize[0]=AliMUONTriggerConstants::StripLength(2)*zRatio;
-    for (Int_t i=1; i<7; i++) 
-      stripYsize[i]=AliMUONTriggerConstants::StripLength(3)*zRatio;
-    for (Int_t i=0; i<5; i++) 
-      stripXsize[i]=AliMUONTriggerConstants::StripWidth(1)*zRatio;
-    stripXsize[5]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    stripXsize[6]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    trigSegY[5]->Init(0,4,nStrip,stripYsize,stripXsize,AliMUONTriggerConstants::StripLength(0)*zRatio);  
+      // chamber 4 cathode 0
+      nStrip[0]=0;
+      for (Int_t i=1; i<3; i++) nStrip[i]=64;  
+      for (Int_t i=3; i<6; i++) nStrip[i]=32;  
+      nStrip[6]=16;
+      stripYsize[0]=0.;
+      for (Int_t i=1; i<3; i++) stripYsize[i]=stripWidth[0];
+      for (Int_t i=3; i<6; i++) stripYsize[i]=stripWidth[1];
+      stripYsize[6]=stripWidth[2];
+      stripXsize[0]=0;  
+      stripXsize[1]=stripLength[0];  
+      for (Int_t i=2; i<6; i++) stripXsize[i]=stripLength[1];
+      stripXsize[6]=stripLength[2];
+      trigSegX[4]->Init(0,nStrip,stripYsize,stripXsize,0.);  
 
-    // chamber 4 cathode 0
-    nStrip[0]=0;
-    for (Int_t i=1; i<3; i++) nStrip[i]=64;  
-    for (Int_t i=3; i<6; i++) nStrip[i]=32;  
-    nStrip[6]=16;
-    stripYsize[0]=0.;
-    for (Int_t i=1; i<3; i++) 
-      stripYsize[i]=AliMUONTriggerConstants::StripWidth(0)*zRatio;
-    for (Int_t i=3; i<6; i++) 
-      stripYsize[i]=AliMUONTriggerConstants::StripWidth(1)*zRatio;
-    stripYsize[6]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    stripXsize[0]=0;  
-    stripXsize[1]=AliMUONTriggerConstants::StripLength(0)*zRatio;
-    for (Int_t i=2; i<6; i++) 
-      stripXsize[i]=AliMUONTriggerConstants::StripLength(1)*zRatio;
-    stripXsize[6]=AliMUONTriggerConstants::StripLength(2)*zRatio;
-    trigSegX[4]->Init(0,5,nStrip,stripYsize,stripXsize,0.);  
+      // chamber 4 cathode 1
+      nStrip[0]=0;  
+      nStrip[1]=8;  
+      for (Int_t i=2; i<5; i++) nStrip[i]=16;
+      for (Int_t i=5; i<6; i++) nStrip[i]=8;
+      nStrip[6]=16;
+      stripYsize[0]=0.;  
+      for (Int_t i=1; i<7; i++) stripYsize[i]=stripLength[3];
+      stripXsize[0]=0.;
+      for (Int_t i=1; i<5; i++) stripXsize[i]=stripWidth[1];
+      for (Int_t i=5; i<7; i++) stripXsize[i]=stripWidth[2];
+      trigSegY[4]->Init(0,nStrip,stripYsize,stripXsize,0.);
 
-    // chamber 4 cathode 1
-    nStrip[0]=0;  
-    nStrip[1]=8;  
-    for (Int_t i=2; i<5; i++) nStrip[i]=16;
-    nStrip[5]=8;
-    nStrip[6]=16;  
-    stripYsize[0]=0.;  
-    for (Int_t i=1; i<7; i++) 
-      stripYsize[i]=AliMUONTriggerConstants::StripLength(3)*zRatio;
-    stripXsize[0]=0.;
-    for (Int_t i=1; i<5; i++) 
-      stripXsize[i]=AliMUONTriggerConstants::StripWidth(1)*zRatio;
-    stripXsize[5]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    stripXsize[6]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    trigSegY[4]->Init(0,5,nStrip,stripYsize,stripXsize,0.);
+      chamberSeg[0] = new AliMUONGeometrySegmentation(fMUON->Chamber(chamber).GetGeometry());
+      chamberSeg[1] = new AliMUONGeometrySegmentation(fMUON->Chamber(chamber).GetGeometry());
 
-    // chamber 3 cathode 0
-    nStrip[0]=48;
-    for (Int_t i=1; i<3; i++) nStrip[i]=64;  
-    for (Int_t i=3; i<6; i++) nStrip[i]=32;
-    nStrip[6]=16;
-    for (Int_t i=0; i<3; i++) 
-      stripYsize[i]=AliMUONTriggerConstants::StripWidth(0)*zRatio;
-    for (Int_t i=3; i<6; i++) 
-      stripYsize[i]=AliMUONTriggerConstants::StripWidth(1)*zRatio;
-    stripYsize[6]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    for (Int_t i=0; i<6; i++) 
-      stripXsize[i]=AliMUONTriggerConstants::StripLength(1)*zRatio;
-    stripXsize[6]=AliMUONTriggerConstants::StripLength(2)*zRatio;
-    trigSegX[3]->Init(0,6,nStrip,stripYsize,stripXsize,0.);  
-
-    // chamber 3 cathode 1
-    for (Int_t i=0; i<5; i++) nStrip[i]=16;
-    nStrip[5]=8;  
-    nStrip[6]=16;
-    stripYsize[0]=AliMUONTriggerConstants::StripLength(2)*zRatio;
-    for (Int_t i=1; i<7; i++) 
-      stripYsize[i]=AliMUONTriggerConstants::StripLength(3)*zRatio;
-    for (Int_t i=0; i<5; i++) 
-      stripXsize[i]=AliMUONTriggerConstants::StripWidth(1)*zRatio;
-    stripXsize[5]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    stripXsize[6]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    trigSegY[3]->Init(0,6,nStrip,stripYsize,stripXsize,0.);  
-
-    // chamber 2 cathode 0
-    for (Int_t i=0; i<6; i++) nStrip[i]=32;
-    nStrip[7]=16;  
-    for (Int_t i=0; i<6; i++) 
-      stripYsize[i]=AliMUONTriggerConstants::StripWidth(1)*zRatio;
-    stripYsize[6]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    for (Int_t i=0; i<6; i++) 
-      stripXsize[i]=AliMUONTriggerConstants::StripLength(1)*zRatio;
-    stripXsize[6]=AliMUONTriggerConstants::StripLength(2)*zRatio;
-    trigSegX[2]->Init(0,7,nStrip,stripYsize,stripXsize,0.);  
-
-    // chamber 2 cathode 1
-    for (Int_t i=0; i<5; i++) nStrip[i]=16;
-    nStrip[5]=8;
-    nStrip[6]=16;  
-    for (Int_t i=0; i<7; i++) 
-      stripYsize[i]=AliMUONTriggerConstants::StripLength(3)*zRatio;  
-    for (Int_t i=0; i<5; i++) 
-      stripXsize[i]=AliMUONTriggerConstants::StripWidth(1)*zRatio;
-    stripXsize[5]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    stripXsize[6]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    trigSegY[2]->Init(0,7,nStrip,stripYsize,stripXsize,0.);  
-
-    // chamber 1 cathode 0
-    for (Int_t i=0; i<6; i++) nStrip[i]=32;
-    nStrip[7]=16;  
-    for (Int_t i=0; i<6; i++) 
-      stripYsize[i]=AliMUONTriggerConstants::StripWidth(1)*zRatio;
-    stripYsize[6]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    for (Int_t i=0; i<6; i++) 
-      stripXsize[i]=AliMUONTriggerConstants::StripLength(1)*zRatio;
-    stripXsize[6]=AliMUONTriggerConstants::StripLength(2)*zRatio;
-    trigSegX[1]->Init(0,8,nStrip,stripYsize,stripXsize,0.);  
-
-    // chamber 1 cathode 1
-    for (Int_t i=0; i<6; i++) nStrip[i]=8;
-    nStrip[6]=16;
-    for (Int_t i=0; i<7; i++) 
-      stripYsize[i]=AliMUONTriggerConstants::StripLength(3)*zRatio;
-    for (Int_t i=0; i<7; i++) 
-      stripXsize[i]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    trigSegY[1]->Init(0,8,nStrip,stripYsize,stripXsize,0.);  
-
-    // chamber 0 cathode 0
-    for (Int_t i=0; i<7; i++) nStrip[i]=16;
-    for (Int_t i=0; i<7; i++) 
-      stripYsize[i]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    for (Int_t i=0; i<6; i++) 
-      stripXsize[i]=AliMUONTriggerConstants::StripLength(1)*zRatio;
-    stripXsize[6]=AliMUONTriggerConstants::StripLength(2)*zRatio; 
-    trigSegX[0]->Init(0,9,nStrip,stripYsize,stripXsize,0.);  
- 
-    // chamber 0 cathode 1
-    for (Int_t i = 0; i < 6; i++) nStrip[i]=8;
-    nStrip[6]=16;
-    for (Int_t i = 0; i < 7; i++) 
-      stripYsize[i]=AliMUONTriggerConstants::StripLength(3)*zRatio;
-    for (Int_t i = 0; i < 7; i++) 
-      stripXsize[i]=AliMUONTriggerConstants::StripWidth(2)*zRatio;
-    trigSegY[0]->Init(0,9,nStrip,stripYsize,stripXsize,0.);
+      fMUON->SetNsec(chamber,2);
+      Int_t icount=chamber-10;  // chamber counter (0 1 2 3)
+      Int_t id0=(10+icount+1)*100;
 
 
-    chamberSeg[0] = new AliMUONGeometrySegmentation(fMUON->Chamber(chamber).GetGeometry());
-    chamberSeg[1] = new AliMUONGeometrySegmentation(fMUON->Chamber(chamber).GetGeometry());
+      //  printf("in CreateTriggerSegmentation here 0 id0=%i \n",id0);  
 
-    fMUON->SetNsec(chamber,2);
+      for (Int_t i = 0; i < 9; i++) {       
 
-    Int_t id0    = (chamber+1)*100;
+        // cathode 0
+        chamberSeg[0]->Add(id0+i,     trigSegX[i]);
+        chamberSeg[0]->Add(id0+50+i,  trigSegX[i]);
+        fMUON->SetSegmentationModel(chamber, 1, chamberSeg[0]);
 
-    //  printf("in CreateTriggerSegmentation here 0 id0=%i \n",id0);  
+        // cathode 1
+        chamberSeg[1]->Add(id0+i,     trigSegY[i]);
+        chamberSeg[1]->Add(id0+50+i,  trigSegY[i]);
+        fMUON->SetSegmentationModel(chamber, 2, chamberSeg[1]);
 
-    for (Int_t i = 0; i < 9; i++) {       
+      }
 
-      // cathode 0
-      chamberSeg[0]->Add(id0+i,     trigSegX[i]);
-      chamberSeg[0]->Add(id0+50+i,  trigSegX[i]);
-      fMUON->SetSegmentationModel(chamber, 1, chamberSeg[0]);
-
-      // cathode 1
-      chamberSeg[1]->Add(id0+i,     trigSegY[i]);
-      chamberSeg[1]->Add(id0+50+i,  trigSegY[i]);
-      fMUON->SetSegmentationModel(chamber, 2, chamberSeg[1]);
-
-    }
-
-    fMUON->SetResponseModel(chamber, responseTrigger0);      
-    fMUON->Chamber(chamber).SetChargeCorrel(0); // same charge on cathodes
+      fMUON->SetResponseModel(chamber, responseTrigger0);      
+      fMUON->Chamber(chamber).SetChargeCorrel(0); // same charge on cathodes
 
   
-  //  printf("in CreateTriggerSegmentation here 1\n");  
+      //  printf("in CreateTriggerSegmentation here 1\n");  
 
-    if (!id0) {
-      AliWarning(Form("Segmentation for chamber %d is not yet defined",chamber));
-      return ;      
+      if (!id0) {
+        AliWarning(Form("Segmentation for chamber %d is not yet defined",chamber));
+        return ;      
+      }
     }
-  }
-}	
+}       
 //__________________________________________________________________________
 void AliMUONFactoryV2::Build(AliMUON* where, const char* what) 
 {
