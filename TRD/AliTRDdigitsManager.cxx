@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2002/10/14 14:57:43  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.16.6.2  2002/07/24 10:09:30  alibrary
 Updating VirtualMC
 
@@ -99,7 +102,7 @@ Add new class AliTRDdigitsManager
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <iostream.h>
+#include <Riostream.h>
  
 #include <TROOT.h>
 #include <TTree.h>                                                              

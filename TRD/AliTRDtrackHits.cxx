@@ -23,7 +23,7 @@
 #include "TClonesArray.h"    
 #include "AliTRDhit.h"    
 
-#include <iostream.h>
+#include <Riostream.h>
 
 
 ClassImp(AliTRDtrackHits)

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2002/10/14 14:57:44  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.1.2.1  2002/10/11 07:26:37  hristov
 Updating VirtualMC to v3-09-02
 
@@ -29,7 +32,7 @@ Add conversion class to produce fake raw data
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <fstream.h>
+#include <Riostream.h>
 
 #include "AliTRDrawData.h"
 #include "AliTRDdigitsManager.h"
