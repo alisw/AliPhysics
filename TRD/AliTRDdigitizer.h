@@ -5,10 +5,12 @@
 
 /* $Id$ */
 
-#include <TNamed.h>
+#include "AliDigitizer.h"
 
 class TFile;
 class TF1;
+
+class AliRunDigitizer;
 
 class AliTRD;
 class AliTRDdigitsManager;
@@ -18,24 +20,25 @@ class AliTRDgeometry;
 //  Produces digits from the hits information        //
 ///////////////////////////////////////////////////////
 
-class AliTRDdigitizer : public TNamed {
+class AliTRDdigitizer : public AliDigitizer {
 
  public:
 
   AliTRDdigitizer();
   AliTRDdigitizer(const Text_t* name, const Text_t* title);
+  AliTRDdigitizer(AliRunDigitizer *manager, const Text_t* name, const Text_t* title);
   AliTRDdigitizer(const AliTRDdigitizer &d);
   virtual ~AliTRDdigitizer();
   AliTRDdigitizer &operator=(const AliTRDdigitizer &d);
 
   virtual void         Copy(TObject &d);
-  virtual void         Init();
+  virtual Bool_t       Init();
   virtual Bool_t       InitDetector();
-  virtual void         ReInit();
+  virtual Bool_t       ReInit();
   virtual Bool_t       Open(const Char_t *name, Int_t nEvent = 0);
   virtual Bool_t       MakeBranch(const Char_t *file = 0);
   virtual Bool_t       MakeDigits();
-  virtual void         AddSDigitsManager(AliTRDdigitsManager *man);
+  virtual void         AddSDigitsManager(AliTRDdigitsManager *manager);
   virtual Bool_t       ConvertSDigits();
   virtual Bool_t       MergeSDigits();
   virtual Bool_t       SDigits2Digits();

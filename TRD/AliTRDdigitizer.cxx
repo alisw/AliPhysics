@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.27  2001/11/14 10:50:45  cblume
+Changes in digits IO. Add merging of summable digits
+
 Revision 1.26  2001/11/06 17:19:41  cblume
 Add detailed geometry and simple simulator
 
@@ -152,9 +155,11 @@ Add new TRD classes
 #include <TFile.h>
 #include <TF1.h>
 #include <TList.h>
+#include <TTask.h>
 
 #include "AliRun.h"
 #include "AliMagF.h"
+#include "AliRunDigitizer.h"
 
 #include "AliTRD.h"
 #include "AliTRDhit.h"
@@ -168,7 +173,7 @@ Add new TRD classes
 ClassImp(AliTRDdigitizer)
 
 //_____________________________________________________________________________
-AliTRDdigitizer::AliTRDdigitizer():TNamed()
+AliTRDdigitizer::AliTRDdigitizer()
 {
   //
   // AliTRDdigitizer default constructor
@@ -224,10 +229,40 @@ AliTRDdigitizer::AliTRDdigitizer():TNamed()
 
 //_____________________________________________________________________________
 AliTRDdigitizer::AliTRDdigitizer(const Text_t *name, const Text_t *title)
-                :TNamed(name,title)
+                :AliDigitizer(name,title)
 {
   //
-  // AliTRDdigitizer default constructor
+  // AliTRDdigitizer constructor
+  //
+
+  fInputFile          = NULL;
+
+  fDigitsManager      = NULL;
+  fSDigitsManager     = NULL;
+  fSDigitsManagerList = NULL;
+
+  fTRD                = NULL;
+  fGeo                = NULL;
+  fPRFsmp             = NULL;
+  fTRFsmp             = NULL;
+
+  fEvent              = 0;
+
+  fCompress           = kTRUE;
+  fVerbose            = 0;
+  fSDigits            = kFALSE;
+
+  Init();
+
+}
+
+//_____________________________________________________________________________
+AliTRDdigitizer::AliTRDdigitizer(AliRunDigitizer *manager
+                                , const Text_t *name, const Text_t *title)
+                :AliDigitizer(manager,name,title)
+{
+  //
+  // AliTRDdigitizer constructor
   //
 
   fInputFile          = NULL;
@@ -452,7 +487,7 @@ Float_t AliTRDdigitizer::TimeResponse(Float_t time)
 }
 
 //_____________________________________________________________________________
-void AliTRDdigitizer::Init()
+Bool_t AliTRDdigitizer::Init()
 {
   //
   // Initializes the digitization procedure with standard values
@@ -494,10 +529,12 @@ void AliTRDdigitizer::Init()
   // The time coupling factor (same number as for the TPC)
   fTimeCoupling   = 0.4;
 
+  return kTRUE;
+
 }
 
 //_____________________________________________________________________________
-void AliTRDdigitizer::ReInit()
+Bool_t AliTRDdigitizer::ReInit()
 {
   //
   // Reinitializes the digitization procedure after a change in the parameter
@@ -506,7 +543,7 @@ void AliTRDdigitizer::ReInit()
   if (!fGeo) {
     printf("AliTRDdigitizer::ReInit -- ");
     printf("No geometry defined. Run InitDetector() first\n");
-    exit(1);
+    return kFALSE;
   }
 
   // Calculate the time bin width in ns
@@ -535,6 +572,8 @@ void AliTRDdigitizer::ReInit()
   else {
     fLorentzFactor = 1.0;
   }
+
+  return kTRUE;
 
 }
 
@@ -809,9 +848,7 @@ Bool_t AliTRDdigitizer::InitDetector()
   // The list for the input s-digits manager to be merged
   fSDigitsManagerList = new TList();
 
-  ReInit();
-
-  return kTRUE;
+  return ReInit();
 
 }
 
