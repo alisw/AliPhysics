@@ -65,7 +65,7 @@ class AliGenPythia : public AliGenMC
 	{fPhiMinJet = TMath::Pi()*phimin/180.; fPhiMaxJet = TMath::Pi()*phimax/180.;}
     virtual void    SetGammaEtaRange(Float_t etamin = -20., Float_t etamax = 20.)
 	{fEtaMinGamma = etamin; fEtaMaxGamma = etamax;}
-    virtual void    SetGammaPhiRange(Float_t phimin = -180., Float_t phimax = 180.)
+    virtual void    SetGammaPhiRange(Float_t phimin = 0., Float_t phimax = 360.)
 	{fPhiMinGamma = TMath::Pi()*phimin/180.; fPhiMaxGamma = TMath::Pi()*phimax/180.;}
     // Set option for feed down from higher family
     virtual void SetFeedDownHigherFamily(Bool_t opt) {
