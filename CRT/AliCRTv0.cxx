@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2002/07/12 12:57:29  gamez
+Division of CRT1 corrected
+
 Revision 1.3.2.1  2002/07/12 12:32:50  gamez
 Division of CRT1 corrected
 
@@ -229,7 +232,7 @@ void AliCRTv0::CreateGeometry()
   scint[0] = AliCRTConstants::fgActiveAreaLenght/2.;       // Half Length in X
   scint[1] = AliCRTConstants::fgActiveAreaHeight/2.;       // Half Length in Y
   scint[2] = AliCRTConstants::fgActiveAreaWidth/2.;        // Half Length in Z
-  gMC->Gsvolu("CRT1", "BOX ", idtmed[1112], scint, 3);  // Scintillators
+  gMC->Gsvolu("CRT1", "BOX ", idtmed[1112], scint, 3);     // Scintillators
   // Divide the modules in 2 planes.
   gMC->Gsdvn("CRT2", "CRT1", 2, 2);
   // Now divide each plane in 8 palettes
@@ -394,36 +397,38 @@ void AliCRTv0::StepManager()
   gMC->TrackMomentum(pxyz);
 
   if ( laststepvol && (strcmp(gMC->CurrentVolName(),"CRT1") == 0) ) {
-    if (  gMC->TrackCharge() != 0 || gMC->TrackPid() == kGamma ) {
-      Float_t vert[3];
-
-      hits[0] = fMucur++;
-
-      if ( (gMC->TrackPid() != kMuonPlus) && (gMC->TrackPid() != kMuonMinus)) {
-	hits[1] = -(Float_t)gMC->TrackPid();
-      } else {
-	hits[1] = (Float_t)gMC->TrackPid();
+      if ( gMC->TrackCharge() != 0 || gMC->TrackPid() == kGamma ) {
+	  Float_t vert[3];
+	  
+	  hits[0] = fMucur++;
+	  
+	  if ( (gMC->TrackPid() != kMuonPlus) 
+	       && (gMC->TrackPid() != kMuonMinus)) {
+	      hits[1] = -(Float_t)gMC->TrackPid();
+	  } else {
+	      hits[1] = (Float_t)gMC->TrackPid();
+	  }
+	  
+	  TLorentzVector xyz;
+	  gMC->TrackPosition(xyz);
+	  TLorentzVector pxyz;
+	  gMC->TrackMomentum(pxyz);
+	  
+	  hits[2]  = xyz[0];  // X pit
+	  hits[3]  = xyz[1];  // Y pit
+	  hits[4]  = xyz[2];  // Z pit
+	  hits[5]  = pxyz[0]; // pxug
+	  hits[6]  = pxyz[1]; // pyug
+	  hits[7]  = pxyz[2]; // pzug
+	  
+	  hits[8]  = gMC->GetMedium(); // layer
+	  hits[9]  = vert[0]; // xver
+	  hits[10] = vert[1]; // yver
+	  hits[11] = vert[2]; // zver
+	  // Store the hit.
+	  AddHit(gAlice->CurrentTrack(),vol, hits);
       }
-
-      TLorentzVector xyz;
-      gMC->TrackPosition(xyz);
-      TLorentzVector pxyz;
-      gMC->TrackMomentum(pxyz);
-
-      hits[2]  = xyz[0]; // X pit
-      hits[3]  = xyz[1]; // Y pit
-      hits[4]  = xyz[2]; // Z pit
-      hits[5]  = pxyz[0]; // pxug
-      hits[6] = pxyz[1]; // pyug
-      hits[7] = pxyz[2]; // pzug
-
-      hits[8] = gMC->GetMedium(); // layer
-      hits[9] = vert[0]; // xver
-      hits[10] = vert[1]; // yver
-      hits[11] = vert[2]; // zver
-    }
   }
-
-  // Store the hit.
-  AddHit(gAlice->CurrentTrack(),vol, hits);
 }
+
+
