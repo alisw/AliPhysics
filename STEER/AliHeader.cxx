@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/10/02 21:28:14  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.3  2000/07/12 08:56:25  fca
 Coding convention correction and warning removal
 
@@ -24,7 +27,7 @@ Introduction of the Copyright and cvs Log
 */
 
 #include "AliHeader.h"
-#include "stdio.h"
+#include <stdio.h>
  
 ClassImp(AliHeader)
 
@@ -64,7 +67,7 @@ void AliHeader::Reset(Int_t run, Int_t event)
   fEvent=event;
 }
 
-void AliHeader::Print(const char *)
+void AliHeader::Print(const char* option)
 {
   //
   // Dumps header content
@@ -78,4 +81,12 @@ void AliHeader::Print(const char *)
   printf(
   "=========== Header for run %d Event %d = end ============================================\n\n",
   fRun,fEvent);
+  
+  // print  particle file map
+  char* oMap = strstr(option,"Map");
+  if (oMap) {
+    printf("\nParticle file map: \n");
+    for (Int_t i=0; i<fNtrack; i++) 
+      printf("   %d th entry: %d \n",i,fParticleFileMap[i]);
+  }    
 }

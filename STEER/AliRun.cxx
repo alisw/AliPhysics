@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.59  2001/03/12 17:47:03  hristov
+Changes needed on Sun with CC 5.0
+
 Revision 1.58  2001/03/09 14:27:26  morsch
 Fix for multiple events per file: inhibit decrease of size of  fParticleFileMap.
 
@@ -206,6 +209,7 @@ ClassImp(AliRun)
 
 //_____________________________________________________________________________
 AliRun::AliRun()
+  : fParticleFileMap(fHeader.GetParticleFileMap())
 {
   //
   // Default constructor for AliRun
@@ -246,7 +250,9 @@ AliRun::AliRun()
 
 //_____________________________________________________________________________
 AliRun::AliRun(const char *name, const char *title)
-  : TNamed(name,title)
+  : TNamed(name,title),
+    fParticleFileMap(fHeader.GetParticleFileMap())
+  
 {
   //
   //  Constructor for the main processor.
@@ -629,7 +635,7 @@ void AliRun::FinishEvent()
       if(!allFilled) allFilled = kTRUE;
     }  
   }
-  
+   
   // Set number of tracks to event header 
   fHeader.SetNtrack(fNtrack);
   
@@ -1289,7 +1295,7 @@ void AliRun::ReadTransPar()
 }
 
 //_____________________________________________________________________________
-void AliRun::MakeBranchInTree(TTree *tree, const char* name, void* address, Int_t size, char *file)
+TBranch* AliRun::MakeBranchInTree(TTree *tree, const char* name, void* address, Int_t size, char *file)
 { 
     //
     // Makes branch in given tree and diverts them  to a separate file 
@@ -1312,17 +1318,20 @@ void AliRun::MakeBranchInTree(TTree *tree, const char* name, void* address, Int_
             printf("* MakeBranch * Diverting Branch %s to file %s\n",name,file);
         cwd->cd();
         delete outFile;
-    } 
+    }
+    
+    return branch; 
 }
 
 //_____________________________________________________________________________
-void AliRun::MakeBranchInTree(TTree *tree, const char* name, const char *classname, void* address, Int_t size, Int_t splitlevel, char *file)
+TBranch* AliRun::MakeBranchInTree(TTree *tree, const char* name, const char *classname, void* address, Int_t size, Int_t splitlevel, char *file)
 { 
     //
     // Makes branch in given tree and diverts them to a separate file
     //  
     TDirectory *cwd = gDirectory;
     TBranch *branch = tree->Branch(name,classname,address,size,splitlevel);
+
     if (GetDebug()>1)
       printf("* MakeBranch * Making Branch %s \n",name);
     if (file) {
@@ -1338,6 +1347,7 @@ void AliRun::MakeBranchInTree(TTree *tree, const char* name, const char *classna
         cwd->cd();
         delete outFile;
     }
+    return branch;
 }
 //_____________________________________________________________________________
 void AliRun::MakeTree(Option_t *option, char *file)
@@ -1389,9 +1399,10 @@ void AliRun::MakeTree(Option_t *option, char *file)
   }
   if (oE && !fTreeE) {
     fTreeE = new TTree("TE","Header");
-    //  Create a branch for Header
-    MakeBranchInTree(fTreeE, 
-                     "Header", "AliHeader", &gAliHeader, 4000, 1, file) ;
+    TBranch* branch 
+      = MakeBranchInTree(fTreeE, 
+                     "Header", "AliHeader", &gAliHeader, 4000, 0, file) ;
+    branch->SetAutoDelete(kFALSE);	     
     fTreeE->Write();
   }
   
@@ -1437,10 +1448,11 @@ TParticle* AliRun::Particle(Int_t i)
     if (entry != fParticleFileMap[i]) {
       Fatal("Particle",
         "!!!! The algorithmic way is WRONG: !!!\n entry: %d map: %d",
-	entry, fParticleFileMap[i]); 
-    }  
+        entry, fParticleFileMap[i]); 
+    } 
       
     fTreeK->GetEntry(fParticleFileMap[i]);
+    //fTreeK->GetEntry(entry);
     new ((*fParticles)[nentries]) TParticle(*fParticleBuffer);
     fParticleMap->AddAt((*fParticles)[nentries],i);
   }

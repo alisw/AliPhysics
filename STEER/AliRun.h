@@ -8,6 +8,7 @@
 class TBrowser;
 class TList;
 class TTree;
+class TBranch;
 class TGeometry;
 class TDatabasePDG;
 class TRandom;
@@ -97,8 +98,8 @@ public:
    Bool_t         IsFolder() const {return kTRUE;}
    virtual AliLego* Lego() const {return fLego;}
    virtual  void  MakeTree(Option_t *option="KH", char *file = 0);
-   virtual  void  MakeBranchInTree(TTree *tree, const char* cname, void* address, Int_t size=32000, char *file=0);
-   virtual  void  MakeBranchInTree(TTree *tree, const char* cname, const char* name, void* address, Int_t size=32000, Int_t splitlevel=1, char *file=0);
+   virtual TBranch* MakeBranchInTree(TTree *tree, const char* cname, void* address, Int_t size=32000, char *file=0);
+   virtual TBranch* MakeBranchInTree(TTree *tree, const char* cname, const char* name, void* address, Int_t size=32000, Int_t splitlevel=1, char *file=0);
 
    TObjArray     *Particles() {return fParticleMap;};
    TParticle     *Particle(Int_t i);
@@ -199,12 +200,14 @@ protected:
   TString        fBaseFileName;      //  Name of the base root file
   TParticle     *fParticleBuffer;    //! Pointer to current particle for writing
   TObjArray     *fParticleMap;       //! Map of particles in the supporting TClonesArray
-  TArrayI        fParticleFileMap;   //  Map of particles in the file
+  TArrayI&       fParticleFileMap;   //! Map of particles in the file
 
 private:
 
-   AliRun(const AliRun &) {}
-   AliRun& operator = (const AliRun &) {return *this;}
+   AliRun(const AliRun &right) 
+     : fParticleFileMap(right.fParticleFileMap) {}  
+   AliRun& operator = (const AliRun &right) 
+      { fParticleFileMap= right.fParticleFileMap; return *this; }
 
    ClassDef(AliRun,4)      //Supervisor class for all Alice detectors
 };

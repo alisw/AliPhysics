@@ -5,7 +5,8 @@
 
 /* $Id$ */
 
-#include "TObject.h"
+#include <TObject.h>
+#include <TArrayI.h>
  
 class AliHeader : public TObject {
 public:
@@ -31,6 +32,8 @@ public:
   virtual  void  SetEvent(Int_t event) {fEvent = event;}
   virtual  Int_t GetEvent() const {return fEvent;}
 
+  virtual  TArrayI& GetParticleFileMap(){return fParticleFileMap;}
+
   virtual void Print(const char *opt=0);
   
 protected:
@@ -39,9 +42,9 @@ protected:
   Int_t         fNprimary;    //Number of primary tracks
   Int_t         fNtrack;      //Number of tracks
   Int_t         fEvent;       //Event number
+  TArrayI       fParticleFileMap; //Map of particles in the file
 
-  ClassDef(AliHeader,1) //Alice event header
-    
+  ClassDef(AliHeader,1) //Alice event header    
 };
 
 #endif
