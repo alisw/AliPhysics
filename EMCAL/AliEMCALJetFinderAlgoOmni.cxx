@@ -20,6 +20,9 @@
 /*
  
 $Log$
+Revision 1.11  2004/03/09 17:06:38  mhorner
+Made more robust
+
 Revision 1.10  2004/03/06 01:56:09  mhorner
 Pythai comp code
 
@@ -320,7 +323,13 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
 		     fUnit[j].SetUnitFlag(kOutJet);
 		     fUnit[j].SetUnitEta(myPart->Eta());
 		     fUnit[j].SetUnitPhi(myPart->Phi());
-		     fUnit[j].SetUnitEnergy(myPart->Energy()*TMath::Sin(myPart->Theta()));
+		     if (myPart->Energy()*TMath::Sin(myPart->Theta()) > fPtCut)
+		     {
+			     fUnit[j].SetUnitEnergy(myPart->Energy()*TMath::Sin(myPart->Theta()));
+		     }else
+		     {
+			     fUnit[j].SetUnitEnergy(0.00);
+		     }
 		     fUnitNoCuts[j].SetUnitID(j);
 		     fUnitNoCuts[j].SetUnitFlag(kOutJet);
 		     fUnitNoCuts[j].SetUnitEta(myPart->Eta());
