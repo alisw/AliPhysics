@@ -66,16 +66,17 @@ CXXFLAGS = -O2 -Wall -ggdb $(INCLUDES)
 LDFLAGS  = -O2 $(LIBS)
 
 
-PRGS	= runit
+PRGS	= runit read
 
 
 
 all : $(PRGS)
 
-runit : runit.o $(OBJS)
-	$(LD) runit.o $(LDFLAGS) $(OBJS) -o runit
+runit : runit.o
+	$(LD) $< $(LDFLAGS) $(OBJS) -o $@
 
-
+read : read.o
+	$(LD) read.o $(LDFLAGS) $(OBJS) -o read
 
 
 %.o : %.cxx 
