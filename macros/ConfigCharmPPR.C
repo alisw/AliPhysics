@@ -82,7 +82,7 @@ void Config()
   // with charm NLO calculation for Pb-Pb @ 5.5 TeV with MNR code.
   //
   gener->SetProcess(kPyCharmPbMNR);
-  gener->SetStrucFunc(kCTEQ_4L);
+  gener->SetStrucFunc(kCTEQ4L);
   gener->SetPtHard(2.1,-1.0);
   gener->SetEnergyCMS(5500.);
   gener->SetNuclei(208,208); // Pb-Pb collisions
