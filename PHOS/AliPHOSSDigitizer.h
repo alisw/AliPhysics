@@ -24,7 +24,7 @@ class AliPHOSSDigitizer: public TTask {
 
 public:
   AliPHOSSDigitizer() ;          // ctor
-  AliPHOSSDigitizer(const char* HeaderFile,const char *SdigitsTitle = "No Name") ; 
+  AliPHOSSDigitizer(const char* HeaderFile,const char *SdigitsTitle = "Default") ; 
   virtual ~AliPHOSSDigitizer(){} // dtor
 
   Float_t  Calibrate(Int_t amp)const {return (amp - fA)/fB ; }

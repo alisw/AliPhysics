@@ -112,13 +112,21 @@ void AliPHOSSDigitizer::Init()
     return ;
   } 
   
-  //add Task to //YSAlice/tasks/SDiditizer/PHOS
-  TTask * aliceSD  = (TTask*)gROOT->FindObjectAny("YSAlice/tasks/SDigitizer") ; 
-  TTask * phosSD   = (TTask*)aliceSD->GetListOfTasks()->FindObject("PHOS") ;
-  if ( ! phosSD->GetListOfTasks()->FindObject(GetName()) ) 
-    phosSD->Add(this) ; 
+  //  //add Task to //YSAlice/tasks/SDiditizer/PHOS
+  //  TTask * aliceSD  = (TTask*)gROOT->FindObjectAny("YSAlice/tasks/SDigitizer") ; 
+  //  TTask * phosSD   = (TTask*)aliceSD->GetListOfTasks()->FindObject("PHOS") ;
+  //  if ( ! phosSD->GetListOfTasks()->FindObject(GetName()) ) 
+  //   phosSD->Add(this) ;
+
+  gime->PostSDigits( GetName(), GetTitle() ) ; 
+
+  TString sdname(GetName() );
+  sdname.Append(":") ;
+  sdname.Append(GetTitle() ) ;
+  SetName(sdname) ;
+  gime->PostSDigitizer(this) ;
+ 
   // create a folder on the white board //YSAlice/WhiteBoard/SDigits/PHOS/headerFile/sdigitsTitle
-  gime->Post(GetTitle(), "S",  GetName() ) ; 
     
 }
 
@@ -138,54 +146,40 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     gBenchmark->Start("PHOSSDigitizer");
 
   //Check, if this branch already exits
-  TObjArray * lob = (TObjArray*)gAlice->TreeS()->GetListOfBranches() ;
-  TIter next(lob) ; 
-  TBranch * branch = 0 ;  
-  Bool_t phosfound = kFALSE, sdigitizerfound = kFALSE ; 
-  
-  while ( (branch = (TBranch*)next()) && (!phosfound || !sdigitizerfound) ) {
-    if ( (strcmp(branch->GetName(), "PHOS")==0) && (strcmp(branch->GetTitle(), GetName())==0) ) 
-      phosfound = kTRUE ;
+  gAlice->GetEvent(0) ;
+  if(gAlice->TreeS() ) {
+    TObjArray * lob = (TObjArray*)gAlice->TreeS()->GetListOfBranches() ;
+    TIter next(lob) ; 
+    TBranch * branch = 0 ;  
+    Bool_t phosfound = kFALSE, sdigitizerfound = kFALSE ; 
     
-    else if ( (strcmp(branch->GetName(), "AliPHOSSDigitizer")==0) && (strcmp(branch->GetTitle(), GetName())==0) ) 
-      sdigitizerfound = kTRUE ; 
-  }
+    while ( (branch = (TBranch*)next()) && (!phosfound || !sdigitizerfound) ) {
+      if ( (strcmp(branch->GetName(), "PHOS")==0) && (strcmp(branch->GetTitle(), GetName())==0) ) 
+	phosfound = kTRUE ;
+      
+      else if ( (strcmp(branch->GetName(), "AliPHOSSDigitizer")==0) && (strcmp(branch->GetTitle(), GetName())==0) ) 
+	sdigitizerfound = kTRUE ; 
+    }
+    
+    if ( phosfound || sdigitizerfound ) {
+      cerr << "WARNING: AliPHOSSDigitizer::Exec -> SDigits and/or SDigitizer branch with name " << GetName() 
+	   << " already exits" << endl ;
+      return ; 
+    }   
+  }  
 
-  if ( phosfound || sdigitizerfound ) {
-    cerr << "WARNING: AliPHOSSDigitizer::Exec -> SDigits and/or SDigitizer branch with name " << GetName() 
-	 << " already exits" << endl ;
-    return ; 
-  }   
-
+  TString sdname(GetName()) ;
+  sdname.Remove(sdname.Index(GetTitle())-1) ;
     
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-
-  TClonesArray * hits = gime->Hits() ; 
 
   Int_t nevents = (Int_t) gAlice->TreeE()->GetEntries() ; 
   
   Int_t ievent ;
   for(ievent = 0; ievent < nevents; ievent++){
-    gAlice->GetEvent(ievent) ;
-    gAlice->SetEvent(ievent) ;
-    
-    if(gAlice->TreeH()==0){
-      cerr << "ERROR: AliPHOSSDigitizer::Exec There is no Hit Tree" << endl;
-      return ;
-    }
-    
-    //set address of the hits 
-    TBranch * branch = gAlice->TreeH()->GetBranch("PHOS");
-    if (branch) 
-      branch->SetAddress(&hits);
-    else{
-      cerr << "ERROR: AliPHOSSDigitizer::Exec -> No branch PHOS in TreeH " << endl ;
-      cerr << "                                 Do nothing " << endl ;
-      return ;
-    }
+    gime->Event(ievent,"H") ;
 
-    TClonesArray * sdigits = gime->SDigits(GetName()) ;
-
+    TClonesArray * sdigits = gime->SDigits(sdname.Data()) ;
     sdigits->Clear();
     Int_t nSdigits = 0 ;
     
@@ -195,10 +189,11 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     for (itrack=0; itrack < gAlice->GetNtrack(); itrack++){
   
       //=========== Get the PHOS branch from Hits Tree for the Primary track itrack
-      branch->GetEntry(itrack,0);
+      gime->Track(itrack) ;
+      TClonesArray * hits = gime->Hits() ;
       Int_t i;
       for ( i = 0 ; i < hits->GetEntries() ; i++ ) {
-	const AliPHOSHit * hit = gime->Hit(i) ;
+	AliPHOSHit * hit = (AliPHOSHit *) hits->At(i) ;
 	// Assign primary number only if contribution is significant
 
 	if( hit->GetEnergy() > fPrimThreshold)
@@ -215,6 +210,7 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     sdigits->Sort() ;
     
     nSdigits = sdigits->GetEntriesFast() ;
+
     sdigits->Expand(nSdigits) ;
     Int_t i ;
     for (i = 0 ; i < nSdigits ; i++) { 
@@ -237,7 +233,7 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     //First list of sdigits
     Int_t bufferSize = 32000 ;    
     TBranch * sdigitsBranch = gAlice->TreeS()->Branch("PHOS",&sdigits,bufferSize);
-    sdigitsBranch->SetTitle(GetName());
+    sdigitsBranch->SetTitle(sdname);
     if (file) {
       sdigitsBranch->SetFile(file);
       TIter next( sdigitsBranch->GetListOfBranches());
@@ -253,7 +249,7 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     AliPHOSSDigitizer * sd = this ;
     TBranch * sdigitizerBranch = gAlice->TreeS()->Branch("AliPHOSSDigitizer","AliPHOSSDigitizer",
 					       &sd,bufferSize,splitlevel); 
-    sdigitizerBranch->SetTitle(GetName());
+    sdigitizerBranch->SetTitle(sdname);
     if (file) {
       sdigitizerBranch->SetFile(file);
       TIter next( sdigitizerBranch->GetListOfBranches());
@@ -307,7 +303,7 @@ void AliPHOSSDigitizer::SetSDigitsBranch(const char * title )
     
   // Post to the WhiteBoard
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  gime->Post(GetTitle(), "S", GetName()) ; 
+  gime->PostSDigits( title, GetTitle()) ; 
 }
 
 //__________________________________________________________________
@@ -339,7 +335,9 @@ void AliPHOSSDigitizer::PrintSDigits(Option_t * option)
   // Prints list of digits produced in the current pass of AliPHOSDigitizer
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  TClonesArray * sdigits = gime->SDigits(GetName()) ; 
+  TString sdname(GetName()) ;
+  sdname.Remove(sdname.Index(GetTitle())-1) ;
+  TClonesArray * sdigits = gime->SDigits(sdname.Data()) ; 
 
   cout << "AliPHOSSDigitizer: event "<<gAlice->GetEvNumber() << endl ;
   cout << "       Number of entries in SDigits list  " << sdigits->GetEntriesFast() << endl ;
