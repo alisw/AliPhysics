@@ -1218,7 +1218,7 @@ void AliL3MemHandler::UpdateRowPointer(AliL3DigitRowData *&tempPt)
   tempPt = (AliL3DigitRowData*)tmp;
 }
 
-inline Int_t  AliL3MemHandler::ComparePoints(UInt_t /*row*/,UShort_t pad,UShort_t time) const
+Int_t  AliL3MemHandler::ComparePoints(UInt_t /*row*/,UShort_t pad,UShort_t time) const
 {
   if(fNUsed>=fNDigits) return -2;
 
@@ -1230,7 +1230,7 @@ inline Int_t  AliL3MemHandler::ComparePoints(UInt_t /*row*/,UShort_t pad,UShort_
   return 1;
 }
 
-inline Int_t AliL3MemHandler::CompareDigits(AliL3RandomDigitData *a,AliL3RandomDigitData *b) const
+Int_t AliL3MemHandler::CompareDigits(AliL3RandomDigitData *a,AliL3RandomDigitData *b) const
 {
   if(a->fPad==b->fPad && a->fTime == b->fTime) return 0;
 
