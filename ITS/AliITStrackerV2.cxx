@@ -40,11 +40,13 @@ extern TRandom *gRandom;
 AliITStrackerV2::AliITSlayer AliITStrackerV2::fLayers[kMaxLayer]; // ITS layers
 
 AliITStrackerV2::
-AliITStrackerV2(const AliITSgeom *geom) throw (const Char_t *) {
+AliITStrackerV2(const AliITSgeom *geom, Int_t eventn) throw (const Char_t *) {
   //--------------------------------------------------------------------
   //This is the AliITStracker constructor
   //It also reads clusters from a root file
   //--------------------------------------------------------------------
+ 
+  fEventN = eventn;  //MI change add event number  - used to generate identifier 
   fYV=fZV=0.;
 
   AliITSgeom *g=(AliITSgeom*)geom;
@@ -90,7 +92,12 @@ if (phi<0) phi += 2*TMath::Pi();
 
   try {
      //Read clusters
-     TTree *cTree=(TTree*)gDirectory->Get("cTree");
+    //MI change 
+    char   cname[100]; 
+    sprintf(cname,"TreeC_ITS_%d",eventn);
+     TTree *cTree=(TTree*)gDirectory->Get(cname);
+    //     TTree *cTree=(TTree*)gDirectory->Get("cTree");
+
      if (!cTree) throw 
         ("AliITStrackerV2::AliITStrackerV2 can't get cTree !\n");
 
@@ -156,8 +163,13 @@ Int_t AliITStrackerV2::Clusters2Tracks(const TFile *inp, TFile *out) {
      return 2;
   }
 
-  in->cd();
-  TTree *tpcTree=(TTree*)in->Get("TPCf");
+  in->cd(); 
+  //
+  char   tname[100];
+  sprintf(tname,"TreeT_TPC_%d",fEventN);
+  TTree *tpcTree=(TTree*)in->Get(tname);
+  //TTree *tpcTree=(TTree*)in->Get("TPCf");
+
   if (!tpcTree) {
      cerr<<"AliITStrackerV2::Clusters2Tracks() ";
      cerr<<"can't get a tree with TPC tracks !\n";
@@ -249,8 +261,8 @@ cout<<fBestTrack.GetNumberOfClusters()<<" number of clusters\n\n";
     }
 
   }
-
-  itsTree.Write();
+  sprintf(tname,"TreeT_ITS_%d",fEventN);
+  itsTree.Write(tname);
   savedir->cd();
   cerr<<"Number of TPC tracks: "<<nentr<<endl;
   cerr<<"Number of prolonged tracks: "<<ntrk<<endl;

@@ -21,14 +21,14 @@ class TFile;
 class AliITStrackerV2 : public AliTracker {
 public:
   AliITStrackerV2():AliTracker(){}
-  AliITStrackerV2(const AliITSgeom *geom) throw (const Char_t *);
+  AliITStrackerV2(const AliITSgeom *geom, Int_t event) throw (const Char_t *);
 
   AliCluster *GetCluster(Int_t index) const;
   Int_t Clusters2Tracks(const TFile *in, TFile *out);
   Int_t PropagateBack(const TFile *in, TFile *out);
 
 private:
-
+  Int_t fEventN;  //event number
   Double_t GetEffectiveThickness(Double_t phi, Double_t z) const;
 
   void  FollowProlongation();
