@@ -5,15 +5,10 @@ Instructions on how to use TFLuka
   * Download Fluka from http://pcfluka.mi.infn.it/ and install it
 
   * Download geant4_vmc and install it (together with Geant4, CLHEP, etc)
+    See http://root.cern.ch/root/vmc/VirtualMC.html
     NOTE: All the geant4_vmc headers are assumed to be in 
-    $ALICE/geant4_vmc/include. To put them there:
-    - Go to $ALICE/geant4_vmc
-      [host] cd $ALICE/geant4_vmc
-    - Make the include directory
-      [host] mkdir include
-    - Put links to the headers:
-      [host] cd include
-      [host] find $ALICE/geant4_vmc -name "*.h" -exec ln -s {} . \;
+    $ALICE/geant4_vmc/include. To put them there execute `gmake includes`
+    in the geant4_vmc/source directory
 
 2) Set the your environment:
 
