@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.77  2001/09/04 15:09:11  hristov
+fTreeE->Branch replaced temporary by fTreeE->BranchOld to avoid data corruption in case of many events per file
+
 Revision 1.76  2001/08/03 14:38:35  morsch
 Use original method to access TreeH.
 
@@ -689,9 +692,9 @@ void AliRun::FinishRun()
   if (fTreeR) {
     delete fTreeR; fTreeR = 0;
   }
-  if (fTreeE) {
-    delete fTreeE; fTreeE = 0;
-  }
+//   if (fTreeE) {
+//     delete fTreeE; fTreeE = 0;
+//   }
   if (fTreeS) {
     delete fTreeS; fTreeS = 0;
   }
@@ -1733,25 +1736,25 @@ void AliRun::Streamer(TBuffer &R__b)
 {
    // Stream an object of class AliRun.
 
-   if (R__b.IsReading()) {
-      if (!gAlice) gAlice = this;
-
-      AliRun::Class()->ReadBuffer(R__b, this);
-      //
-      gROOT->GetListOfBrowsables()->Add(this,"Run");
-
-      fTreeE = (TTree*)gDirectory->Get("TE");
-      if (fTreeE) {
-	  fTreeE->SetBranchAddress("Header", &fHeader);
-      }
-      
-      else    Error("Streamer","cannot find Header Tree\n");
-      fTreeE->GetEntry(0);
-
-      gRandom = fRandom;
-   } else {
-      AliRun::Class()->WriteBuffer(R__b, this);
-   }
+  if (R__b.IsReading()) {
+    if (!gAlice) gAlice = this;
+    
+    AliRun::Class()->ReadBuffer(R__b, this);
+    //
+    gROOT->GetListOfBrowsables()->Add(this,"Run");
+    
+    fTreeE = (TTree*)gDirectory->Get("TE");
+    if (fTreeE) {
+      fTreeE->SetBranchAddress("Header", &fHeader);
+    }
+    
+    else    Error("Streamer","cannot find Header Tree\n");
+    fTreeE->GetEntry(0);
+    
+    gRandom = fRandom;
+  } else {
+    AliRun::Class()->WriteBuffer(R__b, this); 
+ }
 }
 
 

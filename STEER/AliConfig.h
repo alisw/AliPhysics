@@ -6,18 +6,22 @@
 /* $Id$ */
 /* 
  * $Log$
+ * Revision 1.2  2001/05/21 17:22:51  buncic
+ * Fixed problem with missing AliConfig while reading galice.root
+ *
  * Revision 1.1  2001/05/16 14:57:22  alibrary
  * New files for folders and Stack
  * 
  */
 
+#include <iostream>
 #include <TFolder.h>
 #include <TList.h>
 #include <TInterpreter.h>
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TDatabasePDG.h>
-
+class TString ; 
 class AliGenerator;
 class AliModule;
 class AliDetector;
@@ -26,32 +30,46 @@ class AliConfig;
 class AliTasks;
 
 class AliConfig : public TNamed {
+  
+public:
+  
+  AliConfig(){ 
+    // ctor: this is a singleton, the ctor should never be called but cint needs it as public
+    cerr << "ERROR: AliConfig is a singleton default ctor not callable" << endl ;
+    abort() ; 
+  } 
+  
+  virtual ~ AliConfig ();
+  
+  void  Add (AliGenerator *generator);
+  void  Add (AliMC *mc);
+  void  Add (TDatabasePDG *pdg);
+  void  Add (AliModule *module);
+  void  Add (AliDetector *detector);
+  
+  void  Add (char *list);
+  
+  static AliConfig* Instance();
+  
+private:
+  AliConfig(const char * name, const char * title );
+  void  AddInFolder (char * dir, TObject *obj);
+  void  AddSubFolder(char * dir[], TObject *obj);
+  void  AddSubTask(char * dir[], TObject *obj);
+ TObject* FindInFolder (char *dir, const char *name);
+  
+  TFolder  *fTopFolder;
+  AliTasks *fTasks;
+  // folders
+  char*  fPDGFolder ; 
+  char*  fGeneratorFolder ; 
+  char*  fMCFolder ; 
+  char*  fModuleFolder ; 
+  char** fDetectorFolder ; 
+  char** fDetectorTask ; 
 
-  public:
 
-    AliConfig(const char *name="gAlice", 
-    		  const char *title = "Alice simulation and reconstruction framework");
-    virtual ~ AliConfig ();
-
-    void  Add (AliGenerator *generator);
-    void  Add (AliMC *mc);
-    void  Add (TDatabasePDG *pdg);
-    void  Add (AliModule *module);
-    void  Add (AliDetector *detector);
-   
-    void  Add (const char *list);
-    
-    static AliConfig* Instance();
-
-  private:
-     void  AddInFolder (char *dir, TObject *obj);
-     void  AddSubFolder(char *dir[], TObject *obj);
-     TObject* FindInFolder (char *dir, const char *name);
-
-    TFolder  *fTopFolder;
-    AliTasks *fTasks;
-
-    static AliConfig*  fInstance;
+  static AliConfig*  fInstance;
     
     ClassDef(AliConfig,1) //Configuration class for AliRun
 };				// end class AliConfig

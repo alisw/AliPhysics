@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2001/07/27 13:03:13  hristov
+Default Branch split level set to 99
+
 Revision 1.14  2001/05/21 17:22:51  buncic
 Fixed problem with missing AliConfig while reading galice.root
 
@@ -218,18 +221,28 @@ TBranch* AliDetector::MakeBranchInTree(TTree *tree, const char* name, const char
            printf("* MakeBranch * Diverting Branch %s to file %s\n",name,file);
     }
     char *folder = 0;
-        
+    TString folderName(name);  
+    
     if (!strncmp(tree->GetName(),"TreeE",5)) folder = "RunMC/Event/Data";
     if (!strncmp(tree->GetName(),"TreeK",5)) folder = "RunMC/Event/Data";
-    if (!strncmp(tree->GetName(),"TreeH",5)) folder = "RunMC/Event/Data";
-    if (!strncmp(tree->GetName(),"TreeD",5)) folder = "Run/Event/Data";
-    if (!strncmp(tree->GetName(),"TreeS",5)) folder = "Run/Event/Data";
+    if (!strncmp(tree->GetName(),"TreeH",5)) {
+      folder     = "RunMC/Event/Data/Hits";
+      folderName = "Hits" ; 
+    }
+    if (!strncmp(tree->GetName(),"TreeD",5)) {
+      folder     = "Run/Event/Data";
+      folderName = "Digits" ; 
+    }
+    if (!strncmp(tree->GetName(),"TreeS",5)) {
+      folder     = "RunMC/Event/Data/SDigits";
+      folderName = "SDigits" ; 
+    }
     if (!strncmp(tree->GetName(),"TreeR",5)) folder = "Run/Event/RecData";
 
     if (folder) {
       if (GetDebug())
           printf("%15s: Publishing %s to %s\n",ClassName(),name,folder);
-      Publish(folder,address,name);
+      Publish(folder,address, folderName.Data());
     }  
     return branch;
 }
