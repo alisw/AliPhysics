@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2001/04/25 14:09:34  alla
+Curent bur fixed
+
 Revision 1.11  2001/04/04 12:10:18  alla
 changes according Coding Convension
 
@@ -95,12 +98,13 @@ void AliSTARTv0::CreateGeometry()
 
 
   Int_t *idtmed = fIdtmed->GetArray();
-  
+
   Int_t is;
   Int_t idrotm[999];
   Float_t x,y,z;
 
   Float_t pstart[3]={4.5,10.7,5.3};
+  Float_t pinstart[3]={0.,1.3,5.25};
   Float_t ppmt[3]={0.,1.3,3.5};
   Float_t pdivider[3]={0.,1.2,1.75};
   Float_t pdiv2[3]={0.,1.2,1.25};
@@ -118,17 +122,23 @@ void AliSTARTv0::CreateGeometry()
   Float_t pribber[3] = {0.,1.2,2.413/2.};
   Float_t presist[3] = {0.,1.2,0.087/2.};
 
-  Float_t zdet=75.;
+  Float_t zdetRight=69.7,zdetLeft=350;
  //-------------------------------------------------------------------
  //  START volume 
  //-------------------------------------------------------------------
   
+  //  Float_t theta=TMath::ATan(6.5/zdet);
+  Float_t thetaRight=(180./3.1415)*TMath::ATan(6.5/zdetRight);
+  Float_t thetaLeft=(180./3.1415)*TMath::ATan(6.5/zdetLeft);
     AliMatrix(idrotm[901], 90., 0., 90., 90., 180., 0.);
-    gMC->Gsvolu("0STA","TUBE",idtmed[1],pstart,3);
-    gMC->Gspos("0STA",1,"ALIC",0.,0.,zdet,0,"ONLY");
-    gMC->Gspos("0STA",2,"ALIC",0.,0.,-zdet,idrotm[901],"ONLY");
+    
+    gMC->Gsvolu("0STR","TUBE",idtmed[1],pstart,3);
+    gMC->Gsvolu("0STL","TUBE",idtmed[1],pstart,3);
+    gMC->Gspos("0STR",1,"ALIC",0.,0.,zdetRight+pstart[2],0,"ONLY");
+    gMC->Gspos("0STL",1,"ALIC",0.,0.,-zdetLeft-pstart[2],idrotm[901],"ONLY");
 
 //START interior
+    gMC->Gsvolu("0INS","TUBE",idtmed[1],pinstart,3);
     gMC->Gsvolu("0PMT","TUBE",idtmed[3],ppmt,3);     
     gMC->Gsvolu("0DIV","TUBE",idtmed[3],pdivider,3);     
 
@@ -136,15 +146,37 @@ void AliSTARTv0::CreateGeometry()
     Double_t dang1 = 2*TMath::Pi()/12;
     for (is=1; is<=12; is++)
       {  
+	AliMatrix(idrotm[901+is], 
+		  90.-thetaRight, 30.*is, 
+		  90.,       90.+30.*is,
+		  thetaRight,    180.+30.*is); 
 	x=6.5*TMath::Sin(is*dang1);
 	y=6.5*TMath::Cos(is*dang1);
-	z=-pstart[2]+ppmt[2];
-	gMC->Gspos("0PMT",is,"0STA",x,y,z,0,"ONLY");
-	printf("z PMT %f\n",z);
-	z=z+ppmt[2]+pdiv2[2];
-	printf(" is %d, z Divider %f\n",is,z);
-	gMC->Gspos("0DIV",is,"0STA",x,y,z,0,"ONLY");
+	z=-pstart[2]+pinstart[2];
+	gMC->Gspos("0INS",is,"0STR",x,y,z,idrotm[901+is],"ONLY");
+
+      }	
+    for (is=1; is<=12; is++)
+      {
+        AliMatrix(idrotm[901+is],
+                  90.-thetaLeft, 30.*is,
+                  90.,       90.+30.*is,
+                  thetaLeft,    180.+30.*is);
+
+        x=6.5*TMath::Sin(is*dang1);
+        y=6.5*TMath::Cos(is*dang1);
+        z=-pstart[2]+pinstart[2];
+        gMC->Gspos("0INS",is,"0STL",x,y,z,idrotm[901+is],"ONLY");
+
       }
+     x=0;
+    y=0;
+    z=-pinstart[2]+ppmt[2];
+    if(fDebug) printf("%s: is %d, z Divider %f\n",ClassName(),is,z);
+    gMC->Gspos("0PMT",1,"0INS",x,y,z,0,"ONLY");
+    z=pinstart[2]-pdivider[2];
+    gMC->Gspos("0DIV",1,"0INS",x,y,z,0,"ONLY");
+      
      /*  
 //second ring: 20 units of Scintillator+PMT+divider
       Double_t dang2 = 2*TMath::Pi()/26;
@@ -154,63 +186,65 @@ void AliSTARTv0::CreateGeometry()
      x=9.3*TMath::Sin(dang2+(is-13)*dang3);
      y=9.3*TMath::Cos(dang2+(is-13)*dang3);
       z=-pstart[2]+ppmt[2];
-      gMC->Gspos("0PMT",is,"0ST",x,y,z,0,"ONLY");
+      gMC->Gspos("0PMT",is,"0STA",x,y,z,0,"ONLY");
       z=z+ppmt[2]+pdiv2[2];
-      gMC->Gspos("0DI",is,"0ST",x,y,z,0,"ONLY");
+      gMC->Gspos("0DIV",is,"0STA",x,y,z,0,"ONLY");
       }
      */
 // PMT
       
     // Entry window (glass)
-    gMC->Gsvolu("0TOP","TUBE",idtmed[6],ptop,3);
-    z=-ppmt[2]+ptop[2];
+    // gMC->Gsvolu("0TOP","TUBE",idtmed[6],ptop,3);
+       gMC->Gsvolu("0TOP","TUBE",idtmed[12],ptop,3); //lucite
+     z=-ppmt[2]+ptop[2];
     gMC->Gspos("0TOP",1,"0PMT",0,0,z,0,"ONLY");
     //     printf("Z PTOP %f -ppmt[2] %f ptop[2] %f\n",z,-ppmt[2],ptop[2]);
+    
     // Bottom glass
-    gMC->Gsvolu("0BO","TUBE",idtmed[6],pbot,3);
+    gMC->Gsvolu("0BOT","TUBE",idtmed[6],pbot,3);
     z=ppmt[2]-pbot[2];
-    printf("Z bottom %f\n",z);
-    gMC->Gspos("0BO",1,"0PMT",0,0,z,0,"ONLY");
+    if(fDebug) printf("%s: Z bottom %f\n",ClassName(),z);
+    gMC->Gspos("0BOT",1,"0PMT",0,0,z,0,"ONLY");
     // Side cylinder glass
-    gMC->Gsvolu("0UO","TUBE",idtmed[6],pglass,3);
+    gMC->Gsvolu("0OUT","TUBE",idtmed[6],pglass,3);
     z=ppmt[2]-pglass[2];
     //      printf("Z glass %f\n",z);
-    gMC->Gspos("0UO",1,"0PMT",0,0,z,0,"ONLY");
+    gMC->Gspos("0OUT",1,"0PMT",0,0,z,0,"ONLY");
     //PMT electrodes support structure
-    gMC->Gsvolu("0CE","TUBE",idtmed[4],pcer,3);
-    gMC->Gsvolu("0IR","TUBE",idtmed[8],psteel,3);
+    gMC->Gsvolu("0CER","TUBE",idtmed[4],pcer,3);
+    gMC->Gsvolu("0STE","TUBE",idtmed[8],psteel,3);
     z=-ppmt[2]+2*ptop[2]+0.3;;
     //      printf("Z Cer 1 %f\n",z);
     for (is=1; is<=15; is++)
       {
 	z=z+psteel[2]+pcer[2];
-	gMC->Gspos("0CE",is,"0PMT",0,0,z,0,"ONLY");
+	gMC->Gspos("0CER",is,"0PMT",0,0,z,0,"ONLY");
 	z=z+psteel[2]+pcer[2];
-	gMC->Gspos("0IR",is,"0PMT",0,0,z,0,"ONLY");
+	gMC->Gspos("0STE",is,"0PMT",0,0,z,0,"ONLY");
       }
     
     // Divider
     // Knob at the bottom of PMT baloon
     
-    gMC->Gsvolu("0OB","TUBE",idtmed[6],pknob,3);
+    gMC->Gsvolu("0NB","TUBE",idtmed[6],pknob,3);
     z=-pdivider[2]+pknob[2];
     //      printf("zknob %f\n",z);
-    gMC->Gspos("0OB",1,"0DIV",0,0,z,0,"ONLY");
+    gMC->Gspos("0NB",1,"0DIV",0,0,z,0,"ONLY");
     gMC->Gsvolu("0KB","TUBE",idtmed[6],pknob_bot,3);
     z=-pdivider[2]+2*pknob[2]+pknob_bot[2];
-    //      printf("knobbot %f\n",z);
-    gMC->Gspos("0KB",1,"0DIV",0,0,z,0,"ONLY");
-    gMC->Gsvolu("0VA","TUBE",idtmed[6],pknob_vac,3);
+    //      printf(knobbot %f\n",z);
+    gMC->Gspos("0KB",1,"0DIV ",0,0,z,0,"ONLY");
+    gMC->Gsvolu("0VAC","TUBE",idtmed[3],pknob_vac,3);
     z=-pdivider[2]+pknob_vac[2];
     //      printf("knobvac %f\n",z);
-    gMC->Gspos("0VA",1,"0DIV",0,0,z,0,"ONLY");
+    gMC->Gspos("0VAC",1,"0DIV",0,0,z,0,"ONLY");
     //Steel pins + pin holes
-    gMC->Gsvolu("0PI","TUBE",idtmed[8],ppins,3);
+    gMC->Gsvolu("0PIN","TUBE",idtmed[8],ppins,3);
     z=-pdivider[2]+ppins[2];
-    gMC->Gspos("0PI",1,"0DIV",0,0,z,0,"ONLY");
-    gMC->Gsvolu("0HO","TUBE",idtmed[11],phole,3);
+    gMC->Gspos("0PIN",1,"0DIV",0,0,z,0,"ONLY");
+    gMC->Gsvolu("0HOL","TUBE",idtmed[11],phole,3);
     z=-pdivider[2]+2*ppins[2]+phole[2];
-    gMC->Gspos("0HO",1,"0DIV",0,0,z,0,"ONLY");
+    gMC->Gspos("0HOL",1,"0DIV",0,0,z,0,"ONLY");
     
     //Socket
     gMC->Gsvolu("0V1","TUBE",idtmed[4],pdiv1,3);
@@ -220,16 +254,20 @@ void AliSTARTv0::CreateGeometry()
     gMC->Gsvolu("0V2","TUBE",idtmed[1],pdiv2,3);
     z=pdivider[2]-pdiv2[2];
     gMC->Gspos("0V2",1,"0DIV",0,0,z,0,"ONLY");
-    gMC->Gsvolu("0DR","TUBE",idtmed[4],presist,3);
+    gMC->Gsvolu("0RS","TUBE",idtmed[4],presist,3);
     z=-pdiv2[2]+presist[2];
-    gMC->Gspos("0DR",1,"0V2",0,0,z,0,"ONLY");
+    gMC->Gspos("0RS",1,"0V2",0,0,z,0,"ONLY");
     gMC->Gsvolu("0RB","TUBE",idtmed[9],pribber,3);
     z=pdiv2[2]-pribber[2];
     gMC->Gspos("0RB",1,"0V2",0,0,z,0,"ONLY");
     //      printf("z DRIB %f\n",z);
-    
+       
     
 }    
+
+
+
+    
 //------------------------------------------------------------------------
 void AliSTARTv0::CreateMaterials()
 {
@@ -358,63 +396,11 @@ void AliSTARTv0::StepManager()
 {
   //
   // Called for every step in the START Detector
-  //
-  Int_t id,copy,copy1;
-  static Float_t hits[7];
-  static Float_t edep;
-  static Int_t vol[2];
-  TLorentzVector pos;
-  
-  TClonesArray &lhits = *fHits;
-  
-  if(!gMC->IsTrackAlive()) return; // particle has disappeared
-  Float_t charge = gMC->TrackCharge();
-  if(TMath::Abs(charge)<=0.) return; //take only charged particles
-  //    gMC->Gpcxyz();
-  id=gMC->CurrentVolID(copy);
-  
-  
-  //  printf("gMC->ckine->ipart %d",gMC->ckine->ipart);
-  // Check the sensetive volume
-  if(id==fIdSens1 ) {
-    if(gMC->IsTrackEntering()) {
-      gMC->CurrentVolOffID(2,copy);
-      vol[0]=copy;
-      gMC->CurrentVolOffID(1,copy1);
-      vol[1]=copy1;
-      gMC->TrackPosition(pos);
-      hits[0] = pos[0];
-      hits[1] = pos[1];
-      hits[2] = pos[2];
-      Float_t etot=gMC->Etot();
-      hits[4]=etot;
-      Int_t part= gMC->TrackPid();
-      hits[5]=part;
-      Float_t ttime=gMC->TrackTime();
-      hits[6]=ttime*1e9;
-      edep=0;
-    }
-    if(gMC->IsTrackInside()) 	{
-      Float_t de=gMC->Edep(); 
-      edep=edep+de;
-      //       printf ("E deposition %f\n",edep);
-      //    for (i=0; i<=6; i++){
-      //    printf(" HITS on START inside %f\n",hits[i]); } 
-    }
-    if(gMC->IsTrackExiting())	{
-      Float_t de=gMC->Edep(); 
-      edep=edep+de;
-      hits[3]=edep*1e3;
+  // See AliSTARTv1
 
-      //       for (i=0; i<=6; i++){
-      //	 printf(" HITS on START Exit %f\n",hits[i]); } 
-      //for (i=0; i<=1; i++) { printf("START vol %d\n",vol[i]);}
-     
-      new(lhits[fNhits++]) AliSTARThit(fIshunt,gAlice->CurrentTrack(),vol,hits);      
-    }
-  }
-//---------------------------------------------------------------------
 }
+//---------------------------------------------------------------------
+
 
 
 

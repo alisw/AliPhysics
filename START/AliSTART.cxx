@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.22  2001/07/27 13:03:12  hristov
+Default Branch split level set to 99
+
 Revision 1.21  2001/06/27 16:06:59  hristov
 Rotation matrix in BuildGeometry has been changed to rotx999
 
@@ -191,13 +194,13 @@ void AliSTART::BuildGeometry()
 
   new TTUBE("S_0ST1","START  volume 1","void",5.,10.7,5.3);
   top->cd();
-  node = new TNode("0ST1","0ST01","S_0ST1",0,0,75.,"");
+  node = new TNode("0ST1","0ST01","S_0ST1",0,0,69.7,"");
   node->SetLineColor(kColorSTART);
   fNodes->Add(node);
 
   new TTUBE("S_0ST2","START volume 2","void",5.,10.7,5.3);
   top->cd();
-  node = new TNode("0ST2","0ST2","S_0ST2",0,0,-75,"rotx999");
+  node = new TNode("0ST2","0ST2","S_0ST2",0,0,-350,"rotx999");
   node->SetLineColor(kColorSTART);
   fNodes->Add(node);
 }

@@ -95,7 +95,7 @@ void AliSTARTv1::CreateGeometry()
   Float_t pribber[3] = {0.,1.2,2.413/2.};
   Float_t presist[3] = {0.,1.2,0.087/2.};
 
-  Float_t zdetRight=69.7,zdetLeft=355.;
+  Float_t zdetRight=69.7,zdetLeft=350;
  //-------------------------------------------------------------------
  //  START volume 
  //-------------------------------------------------------------------
@@ -167,10 +167,12 @@ void AliSTARTv1::CreateGeometry()
 // PMT
       
     // Entry window (glass)
-    gMC->Gsvolu("0TOP","TUBE",idtmed[6],ptop,3);
-    z=-ppmt[2]+ptop[2];
+    gMC->Gsvolu("0TOP","TUBE",idtmed[6],ptop,3); //glass
+     //   gMC->Gsvolu("0TOP","TUBE",idtmed[12],ptop,3); //lucite
+     z=-ppmt[2]+ptop[2];
     gMC->Gspos("0TOP",1,"0PMT",0,0,z,0,"ONLY");
     //     printf("Z PTOP %f -ppmt[2] %f ptop[2] %f\n",z,-ppmt[2],ptop[2]);
+    
     // Bottom glass
     gMC->Gsvolu("0BOT","TUBE",idtmed[6],pbot,3);
     z=ppmt[2]-pbot[2];
@@ -232,7 +234,7 @@ void AliSTARTv1::CreateGeometry()
     z=pdiv2[2]-pribber[2];
     gMC->Gspos("0RB",1,"0V2",0,0,z,0,"ONLY");
     //      printf("z DRIB %f\n",z);
-    
+       
     
 }    
 //------------------------------------------------------------------------
@@ -248,7 +250,12 @@ void AliSTARTv1::CreateMaterials()
    Float_t zscin[2]={1,6};
    Float_t wscin[2]={1,1};
    Float_t denscin=1.03;
-// PMT glass SiO2
+//Lucite C(CH3)CO2CH3
+   Float_t alucite[3]={1.01,12.01,15.999};
+   Float_t zlucite[3]={1,6,8};
+   Float_t wlucite[3]={8,5,2};
+   Float_t denlucite=1.16;
+ // PMT glass SiO2
    Float_t aglass[2]={28.0855,15.9994};
    Float_t zglass[2]={14.,8.};
    Float_t wglass[2]={1.,2.};
@@ -303,6 +310,7 @@ void AliSTARTv1::CreateMaterials()
    AliMixture( 6, "Brass    $", abrass, zbrass, denbrass, 2, wbrass);
    
    AliMixture( 7, "Ribber $",aribber,zribber,denribber,-3,wribber);
+   AliMixture( 8, "Lucite$",alucite,zlucite,denlucite,-3,wlucite);
    
    
    AliMedium(1, "START Air$", 2, 0, isxfld, sxmgmx, 10., .1, 1., .003, .003);
@@ -313,6 +321,8 @@ void AliSTARTv1::CreateMaterials()
    AliMedium(8, "Steel$", 0, 0, isxfld, sxmgmx, 1., .001, 1., .001, .001);
    AliMedium(9, "Ribber  $", 7, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
    AliMedium(11, "Brass  $", 6, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+   AliMedium(12, "Lucite$", 8, 1, isxfld, sxmgmx, 10., .01, 1., .003, .003);  
+
    if(fDebug) cout<<ClassName()<<": ++++++++++++++Medium set++++++++++"<<endl;
 
 //  geant3->Gsckov(idtmed[2105], 14, ppckov, absco_quarz, effic_all,rindex_quarz);
@@ -384,10 +394,14 @@ void AliSTARTv1::StepManager()
       vol[1]=copy;
       gMC->CurrentVolOffID(3,copy1);
       vol[0]=copy1;
+
       gMC->TrackPosition(pos);
       hits[0] = pos[0];
       hits[1] = pos[1];
       hits[2] = pos[2];
+      if(pos[2]<0) vol[0]=2;
+      if(pos[2]>=0) vol[0]=1;
+     
       Float_t etot=gMC->Etot();
       hits[4]=etot;
       Int_t iPart= gMC->TrackPid();
