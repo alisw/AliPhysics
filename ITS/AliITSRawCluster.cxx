@@ -7,15 +7,17 @@ ClassImp(AliITSRawCluster)
  
 ClassImp(AliITSRawClusterSDD)
 //--------------------------------------
-AliITSRawClusterSDD::AliITSRawClusterSDD(Int_t wing, Float_t Anode,Float_t Time,Float_t Charge,Float_t PeakAmplitude,Float_t Asigma, Float_t Tsigma,Float_t DriftPath,Float_t AnodeOffset,Int_t Samples) {
+AliITSRawClusterSDD::AliITSRawClusterSDD(Int_t wing, Float_t Anode,Float_t Time,Float_t Charge,Float_t PeakAmplitude,Int_t PeakPosition,Float_t Asigma, Float_t Tsigma,Float_t DriftPath,Float_t AnodeOffset,Int_t Samples) {
   // constructor
   fWing = wing;
   fAnode = Anode;
   fTime = Time;
   fQ = Charge;
   fPeakAmplitude = PeakAmplitude;
+  fPeakPosition = PeakPosition;
   fNanodes = 1;
   fNsamples = Samples;
+  fMultiplicity=fNsamples;
   Int_t sign = 1;
   for(Int_t i=0;i<fWing; i++) sign*=(-1);
   fX = DriftPath*sign/10000.;
@@ -32,7 +34,11 @@ void AliITSRawClusterSDD::Add(AliITSRawClusterSDD* clJ) {
   fQ += clJ->Q();
   fNsamples += (Int_t) (clJ->Samples());
   (fNanodes)++;
-  if(clJ->PeakAmpl() > fPeakAmplitude) fPeakAmplitude = clJ->PeakAmpl();
+  fMultiplicity=fNsamples;
+  if(clJ->PeakAmpl() > fPeakAmplitude) {
+     fPeakAmplitude = clJ->PeakAmpl();
+     fPeakPosition = clJ->PeakPos();
+  }
   
   return;
 } 

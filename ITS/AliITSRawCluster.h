@@ -11,20 +11,13 @@
 
 class AliITSRawCluster : public TObject {
   
-  // this class is subject to changes ! - info used for declustering 
+  // this class is subject to changes !!! - info used for declustering 
   // and  eventual debugging
   
 public:
   
   AliITSRawCluster() {
     fMultiplicity=0;
-    /*
-      for (int k=0;k<100;k++) {
-          fIndexMap[k]=-1;
-      }
-      fNcluster[0]=fNcluster[1]=-1;
-      fChi2=-1; 
-    */
   }
   
   virtual ~AliITSRawCluster() {
@@ -38,9 +31,6 @@ public:
 public:
 
   Int_t       fMultiplicity;        // cluster multiplicity
-  //Int_t       fIndexMap[100];     // indices of digits
-  //Int_t       fNcluster[2];
-  //Float_t     fChi2;
   
   ClassDef(AliITSRawCluster,1)  // AliITSRawCluster class
     };
@@ -55,9 +45,10 @@ public:
   
   AliITSRawClusterSPD() {
     // constructor
-    fX=fZ=fQ;
-    fZStart=fZStop;
-    fNClZ=fNClX=fXStart=fXStop=fXStartf=fXStopf=fZend=fNTracks;
+    fX=fZ=fQ=0;
+    fZStart=fZStop=0;
+    fNClZ=fNClX=fXStart=fXStop=fXStartf=fXStopf=fZend=fNTracks=0;
+    fTracks[0]=fTracks[1]=fTracks[2]=-3;
        }
   
   AliITSRawClusterSPD(Float_t clz,Float_t clx,Float_t Charge,Int_t ClusterSizeZ,Int_t ClusterSizeX,Int_t xstart,Int_t xstop,Int_t xstartf,Int_t xstopf,Float_t zstart,Float_t zstop,Int_t zend);
@@ -172,14 +163,16 @@ public:
   
   AliITSRawClusterSDD() {
     // constructor
-    fX=fZ=fQ;
+    fX=fZ=fQ=0;
     fWing=fNsamples=0;
     fNanodes=1;
     fAnode=fTime=fPeakAmplitude=0;
+    fPeakPosition=-1;
+    fMultiplicity=0;
   }
   
   AliITSRawClusterSDD(Int_t wing, Float_t Anode,Float_t Time,Float_t Charge,
-		      Float_t PeakAmplitude,Float_t Asigma, Float_t Tsigma,Float_t DriftPath, Float_t AnodeOffset,Int_t Samples);
+		      Float_t PeakAmplitude,Int_t PeakPosition,Float_t Asigma, Float_t Tsigma,Float_t DriftPath, Float_t AnodeOffset,Int_t Samples);
   virtual ~AliITSRawClusterSDD() {
     // destructor
   }
@@ -187,6 +180,17 @@ public:
   void Add(AliITSRawClusterSDD* clJ); 
   Bool_t Brother(AliITSRawClusterSDD* cluster,Float_t dz,Float_t dx);
   void PrintInfo();
+  // Setters
+  void SetX(Float_t x) {fX=x;}
+  void SetZ(Float_t z) {fZ=z;}
+  void SetQ(Float_t q) {fQ=q;}
+  void SetAnode(Float_t anode) {fAnode=anode;}
+  void SetTime(Float_t time) {fTime=time;}
+  void SetWing(Int_t wing) {fWing=wing;}
+  void SetNanodes(Int_t na) {fNanodes=na;}
+  void SetNsamples(Int_t ns) {fNsamples=ns;}
+  void SetPeakAmpl(Float_t ampl) {fPeakAmplitude=ampl;}
+  void SetPeakPos(Int_t pos) {fPeakPosition=pos;}
   // Getters
   Float_t X() const {
     //X
@@ -224,8 +228,9 @@ public:
     //PeakAmpl
     return fPeakAmplitude ;
   }
+  Int_t PeakPos() {return fPeakPosition;}
   
-protected:
+public:
   
   Float_t   fX;                 // X of cluster
   Float_t   fZ;                 // Z of cluster
@@ -234,6 +239,7 @@ protected:
   Float_t   fAnode;             // Anode number
   Float_t   fTime;              // Drift Time
   Float_t   fPeakAmplitude;     // Peak Amplitude
+  Int_t     fPeakPosition;      // index of digit corresponding to peak
   Int_t     fNanodes;           // N of anodes used for the cluster
   Int_t     fNsamples;          // N of samples used for the cluster
   
