@@ -7,7 +7,7 @@
 #pragma link C++ class AliPHOS ;
 #pragma link C++ class AliPHOSClusterizer ;
 #pragma link C++ class AliPHOSClusterizerv1 ;
-#pragma link C++ class AliPHOSDigit- ;
+#pragma link C++ class AliPHOSDigit ;
 #pragma link C++ class AliPHOSEmcRecPoint- ;
 #pragma link C++ class AliPHOSGeometry ;
 #pragma link C++ class AliPHOSHit ;
@@ -21,8 +21,8 @@
 #pragma link C++ class AliPHOSTrackSegmentMaker ;
 #pragma link C++ class AliPHOSTrackSegmentMakerv1 ;
 #pragma link C++ class AliPHOSRecParticle ;
-#pragma link C++ class AliPHOSParticleGuesser ;
-#pragma link C++ class AliPHOSParticleGuesserv1 ;
+#pragma link C++ class AliPHOSPID ;
+#pragma link C++ class AliPHOSPIDv1 ;
 #pragma link C++ class AliPHOSAnalyze ;
 
 #endif

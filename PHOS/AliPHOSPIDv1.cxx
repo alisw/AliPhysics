@@ -14,33 +14,52 @@
  **************************************************************************/
 
 //_________________________________________________________________________
-// To guess the type of particle detected in PHOS with or without the help 
-// from other detectors
-//*-- Author : Yves Schutz  SUBATECH 
+// Algorithm class to identify the type of particle from the PHOS TrackSegment alone 
+//*-- Author : Y. Schutz SUBATECH
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
 
- 
-
 // --- Standard library ---
 
-
+#include <iostream>
 
 // --- AliRoot header files ---
 
-#include "AliPHOSParticleGuesser.h"
+#include "AliPHOSPIDv1.h"
+#include "AliPHOSTrackSegment.h"
+#include "AliPHOSRecParticle.h"
 
-ClassImp(AliPHOSParticleGuesser)
+ClassImp( AliPHOSPIDv1) 
+
 
 //____________________________________________________________________________
-AliPHOSParticleGuesser::AliPHOSParticleGuesser()
+ AliPHOSPIDv1::AliPHOSPIDv1() 
 {
   // ctor
+
 }
 
 //____________________________________________________________________________
-AliPHOSParticleGuesser::~AliPHOSParticleGuesser()
-{
+ AliPHOSPIDv1::~AliPHOSPIDv1()
+{ 
   // dtor
 }
+
+
+//____________________________________________________________________________
+void  AliPHOSPIDv1::GetParticleType(TrackSegmentsList * trsl, RecParticlesList * rpl)
+{
+  // main function, does the job
+
+  TIter next(trsl) ; 
+  AliPHOSTrackSegment * tracksegment ; 
+  Int_t index = 0 ; 
+
+  while ( (tracksegment = (AliPHOSTrackSegment *)next()) ) {
+    new( (*rpl)[index] ) AliPHOSRecParticle(tracksegment) ; 
+    index++ ; 
+  }
+    
+}
+

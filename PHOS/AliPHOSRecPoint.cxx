@@ -175,24 +175,25 @@ void AliPHOSRecPoint::GetPrimaries(Int_t & number, Int_t * list)
 {
   AliPHOSDigit * digit ;
   Int_t index ;
-  Int_t maxcounter = 10 ;
+  Int_t maxcounter = 3 ;
   Int_t counter    = 0 ;
   Int_t * tempo    = new Int_t[maxcounter] ;
   
   for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
     digit = (AliPHOSDigit *) fDigitsList[index] ; 
-    Int_t * newprimaryarray = digit->GetPrimary() ;
     Int_t nprimaries = digit->GetNprimary() ;
-    //  cout << " nprimaries = " << nprimaries << endl ;
+    Int_t * newprimaryarray = new Int_t[nprimaries] ;
+    Int_t ii ; 
+    for ( ii = 0 ; ii < nprimaries ; ii++)
+      newprimaryarray[ii] = digit->GetPrimary(ii+1) ; 
     Int_t jndex ;
     for ( jndex = 0 ; jndex < nprimaries ; jndex++ ) { // all primaries in digit
-      if ( counter >= maxcounter ) {
+      if ( counter > maxcounter ) {
 	number = - 1 ;
 	cout << "AliPHOSRecPoint::GetNprimaries ERROR > increase maxcounter " << endl ;
 	break ;
       }
       Int_t newprimary = newprimaryarray[jndex] ;
-      //     cout << "GetPrimaries " << newprimary << endl ;
       Int_t kndex ;
       Bool_t already = kFALSE ;
       for ( kndex = 0 ; kndex < counter ; kndex++ ) { //check if not already stored
@@ -206,13 +207,14 @@ void AliPHOSRecPoint::GetPrimaries(Int_t & number, Int_t * list)
 	  counter++ ;
       } // store it
     } // all primaries in digit
+    delete newprimaryarray ; 
   } // all digits
 
-  counter-- ;
   number = counter ; 
   for ( index = 0 ; index < number ; index ++ )
     list[index] = tempo[index] ;
-
+  
+  delete tempo ; 
 }
 
 //______________________________________________________________________________

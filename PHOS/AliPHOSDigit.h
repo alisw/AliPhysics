@@ -40,12 +40,17 @@ public:
   Int_t   Compare(TObject * obj) ;  
   Int_t   GetNprimary() const { return fNprimary ; }
   Int_t * GetPrimary() const { return fPrimary ; }
+  Int_t   GetPrimary(Int_t index) const ; 
   Bool_t  IsSortable() const { return kTRUE ; }
   void    SetAmp(Int_t Amp) { fAmp=Amp ; } 
-   
+  void    SetPrimary(Int_t index, Int_t value) ; 
+
 private:
 
-  Int_t * fPrimary ;         // Array of primary particles which contribute to the digit 
+  Int_t * fPrimary ;         //! Array of primary particles which contribute to the digit 
+  Int_t fPrimary1 ;          // first primary (because I do not know how to stream *fPrimary) 
+  Int_t fPrimary2 ;          // second primary (because I do not know how to stream *fPrimary) 
+  Int_t fPrimary3 ;          // third primary (because I do not know how to stream *fPrimary) 
   Int_t fNprimary ;          // Number of primaries
   
   ClassDef(AliPHOSDigit,1)   // Digit in PHOS, version 1 

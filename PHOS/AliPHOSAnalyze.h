@@ -24,6 +24,7 @@
 
 #include "AliPHOSv0.h"
 #include "AliPHOSGeometry.h"
+#include "AliPHOSPID.h"
 
 class AliPHOSAnalyze : public TObject {
 
@@ -50,7 +51,7 @@ private:
   Int_t fEvt ;                      // the evt number being processed 
   AliPHOSGeometry * fGeom;          // the PHOS Geometry object
   AliPHOSv0 * fPHOS ;               // the PHOS object from the root file 
-  AliPHOSParticleGuesser * fPag ;   // a particle guesser
+  AliPHOSPID * fPID ;               // a particle identifier
   AliPHOSReconstructioner * fRec ;  // a reconstructioner  
   TFile * fRootFile ;               // the root file that contains the data
   AliPHOSTrackSegmentMaker * fTrs ; // a tracksegmentmaker ;

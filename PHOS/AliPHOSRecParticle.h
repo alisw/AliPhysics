@@ -40,7 +40,7 @@ public:
 private:
 
   AliPHOSTrackSegment * fPHOSTrackSegment ; // pointer to the associated track segment in PHOS  
-  Int_t fType ;                             // guessed particle type
+  Int_t fType ;                             // identified particle type
 
   ClassDef(AliPHOSRecParticle,1)  // Reconstructed Particle, version 1
 

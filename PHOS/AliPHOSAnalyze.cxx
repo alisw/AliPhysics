@@ -41,7 +41,7 @@
 #include "AliPHOSAnalyze.h"
 #include "AliPHOSClusterizerv1.h"
 #include "AliPHOSTrackSegmentMakerv1.h"
-#include "AliPHOSParticleGuesserv1.h"
+#include "AliPHOSPIDv1.h"
 #include "AliPHOSReconstructioner.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSTrackSegment.h"
@@ -90,8 +90,8 @@ AliPHOSAnalyze::~AliPHOSAnalyze()
   delete fClu ; 
   fClu = 0 ;
 
-  delete fPag ; 
-  fPag = 0 ;
+  delete fPID ; 
+  fPID = 0 ;
 
   delete fRec ; 
   fRec = 0 ;
@@ -162,10 +162,10 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 	  fClu->SetCalibrationParameters(0., 0.00000001) ;  
 	  //========== Creates the track segment maker
 	  fTrs = new AliPHOSTrackSegmentMakerv1()  ; 
-	  //========== Creates the particle guesser
-	  fPag = new AliPHOSParticleGuesserv1() ;
+	  //========== Creates the particle identifier
+	  fPID = new AliPHOSPIDv1() ;
 	  //========== Creates the Reconstructioner  
-	  fRec = new AliPHOSReconstructioner(fClu, fTrs, fPag) ; 
+	  fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ; 
 	  //========== Event Number
 	  if ( ( log10(ievent+1) - (Int_t)(log10(ievent+1)) ) == 0. ) cout <<  "AnalyzeManyEvents > " << "Event is " << ievent << endl ;  
 	  //=========== Connects the various Tree's for evt
@@ -249,10 +249,10 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 		    }
 		}
 	    }
-	  // Deleting fClu, fTrs, fPag et fRec
+	  // Deleting fClu, fTrs, fPID et fRec
 	  fClu->Delete();
 	  fTrs->Delete();
-	  fPag->Delete();
+	  fPID->Delete();
 	  fRec->Delete();
 
 	}   // endfor
@@ -338,14 +338,14 @@ Bool_t AliPHOSAnalyze::Init(Int_t evt)
     fTrs = new AliPHOSTrackSegmentMakerv1() ;
     cout <<  "AnalyzeOneEvent > using tack segment maker " << fTrs->GetName() << endl ; 
     
-    //========== Creates the particle guesser
+    //========== Creates the particle identifier
     
-    fPag = new AliPHOSParticleGuesserv1() ;
-    cout <<  "AnalyzeOneEvent > using particle guess " << fPag->GetName() << endl ; 
+    fPID = new AliPHOSPIDv1() ;
+    cout <<  "AnalyzeOneEvent > using particle identifier " << fPID->GetName() << endl ; 
     
     //========== Creates the Reconstructioner  
     
-    fRec = new AliPHOSReconstructioner(fClu, fTrs, fPag) ;     
+    fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ;     
     
     //=========== Connect the various Tree's for evt
     
@@ -572,14 +572,6 @@ void AliPHOSAnalyze::DisplayRecPoints()
 	  fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
 	  if (relid[0] == module)  
 	    {  
-
-Int_t nprim = digit->GetNprimary() ;
- cout << " digit nprim = " << nprim << endl ;
-Int_t ii ;
-Int_t * aprim = digit->GetPrimary() ; 
-for ( ii = 0 ; ii < nprim ; ii++)
-  cout << ii << " prim = " << aprim[ii] << endl ;
-
 	      nDigits++ ;
 	      energy = fClu->Calibrate(digit->GetAmp()) ;
 	      etot += energy ; 
@@ -602,22 +594,16 @@ for ( ii = 0 ; ii < nprim ; ii++)
       AliPHOSEmcRecPoint * emc ;
       while((emc = (AliPHOSEmcRecPoint *)nextemc())) 
 	{
-
 	  Int_t numberofprimaries ;
 	  Int_t * primariesarray = new Int_t[10] ;
 	  emc->GetPrimaries(numberofprimaries, primariesarray) ;
-	  //	  cout << " HELLO " << numberofprimaries << endl ;
-	  //	  Int_t index ;
-	  //for ( index = 0 ; index < numberofprimaries ; index++) 
-	  // cout << index << " " << primariesarray[index] << endl;
-
 	  totalnClusters++ ;
 	  if ( emc->GetPHOSMod() == module )
 	    { 
 	      nClusters++ ; 
 	      energy = emc->GetTotalEnergy() ;   
 	      etot+= energy ;  
-	      emc->Draw("P") ;
+	      emc->Draw("M") ;
 	    }
 	}
       cout << "DrawRecPoints > Found " << totalnClusters << " EMC Clusters in PHOS" << endl ; 

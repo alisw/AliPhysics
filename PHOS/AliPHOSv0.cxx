@@ -1042,8 +1042,8 @@ Int_t AliPHOSv0::Digitize(Float_t Energy){
 //___________________________________________________________________________
 void AliPHOSv0::FinishEvent()
 {
-   cout << "//_____________________________________________________" << endl ;
-   cout << "<I> AliPHOSv0::FinishEvent() -- Starting digitalization" << endl ;
+//    cout << "//_____________________________________________________" << endl ;
+//    cout << "<I> AliPHOSv0::FinishEvent() -- Starting digitalization" << endl ;
   Int_t i ;
   Int_t relid[4];
   Int_t j ; 
@@ -1072,16 +1072,10 @@ void AliPHOSv0::FinishEvent()
   } 
   
   // Noise induced by the PIN diode of the PbWO crystals
+
   Float_t energyandnoise ;
   for ( i = 0 ; i < fNdigits ; i++ ) {
     newdigit =  (AliPHOSDigit * ) fDigits->At(i) ;
-
-//     int nprim = newdigit->GetNprimary() ; 
-//     cout << " finishevent " << nprim << endl ; 
-//     int * prim = newdigit->GetPrimary() ; 
-//     for (int ii = 0 ; ii < nprim ; ii++)
-//       cout << ii << " prim = " << prim[ii] << endl ;
-
     fGeom->AbsToRelNumbering(newdigit->GetId(), relid) ;
     if (relid[1]==0){   // Digits belong to EMC (PbW0_4 crystals)
       energyandnoise = newdigit->GetAmp() + Digitize(gRandom->Gaus(0., fPINElectronicNoise)) ;
@@ -1091,8 +1085,6 @@ void AliPHOSv0::FinishEvent()
     }
   }
 
-
-  // Reset the array of all the "accumulated hits" of this event.
   fNTmpHits = 0 ;
   fTmpHits->Delete();
 }
@@ -1131,7 +1123,7 @@ void AliPHOSv0::MakeBranch(Option_t* opt)
   
   if (fDigits && gAlice->TreeD() && cd) {
     gAlice->TreeD()->Branch(branchname,&fDigits, fBufferSize);
-    printf("* AliPHOS::MakeBranch * Making Branch %s for digits\n",branchname);
+    //    printf("* AliPHOS::MakeBranch * Making Branch %s for digits\n",branchname);
   }
 }
 

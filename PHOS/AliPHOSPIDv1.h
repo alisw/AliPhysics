@@ -1,12 +1,12 @@
-#ifndef ALIPHOSPARTICLEGUESSERV1_H
-#define ALIPHOSPARTICLEGUESSERV1_H
+#ifndef ALIPHOSPIDV1_H
+#define ALIPHOSPIDV1_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
 
 ///////////////////////////////////////////////////
-//  Particle Guesser    class for PHOS           //
+//  Particle Identifier   class for PHOS         //
 //  Version SUBATECH                             //
 //  Author Yves Schutz                           //
 //     comment: guess the type of particle       //  
@@ -19,19 +19,19 @@
 
 // --- AliRoot header files ---
 
-#include "AliPHOSParticleGuesser.h"
+#include "AliPHOSPID.h"
 
-class  AliPHOSParticleGuesserv1 : public AliPHOSParticleGuesser {
+class  AliPHOSPIDv1 : public AliPHOSPID {
 
 public:
 
-  AliPHOSParticleGuesserv1() ;                     
-  virtual ~ AliPHOSParticleGuesserv1() ; // dtor
+  AliPHOSPIDv1() ;                     
+  virtual ~ AliPHOSPIDv1() ; // dtor
 
-  void    GuessParticleType(TrackSegmentsList * trsl, RecParticlesList * rpl ) ; // does the job
+  void    GetParticleType(TrackSegmentsList * trsl, RecParticlesList * rpl ) ; // does the job
 
-  ClassDef( AliPHOSParticleGuesserv1,1)  // particle guesser implementation , version 1
+  ClassDef( AliPHOSPIDv1,1)  // particle identifier implementation , version 1
 
 };
 
-#endif // AliPHOSPARTICLEGUESSERV1_H
+#endif // AliPHOSPIDV1_H

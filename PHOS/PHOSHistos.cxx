@@ -43,7 +43,7 @@
 #include "AliPHOSReconstructioner.h"
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSTrackSegmentMakerv1.h"
-#include "AliPHOSParticleGuesserv1.h"
+#include "AliPHOSPIDv1.h"
 #include "PHOSHistos.h"
 
 
@@ -58,9 +58,9 @@ void PHOSHistos (Text_t* infile, Int_t nevent, Int_t Module)
   AliPHOSGeometry * Geom = AliPHOSGeometry::GetInstance(PHOS->GetGeometry()->GetName(),PHOS->GetGeometry()->GetTitle());
 //========== Creates the track segment maker
   AliPHOSTrackSegmentMakerv1 * tracksegmentmaker = new AliPHOSTrackSegmentMakerv1() ;
-  //========== Creates the particle guesser
-  AliPHOSParticleGuesserv1 * particleguesser = new AliPHOSParticleGuesserv1 ;
-  cout <<  "AnalyzeOneEvent > using particle guess " << particleguesser->GetName() << endl ; 
+  //========== Creates the particle identifier
+  AliPHOSPIDv1 * particleidentifier = new AliPHOSPIDv1 ;
+  cout <<  "AnalyzeOneEvent > using particle guess " << particleidentifier->GetName() << endl ; 
     
   TH1F * hEmcDigit       = new TH1F("hEmcDigit","hEmcDigit",1000,0.,5.);
   TH1F * hVetoDigit      = new TH1F("hVetoDigit","hVetoDigit",1000,0.,3.e-5);
@@ -86,7 +86,7 @@ void PHOSHistos (Text_t* infile, Int_t nevent, Int_t Module)
     clusterizer->SetCalibrationParameters(0., 0.00000001) ;
 
   //========== Creates the Reconstructioner  
-    AliPHOSReconstructioner * Reconstructioner = new AliPHOSReconstructioner(clusterizer, tracksegmentmaker, particleguesser) ;
+    AliPHOSReconstructioner * Reconstructioner = new AliPHOSReconstructioner(clusterizer, tracksegmentmaker, particleidentifier) ;
      
     cout << "Event " << ievent <<endl;
 

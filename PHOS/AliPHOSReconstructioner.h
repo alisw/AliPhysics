@@ -10,7 +10,8 @@
 //                                            //
 //  Author Gines MARTINEZ     SUBATECH        //
 //                                            //
-//  january 2000: added Particle guesser (YS) //
+//  january 2000:                             //
+//             added Particle identifier (YS) //
 //                                            //  
 //                                            //
 ////////////////////////////////////////////////
@@ -20,7 +21,7 @@
 #include "TObject.h"
 #include "AliPHOSClusterizer.h"
 #include "AliPHOSTrackSegmentMaker.h"
-#include "AliPHOSParticleGuesser.h"
+#include "AliPHOSPID.h"
 #include "TClonesArray.h" 
 
 // --- Standard library ---
@@ -33,12 +34,12 @@ public:
 
   AliPHOSReconstructioner(); //ctor            
   AliPHOSReconstructioner(AliPHOSClusterizer * Clusterizer, AliPHOSTrackSegmentMaker * Tracker, 
-			  AliPHOSParticleGuesser * Guesser); //ctor            
+			  AliPHOSPID * Identifier); //ctor            
   ~AliPHOSReconstructioner(); // dtor
 
   AliPHOSClusterizer * GetClusterizer() { return fClusterizer ; }
   void Init(AliPHOSClusterizer * Clusterizer, AliPHOSTrackSegmentMaker * Tracker, 
-			  AliPHOSParticleGuesser * Guesser) ;  
+			  AliPHOSPID * Identifier) ;  
   void Make(TClonesArray * DL, RecPointsList * emccl, RecPointsList * ppsdl, 
 	    TrackSegmentsList * trsl, RecParticlesList * rpl) ; // does the job
 
@@ -47,7 +48,7 @@ private:
   
   AliPHOSClusterizer * fClusterizer ;             // Method for clusterization 
   AliPHOSTrackSegmentMaker * fTrackSegmentMaker ; // Method for track segments finding
-  AliPHOSParticleGuesser * fParticleGuesser ;     // Method for guessing the type of particle
+  AliPHOSPID * fPID ;                             // Method for identifying the type of particle
  
   ClassDef(AliPHOSReconstructioner,1)  // Reconstruction interface , version 1
 

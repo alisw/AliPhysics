@@ -35,6 +35,10 @@ ClassImp(AliPHOSDigit)
 //____________________________________________________________________________
   AliPHOSDigit::AliPHOSDigit() : fPrimary(0)
 {
+  fNprimary = 0 ;  
+  Int_t index ; 
+  for (index = 1 ; index <= 3 ; index++)
+    SetPrimary(index, 0) ; 
 }
 
 //____________________________________________________________________________
@@ -45,6 +49,8 @@ AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t DigEnergy)
   fPrimary    = new Int_t[1] ; 
   fPrimary[0] = primary ;
   fNprimary   = 1 ; 
+  SetPrimary(1, primary) ; 
+
 }
 
 //____________________________________________________________________________
@@ -56,14 +62,18 @@ AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit)
   fPrimary  = new Int_t[fNprimary] ;
   Int_t * primary = digit.GetPrimary() ;
   Int_t  index ;
-  for ( index = 0 ; index < fNprimary ; index++ )
+  for ( index = 0 ; index < fNprimary ; index++ ) {
     fPrimary[index] = primary[index] ;
+    SetPrimary( index+1, digit.GetPrimary(index+1) ) ; 
+  }
+
 }
 
 //____________________________________________________________________________
 AliPHOSDigit::~AliPHOSDigit()
 {
-  delete fPrimary ; 
+  if ( fPrimary != 0 ) 
+    delete fPrimary ; 
 }
 
 //____________________________________________________________________________
@@ -85,6 +95,31 @@ Int_t AliPHOSDigit::Compare(TObject * obj)
   return rv ; 
 
 }
+
+//____________________________________________________________________________
+Int_t AliPHOSDigit::GetPrimary(Int_t index) const
+{
+  Int_t rv = -1 ; 
+  if ( index > 3 )
+    cout << "AliPHOSDigit  ERROR > only 3 primaries allowed" << endl ; 
+  else {
+    switch (index) {  
+    case 1 :
+      rv = fPrimary1 ; 
+      break ; 
+    case 2 :
+      rv = fPrimary2 ; 
+      break ; 
+    case 3 :
+      rv = fPrimary3 ; 
+      break ; 
+    }
+  } 
+
+  return rv ; 
+
+}
+
 //____________________________________________________________________________
 Bool_t AliPHOSDigit::operator==(AliPHOSDigit const & digit) const 
 {
@@ -121,7 +156,28 @@ AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit)
     fPrimary[index] = digit.fPrimary[jndex] ; 
     jndex++ ; 
   }
-      
+
+  // Here comes something crummy ... but I do not know how to stream pointers
+  // because AliPHOSDigit is in a TCLonesArray
+
+    if ( fNprimary > 3 )
+      cout << "AliPHOSDigit + operator  ERROR > too many primaries, modify AliPHOSDigit" << endl ; 
+    else {
+      switch (fNprimary) {  
+      case 1 :
+	SetPrimary(1, fPrimary[0]) ; 
+	break ; 
+      case 2 :
+	SetPrimary(2, fPrimary[1]) ; 
+	break ; 
+      case 3:
+	SetPrimary(3, fPrimary[2]) ; 
+	break ; 
+      }
+    }
+
+ // end of crummy stuff      
+
   return *this ;
 }
 
@@ -133,23 +189,19 @@ ostream& operator << ( ostream& out , const AliPHOSDigit & digit)
   return out ;
 }
 
-//______________________________________________________________________________
-void AliPHOSDigit::Streamer(TBuffer &R__b)
+//____________________________________________________________________________
+void AliPHOSDigit::SetPrimary(Int_t index, Int_t value) 
 {
-  assert(0==1) ; 
-   // Stream an object of class AliPHOSDigit.
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      AliDigitNew::Streamer(R__b);
-      R__b.ReadArray(fPrimary);
-      R__b >> fNprimary;
-   } else {
-      R__b.WriteVersion(AliPHOSDigit::IsA());
-      AliDigitNew::Streamer(R__b);
-      R__b.WriteArray(fPrimary, fNprimary);
-      R__b << fNprimary;
+  switch (index) {
+  case 1 : 
+    fPrimary1 = value ; 
+    break ; 
+  case 2 : 
+    fPrimary2 = value ; 
+    break ; 
+  case 3 :
+    fPrimary3 = value ; 
+    break ; 
+  }
 
-   }
-}
-
-   
+ }

@@ -1,14 +1,14 @@
-#ifndef ALIPHOSPARTICLEGUESSER_H
-#define ALIPHOSPARTICLEGUESSER_H
+#ifndef ALIPHOSPID_H
+#define ALIPHOSPID_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
                             
 /* $Id$ */
 
 ////////////////////////////////////////////////
-//  Algorithme class for the guess of         //
+//  Algorithme class for the identification of//
 //          particles detected in PHOS        //
-//  interface class                           //
+//  base  class                               //
 //  Version SUBATECH                          //
 //  Author Yves Schutz     SUBATECH           //
 //                                            //  
@@ -29,17 +29,17 @@
 
 typedef TClonesArray RecParticlesList ; 
 
-class AliPHOSParticleGuesser : public TObject {
+class AliPHOSPID : public TObject {
 
 public:
 
-  AliPHOSParticleGuesser() ;          // ctor            
-  virtual ~AliPHOSParticleGuesser() ; // dtor
+  AliPHOSPID() ;          // ctor            
+  virtual ~AliPHOSPID() ; // dtor
 
   virtual void GuessParticleType(TrackSegmentsList * trsl, RecParticlesList * rpl) {} ; 
 
-  ClassDef(AliPHOSParticleGuesser,1)  // Particle Guesser interface, version 1
+  ClassDef(AliPHOSPID,1)  // Particle Guesser interface, version 1
 
 } ;
 
-#endif // ALIPHOSPARTICLEGUESSER_H
+#endif // ALIPHOSPID_H
