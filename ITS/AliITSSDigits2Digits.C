@@ -33,8 +33,7 @@ void AliITSSD2D(TString inFile, TString outFile){
   }
   delete manager;
   if(file){
-    file->Close();
-    delete file;
+    file->Write();
   }
   if(file2){
     file2->Close();

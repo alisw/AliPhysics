@@ -29,6 +29,7 @@ TFile * AccessFile(TString FileName, TString acctype){
 
   // Function used to open the input file and fetch the AliRun object
 
+  if (gAlice) {delete gAlice; gAlice = 0;}
   TFile *retfil = 0;
   TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(FileName);
   if (file) {file->Close(); delete file; file = 0;}
@@ -45,7 +46,7 @@ TFile * AccessFile(TString FileName, TString acctype){
   } 
 
   // Get AliRun object from file or return if not on file
-  if (gAlice) {delete gAlice; gAlice = 0;}
+  //  if (gAlice) {delete gAlice; gAlice = 0;}  
   gAlice = (AliRun*)file->Get("gAlice");
   if (!gAlice) {
 	cerr << "AliRun object not found on file"<< endl;
