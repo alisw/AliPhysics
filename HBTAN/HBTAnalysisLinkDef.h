@@ -44,6 +44,10 @@
 
 #pragma link C++ class AliHBTAvSeparCorrelFctn+;
 
+#pragma link C++ class AliHBTNonId3DCorrFctn+;          // zch
+#pragma link C++ class AliHBTWeightNonId3DCorrFctn+;    // zch
+#pragma link C++ class AliHBTWeightNonId3DTheorCorrFctn+;    // zch
+
 #pragma link C++ class AliHBTInvMassCorrelFctn+;
 #pragma link C++ class AliHBTCorrFitFctn+;
 
