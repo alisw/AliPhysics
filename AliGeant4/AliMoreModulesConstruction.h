@@ -16,6 +16,7 @@
 
 class AliSingleModuleConstruction;
 class AliSDManager;
+class AliFiles;
 
 class AliMoreModulesConstruction
 {  
@@ -34,7 +35,7 @@ class AliMoreModulesConstruction
     // methods
     void AddModule(G4String moduleName, G4int version, 
                    AliModuleType moduleType);
-    void Configure();
+    void Configure(const AliFiles& files);
     void Construct();
     
     // get methods

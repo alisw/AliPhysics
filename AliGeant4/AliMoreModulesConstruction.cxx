@@ -8,6 +8,7 @@
 #include "AliSDManager.h"
 #include "AliModule.h"
 #include "AliGlobals.h"
+#include "AliFiles.h"
 
 #include "TG4GeometryManager.h"
 
@@ -145,7 +146,7 @@ void AliMoreModulesConstruction::AddModule(G4String moduleName, G4int version,
   fModuleConstructionVector.push_back(moduleConstruction);
 }  
   					   
-void AliMoreModulesConstruction::Configure()
+void AliMoreModulesConstruction::Configure(const AliFiles& files)
 { 
 // Executes the detectors setup Root macros
 // (extracted from AliRoot Config.C) and
@@ -161,7 +162,7 @@ void AliMoreModulesConstruction::Configure()
   }
   else 
     for (G4int i=0; i<nofModules; i++) 
-      fModuleConstructionVector[i]->Configure();
+      fModuleConstructionVector[i]->Configure(files);
 }      
 
 void AliMoreModulesConstruction::Construct()
@@ -185,7 +186,7 @@ void AliMoreModulesConstruction::Construct()
     G4int i;
     for (i=0; i<nofModules; i++) {
 
-      // fModuleConstructionVector[i]->Configure();
+      // fModuleConstructionVector[i]->Configure(files);
     
       // register module name in the name map
       AliModule* module = fModuleConstructionVector[i]->GetAliModule();
