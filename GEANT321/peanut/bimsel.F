@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.2  2002/05/13 12:40:58  hristov
+* Dummy subroutines to avoid files with no code in
+*
 * Revision 1.1.1.1  1999/05/18 15:55:22  fca
 * AliRoot sources
 *
@@ -286,13 +289,27 @@
             BIMPCT = 0.5D+00 * ( RADTOT + BIMPTR - RADPRO )
             IF ( BIMPTR .GE. RADTOT ) THEN
                X1 = BIMPTR - RADTOT
-               ANGRED = ACOS ( 2.D+00 * X1 / ( RADPRO + X1 ) ) / PI
+               DUMMY = 2.D+00 * X1 / ( RADPRO + X1 )
+               IF (ABS(DUMMY).LE.1.0) THEN
+                  ANGRED = ACOS ( DUMMY ) / PI
+               ELSE
+                  PRINT *,"Warning in GEANT321/peanut/bimsel.F "
+                  PRINT *,"Illegal ACOS argument ",DUMMY
+                  ANGRED = SIGN(1.0, DUMMY )
+               ENDIF
                X1 = X1 / ( R0PROT * RPRONU * RADCO2 )
                DSKRED = ( 0.5D+00 * X1 * X1 + X1 + 1.D+00 ) * EXP (-X1)
      &                * ANGRED
             ELSE
                X1 = RADPRO + BIMPTR - RADTOT
-               ANGRED = ACOS ( 2.D+00 * X1 / ( RADPRO + X1 ) ) / PI
+               DUMMY = 2.D+00 * X1 / ( RADPRO + X1 )
+               IF (ABS(DUMMY).LE.1.0) THEN
+                  ANGRED = ACOS ( DUMMY ) / PI
+               ELSE
+                  PRINT *,"Warning in GEANT321/peanut/bimsel.F "
+                  PRINT *,"Illegal ACOS argument ",DUMMY
+                  ANGRED = SIGN(1.0, DUMMY )
+               ENDIF
                X1 = X1 / ( R0PROT * RPRONU * RADCO2 )
                DSKRED = 1.D+00 - ( 0.5D+00 * X1 * X1 + X1 + 1.D+00 )
      &                * EXP (-X1) * ANGRED
