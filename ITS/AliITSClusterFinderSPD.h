@@ -40,6 +40,7 @@ public:
   virtual void FindRawClusters();
   void  Find1DClusters();
   void  GroupClusters();
+  void  TracksInCluster();
   void  SelectClusters() {
     // selects clusters
   }

@@ -57,12 +57,10 @@ public:
     // constructor
     fX=fZ=fQ;
     fZStart=fZStop;
-    fNClZ=fNClX=fXStart=fXStop=fXStartf=fXStopf=fZend;
+    fNClZ=fNClX=fXStart=fXStop=fXStartf=fXStopf=fZend=fNTracks;
        }
   
-  AliITSRawClusterSPD(Float_t clz,Float_t clx,Float_t Charge,
-		      Int_t ClusterSizeZ,Int_t ClusterSizeX,Int_t xstart,Int_t xstop,
-		      Int_t xstartf,Int_t xstopf,Float_t zstart,Float_t zstop,Int_t zend);
+  AliITSRawClusterSPD(Float_t clz,Float_t clx,Float_t Charge,Int_t ClusterSizeZ,Int_t ClusterSizeX,Int_t xstart,Int_t xstop,Int_t xstartf,Int_t xstopf,Float_t zstart,Float_t zstop,Int_t zend);
   virtual ~AliITSRawClusterSPD() {
     // destructor
   }
@@ -83,11 +81,13 @@ public:
     // X
     return fX ;
   }
-  Float_t NclZ() const {
+  //  Float_t NclZ() const {
+  Int_t NclZ() const {
     // NclZ
     return fNClZ ;
   }
-  Float_t NclX() const {
+  //  Float_t NclX() const {
+  Int_t NclX() const {
     // NclX
     return fNClX ;
   }
@@ -119,6 +119,30 @@ public:
     //Zend
     return fZend;
   }
+  Int_t   NTracks() const {
+    //NTracks
+    return fNTracks;
+  }
+
+  void GetTracks(Int_t &track0,Int_t &track1,Int_t &track2) const {
+	       // returns tracks created a cluster
+
+	      track0=fTracks[0];
+	      track1=fTracks[1];
+	      track2=fTracks[2];
+	      return;
+  };
+ 
+  void   SetTracks(Int_t track0, Int_t track1, Int_t track2) {
+    // set tracks in cluster (not more than three ones)
+    fTracks[0]=track0;
+    fTracks[1]=track1;
+    fTracks[2]=track2;
+  }
+  void   SetNTracks(Int_t ntracks) {
+    // set ntracks
+    fNTracks=ntracks;
+  }
   
 protected:
   
@@ -134,6 +158,8 @@ protected:
   Float_t   fZStart;      // number of first pixel in cluster
   Float_t   fZStop;       // number of last pixel in cluster
   Int_t     fZend;        // Zend
+  Int_t     fNTracks;     // number of tracks created a cluster
+  Int_t     fTracks[3];   // tracks created a cluster
   
   ClassDef(AliITSRawClusterSPD,1)  // AliITSRawCluster class for SPD
 

@@ -92,8 +92,9 @@ AliITSClusterFinderSPD&
 void AliITSClusterFinderSPD::SetMap()
 {
   // set map
+
   if(!fMap) fMap=new AliITSMapA1(fSegmentation,fDigits);
-  
+
 }
 
 //_____________________________________________________________________________
@@ -111,6 +112,7 @@ void AliITSClusterFinderSPD::Find1DClusters()
   
   // read in digits -> do not apply threshold 
   // signal in fired pixels is always 1
+
   fMap->FillMap();
   
   Int_t nofFoundClusters = 0;
@@ -263,14 +265,104 @@ void  AliITSClusterFinderSPD::GroupClusters()
     label[i] = 1;
   } // I clusters
   fClusters->Compress();
-  //Int_t totalNofClusters = fClusters->GetEntriesFast();
-  //cout << " Nomber of clusters at the group end ="<< totalNofClusters<<endl;
+  //  Int_t totalNofClusters = fClusters->GetEntriesFast();
+  //  cout << " Nomber of clusters at the group end ="<< totalNofClusters<<endl;
   
   delete [] label;
 
   return;
   
   
+}
+//_____________________________________________________________________________
+
+void AliITSClusterFinderSPD::TracksInCluster()
+{
+  
+  // Find tracks creating one cluster
+
+  // get number of clusters for this module
+  Int_t nofClusters = fClusters->GetEntriesFast();
+  nofClusters -= fNclusters;
+
+  Int_t i, ix, iz, jx, jz, xstart, xstop, zstart, zstop, nclx, nclz;
+  //  Int_t signal, track0, track1, track2;
+  Int_t trmax = 100;
+  Int_t cltracks[trmax], itr, tracki, ii, is, js, ie, ntr, tr0, tr1, tr2;
+
+  for(i=0; i<nofClusters; i++) { 
+    ii = 0;
+    memset(cltracks,-1,sizeof(int)*trmax);
+    tr0=tr1=tr2=-1;
+
+    AliITSRawClusterSPD *clusterI = (AliITSRawClusterSPD*) fClusters->At(i);
+
+    nclx = clusterI->NclX();
+    nclz = clusterI->NclZ();
+    xstart = clusterI->XStartf();
+    xstop = clusterI->XStopf();
+    zstart = clusterI->Zend()-nclz+1;
+    zstop = clusterI->Zend();
+
+    Int_t ind; 
+
+     for(iz=0; iz<nclz; iz++) { 
+         jz = zstart + iz;
+       for(ix=0; ix<nclx; ix++) { 
+	 jx = xstart + ix;
+	 ind = fMap->GetHitIndex(jz,jx);
+	 if(ind == 0 && iz >= 0 && ix > 0) {
+          continue;
+         }
+	 if(ind == 0 && iz > 0 && ix >= 0) {
+          continue;
+         }
+	 if(ind == 0 && iz == 0 && ix == 0 && i > 0) {
+          continue;
+         }
+
+        AliITSdigitSPD *dig = (AliITSdigitSPD*)fMap->GetHit(jz,jx);
+	/*
+         signal=dig->fSignal;
+         track0=dig->fTracks[0];
+         track1=dig->fTracks[1];
+         track2=dig->fTracks[2];
+	*/
+          for(itr=0; itr<3; itr++) { 
+	    tracki = dig->fTracks[itr];
+            if(tracki >= 0) {
+	      ii += 1;
+             cltracks[ii-1] = tracki;
+            }
+	  }
+       } // ix pixel
+     }  // iz pixel
+ 
+     for(is=0; is<trmax; is++) { 
+         if(cltracks[is]<0) continue;
+       for(js=is+1; js<trmax; js++) { 
+         if(cltracks[js]<0) continue;
+         if(cltracks[js]==cltracks[is]) cltracks[js]=-5;
+       }
+     }
+
+     ntr = 0;
+     for(ie=0; ie<trmax; ie++) { 
+       if(cltracks[ie] >= 0) {
+        ntr=ntr+1;
+        if(ntr==1) tr0=cltracks[ie];
+        if(ntr==2) tr1=cltracks[ie];
+        if(ntr==3) tr2=cltracks[ie];
+       }
+     }
+     // if delta ray only
+     if(ntr == 0) ntr = 1;
+
+     clusterI->SetNTracks(ntr);
+     clusterI->SetTracks(tr0,tr1,tr2);
+
+  } // I cluster
+
 }
 //_____________________________________________________________________________
 
@@ -282,8 +374,6 @@ void AliITSClusterFinderSPD::GetRecPoints()
   // get number of clusters for this module
   Int_t nofClusters = fClusters->GetEntriesFast();
   nofClusters -= fNclusters;
-
-  
   const Float_t kconv = 1.0e-4;
   const Float_t kRMSx = 12.0*kconv; // microns -> cm ITS TDR Table 1.3
   const Float_t kRMSz = 70.0*kconv; // microns -> cm ITS TDR Table 1.3
@@ -291,21 +381,24 @@ void AliITSClusterFinderSPD::GetRecPoints()
   Float_t spdLength = fSegmentation->Dz();
   Float_t spdWidth = fSegmentation->Dx();
 
-  Int_t i, ix, iz;
+  Int_t i;
+  Int_t track0, track1, track2;
+
   for(i=0; i<nofClusters; i++) { 
+
     AliITSRawClusterSPD *clusterI = (AliITSRawClusterSPD*) fClusters->At(i);
-    fSegmentation->GetPadIxz(clusterI->X(),clusterI->Z(),ix,iz);
-    AliITSdigitSPD *dig = (AliITSdigitSPD*)fMap->GetHit(iz-1,ix-1);
+    clusterI->GetTracks(track0, track1, track2); 
     AliITSRecPoint rnew;
+
     rnew.SetX((clusterI->X() - spdWidth/2)*kconv);
     rnew.SetZ((clusterI->Z() - spdLength/2)*kconv);
     rnew.SetQ(1.);
     rnew.SetdEdX(0.);
     rnew.SetSigmaX2(kRMSx*kRMSx);
     rnew.SetSigmaZ2(kRMSz*kRMSz);
-    rnew.fTracks[0]=dig->fTracks[0];
-    rnew.fTracks[1]=dig->fTracks[1];
-    rnew.fTracks[2]=dig->fTracks[2];
+    rnew.fTracks[0]=track0;
+    rnew.fTracks[1]=track1;
+    rnew.fTracks[2]=track2;
     iTS->AddRecPoint(rnew);
   } // I clusters
 
@@ -319,6 +412,7 @@ void AliITSClusterFinderSPD::FindRawClusters()
   // find raw clusters
   Find1DClusters();
   GroupClusters();
+  TracksInCluster();
   GetRecPoints();
 
 }
