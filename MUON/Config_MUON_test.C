@@ -104,6 +104,16 @@ void Config(char directory[100]="", char option[6]="box")
     gener->SetOrigin(30,30,1200);//vertex position
     gener->SetPart(13);          //GEANT particle type  13 is muons
   }
+  if (!strcmp(option,"scan")) {
+    AliGenScan *gener = new AliGenScan(-1);
+    gener->SetMomentumRange(10,10);
+    gener->SetPhiRange(0, 0);
+    gener->SetThetaRange(-180, -180);
+    //vertex position
+    //gener->SetSigma(1,1,0);           //Sigma in (X,Y,Z) (cm) on IP position
+    gener->SetPart(kRootino); 
+    gener->SetRange(100, -300., 300., 100, -300., 300., 1, 2000, 2000);
+  }  
   if (!strcmp(option,"param")) {
     //*******************************************************
     // Example for J/psi or Upsilon Production from  Parameterisation *
@@ -145,6 +155,15 @@ void Config(char directory[100]="", char option[6]="box")
   
   // New MUONv1 version (geometry defined via builders)
   AliMUON *MUON = new AliMUONv1("MUON", "default");
+  
+  //MUON->SetAlign(true);
+         // If align = true, the detection elements transformations
+	 // are taken from the input files and not from the code
+  
+  //MUON->SetDebug(2);
+        // To check setting of transformations from input files
+	// set align = true, debug level = 2 and run with scan generator
+  
   //MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilder(MUON));
   MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilderV2(MUON));
   MUON->AddGeometryBuilder(new AliMUONSt2GeometryBuilder(MUON));
