@@ -18,14 +18,10 @@
 //_________________________________________________________________________
 // Implementation version v1 of PHOS Manager class 
 //---
-// Layout EMC + PPSD has name GPS2:
-// Produces cumulated hits
 //---
 // Layout EMC + CPV  has name IHEP:
 // Produces hits for CPV, cumulated hits
 //---
-// Layout EMC + CPV + PPSD has name GPS:
-// Produces hits for CPV, cumulated hits
 //---
 //*-- Author: Yves Schutz (SUBATECH)
 
@@ -284,8 +280,7 @@ void AliPHOSv1::StepManager(void)
   TLorentzVector pos      ;           // Lorentz vector of the track current position
   Int_t          copy     ;
 
-  Int_t tracknumber =  gAlice->GetCurrentTrackNumber() ; 
-  Int_t primary     =  gAlice->GetPrimary( gAlice->GetCurrentTrackNumber() ); 
+  Int_t tracknumber =  gAlice->CurrentTrack() ; 
   TString name      =  GetGeometry()->GetName() ; 
 
   Int_t moduleNumber ;
@@ -369,8 +364,7 @@ void AliPHOSv1::StepManager(void)
 
       xyzte[3] = gMC->TrackTime() ;
       xyzte[4] = cpvDigit->GetQpad() ;                          // amplitude in a pad
-      primary = -1;                                             // No need in primary for CPV
-      AddHit(fIshunt, primary, tracknumber, absid, xyzte);
+      AddHit(fIshunt, -1, tracknumber, absid, xyzte);      // -1: No need in primary for CPV
       
       if (cpvDigit->GetQpad() > 0.02) {
 	xmean += cpvDigit->GetQpad() * (cpvDigit->GetXpad() + 0.5);
@@ -404,10 +398,9 @@ void AliPHOSv1::StepManager(void)
     if ( gMC->IsTrackEntering() ){
       Float_t xyzd[3] ;
       gMC -> Gmtod (xyzte, xyzd, 1);    // transform coordinate from master to daughter system    
-      if (xyzd[1] >  GetGeometry()->GetCrystalSize(1)/2-0.002 ||
-	  xyzd[1] < -GetGeometry()->GetCrystalSize(1)/2+0.002) {
+      if (xyzd[1] < -GetGeometry()->GetCrystalSize(1)/2.+0.001){   //Entered close to forward surface  
 	TParticle * part = 0 ; 
-	Int_t parent = gAlice->GetCurrentTrackNumber() ; 
+	Int_t parent = gAlice->CurrentTrack() ; 
 	while ( parent != -1 ) {
 	  part = gAlice->Particle(parent) ; 
 	  part->SetBit(kKeepBit);
@@ -443,6 +436,23 @@ void AliPHOSv1::StepManager(void)
       //Calculates de energy deposited in the crystal  
       xyzte[4] = fAPDFactor * lightYield  ;
       
+      Int_t primary =-1 ;
+      if(fIshunt == 1)
+	 primary  =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
+      else if(fIshunt == 2){
+         primary = gAlice->CurrentTrack() ;
+         TParticle * part = gAlice->Particle(primary) ;
+         while ( !part->TestBit(kKeepBit) ) {
+           primary = part->GetFirstMother() ;
+           if(primary == -1) break ; //there is a possibility that particle passed e.g. thermal isulator and hits a side 
+                                     //surface of the crystal. In this case it may have no primary at all. 
+                                     //We can not easily separate this case from the case when this is part of the shower, 
+                                     //developed in the neighboring crystal.
+           part = gAlice->Particle(primary) ;
+         }
+      }
+
+	 
       // add current hit to the hit list
       // Info("StepManager","%d %d", primary, tracknumber) ; 
       AddHit(fIshunt, primary,tracknumber, absid, xyzte);
