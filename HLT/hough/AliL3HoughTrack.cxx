@@ -46,6 +46,7 @@ void AliL3HoughTrack::Set(AliL3Track *track)
   SetTrackParameters(tpt->GetKappa(),tpt->GetPhi0(),tpt->GetWeight());
   SetEtaIndex(tpt->GetEtaIndex());
   SetEta(tpt->GetEta());
+  SetTgl(tpt->GetTgl());
   SetPsi(tpt->GetPsi());
   SetCenterX(tpt->GetCenterX());
   SetCenterY(tpt->GetCenterY());
