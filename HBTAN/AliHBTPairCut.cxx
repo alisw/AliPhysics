@@ -417,7 +417,6 @@ Bool_t AliHBTPixelSeparationCut::Pass(AliHBTPair* pair) const
   //fMin encodes treshold valaue of distance in r-phi
   if (drphi > fMin) return kFALSE;
   
-  Info("Pass","Rejected !!!!!");
   return kTRUE;//they are too close, rejected
 }
 /******************************************************************/
