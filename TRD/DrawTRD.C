@@ -2,13 +2,30 @@ void DrawTRD()
 {
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
-   AliTRD *TRD = gAlice->GetModule("TRD");
-   if (TRD->Hole())
-     gROOT->LoadMacro("ViewTRDhole.C");
-   gInterpreter->ProcessLine("ViewTRDhole()");
-   else
-     gROOT->LoadMacro("ViewTRDfull.C");
-   gInterpreter->ProcessLine("ViewTRDfull()");
+   AliTRD *TRD = (AliTRD *) gAlice->GetModule("TRD");
+   AliTRDgeometry *Geo = TRD->GetGeometry(); 
+   gROOT->LoadMacro("ViewTRD.C");
+   if (Geo->IsVersion() == 0) {
+     gInterpreter->ProcessLine("ViewTRDhole()");
+   }
+   else {
+     if (Geo->GetPHOShole()) {
+       if (Geo->GetRICHhole()) {
+         gInterpreter->ProcessLine("ViewTRDfull3()");
+       }
+       else {
+         gInterpreter->ProcessLine("ViewTRDfull1()");
+       }
+     }
+     else {
+       if (Geo->GetRICHhole()) {
+         gInterpreter->ProcessLine("ViewTRDfull2()");
+       }
+       else {
+         gInterpreter->ProcessLine("ViewTRDfull0()");
+       }
+     }
+   }
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);

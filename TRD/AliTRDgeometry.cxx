@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.1.4.1  2000/05/08 14:45:55  cblume
+Bug fix in RotateBack(). Geometry update
+
+Revision 1.1  2000/02/28 19:00:44  cblume
+Add new TRD classes
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -286,24 +292,7 @@ Bool_t AliTRDgeometry::Local2Global(Int_t idet, Float_t *local, Float_t *global)
   Int_t        isect     = GetSector(idet);     // Sector info  (0-17)
   Int_t        iplan     = GetPlane(idet);      // Plane info   (0-5)
 
-  Float_t      padRow    = local[0];            // Pad Row position
-  Float_t      padCol    = local[1];            // Pad Column position
-  Float_t      timeSlice = local[2];            // Time "position"
-
-  Float_t      row0      = GetRow0(iplan,icham,isect);
-  Float_t      col0      = GetCol0(iplan);
-  Float_t      time0     = GetTime0(iplan);
-
-  Float_t      rot[3];
-
-  // calculate (x,y) position in rotated chamber
-  rot[1] = col0  + padCol    * fColPadSize;
-  rot[0] = time0 + timeSlice * fTimeBinSize;
-  // calculate z-position:
-  rot[2] = row0  + padRow    * fRowPadSize;
-
-  // Rotate back to original position
-  return RotateBack(idet,rot,global);
+  return Local2Global(iplan,icham,isect,local,global);
 
 }
  
@@ -329,8 +318,8 @@ Bool_t AliTRDgeometry::Local2Global(Int_t iplan, Int_t icham, Int_t isect
   Float_t      rot[3];
 
   // calculate (x,y,z) position in rotated chamber
-  rot[1] = col0  + padCol    * fColPadSize;
   rot[0] = time0 + timeSlice * fTimeBinSize;
+  rot[1] = col0  + padCol    * fColPadSize;
   rot[2] = row0  + padRow    * fRowPadSize;
 
   // Rotate back to original position
@@ -372,9 +361,9 @@ Bool_t AliTRDgeometry::RotateBack(Int_t d, Float_t *rot, Float_t *pos)
 
   Float_t phi    =  2.0 * kPI /  (Float_t) kNsect * ((Float_t) sector + 0.5);
 
-  rot[0] =  pos[0] * TMath::Cos(phi) + pos[1] * TMath::Sin(phi);
-  rot[1] = -pos[0] * TMath::Sin(phi) + pos[1] * TMath::Cos(phi);
-  rot[2] =  pos[2];
+  pos[0] =  rot[0] * TMath::Cos(phi) + rot[1] * TMath::Sin(phi);
+  pos[1] = -rot[0] * TMath::Sin(phi) + rot[1] * TMath::Cos(phi);
+  pos[2] =  rot[2];
 
   return kTRUE;
 
@@ -446,9 +435,9 @@ void AliTRDgeometry::GetGlobal(const AliRecPoint *p, TVector3 &pos)
 
   Float_t global[3];
   Float_t local[3];
-  local[0] = pos.X();
-  local[1] = pos.Y();
-  local[2] = pos.Z();
+  local[0] = ((AliTRDrecPoint *) p)->GetLocalRow();
+  local[1] = ((AliTRDrecPoint *) p)->GetLocalCol();
+  local[2] = ((AliTRDrecPoint *) p)->GetLocalTime();
 
   if (Local2Global(detector,local,global)) {
     pos.SetX(global[0]);

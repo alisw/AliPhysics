@@ -18,7 +18,7 @@ class AliTRDsegmentArray : public AliTRDsegmentArrayBase {
  public:
 
   AliTRDsegmentArray();
-  AliTRDsegmentArray(Int_t n);
+  AliTRDsegmentArray(Text_t *classname, Int_t n);
   ~AliTRDsegmentArray() { };
 
   virtual void             Delete();

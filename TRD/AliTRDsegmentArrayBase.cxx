@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.1.4.1  2000/05/08 14:55:03  cblume
+Bug fixes
+
+Revision 1.1  2000/02/28 19:02:56  cblume
+Add new TRD classes
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -39,21 +45,24 @@ $Log$
 #include "AliTRDsegmentID.h"
 #include "AliTRDsegmentArrayBase.h"
 
-//_____________________________________________________________________________
 ClassImp(AliTRDsegmentArrayBase)
   
+//_____________________________________________________________________________
 AliTRDsegmentArrayBase::AliTRDsegmentArrayBase()
 {
   //
   //
   //
-  fNSegment=0;
-  fSegment =0; 
+
+  fNSegment  = 0;
+  fSegment   = 0; 
   fTreeIndex = 0;
-  fTree  = 0;
-  fClass = 0;
+  fTree      = 0;
+  fClass     = 0;
+
 }
 
+//_____________________________________________________________________________
 AliTRDsegmentArrayBase::AliTRDsegmentArrayBase(Text_t *classname, Int_t n)
 {
   //
@@ -74,6 +83,7 @@ AliTRDsegmentArrayBase::AliTRDsegmentArrayBase(Text_t *classname, Int_t n)
    }
 }
 
+//_____________________________________________________________________________
 Bool_t AliTRDsegmentArrayBase:: SetClass(Text_t *classname)
 {
   //
@@ -109,6 +119,7 @@ Bool_t AliTRDsegmentArrayBase:: SetClass(Text_t *classname)
    return kTRUE;
 }
 
+//_____________________________________________________________________________
 //Bool_t AliTRDsegmentArrayBase::ClassError( )
 //{
   //signalize class error 
@@ -119,6 +130,7 @@ Bool_t AliTRDsegmentArrayBase:: SetClass(Text_t *classname)
 ////  return kFALSE;
 //}
 
+//_____________________________________________________________________________
 AliTRDsegmentArrayBase::~AliTRDsegmentArrayBase()
 {
   if (fNSegment>0){
@@ -130,6 +142,7 @@ AliTRDsegmentArrayBase::~AliTRDsegmentArrayBase()
   if (fClass!=0) delete fClass;
 }
 
+//_____________________________________________________________________________
 AliTRDsegmentID * AliTRDsegmentArrayBase::NewSegment()
 {
   //
@@ -140,7 +153,7 @@ AliTRDsegmentID * AliTRDsegmentArrayBase::NewSegment()
   return segment;
 }
 
-
+//_____________________________________________________________________________
 Bool_t AliTRDsegmentArrayBase::AddSegment(AliTRDsegmentID *segment)
 {
   //
@@ -159,6 +172,7 @@ Bool_t AliTRDsegmentArrayBase::AddSegment(AliTRDsegmentID *segment)
   return kTRUE;
 }
 
+//_____________________________________________________________________________
 AliTRDsegmentID * AliTRDsegmentArrayBase::AddSegment(Int_t index)
 {
   //
@@ -175,8 +189,7 @@ AliTRDsegmentID * AliTRDsegmentArrayBase::AddSegment(Int_t index)
   return segment;
 }
 
-
-
+//_____________________________________________________________________________
 Bool_t AliTRDsegmentArrayBase::MakeArray(Int_t n)
 {
   //
@@ -195,7 +208,7 @@ Bool_t AliTRDsegmentArrayBase::MakeArray(Int_t n)
   else return kFALSE;		  
 }
 
-
+//_____________________________________________________________________________
 void AliTRDsegmentArrayBase::ClearSegment(Int_t index)
 {
   //
@@ -208,7 +221,7 @@ void AliTRDsegmentArrayBase::ClearSegment(Int_t index)
   }
 }
 
-
+//_____________________________________________________________________________
 void AliTRDsegmentArrayBase::MakeTree()
 {
   //  AliTRDsegmentID  segment;
@@ -219,6 +232,7 @@ void AliTRDsegmentArrayBase::MakeTree()
   delete psegment;
 }              
 
+//_____________________________________________________________________________
 Bool_t AliTRDsegmentArrayBase::ConnectTree(const char * treeName)
 {
   //connect tree from current directory  
@@ -235,6 +249,7 @@ Bool_t AliTRDsegmentArrayBase::ConnectTree(const char * treeName)
   return kTRUE;
 }
 
+//_____________________________________________________________________________
 AliTRDsegmentID *AliTRDsegmentArrayBase::LoadSegment(Int_t index)
 {
   //
@@ -264,6 +279,8 @@ AliTRDsegmentID *AliTRDsegmentArrayBase::LoadSegment(Int_t index)
   return s;
   //  AbstractMethod("LoadSegment");
 }
+
+//_____________________________________________________________________________
 AliTRDsegmentID *AliTRDsegmentArrayBase::LoadEntry(Int_t index)
 {
   //
@@ -299,6 +316,7 @@ void AliTRDsegmentArrayBase::StoreSegment(Int_t index)
   fTree->Fill();
 }
 
+//_____________________________________________________________________________
 Bool_t  AliTRDsegmentArrayBase::MakeDictionary(Int_t size)
 {
   //

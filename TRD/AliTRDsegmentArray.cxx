@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.1.4.1  2000/05/08 14:55:03  cblume
+Bug fixes
+
+Revision 1.1  2000/02/28 19:02:32  cblume
+Add new TRD classes
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -37,8 +43,8 @@ AliTRDsegmentArray::AliTRDsegmentArray():AliTRDsegmentArrayBase()
 }
 
 //_____________________________________________________________________________
-AliTRDsegmentArray::AliTRDsegmentArray(Int_t n)
-                   :AliTRDsegmentArrayBase("AliTRDdataArray",n)
+AliTRDsegmentArray::AliTRDsegmentArray(Text_t *classname, Int_t n)
+                   :AliTRDsegmentArrayBase(classname,n)
 {
   //
   // Constructor creating an array of AliTRDdataArray of size <n>

@@ -11,13 +11,11 @@
  
 #include "AliRun.h"
 #include "AliDetector.h"
-#include "AliHit.h" 
+#include "AliTRDhit.h" 
 #include "AliDigit.h"
 
 #include "AliTRDconst.h"
-//#include "AliTRDgeometry.h"
-
-class AliTRDgeometry;
+#include "AliTRDgeometry.h"
 
 //_____________________________________________________________________________
 class AliTRD : public AliDetector {
@@ -35,7 +33,7 @@ class AliTRD : public AliDetector {
   virtual void       CreateMaterials();
   virtual void       DrawModule();
   Int_t              DistancetoPrimitive(Int_t px, Int_t py);
-  TClonesArray      *RecPoints()           { return fRecPoints;   };
+  TObjArray         *RecPoints()           { return fRecPoints;   };
   virtual void       Init();
   virtual Int_t      IsVersion() const = 0;
   virtual void       MakeBranch(Option_t* option);     
@@ -45,8 +43,14 @@ class AliTRD : public AliDetector {
 
   virtual void       SetGasMix(Int_t imix = 0);
   virtual void       SetHits(Int_t ihit = 1) {};
+  virtual void       SetPHOShole()         { fGeometry->SetPHOShole(); };
+  virtual void       SetRICHhole()         { fGeometry->SetRICHhole(); };
 
   AliTRDgeometry    *GetGeometry()         { return fGeometry; };
+
+  virtual void       SetSensChamber(Int_t ichamber) = 0;
+  virtual void       SetSensPlane(Int_t iplane)     = 0;
+  virtual void       SetSensSector(Int_t isector)   = 0;
 
   virtual Int_t      GetSensChamber() = 0;
   virtual Int_t      GetSensPlane()   = 0;
@@ -54,30 +58,14 @@ class AliTRD : public AliDetector {
  
  protected:
 
-  Int_t              fGasMix;            // Gas mixture. 0: Xe/Isobutane 1: Xe/CO2
+  Int_t              fGasMix;            //  Gas mixture. 0: Xe/Isobutane 1: Xe/CO2
 
-  AliTRDgeometry    *fGeometry;          // The TRD geometry
+  AliTRDgeometry    *fGeometry;          //  The TRD geometry
 
-  TClonesArray      *fRecPoints;         // List of reconstructed points
+  TObjArray         *fRecPoints;         //  Array of reconstructed points
   Int_t              fNRecPoints;        //! Number of reconstructed points
 
-  ClassDef(AliTRD,1)                     // Transition Radiation Detector base class
-
-};
-
-//_____________________________________________________________________________
-class AliTRDhit : public AliHit {
-
-public:
-  Int_t        fDetector;   // TRD detector number
-  Float_t      fQ;          // Charge created by a hit (slow simulator only)
- 
-public:
-  AliTRDhit() {}
-  AliTRDhit(Int_t shunt, Int_t track, Int_t det, Float_t *hits);
-  virtual ~AliTRDhit() {};
- 
-  ClassDef(AliTRDhit,2)     // Hits for Transition Radiation Detector
+  ClassDef(AliTRD,1)                     //  Transition Radiation Detector base class
 
 };
 

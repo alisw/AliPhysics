@@ -30,13 +30,13 @@ class AliTRDv1 : public AliTRD {
   virtual void    StepManager();
   virtual void    Init();
 
-  virtual void    SetSensPlane(Int_t iplane = 0);
-  virtual void    SetSensChamber(Int_t ichamber = 0);
-  virtual void    SetSensSector(Int_t isector = 0);
+          void    SetSensPlane(Int_t iplane = 0);
+          void    SetSensChamber(Int_t ichamber = 0);
+          void    SetSensSector(Int_t isector = 0);
 
-  virtual Int_t   GetSensPlane()   { return fSensPlane;   };
-  virtual Int_t   GetSensChamber() { return fSensChamber; };
-  virtual Int_t   GetSensSector()  { return fSensSector;  };
+          Int_t   GetSensPlane()   { return fSensPlane;   };
+          Int_t   GetSensChamber() { return fSensChamber; };
+          Int_t   GetSensSector()  { return fSensSector;  };
 
  protected:
 

@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.17.2.1  2000/05/08 14:59:16  cblume
+Made inline function non-virtual. Bug fix in setting sensitive chamber
+
+Revision 1.17  2000/02/28 19:10:26  cblume
+Include the new TRD classes
+
 Revision 1.16.4.1  2000/02/28 18:04:35  cblume
 Change to new hit version, introduce geometry class, and move digitization and clustering to AliTRDdigitizer/AliTRDclusterizerV1
 
@@ -340,9 +346,9 @@ void AliTRDv1::StepManager()
       // Check on selected volumes
       Int_t addthishit = 1;
       if (fSensSelect) {
-        if ((fSensPlane)   && (pla != fSensPlane  )) addthishit = 0;
-        if ((fSensChamber) && (cha != fSensChamber)) addthishit = 0;
-        if ((fSensSector)  && (sec != fSensSector )) addthishit = 0;
+        if ((fSensPlane   >= 0) && (pla != fSensPlane  )) addthishit = 0;
+        if ((fSensChamber >= 0) && (cha != fSensChamber)) addthishit = 0;
+        if ((fSensSector  >= 0) && (sec != fSensSector )) addthishit = 0;
       }
 
       // Add this hit

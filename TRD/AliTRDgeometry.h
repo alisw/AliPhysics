@@ -28,9 +28,15 @@ class AliTRDgeometry : public AliGeometry {
   virtual Bool_t  Rotate(Int_t d, Float_t *pos, Float_t *rot);
   virtual Bool_t  RotateBack(Int_t d, Float_t *rot, Float_t *pos);
 
+  virtual void    SetPHOShole() = 0;
+  virtual void    SetRICHhole() = 0;
+
   virtual void    SetRowPadSize(Float_t size)          { fRowPadSize  = size; };
   virtual void    SetColPadSize(Float_t size)          { fColPadSize  = size; };
   virtual void    SetTimeBinSize(Float_t size)         { fTimeBinSize = size; };
+
+  virtual Bool_t  GetPHOShole() = 0;
+  virtual Bool_t  GetRICHhole() = 0;
 
   virtual Int_t   GetDetector(Int_t p, Int_t c, Int_t s);
   virtual Int_t   GetPlane(Int_t d);

@@ -21,7 +21,7 @@ void slowDigitsCreate() {
 
   // Set the parameter
   Digitizer->SetDiffusion();
-  Digitizer->SetExB();
+  //Digitizer->SetExB();
   //Digitizer->SetElAttach();
   //Digitizer->SetAttachProb();
 

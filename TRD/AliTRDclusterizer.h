@@ -35,32 +35,4 @@ class AliTRDclusterizer : public TNamed {
 
 };
 
-//_____________________________________________________________________________
-class AliTRDcluster : public TObject {
-
-public:
-
-  Int_t    fDetector;       // TRD detector number
-
-  Int_t    fTimeSlice;      // Timeslice in chamber where cluster has been found
-  Float_t  fEnergy;         // Charge sum of this cluster
-
-  Float_t  fX;              // X coord in ALICE reference frame
-  Float_t  fY;              // Y coord in ALICE reference frame
-  Float_t  fZ;              // Z coord in ALICE reference frame
-
-  Int_t    fTracks[3];      // Track information
-
-public:
-
-  AliTRDcluster() {};
-  AliTRDcluster(Int_t *tracks, Int_t *cluster, Float_t energy, Float_t *pos);
-  virtual ~AliTRDcluster() {};
-
-  inline virtual Int_t *GetTracks() { return &fTracks[0]; }
-
-  ClassDef(AliTRDcluster,1) // Cluster for Transition Radiation Detector
-
-};
-
 #endif

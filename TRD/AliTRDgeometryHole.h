@@ -14,9 +14,15 @@ class AliTRDgeometryHole : public AliTRDgeometry {
   AliTRDgeometryHole();
   ~AliTRDgeometryHole();
 
-  virtual void    CreateGeometry(Int_t *); 
-  virtual Int_t   IsVersion() const { return 0; };
-  virtual void    Init();
+          void    CreateGeometry(Int_t *); 
+          Int_t   IsVersion() const { return 0; };
+          void    Init();
+
+          void    SetPHOShole()     { };
+          void    SetRICHhole()     { };
+
+          Bool_t  GetPHOShole()     { return kTRUE; };
+          Bool_t  GetRICHhole()     { return kTRUE; };
 
  protected:
 

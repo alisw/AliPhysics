@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1.4.1  2000/05/08 15:09:01  cblume
+Introduce AliTRDdigitsManager
+
 Revision 1.1  2000/02/28 18:58:54  cblume
 Add new TRD classes
 
@@ -33,7 +36,7 @@ Add new TRD classes
 #include "AliTRDgeometry.h"
 #include "AliTRDdigitizer.h"
 #include "AliTRDrecPoint.h"
-#include "AliTRDdataArray.h"
+#include "AliTRDdataArrayF.h"
 
 ClassImp(AliTRDclusterizerV1)
 
@@ -44,7 +47,7 @@ AliTRDclusterizerV1::AliTRDclusterizerV1():AliTRDclusterizer()
   // AliTRDclusterizerV1 default constructor
   //
 
-  fDigitsArray = NULL;
+  fDigitsManager = NULL;
 
 }
 
@@ -56,7 +59,7 @@ AliTRDclusterizerV1::AliTRDclusterizerV1(const Text_t* name, const Text_t* title
   // AliTRDclusterizerV1 default constructor
   //
 
-  fDigitsArray = NULL;
+  fDigitsManager = new AliTRDdigitsManager();
 
   Init();
 
@@ -66,9 +69,8 @@ AliTRDclusterizerV1::AliTRDclusterizerV1(const Text_t* name, const Text_t* title
 AliTRDclusterizerV1::~AliTRDclusterizerV1()
 {
 
-  if (fDigitsArray) {
-    fDigitsArray->Delete();
-    delete fDigitsArray;
+  if (fDigitsManager) {
+    delete fDigitsManager;
   }
 
 }
@@ -100,11 +102,8 @@ Bool_t AliTRDclusterizerV1::ReadDigits()
     return kFALSE;
   }
 
-  // Create a new segment array for the digits 
-  fDigitsArray = new AliTRDsegmentArray(kNsect*kNplan*kNcham);
-
   // Read in the digit arrays
-  return (fDigitsArray->LoadArray("TRDdigits"));  
+  return (fDigitsManager->ReadDigits());  
 
 }
 
@@ -131,7 +130,7 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
   printf("AliTRDclusterizerV1::MakeCluster -- ");
   printf("Start creating clusters.\n");
 
-  AliTRDdataArray *Digits;
+  AliTRDdataArrayI *Digits;
 
   // Parameters
   Float_t maxThresh        = fClusMaxThresh;   // threshold value for maximum
@@ -148,7 +147,7 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
   Int_t chamEnd = kNcham;
   if (TRD->GetSensChamber() >= 0) {
     chamBeg = TRD->GetSensChamber();
-    chamEnd = chamEnd + 1;
+    chamEnd = chamBeg + 1;
   }
   Int_t planBeg = 0;
   Int_t planEnd = kNplan;
@@ -187,7 +186,7 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
                                                      ,isect,icham,iplan);
 
         // Read in the digits
-        Digits = (AliTRDdataArray *) fDigitsArray->At(idet);
+        Digits = fDigitsManager->GetDigits(idet);
 
         // Loop through the detector pixel
         for (time = 0; time < nTimeMax; time++) {

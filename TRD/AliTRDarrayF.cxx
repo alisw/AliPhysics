@@ -15,17 +15,14 @@
 
 /*
 $Log$
-Revision 1.1.4.1  2000/05/08 14:35:54  cblume
-Update
-
-Revision 1.1  2000/02/28 18:57:18  cblume
-Add new TRD classes
+Revision 1.1.2.1  2000/05/08 14:35:38  cblume
+Add float array
 
 */
 
 ///////////////////////////////////////////////////////////////////////
 //                                                                   //  
-// Added additional functionality to the original TArrayI.           //
+// Added additional functionality to the original TArrayF.           //
 //  - Multiple inheritance from TObject                              //
 //  - Function Expand() allows to expand the array without           //
 //    deleting the array contents                                    //
@@ -34,12 +31,12 @@ Add new TRD classes
 //                                                                   //  
 ///////////////////////////////////////////////////////////////////////
 
-#include "AliTRDarrayI.h"
+#include "AliTRDarrayF.h"
 
-ClassImp(AliTRDarrayI)
+ClassImp(AliTRDarrayF)
 
 //_____________________________________________________________________________
-AliTRDarrayI::~AliTRDarrayI()
+AliTRDarrayF::~AliTRDarrayF()
 {
   //
   // Default destructor
@@ -48,19 +45,19 @@ AliTRDarrayI::~AliTRDarrayI()
 }
 
 //_____________________________________________________________________________
-void AliTRDarrayI::Expand(Int_t n)
+void AliTRDarrayF::Expand(Int_t n)
 {
   //
-  // Sets the  array size of the TArrayI object to <n> integers and copies
+  // Sets the  array size of the TArrayF object to <n> integers and copies
   // the old array.
   // If n < 0 leave the array unchanged.
   // The user is responsible for the appropriate size of the array.
   //
 
   if (n < 0) return;  
-  fArray = (Int_t*) TStorage::ReAlloc(fArray
-                                     ,n  * sizeof(Int_t)
-                                     ,fN * sizeof(Int_t));
+  fArray = (Float_t*) TStorage::ReAlloc(fArray
+                                       ,n  * sizeof(Float_t)
+                                       ,fN * sizeof(Float_t));
   if (fArray != 0) fN = n;
  
 }

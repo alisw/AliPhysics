@@ -12,6 +12,7 @@
 const Int_t   kNsect   = 18;      // Number of sectors in the full detector
 const Int_t   kNplan   = 6;       // Number of planes of the TRD
 const Int_t   kNcham   = 5;       // Number of chambers in z-direction
+const Int_t   kNdet    = kNsect * kNplan * kNcham;
 
 const Float_t kRmin    = 294.0;   // r-dimensions of the TRD
 const Float_t kRmax    = 368.0;

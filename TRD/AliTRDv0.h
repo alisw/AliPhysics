@@ -27,9 +27,13 @@ class AliTRDv0 : public AliTRD {
 
   virtual void    SetHits(Int_t ihit = 1) { fHitsOn = ihit; };
 
-  virtual Int_t   GetSensChamber() { return 0; };
-  virtual Int_t   GetSensPlane()   { return 0; };
-  virtual Int_t   GetSensSector()  { return 0; };
+          void    SetSensChamber(Int_t ichamber) { };
+          void    SetSensPlane(Int_t iplane)     { };
+          void    SetSensSector(Int_t isector)   { };
+
+          Int_t   GetSensChamber() { return 0; };
+          Int_t   GetSensPlane()   { return 0; };
+          Int_t   GetSensSector()  { return 0; };
 
  protected:
 

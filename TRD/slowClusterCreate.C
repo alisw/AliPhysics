@@ -14,7 +14,7 @@ void slowClusterCreate() {
   }
 
   // Input (and output) file name
-  Char_t *alifile = "galice_c_v1.root";
+  Char_t *alifile = "galice_r_v1.root";
 
   // Create the clusterizer
   AliTRDclusterizerV1 *Clusterizer = 

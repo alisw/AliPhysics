@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.1.4.1  2000/05/08 15:08:41  cblume
+Replace AliTRDcluster by AliTRDrecPoint
+
+Revision 1.1  2000/02/28 18:58:33  cblume
+Add new TRD classes
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -122,12 +128,14 @@ Bool_t AliTRDclusterizerV0::MakeCluster()
     for (Int_t iplan = 0; iplan < kNplan; iplan++) {
       for (Int_t isect = 0; isect < kNsect; isect++) {
 
-        Int_t   nColMax    = Geo->GetColMax(iplan);
-        Float_t row0       = Geo->GetRow0(iplan,icham,isect);
-        Float_t col0       = Geo->GetCol0(iplan);
+        Int_t   nColMax     = Geo->GetColMax(iplan);
+        Float_t row0        = Geo->GetRow0(iplan,icham,isect);
+        Float_t col0        = Geo->GetCol0(iplan);
+        Float_t time0       = Geo->GetTime0(iplan);
 
-        Float_t rowPadSize = Geo->GetRowPadSize();
-        Float_t colPadSize = Geo->GetColPadSize();
+        Float_t rowPadSize  = Geo->GetRowPadSize();
+        Float_t colPadSize  = Geo->GetColPadSize();
+        Float_t timeBinSize = Geo->GetTimeBinSize();
 
         // Loop through all entries in the tree
         for (Int_t iTrack = 0; iTrack < nTrack; iTrack++) {
@@ -163,18 +171,15 @@ Bool_t AliTRDclusterizerV0::MakeCluster()
             Float_t rot[3];
             Geo->Rotate(detector,pos,rot);
 
-            // Add this cluster to the temporary cluster-array for this chamber
-            Int_t   tracks[3];
-            tracks[0] = track;
-            Int_t   clusters[2];
-            clusters[0] = detector;
-            clusters[1] = 0;
-            Float_t position[3];
-            position[0] = rot[2];
-            position[1] = rot[1];
-            position[2] = rot[0];
-	    AliTRDcluster *Cluster = new AliTRDcluster(tracks,clusters,0,position);
-            Chamber->Add(Cluster);
+            // Add this recPoint to the temporary array for this chamber
+            AliTRDrecPoint *RecPoint = new AliTRDrecPoint();
+            RecPoint->SetLocalRow(rot[2]);
+            RecPoint->SetLocalCol(rot[1]);
+            RecPoint->SetLocalTime(rot[0]);
+            RecPoint->SetEnergy(0);
+            RecPoint->SetDetector(detector);
+            RecPoint->AddDigit(track);
+            Chamber->Add(RecPoint);
 
 	  }
 
@@ -183,73 +188,81 @@ Bool_t AliTRDclusterizerV0::MakeCluster()
         // Loop through the temporary cluster-array
         for (Int_t iClus1 = 0; iClus1 < Chamber->GetEntries(); iClus1++) {
 
-          AliTRDcluster *Cluster1 = (AliTRDcluster *) Chamber->UncheckedAt(iClus1);
-          Float_t x1 = Cluster1->fX;
-          Float_t y1 = Cluster1->fY;
-          Float_t z1 = Cluster1->fZ;
+          AliTRDrecPoint *RecPoint1 = (AliTRDrecPoint *) Chamber->UncheckedAt(iClus1);
+          Float_t row1  = RecPoint1->GetLocalRow();
+          Float_t col1  = RecPoint1->GetLocalCol();
+          Float_t time1 = RecPoint1->GetLocalTime();
 
-          if (!(z1)) continue;             // Skip marked cluster  
+          if (RecPoint1->GetEnergy() < 0) continue;        // Skip marked cluster  
 
-          const Int_t nSave = 2;
+          const Int_t nSave  = 5;
           Int_t idxSave[nSave];
           Int_t iSave = 0;
 
-          Int_t tracks[3];
-          tracks[0] = Cluster1->fTracks[0];
+          const Int_t nTrack = 3;
+          Int_t tracks[nTrack];
+          tracks[0] = RecPoint1->GetDigit(0);
 
           // Check the other cluster to see, whether there are close ones
           for (Int_t iClus2 = iClus1 + 1; iClus2 < Chamber->GetEntries(); iClus2++) {
-            AliTRDcluster *Cluster2 = (AliTRDcluster *) Chamber->UncheckedAt(iClus2);
-            Float_t x2 = Cluster2->fX;
-            Float_t y2 = Cluster2->fY;
-            if ((TMath::Abs(x1 - x2) < rowPadSize) ||
-                (TMath::Abs(y1 - y2) <  fRphiDist)) {
+
+            AliTRDrecPoint *RecPoint2 = (AliTRDrecPoint *) Chamber->UncheckedAt(iClus2);
+            Float_t row2 = RecPoint2->GetLocalRow();
+            Float_t col2 = RecPoint2->GetLocalCol();
+
+            if ((TMath::Abs(row1 - row2) < rowPadSize) ||
+                (TMath::Abs(col1 - col2) <  fRphiDist)) {
               if (iSave == nSave) {
                 printf("AliTRDclusterizerV0::MakeCluster -- ");
                 printf("Boundary error: iSave = %d, nSave = %d.\n"
                       ,iSave,nSave);
 	      }
-              else {                
+              else {                              
                 idxSave[iSave]  = iClus2;
-                tracks[iSave+1] = Cluster2->fTracks[0];
+                iSave++;
+                if (iSave < nTrack) tracks[iSave] = RecPoint2->GetDigit(0);
 	      }
-              iSave++;
 	    }
 	  }
      
           // Merge close cluster
-          Float_t yMerge = y1;
-          Float_t xMerge = x1;
+          Float_t rowMerge = row1;
+          Float_t colMerge = col1;
           if (iSave) {
             for (Int_t iMerge = 0; iMerge < iSave; iMerge++) {
-              AliTRDcluster *Cluster2 = 
-                (AliTRDcluster *) Chamber->UncheckedAt(idxSave[iMerge]);
-              xMerge += Cluster2->fX;
-              yMerge += Cluster2->fY;
-              Cluster2->fZ = 0;            // Mark merged cluster
+              AliTRDrecPoint *RecPoint2 =
+                (AliTRDrecPoint *) Chamber->UncheckedAt(idxSave[iMerge]);
+              rowMerge += RecPoint2->GetLocalRow();
+              colMerge += RecPoint2->GetLocalCol();
+              RecPoint2->SetEnergy(-1);     // Mark merged cluster
 	    }
-            xMerge /= (iSave + 1);
-            yMerge /= (iSave + 1);
+            rowMerge /= (iSave + 1);
+            colMerge /= (iSave + 1);
           }
 
           Float_t smear[3];
 
-          // The position smearing in z-direction (uniform over pad width)            
-          Int_t row = (Int_t) ((xMerge - row0) / rowPadSize);
+          // The position smearing in row-direction (uniform over pad width)            
+          Int_t row = (Int_t) ((rowMerge - row0) / rowPadSize);
           smear[0]  = (row + gRandom->Rndm()) * rowPadSize + row0;
 
           // The position smearing in rphi-direction (Gaussian)
           smear[1] = 0;
           do
-            smear[1] = gRandom->Gaus(yMerge,fRphiSigma);
+            smear[1] = gRandom->Gaus(colMerge,fRphiSigma);
           while ((smear[1] < col0                        ) ||
                  (smear[1] > col0 + nColMax * colPadSize));
 
           // Time direction stays unchanged
-          smear[2] = z1;
+          smear[2] = time1;
+         
+	  // Transform into local coordinates
+          smear[0] = (Int_t) ((smear[0] -  row0) /  rowPadSize);
+          smear[1] = (Int_t) ((smear[1] -  col0) /  colPadSize);
+          smear[2] = (Int_t) ((smear[2] - time0) / timeBinSize);
 
           // Add the smeared cluster to the output array 
-          Int_t detector  = Cluster1->fDetector;
+          Int_t detector  = RecPoint1->GetDetector();
           Int_t digits[3] = {0};
           TRD->AddRecPoint(smear,digits,detector,0.0);
 

@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.1.4.1  2000/05/08 15:08:03  cblume
+Remove the class AliTRDcluster
+
+Revision 1.1  2000/02/28 18:57:58  cblume
+Add new TRD classes
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -140,30 +146,5 @@ Bool_t AliTRDclusterizer::WriteCluster()
   gAlice->TreeR()->Write(treeName,2);
 
   return kTRUE;
-
-}
-
-ClassImp(AliTRDcluster)
-
-//_____________________________________________________________________________
-AliTRDcluster::AliTRDcluster(Int_t *tracks, Int_t *cluster, Float_t energy, Float_t* position)
-              :TObject()
-{
-  //
-  // Create a TRD cluster
-  //
-
-  fDetector  = cluster[0];
-
-  fTimeSlice = cluster[1];
-  fEnergy    = energy;
-
-  fX         = position[0];
-  fY         = position[1];
-  fZ         = position[2];
-
-  fTracks[0] = tracks[0];
-  fTracks[1] = tracks[1];
-  fTracks[2] = tracks[2];
 
 }

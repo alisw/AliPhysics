@@ -13,7 +13,7 @@ void slowClusterAna() {
   }
 
   // Input file name
-  Char_t *alifile = "galice_c_v1.root"; 
+  Char_t *alifile = "galice_r_v1.root"; 
 
   // Event number
   Int_t   nEvent  = 0;
@@ -50,11 +50,12 @@ void slowClusterAna() {
   // Get the geometry
   AliTRDgeometry *TRDgeometry   = TRD->GetGeometry();
   // Get the pointer to the hit container
-  TClonesArray   *RecPointArray = TRD->RecPoints();
+  TObjArray      *RecPointArray = TRD->RecPoints();
   // Set the branch address
   RecTree->GetBranch("TRDrecPoints")->SetAddress(&RecPointArray);
 
   Int_t nEntries = RecTree->GetEntries();
+  cout << "nEntries = " << nEntries << endl;
 
   // Loop through all entries in the tree
   Int_t nbytes;
@@ -65,7 +66,7 @@ void slowClusterAna() {
     // Import the tree
     nbytes += RecTree->GetEvent(iEntry);
 
-    // Get the number of digits in the detector 
+    // Get the number of points in the detector 
     Int_t nRecPoint = RecPointArray->GetEntriesFast();
     cout << " nRecPoint = " << nRecPoint << endl;    
 

@@ -21,6 +21,7 @@
 class AliTRDmatrix : public TObject {
 
 protected:
+
   Int_t         fRow;            // Number of pad-rows
   Int_t         fCol;            // Number of pad-columns
   Int_t         fTime;           // Number of time buckets
@@ -34,6 +35,7 @@ protected:
   virtual AliTRDpixel *GetPixel(Int_t iRow, Int_t iCol, Int_t iTime);
 
 public:
+
   AliTRDmatrix();
   AliTRDmatrix(Int_t nRow, Int_t nCol, Int_t nTime, Int_t iSec, Int_t iCha, Int_t iPla);
   virtual ~AliTRDmatrix();
@@ -45,6 +47,9 @@ public:
   virtual void         DrawRow(Int_t iRow);
   virtual void         DrawCol(Int_t iCol);
   virtual void         DrawTime(Int_t iTime);
+  virtual void         ProjRow();  
+  virtual void         ProjCol();  
+  virtual void         ProjTime();  
 
   virtual void         SetSignal(Int_t iRow, Int_t iCol, Int_t iTime, Float_t signal);
   virtual void         SetTrack(Int_t iRow, Int_t iCol, Int_t iTime

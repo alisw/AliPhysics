@@ -6,7 +6,7 @@
 /* $Id$ */
 
 #include "AliTRD.h"
-#include "AliTRDsegmentArray.h"
+#include "AliTRDdigitsManager.h"
 #include "AliTRDclusterizer.h"
 
 ///////////////////////////////////////////////////////
@@ -25,8 +25,6 @@ class AliTRDclusterizerV1 : public AliTRDclusterizer {
   virtual Bool_t  MakeCluster();
   virtual Bool_t  ReadDigits();
 
-  virtual void    SetDigitsArray(AliTRDsegmentArray *Array) { fDigitsArray   = Array;  };
-
   virtual void    SetClusMaxThresh(Float_t thresh)          { fClusMaxThresh = thresh; };
   virtual void    SetClusSigThresh(Float_t thresh)          { fClusSigThresh = thresh; };
   virtual void    SetClusMethod(Int_t meth)                 { fClusMethod    = meth;   };
@@ -37,11 +35,11 @@ class AliTRDclusterizerV1 : public AliTRDclusterizer {
 
  protected:
 
-  AliTRDsegmentArray *fDigitsArray;    //! Array of detector segments containing the digits  
+  AliTRDdigitsManager *fDigitsManager; //! TRD digits manager
 
-  Float_t             fClusMaxThresh;  // Threshold value for cluster maximum
-  Float_t             fClusSigThresh;  // Threshold value for cluster signal
-  Int_t               fClusMethod;     // Clustering method
+  Float_t              fClusMaxThresh; // Threshold value for cluster maximum
+  Float_t              fClusSigThresh; // Threshold value for cluster signal
+  Int_t                fClusMethod;    // Clustering method
 
  private:
 

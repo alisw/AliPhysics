@@ -12,15 +12,25 @@ class AliTRDrecPoint : public AliRecPoint {
  public:
 
   AliTRDrecPoint();
-  virtual ~AliTRDrecPoint() {};
-  virtual void  Print(Option_t * opt = "void") {};
-  virtual void  AddDigit(Int_t digit);
+  ~AliTRDrecPoint() {};
+  virtual void    Print(Option_t * opt = "void") {};
+  virtual void    AddDigit(Int_t digit);
 
-  virtual void  SetAmplitude(Float_t amp)       { fAmp      = amp; };
-  virtual void  SetDetector(Int_t det)          { fDetector = det; };
-  virtual void  SetLocalPosition(TVector3 &pos);
+  virtual void    SetEnergy(Float_t amp)          { fAmp      = amp; };
+  virtual void    SetDetector(Int_t det)          { fDetector = det; };
+  virtual void    SetLocalPosition(TVector3 &pos);
+  virtual void    SetLocalRow(Float_t r)          { fLocPos.SetX(r); };
+  virtual void    SetLocalCol(Float_t c)          { fLocPos.SetY(c); };
+  virtual void    SetLocalTime(Float_t t)         { fLocPos.SetZ(t); };
 
-  virtual Int_t GetDetector()                   { return fDetector; };
+  virtual Int_t   GetDetector()                   { return fDetector; };
+  virtual Int_t   GetDigit(Int_t i = 0)           { if (i < fMulDigit)
+                                                      return fDigitsList[i]; 
+                                                    else
+                                                      return -1;};
+  virtual Float_t GetLocalRow()                   { return fLocPos(0); };
+  virtual Float_t GetLocalCol()                   { return fLocPos(1); };
+  virtual Float_t GetLocalTime()                  { return fLocPos(2); };
 
  protected:
 

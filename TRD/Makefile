@@ -11,15 +11,18 @@ PACKAGE	      = TRD
 
 # C++ sources
 
-SRCS          = AliTRD.cxx AliTRDv0.cxx AliTRDv1.cxx           \
-		AliTRDpixel.cxx AliTRDmatrix.cxx               \
-                AliTRDgeometry.cxx AliTRDgeometryFull.cxx      \
-                AliTRDgeometryHole.cxx AliTRDdigitizer.cxx     \
-                AliTRDclusterizer.cxx AliTRDclusterizerV0.cxx  \
-                AliTRDclusterizerV1.cxx AliTRDrecPoint.cxx     \
-                AliTRDsegmentArray.cxx AliTRDdataArray.cxx     \
-                AliTRDsegmentID.cxx AliTRDsegmentArrayBase.cxx \
-                AliTRDarrayI.cxx
+SRCS          = AliTRD.cxx AliTRDv0.cxx AliTRDv1.cxx             \
+                AliTRDhit.cxx AliTRDdigit.cxx                    \
+		AliTRDpixel.cxx AliTRDmatrix.cxx                 \
+                AliTRDgeometry.cxx AliTRDgeometryFull.cxx        \
+                AliTRDgeometryHole.cxx AliTRDdigitizer.cxx       \
+                AliTRDclusterizer.cxx AliTRDclusterizerV0.cxx    \
+                AliTRDclusterizerV1.cxx AliTRDrecPoint.cxx       \
+                AliTRDsegmentArray.cxx AliTRDdataArray.cxx       \
+                AliTRDdataArrayI.cxx AliTRDdataArrayF.cxx        \
+                AliTRDdigitsManager.cxx                          \
+                AliTRDsegmentID.cxx AliTRDsegmentArrayBase.cxx   \
+                AliTRDarrayI.cxx AliTRDarrayF.cxx
 
 # C++ Headers
 

@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.17.2.1  2000/05/08 14:28:59  cblume
+Introduced SetPHOShole() and SetRICHhole(). AliTRDrecPoint container is now a TObjArray
+
+Revision 1.17  2000/02/28 19:10:26  cblume
+Include the new TRD classes
+
 Revision 1.16.2.2  2000/02/28 17:53:24  cblume
 Introduce TRD geometry classes
 
@@ -45,16 +51,7 @@ Introduction of the Copyright and cvs Log
 //                                                                           //
 //  Transition Radiation Detector                                            //
 //  This class contains the basic functions for the Transition Radiation     //
-//  Detector, as well as the geometry.                                       //
-//  Functions specific to one particular geometry are contained in the       // 
-//  derived classes.                                                         //
-//                                                                           //
-//Begin_Html
-/*
-<img src="picts/AliTRDClass.gif">
-*/
-//End_Html
-//                                                                           //
+//  Detector.                                                                //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -125,14 +122,14 @@ AliTRD::AliTRD(const char *name, const char *title)
   }
 
   // Allocate the hit array
-  fHits       = new TClonesArray("AliTRDhit"    ,  405);
+  fHits       = new TClonesArray("AliTRDhit"     ,405);
   gAlice->AddHitList(fHits);
 
   // Allocate the digits array
   fDigits     = 0;
 
   // Allocate the rec point array
-  fRecPoints  = new TClonesArray("AliTRDrecPoint",  400);
+  fRecPoints  = new TObjArray(400);
   fNRecPoints = 0;
    
   fIshunt = 0;
@@ -163,16 +160,17 @@ void AliTRD::AddRecPoint(Float_t *pos, Int_t *digits, Int_t det, Float_t amp)
   //
   // Add a reconstructed point for the TRD
   //
-
-  TClonesArray   &lRecPoints = *fRecPoints;
-  AliTRDrecPoint *RecPoint   = new(lRecPoints[fNRecPoints++]) AliTRDrecPoint();
+  
+  AliTRDrecPoint *RecPoint = new AliTRDrecPoint();
   TVector3        posVec(pos[0],pos[1],pos[2]);
   RecPoint->SetLocalPosition(posVec);
   RecPoint->SetDetector(det);
-  RecPoint->SetAmplitude(amp);
+  RecPoint->SetEnergy(amp);
   for (Int_t iDigit = 0; iDigit < 3; iDigit++) {
     RecPoint->AddDigit(digits[iDigit]);
   }
+
+  fRecPoints->Add(RecPoint);
 
 }
 
@@ -184,7 +182,7 @@ void AliTRD::AddDigit(Int_t *digits)
   //
 
   TClonesArray &ldigits = *fDigits;
-  new(ldigits[fNdigits++]) AliTRDdigit(digits);
+  new(ldigits[fNdigits++]) AliTRDdigit(kFALSE,digits);
 
 }
 
@@ -438,6 +436,10 @@ void AliTRD::DrawModule()
     gMC->Gsatt("BTR2","SEEN", 0);
     gMC->Gsatt("BTR3","SEEN", 0);
     gMC->Gsatt("TRD1","SEEN", 0);
+    if (fGeometry->GetPHOShole())
+      gMC->Gsatt("TRD2","SEEN", 0);
+    if (fGeometry->GetRICHhole())
+      gMC->Gsatt("TRD3","SEEN", 0);
   }
   gMC->Gsatt("UCII","SEEN", 0);
   gMC->Gsatt("UCIM","SEEN", 0);
@@ -486,10 +488,15 @@ void AliTRD::Init()
   printf("\n");
 
   if      (fGeometry->IsVersion() == 0) {
-    printf("          Geometry with holes initialized.\n\n");
+    printf("          Geometry for spaceframe with holes initialized.\n\n");
   }
   else if (fGeometry->IsVersion() == 1) {
-    printf("          Geometry without holes initialized.\n\n");
+    printf("          Geometry for spaceframe without holes initialized.\n");
+    if (fGeometry->GetPHOShole())
+      printf("          Leave space in front of PHOS free.\n");
+    if (fGeometry->GetRICHhole())
+      printf("          Leave space in front of RICH free.\n");
+    printf("\n");
   }
 
   if (fGasMix == 1)
@@ -511,17 +518,11 @@ void AliTRD::MakeBranch(Option_t* option)
 
   AliDetector::MakeBranch(option);
 
-  //Char_t *D = strstr(option,"D");
-  //sprintf(branchname,"%s",GetName());
-  //if (fDigits    && gAlice->TreeD() && D) {
-  //  gAlice->TreeD()->Branch(branchname,&fDigits,   buffersize);
-  //  printf("* AliTRD::MakeBranch * Making Branch %s for digits in TreeD\n",branchname);
-  //}
-
   Char_t *R = strstr(option,"R");
   sprintf(branchname,"%srecPoints",GetName());
   if (fRecPoints && gAlice->TreeR() && R) {
-    gAlice->TreeR()->Branch(branchname,&fRecPoints,buffersize);
+    gAlice->TreeR()->Branch(branchname,fRecPoints->IsA()->GetName()
+                           ,&fRecPoints,buffersize,0);
     printf("* AliTRD::MakeBranch * Making Branch %s for points in TreeR\n",branchname);
   }
 
@@ -535,7 +536,7 @@ void AliTRD::ResetRecPoints()
   //
 
   fNRecPoints = 0;
-  if (fRecPoints) fRecPoints->Clear();
+  if (fRecPoints) fRecPoints->Delete();
 
 }
 
@@ -580,53 +581,6 @@ void AliTRD::SetGasMix(Int_t imix)
   }
 
   fGasMix = imix;
-
-}
-
-//______________________________________________________________________________
-void AliTRD::Streamer(TBuffer &R__b)
-{
-  //
-  // Stream an object of class AliTRD.
-  //
-
-  if (R__b.IsReading()) {
-    Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-    AliDetector::Streamer(R__b);
-    R__b >> fGasMix;
-    R__b >> fGeometry;
-    // Stream the pointers but not the TClonesArray
-    R__b >> fRecPoints;     // diff
-  }
-  else {
-    R__b.WriteVersion(AliTRD::IsA());
-    AliDetector::Streamer(R__b);
-    R__b << fGasMix;
-    R__b << fGeometry;
-    // Stream the pointers but not the TClonesArrays
-    R__b << fRecPoints;     // diff
-  }
-
-}
-
-ClassImp(AliTRDhit)
- 
-//_____________________________________________________________________________
-AliTRDhit::AliTRDhit(Int_t shunt, Int_t track, Int_t det, Float_t *hits)
-          :AliHit(shunt, track)
-{
-  //
-  // Create a TRD hit
-  //
-
-  // Store volume hierarchy
-  fDetector = det;
-
-  // Store position and charge
-  fX        = hits[0];
-  fY        = hits[1];
-  fZ        = hits[2];
-  fQ        = hits[3];
 
 }
 
