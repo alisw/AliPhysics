@@ -130,10 +130,10 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
   // Calculates the distance between the EMC RecPoint and the CPV RecPoint
   // Clusters are sorted in "rows" and "columns" of width 1 cm
 
-  Float_t delta = 1 ;  // Width of the rows in sorting of RecPoints (in cm)
+  //Float_t delta = 1 ;  // Width of the rows in sorting of RecPoints (in cm)
                        // if you change this value, change it as well in xxxRecPoint::Compare()
   Float_t distance2Cpv   = fRcpv ;
-  Float_t distance2Track = fRcpv ; 
+  Float_t distance2Track = fRtpc ; 
 
   trackindex = -1 ; // closest track within fRCpv 
 
@@ -196,7 +196,8 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
 //       // If no ESD exists, than simply find EMC-CPV distance
 //       distance = (vecCpv - vecEmc).Mag() ;
     
-      if(distance2Track < fRcpv + 2*delta )
+      //if(distance2Track < fRcpv + 2*delta )
+      if(distance2Track < fRtpc )
 	trackindex = iClosestTrack ; 
       //      toofar = kFALSE ;
     }
@@ -247,7 +248,8 @@ void  AliPHOSTrackSegmentMakerv1::Init()
 void  AliPHOSTrackSegmentMakerv1::InitParameters()
 {
   //Initializes parameters
-  fRcpv      = 10. ;   
+  fRcpv      = 10. ;
+  fRtpc      = 4. ;
   fEmcFirst  = 0 ;    
   fEmcLast   = 0 ;   
   fCpvFirst  = 0 ;   

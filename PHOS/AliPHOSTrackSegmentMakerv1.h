@@ -48,7 +48,7 @@ public:
   virtual void   Print() const ;
   virtual void   SetMaxEmcCPVDistance(Float_t r){ fRcpv = r ;} //Maximal distance (in PHOS plane) 
                                                                //between EMCrp and CPVrp
-  virtual void   SetMaxEmcTPCDistance(Float_t r){ fRtpc = r ;} //Maximal distance (in PHOS plane) 
+  virtual void   SetMaxCPVTPCDistance(Float_t r){ fRtpc = r ;} //Maximal distance 
                                                                //between EMCrp and extrapolation of TPC track
   //  virtual void   SetRecPointsBranch(const char * title) { fRecPointsBranchTitle = title ;} 
   //  virtual void   SetTrackSegmentsBranch(const char * title){ fTrackSegmentsBranchTitle = title ; }
