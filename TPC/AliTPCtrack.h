@@ -85,7 +85,7 @@ public:
   Int_t Update(const AliCluster* c, Double_t chi2, UInt_t i);
   void ResetCovariance();
 
-private: 
+protected: 
   Double_t fX;              // X-coordinate of this track (reference plane)
   Double_t fAlpha;          // Rotation angle the local (TPC sector)
                             // coordinate system and the global ALICE one.

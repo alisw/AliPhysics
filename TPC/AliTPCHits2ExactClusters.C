@@ -1,7 +1,15 @@
+/****************************************************************************
+ *           Origin: M.Ivanov, CERN, Marian.Ivanov@cern.ch                 *
+ ****************************************************************************/
+
 Int_t AliTPCHits2ExactClusters(Int_t nevent=1)
 {
+  //
+  // loop over hits and find itersection of the trak with pad rows
+  // so called exact clusters stored in the structure similar to hits
+  // it's used for comparison purpose - to have benchmark of cluster
+  // finder and tracker
 
-  // new version by J.Belikov
 
   // Connect the Root Galice file containing Geometry, Kine and Hits
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2001/02/05 14:43:13  hristov
+Compare() declared const
+
 Revision 1.1  2000/10/05 16:17:27  kowal2
 New class replacing AliCluster
 
@@ -58,4 +61,10 @@ Bool_t AliComplexCluster::IsSortable() const
 }
 
 ClassImp(AliDigitCluster)
-ClassImp(AliDifCluster)
+ClassImp(AliTPCExactPoint)
+ClassImp(AliTPCClusterPoint)
+ClassImp(AliTPCTrackerPoint)
+ClassImp(AliTPCTrackPoint)
+ClassImp(AliTPCTrackPointRef)
+
+

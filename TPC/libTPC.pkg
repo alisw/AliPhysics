@@ -1,4 +1,4 @@
-SRCS:=  AliTPCClusterFinder.cxx  AliTPC.cxx  AliTPCv0.cxx    AliTPCv1.cxx      AliTPCv2.cxx  \
+SRCS:=  AliTPC.cxx  AliTPCv0.cxx    AliTPCv1.cxx      AliTPCv2.cxx  \
 	AliTPCv3.cxx AliDetectorParam.cxx AliTPCParam.cxx \
 	AliTPCParamSR.cxx AliTPCParamCR.cxx  AliTPCPRF2D.cxx \
 	AliTPCRF1D.cxx \
@@ -10,8 +10,8 @@ SRCS:=  AliTPCClusterFinder.cxx  AliTPC.cxx  AliTPCv0.cxx    AliTPCv1.cxx      A
         AliTPCtrack.cxx AliTPCtracker.cxx \
 	AliTPCTrackHits.cxx\
 	AliTPCDigitizer.cxx\
-	AliTPCTrackHitsV2.cxx AliTPCtrackerParam.cxx AliTPCkineGrid.cxx
-
+	AliTPCTrackHitsV2.cxx AliTPCtrackerParam.cxx AliTPCkineGrid.cxx \
+	AliTPCclustererMI.cxx AliTPCclusterMI.cxx  AliTPCtrackerMI.cxx
 HDRS:= $(SRCS:.cxx=.h)
 
 

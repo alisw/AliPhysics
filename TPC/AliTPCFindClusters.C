@@ -19,6 +19,9 @@ Int_t AliTPCFindClusters(Int_t n=1) {
    TFile *in=TFile::Open("rfio:galice.root");
    if (!in->IsOpen()) {cerr<<"Can't open galice.root !\n"; return 2;}
 
+   TFile *ind=TFile::Open("digits.root");
+   if (!ind->IsOpen()) {cerr<<"Can't open galice.root !\n"; return 2;}
+
    if (!(gAlice=(AliRun*)in->Get("gAlice"))) {
      cerr<<"gAlice have not been found on galice.root !\n";
      return 3;
@@ -53,7 +56,7 @@ Int_t AliTPCFindClusters(Int_t n=1) {
       {
 	// delete gAlice; gAlice=0;
        AliTPCv2 tpc; 
-       tpc.SetParam(dig); timer.Start(); cwd->cd();  
+       tpc.SetParam(dig); timer.Start(); ind->cd();  
        for (Int_t i=0;i<n;i++){
 	 printf("Processing event %d\n",i);
          tpc.Digits2Clusters(out,i);
