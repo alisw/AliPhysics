@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.45  2001/11/03 13:33:48  kowal2
+Updated algorithms in Hits2SDigits, SDigits2Digits,
+Hits2ExactClusters.
+Added method Merge
+
 Revision 1.44  2001/08/30 09:28:48  hristov
 TTree names are explicitly set via SetName(name) and then Write() is called
 
@@ -1279,7 +1284,7 @@ void AliTPC::SDigits2Digits2(Int_t eventnumber)
       }        
     arr->StoreRow(sec,row);
     arr->ClearRow(sec,row);   
-    cerr<<sec<<"\t"<<row<<"\n";   
+    // cerr<<sec<<"\t"<<row<<"\n";   
   }  
 
     
@@ -1389,7 +1394,7 @@ void AliTPC::Merge(TTree * intree, Int_t *mask, Int_t nin, Int_t outid)
       arr->StoreRow(sec,row);
 
       arr->ClearRow(sec,row);   
-      cerr<<sec<<"\t"<<row<<"\n";  
+      // cerr<<sec<<"\t"<<row<<"\n";  
   }  
   
   delete digarr;
