@@ -8,7 +8,7 @@ CXX           = cxx
 F77	      = f77
 
 # Global optimisation
-OPT	      = -O2
+OPT	      = -g
 
 # Shared library suffix
 SL	      = so
@@ -17,9 +17,9 @@ SL	      = so
 AWK	      = awk
 
 # The options
-CXXOPTS       = $(OPT) -nostdnew -nortti
+CXXOPTS       = $(OPT) -nostdnew -rtti -taso
 COPT          = $(OPT)
-FOPT          = $(OPT) -nofor_main -warn noinformational
+FOPT          = $(OPT) -nofor_main -warn noinformational -taso
 
 # CERNLIB defines
 
@@ -33,7 +33,7 @@ CLIBFOPT      = -I. -warn noinformational
 DEPINC	      = -I/usr/include/cxx
 
 LD            = cxx
-LDFLAGS       =
+LDFLAGS       = -taso
 
 SHLD          = ld
 SOFLAGS       = -L/usr/lib/cmplrs/cxx -rpath /usr/lib/cmplrs/cxx \
