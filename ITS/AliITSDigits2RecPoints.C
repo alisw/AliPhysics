@@ -77,8 +77,8 @@ Int_t AliITSDigits2RecPoints(TString digFile="galice.root",
     timer.Stop(); 
     timer.Print();
     delete itsr;
-//    delete gAlice;
-//    gAlice = 0;
+    delete gAlice;
+    gAlice = 0;
     if(digfile){ digfile->Close(); digfile = 0;}
     if(recfile){ recfile->Close(); recfile = 0;}
     return 0;
@@ -89,11 +89,7 @@ TFile * AccessFile(TString FileName, TString acctype){
 
     TFile *retfil = 0;
     TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(FileName);
-    if(file) {
-	file->Close();
-	delete file;
-	file = 0;
-    } // end if file
+    if(file) file->Close();
     if(acctype.Contains("U")){
 	file = new TFile(FileName,"UPDATE");
     } // end if open for update

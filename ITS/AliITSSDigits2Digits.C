@@ -25,20 +25,14 @@ void AliITSSD2D(TString inFile, TString outFile){
   if(outFile != "")manager->SetOutputFile(outFile);
   AliITSDigitizer *dITS  = new AliITSDigitizer(manager);
   manager->Exec("");
-  TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(inFile);
-  TFile *file2 = 0;
   if(outFile != ""){ 
-    file2 = new TFile(outFile,"UPDATE");
+    TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(inFile);
+    TFile * file2 = new TFile(outFile,"UPDATE");
     writeAR(file,file2);
+    file2->Close();
   }
   delete manager;
-  if(file){
-    file->Write();
-  }
-  if(file2){
-    file2->Close();
-    delete file2;
-  }
+  delete gAlice; gAlice=0;
 }
 
 void writeAR(TFile * fin, TFile *fou) {
