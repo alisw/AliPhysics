@@ -33,7 +33,7 @@ class AliDigitizer: public TTask {
       {dig.Copy(*this);return *this;}
       
     virtual ~AliDigitizer();
-    virtual Bool_t Init() const {return kTRUE;}
+    virtual Bool_t Init() {return kTRUE;}
 //    virtual void Digitize() = 0;
 
 protected:
