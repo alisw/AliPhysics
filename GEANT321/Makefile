@@ -48,7 +48,7 @@ ALLOBJS       = $(OBJS) $(FOBJS) $(COBJS) $(DICTO)
 # C++ compilation flags
 
 CXXFLAGS      := $(CXXOPTS) $(CLIBCXXOPTS) $(CLIBDEFS) -I.
-CXXFLAGS      := $(filter-out -O%,$(CXXFLAGS))  
+# CXXFLAGS      := $(filter-out -O%,$(CXXFLAGS))  
  
 # C compilation flags
 
@@ -57,9 +57,10 @@ CFLAGS      := $(COPT) $(CLIBCOPT) $(CLIBDEFS) -I.
 # FORTRAN compilation flags
 
 FFLAGS      := $(FOPT) $(CLIBFOPT) $(CLIBDEFS) -I.
-ifeq ($(PLATFORM),linux)
-#   FFLAGS      := $(filter-out -O%,$(FFLAGS))  
-endif
+
+# ifeq ($(PLATFORM),linux)
+#    FFLAGS      := $(filter-out -O%,$(FFLAGS))  
+# endif
  
 ##### TARGETS #####
  
