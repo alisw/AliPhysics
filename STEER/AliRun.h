@@ -37,6 +37,7 @@ class AliMCQA;
 class AliMagF;
 class AliModule;
 class AliStack;
+class AliTrackReference;
 
 
 enum {kKeepBit=1, kDaughtersBit=2, kDoneBit=4};
@@ -109,7 +110,12 @@ public:
    virtual  void  ResetDigits();
    virtual  void  ResetSDigits();
    virtual  void  ResetHits();
-   virtual  void  ResetTrackReferences();
+// Track reference related 
+   virtual void        AddTrackReference(Int_t label);
+   TClonesArray   *TrackReferences()   const {return fTrackReferences;}
+   virtual void   RemapTrackReferencesIDs(Int_t *map); //remaping track references MI
+   virtual void   ResetTrackReferences();
+   
    virtual  void  ResetPoints();
    virtual  void  SetTransPar(const char *filename="$(ALICE_ROOT)/data/galice.cuts");
    virtual  void  SetBaseFile(const char *filename="galice.root");
@@ -221,7 +227,8 @@ protected:
   AliMCQA       *fMCQA;              //  Pointer to MC Quality assurance class
   TString        fTransParName;      //  Name of the transport parameters file
   TString        fBaseFileName;      //  Name of the base root file
-  
+
+  TClonesArray *fTrackReferences;     //!list of track references - for one primary track only -MI
   AliRunLoader  *fRunLoader;         //!run getter - written as a separate object
 private:
   void Copy(AliRun &arun) const;

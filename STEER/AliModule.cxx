@@ -673,10 +673,15 @@ void AliModule::RemapTrackReferencesIDs(Int_t *map)
     if (ref) {
       Int_t newID = map[ref->GetTrack()];
       if (newID>=0) ref->SetTrack(newID);
-      else ref->SetTrack(-1);
-      
+      else {
+        //ref->SetTrack(-1);
+        ref->SetBit(kNotDeleted,kFALSE);
+        fTrackReferences->RemoveAt(i);  
+      }      
     }
   }
+  fTrackReferences->Compress();
+
 }
 
 

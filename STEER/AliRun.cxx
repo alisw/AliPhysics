@@ -80,6 +80,7 @@
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliStack.h"
+#include "AliTrackReference.h"
 
 AliRun *gAlice;
 
@@ -114,7 +115,8 @@ AliRun::AliRun():
   fRandom(0),
   fMCQA(0),
   fTransParName("\0"),
-  fRunLoader(0x0)
+  fRunLoader(0x0),
+  fTrackReferences(0)
 {
   //
   // Default constructor for AliRun
@@ -152,7 +154,8 @@ AliRun::AliRun(const AliRun& arun):
   fConfigFunction("\0"),
   fRandom(0),
   fMCQA(0),
-  fTransParName("\0"),
+  fTransParName("\0"), 
+  fTrackReferences(new TClonesArray("AliTrackReference", 100)),
   fRunLoader(0x0)
 {
   //
@@ -264,6 +267,13 @@ AliRun::~AliRun()
   delete fHitLists;
   delete fPDGDB;
   delete fMCQA;
+  // Delete track references
+  if (fTrackReferences) {
+    fTrackReferences->Delete();
+    delete fTrackReferences;
+    fTrackReferences     = 0;
+  }
+
 }
 
 //_______________________________________________________________________
@@ -956,6 +966,16 @@ void AliRun::BeginEvent()
     if (GetDebug()) Info("BeginEvent","  %s->SetTreeAddress()",detector->GetName());
     detector->SetTreeAddress();
    }
+  // make branch for AliRun track References
+  TTree * treeTR = fRunLoader->TreeTR();
+  if (treeTR){
+    // make branch for central track references
+    if (!fTrackReferences) fTrackReferences = new TClonesArray("AliTrackReference",0);
+    TBranch *branch;
+    branch = treeTR->Branch("AliRun",&fTrackReferences);
+    branch->SetAddress(&fTrackReferences);
+  }
+  //
 }
 
 //_______________________________________________________________________
@@ -1007,17 +1027,58 @@ void AliRun::ResetHits()
 }
 //_______________________________________________________________________
 
+void  AliRun::AddTrackReference(Int_t label){
+  //
+  // add a trackrefernce to the list
+  if (!fTrackReferences) {
+    cerr<<"Container trackrefernce not active\n";
+    return;
+  }
+  Int_t nref = fTrackReferences->GetEntriesFast();
+  TClonesArray &lref = *fTrackReferences;
+  new(lref[nref]) AliTrackReference(label);
+}
+
+
+
 void AliRun::ResetTrackReferences()
 {
   //
-  //  Reset all Detectors hits
+  //  Reset all  references
   //
+  if (fTrackReferences)   fTrackReferences->Clear();
+
   TIter next(fModules);
   AliModule *detector;
   while((detector = dynamic_cast<AliModule*>(next()))) {
      detector->ResetTrackReferences();
   }
 }
+
+void AliRun::RemapTrackReferencesIDs(Int_t *map)
+{
+  // 
+  // Remapping track reference
+  // Called at finish primary
+  //
+  if (!fTrackReferences) return;
+  for (Int_t i=0;i<fTrackReferences->GetEntries();i++){
+    AliTrackReference * ref = dynamic_cast<AliTrackReference*>(fTrackReferences->UncheckedAt(i));
+    if (ref) {
+      Int_t newID = map[ref->GetTrack()];
+      if (newID>=0) ref->SetTrack(newID);
+      else {
+        //ref->SetTrack(-1);
+        ref->SetBit(kNotDeleted,kFALSE);
+        fTrackReferences->RemoveAt(i);  
+      }      
+    }
+  }
+  fTrackReferences->Compress();
+}
+
+
+
 //_______________________________________________________________________
 
 void AliRun::ResetPoints()
@@ -1487,7 +1548,12 @@ void AliRun::Stepping()
     Int_t copy;
     //Update energy deposition tables
     AddEnergyDeposit(gMC->CurrentVolID(copy),gMC->Edep());
-  
+    //
+    // write tracke reference for track which is dissapearing - MI
+    if (gMC->IsTrackDisappeared()) {      
+      if (gMC->Etot()>0.05) AddTrackReference(GetCurrentTrackNumber());
+    }
+      
     //Call the appropriate stepping routine;
     AliModule *det = dynamic_cast<AliModule*>(fModules->At(id));
     if(det && det->StepManagerIsEnabled()) {

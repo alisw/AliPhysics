@@ -374,7 +374,7 @@ void AliStack::PurifyKine()
   // This for detectors which have a special mapping mechanism
   // for hits, such as TPC and TRD
   //
-
+  
    TObjArray* modules = gAlice->Modules();
    TIter nextmod(modules);
    AliModule *detector;
@@ -382,7 +382,9 @@ void AliStack::PurifyKine()
      detector->RemapTrackHitIDs(map.GetArray());
      detector->RemapTrackReferencesIDs(map.GetArray());
    }
-  
+   //
+   gAlice->RemapTrackReferencesIDs(map.GetArray());
+
    // Now the output bit, from fHgwmk to nkeep we write everything and we erase
    if(nkeep>fParticleFileMap.GetSize()) fParticleFileMap.Set(Int_t (nkeep*1.5));
 
