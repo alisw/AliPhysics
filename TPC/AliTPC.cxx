@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.42  2001/07/28 11:38:52  hristov
+Loop variable declared once
+
 Revision 1.41  2001/07/28 10:53:50  hristov
 Digitisation done according to the general scheme (M.Ivanov)
 
@@ -2254,7 +2257,7 @@ void AliTPC::MakeBranch2(Option_t *option,const char *file)
   //
   if (fTrackHits   && gAlice->TreeH() && cH) {    
     AliObjectBranch * branch = new AliObjectBranch(branchname,"AliTPCTrackHits",&fTrackHits, 
-						   gAlice->TreeH(),fBufferSize);
+						   gAlice->TreeH(),fBufferSize,99);
     gAlice->TreeH()->GetListOfBranches()->Add(branch);
     if (GetDebug()>1) 
       printf("* AliDetector::MakeBranch * Making Branch %s for trackhits\n",branchname);
