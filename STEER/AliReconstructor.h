@@ -12,6 +12,7 @@
 //
 
 #include <TObject.h>
+#include <TString.h>
 
 class AliRunLoader;
 class AliVertexer;
@@ -21,7 +22,7 @@ class AliESD;
 
 class AliReconstructor: public TObject {
 public:
-  AliReconstructor(): TObject() {};
+  AliReconstructor(): TObject(), fOption() {};
   virtual ~AliReconstructor() {};
 
   virtual void         Reconstruct(AliRunLoader* runLoader) const = 0;
@@ -32,6 +33,12 @@ public:
   virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const = 0;
 
   virtual const char*  GetDetectorName() const;
+
+  void                 SetOption(Option_t* option) {fOption = option;};
+  virtual Option_t*    GetOption() const {return fOption.Data();};
+
+private:
+  TString              fOption;   //! option for reconstruction
 
   ClassDef(AliReconstructor, 0)   // base class for reconstruction algorithms
 };

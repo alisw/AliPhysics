@@ -41,6 +41,7 @@ public:
   virtual ~AliReconstruction();
 
   void           SetGAliceFile(const char* fileName);
+  void           SetOption(const char* detector, const char* option);
 
   void           SetRunLocalReconstruction(const char* detectors) {
     fRunLocalReconstruction = detectors;};
@@ -117,6 +118,7 @@ private:
   static const Int_t fgkNDetectors = 15;   //! number of detectors
   static const char* fgkDetectorName[fgkNDetectors]; //! names of detectors
   TObjArray      fReconstructors;     //! array of reconstructor objects
+  TObjArray      fOptions;            // options for reconstructor objects
 
   ClassDef(AliReconstruction, 1)      // class for running the reconstruction
 };

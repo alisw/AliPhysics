@@ -115,7 +115,10 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   fTRDLoader(NULL),
   fTRDTracker(NULL),
   fTOFLoader(NULL),
-  fTOFTracker(NULL)
+  fTOFTracker(NULL),
+
+  fReconstructors(),
+  fOptions()
 {
 // create reconstruction object with default parameters
 
@@ -142,10 +145,16 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fTRDLoader(NULL),
   fTRDTracker(NULL),
   fTOFLoader(NULL),
-  fTOFTracker(NULL)
+  fTOFTracker(NULL),
+
+  fReconstructors(),
+  fOptions()
 {
 // copy constructor
 
+  for (Int_t i = 0; i < fOptions.GetEntriesFast(); i++) {
+    if (rec.fOptions[i]) fOptions.Add(rec.fOptions[i]->Clone());
+  }
 }
 
 //_____________________________________________________________________________
@@ -164,6 +173,7 @@ AliReconstruction::~AliReconstruction()
 // clean up
 
   CleanUp();
+  fOptions.Delete();
 }
 
 
@@ -173,6 +183,16 @@ void AliReconstruction::SetGAliceFile(const char* fileName)
 // set the name of the galice file
 
   fGAliceFileName = fileName;
+}
+
+//_____________________________________________________________________________
+void AliReconstruction::SetOption(const char* detector, const char* option)
+{
+// set options for the reconstruction of a detector
+
+  TObject* obj = fOptions.FindObject(detector);
+  if (obj) fOptions.Remove(obj);
+  fOptions.Add(new TNamed(detector, option));
 }
 
 
@@ -234,7 +254,11 @@ Bool_t AliReconstruction::Run()
       Info("Run", "using dummy reconstructor for %s", detName.Data());
       reconstructor = new AliDummyReconstructor(gAlice->GetDetector(detName));
     }
-    if (reconstructor) fReconstructors.Add(reconstructor);
+    if (reconstructor) {
+      TObject* obj = fOptions.FindObject(detName.Data());
+      if (obj) reconstructor->SetOption(obj->GetTitle());
+      fReconstructors.Add(reconstructor);
+    }
   }
 
   // local reconstruction
@@ -455,7 +479,7 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
     Warning("RunTracking", "no ITS tracker");
   } else {
 
-    fRunLoader->GetAliRun()->GetDetector("TPC")->FillESD(esd); // preliminary
+    GetReconstructor("TPC")->FillESD(fRunLoader, esd); // preliminary
     AliESDpid::MakePID(esd);                  // PID for the ITS tracker
 
     // ITS tracking
