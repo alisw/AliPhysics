@@ -27,7 +27,6 @@ Base classes for HBT functions
 /******************************************************************/
 /******************************************************************/
 
-#include <Riostream.h>
 ClassImp( AliHBTFunction )
 
 AliHBTFunction::AliHBTFunction()
@@ -57,10 +56,9 @@ Write()
  }
 /******************************************************************/
 
-TH1* AliHBTFunction::
-GetRatio(Double_t normfactor)
+TH1* AliHBTFunction::GetRatio(Double_t normfactor)
  {
-   if (gDebug>0) cout<<"Mormfactor is "<<normfactor<<" for "<<fName<<endl;
+   if (gDebug>0) Info("GetRatio","Norm. Factor is %f for %s",normfactor,GetName());
    
    if (normfactor == 0.0)
     {
@@ -71,7 +69,6 @@ GetRatio(Double_t normfactor)
    TH1 *result = (TH1*)GetNumerator()->Clone(str.Data());
    
    result->SetTitle(str.Data());
-   //result->Sumw2();
    
    result->Divide(GetNumerator(),GetDenominator(),normfactor);
    
@@ -239,7 +236,7 @@ void AliHBTOnePairFctn1D::ProcessDiffEventParticles(AliHBTPair* pair)
 /******************************************************************/
 Double_t AliHBTOnePairFctn1D::Scale()
 {
-  if (gDebug>0) cout<<"Enetered Scale()"<<endl;
+  if (gDebug>0) Info("Scale","Enetered Scale()");
   if(!fNumerator) 
    {
      Error("Scale","No numerator");
@@ -262,7 +259,7 @@ Double_t AliHBTOnePairFctn1D::Scale()
     Error("Scale","Number of bins for scaling is bigger thnan number of bins in histograms");
     return 0.0;
    }
-  if (gDebug>0) cout<<"No errors detected"<<endl;
+  if (gDebug>0) Info("Scale","No errors detected");
 
   Double_t ratio;
   Double_t sum = 0;
@@ -280,12 +277,12 @@ Double_t AliHBTOnePairFctn1D::Scale()
      }
    }
   
-  if(gDebug > 0) cout<<"sum="<<sum<<" fNBinsToScale="<<fNBinsToScale<<" N="<<N<<endl;
+  if(gDebug > 0) Info("Scale","sum=%f fNBinsToScale=%d N=%d",sum,fNBinsToScale,N);
   
   if (N == 0) return 0.0;
   Double_t ret = sum/((Double_t)N);
 
-  if(gDebug > 0) cout<<"Scale() returning "<<ret<<endl;
+  if(gDebug > 0) Info("Scale","returning %f",ret);
   return ret;
 } 
 
@@ -439,12 +436,10 @@ AliHBTTwoPairFctn1D::~AliHBTTwoPairFctn1D()
   delete fNumerator;
   delete fDenominator;
 }
-void AliHBTTwoPairFctn1D::
-ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
+void AliHBTTwoPairFctn1D::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
   partpair  = CheckPair(partpair);
-  trackpair = CheckPair(trackpair);
-  if( partpair && trackpair) 
+  if( partpair ) 
    { 
      Double_t x = GetValue(trackpair,partpair);
      fNumerator->Fill(x);
@@ -455,18 +450,16 @@ ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 void AliHBTTwoPairFctn1D::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
   partpair  = CheckPair(partpair);
-  trackpair = CheckPair(trackpair);
-  if( partpair && trackpair)
+  if( partpair )
    { 
      Double_t x = GetValue(trackpair,partpair);
      fDenominator->Fill(x);
    }
-
 }
 /******************************************************************/
 Double_t AliHBTTwoPairFctn1D::Scale()
 {
-  if (gDebug>0) cout<<"Enetered Scale()"<<endl;
+  if (gDebug>0) Info("Scale","Enetered Scale()");
   if(!fNumerator) 
    {
      Error("Scale","No numerator");
@@ -489,7 +482,7 @@ Double_t AliHBTTwoPairFctn1D::Scale()
     Error("Scale","Number of bins for scaling is bigger thnan number of bins in histograms");
     return 0.0;
    }
-  if (gDebug>0) cout<<"No errors detected"<<endl;
+  if (gDebug>0) Info("Scale","No errors detected");
 
   Double_t ratio;
   Double_t sum = 0;
@@ -507,12 +500,12 @@ Double_t AliHBTTwoPairFctn1D::Scale()
      }
    }
   
-  if(gDebug > 0) cout<<"sum="<<sum<<" fNBinsToScale="<<fNBinsToScale<<" N="<<N<<endl;
+  if(gDebug > 0) Info("Scale","sum=%f fNBinsToScale=%d N=%d",sum,fNBinsToScale,N);
   
   if (N == 0) return 0.0;
   Double_t ret = sum/((Double_t)N);
 
-  if(gDebug > 0) cout<<"Scale() returning "<<ret<<endl;
+  if(gDebug > 0) Info("Scale","returning %f",ret);
   return ret;
 } 
 
@@ -553,8 +546,7 @@ void AliHBTTwoPairFctn2D::
 ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
   partpair  = CheckPair(partpair);
-  trackpair = CheckPair(trackpair);
-  if( partpair && trackpair) 
+  if( partpair ) 
    { 
      Double_t x,y;
      GetValues(trackpair,partpair,x,y);
@@ -566,8 +558,7 @@ void AliHBTTwoPairFctn2D::
 ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
   partpair  = CheckPair(partpair);
-  trackpair = CheckPair(trackpair);
-  if( partpair && trackpair)
+  if( partpair ) 
    { 
      Double_t x,y;
      GetValues(trackpair,partpair,x,y);
@@ -585,8 +576,7 @@ void AliHBTTwoPairFctn3D::
 ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
   partpair  = CheckPair(partpair);
-  trackpair = CheckPair(trackpair);
-  if( partpair && trackpair) 
+  if( partpair ) 
    { 
      Double_t x,y,z;
      GetValues(trackpair,partpair,x,y,z);
@@ -598,8 +588,7 @@ void AliHBTTwoPairFctn3D::
 ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
   partpair  = CheckPair(partpair);
-  trackpair = CheckPair(trackpair);
-  if( partpair && trackpair)
+  if( partpair ) 
    { 
      Double_t x,y,z;
      GetValues(trackpair,partpair,x,y,z);
