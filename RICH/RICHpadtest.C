@@ -708,8 +708,8 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 
      case 5:
        
-       if (ndigits)
-	 {
+       //if (ndigits)
+	 //{
 	   TCanvas *c1 = new TCanvas("c1","Alice RICH digits",50,50,1200,700);
 	   c1->Divide(4,2);
 	   c1->cd(1);
@@ -736,7 +736,7 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 	   c1->cd(8);
 	   hc0->SetXTitle("ix (npads)");
 	   hc0->Draw("box");
-	 }
+	 //}
 //
        TCanvas *c4 = new TCanvas("c4","Hits per type",100,100,600,700);
        c4->Divide(2,2);
