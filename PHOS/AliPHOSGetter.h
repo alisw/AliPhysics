@@ -62,7 +62,7 @@ class AliPHOSGetter : public TObject {
   
   virtual ~AliPHOSGetter() ; 
   
-  void CloseFile() { fFile->Close() ; } 
+  void CloseFile() ;  
   void ListBranches(Int_t event=0) const ;
   void NewBranch(TString name, Int_t event = 0) ; 
   Bool_t AliPHOSGetter::NewFile(TString name) ;
@@ -179,6 +179,9 @@ class AliPHOSGetter : public TObject {
   const Int_t                 NPrimaries()const { return fNPrimaries; }
   const TParticle *           Secondary(TParticle * p, Int_t index=1) const ;
   
+  void  RemoveTask(TString opt, TString name) const ;
+  void  RemoveObjects(TString opt, TString name) const ;
+  void  RemoveSDigits() const ;
   void  SetDebug(Int_t level) {fDebug = level;} // Set debug level
   
   AliPHOSGetter & operator = (const AliPHOSGetter & ) {

@@ -156,15 +156,23 @@ AliPHOSGetter::~AliPHOSGetter(){
   TFolder * folder = 0 ; 
   while ( (folder = static_cast<TFolder*>(next())) ) 
     phosF->Remove(folder) ; 
-
+  
   if (fFile) { 
     fFile->Close() ;  
     delete fFile ;
     fFile = 0 ;
   }
-    
+  fgObjGetter = 0 ; 
+  
 }
 
+//____________________________________________________________________________ 
+void AliPHOSGetter::CloseFile()
+{
+//   delete gAlice ; 
+//   gAlice = 0 ; 
+  fFile->Close() ; 
+}
 
 //____________________________________________________________________________ 
 AliPHOSGetter * AliPHOSGetter::GetInstance()
@@ -188,13 +196,13 @@ AliPHOSGetter * AliPHOSGetter::GetInstance(const char* headerFile,
   // Creates and returns the pointer of the unique instance
   // Must be called only when the environment has changed 
 
-  if ( fgObjGetter )    
+  if ( fgObjGetter && fFile->IsOpen()) // an instance exists and the file is still open   
     if((fgObjGetter->fBranchTitle.CompareTo(branchTitle) == 0) && 
        (fgObjGetter->fHeaderFile.CompareTo(headerFile)==0)) {
       fFile->cd() ; 
       return fgObjGetter ;
     }
-    else 
+    else // another file than the existing one is required, scratch the getter
       fgObjGetter->~AliPHOSGetter() ;  // delete it already exists another version
  
   fgObjGetter = new AliPHOSGetter(headerFile,branchTitle) ; 
@@ -1679,6 +1687,7 @@ Int_t AliPHOSGetter::ReadTreeS(Int_t event)
   while ( (folder = static_cast<TFolder*>(next())) ) {
     TString fileName(folder->GetName()) ; 
     fileName.ReplaceAll("_","/") ; 
+    cout << "ALiPHOSGetter::ReadTreeS " << fileName.Data() << " " << fHeaderFile.Data() << endl ; 
     if(fHeaderFile.CompareTo(fileName) == 0 ) 
       treeS=gAlice->TreeS() ;
     else{
@@ -1734,8 +1743,7 @@ Int_t AliPHOSGetter::ReadTreeS(Int_t event)
       PostSDigitizer(fSDigitsTitle,folder->GetName()) ;
 
     sdigitizerBranch->SetAddress(SDigitizerRef(sdname)) ;
-    sdigitizerBranch->GetEntry(0) ;
-    
+    sdigitizerBranch->GetEntry(0) ;  
   }    
   
   // After SDigits have been read from all files, return to the first one
@@ -2027,4 +2035,98 @@ const TTask * AliPHOSGetter::ReturnT(TString what, TString name) const
   if(fDebug)
     cout << "WARNING: AliPHOSGetter::ReturnT -> Task " << search << "/" << name << " not found!" << endl ; 
   return 0 ;
+}
+
+//____________________________________________________________________________ 
+void AliPHOSGetter::RemoveTask(TString opt, TString name) const 
+{
+  // remove a task from the folder
+  // path is fTasksFolder/SDigitizer/PHOS/name
+
+  TTask * task = 0 ; 
+  TTask * phos = 0 ; 
+  TList * lofTasks = 0 ; 
+
+  if (opt == "S") {
+    task = dynamic_cast<TTask*>(fTasksFolder->FindObject("SDigitizer")) ;
+    if (!task) 
+      return ; 
+  }
+
+  else if (opt == "D") {
+    task = dynamic_cast<TTask*>(fTasksFolder->FindObject("Digitizer")) ;
+    if (!task) 
+      return ; 
+  }
+  else {
+    cerr << "WARNING: AliPHOSGetter::RemoveTask -> Unknown option " << opt.Data() << endl ; 
+    return ; 
+  }
+  phos =  dynamic_cast<TTask*>(task->GetListOfTasks()->FindObject("PHOS")) ;
+  if (!phos)
+    return ; 
+  lofTasks = phos->GetListOfTasks() ;
+  if (!lofTasks) 
+    return ; 
+  TObject * obj = lofTasks->FindObject(name) ; 
+  if (obj) 
+    lofTasks->Remove(obj) ;
+}
+
+//____________________________________________________________________________ 
+void AliPHOSGetter::RemoveObjects(TString opt, TString name) const 
+{
+  // remove SDigits from the folder
+  // path is fSDigitsFolder/fHeaderFileName/name
+
+  TFolder * phos     = 0 ; 
+  TFolder * phosmain = 0 ; 
+
+  if (opt == "H") {
+    phos = dynamic_cast<TFolder*>(fHitsFolder->FindObject("PHOS")) ;
+    if (!phos) 
+      return ;
+    name = "Hits" ; 
+  }
+
+  else if ( opt == "S") {
+    phosmain = dynamic_cast<TFolder*>(fSDigitsFolder->FindObject("PHOS")) ;
+    if (!phosmain) 
+      return ;
+    phos = dynamic_cast<TFolder*>(phosmain->FindObject(fHeaderFile)) ;
+    if (!phos) 
+      return ;
+  }
+  
+  else if (opt == "D") {
+    phos = dynamic_cast<TFolder*>(fDigitsFolder->FindObject("PHOS")) ;
+    if (!phos) 
+      return ;
+  }
+  else {
+    cerr << "WARNING: AliPHOSGetter::RemoveObjects -> Unknown option " << opt.Data() << endl ; 
+    return ; 
+  }
+  
+  TObjArray * ar  = dynamic_cast<TObjArray*>(phos->FindObject(name)) ; 
+  if (ar) { 
+    phos->Remove(ar) ;
+    ar->Delete() ; 
+    delete ar ; 
+  }
+
+  if (opt == "S") 
+    phosmain->Remove(phos) ; 
+  
+}
+
+//____________________________________________________________________________ 
+void AliPHOSGetter::RemoveSDigits() const 
+{
+  TFolder * phos= dynamic_cast<TFolder*>(fSDigitsFolder->FindObject("PHOS")) ;
+  if (!phos) 
+    return ;
+  
+  phos->SetOwner() ; 
+  phos->Clear() ; 
 }

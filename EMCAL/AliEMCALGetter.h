@@ -62,7 +62,7 @@ class AliEMCALGetter : public TObject {
   
   virtual ~AliEMCALGetter() ; 
   
-  void CloseFile() { fFile->Close() ; } 
+  void CloseFile() ;  
   const Bool_t HasFailed(void) const {return fFailed ;} 
   Bool_t PostHits(void ) const ;  
   Bool_t PostSDigits(      const char * name,  const char * file = 0) const ;  
@@ -161,7 +161,10 @@ class AliEMCALGetter : public TObject {
   const TParticle *           Primary(Int_t index) const ;
   const Int_t                 NPrimaries()const { return fNPrimaries; }
 
-  void  SetDebug(Int_t level) {fDebug = level;} // Set debug level
+  void RemoveTask(TString opt, TString name) const ;
+  void RemoveObjects(TString opt, TString name) const ; 
+  void RemoveSDigits() const ; 
+  void SetDebug(Int_t level) {fDebug = level;} // Set debug level
 
   AliEMCALGetter & operator = (const AliEMCALGetter & ) {
     // assignement operator requested by coding convention, but not needed

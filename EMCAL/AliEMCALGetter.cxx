@@ -164,12 +164,23 @@ AliEMCALGetter::~AliEMCALGetter()
   fFile->Close() ;  
   delete fFile ; 
   fFile = 0 ;
+
+  fgObjGetter = 0 ; 
+
 }
 
 //____________________________________________________________________________ 
 void AliEMCALGetter::CreateWhiteBoard() const
 {
 
+}
+
+//____________________________________________________________________________ 
+void AliEMCALGetter::CloseFile()
+{
+//   delete gAlice ; 
+//   gAlice = 0 ; 
+  fFile->Close() ; 
 }
 
 //____________________________________________________________________________ 
@@ -194,13 +205,13 @@ AliEMCALGetter * AliEMCALGetter::GetInstance(const char* headerFile,
   // Creates and returns the pointer of the unique instance
   // Must be called only when the environment has changed 
 
-  if ( fgObjGetter )    
+  if ( fgObjGetter && fFile->IsOpen()) // an instance exists and the file is still open        
     if((fgObjGetter->fBranchTitle.CompareTo(branchTitle) == 0) && 
        (fgObjGetter->fHeaderFile.CompareTo(headerFile)==0)) {
       fFile->cd() ; 
       return fgObjGetter ;
     }
-    else
+    else // another file than the existing one is required, scratch the getter
       fgObjGetter->~AliEMCALGetter() ;  // delete it already exists another version
 
   fgObjGetter = new AliEMCALGetter(headerFile,branchTitle, rw) ; 
@@ -1900,4 +1911,100 @@ const TTask * AliEMCALGetter::ReturnT(TString what, TString name) const
   if(fDebug)
     cout << "WARNING: AliEMCALGetter::ReturnT -> Task " << search << "/" << name << " not found!" << endl ; 
   return 0 ;
+}
+
+
+//____________________________________________________________________________ 
+void AliEMCALGetter::RemoveTask(TString opt, TString name) const 
+{
+  // remove a task from the folder
+  // path is fTasksFolder/SDigitizer/PHOS/name
+
+  TTask * task  = 0 ; 
+  TTask * emcal = 0 ; 
+  TList * lofTasks = 0 ; 
+
+  if (opt == "S") {
+    task = dynamic_cast<TTask*>(fTasksFolder->FindObject("SDigitizer")) ;
+    if (!task) 
+      return ; 
+  }
+  
+  else if (opt == "D") {
+    task = dynamic_cast<TTask*>(fTasksFolder->FindObject("Digitizer")) ;
+    if (!task) 
+      return ; 
+  }
+  else {
+    cerr << "WARNING: AliPHOSGetter::RemoveTask -> Unknown option " << opt.Data() << endl ; 
+    return ; 
+  }
+  
+  emcal =  dynamic_cast<TTask*>(task->GetListOfTasks()->FindObject("EMCAL")) ;
+  if (!emcal)
+    return ; 
+  lofTasks = emcal->GetListOfTasks() ;
+  if (!lofTasks) 
+    return ; 
+  TObject * obj = lofTasks->FindObject(name) ; 
+  if (obj) 
+    lofTasks->Remove(obj) ;
+}
+
+//____________________________________________________________________________ 
+void AliEMCALGetter::RemoveObjects(TString opt, TString name) const 
+{
+  // remove SDigits from the folder
+  // path is fSDigitsFolder/fHeaderFileName/name
+
+  TFolder * emcal     = 0 ; 
+  TFolder * emcalmain = 0 ; 
+
+  if (opt == "H") {
+    emcal = dynamic_cast<TFolder*>(fHitsFolder->FindObject("EMCAL")) ;
+    if (!emcal) 
+      return ;
+    name = "Hits" ; 
+  }
+  
+  else if ( opt == "S") {
+    emcalmain = dynamic_cast<TFolder*>(fSDigitsFolder->FindObject("EMCAL")) ;
+    if (!emcalmain) 
+      return ;
+    emcal = dynamic_cast<TFolder*>(emcalmain->FindObject(fHeaderFile)) ;
+    if (!emcal) 
+      return ;
+  }
+
+  else if (opt == "D") {
+    emcal = dynamic_cast<TFolder*>(fDigitsFolder->FindObject("EMCAL")) ;
+    if (!emcal) 
+      return ;
+  }
+  else {
+    cerr << "WARNING: AliEMCALGetter::RemoveObjects -> Unknown option " << opt.Data() << endl ; 
+    return ; 
+  }
+  
+  TObjArray * ar  = dynamic_cast<TObjArray*>(emcal->FindObject(name)) ; 
+  if (ar) { 
+    emcal->Remove(ar) ;
+    ar->Delete() ; 
+    delete ar ; 
+  }
+
+  if (opt == "S") 
+    emcalmain->Remove(emcal) ; 
+  
+}
+
+//____________________________________________________________________________ 
+void AliEMCALGetter::RemoveSDigits() const 
+{
+  TFolder * emcal= dynamic_cast<TFolder*>(fSDigitsFolder->FindObject("EMCAL")) ;
+  if (!emcal) 
+    return ;
+  
+  emcal->SetOwner() ; 
+  emcal->Clear() ; 
 }
