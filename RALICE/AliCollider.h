@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $Id: AliCollider.h,v 1.6 2003/12/18 09:28:06 nick Exp $
+// $Id: AliCollider.h,v 1.7 2004/01/12 08:23:22 nick Exp $
 
 #include "TPythia6.h"
 #include "TString.h"
@@ -68,7 +68,8 @@ class AliCollider : public TPythia6
 
   Int_t IsSelected();   // Check whether (sub)event passed the selection criteria
   void GetFractions(Float_t zp,Float_t ap,Float_t zt,Float_t at); // Determine various N-N collision fractions
+  TString GetPyname(Int_t kf); // Provide the correctly truncated Pythia particle name for PDG code kf  
 
- ClassDef(AliCollider,6) // Pythia based universal physics event generator
+ ClassDef(AliCollider,7) // Pythia based universal physics event generator
 };
 #endif

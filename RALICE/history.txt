@@ -476,3 +476,13 @@
                 via the TTimeStamp constructor. This is only possible with ROOT version 3.10/02 or later,
                 since for earlier versions the TTimeStamp::Set memberfunctions were erroneously declared
                 private. 
+11-feb-2004 NvE In script "gcclib" the option -Wno-long-long added to prevent warnings from the usage
+                of type "long long" in Rtypes.h
+12-feb-2004 NvE In AliCollider::MakeEvent the statement "char* name" was replaced by "char name[16]" to
+                comply with TPythia6 convention. Also the hardcoded values of the p and n masses have
+                been replaced by masses obtained from the Pythia system via a call to GetPMAS(). 
+                Because of a bug in TPythia6 the function Pymass() couldn't be used directly.
+13-feb-2004 NvE AliCollider::GetPyname introduced to provide a correctly stripped character string
+                for the particle names. The name returned by TPythia6::Pyname contains trailing
+                characters due to an incorrect stripping process.
+                AliCollider::MakeEvent was updated accordingly to make use of this new memberfunction.
