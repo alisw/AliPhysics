@@ -49,7 +49,7 @@ class AliPHOS : public AliDetector {
   virtual void    SetTreeAddress();   
   virtual TTree * TreeQA() const {return fTreeQA; } 
   virtual TString Version() {return TString(" ") ; } 
-  virtual void AliPHOS::WriteQA() ; 
+  virtual void WriteQA() ; 
   AliPHOS & operator = (const AliPHOS & rvalue)  {
     // assignement operator requested by coding convention
     // but not needed
