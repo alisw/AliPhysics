@@ -135,26 +135,26 @@ void Config()
     field->SetSolenoidField(4.);
     gAlice->SetField(field);    
 
-    Int_t iMAG    = 0;
-    Int_t iITS    = 0;
-    Int_t iTPC    = 0;
-    Int_t iTOF    = 0;
+    Int_t iMAG    = 1;
+    Int_t iITS    = 1;
+    Int_t iTPC    = 1;
+    Int_t iTOF    = 1;
     Int_t iRICH   = 0;
     Int_t iZDC    = 0;
     Int_t iCASTOR = 0;
-    Int_t iTRD    = 0;
-    Int_t iABSO   = 0;
+    Int_t iTRD    = 1;
+    Int_t iABSO   = 1;
     Int_t iDIPO   = 0;
-    Int_t iHALL   = 0;
-    Int_t iFRAME  = 0;
+    Int_t iHALL   = 1;
+    Int_t iFRAME  = 1;
     Int_t iSHIL   = 0;
-    Int_t iPIPE   = 0;
-    Int_t iFMD    = 0;
+    Int_t iPIPE   = 1;
+    Int_t iFMD    = 1;
     Int_t iMUON   = 0;
-    Int_t iPHOS   = 0;
-    Int_t iPMD    = 0;
-    Int_t iSTART  = 0;
-    Int_t iVZERO  = 0;
+    Int_t iPHOS   = 1;
+    Int_t iPMD    = 1;
+    Int_t iSTART  = 1;
+    Int_t iVZERO  = 1;
     Int_t iEMCAL  = 1;    
 // 
 //  enable/disable StepManager()
