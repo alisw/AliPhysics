@@ -24,8 +24,8 @@ class AliESD;
 class AliJetParticlesReaderESD: public AliJetParticlesReader
 {
   public:
-  AliJetParticlesReaderESD(const Char_t* esdfilename = "AliESDs.root") ;
-  AliJetParticlesReaderESD(TObjArray* dirs,const Char_t* esdfilename = "AliESDs.root");
+  AliJetParticlesReaderESD(Bool_t constrained,const Char_t* esdfilename = "AliESDs.root") ;
+  AliJetParticlesReaderESD(Bool_t constrained,TObjArray* dirs,const Char_t* esdfilename = "AliESDs.root");
 
   void SetCompareFlag(ULong_t f){fPassFlag=f;}
   void SetCompareFlagTPC() {fPassFlag=AliESDtrack::kTPCrefit;}
@@ -43,6 +43,7 @@ class AliJetParticlesReaderESD: public AliJetParticlesReader
   TFile*   OpenFile(Int_t evno);      //opens file to be read for given event
   Bool_t   IsAcceptedParticle(Float_t px, Float_t py, Float_t pz) const;
     
+  Bool_t  fConstrained; // use constrained track parameters
   TString fESDFileName; // name of the file with tracks
   AliESD *fESD;         //! pointer to current esd object
   TFile*  fFile;        //! pointer to current ESD file
@@ -50,7 +51,7 @@ class AliJetParticlesReaderESD: public AliJetParticlesReader
   TIter*  fKeyIterator; //! key iterator through file
   ULong_t fPassFlag;    //flag to compare esd flag with 
 
-  ClassDef(AliJetParticlesReaderESD,1) //
+  ClassDef(AliJetParticlesReaderESD,2) //
 };
 
 inline Bool_t AliJetParticlesReaderESD::IsAcceptedParticle(Float_t pt, Float_t phi, Float_t eta) const

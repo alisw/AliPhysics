@@ -51,16 +51,27 @@ class AliJetParticlesReaderKine: public AliJetParticlesReader
 
 inline Bool_t AliJetParticlesReaderKine::IsAcceptedParticle(TParticle *p) const
 {
-  Int_t pcode=p->GetPdgCode();  
-  if ((pcode==11)||(pcode==-11)||(pcode==22)) {
+  Int_t pcode=TMath::Abs(p->GetPdgCode());  
+  
+  if ((pcode==11)||(pcode==22)) {
     if(!fEM) return kFALSE;
   }  else {
+#if 1
+    if(pcode!=211  && pcode!=321 && pcode!=2212 && 
+       pcode!=111  && pcode!=311 && pcode!=2112 && 
+       pcode!=3122 && pcode!=213 && pcode!=113 &&
+       pcode!=130 &&pcode!=310) {
+      //p->Print();
+      return kFALSE;
+    }
+#endif
     TParticlePDG *pdg=p->GetPDG();
     Int_t ch=(Int_t)pdg->Charge(); 
     if((!fCharged)&&(ch)) return kFALSE;
     if((!fNeutral)&&(!ch)) return kFALSE;
   }
 
+  //p->Print();
   Float_t eta=0.;//p->Eta();
   Float_t pz=p->Pz();
   //if(TMath::Abs(pz)>150.) return kFALSE;

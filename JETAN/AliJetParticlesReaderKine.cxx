@@ -197,7 +197,7 @@ Int_t AliJetParticlesReaderKine::ReadNext()
 	    }
 	  }
 	}
-	headdesc+="Run ";
+	headdesc+=" Run ";
 	headdesc+=header->GetRun();
 	headdesc+=": Ev ";
 	headdesc+=header->GetEventNrInRun();
@@ -230,6 +230,7 @@ Int_t AliJetParticlesReaderKine::ReadNext()
 	    //}
 	  } else if(gentype==3){ //Pythia
 	    if(p->GetStatusCode()!=1) continue;
+	    p->SetWeight(-123); //mark particle
 	  }
 
 	  //kinematic cuts

@@ -121,6 +121,51 @@ void  AliJetEventParticles::Reset(Int_t size)
   }
 } 
 
+void AliJetEventParticles::AddSignal(const AliJetEventParticles& source)
+{ //mark signal particles and add them to TClonesArray
+  //note that fNParticles still keeps only background particles
+
+  Int_t nSignalParts=source.GetNParticles();
+  for(Int_t i=0; i<nSignalParts; i++)
+    {
+      const AliJetParticle *kjp=source.GetParticle(i);
+
+      AliJetParticle *ap=new((*fParticles)[fNParticles+i]) AliJetParticle(*(kjp));
+      ap->SetType(-123); //mark pythia particle
+    }
+  for(Int_t i=nSignalParts+fNParticles;i<fParticles->GetEntriesFast();i++)
+    fParticles->RemoveAt(i);
+  //cout << fParticles->GetEntries() << " " << fNParticles << " " << nSignalParts << endl;
+
+  /* should we transform the vertex???
+  fVertexX=source.GetVertexX();
+  fVertexY=source.GetVertexY();
+  fVertexZ=source.GetVertexZ();
+  */
+  fTrials=source.Trials();
+  fNJets=source.NTriggerJets();
+  fNUQJets=source.NUQTriggerJets();
+  fXJet=source.GetXJet();
+  fYJet=source.GetXJet();
+
+
+  for (Int_t i = 0; i < 4; i++) fZquench[i] = 0.;
+  for (Int_t i = 0; i < 10; i++) 
+    for (Int_t j = 0; j < 4; j++) {
+      fJets[j][i]=0;    // Trigger jets
+      fUQJets[j][i]=0;  // Unquenched trigger jets
+    }
+  source.GetZQuench(fZquench);
+  for (Int_t i = 0; i < NTriggerJets(); i++){
+    source.TriggerJet(i,fJets[0][i],fJets[1][i],fJets[2][i],fJets[3][i]);
+  }
+  for (Int_t i = 0; i < NUQTriggerJets(); i++){
+    source.UQJet(i,fUQJets[0][i],fUQJets[1][i],fUQJets[2][i],fUQJets[3][i]);
+  }
+  source.Hard(0,fHard[0][0],fHard[1][0],fHard[2][0],fHard[3][0],fHard[4][0]);
+  source.Hard(1,fHard[0][1],fHard[1][1],fHard[2][1],fHard[3][1],fHard[4][1]);
+}
+
 void AliJetEventParticles::AddParticle(AliJetParticle* part)
 {
   //Adds new particle to the event
@@ -133,24 +178,24 @@ void AliJetEventParticles::AddParticle(const AliJetParticle* part)
   new((*fParticles)[fNParticles++]) AliJetParticle(*part);
 }
 
-void AliJetEventParticles::AddParticle(const TParticle* part,Int_t idx, Int_t l)
+void AliJetEventParticles::AddParticle(const TParticle* part,Int_t idx, Int_t l, Int_t ncl)
 {
   //Adds new particle to the event
-  new((*fParticles)[fNParticles++]) AliJetParticle(part,idx,l);
+  new((*fParticles)[fNParticles++]) AliJetParticle(part,idx,l,ncl);
 }
 
 void AliJetEventParticles::AddParticle(Float_t px, Float_t py, Float_t pz, 
-                              Float_t etot, Int_t idx, Int_t l)
+                              Float_t etot, Int_t idx, Int_t l, Int_t ncl)
 {
   //Adds new particle to the event
-  new((*fParticles)[fNParticles++]) AliJetParticle(px,py,pz,etot,idx,l); 
+  new((*fParticles)[fNParticles++]) AliJetParticle(px,py,pz,etot,idx,l,ncl); 
 }
 
 void AliJetEventParticles::AddParticle(Float_t px, Float_t py, Float_t pz, Float_t etot, Int_t idx, Int_t l,
-		              Float_t pt, Float_t phi, Float_t eta)
+		              Int_t ncl, Float_t pt, Float_t phi, Float_t eta)
 {
   //Adds new particle to the event
-  new((*fParticles)[fNParticles++]) AliJetParticle(px,py,pz,etot,idx,l,pt,phi,eta); 
+  new((*fParticles)[fNParticles++]) AliJetParticle(px,py,pz,etot,idx,l,ncl,pt,phi,eta); 
 }
 
 const AliJetParticle* AliJetEventParticles::GetParticleSafely(Int_t n)

@@ -27,8 +27,10 @@
 
 ClassImp(AliJetParticlesReaderESD)
 
-AliJetParticlesReaderESD::AliJetParticlesReaderESD(const Char_t* esdfilename) :
+AliJetParticlesReaderESD::AliJetParticlesReaderESD(Bool_t constrained,
+						   const Char_t* esdfilename) :
   AliJetParticlesReader(),
+  fConstrained(constrained),
   fESDFileName(esdfilename),
   fESD(0),
   fFile(0),
@@ -42,9 +44,11 @@ AliJetParticlesReaderESD::AliJetParticlesReaderESD(const Char_t* esdfilename) :
 /********************************************************************/
   
 AliJetParticlesReaderESD::AliJetParticlesReaderESD(
+                                      Bool_t constrained,
                                       TObjArray* dirs,
                                       const Char_t* esdfilename) :
   AliJetParticlesReader(dirs),
+  fConstrained(constrained),
   fESDFileName(esdfilename),
   fESD(0),
   fFile(0),
@@ -212,18 +216,22 @@ Int_t AliJetParticlesReaderESD::ReadESD(AliESD* esd)
         continue;
       }
 
-     if ((kesdtrack->GetStatus() & fPassFlag) == kFALSE)
+     if ((kesdtrack->GetStatus() & fPassFlag) != fPassFlag)
       {
 	Info("ReadNext","Particle skipped: %ud.",kesdtrack->GetStatus());
         continue;
       }
 
      Double_t mom[3];  //momentum
-     kesdtrack->GetPxPyPz(mom);
-     //kesdtrack->GetConstrainedPxPyPz(mom);
-     //Double_t pos[3];//position
-     //kesdtrack->GetXYZ(pos);
-     //kesdtrack->GetConstrainedXYZ(pos);
+     Double_t xyz[3];  //position
+     if (fConstrained) {
+       if (kesdtrack->GetConstrainedChi2() > 25) continue;
+       kesdtrack->GetConstrainedPxPyPz(mom);
+       kesdtrack->GetConstrainedXYZ(xyz);
+     } else {
+       kesdtrack->GetPxPyPz(mom);
+       kesdtrack->GetXYZ(xyz);
+     }
      const Float_t kmass=kesdtrack->GetMass();
      const Float_t kp2=mom[0]*mom[0]+mom[1]*mom[1]+mom[2]*mom[2];
      const Float_t ketot=TMath::Sqrt(kmass*kmass+kp2);
@@ -231,8 +239,16 @@ Int_t AliJetParticlesReaderESD::ReadESD(AliESD* esd)
      const Float_t kp=TMath::Sqrt(kp2);
      const Float_t keta=0.5*TMath::Log((kp+mom[2]+1e-30)/(kp-mom[2]+1e-30)); 
      const Float_t kphi=TMath::Pi()+TMath::ATan2(-mom[1],-mom[0]);
+     //Double_t dx = xyz[0]-vertexpos[0];
+     //Double_t dy = xyz[1]-vertexpos[1];
+     //Float_t dca = TMath::Sqrt(dx*dx + dy*dy);
+     //Float_t dz = xyz[2]-vertexpos[2];
+     UInt_t index[6];
+     const Int_t kncl=kesdtrack->GetITSclusters(index)
+                      +kesdtrack->GetTPCclusters(NULL)
+                      +kesdtrack->GetTRDclusters(NULL);
      if(IsAcceptedParticle(kpt,kphi,keta))
-       fEventParticles->AddParticle(mom[0],mom[1],mom[2],ketot,i,kesdtrack->GetLabel(),kpt,kphi,keta);
+       fEventParticles->AddParticle(mom[0],mom[1],mom[2],ketot,i,kesdtrack->GetLabel(),kncl,kpt,kphi,keta);
 
    } // loop over tracks
 

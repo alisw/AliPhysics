@@ -140,7 +140,7 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
     const Float_t kphi=TMath::Pi()+TMath::ATan2(-kpy,-kpx);
 
     if(IsAcceptedParticle(kpt,kphi,keta))
-      fEventParticles->AddParticle(kpx,kpy,kpz,kp,i,kesdtrack->GetMCid(),kpt,kphi,keta);
+      fEventParticles->AddParticle(kpx,kpy,kpz,kp,i,kesdtrack->GetMCid(),knhits,kpt,kphi,keta);
   } //loop over tracks
 
   return kTRUE;

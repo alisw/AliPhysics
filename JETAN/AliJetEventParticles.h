@@ -12,8 +12,8 @@
 ///////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
-//#include <TObjString.h>
 #include <TString.h>
+
 class TParticle;
 class TClonesArray;
 class AliJetParticle;
@@ -34,12 +34,14 @@ class AliJetEventParticles: public TObject
   //adds particle to the event
   void AddParticle(AliJetParticle* p);  
   void AddParticle(const AliJetParticle* p); 
-  void AddParticle(const TParticle* part,Int_t idx=-1, Int_t l=0); 
-  void AddParticle(Float_t px, Float_t py, Float_t pz, Float_t etot, Int_t idx=-1, Int_t l=0);
-  void AddParticle(Float_t px, Float_t py, Float_t pz, Float_t etot, Int_t idx, Int_t l,
+  void AddParticle(const TParticle* part,Int_t idx=-1, Int_t l=0, Int_t ncl=0); 
+  void AddParticle(Float_t px, Float_t py, Float_t pz, Float_t etot, Int_t idx=-1, Int_t l=0, Int_t ncl=0);
+  void AddParticle(Float_t px, Float_t py, Float_t pz, Float_t etot, Int_t idx, Int_t l, Int_t ncl,
 		   Float_t pt, Float_t phi, Float_t eta);
 
-  const AliJetParticle* GetParticle(Int_t n) //gets particle without boundary check
+  void AddSignal(const AliJetEventParticles& source);
+
+  const AliJetParticle* GetParticle(Int_t n) const //gets particle without boundary check
     {return (const AliJetParticle*)fParticles->At(n);} 
   const AliJetParticle* GetParticleSafely(Int_t n); 
   Int_t GetNParticles()              const {return fNParticles;}

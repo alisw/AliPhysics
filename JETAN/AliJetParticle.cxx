@@ -25,41 +25,52 @@ AliJetParticle::AliJetParticle() :
 AliJetParticle::AliJetParticle(const AliJetParticle& in) :
   TObject(in)
 {
+  Clear();
   SetMomentum(in.fPx,in.fPy,in.fPz,in.fE);
   fIdxInEvent=in.fIdxInEvent;
   fLabel=in.fLabel;
   fType=in.fType;
+  fNhits=in.fNhits;
 }
  
-AliJetParticle::AliJetParticle(const TParticle* p, Int_t idx, Int_t l) :
+AliJetParticle::AliJetParticle(const TParticle* p, Int_t idx, Int_t l, Int_t ncl) :
   TObject()
 {
+  Clear();
   SetMomentum(p->Px(),p->Py(),p->Pz(),p->Energy());
   fIdxInEvent=idx;
   fLabel=l;
-  fType=0;
+  fType=(Int_t)p->GetWeight();
+  fNhits=ncl;
 }
 
 AliJetParticle::AliJetParticle(Float_t px, Float_t py, Float_t pz, 
-                               Float_t etot, Int_t idx, Int_t l) :
+                               Float_t etot, Int_t idx, Int_t l, Int_t ncl) :
   TObject()
 {
+  Clear();
   SetMomentum(px,py,pz,etot);
   fIdxInEvent=idx;
   fLabel=l;
-  fType=0;
+  fNhits=ncl;
 }
 
 AliJetParticle::AliJetParticle(Float_t px, Float_t py, Float_t pz, 
-                               Float_t etot, Int_t idx, Int_t l,
+                               Float_t etot, Int_t idx, Int_t l, Int_t ncl,
 			       Float_t pt, Float_t phi, Float_t eta) :
   TObject(),
   fPx(px),fPy(py),fPz(pz),
   fE(etot),fIdxInEvent(idx),
-  fType(0),fLabel(l),
+  fType(0),fLabel(l),fNhits(ncl),
   fPt(pt),fEta(eta),fPhi(phi)
 {
+}
 
+TParticle* AliJetParticle::Particle() const
+{
+  TParticle *ret=new TParticle(0,0,0,0,0,0,fPx,fPy,fPz,fE,0,0,0,0);
+  ret->SetWeight(fType);
+  return ret;
 }
 
 void AliJetParticle::Calculate()
@@ -75,13 +86,14 @@ void AliJetParticle::Calculate()
 
 void AliJetParticle::Clear(Option_t* /*t*/)
 {
-  fType=0;
   fPx=0.;
   fPy=0.;
   fPz=0.;
   fE=0.;
   fIdxInEvent=0;
+  fType=0;
   fLabel=0;
+  fNhits=0;
   fPt=0.;
   fEta=0.;
   fPhi=0.;
