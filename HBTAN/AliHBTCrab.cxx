@@ -60,6 +60,10 @@ fReducedMom(kTRUE),
 fMaxMomentum(100.0)
 {
   //ctor
+  if(fgCrab)
+   {
+     Fatal("AliHBTCrab","Do not use constructor directly. Use Instance() instead.");
+   }
 }
 //===================================================================
 

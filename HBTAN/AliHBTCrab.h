@@ -34,6 +34,7 @@ class AliHBTCrab: public AliHBTWeights
  {
    public:
 
+     AliHBTCrab();
      virtual ~AliHBTCrab(){fgCrab =0x0;}
      static AliHBTCrab* Instance();
      void Set();
@@ -42,7 +43,6 @@ class AliHBTCrab: public AliHBTWeights
      void Init(Int_t pid1,Int_t pid2); //put the initial values in fortran commons fsiini, led_bldata
      
    private:
-     AliHBTCrab();
      AliHBTCrab(const AliHBTCrab &/*source*/);
      AliHBTCrab & operator=(const AliHBTCrab& /*source*/);
 
