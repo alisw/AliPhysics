@@ -27,4 +27,6 @@
 #pragma link C++ class AliArrayI+;
 #pragma link C++ class AliArrayS+;
 
+#pragma link C++ class AliH2F+;
+
 #endif
