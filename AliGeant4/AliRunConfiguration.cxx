@@ -23,6 +23,8 @@
 
 ClassImp(AliRunConfiguration)
 
+Bool_t  AliRunConfiguration::fgIsHoles = true;
+
 //_____________________________________________________________________________
 AliRunConfiguration::AliRunConfiguration()
   : TG4VRunConfiguration()

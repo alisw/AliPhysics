@@ -29,6 +29,11 @@ class AliRunConfiguration : public TG4VRunConfiguration
     // --> protected
     // AliRunConfiguration(const AliRunConfiguration& right);
     virtual ~AliRunConfiguration();
+
+    // static methods
+    static void   SwitchHoles(Bool_t isHoles);
+    static Bool_t Holes();
+
     void SetConfigName(const char* name);
     void SetG3CallsName(const char* name);
 
@@ -42,11 +47,22 @@ class AliRunConfiguration : public TG4VRunConfiguration
     virtual void CreateUserConfiguration();
     
   private:
+    // static data members
+    static Bool_t     fgIsHoles;      //option for geometry with/without holes
+
     AliRunMessenger*  fRunMessenger;  //messenger 
     AliFiles*         fFiles;         //file paths  
     
   ClassDef(AliRunConfiguration, 1) // Ali* specific action classes for Geant4  
 };
+
+// inline functions
+
+inline void   AliRunConfiguration::SwitchHoles(Bool_t isHoles) 
+{ fgIsHoles = isHoles;}
+
+inline Bool_t AliRunConfiguration::Holes()
+{ return fgIsHoles; }
 
 #endif //ALI_RUN_CONFIGURATION_H
 
