@@ -542,8 +542,7 @@ void AliRICHv3::CreateGeometry()
    rr  = RotateXY(r, -dRotAngleRad);
    AliMatrix(idrotm[1006], rr[0], rr[1], rr[2], rr[3], rr[4], rr[5]);
    pRotMatrix->SetAngles(rr[0], rr[1], rr[2], rr[3], rr[4], rr[5]);
-//   vector.SetXYZ(0,dOffset,0);  vector.RotateZ(dBetaRad); vector.RotateX(-dAlphaRad); //kir
-   vector.SetXYZ(0,dOffset,0);  vector.RotateZ(dBetaRad); vector.RotateX(dAlphaRad); //kir
+   vector.SetXYZ(0,dOffset,0);  vector.RotateZ(dBetaRad); vector.RotateX(-dAlphaRad);
    vector.RotateZ(-dRotAngleRad);
       
    gMC->Gspos("RICH",7,"ALIC",vector.X(),vector.Y(),vector.Z(),idrotm[1006], "ONLY");
