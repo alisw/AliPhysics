@@ -1,12 +1,14 @@
 SRCS= \
+AliVZEROLoader.cxx \
 AliVZERO.cxx \
 AliVZEROv0.cxx \
 AliVZEROv2.cxx \
 AliVZEROhit.cxx \
 AliVZEROdigit.cxx
 
-HDRS= $(SRCS:.cxx=.h)
+HDRS:= $(SRCS:.cxx=.h)
 
-DHDR=VZEROLinkDef.h
+DHDR:=VZEROLinkDef.h
 
-EINCLUDE:= $(ALICE)/geant3/TGeant3 STRUCT STEER
+EINCLUDE:= $(ALICE)/geant3/TGeant3 STRUCT STEER CONTAINERS
+

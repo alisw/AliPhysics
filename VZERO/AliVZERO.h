@@ -7,7 +7,9 @@
 //////////////////////////////////////////////////
 //  Manager and hits classes for set : VZERO    //
 //////////////////////////////////////////////////
- 
+
+#include "AliRun.h"
+#include "AliLoader.h" 
 #include "AliDetector.h"
 #include "AliHit.h"
 #include "TNamed.h"
@@ -30,6 +32,7 @@ public:
   virtual Int_t  DistanceToPrimitive(Int_t px, Int_t py);
   virtual Int_t  IsVersion() const = 0;
   virtual void   Init();
+  virtual AliLoader* MakeLoader(const char* topfoldername);
   virtual void   MakeBranch(Option_t *option) =0;
 //  virtual void   MakeBranch(Option_t *option);
   virtual void   DrawModule() {};

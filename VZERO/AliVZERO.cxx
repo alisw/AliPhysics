@@ -30,6 +30,7 @@
 
 #include "AliRun.h"
 #include "AliVZERO.h"
+#include "AliVZEROLoader.h"
 #include "AliVZEROdigit.h"
 #include "AliVZEROhit.h"
 
@@ -50,8 +51,6 @@ AliVZERO::AliVZERO(const char *name, const char *title)
   fDigits       =  new TClonesArray("AliVZEROdigit",400); 
    
   gAlice->AddHitList(fHits);
-
-//  fDigits       =  new TClonesArray("AliVZEROdigit",400) ; 
 
   fThickness    =  4.1;   // total thickness of the V0R box
   fThickness1   =  0.7;   // thickness of the thickest cell (2.5 in version 0)
@@ -143,3 +142,17 @@ void AliVZERO::SetMaxDestepAlu(Float_t p1)
 {
     fMaxDestepAlu = p1;
 }
+
+//___________________________________________
+AliLoader* AliVZERO::MakeLoader(const char* topfoldername)
+{ 
+  // builds VZEROgetter (AliLoader type)
+  // if detector wants to use customized getter, it must overload this method
+
+  Info("MakeLoader","Creating AliVZEROLoader. Top folder is %s.",topfoldername);
+  fLoader = new AliVZEROLoader(GetName(),topfoldername);
+  return fLoader;
+}
+
+
+
