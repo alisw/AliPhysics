@@ -331,8 +331,8 @@ Bool_t AliReconstruction::RunTracking(AliESD* esd)
   fTPCTracker->SetVertex(vtxPos, vtxErr);
   fTRDTracker->SetVertex(vtxPos, vtxErr);
 
-  // TPC inward fit
-  Info("RunTracking", "TPC inward fit");
+  // TPC tracking
+  Info("RunTracking", "TPC tracking");
   fTPCLoader->LoadRecPoints("read");
   TTree* tpcTree = fTPCLoader->TreeR();
   if (!tpcTree) {
@@ -341,12 +341,15 @@ Bool_t AliReconstruction::RunTracking(AliESD* esd)
   }     
   fTPCTracker->LoadClusters(tpcTree);
   if (fTPCTracker->Clusters2Tracks(esd) != 0) {
-    Error("RunTracking", "TPC inward track fit failed");
+    Error("RunTracking", "TPC Clusters2Tracks failed");
     return kFALSE;
   }
 
-  // ITS inward fit
-  Info("RunTracking", "ITS inward fit");
+  gAlice->GetDetector("TPC")->FillESD(esd); // preliminary PID
+  AliESDpid::MakePID(esd);                  // for the ITS tracker
+
+  // ITS tracking
+  Info("RunTracking", "ITS tracking");
   fITSLoader->LoadRecPoints("read");
   TTree* itsTree = fITSLoader->TreeR();
   if (!itsTree) {
@@ -355,7 +358,7 @@ Bool_t AliReconstruction::RunTracking(AliESD* esd)
   }     
   fITSTracker->LoadClusters(itsTree);
   if (fITSTracker->Clusters2Tracks(esd) != 0) {
-    Error("RunTracking", "ITS inward track fit failed");
+    Error("RunTracking", "ITS Clusters2Tracks failed");
     return kFALSE;
   }
 
