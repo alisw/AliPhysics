@@ -3,7 +3,6 @@ SRCS = 	AliITS.cxx \
                 AliITSvSDD03.cxx AliITSvSSD03.cxx \
 		AliITSvPPRcoarseasymm.cxx \
 		AliITSvPPRasymmFMD.cxx \
-		AliITSv11.cxx \
 		AliITShit.cxx \
 		AliITSDetType.cxx \
 		AliITSgeom.cxx \
@@ -96,14 +95,15 @@ SRCS = 	AliITS.cxx \
 		AliITSRawClusterSPD.cxx \
 		AliITSRawClusterSDD.cxx \
 		AliITSRawClusterSSD.cxx\
-          AliITSspdTestBeam.cxx \
-          DisplayITSv11.cxx \
-		AliITSBaseGeometry.cxx \
-          AliITSv11Geometry.cxx \
-          AliITSv11GeometrySupport.cxx \
+                AliITSspdTestBeam.cxx \
 		AliITSReconstructor.cxx \
 
-#		AliITSAlignmentTrack.cxx AliITSAlignmentModule.cxx \
+#		AliITSv11.cxx \
+#               AliITSv11Geometry.cxx \
+#               AliITSv11GeometrySupport.cxx \
+#               DisplayITSv11.cxx \
+#		AliITSBaseGeometry.cxx \
+# 		AliITSAlignmentTrack.cxx AliITSAlignmentModule.cxx \
 # 		AliACORDEFunctions.cxx \
 
 HDRS:=  $(SRCS:.cxx=.h)

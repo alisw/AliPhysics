@@ -19,9 +19,9 @@
 #pragma link C++ class  AliITSvSPD02+;
 #pragma link C++ class  AliITSvSDD03+;
 #pragma link C++ class  AliITSvSSD03+;
-#pragma link C++ class  AliITSv11+;
-#pragma link C++ class  AliITSv11Geometry+;
-#pragma link C++ class  AliITSv11GeometrySupport+;
+//#pragma link C++ class  AliITSv11+;
+//#pragma link C++ class  AliITSv11Geometry+;
+//#pragma link C++ class  AliITSv11GeometrySupport+;
 //
 #pragma link C++ class  AliITSspdTestBeam+;
 //#pragma link C++ class  AliITSTestBeamData-;
@@ -30,8 +30,8 @@
 //#pragma link C++ class  AliITSspdTestBeamBurst-;
 //#pragma link C++ class  AliITSspdTestBeamData-;
 //
-#pragma link C++ class  AliITSMixture+;
-#pragma link C++ class  AliITSGeoCable+;
+//#pragma link C++ class  AliITSMixture+;
+//#pragma link C++ class  AliITSGeoCable+;
 //
 #pragma link C++ class  AliITShit+;
 #pragma link C++ class  AliITSdigit+;
@@ -162,7 +162,7 @@
 #pragma link C++ class AliITSDigitizer+;
 #pragma link C++ class AliITSFDigitizer+;
 #pragma link C++ class AliITSFindClustersV2+;
-#pragma link C++ class DisplayITSv11+;
+//#pragma link C++ class DisplayITSv11+;
 // Raw data
 #pragma link C++ class AliITSDDLRawData+;
 
