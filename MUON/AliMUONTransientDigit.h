@@ -18,10 +18,10 @@ class AliMUONTransientDigit : public AliMUONDigit {
     AliMUONTransientDigit(const AliMUONTransientDigit& digit);
     AliMUONTransientDigit(Int_t rpad, Int_t *digits);
     virtual ~AliMUONTransientDigit();
-    Int_t Chamber() {return fChamber;}
-    Int_t GetNTracks() {return fTrackList->GetEntriesFast();}
-    Int_t GetTrack(Int_t i);
-    Int_t GetCharge(Int_t i);
+    Int_t Chamber() const {return fChamber;}
+    Int_t GetNTracks() const {return fTrackList->GetEntriesFast();}
+    Int_t GetTrack(Int_t i) const;
+    Int_t GetCharge(Int_t i) const;
     void AddToTrackList(Int_t track, Int_t charge);
     void UpdateTrackList(Int_t track, Int_t charge);
     AliMUONTransientDigit & operator =(const AliMUONTransientDigit & rhs);

@@ -16,13 +16,13 @@ public:
 }
    AliMUONPadHit(Int_t *clhits);
    virtual ~AliMUONPadHit() {;}
-   Int_t   HitNumber()  {return fHitNumber;}
-   Int_t   Cathode()    {return fCathode;}
-   Int_t   Q()          {return fQ;}
-   Int_t   PadX()       {return fPadX;}   
-   Int_t   PadY()       {return fPadY;}
-   Int_t   QPad()       {return fQpad;}
-   Int_t   RSec()       {return fRSec;}
+   Int_t   HitNumber() const {return fHitNumber;}
+   Int_t   Cathode()   const {return fCathode;}
+   Int_t   Q()         const {return fQ;}
+   Int_t   PadX()      const {return fPadX;}   
+   Int_t   PadY()      const {return fPadY;}
+   Int_t   QPad()      const {return fQpad;}
+   Int_t   RSec()      const {return fRSec;}
    
  private:
    Int_t     fHitNumber;    // Hit number

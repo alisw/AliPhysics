@@ -80,7 +80,7 @@ void AliMUONTransientDigit::UpdateTrackList(Int_t track, Int_t charge)
 }
 
 ////////////////////////////////////////////////////////////////////////
-Int_t AliMUONTransientDigit::GetTrack(Int_t i)
+Int_t AliMUONTransientDigit::GetTrack(Int_t i) const
 {
   if (i > fTrackList->GetEntriesFast()) return 0;
   TVector *pVect = static_cast<TVector*>(fTrackList->At(i));
@@ -89,7 +89,7 @@ Int_t AliMUONTransientDigit::GetTrack(Int_t i)
 
 
 ////////////////////////////////////////////////////////////////////////
-Int_t AliMUONTransientDigit::GetCharge(Int_t i)
+Int_t AliMUONTransientDigit::GetCharge(Int_t i) const
 {
   if (i > fTrackList->GetEntriesFast()) return 0;
   TVector *pVect = static_cast<TVector*>(fTrackList->At(i));
