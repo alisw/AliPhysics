@@ -28,13 +28,18 @@
 
 #include "AliEMCALJetFinderInput.h"
 #include "AliEMCALDigit.h"
+#include "AliEMCALGeometry.h"
 #include "AliEMCALParton.h"
 class TClonesArray;
 
 
 ClassImp(AliEMCALJetFinderInput)
 
-AliEMCALJetFinderInput::AliEMCALJetFinderInput()
+AliEMCALJetFinderInput::AliEMCALJetFinderInput(): 
+fDigitsArray(0),
+fTracksArray(0),
+fParticlesArray(0),
+fPartonsArray(0)
 {
 // Default constructor
 // Defines all TClonesArrays  
@@ -57,17 +62,23 @@ fNParticles     = 0;
 void AliEMCALJetFinderInput::InitArrays()
 {
 if (fDebug>0) Info("AliEMCALJetFinderInput","Beginning InitArrays");
-fNDigits = 96*144;     // This is the number of digits
+fNDigits = 19152;     // This is the number of digits
 fNMaxDigits = fNDigits;
 fNMaxTracks = 3000;
 fNMaxParticles = 2000;
 fNMaxPartons = 4;
-for (Int_t i = 0; i < 96*144; i++)
+
+fDigitsArray  = new TClonesArray ("AliEMCALDigit",fNDigits);     // This is the digits array for the EMCAL
+fTracksArray  = new TClonesArray("TParticle",fNMaxTracks);
+fPartonsArray = new TClonesArray("AliEMCALParton",fNMaxPartons);
+fParticlesArray       = new TClonesArray ("TParticle",fNMaxParticles);
+
+for (Int_t i = 0; i < 19152; i++)
 {
 	AliEMCALDigit tempdigit(0,0,i+1,0,1.0,-1);
 	tempdigit.SetAmp(0);
 //	 AliEMCALDigit(0,0,i+1,0,1.0,-1)
-	new(&fDigitsArray[i]) AliEMCALDigit(tempdigit);	// Default digit amplitude is zero
+	new((*fDigitsArray)[i]) AliEMCALDigit(tempdigit);	// Default digit amplitude is zero
 }
 fNTracks	= 0;
 fNPartons	= 0;
@@ -81,6 +92,18 @@ AliEMCALJetFinderInput::~AliEMCALJetFinderInput()
 // Destructor -
 
 if (fDebug>0) Info("~AliEMCALJetFinderInput","Beginning Destructor");	
+if (fInitialised)
+ {
+       fDigitsArray->Delete();
+       fTracksArray->Delete();
+       fPartonsArray->Delete();
+       fParticlesArray->Delete();
+       delete fDigitsArray;
+       delete fTracksArray;
+       delete fPartonsArray;
+       delete fParticlesArray;
+}
+		
 }
 
 void AliEMCALJetFinderInput::Reset(AliEMCALJetFinderResetType_t resettype)
@@ -94,12 +117,19 @@ if (fDebug>1) Info("Reset","Beginning Reset");
   if ( 	resettype == kResetData   ||	
 	resettype == kResetDigits ||
 	resettype == kResetAll   ){
-	  for (Int_t i = 0; i < 96*144; i++)
-		  {
+		if (fInitialised)
+ 		{	
+			fDigitsArray->Delete();			
+	     		fTracksArray->Delete();
+		 	fPartonsArray->Delete();
+		        fParticlesArray->Delete();
+		}
+	  	for (Int_t i = 0; i < 19152; i++)
+		{
 			AliEMCALDigit tempdigit(0,0,i+1,0,1.0,-1);
 			tempdigit.SetAmp(0);
-			new(&fDigitsArray[i]) AliEMCALDigit(tempdigit);	// Default digit amplitude is zero
-		  }
+			new((*fDigitsArray)[i]) AliEMCALDigit(tempdigit);	// Default digit amplitude is zero
+		}
   }
   if (  resettype == kResetData   ||    
         resettype == kResetTracks ||
@@ -127,7 +157,7 @@ if (fDebug>15) Info("AddEnergyToDigit","Beginning AddEnergyToDigit");
  if (!fInitialised) InitArrays();	
 
  Int_t amp = 0;
- AliEMCALDigit *mydigit = &fDigitsArray[digitID];
+ AliEMCALDigit *mydigit = (AliEMCALDigit*)(*fDigitsArray)[digitID];
  amp = mydigit->GetAmp();
  mydigit->SetAmp(amp+denergy);
 }	
@@ -140,7 +170,7 @@ if (fDebug>5) Info("AddTrack","Beginning AddTrack");
  
  	if (!fInitialised) InitArrays();	
 	if (fNTracks < fNMaxTracks){  
-		new(&fTracksArray[fNTracks]) TParticle(track);
+		new((*fTracksArray)[fNTracks]) TParticle(track);
 		fNTracks++;
 		if (fDebug>5) Info("AddTracks","Added Tracks %i",fNTracks);	
 	}else
@@ -157,7 +187,7 @@ if (fDebug>5) Info("AddParton","Beginning AddParton");
 
  	if (!fInitialised) InitArrays();	
 	if (fNPartons < fNMaxPartons){  
-		new(&fPartonsArray[fNPartons]) AliEMCALParton(*parton);
+		new((*fPartonsArray)[fNPartons]) AliEMCALParton(*parton);
 		fNPartons++;
 		if (fDebug>5) Info("AddParton","Added Parton %i",fNPartons);	
 	}else
@@ -174,7 +204,7 @@ if (fDebug>5) Info("AddParticle","Beginning AddParticle");
 
  	if (!fInitialised) InitArrays();	
 	if (fNParticles < fNMaxParticles){  
-		new(&fParticlesArray[fNParticles]) TParticle(*particle);
+		new((*fParticlesArray)[fNParticles]) TParticle(*particle);
 		fNParticles++;
 		if (fDebug>5) Info("AddParticle","Added Particle %i",fNParticles);	
 	}else
@@ -192,7 +222,7 @@ AliEMCALDigit* AliEMCALJetFinderInput::GetDigit(Int_t digitID)
 if (fDebug>15) Info("GetDigit","Beginning GetDigit");
 
     if (digitID >= fNDigits) return 0;
-    return (AliEMCALDigit*)(&fDigitsArray[digitID]);
+    return (AliEMCALDigit*)((*fDigitsArray)[digitID]);
 }
 
 TParticle* AliEMCALJetFinderInput::GetTrack(Int_t trackID)
@@ -202,7 +232,7 @@ TParticle* AliEMCALJetFinderInput::GetTrack(Int_t trackID)
 if (fDebug>15) Info("GetTrack","Beginning GetTrack with trackID %i",trackID);
 
     if (trackID >= fNTracks) return 0;
-    return (TParticle*)(&fTracksArray[trackID]);
+    return (TParticle*)((*fTracksArray)[trackID]);
 }
 
 AliEMCALParton* AliEMCALJetFinderInput::GetParton(Int_t partonID)
@@ -212,7 +242,7 @@ AliEMCALParton* AliEMCALJetFinderInput::GetParton(Int_t partonID)
 if (fDebug>15) Info("GetParton","Beginning GetParton");
 
     if (partonID >= fNPartons) return 0;
-    return (AliEMCALParton*)(&fPartonsArray[partonID]);
+    return (AliEMCALParton*)((*fPartonsArray)[partonID]);
 }
 
 TParticle* AliEMCALJetFinderInput::GetParticle(Int_t particleID)
@@ -222,7 +252,7 @@ TParticle* AliEMCALJetFinderInput::GetParticle(Int_t particleID)
 if (fDebug>15) Info("GetParticle","Beginning GetParticle");
 
     if (particleID >= fNParticles) return 0;
-    return (TParticle*)(&fParticlesArray[particleID]);
+    return (TParticle*)((*fParticlesArray)[particleID]);
 }
 
 

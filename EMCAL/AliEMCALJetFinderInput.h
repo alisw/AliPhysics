@@ -16,6 +16,7 @@
 
 #include "TObject.h"
 #include "TParticle.h"
+#include "TClonesArray.h"
 #include "AliEMCALParton.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALJetFinderTypes.h"
@@ -42,21 +43,21 @@ class AliEMCALJetFinderInput : public TObject
 
 	private:
 		void InitArrays();
-		AliEMCALDigit	fDigitsArray[13824];	// This is the digits array for the EMCAL
+		TClonesArray*	fDigitsArray;	//-> This is the digits array for the EMCAL
 		Int_t		fNDigits;     	// This is the number of digits
 		Int_t		fNMaxDigits;  	// This is the max number of digits
-		TParticle	fTracksArray[3000]; 	// This is the track array 
+		TClonesArray*	fTracksArray; 	//-> This is the track array 
 		Int_t		fNTracks;     	// This stores the number of tracks	
 		Int_t		fNMaxTracks;	// This stores the maximum number of tracks
-		AliEMCALParton	fPartonsArray[4];  //  This is the partons array
+		TClonesArray*	fPartonsArray;  //->  This is the partons array
 		Int_t		fNPartons;	// This stores the number of partons
-		Int_t		fNMaxPartons;	  // This stores the maximum number of partons
-		TParticle	fParticlesArray[2000];// This stores the particles	
+		Int_t		fNMaxPartons;	// This stores the maximum number of partons
+		TClonesArray*	fParticlesArray;//-> This stores the particles	
 		Int_t		fNParticles;	// This stores the number of particles
 	       	Int_t		fNMaxParticles; // This stroes the maximum number of particles
 		Int_t		fDebug;		// This is the debug value 
 		Bool_t		fInitialised;	// Stores whether or not the arrays have been initialised 
 		
-	ClassDef(AliEMCALJetFinderInput,3)
+	ClassDef(AliEMCALJetFinderInput,4)
 };
 #endif
