@@ -59,6 +59,7 @@ class AliL3ClustFinderNew {
   void SetXYError(Float_t f) {fXYErr = f;}
   void SetZError(Float_t f) {fZErr = f;}
   void SetTransformer(AliL3Transform *transform) {fTransform = transform;}
+  void SetDeconv(Bool_t f) {fDeconvPad=f; fDeconvTime=f;}
   
   Int_t GetNumberOfClusters() {return fNClusters;}
   
