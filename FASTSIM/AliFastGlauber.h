@@ -152,9 +152,9 @@ class AliFastGlauber : public TObject {
  protected:
     void Reset();
 
-    static Float_t fgBMax;        // Maximum Impact Parameter
-    static Int_t fgCounter;       // Counter to protect double instantiation
-    static const Int_t fgkMCInts; // Number of MC integrations
+    static Float_t fgBMax;           // Maximum Impact Parameter
+    static Int_t fgCounter;          // Counter to protect double instantiation
+    static const Int_t fgkMCInts;    // Number of MC integrations
 
     static TF1*    fgWSb;            // Wood-Saxon Function (b)
     static TF2*    fgWSbz;           // Wood-Saxon Function (b, z)

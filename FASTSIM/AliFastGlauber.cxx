@@ -1525,16 +1525,20 @@ void AliFastGlauber::PlotI0I1Distr(Int_t n,Double_t ellCut,
 				   Bool_t save,Char_t *fname)
 {
   //
-  // Plot length distribution
+  // Plot I0-I1 distribution
   //
   Double_t i0,i1;
+  TH2F *hI0I1s = new TH2F("hI0I1s","I_{0} versus I_{1}",1000,0,0.001,1000,0,0.01); 
+  hI0I1s->SetXTitle("I_{0} [fm^{-3}]");
+  hI0I1s->SetYTitle("I_{1} [fm^{-2}]");
+
   TH1F *hI0 = new TH1F("hI0","I_{0} = #hat{q}L / k",
-		       100,0,0.001); 
+		       1000,0,0.001); 
   hI0->SetXTitle("I_{0} [fm^{-3}]");
   hI0->SetYTitle("Probability");
   hI0->SetFillColor(3);
   TH1F *hI1 = new TH1F("hI1","I_{1} = #omega_{c} / k",
-		       100,0,0.01); 
+		       1000,0,0.01); 
   hI1->SetXTitle("I_{1} [fm^{-2}]");
   hI1->SetYTitle("Probability");
   hI1->SetFillColor(4);
@@ -1556,6 +1560,7 @@ void AliFastGlauber::PlotI0I1Distr(Int_t n,Double_t ellCut,
 
   for(Int_t i=0; i<n; i++) {
     GetI0I1(i0,i1,ellCut);
+    hI0I1s->Fill(i0,i1);
     hI0->Fill(i0);
     hI1->Fill(i1);
     h2->Fill(2.*i1*i1/i0);
@@ -1564,6 +1569,10 @@ void AliFastGlauber::PlotI0I1Distr(Int_t n,Double_t ellCut,
   }
   hI0->Scale(1/(Double_t)n);
   hI1->Scale(1/(Double_t)n);
+  h2->Scale(1/(Double_t)n);
+  h3->Scale(1/(Double_t)n);
+  h4->Scale(1/(Double_t)n);
+  hI0I1s->Scale(1/(Double_t)n);
 
   TCanvas *cI0I1 = new TCanvas("cI0I1","I0 and I1",0,0,900,700);
   cI0I1->Divide(3,2);
@@ -1577,9 +1586,13 @@ void AliFastGlauber::PlotI0I1Distr(Int_t n,Double_t ellCut,
   h3->Draw();
   cI0I1->cd(5);
   h4->Draw();
+  cI0I1->cd(6);
+  gStyle->SetPalette(1,0);
+  hI0I1s->Draw("col,Z");
 
   if(save) {
     TFile *f = new TFile(fname,"recreate");
+    hI0I1s->Write();
     hI0->Write();
     hI1->Write();
     h2->Write();
@@ -1594,7 +1607,7 @@ void AliFastGlauber::PlotI0I1B2BDistr(Int_t n,Double_t ellCut,
 				      Bool_t save,Char_t *fname)
 {
   //
-  // Plot lengths back-to-back distributions
+  // Plot I0-I1 back-to-back distributions
   //
   Double_t i01,i11,i02,i12;
   TH2F *hI0s = new TH2F("hI0s","I_{0}'s back-to-back",100,0,100,100,0,100); 
