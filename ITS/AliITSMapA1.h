@@ -12,11 +12,10 @@ class AliITSMapA1 :
 {
   
 public:
-  AliITSMapA1() {
-    // constructor
-  }
+  AliITSMapA1();
   AliITSMapA1(AliITSsegmentation *seg);
   AliITSMapA1(AliITSsegmentation *seg, TObjArray *dig);
+  AliITSMapA1(AliITSsegmentation *seg, TObjArray *dig, Int_t threshold);
   AliITSMapA1(const AliITSMapA1 &source);
     // Assignment operator
   AliITSMapA1& operator=(const AliITSMapA1 &source);
@@ -28,6 +27,8 @@ public:
   virtual  void  ClearMap();    
     // Set a single hit
   virtual  void  SetHit(Int_t iz, Int_t ix, Int_t idigit);
+    // Set threshold for the signal
+  virtual  void  SetThreshold(Int_t thresh) {fMapThreshold=thresh;}
     // Delete a single hit
   virtual  void  DeleteHit(Int_t iz, Int_t ix);
     // Get index of hit in the list of digits
@@ -58,6 +59,7 @@ protected:
   
 private:
   Int_t *fHitMap;                      //! [fMaxIndex]
+  Int_t fMapThreshold;                 // signal threshold (ADC)
 
   ClassDef(AliITSMapA1,1)              // Implements Hit/Digit Map 
 };
