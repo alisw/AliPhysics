@@ -29,7 +29,13 @@
 // // Print frequency to produce a short summary print every printfreq events
 // Int_t printfreq=10;
 //
-// Convert q(h999);
+// // Split level for the output structures
+// Int_t split=2;
+//
+// // Buffer size for the output structures
+// Int_t bsize=32000;
+//
+// Convert q(h999,split,bsize);
 // q.Loop(otree,nentries,printfreq);
 // 
 // otree->Print();
@@ -47,14 +53,18 @@
 
 ClassImp(Wa98Convert) // Class implementation to enable ROOT I/O
 
-Wa98Convert::Wa98Convert(TTree* tree)
+Wa98Convert::Wa98Convert(TTree* tree,Int_t split,Int_t bsize)
 {
 // Default constructor.
 // Initialise the input tree (or chain) to be converted.
-// By default tree=0;
+// Also the required split level and buffer size of the output tree
+// can be specified in this constructor.
+// By default tree=0, split=0 and bsize=32000.
 
  fChain=tree;
- if (!fChain) return;
+ fSplit=split;
+ fBsize=bsize;
+ if (!fChain || split<0 || bsize<0) return;
 
  // Link the variables to the branches of the input tree/chain 
  fChain->SetBranchAddress("Jrun",&Jrun);
@@ -101,7 +111,7 @@ void Wa98Convert::Loop(TTree* otree,Int_t nentries,Int_t printfreq)
 // Every "printfreq" events a short event summary will be printed.
 // The default value is printfreq=1.
 
- if (fChain==0) return;
+ if (fChain==0 || fSplit<0) return;
 
  if (nentries<0) nentries=fChain->GetEntriesFast();
 
@@ -109,19 +119,10 @@ void Wa98Convert::Loop(TTree* otree,Int_t nentries,Int_t printfreq)
 
  Double_t pi=acos(-1.);
 
- Double_t me=0.51099890221e-3;
- Double_t mpi=0.13956995;
- Double_t mkc=0.493677;
- Double_t mk0=0.497672;
- Double_t mp=0.93827231;
- Double_t mlam=1.115683;
-
  Wa98Event* evt=new Wa98Event();
 
  // Branch in the tree for the event structure
- Int_t split=1;
- Int_t bsize=32000;
- otree->Branch("Wa98Event","Wa98Event",&evt,bsize,split); 
+ otree->Branch("Wa98Event","Wa98Event",&evt,fBsize,fSplit); 
 
  // The LEDA specific output data
  AliCalorimeter* ledaup=new AliCalorimeter(44,144);

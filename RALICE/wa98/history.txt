@@ -39,8 +39,10 @@
 29-nov-2004 NvE Package containing the classes Wa98Event, Wa98Convert and the usual files
                 RWA98Headers.h, RWA98LinkDef.h, history.txt and the sub-directory /scripts
                 introduced as a sub-directory /wa98 in the Ralice repository at CERN. 
-01-dev-2004 NvE Installation scripts modified to make use of environment variable ALIROOT
+01-dec-2004 NvE Installation scripts modified to make use of environment variable ALIROOT
                 which should contain the path to the directory where AliRoot resides.
                 This ALIROOT environment variable fulfills a comparable function as
                 the ROOTSYS environment variable for the ROOT system.
                 Also installation script macgcclib.sh for gcc on MAC systems introduced.
+16-feb-2005 NvE Support for user selectable split level and buffer size of the output tree
+                introduced in Wa98Convert.

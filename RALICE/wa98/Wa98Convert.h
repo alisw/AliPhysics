@@ -13,11 +13,14 @@
 class Wa98Convert : public TObject
 {
  public :
-  Wa98Convert(TTree* tree=0);                                    // Constructor
+  Wa98Convert(TTree* tree=0,Int_t split=0,Int_t bsize=32000);    // Constructor
   virtual ~Wa98Convert();                                        // Destructor
   void Loop(TTree* otree=0,Int_t nentries=-1,Int_t printfreq=1); // Perform the conversion
 
  protected :
+   Int_t fSplit;
+   Int_t fBsize;
+
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
 
    //Declaration of leaves types
@@ -48,6 +51,6 @@ class Wa98Convert : public TObject
    Float_t         Thetacv[1000]; //[Ncluv]
    Float_t         Phicv[1000];   //[Ncluv]
 
- ClassDef(Wa98Convert,1) // Conversion Wa98 ntuple data into Wa98Event physics event structures.
+ ClassDef(Wa98Convert,2) // Conversion Wa98 ntuple data into Wa98Event physics event structures.
 };
 #endif
