@@ -200,42 +200,44 @@ void  AliPHOSRecPoint::EvalPrimaries(TClonesArray * digits)
   for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
     digit = dynamic_cast<AliPHOSDigit *>(digits->At( fDigitsList[index] )) ; 
     Int_t nprimaries = digit->GetNprimary() ;
-    Int_t * newprimaryarray = new Int_t[nprimaries] ;
-    Int_t ii ; 
-    for ( ii = 0 ; ii < nprimaries ; ii++)
-      newprimaryarray[ii] = digit->GetPrimary(ii+1) ; 
+    if(nprimaries){
+      Int_t * newprimaryarray = new Int_t[nprimaries] ;
+      Int_t ii ; 
+      for ( ii = 0 ; ii < nprimaries ; ii++)
+	newprimaryarray[ii] = digit->GetPrimary(ii+1) ; 
 
-    Int_t jndex ;
-    for ( jndex = 0 ; jndex < nprimaries ; jndex++ ) { // all primaries in digit
-      if ( fMulTrack > fMaxTrack ) {
-	fMulTrack = - 1 ;
-	cout << "AliPHOSRecPoint::GetNprimaries ERROR > increase fMaxTrack " << endl ;
-	break ;
-      }
-      Int_t newprimary = newprimaryarray[jndex] ;
-      Int_t kndex ;
-      Bool_t already = kFALSE ;
-      for ( kndex = 0 ; kndex < fMulTrack ; kndex++ ) { //check if not already stored
-	if ( newprimary == tempo[kndex] ){
-	  already = kTRUE ;
+      Int_t jndex ;
+      for ( jndex = 0 ; jndex < nprimaries ; jndex++ ) { // all primaries in digit
+	if ( fMulTrack > fMaxTrack ) {
+	  fMulTrack = - 1 ;
+	  cout << "AliPHOSRecPoint::GetNprimaries ERROR > increase fMaxTrack " << endl ;
 	  break ;
 	}
-      } // end of check
-      if ( !already) { // store it
-	tempo[fMulTrack] = newprimary ; 
-	fMulTrack++ ;
-      } // store it
-    } // all primaries in digit
-    delete [] newprimaryarray ; 
+	Int_t newprimary = newprimaryarray[jndex] ;
+	Int_t kndex ;
+	Bool_t already = kFALSE ;
+	for ( kndex = 0 ; kndex < fMulTrack ; kndex++ ) { //check if not already stored
+	  if ( newprimary == tempo[kndex] ){
+	    already = kTRUE ;
+	    break ;
+	  }
+	} // end of check
+	if ( !already) { // store it
+	  tempo[fMulTrack] = newprimary ; 
+	  fMulTrack++ ;
+	} // store it
+      } // all primaries in digit
+      delete [] newprimaryarray ; 
+    }
   } // all digits
 
-  
-  fTracksList = new Int_t[fMulTrack] ;
+  if(fMulTrack)
+    fTracksList = new Int_t[fMulTrack] ;
   for(index = 0; index < fMulTrack; index++)
-   fTracksList[index] = tempo[index] ;
- 
+    fTracksList[index] = tempo[index] ;
+  
   delete [] tempo ;
-
+  
 }
 //____________________________________________________________________________
 void AliPHOSRecPoint::GetGlobalPosition(TVector3 & gpos, TMatrix & gmat) const
