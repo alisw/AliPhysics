@@ -49,8 +49,8 @@ AliITSVertex::AliITSVertex() {
 AliITSVertex::~AliITSVertex() {
     // Default Constructor
 
-    if(fPosition){ delete [] fPosition; fPostion   = 0;}
-    if(fResolution){ delete []fResoultion; fResolution = 0;}
+    if(fPosition){ delete [] fPosition; fPosition   = 0;}
+    if(fResolution){ delete []fResolution; fResolution = 0;}
     if(fSNR){ delete [] fSNR;fSNR        = 0;}
 }
 //______________________________________________________________________
