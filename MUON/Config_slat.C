@@ -711,8 +711,10 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 //--------------------------------------------------------
 // Configuration for Trigger Stations -------------------- 
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+// Cluster-size off
  AliMUONResponseTrigger* responseTrigger0 =  new AliMUONResponseTrigger;
+// Cluster-size on  
+// AliMUONResponseTriggerV1* responseTrigger0 =  new AliMUONResponseTriggerV1;
  
  chamber=11;
  MUON->SetNsec(chamber-1,2);

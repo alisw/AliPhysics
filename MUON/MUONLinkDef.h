@@ -17,6 +17,7 @@
 #pragma link C++ class  AliMUONSegmentationV0;
 #pragma link C++ class  AliMUONResponseV0;
 #pragma link C++ class  AliMUONResponseTrigger;
+#pragma link C++ class  AliMUONResponseTriggerV1;
 #pragma link C++ class  AliMUONSegmentationV01;
 #pragma link C++ class  AliMUONSegmentationV02;
 #pragma link C++ class  AliMUONSegmentationV04;

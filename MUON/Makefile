@@ -16,6 +16,7 @@ SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
                AliMUONSegmentationV02.cxx AliMUONSegmentationV04.cxx \
 	       AliMUONSegmentationV05.cxx\
 	       AliMUONSegmentationTrigger.cxx  AliMUONResponseTrigger.cxx\
+               AliMUONResponseTriggerV1.cxx\
 	       AliMUONSegmentationTriggerX.cxx AliMUONSegmentationTriggerY.cxx \
                AliMUONSegmentationV1.cxx AliMUON.cxx AliMUONv0.cxx AliMUONv1.cxx\
                AliMUONDisplay.cxx AliMUONPoints.cxx \
