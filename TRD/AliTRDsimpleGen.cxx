@@ -116,7 +116,7 @@ void AliTRDsimpleGen::NewParticle(Int_t ievent)
     Float_t vtx[3] = { 0.0 };
     Float_t pol[3] = { 0.0 };
     Int_t   ntr    = 0;
-    gAlice->SetTrack(0,-1,fPdg,mom,vtx,pol,0.0,kPPrimary,ntr);
+    gAlice->PushTrack(0,-1,fPdg,mom,vtx,pol,0.0,kPPrimary,ntr);
 
   }
 

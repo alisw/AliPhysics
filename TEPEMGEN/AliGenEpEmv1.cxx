@@ -170,7 +170,7 @@ void AliGenEpEmv1::Generate()
   id =  11;
   if (fDebug == 2)
     printf("id=%+3d, p = (%+11.4e,%+11.4e,%+11.4e) GeV\n",id,p[0],p[1],p[2]);
-  SetTrack(fTrackIt,-1, id,p,origin,polar,0,kPPrimary,nt,weight);
+  PushTrack(fTrackIt,-1, id,p,origin,polar,0,kPPrimary,nt,weight);
 
   // Produce positron
   mt = TMath::Sqrt(ptPositron*ptPositron + fMass*fMass);
@@ -180,7 +180,7 @@ void AliGenEpEmv1::Generate()
   id = -11;
   if (fDebug == 2)
     printf("id=%+3d, p = (%+11.4e,%+11.4e,%+11.4e) GeV\n",id,p[0],p[1],p[2]);
-  SetTrack(fTrackIt,-1, id,p,origin,polar,0,kPPrimary,nt,weight);
+  PushTrack(fTrackIt,-1, id,p,origin,polar,0,kPPrimary,nt,weight);
   
   fEvent++;
   if (fEvent%1000 == 0) {

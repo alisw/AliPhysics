@@ -372,7 +372,7 @@ void AliSTARTv2::StepManager()
 	   hitPhoton[4] = 1e9 * gMC->TrackTime();
 	   hitPhoton[5] = 1e9 * gMC->Etot();
 	   
-	   AddHitPhoton (gAlice->CurrentTrack(), vol, hitPhoton);
+	   AddHitPhoton (gAlice->GetCurrentTrackNumber(), vol, hitPhoton);
 	}
 	gMC->StopTrack();
      }
@@ -436,7 +436,7 @@ void AliSTARTv2::StepManager()
       //	 printf(" HITS on START Exit %f\n",hits[i]); } 
       //for (i=0; i<=1; i++) { printf("START vol %d\n",vol[i]);}
      
-      new(lhits[fNhits++]) AliSTARThit(fIshunt,gAlice->CurrentTrack(),vol,hits);      
+      new(lhits[fNhits++]) AliSTARThit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);      
     }
   }
 

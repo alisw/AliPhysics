@@ -182,9 +182,9 @@ void AliGenExtFile::Generate()
 	                 (TMath::Abs(idpart) > 10) && selected;
       // printf("*** pdg, first daughter, trk = %d, %d, %d\n",
       //   idpart,decayed, doTracking);
-      //PH      SetTrack(doTracking,-1,idpart,p,origin,polar,0,kPPrimary,nt);
+      //PH      PushTrack(doTracking,-1,idpart,p,origin,polar,0,kPPrimary,nt);
       Int_t parent = iparticle->GetFirstMother();
-      SetTrack(doTracking,parent,idpart,p,origin,polar,0,kPPrimary,nt);
+      PushTrack(doTracking,parent,idpart,p,origin,polar,0,kPPrimary,nt);
       KeepTrack(nt);
     } // track loop
 

@@ -1115,6 +1115,6 @@ void AliTOFv4T0::StepManager()
     vol[3]= padx;
     vol[4]= padz;
     
-    AddT0Hit(gAlice->CurrentTrack(),vol, hits);
+    AddT0Hit(gAlice->GetCurrentTrackNumber(),vol, hits);
   }
 }

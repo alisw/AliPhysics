@@ -134,7 +134,7 @@ void AliGenSlowNucleons::Generate()
     kf = kProton;    
     for(i = 0; i < fNgp; i++) {
 	GenerateSlow(fCharge, fTemperatureG, fBetaSourceG, p);
-	SetTrack(fTrackIt, -1, kf, p, origin, polar,
+	PushTrack(fTrackIt, -1, kf, p, origin, polar,
 		 0., kPNoProcess, nt, 1.);
 	KeepTrack(nt);
     }
@@ -145,7 +145,7 @@ void AliGenSlowNucleons::Generate()
     kf = kNeutron;    
     for(i = 0; i < fNgn; i++) {
 	GenerateSlow(fCharge, fTemperatureG, fBetaSourceG, p);
-	SetTrack(fTrackIt, -1, kf, p, origin, polar,
+	PushTrack(fTrackIt, -1, kf, p, origin, polar,
 		 0., kPNoProcess, nt, 1.);
 	KeepTrack(nt);
     }
@@ -156,7 +156,7 @@ void AliGenSlowNucleons::Generate()
     kf = kProton;    
     for(i = 0; i < fNbp; i++) {
 	GenerateSlow(fCharge, fTemperatureB, fBetaSourceB, p);
-	SetTrack(fTrackIt, -1, kf, p, origin, polar,
+	PushTrack(fTrackIt, -1, kf, p, origin, polar,
 		 0., kPNoProcess, nt, 1.);
 	KeepTrack(nt);
     }
@@ -167,7 +167,7 @@ void AliGenSlowNucleons::Generate()
     kf = kNeutron;    
     for(i = 0; i < fNbn; i++) {
 	GenerateSlow(fCharge, fTemperatureB, fBetaSourceB, p);
-	SetTrack(fTrackIt, -1, kf, p, origin, polar,
+	PushTrack(fTrackIt, -1, kf, p, origin, polar,
 		 0., kPNoProcess, nt, 1.);
 	KeepTrack(nt);
     }

@@ -1493,7 +1493,7 @@ void AliVZEROv0::StepManager()
 	 hits[13] = mom[2];
 	 
 
-         AddHit(gAlice->CurrentTrack(), vol, hits);
+         AddHit(gAlice->GetCurrentTrackNumber(), vol, hits);
 	 
 	 }
      

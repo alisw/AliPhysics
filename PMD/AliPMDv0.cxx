@@ -998,7 +998,7 @@ void AliPMDv0::StepManager()
 
     gMC->Gdtom(center,hits,1);
     hits[3] = destep*1e9; //Number in eV
-    AddHit(gAlice->CurrentTrack(), vol, hits);
+    AddHit(gAlice->GetCurrentTrackNumber(), vol, hits);
   }
 }
 

@@ -790,7 +790,7 @@ void AliGenGeVSim::Generate() {
 
       // putting particle on the stack
 
-      SetTrack(fTrackIt, kParent, pdg, p, orgin, polar, time, kPPrimary, id, fTrackIt);     
+      PushTrack(fTrackIt, kParent, pdg, p, orgin, polar, time, kPPrimary, id, fTrackIt);     
       if (isMultTotal) nParticle++;
     }
   }

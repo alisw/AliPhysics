@@ -876,9 +876,9 @@ void AliCRTv1::StepManager()
     hits[12] = 0;
     hits[13] = 0;
 
-    //hits[9] = gAlice->CurrentTrack();
+    //hits[9] = gAlice->GetCurrentTrackNumber();
     
-    AddHit(gAlice->CurrentTrack(),vol, hits);
+    AddHit(gAlice->GetCurrentTrackNumber(),vol, hits);
     
     eloss = 0.;
 
@@ -899,7 +899,7 @@ void AliCRTv1::StepManager()
 
     //hits[10] = 1;
     
-    //AddHit(gAlice->CurrentTrack(),vol, hits);
+    //AddHit(gAlice->GetCurrentTrackNumber(),vol, hits);
     
     //eloss = 0.;
 
@@ -925,7 +925,7 @@ void AliCRTv1::StepManager()
     hits[12] = 0;
     hits[13] = 0;
       
-    AddHit(gAlice->CurrentTrack(),vol, hits);
+    AddHit(gAlice->GetCurrentTrackNumber(),vol, hits);
     
     //eloss = 0.;
 
@@ -950,7 +950,7 @@ void AliCRTv1::StepManager()
     hits[12] = 1;
     hits[13] = 0;
     
-    AddHit(gAlice->CurrentTrack(),vol, hits);
+    AddHit(gAlice->GetCurrentTrackNumber(),vol, hits);
     
     //eloss = 0.;
 
@@ -977,7 +977,7 @@ void AliCRTv1::StepManager()
     hits[13] = 1;
 
     
-    AddHit(gAlice->CurrentTrack(),vol, hits);
+    AddHit(gAlice->GetCurrentTrackNumber(),vol, hits);
     
     //eloss = 0.;
 

@@ -623,7 +623,7 @@ void AliCRTv0::StepManager()
   TLorentzVector mom;
 
   static Float_t hits[14];
-  Int_t tracknumber = gAlice->CurrentTrack();
+  Int_t tracknumber = gAlice->GetCurrentTrackNumber();
 
   static Float_t eloss;
   static Float_t tlength;
@@ -674,7 +674,7 @@ void AliCRTv0::StepManager()
     hits[12] = tlength; // Trajectory lenght
     hits[13] = (Float_t)tracknumber;
 
-    AddHit(gAlice->CurrentTrack(),vol, hits);
+    AddHit(gAlice->GetCurrentTrackNumber(),vol, hits);
 
   }
 

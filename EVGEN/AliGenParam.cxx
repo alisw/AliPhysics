@@ -400,7 +400,7 @@ void AliGenParam::Generate()
 		  ipa++;
 //
 // Parent
-		  SetTrack(0, -1, iPart, p, origin0, polar, 0, kPPrimary, nt, wgtp);
+		  PushTrack(0, -1, iPart, p, origin0, polar, 0, kPPrimary, nt, wgtp);
 		  pParent[0] = nt;
 		  KeepTrack(nt); 
 //
@@ -425,7 +425,7 @@ void AliGenParam::Generate()
 			      iparent = -1;
 			  }
 			 
-			  SetTrack(fTrackIt*trackIt[i], iparent, kf,
+			  PushTrack(fTrackIt*trackIt[i], iparent, kf,
 					   pc, och, polar,
 					   0, kPDecay, nt, wgtch);
 			  pParent[i] = nt;
@@ -442,7 +442,7 @@ void AliGenParam::Generate()
 	  else  // nodecay option, so parent will be tracked by GEANT (pions, kaons, eta, omegas, baryons)
 	  {
 	    gAlice->
-		SetTrack(fTrackIt,-1,iPart,p,origin0,polar,0,kPPrimary,nt,wgtp);
+		PushTrack(fTrackIt,-1,iPart,p,origin0,polar,0,kPPrimary,nt,wgtp);
             ipa++; 
 	  }
 	  break;

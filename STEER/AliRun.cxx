@@ -1345,18 +1345,18 @@ void AliRun::SetCurrentTrack(Int_t track)
 }
  
 //_______________________________________________________________________
-void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
+void AliRun::PushTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
                       Float_t *vpos, Float_t *polar, Float_t tof,
                       TMCProcess mech, Int_t &ntr, Float_t weight, Int_t is)
 { 
 // Delegate to stack
 //
-    fRunLoader->Stack()->SetTrack(done, parent, pdg, pmom, vpos, polar, tof,
+    fRunLoader->Stack()->PushTrack(done, parent, pdg, pmom, vpos, polar, tof,
 		     mech, ntr, weight, is);
 }
 
 //_______________________________________________________________________
-void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg,
+void AliRun::PushTrack(Int_t done, Int_t parent, Int_t pdg,
   	              Double_t px, Double_t py, Double_t pz, Double_t e,
   		      Double_t vx, Double_t vy, Double_t vz, Double_t tof,
 		      Double_t polx, Double_t poly, Double_t polz,
@@ -1364,7 +1364,7 @@ void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg,
 { 
   // Delegate to stack
   //
-  fRunLoader->Stack()->SetTrack(done, parent, pdg, px, py, pz, e, vx, vy, vz, tof,
+  fRunLoader->Stack()->PushTrack(done, parent, pdg, px, py, pz, e, vx, vy, vz, tof,
                                 polx, poly, polz, mech, ntr, weight, is);
 }
 
@@ -1643,11 +1643,11 @@ void AliRun::Streamer(TBuffer &R__b)
 
 
 //_______________________________________________________________________
-Int_t AliRun::CurrentTrack() const {
+Int_t AliRun::GetCurrentTrackNumber() const {
   //
   // Returns current track
   //
-  return fRunLoader->Stack()->CurrentTrack();
+  return fRunLoader->Stack()->GetCurrentTrackNumber();
 }
 
 //_______________________________________________________________________

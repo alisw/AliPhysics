@@ -332,11 +332,11 @@ void AliGenHIJINGpara::Generate()
 	    if (part == kPi0 && fPi0Decays){
 //
 //          Decay pi0 if requested
-		SetTrack(0,-1,part,p,origin,polar,0,kPPrimary,fNt,fParentWeight);
+		PushTrack(0,-1,part,p,origin,polar,0,kPPrimary,fNt,fParentWeight);
 		KeepTrack(fNt);
 		DecayPi0(origin, p);
 	    } else {
-		SetTrack(fTrackIt,-1,part,p,origin,polar,0,kPPrimary,fNt,fParentWeight);
+		PushTrack(fTrackIt,-1,part,p,origin,polar,0,kPPrimary,fNt,fParentWeight);
 		KeepTrack(fNt);
 	    }
 
@@ -393,7 +393,7 @@ void AliGenHIJINGpara::DecayPi0(Float_t* orig, Float_t * p)
 	p[2] = iParticle->Pz();
 	Int_t part = iParticle->GetPdgCode();
 
-	SetTrack(fTrackIt, fNt, part, p, orig, polar, 0, kPDecay, nt, fParentWeight);
+	PushTrack(fTrackIt, fNt, part, p, orig, polar, 0, kPDecay, nt, fParentWeight);
 	KeepTrack(nt);
     }
     fNt = nt;

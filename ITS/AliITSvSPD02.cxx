@@ -678,7 +678,7 @@ void AliITSvSPD02::StepManager(){
 	copy = fTrackReferences->GetEntriesFast();
 	TClonesArray &lTR = *fTrackReferences;
 	// Fill TrackReference structure with this new TrackReference.
-	new(lTR[copy]) AliTrackReference(gAlice->CurrentTrack());
+	new(lTR[copy]) AliTrackReference(gAlice->GetCurrentTrackNumber());
     } // if Outer ITS mother Volume
     if(!(this->IsActive())){
 	return;
@@ -723,7 +723,7 @@ void AliITSvSPD02::StepManager(){
 	return;
     } // end if IsEntering
     // Fill hit structure with this new hit only for non-entrerance hits.
-    else new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,
+    else new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,
 					gMC->Edep(),gMC->TrackTime(),position,
 					position0,momentum);
     //

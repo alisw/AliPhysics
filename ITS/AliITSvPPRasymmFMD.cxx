@@ -5330,7 +5330,7 @@ void AliITSvPPRasymmFMD::StepManager(){
 	copy = fTrackReferences->GetEntriesFast();
 	TClonesArray &lTR = *fTrackReferences;
 	// Fill TrackReference structure with this new TrackReference.
-	new(lTR[copy]) AliTrackReference(gAlice->CurrentTrack());
+	new(lTR[copy]) AliTrackReference(gAlice->GetCurrentTrackNumber());
     } // if Outer ITS mother Volume
     if(!(this->IsActive())){
 	return;
@@ -5429,8 +5429,8 @@ void AliITSvPPRasymmFMD::StepManager(){
 	stat0 = vol[3];
     } // end if IsEntering
     // Fill hit structure with this new hit.
-//    new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,hits);
-    new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,
+//    new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
+    new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,
 				   gMC->Edep(),gMC->TrackTime(),position,
 				   position0,momentum);
     //

@@ -160,7 +160,7 @@ void AliGenMevSim::Generate()
     p[1] = particle->Py();
     p[2] = particle->Pz();
     
-    SetTrack(fTrackIt, parent, pdg, p, orgin, polar, time, kPPrimary, id);
+    PushTrack(fTrackIt, parent, pdg, p, orgin, polar, time, kPPrimary, id);
 
   }  
  

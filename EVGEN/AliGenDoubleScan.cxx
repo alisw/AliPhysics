@@ -93,7 +93,7 @@ void AliGenDoubleScan::Generate()
 	      p[0] = pmom*TMath::Cos(phi)*TMath::Sin(theta);
 	      p[1] = pmom*TMath::Sin(phi)*TMath::Sin(theta);
 	      p[2] = pmom*TMath::Cos(theta);
-	      SetTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
+	      PushTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
 //
 // Generate 2nd particle at distance fDistance from  the first
 //
@@ -109,7 +109,7 @@ void AliGenDoubleScan::Generate()
 	      p[0] = pmom*TMath::Cos(phi)*TMath::Sin(theta);
 	      p[1] = pmom*TMath::Sin(phi)*TMath::Sin(theta);
 	      p[2] = pmom*TMath::Cos(theta);
-	      SetTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
+	      PushTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
 	  }
       }
   }

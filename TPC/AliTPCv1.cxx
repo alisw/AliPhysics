@@ -1766,27 +1766,27 @@ void AliTPCv1::StepManager()
         hits[1]=p[1];
         hits[2]=p[2];
         hits[3]=0.; // this hit has no energy loss
-	// new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+	// new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
 
-        AddHit(gAlice->CurrentTrack(), vol,hits); // M.I. 
+        AddHit(gAlice->GetCurrentTrackNumber(), vol,hits); // M.I. 
 
         gMC->TrackPosition(p);
         hits[0]=p[0];
         hits[1]=p[1];
         hits[2]=p[2];
         hits[3]=0.; // this hit has no energy loss
-        // new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+        // new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
 
-	AddHit(gAlice->CurrentTrack(), vol,hits); // M.I. 
+	AddHit(gAlice->GetCurrentTrackNumber(), vol,hits); // M.I. 
 
       } 
 
       gMC->TrackPosition(p);
       for(i=0;i<3;++i) hits[i]=p[i];
       hits[3]=1; //I'd like to have something positive here (I.Belikov)
-      // new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+      // new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
 
-      AddHit(gAlice->CurrentTrack(), vol,hits); // M.I. 
+      AddHit(gAlice->GetCurrentTrackNumber(), vol,hits); // M.I. 
 
     }
 

@@ -1052,7 +1052,7 @@ void AliVZEROv2::StepManager()
 	    hits[12] = mom[1];
 	    hits[13] = mom[2];
 	    
-	    TParticle *par = gAlice->Particle(gAlice->CurrentTrack());
+	    TParticle *par = gAlice->Particle(gAlice->GetCurrentTrackNumber());
             hits[14] = par->Vx();
             hits[15] = par->Vy();
             hits[16] = par->Vz();
@@ -1067,7 +1067,7 @@ void AliVZEROv2::StepManager()
 	 hits[17] =   eloss;
 	 hits[18] = tlength;
 	 
-         AddHit(gAlice->CurrentTrack(), vol, hits);
+         AddHit(gAlice->GetCurrentTrackNumber(), vol, hits);
 	 	 
 	 tlength  = 0.0;
 	 eloss    = 0.0; 

@@ -315,7 +315,7 @@ void AliGenHijing::Generate()
 		  imo = (mother->GetPdgCode() != 92) ? imo = newPos[imo] : -1;
 	      } // if has mother   
 	      Bool_t tFlag = (fTrackIt && !hasDaughter);
-	      SetTrack(tFlag,imo,kf,p,origin,polar,
+	      PushTrack(tFlag,imo,kf,p,origin,polar,
 		       tof,kPNoProcess,nt, 1., ks);
 	      KeepTrack(nt);
 	      newPos[i] = nt;

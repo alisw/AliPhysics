@@ -412,7 +412,7 @@ void AliFMDv2::StepManager()
 	  gMC->IsTrackStop())
 	 {
 	     hits[6]=de+1000.*gMC->Edep();
-      new(lhits[fNhits++]) AliFMDhit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+      new(lhits[fNhits++]) AliFMDhit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
 	 } // IsTrackExiting()
      }
   }

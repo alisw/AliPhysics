@@ -113,7 +113,7 @@ void AliGenThetaSlice::Generate()
 		    TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 	    }
 	}
-	SetTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
+	PushTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
     }
 }
 

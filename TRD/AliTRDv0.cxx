@@ -176,7 +176,7 @@ void AliTRDv0::StepManager()
       pla = ((Int_t) idChamber % kNplan);
       det = fGeometry->GetDetector(pla,cha,sec);
 
-      AddHit(gAlice->CurrentTrack(),det,hits,0,kTRUE);       
+      AddHit(gAlice->GetCurrentTrackNumber(),det,hits,0,kTRUE);       
 
     }
 

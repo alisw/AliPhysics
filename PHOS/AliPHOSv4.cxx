@@ -484,7 +484,7 @@ void AliPHOSv4::StepManager(void)
 {
   // Only verifies if the particle reaches PHOS and stops the tracking 
 
-  Int_t primary =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
+  Int_t primary =  gAlice->GetPrimary( gAlice->GetCurrentTrackNumber() ); 
 
   TLorentzVector lv ; 
   gMC->TrackPosition(lv) ;

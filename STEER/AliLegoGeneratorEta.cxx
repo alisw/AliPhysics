@@ -81,6 +81,6 @@ void AliLegoGeneratorEta::Generate()
    
    Float_t polar[3]={0.,0.,0.};
    Int_t ntr;
-   gAlice->SetTrack(1, -1, kMpart, pmom, orig, polar, 0, kPPrimary, ntr);
+   gAlice->PushTrack(1, -1, kMpart, pmom, orig, polar, 0, kPPrimary, ntr);
    
 }

@@ -284,8 +284,8 @@ void AliPHOSv1::StepManager(void)
   TLorentzVector pos      ;           // Lorentz vector of the track current position
   Int_t          copy     ;
 
-  Int_t tracknumber =  gAlice->CurrentTrack() ; 
-  Int_t primary     =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
+  Int_t tracknumber =  gAlice->GetCurrentTrackNumber() ; 
+  Int_t primary     =  gAlice->GetPrimary( gAlice->GetCurrentTrackNumber() ); 
   TString name      =  GetGeometry()->GetName() ; 
 
   Int_t moduleNumber ;
@@ -407,7 +407,7 @@ void AliPHOSv1::StepManager(void)
       if (xyzd[1] >  GetGeometry()->GetCrystalSize(1)/2-0.002 ||
 	  xyzd[1] < -GetGeometry()->GetCrystalSize(1)/2+0.002) {
 	TParticle * part = 0 ; 
-	Int_t parent = gAlice->CurrentTrack() ; 
+	Int_t parent = gAlice->GetCurrentTrackNumber() ; 
 	while ( parent != -1 ) {
 	  part = gAlice->Particle(parent) ; 
 	  part->SetBit(kKeepBit);

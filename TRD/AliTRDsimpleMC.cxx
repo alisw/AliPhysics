@@ -65,7 +65,7 @@ AliTRDsimpleMC::AliTRDsimpleMC()
 
 //_____________________________________________________________________________
 AliTRDsimpleMC::AliTRDsimpleMC(const char *name, const char *title)
-               :TVirtualMC(name,title)
+               :TVirtualMC(name,title,kFALSE)
 {                       
   //
   // AliTRDsimpleMC default constructor

@@ -220,7 +220,7 @@ void AliLego::BeginEvent()
     fStepsForward    = 0;
     fStepsBackward   = 0;		  
     fErrorCondition  = 0;
-    if (gAlice->CurrentTrack() == 0) fStepBack = 0;
+    if (gAlice->GetCurrentTrackNumber() == 0) fStepBack = 0;
   }
 }
 
@@ -349,7 +349,7 @@ void AliLego::StepManager()
           orig[1] =  vect[1];	   
           orig[2] =  vect[2];
           
-          gAlice->SetTrack(1, gAlice->CurrentTrack(), 
+          gAlice->PushTrack(1, gAlice->GetCurrentTrackNumber(), 
                            0, pmom, orig, polar, 0., kPNoProcess, ntr);
         } // debug
         

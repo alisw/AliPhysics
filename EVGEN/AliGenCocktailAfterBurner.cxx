@@ -340,7 +340,7 @@ void AliGenCocktailAfterBurner::SetTracks(Int_t stackno)
       mech = AliGenCocktailAfterBurner::IntToMCProcess(p->GetUniqueID());
       weight = p->GetWeight();
 
-      gAlice->SetTrack(done, parent, pdg, px, py, pz, e, vx, vy, vz, tof,
+      gAlice->PushTrack(done, parent, pdg, px, py, pz, e, vx, vy, vz, tof,
                        polx, poly, polz, mech, ntr, weight);
     }
 }

@@ -61,7 +61,7 @@ public:
    virtual  void  CleanDetectors();
    TObjArray     *Detectors() const {return fModules;}
    TObjArray     *Modules() const {return fModules;}
-   Int_t          CurrentTrack() const;
+   Int_t          GetCurrentTrackNumber() const;
    AliDisplay    *Display() const { return fDisplay;}
    virtual  Int_t DistancetoPrimitive(Int_t px, Int_t py) const;
    virtual  void  DumpPart (Int_t i) const;
@@ -126,11 +126,11 @@ public:
    virtual  void  SetDisplay(AliDisplay *display) {fDisplay = display;}
    virtual  void  SetField(Int_t type=2, Int_t version=1, Float_t scale=1, Float_t maxField=10, char*filename="$(ALICE_ROOT)/data/field01.dat");
    virtual  void  SetField(AliMagF* magField);
-   virtual  void  SetTrack(Int_t done, Int_t parent, Int_t pdg, 
+   virtual  void  PushTrack(Int_t done, Int_t parent, Int_t pdg, 
 			   Float_t *pmom, Float_t *vpos, Float_t *polar, 
 			   Float_t tof, TMCProcess mech, Int_t &ntr,
 			   Float_t weight = 1, Int_t is = 0);
-   virtual  void  SetTrack(Int_t done, Int_t parent, Int_t pdg,
+   virtual  void  PushTrack(Int_t done, Int_t parent, Int_t pdg,
 			   Double_t px, Double_t py, Double_t pz, Double_t e,
 			   Double_t vx, Double_t vy, Double_t vz, Double_t tof,
 			   Double_t polx, Double_t poly, Double_t polz,

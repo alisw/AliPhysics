@@ -108,7 +108,7 @@ void AliGenBeamGas::Generate()
 	  Int_t idpart     = iparticle->GetPdgCode();
 	  Int_t decayed    = iparticle->GetFirstDaughter();
 	  Int_t doTracking = fTrackIt && (decayed < 0) && (TMath::Abs(idpart) > 10);
-	  SetTrack(doTracking,-1,idpart,p,origin,polar,0,kPPrimary,nt);
+	  PushTrack(doTracking,-1,idpart,p,origin,polar,0,kPPrimary,nt);
 	  KeepTrack(nt);
       } // track loop
       nInt++;

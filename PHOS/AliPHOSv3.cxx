@@ -128,8 +128,8 @@ void AliPHOSv3::StepManager(void)
   Int_t          copy     ;
   Float_t        fLightYield ;   // Light Yield per GeV
 
-  Int_t tracknumber =  gAlice->CurrentTrack() ; 
-  Int_t primary     =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
+  Int_t tracknumber =  gAlice->GetCurrentTrackNumber() ; 
+  Int_t primary     =  gAlice->GetPrimary( gAlice->GetCurrentTrackNumber() ); 
   TString name      =  GetGeometry()->GetName() ; 
   Float_t        lostenergy ;
   Float_t        global[3] ;

@@ -1245,7 +1245,7 @@ void AliITSvPPRcoarseasymm::StepManager(){
     hits[5]=momentum[2];
     hits[6]=gMC->Edep();
     hits[7]=gMC->TrackTime();
-//    new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+//    new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
 //
 // no hits for this coarse asymmetric version.
 //

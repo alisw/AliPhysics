@@ -383,7 +383,7 @@ void AliGenerator::VertexInternal()
 }
 
 //_______________________________________________________________________
-void  AliGenerator::SetTrack(Int_t done, Int_t parent, Int_t pdg,
+void  AliGenerator::PushTrack(Int_t done, Int_t parent, Int_t pdg,
                                Float_t *pmom, Float_t *vpos, Float_t *polar,
                                Float_t tof, TMCProcess mech, Int_t &ntr,
                                Float_t weight, Int_t is)
@@ -393,15 +393,15 @@ void  AliGenerator::SetTrack(Int_t done, Int_t parent, Int_t pdg,
   //
 
   if (fStack)
-    fStack->SetTrack(done, parent, pdg, pmom, vpos, polar, tof,
+    fStack->PushTrack(done, parent, pdg, pmom, vpos, polar, tof,
                      mech, ntr, weight, is);
   else 
-    gAlice->SetTrack(done, parent, pdg, pmom, vpos, polar, tof,
+    gAlice->PushTrack(done, parent, pdg, pmom, vpos, polar, tof,
                      mech, ntr, weight, is);
 }
 
 //_______________________________________________________________________
-void  AliGenerator::SetTrack(Int_t done, Int_t parent, Int_t pdg,
+void  AliGenerator::PushTrack(Int_t done, Int_t parent, Int_t pdg,
                       Double_t px, Double_t py, Double_t pz, Double_t e,
                       Double_t vx, Double_t vy, Double_t vz, Double_t tof,
                       Double_t polx, Double_t poly, Double_t polz,
@@ -412,10 +412,10 @@ void  AliGenerator::SetTrack(Int_t done, Int_t parent, Int_t pdg,
   //
   
   if (fStack)
-     fStack->SetTrack(done, parent, pdg, px, py, pz, e, vx, vy, vz, tof,
+     fStack->PushTrack(done, parent, pdg, px, py, pz, e, vx, vy, vz, tof,
                       polx, poly, polz, mech, ntr, weight, is);
   else 
-     gAlice->SetTrack(done, parent, pdg, px, py, pz, e, vx, vy, vz, tof,
+     gAlice->PushTrack(done, parent, pdg, px, py, pz, e, vx, vy, vz, tof,
                         polx, poly, polz, mech, ntr, weight, is);
 }
 

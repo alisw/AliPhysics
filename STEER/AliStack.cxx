@@ -124,7 +124,7 @@ AliStack::~AliStack()
 //
 
 //_____________________________________________________________________________
-void AliStack::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
+void AliStack::PushTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
                         Float_t *vpos, Float_t *polar, Float_t tof,
                         TMCProcess mech, Int_t &ntr, Float_t weight, Int_t is)
 { 
@@ -162,17 +162,17 @@ void AliStack::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
 //	   mass,e,fNtrack,pdg,parent,done,vpos[0],vpos[1],vpos[2],pmom[0],pmom[1],pmom[2],kS);
   
 
-	SetTrack(done, parent, pdg, pmom[0], pmom[1], pmom[2], e,
+	PushTrack(done, parent, pdg, pmom[0], pmom[1], pmom[2], e,
 		 vpos[0], vpos[1], vpos[2], tof, polar[0], polar[1], polar[2],
 		 mech, ntr, weight, is);
     } else {
-	Warning("SetTrack", "Particle type %d not defined in PDG Database !\n", pdg);
-	Warning("SetTrack", "Particle skipped !\n");
+	Warning("PushTrack", "Particle type %d not defined in PDG Database !\n", pdg);
+	Warning("PushTrack", "Particle skipped !\n");
     }
 }
 
 //_____________________________________________________________________________
-void AliStack::SetTrack(Int_t done, Int_t parent, Int_t pdg,
+void AliStack::PushTrack(Int_t done, Int_t parent, Int_t pdg,
   	              Double_t px, Double_t py, Double_t pz, Double_t e,
   		      Double_t vx, Double_t vy, Double_t vz, Double_t tof,
 		      Double_t polx, Double_t poly, Double_t polz,
@@ -227,7 +227,7 @@ void AliStack::SetTrack(Int_t done, Int_t parent, Int_t pdg,
       if(particle->GetFirstDaughter()<0) particle->SetFirstDaughter(fNtrack);
     }
     else {
-      printf("Error in AliStack::SetTrack: Parent %d does not exist\n",parent);
+      printf("Error in AliStack::PushTrack: Parent %d does not exist\n",parent);
     }
   } 
   else { 
@@ -243,7 +243,7 @@ void AliStack::SetTrack(Int_t done, Int_t parent, Int_t pdg,
 }
 
 //_____________________________________________________________________________
-TParticle*  AliStack::GetNextTrack(Int_t& itrack)
+TParticle*  AliStack::PopNextTrack(Int_t& itrack)
 {
   //
   // Returns next track from stack of particles
@@ -264,7 +264,7 @@ TParticle*  AliStack::GetNextTrack(Int_t& itrack)
 }
 
 //_____________________________________________________________________________
-TParticle*  AliStack::GetPrimaryForTracking(Int_t i)
+TParticle*  AliStack::PopPrimaryForTracking(Int_t i)
 {
   //
   // Returns i-th primary particle if it is flagged to be tracked,
@@ -620,7 +620,7 @@ Int_t AliStack::TreeKEntry(Int_t id) const
 }
 
 //_____________________________________________________________________________
-Int_t AliStack::CurrentTrackParent() const
+Int_t AliStack::GetCurrentParentTrackNumber() const
 {
   //
   // Return number of the parent of the current track
@@ -631,7 +631,7 @@ Int_t AliStack::CurrentTrackParent() const
   if (current) 
     return current->GetFirstMother();
   else {
-    Warning("CurrentTrackParent", "Current track not found in the stack");
+    Warning("GetCurrentParentTrackNumber", "Current track not found in the stack");
     return -1;
   }  
 }

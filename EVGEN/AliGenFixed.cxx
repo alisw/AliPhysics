@@ -80,7 +80,7 @@ void AliGenFixed::Generate()
   Int_t i, nt;
   //
   for(i=0;i<fNpart;i++) 
-    SetTrack(fTrackIt,-1,fIpart,fP,fOrigin.GetArray(),polar,0,kPPrimary,nt);
+    PushTrack(fTrackIt,-1,fIpart,fP,fOrigin.GetArray(),polar,0,kPPrimary,nt);
 }
   
 //_____________________________________________________________________________

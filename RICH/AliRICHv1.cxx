@@ -228,7 +228,7 @@ void AliRICHv1::StepManager()
     const  Float_t kBig=1.e10;
        
     TClonesArray &lhits = *fHits;
-    TParticle *current = (TParticle*)(*gAlice->Particles())[gAlice->CurrentTrack()];
+    TParticle *current = (TParticle*)(*gAlice->Particles())[gAlice->GetCurrentTrackNumber()];
 
  //if (current->Energy()>1)
    //{
@@ -240,7 +240,7 @@ void AliRICHv1::StepManager()
     id=gMC->CurrentVolID(copy);
     idvol = copy-1;
     Float_t cherenkovLoss=0;
-    //gAlice->KeepTrack(gAlice->CurrentTrack());
+    //gAlice->KeepTrack(gAlice->GetCurrentTrackNumber());
     
     gMC->TrackPosition(position);
     pos[0]=position(0);
@@ -251,9 +251,9 @@ void AliRICHv1::StepManager()
     ckovData[2] = pos[1];                 // Y-position for hit
     ckovData[3] = pos[2];                 // Z-position for hit
     ckovData[6] = 0;                      // dummy track length
-    //ckovData[11] = gAlice->CurrentTrack();
+    //ckovData[11] = gAlice->GetCurrentTrackNumber();
     
-    //printf("\n+++++++++++\nTrack: %d\n++++++++++++\n",gAlice->CurrentTrack());
+    //printf("\n+++++++++++\nTrack: %d\n++++++++++++\n",gAlice->GetCurrentTrackNumber());
 
     //AliRICH *RICH = (AliRICH *) gAlice->GetDetector("RICH"); 
     
@@ -279,7 +279,7 @@ void AliRICHv1::StepManager()
 		      //printf("Second Mother:%d\n",current->GetSecondMother());
 		      
 		      ckovData[10] = mother;
-		      ckovData[11] = gAlice->CurrentTrack();
+		      ckovData[11] = gAlice->GetCurrentTrackNumber();
 		      ckovData[12] = 1;             //Media where photon was produced 1->Freon, 2->Quarz
 		      //printf("Produced in FREO\n");
 		      fCkovNumber++;
@@ -323,7 +323,7 @@ void AliRICHv1::StepManager()
 			if (ranf[0] > t) {
 			  gMC->StopTrack();
 			  ckovData[13] = 5;
-			  AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
+			  AddCerenkov(gAlice->GetCurrentTrackNumber(),vol,ckovData);
 			  //printf("Added One (1)!\n");
 			  //printf("Lost one in grid\n");
 			}
@@ -353,7 +353,7 @@ void AliRICHv1::StepManager()
 			    if (ranf[0] < t) {
 			      gMC->StopTrack();
 			      ckovData[13] = 6;
-			      AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
+			      AddCerenkov(gAlice->GetCurrentTrackNumber(),vol,ckovData);
 				
 			      //printf("Added One (2)!\n");
 			      //printf("Lost by Fresnel\n");
@@ -377,7 +377,7 @@ void AliRICHv1::StepManager()
 		      if (gMC->CurrentVolID(copy) == gMC->VolId("QUAR")) 
 			ckovData[13]=2;
 		      //gMC->StopTrack();
-		      //AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
+		      //AddCerenkov(gAlice->GetCurrentTrackNumber(),vol,ckovData);
 		    } //reflection question
 		     
 		    //        Absorption loss 
@@ -401,7 +401,7 @@ void AliRICHv1::StepManager()
 			ckovData[13]=16;
 		      }
 		      gMC->StopTrack();
-		      AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
+		      AddCerenkov(gAlice->GetCurrentTrackNumber(),vol,ckovData);
 		      //printf("Added One (3)!\n");
 		      //printf("Added cerenkov %d\n",fCkovNumber);
 		    } //absorption question 
@@ -411,7 +411,7 @@ void AliRICHv1::StepManager()
 		    else if (procs[i] == kPStop) {                 //is it below energy treshold?
 		      ckovData[13]=21;
 		      gMC->StopTrack();
-		      AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
+		      AddCerenkov(gAlice->GetCurrentTrackNumber(),vol,ckovData);
 		      //printf("Added One (4)!\n");
 		    }	// energy treshold question	    
 		  }  //number of mechanisms cycle
@@ -541,8 +541,8 @@ void AliRICHv1::StepManager()
 		      }
 		    //if (sector != -1)
 		    //{
-		    AddHit(gAlice->CurrentTrack(),vol,ckovData);
-		    AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
+		    AddHit(gAlice->GetCurrentTrackNumber(),vol,ckovData);
+		    AddCerenkov(gAlice->GetCurrentTrackNumber(),vol,ckovData);
 		    //printf("Added One (5)!\n");
 		    //}
 		}
@@ -690,7 +690,7 @@ void AliRICHv1::StepManager()
 		}
 		
 		//if(sector !=-1)
-		new(lhits[fNhits++]) AliRICHHit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+		new(lhits[fNhits++]) AliRICHHit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
 		eloss = 0; 
 		//
 		// Check additional signal generation conditions 

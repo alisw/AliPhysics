@@ -333,7 +333,7 @@ void AliGenHIJINGparaBa::Generate()
 			TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 		}
 	    }
-	    SetTrack(fTrackIt,-1,part,p,origin,polar,0,kPPrimary,nt,fParentWeight);
+	    PushTrack(fTrackIt,-1,part,p,origin,polar,0,kPPrimary,nt,fParentWeight);
 	    break;
 	} // while(1)
     } // Particle loop

@@ -246,7 +246,7 @@ void AliGenFLUKAsource::Generate()
 	if (part==1 && iwgt>100) iwgt=100;
 	Int_t nstack=0;
 	for (j=0; j<iwgt; j++) {
-	    SetTrack(fTrackIt,-1,part,p,origin,polar,fAge,kPPrimary,nt);
+	    PushTrack(fTrackIt,-1,part,p,origin,polar,fAge,kPPrimary,nt);
 	    Rndm(random,2);
 	    phi=2*random[1]*TMath::Pi();
 	    Float_t pn1=p[0]*TMath::Sin(phi) - p[1]*TMath::Cos(phi);

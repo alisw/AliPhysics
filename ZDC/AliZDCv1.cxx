@@ -1253,7 +1253,7 @@ void AliZDCv1::StepManager()
 
 //	  Int_t PcID = gMC->TrackPid();
 //	  printf("Pc ID -> %d\n",PcID);
-	AddHit(gAlice->CurrentTrack(), vol, hits);
+	AddHit(gAlice->GetCurrentTrackNumber(), vol, hits);
 	
 	if(fNoShower==1){
 //	  fpDetected += 1;
@@ -1273,13 +1273,13 @@ void AliZDCv1::StepManager()
 	   hits[9] = ekin;
 	   hits[7] = 0.;
 	   hits[8] = 0.;
-	   AddHit(gAlice->CurrentTrack(), vol, hits);
+	   AddHit(gAlice->GetCurrentTrackNumber(), vol, hits);
 	   }
 	 else{
 	   hits[9] = destep;
 	   hits[7] = 0.;
 	   hits[8] = 0.;
-	   AddHit(gAlice->CurrentTrack(), vol, hits);
+	   AddHit(gAlice->GetCurrentTrackNumber(), vol, hits);
 	   }
 //	 printf(" Dep. E = %f \n",hits[9]);
       }
@@ -1359,13 +1359,13 @@ void AliZDCv1::StepManager()
 	   hits[7] = nphe;  	//fLightPMQ
 	   hits[8] = 0;
 	   hits[9] = 0;
-	   AddHit(gAlice->CurrentTrack(), vol, hits);
+	   AddHit(gAlice->GetCurrentTrackNumber(), vol, hits);
 	 }
 	 else{
 	   hits[7] = 0;
 	   hits[8] = nphe;	//fLightPMC
 	   hits[9] = 0;
-	   AddHit(gAlice->CurrentTrack(), vol, hits);
+	   AddHit(gAlice->GetCurrentTrackNumber(), vol, hits);
 	 }
        } 
        else if((vol[0]==2)) {	// (2) ZP fibres
@@ -1378,13 +1378,13 @@ void AliZDCv1::StepManager()
 	   hits[7] = nphe;  	//fLightPMQ
 	   hits[8] = 0;
 	   hits[9] = 0;
-	   AddHit(gAlice->CurrentTrack(), vol, hits);
+	   AddHit(gAlice->GetCurrentTrackNumber(), vol, hits);
 	 }
 	 else{
 	   hits[7] = 0;
 	   hits[8] = nphe;	//fLightPMC
 	   hits[9] = 0;
-	   AddHit(gAlice->CurrentTrack(), vol, hits);
+	   AddHit(gAlice->GetCurrentTrackNumber(), vol, hits);
 	 }
        } 
        else if((vol[0]==3)) {	// (3) ZEM fibres
@@ -1410,7 +1410,7 @@ void AliZDCv1::StepManager()
 	 hits[7] = 0;  	
 	 hits[8] = nphe;	//fLightPMC
 	 hits[9] = 0;
-	 AddHit(gAlice->CurrentTrack(), vol, hits);
+	 AddHit(gAlice->GetCurrentTrackNumber(), vol, hits);
        }
      }
    }

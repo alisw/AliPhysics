@@ -302,7 +302,7 @@ void AliGenCRT::Generate()
   }
 
   // Put the track on the stack.
-  SetTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
+  PushTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
 
 
 }

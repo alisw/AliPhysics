@@ -175,7 +175,7 @@ void AliGenTPHIC::Generate()
     tof     = kconv*iparticle->T();
     if (ks == 1) trackIt = 1;
     else         trackIt = 0;
-    SetTrack(fTrackIt*trackIt,iparent,kf,p,origin,polar,tof,kPPrimary,nt,weight,ks);
+    PushTrack(fTrackIt*trackIt,iparent,kf,p,origin,polar,tof,kPPrimary,nt,weight,ks);
     KeepTrack(nt); 
 
     if (fDebug == 2)

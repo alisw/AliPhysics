@@ -612,7 +612,7 @@ void AliSTARTv1::StepManager()
       Float_t de=gMC->Edep(); 
       edep=edep+de;
       hits[3]=edep*1e3;
-      new(lhits[fNhits++]) AliSTARThit(fIshunt,gAlice->CurrentTrack(),vol,hits);      
+      new(lhits[fNhits++]) AliSTARThit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);      
     }
   }
 //---------------------------------------------------------------------

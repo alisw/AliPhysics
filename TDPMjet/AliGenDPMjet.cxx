@@ -316,7 +316,7 @@ void AliGenDPMjet::Generate()
 		 kf==5301 || kf==5303 || kf==5401 || kf==5403 || kf==5503) 
 		 tFlag=kFALSE;
 */	      
-	      SetTrack(tFlag,imo,kf,p,origin,polar,tof,kPNoProcess,nt, 1., ks);
+	      PushTrack(tFlag,imo,kf,p,origin,polar,tof,kPNoProcess,nt, 1., ks);
 	      KeepTrack(nt);
 	      newPos[i] = nt;
 	  } // if selected

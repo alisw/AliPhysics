@@ -31,21 +31,21 @@ class AliStack : public TVirtualMCStack
 
     // methods
 
-    virtual void  SetTrack(Int_t done, Int_t parent, Int_t pdg, 
+    virtual void  PushTrack(Int_t done, Int_t parent, Int_t pdg, 
                            Float_t *pmom, Float_t *vpos, Float_t *polar, 
                            Float_t tof, TMCProcess mech, Int_t &ntr,
                            Float_t weight, Int_t is);
 
-    virtual void  SetTrack(Int_t done, Int_t parent, Int_t pdg,
+    virtual void  PushTrack(Int_t done, Int_t parent, Int_t pdg,
                            Double_t px, Double_t py, Double_t pz, Double_t e,
                            Double_t vx, Double_t vy, Double_t vz, Double_t tof,
                            Double_t polx, Double_t poly, Double_t polz,
                            TMCProcess mech, Int_t &ntr, Double_t weight,
                            Int_t is);
 
-    virtual TParticle* GetNextTrack(Int_t& track);
-    virtual TParticle* GetCurrentTrack() {return fCurrentTrack;}
-    virtual TParticle* GetPrimaryForTracking(Int_t i);    
+    virtual TParticle* PopNextTrack(Int_t& track);
+    virtual TParticle* GetCurrentTrack() const {return fCurrentTrack;}
+    virtual TParticle* PopPrimaryForTracking(Int_t i);    
 
     void  ConnectTree();
     void  BeginEvent();
@@ -67,8 +67,8 @@ class AliStack : public TVirtualMCStack
     // get methods
     virtual Int_t GetNtrack() const;
     Int_t       GetNprimary() const;
-    virtual Int_t CurrentTrack() const;
-    virtual Int_t CurrentTrackParent() const;
+    virtual Int_t GetCurrentTrackNumber() const;
+    virtual Int_t GetCurrentParentTrackNumber() const;
     TObjArray*  Particles() const;
     TParticle*  Particle(Int_t id);
     Int_t       GetPrimary(Int_t id);
@@ -119,7 +119,7 @@ inline Int_t AliStack::GetNtrack() const
 inline Int_t AliStack::GetNprimary() const
 { return fNprimary; }
 
-inline Int_t AliStack::CurrentTrack() const 
+inline Int_t AliStack::GetCurrentTrackNumber() const 
 { return fCurrent; }
 
 inline TObjArray* AliStack::Particles() const

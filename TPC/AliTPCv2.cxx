@@ -1858,7 +1858,7 @@ void AliTPCv2::StepManager()
   if ( (gMC->IsTrackEntering() || gMC->IsTrackExiting()) &&
        ((id == fIdLSec) || (id == fIdUSec)) ) {
 
-    AddTrackReference(gAlice->CurrentTrack());
+    AddTrackReference(gAlice->GetCurrentTrackNumber());
   }
 
   if(id == fIdLSec){
@@ -1902,9 +1902,9 @@ void AliTPCv2::StepManager()
       hits[1]=p[1];
       hits[2]=p[2];
       hits[3]=0.; // this hit has no energy loss
-      // new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+      // new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
 
-      AddHit(gAlice->CurrentTrack(), vol,hits);  //MI change
+      AddHit(gAlice->GetCurrentTrackNumber(), vol,hits);  //MI change
 
     }
 
@@ -1913,9 +1913,9 @@ void AliTPCv2::StepManager()
      hits[1]=p[1];
      hits[2]=p[2];
      hits[3]=0.; // this hit has no energy loss
-     // new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+     // new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
 
-     AddHit(gAlice->CurrentTrack(), vol,hits);  //MI change    
+     AddHit(gAlice->GetCurrentTrackNumber(), vol,hits);  //MI change    
 
   }
   else return;
@@ -1937,14 +1937,14 @@ void AliTPCv2::StepManager()
     
     // Add this hit
     
-    // new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+    // new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
     if (fHitType&&2){
       gMC->TrackMomentum(p);
       Float_t momentum = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
       Float_t precision =   (momentum>0.1) ? 0.002 :0.01;
       fTrackHits->SetHitPrecision(precision);
     }
-    AddHit(gAlice->CurrentTrack(), vol,hits);  //MI change 
+    AddHit(gAlice->GetCurrentTrackNumber(), vol,hits);  //MI change 
     
   } 
   

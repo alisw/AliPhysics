@@ -106,7 +106,7 @@ void stupre()
 	if (EVTFLG.lpairp == 1) mech = kPPair;
 	else if (EVTFLG.lphoel == 1) mech = kPPhotoelectric;
 	else mech = kPAnnihilation;
-        cppstack->SetTrack(done, parent, pdg,
+        cppstack->PushTrack(done, parent, pdg,
 			   px, py, pz, e, vx, vy, vz, tof,
 			   polx, poly, polz, mech, ntr, weight, is);
 	cout << endl << " !!! stupre (PAIR, ..) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
@@ -119,7 +119,7 @@ void stupre()
 
 	if (EMFSTK.ichemf[kp] != 0) {
 	    mech = kPCompton;
-	    cppstack->SetTrack(done, parent, pdg,
+	    cppstack->PushTrack(done, parent, pdg,
 			       px, py, pz, e, vx, vy, vz, tof,
 			       polx, poly, polz, mech, ntr, weight, is);
 	    cout << endl << " !!! stupre (COMPTON) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
@@ -131,7 +131,7 @@ void stupre()
     else if ((EVTFLG.lbrmsp == 1)) {
 	if (EMFSTK.ichemf[kp] == 0) {
 	    mech = kPBrem;
-	    cppstack->SetTrack(done, parent, pdg,
+	    cppstack->PushTrack(done, parent, pdg,
 			       px, py, pz, e, vx, vy, vz, tof,
 			       polx, poly, polz, mech, ntr, weight, is);
 	    cout << endl << " !!! stupre (BREMS) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
@@ -144,7 +144,7 @@ void stupre()
 	if (lbhabh == 1) {
 	    if (EMFSTK.ichemf[kp] == -1) {
 		mech = kPDeltaRay;
-		cppstack->SetTrack(done, parent, pdg,
+		cppstack->PushTrack(done, parent, pdg,
 				   px, py, pz, e, vx, vy, vz, tof,
 				   polx, poly, polz, mech, ntr, weight, is);
 		EMFSTK.iespak[kp][mkbmx2-1] = ntr;
@@ -156,7 +156,7 @@ void stupre()
 //*            lower energy, which has been put higher in the stack
 	else if (kp == EMFSTK.npemf-1) {
 	    mech = kPDeltaRay;
-	    cppstack->SetTrack(done, parent, pdg,
+	    cppstack->PushTrack(done, parent, pdg,
 			       px, py, pz, e, vx, vy, vz, tof,
 			       polx, poly, polz, mech, ntr, weight, is);
 	    cout << endl << " !!! stupre (Moller) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;

@@ -517,8 +517,8 @@ void AliPHOSv1::StepManager(void)
   Bool_t         entered = kFALSE ;  
   Int_t          copy     ;
 
-  Int_t tracknumber =  gAlice->CurrentTrack() ; 
-  Int_t primary     =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
+  Int_t tracknumber =  gAlice->GetCurrentTrackNumber() ; 
+  Int_t primary     =  gAlice->GetPrimary( gAlice->GetCurrentTrackNumber() ); 
   TString name      =  GetGeometry()->GetName() ; 
   Int_t trackpid    =  0  ; 
 

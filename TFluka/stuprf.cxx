@@ -65,7 +65,7 @@ void stuprf(Int_t& ij, Int_t& mreg,
 // was numsec -1
 // clarify with Alberto
   if (numsec > npprmr) {
-// Now call the SetTrack(...)
+// Now call the PushTrack(...)
     Int_t done = 1;
 
     Int_t parent =  TRACKR.ispusr[mkbmx2-1];
@@ -111,7 +111,7 @@ void stuprf(Int_t& ij, Int_t& mreg,
     Int_t ntr;  
     // 
     // Save particle in VMC stack
-    cppstack->SetTrack(done, parent, pdg,
+    cppstack->PushTrack(done, parent, pdg,
 		       px, py, pz, e,
 		       vx, vy, vz, tof,
 		       polx, poly, polz,

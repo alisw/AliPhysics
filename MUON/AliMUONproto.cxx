@@ -427,7 +427,7 @@ void AliMUONproto::StepManager()
       }
     
       new(lhits[fNhits++]) 
-	  AliMUONHit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+	  AliMUONHit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
       eloss = 0; 
       //
       // Check additional signal generation conditions 

@@ -106,7 +106,7 @@ void AliMUONv3::StepManager()
   step   = gMC->TrackStep();
  //new hit
   if (destep>0.)  new(lhits[fNhits++]) 
-		    AliMUONHit(fIshunt, gAlice->CurrentTrack(), iChamber, ipart, 
+		    AliMUONHit(fIshunt, gAlice->GetCurrentTrackNumber(), iChamber, ipart, 
 			       pos.X(), pos.Y(), pos.Z(), tof, mom.P(), 
 			       theta, phi, step, destep);
 }

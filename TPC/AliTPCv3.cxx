@@ -1680,7 +1680,7 @@ void AliTPCv3::StepManager()
     
     // Add this hit
    
-    AddHit(gAlice->CurrentTrack(), vol,hits);  //MI change
+    AddHit(gAlice->GetCurrentTrackNumber(), vol,hits);  //MI change
     
   } 
   

@@ -1048,7 +1048,7 @@ void AliFRAMEv2::StepManager()
   //
   // Add the reference track
   //
-  AddTrackReference(gAlice->CurrentTrack());
+  AddTrackReference(gAlice->GetCurrentTrackNumber());
 }
 
   

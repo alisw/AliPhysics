@@ -800,6 +800,6 @@ void AliITSv5::StepManager(){
   hits[6]=gMC->Edep();
   hits[7]=gMC->TrackTime();
   // Fill hit structure with this new hit.
-  new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+  new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
   return;
 }

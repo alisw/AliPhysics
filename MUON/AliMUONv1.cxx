@@ -1987,7 +1987,7 @@ void AliMUONv1::StepManager()
     destep = gMC->Edep();
     step   = gMC->TrackStep();
     //new hit
-    AddHit(fIshunt, gAlice->CurrentTrack(), iChamber, ipart, 
+    AddHit(fIshunt, gAlice->GetCurrentTrackNumber(), iChamber, ipart, 
 	   pos.X(), pos.Y(), pos.Z(), tof, mom.P(), 
 	   theta, phi, step, destep);
   }
@@ -2148,7 +2148,7 @@ void AliMUONv1::StepManagerOld()
 //    new hit 
       
       new(lhits[fNhits++]) 
-	  AliMUONHit(fIshunt, gAlice->CurrentTrack(), vol,hits);
+	  AliMUONHit(fIshunt, gAlice->GetCurrentTrackNumber(), vol,hits);
       eloss = 0; 
       //
       // Check additional signal generation conditions 

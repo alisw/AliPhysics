@@ -264,7 +264,7 @@ void AliTRDv1::CreateTRhit(Int_t det)
 
       // Add the hit to the array. TR photon hits are marked 
       // by negative charge
-      AddHit(gAlice->CurrentTrack(),det,posHit,-q,kTRUE); 
+      AddHit(gAlice->GetCurrentTrackNumber(),det,posHit,-q,kTRUE); 
 
     }
 
@@ -553,7 +553,7 @@ void AliTRDv1::StepManager()
 	  // momentum components of the particle
           if (gMC->IsTrackEntering() || gMC->IsTrackExiting()) {
             gMC->TrackMomentum(mom);
-            AddTrackReference(gAlice->CurrentTrack());
+            AddTrackReference(gAlice->GetCurrentTrackNumber());
           }
 
           // Create the hits from TR photons
@@ -570,10 +570,10 @@ void AliTRDv1::StepManager()
 
 	// Create a new dEdx hit
         if (drRegion) {
-          AddHit(gAlice->CurrentTrack(),det,hits,qTot,kTRUE);       
+          AddHit(gAlice->GetCurrentTrackNumber(),det,hits,qTot,kTRUE);       
 	}
         else {
-          AddHit(gAlice->CurrentTrack(),det,hits,qTot,kFALSE);      
+          AddHit(gAlice->GetCurrentTrackNumber(),det,hits,qTot,kFALSE);      
 	}
 
         // Calculate the maximum step size for the next tracking step

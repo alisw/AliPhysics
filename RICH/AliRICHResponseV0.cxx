@@ -201,7 +201,7 @@ Int_t AliRICHResponseV0::FeedBackPhotons(Float_t *source, Float_t qtot)
 
   //  Get weight of current particle
   TParticle *current = (TParticle*) 
-    (*gAlice->Particles())[gAlice->CurrentTrack()];
+    (*gAlice->Particles())[gAlice->GetCurrentTrackNumber()];
     
   ifeed = Int_t(current->GetWeight()/100+0.5);
   ipart = gMC->TrackPid();
@@ -291,7 +291,7 @@ Int_t AliRICHResponseV0::FeedBackPhotons(Float_t *source, Float_t qtot)
     // Put photon on the stack and label it as feedback (51, 52) 
     ++sNfeed;
 
-    gAlice->SetTrack(Int_t(1), gAlice->CurrentTrack(), Int_t(50000051),
+    gAlice->PushTrack(Int_t(1), gAlice->GetCurrentTrackNumber(), Int_t(50000051),
 		     mom[0],mom[1],mom[2],mom[3],source[0],source[1],source[2],position[3],pol[0],pol[1],pol[2],
 		     kPFeedBackPhoton, nt, 1.);
     

@@ -275,9 +275,9 @@ void AliGenHaloProtvino::Generate()
       if (!fAnalog || gRandom->Rndm() < fParentWeight) {
 //    Pass parent particle
 //
-	  SetTrack(0,-1,kProton,pP,originP,polar,t,kPNoProcess,ntP, fParentWeight);
+	  PushTrack(0,-1,kProton,pP,originP,polar,t,kPNoProcess,ntP, fParentWeight);
 	  KeepTrack(ntP);
-	  SetTrack(fTrackIt,ntP,ipart[nprim],p,origin,polar,t,kPNoProcess,nt,fParentWeight);
+	  PushTrack(fTrackIt,ntP,ipart[nprim],p,origin,polar,t,kPNoProcess,nt,fParentWeight);
       }
 
       //
@@ -290,9 +290,9 @@ void AliGenHaloProtvino::Generate()
 	      origin[2]  = -origin[2];
 	      originP[2] = -originP[2];
 	      p[2]=-p[2];
-	      SetTrack(0,-1,kProton,pP,originP,polar,t,kPNoProcess,ntP, fParentWeight);
+	      PushTrack(0,-1,kProton,pP,originP,polar,t,kPNoProcess,ntP, fParentWeight);
 	      KeepTrack(ntP);
-	      SetTrack(fTrackIt,ntP,ipart[nprim],p,origin,polar,t,kPNoProcess,nt,fParentWeight);
+	      PushTrack(fTrackIt,ntP,ipart[nprim],p,origin,polar,t,kPNoProcess,nt,fParentWeight);
 	  }
       }
       SetHighWaterMark(nt);

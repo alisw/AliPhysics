@@ -214,7 +214,7 @@ void AliMUONv0::StepManager()
       hits[13] = mom[2];                    // Pz
       hits[14] = gMC->TrackTime();          // time of flight
       new(lhits[fNhits++]) 
-	  AliMUONHit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+	  AliMUONHit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
 
   }
 //  if( gMC->IsTrackExiting()) gMC->StopTrack(); 

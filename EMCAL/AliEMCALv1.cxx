@@ -130,7 +130,7 @@ void AliEMCALv1::StepManager(void){
   Float_t        pmom[4]={0.,0.,0.,0.};
   TLorentzVector pos; // Lorentz vector of the track current position.
   TLorentzVector mom; // Lorentz vector of the track current momentum.
-  Int_t tracknumber =  gAlice->CurrentTrack();
+  Int_t tracknumber =  gAlice->GetCurrentTrackNumber();
   Int_t primary = 0;
   static Int_t iparent = 0;
   static Float_t ienergy = 0;
