@@ -183,11 +183,6 @@ Bool_t AliPHOSFastRecParticle::IsPhoton(TString purity) const
       (TestPIDBit(2)||TestPIDBit(1)||TestPIDBit(0))&& //  neutral by CPV
       !TestPIDBit(14))                              //  no charged track
     return kTRUE ;
-  else if (photonLike                                   && //  photon by PCA
-	   (TestPIDBit(5)|| TestPIDBit(4)|| TestPIDBit(3))&& //  fast by TOF
-	   (!TestPIDBit(2)||!TestPIDBit(1)||!TestPIDBit(0))&& //  charged by CPV
-	   !TestPIDBit(14))                                 //  no charged track, conversion electron
-    return kTRUE ; 
   else
     return kFALSE;
 }
@@ -230,6 +225,28 @@ Bool_t AliPHOSFastRecParticle::IsElectron(TString purity) const
       (TestPIDBit(5)|| TestPIDBit(4)|| TestPIDBit(3))&& //  fast by TOF
       (!TestPIDBit(2)||!TestPIDBit(1)||!TestPIDBit(0))&& //  charged by CPV
       TestPIDBit(14))                                  //  no charged track
+    return kTRUE ;
+  else
+    return kFALSE;
+}
+
+//____________________________________________________________________________
+Bool_t AliPHOSFastRecParticle::IsElecCon(TString purity) const
+{
+  // Rec.Particle is an electron if it has a photon-like shape, fast and charged
+  // photon-like shape is defined with a purity "low", "medium" or "high"
+
+  purity.ToLower();
+  Bool_t photonLike = kFALSE;
+  if      (purity == "low"   ) photonLike = TestPIDBit(6);
+  else if (purity == "medium") photonLike = TestPIDBit(7);
+  else if (purity == "high"  ) photonLike = TestPIDBit(8);
+  else Error("IsElectron","Wrong purity type: %s",purity.Data());
+  
+  if (photonLike                                   && //  photon by PCA
+      (TestPIDBit(5)|| TestPIDBit(4)|| TestPIDBit(3))&& //  fast by TOF
+      (!TestPIDBit(2)||!TestPIDBit(1)||!TestPIDBit(0))&& //  charged by CPV
+      !TestPIDBit(14))                                  //  no charged track
     return kTRUE ;
   else
     return kFALSE;
