@@ -26,12 +26,12 @@ public:
   Int_t GetLastRow()  const {return fRowRange[1];}
   Int_t GetSector()   const {return fSector;}
 
-  Double_t GetFirstPointX() {return fFirstPoint[0];}
-  Double_t GetFirstPointY() {return fFirstPoint[1];}
-  Double_t GetFirstPointZ() {return fFirstPoint[2];}
-  Double_t GetLastPointX() {return fLastPoint[0];}
-  Double_t GetLastPointY() {return fLastPoint[1];}
-  Double_t GetLastPointZ() {return fLastPoint[2];}
+  Double_t GetFirstPointX() const {return fFirstPoint[0];}
+  Double_t GetFirstPointY() const {return fFirstPoint[1];}
+  Double_t GetFirstPointZ() const {return fFirstPoint[2];}
+  Double_t GetLastPointX() const {return fLastPoint[0];}
+  Double_t GetLastPointY() const {return fLastPoint[1];}
+  Double_t GetLastPointZ() const {return fLastPoint[2];}
 
   Int_t GetCharge() const {return fQ;}
   Double_t GetPt() const {return fPt;}
@@ -54,7 +54,7 @@ public:
   Double_t GetP() const;
   Double_t GetPseudoRapidity() const;
 
-  Float_t GetPID() {return fPID;}
+  Float_t GetPID() const {return fPID;}
 
   // setters
   void SetNHits(Int_t f) {fNHits = f;}

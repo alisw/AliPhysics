@@ -46,7 +46,7 @@ AliESDHLTtrack::AliESDHLTtrack() : TObject()
   fBinY = 0;
   fSizeX = 0;
   fSizeY = 0;
-  fPID =0;
+  fPID = 0;
 }
 
 Double_t AliESDHLTtrack::GetP() const

@@ -55,6 +55,8 @@ AliESD::~AliESD()
   // Standard destructor
   //
   fTracks.Delete();
+  fHLTConfMapTracks.Delete();
+  fHLTHoughTracks.Delete();
   fMuonTracks.Delete();
   fPmdTracks.Delete();
   fV0s.Delete();

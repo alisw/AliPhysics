@@ -120,23 +120,21 @@ protected:
   Float_t      fMagneticField;   // Solenoid Magnetic Field in kG : for compatibility with AliMagF
 
   Float_t      fT0zVertex;       // vertex z position estimated by the START
-  AliESDVertex  fPrimaryVertex;  // Primary vertex estimated by the ITS
+  AliESDVertex fPrimaryVertex;   // Primary vertex estimated by the ITS
 
-  TClonesArray  fTracks;         // ESD tracks
-  TClonesArray  fHLTConfMapTracks; // HLT ESD tracks from Conformal Mapper method
-  TClonesArray  fHLTHoughTracks; // HLT ESD tracks from Hough Transform method
-  TClonesArray  fMuonTracks;     // MUON ESD tracks
-  TClonesArray  fPmdTracks;      // PMD ESD tracks
-  TClonesArray  fV0s;            // V0 vertices
-  TClonesArray  fCascades;       // Cascade vertices
-  Int_t         fPHOSParticles;  // Number of PHOS particles (stored as fTracks)
-  Int_t         fEMCALParticles; // Number of EMCAL particles (stored as fTracks)
-  Int_t         fFirstPHOSParticle; // First PHOS particle in the fTracks list 
-  Int_t         fFirstEMCALParticle;// First EMCAL particle in the fTracks list 
+  TClonesArray fTracks;          // ESD tracks
+  TClonesArray fHLTConfMapTracks;// HLT ESD tracks from Conformal Mapper method
+  TClonesArray fHLTHoughTracks;  // HLT ESD tracks from Hough Transform method
+  TClonesArray fMuonTracks;      // MUON ESD tracks
+  TClonesArray fPmdTracks;       // PMD ESD tracks
+  TClonesArray fV0s;             // V0 vertices
+  TClonesArray fCascades;        // Cascade vertices
+  Int_t        fPHOSParticles;   // Number of PHOS particles (stored as fTracks)
+  Int_t        fEMCALParticles;  // Number of EMCAL particles (stored as fTracks)
+  Int_t        fFirstPHOSParticle; // First PHOS particle in the fTracks list 
+  Int_t        fFirstEMCALParticle;// First EMCAL particle in the fTracks list 
  
   ClassDef(AliESD,7)  //ESD class 
-
 };
-
 #endif 
 
