@@ -24,8 +24,6 @@
 #include "AliGeometry.h"
 #include "AliPHOSRecPoint.h"
 
-static const TString kDegre("deg") ; 
-static const TString kRadian("rad") ; 
 
 class AliPHOSGeometry : public AliGeometry {
 
@@ -40,6 +38,9 @@ public:
   static AliPHOSGeometry * GetInstance() ; 
   virtual void  GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TMatrix & gmat)  ;
   virtual void  GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos)  ; 
+
+  static TString kDegre ; 
+  static TString kRadian ; 
 
 protected:
 

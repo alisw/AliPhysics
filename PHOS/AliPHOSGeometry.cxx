@@ -255,6 +255,9 @@ void AliPHOSGeometry::Init(void)
 {
   // Initializes the PHOS parameters
   
+  kDegre  = "deg" ; 
+  kRadian = "rad" ; 
+  
   fRotMatrixArray = new TObjArray(fNModules) ; 
 
   cout << "PHOS geometry setup: parameters for option " << fName << " " << fTitle << endl ;
