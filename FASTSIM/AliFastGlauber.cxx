@@ -99,13 +99,18 @@ void AliFastGlauber::Init(Int_t mode)
 //
 //  Path Length as a function of Phi
 //    
-    fWPathLength0 = new TF1("WPathLength0", WPathLength0, -TMath::Pi(), TMath::Pi(), 1);
-    fWPathLength0->SetParameter(0, 0.);     
-    fWPathLength = new TF1("WPathLength", WPathLength, -TMath::Pi(), TMath::Pi(), 2);
+    fWPathLength0 = new TF1("WPathLength0", WPathLength0, -TMath::Pi(), TMath::Pi(), 2);
+    fWPathLength0->SetParameter(0, 0.);
+//  Pathlength definition     
+    fWPathLength0->SetParameter(1, 0.);     
+
+    fWPathLength = new TF1("WPathLength", WPathLength, -TMath::Pi(), TMath::Pi(), 3);
 //  Impact Parameter
     fWPathLength->SetParameter(0, 0.);    
 //  Number of interactions used for average
     fWPathLength->SetParameter(1, 1000.);    
+//  Pathlength definition
+    fWPathLength->SetParameter(2, 0);    
 
     fWIntRadius = new TF1("WIntRadius", WIntRadius, 0., fbMax, 1);
     fWIntRadius->SetParameter(0, 0.);    
@@ -226,7 +231,7 @@ void AliFastGlauber::DrawAlmond(Double_t b)
     fWAlmond->Draw();
 }
 
-void AliFastGlauber::DrawPathLength0(Double_t b)
+void AliFastGlauber::DrawPathLength0(Double_t b, Int_t iopt)
 {
 //
 //  Draw Path Length
@@ -234,12 +239,13 @@ void AliFastGlauber::DrawPathLength0(Double_t b)
     TCanvas *c8 = new TCanvas("c8","Path Length",400,10,600,700);
     c8->cd();
     fWPathLength0->SetParameter(0, b);
+    fWPathLength0->SetParameter(1, Double_t(iopt));
     fWPathLength0->SetMinimum(0.); 
     fWPathLength0->SetMaximum(10.); 
     fWPathLength0->Draw();
 }
 
-void AliFastGlauber::DrawPathLength(Double_t b , Int_t ni)
+void AliFastGlauber::DrawPathLength(Double_t b , Int_t ni, Int_t iopt)
 {
 //
 //  Draw Path Length
@@ -250,6 +256,7 @@ void AliFastGlauber::DrawPathLength(Double_t b , Int_t ni)
 
     fWPathLength->SetParameter(0, b);
     fWPathLength->SetParameter(1, Double_t (ni));
+    fWPathLength->SetParameter(2, Double_t (iopt));
     fWPathLength->SetMinimum(0.); 
     fWPathLength->SetMaximum(10.); 
     fWPathLength->Draw();
@@ -414,6 +421,9 @@ Double_t AliFastGlauber::WPathLength0(Double_t* x, Double_t* par)
     const Double_t dr  = fbMax/Double_t(np);
 //  Impact parameter    
     Double_t b      = par[0];
+//  Path Length definition
+    Int_t    iopt   = Int_t(par[1]);
+    
 //  Phi direction in Almond
     Double_t phi0   = x[0];
     Double_t r  = 0.;
@@ -439,7 +449,11 @@ Double_t AliFastGlauber::WPathLength0(Double_t* x, Double_t* par)
     } // radial steps
 //
 //  My length definition (is exact for hard disk)
-    return (2. * rw / w);
+    if (!iopt) {
+	return (2. * rw / w);
+    } else {
+	return TMath::Sqrt(2. * rw * dr / fWSta->Eval(0.01) / fWSta->Eval(0.01));
+    }
 }
 
 Double_t AliFastGlauber::WPathLength(Double_t* x, Double_t* par)
@@ -459,6 +473,8 @@ Double_t AliFastGlauber::WPathLength(Double_t* x, Double_t* par)
 //
 //  Impact parameter    
     Double_t b      = par[0];
+//  Path Length definition 
+    Int_t    iopt   = Int_t(par[2]);
 //  Phi direction
     Double_t phi0   = x[0];
 
@@ -496,7 +512,11 @@ Double_t AliFastGlauber::WPathLength(Double_t* x, Double_t* par)
 	    r  += dr;
 	} // steps
 // Average over interactions
-	l += 2. * rw / w;
+	if (!iopt) {
+	    l += (2. * rw / w);
+	} else {
+	    l+= TMath::Sqrt(2. * rw * dr / fWSta->Eval(0.01) / fWSta->Eval(0.01));
+	}
     } // interactions
     return (l / Double_t(npi));
 }

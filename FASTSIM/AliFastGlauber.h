@@ -42,8 +42,8 @@ class AliFastGlauber : public TObject {
     void DrawN();    
     void DrawKernel(Double_t b = 0.);
     void DrawAlmond(Double_t b = 0.);
-    void DrawPathLength0(Double_t b = 0.);
-    void DrawPathLength(Double_t b, Int_t ni = 1000);
+    void DrawPathLength0(Double_t b = 0., Int_t iopt = 0);
+    void DrawPathLength(Double_t b, Int_t ni = 1000, Int_t iopt = 0);
     void DrawIntRadius(Double_t b = 0.);
     void DrawEnergyDensity();
     
