@@ -119,11 +119,13 @@ class TFluka : public TVirtualMC {
   //
   
   // User configuration
-  virtual Bool_t   SetProcess(const char* flagName, Int_t flagValue);
-  virtual void     SetProcess(const char* flagName, Int_t flagValue, Int_t imed);
-  virtual Bool_t   SetCut(const char* cutName, Double_t cutValue);
-  virtual void     SetCut(const char* cutName, Double_t cutValue, Int_t imed);
-  virtual Double_t Xsec(char*, Double_t, Int_t, Int_t);
+  virtual Bool_t     SetProcess(const char* flagName, Int_t flagValue);
+  virtual void       SetProcess(const char* flagName, Int_t flagValue, Int_t imed);
+  virtual Bool_t     SetCut(const char* cutName, Double_t cutValue);
+  virtual void       SetCut(const char* cutName, Double_t cutValue, Int_t imed);
+  virtual TObjArray* GetListOfProceses() {return fProcesses;}
+  virtual TObjArray* GetListOfCuts()     {return fCuts;}
+  virtual Double_t   Xsec(char*, Double_t, Int_t, Int_t);
   
   // Particle table usage         
   virtual Int_t    IdFromPDG(Int_t id) const;

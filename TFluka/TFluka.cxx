@@ -523,7 +523,8 @@ void TFluka::Medium(Int_t& kmed, const char *name, Int_t nmat,
 		    Int_t isvol, Int_t ifield, Double_t fieldm, Double_t tmaxfd, 
 		    Double_t stemax, Double_t deemax, Double_t epsil, 
 		    Double_t stmin, Float_t* ubuf, Int_t nbuf) { 
-  //
+  // Define a medium
+  // 
   kmed = gGeoManager->GetListOfMedia()->GetSize()+1;
   fMCGeo->Medium(kmed, name, nmat, isvol, ifield, fieldm, tmaxfd, stemax, deemax, 
 	     epsil, stmin, ubuf, nbuf);
@@ -534,7 +535,8 @@ void TFluka::Medium(Int_t& kmed, const char *name, Int_t nmat,
 		    Int_t isvol, Int_t ifield, Double_t fieldm, Double_t tmaxfd, 
 		    Double_t stemax, Double_t deemax, Double_t epsil, 
 		    Double_t stmin, Double_t* ubuf, Int_t nbuf) { 
-  //
+  // Define a medium
+  // 
   kmed = gGeoManager->GetListOfMedia()->GetSize()+1;
   fMCGeo->Medium(kmed, name, nmat, isvol, ifield, fieldm, tmaxfd, stemax, deemax, 
 	     epsil, stmin, ubuf, nbuf);
@@ -907,7 +909,7 @@ void TFluka::InitPhysics()
 //
   printf("=>InitPhysics\n");
   Int_t j, k;
-  Double_t fCut;
+  Double_t theCut;
 
   FILE *pFlukaVmcCoreInp, *pFlukaVmcFlukaMat, *pFlukaVmcInp;
 
@@ -1092,61 +1094,61 @@ fin:
 		// G4 particles: "e-", "e+"
 		// G3 default value: 0.01 GeV
 		//gMC ->SetCut("PPCUTM",cut); // total energy cut for direct pair prod. by muons
-		fCut = 0.0;
+		theCut = 0.0;
 		nextc.Reset();
 		while ((cut = (TFlukaConfigOption*)nextc())) {
 		    if (strncmp(cut->GetName(), "PPCUTM", 6) == 0 &&
-			(cut->Medium() == proc->Medium())) fCut = cut->Cut();
+			(cut->Medium() == proc->Medium())) theCut = cut->Cut();
 		}
-		fprintf(pFlukaVmcInp,"%10.4g",fCut);
-		// fCut; = e+, e- kinetic energy threshold (in GeV) for explicit pair production.
+		fprintf(pFlukaVmcInp,"%10.4g",theCut);
+		// theCut; = e+, e- kinetic energy threshold (in GeV) for explicit pair production.
 		// muon and hadron bremsstrahlung
 		// G4 particles: "gamma"
 		// G3 default value: CUTGAM=0.001 GeV
 		//gMC ->SetCut("BCUTM",cut);  // cut for muon and hadron bremsstrahlung
-		fCut = 0.0;
+		theCut = 0.0;
 		nextc.Reset();
 		while ((cut = (TFlukaConfigOption*)nextc())) {
 		    if (strncmp(cut->GetName(), "BCUTM", 5) == 0 &&
-			(cut->Medium() == proc->Medium())) fCut = cut->Cut();
+			(cut->Medium() == proc->Medium())) theCut = cut->Cut();
 		}
-		fprintf(pFlukaVmcInp,"%10.4g%10.1f%10.1f\n",fCut,matMin,matMax);
-		// fCut = photon energy threshold (GeV) for explicit bremsstrahlung production
+		fprintf(pFlukaVmcInp,"%10.4g%10.1f%10.1f\n",theCut,matMin,matMax);
+		// theCut = photon energy threshold (GeV) for explicit bremsstrahlung production
 		// matMin = lower bound of the material indices in which the respective thresholds apply
 		// matMax = upper bound of the material indices in which the respective thresholds apply
 		
 		// for e+ and e-
 		fprintf(pFlukaVmcInp,"*\n*Kinetic energy threshold (GeV) for e+/e- bremsstrahlung - resets to default=0.\n");
 		fprintf(pFlukaVmcInp,"*Generated from call: SetProcess('BREM',1);\n");
-		fCut = -1.0;
+		theCut = -1.0;
 		nextc.Reset();
 		while ((cut = (TFlukaConfigOption*)nextc())) {
 		    if (strncmp(cut->GetName(), "BCUTE", 5) == 0 &&
-			(cut->Medium() == proc->Medium())) fCut = cut->Cut();
+			(cut->Medium() == proc->Medium())) theCut = cut->Cut();
 		}
-		//fCut = kinetic energy threshold (GeV) for e+/e- bremsstrahlung (resets to default=0)
+		//theCut = kinetic energy threshold (GeV) for e+/e- bremsstrahlung (resets to default=0)
 		// zero = not used
 		// zero = not used
 		// matMin = lower bound of the material indices in which the respective thresholds apply
 		// matMax = upper bound of the material indices in which the respective thresholds apply
 		// one = step length in assigning indices
 		// "ELPO-THR"; 
-		fprintf(pFlukaVmcInp,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f%10.1fELPO-THR\n",fCut,zero,zero,matMin,matMax,one);
+		fprintf(pFlukaVmcInp,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f%10.1fELPO-THR\n",theCut,zero,zero,matMin,matMax,one);
 		
           // for e+ and e-
 		fprintf(pFlukaVmcInp,"*\n*Pair production by electrons is activated\n");
 		fprintf(pFlukaVmcInp,"*Generated from call: SetProcess('PAIR',1);\n");
-		fCut = -1.0;
+		theCut = -1.0;
 		nextc.Reset();
 		while ((cut = (TFlukaConfigOption*)nextc())) {
 		    if (strncmp(cut->GetName(), "CUTGAM", 6) == 0 &&
-			(cut->Medium() == proc->Medium())) fCut = cut->Cut();
+			(cut->Medium() == proc->Medium())) theCut = cut->Cut();
 		}
-		// fCut = energy threshold (GeV) for gamma pair production (< 0.0 : resets to default, = 0.0 : ignored)
+		// theCut = energy threshold (GeV) for gamma pair production (< 0.0 : resets to default, = 0.0 : ignored)
 		// matMin = lower bound of the material indices in which the respective thresholds apply
 		// matMax =  upper bound of the material indices in which the respective thresholds apply
 		// one = step length in assigning indices
-		fprintf(pFlukaVmcInp,"EMFCUT    %10.1f%10.1f%10.4g%10.1f%10.1f%10.1fPHOT-THR\n",zero,zero,fCut,matMin,matMax,one);
+		fprintf(pFlukaVmcInp,"EMFCUT    %10.1f%10.1f%10.4g%10.1f%10.1f%10.1fPHOT-THR\n",zero,zero,theCut,matMin,matMax,one);
 		goto BOTH;
 	    } // end of if for BREM
 	} // end of loop for BREM
@@ -1169,19 +1171,19 @@ fin:
 	// for e+ and e-
 	fprintf(pFlukaVmcInp,"*\n*Pair production by electrons is activated\n");
 	fprintf(pFlukaVmcInp,"*Generated from call: SetProcess('PAIR',1) or SetProcess('PAIR',2)\n");
-	fCut = -1.0;
+	theCut = -1.0;
 	nextc.Reset();
 	while ((cut = (TFlukaConfigOption*)nextc())) {
 	    if (strncmp(cut->GetName(), "CUTGAM", 6) == 0 &&
-		(cut->Medium() == proc->Medium())) fCut = cut->Cut();
+		(cut->Medium() == proc->Medium())) theCut = cut->Cut();
 	}
 	// zero = energy threshold (GeV) for Compton scattering (= 0.0 : ignored)
 	// zero = energy threshold (GeV) for Photoelectric (= 0.0 : ignored)
-	// fCut = energy threshold (GeV) for gamma pair production (< 0.0 : resets to default, = 0.0 : ignored)
+	// theCut = energy threshold (GeV) for gamma pair production (< 0.0 : resets to default, = 0.0 : ignored)
 	// matMin = lower bound of the material indices in which the respective thresholds apply
 	// matMax = upper bound of the material indices in which the respective thresholds apply
 	// one = step length in assigning indices
-	fprintf(pFlukaVmcInp,"EMFCUT    %10.1f%10.1f%10.4g%10.1f%10.1f%10.1fPHOT-THR\n",zero,zero,fCut,matMin,matMax,one);
+	fprintf(pFlukaVmcInp,"EMFCUT    %10.1f%10.1f%10.4g%10.1f%10.1f%10.1fPHOT-THR\n",zero,zero,theCut,matMin,matMax,one);
       
     BOTH:
 	k = 0;
@@ -1218,16 +1220,16 @@ fin:
 	      // G4 particles: "gamma"
 	      // G3 default value: CUTGAM=0.001 GeV
 	      //gMC ->SetCut("BCUTM",cut);  // cut for muon and hadron bremsstrahlung
-	      fCut = 0.0;
+	      theCut = 0.0;
 	      nextc.Reset();
 	      while ((cut = (TFlukaConfigOption*)nextc())) {
 		  if (strncmp(cut->GetName(), "BCUTM", 5) == 0 &&
-		      (cut->Medium() == proc->Medium())) fCut = cut->Cut();
+		      (cut->Medium() == proc->Medium())) theCut = cut->Cut();
 	      }
-	      // fCut = photon energy threshold (GeV) for explicit bremsstrahlung production
+	      // theCut = photon energy threshold (GeV) for explicit bremsstrahlung production
 	      // matMin = lower bound of the material indices in which the respective thresholds apply
 	      // matMax = upper bound of the material indices in which the respective thresholds apply
-	      fprintf(pFlukaVmcInp,"PAIRBREM  %10.1f%10.1f%10.4g%10.1f%10.1f\n",two,zero,fCut,matMin,matMax);
+	      fprintf(pFlukaVmcInp,"PAIRBREM  %10.1f%10.1f%10.4g%10.1f%10.1f\n",two,zero,theCut,matMin,matMax);
 	      
 	      // for e+ and e-
 	      fprintf(pFlukaVmcInp,"*\n*Kinetic energy threshold (GeV) for e+/e- bremsstrahlung - resets to default=0.\n");
@@ -1426,19 +1428,22 @@ fin:
 	      fprintf(pFlukaVmcInp,"*Generated from call: SetProcess('DRAY',flag), flag=1,2,3\n");
 	      fprintf(pFlukaVmcInp,"*Delta ray production by muons switched on\n");
 	      fprintf(pFlukaVmcInp,"*Energy threshold set by call SetCut('DCUTM',cut) or set to 1.0e+6.\n");
-	      fCut = 1.0e+6;
+	      theCut = 1.0e+6;
 	      nextc.Reset();
+	      //
+	      // Check cut one delta-rays from electrons
+	      //
 	      while ((cut = (TFlukaConfigOption*)nextc())) {
 		  if (strncmp(cut->GetName(), "DCUTM", 5) == 0 &&
-		      cut->Medium() == proc->Medium()) fCut = cut->Cut();
+		      cut->Medium() == proc->Medium()) theCut = cut->Cut();
 	      }
-	      // fCut = kinetic energy threshold (GeV) for delta ray production (discrete energy transfer)
+	      // theCut = kinetic energy threshold (GeV) for delta ray production (discrete energy transfer)
 	      // zero = ignored
 	      // zero = ignored
 	      // matMin = lower bound of the material indices in which the respective thresholds apply
 	      // matMax =  upper bound of the material indices in which the respective thresholds apply
 	      // one = step length in assigning indices
-	      fprintf(pFlukaVmcInp,"DELTARAY  %10.4g%10.1f%10.1f%10.1f%10.1f%10.1f\n",fCut,zero,zero,matMin,matMax,one);
+	      fprintf(pFlukaVmcInp,"DELTARAY  %10.4g%10.1f%10.1f%10.1f%10.1f%10.1f\n",theCut,zero,zero,matMin,matMax,one);
 	  }
 	  else  {
 	      fprintf(pFlukaVmcInp,"*\n*Illegal flag value in SetProcess('DRAY',?) call.\n");
@@ -1792,69 +1797,41 @@ fin:
 	  TGeoMaterial*    material =  (TGeoMaterial*) (GetFlukaMaterials())->At(GetMaterialIndex(mat));
 	  fprintf(pFlukaVmcInp,"*\n*Material specific cut setting for #%8d %s %s %13.3e\n", 
 		  mat, material->GetName(), cut->GetName(), cut->Cut());  
-
+	  
       } 
-
+      
       // cuts handled in SetProcess calls
-      if (strncmp(cut->GetName(),"BCUTM",5) == 0) continue;
-      else if (strncmp(cut->GetName(),"BCUTE",5) == 0) continue;
-      else if (strncmp(cut->GetName(),"DCUTM",5) == 0) continue;
+      if      (strncmp(cut->GetName(),"BCUTM",5)  == 0) continue;
+      else if (strncmp(cut->GetName(),"BCUTE",5)  == 0) continue;
+      else if (strncmp(cut->GetName(),"DCUTM",5)  == 0) continue;
       else if (strncmp(cut->GetName(),"PPCUTM",6) == 0) continue;
       
-      // delta-rays by electrons
-      // G4 particles: "e-"
-      // G3 default value: 10**4 GeV
-      // gMC ->SetCut("DCUTE",cut);  // cut for deltarays by electrons 
-      else if (strncmp(cut->GetName(),"DCUTE",5) == 0) {
-	fprintf(pFlukaVmcInp,"*Cut for delta rays by electrons\n");
-	// -cut->Cut();
-	// zero = ignored
-	// zero = ignored
-	// matMin = lower bound of the material indices in which the respective thresholds apply
-	// matMax = upper bound of the material indices in which the respective thresholds apply
-        // loop over materials for EMFCUT FLUKA cards
-        for (j=0; j < matMax-matMin+1; j++) {
-          Int_t nreg, imat, *reglist;
-          Float_t ireg;
-          imat = (Int_t) matMin + j;
-          reglist = fGeom->GetMaterialList(imat, nreg);
-          // loop over regions of a given material
-          for (k=0; k<nreg; k++) {
-            ireg = reglist[k];
-	    fprintf(pFlukaVmcInp,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f\n",-cut->Cut(),zero,zero,ireg,ireg);
-          }
-        }
-	fprintf(pFlukaVmcInp,"DELTARAY  %10.4g%10.3f%10.3f%10.1f%10.1f%10.1f\n",cut->Cut(), 100., 1.03, matMin, matMax, 1.0);
-      } // end of if for delta-rays by electrons
-    
-
       // gammas
       // G4 particles: "gamma"
       // G3 default value: 0.001 GeV
       // gMC ->SetCut("CUTGAM",cut); // cut for gammas
       
       else if (strncmp(cut->GetName(),"CUTGAM",6) == 0 && global) {
-	fprintf(pFlukaVmcInp,"*\n*Cut for gamma\n");
-	fprintf(pFlukaVmcInp,"*Generated from call: SetCut('CUTGAM',cut);\n");
-	// -cut->Cut();
-	// 7.0 = lower bound of the particle id-numbers to which the cut-off
-	fprintf(pFlukaVmcInp,"PART-THR  %10.4g%10.1f\n",-cut->Cut(),7.0);
+	  fprintf(pFlukaVmcInp,"*\n*Cut for gamma\n");
+	  fprintf(pFlukaVmcInp,"*Generated from call: SetCut('CUTGAM',cut);\n");
+	  fprintf(pFlukaVmcInp,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", 
+		  zero, cut->Cut(), zero, zero, Float_t(fGeom->NofVolumes()), one);
       }
       else if (strncmp(cut->GetName(),"CUTGAM",6) == 0 && !global) {
-        // loop over materials for EMFCUT FLUKA cards
-        for (j=0; j < matMax-matMin+1; j++) {
-          Int_t nreg, imat, *reglist;
-          Float_t ireg;
-          imat = (Int_t) matMin + j;
-          reglist = fGeom->GetMaterialList(imat, nreg);
-          // loop over regions of a given material
-          for (Int_t k = 0; k < nreg; k++) {
-            ireg = reglist[k];
-	    fprintf(pFlukaVmcInp,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", zero, cut->Cut(), zero, ireg, ireg, one);
-          }
-        }
+	  // loop over materials for EMFCUT FLUKA cards
+	  for (j=0; j < matMax-matMin+1; j++) {
+	      Int_t nreg, imat, *reglist;
+	      Float_t ireg;
+	      imat = (Int_t) matMin + j;
+	      reglist = fGeom->GetMaterialList(imat, nreg);
+	      // loop over regions of a given material
+	      for (Int_t k = 0; k < nreg; k++) {
+		  ireg = reglist[k];
+		  fprintf(pFlukaVmcInp,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", zero, cut->Cut(), zero, ireg, ireg, one);
+	      }
+	  }
       } // end of else if for gamma
-
+      
 
       // electrons
       // G4 particles: "e-"
@@ -1862,27 +1839,24 @@ fin:
       // G3 default value: 0.001 GeV
       //gMC ->SetCut("CUTELE",cut); // cut for e+,e-
       else if (strncmp(cut->GetName(),"CUTELE",6) == 0 && global) {
-	fprintf(pFlukaVmcInp,"*\n*Cut for electrons\n");
-	fprintf(pFlukaVmcInp,"*Generated from call: SetCut('CUTELE',cut);\n");
-	// -cut->Cut();
-	// three = lower bound of the particle id-numbers to which the cut-off
-	// 4.0 = upper bound of the particle id-numbers to which the cut-off
-	// one = step length in assigning numbers
-	fprintf(pFlukaVmcInp,"PART-THR  %10.4g%10.1f%10.1f%10.1f\n",-cut->Cut(),three,4.0,one);
+	  fprintf(pFlukaVmcInp,"*\n*Cut for electrons\n");
+	  fprintf(pFlukaVmcInp,"*Generated from call: SetCut('CUTELE',cut);\n");
+	  fprintf(pFlukaVmcInp,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", 
+		  -cut->Cut(), zero, zero, zero, Float_t(fGeom->NofVolumes()), one);
       }
       else if (strncmp(cut->GetName(),"CUTELE",6) == 0 && !global) {
-        // loop over materials for EMFCUT FLUKA cards
-        for (j=0; j < matMax-matMin+1; j++) {
-          Int_t nreg, imat, *reglist;
-          Float_t ireg;
-          imat = (Int_t) matMin + j;
-          reglist = fGeom->GetMaterialList(imat, nreg);
-          // loop over regions of a given material
-          for (k=0; k<nreg; k++) {
-            ireg = reglist[k];
-	    fprintf(pFlukaVmcInp,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", -cut->Cut(), zero, zero, ireg, ireg, one);
-          }
-        }
+	  // loop over materials for EMFCUT FLUKA cards
+	  for (j=0; j < matMax-matMin+1; j++) {
+	      Int_t nreg, imat, *reglist;
+	      Float_t ireg;
+	      imat = (Int_t) matMin + j;
+	      reglist = fGeom->GetMaterialList(imat, nreg);
+	      // loop over regions of a given material
+	      for (k=0; k<nreg; k++) {
+		  ireg = reglist[k];
+		  fprintf(pFlukaVmcInp,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", -cut->Cut(), zero, zero, ireg, ireg, one);
+	      }
+	  }
       } // end of else if for electrons
 
     
