@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.50  2001/01/27 10:32:00  hristov
+Leave the loop when primaries are filled (I.Hrivnacova)
+
 Revision 1.49  2001/01/26 19:58:48  hristov
 Major upgrade of AliRoot code
 
@@ -1884,6 +1887,17 @@ void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
     fHeader.SetNtrack(fHgwmk+1);
   }
   ntr = fNtrack++;
+}
+
+void AliRun::SetHighWaterMark(const Int_t nt)
+{
+    //
+    // Set high water mark for last track in event
+    fHgwmk=fNtrack-1;
+    //
+    // Set also number if primary tracks
+    fHeader.SetNprimary(fHgwmk+1);
+    fHeader.SetNtrack(fHgwmk+1);
 }
 
 //_____________________________________________________________________________

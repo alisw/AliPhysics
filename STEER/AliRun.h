@@ -127,7 +127,9 @@ public:
   			       Float_t *pmom, Float_t *vpos, Float_t *polar, 
                                Float_t tof, AliMCProcess mech, Int_t &ntr,
                                Float_t weight=1);
-  virtual  void  KeepTrack(const Int_t itra);
+   virtual  void  SetHighWaterMark(Int_t nt);
+   
+   virtual  void  KeepTrack(const Int_t itra);
    virtual  void  MediaTable();
    virtual  Float_t TrackingZmax() const {return fTrZmax;}
    virtual  Float_t TrackingRmax() const {return fTrRmax;}
