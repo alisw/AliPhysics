@@ -161,7 +161,7 @@ void AliTrackingAction::PostTrackingAction(const G4Track* aTrack)
     = fpTrackingManager->GetSteppingManager()->GetSecondary();
   if (secondaryTracks){
     G4int i;
-    for (i=0; i<secondaryTracks->entries(); i++) {
+    for (i=0; i<secondaryTracks->size(); i++) {
       G4Track* track = (*secondaryTracks)[i]; 
 
       if (track->GetUserInformation()) {
