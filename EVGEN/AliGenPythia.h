@@ -6,15 +6,13 @@
 /* $Id$ */
 
 
-#include "AliGenerator.h"
+#include "AliGenMC.h"
 #include "AliPythia.h"
-#include "AliDecayer.h"
-#include <TArrayI.h>    
 
 class AliPythia;
 class TParticle;
 
-class AliGenPythia : public AliGenerator
+class AliGenPythia : public AliGenMC
 {
  public:
     AliGenPythia();
@@ -33,27 +31,26 @@ class AliGenPythia : public AliGenerator
 	{fPtHardMin = ptmin; fPtHardMax = ptmax; }
     // set centre of mass energy
     virtual void    SetEnergyCMS(Float_t energy = 5500) {fEnergyCMS = energy;}
-    // force decay type
-    virtual void    SetForceDecay(Decay_t decay = kSemiMuonic) {fForceDecay = decay;}
     // treat protons as inside nuclei
     virtual void    SetNuclei(Int_t a1, Int_t a2);
     // get cross section of process
     virtual Float_t GetXsection() {return fXsection;}      
-    // Check PDG code
-    virtual Int_t   CheckPDGCode(Int_t pdgcode);
     virtual void    FinishRun();
     
     // Assignment Operator
     AliGenPythia & operator=(const AliGenPythia & rhs);
+ private:
+    Int_t  GenerateMB();
+    virtual void    MakeHeader();    
  protected:
+    TClonesArray* fParticles;  // Particle  List
+    
     Process_t   fProcess;       // Process type
     StrucFunc_t fStrucFunc;     // Structure Function
-    Decay_t     fForceDecay;    // Decay channel  are forced
     Float_t     fEnergyCMS;     // Centre of mass energy
     Float_t     fKineBias;      // Bias from kinematic selection
     Int_t       fTrials;        // Number of trials
-    TArrayI     fParentSelect;  // Parent particles to be selected 
-    TArrayI     fChildSelect;   // Decay products to be selected
+    Int_t       fFlavorSelect;  // Heavy Flavor Selection
     Float_t     fXsection;      // Cross-section
     AliPythia   *fPythia;       //! Pythia 
     Float_t     fPtHardMin;     // lower pT-hard cut 
@@ -61,16 +58,10 @@ class AliGenPythia : public AliGenerator
     Int_t       fNucA1;         // mass number nucleus side 1
     Int_t       fNucA2;         // mass number nucleus side 2
     Bool_t      fFullEvent;     // Write Full event if true
-    AliDecayer  *fDecayer;      // ! pointer to the decayer instance
+    AliDecayer  *fDecayer;      //! Pointer to the decayer instance
     Int_t       fDebugEventFirst; // First event to debug
     Int_t       fDebugEventLast;  // Last  event to debug
  private:
-    // check if particle is selected as parent particle
-    Bool_t ParentSelected(Int_t ip);
-    // check if particle is selected as child particle
-    Bool_t ChildSelected(Int_t ip);
-    // all kinematic selection cuts go here 
-    Bool_t KinematicSelection(TParticle *particle);
     // adjust the weight from kinematic cuts
     void   AdjustWeights();
 

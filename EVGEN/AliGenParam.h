@@ -5,8 +5,7 @@
 
 /* $Id$ */
 
-#include "AliGenerator.h"
-#include "AliDecayer.h"
+#include "AliGenMC.h"
 #include <TArrayI.h>
 
 class AliPythia;
@@ -16,7 +15,7 @@ class TF1;
 
 typedef enum { kAnalog, kNonAnalog} Weighting_t;
 //-------------------------------------------------------------
-class AliGenParam : public AliGenerator
+class AliGenParam : public AliGenMC
 {
  public:
     AliGenParam();
@@ -34,19 +33,7 @@ class AliGenParam : public AliGenerator
     // select particle type
     virtual void SetParam(Int_t param) {fParam = param;}
     // force decay type
-    virtual void SetForceDecay(Decay_t decay = kDiMuon) {fForceDecay = decay;}
     virtual void SetWeighting(Weighting_t flag = kAnalog) {fAnalog = flag;}	
-    virtual void SetCutOnChild(Int_t flag = 0) {fCutOnChild = flag;}
-    virtual void SetChildMomentumRange(Float_t pmin = 0, Float_t pmax = 1.e10)
-	{fChildPMin = pmin; fChildPMax = pmax;}
-    virtual void SetChildPtRange(Float_t ptmin = 0, Float_t ptmax = 20.)
-	{fChildPtMin = ptmin; fChildPtMax = ptmax;}
-    virtual void SetChildPhiRange(Float_t phimin = -180., Float_t phimax = 180)
-	{fChildPhiMin = TMath::Pi()*phimin/180;
-	fChildPhiMax  = TMath::Pi()*phimax/180;}
-    virtual void SetChildThetaRange(Float_t thetamin = 0, Float_t thetamax = 180)
-	{fChildThetaMin = TMath::Pi()*thetamin/180;
-	fChildThetaMax  = TMath::Pi()*thetamax/180;}
     virtual void SetDeltaPt(Float_t delta=0.01) {fDeltaPt = delta;}
     
     AliGenParam & operator=(const AliGenParam & rhs);
@@ -62,25 +49,8 @@ class AliGenParam : public AliGenerator
     Float_t     fPtWgt;        // Pt-weight
     Float_t     fBias;         // Biasing factor
     Int_t       fTrials;       // Number of trials
-    Decay_t     fForceDecay;   // Decay channel forced
-    Int_t       fCutOnChild;   // Cuts on decay products (children)  are enabled/disabled
-    Float_t     fChildPtMin;   // Children minimum pT
-    Float_t     fChildPtMax;   // Children maximum pT
-    Float_t     fChildPMin;    // Children minimum p
-    Float_t     fChildPMax;    // Children maximum p
-    Float_t     fChildPhiMin;  // Children minimum phi
-    Float_t     fChildPhiMax;  // Children maximum phi
-    Float_t     fChildThetaMin;// Children minimum theta
-    Float_t     fChildThetaMax;// Children maximum theta
     Float_t     fDeltaPt;      // pT sampling in steps of fDeltaPt
-    TArrayI     fChildSelect;  // Children to be selected from decay products
     AliDecayer  *fDecayer;     // ! Pointer to pythia object for decays
- private:
-    // check if particle is selected as child
-    Bool_t ChildSelected(Int_t ip);
-    // all kinematic selection goes here
-    Bool_t KinematicSelection(TParticle *particle);
-
   ClassDef(AliGenParam,1) // Generator using parameterised pt- and y-distribution
 };
 #endif

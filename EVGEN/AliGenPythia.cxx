@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.37  2001/06/28 11:17:28  morsch
+SetEventListRange setter added. Events in specified range are listed for
+debugging. (Yuri Kharlov)
+
 Revision 1.36  2001/03/30 07:05:49  morsch
 Final print-out in finish run.
 Write parton system for jet-production (preliminary solution).
@@ -102,6 +106,7 @@ Introduction of the Copyright and cvs Log
 */
 
 #include "AliGenPythia.h"
+#include "AliGenPythiaEventHeader.h"
 #include "AliDecayerPythia.h"
 #include "AliRun.h"
 #include "AliPythia.h"
@@ -112,7 +117,7 @@ Introduction of the Copyright and cvs Log
  ClassImp(AliGenPythia)
 
 AliGenPythia::AliGenPythia()
-                 :AliGenerator()
+                 :AliGenMC()
 {
 // Default Constructor
   fDecayer = new AliDecayerPythia();
@@ -120,7 +125,7 @@ AliGenPythia::AliGenPythia()
 }
 
 AliGenPythia::AliGenPythia(Int_t npart)
-                 :AliGenerator(npart)
+                 :AliGenMC(npart)
 {
 // default charm production at 5. 5 TeV
 // semimuonic decay
@@ -129,9 +134,6 @@ AliGenPythia::AliGenPythia(Int_t npart)
     fXsection  = 0.;
     fNucA1=0;
     fNucA2=0;
-    fParentSelect.Set(5);
-    fChildSelect.Set(5);
-    for (Int_t i=0; i<5; i++) fParentSelect[i]=fChildSelect[i]=0;
     SetProcess();
     SetStrucFunc();
     SetForceDecay();
@@ -141,6 +143,9 @@ AliGenPythia::AliGenPythia(Int_t npart)
     // Set random number generator 
     sRandom=fRandom;
     SetEventListRange();
+    fFlavorSelect   = 0;
+    // Produced particles  
+    fParticles = new TClonesArray("TParticle",1000);
 }
 
 AliGenPythia::AliGenPythia(const AliGenPythia & Pythia)
@@ -171,10 +176,6 @@ void AliGenPythia::Init()
     fParentWeight=1./Float_t(fNpart);
 //
 //  Forward Paramters to the AliPythia object
-    //    gSystem->Exec("ln -s $ALICE_ROOT/data/Decay.table fort.1");
-    //    fPythia->Pyupda(2,1);    
-    //    gSystem->Exec("rm fort.1");
-
     fDecayer->SetForceDecay(fForceDecay);    
     fDecayer->Init();
 
@@ -190,63 +191,49 @@ void AliGenPythia::Init()
     switch (fProcess) 
     {
     case kPyCharm:
-	fParentSelect[0]=411;
-	fParentSelect[1]=421;
-	fParentSelect[2]=431;
-	fParentSelect[3]=4122;	
+	fParentSelect[0] =  411;
+	fParentSelect[1] =  421;
+	fParentSelect[2] =  431;
+	fParentSelect[3] = 4122;	
+	fFlavorSelect    = 4;
 	break;
     case kPyCharmUnforced:
-	fParentSelect[0]=411;
-	fParentSelect[1]=421;
-	fParentSelect[2]=431;
-	fParentSelect[3]=4122;	
+	fParentSelect[0] =  411;
+	fParentSelect[1] =  421;
+	fParentSelect[2] =  431;
+	fParentSelect[3]=  4122;
+	fFlavorSelect    = 4;	
 	break;
     case kPyBeauty:
-	fParentSelect[0]=511;
-	fParentSelect[1]=521;
-	fParentSelect[2]=531;
-	fParentSelect[3]=5122;	
+	fParentSelect[0]=  511;
+	fParentSelect[1]=  521;
+	fParentSelect[2]=  531;
+	fParentSelect[3]= 5122;
+	fParentSelect[4]= 5132;
+	fParentSelect[5]= 5232;
+	fParentSelect[6]= 5332;
+	fFlavorSelect   = 5;	
 	break;
     case kPyBeautyUnforced:
-	fParentSelect[0]=511;
-	fParentSelect[1]=521;
-	fParentSelect[2]=531;
-	fParentSelect[3]=5122;	
+	fParentSelect[0] =  511;
+	fParentSelect[1] =  521;
+	fParentSelect[2] =  531;
+	fParentSelect[3] = 5122;
+	fParentSelect[4] = 5132;
+	fParentSelect[5] = 5232;
+	fParentSelect[6] = 5332;
+	fFlavorSelect    = 5;	
 	break;
     case kPyJpsiChi:
     case kPyJpsi:
-	fParentSelect[0]=443;
+	fParentSelect[0] = 443;
 	break;
     case kPyMb:
     case kPyJets:
     case kPyDirectGamma:
 	break;
     }
-
-    switch (fForceDecay) 
-    {
-    case kSemiElectronic:
-    case kDiElectron:
-    case kBJpsiDiElectron:
-    case kBPsiPrimeDiElectron:
-	fChildSelect[0]=kElectron;	
-	break;
-    case kSemiMuonic:
-    case kDiMuon:
-    case kBJpsiDiMuon:
-    case kBPsiPrimeDiMuon:
-    case kPiToMu:
-    case kKaToMu:
-	fChildSelect[0]=kMuonMinus;
-	break;
-    case kHadronicD:
-      fChildSelect[0]=kPiPlus;
-      fChildSelect[1]=kKPlus;
-      break;
-    case kAll:
-    case kNoDecay:
-      break;
-    }
+    AliGenMC::Init();
 }
 
 void AliGenPythia::Generate()
@@ -256,138 +243,147 @@ void AliGenPythia::Generate()
 
     Float_t polar[3]   =   {0,0,0};
     Float_t origin[3]  =   {0,0,0};
-    Float_t originP[3] =   {0,0,0};
     Float_t origin0[3] =   {0,0,0};
-    Float_t p[3], pP[4];
-//    Float_t random[6];
-    static TClonesArray *particles;
+    Float_t p[3];
 //  converts from mm/c to s
     const Float_t kconv=0.001/2.999792458e8;
-    
-    
 //
     Int_t nt=0;
-    Int_t ntP=0;
     Int_t jev=0;
     Int_t j, kf;
-
-    if(!particles) particles=new TClonesArray("TParticle",1000);
-    
     fTrials=0;
+
+//  Set collision vertex position 
     for (j=0;j<3;j++) origin0[j]=fOrigin[j];
     if(fVertexSmear==kPerEvent) {
 	fPythia->SetMSTP(151,1);
 	for (j=0;j<3;j++) {
-	    fPythia->SetPARP(151+j, fOsigma[j]/10.);
+	    fPythia->SetPARP(151+j, fOsigma[j]*10.);
 	}
     } else if (fVertexSmear==kPerTrack) {
 	fPythia->SetMSTP(151,0);
     }
-    
+//  event loop    
     while(1)
     {
 	fPythia->Pyevnt();
 	if (gAlice->GetEvNumber()>=fDebugEventFirst &&
 	    gAlice->GetEvNumber()<=fDebugEventLast) fPythia->Pylist(1);
 	fTrials++;
-	fPythia->ImportParticles(particles,"All");
-	Int_t np = particles->GetEntriesFast();
+	fPythia->ImportParticles(fParticles,"All");
+
+//
+//
+//
+	Int_t i;
+	
+	Int_t np = fParticles->GetEntriesFast();
+	Int_t* pParent   = new Int_t[np];
+	Int_t* pSelected = new Int_t[np];
+	Int_t* trackIt   = new Int_t[np];
+	for (i=0; i< np-1; i++) {
+	    pParent[i]   = -1;
+	    pSelected[i] =  0;
+	}
 	printf("\n **************************************************%d\n",np);
-	Int_t nc=0;
+	Int_t nc = 0;
 	if (np == 0 ) continue;
 	if (fProcess != kPyMb && fProcess != kPyJets && fProcess != kPyDirectGamma) {
-	    for (Int_t i = 0; i<np-1; i++) {
-		TParticle *  iparticle = (TParticle *) particles->At(i);
+	    for (i = 0; i<np-1; i++) {
+		TParticle *  iparticle = (TParticle *) fParticles->At(i);
 		Int_t ks = iparticle->GetStatusCode();
 		kf = CheckPDGCode(iparticle->GetPdgCode());
+// No initial state partons
 		if (ks==21) continue;
-		fChildWeight=(fDecayer->GetPartialBranchingRatio(kf))*fParentWeight;	  
 //
-// Parent
-		if (ParentSelected(TMath::Abs(kf))) {
-		    if (KinematicSelection(iparticle)) {
-			if (nc==0) {
+// Heavy Flavor Selection
 //
-// Store information concerning the hard scattering process
-//
-			    Float_t massP  = fPythia->GetPARI(13);
-			    Float_t   ptP  = fPythia->GetPARI(17);
-			    Float_t    yP  = fPythia->GetPARI(37);
-			    Float_t  xmtP  = sqrt(ptP*ptP+massP*massP);
-			    Float_t    ty  = Float_t(TMath::TanH(yP));
-			    pP[0] = ptP;
-			    pP[1] = 0;
-			    pP[2] = xmtP*ty/sqrt(1.-ty*ty);
-			    pP[3] = massP;
-			    gAlice->SetTrack(0,-1,-1,
-					     pP,originP,polar,
-					     0,kPPrimary,ntP,fParentWeight);
-//					     0,"Hard Scat.",ntP,fParentWeight);
-			    gAlice->KeepTrack(ntP);
-			}
-			nc++;
-//
-// store parent track information
-			p[0]=iparticle->Px();
-			p[1]=iparticle->Py();
-			p[2]=iparticle->Pz();
-			origin[0]=origin0[0]+iparticle->Vx()/10.;
-			origin[1]=origin0[1]+iparticle->Vy()/10.;
-			origin[2]=origin0[2]+iparticle->Vz()/10.;
+		// quark ?
+		kf = TMath::Abs(kf);
+		Int_t kfl = kf;
+		// meson ?
+		if  (kfl > 10) kfl/=100;
+		// baryon
+		if (kfl > 10) kfl/=10;
+		if (kfl > 10) kfl/=10;
 
-			Int_t ifch=iparticle->GetFirstDaughter();
-			Int_t ilch=iparticle->GetLastDaughter();	
-
-			if ((ifch !=0 && ilch !=0) || fForceDecay == kNoDecay) {
-			  Int_t trackit=0;
-			  if (fForceDecay == kNoDecay) trackit = 1;
-			    gAlice->SetTrack(trackit,ntP,kf,
-					     p,origin,polar,
-					     0,kPPrimary,nt,fParentWeight);
-			    gAlice->KeepTrack(nt);
-			    Int_t iparent = nt;
-//
-// Children	    
-			    if (fForceDecay != kNoDecay) {
-			      for (j=ifch; j<=ilch; j++)
-				{
-				  TParticle *  ichild = 
-				    (TParticle *) particles->At(j-1);
-				  kf = CheckPDGCode(ichild->GetPdgCode());
-//
-// 
-				  if (ChildSelected(TMath::Abs(kf))) {
-				    origin[0]=origin0[0]+ichild->Vx()/10.;
-				    origin[1]=origin0[1]+ichild->Vy()/10.;
-				    origin[2]=origin0[2]+ichild->Vz()/10.;		
-				    p[0]=ichild->Px();
-				    p[1]=ichild->Py();
-				    p[2]=ichild->Pz();
-  				    Float_t tof=kconv*ichild->T();
-  				    gAlice->SetTrack(fTrackIt, iparent, kf,
-  						     p,origin,polar,
-  						     tof,kPDecay,nt,fChildWeight);
-  				    gAlice->KeepTrack(nt);
- 				  } // select child
-  				} // child loop
-  			    } 
-  			}
-  		    } // kinematic selection
-  		} // select particle
-  	    } // particle loop
-  	} else {
-  	    for (Int_t i = 0; i<np-1; i++) {
-  		TParticle *  iparticle = (TParticle *) particles->At(i);
-  		kf = CheckPDGCode(iparticle->GetPdgCode());
-  		Int_t ks = iparticle->GetStatusCode();
-		Int_t km = iparticle->GetFirstMother();
-		//	printf("\n process %d %d\n", ks,km);
+		Int_t ipa = iparticle->GetFirstMother()-1;
+		Int_t kfMo = 0;
 		
-		if ((ks==1 && kf!=0 && KinematicSelection(iparticle)) ||
-		    (fProcess == kPyJets && ks == 21 && km == 0 && i>1)) {
-		    nc++;
+		if (ipa > -1) {
+		    TParticle *  mother = (TParticle *) fParticles->At(ipa);
+		    kfMo = TMath::Abs(mother->GetPdgCode());
+		}
+//		printf("\n particle (all)  %d %d %d", i, pSelected[i], kf);
+		if (kfl >= fFlavorSelect) { 
 //
-// store track information
+// Heavy flavor hadron or quark
+//
+// Kinematic seletion on final state heavy flavor mesons
+		    if (ParentSelected(kf) && !KinematicSelection(iparticle, 0)) 
+		    {
+			nc = -1;
+			break;
+		    }
+		    pSelected[i] = 1;
+//		    printf("\n particle (HF)  %d %d %d", i, pSelected[i], kf);
+		} else {
+// Kinematic seletion on decay products
+		    if (fCutOnChild && ParentSelected(kfMo) && ChildSelected(kf) 
+			&& !KinematicSelection(iparticle, 1))
+		    {
+			nc = -1;
+			break;
+		    }
+//
+// Decay products 
+// Select if mother was selected and is not tracked
+
+		    if (pSelected[ipa] && 
+			!trackIt[ipa]  &&     // mother will be  tracked ?
+			kfMo !=  5 &&         // mother is b-quark, don't store fragments          
+			kfMo !=  4 &&         // mother is c-quark, don't store fragments 
+			kf   != 92)           // don't store string
+		    {
+//
+// Semi-stable or de-selected: diselect decay products:
+// 
+//
+			if (pSelected[i] == -1 ||  fDecayer->GetLifetime(kf) > 10e-15)
+			{
+			    Int_t ipF = iparticle->GetFirstDaughter();
+			    Int_t ipL = iparticle->GetLastDaughter();	
+			    if (ipF > 0) for (j = ipF-1; j < ipL; j++) pSelected[j] = -1;
+			}
+//			printf("\n particle (decay)  %d %d %d", i, pSelected[i], kf);
+			pSelected[i] = (pSelected[i] == -1) ? 0 : 1;
+		    }
+		}
+		if (pSelected[i] == -1) pSelected[i] = 0;
+		if (!pSelected[i]) continue;
+		nc++;
+// Decision on tracking
+		trackIt[i] = 0;
+//
+// Track final state particle
+		if (ks == 1) trackIt[i] = 1;
+// Track semi-stable particles
+		if ((ks ==1) || (fDecayer->GetLifetime(kf)> 10e-15))  trackIt[i] = 1;
+// Track particles selected by process if undecayed. 
+		if (fForceDecay == kNoDecay) {
+		    if (ParentSelected(kf)) trackIt[i] = 1;
+		} else {
+		    if (ParentSelected(kf)) trackIt[i] = 0;
+		}
+//
+//
+
+  	    } // particle selection loop
+	    if (nc > -1) {
+		for (i = 0; i<np-1; i++) {
+		    if (!pSelected[i]) continue;
+		    TParticle *  iparticle = (TParticle *) fParticles->At(i);
+		    kf = CheckPDGCode(iparticle->GetPdgCode());
 		    p[0]=iparticle->Px();
 		    p[1]=iparticle->Py();
 		    p[2]=iparticle->Pz();
@@ -395,13 +391,19 @@ void AliGenPythia::Generate()
 		    origin[1]=origin0[1]+iparticle->Vy()/10.;
 		    origin[2]=origin0[2]+iparticle->Vz()/10.;
 		    Float_t tof=kconv*iparticle->T();
-		    gAlice->SetTrack(fTrackIt,-1,kf,p,origin,polar,
-				     tof,kPPrimary,nt);
-		    gAlice->KeepTrack(nt);
-		} // select particle
-	    } // particle loop 
-	    printf("\n I've put %i particles on the stack \n",nc);
+		    Int_t ipa = iparticle->GetFirstMother()-1;
+		    Int_t iparent = (ipa > -1) ? pParent[ipa] : -1;
+//		    printf("\n SetTrack %d %d %d %d", i, iparent, kf, trackIt[i]);
+		    gAlice->SetTrack(fTrackIt*trackIt[i] ,
+				     iparent, kf, p, origin, polar, tof, kPPrimary, nt, 1.);
+		    pParent[i] = nt;
+		    gAlice->KeepTrack(nt); 
+		} //  SetTrack loop
+	    }
+  	} else {
+	    nc = GenerateMB();
 	} // mb ?
+
 	if (nc > 0) {
 	    jev+=nc;
 	    if (jev >= fNpart || fNpart == -1) {
@@ -418,93 +420,68 @@ void AliGenPythia::Generate()
     fXsection=fPythia->GetPARI(1);
 }
 
+Int_t  AliGenPythia::GenerateMB()
+{
+    Int_t i, kf, nt, iparent;
+    Int_t nc = 0;
+    Float_t p[3];
+    Float_t polar[3]   =   {0,0,0};
+    Float_t origin[3]  =   {0,0,0};
+    Float_t origin0[3] =   {0,0,0};
+//  converts from mm/c to s
+    const Float_t kconv=0.001/2.999792458e8;
+    
+    Int_t np = fParticles->GetEntriesFast();
+    Int_t* pParent = new Int_t[np];
+    for (i=0; i< np-1; i++) pParent[i] = -1;
+
+    for (i = 0; i<np-1; i++) {
+	Int_t trackIt = 0;
+	TParticle *  iparticle = (TParticle *) fParticles->At(i);
+	kf = CheckPDGCode(iparticle->GetPdgCode());
+	Int_t ks = iparticle->GetStatusCode();
+	Int_t km = iparticle->GetFirstMother();
+//	printf("\n Particle: %d %d %d", i, kf, ks);
+	
+	if ((ks == 1  && kf!=0 && KinematicSelection(iparticle, 0)) ||
+	    (ks != 1) ||
+	    (fProcess == kPyJets && ks == 21 && km == 0 && i>1)) {
+	    nc++;
+	    if (ks == 1) trackIt = 1;
+	    Int_t ipa = iparticle->GetFirstMother()-1;
+
+	    iparent = (ipa > -1) ? pParent[ipa] : -1;
+
+//
+// store track information
+	    p[0]=iparticle->Px();
+	    p[1]=iparticle->Py();
+	    p[2]=iparticle->Pz();
+	    origin[0]=origin0[0]+iparticle->Vx()/10.;
+	    origin[1]=origin0[1]+iparticle->Vy()/10.;
+	    origin[2]=origin0[2]+iparticle->Vz()/10.;
+	    Float_t tof=kconv*iparticle->T();
+	    gAlice->SetTrack(fTrackIt*trackIt, iparent, kf, p, origin, polar,
+			     tof, kPPrimary, nt);
+	    gAlice->KeepTrack(nt);
+	    pParent[i] = nt;
+	} // select particle
+    } // particle loop 
+
+    if (pParent) delete[] pParent;
+    
+    printf("\n I've put %i particles on the stack \n",nc);
+    MakeHeader();
+    return nc;
+}
+
+
 void AliGenPythia::FinishRun()
 {
 // Print x-section summary
     fPythia->Pystat(1);
 }
 
-Bool_t AliGenPythia::ParentSelected(Int_t ip)
-{
-// True if particle is in list of parent particles to be selected
-    for (Int_t i=0; i<5; i++)
-    {
-	if (fParentSelect[i]==ip) return kTRUE;
-    }
-    return kFALSE;
-}
-
-Bool_t AliGenPythia::ChildSelected(Int_t ip)
-{
-// True if particle is in list of decay products to be selected
-    if (fForceDecay == kAll) return kTRUE;
-    
-    for (Int_t i=0; i<5; i++)
-    {
-	if (fChildSelect[i]==ip) return kTRUE;
-    }
-    return kFALSE;
-}
-
-Bool_t AliGenPythia::KinematicSelection(TParticle *particle)
-{
-// Perform kinematic selection
-    Float_t px=particle->Px();
-    Float_t py=particle->Py();
-    Float_t pz=particle->Pz();
-    Float_t  e=particle->Energy();
-
-//
-//  transverse momentum cut    
-    Float_t pt=TMath::Sqrt(px*px+py*py);
-    if (pt > fPtMax || pt < fPtMin) 
-    {
-//	printf("\n failed pt cut %f %f %f \n",pt,fPtMin,fPtMax);
-	return kFALSE;
-    }
-//
-// momentum cut
-    Float_t p=TMath::Sqrt(px*px+py*py+pz*pz);
-    if (p > fPMax || p < fPMin) 
-    {
-//	printf("\n failed p cut %f %f %f \n",p,fPMin,fPMax);
-	return kFALSE;
-    }
-    
-//
-// theta cut
-    Float_t  theta = Float_t(TMath::ATan2(Double_t(pt),Double_t(pz)));
-    if (theta > fThetaMax || theta < fThetaMin) 
-    {
-//	printf("\n failed theta cut %f %f %f \n",theta,fThetaMin,fThetaMax);
-	return kFALSE;
-    }
-
-//
-// rapidity cut
-    if ( (e-pz)<=0 || (e+pz)<=0 ) {
-      return kFALSE;
-    }
-    else {
-      Float_t y = 0.5*TMath::Log((e+pz)/(e-pz));
-      if (y > fYMax || y < fYMin)
-        {
-//	printf("\n failed y cut %f %f %f \n",y,fYMin,fYMax);
-          return kFALSE;
-        }
-    }
-
-//
-// phi cut
-    Float_t phi=Float_t(TMath::ATan2(Double_t(py),Double_t(px)));
-    if (phi > fPhiMax || phi < fPhiMin)
-    {
-//	printf("\n failed phi cut %f %f %f \n",phi,fPhiMin,fPhiMax);
-	return kFALSE;
-    }
-
-    return kTRUE;
-}
 void AliGenPythia::AdjustWeights()
 {
 // Adjust the weights after generation of all events
@@ -516,46 +493,21 @@ void AliGenPythia::AdjustWeights()
 	part->SetWeight(part->GetWeight()*fKineBias);
     }
 }
-
-Int_t AliGenPythia::CheckPDGCode(Int_t pdgcode)
-{
-//
-//  If the particle is in a diffractive state, then take action accordingly
-  switch (pdgcode) {
-  case 91:
-    return 92;
-  case 110:
-    //rho_diff0 -- difficult to translate, return rho0
-    return 113;
-  case 210:
-    //pi_diffr+ -- change to pi+
-    return 211;
-  case 220:
-    //omega_di0 -- change to omega0
-    return 223;
-  case 330:
-    //phi_diff0 -- return phi0
-    return 333;
-  case 440:
-    //J/psi_di0 -- return J/psi
-    return 443;
-  case 2110:
-    //n_diffr -- return neutron
-    return 2112;
-  case 2210:
-    //p_diffr+ -- return proton
-    return 2212;
-  }
-  //non diffractive state -- return code unchanged
-  return pdgcode;
-}
-
     
 void AliGenPythia::SetNuclei(Int_t a1, Int_t a2)
 {
 // Treat protons as inside nuclei with mass numbers a1 and a2  
     fNucA1 = a1;
     fNucA2 = a2;
+}
+
+
+void AliGenPythia::MakeHeader()
+{
+// Builds the event header, to be called after each event
+    AliGenEventHeader* header = new AliGenPythiaEventHeader("Pythia");
+   ((AliGenPythiaEventHeader*) header)->SetProcessType(fPythia->GetMSTI(1));
+   gAlice->SetGenEventHeader(header);
 }
 	
 	  
