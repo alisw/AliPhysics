@@ -28,7 +28,7 @@ class AliL3HoughDisplay {
   AliL3HoughDisplay();
   virtual ~AliL3HoughDisplay();
   
-  void Init(Char_t *trackfile);
+  void Init(Char_t *trackfile, Char_t *gfile="$(LEVEL3)/GEO/alice.geom");
   void DisplayEvent();
   void ShowData(AliL3DigitRowData *data,UInt_t size,Int_t slice,Int_t patch);
 
@@ -42,6 +42,5 @@ inline void AliL3HoughDisplay::ShowData(AliL3DigitRowData *data,UInt_t size,Int_
   fDigitRowData = data;
   fNDigitRowData = size;
 }
-
 
 #endif

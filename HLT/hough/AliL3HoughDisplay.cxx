@@ -41,11 +41,11 @@ AliL3HoughDisplay::~AliL3HoughDisplay()
     delete fTracks;
 }
 
-void AliL3HoughDisplay::Init(Char_t *trackfile)
+void AliL3HoughDisplay::Init(Char_t *trackfile, Char_t *gfile)
 {
-  TFile *file = TFile::Open("$(LEVEL3)/GEO/alice.geom");
+  TFile *file = TFile::Open(gfile);
   if(!file->IsOpen())
-    cerr<<"AliL3HoughDisplay::AliL3HoughDisplay : Geometry file alice.geom does not exist"<<endl;
+    cerr<<"AliL3HoughDisplay::AliL3HoughDisplay : Geometry file " << gfile << " does not exist"<<endl;
   fGeom = (TGeometry*)file->Get("AliceGeom");
   file->Close();
   
@@ -56,7 +56,6 @@ void AliL3HoughDisplay::Init(Char_t *trackfile)
   tfile->CloseBinaryInput();
   delete tfile;
 }
-
 
 void AliL3HoughDisplay::GenerateHits(AliL3Track *track,Float_t *x,Float_t *y,Float_t *z,Int_t &n)
 {
@@ -172,6 +171,7 @@ void AliL3HoughDisplay::DisplayEvent()
   
   cout<<"Displaying...."<<endl;
   fGeom->Draw("same");
-  //c1->x3d();
+  c1->x3d();
 }
   
+
