@@ -22,7 +22,7 @@ class AliITSFindClustersV2 : public TTask{
     // standard constructor for files already opened.
     AliITSFindClustersV2(TFile *in,TFile *out=0);
     // Standard constructor for AliRun already read in.
-    AliITSFindClustersV2(AliRun *ar,TString outfile = "");
+    AliITSFindClustersV2(AliRun *ar, const TString outfile = "");
     virtual ~AliITSFindClustersV2();//Destructor
     virtual Bool_t FastSimulation() const {return fSlowFast;}
     virtual void SetSlowSimulation(){fSlowFast = kFALSE;}
