@@ -299,6 +299,8 @@ Bool_t sdigit()
   if ( nSDigits < maxSDigits-widSDigits ||
        nSDigits > maxSDigits+widSDigits ) {
     mess = "Error detected in the SDigits process. Sending error file to PHOS director." ;
+    cout <<  "sdigit() : nsDigits = " << nSDigits 
+	 << " maxSDigits,widSDigits= " << maxSDigits << "," << widSDigits << endl ;    
     write_info(mess) ;
     return kFALSE ;
   }
@@ -326,6 +328,8 @@ Bool_t digit()
   Float_t nDigits = static_cast<Float_t>(gime->Digitizer()->GetDigitsInRun()) / static_cast<Float_t>(gime->MaxEvent()) ;
   
   if ( nDigits < maxDigits-widDigits || nDigits > maxDigits+widDigits ) {
+    cout <<  "digit() : nDigits = " << nDigits 
+	 << " maxDigits,widDigits= " << maxDigits << "," << widDigits << endl ;    
     mess = "Error detected in the Digits process. Sending error file to PHOS director." ;
     write_info(mess) ;
     return kFALSE ;
@@ -357,6 +361,8 @@ Bool_t recpoint()
   
   if ( nRecPoints < maxRecPoints-widRecPoints
        || nRecPoints > maxRecPoints+widRecPoints ) {
+    cout <<  "recpoint() : nRecPoints = " << nRecPoints 
+	 << " maxRecPoints,widRecPoints= " << maxRecPoints << "," << widRecPoints << endl ;    
     mess = "Error detected in the Clusterizing process. Sending error file to PHOS director." ;
     write_info(mess) ;
     return kFALSE ;
@@ -386,6 +392,8 @@ Bool_t track()
   
   if ( nTrackSegments < maxTrackSegments-0.25 ||
        nTrackSegments > maxTrackSegments+0.25 ) {
+    cout <<  "track() : nTrackSegments = " << nTrackSegments
+	 << " maxTrackSegments,widTrackSegments= " << maxTrackSegments << "," << "0.25" << endl ;    
     mess = "Error detected in the TrackSegments process. Sending error file to PHOS director." ;
     write_info(mess) ;
     return kFALSE ;
@@ -416,6 +424,8 @@ Bool_t particle()
   
   if ( nRecParticles < maxRecParticles-0.25 ||
        nRecParticles > maxRecParticles+0.25 ) {
+    cout <<  "particle() : nRecParticles = " << nRecParticles 
+	 << " maxRecParticles,widRecParticles= " << maxRecParticles << "," << widRecParticles << endl ;    
     mess = "Error detected in the RecParticles process. Sending error file to PHOS director.Stop reconstruction." ;
     write_info(mess) ;
     return kFALSE ;
