@@ -185,7 +185,7 @@ public:
   void Reset() ;
   
   AliESD * ESD(Int_t event = 0) ;
-  Bool_t OpenESDFile(TString name = "AliESDs.root") ;
+  Bool_t OpenESDFile() ;
   
 private:
   

@@ -94,7 +94,9 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* version, Option
   fBTE = 0 ; 
   fPrimaries = 0 ; 
   fLoadingStatus = "" ; 
-  fESDFileName = "AliESDs.root" ; 
+ 
+  fESDFileName = rl->GetFileName()  ; // this should be the galice.root file
+  fESDFileName.ReplaceAll("galice.root", "AliESDs.root") ;  
   fESDFile = 0 ; 
 }
 
@@ -484,22 +486,28 @@ void AliPHOSGetter::ReadPrimaries()
 AliESD * AliPHOSGetter::ESD(Int_t event)
 {
   //Read the ESD
+
+  AliESD * esd = 0 ; 
   if (!fESDFile)
-    OpenESDFile() ; 
-  
+    if ( !OpenESDFile() ) 
+      return esd ; 
+
   TString esdEvent("ESD") ;  
   esdEvent+= event ; 
-  AliESD * esd = dynamic_cast<AliESD *>(fESDFile->Get(esdEvent)) ; 
+  esd = dynamic_cast<AliESD *>(fESDFile->Get(esdEvent)) ; 
   return esd ; 
 }
 
 //____________________________________________________________________________ 
-Bool_t AliPHOSGetter::OpenESDFile(TString name) 
+Bool_t AliPHOSGetter::OpenESDFile() 
 {
+  //Open the ESD file    
   Bool_t rv = kTRUE ; 
-  fESDFileName = name ; 
-  if (!fESDFile)
-    fESDFile = new TFile(fESDFileName) ;
+  if (!fESDFile) {
+    fESDFile = TFile::Open(fESDFileName) ;
+    if (!fESDFile ) 
+      return kFALSE ; 
+  }
   else if (fESDFile->IsOpen()) {
     fESDFile->Close() ; 
     fESDFile = TFile::Open(fESDFileName) ;
