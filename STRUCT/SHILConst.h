@@ -6,11 +6,12 @@
 /* $Id$ */
 
 // angle of 2nd cone
-  const Float_t thetaOpen2 = 0.8*kDegrad;
+  const Float_t thetaOpen2 = 0.78*kDegrad;
 // angle of 3rd cone
-  const Float_t thetaOpen3 = 0.9*kDegrad;
+  const Float_t thetaOpen3 = 0.78*kDegrad;
 // angle of beam tube in second cone
-  const Float_t thetaOpenB = 0.84*kDegrad;
+  const Float_t thetaOpenB = 0.83*kDegrad;
+//  const Float_t thetaOpenB = 0.84*kDegrad;
 // inner lead Cone opening angle
   const Float_t thetaOpenPb = 0.6*kDegrad;
 // Outer Pb Cone opening angle
@@ -71,7 +72,8 @@
 // 
   const Float_t zvac6=711.;
   const Float_t zvac8=1274.;
-  const Float_t dr21=2.263;
+//const Float_t dr21=2.263;
+  const Float_t dr21=.5;
   const Float_t dr22=1.3;
   const Float_t dr23=2.263;
   const Float_t dB2=24.118;
@@ -102,7 +104,7 @@
 //
 // Flange1
 //
-  const Float_t rF1=8.5;
+  const Float_t rF1=8.4;
   const Float_t dFlange=0.1;
 
 //
@@ -115,7 +117,7 @@
 //
 // Flange2
 //
-  const Float_t rF2=18.8;
+  const Float_t rF2=18.5;
 
 //
 // Chamber positions
@@ -123,10 +125,10 @@
 const Float_t zch1 =   530.0 ;
 const Float_t zch2 =   672.5 ;
 
-const Float_t zch11 =  522.5 ;
-const Float_t zch12 =  557.5 ;
-const Float_t zch21 =  662.5 ;
-const Float_t zch22 =  709.5 ;
+const Float_t zch11 =  526.2 ;
+const Float_t zch12 =  553.8 ;
+const Float_t zch21 =  670.25;
+const Float_t zch22 =  701.75;
 const Float_t zch31 =  946.  ;
 const Float_t zch32 = 1046.  ;
 const Float_t zch41 = 1238.16;
