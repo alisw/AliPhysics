@@ -50,7 +50,6 @@
 #include <iostream.h>
 #include <fstream.h>
 
-#include <TGeant3.h>
 #include <stdlib.h>
 #include "TObjectTable.h"
 
@@ -1252,7 +1251,6 @@ void AliVZEROv0::CreateMaterials()
 
     Int_t *idtmed = fIdtmed->GetArray()-2999;
     
-    TGeant3 *geant3 = (TGeant3*) gMC;
     
 //  Parameters related to Quarz (SiO2) :
  
@@ -1370,8 +1368,8 @@ void AliVZEROv0::CreateMaterials()
     gMC->Gstpar(idtmed[3005], "DCAY", 1.);
     gMC->Gstpar(idtmed[3005], "DRAY", 1.);    
     
-    geant3->Gsckov(idtmed[3002], 14, ppckov, absco_quarz, effic_all,rindex_quarz);    
-    geant3->Gsckov(idtmed[3004], 14, ppckov_alu, absco_alu, effic_alu, rindex_alu);
+    gMC->SetCerenkov(idtmed[3002], 14, ppckov, absco_quarz, effic_all,rindex_quarz);    
+    gMC->SetCerenkov(idtmed[3004], 14, ppckov_alu, absco_alu, effic_alu, rindex_alu);
 
     
 }
