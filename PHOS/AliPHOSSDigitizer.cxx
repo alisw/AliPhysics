@@ -141,12 +141,19 @@ void AliPHOSSDigitizer::InitParameters()
   fB             = 10000000.;
   fPrimThreshold = 0.01 ;
   fSDigitsInRun  = 0 ;
+  SetEventRange(0,-1) ;
 }
 
 //____________________________________________________________________________
 void AliPHOSSDigitizer::Exec(Option_t *option) 
 { 
-  // Collects all hits in the same active volume into digit
+  // Steering method to produce summable digits for events
+  // in the range from fFirstEvent to fLastEvent.
+  // This range is optionally set by SetEventRange().
+  // if fLastEvent=-1 (by default), then process events until the end.
+  //
+  // Summable digit is a sum of all hits in the same active
+  // volume into digit
   
   if (strstr(option, "print") ) {
     Print() ; 
@@ -165,9 +172,14 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
   }
 
 
-  Int_t nevents = gime->MaxEvent() ; 
+  if (fLastEvent == -1) 
+    fLastEvent = gime->MaxEvent() - 1 ;
+  else 
+    fLastEvent = TMath::Min(fLastEvent,gime->MaxEvent());
+  Int_t nEvents   = fLastEvent - fFirstEvent + 1;
+  
   Int_t ievent ;
-  for(ievent = 0; ievent < nevents; ievent++){
+  for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
 
     gime->Event(ievent,"H") ;
 
@@ -242,7 +254,7 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSSDigitizer");
     Info("Exec","   took %f seconds for SDigitizing  %f seconds per event",
-	 gBenchmark->GetCpuTime("PHOSSDigitizer"), gBenchmark->GetCpuTime("PHOSSDigitizer")/nevents) ;
+	 gBenchmark->GetCpuTime("PHOSSDigitizer"), gBenchmark->GetCpuTime("PHOSSDigitizer")/nEvents) ;
   }
 }
 

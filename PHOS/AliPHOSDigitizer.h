@@ -65,6 +65,7 @@ public:
   void   SetEMCpedestal(Float_t ped)   { fADCpedestalEmc = ped ; }  
   void   SetEventFolderName(TString name) { fEventFolderName = name ; }
   void   SetTimeResolution(Float_t res){ fTimeResolution = res ; }  
+  void   SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
 
   //General
   const Int_t   GetDigitsInRun()  const { return fDigitsInRun ;}  
@@ -124,8 +125,10 @@ private:
   Int_t   fNADCcpv ;                // number of channels in CPV ADC
 
   TString fEventFolderName;         // skowron: name of EFN to read data from in stand alone mode
-  
-  ClassDef(AliPHOSDigitizer,2)  // description 
+  Int_t   fFirstEvent;        // first event to process
+  Int_t   fLastEvent;         // last  event to process 
+ 
+  ClassDef(AliPHOSDigitizer,3)  // description 
 
 };
 

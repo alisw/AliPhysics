@@ -382,7 +382,10 @@ Int_t AliPHOSDigitizer::DigitizeEnergy(Float_t energy, Int_t absId)
 //____________________________________________________________________________
 void AliPHOSDigitizer::Exec(Option_t *option) 
 { 
-  // Does the job
+  // Steering method to process digitization for events
+  // in the range from fFirstEvent to fLastEvent.
+  // This range is optionally set by SetEventRange().
+  // if fLastEvent=-1 (by default), then process events until the end.
 
   if (!fInit) { // to prevent overwrite existing file
     Error( "Exec", "Give a version name different from %s", fEventFolderName.Data() ) ;
@@ -402,11 +405,15 @@ void AliPHOSDigitizer::Exec(Option_t *option)
   
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ;
 
-  Int_t nevents = gime->MaxEvent() ;
-    
+  if (fLastEvent == -1) 
+    fLastEvent = gime->MaxEvent() - 1 ;
+  else 
+    fLastEvent = TMath::Min(fLastEvent,gime->MaxEvent());
+  Int_t nEvents   = fLastEvent - fFirstEvent + 1;
+  
   Int_t ievent ;
 
-  for(ievent = 0; ievent < nevents; ievent++){
+  for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
  
     gime->Event(ievent,"S") ;
 
@@ -427,7 +434,7 @@ void AliPHOSDigitizer::Exec(Option_t *option)
     message = "  took %f seconds for Digitizing %f seconds per event\n" ; 
     Info("Exec", message.Data(), 
 	 gBenchmark->GetCpuTime("PHOSDigitizer"), 
-	 gBenchmark->GetCpuTime("PHOSDigitizer")/nevents ); 
+	 gBenchmark->GetCpuTime("PHOSDigitizer")/nEvents ); 
   } 
 }
 
@@ -520,6 +527,7 @@ void AliPHOSDigitizer::InitParameters()
   fNADCcpv = (Int_t) TMath::Power(2,12);      // number of channels in CPV ADC
 
   fTimeThreshold = 0.001*10000000 ; //Means 1 MeV in terms of SDigits amplitude
+  SetEventRange(0,-1) ;
     
 }
 
