@@ -14,6 +14,7 @@
 //-------------------------------------------------------
 #include "AliTracker.h"
 #include "AliTPCtrack.h"
+#include "AliComplexCluster.h"
 
 class TFile;
 class AliTPCParam;
@@ -22,7 +23,6 @@ class AliTPCclusterMI;
 class AliTPCTrackerPoint;
 class AliESD;   
 class TTree;
-class AliComplexCluster;
 
 class AliTPCseed : public AliTPCtrack {
   friend class AliTPCtrackerMI;

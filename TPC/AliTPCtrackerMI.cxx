@@ -42,7 +42,6 @@
 #include "AliComplexCluster.h"
 #include "AliTPCParam.h"
 #include "AliTPCClustersRow.h"
-#include "AliComplexCluster.h"
 #include "AliTPCpolyTrack.h"
 #include "TStopwatch.h"
 #include "AliESD.h"
