@@ -157,7 +157,7 @@ if(iTPC) {
 //
 //-----------------------------------------------------------------------------
 
-AliTPC *TPC  = new AliTPCv2("TPC","Normal TPC");
+AliTPC *TPC  = new AliTPCv1("TPC","Normal TPC");
 AliTPCD *paramd = TPC->GetDigParam();
 AliTPCParam *param = &(paramd->GetParam());
 
@@ -187,6 +187,7 @@ if (TPC->IsVersion() != 2) paramd->Write("Param1");
 TPC->SetGasMixt(2,20,10,-1,0.9,0.1,0.);
 TPC->SetSecAL(1);
 TPC->SetSecAU(1);
+// Meaningless with versions other than 2
 TPC->SetSecLows(1, 2, 3, 1+18, 2+18, 3+18);
 TPC->SetSecUps(1+36, 2+36, 3+36, 1+38+18, 2+38+18, 3+38+18, -1,-1,-1,-1,-1,-1);
 TPC->SetSens(1);
