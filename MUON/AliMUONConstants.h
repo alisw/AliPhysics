@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id $*/
+/* $Id$*/
 // Revision of includes 07/05/2004
 
 #include <TObject.h>
@@ -18,7 +18,9 @@ class AliMUONConstants : public TObject {
     static Int_t    NTriggerCh() {return fgNTriggerCh;}
     // return number of trigger circuits
     static Int_t    NTriggerCircuit() {return fgNTriggerCircuit;}
-    // return poistion of chamber i
+    // return number of detection elements in chamber i
+    static Int_t    NofDetElements(Int_t i) {return fgNofDetElements[i];}
+    // return position of chamber i
     static Float_t  DefaultChamberZ(Int_t i) {return fgDefaultChamberZ[i];}
     // return pointer to array of positions
     static Float_t* DefaultChamberZ() {return fgDefaultChamberZ;}
@@ -28,6 +30,10 @@ class AliMUONConstants : public TObject {
     static Float_t  Dmax(Int_t i) {return fgDmax[i];}
     // return maximum zoom for event display
     static Int_t    MaxZoom() {return fgMaxZoom;}
+
+    // Conversion functions between chamber Id and detection element Id
+    static  Int_t GetChamberId(Int_t detElemId); 
+    static  Int_t GetFirstDetElemId(Int_t chamberId); 
 
  protected:
     AliMUONConstants() : TObject() {}
@@ -39,6 +45,7 @@ class AliMUONConstants : public TObject {
     static Int_t  fgNTriggerCh;         //  Number of Trigger Chambers
     static Int_t  fgNTriggerCircuit;    //  Number of Trigger Circuits
 //
+    static Int_t    fgNofDetElements[14];     // ! Number of detection elements in chambers
     static Float_t  fgDefaultChamberZ[14];    // ! Z-positions of chambers
     static Float_t  fgDmin[7];                // ! inner diameter
     static Float_t  fgDmax[7];                // ! outer diameter
