@@ -34,7 +34,6 @@ public :
   void HoughFiltering(float HCS[]);           //
   void FlagPhotons();                         //
   void FindWeightThetaCerenkov();             //
-  void EstimationOfTheta();                   //
   void FindIntersectionWithDetector();        //
   Float_t Cerenkovangle(Float_t n, Float_t b);//
   Int_t   PhotonInBand();                     //
@@ -93,8 +92,6 @@ public :
   Float_t GetFittedTrackTheta()                     const{ return fFittedTrackTheta;}               //
   Float_t GetFittedTrackPhi()                       const{ return fFittedTrackPhi;}                 //
   Float_t GetFittedThetaCerenkov()                  const{ return fFittedThetaCerenkov;}            //
-  Float_t GetEstimationOfTheta()                    const{ return fEstimationOfTheta;}              //
-  Float_t GetEstimationOfThetaRMS()                 const{ return fEstimationOfThetaRMS;}           //
   void SetPhotonEnergy(Float_t PhotonEnergy) { fPhotonEnergy = PhotonEnergy;}                       //
   void SetFreonRefractiveIndex() {fFreonRefractiveIndex = fFreonScaleFactor*(1.177+0.0172*fPhotonEnergy);}//
   void SetQuartzRefractiveIndex() {fQuartzRefractiveIndex = sqrt(1+(46.411/(113.763556-TMath::Power(fPhotonEnergy,2)))+(228.71/(328.51563-TMath::Power(fPhotonEnergy,2))));}//
@@ -148,8 +145,6 @@ public :
   void SetFittedTrackPhi(Float_t FittedTrackPhi)    { fFittedTrackPhi = FittedTrackPhi;}            //
   void SetFittedThetaCerenkov(Float_t FittedThetaCerenkov) { fFittedThetaCerenkov = FittedThetaCerenkov;}//
   void SetFittedHoughPhotons(Int_t FittedHoughPhotons) { fFittedHoughPhotons = FittedHoughPhotons;} //
-  void SetEstimationOfTheta(Float_t EstimationOfTheta) { fEstimationOfTheta = EstimationOfTheta;}   //
-  void SetEstimationOfThetaRMS(Float_t EstimationOfThetaRMS) { fEstimationOfThetaRMS = EstimationOfThetaRMS;}//
   void FindBetaFromTheta(Float_t ThetaCerenkov) {fTrackBeta = 1/(fFreonRefractiveIndex*cos(ThetaCerenkov));}//
   Float_t SnellAngle(Float_t n1, Float_t n2, Float_t theta1);                                       //
   Float_t FromEmissionToCathode();                                                                  //
@@ -217,8 +212,6 @@ protected:
   Float_t fFittedTrackTheta;                  // theta track after minim.
   Float_t fFittedTrackPhi;                    // phi track after minim.
   Float_t fFittedThetaCerenkov;               // thetacerenkov after minim.
-  Float_t fEstimationOfTheta;                 // theta estimate
-  Float_t fEstimationOfThetaRMS;              // theta RMS
   Int_t   fThetaBin;                          // bin in theta
   Float_t fThetaMin,fThetaMax;                // min max
   Float_t fXmin,fXmax,fYmin,fYmax;            // xy min max
