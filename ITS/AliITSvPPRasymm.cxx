@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2001/02/19 19:44:00  barbera
+Air density parameter corrected
+
 Revision 1.14  2001/02/13 16:53:35  nilsen
 Fixed a but when trying to use GEANT4. Needed to replace
 if(!((TGeant3*)gMC)) with if(!(dynamic_casst<TGeant3*>(gMC)))
@@ -145,13 +148,13 @@ AliITSvPPRasymm::AliITSvPPRasymm(const char *name, const char *title) : AliITS(n
     fIdSens    = new Int_t[fIdN];
     for(i=0;i<fIdN;i++) fIdSens[i] = 0;
     fMajorVersion = IsVersion();
-    fMinorVersion = 21;
+    fMinorVersion = 22;
     fEuclidOut    = kFALSE; // Don't write Euclide file
     fGeomDetOut   = kFALSE; // Don't write .det file
     fGeomDetIn    = kTRUE; // Read .det file
 
-    fEuclidGeometry="$ALICE_ROOT/ITS/ITSgeometry_PPRasymm21.euc";
-    strncpy(fEuclidGeomDet,"$ALICE_ROOT/ITS/ITSgeometry_PPRasymm21.det",60);
+    fEuclidGeometry="$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm22.euc";
+    strncpy(fEuclidGeomDet,"$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm22.det",60);
     strncpy(fRead,fEuclidGeomDet,60);
     strncpy(fWrite,fEuclidGeomDet,60);
 }
