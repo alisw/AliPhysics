@@ -23,6 +23,7 @@
 #include <TRandom.h>
 #include <TArrayI.h>
 #include <TH1.h>
+#include <TError.h>
 
 
 #include "AliSTARTDigitizer.h"
@@ -195,6 +196,10 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
       //  cout<<" brHits hits "<<nhits<<endl;
       for (hit=0;hit<nhits;hit++) {
 	startHit   = (AliSTARThit*) fHits->UncheckedAt(hit);
+	if (!startHit) {
+	  ::Error("Exec","The unchecked hit doesn't exist");
+	  break;
+	}
 	pmt=startHit->Pmt();
 	volume = startHit->Volume();
 	if(volume==1){
