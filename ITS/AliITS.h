@@ -12,6 +12,9 @@
 
 #include "AliDetector.h"
 
+class TObjArray;
+class TString;
+class TTree;
 
 class AliITSDetType;
 class AliITSsimulation;
@@ -25,9 +28,6 @@ class AliITSRecPoint;
 class AliITSRawCluster;
 class AliITSmodule;
 
-class TObjArray;
-class TString;
-class TTree;
 
 
 
@@ -58,7 +58,7 @@ class AliITS : public AliDetector {
     void GetGeometryVersion(Int_t &a,Int_t &b) const 
 	           {a = fMajorVersion;b=fMinorVersion;return;}
     virtual Int_t  IsVersion() const {return 1;}
-            Int_t  DistancetoPrimitive(Int_t px, Int_t py);
+    virtual Int_t  DistancetoPrimitive(Int_t px, Int_t py);
     virtual void   Init();
     virtual void   SetDefaults();
     virtual void   SetDefaultSimulation();

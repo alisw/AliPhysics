@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.9.2.14  2000/10/02 15:43:51  barbera
+General code clean-up (e.g., printf -> cout)
+
+Revision 1.19  2000/09/22 12:13:25  nilsen
+Patches and updates for fixes to this and other routines.
+
 Revision 1.18  2000/07/12 05:32:20  fca
 Correcting several syntax problem with static members
 
@@ -97,6 +103,7 @@ the AliITS class.
 #include <TObjectTable.h>
 #include <TFile.h>
 #include <TTree.h>
+#include <TString.h>
 
 
 
@@ -216,14 +223,16 @@ AliITS::AliITS(const char *name, const char *title):AliDetector(name,title){
 AliITS::AliITS(AliITS &source){
   // copy constructor
   if(this==&source) return;
-  printf("Error: You are not allowed to make a copy of the AliITS\n");
+  Error("AliITS::Copy constructor",
+  	"You are not allowed to make a copy of the AliITS");
   exit(1);
 }
 //____________________________________________________________________________
 AliITS& AliITS::operator=(AliITS &source){
   // assignment operator
   if(this==&source) return *this;
-  printf("Error: You are not allowed to make a copy of the AliITS\n");
+  Error("AliITS::operator=",
+  	"You are not allowed to make a copy of the AliITS");
   exit(1);
   return *this; //fake return
 }
@@ -520,17 +529,13 @@ void AliITS::Init(){
   SetDefaults();
 
   Int_t i;
-  printf("\n");
-  for(i=0;i<35;i++) printf("*");
-  printf(" ITS_INIT ");
-  for(i=0;i<35;i++) printf("*");
-  printf("\n");
-  //
-  //
+  cout << endl;
+  for(i=0;i<30;i++) cout << "*";cout << " ITS_INIT ";
+  for(i=0;i<30;i++) cout << "*";cout << endl;
   for(i=0;i<fIdN;i++) fIdSens[i] = gMC->VolId(fIdName[i]);
   //
-  for(i=0;i<80;i++) printf("*");
-  printf("\n");
+  for(i=0;i<70;i++) cout << "*";
+  cout << endl;
 }
 
 //_____________________________________________________________________________
@@ -538,7 +543,7 @@ void AliITS::SetDefaults()
 {
   // sets the default segmentation, response, digit and raw cluster classes
 
-  printf("SetDefaults\n");
+  cout << "AliITS::SetDefaults" << endl;
 
   AliITSDetType *iDetType;
 
@@ -559,11 +564,11 @@ void AliITS::SetDefaults()
   AliITSresponseSDD *resp1=new AliITSresponseSDD();
   AliITSsegmentationSDD *seg1=new AliITSsegmentationSDD(fITSgeom,resp1);
   iDetType=DetType(1); 
-  printf("SetDefaults: iDetType %p\n",iDetType);
+  //printf("SetDefaults: iDetType %p\n",iDetType);
   if (!iDetType->GetSegmentationModel()) SetSegmentationModel(1,seg1); 
-  printf("SetDefaults: segm %p\n",iDetType->GetSegmentationModel());
+  //printf("SetDefaults: segm %p\n",iDetType->GetSegmentationModel());
   if (!iDetType->GetResponseModel()) SetResponseModel(1,resp1); 
-  printf("SetDefaults: resp %p\n",iDetType->GetResponseModel());
+  //printf("SetDefaults: resp %p\n",iDetType->GetResponseModel());
   const char *kData1=resp1->DataType();
   const char *kopt=resp1->ZeroSuppOption();
   if ((!strstr(kopt,"2D")) && (!strstr(kopt,"1D")) || strstr(kData1,"real") ) {
@@ -586,8 +591,6 @@ void AliITS::SetDefaults()
   } 
 
 }
-
-
 //_____________________________________________________________________________
 void AliITS::SetDefaultSimulation()
 {
@@ -606,7 +609,7 @@ void AliITS::MakeTreeC(Option_t *option)
 {
   // create a separate tree to store the clusters
 
-  printf("MakeTreeC \n");
+  cout << "AliITS::MakeTreeC" << endl;
 
      char *optC = strstr(option,"C");
      if (optC && !fTreeC) fTreeC = new TTree("TC","Clusters in ITS");
@@ -624,7 +627,8 @@ void AliITS::MakeTreeC(Option_t *option)
 	else  sprintf(branchname,"%sClusters%d",GetName(),i+1);
 	if (fCtype   && fTreeC) {
 	   TreeC()->Branch(branchname,&((*fCtype)[i]), buffersize);
-	   printf("Making Branch %s for Clusters of detector type %d\n",branchname,i+1);
+	   cout << "Making Branch " << branchname;
+	   cout << " for Clusters of detector type " << i+1 << endl;
 	}	
      }
 
@@ -634,7 +638,7 @@ void AliITS::MakeTreeC(Option_t *option)
 void AliITS::GetTreeC(Int_t event)
 {
 
-  printf("GetTreeC \n");
+  cout << "AliITS::GetTreeC" << endl;
 
   // get the clusters tree for this event and set the branch address
     char treeName[20];
@@ -663,7 +667,8 @@ void AliITS::GetTreeC(Int_t event)
 	    }
 	}
     } else {
-	printf("ERROR: cannot find Clusters Tree for event:%d\n",event);
+	Error("AliITS::GetTreeC",
+		"cannot find Clusters Tree for event:%d\n",event);
     }
 
 }
@@ -706,7 +711,8 @@ void AliITS::MakeBranch(Option_t* option){
       
       if (fDtype   && gAlice->TreeD()) {
 	  gAlice->TreeD()->Branch(branchname,&((*fDtype)[i]), buffersize);
-	  printf("Making Branch %s for digits of type %d\n",branchname,i+1);
+	  cout << "Making Branch " << branchname;
+	  cout << " for digits of type "<< i+1 << endl;
       }	
   }
 
@@ -717,7 +723,8 @@ void AliITS::MakeBranch(Option_t* option){
 
   if (fRecPoints && gAlice->TreeR()) {
     gAlice->TreeR()->Branch(branchname,&fRecPoints, buffersize);
-    printf("Making Branch %s for reconstructed space points\n",branchname);
+    cout << "Making Branch " << branchname;
+    cout << " for reconstructed space points" << endl;
   }	
 
 
@@ -776,7 +783,8 @@ void AliITS::InitModules(Int_t size,Int_t &nmodules){
 
     if(size<=0){ // default to using data stored in AliITSgeom
 	if(fITSgeom==0) {
-	    printf("Error in AliITS::InitModule fITSgeom not defined\n");
+	    Error("AliITS::InitModules",
+	    	"in AliITS::InitModule fITSgeom not defined\n");
 	    return;
 	} // end if fITSgeom==0
 	nl = fITSgeom->GetNlayers();
@@ -833,7 +841,8 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,Option_t *option,
         //printf("TrH1 %p of treename %s for event %d \n",trH1,treeName,bgrev);
 	
 	if (!trH1) {
-	    printf("ERROR: cannot find Hits Tree for event:%d\n",bgrev);
+	    Error("AliITS::FillModules",
+	    "cannot find Hits Tree for event:%d\n",bgrev);
 	}
 	// Set branch addresses
 	TBranch *branch;
@@ -958,7 +967,7 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size, Option_t *optio
 	  first = geom->GetStartDet(id);
 	  last = geom->GetLastDet(id);
 	} else first=last=0;
-	printf("det type %d first, last %d %d \n",id,first,last);
+	cout << "det type " << id << " first, last "<< first << last << endl;
 	for(module=first;module<=last;module++) {
 	    AliITSmodule *mod = (AliITSmodule *)fITSmodules->At(module);
 	    sim->DigitiseModule(mod,module,evNumber);
@@ -974,7 +983,7 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size, Option_t *optio
    ClearModules();
 
    Int_t nentries=(Int_t)gAlice->TreeD()->GetEntries();
-   printf("nentries in TreeD %d\n",nentries);
+   cout << "nentries in TreeD" << nentries << endl;
 
    char hname[30];
    sprintf(hname,"TreeD%d",evNumber);
@@ -1051,7 +1060,7 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt)
 
    Int_t nentries=(Int_t)gAlice->TreeR()->GetEntries();
    Int_t ncentries=(Int_t)iTC->GetEntries();
-   printf(" nentries ncentries %d %d\n", nentries, ncentries);
+   cout << " nentries ncentries " << nentries << ncentries <<  endl;
 
    char hname[30];
    sprintf(hname,"TreeR%d",evNumber);
@@ -1135,6 +1144,7 @@ Option_t *option,Option_t *opt,Text_t *filename)
    delete [] random;
 
 }
+
 
 //____________________________________________________________________________
 void AliITS::Streamer(TBuffer &R__b){
