@@ -95,7 +95,7 @@ void AliJetEventParticles::Set(const AliJetEventParticles& source)
   fHeader=source.GetHeader();
   fNParticles=source.fNParticles;
   if(fParticles) delete fParticles;
-  fParticles=new TClonesArray("AliJetParticle",fNParticles);
+  fParticles=new TClonesArray("AliJetParticle",source.GetParticles()->GetEntries());
   fVertexX=source.GetVertexX();
   fVertexY=source.GetVertexY();
   fVertexZ=source.GetVertexZ();
@@ -109,11 +109,10 @@ void AliJetEventParticles::Set(const AliJetEventParticles& source)
   fNwNwColl=source.GetNpart();
   fEventNr=source.GetEventNr();
 
-  for(Int_t i =0; i<fNParticles; i++)
-    {
-      const AliJetParticle *kjp=(const AliJetParticle *)source.fParticles->At(i);
-      new((*fParticles)[i]) AliJetParticle(*(kjp));
-    }
+  for(Int_t i =0; i<source.GetParticles()->GetEntries(); i++){
+    const AliJetParticle *kjp=(const AliJetParticle *)source.fParticles->At(i);
+    new((*fParticles)[i]) AliJetParticle(*(kjp));
+  }
   for (Int_t i = 0; i < 4; i++) fZquench[i] = 0.;
   for (Int_t i = 0; i < 10; i++) 
     for (Int_t j = 0; j < 4; j++) {
