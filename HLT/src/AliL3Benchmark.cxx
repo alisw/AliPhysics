@@ -1,3 +1,5 @@
+// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
+//*-- Copyright &copy Uli
 
 #include <time.h>
 #include <TFile.h>
@@ -9,11 +11,20 @@
 #include "TMath.h"
 #include "AliL3Logging.h"
 
-ClassImp(AliL3Benchmark)
 
+//_____________________________________________________________
+//
+//   Benchmark class for level3 code
+//  
+//
+//
+
+ClassImp(AliL3Benchmark)
 AliL3Benchmark::AliL3Benchmark()
 {
-   fNbench = 0;
+  //Constructor
+
+  fNbench = 0;
    fNmax   = 20;
    fNames  = 0;
    fTimer  = 0;

@@ -1,12 +1,15 @@
-//Author:        Uli Frankenfeld
-//Last Modified: 07.11.2000
+// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
+//*-- Copyright &copy Uli
 
 #include "AliL3Logging.h"
 //#include <TMath.h>
 #include <iostream.h>
 #include "AliL3VertexArray.h"
 
+
 //_____________________________________________________________
+// AliL3VertexArray
+//
 // The L3 Fast Vertex Finder Base Class
 //
 // usage:

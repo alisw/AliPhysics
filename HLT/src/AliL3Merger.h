@@ -57,8 +57,8 @@ class AliL3Merger {
   void FillNtuple(void* nt,AliL3Track *innertrack,AliL3Track *outertrack);
   void AddAllTracks();//Copy all Tracks to Output Array
   void SortGlobalTracks(AliL3Track **tracks, Int_t ntrack);
-  void SortTracks(AliL3Track **tracks, Int_t ntrack);
-  void AddTrack(AliL3TrackArray *mergedtrack,AliL3Track *track);
+  virtual void SortTracks(AliL3Track **tracks, Int_t ntrack);
+  virtual void AddTrack(AliL3TrackArray *mergedtrack,AliL3Track *track);
   virtual AliL3Track * MultiMerge(AliL3TrackArray *mergedtrack,AliL3Track **tracks, Int_t ntrack);
   AliL3Track * MergeTracks(AliL3TrackArray *mergedtrack,AliL3Track *t0,AliL3Track *t1);
   virtual Bool_t IsTrack(AliL3Track *innertrack,AliL3Track *outertrack);
@@ -71,7 +71,7 @@ class AliL3Merger {
 //  Int_t WriteInTracks(Char_t *file);
 //  Int_t WriteAllTracks(Char_t *file);
   
-  ClassDef(AliL3Merger,1) 
+  ClassDef(AliL3Merger,1) //Merging base class
 };
 
 #endif

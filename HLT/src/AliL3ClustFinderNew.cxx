@@ -1,5 +1,5 @@
-//Author:        Anders Strand Vestbo
-//Last Modified: 17.08.2001
+// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
+//*-- Copyright &copy ASV 
 
 #include <iostream.h>
 #include "AliL3Logging.h"
@@ -7,6 +7,12 @@
 #include "AliL3DigitData.h"
 #include "AliL3Transform.h"
 #include "AliL3SpacePointData.h"
+
+//_____________________________________________________________
+// AliL3ClustFinderNew
+//
+// The current cluster finder for HLT
+// Based on STAR L3
 
 ClassImp(AliL3ClustFinderNew)
 

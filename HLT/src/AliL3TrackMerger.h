@@ -30,7 +30,7 @@ class AliL3TrackMerger : public AliL3Merger {
   void Merge();  //Loop over tracks from different subsectors
   void InterMerge();
   
-  ClassDef(AliL3TrackMerger,1) 
+  ClassDef(AliL3TrackMerger,1) //Track merging class 
 };
 
 #endif

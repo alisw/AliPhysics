@@ -178,7 +178,7 @@ class AliL3ConfMapPoint {
   void    SetAllCoord(const AliL3ConfMapPoint *hit);// set conformal mapping coordinates in respect to given hit
   void    SetConfCoord();// conformal mapping
   
-//  ClassDef(AliL3ConfMapPoint, 1)   //Conformal mapping hit class.
+  ClassDef(AliL3ConfMapPoint, 1)   //Conformal mapping hit class.
 };
 
 #endif

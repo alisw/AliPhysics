@@ -16,6 +16,9 @@ struct AliL3ConfMapContainer
   void *last;
 };
 
+//
+//Conformal mapping base class
+
 class AliL3ConfMapper {
 
  private:

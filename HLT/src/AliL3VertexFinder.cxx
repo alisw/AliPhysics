@@ -1,5 +1,5 @@
-//Author:        Uli Frankenfeld
-//Last Modified: 07.11.2000
+// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
+//*-- Copyright &copy Uli
 
 #include <iostream.h>
 #include "AliL3Logging.h"
@@ -9,11 +9,10 @@
 #include "AliL3SpacePointData.h"
 
 //_____________________________________________________________
-//
 // AliL3VertexFinder
 //
-// Implementation of AliL3Array 
-// usage:
+//   Implementation of AliL3Array 
+//   usage:
 // 
 //   ResetSector();
 //   for(n=0;n<NMEMSEC;n++)  
@@ -21,7 +20,7 @@
 //   FindSectorVertex();
 //   SetZ(GetZSector());
 //   SetZErr(GetZErrSector());
-// // do somethink with z, zerr
+// 
 //
 
 ClassImp(AliL3VertexFinder)

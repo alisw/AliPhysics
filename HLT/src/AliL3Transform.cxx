@@ -1,13 +1,12 @@
-
-//Author:        Anders Strand Vestbo
-//Author:        Uli Frankenfeld
-//Last Modified: 05.12.2000
+// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>, Uli Frankenfeld <mailto:franken@fi.uib.no>
+//*-- Copyright &copy ASV
 
 #include "AliL3Logging.h"
 #include "AliL3Transform.h"
 //#include <TFile.h>
 #include <math.h>
-//___________________________
+
+//_____________________________________________________________
 // AliL3Transform
 //
 // Transformation class for ALICE TPC.

@@ -43,7 +43,7 @@ class AliL3VertexArray{
   void FindSectorVertex(Double_t pos = 0,Double_t range = 60,Int_t nbin = 60);
   void ResetSector();
 
-  ClassDef(AliL3VertexArray,1)  // Level3
+  ClassDef(AliL3VertexArray,1)  //The L3 Fast Vertex Finder Base Class
 
 };
 

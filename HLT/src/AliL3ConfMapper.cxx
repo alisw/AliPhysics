@@ -1,7 +1,6 @@
-
-//Author:        Anders Strand Vestbo
-//Last Modified: 15.12.2000
-
+// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
+//*-- Copyright &copy ASV 
+ 
 #include <iostream.h>
 #include <time.h>
 #include <math.h>
@@ -14,11 +13,11 @@
 #include "AliL3ConfMapPoint.h"
 #include "AliL3TrackArray.h"
 
+//_____________________________________________________________
+// AliL3ConfMapper
 //
-//AliL3ConfMapper
+// Conformal mapping base class
 //
-//Conformal mapping base class
-
 ClassImp(AliL3ConfMapper)
 
 Double_t AliL3ConfMapper::pi=3.14159265358979323846;

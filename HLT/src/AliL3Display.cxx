@@ -1,5 +1,5 @@
-//Author:        Anders Strand Vestbo
-//Last Modified: 12.01.2001
+// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
+//*-- Copyright &copy ASV 
 
 #include <TCanvas.h>
 #include <TView.h>
@@ -24,7 +24,9 @@
 #include "AliL3Logging.h"
 #include "AliL3Display.h"
 
+//_____________________________________________________________
 // AliL3Display
+//
 // Simple display class for the Level3 tracker.
 
 ClassImp(AliL3Display)

@@ -1,12 +1,5 @@
-
-//Author:        Anders Strand Vestbo 
-//Author:        Uli Frankenfeld
-//Last Modified: 13.12.2000
-
-//____________________________________
-// AliL3ConfMapTrack
-//
-// Track class for conformal mapper
+// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>, Uli Frankenfeld <mailto:franken@fi.uib.no>
+//*-- Copyright &copy ASV 
 
 #include "AliL3RootTypes.h"
 #include "AliL3Logging.h"
@@ -15,6 +8,11 @@
 #include "AliL3ConfMapFit.h"
 #include "AliL3ConfMapTrack.h"
 #include <math.h>
+
+//_____________________________________________________________
+// AliL3ConfMapTrack
+//
+// Track class for conformal mapper
 
 ClassImp(AliL3ConfMapTrack)
 

@@ -116,7 +116,7 @@ class AliL3Evaluate : public TObject {
   Bool_t GetParticleCrossingPoint(TParticle *part,Int_t slice,Int_t padrow,Float_t *xyz);
   //TNtuple *EvaluateGEANT();
 
-  ClassDef(AliL3Evaluate,1) 
+  ClassDef(AliL3Evaluate,1) //Tracking evaluation class
 };
 
 #endif

@@ -1,5 +1,6 @@
-//Author:        Anders Strand Vestbo
-//Last Modified: 14.12.2000
+//*-- Author : Anders Strand Vestbo <mailto:vestbo@fi.uib.no>
+// @(#) 16.12.2000 
+//*-- Copyright &copy ASV 
 
 #include <iostream.h>
 
@@ -10,8 +11,9 @@
 #include "AliL3SpacePointData.h"
 
 //
-//Simple clusterfinder. Initial version by Tonko.
+// AliL3ClustFinder
 //
+
 
 ClassImp(AliL3ClustFinder)
 

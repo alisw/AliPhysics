@@ -21,7 +21,7 @@ class AliL3GlobalMerger : public AliL3Merger{
   void SlowMerge();
   void Merge();  //Loop over tracks from different sectors
 
-  ClassDef(AliL3GlobalMerger,1) 
+  ClassDef(AliL3GlobalMerger,1) //Slice merger
 };
 
 #endif

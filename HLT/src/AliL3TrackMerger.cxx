@@ -1,6 +1,5 @@
-
-//Author:        Uli Frankenfeld
-//Last Modified: 06.12.2000
+// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
+//*-- Copyright &copy ULI
 
 #include <math.h>
 #include <iostream.h>
@@ -12,6 +11,7 @@
 #include "AliL3TrackArray.h"
 
 //_____________________________________________________________
+// AliL3TrackMerger
 //
 // The L3 track segment merger
 //

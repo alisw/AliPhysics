@@ -1,5 +1,5 @@
-//Author:        Uli Frankenfeld
-//Last Modified: 07.11.2000
+// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
+//*-- Copyright &copy Uli
 
 #include "AliL3RootTypes.h"
 #include <iostream.h>
@@ -7,10 +7,9 @@
 #include "AliL3Vertex.h"
 
 //_____________________________________________________________
-//
 // AliL3Vertex
 //
-// stores the information of the vertex position
+// Stores the information of the vertex position
 //
 
 

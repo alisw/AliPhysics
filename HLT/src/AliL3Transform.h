@@ -59,7 +59,7 @@ class AliL3Transform {
   void Local2Raw(Float_t *xyz,Int_t sector,Int_t row);
   void Global2Raw(Float_t *xyz,Int_t sector,Int_t row);
   
-  ClassDef(AliL3Transform,1)
+  ClassDef(AliL3Transform,1) //Transformation class for ALICE TPC
 };
 
 

@@ -1,6 +1,5 @@
-
-//Author:        Uli Frankenfeld
-//Last Modified: 06.12.2000
+// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
+//*-- Copyright &copy Uli 
 
 #include "AliL3Logging.h"
 #include <math.h>
@@ -16,7 +15,9 @@
 #include <TTree.h>
 #include <TFile.h>
 #endif
+
 //_____________________________________________________________
+// AliL3Merger
 //
 // The L3 merger base class
 //

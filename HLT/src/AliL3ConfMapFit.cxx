@@ -1,3 +1,6 @@
+// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
+//*-- Copyright &copy ASV 
+
 #include <math.h>
 
 #include "AliL3Logging.h"
@@ -6,7 +9,7 @@
 #include "AliL3ConfMapTrack.h"
 #include "AliL3ConfMapPoint.h"
 
-//_______________________________
+//_____________________________________________________________
 // AliL3ConfMapFit
 //
 // Fit class for conformal mapping tracking

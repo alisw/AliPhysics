@@ -20,7 +20,7 @@ class AliL3InterMerger : public AliL3Merger {
   Int_t Merge();
   void MMerge();  //Loop over tracks from different subsectors
   
-  ClassDef(AliL3InterMerger,1) 
+  ClassDef(AliL3InterMerger,1) //Intermerging class
 };
 
 #endif

@@ -1,5 +1,5 @@
-//Author:        Uli Frankenfeld
-//Last Modified: 17.12.2000
+// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
+//*-- Copyright &copy Uli 
 
 #include <math.h>
 #include <time.h>
@@ -15,7 +15,9 @@
 #include "AliL3TrackSegmentData.h"
 #include "AliL3SpacePointData.h"
 #include "AliL3TrackArray.h"
+
 //_____________________________________________________________
+// AliL3MemHandler
 //
 // The L3 Binary File handler 
 //

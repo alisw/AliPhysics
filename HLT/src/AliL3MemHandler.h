@@ -125,9 +125,10 @@ class AliL3MemHandler{
   Byte_t *Allocate(UInt_t size);
   Byte_t *Allocate();  // allocate size of Binary Input File
   Byte_t *Allocate(AliL3TrackArray *array);
+  Byte_t *GetDataPointer(UInt_t &size) {size = fSize; return fPt;}
   void   Free();
   
-  ClassDef(AliL3MemHandler,1) 
+  ClassDef(AliL3MemHandler,1) // Memory handler class
 };
 
 inline Int_t  AliL3MemHandler::ComparePoints(UInt_t row,UShort_t pad,UShort_t time){

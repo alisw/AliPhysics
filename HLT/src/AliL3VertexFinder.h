@@ -50,6 +50,6 @@ class AliL3VertexFinder:public AliL3VertexArray{
 
     void SetXYWeight(Double_t f) {fMWxy = f;}
  
-    ClassDef(AliL3VertexFinder,1)  // Level3
+    ClassDef(AliL3VertexFinder,1)  // Vertex finder class
 };
 #endif

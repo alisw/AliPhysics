@@ -62,7 +62,7 @@ class AliL3ClustFinderNew {
   
   Int_t GetNumberOfClusters() {return fNClusters;}
   
-  ClassDef(AliL3ClustFinderNew,1)
+  ClassDef(AliL3ClustFinderNew,1) //Fast cluster finder
 
 };
 

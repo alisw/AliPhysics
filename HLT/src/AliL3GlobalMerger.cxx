@@ -1,6 +1,5 @@
-
-//Author:        Uli Frankenfeld
-//Last Modified: 06.12.2000
+// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
+//*-- Copyright &copy Uli 
 
 #include <math.h>
 #include <iostream.h>
@@ -9,7 +8,9 @@
 #include "AliL3Track.h"
 #include "AliL3Transform.h"
 #include "AliL3TrackArray.h"
+
 //_____________________________________________________________
+// AliL3GlobalMerger
 //
 // The L3 Slice merger
 //

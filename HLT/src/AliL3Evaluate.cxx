@@ -1,5 +1,5 @@
-//Author:        Anders Strand Vestbo
-//Last Modified: 5.01.2001
+// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
+//*-- Copyright &copy ASV 
 
 #include <stdio.h>
 #include <math.h>
@@ -28,8 +28,10 @@
 #include "AliL3Evaluate.h"
 #include "AliL3Logging.h"
 
-//AliL3Evaluate
-//Class for tracking evaluation.
+//_____________________________________________________________
+// AliL3Evaluate
+//
+// Evaluation class for tracking. Plots efficiencies etc..
 
 ClassImp(AliL3Evaluate)
 

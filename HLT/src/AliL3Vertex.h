@@ -44,6 +44,6 @@ class AliL3Vertex {
 
     void SetXYWeight(Double_t f) {fMWxy = f;}
  
-    ClassDef(AliL3Vertex,1)  // Level3
+    ClassDef(AliL3Vertex,1)  // Vertex base class
 };
 #endif

@@ -49,7 +49,7 @@ class AliL3FileHandler:public AliL3MemHandler{
   Bool_t AliPoints2Binary();
   AliL3SpacePointData *AliPoints2Memory(UInt_t & npoint);//Allocates Memory
 
-  ClassDef(AliL3FileHandler,1)   // Level3 
+  ClassDef(AliL3FileHandler,1)   //Filehandler class
 };
 
 #endif

@@ -1,9 +1,5 @@
-//Author: Anders Strand Vestbo
-
-//________________________________
-// AliL3ConfMapPoint
-//
-// Hit class for conformal mapper
+// Author: Anders Vestbo <mailto:vestbo$fi.uib.no>
+//*-- Copyright &copy ASV
 
 #include <iostream.h>
 #include <math.h>
@@ -14,7 +10,12 @@
 #include "AliL3Vertex.h"
 #include "AliL3ConfMapTrack.h"
 
-//ClassImp(AliL3ConfMapPoint)
+//_____________________________________________________________
+// AliL3ConfMapPoint
+//
+// Hit class for conformal mapper
+
+ClassImp(AliL3ConfMapPoint)
 
 AliL3ConfMapPoint::AliL3ConfMapPoint()
 {

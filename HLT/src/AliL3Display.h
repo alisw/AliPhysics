@@ -31,7 +31,7 @@ class AliL3Display : public TObject {
   void DisplayClusters();
   void DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile,Char_t *type="hist");
 
-  ClassDef(AliL3Display,1) 
+  ClassDef(AliL3Display,1) //Display class
 };
 
 #endif
