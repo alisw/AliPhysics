@@ -2,10 +2,15 @@
 #include <stdio.h>
 #include <TObjArray.h>
 
+#include "AliITSsegmentationSSD.h"
+#include "AliITSresponseSSD.h"
 #include "AliITSsimulationSSD.h"
 #include "AliITSdictSSD.h"
 #include "AliITSdcsSSD.h"
 #include "AliITS.h"
+#include "AliITShit.h"
+#include "AliITSdigit.h"
+#include "AliITSmodule.h"
 #include "AliRun.h"
 
 
@@ -14,6 +19,7 @@ ClassImp(AliITSsimulationSSD);
 AliITSsimulationSSD::AliITSsimulationSSD(AliITSsegmentation *seg,
                                          AliITSresponse *resp){
   // Constructor
+
 
     fSegmentation = seg;
     fResponse = resp;
@@ -56,15 +62,17 @@ AliITSsimulationSSD::AliITSsimulationSSD(AliITSsimulationSSD &source){
 }
 //____________________________________________________________________________
 AliITSsimulationSSD::~AliITSsimulationSSD() {
-  // anihilator    
+  // anihilator 
+
 
     if(fP) delete fP;
     if(fN) delete fN;
-    
-    if(fTracksP) delete fTracksP;
-    if(fTracksN) delete fTracksN;
+
+    if(fTracksP) delete [] fTracksP;
+    if(fTracksN) delete [] fTracksN;
 
     delete fDCS;
+
 } 
 //_______________________________________________________________
 //
@@ -78,6 +86,8 @@ void AliITSsimulationSSD::DigitiseModule(AliITSmodule *mod,Int_t module,
     TObjArray *hits = mod->GetHits();
     Int_t nhits = hits->GetEntriesFast();
     if (!nhits) return;
+
+    //printf("simSSD: module nhits %d %d\n",module,nhits);
 
     Int_t i;
     for(i=0; i<fNstrips; i++) {
@@ -114,7 +124,7 @@ void AliITSsimulationSSD::HitToDigit(Int_t & hitNo,Int_t idtrack,
     Float_t    eP, eN;
     Float_t    arrayEP[10];         // hard-wired number of steps
     Float_t    arrayEN[10];
-    Int_t      track = -1;
+    Int_t      track = -3;
        
     Float_t    ionization = 0;
     Float_t    signal;
@@ -225,10 +235,11 @@ void AliITSsimulationSSD::HitToDigit(Int_t & hitNo,Int_t idtrack,
         dsP    = Get2Strip(1,stripP,xI, zI); // Between 0-1
         dsN    = Get2Strip(0,stripN,xI, zI); // Between 0-1
 
-        sP = sigmaP * sqrt(300. * i / (fSteps));
-	if(sP<=0.0) sP = sigmaP*sqrt(300.);
-        sN = sigmaN * sqrt(300. * i /(fSteps-i));
-	if(sN<=0.0) sN = sigmaN*sqrt(300.);
+        //sP = sigmaP * sqrt(300. * i / (fSteps));
+        //sN = sigmaN * sqrt(300. * i /(fSteps-i));
+
+        sP = sigmaP * sqrt(300. * (i+1) / (fSteps));
+        sN = sigmaN * sqrt(300. * (i+1) /(fSteps-i));
 
 
         sP = (i<2        && dsP>0.3 && dsP<0.7)? 20. : sP;  // square of (microns) 
@@ -236,6 +247,9 @@ void AliITSsimulationSSD::HitToDigit(Int_t & hitNo,Int_t idtrack,
 
         sP = (i==2 && dsP>0.4 && dsP<0.6)? 15. : sP;  // square of (microns) 
         sN = (i==8 && dsN>0.4 && dsN<0.6)? 15. : sN;  // square of (microns)        
+        
+        
+	//printf("i=%d SigmaP SigmaN sP sN %f %f %e %e\n",i,sigmaP, sigmaN,sP,sN);
         
         for (j=-1; j<2; j++) {
             if (stripP+j<0 || stripP+j>fNstrips) continue;
@@ -327,6 +341,7 @@ void AliITSsimulationSSD::ApplyDAQ() {
 
     Int_t i,j;
     if (strstr(opt,"SetInvalid")) {
+      printf("invalid option %s\n",opt);
       // Set signal = 0 if invalid strip
       for(i=0; i<fNstrips; i++) {
          if (!(fDCS->IsValidP(i))) (*fP)[i] = 0;
@@ -337,7 +352,7 @@ void AliITSsimulationSSD::ApplyDAQ() {
     Int_t digits[3], tracks[3], hits[3];
     Float_t charges[3];
     Float_t phys=0;
-    for(i=0;i<3;i++) tracks[i]=0;
+    for(i=0;i<3;i++) tracks[i]=-3;
     for(i=0; i<fNstrips; i++) { 
        if( (strstr(opt,"SetInvalid") && (*fP)[i] < noiseP*4) || !(*fP)[i]) continue;
           digits[0]=1;
@@ -347,11 +362,17 @@ void AliITSsimulationSSD::ApplyDAQ() {
             if(j>2) continue;
 	    if((fTracksP+i)->GetNTracks()) tracks[j]=(fTracksP+i)->GetTrack(j);
 	    else tracks[j]=-2;
+	    //printf("P side: i,j,tracks[j] %d %d %d\n",i,j,tracks[j]);
 	    charges[j] = 0;
 	    hits[j] = -1;
           }
           its->AddSimDigit(2,phys,digits,tracks,hits,charges);
           
+          //cout << (fTracksP+i)->GetNTracks(); 
+          //
+	  //if ((fTracksP+i)->GetNTracks() == 0) {
+          //   cout << d.fCoord2 << " " << d.fSignal << "\n"; 
+          //}
     }
     
     
@@ -364,11 +385,16 @@ void AliITSsimulationSSD::ApplyDAQ() {
             if(j>2) continue;
             if((fTracksN+i)->GetNTracks()) tracks[j]=(fTracksN+i)->GetTrack(j);
 	    else tracks[j]=-2;
+	    //printf("N side: i,j,tracks[j] %d %d %d\n",i,j,tracks[j]);
             charges[j] = 0;
 	    hits[j] = -1;
           }
           its->AddSimDigit(2,phys,digits,tracks,hits,charges);
           
+          //cout << (fTracksN+i)->GetNTracks();
+          //if ((fTracksN+i)->GetNTracks() == 0) {
+          //   cout << d.fCoord2 << " " << d.fSignal << "\n"; 
+          //}
     }
     
 }
@@ -378,9 +404,14 @@ void AliITSsimulationSSD::ApplyDAQ() {
 
 Float_t AliITSsimulationSSD::F(Float_t x, Float_t s) {
   // Computes the integral of a gaussian at the mean valuse x with sigma s.
-
     //printf("SDD:F(%e,%e)\n",x,s);
-    return 0.5*TMath::Erf(x * fPitch / s) ;
+
+    Float_t fval=0;
+    if(s) fval=0.5*TMath::Erf(x * fPitch / s) ;
+    else {
+      Error("SSD simulation: F","sigma is zero!!!",s);
+    }
+    return fval;
 } 
 
 //______________________________________________________________________
