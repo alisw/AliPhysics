@@ -789,7 +789,7 @@ void AliL3HoughTransformerRow::TransformCircle()
   delete [] etaclust;
 }
 
-Int_t AliL3HoughTransformerRow::GetTrackID(Int_t etaindex,Double_t kappa,Double_t psi)
+Int_t AliL3HoughTransformerRow::GetTrackID(Int_t etaindex,Double_t kappa,Double_t psi) const
 {
   // Returns the MC label for a given peak found in the Hough space
   if(!fDoMC)

@@ -745,7 +745,7 @@ void AliL3HoughTransformer::TransformLineC(Int_t *rowrange,Float_t *phirange)
   delete [] digits;
 }
 
-Int_t AliL3HoughTransformer::GetTrackID(Int_t etaindex,Double_t kappa,Double_t psi)
+Int_t AliL3HoughTransformer::GetTrackID(Int_t etaindex,Double_t kappa,Double_t psi) const
 {
   // Returns the MC label for a given peak found in the Hough space
   if(!fDoMC)
