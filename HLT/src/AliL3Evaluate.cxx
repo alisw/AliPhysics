@@ -197,6 +197,9 @@ AliL3Evaluate::~AliL3Evaluate()
   if(fMcId)    delete [] fMcId;
   if(fNtuppel) delete fNtuppel;
   if(fNtupleRes) delete fNtupleRes;
+  for(Int_t s=0; s<=35; s++)
+    for(Int_t p=0; p<6; p++)
+      if(fClusters[s][p]) delete fClusters[s][p];
 }
 
 void AliL3Evaluate::AssignPIDs()
@@ -292,7 +295,7 @@ Float_t AliL3Evaluate::GetTrackPID(AliL3Track *track)
   for (i=nl; i<=nu; i++) trackDEdx += sampleDEdx[i];
   trackDEdx /= (nu-nl+1);
 
-  //  cout<<" PID: "<<nc<<" "<<nl<<" "<<nu<<" "<<trackDEdx<<endl;
+  //  cout<<" PID: "<<nc<<" "<<nl<<" "<<nu<<" "<<trackDEdx<<" "<<track->GetPt()<<endl;
   return trackDEdx;
 }
 
