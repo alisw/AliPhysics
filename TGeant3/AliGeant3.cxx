@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/04/26 10:17:32  fca
+Changes in Lego for G4 compatibility
+
 Revision 1.3  2000/04/07 11:12:35  fca
 G4 compatibility changes
 
@@ -695,9 +698,7 @@ void gustep()
   Float_t mom[3];
   const char *chproc;
   
-  // --- Standard GEANT debug routine 
   TGeant3* geant3 = (TGeant3*) gMC;
-  if(geant3->Gcflag()->idebug) geant3->Gdebug();
 
   //     Stop particle if outside user defined tracking region 
   gMC->TrackPosition(x);
@@ -705,6 +706,7 @@ void gustep()
   if (r > gAlice->TrackingRmax() || TMath::Abs(x[2]) > gAlice->TrackingZmax()) {
 	gMC->StopTrack();
   }
+
   // --- Add new created particles 
   if (gMC->NSecondaries() > 0) {
     chproc=gMC->ProdProcess();
@@ -734,6 +736,9 @@ void gustep()
   // --- Particle leaving the setup ?
   if (!gMC->IsTrackOut()) 
     if ((id=gAlice->DetFromMate(geant3->Gctmed()->numed)) >= 0) gAlice->StepManager(id);
+
+  // --- Standard GEANT debug routine 
+  if(geant3->Gcflag()->idebug) geant3->Gdebug();
 }
 
 //______________________________________________________________________
