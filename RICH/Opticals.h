@@ -5,91 +5,68 @@ void Opticals()
 #endif   
   int i;
   const Int_t kNbins=30;
-  Float_t aPckov[kNbins];
-  for(i=0;i<kNbins;i++){    //Photons energy bins 5.5 eV - 8.5 eV step 0.1 eV
-    aPckov[i]=(0.1*i+5.5)*1e-9;
-  }
   
-  Float_t aIndexFreon[kNbins];  
-  Float_t aIndexSiO2[kNbins];
-  Float_t aIndexOpaqueQuartz[kNbins];
-  Float_t aIndexCH4[kNbins];
-  Float_t aIndexGrid[kNbins];
+  Float_t aPckov[kNbins];  for(i=0;i<kNbins;i++) aPckov[i]=(0.1*i+5.5)*1e-9;//Photons energy bins 5.5 eV - 8.5 eV step 0.1 eV
+    
+  
+  Float_t aIdxC6F14[kNbins];  
+  Float_t aIdxCH4[kNbins];
+  Float_t aIdxGrid[kNbins];
+  Float_t aIdxSiO2[kNbins];
+  Float_t aIdxOpSiO2[kNbins];
         
-  Float_t  e1= 10.666;Float_t  e2= 18.125;  Float_t  f1= 46.411; Float_t  f2= 228.71;//RICH TDR page 35 
+  Float_t  e1=10.666,e2=18.125,f1=46.411,f2= 228.71; //RICH TDR page 35 
   for (i=0;i<kNbins;i++){
-    aIndexFreon[i]        = aPckov[i] * .0172 * 1e9 + 1.177;
-    Float_t ene=aPckov[i]*1e9;
-    aIndexSiO2[i]        = TMath::Sqrt(1. + f1/(e1*e1 - ene*ene) + f2/(e2*e2 - ene*ene) );
-    aIndexOpaqueQuartz[i]  =1;
-    aIndexCH4[i]      =1.000444;
-    aIndexGrid[i]         =1;
+    aIdxC6F14[i] = aPckov[i] *0.0172*1e9+1.177;
+    aIdxSiO2[i]  = TMath::Sqrt(1.+f1/(e1*e1-TMath::Power(aPckov[i]*1e9,2))+f2/(e2*e2-TMath::Power(aPckov[i]*1e9,2)));//TDR p.35
+    aIdxCH4[i]   =1.000444;
+    aIdxGrid[i]  =1;
+    aIdxOpSiO2[i]  =1;
   } 
     
-  Float_t aAbsFreon[kNbins]={179.0987,  179.0987,    179.0987,  179.0987,   179.0987,   //Previous values from code
-                             179.0987,  179.0987,    179.0987,  179.0987,   142.9206, 
-                              56.64957,  25.58622,    13.95293,  12.03905,   10.42953, 
-                               8.804196,  7.069031,    4.461292,  2.028366,   1.293013, 
-                               0.577267,  0.40746,     0.334964,  0.00001,        0.00001,       
-                               0.00001};
+  Float_t aAbsC6F14old[kNbins]={//previous values 26 in total added 0.0001 to the 30
+      179.0987, 179.0987, 179.0987, 179.0987, 179.0987, 179.0987, 179.0987, 179.0987, 179.0987, 142.9206, 
+       56.6496,  25.5862,  13.9529,  12.0391,  10.4295,   8.8042,   7.0690,   4.4611,   2.0284,   1.2930, 
+        0.5772,   0.4074,   0.3350,   0.0001,   0.0001,   0.0001    0.0001,   0.0001,   0.0001,   0.0001};
+  Float_t aAbsSiO2old[kNbins]={//previous values 26 in total added 0.0001 to the 30
+      105.8000,  65.5200,  48.5800,  42.8500,  35.7900,  31.2620,  28.5980,  27.5270,  25.0070,  22.8150, 
+       21.0040,  19.2660,  17.5250,  15.8780,  14.1770,  11.7190,   9.2820,   6.6200,   4.0930,   2.6010, 
+        1.1490,   0.6670,   0.3630,   0.1920,   0.1500,   0.1090,   0.0001,   0.0001,   0.0001,   0.0001};
+      
+  Float_t aAbsC6F14[kNbins]={//New values from A.DiMauro 28.10.03 total 31
+    32701.4219, 17996.1141, 10039.7281, 1799.1230, 1799.1231, 1799.1231, 1241.4091, 179.0987, 179.0986, 179.0987
+      179.0987,   118.9800,    39.5058,   23.7244,   11.1283,    7.1573,    3.6249,   2.1236,   0.7362,   0.5348,
+        0.3387,     0.3074,     0.3050,    0.0001,    0.0001,    0.0001,    0.0001,   0.0001,   0.0001,   0.0001};    
+  Float_t aAbsSiO2[kNbins]={//New values from A.DiMauro 28.10.03 total 31
+       34.4338, 30.5424, 30.2584, 31.4928, 31.7868, 17.8397, 9.3410, 6.4492, 6.1128, 5.8128,
+        5.5589,  5.2877,  5.0162,  4.7999,  4.5734,  4.2135, 3.7471, 2.6033, 1.5223, 0.9658,
+        0.4242,  0.2500,  0.1426,  0.0863,  0.0793,  0.0724, 0.0655, 0.0587, 0.0001, 0.0001};
     
-//   Float_t aAbsFreon[kNbins]={32701.4219, 17996.1141, 10039.7281, 1799.1231, 1799.1231,//New values from A.DiMauro 28.10.03
-//                               1799.1231,  1241.4091,   179.0987,  179.0987,  179.0987,  179.0987,   179.0987,  
-//                              179.0987,  179.0987,    179.0987,  179.0987,   142.9206, 
-//                               56.64957,  25.58622,    13.95293,  12.03905,   10.42953, 
-//                                8.804196,  7.069031,    4.461292,  2.028366,   1.293013, 
-//                                0.577267,  0.40746,     0.334964,  0.0,        0.0,       
-//                                0.0000, 0.0000, 0.0000, 0.0000, 0.0000};
-
-  Float_t aAbsSiO2[kNbins]={105.8,   65.52,  48.58,  42.85,   35.79,
-                               31.262, 28.598, 27.527, 25.007,  22.815, 
-                               21.004, 19.266, 17.525, 15.878,  14.177, 
-                               11.719, 9.282,   6.62,   4.0925,  2.601, 
-                               1.149,  0.667,   0.3627, 0.192,   0.1497, 
-                               0.10857};
-    
-  Float_t aAbsOpaqueQuartz[kNbins];
+  Float_t aAbsOpSiO2[kNbins];
   Float_t aAbsCH4[kNbins];
   Float_t aAbsGrid[kNbins];
   Float_t aAbsCsI[kNbins];
     for (i=0;i<kNbins;i++){
-      aAbsCH4[i]    =AbsoCH4(aPckov[i]*1e9); 
-      aAbsOpaqueQuartz[i]=1e-5; 
-      aAbsCsI[i]        =1e-4; 
-      aAbsGrid[i]       =1e-4; 
+      aAbsCH4[i]         =AbsoCH4(aPckov[i]*1e9); 
+      aAbsOpSiO2[i]      =1e-5; 
+      aAbsCsI[i]         =1e-4; 
+      aAbsGrid[i]        =1e-4; 
     }
     
-  Float_t aQeCsI1[kNbins] = {0.0002, 0.0003, 0.0005, 0.0010, 0.0020, 0.0020, 0.0099, 0.0500, 0.1800, 0.1850, 
-                             0.1899, 0.1920, 0.1979, 0.2099, 0.2179, 0.2249, 0.2349, 0.2599, 0.2800, 0.3000, 
-                             0.3100, 0.3249, 0.3400, 0.3549, 0.3600, 0.3700, 0.3799, 0.3899, 0.4000, 0.4099};
-  Float_t aQeCsI2[kNbins] = {0.0002, 0.0003, 0.0005, 0.0010, 0.0020, 0.0020, 0.0099, 0.0500, 0.1800, 0.1850, 
-                             0.1899, 0.1920, 0.1979, 0.2099, 0.2179, 0.2249, 0.2349, 0.2599, 0.2800, 0.3000, 
-                             0.3100, 0.3249, 0.3400, 0.3549, 0.3600, 0.3700, 0.3799, 0.3899, 0.4000, 0.4099};
-  Float_t aQeCsI3[kNbins] = {0.0002, 0.0003, 0.0005, 0.0010, 0.0020, 0.0020, 0.0099, 0.0500, 0.1800, 0.1850, 
-                             0.1899, 0.1920, 0.1979, 0.2099, 0.2179, 0.2249, 0.2349, 0.2599, 0.2800, 0.3000, 
-                             0.3100, 0.3249, 0.3400, 0.3549, 0.3600, 0.3700, 0.3799, 0.3899, 0.4000, 0.4099};
-  Float_t aQeCsI4[kNbins] = {0.0002, 0.0003, 0.0005, 0.0010, 0.0020, 0.0020, 0.0099, 0.0500, 0.1800, 0.1850, 
-                             0.1899, 0.1920, 0.1979, 0.2099, 0.2179, 0.2249, 0.2349, 0.2599, 0.2800, 0.3000, 
-                             0.3100, 0.3249, 0.3400, 0.3549, 0.3600, 0.3700, 0.3799, 0.3899, 0.4000, 0.4099};
-  Float_t aQeCsI5[kNbins] = {0.0002, 0.0003, 0.0005, 0.0010, 0.0020, 0.0020, 0.0099, 0.0500, 0.1800, 0.1850, 
-                             0.1899, 0.1920, 0.1979, 0.2099, 0.2179, 0.2249, 0.2349, 0.2599, 0.2800, 0.3000, 
-                             0.3100, 0.3249, 0.3400, 0.3549, 0.3600, 0.3700, 0.3799, 0.3899, 0.4000, 0.4099};
-  Float_t aQeCsI6[kNbins] = {0.0002, 0.0003, 0.0005, 0.0010, 0.0020, 0.0020, 0.0099, 0.0500, 0.1800, 0.1850, 
-                             0.1899, 0.1920, 0.1979, 0.2099, 0.2179, 0.2249, 0.2349, 0.2599, 0.2800, 0.3000, 
-                             0.3100, 0.3249, 0.3400, 0.3549, 0.3600, 0.3700, 0.3799, 0.3899, 0.4000, 0.4099};
-  Float_t aQeCsI7[kNbins] = {0.0002, 0.0003, 0.0005, 0.0010, 0.0020, 0.0020, 0.0099, 0.0500, 0.1800, 0.1850, 
-                             0.1899, 0.1920, 0.1979, 0.2099, 0.2179, 0.2249, 0.2349, 0.2599, 0.2800, 0.3000, 
-                             0.3100, 0.3249, 0.3400, 0.3549, 0.3600, 0.3700, 0.3799, 0.3899, 0.4000, 0.4099};
+  Float_t aQeCsIold[kNbins]={
+    0.0002, 0.0006, 0.0007, 0.0050, 0.0075, 0.0101, 0.0243, 0.0405, 0.0689, 0.1053, 
+    0.1215, 0.1417, 0.1579, 0.1620, 0.1661, 0.1677, 0.1743, 0.1768, 0.1793, 0.1826,
+    0.1859, 0.1876, 0.1892, 0.1909, 0.2075, 0.2158, 0.0001, 0.0001, 0.0001, 0.0001 };
+    
+  Float_t aQeCsI1[kNbins] = {0.0002, 0.0006, 0.0007, 0.0010, 0.0049, 0.0073, 0.0104, 0.0519, 0.0936, 0.1299,
+                             0.1560, 0.1768, 0.1872, 0.1976, 0.2142, 0.2288, 0.2434, 0.2599, 0.2673, 0.2808,
+                             0.2859, 0.2954, 0.3016, 0.3120, 0.3172, 0.3224, 0.3266, 0.3328, 0.3359, 0.3390};
+//                             0.3431};
+
   
   Float_t aQeAll[kNbins];
   for(i=0;i<kNbins;i++){
     aQeCsI1[i]/= (1.0-Fresnel(aPckov[i]*1e9,1.0,0)); //FRESNEL LOSS CORRECTION
-    aQeCsI2[i]/= (1.0-Fresnel(aPckov[i]*1e9,1.0,0)); //FRESNEL LOSS CORRECTION
-    aQeCsI3[i]/= (1.0-Fresnel(aPckov[i]*1e9,1.0,0)); //FRESNEL LOSS CORRECTION
-    aQeCsI4[i]/= (1.0-Fresnel(aPckov[i]*1e9,1.0,0)); //FRESNEL LOSS CORRECTION
-    aQeCsI5[i]/= (1.0-Fresnel(aPckov[i]*1e9,1.0,0)); //FRESNEL LOSS CORRECTION
-    aQeCsI6[i]/= (1.0-Fresnel(aPckov[i]*1e9,1.0,0)); //FRESNEL LOSS CORRECTION
-    aQeCsI7[i]/= (1.0-Fresnel(aPckov[i]*1e9,1.0,0)); //FRESNEL LOSS CORRECTION
     aQeAll[i]=1; //QE for all other materials except for PC must be 1.
   }
        
@@ -98,9 +75,9 @@ void Opticals()
 
 //Now plot all the thigs  
 //Freon, Quartz, Opaque ,Methane,CsI,Grid   
-  const Int_t kFreonMarker= 24; const Int_t kFreonColor=kRed;  
-  const Int_t kCH4Marker= 25;   const Int_t kCH4Color=kGreen;  
-  const Int_t kSiO2Marker= 26;  const Int_t kSiO2Color=kBlue;  
+  const Int_t kC6F14M= 24; const Int_t kC6F14C=kRed;  
+  const Int_t kCH4M= 25;   const Int_t kCH4Color=kGreen;  
+  const Int_t kSiO2M= 26;  const Int_t kSiO2C=kBlue;  
   const Int_t kCsIMarker = 2;   const Int_t kCsIColor =kMagenta;  
   
   TCanvas *pC=new TCanvas("c1","RICH optics to check",1100,900);
@@ -108,82 +85,73 @@ void Opticals()
   pC->Divide(3,2);           
            
   pC->cd(1);                 
-  TGraph *pAbsFreonGr=new TGraph(kNbins,aPckov,aAbsFreon);
-  pAbsFreonGr->SetMarkerStyle(kFreonMarker); pAbsFreonGr->SetMarkerColor(kFreonColor);
-  TGraph *pAbsSiO2Gr=new TGraph(kNbins,aPckov,aAbsSiO2);
-  pAbsSiO2Gr->SetMarkerStyle(kSiO2Marker); pAbsSiO2Gr->SetMarkerColor(kSiO2Color);  
-  TMultiGraph *pAbsMG=new TMultiGraph();
-  TLegend *pAbsLegend=new TLegend(0.6,0.3,0.85,0.5);
-  pAbsMG->Add(pAbsFreonGr);     pAbsLegend->AddEntry(pAbsFreonGr,   "freon","p");            //1
-  pAbsMG->Add(pAbsSiO2Gr);      pAbsLegend->AddEntry(pAbsSiO2Gr,  "SiO2","p");          //2
-  pAbsMG->Draw("APL");                       		
-  pAbsMG->GetXaxis()->SetTitle("energy, GeV");
-  pAbsMG->GetYaxis()->SetTitle("absorption length, cm");
-  pAbsMG->Draw("APL");
-  pAbsLegend->Draw();   
+  TGraph *pIdxC6F14G=new TGraph(kNbins,aPckov,aIdxC6F14);pIdxC6F14G->SetMarkerStyle(kC6F14M); pIdxC6F14G->SetMarkerColor(kC6F14C);
+  TGraph *pIdxSiO2G =new TGraph(kNbins,aPckov,aIdxSiO2); pIdxSiO2G->SetMarkerStyle(kSiO2M);   pIdxSiO2G->SetMarkerColor(kSiO2C);  
+  TGraph *pIdxCH4G  =new TGraph(kNbins,aPckov,aIdxCH4);  pIdxCH4G->SetMarkerStyle(kCH4M);     pIdxCH4G->SetMarkerColor(kCH4Color);
+  TMultiGraph *pIdxMG=new TMultiGraph();  TLegend *pIdxLe=new TLegend(0.6,0.2,0.85,0.4);
+  pIdxMG->Add(pIdxC6F14G);     pIdxLe->AddEntry(pIdxC6F14G,   "C6F14","p");            
+  pIdxMG->Add(pIdxSiO2G);      pIdxLe->AddEntry(pIdxSiO2G,    "SiO2","p");          
+  pIdxMG->Add(pIdxCH4G);       pIdxLe->AddEntry(pIdxCH4G,     "CH4","p");          
+  pIdxMG->Draw("APL");pIdxMG->GetXaxis()->SetTitle("ref index versus energy, GeV");pIdxMG->Draw("APL");
+  pIdxLe->Draw();      
 
 
   pC->cd(2);
-  TGraph *pIndexFreonGr=new TGraph(kNbins,aPckov,aIndexFreon);
-  pIndexFreonGr->SetMarkerStyle(kFreonMarker); pIndexFreonGr->SetMarkerColor(kFreonColor);  
-  TGraph *pIndexSiO2Gr=new TGraph(kNbins,aPckov,aIndexSiO2);
-  pIndexSiO2Gr->SetMarkerStyle(kSiO2Marker); pIndexSiO2Gr->SetMarkerColor(kSiO2Color);  
-  TGraph *pIndexCH4Gr=new TGraph(kNbins,aPckov,aIndexCH4);
-  pIndexCH4Gr->SetMarkerStyle(kCH4Marker); pIndexCH4Gr->SetMarkerColor(kCH4Color);   
-  TMultiGraph *pIndexMG=new TMultiGraph();
-  TLegend *pIndexLegend=new TLegend(0.6,0.2,0.85,0.4);
-  pIndexMG->Add(pIndexFreonGr);     pIndexLegend->AddEntry(pIndexFreonGr,   "C6F14","p");            //1
-  pIndexMG->Add(pIndexSiO2Gr);      pIndexLegend->AddEntry(pIndexSiO2Gr,  "SiO2","p");          
-  pIndexMG->Add(pIndexCH4Gr);       pIndexLegend->AddEntry(pIndexCH4Gr,   "CH4","p");          
-  pIndexMG->Draw("APL");                       		
-  pIndexMG->GetXaxis()->SetTitle("energy, GeV");
-  pIndexMG->GetYaxis()->SetTitle("refraction index");
-  pIndexMG->Draw("APL");
-  pIndexLegend->Draw();      
+  TGraph *pAbsC6F14G=new TGraph(kNbins,aPckov,aAbsC6F14);pAbsC6F14G->SetMarkerStyle(kC6F14M); pAbsC6F14G->SetMarkerColor(kC6F14C);
+  TGraph *pAbsSiO2G =new TGraph(kNbins,aPckov,aAbsSiO2); pAbsSiO2G->SetMarkerStyle(kSiO2M);   pAbsSiO2G->SetMarkerColor(kSiO2C);
+  TMultiGraph *pAbsMG=new TMultiGraph();  TLegend *pAbsLegend=new TLegend(0.6,0.3,0.85,0.5);
+  pAbsMG->Add(pAbsC6F14G);      pAbsLegend->AddEntry(pAbsC6F14G,  "C6F14","p"); 
+  pAbsMG->Add(pAbsSiO2G);       pAbsLegend->AddEntry(pAbsSiO2G,  "SiO2", "p"); 
+  pAbsMG->Draw("APL"); pAbsMG->GetXaxis()->SetTitle("absorbtion length, cm versus energy, GeV");  pAbsMG->Draw("APL");
+  pAbsLegend->Draw();   
 
   pC->cd(3);      
   TGraph *pAbsCH4Gr=new TGraph(kNbins,aPckov,aAbsCH4);
-  pAbsCH4Gr->SetMarkerStyle(kCH4Marker); pAbsCH4Gr->SetMarkerColor(kCH4Color);
+  pAbsCH4Gr->SetMarkerStyle(kCH4M); pAbsCH4Gr->SetMarkerColor(kCH4Color);
   pAbsCH4Gr->Draw("APL");
   pAbsCH4Gr->GetXaxis()->SetTitle("energy, GeV");
   pAbsCH4Gr->SetTitle("CH4 absorption length, cm");
   pAbsCH4Gr->Draw("APL");
   
   pC->cd(4);
-  TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI1);
-  pQeCsIGr->SetMarkerStyle(kCsIMarker); pQeCsIGr->SetMarkerColor(kCsIColor);
-  pQeCsIGr->Draw("APL");
-  pQeCsIGr->GetXaxis()->SetTitle("energy, GeV");
-  pQeCsIGr->SetTitle("QE");
-  pQeCsIGr->Draw("APL");
+  TGraph *pQeCsIG=new TGraph(kNbins,aPckov,aQeCsI1);
+  pQeCsIG->SetMarkerStyle(kCsIMarker); pQeCsIG->SetMarkerColor(kCsIColor);
+  pQeCsIG->Draw("APL");
+  pQeCsIG->GetXaxis()->SetTitle("energy, GeV");
+  pQeCsIG->SetTitle("QE");
+  pQeCsIG->Draw("APL");
   
-  
+//transmission  
   pC->cd(5);
-  Float_t aTrFreon[kNbins],aTrSiO2[kNbins],aTrCH4[kNbins];
+  Float_t aTrC6F14[kNbins],aTrSiO2[kNbins],aTrCH4[kNbins];
   Float_t aTotTr[kNbins];
   for(Int_t i=0;i<kNbins;i++){
-    aTrFreon[i]=TMath::Exp(-AliRICHParam::FreonThickness() /(aAbsFreon[i]+0.0001));
+    aTrC6F14[i]=TMath::Exp(-AliRICHParam::FreonThickness() /(aAbsC6F14[i]+0.0001));
     aTrSiO2[i] =TMath::Exp(-AliRICHParam::QuartzThickness()/(aAbsSiO2[i] +0.0001));
     aTrCH4[i]  =TMath::Exp(-AliRICHParam::GapThickness()   /(aAbsCH4[i]  +0.0001));    
-    aTotTr[i]    =aTrFreon[i]*aTrSiO2[i]*aTrCH4[i]*aQeCsI1[i];
+    aTotTr[i]    =aTrC6F14[i]*aTrSiO2[i]*aTrCH4[i]*aQeCsI1[i];
   }
-  TGraph *pTrFreonG=new TGraph(kNbins,aPckov,aTrFreon);pTrFreonG->SetMarkerStyle(kFreonMarker);pTrFreonG->SetMarkerColor(kFreonColor);  
-  TGraph *pTrSiO2G=new TGraph(kNbins,aPckov,aTrSiO2);pTrSiO2G->SetMarkerStyle(kSiO2Marker); pTrSiO2G->SetMarkerColor(kSiO2Color);  
-  TGraph *pTrCH4G=new TGraph(kNbins,aPckov,aTrCH4);pTrCH4G->SetMarkerStyle(kCH4Marker); pTrCH4G->SetMarkerColor(kCH4Color);   
-  TGraph *pTotTrG=new TGraph(kNbins,aPckov,aTotTr);pTotTrG->SetMarkerStyle(30);
+  TGraph *pTrC6F14G=new TGraph(kNbins,aPckov,aTrC6F14);pTrC6F14G->SetMarkerStyle(kC6F14M);pTrC6F14G->SetMarkerColor(kC6F14C);  
+  TGraph *pTrSiO2G=new TGraph(kNbins,aPckov,aTrSiO2);pTrSiO2G->SetMarkerStyle(kSiO2M); pTrSiO2G->SetMarkerColor(kSiO2C);  
+  TGraph *pTrCH4G=new TGraph(kNbins,aPckov,aTrCH4);pTrCH4G->SetMarkerStyle(kCH4M); pTrCH4G->SetMarkerColor(kCH4Color);   
+  TGraph *pTotTrG=new TGraph(kNbins,aPckov,aTotTr);pTotTrG->SetMarkerStyle(30);pTotTrG->SetMarkerColor(kYellow);
   TMultiGraph *pTrMG=new TMultiGraph();
-  TLegend *pTrLegend=new TLegend(0.6,0.2,0.85,0.4);
-  pTrMG->Add(pTrFreonG);     pTrLegend->AddEntry(pTrFreonG, "freon","p");            //1
-  pTrMG->Add(pTrSiO2G);      pTrLegend->AddEntry(pTrSiO2G,  "SiO2","p");          
-  pTrMG->Add(pTrCH4G);       pTrLegend->AddEntry(pTrCH4G,   "CH4","p");          
-  pTrMG->Add(pTotTrG);       pTrLegend->AddEntry(pTotTrG,   "total","p");          
-  pTrMG->Draw("APL");                       		
-  pTrMG->GetXaxis()->SetTitle("energy, GeV");
-  pTrMG->GetYaxis()->SetTitle("transmission");
-  pTrMG->Draw("APL");
+  TLegend *pTrLegend=new TLegend(0.2,0.4,0.35,0.6);
+  pTrMG->Add(pQeCsIG);       pTrLegend->AddEntry(pQeCsIG,   "CsI QE", "p");  
+  pTrMG->Add(pTrC6F14G);     pTrLegend->AddEntry(pTrC6F14G, "C6F14", "p");  
+  pTrMG->Add(pTrSiO2G);      pTrLegend->AddEntry(pTrSiO2G,  "SiO2",  "p");          
+  pTrMG->Add(pTrCH4G);       pTrLegend->AddEntry(pTrCH4G,   "CH4",   "p");          
+  pTrMG->Add(pTotTrG);       pTrLegend->AddEntry(pTotTrG,   "total", "p");          
+  pTrMG->Draw("APL");pTrMG->GetXaxis()->SetTitle("transmission versus energy, GeV");pTrMG->Draw("APL");
   pTrLegend->Draw();      
 
+  pC->cd(6);
   
+  TMultiGraph *pCompMG=new TMultiGraph;
+  pCompMG->Add(pQeCsIG);
+  pCompMG->Add(new TGraph(kNbins,aPckov,aQeCsIold));
+  pCompMG->Draw("APL");pCompMG->GetXaxis()->SetTitle("comparison of QE versus energy, GeV");pCompMG->Draw("APL");
+    
   return;
   TCanvas *pQeC=new TCanvas("pQeC","CsI QE currently all the same",800,900); 
   pQeC->Divide(2,4);
@@ -293,5 +261,5 @@ Float_t Fresnel(Float_t ene,Float_t pdoti, Bool_t pola)
       
     fresn = fresn*rO;
     return(fresn);
-}//Fresnel(...)
+}//Fresnel()
 #endif

@@ -13,12 +13,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
 
 
 #include "AliRICHTresholdMap.h"
 #include "AliSegmentation.h"
-#include "AliRICHDigit.h"
 
 #include <TObjArray.h>
 #include <TMath.h>

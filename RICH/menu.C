@@ -39,12 +39,7 @@ Double_t d2r = TMath::DegToRad();
 void DisplFast()
 {
   AliRICHDisplFast *d = new AliRICHDisplFast();
-
-  for (int nev=0; nev< a->GetEventsPerRun(); nev++) {    // Event Loop
-    al->GetEvent(nev);
-    cout <<endl<< "Processing event:" <<nev<<endl;
-    d->Display();
-  } // event loop  
+  d->Exec();
 }  
 
 
@@ -238,7 +233,10 @@ void Show3()
   cout<<endl;
   al->LoadHeader();  al->LoadKinematics();
   
-  rl->LoadHits();  Bool_t isSdigits=!rl->LoadSDigits();  Bool_t isDigits=!rl->LoadDigits();//loaders
+  rl->LoadHits();  
+    Bool_t isSdigits=!rl->LoadSDigits();  
+      Bool_t isClusters=!rl->LoadRecPoints();
+        Bool_t isDigits=!rl->LoadDigits();//loaders
   
   cout<<endl;  cout<<endl;  
   for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
@@ -270,19 +268,26 @@ void Show3()
     if(isDigits){
       rl->TreeD()->GetEntry(0);
       for(int i=1;i<=7;i++)
-        Info("Show-DIGITS","Evt %i chamber %i contains %5i NEW digits and %5i OLD",
-                                 iEventN,   i,           r->Digits(i)->GetEntries(),r->DigitsOld(i)->GetEntries());
+        Info("Show-DIGITS","Evt %i chamber %i contains %5i digits",
+                                 iEventN,   i,           r->Digits(i)->GetEntries());
+    }
+    if(isClusters){
+      rl->TreeR()->GetEntry(0);
+      for(int i=1;i<=7;i++)
+        Info("Show-CLUSTERS","Evt %i chamber %i contains %5i clusters",
+                                 iEventN,   i,           r->Clusters(i)->GetEntries());
     }
     cout<<endl;
   }//events loop
-  rl->UnloadHits();  if(isSdigits) rl->UnloadSDigits(); if(isDigits) rl->UnloadDigits();
+  rl->UnloadHits();  
+    if(isSdigits) rl->UnloadSDigits(); 
+      if(isDigits) rl->UnloadDigits(); 
+        if(isClusters) rl->UnloadRecPoints();
   al->UnloadHeader();
   al->UnloadKinematics();
   cout<<endl;
 }//void Show()
-
-
-
+//__________________________________________________________________________________________________
 void DebugOFF()
 {
   Info("DebugOFF","");

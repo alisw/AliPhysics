@@ -10,15 +10,15 @@
 
 class AliRICH;
 
-class AliRICHDisplFast : public TTask {
-   public :
+class AliRICHDisplFast : public TTask 
+{
+public :
  
-   AliRICHDisplFast();
-   ~AliRICHDisplFast(){;}
-   void Display();
-
-ClassDef(AliRICHDisplFast,0)
-
+       AliRICHDisplFast() {;}
+      ~AliRICHDisplFast() {;}
+  void Exec();//virtual
+protected:  
+  ClassDef(AliRICHDisplFast,0)
 };
     
 #endif // #ifdef AliRICHDisplFast_cxx

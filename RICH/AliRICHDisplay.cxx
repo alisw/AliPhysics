@@ -13,7 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
@@ -61,8 +60,6 @@
 #include "AliHeader.h"
 
 #include "AliRICHSDigit.h"
-#include "AliRICHDigit.h"
-#include "AliRICHRawCluster.h"
 #include "AliMC.h"
 
 ClassImp(AliRICHDisplay)
@@ -741,19 +738,15 @@ void AliRICHDisplay::LoadCoG(Int_t chamber, Int_t cathode)
 // Read raw clusters info and store x,y,z info in arrays fRpoints
 // Loop on all detectors
 
-   if (chamber > 6) return;
-
-   //printf("Entering LoadCoG\n");
-
+   if (chamber > 7) return;
 
    AliRICH *pRICH  = (AliRICH*)gAlice->GetModule("RICH");
    AliRICHChamber*  iChamber;
 
-   TClonesArray *pRICHrawclust  = pRICH->RawClustAddress(chamber);
-   //printf ("Chamber:%d has adress:%p\n", chamber, pRICHrawclust );
+   TClonesArray *pRICHrawclust  = pRICH->Clusters(chamber);
    if (pRICHrawclust == 0) return;
 
-   pRICH->ResetRawClusters();
+   pRICH->ResetClusters();
 
 
    Int_t nent=(Int_t)gAlice->TreeR()->GetEntries();
@@ -764,13 +757,13 @@ void AliRICHDisplay::LoadCoG(Int_t chamber, Int_t cathode)
    if (fRpoints == 0) fRpoints = new TObjArray(nrawcl);
    
    iChamber = &(pRICH->Chamber(chamber));
-   AliRICHRawCluster  *mRaw;
+   AliRICHcluster  *mRaw;
    AliRICHPoints *points = 0;
    //
    //loop over all raw clusters and store their position
    points = new AliRICHPoints(nrawcl);
    for (Int_t iraw=0;iraw<nrawcl;iraw++) {
-       mRaw   = (AliRICHRawCluster*)pRICHrawclust->UncheckedAt(iraw);
+       mRaw   = (AliRICHcluster*)pRICHrawclust->UncheckedAt(iraw);
        fRpoints->AddAt(points,iraw);
        points->SetMarkerColor(3);
        points->SetMarkerStyle(3);
@@ -779,12 +772,12 @@ void AliRICHDisplay::LoadCoG(Int_t chamber, Int_t cathode)
        points->SetHitIndex(-1);
        points->SetTrackIndex(-1);
        points->SetDigitIndex(-1);
-       Float_t  vectorLoc[3]={mRaw->fX,5,mRaw->fY};
+       Float_t  vectorLoc[3]={mRaw->X(),5,mRaw->Y()};
        Float_t  vectorGlob[3];
        iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
        points->SetPoint(iraw,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
    }
-}
+}//LoadCoG()
 //___________________________________________
 void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
 {
@@ -808,21 +801,19 @@ void AliRICHDisplay::LoadDigits()
    if (gAlice->TreeD())
      {
    
-       for (ich=0; ich<kNCH; ich++) {
-	 TClonesArray *pRICHdigits  = pRICH->DigitsAddress(ich);
-	 //printf ("Chamber:%d has adress:%p\n", ich, pRICHdigits );
+       for (ich=1; ich<=kNCH; ich++) {
+	 TClonesArray *pRICHdigits  = pRICH->Digits(ich);
 	 if (pRICHdigits == 0) continue;
 	 gAlice->ResetDigits();
 	 gAlice->TreeD()->GetEvent(0);
 	 Int_t ndigits = pRICHdigits->GetEntriesFast();
-	 //printf("ndigits:%d\n",ndigits);
 	 nAllDigits+=ndigits;
        }
        
        if (fPoints == 0) fPoints = new TObjArray(nAllDigits);   
        Int_t counter=0;
-       for (ich=0; ich<kNCH; ich++) {
-	 TClonesArray *pRICHdigits  = pRICH->DigitsAddress(ich);
+       for (ich=1; ich<=kNCH; ich++) {
+	 TClonesArray *pRICHdigits  = pRICH->Digits(ich);
 	 if (pRICHdigits == 0) continue;
 	 gAlice->ResetDigits();
 	 gAlice->TreeD()->GetEvent(0);
@@ -835,7 +826,7 @@ void AliRICHDisplay::LoadDigits()
 	 
 	 //printf("Dpx:%d, Dpy:%d\n",dpx,dpy);
 	 
-	 AliRICHDigit  *mdig;
+	 AliRICHdigit  *mdig;
 	 AliRICHPoints *points = 0;
 	 TMarker3DBox  *marker = 0;
 	 //
@@ -843,11 +834,11 @@ void AliRICHDisplay::LoadDigits()
 	 Int_t npoints=1;
 	 
 	 for (Int_t digit=0;digit<ndigits;digit++) {
-	   mdig    = (AliRICHDigit*)pRICHdigits->UncheckedAt(digit);
+	   mdig    = (AliRICHdigit*)pRICHdigits->UncheckedAt(digit);
 	   points = new AliRICHPoints(npoints);
 	   fPoints->AddAt(points,counter);
 	   counter++;
-	   Int_t charge=mdig->Signal();
+	   Int_t charge=(Int_t)mdig->Q();
 	   Int_t index=Int_t(TMath::Log(charge)/(TMath::Log(kadc_satm)/22));
 	   Int_t color=701+index;
 	   if (color>722) color=722;
@@ -855,7 +846,7 @@ void AliRICHDisplay::LoadDigits()
 	   points->SetMarkerStyle(21);
 	   points->SetMarkerSize(0.5);
 	   Float_t xpad, ypad, zpad;
-	   segmentation->GetPadC(mdig->PadX(), mdig->PadY(),xpad, ypad, zpad);
+	   segmentation->GetPadC(mdig->X(), mdig->Y(),xpad, ypad, zpad);
 	   Float_t vectorLoc[3]={xpad,5,ypad};
 	   Float_t  vectorGlob[3];
 	   iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
@@ -866,7 +857,7 @@ void AliRICHDisplay::LoadDigits()
 	   points->SetPoint(0,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
 	   //printf("Y position (digit): %f\n", vectorGlob[1]);
 	   
-	   segmentation->GetPadC(mdig->PadX(), mdig->PadY(), xpad, ypad, zpad);
+	   segmentation->GetPadC(mdig->X(), mdig->Y(), xpad, ypad, zpad);
 	   Float_t theta = iChamber->GetRotMatrix()->GetTheta();
 	   Float_t phi   = iChamber->GetRotMatrix()->GetPhi();	   
 	   marker=new TMarker3DBox(vectorGlob[0],vectorGlob[1],vectorGlob[2],
@@ -879,10 +870,8 @@ void AliRICHDisplay::LoadDigits()
 	 } // loop over digits
        } // loop over chambers 
      } //if TreeD
-}
-
-
-//___________________________________________
+}//LoadDigits();
+//__________________________________________________________________________________________________
 void AliRICHDisplay::LoadHits(Int_t chamber)
 {
 // Read hits info and store x,y,z info in arrays fPhits
@@ -949,10 +938,8 @@ void AliRICHDisplay::LoadHits(Int_t chamber)
 	    npoints++;
 	}
     }
-}
-
-//_____________________________________________________________________________
-
+}//LoadHits()
+//__________________________________________________________________________________________________
 void AliRICHDisplay::LoadCerenkovs(Int_t chamber)
 {
 // Read cerenkov hits info and store x,y,z info in array fPCerenkovs

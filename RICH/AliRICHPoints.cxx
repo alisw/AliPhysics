@@ -38,11 +38,9 @@
 #include <TParticle.h>
 #include "AliRICHDisplay.h"
 #include "AliRICHPoints.h"
-#include "AliRun.h"
+#include <AliRun.h>
 #include "AliRICHSDigit.h"
-#include "AliRICHDigit.h"
-#include "AliRICHRawCluster.h"
-#include "AliMC.h"
+#include <AliMC.h>
 
 const Int_t kMaxNipx=400, kMaxNipy=800;
  
@@ -100,7 +98,7 @@ void AliRICHPoints::DumpDigit()
   //
   //   Dump digit corresponding to this point
   //
-  AliRICHDigit *digit = GetDigit();
+  AliRICHdigit *digit = GetDigit();
   if (digit) digit->Dump();
 }
 
@@ -120,7 +118,7 @@ void AliRICHPoints::InspectDigit()
   //
   //   Inspect digit corresponding to this point
   //
-  AliRICHDigit *digit = GetDigit();
+  AliRICHdigit *digit = GetDigit();
   if (digit) digit->Inspect();
 }
 
@@ -159,7 +157,7 @@ AliRICHhit *AliRICHPoints::GetHit() const
 }
 
 //_____________________________________________________________________________
-AliRICHDigit *AliRICHPoints::GetDigit() const
+AliRICHdigit *AliRICHPoints::GetDigit() const
 {
   //
   //   Returns pointer to digit index in AliRun::fParticles
@@ -170,11 +168,11 @@ AliRICHDigit *AliRICHPoints::GetDigit() const
   Int_t cathode=display->GetCathode();
    
   AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
-  TClonesArray *pRICHdigits  = pRICH->DigitsAddress(chamber-1);
+  TClonesArray *pRICHdigits  = pRICH->Digits(chamber);
   gAlice->TreeD()->GetEvent(cathode);
   Int_t ndigits = pRICHdigits->GetEntriesFast();
   if (fDigitIndex < 0 || fDigitIndex >= ndigits) return 0;
-  return (AliRICHDigit*)pRICHdigits->UncheckedAt(fDigitIndex);
+  return (AliRICHdigit*)pRICHdigits->UncheckedAt(fDigitIndex);
 }
 //----------------------------------------------------------------------------
 void AliRICHPoints::ShowRing(Int_t highlight) {
@@ -195,7 +193,7 @@ void AliRICHPoints::ShowRing(Int_t highlight) {
 
   printf("Hit %d on chamber: %d\n",fHitIndex, mHit->Chamber());
 
-  TClonesArray *digits  = pRICH->DigitsAddress(mHit->Chamber() - 1);
+  TClonesArray *digits  = pRICH->Digits(mHit->Chamber());
   iChamber = &(pRICH->Chamber(mHit->Chamber() - 1));
   segmentation=iChamber->GetSegmentationModel();
 
@@ -207,17 +205,16 @@ void AliRICHPoints::ShowRing(Int_t highlight) {
   printf("Show Ring called with %d digits\n",ndigits);
   
   for (int digit=0;digit<ndigits;digit++) {
-    AliRICHDigit *mdig = (AliRICHDigit*)digits->UncheckedAt(digit);
+    AliRICHdigit *mdig = (AliRICHdigit*)digits->UncheckedAt(digit);
     points = new AliRICHPoints(1);
     
      //printf("Particle %d belongs to ring %d \n", fTrackIndex, mdig->fTracks[1]);
 
     if (!points) continue;
-    if (fTrackIndex == mdig->Track(0)) {
+    if (fTrackIndex == mdig->T(0)) {
 
-      printf("Digit %d from particle %d belongs to ring %d \n", digit, fTrackIndex, mdig->Track(0));
 
-      Int_t charge=mdig->Signal();
+      Int_t charge=(Int_t)mdig->Q();
       Int_t index=Int_t(TMath::Log(charge)/(TMath::Log(kadc_satm)/22));
       Int_t color=701+index;
       if (color>722) color=722;
@@ -225,7 +222,7 @@ void AliRICHPoints::ShowRing(Int_t highlight) {
       points->SetMarkerStyle(21);
       points->SetMarkerSize(.5);
       Float_t xpad, ypad, zpad;
-      segmentation->GetPadC(mdig->PadX(), mdig->PadY(),xpad, ypad, zpad);
+      segmentation->GetPadC(mdig->X(), mdig->Y(),xpad, ypad, zpad);
       Float_t vectorLoc[3]={xpad,6.276,ypad};
       Float_t  vectorGlob[3];
       points->SetParticle(-1);
@@ -235,7 +232,7 @@ void AliRICHPoints::ShowRing(Int_t highlight) {
       iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
       points->SetPoint(0,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
       
-      segmentation->GetPadC(mdig->PadX(), mdig->PadY(), xpad, ypad, zpad);
+      segmentation->GetPadC(mdig->X(), mdig->Y(), xpad, ypad, zpad);
       Float_t theta = iChamber->GetRotMatrix()->GetTheta();
       Float_t phi   = iChamber->GetRotMatrix()->GetPhi();	   
       marker=new TMarker3DBox(vectorGlob[0],vectorGlob[1],vectorGlob[2],

@@ -72,8 +72,6 @@ AliRICH::AliRICH()
   
   fCerenkovs  =0; fNcerenkovs =0;
   fSpecials   =0; fNspecials  =0;  
-  fDchambers  =0; for(int i=0;i<kNCH;i++) fNdch[i]=0;
-  fRawClusters=0; for(int i=0;i<kNCH;i++) fNrawch[i]=0;  
   fCkovNumber=fFreonProd=0;  
 }//AliRICH::AliRICH()
 //__________________________________________________________________________________________________
@@ -91,8 +89,6 @@ AliRICH::AliRICH(const char *name, const char *title)
   
   fCerenkovs=  0;     CreateCerenkovsOld();  gAlice->GetMCApp()->AddHitList(fCerenkovs);
   fSpecials=   0;     CreateSpecialsOld();   
-  fDchambers=  0;  
-  fRawClusters=0;  
   
   fCkovNumber=fFreonProd=0;  
   if(GetDebug())Info("named ctor","Stop.");
@@ -113,8 +109,6 @@ AliRICH::~AliRICH()
   
   if(fCerenkovs) delete fCerenkovs;
   if(fSpecials)  delete fSpecials;
-  if(fDchambers)   {fDchambers->Delete();     delete fDchambers;}
-  if(fRawClusters) {fRawClusters->Delete();   delete fRawClusters;}          
   if(GetDebug()) Info("dtor","Stop.");    
 }//AliRICH::~AliRICH()
 //__________________________________________________________________________________________________
@@ -169,7 +163,7 @@ void AliRICH::SDigits2Digits()
     gAlice->GetRunLoader()->GetEvent(iEventN);
     
     if(!GetLoader()->TreeD()) GetLoader()->MakeTree("D");  MakeBranch("D"); //create TreeD with RICH branches 
-    ResetSDigits();ResetDigitsOld();//reset lists of sdigits and digits
+    ResetSDigits();ResetDigits();//reset lists of sdigits and digits
     GetLoader()->TreeS()->GetEntry(0);  
     SDigits()->Sort();
   
@@ -202,7 +196,7 @@ void AliRICH::SDigits2Digits()
     if(GetDebug()) Info("SDigits2Digits","Event %i processed.",iEventN);
   }//events loop
   GetLoader()->UnloadSDigits();  GetLoader()->UnloadDigits();  
-  ResetSDigits();                ResetDigitsOld();
+  ResetSDigits();                ResetDigits();
   if(GetDebug()) Info("SDigits2Digits","Stop.");
 }//void AliRICH::SDigits2Digits()
 //__________________________________________________________________________________________________
@@ -535,20 +529,15 @@ void AliRICH::MakeBranch(Option_t* option)
    
   if(cD&&fLoader->TreeD()){//D
     CreateDigits();
-    CreateDigitsOld();  
     for(Int_t i=0;i<kNCH;i++){ 
-      MakeBranchInTree(fLoader->TreeD(),Form("%sDigits%d",GetName(),i+1),&((*fDchambers)[i]),kBufferSize,0);
       MakeBranchInTree(fLoader->TreeD(),Form("%s%d",GetName(),i+1),&((*fDigitsNew)[i]),kBufferSize,0);
     }
   }//D
   
   if(cR&&fLoader->TreeR()){//R
     CreateClusters();
-    CreateRawClustersOld(); 
-    for(Int_t i=0;i<kNCH;i++){
-      MakeBranchInTree(fLoader->TreeR(),Form("%sClusters%d",GetName(),i+1), &((*fClusters)[i]), kBufferSize, 0);
-      MakeBranchInTree(fLoader->TreeR(),Form("%sRawClusters%d",GetName(),i+1), &((*fRawClusters)[i]), kBufferSize, 0);
-    }
+    for(Int_t i=0;i<kNCH;i++)
+      MakeBranchInTree(fLoader->TreeR(),Form("%sClusters%d",GetName(),i+1), &((*fClusters)[i]), kBufferSize, 0);    
   }//R
   if(GetDebug())Info("MakeBranch","Stop.");   
 }//void AliRICH::MakeBranch(Option_t* option)
@@ -577,23 +566,14 @@ void AliRICH::SetTreeAddress()
     for(int i=0;i<kNCH;i++){      
       branch=fLoader->TreeD()->GetBranch(Form("%s%d",GetName(),i+1)); 
       if(branch){CreateDigits(); branch->SetAddress(&((*fDigitsNew)[i]));}
-      
-      branch=fLoader->TreeD()->GetBranch(Form("%sDigits%d",GetName(),i+1)); 
-      if(branch){CreateDigitsOld(); branch->SetAddress(&((*fDchambers)[i]));}
-    }//for
+    }
   }//D
     
   if(fLoader->TreeR()){//R
     if(GetDebug())Info("SetTreeAddress","tree R is requested.");
-
     for(int i=0;i<kNCH;i++){         
       branch=fLoader->TreeR()->GetBranch(Form("%sClusters%d" ,GetName(),i+1));
       if(branch){CreateClusters(); branch->SetAddress(&((*fClusters)[i]));}
-    }
-    
-    for(int i=0;i<kNCH;i++) {
-      branch=fLoader->TreeR()->GetBranch(Form("%sRawClusters%d" ,GetName(),i+1));
-      if(branch){CreateRawClustersOld(); branch->SetAddress(&((*fRawClusters)[i]));}
     }
   }//R
   if(GetDebug())Info("SetTreeAddress","Stop.");

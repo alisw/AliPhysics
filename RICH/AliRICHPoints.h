@@ -4,13 +4,11 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
 
 #include <TPolyMarker3D.h>
 #include <TMarker3DBox.h>
 #include "AliRICH.h"
 #include "AliPoints.h"
-class AliRICHDigit;
 
 class AliRICHPoints : public AliPoints {
 public:
@@ -23,7 +21,7 @@ public:
   Int_t                 GetDigitIndex() {return fDigitIndex;}
   Int_t                 GetIndex() {return fIndex;}
   AliRICHhit           *GetHit() const;
-  AliRICHDigit         *GetDigit() const;
+  AliRICHdigit         *GetDigit() const;
   virtual const Text_t *GetName() const;
   virtual Text_t       *GetObjectInfo(Int_t px, Int_t py);
   TMarker3DBox         *GetMarker(Int_t i) {return fMarker[i];}

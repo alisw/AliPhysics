@@ -15,10 +15,7 @@
 #include "AliRICHChamber.h"
 #include "AliRICHParam.h"
 
-
-#include "AliRICHDigit.h"
 #include "AliRICHSDigit.h"
-#include "AliRICHRawCluster.h"
 
 //__________________AliRICHhit______________________________________________________________________
 //__________________________________________________________________________________________________
@@ -322,29 +319,16 @@ public:
 // OLD staff OLD staff    
   inline  void    AddCerenkov(Int_t track, Int_t *vol, Float_t *cerenkovs);
   inline  void    AddSpecialOld(Int_t *);      
-  inline  void    AddDigitOld(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits);          
-  inline  void    AddClusterOld(Int_t iChamber, const AliRICHRawCluster& cluster);
           
   inline  void    CreateCerenkovsOld();  
   inline  void    CreateSpecialsOld();   
-  inline  void    CreateDigitsOld();    
-  inline  void    CreateRawClustersOld();  
-          void    ResetDigitsOld()  {if(fDchambers)  for(int i=0;i<kNCH;i++){fDchambers->At(i)->Clear();fNdch[i]=0;}}   //virtual
           void    ResetSpecialsOld(){fNspecials=0; if(fSpecials) fSpecials->Clear();}   
-          void    ResetRawClusters(){if(fRawClusters)for(int i=0;i<kNCH;i++){fRawClusters->At(i)->Clear();fNrawch[i]=0;}}
-  
-  TClonesArray*   DigitsOld(Int_t iC)   const{if(fDchambers) return (TClonesArray *)fDchambers->At(iC-1);else return 0;}
-  TClonesArray*   ClustersOld(Int_t iC) const{if(fRawClusters)return (TClonesArray *)fRawClusters->At(iC-1);else return 0;}
   TClonesArray*   Specials()            const{return fSpecials;}
   TClonesArray*   Cerenkovs()           const{return fCerenkovs;}
   
   
             
   AliRICHChamber& Chamber(Int_t id)      {return *((AliRICHChamber *) (*fChambers)[id]);}  
-  TObjArray     *Dchambers()                const{return fDchambers;}
-  Int_t         *Ndch()                          {return fNdch;}
-  TClonesArray  *DigitsAddress(Int_t id)    const{return ((TClonesArray *) (*fDchambers)[id]);}
-  TClonesArray  *RawClustAddress(Int_t id)  const{return ((TClonesArray *) (*fRawClusters)[id]);}    
 //          Int_t DistancetoPrimitive(Int_t /*px*/, Int_t /*py*/)      {return 9999;}
     
 protected:  
@@ -352,25 +336,21 @@ protected:
   TObjArray            *fChambers;           //list of RICH chambers
                 //fHits and fDigits belong to AliDetector
   TClonesArray         *fSdigits;            //! List of sdigits  
-  Int_t                 fNsdigits;           //Current number of sdigits
+  Int_t                 fNsdigits;           //! Current number of sdigits
   TObjArray            *fDigitsNew;          //! Each chamber holds it's one lists of digits
-  Int_t                 fNdigitsNew[kNCH];   //Array of current numbers of digits
+  Int_t                 fNdigitsNew[kNCH];   //! Array of current numbers of digits
   TObjArray            *fClusters;           //! Each chamber holds it's one lists of clusters 
-  Int_t                 fNclusters[kNCH];    //Array of current numbers of raw clusters
+  Int_t                 fNclusters[kNCH];    //! Array of current numbers of raw clusters
 
   TClonesArray         *fCerenkovs;          //! ??? List of cerenkovs
-  Int_t                 fNcerenkovs;         //??? Current number of cerenkovs
+  Int_t                 fNcerenkovs;         //! ??? Current number of cerenkovs
   TClonesArray         *fSpecials;           //! ??? List of specials
-  Int_t                 fNspecials;          //??? Current number of specials  
-  TObjArray            *fDchambers;          //! Array of lists of digits  
-  Int_t                 fNdch[kNCH];         //Array of current numbers of digits
-  TObjArray            *fRawClusters;        //! Array of lists of raw clusters 
-  Int_t                 fNrawch[kNCH];       //Array of current numbers of raw clusters
+  Int_t                 fNspecials;          //! ??? Current number of specials  
   Int_t fCkovNumber;                         // Number of Cerenkov photons
   Int_t fFreonProd;                          // Cerenkovs produced in freon
   Int_t fFeedbacks;                          // Number of feedback photons
     
-  ClassDef(AliRICH,3)                        //Main RICH class 
+  ClassDef(AliRICH,4)                        //Main RICH class 
 };//class AliRICH  
 //__________________________________________________________________________________________________
 void AliRICH::AddHit(Int_t track, Int_t *vol, Float_t *hits)
@@ -445,22 +425,6 @@ void AliRICH::CreateSpecialsOld()
   fSpecials=new TClonesArray("AliRICHSDigit",100000); fNspecials=0;
 }
 //__________________________________________________________________________________________________
-void AliRICH::CreateDigitsOld()
-{
-  if(fDchambers) return;
-  if(GetDebug())Info("CreateDigitsOld","creating digits containers.");
-  fDchambers = new TObjArray(kNCH);  
-  for(Int_t i=0;i<kNCH;i++) fDchambers->AddAt(new TClonesArray("AliRICHDigit",10000), i); 
-}
-//__________________________________________________________________________________________________
-void AliRICH::CreateRawClustersOld()
-{
-  if(fRawClusters) return;
-  if(GetDebug())Info("CreateClustersOld","creating clusters containers.");
-  fRawClusters = new TObjArray(kNCH);
-  for(Int_t i=0; i<kNCH ;i++) fRawClusters->AddAt(new TClonesArray("AliRICHRawCluster",10000), i); 
-}
-//__________________________________________________________________________________________________
 void AliRICH::AddCerenkov(Int_t track, Int_t *vol, Float_t *cerenkovs)
 {//Adds the current RICH cerenkov hit to the Cerenkovs list   
   TClonesArray &tmp=*fCerenkovs;
@@ -472,17 +436,4 @@ void AliRICH::AddSpecialOld(Int_t *aiSDigit)
   TClonesArray &lSDigits = *fSpecials;
   new(lSDigits[fNspecials++]) AliRICHSDigit(aiSDigit);
 }
-//__________________________________________________________________________________________________
-void AliRICH::AddDigitOld(Int_t iChamber, Int_t *tracks, Int_t *charges, Int_t *digits)
-{// Adds the current digit to the RICH list of S digits
-   TClonesArray &ldigits = *((TClonesArray*)fDchambers->At(iChamber-1));
-   new(ldigits[fNdch[iChamber-1]++]) AliRICHDigit(tracks,charges,digits);
-}
-//__________________________________________________________________________________________________
-void AliRICH::AddClusterOld(Int_t iChamber, const AliRICHRawCluster& c)
-{// Add a RICH raw cluster to the list   
-  TClonesArray &tmp= *((TClonesArray*)fRawClusters->At(iChamber-1));
-  new(tmp[fNrawch[iChamber-1]++]) AliRICHRawCluster(c);
-}
-//__________________________________________________________________________________________________
 #endif//#ifndef AliRICH_h

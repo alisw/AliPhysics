@@ -100,13 +100,13 @@ void AliRICHRecon::StartProcessEvent()
     Int_t nClusters[7];
     
     for (Int_t ich=0;ich<7;ich++) {
-      nClusters[ich] = Rich()->ClustersOld(ich+1)->GetEntries();    
+      nClusters[ich] = Rich()->Clusters(ich+1)->GetEntries();    
       for(Int_t k=0;k<nClusters[ich];k++) {
-        AliRICHRawCluster *pCluster = (AliRICHRawCluster *)Rich()->ClustersOld(ich+1)->At(k);
-        clusX[ich][k] = pCluster->fX;
-        clusY[ich][k] = pCluster->fY;
-        clusQ[ich][k] = pCluster->fQ;
-        clusMul[ich][k] = pCluster->fMultiplicity;
+        AliRICHcluster *pCluster = (AliRICHcluster *)Rich()->Clusters(ich+1)->At(k);
+        clusX[ich][k] = pCluster->X();
+        clusY[ich][k] = pCluster->Y();
+        clusQ[ich][k] = pCluster->Q();
+        clusMul[ich][k] = pCluster->Size();
         pCluster->Print();
       }
     }

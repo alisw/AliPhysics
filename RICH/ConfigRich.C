@@ -3,7 +3,7 @@ const static Bool_t  IsRichUp=kFALSE;
 const static Int_t   kEventsPerFile=50;
 
 enum  EGenTypes {kGun0,kGun1,kGun7,kPP7};
-const static EGenTypes kGen=kGun1;
+const static EGenTypes kGen=kGun7;
 
 Int_t   iPIPE  =  0;//central before RICH
 Int_t   iITS   =  0;
