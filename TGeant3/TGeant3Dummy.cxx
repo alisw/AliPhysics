@@ -232,6 +232,7 @@ void TGeant3::SetPHOT(Int_t)  {}
 void TGeant3::SetRAYL(Int_t)  {}
 void TGeant3::SetSWIT(Int_t , Int_t)  {}
 void TGeant3::SetTRIG(Int_t)  {}
+void TGeant3::SetUserDecay(Int_t) {}
 void TGeant3::Vname(const char *, char *) {}
 void TGeant3::InitLego() {}
 

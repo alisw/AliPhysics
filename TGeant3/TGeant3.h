@@ -19,6 +19,21 @@ typedef struct {
   Int_t    iquest[100]; 
 } Quest_t; 
  
+//----------GCBANK
+//      COMMON/GCBANK/NZEBRA,GVERSN,ZVERSN,IXSTOR,IXDIV,IXCONS,FENDQ(16)
+//     +             ,LMAIN,LR1,WS(KWBANK)
+typedef struct {
+  Int_t nzebra;
+  Float_t gversn;
+  Float_t zversn;
+  Int_t ixstor;
+  Int_t ixdiv;
+  Int_t ixcons;
+  Float_t fendq[16];
+  Int_t lmain;
+  Int_t lr1;
+} Gcbank_t;
+
 //----------GCLINK 
 //      COMMON/GCLINK/JDIGI ,JDRAW ,JHEAD ,JHITS ,JKINE ,JMATE ,JPART 
 //     +      ,JROTM ,JRUNG ,JSET  ,JSTAK ,JGSTAT,JTMED ,JTRACK,JVERTX 
@@ -386,6 +401,7 @@ private:
   Float_t *fZq; 
 
   Quest_t  *fQuest; 
+  Gcbank_t *fGcbank;
   Gclink_t *fGclink; 
   Gccuts_t *fGccuts; 
   Gcmate_t *fGcmate; 
@@ -479,6 +495,7 @@ public:
   // access functions to commons
  
   virtual Quest_t* Quest() const {return fQuest;}
+  virtual Gcbank_t* Gcbank() const {return fGcbank;}
   virtual Gclink_t* Gclink() const {return fGclink;}
   virtual Gccuts_t* Gccuts() const {return fGccuts;}
   virtual Gcmate_t* Gcmate() const {return fGcmate;}
@@ -646,6 +663,7 @@ public:
    virtual  void  SetRAYL(Int_t par=1);
    virtual  void  SetSWIT(Int_t sw, Int_t val=1);
    virtual  void  SetTRIG(Int_t nevents=1);
+   virtual  void  SetUserDecay(Int_t ipart);
 
    virtual  void  Vname(const char *name, char *vname);
 
