@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.25  2002/10/14 14:55:35  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.20.6.1  2002/06/10 14:57:41  hristov
 Merged with v3-08-02
 
@@ -211,6 +214,13 @@ void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfun
  
 	break;
     case kPyJets:
+//
+	printf("\n*************************************************\n");
+	printf("\nWARNING !\n");
+	printf("The kPyJet option uses simplified jet-production\n");
+	printf("without gluon radiation \n");
+	printf("\n*************************************************\n");
+//
 	SetMSEL(1);
 // no initial state radiation   
 	SetMSTP(61,0);
