@@ -120,7 +120,7 @@ public:
 			  Int_t nc2=60,Float_t c2min=0,Float_t c2max=360,Float_t rmin=0,
 			  Float_t rmax=430,Float_t zmax=10000, AliLegoGenerator* gener=NULL);
    virtual  Bool_t IsLegoRun() const {return (fLego!=0);}
-   virtual  void  RunReco(const char *detector=0);
+   virtual  void  RunReco(const char *detector=0, Int_t first = 0, Int_t last = 0);
    virtual  void  SetCurrentTrack(Int_t track);                           
    virtual  void  SetDebug(const Int_t level=0) {fDebug = level;}
    virtual  void  SetDisplay(AliDisplay *display) {fDisplay = display;}

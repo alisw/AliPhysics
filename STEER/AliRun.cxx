@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.68  2001/06/11 13:14:40  morsch
+SetAliGenEventHeader() method added.
+
 Revision 1.67  2001/06/07 18:24:50  buncic
 Removed compilation warning in AliConfig initialisation.
 
@@ -197,7 +200,6 @@ Introduction of the Copyright and cvs Log
 #include <TFile.h>
 #include <TRandom.h>
 #include <TBRIK.h> 
-#include <TNode.h> 
 #include <TCint.h> 
 #include <TSystem.h>
 #include <TObjectTable.h>
@@ -206,6 +208,7 @@ Introduction of the Copyright and cvs Log
 #include <TROOT.h>
 #include <TBrowser.h>
 #include <TFolder.h>
+#include <TNode.h>
 
 #include "TParticle.h"
 #include "AliRun.h"
@@ -1418,13 +1421,16 @@ void AliRun::RunMC(Int_t nevent, const char *setup)
 }
 
 //_____________________________________________________________________________
-void AliRun::RunReco(const char *selected)
+void AliRun::RunReco(const char *selected, Int_t first, Int_t last)
 {
   //
   // Main function to be called to reconstruct Alice event
   // 
-   cout << "Found "<< gAlice->TreeE()->GetEntries() << "events" << endl; 
-   for (Int_t nevent=0; nevent<gAlice->TreeE()->GetEntries(); nevent++) {
+   cout << "Found "<< gAlice->TreeE()->GetEntries() << "events" << endl;
+   Int_t nFirst = first;
+   Int_t nLast  = (last < 0)? (Int_t) gAlice->TreeE()->GetEntries() : last;
+   
+   for (Int_t nevent = nFirst; nevent < nLast; nevent++) {
      cout << "Processing event "<< nevent << endl;
      GetEvent(nevent);
      // MakeTree("R");
