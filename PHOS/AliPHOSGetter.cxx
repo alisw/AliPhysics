@@ -971,7 +971,6 @@ void AliPHOSGetter::Event(Int_t event)
   ReadTreeS() ;
   ReadTreeD() ;
   ReadTreeR() ;
-  //ReadTreeQA() ;
   ReadPrimaries() ;
 }
 
