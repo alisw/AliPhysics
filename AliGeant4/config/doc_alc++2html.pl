@@ -38,7 +38,9 @@ if (! grep(/tmpdoc/, `ls`)) {
 }  
 
 # select directory that will be processed
-$SOURCEDIR = ". ../TGeant4";
+$SOURCEDIR = ". ../TGeant4 ../STEER ../EVGEN ../TGeant3 ../ALIFAST ../ALIROOT ";
+$SOURCEDIR = $SOURCEDIR . "../CASTOR ../FMD ../ITS ../MUON ../PHOS ../PMD ";
+$SOURCEDIR = $SOURCEDIR . "../RICH ../START ../STRUCT ../TOF ../TPC ../TRD ../ZDC";
 
 # copy everything for documentation to tmpdoc
 @FILELIST = `find $SOURCEDIR -name "*.ddl"`;
