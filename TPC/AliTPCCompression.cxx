@@ -302,7 +302,11 @@ Int_t AliTPCCompression::CreateTableFormula(Double_t beta,ULong_t  M,Int_t dim,I
   ofstream fTable;
   char filename[15];
   sprintf(filename,"Table%d.dat",Type); 
+#ifndef __DECCXX 
   fTable.open(filename,ios::binary);
+#else
+  fTable.open(filename);
+#endif
   Int_t dimTable=Table->Size();
   //Table dimension is written into a file
   fTable.write((char*)(&dimTable),sizeof(Int_t));
