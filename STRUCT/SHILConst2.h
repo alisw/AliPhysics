@@ -91,7 +91,7 @@
   const Float_t kZvac12=1900.;
 
   const Float_t kR41=35.;
-  const Float_t kR42=49.9;
+  const Float_t kR42=48.0;
   const Float_t kR43=110.;
 
 //
