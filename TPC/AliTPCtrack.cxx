@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2003/05/22 10:46:46  hristov
+Using access methods instead of data members
+
 Revision 1.20  2003/04/10 10:36:54  hristov
 Code for unified TPC/TRD tracking (S.Radomski)
 
@@ -62,6 +65,7 @@ Logs added
 #include "AliTPCtrack.h"
 #include "AliCluster.h"
 #include "AliBarrelTrack.h"
+#include "AliESDtrack.h"
 
 ClassImp(AliTPCtrack)
 
@@ -135,6 +139,49 @@ AliKalmanTrack(t) {
   fC30=c[6 ];   fC31=c[7 ];   fC32=c32;   fC33=c[9 ];
   fC40=c[10];   fC41=c[11];   fC42=c42;   fC43=c[13]; fC44=c[14];
 
+}
+
+//_____________________________________________________________________________
+AliTPCtrack::AliTPCtrack(const AliESDtrack& t) : AliKalmanTrack() {
+  //-----------------------------------------------------------------
+  // Conversion AliESDtrack -> AliTPCtrack.
+  //-----------------------------------------------------------------
+  SetNumberOfClusters(t.GetTPCclusters(fIndex));
+  SetLabel(t.GetLabel());
+  SetMass(t.GetMass());
+
+  fdEdx  = t.GetTPCsignal();
+  fAlpha = t.GetAlpha();
+  if      (fAlpha < -TMath::Pi()) fAlpha += 2*TMath::Pi();
+  else if (fAlpha >= TMath::Pi()) fAlpha -= 2*TMath::Pi();
+
+  //Conversion of the track parameters
+  Double_t x,p[5]; t.GetExternalParameters(x,p);
+  fX=x;    x=GetConvConst();
+  fP0=p[0];
+  fP1=p[1];
+  fP3=p[3];
+  fP4=p[4]/x;
+  fP2=fP4*fX - p[2];
+
+  //Conversion of the covariance matrix
+  Double_t c[15]; t.GetExternalCovariance(c);
+  c[10]/=x; c[11]/=x; c[12]/=x; c[13]/=x; c[14]/=x*x;
+
+  Double_t c22=fX*fX*c[14] - 2*fX*c[12] + c[5];
+  Double_t c32=fX*c[13] - c[8];
+  Double_t c20=fX*c[10] - c[3], c21=fX*c[11] - c[4], c42=fX*c[14] - c[12];
+
+  fC00=c[0 ];
+  fC10=c[1 ];   fC11=c[2 ];
+  fC20=c20;     fC21=c21;     fC22=c22;
+  fC30=c[6 ];   fC31=c[7 ];   fC32=c32;   fC33=c[9 ];
+  fC40=c[10];   fC41=c[11];   fC42=c42;   fC43=c[13]; fC44=c[14];
+
+  if (t.GetStatus()&AliESDtrack::kTIME == 0) return;
+  StartTimeIntegral();
+  Double_t times[10]; t.GetIntegratedTimes(times); SetIntegratedTimes(times);
+  SetIntegratedLength(t.GetIntegratedLength());
 }
 
 //_____________________________________________________________________________

@@ -13,6 +13,7 @@
 #include "AliITStrackV2.h"
 
 class AliITSclusterV2;
+class AliESD;
 class AliITSgeom;
 class TFile;
 
@@ -24,10 +25,14 @@ public:
   AliITStrackerV2(const AliITSgeom *geom);
   AliCluster *GetCluster(Int_t index) const;
   Int_t LoadClusters();
+  Int_t LoadClusters(const TFile *cf);
   void UnloadClusters();
   Int_t Clusters2Tracks(const TFile *in, TFile *out);
+  Int_t Clusters2Tracks(AliESD *event);
   Int_t PropagateBack(const TFile *in, TFile *out);
+  Int_t PropagateBack(AliESD *event);
   Int_t RefitInward(const TFile *in, TFile *out);
+  Int_t RefitInward(AliESD *event);
   Bool_t RefitAt(Double_t x, AliITStrackV2 *seed, const AliITStrackV2 *t);
   void SetupFirstPass(Int_t *flags, Double_t *cuts=0);
   void SetupSecondPass(Int_t *flags, Double_t *cuts=0);

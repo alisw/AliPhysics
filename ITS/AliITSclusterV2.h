@@ -9,6 +9,7 @@
 //      Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
 
+#include "TMath.h"
 #include "AliCluster.h"
 #include "AliITSrecoV2.h"
 
@@ -20,12 +21,12 @@ public:
     fIndex=lab[3];
     fQ=hit[4];
   }
-  void Use() {fSigmaY2=-fSigmaY2;}
+  void Use() {fQ=-fQ;}
   void SetQ(Float_t q) {fQ=q;}
   void SetDetectorIndex(Int_t i) { fIndex=i; }
 
-  Int_t IsUsed() const {return (fSigmaY2<0) ? 1 : 0;}
-  Float_t GetQ() const {return fQ;}
+  Int_t IsUsed() const {return (fQ<0) ? 1 : 0;}
+  Float_t GetQ() const {return TMath::Abs(fQ);}
   Int_t GetDetectorIndex() const { return 0x3FF&fIndex; }
 
   Int_t GetPindex() const { return 0xFFF00000&fIndex; }  //SSD clusters only

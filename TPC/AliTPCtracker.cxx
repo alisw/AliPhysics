@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.32  2003/04/10 10:36:54  hristov
+Code for unified TPC/TRD tracking (S.Radomski)
+
 Revision 1.31  2003/03/19 17:14:11  hristov
 Load/UnloadClusters added to the base class and the derived classes changed correspondingly. Possibility to give 2 input files for ITS and TPC tracks in PropagateBack. TRD tracker uses fEventN from the base class (T.Kuhr)
 
@@ -104,6 +107,8 @@ Splitted from AliTPCtracking
 #include <TTree.h>
 #include <Riostream.h>
 
+#include "AliESD.h"
+
 #include "AliTPCtracker.h"
 #include "AliTPCcluster.h"
 #include "AliTPCParam.h"
@@ -112,6 +117,9 @@ Splitted from AliTPCtracking
 #include "TVector2.h"
 
 #include <stdlib.h>
+
+ClassImp(AliTPCtracker)
+
 //_____________________________________________________________________________
 AliTPCtracker::AliTPCtracker(const AliTPCParam *par): 
 AliTracker(), fkNIS(par->GetNInnerSector()/2), fkNOS(par->GetNOuterSector()/2)
@@ -333,12 +341,16 @@ Double_t f3(Double_t x1,Double_t y1,
   return (z1 - z2)/sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
 }
 
-//_____________________________________________________________________________
 Int_t AliTPCtracker::LoadClusters() {
+  return LoadClusters(gFile);
+}
+
+//_____________________________________________________________________________
+Int_t AliTPCtracker::LoadClusters(const TFile *cf) {
   //-----------------------------------------------------------------
   // This function loads TPC clusters.
   //-----------------------------------------------------------------
-  if (!gFile->IsOpen()) {
+  if (!((TFile*)cf)->IsOpen()) {
     cerr<<"AliTPCtracker::LoadClusters : "<<
       "file with clusters has not been open !\n";
     return 1;
@@ -346,7 +358,7 @@ Int_t AliTPCtracker::LoadClusters() {
 
   Char_t name[100];
   sprintf(name,"TreeC_TPC_%d",GetEventNumber());
-  TTree *cTree=(TTree*)gFile->Get(name);
+  TTree *cTree=(TTree*)((TFile*)cf)->Get(name);
   if (!cTree) {
     cerr<<"AliTPCtracker::LoadClusters : "<<
       "can't get the tree with TPC clusters !\n";
@@ -359,7 +371,7 @@ Int_t AliTPCtracker::LoadClusters() {
       "can't get the segment branch !\n";
     return 3;
   }
-//  AliClusters carray, *addr=&carray;
+
   AliClusters carray, *addr=&carray;
   carray.SetClass("AliTPCcluster");
   carray.SetArray(0);
@@ -376,9 +388,9 @@ Int_t AliTPCtracker::LoadClusters() {
       Int_t id=carray.GetID();
       if ((id<0) || (id>2*(fkNIS*nir + fkNOS*nor))) {
          cerr<<"AliTPCtracker::LoadClusters : "<<
-	       "wrong index !\n";
+               "wrong index !\n";
          exit(1);
-      }        
+      }
       Int_t outindex = 2*fkNIS*nir;
       if (id<outindex) {
          Int_t sec = id/nir;
@@ -388,7 +400,7 @@ Int_t AliTPCtracker::LoadClusters() {
          while (ncl--) {
            AliTPCcluster *c=(AliTPCcluster*)carray[ncl];
            padrow.InsertCluster(c,sec,row);
-         }           
+         }
       } else {
          id -= outindex;
          Int_t sec = id/nor;
@@ -400,7 +412,6 @@ Int_t AliTPCtracker::LoadClusters() {
            padrow.InsertCluster(c,sec+fkNIS,row);
          }
       }
-
       carray.GetArray()->Clear();
   }
   delete cTree;

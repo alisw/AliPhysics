@@ -19,6 +19,7 @@
 class TFile;
 class AliTPCParam;
 class TObjArray;
+class AliESD;
 
 class AliTPCtracker : public AliTracker {
 public:
@@ -32,11 +33,14 @@ public:
    Int_t ReadSeeds(const TFile *in);
 
    Int_t LoadClusters();
+   Int_t LoadClusters(const TFile *cf);
    void UnloadClusters();
 
    AliCluster *GetCluster(Int_t index) const;
    Int_t Clusters2Tracks(const TFile *in, TFile *out);
+   Int_t Clusters2Tracks(AliESD *event);
    Int_t PropagateBack(const TFile *in, TFile *out);
+   Int_t PropagateBack(AliESD *event);
    Int_t PropagateBack(const TFile *in, const TFile *in2, TFile *out);
    Int_t RefitInward(TFile *outTracks, TFile *inTracks);
 
@@ -179,6 +183,7 @@ private:
    TClonesArray *fBarrelArray;
    AliBarrelTrack *fBarrelTrack;
 
+  ClassDef(AliTPCtracker,1)   // Time Projection Chamber tracker
 };
 
 #endif

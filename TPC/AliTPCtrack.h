@@ -2,10 +2,7 @@
 #define ALITPCTRACK_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
 /* $Id$ */
-
-
 
 //-------------------------------------------------------
 //                    TPC Track Class
@@ -26,13 +23,13 @@
  *      external param3:   tangent of the track momentum dip angle           *
  *      external param4:   1/pt (1/(GeV/c))                                  *
  *****************************************************************************/
-
 #include <AliKalmanTrack.h>
 #include <TMath.h>
 
 #include "AliTPCreco.h"
 
 class AliBarrelTrack;
+class AliESDtrack;
 
 //_____________________________________________________________________________
 class AliTPCtrack : public AliKalmanTrack {
@@ -41,6 +38,7 @@ public:
   AliTPCtrack(UInt_t index, const Double_t xx[5], 
               const Double_t cc[15], Double_t xr, Double_t alpha); 
   AliTPCtrack(const AliKalmanTrack& t, Double_t alpha);
+  AliTPCtrack(const AliESDtrack& t);
   AliTPCtrack(const AliTPCtrack& t);
   virtual ~AliTPCtrack() {}
   Int_t PropagateToVertex(Double_t x0=36.66,Double_t rho=1.2e-3);
@@ -50,10 +48,11 @@ public:
   Double_t GetX()     const {return fX;}
   Double_t GetAlpha() const {return fAlpha;}
   Double_t GetdEdx()  const {return fdEdx;}
+  Double_t GetPIDsignal()  const {return GetdEdx();}
 
   Double_t GetY()   const {return fP0;}
   Double_t GetZ()   const {return fP1;}
-  Double_t GetSnp() const {return fX*fP4 - fP2;}             
+  Double_t GetSnp() const {return fX*fP4 - fP2;}
   Double_t 
     Get1Pt() const { return (1e-9*TMath::Abs(fP4)/fP4 + fP4)*GetConvConst(); }
   Double_t GetTgl() const {return fP3;}
@@ -101,7 +100,7 @@ public:
     cc[3 ]=fC20;  cc[4 ]=fC21;  cc[5 ]=fC22;
     cc[6 ]=fC40;  cc[7 ]=fC41;  cc[8 ]=fC42;  cc[9 ]=fC44;
     cc[10]=fC30;  cc[11]=fC31;  cc[12]=fC32;  cc[13]=fC43;  cc[14]=fC33;
-  }  
+  }
 //****************************************************** 
 
   virtual Double_t GetPredictedChi2(const AliCluster *cluster) const;
@@ -127,7 +126,7 @@ protected:
   Double_t fC20, fC21, fC22;             // of the
   Double_t fC30, fC31, fC32, fC33;       // track
   Double_t fC40, fC41, fC42, fC43, fC44; // parameters
- 
+
   UInt_t fIndex[kMaxRow];       // indices of associated clusters 
 
   //[SR, 01.04.2003]
@@ -143,10 +142,9 @@ void AliTPCtrack::GetExternalParameters(Double_t& xr, Double_t x[5]) const {
   //---------------------------------------------------------------------
   // This function return external TPC track representation
   //---------------------------------------------------------------------
-     xr=fX;          
+     xr=fX;
      x[0]=GetY(); x[1]=GetZ(); x[2]=GetSnp(); x[3]=GetTgl(); x[4]=Get1Pt();
 }
 
 #endif
-
 

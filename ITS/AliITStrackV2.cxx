@@ -26,6 +26,7 @@
 
 #include "AliCluster.h"
 #include "AliTPCtrack.h"
+#include "AliESDtrack.h"
 #include "AliITStrackV2.h"
 
 ClassImp(AliITStrackV2)
@@ -56,11 +57,13 @@ AliITStrackV2::AliITStrackV2():AliKalmanTrack(),
   fC41(0),
   fC42(0),
   fC43(0),
-  fC44(0)
+  fC44(0),
+  fESDtrack(0)
   {
   for(Int_t i=0; i<kMaxLayer; i++) fIndex[i]=0;
   for(Int_t i=0; i<4; i++) fdEdxSample[i]=0;
 }
+
 //____________________________________________________________________________
 AliITStrackV2::AliITStrackV2(const AliTPCtrack& t) throw (const Char_t *) :
 AliKalmanTrack(t) {
@@ -73,6 +76,43 @@ AliKalmanTrack(t) {
   fdEdx  = t.GetdEdx();
   SetMass(t.GetMass());
 
+  fAlpha = t.GetAlpha();
+  if      (fAlpha < -TMath::Pi()) fAlpha += 2*TMath::Pi();
+  else if (fAlpha >= TMath::Pi()) fAlpha -= 2*TMath::Pi();
+
+  //Conversion of the track parameters
+  Double_t x,p[5]; t.GetExternalParameters(x,p);
+  fX=x;    x=GetConvConst();
+  fP0=p[0];
+  fP1=p[1];
+  fP2=p[2];
+  fP3=p[3];
+  fP4=p[4]/x;
+
+  //Conversion of the covariance matrix
+  Double_t c[15]; t.GetExternalCovariance(c);
+
+  fC00=c[0 ];
+  fC10=c[1 ];   fC11=c[2 ];
+  fC20=c[3 ];   fC21=c[4 ];   fC22=c[5 ];
+  fC30=c[6 ];   fC31=c[7 ];   fC32=c[8 ];   fC33=c[9 ];
+  fC40=c[10]/x; fC41=c[11]/x; fC42=c[12]/x; fC43=c[13]/x; fC44=c[14]/x/x;
+
+  if (!Invariant()) throw "AliITStrackV2: conversion failed !\n";
+
+}
+
+//____________________________________________________________________________
+AliITStrackV2::AliITStrackV2(AliESDtrack& t) throw (const Char_t *) :
+AliKalmanTrack() {
+  //------------------------------------------------------------------
+  //Conversion ESD track -> ITS track
+  //------------------------------------------------------------------
+  SetNumberOfClusters(t.GetITSclusters(fIndex));
+  SetLabel(t.GetLabel());
+  SetMass(t.GetMass());
+
+  fdEdx=t.GetITSsignal();
   fAlpha = t.GetAlpha();
   if      (fAlpha < -TMath::Pi()) fAlpha += 2*TMath::Pi();
   else if (fAlpha >= TMath::Pi()) fAlpha -= 2*TMath::Pi();
@@ -95,8 +135,19 @@ AliKalmanTrack(t) {
   fC30=c[6 ];   fC31=c[7 ];   fC32=c[8 ];   fC33=c[9 ];
   fC40=c[10]/x; fC41=c[11]/x; fC42=c[12]/x; fC43=c[13]/x; fC44=c[14]/x/x;
 
+  if (t.GetStatus()&AliESDtrack::kTIME) {
+    StartTimeIntegral();
+    Double_t times[10]; t.GetIntegratedTimes(times); SetIntegratedTimes(times);
+    SetIntegratedLength(t.GetIntegratedLength());
+  }
+  fESDtrack=&t;
+
   if (!Invariant()) throw "AliITStrackV2: conversion failed !\n";
 
+}
+
+void AliITStrackV2::UpdateESDtrack(ULong_t flags) {
+  fESDtrack->UpdateTrackParams(this,flags);
 }
 
 //____________________________________________________________________________
@@ -121,6 +172,7 @@ AliITStrackV2::AliITStrackV2(const AliITStrackV2& t) : AliKalmanTrack(t) {
       fIndex[i]=t.fIndex[i];
       if (i<4) fdEdxSample[i]=t.fdEdxSample[i];
   }
+  fESDtrack=t.fESDtrack;
 }
 
 //_____________________________________________________________________________
@@ -239,6 +291,8 @@ Int_t AliITStrackV2::CorrectForMaterial(Double_t d, Double_t x0) {
   if (x0!=0.) {
      d*=x0;
      Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2)) - beta2)*d;
+     if (beta2/(1-beta2)>3.5*3.5)
+       dE=0.153e-3/beta2*(log(3.5*5940)+0.5*log(beta2/(1-beta2)) - beta2)*d;
      fP4*=(1.- sqrt(p2+GetMass()*GetMass())/p2*dE);
   }
 

@@ -29,6 +29,7 @@
 
 #include "AliITSrecoV2.h"
 
+class AliESDtrack;
 class AliTPCtrack;
 
 //_____________________________________________________________________________
@@ -36,6 +37,7 @@ class AliITStrackV2 : public AliKalmanTrack {
 public:
   AliITStrackV2();
   AliITStrackV2(const AliTPCtrack& t) throw (const Char_t *);
+  AliITStrackV2(AliESDtrack& t) throw (const Char_t *);
   AliITStrackV2(const AliITStrackV2& t);
   Int_t PropagateToVertex(Double_t d=0., Double_t x0=0.);
   Int_t Propagate(Double_t alpha, Double_t xr);
@@ -49,6 +51,7 @@ public:
   void SetDetectorIndex(Int_t i) {SetLabel(i);}
   void ResetCovariance();
   void ResetClusters() { SetChi2(0.); SetNumberOfClusters(0); }
+  void UpdateESDtrack(ULong_t flags);
   
   void *operator new(size_t s,void *p) { return p; }
   void *operator new(size_t s) { return ::operator new(s); }
@@ -57,6 +60,7 @@ public:
   Double_t GetX()    const {return fX;}
   Double_t GetAlpha()const {return fAlpha;}
   Double_t GetdEdx() const {return fdEdx;}
+  Double_t GetPIDsignal() const {return GetdEdx();}
   Double_t GetY()    const {return fP0;}
   Double_t GetZ()    const {return fP1;}
   Double_t GetSnp()  const {return fP2;}
@@ -96,13 +100,15 @@ private:
 
   Float_t fdEdxSample[4];   // array of dE/dx samples b.b.
 
+  AliESDtrack *fESDtrack;   //! pointer to the connected ESD track
+
   ClassDef(AliITStrackV2,2)   //ITS reconstructed track
 };
 
 inline 
 void AliITStrackV2::GetExternalParameters(Double_t& xr, Double_t x[5]) const {
   //---------------------------------------------------------------------
-  // This function return external TPC track representation
+  // This function return external ITS track representation
   //---------------------------------------------------------------------
      xr=fX;          
      x[0]=GetY(); x[1]=GetZ(); x[2]=GetSnp(); x[3]=GetTgl(); x[4]=Get1Pt();
