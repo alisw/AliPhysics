@@ -20,6 +20,7 @@
 #pragma link C++ class  AliGenThetaSlice+;
 #pragma link C++ class  AliGenParam+;
 #pragma link C++ class  AliGenCocktail+;
+#pragma link C++ class  AliGenMUONCocktail+;
 #pragma link C++ class  AliGenCocktailAfterBurner+;
 #pragma link C++ class  AliGenCocktailEntry+;
 #pragma link C++ class  AliGenExtFile+;
@@ -46,13 +47,11 @@
 #pragma link C++ class  AliGeVSimParticle+;
 #pragma link C++ class  AliGenBeamGas+;
 #pragma link C++ class  AliGenAfterBurnerFlow+;
-#pragma link C++ class  AliPartonicEnergyLoss+;
 #pragma link C++ class  AliStructFuncType+;
 #pragma link C++ class  AliGenSlowNucleons+;
 #pragma link C++ class  AliSlowNucleonModel+;
 #pragma link C++ class  AliSlowNucleonModelExp+;
 #pragma link C++ class  AliGenHBTosl+;
-#pragma link C++ class  AliGenMUONCocktail+;
 #endif
 
 

@@ -1,4 +1,3 @@
-FSRCS= PartEloss/integralgauss.f  PartEloss/read.f PartEloss/readca3.f
 SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
                 AliGenCocktail.cxx AliGenCocktailAfterBurner.cxx AliGenFLUKAsource.cxx \
                 AliGenLib.cxx \
@@ -14,7 +13,6 @@ SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
 		AliGenHIJINGparaBa.cxx AliGeVSimParticle.cxx AliGenGeVSim.cxx\
 		AliGenThetaSlice.cxx AliGenSTRANGElib.cxx AliGenBeamGas.cxx\
 		AliGenAfterBurnerFlow.cxx \
-		AliPartonicEnergyLoss.cxx\
 		AliStructFuncType.cxx AliGenSlowNucleons.cxx \
   	        AliGenGeVSimEventHeader.cxx\
 		AliSlowNucleonModel.cxx AliSlowNucleonModelExp.cxx \
