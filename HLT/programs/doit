@@ -1,3 +1,0 @@
-g++ -O -Wall -fPIC -ffast-math speedtest.cxx -o speedtest
-# g++ -O -Wall -fPIC -mcpu=ev6 speedtest.cxx -o speedtest
-# cxx -O -Wall -fPIC  -lm  speedtest.cxx -o speedtest 
