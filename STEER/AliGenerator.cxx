@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2002/11/21 16:13:03  alibrary
+Removing AliMCProcess and AliMC
+
 Revision 1.20  2002/10/29 14:26:49  hristov
 Code clean-up (F.Carminati)
 
@@ -93,6 +96,7 @@ Introduction of the Copyright and cvs Log
 
 #include "AliConfig.h"
 #include "AliGenerator.h"
+#include "AliCollisionGeometry.h"
 #include "AliRun.h"
 #include "AliStack.h"
 
@@ -126,7 +130,8 @@ AliGenerator::AliGenerator():
   fOsigma(3),
   fVertex(3),
   fEventVertex(0),
-  fStack(0)
+  fStack(0),
+  fCollisionGeometry(0)
 {
   //
   // Default constructor
@@ -181,7 +186,8 @@ AliGenerator::AliGenerator(Int_t npart):
   fOsigma(3),
   fVertex(3),
   fEventVertex(0),
-  fStack(0)
+  fStack(0),
+  fCollisionGeometry(0)
 {
   //
   // Standard constructor

@@ -19,6 +19,7 @@
 #include "AliRndm.h"
 class TGenerator;
 class AliStack;
+class AliCollisionGeometry;
 
 
 typedef enum { kNoSmear, kPerEvent, kPerTrack } VertexSmear_t;
@@ -72,10 +73,14 @@ class AliGenerator : public TNamed, public AliRndm
 	{ox=fOrigin.At(0);oy=fOrigin.At(1);oz=fOrigin.At(2);}
     virtual void GetOrigin(TLorentzVector &o) const
 	{o[0]=fOrigin.At(0);o[1]=fOrigin.At(1);o[2]=fOrigin.At(2);o[3]=0;}
-
+  // Stack 
     void SetStack (AliStack *stack) {fStack = stack;}
     AliStack* GetStack(){return fStack;}
-// Comminication with stack
+  // Collision Geometry
+    virtual Bool_t ProvidesCollisionGeometry() {return kFALSE;}
+    virtual Bool_t NeedsCollisionGeometry()    {return kFALSE;}    
+    virtual AliCollisionGeometry* CollisionGeometry() {return fCollisionGeometry;}
+    virtual void SetCollisionGeometry(AliCollisionGeometry* geom) {fCollisionGeometry = geom;}
  protected:
     virtual  void  SetTrack(Int_t done, Int_t parent, Int_t pdg,
                                Float_t *pmom, Float_t *vpos, Float_t *polar,
@@ -118,6 +123,7 @@ class AliGenerator : public TNamed, public AliRndm
     TArrayF     fEventVertex;   //!The current event vertex
 
     AliStack*   fStack;      //! Local pointer to stack
+    AliCollisionGeometry* fCollisionGeometry; //!Collision geometry
     /*************************************************************************/
     enum {kThetaRange    = BIT(14),
 	  kVertexRange   = BIT(15),
@@ -126,7 +132,7 @@ class AliGenerator : public TNamed, public AliRndm
 	  kYRange        = BIT(18),
 	  kMomentumRange = BIT(19)     
     };
-    ClassDef(AliGenerator,2) // Base class for event generators
+    ClassDef(AliGenerator,3) // Base class for event generators
 };
 
 #endif
