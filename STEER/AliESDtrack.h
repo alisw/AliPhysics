@@ -94,7 +94,7 @@ public:
   void    SetTRDpid(Int_t iSpecies, Float_t p);
   Float_t GetTRDpid(Int_t iSpecies) const;
   Int_t GetTRDLabel() const {return fTRDLabel;}
-  void GetTRDExternalParameters(Double_t &x, Double_t p[5], Double_t cov[15]) const;//MI
+  void GetTRDExternalParameters(Double_t &x, Double_t &alpha, Double_t p[5], Double_t cov[15]) const;//MI
   AliKalmanTrack * GetTRDtrack(){return fTRDtrack;}
 
   void SetTOFsignal(Double_t tof) {fTOFsignal=tof;}

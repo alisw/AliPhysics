@@ -349,6 +349,7 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags) {
   case kTRDbackup:
     t->GetExternalParameters(fTx,fTp);
     t->GetExternalCovariance(fTc);
+    fTalpha = t->GetAlpha();
     fTRDncls0 = t->GetNumberOfClusters(); 
     break;
   case kTOFin: 
@@ -598,12 +599,13 @@ void AliESDtrack::GetInnerExternalCovariance(Double_t cov[15]) const
  
 }
 
-void  AliESDtrack::GetTRDExternalParameters(Double_t &x, Double_t p[5], Double_t cov[15]) const
+void  AliESDtrack::GetTRDExternalParameters(Double_t &x, Double_t&alpha, Double_t p[5], Double_t cov[15]) const
 {
   //
   //this function returns TRD parameters
   //
   x=fTx;
+  alpha = fTalpha; 
   for (Int_t i=0; i<5; i++) p[i]=fTp[i];
   for (Int_t i=0; i<15; i++) cov[i]=fTc[i];
 }
