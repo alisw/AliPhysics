@@ -58,6 +58,8 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader* runLoader) const
     clusterer.MakeClusters();
     clusterer.WriteClusters(-1);
   }
+
+  loader->UnloadRecPoints();
 }
 
 //_____________________________________________________________________________
