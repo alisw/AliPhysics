@@ -47,8 +47,8 @@
 # define hijset hijset_
 # define hijing hijing_
 # define profile profile_
-# define rluget_hijing rluget_hijing__
-# define rluset_hijing rluset_hijing__
+# define rluget_hijing rluget_hijing_
+# define rluset_hijing rluset_hijing_
 # define type_of_call
 #else
 # define hijset HIJSET
