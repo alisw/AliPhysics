@@ -2,6 +2,15 @@
 
 // Author: Constantin Loizides <mailto:loizides@ikf.uni-frankfurt.de>
 //*-- Copyright &copy ALICE HLT Group
+/** /class AliL3HoughTransformerLUT
+//<pre>
+//_____________________________________________________________
+// AliL3HoughTransformerLUT
+//
+// Hough transformation class using Look-UP-Tables
+//
+//</pre>
+*/
 
 #include "AliL3StandardIncludes.h"
 
@@ -17,20 +26,11 @@
 using namespace std;
 #endif
 
-/** /class AliL3HoughTransformerLUT
-//<pre>
-//_____________________________________________________________
-// AliL3HoughTransformerLUT
-//
-// Hough transformation class using Look-UP-Tables
-//
-//</pre>
-*/
-
 ClassImp(AliL3HoughTransformerLUT)
 
 AliL3HoughTransformerLUT::AliL3HoughTransformerLUT() : AliL3HoughBaseTransformer()
 {
+  // default contructor
   fParamSpace=0;
   fMinRow=0;
   fMaxRow=0;
@@ -62,8 +62,9 @@ AliL3HoughTransformerLUT::AliL3HoughTransformerLUT() : AliL3HoughBaseTransformer
   fX=fY=0.;
 }
 
-AliL3HoughTransformerLUT::AliL3HoughTransformerLUT(Int_t slice,Int_t patch,Int_t n_eta_segments) : AliL3HoughBaseTransformer(slice,patch,n_eta_segments)
+AliL3HoughTransformerLUT::AliL3HoughTransformerLUT(Int_t slice,Int_t patch,Int_t nEtaSegments) : AliL3HoughBaseTransformer(slice,patch,nEtaSegments)
 {
+  // constructor
   fParamSpace=0;
   fMinRow=0;
   fMaxRow=0;
@@ -93,11 +94,12 @@ AliL3HoughTransformerLUT::AliL3HoughTransformerLUT(Int_t slice,Int_t patch,Int_t
   fAccCharge=0;
   fX=fY=0.;
 
-  Init(slice,patch,n_eta_segments);
+  Init(slice,patch,nEtaSegments);
 }
 
 AliL3HoughTransformerLUT::~AliL3HoughTransformerLUT()
 {
+  // destructor
   DeleteHistograms();
 
   if(fNRows){
@@ -115,6 +117,7 @@ AliL3HoughTransformerLUT::~AliL3HoughTransformerLUT()
 
 void AliL3HoughTransformerLUT::DeleteHistograms()
 {
+  // deletes all histograms
   if(fNPhi0){
     delete[] fLUT2sinphi0;
     delete[] fLUT2cosphi0;
@@ -137,9 +140,10 @@ void AliL3HoughTransformerLUT::DeleteHistograms()
   }
 }
 
-void AliL3HoughTransformerLUT::Init(Int_t slice,Int_t patch,Int_t n_eta_segments,Int_t /*n_seqs*/) 
+void AliL3HoughTransformerLUT::Init(Int_t slice,Int_t patch,Int_t nEtaSegments,Int_t /*nSeqs*/) 
 {
-  AliL3HoughBaseTransformer::Init(slice,patch,n_eta_segments);
+  // Initialization
+  AliL3HoughBaseTransformer::Init(slice,patch,nEtaSegments);
 
   //delete old LUT tables
   if(fNRows){
@@ -157,7 +161,7 @@ void AliL3HoughTransformerLUT::Init(Int_t slice,Int_t patch,Int_t n_eta_segments
   fMinRow=AliL3Transform::GetFirstRow(patch);;
   fMaxRow=AliL3Transform::GetLastRow(patch);;
   fNRows=AliL3Transform::GetNRows(patch);;
-  fNEtas=n_eta_segments;
+  fNEtas=nEtaSegments;
   if(fNEtas!=GetNEtaSegments()) {
     cerr << "AliL3HoughTransformerLUT::Init -> Error: Number of Etas must be equal!" << endl;
     exit(1);
@@ -175,9 +179,9 @@ void AliL3HoughTransformerLUT::Init(Int_t slice,Int_t patch,Int_t n_eta_segments
   else
     fPadPitch=AliL3Transform::GetPadPitchWidthUp();  
 
-  Float_t etamax_=GetEtaMax();
-  Float_t etamin_=GetEtaMin();
-  fEtaSlice=(etamax_-etamin_)/n_eta_segments;
+  Float_t etaMax=GetEtaMax();
+  Float_t etaMin=GetEtaMin();
+  fEtaSlice=(etaMax-etaMin)/nEtaSegments;
 
   //lookup tables for X and Y
   fLUTX=new Float_t[fNRows];
@@ -193,7 +197,7 @@ void AliL3HoughTransformerLUT::Init(Int_t slice,Int_t patch,Int_t n_eta_segments
   fLUTEta=new Float_t[fNEtas];
   fLUTEtaReal=new Float_t[fNEtas];
   for(Int_t rr=0;rr<fNEtas;rr++){
-    Float_t eta=etamin_+(rr+1)*fEtaSlice;
+    Float_t eta=etaMin+(rr+1)*fEtaSlice;
     fLUTEta[rr]=CalcRoverZ2(eta);
     fLUTEtaReal[rr]=eta-0.5*fEtaSlice;
     //cout << rr << ": " << eta << " " << fLUTEtaReal[rr] << " " << GetEta(rr,fSlice) << " - " << fLUTEta[rr] << endl;
@@ -246,18 +250,18 @@ void AliL3HoughTransformerLUT::CreateHistograms(Float_t ptmin,Float_t ptmax,Floa
     }
 }
 
-void AliL3HoughTransformerLUT::CreateHistograms(Int_t nxbin,Float_t pt_min,Int_t nybin,Float_t phimin,Float_t phimax)
+void AliL3HoughTransformerLUT::CreateHistograms(Int_t nxbin,Float_t ptMin,Int_t nybin,Float_t phimin,Float_t phimax)
 {
   //Create the histograms (parameter space).
   //These are 2D histograms, span by kappa (curvature of track) and phi0 (emission angle with x-axis).
   //The arguments give the range and binning; 
   //nxbin = #bins in kappa
   //nybin = #bins in phi0
-  //pt_min = mimium Pt of track (corresponding to maximum kappa)
+  //ptMin = mimium Pt of track (corresponding to maximum kappa)
   //phi_min = mimimum phi0 (degrees)
   //phi_max = maximum phi0 (degrees)
     
-  Double_t x = AliL3Transform::GetBFact()*AliL3Transform::GetBField()/pt_min;
+  Double_t x = AliL3Transform::GetBFact()*AliL3Transform::GetBField()/ptMin;
   //Double_t torad = AliL3Transform::Pi()/180;
   CreateHistograms(nxbin,-1.*x,x,nybin,phimin/**torad*/,phimax/**torad*/);
 }
@@ -324,18 +328,20 @@ Int_t AliL3HoughTransformerLUT::GetEtaIndex(Double_t eta)
 #endif
 }
 
-AliL3Histogram *AliL3HoughTransformerLUT::GetHistogram(Int_t eta_index)
+AliL3Histogram *AliL3HoughTransformerLUT::GetHistogram(Int_t etaIndex)
 {
-  if(!fParamSpace || eta_index >= fNEtas || eta_index < 0)
+  // gets hitogram
+  if(!fParamSpace || etaIndex >= fNEtas || etaIndex < 0)
     return 0;
-  if(!fParamSpace[eta_index])
+  if(!fParamSpace[etaIndex])
     return 0;
-  return fParamSpace[eta_index];
+  return fParamSpace[etaIndex];
 }
 
-Double_t AliL3HoughTransformerLUT::GetEta(Int_t eta_index,Int_t slice)
+Double_t AliL3HoughTransformerLUT::GetEta(Int_t etaIndex,Int_t slice) const
 {
-  if(eta_index >= fNEtas || eta_index < 0){
+  // gets eta
+  if(etaIndex >= fNEtas || etaIndex < 0){
     LOG(AliL3Log::kWarning,"AliL3HoughTransformerLUT::GetEta","Index") << "Index out of range."<<ENDLOG;
     return 0.;
   }
@@ -344,7 +350,7 @@ Double_t AliL3HoughTransformerLUT::GetEta(Int_t eta_index,Int_t slice)
     return 0.;
   }
 
-  return(fLUTEtaReal[eta_index]);
+  return(fLUTEtaReal[etaIndex]);
 }
 
 void AliL3HoughTransformerLUT::TransformCircle()
@@ -428,24 +434,24 @@ void AliL3HoughTransformerLUT::TransformCircle()
 
 	  Float_t z2=z*z;
 	  Float_t rz2 = 1 + r2/z2;
-	  Int_t eta_index = FindIndex(rz2,fLastIndex);
+	  Int_t etaIndex = FindIndex(rz2,fLastIndex);
 #else
 	  Float_t z = CalcZ(time);
 	  Double_t r = sqrt(fX*fX+fY*fY+z*z);
 	  Double_t eta = 0.5 * log((r+z)/(r-z));
-	  Int_t eta_index = GetEtaIndex(eta);
+	  Int_t etaIndex = GetEtaIndex(eta);
 #endif
-	  if(eta_index < 0 || eta_index >= fNEtas){
-	    LOG(AliL3Log::kWarning,"AliL3HoughTransformerLUT::TransformCircle","Histograms")<<"No histograms corresponding to eta index value of "<<eta_index<<"."<<ENDLOG;
+	  if(etaIndex < 0 || etaIndex >= fNEtas){
+	    LOG(AliL3Log::kWarning,"AliL3HoughTransformerLUT::TransformCircle","Histograms")<<"No histograms corresponding to eta index value of "<<etaIndex<<"."<<ENDLOG;
 	    continue;
 	  }	  
 
 #ifndef FULLLUT
-	  if(fLastIndex==-1) fLastIndex=eta_index;
+	  if(fLastIndex==-1) fLastIndex=etaIndex;
 #endif
 
-	  if(fLastIndex!=eta_index){ //enter old values first
-	    AddCurveToHistogram(eta_index);
+	  if(fLastIndex!=etaIndex){ //enter old values first
+	    AddCurveToHistogram(etaIndex);
 	  }
 
 	  fAccCharge+=charge;
@@ -462,6 +468,7 @@ void AliL3HoughTransformerLUT::TransformCircle()
 
 void AliL3HoughTransformerLUT::Print()
 {
+  // debug printout
   cout << "fSlice: " << GetSlice() << endl;
   cout << "fPatch: " << GetPatch() << endl;
   cout << "fSector: " << fSector << endl;
