@@ -7,9 +7,9 @@
 /* $Id$ */
 
 
-/////////////////////////////////////////////////////////
-//  Manager and hits classes for set:RICH version 0    //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+//  Manager and hits classes for set:RICH default version //
+////////////////////////////////////////////////////////////
 
 #include "AliRICH.h"
 
@@ -45,7 +45,7 @@ class AliRICHv0 : public AliRICH {
     Float_t        AbsoCH4(Float_t x);
 //   virtual void   Trigger(Float_t (*)[4], Float_t (*)[4], Int_t& iflag);
  private:
-    ClassDef(AliRICHv0,1)  //Hits manager for set:RICH version 0
+    ClassDef(AliRICHv0,1)  //Hits manager for set: RICH default version
 	
 	};
 	
