@@ -4,6 +4,7 @@
 // See the class description in the header file.
 
 #include "AliGlobals.h"
+#include "TG4Globals.h"
 
 #include <stdlib.h>
 
@@ -68,18 +69,7 @@ void AliGlobals::AppendNumberToString(G4String& s, G4int a)
 {
 // Appends number to string.
 // ---
-
-  const char* kpNumber="0123456789";
-  G4String p=""; G4String q="";
-  do 
-  {
-    G4int b=a/10;
-    G4int c=a%10;
-    p=kpNumber[c];
-    q=p.append(q);
-    a=b;        
-  } while (a>0);
-  s.append(q);
+  TG4Globals::AppendNumberToString(s, a);
 }
 
 G4int AliGlobals::StringToInt(G4String s)
