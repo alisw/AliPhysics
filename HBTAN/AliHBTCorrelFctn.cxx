@@ -13,7 +13,7 @@ ClassImp(AliHBTQInvCorrelFctn)
 //  of particles from different events
 
 AliHBTQInvCorrelFctn::
-AliHBTQInvCorrelFctn(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0):
+AliHBTQInvCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
                      AliHBTTwoPartFctn1D(nbins,maxXval,minXval)
 {
  Rename("qinvcf","Q_{inv} Correlation Function");
