@@ -20,7 +20,7 @@ ClassImp(AliPHOSv0)
 //______________________________________________________________________________
 
 
-AliPHOSv0::AliPHOSv0() : AliPHOS()
+AliPHOSv0::AliPHOSv0()
 {
   fIdSens=0;
 }

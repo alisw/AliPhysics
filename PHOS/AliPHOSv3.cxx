@@ -20,7 +20,7 @@ ClassImp(AliPHOSv3)
 //______________________________________________________________________________
 
 
-AliPHOSv3::AliPHOSv3() : AliPHOS()
+AliPHOSv3::AliPHOSv3()
 {
 }
  

@@ -21,7 +21,7 @@ ClassImp(AliPHOSv1)
 //______________________________________________________________________________
 
 
-AliPHOSv1::AliPHOSv1() : AliPHOS()
+AliPHOSv1::AliPHOSv1()
 {
 }
  
