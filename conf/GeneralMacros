@@ -40,6 +40,7 @@ depend:
 		@$(MAKEDEPEND) -ftgt_$(ALICE_TARGET)/Make-depend -ptgt_$(ALICE_TARGET)/ -- $(CXXFLAGS) $(DEPINC) -- $^
 
 tgt_$(ALICE_TARGET)/Make-depend:
+		@[ -d $(dir $@) ] || mkdir $(dir $@)
 		@cp $(ALICE_ROOT)/conf/Makedepend $@
 
 macroclean:
