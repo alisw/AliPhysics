@@ -30,7 +30,7 @@ public:
 
   AliEMCALTowerRecPoint() ;
   AliEMCALTowerRecPoint(const char * opt) ;
-  AliEMCALTowerRecPoint(const AliEMCALTowerRecPoint & rp) {
+  AliEMCALTowerRecPoint(const AliEMCALTowerRecPoint & rp):AliEMCALRecPoint(rp) {
     // cpy ctor requested by Coding Convention 
     // but not yet needed
     assert(0==1) ; 
@@ -84,7 +84,7 @@ public:
   Float_t *fEnergyList ;      //[fMulDigit] energy of digits
   Float_t fTime ;             // Time of the digit with maximal energy deposition
   
-  ClassDef(AliEMCALTowerRecPoint,1)  // Tower RecPoint (cluster)
+  ClassDef(AliEMCALTowerRecPoint,2)  // Tower RecPoint (cluster)
 
 };
 

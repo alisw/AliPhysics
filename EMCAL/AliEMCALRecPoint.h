@@ -30,7 +30,7 @@ class AliEMCALRecPoint : public AliRecPoint {
 
   AliEMCALRecPoint() ;                   // ctor         
   AliEMCALRecPoint(const char * opt) ;   // ctor 
-  AliEMCALRecPoint(const AliEMCALRecPoint & rp) {
+  AliEMCALRecPoint(const AliEMCALRecPoint & rp):AliRecPoint(rp) {
     // cpy ctor requested by Coding Convention 
     // but not yet needed
     assert(0==1) ; 
@@ -89,7 +89,7 @@ protected:
   Bool_t  fHCASection ; // tells if the recpoint is in HCAL section 
   Bool_t  fPRESection ;  // tells if the recpoint is in PRE section 
 
-  ClassDef(AliEMCALRecPoint,2) // RecPoint for EMCAL (Base Class)
+  ClassDef(AliEMCALRecPoint,3) // RecPoint for EMCAL (Base Class)
  
 };
 

@@ -33,7 +33,7 @@ class AliEMCALPID : public TTask {
 
   AliEMCALPID() ;          // ctor            
   AliEMCALPID(const TString alirunFileName, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ;
-  AliEMCALPID(const AliEMCALPID & pid) {;} 
+  AliEMCALPID(const AliEMCALPID & pid):TTask(pid) {;} 
   virtual ~AliEMCALPID() ; // dtor
 
   virtual void Exec(Option_t * option) { Warning("Exec", "not defined" ) ; }
@@ -51,7 +51,7 @@ private:
 protected:
   TString fEventFolderName ;  // event folder name
  
-  ClassDef(AliEMCALPID,2)  // Particle Identifier algorithm (base class)
+  ClassDef(AliEMCALPID,3)  // Particle Identifier algorithm (base class)
 
 } ;
 

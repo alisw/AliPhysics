@@ -32,7 +32,7 @@ public:
 
   AliEMCALReconstructioner() ; //ctor            
   AliEMCALReconstructioner(const char * headreFile, const char * branchName = "Default",Bool_t toSplit = kFALSE) ;
-  AliEMCALReconstructioner(const AliEMCALReconstructioner & rec) {
+  AliEMCALReconstructioner(const AliEMCALReconstructioner & rec):TTask(rec) {
     // cpy ctor: 
     // requested by the Coding Convention
     Fatal("cpy ctor", "not implemented") ;  
@@ -79,7 +79,7 @@ private:
 
   Bool_t   fIsInitialized ; // kTRUE if reconstructioner is initialized
  
-  ClassDef(AliEMCALReconstructioner,1)  // Reconstruction algorithm class (Base Class)
+  ClassDef(AliEMCALReconstructioner,2)  // Reconstruction algorithm class (Base Class)
 
 }; 
 
