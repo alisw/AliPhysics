@@ -459,3 +459,64 @@ TH1* AliHBTWeightQSideQLongFctn::GetResult()
  fRatio = GetRatio(Scale());
  return fRatio;
 }
+/*************************************************************/
+/*************************************************************/
+/*************************************************************/ 
+
+ClassImp(AliHBTWeightQOutSQideQLongFctn)
+
+AliHBTWeightQOutSQideQLongFctn::AliHBTWeightQOutSQideQLongFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
+                                                   Int_t nYbins, Double_t maxYval, Double_t minYval,
+                                                   Int_t nZbins, Double_t maxZval, Double_t minZval):
+ AliHBTTwoPairFctn3D(nXbins,maxXval,minXval,nYbins,maxYval,minYval,nZbins,maxZval,minZval)
+{
+  //ctor
+  fWriteNumAndDen = kTRUE;//change default behaviour
+  Rename("wqoslcf","Q_{out}-Q_{side}-Q_{long} Weight Correlation Fctn");
+}
+/*************************************************************/
+
+void AliHBTWeightQOutSQideQLongFctn::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
+{
+//Fills numerator
+  //process particles from same events (fills numerator)
+  trackpair = CheckPair(trackpair);
+  partpair  = CheckPair(partpair);
+  if ( trackpair && partpair)     
+  {
+//    Double_t weightPID=1.;
+    Double_t weight = 1.0;
+    if ( ( trackpair->Particle1()->GetPdgCode() == partpair->Particle1()->GetPdgCode()) &&
+         ( trackpair->Particle2()->GetPdgCode() == partpair->Particle2()->GetPdgCode())    )
+      {   
+         weight=partpair->GetWeight();//here we take weight from the particle pair
+      }   
+//    Double_t weight=weightHBT*weightPID;
+    Double_t out = TMath::Abs(trackpair->GetQOutCMSLC());
+    Double_t side = TMath::Abs(trackpair->GetQSideCMSLC());
+    Double_t lon = TMath::Abs(trackpair->GetQLongCMSLC());
+    fNumerator->Fill(out,side,lon,weight);//here we fill in q's corresponding to track pair 
+                                          //weight calculated for the simulated one
+  }
+}
+/*************************************************************/
+
+void AliHBTWeightQOutSQideQLongFctn::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
+{
+  //process particles from diff events (fills denominator)
+  trackpair = CheckPair(trackpair);
+  partpair  = CheckPair(partpair);
+  if ( trackpair && partpair)  
+   {
+     fDenominator->Fill(trackpair->GetQOutCMSLC(),trackpair->GetQSideCMSLC(),trackpair->GetQLongCMSLC());
+   }
+}
+/*************************************************************/
+
+TH1* AliHBTWeightQOutSQideQLongFctn::GetResult()
+{
+ //returns the scaled ratio
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ return fRatio;
+}                    

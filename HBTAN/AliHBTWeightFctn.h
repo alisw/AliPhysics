@@ -152,7 +152,6 @@ class AliHBTWeightQOutQLongFctn: public AliHBTTwoPairFctn2D, public AliHBTCorrel
   ClassDef(AliHBTWeightQOutQLongFctn,2)
  
 };
-
 /*************************************************************************************/ 
 
 class AliHBTWeightQSideQLongFctn: public AliHBTTwoPairFctn2D, public AliHBTCorrelFunction
@@ -161,7 +160,7 @@ class AliHBTWeightQSideQLongFctn: public AliHBTTwoPairFctn2D, public AliHBTCorre
   //  friend class AliHBTOnePairFctn1D;
  public:
   AliHBTWeightQSideQLongFctn(Int_t nxbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0,
-                              Int_t nybins = 100, Double_t maxYval = 0.15, Double_t minYval = 0.0);
+                             Int_t nybins = 100, Double_t maxYval = 0.15, Double_t minYval = 0.0);
   virtual ~AliHBTWeightQSideQLongFctn(){};
   TH1* GetResult();
   void   ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
@@ -172,5 +171,27 @@ class AliHBTWeightQSideQLongFctn: public AliHBTTwoPairFctn2D, public AliHBTCorre
   ClassDef(AliHBTWeightQSideQLongFctn,2)
  
 };
+/*************************************************************************************/ 
+
+class AliHBTWeightQOutSQideQLongFctn: public AliHBTTwoPairFctn3D, public AliHBTCorrelFunction
+{
+
+  public:
+    AliHBTWeightQOutSQideQLongFctn(Int_t nXbins = 100, Double_t maxXval = 0.3, Double_t minXval = 0.0,
+                                Int_t nYbins = 100, Double_t maxYval = 0.3, Double_t minYval = 0.0,
+                                Int_t nZbins = 100, Double_t maxZval = 0.3, Double_t minZval = 0.0);
+    virtual  ~AliHBTWeightQOutSQideQLongFctn(){}
+
+    TH1* GetResult();
+  void   ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
+  void   ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
+  
+  protected:
+    void GetValues(AliHBTPair* /*trackpair*/, AliHBTPair* /*partpair*/, 
+                   Double_t& /*x*/, Double_t& /*y*/, Double_t& /*z*/) { } 
+
+    ClassDef(AliHBTWeightQOutSQideQLongFctn,1)
+};
+
 
 #endif

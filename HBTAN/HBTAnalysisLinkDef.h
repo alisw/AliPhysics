@@ -179,6 +179,8 @@
 #pragma link C++ class AliHBTWeightQOutQSideFctn+;
 #pragma link C++ class AliHBTWeightQOutQLongFctn+;
 #pragma link C++ class AliHBTWeightQSideQLongFctn+;
+#pragma link C++ class AliHBTWeightQOutSQideQLongFctn+;
+
 
 #pragma link C++ class AliHBTWeightTheorQInvFctn+;
 #pragma link C++ class AliHBTWeightTheorQOutFctn+;
