@@ -15,20 +15,21 @@
 
 /* 
    $Log$
-   Revision 1.6  2002/10/14 14:57:32  hristov
-   Merging the VirtualMC branch to the main development branch (HEAD)
-
-   Revision 1.3.6.2  2002/07/24 10:07:52  alibrary
-   Updating VirtualMC
-
-   Revision 1.3.6.1  2002/06/10 15:12:46  hristov
-   Merged with v3-08-02
+   Revision 1.5  2002/07/09 13:11:26  hristov
+   Old style include files needed on HP (aCC)
 
    Revision 1.4  2002/05/28 07:53:10  morsch
    Wrong order of arguments in for-statement corrected.
 
    Revision 1.3  2001/12/05 14:53:34  hristov
-   Destructor corrected
+   Destructor corRevision 1.60  2002/10/22 16:28:21  alibrary
+  Introducing Riostream.h
+
+  Revision 1.59  2002/10/14 14:57:31  hristov
+  Merging the VirtualMC branch to the main development branch (HEAD)
+
+  Revision 1.58.6.1  2002/06/10 15:12:46  hristov
+  Merged with v3-08-02rected
 
    Revision 1.2  2001/11/07 14:50:31  hristov
    Minor correction of the Log part
@@ -268,6 +269,8 @@ void AliRICHDigitizer::Exec(Option_t* option)
 	  fDigits[3]=iqpad;
 	  fDigits[4]=mPad->HitNumber();
 		  
+	
+
 	  // build the list of fired pads and update the info
 	  if (Exists(mPad)) {
 	    Update(mPad);
@@ -337,6 +340,7 @@ void AliRICHDigitizer::Exec(Option_t* option)
     for (Int_t tr=0;tr<nptracks;tr++) {
       tracks[tr]=transDigit->GetTrack(tr);
       charges[tr]=transDigit->GetCharge(tr);
+      //printf("%f \n",charges[tr]);
     }      //end loop over list of tracks for one pad
     if (nptracks < kMAXTRACKSPERRICHDIGIT ) {
       for (Int_t t=nptracks; t<kMAXTRACKSPERRICHDIGIT; t++) {
@@ -350,10 +354,12 @@ void AliRICHDigitizer::Exec(Option_t* option)
       
     // fill digits
     pRICH->AddDigits(ich,tracks,charges,fDigits);
+    
+   
   }	
   fManager->GetTreeD()->Fill();
 
-  pRICH->ResetDigits();
+  //pRICH->ResetDigits();
   fTDList->Delete();    // or fTDList->Clear(); ???
   for(Int_t ii=0;ii<kNCH;++ii) {
     if (fHitMap[ii]) {
@@ -368,8 +374,8 @@ void AliRICHDigitizer::Exec(Option_t* option)
     Int_t ndigit=richDigits->GetEntriesFast();
     printf ("Chamber %d digits %d \n",k,ndigit);
   }
-  pRICH->ResetDigits(); /// ??? should it be here???
   fManager->GetTreeD()->Write(0,TObject::kOverwrite);
+  pRICH->ResetDigits();
   delete [] fHitMap;
   delete fTDList;
 
