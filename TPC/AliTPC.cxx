@@ -78,8 +78,8 @@
 #include "AliTrackReference.h"
 #include "AliMC.h"
 #include "AliTPCDigitizer.h"
-#include "AliTPCclusterer.h"
-#include "AliTPCtracker.h"
+#include "AliTPCclustererMI.h"
+#include "AliTPCtrackerMI.h"
 #include "AliTPCpidESD.h"
 
 
@@ -92,8 +92,13 @@ ClassImp(AliTPC)
 class AliTPCFastMatrix : public TMatrix {
 public :
   AliTPCFastMatrix(Int_t rowlwb, Int_t rowupb, Int_t collwb, Int_t colupb);
+#if ROOT_VERSION_CODE >= ROOT_VERSION(4,0,1)
+  Float_t & UncheckedAt(Int_t rown, Int_t coln) const  {return fElements[(rown-fRowLwb)*fNcols+(coln-fColLwb)];} //fast acces
+  Float_t   UncheckedAtFast(Int_t rown, Int_t coln) const  {return fElements[(rown-fRowLwb)*fNcols+(coln-fColLwb)];} //fast acces
+#else
   Float_t & UncheckedAt(Int_t rown, Int_t coln) const  {return  (fIndex[coln])[rown];} //fast acces   
   Float_t   UncheckedAtFast(Int_t rown, Int_t coln) const  {return  (fIndex[coln])[rown];} //fast acces   
+#endif
 };
 
 AliTPCFastMatrix::AliTPCFastMatrix(Int_t rowlwb, Int_t rowupb, Int_t collwb, Int_t colupb):
@@ -340,7 +345,7 @@ void AliTPC::Reconstruct() const
   loader->LoadRecPoints("recreate");
   loader->LoadDigits("read");
 
-  AliTPCclusterer clusterer(fTPCParam);
+  AliTPCclustererMI clusterer(fTPCParam);
   AliRunLoader* runLoader = loader->GetRunLoader();
   Int_t nEvents = runLoader->GetNumberOfEvents();
 
@@ -358,7 +363,10 @@ void AliTPC::Reconstruct() const
       return;
     }
 
-    clusterer.Digits2Clusters(treeDigits, treeClusters);
+//    clusterer.Digits2Clusters(treeDigits, treeClusters);
+    clusterer.SetInput(treeDigits);
+    clusterer.SetOutput(treeClusters);
+    clusterer.Digits2Clusters();
          
     loader->WriteRecPoints("OVERWRITE");
   }
@@ -372,7 +380,7 @@ AliTracker* AliTPC::CreateTracker() const
 {
 // create a TPC tracker
 
-  return new AliTPCtracker(fTPCParam);
+  return new AliTPCtrackerMI(fTPCParam);
 }
 
 //_____________________________________________________________________________
