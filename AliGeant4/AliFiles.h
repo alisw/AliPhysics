@@ -10,10 +10,10 @@
 // Config.in   - G4 specific configuration macros per detector
 // The output files:
 // g3calls.dat - the ASCII file with G3 geometry calls;
-//               generation is switch on with /aliDet/writeGeometry command
+//               generation is switched on with /aliDet/writeGeometry command
 //               in PreInit phase
 // DetvN.xml   - XML geometry description file;                
-//               generation is switch on with /aliDet/generateXML command
+//               generation is switched on with /aliDet/generateXML command
 //               in Init phase
 
 #ifndef ALI_FILES_H
@@ -27,6 +27,8 @@ class AliFiles
     AliFiles();
     AliFiles(const G4String& config);
     AliFiles(const G4String& config, const G4String& g3calls);
+    // --> protected
+    //AliFiles(const AliFiles& right);
     virtual ~AliFiles();
     
     // static access method
@@ -52,7 +54,13 @@ class AliFiles
     G4String GetG3CallsName() const;			      
     G4String GetDefaultMacroName() const;			      
     G4String GetDefaultG3CallsName() const;			      
-       
+    
+  protected:
+    AliFiles(const AliFiles& right);
+    
+    // operators
+    AliFiles& operator=(const AliFiles& right);    
+    
   private: 
     // methods
     G4String GetMacroPath(const G4String& macroName,
@@ -70,8 +78,8 @@ class AliFiles
     static const G4String  fgkXMLFileExtension;   //".xml"   
 
     // data members  
-    G4String        fMacroName;      //configuration macro name
-    G4String        fG3CallsName;        //g3calls data file name  
+    G4String        fMacroName;   //configuration macro name
+    G4String        fG3CallsName; //g3calls data file name  
 };  
 
 // inline methods
