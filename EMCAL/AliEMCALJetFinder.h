@@ -48,6 +48,19 @@ class AliEMCALJetFinder : public TTask {
     virtual void SetHadronCorrector(AliEMCALHadronCorrection* corr)
 	{fHadronCorrector = corr;}
     virtual void SetHadronCorrection(Int_t flag = 1) {fHCorrection = flag;}
+    // PAI
+    void SetWriteKey(Bool_t flag = kFALSE) {fWrite = flag;}
+    void SetMode(Int_t mode = 0) {fMode = mode;}
+    void SetMinMove(Float_t minMove = 0.05) {fMinMove = minMove;}
+    void SetMaxMove(Float_t maxMove = 0.15) {fMaxMove = maxMove;}
+    void SetPrecBg (Float_t precBg = 0.035) {fPrecBg = precBg;}
+    void SetParametersForBgSubtraction
+    (Int_t mode=0, Float_t minMove=0.05, Float_t maxMove=0.15, Float_t precBg=0.035);
+    //    virtual void Print(Option_t* option="") const;    // *MENU*
+
+    Bool_t GetWriteKey() {return fWrite;}
+    AliEMCALJet* GetJetT() {return fJetT[0];}
+
     // Access to Results
     virtual Int_t   Njets();
     virtual Float_t JetEnergy(Int_t);
@@ -62,6 +75,8 @@ class AliEMCALJetFinder : public TTask {
     virtual void FillFromHitFlaggedTracks(Int_t flag = 0);
     virtual void FillFromDigits(Int_t flag = 0);
     virtual void FillFromTracks(Int_t flag = 0, Int_t ich = 0);
+    virtual void FillFromPartons();
+
     virtual void SaveBackgroundEvent();
     virtual void InitFromBackground();
     virtual void AddJet(const AliEMCALJet& jet);
@@ -74,6 +89,7 @@ class AliEMCALJetFinder : public TTask {
     virtual void ResetMap();
     virtual Float_t PropagatePhi(Float_t pt, Float_t charge, Bool_t& curls);
  protected:
+    Bool_t                         fWrite;           // Key for writing
     TClonesArray*                  fJets;            //! List of Jets
     TH2F*                          fLego;            //! Lego Histo
     TH2F*                          fLegoB;           //! Lego Histo Backg    
@@ -116,10 +132,19 @@ class AliEMCALJetFinder : public TTask {
     Float_t*                       fPtB;             //! Pt   of tracks in Bg
     Float_t*                       fEtaB;            //! Eta  of tracks in Bg
     Float_t*                       fPhiB;            //! Phi  of tracks in Bg
+
+    // parameter for jet_finder_ua1
+    Float_t                        fMinMove;         // min cone move 
+    Float_t                        fMaxMove;         // max cone move
+    Int_t                          fMode;            // key for BG subtraction
+    Float_t                        fPrecBg;          // max value of change for BG (in %)
+    Int_t                          fError;           // error variables 
+
     char*                          fOutFileName;     //! Output file name
     TFile*                         fOutFile;         //! Output file
     TFile*                         fInFile;          //! Output file
     Int_t                          fEvent;           //! Processed event
+
     ClassDef(AliEMCALJetFinder,2)        // JetFinder for EMCAL
 }
 ;
