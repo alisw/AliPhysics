@@ -410,7 +410,7 @@ Float_t AliGenHaloProtvino::GasPressureWeight(Float_t zPrimary)
     return weight;
 }
 
-void AliGenHaloProtvino::Draw()
+void AliGenHaloProtvino::Draw(Option_t *)
 {
 // Draws the gas pressure distribution
     Float_t z[400];

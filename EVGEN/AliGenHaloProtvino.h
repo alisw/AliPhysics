@@ -29,7 +29,7 @@ public:
     virtual void SetNskip(Int_t nskip) {fNskip = nskip;}
     virtual void SetRunPeriod(Int_t t = kY3D90) {fRunPeriod = t;}
     virtual void SetTimePerEvent(Float_t t = 1.e-4) {fTimePerEvent = t;}
-    virtual void Draw();
+    virtual void Draw(Option_t * opt="");
     AliGenHaloProtvino & operator=(const AliGenHaloProtvino & rhs);
 
 protected:
