@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2000/12/22 16:17:15  hristov
+Updated  START code from Alla
+
 Revision 1.13  2000/12/18 11:39:41  alibrary
 Quick fix to avoid crash in display waiting for new version
 
@@ -204,7 +207,6 @@ void AliSTART::MakeBranch(Option_t* option)
   //
   // Specific START branches
   //
-  AliSTARTdigit *digits; 
   // Create Tree branches for the START.
   Int_t buffersize = 400;
   char branchname[10];
