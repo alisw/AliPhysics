@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2001/08/29 14:28:33  morsch
+Use visibility flags -1 and 3 instead of 0 and 1.
+
 Revision 1.16  2001/05/16 14:57:22  alibrary
 New files for folders and Stack
 
@@ -87,6 +90,7 @@ AliModule::AliModule()
   fIdtmed     = 0;
   fIdmate     = 0;
   fDebug      = 0;
+  fEnable     = 1;
 }
  
 //_____________________________________________________________________________
@@ -130,6 +134,8 @@ AliModule::AliModule(const char* name,const char *title):TNamed(name,title)
   AliConfig::Instance()->Add(this);    
     
   SetDebug(gAlice->GetDebug());
+
+  fEnable     = 1;
 }
  
 //_____________________________________________________________________________

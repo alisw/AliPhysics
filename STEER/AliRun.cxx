@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.80  2001/10/21 18:22:55  hristov
+BranchOld replaced by Branch. It works correctly with Root 2.02.xx
+
 Revision 1.79  2001/10/09 18:00:35  hristov
 Temporary fix to provide unique event number in the simulation (J.Chudoba)
 
@@ -239,6 +242,7 @@ Introduction of the Copyright and cvs Log
 #include <TROOT.h>
 #include <TBrowser.h>
 #include <TFolder.h>
+#include <TKey.h>
 #include <TNode.h>
 #include "TParticle.h"
 #include "AliRun.h"
@@ -1733,7 +1737,7 @@ void AliRun::StepManager(Int_t id)
   
     //Call the appropriate stepping routine;
     AliModule *det = (AliModule*)fModules->At(id);
-    if(det) {
+    if(det && det->StepManagerIsEnabled()) {
       fMCQA->StepManager(id);
       det->StepManager();
     }

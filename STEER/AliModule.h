@@ -103,6 +103,8 @@ public:
   virtual void        SetTimeGate(Float_t) {}
   virtual Float_t     GetTimeGate() const {return 1.e10;}
   virtual void        StepManager() {}
+  virtual void        DisableStepManager() {fEnable = kFALSE;}
+  virtual Bool_t      StepManagerIsEnabled() {return fEnable;}
   virtual void        SetBufferSize(Int_t) {}  
   virtual Float_t     ZMin() const;
   virtual Float_t     ZMax() const;
@@ -127,7 +129,7 @@ protected:
   TList        *fHistograms;  //List of histograms
   TList        *fNodes;       //List of geometry nodes
   Int_t         fDebug;       //Debug flag
-
+  Bool_t        fEnable;      //StepManager enabling flag
   ClassDef(AliModule,1)  //Base class for ALICE Modules
 };
 #endif
