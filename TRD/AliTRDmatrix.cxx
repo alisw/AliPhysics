@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/11/01 14:53:21  cblume
+Merge with TRD-develop
+
 Revision 1.4.2.5  2000/10/17 02:27:34  cblume
 Get rid of global constants
 
@@ -193,9 +196,9 @@ void AliTRDmatrix::Draw(Option_t *)
   Char_t ctitle[50];
   sprintf(ctitle,"Matrix (Sector:%d Chamber:%d Plane:%d)"
                 ,fSector,fChamber,fPlane);
-  TH3F *hMatrix = new TH3F("hMatrix",ctitle,fRow ,-0.5,fRow +0.5
-                                           ,fCol ,-0.5,fCol +0.5
-                                           ,fTime,-0.5,fTime+0.5);
+  TH3F *hMatrix = new TH3F("hMatrix",ctitle,fRow ,-0.5,fRow -0.5
+                                           ,fCol ,-0.5,fCol -0.5
+                                           ,fTime,-0.5,fTime-0.5);
 
   for (Int_t iRow  = 0; iRow  < fRow;  iRow++ ) {
     for (Int_t iCol  = 0; iCol  < fCol;  iCol++ ) {
@@ -233,8 +236,8 @@ void AliTRDmatrix::DrawRow(Int_t iRow)
   Char_t ctitle[50];
   sprintf(ctitle,"Pad-row %d (Sector:%d Chamber:%d Plane:%d)"
                 ,iRow,fSector,fChamber,fPlane);
-  TH2F *hSliceRow = new TH2F("hSliceRow",ctitle,fCol ,-0.5,fCol +0.5
-                                               ,fTime,-0.5,fTime+0.5);
+  TH2F *hSliceRow = new TH2F("hSliceRow",ctitle,fCol ,-0.5,fCol -0.5
+                                               ,fTime,-0.5,fTime-0.5);
 
   for (Int_t iCol  = 0; iCol  < fCol;  iCol++ ) {
     for (Int_t iTime = 0; iTime < fTime; iTime++) {
@@ -269,8 +272,8 @@ void AliTRDmatrix::DrawCol(Int_t iCol)
   Char_t ctitle[50];
   sprintf(ctitle,"Pad-column %d (Sector:%d Chamber:%d Plane:%d)"
                 ,iCol,fSector,fChamber,fPlane);
-  TH2F *hSliceCol = new TH2F("hSliceCol",ctitle,fRow ,-0.5,fRow +0.5
-                                               ,fTime,-0.5,fTime+0.5);
+  TH2F *hSliceCol = new TH2F("hSliceCol",ctitle,fRow ,-0.5,fRow -0.5
+                                               ,fTime,-0.5,fTime-0.5);
 
   for (Int_t iRow  = 0; iRow  < fRow;  iRow++ ) {
     for (Int_t iTime = 0; iTime < fTime; iTime++) {
@@ -305,8 +308,8 @@ void AliTRDmatrix::DrawTime(Int_t iTime)
   Char_t ctitle[50];
   sprintf(ctitle,"Time-slice %d (Sector:%d Chamber:%d Plane:%d)"
                 ,iTime,fSector,fChamber,fPlane);
-  TH2F *hSliceTime = new TH2F("hSliceTime",ctitle,fRow,-0.5,fRow+0.5
-                                                 ,fCol,-0.5,fCol+0.5);
+  TH2F *hSliceTime = new TH2F("hSliceTime",ctitle,fRow,-0.5,fRow-0.5
+                                                 ,fCol,-0.5,fCol-0.5);
 
   for (Int_t iRow = 0; iRow < fRow; iRow++) {
     for (Int_t iCol = 0; iCol < fCol; iCol++) {
@@ -335,8 +338,8 @@ void AliTRDmatrix::ProjRow()
   Char_t ctitle[60];
   sprintf(ctitle,"Row-projection (Sector:%d Chamber:%d Plane:%d)"
                 ,fSector,fChamber,fPlane);
-  TH2F *hProjRow = new TH2F("hProjRow",ctitle,fCol ,-0.5,fCol +0.5
-                                             ,fTime,-0.5,fTime+0.5);
+  TH2F *hProjRow = new TH2F("hProjRow",ctitle,fCol ,-0.5,fCol -0.5
+                                             ,fTime,-0.5,fTime-0.5);
 
   for (Int_t iRow  = 0; iRow  < fRow;  iRow++ ) {
     for (Int_t iCol  = 0; iCol  < fCol;  iCol++ ) {
@@ -367,8 +370,8 @@ void AliTRDmatrix::ProjCol()
   Char_t ctitle[60];
   sprintf(ctitle,"Column-projection (Sector:%d Chamber:%d Plane:%d)"
                 ,fSector,fChamber,fPlane);
-  TH2F *hProjCol = new TH2F("hProjCol",ctitle,fRow ,-0.5,fRow +0.5
-                                             ,fTime,-0.5,fTime+0.5);
+  TH2F *hProjCol = new TH2F("hProjCol",ctitle,fRow ,-0.5,fRow -0.5
+                                             ,fTime,-0.5,fTime-0.5);
 
   for (Int_t iRow  = 0; iRow  < fRow;  iRow++ ) {
     for (Int_t iCol  = 0; iCol  < fCol;  iCol++ ) {
@@ -399,8 +402,8 @@ void AliTRDmatrix::ProjTime()
   Char_t ctitle[60];
   sprintf(ctitle,"Time-projection (Sector:%d Chamber:%d Plane:%d)"
                 ,fSector,fChamber,fPlane);
-  TH2F *hProjTime = new TH2F("hProjTime",ctitle,fRow,-0.5,fRow+0.5
-                                               ,fCol,-0.5,fCol+0.5);
+  TH2F *hProjTime = new TH2F("hProjTime",ctitle,fRow,-0.5,fRow-0.5
+                                               ,fCol,-0.5,fCol-0.5);
 
   for (Int_t iRow = 0; iRow < fRow; iRow++) {
     for (Int_t iCol = 0; iCol < fCol; iCol++) {
