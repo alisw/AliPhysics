@@ -52,6 +52,7 @@ class AliTRDtracker : public AliTracker {
   Int_t         CookSectorIndex(Int_t gs) const { return kTrackingSectors - 1 - gs; }
   AliTRDcluster * GetCluster(AliTRDtrack * track, Int_t plane, Int_t timebin);
   Int_t         GetLastPlane(AliTRDtrack * track); //return last updated plane
+  Int_t FindClusters(Int_t sector, Int_t t0, Int_t t1, AliTRDtrack * track, Int_t *clusters);
 
   Float_t  GetSeedGap()       const {return fgkSeedGap;}   
   Int_t    GetMaxGap()        const {return fMaxGap;}   

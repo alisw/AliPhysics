@@ -50,7 +50,7 @@ ClassImp(AliTRDcluster)
 
   fSigmaY2    = 0.2;
   fSigmaZ2    = 5.;  
-
+  fNPads      =0;
 }
 
 //_____________________________________________________________________________
@@ -72,6 +72,7 @@ AliTRDcluster::AliTRDcluster(const AliTRDcluster &c):AliCluster()
   fDetector   = c.GetDetector();
   fTimeBin    = c.GetLocalTimeBin();
   fQ          = c.GetQ();
+  fNPads      = c.fNPads;
 
 }
 

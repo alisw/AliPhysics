@@ -20,7 +20,7 @@ const unsigned kMAX_CLUSTERS_PER_TRACK=210;
 class AliTRDtrack : public AliKalmanTrack {
 
 // Represents reconstructed TRD track
-
+  friend class AliTRDtracker;
 public:
 
    AliTRDtrack():AliKalmanTrack(){fBackupTrack=0;}
@@ -31,8 +31,8 @@ public:
    AliTRDtrack(const AliESDtrack& t);    
    ~AliTRDtrack();
    Int_t    Compare(const TObject *o) const;
-   void     CookdEdx(Double_t low=0.05, Double_t up=0.70);   
-
+   void     CookdEdx(Double_t low=0.05, Double_t up=0.55);   
+   Float_t    StatusForTOF();
    Double_t GetAlpha() const {return fAlpha;}
    Int_t    GetSector() const {
      //if (fabs(fAlpha) < AliTRDgeometry::GetAlpha()/2) return 0;
@@ -74,8 +74,6 @@ public:
    Double_t GetZ()    const {return fZ;}
    UInt_t * GetBackupIndexes()  {return fIndexBackup;}
    UInt_t * GetIndexes()  {return fIndex;}
-  
-
    Double_t GetYat(Double_t xk) const {     
 //-----------------------------------------------------------------
 // This function calculates the Y-coordinate of a track at the plane x=xk.
@@ -85,6 +83,8 @@ public:
       Double_t c2=fC*xk - fE, r2=TMath::Sqrt(1.- c2*c2);
       return fY + (xk-fX)*(c1+c2)/(r1+r2);
    }
+   Int_t GetProlongation(Double_t xk, Double_t &y, Double_t &z);
+
    void SetStop(Bool_t stop) {fStopped=stop;}
    Bool_t GetStop() const {return fStopped;}
 
@@ -100,9 +100,15 @@ public:
    void     SetLikelihoodElectron(Float_t l) { fLhElectron = l; };  
 
    void     SetSampledEdx(Float_t q, Int_t i) {
+               Double_t s=GetSnp(), t=GetTgl();
+               q*= TMath::Sqrt((1-s*s)/(1+t*t));
+               fdQdl[i]=q;
+            }     
+   void     SetSampledEdx(Float_t q) {
               Double_t s=GetSnp(), t=GetTgl();
               q*= TMath::Sqrt((1-s*s)/(1+t*t));
-              fdQdl[i]=q;
+              fdQdl[fNdedx]=q;
+	      fNdedx++;
             }     
 
    void     SetSeedLabel(Int_t lab) { fSeedLab=lab; }
@@ -118,7 +124,7 @@ public:
   Int_t GetNWrong() const {return fNWrong;}
   Int_t GetNRotate() const {return fNRotate;}
   Int_t GetNCross() const {return fNCross;}
-  void  IncCross() {fNCross++;}
+  void  IncCross() {fNCross++; if (fBackupTrack) fBackupTrack->IncCross();}
   AliTRDtrack *  GetBackupTrack(){return fBackupTrack;}
   void    MakeBackupTrack();
   //
@@ -156,6 +162,11 @@ protected:
    Int_t fNWrong;    // number of wrong clusters
    Int_t fNRotate;   // number of rotation
    Int_t fNCross;     // number of the cross materials
+   Int_t fNExpected;  //expected number of cluster
+   Int_t fNLast;      //number of clusters in last 2 layers
+   Int_t fNExpectedLast; //number of expected clusters on last 2 layers
+   Int_t      fNdedx;      //number of clusters for dEdx measurment
+   Float_t fChi2Last;      //chi2 in the  last 2 layers
    AliTRDtrack * fBackupTrack; //! backup track
    ClassDef(AliTRDtrack,2) // TRD reconstructed tracks
 
