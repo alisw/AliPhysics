@@ -39,6 +39,10 @@ class AliEMCALGeometry ;
 #include "AliEMCALDigitizer.h" 
 #include "AliEMCALSDigitizer.h"
 class AliEMCALClusterizer ;
+#include "AliEMCALTrackSegment.h" 
+class AliEMCALTrackSegmentMaker ;
+#include "AliEMCALRecParticle.h" 
+class AliEMCALPID ;
 
 class AliEMCALGetter : public TObject {
   
@@ -113,15 +117,34 @@ class AliEMCALGetter : public TObject {
     return (const AliEMCALDigitizer*)(ReturnT("Digitizer", name)) ; }
       
   //========== RecPoints =============
-  TObjArray * TowerRecPoints(const char * name = 0) const { 
-    return (dynamic_cast<TObjArray*>(ReturnO("TowerRecPoints", name))) ; }
-  const AliEMCALTowerRecPoint *  TowerRecPoint(Int_t index) { return static_cast<const AliEMCALTowerRecPoint *>(TowerRecPoints()->At(index)) ;}
-  TObjArray * PreShowerRecPoints(const char * name = 0) const { 
-    return (dynamic_cast<TObjArray*>(ReturnO("PreShowerRecPoints", name))) ; }
-  const AliEMCALRecPoint *  PreShowerRecPoint(Int_t index) { return static_cast<const AliEMCALRecPoint *>(PreShowerRecPoints()->At(index)) ;}
+  TObjArray * PRERecPoints(const char * name = 0) const { 
+    return (dynamic_cast<TObjArray*>(ReturnO("PRERecPoints", name))) ; }
+  const AliEMCALRecPoint *  PRERecPoint(Int_t index) { return static_cast<const AliEMCALRecPoint *>(PRERecPoints()->At(index)) ;}
+  TObjArray * ECALRecPoints(const char * name = 0) const { 
+    return (dynamic_cast<TObjArray*>(ReturnO("ECALRecPoints", name))) ; }
+  const AliEMCALTowerRecPoint *  ECALRecPoint(Int_t index) { return static_cast<const AliEMCALTowerRecPoint *>(ECALRecPoints()->At(index)) ;}
+  TObjArray * HCALRecPoints(const char * name = 0) const { 
+    return (dynamic_cast<TObjArray*>(ReturnO("HCALRecPoints", name))) ; }
+  const AliEMCALTowerRecPoint *  HCALRecPoint(Int_t index) { return static_cast<const AliEMCALTowerRecPoint *>(HCALRecPoints()->At(index)) ;}
+
   const AliEMCALClusterizer * Clusterizer (const char * name =0) const { 
     return (const AliEMCALClusterizer*)(ReturnT("Clusterizer", name)) ;// here static or dynamic cast does not work ! why ?
   }
+
+  //========== TrackSegments =============
+  TClonesArray * TrackSegments(const char * name = 0) const { 
+    return static_cast<TClonesArray*>(ReturnO("TrackSegments", name)) ; }
+  const AliEMCALTrackSegment *  TrackSegment(Int_t index) { return static_cast<const AliEMCALTrackSegment *>(TrackSegments()->At(index)) ;}
+
+  const AliEMCALTrackSegmentMaker * TrackSegmentMaker (const char * name =0) const { 
+    return (const AliEMCALTrackSegmentMaker*)(ReturnT("TrackSegmentMaker", name)) ;// here static or dynamic cast does not work ! why ?
+  }
+
+  //========== RecParticles ===========
+  TClonesArray * RecParticles(const char * name = 0) { 
+    return static_cast<TClonesArray*>(ReturnO("RecParticles", name)) ;   }
+  const AliEMCALPID * PID(const char * name =0) const { 
+    return (const AliEMCALPID*)(ReturnT("PID", name)) ; } // here static or dynamic cast does not work ! why ? 
 
   //-----------------Auxiliary methods: cleaners-----------------
   void RemoveTask(TString opt, TString name) const ;
@@ -145,12 +168,18 @@ class AliEMCALGetter : public TObject {
   const Bool_t PostSDigits(      const char * name,  const char * file = 0) const ;  
   const Bool_t PostDigits(       const char * name ) const ;  
   const Bool_t PostRecPoints(    const char * name ) const ;  
+  const Bool_t PostTrackSegments(const char * name) const ;  
+  const Bool_t PostRecParticles( const char * name) const ;  
   const Bool_t PostClusterizer( const char * name) const ;  
   const Bool_t PostClusterizer(AliEMCALClusterizer * clu) const ;  
   const Bool_t PostSDigitizer (AliEMCALSDigitizer * sdigitizer) const ;  
   const Bool_t PostSDigitizer ( const char * name, const char * file ) const ;  
   const Bool_t PostDigitizer (AliEMCALDigitizer * digitizer) const ;  
   const Bool_t PostDigitizer  ( const char * name) const ;  
+  const Bool_t PostTrackSegmentMaker(AliEMCALTrackSegmentMaker * tsm) const ;  
+  const Bool_t PostTrackSegmentMaker(const char * name ) const ;  
+  const Bool_t PostPID  (AliEMCALPID * pid) const ;  
+  const Bool_t PostPID  (const char * name ) const ;  
 
 private:
 
@@ -172,11 +201,16 @@ private:
   TObject ** HitsRef(void) const ;
   TObject ** SDigitsRef(const char * name, const char * file = 0 ) const;
   TObject ** DigitsRef (const char * name)   const ;
-  TObject ** TowerRecPointsRef (const char * name) const ;
-  TObject ** PreShowerRecPointsRef (const char * name) const ;
+  TObject ** ECRecPointsRef (const char * name) const ;
+  TObject ** HCRecPointsRef (const char * name) const ;
+  TObject ** PRERecPointsRef (const char * name) const ;
+  TObject ** TrackSegmentsRef(const char * name)   const ;
+  TObject ** RecParticlesRef (const char * name)   const ;
   TObject ** SDigitizerRef (const char * name) const ; 
   TObject ** DigitizerRef  (const char * name) const ; 
   TObject ** ClusterizerRef(const char * name) const ; 
+  TObject ** TSMakerRef    (const char * name) const ; 
+  TObject ** PIDRef        (const char * name) const ; 
 
  private:
 
