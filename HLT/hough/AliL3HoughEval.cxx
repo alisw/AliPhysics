@@ -92,9 +92,7 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
   Float_t xyz[3];
   
   Int_t total_charge=0;//total charge along the road
-  Double_t etaslice = (fEtaMax - fEtaMin)/fNEtaSegments;
-
-
+  
   //Check if the track is leaving the sector at some point
   Float_t maxrow=300;
   Double_t angle=AliL3Transform::Pi()/18;
@@ -269,7 +267,6 @@ void AliL3HoughEval::DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist)
       return;
     }
   
-  Double_t etaslice = (fEtaMax - fEtaMin)/fNEtaSegments;
   for(Int_t padrow = AliL3Transform::GetFirstRow(fPatch); padrow <= AliL3Transform::GetLastRow(fPatch); padrow++)
     {
       Int_t prow = padrow - AliL3Transform::GetFirstRow(fPatch);
@@ -298,7 +295,7 @@ void AliL3HoughEval::DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist)
 	  AliL3Transform::Slice2Sector(fSlice,padrow,sector,row);
 	  AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
 	  Double_t eta = AliL3Transform::GetEta(xyz);
-	  Int_t pixel_index = (Int_t)(eta/etaslice);
+	  Int_t pixel_index = fHoughTransformer->GetEtaIndex(eta);//(Int_t)(eta/etaslice);
 	  if(pixel_index != eta_index) continue;
 	  hist->Fill(xyz[0],xyz[1],charge);
 	}

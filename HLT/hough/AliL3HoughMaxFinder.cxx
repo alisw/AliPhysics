@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <TNtuple.h>
+#include <TFile.h>
+
 #include "AliL3Histogram.h"
 #include "AliL3TrackArray.h"
 #include "AliL3HoughTrack.h"
@@ -29,6 +32,7 @@ AliL3HoughMaxFinder::AliL3HoughMaxFinder()
   fYPeaks=0;
   fNPeaks=0;
   fNMax=0;
+  fNtuppel = 0;
 }
 
 
@@ -47,6 +51,8 @@ AliL3HoughMaxFinder::AliL3HoughMaxFinder(Char_t *histotype,Int_t nmax,AliL3Histo
   fXPeaks = new Float_t[fNMax];
   fYPeaks = new Float_t[fNMax];
   fWeight = new Int_t[fNMax];
+  fNtuppel = 0;
+  fThreshold=0;
 }
 
 
@@ -59,6 +65,8 @@ AliL3HoughMaxFinder::~AliL3HoughMaxFinder()
     delete [] fYPeaks;
   if(fWeight)
     delete [] fWeight;
+  if(fNtuppel)
+    delete fNtuppel;
 }
 
 void AliL3HoughMaxFinder::Reset()
@@ -72,11 +80,31 @@ void AliL3HoughMaxFinder::Reset()
   fNPeaks=0;
 }
 
+void AliL3HoughMaxFinder::CreateNtuppel()
+{
+  fNtuppel = new TNtuple("ntuppel","Peak charateristics","kappa:phi0:weigth:content3:content5:content1:content7");
+  //content#; neighbouring bins of the peak.
+  
+}
+
+void AliL3HoughMaxFinder::WriteNtuppel(Char_t *filename)
+{
+  TFile *file = TFile::Open(filename,"RECREATE");
+  if(!file)
+    {
+      cerr<<"AliL3HoughMaxFinder::WriteNtuppel : Error opening file "<<filename<<endl;
+      return;
+    }
+  fNtuppel->Write();
+  file->Close();
+}
+
 void AliL3HoughMaxFinder::FindAbsMaxima()
 {
+  
   if(!fCurrentHisto)
     {
-      printf("AliL3HoughMaxFinder::FindAbsMaxima : No histogram!\n");
+      cerr<<"AliL3HoughMaxFinder::FindAbsMaxima : No histogram"<<endl;
       return;
     }
   AliL3Histogram *hist = fCurrentHisto;
@@ -110,13 +138,24 @@ void AliL3HoughMaxFinder::FindAbsMaxima()
       return;
     }
   
+      
   Double_t max_x = hist->GetBinCenterX(max_xbin);
   Double_t max_y = hist->GetBinCenterY(max_ybin);
   fXPeaks[fNPeaks] = max_x;
   fYPeaks[fNPeaks] = max_y;
   fWeight[fNPeaks] = (Int_t)max_value;
   fNPeaks++;
-
+  
+  if(fNtuppel)
+    {
+      Int_t bin3 = hist->GetBin(max_xbin-1,max_ybin);
+      Int_t bin5 = hist->GetBin(max_xbin+1,max_ybin);
+      Int_t bin1 = hist->GetBin(max_xbin,max_ybin-1);
+      Int_t bin7 = hist->GetBin(max_xbin,max_ybin+1);
+      
+      fNtuppel->Fill(max_x,max_y,max_value,hist->GetBinContent(bin3),hist->GetBinContent(bin5),hist->GetBinContent(bin1),hist->GetBinContent(bin7));
+    }
+  
 }
 
 void AliL3HoughMaxFinder::FindBigMaxima()
@@ -173,7 +212,7 @@ void AliL3HoughMaxFinder::FindBigMaxima()
 }
 
 
-void AliL3HoughMaxFinder::FindMaxima()
+void AliL3HoughMaxFinder::FindMaxima(Double_t grad_x,Double_t grad_y)
 {
   //Locate all the maxima in input histogram.
   //Maxima is defined as bins with more entries than the
@@ -186,9 +225,6 @@ void AliL3HoughMaxFinder::FindMaxima()
   Int_t bin[9];
   Double_t value[9];
   
-  Double_t grad_x = 3;
-  Double_t grad_y = 3;
-
   for(Int_t xbin=xmin+1; xbin<xmax-1; xbin++)
     {
       for(Int_t ybin=ymin+1; ybin<ymax-1; ybin++)
@@ -222,7 +258,7 @@ void AliL3HoughMaxFinder::FindMaxima()
 	      Float_t max_x = fCurrentHisto->GetBinCenterX(xbin);
 	      Float_t max_y = fCurrentHisto->GetBinCenterY(ybin);
 	      
-	      
+	      cout<<"Checking for threshols "<<value[4]<<" "<<fThreshold<<endl;
 	      if((Int_t)value[4] <= fThreshold) continue;//central bin below threshold
 	      
 	      if(fNPeaks > fNMax)
@@ -235,7 +271,6 @@ void AliL3HoughMaxFinder::FindMaxima()
 	      if(value[4]/value[3] < grad_x || value[4]/value[5] < grad_x ||
 		 value[4]/value[1] < grad_y || value[4]/value[7] < grad_y)
 		continue;
-	      
 	      
 	      fXPeaks[fNPeaks] = max_x;
 	      fYPeaks[fNPeaks] = max_y;

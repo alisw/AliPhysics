@@ -27,6 +27,8 @@ AliL3HoughTrack::AliL3HoughTrack()
   fPsiLine = 0;
   fIsHelix = true;
   fEtaIndex = -1;
+  fEta = 0;
+  
 }
 
 

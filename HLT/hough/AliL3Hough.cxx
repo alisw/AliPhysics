@@ -110,7 +110,6 @@ void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit
   fUse8bits = bit8;
   
   AliL3Transform::Init(fPath);
-  fPeakThreshold = 0;
   fNPatches = AliL3Transform::GetNPatches();
   fHoughTransformer = new AliL3HoughBaseTransformer*[fNPatches];
   fMemHandler = new AliL3MemHandler*[fNPatches];
@@ -161,7 +160,7 @@ void AliL3Hough::Process(Int_t minslice,Int_t maxslice)
   
 }
 
-void AliL3Hough::ReadData(Int_t slice)
+void AliL3Hough::ReadData(Int_t slice,Int_t eventnr=0)
 {
   //Read data from files, binary or root.
 
@@ -185,7 +184,8 @@ void AliL3Hough::ReadData(Int_t slice)
       else //read data from root file
 	{
 #ifdef use_aliroot
-	  digits=(AliL3DigitRowData *)fMemHandler[i]->AliDigits2Memory(ndigits); 
+	  digits=(AliL3DigitRowData *)fMemHandler[i]->AliDigits2Memory(ndigits,eventnr); 
+	  fMemHandler[i]->FreeDigitsTree();
 #else
 	  cerr<<"You cannot read from rootfile now"<<endl;
 #endif
@@ -319,8 +319,9 @@ void AliL3Hough::FindTrackCandidates()
 	  if(hist->GetNEntries()==0) continue;
 	  fPeakFinder->Reset();
 	  fPeakFinder->SetHistogram(hist);
-	  fPeakFinder->SetThreshold(fPeakThreshold);
-	  fPeakFinder->FindMaxima(); //Simple maxima finder
+	  fPeakFinder->FindMaxima(0,0); //Simple maxima finder
+	  //fPeakFinder->FindAbsMaxima();
+	  cout<<"Found "<<fPeakFinder->GetEntries()<<endl;
 	  for(Int_t k=0; k<fPeakFinder->GetEntries(); k++)
 	    {
 	      if(fPeakFinder->GetWeight(k) == 0) continue;
@@ -339,7 +340,7 @@ void AliL3Hough::InitEvaluate()
 {
   //Pass the transformer objects to the AliL3HoughEval objects:
   //This will provide the evaluation objects with all the necessary
-  //data it needs.
+  //data and parameters it needs.
   
   for(Int_t i=0; i<fNPatches; i++) 
     fEval[i]->InitTransformer(fHoughTransformer[i]);
@@ -437,9 +438,10 @@ void AliL3Hough::WriteTracks(Int_t slice,Char_t *path)
   delete mem;
   
 }
-#ifdef use_aliroot
+
 void AliL3Hough::WriteDigits(Char_t *outfile)
 {
+#ifdef use_aliroot  
   //Write the current data to a new rootfile.
 
   for(Int_t i=0; i<fNPatches; i++)
@@ -447,6 +449,9 @@ void AliL3Hough::WriteDigits(Char_t *outfile)
       AliL3DigitRowData *tempPt = (AliL3DigitRowData*)fHoughTransformer[i]->GetDataPointer();
       fMemHandler[i]->AliDigits2RootFile(tempPt,outfile);
     }
-  
+#else
+  cerr<<"AliL3Hough::WriteDigits : You need to compile with AliROOT!"<<endl;
+  return;
+#endif  
 }
-#endif
+

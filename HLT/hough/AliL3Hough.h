@@ -25,7 +25,6 @@ class AliL3Hough {
   Bool_t fUse8bits;
   Int_t fNEtaSegments;
   Int_t fNPatches;
-  Int_t fPeakThreshold;
   AliL3MemHandler **fMemHandler; //!
   AliL3HoughBaseTransformer **fHoughTransformer; //!
   AliL3HoughEval **fEval; //!
@@ -44,7 +43,7 @@ class AliL3Hough {
   
   void Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit8=kFALSE);
   void Process(Int_t minslice,Int_t maxslice);
-  void ReadData(Int_t slice);
+  void ReadData(Int_t slice,Int_t eventnr=0);
   void Transform(Int_t row_range = -1);
   void ProcessSliceIter();
   void ProcessPatchIter(Int_t patch);
@@ -56,9 +55,7 @@ class AliL3Hough {
   void Evaluate(Int_t road_width=1);
   void EvaluateWithEta();
   void WriteTracks(Int_t slice,Char_t *path="./");
-#ifdef use_aliroot
   void WriteDigits(Char_t *outfile="output_digits.root");
-#endif
   void InitEvaluate();
   
   //Setters
@@ -66,7 +63,6 @@ class AliL3Hough {
   void SetAddHistograms() {fAddHistograms = kTRUE;}
   void DoIterative() {fDoIterative = kTRUE;}
   void SetWriteDigits() {fWriteDigits = kTRUE;}
-  void SetPeakThreshold(Int_t i) {fPeakThreshold = i;}
   
   //Getters
   AliL3HoughBaseTransformer *GetTransformer(Int_t i) {if(!fHoughTransformer[i]) return 0; return fHoughTransformer[i];}
@@ -75,7 +71,7 @@ class AliL3Hough {
   AliL3HoughMerger *GetMerger() {if(!fMerger) return 0; return fMerger;}
   AliL3HoughIntMerger *GetInterMerger() {if(!fInterMerger) return 0; return fInterMerger;}
   AliL3MemHandler *GetMemHandler(Int_t i) {if(!fMemHandler[i]) return 0; return fMemHandler[i];}
-
+  AliL3HoughMaxFinder *GetMaxFinder() {return fPeakFinder;}
 
   ClassDef(AliL3Hough,1) //Hough transform base class
 

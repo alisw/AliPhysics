@@ -7,6 +7,7 @@
 class AliL3Histogram;
 class AliL3TrackArray;
 class AliL3HoughTrack;
+class TNtuple;
 
 struct AxisWindow
 {
@@ -31,16 +32,21 @@ class AliL3HoughMaxFinder {
   
   Char_t fHistoType;
 
+  TNtuple *fNtuppel; //!
+
+
  public:
   AliL3HoughMaxFinder(); 
   AliL3HoughMaxFinder(Char_t *histotype,Int_t nmax,AliL3Histogram *hist=0);
   virtual ~AliL3HoughMaxFinder();
   void Reset();
-  
+  void CreateNtuppel();
+  void WriteNtuppel(Char_t *filename);
+
   //Simple maxima finders:
   void FindAbsMaxima();
   void FindBigMaxima();
-  void FindMaxima();
+  void FindMaxima(Double_t grad_x,Double_t grad_y);
   
   //More sophisticated peak finders:
   AliL3TrackArray *LookForPeaks(AliL3Histogram *hist,Int_t nbins);
