@@ -83,7 +83,9 @@ public:
   Int_t GetNumberOfMuonTracks() const {return fMuonTracks.GetEntriesFast();}
   Int_t GetNumberOfV0s()      const {return fV0s.GetEntriesFast();}
   Int_t GetNumberOfCascades() const {return fCascades.GetEntriesFast();}
-  
+
+  void  Print(Option_t *option="") const;
+   
 protected:
 
   // Event Identification

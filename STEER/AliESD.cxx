@@ -60,3 +60,19 @@ void AliESD::GetVertex(Double_t *vtx, Double_t *cvtx) const {
   for (i=0; i<6; i++) cvtx[i]=fCovVtx[i];   
 }
 
+void AliESD::Print(Option_t *) const {
+  //Print header information of the event
+  Info("Print","ESD run information");
+  printf("Event # %d Run # %d Trigger %ld Magnetic field %f \n",
+	 GetEventNumber(),
+	 GetRunNumber(),
+	 GetTrigger(),
+	 GetMagneticField() );
+  printf("Event from reconstruction version %d \n",fRecoVersion);
+  printf("Number of tracks: \n");
+  printf("charged %d\n",GetNumberOfTracks());
+  printf("                 calo      %d\n", GetNumberOfCaloTracks());
+  printf("                 muon      %d\n", GetNumberOfMuonTracks());
+  printf("                 v0        %d\n", GetNumberOfV0s());
+  printf("                 cascades %d\n)", GetNumberOfCascades());
+}
