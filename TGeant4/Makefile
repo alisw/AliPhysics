@@ -74,10 +74,40 @@ CHECKS  =       $(patsubst %.cxx,check/%.viol,$(SRCS))
 
 include $(ALICE_ROOT)/conf/GeneralMacros
 
-
 # Geant4 specific compiler flags
 
 CXXFLAGS += $(CPPFLAGS)
+
+# Remove optimisation for TG4PhysicsConstructorHadron
+
+ifeq ($(ALICE_TARGET),Linux)
+  COMPILER := $(shell g++ -v 2>&1 | grep version | grep egcs)
+  ifeq ($(findstring 1.1,$(COMPILER)),1.1)
+    CXXFLAGS_WITHOUT_O := $(filter-out -O% -Wuninitialized, $(CXXFLAGS))
+    tgt_$(ALICE_TARGET)/TG4PhysicsConstructorHadron.o : TG4PhysicsConstructorHadron.cxx
+      ifeq ($(CXXVERBOSE),)
+	@$(CXX) $(CXXFLAGS_WITHOUT_O) -c -o $@ TG4PhysicsConstructorHadron.cxx
+      else
+	$(CXX) $(CXXFLAGS_WITHOUT_O) -c -o $@ TG4PhysicsConstructorHadron.cxx
+      endif
+  endif
+endif      
+
+ifeq ($(ALICE_TARGET),HP-UX.aCC)
+  # remove optimisation for TG4PhysicsConstructorHadron
+  # to be tested
+  COMPILER := $(shell aCC -V 2>&1)
+  ifeq ($(COMPILER), aCC: HP ANSI C++ B3910B A.01.15)
+    CXXFLAGS_WITHOUT_O := $(filter-out -O% , $(CXXFLAGS))
+    CXXFLAGS_WITHOUT_O := $(filter-out +O% , $(CXXFLAGS_WITHOUT_O))  
+    tgt_$(ALICE_TARGET)/TG4PhysicsConstructorHadron.o : TG4PhysicsConstructorHadron.cxx
+      ifeq ($(CXXVERBOSE),)
+	@$(CXX) $(CXXFLAGS_WITHOUT_O) -c $*.cxx -o tgt_$(ALICE_TARGET)/$*.o
+      else
+	$(CXX) $(CXXFLAGS_WITHOUT_O) -c $*.cxx -o tgt_$(ALICE_TARGET)/$*.o
+      endif
+  endif    
+endif      
 
 
 ############################ Dependencies #####################################
