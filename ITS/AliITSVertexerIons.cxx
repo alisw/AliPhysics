@@ -19,7 +19,7 @@
 #include <TH1.h>
 #include <TF1.h>
 #include <TCanvas.h>
-#include <AliITSVertex.h>
+#include <AliESDVertex.h>
 #include <TObjArray.h>
 #include <TObject.h>
 #include <AliITSVertexerPPZ.h>
@@ -68,8 +68,8 @@ AliITSVertexerIons::~AliITSVertexerIons() {
 }
 
 //______________________________________________________________________
-AliITSVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
-  // Defines the AliITSVertex for the current event
+AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
+  // Defines the AliESDVertex for the current event
   fCurrentVertex = 0;
   Double_t position[3];
   Double_t resolution[3];
@@ -262,7 +262,7 @@ AliITSVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
 	  snr[2]=-123;
 	  Char_t name[30];
 	  sprintf(name,"Vertex");
-	  fCurrentVertex = new AliITSVertex(position,resolution,snr,name);
+	  fCurrentVertex = new AliESDVertex(position,resolution,snr,name);
 	  return fCurrentVertex;*/
 
     Warning("FindVertexForCurrentEvent","AliITSVertexerIons finder is not reliable for low multiplicity events. Switching to AliITSVertexerPPZ with default parameters...\n");
@@ -465,7 +465,7 @@ AliITSVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
   //  sprintf(name,"Vertex_%d",evnumber);
   if(fDebug>0)Info("FindVertexForCurrentEvent","Vertex found for event %d",evnumber);
   sprintf(name,"Vertex");
-  fCurrentVertex = new AliITSVertex(position,resolution,snr,name);
+  fCurrentVertex = new AliESDVertex(position,resolution,snr,name);
   return fCurrentVertex;
 }
 

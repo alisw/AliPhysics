@@ -1,5 +1,5 @@
-#ifndef ALIITSVERTEX_H
-#define ALIITSVERTEX_H
+#ifndef ALIESDVERTEX_H
+#define ALIESDVERTEX_H
 /* Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -13,13 +13,13 @@
 /*****************************************************************************
  *                                                                           *
  * This class deals with primary vertex.                                     *
- * AliITSVertex objects are created by the class AliITSVertexer and its      *
+ * AliESDVertex objects are created by the class AliITSVertexer and its      *
  * derived classes.                                                          *
  * Different constructors are provided:                                      *
  * - for primary vertex determined with pixels in pp (only Z)                *
  * - for primary vertex determined with pixels in ion-ion (X,Y,Z)            *
  * - for primary vertex determined with ITS tracks in pp (X,Y,Z)             *
- * This class replaces the previous version of AliITSVertex, designed        *
+ * This class replaces the previous version of AliESDVertex, designed        *
  * originally only for A-A collisions. The functionalities of the old class  *
  * are maintained in the AliITSVertexerIons class                            *
  *                                                                           *
@@ -28,22 +28,22 @@
 //---- Root headers -----
 #include <TNamed.h>
 
-class AliITSVertex : public TNamed {
+class AliESDVertex : public TNamed {
  
  public:
  
-  AliITSVertex();
-  AliITSVertex(Double_t positionZ,Double_t sigmaZ,Int_t nContributors,
+  AliESDVertex();
+  AliESDVertex(Double_t positionZ,Double_t sigmaZ,Int_t nContributors,
 	       Char_t *vtxName="Vertex");
-  AliITSVertex(Double_t position[3],Double_t covmatrix[6],
+  AliESDVertex(Double_t position[3],Double_t covmatrix[6],
 	       Double_t chi2,Int_t nContributors,
 	       Char_t *vtxName="Vertex");
-  AliITSVertex(Double_t position[3],Double_t sigma[3],
+  AliESDVertex(Double_t position[3],Double_t sigma[3],
 	       Char_t *vtxName="Vertex");
-  AliITSVertex(Double_t position[3],Double_t sigma[3],Double_t snr[3],
+  AliESDVertex(Double_t position[3],Double_t sigma[3],Double_t snr[3],
 	       Char_t *vtxName="Vertex");
 
-  virtual ~AliITSVertex();
+  virtual ~AliESDVertex();
 
 
   void     GetXYZ(Double_t position[3]) const;
@@ -85,7 +85,7 @@ class AliITSVertex : public TNamed {
   Int_t    fNContributors;  // # of tracklets/tracks used for the estimate 
   Int_t    fDebug;  //! for debugging
   Double_t fTruePos[3];   //true vertex position (for comparison purposes)
-  ClassDef(AliITSVertex,4)  // Class for Primary Vertex
+  ClassDef(AliESDVertex,4)  // Class for Primary Vertex
     };
 
 #endif

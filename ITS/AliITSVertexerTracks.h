@@ -32,7 +32,7 @@
 #include <TObjArray.h>
 
 class TTree; 
-class AliITSVertex; 
+class AliESDVertex; 
 
 class AliITSVertexerTracks : public AliITSVertexer {
   
@@ -49,11 +49,11 @@ class AliITSVertexerTracks : public AliITSVertexer {
   // destructor
   ~AliITSVertexerTracks();
   // return vertex from the set of tracks in the tree
-  AliITSVertex* VertexOnTheFly(TTree &trkTree);
+  AliESDVertex* VertexOnTheFly(TTree &trkTree);
   // computes the vertex for the current event
-  virtual AliITSVertex* FindVertexForCurrentEvent(Int_t evnumb);
+  virtual AliESDVertex* FindVertexForCurrentEvent(Int_t evnumb);
   // computes the vertex for the current event using the ESD
-  AliITSVertex*         FindVertexForCurrentEvent(AliESD *esdEvent);
+  AliESDVertex*         FindVertexForCurrentEvent(AliESD *esdEvent);
   // computes the vertex for each event and stores it on file
   virtual void  FindVertices();
   // computes the vertex for each event and stores it in the ESD

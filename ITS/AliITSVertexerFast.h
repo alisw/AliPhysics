@@ -20,7 +20,7 @@ class AliITSVertexerFast : public AliITSVertexer {
   AliITSVertexerFast();
   AliITSVertexerFast(Double_t *smear);
   virtual ~AliITSVertexerFast(); 
-  virtual AliITSVertex* FindVertexForCurrentEvent(Int_t evnumb);
+  virtual AliESDVertex* FindVertexForCurrentEvent(Int_t evnumb);
   virtual void FindVertices();
   virtual void PrintStatus() const;
 

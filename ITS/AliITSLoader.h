@@ -2,7 +2,7 @@
 #define ALIITSLOADER_H
 
 #include <AliLoader.h>
-#include <AliITSVertex.h>
+#include <AliESDVertex.h>
 
 
 class AliITSLoader: public AliLoader
@@ -32,9 +32,9 @@ class AliITSLoader: public AliLoader
     void           SetVerticesFileName(const TString& fname){GetVertexDataLoader()->SetFileName(fname);}
     void           UnloadVertices(){GetVertexDataLoader()->GetBaseLoader(0)->Unload();}
     virtual Int_t  WriteVertices(Option_t* opt=""){return GetVertexDataLoader()->GetBaseLoader(0)->WriteData(opt);}
-    virtual Int_t PostVertex(AliITSVertex *ptr){return GetVertexDataLoader()->GetBaseLoader(0)->Post(ptr);}
+    virtual Int_t PostVertex(AliESDVertex *ptr){return GetVertexDataLoader()->GetBaseLoader(0)->Post(ptr);}
     //    virtual void SetVerticesContName(const char *name){GetVertexDataLoader()->GetBaseLoader(0)->SetName(name);}
-    AliITSVertex *GetVertex(){return static_cast <AliITSVertex*>(GetVertexDataLoader()->GetBaseLoader(0)->Get());}
+    AliESDVertex *GetVertex(){return static_cast <AliESDVertex*>(GetVertexDataLoader()->GetBaseLoader(0)->Get());}
 
     //V0s
     AliDataLoader* GetV0DataLoader() {return GetDataLoader("V0 Vertices");}

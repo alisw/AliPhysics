@@ -70,7 +70,7 @@
 #pragma link C++ class  AliESDMuonTrack+;
 #pragma link C++ class  AliESDv0+;
 #pragma link C++ class  AliESDcascade+;
-#pragma link C++ class  AliESDvertex+;
+#pragma link C++ class  AliESDVertex+;
 #pragma link C++ class  AliESDpid+;
 #pragma link C++ class  AliTrackMap+;
 #pragma link C++ class  AliTrackMapper+;

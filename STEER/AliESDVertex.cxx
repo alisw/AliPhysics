@@ -26,20 +26,20 @@
 #include <TROOT.h>
 #include <TNamed.h>
 //---- AliRoot headers -----
-#include "AliITSVertex.h"
+#include "AliESDVertex.h"
 
 
-ClassImp(AliITSVertex)
+ClassImp(AliESDVertex)
 
 //--------------------------------------------------------------------------
-AliITSVertex::AliITSVertex() {
+AliESDVertex::AliESDVertex() {
 //
 // Default Constructor, set everything to 0
 //
   SetToZero();
 }
 //--------------------------------------------------------------------------
-AliITSVertex::AliITSVertex(Double_t positionZ,Double_t sigmaZ,
+AliESDVertex::AliESDVertex(Double_t positionZ,Double_t sigmaZ,
 			   Int_t nContributors,Char_t *vtxName) {
   //
   // Constructor for vertex Z from pixels
@@ -54,7 +54,7 @@ AliITSVertex::AliITSVertex(Double_t positionZ,Double_t sigmaZ,
 
 }
 //------------------------------------------------------------------------- 
-AliITSVertex::AliITSVertex(Double_t position[3],Double_t covmatrix[6],
+AliESDVertex::AliESDVertex(Double_t position[3],Double_t covmatrix[6],
 			   Double_t chi2,Int_t nContributors,Char_t *vtxName) {
 //
 // Constructor for vertex in 3D from tracks
@@ -79,7 +79,7 @@ AliITSVertex::AliITSVertex(Double_t position[3],Double_t covmatrix[6],
 
 }
 //--------------------------------------------------------------------------
-AliITSVertex::AliITSVertex(Double_t position[3],Double_t sigma[3],
+AliESDVertex::AliESDVertex(Double_t position[3],Double_t sigma[3],
 			   Char_t *vtxName) {
 //
 // Constructor for smearing of true position
@@ -101,7 +101,7 @@ AliITSVertex::AliITSVertex(Double_t position[3],Double_t sigma[3],
 
 }
 //--------------------------------------------------------------------------
-AliITSVertex::AliITSVertex(Double_t position[3],Double_t sigma[3],
+AliESDVertex::AliESDVertex(Double_t position[3],Double_t sigma[3],
 			   Double_t snr[3],Char_t *vtxName) {
   //
   // Constructor for Pb-Pb
@@ -126,7 +126,7 @@ AliITSVertex::AliITSVertex(Double_t position[3],Double_t sigma[3],
 
 }
 //--------------------------------------------------------------------------
-void AliITSVertex::SetToZero() {
+void AliESDVertex::SetToZero() {
   //
   // Set some data members to 0. Used by constructors
   //
@@ -148,14 +148,14 @@ void AliITSVertex::SetToZero() {
   SetDebug();
 }
 //--------------------------------------------------------------------------
-AliITSVertex::~AliITSVertex() {
+AliESDVertex::~AliESDVertex() {
 //  
 // Default Destructor
 //
 
 }
 //--------------------------------------------------------------------------
-void AliITSVertex::GetXYZ(Double_t position[3]) const {
+void AliESDVertex::GetXYZ(Double_t position[3]) const {
 //
 // Return position of the vertex in global frame
 //
@@ -166,7 +166,7 @@ void AliITSVertex::GetXYZ(Double_t position[3]) const {
   return;
 }
 //--------------------------------------------------------------------------
-void AliITSVertex::GetSigmaXYZ(Double_t sigma[3]) const {
+void AliESDVertex::GetSigmaXYZ(Double_t sigma[3]) const {
 //
 // Return errors on vertex position in thrust frame
 //
@@ -177,7 +177,7 @@ void AliITSVertex::GetSigmaXYZ(Double_t sigma[3]) const {
   return;
 }
 //--------------------------------------------------------------------------
-void AliITSVertex::GetCovMatrix(Double_t covmatrix[6]) const {
+void AliESDVertex::GetCovMatrix(Double_t covmatrix[6]) const {
 //
 // Return covariance matrix of the vertex
 //
@@ -191,49 +191,49 @@ void AliITSVertex::GetCovMatrix(Double_t covmatrix[6]) const {
   return;
 }
 //--------------------------------------------------------------------------
-Double_t AliITSVertex::GetXv() const {
+Double_t AliESDVertex::GetXv() const {
 //
 // Return global x
 //
   return fPosition[0];
 }
 //--------------------------------------------------------------------------
-Double_t AliITSVertex::GetYv() const {
+Double_t AliESDVertex::GetYv() const {
 //
 // Return global y
 //
   return fPosition[1];
 }
 //--------------------------------------------------------------------------
-Double_t AliITSVertex::GetZv() const {
+Double_t AliESDVertex::GetZv() const {
 //
 // Return global z
 //
   return fPosition[2];
 }
 //--------------------------------------------------------------------------
-Double_t AliITSVertex::GetXRes() const {
+Double_t AliESDVertex::GetXRes() const {
 //
 // Return error on global x
 //
   return TMath::Sqrt(fCovXX);
 }
 //--------------------------------------------------------------------------
-Double_t AliITSVertex::GetYRes() const {
+Double_t AliESDVertex::GetYRes() const {
 //
 // Return error on global y
 //
   return TMath::Sqrt(fCovYY);
 }
 //--------------------------------------------------------------------------
-Double_t AliITSVertex::GetZRes() const {
+Double_t AliESDVertex::GetZRes() const {
 //
 // Return error on global z
 //
   return TMath::Sqrt(fCovZZ);
 }
 //--------------------------------------------------------------------------
-void AliITSVertex::GetSNR(Double_t snr[3]) const {
+void AliESDVertex::GetSNR(Double_t snr[3]) const {
 //
 // Return S/N ratios
 //
@@ -242,7 +242,7 @@ void AliITSVertex::GetSNR(Double_t snr[3]) const {
   return;
 }
 //--------------------------------------------------------------------------
-void AliITSVertex::PrintStatus() const {
+void AliESDVertex::PrintStatus() const {
 //
 // Print out information on all data members
 //

@@ -23,7 +23,7 @@ class AliITSVertexerPPZ : public AliITSVertexer {
   AliITSVertexerPPZ();
   AliITSVertexerPPZ(TString fn, Float_t x0=0., Float_t y0=0.);  // standard constructor 
   virtual ~AliITSVertexerPPZ(); // destructor
-  virtual AliITSVertex* FindVertexForCurrentEvent(Int_t event);
+  virtual AliESDVertex* FindVertexForCurrentEvent(Int_t event);
   virtual void FindVertices();
   virtual Float_t GetZFound() const {return fZFound;}
   virtual Float_t GetZsig() const {return fZsig;}

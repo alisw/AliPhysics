@@ -104,8 +104,8 @@ AliITSVertexerZ::~AliITSVertexerZ() {
 }
 
 //______________________________________________________________________
-AliITSVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
-  // Defines the AliITSVertex for the current event
+AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
+  // Defines the AliESDVertex for the current event
 
   fCurrentVertex = 0;
   AliRunLoader *rl =AliRunLoader::GetRunLoader();
@@ -276,7 +276,7 @@ AliITSVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
     }
   }
   cout<<"Numer of Iterations "<<niter<<endl<<endl;
-  fCurrentVertex = new AliITSVertex(fZFound,fZsig,num);
+  fCurrentVertex = new AliESDVertex(fZFound,fZsig,num);
   fCurrentVertex->SetTitle("vertexer: B");
   ResetHistograms();
   return fCurrentVertex;

@@ -132,7 +132,6 @@
 #pragma link C++ class  AliCascadeVertex+;
 #pragma link C++ class  AliCascadeVertexer+;
 
-#pragma link C++ class  AliITSVertex+;
 #pragma link C++ class  AliITSVertexer+;
 #pragma link C++ class  AliITSVertexerIons+;
 #pragma link C++ class  AliITSVertexerPPZ+;

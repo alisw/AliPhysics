@@ -32,7 +32,7 @@ SRCS          = AliITS.cxx AliITSvSPD02.cxx \
 		AliITSvtest.cxx	AliITSStrLine.cxx\
                 AliITSclustererV2.cxx \
                 AliITSclusterV2.cxx AliITStrackV2.cxx AliITStrackerV2.cxx \
-		AliITSVertex.cxx AliITSVertexer.cxx AliITSVertexerIons.cxx \
+		AliITSVertexer.cxx AliITSVertexerIons.cxx \
                 AliITSVertexerPPZ.cxx AliITSVertexerTracks.cxx\
                 AliITSVertexerZ.cxx \
                 AliV0vertex.cxx AliV0vertexer.cxx \
@@ -60,5 +60,5 @@ DHDR=ITSLinkDef.h
 
 EINCLUDE:=$(ALICE)/geant3/TGeant3 TPC CONTAINERS RAW
 
-EXPORT:=AliITStrackV2.h AliITSVertexerTracks.h AliITSVertex.h AliV0vertexer.h \
+EXPORT:=AliITStrackV2.h AliITSVertexerTracks.h AliV0vertexer.h \
         AliV0vertex.h AliITSVertexer.h AliITSrecoV2.h

@@ -28,7 +28,7 @@ class AliITSVertexerIons : public AliITSVertexer {
   AliITSVertexerIons();
   AliITSVertexerIons(TString fn); 
   virtual ~AliITSVertexerIons(); // destructor
-  virtual AliITSVertex* FindVertexForCurrentEvent(Int_t event);
+  virtual AliESDVertex* FindVertexForCurrentEvent(Int_t event);
   virtual void FindVertices();
   virtual Double_t PhiFunc(Float_t p[]);
   virtual void PrintStatus() const;

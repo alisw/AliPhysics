@@ -16,7 +16,7 @@
 
 class AliITSclusterTable;
 class AliITStrackSA;
-class AliITSVertex;
+class AliESDVertex;
 class AliITSVertexer;
 
 class AliITStrackerSA : public AliITStrackerV2 {
@@ -25,7 +25,7 @@ class AliITStrackerSA : public AliITStrackerV2 {
  public:
 
   AliITStrackerSA();
-  AliITStrackerSA(AliITSgeom *geom,AliITSVertex *vert);
+  AliITStrackerSA(AliITSgeom *geom,AliESDVertex *vert);
   AliITStrackerSA(AliITSgeom *geom,AliITSVertexer *vertexer);
   AliITStrackerSA(AliITStrackerSA& tracker);
   virtual ~AliITStrackerSA();  
@@ -37,7 +37,7 @@ class AliITStrackerSA : public AliITStrackerV2 {
                           Double_t *errorprimvert,char *opt="6/6");
 
   AliITStrackV2* FindTrackLowChiSquare(TObjArray* tracklist, Int_t dim) const;
-  void SetVertex(AliITSVertex *vtx){fVert = vtx;}
+  void SetVertex(AliESDVertex *vtx){fVert = vtx;}
   void SetWindowSizes(Int_t n=46, Double_t *phi=0, Double_t *lam=0);
   void UseFoundTracksV2(Int_t evnum,TTree* treev2, TTree* clustertree);
   void UseFoundTracksV2(Int_t evnum,AliESD *event, TTree* clustertree);
@@ -92,7 +92,7 @@ class AliITStrackerSA : public AliITStrackerV2 {
   Int_t fNloop;         //  Number of iterqations on phi and lambda windows
   Double_t *fPhiWin;    // phi window sizes
   Double_t *fLambdaWin; // lambda window sizes
-  AliITSVertex *fVert;        //! primary vertex
+  AliESDVertex *fVert;        //! primary vertex
   AliITSVertexer *fVertexer;  //! vertexer 
   AliITSgeom *fGeom;          //! ITS geometry
   Int_t fFlagLoad;            //  flag for loaded clusters (1==already loaded)

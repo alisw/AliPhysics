@@ -16,7 +16,7 @@
 #include "AliESD.h"
 #include "AliITStrackV2.h"
 #include "AliITSVertexerTracks.h"
-#include "AliITSVertex.h"
+#include "AliESDVertex.h"
 #include "AliV0vertexer.h"
 #include "AliV0vertex.h"
 #include "AliD0toKpi.h"

@@ -15,7 +15,7 @@
 #include <Riostream.h>
 #include <TArrayF.h>
 #include <TRandom.h>
-#include "AliITSVertex.h"
+#include "AliESDVertex.h"
 #include <AliITSVertexerFast.h>
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
@@ -55,7 +55,7 @@ AliITSVertexerFast::~AliITSVertexerFast(){
 }
 
 //______________________________________________________________________
-AliITSVertex* AliITSVertexerFast::FindVertexForCurrentEvent(Int_t evnumb){
+AliESDVertex* AliITSVertexerFast::FindVertexForCurrentEvent(Int_t evnumb){
   // Defines the AliITSVertex for the current event
   fCurrentVertex = 0;
   AliRunLoader *rl =AliRunLoader::GetRunLoader();
@@ -73,7 +73,7 @@ AliITSVertex* AliITSVertexerFast::FindVertexForCurrentEvent(Int_t evnumb){
   }
   char name[30];
   sprintf(name,"Vertex_%d",evnumb);
-  fCurrentVertex = new AliITSVertex(vrtx,fSmear,name);
+  fCurrentVertex = new AliESDVertex(vrtx,fSmear,name);
   fCurrentVertex->SetTruePos(vrttrue);
   return fCurrentVertex;
 }

@@ -12,7 +12,7 @@
 class TFile;
 class TString;
 class TTRee;
-class AliITSVertex;
+class AliESDVertex;
 
 
 class AliITSVertexer : public TObject {
@@ -25,7 +25,7 @@ class AliITSVertexer : public TObject {
     // destructor
     virtual ~AliITSVertexer(); 
     // computes the vertex for the current event
-    virtual AliITSVertex* FindVertexForCurrentEvent(Int_t evnumb)=0; 
+    virtual AliESDVertex* FindVertexForCurrentEvent(Int_t evnumb)=0; 
     // computes the vetex for each event and stores it on file
     virtual void FindVertices()= 0;
     virtual void PrintStatus() const = 0;
@@ -42,7 +42,7 @@ class AliITSVertexer : public TObject {
     // assignment operator (NO assignment allowed)
     AliITSVertexer& operator=(const AliITSVertexer& /* vtxr */);
 
-    AliITSVertex *fCurrentVertex;  //! pointer to the vertex of the current
+    AliESDVertex *fCurrentVertex;  //! pointer to the vertex of the current
                                    //  event
     Int_t fFirstEvent;          // First event to be processed by FindVertices
     Int_t fLastEvent;           // Last event to be processed by FindVertices 

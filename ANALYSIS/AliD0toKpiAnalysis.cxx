@@ -35,7 +35,7 @@
 #include "AliRunLoader.h"
 #include "AliITStrackV2.h"
 #include "AliITSVertexerTracks.h"
-#include "AliITSVertex.h"
+#include "AliESDVertex.h"
 #include "AliV0vertexer.h"
 #include "AliV0vertex.h"
 #include "AliD0toKpi.h"
@@ -207,7 +207,7 @@ void AliD0toKpiAnalysis::FindCandidates(Int_t evFirst,Int_t evLast,
 
     // retrieve primary vertex from file
     sprintf(vtxName,"VertexTracks_%d",ev);
-    AliITSVertex *vertex1stored = (AliITSVertex*)trkFile->Get(vtxName);
+    AliESDVertex *vertex1stored = (AliESDVertex*)trkFile->Get(vtxName);
     vertex1stored->GetXYZ(fV1);
     delete vertex1stored;
 
@@ -289,8 +289,8 @@ void AliD0toKpiAnalysis::FindCandidates(Int_t evFirst,Int_t evLast,
 	    skipped[0] = trkEntryP[iTrkP];
 	    skipped[1] = trkEntryN[iTrkN];
 	    vertexer1->SetSkipTracks(2,skipped);
-	    AliITSVertex *vertex1onfly = 
-	      (AliITSVertex*)vertexer1->VertexOnTheFly(*trkTree); 
+	    AliESDVertex *vertex1onfly = 
+	      (AliESDVertex*)vertexer1->VertexOnTheFly(*trkTree); 
 	    if(vertex1onfly->GetNContributors()>0) goodVtx1 = kTRUE;
 	    vertex1onfly->GetXYZ(fV1);
 	    //vertex1onfly->PrintStatus();
@@ -444,7 +444,7 @@ void AliD0toKpiAnalysis::FindCandidatesESD(Int_t evFirst,Int_t evLast,
 
     // retrieve primary vertex from file
     //sprintf(vtxName,"Vertex_%d",ev);
-    //AliITSVertex *vertex1stored = (AliITSVertex*)trkFile->Get(vtxName);
+    //AliESDVertex *vertex1stored = (AliESDVertex*)trkFile->Get(vtxName);
     //vertex1stored->GetXYZ(fV1);
     //delete vertex1stored;
     event->GetVertex(fV1,covV1);
@@ -530,8 +530,8 @@ void AliD0toKpiAnalysis::FindCandidatesESD(Int_t evFirst,Int_t evLast,
 	    skipped[0] = trkEntryP[iTrkP];
 	    skipped[1] = trkEntryN[iTrkN];
 	    vertexer1->SetSkipTracks(2,skipped);
-	    AliITSVertex *vertex1onfly = 
-	      (AliITSVertex*)vertexer1->VertexOnTheFly(*trkTree); 
+	    AliESDVertex *vertex1onfly = 
+	      (AliESDVertex*)vertexer1->VertexOnTheFly(*trkTree); 
 	    if(vertex1onfly->GetNContributors()>0) goodVtx1 = kTRUE;
 	    vertex1onfly->GetXYZ(fV1);
 	    //vertex1onfly->PrintStatus();

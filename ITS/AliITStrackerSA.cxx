@@ -34,7 +34,7 @@
 #include "AliITStrackerSA.h"
 #include "AliITStrackSA.h"
 #include "AliITSVertexer.h"
-#include "AliITSVertex.h"
+#include "AliESDVertex.h"
 #include "AliESD.h"
 #include "AliESDtrack.h"
 
@@ -46,7 +46,7 @@ AliITStrackerSA::AliITStrackerSA():AliITStrackerV2(){
   Init();
 }
 //____________________________________________________________________________
-AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom, AliITSVertex *vert):AliITStrackerV2(geom) 
+AliITStrackerSA::AliITStrackerSA(AliITSgeom *geom, AliESDVertex *vert):AliITStrackerV2(geom) 
 {
   // Standard constructor (Vertex is known and passed to this obj.)
   Init();
@@ -99,7 +99,7 @@ AliITStrackerSA::AliITStrackerSA(AliITStrackerSA& tracker):AliITStrackerV2(){
   fPhiWin = tracker.fPhiWin;
   fLambdaWin = tracker.fLambdaWin;
   if(tracker.fVertexer && tracker.fVert){
-    fVert = new AliITSVertex(*tracker.fVert);
+    fVert = new AliESDVertex(*tracker.fVert);
   }
   else {
     fVert = tracker.fVert;
@@ -113,7 +113,7 @@ AliITStrackerSA::AliITStrackerSA(AliITStrackerSA& tracker):AliITStrackerV2(){
 //____________________________________________________________________________
 AliITStrackerSA::~AliITStrackerSA(){
   // destructor
-  // if fVertexer is not null, the AliITSVertex obj. is owned by this class
+  // if fVertexer is not null, the AliESDVertex obj. is owned by this class
   // and is deleted here
   if(fVertexer){
     if(fVert)delete fVert;

@@ -95,7 +95,7 @@ void  AliITSVertexerPPZ::EvalZ(TH1F *hist,Int_t sepa, Int_t ncoinc, TArrayF *zva
   if(NbinNotZero==1){
     fZFound = curz;
     fZsig=0;
-    fCurrentVertex = new AliITSVertex(fZFound,fZsig,NbinNotZero);
+    fCurrentVertex = new AliESDVertex(fZFound,fZsig,NbinNotZero);
     return;
   }
   Float_t errsq = totst2/(N-1)-totst*totst/N/(N-1);
@@ -154,7 +154,7 @@ void  AliITSVertexerPPZ::EvalZ(TH1F *hist,Int_t sepa, Int_t ncoinc, TArrayF *zva
   if(N<1){fZFound=-110; fZsig=-110; return;}
   if(N==1){
     fZsig = 0;
-    fCurrentVertex = new AliITSVertex(fZFound,fZsig,N);
+    fCurrentVertex = new AliESDVertex(fZFound,fZsig,N);
     return;
   }
   errsq = (fZsig/(N-1)-fZFound*fZFound/N/(N-1))/N;
@@ -171,12 +171,12 @@ void  AliITSVertexerPPZ::EvalZ(TH1F *hist,Int_t sepa, Int_t ncoinc, TArrayF *zva
   fZFound*=fZsig;
   fZsig = TMath::Sqrt(fZsig);
   */
-  fCurrentVertex = new AliITSVertex(fZFound,fZsig,N);
+  fCurrentVertex = new AliESDVertex(fZFound,fZsig,N);
 }
 
 //______________________________________________________________________
-AliITSVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
-  // Defines the AliITSVertex for the current event
+AliESDVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
+  // Defines the AliESDVertex for the current event
   fCurrentVertex = 0;
   fZFound = -999;
   fZsig = -999;

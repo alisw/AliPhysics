@@ -1,4 +1,4 @@
-#include <AliITSVertex.h>
+#include <AliESDVertex.h>
 #include <AliITSVertexer.h>
 #include <AliRunLoader.h>
 #include <AliITSLoader.h>
@@ -7,7 +7,7 @@ ClassImp(AliITSVertexer)
 
 //////////////////////////////////////////////////////////////////////
 // Base class for primary vertex reconstruction                     //
-// AliITSVertex is a class for full 3D primary vertex finding       //
+// AliESDVertexer is a class for full 3D primary vertex finding     //
 // derived classes: AliITSVertexerIons AliITSvertexerPPZ            //
 //                  AliITSVertexerTracks                            //
 //////////////////////////////////////////////////////////////////////

@@ -34,7 +34,7 @@
 #include "AliKalmanTrack.h"
 #include "AliITSStrLine.h"
 #include "AliITStrackV2.h"
-#include "AliITSVertex.h"
+#include "AliESDVertex.h"
 #include "AliITSVertexerTracks.h"
 #include "AliESD.h"
 #include "AliESDtrack.h"
@@ -285,7 +285,7 @@ void AliITSVertexerTracks::PrintStatus() const {
   return;
 }
 //----------------------------------------------------------------------------
-AliITSVertex* AliITSVertexerTracks::FindVertexForCurrentEvent(Int_t evnumb) {
+AliESDVertex* AliITSVertexerTracks::FindVertexForCurrentEvent(Int_t evnumb) {
 //
 // Vertex for current event
 //
@@ -315,7 +315,7 @@ AliITSVertex* AliITSVertexerTracks::FindVertexForCurrentEvent(Int_t evnumb) {
   return fCurrentVertex;
 }
 //----------------------------------------------------------------------------
-AliITSVertex* AliITSVertexerTracks::FindVertexForCurrentEvent(AliESD *esdEvent)
+AliESDVertex* AliITSVertexerTracks::FindVertexForCurrentEvent(AliESD *esdEvent)
 {
 //
 // Vertex for current ESD event
@@ -382,7 +382,7 @@ void AliITSVertexerTracks::TooFewTracks() {
 // When the number of tracks is < fMinTracks the vertex is set to (0,0,0)
 // and the number of tracks to -1
 //
-  fCurrentVertex = new AliITSVertex(0.,0.,-1);
+  fCurrentVertex = new AliESDVertex(0.,0.,-1);
   return;
 }
 //---------------------------------------------------------------------------
@@ -632,7 +632,7 @@ void AliITSVertexerTracks::VertexFitter() {
   covmatrix[5] = V(2,2);
   
   // store data in the vertex object
-  fCurrentVertex = new AliITSVertex(position,covmatrix,chi2,nUsedTrks);
+  fCurrentVertex = new AliESDVertex(position,covmatrix,chi2,nUsedTrks);
 
   if(fDebug) {
     printf(" VertexFitter(): finish\n");
@@ -643,7 +643,7 @@ void AliITSVertexerTracks::VertexFitter() {
   return;
 }
 //----------------------------------------------------------------------------
-AliITSVertex *AliITSVertexerTracks::VertexOnTheFly(TTree &trkTree) {
+AliESDVertex *AliITSVertexerTracks::VertexOnTheFly(TTree &trkTree) {
 //
 // Return vertex from tracks in trkTree
 //
