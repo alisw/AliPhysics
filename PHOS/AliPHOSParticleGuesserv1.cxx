@@ -14,65 +14,52 @@
  **************************************************************************/
 
 //_________________________________________________________________________
-// A brief description of the class
-//*-- Author : Gines MARTINEZ  SUBATECH 
+// Algorithm class to guess the type of particle from the PHOS TrackSegment alone 
+//*-- Author : Y. Schutz SUBATECH
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
 
-#include "TClonesArray.h"
-
 // --- Standard library ---
+
+#include <iostream>
 
 // --- AliRoot header files ---
 
-#include "AliPHOSReconstructioner.h"
-#include "AliPHOSClusterizer.h"
+#include "AliPHOSParticleGuesserv1.h"
+#include "AliPHOSTrackSegment.h"
+#include "AliPHOSRecParticle.h"
 
-ClassImp(AliPHOSReconstructioner)
+ClassImp( AliPHOSParticleGuesserv1) 
 
 
 //____________________________________________________________________________
-AliPHOSReconstructioner::AliPHOSReconstructioner() 
+ AliPHOSParticleGuesserv1::AliPHOSParticleGuesserv1() 
 {
   // ctor
-}        
 
-//____________________________________________________________________________
-AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterizer, 
-						 AliPHOSTrackSegmentMaker * Tracker,
-						 AliPHOSParticleGuesser * Guesser)
-{
-  fClusterizer        = Clusterizer ;
-  fTrackSegmentMaker  = Tracker ;
-  fParticleGuesser    = Guesser ; 
-} 
-
-//____________________________________________________________________________
-AliPHOSReconstructioner::~AliPHOSReconstructioner() 
-{
-  // dtor
-}  
-
-//____________________________________________________________________________
- void AliPHOSReconstructioner::Init(AliPHOSClusterizer * Clusterizer, 
-						 AliPHOSTrackSegmentMaker * Tracker,
-						 AliPHOSParticleGuesser * Guesser)
-{
-  fClusterizer        = Clusterizer ;
-  fTrackSegmentMaker  = Tracker ;
-  fParticleGuesser    = Guesser ; 
-} 
-
-
-
-//____________________________________________________________________________
- void AliPHOSReconstructioner::Make(TClonesArray * dl, RecPointsList * emccl, RecPointsList * ppsdl, 
-				     TrackSegmentsList * trsl, RecParticlesList * rpl)
-{
-  fClusterizer->MakeClusters(dl, emccl, ppsdl);
-
-  fTrackSegmentMaker->MakeTrackSegments(dl, emccl, ppsdl, trsl) ;
-
-  fParticleGuesser->GuessParticleType(trsl, rpl) ; 
 }
+
+//____________________________________________________________________________
+ AliPHOSParticleGuesserv1::~AliPHOSParticleGuesserv1()
+{ 
+  // dtor
+}
+
+
+//____________________________________________________________________________
+void  AliPHOSParticleGuesserv1::GuessParticleType(TrackSegmentsList * trsl, RecParticlesList * rpl)
+{
+  // main function, does the job
+
+  TIter next(trsl) ; 
+  AliPHOSTrackSegment * tracksegment ; 
+  Int_t index = 0 ; 
+
+  while ( (tracksegment = (AliPHOSTrackSegment *)next()) ) {
+    new( (*rpl)[index] ) AliPHOSRecParticle(tracksegment) ; 
+    index++ ; 
+  }
+    
+}
+

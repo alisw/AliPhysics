@@ -14,65 +14,63 @@
  **************************************************************************/
 
 //_________________________________________________________________________
-// A brief description of the class
-//*-- Author : Gines MARTINEZ  SUBATECH 
+// Reconstructed Particle
+//*-- Y. Schutz:   SUBATECH 
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
-
-#include "TClonesArray.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 
-#include "AliPHOSReconstructioner.h"
-#include "AliPHOSClusterizer.h"
+#include "AliPHOSRecParticle.h"
 
-ClassImp(AliPHOSReconstructioner)
+ClassImp(AliPHOSRecParticle)
 
 
 //____________________________________________________________________________
-AliPHOSReconstructioner::AliPHOSReconstructioner() 
+ AliPHOSRecParticle::AliPHOSRecParticle(AliPHOSTrackSegment * ts)
 {
   // ctor
-}        
+ 
+  fPHOSTrackSegment = new AliPHOSTrackSegment(*ts) ; 
+  fType             = ts->GetPartType() ; 
+  fE                = ts->GetEnergy() ; 
+  TVector3 momdir   = ts->GetMomentumDirection() ;
+  fPx               = fE * momdir.X() ; 
+  fPy               = fE * momdir.Y() ; 
+  fPz               = fE * momdir.Z() ; 
+
+}
 
 //____________________________________________________________________________
-AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterizer, 
-						 AliPHOSTrackSegmentMaker * Tracker,
-						 AliPHOSParticleGuesser * Guesser)
+TString AliPHOSRecParticle::Name()
 {
-  fClusterizer        = Clusterizer ;
-  fTrackSegmentMaker  = Tracker ;
-  fParticleGuesser    = Guesser ; 
-} 
+  TString  name ; 
+  switch (fType) {
+  case GAMMA :
+    name = "PHOTON" ;
+    break ; 
+   case ELECTRON :
+     name = "ELECTRON" ;
+    break ; 
+  case NEUTRAL :
+    name = "NEUTRAL" ;
+    break ; 
+   case CHARGEDHADRON:
+    name = "CHARGED HADRON" ;
+    break ; 
+  }
+  return name ; 
+}
 
 //____________________________________________________________________________
-AliPHOSReconstructioner::~AliPHOSReconstructioner() 
+void AliPHOSRecParticle::Print()
 {
-  // dtor
-}  
-
-//____________________________________________________________________________
- void AliPHOSReconstructioner::Init(AliPHOSClusterizer * Clusterizer, 
-						 AliPHOSTrackSegmentMaker * Tracker,
-						 AliPHOSParticleGuesser * Guesser)
-{
-  fClusterizer        = Clusterizer ;
-  fTrackSegmentMaker  = Tracker ;
-  fParticleGuesser    = Guesser ; 
-} 
-
-
-
-//____________________________________________________________________________
- void AliPHOSReconstructioner::Make(TClonesArray * dl, RecPointsList * emccl, RecPointsList * ppsdl, 
-				     TrackSegmentsList * trsl, RecParticlesList * rpl)
-{
-  fClusterizer->MakeClusters(dl, emccl, ppsdl);
-
-  fTrackSegmentMaker->MakeTrackSegments(dl, emccl, ppsdl, trsl) ;
-
-  fParticleGuesser->GuessParticleType(trsl, rpl) ; 
+  cout << "AliPHOSRecParticle > " << "type is  " << Name() << endl 
+       << "                     " << "Energy = " << fE << endl 
+       << "                     " << "Px     = " << fPx << endl 
+       << "                     " << "Py     = " << fPy << endl 
+       << "                     " << "Pz     = " << fPz << endl ; 
 }

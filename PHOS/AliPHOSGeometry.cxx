@@ -200,6 +200,7 @@ void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TM
   
   TRotation dummy = Rot.Invert() ;  // to transform from original frame to rotate frame
   gpos.Transform(Rot) ; // rotate the baby 
+
 }
 
 //____________________________________________________________________________
@@ -492,7 +493,7 @@ void AliPHOSGeometry::RelPosInModule(const Int_t * RelId, Float_t & x, Float_t &
 
   if ( RelId[1] == 0 ) { // its a PbW04 crystal 
     x = -( GetNPhi()/2. - Row   + 0.5 ) *  GetCrystalSize(0) ; // position ox Xtal with respect
-    z = -( GetNZ() /2. - Column + 0.5 ) *  GetCrystalSize(2) ; // of center of PHOS module  
+    z = ( GetNZ() /2. - Column + 0.5 ) *  GetCrystalSize(2) ; // of center of PHOS module  
    }  
    else  {    
     if ( RelId[1] >  GetNumberOfModulesPhi() *  GetNumberOfModulesZ() )
@@ -503,7 +504,7 @@ void AliPHOSGeometry::RelPosInModule(const Int_t * RelId, Float_t & x, Float_t &
     Float_t x0 = (  GetNumberOfModulesPhi() / 2.  - ModRow  + 0.5 ) * GetPPSDModuleSize(0) ;
     Float_t z0 = (  GetNumberOfModulesZ() / 2.  - ModCol  + 0.5 ) * GetPPSDModuleSize(2)  ;     
     x = - ( GetNumberOfPadsPhi()/2. - Row - 0.5 ) * PadSizeX + x0 ; // position of pad  with respect
-    z = - ( GetNumberOfPadsZ()/2.   - Column - 0.5 ) * PadSizeZ + z0 ; // of center of PHOS module  
+    z = ( GetNumberOfPadsZ()/2.   - Column - 0.5 ) * PadSizeZ - z0 ; // of center of PHOS module  
          }
 }
 

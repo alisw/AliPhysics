@@ -19,6 +19,7 @@
 #include "AliPHOSGeometry.h"
 #include "AliPHOSReconstructioner.h"
 #include "AliPHOSTrackSegmentMaker.h"
+#include "AliPHOSParticleGuesser.h"
 
 class AliPHOSv0 : public AliPHOS {
 
@@ -26,7 +27,7 @@ public:
 
   AliPHOSv0(void) ;
   AliPHOSv0(const char *name, const char *title="") ;
-  AliPHOSv0(AliPHOSReconstructioner& Reconstructioner, const char *name, const char *title="") ;
+  AliPHOSv0(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title="") ;
   virtual ~AliPHOSv0(void) ;
 
   virtual void   AddHit( Int_t track, Int_t id, Float_t *hits ) ;   // adds a pre-digitilized hit to the hit tree 
@@ -43,12 +44,13 @@ public:
   virtual void   Init(void) ;                                       // does nothing
   Int_t IsVersion(void) const { return 0 ; }
   void           MakeBranch(Option_t* opt) ;
-  RecPointsList* PpsdClusters() {return fPpsdClusters;}             // gets TClonesArray of clusters in the PPSD 
-  void           Reconstruction(AliPHOSReconstructioner& Reconstructioner) ;
+  RecPointsList* PpsdClusters() { return fPpsdClusters ; }          // gets TClonesArray of clusters in the PPSD 
+  void           Reconstruction(AliPHOSReconstructioner * Reconstructioner) ;
+  RecParticlesList * RecParticles() { return fRecParticles ; }      // gets TClonesArray of reconstructed particles
   void           ResetClusters(){} ;
   void           SetReconstructioner(AliPHOSReconstructioner& Reconstructioner) {fReconstructioner = &Reconstructioner ;} 
   virtual void   StepManager(void) ;                                // does the tracking through PHOS and a preliminary digitalization
-  TObjArray *    TrackSegments(){return fTrackSegments ;}
+  TrackSegmentsList *    TrackSegments(){return fTrackSegments ;}
   
 private:
 
@@ -59,7 +61,8 @@ private:
   AliPHOSReconstructioner * fReconstructioner ; // Reconstrutioner of the PHOS event: Clusterization and subtracking procedures
   TClonesArray * fTmpHits ;             //!  idem
   AliPHOSTrackSegmentMaker * fTrackSegmentMaker ;
-  TObjArray * fTrackSegments ;          //!
+  TrackSegmentsList * fTrackSegments ;  //! idem
+  RecParticlesList * fRecParticles ;    //! idem
 
 public:
 

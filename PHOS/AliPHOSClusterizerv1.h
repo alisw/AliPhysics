@@ -3,6 +3,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+
 ////////////////////////////////////////////////
 //  Clusterizer implementation version 1      //
 //  algorithme class                          //
@@ -38,14 +40,14 @@ public:
   virtual void GetNumberOfClustersFound(Int_t * numb) ;   
   Bool_t IsInEmc(AliPHOSDigit * digit) ;                      // Tells if id digit is in EMC
   virtual void MakeClusters(const DigitsList * dl, RecPointsList * emcl, RecPointsList * ppsdl) ; // does the job 
-  void PrintParameters() ;  
-  void SetCalibrationParameters(Float_t A,Float_t B){ fA = A ; fB = B;} 
-  void SetEmcClusteringThreshold(Float_t cluth) { fEmcClusteringThreshold = cluth ; }
-  void SetEmcEnergyThreshold(Float_t enth) { fEmcEnergyThreshold = enth ; } 
-  void SetLocalMaxCut(Float_t cut) { fLocMaxCut = cut ; }
-  void SetLogWeightCut(Float_t w) { fW0 = w ; }
-  void SetPpsdClusteringThreshold(Float_t cluth) { fPpsdClusteringThreshold = cluth ; }
-  void SetPpsdEnergyThreshold(Float_t enth) { fPpsdEnergyThreshold = enth ; } 
+  virtual void PrintParameters() ;  
+  virtual void SetCalibrationParameters(Float_t A,Float_t B){ fA = A ; fB = B;} 
+  virtual void SetEmcClusteringThreshold(Float_t cluth) { fEmcClusteringThreshold = cluth ; }
+  virtual void SetEmcEnergyThreshold(Float_t enth) { fEmcEnergyThreshold = enth ; } 
+  virtual void SetLocalMaxCut(Float_t cut) { fLocMaxCut = cut ; }
+  virtual void SetLogWeightCut(Float_t w) { fW0 = w ; }
+  virtual void SetPpsdClusteringThreshold(Float_t cluth) { fPpsdClusteringThreshold = cluth ; }
+  virtual void SetPpsdEnergyThreshold(Float_t enth) { fPpsdEnergyThreshold = enth ; } 
   
 private:
   

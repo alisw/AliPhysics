@@ -12,14 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 //_________________________________________________________________________
 // Cheking PHOSHistos procedure of PHOS
 //*-- Author : Gines MARTINEZ  SUBATECH january 2000
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
-
 #include "TCanvas.h"
 #include "TFile.h"
 #include "TH1.h"
@@ -45,6 +43,7 @@
 #include "AliPHOSReconstructioner.h"
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSTrackSegmentMakerv1.h"
+#include "AliPHOSParticleGuesserv1.h"
 #include "PHOSHistos.h"
 
 
@@ -54,34 +53,42 @@ void PHOSHistos (Text_t* infile, Int_t nevent, Int_t Module)
   TFile * file   = new TFile(infile); 
 //========== Get AliRun object from file 
   gAlice = (AliRun*) file->Get("gAlice");//=========== Gets the PHOS object and associated geometry from the file 
+
   AliPHOSv0 * PHOS  = (AliPHOSv0 *)gAlice->GetDetector("PHOS");
   AliPHOSGeometry * Geom = AliPHOSGeometry::GetInstance(PHOS->GetGeometry()->GetName(),PHOS->GetGeometry()->GetTitle());
-//========== Creates the Clusterizer
-  AliPHOSClusterizerv1 clusterizer; 
-  clusterizer.SetEmcEnergyThreshold(0.01) ; 
-  clusterizer.SetEmcClusteringThreshold(0.1) ; 
-  clusterizer.SetPpsdEnergyThreshold(0.00000005) ; 
-  clusterizer.SetPpsdClusteringThreshold(0.0000005) ; 
-  clusterizer.SetLocalMaxCut(0.03) ;
-  clusterizer.SetCalibrationParameters(0., 0.00000001) ;
 //========== Creates the track segment maker
-  AliPHOSTrackSegmentMakerv1 tracksegmentmaker ;
-//========== Creates the Reconstructioner  
-  AliPHOSReconstructioner Reconstructioner(clusterizer,tracksegmentmaker);     
+  AliPHOSTrackSegmentMakerv1 * tracksegmentmaker = new AliPHOSTrackSegmentMakerv1() ;
+  //========== Creates the particle guesser
+  AliPHOSParticleGuesserv1 * particleguesser = new AliPHOSParticleGuesserv1 ;
+  cout <<  "AnalyzeOneEvent > using particle guess " << particleguesser->GetName() << endl ; 
     
-  TH1F * hEmcDigit       = new TH1F("hEmcDigit","hEmcDigit",1000,0.,10.);
+  TH1F * hEmcDigit       = new TH1F("hEmcDigit","hEmcDigit",1000,0.,5.);
   TH1F * hVetoDigit      = new TH1F("hVetoDigit","hVetoDigit",1000,0.,3.e-5);
   TH1F * hConvertorDigit = new TH1F("hConvertorDigit","hConvertorDigit",1000,0.,3.e-5);
-  TH1F * hEmcCluster       = new TH1F("hEmcCluster","hEmcCluster",100,0.,10.);
+  TH1F * hEmcCluster       = new TH1F("hEmcCluster","hEmcCluster",1000,-5.,5.);
   TH1F * hVetoCluster      = new TH1F("hVetoCluster","hVetoCluster",1000,0.,3.e-5);
   TH1F * hConvertorCluster = new TH1F("hConvertorCluster","hConvertorCluster",1000,0.,3.e-5);
+  TH2F * hConvertorEmc = new TH2F("hConvertorEmc","hConvertorEmc",100,2.,3., 100, 0., 1.e-5);
+
   AliPHOSDigit * digit ;
 
 //========== Loop on events
   Int_t ievent;
   for(ievent=0;ievent<nevent; ievent++)
-  {
-    //   cout << "Event " << ievent <<endl;
+  { 
+//========== Creates the Clusterizer
+    AliPHOSClusterizerv1 * clusterizer = new AliPHOSClusterizerv1() ; 
+    clusterizer->SetEmcEnergyThreshold(0.01) ; 
+    clusterizer->SetEmcClusteringThreshold(0.1) ; 
+    clusterizer->SetPpsdEnergyThreshold(0.00000005) ; 
+    clusterizer->SetPpsdClusteringThreshold(0.00000005) ; 
+    clusterizer->SetLocalMaxCut(0.03) ;
+    clusterizer->SetCalibrationParameters(0., 0.00000001) ;
+
+  //========== Creates the Reconstructioner  
+    AliPHOSReconstructioner * Reconstructioner = new AliPHOSReconstructioner(clusterizer, tracksegmentmaker, particleguesser) ;
+     
+    cout << "Event " << ievent <<endl;
 
     Int_t RelId[4] ;
     //=========== Connects the various Tree's for evt
@@ -94,105 +101,85 @@ void PHOSHistos (Text_t* infile, Int_t nevent, Int_t Module)
     Float_t Etot=0 ;
     Int_t nVeto=0 ;
     Int_t nConvertor=0 ;
+
     while( ( digit = (AliPHOSDigit *)next() ) )
     {
-       Etot+=clusterizer.Calibrate(digit->GetAmp()) ;
+       Etot+=clusterizer->Calibrate(digit->GetAmp()) ;
        Geom->AbsToRelNumbering(digit->GetId(), RelId) ;        
 
-       if (clusterizer.IsInEmc(digit))
-       {   hEmcDigit->Fill(clusterizer.Calibrate(digit->GetAmp())) ; }
+       if (clusterizer->IsInEmc(digit))
+       {   hEmcDigit->Fill(clusterizer->Calibrate(digit->GetAmp())) ; }
        else    
        {  
-          if (RelId[1]==9) {nVeto++; hVetoDigit->Fill(clusterizer.Calibrate(digit->GetAmp()));} 
-	  if (RelId[1]==25){nConvertor++; hConvertorDigit->Fill(clusterizer.Calibrate(digit->GetAmp()));}
+	 if (RelId[1]==9) {nVeto++; hVetoDigit->Fill(clusterizer->Calibrate(digit->GetAmp()));} 
+	 if (RelId[1]==25) {nConvertor++; hConvertorDigit->Fill(clusterizer->Calibrate(digit->GetAmp()));}
        }
     }
-     
-    //    if (nVeto>1)       printf("AnaPHOSv0.C> Number of Veto entries  is %d \n",nVeto);
-    //    if (nConvertor>1)  printf("AnaPHOSv0.C> Number of Convertor entries is %d \n",nConvertor);
+   
+     PHOS->Reconstruction(Reconstructioner); 
+ 
+//=========== Cluster in Module
+     TClonesArray * EmcRP = PHOS->EmcClusters() ;
+     TIter nextemc(EmcRP) ;
+     AliPHOSEmcRecPoint * emc ;
+     Float_t Energy;
+     while((emc = (AliPHOSEmcRecPoint *)nextemc())) 
+     {
+       if ( emc->GetPHOSMod() == Module )
+       {  
+         Energy = emc->GetTotalEnergy() ;
+	 hEmcCluster->Fill(Energy); 
+         printf("Energy of the EMC cluster is %f \n",Energy);
+	 TClonesArray * PpsdRP = PHOS->PpsdClusters() ;
+	 TIter nextPpsd(PpsdRP) ;
+	 AliPHOSPpsdRecPoint * Ppsd ;
+	 Float_t Energy2;
+	 while((Ppsd = (AliPHOSPpsdRecPoint *)nextPpsd())) 
+	   {
+	     if ( Ppsd->GetPHOSMod() == Module )
+	       { 
+		 Energy2 = Ppsd->GetTotalEnergy() ;
+		 
+		 if (!Ppsd->GetUp()) hConvertorEmc->Fill(Energy,Energy2) ;
+	       }
+	   }
+    
+       }
+     }
+ 
+    //=========== Cluster in Module PPSD Down
+     TClonesArray * PpsdRP = PHOS->PpsdClusters() ;
+     TIter nextPpsd(PpsdRP) ;
+     AliPHOSPpsdRecPoint * Ppsd ;
+     while((Ppsd = (AliPHOSPpsdRecPoint *)nextPpsd())) 
+     {
+       if ( Ppsd->GetPHOSMod() == Module )
+       { 
+         Energy = Ppsd->GetTotalEnergy() ;
 
-//    cout <<"TestRec> Found  " << nId << "  digits in PHOS with total energy " << Etot << endl ;
-//  
-         PHOS->Reconstruction(Reconstructioner); 
-        //  PHOS->EmcClusters()->Delete();
-//          PHOS->PpsdClusters()->Delete(); 
-//   
-//    //=========== Cluster in Module
-//     TClonesArray * EmcRP = PHOS->EmcClusters() ;
-//     Etot = 0.; 
-//     Int_t TotalNumberOfClusters = 0 ; 
-//     Int_t NumberOfClusters = 0 ;
-//     TIter nextemc(EmcRP) ;
-//     AliPHOSEmcRecPoint * emc ;
-//     while((emc = (AliPHOSEmcRecPoint *)nextemc())) 
-//     {
-//       TotalNumberOfClusters++ ;
-//       if ( emc->GetPHOSMod() == Module )
-//       { 
-//         NumberOfClusters++ ; 
-//         Energy = emc->GetTotalEnergy() ;
-// 	hEmcCluster->Fill(Energy);   
-//         Etot+=Energy ;  
-//       }
-//     }
-//     cout << "TestRec> Found " << TotalNumberOfClusters << " EMC Clusters in PHOS" << endl ; 
-//     cout << "TestRec> Found in Module " << Module << "  " << NumberOfClusters << " EMC Clusters " << endl ;
-//     cout << "TestRec> Total energy  " <<Etot << endl ; 
-// 
-//    //=========== Cluster in Module PPSD Down
-//     TClonesArray * PpsdRP = PHOS->PpsdClusters() ;
-//     Etot = 0.; 
-//     Int_t TotalNumberOfClusters = 0 ; 
-//     Int_t NumberOfClusters = 0 ;
-//     TIter nextPpsd(PpsdRP) ;
-//     AliPHOSPpsdRecPoint * Ppsd ;
-//     while((Ppsd = (AliPHOSPpsdRecPoint *)nextPpsd())) 
-//     {
-//       TotalNumberOfClusters++ ;
-//       if ( Ppsd->GetPHOSMod() == Module )
-//       { 
-//         NumberOfClusters++ ; 
-//         Energy = Ppsd->GetEnergy() ;
-// 	hConvertorCluster->Fill(Energy) ;   
-//         Etot+=Energy ;  
-//         if (!Ppsd->GetUp()) Ppsd->Draw("P") ;
-//       }
-//     }
-//     cout << "TestRec> Found " << TotalNumberOfClusters << " Ppsd Down Clusters in PHOS" << endl ; 
-//     cout << "TestRec> Found in Module " << Module << "  " << NumberOfClusters << " Ppsd Down Clusters " << endl ;
-//     cout << "TestRec> Total energy  " <<Etot << endl ; 
-// 
-//    //=========== Cluster in Module PPSD Up
-//     PpsdRP = PHOS->PpsdClusters() ;
-//     Etot = 0.; 
-//     Int_t TotalNumberOfClusters = 0 ; 
-//     Int_t NumberOfClusters = 0 ;
-//     TIter nextPpsdUp(PpsdRP) ;
-//     while((Ppsd = (AliPHOSPpsdRecPoint *)nextPpsdUp())) 
-//     {
-//       TotalNumberOfClusters++ ;
-//       if ( Ppsd->GetPHOSMod() == Module )
-//       { 
-//         NumberOfClusters++ ; 
-//         Energy = Ppsd->GetEnergy() ;
-// 	hVetoCluster->Fill(Energy);   
-//         Etot+=Energy ;  
-//         if (Ppsd->GetUp()) Ppsd->Draw("P") ;
-//       }
-//     }
-//     cout << "TestRec> Found " << TotalNumberOfClusters << " Ppsd Up Clusters in PHOS" << endl ; 
-//     cout << "TestRec> Found in Module " << Module << "  " << NumberOfClusters << " Ppsd Up Clusters " << endl ;
-//     cout << "TestRec> Total energy  " <<Etot << endl ; 
-
+	 if (!Ppsd->GetUp()) hConvertorCluster->Fill(Energy) ;
+	 if (Ppsd->GetUp()) hVetoCluster->Fill(Energy) ;
+   
+       }
+     }
   } 
+
   TCanvas * cVetoDigit = new TCanvas("VetoDigit","VetoDigit");  
   hVetoDigit->Draw();
   TCanvas * cConvertorDigit = new TCanvas("ConvertorDigit","ConvertorDigit");  
   hConvertorDigit->Draw();
   TCanvas * cEmcDigit = new TCanvas("EmcDigit","EmcDigit");  
   hEmcDigit->Draw();
-  
-  
+  TCanvas * cVetoCluster = new TCanvas("VetoCluster","VetoCluster");  
+  hVetoCluster->Draw();
+  TCanvas * cConvertorCluster = new TCanvas("ConvertorCluster","ConvertorCluster");  
+  hConvertorCluster->Draw();
+  TCanvas * cEmcCluster = new TCanvas("EmcCluster","EmcCluster");  
+  hEmcCluster->Draw();
+  TCanvas * cConvertorEmc = new TCanvas("ConvertorEmc","ConvertorEmc");  
+  hConvertorEmc->Draw("col1");
+
+
 }
 
 

@@ -1,7 +1,9 @@
-#ifndef ALIPHOSSUBTRACKERV1_H
-#define ALIPHOSSUBTRACKERV1_H
+#ifndef ALIPHOSTRACKSEGMENTMAKERV1_H
+#define ALIPHOSTRACKSEGMENTMAKERV1_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
 
 ///////////////////////////////////////////////////
 //  Track Segment Maker class for PHOS           //
@@ -68,4 +70,4 @@ ClassDef( AliPHOSTrackSegmentMakerv1,1)  // track segment maker implementation ,
 
 };
 
-#endif // AliPHOSSUBTRACKERV1_H
+#endif // AliPHOSTRACKSEGMENTMAKERV1_H

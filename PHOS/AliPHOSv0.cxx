@@ -13,10 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-*/
-
 //_________________________________________________________________________
 // Manager class for PHOS version SUBATECH
 //*-- Author : Y. Schutz SUBATECH 
@@ -68,15 +64,19 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
   //     is used for the digitization part.
 
   fHits   = new TClonesArray("AliPHOSHit",100) ;
-  gAlice->AddHitList(fHits);
-  fDigits = new TClonesArray("AliPHOSDigit",100) ;
+  gAlice->AddHitList(fHits) ; 
+
   fTmpHits= new TClonesArray("AliPHOSHit",100) ;
 
   fNTmpHits = fNhits = 0 ;
 
+  fDigits = new TClonesArray("AliPHOSDigit",100) ;
+
+
   fIshunt     =  1 ; // All hits are associated with primary particles
  
   // gets an instance of the geometry parameters class  
+   
   fGeom =  AliPHOSGeometry::GetInstance(title, "") ; 
 
   if (fGeom->IsInitialized() ) 
@@ -85,7 +85,7 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
    cout << "AliPHOSv0 : PHOS geometry initialization failed !" << endl ;   
 }
 //____________________________________________________________________________
-AliPHOSv0::AliPHOSv0(AliPHOSReconstructioner & Reconstructioner, const char *name, const char *title):
+AliPHOSv0::AliPHOSv0(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title):
   AliPHOS(name,title)
 {
   
@@ -116,7 +116,7 @@ AliPHOSv0::AliPHOSv0(AliPHOSReconstructioner & Reconstructioner, const char *nam
 
   // Defining the PHOS Reconstructioner
  
- fReconstructioner = &Reconstructioner ;
+ fReconstructioner = Reconstructioner ;
 }
 
 //____________________________________________________________________________
@@ -1097,21 +1097,19 @@ void AliPHOSv0::MakeBranch(Option_t* opt)
 }
 
 //_____________________________________________________________________________
-void AliPHOSv0::Reconstruction(AliPHOSReconstructioner & Reconstructioner)
+void AliPHOSv0::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
 { 
   // reinitializes the existing RecPoint Lists and steers the reconstruction processes
 
-  fReconstructioner = &Reconstructioner ;
-  cout << "Hola1" << endl;
+  fReconstructioner = Reconstructioner ;
+
   if (fEmcClusters) { 
     fEmcClusters->Delete() ; 
     delete fEmcClusters ;
     fEmcClusters = 0 ; 
-
   }
   fEmcClusters= new RecPointsList("AliPHOSEmcRecPoint", 100) ;
  
-  cout << "Hola2" << endl;
   if (fPpsdClusters) { 
     fPpsdClusters->Delete() ; 
     delete fPpsdClusters ; 
@@ -1119,19 +1117,22 @@ void AliPHOSv0::Reconstruction(AliPHOSReconstructioner & Reconstructioner)
   }
   fPpsdClusters = new RecPointsList("AliPHOSPpsdRecPoint", 100) ;
 
-
-  cout << "Hola3" << endl;
-  if (fTrackSegments) { 
-   fTrackSegments->Print(""); 
+  if (fTrackSegments) {  
    fTrackSegments->Delete() ; 
     delete fTrackSegments ; 
     fTrackSegments = 0 ; 
   }
-  fTrackSegments = new TObjArray(100) ;
+  fTrackSegments = new TrackSegmentsList(100) ;
+ 
+ if (fRecParticles) {  
+   fRecParticles->Delete() ; 
+    delete fRecParticles ; 
+    fRecParticles = 0 ; 
+  }
+  fRecParticles = new RecParticlesList("AliPHOSRecParticle", 100) ;
 
-  cout << "Hola4" << endl;
-  fReconstructioner->Make(fDigits, fEmcClusters, fPpsdClusters, fTrackSegments);
-  cout << "Hola5" << endl;
+  fReconstructioner->Make(fDigits, fEmcClusters, fPpsdClusters, fTrackSegments, fRecParticles);
+
 }
 
 //____________________________________________________________________________

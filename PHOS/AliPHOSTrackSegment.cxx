@@ -51,6 +51,12 @@ AliPHOSTrackSegment::AliPHOSTrackSegment( AliPHOSEmcRecPoint * emc , AliPHOSPpsd
 }
 
 //____________________________________________________________________________
+AliPHOSTrackSegment::AliPHOSTrackSegment( const AliPHOSTrackSegment & ts) 
+{
+ ( (AliPHOSTrackSegment &)ts ).Copy(*this) ; 
+}
+
+//____________________________________________________________________________
 AliPHOSTrackSegment::~AliPHOSTrackSegment() // dtor
 {
 //    fEmcRecPoint.Delete() ;   Not Owners !!!
@@ -59,18 +65,41 @@ AliPHOSTrackSegment::~AliPHOSTrackSegment() // dtor
 }
 
 //____________________________________________________________________________
+void AliPHOSTrackSegment::Copy(TObject & obj) 
+{
+   TObject::Copy(obj) ;
+   ( (AliPHOSTrackSegment &)obj ).fEmcRecPoint = fEmcRecPoint ; 
+   ( (AliPHOSTrackSegment &)obj ).fPpsdLow     = fPpsdLow ; 
+   ( (AliPHOSTrackSegment &)obj ).fPpsdUp      = fPpsdUp ; 
+}
+//____________________________________________________________________________
 Int_t AliPHOSTrackSegment::DistancetoPrimitive(Int_t px, Int_t py)
 {
-//*-*-*-*-*-*-*-*-*-*-*Compute distance from point px,py to  a AliPHOSTrackSegment considered as a Tmarker*-*-*-*-*-*
-//*-*                  ===========================================
-//  Compute the closest distance of approach from point px,py to this marker.
-//  The distance is computed in pixels units.
-//
+  //Compute distance from point px,py to  a AliPHOSTrackSegment considered as a Tmarker
+  //  Compute the closest distance of approach from point px,py to this marker.
+  //  The distance is computed in pixels units.
+  //
+  Int_t div = 1 ;  
+  TVector3 pos(0.,0.,0.) ;
+ 
+  fEmcRecPoint->GetLocalPosition( pos) ;
+  Float_t x =  pos.X() ;
+  Float_t y =  pos.Z() ;
+  if ( fPpsdLow ) {
+    fPpsdLow->GetLocalPosition( pos ) ;
+    x +=  pos.X() ;
+    y +=  pos.Z() ;
+    div++ ; 
+  }
+  if ( fPpsdUp ) {
+    fPpsdUp->GetLocalPosition( pos ) ;
+    x +=  pos.X() ;
+    y +=  pos.Z() ;
+    div++ ; 
+  }
+  x /= div ; 
+  y /= div ; 
 
-   TVector3 pos(0.,0.,0.) ;
-   fEmcRecPoint->GetLocalPosition( pos) ;
-   Float_t x =  pos.X() ;
-   Float_t y =  pos.Z() ;
    const Int_t kMaxDiff = 10;
    Int_t pxm  = gPad->XtoAbsPixel(x);
    Int_t pym  = gPad->YtoAbsPixel(y);
@@ -83,25 +112,24 @@ Int_t AliPHOSTrackSegment::DistancetoPrimitive(Int_t px, Int_t py)
 //___________________________________________________________________________
  void AliPHOSTrackSegment::Draw(Option_t *option)
  {
-// //*-*-*-*-*-*-*-*-*-*-*Draw this AliPHOSTrackSegment with its current attributes*-*-*-*-*-*-*
-// //*-*
-   // assert(0==1);
-  AppendPad(option);
+   // Draw this AliPHOSTrackSegment with its current attribute
+
+   AppendPad(option);
  }
 
 //______________________________________________________________________________
 void AliPHOSTrackSegment::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 {
-//*-*-*-*-*-*-*-*-*-*-*Execute action corresponding to one event*-*-*-*
-//*-*                  =========================================
-//  This member function is called when a AliPHOSTrackSegment is clicked with the locator
-//
-//  If Left button is clicked on AliPHOSRecPoint, the digits are switched on    
-//  and switched off when the mouse button is released.
-//
+  // Execute action corresponding to one event
+  //  This member function is called when a AliPHOSTrackSegment is clicked with the locator
+  //
+  //  If Left button is clicked on AliPHOSRecPoint, the digits are switched on    
+  //  and switched off when the mouse button is released.
+  //
    static TPaveText* TrackSegmentText = 0 ;
 
-   if (!gPad->IsEditable()) return;
+   if (!gPad->IsEditable()) 
+     return;
 
    switch (event) {
 
@@ -111,14 +139,20 @@ void AliPHOSTrackSegment::ExecuteEvent(Int_t event, Int_t px, Int_t py)
   
        TVector3 pos(0.,0.,0.) ;
        fEmcRecPoint->GetLocalPosition(pos) ;
-       TrackSegmentText = new TPaveText(pos.X()-10,pos.Z()+10,pos.X()+50,pos.Z()+35,"") ;
+       TrackSegmentText = new TPaveText(pos.X()-10,pos.Z()+10,pos.X()+5,pos.Z()+15,"") ;
        Text_t  line1[40] ;
-       if (GetPartType() == 0 ) sprintf(line1,"PHOTON") ;
-       if (GetPartType() == 1 ) sprintf(line1,"NEUTRAL HADRON") ;
-       if (GetPartType() == 2 ) sprintf(line1,"CHARGED HADRON") ;
-       if (GetPartType() == 3 ) sprintf(line1,"ELECTRON") ;
+       if (GetPartType() == GAMMA ) 
+	 sprintf(line1,"PHOTON") ;
+       if (GetPartType() == ELECTRON ) 
+	 sprintf(line1,"ELECTRON") ;
+       if (GetPartType() == NEUTRAL ) 
+	 sprintf(line1,"NEUTRAL") ;
+       if (GetPartType() == CHARGEDHADRON ) 
+	 sprintf(line1,"CHARGED HADRON") ;
+
        TrackSegmentText ->AddText(line1) ;
-       TrackSegmentText ->Paint("");
+       TrackSegmentText ->Draw("");
+       gPad->Update() ; 
      }
    }
 
@@ -155,39 +189,38 @@ Float_t AliPHOSTrackSegment::GetDistanceInPHOSPlane()
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSTrackSegment::GetMomentumDirection( TVector3 & dir ) 
+TVector3 AliPHOSTrackSegment::GetMomentumDirection() 
 {   
-  // True if determined
-  Bool_t ifdeterm = kTRUE ;
+  TVector3 dir, tempo ; 
+  TMatrix mdummy ;
 
-  if( fPpsdLow ){
-    TMatrix mdummy ;
-    if( fPpsdUp->GetMultiplicity() ) { // draw line trough 2 points
-      TVector3 posEmc ;
-      fEmcRecPoint->GetGlobalPosition(posEmc,mdummy) ;
-      TVector3 posPpsd ;
-      fPpsdLow->GetGlobalPosition(posPpsd,mdummy) ; 
-      dir = posEmc - posPpsd ;
-      dir.SetMag(1.) ;
-    }
+  TVector3 posEmc ;
+  fEmcRecPoint->GetGlobalPosition(posEmc, mdummy) ;
 
-    else { // draw line through 3 pionts
-      TVector3 posEmc ;
-      fEmcRecPoint->GetGlobalPosition(posEmc,mdummy) ;
-      TVector3 posPpsdl ;
-      fPpsdLow->GetGlobalPosition(posPpsdl,mdummy) ; 
-      TVector3 posPpsdup ;
-      fPpsdUp->GetGlobalPosition(posPpsdup,mdummy) ;
-      posPpsdl = 0.5*( posPpsdup+posPpsdl ) ; 
-      dir = posEmc - posPpsdl ;
-      dir.SetMag(1.) ;
-    }
-  
-  }
-  else 
-    ifdeterm = kFALSE ;
+  TVector3 posPpsdl ;
+  TVector3 posPpsdup ;
  
-  return ifdeterm ;
+//   if( fPpsdLow ){
+//     fPpsdLow->GetGlobalPosition(posPpsdl, mdummy) ; 
+//     if( !fPpsdUp ) { // draw line trough 2 points
+//       tempo = posEmc - posPpsdl;
+//      }
+
+//     else { // draw line through 3 points
+//       fPpsdUp->GetGlobalPosition(posPpsdup, mdummy) ;
+//       posPpsdl = 0.5 * ( posPpsdup + posPpsdl ) ; 
+//       dir = posEmc - posPpsdl ;
+//     }
+//   }
+//   else 
+    tempo = posEmc ; 
+    
+  dir.SetX( tempo.X() ) ;  // assumes that a neutral comes from the vertex
+  dir.SetY( tempo.Y() ) ;  
+  dir.SetZ( -tempo.Z() ) ; 
+  
+  dir.SetMag(1.) ;
+  return dir ;  
 }
 
 //____________________________________________________________________________
@@ -195,25 +228,26 @@ Int_t AliPHOSTrackSegment::GetPartType()
 {  
   // Returns 0 - gamma
   //         1 - e+, e-
-  //         2 - neutral hadron  
+  //         2 - neutral   
   //         3 - charged hadron
 
-  Int_t PartType =0;                            
-  if( fPpsdUp ){     // Neutral
+  Int_t PartType = GAMMA ;
+                            
+  if( fPpsdUp == 0 ) {     // Neutral
 
-    if( fPpsdLow ) // Neutral hadron  
-      PartType = 2 ;   
-    else                                // Gamma
-      PartType = 0 ;               
+    if( fPpsdLow == 0 )    // Neutral  
+      PartType = NEUTRAL ;   
+    else                   // Gamma
+      PartType = GAMMA ;               
 
   }
 
   else {             // Charged           
 
     if( fEmcRecPoint->GetDispersion() > fCutOnDispersion) 
-      PartType = 3 ;
+      PartType = CHARGEDHADRON ;
     else  
-      PartType = 1 ;  
+      PartType = ELECTRON ;  
   
   }
   
@@ -232,20 +266,30 @@ void AliPHOSTrackSegment::GetPosition( TVector3 & pos )
 //______________________________________________________________________________
 void AliPHOSTrackSegment::Paint(Option_t *)
 {
-//*-*-*-*-*-*-*-*-*-*-*Paint this ALiPHOSTrackSegment as a TMarker  with its current attributes*-*-*-*-*-*-*
-//*-*                  =============================================
-   TVector3 pos(0.,0.,0.)  ;
-   fEmcRecPoint->GetLocalPosition(pos)   ;
-   Coord_t x = pos.X()     ;
-   Coord_t y = pos.Z()     ;
-   Color_t MarkerColor = 1 ;
-   Size_t  MarkerSize = 1. ;
-   Style_t MarkerStyle = 29 ;
+  //Paint this ALiPHOSTrackSegment as a TMarker  with its current attributes
 
-   if (GetPartType() == 0 ) MarkerStyle = 20 ;
-   if (GetPartType() == 1 ) MarkerStyle = 21 ;
-   if (GetPartType() == 2 ) MarkerStyle = 22 ;
-   if (GetPartType() == 3 ) MarkerStyle = 23 ;
+   TVector3 posemc(999., 999., 999.) ;
+   TVector3 posppsdl(999., 999., 999.) ;
+   TVector3 posppsdu(999., 999., 999.) ;
+
+   fEmcRecPoint->GetLocalPosition(posemc) ;
+   if (fPpsdLow !=0 ) 
+     fPpsdLow->GetLocalPosition(posppsdl) ;
+     if (fPpsdUp !=0 ) 
+       fPpsdUp->GetLocalPosition(posppsdu) ;
+
+   Coord_t xemc   = posemc.X() ;
+   Coord_t yemc   = posemc.Z() ;
+
+   Coord_t yppsdl = posppsdl.Z() ;
+   Coord_t xppsdl = posppsdl.X() ;
+
+   Coord_t yppsdu = posppsdu.Z() ;
+   Coord_t xppsdu = posppsdu.X() ;
+
+   Color_t MarkerColor = 1 ;
+   Size_t  MarkerSize  = 1.5 ;
+   Style_t MarkerStyle = 20 ;
 
    if (!gPad->IsBatch()) {
      gVirtualX->SetMarkerColor(MarkerColor) ;
@@ -253,7 +297,37 @@ void AliPHOSTrackSegment::Paint(Option_t *)
      gVirtualX->SetMarkerStyle(MarkerStyle) ;
    }
    gPad->SetAttMarkerPS(MarkerColor,MarkerStyle,MarkerSize) ;
-   gPad->PaintPolyMarker(1,&x,&y,"") ;
+   gPad->PaintPolyMarker(1, &xemc, &yemc, "") ;
+   
+   if (xppsdl != 999. && yppsdl != 999. ) {
+
+     MarkerColor = 2 ;
+     MarkerSize  = 1.25 ;
+     MarkerStyle = 21 ;
+     
+     if (!gPad->IsBatch()) {
+       gVirtualX->SetMarkerColor(MarkerColor) ;
+       gVirtualX->SetMarkerSize (MarkerSize)  ;
+       gVirtualX->SetMarkerStyle(MarkerStyle) ;
+     }
+     gPad->SetAttMarkerPS(MarkerColor,MarkerStyle,MarkerSize) ;
+     gPad->PaintPolyMarker(1, &xppsdl, &yppsdl, "") ;
+   }
+
+    if (xppsdu != 999. && yppsdu != 999. ) {
+  
+      MarkerColor = 3 ;
+      MarkerSize  = 1. ;
+      MarkerStyle = 22 ;
+      
+      if (!gPad->IsBatch()) {
+	gVirtualX->SetMarkerColor(MarkerColor) ;
+	gVirtualX->SetMarkerSize (MarkerSize)  ;
+	gVirtualX->SetMarkerStyle(MarkerStyle) ;
+      }
+      gPad->SetAttMarkerPS(MarkerColor,MarkerStyle,MarkerSize) ;
+      gPad->PaintPolyMarker(1, &xppsdu, &yppsdu, "") ;
+    }
 }
 
 

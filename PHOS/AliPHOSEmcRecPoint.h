@@ -3,6 +3,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+
 //////////////////////////////////////////////////
 //  Rec Point in the EM calorimeter of PHOS     //
 //                                              //
@@ -43,7 +45,7 @@ public:
   Int_t       GetMaximumMultiplicity() { return   fMaxDigit ; } 
   Int_t       GetMultiplicity(void) const { return fMulDigit ; } 
   Int_t       GetMultiplicityAtLevel(const Float_t level) ;   // computes multiplicity of digits with energy above relative level
-  Int_t       GetNumberOfLocalMax(int *  maxAt, Float_t * maxAtEnergy) ; // searches for the local maxima 
+  Int_t       GetNumberOfLocalMax(Int_t *  maxAt, Float_t * maxAtEnergy) ; // searches for the local maxima 
  
   Float_t     GetTotalEnergy(void) const { return fAmp ; }    // in EMC RecPoint Amp = Energy
   void        GetLocalPosition(TVector3 &Lpos) ;              // computes the position in the PHOS module 
@@ -55,12 +57,6 @@ private:
 
   Bool_t AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * digit2 ) ;
 
-public:
-
-  //  AliPHOSEmcRecPoint& operator = (AliPHOSEmcRecPoint clu) ;  
-  
-private:
-
   Float_t  fDelta ;        // parameter used to sort the clusters   
   Float_t  fLocMaxCut ;    // parameter used for local maximum searc
   Float_t * fEnergyList ;  // energy of digits
@@ -68,7 +64,7 @@ private:
 
 public: 
 
-ClassDef(AliPHOSEmcRecPoint,1)  // EMC cluster, version 1
+ClassDef(AliPHOSEmcRecPoint,1)  // EMC RecPoint, version 1
 
 };
 

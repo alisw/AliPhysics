@@ -158,13 +158,12 @@ Int_t AliPHOSEmcRecPoint::Compare(TObject * obj)
 //______________________________________________________________________________
 void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 {
-//*-*-*-*-*-*-*-*-*-*-*Execute action corresponding to one event*-*-*-*
-//*-*                  =========================================
-//  This member function is called when a AliPHOSRecPoint is clicked with the locator
-//
-//  If Left button is clicked on AliPHOSRecPoint, the digits are switched on    
-//  and switched off when the mouse button is released.
-//
+  //Execute action corresponding to one event
+  //  This member function is called when a AliPHOSRecPoint is clicked with the locator
+  //
+  //  If Left button is clicked on AliPHOSRecPoint, the digits are switched on    
+  //  and switched off when the mouse button is released.
+  //
 
   //   static Int_t pxold, pyold;
 
@@ -362,7 +361,7 @@ Int_t AliPHOSEmcRecPoint::GetMultiplicityAtLevel(Float_t H)
 }
 
 //____________________________________________________________________________
-Int_t  AliPHOSEmcRecPoint::GetNumberOfLocalMax(int *  maxAt, Float_t * maxAtEnergy) 
+Int_t  AliPHOSEmcRecPoint::GetNumberOfLocalMax(Int_t *  maxAt, Float_t * maxAtEnergy) 
 { 
   AliPHOSDigit * digit ;
   AliPHOSDigit * digitN ;
@@ -371,28 +370,28 @@ Int_t  AliPHOSEmcRecPoint::GetNumberOfLocalMax(int *  maxAt, Float_t * maxAtEner
   Int_t iDigitN ;
   Int_t iDigit ;
 
-  for(iDigit=0; iDigit<fMulDigit; iDigit++){
+  for(iDigit = 0; iDigit < fMulDigit; iDigit++){
     maxAt[iDigit] = fDigitsList[iDigit] ;
   }
   
-  for(iDigit=0 ; iDigit<fMulDigit; iDigit++) {   
+  for(iDigit = 0 ; iDigit < fMulDigit; iDigit++) {   
     if(maxAt[iDigit] != -1) {
       digit = (AliPHOSDigit *) maxAt[iDigit] ;
          
-      for(iDigitN=0; iDigitN<fMulDigit; iDigitN++) {	
+      for(iDigitN = 0; iDigitN < fMulDigit; iDigitN++) {	
 	digitN = (AliPHOSDigit *) fDigitsList[iDigitN] ; 
 	
 	if ( AreNeighbours(digit, digitN) ) {
 	  if (fEnergyList[iDigit] > fEnergyList[iDigitN] ) {    
 	    maxAt[iDigitN] = -1 ;
-	    //but may be digit is not local max too ?
-	    if(fEnergyList[iDigit]<fEnergyList[iDigitN]+fLocMaxCut) 
+	    // but may be digit too is not local max ?
+	    if(fEnergyList[iDigit] < fEnergyList[iDigitN] + fLocMaxCut) 
 	      maxAt[iDigit] = -1 ;
 	  }
 	  else {
 	    maxAt[iDigit] = -1 ;
-	    //but may be digitN is not local max too ?
-	    if(fEnergyList[iDigit] >fEnergyList[iDigitN]-fLocMaxCut) 
+	    // but may be digitN too is not local max ?
+	    if(fEnergyList[iDigit] > fEnergyList[iDigitN] - fLocMaxCut) 
 	      maxAt[iDigitN] = -1 ; 
 	  } 
 	} // if Areneighbours
@@ -401,7 +400,7 @@ Int_t  AliPHOSEmcRecPoint::GetNumberOfLocalMax(int *  maxAt, Float_t * maxAtEner
   } // while digit
   
   iDigitN = 0 ;
-  for(iDigit=0; iDigit<fMulDigit; iDigit++) { 
+  for(iDigit = 0; iDigit < fMulDigit; iDigit++) { 
     if(maxAt[iDigit] != -1){
       maxAt[iDigitN] = maxAt[iDigit] ;
       maxAtEnergy[iDigitN] = fEnergyList[iDigit] ;
@@ -414,7 +413,7 @@ Int_t  AliPHOSEmcRecPoint::GetNumberOfLocalMax(int *  maxAt, Float_t * maxAtEner
 //____________________________________________________________________________
 void AliPHOSEmcRecPoint::GetLocalPosition(TVector3 &LPos)
 {
-  if( fLocPos.X() < 1000000.) { //allready evaluated
+  if( fLocPos.X() < 1000000.) { // already evaluated
    LPos = fLocPos ;
    return ;
   }

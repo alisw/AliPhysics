@@ -14,30 +14,33 @@
  **************************************************************************/
 
 //_________________________________________________________________________
-// Short description
-//*-- Author :   SUBATECH 
+// To guess the type of particle detected in PHOS with or without the help 
+// from other detectors
+//*-- Author : Yves Schutz  SUBATECH 
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
 
+ 
+
 // --- Standard library ---
+
+
 
 // --- AliRoot header files ---
 
-#include "AliPHOSxxx.h"
+#include "AliPHOSParticleGuesser.h"
 
-ClassImp(AliPHOSxxx)
+ClassImp(AliPHOSParticleGuesser)
 
-
-//____________________________________________________________________________ 
-AliPHOSxxx::AliPHOSxxx()
+//____________________________________________________________________________
+AliPHOSParticleGuesser::AliPHOSParticleGuesser()
 {
   // ctor
 }
 
 //____________________________________________________________________________
-AliPHOSxxx::~AliPHOSxxx()
+AliPHOSParticleGuesser::~AliPHOSParticleGuesser()
 {
   // dtor
 }
-

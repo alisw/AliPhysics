@@ -44,10 +44,4 @@ ClassImp( AliPHOSTrackSegmentMaker)
   fR0 = 4. ;   
 }
 
-//____________________________________________________________________________
-void  AliPHOSTrackSegmentMaker::MakeTrackSegments(DigitsList * DL, RecPointsList * emcl, RecPointsList * ppsdl,
-                                        TrackSegmentsList * trsl)
-{
- 
-}
 

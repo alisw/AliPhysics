@@ -3,6 +3,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+
 ///////////////////////////////////////////////////
 //  Subtrackin class for PHOS                    //
 //  Version SUBATECH                             //
@@ -28,15 +30,16 @@ class  AliPHOSTrackSegmentMaker : public TObject {
 
 public:
 
-   AliPHOSTrackSegmentMaker() ;                     
+  AliPHOSTrackSegmentMaker() ;                     
   
   virtual ~ AliPHOSTrackSegmentMaker(){}  // dtor
 
-  virtual void MakeTrackSegments(DigitsList * DL, RecPointsList * emcl, RecPointsList * ppsdl, TrackSegmentsList * trsl ) ; 
-  // does the job
+  virtual void MakeTrackSegments(DigitsList * DL, RecPointsList * emcl, RecPointsList * ppsdl, TrackSegmentsList * trsl ) = 0  ; 
+                                         // does the job
   virtual void SetMaxEmcPpsdDistance(Float_t r){ fR0 = r ;}
 
 private:
+
   Float_t fR0 ;
 
 public: 

@@ -52,11 +52,10 @@ AliPHOSRecPoint::~AliPHOSRecPoint()
 //____________________________________________________________________________
 Int_t AliPHOSRecPoint::DistancetoPrimitive(Int_t px, Int_t py)
 {
-//*-*-*-*-*-*-*-*-*-*-*Compute distance from point px,py to  a AliPHOSRecPoint considered as a Tmarker*-*-*-*-*-*
-//*-*                  ===========================================
-//  Compute the closest distance of approach from point px,py to this marker.
-//  The distance is computed in pixels units.
-//
+  //Compute distance from point px,py to  a AliPHOSRecPoint considered as a Tmarker
+  //  Compute the closest distance of approach from point px,py to this marker.
+  //  The distance is computed in pixels units.
+  //
 
    TVector3 pos(0.,0.,0.) ;
    GetLocalPosition( pos) ;
@@ -70,25 +69,24 @@ Int_t AliPHOSRecPoint::DistancetoPrimitive(Int_t px, Int_t py)
    if (dist > kMaxDiff) return 9999;
    return dist;
 }
+
 //___________________________________________________________________________
  void AliPHOSRecPoint::Draw(Option_t *option)
  {
-// //*-*-*-*-*-*-*-*-*-*-*Draw this AliPHOSRecPoint with its current attributes*-*-*-*-*-*-*
-// //*-*
-   //   assert(0==1);
-  AppendPad(option);
+   // Draw this AliPHOSRecPoint with its current attributes
+   
+   AppendPad(option);
  }
 
 //______________________________________________________________________________
 void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 {
-//*-*-*-*-*-*-*-*-*-*-*Execute action corresponding to one event*-*-*-*
-//*-*                  =========================================
-// This member function is called when a AliPHOSRecPoint is clicked with the locator
-//
-// If Left button is clicked on AliPHOSRecPoint, the digits are switched on    
-// and switched off when the mouse button is released.
-//
+  // Execute action corresponding to one event
+  // This member function is called when a AliPHOSRecPoint is clicked with the locator
+  //
+  // If Left button is clicked on AliPHOSRecPoint, the digits are switched on    
+  // and switched off when the mouse button is released.
+  //
 
   //  static Int_t pxold, pyold;
 
@@ -159,7 +157,9 @@ void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 //____________________________________________________________________________
 Int_t AliPHOSRecPoint::GetPHOSMod()
 { 
-  if(fPHOSMod > 0) return fPHOSMod ;
+  if(fPHOSMod > 0) 
+    return fPHOSMod ;
+
   Int_t relid[4] ;
   
   AliPHOSDigit * digit   ;
@@ -170,11 +170,12 @@ Int_t AliPHOSRecPoint::GetPHOSMod()
   fPHOSMod = relid[0];
   return fPHOSMod ;
 }
+
 //______________________________________________________________________________
 void AliPHOSRecPoint::Paint(Option_t *)
 {
-//*-*-*-*-*-*-*-*-*-*-*Paint this ALiRecPoint as a TMarker  with its current attributes*-*-*-*-*-*-*
-//*-*                  =============================================
+// Paint this ALiRecPoint as a TMarker  with its current attributes
+
    TVector3 pos(0.,0.,0.)  ;
    GetLocalPosition(pos)   ;
    Coord_t x = pos.X()     ;

@@ -3,6 +3,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+
 ////////////////////////////////////////////////
 //  Short description                         //
 //  Author                 SUBATECH           //
@@ -19,10 +21,13 @@
 class AliPHOSxxx {
 
 public:
+  AliPHOSxxx() ;          // ctor
 
   virtual ~AliPHOSxxx() ; // dtor
 
 private:
+
+public:
 
 ClassDef(AliPHOSxxx,1)  // description , version 1
 

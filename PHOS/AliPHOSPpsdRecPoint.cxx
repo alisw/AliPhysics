@@ -171,7 +171,7 @@ void AliPHOSPpsdRecPoint::GetLocalPosition(TVector3 &LPos){
   AliPHOSDigit * digit ;
   Int_t iDigit;
 
-  for(iDigit=0; iDigit<fMulDigit; iDigit++) {
+  for(iDigit = 0; iDigit < fMulDigit; iDigit++) {
     digit = (AliPHOSDigit *) fDigitsList[iDigit]; 
  
     Float_t xi ;
@@ -182,14 +182,15 @@ void AliPHOSPpsdRecPoint::GetLocalPosition(TVector3 &LPos){
     z += zi ;
   }
 
-  x   /= fMulDigit ;
-  z   /= fMulDigit ;
+  x /= fMulDigit ;
+  z /= fMulDigit ;
 
   fLocPos.SetX(x)  ;
   fLocPos.SetY(0.) ;
   fLocPos.SetZ(z)  ;
 
   LPos = fLocPos ;
+
 }
 
 //____________________________________________________________________________
