@@ -13,29 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-
-Adding rekonstruction facilities
-Piotr Krzysztof Skowronski 
-December 1999.
-
-//Piotr Krzysztof Skowronski
-//Warsaw University of Technology
-//skowron@if.pw.edu.pl
-
-*/
-
-/*
-15 -18 V 2000
-Eroor counting routines
-Automatic combination routines improved (traps)
-
-*/
-
 #include <iostream.h>
 #include <TArrayI.h>
-
-
 #include "AliRun.h"
 #include "AliITS.h"
 #include "AliITSdigit.h"
@@ -49,7 +28,6 @@ Automatic combination routines improved (traps)
 
 const Bool_t AliITSClusterFinderSSD::fgkSIDEP=kTRUE;
 const Bool_t AliITSClusterFinderSSD::fgkSIDEN=kFALSE;
-
 const Int_t debug=0;
 
 ClassImp(AliITSClusterFinderSSD)
@@ -88,9 +66,9 @@ AliITSClusterFinderSSD::AliITSClusterFinderSSD(AliITSsegmentation *seg, TClonesA
     fDigitsIndexN      =  new TArrayI(300);
     fNDigitsN          =  0;
     
-    SetAlpha1(1000);
-    SetAlpha2(1000);
-    SetAlpha3(1000);
+    //SetAlpha1(1000);
+    //SetAlpha2(1000);
+    //SetAlpha3(1000);
 
     
     fPitch = fSegmentation->Dpx(0);
@@ -112,7 +90,6 @@ AliITSClusterFinderSSD::~AliITSClusterFinderSSD() {
     delete fPackages;        
     delete fDigitsIndexP;        
     delete fDigitsIndexN; 
-    
     delete fMap;
 
 }
@@ -169,12 +146,9 @@ void AliITSClusterFinderSSD::FindRawClusters()
   FillDigitsIndex();
   SortDigits();
   FindNeighbouringDigits(); //ad. 2
-  SeparateOverlappedClusters();  //ad. 3
+  //SeparateOverlappedClusters();  //ad. 3
   ClustersToPackages();  //ad. 4
-  ConsumeClusters();
-  PackagesToPoints();   //ad. 5
-  ReconstructNotConsumedClusters();
-  
+  AliITSRecPoint rnew;
   fMap->ClearMap();
 }
 
@@ -245,8 +219,8 @@ void AliITSClusterFinderSSD::FindNeighbouringDigits()
  if (debug) cout<<"\n Found clusters: fNClusterP = "<<fNClusterP<<"  fNClusterN ="<<fNClusterN<<"\n";
 
 }  
-/**********************************************************************/
 
+//--------------------------------------------------------------
 
 void AliITSClusterFinderSSD::SeparateOverlappedClusters()
 {
@@ -620,20 +594,10 @@ void AliITSClusterFinderSSD::ClustersToPackages()
                                           // MB: well, that's not true that one
                                           //cannot sort objects in TClonesArray
   
-  register Int_t i;    //iterator
-  AliITSpackageSSD *currentpkg;
+  //AliITSpackageSSD *currentpkg;
   AliITSclusterSSD *currentP;
   AliITSclusterSSD *currentN;
-  AliITSclusterSSD *fcurrN;
-
-  Int_t     lastNclIndex=0;          //index of last N sidecluster
-  Int_t     Nclpack=0;               //number of P clusters in current package
-  Int_t     Pclpack=0;               //number of N clusters in current package
-  Int_t     firstStripP;
-  Int_t     lastStripP;
-  Int_t     firstStripN;
-  Int_t     lastStripN;
-  Int_t     tmplastNclIndex;
+  Int_t j1, j2;    
 
 //Fills in One Side Clusters Index Array
   FillClIndexArrays(oneSclP,oneSclN); 
@@ -643,124 +607,27 @@ void AliITSClusterFinderSSD::ClustersToPackages()
 
   fNPackages=1;      
   new ((*fPackages)[0]) AliITSpackageSSD(fClusterP,fClusterN);
-  currentpkg = (AliITSpackageSSD*)((*fPackages)[0]);
-  
-  //main loop on sorted P side clusters 
-  Int_t k;
-  for (i=0;i<fNClusterP;i++) {  
-      //Take new P side cluster
-      currentP = GetPSideCluster(oneSclP[i]);
-      currentN = GetNSideCluster(oneSclN[lastNclIndex]);
-      // take a new P cluster or not ?
-      if(IsCrossing(currentP,currentN)) {
-	  // don't take a new P cluster
-          Pclpack++;
-          currentP->AddCross(oneSclN[lastNclIndex]);
-          currentN->AddCross(oneSclP[i]);
-          currentpkg->AddPSideCluster(oneSclP[i]);
-          if (Nclpack==0) {
-              currentpkg->AddNSideCluster(oneSclN[lastNclIndex]);          
-              Nclpack++;
-	  }  
-	  //check if previous N side clusters crosses with it too    
-          for(k=1;k<fSFB+1;k++) {
-	      //check if we are not out of array 
-              if ((lastNclIndex-k)>-1) {
-                  fcurrN = GetNSideCluster( oneSclN[lastNclIndex-k] );
-                  if( IsCrossing(currentP,fcurrN) ) {
-		      currentP->AddCross(oneSclN[lastNclIndex-k]);
-                      fcurrN->AddCross(oneSclP[i]);      
-		 } else break; //There is no sense to check rest of clusters
-	      } else break;
-	  }
-          tmplastNclIndex=lastNclIndex;  
-	  //Check if next N side clusters crosses with it too
-          for (Int_t k=1;k<fSFF+1;k++) {
-	      //check if we are not out of array 
-              if ((tmplastNclIndex+k)<fNClusterN) {
-                  fcurrN = GetNSideCluster( oneSclN[tmplastNclIndex+k] );
-                  if(IsCrossing(currentP,fcurrN) ) {
-                     lastNclIndex++;
-                     fcurrN->AddCross(oneSclP[i]);
-                     currentP->AddCross(oneSclN[tmplastNclIndex+k]);
-                     currentpkg->AddNSideCluster(oneSclN[lastNclIndex]);
-                     Nclpack++;
-		  }else break;
-	      } else break;
-	  }
-      
-	  // end of package 
-	  //if( IsCrossing )
-      } else { 
-         lastStripP  = currentP->GetLastDigitStripNo();
-         lastStripN  = currentN->GetLastDigitStripNo();
-         
-         if((lastStripN-fSFF) < lastStripP ) {
-	    //Take new PCluster
-            if((Nclpack>0)&& (Pclpack>0)) {
-              new ((*fPackages)[fNPackages]) AliITSpackageSSD(fClusterP,fClusterN);
-              currentpkg = (AliITSpackageSSD*)((*fPackages)[fNPackages++]);
-	    }
-              
-	    //so we have to take another cluster on side N and check it
-	    //we have to check until taken cluster's last strip will 
-	    //be > last of this cluster(P)
-	    //so it means that there is no corresponding cluster on side N 
-	    //to this cluster (P)
-	    //so we have to continue main loop with new "lastNclIndex"
-         
-	    Nclpack=0;     
-	    Pclpack=0;   
-	    //We are not sure that next N cluter will cross with this P cluster
-	    //There might one, or more, clusters that do not have any 
-	    //corresponding cluster on the other side	   
-	    for(;;) {     
-	       lastNclIndex++;
-	       //Check if we are not out of array
-	       if (lastNclIndex<fNClusterN) {
-		  currentN = GetNSideCluster(oneSclN[lastNclIndex]);
-		  if ( IsCrossing(currentP, currentN) ){
-		     Nclpack++;       
-		     Pclpack++;
-		     currentP->AddCross(oneSclN[lastNclIndex]);
-		     currentN->AddCross(oneSclP[i]);
-		     currentpkg->AddNSideCluster(oneSclN[lastNclIndex]);
-		     currentpkg->AddPSideCluster(oneSclP[i]);          
-		     //Check, if next N side clusters crosses with it too
-		     tmplastNclIndex=lastNclIndex;
-		     for (Int_t k=1;k<fSFF+1;k++) {
-		       //Check if we are not out of array
-		       if ((tmplastNclIndex+k)<fNClusterN) {
-			  fcurrN = GetNSideCluster(oneSclN[tmplastNclIndex+k]);
-			  if( IsCrossing(currentP, fcurrN) ) {
-			     Nclpack++;
-			     lastNclIndex++;
-			     currentP->AddCross(oneSclN[tmplastNclIndex+k]);
-			     fcurrN->AddCross(oneSclP[i]);
-			     currentpkg->AddNSideCluster(oneSclN[tmplastNclIndex+k]);
-			  }else break;
-		       } else break; //we are out of array
-		     } // end loop 
-		     break;
-		  } else {
-		     firstStripP = currentP->GetFirstDigitStripNo();
-		     firstStripN = currentN->GetFirstDigitStripNo();
-		     if((firstStripN+fSFB)>=firstStripP) break;
-		     else continue;
-		  }  
-	       } else goto EndOfFunction;
-	    } // end for(;;)
-	 }  else  //EndOfPackage
-	   {
-	     continue;     
-	   } //else EndOfPackage
-       
-      }//else IsCrossing
-	    
-  }//main for
+  //currentpkg = (AliITSpackageSSD*)((*fPackages)[0]);
 
- EndOfFunction:
-  if ((Nclpack<1) || (Pclpack<1)) fNPackages--;
+  // Take all pairs of recpoints x coordinates in both sides  
+  // to calculate z coordinates of the recpoints
+  for (j1=0;j1<fNClusterP;j1++) {  
+      currentP = GetPSideCluster(oneSclP[j1]);
+      Double_t xP = currentP->GetPosition();
+      //Int_t NxP = currentP->GetNumOfDigits();
+      //cout<<"ClusterToP:New NxP,xP ="<<NxP<<","<<xP<<endl;
+      Float_t signalP = currentP->GetTotalSignal();
+    for (j2=0;j2<fNClusterN;j2++) {  
+      currentN = GetNSideCluster(oneSclN[j2]);
+      Double_t xN = currentN->GetPosition();
+      //Int_t NxN = currentN->GetNumOfDigits();
+      //cout<<"ClusterToP:New NxN,xN ="<<NxN<<","<<xN<<endl;
+      Float_t signalN = currentN->GetTotalSignal();
+      //cout<<"ClusterToP: signalP,signalN ="<<signalP<<","<<signalN<<endl;
+      CreateNewRecPoint(xP,1,xN,1,signalP,signalN,currentP, currentN, 0.75);
+
+    }
+  }
 
    delete oneSclP;
    delete oneSclN;
@@ -768,995 +635,89 @@ void AliITSClusterFinderSSD::ClustersToPackages()
 }
 
 
-
-//-----------------------------------------------
-void AliITSClusterFinderSSD::PackagesToPoints()
-{
-// find recpoints from packages
- 
- register Int_t i;
- AliITSpackageSSD *currentpkg;
- Int_t NumNcl;
- Int_t NumPcl;
- Int_t clusterIndex;
- Bool_t clusterSide;
-
- for (i=0;i<fNPackages;i++) {
-    //get pointer to next package
-    currentpkg = (AliITSpackageSSD*)((*fPackages)[i]); 
-    NumNcl = currentpkg->GetNumOfClustersN();
-    NumPcl = currentpkg->GetNumOfClustersP();
-    if(debug) cout<<"New Package\nNumPcl ="<<NumPcl<<" NumNcl ="<<NumNcl<<"\n";
-
-    while(((NumPcl>=2)&&(NumNcl>2))||((NumPcl>2)&&(NumNcl>=2))) {  
-        //This is case of "big" pacakage
-        //conditions see 3 lines above  
-        //if in the big package exists cluster with one cross 
-	//we can reconstruct this point without any geometrical ambiguities
-	if(currentpkg->GetClusterWithOneCross(clusterIndex, clusterSide) )
-        {
-            ResolveClusterWithOneCross(currentpkg, clusterIndex, clusterSide);
-        } else if (clusterIndex == -2) {
-	    NumPcl = 0;
-	    NumNcl = 0;
-	    break;
-        } else {
-	    if ( (NumNcl==NumPcl) && (NumPcl<10)) {
-               //if there is no cluster with one cross 
-	       //we can resolve whole package at once 
-	       //by finding best combination
-	       //we can make combinations when NumNcl==NumPcl
-	       if (ResolvePackageBestCombin(currentpkg)) { 
-                   //sometimes creating combinations fail, 
-		   //but it happens very rarely
-		   NumPcl = 0;
-		   NumNcl = 0;
-		   break;
-	       } else ResolveOneBestMatchingPoint(currentpkg);
-	    } else {
-	       ResolveOneBestMatchingPoint(currentpkg);
-	    }
-        }
-	NumNcl = currentpkg->GetNumOfClustersN();
-	NumPcl = currentpkg->GetNumOfClustersP();
-    } // end while 
-    if ((NumPcl==1)&&(NumNcl==1)) {
-      ResolveSimplePackage(currentpkg);
-       continue;
-    }
-    if (NumPcl==1) {
-      ResolvePackageWithOnePSideCluster(currentpkg);
-      continue;
-    }
-    if (NumNcl==1) {
-      ResolvePackageWithOneNSideCluster(currentpkg);
-      continue;
-    }
-    if ((NumPcl==2)&&(NumNcl==2)) {
-      ResolveTwoForTwoPackage(currentpkg);
-      continue; 
-    }
-    if ((NumPcl==0)&&(NumNcl>0)) { }
-    if ((NumNcl==0)&&(NumPcl>0)) { }
-
-  } // end loop over fNPackages
-
-
-}
-
-
-//----------------------------------------------------------
-
-void AliITSClusterFinderSSD::
-ResolveClusterWithOneCross(AliITSpackageSSD *currentpkg, Int_t clusterIndex, Bool_t clSide)
-{
-// resolve clusters with one cross
-/*
-
-ie:
-    \    /  
-     \  /   
-      \/ 
-      /\ 
-     /  \
-    /    \  
-   /      \
-  /        \
- /          \
-*/
-
-
-
-   if (clSide == fgkSIDEP) ResolvePClusterWithOneCross(currentpkg,clusterIndex);
-   else  ResolveNClusterWithOneCross(currentpkg,clusterIndex);
-
-}
-
-
-//---------------------------------------------------------
-void AliITSClusterFinderSSD::
-ResolvePClusterWithOneCross(AliITSpackageSSD *pkg, Int_t clusterIndex)
-{
-// resolve clusters with one cross on P side
-/*
-There is cluster (side P) which crosses with only one cluster on the other 
-side (N)
-
-ie:
-    \    /  \/   /
-     \  /   /\  /
-      \/   /  \/
-      /\  /   /\
-     /  \/   /  \    .....
-    /   /\  /    \
-   /   /  \/      \
-  /   /   /\       \
- /   /   /  \       \
-*/
-
-
-  AliITSclusterSSD * clusterP;
-  AliITSclusterSSD * clusterN;
-
-  Float_t posClusterP;           //Cluster P position in strip coordinates
-  Float_t posClusterN;           //Cluster N position in strip coordinates
-  
-  Float_t posErrorClusterP;
-  Float_t posErrorClusterN;
-  
-  Float_t sigClusterP;
-  Float_t sigClusterN;
-
-  Float_t sigErrorClusterP;
-  Float_t sigErrorClusterN;
-
-  Float_t ps;
-  Float_t ns;
-  
-  Float_t Chicomb;
-  Int_t clusterIdx;
-
-  if (debug) cout<<"ResolvePClusterWithOneCross\n";
-
-  clusterP=pkg->GetPSideCluster(clusterIndex);
-  posClusterP = GetClusterZ(clusterP);
-  posErrorClusterP = clusterP->GetPositionError();
-  sigClusterP = ps = clusterP->GetTotalSignal();
-  sigErrorClusterP = clusterP->GetTotalSignalError(); 
-  //carefully, it returns index in TClonesArray
-  
-  clusterIdx = clusterP->GetCross(0);
-  clusterN=this->GetNSideCluster(clusterIdx);
-  ns = clusterN->GetTotalSignal();
-  posClusterN = GetClusterZ(clusterN);
-  posErrorClusterN = clusterN->GetPositionError();
-  pkg->DelCluster(clusterIndex,fgkSIDEP);
-  sigClusterN = ps/fPNsignalRatio;
-  // there is no sonse to check how signal ratio is far from perfect 
-  // matching line if the if below it is true
-  if (ns < sigClusterN) {
-      sigClusterN=ns;
-      if (debug) cout<<"n1 < p1/fPNsignalRatio";
-      if (debug) cout<<"Attempting to del cluster N "<<clusterIdx<<" ... \n";
-      pkg->DelClusterOI(clusterIdx,fgkSIDEN);
-  } else {
-      //Let's see how signal ratio is far from perfect matching line
-      Chicomb = DistToPML(ps,ns);
-      if (debug) cout<<"Chic "<<Chicomb<<"\n";
-      if (Chicomb > fAlpha2) {
-         //it is near, so we can risk throwing this cluster away too
-	 if (debug) cout<<"Attempting to del cluster N "<<clusterIdx<<"...\n"; 
-         pkg->DelClusterOI(clusterIdx,fgkSIDEN);
-      } else {
-         clusterN->CutTotalSignal(sigClusterN);
-	 if (debug) cout <<"Signal cut  |||||||||||||\n";
-      }
-  }
-  sigErrorClusterN= clusterN->GetTotalSignalError(); 
-  CreateNewRecPoint(posClusterP,posErrorClusterP,posClusterN,posErrorClusterN,
-                    sigClusterP+sigClusterN, sigErrorClusterN+sigErrorClusterP,
-      	            clusterP, clusterN, 0.75);
-
-}
-
-
-//------------------------------------------------------
-void AliITSClusterFinderSSD::
-ResolveNClusterWithOneCross(AliITSpackageSSD *pkg, Int_t clusterIndex)
-{
-// resolve clusters with one cross on N side
-
-
-  AliITSclusterSSD * clusterP;
-  AliITSclusterSSD * clusterN;
-
-  Float_t posClusterP;              //Cluster P position in strip coordinates
-  Float_t posClusterN;              //Cluster N position in strip coordinates
-
-  Float_t posErrorClusterP;
-  Float_t posErrorClusterN;
-
-  Float_t sigClusterP;
-  Float_t sigClusterN;
-
-  Float_t sigErrorClusterP;
-  Float_t sigErrorClusterN;
-
-  Float_t ps;
-  Float_t ns;
-  
-  Float_t Chicomb;
-  Int_t clusterIdx;
-  
-  if (debug) cout<<"ResolveNClusterWithOneCross\n"; 
-  
-  clusterN=pkg->GetNSideCluster(clusterIndex);
-  posClusterN = GetClusterZ(clusterN);
-  posErrorClusterN = clusterN->GetPositionError();
-  sigClusterN = ns = clusterN->GetTotalSignal();
-  sigErrorClusterN = clusterN->GetTotalSignalError(); 
-  //carefully, it returns index in TClonesArray
-  clusterIdx = clusterN->GetCross(0);
-  clusterP=this->GetPSideCluster(clusterIdx);
-  ps = clusterP->GetTotalSignal();
-  posClusterP = GetClusterZ(clusterP);
-  posErrorClusterP = clusterP->GetPositionError();
-  pkg->DelCluster(clusterIndex,fgkSIDEN);
-  sigClusterP=ns*fPNsignalRatio;
-  // there is no sonse to check how signal ratio is far from perfect 
-  // matching line if the if below it is true
-  if (ps < sigClusterP) {
-      sigClusterP = ps;
-      if (debug) cout<<"ps < ns*fPNsignalRatio";
-      if (debug) cout<<"Attempting to del cluster P "<<clusterIdx<<" ... \n";
-      pkg->DelClusterOI(clusterIdx,fgkSIDEP);
-  } else {
-      //Let's see how signal ratio is far from perfect matching line
-       Chicomb = DistToPML(ps,ns);
-       if (debug) cout<<"Chic "<<Chicomb<<"\n";
-       if (Chicomb > fAlpha2) {
-          //it is near, so we can risk frowing this cluster away too
-          if (debug) cout<<"Attempting to del cluster P "<<clusterIdx<<"...\n";
-	  pkg->DelClusterOI(clusterIdx,fgkSIDEP);
-       } else {
-          clusterN->CutTotalSignal(sigClusterP);
-	  if (debug) cout <<"Signal cut  ------------\n";
-       }
-  }
-  sigErrorClusterP= clusterP->GetTotalSignalError(); 
-  CreateNewRecPoint( posClusterP,posErrorClusterP,posClusterN,posErrorClusterN,
-                     sigClusterP+sigClusterN,sigErrorClusterN+sigErrorClusterP,
-      	             clusterP, clusterN, 0.75);
-
-
-}
-
-
-
-//-------------------------------------------------------
-
-Bool_t AliITSClusterFinderSSD::
-ResolvePackageBestCombin(AliITSpackageSSD *pkg)
-{
-//find best combination
-
-  if (debug) cout<<"NumNcl==NumPcl ("<<pkg->GetNumOfClustersN()
-      <<"=="<<pkg->GetNumOfClustersP()<<"); Generating combinations ... \n";
-
-
-  AliITSclusterSSD * clusterP;
-  AliITSclusterSSD * clusterN;
-
-  Int_t Ncombin; //Number of combinations
-  Int_t itera;   //iterator
-  Int_t sizet=1;   //size of array to allocate 
-
-  Int_t NP = pkg->GetNumOfClustersP();
-  for (itera =2; itera <= NP ;itera ++) {
-     sizet=sizet*itera;
-     if (sizet > 10000) {
-       sizet=10000;
-       break;
-     }
-  }
-
-  Int_t** combin = new Int_t*[sizet]; //2D array to keep combinations in
-
-  for (itera =0; itera <sizet;itera++) {
-   combin[itera] = new Int_t[NP+1];
-  }
-     
-  pkg->GetAllCombinations(combin,Ncombin,sizet);
- 
-  if (Ncombin==0) { 
-    if (debug) cout<<"No combin Error";
-    return kFALSE;
-  }
-//calculate which combination fits the best to perfect matching line 
-  Int_t bc = GetBestComb(combin,Ncombin,NP,pkg); 
-  if (debug) cout<<"  bc "<<bc <<"\n";
-              
-  for (itera =0; itera < NP; itera ++) {
-      clusterP = pkg->GetPSideCluster(itera);
-      //carefully here
-      //becase AliITSclusterSSD::GetCross returns index in 
-      //AliITSmoduleSSD.fClusterP, which is put to "combin"        
-      clusterN = GetNSideCluster(combin[bc][itera]);
-      CreateNewRecPoint(clusterP, clusterN, 0.75);
-  } 
-
-  for (itera =0; itera <sizet;itera++) {
-     delete [](combin[itera]);
-  }
-  delete [] combin;  
-  return kTRUE;
-
-}
-
-
-//----------------------------------------------------
-void AliITSClusterFinderSSD::
-ResolveOneBestMatchingPoint(AliITSpackageSSD *pkg)
-{
-// find best matching point
-
- Int_t ni, pi;
-
- Int_t prvP, prvN;
- Int_t nextP, nextN=0;
-
-  
- AliITSclusterSSD * clusterP;
- AliITSclusterSSD * clusterN;
-
- Bool_t split = kFALSE;
-
- if (debug) cout<<"ResolveOneBestMatchingPoint \n";
-
- GetBestMatchingPoint(pi, ni, pkg);
-         
- clusterP = GetPSideCluster(pi);
- clusterN = GetNSideCluster(ni);
-              
- CreateNewRecPoint(clusterP, clusterN, 0.75);
- 
- if ((nextP=pkg->GetNextPIdx(pi))!=-1)
-   if ((nextN=pkg->GetNextNIdx(ni))!=-1)
-     if ((prvP=pkg->GetPrvPIdx(pi))!=-1)
-       if ((prvN=pkg->GetPrvNIdx(ni))!=-1)
-          if( !(GetPSideCluster(prvP)->IsCrossingWith(nextN)))
-            if( !(GetPSideCluster(nextP)->IsCrossingWith(prvN)))
-              {
-                 split = kTRUE;
-              }	  
- 
- 
- pkg->DelClusterOI(pi, fgkSIDEP);
- pkg->DelClusterOI(ni, fgkSIDEN);
-
- if (split) {
-   if (debug) cout<<"spltting package ...\n";
-   new ((*fPackages)[fNPackages]) AliITSpackageSSD(fClusterP,fClusterN);
-   pkg->
-     SplitPackage(nextP,nextN,(AliITSpackageSSD*)((*fPackages)[fNPackages++]));
- }
-
-}
-
-
-//--------------------------------------------------
-void  AliITSClusterFinderSSD::ResolveSimplePackage(AliITSpackageSSD *pkg)
-{
-// resolve simple package
-
-  AliITSclusterSSD * clusterP;
-  AliITSclusterSSD * clusterN;
-
-  clusterP         = pkg->GetPSideCluster(0);
-        
-  clusterN         = pkg->GetNSideCluster(0);
-
-  CreateNewRecPoint(clusterP, clusterN, 1.0);
-
-
-} 
-
-
-//--------------------------------------------------
-void AliITSClusterFinderSSD:: ResolvePackageWithOnePSideCluster(AliITSpackageSSD *pkg) {
-// resolve P side clusters from packages
-
-/*
- \   \   \  /
-  \   \   \/
-   \   \  /\
-    \   \/  \
-     \  /\   \
-      \/  \   \
-      /\   \   \
-     /  \   \   \  
-
-*/
-
-
-/************************/
-/**************************/
-/*XP SP itg jest tylko jeden nie musi byc tablica i w peetli nie trzeba po niej iterowcac*/
-/***************************/
-
-
- Int_t k;
- AliITSclusterSSD * clusterP;
- AliITSclusterSSD * clusterN;
- 
- Int_t NN=pkg->GetNumOfClustersN();
- Float_t sumsig = 0;
- 
- Float_t   XP;
- Float_t   XPerr;
- 
- Float_t * XN = new Float_t[NN];
- Float_t * XNerr = new Float_t[NN];
- 
- Float_t * SP = new Float_t[NN];
- Float_t * SN = new Float_t[NN];
- 
- Float_t * SPerr = new Float_t[NN];
- Float_t * SNerr = new Float_t[NN];
- 
- Float_t p1;
- Float_t p1err;
- 
- clusterP = pkg->GetPSideCluster(0);
- p1       = clusterP->GetTotalSignal();
-   
- XP    = GetClusterZ(clusterP);
- XPerr = clusterP->GetPositionError();
- p1err = clusterP->GetTotalSignalError();
-   
- for (k=0;k<NN;k++) {
-    SN[k]    = pkg->GetNSideCluster(k)->GetTotalSignal();
-    SNerr[k] = pkg->GetNSideCluster(k)->GetTotalSignalError();
-    sumsig   += SN[k];
- }
- for (k=0;k<NN;k++) {
-    clusterN = pkg->GetNSideCluster(k);
-    SP[k]= p1*SN[k]/sumsig;
-    SPerr[k] = p1err*SN[k]/sumsig;
-    XN[k]=GetClusterZ(clusterN);
-    XNerr[k]= clusterN->GetPositionError();
-    CreateNewRecPoint(XP,XPerr, XN[k],XNerr[k], SP[k]+SN[k], SPerr[k]+SNerr[k], clusterP, clusterN, 1.0);
-
- }
-
- delete [] XN;
- delete [] XNerr;
- delete [] SP;
- delete [] SN;
- delete [] SPerr;
- delete [] SNerr;
-
-
-}
-
-
-//---------------------------------------------------------
-void AliITSClusterFinderSSD::ResolvePackageWithOneNSideCluster(AliITSpackageSSD *pkg) {
-// resolve N side clusters from packages
-
-/*
-    \    /   /   /
-     \  /   /   /
-      \/   /   /
-      /\  /   /
-     /  \/   /
-    /   /\  /  
-   /   /  \/
-  /   /   /\
- /   /   /  \  
-*/
-
-
- Int_t k;
- AliITSclusterSSD * clusterP;
- AliITSclusterSSD * clusterN;
- 
- Int_t NP=pkg->GetNumOfClustersP();
- Float_t sumsig = 0;
- 
- Float_t * XP = new Float_t[NP];
- Float_t * XPerr = new Float_t[NP];
- 
- Float_t   XN;
- Float_t   XNerr;
- 
- Float_t * SP = new Float_t[NP];
- Float_t * SN = new Float_t[NP];
- 
- Float_t * SPerr = new Float_t[NP];
- Float_t * SNerr = new Float_t[NP];
- 
- Float_t n1;
- Float_t n1err;
-
- clusterN = pkg->GetNSideCluster(0);
- n1       = clusterN->GetTotalSignal();
-   
- XN = GetClusterZ(clusterN);
- XNerr = clusterN->GetPositionError();
- 
- n1err=clusterN->GetTotalSignalError();
-   
- for (k=0;k<NP;k++) {
-    SP[k] = pkg->GetPSideCluster(k)->GetTotalSignal();
-    sumsig += SP[k];
-    SPerr[k] = pkg->GetPSideCluster(k)->GetTotalSignalError();
- }
-
- for (k=0;k<NP;k++) {
-    clusterP = pkg->GetPSideCluster(k);
-    SN[k]= n1*SP[k]/sumsig;
-    XP[k]=GetClusterZ(clusterP);
-    XPerr[k]= clusterP->GetPositionError();
-    SNerr[k] = n1err*SP[k]/sumsig;
-    CreateNewRecPoint(XP[k],XPerr[k], XN,XNerr, SP[k]+SN[k], SPerr[k]+SNerr[k],clusterP, clusterN, 1.0);
-  }
-  
- delete [] XP;
- delete [] XPerr;
- delete [] SP;
- delete [] SN;
- delete [] SPerr;
- delete [] SNerr;
-               
-}
-
-/**********************************************************************/
-/*********      2  X   2  *********************************************/
-/**********************************************************************/
-
-void AliITSClusterFinderSSD::
-ResolveTwoForTwoPackage(AliITSpackageSSD *pkg)
-{
-// resolve 2x2 packages
-
-  AliITSclusterSSD *clusterP1 = pkg->GetPSideCluster(0);
-  AliITSclusterSSD *clusterP2 = pkg->GetPSideCluster(1);
-  AliITSclusterSSD *clusterN1 = pkg->GetNSideCluster(0);
-  AliITSclusterSSD *clusterN2 = pkg->GetNSideCluster(1);
-
-  AliITSclusterSSD *tmp;
-
-  Float_t p1sig;
-  Float_t p2sig;
-  Float_t n1sig;
-  Float_t n2sig;
-
-  Float_t p1sigErr;
-  Float_t p2sigErr;
-  Float_t n1sigErr;
-  Float_t n2sigErr;
-
-  Float_t ZposP1;
-  Float_t ZposP2;
-  Float_t ZposN1;
-  Float_t ZposN2;
-
-  Float_t ZposErrP1;
-  Float_t ZposErrP2;
-  Float_t ZposErrN1;
-  Float_t ZposErrN2;
-
-  Float_t D12;
-
-  Float_t Chicomb1;
-  Float_t Chicomb2;
-
-  if(clusterP1->GetDigitStripNo(0) > clusterP2->GetDigitStripNo(0)) {
-     if (debug) cout<<"P strips flip\n";
-     tmp       = clusterP1;
-     clusterP1 = clusterP2;
-     clusterP2 = tmp;
-  }
-  if(clusterN1->GetDigitStripNo(0) > clusterN2->GetDigitStripNo(0)) {
-     if (debug) cout<<"N strips flip\n";
-     tmp       = clusterN1;
-     clusterN1 = clusterN2;
-     clusterN2 = tmp;
-  }
-  p1sig = clusterP1->GetTotalSignal();
-  p2sig = clusterP2->GetTotalSignal();
-  n1sig = clusterN1->GetTotalSignal();
-  n2sig = clusterN2->GetTotalSignal();
-
-
-  p1sigErr = clusterP1->GetTotalSignalError();
-  n1sigErr = clusterN1->GetTotalSignalError();
-  p2sigErr = clusterP2->GetTotalSignalError();
-  n2sigErr = clusterN2->GetTotalSignalError();
-          
-  ZposP1 = clusterP1->GetPosition();
-  ZposN1 = clusterN1->GetPosition();
-  ZposP2 = clusterP2->GetPosition();
-  ZposN2 = clusterN2->GetPosition();
-
-  ZposErrP1 = clusterP1->GetPositionError();
-  ZposErrN1 = clusterN1->GetPositionError();
-  ZposErrP2 = clusterP2->GetPositionError();
-  ZposErrN2 = clusterN2->GetPositionError();
-
-  //in this may be two types:
-  //    1.When each cluster crosses with 2 clusters on the other side
-  //            gives 2 ghosts and 2 real points
-  //
-  //    2.When two clusters (one an each side) crosses with only one on 
-  //           the other side and two crosses (one on the each side) with 
-  //           two on the other gives 2 or 3 points,
-   
-  if (debug) cout<<"2 for 2 ambiguity ...";
-  /***************************/
-  /*First sort of combination*/
-  /***************************/
-  
-  if((clusterP1->GetCrossNo()==2) && (clusterN1->GetCrossNo()==2)) {  
-     if (debug) cout<<"All clusters has 2 crosses\n";
-     D12 = TMath::Sqrt((Float_t)((p1sig -p2sig)*(p1sig -p2sig) + (n1sig -n2sig)*(n1sig -n2sig)));
-	    
-     if(debug) cout<<"Distance between points in P(N) plane D12 = "<<D12<<"\n";
-            
-     /*********************************************/
-     /*resolving ambiguities:                     */
-     /*we count Chicomb's and we take combination */
-     /*giving lower Chicomb as a real points      */
-     /*Keep only better combinantion              */
-     /*********************************************/
-	    
-     if (D12 > (fAlpha3*17.8768)) {
-       if (debug) cout<<"decided to take only one pair \n";
-       Chicomb1 = DistToPML(p1sig,n1sig) + DistToPML(p2sig,n2sig);
-       Chicomb2 = DistToPML(p2sig,n1sig) + DistToPML(p1sig,n2sig);
-       if (debug) {
-	 cout<<" 00 11 combination : "<<Chicomb1<<" 01 10 combination : "<<Chicomb2<<" \n";
-	 cout<<"p1 = "<<p1sig<<"  n1 = "<<n1sig<<"  p2 = "<<p2sig<<"  n2 = "<<n2sig<<"\n"; 
-       }
-       if (Chicomb1 < Chicomb2) {
-	  if (debug) cout<<"00 11";
-	  CreateNewRecPoint(ZposP1,ZposErrP1, ZposN1,ZposErrN1, p1sig+n1sig, p1sigErr+n1sigErr, clusterP1, clusterN1, 0.75);   
-	  CreateNewRecPoint(ZposP2,ZposErrP2, ZposN2,ZposErrN2, p2sig+n2sig, p2sigErr+n2sigErr, clusterP2, clusterN2, 0.75); 
-
-  
-	  //second cominantion
-       } else {
-	  if (debug) cout<<"01 10";
-	  CreateNewRecPoint(ZposP1,0, ZposN2,0, p1sig+n2sig, p1sigErr+n2sigErr, clusterP1, clusterN2, 0.75);   
-	  CreateNewRecPoint(ZposP2,0, ZposN1,0, p2sig+n1sig, p2sigErr+n1sigErr, clusterP2, clusterN1, 0.75);    
-       } //end second combinantion
-       //if (D12 > fAlpha3*17.8768)
-       //keep all combinations
-     } else {
-        if (debug) cout<<"We decide to take all points\n";
-	CreateNewRecPoint(ZposP1,ZposErrP1, ZposN1,ZposErrN1, p1sig+n1sig, p1sigErr+n1sigErr, clusterP1, clusterN1, 0.5);   
-	CreateNewRecPoint(ZposP2,ZposErrP2, ZposN2,ZposErrN2, p2sig+n2sig, p2sigErr+n2sigErr, clusterP2, clusterN2, 0.5);   
-	CreateNewRecPoint(ZposP1,ZposErrP1, ZposN2,ZposErrN2, p1sig+n2sig, p1sigErr+n2sigErr, clusterP1, clusterN2, 0.5);   
-	CreateNewRecPoint(ZposP2,ZposErrP2, ZposN1,ZposErrN1, p2sig+n1sig, p2sigErr+n1sigErr, clusterP2, clusterN1, 0.5);    
-     }
-  }
-  // ad.2 Second type of combination
-  else {
-    Chicomb1 = DistToPML(p1sig,n1sig) + DistToPML(p2sig,n2sig);
-    if (debug) cout<<"\nhere can be reconstructed 3 points: chicomb = "<<Chicomb1<<"\n"; 
-  
-    if (Chicomb1<fAlpha1) {
-       if (debug) cout<<"\nWe decided to take 3rd point"; 
-       if (clusterP1->GetCrossNo()==1) {
-	  if (debug) cout<<"...  P1 has one cross\n"; 
-	  n1sig = p1sig/fPNsignalRatio;
-	  p2sig = n2sig*fPNsignalRatio;
-              
-	  clusterN1->CutTotalSignal(n1sig);
-	  clusterP2->CutTotalSignal(p2sig);
-       
-	  CreateNewRecPoint(ZposP2,ZposErrP2, ZposN1,ZposErrN1, p2sig+n1sig, p2sigErr+n1sigErr, clusterP2, clusterN1, 0.5);    
-
-	  n1sig = clusterN1->GetTotalSignal();
-	  p2sig = clusterP2->GetTotalSignal();
-
-       } else {
- 	  if (debug) cout<<"...  N1 has one cross\n";
-	      
-	  n2sig=p2sig/fPNsignalRatio;
-	  p1sig=n1sig*fPNsignalRatio;
-
-	  clusterN2->CutTotalSignal(n2sig);
-	  clusterP1->CutTotalSignal(p1sig);
-
-	  CreateNewRecPoint(ZposP1,ZposErrP1, ZposN2,ZposErrN2, p1sig+n2sig, p1sigErr+n2sigErr, clusterP1, clusterN2, 0.5);   
-	  
-	  n2sig=clusterN2->GetTotalSignal();
-	  p1sig=clusterP1->GetTotalSignal();
-       }
-    } else {
-       if (debug) cout<<"\nWe decided  NOT to take 3rd point\n"; 
-    }
-
-    CreateNewRecPoint(ZposP1,ZposErrP1, ZposN1,ZposErrN1, p1sig+n1sig, p1sigErr+n1sigErr, clusterP1, clusterN1, 1.0);   
-    CreateNewRecPoint(ZposP2,ZposErrP2, ZposN2,ZposErrN2, p2sig+n2sig, p2sigErr+n2sigErr, clusterP2, clusterN2, 1.0);   
-  
-  }
-
-}
-
-
-
 //------------------------------------------------------
 Bool_t AliITSClusterFinderSSD::    
 CreateNewRecPoint(Float_t P, Float_t dP, Float_t N, Float_t dN,
-                  Float_t Sig,Float_t dSig, 
+                  Float_t SigP,Float_t SigN, 
                   AliITSclusterSSD *clusterP, AliITSclusterSSD *clusterN,
                   Stat_t prob)
 {
 // create the recpoints
-
-
-  const Float_t kdEdXtoQ = 2.778e+8;
+  const Float_t kADCtoKeV = 2.16; 
+  // 50 ADC units -> 30000 e-h pairs; 1e-h pair -> 3.6e-3 KeV;
+  // 1 ADC unit -> (30000/50)*3.6e-3 = 2.16 KeV 
   const Float_t kconv = 1.0e-4; 
-  const Float_t kRMSx = 20.0*kconv; // microns->cm ITS TDR Table 1.3
-  const Float_t kRMSz = 830.0*kconv; // microns->cm ITS TDR Table 1.3
 
+  const Float_t kRMSx = 20.0*kconv; 
+  const Float_t kRMSz = 800.0*kconv; 
 
-  Float_t p=P;
-  Float_t n=N;
   Int_t stripP, stripN;
-  Int_t sigP, sigN;
-  AliITSdigitSSD *digP, *digN;
+  Int_t n=0;
+  Int_t *tr;
   if (GetCrossing(P,N)) {
+  
      GetCrossingError(dP,dN);
      AliITSRawClusterSSD cnew;
      Int_t nstripsP=clusterP->GetNumOfDigits();
      Int_t nstripsN=clusterN->GetNumOfDigits();
+     //Float_t signalP=clusterP->GetTotalSignal();
+     //Float_t signalN=clusterN->GetTotalSignal();
+
+     Float_t signal = 0;
+     Float_t dedx = 0;
+     if(SigP>SigN) {
+       signal = SigP;
+       dedx = SigP*kADCtoKeV;
+     }else{
+       signal = SigN;
+       dedx = SigN*kADCtoKeV;
+     }	       
+     Float_t signalCut = TMath::Abs((SigP-SigN)/signal);
+
+  //cnew.fSignalP=signalP;
+  //cnew.fSignalN=signalN;
+     cnew.fSignalP=SigP;
+     cnew.fSignalN=SigN;
      cnew.fMultiplicity=nstripsP;
      cnew.fMultiplicityN=nstripsN;
-     /*
-     if (nstripsP > 100) {
-        printf("multiplicity > 100 - increase the dimension of the arrays %d\n",nstripsP);
-        nstripsP=100;
-     }
-     for(int i=0;i<nstripsP;i++) {
-       // check if 'clusterP->GetDigitStripNo(i)' returns the digit index
-       cnew.fIndexMap[i] = clusterP->GetDigitStripNo(i); 
-     } 
-     if (nstripsN > 100) {
-        printf("multiplicity > 100 - increase the dimension of the arrays %d\n",nstripsN);
-        nstripsN=100;
-     }
-     for(int i=0;i<nstripsN;i++) {
-       // check if 'clusterN->GetDigitStripNo(i)' returns the digit index
-       cnew.fIndexMapN[i] = clusterN->GetDigitStripNo(i); 
-     }
-     */
-     cnew.fQErr=dSig;
-     //cnew.fProbability=(float)prob; 
-     fITS->AddCluster(2,&cnew);
+     cnew.fQErr=signalCut;
+
+     //fITS->AddCluster(2,&cnew);
+
+     if(signalCut<0.18) fITS->AddCluster(2,&cnew);
+     // the cut of the signals difference in P and N sides to
+     // remove the "ghosts"
+
      fSegmentation->GetPadIxz(P,N,stripP,stripN);
-     digP = (AliITSdigitSSD*)fMap->GetHit(1,stripP);
-     digN = (AliITSdigitSSD*)fMap->GetHit(0,stripN);
-     //printf("SSD: digP digN %p %p\n",digP,digN);
-     if(digP) sigP = digP->fSignal;
-     else sigP=0;
-     if(digN) sigN = digN->fSignal;
-     else sigN=0;
-     if (!digP && !digN) {
-       Error("CreateNewRecPoint","cannot find the digit!");
-       return kFALSE;
-     }
-     // add the rec point info
+
+     //cout<<"NewRec: P,N microns,stripP,stripN ="<<P<<","<<N<<","<<stripP<<","<<stripN<<endl;
+
+     tr = (Int_t*) clusterP->GetTracks(n);
+     //cout<<"!!!! ntr,tr0,tr1,tr2 ="<<n<<","<<tr[0]<<","<<tr[1]<<","<<tr[2]<<endl; 
+     //cout<<"NewRec:AddRecP: xL,zL cm ="<<P*kconv<<","<<N*kconv<<endl;
+
      AliITSRecPoint rnew;
      rnew.SetX(P*kconv);
      rnew.SetZ(N*kconv);
-     rnew.SetQ(Sig);
-     rnew.SetdEdX(Sig/kdEdXtoQ);
+     rnew.SetQ(signal);
+     rnew.SetdEdX(dedx);
      rnew.SetSigmaX2( kRMSx* kRMSx); 
      rnew.SetSigmaZ2( kRMSz* kRMSz);
-     //rnew.SetProbability((float)prob);
-     if(sigP > sigN) {
-        rnew.fTracks[0]=digP->fTracks[0];
-        rnew.fTracks[1]=digP->fTracks[1];
-        rnew.fTracks[2]=digP->fTracks[2];
-	//printf("sigP>sigN: %d %d %d\n",digP->fTracks[0],digP->fTracks[1],digP->fTracks[2]);
-     } else {
-        rnew.fTracks[0]=digN->fTracks[0];
-        rnew.fTracks[1]=digN->fTracks[1];
-        rnew.fTracks[2]=digN->fTracks[2];
-	//printf("sigN>sigP: %d %d %d\n",digN->fTracks[0],digN->fTracks[1],digN->fTracks[2]);
-     }
-     //printf("SSD: track1 track2 track3 X Z %d %d %d %f %f\n",rnew.fTracks[0],rnew.fTracks[1],rnew.fTracks[2],P*kconv,N*kconv);
-     fITS->AddRecPoint(rnew);
-     /*
-     // it was
-     fPointsM->AddLast( (TObject*) 
-                   new AliITSRecPointSSD(P,dP,0,0,N,dN,Sig,dSig,fLayer,fLad,fDet,clusterP,clusterN,prob) );
-     */
-    
-     if(debug) cout<<"\n"<<": ImpactPoint Created: X = "<<P<<" Z = "<<N<<";   P = "<<p<<"  N = "<<n<<"\n";
+     rnew.SetSigmaX2(1); 
+     rnew.SetSigmaZ2(1);
+     rnew.fTracks[0]=tr[0];
+     rnew.fTracks[1]=tr[1];
+     rnew.fTracks[2]=tr[2];
+
+     //fITS->AddRecPoint(rnew);
+
+     if(signalCut<0.18) fITS->AddRecPoint(rnew);
+     // the cut of the signals difference in P and N sides to
+     // remove the "ghosts"
+
      return kTRUE;
-  } else { 
-     if (debug) {
-       cout<<"\n"<<": ATENTION : stupid ImpactPoit Point X = "<<P<<" Z = "<<N<<";  P = "<<p<<"  N = "<<n<<"\n";
-     }
-     return kFALSE;
   }
-}
-
-
-
-/**********************************************************************/
-Bool_t  AliITSClusterFinderSSD::
-CreateNewRecPoint(AliITSclusterSSD *clusterP, AliITSclusterSSD *clusterN, Stat_t prob)
-{
-// create recpoints
-
-  Float_t posClusterP;  //Cluster P position in strip coordinates
-  Float_t posClusterN;  //Cluster N position in strip coordinates
- 
-  Float_t posErrorClusterP;
-  Float_t posErrorClusterN;
-
-  Float_t sigClusterP;
-  Float_t sigClusterN;
-
-  Float_t sigErrorClusterP;
-  Float_t sigErrorClusterN;
-
-  posClusterP      = clusterP->GetPosition();
-  posErrorClusterP = clusterP->GetPositionError();
-  sigClusterP      = clusterP->GetTotalSignal();
-  sigErrorClusterP = clusterP->GetTotalSignalError();
-
-  posClusterN      = clusterN->GetPosition();
-  posErrorClusterN = clusterN->GetPositionError();
-  sigClusterN      = clusterN->GetTotalSignal();
-  sigErrorClusterN = clusterN->GetTotalSignalError();
-
-  return CreateNewRecPoint( posClusterP,posErrorClusterP,  posClusterN,posErrorClusterN, 
-                     sigClusterP+sigClusterN, sigErrorClusterN+sigErrorClusterP,
-      	             clusterP, clusterN, prob);
-
-}
-
-//--------------------------------------------------
-Bool_t AliITSClusterFinderSSD::IsCrossing(AliITSclusterSSD* p, AliITSclusterSSD* n)
-{
-// check for crossings
-
-  Float_t x = p->GetPosition();
-  Float_t y = n->GetPosition();
-  return GetCrossing(x,y);
-}
-
-
-//----------------------------------------------
-Bool_t AliITSClusterFinderSSD::Strip2Local( Float_t stripP, Float_t stripN, Float_t &Z,Float_t &X)
-{
-// convert between strip numbers and local coordinates
-
-/*
- Z = (stripN-stripP)*fFactorOne;  
- X = (stripN + stripP - fStripZeroOffset)*fFactorTwo;
-*/
-
- Float_t P =stripP;
- Float_t N =stripN;
-
- GetCrossing(P,N);
- X=P;
- Z=N;
- if (debug) cout<<"P="<<stripP<<" N="<<stripN<<"   X = "<<X<<" Z = "<<Z<<"\n";
- if ((Z<2.1)&&(Z>-2.1)&&(X<3.65)&&(X>-3.65)) return kTRUE; 
-    else return kFALSE;  
-
-}
-
-
-//-----------------------------------------------------------
-Float_t  AliITSClusterFinderSSD::GetClusterZ(AliITSclusterSSD* clust)
-{
-// get Z coordinate of the cluster
-
-  return clust->GetPosition();
-
-}
-
-//-------------------------------------------------------------
-Int_t AliITSClusterFinderSSD::GetBestComb
-(Int_t** comb,Int_t Ncomb, Int_t Ncl, AliITSpackageSSD * pkg)
-{
-//returns index of best combination in "comb"
-//comb : sets of combinations
-//       in given combination on place "n" is index of 
-//       Nside cluster coresponding to "n" P side cluster
-//
-//Ncomb : number of combinations == number of rows in "comb"
-//
-//Ncl   : number of clusters in each row  == number of columns in "comb"
-//
-//pkg   : package 
-
-
-  Float_t currbval=-1;  //current best value, 
-                        //starting value is set to number negative, 
-                        //to be changed in first loop turn automatically
-      
-  Int_t  curridx=0;     //index of combination giving currently the best chi^2 
-  Float_t chi;
-  Float_t ps, ns;       //signal of P cluster and N cluster
-
-  for (Int_t i=0;i<Ncomb;i++)
-    {
-      chi=0;
-      
-      for (Int_t j=0;j<Ncl;j++)
-      {
-        ps = pkg->GetPSideCluster(j)->GetTotalSignal();  //carrefully here, different functions
-        ns = GetNSideCluster(comb[i][j])->GetTotalSignal(); 
-        chi+=DistToPML(ps,ns);
-      }
-      
-      if (currbval==-1) currbval = chi;
-      if (chi<currbval)
-        {
-          curridx = i;
-          currbval  =chi;
-        }
-    }
-
-
-  return curridx;
-
-}
-
-//--------------------------------------------------
-void AliITSClusterFinderSSD::GetBestMatchingPoint
-(Int_t & ip, Int_t & in, AliITSpackageSSD* pkg )
-{
-// find the best matching point
- 
-  if (debug) pkg->PrintClusters();
- 
-  Float_t ps, ns;  //signals on side p & n
-  
-  Int_t nc;       // number of crosses in given p side cluster
-  Int_t n,p;
-  AliITSclusterSSD *curPcl, *curNcl;  //current p side cluster
-  Float_t  bestchi, chi;
-  ip=p=pkg->GetPSideClusterIdx(0);
-  in=n=pkg->GetNSideClusterIdx(0);
-	
-  bestchi=DistToPML(  pkg->GetPSideCluster(0)->GetTotalSignal(),
-                  pkg->GetNSideCluster(0)->GetTotalSignal()  );
-  for (Int_t i = 0; i< pkg->GetNumOfClustersP(); i++)
-    {
-      
-      p =  pkg->GetPSideClusterIdx(i);   
-      curPcl= GetPSideCluster(p);
-      nc=curPcl->GetCrossNo();
-      ps=curPcl->GetTotalSignal();
-      
-      for (Int_t j = 0; j< nc; j++)
-        {
-         n=curPcl->GetCross(j);
-         curNcl= GetNSideCluster(n);
-         ns=curNcl->GetTotalSignal();
-         chi = DistToPML(ps, ns);
-    
-         if (chi <= bestchi)
-          {
-            bestchi = chi;
-            in = n;
-            ip = p;
-          }
-        }
-    }
-  
+     return kFALSE;  
 }
 
 
@@ -1767,10 +728,6 @@ void  AliITSClusterFinderSSD::CalcStepFactor(Float_t Psteo, Float_t Nsteo )
 
 
   // 95 is the pitch, 4000 - dimension along z ?
-  /*
-  fSFF = ( (Int_t)  (Psteo*40000/95 ) );// +1;
-  fSFB = ( (Int_t)  (Nsteo*40000/95 ) );// +1;
-  */
 
 
   Float_t dz=fSegmentation->Dz();
@@ -1824,217 +781,52 @@ AliITSclusterSSD* AliITSClusterFinderSSD::GetCluster(Int_t idx, Bool_t side)
   return (side) ? GetPSideCluster(idx) : GetNSideCluster(idx);
 }
 
-
-//--------------------------------------------------------
-void AliITSClusterFinderSSD::ConsumeClusters()
-{
-// remove clusters from the list of unmatched clusters
-
- for ( Int_t i=0;i<fNPackages;i++)
-  {
-    ((AliITSpackageSSD*)((*fPackages)[i]))->ConsumeClusters();
-  }
-
-}
-
-
-//--------------------------------------------------------
-void AliITSClusterFinderSSD::ReconstructNotConsumedClusters()
-{
-// reconstruct remaining non-crossing clusters
-
-  //printf("ReconstructNotConsumedClusters !!!\n");
-
-  Int_t i;
-  AliITSclusterSSD *cluster;
-  Float_t pos;
-  Float_t sig;
-  Float_t sigerr;
-  Float_t x1,x2,z1,z2;
-
-  Float_t Dx = fSegmentation->Dx();
-  Float_t Dz = fSegmentation->Dz();
-  
-  const Float_t kdEdXtoQ = 2.778e+8; // GeV -> number of e-hole pairs
-  const Float_t kconv = 1.0e-4; 
-  const Float_t kRMSx = 20.0*kconv; // microns->cm ITS TDR Table 1.3
-  const Float_t kRMSz = 830.0*kconv; // microns->cm ITS TDR Table 1.3
-  
-  Int_t stripP,stripN;
-  AliITSdigitSSD *dig;
-  for (i=0;i<fNClusterP;i++)
-    {
-      //printf("P side cluster: cluster number %d\n",i);
-      cluster = GetPSideCluster(i);
-      if (!cluster->IsConsumed())
-        {
-          if( (pos = cluster->GetPosition()) < fSFB)
-            {
-              sig = cluster->GetTotalSignal();
-              
-              sig += sig/fPNsignalRatio;
-              
-              sigerr = cluster->GetTotalSignalError();
-              x1 = -Dx/2 + pos *fPitch;
-              z1 = -Dz/2;
-
-              x2 = pos;
-              z2 = 1;
-              GetCrossing (x2,z2);
-	      fSegmentation->GetPadIxz((x1+x2)/2,(z1+z2)/2,stripP,stripN);
-	      dig = (AliITSdigitSSD*)fMap->GetHit(1,stripP);
-	      //printf("dig %p\n",dig);
-	      if (!dig) printf("SSD: check the digit!  dig %p\n",dig);
-	      if(!dig) continue;
-	      AliITSRawClusterSSD cnew;
-	      Int_t nstripsP=cluster->GetNumOfDigits();
-	      cnew.fMultiplicity=nstripsP;
-	      cnew.fMultiplicityN=0;
-	      /*
-	      if (nstripsP > 100) {
-		printf("multiplicity > 100 - increase the dimension of the arrays %d\n",nstripsP);
-		nstripsP=100;
-	      }
-	      for(int k=0;k<nstripsP;k++) {
-		// check if 'clusterP->GetDigitStripNo(i)' returns 
-		// the digit index and not smth else
-		cnew.fIndexMap[k] = cluster->GetDigitStripNo(k); 
-	      } 
-	      */
-	      cnew.fQErr=sigerr;
-	      //cnew.fProbability=0.75; 
-	      //printf("AddCluster: %p nstripsP %d\n",&cnew,nstripsP);
-	      fITS->AddCluster(2,&cnew);
-	      // add the rec point info
-	      AliITSRecPoint rnew;
-              rnew.SetX(kconv*(x1+x2)/2);
-              rnew.SetZ(kconv*(z1+z2)/2);
-              rnew.SetQ(sig);
-              rnew.SetdEdX(sig/kdEdXtoQ);
-	      rnew.SetSigmaX2( kRMSx* kRMSx);
-	      rnew.SetSigmaZ2( kRMSz* kRMSz);
-              //rnew.SetProbability(0.75);
-	      rnew.fTracks[0]=dig->fTracks[0];
-	      rnew.fTracks[1]=dig->fTracks[1];
-	      rnew.fTracks[2]=dig->fTracks[2];
-	      //printf("digP: %d %d %d\n",dig->fTracks[0],dig->fTracks[1],dig->fTracks[2]);
-	      //printf("SSD - P : track1 track2 track3  X Z %d %d %d %f %f\n",rnew.fTracks[0],rnew.fTracks[1],rnew.fTracks[2],kconv*(x1+x2)/2,kconv*(z1+z2)/2);
-              fITS->AddRecPoint(rnew);
-	      /*
-              fPointsM->AddLast( (TObject*) 
-                   new AliITSRecPointSSD((x1+x2)/2 ,0,0,0,(z1+z2)/2,0,sig,sigerr,fLayer,fLad,fDet,cluster, 0.75) );
-	      */
-
-              if(debug) cout<<"\n"<<": SINGLE SIDE ImpactPoint Created: X = "
-                  <<(x1+x2)/2<<" Z = "<<(z1+z2)/2<<";   Pos = "<<pos;
-            }
-        }
-    }
-
-  for (i=0;i<fNClusterN;i++)
-    {
-      //printf("N side cluster: cluster number %d\n",i);
-      cluster = GetNSideCluster(i);
-      if (!cluster->IsConsumed())
-        {
-          if( (pos = cluster->GetPosition()) < fSFF)
-            {
-              sig = cluster->GetTotalSignal();
-              
-              sig += sig*fPNsignalRatio;
-              
-              sigerr = cluster->GetTotalSignalError();
-              
-              x1 = -Dx/2 + pos *fPitch;
-              z1 = Dz/2;
-
-              x2 = 1;
-              z2 = pos;
-              
-              GetCrossing (x2,z2);
-	      fSegmentation->GetPadIxz((x1+x2)/2,(z1+z2)/2,stripP,stripN);
-	      dig = (AliITSdigitSSD*)fMap->GetHit(0,stripN);
-	      if (!dig) printf("SSD: check the digit! dig %p\n",dig);
-	      if(!dig) continue;
-	      AliITSRawClusterSSD cnew;
-	      Int_t nstripsN=cluster->GetNumOfDigits();
-	      cnew.fMultiplicity=0;
-	      cnew.fMultiplicityN=nstripsN;
-	      /*
-	      if (nstripsN > 100) {
-		printf("multiplicity > 100 - increase the dimension of the arrays %d\n",nstripsN);
-		nstripsN=100;
-	      }
-	      for(int k=0;k<nstripsN;k++) {
-		// check if 'clusterP->GetDigitStripNo(i)' returns 
-		// the digit index and not smth else
-		cnew.fIndexMapN[k] = cluster->GetDigitStripNo(k); 
-	      } 
-	      */
-	      cnew.fQErr=sigerr;
-	      //cnew.fProbability=0.75; 
-	      fITS->AddCluster(2,&cnew);
-	      AliITSRecPoint rnew;
-              rnew.SetX(kconv*(x1+x2)/2);
-              rnew.SetZ(kconv*(z1+z2)/2);
-              rnew.SetQ(sig);
-              rnew.SetdEdX(sig/kdEdXtoQ);
-	      rnew.SetSigmaX2( kRMSx* kRMSx);
-	      rnew.SetSigmaZ2( kRMSz* kRMSz);
-              //rnew.SetProbability(0.75);
-	      rnew.fTracks[0]=dig->fTracks[0];
-	      rnew.fTracks[1]=dig->fTracks[1];
-	      rnew.fTracks[2]=dig->fTracks[2];
-	      //printf("digN: %d %d %d\n",dig->fTracks[0],dig->fTracks[1],dig->fTracks[2]);
-	      //printf("SSD -N : track1 track2 track3  X Z %d %d %d %f %f\n",rnew.fTracks[0],rnew.fTracks[1],rnew.fTracks[2],kconv*(x1+x2)/2,kconv*(z1+z2)/2);
-              fITS->AddRecPoint(rnew);
-	      /*
-              fPointsM->AddLast( (TObject*) 
-                   new AliITSRecPointSSD((x1+x2)/2 ,0,0,0,(z1+z2)/2,0,sig,sigerr,fLayer,fLad,fDet,cluster, 0.75) );
-	      */
-
-              if(debug) cout<<"\n"<<": SINGLE SIDE ImpactPoint Created: X = "
-                  <<(x1+x2)/2<<" Z = "<<(z1+z2)/2<<";   Pos = "<<pos;
- 
-            }
-        }
-    }
-
-
-}
-
 //_______________________________________________________________________
 
 Bool_t AliITSClusterFinderSSD::GetCrossing (Float_t &P, Float_t &N) 
 { 
 // get crossing 
 
-   Float_t Dx = fSegmentation->Dx();
-   Float_t Dz = fSegmentation->Dz();
+  Float_t Dx = fSegmentation->Dx(); // detector size in x direction, microns
+  Float_t Dz = fSegmentation->Dz(); // detector size in z direction, microns
 
-   //P==X
-   //N==Z
+  Float_t xL; // x local coordinate
+  Float_t zL; // z local coordinate
+  Float_t x;  // x = xL + Dx/2
+  Float_t z;  // z = zL + Dz/2
+  Float_t xP; // x coordinate in the P side from the first P strip
+  Float_t xN; // x coordinate in the N side from the first N strip
+  Float_t kP = fTanP; // Tangent of 0.0075 mrad
+  Float_t kN = fTanN; // Tangent of 0.0275 mrad
 
-    Float_t dx = 0.1;
+  //cout<<"1 GetCros: strP,srtN,fPitch,Dx ="<<P<<","<<N<<","<<fPitch<<","<<fSegmentation->Dx()<<endl;
+
+
     P *= fPitch;
     N *= fPitch; 
-    
-    //P = (kZ * fTan + N + P)/2.0;         // x coordinate
-    //N = kZ - (P-N)/fTan;                 // z coordinate
-    
-    if(fTanP + fTanN == 0) return kFALSE;
+    xP = N;      // change the mistake for the P/N
+    xN = P;      // coordinates correspondence in this function
+ 
+    //cout<<"2 GetCross: xP,xN,fTanP,fTanN ="<<xP<<","<<xN<<","<<fTanP<<","<<fTanN<<endl;     
 
-    N = (N - P + fTanN * Dz) / (fTanP + fTanN);  // X coordinate
-    P = P + fTanP * N;                           // Y coordinate
+    /*
+    Float_t x = xP + 0.21428*(1100-xP+xN);
+    Float_t z = 31428.571 - (xP-xN)/0.035;    
+    */
 
-    P -= Dx/2;
-    N -= Dz/2;
+    x = xP + kP*(Dz*kN-xP+xN)/(kP+kN);
+    z = (Dz*kN-xP+xN)/(kP+kN); 
+    xL = x - Dx/2;
+    zL = z - Dz/2;
 
-    //   N = -(N - P + kZ/2*(fTanP + fTanN))/(fTanP + fTanN);
-    //  P = (fTanP*(N-kX/2-kZ*fTanN/2) + fTanN*(P-kX/2-kZ*fTanP/2) )/(fTanP + fTanN);
-    
-    if ( ( N < -(Dz/2+dx) ) || ( N > (Dz/2+dx) ) ) return kFALSE;
-    if ( ( P < -(Dx/2+dx) ) || ( P > (Dx/2+dx) ) ) return kFALSE;
+    //cout<<"3 GetCross: x,z,xL,zL ="<<x<<","<<z<<","<<xL<<","<<zL<<endl;     
+
+    P = xL;
+    N = zL;  
+
+    if(TMath::Abs(xL) > Dx/2 || TMath::Abs(zL) > Dz/2) return kFALSE;
+    // Check that xL and zL are inside the detector for the 
+    // correspondent xP and xN coordinates
 
     return kTRUE;   
 }
@@ -2055,3 +847,10 @@ void AliITSClusterFinderSSD::GetCrossingError(Float_t& dP, Float_t& dN)
   dN = dz;
   dP = dx;
 }
+
+
+
+
+
+
+

@@ -31,9 +31,16 @@ public AliITSsegmentation {
 
 
     // Set stereo angles Pside-Nside 
-    virtual void    SetAngles(Float_t pa=0.0175, Float_t na=0.0175) 
-                         {fStereoP=pa; fStereoN=na;}
+    virtual void    SetAngles(Float_t pa=0.0075, Float_t na=0.0275) 
+                         {fStereoPl5=pa; fStereoNl5=na; fStereoPl6=na; fStereoNl6=pa;}
 
+    virtual void    SetAnglesLay5(Float_t pa=0.0075, Float_t na=0.0275) 
+                         {fStereoPl5=pa; fStereoNl5=na;}
+
+    virtual void    SetAnglesLay6(Float_t pa=0.0275, Float_t na=0.0075) 
+                         {fStereoPl6=pa; fStereoNl6=na;}
+
+    // Set stereo angles Pside-Nside 
     // Transform from real coordinates to strips
     virtual void    GetPadIxz
     (Float_t x ,Float_t z ,Int_t   &iP,Int_t  &iN);
@@ -66,8 +73,9 @@ public AliITSsegmentation {
     virtual Int_t    Npz(){return 1;}
 
     // Angles : Pside stereo angle-Nside stereo angle
-    virtual void Angles(Float_t &aP,Float_t &aN) 
-                     {aP=fStereoP;aN=fStereoN;}
+     virtual void Angles(Float_t &aP,Float_t &aN);
+     virtual void SetLayer(Int_t l);
+     virtual Int_t GetLayer() const {return fLayer;}
 
   protected:
 
@@ -79,6 +87,12 @@ public AliITSsegmentation {
   Float_t    fDx;            // Full length of the detector (x axis)- microns
   Float_t    fDy;            // Full thickness of the detector (y axis) -um 
   
+  Float_t    fStereoPl5;       // Stereo angle for Pside
+  Float_t    fStereoNl5;       // Stereo angle for Nside
+  Float_t    fStereoPl6;       // Stereo angle for Pside
+  Float_t    fStereoNl6;       // Stereo angle for Nside
+  Int_t      fLayer;
+
   AliITSgeom *fGeom;         //! pointer to the geometry class
   TF1*       fCorr;          // correction function
   

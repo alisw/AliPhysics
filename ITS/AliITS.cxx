@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.40  2001/03/17 15:07:06  mariana
+Update SDD response parameters
+
 Revision 1.39  2001/03/12 17:45:32  hristov
 Changes needed on Sun with CC 5.0
 
@@ -1104,10 +1107,12 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size, Option_t *optio
 
    const char *all = strstr(opt,"All");
    const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),strstr(opt,"SSD")};
-
+   cout<<" 1 AliITS "<<endl;
    Int_t nmodules;
    InitModules(size,nmodules); 
+   cout<<" 2 AliITS "<<endl;
    FillModules(evNumber,bgrev,nmodules,option,filename);
+   cout<<" 3 AliITS "<<endl;
 
    //TBranch *branch;
    AliITSsimulation* sim;
@@ -1115,17 +1120,20 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size, Option_t *optio
    AliITSgeom *geom = GetITSgeom();
 
    Int_t id,module;
+   Int_t lay, lad, detect;
    Int_t first,last;
    for (id=0;id<kNTYPES;id++) {
         if (!all && !det[id]) continue;
 	//branch = (TBranch*)branches->UncheckedAt(id);
 	AliITSDetType *iDetType=DetType(id); 
 	sim = (AliITSsimulation*)iDetType->GetSimulationModel();
+
 	if (!sim) {
            Error("HitsToDigits","The simulation class was not instantiated!");
            exit(1);
 	   // or SetDefaultSimulation();
 	}
+
 	if(geom) {
 	  first = geom->GetStartDet(id);
 	  last = geom->GetLastDet(id);
@@ -1133,6 +1141,13 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size, Option_t *optio
 	cout << "det type " << id << " first, last "<< first << last << endl;
 	for(module=first;module<=last;module++) {
 	    AliITSmodule *mod = (AliITSmodule *)fITSmodules->At(module);
+
+	    geom->GetModuleId(module,lay, lad, detect);
+            if ( lay == 6 )
+	      ((AliITSsegmentationSSD*)(((AliITSsimulationSSD*)sim)->GetSegmentation()))->SetLayer(6);
+	    if ( lay == 5 )
+	      ((AliITSsegmentationSSD*)(((AliITSsimulationSSD*)sim)->GetSegmentation()))->SetLayer(5);
+
 	    sim->DigitiseModule(mod,module,evNumber);
 	    // fills all branches - wasted disk space
 	    gAlice->TreeD()->Fill(); 

@@ -307,14 +307,9 @@ public:
   AliITSRawClusterSSD() {
     fMultiplicityN=0;
     fQErr=0; 
+    fSignalP=0;
+    fSignalN=0;
     fStatus=-1;
-    /*
-      for (int k=0;k<100;k++) {
-         fIndexMapN[k]=-1;
-      }
-      fProbability=0;
-      fChi2N=-1;
-    */
   }
   AliITSRawClusterSSD(Float_t Prob,Int_t Sp,Int_t Sn);
   virtual ~AliITSRawClusterSSD() {
@@ -335,6 +330,8 @@ public:
   Int_t   fMultiplicityN;  // The number of N side strips involved 
                            // in this point calculations
   Float_t fQErr;           // Total charge error
+  Float_t fSignalP;        // Signal of P side cluster
+  Float_t fSignalN;        // Signal of N side cluster
   Int_t   fStatus;         // Flag status : 0 - real point
                            //               1 - ghost 
                            //               2 - EIC ? 
