@@ -20,6 +20,7 @@ public:
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
   virtual void   Init();
+  virtual void   StepManager();
   virtual Int_t  IsVersion() const;
   virtual void   SetHoles(Int_t flag=0) {fHoles = flag;}
   virtual Int_t  Holes() const {return fHoles;}

@@ -103,7 +103,6 @@ void AliFRAMEv2::CreateGeometry()
   ppgon[2] =  18.;
   
   ppgon[3] =   2.;
-
   ppgon[4] = -376.;
   ppgon[5] =  280.;
   ppgon[6] =  421.;
@@ -116,6 +115,13 @@ void AliFRAMEv2::CreateGeometry()
 
 //  gMC->Gsvolu("B077", "TUBE", kAir, ptube, 3);
   gMC->Gspos("B077", 1, "ALIC", 0., 0., 0., 0, "ONLY");
+//
+// Reference plane for TRD
+//
+  ppgon[6] = ppgon[5] + 0.1;
+  ppgon[9] = ppgon[6];
+  gMC->Gsvolu("BREF", "PGON", kAir, ppgon, 10);
+  gMC->Gspos("BREF", 1, "B077", 0., 0., 0., 0, "ONLY");
 //
 //  The outer Frame
 //
@@ -1024,6 +1030,9 @@ void AliFRAMEv2::Init()
 	       " FRAME "
 	       "**************************************\n",ClassName());
     }
+//
+// The reference volume id
+    fRefVolumeId = gMC->VolId("BREF");
 }
 
 Int_t AliFRAMEv2::IsVersion() const 
@@ -1034,7 +1043,32 @@ Int_t AliFRAMEv2::IsVersion() const
     return version;
 }
 
+void AliFRAMEv2::StepManager()
+{
+//
+// Stepmanager of AliFRAMEv2.cxx
+// Used for recording of reference tracks entering the spaceframe mother volume
+//
+  Int_t   copy, id;
+  
+  //
+  // Only charged tracks
+  if( !(gMC->TrackCharge()) ) return; 
+  //
+  // Only tracks entering mother volume
+  // 
 
+  id=gMC->CurrentVolID(copy);
+
+  if (id != fRefVolumeId)  return;
+  if(!gMC->IsTrackEntering()) return;
+  //
+  // Add the reference track
+  //
+  AddTrackReference(gAlice->CurrentTrack());
+}
+
+  
 
 
 
