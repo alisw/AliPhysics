@@ -7,9 +7,10 @@
 /* $Id$ */
 
 #include "AliGenEventHeader.h"
+#include "AliCollisionGeometry.h"
 #include <TLorentzVector.h>
 
-class AliGenHijingEventHeader : public AliGenEventHeader
+class AliGenHijingEventHeader : public AliGenEventHeader, public AliCollisionGeometry
 {
  public:
 
@@ -18,27 +19,11 @@ class AliGenHijingEventHeader : public AliGenEventHeader
   virtual ~AliGenHijingEventHeader() {}
   // Getters
   Float_t TotalEnergy()  {return fTotalEnergy;} 
-  Int_t   HardScatters() {return fNHardScatters;}
-  Int_t   ProjectileParticipants()  {return fNProjectileParticipants;}
-  Int_t   TargetParticipants()      {return fNTargetParticipants;}
-  Int_t   Spectatorsn()	{return fSpecn;}
-  Int_t   Spectatorsp()	{return fSpecp;}
-  Int_t   NN()    {return fNNColl;}
-  Int_t   NNw()   {return fNNwColl;}
-  Int_t   NwN()   {return fNwNColl;}
-  Int_t   NwNw()  {return fNwNwColl;}
   Int_t   Trials() {return fTrials;}
   
 	  
   // Setters
   void SetTotalEnergy(Float_t energy)  {fTotalEnergy=energy;}
-  void SetHardScatters(Int_t n)  {fNHardScatters=n;}
-  void SetParticipants(Int_t np, Int_t nt)
-      {fNProjectileParticipants=np, fNTargetParticipants=nt;}
-  void SetCollisions(Int_t nn, Int_t nnw, Int_t nwn, Int_t nwnw)
-      {fNNColl=nn, fNNwColl=nnw, fNwNColl=nwn,  fNwNwColl=nwnw;}
-  void SetSpectators(Int_t nspecn, Int_t nspecp)
-      {fSpecn=nspecn, fSpecp=nspecp;}
   void SetJets(TLorentzVector* jet1, TLorentzVector* jet2,
 	       TLorentzVector* jet3, TLorentzVector* jet4)
       {fJet1 = *jet1; fJet2 = *jet2; fJetFsr1 = *jet3; fJetFsr2 = *jet4;}
@@ -49,15 +34,6 @@ class AliGenHijingEventHeader : public AliGenEventHeader
 	  
 protected:
   Float_t fTotalEnergy;              // Total energy of produced particles
-  Int_t   fNHardScatters;            // Number of hard scatterings
-  Int_t   fNProjectileParticipants;  // Number of projectiles participants
-  Int_t   fNTargetParticipants;      // Number of target participants
-  Int_t   fNNColl;                   // Number of N-N collisions
-  Int_t   fNNwColl;                  // Number of N-Nwounded collisions
-  Int_t   fNwNColl;                  // Number of Nwounded-N collisons
-  Int_t   fNwNwColl;                 // Number of Nwounded-Nwounded collisions
-  Int_t   fSpecn;                    // Number of spectators neutrons
-  Int_t   fSpecp;                    // Number of spectators protons
   Int_t   fTrials;                   // Number of trials to fulfill trigger condition
   
   TLorentzVector  fJet1;             // 4-Momentum-Vector of first   triggered jet  
@@ -65,7 +41,7 @@ protected:
   TLorentzVector  fJetFsr1;          // 4-Momentum-Vector of first   triggered jet  
   TLorentzVector  fJetFsr2;          // 4-Momentum-Vector of second  triggered jet     
   
-  ClassDef(AliGenHijingEventHeader,4) // Event header for hijing event
+  ClassDef(AliGenHijingEventHeader,5) // Event header for hijing event
 };
 
 #endif
