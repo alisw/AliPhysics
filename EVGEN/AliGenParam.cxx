@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.28  2001/03/09 13:01:41  morsch
+- enum constants for paramterisation type (particle family) moved to AliGen*lib.h
+- use AliGenGSIlib::kUpsilon, AliGenPHOSlib::kEtaPrime to access the constants
+
 Revision 1.27  2001/02/02 15:21:10  morsch
 Set high water mark after last particle.
 Use Vertex() method for Vertex.
@@ -301,8 +305,10 @@ void AliGenParam::Generate()
 // However, light mesons are directly tracked by GEANT 
 // setting fForceDecay = nodecay (SetForceDecay(nodecay)) 
 //
-
-    fDecayer->ForceDecay();
+//
+//  Reinitialize decayer
+    fDecayer->Init();
+//
   Float_t polar[3]= {0,0,0};  // Polarisation of the parent particle (for GEANT tracking)
   Float_t origin0[3];         // Origin of the generated parent particle (for GEANT tracking)
   Float_t pt, pl, ptot;       // Transverse, logitudinal and total momenta of the parent particle
