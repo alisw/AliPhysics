@@ -308,6 +308,18 @@ void AliHBTTrackPoints::PositionAt(Int_t n, Float_t &x,Float_t &y,Float_t &z)
 }
 /***************************************************************/
 
+void AliHBTTrackPoints::Move(Float_t x, Float_t y, Float_t z)
+{
+//Moves all points about vector
+ for (Int_t i = 0; i<fN; i++)
+   {
+     fX[i]+=x;
+     fY[i]+=y;
+     fZ[i]+=z;
+   }   
+}
+/***************************************************************/
+
 Double_t AliHBTTrackPoints::AvarageDistance(const AliHBTTrackPoints& tr)
 {
   //returns the aritmethic avarage distance between two tracks
@@ -630,3 +642,4 @@ void AliHBTTrackPoints::testtpc(Int_t entr)
   
   delete rl;
 }
+

@@ -419,12 +419,14 @@ Int_t AliHBTReaderESD::ReadESD(AliESD* esd)
       if (fNTrackPoints > 0) 
        {
          tpts = new AliHBTTrackPoints(fNTrackPoints,esdtrack,mf,fdR);
+         tpts->Move(-vertexpos[0],-vertexpos[1],-vertexpos[2]);
        }
       
       AliHBTTrackPoints* itstpts = 0x0;
       if (fITSTrackPoints) 
        {
          itstpts = new AliHBTTrackPoints(AliHBTTrackPoints::kITS,esdtrack);
+         itstpts->Move(-vertexpos[0],-vertexpos[1],-vertexpos[2]);
        }
       
 

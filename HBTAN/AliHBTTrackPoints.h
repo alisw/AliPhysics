@@ -34,6 +34,8 @@ class AliHBTTrackPoints: public TObject
     
     Double_t AvarageDistance(const AliHBTTrackPoints& tr);
     void PositionAt(Int_t n, Float_t &x, Float_t &y, Float_t &z);
+    void Move(Float_t x, Float_t y, Float_t z);
+
     Int_t GetDebug() const {return fgDebug;}
     void  SetDebug(Int_t deblevel){fgDebug = deblevel;} 
     static void testtpc(Int_t entr);
