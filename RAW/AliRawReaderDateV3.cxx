@@ -258,7 +258,7 @@ Bool_t AliRawReaderDateV3::ReadHeader()
 
     // check for end of event data
     if (fPosition >= ((UChar_t*)fEvent)+fEvent->size) return kFALSE;
-    if ((fEvent->detectorId[2] && 0x8000) != 0x8000) {
+    if ((fEvent->detectorId[2] & 0x8000) != 0x8000) {
       fSubEvent = fEvent;   // no super event
     } else if (fSubEvent) {
       fSubEvent = (eventHeaderStruct*) (((UChar_t*)fSubEvent) + 
@@ -436,7 +436,7 @@ Int_t AliRawReaderDateV3::CheckData() const
   while (kTRUE) {
     // check for end of event data
     if (position >= ((UChar_t*)fEvent)+fEvent->size) return result;
-    if ((fEvent->detectorId[2] && 0x8000) != 0x8000) {
+    if ((fEvent->detectorId[2] & 0x8000) != 0x8000) {
       subEvent = fEvent;   // no super event
     } else if (subEvent) {
       subEvent = (eventHeaderStruct*) (((UChar_t*)subEvent) + 
