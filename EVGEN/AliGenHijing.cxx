@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2000/11/30 20:29:02  morsch
+Initialise static variable sRandom in constructor: sRandom = fRandom;
+
 Revision 1.14  2000/11/30 07:12:50  alibrary
 Introducing new Rndm and QA classes
 
@@ -100,7 +103,8 @@ AliGenHijing::AliGenHijing(Int_t npart)
     fFlavor=0;
     fSpectators=1;
 //
-    sRandom=fRandom;
+// Set random number generator   
+    SetRandom();
 }
 
 AliGenHijing::AliGenHijing(const AliGenHijing & Hijing)
@@ -517,16 +521,3 @@ extern "C" {
   Double_t type_of_call rlu_hijing(Int_t & /*idum*/) 
   {return sRandom->Rndm();}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

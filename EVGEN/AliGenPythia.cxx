@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.27  2000/11/30 20:29:02  morsch
+Initialise static variable sRandom in constructor: sRandom = fRandom;
+
 Revision 1.26  2000/11/30 07:12:50  alibrary
 Introducing new Rndm and QA classes
 
@@ -106,8 +109,8 @@ AliGenPythia::AliGenPythia(Int_t npart)
     SetPtHard();
     SetEnergyCMS();
     fDecayer = new AliDecayerPythia();
-    //
-    sRandom=fRandom;
+    // Set random number generator 
+    SetRandom();
 }
 
 AliGenPythia::AliGenPythia(const AliGenPythia & Pythia)
