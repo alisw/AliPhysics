@@ -1,7 +1,7 @@
 FSRCS= jet_finder_ua1.F
 
 SRCS= \
-AliEMCAL.cxx  \
+AliEMCAL.cxx \
 AliEMCALGeometry.cxx \
 AliEMCALHit.cxx \
 AliEMCALv0.cxx \
@@ -16,7 +16,7 @@ AliEMCALJetFinder.cxx \
 AliEMCALFast.cxx 
 
 HDRS= \
-AliEMCAL.h  \
+AliEMCAL.h \
 AliEMCALGeometry.h \
 AliEMCALHit.h \
 AliEMCALv0.h \
@@ -24,9 +24,9 @@ AliEMCALv1.h \
 AliEMCALDigit.h \
 AliEMCALSDigitizer.h \
 AliEMCALDigitizer.h \
-AliEMCALTick.h  \
+AliEMCALTick.h \
 AliEMCALGetter.h \
-AliEMCALJet.h  \
+AliEMCALJet.h \
 AliEMCALJetFinder.h \ 
 AliEMCALFast.h
 
