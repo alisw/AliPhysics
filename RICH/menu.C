@@ -2,7 +2,8 @@ void ControlPlots()
 {  
   Int_t iChamber=1;
   
-  TH1F *pCqH1=new TH1F("clusq","Clusters Charge;q [QDC]",300,0,4000);
+  TH1F *pCqH1=new TH1F("clusq","Cluster Charge;q [QDC]",AliRICHParam::MaxQdc(),0,AliRICHParam::MaxQdc());
+  TH1F *pDqH1=new TH1F("digq","Digit Charge;q [QDC]",AliRICHParam::MaxQdc(),0,AliRICHParam::MaxQdc());
   al->LoadHeader();  al->LoadKinematics();
   
   Bool_t isHits=!rl->LoadHits();  
@@ -26,23 +27,31 @@ void ControlPlots()
     }//isSdigits
     if(isDigits){
       rl->TreeD()->GetEntry(0);
-      for(int i=1;i<=7;i++);
+      Int_t iTotalDigits=0;
+      for(int i=1;i<=7;i++) iTotalDigits+=r->Clusters(i)->GetEntries();    
+      for(Int_t iDigitN=0;iDigitN<r->Digits(iChamber)->GetEntries();iDigitN++){
+        pDqH1->Fill(((AliRICHdigit*)r->Digits(iChamber)->At(iDigitN))->Q());
+      }//digits loop
     }//isDigits
     if(isClusters){
       rl->TreeR()->GetEntry(0);
       Int_t iTotalClusters=0;
       for(int i=1;i<=7;i++) iTotalClusters+=r->Clusters(i)->GetEntries();    
       for(Int_t iClusterN=0;iClusterN<r->Clusters(iChamber)->GetEntries();iClusterN++){
-        pCqH1->Fill(((AliRICHcluster*)r->Clusters(iChamber)->At(i))->Q());
+        pCqH1->Fill(((AliRICHcluster*)r->Clusters(iChamber)->At(iClusterN))->Q());
       }//clusters loop
     }//isClusters
+    cout<<"Event "<<iEventN<<endl;
   }//events loop 
   if(isHits) rl->UnloadHits();  
     if(isSDigits) rl->UnloadSDigits(); 
       if(isDigits) rl->UnloadDigits(); 
         if(isClusters) rl->UnloadRecPoints();
-  al->UnloadHeader();  al->UnloadKinematics();
-  pCqH1->Draw();
+          al->UnloadHeader();  al->UnloadKinematics();
+  TCanvas *pC=new TCanvas("c","Control Plots",600,500);
+  pC->Divide(2,2);
+  pC->cd(1); pCqH1->Draw();
+  pC->cd(2); pDqH1->Draw();  
 }//void ControlPlots()
 //__________________________________________________________________________________________________
 void MainTrank()
@@ -152,7 +161,7 @@ void OLD_S_SD()
   rl->LoadHits(); 
   
   for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
-    al->GetEvent(iEventN);
+    al->GetEvent(iEventN);    cout<<"Event "<<iEventN<<endl;  
     
     rl->MakeTree("S");  r->MakeBranch("S");
     r->ResetSDigits();  r->ResetSpecialsOld();
@@ -160,14 +169,14 @@ void OLD_S_SD()
     for(Int_t iPrimN=0;iPrimN<rl->TreeH()->GetEntries();iPrimN++){//prims loop
       rl->TreeH()->GetEntry(iPrimN);
       for(Int_t i=0;i<r->Specials()->GetEntries();i++){//specials loop          
-        Int_t padx= ((AliRICHSDigit*)r->Specials()->At(i))->PadX()+r->Param()->NpadsX()/2;
-        Int_t pady= ((AliRICHSDigit*)r->Specials()->At(i))->PadY()+r->Param()->NpadsY()/2;
+        Int_t padx=1+ ((AliRICHSDigit*)r->Specials()->At(i))->PadX()+r->Param()->NpadsX()/2;
+        Int_t pady=1+ ((AliRICHSDigit*)r->Specials()->At(i))->PadY()+r->Param()->NpadsY()/2;
         Double_t q=  ((AliRICHSDigit*)r->Specials()->At(i))->QPad();
         Int_t hitN= ((AliRICHSDigit*)r->Specials()->At(i))->HitNumber()-1;//!!! important -1
         Int_t chamber=((AliRICHhit*)r->Hits()->At(hitN))->C();
         Int_t track=((AliRICHhit*)r->Hits()->At(hitN))->GetTrack();
         if(padx<1 || padx>r->Param()->NpadsX() ||pady<1 || pady>r->Param()->NpadsY())
-          Error("OLD_S_SD","pad is out of valid range padx= %i pady=%i event %i",padx,pady,iEventN);
+          Warning("OLD_S_SD","pad is out of valid range padx= %i pady=%i event %i",padx,pady,iEventN);
         else
           r->AddSDigit(chamber,padx,pady,q,track);
       }//specials loop
@@ -222,11 +231,11 @@ void SD_D()
 {
   Info("SD_D","Start.");  
 
+  r->Param()->GenSigmaThMap();
   rl->LoadSDigits();
   
   for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
-    al->GetEvent(iEventN);
-    cout<<"Event "<<iEventN<<endl;  
+    al->GetEvent(iEventN);    cout<<"Event "<<iEventN<<endl;  
     rl->MakeTree("D");r->MakeBranch("D"); //create TreeD with RICH branches 
     r->ResetSDigits();r->ResetDigits();//reset lists of sdigits and digits
     rl->TreeS()->GetEntry(0);  
@@ -248,13 +257,15 @@ void SD_D()
 //        else
 //          Info("","More then 3 sdigits for the given pad");
       }else{//new pad, add the pevious one
-        if(id!=kBad) r->AddDigit(chamber,x,y,q,tr[0],tr[1],tr[2]);//ch-xpad-ypad-qdc-tr1-2-3
+        if(id!=kBad&&r->Param()->IsOverTh(chamber,x,y,q))
+           r->AddDigit(chamber,x,y,q,tr[0],tr[1],tr[2]);//ch-xpad-ypad-qdc-tr1-2-3
         chamber=pSdig->C();x=pSdig->X();y=pSdig->Y();q=pSdig->Q();tr[0]=pSdig->T(0);id=pSdig->Id();
         iNdigitsPerPad=1;tr[1]=tr[2]=kBad;
       }
     }//sdigits loop (sorted)
   
-    if(r->SDigits()->GetEntries())r->AddDigit(chamber,x,y,q,tr[0],tr[1],tr[2]);//add the last digit
+    if(r->SDigits()->GetEntries()&&r->Param()->IsOverTh(chamber,x,y,q))
+      r->AddDigit(chamber,x,y,q,tr[0],tr[1],tr[2]);//add the last digit
         
     rl->TreeD()->Fill();  
     rl->WriteDigits("OVERWRITE");
