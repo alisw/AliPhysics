@@ -5,5 +5,5 @@
 #pragma link off all functions;
  
 #pragma link C++ class THerwig6+;
-
+#pragma link C++ class AliGenHerwig+;
 #endif

@@ -1,6 +1,6 @@
-SRCS= THerwig6.cxx
+SRCS= THerwig6.cxx AliGenHerwig.cxx
 
-HDRS= THerwig6.h
+HDRS= THerwig6.h AliGenHerwig.h
 
 DHDR:=THerwigLinkDef.h
 
