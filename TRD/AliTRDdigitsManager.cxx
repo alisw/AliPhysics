@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/11/01 14:53:20  cblume
+Merge with TRD-develop
+
 Revision 1.1.2.5  2000/10/17 02:27:34  cblume
 Get rid of global constants
 
@@ -154,8 +157,10 @@ Bool_t AliTRDdigitsManager::MakeBranch()
 
     // Make the branch for the digits
     if (fDigits) {
-      const AliTRDdataArrayI *kDigits = 
-           (AliTRDdataArrayI *) fDigits->At(0);
+      //const AliTRDdataArrayI *kDigits = 
+      //     (AliTRDdataArrayI *) fDigits->At(0);
+      const AliTRDdataArray *kDigits = 
+           (AliTRDdataArray *) fDigits->At(0);
       if (kDigits) {
         gAlice->TreeD()->Branch("TRDdigits",kDigits->IsA()->GetName()
                                            ,&kDigits,buffersize,1);
