@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2002/10/14 14:57:43  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.4.6.1  2002/07/26 12:12:55  alibrary
 Updating VirtualMC
 
@@ -71,7 +74,7 @@ New track hits using root containers.
 #include "TClonesArray.h"    
 #include "AliTPC.h"
 
-#include <iostream.h>
+#include <Riostream.h>
 
 
 

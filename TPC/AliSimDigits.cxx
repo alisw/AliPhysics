@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2002/01/21 17:15:23  kowal2
+Better protection.
+
 Revision 1.5  2001/11/24 16:10:22  kowal2
 Faster algorithms.
 
@@ -58,7 +61,7 @@ Digits handling in a new data structure
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "TClass.h"
-#include <iostream.h>
+#include <Riostream.h>
 #include "TError.h"
 #include "AliSegmentID.h"
 #include "AliH2F.h"

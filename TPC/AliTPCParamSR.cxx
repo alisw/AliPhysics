@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2002/10/14 14:57:43  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.7.4.1  2002/07/24 10:09:01  alibrary
 Updating VirtualMC
 
@@ -68,7 +71,7 @@ New Detector parameters handling class
 ///////////////////////////////////////////////////////////////////////
 
 
-#include <iostream.h>
+#include <Riostream.h>
 #include <TMath.h>
 #include <TObject.h>
 #include <AliTPCParamSR.h>

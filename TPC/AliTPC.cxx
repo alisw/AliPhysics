@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.63  2002/10/14 14:57:42  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.54.4.3  2002/10/11 08:34:48  hristov
 Updating VirtualMC to v3-09-02
 
@@ -221,9 +224,9 @@ Introduction of the Copyright and cvs Log
 #include <TROOT.h>
 #include <TSystem.h>     
 #include "AliRun.h"
-#include <iostream.h>
+#include <Riostream.h>
 #include <stdlib.h>
-#include <fstream.h>
+#include <Riostream.h>
 #include "AliMC.h"
 #include "AliMagF.h"
 #include "AliTrackReference.h"

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2002/10/14 14:57:42  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.13.4.1  2002/06/10 15:26:11  hristov
 Merged with v3-08-02
 
@@ -90,7 +93,7 @@ Introduction of the Copyright and cvs Log
 
 //
 
-#include <iostream.h>
+#include <Riostream.h>
 #include <TMath.h>
 #include <TObject.h>
 #include <TRandom.h>

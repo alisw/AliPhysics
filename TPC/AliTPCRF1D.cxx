@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2002/02/12 16:07:43  kowal2
+coreccted bug in SetGauss
+
 Revision 1.7  2001/01/26 19:57:22  hristov
 Major upgrade of AliRoot code
 
@@ -58,7 +61,7 @@ Introduction of the Copyright and cvs Log
 #include "TMath.h"
 #include "AliTPCRF1D.h"
 #include "TF2.h"
-#include <iostream.h>
+#include <Riostream.h>
 #include "TCanvas.h"
 #include "TPad.h"
 #include "TStyle.h"

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2002/10/14 14:57:43  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.9.6.1  2002/10/11 08:34:48  hristov
 Updating VirtualMC to v3-09-02
 
@@ -30,7 +33,7 @@ Logs added
 // Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //-----------------------------------------------------------------
 
-#include <iostream.h>
+#include <Riostream.h>
 
 #include "AliTPCtrack.h"
 #include "AliTPCcluster.h"

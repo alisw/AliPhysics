@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2002/10/21 16:49:46  hristov
+Replacing the old sorting by the Root one (M.Ivanov)
+
 Revision 1.20  2002/10/14 14:57:43  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -82,7 +85,7 @@ Splitted from AliTPCtracking
 #include <TObjArray.h>
 #include <TFile.h>
 #include <TTree.h>
-#include <iostream.h>
+#include <Riostream.h>
 
 #include "AliTPCtracker.h"
 #include "AliTPCcluster.h"

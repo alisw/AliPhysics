@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2002/10/14 14:57:43  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.7.6.1  2002/06/10 15:26:12  hristov
 Merged with v3-08-02
 
@@ -62,7 +65,7 @@ Splitted from AliTPCtracking
 #include "AliDigits.h"
 #include "AliSimDigits.h"
 #include "AliTPCParam.h"
-#include <iostream.h>
+#include <Riostream.h>
 #include <TTree.h>
 
 void AliTPCclusterer::FindPeaks(Int_t k,Int_t max,

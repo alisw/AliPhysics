@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2002/03/18 17:59:13  kowal2
+Chnges in the pad geometry - 3 pad lengths introduced.
+
 Revision 1.5  2001/01/26 19:57:22  hristov
 Major upgrade of AliRoot code
 
@@ -49,7 +52,7 @@ New Detector parameters handling class
 ///////////////////////////////////////////////////////////////////////
 
 
-#include <iostream.h>
+#include <Riostream.h>
 #include <TMath.h>
 #include <TClass.h>
 #include <AliTPCParamCR.h>
