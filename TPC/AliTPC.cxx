@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.56  2002/04/04 16:26:33  kowal2
+Digits (Sdigits) go to separate files now.
+
 Revision 1.55  2002/03/29 06:57:45  kowal2
 Restored backward compatibility to use the hits from Dec. 2000 production.
 
@@ -2314,13 +2317,12 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	    y1 = fTPCParam->GetYOuter(rowNumber);
 	  }
 
+	  // gain inefficiency at the wires edges - linear
+
 	  x1=TMath::Abs(x1);
-	  if (y1-0.5 <x1) {
-	    xyz[3]=0.;}
-	  else{ 
-	    if (y1 -1.<x1){
-	      xyz[3]*=0.5;}
-	  }          	       
+	  y1-=1.;
+          if(x1>y1) xyz[3]*=TMath::Max(1.e-6,(y1-x1+1.));	
+       
 	  nofElectrons[rowNumber]++;	  
 	  //----------------------------------
 	  // Expand vector if necessary
