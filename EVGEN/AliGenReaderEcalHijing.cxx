@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2002/01/08 09:59:34  morsch
+Readers for EMCAL primary particle input.
+
 */
 
 #include <TFile.h>
@@ -63,7 +66,7 @@ void AliGenReaderEcalHijing::Init()
 Int_t AliGenReaderEcalHijing::NextEvent() 
 {
 // Read the next event  
-    Int_t nTracks, nread;
+    Int_t nTracks=0, nread=0;
     
     TFile* pFile = fTreeNtuple->GetCurrentFile();
     pFile->cd();
