@@ -34,7 +34,7 @@ class AliTPCtrack;
 //_____________________________________________________________________________
 class AliITStrackV2  : public AliKalmanTrack {
 public:
-  AliITStrackV2():AliKalmanTrack(){}
+  AliITStrackV2();
   AliITStrackV2(const AliTPCtrack& t) throw (const Char_t *);
   AliITStrackV2(const AliITStrackV2& t);
   Int_t PropagateToVertex(Double_t d=1.2e-3*3., Double_t x0=36.66);
