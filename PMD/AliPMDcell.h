@@ -22,8 +22,8 @@ class AliPMDcell : public TObject
   AliPMDcell(Int_t trnumber, Int_t smnumber,
 	      Int_t xpos, Int_t ypos, Float_t edep);
   AliPMDcell(AliPMDcell *pmdcell) {*this = *pmdcell;}
-  AliPMDcell (const AliPMDcell &alipmdcell);  // dummy copy constructor
-  AliPMDcell &operator=(const AliPMDcell &alipmdcell); // dummy assignment op
+  AliPMDcell (const AliPMDcell &alipmdcell);  // copy constructor
+  AliPMDcell &operator=(const AliPMDcell &alipmdcell); // assignment op
 
   virtual ~AliPMDcell();
 

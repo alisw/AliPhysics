@@ -35,6 +35,29 @@ AliPMDcell::AliPMDcell(Int_t trnumber, Int_t smnumber,
   fEdep     = edep;
 
 }
+
+AliPMDcell::AliPMDcell(const AliPMDcell& source):TObject(source) {
+  //Copy Constructor 
+  if(&source == this) return;
+  this->fTrNumber = source.fTrNumber;
+  this->fSMNumber = source.fSMNumber;
+  this->fXpos = source.fXpos;
+  this->fYpos = source.fYpos;
+  this->fEdep = source.fEdep;
+  return;
+}
+
+AliPMDcell& AliPMDcell::operator=(const AliPMDcell& source) {
+  //Copy Constructor 
+  if(&source == this) return *this;
+  this->fTrNumber = source.fTrNumber;
+  this->fSMNumber = source.fSMNumber;
+  this->fXpos = source.fXpos;
+  this->fYpos = source.fYpos;
+  this->fEdep = source.fEdep;
+  return *this;
+}
+
 AliPMDcell::~AliPMDcell()
 {
   // Default destructor
