@@ -196,6 +196,7 @@ private:
   TString        fSDigitsFileName ;      //!
   Bool_t         fFailed ;            //! true if file is not opened and/or galice not found
   Int_t          fDebug ;             // Debug level
+  AliRun *       fAlice ;             //! needed to read TreeK if in an other file than fHeaderFile
   Int_t          fNPrimaries ;        //! # of primaries 
   TObjArray *    fPrimaries ;         //! list of lists of primaries-for the case of mixing
   TFolder *      fModuleFolder ;      //!Folder that contains the modules 
