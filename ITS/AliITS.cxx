@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2000/11/27 13:12:13  barbera
+New version containing the files for tracking
+
 Revision 1.25  2000/11/12 22:38:05  barbera
 Added header file for the SPD Bari model
 
@@ -1590,7 +1593,8 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
       iotrack->SetZ(ztrack);
       iotrack->SetLabel(labITS);
 		
-		for( Int_t il=0;il<6; il++){
+      Int_t il;		
+		for(il=0;il<6; il++){
 		  iotrack->SetIdPoint(il,result.GetIdPoint(il));
 		  iotrack->SetIdModule(il,result.GetIdModule(il));		
 		}
@@ -1601,7 +1605,7 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
 
      DataOut(kkk) = ptg; kkk++; DataOut(kkk)=labITS; kkk++; DataOut(kkk)=lab; kkk++;		
 
-      for (Int_t il=0;il<6;il++) {
+      for (il=0;il<6;il++) {
         idpoint=result.GetIdPoint(il);
         idmodule=result.GetIdModule(il);
 	*(vettid[idmodule]+idpoint)=1; 
