@@ -141,8 +141,13 @@
 
 #pragma link C++ class AliHBTLLWeights+;
 #pragma link C++ class AliHBTLLWeightQInvFctn+;
+#pragma link C++ class AliHBTLLWeightQOutFctn+;
+#pragma link C++ class AliHBTLLWeightQSideFctn+;
+#pragma link C++ class AliHBTLLWeightQLongFctn+;
+#pragma link C++ class AliHBTLLWeightTwoKStarFctn+;
 #pragma link C++ class AliHBTLLWeightTheorQInvFctn+;
 #pragma link C++ class AliHBTLLWeightsPID+;
+//#pragma link C++ class AliHBTGoComPair+;
 //#pragma link C++ class AliHBTCorrectQ3DCorrelFctn+;
 //#pragma link C++ class AliHBTCorrectQInvCorrelFctn+;
 #endif
