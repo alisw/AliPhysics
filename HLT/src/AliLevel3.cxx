@@ -1,6 +1,5 @@
-//Author:        Uli Frankenfeld
-//Author:        Anders Strand Vestbo
-//Last Modified: 13.12.2000
+// Author: Anders Vestbo <mailto:vestbo$fi.uib.no>, Uli Frankenfeld <mailto:franken@fi.uib.no>
+//*-- Copyright &copy ASV
 
 #include <TFile.h>
 #include <TDirectory.h>
@@ -33,7 +32,7 @@
 #include "AliL3SpacePointData.h"
 #include "AliL3VertexData.h"
 
-//_______________________________________
+//_____________________________________________________________
 //
 //  AliLevel3
 //
@@ -45,6 +44,11 @@
 //  AliLevel3 *level3 = new AliLevel3(inputfile,outputfile);
 //  level3->SetTrackerParam(); //Sets default tracking parameters
 //  level3->ProcessSector(2,2);  //Does tracking on sector 2 (actually 2+38)
+//Begin_Html
+/*
+<img src="tpcsectorsnb.gif">
+*/
+//End_Html
 
 ClassImp(AliLevel3)
 
@@ -115,7 +119,7 @@ void AliLevel3::Init(){
   fUseBinary =kFALSE;
   SetPath("");
   fFindVertex =kTRUE;
-  if(0){
+  if(1){
     fNPatch = 1;   //number of patches change row in process
     fRow[0][0] = 0;     // first row
     fRow[0][1] = 175;   // last row
@@ -140,7 +144,7 @@ void AliLevel3::Init(){
     fRow[4][0] = 142;
     fRow[4][1] = 175;   // last row
   }
-  if(1){
+  if(0){
     fNPatch = 6;   //number of patches change row in process
     fRow[0][0] = 0;     // first row
     fRow[0][1] = 31;
@@ -174,10 +178,10 @@ void AliLevel3::DoBench(char* name){
 }
 
 void AliLevel3::DoMc(char* file){
-  #ifdef use_aliroot
+#ifdef use_aliroot
   if(!fFileHandler->IsDigit())
     fFileHandler->SetMCOutput(file);
-  #endif
+#endif
 }
 
 AliLevel3::~AliLevel3(){
@@ -228,8 +232,9 @@ void AliLevel3::ProcessEvent(Int_t first,Int_t last){
     fTrackData=0;
   }
   fBenchmark->Start("Global Merger");
-  fGlobalMerger->Merge();
-//  fGlobalMerger->SlowMerge();
+  fGlobalMerger->AddAllTracks();
+  //fGlobalMerger->Merge();
+  fGlobalMerger->SlowMerge();
   fBenchmark->Stop("Global Merger");
 
   if(fWriteOut) WriteResults(); 
@@ -410,7 +415,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
       }
       fTrackMerger->SetVertex(fVertex);
     }
-    fTracker->InitSector(slice,fRow[patch],fEta);
+    fTracker->InitSector(slice,fRow[patch]);//,fEta);
     fTracker->SetVertex(fVertex);
     fBenchmark->Start("Tracker Read Hits");
     fTracker->ReadHits(npoints,points);
@@ -453,7 +458,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
 
     fInterMerger->FillTracks(ntracks0,trackdata0);
     fBenchmark->Start("Inter Merger");
-    fInterMerger->Merge();
+    // fInterMerger->Merge();
 //    fInterMerger->SlowMerge();
     
     fBenchmark->Stop("Inter Merger");
@@ -478,7 +483,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
   fBenchmark->Start("Patch Merger");
 //  fTrackMerger->SlowMerge();
   fTrackMerger->AddAllTracks();
-//  fTrackMerger->Merge();
+  fTrackMerger->Merge();
   fBenchmark->Stop("Patch Merger");
   //write merged tracks
   if(fWriteOut){
