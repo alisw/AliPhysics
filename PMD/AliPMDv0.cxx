@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  1999/09/29 09:24:28  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -402,6 +405,12 @@ void AliPMDv0::CreatePads()
   gMC->Gsatt("DV11", "SEEN", 1);
   
   // --- DEFINE MODULES, IRON, TUNGSTEN AND LEAD VOLUMES 
+
+  // This mod by fca, waiting for Yogendra Viyogi answer
+  spsw1[0] = spsw2[0];
+  spsw1[1] = spsw2[1];
+  spsw1[2] = spsw2[2];
+  // End of fca mod
   
   
   spb[0] = spsw1[0];
