@@ -138,21 +138,21 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
       // First hit -> setting flag for primary or secondary particle
       Int_t primary = gAlice->GetMCApp()->GetPrimary(track);     
       if(track != primary){
-        newquad->fSFlag = 1;  // SECONDARY particle entering the ZDC
+        newquad->SetSFlag(1);  // SECONDARY particle entering the ZDC
       }
       else if(track == primary){
-        newquad->fSFlag = 0;  // PRIMARY particle entering the ZDC
+        newquad->SetSFlag(0);  // PRIMARY particle entering the ZDC
       }  
-      sFlag 	= newquad->fSFlag;
-      primKinEn = newquad->fPrimKinEn;
-      xImpact 	= newquad->fXImpact;
-      yImpact 	= newquad->fYImpact;
+      sFlag 	= newquad->GetSFlag();
+      primKinEn = newquad->GetPrimKinEn();
+      xImpact 	= newquad->GetXImpact();
+      yImpact 	= newquad->GetYImpact();
    }
    else{       
-      newquad->fPrimKinEn = primKinEn;
-      newquad->fXImpact	= xImpact;
-      newquad->fYImpact = yImpact;
-      newquad->fSFlag 	= sFlag;
+      newquad->SetPrimKinEn(primKinEn);
+      newquad->SetXImpact(xImpact);
+      newquad->SetYImpact(yImpact);
+      newquad->SetSFlag(sFlag);
    }
  
   Int_t j;

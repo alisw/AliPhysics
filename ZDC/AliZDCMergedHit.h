@@ -18,26 +18,14 @@ public:
   virtual ~AliZDCMergedHit() {}
 
   // Getters 
-  virtual Int_t   GetSector(Int_t i) {return fSector[i];}
-  virtual Float_t GetPrimKinEn()     {return fPrimKinEn;}
-  virtual Float_t GetXImpact()       {return fXImpact;}
-  virtual Float_t GetYImpact()       {return fYImpact;}
-  virtual Float_t GetSFlag()         {return fSFlag;}
-  virtual Float_t GetLightPMQ()      {return fLightPMQ;}
-  virtual Float_t GetLightPMC()      {return fLightPMC;}
-  virtual Float_t GetEnergy()        {return fEnergy;}
-
-
-  // Data members
-  Int_t      fSector[2];    //Array of volumes
-  Float_t    fPrimKinEn;    //Primary particle energy
-  Float_t    fXImpact;      //x-coord. of the impact point over the ZDC
-  Float_t    fYImpact;      //y-coord. of the impact point over the ZDC
-  Float_t    fSFlag;        //Secondary flag
-  Float_t    fLightPMQ;     //Cerenkov light produced in each quadrant
-  Float_t    fLightPMC;     //Cerenkov light seen by the common PM
-  Float_t    fEnergy;       //Total energy deposited in eV
- 
+  virtual Int_t   GetSector(Int_t i) const {return fSector[i];}
+  virtual Float_t GetPrimKinEn() const     {return fPrimKinEn;}
+  virtual Float_t GetXImpact() const       {return fXImpact;}
+  virtual Float_t GetYImpact() const       {return fYImpact;}
+  virtual Float_t GetSFlag() const         {return fSFlag;}
+  virtual Float_t GetLightPMQ() const      {return fLightPMQ;}
+  virtual Float_t GetLightPMC() const      {return fLightPMC;}
+  virtual Float_t GetEnergy() const        {return fEnergy;}
 
   // Operators
   Int_t operator == (AliZDCMergedHit &quad) {
@@ -59,6 +47,18 @@ public:
 	    "  LightPMQ = %f, LightPMC = %f,  Deposited E = %f\n ", 
 	    fSector[0],fSector[1],fLightPMQ,fLightPMC,fEnergy);
   }
+
+private:
+  // Data members
+  Int_t      fSector[2];    //Array of volumes
+  Float_t    fPrimKinEn;    //Primary particle energy
+  Float_t    fXImpact;      //x-coord. of the impact point over the ZDC
+  Float_t    fYImpact;      //y-coord. of the impact point over the ZDC
+  Float_t    fSFlag;        //Secondary flag
+  Float_t    fLightPMQ;     //Cerenkov light produced in each quadrant
+  Float_t    fLightPMC;     //Cerenkov light seen by the common PM
+  Float_t    fEnergy;       //Total energy deposited in eV
+ 
 
   ClassDef(AliZDCMergedHit,1)  // MergedHits for the Zero Degree Calorimeters
 };
