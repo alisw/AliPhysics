@@ -4,13 +4,13 @@
 //*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
-
+#include "AliL3RootTypes.h"
 #include "AliL3Logging.h"
-#include "AliL3ConfMapFit.h"
 #include "AliL3Vertex.h"
 #include "AliL3ConfMapTrack.h"
 #include "AliL3ConfMapPoint.h"
 #include "AliL3Transform.h"
+#include "AliL3ConfMapFit.h"
 
 /** \class AliL3ConfMapFit
 <pre>

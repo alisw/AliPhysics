@@ -12,9 +12,8 @@
 </pre>
 */
 
-#include "AliL3StandardIncludes.h"
 #include <math.h>
-
+#include "AliL3StandardIncludes.h"
 #include "AliL3Logging.h"
 #include "AliL3Fitter.h"
 #include "AliL3Vertex.h"
@@ -175,7 +174,6 @@ Int_t AliL3Fitter::FitCircle()
   
   //
   //     Loop over hits calculating average
-  //  Double_t fXYWeight[(fTrack->GetNHits())];
   Double_t * fXYWeight = new Double_t[(fTrack->GetNHits())];
   UInt_t *hitnum = fTrack->GetHitNumbers();
   for(Int_t i=0; i<fTrack->GetNHits(); i++)
@@ -323,7 +321,7 @@ Int_t AliL3Fitter::FitCircle()
       yrrav  += wiriri * yi ;
       rrrrav += wiriri * riri ;
     }
-  //
+//
 //   Include vertex if required
 //
   if (fVertexConstraint == kTRUE)
@@ -400,7 +398,6 @@ Int_t AliL3Fitter::FitCircle()
   }
 
   //Double_t chi2 = (Double_t)(chiscl * lamda) ;
- 
   //fTrack->SetChiSq1(chi2);
   // Double_t dchisq = chiscl * dlamda ;	     
   //
@@ -454,7 +451,6 @@ Int_t AliL3Fitter::FitCircle()
 //   Get charge
 //
   Int_t q = ( ( yrrav < 0 ) ? 1 : -1 ) ;
-
   fTrack->SetCharge(q);
   
   //Set the first point on the track to the space point coordinates of the innermost track
@@ -481,14 +477,13 @@ Int_t AliL3Fitter::FitCircle()
   fTrack->SetRadius(radius);
   fTrack->SetCenterX(acent);
   fTrack->SetCenterY(bcent);
-  //
+//
 //    Get errors from fast fit
 //
   //if ( getPara()->getErrors ) getErrorsCircleFit ( acent, bcent, radius ) ;
 //
   delete [] fXYWeight;
   return 0 ;
-  
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -510,10 +505,6 @@ Int_t AliL3Fitter::FitLine ( )
   Double_t dx, dy ;
   Double_t radius = (Double_t)(fTrack->GetPt() / ( AliL3Transform::GetBFact() * AliL3Transform::GetBField() ) ) ;
 
-  //TObjArray *hits = fTrack->GetHits();
-  //Int_t num_of_hits = fTrack->GetNumberOfPoints();
-
-  //  Double_t fS[(fTrack->GetNHits())];
   Double_t * fS = new Double_t[(fTrack->GetNHits())];
   Double_t *fZWeight = new Double_t[fTrack->GetNHits()];
   UInt_t *hitnum = fTrack->GetHitNumbers();
@@ -612,8 +603,7 @@ Int_t AliL3Fitter::FitLine ( )
   fTrack->SetTgl(tanl);
   fTrack->SetZ0(z0);
   
-  //     calculate chi-square 
-  
+  //calculate chi-square 
   chi2 = 0.;
   Double_t r1 ;
   
@@ -630,11 +620,11 @@ Int_t AliL3Fitter::FitLine ( )
   
   //fTrack->SetChiSq2(chi2);
   //
-  //     calculate estimated variance
-  //      varsq=chi/(double(n)-2.) 
-  //     calculate covariance matrix 
-  //      siga=sqrt(varsq*sxx/det) 
-  //      sigb=sqrt(varsq*sum/det) 
+  //calculate estimated variance
+  //varsq=chi/(double(n)-2.) 
+  //calculate covariance matrix 
+  //siga=sqrt(varsq*sxx/det) 
+  //sigb=sqrt(varsq*sum/det) 
   //
   dtanl = (Double_t) ( sum / det );
   dz0   = (Double_t) ( sss / det );

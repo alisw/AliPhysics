@@ -183,7 +183,7 @@ void AliL3MemHandler::SetROI(Float_t *eta,Int_t */*slice*/)
   
 }
 
-Bool_t AliL3MemHandler::SetBinaryInput(char *name)
+Bool_t AliL3MemHandler::SetBinaryInput(Char_t *name)
 {
   //Set the input binary file.
   fInBinary = fopen(name,"r");
@@ -219,7 +219,7 @@ void AliL3MemHandler::CloseBinaryInput()
   fInBinary =0;
 }
 
-Bool_t AliL3MemHandler::SetBinaryOutput(char *name)
+Bool_t AliL3MemHandler::SetBinaryOutput(Char_t *name)
 {
   //Set the binary output file.
     fOutBinary = fopen(name,"w");

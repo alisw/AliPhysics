@@ -1,7 +1,7 @@
 // @(#) $Id$
 
-#ifndef ALIL3FitterH
-#define ALIL3FitterH
+#ifndef ALIL3FITTER_H
+#define ALIL3FITTER_H
 
 //_____________________________________________________________
 // AliL3Fitter

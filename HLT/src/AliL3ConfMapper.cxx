@@ -1,11 +1,22 @@
 // @(#) $Id$
 
+/** \class AliL3ConfMapper
+<pre>
+//_____________________________________________________________
+// AliL3ConfMapper
+//
+// Conformal mapping base class
+//
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
-//*-- Copyright &copy ALICE HLT Group
+// Copyright &copy ALICE HLT Group
+</pre>
+*/
+
+#include <sys/time.h>
  
 #include "AliL3StandardIncludes.h"
-#include <sys/time.h>
-
+#include "AliL3RootTypes.h"
+#include "AliL3SpacePointData.h"
 #include "AliL3Logging.h" 
 #include "AliL3Vertex.h"
 #include "AliL3ConfMapTrack.h"
@@ -14,15 +25,6 @@
 #include "AliL3Transform.h"
 #include "AliL3ConfMapper.h"
 
-/** \class AliL3ConfMapper
-<pre>
-//_____________________________________________________________
-// AliL3ConfMapper
-//
-// Conformal mapping base class
-//
-</pre>
-*/
 
 ClassImp(AliL3ConfMapper)
 

@@ -1,20 +1,82 @@
 // @(#) $Id$
 
-#ifndef ALIL3ConfMapperH
-#define ALIL3ConfMapperH
+#ifndef ALIL3CONFMAPPER_H
+#define ALIL3CONFMAPPER_H
 
-#include "AliL3RootTypes.h"
-#include "AliL3SpacePointData.h"
+//
+//Conformal mapping base class
+//
+// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
+//*-- Copyright &copy ALICE HLT Group
+
 
 class AliL3ConfMapPoint;
 class AliL3ConfMapTrack;
 class AliL3Vertex;
 class AliL3TrackArray;
+class AliL3SpacePointData;
 
-//
-//Conformal mapping base class
 
 class AliL3ConfMapper {
+
+ public:
+
+  AliL3ConfMapper();
+  //  AliL3ConfMapper(AliTPCParam *param,AliL3Vertex *vertex,Bool_t bench=(Bool_t)false);
+  virtual ~AliL3ConfMapper();
+  
+  void InitVolumes();
+  void InitSector(Int_t sector,Int_t *rowrange=0,Float_t *etarange=0);
+  void SetVertex(AliL3Vertex *vertex){fVertex = vertex;}
+  void MainVertexTracking_a();
+  void MainVertexTracking_b();
+  void MainVertexTracking();
+  void NonVertexTracking();
+  void MainVertexSettings(Int_t trackletlength, Int_t tracklength, 
+			  Int_t rowscopetracklet, Int_t rowscopetrack,Double_t maxphi=0.1,Double_t maxeta=0.1);
+  void NonVertexSettings(Int_t trackletlength, Int_t tracklength, 
+			 Int_t rowscopetracklet, Int_t rowscopetrack);
+  Bool_t ReadHits(UInt_t count, AliL3SpacePointData* hits );
+  void ClusterLoop();
+  void CreateTrack(AliL3ConfMapPoint *hit);
+  AliL3ConfMapPoint *GetNextNeighbor(AliL3ConfMapPoint *start_hit,AliL3ConfMapTrack *track=NULL);
+  Int_t EvaluateHit(AliL3ConfMapPoint *start_hit,AliL3ConfMapPoint *hit,AliL3ConfMapTrack *track);
+
+  Double_t CalcDistance(const AliL3ConfMapPoint *hit1,const AliL3ConfMapPoint *hit2) const;
+  Double_t TrackletAngle(AliL3ConfMapTrack *track,Int_t n=3) const;
+  Bool_t VerifyRange(const AliL3ConfMapPoint *hit1,const AliL3ConfMapPoint *hit2) const;
+  Int_t FillTracks();
+  
+  //getters
+  Int_t GetNumberOfTracks()    const {return fNTracks;}
+  AliL3TrackArray *GetTracks() const {return fTrack;}
+  Double_t GetMaxDca()         const {return fMaxDca;}
+  AliL3Vertex* GetVertex()     const {return fVertex;}
+  Double_t CpuTime();
+
+  //setters
+  void SetTrackCuts(Double_t hitChi2Cut, Double_t goodHitChi2, Double_t trackChi2Cut, Int_t maxdist,Bool_t vertexconstraint); 
+  void SetTrackletCuts(Double_t maxangle,Double_t goodDist,Bool_t vc);    //Set cut of tracklet for the given vertex_constraint
+  void SetNSegments(Int_t f,Int_t g) {fNumPhiSegment=f,fNumEtaSegment=g;} //Set number of subvolumes (#segments in (phi,eta)
+  void SetMaxDca(Double_t f) {fMaxDca = f;}
+
+  //setter:
+  void SetMinPoints(Int_t f,Bool_t vconstraint) {fMinPoints[(Int_t)vconstraint] = f; }  
+  void SetVertexConstraint(Bool_t f) {fVertexConstraint =f;}
+  
+  void SetHitChi2Cut(Double_t f,Bool_t vert) {fHitChi2Cut[(Int_t)vert]=f;}
+  void SetGoodHitChi2(Double_t f,Bool_t vert) {fGoodHitChi2[(Int_t)vert]=f;}
+  void SetTrackChi2Cut(Double_t f,Bool_t vert) {fTrackChi2Cut[(Int_t)vert]=f;}
+  void SetMaxDist(Int_t f,Bool_t vert) {fMaxDist[(Int_t)vert]=f;}
+  void SetTrackletLength(Int_t f,Bool_t vert) {fTrackletLength[(Int_t)vert]=f;}
+  void SetRowScopeTrack(Int_t f, Bool_t vc){fRowScopeTrack[(Int_t)vc] = f;}
+  void SetRowScopeTracklet(Int_t f, Bool_t vc){fRowScopeTracklet[(Int_t)vc] = f;}
+  void SetMaxAngleTracklet(Double_t f, Bool_t vc){fMaxAngleTracklet[(Int_t)vc] = f;}
+
+  void SetPointers();
+  void SetParamDone(Bool_t vconstraint) {fParamSet[(Int_t)vconstraint] = kTRUE;}
+
+ private:
 
   struct AliL3ConfMapContainer 
   {
@@ -22,15 +84,13 @@ class AliL3ConfMapper {
     void *last;  // last track
   };
 
- private:
-
   Bool_t fBench; //run-time measurements
-
   Int_t fNTracks; //number of tracks build.
 
   AliL3Vertex *fVertex; //!
   Bool_t fParamSet[2];  //!
-  Bool_t fVertexFinder;  //Include vertexfinding or not (latter case vertex=(0,0,0))
+  Bool_t fVertexFinder; //Include vertexfinding or not 
+                        //(latter case vertex=(0,0,0))
 
   AliL3ConfMapPoint *fHit;  //!
   AliL3TrackArray *fTrack;  //!
@@ -78,63 +138,6 @@ class AliL3ConfMapper {
   // Tracking informtion
   Int_t fMainVertexTracks; //number of tracks coming from the main vertex
   Int_t fClustersUnused;   //number of unused clusters
-
-  //setter:
-  void SetMinPoints(Int_t f,Bool_t vconstraint) {fMinPoints[(Int_t)vconstraint] = f; }  
-  void SetVertexConstraint(Bool_t f) {fVertexConstraint =f;}
-  
-  void SetHitChi2Cut(Double_t f,Bool_t vert) {fHitChi2Cut[(Int_t)vert]=f;}
-  void SetGoodHitChi2(Double_t f,Bool_t vert) {fGoodHitChi2[(Int_t)vert]=f;}
-  void SetTrackChi2Cut(Double_t f,Bool_t vert) {fTrackChi2Cut[(Int_t)vert]=f;}
-  void SetMaxDist(Int_t f,Bool_t vert) {fMaxDist[(Int_t)vert]=f;}
-  void SetTrackletLength(Int_t f,Bool_t vert) {fTrackletLength[(Int_t)vert]=f;}
-  void SetRowScopeTrack(Int_t f, Bool_t vc){fRowScopeTrack[(Int_t)vc] = f;}           // sets one row scope for tracks
-  void SetRowScopeTracklet(Int_t f, Bool_t vc){fRowScopeTracklet[(Int_t)vc] = f;}     // sets one row scope for tracklets
-  void SetMaxAngleTracklet(Double_t f, Bool_t vc){fMaxAngleTracklet[(Int_t)vc] = f;}  // sets one angle cut
-
-  void SetPointers();
-  Double_t CpuTime();
-  void SetParamDone(Bool_t vconstraint) {fParamSet[(Int_t)vconstraint] = kTRUE;}
-  
- public:
-
-  AliL3ConfMapper();
-  //  AliL3ConfMapper(AliTPCParam *param,AliL3Vertex *vertex,Bool_t bench=(Bool_t)false);
-  virtual ~AliL3ConfMapper();
-  
-  void InitVolumes();
-  void InitSector(Int_t sector,Int_t *rowrange=0,Float_t *etarange=0);
-  void SetVertex(AliL3Vertex *vertex){fVertex = vertex;}
-  void MainVertexTracking_a();
-  void MainVertexTracking_b();
-  void MainVertexTracking();
-  void NonVertexTracking();
-  void MainVertexSettings(Int_t trackletlength, Int_t tracklength, 
-			  Int_t rowscopetracklet, Int_t rowscopetrack,Double_t maxphi=0.1,Double_t maxeta=0.1);
-  void NonVertexSettings(Int_t trackletlength, Int_t tracklength, 
-			 Int_t rowscopetracklet, Int_t rowscopetrack);
-  Bool_t ReadHits(UInt_t count, AliL3SpacePointData* hits );
-  void ClusterLoop();
-  void CreateTrack(AliL3ConfMapPoint *hit);
-  AliL3ConfMapPoint *GetNextNeighbor(AliL3ConfMapPoint *start_hit,AliL3ConfMapTrack *track=NULL);
-  Int_t EvaluateHit(AliL3ConfMapPoint *start_hit,AliL3ConfMapPoint *hit,AliL3ConfMapTrack *track);
-
-  Double_t CalcDistance(const AliL3ConfMapPoint *hit1,const AliL3ConfMapPoint *hit2) const;
-  Double_t TrackletAngle(AliL3ConfMapTrack *track,Int_t n=3) const;
-  Bool_t VerifyRange(const AliL3ConfMapPoint *hit1,const AliL3ConfMapPoint *hit2) const;
-  Int_t FillTracks();
-  
-  //getters
-  Int_t GetNumberOfTracks()    const {return fNTracks;}
-  AliL3TrackArray *GetTracks() const {return fTrack;}
-  Double_t GetMaxDca()         const {return fMaxDca;}
-  AliL3Vertex* GetVertex()     const {return fVertex;}
-
-  //setters
-  void SetTrackCuts(Double_t hitChi2Cut, Double_t goodHitChi2, Double_t trackChi2Cut, Int_t maxdist,Bool_t vertexconstraint); 
-  void SetTrackletCuts(Double_t maxangle,Double_t goodDist,Bool_t vc);    //Set cut of tracklet for the given vertex_constraint
-  void SetNSegments(Int_t f,Int_t g) {fNumPhiSegment=f,fNumEtaSegment=g;} //Set number of subvolumes (#segments in (phi,eta)
-  void SetMaxDca(Double_t f) {fMaxDca = f;}
 
   ClassDef(AliL3ConfMapper,1) //Base class for conformal mapping tracking
 };

@@ -517,8 +517,13 @@ void AliL3Track::GetClosestPoint(AliL3Vertex *vertex,Double_t &closestx,Double_t
 }
 
 void AliL3Track::Print() const
-{
+{ //print out parameters of track
   LOG(AliL3Log::kInformational,"AliL3Track::Print","Print values")
-    <<fNHits<<" "<<fMCid<<" "<<fKappa<<" "<<fRadius<<" "<<fCenterX<<" "<<fCenterY<<" "<<fFromMainVertex<<" "<<fRowRange[0]<<" "<<fRowRange[1]<<" "<<fSector<<" "<<fQ<<" "<<fTanl<<" "<<fPsi<<" "<<fPt<<" "<<fLength<<" "<<fPterr<<" "<<fPsierr<<" "<<fZ0err<<" "<<fTanlerr<<" "<<fPhi0<<" "<<fR0<<" "<<fZ0<<" "<<fFirstPoint[0]<<" "<<fFirstPoint[1]<<" "<<fFirstPoint[2]<<" "<<fLastPoint[0]<<" "<<fLastPoint[1]<<" "<<fLastPoint[2]<<" "<<fPoint[0]<<" "<<fPoint[1]<<" "<<fPoint[2]<<" "<<fPointPsi<<" "<<fIsPoint<<" "<<fIsLocal<<" "<<fPID<<ENDLOG; 
-
+    <<fNHits<<" "<<fMCid<<" "<<fKappa<<" "<<fRadius<<" "<<fCenterX<<" "<<fCenterY<<" "
+    <<fFromMainVertex<<" "<<fRowRange[0]<<" "<<fRowRange[1]<<" "<<fSector<<" "<<fQ<<" "
+    <<fTanl<<" "<<fPsi<<" "<<fPt<<" "<<fLength<<" "<<fPterr<<" "<<fPsierr<<" "<<fZ0err<<" "
+    <<fTanlerr<<" "<<fPhi0<<" "<<fR0<<" "<<fZ0<<" "<<fFirstPoint[0]<<" "<<fFirstPoint[1]<<" "
+    <<fFirstPoint[2]<<" "<<fLastPoint[0]<<" "<<fLastPoint[1]<<" "<<fLastPoint[2]<<" "
+    <<fPoint[0]<<" "<<fPoint[1]<<" "<<fPoint[2]<<" "<<fPointPsi<<" "<<fIsPoint<<" "
+    <<fIsLocal<<" "<<fPID<<ENDLOG; 
 }
