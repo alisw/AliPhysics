@@ -2,10 +2,9 @@
 #define ALIPHOSRECPOINT_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
 //_________________________________________________________________________
 //  Base Class for PHOS Reconstructed Points  
-//                  
+//  A recpoint being equivalent to a cluster in encal terminology                 
 //*-- Author: Gines Martinez (SUBATECH)
 
 #include <assert.h>
@@ -68,7 +67,7 @@ class AliPHOSRecPoint : public AliRecPoint {
     // Print prototype
   } 
 
-  AliPHOSRecPoint & operator = (const AliPHOSRecPoint & rvalue)  {
+  AliPHOSRecPoint & operator = (const AliPHOSRecPoint & )  {
     // assignement operator requested by coding convention
     // but not needed
     assert(0==1) ;

@@ -78,7 +78,7 @@ public:
 		       Float_t * maxAtEnergy ) ; //Unfolds overlaping clusters using TMinuit package
   virtual void UnsetUnfoldFlag() { fUnfoldFlag = kFALSE ; } 
 
-  AliPHOSTrackSegmentMakerv1 & operator = (const AliPHOSTrackSegmentMakerv1 & rvalue)  {
+  AliPHOSTrackSegmentMakerv1 & operator = (const AliPHOSTrackSegmentMakerv1 & )  {
     // assignement operator requested by coding convention
     // but not needed
     assert(0==1) ;

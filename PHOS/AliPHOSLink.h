@@ -7,7 +7,8 @@
 
 //_________________________________________________________________________
 //  Algorithm class used only by AliPHOSTrackSegmentMaker 
-//                  
+//  Links recpoints
+// into tracksegments                
 //*-- Author: Dmitri Peressounko (SUBATECH)
 
 // --- ROOT system ---

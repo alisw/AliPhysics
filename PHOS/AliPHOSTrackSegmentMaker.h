@@ -46,7 +46,7 @@ public:
   
   Int_t                  fNTrackSegments ; // number of track segments found 
   AliPHOSGeometry      * fGeom ;           // pointer to PHOS geometry  
-  AliPHOSIndexToObject * fPlease ;         //
+  AliPHOSIndexToObject * fPlease ;         // factory used to convert an index into the associated object
 
   ClassDef( AliPHOSTrackSegmentMaker,1)    // Algorithm class to make PHOS track segments (Base Class)
 

@@ -77,7 +77,7 @@ public:
     return TString("v4") ; 
   }
 
-  AliPHOSv4 & operator = (const AliPHOSv4 & rvalue)  {
+  AliPHOSv4 & operator = (const AliPHOSv4 & )  {
     // assignement operator requested by coding convention
     // but not needed
     assert(0==1) ;

@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
 //_________________________________________________________________________
 // Version of AliPHOSv1 which keeps all hits in TreeH
@@ -22,7 +21,7 @@
 //*-- Modified Nov. 22 2000 by Dmitri Peressounko
 // All hits are stored.
 // Note, that primaries will not be assigned to digits:
-// becouse of tiny energy deposition at each step.
+// because of tiny energy deposition at each step.
 //  
 
 // --- ROOT system ---

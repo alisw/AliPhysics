@@ -8,7 +8,7 @@
 //_________________________________________________________________________
 //  Algorithm class for the identification of particles detected in PHOS        
 //  base  class                             
-//                  
+//  of identified particles                
 //*-- Author: Yves Schutz (SUBATECH)
 
 // --- ROOT system ---

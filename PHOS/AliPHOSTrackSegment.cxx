@@ -12,9 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
 //_________________________________________________________________________
 //  Track segment in PHOS
 //  Can be : 1 EmcRecPoint
@@ -519,6 +517,7 @@ void AliPHOSTrackSegment::Print(const char * opt)
 //____________________________________________________________________________
 void AliPHOSTrackSegment::SetPpsdUpRecPoint(AliPHOSPpsdRecPoint * PpsdUpRecPoint) 
 {
+  // gives an id from its position in the list
   if( PpsdUpRecPoint )  
     fPpsdUpRecPoint = PpsdUpRecPoint->GetIndexInList() ;
  else 

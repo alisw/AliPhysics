@@ -8,7 +8,7 @@
 //_________________________________________________________________________
 //  A singleton that retrieves objets from an array stored in a Tree on a disk file
 //    1. AliPHOSDigit from TreeD     
-//                  
+// Oh yeah                 
 //*-- Author: Yves Schutz (SUBATECH)
 
 
@@ -59,7 +59,7 @@ public:
   AliRecPoint *         GimeRecPoint(Int_t index, TString s) ; 
   AliPHOSTrackSegment * GimeTrackSegment(Int_t index) ;
   
-  AliPHOSIndexToObject & operator = (const AliPHOSIndexToObject & rvalue) {
+  AliPHOSIndexToObject & operator = (const AliPHOSIndexToObject & ) {
     // assignement operator requested by coding convention
     // but not needed
     assert(0==1) ;

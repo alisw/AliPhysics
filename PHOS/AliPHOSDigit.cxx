@@ -120,7 +120,7 @@ Int_t AliPHOSDigit::Compare(TObject * obj)
 //____________________________________________________________________________
 Int_t AliPHOSDigit::GetPrimary(Int_t index) const
 {
- 
+  // retrieves the primary particle number given its index in the list 
   Int_t rv = -1 ;
   if ( index <= fNprimary ){
     rv = fPrimary[index-1] ;

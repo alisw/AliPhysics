@@ -469,16 +469,16 @@ void AliPHOSv4::StepManager(void)
   Int_t modid  ; 
   gMC->CurrentVolID(modid);
   
-  Float_t Energy = gMC->Etot() ; //Total energy of current track
+  Float_t energy = gMC->Etot() ; //Total energy of current track
 
   //Calculating mass of current particle
-  TDatabasePDG * PDG = TDatabasePDG::Instance() ;
-  TParticlePDG * partPDG = PDG->GetParticle(gMC->TrackPid()) ;
+  TDatabasePDG * pdg = TDatabasePDG::Instance() ;
+  TParticlePDG * partPDG = pdg->GetParticle(gMC->TrackPid()) ;
   Float_t mass = partPDG->Mass() ;
 
-  if(Energy > mass){
-    pos.SetMag(TMath::Sqrt(Energy*Energy-mass*mass)) ;
-    TLorentzVector pTrack(pos,Energy) ;  
+  if(energy > mass){
+    pos.SetMag(TMath::Sqrt(energy*energy-mass*mass)) ;
+    TLorentzVector pTrack(pos, energy) ;  
 
     TParticle * part = new TParticle(gMC->TrackPid(), 0,-1,-1,-1,-1, pTrack, lv)  ;
         

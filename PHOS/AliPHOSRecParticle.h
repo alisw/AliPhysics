@@ -8,7 +8,7 @@
 //_________________________________________________________________________
 //  A Reconstructed Particle in PHOS    
 //  To become a general class of AliRoot ?        
-//       
+//  why not      
 //*-- Author: Yves Schutz (SUBATECH)
 
 // --- ROOT system ---

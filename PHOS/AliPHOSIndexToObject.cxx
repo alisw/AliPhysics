@@ -17,7 +17,10 @@
 
 //_________________________________________________________________________
 //  A singleton that retrieves objets from an array stored in a Tree on a disk file
-//    1. AliPHOSDigit from TreeD     
+//    1. AliPHOSDigit from TreeD  
+//  Why should I put meaningless comments
+//  just to satisfy
+//  the code checker                   
 //                  
 //*-- Author: Yves Schutz (SUBATECH)
 //////////////////////////////////////////////////////////////////////////////

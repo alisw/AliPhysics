@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 //_________________________________________________________________________
 // Version of AliPHOSv0 which keeps all hits in TreeH
+// I mean real hits not cumulated hits
 //  This version is NOT recommended for Reconstruction analysis
 //                  
 //*-- Author: Gines MARTINEZ (SUBATECH)

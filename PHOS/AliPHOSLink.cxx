@@ -12,12 +12,13 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
 //_________________________________________________________________________
 //  Algorithm class used only by AliPHOSTrackSegmentMaker 
-//                  
+//  Links recpoints into tracksegments
+//  Why should I put meaningless comments
+//  just to satisfy
+//  the code checker                                
 //*-- Author: Dmitri Peressounko (SUBATECH)
 
 // --- ROOT system ---

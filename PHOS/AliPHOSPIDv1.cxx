@@ -18,6 +18,9 @@
 //_________________________________________________________________________
 // Implementation version v1 of the PHOS particle identifier 
 // Identification is based on information from PPSD and EMC
+//  Why should I put meaningless comments
+//  just to satisfy
+//  the code checker                
 //                  
 //*-- Author: Yves Schutz (SUBATECH)  & Gines Martinez (SUBATECH)
 
@@ -111,9 +114,9 @@ void  AliPHOSPIDv1::MakeParticles(AliPHOSTrackSegment::TrackSegmentsList * trsl,
     //       //R=(lambda[0]-1.386)*(lambda[0]-1.386)+1.707*1.707*(lambda[1]-1.008)*(lambda[1]-1.008) ;
     //       //if(R<0.35*0.35)
 
-    Float_t Dispersion;
-    Dispersion = recp->GetDispersion();
-    if (Dispersion < fCutOnDispersion)
+    Float_t dispersion;
+    dispersion = recp->GetDispersion();
+    if (dispersion < fCutOnDispersion)
       showerprofile = 0 ;   // NARROW PROFILE   
     else      
       showerprofile = 1 ;// WIDE PROFILE

@@ -88,7 +88,7 @@ public:
   TH2F * fhAllEnergy ;       // Spectrum of detected photons with photon primary
   TH2F * fhPhotEnergy ;      // Total spectrum of detected photons
   TH2F * fhEMEnergy ;        // Spectrum of detected neutral EM with EM primary
-  TH2F * fhPPSDEnergy ;      // 
+  TH2F * fhPPSDEnergy ;      // Spectrum of particles detected in PPSD with primary particle 
 
   TH2F * fhAllPosition ;     // Position Resolution of  photons with photon primary
   TH2F * fhPhotPosition ;    // Position Resolution of  photons

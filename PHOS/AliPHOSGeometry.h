@@ -170,13 +170,7 @@ public:
 
   // Common PPSD and CPV parameters
 
-  Float_t GetCPVBoxSize(Int_t index)  const { 
-    if      (strcmp(fName,"GPS2")==0) return fGeometryPPSD->GetCPVBoxSize(index);
-    else if (strcmp(fName,"IHEP")==0) return fGeometryCPV ->GetCPVBoxSize(index);
-    else if (strcmp(fName,"MIXT")==0) return TMath::Max(fGeometryCPV ->GetCPVBoxSize(index),
-							fGeometryPPSD->GetCPVBoxSize(index));
-    else                              return 0;
-  }
+  Float_t GetCPVBoxSize(Int_t index)  const ;
 
   // Mixed EMCA and PPSD parameters
 

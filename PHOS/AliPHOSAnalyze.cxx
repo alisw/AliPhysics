@@ -635,8 +635,8 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
 {
   // Calculates Real and Mixed invariant mass distributions
 
-  const Int_t nMixedEvents = 4 ; //# of events used for calculation of 'mixed' distribution 
-  Int_t mixedLoops = (Int_t )TMath::Ceil(Nevents/nMixedEvents) ;
+  const Int_t knMixedEvents = 4 ; //# of events used for calculation of 'mixed' distribution 
+  Int_t mixedLoops = (Int_t )TMath::Ceil(Nevents/knMixedEvents) ;
   
   //========== Booking Histograms
   TH2D * hRealEM   = new TH2D("hRealEM",   "Real for EM particles",      250,0.,1.,40,0.,4.) ;
@@ -647,16 +647,16 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
   Int_t ievent;
   Int_t eventInMixedLoop ;
   
-  Int_t nRecParticles[4];//nMixedEvents] ;
+  Int_t nRecParticles[4];//knMixedEvents] ;
   
-  AliPHOSRecParticle::RecParticlesList * allRecParticleList  = new TClonesArray("AliPHOSRecParticle", nMixedEvents*1000) ;
+  AliPHOSRecParticle::RecParticlesList * allRecParticleList  = new TClonesArray("AliPHOSRecParticle", knMixedEvents*1000) ;
   
   for(eventInMixedLoop = 0; eventInMixedLoop < mixedLoops; eventInMixedLoop++  ){
     Int_t iRecPhot = 0 ;
     
-    for ( ievent=0; ievent < nMixedEvents; ievent++){        
+    for ( ievent=0; ievent < knMixedEvents; ievent++){        
       
-      Int_t absEventNumber = eventInMixedLoop*nMixedEvents + ievent ;
+      Int_t absEventNumber = eventInMixedLoop*knMixedEvents + ievent ;
       
       //=========== Connects the various Tree's for evt
       gAlice->GetEvent(absEventNumber);

@@ -9,7 +9,7 @@
 //_________________________________________________________________________
 // Implementation version v1 of the PHOS particle identifier 
 // Identification is based on information from PPSD and EMC
-//                  
+// Oh yeah                 
 //*-- Author: Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
@@ -32,7 +32,7 @@ public:
   Float_t GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * emcclu, AliPHOSPpsdRecPoint * PpsdClu, Bool_t &toofar, Option_t * Axis) ; // Relative Distance PPSD-EMC
   virtual void MakeParticles(AliPHOSTrackSegment::TrackSegmentsList * trsl, 
 			     AliPHOSRecParticle::RecParticlesList * rpl ) ; // does the job
-  virtual void Print(const char *) ; 
+  virtual void Print(const char * opt) ; 
   virtual void SetDispersionCutOff(Float_t Dcut) {fCutOnDispersion = Dcut ; }    
   virtual void SetShowerProfileCuts(Float_t l1m, Float_t l1M, Float_t l2m, Float_t l2M) ; 
   virtual void SetRelativeDistanceCut(Float_t CutOnRelativeDistance) ;

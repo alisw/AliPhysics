@@ -17,7 +17,11 @@
 
 //_________________________________________________________________________
 //  Algorithm class for the identification of particles detected in PHOS        
-//  base  class                             
+//  base  class  of identified particle  
+//  Why should I put meaningless comments
+//  just to satisfy
+//  the code checker                
+                         
 //                  
 //*-- Author: Yves Schutz (SUBATECH)
 

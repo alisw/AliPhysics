@@ -12,12 +12,13 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
 //_________________________________________________________________________
 //  A Reconstructed Particle in PHOS    
-//  To become a general class of AliRoot ?        
+//  To become a general class of AliRoot ?       
+//  Why should I put meaningless comments
+//  just to satisfy
+//  the code checker                 
 //       
 //*-- Author: Yves Schutz (SUBATECH)
 

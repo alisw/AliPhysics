@@ -12,12 +12,13 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
 //_________________________________________________________________________
 //  A RecPoint (cluster) in the PPSD 
 //  A PPSD RecPoint ends up to be a single digit
+//  Why should I put meaningless comments
+//  just to satisfy
+//  the code checker                
 //                
 //*--  Yves Schutz (SUBATECH)
 

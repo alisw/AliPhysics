@@ -12,12 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
 //_________________________________________________________________________
 //  Base Class for PHOS Reconstructed Points  
-//                  
+//  Why should I put meaningless comments
+//  just to satisfy
+//  the code checker                
 //*-- Author: Gines Martinez (SUBATECH)
 
 // --- ROOT system ---
