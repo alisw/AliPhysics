@@ -10,12 +10,12 @@
 #include "TObject.h"
 #include "TObjArray.h"
 #include "TDatime.h"
-#include "TTimeStamp.h"
  
 #include "AliVertex.h"
 #include "AliDevice.h"
+#include "AliTimestamp.h"
  
-class AliEvent : public AliVertex
+class AliEvent : public AliVertex,public AliTimestamp
 {
  public:
   AliEvent();                             // Default constructor
@@ -24,8 +24,8 @@ class AliEvent : public AliVertex
   AliEvent(const AliEvent& evt);          // Copy constructor
   virtual TObject* Clone(const char* name="") const; // Make a deep copy and provide its pointer
   virtual void SetOwner(Bool_t own=kTRUE);// Set ownership of all added objects
-  void SetDayTime(TTimeStamp& stamp);     // Set the date and time stamp exactly as specified (1 ns accuracy)
-  void SetDayTime(TDatime& stamp);        // Set date and time stamp interpreted as local time (1 s accuracy)
+  void SetDayTime(TTimeStamp& stamp);     // (Obsolete, see docs) Set date/time exactly as specified (1ns accuracy)
+  void SetDayTime(TDatime& stamp);        // (Obsolete, see docs) Set date/time interpreted as local time (1s accuracy)
   void SetRunNumber(Int_t run);           // Set the run number
   void SetEventNumber(Int_t evt);         // Set the event number
   void SetProjectile(Int_t a,Int_t z,Double_t pnuc,Int_t id=0); // Set projectile A, Z, p per nucleon and id
@@ -39,10 +39,10 @@ class AliEvent : public AliVertex
   Double_t GetTargetPnuc() const;         // Provide the target momentum value per nucleon
   Int_t GetTargetId() const;              // Provide the user defined particle ID of the target
   void Reset();                           // Reset all values
-  TTimeStamp GetDayTime() const;          // Provide the date and time stamp
+  TTimeStamp GetDayTime() const;          // (Obsolete, see docs) Provide the date and time stamp
   Int_t GetRunNumber() const;             // Provide the run number
   Int_t GetEventNumber() const;           // Provide the event number
-  virtual void HeaderData() const;        // Print the event header information
+  virtual void HeaderData();              // Print the event header information
   virtual void Data(TString f="car");     // Print the event info within coordinate frame f
   void SetDevCopy(Int_t j);               // (De)activate creation of private copies of the devices
   Int_t GetDevCopy() const;               // Provide DevCopy flag value      
@@ -68,7 +68,6 @@ class AliEvent : public AliVertex
   TObjArray* SortDevices(TObjArray* hits,Int_t idx=1,Int_t mode=-1);        // Sort devices by signal value
 
  protected:
-  TTimeStamp fDaytime;                  // The date and time stamp
   Int_t fRun;                           // The run number
   Int_t fEvent;                         // The event number
   Int_t fAproj;                         // The projectile A value
@@ -86,6 +85,6 @@ class AliEvent : public AliVertex
   TObjArray* fOrdered;                  //! Temp. array to hold references to various ordered objects
   TObject* fDisplay;                    //! Temp. pointer to hold objects which serve event displays
 
- ClassDef(AliEvent,17) // Creation and investigation of an Alice physics event.
+ ClassDef(AliEvent,18) // Creation and investigation of an Alice physics event.
 };
 #endif

@@ -252,11 +252,10 @@
  
 ClassImp(AliEvent) // Class implementation to enable ROOT I/O
  
-AliEvent::AliEvent() : AliVertex()
+AliEvent::AliEvent() : AliVertex(),AliTimestamp()
 {
 // Default constructor.
 // All variables initialised to default values.
- fDaytime.Set();
  fRun=0;
  fEvent=0;
  fAproj=0;
@@ -274,7 +273,7 @@ AliEvent::AliEvent() : AliVertex()
  fDisplay=0;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliEvent::AliEvent(Int_t n) : AliVertex(n)
+AliEvent::AliEvent(Int_t n) : AliVertex(n),AliTimestamp()
 {
 // Create an event to hold initially a maximum of n tracks
 // All variables initialised to default values
@@ -282,7 +281,6 @@ AliEvent::AliEvent(Int_t n) : AliVertex(n)
  {
   cout << " *** This AliVertex initialisation was invoked via the AliEvent ctor." << endl;
  }
- fDaytime.Set();
  fRun=0;
  fEvent=0;
  fAproj=0;
@@ -325,10 +323,9 @@ AliEvent::~AliEvent()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliEvent::AliEvent(const AliEvent& evt) : AliVertex(evt)
+AliEvent::AliEvent(const AliEvent& evt) : AliVertex(evt),AliTimestamp(evt)
 {
 // Copy constructor.
- fDaytime=evt.fDaytime;
  fRun=evt.fRun;
  fEvent=evt.fEvent;
  fAproj=evt.fAproj;
@@ -378,7 +375,7 @@ void AliEvent::Reset()
 
  AliVertex::Reset();
 
- fDaytime.Set();
+ Set();
  fRun=0;
  fEvent=0;
  fAproj=0;
@@ -446,7 +443,15 @@ void AliEvent::SetDayTime(TTimeStamp& stamp)
 // Set the date and time stamp for this event.
 // An exact copy of the entered date/time stamp will be saved with an
 // accuracy of 1 nanosecond.
- fDaytime=stamp;
+//
+// Note : Since the introduction of the more versatile class AliTimestamp
+//        and the fact that AliEvent has now been derived from it,
+//        this memberfunction has become obsolete.
+//        It is recommended to use the corresponding AliTimestamp
+//        functionality directly for AliEvent instances.
+//        This memberfunction is only kept for backward compatibility.
+
+ Set(stamp.GetDate(),stamp.GetTime(),0,kTRUE,0);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliEvent::SetDayTime(TDatime& stamp)
@@ -454,11 +459,13 @@ void AliEvent::SetDayTime(TDatime& stamp)
 // Set the date and time stamp for this event.
 // The entered date/time will be interpreted as being the local date/time
 // and the accuracy is 1 second.
+//
 // This function with the TDatime argument is mainly kept for backward
-// compatibility reasons. It is recommended to use the corresponding
-// function with the TTimeStamp argument.
+// compatibility reasons.
+// It is recommended to use the corresponding AliTimestamp functionality
+// directly for AliEvent instances.
 
- fDaytime.Set(stamp.GetDate(),stamp.GetTime(),0,kFALSE,0);
+ Set(stamp.GetDate(),stamp.GetTime(),0,kFALSE,0);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliEvent::SetRunNumber(Int_t run)
@@ -476,7 +483,15 @@ void AliEvent::SetEventNumber(Int_t evt)
 TTimeStamp AliEvent::GetDayTime() const
 {
 // Provide the date and time stamp for this event
- return fDaytime;
+//
+// Note : Since the introduction of the more versatile class AliTimestamp
+//        and the fact that AliEvent has now been derived from it,
+//        this memberfunction has become obsolete.
+//        It is recommended to use the corresponding AliTimestamp
+//        functionality directly for AliEvent instances.
+//        This memberfunction is only kept for backward compatibility.
+
+ return (TTimeStamp)(*this);
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliEvent::GetRunNumber() const
@@ -559,7 +574,7 @@ Int_t AliEvent::GetTargetId() const
  return fIdTarg;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliEvent::HeaderData() const
+void AliEvent::HeaderData()
 {
 // Provide event header information
  const char* name=GetName();
@@ -569,7 +584,7 @@ void AliEvent::HeaderData() const
  if (strlen(name))  cout << " Name : " << GetName();
  if (strlen(title)) cout << " Title : " << GetTitle();
  cout << endl;
- cout << "  " << fDaytime.AsString() << endl;
+ Date(1);
  cout << "  Run : " << fRun << " Event : " << fEvent
       << " Number of devices : " << ndevs << endl;
 

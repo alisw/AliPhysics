@@ -561,3 +561,16 @@
                 Also the standard ROOT file libNew.lib is now automatically renamed to libNew.lix
                 in the Ralice windows installation script mklibs.bat to prevent linking with
                 this libNew.lib which is inconsistent with the binary ROOT executable release.
+09-feb-2005 NvE New class AliTimestamp introduced to support timestamp information for
+                astrophysical research (i.e. Julian dates etc...) without the restrictions
+                of class TTimeStamp.
+10-feb-2005 NvE AliEvent modified such that it is derived from AliTimestamp.
+                This will allow events to be synchronised with astrophysical phenomena without
+                the restrictions imposed by TTimeStamp.
+                All existing user functions have been kept to provide full backward compatibility
+                in usage. However, a side effect of the new structure is that when reading data files
+                containing the old event structures, the original date/time stamp information is lost and
+                replaced by the date/time at the moment of reading the data.
+                This implies that to restore the original event date/time, the data files have to
+                be re-created. This I/O backward incompatibility could not be avoided in the
+                effort of eliminating the TTimeStamp restrictions.
