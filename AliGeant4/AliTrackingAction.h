@@ -21,7 +21,7 @@ class AliTrackingAction : public G4UserTrackingAction
     AliTrackingAction();
     // --> protected
     // AliTrackingAction(const AliTrackingAction& right);
-    ~AliTrackingAction();
+    virtual ~AliTrackingAction();
    
     // static get method
     static AliTrackingAction* Instance();
