@@ -32,23 +32,23 @@ public:
 
 private:
 
-  static const Int_t   fgkNcolUM1    = 48;  // Number of cols in UM, type 1
-  static const Int_t   fgkNcolUM2    = 96;  // Number of cols in UM, type 2
-  static const Int_t   fgkNrowUM1    = 96;  // Number of rows in UM, type 1
-  static const Int_t   fgkNrowUM2    = 48;  // Number of rows in UM, type 2
-  static const Float_t fgkCellRadius = 0.25;      // Radius of a hexagonal cell
-  static const Float_t fgkCellWall   = 0.02;      // Thickness of cell Wall
-  static const Float_t fgkCellDepth  = 0.50;      // Gas thickness
-  static const Float_t fgkBoundary   = 0.7;       // Thickness of Boundary wall
-  static const Float_t fgkThBase     = 0.3;       // Thickness of Base plate
-  static const Float_t fgkThAir      = 0.1;       // Thickness of Air
-  static const Float_t fgkThPCB      = 0.16;      // Thickness of PCB
-  static const Float_t fgkThLead     = 1.5;       // Thickness of Pb
-  static const Float_t fgkThSteel    = 0.5;       // Thickness of Steel
-  static const Float_t fgkGap        = 0.025;     // Air Gap
-  static const Float_t fgkZdist      = 361.5;     // z-position of the detector
-  static const Float_t fgkSqroot3    = 1.7320508; // Square Root of 3
-  static const Float_t fgkSqroot3by2 = 0.8660254; // Square Root of 3 by 2
+  static const Int_t   fgkNcolUM1;  // Number of cols in UM, type 1
+  static const Int_t   fgkNcolUM2;  // Number of cols in UM, type 2
+  static const Int_t   fgkNrowUM1;  // Number of rows in UM, type 1
+  static const Int_t   fgkNrowUM2;  // Number of rows in UM, type 2
+  static const Float_t fgkCellRadius;    // Radius of a hexagonal cell
+  static const Float_t fgkCellWall;      // Thickness of cell Wall
+  static const Float_t fgkCellDepth;     // Gas thickness
+  static const Float_t fgkBoundary;      // Thickness of Boundary wall
+  static const Float_t fgkThBase;        // Thickness of Base plate
+  static const Float_t fgkThAir;         // Thickness of Air
+  static const Float_t fgkThPCB;         // Thickness of PCB
+  static const Float_t fgkThLead;        // Thickness of Pb
+  static const Float_t fgkThSteel;       // Thickness of Steel
+  static const Float_t fgkGap;           // Air Gap
+  static const Float_t fgkZdist;         // z-position of the detector
+  static const Float_t fgkSqroot3;       // Square Root of 3
+  static const Float_t fgkSqroot3by2;    // Square Root of 3 by 2
 
   Float_t fSMthick;     // Thickness of the supermodule
   Float_t fSMLengthax;  // Supermodule length along X, type A

@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.32  2003/11/03 11:53:05  bnandi
+global variables are removed
+
 Revision 1.31  2003/10/31 12:25:36  bnandi
 variable names are changed according to ALICE convention
 
@@ -66,16 +69,24 @@ June 2003
 #include <TVirtualMC.h>
 #include "AliMC.h"
 
-/* 
-   static Int_t     gAliNcolUM1, gAliNcolUM2, gAliNrowUM1, gAliNrowUM2;
-   static Int_t     gAliKdet;
-   static Float_t   gAliSMLengthax, gAliSMLengthay;
-   static Float_t   gAliSMLengthbx, gAliSMLengthby;
-   static Float_t   gAliZdist, gAliZdist1;
-   static Float_t   gAliSMthick, gAliCellRadius, gAliCellWall, gAliCellDepth;
-   static Float_t   gAliBoundary, gAliThBase, gAliThAir, gAliThPCB;
-   static Float_t   gAliThLead, gAliThSteel;
-*/
+const Int_t   AliPMDv1::fgkNcolUM1    = 48;  // Number of cols in UM, type 1
+const Int_t   AliPMDv1::fgkNcolUM2    = 96;  // Number of cols in UM, type 2
+const Int_t   AliPMDv1::fgkNrowUM1    = 96;  // Number of rows in UM, type 1
+const Int_t   AliPMDv1::fgkNrowUM2    = 48;  // Number of rows in UM, type 2
+const Float_t AliPMDv1::fgkCellRadius = 0.25;     // Radius of a hexagonal cell
+const Float_t AliPMDv1::fgkCellWall   = 0.02;     // Thickness of cell Wall
+const Float_t AliPMDv1::fgkCellDepth  = 0.50;     // Gas thickness
+const Float_t AliPMDv1::fgkBoundary   = 0.7;      // Thickness of Boundary wall
+const Float_t AliPMDv1::fgkThBase     = 0.3;      // Thickness of Base plate
+const Float_t AliPMDv1::fgkThAir      = 0.1;      // Thickness of Air
+const Float_t AliPMDv1::fgkThPCB      = 0.16;     // Thickness of PCB
+const Float_t AliPMDv1::fgkThLead     = 1.5;      // Thickness of Pb
+const Float_t AliPMDv1::fgkThSteel    = 0.5;      // Thickness of Steel
+const Float_t AliPMDv1::fgkGap        = 0.025;    // Air Gap
+const Float_t AliPMDv1::fgkZdist      = 361.5;    // z-position of the detector
+const Float_t AliPMDv1::fgkSqroot3    = 1.7320508;// Square Root of 3
+const Float_t AliPMDv1::fgkSqroot3by2 = 0.8660254;// Square Root of 3 by 2
+
 ClassImp(AliPMDv1)
  
   //_____________________________________________________________________________
