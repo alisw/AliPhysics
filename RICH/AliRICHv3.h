@@ -10,16 +10,16 @@ class AliRICHv3 : public AliRICH
 {    
 public:
     
- inline                AliRICHv3():AliRICH()                                {} 
-                       AliRICHv3(const char *pcName, const char *pcTitle);    
-        virtual       ~AliRICHv3();                             
- inline virtual Int_t  IsVersion()                                     const{return 3;}
-        virtual void   StepManager();     
-        virtual void   CreateGeometry();  
-        virtual void   BuildGeometry();   
-        virtual void   Init();            // Makes nothing for a while          
+                 AliRICHv3():AliRICH()                                {;} 
+                 AliRICHv3(const char *pcName, const char *pcTitle);    
+  virtual       ~AliRICHv3();                             
+  virtual Int_t  IsVersion()                                     const{return 3;}
+  virtual void   StepManager();     
+  virtual void   CreateGeometry();  
+  virtual void   BuildGeometry();   
+  virtual void   Init();            // Makes nothing for a while          
 private:
-            Double_t* RotateXY(const Double_t* r, Double_t a);   //Rotation in the X-Y plane in G3 notation
+  Double_t* RotateXY(const Double_t* r, Double_t a);//Rotation in the X-Y plane in G3 notation
   ClassDef(AliRICHv3,1)  //RICH full version, configurable with azimuthal rotation	
 };// class AliRICHv3
 

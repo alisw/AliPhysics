@@ -32,13 +32,13 @@ class AliRICHMerger;
 class AliRICH : public AliDetector 
 {
 public:
-                    AliRICH();                                            //default ctor
-                    AliRICH(const char *name, const char *title);         //named ctor
-  inline            AliRICH(const AliRICH& RICH)                    {;}   //copy ctor  
-          virtual  ~AliRICH();                                            //dtor
+            AliRICH();                                            //default ctor
+            AliRICH(const char *name, const char *title);         //named ctor
+            AliRICH(const AliRICH& RICH)                    {;}   //copy ctor  
+  virtual  ~AliRICH();                                            //dtor
           
-  inline  AliRICH& operator=(const AliRICH& rhs) { return *this;}
-          virtual Int_t  IsVersion() const =0;
+  AliRICH& operator=(const AliRICH& rhs) { return *this;}
+  virtual Int_t  IsVersion() const =0;
           
   virtual void  AddHit(Int_t track, Int_t *vol, Float_t *hits);
           void  AddCerenkov(Int_t track, Int_t *vol, Float_t *cerenkovs);
@@ -65,7 +65,7 @@ public:
   virtual void    CreateGeometry();  //GEANT volumes tree for simulation  
   virtual void    StepManager()=0;
    
-  inline Int_t    DistancetoPrimitive(Int_t px, Int_t py)      {return 9999;}
+          Int_t    DistancetoPrimitive(Int_t px, Int_t py)      {return 9999;}
    
   virtual void   MakeBranch(Option_t *opt=" ");
   virtual void   MakeBranchInTreeD(TTree *treeD, const char *file=0);
@@ -90,18 +90,18 @@ public:
   AliRICHChamber& Chamber(Int_t id) {return *((AliRICHChamber *) (*fChambers)[id]);}
   AliRICHChamber* GetChamber(Int_t iChamberN)     const{return (AliRICHChamber*) (*fChambers)[iChamberN];}
   
-  inline TObjArray     *Dchambers()                     {return fDchambers;}
-  inline TObjArray     *RecHits3D()                const{return fRecHits3D;}
-  inline TObjArray     *RecHits1D()                const{return fRecHits1D;}
-  inline Int_t         *Ndch()                          {return fNdch;}
-  inline Int_t         *Nrechits1D()                    {return fNrechits1D;} 
-  inline Int_t         *Nrechits3D()                    {return fNrechits3D;} 
-  inline TClonesArray  *SDigits()                  const{return fSDigits;}
-  inline TClonesArray  *Cerenkovs()                const{return fCerenkovs;}
-  inline TClonesArray  *DigitsAddress(Int_t id)         {return ((TClonesArray *) (*fDchambers)[id]);}
-  inline TClonesArray  *RecHitsAddress1D(Int_t id) const{return ((TClonesArray *) (*fRecHits1D)[id]);}
-  inline TClonesArray  *RecHitsAddress3D(Int_t id) const{return ((TClonesArray *) (*fRecHits3D)[id]);}
-  inline TClonesArray  *RawClustAddress(Int_t id)  const{return ((TClonesArray *) (*fRawClusters)[id]);}    
+  TObjArray     *Dchambers()                     {return fDchambers;}
+  TObjArray     *RecHits3D()                const{return fRecHits3D;}
+  TObjArray     *RecHits1D()                const{return fRecHits1D;}
+  Int_t         *Ndch()                          {return fNdch;}
+  Int_t         *Nrechits1D()                    {return fNrechits1D;} 
+  Int_t         *Nrechits3D()                    {return fNrechits3D;} 
+  TClonesArray  *SDigits()                  const{return fSDigits;}
+  TClonesArray  *Cerenkovs()                const{return fCerenkovs;}
+  TClonesArray  *DigitsAddress(Int_t id)         {return ((TClonesArray *) (*fDchambers)[id]);}
+  TClonesArray  *RecHitsAddress1D(Int_t id) const{return ((TClonesArray *) (*fRecHits1D)[id]);}
+  TClonesArray  *RecHitsAddress3D(Int_t id) const{return ((TClonesArray *) (*fRecHits3D)[id]);}
+  TClonesArray  *RawClustAddress(Int_t id)  const{return ((TClonesArray *) (*fRawClusters)[id]);}    
 
   void DiagnosticsFE(Int_t evNumber1=0,Int_t evNumber2=0);    // Full events
   void DiagnosticsSE(Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0);    // Single events

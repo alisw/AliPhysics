@@ -8,76 +8,76 @@ class AliRICHParam :public TObject
 {
 public:
                  AliRICHParam();  
-         void    Recalc();//Recalculate dependent parameters after changes 
-  inline void    Segmentation(Int_t Nx, Int_t Ny)   {fNx=Nx;fNy=Ny;Recalc();}
-  inline Int_t   Nx()                          const{return fNx;}
-  inline Int_t   Ny()                          const{return fNy;}   
-  inline void    DeadZone(Float_t a)                {       fDeadZone=a;Recalc();}
-  inline Float_t DeadZone()                    const{return fDeadZone;}
-  inline void    PadSize(Float_t x,Float_t y)       {       fPadX=x;fPadY=y;Recalc();} 
-  inline Float_t PadX()                        const{return fPadX;}
-  inline Float_t PadY()                        const{return fPadY;}
-  inline Float_t PadPlaneWidth()               const{return fPadPlaneWidth;}
-  inline Float_t PadPlaneLength()              const{return fPadPlaneLength;}  
-  inline void    Size(Float_t x,Float_t y,Float_t z){fSizeX=x;fSizeY=y;fSizeZ=z;}
-  inline void    GeantSize(Float_t *pParam)    const{pParam[0]=fSizeX/2;pParam[1]=fSizeY/2;pParam[2]=fSizeZ/2;}  
-  inline Float_t SizeX()                       const{return fSizeX;}
-  inline Float_t SizeY()                       const{return fSizeY;}
-  inline Float_t SizeZ()                       const{return fSizeZ;}   
-  inline void    Offset(Float_t offset)             {       fOffset=offset;}  
-  inline Float_t Offset()                      const{return fOffset;}  
-  inline void    AnglesDeg(Float_t xy,Float_t yz)   {       fAngleXY=xy;fAngleYZ=yz;} 
-  inline Float_t AngleYZ()                     const{return fAngleYZ*d2r;} 
-  inline Float_t AngleXY()                     const{return fAngleXY*d2r;} 
-  inline void    AngleRot(Float_t angle)            {       fAngleRot=angle;}
-  inline Float_t AngleRot()                    const{return fAngleRot*d2r;}                
-  inline void    GapThickness(Float_t a)            {       fGapThickness=a;}    
-  inline Float_t GapThickness()                const{return fGapThickness;}      
-  inline void    ProximityGapThickness(Float_t a)   {       fProximityGapThickness=a;}
-  inline Float_t ProximityGapThickness()       const{return fProximityGapThickness;}    
-  inline void    QuartzLength(Float_t a)            {       fQuartzLength=a;}
-  inline Float_t QuartzLength()                const{return fQuartzLength;}   
-  inline void    QuartzWidth(Float_t a)             {       fQuartzWidth=a;}
-  inline Float_t QuartzWidth()                 const{return fQuartzWidth;}
-  inline void    QuartzThickness(Float_t a)         {       fQuartzThickness=a;}
-  inline Float_t QuartzThickness()             const{return fQuartzThickness;}   
-  inline void    OuterFreonLength(Float_t a)        {       fOuterFreonLength=a;}
-  inline Float_t OuterFreonLength()            const{return fOuterFreonLength;}   
-  inline void    OuterFreonWidth(Float_t a)         {       fOuterFreonWidth=a;}
-  inline Float_t OuterFreonWidth()             const{return fOuterFreonWidth;}   
-  inline void    InnerFreonLength(Float_t a)        {       fInnerFreonLength=a;}
-  inline Float_t InnerFreonLength()            const{return fInnerFreonLength;}   
-  inline void    InnerFreonWidth(Float_t a)         {       fInnerFreonWidth=a;}
-  inline Float_t InnerFreonWidth()             const{return fInnerFreonWidth;}   
-  inline void    FreonThickness(Float_t a)          {       fFreonThickness=a;}
-  inline Float_t FreonThickness()              const{return fFreonThickness;}   
-  inline void    RadiatorToPads(Float_t a)          {       fRadiatorToPads=a;}
-  inline Float_t RadiatorToPads()              const{return fRadiatorToPads;}   
-               
-  inline void    SigmaIntegration(Float_t a)        {       fSigmaIntegration=a;}    
-  inline Float_t SigmaIntegration()            const{return fSigmaIntegration;}    
-  inline void    ChargeSpreadX(Float_t a)           {       fChargeSpreadX=a;}
-  inline Float_t ChargeSpreadX()               const{return fChargeSpreadX;}    
-  inline void    ChargeSpreadY(Float_t a)           {       fChargeSpreadY=a;}
-  inline Float_t ChargeSpreadY()               const{return fChargeSpreadY;}   
-  inline void    ChargeSlope(Float_t a)             {       fChargeSlope=a;}
-  inline Float_t ChargeSlope()                      {return fChargeSlope;}
-  inline void    MaxAdc(Float_t a)                  {       fMaxAdc=a;}
-  inline Float_t MaxAdc()                      const{return fMaxAdc;}
-  inline void    Pitch(Float_t a)                   {       fPitch=a;};
-  inline Float_t Pitch()                       const{return fPitch;}
-  inline void    AlphaFeedback(Float_t a)           {       fAlphaFeedback=a;}
-  inline Float_t AlphaFeedback()               const{return fAlphaFeedback;}
-  inline void    EIonisation(Float_t a)             {       fEIonisation=a;}
-  inline Float_t EIonisation()                 const{return fEIonisation;}                            
-  inline void    SqrtKx3(Float_t a)                 {       fSqrtKx3=a;};
-  inline void    Kx2(Float_t a)                     {       fKx2=a;};
-  inline void    Kx4(Float_t a)                     {       fKx4=a;};
-  inline void    SqrtKy3(Float_t a)                 {       fSqrtKy3=a;};
-  inline void    Ky2(Float_t a)                     {       fKy2=a;};
-  inline void    Ky4(Float_t a)                     {       fKy4=a;};
-  inline void    WireSag(Int_t a)                   {       fWireSag=a;};
-  inline void    Voltage(Int_t a)                   {       fVoltage=a;};       
+  void    Recalc();//Recalculate dependent parameters after changes 
+  void    Segmentation(Int_t Nx, Int_t Ny)   {fNx=Nx;fNy=Ny;Recalc();}
+  Int_t   Nx()                          const{return fNx;}
+  Int_t   Ny()                          const{return fNy;}   
+  void    DeadZone(Float_t a)                {       fDeadZone=a;Recalc();}
+  Float_t DeadZone()                    const{return fDeadZone;}
+  void    PadSize(Float_t x,Float_t y)       {       fPadX=x;fPadY=y;Recalc();} 
+  Float_t PadX()                        const{return fPadX;}
+  Float_t PadY()                        const{return fPadY;}
+  Float_t PadPlaneWidth()               const{return fPadPlaneWidth;}
+  Float_t PadPlaneLength()              const{return fPadPlaneLength;}  
+  void    Size(Float_t x,Float_t y,Float_t z){fSizeX=x;fSizeY=y;fSizeZ=z;}
+  void    GeantSize(Float_t *pParam)    const{pParam[0]=fSizeX/2;pParam[1]=fSizeY/2;pParam[2]=fSizeZ/2;}  
+  Float_t SizeX()                       const{return fSizeX;}
+  Float_t SizeY()                       const{return fSizeY;}
+  Float_t SizeZ()                       const{return fSizeZ;}   
+  void    Offset(Float_t offset)             {       fOffset=offset;}  
+  Float_t Offset()                      const{return fOffset;}  
+  void    AnglesDeg(Float_t xy,Float_t yz)   {       fAngleXY=xy;fAngleYZ=yz;} 
+  Float_t AngleYZ()                     const{return fAngleYZ*d2r;} 
+  Float_t AngleXY()                     const{return fAngleXY*d2r;} 
+  void    AngleRot(Float_t angle)            {       fAngleRot=angle;}
+  Float_t AngleRot()                    const{return fAngleRot*d2r;}                
+  void    GapThickness(Float_t a)            {       fGapThickness=a;}    
+  Float_t GapThickness()                const{return fGapThickness;}      
+  void    ProximityGapThickness(Float_t a)   {       fProximityGapThickness=a;}
+  Float_t ProximityGapThickness()       const{return fProximityGapThickness;}    
+  void    QuartzLength(Float_t a)            {       fQuartzLength=a;}
+  Float_t QuartzLength()                const{return fQuartzLength;}   
+  void    QuartzWidth(Float_t a)             {       fQuartzWidth=a;}
+  Float_t QuartzWidth()                 const{return fQuartzWidth;}
+  void    QuartzThickness(Float_t a)         {       fQuartzThickness=a;}
+  Float_t QuartzThickness()             const{return fQuartzThickness;}   
+  void    OuterFreonLength(Float_t a)        {       fOuterFreonLength=a;}
+  Float_t OuterFreonLength()            const{return fOuterFreonLength;}   
+  void    OuterFreonWidth(Float_t a)         {       fOuterFreonWidth=a;}
+  Float_t OuterFreonWidth()             const{return fOuterFreonWidth;}   
+  void    InnerFreonLength(Float_t a)        {       fInnerFreonLength=a;}
+  Float_t InnerFreonLength()            const{return fInnerFreonLength;}   
+  void    InnerFreonWidth(Float_t a)         {       fInnerFreonWidth=a;}
+  Float_t InnerFreonWidth()             const{return fInnerFreonWidth;}   
+  void    FreonThickness(Float_t a)          {       fFreonThickness=a;}
+  Float_t FreonThickness()              const{return fFreonThickness;}   
+  void    RadiatorToPads(Float_t a)          {       fRadiatorToPads=a;}
+  Float_t RadiatorToPads()              const{return fRadiatorToPads;}   
+        
+  void    SigmaIntegration(Float_t a)        {       fSigmaIntegration=a;}    
+  Float_t SigmaIntegration()            const{return fSigmaIntegration;}    
+  void    ChargeSpreadX(Float_t a)           {       fChargeSpreadX=a;}
+  Float_t ChargeSpreadX()               const{return fChargeSpreadX;}    
+  void    ChargeSpreadY(Float_t a)           {       fChargeSpreadY=a;}
+  Float_t ChargeSpreadY()               const{return fChargeSpreadY;}   
+  void    ChargeSlope(Float_t a)             {       fChargeSlope=a;}
+  Float_t ChargeSlope()                      {return fChargeSlope;}
+  void    MaxAdc(Float_t a)                  {       fMaxAdc=a;}
+  Float_t MaxAdc()                      const{return fMaxAdc;}
+  void    Pitch(Float_t a)                   {       fPitch=a;};
+  Float_t Pitch()                       const{return fPitch;}
+  void    AlphaFeedback(Float_t a)           {       fAlphaFeedback=a;}
+  Float_t AlphaFeedback()               const{return fAlphaFeedback;}
+  void    EIonisation(Float_t a)             {       fEIonisation=a;}
+  Float_t EIonisation()                 const{return fEIonisation;}                            
+  void    SqrtKx3(Float_t a)                 {       fSqrtKx3=a;};
+  void    Kx2(Float_t a)                     {       fKx2=a;};
+  void    Kx4(Float_t a)                     {       fKx4=a;};
+  void    SqrtKy3(Float_t a)                 {       fSqrtKy3=a;};
+  void    Ky2(Float_t a)                     {       fKy2=a;};
+  void    Ky4(Float_t a)                     {       fKy4=a;};
+  void    WireSag(Int_t a)                   {       fWireSag=a;};
+  void    Voltage(Int_t a)                   {       fVoltage=a;};       
 protected:
   Int_t   fNx;                //number of pads along X
   Int_t   fNy;                //number of pads along Y
