@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2003/01/31 16:54:38  morsch
+Use TPDCCode.h instead of AliPDG.
+
 Revision 1.16  2003/01/31 15:56:42  morsch
 Forcing of decay channels independent of order in decay table.
 
@@ -154,7 +157,7 @@ void AliDecayerPythia::Decay(Int_t idpart, TLorentzVector* p)
     
     Lu1Ent(0, idpart, energy, theta, phi);
     fPythia->GetPrimaries();
-    fPythia->Pylist(1);
+//    fPythia->Pylist(1);
     
 }
 
