@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.15  2001/08/30 09:51:23  hristov
+  The operator[] is replaced by At() or AddAt() in case of TObjArray.
+
   Revision 1.14  2001/05/16 14:57:20  alibrary
   New files for folders and Stack
 
@@ -93,7 +96,7 @@
 #include "AliRICHHit.h"
 #include "AliSegmentation.h"
 #include "AliRICHResponse.h"
-#include "AliRICHSegmentationV0.h"
+#include "AliRICHSegmentationV1.h"
 #include "AliRICHResponseV0.h"
 #include "AliRICHGeometry.h"
 #include "AliRun.h"
@@ -123,7 +126,7 @@ AliRICHv1::AliRICHv1(const char *name, const char *title)
 
   // Version 0
 // Default Segmentation, no hits
-    AliRICHSegmentationV0* segmentation = new AliRICHSegmentationV0;
+    AliRICHSegmentationV1* segmentation = new AliRICHSegmentationV1;
 //
 //  Segmentation parameters
     segmentation->SetPadSize(0.84,0.80);
@@ -157,7 +160,7 @@ AliRICHv1::AliRICHv1(const char *name, const char *title)
     response->SetKy2(0.962);
     response->SetKy4(0.379);
     response->SetPitch(0.25);
-    response->SetWireSag(0);                     // 1->On, 0->Off
+    response->SetWireSag(1);                     // 1->On, 0->Off
     response->SetVoltage(2150);                  // Should only be 2000, 2050, 2100 or 2150
 
 //
