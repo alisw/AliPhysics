@@ -262,11 +262,11 @@ gAlice->SetField(2,1);    //Specify maximum magnetic field in Tesla (neg. ==> de
 Int_t iFRAME  =0;
 Int_t iMAG    =0;
 Int_t iITS    =0;
-Int_t iABSO   =0;
+Int_t iABSO   =1;
 Int_t iDIPO   =0;
 Int_t iHALL   =0;
-Int_t iSHIL   =0;
-Int_t iPIPE   =0;
+Int_t iSHIL   =1;
+Int_t iPIPE   =1;
 Int_t iFMD    =0;
 Int_t iMUON   =1;
 
