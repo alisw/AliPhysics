@@ -174,7 +174,7 @@ hEtaDiff2		= new TH1F("hEtaDiff2","#eta_{jet}^{reco}-#eta_{jet}^{input}",100,-0.
 hEtaDiff2->Sumw2();
 hPhiDiff2		= new TH1F("hPhiDiff2","#phi_{jet}^{reco}-#phi_{jet}^{input}",100,-0.5,0.5);
 hPhiDiff2->Sumw2();
-hEtaPhiSpread2		= new TH2F("hEtaPhiSpread2","#eta - #phi Distribution of Reconstructed Jets",192,-0.7,0.7,288,TMath::Pi()/3,TMath::Pi());
+hEtaPhiSpread2		= new TH2F("hEtaPhiSpread2","#eta - #phi Distribution of Reconstructed Jets",192,-0.7,0.7,288,0.0,2.0/3.0*TMath::Pi());
 hEtaPhiSpread2->Sumw2();
 hNJets2			= new TH1F("hNJets2","N Reconstructed jets",11,-0.5,10.5);
 hNJets2->Sumw2();
