@@ -19,7 +19,7 @@ class AliTRDmcTrack;
 
 const unsigned kMAX_LAYERS_PER_SECTOR = 1000;  
 const unsigned kMAX_TIME_BIN_INDEX = 216;  // (30 drift + 6 ampl) * 6 planes  
-const unsigned kMAX_CLUSTER_PER_TIME_BIN = 3500; 
+const unsigned kMAX_CLUSTER_PER_TIME_BIN = 7000; 
 const unsigned kZONES = 5; 
 const Int_t kTRACKING_SECTORS = 18; 
 
@@ -39,6 +39,7 @@ class AliTRDtracker : public AliTracker {
   
   void          SetEventNumber(Int_t event) { fEvent = event; }
   void          SetAddTRDseeds() { fAddTRDseeds = kTRUE; }
+  void          SetNoTilt() { fNoTilt = kTRUE; }
 
   Double_t      GetTiltFactor(const AliTRDcluster* c);
 
@@ -80,7 +81,7 @@ class AliTRDtracker : public AliTracker {
    // *****************  internal class *******************
    public: 
      AliTRDpropagationLayer(Double_t x, Double_t dx, Double_t rho, 
-			    Double_t x0, Int_t tb_index); 
+                            Double_t x0, Int_t tb_index); 
 
      ~AliTRDpropagationLayer() { 
        if(fTimeBinIndex >= 0) { delete[] fClusters; delete[] fIndex; }
@@ -95,7 +96,7 @@ class AliTRDtracker : public AliTracker {
      Double_t       GetX0() const { return fX0; }
      Int_t          GetTimeBinIndex() const { return fTimeBinIndex; }     
      void           GetPropagationParameters(Double_t y, Double_t z,
-				Double_t &dx, Double_t &rho, Double_t &x0, 
+                                Double_t &dx, Double_t &rho, Double_t &x0, 
                                 Bool_t &lookForCluster) const;
      Int_t          Find(Double_t y) const; 
      void           SetZmax(Int_t cham, Double_t center, Double_t w)
@@ -106,9 +107,9 @@ class AliTRDtracker : public AliTracker {
      Double_t       GetZc(Int_t c) const { return fZc[c]; }
      
      void           SetHole(Double_t Zmax, Double_t Ymax,
-			    Double_t rho = 1.29e-3, Double_t x0 = 36.66,
-			    Double_t Yc = 0, Double_t Zc = 0);
-			    
+                            Double_t rho = 1.29e-3, Double_t x0 = 36.66,
+                            Double_t Yc = 0, Double_t Zc = 0);
+                            
      void    Clear() {for(Int_t i=0; i<fN; i++) fClusters[i] = NULL; fN = 0;}
                    
    private:     
@@ -212,18 +213,18 @@ class AliTRDtracker : public AliTracker {
 
   static const Float_t  fSeedGap;     // Distance between inner and outer
                                       // time bin in seeding 
-				      // (fraction of all time bins) 
+                                      // (fraction of all time bins) 
   
   static const Float_t  fSeedStep;    // Step in iterations
-  static const Float_t 	fSeedDepth;   // Fraction of TRD allocated for seeding
+  static const Float_t  fSeedDepth;   // Fraction of TRD allocated for seeding
   static const Float_t  fSkipDepth;   // Fraction of TRD which can be skipped
-                                      // in track prolongation		   
+                                      // in track prolongation             
   Int_t       fTimeBinsPerPlane;      // number of sensitive timebins per plane
   Int_t       fMaxGap;                // max gap (in time bins) in the track  
-                                      // in track prolongation		   
+                                      // in track prolongation             
 
   static const Double_t fMaxChi2;     // max increment in track chi2 
- 	
+        
   static const Float_t  fMinClustersInTrack; // min number of clusters in track
                                              // out of total timebins
 
@@ -244,6 +245,8 @@ class AliTRDtracker : public AliTracker {
 
   Bool_t                fVocal;   
   Bool_t                fAddTRDseeds;
+
+  Bool_t                fNoTilt;
  
   ClassDef(AliTRDtracker,1)           // manager base class  
 

@@ -15,6 +15,9 @@
                                                       
 /*
 $Log$
+Revision 1.22  2003/01/30 15:19:58  cblume
+New set of  parameters
+
 Revision 1.21  2003/01/27 16:34:49  cblume
 Update of tracking by Sergei and Chuncheng
 
@@ -115,7 +118,7 @@ ClassImp(AliTRDtracker)
   const  Float_t     AliTRDtracker::fLabelFraction      = 0.8;  
   const  Float_t     AliTRDtracker::fWideRoad           = 20.;
 
-  const  Double_t    AliTRDtracker::fMaxChi2            = 20.; 
+  const  Double_t    AliTRDtracker::fMaxChi2            = 12.; 
 
 
 //____________________________________________________________________
@@ -126,11 +129,10 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile)
   //  
 
   Float_t fTzero = 0;
-  Int_t   version = 2;
-  
+   
   fAddTRDseeds = kFALSE;
-
   fGeom = NULL;
+  fNoTilt = kFALSE;
   
   TDirectory *savedir=gDirectory; 
   TFile *in=(TFile*)geomfile;  
@@ -148,9 +150,7 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile)
 
   if(fGeom) {
     //    fTzero = geo->GetT0();
-    fTzero = 0.;
-    version = fGeom->IsVersion();
-    printf("Found geometry version %d on file \n", version);
+    printf("Found geometry version %d on file \n", fGeom->IsVersion());
   }
   else { 
     printf("AliTRDtracker::AliTRDtracker(): cann't find TRD geometry!\n");
@@ -178,8 +178,16 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile)
     fTrSec[tr_s] = new AliTRDtrackingSector(fGeom, geom_s, fPar);
   }
 
-  fSY2corr = 0.025;
-  fSZ2corr = 12.;      
+  Float_t tilt_angle = TMath::Abs(fPar->GetTiltingAngle()); 
+  if(tilt_angle < 0.1) {
+    fNoTilt = kTRUE;
+  }
+
+  fSY2corr = 0.2;
+  fSZ2corr = 120.;      
+
+  if(fNoTilt && (tilt_angle > 0.1)) fSY2corr = fSY2corr + tilt_angle * 0.05; 
+
 
   // calculate max gap on track
 
@@ -336,7 +344,6 @@ Int_t AliTRDtracker::Clusters2Tracks(const TFile *inp, TFile *out)
   }
 
   out->cd();
-
 
 
   // find tracks from loaded seeds
@@ -684,19 +691,13 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack& t, Int_t rf)
 
     if(lookForCluster) {
 
-
       expectedNumberOfClusters++;       
-
       wIndex = (Float_t) t.GetLabel();
       wTB = nr;
 
-
       AliTRDpropagationLayer& time_bin=*(fTrSec[s]->GetLayer(nr-1));
 
-
       Double_t sy2=ExpectedSigmaY2(x,t.GetTgl(),t.GetPt());
-
-
       Double_t sz2=ExpectedSigmaZ2(x,t.GetTgl());
 
       Double_t road;
@@ -1394,6 +1395,12 @@ void AliTRDtracker::MakeSeeds(Int_t inner, Int_t outer, Int_t turn)
 
         // Tilt changes
         Double_t h01 = GetTiltFactor(r1[is]);
+	Double_t xu_factor = 100.;
+	if(fNoTilt) { 
+	  h01 = 0;
+	  xu_factor = 1;
+	}
+
         sy1=sy1+sz1*h01*h01;
         Double_t syz=sz1*(-h01);
         // end of tilt changes
@@ -1412,14 +1419,13 @@ void AliTRDtracker::MakeSeeds(Int_t inner, Int_t outer, Int_t turn)
         
         c[0]=sy1;
         //        c[1]=0.;       c[2]=sz1;
-        c[1]=syz;       c[2]=sz1*100;
+        c[1]=syz;       c[2]=sz1*xu_factor;
         c[3]=f20*sy1;  c[4]=0.;       c[5]=f20*sy1*f20+f22*sy2*f22+f23*sy3*f23;
         c[6]=f30*sy1;  c[7]=f31*sz1;  c[8]=f30*sy1*f20+f32*sy2*f22;
                        c[9]=f30*sy1*f30+f31*sz1*f31+f32*sy2*f32+f34*sz2*f34;
         c[10]=f40*sy1; c[11]=0.; c[12]=f40*sy1*f20+f42*sy2*f22+f43*sy3*f23;
         c[13]=f30*sy1*f40+f32*sy2*f42;
         c[14]=f40*sy1*f40+f42*sy2*f42+f43*sy3*f43;      
-
         
         UInt_t index=r1.GetIndex(is);
         
@@ -1492,8 +1498,8 @@ void AliTRDtracker::ReadClusters(TObjArray *array, const TFile *inp)
       AliTRDcluster *co = new AliTRDcluster(*c);
       co->SetSigmaY2(c->GetSigmaY2() * fSY2corr);
       Int_t ltb = co->GetLocalTimeBin();
-      if(ltb != 0) co->SetSigmaZ2(c->GetSigmaZ2() * fSZ2corr);
-      
+      if(ltb == 19) co->SetSigmaZ2(c->GetSigmaZ2());
+      else if(fNoTilt) co->SetSigmaZ2(c->GetSigmaZ2() * fSZ2corr);
       array->AddLast(co);
       delete ClusterArray->RemoveAt(iCluster); 
     }
@@ -1560,7 +1566,8 @@ void AliTRDtracker::ReadClusters(TObjArray *array, const Char_t *filename)
       AliTRDcluster *co = new AliTRDcluster(*c);
       co->SetSigmaY2(c->GetSigmaY2() * fSY2corr);
       Int_t ltb = co->GetLocalTimeBin();
-      if(ltb != 0) co->SetSigmaZ2(c->GetSigmaZ2() * fSZ2corr);
+      if(ltb == 19) co->SetSigmaZ2(c->GetSigmaZ2());
+      else if(fNoTilt) co->SetSigmaZ2(c->GetSigmaZ2() * fSZ2corr);
       array->AddLast(co);
       delete ClusterArray->RemoveAt(iCluster);
     }
@@ -2327,6 +2334,8 @@ Double_t AliTRDtracker::GetTiltFactor(const AliTRDcluster* c) {
   Int_t plane = fGeom->GetPlane(det);
 
   if((plane == 1) || (plane == 3) || (plane == 5)) h01=-h01;
+
+  if(fNoTilt) h01 = 0;
   
   return h01;
 }

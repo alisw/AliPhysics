@@ -41,7 +41,7 @@ public:
 
    Double_t GetLikelihoodElectron() const { return fLhElectron; };
 
-   Double_t Get1Pt()   const {return TMath::Abs(fC*GetConvConst());} 
+   Double_t Get1Pt()   const {return (1e-9*TMath::Abs(fC)/fC + fC)*GetConvConst(); } 
    Double_t GetP()     const {  
      return TMath::Abs(GetPt())*sqrt(1.+GetTgl()*GetTgl());
    }
@@ -76,8 +76,10 @@ public:
    void     SetSeedLabel(Int_t lab) { fSeedLab=lab; }
 
    Int_t    Update(const AliTRDcluster* c, Double_t chi2, UInt_t i, 
-		   Double_t h01);
+                   Double_t h01);
 
+   void     ResetParameters();   
+   void     CheckParameters(Int_t stage);   
 
 
 protected:
@@ -88,22 +90,23 @@ protected:
    Double_t fAlpha;       // rotation angle
    Double_t fX;           // running local X-coordinate of the track (time bin)
 
-   Double_t fY;           // Y-coordinate of the track
-   Double_t fZ;           // Z-coordinate of the track
-   Double_t fE;           // C*x0
-   Double_t fT;           // tangent of the track dip angle   
-   Double_t fC;           // track curvature
+
+   Double_t fY;             // Y-coordinate of the track
+   Double_t fZ;             // Z-coordinate of the track
+   Double_t fE;             // C*x0
+   Double_t fT;             // tangent of the track momentum dip angle
+   Double_t fC;             // track curvature
 
    Double_t fCyy;                         // covariance
    Double_t fCzy, fCzz;                   // matrix
    Double_t fCey, fCez, fCee;             // of the
    Double_t fCty, fCtz, fCte, fCtt;       // track
    Double_t fCcy, fCcz, fCce, fCct, fCcc; // parameters   
-
+   
    UInt_t  fIndex[kMAX_CLUSTERS_PER_TRACK];  // global indexes of clusters  
    Float_t fdQdl[kMAX_CLUSTERS_PER_TRACK];   // cluster amplitudes corrected 
                                              // for track angles    
-			   
+                           
    Float_t fLhElectron;    // Likelihood to be an electron    
 
    ClassDef(AliTRDtrack,2) // TRD reconstructed tracks
