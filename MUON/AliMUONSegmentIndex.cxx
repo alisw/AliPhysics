@@ -76,7 +76,7 @@ TString AliMUONSegmentIndex::Name(Int_t padx, Int_t pady, Int_t cathode)
 }
 
 //___________________________________________
-void AliMUONSegmentIndex::Print() const
+void AliMUONSegmentIndex::Print(const char* /*opt*/) const
 {
   // Printing information of AliMUONSegmentIndex
   AliInfo(Form("Name=%s Id=%d PadX=%d PadY=%d Cathode=%d\n",fName.Data(),fChannelId,fPadX,fPadY,fCathode));   

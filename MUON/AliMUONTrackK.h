@@ -55,6 +55,7 @@ class AliMUONTrackK : public AliMUONTrack {
   Bool_t Smooth(void); // apply smoother
   Double_t GetChi2PerPoint(Int_t iPoint) const; // return Chi2 at point
   void Print(FILE *lun) const; // print track information
+  void Print(const char* /*opt*/) const {return;} // print track information
   AliMUONHitForRec* GetHitLastOk(void); // get hit before the skipped one
   Int_t GetStation0(void); // return seed station number
   Int_t DebugLevel(void) const {return fgDebug;} // return debug level

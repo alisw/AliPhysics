@@ -35,7 +35,7 @@ class AliMUONSegmentManuIndex : public TNamed {
 
   static TString Name(Int_t manuId, Int_t manuchannel);
   
-  void   Print() const;
+  void   Print(const char* opt="") const;
 
  private:
   Int_t fChannelId; // Id of the channel within the detection element

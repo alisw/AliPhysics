@@ -50,3 +50,10 @@ Int_t AliMUONPixel::Compare(const TObject* pixel) const
   else if (fCharge == ((AliMUONPixel*)pixel)->Charge()) return( 0);
   else return(+1);
 }
+
+//__________________________________________________________________________
+void AliMUONPixel::Print(const char* /*opt*/) const
+{
+  // "Compare" function to sort with decreasing pixel charge
+  printf("%9.4f %9.4f %9.4f %9.4f %9.4f \n", fXY[0], fXY[1], fSize[0], fSize[1], fCharge);
+}

@@ -91,7 +91,7 @@ TString AliMUONSegmentPosition::Name(Float_t x, Float_t y, Int_t cathode)
   return TString(name);
 }
 //___________________________________________
-void AliMUONSegmentPosition::Print() const
+void AliMUONSegmentPosition::Print(const char* /*opt*/) const
 {
   // Printing AliMUONSegmentManuIndex information
   AliInfo(Form("Name=%s Id=%d X=%f Y=%f Cathode=%d\n",fName.Data(),fChannelId, fX, fY,fCathode));   

@@ -76,7 +76,7 @@ TString AliMUONSegmentManuIndex::Name(Int_t manuid, Int_t manuchannel)
   return TString(name);
 }
 //___________________________________________
-void AliMUONSegmentManuIndex::Print() const
+void AliMUONSegmentManuIndex::Print(const char* /*opt*/) const
 {
   // Printing AliMUONSegmentManuIndex information
   AliInfo(Form("Name=%s Id=%d BusPatch=%d ManuId=%d ManuChannelId=%d\n",fName.Data(),fChannelId,fBusPatchId,fManuId,fManuChannelId));   

@@ -14,11 +14,22 @@ class AliMUONReconstructor: public AliReconstructor
     AliMUONReconstructor();
     virtual ~AliMUONReconstructor();
 
+    virtual void         Reconstruct(TTree* /*digitsTree*/, 
+				     TTree* /*clustersTree*/) const {return;}
+    virtual void         Reconstruct(AliRawReader* /*rawReader*/, 
+				     TTree* /*clustersTree*/) const {return;}
     virtual void         Reconstruct(AliRunLoader* runLoader) const;
-    virtual void         Reconstruct(AliRunLoader* runLoader,
-				   AliRawReader* rawReader) const;
+    virtual void         Reconstruct(AliRunLoader* runLoader, 
+                                   AliRawReader* rawReader) const;
 
+    virtual void         FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/, 
+				 AliESD* /*esd*/) const {return;}
+    virtual void         FillESD(AliRawReader* /*rawReader*/, TTree* /*clustersTree*/, 
+				 AliESD* /*esd*/) const {return;}
     virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
+    virtual void         FillESD(AliRunLoader* /*runLoader*/, 
+				 AliRawReader* /*rawReader*/, AliESD* /*esd*/) const {return;}
+
  
   ClassDef(AliMUONReconstructor, 0)   // class for the MUON reconstruction
 };

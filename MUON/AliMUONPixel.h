@@ -24,7 +24,7 @@ class AliMUONPixel : public TObject {
   void SetSize(Int_t ixy, Double_t Size) { fSize[ixy] = Size; } // set size
   void SetCoord(Int_t ixy, Double_t Coord) { fXY[ixy] = Coord; }
   void Shift(Int_t ixy, Double_t shift) { fXY[ixy] += shift; }
-  void Print(void) {printf("%9.4f %9.4f %9.4f %9.4f %9.4f \n", fXY[0], fXY[1], fSize[0], fSize[1], fCharge); }
+  void Print(const char* opt="") const;
   // What is necessary for sorting TObjArray's
   Bool_t IsSortable() const { return kTRUE; }
   Int_t Compare(const TObject* pixel) const; // "Compare" function for sorting

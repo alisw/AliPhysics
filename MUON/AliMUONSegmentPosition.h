@@ -36,7 +36,7 @@ class AliMUONSegmentPosition : public TNamed
     static  Float_t GetUnit()            {return fUnit;} 
     static  TString Name(Float_t x, Float_t y, Int_t cathode) ;
 
-    void    Print() const;
+    void    Print(const char* opt="") const;
 
  private:
     Int_t   fChannelId;   // Id of the channel within the detection element
