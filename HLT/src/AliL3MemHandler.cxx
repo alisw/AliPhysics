@@ -1,5 +1,8 @@
+/* $Id$
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
-//*-- Copyright &copy Uli 
+// -- Copyright &copy Uli 
+// changes done by Constantin Loizides <mailto:loizides@ikf.physik.uni-frankfurt.de>
+*/
 
 #include <math.h>
 #include <time.h>
@@ -65,8 +68,6 @@
 //  newfile.Memory2CompBinary((UInt_t)NumberOfRowsInPatch,(AliL3DigitRowData*)data);
 //  newfile.CloseBinaryOutput();
   
-  
-
 ClassImp(AliL3MemHandler)
 
 AliL3MemHandler::AliL3MemHandler()
@@ -326,47 +327,47 @@ void AliL3MemHandler::SetRandomCluster(Int_t maxnumber)
   fDPt = new AliL3RandomDigitData *[fNRandom*9];
 }
 
-void AliL3MemHandler::QSort(AliL3RandomDigitData **a, Int_t first, Int_t last)
-{
-  
-  // Sort array of AliL3RandomDigitData pointers using a quicksort algorithm.
-  // Uses CompareDigits() to compare objects.
-  // Thanks to Root!
-  
-  static AliL3RandomDigitData *tmp;
-  static int i;           // "static" to save stack space
-  int j;
-  
-  while (last - first > 1) {
-    i = first;
-    j = last;
-    for (;;) {
-      while (++i < last && CompareDigits(a[i], a[first]) < 0)
-	;
-      while (--j > first && CompareDigits(a[j], a[first]) > 0)
-	;
-      if (i >= j)
-	break;
-      
-      tmp  = a[i];
-      a[i] = a[j];
+void AliL3MemHandler::QSort(AliL3RandomDigitData **a, Int_t first, Int_t last){
+
+   // Sort array of AliL3RandomDigitData pointers using a quicksort algorithm.
+   // Uses CompareDigits() to compare objects.
+   // Thanks to Root!
+
+   static AliL3RandomDigitData *tmp;
+   static int i;           // "static" to save stack space
+   int j;
+
+   while (last - first > 1) {
+      i = first;
+      j = last;
+      for (;;) {
+         while (++i < last && CompareDigits(a[i], a[first]) < 0)
+            ;
+         while (--j > first && CompareDigits(a[j], a[first]) > 0)
+            ;
+         if (i >= j)
+            break;
+
+         tmp  = a[i];
+         a[i] = a[j];
+         a[j] = tmp;
+      }
+      if (j == first) {
+         ++first;
+         continue;
+      }
+      tmp = a[first];
+      a[first] = a[j];
       a[j] = tmp;
-    }
-    if (j == first) {
-      ++first;
-      continue;
-    }
-    tmp = a[first];
-    a[first] = a[j];
-    a[j] = tmp;
-    if (j - first < last - (j + 1)) {
-      QSort(a, first, j);
-      first = j + 1;   // QSort(j + 1, last);
-    } else {
-      QSort(a, j + 1, last);
-      last = j;        // QSort(first, j);
-    }
-  }
+
+      if (j - first < last - (j + 1)) {
+	QSort(a, first, j);
+	first = j + 1;   // QSort(j + 1, last);
+      } else {
+	QSort(a, j + 1, last);
+	last = j;        // QSort(first, j);
+      }
+   }
 }
 
 UInt_t AliL3MemHandler::GetRandomSize()
