@@ -47,7 +47,9 @@
 #include <TMessage.h>
 #include <TGridResult.h>
 #include <TROOT.h>
-
+#ifdef ALI_HLT
+#include <AliL3Transform.h>
+#endif
 
 ClassImp(AliMonitorProcess) 
 
@@ -86,6 +88,15 @@ AliMonitorProcess::AliMonitorProcess(const char* alienDir,
   if (!ITS) Fatal("AliMonitorProcess", "no ITS detector found");
   fITSgeom = ITS->GetITSgeom();
   if (!fITSgeom) Fatal("AliMonitorProcess", "could not load ITS geometry");
+
+#ifdef ALI_HLT
+// Init TPC parameters for HLT
+  Bool_t isinit=AliL3Transform::Init(const_cast<char*>(fileNameGalice),kTRUE);
+  if(!isinit){
+    cerr << "Could not create transform settings, please check log for error messages!" << endl;
+    return;
+  }
+#endif
 
   fRunNumber = 0;
   fSubRunNumber = 0;
@@ -129,7 +140,7 @@ AliMonitorProcess::AliMonitorProcess(const char* alienDir,
   fHLT = NULL;
 #endif
 
-  fStatus = kStopped;
+  SetStatus(kStopped);
   fStopping = kFALSE;
 }
 
@@ -167,6 +178,14 @@ const char* AliMonitorProcess::GetRevision()
 
 
 //_____________________________________________________________________________
+void AliMonitorProcess::SetStatus(EStatus status)
+{
+  fStatus = status;
+  gSystem->ProcessEvents();
+}
+
+
+//_____________________________________________________________________________
 void AliMonitorProcess::Run()
 {
 // run the monitor process: 
@@ -175,10 +194,10 @@ void AliMonitorProcess::Run()
   fStopping = kFALSE;
 
   while (!fStopping) {
-    fStatus = kWaiting;
+    SetStatus(kWaiting);
     while (!CheckForNewFile()) {
       CheckForConnections();
-      fStatus = kWaiting;
+      SetStatus(kWaiting);
       if (fStopping) break;
       gSystem->Sleep(10);
     }
@@ -190,7 +209,7 @@ void AliMonitorProcess::Run()
   WriteHistos();
 
   fStopping = kFALSE;
-  fStatus = kStopped;
+  SetStatus(kStopped);
 }
 
 
@@ -200,7 +219,7 @@ void AliMonitorProcess::Stop()
 // set the fStopping flag to terminate the monitor process after the current
 // event was processed
 
-  if (fStatus != kStopped) fStopping = kTRUE;
+  if (GetStatus() != kStopped) fStopping = kTRUE;
 }
 
 
@@ -209,7 +228,7 @@ void AliMonitorProcess::ProcessFile(const char* fileName)
 {
 // create a file with monitor histograms for a single file
 
-  if (fStatus != kStopped) {
+  if (GetStatus() != kStopped) {
     Error("ProcessFile", "ProcessFile can not be called"
 	  " while the monitor process is running");
     return;
@@ -221,7 +240,7 @@ void AliMonitorProcess::ProcessFile(const char* fileName)
   ProcessFile();
   WriteHistos();
   fNEventsMin = nEventMin;
-  fStatus = kStopped;
+  SetStatus(kStopped);
 }
 
 
@@ -258,7 +277,9 @@ Bool_t AliMonitorProcess::CheckForNewFile()
   if (fLogicalFileName.CompareTo(fileName) == 0) return kFALSE;  // no new file
 
   fLogicalFileName = fileName;
-  fFileName = fGrid->GetPhysicalFileName(fLogicalFileName.Data());
+  TGridResult* result2 = fGrid->GetPhysicalFileNames(fLogicalFileName.Data());
+  fFileName = result2->Next();
+
   return kTRUE;
 }
 
@@ -278,7 +299,7 @@ Bool_t AliMonitorProcess::ProcessFile()
 
   // loop over the events
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-    fStatus = kReading;
+    SetStatus(kReading);
     fRunLoader->SetEventNumber(0);
     AliRawReaderRoot rawReader(fFileName, iEvent);
     if (fStopping) break;
@@ -304,7 +325,7 @@ Bool_t AliMonitorProcess::ProcessFile()
     if (fDisplaySocket) fDisplaySocket->Send("new event");
 
     Info("ProcessFile", "filling histograms...");
-    fStatus = kFilling;
+    SetStatus(kFilling);
     for (Int_t iMonitor = 0; iMonitor < fMonitors.GetEntriesFast(); iMonitor++) {
       ((AliMonitor*) fMonitors[iMonitor])->FillHistos(fRunLoader, &rawReader);
       if (fStopping) break;
@@ -312,7 +333,7 @@ Bool_t AliMonitorProcess::ProcessFile()
     if (fStopping) break;
 
     Info("ProcessFile", "updating histograms...");
-    fStatus = kUpdating;
+    SetStatus(kUpdating);
     TIterator* iFolder = fTopFolder->GetListOfFolders()->MakeIterator();
     while (TFolder* folder = (TFolder*) iFolder->Next()) {
       TIterator* iHisto = folder->GetListOfFolders()->MakeIterator();
@@ -410,7 +431,7 @@ Bool_t AliMonitorProcess::ReconstructTPC(AliRawReader* rawReader)
 {
 // find TPC clusters and tracks
 
-  fStatus = kRecTPC;
+  SetStatus(kRecTPC);
 
   AliLoader* tpcLoader = fRunLoader->GetLoader("TPCLoader");
   if (!tpcLoader) {
@@ -447,7 +468,7 @@ Bool_t AliMonitorProcess::ReconstructITS(AliRawReader* rawReader)
 {
 // find ITS clusters and tracks
 
-  fStatus = kRecITS;
+  SetStatus(kRecITS);
 
   AliLoader* itsLoader = fRunLoader->GetLoader("ITSLoader");
   if (!itsLoader) {
@@ -491,7 +512,7 @@ Bool_t AliMonitorProcess::ReconstructV0s()
 {
 // find V0s
 
-  fStatus = kRecV0s;
+  SetStatus(kRecV0s);
 
   AliITSLoader* itsLoader = (AliITSLoader*) fRunLoader->GetLoader("ITSLoader");
   if (!itsLoader) {
@@ -524,6 +545,7 @@ Bool_t AliMonitorProcess::ReconstructV0s()
 #ifdef ALI_HLT
 void AliMonitorProcess::CreateHLT(const char* fileName)
 {
+
 // create the HLT (Level3) object
 
   if (fHLT) delete fHLT;
@@ -538,7 +560,7 @@ void AliMonitorProcess::CreateHLT(const char* fileName)
   Int_t phi_segments = 50;
   Int_t eta_segments = 100;
   Int_t trackletlength = 3;
-  Int_t tracklength = 5;
+  Int_t tracklength = 40;//40 or 5
   Int_t rowscopetracklet = 2;
   Int_t rowscopetrack = 2;
   Double_t min_pt_fit = 0;
@@ -546,9 +568,9 @@ void AliMonitorProcess::CreateHLT(const char* fileName)
   Double_t goodDist = 5;
   Double_t maxphi = 100;
   Double_t maxeta = 100;
-  Double_t hitChi2Cut = 15;//100
-  Double_t goodHitChi2 = 5;//20;
-  Double_t trackChi2Cut = 10;
+  Double_t hitChi2Cut = 15;//100 or 15
+  Double_t goodHitChi2 = 5;//20 or 5
+  Double_t trackChi2Cut = 10;//50 or 10
   fHLT->SetTrackerParam(phi_segments, eta_segments, 
 			trackletlength, tracklength,
 			rowscopetracklet, rowscopetrack,
@@ -564,7 +586,7 @@ Bool_t AliMonitorProcess::ReconstructHLT(Int_t iEvent)
 {
 // run the HLT cluster and track finder
 
-  fStatus = kRecHLT;
+  SetStatus(kRecHLT);
 
 #ifndef ALI_HLT
   Warning("ReconstructHLT", "the code was compiled without HLT support");
@@ -599,7 +621,7 @@ Bool_t AliMonitorProcess::WriteHistos()
 // "monitor_<run number>[_<sub_run_number>].root"
 // if at least fNEventsMin events were monitored
 
-  fStatus = kWriting;
+  SetStatus(kWriting);
 
   // rename tree file and create a new one
   fFile->cd();
@@ -666,7 +688,7 @@ void AliMonitorProcess::StartNewRun()
 {
 // reset the histograms for a new run
 
-  fStatus = kResetting;
+  SetStatus(kResetting);
   TIterator* iFolder = fTopFolder->GetListOfFolders()->MakeIterator();
   while (TFolder* folder = (TFolder*) iFolder->Next()) {
     TIterator* iHisto = folder->GetListOfFolders()->MakeIterator();
@@ -688,10 +710,11 @@ void AliMonitorProcess::CheckForConnections()
 
   TMessage message(kMESS_OBJECT);
   message.WriteObject(fTopFolder); 
-  fStatus = kConnecting;
+  SetStatus(kConnecting);
 
   TSocket* socket;
   while ((socket = fServerSocket->Accept()) != (TSocket*)-1) {
+    socket->SetOption(kNoBlock,1);
     char socketType[256];
     if (!socket->Recv(socketType, 255)) continue;
     if (strcmp(socketType, "client") == 0) {
@@ -717,6 +740,19 @@ void AliMonitorProcess::CheckForConnections()
   for (Int_t iSocket = 0; iSocket < fSockets.GetEntriesFast(); iSocket++) {
     socket = (TSocket*) fSockets[iSocket];
     if (!socket) continue;
+    // remove finished client
+    char str[256];
+    if (socket->Recv(str, 255)) {
+      TString socketMessage(str);
+      if(socketMessage.CompareTo("Finished") == 0) {
+	TInetAddress adr = socket->GetInetAddress();
+	Info("CheckForConnections",
+	     "disconnect finished client:\n %s (%s), port %d\n",
+	     adr.GetHostName(), adr.GetHostAddress(), adr.GetPort());
+	delete fSockets.RemoveAt(iSocket);
+	continue;
+      }
+    }
     if (!socket->IsValid()) {
       // remove invalid sockets from the list
       TInetAddress adr = socket->GetInetAddress();
@@ -733,7 +769,7 @@ void AliMonitorProcess::BroadcastHistos()
 {
 // send the monitor histograms to the clients
 
-  fStatus = kBroadcasting;
+  SetStatus(kBroadcasting);
   TMessage message(kMESS_OBJECT);
   message.WriteObject(fTopFolder); 
 

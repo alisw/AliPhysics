@@ -14,6 +14,7 @@
 #include <TServerSocket.h>
 #include <TTimer.h>
 #include <TGrid.h>
+#include <TSystem.h>
 #include "AliRunLoader.h"
 #include "AliRawReader.h"
 #include "AliTPCParam.h"
@@ -45,7 +46,7 @@ public:
   enum EStatus     {kStopped, kWaiting, kReading, kRecTPC, kRecITS, kRecV0s,
 		    kRecHLT, kFilling, kUpdating, kWriting, kResetting, 
 		    kConnecting, kBroadcasting};
-  EStatus          GetStatus() {return fStatus;};
+  EStatus          GetStatus() {gSystem->ProcessEvents();return fStatus;};
   Bool_t           WillStop() {return fStopping;};
   Bool_t           IsStopped() {return (fStatus == kStopped);};
 
@@ -76,6 +77,7 @@ private:
 
   void             CheckForConnections();
   void             BroadcastHistos();
+  void             SetStatus(EStatus);
 
   TGrid*           fGrid;
   AliRunLoader*    fRunLoader;
