@@ -1182,7 +1182,7 @@ void AliTPCtrackerMI::MakeSeeds(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2) 
 	  z2=kcl->GetZ();
 	  if ((extraz-z2)>10) continue;	  
 	  if ((extraz-z2)<-10) {
-	    js = nl;
+	    js = nl-1;
 	    continue;
 	  }
           y2=kcl->GetY(); 
@@ -1198,7 +1198,7 @@ void AliTPCtrackerMI::MakeSeeds(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2) 
 	    z2=kcl->GetZ();
 	    if ((extraz-z2)>10) continue;
 	    if ((extraz-z2)<-10) {
-	      js = nl+nm;
+	      js = nl+nm-1;
 	      continue;
 	    }
             x2=xx2; y2=kcl->GetY(); 
