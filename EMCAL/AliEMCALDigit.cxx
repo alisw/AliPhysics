@@ -62,7 +62,7 @@ AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEn
 {  
   // ctor with all data 
 
-  fNMaxPrimary = 5 ; 
+  fNMaxPrimary = 25 ; 
   fNMaxiparent = 40 ; 
   fPrimary = new Int_t[fNMaxPrimary] ;
   fIparent = new Int_t[fNMaxiparent] ; 
@@ -249,20 +249,10 @@ AliEMCALDigit& AliEMCALDigit::operator+(AliEMCALDigit const & digit)
       fNprimary++ ;
       max1++;}
       if(fNprimary==fNMaxPrimary) {
-	fNMaxPrimary += fMaxIter ;
-	Int_t * tempo = new Int_t[fNprimary] ;
-	Int_t i ;
-	for (i=0; i < fNprimary; i++)
-	  tempo[i] = fPrimary[i] ;
-	delete [] fPrimary ;
-	fPrimary = new Int_t[fNMaxPrimary];
-    for (i=0; i < fNprimary; i++)
-      fPrimary[i] = tempo[i] ;  
-    delete [] tempo ;
-	for (i=fNprimary; i < fNMaxPrimary; i++)
-	  fPrimary[i] = -1 ;
-cout << "AliEMCALDigit >>  NMaxPrimary has been increased to "<<  fNMaxPrimary << endl ;
-	return *this ;
+	TString mess = " NMaxPrimary  =  " ; 
+	mess += fNMaxPrimary ; 
+	mess += " is too small" ; 
+	Fatal("AliEMCALDigit::Operator+ -->" , mess.Data()) ; 
       }
     }
   }
@@ -279,20 +269,10 @@ cout << "AliEMCALDigit >>  NMaxPrimary has been increased to "<<  fNMaxPrimary <
       fNiparent++ ;
       max2++;}
       if(fNiparent==fNMaxiparent) {
-	fNMaxiparent += fMaxIter ; 
-	Int_t * tempo = new Int_t[fNiparent] ;
-	Int_t i ;
-	for (i=0; i < fNiparent; i++)
-	  tempo[i] = fIparent[i] ;
-	delete [] fIparent ;
-	fIparent = new Int_t[fNMaxiparent];
-    for (i=0; i < fNiparent; i++)
-      fIparent[i] = tempo[i] ;
-    delete [] tempo ;
-	for (i=fNiparent; i < fNMaxiparent; i++)
-	  fIparent[i] = -1 ;
-	cout << "AliEMCALDigit >> Increasing fNMaxiparent to  " << fNMaxiparent << endl ;
-	return *this ;
+	TString mess = " NMaxiparent  =  " ; 
+	mess += fNMaxiparent ; 
+	mess += " is too small" ; 
+	Fatal("AliEMCALDigit::Operator+ -->", mess.Data()) ; 
       }
     }
   }
