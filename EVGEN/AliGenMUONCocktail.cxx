@@ -27,10 +27,6 @@
 // There is a primordial trigger which requires :
 //      a minimum muon multiplicity above a pT cut in a theta acceptance cone
 //
-// Gines Martinez, jan 2004, Nantes  martinez@in2p3.fr
-// Gines Martinez  sep 2004, Nantes  martinez@in2p3.fr
-//
-//
 
 #include <TObjArray.h>
 #include <TParticle.h>
@@ -164,8 +160,8 @@ void AliGenMUONCocktail::Init()
   AliInfo(Form("Ranges pT:%4.1f : %4.1f GeV/c, y:%4.2f : %4.2f, Phi:%5.1f : %5.1f degres",ptMin,ptMax,yMin,yMax,phiMin,phiMax));
 
   // Generating J/Psi Physics 
-  // Using Ramona Vogt distribution form CERN Yelow report and Andreas MORSCH private communication 
-  AliGenParam * genjpsi = new AliGenParam(1, AliGenMUONlib::kJpsi, "Vogt", "Jpsi");
+  // Using CFD scaled distribution (see http://clrwww.in2p3.fr/DIMUON2004/talks/sgrigoryan.pdf )
+  AliGenParam * genjpsi = new AliGenParam(1, AliGenMUONlib::kJpsi, "CDF scaled", "Jpsi");
   genjpsi->SetPtRange(0,100.); // 4pi generation
   genjpsi->SetYRange(-8.,8);
   genjpsi->SetPhiRange(0.,360.);
@@ -189,8 +185,8 @@ void AliGenMUONCocktail::Init()
   fTotalRate+=ratiojpsi;
 
  // Generating Psi prime Physics
- // Using Ramona Vogt distribution form CERN Yelow report and Andreas MORSCH private communication 
-  AliGenParam * genpsiP = new AliGenParam(1, AliGenMUONlib::kPsiP, "Vogt", "PsiP");
+ // Using CFD scaled distribution (see http://clrwww.in2p3.fr/DIMUON2004/talks/sgrigoryan.pdf )
+  AliGenParam * genpsiP = new AliGenParam(1, AliGenMUONlib::kPsiP, "CDF scaled", "PsiP");
   genpsiP->SetPtRange(0,100.);// 4pi generation
   genpsiP->SetYRange(-8.,8);
   genpsiP->SetPhiRange(0.,360.);
@@ -214,8 +210,8 @@ void AliGenMUONCocktail::Init()
   fTotalRate+=ratiopsiP;
 
   // Generating Upsilon Physics
-  // Using Ramona Vogt distribution form CERN Yelow report and Andreas MORSCH private communication 
-  AliGenParam * genupsilon = new AliGenParam(1, AliGenMUONlib::kUpsilon, "Vogt", "Upsilon");  
+  // Using CFD scaled distribution (see http://clrwww.in2p3.fr/DIMUON2004/talks/sgrigoryan.pdf )
+  AliGenParam * genupsilon = new AliGenParam(1, AliGenMUONlib::kUpsilon, "CDF scaled", "Upsilon");  
   genupsilon->SetPtRange(0,100.);  
   genupsilon->SetYRange(-8.,8);
   genupsilon->SetPhiRange(0.,360.);
@@ -236,8 +232,8 @@ void AliGenMUONCocktail::Init()
   fTotalRate+=ratioupsilon;
 
   // Generating UpsilonP Physics
-  // Using Ramona Vogt distribution form CERN Yelow report and Andreas MORSCH private communication 
-  AliGenParam * genupsilonP = new AliGenParam(1, AliGenMUONlib::kUpsilonP, "Vogt", "UpsilonP");  
+  // Using CFD scaled distribution (see http://clrwww.in2p3.fr/DIMUON2004/talks/sgrigoryan.pdf )
+  AliGenParam * genupsilonP = new AliGenParam(1, AliGenMUONlib::kUpsilonP, "CDF Scaled", "UpsilonP");  
   genupsilonP->SetPtRange(0,100.);  
   genupsilonP->SetYRange(-8.,8);
   genupsilonP->SetPhiRange(0.,360.);
@@ -258,8 +254,8 @@ void AliGenMUONCocktail::Init()
   fTotalRate+=ratioupsilonP;
 
   // Generating UpsilonPP Physics
-  // Using Ramona Vogt distribution form CERN Yelow report and Andreas MORSCH private communication 
-  AliGenParam * genupsilonPP = new AliGenParam(1, AliGenMUONlib::kUpsilonPP, "Vogt", "UpsilonPP");  
+  // Using CFD scaled distribution (see http://clrwww.in2p3.fr/DIMUON2004/talks/sgrigoryan.pdf )
+  AliGenParam * genupsilonPP = new AliGenParam(1, AliGenMUONlib::kUpsilonPP, "CDF Scaled", "UpsilonPP");  
   genupsilonPP->SetPtRange(0,100.);  
   genupsilonPP->SetYRange(-8.,8);
   genupsilonPP->SetPhiRange(0.,360.);
@@ -280,7 +276,7 @@ void AliGenMUONCocktail::Init()
   fTotalRate+=ratioupsilonPP;
 
 // Generating non-correlated Charm Physics 
-  AliGenParam * gencharm = new AliGenParam(1, AliGenMUONlib::kCharm, "Vogt", "Charm");  
+  AliGenParam * gencharm = new AliGenParam(1, AliGenMUONlib::kCharm, "pp", "Charm");  
   gencharm->SetPtRange(0,100.);  
   gencharm->SetYRange(-8.,8);
   gencharm->SetPhiRange(0.,360.);
@@ -301,7 +297,7 @@ void AliGenMUONCocktail::Init()
   fTotalRate+=ratiocharm;
 
 // Generating non-correlated Beauty Physics 
-  AliGenParam * genbeauty = new AliGenParam(1, AliGenMUONlib::kBeauty, "Vogt", "Beauty");  
+  AliGenParam * genbeauty = new AliGenParam(1, AliGenMUONlib::kBeauty, "pp", "Beauty");  
   genbeauty->SetPtRange(0,100.);  
   genbeauty->SetYRange(-8.,8);
   genbeauty->SetPhiRange(0.,360.);
@@ -334,7 +330,7 @@ void AliGenMUONCocktail::Init()
     //    9 - 12       188    71    0.655
     //   12 - 16        15    10    0.086
     // We found the hadronic muons scales quite well with the number of participants  
-    AliGenParam * genpion = new AliGenParam(1, AliGenMUONlib::kPion, "Vogt", "Pion");  
+    AliGenParam * genpion = new AliGenParam(1, AliGenMUONlib::kPion, "default", "Pion");  
     genpion->SetPtRange(0,100.);  
     genpion->SetYRange(-8.,8);
     genpion->SetPhiRange(0.,360.);
@@ -355,7 +351,7 @@ void AliGenMUONCocktail::Init()
     fTotalRate+=ratiopion;
     
     // Generating Kaon Physics
-    AliGenParam * genkaon = new AliGenParam(1, AliGenMUONlib::kKaon, "Vogt", "Kaon");  
+    AliGenParam * genkaon = new AliGenParam(1, AliGenMUONlib::kKaon, "default", "Kaon");  
     genkaon->SetPtRange(0,100.);  
     genkaon->SetYRange(-8.,8);
     genkaon->SetPhiRange(0.,360.);
@@ -409,10 +405,14 @@ void AliGenMUONCocktail::Generate()
 	  igen++;	
 	  if (igen ==1) entry->SetFirst(0);
 	  else  entry->SetFirst((partArray->GetEntriesFast())+1);
+	  // if ( (fHadronicMuons == kFALSE) && ( (gen->GetName() == "Pions") || (gen->GetName() == "Kaons") ) )
+	  //  { AliInfo(Form("This generator %s is finally not generated. This is option for hadronic muons.",gen->GetName() ) ); }
+	  // else {
 	  gen->SetNumberParticles(npart);
 	  gen->Generate();
 	  entry->SetLast(partArray->GetEntriesFast());
 	  preventry = entry;
+	    // }
 	}
       }  
       next.Reset();
@@ -434,6 +434,8 @@ void AliGenMUONCocktail::Generate()
       if (numberOfMuons >= fMuonMultiplicity ) primordialTrigger = kTRUE;
     }
     fNSucceded++;
+ 
+    AliDebug(5,Form("Generated Events are %d and Succeeded Events are %d",fNGenerated,fNSucceded));
 }
 
 
