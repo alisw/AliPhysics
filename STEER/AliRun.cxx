@@ -419,7 +419,7 @@ void AliRun::FinishEvent()
   //
   // Called at the end of the event.
   //
-  printf("\n\n\n\nEntering FinishEvent \n\n\n");
+  
   //Update the energy deposit tables
   Int_t i;
   for(i=0;i<sEventEnergy.GetSize();i++) {
@@ -451,21 +451,6 @@ void AliRun::FinishEvent()
   // Write out the event Header information
   if (fTreeE) fTreeE->Fill();
   
-  Int_t np=fParticles->GetEntriesFast();
-  printf("Checking %d\n",np);
-  for (Int_t inpart=0; inpart<np;++inpart) {
-	
-    TParticle *particle = (TParticle*)fParticles->UncheckedAt(inpart);
-    Int_t icode = particle->GetPdgCode();
-    Double_t chg = particle->GetPDG()->Charge();
-    
-    if (icode==111 && chg) {
-      printf("%s charge %f %p %s\n",
-	     particle->GetName(),chg,particle->GetPDG(),
-	     particle->GetPDG()->GetName());
-    }
-  }
-
   // Reset stack info
   ResetStack();
   
