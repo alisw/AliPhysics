@@ -21,25 +21,25 @@ TG4RunMessenger::TG4RunMessenger(TG4RunManager* runManager)
   : fRunManager(runManager)
 { 
 //
-  fDirectory = new G4UIdirectory("/g4mc/");
+  fDirectory = new G4UIdirectory("/tg4Control/");
   fDirectory->SetGuidance("TGeant4 control commands.");
 
-  fRootCmd = new G4UIcmdWithoutParameter("/g4mc/root", this);
+  fRootCmd = new G4UIcmdWithoutParameter("/tg4Control/root", this);
   fRootCmd->SetGuidance("Switch to Root interactive shell.");
   fRootCmd->AvailableForStates(PreInit, Init, Idle, GeomClosed, EventProc);
 
-  fRootMacroCmd = new G4UIcmdWithAString("/g4mc/rootMacro", this);
+  fRootMacroCmd = new G4UIcmdWithAString("/tg4Control/rootMacro", this);
   fRootMacroCmd->SetGuidance("Process Root macro with given name (from file name.C)");
   fRootMacroCmd->SetParameterName("macroName", true);
   fRootMacroCmd->AvailableForStates(PreInit, Init, Idle, GeomClosed, EventProc);
 
-  fRootCommandCmd = new TG4UICmdWithAComplexString("/g4mc/rootCmd", this);
+  fRootCommandCmd = new TG4UICmdWithAComplexString("/tg4Control/rootCmd", this);
   fRootCommandCmd->SetGuidance("Process Root command");
   fRootCommandCmd->SetParameterName("command", false);
   fRootCommandCmd->SetDefaultValue(" ");
   fRootCommandCmd->AvailableForStates(PreInit, Init, Idle, GeomClosed, EventProc);
 
-  fG3DefaultsCmd = new G4UIcmdWithoutParameter("/g4mc/g3Defaults", this);
+  fG3DefaultsCmd = new G4UIcmdWithoutParameter("/tg4Control/g3Defaults", this);
   fG3DefaultsCmd->SetGuidance("Set G3 default parameters (cut values,");
   fG3DefaultsCmd->SetGuidance("tracking media max step values, ...)");
   fG3DefaultsCmd->AvailableForStates(PreInit);
