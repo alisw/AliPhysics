@@ -28,7 +28,7 @@
 
 #include "Riostream.h"
 
- ClassImp(AliGenHerwig)
+ClassImp(AliGenHerwig)
 
 static TRandom * sRandom;
 
@@ -59,8 +59,10 @@ AliGenHerwig::AliGenHerwig(Int_t npart)
 }
 
 AliGenHerwig::AliGenHerwig(const AliGenHerwig & Herwig)
+    :AliGenMC(Herwig)
 {
-// copy constructor
+// Copy constructor
+    Herwig.Copy(*this);
 }
 
 
@@ -317,7 +319,8 @@ void AliGenHerwig::FinishRun()
 AliGenHerwig& AliGenHerwig::operator=(const  AliGenHerwig& rhs)
 {
 // Assignment operator
-    return *this;
+    rhs.Copy(*this);
+    return (*this);
 }
 
 
