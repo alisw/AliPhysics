@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Header$ */
+/* $Id$ */
 
 // Event header base class for generator. 
 // Stores as a minimum the date, run number, event number,

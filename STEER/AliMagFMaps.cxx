@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Header$ */
+/* $Id$ */
 
 //
 // Author: Andreas Morsch <andreas.morsch@cern.ch>

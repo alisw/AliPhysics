@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Header$ */
+/* $Id$ */
 
 //-------------------------------------------------------------------------
 //               Implementation of the Cluster class

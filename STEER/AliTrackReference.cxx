@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Header$ */
+/* $Id$ */
 
 //----------------------------------------------------------------------
 //  Class containing the kinematic information of tracks at various

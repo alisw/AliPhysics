@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Header$ */
+/* $Id$ */
 
 // Class to encapsulate the ALICE updates to TDatabasePDG.h
 // Can be used by TGeant3 and TGeant4

@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Header$ */
+/* $Id$ */
 
 ////////////////////////////////////////////////////////////////////////
 // Class used to generate correlated gaussian numbers with mean
