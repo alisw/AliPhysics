@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/11/30 07:12:50  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.1  2000/06/15 08:48:43  morsch
 AliGenGSIlib with parametersations for GSI physics simulation added (YF, MI)
 
@@ -25,6 +28,12 @@ Revision 1.6  1999/09/29 09:24:14  fca
 Introduction of the Copyright and cvs Log
 
 */
+
+// Implementation of AliGenLib 
+// using GSI specific parameterisations.
+// So far for Upsilon resonances only. 
+// Different paramterisations of y and pt can be chosen.
+// Responsible: Andres.Sandoval@cern.ch
 
 #include "TMath.h"
 #include "TString.h"

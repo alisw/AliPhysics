@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/11/30 07:12:49  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.3  2000/10/02 21:28:06  fca
 Removal of useless dependecies via forward declarations
 
@@ -27,25 +30,14 @@ All coding rule violations except RS3 corrected (AM)
 
 */
 
-/*
-Old Log:
-Revision 1.8  2000/06/08 13:34:50  fca
-Better control of momentum range in GenBox
 
-Revision 1.7  2000/06/07 16:29:58  fca
-Adding check for pt range in AliGenBox
 
-Revision 1.6  1999/11/03 17:43:20  fca
-New version from G.Martinez & A.Morsch
-
-Revision 1.5  1999/09/29 09:24:14  fca
-Introduction of the Copyright and cvs Log
-*/
-
-///////////////////////////////////////////////////////////////////
-//                                                               //
-//    Generate the final state of the interaction as the input   //
-//    to the MonteCarlo                                          //
+// Generator for particles in a preset
+// kinematic range (flat distribution)
+// Note that for a given theta pt and p are not independent 
+// Range for only one variable (pt or p) should be given.
+//
+// Comments and suggestions: andreas.morsch@cern.ch
 //
 //Begin_Html
 /*

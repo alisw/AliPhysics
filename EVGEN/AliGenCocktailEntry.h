@@ -5,9 +5,11 @@
 
 /* $Id$ */
 
+// Entry for AleGenCocktail container class. 
+// See also comments there
+// Author: andreas.morsch@cern.ch
 
 #include <TNamed.h>
-#include <TString.h>
 
 class AliGenerator;
 

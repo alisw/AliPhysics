@@ -15,6 +15,7 @@ class AliGenLib :
 {
  public:
 //
+    virtual ~AliGenLib(){}
     typedef Double_t (*GenFunc)  (Double_t *, Double_t *);
     typedef Int_t    (*GenFuncIp)(TRandom *);    
     virtual GenFunc   GetPt(Param_t param, const char *tname)   = 0;

@@ -5,6 +5,12 @@
 
 /* $Id$ */
 
+/*
+ Generator for particles in a preset
+ kinematic range (flat distribution)
+ Comments and suggestions: andreas.morsch@cern.ch
+*/
+
 #include "AliGenerator.h"
 class AliGenBox : public AliGenerator
 {

@@ -5,8 +5,12 @@
 
 /* $Id$ */
 
+// Container class for AliGenerator through recursion.
+// (Container is itself an AliGenerator)
+// Author: andreas.morsch@cern.ch 
+//
+
 #include "AliGenerator.h"
-#include <TList.h>
 
 class AliGenCocktailEntry;
 

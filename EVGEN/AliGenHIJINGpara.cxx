@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/11/30 07:12:50  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.3  2000/10/02 21:28:06  fca
 Removal of useless dependecies via forward declarations
 
@@ -26,11 +29,14 @@ Same class as previously in AliSimpleGen.cxx
 All coding rule violations except RS3 corrected (AM)
 
 */
-///////////////////////////////////////////////////////////////////
-//                                                               //
-//    Generate the final state of the interaction as the input   //
-//    to the MonteCarlo                                          //
-//
+
+// Parameterisation of pi and K, eta and pt distributions
+// used for the ALICE TDRs.
+// eta: according to HIJING (shadowing + quenching)
+// pT : according to CDF measurement at 1.8 TeV
+// Author: andreas.morsch@cern.ch
+
+
 //Begin_Html
 /*
 <img src="picts/AliGeneratorClass.gif">

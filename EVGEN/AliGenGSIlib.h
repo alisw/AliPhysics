@@ -5,6 +5,10 @@
 
 /* $Id$ */
 
+// Implementation of AliGenLib 
+// using GSI specific parameterisations.
+// Responsible: Andres.Sandoval@cern.ch
+
 #include "AliGenLib.h"
 class TRandom;
 

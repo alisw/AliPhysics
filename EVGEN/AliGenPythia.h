@@ -58,7 +58,7 @@ class AliGenPythia : public AliGenerator
     Int_t       fNucA1;         // mass number nucleus side 1
     Int_t       fNucA2;         // mass number nucleus side 2
     
-    AliDecayer  *fDecayer;
+    AliDecayer  *fDecayer;      // pointer to the decayer instance
  private:
     // check if particle is selected as parent particle
     Bool_t ParentSelected(Int_t ip);

@@ -5,6 +5,10 @@
 
 /* $Id$ */
 
+// Parameterisation of pi and K, eta and pt distributions
+// used for the ALICE TDRs.
+// Author: andreas.morsch@cern.ch
+
 #include "AliGenerator.h"
 class TF1;
 

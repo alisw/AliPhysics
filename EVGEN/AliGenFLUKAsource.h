@@ -6,15 +6,15 @@
 /* $Id$ */
 
 
+// Read background particles from a FLUKA boundary source file
+// This is a very special generator that works for background studies for the muon-spectrometer 
+// Ask: andreas.morsch@cern.ch
+
 #include "AliGenerator.h"
 class TChain;
-
 class TTree;
-
-
-// Read background particles from a FLUKA boundary source file
-
 class AliGenFLUKAsource : public AliGenerator
+
 {
 public:
   AliGenFLUKAsource();

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2000/12/06 17:46:30  morsch
+Avoid random numbers 1 and 0.
+
 Revision 1.17  2000/12/04 11:22:03  morsch
 Init of sRandom as in 1.15
 
@@ -72,6 +75,14 @@ Revision 1.1  2000/06/09 20:47:27  morsch
 AliGenerator interface class to HIJING using THijing (test version)
 
 */
+
+
+
+// Generator using HIJING as an external generator
+// The main HIJING options are accessable for the user through this interface.
+// Uses the THijing implementation of TGenerator.
+//
+// andreas.morsch@cern.ch
 
 #include "AliGenHijing.h"
 #include "AliGenHijingEventHeader.h"
@@ -469,6 +480,8 @@ Bool_t AliGenHijing::SelectFlavor(Int_t pid)
 
 Bool_t AliGenHijing::Stable(TParticle*  particle)
 {
+// Return true for a stable particle
+//
     Int_t kf = TMath::Abs(particle->GetPdgCode());
     
     if ( (particle->GetFirstDaughter() < 0 ) || (kf == 1000*fFlavor+122))

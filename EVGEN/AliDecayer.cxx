@@ -15,7 +15,15 @@
 
 /*
 $Log$
+Revision 1.1  2000/09/06 14:22:45  morsch
+Particle decayer virtual base class.
+
 */
+// This is an abstract base class !
+// No
+// implemenataion
+// needed.
+// andreas.morsch@cern.ch
 
 #include "AliDecayer.h"
 ClassImp(AliDecayer)

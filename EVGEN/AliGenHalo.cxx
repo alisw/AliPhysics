@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/11/30 07:12:50  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.8  2000/10/02 15:20:40  morsch
 Direct reference to default input file removed.
 
@@ -31,6 +34,12 @@ Revision 1.4  1999/09/29 09:24:14  fca
 Introduction of the Copyright and cvs Log
 
 */
+
+// Read background particles from a boundary source
+// Very specialized generator to simulate background from beam halo.
+// The input file is a text file specially prepared 
+// for this purpose.
+// Author: andreas.morsch@cern.ch
 
 #include "AliGenHalo.h"
 #include "AliRun.h"

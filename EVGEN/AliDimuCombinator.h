@@ -4,8 +4,14 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+
+
+//  Class for dimuon analysis and fast dimuon simulation.
+//  It uses the AliRun particle tree.
+//  Comments and suggestions to andreas.morsch@cern.ch
+
+
 #include <TObject.h>
-#include <TParticle.h>
 
 class TClonesArray;
 class TParticle;
@@ -16,7 +22,7 @@ class AliDimuCombinator:
 {
 public:
     AliDimuCombinator(TClonesArray* Partarray);
-    AliDimuCombinator(const AliDimuCombinator &combinator);
+    void  Copy(AliDimuCombinator &combi) const;
 //    
 //  Iterators
 //  Single muons
@@ -56,7 +62,6 @@ public:
     Float_t Weight(TParticle* part);
     Float_t Weight(TParticle* part1, TParticle* part);
     Float_t DecayProbability(TParticle* part);
-    AliDimuCombinator & operator=(const AliDimuCombinator & rhs);
     
  private:
     void FirstPartner();
@@ -67,6 +72,9 @@ public:
     TParticle* Parent(TParticle* part);
     TParticle* Partner();
     Int_t Type(TParticle *part);
+    AliDimuCombinator(const AliDimuCombinator &combinator);
+    AliDimuCombinator & operator=(const AliDimuCombinator & rhs);
+
  private:
     TClonesArray *fPartArray;      // MC Event
     Int_t fNParticle;              // Number of particles

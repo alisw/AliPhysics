@@ -15,7 +15,17 @@
 
 /*
 $Log$
+Revision 1.1  2000/06/15 15:47:48  morsch
+Proposal for an event header class for generated events.
+
 */
+
+// Event header base class for generator. 
+// Stores as a minimum the date, run number, event number,
+// number of particles produced  
+// and the impact parameter.
+// 
+// Author: andreas.morsch@cern.ch
 
 #include "AliGenEventHeader.h"
 ClassImp(AliGenEventHeader)
@@ -32,3 +42,7 @@ AliGenEventHeader::AliGenEventHeader(const char * name)
     fNProduced=-1;      
     fImpactParameter=-1.;
 }
+
+
+
+

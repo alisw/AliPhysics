@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.8  2000/10/27 13:53:29  morsch
+AddGenerator: check testbit before setting the pT and momentum range
+(D.Y. Peressounko)
+
 Revision 1.7  2000/10/02 15:15:41  morsch
 Use default streamer for AliGenCocktail
 
@@ -29,9 +33,18 @@ Introduction of the Copyright and cvs Log
 
 */
 
+// Container class for AliGenerator through recursion.
+// Container is itself an AliGenerator.
+// What is stored are not the pointers to the generators directly but to objects of type
+// AliGenCocktail entry.   
+// The class provides also iterator functionality.  
+// Author: andreas.morsch@cern.ch 
+//
+
 #include "AliGenCocktail.h"
 #include "AliGenCocktailEntry.h"
 #include "AliRun.h"
+#include <TList.h>
 
 ClassImp(AliGenCocktail)
 

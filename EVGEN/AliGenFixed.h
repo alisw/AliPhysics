@@ -5,6 +5,11 @@
 
 /* $Id$ */
 
+// Simple particle gun. 
+// Momentum, phi and theta of the partice as well as the particle type can be set.
+// andreas.morsch@cern.ch
+
+
 #include "AliGenerator.h"
 
 class AliGenFixed : public AliGenerator

@@ -8,7 +8,10 @@
 
 #include "AliGenerator.h"
 #include <TString.h>
-// Read background particles from a FLUKA boundary source file
+
+// Read background particles from a boundary source
+// Very specialized generator to simulate background from beam halo.
+// Author: andreas.morsch@cern.ch
 
 class AliGenHalo : public AliGenerator
 {

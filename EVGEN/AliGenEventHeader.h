@@ -9,6 +9,11 @@
 #include <TNamed.h>
 #include <TDatime.h>
 
+// Event header base class for generator. 
+// Stores as a minimum the date, run number, event number, number of particles produced  
+// and the impact parameter
+// Author: andreas.morsch@cern.ch
+
 class AliGenEventHeader : public TNamed
 {
  public:

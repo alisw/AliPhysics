@@ -17,6 +17,13 @@
 $Log $
 */
 
+// Entry for AliGenCocktail container class. 
+// See also comments there.
+// In addition to the pointer to the generator the class provides some 
+// bookkeeping functionality (weights, links to particle list, ...)
+// Author: andreas.morsch@cern.ch
+
+#include <TString.h>
 #include "AliGenCocktailEntry.h"
 #include "AliGenerator.h"
 

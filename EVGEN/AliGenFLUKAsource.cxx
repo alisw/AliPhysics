@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2000/11/30 07:12:50  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.11  2000/06/14 15:20:40  morsch
 Include clean-up (IH)
 
@@ -35,6 +38,14 @@ Revision 1.6  1999/09/29 09:24:12  fca
 Introduction of the Copyright and cvs Log
 
 */
+
+
+
+// Read background particles from a FLUKA boundary source file
+// This is a very special generator that works for background studies for the muon-spectrometer.
+// The input files come from FLUKA simulations.
+// Files can be chained. 
+// Author: andreas.morsch@cern.ch
 
 #include "AliGenFLUKAsource.h"
 #include "AliMC.h"
@@ -81,8 +92,8 @@ AliGenFLUKAsource::AliGenFLUKAsource(Int_t npart)
     :AliGenerator(npart)
 {
     // Constructor
-    fName="FLUKA";
-    fTitle="FLUKA Boundary Source";
+    fName  = "FLUKA";
+    fTitle = "FLUKA Boundary Source";
     // Read in all particle types by default
     fIkine=6;
     // Set maximum admitted age of particles to 1.e-05 by default 

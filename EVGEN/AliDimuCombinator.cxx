@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/10/02 15:16:37  morsch
+Correct coding rule violation for member data names of type fi -> fI.
+
 Revision 1.6  2000/06/14 15:19:47  morsch
 Include clean-up (IH)
 
@@ -29,10 +32,15 @@ Introduction of the Copyright and cvs Log
 
 */
 
-//
-//
-//
-//
+/*  
+ Class for dimuon analysis and fast dimuon simulation.
+ It provides single and dimuon iterators, cuts, weighting, kinematic
+ It uses the AliRun particle tree.
+ Comments and suggestions to 
+ andreas.morsch@cern.ch
+*/
+
+
 #include "AliDimuCombinator.h" 
 #include "AliPDG.h" 
 #include <TRandom.h>
@@ -64,7 +72,7 @@ ClassImp(AliDimuCombinator)
 
 AliDimuCombinator::AliDimuCombinator(const AliDimuCombinator & combinator)
 {
-// copy constructor
+// Dummy copy constructor
 }
 
 
@@ -422,7 +430,13 @@ AliDimuCombinator& AliDimuCombinator::operator=(const  AliDimuCombinator& rhs)
 }
 
 
-
+void AliDimuCombinator::Copy(AliDimuCombinator &combi) const
+{
+  //
+  // Copy *this onto lego -- not implemented
+  //
+  Fatal("Copy","Not implemented!\n");
+}
 
 
 

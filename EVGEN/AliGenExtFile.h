@@ -6,11 +6,12 @@
 /* $Id$ */
 
 
+// Event generator that can read the old ALICE event format based on CW-ntuples
+// http://consult.cern.ch/alice/Internal_Notes/1995/32/abstract
+// Author: andreas.morsch@cern.ch
 
 #include "AliGenerator.h"
-#include "TTree.h"
-
-// Read background particles from a FLUKA boundary source file
+class TTree;
 
 class AliGenExtFile : public AliGenerator
 {

@@ -15,12 +15,24 @@
 
 /*
 $Log$
+Revision 1.2  2000/09/12 13:58:45  morsch
+SetForceDcay(..) sets the member data storing the forced decay information.
+ForceDecay() executes the change of the decay table.
+
 Revision 1.1  2000/09/06 14:23:43  morsch
 Realisation of AliDecayer using Pythia6
 
 */
 
+// Implementation of AliDecayer using Pythia
+// Method forwarding to the AliPythia instance.
+// Muonic and electronic decay modes can be forced
+// for heavy flavor hadrons.
+// Author: andreas.morsch@cern.ch
+
+
 #include "AliDecayerPythia.h"
+#include "AliPythia.h"
 #include <TLorentzVector.h>
 
 ClassImp(AliDecayerPythia)
@@ -64,6 +76,8 @@ void AliDecayerPythia::Init()
 
 void AliDecayerPythia::Decay(Int_t idpart, TLorentzVector* p)
 {
+//  Decay a particle
+// 
     Float_t energy = p->Energy();
     Float_t theta  = p->Theta();
     Float_t phi    = p->Phi();
@@ -71,6 +85,14 @@ void AliDecayerPythia::Decay(Int_t idpart, TLorentzVector* p)
     Lu1Ent(0, idpart, energy, theta, phi);
     fPythia->GetPrimaries();
 }
+
+Int_t AliDecayerPythia::ImportParticles(TClonesArray *particles)
+{
+// Import the decay products
+//
+    return fPythia->ImportParticles(particles, "All");
+}
+
 
 void AliDecayerPythia::ForceDecay()
 {
@@ -283,15 +305,17 @@ void AliDecayerPythia::AllowAllDecays()
 
 void AliDecayerPythia::DefineParticles()
 {
-    Float_t mass;
-    Float_t tlife;
-    Int_t kc, nkc, i;
 //
 //
 // Some particles cloned for rare decays     
 //
 //  phi-> mu+mu- and phi -> e+e-
 //  clone the original phi
+
+    Float_t mass;
+    Float_t tlife;
+    Int_t kc, nkc, i;
+
     kc  = fPythia->Pycomp(333);
     nkc = 41;
     
@@ -364,6 +388,17 @@ void AliDecayerPythia::Streamer(TBuffer &R__b)
       R__b.WriteArray(fBraPart, 501);
    }
 }
+
+
+void AliDecayerPythia::Copy(AliDecayerPythia &decayer) const
+{
+  //
+  // Copy *this onto AliDecayerPythia -- not implemented
+  //
+  Fatal("Copy","Not implemented!\n");
+}
+
+
 /*
 
                               Particle/parton data table
@@ -2124,7 +2159,7 @@ void AliDecayerPythia::Streamer(TBuffer &R__b)
           1386    1   42    0.105000    nu_mubar        mu-             c               specflav                        
           1387    1   42    0.040000    nu_taubar       tau-            c               specflav                        
           1388    1   42    0.500000    ubar            d               c               specflav                        
-          1389    1   42    0.080000    ubar            c               d               specflav                        
+          1389    1   i42    0.080000    ubar            c               d               specflav                        
           1390    1   42    0.140000    cbar            s               c               specflav                        
           1391    1   42    0.010000    cbar            c               s               specflav                        
           1392    1   42    0.015000    ubar            d               u               specflav                        

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/11/30 07:12:50  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.2  2000/10/02 15:17:54  morsch
 Unused includes removed.
 
@@ -24,11 +27,11 @@ All coding rule violations except RS3 corrected (AM)
 
 */
 
-///////////////////////////////////////////////////////////////////
-//                                                               //
-//    Generate the final state of the interaction as the input   //
-//    to the MonteCarlo                                          //
-//
+
+
+// Simple particle gun. 
+// Momentum, phi and theta of the partice as well as the particle type can be set.
+// andreas.morsch@cern.ch
 //Begin_Html
 /*
 <img src="picts/AliGeneratorClass.gif">

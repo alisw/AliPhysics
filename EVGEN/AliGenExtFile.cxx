@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2000/11/30 07:12:50  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.12  2000/10/27 13:54:45  morsch
 Remove explicite reference to input file from constuctor.
 
@@ -41,6 +44,13 @@ Introduction of the Copyright and cvs Log
 
 */
 
+
+// Event generator that can read the old ALICE event format based on CW-ntuples
+// http://consult.cern.ch/alice/Internal_Notes/1995/32/abstract
+// .cwn file have to be converted to .root using h2root
+// Use SetFileName(file) to read from "file" 
+// Author: andreas.morsch@cern.ch
+
 #include <iostream.h>
 
 #include "AliGenExtFile.h"
@@ -50,6 +60,7 @@ Introduction of the Copyright and cvs Log
 #include <TDirectory.h>
 #include <TDatabasePDG.h>
 #include <TFile.h>
+#include "TTree.h"
 #include <stdlib.h>
 
  ClassImp(AliGenExtFile)

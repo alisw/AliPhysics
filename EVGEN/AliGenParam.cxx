@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.25  2000/11/30 07:12:50  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.24  2000/10/18 19:11:27  hristov
 Division by zero fixed
 
@@ -100,6 +103,9 @@ AliGenParam::AliGenParam()
     SetChildPhiRange();
     SetChildThetaRange();  
     SetDeltaPt();
+//
+// Set random number generator   
+    sRandom = fRandom;
 }
 
 AliGenParam::AliGenParam(Int_t npart, AliGenLib * Library,  Param_t param, char* tname):AliGenerator(npart)
@@ -123,6 +129,9 @@ AliGenParam::AliGenParam(Int_t npart, AliGenLib * Library,  Param_t param, char*
     SetChildPhiRange();
     SetChildThetaRange(); 
     SetDeltaPt(); 
+//
+// Set random number generator   
+    sRandom = fRandom;
 }
 
 //____________________________________________________________
@@ -131,11 +140,11 @@ AliGenParam::AliGenParam(Int_t npart, Param_t param, char* tname):AliGenerator(n
 {
 // Constructor using parameterisation id and number of particles
 //      
-    AliGenLib* Library = new AliGenMUONlib();
+    AliGenLib* pLibrary = new AliGenMUONlib();
  
-    fPtParaFunc = Library->GetPt(param, tname);
-    fYParaFunc  = Library->GetY (param, tname);
-    fIpParaFunc = Library->GetIp(param, tname);
+    fPtParaFunc = pLibrary->GetPt(param, tname);
+    fYParaFunc  = pLibrary->GetY (param, tname);
+    fIpParaFunc = pLibrary->GetIp(param, tname);
     
     fPtPara = 0;
     fYPara  = 0;
@@ -262,6 +271,9 @@ void AliGenParam::Init()
     case katomu:
 	fChildSelect[0]=13;
 	break;
+    case hadronicD:
+// Implement me !!
+	break;
     case nodecay:
 	break;
     case all:
@@ -298,8 +310,8 @@ void AliGenParam::Generate()
   //
   if(!particles) particles=new TClonesArray("TParticle",1000);
 
-  static TDatabasePDG *DataBase = new TDatabasePDG();
-  if(!DataBase) DataBase = new TDatabasePDG();
+  static TDatabasePDG *pDataBase = new TDatabasePDG();
+  if(!pDataBase) pDataBase = new TDatabasePDG();
   //
   Float_t random[6];
  
@@ -320,7 +332,7 @@ void AliGenParam::Generate()
 // particle type
 	  Int_t iPart = fIpParaFunc(fRandom);
 	  fChildWeight=(fDecayer->GetPartialBranchingRatio(iPart))*fParentWeight;	   
-	  TParticlePDG *particle = DataBase->GetParticle(iPart);
+	  TParticlePDG *particle = pDataBase->GetParticle(iPart);
 	  Float_t am = particle->Mass();
 
 	  Rndm(random,2);

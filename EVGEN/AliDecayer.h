@@ -4,6 +4,11 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+
+// Abstract base class for particle decays.
+// Clients are the transport code and the primary particle generators
+// Author: andreas.morsch@cern.ch
+
 #include "GenTypeDefs.h"
 #include <TObject.h>
 class TClonesArray;
@@ -14,6 +19,7 @@ public TObject
 {
  public:
 //
+    virtual ~AliDecayer(){;}
     virtual void    Init()                                     =0;
     virtual void    Decay(Int_t idpart, TLorentzVector* p)     =0;
     virtual Int_t   ImportParticles(TClonesArray *particles)   =0;

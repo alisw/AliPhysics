@@ -5,6 +5,9 @@
 
 /* $Id$ */
 
+// Generator using HIJING as an external generator
+// The main HIJING options are accessable for the user through this interface.
+// andreas.morsch@cern.ch
 
 #include "AliGenerator.h"
 #include "GenTypeDefs.h"

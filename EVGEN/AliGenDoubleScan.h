@@ -5,6 +5,10 @@
 
 /* $Id$ */
 
+// As AliGenScan,  generation of particles on a 3-dim grid
+// but here double hits with a predefined distance are generated.
+// Author: andreas.morsch@cern.ch
+
 #include "AliGenScan.h"
 
 class AliGenDoubleScan : public AliGenScan

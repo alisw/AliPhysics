@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/12/06 15:11:38  morsch
+Correct double declared data members.
+
 Revision 1.4  2000/11/30 07:12:50  alibrary
 Introducing new Rndm and QA classes
 
@@ -28,6 +31,12 @@ Revision 1.1  2000/02/23 16:25:14  morsch
 First commit of this file
 
 */
+
+// As AliGenScan,  generation of particles on a 3-dim grid
+// but here double hits with a predefined distance are generated.
+// The second particle is generated at a constant distance but with random phi.
+// Generator can be used to evaluate double hit resolutions.
+// Author: andreas.morsch@cern.ch
 
 #include "AliGenDoubleScan.h"
 #include "AliRun.h"
