@@ -1,5 +1,5 @@
 // $Id$
-// Category: geometry
+// Category: digits+hits
 //
 // Special sensitive detector class for lego run.
 // It implements G4VSensitiveDetector::ProcessHits() 
