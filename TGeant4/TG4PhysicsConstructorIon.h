@@ -11,7 +11,8 @@
 #ifndef TG4_PHYSICS_CONSTRUCTOR_ION_H
 #define TG4_PHYSICS_CONSTRUCTOR_ION_H
 
-#include <G4VPhysicsConstructor.hh>
+#include "TG4VPhysicsConstructor.h"
+
 #include <G4HadronElasticProcess.hh>
 #include <G4LElastic.hh>
 #include <G4DeuteronInelasticProcess.hh>
@@ -24,10 +25,13 @@
 #include <G4MultipleScattering.hh>
 #include <globals.hh>
 
-class TG4PhysicsConstructorIon: public G4VPhysicsConstructor
+class TG4PhysicsConstructorIon: public TG4VPhysicsConstructor
 {
   public:
     TG4PhysicsConstructorIon(const G4String& name = "Ion");
+    TG4PhysicsConstructorIon(G4int verboseLevel, 
+                             G4bool setEM, G4bool setHadron,
+                             const G4String& name = "Ion");
     // --> protected
     // TG4PhysicsConstructorIon(const TG4PhysicsConstructorIon& right);
     virtual ~TG4PhysicsConstructorIon();
@@ -75,11 +79,24 @@ class TG4PhysicsConstructorIon: public G4VPhysicsConstructor
     
   private:
     // methods
-    void ConstructProcessForGenericIon();    
-    void ConstructProcessForDeuteron();    
-    void ConstructProcessForTriton();    
-    void ConstructProcessForAlpha();    
-    void ConstructProcessForHe3();    
+
+    // Hadron processes
+    void ConstructHadProcessForGenericIon();    
+    void ConstructHadProcessForDeuteron();    
+    void ConstructHadProcessForTriton();    
+    void ConstructHadProcessForAlpha();    
+    void ConstructHadProcessForHe3();    
+
+    // EM processes
+    void ConstructEMProcessForGenericIon();    
+    void ConstructEMProcessForDeuteron();    
+    void ConstructEMProcessForTriton();    
+    void ConstructEMProcessForAlpha();    
+    void ConstructEMProcessForHe3();    
+
+    // data members
+    G4bool  fSetEM;    //if true - EM processes are constructed
+    G4bool  fSetHadron;//if true - hadron processes are constructed
 };
 
 #endif //TG4_PHYSICS_CONSTRUCTOR_ION_H

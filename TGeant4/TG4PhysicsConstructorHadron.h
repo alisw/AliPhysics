@@ -11,7 +11,8 @@
 #ifndef TG4_PHYSICS_CONSTRUCTOR_HADRON_H
 #define TG4_PHYSICS_CONSTRUCTOR_HADRON_H
 
-#include <G4VPhysicsConstructor.hh>
+#include "TG4VPhysicsConstructor.h"
+
 #include <g4std/vector>
 #include <globals.hh>
 
@@ -119,12 +120,15 @@
 #include <G4KaonMinusAbsorptionAtRest.hh>
 #endif
 
-class TG4PhysicsConstructorHadron: public G4VPhysicsConstructor
+class TG4PhysicsConstructorHadron: public TG4VPhysicsConstructor
 {
   typedef G4std::vector<G4VProcess*>  ProcessVector;
 
   public:
     TG4PhysicsConstructorHadron(const G4String& name = "Hadron");
+    TG4PhysicsConstructorHadron(G4int verboseLevel, 
+                                G4bool setEM, G4bool setHadron,
+                                const G4String& name = "Hadron");
     // --> protected
     // TG4PhysicsConstructorHadron(const TG4PhysicsConstructorHadron& right);
     virtual ~TG4PhysicsConstructorHadron();
@@ -306,29 +310,52 @@ class TG4PhysicsConstructorHadron: public G4VPhysicsConstructor
 
   private:
     // methods
-    void ConstructProcessForPionPlus();
-    void ConstructProcessForPionMinus();
-    void ConstructProcessForKaonPlus();
-    void ConstructProcessForKaonMinus();
-    void ConstructProcessForKaonZeroLong();
-    void ConstructProcessForKaonZeroShort();
-    void ConstructProcessForProton();
-    void ConstructProcessForAntiProton();
-    void ConstructProcessForNeutron();
-    void ConstructProcessForAntiNeutron();
-    void ConstructProcessForLambda();
-    void ConstructProcessForAntiLambda();
-    void ConstructProcessForSigmaMinus();
-    void ConstructProcessForAntiSigmaMinus();
-    void ConstructProcessForSigmaPlus();
-    void ConstructProcessForAntiSigmaPlus();
-    void ConstructProcessForXiMinus();
-    void ConstructProcessForAntiXiMinus();
-    void ConstructProcessForXiZero();
-    void ConstructProcessForAntiXiZero();
-    void ConstructProcessForOmegaMinus();
-    void ConstructProcessForAntiOmegaMinus();
-    void ConstructProcessForOther();
+
+    // EM processes
+    void ConstructEMProcessForPionPlus();
+    void ConstructEMProcessForPionMinus();
+    void ConstructEMProcessForKaonPlus();
+    void ConstructEMProcessForKaonMinus();
+    void ConstructEMProcessForProton();
+    void ConstructEMProcessForAntiProton();
+    void ConstructEMProcessForSigmaMinus();
+    void ConstructEMProcessForAntiSigmaMinus();
+    void ConstructEMProcessForSigmaPlus();
+    void ConstructEMProcessForAntiSigmaPlus();
+    void ConstructEMProcessForXiMinus();
+    void ConstructEMProcessForAntiXiMinus();
+    void ConstructEMProcessForOmegaMinus();
+    void ConstructEMProcessForAntiOmegaMinus();
+    void ConstructEMProcessForOther();
+
+    // hadron processes
+    void ConstructHadProcessForPionPlus();
+    void ConstructHadProcessForPionMinus();
+    void ConstructHadProcessForKaonPlus();
+    void ConstructHadProcessForKaonMinus();
+    void ConstructHadProcessForKaonZeroLong();
+    void ConstructHadProcessForKaonZeroShort();
+    void ConstructHadProcessForProton();
+    void ConstructHadProcessForAntiProton();
+    void ConstructHadProcessForNeutron();
+    void ConstructHadProcessForAntiNeutron();
+    void ConstructHadProcessForLambda();
+    void ConstructHadProcessForAntiLambda();
+    void ConstructHadProcessForSigmaMinus();
+    void ConstructHadProcessForAntiSigmaMinus();
+    void ConstructHadProcessForSigmaPlus();
+    void ConstructHadProcessForAntiSigmaPlus();
+    void ConstructHadProcessForXiMinus();
+    void ConstructHadProcessForAntiXiMinus();
+    void ConstructHadProcessForXiZero();
+    void ConstructHadProcessForAntiXiZero();
+    void ConstructHadProcessForOmegaMinus();
+    void ConstructHadProcessForAntiOmegaMinus();
+    void ConstructHadProcessForOther();
+
+    // data members
+    G4bool  fSetEM;    //if true - EM processes are constructed
+    G4bool  fSetHadron;//if true - hadron processes are constructed
 };
 
 #endif //TG4_PHYSICS_CONSTRUCTOR_HADRON_H

@@ -20,10 +20,21 @@
 
 //_____________________________________________________________________________
 TG4PhysicsConstructorIon::TG4PhysicsConstructorIon(const G4String& name)
-  : G4VPhysicsConstructor(name)
-{
+  : TG4VPhysicsConstructor(name),
+    fSetEM(true),
+    fSetHadron(true) {
 //
-  SetVerboseLevel(1);
+}
+
+//_____________________________________________________________________________
+TG4PhysicsConstructorIon::TG4PhysicsConstructorIon(G4int verboseLevel,
+                                                   G4bool setEM,
+						   G4bool setHadron,
+						   const G4String& name)
+  : TG4VPhysicsConstructor(name, verboseLevel),
+    fSetEM(setEM),
+    fSetHadron(setHadron) {
+//
 }
 
 //_____________________________________________________________________________
@@ -58,7 +69,7 @@ TG4PhysicsConstructorIon::operator=(const TG4PhysicsConstructorIon &right)
 // private methods
 
 //_____________________________________________________________________________
-void TG4PhysicsConstructorIon::ConstructProcessForGenericIon()
+void TG4PhysicsConstructorIon::ConstructHadProcessForGenericIon()
 {
 // Constructs electromagnetic processes for generic ion.
 // ---
@@ -66,28 +77,18 @@ void TG4PhysicsConstructorIon::ConstructProcessForGenericIon()
   // add process
   G4ProcessManager* pManager = G4GenericIon::GenericIon()->GetProcessManager();
   pManager->AddDiscreteProcess(&fElasticProcess);
-  pManager->AddProcess(&fIonIonisation, ordInActive, 2, 2);
-  pManager->AddProcess(&fIonMultipleScattering);
-
-  // set ordering
-  pManager->SetProcessOrdering(&fIonMultipleScattering, idxAlongStep,  1);
-  pManager->SetProcessOrdering(&fIonMultipleScattering, idxPostStep,  1);
 
   // map to G3 controls
   TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
   controlMap->Add(&fElasticProcess, kHADR); 
-  controlMap->Add(&fIonIonisation, kLOSS); 
-  controlMap->Add(&fIonMultipleScattering, kMULS); 
 
   // map to AliMCProcess codes
   TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
   mcMap->Add(&fElasticProcess, kPHElastic); 
-  mcMap->Add(&fIonIonisation, kPEnergyLoss); 
-  mcMap->Add(&fIonMultipleScattering, kPMultipleScattering); 
 }
 
 //_____________________________________________________________________________
-void TG4PhysicsConstructorIon::ConstructProcessForDeuteron()
+void TG4PhysicsConstructorIon::ConstructHadProcessForDeuteron()
 {
 // Constructs electromagnetic processes for deuteron.
 // ---
@@ -100,28 +101,17 @@ void TG4PhysicsConstructorIon::ConstructProcessForDeuteron()
   fDeuteronProcess.RegisterMe(fDeuteronModel);
   pManager->AddDiscreteProcess(&fDeuteronProcess);
 
-  pManager->AddProcess(&fDeuteronIonisation, ordInActive, 2, 2);
-  pManager->AddProcess(&fDeuteronMultipleScattering);
-
-  // set ordering
-  pManager->SetProcessOrdering(&fDeuteronMultipleScattering, idxAlongStep,  1);
-  pManager->SetProcessOrdering(&fDeuteronMultipleScattering, idxPostStep,  1);
-
   // map to G3 controls
   TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
   controlMap->Add(&fDeuteronProcess, kHADR); 
-  controlMap->Add(&fDeuteronIonisation, kLOSS); 
-  controlMap->Add(&fDeuteronMultipleScattering, kMULS); 
 
   // map to AliMCProcess codes
   TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
   mcMap->Add(&fDeuteronProcess, kPHInhelastic); 
-  mcMap->Add(&fDeuteronIonisation, kPEnergyLoss); 
-  mcMap->Add(&fDeuteronMultipleScattering, kPMultipleScattering); 
 }
 
 //_____________________________________________________________________________
-void TG4PhysicsConstructorIon::ConstructProcessForTriton()
+void TG4PhysicsConstructorIon::ConstructHadProcessForTriton()
 {
 // Constructs electromagnetic processes for triton.
 // ---
@@ -134,28 +124,17 @@ void TG4PhysicsConstructorIon::ConstructProcessForTriton()
   fTritonProcess.RegisterMe(fTritonModel);
   pManager->AddDiscreteProcess(&fTritonProcess);
 
-  pManager->AddProcess(&fTritonIonisation, ordInActive, 2, 2);
-  pManager->AddProcess(&fTritonMultipleScattering);
-
-  // set ordering
-  pManager->SetProcessOrdering(&fTritonMultipleScattering, idxAlongStep,  1);
-  pManager->SetProcessOrdering(&fTritonMultipleScattering, idxPostStep,  1);
-
   // map to G3 controls
   TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
   controlMap->Add(&fTritonProcess, kHADR); 
-  controlMap->Add(&fTritonIonisation, kLOSS); 
-  controlMap->Add(&fTritonMultipleScattering, kMULS); 
 
   // map to AliMCProcess codes
   TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
   mcMap->Add(&fTritonProcess, kPHInhelastic); 
-  mcMap->Add(&fTritonIonisation, kPEnergyLoss); 
-  mcMap->Add(&fTritonMultipleScattering, kPMultipleScattering); 
 }
 
 //_____________________________________________________________________________
-void TG4PhysicsConstructorIon::ConstructProcessForAlpha()
+void TG4PhysicsConstructorIon::ConstructHadProcessForAlpha()
 {
 // Constructs electromagnetic processes for alpha.
 // ---
@@ -168,6 +147,115 @@ void TG4PhysicsConstructorIon::ConstructProcessForAlpha()
   fAlphaProcess.RegisterMe(fAlphaModel);
   pManager->AddDiscreteProcess(&fAlphaProcess);
 
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fAlphaProcess, kHADR); 
+
+  // map to AliMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fAlphaProcess, kPHInhelastic); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorIon::ConstructHadProcessForHe3()
+{
+// Constructs electromagnetic processes for He3.
+// ---
+
+  // add process
+  G4ProcessManager* pManager = G4He3::He3()->GetProcessManager();
+  pManager->AddDiscreteProcess(&fElasticProcess);
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorIon::ConstructEMProcessForGenericIon()
+{
+// Constructs electromagnetic processes for generic ion.
+// ---
+
+  // add process
+  G4ProcessManager* pManager = G4GenericIon::GenericIon()->GetProcessManager();
+  pManager->AddProcess(&fIonIonisation, ordInActive, 2, 2);
+  pManager->AddProcess(&fIonMultipleScattering);
+
+  // set ordering
+  pManager->SetProcessOrdering(&fIonMultipleScattering, idxAlongStep,  1);
+  pManager->SetProcessOrdering(&fIonMultipleScattering, idxPostStep,  1);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fIonIonisation, kLOSS); 
+  controlMap->Add(&fIonMultipleScattering, kMULS); 
+
+  // map to AliMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fIonIonisation, kPEnergyLoss); 
+  mcMap->Add(&fIonMultipleScattering, kPMultipleScattering); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorIon::ConstructEMProcessForDeuteron()
+{
+// Constructs electromagnetic processes for deuteron.
+// ---
+
+  // add process
+  G4ProcessManager* pManager = G4Deuteron::Deuteron()->GetProcessManager();
+
+  pManager->AddProcess(&fDeuteronIonisation, ordInActive, 2, 2);
+  pManager->AddProcess(&fDeuteronMultipleScattering);
+
+  // set ordering
+  pManager->SetProcessOrdering(&fDeuteronMultipleScattering, idxAlongStep,  1);
+  pManager->SetProcessOrdering(&fDeuteronMultipleScattering, idxPostStep,  1);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fDeuteronIonisation, kLOSS); 
+  controlMap->Add(&fDeuteronMultipleScattering, kMULS); 
+
+  // map to AliMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fDeuteronIonisation, kPEnergyLoss); 
+  mcMap->Add(&fDeuteronMultipleScattering, kPMultipleScattering); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorIon::ConstructEMProcessForTriton()
+{
+// Constructs electromagnetic processes for triton.
+// ---
+
+  // add process
+  G4ProcessManager* pManager = G4Triton::Triton()->GetProcessManager();
+
+  pManager->AddProcess(&fTritonIonisation, ordInActive, 2, 2);
+  pManager->AddProcess(&fTritonMultipleScattering);
+
+  // set ordering
+  pManager->SetProcessOrdering(&fTritonMultipleScattering, idxAlongStep,  1);
+  pManager->SetProcessOrdering(&fTritonMultipleScattering, idxPostStep,  1);
+
+  // map to G3 controls
+  TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
+  controlMap->Add(&fTritonIonisation, kLOSS); 
+  controlMap->Add(&fTritonMultipleScattering, kMULS); 
+
+  // map to AliMCProcess codes
+  TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
+  mcMap->Add(&fTritonIonisation, kPEnergyLoss); 
+  mcMap->Add(&fTritonMultipleScattering, kPMultipleScattering); 
+}
+
+//_____________________________________________________________________________
+void TG4PhysicsConstructorIon::ConstructEMProcessForAlpha()
+{
+// Constructs electromagnetic processes for alpha.
+// ---
+
+  // add process
+  G4ProcessManager* pManager = G4Alpha::Alpha()->GetProcessManager();
+
   pManager->AddProcess(&fAlphaIonisation, ordInActive, 2, 2);
   pManager->AddProcess(&fAlphaMultipleScattering);
 
@@ -177,26 +265,23 @@ void TG4PhysicsConstructorIon::ConstructProcessForAlpha()
 
   // map to G3 controls
   TG4ProcessControlMap* controlMap = TG4ProcessControlMap::Instance();
-  controlMap->Add(&fAlphaProcess, kHADR); 
   controlMap->Add(&fAlphaIonisation, kLOSS); 
   controlMap->Add(&fAlphaMultipleScattering, kMULS); 
 
   // map to AliMCProcess codes
   TG4ProcessMCMap* mcMap = TG4ProcessMCMap::Instance();
-  mcMap->Add(&fAlphaProcess, kPHInhelastic); 
   mcMap->Add(&fAlphaIonisation, kPEnergyLoss); 
   mcMap->Add(&fAlphaMultipleScattering, kPMultipleScattering); 
 }
 
 //_____________________________________________________________________________
-void TG4PhysicsConstructorIon::ConstructProcessForHe3()
+void TG4PhysicsConstructorIon::ConstructEMProcessForHe3()
 {
 // Constructs electromagnetic processes for He3.
 // ---
 
   // add process
   G4ProcessManager* pManager = G4He3::He3()->GetProcessManager();
-  pManager->AddDiscreteProcess(&fElasticProcess);
   pManager->AddProcess(&fHe3Ionisation, ordInActive, 2, 2);
   pManager->AddProcess(&fHe3MultipleScattering);
 
@@ -214,6 +299,7 @@ void TG4PhysicsConstructorIon::ConstructProcessForHe3()
   mcMap->Add(&fHe3Ionisation, kPEnergyLoss); 
   mcMap->Add(&fHe3MultipleScattering, kPMultipleScattering); 
 }
+
 
 // protected methods
 
@@ -234,16 +320,37 @@ void TG4PhysicsConstructorIon::ConstructProcess()
 // Constructs electromagnetic processes for e+.
 // ---
 
-  // Elastic Process
-  fElasticModel = new G4LElastic();
-  fElasticProcess.RegisterMe(fElasticModel);
+  if (fSetHadron) {
+    // Elastic Process
+    fElasticModel = new G4LElastic();
+    fElasticProcess.RegisterMe(fElasticModel);
 
-  ConstructProcessForGenericIon();
-  ConstructProcessForDeuteron();
-  ConstructProcessForTriton();
-  ConstructProcessForAlpha();
-  ConstructProcessForHe3();
+    // Hadron processes
+    ConstructHadProcessForGenericIon();
+    ConstructHadProcessForDeuteron();
+    ConstructHadProcessForTriton();
+    ConstructHadProcessForAlpha();
+    ConstructHadProcessForHe3();
 
-  if (verboseLevel>0)
+    if (VerboseLevel() > 1) {
+      G4cout << "### Ion EM physics constructed." << G4endl;
+    }  
+  }  
+
+  if (fSetEM) {
+    // EM processes
+    ConstructEMProcessForGenericIon();
+    ConstructEMProcessForDeuteron();
+    ConstructEMProcessForTriton();
+    ConstructEMProcessForAlpha();
+    ConstructEMProcessForHe3();
+
+    if (VerboseLevel() > 1) {
+      G4cout << "### Ion hadron physics constructed." << G4endl;
+    }  
+  }  
+
+  if (VerboseLevel() > 0) {
     G4cout << "### Ion physics constructed." << G4endl;
+  }  
 }
