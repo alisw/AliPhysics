@@ -55,7 +55,8 @@ class AliL3TrackArray{
   UInt_t GetOutSize();
   UInt_t GetOutCount(){return (UInt_t) GetNPresent();}
   void AddTracks(AliL3TrackArray *newtrack);//add all Tracks to this 
-  
+  void AddLast(AliL3Track *track);
+
   ClassDef(AliL3TrackArray,1) 
 };
 

@@ -301,6 +301,14 @@ UInt_t AliL3TrackArray::WriteConfMapTracks(AliL3TrackSegmentData* tr){
   return size;
 }
 
+void AliL3TrackArray::AddLast(AliL3Track *track)
+{
+  AliL3Track *tpt = NextTrack();
+  tpt->Set(track);
+  delete track;
+}
+
+
 void AliL3TrackArray::AddTracks(AliL3TrackArray *newtrack){
   if(GetTrackType() != newtrack->GetTrackType())
     return;
