@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/05/16 14:57:22  alibrary
+New files for folders and Stack
+
 Revision 1.2  2000/12/21 16:24:06  morsch
 Coding convention clean-up
 
@@ -40,6 +43,7 @@ AliGenEventHeader::AliGenEventHeader()
 // Constructor
     fNProduced      = -1;      
     fImpactParameter= -1.;
+    fVertex.Set(3);
 }
 
 
@@ -51,6 +55,23 @@ AliGenEventHeader::AliGenEventHeader(const char * name)
     fImpactParameter= -1.;
 }
 
+void AliGenEventHeader::SetPrimaryVertex(const TArrayF &o)
+{
+    //
+    // Set the primary vertex for the event
+    //
+    fVertex[0]=o.At(0);
+    fVertex[1]=o.At(1);
+    fVertex[2]=o.At(2);
+}
 
-
+void  AliGenEventHeader::PrimaryVertex(TArrayF &o) const
+{
+    //
+    // Return the primary vertex for the event
+    //
+    o[0] = fVertex.At(0);
+    o[1] = fVertex.At(1);
+    o[2] = fVertex.At(2);    
+}
 
