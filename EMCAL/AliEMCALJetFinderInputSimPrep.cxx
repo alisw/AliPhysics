@@ -281,6 +281,8 @@ void AliEMCALJetFinderInputSimPrep::FillTracks()	// Fill from particles simulati
 	   break;
 	   case kEM:   // All Electromagnetic particles
 		if (MPart->GetPdgCode() == kElectron ||
+                    MPart->GetPdgCode() == kMuonPlus  &&
+                    MPart->GetPdgCode() == kMuonMinus &&
 		    MPart->GetPdgCode() == kPositron ){
 		      if (fDebug > 5) Info("FillTracks","Storing electron or positron");
 	 	      if (fSmearType == kSmear ||
@@ -320,8 +322,10 @@ void AliEMCALJetFinderInputSimPrep::FillTracks()	// Fill from particles simulati
 		}
 	   break;
 	   case kHadron: //All hadrons
-		if (MPart->GetPdgCode() != kElectron &&
-                    MPart->GetPdgCode() != kPositron &&
+		if (MPart->GetPdgCode() != kElectron  &&
+                    MPart->GetPdgCode() != kPositron  &&
+                    MPart->GetPdgCode() != kMuonPlus  &&
+                    MPart->GetPdgCode() != kMuonMinus &&
                     MPart->GetPdgCode() != kGamma ) 
 		{
 			if (fDebug > 5) Info("FillTracks","Storing hadron");
@@ -341,9 +345,11 @@ void AliEMCALJetFinderInputSimPrep::FillTracks()	// Fill from particles simulati
 		}
 	   break;
 	   case kChargedHadron:  // only charged hadrons
-		if (MPart->GetPdgCode() != kElectron &&
-                    MPart->GetPdgCode() != kPositron &&
-                    MPart->GetPdgCode() != kGamma    &&
+		if (MPart->GetPdgCode() != kElectron  &&
+                    MPart->GetPdgCode() != kPositron  &&
+                    MPart->GetPdgCode() != kGamma     &&
+                    MPart->GetPdgCode() != kMuonPlus  &&
+                    MPart->GetPdgCode() != kMuonMinus &&
 		    pdgP->Charge() 	!= 0   	   ){
 			if (fDebug > 5) Info("FillTracks","Storing charged hadron");
 		       	if (fSmearType == kSmear ||
