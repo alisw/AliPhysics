@@ -10,7 +10,8 @@ void DrawSTART()
    gMC->SetClipBox(".");
    //  gMC->SetClipBox("*", 0, 1000, -1000, 1000, -1000, 1000);
    gMC->DefaultRange();
-   gMC->Gdraw("alic", 40, 30, 0, 6, 9, .08, .08);
+   //gMC->Gdraw("alic", 40, 30, 0, -8, 2, 1, 1);
+   gMC->Gdraw("alic", 40, 30, 0, 10, 9, 1., 1.);
    gMC->Gdhead(1111, "START Detector");
-   gMC->Gdman(13, 9, "MAN");
+   //  gMC->Gdman(13, 9, "MAN");
 }

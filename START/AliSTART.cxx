@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/03/27 17:24:25  alla
+Modifing geometry
+
 Revision 1.6  2000/01/21 15:45:23  fca
 New Version from Alla
 
@@ -67,7 +70,9 @@ Introduction of the Copyright and cvs Log
 #include "AliSTARTvertex.h"
 
 ClassImp(AliSTART)
-  AliSTARTdigit *digits; 
+
+static  AliSTARTdigit *digits; 
+
 //_____________________________________________________________________________
 AliSTART::AliSTART()
 {
@@ -127,25 +132,25 @@ void AliSTART::BuildGeometry()
   //
   // Build simple ROOT TNode geometry for event display
   //
-  TNode *Node, *Top;
+  TNode *node, *top;
   const int kColorSTART  = 19;
   //
-  Top=gAlice->GetGeometry()->GetNode("alice");
+  top=gAlice->GetGeometry()->GetNode("alice");
 
   // START define the different volumes
   new TRotMatrix("rot999","rot999",  90,0,90,90,180,0);
 
   new TTUBE("S_STR1","START  volume 1","void",5.,10.7,5.3);
-  Top->cd();
-  Node = new TNode("STR1","STR1","S_STR1",0,0,75.,"");
-  Node->SetLineColor(kColorSTART);
-  fNodes->Add(Node);
+  top->cd();
+  node = new TNode("STR1","STR1","S_STR1",0,0,75.,"");
+  node->SetLineColor(kColorSTART);
+  fNodes->Add(node);
 
   new TTUBE("S_STR2","START volume 2","void",5.,10.7,5.3);
-  Top->cd();
-  Node = new TNode("STR2","STR2","S_STR2",0,0,-75,"rot999");
-  Node->SetLineColor(kColorSTART);
-  fNodes->Add(Node);
+  top->cd();
+  node = new TNode("STR2","STR2","S_STR2",0,0,-75,"rot999");
+  node->SetLineColor(kColorSTART);
+  fNodes->Add(node);
 }
  
 //_____________________________________________________________________________
@@ -184,7 +189,9 @@ void AliSTART::Init()
 //---------------------------------------------------------------------------
 void AliSTART::MakeBranch(Option_t* option)
 {
-  
+  //
+  // Specific START branches
+  //
   AliSTARTdigit *digits; 
   // Create Tree branches for the START.
   Int_t buffersize = 400;
@@ -193,9 +200,9 @@ void AliSTART::MakeBranch(Option_t* option)
 
   AliDetector::MakeBranch(option);
 
-  TTree *TD = gAlice->TreeD();
+  TTree *td = gAlice->TreeD();
   digits = new AliSTARTdigit();
-  TD->Branch(branchname,"AliSTARTdigit",&digits, buffersize);
+  td->Branch(branchname,"AliSTARTdigit",&digits, buffersize);
   printf("Making Branch %s for digits\n",branchname);
     
 /*
@@ -208,16 +215,18 @@ void AliSTART::MakeBranch(Option_t* option)
 
 void AliSTART::Hit2digit(Int_t evnum) 
 {
-  
-  Float_t x,y,z,e;
+  //
+  // From hits to digits
+  //
+  Float_t x,y,e;
   Int_t nbytes = 0;
-  Int_t j,hit;
+  Int_t hit;
   Int_t nhits;
   Int_t volume,pmt;
   char nameTH[8],nameTD[8];
   Float_t timediff,timeright,timeleft,timeav;
   Float_t besttimeright,besttimeleft,meanTime;
-  Int_t channel_width=10;
+  Int_t channelWidth=10;
 
   TParticle *particle;
   AliSTARThit  *startHit;
@@ -228,45 +237,34 @@ void AliSTART::Hit2digit(Int_t evnum)
   digits= new AliSTARTdigit();
   TBranch *bDig=0;
 
-  /*    
-  // Create histograms
-  
-   TH1F *hTimediff = new TH1F("hTimediff","Time different",100,-2,2);
-   TH1F *hMeanTime = new TH1F("hMeanTime","Mean Time",100,2.2,2.8);
-  
-   TH1F *hTime1stright = new TH1F("hTime1stright","Time flight of 1st  particle right", 100,1.5,3.2);
-   TH1F *hTime1stleft = new  TH1F("hTime1sleft","Time flight of 1st particle left",100,1.5,3.2);
-  
-  */ 
-   //   AliSTART *START  = (AliSTART*) gAlice->GetDetector("START");
   
  // Event ------------------------- LOOP  
  
     sprintf(nameTD,"TreeD%d",evnum);
-    TTree *TD = new TTree(nameTD,"START");
-    bDig = TD->Branch("START","AliSTARTdigit",&digits,buffersize,split);
+    TTree *td = new TTree(nameTD,"START");
+    bDig = td->Branch("START","AliSTARTdigit",&digits,buffersize,split);
 
     besttimeright=9999.;
     besttimeleft=9999.;
-    Int_t Timediff=0;
-    Int_t Timeav=0;
+    Int_t timeDiff=0;
+    Int_t timeAv=0;
 
     Int_t nparticles = gAlice->GetEvent(evnum);
     if (nparticles <= 0) return;
     printf("\n nparticles %d\n",nparticles);
     
-    TClonesArray *Particles = gAlice->Particles();
+    TClonesArray *particles = gAlice->Particles();
    
     sprintf(nameTH,"TreeH%d",evnum);
     printf("%s\n",nameTH);
-    TTree *TH = gAlice->TreeH();
-    Int_t ntracks    = (Int_t) TH->GetEntries();
+    TTree *th = gAlice->TreeH();
+    Int_t ntracks    = (Int_t) th->GetEntries();
     if (ntracks<=0) return;
     // Start loop on tracks in the hits containers
     for (Int_t track=0; track<ntracks;track++) {
       gAlice->ResetHits();
-      nbytes += TH->GetEvent(track);
-      particle=(TParticle*)Particles->UncheckedAt(track);
+      nbytes += th->GetEvent(track);
+      particle=(TParticle*)particles->UncheckedAt(track);
       nhits =fHits->GetEntriesFast();
       
       for (hit=0;hit<nhits;hit++) {
@@ -293,42 +291,44 @@ void AliSTART::Hit2digit(Int_t evnum)
     } //track loop
 
     //folding with experimental time distribution
-   Float_t besttimerightGaus=gRandom->Gaus(besttimeright,0.05);
-   Float_t besttimeleftGaus=gRandom->Gaus(besttimeleft,0.05);
-   timediff=besttimerightGaus-besttimeleftGaus;
-   meanTime=(besttimerightGaus+besttimeleftGaus)/2.;
-  if ( TMath::Abs(timediff)<2. && meanTime<3.) 
+    Float_t besttimerightGaus=gRandom->Gaus(besttimeright,0.05);
+    Float_t besttimeleftGaus=gRandom->Gaus(besttimeleft,0.05);
+    timediff=besttimerightGaus-besttimeleftGaus;
+    meanTime=(besttimerightGaus+besttimeleftGaus)/2.;
+    if ( TMath::Abs(timediff)<2. && meanTime<3.) 
      {
-     //we assume centre of bunch is 5ns after TTS signal
-     //TOF values are relative of the end of bunch
-       //      hTimediff->Fill(timediff);
-       //hMeanTime->Fill(meanTime);
-       Float_t pp_bunch=25;
+       //we assume centre of bunch is 5ns after TTS signal
+       //TOF values are relative of the end of bunch
+       Float_t ppBunch=25;
     
-       pp_bunch=pp_bunch-10/2;
+       ppBunch=ppBunch-10/2;
        Float_t t1=1000.*besttimeleftGaus;
        Float_t t2=1000.*besttimerightGaus;
-       t1=t1/channel_width+pp_bunch; //time in ps to channel_width
-       t2=t2/channel_width+pp_bunch; //time in ps to channel_width
+       t1=t1/channelWidth+ppBunch; //time in ps to channelWidth
+       t2=t2/channelWidth+ppBunch; //time in ps to channelWidth
      
        timeav=(t1+t2)/2.;
      
        // Time to TDC signal
        // 256 channels for timediff, range 1ns
        
-       timediff=128+1000*timediff/channel_width; // time in ps
- 
+       timediff=128+1000*timediff/channelWidth; // time in ps 
 
-       Timeav = (Int_t)(timeav);   // time in ps
-       Timediff = (Int_t)(timediff); // time in ps
-       digits->Set(Timeav,Timediff);
-       TD->Fill();
+       timeAv = (Int_t)(timeav);   // time (ps) channel numbres
+       timeDiff = (Int_t)(timediff); // time ( ps) channel numbres
+       digits->Set(timeAv,timeDiff);
+     }
+       else
+	 {timeAv=999999; timeDiff=99999;}
+       td->Fill();
        digits->MyDump();
-       TD->Write();
-     } //timediff
+       printf("digits-> %d \n",digits->GetTime());
+       td->Write();
+       //     } //timediff
    
 
 } // end macro
+
 
 
 

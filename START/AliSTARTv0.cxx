@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/01/21 15:45:23  fca
+New Version from Alla
+
 Revision 1.6  1999/11/12 15:04:00  fca
 Modifications from A.Maevskaya
 
@@ -115,7 +118,7 @@ void AliSTARTv0::CreateGeometry()
     gMC->Gsvolu("PMT ","TUBE",idtmed[3],ppmt,3);     
     gMC->Gsvolu("DIVI","TUBE",idtmed[3],pdivider,3);     
 
-// first ring: 13 units of Scintillator+PMT+divider
+// first ring: 12 units of Scintillator+PMT+divider
     Double_t dang1 = 2*TMath::Pi()/12;
     for (is=1; is<=12; is++)
       {  
@@ -216,8 +219,8 @@ void AliSTARTv0::CreateGeometry()
 //------------------------------------------------------------------------
 void AliSTARTv0::CreateMaterials()
 {
-   Int_t ISXFLD   = gAlice->Field()->Integ();
-   Float_t SXMGMX = gAlice->Field()->Max();
+   Int_t isxfld   = gAlice->Field()->Integ();
+   Float_t sxmgmx = gAlice->Field()->Max();
    Float_t a,z,d,radl,absl,buf[1];
    Int_t nbuf;
 
@@ -286,14 +289,14 @@ void AliSTARTv0::CreateMaterials()
    AliMixture( 7, "Ribber $",aribber,zribber,denribber,-3,wribber);
    
    
-   AliMedium(1, "START Air$", 2, 0, ISXFLD, SXMGMX, 10., .1, 1., .003, .003);
-   AliMedium(2, "Scintillator$", 5, 1, ISXFLD, SXMGMX, 10., .01, 1., .003, .003);
-   AliMedium(3, "Vacuum$", 1, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-   AliMedium(4, "Ceramic$", 9, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-   AliMedium(6, "Glass$", 4, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-   AliMedium(8, "Steel$", 0, 0, ISXFLD, SXMGMX, 1., .001, 1., .001, .001);
-   AliMedium(11, "Brass  $", 6, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-   AliMedium(9, "Ribber  $", 7, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+   AliMedium(1, "START Air$", 2, 0, isxfld, sxmgmx, 10., .1, 1., .003, .003);
+   AliMedium(2, "Scintillator$", 5, 1, isxfld, sxmgmx, 10., .01, 1., .003, .003);
+   AliMedium(3, "Vacuum$", 1, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+   AliMedium(4, "Ceramic$", 9, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+   AliMedium(6, "Glass$", 4, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+   AliMedium(8, "Steel$", 0, 0, isxfld, sxmgmx, 1., .001, 1., .001, .001);
+   AliMedium(11, "Brass  $", 6, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+   AliMedium(9, "Ribber  $", 7, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
 
 //  geant3->Gsckov(idtmed[2105], 14, ppckov, absco_quarz, effic_all,rindex_quarz);
 

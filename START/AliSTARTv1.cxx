@@ -75,6 +75,7 @@ void AliSTARTv1::CreateGeometry()
   Float_t x,y,z;
 
   Float_t pstart[3]={4.5,10.7,5.3};
+  Float_t pinstart[3]={0.,1.3,5.25};
   Float_t ppmt[3]={0.,1.3,3.5};
   Float_t pdivider[3]={0.,1.2,1.75};
   Float_t pdiv2[3]={0.,1.2,1.25};
@@ -106,6 +107,7 @@ void AliSTARTv1::CreateGeometry()
     gMC->Gspos("STRT",2,"ALIC",0.,0.,-zdet,idrotm[901],"ONLY");
 
 //START interior
+    gMC->Gsvolu("INST","TUBE",idtmed[1],pinstart,3);
     gMC->Gsvolu("PMT ","TUBE",idtmed[3],ppmt,3);     
     gMC->Gsvolu("DIVI","TUBE",idtmed[3],pdivider,3);     
 
@@ -119,12 +121,18 @@ void AliSTARTv1::CreateGeometry()
 		  theta,    180.+30.*is); 
 	x=6.5*TMath::Sin(is*dang1);
 	y=6.5*TMath::Cos(is*dang1);
-	z=-pstart[2]+ppmt[2];
-	gMC->Gspos("PMT ",is,"STRT",x,y,z,idrotm[901+is],"ONLY");
+	z=-pstart[2]+pinstart[2];
+	gMC->Gspos("INST",is,"STRT",x,y,z,idrotm[901+is],"ONLY");
 	printf("z PMT %f\n",z);
-	z=z+ppmt[2]+pdiv2[2]-pdiv1[2];
+
+	
+	x=0;
+	y=0;
+	z=-pinstart[2]+ppmt[2];
 	printf(" is %d, z Divider %f\n",is,z);
-	gMC->Gspos("DIVI",is,"STRT",x,y,z,idrotm[901+is],"ONLY");
+	gMC->Gspos("PMT ",is,"INST",x,y,z,0,"ONLY");
+	z=pinstart[2]-pdivider[2];
+	gMC->Gspos("DIVI",is,"INST",x,y,z,0,"ONLY");
       }
      /*  
 //second ring: 20 units of Scintillator+PMT+divider
@@ -214,8 +222,8 @@ void AliSTARTv1::CreateGeometry()
 //------------------------------------------------------------------------
 void AliSTARTv1::CreateMaterials()
 {
-   Int_t ISXFLD   = gAlice->Field()->Integ();
-   Float_t SXMGMX = gAlice->Field()->Max();
+   Int_t isxfld   = gAlice->Field()->Integ();
+   Float_t sxmgmx = gAlice->Field()->Max();
    Float_t a,z,d,radl,absl,buf[1];
    Int_t nbuf;
 
@@ -258,9 +266,6 @@ void AliSTARTv1::CreateMaterials()
    Float_t absco_quarz[14] = { 20.126,16.27,13.49,11.728,9.224,8.38,7.44,7.17,
 				6.324,4.483,1.6,.323,.073,0. };
    */
-   Int_t *idtmed = fIdtmed->GetArray()-2100;
-    
-   //  TGeant3 *geant3 = (TGeant3*) gMC;
     
 //*** Definition Of avaible START materials ***
    AliMaterial(0, "START Steel$", 55.850,26.,7.87,1.76,999);
@@ -284,14 +289,14 @@ void AliSTARTv1::CreateMaterials()
    AliMixture( 7, "Ribber $",aribber,zribber,denribber,-3,wribber);
    
    
-   AliMedium(1, "START Air$", 2, 0, ISXFLD, SXMGMX, 10., .1, 1., .003, .003);
-   AliMedium(2, "Scintillator$", 5, 1, ISXFLD, SXMGMX, 10., .01, 1., .003, .003);
-   AliMedium(3, "Vacuum$", 1, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-   AliMedium(4, "Ceramic$", 9, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-   AliMedium(6, "Glass$", 4, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-   AliMedium(8, "Steel$", 0, 0, ISXFLD, SXMGMX, 1., .001, 1., .001, .001);
-   AliMedium(9, "Ribber  $", 7, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
-   AliMedium(11, "Brass  $", 6, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
+   AliMedium(1, "START Air$", 2, 0, isxfld, sxmgmx, 10., .1, 1., .003, .003);
+   AliMedium(2, "Scintillator$", 5, 1, isxfld, sxmgmx, 10., .01, 1., .003, .003);
+   AliMedium(3, "Vacuum$", 1, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+   AliMedium(4, "Ceramic$", 9, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+   AliMedium(6, "Glass$", 4, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+   AliMedium(8, "Steel$", 0, 0, isxfld, sxmgmx, 1., .001, 1., .001, .001);
+   AliMedium(9, "Ribber  $", 7, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
+   AliMedium(11, "Brass  $", 6, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
    cout<<"++++++++++++++Medium set++++++++++"<<endl;
 
 //  geant3->Gsckov(idtmed[2105], 14, ppckov, absco_quarz, effic_all,rindex_quarz);
@@ -308,7 +313,8 @@ void AliSTARTv1::DrawDetector()
   gMC->Gsatt("ALIC","SEEN",0);
   //
   //Set volumes visible
-  gMC->Gsatt("STRT","SEEN",0);
+  //  gMC->Gsatt("STRT","SEEN",0);
+  gMC->Gsatt("INST","SEEN",0);
   gMC->Gsatt("PMT ","SEEN",1);
   gMC->Gsatt("DIVI","SEEN",1);
   //
@@ -369,8 +375,9 @@ void AliSTARTv1::StepManager()
       hits[2] = pos[2];
       Float_t etot=gMC->Etot();
       hits[4]=etot;
-      Int_t part= gMC->TrackPid();
-      hits[5]=part;
+      Int_t iPart= gMC->TrackPid();
+      Int_t partID=gMC->IdFromPDG(iPart);
+      hits[5]=partID;
       Float_t ttime=gMC->TrackTime();
       hits[6]=ttime*1e9;
       edep=0;
@@ -389,7 +396,7 @@ void AliSTARTv1::StepManager()
       Int_t i;
       for (i=0; i<=6; i++){
 	printf(" HITS on START Exit %f\n",hits[i]); } 
-      for (i=0; i<=1; i++) { printf("START vol %d\n",vol[i]);}
+      //      for (i=0; i<=1; i++) { printf("START vol %d\n",vol[i]);}
      
       new(lhits[fNhits++]) AliSTARThit(fIshunt,gAlice->CurrentTrack(),vol,hits);      
     }

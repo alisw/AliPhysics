@@ -11,7 +11,7 @@ class AliSTARTvertex   : public TObject {
 
 
 ////////////////////////////////////////////////////////////////////////
- public:
+ private:
   Int_t fZposition;        // Z position of vertex
 
  public:

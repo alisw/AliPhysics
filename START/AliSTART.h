@@ -1,5 +1,5 @@
-#ifndef START_H
-#define START_H
+#ifndef ALISTART_H
+#define ALISTART_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -18,16 +18,14 @@ R__EXTERN TDirectory *  gDirectory;
  
 class AliSTART : public AliDetector {
 
-public:
-  Int_t fZposit;
 
 
 public:
    AliSTART();
    AliSTART(const char *name, const char *title);
    virtual       ~AliSTART() {}
-   virtual void   AddHit(Int_t, Int_t*, Float_t*);
-   virtual void   AddDigit(Int_t*, Int_t*);
+   virtual void   AddHit(Int_t track, Int_t *vol, Float_t *hits);
+   virtual void   AddDigit(Int_t *tracks, Int_t *digits);
    virtual void   BuildGeometry();
    virtual void   CreateGeometry(){}
    virtual void   CreateMaterials(){} 
@@ -39,15 +37,6 @@ public:
    void Hit2digit(){return;}
    virtual void   MakeBranch(Option_t *opt=" ");
    virtual void   StepManager(){}
-  /*
-   TTree   *fTreeD;        //tree
-   TTree * GetTree() { return fTreeD;}//return reference to actual tree 
-   Bool_t  SetTree(Int_t nevent=0, TDirectory *dir = gDirectory);//map tree from given directory
-   Bool_t  MakeTree(Int_t nevent=0);//map tree from given directory
-   */   
-   
-   //  void Fill();
-   //   void Write();
    
 protected:
    Int_t fIdSens;    // Sensetive Cherenkov radiator

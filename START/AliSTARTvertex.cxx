@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.1  2000/03/24 17:46:58  alla
+Vertex reconstruction
+
 */ 
 #include <TObject.h>
 #include "AliSTARTvertex.h"
@@ -28,7 +31,6 @@ ClassImp(AliSTARTvertex)
 AliSTARTvertex::AliSTARTvertex( Int_t * Zposit)
 {
   //
-  // Create START digit
   //     The creator for the AliSTARTvertex class. This routine fills the
   // AliSTARTvertex data members from the array vertex.
   // The order of the elements in the vertex array are
@@ -58,36 +60,38 @@ void AliSTARTvertex::Reconstruct(Int_t evNumber=1)
   // TParticle *particle;
   digits = new AliSTARTdigit();
   vertex = new AliSTARTvertex();
-  // AliSTART *START  = (AliSTART*) gAlice->GetDetector("START");
 
  // Event ------------------------- LOOP  
    
-    sprintf(nameTD,"TreeD%d",evNumber);
-    printf("%s\n",nameTD);
-    TTree *TD = (TTree*)gDirectory->Get(nameTD);
-    bd = TD->GetBranch("START");
-    bd->SetAddress(&digits);
-    bd->GetEvent(0);
-    printf(" Digits: "); digits->MyDump();
-    
-    sprintf(nameTR,"TreeR%d",evNumber);
-    TTree *TR = new TTree(nameTR,"START");
-    bRec = TR->Branch("START","AliSTARTvertex",&vertex,buffersize,split);
+  sprintf(nameTD,"TreeD%d",evNumber);
+  printf("%s\n",nameTD);
+  TTree *td = (TTree*)gDirectory->Get(nameTD);
+  bd = td->GetBranch("START");
+  bd->SetAddress(&digits);
+  bd->GetEvent(0);
+  printf(" Digits: "); digits->MyDump();    
+  sprintf(nameTR,"TreeR%d",evNumber);
+  TTree *tr = new TTree(nameTR,"START");
+  bRec = tr->Branch("START","AliSTARTvertex",&vertex,buffersize,split);
 
-    //  TD->Print(); TD->Show(0); TD->GetBranch("START")->Dump();
+  //  td->Print(); td->Show(0); td->GetBranch("START")->Dump();
+        digits->MyDump();
+       printf("digits-> %d \n",digits->GetTime());
   
-    if(digits->fTime_average!=0)
-      {
-      timediff=digits->fTime_diff;     //time in number of channels
-      timePs=(timediff-128)*10.;       // time in Ps
+  if(digits->GetTime()!=999999)
+    {
+      timediff=digits->GetTime();     //time in number of channels
+      timePs=(timediff-128)*10.;       // time in Ps channel_width =10ps
       printf(" timediff %d in PS %f\n",timediff,timePs);
       Float_t c = 299792458/1.e9;  //speed of light cm/ps
-      Float_t Zposit=timePs*c;
-      printf(" Z position %f\n",Zposit);
+      //Float_t c = 0.3;  //speed of light mm/ps
+      Float_t Zposit=timePs*c;// for 0 vertex
+      //    Float_t Zposit=timePs*c/2.;// for spread vertex
+      //      printf(" Z position %f\n",Zposit);
       //      vertex->GetVertex();
       vertex->Set(Zposit);
-      TR->Fill();
-      TR->Write();
+      tr->Fill();
+      tr->Write();
       //hTimediff->Fill(timePs);
       //hVertex->Fill(Zposit);
       }

@@ -1,5 +1,5 @@
-#ifndef STARTDIGIT_H
-#define STARTDIGIT_H
+#ifndef ALISTARTDIGIT_H
+#define ALISTARTDIGIT_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -9,9 +9,9 @@
 //___________________________________________
 class AliSTARTdigit: public TObject  {
 ////////////////////////////////////////////////////////////////////////
- public:
-    Int_t fTime_average;     // Average time
-    Int_t fTime_diff;  // Time difference
+ protected:
+    Int_t fTimeAverage;     // Average time
+    Int_t fTimeDiff;  // Time difference
 
 
  public:
@@ -19,19 +19,21 @@ class AliSTARTdigit: public TObject  {
     AliSTARTdigit(Int_t , Int_t );
     virtual ~AliSTARTdigit() {}
     void Set(Int_t, Int_t);
+    Int_t GetTime();
     void MyDump(); 
 
 
     ClassDef(AliSTARTdigit,1)  //Digit (Header) object for set:START
 };
 
-inline AliSTARTdigit::AliSTARTdigit(){fTime_average=99999.;fTime_diff=99999.;}
+inline AliSTARTdigit::AliSTARTdigit(){fTimeAverage=999999;fTimeDiff=999999;}
+inline Int_t AliSTARTdigit::GetTime(){return fTimeDiff;}
 inline void AliSTARTdigit::Set(Int_t Timeav, Int_t Timediff)
-  {fTime_average=Timeav; fTime_diff=Timediff;}
+  {fTimeAverage=Timeav; fTimeDiff=Timediff;}
 
 inline void AliSTARTdigit::MyDump(){
-  printf("AliSTARTdigit: fTime_average=%d, fTime_diff=%d\n",
-	 fTime_average, fTime_diff);
+  printf("AliSTARTdigit: fTimeAverage=%d, fTimeDiff=%d\n",
+	 fTimeAverage, fTimeDiff);
 }
 
 #endif

@@ -1,3 +1,4 @@
+
 ###############################START Makefile##################################
 
 # Include machine specific definitions
@@ -9,7 +10,7 @@ PACKAGE = START
 
 # C++ sources
 
-SRCS          = AliSTART.cxx AliSTARTv0.cxx AliSTARThit.cxx AliSTARTdigit.cxx
+SRCS          = AliSTART.cxx AliSTARTv0.cxx AliSTARTv1.cxx AliSTARThit.cxx AliSTARTdigit.cxx AliSTARTvertex.cxx
 
 # C++ Headers
 

@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.2  2000/03/24 17:40:35  alla
+New AliSTART
+
 */ 
 #include <iostream.h>
 #include <fstream.h>
@@ -33,10 +36,10 @@ AliSTARTdigit::AliSTARTdigit(Int_t Timeav, Int_t Timediff)
   // AliSTARTdigit data members from the array digits. The array of track
   // numbers are passed to the AliDigit creator. The order of the elements
   // in the digits array are fEvent = digits[0], fAmplitude = digits[1],
-  // fTime_average = digits[1], fTime_diff = digits[1], and fDet = digits[4].
+  // fTimeAverage = digits[1], fTimeDiff = digits[1], and fDet = digits[4].
   // Therefore the array digits is expected to be at least 5 elements long.
   //
-  Timeav = fTime_average;
-  Timediff = fTime_diff;
+  Timeav = fTimeAverage;
+  Timediff = fTimeDiff;
 
 }
