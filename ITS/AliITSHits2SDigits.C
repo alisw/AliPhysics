@@ -1,37 +1,38 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
-#include "iostream.h"
-#include "TDatetime.h"
-#include "STEER/AliRun.h"
-#include "STEER/AliRunDigitizer.h"
-#include "ITS/AliITSDigitizer.h"
-#include "ITS/AliITS.h"
-#include "ITS/AliITSDetType.h"
-#include "ITS/AliITSresponseSDD.h"
+#include "Riostream.h"
+#include "TDatime.h"
+#include "TClassTable.h"
+#include "AliRun.h"
+#include "AliRunDigitizer.h"
+#include "AliITSDigitizer.h"
+#include "AliITS.h"
+#include "AliITSDetType.h"
+#include "AliITSLoader.h"
+#include "AliITSresponseSDD.h"
 #include "TStopwatch.h"
 
 #endif
 
 Int_t AliITSHits2SDigits(TString  filename = "galice.root")
  {
-    // Standeard ITS Hits to SDigits.
+    // Standard ITS Hits to SDigits.
 
     // Dynamically link some shared libs
     if (gClassTable->GetID("AliRun") < 0) {
-     gROOT->LoadMacro("loadlibs.C");
-     loadlibs();
-    } else if (gAlice){
-       delete gAlice->GetRunLoader();
-       delete gAlice;
-       gAlice=0;
-     }
+      gROOT->ProcessLine(".x $(ALICE_ROOT)/macros/loadlibs.C");
+    }else if (gAlice){
+      delete gAlice->GetRunLoader();
+      delete gAlice;
+      gAlice=0;
+     } 
 
     // Connect the Root Galice file containing Geometry, Kine and Hits
 
     AliRunLoader* rl = AliRunLoader::Open(filename);
     if (rl == 0x0)
      {
-      cerr<<"AliITSHits2DigitsDefault.C : Can not open session RL=NULL"
+      cerr<<"AliITSHits2SDigits.C : Can not open session RL=NULL"
            << endl;
        return 3;
      }
@@ -39,25 +40,25 @@ Int_t AliITSHits2SDigits(TString  filename = "galice.root")
     Int_t retval = rl->LoadgAlice();
     if (retval)
      {
-      cerr<<"AliITSHits2DigitsDefault.C : LoadgAlice returned error"
+      cerr<<"AliITSHits2SDigits.C : LoadgAlice returned error"
            << endl;
        return 3;
      }
     gAlice=rl->GetAliRun();
-    AliLoader* gime = rl->GetLoader("ITSLoader");
+    AliITSLoader* gime = (AliITSLoader*) rl->GetLoader("ITSLoader");
     if (gime == 0x0)
      {
-      cerr<<"AliITSHits2DigitsDefault.C : can not get ITS loader"
+      cerr<<"AliITSHits2SDigits.C : can not get ITS loader"
            << endl;
      }
     AliITS *ITS = (AliITS*)gAlice->GetDetector("ITS");      
     if (!ITS) {
-	cerr<<"AliITSHits2DigitsDefault.C : AliITS object not found on file"
+	cerr<<"AliITSHits2SDigits.C : AliITS object not found on file"
 	    << endl;
 	return 3;
     }  // end if !ITS
     if(!(ITS->GetITSgeom())){
-       cerr << " AliITSgeom not found. Can't digitize with out it." << endl;
+       cerr << " AliITSgeom not found. Can't digitize without it." << endl;
        return 4;
     } // end if
 
@@ -68,14 +69,14 @@ Int_t AliITSHits2SDigits(TString  filename = "galice.root")
     retval = gime->LoadHits();
     if (retval)
      {
-      cerr<<"AliITSHits2DigitsDefault.C : ITSLoader::LoadHits returned error"
+      cerr<<"AliITSHits2SDigits.C : ITSLoader::LoadHits returned error"
            << endl;
        return 3;
      }
     retval = gime->LoadSDigits("recreate");
     if (retval)
      {
-      cerr<<"AliITSHits2DigitsDefault.C : ITSLoader::LoadSDigits returned error"
+      cerr<<"AliITSHits2SDigits.C : ITSLoader::LoadSDigits returned error"
            << endl;
        return 3;
      }
@@ -95,4 +96,5 @@ Int_t AliITSHits2SDigits(TString  filename = "galice.root")
     timer.Print();
 
     delete rl; // sdigfile is closed by deleting gAlice if != hitfile.
+    return 0;
 }
