@@ -26,6 +26,10 @@ public:
   AliEMCALClusterizer(const char * headerFile, const char * name) ;
   virtual ~AliEMCALClusterizer() ; // dtor
 
+  const TString GetHitsFileName() const { return fHitsFileName ; }
+  const TString GetSDigitsFileName() const { return fSDigitsFileName ; }
+  const TString GetDigitsFileName() const { return fDigitsFileName ; }
+
   virtual Float_t GetEmcClusteringThreshold()const = 0 ; 
   virtual Float_t GetEmcLocalMaxCut()const = 0 ; 
   virtual Float_t GetEmcLogWeight()const = 0 ; 
@@ -55,6 +59,9 @@ public:
 
 protected:
   
+  TString fHitsFileName ;          // file name that contains the original hits
+  TString fSDigitsFileName ;       // file name that contains the original SDigits
+  TString fDigitsFileName ;        // file name that contains the original Digits
   TFile * fSplitFile ;             //! file in which RecPoints will eventually be stored
 
   ClassDef(AliEMCALClusterizer,1)  // Clusterization algorithm class 

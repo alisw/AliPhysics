@@ -36,6 +36,9 @@
 #include "AliRun.h" 
 #include "AliPHOSClusterizer.h"
 #include "AliHeader.h" 
+#include "AliPHOSGetter.h"
+#include "AliPHOSSDigitizer.h"
+#include "AliPHOSDigitizer.h"
 
 ClassImp(AliPHOSClusterizer)
 
@@ -44,6 +47,10 @@ ClassImp(AliPHOSClusterizer)
 {
   // ctor
   fSplitFile= 0 ; 
+  fHitsFileName = "" ; 
+  fSDigitsFileName = "" ; 
+  fDigitsFileName = "" ; 
+
 }
 
 //____________________________________________________________________________
@@ -52,7 +59,13 @@ TTask(name, headerFile)
 {
   // ctor
   fSplitFile= 0 ; 
-
+  fDigitsFileName = headerFile ; 
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(headerFile, name) ; 
+  gime->Event(0,"D") ; 
+  fSDigitsFileName = gime->Digitizer()->GetTitle() ; 
+  gime = AliPHOSGetter::GetInstance(fSDigitsFileName, name) ; 
+  gime->Event(0,"S") ; 
+  fHitsFileName = gime->SDigitizer()->GetTitle() ; 
 }
 
 //____________________________________________________________________________

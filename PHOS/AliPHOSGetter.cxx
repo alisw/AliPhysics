@@ -81,6 +81,8 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
   //Initialize  all lists
 
   fDebug = 0 ; 
+
+  fAlice = 0 ; 
   
   fHeaderFile         = headerFile ; 
   fBranchTitle        = branchTitle ;
@@ -170,6 +172,8 @@ void AliPHOSGetter::CloseFile()
 {
   delete gAlice ;  
   gAlice = 0 ; 
+  delete fAlice ; 
+  fAlice = 0 ; 
 }
 
 //____________________________________________________________________________ 
@@ -1333,21 +1337,128 @@ TObject** AliPHOSGetter::AlarmsRef(void) const
   return fQAFolder->GetListOfFolders()->GetObjectRef(phosFolder) ;
 }
 
+
 //____________________________________________________________________________ 
-const TParticle * AliPHOSGetter::Primary(Int_t index) const
+TTree * AliPHOSGetter::TreeK(TString filename)  
+{
+
+  // returns TreeK from file filename
+  // usefull in case of split file
+
+  if ( filename.IsNull() ) 
+    filename = fHeaderFile ; 
+
+  TFile * file = 0 ; 
+  // file = static_cast<TFile*>(gROOT->GetFile(filename.Data() ) ) ;
+  if (!file) {  // file not open yet
+    //   file->Close() ; 
+    file = TFile::Open(filename.Data(), "read") ; 
+    delete fAlice ; 
+    fAlice = static_cast<AliRun *>(file->Get("gAlice")) ; 
+  }
+
+  TString treeName("TreeK") ; 
+  treeName += EventNumber()  ; 
+  TTree * tree = static_cast<TTree *>(file->Get(treeName.Data())) ;
+  if (!tree && fDebug)  
+    cout << "WARNING: AliPHOSGetter::TreeK -> " << treeName.Data() << " not found in " << filename.Data() << endl ; 
+  
+  return tree ; 		      
+}
+
+//____________________________________________________________________________ 
+TTree * AliPHOSGetter::TreeH(TString filename)  
+{
+
+  // returns TreeH from file filename
+  // usefull in case of split file
+
+  if ( filename.IsNull() ) 
+    filename = fHeaderFile ; 
+
+  TFile * file = 0 ; 
+  file = static_cast<TFile*>(gROOT->GetFile(filename.Data() ) ) ;
+  if (!file) { // file not open yet
+    file = TFile::Open(filename.Data(), "read") ; 
+  }
+  TString treeName("TreeH") ; 
+  treeName += EventNumber()  ; 
+  TTree * tree = static_cast<TTree *>(file->Get(treeName.Data())) ;
+  if (!tree && fDebug)  
+    cout << "WARNING: AliPHOSGetter::TreeH -> " << treeName.Data() << " not found in " << filename.Data() << endl ; 
+  
+  return tree ; 		      
+}
+
+//____________________________________________________________________________ 
+TTree * AliPHOSGetter::TreeS(TString filename)  
+{
+
+  // returns TreeS from file filename
+  // usefull in case of split file
+
+  if ( filename.IsNull() ) 
+    filename = fHeaderFile ; 
+
+  TFile * file = 0 ; 
+  file = static_cast<TFile*>(gROOT->GetFile(filename.Data() ) ) ;
+  if (!file) { // file not open yet
+    file = TFile::Open(filename.Data(), "read") ; 
+  }
+  TString treeName("TreeS") ; 
+  treeName += EventNumber()  ; 
+  TTree * tree = static_cast<TTree *>(file->Get(treeName.Data())) ;
+  if (!tree && fDebug)  
+    cout << "WARNING: AliPHOSGetter::TreeS -> " << treeName.Data() << " not found in " << filename.Data() << endl ; 
+  
+  return tree ; 		      
+}
+
+//____________________________________________________________________________ 
+TTree * AliPHOSGetter::TreeD(TString filename)  
+{
+
+  // returns TreeD from file filename
+  // usefull in case of split file
+
+  if ( filename.IsNull() ) 
+    filename = fHeaderFile ; 
+
+  TFile * file = 0 ; 
+  file = static_cast<TFile*>(gROOT->GetFile(filename.Data() ) ) ;
+  if (!file) { // file not open yet
+    file = TFile::Open(filename.Data(), "read") ; 
+  }
+  TString treeName("TreeD") ; 
+  treeName += EventNumber()  ; 
+  TTree * tree = static_cast<TTree *>(file->Get(treeName.Data())) ;
+  if (!tree && fDebug)  
+    cout << "WARNING: AliPHOSGetter::TreeD -> " << treeName.Data() << " not found in " << filename.Data() << endl ; 
+  
+  return tree ; 		      
+}
+
+//____________________________________________________________________________ 
+const TParticle * AliPHOSGetter::Primary(Int_t index) 
 {
   // Return primary particle numbered by <index>
 
   if(index < 0) 
     return 0 ;
-  TParticle *  p = gAlice->Particle(index) ; 
-//   if (p->GetFirstMother() != -1 ) {
-//     cout << "AliPHOSGetter::Primary : Not a primary " << endl ; 
-//   }
+  TParticle *  p = 0 ;
+  if (fAlice) 
+    p = fAlice->Particle(index) ; 
+  else 
+    p = gAlice->Particle(index) ; 
+  //   if (p->GetFirstMother() != -1 ) {
+  //     cout << "AliPHOSGetter::Primary : Not a primary " << endl ; 
+  //   }
+  
   return p ; 
+    
   
   
-//   Int_t primaryIndex = index % 10000000 ; 
+  //   Int_t primaryIndex = index % 10000000 ; 
 //   Int_t primaryList = (Int_t ) ((index-primaryIndex)/10000000.)  ;
   
 //   if ( primaryList > 0  ) {
@@ -1384,12 +1495,33 @@ const TParticle * AliPHOSGetter::Secondary(TParticle* p, Int_t index) const
 Int_t AliPHOSGetter::ReadTreeD()
 {
   // Read the digit tree gAlice->TreeD()  
-  if(gAlice->TreeD()== 0){
-    cerr <<   "WARNING: AliPHOSGetter::ReadTreeD: can not read TreeD " << endl ;
-  return 1;
+  
+  TTree * treeD = gAlice->TreeD() ;
+
+  if(!treeD) { // TreeD not found in header file
+    
+    if (fDebug) 
+      cout <<   "WARNING: AliPHOSGetter::ReadTreeD -> Cannot find TreeD in " << fHeaderFile << endl ;
+    
+    TString searchFileName("") ; 
+    
+    if (Digitizer())  // Digitizer found in header file
+      searchFileName = Digitizer()->GetTitle() ; 
+    
+    else if (Clusterizer())  // Clusterizer found in header file
+      searchFileName = Clusterizer()->GetDigitsFileName() ; 
+    
+    if (treeD = TreeD(searchFileName)) { //found TreeD in the file which contains the hits
+      if (fDebug) 
+	cout << "INFO: AliPHOSGetter::ReadTreeD -> TreeD found in " << searchFileName.Data() << endl ; 
+      
+    } else {
+      cerr << "ERROR: AliPHOSGetter::ReadTreeD -> TreeD not found " << endl ; 
+      return 1;
+    }   
   }
   
-  TObjArray * lob = static_cast<TObjArray*>(gAlice->TreeD()->GetListOfBranches()) ;
+  TObjArray * lob = static_cast<TObjArray*>(treeD->GetListOfBranches()) ;
   TIter next(lob) ; 
   TBranch * branch = 0 ; 
   TBranch * digitsbranch = 0 ; 
@@ -1422,7 +1554,7 @@ Int_t AliPHOSGetter::ReadTreeD()
   
   
   // read  the Digitizer
-  RemoveTask("D", fDigitsTitle) ;
+  RemoveTask("D", fDigitsTitle) ; // I do not understand why I need that 
   if(!Digitizer(fDigitsTitle))
     PostDigitizer(fDigitsTitle) ;
   digitizerbranch->SetAddress(DigitizerRef(fDigitsTitle)) ;
@@ -1435,13 +1567,36 @@ Int_t AliPHOSGetter::ReadTreeD()
 Int_t AliPHOSGetter::ReadTreeH()
 {
   // Read the first entry of PHOS branch in hit tree gAlice->TreeH()
+  
+  TTree * treeH = gAlice->TreeH() ;
 
-  if(gAlice->TreeH()== 0){
-    cerr <<   "WARNING: AliPHOSGetter::ReadTreeH: -> Cannot read TreeH " << endl ;
-    return 1;
+  if(!treeH) {// TreeH not found in header file
+ 
+    if (fDebug) 
+      cout <<   "WARNING: AliPHOSGetter::ReadTreeH -> Cannot find TreeH in " << fHeaderFile << endl ;
+    
+    TString searchFileName("") ; 
+    
+    if (SDigitizer())  // SDigitizer found in header file
+	searchFileName = SDigitizer()->GetTitle() ;
+ 
+    else if (Digitizer())  // Digitizer found in header file
+      searchFileName = Digitizer()->GetHitsFileName() ; 
+    
+    else if (Clusterizer())  // Clusterizer found in header file
+      searchFileName = Clusterizer()->GetHitsFileName() ; 
+      
+    if (treeH = TreeH(searchFileName)) { //found TreeH in the file which contains the hits
+      if (fDebug) 
+	cout << "INFO: AliPHOSGetter::ReadTreeH -> TreeH found in " << searchFileName.Data() << endl ; 
+      
+    } else {
+      cerr << "ERROR: AliPHOSGetter::ReadTreeH -> TreeH not found " << endl ; 
+      return 1;
+    }  
   }
   
-  TBranch * hitsbranch = static_cast<TBranch*>(gAlice->TreeH()->GetBranch("PHOS")) ;
+  TBranch * hitsbranch = static_cast<TBranch*>(treeH->GetBranch("PHOS")) ;
   if ( !hitsbranch ) {
     if (fDebug)
       cout << "WARNING:  AliPHOSGetter::ReadTreeH -> Cannot find branch PHOS" << endl ; 
@@ -1546,7 +1701,8 @@ Int_t AliPHOSGetter::ReadTreeR(Bool_t any)
   // See AliPHOSPIDv1    
 
   if(gAlice->TreeR()== 0){
-    cerr <<   "WARNING: AliPHOSGetter::ReadTreeR: can not read TreeR " << endl ;
+    if (fDebug) 
+      cout <<   "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find TreeR" << endl ;
     return 1;
   }
   // RecPoints 
@@ -1709,9 +1865,30 @@ Int_t AliPHOSGetter::ReadTreeS(Int_t event)
       treeName += event ; 
       treeS = dynamic_cast<TTree*>(gDirectory->Get(treeName.Data()));
     }
-    if(treeS==0){
-      cerr << "WARNING: AliPHOSGetter::ReadTreeS There is no SDigit Tree" << endl;
+    if(!treeS){ // TreeS not found in header file
+
+      if (fDebug)
+	cout << "WARNING: AliPHOSGetter::ReadTreeS -> Cannot find TreeS in " << fHeaderFile << endl;
+    
+      TString searchFileName("") ; 
+
+      if (SDigitizer())  // SDigitizer found in header file
+	searchFileName = SDigitizer()->GetTitle() ;
+ 
+      else if (Digitizer())  // Digitizer found in header file
+	searchFileName = Digitizer()->GetSDigitsFileName() ; 
+      
+      else if (Clusterizer())  // Clusterizer found in header file
+	searchFileName = Clusterizer()->GetSDigitsFileName() ; 
+      
+      if (treeS = TreeS(searchFileName)) { //found TreeS in the file which contains the hits
+	if (fDebug) 
+	  cout << "INFO: AliPHOSGetter::ReadTreeS -> TreeS found in " << searchFileName.Data() << endl ; 
+	
+      } else {
+      cerr << "ERROR: AliPHOSGetter::ReadTreeS -> TreeS not found " << endl ; 
       return 1;
+      }
     }
     
     //set address of the SDigits and SDigitizer
@@ -1834,12 +2011,42 @@ void AliPHOSGetter::ReadPrimaries()
   }
   ar->Delete() ; 
   
-  fNPrimaries = gAlice->GetNtrack() ; 
+  if (TreeK(fHeaderFile)) { // treeK found in header file
+    if (fDebug) 
+      cout << "INFO: AliPHOSGetter::ReadPrimaries -> TreeK found in " << fHeaderFile.Data() << endl ; 
+    fNPrimaries = gAlice->GetNtrack() ; 
+  
+  } else { // treeK not found in header file
+
+    TString searchFileName("") ; 
+
+    if (SDigitizer())  // SDigitizer found in header file
+      searchFileName = SDigitizer()->GetTitle() ;
+
+    else if (Digitizer())  // Digitizer found in header file
+      searchFileName = Digitizer()->GetHitsFileName() ; 
+
+    else if (Clusterizer())  // Clusterizer found in header file
+      searchFileName = Clusterizer()->GetHitsFileName() ; 
+    
+    if (TreeK(searchFileName)) { //found TreeK in the file which contains the hits
+      if (fDebug) 
+	cout << "INFO: AliPHOSGetter::ReadPrimaries -> TreeK found in " << searchFileName.Data() << endl ; 
+      fAlice->GetEvent(EventNumber()) ; 
+      fNPrimaries = fAlice->GetNtrack() ; 
+      
+    } else {
+      cerr << "ERROR: AliPHOSGetter::ReadPrimaries -> TreeK not  found " << endl ; 
+      return ;
+    }
+    
+  }
   Int_t index = 0 ; 
   for (index = 0 ; index < fNPrimaries; index++) { 
     new ((*ar)[index]) TParticle(*(Primary(index)));
   }
 }
+
 //____________________________________________________________________________ 
 void AliPHOSGetter::Event(const Int_t event, const char* opt)
 {
@@ -1861,25 +2068,24 @@ void AliPHOSGetter::Event(const Int_t event, const char* opt)
   Int_t rvRD = 0 ;
   Int_t rvRR = 0 ;
 
-  if(strstr(opt,"H") )
-    rvRH = ReadTreeH() ;
-
-  if(strstr(opt,"S") )
-    rvRS = ReadTreeS(event) ;
+  if( strstr(opt,"R") )
+    rvRR = ReadTreeR(any) ;
 
   if( strstr(opt,"D") )
     rvRD = ReadTreeD() ;
 
-  if( strstr(opt,"R") )
-    rvRR = ReadTreeR(any) ;
+  if(strstr(opt,"S") )
+    rvRS = ReadTreeS(event) ;
 
+  if(strstr(opt,"H") )
+    rvRH = ReadTreeH() ;
+   
   if( strstr(opt,"Q") )
     ReadTreeQA() ;
-
+ 
   if( strstr(opt,"P") || (strcmp(opt,"")==0) )
-    if ( gAlice->Stack() ) 
-      ReadPrimaries() ;
-
+    ReadPrimaries() ;
+  
 }
 
 //____________________________________________________________________________ 

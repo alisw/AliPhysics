@@ -90,6 +90,9 @@ ClassImp(AliEMCALDigitizer)
 
   InitParameters() ; 
   fDefaultInit = kTRUE ; 
+ 
+  fHitsFileName    = "" ;
+  fSDigitsFileName = "" ; 
 
 }
 
@@ -103,7 +106,10 @@ AliEMCALDigitizer::AliEMCALDigitizer(const char *headerFile,const char *name)
   InitParameters() ; 
   Init() ;
   fDefaultInit = kFALSE ; 
-
+  fSDigitsFileName = headerFile ; 
+  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
+  gime->Event(0, "S") ; 
+  fHitsFileName = gime->SDigitizer()->GetTitle() ; 
 }
 
 //____________________________________________________________________________ 
@@ -113,6 +119,15 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
   SetName("Default");    
   SetTitle("aliroot") ;  
   fDefaultInit = kFALSE ; 
+  
+  const AliRunDigitizer * rd = Manager() ; 
+  if (rd) {
+    AliStream * st = static_cast<AliStream*>(rd->GetInputStreams()->At(0))  ;
+    fSDigitsFileName = st->GetFileNames()->At(0)->GetName() ;
+  }
+  AliEMCALGetter * gime = AliEMCALGetter::GetInstance(fSDigitsFileName, GetName()) ; 
+  gime->Event(0,"S") ; 
+  fHitsFileName = gime->SDigitizer()->GetTitle() ; 
 }
 
 //____________________________________________________________________________ 

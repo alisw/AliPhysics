@@ -38,6 +38,9 @@
 #include "AliRun.h" 
 #include "AliEMCALClusterizer.h"
 #include "AliHeader.h" 
+#include "AliEMCALGetter.h"
+#include "AliEMCALSDigitizer.h"
+#include "AliEMCALDigitizer.h"
 
 ClassImp(AliEMCALClusterizer)
 
@@ -46,6 +49,10 @@ ClassImp(AliEMCALClusterizer)
 {
   // ctor
   fSplitFile = 0 ;  
+  fHitsFileName = "" ; 
+  fSDigitsFileName = "" ; 
+  fDigitsFileName = "" ; 
+
 }
 
 //____________________________________________________________________________
@@ -54,6 +61,13 @@ TTask(name, headerFile)
 {
   // ctor
   fSplitFile = 0 ;  
+  fDigitsFileName = headerFile ; 
+  AliEMCALGetter * gime = AliEMCALGetter::GetInstance(headerFile, name) ; 
+  gime->Event(0,"D") ; 
+  fSDigitsFileName = gime->Digitizer()->GetTitle() ; 
+  gime = AliEMCALGetter::GetInstance(fSDigitsFileName, name) ; 
+  gime->Event(0,"S") ; 
+  fHitsFileName = gime->SDigitizer()->GetTitle() ; 
 }
 
 //____________________________________________________________________________
@@ -62,7 +76,7 @@ AliEMCALClusterizer::~AliEMCALClusterizer()
   // dtor
   
   fSplitFile = 0 ;
-
+ 
 }
 
 //____________________________________________________________________________

@@ -90,8 +90,11 @@ ClassImp(AliPHOSDigitizer)
   // ctor
 
   InitParameters() ; 
-  fDefaultInit = kTRUE ; 
-}
+  fDefaultInit = kTRUE ;
+ 
+  fHitsFileName    = "" ;
+  fSDigitsFileName = "" ; 
+ }
 
 //____________________________________________________________________________ 
 AliPHOSDigitizer::AliPHOSDigitizer(const char *headerFile,const char * name)
@@ -105,7 +108,10 @@ AliPHOSDigitizer::AliPHOSDigitizer(const char *headerFile,const char * name)
   InitParameters() ; 
   Init() ;
   fDefaultInit = kFALSE ; 
-  
+  fSDigitsFileName = headerFile ; 
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+  gime->Event(0, "S") ; 
+  fHitsFileName = gime->SDigitizer()->GetTitle() ; 
 }
 
 //____________________________________________________________________________ 
@@ -116,6 +122,16 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
   SetName("Default") ;
   InitParameters() ; 
   fDefaultInit = kTRUE ; 
+  
+  const AliRunDigitizer * rd = Manager() ; 
+  if (rd) {
+    AliStream * st = static_cast<AliStream*>(rd->GetInputStreams()->At(0))  ;
+    fSDigitsFileName = st->GetFileNames()->At(0)->GetName() ;
+  }
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(fSDigitsFileName, GetName()) ; 
+  gime->Event(0,"S") ; 
+  fHitsFileName = gime->SDigitizer()->GetTitle() ; 
+  
 }
 
 //____________________________________________________________________________ 
