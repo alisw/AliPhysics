@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2001/01/26 19:56:27  hristov
+Major upgrade of AliRoot code
+
 Revision 1.14  2000/12/12 13:17:01  coppedis
 Minor corrections suggested by P. Hristov
 
@@ -76,13 +79,16 @@ AliZDC::AliZDC()
   //
   // Default constructor for the Zero Degree Calorimeter base class
   //
-  
-  fIshunt = 1;
 
   fNhits = 0;
+
   fNStHits = 0;
   fStHits = new TClonesArray("AliZDCHit",1000);
+
   fNPrimaryHits = 0;
+  fNoShower   = 0;
+  
+  fIshunt = 0;
 }
  
 //_____________________________________________________________________________
@@ -108,67 +114,12 @@ AliZDC::AliZDC(const char *name, const char *title)
   gAlice->AddHitList(fHits);
   
   fStHits = new TClonesArray("AliZDCHit",1000);
-
   fNStHits = 0;
 
   fNPrimaryHits = 0;
+  fNoShower   = 0;
   
-  fIshunt =  1;
-  
-  fDimZN[0] = 3.52;
-  fDimZN[1] = 3.52;
-  fDimZN[2] = 50.;
-  fDimZP[0] = 11.2;
-  fDimZP[1] = 6.;
-  fDimZP[2] = 75.;
-  fPosZN[0] = 0.;
-  fPosZN[1] = 0.;
-  fPosZN[2] = 11650.;
-  fPosZP[0] = -23.;
-  fPosZP[1] = 0.;
-  fPosZP[2] = 11600.;
-  fFibZN[0] = 0.;
-  fFibZN[1] = 0.01825;
-  fFibZN[2] = 50.;
-  fFibZP[0] = 0.;
-  fFibZP[1] = 0.0275;
-  fFibZP[2] = 75.;
-  fGrvZN[0] = 0.03;
-  fGrvZN[1] = 0.03;
-  fGrvZN[2] = 50.;
-  fGrvZP[0] = 0.04;
-  fGrvZP[1] = 0.04;
-  fGrvZP[2] = 75.;
-  fDivZN[0] = 11;
-  fDivZN[1] = 11;
-  fDivZN[2] = 0;
-  fDivZP[0] = 7;
-  fDivZP[1] = 15;
-  fDivZP[2] = 0;
-  fTowZN[0] = 2;
-  fTowZN[1] = 2;
-  fTowZP[0] = 4;
-  fTowZP[1] = 1;
-  
-  // EM Calorimeter
-  fDimZEMPb  = 0.15*(TMath::Sqrt(2.));
-  fDimZEMAir = 0.001;
-  fFibRadZEM = 0.0315;
-  fDivZEM[0] = 92;
-  fDivZEM[1] = 0;
-  fDivZEM[2] = 20;
-  fDimZEM[0] = 2*fDivZEM[2]*(fDimZEMPb+fDimZEMAir+fFibRadZEM*(TMath::Sqrt(2.)));
-  fDimZEM[1] = 3.5;
-  fDimZEM[2] = 3.5;
-  fDimZEM[3] = 45.;
-  fDimZEM[4] = 0.;
-  fDimZEM[5] = 0.;
-  fFibZEM[0] = 0.;
-  fFibZEM[1] = 0.0275;
-  fFibZEM[2] = fDimZEM[2]/TMath::Sin(fDimZEM[3]*kDegrad)-fFibRadZEM;
-  fPosZEM[0] = 0.;
-  fPosZEM[1] = 5.8;
-  fPosZEM[2] = 11600.;
+  fIshunt =  0;
 
 }
 //____________________________________________________________________________ 
@@ -238,7 +189,7 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
       else if(track == primary){
         newquad->fSFlag = 0;  // Hit created by PRIMARY particle entering the ZDC
       }  
-      fNPrimaryHits = fNPrimaryHits + 1;
+      fNPrimaryHits += 1;
       sFlag = newquad->fSFlag;
       primKinEn = newquad->fPrimKinEn;
       xImpact = newquad->fXImpact;
@@ -260,10 +211,12 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
       fNStHits++;
     }
  
-//    printf("\n  Primary Hits --------------------------------------------------------\n");
-//    fHits->Print("");
-//    printf("\n  Event Hits --------------------------------------------------------\n");
-//    fStHits->Print("");
+    if(fDebug == 1){ 
+      printf("\n  Primary Hits --------------------------------------------------------\n");
+      fHits->Print("");
+      printf("\n  Event Hits --------------------------------------------------------\n");
+      fStHits->Print("");
+    }
 
     delete newquad;
   }
