@@ -278,3 +278,5 @@
                 different calorimeter systems in an event structure.
                 Storage of jets introduced in AliVertex on the same footing as the
                 storage of (secondary) vertices.
+04-jul-2001 NvE Storage of calorimeters introduced in AliEvent and ResetVertices()
+                added to AliVertex.

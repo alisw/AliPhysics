@@ -20,7 +20,8 @@ class AliVertex : public AliJet,public AliPosition
   AliVertex();                            // Default constructor
   AliVertex(Int_t n);                     // Create a vertex to hold initially n tracks
   ~AliVertex();                           // Default destructor
-  void Reset();                           // Reset all values
+  void Reset();                           // Reset all values and stored vertex and jet lists
+  void ResetVertices();                   // Reset stored vertex list
   void AddJet(AliJet& j,Int_t tracks=1);  // Add a jet (and its tracks) to the vertex
   void AddVertex(AliVertex& v,Int_t connect=1);// Add (and connect) a (sec.) vertex to the current vertex
   void AddJet(AliJet* j,Int_t tracks=1)    { AddJet(*j,tracks); }

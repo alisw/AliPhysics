@@ -252,9 +252,10 @@ void AliVertex::SetNjmax(Int_t n)
 ///////////////////////////////////////////////////////////////////////////
 void AliVertex::Reset()
 {
-// Reset all variables to 0
+// Reset all variables to 0 and reset all stored vertex and jet lists.
 // The max. number of tracks is set to the initial value again
 // The max. number of vertices is set to the default value again
+// The max. number of jets is set to the default value again
 
  AliJet::Reset();
 
@@ -273,6 +274,45 @@ void AliVertex::Reset()
 
  fNjets=0;
  if (fNjmax>0) SetNjmax(fNjmax);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliVertex::ResetVertices()
+{
+// Reset the stored vertex list and delete all connecting tracks which
+// were generated automatically via connect=1 in AddVertex().
+// The max. number of vertices is set to the default value again.
+// All physics quantities are updated according to the remaining structure
+// of connected tracks.
+ AliTrack* t;
+ if (fConnects)
+ {
+  for (Int_t i=0; i<=fConnects->GetLast(); i++)
+  {
+   t=(AliTrack*)fConnects->At(i);
+   AliTrack* test=(AliTrack*)fTracks->Remove(t);
+   if (test) fNtrk--;
+  }
+  fTracks->Compress();
+ }
+
+ fQ=0;
+ Double_t a[4]={0,0,0,0};
+ Ali4Vector::SetVector(a,"sph");
+ for (Int_t i=0; i<fNtrk; i++)
+ {
+  t=GetTrack(i);
+  (*this)+=(Ali4Vector&)(*t);
+  fQ+=t->GetCharge();
+ }
+
+ fNvtx=0;
+ if (fNvmax>0) SetNvmax(fNvmax);
+ if (fConnects)
+ {
+  fConnects->Delete();
+  delete fConnects;
+  fConnects=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliVertex::AddJet(AliJet& j,Int_t tracks)

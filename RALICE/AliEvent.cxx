@@ -13,61 +13,139 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id$
+// $Id: AliEvent.cxx,v 1.2 2001/06/25 09:37:23 hristov Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
 // Creation and investigation of an Alice physics event.
-// An AliEvent can be constructed by adding AliTracks, Alivertices
-// and/or AliJets.
+// An AliEvent can be constructed by adding AliTracks, Alivertices, AliJets
+// and/or AliCalorimeters.
 //
 // The basic functionality of AliEvent is identical to the one of AliVertex.
 // So, an AliEvent may be regarded as the primary vertex with some
 // additional functionality compared to AliVertex.
 //
-// Coding example to make an event consisting of a primary vertex
-// and 2 secondary vertices.
-// --------------------------------------------------------------
-// v1 contains the tracks 1,2,3 and 4
-// v2 contains the tracks 5,6 and 7
-// v3 contains the jets 1 and 2
+// To provide maximal flexibility to the user, the two modes of track/jet/vertex
+// storage as described in AliJet and AliVertex can be used.
+// In addition an identical structure is provided for the storage of AliCalorimeter
+// objects, which can be selected by means of the memberfunction SetCalCopy().
 //
-//        AliTrack t1,t2,t3,t4,t5,t6,t7;
+// a) SetCalCopy(0) (which is the default).
+//    Only the pointers of the 'added' calorimeters are stored.
+//    This mode is typically used by making cal. studies based on a fixed set
+//    of calorimeters which stays under user control or is kept on an external
+//    file/tree. 
+//    In this way the AliEvent just represents a 'logical structure' for the
+//    physics analysis.
+//    Modifications made to the original calorimeters also affect the AliCalorimeter
+//    objects which are stored in the AliEvent. 
+// b) SetCalCopy(1).
+//    Of every 'added' calorimeter a private copy will be made of which the pointer
+//    will be stored.
+//    In this way the AliEvent represents an entity on its own and modifications
+//    made to the original calorimeters do not affect the AliCalorimeter objects
+//    which are stored in the AliEvent. 
+//    This mode will allow 'adding' many different AliCalorimeters into an AliEvent by
+//    creating only one AliCalorimeter instance in the main programme and using the
+//    AliCalorimeter::Reset() and AliCalorimeter parameter setting memberfunctions.
+//
+// Coding example to make an event consisting of a primary vertex,
+// 2 secondary vertices and a calorimeter.
+// --------------------------------------------------------------
+// vp contains the tracks 1,2,3 and 4 (primary vertex)
+// v1 contains the tracks 5,6 and 7   (sec. vertex)
+// v2 contains the jets 1 and 2       (sec. vertex)
+//
+//        AliCalorimeter emcal;
+//         ...
+//         ... // code to fill the calorimeter data
+//         ...
+//
+//        AliEvent evt;
+//
+// Specify the event object as the repository of all objects
+// for the event building and physics analysis.
+// 
+//        evt.SetCalCopy(1);
+//        evt.SetTrackCopy(1);
+//
+// Fill the event structure with the basic objects
+// 
+//        evt.AddCalorimeter(emcal);
+//
+//        AliTrack* tx;
+//        for (Int_t i=0; i<10; i++)
+//        {
 //         ...
 //         ... // code to fill the track data
 //         ...
+//         evt.AddTrack(tx);
+//         tx->Reset(); 
+//        }
+//
+// Build the event structure (vertices, jets, ...) for physics analysis
+// based on the basic objects from the event repository.
 //
 //        AliJet j1,j2;
+//        for (Int_t i=0; i<evt.GetNtracks(); i++)
+//        {
+//         tx=evt.GetTrack(i);
 //         ...
 //         ... // code to fill the jet data
 //         ...
+//        }
 //
-//        AliEvent evt(5);
+//        AliVertex vp;
+//        tx=evt.GetTrack(1)
+//        vp.AddTrack(tx);
+//        tx=evt.GetTrack(2)
+//        vp.AddTrack(tx);
+//        tx=evt.GetTrack(3)
+//        vp.AddTrack(tx);
+//        tx=evt.GetTrack(4)
+//        vp.AddTrack(tx);
 //
-//        evt.AddTrack(t1);
-//        evt.AddTrack(t2);
-//        evt.AddTrack(t3);
-//        evt.AddTrack(t4);
+//        Float_t rp[3]={2.4,0.1,-8.5};
+//        vp.SetPosition(rp,"car");
 //
-//        Float_t r0[3]={2.4,0.1,-8.5};
-//        evt.SetPosition(r0,"car");
-//
-//        AliVertex v1(2);
-//        v1.AddTrack(t5);
-//        v1.AddTrack(t6);
-//        v1.AddTrack(t7);
+//        AliVertex v1;
+//        tx=evt.GetTrack(5)
+//        v1.AddTrack(tx);
+//        tx=evt.GetTrack(6)
+//        v1.AddTrack(tx);
+//        tx=evt.GetTrack(7)
+//        v1.AddTrack(tx);
 //
 //        Float_t r1[3]={1.6,-3.2,5.7};
 //        v1.SetPosition(r1,"car");
 //
-//        AliVertex v2;
 //
+//        AliVertex v2;
+//        v2.SetJetCopy(1);
 //        v2.AddJet(j1);
 //        v2.AddJet(j2);
 //
 //        Float_t r2[3]={6.2,4.8,1.3};
 //        v2.SetPosition(r2,"car");
 //
+// Specify the vertices v1 and v2 as secondary vertices of the primary
+//
+//        vp.SetVertexCopy(1);
+//        vp.AddVertex(v1);
+//        vp.AddVertex(v2);
+//
+// Enter the physics structures into the event
+//        evt.SetVertexCopy(1);
+//        evt.AddVertex(vp,0);
+//
+// The jets j1 and j2 are already available via sec. vertex v2,
+// but can be made available also from the event itself if desired.
+//        AliJet* jx;
+//        jx=v2.GetJet(1);
+//        evt.AddJet(jx,0); 
+//        jx=v2.GetJet(2);
+//        evt.AddJet(jx,0); 
+// 
 //        evt.Info("sph");
 //        v1.ListAll();
 //        v2.List("cyl");
@@ -81,15 +159,10 @@
 //        Int_t nt=v2.GetNtracks();
 //        AliTrack* tv=v2.GetTrack(1); // Access track number 1 of Vertex v2
 //
-// Specify the vertices v2 and v3 as secondary vertices of the primary
-//
-//        evt.AddVertex(v2);
-//        evt.AddVertex(v3);
-//
 //        evt.List();
 //
 //        Int_t nv=evt.GetNvtx();
-//        AliVertex* vx=evt.GetVertex(1); // Access 1st secondary vertex
+//        AliVertex* vx=evt.GetVertex(1); // Access primary vertex
 //        Float_t e=vx->GetEnergy();
 //
 //        Float_t M=evt.GetInvmass(); 
@@ -98,16 +171,14 @@
 //
 //        evt.Reset();
 //        evt.SetNvmax(25); // Increase initial no. of sec. vertices
-//        evt.AddTrack(t3);
-//        evt.AddTrack(t7);
-//        evt.AddJet(j2);
-//        Float_t pos[3]={7,9,4};
-//        evt.SetPosition(pos,"car");
+//        ...
+//        ... // code to create tracks etc... 
+//        ...
 //
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
-//- Modified: NvE $Date$ UU-SAP Utrecht
+//- Modified: NvE $Date: 2001/06/25 09:37:23 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliEvent.h"
@@ -121,6 +192,9 @@ AliEvent::AliEvent()
  fDaytime.Set();
  fRun=0;
  fEvent=0;
+ fNcals=0;
+ fCalorimeters=0;
+ fCalCopy=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliEvent::AliEvent(Int_t n): AliVertex(n)
@@ -130,11 +204,20 @@ AliEvent::AliEvent(Int_t n): AliVertex(n)
  fDaytime.Set();
  fRun=0;
  fEvent=0;
+ fNcals=0;
+ fCalorimeters=0;
+ fCalCopy=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliEvent::~AliEvent()
 {
 // Default destructor
+ if (fCalorimeters)
+ {
+  if (fCalCopy) fCalorimeters->Delete();
+  delete fCalorimeters;
+  fCalorimeters=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliEvent::Reset()
@@ -145,6 +228,14 @@ void AliEvent::Reset()
  fDaytime.Set();
  fRun=0;
  fEvent=0;
+
+ fNcals=0;
+ if (fCalorimeters)
+ {
+  if (fCalCopy) fCalorimeters->Delete();
+  delete fCalorimeters;
+  fCalorimeters=0;
+ }
 
  AliVertex::Reset();
 }
@@ -206,6 +297,7 @@ void AliEvent::HeaderInfo()
  cout << " Date : " << setw(2) << day << "-" << c[month-1] << "-" << year
       << " Time : " << setw(2) << hh << ":" << setw(2) << mm << ":" << setw(2) << ss << endl;
  cout.fill(' ');
+ cout << " Ncalorimeters : " << fNcals << endl;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliEvent::Info(TString f)
@@ -214,5 +306,111 @@ void AliEvent::Info(TString f)
  HeaderInfo();
  AliVertex::Info(f);
 } 
+///////////////////////////////////////////////////////////////////////////
+Int_t AliEvent::GetNcalorimeters()
+{
+// Provide the number of stored calorimeter systems
+ return fNcals;
+} 
+///////////////////////////////////////////////////////////////////////////
+void AliEvent::AddCalorimeter(AliCalorimeter& c)
+{
+// Add a calorimeter system to the event
+ if (!fCalorimeters) fCalorimeters=new TObjArray();
+ 
+ // Add the calorimeter system to this event
+ fNcals++;
+ if (fCalCopy)
+ {
+  AliCalorimeter* cx=new AliCalorimeter(c);
+  fCalorimeters->AddLast(cx);
+ }
+ else
+ {
+  fCalorimeters->AddLast(&c);
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliEvent::SetCalCopy(Int_t j)
+{
+// (De)activate the creation of private copies of the added calorimeters.
+// j=0 ==> No private copies are made; pointers of original cals. are stored.
+// j=1 ==> Private copies of the cals. are made and these pointers are stored.
+//
+// Note : Once the storage contains pointer(s) to AliCalorimeter(s) one cannot
+//        change the CalCopy mode anymore.
+//        To change the CalCopy mode for an existing AliEvent containing
+//        calorimeters one first has to invoke Reset().
+ if (!fCalorimeters)
+ {
+  if (j==0 || j==1)
+  {
+   fCalCopy=j;
+  }
+  else
+  {
+   cout << "*AliEvent::SetCalCopy* Invalid argument : " << j << endl;
+  }
+ }
+ else
+ {
+  cout << "*AliEvent::SetCalCopy* Storage already contained calorimeters."
+       << "  ==> CalCopy mode not changed." << endl; 
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliEvent::GetCalCopy()
+{
+// Provide value of the CalCopy mode.
+// 0 ==> No private copies are made; pointers of original cals. are stored.
+// 1 ==> Private copies of the cals. are made and these pointers are stored.
+ return fCalCopy;
+}
+///////////////////////////////////////////////////////////////////////////
+AliCalorimeter* AliEvent::GetCalorimeter(Int_t i)
+{
+// Return the i-th calorimeter of this event
+ if (!fCalorimeters)
+ {
+  cout << " *AliEvent::GetCalorimeter* No calorimeters present." << endl;
+  return 0;
+ }
+ else
+ {
+  if (i<=0 || i>fNcals)
+  {
+   cout << " *AliEvent::GetCalorimeter* Invalid argument i : " << i
+        << " Ncals = " << fNcals << endl;
+   return 0;
+  }
+  else
+  {
+   return (AliCalorimeter*)fCalorimeters->At(i-1);
+  }
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+AliCalorimeter* AliEvent::GetCalorimeter(TString name)
+{
+// Return the calorimeter with name tag "name"
+ if (!fCalorimeters)
+ {
+  cout << " *AliEvent::GetCalorimeter* No calorimeters present." << endl;
+  return 0;
+ }
+ else
+ {
+  AliCalorimeter* cx;
+  TString s;
+  for (Int_t i=0; i<fNcals; i++)
+  {
+   cx=(AliCalorimeter*)fCalorimeters->At(i);
+   s=cx->GetName();
+   if (s == name) return cx;
+  }
+
+  return 0; // No matching name found
+ }
+}
 ///////////////////////////////////////////////////////////////////////////
 
