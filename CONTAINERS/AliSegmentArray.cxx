@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2001/01/26 20:29:00  hristov
+Major upgrade of AliRoot code
+
 Revision 1.1  2000/11/01 15:57:13  kowal2
 Moved from the TPC directory
 
@@ -116,7 +119,7 @@ AliSegmentArray::~AliSegmentArray()
   }
   if (fTree) delete fTree;
   if (fTreeIndex) delete fTreeIndex;
-  if (fClass!=0) delete fClass;
+  //  if (fClass!=0) delete fClass;
 }
 
 
@@ -125,7 +128,7 @@ Bool_t AliSegmentArray::SetClass(Text_t *classname)
   //
   //set class of stored object
   if ( fClass !=0 ) {
-    delete fClass;
+    //delete fClass; not ower of fClass
     fClass = 0;
   }
   if (fTree !=0) {
@@ -261,18 +264,18 @@ Bool_t  AliSegmentArray::MakeDictionary(Int_t size)
   fTreeIndex = new AliArrayI(); 
   fTreeIndex->Set(size);
   
-  AliSegmentID  segment;
-  AliSegmentID * psegment = &segment;
+  AliSegmentID * psegment = NewSegment(); //MI change
   fBranch->SetAddress(&psegment);
   TBranch * brindix = fTree->GetBranch("fSegmentID");
   Int_t nevent = (Int_t)fTree->GetEntries();  
   for (Int_t i = 0; i<nevent; i++){
     brindix->GetEvent(i);
-    Int_t treeIndex=segment.GetID();
+    Int_t treeIndex=psegment->GetID();
     if (fTreeIndex->fN<treeIndex) fTreeIndex->Expand(Int_t(Float_t(treeIndex)*1.5)+1);
     //    Int_t index = segment.GetID(); 
     (*fTreeIndex)[treeIndex]=i+1; //  
   }
+  if (psegment) delete psegment;
   return kTRUE;
 }
 
