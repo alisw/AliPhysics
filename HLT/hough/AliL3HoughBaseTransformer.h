@@ -29,22 +29,22 @@ class AliL3HoughBaseTransformer {
   void SetInputData(UInt_t /*ndigits*/,AliL3DigitRowData *ptr) {fDigitRowData = ptr;}
   
   //this is for adaptave histograms
-  virtual void CreateHistograms(Float_t /*ptmin*/,Float_t /*ptmax*/,Float_t /*pres*/,Int_t /*nybin*/,Float_t /*psi*/) const
+  virtual void CreateHistograms(Float_t /*ptmin*/,Float_t /*ptmax*/,Float_t /*pres*/,Int_t /*nybin*/,Float_t /*psi*/)
     {STDCERR<<"Adaptive histograms are not supported  for this Transformer!"<<STDENDL;}
 
   virtual void CreateHistograms(Int_t nxbin,Float_t ptmin,Int_t nybin,Float_t phimin,Float_t phimax) = 0;
   virtual void CreateHistograms(Int_t nxbin,Float_t xmin,Float_t xmax,Int_t nybin,Float_t ymin,Float_t ymax) = 0;
 
   virtual void Reset() = 0;
-  virtual void TransformCircle() const
+  virtual void TransformCircle()
     {STDCERR<<"TransformCircle is not defined for this transformer!"<<STDENDL;}
-  virtual void TransformCircle(Int_t */*row_range*/,Int_t /*every*/) const
+  virtual void TransformCircle(Int_t */*row_range*/,Int_t /*every*/)
     {STDCERR<<"TransformCircle is not defined for this transformer!"<<STDENDL;}
-  virtual void TransformCircleC(Int_t */*row_range*/,Int_t /*every*/) const
+  virtual void TransformCircleC(Int_t */*row_range*/,Int_t /*every*/)
     {STDCERR<<"TransformCircleC is not defined for this transformer!"<<STDENDL;}
-  virtual void TransformLine(Int_t */*rowrange*/=0,Float_t */*phirange*/=0) const
+  virtual void TransformLine(Int_t */*rowrange*/=0,Float_t */*phirange*/=0)
     {STDCERR<<"TransformLine is not defined for this Transformer!"<<STDENDL;}
-  virtual void TransformLineC(Int_t */*rowrange*/,Float_t */*phirange*/) const
+  virtual void TransformLineC(Int_t */*rowrange*/,Float_t */*phirange*/)
       {STDCERR<<"TransformLineC is not defined for this Transformer!"<<STDENDL;}
 
   //Getters
