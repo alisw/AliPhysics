@@ -16,6 +16,7 @@
 /*
 $Id$
 */
+#include <Riostream.h>
 #include <TSystem.h>
 #include <TROOT.h>
 #include <TGeoManager.h>
@@ -91,6 +92,7 @@ void DisplayITSv11::Exec(Option_t* opt){
     //      none.
     Int_t i;
 
+    if(strstr(opt,"debug")) fits->SetDebug();
     gSystem->Load("libGeom");
     //
     if(gGeoManager) delete gGeoManager;

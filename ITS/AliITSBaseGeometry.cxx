@@ -158,6 +158,8 @@ AliITSGeoCable::AliITSGeoCable(const char *name,const TObjArray *vect,
     Double_t s,th,ph;
     TVector3 x0,x1,x2,d,t,n0,n1;
 
+    fRmin = Rmin;
+    fRmax = Rmax;
     fRmin = fRmax = 0.0;
     fNs.SetXYZ(0.0,0.0,-1.0);
     fNe.SetXYZ(0.0,0.0,1.0);
