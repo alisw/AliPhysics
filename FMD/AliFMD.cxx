@@ -90,7 +90,6 @@
 //                                                                          
 //Begin_Html
 /*
-   <img src="gif/AliFMDClass.gif">
    </pre>
    <br clear=left>
    <p>
