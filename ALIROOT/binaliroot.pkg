@@ -10,7 +10,7 @@ ELIBS:= MUONmapping MUON TPCbase TPCsim TPCrec TPCfast \
         STRUCT STARTbase STARTsim STARTrec EVGEN STEER CONTAINERS \
         pythia6 AliPythia6 pdf THijing \
         hijing TMEVSIM mevsim THbtp HBTP THerwig herwig TEPEMGEN EPEMGEN \
-        TPHIC FASTSIM microcern RAW
+        TPHIC FASTSIM microcern RAW AliL3Src AliL3Comp AliL3Misc AliL3Hough
 # g2c_sh
 
 
