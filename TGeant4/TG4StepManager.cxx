@@ -12,7 +12,6 @@
 
 #include <G4SteppingManager.hh>
 #include <G4UserLimits.hh>
-#include <G4ParticleTable.hh>
 #include <G4UImanager.hh>
 #include <G4AffineTransform.hh>
 #include <G4TransportationManager.hh>

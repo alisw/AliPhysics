@@ -4,7 +4,6 @@
 // See the class description in the header file.
 
 #include "TG4SteppingAction.h"
-#include "TG4StepManager.h"
 #include "TG4VSensitiveDetector.h"
 #include "TG4Globals.h"
 

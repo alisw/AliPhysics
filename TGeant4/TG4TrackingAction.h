@@ -10,7 +10,6 @@
 #define TG4_TRACKING_ACTION_H
 
 #include <G4UserTrackingAction.hh>
-#include <globals.hh>
 
 class G4Track;
 

@@ -10,8 +10,6 @@
 #include "TG4Globals.h"
 #include "TG3Flag.h"
 
-#include <g4rw/tvordvec.h>
-
 class G4VProcess;
 
 class TG4FlagVector

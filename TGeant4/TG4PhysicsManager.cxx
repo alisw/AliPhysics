@@ -10,7 +10,6 @@
 #include "TG4G3Defaults.h"
 
 #include <G4ParticleDefinition.hh>
-#include <Randomize.hh>
 
 #include <TDatabasePDG.h>
 

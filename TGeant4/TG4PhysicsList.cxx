@@ -8,29 +8,20 @@
 #include "TG4PhysicsList.h"
 #include "TG4PhysicsListMessenger.h"
 #include "TG4PhysicsManager.h"
-#include "TG4CutVector.h"
 #include "TG4FlagVector.h"
 #include "TG4SpecialCuts.h"
 #include "TG4SpecialFlags.h"
 
 #include <G4ParticleDefinition.hh>
-#include <G4ParticleWithCuts.hh>
 #include <G4ProcessManager.hh>
 #include <G4ProcessVector.hh>
-#include <G4ParticleTypes.hh>
-#include <G4ParticleTable.hh>
 #include <G4BosonConstructor.hh>
 #include <G4LeptonConstructor.hh>
 #include <G4MesonConstructor.hh>
 #include <G4BaryonConstructor.hh>
 #include <G4IonConstructor.hh>
 #include <G4ShortLivedConstructor.hh>
-#include <G4Material.hh>
-#include <G4MaterialTable.hh>
 #include <G4ProcessTable.hh>
-//#include <G4ios.hh>
-
-#include <g4std/iomanip>
 
 
 TG4PhysicsList::TG4PhysicsList()
@@ -964,6 +955,7 @@ void TG4PhysicsList::SetCuts()
   // default cut value
   G4double cut  = defaultCutValue;
   G4double ecut = 10.*m; 
+  //G4double ecut = cut; 
 
 #ifdef G4VERBOSE    
   if (verboseLevel >1){

@@ -25,16 +25,12 @@
 #include <G3MedTable.hh>
 #include <G3SensVolVector.hh>
 
-#include <G4SDManager.hh>
 #include <G4VSensitiveDetector.hh>
 #include <G4LogicalVolumeStore.hh>
 #include <G4PVPlacement.hh>
 #include <G4Material.hh>
 #include <G4MaterialPropertiesTable.hh>
 #include <G4Element.hh> 
-
-#include <math.h>
-#include <ctype.h>
 
 // extern global method from g3tog4
 void G3CLRead(G4String &, char *);

@@ -8,7 +8,6 @@
 #include "TG4G3Defaults.h"
 #include "TG4Globals.h"
 
-#include <G4ParticleDefinition.hh>
 #include <G4VProcess.hh>
 
 #include <math.h>
