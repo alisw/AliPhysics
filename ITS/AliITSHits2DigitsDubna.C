@@ -1,0 +1,109 @@
+Int_t AliITSHits2DigitsDubna()
+{
+
+  // Connect the Root Galice file containing Geometry, Kine and Hits
+
+  const char * inFile = "galice.root";  
+  TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(inFile);
+  if (file) {file->Close(); delete file;}
+  printf("Hits2Digits\n");
+  file = new TFile(inFile,"UPDATE");
+  if (!file->IsOpen()) {
+    cerr<<"Can't open "<<inFile<<" !\n";
+    return 1;
+  }
+  file->ls();
+
+  // Get AliRun object from file or return if not on file
+  if (gAlice) delete gAlice;
+  gAlice = (AliRun*)file->Get("gAlice");
+  if (!gAlice) {
+    cerr<<"ITSHits2Digits.C : AliRun object not found on file\n";
+    return 2;
+  }
+
+  gAlice->GetEvent(0);
+  AliITS *ITS = (AliITS*)gAlice->GetDetector("ITS");      
+  if (!ITS) {
+    cerr<<"ITSHits2Digits.C : AliITS object not found on file\n";
+    return 3;
+  }
+
+// Set the simulation models for the three detector types
+  AliITSgeom *geom = ITS->GetITSgeom();
+
+  // SPD
+  AliITSDetType *iDetType=ITS->DetType(0);
+  AliITSsegmentationSPD *seg0=(AliITSsegmentationSPD*)iDetType->GetSegmentationModel();
+  //AliITSresponseSPDdubna *res0 = (AliITSresponseSPDdubna*)iDetType->GetResponseModel();
+  AliITSresponseSPDdubna *res0 = new AliITSresponseSPDdubna();
+  ITS->SetResponseModel(0,res0);
+  AliITSsimulationSPDdubna *sim0=new AliITSsimulationSPDdubna(seg0,res0);
+  ITS->SetSimulationModel(0,sim0);
+  // test
+  printf("SPD dimensions %f %f \n",seg0->Dx(),seg0->Dz());
+  printf("SPD npixels %d %d \n",seg0->Npz(),seg0->Npx());
+  printf("SPD pitches %d %d \n",seg0->Dpz(0),seg0->Dpx(0));
+  // end test
+
+  // SDD
+  // Set response parameters
+  // SDD compression param: 2 fDecrease, 2fTmin, 2fTmax or disable, 2 fTolerance
+  AliITSDetType *iDetType=ITS->DetType(1);
+  AliITSresponseSDD *res1 = (AliITSresponseSDD*)iDetType->GetResponseModel();
+  if (!res1) {
+    res1=new AliITSresponseSDD();
+    ITS->SetResponseModel(1,res1);
+  }
+   Float_t baseline;
+   Float_t noise;
+   res1->GetNoiseParam(noise,baseline);
+   Float_t noise_after_el = res1->GetNoiseAfterElectronics();
+   cout << "noise_after_el: " << noise_after_el << endl; 
+   Float_t fCutAmp;
+   fCutAmp = baseline;
+   fCutAmp += (2.*noise_after_el);  // noise
+   cout << "Cut amplitude: " << fCutAmp << endl;
+   Int_t cp[8]={0,0,fCutAmp,fCutAmp,0,0,0,0};
+   res1->SetCompressParam(cp);
+
+   res1->Print();
+  AliITSsegmentationSDD *seg1=(AliITSsegmentationSDD*)iDetType->GetSegmentationModel();
+  if (!seg1) {
+    seg1 = new AliITSsegmentationSDD(geom,res1);
+    ITS->SetSegmentationModel(1,seg1);
+  }
+  AliITSsimulationSDD *sim1=new AliITSsimulationSDD(seg1,res1);
+  ITS->SetSimulationModel(1,sim1);
+
+  // SSD
+  AliITSDetType *iDetType=ITS->DetType(2);
+  AliITSsegmentationSSD *seg2=(AliITSsegmentationSSD*)iDetType->GetSegmentationModel();
+  AliITSresponseSSD *res2 = (AliITSresponseSSD*)iDetType->GetResponseModel();
+  res2->SetSigmaSpread(3.,2.);
+  AliITSsimulationSSD *sim2=new AliITSsimulationSSD(seg2,res2);
+  ITS->SetSimulationModel(2,sim2);
+
+  cerr<<"Digitizing ITS...\n";
+
+   if(!gAlice->TreeD()) gAlice->MakeTree("D");
+   printf("TreeD %p\n",gAlice->TreeD());
+   //make branch
+   ITS->MakeBranch("D");
+  
+  TStopwatch timer;
+  timer.Start();
+  ITS->HitsToDigits(0,0,-1," ","All"," ");
+  timer.Stop(); timer.Print();
+
+  delete sim0;
+  delete sim1;
+  delete sim2;
+
+
+  delete gAlice;   gAlice=0;
+  file->Close(); 
+  delete file;
+  return 0;
+};
+
