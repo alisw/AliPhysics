@@ -12,7 +12,7 @@
 # include <AliRunDigitizer.h>
 #endif
 #ifndef ALIFMDEdepMAP_H
-# include <AliFMDEdepMap.h>
+# include "AliFMDEdepMap.h"
 #endif
 #ifndef __UTILITY__
 # include <utility>

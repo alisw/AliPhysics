@@ -13,7 +13,7 @@
 //  Manager class for the FMD - Coarse version. 
 //
 #ifndef ALIFMD_H 
-# include <AliFMD.h>
+# include "AliFMD.h"
 #endif
 
 //____________________________________________________________________

@@ -13,7 +13,7 @@
 //  Manager class for the FMD - Detailed version. 
 //
 #ifndef ALIFMD_H 
-# include <AliFMD.h>
+# include "AliFMD.h"
 #endif
 #ifndef ROOT_TLorentzVector
 # include <TLorentzVector.h>

@@ -15,7 +15,7 @@
 // sub-detectors. 
 //
 #ifndef ALIFMDPOLYGON_H
-# include <AliFMDPolygon.h>
+# include "AliFMDPolygon.h"
 #endif
 #ifndef ROOT_TArrayI
 # include <TArrayI.h>
