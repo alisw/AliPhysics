@@ -73,6 +73,8 @@ class AliFMDhit : public AliHit {
 
 private:
   Int_t      fVolume;       //Volume copy identifier
+  Int_t    fNumberOfSector;
+  Int_t    fNumberOfRing;
   Int_t      fParticle;     //Particle identificator
   Float_t    fEdep;         //Energy deposition
   Float_t    fPx;            // Particle's momentum X
@@ -85,16 +87,19 @@ public:
   AliFMDhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
   virtual ~AliFMDhit() {}
   Int_t Volume();
+  Int_t NumberOfSector();
+  Int_t NumberOfRing();
   Float_t Particle();
   Float_t Edep();
   Float_t Px();
   Float_t Py();
   Float_t Pz();
   Float_t Time();
-
-  ClassDef(AliFMDhit,1)  //Hits for detector FMD
+  ClassDef(AliFMDhit,2)  //Hits for detector FMD
 };
 inline Int_t AliFMDhit::Volume(){return fVolume;} 
+inline Int_t AliFMDhit::NumberOfSector(){return fNumberOfSector;} 
+inline Int_t AliFMDhit::NumberOfRing(){return fNumberOfRing;} 
 inline Float_t AliFMDhit::Particle(){return fParticle;} 
 inline Float_t AliFMDhit::Edep(){return fEdep;} 
 inline Float_t AliFMDhit::Px(){return fPx;} 

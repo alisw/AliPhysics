@@ -35,7 +35,7 @@
 #include "AliMC.h"
 #include <iostream.h>
 #include <fstream.h>
-
+//#include <AliRandom.h>
 #include "AliMagF.h"
 #include "AliFMDhit.h"
 #include <stdlib.h>
@@ -218,7 +218,6 @@ AliMC* gMC=AliMC::GetMC();
 AliFMD::Init();
 fIdSens1=gMC->VolId("GFSI");
 printf("*** FMD version 0 initialized ***\n");
- 
 }
 
 //-------------------------------------------------------------------

@@ -36,19 +36,30 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <TTUBE.h>
-#include <TNode.h>
+#define DEBUG
+#include <TMath.h>
 #include <TGeometry.h>
+#include <TTUBE.h>
 #include <TTree.h>
+#include <TNode.h>
+
+#include <TClonesArray.h>
+#include <TLorentzVector.h>
+#include "AliFMDv1.h"
 #include "AliRun.h"
 #include "AliMC.h"
-#include "AliFMD.h"
+#include <iostream.h>
+#include <fstream.h>
+#include "AliMagF.h"
 #include "AliFMDhit.h"
+#include "AliFMDdigit.h"
+#include <stdlib.h>
+
 
 ClassImp(AliFMD)
  
-//_____________________________________________________________________________
-AliFMD::AliFMD(): AliDetector()
+  //_____________________________________________________________________________
+  AliFMD::AliFMD(): AliDetector()
 {
   //
   // Default constructor for class AliFMD
@@ -58,7 +69,7 @@ AliFMD::AliFMD(): AliDetector()
  
 //_____________________________________________________________________________
 AliFMD::AliFMD(const char *name, const char *title)
-       : AliDetector(name,title)
+  : AliDetector(name,title)
 {
   //
   // Standard constructor for Forward Multiplicity Detector
@@ -67,6 +78,9 @@ AliFMD::AliFMD(const char *name, const char *title)
   //
   // Initialise Hit array
   fHits     = new TClonesArray("AliFMDhit", 1000);
+  // Digits for each Si disk
+  fDigits   = new TClonesArray("AliFMDdigit", 1000);
+  fSDigits  = new TClonesArray("AliFMDdigit", 1000) ; 
   gAlice->AddHitList(fHits);
 
   fIshunt     =  0;
@@ -78,7 +92,13 @@ AliFMD::AliFMD(const char *name, const char *title)
 
 AliFMD::~AliFMD()
 {
-  delete fHits;
+  if (fHits) {
+      fHits->Delete();
+      delete fHits;
+  }
+  delete fDigits ;
+  delete fSDigits ;
+   
 }
 //_____________________________________________________________________________
 void AliFMD::AddHit(Int_t track, Int_t *vol, Float_t *hits)
@@ -88,6 +108,18 @@ void AliFMD::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   //
   TClonesArray &lhits = *fHits;
   new(lhits[fNhits++]) AliFMDhit(fIshunt,track,vol,hits);
+}
+//_____________________________________________________________________________
+void AliFMD::AddDigit( Int_t *digits) 
+{
+  // add a real digit - as coming from data
+
+  // printf("AddDigit\n");
+
+   TClonesArray &ldigits = *fDigits;
+   // new((*fDigits)[fNdigits++]) AliFMDdigit(digits);
+  new(ldigits[fNdigits++]) AliFMDdigit(digits);
+
 }
 //_____________________________________________________________________________
 void AliFMD::BuildGeometry()
@@ -151,8 +183,21 @@ Int_t AliFMD::DistanceToPrimitive(Int_t px, Int_t py)
   //
   return 9999;
 }
- 
-//_____________________________________________________________________________
+//___________________________________________
+void AliFMD::ResetHits()
+{
+  // Reset number of clusters and the cluster array for this detector
+  AliDetector::ResetHits();
+}
+
+//____________________________________________
+void AliFMD::ResetDigits()
+{
+    //
+    // Reset number of digits and the digits array for this detector
+   AliDetector::ResetHits();
+   //
+}
 
 //-------------------------------------------------------------------------
 void AliFMD::Init()
@@ -171,41 +216,108 @@ void AliFMD::Init()
   // Here the FMD initialisation code (if any!)
   for(i=0;i<80;i++) printf("*");
   printf("\n");
- //
- //
-  fIdSens1=pMC->VolId("GFSI"); //Si sensetive volume
+  //
+  //
+  fIdSens1=pMC->VolId("GRIN"); //Si sensetive volume
 
 }
 //---------------------------------------------------------------------
-void AliFMD::MakeBranch(Option_t* option)
+void AliFMD::MakeBranch(Option_t* option, char *file)
 {
   // Create Tree branches for the FMD.
-  Int_t buffersize = 4000;
+  const Int_t kBufferSize = 4000;
   char branchname[10];
   sprintf(branchname,"%s",GetName());
 
-  AliDetector::MakeBranch(option);
+  AliDetector::MakeBranch(option,file);
 
-  if (fDigits   && gAlice->TreeD()) {
-    gAlice->TreeD()->Branch(branchname,&fDigits, buffersize);
+  const char *cD = strstr(option,"D");
+ 
+  if (cD) {
+    
+     gAlice->MakeBranchInTree(gAlice->TreeD(), 
+                                   branchname, &fDigits, kBufferSize, file) ; 	  
+
     printf("Making Branch %s for digits\n",branchname);
+    gAlice->TreeD()->Print();
   }
 }
  
+//_____________________________________________________________________________
+void AliFMD::SetTreeAddress()
+{
+  // Set branch address for the Hits and Digits Tree.
+  char branchname[30];
+  AliDetector::SetTreeAddress();
+
+  TBranch *branch;
+  TTree *treeD = gAlice->TreeD();
+
+
+  if (treeD) {
+	if (fDigits) {
+	      branch = treeD->GetBranch(branchname);
+	      if (branch) branch->SetAddress(&fDigits);
+        }
+      
+  }
+  if(fSDigits)
+    fSDigits->Clear();
+
+  if (gAlice->TreeS()  && fSDigits ) {
+    branch = gAlice->TreeS()->GetBranch("FMD");
+    if (branch) branch->SetAddress(&fSDigits) ;
+  } 
+
+
+}
+
 //---------------------------------------------------------------------
+/*
+void AliFMD::SDigits2Digits() 
+{
+     Int_t  ibg=0, bgr=0;
+    Int_t nbgr_ev= 0;
+       
+    if (ibg) {
+         printf("nbgr_ev %d\n",nbgr_ev);
+ //        Hit2Digits(nbgr_ev,"Add"," ","galice_bgr.root");
+    } 
+       else {
+   //      Hit2Digits(nbgr_ev,"rien","",""); 
+    }
+
+}
+*/
+//---------------------------------------------------------------------
+
+
 
 void AliFMD::Eta2Radius(Float_t eta, Float_t zDisk, Float_t *radius)
 {
-   Float_t expEta=TMath::Exp(-eta);
-   Float_t theta=TMath::ATan(expEta);
-   theta=2.*theta;
-   Float_t rad=zDisk*(TMath::Tan(theta));
-   *radius=rad;
+  Float_t expEta=TMath::Exp(-eta);
+  Float_t theta=TMath::ATan(expEta);
+  theta=2.*theta;
+  Float_t rad=zDisk*(TMath::Tan(theta));
+  *radius=rad;
    
-   printf(" eta %f radius %f\n", eta, rad);
+  printf(" eta %f radius %f\n", eta, rad);
 }
- 
 
- 
-    
- 
+//---------------------------------------------------------------------
+
+void AliFMD::Hits2SDigits(){
+#ifdef DEBUG
+  cout<<"ALiFMD::Hits2SDigits> start...\n";
+#endif
+  char * fileSDigits = 0 ;
+  char * fileHeader=0 ;
+  AliFMDSDigitizer * sd = new AliFMDSDigitizer("mgalice.root","FMD.SDigit.root") ;
+  sd->Exec("") ;
+  sd->Print("");
+  
+  delete sd ;
+}
+
+
+

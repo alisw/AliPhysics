@@ -21,6 +21,8 @@ AliFMDhit::AliFMDhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
 {
 //Normal FMD  hit ctor
   fVolume = vol[0];
+  fNumberOfSector=vol[1];
+  fNumberOfRing=vol[2];
   fX=hits[0];
   fY=hits[1];
   fZ=hits[2];
