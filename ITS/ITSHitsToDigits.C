@@ -130,6 +130,11 @@ void ITSHitsToDigits (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal  =25, In
    ITS->MakeBranch("D");
 
    Int_t nbgr_ev=0;
+	
+	
+	cout<<"Digitizing ITS...\n";
+   TStopwatch timer;
+	
    for (Int_t nev=evNumber1; nev<= evNumber2; nev++) {
        cout << "nev         " <<nev<<endl;
        if(nev>0) {
@@ -144,7 +149,9 @@ void ITSHitsToDigits (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal  =25, In
 
        Int_t nbgr_ev=0;
        if(nsignal) nbgr_ev=Int_t(nev/nsignal);
+		 timer.Start();
        ITS->HitsToDigits(nev,nbgr_ev,size," ","All"," ");
+		 timer.Stop(); timer.Print();
    } // event loop 
 
    delete sim0;

@@ -46,7 +46,12 @@ void ITStracking(Int_t evNumber1=0,Int_t evNumber2=0,int min_t, int max_t,Bool_t
      Int_t nent=TR->GetEntries();
      //printf("Found %d entries in the TreeR (must be one per module per event!)\n",nent);
 
+
+     TStopwatch timer;
+	  
+	  timer.Start();
      ITS->DoTracking(nev,min_t,max_t,file,flagvert);
+     timer.Stop(); timer.Print();
    }   // event loop 
    file->Close();   
 }

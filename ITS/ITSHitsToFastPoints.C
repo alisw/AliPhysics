@@ -53,6 +53,11 @@ void ITSHitsToFastPoints (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal=25, 
 
    Int_t nbgr_ev=0;
 
+
+   cout<<"Creating fast points...\n";
+   
+   TStopwatch timer;
+
    for (int ev=evNumber1; ev<= evNumber2; ev++) {
        Int_t nparticles = gAlice->GetEvent(ev);
        cout << "event         " <<ev<<endl;
@@ -62,7 +67,9 @@ void ITSHitsToFastPoints (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal=25, 
 
        Int_t bgr_ev=Int_t(ev/nsignal);
        //printf("bgr_ev %d\n",bgr_ev);
+		 timer.Start();
        ITS->HitsToFastRecPoints(ev,bgr_ev,size," ","All"," ");
+		 timer.Stop(); timer.Print();
    } // event loop 
 
    delete gAlice;

@@ -125,6 +125,10 @@ void ITSDigitsToClusters (Int_t evNumber1=0,Int_t evNumber2=0)
 // Event Loop
 //
 
+   cout << "Looking for clusters...\n";
+   
+   TStopwatch timer;
+
    if(!gAlice->TreeR()) gAlice->MakeTree("R");
    //make branch
    ITS->MakeBranch("R");
@@ -148,7 +152,9 @@ void ITSDigitsToClusters (Int_t evNumber1=0,Int_t evNumber2=0)
        //Int_t last_entry=nent-nmodules;
        //Int_t last_entry=1;
        Int_t last_entry=0;
+		 timer.Start();
        ITS->DigitsToRecPoints(nev,last_entry,"All");
+		 timer.Stop(); timer.Print(); 
    } // event loop 
 
    delete rec0;
