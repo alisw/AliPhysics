@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/10/04 20:01:54  jchudoba
+changes for TTask implementation, some other small editing
+
 Revision 1.2  2001/07/28 10:46:04  hristov
 AliRunDigitizer.h included; typos corrected
 
@@ -22,7 +25,6 @@ Revision 1.1  2001/07/27 15:41:01  jchudoba
 merging/digitization classes
 
 */
-
 #include <TTree.h> 
 #include <TVector.h>
 #include <TObjArray.h>
@@ -319,8 +321,8 @@ void AliMUONDigitizer::Exec(Option_t* option)
     } // end file loop
     if (GetDebug()>2) cerr<<"END OF FILE LOOP"<<endl;
 
-    Int_t tracks[10];
-    Int_t charges[10];
+    Int_t tracks[MAXTRACKS];
+    Int_t charges[MAXTRACKS];
     Int_t nentries = fTDList->GetEntriesFast();
 	
     for (Int_t nent = 0; nent < nentries; nent++) {
@@ -348,12 +350,15 @@ void AliMUONDigitizer::Exec(Option_t* option)
 
       // this was changed to accomodate the real number of tracks
 
-      if (nptracks > 10 && GetDebug() >0) {
-	cerr<<"Attention - nptracks > 10 "<<nptracks<<endl;
-	nptracks = 10;
+      if (nptracks > MAXTRACKS) {
+	if (GetDebug() >0) {
+	  cerr<<"AliMUONDigitizer: nptracks > 10 "<<nptracks;
+	  cerr<<"reset to max value "<<MAXTRACKS<<endl;
+	}
+	nptracks = MAXTRACKS;
       }
       if (nptracks > 2 && GetDebug() >2) {
-	cerr<<"Attention - nptracks > 2 "<<nptracks<<endl;
+	cerr<<"AliMUONDigitizer: nptracks > 2 "<<nptracks<<endl;
 	printf("cat,ich,ix,iy,q %d %d %d %d %d \n",icat,ich,fDigits[0],fDigits[1],q);
       }
       for (Int_t tr = 0; tr < nptracks; tr++) {
@@ -370,8 +375,8 @@ void AliMUONDigitizer::Exec(Option_t* option)
       if (nptracks > 1) {
 	SortTracks(tracks,charges,nptracks);
       }
-      if (nptracks < 10 ) {
-	for (Int_t i = nptracks; i < 10; i++) {
+      if (nptracks < MAXTRACKS ) {
+	for (Int_t i = nptracks; i < MAXTRACKS; i++) {
 	  tracks[i]  = 0;
 	  charges[i] = 0;
 	}

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/01/26 21:26:58  morsch
+All data members private. Access functions provided.
+
 Revision 1.2  2000/06/15 07:58:48  morsch
 Code from MUON-dev joined
 
@@ -53,7 +56,7 @@ AliMUONDigit::AliMUONDigit(Int_t *tracks, Int_t *charges, Int_t *digits)
     fPhysics     = digits[4];
     fHit         = digits[5];
 
-    for(Int_t i=0; i<10; i++) {
+    for(Int_t i=0; i<MAXTRACKS; i++) {
 	fTcharges[i]  = charges[i];
 	fTracks[i]    = tracks[i];
     }

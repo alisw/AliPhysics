@@ -7,6 +7,8 @@
 
 #include <TObject.h>
 
+#define MAXTRACKS 10
+
 class AliMUONDigit : public TObject {
 
  public:
@@ -31,8 +33,8 @@ class AliMUONDigit : public TObject {
     Int_t     fCathode;       // Cathode number
     
     Int_t     fSignal;        // Signal amplitude
-    Int_t     fTcharges[10];  // charge per track making this digit (up to 10)
-    Int_t     fTracks[10];    // primary tracks making this digit (up to 10)
+    Int_t     fTcharges[MAXTRACKS];  // charge per track making this digit (up to 10)
+    Int_t     fTracks[MAXTRACKS];    // primary tracks making this digit (up to 10)
     Int_t     fPhysics;       // physics contribution to signal 
     Int_t     fHit;           // hit number - temporary solution
 
