@@ -739,14 +739,42 @@ void TFluka::SetCerenkov(Int_t itmed, Int_t npckov, Float_t* ppckov,
     medium->SetCerenkovProperties(cerenkovProperties);
 }  
 
+void TFluka::SetCerenkov(Int_t itmed, Int_t npckov, Float_t* ppckov,
+			 Float_t* absco, Float_t* effic, Float_t* rindex, Float_t* rfl) {
+//
+// Set Cerenkov properties for medium itmed
+//
+// npckov: number of sampling points
+// ppckov: energy values
+// absco:  absorption length
+// effic:  quantum efficiency
+// rindex: refraction index
+// rfl:    reflectivity for boundary to medium itmed
+//
+//  
+//  Create object holding Cerenkov properties
+//  
+    TFlukaCerenkov* cerenkovProperties = new TFlukaCerenkov(npckov, ppckov, absco, effic, rindex, rfl);
+//
+//  Pass object to medium
+    TGeoMedium* medium = gGeoManager->GetMedium(itmed);
+    medium->SetCerenkovProperties(cerenkovProperties);
+}  
+
+
 //______________________________________________________________________________ 
 void TFluka::SetCerenkov(Int_t /*itmed*/, Int_t /*npckov*/, Double_t * /*ppckov*/,
 			 Double_t * /*absco*/, Double_t * /*effic*/, Double_t * /*rindex*/) {
 //
-// Not implemented with TGeo - what G4 did ? Any FLUKA card generated?
-   Warning("SetCerenkov", "Not implemented with TGeo");
+//  Double_t version not implemented
 }  
-    
+
+void TFluka::SetCerenkov(Int_t /*itmed*/, Int_t /*npckov*/, Double_t* /*ppckov*/,
+			 Double_t* /*absco*/, Double_t* /*effic*/, Double_t* /*rindex*/, Double_t* /*rfl*/) { 
+//
+// //  Double_t version not implemented
+}
+
 // Euclid
 //______________________________________________________________________________ 
 void TFluka::WriteEuclid(const char* /*fileName*/, const char* /*topVol*/, 
@@ -1074,7 +1102,7 @@ void TFluka::SetMaxStep(Double_t step)
     
     Int_t mreg, latt;
     fGeom->GetCurrentRegion(mreg, latt);
-    STEPSZ.stepmx[mreg - 1] = step;
+//    STEPSZ.stepmx[mreg - 1] = step;
 }
 
 
@@ -1316,12 +1344,12 @@ Double_t TFluka::Edep() const
   if (caller == 11 || caller==12 || caller==6 || caller == 40) return 0.0;
   Double_t sum = 0;
   for ( Int_t j=0;j<TRACKR.mtrack;j++) {
-    sum +=TRACKR.dtrack[j];  
+      sum +=TRACKR.dtrack[j];  
   }
   if (TRACKR.ntrack == 0 && TRACKR.mtrack == 0)
-    return fRull + sum;
+      return fRull + sum;
   else {
-    return sum;
+      return sum;
   }
 }
 
@@ -1921,7 +1949,7 @@ extern "C" {
 	fluka->SetZsco(z);
 	fluka->SetNCerenkov(nphot);
 	fluka->SetCaller(50);
-	printf("userstepping ckv: %10d %10d %13.3f %13.3f %13.2f\n", nphot, mreg, x, y, z);
+	printf("userstepping ckv: %10d %10d %13.3f %13.3f %13.2f %s\n", nphot, mreg, x, y, z, fluka->CurrentVolName());
 	(TVirtualMCApplication::Instance())->Stepping();
     }
 }

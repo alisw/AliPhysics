@@ -94,6 +94,10 @@ class TFluka : public TVirtualMC {
 			     Float_t *absco, Float_t *effic, Float_t *rindex);
   virtual void   SetCerenkov(Int_t itmed, Int_t npckov, Double_t *ppckov,
 			     Double_t *absco, Double_t *effic, Double_t *rindex);
+  virtual void   SetCerenkov(Int_t itmed, Int_t npckov, Float_t *ppckov,
+			     Float_t *absco, Float_t *effic, Float_t *rindex, Float_t *rfl);
+  virtual void   SetCerenkov(Int_t itmed, Int_t npckov, Double_t *ppckov,
+			     Double_t *absco, Double_t *effic, Double_t *rindex, Double_t *rfl);
   
   
   // Functions for drawing

@@ -29,12 +29,15 @@ public:
    // constructors
     TFlukaCerenkov();
     TFlukaCerenkov(Int_t npckov, Float_t *ppckov, Float_t *absco, Float_t *effic, Float_t *rindex);
+    TFlukaCerenkov(Int_t npckov, Float_t *ppckov, Float_t *absco, Float_t *effic, Float_t *rindex, Float_t* rfl);
     virtual Float_t   GetAbsorptionCoefficient(Float_t energy);
     virtual Float_t   GetQuantumEfficiency(Float_t energy);
     virtual Float_t   GetRefractionIndex(Float_t energy);
+    virtual Float_t   GetReflectivity(Float_t energy);    
     virtual Float_t   GetAbsorptionCoefficientByWaveLength(Float_t energy);
     virtual Float_t   GetQuantumEfficiencyByWaveLength(Float_t energy);
     virtual Float_t   GetRefractionIndexByWaveLength(Float_t energy);
+    virtual Float_t   GetReflectivityByWaveLength(Float_t energy);
     virtual Float_t   GetMinimumEnergy()     {return fEnergy[0];}
     virtual Float_t   GetMaximumEnergy()     {return fEnergy[fSamples-1];}
     virtual Float_t   GetMinimumWavelength() {return khc / fEnergy[fSamples-1];}
@@ -57,6 +60,7 @@ public:
     Float_t*     fAbsorptionCoefficient;    // [fSamples] Absorption Coefficient (1/cm)
     Float_t*     fQuantumEfficiency;        // [fSamples] Quantum efficiency
     Float_t*     fRefractionIndex;          // [fSamples] Refraction Index
+    Float_t*     fReflectivity;             // [fSamples] Reflectivity
     Double_t     fMaximumEfficiency;        // Local maximum quantum efficiency
     // static 
     static Double_t fgGlobalMaximumEfficiency; // Global maximum quantum efficiency
