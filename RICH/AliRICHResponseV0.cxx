@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.7  2001/05/10 12:32:27  jbarbosa
+  Changed call to SetTrack.
+
   Revision 1.6  2001/02/23 17:39:02  jbarbosa
   Removed verbose output.
 
@@ -193,7 +196,7 @@ Int_t AliRICHResponseV0::FeedBackPhotons(Float_t *source, Float_t qtot)
   Float_t fp, random;
   Float_t dir[3], phi;
   Int_t nfp;
-  Float_t pol[3], mom[3];
+  Float_t pol[3], mom[4];
   TLorentzVector position;
   //
   // Determine number of feedback photons
@@ -237,8 +240,10 @@ Int_t AliRICHResponseV0::FeedBackPhotons(Float_t *source, Float_t qtot)
     mom[0]*=enfp;
     mom[1]*=enfp;
     mom[2]*=enfp;
+    mom[3] = TMath::Sqrt(mom[0]*mom[0]+mom[1]*mom[1]+mom[2]*mom[2]);
     //printf("Dir %f %f %f\n",dir[0],dir[1],dir[2]);
     //printf("Momentum %15.12f %15.12f %15.12f\n",mom[0],mom[1],mom[2]);
+    //printf("Energy %e\n", mom[3]);
     
     // Polarisation
     e1[0] = 0;
