@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.33  2001/12/05 10:18:51  morsch
+Possibility of kinematic biasing of jet phi range. (J. Klay)
+
 Revision 1.32  2001/11/28 13:51:11  morsch
 Introduce kinematic biasing (etamin, etamax) of jet trigger. Bookkeeping
 (number of trials) done in AliGenHijingEventHeader.
@@ -164,6 +167,7 @@ AliGenHijing::AliGenHijing(Int_t npart)
     SetProjectile();
     SetBoostLHC();
     SetJetEtaRange();
+    SetJetPhiRange();
     
     fKeep       =  0;
     fQuench     =  1;
