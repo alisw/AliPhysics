@@ -15,14 +15,14 @@ class AliGenReaderTreeK : public AliGenReader
 {
  public:
     AliGenReaderTreeK();
-    AliGenReaderTreeK(const AliGenReaderTreeK &reader){;}
+    AliGenReaderTreeK(const AliGenReaderTreeK &reader);
     virtual ~AliGenReaderTreeK();
     // Initialise 
     virtual void Init();
     // Read
     virtual Int_t NextEvent();
     virtual TParticle*  NextParticle();
-    AliGenReaderTreeK & operator=(const AliGenReader & rhs);
+    AliGenReaderTreeK & operator=(const AliGenReaderTreeK & rhs);
     
  protected:
     Int_t             fNcurrent;          // points to the next entry
