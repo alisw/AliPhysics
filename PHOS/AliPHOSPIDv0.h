@@ -30,6 +30,7 @@ public:
 
   AliPHOSPIDv0() ;          // ctor            
   AliPHOSPIDv0(const char* headerFile, const char * tsBranch = "Default", const Bool_t toSplit=kFALSE) ;
+  AliPHOSPIDv0(AliPHOSPIDv0 & pid) ;          // cpy ctor            
   virtual ~AliPHOSPIDv0() ; // dtor
 
   virtual void Exec(Option_t * option);
@@ -47,7 +48,7 @@ public:
   //  virtual void SetTrackSegmentsBranch(const char* title) { fTrackSegmentsTitle = title;}
   //  virtual void SetRecParticlesBranch (const char* title) { fRecParticlesTitle = title;} 
   virtual const char * Version() const { return "pid-v0" ; }  
-                     
+  AliPHOSPIDv0 & operator = (const  AliPHOSPIDv0 & pid) { return *this ; }                 
  private:
   
   virtual void Init() ;

@@ -63,20 +63,14 @@
 #include "TF2.h"
 #include "TFormula.h"
 #include "TCanvas.h"
-#include "TFolder.h"
-#include "TSystem.h"
 #include "TBenchmark.h"
 // --- Standard library ---
 
 // --- AliRoot header files ---
 
-#include "AliRun.h"
 #include "AliGenerator.h"
-#include "AliPHOS.h"
 #include "AliPHOSPIDv0.h"
-#include "AliPHOSClusterizerv1.h"
 #include "AliPHOSTrackSegment.h"
-#include "AliPHOSTrackSegmentMakerv1.h"
 #include "AliPHOSRecParticle.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSGetter.h"
@@ -125,6 +119,21 @@ AliPHOSPIDv0::AliPHOSPIDv0(const char * headerFile,const char * name, const Bool
 
   Init() ;
 
+}
+AliPHOSPIDv0::AliPHOSPIDv0(AliPHOSPIDv0 & pid):AliPHOSPID(pid)
+{ 
+  // copy ctor
+  fHeaderFileName = pid.fHeaderFileName ; 
+  fTrackSegmentsTitle = pid.fTrackSegmentsTitle ;
+  fRecPointsTitle = pid.fRecPointsTitle ;
+  fRecParticlesTitle = pid.fRecParticlesTitle ;
+  fIDOptions = pid.fIDOptions ;
+  fNEvent = pid.fNEvent ; 
+  fFormula = new TFormula(*pid.fFormula) ; 
+  fDispersion = pid.fDispersion ;
+  fCpvEmcDistance = pid.fCpvEmcDistance ; 
+  fRecParticlesInRun = pid.fRecParticlesInRun ;
+  Init() ;
 }
 
 //____________________________________________________________________________
