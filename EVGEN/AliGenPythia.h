@@ -8,7 +8,6 @@
 
 #include "AliGenMC.h"
 #include "AliPythia.h"
-#include "TArrayF.h"
 
 class AliPythia;
 class TParticle;
@@ -67,9 +66,9 @@ class AliGenPythia : public AliGenMC
     }
     
     // get cross section of process
-    virtual Float_t GetXsection() {return fXsection;}      
+    virtual Float_t GetXsection() const {return fXsection;}      
     virtual void    FinishRun();
-    Bool_t CheckTrigger(TParticle* jet1, TParticle* jet2);
+    Bool_t CheckTrigger(TParticle* jet1, TParticle* jet2) const;
     
     // Assignment Operator
     AliGenPythia & operator=(const AliGenPythia & rhs);
@@ -112,13 +111,13 @@ class AliGenPythia : public AliGenMC
                                   // quark families (e.g. b->c)
     Bool_t fFragmentation;        // Option to activate fragmentation by Pythia
     //
-    // Options for counting when the event will be finished.
+
+    CountMode_t fCountMode;        // Options for counting when the event will be finished.
     // fCountMode = kCountAll         --> All particles that end up in the
     //                                    stack are counted
     // fCountMode = kCountParents     --> Only selected parents are counted
     // fCountMode = kCountTrackabless --> Only particles flagged for tracking
     //                                     are counted
-    CountMode_t fCountMode;
 
  private:
     // adjust the weight from kinematic cuts
