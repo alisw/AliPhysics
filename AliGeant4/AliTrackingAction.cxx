@@ -8,6 +8,7 @@
 #include "AliRun.h"
 #include "AliGlobals.h"  
 #include "TG4StepManager.h"
+#include "TG4PhysicsManager.h"
 
 #include <G4TrackingManager.hh>
 #include <G4Track.hh>
@@ -122,11 +123,7 @@ void AliTrackingAction::PreTrackingAction(const G4Track* aTrack)
   }
   else { 
     // save secondary particles info 
-    // improve this later with retrieving the generation process
-    // (primary particles are stored 
-    //  by AlStackingAction in ClassifyNewTrack() method)
-    G4String origin = "secondary"; 
-    SaveParticle(aTrack, origin);
+    SaveParticle(aTrack);
   }
   
   gAlice->PreTrack();
@@ -179,8 +176,7 @@ void AliTrackingAction::SaveAndDestroyTrack()
    fPrimaryTrackID = 0;
 }  
 
-void AliTrackingAction::SaveParticle(const G4Track* track, 
-                                     G4String processName)
+void AliTrackingAction::SaveParticle(const G4Track* track)
 {
 // Converts G4track to TParticle and saves it in AliRun::fParticles
 // array.
@@ -242,7 +238,7 @@ void AliTrackingAction::SaveParticle(const G4Track* track,
   G4double polY = polarization.y();
   G4double polZ = polarization.z();
 
-  // aliroot
+  // create TParticle
   TClonesArray& theCollectionRef = *fParticles;
   G4int nofParticles = theCollectionRef.GetEntriesFast();
   TParticle* particle 
@@ -251,6 +247,20 @@ void AliTrackingAction::SaveParticle(const G4Track* track,
          firstDaughter, lastDaughter, px, py, pz, e, vx, vy, vz, t);
   particle->SetPolarisation(polX, polY, polZ);
   particle->SetBit(kKeepBit, false); 
+  
+  // set production process
+  AliMCProcess mcProcess;  
+  const G4VProcess* kpProcess = track->GetCreatorProcess();
+  if (!kpProcess) {
+    mcProcess = kPPrimary;
+  }
+  else {  
+    TG4PhysicsManager* pPhysicsManager = TG4PhysicsManager::Instance();
+    mcProcess = pPhysicsManager->GetMCProcess(kpProcess->GetProcessName());  
+    // distinguish kPDeltaRay from kPEnergyLoss  
+    if (mcProcess == kPEnergyLoss) mcProcess = kPDeltaRay;
+  }  
+  particle->SetUniqueID(mcProcess);  
 }
 
 G4int AliTrackingAction::GetParticleIndex(G4int trackID)
