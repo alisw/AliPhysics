@@ -562,6 +562,9 @@ void  AliPHOSPIDv1::MakeRecParticles()
     if(ts->GetCpvIndex()>=0)
       cpv = (AliPHOSCpvRecPoint *) cpvRecPoints->At(ts->GetCpvIndex()) ;
     
+    Int_t track = 0 ; 
+    track = ts->GetTrackIndex() ; 
+      
     // Now set type (reconstructed) of the particle
 
     // Choose the cluster energy range
@@ -640,6 +643,9 @@ void  AliPHOSPIDv1::MakeRecParticles()
     if(GetHardPi0Bit   (emc))
       rp->SetPIDBit(13) ;
     
+    if(track >= 0) 
+      rp->SetPIDBit(14) ; 
+
     //Set momentum, energy and other parameters 
     Float_t  encal = GetCalibratedEnergy(e);
     TVector3 dir   = GetMomentumDirection(emc,cpv) ; 
