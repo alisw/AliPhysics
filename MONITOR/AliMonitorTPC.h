@@ -51,6 +51,7 @@ private:
   AliMonitorHisto* fTrackPt;            // pt distribution of TPC tracks
   AliMonitorHisto* fTrackEta;           // eta distribution of TPC tracks
   AliMonitorHisto* fTrackPhi;           // phi distribution of TPC tracks
+  AliMonitorHisto* fTrackNCl;           // number of clusters per track
   AliMonitorHisto* fTrackDEdxVsP;       // dE/dx vs momentum distribution of TPC tracks
 
   AliMonitorDataTPC* fData;             // data for the monitor tree

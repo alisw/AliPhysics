@@ -137,6 +137,10 @@ void AliMonitorTPC::CreateHistos(TFolder* folder)
 			   AliMonitorHisto::kNormEntries);
   fTrackPhi->SetDescription("The phi distribution should be flat on average.\nIf it is not flat check for dead TPC sectors.");
 
+  fTrackNCl = CreateHisto1("TrackNCl", "Number of clusters per track", 
+			   200, 0, 200, "N_{clusters}", "#Delta N/N",
+			   AliMonitorHisto::kNormEntries);
+
   fTrackDEdxVsP = CreateHisto2("TrackDEdxVsP", "dE/dx of tracks", 
 			       100, 0, 3, 100, 0, 200, 
 			       "p [GeV/c]", "dE/dx", "#Delta N/N",
@@ -213,6 +217,7 @@ void AliMonitorTPC::FillHistos(AliRunLoader* runLoader,
     fTrackPt->Fill(track->Pt());
     fTrackEta->Fill(track->Eta());
     fTrackPhi->Fill(track->Phi() * TMath::RadToDeg());
+    fTrackNCl->Fill(track->GetNumberOfClusters());
     fTrackDEdxVsP->Fill(track->P(), track->GetdEdx());
 
     fData->fPt[i] = track->Pt();
