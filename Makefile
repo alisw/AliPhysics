@@ -183,7 +183,7 @@ include build/dummy.d
 
 # targets
 
-.PHONY:		alilibs aliroot makedistr clean
+.PHONY:		alilibs aliroot makedistr clean htmldoc
 
 modules: $(patsubst %,%/module.mk,$(MODULES)) 	
 
@@ -301,3 +301,23 @@ ifndef ALIQUIET
 	@echo "***** Cleaning up binary files *****"
 endif
 	$(MUTE)rm -rf bin/tgt_$(ALICE_TARGET)
+
+htmldoc:
+	@rm -rf html/roothtml
+	@rm -f  html/picts
+	@rm -f /tmp/macros
+	@cd html ;\
+	aliroot -q -b "mkhtml.C(0,1)" ;\
+	ls ../macros/*.C > /tmp/macros ;\
+	for i in $(ALIROOTMODULES) ; do \
+		ls ../$$i/*.C 2>/dev/null >> /tmp/macros ;\
+	done ;\
+	for i in `cat /tmp/macros` ; do \
+		echo $$i ; \
+		aliroot -b -q "mkhtml.C(\"$$i\")" > /dev/null ;\
+	done ;\
+	./makeExampleList ;
+	@ln -s ../picts html/picts
+	@ln -s ../../picts html/roothtml/picts
+	@ln -s ../../../picts html/roothtml/src/picts
+	@ln -s ../../../picts html/roothtml/examples/picts
