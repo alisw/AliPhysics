@@ -14,7 +14,7 @@
 
 #include <TTask.h>
 
-class AliESD;
+class AliAOD;
 class AliStack;
  
 class AliAnalysis: public TTask
@@ -25,17 +25,12 @@ class AliAnalysis: public TTask
     virtual ~AliAnalysis();
     
     virtual Int_t Init() = 0;
-    virtual Int_t ProcessEvent(AliESD* esd, AliStack* stack = 0x0) = 0;
+    virtual Int_t ProcessEvent(AliAOD* aodrec, AliAOD* aodsim = 0x0) = 0;
     virtual Int_t Finish() = 0;
-    
-    
-    static Int_t GetDebug() {return fgkDebug;}
-    static void  SetDebug(Int_t level) {fgkDebug = level;}
     
   protected:
     
   private:
-    static Int_t fgkDebug;//! debug level
     ClassDef(AliAnalysis,1)
 };
 

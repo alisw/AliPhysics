@@ -12,14 +12,13 @@
 //
 ///////////////////////////////////////////////////////////
 
-class AliEventCut;
-class TObjArray;
-class TFile;
-
-#include <TString.h>
 #include <TTask.h>
-
+#include <TObjArray.h>
 #include "AliAnalysis.h"
+
+class AliEventCut;
+class TFile;
+class AliReader;
 
 class AliRunAnalysis: public TTask
 {
@@ -27,23 +26,22 @@ class AliRunAnalysis: public TTask
     AliRunAnalysis();
     virtual ~AliRunAnalysis();
     
-    Int_t Run();
-    void  Add(AliAnalysis* a);
-    void  ReadKinematics(Bool_t flag){fReadKinematics = flag;}
+    Int_t         Run();
+    void          Add(AliAnalysis* a);
+    void          SetReader(AliReader* reader){fReader = reader;}
     
-    Int_t GetDebug() {return AliAnalysis::GetDebug();}
-    void SetDirs(TObjArray* dirs){fDirs = dirs;} //sets array directories names;
+    const char*   GetName(){return "RunAnalysis";}
+    
   protected:
-    TObjArray*    fAnalysies;//arry with analysies
-    TObjArray*    fDirs;//arry with directories to read data from
+    TObjArray     fAnalysies;//arry with analysies
+    AliReader*    fReader;//arry with directories to read data from
     
     AliEventCut*  fEventCut;//event cut    
     
-    TString       fFileName;//name of the file with ESDs
-    Bool_t        fReadKinematics;
+    Bool_t        fCutOnSim;//flag indicating that event cut is performed on simulated particles 
+    Bool_t        fCutOnRec;//flag indicating that event cut is performed on reconstructed tracks
     
-    TString& GetDirName(Int_t entry);
-    TFile* OpenFile(Int_t n);
+    Bool_t        Pass(AliAOD* recevent, AliAOD* simevent);
     
   private:
     void SetName(const char *){}//change SetName to be private

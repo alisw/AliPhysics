@@ -4,17 +4,17 @@
 //
 // class AliAnalysis
 //
-// Base class for analysis
-//
-//
+// Base class for analysis.
+// Each inheriting calss must define 3 methods:
+//   - Init() : that is called before event processing
+//   - ProcessEvent(AliESD*,AliStack*)
+//   - 
 // Piotr.Skowronski@cern.ch
 //
 ///////////////////////////////////////////////////////////
 
 
 ClassImp(AliAnalysis)
-
-Int_t AliAnalysis::fgkDebug = 0;
 
 AliAnalysis::AliAnalysis()
 {

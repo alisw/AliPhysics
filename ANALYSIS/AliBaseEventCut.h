@@ -13,7 +13,7 @@
 
 #include "TObject.h"
 
-class AliESD;
+class AliAOD;
 
 class AliBaseEventCut: public TObject
 {
@@ -21,9 +21,9 @@ class AliBaseEventCut: public TObject
     AliBaseEventCut();
     virtual ~AliBaseEventCut(){}
     
-    virtual Bool_t Pass(AliESD* esd) const;//returns kTRUE if rejected
+    virtual Bool_t Pass(AliAOD* aod) const;//returns kTRUE if rejected
   protected:
-    virtual Double_t GetValue(AliESD* esd) const = 0;
+    virtual Double_t GetValue(AliAOD* aod) const = 0;
     
     Double_t fMin;//Minimum value
     Double_t fMax;//Maximum value

@@ -12,7 +12,7 @@
 
 #include "TObject.h"
 
-class AliESD;
+class AliAOD;
 class TObjArray;
 
 class AliEventCut: public TObject
@@ -21,7 +21,7 @@ class AliEventCut: public TObject
     AliEventCut();
     virtual ~AliEventCut();
     
-    virtual Bool_t Pass(AliESD* esd) const;//returns kTRUE if rejected
+    virtual Bool_t Pass(AliAOD* aod) const;//returns kTRUE if rejected
     
   protected:
     TObjArray* fBaseCuts;
