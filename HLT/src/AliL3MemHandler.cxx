@@ -1,5 +1,5 @@
 /* $Id$
-// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
+// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>, Anders Vestbo <mailto:vestbo$fi.uib.no>
 // -- Copyright &copy Uli 
 // changes done by Constantin Loizides <mailto:loizides@ikf.physik.uni-frankfurt.de>
 */
