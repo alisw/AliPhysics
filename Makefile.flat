@@ -39,6 +39,8 @@ override ALICE_TARGET:=$(ALICE_TARGET)DEBUG
 FFLAGS := -g $(filter-out -O%,$(FFLAGS))
 CXXFLAGS := -g $(filter-out -O%,$(CXXLAGS))
 CFLAGS := -g $(filter-out -O%,$(CLAGS))
+SOFLAGS := -g $(filter-out -O%,$(SOFLAGS))
+LDFLAGS := -g $(filter-out -O%,$(LDFLAGS))
 endif
 ##################################################################
 
