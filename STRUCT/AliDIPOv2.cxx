@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2000/06/11 12:33:46  morsch
+Coding rule violations corrected
+
 Revision 1.10  2000/06/09 19:32:56  morsch
 New detailed and corrected version from Galina Chabratova
 
@@ -82,7 +85,7 @@ void AliDIPOv2::CreateGeometry()
 
   //  AliMC* gMC = AliMC::GetMC();
 
-  Float_t cpar[5], tpar[3], ypar[12];
+  Float_t cpar[5], tpar[15], ypar[12];
   Float_t dz, dx, dy;
   Int_t idrotm[1899];
   Float_t accMax, the1, phi1, the2, phi2, the3, phi3;
@@ -93,13 +96,28 @@ void AliDIPOv2::CreateGeometry()
 
   //       DIPOLE MAGNET 
 
-  tpar[0] = 243.55; // 248.5
-  tpar[1] = 130.88762;
-  tpar[2] = 527.34; //440.;
-  tpar[3] = 211.2;
-  tpar[4] = 527.34; // 440.;
+  tpar[0] = 0.; 
+  tpar[1] = 360.;
+  tpar[2] = 4.; 
+  //
+  tpar[3] = -250.55;
+  tpar[4] = 144.;
+  tpar[5] = 527.34; 
+  //
+  tpar[6] = -160.7;
+  tpar[7] = 144.;
+  tpar[8] = 527.34; 
+  //
+  tpar[9] = 150.8;
+  tpar[10] = 193.3;
+  tpar[11] = 527.34;
+  //
+  tpar[12] = 250.55;
+  tpar[13] = 193.3;
+  tpar[14] = 527.34;
 
-  gMC->Gsvolu("DDIP", "CONE", idtmed[1814], tpar, 5);  
+
+  gMC->Gsvolu("DDIP", "PCON", idtmed[1814], tpar, 15);  
   //       COILS 
   // air - m.f. 
   cpar[0] = 207.;
