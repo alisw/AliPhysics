@@ -33,6 +33,36 @@ AliMUONLocalTrigger::AliMUONLocalTrigger()
   fLoApt     = 0;
 }
 //----------------------------------------------------------------------
+AliMUONLocalTrigger::AliMUONLocalTrigger(const AliMUONLocalTrigger& MUONLocalTrig):TObject(MUONLocalTrig)
+{
+// copy constructor (useful for TClonesArray)
+  fLoCircuit = MUONLocalTrig.fLoCircuit;
+  fLoStripX  = MUONLocalTrig.fLoStripX;         
+  fLoDev     = MUONLocalTrig.fLoDev;           
+  fLoStripY  = MUONLocalTrig.fLoStripY;           
+  fLoLpt     = MUONLocalTrig.fLoLpt;
+  fLoHpt     = MUONLocalTrig.fLoHpt;
+  fLoApt     = MUONLocalTrig.fLoApt;
+}
+//----------------------------------------------------------------------
+AliMUONLocalTrigger& AliMUONLocalTrigger::operator=(const AliMUONLocalTrigger& MUONLocalTrig)
+{
+// equal operator (useful for non-pointer member in TClonesArray)
+  if (this == &MUONLocalTrig)
+    return *this;
+
+  fLoCircuit = MUONLocalTrig.fLoCircuit;
+  fLoStripX  = MUONLocalTrig.fLoStripX;         
+  fLoDev     = MUONLocalTrig.fLoDev;           
+  fLoStripY  = MUONLocalTrig.fLoStripY;           
+  fLoLpt     = MUONLocalTrig.fLoLpt;
+  fLoHpt     = MUONLocalTrig.fLoHpt;
+  fLoApt     = MUONLocalTrig.fLoApt;
+
+  return *this;
+}
+
+//----------------------------------------------------------------------
 AliMUONLocalTrigger::AliMUONLocalTrigger(Int_t *localtr)
 {
 // add a local trigger object 

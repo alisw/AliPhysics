@@ -11,8 +11,11 @@
 class AliMUONLocalTrigger : public TObject {
  public:
   AliMUONLocalTrigger();
+  AliMUONLocalTrigger(const AliMUONLocalTrigger& ); // copy constructor !
   AliMUONLocalTrigger(Int_t *localtr);
   virtual ~AliMUONLocalTrigger(){;}
+  AliMUONLocalTrigger& operator=(const AliMUONLocalTrigger& ); 
+
   Int_t LoCircuit(); 
   Int_t LoStripX();   
   Int_t LoDev();     

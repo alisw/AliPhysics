@@ -45,6 +45,61 @@ AliMUONGlobalTrigger::AliMUONGlobalTrigger()
   fPairLikeApt   = 0;
 }
 //----------------------------------------------------------------------
+AliMUONGlobalTrigger::AliMUONGlobalTrigger(const AliMUONGlobalTrigger& MUONGlobalTrig):TObject(MUONGlobalTrig)
+{
+// copy constructor
+  fSinglePlusLpt  = MUONGlobalTrig.fSinglePlusLpt;
+  fSinglePlusHpt  = MUONGlobalTrig.fSinglePlusHpt;
+  fSinglePlusApt  = MUONGlobalTrig.fSinglePlusApt;
+  
+  fSingleMinusLpt = MUONGlobalTrig.fSingleMinusLpt;
+  fSingleMinusHpt = MUONGlobalTrig.fSingleMinusHpt;
+  fSingleMinusApt = MUONGlobalTrig.fSingleMinusApt;
+  
+  fSingleUndefLpt = MUONGlobalTrig.fSingleUndefLpt;
+  fSingleUndefHpt = MUONGlobalTrig.fSingleUndefHpt;
+  fSingleUndefApt = MUONGlobalTrig.fSingleUndefApt;
+  
+  fPairUnlikeLpt  = MUONGlobalTrig.fPairUnlikeLpt;
+  fPairUnlikeHpt  = MUONGlobalTrig.fPairUnlikeHpt;
+  fPairUnlikeApt  = MUONGlobalTrig.fPairUnlikeApt;
+  
+  fPairLikeLpt    = MUONGlobalTrig.fPairLikeLpt;
+  fPairLikeHpt    = MUONGlobalTrig.fPairLikeHpt;
+  fPairLikeApt    = MUONGlobalTrig.fPairLikeApt;
+}
+
+//----------------------------------------------------------------------
+AliMUONGlobalTrigger& AliMUONGlobalTrigger::operator=(const AliMUONGlobalTrigger& MUONGlobalTrig)
+{
+// equal operator (useful for non-pointer member in TClonesArray)
+  if (this == &MUONGlobalTrig)
+    return *this;
+
+  fSinglePlusLpt  = MUONGlobalTrig.fSinglePlusLpt;
+  fSinglePlusHpt  = MUONGlobalTrig.fSinglePlusHpt;
+  fSinglePlusApt  = MUONGlobalTrig.fSinglePlusApt;
+  
+  fSingleMinusLpt = MUONGlobalTrig.fSingleMinusLpt;
+  fSingleMinusHpt = MUONGlobalTrig.fSingleMinusHpt;
+  fSingleMinusApt = MUONGlobalTrig.fSingleMinusApt;
+  
+  fSingleUndefLpt = MUONGlobalTrig.fSingleUndefLpt;
+  fSingleUndefHpt = MUONGlobalTrig.fSingleUndefHpt;
+  fSingleUndefApt = MUONGlobalTrig.fSingleUndefApt;
+  
+  fPairUnlikeLpt  = MUONGlobalTrig.fPairUnlikeLpt;
+  fPairUnlikeHpt  = MUONGlobalTrig.fPairUnlikeHpt;
+  fPairUnlikeApt  = MUONGlobalTrig.fPairUnlikeApt;
+  
+  fPairLikeLpt    = MUONGlobalTrig.fPairLikeLpt;
+  fPairLikeHpt    = MUONGlobalTrig.fPairLikeHpt;
+  fPairLikeApt    = MUONGlobalTrig.fPairLikeApt;
+
+  return *this;
+}
+
+//----------------------------------------------------------------------
 AliMUONGlobalTrigger::AliMUONGlobalTrigger(Int_t *singlePlus, 
 					   Int_t *singleMinus,
 					   Int_t *singleUndef,
