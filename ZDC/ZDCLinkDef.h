@@ -14,5 +14,6 @@
 #pragma link C++ class  AliZDCHit+;
 #pragma link C++ class  AliZDCDigit+;
 #pragma link C++ class  AliGenZDC+;
+#pragma link C++ class  AliZDCFragment+;
 
 #endif
