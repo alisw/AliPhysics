@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.22  2001/03/29 22:01:53  barbera
+New flag added to change the material for some service supports as asked by the PMD people. Some changes to the services due to the new drawings from the engineers
+
 Revision 1.21  2001/03/29 05:28:56  barbera
 Rails material changed from aluminum to carbon fiber according with the decision of the last Technical Board
 
@@ -930,8 +933,8 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   dgh[1] = 59.;
   dgh[2] = 0.6;    
   gMC->Gsvolu("ICYL", "TUBE", idtmed[285], dgh, 3);   
-  gMC->Gspos("ICYL", 1, "ALIC", 0., 0., 73.4, 0, "ONLY");       
-  gMC->Gspos("ICYL", 2, "ALIC", 0., 0., -73.4, idrotm[200], "ONLY");  
+  gMC->Gspos("ICYL", 1, "ALIC", 0., 0., 74.1, 0, "ONLY");       
+  gMC->Gspos("ICYL", 2, "ALIC", 0., 0., -74.1, idrotm[200], "ONLY");  
 
   // --- DEFINE SUPPORTS FOR RAILS ATTACHED TO THE CYLINDERS
 
