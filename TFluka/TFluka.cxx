@@ -1354,13 +1354,12 @@ fin:
 	  else if (fProcessValue[i] == 0) {
 	      fprintf(pAliceInp,"*\n*Hadronic interaction is set OFF\n");
 	      fprintf(pAliceInp,"*Generated from call: SetProcess('HADR',0);\n");
+	      fprintf(pAliceInp,"*Switching off hadronic interactions not foreseen in FLUKA\n");
 	      // zero = ignored
 	      // three = multiple scattering for hadrons and muons is completely suppressed
 	      // zero = no spin-relativistic corrections
 	      // matMin = lower bound of the material indices in which the respective thresholds apply
 	      // matMax = upper bound of the material indices in which the respective thresholds apply
-	      fprintf(pAliceInp,"MULSOPT   %10.1f%10.1f%10.1f%10.1f%10.1f\n",zero,three,zero,matMin,matMax);
-	      
 	  }
 	  else  {
 	      fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('HADR',?) call.\n");
