@@ -3,11 +3,21 @@ void tzero15tracks(const char* datafile, Float_t globalTimeRes=1.2e-10)
   
   //
   // Calculate the t0 distribution 
-  // 
+  // selecting 15 tracks
   // (primary particles reaching TOF)
-  //
-  
-  
+  // NB: see the description of the analogous AliTOFT0 class
+  // NB II: apply this macro to a realistic Pb-Pb event (e.g. Hijing event)
+  // Use case
+  // - start root
+  // root [0] .L tzero15tracksopt.C
+  // // exec the macro with the default time resolution 120 ps
+  // root [1] tzero15tracksopt("hij25evCentralTOFv4T0Set10.04T.root")
+
+  // // exec the macro with 150 ps global time resolution
+  // // NB: time resolution has to be given in [s]
+  // root [1] tzero15tracksopt("hij25evCentralTOFv4T0Set10.04T.root", 1.5e-10))
+
+
   // Dynamically link some shared libs
   if (gClassTable->GetID("AliRun") < 0) {
     gROOT->LoadMacro("loadlibs.C");
@@ -136,7 +146,7 @@ void tzero15tracks(const char* datafile, Float_t globalTimeRes=1.2e-10)
 	    Bool_t isgoodpart=(abspdg==211 || abspdg==2212 || abspdg==321);
 	    
 	    time*=1.e+9; // tof given in nanoseconds	   
-	    if (particle->GetFirstMother() < 0 && isgoodpart && mom<=1.7 && mom>=1.25){
+	    if (particle->GetFirstMother() < 0 && isgoodpart && mom<=1.75 && mom>=1.25){
 	      
 	      selected+=1;
 	      istop=selected;
@@ -167,49 +177,47 @@ void tzero15tracks(const char* datafile, Float_t globalTimeRes=1.2e-10)
 	      selected=0;
 	      cout << "starting t0 calculation for current set" << endl;
 	      for (Int_t i1=0; i1<3;i1++) {
+		beta[0]=momentum[0]/TMath::Sqrt(massarray[i1]*massarray[i1]+momentum[0]*momentum[0]);
 		for (Int_t i2=0; i2<3;i2++) { 
+		  beta[1]=momentum[1]/TMath::Sqrt(massarray[i2]*massarray[i2]+momentum[1]*momentum[1]);
 		  for (Int_t i3=0; i3<3;i3++) {
+		    beta[2]=momentum[2]/TMath::Sqrt(massarray[i3]*massarray[i3]+momentum[2]*momentum[2]);
 		    for (Int_t i4=0; i4<3;i4++) {
+		      beta[3]=momentum[3]/TMath::Sqrt(massarray[i4]*massarray[i4]+momentum[3]*momentum[3]);
 		      for (Int_t i5=0; i5<3;i5++) {
+			beta[4]=momentum[4]/TMath::Sqrt(massarray[i5]*massarray[i5]+momentum[4]*momentum[4]);
 			for (Int_t i6=0; i6<3;i6++) {
+			  beta[5]=momentum[5]/TMath::Sqrt(massarray[i6]*massarray[i6]+momentum[5]*momentum[5]);
 			  for (Int_t i7=0; i7<3;i7++) { 
+			    beta[6]=momentum[6]/TMath::Sqrt(massarray[i7]*massarray[i7]+momentum[6]*momentum[6]);
 			    for (Int_t i8=0; i8<3;i8++) {
+			      beta[7]=momentum[7]/TMath::Sqrt(massarray[i8]*massarray[i8]+momentum[7]*momentum[7]);
 			      for (Int_t i9=0; i9<3;i9++) {
+				beta[8]=momentum[8]/TMath::Sqrt(massarray[i9]*massarray[i9]+momentum[8]*momentum[8]);
 				for (Int_t i10=0; i10<3;i10++) { 	
+				  beta[9]=momentum[9]/TMath::Sqrt(massarray[i10]*massarray[i10]+momentum[9]*momentum[9]);
 				  for (Int_t i11=0; i11<3;i11++) {
+				    beta[10]=momentum[10]/TMath::Sqrt(massarray[i11]*massarray[i11]+momentum[10]*momentum[10]);
 				    for (Int_t i12=0; i12<3;i12++) { 
+				      beta[11]=momentum[11]/TMath::Sqrt(massarray[i12]*massarray[i12]+momentum[11]*momentum[11]);
 				      for (Int_t i13=0; i13<3;i13++) {
+					beta[12]=momentum[12]/TMath::Sqrt(massarray[i13]*massarray[i13]+momentum[12]*momentum[12]);
 					for (Int_t i14=0; i14<3;i14++) {
-					  for (Int_t i15=0; i15<3;i15++) {				  
-					    beta[0]=momentum[0]/sqrt(massarray[i1]*massarray[i1]+momentum[0]*momentum[0]);
-					    beta[1]=momentum[1]/sqrt(massarray[i2]*massarray[i2]+momentum[1]*momentum[1]);
-					    beta[2]=momentum[2]/sqrt(massarray[i3]*massarray[i3]+momentum[2]*momentum[2]);
-					    beta[3]=momentum[3]/sqrt(massarray[i4]*massarray[i4]+momentum[3]*momentum[3]);
-					    beta[4]=momentum[4]/sqrt(massarray[i5]*massarray[i5]+momentum[4]*momentum[4]);
-					    beta[5]=momentum[5]/sqrt(massarray[i6]*massarray[i6]+momentum[5]*momentum[5]);
-					    beta[6]=momentum[6]/sqrt(massarray[i7]*massarray[i7]+momentum[6]*momentum[6]);
-					    beta[7]=momentum[7]/sqrt(massarray[i8]*massarray[i8]+momentum[7]*momentum[7]);
-					    beta[8]=momentum[8]/sqrt(massarray[i9]*massarray[i9]+momentum[8]*momentum[8]);
-					    beta[9]=momentum[9]/sqrt(massarray[i10]*massarray[i10]+momentum[9]*momentum[9]);
-					    beta[10]=momentum[10]/sqrt(massarray[i11]*massarray[i11]+momentum[10]*momentum[10]);
-					    beta[11]=momentum[11]/sqrt(massarray[i12]*massarray[i12]+momentum[11]*momentum[11]);
-					    beta[12]=momentum[12]/sqrt(massarray[i13]*massarray[i13]+momentum[12]*momentum[12]);
-					    beta[13]=momentum[13]/sqrt(massarray[i14]*massarray[i14]+momentum[13]*momentum[13]);
-					    beta[14]=momentum[14]/sqrt(massarray[i15]*massarray[i15]+momentum[14]*momentum[14]);
-
-					    
+					  beta[13]=momentum[13]/TMath::Sqrt(massarray[i14]*massarray[i14]+momentum[13]*momentum[13]);
+					  for (Int_t i15=0; i15<3;i15++) {
+					    beta[14]=momentum[14]/TMath::Sqrt(massarray[i15]*massarray[i15]+momentum[14]*momentum[14]);
+				    
 					    Float_t meantzero=0.;
 					    Float_t sumAllweights=0.;
 					    for (Int_t itz=0; itz<15;itz++) {
 					      sqMomError[itz]=((1.-beta[itz]*beta[itz])*0.025)*((1.-beta[itz]*beta[itz])*0.025)*(tracktoflen[itz]/(0.299792*beta[itz]))*(tracktoflen[itz]/(0.299792*beta[itz])); // this gives the square of the momentum error in nanoseconds
 					      sqTrackError[itz]=(timeresolutioninns*timeresolutioninns+sqMomError[itz]); // total error for the current track
 					      sumAllweights+=1./sqTrackError[itz];
-					      // redefining beta, it is useful in order to calculate t zero
-					      beta[itz]*=0.299792;
-					      timezero[itz]=(tracktoflen[itz]/beta[itz])-timeofflight[itz];
-					      weightedtimezero[itz]=((tracktoflen[itz]/beta[itz])-timeofflight[itz])/sqTrackError[itz];// weighted time zero for current track
+					      timezero[itz]=(tracktoflen[itz]/(beta[itz]*0.299792))-timeofflight[itz];
+					      weightedtimezero[itz]=((tracktoflen[itz]/(beta[itz]*0.299792))-timeofflight[itz])/sqTrackError[itz];// weighted time zero for current track
 					      meantzero+=weightedtimezero[itz];
 					    }
+					    
 					    meantzero=meantzero/sumAllweights; // it is given in [ns]
 					    
 					    Float_t dummychisquare=0.;
@@ -255,9 +263,13 @@ void tzero15tracks(const char* datafile, Float_t globalTimeRes=1.2e-10)
 		}
 	      }	
 	      
-	      cout << "true" << truparticle[0] << truparticle[1] << truparticle[2] << truparticle[3] << truparticle[4] << truparticle[5] << truparticle[6] << truparticle[7] << truparticle[8] << truparticle[9] <<truparticle[10] << truparticle[11] << truparticle[12] << truparticle[13] << truparticle[14] <<endl;
-	      cout << "best" << assparticle[0] << assparticle[1] << assparticle[2] << assparticle[3] << assparticle[4] << assparticle[5] << assparticle[6] << assparticle[7] << assparticle[8] << assparticle[9] <<assparticle[10] << assparticle[11] << assparticle[12] << assparticle[13] << assparticle[14] << endl;
-	      if(truparticle[0]==assparticle[0] && truparticle[1]==assparticle[1] && truparticle[2]==assparticle[2]  && truparticle[3]==assparticle[3] && truparticle[4]==assparticle[4]&& truparticle[5]==assparticle[5] && truparticle[6]==assparticle[6] && truparticle[7]==assparticle[7]  && truparticle[8]==assparticle[8] && truparticle[9]==assparticle[9] &&truparticle[10]==assparticle[10] && truparticle[11]==assparticle[11] && truparticle[12]==assparticle[12]  && truparticle[13]==assparticle[13] && truparticle[14]==assparticle[14]) ngood+=1;
+	      cout << "true" << truparticle[0] << truparticle[1] << truparticle[2] << truparticle[3] << truparticle[4] << truparticle[5] << truparticle[6] << truparticle[7] << truparticle[8] << truparticle[9] <<truparticle[10] << truparticle[11] << truparticle[1
+2] << truparticle[13] << truparticle[14] <<endl;
+	      cout << "best" << assparticle[0] << assparticle[1] << assparticle[2] << assparticle[3] << assparticle[4] << assparticle[5] << assparticle[6] << assparticle[7] << assparticle[8] << assparticle[9] <<assparticle[10] << assparticle[11] << assparticle[1
+2] << assparticle[13] << assparticle[14] << endl;
+	      if(truparticle[0]==assparticle[0] && truparticle[1]==assparticle[1] && truparticle[2]==assparticle[2]  && truparticle[3]==assparticle[3] && truparticle[4]==assparticle[4]&& truparticle[5]==assparticle[5] && truparticle[6]==assparticle[6] && trupart
+icle[7]==assparticle[7]  && truparticle[8]==assparticle[8] && truparticle[9]==assparticle[9] &&truparticle[10]==assparticle[10] && truparticle[11]==assparticle[11] && truparticle[12]==assparticle[12]  && truparticle[13]==assparticle[13] && truparticle[14]
+==assparticle[14]) ngood+=1;
 	      if(truparticle[0]!=assparticle[0]) nmisidentified0+=1;
 	      if(truparticle[1]!=assparticle[1]) nmisidentified1+=1;
 	      if(truparticle[2]!=assparticle[2]) nmisidentified2+=1;
@@ -274,8 +286,6 @@ void tzero15tracks(const char* datafile, Float_t globalTimeRes=1.2e-10)
 	      if(truparticle[13]!=assparticle[13]) nmisidentified13+=1;
 	      if(truparticle[14]!=assparticle[14]) nmisidentified14+=1;
 	      cout << "chisquare for current set" << chisquare << endl;
-	      //Float_t weight=1./chisquare;
-	      //htzerobest->Fill(t0best,weight);
 	      htzerobest->Fill(t0best);
 	      hchibest->Fill(chisquare);
 	      Double_t dblechisquare=(Double_t)chisquare;
@@ -285,7 +295,7 @@ void tzero15tracks(const char* datafile, Float_t globalTimeRes=1.2e-10)
 	      chisquare=999.;
 	      t0best=999.;
 	      
-	    } // end for the current set. close if(istop==5)
+	    } // end for the current set. close if(istop==15)
 	    
 	    
 	  } // end condition on ipartold
@@ -300,7 +310,8 @@ void tzero15tracks(const char* datafile, Float_t globalTimeRes=1.2e-10)
     
   }//end loop on events
   
-  nmisidentified=(nmisidentified0+nmisidentified1+nmisidentified2+nmisidentified3+nmisidentified4+nmisidentified5+nmisidentified6+nmisidentified7+nmisidentified8+nmisidentified9+nmisidentified10+nmisidentified11+nmisidentified12+nmisidentified13+nmisidentified14);
+  nmisidentified=(nmisidentified0+nmisidentified1+nmisidentified2+nmisidentified3+nmisidentified4+nmisidentified5+nmisidentified6+nmisidentified7+nmisidentified8+nmisidentified9+nmisidentified10+nmisidentified11+nmisidentified12+nmisidentified13+nmisident
+ified14);
   cout << "total misidentified " << nmisidentified << endl;
   TFile *houtfile = new TFile(outFileName,"recreate");
   houtfile->cd();
