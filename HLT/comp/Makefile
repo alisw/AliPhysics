@@ -18,6 +18,7 @@ SRCS =  AliL3Modeller.cxx AliL3ClusterFitter.cxx \
         AliL3Compress.cxx  AliL3DataCompressor.cxx AliL3CompressAC.cxx
 
 ifneq ($(ARCH),macosx)
+## for macosx put into src as symbolic link
 SRCS += AliL3DataCompressorHelper.cxx AliL3ModelTrack.cxx
 endif
 

@@ -20,6 +20,7 @@ SRCS	= AliL3TransBit.cxx AliL3AltroMemHandler.cxx \
           AliL3DDLRawReaderFile.cxx AliL3DDLTPCRawStream.cxx 
 
 ifneq ($(ARCH),macosx)
+## for macosx put into src as symbolic link
 SRCS   += AliL3DDLDataFileHandler.cxx AliL3DataHandler.cxx 
 endif
 

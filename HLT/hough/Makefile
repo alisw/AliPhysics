@@ -20,13 +20,13 @@ SRCS = AliL3HoughTransformer.cxx AliL3HoughClusterTransformer.cxx \
        AliL3Histogram.cxx AliL3Histogram1D.cxx AliL3HoughMaxFinder.cxx AliL3Hough.cxx \
        AliL3HoughTransformerLUT.cxx AliL3HoughTransformerRow.cxx AliL3HistogramAdaptive.cxx 
 
-ifeq ($(ARCH),macosx)
-## AliL3HoughTrack put into src as symbolic link
+ifneq ($(ARCH),macosx)
+## for macosx put into src as symbolic link
 SRCS +=  AliL3HoughTrack.cxx 
 endif
 
 ifeq ($(ALIHLT_USEPACKAGE),ROOT)
-SRCS += AliL3HoughDisplay.cxx AliL3HoughTest.cxx AliL3HoughTransformerNew.cxx
+SRCS += AliL3HoughDisplay.cxx AliL3HoughTest.cxx AliL3HoughTransformerNew.cxx AliL3HoughTransformerGlobal.cxx
 HDRS = $(SRCS:.cxx=.h) $(MODNAME)LinkDef.h
 OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(DICTO)
 endif

@@ -1,10 +1,11 @@
+# -*- Mode: Makefile -*-
 #$Id$
-###############################
-# Makefile for HLT code.      #
-#                             #
-# Author: Anders Vestbo,      #
-#         Constantin Loizides #                    
-###############################
+#########################################################
+# Makefile for HLT code used as modules to ALIROOT      #
+# (not to confuse with top makefile in $ALICE_ROOT)     #
+# Author: Anders Vestbo,                                #
+#         Constantin Loizides                           #                    
+#########################################################
 
 LIBS = src hough comp misc
 MAKEDIRS = $(LIBS) programs
