@@ -11,14 +11,15 @@ void RICHrawclusters (Int_t evNumber1=0,Int_t evNumber2=0)
 
 // Dynamically link some shared libs
 
-    if (gClassTable->GetID("AliRun") < 0) {
-	gROOT->LoadMacro("loadlibs.C");
-	loadlibs();
-    }
-    else {
-      //delete gAlice;
+   if (gClassTable->GetID("AliRun") < 0) {
+      gROOT->LoadMacro("loadlibs.C");
+      loadlibs();
+    }else {
+      delete gAlice;
       gAlice = 0;
-    }
+   }
+
+    gAlice=0;
 
 // Connect the Root Galice file containing Geometry, Kine and Hits
 
@@ -115,18 +116,15 @@ void RICHrawclusters (Int_t evNumber1=0,Int_t evNumber2=0)
 
 	TClonesArray *Particles = gAlice->Particles();
 	TTree *TD = gAlice->TreeD();
-	Int_t nent=TD->GetEntries();
+	Int_t nent=gAlice->TreeD()->GetEntries();
 	//printf("Found %d entries in the tree (must be one per cathode per event!)\n",nent);
 	if (RICH) {
 	    //printf("Finding clusters for event:%d",nev);
 	    RICH->FindClusters(nev,nent-2);
 	}   // end if RICH
     }   // event loop 
-    //file->ls();
-    file->Close();
-
-
-    //delete gAlice;
+   
+   
     printf("\nEnd of Macro  *************************************\n");
 }
 
