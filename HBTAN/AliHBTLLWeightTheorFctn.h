@@ -25,7 +25,6 @@ class AliHBTLLWeightTheorQInvFctn: public AliHBTOnePairFctn1D
     TH1* GetResult(); 
 
     void   ProcessSameEventParticles(AliHBTPair* partpair);
-    void   ProcessDiffEventParticles(AliHBTPair* partpair);
       
     Double_t GetValue(AliHBTPair* partpair){ return partpair->GetQInv();} //isn't used
 
