@@ -16,6 +16,8 @@
 #pragma link C++ class  AliITSdigit;
 #pragma link C++ class  AliITSgeom-;
 #pragma link C++ class  AliITSgeomSPD;
+#pragma link C++ class  AliITSgeomSPD300-;
+#pragma link C++ class  AliITSgeomSPD425-;
 #pragma link C++ class  AliITSgeomSDD;
 #pragma link C++ class  AliITSgeomSSD;
 #pragma link C++ class  AliITSmodule-;

@@ -9,7 +9,11 @@ PACKAGE = ITS
 
 # C++ sources
 
-SRCS          = AliITS.cxx AliITSv1.cxx AliITSv3.cxx AliITSv5.cxx AliITSdigit.cxx AliITSgeom.cxx AliITSgeomSPD.cxx AliITSgeomSDD.cxx AliITSgeomSSD.cxx AliITSmodule.cxx AliITSmoduleSPD.cxx AliITSmoduleSDD.cxx AliITSmoduleSSD.cxx AliITSdigitSSD.cxx AliITShit.cxx
+SRCS          = AliITS.cxx AliITSv1.cxx AliITSv3.cxx AliITSv5.cxx\
+AliITSdigit.cxx AliITSgeom.cxx AliITSgeomSPD.cxx AliITSgeomSPD300.cxx\
+AliITSgeomSPD425.cxx AliITSgeomSDD.cxx AliITSgeomSSD.cxx\
+AliITSmodule.cxx AliITSmoduleSPD.cxx AliITSmoduleSDD.cxx AliITSmoduleSSD.cxx\
+AliITSdigitSSD.cxx AliITShit.cxx
 
 # Fortran sources
 
