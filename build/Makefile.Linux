@@ -10,7 +10,7 @@ CCMAJORV      = $(shell $(CC) -dumpversion | cut -d. -f1)
 OPT           = -O -g
 
 ifeq ($(CCMAJORV),2)
-CXXOPTS       = $(OPT) -W -Wall -Werror -fPIC -pipe -Wno-long-long -pedantic-errors -ansi
+CXXOPTS       = $(OPT) -W -Wall -fPIC -pipe
 else
 CXXOPTS       = $(OPT) -W -Wall -Werror -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi
 endif
