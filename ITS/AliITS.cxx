@@ -194,7 +194,7 @@ AliITS::AliITS(const char *name, const char *title):AliDetector(name,title){
 
     fIshunt     = 0;  // not zeroed in AliDetector
     fHits       = new TClonesArray("AliITShit", 1560);//not done in AliDetector
-    gAlice->GetMCApp()->AddHitList(fHits);  // Not done in AliDetector.
+    if(gAlice->GetMCApp()) gAlice->GetMCApp()->AddHitList(fHits);// Not done in AliDetector.
 
     fEuclidOut  = 0;
     fITSgeom    = 0;
@@ -360,7 +360,7 @@ void AliITS::Init(){
 
     SetDefaults();
     // Array of TStrings
-    for(i=0;i<fIdN;i++) fIdSens[i] = gMC->VolId(fIdName[i]);
+    if(gMC) for(i=0;i<fIdN;i++) fIdSens[i] = gMC->VolId(fIdName[i]);
 }
 //______________________________________________________________________
 void AliITS::SetDefaults(){
