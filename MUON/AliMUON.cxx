@@ -408,14 +408,14 @@ void AliMUON::Trigger(Int_t nev){
   }
   
   delete decision;
-  
+
   fLoader->TreeR()->Fill();
+ 
   //  char hname[30];
   //  sprintf(hname,"TreeR%d",nev);
   //  fLoader->TreeR()->Write(hname,TObject::kOverwrite);
-  //  fLoader->TreeR()->Reset();
+    //  fLoader->TreeR()->Reset();
   fLoader->WriteRecPoints("OVERWRITE");
-  ResetTrigger();
   
   printf("\n End of trigger for event %d", nev);
 }

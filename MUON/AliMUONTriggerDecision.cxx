@@ -205,7 +205,7 @@ void AliMUONTriggerDecision::SetBit(){
       gime->TreeD()->GetEvent(cathode-1);
       TClonesArray *muonDigits = pMUON->GetMUONData()->Digits(chamber-1,0);
       Int_t ndigits = muonDigits->GetEntriesFast();
-//      printf("\n 1 Found %d digits in %p %d \n ", ndigits, muonDigits,chamber-1);
+      printf("\n 1 Found %d digits in %p %d \n ", ndigits, muonDigits,chamber-1);
 //    if (ndigits == 0) return;
       
 //      iChamber = &(pMUON->Chamber(chamber-1));
@@ -217,6 +217,7 @@ void AliMUONTriggerDecision::SetBit(){
 // get the center of the pad Id 
   	Int_t ix=mdig->PadX();
   	Int_t iy=mdig->PadY();
+	printf("digits %d ix %d iy %d \n",digit,ix,iy);
 
 // get the sum of the coded charge 
 // see coding convention in AliMUONChamberTrigger::DisIntegration 	
@@ -323,7 +324,7 @@ void AliMUONTriggerDecision::SetBit(){
 	  } // if cathode
 	}  // remove soft background
       }   // end loop on digit
-      pMUON->ResetDigits();
+      pMUON->GetMUONData()->ResetDigits();
     }    // end loop on cathode
   }     // end loop on chamber
 }  

@@ -36,7 +36,9 @@ aliroot -b << EOF
 .includepath $ALICE_ROOT/STEER
 .includepath $ALICE_ROOT/MUON
 .L $ALICE_ROOT/MUON/MUONrawclusters.C++
-MUONrawclusters("galice.root",0,10); 
+MUONrawclusters("galice.root",0,9999); 
+to Load
+gSystem->Load("$ALICE_ROOT/MUON/MUONrawclusters_C.so")
 
 First event and last event are given by hand, but this will change.
 
@@ -44,13 +46,7 @@ First event and last event are given by hand, but this will change.
  How to run MUON Trigger
 ============================================================
 .L $ALICE_ROOT/MUON/MUONtrigger.C
-MUONtrigger("galice.root",0,10); 
->> IMPORTANT NOTE: in the present version, one can only have either
->> rawclusters or trigger information written in MUON.RecPoints.root
->> but not both of them i.e. running MUONtrigger after MUONrawclusters
->> will erase rawclusters from TreeR and vice versa.
-
-First event and last event are given by hand, but this will change.
+MUONtrigger("galice.root",0,9999); 
 
 ============================================================
  How to run MUON Tracking reconstruction (old output)
@@ -68,7 +64,7 @@ First event and last event are given by hand, but this will change.
 .includepath $ALICE_ROOT/STEER
 .includepath $ALICE_ROOT/MUON
 .L $ALICE_ROOT/MUON/MUONTracker.C++
-MUONTracker(0,10,"galice.root")    
+MUONTracker("galice.root",0,9999);    
 
 Output in MUON.Tracks.root using the new IO 
 as a TClonesArray of AliMUONTrack
@@ -83,6 +79,8 @@ To compile MUONCheck.C
 .includepath $ALICE_ROOT/STEER
 .includepath $ALICE_ROOT/MUON
 .L $ALICE_ROOT/MUON/MUONCheck.C++
+To Load
+gSystem->Load("$ALICE_ROOT/MUON/MUONCheck_C.so")
 
 To print Kine : (default file is galice.root )
 MUONkine()

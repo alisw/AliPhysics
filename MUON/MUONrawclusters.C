@@ -14,7 +14,7 @@
 
 #include "AliMUONClusterFinderVS.h"
 
-void MUONrawclusters (char* filename, Int_t evNumber1=0,Int_t evNumber2=0) 
+void MUONrawclusters (char* filename="galice.root", Int_t evNumber1=0,Int_t evNumber2=9999) 
 {
   //////////////////////////////////////
   //                                  //
@@ -77,6 +77,7 @@ void MUONrawclusters (char* filename, Int_t evNumber1=0,Int_t evNumber2=0)
     Int_t Nh=0;
     Int_t Nh1=0;
     //    gAlice->RunReco("MUON", evNumber1, evNumber2);
+    if (evNumber2>nevents) evNumber2=nevents;
     for(Int_t ievent=evNumber1; ievent<evNumber2; ievent++) {
       printf("event %d\n",ievent);
       RunLoader->GetEvent(ievent);

@@ -2,7 +2,7 @@
 //get trigger decision and write it in TreeR of MUON.RecPoints.root
 
 void MUONtrigger (char* filename="galice.root", 
-		  Int_t evNumber1=0, Int_t evNumber2=0)
+		  Int_t evNumber1=0, Int_t evNumber2=9999)
 {
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Creating Run Loader and openning file containing Hits
@@ -27,17 +27,23 @@ void MUONtrigger (char* filename="galice.root",
   nevents = RunLoader->GetNumberOfEvents();
 
   MUONLoader->LoadDigits("READ");
+  MUONLoader->LoadRecPoints("UPDATE");
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
+  if (evNumber2>nevents) evNumber2=nevents;
    for (Int_t ievent=evNumber1; ievent<evNumber2; ievent++) { // event loop
        printf("event %d\n",ievent);
        RunLoader->GetEvent(ievent);       
-       if (MUONLoader->TreeR() == 0x0) MUONLoader->MakeTree("R");
+       if (MUONLoader->TreeR() == 0x0) { 
+	 MUONLoader->MakeTree("R");
+       }
        muondata->MakeBranch("GLT");
        muondata->SetTreeAddress("D,GLT");
-       MUON->Trigger(ievent);       
+       MUON->Trigger(ievent); 
+       muondata->ResetDigits();
+       muondata->ResetTrigger();
    } // event loop 
    MUONLoader->UnloadDigits();
+   MUONLoader->UnloadRecPoints();
 }
 
 
