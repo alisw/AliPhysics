@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  1999/11/03 16:58:28  fca
+Correct source of address violation in creating character string
+
 Revision 1.16  1999/11/03 13:17:08  fca
 Have ProdProcess return const char*
 
@@ -650,12 +653,11 @@ const char* TGeant3::CurrentVolName() const
   // Returns the current volume name
   //
   Int_t i, gname;
-  char *name;
+  static char name[5];
   if( (i=fGcvolu->nlevel-1) < 0 ) {
     Warning("CurrentVolName","Stack depth %d\n",fGcvolu->nlevel);
   } else {
     gname=fGcvolu->names[i];
-    name = new char[5];
     strncpy(name,(char *) &gname, 4);
     name[4]='\0';
     i=fGcvolu->lvolum[i];   
