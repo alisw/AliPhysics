@@ -28,6 +28,7 @@ public:
   TClonesArray *Digits() const {return fDigits;}
   TClonesArray *Hits()   const {return fHits;}
   TClonesArray *TrackReferences()   const {return fTrackReferences;}
+  virtual void        RemapTrackReferencesIDs(Int_t *map); //remaping track references MI
 
   TObjArray    *Points() const {return fPoints;}
   Int_t         GetIshunt() const {return fIshunt;}
@@ -73,9 +74,9 @@ protected:
   TClonesArray *fDigits;      //List of digits for this detector
   char         *fDigitsFile;  //!File to store branches of digits tree for detector 
   TObjArray    *fPoints;      //!Array of points for each track (all tracks in memory)
-  TClonesArray *fTrackReferences; //!list of track references - for one primary track only -MI
+  TClonesArray *fTrackReferences; //list of track references - for one primary track only -MI
   Int_t         fMaxIterTrackRef; //!for track refernce iterator routines
   Int_t         fCurrentIterTrackRef; //!for track refernce iterator routines
-  ClassDef(AliDetector,1)  //Base class for ALICE detectors
+  ClassDef(AliDetector,2)  //Base class for ALICE detectors
 };
 #endif

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2002/05/28 14:24:57  hristov
+Correct warning messages
+
 Revision 1.20  2002/04/30 11:47:30  morsch
 KeepPhysics method called by PurifyKine added (N. Carrer, A.M.)
 
@@ -447,6 +450,7 @@ void AliStack::PurifyKine()
    AliModule *detector;
    while((detector = (AliModule*)nextmod())) {
      detector->RemapTrackHitIDs(map.GetArray());
+     detector->RemapTrackReferencesIDs(map.GetArray());
    }
   
    // Now the output bit, from fHgwmk to nkeep we write everything and we erase

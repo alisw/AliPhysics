@@ -89,6 +89,7 @@ public:
   virtual void        FinishRun() {}
   virtual void        FinishPrimary() {}
   virtual void        RemapTrackHitIDs(Int_t *map) {}
+  virtual void        RemapTrackReferencesIDs(Int_t *map) {} //remaping track references MI
 
   //virtual void        Hits2Digits() {}
   virtual void        Init() {}
