@@ -37,6 +37,8 @@ class AliMUONLoader : public AliLoader {
     AliMUONLoader(const Char_t *detname,TFolder* eventfolder);
     virtual ~AliMUONLoader();
 
+    void           SetMUONData(AliMUONData * MUONData);
+    AliMUONData *  GetMUONData();
  
  private:
     //descendant classes should

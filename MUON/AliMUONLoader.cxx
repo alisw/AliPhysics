@@ -49,5 +49,13 @@ AliMUONLoader::~AliMUONLoader()
 //detructor 
 }
 //_______________________________________________________________________________
-
+void AliMUONLoader::SetMUONData(AliMUONData * MUONData)
+{
+  fMUONData = MUONData;
+}
+//_______________________________________________________________________________
+AliMUONData * AliMUONLoader::GetMUONData()
+{
+  return fMUONData;
+}
 
