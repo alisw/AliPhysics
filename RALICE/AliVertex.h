@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+// $Id$
 
 #include <iostream.h>
 #include <math.h>
@@ -21,10 +21,10 @@ class AliVertex : public AliJet,public AliPosition
   AliVertex(Int_t n);                     // Create a vertex to hold initially n tracks
   ~AliVertex();                           // Default destructor
   void Reset();                           // Reset all values
-  void Add(AliJet& j);                    // Add a jet of tracks to the vertex
-  void Add(AliVertex& v,Int_t connect=1); // Add (and connect) a (sec.) vertex to the current vertex
-  void Add(AliJet* j)    { Add(*j); }
-  void Add(AliVertex* v,Int_t connect=1) { Add(*v,connect); }
+  void AddJet(AliJet& j);                 // Add a jet of tracks to the vertex
+  void AddVertex(AliVertex& v,Int_t connect=1);// Add (and connect) a (sec.) vertex to the current vertex
+  void Add(AliJet* j)    { AddJet(*j); }
+  void Add(AliVertex* v,Int_t connect=1) { AddVertex(*v,connect); }
   void Info(TString f="car");             // Print the vertex info within coordinate frame f
   void List(TString f="car");             // Print vertex prim. track information for coord. frame f
   void ListAll(TString f="car");          // Print prim. + sec. vertex full track info for coord. frame f

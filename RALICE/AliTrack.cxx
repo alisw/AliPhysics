@@ -13,12 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.2  1999/09/29 09:24:28  fca
-Introduction of the Copyright and cvs Log
-
-*/
+// $Id$
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliTrack
@@ -91,7 +86,7 @@ Introduction of the Copyright and cvs Log
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 10-jul-1997 UU-SAP Utrecht
-//- Modified: NvE 29-oct-1999 UU-SAP Utrecht
+//- Modified: NvE $Date$ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliTrack.h"
@@ -104,6 +99,9 @@ AliTrack::AliTrack()
 // All variables initialised to 0
  fDecays=0;
  fSignals=0;
+ fMasses=0;
+ fDmasses=0;
+ fPmasses=0;
  Reset();
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -130,6 +128,7 @@ void AliTrack::Reset()
  fQ=0;
  fNdec=0;
  fNsig=0;
+ fNmasses=0;
  Double_t a[4]={0,0,0,0};
  SetVector(a,"sph");
  if (fDecays)
@@ -147,6 +146,21 @@ void AliTrack::Reset()
  Double_t b[3]={0,0,0};
  fBegin.SetPosition(b,"sph");
  fEnd.SetPosition(b,"sph");
+ if (fMasses)
+ {
+  delete fMasses;
+  fMasses=0;
+ }
+ if (fDmasses)
+ {
+  delete fDmasses;
+  fDmasses=0;
+ }
+ if (fPmasses)
+ {
+  delete fPmasses;
+  fPmasses=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliTrack::Set3Momentum(Ali3Vector& p)
@@ -187,8 +201,14 @@ void AliTrack::Info(TString f)
  Double_t dm=GetResultError();
  cout << " *AliTrack::Info* Mass : " << m
       << " error : " << dm << " Charge : " << fQ
-      << " Momentum : " << GetMomentum() << " Ntracks : " << fNdec
-      << " Nsignals : " << fNsig << endl;
+      << " Momentum : " << GetMomentum() << " Nmass hyp. : " << fNmasses
+      << " Ntracks : " << fNdec << " Nsignals : " << fNsig << endl;
+ for (Int_t i=0; i<fNmasses; i++)
+ {
+  cout << " Mass hypothesis " << (i+1) << " Mass : " << fMasses->At(i)
+       << " error : " << fDmasses->At(i) << " prob. : " << fPmasses->At(i)
+       << endl;
+ }
  Ali4Vector::Info(f); 
 } 
 ///////////////////////////////////////////////////////////////////////////
@@ -483,5 +503,167 @@ AliPosition AliTrack::GetEndPoint()
 {
 // Provide the position of the track end-point.
  return fEnd;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTrack::AddMassHypothesis(Double_t prob,Double_t m,Double_t dm)
+{
+// Add a mass hypothesis for this current track.
+// prob=probalility  m=mass value  dm=error on the mass value.
+// The default value for the mass error dm is 0.
+ if (!fMasses) fMasses=new TArrayD();
+ if (!fDmasses) fDmasses=new TArrayD();
+ if (!fPmasses) fPmasses=new TArrayD();
+
+ fNmasses++;
+ fMasses->Set(fNmasses);
+ fDmasses->Set(fNmasses);
+ fPmasses->Set(fNmasses);
+
+ fMasses->AddAt(m,fNmasses-1);
+ fDmasses->AddAt(dm,fNmasses-1);
+ fPmasses->AddAt(prob,fNmasses-1);
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliTrack::GetNMassHypotheses()
+{
+// Provide the number of mass hypotheses for this track.
+ return fNmasses;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTrack::GetMassHypothesis(Int_t j)
+{
+// Provide the mass of the jth hypothesis for this track.
+// Note : the first hypothesis is indicated by j=1.
+// Default : j=0 ==> Hypothesis with highest probability.
+// The error on the mass can be obtained by invoking GetResultError()
+// after invokation of GetMassHypothesis(j).
+
+ Double_t m=0,dm=0,prob=0;
+
+ // Check validity of index j
+ if (j<0 || j>fNmasses)
+ {
+  cout << " *AliTrack::GetMassHypothesis* Invalid index j : " << j
+       << " Number of mass hypotheses : " << fNmasses << endl;
+  fDresult=0;
+  return 0;
+ }
+
+ // Select mass hypothesis with highest probability
+ if (j==0) 
+ {
+  if (fNmasses) 
+  {
+   m=fMasses->At(0);
+   dm=fDmasses->At(0);
+   prob=fPmasses->At(0);
+   for (Int_t i=1; i<fNmasses; i++)
+   {
+    if (fPmasses->At(i)>prob)
+    {
+     m=fMasses->At(i);
+     dm=fDmasses->At(i);
+    }
+   }
+  }
+  fDresult=dm;
+  return m;  
+ }
+
+ // Provide data of requested mass hypothesis
+ m=fMasses->At(j-1);
+ fDresult=fDmasses->At(j-1);
+ return m;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTrack::GetMassHypothesisProb(Int_t j)
+{
+// Provide the probability of the jth hypothesis for this track.
+// Note : the first hypothesis is indicated by j=1.
+// Default : j=0 ==> Hypothesis with highest probability.
+
+ Double_t prob=0;
+
+ // Check validity of index j
+ if (j<0 || j>fNmasses)
+ {
+  cout << " *AliTrack::GetMassHypothesisProb* Invalid index j : " << j
+       << " Number of mass hypotheses : " << fNmasses << endl;
+  return 0;
+ }
+
+ // Select mass hypothesis with highest probability
+ if (j==0) 
+ {
+  if (fNmasses) 
+  {
+   prob=fPmasses->At(0);
+   for (Int_t i=1; i<fNmasses; i++)
+   {
+    if (fPmasses->At(i)>prob) prob=fPmasses->At(i);
+   }
+  }
+  return prob;  
+ }
+
+ // Provide probability of requested mass hypothesis
+ prob=fPmasses->At(j-1);
+ return prob;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTrack::SetMass()
+{
+// Set the mass and error to the value of the hypothesis with highest prob.
+
+ Double_t m=0,dm=0,prob=0;
+
+ // Select mass hypothesis with highest probability
+ if (fNmasses) 
+ {
+  m=fMasses->At(0);
+  dm=fDmasses->At(0);
+  prob=fPmasses->At(0);
+  for (Int_t i=1; i<fNmasses; i++)
+  {
+   if (fPmasses->At(i)>prob)
+   {
+    m=fMasses->At(i);
+    dm=fDmasses->At(i);
+   }
+  }
+  SetMass(m,dm);
+ }
+ else
+ {
+  cout << " *AliTrack::SetMass()* No hypothesis present => No action." << endl;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTrack::RemoveMassHypothesis(Int_t j)
+{
+// Remove the jth mass hypothesis for this track.
+// Note : the first hypothesis is indicated by j=1.
+
+ if (j<=0 || j>fNmasses) // Check validity of index j
+ {
+  cout << " *AliTrack::RemoveMassHypothesis* Invalid index j : " << j
+       << " Number of mass hypotheses : " << fNmasses << endl;
+ }
+ else
+ {
+  if (j != fNmasses)
+  {
+   fMasses->AddAt(fMasses->At(fNmasses-1),j-1);
+   fDmasses->AddAt(fDmasses->At(fNmasses-1),j-1);
+   fPmasses->AddAt(fPmasses->At(fNmasses-1),j-1);
+  }
+  fMasses->AddAt(0,fNmasses-1);
+  fDmasses->AddAt(0,fNmasses-1);
+  fPmasses->AddAt(0,fNmasses-1);
+  fNmasses--;
+  fMasses->Set(fNmasses);
+  fDmasses->Set(fNmasses);
+  fPmasses->Set(fNmasses);
+ }
 }
 ///////////////////////////////////////////////////////////////////////////

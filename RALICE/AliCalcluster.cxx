@@ -13,15 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.3  1999/11/03 14:23:17  fca
-New version of RALICE introduced
-
-Revision 1.2  1999/09/29 09:24:28  fca
-Introduction of the Copyright and cvs Log
-
-*/
+// $Id$
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliCalcluster
@@ -33,7 +25,7 @@ Introduction of the Copyright and cvs Log
 // to enable EM or hadronic cluster identification.
 //
 //--- Author: Nick van Eijndhoven 13-jun-1997 UU-SAP Utrecht
-//- Modified: NvE 18-jan-2000 UU-SAP Utrecht 
+//- Modified: NvE $Date$ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliCalcluster.h"

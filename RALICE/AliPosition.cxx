@@ -13,12 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.2  1999/09/29 09:24:28  fca
-Introduction of the Copyright and cvs Log
-
-*/
+// $Id$
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliPosition
@@ -55,6 +50,7 @@ Introduction of the Copyright and cvs Log
 // q.GetPositionErrors(dloc,"sph");
 //
 //--- Author: Nick van Eijndhoven 06-feb-1999 UU-SAP Utrecht
+//- Modified: NvE $Date$ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliPosition.h"

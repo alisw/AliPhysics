@@ -4,11 +4,12 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+// $Id$
 
 
 #include "TObject.h"
 #include "TObjArray.h"
+#include "TArrayD.h"
  
 #include "AliSignal.h"
 #include "AliBoost.h"
@@ -23,6 +24,7 @@ class AliTrack : public TObject,public Ali4Vector
   void Set4Momentum(Ali4Vector& p); // Set track 4-momentum
   void Set3Momentum(Ali3Vector& p); // Set track 3-momentum
   void SetMass(Double_t m,Double_t dm=0); // Set particle mass and error
+  void SetMass();                   // Set mass and error to mass hypothesis with highest prob.
   void SetCharge(Float_t q);        // Set particle charge
   void Info(TString f="car");       // Print track information for coord. frame f
   void List(TString f="car");       // Print track and decay level 1 information for coord. frame f
@@ -43,6 +45,11 @@ class AliTrack : public TObject,public Ali4Vector
   AliPosition GetBeginPoint();      // Provide the track begin-point
   void SetEndPoint(AliPosition p);  // Set the track end-point
   AliPosition GetEndPoint();        // Provide the track end-point
+  void AddMassHypothesis(Double_t prob,Double_t m,Double_t dm=0); // Add mass hypothesis data
+  Int_t GetNMassHypotheses();                // Provide number of mass hypotheses
+  Double_t GetMassHypothesis(Int_t j=0);     // Provide mass of jth hypothesis 
+  Double_t GetMassHypothesisProb(Int_t j=0); // Provide prob. of jth mass hypothesis 
+  void RemoveMassHypothesis(Int_t j);        // Remove the jth mass hypothesis 
  
  protected:
   Float_t fQ;          // The charge of the particle
@@ -52,6 +59,10 @@ class AliTrack : public TObject,public Ali4Vector
   TObjArray* fSignals; // The array of related AliSignals
   AliPosition fBegin;  // The begin-point of the track 
   AliPosition fEnd;    // The end-point of the track 
+  Int_t fNmasses;      // The number of mass hypotheses
+  TArrayD* fMasses;    // The various mass hypotheses
+  TArrayD* fDmasses;   // The errors on the various masses
+  TArrayD* fPmasses;   // The probabilities of the various mass hypotheses
 
  private:
   void Dump(AliTrack* t,Int_t n,TString f); // Recursively print all decay levels

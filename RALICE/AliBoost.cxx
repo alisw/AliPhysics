@@ -13,12 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.2  1999/09/29 09:24:28  fca
-Introduction of the Copyright and cvs Log
-
-*/
+// $Id$
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliBoost
@@ -61,7 +56,7 @@ Introduction of the Copyright and cvs Log
 // b2.Info("sph");
 //
 //--- Author: Nick van Eijndhoven 14-may-1996 UU-SAP Utrecht
-//- Modified: NvE 24-oct-1999 UU-SAP Utrecht
+//- Modified: NvE $Date$ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliBoost.h"

@@ -13,12 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.2  1999/09/29 09:24:28  fca
-Introduction of the Copyright and cvs Log
-
-*/
+// $Id$
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliJet
@@ -36,10 +31,10 @@ Introduction of the Copyright and cvs Log
 //  ...
 // AliJet j1(5);
 // AliJet j2(12);
-// j1.Add(t1);
-// j1.Add(t2);
-// j2.Add(t3);
-// j2.Add(t4);
+// j1.AddTrack(t1);
+// j1.AddTrack(t2);
+// j2.AddTrack(t3);
+// j2.AddTrack(t4);
 //
 // j1.Info();
 // j2.Info("sph");
@@ -54,7 +49,7 @@ Introduction of the Copyright and cvs Log
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 10-jul-1997 UU-SAP Utrecht
-//- Modified: NvE 06-apr-1999 UU-SAP Utrecht to inherit from Ali4Vector
+//- Modified: NvE $Date$ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliJet.h"
@@ -120,7 +115,7 @@ void AliJet::Reset()
  if (fNtinit > 0) SetNtinit(fNtinit);
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliJet::Add(AliTrack& t)
+void AliJet::AddTrack(AliTrack& t)
 {
 // Add a track to the jet
 // In case the maximum number of tracks has been reached

@@ -13,12 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.2  1999/09/29 09:24:28  fca
-Introduction of the Copyright and cvs Log
-
-*/
+// $Id$
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliSignal
@@ -74,7 +69,7 @@ Introduction of the Copyright and cvs Log
 // q.SetSignalError(error,3);
 //
 //--- Author: Nick van Eijndhoven 23-jan-1999 UU-SAP Utrecht
-//- Modified: NvE 30-oct-1999 UU-SAP Utrecht
+//- Modified: NvE $Date$ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliSignal.h"

@@ -13,12 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.2  1999/09/29 09:24:28  fca
-Introduction of the Copyright and cvs Log
-
-*/
+// $Id$
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliSample
@@ -44,6 +39,7 @@ Introduction of the Copyright and cvs Log
 // All statistics of a sample are obtained via s.Info().
 //
 //--- Author: Nick van Eijndhoven 30-mar-1996 CERN Geneva
+//- Modified: NvE $Date$ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliSample.h"

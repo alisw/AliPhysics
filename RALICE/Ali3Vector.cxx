@@ -13,12 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.2  1999/09/29 09:24:28  fca
-Introduction of the Copyright and cvs Log
-
-*/
+// $Id$
 
 ///////////////////////////////////////////////////////////////////////////
 // Class Ali3Vector
@@ -78,7 +73,7 @@ Introduction of the Copyright and cvs Log
 // c=a*5;
 //
 //--- Author: Nick van Eijndhoven 30-mar-1999 UU-SAP Utrecht
-//- Modified: NvE 25-oct-1999 UU-SAP Utrecht
+//- Modified: NvE $Date$ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "Ali3Vector.h"

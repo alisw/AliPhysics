@@ -237,3 +237,17 @@
 06-jun-2000 NvE AliMath::K() etc... renamed to AliMath::BesselK() etc... for clarity.
 07-jun-2000 NvE Vertex linking of AliVertex::Add(AliVertex&) made more sophisticated
                 by introduction of automatic generation of connecting track.
+26-jan-2001 NvE File RALICELinkDef.h updated to allow the automatic schema evolution
+                as introduced in ROOT 3.00/05. 
+27-may-2001 NvE New class AliEvent introduced and RALICELinkDef.h & co. updated accordingly.
+                Also RALICELinkDef.h changed back to old schema evolution (i.e. "+" removed)
+                because of problems with I/O in ROOT 3.00/06 w.r.t. multiple inheritance. 
+29-may-2001 NvE Position reset added in AliVertex::Reset().
+01-jun-2001 NvE Memberfunctions Add() renamed explicitly to AddTrack(), AddJet() and
+                AddVertex() in AliJet and AliVertex.
+03-jun-2001 NvE Treatment of masshypotheses introduced in AliTrack.
+04-jun-2001 NvE CVS Log text and keyword replaced by Id in .cxx files and C++ comment
+                indicator /* ... */ replaced by // in the Id record of the .h files
+                to prevent problems.
+06-jun-2001 NvE CVS Date keyword introduced in 'Modified' field in .cxx files so that
+                the modification date is updated automatically in the html docs.

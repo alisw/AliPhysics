@@ -13,15 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.4  1999/11/03 14:23:18  fca
-New version of RALICE introduced
-
-Revision 1.3  1999/09/29 09:24:28  fca
-Introduction of the Copyright and cvs Log
-
-*/
+// $Id$
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliVertex
@@ -48,26 +40,26 @@ Introduction of the Copyright and cvs Log
 //
 //        AliVertex v1(5);
 //
-//        v1.Add(t1);
-//        v1.Add(t2);
-//        v1.Add(t3);
-//        v1.Add(t4);
+//        v1.AddTrack(t1);
+//        v1.AddTrack(t2);
+//        v1.AddTrack(t3);
+//        v1.AddTrack(t4);
 //
 //        Float_t r1[3]={2.4,0.1,-8.5};
 //        v1.SetPosition(r1,"car");
 //
 //        AliVertex v2(2);
-//        v2.Add(t5);
-//        v2.Add(t6);
-//        v2.Add(t7);
+//        v2.AddTrack(t5);
+//        v2.AddTrack(t6);
+//        v2.AddTrack(t7);
 //
 //        Float_t r2[3]={1.6,-3.2,5.7};
 //        v2.SetPosition(r2,"car");
 //
 //        AliVertex v3;
 //
-//        v3.Add(j1);
-//        v3.Add(j2);
+//        v3.AddJet(j1);
+//        v3.AddJet(j2);
 //
 //        Float_t r3[3]={6.2,4.8,1.3};
 //        v3.SetPosition(r3,"car");
@@ -87,8 +79,8 @@ Introduction of the Copyright and cvs Log
 //
 // Specify the vertices v2 and v3 as secondary vertices of v1
 //
-//        v1.Add(v2);
-//        v1.Add(v3);
+//        v1.AddVertex(v2);
+//        v1.AddVertex(v3);
 //
 //        v1.List();
 //
@@ -102,16 +94,16 @@ Introduction of the Copyright and cvs Log
 //
 //        v1.Reset();
 //        v1.SetNvmax(25); // Increase initial no. of sec. vertices
-//        v1.Add(t3);
-//        v1.Add(t7);
-//        v1.Add(j2);
+//        v1.AddTrack(t3);
+//        v1.AddTrack(t7);
+//        v1.AddJet(j2);
 //        Float_t pos[3]={7,9,4};
 //        v1.SetPosition(pos,"car");
 //
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 04-apr-1998 UU-SAP Utrecht
-//- Modified: NvE 08-apr-1999 UU-SAP Utrecht to inherit from AliJet
+//- Modified: NvE $Date$ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliVertex.h"
@@ -191,6 +183,10 @@ void AliVertex::Reset()
 
  AliJet::Reset();
 
+ Double_t a[3]={0,0,0};
+ SetPosition(a,"sph");
+ SetPositionErrors(a,"car");
+
  fNvtx=0;
  if (fNvmax>0) SetNvmax(fNvmax);
  if (fConnects)
@@ -201,18 +197,18 @@ void AliVertex::Reset()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliVertex::Add(AliJet& j)
+void AliVertex::AddJet(AliJet& j)
 {
 // Add the tracks of a jet to the vertex
  AliTrack* tj;
  for (Int_t i=1; i<=j.GetNtracks(); i++)
  {
   tj=j.GetTrack(i);
-  AliJet::Add(tj);
+  AliJet::AddTrack(tj);
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliVertex::Add(AliVertex& v,Int_t connect)
+void AliVertex::AddVertex(AliVertex& v,Int_t connect)
 {
 // Add a (secondary) vertex to the current vertex.
 // In case the maximum number of (secondary) vertices has been reached,
@@ -255,7 +251,7 @@ void AliVertex::Add(AliVertex& v,Int_t connect)
   t->Set3Momentum(p);
   t->SetInvariant(v2,dv2);
 
-  AliJet::Add(t);
+  AliJet::AddTrack(t);
 
   if (!fConnects) fConnects=new TObjArray(fNvmax);
   fConnects->Add(t);

@@ -13,12 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.2  1999/09/29 09:24:28  fca
-Introduction of the Copyright and cvs Log
-
-*/
+// $Id$
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliRandom
@@ -108,6 +103,7 @@ Introduction of the Copyright and cvs Log
 // 3) Using the rvec facility saves a lot of CPU time for large n values.
 //
 //--- Author: Nick van Eijndhoven 11-oct-1997 UU-SAP Utrecht
+//- Modified: NvE $Date$ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliRandom.h"

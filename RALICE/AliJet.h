@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+// $Id$
  
 #include <iostream.h>
 #include <math.h>
@@ -21,8 +21,8 @@ class AliJet : public TObject,public Ali4Vector
   AliJet(Int_t n);                   // Create a Jet to hold initially n Tracks
   ~AliJet();                         // Default destructor
   void Reset();                      // Reset all values
-  virtual void Add(AliTrack& t);     // Add a track to the jet
-  virtual void Add(AliTrack* t) { Add(*t); }
+  virtual void AddTrack(AliTrack& t);// Add a track to the jet
+  virtual void AddTrack(AliTrack* t) { AddTrack(*t); }
   void Info(TString f);              // Print jet information in coordinate frame f 
   void List(TString f="car");        // Print jet prim. track information for coord. frame f
   void ListAll(TString f="car");     // Print jet prim. and decay track information for coord. frame f

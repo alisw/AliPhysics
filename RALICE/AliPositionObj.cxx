@@ -13,9 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-*/
+// $Id$
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliPositionObj
@@ -53,6 +51,7 @@ $Log$
 // ssum.Info();
 //
 //--- Author: Nick van Eijndhoven 18-oct-1999 UU-SAP Utrecht
+//- Modified: NvE $Date$ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliPositionObj.h"
