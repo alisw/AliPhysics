@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.31  2000/07/13 16:19:10  fca
+Mainly coding conventions + some small bug fixes
+
 Revision 1.30  2000/07/12 08:56:30  fca
 Coding convention correction and warning removal
 
@@ -1312,7 +1315,7 @@ Bool_t TGeant3::IsNewTrack() const
   //
   // True if the track is not at the boundary of the current volume
   //
-  return (fGctrak->sleng>0);
+  return (fGctrak->sleng==0);
 }
 
 //_____________________________________________________________________________
