@@ -12,6 +12,13 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+/* $Id:*/
+
+//This class contains all the necessary methods to create the Raw Data
+//files (slides) for the ITS data challenges for:
+//SPD 
+//SDD
+//SSD
 
 #include <stdlib.h>
 #include "Riostream.h"
@@ -27,6 +34,7 @@ ClassImp(AliITSDDLRawData)
 
 ////////////////////////////////////////////////////////////////////////////////////////
 AliITSDDLRawData::AliITSDDLRawData(){
+  //Default constructor
   fIndex=-1;
   fHalfStaveModule=-1;
 }
@@ -34,7 +42,7 @@ AliITSDDLRawData::AliITSDDLRawData(){
 ////////////////////////////////////////////////////////////////////////////////////////
 
 AliITSDDLRawData::AliITSDDLRawData(const AliITSDDLRawData &source){
-  // Copy Constructor
+  //Copy Constructor
   this->fIndex=source.fIndex;
   this->fHalfStaveModule=source.fHalfStaveModule;
   return;
@@ -54,11 +62,12 @@ AliITSDDLRawData& AliITSDDLRawData::operator=(const AliITSDDLRawData &source){
 //
 
 void AliITSDDLRawData::GetDigitsSSD(TClonesArray *ITSdigits,Int_t mod, ULong_t *buf){
+  //This method packs the SSD digits in a proper 32 bits structure
   Int_t ix;
   Int_t iz;
   Int_t is;
-  ULong_t Word;
-  ULong_t BaseWord;
+  ULong_t word;
+  ULong_t baseWord;
   Int_t ndigits = ITSdigits->GetEntries();
   AliITSdigit *digs;
   if(ndigits){
@@ -68,17 +77,17 @@ void AliITSDDLRawData::GetDigitsSSD(TClonesArray *ITSdigits,Int_t mod, ULong_t *
       ix=digs->fCoord2;  // Strip Numbar
       is=digs->fSignal;  // ADC Signal
       // cout<<" Module:"<<mod-500<<" N/P side:"<<iz<<" Strip Number:"<<ix<<" Amplidute:"<<is-1<<endl;
-      BaseWord=0;
-      Word=is-1;
-      PackWord(BaseWord,Word,0,9);//ADC data
-      Word=ix;
-      PackWord(BaseWord,Word,10,19);//Strip Number
-      Word=iz;      
-      PackWord(BaseWord,Word,20,20);//ADC Channel ID (N or P side)
-      Word=mod;
-      PackWord(BaseWord,Word,21,31);//ADC module ID
+      baseWord=0;
+      word=is-1;
+      PackWord(baseWord,word,0,9);//ADC data
+      word=ix;
+      PackWord(baseWord,word,10,19);//Strip Number
+      word=iz;      
+      PackWord(baseWord,word,20,20);//ADC Channel ID (N or P side)
+      word=mod;
+      PackWord(baseWord,word,21,31);//ADC module ID
       fIndex++;
-      buf[fIndex]=BaseWord;
+      buf[fIndex]=baseWord;
     }//end for
   }//end if
   return;
@@ -89,11 +98,12 @@ void AliITSDDLRawData::GetDigitsSSD(TClonesArray *ITSdigits,Int_t mod, ULong_t *
 //
 
 void AliITSDDLRawData::GetDigitsSDD(TClonesArray *ITSdigits,Int_t mod, ULong_t *buf){  
+  //This method packs the SSD digits in a proper 32 bits structure
   Int_t ix;
   Int_t iz;
   Int_t is;
-  ULong_t Word;
-  ULong_t BaseWord;
+  ULong_t word;
+  ULong_t baseWord;
   Int_t ndigits = ITSdigits->GetEntries();
   AliITSdigit *digs;
   if(ndigits){
@@ -105,31 +115,31 @@ void AliITSDDLRawData::GetDigitsSDD(TClonesArray *ITSdigits,Int_t mod, ULong_t *
       is=digs->fSignal;  // ADC Signal
       //      cout<<"Amplitude value:"<<is<<" Time Bucket:"<<ix<<" Anode:"<<iz<<endl;
       if (is>255){cout<<"WARNING (!) bits words is needed)!!!\n";}
-      BaseWord=0;
+      baseWord=0;
       /*
       //10 bits words for amplitude value
-      Word=is;
-      PackWord(BaseWord,Word,0,9);//ADC data
-      Word=ix;
-      PackWord(BaseWord,Word,10,17);//Time bucket
-      Word=iz;
-      PackWord(BaseWord,Word,18,26);//Anode Number
-      Word=mod;
-      PackWord(BaseWord,Word,27,31);//Module number
+      word=is;
+      PackWord(baseWord,word,0,9);//ADC data
+      word=ix;
+      PackWord(baseWord,word,10,17);//Time bucket
+      word=iz;
+      PackWord(baseWord,word,18,26);//Anode Number
+      word=mod;
+      PackWord(baseWord,word,27,31);//Module number
       */
       
       //8bits words for amplitude value
-      Word=is;
-      PackWord(BaseWord,Word,0,7);//ADC data
-      Word=ix;
-      PackWord(BaseWord,Word,8,15);//Time bucket
-      Word=iz;
-      PackWord(BaseWord,Word,16,24);//Anode Number
-      Word=mod;
-      PackWord(BaseWord,Word,25,31);//Module number
+      word=is;
+      PackWord(baseWord,word,0,7);//ADC data
+      word=ix;
+      PackWord(baseWord,word,8,15);//Time bucket
+      word=iz;
+      PackWord(baseWord,word,16,24);//Anode Number
+      word=mod;
+      PackWord(baseWord,word,25,31);//Module number
      
       fIndex++;
-      buf[fIndex]=BaseWord;
+      buf[fIndex]=baseWord;
     }//end for
   }//end if
   return;
@@ -140,13 +150,14 @@ void AliITSDDLRawData::GetDigitsSDD(TClonesArray *ITSdigits,Int_t mod, ULong_t *
 //
 
 void AliITSDDLRawData::GetDigitsSPD(TClonesArray *ITSdigits,Int_t mod, ULong_t *buf){
+  //This method packs the SPD digits in a proper 32 strucure
   Int_t ix;
   Int_t iz;
-  Int_t ChipNo=0;
-  ULong_t BaseWord=0;
-  ULong_t HitRow=0;
-  Int_t ChipHitCount=0;  //Number of Hit in the current chip
-  Int_t PreviousChip=-1; //Previuos chip respect to the actual aone
+  Int_t chipNo=0;
+  ULong_t baseWord=0;
+  ULong_t hitRow=0;
+  Int_t chipHitCount=0;  //Number of Hit in the current chip
+  Int_t previousChip=-1; //Previuos chip respect to the actual aone
   Int_t ndigits = ITSdigits->GetEntries(); //number of digits in the current module
   //cout<<"      Number of digits in the current module:"<<ndigits<<" module:"<<mod<<endl;
   AliITSdigit *digs;
@@ -163,63 +174,63 @@ void AliITSDDLRawData::GetDigitsSPD(TClonesArray *ITSdigits,Int_t mod, ULong_t *
        *     ---------------------------------------------------------------------*/
       iz=digs->fCoord1;  // Cell number in Z direction 
       ix=digs->fCoord2;  // Cell number in X direction
-      ChipNo=iz/32;
-      HitRow=iz-ChipNo*32;
+      chipNo=iz/32;
+      hitRow=iz-chipNo*32;
       if(fHalfStaveModule){
-	ChipNo+=5;
+	chipNo+=5;
 	fHalfStaveModule=-1;
       }//end if
-      //cout<<"Chip number of the current digit:"<<ChipNo<<" Row:"<<HitRow<<" Column:"<<ix<<endl;
-      if(PreviousChip==-1){
+      //cout<<"Chip number of the current digit:"<<chipNo<<" Row:"<<hitRow<<" Column:"<<ix<<endl;
+      if(previousChip==-1){
 	//loop over chip without digits 
 	//Even if there aren't digits for a given chip 
 	//the chip header and the chip trailer are stored
 	for(Int_t i=0;i<(iz/32);i++){
-	  if(ChipNo>4)
-	    WriteChipHeader(i+5,(mod/2),BaseWord);
+	  if(chipNo>4)
+	    WriteChipHeader(i+5,(mod/2),baseWord);
 	  else
-	    WriteChipHeader(i,(mod/2),BaseWord);
-	  WriteChipTrailer(buf,ChipHitCount,BaseWord);
+	    WriteChipHeader(i,(mod/2),baseWord);
+	  WriteChipTrailer(buf,chipHitCount,baseWord);
 	}//end for
-	PreviousChip=ChipNo;
-	WriteChipHeader(ChipNo,(mod/2),BaseWord);
-	ChipHitCount++;
-	WriteHit(buf,ix,HitRow,BaseWord);
+	previousChip=chipNo;
+	WriteChipHeader(chipNo,(mod/2),baseWord);
+	chipHitCount++;
+	WriteHit(buf,ix,hitRow,baseWord);
       }//end if
       else{
-	ChipHitCount++;
-	if(PreviousChip!=ChipNo){
-	  WriteChipTrailer(buf,ChipHitCount-1,BaseWord);
-	  for(Int_t i=PreviousChip+1;i<ChipNo;i++){
-	    WriteChipHeader(i,(mod/2),BaseWord);
-	    WriteChipTrailer(buf,0,BaseWord);
+	chipHitCount++;
+	if(previousChip!=chipNo){
+	  WriteChipTrailer(buf,chipHitCount-1,baseWord);
+	  for(Int_t i=previousChip+1;i<chipNo;i++){
+	    WriteChipHeader(i,(mod/2),baseWord);
+	    WriteChipTrailer(buf,0,baseWord);
 	  }//end for
-	  WriteChipHeader(ChipNo,(mod/2),BaseWord);
-	  PreviousChip=ChipNo;
+	  WriteChipHeader(chipNo,(mod/2),baseWord);
+	  previousChip=chipNo;
 	}//end if
-	WriteHit(buf,ix,HitRow,BaseWord);
+	WriteHit(buf,ix,hitRow,baseWord);
       }//end else
     }//end for
     //Even if there aren't digits for a given chip 
     //the chip header and the chip trailer are stored
-    Int_t End=4;
-    if(ChipNo>4)End+=5;
-    WriteChipTrailer(buf,ChipHitCount,BaseWord);
-    for(Int_t i=ChipNo+1;i<=End;i++){
-      WriteChipHeader(i,(mod/2),BaseWord);
-      WriteChipTrailer(buf,0,BaseWord);
+    Int_t end=4;
+    if(chipNo>4)end+=5;
+    WriteChipTrailer(buf,chipHitCount,baseWord);
+    for(Int_t i=chipNo+1;i<=end;i++){
+      WriteChipHeader(i,(mod/2),baseWord);
+      WriteChipTrailer(buf,0,baseWord);
     }//end for
   }//end if
   else{
     //In this module there aren't digits but
     //the chip header and chip trailer are store anyway
     if(fHalfStaveModule){
-      ChipNo=5;
+      chipNo=5;
       fHalfStaveModule=-1;
     }//end if
     for(Int_t i=0;i<5;i++){
-      WriteChipHeader(ChipNo+i,(mod/2),BaseWord);
-      WriteChipTrailer(buf,ChipHitCount,BaseWord);
+      WriteChipHeader(chipNo+i,(mod/2),baseWord);
+      WriteChipTrailer(buf,chipHitCount,baseWord);
     }//end for
   }//end else 
   return;
@@ -228,40 +239,43 @@ void AliITSDDLRawData::GetDigitsSPD(TClonesArray *ITSdigits,Int_t mod, ULong_t *
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AliITSDDLRawData::PackWord(ULong_t &BaseWord, ULong_t Word, Int_t StartBit, Int_t StopBit){
-  ULong_t DummyWord,OffSet;
-  Int_t   Length;
-  ULong_t Sum;
+  //This method packs a word into the Baseword buffer starting form the "StartBit" 
+  //and tacking StopBit-StertBit+1 bits
+  ULong_t dummyWord,offSet;
+  Int_t   length;
+  ULong_t sum;
   //The BaseWord is being filled with 1 from StartBit to StopBit
-  Length=StopBit-StartBit+1;
-  Sum=(ULong_t)TMath::Power(2,Length)-1;
-  if(Word > Sum){
+  length=StopBit-StartBit+1;
+  sum=(ULong_t)TMath::Power(2,length)-1;
+  if(Word > sum){
     cout<<"WARNING::Word to be filled is not within desired length"<<endl;
     cout<<"Word:"<<Word<<" Start bit:"<<StartBit<<" Stop Bit:"<<StopBit<<endl;
     exit(-1);
   }
-  OffSet=Sum;
-  OffSet<<=StartBit;
-  BaseWord=BaseWord|OffSet;
+  offSet=sum;
+  offSet<<=StartBit;
+  BaseWord=BaseWord|offSet;
   //The Word to be filled is shifted to the position StartBit
   //and the remaining  Left and Right bits are filled with 1
-  Sum=(ULong_t)TMath::Power(2,StartBit)-1;
-  DummyWord=0xFFFFFFFF<<Length;
-  DummyWord +=Word;
-  DummyWord<<=StartBit;
-  DummyWord+=Sum;
-  BaseWord=BaseWord&DummyWord;
+  sum=(ULong_t)TMath::Power(2,StartBit)-1;
+  dummyWord=0xFFFFFFFF<<length;
+  dummyWord +=Word;
+  dummyWord<<=StartBit;
+  dummyWord+=sum;
+  BaseWord=BaseWord&dummyWord;
   return;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AliITSDDLRawData::UnpackWord(ULong_t PackedWord, Int_t StartBit, Int_t StopBit, ULong_t &Word){ 	
-  ULong_t OffSet;
-  Int_t Length;
-  Length=StopBit-StartBit+1;
-  OffSet=(ULong_t)TMath::Power(2,Length)-1;
-  OffSet<<=StartBit;
-  Word=PackedWord&OffSet;
+  //This method unpacks a words of StopBit-StertBit+1 bits starting from "StopBits"  
+  ULong_t offSet;
+  Int_t length;
+  length=StopBit-StartBit+1;
+  offSet=(ULong_t)TMath::Power(2,length)-1;
+  offSet<<=StartBit;
+  Word=PackedWord&offSet;
   Word>>=StartBit;
   return;
 }
@@ -269,13 +283,13 @@ void AliITSDDLRawData::UnpackWord(ULong_t PackedWord, Int_t StartBit, Int_t Stop
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Int_t AliITSDDLRawData::RawDataSPD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
-
+  //This method creates the Raw data files for SPD detectors
   //Silicon Pixel Detector
-  const Int_t DDLNumber=20;       // Number of DDL in SPD
-  const Int_t ModulePerDDL=12;    // Number of modules in each DDL 
+  const Int_t kDDLsNumber=20;       // Number of DDL in SPD
+  const Int_t kModulesPerDDL=12;    // Number of modules in each DDL 
   //Row    ==> DDLs
   //Column ==> Modules
-  Int_t SPDMap[DDLNumber][ModulePerDDL]={{ 0, 1, 4, 5, 80, 81, 84, 85, 88, 89, 92, 93},
+  Int_t mapSPD[kDDLsNumber][kModulesPerDDL]={{ 0, 1, 4, 5, 80, 81, 84, 85, 88, 89, 92, 93},
 					 { 2, 3, 6, 7, 82, 83, 86, 87, 90, 91, 94, 95},
 					 { 8, 9,12,13, 96, 97,100,101,104,105,108,109},
 					 {10,11,14,15, 98, 99,102,103,106,107,110,111},
@@ -295,50 +309,50 @@ Int_t AliITSDDLRawData::RawDataSPD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
 					 {66,67,70,71,210,211,214,215,218,219,222,223},
 					 {72,73,76,77,224,225,228,229,232,233,236,237},
 					 {74,75,78,79,226,227,230,231,234,235,238,239}};
-  Int_t DDLPerFile=DDLNumber/LDCsNumber;
-  if(DDLNumber%LDCsNumber)DDLPerFile++;
-  cout<<"Number of DDL per File: "<<DDLPerFile<<endl;
+  Int_t ddlsPerFile=kDDLsNumber/LDCsNumber;
+  if(kDDLsNumber%LDCsNumber)ddlsPerFile++;
+  cout<<"Number of DDL per File: "<<ddlsPerFile<<endl;
   Int_t subd=0;
-  Int_t CountDDL=0;
-  Int_t SliceNumber=1;
-  const Int_t size=21000; //256*32*5=40960 max number of digits per module
-  ULong_t buf[size];      //One buffer cell can contain 2 digits 
+  Int_t countDDL=0;
+  Int_t sliceNumber=1;
+  const Int_t kSize=21000; //256*32*5=40960 max number of digits per module
+  ULong_t buf[kSize];      //One buffer cell can contain 2 digits 
   fIndex=-1;
-  TClonesArray *ITSdigits  = ITS->DigitsAddress(subd);
+  TClonesArray *digitsInITS  = ITS->DigitsAddress(subd);
 
   Int_t nbytes = 0; 
   char fileName[15];
 
-  ULong_t MiniHeaderPosition=0; //variable used to store the position of the Mini Header inside a file
+  ULong_t miniHeaderPosition=0; //variable used to store the position of the Mini Header inside a file
   ofstream outfile;         // logical name of the output file 
-  Int_t Flag=0;             // 0==> Uncompressed data 1==>Compressed Data
-  Int_t Detector=1;         // 1==>ITS (Pixel) 2==>ITS (Drift) 3==>ITS (Strip) 0==>TPC ......
-  ULong_t Size=0;           // Size of the data block that follows the mini header
-  Int_t MagicWord=0x123456;  // Magic word used to distinguish between data and garbage
-  sprintf(fileName,"SPDslice%d",SliceNumber); //The name of  the output file. There are as many slides as the number of LDC
+  Int_t flag=0;             // 0==> Uncompressed data 1==>Compressed Data
+  Int_t detector=1;         // 1==>ITS (Pixel) 2==>ITS (Drift) 3==>ITS (Strip) 0==>TPC ......
+  ULong_t size=0;           // size of the data block that follows the mini header
+  Int_t magicWord=0x123456;  // Magic word used to distinguish between data and garbage
+  sprintf(fileName,"SPDslice%d",sliceNumber); //The name of  the output file. There are as many slides as the number of LDC
   outfile.open(fileName,ios::binary);
-  ULong_t MiniHeader[3];
-  Int_t MiniHeaderSize=sizeof(ULong_t)*3;
-  Int_t Version=1;          //Version of the mini header 
+  ULong_t miniHeader[3];
+  Int_t miniHeaderSize=sizeof(ULong_t)*3;
+  Int_t version=1;          //version of the mini header 
   //loop over DDLs
-  for(Int_t i=0;i<DDLNumber;i++){
-    CountDDL++;
+  for(Int_t i=0;i<kDDLsNumber;i++){
+    countDDL++;
     //write Dummy MINI HEADER
-    MiniHeader[0]=Size;
-    PackWord(MiniHeader[1],MagicWord,8,31);
-    PackWord(MiniHeader[1],Detector,0,7);
-    PackWord(MiniHeader[2],i,16,31);
-    PackWord(MiniHeader[2],Flag,8,15);
-    PackWord(MiniHeader[2],Version,0,7);
-    MiniHeaderPosition=outfile.tellp();
-    outfile.write((char*)(MiniHeader),MiniHeaderSize);
+    miniHeader[0]=size;
+    PackWord(miniHeader[1],magicWord,8,31);
+    PackWord(miniHeader[1],detector,0,7);
+    PackWord(miniHeader[2],i,16,31);
+    PackWord(miniHeader[2],flag,8,15);
+    PackWord(miniHeader[2],version,0,7);
+    miniHeaderPosition=outfile.tellp();
+    outfile.write((char*)(miniHeader),miniHeaderSize);
     //Loops over Modules of a particular DDL
-    for (Int_t mod=0; mod<ModulePerDDL; mod++){
+    for (Int_t mod=0; mod<kModulesPerDDL; mod++){
       ITS->ResetDigits();
-      nbytes += TD->GetEvent(SPDMap[i][mod]);
+      nbytes += TD->GetEvent(mapSPD[i][mod]);
       //For each Module, buf contains the array of data words in Binary format	  
       //fIndex gives the number of 32 bits words in the buffer for each module
-      GetDigitsSPD(ITSdigits,SPDMap[i][mod],buf);
+      GetDigitsSPD(digitsInITS,mapSPD[i][mod],buf);
       outfile.write((char *)buf,((fIndex+1)*sizeof(ULong_t)));
       for(Int_t i=0;i<(fIndex+1);i++){
 	buf[i]=0;
@@ -347,19 +361,19 @@ Int_t AliITSDDLRawData::RawDataSPD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
     }//end for
     
     //Write REAL MINI HEADER
-    ULong_t CurrentFilePosition=outfile.tellp();
-    outfile.seekp(MiniHeaderPosition);
-    Size=CurrentFilePosition-MiniHeaderPosition-MiniHeaderSize;
+    ULong_t currentFilePosition=outfile.tellp();
+    outfile.seekp(miniHeaderPosition);
+    size=currentFilePosition-miniHeaderPosition-miniHeaderSize;
     
-    outfile.write((char*)(&Size),sizeof(ULong_t));
-    outfile.seekp(CurrentFilePosition);
-    if(CountDDL==DDLPerFile){
+    outfile.write((char*)(&size),sizeof(ULong_t));
+    outfile.seekp(currentFilePosition);
+    if(countDDL==ddlsPerFile){
       outfile.close();
-      SliceNumber++;
-      sprintf(fileName,"SPDslice%d",SliceNumber); 
-      if(i!=(DDLNumber-1))
+      sliceNumber++;
+      sprintf(fileName,"SPDslice%d",sliceNumber); 
+      if(i!=(kDDLsNumber-1))
 	outfile.open(fileName,ios::binary);
-      CountDDL=0;
+      countDDL=0;
     }//end if
   }//end for
   outfile.close();
@@ -369,13 +383,14 @@ Int_t AliITSDDLRawData::RawDataSPD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Int_t AliITSDDLRawData::RawDataSSD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
+  //This method creates the Raw data files for SSD detectors
   //Strip detector
-  const Int_t DDLNumber=16;        // Number of DDL in SSD
-  const Int_t ModulePerDDL=109;    // Number of modules in each DDL 
+  const Int_t kDDLsNumber=16;        // Number of DDL in SSD
+  const Int_t kModulesPerDDL=109;    // Number of modules in each DDL 
   //DDL from 32 to 47 (16 DDL)
   //Row    ==> DDLs
   //Column ==> Modules
-  Int_t SSDMap[DDLNumber][ModulePerDDL]={
+  Int_t mapSSD[kDDLsNumber][kModulesPerDDL]={
     //104
     //DDL[32][]=
     { 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510,
@@ -554,52 +569,52 @@ Int_t AliITSDDLRawData::RawDataSSD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
      2085,2086,2087,2088,2089,2090,2091,2092,2093,2094,2095,2096,2097} };
 
 
-  Int_t DDLPerFile=DDLNumber/LDCsNumber;
-  if(20%LDCsNumber)DDLPerFile++;
-  cout<<"Number of DDL per File: "<<DDLPerFile<<endl;
+  Int_t ddlsPerFile=kDDLsNumber/LDCsNumber;
+  if(20%LDCsNumber)ddlsPerFile++;
+  cout<<"Number of DDL per File: "<<ddlsPerFile<<endl;
   Int_t subd=2;          //SSD
-  Int_t CountDDL=0;
-  Int_t SliceNumber=1;
-  const Int_t size=1536;//768*2 Number of stripe * number of sides(N and P)
-  ULong_t buf[size];      
+  Int_t countDDL=0;
+  Int_t sliceNumber=1;
+  const Int_t kSize=1536;//768*2 Number of stripe * number of sides(N and P)
+  ULong_t buf[kSize];      
   fIndex=-1;
   Int_t nbytes = 0; 
-  TClonesArray *ITSdigits  = ITS->DigitsAddress(subd);
+  TClonesArray *digitsInITS  = ITS->DigitsAddress(subd);
   char fileName[15];
 
-  ULong_t MiniHeaderPosition=0; //variable used to store the position of the Mini Header inside the file
+  ULong_t miniHeaderPosition=0; //variable used to store the position of the Mini Header inside the file
   ofstream outfile;             // logical name of the output file 
-  Int_t Flag=0;                 // 0==> Uncompressed data 1==>Compressed Data
-  Int_t Detector=3;             // 1==>ITS (Pixel) 2==>ITS (Drift) 3==>ITS (Strip) 0==>TPC ......
-  ULong_t Size=0;               // Size of the data block that follows the mini header
-  Int_t MagicWord=0x123456;     // Magic word used to distinguish between data and garbage
-  sprintf(fileName,"SSDslice%d",SliceNumber); //The name of  the output file. There are as many slides as the number of LDC
+  Int_t flag=0;                 // 0==> Uncompressed data 1==>Compressed Data
+  Int_t detector=3;             // 1==>ITS (Pixel) 2==>ITS (Drift) 3==>ITS (Strip) 0==>TPC ......
+  ULong_t size=0;               // size of the data block that follows the mini header
+  Int_t magicWord=0x123456;     // Magic word used to distinguish between data and garbage
+  sprintf(fileName,"SSDslice%d",sliceNumber); //The name of  the output file. There are as many slides as the number of LDC
   outfile.open(fileName,ios::binary);
-  ULong_t MiniHeader[3];
-  Int_t MiniHeaderSize=sizeof(ULong_t)*3;
-  Int_t Version=1;              //Version of the mini header 
+  ULong_t miniHeader[3];
+  Int_t miniHeaderSize=sizeof(ULong_t)*3;
+  Int_t version=1;              //version of the mini header 
   //loop over DDLs
   
-  for(Int_t i=0;i<DDLNumber;i++){
-    CountDDL++;
+  for(Int_t i=0;i<kDDLsNumber;i++){
+    countDDL++;
     //write Dummy MINI HEADER
-    MiniHeader[0]=Size;
-    PackWord(MiniHeader[1],MagicWord,8,31);
-    PackWord(MiniHeader[1],Detector,0,7);
-    PackWord(MiniHeader[2],i,16,31);
-    PackWord(MiniHeader[2],Flag,8,15);
-    PackWord(MiniHeader[2],Version,0,7);
-    MiniHeaderPosition=outfile.tellp();
-    outfile.write((char*)(MiniHeader),MiniHeaderSize);
+    miniHeader[0]=size;
+    PackWord(miniHeader[1],magicWord,8,31);
+    PackWord(miniHeader[1],detector,0,7);
+    PackWord(miniHeader[2],i,16,31);
+    PackWord(miniHeader[2],flag,8,15);
+    PackWord(miniHeader[2],version,0,7);
+    miniHeaderPosition=outfile.tellp();
+    outfile.write((char*)(miniHeader),miniHeaderSize);
     
     //Loops over Modules of a particular DDL
-    for (Int_t mod=0; mod<ModulePerDDL; mod++){
-      if(SSDMap[i][mod]!=-1){
+    for (Int_t mod=0; mod<kModulesPerDDL; mod++){
+      if(mapSSD[i][mod]!=-1){
 	ITS->ResetDigits();
-	nbytes += TD->GetEvent(SSDMap[i][mod]);
+	nbytes += TD->GetEvent(mapSSD[i][mod]);
 	//For each Module, buf contains the array of data words in Binary format	  
 	//fIndex gives the number of 32 bits words in the buffer for each module
-	GetDigitsSSD(ITSdigits,mod,buf);
+	GetDigitsSSD(digitsInITS,mod,buf);
 	outfile.write((char *)buf,((fIndex+1)*sizeof(ULong_t)));
 	for(Int_t i=0;i<(fIndex+1);i++){
 	  buf[i]=0;
@@ -608,19 +623,19 @@ Int_t AliITSDDLRawData::RawDataSSD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
       }//end if
     }//end for
     //Write REAL MINI HEADER
-    ULong_t CurrentFilePosition=outfile.tellp();
-    outfile.seekp(MiniHeaderPosition);
-    Size=CurrentFilePosition-MiniHeaderPosition-MiniHeaderSize;
+    ULong_t currentFilePosition=outfile.tellp();
+    outfile.seekp(miniHeaderPosition);
+    size=currentFilePosition-miniHeaderPosition-miniHeaderSize;
     
-    outfile.write((char*)(&Size),sizeof(ULong_t));
-    outfile.seekp(CurrentFilePosition);
-    if(CountDDL==DDLPerFile){
+    outfile.write((char*)(&size),sizeof(ULong_t));
+    outfile.seekp(currentFilePosition);
+    if(countDDL==ddlsPerFile){
       outfile.close();
-      SliceNumber++;
-      sprintf(fileName,"SSDslice%d",SliceNumber); 
-      if(i!=(DDLNumber-1))
+      sliceNumber++;
+      sprintf(fileName,"SSDslice%d",sliceNumber); 
+      if(i!=(kDDLsNumber-1))
 	outfile.open(fileName,ios::binary);
-      CountDDL=0;
+      countDDL=0;
     }//end if
   }//end for
   outfile.close();
@@ -630,12 +645,13 @@ Int_t AliITSDDLRawData::RawDataSSD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Int_t AliITSDDLRawData::RawDataSDD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
-  //Silicon Drift Detector
-  const Int_t DDLNumber=12;       // Number of DDL in SPD
-  const Int_t ModulePerDDL=22;    // Number of modules in each DDL 
+    //This method creates the Raw data files for SDD detectors
+  //Silicon Drift detector
+  const Int_t kDDLsNumber=12;       // Number of DDL in SPD
+  const Int_t kModulesPerDDL=22;    // Number of modules in each DDL 
   //Row    ==> DDLs
   //Column ==> Modules  
-  Int_t SDDMap[DDLNumber][ModulePerDDL]= {{240,241,242,246,247,248,252,253,254,258,259,260,264,265,266,270,271,272,276,277,278,-1},
+  Int_t mapSDD[kDDLsNumber][kModulesPerDDL]= {{240,241,242,246,247,248,252,253,254,258,259,260,264,265,266,270,271,272,276,277,278,-1},
 					  {243,244,245,249,250,251,255,256,257,261,262,263,267,268,269,273,274,275,279,280,281,-1},
 					  {282,283,284,288,289,290,294,295,296,300,301,302,306,307,308,312,313,314,318,319,320,-1},
 					  {285,286,287,291,292,293,297,298,299,303,304,305,309,310,311,315,316,317,321,322,323,-1},
@@ -648,51 +664,51 @@ Int_t AliITSDDLRawData::RawDataSDD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
 					  {454,455,460,461,462,463,468,469,470,471,476,477,478,479,484,485,486,487,492,493,494,495},
 					  {458,459,464,465,466,467,472,473,474,475,480,481,482,483,488,489,490,491,496,497,498,499}};
   
-  Int_t DDLPerFile=DDLNumber/LDCsNumber;
-  if(DDLNumber%LDCsNumber)DDLPerFile++;
-  cout<<"Number of DDL per File: "<<DDLPerFile<<endl;
+  Int_t ddlsPerFile=kDDLsNumber/LDCsNumber;
+  if(kDDLsNumber%LDCsNumber)ddlsPerFile++;
+  cout<<"Number of DDL per File: "<<ddlsPerFile<<endl;
   Int_t subd=1;
-  Int_t CountDDL=0;
-  Int_t SliceNumber=1;
-  const Int_t size=131072; //256*512
-  ULong_t buf[size];      
+  Int_t countDDL=0;
+  Int_t sliceNumber=1;
+  const Int_t kSize=131072; //256*512
+  ULong_t buf[kSize];      
   fIndex=-1;
   Int_t nbytes = 0; 
-  TClonesArray *ITSdigits  = ITS->DigitsAddress(subd);
+  TClonesArray *digitsInITS  = ITS->DigitsAddress(subd);
   char fileName[15];
 
-  ULong_t MiniHeaderPosition=0; // variable used to store the position of the Mini Header inside a file
+  ULong_t miniHeaderPosition=0; // variable used to store the position of the Mini Header inside a file
   ofstream outfile;             // logical name of the output file 
-  Int_t Flag=0;                 // 0==> Uncompressed data 1==>Compressed Data
-  Int_t Detector=2;             // 1==>ITS (Pixel) 2==>ITS (Drift) 3==>ITS (Strip) 0==>TPC ......
-  ULong_t Size=0;               // Size of the data block that follows the mini header
-  Int_t MagicWord=0x123456;     // Magic word used to distinguish between data and garbage
-  sprintf(fileName,"SDDslice%d",SliceNumber); //The name of  the output file. There are as many slides as the number of LDC
+  Int_t flag=0;                 // 0==> Uncompressed data 1==>Compressed Data
+  Int_t detector=2;             // 1==>ITS (Pixel) 2==>ITS (Drift) 3==>ITS (Strip) 0==>TPC ......
+  ULong_t size=0;               // size of the data block that follows the mini header
+  Int_t magicWord=0x123456;     // Magic word used to distinguish between data and garbage
+  sprintf(fileName,"SDDslice%d",sliceNumber); //The name of  the output file. There are as many slides as the number of LDC
   outfile.open(fileName,ios::binary);
-  ULong_t MiniHeader[3];
-  Int_t MiniHeaderSize=sizeof(ULong_t)*3;
-  Int_t Version=1;             //Version of the mini header 
+  ULong_t miniHeader[3];
+  Int_t miniHeaderSize=sizeof(ULong_t)*3;
+  Int_t version=1;             //version of the mini header 
   //loop over DDLs
-  for(Int_t i=0;i<DDLNumber;i++){
-    CountDDL++;
+  for(Int_t i=0;i<kDDLsNumber;i++){
+    countDDL++;
     //write Dummy MINI HEADER
-    MiniHeader[0]=Size;
-    PackWord(MiniHeader[1],MagicWord,8,31);
-    PackWord(MiniHeader[1],Detector,0,7);
-    PackWord(MiniHeader[2],i,16,31);
-    PackWord(MiniHeader[2],Flag,8,15);
-    PackWord(MiniHeader[2],Version,0,7);
-    MiniHeaderPosition=outfile.tellp();
-    outfile.write((char*)(MiniHeader),MiniHeaderSize);
+    miniHeader[0]=size;
+    PackWord(miniHeader[1],magicWord,8,31);
+    PackWord(miniHeader[1],detector,0,7);
+    PackWord(miniHeader[2],i,16,31);
+    PackWord(miniHeader[2],flag,8,15);
+    PackWord(miniHeader[2],version,0,7);
+    miniHeaderPosition=outfile.tellp();
+    outfile.write((char*)(miniHeader),miniHeaderSize);
     //Loops over Modules of a particular DDL
-    for (Int_t mod=0; mod<ModulePerDDL; mod++){
-      if(SDDMap[i][mod]!=-1){
+    for (Int_t mod=0; mod<kModulesPerDDL; mod++){
+      if(mapSDD[i][mod]!=-1){
 	ITS->ResetDigits();
-	nbytes += TD->GetEvent(SDDMap[i][mod]);
+	nbytes += TD->GetEvent(mapSDD[i][mod]);
 	//For each Module, buf contains the array of data words in Binary format	  
 	//fIndex gives the number of 32 bits words in the buffer for each module
-	//	cout<<"MODULE NUMBER:"<<SDDMap[i][mod]<<endl;
-	GetDigitsSDD(ITSdigits,mod,buf);
+	//	cout<<"MODULE NUMBER:"<<mapSDD[i][mod]<<endl;
+	GetDigitsSDD(digitsInITS,mod,buf);
 	outfile.write((char *)buf,((fIndex+1)*sizeof(ULong_t)));
 	for(Int_t i=0;i<(fIndex+1);i++){
 	  buf[i]=0;
@@ -702,19 +718,19 @@ Int_t AliITSDDLRawData::RawDataSDD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
     }//end for
     
     //Write REAL MINI HEADER
-    ULong_t CurrentFilePosition=outfile.tellp();
-    outfile.seekp(MiniHeaderPosition);
-    Size=CurrentFilePosition-MiniHeaderPosition-MiniHeaderSize;
+    ULong_t currentFilePosition=outfile.tellp();
+    outfile.seekp(miniHeaderPosition);
+    size=currentFilePosition-miniHeaderPosition-miniHeaderSize;
     
-    outfile.write((char*)(&Size),sizeof(ULong_t));
-    outfile.seekp(CurrentFilePosition);
-    if(CountDDL==DDLPerFile){
+    outfile.write((char*)(&size),sizeof(ULong_t));
+    outfile.seekp(currentFilePosition);
+    if(countDDL==ddlsPerFile){
       outfile.close();
-      SliceNumber++;
-      sprintf(fileName,"SDDslice%d",SliceNumber); 
-      if(i!=(DDLNumber-1))
+      sliceNumber++;
+      sprintf(fileName,"SDDslice%d",sliceNumber); 
+      if(i!=(kDDLsNumber-1))
 	outfile.open(fileName,ios::binary);
-      CountDDL=0;
+      countDDL=0;
     }//end if
   }//end for
   outfile.close();
@@ -724,6 +740,7 @@ Int_t AliITSDDLRawData::RawDataSDD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AliITSDDLRawData::WriteChipHeader(Int_t ChipAddr,Int_t EventCnt,ULong_t &BaseWord){
+  //This method writes a chip header 
   //cout<<"Chip: "<<ChipAddr<<" Half Stave module:"<<EventCnt<<endl;
   BaseWord=0;
   PackWord(BaseWord,ChipAddr,0,3);
@@ -736,6 +753,7 @@ void AliITSDDLRawData::WriteChipHeader(Int_t ChipAddr,Int_t EventCnt,ULong_t &Ba
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AliITSDDLRawData::ReadChipHeader(Int_t &ChipAddr,Int_t &EventCnt,ULong_t BaseWord){
+  //This method reads a chip header
   ULong_t temp=0;
   UnpackWord(BaseWord,0,3,temp);
   ChipAddr=(Int_t)temp;
@@ -748,6 +766,7 @@ void AliITSDDLRawData::ReadChipHeader(Int_t &ChipAddr,Int_t &EventCnt,ULong_t Ba
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void  AliITSDDLRawData::WriteChipTrailer(ULong_t *buf,Int_t ChipHitCount,ULong_t &BaseWord){
+  //This method writes a chip trailer
   //pixel fill word
   if((ChipHitCount%2)!=0){
     PackWord(BaseWord,0xFECD,0,15);
@@ -763,6 +782,7 @@ void  AliITSDDLRawData::WriteChipTrailer(ULong_t *buf,Int_t ChipHitCount,ULong_t
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void  AliITSDDLRawData::ReadChipTrailer(Int_t &ChipHitCount,ULong_t BaseWord){
+  //This method reads a chip trailer
   ULong_t temp=0;
   UnpackWord(BaseWord,16,28,temp);
   ChipHitCount=(Int_t)temp;
@@ -772,6 +792,7 @@ void  AliITSDDLRawData::ReadChipTrailer(Int_t &ChipHitCount,ULong_t BaseWord){
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void  AliITSDDLRawData::WriteHit(ULong_t *buf,Int_t RowAddr,Int_t HitAddr,ULong_t &BaseWord){
+  //This method writs an hit
   if(!BaseWord){
     PackWord(BaseWord,HitAddr,0,4);
     PackWord(BaseWord,RowAddr,5,12);
@@ -791,58 +812,60 @@ void  AliITSDDLRawData::WriteHit(ULong_t *buf,Int_t RowAddr,Int_t HitAddr,ULong_
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AliITSDDLRawData::TestFormat(){
+  //This method generates a text file containing SPD information
+  //Used for debugging
   ifstream f;
-  Int_t  LDCsNumber=2;
+  Int_t  ldcsNumber=2;
   ofstream ftxt("File2.txt");
-  ULong_t Size=0;
+  ULong_t size=0;
   char filename[15];
-  ULong_t DDLNumber=0;
-  ULong_t MiniHeader[3];
-  Int_t MiniHeaderSize=sizeof(ULong_t)*3;
-  for(Int_t i=1;i<=LDCsNumber;i++){
+  ULong_t ddlsNumber=0;
+  ULong_t miniHeader[3];
+  Int_t miniHeaderSize=sizeof(ULong_t)*3;
+  for(Int_t i=1;i<=ldcsNumber;i++){
     sprintf(filename,"SPDslice%d",i);  
     f.open(filename,ios::binary|ios::in);
     if(!f){exit(1);}
     //loop over the DDL block 
     //here the Mini Header is read
-    while( f.read((char*)(MiniHeader),MiniHeaderSize)){
-      //cout<<"Block Size: "<<Size<<endl;
-      Size=MiniHeader[0];
-      UnpackWord(MiniHeader[2],16,31,DDLNumber);
-      ftxt<<"DDL NUMBER:"<<DDLNumber<<endl;
-      ULong_t Word=0;
-      ULong_t Code=0;
-      ULong_t Decoded1,Decoded2=0;
-      for(ULong_t j=0;j<(Size/4);j++){
-	f.read((char*)(&Word),sizeof(Word)); //32 bits word
-	Code=0;
-	UnpackWord(Word,14,15,Code);
-	DecodeWord(Code,Word,0,Decoded1,Decoded2);
-	switch (Code){
+    while( f.read((char*)(miniHeader),miniHeaderSize)){
+      //cout<<"Block Size: "<<size<<endl;
+      size=miniHeader[0];
+      UnpackWord(miniHeader[2],16,31,ddlsNumber);
+      ftxt<<"DDL NUMBER:"<<ddlsNumber<<endl;
+      ULong_t word=0;
+      ULong_t code=0;
+      ULong_t decoded1,decoded2=0;
+      for(ULong_t j=0;j<(size/4);j++){
+	f.read((char*)(&word),sizeof(word)); //32 bits word
+	code=0;
+	UnpackWord(word,14,15,code);
+	DecodeWord(code,word,0,decoded1,decoded2);
+	switch (code){
 	case 0://trailer
-	  ftxt<<"Number of Hit:"<<Decoded1<<endl;
+	  ftxt<<"Number of Hit:"<<decoded1<<endl;
 	  break;
 	case 1://header
-	  ftxt<<"Half Stave Number:"<<Decoded1<<" Chip Number:"<<Decoded2<<endl;
+	  ftxt<<"Half Stave Number:"<<decoded1<<" Chip Number:"<<decoded2<<endl;
 	  break;
 	case 2://hit
-	  ftxt<<"Row:"<<Decoded1<<" Column:"<<Decoded2<<endl;
+	  ftxt<<"Row:"<<decoded1<<" Column:"<<decoded2<<endl;
 	  break;
 	case 3://fill word
 	  break;
 	}//end switch
-	Code=0;
-	UnpackWord(Word,30,31,Code);
-	DecodeWord(Code,Word,1,Decoded1,Decoded2);
-	switch (Code){
+	code=0;
+	UnpackWord(word,30,31,code);
+	DecodeWord(code,word,1,decoded1,decoded2);
+	switch (code){
 	case 0://trailer
-	  ftxt<<"Number of Hit:"<<Decoded1<<endl;
+	  ftxt<<"Number of Hit:"<<decoded1<<endl;
 	  break;
 	case 1://header
-	  ftxt<<"Half Stave Number:"<<Decoded1<<" Chip Number:"<<Decoded2<<endl;
+	  ftxt<<"Half Stave Number:"<<decoded1<<" Chip Number:"<<decoded2<<endl;
 	  break;
 	case 2://hit
-	  ftxt<<"Row:"<<Decoded1<<" Column:"<<Decoded2<<endl;
+	  ftxt<<"Row:"<<decoded1<<" Column:"<<decoded2<<endl;
 	  break;
 	case 3://fill word
 	  break;

@@ -5,7 +5,7 @@
 #endif
 
 /*
-Before running this macro it is necessary comment the following line of the method
+Before running this macro it is necessary to comment the following line of the method
 AddDigit in the class AliITSsimulationSDD
 //if( fResponse->Do10to8() ) signal = Convert8to10( signal ); 
 In this way the amplitude value for signal coming from SDD takes only 8 bits and not 10.
@@ -26,7 +26,7 @@ void AliITSDDLRawData(char* DigitsFile="galice.root"){
 #ifdef __NOCOMPILED__
   }
 #endif
-  // Connect the Root input  file containing Geometry, Kine and Hits
+  // Connect the Root input file containing Geometry, Kine and Hits
   // galice.root file by default
   char* filename="galice.root";
   // TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
@@ -71,6 +71,7 @@ void AliITSDDLRawData(char* DigitsFile="galice.root"){
   util->RawDataSPD(ITS,TD);
   timer.Stop();
   timer.Print();
+  //util->TestFormat();
     
   //SILICON DRIFT DETECTOR
   cout<<"Formatting data for SDD"<<endl;

@@ -25,41 +25,41 @@ public:
   AliTPCBuffer160(const AliTPCBuffer160 &source); // copy constructor
   AliTPCBuffer160& operator=(const AliTPCBuffer160 &source); // ass. op.
   void  FillBuffer(Int_t Val);
-  //this method returmn the number of free cells of the internal buffer
+  //this method store a word into the buffer
   Int_t GetFreeCellNumber()const{return fFreeCellBuffer;}
-  //this method return the next word of 10 bit (reading the file backward) if it exists -1 otherwise
+  //this method return the number of free cells of the internal buffer
   Int_t GetNextBackWord();
-  //this method return the next word of 10 bit (reading the file forward) if it exists -1 otherwise
+  //this method return the next word of 10 bit (reading the file backward) if it exists -1 otherwise
   Int_t GetNext();
-  //this method is used to write tha trailer
+  //this method return the next word of 10 bit (reading the file forward) if it exists -1 otherwise
   void  WriteTrailer(Int_t WordsNumber,Int_t PadNumber,Int_t RowNumber,Int_t SecNumber);
-  //this method is used to read the trailer when the file is read forward
+  //this method is used to write the trailer
   void  ReadTrailer(Int_t &WordsNumber,Int_t &PadNumber,Int_t &RowNumber,Int_t &SecNumber);
-  //this method is used to read the trailer when the file is read backward
+  //this method is used to read the trailer when the file is read forward
   Int_t ReadTrailerBackward(Int_t &WordsNumber,Int_t &PadNumber,Int_t &RowNumber,Int_t &SecNumber);
-  //this methos is used to write the Mini header
+  //this method is used to read the trailer when the file is read backward
   void  WriteMiniHeader(ULong_t Size,Int_t SecNumber,Int_t SubSector,Int_t Detector,Int_t Flag );
-  //this methos is used to set the verbose level 
+  //this method is used to write the Mini header
+  void  SetVerbose(Int_t val){fVerbose=val;}
+  //this method is used to set the verbose level 
   //level  0 no output messages
   //level !=0 some messages are displayed during the run
-  void  SetVerbose(Int_t val){fVerbose=val;}
-  //this method is used to fill the buffer with 2AA hexadecimal value and save it into the output file
   void  Flush();
-  Int_t GetFillWordsNum(){return fEndingFillWords;}
+  //this method is used to fill the buffer with 2AA hexadecimal value and save it into the output file
+  Int_t GetFillWordsNum()const{return fEndingFillWords;}
 private:
-  //this method is used to pack bits into a word of 32 bits
   void  PackWord(ULong_t &BaseWord, ULong_t Word, Int_t StartBit, Int_t StopBit);
-  //this method is used to read a precise number of bits from a word of 32 bits
+  //this method is used to pack bits into a word of 32 bits
   void  UnpackWord(ULong_t PackedWord, Int_t StartBit, Int_t StopBit, ULong_t &Word);
-
+  //this method is used to read a precise number of bits from a word of 32 bits
   ULong_t fBuffer[5];   //Buffer dimension is 32*5=160 bits and it contains 16 values
                         //A value is never splitted in two Buffer
 
 
-  Int_t fShift;         //This variable contains the number of free bits in the current cel of
+  Int_t fShift;         //This variable contains the number of free bits in the current cell of
                         //the Buffer after that the value Val is been inserted.
                         //size of Int_t is 32 bit that is the same size of a cell of Buffer so 
-                        //the shift operation are perfomend only on value Val.
+                        //the shift operation are performed only on value Val.
   Int_t fCurrentCell;   //This variable contains the cell number of the cell currently used 
   Int_t fFreeCellBuffer;//number of free cells of the buffer
   Int_t fFlag;          //0 read  1 write

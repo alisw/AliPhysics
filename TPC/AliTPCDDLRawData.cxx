@@ -12,6 +12,14 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+/* $Id:*/
+
+//This class conteins all the methods to create raw data 
+//as par a given DDL.
+//It produces DDL with both compressed and uncompressed format.
+//For compression we use the optimized table wich needs 
+//to be provided.
+
 
 #include "TObjArray.h"
 #include "Riostream.h"
@@ -37,13 +45,14 @@ AliTPCDDLRawData& AliTPCDDLRawData::operator=(const AliTPCDDLRawData &source){
 
 ////////////////////////////////////////////////////////////////////////////
 void AliTPCDDLRawData::RawData(Int_t LDCsNumber){
+  //Raw data slides generation
   //Number of DDL=2*36+4*36=216
   //2 DDL for each inner sector
   //4 DDL for each outer sector
-  Int_t DDLPerFile=216/LDCsNumber;
+  Int_t ddlPerFile=216/LDCsNumber;
   Int_t offset=1;
-  if (216%LDCsNumber) DDLPerFile++;
-  cout<<"Number of DDL per slide: "<<DDLPerFile<<endl;
+  if (216%LDCsNumber) ddlPerFile++;
+  cout<<"Number of DDL per slide: "<<ddlPerFile<<endl;
   ifstream f;
   f.open("AliTPCDDL.dat",ios::binary);
   if(!f){cout<<"File doesn't exist !!"<<endl;return;}
@@ -58,112 +67,113 @@ void AliTPCDDLRawData::RawData(Int_t LDCsNumber){
   DataPad data;
 
   //AliTPCBuffer160 is used in write mode to generate AltroFormat.dat file
-  Int_t SliceNumber=1;
+  Int_t sliceNumber=1;
   char  filename[15];
-  sprintf(filename,"TPCslice%d",SliceNumber); 
+  sprintf(filename,"TPCslice%d",sliceNumber); 
   cout<<"   Creating "<<filename<<endl;
-  AliTPCBuffer160 *Buffer=new AliTPCBuffer160(filename,1);
+  AliTPCBuffer160 *buffer=new AliTPCBuffer160(filename,1);
 
-  ULong_t Count=0;
-  Int_t PSecNumber=-1;  //Previous Sector number
-  Int_t PRowNumber=-1;  //Previous Row number  
-  Int_t PPadNumber=-1;  //Previous Pad number
-  Int_t PTimeBin=-1;    //Previous Time-Bin
-  Int_t PSubSector=-1;  //Previous Sub Sector
-  Int_t BunchLength=0;
-  Int_t CountDDL=0;
+  ULong_t count=0;
+  Int_t pSecNumber=-1;  //Previous Sector number
+  Int_t pRowNumber=-1;  //Previous Row number  
+  Int_t pPadNumber=-1;  //Previous Pad number
+  Int_t pTimeBin=-1;    //Previous Time-Bin
+  Int_t pSubSector=-1;  //Previous Sub Sector
+  Int_t bunchLength=0;
+  Int_t countDDL=0;
   Int_t nwords=0;
   ULong_t numPackets=0;
   while (f.read((char*)(&data),sizeof(data))){
-    Count++;
-    if (PPadNumber==-1){
-      PSecNumber=data.Sec;
-      PRowNumber=data.Row;
-      PPadNumber=data.Pad;
-      PTimeBin=data.Time;
-      PSubSector=data.SubSec;
+    count++;
+    if (pPadNumber==-1){
+      pSecNumber=data.Sec;
+      pRowNumber=data.Row;
+      pPadNumber=data.Pad;
+      pTimeBin=data.Time;
+      pSubSector=data.SubSec;
       //size magic word sector number sub-sector number 0 for TPC 0 for uncompressed
-      Buffer->WriteMiniHeader(0,PSecNumber,PSubSector,0,0);//Dummy;
-      BunchLength=1;
-      Buffer->FillBuffer(data.Dig-offset);
+      buffer->WriteMiniHeader(0,pSecNumber,pSubSector,0,0);//Dummy;
+      bunchLength=1;
+      buffer->FillBuffer(data.Dig-offset);
       nwords++;
     }//end if
     else{
-      if ( (data.Time==(PTimeBin+1)) &&
-	   (PPadNumber==data.Pad) &&
-	   (PRowNumber==data.Row) &&
-	   (PSecNumber==data.Sec)){
-	BunchLength++;
+      if ( (data.Time==(pTimeBin+1)) &&
+	   (pPadNumber==data.Pad) &&
+	   (pRowNumber==data.Row) &&
+	   (pSecNumber==data.Sec)){
+	bunchLength++;
       }//end if
       else{
-	Buffer->FillBuffer(PTimeBin);
-	Buffer->FillBuffer(BunchLength+2);
+	buffer->FillBuffer(pTimeBin);
+	buffer->FillBuffer(bunchLength+2);
 	nwords+=2;
-	if ((PPadNumber!=data.Pad)||(PRowNumber!=data.Row)||(PSecNumber!=data.Sec)){
+	if ((pPadNumber!=data.Pad)||(pRowNumber!=data.Row)||(pSecNumber!=data.Sec)){
 	  //Trailer is formatted and inserted!!
-	  Buffer->WriteTrailer(nwords,PPadNumber,PRowNumber,PSecNumber);
+	  buffer->WriteTrailer(nwords,pPadNumber,pRowNumber,pSecNumber);
 	  numPackets++;
 	  nwords=0;
 
-	  if(PSubSector!=data.SubSec){
-	    CountDDL++;
-	    if(CountDDL==DDLPerFile){
+	  if(pSubSector!=data.SubSec){
+	    countDDL++;
+	    if(countDDL==ddlPerFile){
 	      //size magic word sector number sub-sector number 0 for TPC 0 for uncompressed
-	      Buffer->Flush();
-	      Buffer->WriteMiniHeader(1,PSecNumber,PSubSector,0,0);
+	      buffer->Flush();
+	      buffer->WriteMiniHeader(1,pSecNumber,pSubSector,0,0);
 	      //cout<<"Mini header for DDL:"<<PSecNumber<<" Sub-sec:"<<PSubSector<<endl;
-	      delete Buffer;
-	      SliceNumber++;
-	      sprintf(filename,"TPCslice%d",SliceNumber);
+	      delete buffer;
+	      sliceNumber++;
+	      sprintf(filename,"TPCslice%d",sliceNumber);
 	      cout<<"   Creating "<<filename<<endl;
-	      Buffer=new AliTPCBuffer160(filename,1);
-	      Buffer->WriteMiniHeader(0,data.Sec,data.SubSec,0,0);//Dummy;
-	      CountDDL=0;
+	      buffer=new AliTPCBuffer160(filename,1);
+	      buffer->WriteMiniHeader(0,data.Sec,data.SubSec,0,0);//Dummy;
+	      countDDL=0;
 	    }//end if
 	    else{
-	      Buffer->Flush();
-	      Buffer->WriteMiniHeader(1,PSecNumber,PSubSector,0,0);
-	      Buffer->WriteMiniHeader(0,data.Sec,data.SubSec,0,0);//Dummy;
+	      buffer->Flush();
+	      buffer->WriteMiniHeader(1,pSecNumber,pSubSector,0,0);
+	      buffer->WriteMiniHeader(0,data.Sec,data.SubSec,0,0);//Dummy;
 	    }
-	    PSubSector=data.SubSec;
+	    pSubSector=data.SubSec;
 	  }//end if
 	}//end if
 	
-	BunchLength=1;
-	PPadNumber=data.Pad;
-	PRowNumber=data.Row;
-	PSecNumber=data.Sec;
+	bunchLength=1;
+	pPadNumber=data.Pad;
+	pRowNumber=data.Row;
+	pSecNumber=data.Sec;
       }//end else
-      PTimeBin=data.Time;
-      Buffer->FillBuffer(data.Dig-offset);
+      pTimeBin=data.Time;
+      buffer->FillBuffer(data.Dig-offset);
       nwords++;
     }//end else
   }//end while
-  Buffer->FillBuffer(PTimeBin);
-  Buffer->FillBuffer(BunchLength+2);
+  buffer->FillBuffer(pTimeBin);
+  buffer->FillBuffer(bunchLength+2);
   nwords+=2;
-  Buffer->WriteTrailer(nwords,PPadNumber,PRowNumber,PSecNumber);
+  buffer->WriteTrailer(nwords,pPadNumber,pRowNumber,pSecNumber);
   //write the  M.H.
-  Buffer->Flush();
-  Buffer->WriteMiniHeader(1,PSecNumber,PSubSector,0,0);
-  //cout<<"Mini header for D D L:"<<PSecNumber<<" Sub-sec:"<<PSubSector<<endl;
-  delete Buffer;
-  cout<<"Number of digits: "<<Count<<endl;
+  buffer->Flush();
+  buffer->WriteMiniHeader(1,pSecNumber,pSubSector,0,0);
+  //cout<<"Mini header for D D L:"<<pSecNumber<<" Sub-sec:"<<pSubSector<<endl;
+  delete buffer;
+  cout<<"Number of digits: "<<count<<endl;
   f.close();
   return;
 }
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
-//This method is used to Compress and decompress the slides
+
 
 Int_t AliTPCDDLRawData::RawDataCompDecompress(Int_t LDCsNumber,Int_t Comp){
-  static const Int_t NumTable=5;
+  //This method is used to compress and decompress the slides
+  static const Int_t kNumTables=5;
   char filename[20];
   char dest[20];
   fstream f;
-  ULong_t Size=0;
+  ULong_t size=0;
   //Int_t MagicWord,DDLNumber,SecNumber,SubSector,Detector;
-  Int_t Flag=0;
+  Int_t flag=0;
   for(Int_t i=1;i<=LDCsNumber;i++){
     if(!Comp){
       sprintf(filename,"TPCslice%d",i);
@@ -181,18 +191,18 @@ Int_t AliTPCDDLRawData::RawDataCompDecompress(Int_t LDCsNumber,Int_t Comp){
     //loop over the DDL block 
     //Each block contains a Mini Header followed by raw data (ALTRO FORMAT)
     //The number of block is ceil(216/LDCsNumber)
-    ULong_t MiniHeader[3];
+    ULong_t miniHeader[3];
     //here the Mini Header is read
-    while( (f.read((char*)(MiniHeader),sizeof(ULong_t)*3)) ){
-      Size=MiniHeader[0];
+    while( (f.read((char*)(miniHeader),sizeof(ULong_t)*3)) ){
+      size=miniHeader[0];
       //Int_t dim=sizeof(ULong_t)+sizeof(Int_t)*5;
-      //cout<<" Sec "<<SecNumber<<" SubSector "<<SubSector<<" Size "<<Size<<endl;
+      //cout<<" Sec "<<SecNumber<<" SubSector "<<SubSector<<" size "<<size<<endl;
       //open the temporay File
       ofstream fo;
       char temp[15]="TempFile";
       fo.open(temp,ios::binary);
       Int_t car=0;
-      for(ULong_t j=0;j<Size;j++){
+      for(ULong_t j=0;j<size;j++){
 	f.read((char*)(&car),1);
 	fo.write((char*)(&car),1);
       }//end for
@@ -200,31 +210,31 @@ Int_t AliTPCDDLRawData::RawDataCompDecompress(Int_t LDCsNumber,Int_t Comp){
       //The temp file is compressed or decompressed
       AliTPCCompression *util = new AliTPCCompression();
       if(!Comp)
-	util->CompressDataOptTables(NumTable,temp,"TempCompDecomp");
+	util->CompressDataOptTables(kNumTables,temp,"TempCompDecomp");
       else
-	util->DecompressDataOptTables(NumTable,temp,"TempCompDecomp");
+	util->DecompressDataOptTables(kNumTables,temp,"TempCompDecomp");
       delete util;
       //the temp compressed file is open and copied to the final file fdest
       ifstream fi;
       fi.open("TempCompDecomp",ios::binary);
       fi.seekg(0,ios::end);
-      Size=fi.tellg();
+      size=fi.tellg();
       fi.seekg(0);
-      //The Mini Header is updated (Size and Compressed flag) 
+      //The Mini Header is updated (size and Compressed flag) 
       //and written into the output file
-      MiniHeader[0]=Size;
+      miniHeader[0]=size;
       if(!Comp)
-	Flag=1;
+	flag=1;
       else
-	Flag=0;
+	flag=0;
       ULong_t aux=0xFFFF;
       aux<<=16;
-      aux|=Flag;
+      aux|=flag;
       aux|=0xFF;
-      MiniHeader[2]=MiniHeader[2]&aux;
-      fdest.write((char*)(MiniHeader),sizeof(ULong_t)*3);
+      miniHeader[2]=miniHeader[2]&aux;
+      fdest.write((char*)(miniHeader),sizeof(ULong_t)*3);
       //The compressem temp file is copied into the output file fdest
-      for(ULong_t j=0;j<Size;j++){
+      for(ULong_t j=0;j<size;j++){
 	fi.read((char*)(&car),1);
 	fdest.write((char*)(&car),1);
       }//end for
@@ -240,9 +250,9 @@ Int_t AliTPCDDLRawData::RawDataCompDecompress(Int_t LDCsNumber,Int_t Comp){
 }
 
 /////////////////////////////////////////////////////////////////////////////////
-//This method is used to build the Altro format from AliTPCDDL.dat
-//It is used to debug the code and create the tables used in the compresseion phase
-void AliTPCDDLRawData::RawDataAltro(){
+void AliTPCDDLRawData::RawDataAltro()const{
+  //This method is used to build the Altro format from AliTPCDDL.dat
+  //It is used to debug the code and create the tables used in the compresseion phase
   Int_t offset=1;
   ifstream f;
   f.open("AliTPCDDL.dat",ios::binary);
@@ -260,67 +270,71 @@ void AliTPCDDLRawData::RawDataAltro(){
   //AliTPCBuffer160 is used in write mode to generate AltroFormat.dat file
   char  filename[30]="AltroFormatDDL.dat";
   cout<<"   Creating "<<filename<<endl;
-  AliTPCBuffer160 *Buffer=new AliTPCBuffer160(filename,1);
+  AliTPCBuffer160 *buffer=new AliTPCBuffer160(filename,1);
 
-  ULong_t Count=0;
-  Int_t PSecNumber=-1;  //Previous Sector number
-  Int_t PRowNumber=-1;  //Previous Row number  
-  Int_t PPadNumber=-1;  //Previous Pad number
-  Int_t PTimeBin=-1;    //Previous Time-Bin
-  Int_t BunchLength=0;
+  ULong_t count=0;
+  Int_t pSecNumber=-1;  //Previous Sector number
+  Int_t pRowNumber=-1;  //Previous Row number  
+  Int_t pPadNumber=-1;  //Previous Pad number
+  Int_t pTimeBin=-1;    //Previous Time-Bin
+  Int_t bunchLength=0;
   Int_t nwords=0;
   ULong_t numPackets=0;
   while (f.read((char*)(&data),sizeof(data))){
-    Count++;
-    if (PPadNumber==-1){
-      PSecNumber=data.Sec;
-      PRowNumber=data.Row;
-      PPadNumber=data.Pad;
-      PTimeBin=data.Time;
-      BunchLength=1;
-      Buffer->FillBuffer(data.Dig-offset);
+    count++;
+    if (pPadNumber==-1){
+      pSecNumber=data.Sec;
+      pRowNumber=data.Row;
+      pPadNumber=data.Pad;
+      pTimeBin=data.Time;
+      bunchLength=1;
+      buffer->FillBuffer(data.Dig-offset);
       nwords++;
     }//end if
     else{
-      if ( (data.Time==(PTimeBin+1)) &&
-	   (PPadNumber==data.Pad) &&
-	   (PRowNumber==data.Row) &&
-	   (PSecNumber==data.Sec)){
-	BunchLength++;
+      if ( (data.Time==(pTimeBin+1)) &&
+	   (pPadNumber==data.Pad) &&
+	   (pRowNumber==data.Row) &&
+	   (pSecNumber==data.Sec)){
+	bunchLength++;
       }//end if
       else{
-	Buffer->FillBuffer(PTimeBin);
-	Buffer->FillBuffer(BunchLength+2);
+	buffer->FillBuffer(pTimeBin);
+	buffer->FillBuffer(bunchLength+2);
 	nwords+=2;
-	if ((PPadNumber!=data.Pad)||(PRowNumber!=data.Row)||(PSecNumber!=data.Sec)){
+	if ((pPadNumber!=data.Pad)||(pRowNumber!=data.Row)||(pSecNumber!=data.Sec)){
 	  //Trailer is formatted and inserted!!
-	  Buffer->WriteTrailer(nwords,PPadNumber,PRowNumber,PSecNumber);
+	  buffer->WriteTrailer(nwords,pPadNumber,pRowNumber,pSecNumber);
 	  numPackets++;
 	  nwords=0;
 	}//end if
 	
-	BunchLength=1;
-	PPadNumber=data.Pad;
-	PRowNumber=data.Row;
-	PSecNumber=data.Sec;
+	bunchLength=1;
+	pPadNumber=data.Pad;
+	pRowNumber=data.Row;
+	pSecNumber=data.Sec;
       }//end else
-      PTimeBin=data.Time;
-      Buffer->FillBuffer(data.Dig-offset);
+      pTimeBin=data.Time;
+      buffer->FillBuffer(data.Dig-offset);
       nwords++;
     }//end else
   }//end while
-  Buffer->FillBuffer(PTimeBin);
-  Buffer->FillBuffer(BunchLength+2);
+  buffer->FillBuffer(pTimeBin);
+  buffer->FillBuffer(bunchLength+2);
   nwords+=2;
-  Buffer->WriteTrailer(nwords,PPadNumber,PRowNumber,PSecNumber);
-  delete Buffer;
-  cout<<"Number of digits: "<<Count<<endl;
+  buffer->WriteTrailer(nwords,pPadNumber,pRowNumber,pSecNumber);
+  delete buffer;
+  cout<<"Number of digits: "<<count<<endl;
   f.close(); 
   return;
 }
 
-
+/////////////////////////////////////////////////////////////////////////
 void AliTPCDDLRawData::RawDataAltroDecode(Int_t LDCsNumber,Int_t Comp){
+  //This method merges the slides in only one file removing at the same 
+  //time all the mini headers. The file so obtained must be Altro format
+  //complaiant.
+  //It is used mainly in the debugging phase 
   char filename[15];
   char dest[30];
   fstream f;
@@ -331,8 +345,8 @@ void AliTPCDDLRawData::RawDataAltroDecode(Int_t LDCsNumber,Int_t Comp){
   ofstream fdest;
 
   fdest.open(dest,ios::binary);
-  ULong_t Size=0;
-  //Int_t MagicWord,DDLNumber,SecNumber,SubSector,Detector,Flag=0;
+  ULong_t size=0;
+  //Int_t MagicWord,DDLNumber,SecNumber,SubSector,Detector,flag=0;
   for(Int_t i=1;i<=LDCsNumber;i++){
     if(!Comp)
       sprintf(filename,"TPCslice%d",i);  
@@ -343,13 +357,13 @@ void AliTPCDDLRawData::RawDataAltroDecode(Int_t LDCsNumber,Int_t Comp){
     //loop over the DDL block 
     //Each block contains a Mini Header followed by raw data (ALTRO FORMAT)
     //The number of block is ceil(216/LDCsNumber)
-    ULong_t MiniHeader[3];
+    ULong_t miniHeader[3];
     //here the Mini Header is read
-    while( (f.read((char*)(MiniHeader),sizeof(ULong_t)*3)) ){
-      //cout<<"Mini header dimension "<<MiniHeader[0]<<endl;
+    while( (f.read((char*)(miniHeader),sizeof(ULong_t)*3)) ){
+      //cout<<"Mini header dimension "<<miniHeader[0]<<endl;
       Int_t car=0;
-      Size=MiniHeader[0];
-      for(ULong_t j=0;j<Size;j++){
+      size=miniHeader[0];
+      for(ULong_t j=0;j<size;j++){
 	f.read((char*)(&car),1);
 	fdest.write((char*)(&car),1);
       }//end for

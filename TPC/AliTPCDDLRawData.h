@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 /////////////////////////////////////////////////////
-// Class used for the fifth ALICE data challenge  //
+// Class used for the ALICE data challenges        //
 /////////////////////////////////////////////////////
 
 #ifndef AliTPCDDLRAWDATA_H
@@ -15,16 +15,16 @@ class AliTPCDDLRawData:public TObject{
   virtual ~AliTPCDDLRawData(){;}//destructor
   AliTPCDDLRawData(const AliTPCDDLRawData &source); // copy constructor
   AliTPCDDLRawData& operator=(const AliTPCDDLRawData &source); // ass. op.
-  //This method is used to create the slides (sequence of files)
   void  RawData(Int_t LDCsNumber);
+  //This method is used to create the slides (sequence of files)
+  Int_t RawDataCompDecompress(Int_t LDCsNumber,Int_t Comp=0);
   //This method is used to create the compressed slides starting from the uncompressed ones 
   //or it can be used to decompress a sequence of compressed slices
-  Int_t RawDataCompDecompress(Int_t LDCsNumber,Int_t Comp=0);
+  void  RawDataAltro()const;
   //This method is used to create the Altro format file from "AliTPCDDL.dat"
-  void  RawDataAltro();
-  //This method is used to Construct an Altro format file starting from
-  //the slices compressed or uncompressed
   void RawDataAltroDecode(Int_t LDCsNumber,Int_t Comp=0);
+  //This method is used to construct an Altro format file starting from
+  //the slices compressed or uncompressed
  private:
   ClassDef(AliTPCDDLRawData,1)
 };

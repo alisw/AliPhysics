@@ -13,6 +13,7 @@ void AliTPCH5OptimizedTables(const char* fSource="AltroFormat.dat",const char* f
   static const Int_t NumTable=5;
   AliTPCCompression *util = new AliTPCCompression();
   TStopwatch timer;
+  //verbose level can be: 0=silent 1=few messages 2=pedantic output
   util->SetVerbose(2);
   //Tables are created
   util->CreateTables(fSource,NumTable);
@@ -24,7 +25,7 @@ void AliTPCH5OptimizedTables(const char* fSource="AltroFormat.dat",const char* f
   timer.Stop();
   timer.Print();
   
-  /*
+  /*  
   //The Compressed file is decompressed  
   timer.Start();
   util->DecompressDataOptTables(NumTable,fDest);

@@ -31,9 +31,7 @@
 ClassImp(AliTPCBuffer)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 AliTPCBuffer::AliTPCBuffer(const char* fileName){
-  //
   // Constructor
-  //
   f.open("AliTPCDDL.dat",ios::binary|ios::out);
   // fout=new TFile(fileName,"recreate");
   // tree=new TTree("tree","Values");
@@ -51,11 +49,13 @@ AliTPCBuffer::~AliTPCBuffer(){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 AliTPCBuffer::AliTPCBuffer(const AliTPCBuffer &source){
   // Copy Constructor
+  this->fVerbose=source.fVerbose;
   return;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 AliTPCBuffer& AliTPCBuffer::operator=(const AliTPCBuffer &source){
   //Assigment operator
+  this->fVerbose=source.fVerbose;
   return *this;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -109,9 +109,11 @@ void AliTPCBuffer::WriteRow(Int_t eth,AliSimDigits *digrow,Int_t minPad,Int_t ma
 */
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void AliTPCBuffer::WriteRowBinary(Int_t eth,AliSimDigits *digrow,Int_t minPad,Int_t maxPad,Int_t flag,Int_t sec,Int_t SubSec,Int_t row){
-  //flag=0 the whole row is written intto the file
+  //It writes TPC digits as par the flag specifications. Being called by AliTPCDDL.C
+  //flag=0 the whole row is written into the file
   //flag=1 only value in the range [minPad,MaxPasd] are written into the file
   //flag=2 complementary case of 1
+
   struct DataPad{
     Int_t Sec;
     Int_t SubSec;

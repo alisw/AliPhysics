@@ -17,7 +17,7 @@
 
 // Interface to the Altro format
 // to read and write digits
-// To be used in Alice Data Challenges
+// To be used in Alice Data Challenges 
 // and in the compression of the RAW data
 // Author: D.Favretto
 
@@ -61,7 +61,7 @@ AliTPCBuffer160::AliTPCBuffer160(const char* fileName,Int_t flag){
 AliTPCBuffer160::~AliTPCBuffer160(){
   // destructor
   if (fFlag){
-    //Last Buffer filled couldn't be full
+    //Flush out the Buffer content at the end only if Buffer wasn't completely filled
     Flush();
     if(fVerbose)
       cout<<"File Created\n";
@@ -101,6 +101,8 @@ AliTPCBuffer160& AliTPCBuffer160::operator=(const AliTPCBuffer160 &source){
 }
 
 Int_t AliTPCBuffer160::GetNext(){
+  //It reads a 10 bits word in forward dicection from the Buffer.
+  //A new Buffer is read from the file only when Buffer is empty.
   //If there aren't elements anymore -1 is returned otherwise 
   //the next element is returned
   ULong_t mask=0xFFC00000;
@@ -140,6 +142,8 @@ Int_t AliTPCBuffer160::GetNext(){
 }
 
 Int_t AliTPCBuffer160::GetNextBackWord(){
+  //It reads a 10 bits word in backward dicection from the Buffer.
+  //A new Buffer is read from the file only when Buffer is empty.
   //If there aren't elements anymore -1 is returned otherwise 
   //the next element is returned
   ULong_t mask=0x3FF;
@@ -181,7 +185,7 @@ Int_t AliTPCBuffer160::GetNextBackWord(){
 }
 
 void AliTPCBuffer160::Flush(){
-  // Flushes the internal buffer
+  // Flushes the Buffer content 
   if(fFreeCellBuffer!=16){
     Int_t temp=fFreeCellBuffer;
     for(Int_t i=0;i<temp;i++){
@@ -191,7 +195,7 @@ void AliTPCBuffer160::Flush(){
 }
 
 void AliTPCBuffer160::FillBuffer(Int_t Val){
-  //each value takes 10 bits
+  //Fills the Buffer with 16 ten bits words and write into a file 
   fFreeCellBuffer--;
   if (fShift<10){
     Int_t temp=Val;
@@ -225,6 +229,7 @@ void AliTPCBuffer160::FillBuffer(Int_t Val){
 }
 
 void   AliTPCBuffer160::WriteTrailer(Int_t WordsNumber,Int_t PadNumber,Int_t RowNumber,Int_t SecNumber){
+  //Writes a trailer of 40 bits
   Int_t num=fFreeCellBuffer%4;
   for(Int_t i=0;i<num;i++){
     FillBuffer(0x2AA);
@@ -236,6 +241,7 @@ void   AliTPCBuffer160::WriteTrailer(Int_t WordsNumber,Int_t PadNumber,Int_t Row
 }
 
 void AliTPCBuffer160::ReadTrailer(Int_t &WordsNumber,Int_t &PadNumber,Int_t &RowNumber,Int_t &SecNumber){
+  //Read a trailer of 40 bits in the forward reading mode
   WordsNumber=GetNext();
   PadNumber=GetNext();
   RowNumber=GetNext();
@@ -244,6 +250,7 @@ void AliTPCBuffer160::ReadTrailer(Int_t &WordsNumber,Int_t &PadNumber,Int_t &Row
 
 
 Int_t AliTPCBuffer160::ReadTrailerBackward(Int_t &WordsNumber,Int_t &PadNumber,Int_t &RowNumber,Int_t &SecNumber){
+  //Read a trailer of 40 bits in the backward reading mode
   Int_t temp;
   fEndingFillWords=0;
   do{
@@ -260,7 +267,7 @@ Int_t AliTPCBuffer160::ReadTrailerBackward(Int_t &WordsNumber,Int_t &PadNumber,I
 } 
 
 void AliTPCBuffer160::WriteMiniHeader(ULong_t Size,Int_t SecNumber,Int_t SubSector,Int_t Detector,Int_t Flag ){
-  //size msg errore sector number sub-sector number 0 for TPC 0 for uncompressed
+  //Size msg errore sector number sub-sector number 0 for TPC 0 for uncompressed
   Int_t ddlNumber;
   ULong_t miniHeader[3];
   Int_t version=1;
@@ -300,6 +307,7 @@ void AliTPCBuffer160::WriteMiniHeader(ULong_t Size,Int_t SecNumber,Int_t SubSect
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AliTPCBuffer160::PackWord(ULong_t &BaseWord, ULong_t Word, Int_t StartBit, Int_t StopBit){
+  //Packs a word into the BaseWord buffer from StartBit bit up to StopBit bit
   ULong_t dummyWord,offSet;
   Int_t   length;
   ULong_t sum;
@@ -327,6 +335,8 @@ void AliTPCBuffer160::PackWord(ULong_t &BaseWord, ULong_t Word, Int_t StartBit, 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AliTPCBuffer160::UnpackWord(ULong_t PackedWord, Int_t StartBit, Int_t StopBit, ULong_t &Word){ 	
+  //Unpacks a word of StopBit-StartBit+1 bits from PackedWord buffer starting from the position 
+  //indicated by StartBit
   ULong_t offSet;
   Int_t length;
   length=StopBit-StartBit+1;

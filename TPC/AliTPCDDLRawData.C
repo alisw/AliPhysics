@@ -32,10 +32,10 @@ void AliTPCDDLRawData(Int_t LDCsNumber=12){
   timer.Stop();
   timer.Print();
   
-  
-  /* 
+  /*
   //SLICE CHECKING
   //An Altro File is created from the slides
+  cout<<"slice control"<<endl;
   util->RawDataAltroDecode(LDCsNumber,0);
   ///The Altro file AltroDDLRecomposed.dat is converted in a txt file AltroDDLRecomposed.txt
   //This file must be equal to the ones created above.
@@ -44,7 +44,9 @@ void AliTPCDDLRawData(Int_t LDCsNumber=12){
 
   
   //SLICE COMPRESSION
-  //Slices are compressed here using the tables created above or an optimized set of tables (Tables file for Huffman coding are required)
+  cout<<"Slice Compression"<<endl;
+  //Slices are compressed here using the tables created above or an optimized set of tables 
+  //(Tables file for Huffman coding are required)
   timer.Start();
   util->RawDataCompDecompress(LDCsNumber,0);
   timer.Stop();
@@ -59,14 +61,14 @@ void AliTPCDDLRawData(Int_t LDCsNumber=12){
   timer.Print();
   */
 
-  
+  /*
   //SLICE DECOMPRESSED CHECKING  
   //A new Altro file is created from the decompressed slides
   util->RawDataAltroDecode(LDCsNumber,1);
   //Convertion of the Altro file AltroDDLRecomposedDec.dat in a txt file AltroDDLRecomposedDec.txt
   //Useful for debugging
   u->ReadAltroFormat("AltroDDLRecomposedDec.txt","AltroDDLRecomposedDec.dat");
-  
+  */
   delete util;
   delete u;
   return;

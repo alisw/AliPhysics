@@ -8,6 +8,7 @@
  
 #ifndef AliTPCHUFFMAN_H
 #define AliTPCHUFFMAN_H
+
 class AliTPCBuffer160;
 
 class AliTPCHNode: public TObject  {
@@ -24,16 +25,16 @@ class AliTPCHNode: public TObject  {
   void    SetRight(AliTPCHNode* point){fRight=point;}
   AliTPCHNode* GetRight()const{return fRight;}
   AliTPCHNode* GetLeft()const{return fLeft;}
-  void    SetSymbol(Int_t sym){fSymbol=sym;}
-  void    SetFrequency(Double_t freq){fFrequency=freq;}
+  void     SetSymbol(Int_t sym){fSymbol=sym;}
+  void     SetFrequency(Double_t freq){fFrequency=freq;}
   Double_t GetFrequency()const{return fFrequency;}
-  Int_t   GetSymbol()const{return fSymbol;}
+  Int_t    GetSymbol()const{return fSymbol;}
 
  private:
   Int_t         fSymbol;       // Symbols
-  Double_t       fFrequency;    // Frequency of the Symbol
+  Double_t      fFrequency;    // Frequency of the Symbol
   AliTPCHNode   *fLeft;        // Pointer to the left son
-  AliTPCHNode   *fRight;       // pointer to the right son
+  AliTPCHNode   *fRight;       // Pointer to the right son
   ClassDef(AliTPCHNode,1)     
 };
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -53,7 +54,7 @@ class AliTPCHTable: public TObject{
   void       SetCode(Double_t code,Int_t val);
   TObjArray* HNodes()const {return fHNodes;}
   void       PrintTable()const;
-  //This method builds the Huffman tree starting from the frequncies that are 
+  //This method builds the Huffman tree starting from the frequencies that are 
   //strored temporary in fCode array
   Int_t      BuildHTable();
   //This method returns the number of words stored in the fSym array
@@ -63,28 +64,28 @@ class AliTPCHTable: public TObject{
   Int_t      GetFrequencies(const char* fname);
   //This method increase by one the frequency of a given value
   Int_t      SetFrequency(const Int_t Val);
-  //This method strores the frequency of the symbol in a text file
-  Int_t      StoreFrequencies(const char *fname);
+  //This method stores the frequency of the symbol in a text file
+  Int_t      StoreFrequencies(const char *fname)const;
   void       CompleteTable(Int_t k);
   Double_t   GetEntropy()const;
   void       SetVerbose(Int_t val){fVerbose=val;}
-  //Method to set directly a frequency
+  //Method to set directly a frequency 
   Int_t      SetValFrequency(const Int_t Val,Double_t Value);
  private:
   //This method executes the pre-order visit of an Huffman tree and calculates the 
   //codeword for each leaf
   Bool_t     SpanTree(AliTPCHNode*start, ULong_t code, UChar_t len);
-  void       ResetHNodes();  //Reset the array fHNodes but not delete the remuved objects
+  void       ResetHNodes();  //Reset the array fHNodes but not delete the removed objects
   void       ClearTable();   //Reset the table
-  Int_t       fSize;       // size of the arrays
-  UChar_t     *fCodeLen;   //![fSize] number of bits array
-  Double_t    *fCode;     //![fSize] coded symbols array
+  Int_t       fSize;         //size of the arrays fCodelen and fCode
+  UChar_t     *fCodeLen;     //![fSize] number of bits array
+  Double_t    *fCode;        //![fSize] coded symbols array
   
-  Short_t    *fSym;      //![fSize] array of input symbols
-  TObjArray  *fHNodes;   // array of nodes
-  Int_t       fNnodes;   // number of nodes
-  ULong_t     fNum;      // number of words
-  Int_t       fVerbose;
-  ClassDef(AliTPCHTable,1)  //Huffman Table  object for set:TPC
+  Short_t    *fSym;          //![fSize] array of input symbols
+  TObjArray  *fHNodes;       // array of nodes
+  Int_t       fNnodes;       // number of nodes
+  ULong_t     fNum;          // number of words
+  Int_t       fVerbose;      // if fVerbose== 0 no output messages; fVerbose!=0 output messages are printed out 
+  ClassDef(AliTPCHTable,1)   //Huffman Table object for set:TPC
 };
 #endif

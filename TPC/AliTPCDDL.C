@@ -6,7 +6,7 @@
 
 void AliTPCDDL(char* FileName,Int_t eth=0){
   //eth is a threshold.
-  //Digits stored into a file have an amplitude value greater than eth
+  //Digits stored into a file have an amplitude value greater than "eth"
   TFile *cf=TFile::Open(FileName);
   // old geometry (3.07)
   //AliTPCParamSR *param =(AliTPCParamSR *)cf->Get("75x40_100x60");

@@ -6,10 +6,10 @@
 
 int AliTPCAltro(char* FileName,Int_t eth=0){
   //eth is a threshold.
-  //Digits stored into a file have an amplitude value greater than eth
+  //Digits stored into a file have an amplitude value greater than "eth"
   Int_t offset=1; //this should be equal to the threshold
   /*
-    NB the amplitude values strored in the ALTRO file are shifted  by offset 
+    NB the amplitude values stored in the ALTRO file are shifted  by offset 
     because the range for each word goes from 0 to 1023, now due to zero suppression 
     values lower that the threshold never appear.
    */

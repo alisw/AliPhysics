@@ -12,10 +12,16 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
+/* $Id:*/
 ////////////////////////////////////////////////
 //  Huffman classes for set:TPC               //
 ////////////////////////////////////////////////
+//This file contains two classes and it implements 
+//the Huffman algorithm for creating tables
+//used in the compression phase.
+//The class AliTPCHNode represents a node of the Huffman tree, while
+//the class AliTPCHTable represents a compression table
+
 
 #include <TObjArray.h>
 #include "Riostream.h"
@@ -26,7 +32,7 @@
 ClassImp(AliTPCHNode)
 
 AliTPCHNode::AliTPCHNode(){
-  // constructor
+  //Constructor
   fLeft=0;
   fRight=0;
 }
@@ -34,7 +40,7 @@ AliTPCHNode::AliTPCHNode(){
 //////////////////////////////////////////////////////////////////////////////
 
 AliTPCHNode::AliTPCHNode(Int_t sym, Double_t freq){
-  // standard constructor
+  //Standard constructor
   fSymbol=sym;
   fFrequency=freq;
   fLeft=0;
@@ -44,7 +50,7 @@ AliTPCHNode::AliTPCHNode(Int_t sym, Double_t freq){
 //////////////////////////////////////////////////////////////////////////////
 
 AliTPCHNode::AliTPCHNode(const AliTPCHNode &source){
-  //     Copy Constructor 
+  //Copy Constructor 
   if(&source == this) return;
   this->fSymbol = source.fSymbol;
   this->fFrequency = source.fFrequency;
@@ -56,7 +62,7 @@ AliTPCHNode::AliTPCHNode(const AliTPCHNode &source){
 //////////////////////////////////////////////////////////////////////////////
 
 AliTPCHNode& AliTPCHNode::operator=(const AliTPCHNode &source){
-  //    Assignment operator
+  //Assignment operator
   if(&source == this) return *this;
   this->fSymbol = source.fSymbol;
   this->fFrequency = source.fFrequency;
@@ -68,7 +74,7 @@ AliTPCHNode& AliTPCHNode::operator=(const AliTPCHNode &source){
 //////////////////////////////////////////////////////////////////////////////
 
 Int_t AliTPCHNode::Compare(const TObject *obj)const{
-  // function called by Sort method of TObjArray
+  //Function called by Sort method of TObjArray
   AliTPCHNode *node=(AliTPCHNode *)obj;
   Double_t f=fFrequency;
   Double_t fo=node->fFrequency;
@@ -84,7 +90,7 @@ Int_t AliTPCHNode::Compare(const TObject *obj)const{
 ClassImp(AliTPCHTable)
   
 AliTPCHTable::AliTPCHTable(){
-  // constructor
+  //Constructor
   fCodeLen=0;
   fCode=0;
   fHNodes=0;
@@ -96,7 +102,7 @@ AliTPCHTable::AliTPCHTable(){
 //////////////////////////////////////////////////////////////////////////////
 
 AliTPCHTable::AliTPCHTable(Int_t size){
-  //initialise
+  //Initialization
   fSize=size;
   fCodeLen = new UChar_t[fSize]; 
   fCode = new Double_t[fSize]; 
@@ -114,7 +120,7 @@ AliTPCHTable::AliTPCHTable(Int_t size){
 //////////////////////////////////////////////////////////////////////////////
 
 AliTPCHTable::AliTPCHTable(const AliTPCHTable &source){
-  //     Copy Constructor 
+  //Copy Constructor 
   if(&source == this) return;
   this->fSize = source.fSize;
   this->fCodeLen = source.fCodeLen;
@@ -130,7 +136,7 @@ AliTPCHTable::AliTPCHTable(const AliTPCHTable &source){
 //////////////////////////////////////////////////////////////////////////////
 
 AliTPCHTable& AliTPCHTable::operator=(const AliTPCHTable &source) {
-  //    Assignment operator
+  //Assignment operator
   if(&source == this) return *this;
   this->fSize = source.fSize;
   this->fCodeLen = source.fCodeLen;
@@ -146,7 +152,7 @@ AliTPCHTable& AliTPCHTable::operator=(const AliTPCHTable &source) {
 //////////////////////////////////////////////////////////////////////////////
 
 AliTPCHTable::~AliTPCHTable(){
-  // HTable
+  //HTable destructor
   if(fVerbose)
     cout<<"HTable destructor !\n";
   if (fCodeLen) delete[] fCodeLen;
@@ -160,6 +166,7 @@ AliTPCHTable::~AliTPCHTable(){
 //////////////////////////////////////////////////////////////////////////////
 
 void AliTPCHTable::SetCodeLen(UChar_t len,Int_t val){
+  //Sets codelength of "val" to the variable "len"
   fCodeLen[val]=len;
   return;
 }
@@ -167,6 +174,7 @@ void AliTPCHTable::SetCodeLen(UChar_t len,Int_t val){
 //////////////////////////////////////////////////////////////////////////////
 
 void AliTPCHTable::SetCode(Double_t code,Int_t val){
+  //Sets the binary code of the variable "val"
   fCode[val]=code;
   return;
 }
@@ -174,6 +182,7 @@ void AliTPCHTable::SetCode(Double_t code,Int_t val){
 //////////////////////////////////////////////////////////////////////////////
 
 void AliTPCHTable::PrintTable()const{
+  //This method prints a table
   cout<<"Table for Huffman coding\n";
   cout<<"  Symbol|   Code   |   Length \n";
   for (Int_t i=0;i<fSize;i++){
@@ -190,7 +199,7 @@ void AliTPCHTable::PrintTable()const{
 //////////////////////////////////////////////////////////////////////////////
 
 Bool_t AliTPCHTable::SpanTree(AliTPCHNode *start, ULong_t code, UChar_t len){
-  // span tree
+  //Hoffman codes are generated spanning the Huffman tree
   //In an Huffman tree any internal node has always two children
   AliTPCHNode * visited;
   visited = start;
@@ -208,7 +217,7 @@ Bool_t AliTPCHTable::SpanTree(AliTPCHNode *start, ULong_t code, UChar_t len){
 //////////////////////////////////////////////////////////////////////////////
 
 void AliTPCHTable::ResetHNodes(){
-  // Reset number of HNodes and the HNodes array 
+  //Reset number of HNodes and the HNodes array 
   if (fHNodes)  fHNodes->Clear();
   if (fNnodes)  fNnodes=0;
 }
@@ -216,7 +225,7 @@ void AliTPCHTable::ResetHNodes(){
 //////////////////////////////////////////////////////////////////////////////
 
 void AliTPCHTable::ClearTable(){
-  // Clear the table
+  //Clear the table
   memset(fCodeLen,0,sizeof(UChar_t)*fSize);
   memset(fCode,0,sizeof(Double_t)*fSize);
 }
@@ -224,15 +233,16 @@ void AliTPCHTable::ClearTable(){
 //////////////////////////////////////////////////////////////////////////////
 
 Int_t  AliTPCHTable::GetFrequencies(const char *fname){
+  //It fills the "fCode" array with the frequencies of the symbols read from the file
   AliTPCBuffer160 buff(fname,0);
-  ULong_t NumberOfWords=0;
-  Int_t Val;
-  while((Val=buff.GetNext())!=-1){
-    fCode[Val]++;
+  ULong_t numberOfWords=0;
+  Int_t val;
+  while((val=buff.GetNext())!=-1){
+    fCode[val]++;
     fNum++;
-    NumberOfWords++;
+    numberOfWords++;
   }
-  cout<<"Total number of words: "<<NumberOfWords<<endl;
+  cout<<"Total number of words: "<<numberOfWords<<endl;
   //Print out the frequencies 
   /*
     for (Int_t i=0;i<fSize;i++){
@@ -244,6 +254,7 @@ Int_t  AliTPCHTable::GetFrequencies(const char *fname){
 }
 
 Int_t AliTPCHTable::SetValFrequency(const Int_t Val,Double_t Value){
+  //This method sets to "Value" the frequency of the symbol "Val"
   fCode[Val]=Value;
   fNum=1;
   return 0;
@@ -252,6 +263,8 @@ Int_t AliTPCHTable::SetValFrequency(const Int_t Val,Double_t Value){
 //////////////////////////////////////////////////////////////////////////////
 
 Int_t AliTPCHTable::SetFrequency(const Int_t Val){
+  //It increments by one the frequency of the symbol "Val" whose frequency is 
+  //stored in the fCode array
   fCode[Val]++;
   fNum++;
   return 0;
@@ -259,7 +272,8 @@ Int_t AliTPCHTable::SetFrequency(const Int_t Val){
 
 //////////////////////////////////////////////////////////////////////////////
 
-Int_t AliTPCHTable::StoreFrequencies(const char *fname){
+Int_t AliTPCHTable::StoreFrequencies(const char *fname)const{
+  //It stores the frequencies in a text file
   ofstream ftxt(fname);  
   for (Int_t i=0;i<fSize;i++){
     ftxt<<(ULong_t)fCode[i]<<endl;
@@ -271,6 +285,8 @@ Int_t AliTPCHTable::StoreFrequencies(const char *fname){
 //////////////////////////////////////////////////////////////////////////////
 
 void AliTPCHTable::CompleteTable(Int_t k){
+  //According to the kind of table (0..4) it associates a dummy frequency (1) to 
+  //every symbols whose real frequency is zero, in a given range 0..max
   Int_t max;
   ULong_t val;
   switch(k){
@@ -297,6 +313,7 @@ void AliTPCHTable::CompleteTable(Int_t k){
 //////////////////////////////////////////////////////////////////////////////
 
 Double_t  AliTPCHTable::GetEntropy()const{
+  //This method calculates the value of the entropy 
   Double_t entropy=0;
   Double_t prob=0;
   for (Int_t i=0;i<fSize;i++){
@@ -311,7 +328,7 @@ Double_t  AliTPCHTable::GetEntropy()const{
 //////////////////////////////////////////////////////////////////////////////
 
 Int_t AliTPCHTable::BuildHTable(){
-  // build Htable
+  //It builds a Huffman tree 
   if(GetWordsNumber()){
     for (Int_t i=0; i< fSize; i++) {
       if (fCode[i] > 0.){
@@ -345,5 +362,4 @@ Int_t AliTPCHTable::BuildHTable(){
   }//end else
   return 0;
 }
-
 //////////////////////////////////////////////////////////////////////////////
