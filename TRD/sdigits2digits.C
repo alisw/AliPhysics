@@ -20,14 +20,14 @@ void sdigits2digits()
   AliTRDdigitizer *digitizer = new AliTRDdigitizer("digitizer","Digitizer class");  
 
   // Set the parameter
-  digitizer->SetVerbose(1);
+  digitizer->SetDebug(1);
 
   // Initialize the geometry 
   digitizer->Open(fileName);
 
   // Create the digits manager for the input s-digits
   AliTRDdigitsManager *sdigitsManager = new AliTRDdigitsManager();
-  sdigitsManager->SetVerbose(1);
+  sdigitsManager->SetDebug(1);
   sdigitsManager->SetSDigits(kTRUE);
   sdigitsManager->ReadDigits();
 
