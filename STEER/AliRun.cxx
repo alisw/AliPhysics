@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.91  2002/10/29 14:26:49  hristov
+Code clean-up (F.Carminati)
+
 Revision 1.90  2002/10/22 15:02:15  alibrary
 Introducing Riostream.h
 
@@ -268,7 +271,6 @@ Introduction of the Copyright and cvs Log
 #include <Riostream.h>
  
 #include <TFile.h>
-#include <TRandom.h>
 #include <TBRIK.h> 
 #include <TCint.h> 
 #include <TSystem.h>
