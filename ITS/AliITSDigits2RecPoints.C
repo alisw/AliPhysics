@@ -15,7 +15,7 @@
 #endif
 #define DEBUG
 
-Int_t AliITSDigits2RecPoints(TString filename="galice.root"){
+Int_t AliITSDigits2RecPoints(TString filename="galice.root",TString fileRP=""){
     // Standard ITS Digits to RecPoints.
 
     // Dynamically link some shared libs
@@ -34,6 +34,7 @@ Int_t AliITSDigits2RecPoints(TString filename="galice.root"){
     AliITSreconstruction *itsr = new AliITSreconstruction(filename);
 
     timer.Start();
+    if(!(fileRP.IsNull()))itsr->SetOutputFile(fileRP);
     itsr->Init();
     itsr->Exec(); 
     timer.Stop(); 

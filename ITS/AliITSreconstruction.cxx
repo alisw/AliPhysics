@@ -269,9 +269,15 @@ void AliITSreconstruction::Exec(const Option_t *opt){
 }
 //______________________________________________________________________ 
 void AliITSreconstruction::SetOutputFile(TString filename){
-  // Set a file name for recpoints. Used only if this file is not the file
-  // containing digits. This obj is deleted by AliRun.
-  Error("SetOutputFile",
-	"Use AliLoader::SetRecPointsFileName(TString&)instead filename=%s",
-	filename.Data());
+  // Set a new file name for recpoints. 
+  // It must be called before Init()
+  if(!fLoader)fLoader = (AliITSLoader*) fRunLoader->GetLoader("ITSLoader");
+  if(fLoader){
+    Info("SetOutputFile","name for rec points is %s",filename.Data());
+    fLoader->SetRecPointsFileName(filename);
+  }
+  else {
+    Error("SetOutputFile",
+    "ITS loader not available. Not possible to set name: %s",filename.Data());
+  }
 }
