@@ -36,9 +36,9 @@ public:
   AliPHOSPID() ;          // ctor            
   virtual ~AliPHOSPID() ; // dtor
 
-  virtual void GuessParticleType(TrackSegmentsList * trsl, RecParticlesList * rpl) {} ; 
+  virtual void GetParticleType(TrackSegmentsList * trsl, RecParticlesList * rpl) {} ; 
 
-  ClassDef(AliPHOSPID,1)  // Particle Guesser interface, version 1
+  ClassDef(AliPHOSPID,1)  // Particle Identifier interface, version 1
 
 } ;
 

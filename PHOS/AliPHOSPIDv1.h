@@ -9,7 +9,7 @@
 //  Particle Identifier   class for PHOS         //
 //  Version SUBATECH                             //
 //  Author Yves Schutz                           //
-//     comment: guess the type of particle       //  
+//     comment: identify the type of particle    //  
 //              PHOS SubTrack alone              //
 ///////////////////////////////////////////////////
 

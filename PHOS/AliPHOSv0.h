@@ -19,7 +19,7 @@
 #include "AliPHOSGeometry.h"
 #include "AliPHOSReconstructioner.h"
 #include "AliPHOSTrackSegmentMaker.h"
-#include "AliPHOSParticleGuesser.h"
+#include "AliPHOSPID.h"
 
 class AliPHOSv0 : public AliPHOS {
 

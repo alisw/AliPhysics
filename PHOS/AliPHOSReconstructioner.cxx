@@ -41,11 +41,11 @@ AliPHOSReconstructioner::AliPHOSReconstructioner()
 //____________________________________________________________________________
 AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterizer, 
 						 AliPHOSTrackSegmentMaker * Tracker,
-						 AliPHOSParticleGuesser * Guesser)
+						 AliPHOSPID * Pid)
 {
   fClusterizer        = Clusterizer ;
   fTrackSegmentMaker  = Tracker ;
-  fParticleGuesser    = Guesser ; 
+  fPID                = Pid ; 
 } 
 
 //____________________________________________________________________________
@@ -57,11 +57,11 @@ AliPHOSReconstructioner::~AliPHOSReconstructioner()
 //____________________________________________________________________________
  void AliPHOSReconstructioner::Init(AliPHOSClusterizer * Clusterizer, 
 						 AliPHOSTrackSegmentMaker * Tracker,
-						 AliPHOSParticleGuesser * Guesser)
+						 AliPHOSPID * Pid)
 {
   fClusterizer        = Clusterizer ;
   fTrackSegmentMaker  = Tracker ;
-  fParticleGuesser    = Guesser ; 
+  fPID                = Pid ; 
 } 
 
 
@@ -75,5 +75,5 @@ AliPHOSReconstructioner::~AliPHOSReconstructioner()
 
   fTrackSegmentMaker->MakeTrackSegments(dl, emccl, ppsdl, trsl) ;
 
-  fParticleGuesser->GuessParticleType(trsl, rpl) ; 
+  fPID->GetParticleType(trsl, rpl) ; 
 }
