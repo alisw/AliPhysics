@@ -397,3 +397,4 @@
                 and Ali4Vector respectively. This allows to use this memberfunction also in
                 all the derived classes (e.g. AliPosition, AliSignal, AliTrack, etc...).
                 Therefore the Load() memberfunction has been removed from AliPositionObj.
+03-oct-2003 NvE Typos fixed in AliCalorimeter.cxx.

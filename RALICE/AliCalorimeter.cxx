@@ -590,7 +590,7 @@ void AliCalorimeter::SetEdgeOn(Int_t row,Int_t col)
  {
   a=new AliAttribObj();
   a->SetEdgeOn(col);
-  fAttributes->AddAt(a,col-1);
+  fAttributes->AddAt(a,row-1);
  } 
 
  AliCalmodule* m=GetModule(row,col);
@@ -787,7 +787,7 @@ void AliCalorimeter::SetGain(Int_t row,Int_t col,Float_t gain)
  {
   a=new AliAttribObj();
   a->SetGain(gain,col);
-  fAttributes->AddAt(a,col-1);
+  fAttributes->AddAt(a,row-1);
  } 
 
  AliCalmodule* m=GetModule(row,col);
@@ -827,7 +827,7 @@ void AliCalorimeter::SetOffset(Int_t row,Int_t col,Float_t offset)
  {
   a=new AliAttribObj();
   a->SetOffset(offset,col);
-  fAttributes->AddAt(a,col-1);
+  fAttributes->AddAt(a,row-1);
  } 
 
  AliCalmodule* m=GetModule(row,col);
