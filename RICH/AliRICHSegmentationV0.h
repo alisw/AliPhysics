@@ -107,6 +107,10 @@ public AliSegmentation {
     virtual void Draw(const char* = "") const; 
     // Function for systematic corrections
     virtual void SetCorrFunc(Int_t dum, TF1* func) {fCorr=func;}
+
+    // Getters for padplane dimensions
+    virtual Float_t    GetPadPlaneWidth()  {return fPadPlane_Width;}
+    virtual Float_t    GetPadPlaneLength() {return fPadPlane_Length;}
     
     virtual TF1* CorrFunc(Int_t) const {return fCorr;} 
     ClassDef(AliRICHSegmentationV0,1)
@@ -125,6 +129,8 @@ public AliSegmentation {
     Int_t      fSector;          // Current padplane
     Float_t    fWireD;           // wire pitch
     
+    Float_t fPadPlane_Width;         //width of CsI padplanes
+    Float_t fPadPlane_Length;        //length of CsI padplanes
 
         
     // Chamber region consideres during disintegration (lower left and upper right corner)
