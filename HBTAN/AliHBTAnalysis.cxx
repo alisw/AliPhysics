@@ -337,15 +337,15 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
 //          }
          
          Bool_t firstcut = fPairCut->GetFirstPartCut()->Pass(part1);
-         
-         if ( (firstcut == kFALSE) || (fPairCut->GetSecondPartCut()->Pass(part1) == kFALSE) )
-          {
-            //accepted by any cut
-            // we have to copy because reader keeps only one event
-            
-            partEvent1->AddParticle(new AliHBTParticle(*part1));
-            trackEvent1->AddParticle(new AliHBTParticle(*track1));
-          }
+         if (fBufferSize == 0) 
+           if ( (firstcut == kFALSE) || (fPairCut->GetSecondPartCut()->Pass(part1) == kFALSE) )
+            {
+              //accepted by any cut
+              // we have to copy because reader keeps only one event
+
+              partEvent1->AddParticle(new AliHBTParticle(*part1));
+              trackEvent1->AddParticle(new AliHBTParticle(*track1));
+            }
 
          if (firstcut) continue;
          
@@ -500,12 +500,13 @@ void AliHBTAnalysis::ProcessTracks()
          track1= trackEvent->GetParticle(j);
          Bool_t firstcut = fPairCut->GetFirstPartCut()->Pass(track1);
          
-         if ( (firstcut == kFALSE) || (fPairCut->GetSecondPartCut()->Pass(track1) == kFALSE) )
-          {
-            //accepted by any cut
-            // we have to copy because reader keeps only one event
-            trackEvent1->AddParticle(new AliHBTParticle(*track1));
-          }
+         if (fBufferSize == 0) //useless in case 
+           if ( (firstcut == kFALSE) || (fPairCut->GetSecondPartCut()->Pass(track1) == kFALSE) )
+            {
+              //accepted by any cut
+              // we have to copy because reader keeps only one event
+              trackEvent1->AddParticle(new AliHBTParticle(*track1));
+            }
 
          if (firstcut) continue;
 
@@ -627,12 +628,13 @@ void AliHBTAnalysis::ProcessParticles()
          part1 = partEvent->GetParticle(j);
          Bool_t firstcut = fPairCut->GetFirstPartCut()->Pass(part1);
          
-         if ( (firstcut == kFALSE) || (fPairCut->GetSecondPartCut()->Pass(part1) == kFALSE) )
-          {
-            //accepted by any cut
-            // we have to copy because reader keeps only one event
-            partEvent1->AddParticle(new AliHBTParticle(*part1));
-          }
+         if (fBufferSize == 0) //useless in case 
+           if ( (firstcut == kFALSE) || (fPairCut->GetSecondPartCut()->Pass(part1) == kFALSE) )
+            {
+              //accepted by any cut
+              // we have to copy because reader keeps only one event
+              partEvent1->AddParticle(new AliHBTParticle(*part1));
+            }
 
          if (firstcut) continue;
 

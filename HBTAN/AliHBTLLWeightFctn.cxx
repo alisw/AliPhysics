@@ -12,7 +12,6 @@
 //One needs both pairs 
 //(simulated and recontructed), thus function is of class AliHBTTwoPairFctn1D.
 //Author: Ludmila Malinina, JINR (malinina@sunhe.jinr.ru)
-#include "AliHBTLLWeights.h"
 #include "AliHBTLLWeightsPID.h"
 
 //--for test--AliHBTLLWeightQInvFctn* yyy= new AliHBTLLWeightQInvFctn();
@@ -37,7 +36,7 @@ void  AliHBTLLWeightQInvFctn::ProcessSameEventParticles(AliHBTPair* trackpair, A
   if ( trackpair && partpair)     
   {
     Double_t weightPID=1.;
-    Double_t weightHBT=AliHBTLLWeights::Instance()->GetWeight(partpair);
+    Double_t weightHBT=partpair->GetLLWeight();
     Double_t weight=weightHBT*weightPID;
     if(TMath::Abs(weight)<=10.)fNumerator->Fill(trackpair->GetQInv(),weight);
   }
@@ -84,7 +83,7 @@ void AliHBTLLWeightQOutFctn::ProcessSameEventParticles(AliHBTPair* trackpair, Al
   if ( trackpair && partpair)     
   {
     Double_t weightPID=1.;
-    Double_t weightHBT=AliHBTLLWeights::Instance()->GetWeight(partpair);
+    Double_t weightHBT=partpair->GetLLWeight();
     Double_t weight=weightHBT*weightPID;
     if(TMath::Abs(weight)<=10.) fNumerator->Fill(trackpair->GetQOutCMSLC(),weight);
   }
@@ -130,7 +129,7 @@ void AliHBTLLWeightQLongFctn::ProcessSameEventParticles(AliHBTPair* trackpair, A
   if ( trackpair && partpair)     
   {
     Double_t weightPID=1.;
-    Double_t weightHBT=AliHBTLLWeights::Instance()->GetWeight(partpair);
+    Double_t weightHBT=partpair->GetLLWeight();
     Double_t weight=weightHBT*weightPID;
     if(TMath::Abs(weight)<=10.) fNumerator->Fill(trackpair->GetQLongCMSLC(),weight);
   }
@@ -178,7 +177,7 @@ void AliHBTLLWeightQSideFctn::ProcessSameEventParticles(AliHBTPair* trackpair, A
   if ( trackpair && partpair)     
   {
     Double_t weightPID=1.;
-    Double_t weightHBT=AliHBTLLWeights::Instance()->GetWeight(partpair);
+    Double_t weightHBT=partpair->GetLLWeight();
     Double_t weight=weightHBT*weightPID;
     if(TMath::Abs(weight)<=10.) fNumerator->Fill(trackpair->GetQSideCMSLC(),weight);
   }
@@ -225,7 +224,7 @@ void AliHBTLLWeightTwoKStarFctn::ProcessSameEventParticles(AliHBTPair* trackpair
   if ( trackpair && partpair)     
   {
     Double_t weightPID=1.;
-    Double_t weightHBT=AliHBTLLWeights::Instance()->GetWeight(partpair);
+    Double_t weightHBT=partpair->GetLLWeight();
     Double_t weight=weightHBT*weightPID;
     if(TMath::Abs(weight)<=10.) fNumerator->Fill(2.0*(trackpair->GetKStar()),weight);
   }
@@ -274,7 +273,7 @@ void AliHBTLLWeightQOutQSideFctn::ProcessSameEventParticles(AliHBTPair* trackpai
   if ( trackpair && partpair)     
   {
     Double_t weightPID=1.;
-    Double_t weightHBT=AliHBTLLWeights::Instance()->GetWeight(partpair);
+    Double_t weightHBT=partpair->GetLLWeight();
     Double_t weight=weightHBT*weightPID;
     if(TMath::Abs(weight)<=10.) 
       fNumerator->Fill(trackpair->GetQOutCMSLC(),trackpair->GetQSideCMSLC(),weight);
@@ -323,7 +322,7 @@ void AliHBTLLWeightQOutQLongFctn::ProcessSameEventParticles(AliHBTPair* trackpai
   if ( trackpair && partpair)     
   {
     Double_t weightPID=1.;
-    Double_t weightHBT=AliHBTLLWeights::Instance()->GetWeight(partpair);
+    Double_t weightHBT=partpair->GetLLWeight();
     Double_t weight=weightHBT*weightPID;
     if(TMath::Abs(weight)<=10.) 
       fNumerator->Fill(trackpair->GetQOutCMSLC(),trackpair->GetQLongCMSLC(),weight);
@@ -373,7 +372,7 @@ void AliHBTLLWeightQSideQLongFctn::ProcessSameEventParticles(AliHBTPair* trackpa
   if ( trackpair && partpair)     
   {
     Double_t weightPID=1.;
-    Double_t weightHBT=AliHBTLLWeights::Instance()->GetWeight(partpair);
+    Double_t weightHBT=partpair->GetLLWeight();
     Double_t weight=weightHBT*weightPID;
     if(TMath::Abs(weight)<=10.) 
       fNumerator->Fill(trackpair->GetQSideCMSLC(),trackpair->GetQLongCMSLC(),weight);
