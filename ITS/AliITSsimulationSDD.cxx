@@ -346,6 +346,7 @@ void AliITSsimulationSDD::SDigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
     WriteSDigits(pList);
 
     // clean memory
+    delete pList;
     alist->Delete();
     delete alist;
     padr->Delete();
@@ -382,6 +383,7 @@ void AliITSsimulationSDD::DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
     FinishDigits(alist);
 
     // clean memory
+    delete pList;
     alist->Delete();
     delete alist;
     padr->Delete();
