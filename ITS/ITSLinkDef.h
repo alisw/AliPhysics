@@ -17,7 +17,7 @@
 #pragma link C++ class  AliITSv1-;
 #pragma link C++ class  AliITSv3-;
 #pragma link C++ class  AliITSv5-;
-#pragma link C++ class  AliITShit-;
+#pragma link C++ class  AliITShit+;
 #pragma link C++ class  AliITSdigit+;
 #pragma link C++ class  AliITSdigitSPD+;
 #pragma link C++ class  AliITSdigitSDD+;
@@ -29,8 +29,8 @@
 #pragma link C++ class  AliITSgeomSDD+;
 #pragma link C++ class  AliITSgeomSSD+;
 
-#pragma link C++ class AliITSgeomSPD300-;
-#pragma link C++ class AliITSgeomSPD425-;
+#pragma link C++ class AliITSgeomSPD300+;
+#pragma link C++ class AliITSgeomSPD425+;
 
 #pragma link C++ class  AliITSmodule+;
 #pragma link C++ class  AliITSRecPoint+;
@@ -60,8 +60,8 @@
 #pragma link C++ class  AliITSClusterFinderSDD+;
 #pragma link C++ class  AliITSClusterFinderSSD+;
 #pragma link C++ class  AliITSDetType+;
-#pragma link C++ class  AliITSstatistics-;
-#pragma link C++ class  AliITSstatistics2-;
+#pragma link C++ class  AliITSstatistics+;
+#pragma link C++ class  AliITSstatistics2+;
 // SDD simulation
 #pragma link C++ class  AliITSRawData+;
 #pragma link C++ class  AliITSInStream-;
