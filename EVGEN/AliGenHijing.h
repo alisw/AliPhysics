@@ -56,6 +56,7 @@ class AliGenHijing : public AliGenMC
     virtual void    SetFlavor(Int_t flag=0)           {fFlavor     = flag;}
     virtual void    SetEvaluate(Int_t flag=0)         {fEvaluate   = flag;}
     virtual void    SetSelectAll(Int_t flag=0)        {fSelectAll  = flag;}
+    virtual void    SetRadiation(Int_t flag=3)        {fRadiation  = flag;}    
     virtual void    SetSpectators(Int_t spects=1)     {fSpectators = spects;}
     virtual void    SetPtMinJet(Float_t ptmin)        {fPtMinJet   = ptmin;}
     AliGenHijing &  operator=(const AliGenHijing & rhs);
@@ -97,7 +98,9 @@ class AliGenHijing : public AliGenMC
     Int_t       fSpectators;     // put spectators on stack
     TGraph*     fDsigmaDb;       // dSigma/db for the system
     TGraph*     fDnDb;           // dNBinaryCollisions/db
-    Float_t     fPtMinJet;       // Minimum Pt of triggered Jet  	
+    Float_t     fPtMinJet;       // Minimum Pt of triggered Jet
+    Int_t       fRadiation;      // Flag to switch on/off initial and final state radiation
+    
 // ZDC proposal (by Chiara) to store num. of SPECTATORS protons and neutrons
     Int_t 	fSpecn;		 // Num. of spectator neutrons
     Int_t 	fSpecp;		 // Num. of spectator protons

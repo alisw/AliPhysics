@@ -7,7 +7,7 @@
 /* $Id$ */
 
 #include "AliGenEventHeader.h"
-
+#include <TLorentzVector.h>
 
 class AliGenHijingEventHeader : public AliGenEventHeader
 {
@@ -36,7 +36,10 @@ class AliGenHijingEventHeader : public AliGenEventHeader
       {fNNColl=nn, fNNwColl=nnw, fNwNColl=nwn,  fNwNwColl=nwnw;}
   void SetSpectators(Int_t nspecn, Int_t nspecp)
       {fSpecn=nspecn, fSpecp=nspecp;}
-  
+  void SetJets(TLorentzVector* jet1, TLorentzVector* jet2)
+      {fJet1 = *jet1; fJet2 = *jet2;}
+  void GetJets(TLorentzVector& jet1, TLorentzVector& jet2)  
+      {jet1 = fJet1; jet2 = fJet2;}
 protected:
   Float_t fTotalEnergy;              // Total energy of produced particles
   Int_t   fNHardScatters;            // Number of hard scatterings
@@ -48,9 +51,10 @@ protected:
   Int_t   fNwNwColl;                 // Number of Nwounded-Nwounded collisions
   Int_t   fSpecn;                    // Number of spectators neutrons
   Int_t   fSpecp;                    // Number of spectators protons
+  TLorentzVector  fJet1;             // 4-Momentum-Vector of first triggered jet  
+  TLorentzVector  fJet2;             // 4-Momentum-Vector of first triggered jet     
   
-  
-  ClassDef(AliGenHijingEventHeader,1) // Event header for hijing event
+  ClassDef(AliGenHijingEventHeader,2) // Event header for hijing event
 };
 
 #endif

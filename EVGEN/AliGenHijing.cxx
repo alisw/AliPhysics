@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.27  2001/10/08 07:13:14  morsch
+Add setter for minimum transverse momentum of triggered jet.
+
 Revision 1.26  2001/10/04 08:12:24  morsch
 Redefinition of stable condition.
 
@@ -121,6 +124,7 @@ AliGenerator interface class to HIJING using THijing (test version)
 #include <TParticle.h>
 #include <THijing.h>
 #include <TGraph.h>
+#include <TLorentzVector.h>
 
 
  ClassImp(AliGenHijing)
@@ -152,6 +156,7 @@ AliGenHijing::AliGenHijing(Int_t npart)
     fDsigmaDb   =  0;
     fDnDb       =  0;
     fPtMinJet   = -2.5; 	
+    fRadiation  =  1;
 //
 // Set random number generator   
     sRandom = fRandom;
@@ -182,7 +187,7 @@ void AliGenHijing::Init()
 		      fMinImpactParam, fMaxImpactParam));
 
     fHijing=(THijing*) fgMCEvGen;
-
+    fHijing->SetIHPR2(2,  fRadiation);
     fHijing->SetIHPR2(3,  fTrigger);
     fHijing->SetIHPR2(4,  fQuench);
     fHijing->SetIHPR2(6,  fShadowing);
@@ -487,8 +492,6 @@ Bool_t AliGenHijing::Stable(TParticle*  particle)
 {
 // Return true for a stable particle
 //
-    Int_t kf = TMath::Abs(particle->GetPdgCode());
-    
     if (particle->GetFirstDaughter() < 0 )
     {
 	return kTRUE;
@@ -501,18 +504,29 @@ void AliGenHijing::MakeHeader()
 {
 // Builds the event header, to be called after each event
     AliGenEventHeader* header = new AliGenHijingEventHeader("Hijing");
-   ((AliGenHijingEventHeader*) header)->SetNProduced(fHijing->GetNATT());
-   ((AliGenHijingEventHeader*) header)->SetImpactParameter(fHijing->GetHINT1(19));
-   ((AliGenHijingEventHeader*) header)->SetTotalEnergy(fHijing->GetEATT());
-   ((AliGenHijingEventHeader*) header)->SetHardScatters(fHijing->GetJATT());
-   ((AliGenHijingEventHeader*) header)->SetParticipants(fHijing->GetNP(), fHijing->GetNT());
-   ((AliGenHijingEventHeader*) header)->SetCollisions(fHijing->GetN0(),
-			  fHijing->GetN01(),
-			  fHijing->GetN10(),
-			  fHijing->GetN11());
-   ((AliGenHijingEventHeader*) header)->SetSpectators(fSpecn, fSpecp);
-   gAlice->SetGenEventHeader(header);
-   
+    ((AliGenHijingEventHeader*) header)->SetNProduced(fHijing->GetNATT());
+    ((AliGenHijingEventHeader*) header)->SetImpactParameter(fHijing->GetHINT1(19));
+    ((AliGenHijingEventHeader*) header)->SetTotalEnergy(fHijing->GetEATT());
+    ((AliGenHijingEventHeader*) header)->SetHardScatters(fHijing->GetJATT());
+    ((AliGenHijingEventHeader*) header)->SetParticipants(fHijing->GetNP(), fHijing->GetNT());
+    ((AliGenHijingEventHeader*) header)->SetCollisions(fHijing->GetN0(),
+						       fHijing->GetN01(),
+						       fHijing->GetN10(),
+						       fHijing->GetN11());
+    ((AliGenHijingEventHeader*) header)->SetSpectators(fSpecn, fSpecp);
+
+    TLorentzVector* jet1 = new TLorentzVector(fHijing->GetHINT1(21), 
+					      fHijing->GetHINT1(22),
+					      fHijing->GetHINT1(23),
+					      fHijing->GetHINT1(24));
+
+    TLorentzVector* jet2 = new TLorentzVector(fHijing->GetHINT1(31), 
+					      fHijing->GetHINT1(32),
+					      fHijing->GetHINT1(33),
+					      fHijing->GetHINT1(34));
+
+    ((AliGenHijingEventHeader*) header)->SetJets(jet1, jet2);
+    gAlice->SetGenEventHeader(header);    
 }
 
 AliGenHijing& AliGenHijing::operator=(const  AliGenHijing& rhs)
