@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -15,6 +16,9 @@
 
 /*
 $Log$
+Revision 1.4  2002/01/21 11:03:21  morsch
+Phi propagation introduced in FillFromTracks.
+
 Revision 1.3  2002/01/18 05:07:56  morsch
 - hadronic correction
 - filling of digits
@@ -48,6 +52,7 @@ Revision 1.3  2002/01/18 05:07:56  morsch
 #include "AliMagFCM.h"
 #include "AliEMCAL.h"
 #include "AliHeader.h"
+#include "AliPDG.h"
 
 ClassImp(AliEMCALJetFinder)
 
@@ -90,6 +95,7 @@ AliEMCALJetFinder::AliEMCALJetFinder(const char* name, const char *title)
     SetDebug();
     SetHadronCorrection();
     SetSamplingFraction();
+    SetIncludeK0andN();
 }
 
 
@@ -463,7 +469,15 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 // charged or neutral 
 	if (ich == 0) {
 	    pdgP = MPart->GetPDG();
-	    if (pdgP->Charge() == 0) continue;
+	    if (pdgP->Charge() == 0) {
+		if (!fK0N) {
+		    continue;
+		} else {
+		    if (mpart != kNeutron    &&
+			mpart != kNeutronBar &&
+			mpart != kK0Long) continue;
+		}
+	    }
 	} 
 // skip partons
 	if (TMath::Abs(mpart) <= 6         ||

@@ -42,6 +42,7 @@ class AliEMCALJetFinder : public TTask {
     virtual void SetMomentumSmearing(Bool_t flag = kFALSE) {fSmear = flag;}
     virtual void SetEfficiencySim(Bool_t flag = kFALSE)    {fEffic = flag;}
     virtual void SetSamplingFraction(Float_t par = 12.9) {fSamplingF = par;}
+    virtual void SetIncludeK0andN(Bool_t flag = kFALSE) {fK0N = flag;}
     // Correction of hadronic energy
     virtual void SetHadronCorrector(AliEMCALHadronCorrection* corr)
 	{fHadronCorrector = corr;}
@@ -83,6 +84,7 @@ class AliEMCALJetFinder : public TTask {
     Float_t                        fSamplingF;
     Bool_t                         fSmear;           //  Flag for momentum smearing
     Bool_t                         fEffic;           //  Flag for efficiency simulation
+    Bool_t                         fK0N;             //  Flag for efficiency simulation
     Int_t                          fNjets;           //! Number of Jets
     Float_t                        fDeta;            //! eta cell size 
     Float_t                        fDphi;            //! phi cell size
