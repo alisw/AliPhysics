@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2001/03/05 08:40:25  morsch
+Method SortTracks(..) imported from AliMUON.
+
 Revision 1.1  2001/02/02 14:11:53  morsch
 AliMUONMerger prototype to be called by the merge manager.
 
@@ -457,11 +460,6 @@ void AliMUONMerger::Digitise()
 	delete [] nmuon;    
     } //end loop over cathodes
     delete [] fHitMap;
-    char hname[30];
-    sprintf(hname,"TreeD%d",fEvNrSig);
-    gAlice->TreeD()->Write(hname);
-    // reset tree
-    gAlice->TreeD()->Reset();
     delete fList;
     
     if (fAddress)    fAddress->Delete();
