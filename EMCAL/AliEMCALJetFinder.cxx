@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2002/06/27 09:24:26  morsch
+Uncomment the TH1::AddDirectory statement.
+
 Revision 1.22  2002/05/22 13:48:43  morsch
 Pdg code added to track list.
 
@@ -1470,7 +1473,7 @@ Float_t AliEMCALJetFinder::PropagatePhi(Float_t pt, Float_t charge, Bool_t& curl
   static Float_t b = 0.0, rEMCAL = -1.0;
   if(rEMCAL<0) {
 // Get field in kGS
-    b =  ((AliMagFCM*) gAlice->Field())->SolenoidField();
+    b =  gAlice->Field())->SolenoidField();
 // Get EMCAL radius in cm 
     rEMCAL = AliEMCALGeometry::GetInstance()->GetIPDistance();
     printf("\nMagnetic field %f rEMCAL %f ", b, rEMCAL);
