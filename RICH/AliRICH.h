@@ -110,7 +110,12 @@ class AliRICH : public  AliDetector {
     virtual TClonesArray *RawClustAddress(Int_t id) {return ((TClonesArray *) (*fRawClusters)[id]);}    
 // Assignment operator
     AliRICH& operator=(const AliRICH& rhs);
-    
+
+// Analysis routines
+    // Full events
+    virtual void DiagnosticsFE(Int_t evNumber1=0,Int_t evNumber2=0);
+    // Single events
+    virtual void DiagnosticsSE(Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0);
     
  protected:
     TObjArray            *fChambers;           // List of Tracking Chambers
