@@ -70,6 +70,7 @@ AliITSsimulationSPD::AliITSsimulationSPD(AliITSsegmentation *seg,
     fSegmentation = 0;
     fHis          = 0;
     fMapA2        = 0;
+    SetDebug(kFALSE);
 
 /*
     fThresh       = 0.;

@@ -72,6 +72,7 @@ AliITSsimulationSSD::AliITSsimulationSSD(AliITSsegmentation *seg,
     fDifConst[0] = fDifConst[1] = 0.0;
     fDriftVel[0] = fDriftVel[1] = 0.0;
     fMapA2   = 0;
+    SetDebug(kFALSE);
 //    fpList    = 0;
     Init((AliITSsegmentationSSD*)seg,(AliITSresponseSSD*)resp);
 }

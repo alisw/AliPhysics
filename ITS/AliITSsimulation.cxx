@@ -27,6 +27,7 @@ AliITSsimulation::AliITSsimulation(){
     fpList        = 0;
     fModule       = 0;
     fEvent        = 0;
+    SetDebug(kFALSE);
 }
 //__________________________________________________________________________
 AliITSsimulation::~AliITSsimulation(){

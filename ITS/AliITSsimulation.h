@@ -75,9 +75,11 @@ class AliITSsimulation : public TObject {
     virtual void SetMap(AliITSpList *p){fpList = p;} // Sets fpList, the map.
     virtual void ClearMap(){fpList->ClearMap();} // Clear fpList, map.
     virtual void SetModuleNumber(Int_t mod){fModule=mod;} // Set Module number
-    virtual Int_t GetModuleNumber(){return fModule;}// Gets Module number
+    virtual Int_t GetModuleNumber()const {return fModule;}// Gets Module number
     virtual void SetEventNumber(Int_t evnt){fEvent=evnt;} // Set Event number
-    virtual Int_t GetEventNumber(){return fEvent;}// Gets Event number
+    virtual Int_t GetEventNumber()const {return fEvent;}// Gets Event number
+    virtual Bool_t GetDebug() const {return fDebug;}
+    virtual void SetDebug(Bool_t db = kTRUE) {fDebug = db;}
 
  protected:
     AliITSresponse      *fResponse;       //! response
@@ -85,8 +87,9 @@ class AliITSsimulation : public TObject {
     AliITSpList         *fpList;          //!
     Int_t                fModule;         //!
     Int_t                fEvent;          //!
+    Bool_t               fDebug;          //  debug flag
 
-  ClassDef(AliITSsimulation,1)  // Simulation base class 
+  ClassDef(AliITSsimulation,2)  // Simulation base class 
     
 };
 
