@@ -201,12 +201,12 @@ AliLevel3::~AliLevel3(){
 }
 
 void AliLevel3::SetTrackerParam(Int_t phi_segments, Int_t eta_segments,
-				   Int_t trackletlength, Int_t tracklength,
-				   Int_t rowscopetracklet, Int_t rowscopetrack,
-				   Double_t min_pt_fit, Double_t maxangle,
-				   Double_t goodDist, Double_t hitChi2Cut,
-				   Double_t goodHitChi2, Double_t trackChi2Cut,
-				   Int_t maxdist,Bool_t vertexconstraint)
+				Int_t trackletlength, Int_t tracklength,
+				Int_t rowscopetracklet, Int_t rowscopetrack,
+				Double_t min_pt_fit, Double_t maxangle,
+				Double_t goodDist, Double_t hitChi2Cut,
+				Double_t goodHitChi2, Double_t trackChi2Cut,
+				Int_t maxdist,Double_t maxphi,Double_t maxeta,Bool_t vertexconstraint)
 {
   //Set parameters input to the tracker
   //If no arguments are given, default parameters will be used
@@ -216,7 +216,7 @@ void AliLevel3::SetTrackerParam(Int_t phi_segments, Int_t eta_segments,
   fTracker->SetTrackCuts(hitChi2Cut,goodHitChi2,trackChi2Cut,maxdist,vertexconstraint);
   fTracker->SetTrackletCuts(maxangle,goodDist,vertexconstraint);
   if(vertexconstraint)
-    fTracker->MainVertexSettings(trackletlength,tracklength,rowscopetracklet,rowscopetrack);
+    fTracker->MainVertexSettings(trackletlength,tracklength,rowscopetracklet,rowscopetrack,maxphi,maxeta);
   else
     fTracker->NonVertexSettings(trackletlength,tracklength,rowscopetracklet,rowscopetrack);
   
@@ -365,8 +365,8 @@ void AliLevel3::ProcessSlice(Int_t slice){
       fClusterFinder->InitSlice(slice,patch,fRow[patch][0],fRow[patch][1]
 				,maxpoints);
       fClusterFinder->SetDeconv(fClusterDeconv);
-      fClusterFinder->SetXYError(0.1);
-      fClusterFinder->SetZError(0.2);
+      fClusterFinder->SetXYError(0.2);
+      fClusterFinder->SetZError(0.3);
       fClusterFinder->SetOutputArray(points);
       fClusterFinder->Read(ndigits,digits);
       fBenchmark->Start("Cluster Finder");
@@ -431,11 +431,12 @@ void AliLevel3::ProcessSlice(Int_t slice){
     fTracker->ReadHits(npoints,points);
     fBenchmark->Stop("Tracker Read Hits");
     fBenchmark->Start("MainVertexTracking A"); 
-    fTracker->MainVertexTracking_a();
+    fTracker->MainVertexTracking();
+    //fTracker->MainVertexTracking_a();
     fBenchmark->Stop("MainVertexTracking A");
-    fBenchmark->Start("MainVertexTracking B"); 
-    fTracker->MainVertexTracking_b();
-    fBenchmark->Stop("MainVertexTracking B");
+    //fBenchmark->Start("MainVertexTracking B"); 
+    //fTracker->MainVertexTracking_b();
+    //fBenchmark->Stop("MainVertexTracking B");
     fBenchmark->Start("Tracking fit");
     if(fDoNonVertex)
       fTracker->NonVertexTracking();//Do a second pass for nonvertex tracks
@@ -495,7 +496,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
   fBenchmark->Start("Patch Merger");
 //  fTrackMerger->SlowMerge();
   fTrackMerger->AddAllTracks();
-  fTrackMerger->Merge();
+  //fTrackMerger->Merge();
   fBenchmark->Stop("Patch Merger");
   //write merged tracks
   if(fWriteOut){

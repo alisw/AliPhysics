@@ -80,7 +80,7 @@ class AliLevel3 : public TObject {
 		       Double_t min_pt_fit=0,Double_t maxangle=1.31,
 		       Double_t goodDist=5,Double_t hitChi2Cut=10,
 		       Double_t goodHitChi2=20,Double_t trackChi2Cut=50,
-		       Int_t maxdist=50,Bool_t vertexconstraint=kTRUE);
+		       Int_t maxdist=50,Double_t maxphi=0.1,Double_t maxeta=0.1,Bool_t vertexconstraint=kTRUE);
 
 
   void ProcessEvent(Int_t first,Int_t last,Int_t event=0);
