@@ -587,26 +587,26 @@ Int_t AliRunLoader::LoadHeader()
  
  if (GetEventFolder() == 0x0)
   {
-    Error("LoadHaeder","Event folder not specified yet");
+    Error("LoadHeader","Event folder not specified yet");
     return 1;
   }
 
  if (fGAFile == 0x0)
   {
-    Error("LoadHaeder","Session not opened. Use AliRunLoader::Open");
+    Error("LoadHeader","Session not opened. Use AliRunLoader::Open");
     return 2;
   }
  
  if (fGAFile->IsOpen() == kFALSE)
   {
-    Error("LoadHaeder","Session not opened. Use AliRunLoader::Open");
+    Error("LoadHeader","Session not opened. Use AliRunLoader::Open");
     return 2;
   }
 
  TTree* tree = dynamic_cast<TTree*>(fGAFile->Get(fgkHeaderContainerName));
  if (tree == 0x0)
   {
-    Fatal("LoadHaeder","Can not find header tree named %s in file %s",
+    Fatal("LoadHeader","Can not find header tree named %s in file %s",
            fgkHeaderContainerName.Data(),fGAFile->GetName());
     return 2;
   }
