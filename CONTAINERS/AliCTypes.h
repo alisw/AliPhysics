@@ -20,7 +20,7 @@
 class TDumpMembers : public TMemberInspector {
 public:
    TDumpMembers() { }
-   void Inspect(TClass *cl, const char *parent, const char *name, void *addr);
+   void Inspect(TClass *cl, const char *parent, const char *name, const void *addr);
 };
 
 //////////////////////////////////////////////////////////////////////////
