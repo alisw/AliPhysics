@@ -237,6 +237,7 @@ Int_t iFMD=1;
 Int_t iMUON=1;
 Int_t iPHOS=1;
 Int_t iPMD=1;
+Int_t iSTART=0;
 
 //=================== Alice BODY parameters =============================
 AliBODY *BODY = new AliBODY("BODY","Alice envelop");
@@ -808,4 +809,9 @@ PMD->SetPadSize(0.8, 1.0, 1.0, 1.5);
 
 }
          
+if(iSTART) {
+//=================== START parameters ============================
+AliSTART *START  = new AliSTARTv0("START","START Detector");
+}
+
 }
