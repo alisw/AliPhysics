@@ -34,19 +34,19 @@ public:
   virtual ~AliModule();
 
   // Inline functions
-  virtual inline int   GetNdigits() {return 0;}
-  virtual inline int   GetNhits()   {return 0;}
-  virtual inline TList        *Histograms() {return fHistograms;}
-  virtual inline TList        *Nodes()  {return fNodes;}
-  virtual inline TClonesArray *Digits() {return 0;}
-  virtual inline TClonesArray *Hits()   {return 0;}
-  virtual inline TObjArray    *Points() {return 0;}
-  virtual inline Int_t         GetIshunt() {return 0;}
-  virtual inline void          SetIshunt(Int_t) {}
-  virtual inline Bool_t        IsActive() {return fActive;}
-  virtual inline Bool_t        IsFolder() {return kTRUE;}
-  virtual inline Int_t&        LoMedium() {return fLoMedium;}
-  virtual inline Int_t&        HiMedium() {return fHiMedium;}
+  virtual  int           GetNdigits() {return 0;}
+  virtual  int           GetNhits()   {return 0;}
+  virtual  TList        *Histograms() {return fHistograms;}
+  virtual  TList        *Nodes()  {return fNodes;}
+  virtual  TClonesArray *Digits() {return 0;}
+  virtual  TClonesArray *Hits()   {return 0;}
+  virtual  TObjArray    *Points() {return 0;}
+  virtual  Int_t         GetIshunt() {return 0;}
+  virtual  void          SetIshunt(Int_t) {}
+  virtual  Bool_t        IsActive() {return fActive;}
+  virtual  Bool_t        IsFolder() {return kTRUE;}
+  virtual  Int_t&        LoMedium() {return fLoMedium;}
+  virtual  Int_t&        HiMedium() {return fHiMedium;}
 
   // Module composition
   virtual void  AliMaterial(Int_t, const char*, Float_t, Float_t, Float_t, Float_t,
@@ -63,15 +63,15 @@ public:
   // Other methods
   virtual void        AddDigit(Int_t*, Int_t*){}
   virtual void        AddHit(Int_t, Int_t*, Float_t *) {}
-  virtual void        Browse(TBrowser *b) {}
+  virtual void        Browse(TBrowser *) {}
   virtual void        CreateGeometry() {}
   virtual void        CreateMaterials() {}
   virtual void        Disable();
   virtual Int_t       DistancetoPrimitive(Int_t px, Int_t py);
   virtual void        Enable();
-  virtual inline void PreTrack(){}
-  virtual inline void PostTrack(){}
-  virtual inline void FinishEvent() {}
+  virtual void        PreTrack(){}
+  virtual void        PostTrack(){}
+  virtual void        FinishEvent() {}
   virtual void        FinishRun() {}
   virtual void        Hits2Digits() {}
   virtual void        Init() {}
