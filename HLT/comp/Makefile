@@ -5,6 +5,9 @@
 # Author: Anders Vestbo   #                    
 ###########################
 
+USEPACKAGE = ROOT
+#USEPACKAGE = ALIROOT
+
 CXX         = g++
 LD          = g++
 CXXFLAGS    = -O2 -Wall -fPIC -Woverloaded-virtual
@@ -14,6 +17,15 @@ SOFLAGS     = -shared
 TOPDIR = $(HOME)/level3code
 OBJDIR = lib
 LIBDIR = $(LEVEL3)/lib_$(USERNAME)
+
+
+ifeq ($(USEPACKAGE),ROOT) 
+INCLUDES = -I$(ROOTSYS)/include -I$(TOPDIR)/hough -I$(TOPDIR)/src -I$(TOPDIR)/comp
+endif
+
+ifeq ($(USEPACKAGE),ALIROOT)
+INCLUDES = -I$(ROOTSYS)/include -I$(TOPDIR)/hough -I$(TOPDIR)/src -I$(TOPDIR)/comp -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/CONTAINERS -I$(ALICE_ROOT)/STEER
+endif
 
 SRCS	= AliL3Modeller.cxx AliL3ModelTrack.cxx AliL3Compress.cxx
 
@@ -35,11 +47,11 @@ $(LEVELSO) : $(OBJS)
 
 $(DICT) : $(HDRS)
 	@echo "Generating dictionary..."
-	@rootcint -f $(DICT) -c -I$(ROOTSYS) -I$(TOPDIR)/src/ $(HDRS)
+	@rootcint -f $(DICT) -c $(INCLUDES) $(HDRS)
 
 
 $(OBJDIR)/%.o : %.cxx 
-	$(CXX) $(CXXFLAGS) -c -I$(ROOTSYS)/include -I$(TOPDIR)/src -I$(TOPDIR)/hough -o $@ $<
+	$(CXX) $(CXXFLAGS) -c $(INCLUDES) -o $@ $<
 
 $(OBJDIR) : 
 	test ! -e $(OBJDIR) && mkdir -p $(OBJDIR)
