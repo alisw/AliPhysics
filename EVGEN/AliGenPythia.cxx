@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.39  2001/07/27 17:09:36  morsch
+Use local SetTrack, KeepTrack and SetHighWaterMark methods
+to delegate either to local stack or to stack owned by AliRun.
+(Piotr Skowronski, A.M.)
+
 Revision 1.38  2001/07/13 10:58:54  morsch
 - Some coded moved to AliGenMC
 - Improved handling of secondary vertices.
@@ -150,6 +155,7 @@ AliGenPythia::AliGenPythia(Int_t npart)
     fFlavorSelect   = 0;
     // Produced particles  
     fParticles = new TClonesArray("TParticle",1000);
+    fEventVertex.Set(3);
 }
 
 AliGenPythia::AliGenPythia(const AliGenPythia & Pythia)
@@ -244,7 +250,6 @@ void AliGenPythia::Generate()
 {
 // Generate one event
     fDecayer->ForceDecay();
-
     Float_t polar[3]   =   {0,0,0};
     Float_t origin[3]  =   {0,0,0};
     Float_t origin0[3] =   {0,0,0};
@@ -292,9 +297,16 @@ void AliGenPythia::Generate()
 	printf("\n **************************************************%d\n",np);
 	Int_t nc = 0;
 	if (np == 0 ) continue;
+// Get event vertex	
+	TParticle* iparticle;
+	iparticle = (TParticle *) fParticles->At(0);
+	fEventVertex[0] = iparticle->Vx()/10.;
+	fEventVertex[1] = iparticle->Vy()/10.;	
+	fEventVertex[2] = iparticle->Vz()/10.;
+//
 	if (fProcess != kPyMb && fProcess != kPyJets && fProcess != kPyDirectGamma) {
 	    for (i = 0; i<np-1; i++) {
-		TParticle *  iparticle = (TParticle *) fParticles->At(i);
+		iparticle = (TParticle *) fParticles->At(i);
 		Int_t ks = iparticle->GetStatusCode();
 		kf = CheckPDGCode(iparticle->GetPdgCode());
 // No initial state partons
@@ -466,7 +478,7 @@ Int_t  AliGenPythia::GenerateMB()
 	    origin[2]=origin0[2]+iparticle->Vz()/10.;
 	    Float_t tof=kconv*iparticle->T();
 	    SetTrack(fTrackIt*trackIt, iparent, kf, p, origin, polar,
-			     tof, kPPrimary, nt);
+		     tof, kPPrimary, nt);
 	    KeepTrack(nt);
 	    pParent[i] = nt;
 	} // select particle
@@ -510,8 +522,9 @@ void AliGenPythia::MakeHeader()
 {
 // Builds the event header, to be called after each event
     AliGenEventHeader* header = new AliGenPythiaEventHeader("Pythia");
-   ((AliGenPythiaEventHeader*) header)->SetProcessType(fPythia->GetMSTI(1));
-   gAlice->SetGenEventHeader(header);
+    ((AliGenPythiaEventHeader*) header)->SetProcessType(fPythia->GetMSTI(1));
+    header->SetPrimaryVertex(fEventVertex);
+    gAlice->SetGenEventHeader(header);
 }
 	
 	  
