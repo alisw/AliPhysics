@@ -26,6 +26,8 @@
 // a range of MANU numbers or, finally,
 // a range of gassiplex/MANAS numbers, in a given range of MANU addresses
 
+#include "AliMpPad.h"
+
 #include "AliMUONSt1ElectronicElement.h"
 
 ClassImp(AliMUONSt1ElectronicElement);

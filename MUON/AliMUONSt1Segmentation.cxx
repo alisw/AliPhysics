@@ -22,16 +22,15 @@
 // Segmentation for MUON station 1 using the external 
 // mapping package
 
-#include <Riostream.h>
 #include <TError.h>
 #include <TObjArray.h>
 #include <TVector2.h>
 #include <TF1.h>
 
-#include <AliMpPlane.h>
-#include <AliMpPlaneType.h>
-#include <AliMpPlaneSegmentation.h>
-#include <AliMpPlaneAreaPadIterator.h>
+#include "AliMpPlane.h"
+#include "AliMpPlaneSegmentation.h"
+#include "AliMpPlaneAreaPadIterator.h"
+#include "AliMpPad.h"
 
 #include "AliMUONSt1Segmentation.h"
 #include "AliRun.h"

@@ -16,7 +16,8 @@
 // Threshold levels for the MANU zero supression algorithm are included.
 
 #include <TNamed.h>
-#include <TString.h>
+
+class TString;
 
 class AliMUONSt1ResponseParameter : public TNamed 
 {
@@ -46,7 +47,7 @@ class AliMUONSt1ResponseParameter : public TNamed
     Bool_t GetState() const {return fState;}
         
  private:
-    static const Int_t fgkNofChannels=64;
+    static const Int_t fgkNofChannels=64;  // number of channels
     typedef union {
       //Double_t values[fgkNofChannels];
       Double_t values[64];

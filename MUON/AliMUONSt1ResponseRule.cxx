@@ -24,6 +24,8 @@
 // (ie. a set of AliMUONSt1ResponseParameter) and a set of cathode pads to 
 // which these filters should be applied (set of AliMUONSt1ElectronicElement)
 
+#include "AliMpPad.h"
+
 #include "AliMUONSt1ResponseRule.h"
 #include "AliMUONSt1ElectronicElement.h"
 #include "AliMUONSt1ResponseParameter.h"

@@ -16,7 +16,8 @@
 
 #include <TObject.h>
 #include <TList.h>
-#include "AliMpPad.h"
+
+class AliMpPad;
 
 class AliMUONSt1ElectronicElement;
 class AliMUONSt1ResponseParameter;

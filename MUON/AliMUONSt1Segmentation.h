@@ -13,7 +13,6 @@
 // Segmentation for MUON station 1 using the external 
 // mapping package
 
-#include "AliMpPad.h"
 #include "AliMpPlaneType.h"
 
 #include "AliSegmentation.h"
@@ -23,6 +22,7 @@ class TObjArray;
 class AliMpPlane;
 class AliMpPlaneSegmentation;
 class AliMpVPadIterator;
+class AliMpPad;
 
 class AliMUONChamber;
 
@@ -67,16 +67,16 @@ class AliMUONSt1Segmentation : public AliSegmentation
     virtual Float_t Dpx() const;
     virtual Float_t Dpy() const;
                       // Pad size in x, y 
-    virtual Float_t Dpx(Int_t) const;
-    virtual Float_t Dpy(Int_t) const;
+    virtual Float_t Dpx(Int_t isector) const;
+    virtual Float_t Dpy(Int_t isector) const;
                       // Pad size in x, y by Sector 
     virtual Int_t   Npx() const;
     virtual Int_t   Npy() const;
                       // Maximum number of Pads in y
 
-    virtual void  SetPad(Int_t, Int_t);
+    virtual void  SetPad(Int_t ix, Int_t iy);
                       // Set pad position
-    virtual void  SetHit(Float_t, Float_t, Float_t);
+    virtual void  SetHit(Float_t xhit, Float_t yhit, Float_t zhit);
                       // Set hit position
     
     // Iterate over pads
@@ -129,9 +129,9 @@ class AliMUONSt1Segmentation : public AliSegmentation
 
     // Function for systematic corrections
     //
-    virtual void SetCorrFunc(Int_t,  TF1*);
+    virtual void SetCorrFunc(Int_t isec,  TF1* func);
                    // Set the correction function
-    virtual TF1* CorrFunc(Int_t)  const;
+    virtual TF1* CorrFunc(Int_t isec)  const;
                    // Get the correction Function
  
   private:

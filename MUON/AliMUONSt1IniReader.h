@@ -49,11 +49,11 @@ class AliMUONSt1IniReader
     TChapter     MakeCurrentChapter();
     TValueList   MakeCurrentValueList();
     TChapterList MakeChapterList();
-    bool Eof() {return fEndOfFile;}
+    bool Eof() const {return fEndOfFile;}
     void Reset() ;
 
   private:
-    string trail(const string& s) const;
+    string Trail(const string& s) const;
 
     ifstream fFile;        // the file to be read
     TType    fCurrentType; // current type of line (either kChapter or kValue)

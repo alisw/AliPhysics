@@ -24,10 +24,12 @@
 // The current pulse height responses do not contain any physics
 
 #include <vector>
+
 #include <TMath.h>
 #include <TRandom.h>
 #include <TSystem.h>
 #include <Riostream.h>
+
 #include "AliMpIntPair.h"
 #include "AliMpPlaneSegmentation.h"
 #include "AliMpPad.h"
@@ -37,6 +39,7 @@
 #include "AliMpZone.h"
 #include "AliMpSubZone.h"
 #include "AliMpVRowSegment.h"
+
 #include "AliMUONSt1Response.h"
 #include "AliMUONSt1ResponseParameter.h"
 #include "AliMUONSt1ResponseRule.h"
@@ -78,10 +81,18 @@ const TString AliMUONSt1Response::fgkNofSigmaName ="nofSigma";
 
 //__________________________________________________________________________
 AliMUONSt1Response::AliMUONSt1Response(Int_t chamber)
-  :AliMUONResponseV0()
-  ,fChamber(chamber),fParams(),fRegions(),fTrashList()
+  : AliMUONResponseV0(),
+    fCountNofCalls(0),
+    fCountUnknownZone(0),
+    fCountUnknownIndices(0),
+    fChamber(chamber),
+    fParams(),
+    fRegions(),
+    fTrashList()
   
 {
+// Standard constructor
+
    // default pedestal value
    fCountNofCalls=0;
    fCountUnknownZone=0;
@@ -102,6 +113,16 @@ AliMUONSt1Response::AliMUONSt1Response(Int_t chamber)
 
 
 //__________________________________________________________________________
+AliMUONSt1Response::AliMUONSt1Response(const AliMUONSt1Response& rhs)
+  : AliMUONResponseV0(rhs)
+{
+// Copy constructor
+
+  Fatal("Copy constructor", 
+        "Copy constructor is not implemented.");
+}
+
+//__________________________________________________________________________
 AliMUONSt1Response::~AliMUONSt1Response()
 {
 //destructor
@@ -111,6 +132,25 @@ AliMUONSt1Response::~AliMUONSt1Response()
     if (fPlane[i]) delete fPlane[i];
     fTrashList.Delete();
   }
+}
+
+//
+// operators
+//
+
+//______________________________________________________________________________
+AliMUONSt1Response& 
+AliMUONSt1Response::operator=(const AliMUONSt1Response& rhs)
+{
+// Copy operator 
+
+  // check assignement to self
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", 
+        "Assignment operator is not implemented.");
+    
+  return *this;  
 }
 
 //__________________________________________________________________________
@@ -447,7 +487,7 @@ Float_t AliMUONSt1Response::IntPH(Float_t eloss)
 
 
 //__________________________________________________________________________
-AliMpZone* AliMUONSt1Response::FindZone(AliMpSector* sector,Int_t posId)
+AliMpZone* AliMUONSt1Response::FindZone(AliMpSector* sector,Int_t posId) const
 {
 // to be moved to AliMpSector::
   for (Int_t izone=1;izone<=sector->GetNofZones();izone++){
@@ -480,7 +520,7 @@ Int_t  AliMUONSt1Response::DigitResponse(Int_t digit,AliMUONTransientDigit* wher
     
     AliMpIntPair indices(where->PadX(),where->PadY());
     AliMpPad pad = fPlaneSegmentation[where->Cathode()]->PadByIndices(indices,kFALSE);
-    Int_t GC=0;
+    Int_t gc=0;
     Int_t numZone=0;
     AliMpZone* zone=0;
 
@@ -497,7 +537,7 @@ Int_t  AliMUONSt1Response::DigitResponse(Int_t digit,AliMUONTransientDigit* wher
       if (sector) zone=FindZone(sector,posId);
       if (zone){
       	numZone=zone->GetID()-1;
-      	GC=location.GetSecond();
+      	gc=location.GetSecond();
       } else {
 	fCountUnknownZone++;
       }
@@ -528,7 +568,7 @@ Int_t  AliMUONSt1Response::DigitResponse(Int_t digit,AliMUONTransientDigit* wher
     nextParam.Reset();
     while ( (param = static_cast<AliMUONSt1ResponseParameter*>(nextParam()))){
       if (param->HasPedestal()) {
-        digit  = param->ApplyPedestal(digit,GC);
+        digit  = param->ApplyPedestal(digit,gc);
         break; // Apply pedestals just once -->  break the loop once a pedestal 
 //                                               rule is applied
       }

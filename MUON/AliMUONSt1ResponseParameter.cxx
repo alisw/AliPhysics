@@ -25,7 +25,10 @@
 // Threshold levels for the MANU zero supression algorithm are included.
 
 #include <fstream>
+
 #include <TRandom.h>
+#include <TString.h>
+
 #include "AliMUONSt1ResponseParameter.h"
 
 ClassImp(AliMUONSt1ResponseParameter);

@@ -16,7 +16,9 @@
 // a range of MANU numbers or, finally,
 // a range of gassiplex/MANAS numbers, in a given range of MANU addresses
 
-#include "AliMpPad.h"
+#include <TObject.h>
+
+class AliMpPad;
 
 class AliMUONSt1ElectronicElement : public TObject 
 {

@@ -32,6 +32,7 @@ class AliMUONSt1Response : public AliMUONResponseV0
 {
 public:
     AliMUONSt1Response(Int_t chamber=1);
+    AliMUONSt1Response(const AliMUONSt1Response& rhs);
     virtual ~AliMUONSt1Response();
     
     //
@@ -47,39 +48,11 @@ public:
 
 
 private:
-    //private constants
-    static const Int_t fgkNofZones=4;
-    static const TString fgkTopDir;
-    static const TString fgkDataDir;
-    static const TString fgkConfigBaseName;
-    static const TString fgkStandardIniFileName;    
+    // operators
+    AliMUONSt1Response& operator=(const AliMUONSt1Response & rhs);
 
-    // static names
-    static const TString fgkBaseName ;
-    static const TString fgkIncludeName ;
-    static const TString fgkParameterName ;
-    static const TString fgkRegionName ;
-    static const TString fgkRuleName ;
-    static const TString fgkNameName ;
-    static const TString fgkPedestalName ;
-    static const TString fgkNoiseName ;
-    static const TString fgkStateName ;
-    static const TString fgkMName ;
-    static const TString fgkMGName ;
-    static const TString fgkMGCName ;
-    static const TString fgkIJName ;
-    static const TString fgkXYName ;
-    static const TString fgkZoneName ;
-    static const TString fgkStickyOnName ;
-    static const TString fgkStickyOffName ;
-    static const TString fgkFileName ;
-    static const TString fgkValueName ;
-    static const TString fgkGausName ;
-    static const TString fgkNotName ;
-    static const TString fgkNofSigmaName ;
-
-    //protected methods
-    AliMpZone* FindZone(AliMpSector* sector,Int_t posId); // to be moved in AliMpSector::
+    // private methods
+    AliMpZone* FindZone(AliMpSector* sector,Int_t posId) const; // to be moved in AliMpSector::
     void ReadFiles();
     void ReadIniFile(Int_t plane,const TString& fileName,Bool_t rdParam,Bool_t rdRegion,Bool_t rdRule);
     void ReadIniFile(Int_t plane);
@@ -88,9 +61,39 @@ private:
     void SetPairToParam(const string& name,const string& value,AliMUONSt1ResponseParameter* param) const;
     void SetPairToListElem(const string& name,const string& value,TList* list);
 
+    // private constants
+    static const Int_t fgkNofZones=4;           // number of zones
+    static const TString fgkTopDir;             // top directory path
+    static const TString fgkDataDir;            // data directory path
+    static const TString fgkConfigBaseName;     // config file base name
+    static const TString fgkStandardIniFileName;// standard ini file name    
 
-    //data members
-    AliMpPlane* fPlane[2];       // !The mapping planes
+    // static names
+    static const TString fgkBaseName ;          // base name
+    static const TString fgkIncludeName ;       // include name
+    static const TString fgkParameterName ;     // parameter name
+    static const TString fgkRegionName ;        // region name
+    static const TString fgkRuleName ;          // rule name
+    static const TString fgkNameName ;          // name name
+    static const TString fgkPedestalName ;      // pedestal name
+    static const TString fgkNoiseName ;         // noise name
+    static const TString fgkStateName ;         // state name
+    static const TString fgkMName ;             // M name
+    static const TString fgkMGName ;            // MG name
+    static const TString fgkMGCName ;           // MGC name
+    static const TString fgkIJName ;            // i,j name
+    static const TString fgkXYName ;            // x,y name
+    static const TString fgkZoneName ;          // zone name
+    static const TString fgkStickyOnName ;      // sticky on name
+    static const TString fgkStickyOffName ;     // sticky off
+    static const TString fgkFileName ;          // file name
+    static const TString fgkValueName ;         // value name
+    static const TString fgkGausName ;          // gauss name
+    static const TString fgkNotName ;           // not name
+    static const TString fgkNofSigmaName ;      // nof sigma name
+
+    // data members
+    AliMpPlane* fPlane[2];  // !The mapping planes
     AliMpPlaneSegmentation* fPlaneSegmentation[2]; // !The mapping plane segmentation
     TString fIniFileName[2];// file names for initialisation of each cathode
 

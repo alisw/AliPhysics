@@ -108,17 +108,17 @@ bool AliMUONSt1IniReader::ReadNextLine()
   
   if (c=='[') {       	     // this is a chapter name
     getline(l,fCurrentName,']');
-    fCurrentName=trail(fCurrentName);
+    fCurrentName=Trail(fCurrentName);
     fCurrentType=kChapter;
     return true;
   } else {
     if (line.find_first_of("=") != string::npos ) {
       l.putback(c);
       getline(l,fCurrentName,'=');
-      fCurrentName = trail(fCurrentName);
+      fCurrentName = Trail(fCurrentName);
        
       getline(l,fCurrentValue);
-      fCurrentValue = trail(fCurrentValue);
+      fCurrentValue = Trail(fCurrentValue);
       fCurrentType=kValue;
       return true;
     } else {
@@ -186,7 +186,7 @@ AliMUONSt1IniReader::TChapterList AliMUONSt1IniReader::MakeChapterList()
 }
 
 //______________________________________________________________________
-string AliMUONSt1IniReader::trail(const string& s) const
+string AliMUONSt1IniReader::Trail(const string& s) const
 {
 // Utility function: clear the blanks before and after the string <s>
 // ---
