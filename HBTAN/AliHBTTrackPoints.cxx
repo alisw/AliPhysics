@@ -220,7 +220,7 @@ void AliHBTTrackPoints::tp(Int_t entr)
       
       //BUT they are local!!!!
       t->PropagateTo(r);
-      Double_t phi = t->Phi();
+//      Double_t phi = t->Phi();
       Double_t rl = TMath::Hypot(t->GetX(),t->GetY());//real radius 
       
       Double_t alpha = t->GetAlpha();
@@ -249,7 +249,7 @@ void AliHBTTrackPoints::tp(Int_t entr)
   
   Int_t tlab = TMath::Abs(t->GetLabel());
 
-  Int_t netr = treeTR->GetEntries();
+  Int_t netr = (Int_t)treeTR->GetEntries();
   printf("Found %d entries in TR tree\n",netr);
   
   for (Int_t e = 0; e < netr; e++)
