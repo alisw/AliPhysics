@@ -3,7 +3,7 @@ AliHBTAnalysis.cxx    AliHBTPair.cxx         AliHBTQResolutionFctns.cxx  AliHBTR
 AliHBTCorrelFctn.cxx  AliHBTPairCut.cxx      AliHBTReader.cxx            AliHBTReaderTPC.cxx\
 AliHBTEvent.cxx       AliHBTParticle.cxx     AliHBTRun.cxx\
 AliHBTFunction.cxx    AliHBTParticleCut.cxx  \
-AliHBTReaderITSv1.cxx AliHBTReaderITSv2.cxx 
+AliHBTReaderITSv1.cxx AliHBTReaderITSv2.cxx AliHBTReaderKineTree.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h) 
