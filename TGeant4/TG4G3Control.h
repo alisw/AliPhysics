@@ -1,10 +1,10 @@
 // $Id$
-// Category: physics
+// Category: global
 
-#ifndef TG3_FLAG_H
-#define TG3_FLAG_H
+#ifndef TG4_G3_CONTROL_H
+#define TG4_G3_CONTROL_H
 
-enum TG3Flag
+enum TG4G3Control
 {
   kPAIR, // pair production       
              // G3 default value: 1
@@ -74,11 +74,11 @@ enum TG3Flag
            // G3 default value: 0	     
 	   // G4 process: ?? G4SynchrotronRadiation (check)
 */
-  kNoG3Flags
+  kNoG3Controls
 };
 
-enum TG3FlagValue {
-// in G3 the control flag values meaning can be different for
+enum TG4G3ControlValue {
+// in G3 the process control values meaning can be different for
 // different processes, but for most of them is:
 //   0  process is not activated
 //   1  process is activated WITH generation of secondaries
@@ -97,5 +97,5 @@ enum TG3FlagValue {
   kActivate2  = 2   
 }; 
 
-#endif //TG3_FLAG_H
+#endif //TG4_G3_CONTROL_H
 
