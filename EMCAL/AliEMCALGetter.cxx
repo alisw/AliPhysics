@@ -267,6 +267,7 @@ Bool_t AliEMCALGetter::PostSDigits(const char * name, const char * headerFile) c
     emcalFolder = fSDigitsFolder->AddFolder("EMCAL", "SDigits from EMCAL") ; 
   }    
   TString subdir(headerFile) ;
+  subdir.ReplaceAll("/", "_") ; 
   TFolder * emcalSubFolder = dynamic_cast<TFolder*>(emcalFolder->FindObject(subdir)) ; 
   if ( !emcalSubFolder ) 
     emcalSubFolder = emcalFolder->AddFolder(subdir, ""); 
