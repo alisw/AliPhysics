@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.2  2001/05/10 12:33:24  jbarbosa
+  Added mean radius data member.
+
   Revision 1.1  2000/11/01 15:31:56  jbarbosa
   New rec. point object for 3D Hough reconstruction.
 
@@ -31,7 +34,7 @@
  
 ClassImp(AliRICHRecHit3D)
 
-AliRICHRecHit3D::AliRICHRecHit3D(Int_t id, Float_t *rechit)
+AliRICHRecHit3D::AliRICHRecHit3D(Int_t id, Float_t *rechit, Float_t omega, Float_t theta, Float_t phi)
 {
     //
     // Creates a RICH rec. hit object
@@ -42,6 +45,9 @@ AliRICHRecHit3D::AliRICHRecHit3D(Int_t id, Float_t *rechit)
     fX            = rechit[3];
     fY            = rechit[4];
     fMeanRadius   = rechit[5];
+    fOriginalOmega = omega;
+    fOriginalTheta = theta;
+    fOriginalPhi = phi;
 }
 
 
