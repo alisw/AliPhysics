@@ -1,0 +1,54 @@
+PLATFORM:=linuxicc
+
+# The compilers
+CXX           = icc 
+F77	      = ifc
+CC	      = icc
+
+# Global optimisation
+OPT           = -O -g
+
+CXXOPTS       = $(OPT)
+COPT	      = $(OPT)
+FOPT	      = $(OPT)
+CXXFLAGS      = $(CXXOPTS)
+CFLAGS	      = $(COPT)
+
+# rootcint flags
+CINTFLAGS     = #$(CXXFLAGS)
+
+# CERNLIB defines
+
+CLIBDEFS      = -DCERNLIB_LINUX -DCERNLIB_BLDLIB -DCERNLIB_CZ
+CLIBCXXOPTS   =
+CLIBCOPT      =
+CLIBFOPT      =
+
+# Common Fortran compilation flags
+FFLAGS = $(CLIBFOPT)  $(CLIBDEFS) $(FOPT)
+
+LD            = icc
+LDFLAGS       = $(OPT) 
+
+SHLD	      = $(LD)
+SOFLAGS       = -Wl,-soname,$(notdir $@) -shared -O
+SHLIB         =
+SOEXT 	      = so
+
+# additional ROOT libraries
+ROOTLIBS  += -lcrypt 
+
+# rmkdepend flags for building dependencies of FORTRAN files
+DEPENDFFLAGS = $(FFLAGS)
+
+LIBNOVER      = `find /lib -name 'libNoVersion*.so' | xargs --replace basename {} .so | sed -e 's/lib/ -l/'`
+GLIBS         = -L/usr/X11R6/lib -lX11  $(LIBNOVER)
+
+#System libraries
+SYSLIBS =
+
+EXEFLAGS+= -L/usr/local/lib -lXt -lCEPCF90 -lF90 -lPEPCF90 -lintrins
+
+
+
+
