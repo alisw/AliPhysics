@@ -18,12 +18,12 @@ PRETTY =  $(AWK) '{print $$0 substr($(DOTS),1,79-length($$0))}'
 ##### Module libraries #####
 
 ALIROOT_DIRS		= STEER TGeant3 TRD PHOS TPC ZDC MUON PMD FMD TOF ITS \
-			  CASTOR RICH START STRUCT EVGEN RALICE ALIFAST \
+			  CRT RICH START STRUCT EVGEN RALICE ALIFAST \
 			  THijing CONTAINERS MEVSIM TMEVSIM THbtp HBTP \
                           EMCAL HBTAN VZERO
 
 ##### TARGETS #####
- 
+
 default:      lib bin alilibs aliroot
 
 lib bin:
