@@ -16,18 +16,14 @@ class AliITSClusterFinderSDD :
 
 {
 public:
+
   AliITSClusterFinderSDD
   (AliITSsegmentation *seg, 
-   AliITSresponse *response, TClonesArray *digits,TClonesArray *recpoints);
+    AliITSresponse *response, TClonesArray *digits,TClonesArray *recpoints);
   AliITSClusterFinderSDD();
   virtual ~AliITSClusterFinderSDD();
-  AliITSClusterFinderSDD(const AliITSClusterFinderSDD &source); // copy constructor
-  AliITSClusterFinderSDD& operator=(const AliITSClusterFinderSDD &source); // assignment operator
   
-  virtual void SetCutAmplitude(Int_t thres=0) {
-    // set cut amplitude
-    fCutAmplitude=thres;
-  }
+  virtual void  SetCutAmplitude(Float_t nsigma=4);
   virtual Int_t CutAmplitude() {
     // get cut amplitude
     return fCutAmplitude;
@@ -108,9 +104,12 @@ public:
   void PeakFunc( Int_t xdim, Int_t zdim, Float_t *par, Float_t *spe, Float_t
                  *Integral=0 ); 
 
-  virtual void Print();
+  void Print();
   
-protected:
+private:
+
+  AliITSClusterFinderSDD(const AliITSClusterFinderSDD &source); // copy ctor
+  AliITSClusterFinderSDD& operator=(const AliITSClusterFinderSDD &source); 
 
 private:
   

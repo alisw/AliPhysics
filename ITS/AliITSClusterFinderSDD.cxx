@@ -27,7 +27,7 @@
 #include "AliITSRawCluster.h"
 #include "AliITSRecPoint.h"
 #include "AliITSsegmentation.h"
-#include "AliITSresponse.h"
+#include "AliITSresponseSDD.h"
 #include "AliRun.h"
 
 
@@ -38,7 +38,7 @@ ClassImp(AliITSClusterFinderSDD)
 AliITSClusterFinderSDD::AliITSClusterFinderSDD
 (AliITSsegmentation *seg, AliITSresponse *response, TClonesArray *digits, TClonesArray *recp)   
 {
-  // constructor
+  // standard constructor
 
     fSegmentation=seg;
     fResponse=response;
@@ -60,14 +60,14 @@ AliITSClusterFinderSDD::AliITSClusterFinderSDD
 //_____________________________________________________________________________
 AliITSClusterFinderSDD::AliITSClusterFinderSDD()
 {
-  // constructor
+  // default constructor
     fSegmentation=0;
     fResponse=0;
     fDigits=0;
     fClusters=0;
     fNclusters=0;
     fMap=0;
-    SetCutAmplitude();
+    fCutAmplitude=0;
     SetDAnode();
     SetDTime();
     SetMinPeak();
@@ -86,42 +86,18 @@ AliITSClusterFinderSDD::~AliITSClusterFinderSDD()
     if(fMap) delete fMap;
 
 }
-//__________________________________________________________________________
-AliITSClusterFinderSDD::AliITSClusterFinderSDD(const AliITSClusterFinderSDD &source){
-  //     Copy Constructor 
-  if(&source == this) return;
-  this->fClusters = source.fClusters ;
-  this->fNclusters = source.fNclusters ;
-  this->fMap = source.fMap ;
-  this->fCutAmplitude = source.fCutAmplitude ;
-  this->fDAnode = source.fDAnode ;
-  this->fDTime = source.fDTime ;
-  this->fTimeCorr = source.fTimeCorr ;
-  this->fMinPeak = source.fMinPeak ;
-  this->fMinNCells = source.fMinNCells ;
-  this->fMaxNCells = source.fMaxNCells ;
-  return;
+
+//_____________________________________________________________________________
+
+void AliITSClusterFinderSDD::SetCutAmplitude(Float_t nsigma)
+{
+  // set the signal threshold for cluster finder
+
+   Float_t baseline,noise;
+   fResponse->GetNoiseParam(noise,baseline);
+   Float_t noise_after_el = ((AliITSresponseSDD*)fResponse)->GetNoiseAfterElectronics();
+   fCutAmplitude=(Int_t)(baseline + nsigma*noise_after_el);
 }
-
-//_________________________________________________________________________
-AliITSClusterFinderSDD& 
-  AliITSClusterFinderSDD::operator=(const AliITSClusterFinderSDD &source) {
-  //    Assignment operator
-  if(&source == this) return *this;
-  this->fClusters = source.fClusters ;
-  this->fNclusters = source.fNclusters ;
-  this->fMap = source.fMap ;
-  this->fCutAmplitude = source.fCutAmplitude ;
-  this->fDAnode = source.fDAnode ;
-  this->fDTime = source.fDTime ;
-  this->fTimeCorr = source.fTimeCorr ;
-  this->fMinPeak = source.fMinPeak ;
-  this->fMinNCells = source.fMinNCells ;
-  this->fMaxNCells = source.fMaxNCells ;
-  return *this;
-}
-
-
 //_____________________________________________________________________________
 
 void AliITSClusterFinderSDD::Find1DClusters()
