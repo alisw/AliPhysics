@@ -392,3 +392,11 @@ npdf/sfeks98.F \
 npdf/structa.F 
 
 PACKFFLAGS := $(FFLAGS) -IPDF/pdf
+
+ifeq ($(PLATFORM),linux)
+   GCC_VERSION    := $(shell $(CXX) -v 2>&1 | \
+                     grep version | cut -d' ' -f3)
+   ifeq ($(GCC_VERSION),2.96)
+      PACKFFLAGS      := $(filter-out -O%,$(FFLAGS))
+   endif
+endif
