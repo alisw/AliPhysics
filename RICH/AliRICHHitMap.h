@@ -1,9 +1,12 @@
 #ifndef AliRICHHitMap_H
 #define AliRICHHitMap_H
+
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+
 
 #include "AliRICH.h"
 #include "TArrayI.h"
@@ -14,7 +17,7 @@ class AliRICHHitMap :
 public TObject {
  public:
     virtual  void  FillHits()                                      =0;
-    virtual  void  Clear(Option_t* =0)                             =0;
+    virtual  void  Clear()                                         =0;
     virtual  void  SetHit(Int_t ix, Int_t iy, Int_t idigit)        =0;
     virtual  void  DeleteHit(Int_t ix, Int_t iy)                   =0;
     virtual Int_t  GetHitIndex(Int_t ix, Int_t iy)                 =0;
@@ -29,7 +32,7 @@ class AliRICHHitMapA1 :
 public AliRICHHitMap 
 {
  private:
-    AliRICHsegmentation *fSegmentation;
+    AliRICHSegmentation *fSegmentation;
     Int_t fNpx;
     Int_t fNpy;
     TObjArray *fDigits;
@@ -38,10 +41,10 @@ public AliRICHHitMap
     Int_t fMaxIndex;
     
  public:
-    AliRICHHitMapA1(AliRICHsegmentation *seg, TObjArray *dig);
+    AliRICHHitMapA1(AliRICHSegmentation *seg, TObjArray *dig);
     virtual ~AliRICHHitMapA1();
     virtual  void  FillHits();
-    virtual  void  Clear(Option_t* =0);    
+    virtual  void  Clear();    
     virtual  void  SetHit(Int_t ix, Int_t iy, Int_t idigit);
     virtual  void  DeleteHit(Int_t ix, Int_t iy);
     virtual Int_t  GetHitIndex(Int_t ix, Int_t iy);

@@ -14,18 +14,17 @@
  **************************************************************************/
 
 /*
-$Log$
+  $Log$
 */
+
 
 #include "AliRICHHitMap.h"
 
 ClassImp(AliRICHHitMap)
 ClassImp(AliRICHHitMapA1)
 
-    //const char* dummy=0;
 
-
-AliRICHHitMapA1::AliRICHHitMapA1(AliRICHsegmentation *seg, TObjArray *dig)
+AliRICHHitMapA1::AliRICHHitMapA1(AliRICHSegmentation *seg, TObjArray *dig)
 {
     fSegmentation = seg;
     fNpx  = fSegmentation->Npx();
@@ -45,7 +44,7 @@ AliRICHHitMapA1::~AliRICHHitMapA1()
     if (fHitMap) delete[] fHitMap;
 }
 
-void AliRICHHitMapA1::Clear(Option_t *)
+void AliRICHHitMapA1::Clear()
 {
     memset(fHitMap,0,sizeof(int)*fMaxIndex);
 }
@@ -65,12 +64,12 @@ Int_t AliRICHHitMapA1::CheckedIndex(Int_t ix, Int_t iy)
 void  AliRICHHitMapA1::FillHits()
 {
     Int_t ndigits = fDigits->GetEntriesFast();
-    printf("\n Filling hits into HitMap\n");
-    printf("FindRawClusters -- ndigits %d \n",ndigits);
+    //printf("\n Filling hits into HitMap\n");
+    //printf("FindRawClusters -- ndigits %d \n",ndigits);
     if (!ndigits) return;
-    AliRICHdigit *dig;
+    AliRICHDigit *dig;
     for (Int_t ndig=0; ndig<fNdigits; ndig++) {
-	dig = (AliRICHdigit*)fDigits->UncheckedAt(ndig);
+	dig = (AliRICHDigit*)fDigits->UncheckedAt(ndig);
 	SetHit(dig->fPadX,dig->fPadY,ndig);
     }
 }

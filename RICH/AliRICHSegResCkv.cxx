@@ -14,8 +14,9 @@
  **************************************************************************/
 
 /*
-$Log$
+  $Log$
 */
+
 
 #include "AliRICHSegResCkv.h"
 #include "TMath.h"
@@ -23,12 +24,18 @@ $Log$
 
 
 //___________________________________________
-ClassImp(AliRICHresponseCkv)
+ClassImp(AliRICHResponseCkv)
 //___________________________________________	
-Float_t AliRICHresponseCkv::IntPH(Float_t)
+Float_t AliRICHResponseCkv::IntPH(Float_t)
 {
     
-    Float_t charge = -fChslope*TMath::Log(gRandom->Rndm());
+    Float_t charge = -fChargeSlope*TMath::Log(gRandom->Rndm());
+    return charge;
+}
+
+Float_t AliRICHResponseCkv::IntPH()
+{
+    Float_t charge = -fChargeSlope*TMath::Log(gRandom->Rndm());
     return charge;
 }
 
