@@ -31,14 +31,14 @@ class AliITStrackerSA : public AliITStrackerV2 {
   AliITStrackerSA(AliITSgeom *geom,AliITSVertexer *vertexer);
   AliITStrackerSA(AliITStrackerSA& tracker);
   virtual ~AliITStrackerSA();  
-  virtual Int_t Clusters2Tracks(AliESD *event){Int_t rc = AliITStrackerV2::Clusters2Tracks(event); if(!rc)rc=FindTracks(event); return rc;}
+  virtual Int_t Clusters2Tracks(AliESD *event){Int_t rc = AliITStrackerV2::Clusters2Tracks(event); if(!rc) rc=FindTracks(event); return rc;}
   Int_t FindTracks(AliESD* event);
   void  FindTracks(TTree *out,Int_t evnumber=0);
   AliITStrackV2* FitTrack(AliITStrackSA* tr,Double_t* primaryVertex,
                           Double_t *errorprimvert);
 
   AliITStrackV2* FindTrackLowChiSquare(TObjArray* tracklist, Int_t dim) const;
-  Int_t LoadClusters(TTree *cf) {Int_t rc=AliITStrackerV2::LoadClusters(cf); SetClusterTree(cf); return rc;}
+  Int_t LoadClusters(TTree *cf) {Int_t rc=AliITStrackerV2::LoadClusters(cf); SetClusterTree(cf);SetSixPoints(kTRUE); return rc;}
   void SetVertex(AliESDVertex *vtx){fVert = vtx;}
   void SetClusterTree(TTree * itscl){fITSclusters = itscl;}
   void SetSixPoints(Bool_t sp = kTRUE){fSixPoints = sp;}
@@ -46,6 +46,8 @@ class AliITStrackerSA : public AliITStrackerV2 {
   void SetWindowSizes(Int_t n=46, Double_t *phi=0, Double_t *lam=0);
   void UseFoundTracksV2(Int_t evnum,TTree* treev2);
   void UseFoundTracksV2(AliESD *event);
+
+  enum {kSAflag=0x8000}; //flag to mark clusters used in the SA tracker
 
  protected:
 
@@ -79,7 +81,6 @@ class AliITStrackerSA : public AliITStrackerV2 {
   Int_t SearchClusters(Int_t layer,Double_t phiwindow,Double_t lambdawindow, 
                        AliITStrackSA* trs,Double_t zvertex,Int_t flagp, AliITSclusterTable* table); 
  
-
   Double_t fPhiEstimate; //Estimation of phi angle on next layer
   Float_t fPoint1[2];   //! coord. of 1-st point to evaluate the curvature
   Float_t fPoint2[2];   //! coord. of 2-nd point to evaluate the curvature
