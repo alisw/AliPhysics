@@ -14,7 +14,7 @@ OPT	      = -O
 SL	      = sl
 
 # The options
-CXXOPTS       = $(OPT) +Z -z
+CXXOPTS       = $(OPT) +Z -z +W70,495,740,749,823,829
 COPT          = $(OPT)
 FOPT          = $(OPT) +ppu +Z
 
@@ -30,7 +30,7 @@ CLIBFOPT      = -WF,-P
 DEPINC	      = -I /opt/aCC/include/aCC -I /opt/aCC/include/iostream
 
 LD            = aCC
-LDFLAGS       = $(OPT) -z
+LDFLAGS       = $(OPT) -z -Wl,+s -Wl,-E
 
 SHLD	      = $(LD)
 SOFLAGS       = -b /usr/lib/libm.sl 
