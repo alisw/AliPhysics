@@ -1,4 +1,4 @@
-{
+void PresentationStyle() {
   gStyle->SetOptStat(1110);
   gStyle->SetOptFit(101);
   gStyle->SetCanvasColor(10);
