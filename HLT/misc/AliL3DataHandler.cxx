@@ -8,6 +8,7 @@
 #include "AliL3DataHandler.h"
 #include "AliL3Logging.h"
 #include "AliTransBit.h"
+#include "AliL3Transform.h"
 
 #if GCCVERSION == 3
 using namespace std;
@@ -46,7 +47,7 @@ using namespace std;
 // 255 (8 bit), another 8 bit word is written for the remaining. At the end of one 
 // pad, 2 zeros are written. Example:
 //
-// ROW PAD 0 NZEROS ADC ADC ADC ADC 0 NZEROS ADC ADC 0 0
+// ROW NPADSWITHDATA PAD 0 NZEROS ADC ADC ADC ADC 0 NZEROS ADC ADC 0 0
 //
 // Everything is written using 8 bit;
 // (ROW < 176, PAD < 200, ADC < 255, if(NZEROS > 255) write 2 words;)
@@ -243,12 +244,13 @@ Bool_t AliL3DataHandler::Memory2CompMemory(UInt_t nrow,AliL3DigitRowData *data,B
 		  
 		  //Check if we have to use more than 1 byte to write the zeros:
 		  Int_t number_of_zero_intervals=0;
-		  if(rowPt->fDigitData[digit].fTime > 255)
+		  if(rowPt->fDigitData[digit].fTime >= 255)
 		    {
 		      number_of_zero_intervals++;
 		      Write(comp,index,255);
-		      if(rowPt->fDigitData[digit].fTime > 2*255)
+		      if(rowPt->fDigitData[digit].fTime >= 2*255)
 			{
+			  cerr<<"AliL3DataHandler::Memory2CompMemory : Should not happen "<<(Int_t)rowPt->fDigitData[digit].fTime<<endl;
 			  Write(comp,index,255);
 			  number_of_zero_intervals++;
 			}
@@ -285,12 +287,13 @@ Bool_t AliL3DataHandler::Memory2CompMemory(UInt_t nrow,AliL3DigitRowData *data,B
 		      
 		      //Check if we have to use more than one byte to write the zeros:
 		      Int_t number_of_zero_intervals=0;
-		      if(nzero > 255)
+		      if(nzero >= 255)
 			{
 			  number_of_zero_intervals++;
 			  Write(comp,index,255);
-			  if(nzero > 2*255)
+			  if(nzero >= 2*255)
 			    {
+			      cerr<<"AliL3DataHandler::Memory2CompMemory : Should not happen "<<(Int_t)rowPt->fDigitData[digit].fTime<<endl;
 			      Write(comp,index,255);
 			      number_of_zero_intervals++;
 			    }
@@ -379,9 +382,9 @@ UInt_t AliL3DataHandler::GetCompMemorySize(UInt_t nrow,AliL3DigitRowData *data)
 		  index++;
 		  
 		  //Check if we have to use more than 1 byte to write the zeros:
-		  if(rowPt->fDigitData[digit].fTime > 255)
+		  if(rowPt->fDigitData[digit].fTime >= 255)
 		    index++;
-		  if(rowPt->fDigitData[digit].fTime > 2*255)
+		  if(rowPt->fDigitData[digit].fTime >= 2*255)
 		    index++;
 		}
 	    }
@@ -401,9 +404,9 @@ UInt_t AliL3DataHandler::GetCompMemorySize(UInt_t nrow,AliL3DigitRowData *data)
 		      
 		      //Check if we have to use more than 1 byte to write the zeros:
 		      UInt_t nzeros = rowPt->fDigitData[digit+1].fTime - rowPt->fDigitData[digit].fTime + 1;
-		      if(nzeros > 255)
+		      if(nzeros >= 255)
 			index++;
-		      if(nzeros > 2*255)
+		      if(nzeros >= 2*255)
 			index++;
 		    }  
 		}
@@ -467,6 +470,8 @@ UInt_t AliL3DataHandler::CompMemory2Memory(UInt_t nrow,AliL3DigitRowData *data,B
 	    {
 	      //Read the first zero
 	      Read(comp,index);
+	      
+		
 	      if(Test(comp,index) == 0)//end of pad.
 		{
 		  time = Read(comp,index); 
@@ -480,11 +485,15 @@ UInt_t AliL3DataHandler::CompMemory2Memory(UInt_t nrow,AliL3DigitRowData *data,B
 	    {
 	      while( (charge = Read(comp,index)) != 0)
 		{
+		  if(time >= AliL3Transform::GetNTimeBins())
+		    cerr<<"AliL3DataHandler::CompMemory2Memory : Time out of range "<<time<<endl;
 		  rowPt->fDigitData[ndigit].fPad = pad;
 		  rowPt->fDigitData[ndigit].fTime = time;
 		  rowPt->fDigitData[ndigit].fCharge = charge;
-		  time++;
 		  ndigit++;
+		  if(Test(comp,index) != 0)
+		    time++;
+		  
 		}
 	      if(Test(comp,index) == 0)
 		{
@@ -496,6 +505,7 @@ UInt_t AliL3DataHandler::CompMemory2Memory(UInt_t nrow,AliL3DigitRowData *data,B
 		if( (time_shift += Read(comp,index)) == 2*255)
 		  time_shift += Read(comp,index);
 	      time += time_shift;
+	      
 	    }
 	}
       rowPt->fNDigit = ndigit;
