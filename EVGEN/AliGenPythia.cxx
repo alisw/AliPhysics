@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.22  2000/09/14 14:02:22  morsch
+- Correct conversion from mm to cm when passing particle vertex to MC.
+- Correct handling of fForceDecay == all.
+
 Revision 1.21  2000/09/12 14:14:55  morsch
 Call fDecayer->ForceDecay() at the beginning of Generate().
 
@@ -267,9 +271,9 @@ void AliGenPythia::Generate()
 			p[0]=iparticle->Px();
 			p[1]=iparticle->Py();
 			p[2]=iparticle->Pz();
-			origin[0]=origin0[0]+iparticle->Vx()*10.;
-			origin[1]=origin0[1]+iparticle->Vy()*10.;
-			origin[2]=origin0[2]+iparticle->Vz()*10.;
+			origin[0]=origin0[0]+iparticle->Vx()/10.;
+			origin[1]=origin0[1]+iparticle->Vy()/10.;
+			origin[2]=origin0[2]+iparticle->Vz()/10.;
 
 			Int_t ifch=iparticle->GetFirstDaughter();
 			Int_t ilch=iparticle->GetLastDaughter();	
