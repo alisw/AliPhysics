@@ -527,6 +527,10 @@ private:
   Eroptc_t *fEroptc;
   Erwork_t *fErwork;
 
+  //Put here all volume names
+
+  char (*fVolNames)[5];           //! Names of geant volumes as C++ chars
+
   enum {kMaxParticles = 100};
 
   Int_t fNPDGCodes;
@@ -536,7 +540,10 @@ private:
 public: 
   TGeant3(); 
   TGeant3(const char *title, Int_t nwgeant=0); 
-  virtual ~TGeant3() {} 
+  virtual ~TGeant3() {if(fVolNames) {
+    delete [] fVolNames;
+    fVolNames=0;}
+  } 
   virtual void LoadAddress(); 
  
 ///////////////////////////////////////////////////////////////////////

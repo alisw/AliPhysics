@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  1999/11/26 16:55:39  fca
+Reimplement CurrentVolName() to avoid memory leaks
+
 Revision 1.17  1999/11/03 16:58:28  fca
 Correct source of address violation in creating character string
 
@@ -596,10 +599,9 @@ Int_t TGeant3::NextVolUp(Text_t *name, Int_t &copy)
   fNextVol--;
   if(fNextVol>=0) {
     gname=fGcvolu->names[fNextVol];
-    strncpy(name,(char *) &gname, 4);
-    name[4]='\0';
     copy=fGcvolu->number[fNextVol];
     i=fGcvolu->lvolum[fNextVol];
+    name = fVolNames[i-1];
     if(gname == fZiq[fGclink->jvolum+i]) return i;
     else printf("GeomTree: Volume %s not found in bank\n",name);
   }
@@ -653,16 +655,13 @@ const char* TGeant3::CurrentVolName() const
   // Returns the current volume name
   //
   Int_t i, gname;
-  static char name[5];
   if( (i=fGcvolu->nlevel-1) < 0 ) {
     Warning("CurrentVolName","Stack depth %d\n",fGcvolu->nlevel);
   } else {
     gname=fGcvolu->names[i];
-    strncpy(name,(char *) &gname, 4);
-    name[4]='\0';
     i=fGcvolu->lvolum[i];   
-    if(gname == fZiq[fGclink->jvolum+i]) return name;
-    else Warning("CurrentVolName","Volume %4s not found\n",name);
+    if(gname == fZiq[fGclink->jvolum+i]) return fVolNames[i-1];
+    else Warning("CurrentVolName","Volume %4s not found\n",(char*) &gname);
   }
   return 0;
 }
@@ -676,18 +675,14 @@ const char* TGeant3::CurrentVolOffName(Int_t off) const
   // if name=0 no name is returned
   //
   Int_t i, gname;
-  char *name;
   if( (i=fGcvolu->nlevel-off-1) < 0 ) {
     Warning("CurrentVolOffName",
 	    "Offset requested %d but stack depth %d\n",off,fGcvolu->nlevel);
   } else {
     gname=fGcvolu->names[i];
-    name = new char[5];
-    strncpy(name,(char *) &gname, 4);
-    name[4]='\0';
     i=fGcvolu->lvolum[i];    
-    if(gname == fZiq[fGclink->jvolum+i]) return name;
-    else Warning("CurrentVolOffName","Volume %4s not found\n",name);
+    if(gname == fZiq[fGclink->jvolum+i]) return fVolNames[i-1];
+    else Warning("CurrentVolOffName","Volume %4s not found\n",(char*)&gname);
   }
   return 0;
 }
@@ -997,13 +992,11 @@ const char* TGeant3::VolName(Int_t id) const
   //
   // Return the volume name given the volume identifier
   //
-  static char name[5];
+  const char name[5]="NULL";
   if(id<1 || id > fGcnum->nvolum || fGclink->jvolum<=0) 
-    strcpy(name,"NULL");
+    return name;
   else
-    strncpy(name,(char *)&fZiq[fGclink->jvolum+id],4);
-  name[4]='\0';
-  return name;
+    return fVolNames[id-1];
 }
 
 //_____________________________________________________________________________
@@ -1581,6 +1574,13 @@ void  TGeant3::Ggclos()
   //   through the routine GHCLOS. 
   //
   ggclos(); 
+  // Create internal list of volumes
+  fVolNames = new char[fGcnum->nvolum][5];
+  Int_t i;
+  for(i=0; i<fGcnum->nvolum; ++i) {
+    strncpy(fVolNames[i], (char *) &fZiq[fGclink->jvolum+i+1], 4);
+    fVolNames[i][4]='\0';
+  }
 } 
  
 //_____________________________________________________________________________
