@@ -48,7 +48,7 @@
 ClassImp(AliPHOSv4)
 
 //____________________________________________________________________________
-AliPHOSv4::AliPHOSv4() AliPHOS(name,title)
+AliPHOSv4::AliPHOSv4() : AliPHOS()
 {
   // default ctor : initialize data member
    fBigBoxX = 0. ;                      
