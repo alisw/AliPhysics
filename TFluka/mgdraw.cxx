@@ -9,6 +9,7 @@
 #include "Fdblprc.h"  //(DBLPRC) fluka common
 #include "Ftrackr.h"  //(TRACKR) fluka common
 #include "Fopphst.h"  //(OPPHST) fluka common
+#include "Fstack.h"   //(STACK)  fluka common
 
 #ifndef WIN32
 # define mgdraw mgdraw_
@@ -27,8 +28,14 @@ void mgdraw(Int_t& icode, Int_t& mreg)
     TVirtualMCStack* cppstack = fluka->GetStack();
     
     if (TRACKR.jtrack == -1) {
-	trackId = OPPHST.LOUOPP[OPPHST.LSTOPP - 1];
-
+	// Optical photons
+	//
+	// Try first to get the track ID from the FLUKA stack for optical photons
+	trackId = OPPHST.LOUOPP[OPPHST.LSTOPP];
+	if (trackId == 0) {
+	    // This might be a feedback photon or similar that was put on the VMC stack first 
+	    trackId = STACK.ispark[STACK.lstack][mkbmx2-1];
+	}
     } else {
 	trackId = TRACKR.ispusr[mkbmx2-1];
     }
