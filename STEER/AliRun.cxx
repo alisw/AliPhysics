@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.25  2000/02/23 16:25:22  fca
+AliVMC and AliGeant3 classes introduced
+ReadEuclid moved from AliRun to AliModule
+
 Revision 1.24  2000/01/19 17:17:20  fca
 Introducing a list of lists of hits -- more hits allowed for detector now
 
@@ -909,8 +913,17 @@ void AliRun::SetGenerator(AliGenerator *generator)
   //
   // Load the event generator
   //
+  if(!fGenerator) fGenerator = generator;
+}
+
+//____________________________________________________________________________
+void AliRun::ResetGenerator(AliGenerator *generator)
+{
+  //
+  // Load the event generator
+  //
   if(fGenerator)
-    Warning("SetGenerator","Replacing generator %s with %s\n",
+    Warning("ResetGenerator","Replacing generator %s with %s\n",
 	    fGenerator->GetName(),generator->GetName());
   fGenerator = generator;
 }

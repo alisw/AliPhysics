@@ -129,6 +129,7 @@ public:
    virtual  Int_t   DetFromMate(Int_t i) { return (*fImedia)[i];}
    virtual  AliGenerator* Generator() {return fGenerator;}
    virtual  void SetGenerator(AliGenerator *generator);
+   virtual  void ResetGenerator(AliGenerator *generator);
    virtual  void EnergySummary();
    virtual  const TDatabasePDG* PDGDB() const {return fPDGDB;}
 

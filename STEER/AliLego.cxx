@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.10  2000/02/23 16:25:22  fca
+AliVMC and AliGeant3 classes introduced
+ReadEuclid moved from AliRun to AliModule
+
 Revision 1.9  1999/12/03 10:54:01  fca
 Fix lego summary
 
@@ -85,7 +89,7 @@ AliLego::AliLego(const char *title, Int_t ntheta, Float_t themin, Float_t themax
    fGener = new AliLegoGenerator(ntheta, themin, themax,
 		       nphi, phimin, phimax, rmin, rmax, zmax);
    
-   gAlice->SetGenerator(fGener);
+   gAlice->ResetGenerator(fGener);
 
    Float_t etamin = -TMath::Log(TMath::Tan(TMath::Min((Double_t)themax*kDegrad/2,TMath::Pi()/2-1.e-10)));
    Float_t etamax = -TMath::Log(TMath::Tan(TMath::Max((Double_t)themin*kDegrad/2,              1.e-10)));
