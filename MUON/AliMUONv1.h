@@ -40,16 +40,12 @@ protected:
    // StepManager 
    Float_t *  fStepSum; //!
    Float_t *  fDestepSum; //!
-   // Momentum of the particle entering in the active gas of chamber
-   TLorentzVector fTrackMomentum;
-   // Position of the particle exiting the active gas of chamber
-   TLorentzVector fTrackPosition;
-   // Ratio of particle mean eloss with respect MIP's
-   TF1 * fElossRatio;
-   // Angle effect in tracking chambers at theta =10 degres as a function of ElossRatio (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis) (in micrometers)
-   TF1 * fAngleEffect10;
-   // Angle effect: Normalisation form theta=10 degres to theta between 0 and 10 (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis) 
-   TF1 * fAngleEffectNorma;
+  
+   TLorentzVector fTrackMomentum; // Momentum of the particle entering in the active gas of chamber
+   TLorentzVector fTrackPosition; // Position of the particle exiting the active gas of chamber
+   TF1 *          fElossRatio;    // Ratio of particle mean eloss with respect MIP's 
+   TF1 *          fAngleEffect10; // Angle effect in tracking chambers at theta =10 degres as a function of ElossRatio (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis) (in micrometers)  
+   TF1 *          fAngleEffectNorma;// Angle effect: Normalisation form theta=10 degres to theta between 0 and 10 (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis)
 private:
    ClassDef(AliMUONv1,1)  // MUON Detector class Version 1
 
