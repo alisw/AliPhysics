@@ -61,9 +61,7 @@ void AliL3HoughTransformer::CreateHistograms(Int_t nxbin,Double_t pt_min,
   //phi_min = mimimum phi0 (degrees)
   //phi_max = maximum phi0 (degrees)
     
-  Double_t bfact = 0.0029980;
-  Double_t bfield = 0.2;
-  Double_t x = bfact*bfield/pt_min;
+  Double_t x = AliL3Transform::GetBFact()*AliL3Transform::GetBField()/pt_min;
   Double_t torad = AliL3Transform::Pi()/180;
   CreateHistograms(nxbin,-1.*x,x,nybin,phimin*torad,phimax*torad);
 }
