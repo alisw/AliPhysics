@@ -13,7 +13,7 @@
 
 // --- ROOT system ---
 #include "TTask.h"
-class TObjString ;
+#include "TObjString.h"
 class TArrayI ;
 // --- Standard library ---
 
@@ -40,6 +40,7 @@ public:
   Float_t GetPPSDThreshold()const { return fPPSDDigitThreshold ;}
   Float_t GetSlope()        const { return fSlope; }
   char *  GetDigitsBranch ()const { return (char*)fDigitsTitle.Data() ;}
+  char *  GetSDigitsBranch()const { return (char*)((TObjString*)fSDigitsTitles->At(0))->GetString().Data() ;}
   TClonesArray * GetHeadersFiles(){ return fHeaderFiles ;}
   TArrayI*    GetCurrentEvents()  { return fIevent ;}
 
