@@ -969,7 +969,6 @@ void AliHBTAnalysis::ProcessTracksAndParticlesNonIdentAnal()
        }//for over particles in event1
      
      if ( fBufferSize == 0) continue;//do not mix diff histograms-> do not add to buffer list
-     Info("ProcessTracksAndParticlesNonIdentAnal","Adding Event2's to lists and setting to null");
      pbuffer.AddFirst(partEvent2);
      tbuffer.AddFirst(trackEvent2);
      partEvent2 = 0x0;
