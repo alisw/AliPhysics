@@ -23,6 +23,9 @@
 //*-- Author: Sahal Yacoob (LBL /UCT)
 //*--       : Jennifer Klay (LBL)
 
+// This Class not stores information on all particles prior to EMCAL entry - in order to facilitate analysis.
+// This is done by setting fIShunt =2, and flagging all parents of particles entering the EMCAL.
+
 
 // --- ROOT system ---
 #include "TPGON.h"
@@ -31,7 +34,7 @@
 #include "TRandom.h"
 #include "TTree.h"
 #include "TGeometry.h"
-
+#include "TParticle.h"
 
 // --- Standard library ---
 
@@ -68,7 +71,7 @@ AliEMCALv1::AliEMCALv1(const char *name, const char *title):
     fNhits = 0;
     fSamplingFraction = 12.9 ; 
     fLayerToPreshowerRatio = 5.0/6.0; 
-    fIshunt     =  1; // All hits are associated with primary particles
+    fIshunt     =  2; // All hits are associated with particles entering the calorimeter
 }
 //______________________________________________________________________
 AliEMCALv1::~AliEMCALv1(){
@@ -131,9 +134,29 @@ void AliEMCALv1::StepManager(void){
 
  if(gMC->IsTrackEntering() && (strcmp(gMC->CurrentVolName(),"XALU") == 0)) // This Particle in enterring the Calorimeter 
  {
+
+gMC->TrackPosition(pos) ;
+    xyze[0] = pos[0] ;
+    xyze[1] = pos[1] ;
+    xyze[2] = pos[2] ;
+
+       if ( (xyze[1]*xyze[1] + xyze[2]*xyze[2] + xyze[3]*xyze[3]) <  (fGeom->GetEnvelop(0)+fGeom->GetGap2Active()+1.5 )*(fGeom->GetEnvelop(0)+fGeom->GetGap2Active()+1.5 ) )
+    {
     iparent = tracknumber;
     gMC->TrackMomentum(mom);
     ienergy = mom[3]; 
+  TParticle * part = 0 ;
+ Int_t parent = iparent ;
+ while ( parent != -1 ) { // <------------- flags this particle to be kept and
+//all the ancestors of this particle
+   part = gAlice->Particle(parent) ;
+   part->SetBit(kKeepBit);
+   parent = part->GetFirstMother() ;
+ }
+      }
+
+
+
 }
  if(gMC->CurrentVolID(copy) == gMC->VolId("XPHI") ) { // We are in a Scintillator Layer 
 
