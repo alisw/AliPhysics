@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/11/02 15:37:26  hristov
+Digitizer class created. Code cleaning and bug fixes (J.Chudoba)
+
 Revision 1.5  2001/10/23 13:03:35  hristov
 The access to several data members was changed from public to protected. The digitisation was adapted to the multi-event case (J.Chudoba)
 
@@ -32,7 +35,7 @@ Revision 1.1  2001/02/27 22:13:34  jbarbosa
 Implementing merger class.
 
 */
-#include <iostream> 
+#include <iostream.h> 
 
 #include <TTree.h> 
 #include <TObjArray.h>
