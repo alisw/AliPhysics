@@ -7,81 +7,78 @@
 ////////////////////////////////////////////////
 //  Manager class for AliTPCPRF2D             //
 ////////////////////////////////////////////////
-  
-
-// include files and class forward declarations
-//DSTEP in cm
-//NPRF in number of interpolation points
-
-
 #include "TObject.h"
 #include "TMath.h"
 class TF2;
 class TArrayF;
+class TH1F;
+class AliH2F;
+class TPaveText;
 
 class AliTPCPRF2D : public TObject {
 public : 
   AliTPCPRF2D();
-   AliTPCPRF2D(const AliTPCPRF2D &prf);
-  AliTPCPRF2D & operator = (const AliTPCPRF2D &prf);
-  ~AliTPCPRF2D();
-  void Update();  //recalculate tables for charge calculation
+  virtual ~AliTPCPRF2D(); 
+  virtual void Update();  //recalculate tables for charge calculation
   Float_t GetGRF(Float_t xin, Float_t yin); 
   //return generic response function  in xin
-  Float_t GetPRF(Float_t xin, Float_t yin, Bool_t inter=kFALSE); 
+  virtual TF2 * GetGRF(){return fGRF;}
+  virtual Float_t GetPRF(Float_t xin, Float_t yin); 
   //return PRF in point xin,yin
-  void DrawX(Float_t x1, Float_t x2,Float_t y, Bool_t inter=kFALSE);  
-  //draw one dimensional response for
-  //fixed y
-  // void DrawY(Float_t y1, Float_t y2,Float_t x);
-  //draw one dimensional response for fixed x
-  void DrawPRF(Float_t x1, Float_t x2, Float_t y1, Float_t y2,
-	    Bool_t inter=kFALSE, Int_t Nx=20, Int_t Ny=20);
+
+  virtual void DrawX(Float_t x1 ,Float_t x2,Float_t y1,Float_t y2=0, Int_t N=1);
+  virtual void DrawPRF(Float_t x1, Float_t x2, Float_t y1, Float_t y2, Int_t Nx=20, Int_t Ny=20);
   //draw two dimensional PRF
 
-  void DrawDist(Float_t x1, Float_t x2, Float_t y1, Float_t y2,
-		Bool_t inter=kFALSE, Int_t Nx=20, Int_t Ny=20, 
+  virtual void DrawDist(Float_t x1, Float_t x2, Float_t y1, Float_t y2, Int_t Nx=20, Int_t Ny=20, 
 		Float_t  thr=0);
   //draw distortion of COG method
   //we suppose threshold equal to thr
-
-  void SetPad(Float_t width, Float_t height);
+  TH1F *  GenerDrawXHisto(Float_t x1, Float_t x2,Float_t y);  
+  AliH2F * GenerDrawHisto(Float_t x1, Float_t x2, Float_t y1, Float_t y2, Int_t Nx=20, Int_t Ny=20);
+  AliH2F * GenerDrawDistHisto(Float_t x1, Float_t x2, Float_t y1, Float_t y2, Int_t Nx=20, Int_t Ny=20, 
+		Float_t  thr=0);  
+  
+  virtual void SetPad(Float_t width, Float_t height);
   //set base chevron parameters
-  void SetChevron(Float_t hstep, Float_t shifty, Float_t fac);
+  virtual void SetChevron(Float_t hstep, Float_t shifty, Float_t fac);
   //set chevron parameters   
-  void SetChParam(Float_t width, Float_t height,
+  virtual void SetChParam(Float_t width, Float_t height,
 		  Float_t hstep, Float_t shifty, Float_t fac);
   //set all geometrical parameters     
-  void SetY(Float_t y1, Float_t y2, Int_t nYdiv) ;
-  void SetChargeAngle(Float_t angle){fChargeAngle = angle;} //set angle of pad and charge distribution
+  virtual void SetY(Float_t y1, Float_t y2, Int_t nYdiv) ;
+  virtual void SetChargeAngle(Float_t angle){fChargeAngle = angle;} //set angle of pad and charge distribution
                                                             //axes
-  void SetGauss(Float_t sigmaX,Float_t sigmaY , Float_t kNorm=1);
+  virtual void SetCurrentAngle(Float_t angle){return;}
+  virtual void SetPadAngle(Float_t angle){fPadAngle = angle;} //set pad angle
+  void SetInterpolationType(Int_t interx, Int_t intery) {fInterX=interx; fInterY =intery;}
+  virtual void SetGauss(Float_t sigmaX,Float_t sigmaY , Float_t kNorm=1);
   //adjust PRF with GAUSIAN as generic GRF 
   //if  direct = kTRUE then it does't convolute distribution
-  void SetCosh(Float_t sigmaX,Float_t sigmaY , Float_t kNorm=1);
+  virtual void SetCosh(Float_t sigmaX,Float_t sigmaY , Float_t kNorm=1);
   //adjust PRF with 1/Cosh  as generic GRF
-  void  SetGati(Float_t K3X, Float_t K3Y,
+  virtual void  SetGati(Float_t K3X, Float_t K3Y,
 		     Float_t padDistance,
 		     Float_t kNorm=1);
   void SetParam(TF2 * GRF,Float_t kNorm, 
 		Float_t sigmaX=0, Float_t sigmaY=0);
   void SetNdiv(Int_t Ndiv){fNdiv=Ndiv;}
-  Float_t GetSigmaX() const {return fSigmaX;}
-  Float_t GetSigmaY() const {return fSigmaY;}
+  virtual Float_t GetSigmaX() const {return fSigmaX;}
+  virtual Float_t GetSigmaY() const {return fSigmaY;}
   
   
 protected:
   void Update1(); 
-  void UpdateSigma();  //recalculate sigma of PRF
+  virtual void UpdateSigma();  //recalculate sigma of PRF
   Float_t GetPRFActiv(Float_t xin); //return PRF in point xin and actual y
   Float_t  * fcharge; //field with PRF 
   Float_t fY1;        //position of first "virtual" vire 
   Float_t fY2;        //position of last virtual vire
   Int_t fNYdiv;       //number of wires
-  Float_t * ffcharge;  //pointer to array of arrays
-
-private: 
-
+  Float_t * fChargeArray;  //pointer to array of arrays
+  Int_t fNChargeArray;  //number of charge interpolation points
+ 
+  void DrawComment(TPaveText * comment);  //draw comments to picture
   //chevron parameters
   Float_t fHeightFull;  //height of the full pad
   Float_t fHeightS;     //height of the one step
@@ -93,7 +90,7 @@ private:
   Int_t  fNPRF;      //number of interpolations point
   Int_t  fNdiv;      //number of division to calculate integral
   Float_t fDStep;    //element step for point 
-  Float_t fkNorm;     //normalisation factor of the charge integral
+  Float_t fKNorm;     //normalisation factor of the charge integral
   Float_t fInteg;     //integral of GRF on +- infinity
   TF2 *  fGRF;        //charge distribution function
 
@@ -103,27 +100,32 @@ private:
 
   Float_t  fOrigSigmaX; //sigma of original distribution;  
   Float_t  fOrigSigmaY; //sigma of original distribution;  
+
   Float_t  fChargeAngle;//'angle' of charge distribution refernce system to pad reference system
-  Float_t  fCosAngle;   //'angle' of the pad assymetry
+  Float_t  fPadAngle;   //'angle' of the pad assymetry
 
   Float_t  fSigmaX;    //sigma X of PAD response function
   Float_t  fSigmaY;    //sigma Y of PAD response function
   Float_t  fMeanX;     //mean X value
   Float_t  fMeanY;     //mean Y value
+  Int_t    fInterX;    //interpolation in X
+  Int_t    fInterY;    //interpolation in Y
   //calculated during update
-
-   
 
   char  fType[5];       //charge type
   Float_t fCurrentY;    //in reality we calculate PRF only for one fixed y 
   Float_t fDYtoWire;    //! used to make PRF calculation faster in GetPRF
-  Float_t fDStepM1;     //! used in GetPRFActiv to make calculation faster
-  
-  static const Float_t fgSQRT12; //numeric constant
-  static const Int_t   fgNPRF;   //default number of division
+  Float_t fDStepM1;     //! used in GetPRFActiv to make calculation faster  
+  //
+  static const Double_t fgkDegtoRad; //numeric constant
+  static const Double_t fgkSQRT12; //numeric constant
+  static const Int_t   fgkNPRF;   //default number of division
 
+private: 
+  AliTPCPRF2D(const AliTPCPRF2D &prf) {;}
+  AliTPCPRF2D &operator = (const AliTPCPRF2D &prf) {return *this;}
+  
   ClassDef(AliTPCPRF2D,1) 
-}; 
+};   
 
 #endif /* ALITPCPRF2D_H */
-  
