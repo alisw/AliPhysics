@@ -75,7 +75,7 @@ void AliGenHerwig::Init()
   fTarget.Resize(8);
   fProjectile.Resize(8);
   SetMC(new THerwig6());
-  fHerwig=(THerwig6*) fgMCEvGen;
+  fHerwig=(THerwig6*) fMCEvGen;
   // initialize common blocks
   fHerwig->Initialize(fProjectile, fTarget, fMomentum1, fMomentum2, fProcess);
   // reset parameters according to user needs
