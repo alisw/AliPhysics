@@ -18,6 +18,9 @@ class TClonesArray;
 class TFile;
 class TTree;
 class AliMUONRecoEvent;
+class AliMUONData;
+class AliRunLoader;
+class AliLoader;
 
 // Constants which should be elsewhere ????
 const Int_t kMaxMuonTrackingChambers = 10;
@@ -26,7 +29,7 @@ const Int_t kMaxMuonTrackingStations = kMaxMuonTrackingChambers / 2;
 class AliMUONEventReconstructor : public TObject {
 
  public:
-  AliMUONEventReconstructor(void); // Constructor
+  AliMUONEventReconstructor(AliLoader* ); // default Constructor
   virtual ~AliMUONEventReconstructor(void); // Destructor
   AliMUONEventReconstructor (const AliMUONEventReconstructor& Reconstructor); // copy constructor
   AliMUONEventReconstructor& operator=(const AliMUONEventReconstructor& Reconstructor); // assignment operator
@@ -73,12 +76,12 @@ class AliMUONEventReconstructor : public TObject {
   Int_t GetNRecTracks() const {return fNRecTracks;} // Number
   void SetNRecTracks(Int_t NRecTracks) {fNRecTracks = NRecTracks;}
   TClonesArray* GetRecTracksPtr(void) const {return fRecTracksPtr;} // Array
+ 
+ // Reconstructed trigger tracks
+   Int_t GetNRecTriggerTracks() const {return fNRecTriggerTracks;} // Number
+   void SetNRecTriggerTracks(Int_t NRecTriggerTracks) {fNRecTriggerTracks = NRecTriggerTracks;}
+   TClonesArray* GetRecTriggerTracksPtr(void) const {return fRecTriggerTracksPtr;} // Array
 
-  // Reconstructed trigger tracks
-  Int_t GetNRecTriggerTracks() const {return fNRecTriggerTracks;} // Number
-  void SetNRecTriggerTracks(Int_t NRecTriggerTracks) {fNRecTriggerTracks = NRecTriggerTracks;}
-  TClonesArray* GetRecTriggerTracksPtr(void) const {return fRecTriggerTracksPtr;} // Array
-  
   // Hits on reconstructed tracks
   Int_t GetNRecTrackHits() const {return fNRecTrackHits;} // Number
   void SetNRecTrackHits(Int_t NRecTrackHits) {fNRecTrackHits = NRecTrackHits;}
@@ -95,6 +98,9 @@ class AliMUONEventReconstructor : public TObject {
   void SetTrackMethod(Int_t TrackMethod) {fTrackMethod = TrackMethod;} //AZ
   Int_t GetTrackMethod(void) const {return fTrackMethod;} //AZ
   Int_t fMuons; // AZ - number of muons within acceptance - just for tests
+
+  AliMUONData*  GetMUONData() {return fMUONData;}
+
  protected:
 
  private:
@@ -158,6 +164,12 @@ class AliMUONEventReconstructor : public TObject {
   AliMUONRecoEvent *fRecoEvent; // the reconstructed event
   TTree            *fEventTree; // tree of reconstructed events
   TFile            *fTreeFile;  // file where the tree is outputed
+
+  // data container
+  AliMUONData* fMUONData;
+
+  // alice loader
+  AliLoader* fLoader;
 
   // Functions
   void ResetHitsForRec(void);

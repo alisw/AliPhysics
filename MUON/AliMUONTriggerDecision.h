@@ -7,19 +7,21 @@
 //  MUON Trigger Decision Class               //
 ////////////////////////////////////////////////
 #include "TObject.h"
+#include "TObjArray.h"
 
-class AliMUONHitMapA1;
-class TF1;
+class AliLoader;
 class TClonesArray;
-class AliMUONSegmentation;
-class AliMUONResponse;
+class AliMUONData;
+class AliMUON;
+
 
 class AliMUONTriggerDecision :
 public TObject {
  public:
-  AliMUONTriggerDecision(Int_t iprint);         // constructor
+  AliMUONTriggerDecision(AliLoader*, Int_t iprint = 0);         // constructor
   ~AliMUONTriggerDecision();                  // destructor
   
+  AliMUONData*   GetMUONData() {return fMUONData;}
   void Trigger();
   void ResetBit();
   void SetBit();
@@ -38,6 +40,8 @@ public TObject {
 		    Int_t &iTrigger);    
   void GlobalTrigger();
 
+  void   Digits2Trigger(); // main function
+
   // print-debug
   void PrintBitPatXInput(Int_t icirc);
   void PrintBitPatYInput(Int_t icirc);
@@ -54,6 +58,7 @@ public TObject {
 			Int_t singleUndef[3], Int_t pairUnlike[3], 
 			Int_t pairLike[3]);  
   
+
 // Add a new Local Trigger
   // virtual void AddLocalTrigger(const AliMUONLocalTrigger);
 //  Return pointer to Local Triggers
@@ -94,6 +99,12 @@ public TObject {
   Int_t fYbit22U[234][16]; // bit pattern YM22 Up
   Int_t fYbit21D[234][16]; // bit pattern YM21 Down
   Int_t fYbit22D[234][16]; // bit pattern YM22 Down
+
+  
+  AliLoader*     fLoader;             //! alice loader
+  TObjArray*     fTriggerCircuit;     //! List of Trigger Circuit
+  AliMUONData*   fMUONData;           //! Data container for MUON subsystem 
+  AliMUON*       fMUON;               //! pointer to MUON  
 
   // ???
   //  TClonesArray* fLocalTriggers;   // Local Triggers

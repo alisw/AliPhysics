@@ -38,15 +38,15 @@
 #include <TTree.h>
 
 #include "AliMUON.h"
-#include "AliMUONChamber.h"
+//#include "AliMUONChamber.h"
 #include "AliMUONEventReconstructor.h"
 #include "AliMUONHitForRec.h"
 #include "AliMUONTriggerTrack.h"
 //#include "AliMUONTriggerConstants.h"
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONRawCluster.h"
-#include "AliMUONGlobalTrigger.h"
 #include "AliMUONLocalTrigger.h"
+#include "AliMUONGlobalTrigger.h"
 #include "AliMUONRecoEvent.h"
 #include "AliMUONSegment.h"
 #include "AliMUONTrack.h"
@@ -85,7 +85,7 @@ static const Int_t kDefaultPrintLevel = -1;
 ClassImp(AliMUONEventReconstructor) // Class implementation in ROOT context
 
   //__________________________________________________________________________
-AliMUONEventReconstructor::AliMUONEventReconstructor(void)
+AliMUONEventReconstructor::AliMUONEventReconstructor(AliLoader* loader)
 {
   // Constructor for class AliMUONEventReconstructor
   SetReconstructionParametersToDefaults();
@@ -140,10 +140,21 @@ AliMUONEventReconstructor::AliMUONEventReconstructor(void)
   fRecoEvent = 0;
   fEventTree = 0;
   fTreeFile  = 0;
-  
+ 
+  // initialize loader's
+  fLoader = loader;
+
+  // initialize container
+  fMUONData  = new AliMUONData(fLoader,"MUON","MUON");
+
+   // Loading AliRun master
+  AliRunLoader* runloader = fLoader->GetRunLoader();
+  if (runloader->GetAliRun() == 0x0) runloader->LoadgAlice();
+  gAlice = runloader->GetAliRun();
+
   return;
 }
-
+  //__________________________________________________________________________
 AliMUONEventReconstructor::AliMUONEventReconstructor (const AliMUONEventReconstructor& Reconstructor):TObject(Reconstructor)
 {
   // Dummy copy constructor
@@ -434,46 +445,46 @@ void AliMUONEventReconstructor::MakeEventToBeReconstructed(void)
   // To make the list of hits to be reconstructed,
   // either from the GEANT hits or from the raw clusters
   // according to the parameter set for the reconstructor
-  TString evfoldname = AliConfig::fgkDefaultEventFolderName;//to be interfaced properly
+//   TString evfoldname = AliConfig::fgkDefaultEventFolderName;//to be interfaced properly
   
-  AliRunLoader* rl = AliRunLoader::GetRunLoader(evfoldname);
-  if (rl == 0x0)
-   {
-     Error("MakeEventToBeReconstructed",
-           "Can not find Run Loader in Event Folder named %s.",
-           evfoldname.Data());
-     return;
-   }
-  AliLoader* gime = rl->GetLoader("MUONLoader");
-  if (gime == 0x0)
-   {
-     Error("MakeEventToBeReconstructed","Can not get MUON Loader from Run Loader.");
-     return;
-   }
+//   AliRunLoader* rl = AliRunLoader::GetRunLoader(evfoldname);
+//   if (rl == 0x0)
+//    {
+//      Error("MakeEventToBeReconstructed",
+//            "Can not find Run Loader in Event Folder named %s.",
+//            evfoldname.Data());
+//      return;
+//    }
+//   AliLoader* gime = rl->GetLoader("MUONLoader");
+//   if (gime == 0x0)
+//    {
+//      Error("MakeEventToBeReconstructed","Can not get MUON Loader from Run Loader.");
+//      return;
+//    }
   
   if (fPrintLevel >= 1) cout << "enter MakeEventToBeReconstructed" << endl;
   ResetHitsForRec();
   if (fRecGeantHits == 1) {
     // Reconstruction from GEANT hits
     // Back to the signal file
-      TTree* treeH = gime->TreeH();
+      TTree* treeH = fLoader->TreeH();
       if (treeH == 0x0)
        {
-         Int_t retval = gime->LoadHits();
+         Int_t retval = fLoader->LoadHits();
          if ( retval)
           {
             Error("MakeEventToBeReconstructed","Error occured while loading hits.");
             return;
           }
-         treeH = gime->TreeH();
+         treeH = fLoader->TreeH();
          if (treeH == 0x0)
           {
            Error("MakeEventToBeReconstructed","Can not get TreeH");
            return;
           }
        }
-    
-    AddHitsForRecFromGEANT(treeH);
+      fMUONData->SetTreeAddress("H");
+      AddHitsForRecFromGEANT(treeH);
     
     // Background hits
     AddHitsForRecFromBkgGEANT(fBkgGeantTH, fBkgGeantHits);
@@ -486,7 +497,8 @@ void AliMUONEventReconstructor::MakeEventToBeReconstructed(void)
     // Security on MUON ????
     // TreeR assumed to be be "prepared" in calling function
     // by "MUON->GetTreeR(nev)" ????
-    TTree *treeR = gime->TreeR();
+    TTree *treeR = fLoader->TreeR();
+    fMUONData->SetTreeAddress("RC");
     AddHitsForRecFromRawClusters(treeR);
     // No sorting: it is done automatically in the previous function
   }
@@ -518,8 +530,8 @@ void AliMUONEventReconstructor::AddHitsForRecFromGEANT(TTree *TH)
   if (fPrintLevel >= 2)
     cout << "enter AddHitsForRecFromGEANT with TH: " << TH << endl;
   if (TH == NULL) return;
-  AliMUON *pMUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
-  AliMUONData * muondata = pMUON->GetMUONData();
+  //  AliMUON *pMUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
+  //AliMUONData * muondata = pMUON->GetMUONData();
   // Security on MUON ????
   // See whether it could be the same for signal and background ????
   // Loop over tracks in tree
@@ -528,7 +540,7 @@ void AliMUONEventReconstructor::AddHitsForRecFromGEANT(TTree *TH)
     cout << "ntracks: " << ntracks << endl;
   fMuons = 0; //AZ
   for (Int_t track = 0; track < ntracks; track++) {
-    muondata->ResetHits();
+    fMUONData->ResetHits();
     TH->GetEvent(track);
     // Loop over hits
     Int_t hit = 0;
@@ -537,11 +549,11 @@ void AliMUONEventReconstructor::AddHitsForRecFromGEANT(TTree *TH)
     Int_t itrack = track; //AZ
 
     Int_t ihit, nhits=0;
-      nhits = (Int_t) muondata->Hits()->GetEntriesFast();
+      nhits = (Int_t) fMUONData->Hits()->GetEntriesFast();
       AliMUONHit* mHit=0x0;
 
       for(ihit=0; ihit<nhits; ihit++) {
-	mHit = static_cast<AliMUONHit*>(muondata->Hits()->At(ihit));
+	mHit = static_cast<AliMUONHit*>(fMUONData->Hits()->At(ihit));
 	Int_t ipart = TMath::Abs ((Int_t) mHit->Particle()); //AZ
 	if (NewHitForRecFromGEANT(mHit,track, hit, 1) && ipart == 13
 	    //if (NewHitForRecFromGEANT(mHit,itrack-1, hit, 1) && ipart == 13 
@@ -727,27 +739,27 @@ void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
   TClonesArray *rawclusters;
   if (fPrintLevel >= 1) cout << "enter AddHitsForRecFromRawClusters" << endl;
 
-  TString evfoldname = AliConfig::fgkDefaultEventFolderName;//to be interfaced properly
-  AliRunLoader* rl = AliRunLoader::GetRunLoader(evfoldname);
-  if (rl == 0x0)
-   {
-     Error("MakeEventToBeReconstructed",
-           "Can not find Run Loader in Event Folder named %s.",
-           evfoldname.Data());
-     return;
-   }
-  AliLoader* gime = rl->GetLoader("MUONLoader");
-  if (gime == 0x0)
-   {
-     Error("MakeEventToBeReconstructed","Can not get MUON Loader from Run Loader.");
-     return;
-   }
-   // Loading AliRun master
-  if (rl->GetAliRun() == 0x0) rl->LoadgAlice();
-  gAlice = rl->GetAliRun();
+//   TString evfoldname = AliConfig::fgkDefaultEventFolderName;//to be interfaced properly
+//   AliRunLoader* rl = AliRunLoader::GetRunLoader(evfoldname);
+//   if (rl == 0x0)
+//    {
+//      Error("MakeEventToBeReconstructed",
+//            "Can not find Run Loader in Event Folder named %s.",
+//            evfoldname.Data());
+//      return;
+//    }
+//   AliLoader* gime = rl->GetLoader("MUONLoader");
+//   if (gime == 0x0)
+//    {
+//      Error("MakeEventToBeReconstructed","Can not get MUON Loader from Run Loader.");
+//      return;
+//    }
+//    // Loading AliRun master
+//   rl->LoadgAlice();
+//   gAlice = rl->GetAliRun();
 
   // Loading MUON subsystem
-  AliMUON * pMUON = (AliMUON *) gAlice->GetDetector("MUON");
+  //  AliMUON * pMUON = (AliMUON *) gAlice->GetDetector("MUON");
 
   nTRentries = Int_t(TR->GetEntries());
   if (nTRentries != 1) {
@@ -756,7 +768,8 @@ void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
     cout << "nTRentries = " << nTRentries << " not equal to 1" << endl;
     exit(0);
   }
-  gime->TreeR()->GetEvent(0); // only one entry  
+  fLoader->TreeR()->GetEvent(0); // only one entry  
+
   // Loop over tracking chambers
   for (Int_t ch = 0; ch < kMaxMuonTrackingChambers; ch++) {
     // number of HitsForRec to 0 for the chamber
@@ -764,7 +777,7 @@ void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
     // index of first HitForRec for the chamber
     if (ch == 0) fIndexOfFirstHitForRecPerChamber[ch] = 0;
     else fIndexOfFirstHitForRecPerChamber[ch] = fNHitsForRec;
-    rawclusters = pMUON->GetMUONData()->RawClusters(ch);
+    rawclusters =fMUONData->RawClusters(ch);
 //     pMUON->ResetRawClusters();
 //     TR->GetEvent((Int_t) (TR->GetEntries()) - 1); // to be checked ????
     nclus = (Int_t) (rawclusters->GetEntries());
@@ -961,6 +974,11 @@ void AliMUONEventReconstructor::MakeTracks(void)
     // Remove double tracks
     RemoveDoubleTracks();
   }
+  //  AliMUON * pMUON = (AliMUON *) gAlice->GetDetector("MUON");
+  for(Int_t i=0; i<GetNRecTracks(); i++) {
+    AliMUONTrack * track = (AliMUONTrack*) GetRecTracksPtr()->At(i);
+     fMUONData->AddRecTrack(*track);
+  }
   return;
 }
 
@@ -969,56 +987,55 @@ void AliMUONEventReconstructor::MakeTriggerTracks(void)
 {
     // To make the trigger tracks from Local Trigger
     if (fPrintLevel >= 1) cout << "enter MakeTriggerTracks" << endl;
-    ResetTriggerTracks();
+    //    ResetTriggerTracks();
     
     Int_t nTRentries;
+    Long_t gloTrigPat;
     TClonesArray *localTrigger;
     TClonesArray *globalTrigger;
     AliMUONLocalTrigger *locTrg;
     AliMUONGlobalTrigger *gloTrg;
     AliMUONTriggerCircuit *circuit;
-    AliMUONTriggerTrack *recTriggerTrack;
-    Long_t gloTrigPat;
-
-    TString evfoldname = AliConfig::fgkDefaultEventFolderName;//to be interfaced properly
-    AliRunLoader* rl = AliRunLoader::GetRunLoader(evfoldname);
-    if (rl == 0x0)
-    {
-	Error("MakeTriggerTracks",
-	      "Can not find Run Loader in Event Folder named %s.",
-	      evfoldname.Data());
-	return;
-    }
-    AliLoader* gime = rl->GetLoader("MUONLoader");
-    if (gime == 0x0)
-    {
-	Error("MakeTriggerTracks","Can not get MUON Loader from Run Loader.");
-	return;
-    }
-    TTree* TR = gime->TreeR();
+    AliMUONTriggerTrack *recTriggerTrack = 0;
+//     TString evfoldname = AliConfig::fgkDefaultEventFolderName;//to be interfaced properly
+//     AliRunLoader* rl = AliRunLoader::GetRunLoader(evfoldname);
+//     if (rl == 0x0)
+//     {
+// 	Error("MakeTriggerTracks",
+// 	      "Can not find Run Loader in Event Folder named %s.",
+// 	      evfoldname.Data());
+// 	return;
+//     }
+//     AliLoader* gime = rl->GetLoader("MUONLoader");
+//     if (gime == 0x0)
+//     {
+// 	Error("MakeTriggerTracks","Can not get MUON Loader from Run Loader.");
+// 	return;
+//     }
+    TTree* TR = fLoader->TreeR();
     
     // Loading AliRun master
-    if (rl->GetAliRun() == 0x0) rl->LoadgAlice();
-    gAlice = rl->GetAliRun();
+//     rl->LoadgAlice();
+//     gAlice = rl->GetAliRun();
     
     // Loading MUON subsystem
     AliMUON * pMUON = (AliMUON *) gAlice->GetDetector("MUON");
     
     nTRentries = Int_t(TR->GetEntries());
     if (nTRentries != 1) {
-	cout << "Error in AliMUONEventReconstructor::MakeTriggerTracks"
-	     << endl;
-	cout << "nTRentries = " << nTRentries << " not equal to 1" << endl;
-	exit(0);
+      cout << "Error in AliMUONEventReconstructor::MakeTriggerTracks"
+	   << endl;
+      cout << "nTRentries = " << nTRentries << " not equal to 1" << endl;
+      exit(0);
     }
-    gime->TreeR()->GetEvent(0); // only one entry  
+    fLoader->TreeR()->GetEvent(0); // only one entry  
 
-    pMUON->GetMUONData()->SetTreeAddress("GLT");
-    pMUON->GetMUONData()->GetTrigger();
+    fMUONData->SetTreeAddress("GLT");
+    fMUONData->GetTrigger();
 
-// global trigger
+    // global trigger for trigger pattern
     gloTrigPat = 0;
-    globalTrigger = pMUON->GetMUONData()->GlobalTrigger(); 
+    globalTrigger = fMUONData->GlobalTrigger(); 
     gloTrg = (AliMUONGlobalTrigger*)globalTrigger->UncheckedAt(0);	
     if (gloTrg->SinglePlusLpt())  gloTrigPat|= 0x1;
     if (gloTrg->SinglePlusHpt())  gloTrigPat|= 0x2;
@@ -1040,25 +1057,28 @@ void AliMUONEventReconstructor::MakeTriggerTracks(void)
     if (gloTrg->PairLikeHpt())    gloTrigPat|= 0x2000;
     if (gloTrg->PairLikeApt())    gloTrigPat|= 0x4000;
 
-// local trigger
-    localTrigger = pMUON->GetMUONData()->LocalTrigger();    
+ 
+
+    // local trigger for tracking 
+    localTrigger = fMUONData->LocalTrigger();    
     Int_t nlocals = (Int_t) (localTrigger->GetEntries());
     Float_t z11 = ( &(pMUON->Chamber(10)) )->Z();
     Float_t z21 = ( &(pMUON->Chamber(12)) )->Z();
 
     for (Int_t i=0; i<nlocals; i++) { // loop on Local Trigger
-        locTrg = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(i);	
-	circuit = &(pMUON->TriggerCircuit(locTrg->LoCircuit()));
-	Float_t y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
-	Float_t y21 = circuit->GetY21Pos(locTrg->LoStripX());
-	Float_t x11 = circuit->GetX11Pos(locTrg->LoStripY());
-	Float_t thetax = TMath::ATan2( x11 , z11 );
-	Float_t thetay = TMath::ATan2( (y21-y11) , (z21-z11) );
+      locTrg = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(i);	
+      circuit = &(pMUON->TriggerCircuit(locTrg->LoCircuit()));
+      Float_t y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
+      Float_t y21 = circuit->GetY21Pos(locTrg->LoStripX());
+      Float_t x11 = circuit->GetX11Pos(locTrg->LoStripY());
+      Float_t thetax = TMath::ATan2( x11 , z11 );
+      Float_t thetay = TMath::ATan2( (y21-y11) , (z21-z11) );
 
-	recTriggerTrack = new ((*fRecTriggerTracksPtr)[fNRecTriggerTracks])
-	    AliMUONTriggerTrack(x11,y11,thetax,thetay,gloTrigPat,this);
-// since static statement does not work, set gloTrigPat for each track
-	fNRecTriggerTracks++;
+      recTriggerTrack = new AliMUONTriggerTrack(x11,y11,thetax,thetay,gloTrigPat,this);
+      // since static statement does not work, set gloTrigPat for each track
+
+      // 	fNRecTriggerTracks++;
+      fMUONData->AddRecTriggerTrack(*recTriggerTrack);
     } // end of loop on Local Trigger
     return;    
 }
@@ -1604,16 +1624,16 @@ void AliMUONEventReconstructor::EventDumpTrigger(void)
   // Dump reconstructed trigger event 
   // and the particle parameters
     
-  AliMUONTriggerTrack *triggertrack;
-  Int_t trackIndex;
+  AliMUONTriggerTrack *triggertrack ;
+  Int_t nTriggerTracks = fMUONData->RecTriggerTracks()->GetEntriesFast();
  
-  if (fPrintLevel >= 1) cout << "****** enter EventDumpTrigger ******" << endl;
   if (fPrintLevel >= 1) {
-      cout << " Number of Reconstructed tracks :" <<  fNRecTriggerTracks << endl;
+    cout << "****** enter EventDumpTrigger ******" << endl;
+    cout << " Number of Reconstructed tracks :" <<  nTriggerTracks << endl;
   }
   // Loop over reconstructed tracks
-  for (trackIndex = 0; trackIndex < fNRecTriggerTracks; trackIndex++) {
-      triggertrack = (AliMUONTriggerTrack*) ((*fRecTriggerTracksPtr)[trackIndex]);
+  for (Int_t trackIndex = 0; trackIndex < nTriggerTracks; trackIndex++) {
+    triggertrack = (AliMUONTriggerTrack*)fMUONData->RecTriggerTracks()->At(trackIndex);
       printf(" trigger track number %i x11=%f y11=%f thetax=%f thetay=%f \n",
 	     trackIndex,
 	     triggertrack->GetX11(),triggertrack->GetY11(),

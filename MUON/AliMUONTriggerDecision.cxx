@@ -27,6 +27,9 @@
 #include "AliMUONResponse.h"
 #include "AliMUONChamber.h"
 #include "AliMUONDigit.h"
+#include "AliMUONConstants.h"
+#include "AliMUONGlobalTrigger.h"
+#include "AliMUONLocalTrigger.h"
 
 
 #include <TF1.h>
@@ -43,7 +46,7 @@
 ClassImp(AliMUONTriggerDecision)
 
 //----------------------------------------------------------------------
-AliMUONTriggerDecision::AliMUONTriggerDecision(Int_t iprint)
+AliMUONTriggerDecision::AliMUONTriggerDecision(AliLoader* loader, Int_t iprint)
 {
 // Constructor 
   fDebug = iprint;            // print option
@@ -90,14 +93,41 @@ AliMUONTriggerDecision::AliMUONTriggerDecision(Int_t iprint)
       fXbit21[icirc][istrip]=fXbit22[icirc][istrip]=0;
     }
   }
-}
 
+  fTriggerCircuit = new TObjArray(AliMUONConstants::NTriggerCircuit());
+
+  // initialize loader's
+  fLoader = loader;
+
+  // initialize container
+  fMUONData  = new AliMUONData(fLoader,"MUON","MUON");
+
+  // Loading AliRun master
+  AliRunLoader* runloader = fLoader->GetRunLoader();
+  if (runloader->GetAliRun() == 0x0) runloader->LoadgAlice();
+  gAlice = runloader->GetAliRun();
+
+  // getting MUON
+  fMUON = (AliMUON*) gAlice->GetDetector("MUON");
+
+  // setting circuit
+  for (icirc = 0; icirc < AliMUONConstants::NTriggerCircuit(); icirc++) {
+    AliMUONTriggerCircuit* pCir = 0;
+    pCir = &(fMUON->TriggerCircuit(icirc));
+    fTriggerCircuit->AddAt(pCir, icirc);
+  }
+}
 //----------------------------------------------------------------------
 AliMUONTriggerDecision::~AliMUONTriggerDecision()
 {
 // Destructor
+  if (fTriggerCircuit){
+    fTriggerCircuit->Delete();
+    delete fTriggerCircuit;
+  } 
+  if (fMUONData)
+    delete fMUONData;
 }
-
 //----------------------------------------------------------------------
 void AliMUONTriggerDecision::Trigger(){
 // main method of the class which calls the overall Trigger procedure
@@ -108,11 +138,10 @@ void AliMUONTriggerDecision::Trigger(){
 
   Int_t coinc44=0, resetMid=0; // initialize coincidence
 
-  AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");  
   AliMUONTriggerCircuit* triggerCircuit;
 
   for (Int_t icirc=0; icirc<234; icirc++) {  // loop on circuits
-    triggerCircuit = &(pMUON->TriggerCircuit(icirc));  	  
+    triggerCircuit = (AliMUONTriggerCircuit*)fTriggerCircuit->At(icirc);  	  
     //    Int_t idCircuit=triggerCircuit->GetIdCircuit(); 
     
     Int_t minDevStrip[5], minDev[5], coordY[5];
@@ -192,25 +221,19 @@ void AliMUONTriggerDecision::SetBit(){
 // 4) set the bit patterns
 
 
-  AliMUON *pMUON  = (AliMUON*)gAlice->GetDetector("MUON");  
   AliMUONTriggerCircuit* triggerCircuit;
-  AliRunLoader * rl = AliRunLoader::GetRunLoader();
-  AliLoader * gime  = rl->GetLoader("MUONLoader");
 
   for (Int_t chamber=11; chamber<15; chamber++){
     for (Int_t cathode=1; cathode<3; cathode++){
       
-      AliMUONChamber*   iChamber = &(pMUON->Chamber(chamber-1));
-      AliSegmentation*  segmentation;
-      gime->TreeD()->GetEvent(cathode-1);
-      TClonesArray *muonDigits = pMUON->GetMUONData()->Digits(chamber-1);
+      //      AliMUONChamber*   iChamber = &(pMUON->Chamber(chamber-1));
+      //       AliSegmentation*  segmentation;
+      fLoader->TreeD()->GetEvent(cathode-1);
+      TClonesArray *muonDigits = fMUONData->Digits(chamber-1);
       Int_t ndigits = muonDigits->GetEntriesFast();
       if (fDebug>3)
-      printf("\n 1 Found %d digits in %p %d \n ", ndigits, muonDigits,chamber-1);
-//    if (ndigits == 0) return;
-      
-//      iChamber = &(pMUON->Chamber(chamber-1));
-      segmentation=iChamber->SegmentationModel(cathode);
+	printf("\n 1 Found %d digits in %p %d \n ", ndigits, muonDigits,chamber-1);
+
       AliMUONDigit  *mdig;
       
       for (Int_t digit=0; digit<ndigits; digit++) {
@@ -243,7 +266,7 @@ void AliMUONTriggerDecision::SetBit(){
 	      {
 	      case 11:
 		for (icirc=0; icirc<234; icirc++) {		  
-		  triggerCircuit = &(pMUON->TriggerCircuit(icirc));  	  
+		  triggerCircuit = (AliMUONTriggerCircuit*) fTriggerCircuit->At(icirc);  
 		  for (istrip=0; istrip<16; istrip++) {
 		    if (triggerCircuit->GetXcode(0,istrip)==code) 
 		      fXbit11[icirc][istrip]=1;
@@ -252,7 +275,7 @@ void AliMUONTriggerDecision::SetBit(){
 		break;
 	      case 12:
 		for (icirc=0; icirc<234; icirc++) {
-		  triggerCircuit = &(pMUON->TriggerCircuit(icirc));  	  
+		  triggerCircuit = (AliMUONTriggerCircuit*)fTriggerCircuit->At(icirc);
 		  for (istrip=0; istrip<16; istrip++) {
 		    if (triggerCircuit->GetXcode(1,istrip)==code) 
 		      fXbit12[icirc][istrip]=1;
@@ -261,7 +284,7 @@ void AliMUONTriggerDecision::SetBit(){
 		break;
 	      case 13:
 		for (icirc=0; icirc<234; icirc++) {
-		  triggerCircuit = &(pMUON->TriggerCircuit(icirc));  	  
+		  triggerCircuit = (AliMUONTriggerCircuit*)fTriggerCircuit->At(icirc); 
 		  for (istrip=0; istrip<32; istrip++) {
 		    if (triggerCircuit->GetXcode(2,istrip)==code) 
 		      fXbit21[icirc][istrip]=1;
@@ -270,7 +293,7 @@ void AliMUONTriggerDecision::SetBit(){
 		break;
 	      case 14:
 		for (icirc=0; icirc<234; icirc++) {
-		  triggerCircuit = &(pMUON->TriggerCircuit(icirc));  	  
+		  triggerCircuit = (AliMUONTriggerCircuit*)fTriggerCircuit->At(icirc);
 		  for (istrip=0; istrip<32; istrip++) {
 		    if (triggerCircuit->GetXcode(3,istrip)==code) 
 		      fXbit22[icirc][istrip]=1;		    
@@ -284,7 +307,7 @@ void AliMUONTriggerDecision::SetBit(){
 	      {
 	      case 11:
 		for (icirc=0; icirc<234; icirc++) {
-		  triggerCircuit = &(pMUON->TriggerCircuit(icirc));  	  
+		  triggerCircuit = (AliMUONTriggerCircuit*)fTriggerCircuit->At(icirc);
 		  nStrip=triggerCircuit->GetNstripY();
 		  for (istrip=0; istrip<nStrip; istrip++) {
 		    if (triggerCircuit->GetYcode(0,istrip)==code) 
@@ -294,7 +317,7 @@ void AliMUONTriggerDecision::SetBit(){
 		break;
 	      case 12:
 		for (icirc=0; icirc<234; icirc++) {
-		  triggerCircuit = &(pMUON->TriggerCircuit(icirc));  	  
+		  triggerCircuit = (AliMUONTriggerCircuit*)fTriggerCircuit->At(icirc);
 		  nStrip=triggerCircuit->GetNstripY(); 
 		  for (istrip=0; istrip<nStrip; istrip++) {
 		    if (triggerCircuit->GetYcode(1,istrip)==code) 
@@ -304,7 +327,7 @@ void AliMUONTriggerDecision::SetBit(){
 		break;
 	      case 13:
 		for (icirc=0; icirc<234; icirc++) {
-		  triggerCircuit = &(pMUON->TriggerCircuit(icirc));  	  
+		  triggerCircuit = (AliMUONTriggerCircuit*)fTriggerCircuit->At(icirc);
 		  nStrip=triggerCircuit->GetNstripY();    
 		  for (istrip=0; istrip<nStrip; istrip++) {
 		    if (triggerCircuit->GetYcode(2,istrip)==code) 
@@ -314,7 +337,7 @@ void AliMUONTriggerDecision::SetBit(){
 		break;
 	      case 14:
 		for (icirc=0; icirc<234; icirc++) {
-		  triggerCircuit = &(pMUON->TriggerCircuit(icirc));  	  
+		  triggerCircuit = (AliMUONTriggerCircuit*)fTriggerCircuit->At(icirc);
 		  nStrip=triggerCircuit->GetNstripY();    
 		  for (istrip=0; istrip<nStrip; istrip++) {
 		    if (triggerCircuit->GetYcode(3,istrip)==code) 
@@ -326,7 +349,7 @@ void AliMUONTriggerDecision::SetBit(){
 	  } // if cathode
 	}  // remove soft background
       }   // end loop on digit
-      pMUON->GetMUONData()->ResetDigits();
+      fMUONData->ResetDigits();
     }    // end loop on cathode
   }     // end loop on chamber
 }  
@@ -336,7 +359,6 @@ void AliMUONTriggerDecision::SetBitUpDownY(){
 // Set Y bit for up and down parts of circuits
   Int_t idModule, nStripX, nStripY, iPosCircuit;
 
-  AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
   
   for (Int_t icirc=0; icirc<234; icirc++) {
 
@@ -344,7 +366,7 @@ void AliMUONTriggerDecision::SetBitUpDownY(){
     AliMUONTriggerCircuit* circuitD;  // circuit Down
     AliMUONTriggerCircuit* circuitU;  // circuit Up
 
-    circuit = &(pMUON->TriggerCircuit(icirc));  
+    circuit = (AliMUONTriggerCircuit*)fTriggerCircuit->At(icirc);  
     idModule=circuit->GetIdModule();      // corresponding module Id.
     nStripX=circuit->GetNstripX();        // number of X strips
     nStripY=circuit->GetNstripY();        // number of Y strips
@@ -354,7 +376,7 @@ void AliMUONTriggerDecision::SetBitUpDownY(){
     if (iPosCircuit==1) {               // need to scan lower module       
       if(idModule<91&&TMath::Abs(idModule)!=41&&idModule>-91) { 
 	Int_t icircD=circuit->GetICircuitD();
-	circuitD = &(pMUON->TriggerCircuit(icircD));  
+	circuitD = (AliMUONTriggerCircuit*)fTriggerCircuit->At(icircD);  
 	Int_t nStripD=circuitD->GetNstripY();
 		
 	if (TMath::Abs(idModule)==42) { // shift of +8 bits
@@ -386,7 +408,7 @@ void AliMUONTriggerDecision::SetBitUpDownY(){
 	(iPosCircuit==3&&nStripX==48)||(iPosCircuit==4&&nStripX==64)) {   
       if ((idModule>17||idModule<-17)&&TMath::Abs(idModule)!=61) {  
 	Int_t icircU=circuit->GetICircuitU();
-	circuitU = &(pMUON->TriggerCircuit(icircU));  
+	circuitU = (AliMUONTriggerCircuit*)fTriggerCircuit->At(icircU);  
 	Int_t nStripU=circuitU->GetNstripY();		
 	
 	if (TMath::Abs(idModule)==62) { // shift of +8 bits
@@ -1026,9 +1048,8 @@ void AliMUONTriggerDecision::LocalTrigger(Int_t icirc,
 // returns local trigger answer for circuit icirc
   Int_t i;
 
-  AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");  
   AliMUONTriggerCircuit* triggerCircuit;
-  triggerCircuit = &(pMUON->TriggerCircuit(icirc));  	  
+  triggerCircuit = (AliMUONTriggerCircuit*) fTriggerCircuit->At(icirc);  	  
   Int_t idCircuit=triggerCircuit->GetIdCircuit();
   
   Int_t signDev=minDev[4];   
@@ -1196,9 +1217,8 @@ void AliMUONTriggerDecision::PrintBitPatYInput(Int_t icirc){
 
     Int_t istrip;
 
-  AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");  
   AliMUONTriggerCircuit* triggerCircuit;
-  triggerCircuit = &(pMUON->TriggerCircuit(icirc));  	  
+  triggerCircuit = (AliMUONTriggerCircuit*) fTriggerCircuit->At(icirc);  	  
   Int_t idCircuit=triggerCircuit->GetIdCircuit();
   Int_t nStrip=triggerCircuit->GetNstripY();
 
@@ -1295,6 +1315,7 @@ void AliMUONTriggerDecision::GetGlobalTrigger(Int_t singlePlus[3],
 					      Int_t pairUnlike[3], 
 					      Int_t pairLike[3]){
 // returns Global Trigger information (0,1,2 : Lpt,Hpt,Apt)
+// should not be used anymore.
   for (Int_t i=0; i<3; i++) { 
     singlePlus[i]  = fGlobalSinglePlus[i];
     singleMinus[i] = fGlobalSingleMinus[i];
@@ -1303,15 +1324,37 @@ void AliMUONTriggerDecision::GetGlobalTrigger(Int_t singlePlus[3],
     pairLike[i]    = fGlobalPairLike[i];    
   }
 }
-//----------------------------------------------------------------------
-//--- end of methods which return member data related info
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-/*
-void AliMUONTriggerDecision::AddLocalTrigger(const AliMUONLocalTrigger c){
-// Add a Local Trigger copy to the list
-  AliMUON *MUON=(AliMUON*)gAlice->GetModule("MUON");
-  MUON->AddLocalTrigger(c); 
-  fNLocalTriggers++;
+//_______________________________________________________________________
+void AliMUONTriggerDecision::Digits2Trigger(){
+// call the Trigger Algorithm and fill TreeR
+
+  
+  fMUONData->ResetTrigger();
+  Trigger();   
+  AliMUONGlobalTrigger* pGloTrig = new AliMUONGlobalTrigger(fGlobalSinglePlus, fGlobalSingleMinus,
+						       fGlobalSingleUndef, fGlobalPairUnlike, 
+						       fGlobalPairLike);  
+  // add a local trigger in the list 
+  fMUONData->AddGlobalTrigger(*pGloTrig);
+
+  Int_t i;
+  
+  for (Int_t icirc=0; icirc<AliMUONConstants::NTriggerCircuit(); icirc++) { 
+    if(GetITrigger(icirc)==1) {
+      Int_t localtr[7]={0,0,0,0,0,0,0};      
+      Int_t loLpt[2]={0,0}; Int_t loHpt[2]={0,0}; Int_t loApt[2]={0,0};
+      GetLutOutput(icirc, loLpt, loHpt, loApt);
+      localtr[0] = icirc;
+      localtr[1] = GetStripX11(icirc);
+      localtr[2] = GetDev(icirc);
+      localtr[3] = GetStripY11(icirc);
+      for (i=0; i<2; i++) {    // convert the Lut output in 1 digit 
+	localtr[4] = localtr[4]+Int_t(loLpt[i]*TMath::Power(2,i));
+	localtr[5] = localtr[5]+Int_t(loHpt[i]*TMath::Power(2,i));
+	localtr[6] = localtr[6]+Int_t(loApt[i]*TMath::Power(2,i));
+      }
+      AliMUONLocalTrigger* pLocTrig = new AliMUONLocalTrigger(localtr);
+      fMUONData->AddLocalTrigger(*pLocTrig);  // add a local trigger in the list
+    }
+  }
 }
-*/

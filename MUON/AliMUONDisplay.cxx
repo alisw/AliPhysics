@@ -1059,7 +1059,10 @@ void AliMUONDisplay::NextCathode()
 void AliMUONDisplay::Trigger()
 {
   // returns Trigger Decision for current event
-  AliMUONTriggerDecision* decision= new AliMUONTriggerDecision(1);
+  AliMUON *pMUON  =     (AliMUON*)gAlice->GetModule("MUON");
+  AliMUONTriggerDecision* decision= new AliMUONTriggerDecision(pMUON->GetLoader());
+
+  //  AliMUONTriggerDecision* decision= new AliMUONTriggerDecision(1);
   decision->Trigger(); 
 }
 

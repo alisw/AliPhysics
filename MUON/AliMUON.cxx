@@ -55,10 +55,11 @@
 #include "AliMUON.h"
 #include "AliMUONTriggerTrack.h"
 #include "AliMUONEventReconstructor.h"
+#include "AliMUONClusterReconstructor.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONChamberTrigger.h"
-#include "AliMUONClusterFinderVS.h"
+#include "AliMUONClusterFinderAZ.h"
 #include "AliMUONClusterInput.h"
 #include "AliMUONConstants.h"
 #include "AliMUONDigit.h"
@@ -237,8 +238,9 @@ Int_t AliMUON::DistancetoPrimitive(Int_t , Int_t )
 void  AliMUON::SetTreeAddress()
 {
   GetMUONData()->SetLoader(fLoader); 
-  GetMUONData()->MakeBranch("D,RC");
-  GetMUONData()->SetTreeAddress("H,D,RC");
+  //  GetMUONData()->MakeBranch("D,RC");
+  //  GetMUONData()->SetTreeAddress("H,D,RC");
+  GetMUONData()->SetTreeAddress("H");
   fHits = GetMUONData()->Hits(); // Added by Ivana to use the methods FisrtHit, NextHit of AliDetector
 }
 
@@ -440,7 +442,6 @@ AliLoader* AliMUON::MakeLoader(const char* topfoldername)
    Info("MakeLoader",
         "Creating standard getter for detector %s. Top folder is %s.",
          GetName(),topfoldername);
-     
  fLoader   = new AliLoader(GetName(),topfoldername);
  fMUONData = new AliMUONData(fLoader,GetName(),GetName()); 
  fMUONData->SetSplitLevel(fSplitLevel);
@@ -458,7 +459,7 @@ void AliMUON::Trigger(Int_t /*nev*/){
   Int_t pairLike[3]    = {0,0,0};
   
   ResetTrigger();
-  AliMUONTriggerDecision* decision= new AliMUONTriggerDecision(1);
+  AliMUONTriggerDecision* decision= new AliMUONTriggerDecision(fLoader,1);
   decision->Trigger();   
   decision->GetGlobalTrigger(singlePlus, singleMinus, singleUndef,
 			     pairUnlike, pairLike);
@@ -752,77 +753,92 @@ AliMUON& AliMUON::operator = (const AliMUON& /*rhs*/)
 //________________________________________________________________________
 void AliMUON::Reconstruct() const
 {
-// reconstruct clusters
 
 //  AliLoader* loader = GetLoader();
+
   AliRunLoader* runLoader = fLoader->GetRunLoader();
   Int_t nEvents = runLoader->GetNumberOfEvents();
+
+// used local container for each method
+// passing fLoader as argument, could be avoided ???
+  AliMUONEventReconstructor* recoEvent = new AliMUONEventReconstructor(fLoader);
+  AliMUONData* dataEvent = recoEvent->GetMUONData();
+
+  AliMUONClusterReconstructor* recoCluster = new AliMUONClusterReconstructor(fLoader);
+  AliMUONData* dataCluster = recoCluster->GetMUONData();
+
+  AliMUONTriggerDecision* trigDec = new AliMUONTriggerDecision(fLoader);
+  AliMUONData* dataTrig = trigDec->GetMUONData();
+
 
   for (Int_t i = 0; i < 10; i++) {
     AliMUONClusterFinderVS *RecModel = new AliMUONClusterFinderVS();
     RecModel->SetGhostChi2Cut(10);
-    const_cast<AliMUON*>(this)->SetReconstructionModel(i,RecModel);
+    recoCluster->SetReconstructionModel(i,RecModel);
   } 
 
-  AliMUONEventReconstructor* reco = new AliMUONEventReconstructor();
-
+  fLoader->LoadDigits("READ");
   fLoader->LoadRecPoints("RECREATE");
   fLoader->LoadTracks("RECREATE");
-  fLoader->LoadDigits("READ");
-
-
+  
   //   Loop over events              
   for(Int_t ievent = 0; ievent < nEvents; ievent++) {
     printf("Event %d\n",ievent);
     runLoader->GetEvent(ievent);
 
-    //---------------------------- digit2Reco & Trigger ---------------------
+    //----------------------- digit2cluster & Digits2Trigger -------------------
     if (!fLoader->TreeR()) fLoader->MakeRecPointsContainer();
      
     // tracking branch
-    fMUONData->MakeBranch("RC");
-    fMUONData->SetTreeAddress("D,RC");
-    const_cast<AliMUON*>(this)->Digits2Reco(); 
+    dataCluster->MakeBranch("RC");
+    dataCluster->SetTreeAddress("D,RC");
+    recoCluster->Digits2Clusters(); 
+    dataCluster->Fill("RC"); 
 
     // trigger branch
-    fMUONData->MakeBranch("GLT");
-    fMUONData->SetTreeAddress("D,GLT");
-    const_cast<AliMUON*>(this)->Trigger(ievent); 
+    dataTrig->MakeBranch("GLT");
+    dataTrig->SetTreeAddress("D,GLT");
+    trigDec->Digits2Trigger(); 
+    dataTrig->Fill("GLT");
+
+    fLoader->WriteRecPoints("OVERWRITE");
 
     //---------------------------- Track & TriggerTrack ---------------------
     if (!fLoader->TreeT()) fLoader->MakeTracksContainer();
+    // tracking branch
+    dataEvent->MakeBranch("RT"); //track
+    dataEvent->SetTreeAddress("RT");
+    recoEvent->EventReconstruct();
+    dataEvent->Fill("RT");
 
-    fMUONData->MakeBranch("RT"); //track
-    fMUONData->SetTreeAddress("RT");
-    reco->EventReconstruct();
-    for(Int_t i=0; i<reco->GetNRecTracks(); i++) {
-      AliMUONTrack * track = (AliMUONTrack*) reco->GetRecTracksPtr()->At(i);
-      fMUONData->AddRecTrack(*track);
-    }
-    fMUONData->Fill("RT");
-
-    fMUONData->MakeBranch("RL"); //trigger track
-    fMUONData->SetTreeAddress("RL");
-    reco->EventReconstructTrigger();
-    for(Int_t i=0; i<reco->GetNRecTriggerTracks(); i++) {
-      AliMUONTriggerTrack * triggertrack = (AliMUONTriggerTrack*) reco->GetRecTriggerTracksPtr()->At(i);
-      fMUONData->AddRecTriggerTrack(*triggertrack);
-    }
-    fMUONData->Fill("RL");
+    // trigger branch
+    dataEvent->MakeBranch("RL"); //trigger track
+    dataEvent->SetTreeAddress("RL");
+    recoEvent->EventReconstructTrigger();
+    dataEvent->Fill("RL");
 
     fLoader->WriteTracks("OVERWRITE");  
   
     //--------------------------- Resetting branches -----------------------
-    fMUONData->ResetDigits();
-    fMUONData->ResetRawClusters();
-    fMUONData->ResetTrigger();
-    fMUONData->ResetRecTracks();
-    fMUONData->ResetRecTriggerTracks();
+    dataCluster->ResetDigits();
+    dataCluster->ResetRawClusters();
+
+    dataTrig->ResetDigits();
+    dataTrig->ResetTrigger();
+
+    dataEvent->ResetRawClusters();
+    dataEvent->ResetTrigger();
+    dataEvent->ResetRecTracks();
+    dataEvent->ResetRecTriggerTracks();
+  
   }
   fLoader->UnloadDigits();
   fLoader->UnloadRecPoints();
   fLoader->UnloadTracks();
-  //delete reco;
+
+  delete recoCluster;
+  delete recoEvent;
+  delete trigDec;
 }
 //________________________________________________________________________
 void AliMUON::FillESD(AliESD* event) const
@@ -931,17 +947,17 @@ void AliMUON::FillESD(AliESD* event) const
 	ESDTrack->SetY11(y11);
       }
       // storing ESD MUON Track into ESD Event & reset muondata
-      if (ntrectracks+ntrectracks != 0)  //YS 
+      if (ntrectracks+ntrectracks != 0)  
 	event->AddMuonTrack(ESDTrack);
     } // end loop tracks
 
-    if (ntrectracks+ntrectracks != 0)  //YS 
-      event->SetTrigger(trigPat);
-
+    //    if (ntrectracks+ntrectracks != 0)  
+      //  event->SetTrigger(trigPat);
+      // Waiting for STEER update
     fMUONData->ResetRecTracks();
     fMUONData->ResetRecTriggerTracks();
 
-    //YS } // end loop on event  
-    fLoader->UnloadTracks(); //YS
+    //} // end loop on event  
+    fLoader->UnloadTracks(); 
 }
 

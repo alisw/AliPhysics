@@ -21,13 +21,11 @@
 // The output is a TClonesArray of AliMUONTriggerTracks.
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
-#include <TClonesArray.h>
 
 #include "AliRun.h"
 #include "AliMUON.h"
 #include "AliMUONData.h"
 #include "AliMUONEventReconstructor.h"
-#include "AliMUONTriggerTrack.h"
 #endif
 
 void MUONTriggerTracker (Text_t *FileName = "galice.root", Int_t FirstEvent = 0, Int_t LastEvent = 9999)
@@ -39,27 +37,29 @@ void MUONTriggerTracker (Text_t *FileName = "galice.root", Int_t FirstEvent = 0,
   cout << "FileName ``" << FileName << "''" << endl;
   
   // Creating Run Loader and openning file containing Hits, Digits and RecPoints
-  AliRunLoader * RunLoader = AliRunLoader::Open(FileName,"Event","UPDATE");
+  AliRunLoader * RunLoader = AliRunLoader::Open(FileName,"MUONLoader","UPDATE");
   if (RunLoader ==0x0) {
     printf(">>> Error : Error Opening %s file \n",FileName);
     return;
   }
   
   // Loading AliRun master
-  RunLoader->LoadgAlice();
+  if (RunLoader->GetAliRun() == 0x0) RunLoader->LoadgAlice();
   gAlice = RunLoader->GetAliRun();
-  RunLoader->LoadKinematics("READ");
+  // RunLoader->LoadKinematics("READ");
   
   // Loading MUON subsystem
-  AliMUON * MUON = (AliMUON *) gAlice->GetDetector("MUON");
   AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
-  AliMUONData * muondata = MUON->GetMUONData();
-  
+ 
   Int_t nevents;
   nevents = RunLoader->GetNumberOfEvents();
 
   MUONLoader->LoadRecPoints("READ");
   MUONLoader->LoadTracks("UPDATE"); 
+
+
+  AliMUONEventReconstructor *Reco = new AliMUONEventReconstructor(MUONLoader);
+  AliMUONData* muondata = Reco->GetMUONData();
 
   // Testing if Trigger Tracking has already been done
   RunLoader->GetEvent(0);
@@ -71,14 +71,9 @@ void MUONTriggerTracker (Text_t *FileName = "galice.root", Int_t FirstEvent = 0,
     }
   }
 
-  AliMUONEventReconstructor *Reco = new AliMUONEventReconstructor();
-  
-  Reco->SetPrintLevel(0);
-  cout << "AliMUONEventReconstructor: actual parameters" << endl;  
-  //  Reco->Dump();
-  //   gObjectTable->Print();
-  
+  Reco->SetPrintLevel(0);    
   if  (LastEvent>nevents) LastEvent=nevents;
+
   // Loop over events
   for (Int_t event = FirstEvent; event < LastEvent; event++) {
       cout << "Event: " << event << endl;
@@ -88,21 +83,13 @@ void MUONTriggerTracker (Text_t *FileName = "galice.root", Int_t FirstEvent = 0,
       muondata->MakeBranch("RL");
       muondata->SetTreeAddress("RL");
       Reco->EventReconstructTrigger();
-      // Dump current event
-      // Reco->EventDumpTrigger();
-      
-      // Duplicating rectriggertrack data in muondata for output
-      for(Int_t i=0; i<Reco->GetNRecTriggerTracks(); i++) {
-	  AliMUONTriggerTrack * triggertrack = (AliMUONTriggerTrack*) Reco->GetRecTriggerTracksPtr()->At(i);
-	  muondata->AddRecTriggerTrack(*triggertrack);
-//	 printf(">>> TEST TEST event %d Number of hits in the track %d is %d \n",event,i,track->GetNTrackHits());
-      }
-      
+ 
       muondata->Fill("RL");
       MUONLoader->WriteTracks("OVERWRITE");  
       muondata->ResetRecTriggerTracks();
       muondata->ResetTrigger();
   } // Event loop
+
   MUONLoader->UnloadRecPoints();
   MUONLoader->UnloadTracks();
 }
