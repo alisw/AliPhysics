@@ -334,16 +334,16 @@ Double_t AliHBTAvSeparationCut::GetValue(AliHBTPair* pair) const
   //chacks if avarage distance of two tracks is in given range
   AliHBTTrackPoints* tpts1 = pair->Particle1()->GetTrackPoints();
   if ( tpts1 == 0x0)
-   {
-     Warning("GetValue","Track 1 does not have Track Points. Pair NOT Passed.");
-     return -10e5;
+   {//it could be simulated pair
+//     Warning("GetValue","Track 1 does not have Track Points. Pair NOT Passed.");
+     return 10e5;
    }
 
   AliHBTTrackPoints* tpts2 = pair->Particle2()->GetTrackPoints();
   if ( tpts2 == 0x0)
    {
-     Warning("GetValue","Track 2 does not have Track Points. Pair NOT Passed.");
-     return -10e5;
+//     Warning("GetValue","Track 2 does not have Track Points. Pair NOT Passed.");
+     return 10e5;
    }
    
   return tpts1->AvarageDistance(*tpts2);
