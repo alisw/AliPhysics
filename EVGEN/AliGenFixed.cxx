@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.1  2000/06/09 20:24:00  morsch
+Same class as previously in AliSimpleGen.cxx
+All coding rule violations except RS3 corrected (AM)
+
 */
 
 ///////////////////////////////////////////////////////////////////
@@ -39,9 +43,7 @@ $Log$
 
 #include "AliGenFixed.h"
 #include "AliRun.h"
-#include "AliConst.h"
 #include "AliPDG.h"
-#include "TF1.h"
   
 ClassImp(AliGenFixed)
 
