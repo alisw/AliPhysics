@@ -239,7 +239,7 @@ Int_t  AliMUONHit::Chamber()  const
 {  
 // Return chamber ID
 
-  if (!fIsDetElemId) 
+  if (fIsDetElemId) 
     return fDetElemId;
   else  
     return AliMUONVGeometryDEIndexing::GetModuleId(fDetElemId);  
