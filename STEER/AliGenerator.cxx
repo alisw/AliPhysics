@@ -47,6 +47,7 @@ ClassImp(AliGenerator)
 
 //_______________________________________________________________________
 AliGenerator::AliGenerator():
+  fMCEvGen(0),
   fThetaMin(0),
   fThetaMax(0),
   fPhiMin(0),
@@ -102,6 +103,7 @@ AliGenerator::AliGenerator():
 
 //_______________________________________________________________________
 AliGenerator::AliGenerator(Int_t npart):
+  fMCEvGen(0),
   fThetaMin(0),
   fThetaMax(0),
   fPhiMin(0),
@@ -161,6 +163,7 @@ AliGenerator::AliGenerator(Int_t npart):
 AliGenerator::AliGenerator(const AliGenerator &gen): 
   TNamed(gen),
   AliRndm(gen),
+  fMCEvGen(0),
   fThetaMin(0),
   fThetaMax(0),
   fPhiMin(0),
