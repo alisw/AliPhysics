@@ -99,7 +99,7 @@ ClassImp(AliTOFPID)
 }
            
 //____________________________________________________________________________ 
-  AliTOFPID::AliTOFPID(char* headerFile, char *cutsFile, const Option_t* opt="pp"):TTask("AliTOFPID","") 
+  AliTOFPID::AliTOFPID(char* headerFile, char *cutsFile, const Option_t* opt):TTask("AliTOFPID","") 
 {
   fhfile = TFile::Open(headerFile); // connect file with ntuple
   fcut = TFile::Open(cutsFile); // connect file for cuts

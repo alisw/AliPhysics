@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.33  2002/02/19 10:39:38  vicinanz
+t0 classes added and material update (steel added)
+
 Revision 1.31  2001/11/22 11:22:51  hristov
 Updated version of TOF digitization, N^2 problem solved (J.Chudoba)
 
@@ -168,7 +171,7 @@ AliTOF::AliTOF()
 }
  
 //_____________________________________________________________________________
-AliTOF::AliTOF(const char *name, const char *title, Option_t *option="noTimeZero")
+AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
        : AliDetector(name,title)
 {
   //
