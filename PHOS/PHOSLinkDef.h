@@ -37,14 +37,14 @@
 #pragma link C++ class AliPHOSRecParticle+;
 #pragma link C++ class AliPHOSPID+;
 #pragma link C++ class AliPHOSPIDv1+;
-#pragma link C++ class AliPHOSIndexToObject+;
+#pragma link C++ class AliPHOSGetter+;
 #pragma link C++ class AliPHOSAnalyze+;
 #pragma link C++ class AliPHOSCPVDigit+;
-#pragma link C++ class  AliPHOSQAVirtualCheckable+;
-#pragma link C++ class  AliPHOSQAIntCheckable+;
-#pragma link C++ class  AliPHOSQAFloatCheckable+;
-#pragma link C++ class  AliPHOSQAObjectCheckable+;  
-#pragma link C++ class  AliPHOSQAChecker+;
-#pragma link C++ class  AliPHOSQAMeanChecker+;
-#pragma link C++ class  AliPHOSQAAlarm+;
+#pragma link C++ class AliPHOSQAVirtualCheckable+;
+#pragma link C++ class AliPHOSQAIntCheckable+;
+#pragma link C++ class AliPHOSQAFloatCheckable+;
+#pragma link C++ class AliPHOSQAObjectCheckable+;  
+#pragma link C++ class AliPHOSQAChecker+;
+#pragma link C++ class AliPHOSQAMeanChecker+;
+#pragma link C++ class AliPHOSQAAlarm+;
 #endif
