@@ -3,7 +3,9 @@
 # Makefile for HLT code.  #
 #                         #
 # Author: Anders Vestbo   #                    
+# changes by C. Loizides  #
 ###########################
+
 
 ifndef TOPDIR
 TOPDIR = `pwd`/..
@@ -12,6 +14,8 @@ endif
 include $(TOPDIR)/Makefile.conf
 
 DEFSTR = -Dno_root
+OBJDIR = lib_alone
+INCLUDES = -I$(TOPDIR)/hough -I$(TOPDIR)/src -I$(TOPDIR)/comp -I$(TOPDIR)/misc
 
 ifeq ($(USEPACKAGE),ROOT) 
 INCLUDES = -I$(ROOTSYS)/include -I$(TOPDIR)/hough -I$(TOPDIR)/src -I$(TOPDIR)/comp
@@ -22,16 +26,18 @@ endif
 ifeq ($(USEPACKAGE),ALIROOT)
 INCLUDES = -I$(ROOTSYS)/include -I$(TOPDIR)/hough -I$(TOPDIR)/src -I$(TOPDIR)/comp -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/CONTAINERS -I$(ALICE_ROOT)/STEER
 DEFSTR = -Duse_aliroot
+OBJDIR = lib
 endif
 
 ifdef DO_MC
 DEFSTR += -Ddo_mc
 endif
-DEFSTR += $(EXTRADEF)
 
 ifndef NOLOGGING
 DEFSTR += -Duse_logging
 endif
+
+DEFSTR += $(EXTRADEF)
 
 ifdef MLUCDIR
 INCLUDES += -I$(MLUCDIR)/include
@@ -48,9 +54,9 @@ SRCS	= AliL3ConfMapper.cxx AliL3ConfMapPoint.cxx AliLevel3.cxx\
           AliL3MemHandler.cxx  AliL3Benchmark.cxx AliL3Display.cxx
 
 
-DICT = AliL3Cint.cxx
-DICTH = AliL3Cint.h
-DICTO = $(OBJDIR)/AliL3Cint.o
+DICT  = AliL3Cint-$(USEPACKAGE).cxx
+DICTH = AliL3Cint-$(USEPACKAGE).h
+DICTO = $(OBJDIR)/AliL3Cint-$(USEPACKAGE).o
 
 ifeq ($(USEPACKAGE),ROOT)
 HDRS = $(SRCS:.cxx=.h) AliL3LinkDef.h
@@ -61,6 +67,12 @@ ifeq ($(USEPACKAGE),ALIROOT)
 HDRS = $(SRCS:.cxx=.h) AliL3FileHandler.h AliL3Evaluate.h AliL3LinkDef.h
 OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(OBJDIR)/AliL3Evaluate.o $(OBJDIR)/AliL3FileHandler.o $(DICTO)
 endif
+
+ifeq ($(OBJDIR),lib_alone)
+HDRS = $(SRCS:.cxx=.h) 
+OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS))
+endif
+
 
 LEVELSO = $(LIBDIR)/libAliL3.so
 
@@ -85,33 +97,7 @@ $(LIBDIR) :
 clean :
 	rm -f $(OBJDIR)/*.o
 	rm -f $(LIBDIR)/libAliL3.so
-	rm -f $(DICT) $(DICTH) 
+	rm -f $(DICT) $(DICTH)
 
 so :
 	rm -f $(LIBDIR)/libAliL3.so
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
