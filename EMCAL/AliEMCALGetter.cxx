@@ -122,10 +122,10 @@ AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* branchTitle, 
        	fFailed = kTRUE ;
         return ;  
       }
-      
-      gAlice = static_cast<AliRun *>(fFile->Get("gAlice")) ;
     }
+    gAlice = static_cast<AliRun *>(fFile->Get("gAlice")) ;
   }
+  
 
   if (!gAlice) {
     cerr << "ERROR : AliEMCALGetter::AliEMCALGetter -> Cannot find gAlice in " << fHeaderFile.Data() << endl ; 
@@ -182,7 +182,8 @@ AliEMCALGetter * AliEMCALGetter::GetInstance()
     rv = fgObjGetter ;
   else
     cout << "AliEMCALGetter::GetInstance ERROR: not yet initialized" << endl ;
-
+  
+  fFile->cd() ; 
   return rv ;
 }
 
@@ -196,19 +197,16 @@ AliEMCALGetter * AliEMCALGetter::GetInstance(const char* headerFile,
   if ( fgObjGetter )    
     if((fgObjGetter->fBranchTitle.CompareTo(branchTitle) == 0) && 
        (fgObjGetter->fHeaderFile.CompareTo(headerFile)==0)) {
-      return fgObjGetter ;
       fFile->cd() ; 
+      return fgObjGetter ;
     }
     else
       fgObjGetter->~AliEMCALGetter() ;  // delete it already exists another version
-  
+
   fgObjGetter = new AliEMCALGetter(headerFile,branchTitle, rw) ; 
 
   if (fgObjGetter->HasFailed() ) 
     fgObjGetter = 0 ; 
-
-  // Posts a few item to the white board (folders)
-  // fgObjGetter->CreateWhiteBoard() ;
     
   fFile->cd() ; 
   return fgObjGetter ; 
@@ -438,7 +436,7 @@ Bool_t AliEMCALGetter::PostSDigitizer(const char * name, const char * file) cons
   AliEMCALSDigitizer * emcalsd  = dynamic_cast<AliEMCALSDigitizer *>(emcal->GetListOfTasks()->FindObject( sdname )); 
   if (!emcalsd) {
     emcalsd = new AliEMCALSDigitizer() ;  
-    //Note, we can not call constructor with parameters: it will call Getter and scrud up everething
+    //Note, we can not call constructor with parameters: it will call Getter and screw up everething
     emcalsd->SetName(sdname) ;
     emcalsd->SetTitle(file) ;
     emcal->Add(emcalsd) ;	
