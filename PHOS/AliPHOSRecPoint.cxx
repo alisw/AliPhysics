@@ -46,8 +46,7 @@ AliPHOSRecPoint::AliPHOSRecPoint()
 
   fMaxTrack = 200 ;
   fPHOSMod = 0;
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  fGeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
+
 }
 
 //____________________________________________________________________________
@@ -228,6 +227,17 @@ void  AliPHOSRecPoint::EvalPrimaries(TClonesArray * digits)
   delete tempo ;
 
 }
+//____________________________________________________________________________
+void AliPHOSRecPoint::GetGlobalPosition(TVector3 & gpos, TMatrix & gmat) const
+{
+  // returns the position of the cluster in the global reference system of ALICE
+  // and the uncertainty on this position
+  
+  
+  AliPHOSGetter::GetInstance()->PHOSGeometry()->GetGlobal(this, gpos, gmat) ;
+ 
+}
+
 
 //______________________________________________________________________________
 void AliPHOSRecPoint::Paint(Option_t *)
