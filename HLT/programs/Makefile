@@ -66,22 +66,30 @@ CXXFLAGS = -O2 -Wall -ggdb $(INCLUDES)
 LDFLAGS  = -O2 $(LIBS)
 
 
-PRGS	= runit read
-
+PRGS	= runit read speedtest convbin gettransform
 
 
 all : $(PRGS)
 
 runit : runit.o
-	$(LD) $< $(LDFLAGS) $(OBJS) -o $@
+	$(LD) $< $(LDFLAGS) -o $@
+
+convbin : ali2raw.o
+	$(LD) $< $(LDFLAGS) -o $@
 
 read : read.o
-	$(LD) read.o $(LDFLAGS) $(OBJS) -o read
+	$(LD) $< $(LDFLAGS) -o $@
 
+gettransform : gettransform.o
+	$(LD) $< $(LDFLAGS) -o $@
+
+speedtest : speedtest.cxx
+	g++ -O -Wall -fPIC -ffast-math $(CXXFLAGS) speedtest.cxx -o speedtest
+	# g++ -O -Wall -fPIC -mcpu=ev6 $(CXXFLAGS) speedtest.cxx -o speedtest
+	# cxx -O -Wall -fPIC  -lm  $(CXXFLAGS) speedtest.cxx -o speedtest 
 
 %.o : %.cxx 
 	$(CXX) $(CXXFLAGS) $(DEFSTR) -c $(INCLUDES) -o $@ $<
-
 
 clean :
 	rm -f *.o $(PRGS)
