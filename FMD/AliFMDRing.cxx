@@ -413,7 +413,7 @@ AliFMDRing::SetupGeometry(Int_t vacuumId, Int_t siId, Int_t pcbId,
     dz   =  w / 2 - fSiThickness - fPrintboardThickness / 2;
     gMC->Gspos(name.Data(), id, name2.Data(), 
 	       fLowR + pbBotL + pbTopL / 2, 0, dz, pbRotId, "ONLY");
-    name = Form(kPrintboardFormat, fId);
+    name = Form(kPrintboardFormat, 'B', fId);
     gMC->Gspos(name.Data(), id, name2.Data(), 
 	       fLowR + pbBotL / 2, 0, dz, pbRotId, "ONLY");
 

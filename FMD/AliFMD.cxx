@@ -173,7 +173,17 @@ AliFMD::AliFMD()
     fOuter(0),
     fFMD1(0),
     fFMD2(0), 
-    fFMD3(0)
+    fFMD3(0), 
+    fSDigits(0), 
+    fNsdigits(0),
+    fSiDensity(0),
+    fPrintboardRotationId(0),
+    fIdentityRotationId(0),
+    fShortLegId(0),
+    fLongLegId(0),
+    fLegLength(0),
+    fLegRadius(0),
+    fModuleSpacing(0)
 {
   //
   // Default constructor for class AliFMD
@@ -181,8 +191,6 @@ AliFMD::AliFMD()
   AliDebug(0, "Default CTOR");
   fHits     = 0;
   fDigits   = 0;
-  fSDigits  = 0;
-  fNsdigits = 0;
   fIshunt   = 0;
 }
 
@@ -193,7 +201,17 @@ AliFMD::AliFMD(const char *name, const char *title, bool detailed)
     fOuter(0),
     fFMD1(0),
     fFMD2(0), 
-    fFMD3(0)
+    fFMD3(0),
+    fSDigits(0),
+    fNsdigits(0),
+    fSiDensity(0),
+    fPrintboardRotationId(0),
+    fIdentityRotationId(0),
+    fShortLegId(0),
+    fLongLegId(0),
+    fLegLength(0),
+    fLegRadius(0),
+    fModuleSpacing(0)
 {
   //
   // Standard constructor for Forward Multiplicity Detector
@@ -651,8 +669,7 @@ AliFMD::MakeBranch(Option_t * option)
 void 
 AliFMD::SetTreeAddress()
 {
-  // Set branch address for the Hits and Digits Tree.
-
+  // Set branch address for the Hits, Digits, and SDigits Tree.
   if (fLoader->TreeH()) HitsArray();
   AliDetector::SetTreeAddress();
 

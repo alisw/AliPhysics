@@ -120,21 +120,19 @@ AliFMDv1::StepManager()
   // Only process charged particles 
   if(TMath::Abs(gMC->TrackCharge()) <= 0) return; 
 
-  TString vol(gMC->CurrentVolName());
-  std::cout << "Is inside " << vol << " ... " << std::endl;
+  // TString vol(gMC->CurrentVolName());
+  // std::cout << "Is inside " << vol << " ... " << std::endl;
   // Only do stuff is the track is in one of the strips. 
   // TString vol(gMC->CurrentVolName());
   // if (!vol.Contains("STR")) return;
   Int_t copy;
   Int_t volumeId = gMC->CurrentVolID(copy);
-  if (volumeId != fInner->GetStripId() || volumeId != fOuter->GetStripId()) {
-    std::cout << "Not a FMD strip volume: " 
-	      << volumeId << " != " << fInner->GetStripId() << " or " 
-	      << fOuter->GetStripId() << std::endl;
-    return;
-  }
-  std::cout << "OK, an FMD strip volume!" << std::endl;
-  
+  // The ring ID is encoded in the volume name 
+  Char_t ring = '\0';
+  if (volumeId == fInner->GetStripId())      ring = 'I';
+  else if (volumeId == fOuter->GetStripId()) ring = 'O'; 
+  else                                       return;
+
   // Get the strip number.  Note, that GEANT numbers divisions from 1,
   // so we subtract one 
   Int_t strip = copy - 1;
@@ -161,9 +159,7 @@ AliFMDv1::StepManager()
   // The sector number, calculated from module and phi division # 
   Int_t  sector =  2 * module + phiDiv - 1;
 
-  // The ring ID is encoded in the volume name 
-  Char_t ring = vol[3];
-
+  
   // Get a pointer to the sub detector structure 
   AliFMDSubDetector* det = 0;
   switch (detector) {
