@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/07/10 13:58:01  fca
+New version of ZDC from E.Scomparin & C.Oppedisano
+
 Revision 1.7  2000/01/19 17:17:40  fca
 
 Revision 1.6  1999/09/29 09:24:35  fca
@@ -80,6 +83,8 @@ void AliGenZDC::Generate()
   //
   // Generate one trigger (n or p)
   //
+  Int_t i;
+
   Double_t mass, pLab[3], balp0, balp[3], ddp[3], dddp0, dddp[3];
   Float_t ptot = fPMin;
   Int_t nt;
@@ -95,7 +100,7 @@ void AliGenZDC::Generate()
     pLab[1] = 0.;
     pLab[2] = ptot*TMath::Cos(scang);
   }
-  for(Int_t i=0; i<=2; i++){
+  for(i=0; i<=2; i++){
      fP[i] = pLab[i];
   }
   
@@ -111,11 +116,11 @@ void AliGenZDC::Generate()
     if(fIpart==kProton) {mass = 0.93956563;}
     if(fIpart==kNeutron) {mass = 0.93827231;}
 //  printf(" pLABx = %f  pLABy = %f  pLABz = %f \n",pLab[0],pLab[1],pLab[2]); 
-    for(Int_t i=0; i<=2; i++){
+    for(i=0; i<=2; i++){
        balp[i] = -pLab[i];
     }
     balp0 = TMath::Sqrt(pLab[0]*pLab[0]+pLab[1]*pLab[1]+pLab[2]*pLab[2]+mass*mass);
-    for(Int_t i=0; i<=2; i++){
+    for(i=0; i<=2; i++){
        dddp[i] = ddp[i];
     }
     dddp0 = TMath::Sqrt(dddp[0]*dddp[0]+dddp[1]*dddp[1]+dddp[2]*dddp[2]+mass*mass);
@@ -132,7 +137,7 @@ void AliGenZDC::Generate()
 
 //    printf(" Boosted momentum -> px = %f, py = %f, pz = %f\n",
 //	     pFermi[0], pFermi[1], pFermi[2]);
-    for(Int_t i=0; i<=2; i++){
+    for(i=0; i<=2; i++){
        fBoostP[i] = pFermi[i];
     }
 
@@ -209,9 +214,11 @@ void AliGenZDC::BeamDivCross(Int_t icross, Float_t fBeamDiv, Float_t fBeamCrossA
 {
   Double_t tetpart, fipart, tetdiv, fidiv, angleSum[2], tetsum, fisum, dplab[3];
   Double_t rvec;
+
+  Int_t i;
   
   Double_t pmq = 0.;
-  for(int i=0; i<=2; i++){
+  for(i=0; i<=2; i++){
      dplab[i] = pLab[i];
      pmq = pmq+pLab[i]*pLab[i];
   }
@@ -263,7 +270,7 @@ void AliGenZDC::BeamDivCross(Int_t icross, Float_t fBeamDiv, Float_t fBeamCrossA
   pLab[2] = pmod*TMath::Cos(tetsum);
 //  printf("	pLab[0] = %f pLab[1] = %f pLab[2] = %f \n\n",
 //         pLab[0],pLab[1],pLab[2]);
-  for(Int_t i=0; i<=2; i++){
+  for(i=0; i<=2; i++){
      fDivP[i] = pLab[i];
   }
 }

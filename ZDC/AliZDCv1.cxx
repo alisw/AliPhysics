@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/07/10 13:58:01  fca
+New version of ZDC from E.Scomparin & C.Oppedisano
+
 Revision 1.7  2000/01/19 17:17:40  fca
 
 Revision 1.6  1999/09/29 09:24:35  fca
@@ -849,6 +852,7 @@ void AliZDCv1::Init()
 //_____________________________________________________________________________
 void AliZDCv1::InitTables()
 {
+  Int_t k, j;
   //Initialize parameters for light tables and read them
   fNalfan = 90;
   fNalfap = 90;
@@ -874,8 +878,8 @@ void AliZDCv1::InitTables()
      return;
   }
 //  printf(" --- Reading light tables for ZN \n");
-  for(int k=0; k<fNalfan; k++){
-     for(int j=0; j<fNben; j++){
+  for(k=0; k<fNalfan; k++){
+     for(j=0; j<fNben; j++){
        fscanf(fp1,"%f",&fTablen[0][k][j]);
        fscanf(fp2,"%f",&fTablen[1][k][j]);
        fscanf(fp3,"%f",&fTablen[2][k][j]);
@@ -904,8 +908,8 @@ void AliZDCv1::InitTables()
      return;
   }
 //  printf(" --- Reading light tables for ZP \n");
-  for(int k=0; k<fNalfap; k++){
-     for(int j=0; j<fNbep; j++){
+  for(k=0; k<fNalfap; k++){
+     for(j=0; j<fNbep; j++){
        fscanf(fp5,"%f",&fTablep[0][k][j]);
        fscanf(fp6,"%f",&fTablep[1][k][j]);
        fscanf(fp7,"%f",&fTablep[2][k][j]);
@@ -925,6 +929,8 @@ void AliZDCv1::StepManager()
   // Routine called at every step in the Zero Degree Calorimeters
   //
 
+  Int_t j;
+
   Int_t vol[2], ibeta, ialfa, ibe;
   Float_t x[3], xdet[3], destep, hits[9], m, ekin, um[3], ud[3], be, radius, out;
   TLorentzVector s, p;
@@ -936,7 +942,7 @@ void AliZDCv1::StepManager()
         
   //Particle coordinates 
     gMC->TrackPosition(s);
-    for(Int_t j=0; j<=2; j++){
+    for(j=0; j<=2; j++){
        x[j] = s[j];
     }
     hits[0] = x[0];
@@ -1057,7 +1063,7 @@ void AliZDCv1::StepManager()
  
        // Distance between particle trajectory and fibre axis
        gMC->TrackPosition(s);
-       for(Int_t j=0; j<=2; j++){
+       for(j=0; j<=2; j++){
    	  x[j] = s[j];
        }
        gMC->Gmtod(x,xdet,1);
