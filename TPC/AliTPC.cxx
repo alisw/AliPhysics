@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.46  2001/11/07 06:47:12  kowal2
+Removed printouts
+
 Revision 1.45  2001/11/03 13:33:48  kowal2
 Updated algorithms in Hits2SDigits, SDigits2Digits,
 Hits2ExactClusters.
@@ -1748,7 +1751,7 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
 
         q = gRandom->Gaus(q,fTPCParam->GetNoise()*fTPCParam->GetNoiseNormFac()); 
 
-        q = (Int_t)q;
+        q = TMath::Nint(q);
 
         if(q <=zerosup) continue; // do not fill zeros
         if(q > fTPCParam->GetADCSat()) q = fTPCParam->GetADCSat();  // saturation
@@ -1757,8 +1760,9 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
 
       else {
        if(q <= 0.) continue; // do not fill zeros
+       if(q>2000.) q=2000.;
        q *= 16.;
-       q = (Int_t)q;
+       q = TMath::Nint(q);
       }
 
       //
