@@ -116,20 +116,21 @@ AliHBTTrackPoints::AliHBTTrackPoints(Int_t n, AliESDtrack* track, Float_t mf, Fl
      fZ[i] = 0.0;
    }
   
-  Double_t x;
-  Double_t par[5];
-  track->GetInnerExternalParameters(x,par);     //get properties of the track
-  if (x == 0)
-   {
-     Error("AliHBTTrackPoints","This ESD track does not contain TPC information");
-     return;
-   }
-
-  if (mf == 0.0)
-   {
-     Error("AliHBTTrackPoints","Zero Magnetic field passed as parameter.");
-     return;
-   }
+  TMath::Hypot(dr,r0)+mf;//just to shut up compilers warning
+//  Double_t x;
+//  Double_t par[5];
+//  track->GetInnerExternalParameters(x,par);     //get properties of the track
+//  if (x == 0)
+//   {
+//     Error("AliHBTTrackPoints","This ESD track does not contain TPC information");
+//     return;
+//   }
+//
+//  if (mf == 0.0)
+//   {
+//     Error("AliHBTTrackPoints","Zero Magnetic field passed as parameter.");
+//     return;
+//   }
    
 //  Double_t alpha = track->GetInnerAlpha();
 //  Double_t cc = 1000./0.299792458/mf;//conversion constant
