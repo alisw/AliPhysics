@@ -338,7 +338,11 @@ Float_t  AliPHOSPIDv1::GetEllipseParameter(TString particle, TString param, Floa
     else if (param.Contains("x0")) e = TMath::Max((Double_t)e,1.1);
   }
 
-  value = p[0]/TMath::Sqrt(e) + p[1]*e + p[2]*e*e + p[3];
+ if (particle == "photon")
+    value = p[0]/TMath::Sqrt(e) + p[1]*e + p[2]*e*e + p[3];
+  else if (particle == "pi0")
+    value = p[0] + p[1]*e + p[2]*e*e;
+
   return value;
 }
 
