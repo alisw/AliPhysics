@@ -113,7 +113,7 @@ void Config()
   gMC->SetProcess("ANNI",1);
   gMC->SetProcess("BREM",1);
   gMC->SetProcess("MUNU",1);
-  gMC->SetProcess("CKOV",1);
+  gMC->SetProcess("CKOV",0); // 1
   gMC->SetProcess("HADR",1);
   gMC->SetProcess("LOSS",2);
   gMC->SetProcess("MULS",1);
