@@ -17,9 +17,8 @@
 
 //____________________________________________________________________
 //
-// This is a class that constructs ReconstParticles (reconstructed
-// particles) out of Digits
-//
+// This is a class that constructs AliFMDMult (reconstructed
+// multiplicity) from of Digits
 //
 // This class reads either digits from a TClonesArray or raw data from
 // a DDL file (or similar), and stores the read ADC counts in an
@@ -33,8 +32,53 @@
 // signal to an energy deposition, and then dividing by the typical
 // energy loss of a particle.
 // 
-// Currently, this class only reads the digits from a TClonesArray,
-// and the Poission method for reconstruction. 
+//      +---------------------+       +---------------------+
+//      | AliFMDReconstructor |<>-----| AliFMDMultAlgorithm |
+//      +---------------------+       +---------------------+
+//                                               ^
+//                                               |
+//                                   +-----------+---------+
+//                                   |                     |
+//                         +-------------------+   +------------------+
+//                         | AliFMDMultPoisson |   | AliFMDMultNaiive |
+//                         +-------------------+   +------------------+
+//
+// AliFMDReconstructor acts as a manager class.  It contains a list of
+// AliFMDMultAlgorithm objects.  The call graph looks something like 
+//
+//
+//       +----------------------+            +----------------------+
+//       | :AliFMDReconstructor |            | :AliFMDMultAlgorithm |
+//       +----------------------+            +----------------------+
+//                  |                                  |
+//    Reconstruct  +-+                                 |
+//    ------------>| |                         PreRun +-+
+//                 | |------------------------------->| |   
+//                 | |                                +-+
+//                 | |-----+ (for each event)          |
+//                 | |     | *ProcessEvent             |
+//                 |+-+    |                           |
+//                 || |<---+                 PreEvent +-+
+//                 || |------------------------------>| |      
+//                 || |                               +-+
+//                 || |-----+                          |
+//                 || |     | ProcessDigits            |
+//                 ||+-+    |                          |
+//                 ||| |<---+                          |
+//                 ||| |         *ProcessDigit(digit) +-+
+//                 ||| |----------------------------->| |
+//                 ||| |                              +-+
+//                 ||+-+                               |
+//                 || |                     PostEvent +-+
+//                 || |------------------------------>| |
+//                 || |                               +-+
+//                 |+-+                                |
+//                 | |                        PostRun +-+
+//                 | |------------------------------->| |
+//                 | |                                +-+
+//                 +-+                                 |
+//                  |                                  |
+//
 //
 // 
 //-- Authors: Evgeny Karpechev(INR) and Alla Maevsksia
@@ -281,7 +325,9 @@ AliFMDReconstructor::ProcessEvent(Int_t event,
 
   if  (reader) {
     AliFMDRawReader rawRead(fFMD, reader);
-    // rawRead->SetSampleRate(fSampleRate);
+    AliDebug(10, Form("Making raw reader with sample rate: %d",
+		      fFMD->GetSampleRate()));
+    rawRead.SetSampleRate(fFMD->GetSampleRate());
     rawRead.Exec();
   }
   else {
@@ -323,10 +369,10 @@ AliFMDReconstructor::SubtractPedestal(AliFMDDigit* digit) const
   // something like that. 
 
   Int_t counts = 0;
-  Float_t ped = fPedestal * fPedestalFactor * fPedestalWidth;
-  if (digit->Count3() >= 0)      counts = digit->Count3();
-  else if (digit->Count2() >= 0) counts = digit->Count2();
-  else                           counts = digit->Count2();
+  Float_t ped = fPedestal + fPedestalFactor * fPedestalWidth;
+  if (digit->Count3() > 0)      counts = digit->Count3();
+  else if (digit->Count2() > 0) counts = digit->Count2();
+  else                          counts = digit->Count1();
   counts = TMath::Max(Int_t(counts - ped), 0);
   return  UShort_t(counts);
 }

@@ -12,7 +12,6 @@
 // 
 // Class to read ADC values from a AliRawReader object. 
 // 
-
 #ifndef ROOT_TTask
 # include <TTask.h>
 #endif

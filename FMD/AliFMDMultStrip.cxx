@@ -17,10 +17,14 @@
 
 //____________________________________________________________________
 //
-//  Forward Multiplicity Detector have to be reconstructed number of
-//  particles in fixed pseudorapidity interval from fNumOfMinRing
-//  to fNumOfMaxRing and phi interval from fNumOfMinSector to
-//  fNumOfMaxSector
+//  FMD reconstructed multiplicity in a strip.   It contains the
+//  information of which strip in what sector of what ring, in which
+//  detector the information belongs, as well as the pseudo-rapidity,
+//  and azimuthal angle the strip had in the event.  Note, that this
+//  may change when the interaction points z--coordinate changes
+//  (which it probably will - experience from RHIC says so).  Also,
+//  the reconstructed energy deposited is stored. 
+//
 //
 #include "AliFMDMultStrip.h"	// ALIFMDMULTSTRIP_H
 #include <TString.h>            // ROOT_TString
@@ -70,7 +74,7 @@ AliFMDMultStrip::Print(Option_t* option) const
   //    P:           Phi range (default)
   //
   TString opt(option);
-  cout << "FMD Reconstructed particles: " << fParticles << endl;
+  cout << "FMD Multiplicity in a strip: " << fParticles << endl;
   if (opt.Contains("D", TString::kIgnoreCase))
     cout << "  Detector:      FMD" << fDetector << fRing 
 	 << "[" << fSector << "," << fStrip << "]" << endl;

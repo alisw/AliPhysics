@@ -34,7 +34,14 @@
 #include <TList.h>		// ROOT_TList
 #include <TString.h>		// ROOT_TString
 
+//____________________________________________________________________
 ClassImp(AliFMDSubDetector);
+
+//____________________________________________________________________
+const Char_t* AliFMDSubDetector::fgkHoneyTopFormat         = "F%d%cH";
+const Char_t* AliFMDSubDetector::fgkHoneyBottomFormat      = "F%d%cI";
+const Char_t* AliFMDSubDetector::fgkHoneyTopInnerFormat    = "F%d%cJ";
+const Char_t* AliFMDSubDetector::fgkHoneyBottomInnerFormat = "F%d%cK";
 
 //____________________________________________________________________
 AliFMDSubDetector::AliFMDSubDetector(Int_t n)
@@ -43,7 +50,11 @@ AliFMDSubDetector::AliFMDSubDetector(Int_t n)
     fOuterZ(0), 
     fInner(0), 
     fOuter(0)
-{}
+{
+  SetAlThickness();
+  SetHoneycombThickness();
+}
+
 
 //____________________________________________________________________
 void 
@@ -119,7 +130,8 @@ AliFMDSubDetector::SimpleGeometry(TList* nodes,
   
 //____________________________________________________________________
 void 
-AliFMDSubDetector::SetupGeometry(Int_t airId, Int_t kaptionId) 
+AliFMDSubDetector::SetupGeometry(Int_t airId, Int_t alId, Int_t /* cId
+								 */) 
 {
   // Set up the geometry of this particular detector. 
   // 
@@ -128,7 +140,7 @@ AliFMDSubDetector::SetupGeometry(Int_t airId, Int_t kaptionId)
   // 
   // Parameters
   //   airId           Medium of inactive virtual volumes 
-  //   kaptionId       Medium of honeycomb
+  //   alId       Medium of honeycomb
   // 
   // DebugGuard guard("AliFMDSubDetector::SetupGeometry");
   AliDebug(10, "AliFMDSubDetector::SetupGeometry");
@@ -141,44 +153,44 @@ AliFMDSubDetector::SetupGeometry(Int_t airId, Int_t kaptionId)
     switch (i) {
     case 0: 
       r      = fInner;
-      c      = 'I';
       par[0] = fInnerHoneyLowR;
       par[1] = fInnerHoneyHighR;
       break;
     case 1: 
       r     = fOuter;
-      c     = 'O';
       par[0] = fOuterHoneyLowR;
       par[1] = fOuterHoneyHighR;
       break;
     }
     if (!r) continue;
+    c = r->GetId();
+    
     // Top of honeycomb, inner ring 
     par[2] = fHoneycombThickness / 2;
     par[3] = 0;
     par[4] = 180;
-    name   = Form("HT%c%d", c, fId);
-    gMC->Gsvolu(name.Data(), "TUBS", kaptionId, par, 5);
+    name   = Form(fgkHoneyTopFormat, fId, c);
+    gMC->Gsvolu(name.Data(), "TUBS", alId, par, 5);
     
     // Bottom of honeycomb, inner ring 
     par[3] = 180;
     par[4] = 360;
-    name   = Form("HB%c%d", c, fId);
-    gMC->Gsvolu(name.Data(), "TUBS", kaptionId, par, 5);
+    name   = Form(fgkHoneyBottomFormat, fId, c);
+    gMC->Gsvolu(name.Data(), "TUBS", alId, par, 5);
     
     // Air in top of honeycomb, inner ring 
-    par[0] += fKaptionThickness;
-    par[1] -= fKaptionThickness;
-    par[2] -= fKaptionThickness;
+    par[0] += fAlThickness;
+    par[1] -= fAlThickness;
+    par[2] -= fAlThickness;
     par[3] = 0;
     par[4] = 180;
-    name   = Form("GT%c%d", c, fId);
+    name   = Form(fgkHoneyTopInnerFormat, fId, c);
     gMC->Gsvolu(name.Data(), "TUBS", airId, par, 5);
     
     // Air in bottom of honeycomb, inner ring 
     par[3] = 180;
     par[4] = 360;
-    name   = Form("GB%c%d", c, fId);
+    name   = Form(fgkHoneyBottomInnerFormat, fId, c);
     gMC->Gsvolu(name.Data(), "TUBS", airId, par, 5);
   }
 }
@@ -217,44 +229,45 @@ AliFMDSubDetector::Geometry(const char* mother, Int_t pbRotId, Int_t idRotId,
     switch (i) {
     case 0: 
       r     = fInner;
-      c     = 'I';
       z     = fInnerZ;
       break;
     case 1: 
       r     =  fOuter;
-      c     =  'O';
       z     =  fOuterZ;
       break;
     }
     if (!r) continue;
+    c = r->GetId();
 
     // Make the coordinates relative to the mother volume.   If we're
     // on the positive side, then we need to flip the z-coordinate, as
     // we'll rotate the whole sub-detector afterwards. 
-    z -= zMother;
-    if (zMother > 0) z *= -1;
-    
-    r->Geometry(mother, fId, z, pbRotId, idRotId);
+    Double_t z2 = z;
+    z2 -= zMother;
+    if (zMother > 0) z2 *= -1;
+    AliDebug(10, Form("Putting ring %c in %s at z=%lf-%lf=%lf", 
+		      c, mother, z, zMother, z2));
+    r->Geometry(mother, fId, z2, pbRotId, idRotId);
     ringW =  r->GetRingDepth();
-    z     -= ringW + fHoneycombThickness / 2;
+    z2    -= ringW + fHoneycombThickness / 2;
 
     // Top of honeycomb
-    name = Form("HT%c%d", c, fId);
-    gMC->Gspos(name.Data(), 1, mother, 0, 0, z, idRotId);
+    name   = Form(fgkHoneyTopFormat, fId, c);
+    gMC->Gspos(name.Data(), 1, mother, 0, 0, z2, idRotId);
 
     // Air in top of honeycomb
     name2 = name;
-    name  = Form("GT%c%d", c, fId);
-    gMC->Gspos(name.Data(), 1, name2.Data(),0,fKaptionThickness,0,idRotId);
+    name   = Form(fgkHoneyTopInnerFormat, fId, c);
+    gMC->Gspos(name.Data(), 1, name2.Data(),0,fAlThickness,0,idRotId);
     
     // Bottom of honeycomb
-    name = Form("HB%c%d", c, fId);
-    gMC->Gspos(name.Data(), 1, mother, 0, 0, z, idRotId);
+    name   = Form(fgkHoneyBottomFormat, fId, c);
+    gMC->Gspos(name.Data(), 1, mother, 0, 0, z2, idRotId);
 
     // Air in bottom of honeycomb
     name2 = name;
-    name  = Form("GB%c%d", c, fId);
-    gMC->Gspos(name.Data(),1,name2.Data(),0,-fKaptionThickness,0,idRotId);
+    name   = Form(fgkHoneyBottomInnerFormat, fId, c);
+    gMC->Gspos(name.Data(),1,name2.Data(),0,-fAlThickness,0,idRotId);
   }
 }
 
@@ -266,8 +279,33 @@ AliFMDSubDetector::Gsatt()
   // 
   // DebugGuard guard("AliFMDSubDetector::Gsatt");
   AliDebug(10, "AliFMDSubDetector::Gsatt");
-  TString name(Form("FMD%d", fId));
+  TString name;
+
+  name = Form("FMD%d", fId);
   gMC->Gsatt(name.Data(), "SEEN", 0);
+
+  for (int i = 0; i < 2; i++) {
+    AliFMDRing* r = 0;
+    char  c = '\0';
+    switch (i) {
+    case 0: r = fInner; break;
+    case 1: r = fOuter; break;
+    }
+    if (!r) continue;
+    c = r->GetId();
+
+    name = Form(fgkHoneyTopFormat, fId, c);
+    gMC->Gsatt(name.Data(), "SEEN", 1);
+
+    name = Form(fgkHoneyBottomFormat, fId, c);
+    gMC->Gsatt(name.Data(), "SEEN", 1);
+
+    name = Form(fgkHoneyTopInnerFormat, fId, c);
+    gMC->Gsatt(name.Data(), "SEEN", 0);
+
+    name = Form(fgkHoneyBottomInnerFormat, fId, c);
+    gMC->Gsatt(name.Data(), "SEEN", 0);
+  }
 }
 
 

@@ -17,10 +17,17 @@
 
 //____________________________________________________________________
 //
-//  Forward Multiplicity Detector have to be reconstructed number of
-//  particles in fixed pseudorapidity interval from fNumOfMinRing
-//  to fNumOfMaxRing and phi interval from fNumOfMinSector to
-//  fNumOfMaxSector
+// FMD reconstructed multiplicity in a region of a ring.  The region
+// is identified by (strip_min,sector_min)x(strip_max,sector_max) or
+// by (eta_max,phi_min),(eta_min,phi_max).   It's also possible to
+// get the peudorapidity of the center-of-mass of the region, as well
+// as the mean azimuthal angle.
+//
+// [Note, that minStrip corresponds to maxEta, and maxStrip
+// corresponds to minEta]
+// 
+// These objects are usually created by the Poisson reconstruction
+// method. 
 //
 #include "AliFMDMultRegion.h"	// ALIFMDPARTICLES_H
 #include <TString.h>            // ROOT_TString
@@ -64,7 +71,71 @@ AliFMDMultRegion::AliFMDMultRegion(UShort_t detector,  Char_t ring,
     fMaxPhi(maxPhi)
 {}
 
+//____________________________________________________________________
+Float_t
+AliFMDMultRegion::Eta() const 
+{
+  // Return the center-of-mass eta of the region.   This is calculated
+  // as the weighted mean of min and max eta, where the weights are
+  // the length of the arcs of the upper and lower edge of the region: 
+  // 
+  //            (maxPhi - minPhi)
+  //  f       = -----------------
+  //                   360 	
+  //
+  //  w_max   = ds*minStrip*2*pi*f
+  //                                   
+  //  w_min   = ds*maxStrip*2*pi*f
+  // 
+  //  1/w^2   = 1/w_max^2 + 1/w_min^2 
+  //
+  //                      1                        1  	      
+  //          = ---------------------- + ----------------------
+  //            (ds*minStrip*2*pi*f)^2	 (ds*maxStrip*2*pi*f)^2
+  // 
+  //            (ds*maxStrip*2*pi*f)^2 + (ds*minStrip*2*pi*f)^2
+  //          = -----------------------------------------------
+  //            (ds*maxStrip*2*pi*f)^2 * (ds*minStrip*2*pi*f)^2
+  //
+  //          
+  //             4 * pi^2 * ds^2 * f^2 (maxStrip^2  + minStrip^2)
+  //          = -------------------------------------------------
+  //             16 * pi^4 * ds^4 * f^4 minStrip^2 * maxStrip^2 
+  //
+  //                     (maxStrip^2  + minStrip^2)
+  //          = -------------------------------------------------
+  //             4 * pi^2 * ds^2 * f^2 minStrip^2 * maxStrip^2 
+  //
+  //  <eta> = (maxEta/w_max^2 + minEta /w_min^2) / (1/w^2)
+  //      
+  //           w_min^2 * maxEta + w_max^2 * minEta
+  //        = ------------------------------------ / (1/w^2)
+  //                  w_max^2 * w_min^2
+  // 
+  //           4*pi^2*ds^2*(maxStrip*maxEta + minStrip*minEta)
+  //        =  ----------------------------------------------- / (1/w^2)
+  //               16*pi^4*ds^4*f^4*minStrip^2*maxStrip^2 
+  //
+  //           maxStrip * maxEta + minStrip * minEta   
+  //        =  ------------------------------------- 
+  //           4*pi^2*ds^2*f^2*minStrip^2*maxStrip^2 
+  //
+  //               4*pi^2*ds^2*f^2*minStrip^2*maxStrip^2
+  //             * ------------------------------------- 		  
+  //		         maxStrip^2+minStrip^2		  
+  // 
+  //           maxStrip * maxEta + minStrip * minEta   
+  //        =  ------------------------------------- 
+  //                  maxStrip^2 + minStrip^2
+  //                                                     _
+  //                                                    |_|
+  //
+  Float_t eta = (fMaxStrip * fMaxEta + fMinStrip * fMinEta) 
+    / (fMaxStrip * fMaxStrip + fMinStrip * fMinStrip);
+  return eta;
+}
 
+  
 //____________________________________________________________________
 void
 AliFMDMultRegion::Print(Option_t* option) const
@@ -79,13 +150,11 @@ AliFMDMultRegion::Print(Option_t* option) const
   //    P:           Phi range (default)
   //
   TString opt(option);
-  cout << "FMD Reconstructed particles: " << fParticles << endl;
+  cout << "FMD Multiplicity in a region: " << fParticles << endl;
   if (opt.Contains("D", TString::kIgnoreCase))
-    cout << "  Detector:      FMD" << fDetector << fRing << endl;
-  if (opt.Contains("S", TString::kIgnoreCase))
-    cout << "  Sector range:  [" << fMinSector << "," << fMaxSector << endl;
-  if (opt.Contains("T", TString::kIgnoreCase))
-    cout << "  Strip range:   [" << fMinStrip << "," << fMaxStrip << endl;
+    cout << "  Detector:      FMD" << fDetector << fRing 
+	 << "[" << fMinSector << "-" << fMaxSector 
+	 << "," <<  fMinStrip << "-" << fMaxStrip << "]" << endl;
   if (opt.Contains("E", TString::kIgnoreCase))
     cout << "  Eta range:     [" << fMinEta << "," << fMaxEta << endl;
   if (opt.Contains("P", TString::kIgnoreCase))

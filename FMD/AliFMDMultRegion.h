@@ -23,6 +23,8 @@ public:
 
   UShort_t     Detector() const        { return fDetector; }
   Char_t       Ring() const            { return fRing; }
+  Float_t      Eta() const;
+  Float_t      Phi() const             { return (fMaxPhi + fMinPhi) / 2; }  
   UShort_t     MinSector() const       { return fMinSector; }
   UShort_t     MaxSector() const       { return fMaxSector; }
   UShort_t     MinStrip() const        { return fMinStrip; }
@@ -31,7 +33,7 @@ public:
   Float_t      MaxEta() const          { return fMaxEta; }
   Float_t      MinPhi() const          { return fMinPhi; }
   Float_t      MaxPhi() const          { return fMaxPhi; }
-  virtual void Print(Option_t* opt="") const;
+  virtual void Print(Option_t* opt="EP") const;
 protected:
   UShort_t fDetector;        // Detector #
   Char_t   fRing;            // Ring ID

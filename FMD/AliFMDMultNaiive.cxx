@@ -17,10 +17,12 @@
 
 //____________________________________________________________________
 // 
-// Base class for FMD naiive algorithms. 
-//
-// Derived classes will implement various ways of reconstructing the
-// charge particle multiplicity in the FMD.  
+// Reconstruct charged particle multiplicity in the FMD 
+// 
+// [See also the AliFMDReconstructor class]
+// 
+// This class reconstructs the multiplicity based on the assumption
+// that all particles are minimum ionizing. 
 // 
 #include "AliFMD.h"			// ALIFMD_H
 #include "AliFMDMultNaiive.h"		// ALIFMDMULTNAIIVE_H
@@ -47,7 +49,7 @@ AliFMDMultNaiive::PreRun(AliFMD* fmd)
   // Initialise before a run 
   AliFMDMultAlgorithm::PreRun(fmd);
   fEdepMip = fmd->GetEdepMip();
-  fGain = (fmd->GetVA1MipRange() / fmd->GetAltroChannelSize() 
+  fGain = (Float_t(fmd->GetVA1MipRange()) / fmd->GetAltroChannelSize() 
 	   * fEdepMip);
 }
 
@@ -99,14 +101,16 @@ AliFMDMultNaiive::ProcessDigit(AliFMDDigit* digit,
   if (!digit) return;
   Double_t edep  = Adc2Energy(digit, eta, count);
   Double_t mult  = Energy2Multiplicity(digit, edep);
-
-  new ((*fMult)[fNMult]) AliFMDMultStrip(digit->Detector(), 
-					 digit->Ring(), 
-					 digit->Sector(),
-					 digit->Strip(),
-					 eta, phi, 
-					 edep, mult, 
-					 AliFMDMult::kNaiive);
+  
+  AliFMDMultStrip* m = 
+    new ((*fMult)[fNMult]) AliFMDMultStrip(digit->Detector(), 
+					   digit->Ring(), 
+					   digit->Sector(),
+					   digit->Strip(),
+					   eta, phi, 
+					   edep, mult,
+				   AliFMDMult::kNaiive);
+  (void)m;
   fNMult++;
 }
 //____________________________________________________________________

@@ -20,7 +20,7 @@ void
 Simulate()
 {
  AliSimulation sim;
- sim.SetConfigFile("$(ALICE)/FMD/Config.C");
+ sim.SetConfigFile("$(ALICE)/FMD/Config_new.C");
  // sim.SetMakeSDigits("FMD");
  // sim.SetMakeDigits("FMD");
  sim.SetWriteRawData("FMD");

@@ -17,10 +17,10 @@
 
 //____________________________________________________________________
 //
-//  Forward Multiplicity Detector have to be reconstructed number of
-//  particles in fixed pseudorapidity interval from fNumOfMinRing
-//  to fNumOfMaxRing and phi interval from fNumOfMinSector to
-//  fNumOfMaxSector
+// Base class for reconstructed charged particle multiplicty in the
+// FMD.  The class contains the field fMethod which is a flag set by
+// the AliFMDMultAlgorithm that created the object. The flag tells us
+// which algorithm was used to create the data stored in the object. 
 //
 #include "AliFMDMult.h"		// ALIFMDMULT_H
 #include <TString.h>            // ROOT_TString 

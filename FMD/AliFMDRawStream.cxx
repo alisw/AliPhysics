@@ -19,6 +19,11 @@
 //                                                                          
 // Buffer to read RAW ALTRO FMD format from a AliRawReader 
 // 
+// This class derives from AliAltroBuffer, but overloads the memer
+// function Next to do some extra processing.  In particular, it tries
+// to autodetect the sample rate.  If zero-suppression was used when
+// writing the raw data, then the automatic discovery will not work,
+// and the sample rate should be set explicitly. 
 //
 #include "AliFMDRawStream.h"		// ALIFMDRAWSTREAM_H
 #include <AliRawReader.h>		// ALIRAWREADER_H

@@ -19,6 +19,20 @@
 //
 // Class to write ADC values to a raw data file
 //
+// This class writes FMD Raw data to a file.   The sample rate (number
+// of times the ALTRO ADC samples each pre-amp. channel - that is,
+// data from a single strip), can be set via SetSampleRate. 
+//
+// Zero-suppression can be enabled by calling SetThreshold with a
+// non-zero argument.   ADC values less than the value set will not be
+// written to output.   Note, that if you use zero-suppression, you
+// need to explicitly set the sample rate when reading back the data
+// with AliFMDRawReader. 
+// 
+// This class uses the AliAltroBuffer class to write the data in the
+// ALTRO format.  See the Exec member function for more information on
+// that format.  
+//
 #include <AliLog.h>		// ALILOG_H
 #include <AliLoader.h>		// ALILOADER_H
 #include <AliAltroBuffer.h>     // ALIALTROBUFFER_H
@@ -37,6 +51,8 @@ AliFMDRawWriter::AliFMDRawWriter(AliFMD* fmd)
     fFMD(fmd)
 {
   SetSampleRate();
+  SetThreshold();
+  SetChannelsPerAltro();
 }
 
 
@@ -141,7 +157,7 @@ AliFMDRawWriter::Exec(Option_t*)
 
     // A buffer to hold 1 ALTRO channel - Normally, one ALTRO channel
     // holds 128 VA1_ALICE channels, sampled at a rate of `sampleRate' 
-    TArrayI channel(128 * sampleRate);
+    TArrayI channel(fChannelsPerAltro * sampleRate);
     
     // The Altro buffer 
     AliAltroBuffer* altro = 0;
@@ -178,10 +194,7 @@ AliFMDRawWriter::Exec(Option_t*)
 	  //    row       |     sector
 	  //    sector    |       ring
 	  // 
-	  altro->WriteChannel(Int_t(startStrip), 
-			      Int_t(prevSector), 
-			      Int_t((prevRing == 'I' ? 0 : 1)), 
-			      channel.fN, channel.fArray, 0);
+	  WriteChannel(altro, startStrip, prevSector, prevRing, channel);
 	  altro->Flush();
 	  altro->WriteDataHeader(kFALSE, kFALSE);
 	  delete altro;
@@ -212,27 +225,24 @@ AliFMDRawWriter::Exec(Option_t*)
 	  if (digit->Count3() >= 0) sampleRate = 3;
 	}
 
-	channel.Set(128 * sampleRate);
+	channel.Set(fChannelsPerAltro * sampleRate);
 	offset     = 0;
 	prevRing   = ring;
 	prevSector = sector;
 	startStrip = strip;
       }
-      else if (offset == 128                        
+      else if (offset == fChannelsPerAltro
 	       || digit->Ring() != prevRing 
 	       || digit->Sector() != prevSector) {
 	// Force a new Altro channel
 	AliDebug(10, Form("Flushing channel to disk because %s",
-			  (offset == 128 ? "channel is full" :
+			  (offset == fChannelsPerAltro ? "channel is full" :
 			   (ring != prevRing ? "new ring up" :
 			    "new sector up"))));
 	AliDebug(10, Form("New Channel: Write channel at %d Strip: %d "
 			  "Sector: %d  Ring: %d", 
 			  i, startStrip, prevSector, prevRing));
-	altro->WriteChannel(Int_t(startStrip), 
-			    Int_t(prevSector), 
-			    Int_t((prevRing == 'I' ? 0 : 1)), 
-			    channel.fN, channel.fArray, 0);
+	WriteChannel(altro, startStrip, prevSector, prevRing, channel);
 	// Reset and update channel variables 
 	channel.Reset(0);
 	offset     = 0; 
@@ -259,6 +269,24 @@ AliFMDRawWriter::Exec(Option_t*)
   }
   loader->UnloadDigits();
 }
+
+//____________________________________________________________________
+void
+AliFMDRawWriter::WriteChannel(AliAltroBuffer* altro, 
+			      UShort_t strip, UShort_t sector, Char_t ring, 
+			      const TArrayI& data) 
+{
+  // Write out one ALTRO channel to the data file. 
+  // Derived classes can overload this method to use a per-ALTRO
+  // threshold.   This implementation uses the common threshold set by
+  // SetThreshold. 
+  altro->WriteChannel(Int_t(strip), 
+		      Int_t(sector), 
+		      Int_t((ring == 'I' ? 0 : 1)), 
+		      data.fN, data.fArray, fThreshold);
+}
+
+  
 
 //____________________________________________________________________
 // 

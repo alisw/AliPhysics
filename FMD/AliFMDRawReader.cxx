@@ -19,6 +19,29 @@
 //
 // Class to read ADC values from a AliRawReader object. 
 //
+// This class uses the AliFMDRawStreamer class to read the ALTRO
+// formatted data. 
+// 
+//          +-------+
+//          | TTask |
+//          +-------+
+//              ^
+//              |
+//      +-----------------+  <<references>>  +--------------+
+//      | AliFMDRawReader |<>----------------| AliRawReader |
+//      +-----------------+                  +--------------+
+//              |                                  ^
+//              | <<uses>>                         |
+//              V                                  |
+//      +-----------------+      <<uses>>          |
+//      | AliFMDRawStream |------------------------+
+//      +-----------------+
+//              |
+//              V
+//      +----------------+
+//      | AliAltroStream |
+//      +----------------+
+//
 #include <AliLog.h>		// ALILOG_H
 #include "AliFMD.h"		// ALIFMD_H
 #include "AliFMDDigit.h"	// ALIFMDDIGIT_H

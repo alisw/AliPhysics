@@ -27,7 +27,7 @@ public:
   Float_t      Eta() const             { return fEta; }
   Float_t      Phi() const             { return fPhi; }
   Float_t      Edep() const            { return fEdep; }
-  virtual void Print(Option_t* opt="") const;
+  virtual void Print(Option_t* opt="D") const;
 protected:
   UShort_t fDetector;        // Detector #
   Char_t   fRing;            // Ring ID

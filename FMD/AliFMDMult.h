@@ -20,9 +20,11 @@ public:
   AliFMDMult(Float_t  particles=0, UShort_t method=kNaiive);
   virtual ~AliFMDMult() {};
 
-  Float_t      Particles() const { return fParticles; }
-  UShort_t     Method()    const { return fMethod; }
-  virtual void Print(Option_t* opt="") const;
+  Float_t         Particles() const { return fParticles; }
+  UShort_t        Method()    const { return fMethod; }
+  virtual Float_t Eta() const = 0;
+  virtual Float_t Phi() const = 0;
+  virtual void    Print(Option_t* opt="") const;
 protected:
   Float_t  fParticles;       // Number of particles 
   UShort_t fMethod;          // Method use to get fParticles

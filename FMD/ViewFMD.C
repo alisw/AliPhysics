@@ -1,18 +1,70 @@
 void ViewFMD()
 {
-   gMC->Gsatt("FMD1","seen",0);
-   gMC->Gsatt("FMD2","seen",0);
-   gMC->Gsatt("FMD3","seen",0);
-   gMC->Gsatt("FRGI","seen",0);
-   gMC->Gsatt("FRGO","seen",0);
-   gMC->Gsatt("FVFI","seen",0);
-   gMC->Gsatt("FVFO","seen",0);
-   gMC->Gsatt("FVBI","seen",0);
-   gMC->Gsatt("FVBO","seen",0);
-   gMC->Gsatt("FACI","seen",1);
-   gMC->Gsatt("FACO","seen",1);
-   gMC->Gsatt("FPTI","seen",1);
-   gMC->Gsatt("FPTO","seen",1);
-   gMC->Gsatt("FPBI","seen",1);
-   gMC->Gsatt("FPBO","seen",1);
+  gMC->Gsatt("FMD1","seen",0);
+  gMC->Gsatt("FMD2","seen",0);
+  gMC->Gsatt("FMD3","seen",0);
+  gMC->Gsatt("FSSL","seen",1);
+  gMC->Gsatt("FSLL","seen",1);
+
+  TString name;
+  // Rings
+  for (Int_t i = 0; i < 2; i++) {
+    char c;
+    switch (i) {
+    case 0: c = 'I'; break;
+    case 1: c = 'O'; break;
+    }
+     
+    name = Form("F%cRG", c);
+    gMC->Gsatt(name.Data(),"seen",0); // Ring volume	     
+
+    name = Form("F%cVF", c);
+    gMC->Gsatt(name.Data(),"seen",0); // Virtual volume front
+
+    name = Form("F%cVB", c);
+    gMC->Gsatt(name.Data(),"seen",0); // Virtual volume back
+
+    name = Form("F%cAC", c);
+    gMC->Gsatt(name.Data(),"seen",-2); // Active volume
+
+    // name = Form("F%cAP", c);
+    // gMC->Gsatt(name.Data(),"seen",-1); // Phi segmentation of active
+
+    // name = Form("F%cAR", c);
+    // gMC->Gsatt(name.Data(),"seen",-1); // R segmentation of active
+
+    name = Form("F%cPT", c);
+    gMC->Gsatt(name.Data(),"seen",1); // Top of print-board
+
+    name = Form("F%cPB", c);
+    gMC->Gsatt(name.Data(),"seen",1); // Bottom of print board
+  }
+   
+  for (Int_t i = 1; i <= 3; i++) {
+    for (Int_t j = 0;  j < 2; j++) {
+      if (i == 1 && j == 1) break;
+      char c;
+      switch (j) {
+      case 0: c = 'I'; break;
+      case 1: c = 'O'; break;
+      }
+       
+      name = Form("F%d%cH", i, c);
+      gMC->Gsatt(name.Data(),"seen",-2); // Honeycomp top 
+
+      name = Form("F%d%cI", i, c);
+      gMC->Gsatt(name.Data(),"seen",-2); // Honeycomp bottom
+
+      name = Form("F%d%cJ", i, c);
+      gMC->Gsatt(name.Data(),"seen",0); // Honeycomp inner top 
+
+      name = Form("F%d%cK", i, c);
+      gMC->Gsatt(name.Data(),"seen",0); // Honeycomp inner bottom 
+    }
+  }
+
+  gMC->Gsatt("F3SN", "seen", 1); // Nose of FMD3 Cone
+  gMC->Gsatt("F3SB", "seen", 1); // Back of FMD3 Cone
+  gMC->Gsatt("F3SL", "seen", 1); // Beams of FMD3 Cone
+  gMC->Gsatt("F3SF", "seen", 1); // Flanges on FMD3 Cone
 }

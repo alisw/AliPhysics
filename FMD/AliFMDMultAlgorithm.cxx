@@ -22,6 +22,54 @@
 // Derived classes will implement various ways of reconstructing the
 // charge particle multiplicity in the FMD.  
 // 
+//      +---------------------+       +---------------------+
+//      | AliFMDReconstructor |<>-----| AliFMDMultAlgorithm |
+//      +---------------------+       +---------------------+
+//                                               ^
+//                                               |
+//                                   +-----------+---------+
+//                                   |                     |
+//                         +-------------------+   +------------------+
+//                         | AliFMDMultPoisson |   | AliFMDMultNaiive |
+//                         +-------------------+   +------------------+
+//
+// AliFMDReconstructor acts as a manager class.  It contains a list of
+// AliFMDMultAlgorithm objects.  The call graph looks something like 
+//
+//
+//       +----------------------+            +----------------------+
+//       | :AliFMDReconstructor |            | :AliFMDMultAlgorithm |
+//       +----------------------+            +----------------------+
+//                  |                                  |
+//    Reconstruct  +-+                                 |
+//    ------------>| |                         PreRun +-+
+//                 | |------------------------------->| |   
+//                 | |                                +-+
+//                 | |-----+ (for each event)          |
+//                 | |     | *ProcessEvent             |
+//                 |+-+    |                           |
+//                 || |<---+                 PreEvent +-+
+//                 || |------------------------------>| |      
+//                 || |                               +-+
+//                 || |-----+                          |
+//                 || |     | ProcessDigits            |
+//                 ||+-+    |                          |
+//                 ||| |<---+                          |
+//                 ||| |         *ProcessDigit(digit) +-+
+//                 ||| |----------------------------->| |
+//                 ||| |                              +-+
+//                 ||+-+                               |
+//                 || |                     PostEvent +-+
+//                 || |------------------------------>| |
+//                 || |                               +-+
+//                 |+-+                                |
+//                 | |                        PostRun +-+
+//                 | |------------------------------->| |
+//                 | |                                +-+
+//                 +-+                                 |
+//                  |                                  |
+//
+//
 #include "AliFMDMultAlgorithm.h"	// ALIFMDMULTALGORITHM_H
 #include "AliFMDDigit.h"		// ALIFMDDIGIT_H
 #include <TClonesArray.h>               // ROOT_TClonesArray

@@ -17,11 +17,13 @@
 
 //____________________________________________________________________
 // 
-// Base class for FMD poisson algorithms. 
-//
-// Derived classes will implement various ways of reconstructing the
-// charge particle multiplicity in the FMD.  
+// Reconstruct charged particle multiplicity in the FMD 
 // 
+// [See also the AliFMDReconstructor class]
+// 
+// This class reconstructs the muliplicity in regions based on the
+// ratio of empty to full strips. 
+//
 #include "AliFMD.h"			// ALIFMD_H
 #include "AliFMDMultPoisson.h"		// ALIFMDMULTPOISSON_H
 #include "AliFMDMultRegion.h"		// ALIFMDMULTREGION_H
@@ -187,11 +189,12 @@ AliFMDMultPoisson::PostEvent()
 	  Int_t reconstructed = Int_t(lambda * nTotal + 0.5);
 	    
 	  // Add a AliFMDMultRegion to the reconstruction tree. 
-	  new((*fMult)[fNMult])   
+	  AliFMDMultRegion* m = new((*fMult)[fNMult])   
 	    AliFMDMultRegion(sub->GetId(), r->GetId(),
 			     minSector, maxSector, minStrip, maxStrip,
 			     minEta, maxEta, minPhi, maxPhi,
 			     reconstructed, AliFMDMultRegion::kPoission);
+	  (void)m;
 	  fNMult++;
 	} // phi 
       } // eta

@@ -17,7 +17,8 @@
 
 //____________________________________________________________________
 //                                                                          
-//
+// A map of per strip UShort_t information (for example ADC values,
+// number of hits and so on). 
 //
 #include "AliFMDUShortMap.h"		// ALIFMDUSHORTMAP_H
 
