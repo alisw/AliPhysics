@@ -240,6 +240,8 @@ void AliFieldMap::Field(Float_t *x, Float_t *b) const
     raty1=kone-raty;
     ratz1=kone-ratz;
 
+    if (!fB) return;
+
     bhyhz = Bx(ix  ,iy+1,iz+1)*ratx1+Bx(ix+1,iy+1,iz+1)*ratx;
     bhylz = Bx(ix  ,iy+1,iz  )*ratx1+Bx(ix+1,iy+1,iz  )*ratx;
     blyhz = Bx(ix  ,iy  ,iz+1)*ratx1+Bx(ix+1,iy  ,iz+1)*ratx;
