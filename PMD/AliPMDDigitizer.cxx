@@ -282,7 +282,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		  ypad = Vol1;
 		}
 
-	      //cout << "-zpos = " << -zPos << endl;
+	      //cout << "zpos = " << zPos << " edep = " << edep << endl;
 
 	      Float_t zposition = TMath::Abs(zPos);
 	      if (zposition < fZPos)
@@ -658,17 +658,19 @@ void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
 void AliPMDDigitizer::TrackAssignment2Cell()
 {
   // 
-  // This blocks assign the cell id when there is 
+  // This block assigns the cell id when there are
   // multiple tracks in a cell according to the
   // energy deposition
   //
-
+  Bool_t jsort = false;
 
   Int_t i, j, k;
 
   Float_t *frac_edp;
   Float_t *tr_edp;
-  Int_t *status;
+  Int_t *status1;
+  Int_t *status2;
+  Int_t *trnarray;
   Int_t   ****PMDTrack;
   Float_t ****PMDEdep;
 
@@ -749,33 +751,35 @@ void AliPMDDigitizer::TrackAssignment2Cell()
 		{
 		  // This block handles if a cell is fired
 		  // many times by many tracks
-		  
-		  status = new Int_t[nn];
+		  status1  = new Int_t[nn];
+		  status2  = new Int_t[nn];
+		  trnarray = new Int_t[nn];
 		  for (iz = 0; iz < nn; iz++)
 		    {
-		      status[iz] = PMDTrack[im][ix][iy][iz];
+		      status1[iz] = PMDTrack[im][ix][iy][iz];
 		    }
-		  sort(status,status+nn);
+		  TMath::Sort(nn,status1,status2,jsort);
 		  Int_t track_old = -99999;
 		  Int_t track, tr_count = 0;
 		  for (iz = 0; iz < nn; iz++)
 		    {
-		      track = status[iz];
+		      track = status1[status2[iz]];
 		      if (track_old != track)
 			{
+			  trnarray[tr_count] = track;
 			  tr_count++;
-			  vjunkTRN.push_back(track);
 			}			      
 		      track_old = track;
 		    }
-		  delete status;
+		  delete status1;
+		  delete status2;
 		  Float_t tot_edp = 0.;
 		  tr_edp = new Float_t[tr_count];
 		  frac_edp = new Float_t[tr_count];
 		  for (il = 0; il < tr_count; il++)
 		    {
 		      tr_edp[il] = 0.;
-		      track = vjunkTRN[il];
+		      track = trnarray[il];
 		      for (iz = 0; iz < nn; iz++)
 			{
 			  if (track == PMDTrack[im][ix][iy][iz])
@@ -785,7 +789,6 @@ void AliPMDDigitizer::TrackAssignment2Cell()
 			}
 		      tot_edp += tr_edp[il];
 		    }
-		  vjunkTRN.clear();
 		  Int_t il_old = 0;
 		  Float_t frac_old = 0.;
 		  
@@ -798,10 +801,10 @@ void AliPMDDigitizer::TrackAssignment2Cell()
 			  il_old = il;
 			}
 		    }
+		  fPMDTrackNo[im][ix][iy] = trnarray[il_old];
 		  delete frac_edp;
 		  delete tr_edp;
-		  
-		  fPMDTrackNo[im][ix][iy] = vjunkTRN[il_old];
+		  delete trnarray;
 		}
 	      else if (nn == 1)
 		{

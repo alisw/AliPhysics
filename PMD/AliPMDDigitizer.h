@@ -12,8 +12,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <TMath.h>
-#include <vector>
-#include <algorithm>
 
 class TClonesArray;
 class TFile;
@@ -35,8 +33,6 @@ class AliPMDcell;
 class AliPMDsdigit;
 class AliPMDdigit;
 class AliPMDClustering;
-
-//using namespace std;
 
 class AliPMDDigitizer
 {
@@ -61,7 +57,6 @@ class AliPMDDigitizer
 
   TObjArray    *fCell;
   AliPMDcell   *pmdcell;
-  vector<int> vjunkTRN;
 
   Int_t fNsdigit;
   Int_t fNdigit;

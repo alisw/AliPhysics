@@ -15,8 +15,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <TMath.h>
-#include <vector>
-#include <algorithm>
 
 class TClonesArray;
 class TFile;
