@@ -18,7 +18,6 @@ class AliL3FileHandler:public AliL3MemHandler{
  private:
   TFile *fInAli;
   AliTPCParam *fParam;
-  AliL3Transform *fTransformer;//!
   Bool_t SetAliInput();
   Int_t fLastIndex;
   AliSimDigits *fDigits;

@@ -33,7 +33,6 @@ AliL3FileHandler::AliL3FileHandler(){
   //Default constructor
   fInAli = 0;
   fParam = 0;
-  fTransformer = 0;
   fMC =0;
   fLastIndex=0;
   fDigits=0;
@@ -42,7 +41,6 @@ AliL3FileHandler::AliL3FileHandler(){
 
 AliL3FileHandler::~AliL3FileHandler(){
   //Destructor
-  if(fTransformer) delete fTransformer;
   if(fMC) CloseMCOutput();
   if(fDigitsTree) delete fDigitsTree;
   if(fInAli) CloseAliInput();
@@ -91,7 +89,6 @@ Bool_t AliL3FileHandler::SetAliInput(){
     <<"No AliTPCParam 75x40_100x60 in File "<<fInAli->GetName()<<ENDLOG;
      return kFALSE;
   }
-  fTransformer = new AliL3Transform();
   return kTRUE;
 }
 
@@ -180,7 +177,13 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
     <<"No Input avalible: TFile not opend"<<ENDLOG;
     return 0;
   }
-
+  if(!fTransformer)
+    {
+      LOG(AliL3Log::kWarning,"AliL3FileHandler::AliDigits2Memory","Transformer")
+	<<"No transformer object"<<ENDLOG;
+      return 0;
+    }
+  
   if(!fDigitsTree)
     GetDigitsTree(event);
     
@@ -489,6 +492,12 @@ AliL3SpacePointData * AliL3FileHandler::AliPoints2Memory(UInt_t & npoint){
     <<"No Input avalible: TFile not opend"<<ENDLOG;
     return 0;
   }
+  if(!fTransformer)
+    {
+      LOG(AliL3Log::kWarning,"AliL3FileHandler::AliPoints2Memory","Transformer")
+	<<"No transformer object"<<ENDLOG;
+      return 0;
+    }
   TDirectory *savedir = gDirectory;
   fInAli->cd();
   

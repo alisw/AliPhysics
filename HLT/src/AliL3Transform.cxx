@@ -31,7 +31,10 @@ AliL3Transform::~AliL3Transform(){
 
 /// old init function used by Anders for AliRoot version 3.06
 void AliL3Transform::Init(){
-
+  
+  LOG(AliL3Log::kWarning,"AliL3Transform::Init()","Init")
+    <<"You are using the _old_ version of parameter inits. V3.06 only!"<<ENDLOG;
+  
   //sector:
   fNTimeBins = 446;
   fNRowLow = 64;
@@ -418,7 +421,8 @@ void AliL3Transform::Init(const char* path){
 
   FILE *fptr=fopen(pathname,"r");
   if(!fptr){
-    LOG(AliL3Log::kWarning,"AliL3Transform::Init","File Open")<<"Pointer to Config File \""<<pathname<<"\" 0x0!"<<ENDLOG;
+    LOG(AliL3Log::kWarning,"AliL3Transform::Init","File Open")
+      <<"Pointer to Config File \""<<pathname<<"\" 0x0!"<<ENDLOG;
     return;
   }
 

@@ -14,7 +14,7 @@ class AliL3RandomPointData;
 
 class AliL3MemHandler{
  private:
-  AliL3Transform *fTransformer;//!
+  
   FILE *fInBinary;//!
   FILE *fOutBinary;//!
   Byte_t *fPt;//!
@@ -52,7 +52,7 @@ class AliL3MemHandler{
 
   Int_t fEtaMinTimeBin[176];
   Int_t fEtaMaxTimeBin[176];
-  
+  AliL3Transform *fTransformer;//!
 
  public:
   AliL3MemHandler();

@@ -90,7 +90,7 @@ AliL3MemHandler::AliL3MemHandler()
   fNGenerate = 0;
   fNUsed = 0;
   fNDigits = 0;
-  
+  fTransformer = 0;
   Int_t row[2] = {0,175};
   Init(0,0,row);
   ResetROI();
