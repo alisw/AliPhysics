@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  1999/10/08 06:27:59  fca
+Defaults updated
+
 Revision 1.5  1999/10/05 17:18:27  fca
 Correct GetWire check on even/odd fnWires
 
@@ -328,7 +331,7 @@ void AliTPCParam::SetDefault()
   fOuterRadiusLow = kOuterRadiusLow;
   fInnerRadiusUp  = kInnerRadiusUp;
   fOuterRadiusUp  = kOuterRadiusUp;   
-  SetSectorAngles(kInnerAngle,kInnerAngleShift, kOuterAngle, kOuterAngleShift); 
+  SetSectorAngles(kInnerAngle,kInnerAngleShift, kOuterAngle, kOuterAngleShift,kFALSE); 
   // set default pad size and shape
   fPadPitchLength  = kPadPitchLength;
   fPadPitchWidth   = kPadPitchWidth;
