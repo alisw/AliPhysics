@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2002/10/14 14:57:43  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.15.6.2  2002/07/24 10:09:30  alibrary
 Updating VirtualMC
 
@@ -196,6 +199,7 @@ Bool_t AliTRDclusterizerV1::ReadDigits()
   }
 
   fDigitsManager->Open(fInputFile->GetName());
+  fDigitsManager->SetEvent(fEvent);
 
   // Read in the digit arrays
   return (fDigitsManager->ReadDigits());  
