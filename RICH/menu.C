@@ -217,20 +217,17 @@ void H_SD()
       
     for(Int_t iPrimN=0;iPrimN<rl->TreeH()->GetEntries();iPrimN++){//prims loop
       rl->TreeH()->GetEntry(iPrimN);
-      for(Int_t iHitN=0;iHitN<3;iHitN++){//hits loop  ???
+      for(Int_t iHitN=0;iHitN<r->Hits()->GetEntries();iHitN++){//hits loop  ???
         AliRICHhit *pHit=r->Hits()->At(iHitN);        
-        TVector3 globX3(pHit->X(),pHit->Y(),pHit->Z());        
-        TVector3 locX3=r->C(pHit->C())->Glob2Loc(globX3);
-        
         Int_t sector;
-        Int_t iTotQdc=r->Param()->Loc2TotQdc(locX3,pHit->Eloss(),pHit->Pid(),sector);
+        Int_t iTotQdc=r->Param()->Loc2TotQdc(pHit->OutX3(),pHit->Eloss(),pHit->Pid(),sector);
         
         Int_t iPadXmin,iPadXmax,iPadYmin,iPadYmax;
-        r->Param()->Loc2Area(locX3,iPadXmin,iPadYmin,iPadXmax,iPadYmax);
+        r->Param()->Loc2Area(pHit->OutX3(),iPadXmin,iPadYmin,iPadXmax,iPadYmax);
         cout<<"left-down=("<<iPadXmin<<","<<iPadYmin<<") right-up=("<<iPadXmax<<','<<iPadYmax<<')'<<endl;
         for(Int_t iPadY=iPadYmin;iPadY<=iPadYmax;iPadY++)
           for(Int_t iPadX=iPadXmin;iPadX<=iPadXmax;iPadX++){
-            Double_t padQdc=iTotQdc*r->Param()->Loc2PadFrac(locX3,iPadX,iPadY);
+            Double_t padQdc=iTotQdc*r->Param()->Loc2PadFrac(pHit->OutX3(),iPadX,iPadY);
             if(padQdc>0.1)r->AddSDigit(pHit->C(),iPadX,iPadY,padQdc,pHit->GetTrack());
           }            
       }//hits loop

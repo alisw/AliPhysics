@@ -37,6 +37,8 @@ public:
   Float_t MomFreoX()            const{return fMomFreoX;}
   Float_t MomFreoY()            const{return fMomFreoY;}
   Float_t MomFreoZ()            const{return fMomFreoZ;}
+  TVector3 InX3()               const{return fInX3;}
+  TVector3 OutX3()              const{return fOutX3;}
   void    Print(Option_t *option="")const;      //virtual
 protected:
   Int_t     fChamber;                      //chamber number
@@ -169,14 +171,17 @@ protected:
 class AliRICHcluster :public TObject
 {
 public:
-  enum ClusterStatus {kOK,kEdge,kShape,kSize,kRaw};
-                    AliRICHcluster()                                 {fSize=fQdc=fStatus=fChamber=fDimXY=kBad;fX=fY=kBad;fDigits=0;}
+  enum ClusterStatus {kEdge,kShape,kSize,kRaw,kResolved};
+                    AliRICHcluster()                                 {fSize=fQdc=fStatus=fChamber=fDimXY=0;fX=fY=kBad;fDigits=0;}
   virtual          ~AliRICHcluster()                                 {delete fDigits;}  
   AliRICHcluster&   operator=(const AliRICHcluster&)                 {return *this;}
-         Int_t      Size()                                      const{return fSize;}                       //
+         Int_t      Nlocals()                                   const{return fSize - 10000*(fSize/10000);} //
+         Int_t      Size()                                      const{return fSize/10000;}                 //
+         Int_t      Fsize()                                     const{return fSize;}                       //
          Int_t      DimXY()                                     const{return fDimXY;}                      //
          Int_t      C()                                         const{return fChamber/10;}                 //
          Int_t      S()                                         const{return fChamber-(fChamber/10)*10;}   //
+         Int_t      Fchamber()                                  const{return fChamber;}                    //
          Int_t      Chamber()                                   const{return C();}                         //
          Int_t      Sector()                                    const{return S();}                         //
          Int_t      Q()                                         const{return fQdc;}                        // 
@@ -190,15 +195,19 @@ public:
          Bool_t     IsPureMip()                                 const{return fCombiPid<1000;}   
          Bool_t     IsPureCerenkov()                            const{return Nmips()==0&&Nfeedbacks()==0;} //
          Bool_t     IsPureFeedback()                            const{return Nmips()==0&&Ncerenkovs()==0;} //
+         Int_t      CombiPid()                                  const{return fCombiPid;} //
          void       SetCombiPid(Int_t ckov,Int_t feeds,Int_t mips)   {fCombiPid=1000000*ckov+1000*feeds+mips;}            //
+         void       Fill(AliRICHcluster *pRaw,Double_t x,Double_t y, Double_t q, Int_t combipid)
+             {fCombiPid=combipid;fChamber=pRaw->Fchamber();fSize=pRaw->Fsize();
+              fQdc=(Int_t)(q*pRaw->Q());fX=x;fY=y;fStatus=kResolved;} //
          TObjArray* Digits()                                    const{return fDigits;}                     //  
          void       Print(Option_t *option="")const;                                                       //virtual
   inline void       AddDigit(AliRICHdigit *pDig);                                                          //
-  inline void       CoG();                                                                                 // 
+  inline void       CoG(Int_t nLocals);                                                                                 // 
          void       Reset() {fSize=fQdc=fStatus=fChamber=fDimXY=kBad;fX=fY=kBad;delete fDigits;fDigits=0;} //
 protected:
   Int_t         fCombiPid;    //1000000*Ncerenkovs+1000*Nfeedbacks+Nmips  
-  Int_t         fSize;        //how many digits belong to this cluster    
+  Int_t         fSize;        //10000*(how many digits belong to this cluster) + nLocalMaxima     
   Int_t         fDimXY;       //100*xdim+ydim box containing the cluster
   Int_t         fQdc;         //QDC value
   Int_t         fChamber;     //10*module number+sector number 
@@ -214,10 +223,10 @@ void AliRICHcluster::AddDigit(AliRICHdigit *pDig)
   if(!fDigits) {fQdc=fSize=fCombiPid=0;fDigits = new TObjArray;}
   fQdc+=(Int_t)pDig->Q(); fDigits->Add(pDig);
   fChamber=10*pDig->C()+pDig->S();
-  fSize++;
+  fSize+=10000;
 }
 //__________________________________________________________________________________________________
-void AliRICHcluster::CoG()
+void AliRICHcluster::CoG(Int_t nLocals)
 {//
   Int_t xmin=999,ymin=999,xmax=0,ymax=0;   
   Double_t x,y;        
@@ -231,6 +240,7 @@ void AliRICHcluster::CoG()
    }
    fX/=fQdc;fY/=fQdc;//Center of Gravity
    fDimXY = 100*(xmax-xmin+1)+ymax-ymin+1;//find box containing cluster
+   fSize+=nLocals;
    fStatus=kRaw;
 }//CoG()
 class AliRICHreco: public TObject
@@ -267,7 +277,6 @@ public:
   AliRICH&  operator=(const AliRICH&)                 {return *this;}
   virtual Int_t   IsVersion()                                            const =0;            
           void    Hits2SDigits();                                                                                 //virtual
-  AliDigitizer*   CreateDigitizer(AliRunDigitizer* manager);                                                      //virtual
           void    SDigits2Digits();                                                                               //virtual
   
   inline  void    CreateHits();    

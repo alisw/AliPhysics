@@ -28,7 +28,6 @@
 #include <AliRunDigitizer.h>
 #include <AliMC.h>
 #include <TVirtualMC.h>
-#include "AliRICHDigitizer.h"
  
 ClassImp(AliRICHhit)
 //__________________________________________________________________________________________________
@@ -52,7 +51,7 @@ ClassImp(AliRICHcluster)
 //__________________________________________________________________________________________________
 void AliRICHcluster::Print(Option_t*)const
 {
-  ::Info("cluster","CombiPid=%10i, c=%2i, size=%4i, dim=%5i, x=%7.3f, y=%7.3f, Q=%6i, st=%i",
+  ::Info("cluster","CombiPid=%10i, c=%2i, size=%6i, dim=%5i, x=%7.3f, y=%7.3f, Q=%6i, st=%i",
            fCombiPid,fChamber,fSize,fDimXY,fX,fY,fQdc,fStatus);
 }
 //__________________________________________________________________________________________________
@@ -133,11 +132,6 @@ void AliRICH::Hits2SDigits()
   if(GetDebug()) Info("Hit2SDigits","Start.");
   if(GetDebug()) Info("Hit2SDigits","Stop.");
 }//void AliRICH::Hits2SDigits()
-//__________________________________________________________________________________________________
-AliDigitizer* AliRICH::CreateDigitizer(AliRunDigitizer* manager)
-{
-  return new AliRICHDigitizer(manager);
-}
 //__________________________________________________________________________________________________
 void AliRICH::SDigits2Digits()
 {

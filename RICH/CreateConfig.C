@@ -19,7 +19,7 @@ public:
 protected:
   TGMainFrame  *fMain;//main window poiter
   TGComboBox   *fRichVersionCombo;
-  TGButton     *fRichTopChkBtn;
+  TGButton     *fRichTopChkBtn, *fMagFldChkBtn;
   TGComboBox   *fGenTypeCombo,*fPartIdCombo,*fMomCombo;
   Int_t         fDetectors;
   Int_t         fProcesses;
@@ -72,8 +72,11 @@ KirConfig::KirConfig()
   fMomCombo->AddEntry("4.5 GeV",45);
   fMomCombo->Select(40);
   fMomCombo->Resize(160,20);
-    
-//Detectors  
+// Magnetic Field
+  pVerFrame->AddFrame(pFldGrpFrm=new TGGroupFrame(pHorFrame,"Magnetic Field"));
+  pFldGrpFrm->AddFrame(fMagFldChkBtn=new TGCheckButton(pFldGrpFrm,"On/Off?"));
+  fMagFldChkBtn->SetState(kButtonDown);
+//Detectors
   pHorFrame->AddFrame(pDetButGrp=new TGButtonGroup(pHorFrame,"Detectors"));
   pDetButGrp->Connect("Pressed(Int_t)","KirConfig",this,"AddDetector(Int_t)");
   pDetButGrp->Connect("Released(Int_t)","KirConfig",this,"RemoveDetector(Int_t)");
@@ -172,7 +175,7 @@ void KirConfig::CreateConfigFile()
   fprintf(fp,"  gMC->SetCut(\"DCUTM\" ,0.001);\n");  fprintf(fp,"  gMC->SetCut(\"PPCUTM\",0.001); ");
   fprintf(fp,"  gMC->SetCut(\"TOFMAX\",1e10);\n\n"); 
 //Field
-  fprintf(fp,"  gAlice->SetField();\n\n");
+  if(fMagFldChkBtn->GetState()==kButtonDown) fprintf(fp,"  gAlice->SetField();\n\n");else fprintf(fp,"  gAlice->SetField(0);\n\n");
   fprintf(fp,"  pAL->CdGAFile();\n\n");                                 //????       
 //BODY-ALIC 
   fprintf(fp,"  new AliBODY(\"BODY\",\"Alice envelop\");\n\n");
