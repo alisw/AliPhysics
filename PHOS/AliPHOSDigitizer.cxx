@@ -178,8 +178,10 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
   TObjArray * sdigArray = new TObjArray(2) ;
   while ( (folder = (TFolder*)next()) ) 
     if ( (sdigits = (TClonesArray*)folder->FindObject(GetName()) ) ) {
+      TString fileName(folder->GetName()) ;
+      fileName.ReplaceAll("_","/") ;
       cout << "INFO: AliPHOSDigitizer::Digitize -> Adding SDigits " 
-	   << GetName() << " from " << folder->GetName() << endl ; 
+	   << GetName() << " from " << fileName << endl ; 
       sdigArray->AddAt(sdigits, input) ;
       input++ ;
     }

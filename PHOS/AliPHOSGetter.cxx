@@ -83,6 +83,8 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
 {
   //Initialize  all lists
 
+  fDebug = 0 ; 
+  
   fHeaderFile         = headerFile ; 
   fBranchTitle        = branchTitle ;
   fSDigitsTitle       = branchTitle ; 
@@ -450,6 +452,7 @@ Bool_t AliPHOSGetter::PostSDigitizer(const char * name, const char * file) const
   TString sdname(name) ;
   sdname.Append(":") ;
   sdname.Append(file);
+  sdname.ReplaceAll("/","_") ; 
   AliPHOSSDigitizer * phossd  = dynamic_cast<AliPHOSSDigitizer *>(phos->GetListOfTasks()->FindObject( sdname )); 
   if (!phossd) {
     phossd = new AliPHOSSDigitizer() ;  

@@ -130,11 +130,11 @@ Bool_t AliEMCALDigitizer::Init()
  
 
 
-if(fManager)
+  if(fManager)
     SetTitle("aliroot") ;
   else if (strcmp(GetTitle(),"")==0) 
-   SetTitle("galice.root") ;
-
+    SetTitle("galice.root") ;
+  
   if( strcmp(GetName(), "") == 0 )
     SetName("Default") ;
   
@@ -167,7 +167,7 @@ if(fManager)
 //____________________________________________________________________________ 
 AliEMCALDigitizer::AliEMCALDigitizer(const char *headerFile,const char *name)
 {
-   SetName(name) ;
+  SetName(name) ;
   SetTitle(headerFile) ;
   fManager = 0 ;                     // We work in the standalong mode
   Init() ;
@@ -230,7 +230,6 @@ void AliEMCALDigitizer::Digitize(const Int_t event) {
     cerr << "ERROR: AliEMCALDigitizer::Digitize -> SDigitizer with name " << GetName() << " not found " << endl ; 
     abort() ; 
   }
-
 // loop through the sdigits posted to the White Board and add them to the noise
   TCollection * folderslist = gime->SDigitsFolder()->GetListOfFolders() ; 
   TIter next(folderslist) ; 
@@ -240,8 +239,10 @@ void AliEMCALDigitizer::Digitize(const Int_t event) {
   TObjArray * sdigArray = new TObjArray(2) ;
   while ( (folder = (TFolder*)next()) ) 
     if ( (sdigits = (TClonesArray*)folder->FindObject(GetName()) ) ) {
+      TString fileName(folder->GetName()) ;
+      fileName.ReplaceAll("_","/") ;
       cout << "INFO: AliEMCALDigitizer::Digitize -> Adding SDigits " 
-	   << GetName() << " from " << folder->GetName() << endl ; 
+	   << GetName() << " from " << fileName << endl ; 
       sdigArray->AddAt(sdigits, input) ;
       input++ ;
     }
@@ -469,8 +470,8 @@ if(strcmp(GetName(), "") == 0 )
 	gime->ReadTreeS(treeS,input) ;
       }
     }
-    else
-      gime->Event(ievent,"S") ;
+    else 
+      gime->Event(ievent,"S") ; 
     
     Digitize(ievent) ; //Add prepared SDigits to digits and add the noise
     
