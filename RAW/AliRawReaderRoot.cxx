@@ -359,4 +359,6 @@ Int_t AliRawReaderRoot::CheckData() const
     if (position + miniHeader->fSize > end) result |= kErrSize;
     position += miniHeader->fSize;
   };
+
+  return result;
 }
