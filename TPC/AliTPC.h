@@ -11,9 +11,9 @@
 #include "AliDetector.h"
 #include "AliHit.h" 
 #include "AliDigit.h" 
-#include "TLorentzVector.h" 
+//#include "TLorentzVector.h" 
 
-#include "AliTPCLoader.h"
+//#include "AliTPCLoader.h"
 
 
 class TMatrix;
@@ -28,51 +28,29 @@ class AliTPCDigitsArray;
 class AliTPCClustersArray;
 class AliTPCTrackHitsV2; // M.I.
 class AliTPCTrackHits; // M.I.  -MI4 old hits - to be removed later
+//class TLorentzVector;
+class AliTPCLoader;
 
 
 class AliTPC : public AliDetector {
-protected:
-  Int_t          fDefaults;
-  Int_t          fSens;             // ISENS
-  Int_t          fSecAL;            // Upper sector selector
-  Int_t          fSecAU;            // Lower sector selector
-  Int_t          fSecLows[6];       // List of lower sectors selected
-  Int_t          fSecUps[12];       // List of upper sectors selected
-  Int_t          fNsectors;         // Number of sectors in TPC
-  //MI changes
-  AliTPCDigitsArray * fDigitsArray;              //!detector digit object  
-  AliTPCClustersArray * fClustersArray; //!detector cluster object
-  AliTPCParam *fTPCParam;           // pointer to TPC parameters 
-  AliTPCTrackHitsV2 *fTrackHits;      //!hits for given track M.I.
-  AliTPCTrackHits *fTrackHitsOld;      //!hits for given track M.I. MIold -
-
-  Int_t  fHitType; // if fNewHit = 1 old data structure if 2 new hits  if 4  old MI stucture
-  //  3 both types 
-  Int_t fDigitsSwitch; // digits type, 0->normal, 1->summable
-
-  //MK changes
-
-  Float_t        fSide;  // selects left(-1), right(+1), or both(0) sides of the TPC
-  Int_t          fNoComp; // number of a drift gas components
-  Int_t          fMixtComp[3]; // drift gas components
-  Float_t        fMixtProp[3]; // mixture proportions
 
 public:
-  AliTPC();
+  AliTPC(); 
   AliTPC(const char *name, const char *title);
+  AliTPC(const AliTPC& t);
   
   virtual AliLoader* MakeLoader(const char* topfoldername);
   
   virtual      ~AliTPC();
   virtual void  AddHit(Int_t a1, Int_t *a2, Float_t *a3);
-  Int_t         DistancetoPrimitive(Int_t px, Int_t py);
+  Int_t         DistancetoPrimitive(Int_t px, Int_t py) const;
   virtual void  BuildGeometry();
   virtual void  CreateGeometry() {}
   virtual void  CreateMaterials();
   virtual void  Hits2Clusters(Int_t eventn=0);
   virtual void  Hits2ExactClustersSector(Int_t isec); // MI change calculate "exact" cluster position
   
-  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager);
+  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
   virtual void  SDigits2Digits(){;} //MI change -cycling to production
   virtual void  SDigits2Digits2(Int_t eventnumber=0);
 
@@ -85,10 +63,10 @@ public:
   virtual void  Hits2DigitsSector(Int_t isec);  //MI change
   virtual void  Init();
   virtual Int_t IsVersion() const =0;
-  virtual void  Digits2Clusters(Int_t eventnumber=0);
-  virtual void  Clusters2Tracks();
+  virtual void  Digits2Clusters(Int_t eventnumber=0) const;
+  virtual void  Clusters2Tracks() const;
 
-  Int_t         GetNsectors()       {return fNsectors;}
+  Int_t         GetNsectors() const  {return fNsectors;}
   virtual void  MakeBranch(Option_t *opt=" ");
   virtual void  ResetDigits();
   virtual void  SetSecAL(Int_t sec);
@@ -136,13 +114,38 @@ public:
    void SetDefSwitch(Int_t def){fDefaults = def;}
    Float_t GetNoise();  //get Current noise  
    void    GenerNoise(Int_t tablasize);  // make noise table
-   Bool_t  IsSectorActive(Int_t sec);    // check if the sector is active
+   Bool_t  IsSectorActive(Int_t sec) const;    // check if the sector is active
    void    SetActiveSectors(Int_t * sectors, Int_t n);  //set active sectors
-   Int_t GetHitType(){return fHitType;}
+   Int_t GetHitType() const {return fHitType;}
    void    SetActiveSectors(Int_t flag=0); //loop over al hits and set active only hitted sectors
 
 // static functions
-   static AliTPCParam* LoadTPCParam(TFile *file);  
+   static AliTPCParam* LoadTPCParam(TFile *file); 
+protected:
+   Int_t          fDefaults; // defaults switch
+  Int_t          fSens;             // ISENS
+  Int_t          fSecAL;            // Upper sector selector
+  Int_t          fSecAU;            // Lower sector selector
+  Int_t          fSecLows[6];       // List of lower sectors selected
+  Int_t          fSecUps[12];       // List of upper sectors selected
+  Int_t          fNsectors;         // Number of sectors in TPC
+  //MI changes
+  AliTPCDigitsArray * fDigitsArray;              //!detector digit object  
+  AliTPCClustersArray * fClustersArray; //!detector cluster object
+  AliTPCParam *fTPCParam;           // pointer to TPC parameters 
+  AliTPCTrackHitsV2 *fTrackHits;      //!hits for given track M.I.
+  AliTPCTrackHits *fTrackHitsOld;      //!hits for given track M.I. MIold -
+
+  Int_t  fHitType; // if fNewHit = 1 old data structure if 2 new hits  if 4  old MI stucture
+  //  3 both types 
+  Int_t fDigitsSwitch; // digits type, 0->normal, 1->summable
+
+  //MK changes
+
+  Float_t        fSide;  // selects left(-1), right(+1), or both(0) sides of the TPC
+  Int_t          fNoComp; // number of a drift gas components
+  Int_t          fMixtComp[3]; // drift gas components
+  Float_t        fMixtProp[3]; // mixture proportions 
    
  private:
   //

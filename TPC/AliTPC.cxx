@@ -88,13 +88,13 @@ ClassImp(AliTPC)
 
 class AliTPCFastMatrix : public TMatrix {
 public :
-  AliTPCFastMatrix(Int_t row_lwb, Int_t row_upb, Int_t col_lwb, Int_t col_upb);
-  inline Float_t & UncheckedAt(Int_t rown, Int_t coln) const  {return  (fIndex[coln])[rown];} //fast acces   
-  inline Float_t   UncheckedAtFast(Int_t rown, Int_t coln) const  {return  (fIndex[coln])[rown];} //fast acces   
+  AliTPCFastMatrix(Int_t rowlwb, Int_t rowupb, Int_t collwb, Int_t colupb);
+  Float_t & UncheckedAt(Int_t rown, Int_t coln) const  {return  (fIndex[coln])[rown];} //fast acces   
+  Float_t   UncheckedAtFast(Int_t rown, Int_t coln) const  {return  (fIndex[coln])[rown];} //fast acces   
 };
 
-AliTPCFastMatrix::AliTPCFastMatrix(Int_t row_lwb, Int_t row_upb, Int_t col_lwb, Int_t col_upb):
-  TMatrix(row_lwb, row_upb,col_lwb,col_upb)
+AliTPCFastMatrix::AliTPCFastMatrix(Int_t rowlwb, Int_t rowupb, Int_t collwb, Int_t colupb):
+  TMatrix(rowlwb, rowupb,collwb,colupb)
    {
    };
 //_____________________________________________________________________________
@@ -102,7 +102,7 @@ class AliTPCFastVector : public TVector {
 public :
   AliTPCFastVector(Int_t size);
   virtual ~AliTPCFastVector(){;}
-  inline Float_t & UncheckedAt(Int_t index) const  {return  fElements[index];} //fast acces  
+  Float_t & UncheckedAt(Int_t index) const  {return  fElements[index];} //fast acces  
   
 };
 
@@ -186,6 +186,11 @@ AliTPC::AliTPC(const char *name, const char *title)
 }
 
 //_____________________________________________________________________________
+AliTPC::AliTPC(const AliTPC& t):AliDetector(t){
+  //
+  // dummy copy constructor
+  //
+}
 AliTPC::~AliTPC()
 {
   //
@@ -304,7 +309,7 @@ void AliTPC::BuildGeometry()
 }    
 
 //_____________________________________________________________________________
-Int_t AliTPC::DistancetoPrimitive(Int_t , Int_t )
+Int_t AliTPC::DistancetoPrimitive(Int_t , Int_t ) const
 {
   //
   // Calculate distance from TPC to mouse on the display
@@ -313,7 +318,7 @@ Int_t AliTPC::DistancetoPrimitive(Int_t , Int_t )
   return 9999;
 }
 
-void AliTPC::Clusters2Tracks() 
+void AliTPC::Clusters2Tracks() const 
  {
   //-----------------------------------------------------------------
   // This is a track finder.
@@ -438,7 +443,7 @@ void AliTPC::CreateMaterials()
   density = 0.;
   Float_t am=0;
   Int_t nc;
-  Float_t rho,absl,X0,buf[1];
+  Float_t rho,absl,x0,buf[1];
   Int_t nbuf;
   Float_t a,z;
 
@@ -447,7 +452,7 @@ void AliTPC::CreateMaterials()
     
       // retrive material constants
       
-      gMC->Gfmate((*fIdmate)[fMixtComp[nc]],namate,a,z,rho,X0,absl,buf,nbuf);
+      gMC->Gfmate((*fIdmate)[fMixtComp[nc]],namate,a,z,rho,x0,absl,buf,nbuf);
 
       amat[nc] = a;
       zmat[nc] = z;
@@ -677,7 +682,7 @@ void AliTPC::CreateMaterials()
 
   // get epoxy
 
-  gMC->Gfmate((*fIdmate)[45],namate,amat[1],zmat[1],rho,X0,absl,buf,nbuf);
+  gMC->Gfmate((*fIdmate)[45],namate,amat[1],zmat[1],rho,x0,absl,buf,nbuf);
 
   // Carbon fiber
 
@@ -690,7 +695,7 @@ void AliTPC::CreateMaterials()
 
   // get SiO2
 
-  gMC->Gfmate((*fIdmate)[38],namate,amat[0],zmat[0],rho,X0,absl,buf,nbuf); 
+  gMC->Gfmate((*fIdmate)[38],namate,amat[0],zmat[0],rho,x0,absl,buf,nbuf); 
 
   wmat[0]=0.725; // by weight!
   wmat[1]=0.275;
@@ -760,7 +765,7 @@ Float_t AliTPC::GetNoise()
 }
 
 
-Bool_t  AliTPC::IsSectorActive(Int_t sec)
+Bool_t  AliTPC::IsSectorActive(Int_t sec) const
 {
   //
   // check if the sector is active
@@ -836,7 +841,7 @@ void    AliTPC::SetActiveSectors(Int_t flag)
 
 
 
-void AliTPC::Digits2Clusters(Int_t /*eventnumber*/)
+void AliTPC::Digits2Clusters(Int_t /*eventnumber*/) const
 {
   //-----------------------------------------------------------------
   // This is a simple cluster finder.
@@ -1231,7 +1236,7 @@ void AliTPC::Hits2ExactClustersSector(Int_t isec)
 
 
 //______________________________________________________________________
-AliDigitizer* AliTPC::CreateDigitizer(AliRunDigitizer* manager)
+AliDigitizer* AliTPC::CreateDigitizer(AliRunDigitizer* manager) const
 {
   return new AliTPCDigitizer(manager);
 }
@@ -1359,7 +1364,9 @@ void AliTPC::SDigits2Digits2(Int_t /*eventnumber*/)
 }
 //__________________________________________________________________
 void AliTPC::SetDefaults(){
-
+  //
+  // setting the defaults
+  //
    
    cerr<<"Setting default parameters...\n";
 
@@ -1434,6 +1441,10 @@ void AliTPC::SetDefaults(){
 //__________________________________________________________________  
 void AliTPC::Hits2Digits()  
 {
+  //
+  // creates digits from hits
+  //
+
   fLoader->LoadHits("read");
   fLoader->LoadDigits("recreate");
   AliRunLoader* runLoader = fLoader->GetRunLoader(); 
@@ -2576,6 +2587,9 @@ AliHit* AliTPC::FirstHit(Int_t track)
 }
 AliHit* AliTPC::NextHit()
 {
+  //
+  // gets next hit
+  //
   if (fHitType>1) return NextHit2();
   
   return AliDetector::NextHit();
@@ -2642,6 +2656,9 @@ void AliTPC::LoadPoints(Int_t)
 
 void AliTPC::RemapTrackHitIDs(Int_t *map)
 {
+  //
+  // remapping
+  //
   if (!fTrackHits) return;
   
   if (fTrackHitsOld && fHitType&2){
