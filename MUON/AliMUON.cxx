@@ -99,6 +99,7 @@ AliMUON::AliMUON()
     fAccCut          = kFALSE;
     fMerger          = 0;
     fFileName        = 0;
+    fMUONData        = 0;
 }
 //__________________________________________________________________
 AliMUON::AliMUON(const char *name, const char *title)
