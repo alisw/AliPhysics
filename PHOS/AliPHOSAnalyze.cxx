@@ -407,7 +407,8 @@ void AliPHOSAnalyze::ReadAndPrintCPV(Int_t EvFirst, Int_t EvLast)
       //=========== Get the Hits Tree for the Primary track itrack
       gAlice->ResetHits();
       gAlice->TreeH()->GetEvent(itrack);
-      for (Int_t iModule=0; iModule < fGeom->GetNModules(); iModule++) {
+      Int_t iModule = 0 ; 	
+      for (iModule=0; iModule < fGeom->GetNModules(); iModule++) {
 	cpvModule = fPHOS->GetCPVModule(iModule);
 	cpvHits   = cpvModule.Hits();
 	nCPVhits  = cpvHits->GetEntriesFast();
@@ -520,7 +521,8 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
 	cpvModule.Clear();
       }
     }
-    for (Int_t iModule=0; iModule < nOfModules; iModule++) {
+    Int_t iModule = 0; 	
+    for (iModule=0; iModule < nOfModules; iModule++) {
       Int_t nsum = hitsPerModule[iModule]->GetEntriesFast();
       printf("Module %d has %d hits\n",iModule,nsum);
     }
