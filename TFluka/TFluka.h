@@ -337,12 +337,6 @@ class TFluka : public TVirtualMC {
   
   Int_t GetMaterialIndex(Int_t idmat) const {return fMaterials[idmat];}
   TObjArray *GetFlukaMaterials();
-  //
-  // Fluka specific scoring options
-  //
-
-  Bool_t  SetFlukaScoringOption(Float_t what[12], const char* sdum) {return kTRUE;}
-      
   private:
   TFluka(const TFluka &mc): TVirtualMC(mc) {;}
   TFluka & operator=(const TFluka &) {return (*this);}
