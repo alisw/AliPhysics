@@ -1,6 +1,10 @@
 // $Id$
 // Category: event
 //
+// Author: I.Hrivnacova
+//
+// Class TG4StepManager
+// --------------------
 // See the class description in the header file.
 
 #include "TG4StepManager.h"
@@ -9,7 +13,6 @@
 #include "TG4ParticlesManager.h"
 #include "TG4PhysicsManager.h"
 #include "TG4VSensitiveDetector.h"
-#include "TG4Limits.h"
 #include "TG4Globals.h"
 #include "TG4G3Units.h"
 
@@ -197,20 +200,17 @@ void TG4StepManager::SetMaxStep(Float_t step)
 // Maximum step allowed in the current logical volume.
 // ---
 
-  G4LogicalVolume* curLogVolume 
-    = GetCurrentPhysicalVolume()->GetLogicalVolume();
   G4UserLimits* userLimits 
-    = curLogVolume->GetUserLimits();
-
-  if (userLimits == 0) {
-    // create new limits
-    userLimits = new TG4Limits();
-    
-    // set limits to all logical volumes
-    // corresponding to the current "G3" volume 
-    TG4GeometryServices* geometryServices = TG4GeometryServices::Instance();
-    G4int nofLV = geometryServices->SetUserLimits(userLimits, curLogVolume);
+    = GetCurrentPhysicalVolume()->GetLogicalVolume()->GetUserLimits();
+  
+#ifdef TGEANT4_DEBUG
+  if (!userLimits) {
+    G4String text = "TG4StepManager::SetMaxStep:\n";
+    text = text + "   User limits not defined.";
+    TG4Globals::Exception(text);
+    return;
   }
+#endif  
 
   // set max step
   userLimits->SetMaxAllowedStep(step*TG4G3Units::Length()); 
@@ -356,28 +356,29 @@ Int_t TG4StepManager::CurrentMaterial(Float_t &a, Float_t &z, Float_t &dens,
   G4Material* material 
     = physVolume->GetLogicalVolume()->GetMaterial();
 
-  if (material) {
-    G4int nofElements = material->GetNumberOfElements();
-    TG4GeometryServices* geometryServices = TG4GeometryServices::Instance();
-    a = geometryServices->GetEffA(material);
-    z = geometryServices->GetEffZ(material);
-      
-    // density 
-    dens = material->GetDensity();
-    dens /= TG4G3Units::MassDensity();      
-      
-    // radiation length
-    radl = material->GetRadlen();
-    radl /= TG4G3Units::Length();
-      
-    absl = 0.;  // this parameter is not defined in Geant4
-    return nofElements;
-  }
-  else {
+#ifdef TGEANT4_DEBUG
+  if (!material) {
     TG4Globals::Exception(
      "TG4StepManager::CurrentMaterial(..): material is not defined.");
     return 0;
   }
+#endif  
+
+  G4int nofElements = material->GetNumberOfElements();
+  TG4GeometryServices* geometryServices = TG4GeometryServices::Instance();
+  a = geometryServices->GetEffA(material);
+  z = geometryServices->GetEffZ(material);
+      
+  // density 
+  dens = material->GetDensity();
+  dens /= TG4G3Units::MassDensity();      
+      
+  // radiation length
+  radl = material->GetRadlen();
+  radl /= TG4G3Units::Length();
+      
+  absl = 0.;  // this parameter is not defined in Geant4
+  return nofElements;
 }
 
 //_____________________________________________________________________________
@@ -401,6 +402,14 @@ void TG4StepManager::Gmtod(Float_t* xm, Float_t* xd, Int_t iflag)
 //
 // ---
 
+#ifdef TGEANT4_DEBUG
+  if (iflag != 1 && iflag != 2) {
+      TG4Globals::Exception(
+        "TG4StepManager::Gmtod(..,iflag): iflag is not in 1..2");
+      return;	
+  }	
+#endif
+
   G4AffineTransform affineTransform;
 
   if (fStepStatus == kVertex) {
@@ -423,13 +432,11 @@ void TG4StepManager::Gmtod(Float_t* xm, Float_t* xd, Int_t iflag)
 
   G4ThreeVector theGlobalPoint(xm[0],xm[1],xm[2]); 
   G4ThreeVector theLocalPoint;
-  if(iflag == 1) 
-       theLocalPoint = affineTransform.TransformPoint(theGlobalPoint);
-  else if ( iflag == 2)
-       theLocalPoint = affineTransform.TransformAxis(theGlobalPoint);
-  else 
-    TG4Globals::Exception(
-      "TG4StepManager::Gmtod(..,iflag): iflag is not in 1..2");
+  if (iflag == 1) 
+    theLocalPoint = affineTransform.TransformPoint(theGlobalPoint);
+  else
+    // if ( iflag == 2)
+    theLocalPoint = affineTransform.TransformAxis(theGlobalPoint);
 
   xd[0] = theLocalPoint.x();
   xd[1] = theLocalPoint.y();
@@ -564,13 +571,12 @@ Int_t TG4StepManager::GetMedium() const
 // G3 tracking medium index).
 // --- 
 
-  // current material
-  G4Material* curMaterial
-    = GetCurrentPhysicalVolume()->GetLogicalVolume()->GetMaterial();
+  // current logical volume
+  G4LogicalVolume* curLV = GetCurrentPhysicalVolume()->GetLogicalVolume();
 
   // medium index  
   TG4GeometryServices* geometryServices = TG4GeometryServices::Instance();
-  return geometryServices->GetMediumId(curMaterial);
+  return geometryServices->GetMediumId(curLV);
 }
 
 //_____________________________________________________________________________
@@ -982,43 +988,42 @@ void TG4StepManager::GetSecondary(Int_t index, Int_t& particleId,
   G4int nofSecondaries = NSecondaries();
   G4TrackVector* secondaryTracks = fSteppingManager->GetSecondary();
 
-  if (secondaryTracks){
-    if (index < nofSecondaries) {
-
-      // the index of the first secondary of this step
-      G4int startIndex 
-        = secondaryTracks->size() - nofSecondaries;
-             // (the secondaryTracks vector contains secondaries 
-             // produced by the track at previous steps, too)
-      G4Track* track 
-        = (*secondaryTracks)[startIndex + index]; 
-   
-      // particle encoding
-      particleId 
-        = track->GetDynamicParticle()->GetDefinition()->GetPDGEncoding();
- 
-      // position & time
-      G4ThreeVector positionVector = track->GetPosition();
-      positionVector *= 1./(TG4G3Units::Length());
-      G4double time = track->GetLocalTime();
-      time /= TG4G3Units::Time();
-      SetTLorentzVector(positionVector, time, position);
-
-      // momentum & energy
-      G4ThreeVector momentumVector = track->GetMomentum();	
-      G4double energy = track->GetDynamicParticle()->GetTotalEnergy();
-      energy /= TG4G3Units::Energy();
-      SetTLorentzVector(momentumVector, energy, momentum);
-    }
-    else {
-      TG4Globals::Exception(
-        "TG4StepManager::GetSecondary(): wrong secondary track index.");
-    }
-  }
-  else {
+#ifdef TGEANT4_DEBUG
+  if (!secondaryTracks) {
     TG4Globals::Exception(
       "TG4StepManager::GetSecondary(): secondary tracks vector is empty");
   }
+  
+  if (index >= nofSecondaries) {
+    TG4Globals::Exception(
+      "TG4StepManager::GetSecondary(): wrong secondary track index.");
+  }
+#endif
+  
+  // the index of the first secondary of this step
+  G4int startIndex 
+    = secondaryTracks->size() - nofSecondaries;
+         // (the secondaryTracks vector contains secondaries 
+         // produced by the track at previous steps, too)
+  G4Track* track 
+    = (*secondaryTracks)[startIndex + index]; 
+   
+  // particle encoding
+  particleId 
+    = track->GetDynamicParticle()->GetDefinition()->GetPDGEncoding();
+ 
+  // position & time
+  G4ThreeVector positionVector = track->GetPosition();
+  positionVector *= 1./(TG4G3Units::Length());
+  G4double time = track->GetLocalTime();
+  time /= TG4G3Units::Time();
+  SetTLorentzVector(positionVector, time, position);
+
+  // momentum & energy
+  G4ThreeVector momentumVector = track->GetMomentum();	
+  G4double energy = track->GetDynamicParticle()->GetTotalEnergy();
+  energy /= TG4G3Units::Energy();
+  SetTLorentzVector(momentumVector, energy, momentum);
 }
 
 //_____________________________________________________________________________
@@ -1037,6 +1042,7 @@ AliMCProcess TG4StepManager::ProdProcess(Int_t isec) const
 
   G4TrackVector* secondaryTracks = fSteppingManager->GetSecondary();
  
+#ifdef TGEANT4_DEBUG
   // should never happen
   if (!secondaryTracks) {
     TG4Globals::Exception(
@@ -1045,33 +1051,32 @@ AliMCProcess TG4StepManager::ProdProcess(Int_t isec) const
     return kPNoProcess;  
   }    
 
-  if (isec < nofSecondaries) {
-
-    // the index of the first secondary of this step
-    G4int startIndex 
-      = secondaryTracks->size() - nofSecondaries;
-           // the secondaryTracks vector contains secondaries 
-           // produced by the track at previous steps, too
-
-    // the secondary track with specified isec index
-    G4Track* track = (*secondaryTracks)[startIndex + isec]; 
-   
-    const G4VProcess* kpProcess = track->GetCreatorProcess(); 
-  
-    AliMCProcess mcProcess 
-     = TG4PhysicsManager::Instance()->GetMCProcess(kpProcess);
-  
-    // distinguish kPDeltaRay from kPEnergyLoss  
-    if (mcProcess == kPEnergyLoss) mcProcess = kPDeltaRay;
-  
-    return mcProcess;
-  }
-  else {
+  if (isec >= nofSecondaries) {
     TG4Globals::Exception(
       "TG4StepManager::GetSecondary(): wrong secondary track index.");
 
     return kPNoProcess;  
   }
+#endif
+
+  // the index of the first secondary of this step
+  G4int startIndex 
+    = secondaryTracks->size() - nofSecondaries;
+         // the secondaryTracks vector contains secondaries 
+         // produced by the track at previous steps, too
+
+  // the secondary track with specified isec index
+  G4Track* track = (*secondaryTracks)[startIndex + isec]; 
+   
+  const G4VProcess* kpProcess = track->GetCreatorProcess(); 
+  
+  AliMCProcess mcProcess 
+   = TG4PhysicsManager::Instance()->GetMCProcess(kpProcess);
+  
+  // distinguish kPDeltaRay from kPEnergyLoss  
+  if (mcProcess == kPEnergyLoss) mcProcess = kPDeltaRay;
+  
+  return mcProcess;
 }
 
 //_____________________________________________________________________________

@@ -1,6 +1,10 @@
 // $Id$
 // Category: geometry
 //
+// Author: I. Hrivnacova 
+//
+// Class TG4GeometryOutputManager
+// ------------------------------
 // See the class description in the header file.
 
 #include "TG4GeometryOutputManager.h"

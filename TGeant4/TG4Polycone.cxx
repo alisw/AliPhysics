@@ -1,7 +1,10 @@
 // $Id$
 // Category: geometry
-// by I. Hrivnacova, 12.10.2000 
 //
+// Author: I. Hrivnacova, 12.10.2000 
+//
+// Class TG4Polycone
+// -----------------
 // See the class description in the header file.
 
 #include "TG4Polycone.h"

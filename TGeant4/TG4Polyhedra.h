@@ -1,7 +1,10 @@
 // $Id$
 // Category: geometry
-// by I. Hrivnacova, 12.10.2000 
+// 
+// Author: I. Hrivnacova, 12.10.2000 
 //
+// Class TG4Polyhedra
+// ------------------
 // G4Polyhedra class extented for public access method
 // to the original parameters.
 

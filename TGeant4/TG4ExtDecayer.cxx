@@ -1,6 +1,10 @@
 // $Id$
 // Category: physics
 //
+// Author: I. Hrivnacova
+//
+// Class TG4ExtDecayer
+// -------------------
 // See the class description in the header file.
 
 #include "AliDecayer.h"

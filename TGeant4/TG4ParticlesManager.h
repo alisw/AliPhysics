@@ -1,6 +1,10 @@
 // $Id$
 // Category: physics
 //
+// Author: I. Hrivnacova
+//
+// Class TG4ParticlesManager
+// -------------------------
 // This class provides mapping between TDatabasePDG
 // and Geant4 particles. 
 

@@ -1,6 +1,10 @@
 // $Id$
 // Category: digits+hits
 //
+// Author: I.Hrivnacova
+//
+// Class TG4VSDConstruction
+// ------------------------
 // Abstract class for construction of user sensitive detectors.
 // It has one pure virtual method Construct()
 // that has to be be implemented by a derived class.
@@ -11,10 +15,6 @@
 
 #ifndef TG4V_SD_CONSTRUCTION_H
 #define TG4V_SD_CONSTRUCTION_H
-
-#include <globals.hh>
-
-#include <Rtypes.h>
 
 class TG4VSDConstruction
 {

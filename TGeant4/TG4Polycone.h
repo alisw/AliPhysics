@@ -1,7 +1,10 @@
 // $Id$
 // Category: geometry
-// by I. Hrivnacova, 12.10.2000 
 //
+// Author: I. Hrivnacova, 12.10.2000 
+//
+// Class TG4Polycone
+// -----------------
 // G4Polycone class extented for public access method
 // to the original parameters.
 

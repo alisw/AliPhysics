@@ -1,8 +1,15 @@
 // $Id$
 // Category: event
 //
-// Class that ensures additional call to sensitive detector
-// when track crosses geometrical boundary.
+// Author: I.Hrivnacova
+//
+// Class TG4SteppingAction
+// -----------------------
+// This class ensures additional call to sensitive detector
+// when track crosses a geometrical boundary.
+// It also enables to define a maximum number of steps
+// and takes care of stopping of a track when this number
+// is reached.
 
 #ifndef TG4_STEPPING_ACTION_H
 #define TG4_STEPPING_ACTION_H

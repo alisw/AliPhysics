@@ -1,6 +1,10 @@
 // $Id$
 // Category: global
 //
+// Author: I. Hrivnacova
+//
+// Class TG4G3Units
+// ----------------
 // See the class description in the header file.
 
 #include "TG4G3Units.h"

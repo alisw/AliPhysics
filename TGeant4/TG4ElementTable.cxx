@@ -1,6 +1,10 @@
 // $Id$
 // Category: geometry
 //
+// Author: I. Hrivnacova, 27.07.2000 
+//
+// Class TG4ElementTable 
+// ---------------------
 // See the class description in the header file.
 
 #include "TG4ElementTable.h"

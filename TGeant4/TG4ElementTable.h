@@ -1,9 +1,13 @@
 // $Id$
 // Category: geometry
 //
+// Author: I. Hrivnacova 
+//
+// Class TG4ElementTable
+// ---------------------
 // Singleton class that builds the default element table
-// Currently defined elements: up to Z=47
-// to be continued
+// Currently defined elements: up to Z=47 (to be continued).
+// Not used.
 
 #ifndef TG4_ELEMENT_TABLE_H
 #define TG4_ELEMENT_TABLE_H

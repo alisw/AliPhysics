@@ -1,6 +1,10 @@
 // $Id$
 // Category: physics
 //
+// Author: I. Hrivnacova
+//
+// Class TG4PhysicsConstructorEM
+// -----------------------------
 // Constructor of electromagnetic physics.
 // According to the corresponding part of:
 // ExN04PhysicsList.hh, GEANT4 tag Name: geant4-01-01

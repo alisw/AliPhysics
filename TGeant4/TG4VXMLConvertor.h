@@ -1,8 +1,11 @@
 // $Id$
 // Category: geometry
-// by I. Hrivnacova, 27.07.2000 
 //
-// The interface for XML convertor that
+// Author: I. Hrivnacova, 27.07.2000 
+//
+// Class TG4VXMLConvertor
+// ----------------------
+// The interface for the XML convertor that
 // converts G4 basic geometry objects to XML. 
 
 #ifndef TG4_V_XML_CONVERTOR_H

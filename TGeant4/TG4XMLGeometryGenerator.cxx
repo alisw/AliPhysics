@@ -1,7 +1,10 @@
 // $Id$
 // Category: geometry
-// by I. Hrivnacova, 27.07.2000 
 //
+// Author: I. Hrivnacova, 27.07.2000 
+//
+// Class TG4XMLGeometryGenerator
+// -----------------------------
 // See the class description in the header file.
 
 #include "TG4XMLGeometryGenerator.h"

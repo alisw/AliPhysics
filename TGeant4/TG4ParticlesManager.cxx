@@ -1,6 +1,10 @@
 // $Id$
 // Category: physics
 //
+// Author: I. Hrivnacova
+//
+// Class TG4ParticlesManager
+// -------------------------
 // See the class description in the header file.
 
 #include "TG4ParticlesManager.h"
@@ -174,12 +178,13 @@ G4int TG4ParticlesManager::GetPDGEncodingFast(G4ParticleDefinition* particle)
 
 //_____________________________________________________________________________
 TParticle* TG4ParticlesManager::GetParticle(const TClonesArray* particles, 
-                                          G4int index) const
+                                            G4int index) const
 {
 // Retrives particle with given index from TClonesArray 
 // and checks type.
 // ---
 
+#ifdef TGEANT4_DEBUG
   TObject* particleTObject = particles->UncheckedAt(index);      
   TParticle* particle
     = dynamic_cast<TParticle*>(particleTObject);
@@ -188,8 +193,9 @@ TParticle* TG4ParticlesManager::GetParticle(const TClonesArray* particles,
   if (!particle) 
     TG4Globals::Exception(
       "TG4ParticlesManager::GetParticle: Unknown particle type");
-  
-  return particle;  
+#else
+  return (TParticle*)particles->UncheckedAt(index);      
+#endif  
 }     
 
 

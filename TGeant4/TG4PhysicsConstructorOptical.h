@@ -1,6 +1,10 @@
 // $Id$
 // Category: physics
 //
+// Author: I. Hrivnacova
+//
+// Class TG4PhysicsConstructorOptical
+// ----------------------------------
 // Constructor of optical physics.
 // According to ExN06PhysicsList (geant4 1.1)
 

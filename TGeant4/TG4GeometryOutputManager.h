@@ -1,9 +1,13 @@
 // $Id$
 // Category: geometry
 //
+// Author: I. Hrivnacova
+//
+// Class TG4GeometryOutputManager
+// ------------------------------
 // This class provides methods for writing
 // tokens (ASCII form of Geant3 routines calls)
-// into the specified output file
+// into the specified output file.
 
 #ifndef TG4_GEOMETRY_OUTPUT_MANAGER_H
 #define TG4_GEOMETRY_OUTPUT_MANAGER_H

@@ -1,6 +1,10 @@
 // $Id$
 // Category: event
 //
+// Author: I.Hrivnacova
+//
+// Class TG4TrackingAction
+// -----------------------
 // Class that ensures calling sensitive detector
 // before track starts stepping.
 // It also takes care of setting step status (kVertex)

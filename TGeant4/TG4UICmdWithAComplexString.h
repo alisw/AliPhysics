@@ -1,6 +1,10 @@
-// $ Id:$
+// $Id$
 // Category: global
-
+//
+// Author: I. Hrivnacova
+//
+// Class TG4UICmdWithAComplexString
+// --------------------------------
 // Concrete class of G4UIcommand. 
 // The command defined by this class takes up to three string values.
 // General information of G4UIcommand is given in G4UIcommand.hh.

@@ -1,7 +1,10 @@
 // $Id$
 // Category: geometry
-// by I. Hrivnacova, 27.07.2000 
 //
+// Author: I. Hrivnacova, 27.07.2000 
+//
+// Class TG4XMLGeometryGenerator
+// -----------------------------
 // Singleton class for generation of geometry data files in XML,
 // the XML format is independent from G4 geometry
 // object model. 

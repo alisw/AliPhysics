@@ -1,9 +1,12 @@
 // $Id$
 // Category: event
 //
-// Geant4 implementation of the MonteCarlo interface methods                    
-// for access to Geant4 at step level
+// Author: I.Hrivnacova
 //
+// Class TG4StepManager
+// --------------------
+// Geant4 implementation of the MonteCarlo interface methods                    
+// for access to Geant4 at step level.
 // The public methods that do not implement AliMC methods
 // are commented as G4 specific
 

@@ -1,6 +1,10 @@
 // $Id$
 // Category: physics
 //
+// Author: I. Hrivnacova
+//
+// Class TG4TG4PhysicsConstructorSpecialControls
+// ---------------------------------------------
 // Constructor of special controls of physics processes.
 
 #ifndef TG4_PHYSICS_CONSTRUCTOR_SPECIAL_CONTROLS_H

@@ -1,8 +1,11 @@
 // $Id$
 // Category: geometry
-// by I. Hrivnacova, 27.07.2000 
 //
-// XML convertor that converts G4 basic geometry objects 
+// Author: I. Hrivnacova, 27.07.2000 
+//
+// Class TG4XMLConvertor
+// ---------------------
+// The class provides methods for conversion of G4 basic geometry objects 
 // to XML defined by AGDD.dtd
 // (ATLAS Generic Detector Description)
 
@@ -14,6 +17,7 @@
 
 #include <globals.hh>
 #include <g4std/fstream>
+#include <g4std/vector>
 
 class G4Material;
 class G4VSolid;
@@ -30,6 +34,8 @@ class G4Polyhedra;
 
 class TG4XMLConvertor : public TG4VXMLConvertor
 {
+  typedef G4std::vector<const G4RotationMatrix*> RotationMatrixVector;
+
   public:
     TG4XMLConvertor(G4std::ofstream& outFile);
     virtual ~TG4XMLConvertor();
@@ -93,7 +99,7 @@ class TG4XMLConvertor : public TG4VXMLConvertor
     G4int             fNW;               //output numbers width
     G4int             fNP;               //output numbers precision 
     G4int             fRotationCounter;  //counter of rotations
-    TG4RotationMatrixVector  fRotations; //vector of rot matrices
+    RotationMatrixVector  fRotations;    //vector of rot matrices
 };
 
 inline void TG4XMLConvertor::SetNumWidth(G4int width)

@@ -1,6 +1,10 @@
 // $Id$
 // Category: run
 //
+// Author: I. Hrivnacova
+//
+// Class TG4RunMessenger
+// ---------------------
 // Messenger class that defines commands for TG4RunManager
 
 #ifndef TG4_RUN_MESSENGER_H

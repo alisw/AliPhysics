@@ -1,6 +1,11 @@
 // $Id$
 // Category: visualization
 //
+// Author: I. Hrivnacova, A. Gheata
+//
+// Class TG4VisManager
+// -------------------
+// See the class description in the header file.
 // According to visualization/management/include/MyVisManager.*
 // John Allison 24th January 1998.
 // I. Hrivnacova 12.5.98

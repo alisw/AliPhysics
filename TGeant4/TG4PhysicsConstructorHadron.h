@@ -1,6 +1,10 @@
 // $Id$
 // Category: physics
 //
+// Author: I. Hrivnacova
+//
+// Class TG4PhysicsConstructorHadron
+// ---------------------------------
 // Constructor of hadron physics.
 // According to corresponding part of:
 // ExN04PhysicsList.hh, GEANT4 tag Name: geant4-01-01

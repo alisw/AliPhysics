@@ -1,6 +1,10 @@
 // $Id$
 // Category: run
 //
+// Author: I. Hrivnacova
+//
+// Class TG4RunMessenger
+// ---------------------
 // See the class description in the header file.
 
 #include "TG4RunMessenger.h"

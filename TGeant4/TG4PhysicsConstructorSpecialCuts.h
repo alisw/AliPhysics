@@ -1,6 +1,10 @@
 // $Id$
 // Category: physics
 //
+// Author: I. Hrivnacova
+//
+// Class TG4PhysicsConstructorSpecialCuts
+// --------------------------------------
 // Constructor of special cuts.
 
 #ifndef TG4_PHYSICS_CONSTRUCTOR_SPECIAL_CUTS_H

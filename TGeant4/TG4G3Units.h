@@ -1,6 +1,10 @@
 // $Id$
 // Category: global
 //
+// Author: I. Hrivnacova
+//
+// Class TG4G3Units
+// ----------------
 // Class defines the G3 default units of physical quantities; 
 // all physical quantities returned by MC are expressed in these units.
 

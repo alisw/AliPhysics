@@ -1,9 +1,13 @@
 // $Id$
 // Category: event
 //
+// Author: I.Hrivnacova
+//
+// Enum TG4StepStatus
+// ------------------
 // In orded to take into account different stepping 
-// mechanism in G3 and G4 three states of 
-// TG4StepManager are defined:
+// mechanism in G3 and G4 three states of TG4StepManager
+// are defined:
 //  kVertex     - returns track properties in the vertex
 //                position before particle started stepping
 //  kBoundary   - returns track properties when particle

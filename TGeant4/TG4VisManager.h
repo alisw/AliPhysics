@@ -1,10 +1,13 @@
 // $Id$
 // Category: visualization
 //
+// Author: I. Hrivnacova, A. Gheata
+//
+// Class TG4VisManager
+// -------------------
 // G4VisManager derived class that takes care of registering
-// graphics syystem and provides 
-// Geant4 implementation of the MonteCarlo interface methods                    
-// for visualization.
+// graphics system and provides Geant4 implementation of 
+// the MonteCarlo interface methods for visualization.
 
 #ifndef TG4_VIS_MANAGER_H
 #define TG4_VIS_MANAGER_H

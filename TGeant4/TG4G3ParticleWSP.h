@@ -1,5 +1,12 @@
 // $Id$
 // Category: physics
+//
+// Author: I. Hrivnacova
+//
+// Enum TG4G3ParticleWSP
+// ---------------------
+// The particles types which a special process (cuts, controls)
+// is applicable for.
 
 #ifndef TG4_G3_PARTICLE_WSP_H
 #define TG4_G3_PARTICLE_WSP_H

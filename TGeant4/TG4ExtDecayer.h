@@ -1,6 +1,10 @@
 // $Id$
 // Category: physics
 //
+// Author: I. Hrivnacova
+//
+// Class TG4ExtDecayer
+// -------------------
 // TG4ExtDecayer class implements the G4VExtDecayer abstract class
 // with the AliDecayer.
 // In case a particle has not defined any decay channel
