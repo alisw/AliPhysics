@@ -1206,14 +1206,15 @@ Int_t AliITStrackerSA::FindEquation(Float_t x1, Float_t y1, Float_t x2, Float_t 
  //c2 is -rlayer*rlayer
 
   if(a1==0) return 0;
- Float_t m = c2-c1; 
- Float_t aA = (b1*b1)/(a1*a1)+1;
- Float_t bB = (-2*m*b1/(a1*a1));
- Float_t cC = c2+(m*m)/(a1*a1);
- if((bB*bB-4*aA*cC)<0) return 0;
+ Double_t m = c2-c1; 
+ Double_t aA = (b1*b1)/(a1*a1)+1;
+ Double_t bB = (-2*m*b1/(a1*a1));
+ Double_t cC = c2+(m*m)/(a1*a1);
+ Double_t dD = bB*bB-4*aA*cC;
+ if(dD<0) return 0;
  
- y1 = (-bB+TMath::Sqrt(bB*bB-4*aA*cC))/(2*aA); 
- y2 = (-bB-TMath::Sqrt(bB*bB-4*aA*cC))/(2*aA); 
+ y1 = (-bB+TMath::Sqrt(dD))/(2*aA); 
+ y2 = (-bB-TMath::Sqrt(dD))/(2*aA); 
  x1 = (c2-c1-b1*y1)/a1;
  x2 = (c2-c1-b1*y2)/a1;
 
