@@ -32,7 +32,7 @@ class AliPHOSClusterizerv1 : public AliPHOSClusterizer {
 public:
   
   AliPHOSClusterizerv1() ;             // ctor            
-  AliPHOSClusterizerv1(const char * headerFile, const char * name = 0);
+  AliPHOSClusterizerv1(const char * headerFile, const char * name = "Default");
   virtual ~AliPHOSClusterizerv1(){}    // dtor
   
   Int_t           AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)const ; 
