@@ -40,10 +40,10 @@
 #include "globals.hh"
 
 
-void nrmlwr(G4double& pSx, G4double& pSy, G4double& pSz,
+void nrmlwr(G4double& /*pSx*/, G4double& /*pSy*/, G4double& /*pSz*/,
             G4double& pVx, G4double& pVy, G4double& pVz,
 	    G4double* norml, const G4int& oldReg, 
-	    const G4int& newReg, G4int& flagErr)
+	    const G4int& /*newReg*/, G4int& flagErr)
 {
   //flag
 #ifdef G4GEOMETRY_DEBUG
@@ -63,8 +63,8 @@ void nrmlwr(G4double& pSx, G4double& pSy, G4double& pSz,
   G4ThreeVector normalGlob;
   
   //normal computing
-  G4bool* valid;
-  normalLoc=ptrNavig->GetLocalExitNormal(valid);
+  G4bool valid;
+  normalLoc=ptrNavig->GetLocalExitNormal(&valid);
   if(valid) {
     normalLoc *= -1;        
     
