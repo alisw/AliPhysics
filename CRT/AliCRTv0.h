@@ -29,9 +29,6 @@ public:
    virtual TString Version(void) {return TString("v0");}
    virtual void    StepManager();
 
-   void           CreateHall();
-
-
 private: 
   Int_t fMucur;
 
