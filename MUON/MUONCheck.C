@@ -21,7 +21,6 @@
 //
 
 // ROOT includes
-#if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TBranch.h"
 #include "TClonesArray.h"
 #include "TFile.h"
@@ -46,9 +45,10 @@
 #include "AliMUONGlobalTrigger.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONTrack.h"
-#endif
 
-void MUONkine(char * filename="galice.root")
+
+
+void MUONkine(char * filename="galice.root",Int_t event2Check=0)
 {
   TClonesArray * ListOfParticles = new TClonesArray("TParticle",1000);
   TParticle * particle = new TParticle();
@@ -63,6 +63,7 @@ void MUONkine(char * filename="galice.root")
   nevents = RunLoader->GetNumberOfEvents();
 
   for(ievent=0; ievent<nevents; ievent++) {  // Event loop
+    if (event2Check!=0) ievent=event2Check;
     Int_t iparticle, nparticles;
     // Getting event ievent
     RunLoader->GetEvent(ievent); 
@@ -71,14 +72,15 @@ void MUONkine(char * filename="galice.root")
     printf(">>> Event %d, Number of particles is %d \n",ievent, nparticles);
     for(iparticle=0; iparticle<nparticles; iparticle++) {
       RunLoader->TreeK()->GetEvent(iparticle);
-      particle->Print("");
+      particle->Print("");  
     }
+    if (event2Check!=0) ievent=nevents;
   }
   RunLoader->UnloadKinematics();
 }
 
 
-void MUONhits(char * filename="galice.root")
+void MUONhits(char * filename="galice.root", Int_t event2Check=0)
 {
   // Creating Run Loader and openning file containing Hits
   AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
@@ -94,6 +96,7 @@ void MUONhits(char * filename="galice.root")
   nevents = RunLoader->GetNumberOfEvents();
 
   for(ievent=0; ievent<nevents; ievent++) {  // Event loop
+    if (event2Check!=0) ievent=event2Check;
     printf(">>> Event %d \n",ievent);
     // Getting event ievent
     RunLoader->GetEvent(ievent); 
@@ -126,12 +129,13 @@ void MUONhits(char * filename="galice.root")
       }
       muondata.ResetHits();
     } // end track loop
+    if (event2Check!=0) ievent=nevents;
   }  // end event loop
   MUONLoader->UnloadHits();
 }
 
 
-void MUONdigits(char * filename="galice.root")
+void MUONdigits(char * filename="galice.root", Int_t event2Check=0)
 {
   // Creating Run Loader and openning file containing Hits
   AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
@@ -150,6 +154,7 @@ void MUONdigits(char * filename="galice.root")
   AliMUONDigit * mDigit;
   
   for(ievent=0; ievent<nevents; ievent++) {
+    if (event2Check!=0) ievent=event2Check;
     printf(">>> Event %d \n",ievent);
     RunLoader->GetEvent(ievent);
   
@@ -194,11 +199,12 @@ void MUONdigits(char * filename="galice.root")
       } // end chamber loop
       muondata.ResetDigits();
     } // end cathode loop
+    if (event2Check!=0) ievent=nevents;
   }  // end event loop
   MUONLoader->UnloadDigits();
 }
 
-void MUONrecpoints(char * filename="galice.root") {
+void MUONrecpoints(char * filename="galice.root", Int_t event2Check=0) {
 
   // Creating Run Loader and openning file containing Hits
   AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
@@ -217,6 +223,7 @@ void MUONrecpoints(char * filename="galice.root") {
   AliMUONRawCluster * mRecPoint;
   
   for(ievent=0; ievent<nevents; ievent++) {
+    if (event2Check!=0) ievent=event2Check;
     printf(">>> Event %d \n",ievent);
     RunLoader->GetEvent(ievent);
     // Addressing
@@ -275,11 +282,12 @@ irecpoint, x0, x1, y0, y1, z0, z1, Q0, Q1, Track0, Track1, Track2, chi2_0, chi2_
       } // end recpoint loop
     } // end chamber loop
     muondata.ResetRawClusters();
+    if (event2Check!=0) ievent=nevents;
   }  // end event loop
   MUONLoader->UnloadRecPoints();
 }
 
-void MUONTestTrigger (char * filename="galice.root"){
+void MUONTestTrigger (char * filename="galice.root", Int_t event2Check=0){
 // reads and dumps trigger objects from MUON.RecPoints.root
   TClonesArray * globalTrigger;
   TClonesArray * localTrigger;
@@ -304,6 +312,7 @@ void MUONTestTrigger (char * filename="galice.root"){
   AliMUONLocalTrigger *locTrg;
   
   for (ievent=0; ievent<nevents; ievent++) {
+    if (event2Check!=0) ievent=event2Check;
     RunLoader->GetEvent(ievent);
     
     muondata.SetTreeAddress("GLT"); 
@@ -365,13 +374,14 @@ void MUONTestTrigger (char * filename="galice.root"){
       
     } // end of loop on Local Trigger
     muondata.ResetTrigger();
+    if (event2Check!=0) ievent=nevents;
   } // end loop on event  
   MUONLoader->UnloadRecPoints();
 }
 
 
 
-void MUONRecTracks (char * filename="galice.root"){
+void MUONRecTracks (char * filename="galice.root", Int_t event2Check=0 ){
 // reads and dumps trigger objects from MUON.RecPoints.root
   TClonesArray * RecTracks;
   
@@ -393,6 +403,7 @@ void MUONRecTracks (char * filename="galice.root"){
   AliMUONTrack * rectrack;
   
   for (ievent=0; ievent<nevents; ievent++) {
+    if (event2Check!=0) ievent=event2Check;
     RunLoader->GetEvent(ievent);
     
     muondata.SetTreeAddress("RT");
@@ -405,6 +416,7 @@ void MUONRecTracks (char * filename="galice.root"){
     printf(">>> Event %d Number of Recconstructed tracks %d \n",ievent, nrectracks);
    
     muondata.ResetRecTracks();
+    if (event2Check!=0) ievent=nevents;
   } // end loop on event  
   MUONLoader->UnloadTracks();
 }

@@ -66,6 +66,7 @@ gSystem->Load("$ALICE_ROOT/MUON/MUONrawclusters_C.so")
 MUONtrigger("galice.root",0,9999); 
 To Load
 gSystem->Load("$ALICE_ROOT/MUON/MUONtrigger_C.so")
+
 ============================================================
  How to run MUON Tracking reconstruction (old output)
 ===========================================================
@@ -120,19 +121,21 @@ To Load
 gSystem->Load("$ALICE_ROOT/MUON/MUONCheck_C.so")
 
 To print Kine : (default file is galice.root )
-MUONkine()
+MUONkine() or MUONkine("galice.root",##) for the event number ##
 
 To print hits : (default file is galice.root if not MUONhits("toto.root""); )
-MUONhits()  
+MUONhits()  or MUONhits("galice.root",##) for the event number ##
 
 To print digits : (default file is galice.root)
-MUONdigits()  
+MUONdigits()  or MUONdigits("galice.root",##) for the event number ##
 
 To print rawcluster : (default file is galice.root)
-MUONrecpoints()
+MUONrecpoints() or MUONrecpoints("galice.root",##) for the event number ##
 
 To print trigger : (default file is galice.root)
-MUONTestTrigger()
+MUONTestTrigger() or MUONTestTrigger("galice.root",##) for the event number ##
+
+....
 
 
 ============================================================
@@ -179,6 +182,7 @@ config file when the magnetic field is defined:
 TRACKING must be 1 for RKUTA and 2 for HELIX (the default value for aliroot is 2 (HELIX))
 FACTOR allows you to set the magnetic field to 0, just putting FACTOR=0. Default value is 1.
 MAXB is the maximum magnetic field which is 10.T
+
 ===========================================================
  MUON cocktail for physics ..............
 ===========================================================
@@ -215,6 +219,54 @@ gener->SetOrigin(0,0,0);        // Vertex position
 gener->SetSigma(0,0,0.0);       // Sigma in (X,Y,Z) (cm) on IP position
 gener->Init();
  
+===========================================================
+ csh Script for the full reconstruction
+===========================================================
+aliroot -b << EOF  
+gAlice->Run(NumberOfEvents,"YourConfig.C");
+.q
+EOF
+
+aliroot -b << EOF 
+AliRunDigitizer   * manager = new AliRunDigitizer(1,1);
+manager->SetInputStream(0,"galice.root");
+AliMUONDigitizerv1* dMUON   = new AliMUONDigitizerv1(manager);
+manager->AddDigitizer(dMUON);
+manager->Exec("deb");
+.q
+EOF
+
+aliroot -b << EOF 
+.includepath $ALICE_ROOT/STEER
+.includepath $ALICE_ROOT/MUON
+.L $ALICE_ROOT/MUON/MUONrawclusters.C++
+MUONrawclusters("galice.root",0,99999); 
+.q
+EOF
+
+aliroot -b << EOF 
+.includepath $ALICE_ROOT/STEER
+.includepath $ALICE_ROOT/MUON
+.L $ALICE_ROOT/MUON/MUONtrigger.C++
+MUONtrigger("galice.root",0,99999);
+ .q
+EOF
+
+aliroot -b << EOF 
+.includepath $ALICE_ROOT/STEER
+.includepath $ALICE_ROOT/MUON
+.L $ALICE_ROOT/MUON/MUONTracker.C++
+MUONTracker("galice.root",0,99999) 
+ .q
+EOF
+
+aliroot -b << EOF  
+.includepath $ALICE_ROOT/STEER
+.includepath $ALICE_ROOT/MUON
+.L $ALICE_ROOT/MUON/MUONmassPlot_NewIO.C++
+MUONmassPlot("galice.root",0,99999);
+.q
+EOF
 
 ===========================================================
  Still working ..............
