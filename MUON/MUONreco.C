@@ -1,4 +1,4 @@
-// Macro for testing the new C++ reconstruction code
+// Macro MUONreco.C for testing the C++ reconstruction code
 
 // Arguments:
 //   FirstEvent (default 0)
@@ -10,7 +10,7 @@
 void MUONreco (Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t RecGeantHits = 0, Text_t *FileName = "galice.root", Text_t *BkgGeantFileName = "")
 {
   //
-  cout << "MUONtest_reco" << endl;
+  cout << "MUONreco" << endl;
   cout << "FirstEvent " << FirstEvent << endl;
   cout << "LastEvent " << LastEvent << endl;
   cout << "RecGeantHits " << RecGeantHits << endl;
@@ -22,7 +22,8 @@ void MUONreco (Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t RecGeantHits = 0
     loadlibs();
   }
 
-  // Connect the Root Galice file containing Geometry, Kine and Hits
+  // Connect the Root Galice file containing Geometry, Kine, Hits
+  // and eventually RawClusters
   TFile *file = (TFile*) gROOT->GetListOfFiles()->FindObject(FileName);
   if (!file) {
     printf("\n Creating file %s\n", FileName);
