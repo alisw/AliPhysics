@@ -2,21 +2,22 @@ AliGenerator*  CreateGenerator();
 
 void fastGen(Int_t nev = 1, char* filename = "galice.root")
 {
-//
-//                        Construction
-//
-//  Output file
-    TFile*  file         = new TFile(filename, "recreate");
-//  Create stack
-    AliStack* stack      = new AliStack(10000);
-    stack->MakeTree(0, filename);
+//  Runloader
+    
+    AliRunLoader* rl = AliRunLoader::Open("galice.root","FASTRUN","recreate");
+    
+    rl->SetCompressionLevel(2);
+    rl->SetNumberOfEventsPerFile(nev);
+    rl->LoadKinematics("RECREATE");
+    rl->MakeTree("E");
+    gAlice->SetRunLoader(rl);
 
-//  Create Header
-    AliHeader* header    = new AliHeader();
-//  Create Header Tree
-    TTree* treeE         = new TTree("TE","Headers");
-    treeE->Branch("Header", "AliHeader", &header, 4000, 0);
-    treeE->Write();
+//  Create stack
+    rl->MakeStack();
+    AliStack* stack      = rl->Stack();
+ 
+//  Header
+    AliHeader* header = rl->GetHeader();
 //
 //  Create and Initialize Generator
     AliGenerator *gener = CreateGenerator();
@@ -34,9 +35,11 @@ void fastGen(Int_t nev = 1, char* filename = "galice.root")
 	
 //  Initialize event
 	header->Reset(0,iev);
+	rl->SetEventNumber(iev);
 	stack->Reset();
-	stack->BeginEvent(iev);
-
+	rl->MakeTree("K");
+//	stack->ConnectTree();
+    
 //  Generate event
 	gener->Generate();
 //  Analysis
@@ -55,21 +58,17 @@ void fastGen(Int_t nev = 1, char* filename = "galice.root")
 //	
 	stack->FinishEvent();
 	header->SetStack(stack);
-	treeE->Fill();
-	(stack->TreeK())->Write(0,TObject::kOverwrite);
+	rl->WriteKinematics("OVERWRITE");
     } // event loop
 //
 //                         Termination
 //  Generator
     gener->FinishRun();
-//  Header
-    treeE->Write(0,TObject::kOverwrite);
-    delete treeE;   treeE = 0;
 //  Stack
     stack->FinishRun();
 //  Write file
     gener->Write();
-    file->Write();
+    rl->WriteHeader("OVERWRITE");
 }
 
 
