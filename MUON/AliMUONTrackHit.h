@@ -23,13 +23,13 @@ class AliMUONTrackHit : public TObject {
   AliMUONTrackHit(AliMUONHitForRec* Hit); // Constructor from one HitForRec
 
   // Inline functions for Get and Set
-  inline AliMUONHitForRec* GetHitForRecPtr(void) {
+  AliMUONHitForRec* GetHitForRecPtr(void) {
     // Get fHitForRecPtr
     return fHitForRecPtr;}
-  inline AliMUONTrackParam* GetTrackParam(void) {
+  AliMUONTrackParam* GetTrackParam(void) {
     // Get pointer to fTrackParam
     return &(fTrackParam);}
-  inline void SetTrackParam(AliMUONTrackParam* TrackParam) {
+  void SetTrackParam(AliMUONTrackParam* TrackParam) {
     // Set fTrackParam
     fTrackParam = *TrackParam;}
 
