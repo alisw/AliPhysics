@@ -149,6 +149,10 @@ class AliFastGlauber : public TObject {
 				 Double_t& integral02,Double_t& integral12,
 				 Double_t& phi,
 				 Double_t ellCut=20.,Double_t b=-1.);
+    void GetI0I1BackToBackAndPhiAndXY(Double_t& integral01,Double_t& integral11,
+				      Double_t& integral02,Double_t& integral12,
+				      Double_t& phi,Double_t& x,Double_t&y,
+				      Double_t ellCut=20.,Double_t b=-1.);
     void GetI0I1BackToBack(Double_t& integral01,Double_t& integral11,
 			   Double_t& integral02,Double_t& integral12,
 			   Double_t ellCut=20.,Double_t b=-1.);

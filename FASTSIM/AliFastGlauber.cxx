@@ -1547,6 +1547,26 @@ void AliFastGlauber::GetI0I1BackToBackAndPhi(Double_t& integral01,Double_t& inte
   return;
 }
 
+void AliFastGlauber::GetI0I1BackToBackAndPhiAndXY(Double_t& integral01,Double_t& integral11,
+					          Double_t& integral02,Double_t& integral12,
+						  Double_t& phi,Double_t &x,Double_t &y,
+						  Double_t ellCut,Double_t b)
+{
+  //
+  // Return 2 pairs of I0 and I1 back to back from random b, x0, y0, phi0 
+  // Return also phi0
+  //
+  Double_t x0,y0,phi0;
+  if(b<0.) GetRandomBHard(b);
+  GetRandomXY(x0,y0);
+  GetRandomPhi(phi0);
+  phi = phi0; x=x0; y=y0;
+  const Double_t kphi0plusPi = phi0+TMath::Pi();
+  CalculateI0I1(integral01,integral11,b,x0,y0,phi0,ellCut);
+  CalculateI0I1(integral02,integral12,b,x0,y0,kphi0plusPi,ellCut);
+  return;
+}
+
 void AliFastGlauber::GetI0I1BackToBack(Double_t& integral01,Double_t& integral11,
 				       Double_t& integral02,Double_t& integral12,
 				       Double_t ellCut,Double_t b)
