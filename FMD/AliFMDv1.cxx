@@ -100,9 +100,6 @@ AliFMDv1::StepManager()
   //   - ENDIF
   //     
   //
-  // DebugGuard guard("AliFMDv1::StepManager");
-  AliDebug(10, "AliFMDv1::StepManager");
-  // return;
   AliDebug(10, Form("Is inside %s", gMC->CurrentVolName()));
 
   // If the track is gone, return
@@ -169,7 +166,14 @@ AliFMDv1::StepManager()
 		     || gMC->IsTrackDisappeared() 
 		     || gMC->IsTrackStop() 
 		     || !isWithin);
-// Reset the energy deposition for this track, and update some of
+
+  AliDebug(2, Form("Is inside FMD%d%c[%02d,%03d]: particle is %s", 
+		   detector, ring, sector, strip, 
+		   (entering ? "entering" : 
+		    (inside ? "inside" : 
+		     "exiting"))));
+
+  // Reset the energy deposition for this track, and update some of
   // our parameters.
   if (entering) {
     fCurrentDeltaE = 0;

@@ -4,10 +4,10 @@
 void DrawFMD3()
 {
   // gAlice->Init("FMD/scripts/ConfigInner.C");
-  gAlice->Init("FMD/scripts/ConfigFmdOnly.C");
+  gAlice->Init("$(ALICE)/FMD/Config.C");
   gMC->Gsatt("*", "seen", -1);
   gMC->Gsatt("alic", "seen", 0);
-  gROOT->LoadMacro("FMD/ViewFMD.C");
+  gROOT->LoadMacro("$(ALICE)/FMD/ViewFMD.C");
   gInterpreter->ProcessLine("ViewFMD()");
   gMC->Gdopt("hide", "on");
   gMC->Gdopt("shad", "on");
@@ -51,5 +51,5 @@ void DrawFMD3()
   
   gPad->Modified();
   gPad->cd();
-  gPad->Print("FMD3_detail.png");
+  gPad->Print("FMD3.png");
 }

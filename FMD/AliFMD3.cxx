@@ -39,6 +39,7 @@ AliFMD3::AliFMD3()
     fVolumeId(0)
 {
   // Default constructor for the FMD3 sub-detector 
+  AliDebug(10, "\t\tDefault CTOR");
 }
 
 
@@ -46,6 +47,7 @@ AliFMD3::AliFMD3()
 AliFMD3::~AliFMD3() 
 {
   // Destructor - does nothing 
+  AliDebug(10, "\t\tDTOR");
 }
 
 
@@ -60,6 +62,7 @@ AliFMD3::SetupGeometry(Int_t airId, Int_t alId, Int_t carbonId)
   //     airId         Id # of the Air medium 
   //     kaptionId     Id # of the Aluminium medium 
   // 
+  AliDebug(10, "\tSetting up the geometry for FMD3");
   Double_t innerZl = fInnerZ;
   Double_t innerZh = (fInnerZ 
 		      - fInner->GetModuleSpacing() 
@@ -90,6 +93,7 @@ AliFMD3::SetupGeometry(Int_t airId, Int_t alId, Int_t carbonId)
   gMC->Matrix(fRotationId, 90, 0, 90, 90, 0, 0); 
   //0, 180, 90, 90, 180, 0);
 
+
   AliFMDSubDetector::SetupGeometry(airId, alId, carbonId);
 }
 
@@ -108,9 +112,9 @@ AliFMD3::Geometry(const char* mother, Int_t pbRotId,
   //     z          Z position (not really used here, but passed down)
   //
   z = fSupport.GetZ();
-  AliDebug(10, Form("Passing z=%lf to ring volumes", z));
-  AliFMDSubDetector::Geometry("FMD3", pbRotId, idRotId, z);
   fSupport.Geometry(mother, fRotationId, z);
+  AliDebug(10, Form("\t\tPassing z=%lf to ring volumes", z));
+  AliFMDSubDetector::Geometry("FMD3", pbRotId, idRotId, z);
 }
 
   
@@ -149,6 +153,7 @@ AliFMD3::SimpleGeometry(TList* nodes,
   //    a  = (fOuterHoneyHighR - fInnerHoneyHighR) / (x1 - x2)
   //    
   // 
+  AliDebug(10, "\tCreating simplified geometry for FMD3");
   Double_t dz = (TMath::Abs(fInnerZ - fOuterZ) 
 		 + fOuter->GetSiThickness() 
 		 + fOuter->GetPrintboardThickness() 
@@ -197,8 +202,10 @@ AliFMD3::SimpleGeometry(TList* nodes,
 
 //____________________________________________________________________
 void 
-AliFMD3::Gsatt() 
+AliFMD3::Gsatt() const
 {
+  // Set draw attributes for the FMD3
+  AliDebug(10, "Setting drawing attributes for FMD3");
   AliFMDSubDetector::Gsatt();
   fSupport.Gsatt();
 }

@@ -2,7 +2,7 @@
 // Script to digit multiplicity information to std::cout. 
 //
 void
-ShowDigits()
+ShowDigits(Int_t det=2)
 {
   AliRunLoader* runLoader = AliRunLoader::Open("galice.root");
   runLoader->LoadgAlice();
@@ -12,6 +12,7 @@ ShowDigits()
   AliLoader*    fmdLoader  = runLoader->GetLoader("FMDLoader");
   fmdLoader->LoadDigits("READ");
   
+  TH1* h = new TH1F("digitData", "Digit Data", 128, 0, 1024);
   Int_t nEvents = runLoader->TreeE()->GetEntries();
   for (Int_t event = 0; event < nEvents; event++) {
     cout << "Event # " << event << endl;
@@ -35,8 +36,16 @@ ShowDigits()
 	  digit->Print();
 	  total++;
 	}
+	if (digit->Detector() == det) 
+	  h->Fill(digit->Counts());
       }
     }
     cout << "Total number of digits: " << total << endl;
   }
+
+  TCanvas* c = new TCanvas("digit", "Digit Data");
+  c->SetFillColor(0);
+  c->SetLogy();
+  c->SetBorderMode(0);
+  h->Draw();
 }

@@ -33,8 +33,9 @@ public:
 				Int_t colour, 
 				Double_t zMother);
   
-  virtual void   Gsatt();
+  virtual void   Gsatt() const;
   virtual void   Draw(Option_t* option="BIOL0") const; //*MENU*
+  virtual void   DrawSpecs() const; // *MENU*
   virtual Bool_t CheckHit(Char_t ring, Int_t module, Double_t x, Double_t y);
 
   void   SetInner(AliFMDRing* r)             { fInner = r; }

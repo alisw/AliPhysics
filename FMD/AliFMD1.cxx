@@ -54,6 +54,7 @@ AliFMD1::SetupGeometry(Int_t airId, Int_t alId, Int_t /* cId */)
   //     airId         Id # of the Air medium 
   //     alId     Id # of the Aluminium medium 
   // 
+  AliDebug(10, "\tDefining the geometry for FMD1");
   fInnerHoneyLowR  = fInner->GetLowR() + 1;
   fInnerHoneyHighR = fInner->GetHighR() + 1;
   fOuterHoneyLowR  = 0;
@@ -91,7 +92,8 @@ AliFMD1::Geometry(const char* mother, Int_t pbRotId,
   //
   // The Z passed in isn't used. 
   z = fInnerZ + fDz;
-  gMC->Gspos("FMD1", 1, mother, 0, 0, z, fRotationId);
+  AliDebug(10, Form("\tPutting FMD1 in %s at z=%lf cm", mother, z));
+  gMC->Gspos("FMD1", 1, mother, 0, 0, z, fRotationId, "ONLY");
 
   AliFMDSubDetector::Geometry("FMD1", pbRotId, idRotId, z);
 }

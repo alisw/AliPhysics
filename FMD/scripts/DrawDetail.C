@@ -4,10 +4,11 @@
 void DrawDetail()
 {
   // gAlice->Init("FMD/scripts/ConfigInner.C");
-  gAlice->Init("FMD/scripts/ConfigFmdOnly.C");
+  AliLog::SetModuleDebugLevel("FMD", 6);
+  gAlice->Init("$(ALICE)/FMD/Config.C");
   gMC->Gsatt("*", "seen", -1);
   gMC->Gsatt("alic", "seen", 0);
-  gROOT->LoadMacro("FMD/ViewFMD.C");
+  gROOT->LoadMacro("$(ALICE)/FMD/ViewFMD.C");
   gInterpreter->ProcessLine("ViewFMD()");
   // gROOT->LoadMacro("VZERO/ViewVZERO.C");
   // gInterpreter->ProcessLine("ViewVZERO()");
@@ -53,9 +54,9 @@ void DrawDetail()
   gMC->SetClipBox(".");
   gMC->SetClipBox("*", 0, 10000, -1000, 1000, -1000, 1000);
   gMC->DefaultRange();
-  gMC->Gdraw("alic", 60, 0, 0, -5, 10, .3, .3);
+  gMC->Gdraw("alic", 90, 0, 0, -5, 10, .15, .15);
 
   gPad->Modified();
   gPad->cd();
-  // gPad->Print("FMD3_detail.png");
+  gPad->Print("FMD3_detail.png");
 }

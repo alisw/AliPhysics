@@ -156,7 +156,7 @@ AliFMD::AliFMD()
   //
   // Default constructor for class AliFMD
   //
-  AliDebug(0, "Default CTOR");
+  AliDebug(0, "\tDefault CTOR");
   fHits     = 0;
   fDigits   = 0;
   fIshunt   = 0;
@@ -216,7 +216,7 @@ AliFMD::AliFMD(const char *name, const char *title, bool detailed)
   //
   // Standard constructor for Forward Multiplicity Detector
   //
-  AliDebug(0, "Standard CTOR");
+  AliDebug(0, "\tStandard CTOR");
 
   // Initialise Hit array
   HitsArray();
@@ -375,7 +375,7 @@ AliFMD::CreateGeometry()
   //   
 
   // DebugGuard guard("AliFMD::CreateGeometry");
-  AliDebug(10, "Creating geometry");
+  AliDebug(10, "\tCreating geometry");
 
   fInner->Init();
   fOuter->Init();
@@ -429,7 +429,7 @@ void AliFMD::CreateMaterials()
   // Also defined are two rotation matricies. 
   //
   // DebugGuard guard("AliFMD::CreateMaterials");
-  AliDebug(10, "Creating materials");
+  AliDebug(10, "\tCreating materials");
   Int_t    id;
   Double_t a                = 0;
   Double_t z                = 0;
@@ -621,7 +621,7 @@ AliFMD::BuildGeometry()
   // 
   // The actual building of the TNodes is done by
   // AliFMDSubDetector::SimpleGeometry. 
-  AliDebug(10, "Creating a simplified geometry");
+  AliDebug(10, "\tCreating a simplified geometry");
 
   TNode* top = gAlice->GetGeometry()->GetNode("alice");
   
@@ -638,7 +638,7 @@ AliFMD::DrawDetector()
   // Draw a shaded view of the Forward multiplicity detector
   //
   // DebugGuard guard("AliFMD::DrawDetector");
-  AliDebug(10, "Draw detector");
+  AliDebug(10, "\tDraw detector");
   
   //Set ALIC mother transparent
   gMC->Gsatt("ALIC","SEEN",0);
@@ -1083,8 +1083,7 @@ AliFMD::SetLegLength(Double_t length)
   // Set lenght of plastic legs that hold the hybrid (print board and
   // silicon sensor) onto the honeycomp support
   //
-  // DebugGuard guard("AliFMD::SetLegLength");
-  AliDebug(10, "AliFMD::SetLegLength");
+  AliDebug(10, Form("\tLeg length set to %lf cm", length));
   fLegLength = length;
   fInner->SetLegLength(fLegLength);
   fOuter->SetLegLength(fLegLength);
@@ -1098,8 +1097,7 @@ AliFMD::SetLegOffset(Double_t offset)
   // hybrid (print board and silicon sensor) onto the honeycomp
   // support 
   //
-  // DebugGuard guard("AliFMD::SetLegOffset");
-  AliDebug(10, "AliFMD::SetLegOffset");
+  AliDebug(10, Form("\tLeg offset set to %lf cm", offset));
   fInner->SetLegOffset(offset);
   fOuter->SetLegOffset(offset);
 }
@@ -1111,8 +1109,7 @@ AliFMD::SetLegRadius(Double_t radius)
   // Set the diameter of the plastic legs that hold the hybrid (print
   // board and silicon sensor) onto the honeycomp support
   //
-  // DebugGuard guard("AliFMD::SetLegRadius");
-  AliDebug(10, "AliFMD::SetLegRadius");
+  AliDebug(10, Form("\tLeg radius set to %lf cm", radius));
   fLegRadius = radius;
   fInner->SetLegRadius(fLegRadius);
   fOuter->SetLegRadius(fLegRadius);
@@ -1125,8 +1122,7 @@ AliFMD::SetModuleSpacing(Double_t spacing)
   // Set the distance between the front and back sensor modules
   // (module staggering). 
   //
-  // DebugGuard guard("AliFMD::SetModuleSpacing");
-  AliDebug(10, "AliFMD::SetModuleSpacing");  
+  AliDebug(10, Form("\tModule spacing set to %lf cm", spacing));  
   fModuleSpacing = spacing;
   fInner->SetModuleSpacing(fModuleSpacing);
   fOuter->SetModuleSpacing(fModuleSpacing);
@@ -1142,7 +1138,7 @@ AliFMD::Browse(TBrowser* b)
 {
   // Browse this object. 
   //
-  AliDebug(10, "AliFMD::Browse");
+  AliDebug(30, "\tBrowsing the FMD");
   AliDetector::Browse(b);
   if (fInner) b->Add(fInner, "Inner Ring");
   if (fOuter) b->Add(fOuter, "Outer Ring");

@@ -178,7 +178,7 @@ AliFMDRing::Init()
 {
   // Initialize the ring object.
   // DebugGuard guard("AliFMDRing::Init");
-  AliDebug(10, "AliFMDRing::Init");
+  AliDebug(30, Form("\tInitializing ring %c", fId));
   fPolygon.Clear();
   SetupCoordinates();  
 }
@@ -187,6 +187,7 @@ AliFMDRing::Init()
 AliFMDRing::~AliFMDRing() 
 {
   // Destructor - deletes shape and rotation matricies 
+  AliDebug(30, Form("\tDestructing ring %c", fId));
   if (fShape) delete fShape;
   if (fRotMatricies) delete fRotMatricies;
 }
@@ -197,7 +198,7 @@ void
 AliFMDRing::Browse(TBrowser* /* b */)
 {
   // DebugGuard guard("AliFMDRing::Browse");
-  AliDebug(10, "AliFMDRing::Browse");
+  AliDebug(30, Form("\tBrowsing ring %c", fId));
 }
 
   
@@ -207,10 +208,11 @@ AliFMDRing::SetupCoordinates()
 {
   // Calculates the parameters of the polygon shape. 
   // 
-  // DebugGuard guard("AliFMDRing::SetupCoordinates");
-  AliDebug(10, "AliFMDRing::SetupCoordinates");
+  //
+
   // Get out immediately if we have already done all this 
   if (fPolygon.GetNVerticies() > 1) return;
+  AliDebug(10, Form("\tSetting up the coordinates for ring %c", fId));
 
   double tanTheta  = TMath::Tan(fTheta * TMath::Pi() / 180.);
   double tanTheta2 = TMath::Power(tanTheta,2);
@@ -242,7 +244,8 @@ AliFMDRing::IsWithin(size_t moduleNo, double x, double y) const
   // Checks if a point (x,y) is inside the module with number moduleNo 
   //
   // DebugGuard guard("AliFMDRing::IsWithin");
-  AliDebug(10, "AliFMDRing::IsWithin");
+  AliDebug(20, Form("\tChecking wether the hit at (%lf,%lf) in module %d "
+		    "is within this ring (%c)", x, y, moduleNo, fId));
   bool   ret            = false;
   double r2             = x * x + y * y;
   if (r2 < fHighR * fHighR && r2 > fLowR * fLowR) {
@@ -272,7 +275,7 @@ AliFMDRing::Draw(Option_t* option) const
   // hits in the detector. 
   // 
   // DebugGuard guard("AliFMDRing::Draw");
-  AliDebug(10, "AliFMDRing::Draw");
+  AliDebug(20, Form("\tDrawing ring %c", fId));
   // The unrotated coordinates of the polygon verticies
   if (fPolygon.GetNVerticies() < 1) return;
   
@@ -354,7 +357,7 @@ AliFMDRing::SetupGeometry(Int_t vacuumId, Int_t siId, Int_t pcbId,
   //   idRotId         Identity rotation matrix 
   //
   // DebugGuard guard("AliFMDRing::SetupGeometry");
-  AliDebug(10, "AliFMDRing::SetupGeometry");
+  AliDebug(10, Form("\tSetting up the geometry for ring %c", fId));
 
   const TVector2& bCorner   = fPolygon.GetVertex(3); // Third  corner
   const TVector2& aCorner   = fPolygon.GetVertex(5); // First  corner
@@ -459,7 +462,8 @@ AliFMDRing::SetupGeometry(Int_t vacuumId, Int_t siId, Int_t pcbId,
     // Place virtual module volume 
     name = Form(fgkVirtualFormat, fId, (isFront ? 'F' : 'B'));
     dz   = (w - fRingDepth) / 2;
-    gMC->Gspos(name.Data(), id, name2.Data(), 0., 0., dz,fRotations[i]);
+    gMC->Gspos(name.Data(), id, name2.Data(), 0., 0., dz,fRotations[i], 
+	       "ONLY");
 
     // We only need to place the children once, they are copied when
     // we place the other virtual volumes. 
@@ -470,7 +474,7 @@ AliFMDRing::SetupGeometry(Int_t vacuumId, Int_t siId, Int_t pcbId,
     // the silicon is on the edge of the virtual volume. 
     name  = Form(fgkActiveFormat, fId);
     dz    = (w - fSiThickness) / 2;
-    gMC->Gspos(name.Data(), id, name2.Data(),0.,0.,dz,idRotId);
+    gMC->Gspos(name.Data(), id, name2.Data(),0.,0.,dz,idRotId, "ONLY");
 
     // Place print board.  This is put immediately behind the silicon
     name = Form(fgkPrintboardFormat, fId, 'T');
@@ -487,10 +491,12 @@ AliFMDRing::SetupGeometry(Int_t vacuumId, Int_t siId, Int_t pcbId,
 	     - (fLegLength + (isFront ? fModuleSpacing : 0)) /2);
     name  = (isFront ? AliFMD::fgkLongLegName : AliFMD::fgkShortLegName);
     gMC->Gspos(name.Data(), id*10 + 1, name2.Data(), 
-	       aCorner.X() + fLegOffset + fLegRadius, 0., dz, idRotId, "");
+	       aCorner.X() + fLegOffset + fLegRadius, 0., dz, idRotId, "ONLY");
     Double_t y = cCorner.Y() - yoffset - fLegOffset - fLegRadius;
-    gMC->Gspos(name.Data(),id*10+2,name2.Data(),cCorner.X(), y,dz,idRotId,"");
-    gMC->Gspos(name.Data(),id*10+3,name2.Data(),cCorner.X(), -y,dz,idRotId,"");
+    gMC->Gspos(name.Data(),id*10+2,name2.Data(),cCorner.X(),y,dz,
+	       idRotId,"ONLY");
+    gMC->Gspos(name.Data(),id*10+3,name2.Data(),cCorner.X(),-y,dz,
+	       idRotId,"ONLY");
   }
 }
 //____________________________________________________________________
@@ -510,15 +516,15 @@ AliFMDRing::Geometry(const char* mother, Int_t baseId, Double_t z,
   //    idRotId   Identity rotation matrix 
   // 
   // DebugGuard guard("AliFMDRing::Geometry");
-  AliDebug(10, "AliFMDRing::Geometry");
   TString  name;
   Double_t offsetZ   = (fSiThickness 
 			+ fPrintboardThickness 
 			+ fLegLength + fModuleSpacing) / 2;
   name = Form(fgkRingFormat, fId);
-  AliDebug(10, Form("Placing ring %s in %s at z=%lf-%lf=%lf", 
-		    name.Data(), mother, z, offsetZ, z-offsetZ));
-  gMC->Gspos(name.Data(), baseId, mother, 0., 0., z - offsetZ, idRotId, "");
+  AliDebug(10, Form("\tPlacing ring %s in %s at z=%lf-%lf=%lf (base ID: %d)", 
+		    name.Data(), mother, z, offsetZ, z-offsetZ, baseId));
+  gMC->Gspos(name.Data(), baseId, mother, 0., 0., z - offsetZ, idRotId, 
+	     "ONLY");
 }
 
 //____________________________________________________________________
@@ -544,11 +550,14 @@ AliFMDRing::SimpleGeometry(TList* nodes,
   //    n         Detector number
   //
   // DebugGuard guard("AliFMDRing::SimpleGeometry");
-  AliDebug(10, "AliFMDRing::SimpleGeometry");
   SetupCoordinates();
 
+  AliDebug(10, Form("\tCreating simple geometry for "
+		    "ring %c at z=%lf cm in %s", 
+		    fId, z, mother->GetName()));
   // If the shape hasn't been defined yet, we define it here. 
   if (!fShape) {
+
     TString name(Form(fgkActiveFormat, fId));
     TString title(Form("Shape of modules in %c Rings", fId));
     Int_t n = fPolygon.GetNVerticies();
@@ -609,7 +618,7 @@ AliFMDRing::Gsatt()
   // Set drawing attributes for the RING 
   // 
   // DebugGuard guard("AliFMDRing::Gsatt");
-  AliDebug(10, "AliFMDRing::Gsatt");
+  AliDebug(10, Form("\tSetting drawing attributes for Ring %c", fId));
   TString name;
   name = Form(fgkRingFormat,fId);
   gMC->Gsatt(name.Data(), "SEEN", 0);

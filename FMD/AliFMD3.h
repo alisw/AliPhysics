@@ -21,7 +21,7 @@ public:
 			  Int_t idRotId, Double_t z=0);
   virtual void   SimpleGeometry(TList* nodes, TNode* mother, 
 				Int_t colour, Double_t zMother);
-  virtual void   Gsatt();
+  virtual void   Gsatt() const;
 protected:
   Int_t          fVolumeId;  // Volume ID
   AliFMD3Support fSupport;   // Support for FMD3 

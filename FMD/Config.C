@@ -66,6 +66,7 @@ enum EG_t {
   kParam_8000,			//
   kParam_4000,			//
   kParam_2000,			//
+  kParam_fmd,			//
   kHijing_cent1,		//
   kHijing_cent2,		//
   kHijing_per1,			//
@@ -124,6 +125,7 @@ const char* egName[kEgMax] = {
   "kParam_8000",		//
   "kParam_4000",		//
   "kParam_2000",		//
+  "kParam_fmd",			//
   "kHijing_cent1",		//
   "kHijing_cent2",		//
   "kHijing_per1",		//
@@ -213,7 +215,7 @@ Config()
   //____________________________________________________________________
   // This part for configuration    
   //static EG_t eg = test50;
-  EG_t  eg   = kParam_2000;
+  EG_t  eg   = kParam_fmd;
   Geo_t geo  = kNoHoles;
   Rad_t rad  = kGluonRadiation;
   Mag_t mag  = k5kG;
@@ -717,6 +719,19 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     {
       comment = comment.Append("HIJINGparam N=2000");
       AliGenHIJINGpara *gener = new AliGenHIJINGpara(21507);
+      gener->SetMomentumRange(0, 999999.);
+      gener->SetPhiRange(0., 360.);
+      // Set pseudorapidity range from -8 to 8.
+      Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
+      Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
+      gener->SetThetaRange(thmin,thmax);
+      gGener=gener;
+    }
+    break;
+  case kParam_fmd:
+    {
+      comment = comment.Append("HIJINGparam N=100");
+      AliGenHIJINGpara *gener = new AliGenHIJINGpara(100);
       gener->SetMomentumRange(0, 999999.);
       gener->SetPhiRange(0., 360.);
       // Set pseudorapidity range from -8 to 8.

@@ -21,7 +21,7 @@ public:
 			       Double_t innerRl, Double_t outerZl, 
 			       Double_t outerZh, Double_t outerRl);
   virtual void   Geometry(const char* mother, Int_t idRotId, Double_t z=0);
-  virtual void   Gsatt();
+  virtual void   Gsatt() const;
   
   void SetNoseZ(Double_t         x=-46)		{ fNoseZ = x; }
   void SetNoseLowR(Double_t      x=5.5)		{ fNoseLowR = x; }

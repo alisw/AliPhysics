@@ -104,7 +104,7 @@ public:
   // Set various parameters 
   void     SetLegLength(Double_t     length=1);
   void     SetLegRadius(Double_t     radius=.5);
-  void     SetLegOffset(Double_t     offset=.5);
+  void     SetLegOffset(Double_t     offset=2);
   void     SetModuleSpacing(Double_t spacing=1);
   void     SetSiDensity(Float_t r=2.33)         { fSiDensity = r; }
   void     SetSiThickness(Float_t r=0.03)       { fSiThickness = r; }

@@ -10,7 +10,7 @@ ShowRaw(Int_t det=2,  bool verbose=false, Int_t event=0)
 
   std::cout << "Reading raw data file " << file << std::endl;
   
-  TH1* h = new TH1F("rawData", "Raw Data", 90, 0, 90);
+  TH1* h = new TH1F("rawData", "Raw Data", 128, 0, 1024);
   
   
   // This method creates a text file containing the same information
@@ -58,6 +58,11 @@ ShowRaw(Int_t det=2,  bool verbose=false, Int_t event=0)
       break;
     }
   }//end while
+
+  TCanvas* c = new TCanvas("raw", "Raw Data");
+  c->SetFillColor(0);
+  c->SetLogy();
+  c->SetBorderMode(0);
   h->Draw();
   return;
 }

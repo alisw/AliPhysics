@@ -51,6 +51,7 @@ AliFMDSubDetector::AliFMDSubDetector(Int_t n)
     fInner(0), 
     fOuter(0)
 {
+  // Normal CTOR
   SetAlThickness();
   SetHoneycombThickness();
 }
@@ -61,7 +62,18 @@ void
 AliFMDSubDetector::Draw(Option_t* /* opt */) const 
 {
   // DebugGuard guard("AliFMDSubDetector::Draw");
-  AliDebug(10, "AliFMDSubDetector::Draw");
+  AliDebug(30, Form("\tDrawing FMD%d", fId));
+  Gsatt();
+  gMC->Gdraw(Form("FMD%d", fId));
+}
+
+//____________________________________________________________________
+void 
+AliFMDSubDetector::DrawSpecs() const 
+{
+  // DebugGuard guard("AliFMDSubDetector::Draw");
+  AliDebug(30, Form("\tDrawing specs foro FMD%d", fId));
+  gMC->DrawOneSpec(Form("FMD%d", fId));
 }
 
 //____________________________________________________________________
@@ -70,6 +82,8 @@ AliFMDSubDetector::CheckHit(Char_t ring, Int_t module, Double_t x, Double_t y)
 {
   // Check if a hit (x,y) in module module of ring ring is within the
   // actual shape. 
+  AliDebug(30, Form("\tChecking wether the hit at (%lf,%lf) "
+		    "is in ring %c module %d", x, y, ring, module));
   Bool_t ret = kFALSE;
   switch (ring) {
   case 'i':
@@ -102,7 +116,8 @@ AliFMDSubDetector::SimpleGeometry(TList* nodes,
   //    colour    Colour of the nodes 
   //    zMother   Z position of the node in the mother volume 
   // 
-  for (int i = 0; i < 2; i++) {
+  AliDebug(20, Form("\tCreating simple geometry for FMD%d", fId));
+  for (int i = 0; i < 2; i++) { 
     AliFMDRing* r = 0;
     Double_t z = 0;
     switch (i) {
@@ -143,7 +158,7 @@ AliFMDSubDetector::SetupGeometry(Int_t airId, Int_t alId, Int_t /* cId
   //   alId       Medium of honeycomb
   // 
   // DebugGuard guard("AliFMDSubDetector::SetupGeometry");
-  AliDebug(10, "AliFMDSubDetector::SetupGeometry");
+  AliDebug(20, Form("\tSetting up the geometry for FMD%d", fId));
   TString name;
   Double_t par[5];
 
@@ -215,7 +230,8 @@ AliFMDSubDetector::Geometry(const char* mother, Int_t pbRotId, Int_t idRotId,
   // support in the mother volume 
   // 
   // DebugGuard guard("AliFMDSubDetector::Geometry");
-  AliDebug(10, "AliFMDSubDetector::Geometry");
+  AliDebug(20, Form("\tDefining the rings in  %s (z=%lf cm)", 
+		    mother, zMother));
 
   Double_t  ringW;
   Double_t  z = 0;
@@ -245,7 +261,7 @@ AliFMDSubDetector::Geometry(const char* mother, Int_t pbRotId, Int_t idRotId,
     Double_t z2 = z;
     z2 -= zMother;
     if (zMother > 0) z2 *= -1;
-    AliDebug(10, Form("Putting ring %c in %s at z=%lf-%lf=%lf", 
+    AliDebug(10, Form("\tPutting ring %c in %s at z=%lf-%lf=%lf", 
 		      c, mother, z, zMother, z2));
     r->Geometry(mother, fId, z2, pbRotId, idRotId);
     ringW =  r->GetRingDepth();
@@ -253,32 +269,32 @@ AliFMDSubDetector::Geometry(const char* mother, Int_t pbRotId, Int_t idRotId,
 
     // Top of honeycomb
     name   = Form(fgkHoneyTopFormat, fId, c);
-    gMC->Gspos(name.Data(), 1, mother, 0, 0, z2, idRotId);
+    gMC->Gspos(name.Data(), 1, mother, 0, 0, z2, idRotId, "ONLY");
 
     // Air in top of honeycomb
     name2 = name;
     name   = Form(fgkHoneyTopInnerFormat, fId, c);
-    gMC->Gspos(name.Data(), 1, name2.Data(),0,fAlThickness,0,idRotId);
+    gMC->Gspos(name.Data(), 1, name2.Data(),0,fAlThickness,0,idRotId,"ONLY");
     
     // Bottom of honeycomb
     name   = Form(fgkHoneyBottomFormat, fId, c);
-    gMC->Gspos(name.Data(), 1, mother, 0, 0, z2, idRotId);
+    gMC->Gspos(name.Data(), 1, mother, 0, 0, z2, idRotId, "ONLY");
 
     // Air in bottom of honeycomb
     name2 = name;
     name   = Form(fgkHoneyBottomInnerFormat, fId, c);
-    gMC->Gspos(name.Data(),1,name2.Data(),0,-fAlThickness,0,idRotId);
+    gMC->Gspos(name.Data(),1,name2.Data(),0,-fAlThickness,0,idRotId, "ONLY");
   }
 }
 
 //____________________________________________________________________
 void
-AliFMDSubDetector::Gsatt() 
+AliFMDSubDetector::Gsatt() const
 {
   // Set drawing attributes for the detector 
   // 
   // DebugGuard guard("AliFMDSubDetector::Gsatt");
-  AliDebug(10, "AliFMDSubDetector::Gsatt");
+  AliDebug(30, Form("\tSetting draw attributs for FMD%d", fId));
   TString name;
 
   name = Form("FMD%d", fId);
