@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2002/10/29 14:26:49  hristov
+Code clean-up (F.Carminati)
+
 Revision 1.3  2001/10/16 07:44:38  morsch
 Initialize  fVertex in all constructors.
 
@@ -46,7 +49,6 @@ ClassImp(AliGenEventHeader)
 //_______________________________________________________________________
 AliGenEventHeader::AliGenEventHeader():
   fNProduced(-1),
-  fImpactParameter(-1),
   fVertex(3)
 {
   //
@@ -58,7 +60,6 @@ AliGenEventHeader::AliGenEventHeader():
 AliGenEventHeader::AliGenEventHeader(const char * name):
   TNamed(name, "Event Header"),
   fNProduced(-1),
-  fImpactParameter(-1),
   fVertex(3)
 {
   //

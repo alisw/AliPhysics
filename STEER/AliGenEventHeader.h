@@ -23,19 +23,16 @@ class AliGenEventHeader : public TNamed
   virtual ~AliGenEventHeader() {}
   // Getters
   virtual Int_t           NProduced()         {return fNProduced;}
-  virtual Float_t         ImpactParameter()   {return fImpactParameter;}
   virtual void            PrimaryVertex(TArrayF &o) const;
   
   // Setters
   virtual void   SetNProduced(Int_t nprod)         {fNProduced=nprod;}
-  virtual void   SetImpactParameter(Float_t b)     {fImpactParameter=b;}
   virtual void   SetPrimaryVertex(const TArrayF &o);
   
 protected:
   Int_t     fNProduced;                 // Number stable or undecayed particles
-  Float_t   fImpactParameter;           // Impact Parameter
   TArrayF   fVertex;                    // Primary Vertex Position
-  ClassDef(AliGenEventHeader,1)         // Event header for primary event
+  ClassDef(AliGenEventHeader,2)         // Event header for primary event
 };
 
 #endif
