@@ -158,29 +158,58 @@ AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit)
   // Adds the amplitude of digits and completes the list of primary particles
   // if amplitude is larger than 
   
+  Int_t toAdd = fNprimary ;
+  if(digit.fNprimary>0){
+    if(fAmp < digit.fAmp){//most energetic primary in digit => first primaries in list from second digit
+      for (Int_t index = 0 ; index < digit.fNprimary ; index++){
+	for (Int_t old = 0 ; old < fNprimary ; old++) { //already have this primary?
+	  if(fPrimary[old] == (digit.fPrimary)[index]){
+	    fPrimary[old] = -1 ; //removed
+	    toAdd-- ;
+	    break ;
+	  }
+	}
+      }
+      if(digit.fNprimary+toAdd >fNMaxPrimary)  //Do not change primary list
+	Error("Operator +", "Increase NMaxPrimary") ;
+      else{
+	for(Int_t index = fNprimary-1 ; index >=0 ; index--){ //move old primaries	
+	  if(fPrimary[index]>-1){
+	    fPrimary[fNprimary+toAdd]=fPrimary[index] ;
+	    toAdd-- ;
+	  }
+	}
+	//copy new primaries
+	for(Int_t index = 0; index < digit.fNprimary ; index++){
+	  fPrimary[index] = (digit.fPrimary)[index] ;	
+	}
+      }
+    }
+    else{ //add new primaries to the end
+      for(Int_t index = 0 ; index < digit.fNprimary ; index++){
+	Bool_t deja = kTRUE ;
+	for(Int_t old = 0 ; old < fNprimary; old++) { //already have this primary?
+	  if(fPrimary[old] == (digit.fPrimary)[index]){
+	    deja = kFALSE;
+	    break ;
+	  }      
+	}
+	if(deja){
+	  fPrimary[fNprimary] = (digit.fPrimary)[index] ; 
+	  fNprimary++ ;
+	  if(fNprimary>fNMaxPrimary) {
+	    Error("Operator +", "Increase NMaxPrimary") ;
+	    break ;
+	  }
+	}
+      }
+      
+    }
+  }
+  
   fAmp += digit.fAmp ;
   if(fTime > digit.fTime)
     fTime = digit.fTime ;
-  
-  Int_t max1 = fNprimary ; 
-  
-  Int_t index ; 
-  for (index = 0 ; index < digit.fNprimary ; index++){
-    Bool_t deja = kTRUE ;
-    Int_t old ;
-    for ( old = 0 ; (old < max1) && deja; old++) { //already have this primary?
-      if(fPrimary[old] == (digit.fPrimary)[index])
-	deja = kFALSE;
-    }
-    if(deja){
-      fPrimary[fNprimary] = (digit.fPrimary)[index] ; 
-      fNprimary++ ;
-      if(fNprimary>fNMaxPrimary) {
-	Error("Operator +", "Increase NMaxPrimary") ;
-	return *this ;
-      }
-    }
-  }
   
   return *this ;
 }

@@ -191,42 +191,70 @@ void AliPHOSRecPoint::EvalPHOSMod(AliPHOSDigit * digit)
 void  AliPHOSRecPoint::EvalPrimaries(TClonesArray * digits)
 {
   // Constructs the list of primary particles (tracks) which have contributed to this RecPoint
+  // First in the list - primary, made strongest contribution to the center
+
   
   AliPHOSDigit * digit ;
   Int_t * tempo    = new Int_t[fMaxTrack] ;
 
+  //Find digit in center
+  AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance("IHEP","") ;
+  if(!geom){
+    Error("EvalPrimaries","Can not instantiate PHOS geometry") ;
+    return ;
+  }
+  TVector3  pos ;
+  TMatrix  mat ;
+  GetGlobalPosition(pos,mat) ;
+  Int_t module ;
+  Double_t x,z ;
+  geom->ImpactOnEmc(pos.Theta(),pos.Phi(),module,z,x);
+  Int_t absId ;
+  geom->RelPosToAbsId(module,x,z,absId) ;
+  //copy primaries
   Int_t index ;  
   for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
     digit = dynamic_cast<AliPHOSDigit *>(digits->At( fDigitsList[index] )) ; 
-    Int_t nprimaries = digit->GetNprimary() ;
-    if(nprimaries){
-      Int_t * newprimaryarray = new Int_t[nprimaries] ;
-      Int_t ii ; 
-      for ( ii = 0 ; ii < nprimaries ; ii++)
-	newprimaryarray[ii] = digit->GetPrimary(ii+1) ; 
-
-      Int_t jndex ;
-      for ( jndex = 0 ; jndex < nprimaries ; jndex++ ) { // all primaries in digit
-	if ( fMulTrack > fMaxTrack ) {
-	  fMulTrack = - 1 ;
-	  Error("EvalPrimaries", "GetNprimaries ERROR > increase fMaxTrack" ) ;
-	  break ;
-	}
-	Int_t newprimary = newprimaryarray[jndex] ;
-	Int_t kndex ;
-	Bool_t already = kFALSE ;
-	for ( kndex = 0 ; kndex < fMulTrack ; kndex++ ) { //check if not already stored
-	  if ( newprimary == tempo[kndex] ){
-	    already = kTRUE ;
+    if(digit->GetId() == absId){ 
+      fMulTrack = digit->GetNprimary() ;
+      for(Int_t ii = 0 ; ii < fMulTrack ; ii++)
+	tempo[ii] = digit->GetPrimary(ii+1) ; 
+    }
+  }
+  
+  for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
+    digit = dynamic_cast<AliPHOSDigit *>(digits->At( fDigitsList[index] )) ; 
+    if(digit->GetId()!=absId){ //already done
+      Int_t nprimaries = digit->GetNprimary() ;
+      if(nprimaries){
+	Int_t * newprimaryarray = new Int_t[nprimaries] ;
+	Int_t ii ; 
+	for ( ii = 0 ; ii < nprimaries ; ii++)
+	  newprimaryarray[ii] = digit->GetPrimary(ii+1) ; 
+	
+	Int_t jndex ;
+	for ( jndex = 0 ; jndex < nprimaries ; jndex++ ) { // all primaries in digit
+	  if ( fMulTrack > fMaxTrack ) {
+	    fMulTrack = - 1 ;
+	    Error("EvalPrimaries", "GetNprimaries ERROR > increase fMaxTrack" ) ;
 	    break ;
 	  }
-	} // end of check
-	if ( !already) { // store it
-	  tempo[fMulTrack] = newprimary ; 
-	  fMulTrack++ ;
-	} // store it
-      } // all primaries in digit
-      delete [] newprimaryarray ; 
+	  Int_t newprimary = newprimaryarray[jndex] ;
+	  Int_t kndex ;
+	  Bool_t already = kFALSE ;
+	  for ( kndex = 0 ; kndex < fMulTrack ; kndex++ ) { //check if not already stored
+	    if ( newprimary == tempo[kndex] ){
+	      already = kTRUE ;
+	      break ;
+	    }
+	  } // end of check
+	  if ( !already) { // store it
+	    tempo[fMulTrack] = newprimary ; 
+	    fMulTrack++ ;
+	  } // store it
+	} // all primaries in digit
+	delete [] newprimaryarray ; 
+      }
     }
   } // all digits
 

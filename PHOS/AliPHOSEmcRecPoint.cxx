@@ -485,12 +485,12 @@ void AliPHOSEmcRecPoint::EvalAll(Float_t logWeight, TClonesArray * digits )
 {
   // Evaluates all shower parameters
 
-  AliPHOSRecPoint::EvalAll(logWeight,digits) ;
   EvalLocalPosition(logWeight, digits) ;
   EvalElipsAxis(logWeight, digits) ;
   EvalDispersion(logWeight, digits) ;
   EvalCoreEnergy(logWeight, digits);
   EvalTime(digits) ;
+  AliPHOSRecPoint::EvalAll(logWeight,digits) ;
 }
 //____________________________________________________________________________
 void AliPHOSEmcRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digits)
