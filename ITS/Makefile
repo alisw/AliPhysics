@@ -9,12 +9,27 @@ PACKAGE = ITS
 
 # C++ sources
 
-SRCS          = AliITS.cxx AliITSv1.cxx AliITSv3.cxx AliITSv5.cxx\
-AliITSdigit.cxx AliITSgeom.cxx AliITSgeomSPD.cxx AliITSgeomSPD300.cxx\
-AliITSgeomSPD425.cxx AliITSgeomSDD.cxx AliITSgeomSSD.cxx\
-AliITSmodule.cxx AliITSmoduleSPD.cxx AliITSmoduleSDD.cxx AliITSmoduleSSD.cxx\
-AliITSdigitSSD.cxx AliITShit.cxx
-
+SRCS          = AliITS.cxx \
+AliITSv1.cxx AliITSv3.cxx AliITSv5.cxx\
+AliITShit.cxx \
+AliITSgeom.cxx AliITSgeomSPD.cxx AliITSgeomSDD.cxx AliITSgeomSSD.cxx \
+AliITSmodule.cxx AliITSsimulationFastPoints.cxx\
+AliITSsimulation.cxx AliITSsimulationSPD.cxx \
+AliITSsimulationSDD.cxx AliITSetfSDD.cxx\
+AliITSsimulationSSD.cxx AliITSdcsSSD.cxx\
+AliITSdictSSD.cxx \
+AliITSdigit.cxx \
+AliITSRawCluster.cxx \
+AliITSstatistics.cxx AliITSstatistics2.cxx \
+AliITSMap.cxx \
+AliITSsegmentationSPD.cxx  AliITSsegmentationSDD.cxx AliITSsegmentationSSD.cxx\
+AliITSresponseSPD.cxx  AliITSresponseSDD.cxx AliITSresponseSSD.cxx\
+AliITSClusterFinder.cxx \
+AliITSClusterFinderSPD.cxx AliITSClusterFinderSDD.cxx AliITSRawData.cxx \
+AliITSHuffman.cxx \
+AliITSClusterFinderSSD.cxx AliITSclusterSSD.cxx AliITSpackageSSD.cxx \
+AliITSDetType.cxx \
+AliITSgeomSPD300.cxx AliITSgeomSPD425.cxx
 # Fortran sources
 
 FSRCS	       = 
@@ -69,8 +84,6 @@ depend:				$(SRCS) $(FSRCS)
 
 TOCLEAN		= $(OBJS) $(FOBJS) *Cint.cxx *Cint.h
 
-CHECKS        = $(patsubst %.cxx,check/%.viol,$(SRCS))
-
 ############################### General Macros ################################
 
 include $(ALICE_ROOT)/conf/GeneralMacros
@@ -78,3 +91,11 @@ include $(ALICE_ROOT)/conf/GeneralMacros
 ############################ Dependencies #####################################
 
 -include tgt_$(ALICE_TARGET)/Make-depend 
+
+### Target check creates violation reports (.viol), which depend on
+### stripped files (.ii), which in turn depend on preprocessed
+### files (.i). Dependences are in conf/GeneralDef.
+
+CHECKS        = $(patsubst %.cxx,check/%.viol,$(SRCS))
+
+check:          $(CHECKS)
