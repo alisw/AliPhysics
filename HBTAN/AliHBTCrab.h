@@ -11,10 +11,11 @@
 
 #include "AliHBTWeights.h"
 
-//class Complex;
-//typedef Complex double_complex;
 #ifdef __DECCXX
 #include <complex.h>
+#else
+class Complex;
+typedef Complex double_complex;
 #endif
 #include <math.h>
 
