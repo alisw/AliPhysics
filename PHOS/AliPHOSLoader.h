@@ -93,7 +93,6 @@ public:
 //   Int_t   WriteRecParticles(Option_t* opt="");//writes the reconstructed particles
 //   Int_t   WritePID(Option_t* opt="");//writes the task for PID to file
 //   Bool_t  PostPID  (AliPHOSPID * pid) const {return kTRUE;}
-//  Bool_t  PostQA   (void) const ; //it was empty anyway
   
 /*******************************************************************/
 /*******************************************************************/
@@ -195,7 +194,6 @@ private:
   Int_t ReadTracks();
   Int_t ReadRecParticles();
   
-  void  ReadTreeQA() ;
   Int_t  fDebug ;             // Debug level
 
   static const TString fgkHitsName;//Name for TClonesArray with hits from one event
@@ -323,8 +321,5 @@ inline const AliPHOSRecParticle* AliPHOSLoader::RecParticle(Int_t index)
     return (const AliPHOSRecParticle*) tcarr->At(index);
   return 0x0;  
 }
-/******************************************************************************/
-inline TObjArray *  AliPHOSLoader::Alarms()
-{ return (TObjArray*)(GetQAFolder()->FindObject(fDetectorName));}
 
 #endif // AliPHOSLOADER_H

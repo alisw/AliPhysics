@@ -10,7 +10,7 @@
 //              energy
 //              3 identifiers for the primary particle(s) at the origine of the digit
 //  The digits are made in FinishEvent() by summing all the hits in a single PHOS crystal or PPSD gas cell
-//  It would be nice to replace the 3 identifiers by an array, but, because digits are kept in a TClonesQArray,
+//  It would be nice to replace the 3 identifiers by an array, but, because digits are kept in a TClonesArray,
 //   it is not possible to stream such an array... (beyond my understqnding!)
 //
 //*-- Author: Laurent Aphecetche & Yves Schutz (SUBATECH)

@@ -60,8 +60,6 @@ Double_t AliPHOS::fgTimeTrigger = 100E-9 ;      // 100ns, just for a reference
 {
   // Default ctor
   fName   = "PHOS" ;
-  fQATask = 0;
-  fTreeQA = 0;
   fDebug  = 0; 
 
 }
@@ -71,8 +69,6 @@ AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name, title)
 {
   //   ctor : title is used to identify the layout
   
-  fQATask = 0 ; 
-  fTreeQA = 0 ;
   fDebug  = 0 ; 
   fHighCharge        = 8.2 ;          // adjusted for a high gain range of 5.12 GeV (10 bits)
   fHighGain          = 6.64 ; 
@@ -91,8 +87,6 @@ void AliPHOS::Copy(AliPHOS & phos)
 {
   // copy method to be used byy the cpy ctor
   TObject::Copy(phos) ; 
-  //  fQATask = AliPHOSQAChecker::Copy(*(phos.fQATask)) ; 
-  phos.fTreeQA = fTreeQA->CloneTree() ; 
   phos.fHighCharge        = fHighCharge ;
   phos.fHighGain          = fHighGain ; 
   phos.fHighLowGainFactor = fHighLowGainFactor ;  
@@ -612,36 +606,5 @@ void AliPHOS::SetTreeAddress()
        branch->SetAddress(&fHits);
      }
   }
-}
-
-//____________________________________________________________________________
-void AliPHOS::WriteQA()
-{
-
-  // Make TreeQA in the output file. 
-
-  if(fTreeQA == 0)
-    fTreeQA = new TTree("TreeQA", "QA Alarms") ;    
-  // Create Alarms branches
-  Int_t bufferSize = 32000 ;    
-  Int_t splitlevel = 0 ; 
-
-  TFolder* topfold = GetLoader()->GetTopFolder(); //get top aliroot folder; skowron
-  TString phosqafn(AliConfig::Instance()->GetQAFolderName()+"/"); //get name of QAaut folder relative to top event; skowron
-  phosqafn+=GetName(); //hard wired string!!! add the detector name to the pathname; skowron 
-  TFolder * alarmsF = (TFolder*)topfold->FindObjectAny(phosqafn); //get the folder
- 
-  if (alarmsF == 0x0)
-   {
-     AliError(Form("Can not find folder with qa alarms"));
-     return;
-   }
-  TString branchName(alarmsF->GetName());
-  TBranch * alarmsBranch = fTreeQA->Branch(branchName,"TFolder", &alarmsF, bufferSize, splitlevel);
-  TString branchTitle = branchName + " QA alarms" ; 
-  alarmsBranch->SetTitle(branchTitle);
-  alarmsBranch->Fill() ; 
-
-  //fTreeQA->Fill() ; 
 }
 

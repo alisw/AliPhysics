@@ -21,7 +21,6 @@ class TRandom ;
 #include "AliDetector.h" 
 #include "AliLog.h"
 #include "AliPHOSGeometry.h" 
-class AliPHOSQAChecker ;
 
 class AliPHOS : public AliDetector {
 
@@ -44,7 +43,7 @@ public:
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
   virtual void  CreateMaterials() ;            
   virtual void  Digits2Raw();
-  virtual void  FinishRun() {WriteQA();}
+  virtual void  FinishRun() {;}
   virtual AliPHOSGeometry * GetGeometry() const 
   {return AliPHOSGeometry::GetInstance(GetTitle(),"") ;  }
   virtual void    Hits2SDigits();
@@ -66,22 +65,17 @@ public:
   static Double_t RawResponseFunctionMax(Double_t charge, Double_t gain) ;
   //
   virtual AliLoader* MakeLoader(const char* topfoldername);
-  AliPHOSQAChecker * QAChecker() {return fQATask;}  
   virtual void    SetTreeAddress();   
-  virtual TTree * TreeQA() const {return fTreeQA; } 
   virtual const TString Version() const {return TString(" ") ; } 
-  virtual void WriteQA() ; 
   AliPHOS & operator = (const AliPHOS & /*rvalue*/)  {
     Fatal("operator =", "not implemented") ; return *this ; }
 
 
 protected:
 
-    Bool_t   RawSampledResponse(const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const ; 
-
-
-  AliPHOSQAChecker * fQATask ;          //! PHOS checkers container
-  TTree * fTreeQA ;                     // the QA tree that contains the alarms
+  Bool_t   RawSampledResponse(const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const ; 
+  
+  
   static Double_t fgCapa ;              // capacitor of the preamplifier for the raw RO signal
   Double_t fHighCharge ;                // high charge (to convert energy to charge) for the raw RO signal
   Double_t fHighGain ;                  // high gain for the raw RO signal
@@ -93,7 +87,7 @@ protected:
   static Double_t fgTimePeak ;          // peaking time of the raw RO signal                                    
   static Double_t fgTimeTrigger ;       // time of the trigger for the RO signal 
                                         
-  ClassDef(AliPHOS,4) // Photon Spectrometer Detector (base class)
+  ClassDef(AliPHOS,5) // Photon Spectrometer Detector (base class)
 } ;
 
 #endif // ALIPHOS_H

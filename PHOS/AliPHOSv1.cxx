@@ -37,9 +37,6 @@
 #include "AliPHOSCPVDigit.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSHit.h"
-#include "AliPHOSQAFloatCheckable.h"
-#include "AliPHOSQAIntCheckable.h"
-#include "AliPHOSQAMeanChecker.h"
 #include "AliPHOSv1.h"
 #include "AliRun.h"
 #include "AliMC.h"
@@ -50,11 +47,6 @@ ClassImp(AliPHOSv1)
 AliPHOSv1::AliPHOSv1():
 AliPHOSv0()
 {
-  // default ctor: initialze data memebers
-  fQAHitsMul  = 0 ;
-  fQAHitsMulB = 0 ; 
-  fQATotEner  = 0 ; 
-  fQATotEnerB = 0 ; 
 
   fLightYieldMean         = 0. ;         
   fIntrinsicPINEfficiency = 0. ; 
@@ -110,40 +102,7 @@ AliPHOSv1::AliPHOSv1(const char *name, const char *title):
   fElectronsPerGeV        = 2.77e+8 ;
   fAPDGain                = 300. ;
   fLightFactor            = fLightYieldMean * fIntrinsicPINEfficiency ; 
-  fAPDFactor              = (fRecalibrationFactor/100.) * fAPDGain ; 
-
-
-  Int_t nb   = GetGeometry()->GetNModules() ; 
-  
-  // create checkables 
-  fQAHitsMul   = new AliPHOSQAIntCheckable("HitsM") ; 
-  fQATotEner   = new AliPHOSQAFloatCheckable("TotEn") ; 
-  fQAHitsMulB  = new TClonesArray("AliPHOSQAIntCheckable",nb) ;
-  fQAHitsMulB->SetOwner() ; 
-  fQATotEnerB  = new TClonesArray("AliPHOSQAFloatCheckable", nb); 
-  fQATotEnerB->SetOwner() ; 
-  char tempo[20]  ; 
-  Int_t i ; 
-  for ( i = 0 ; i < nb ; i++ ) {
-    sprintf(tempo, "HitsMB%d", i+1) ; 
-    new( (*fQAHitsMulB)[i]) AliPHOSQAIntCheckable(tempo) ; 
-    sprintf(tempo, "TotEnB%d", i+1) ; 
-    new( (*fQATotEnerB)[i] ) AliPHOSQAFloatCheckable(tempo) ;
-  }
-
-  AliPHOSQAMeanChecker * hmc  = new AliPHOSQAMeanChecker("HitsMul", 100. ,25.) ; 
-  AliPHOSQAMeanChecker * emc  = new AliPHOSQAMeanChecker("TotEner", 10. ,5.) ; 
-  AliPHOSQAMeanChecker * bhmc = new AliPHOSQAMeanChecker("HitsMulB", 100. ,5.) ; 
-  AliPHOSQAMeanChecker * bemc = new AliPHOSQAMeanChecker("TotEnerB", 2. ,.5) ; 
-
-  // associate checkables and checkers 
-  fQAHitsMul->AddChecker(hmc) ; 
-  fQATotEner->AddChecker(emc) ; 
-  for ( i = 0 ; i < nb ; i++ ) {
-    (static_cast<AliPHOSQAIntCheckable*>((*fQAHitsMulB)[i]))->AddChecker(bhmc) ;
-    (static_cast<AliPHOSQAFloatCheckable*>((*fQATotEnerB)[i]))->AddChecker(bemc) ; 
-  }
-
+  fAPDFactor              = (fRecalibrationFactor/100.) * fAPDGain ;   
 }
 
 //____________________________________________________________________________
@@ -154,18 +113,7 @@ AliPHOSv1::~AliPHOSv1()
     fHits->Delete() ; 
     delete fHits ;
     fHits = 0 ; 
-  }
-  
-  if ( fQAHitsMulB ) {
-    fQAHitsMulB->Delete() ;
-    delete fQAHitsMulB ; 
-  }
-
-  if ( fQATotEnerB ) {
-    fQATotEnerB->Delete() ;
-    delete fQATotEnerB ; 
-  }
- 
+ }
 }
 
 //____________________________________________________________________________
@@ -212,14 +160,10 @@ void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t Id, Float_t * hits)
     // get the block Id number
     Int_t relid[4] ;
     geom->AbsToRelNumbering(Id, relid) ;
-    // and fill the relevant QA checkable (only if in PbW04)
-    if ( relid[1] == 0 ) {
-      fQAHitsMul->Update(1) ; 
-      (static_cast<AliPHOSQAIntCheckable*>((*fQAHitsMulB)[relid[0]-1]))->Update(1) ;
-    } 
+
     fNhits++ ;
   }
-
+  
   delete newHit;
 }
 
@@ -229,8 +173,6 @@ void AliPHOSv1::FinishPrimary()
   // called at the end of each track (primary) by AliRun
   // hits are reset for each new track
   // accumulate the total hit-multiplicity
-//   if ( fQAHitsMul ) 
-//     fQAHitsMul->Update( fHits->GetEntriesFast() ) ; 
 
 }
 
@@ -241,39 +183,6 @@ void AliPHOSv1::FinishEvent()
   // accumulate the hit-multiplicity and total energy per block 
   // if the values have been updated check it
   
-
-  if ( fQATotEner ) { 
-    if ( fQATotEner->HasChanged() ) {
-      fQATotEner->CheckMe() ; 
-      fQATotEner->Reset() ; 
-    }
-  }
-  
-  Int_t i ; 
-  if ( fQAHitsMulB && fQATotEnerB ) {
-    for (i = 0 ; i < GetGeometry()->GetNModules() ; i++) {
-      AliPHOSQAIntCheckable * ci = static_cast<AliPHOSQAIntCheckable*>((*fQAHitsMulB)[i]) ;  
-      AliPHOSQAFloatCheckable* cf = static_cast<AliPHOSQAFloatCheckable*>((*fQATotEnerB)[i]) ; 
-      if ( ci->HasChanged() ) { 
-	ci->CheckMe() ;  
-	ci->Reset() ;
-      } 
-      if ( cf->HasChanged() ) { 
-	cf->CheckMe() ; 
-	cf->Reset() ;
-      }
-    } 
-  }
-  
-  // check the total multiplicity 
-  
-  if ( fQAHitsMul ) {
-    if ( fQAHitsMul->HasChanged() ) { 
-      fQAHitsMul->CheckMe() ; 
-      fQAHitsMul->Reset() ; 
-    }
-  } 
-
   AliDetector::FinishEvent(); 
 }
 //____________________________________________________________________________
@@ -478,11 +387,7 @@ void AliPHOSv1::StepManager(void)
       // add current hit to the hit list
       // Info("StepManager","%d %d", primary, tracknumber) ; 
       AddHit(fIshunt, primary, absid, xyzte);
-      
-      // fill the relevant QA Checkables
-      fQATotEner->Update( xyzte[4] ) ;                                             // total energy in PHOS
-      (static_cast<AliPHOSQAFloatCheckable*>((*fQATotEnerB)[moduleNumber-1]))->Update( xyzte[4] ) ; // energy in this block  
-      
+        
     } // there is deposited energy
   } // we are inside a PHOS Xtal
   

@@ -530,32 +530,6 @@ void AliPHOSLoader::Track(Int_t itrack)
   hitsbranch->GetEntry(itrack);
 
 }
-//____________________________________________________________________________ 
-void AliPHOSLoader::ReadTreeQA()
-{
-  // Read the digit tree gAlice->TreeQA()
-  // so far only PHOS knows about this Tree  
-
-  if(PHOS()->TreeQA()== 0){
-    cerr <<   "ERROR: AliPHOSLoader::ReadTreeQA: can not read TreeQA " << endl ;
-    return ;
-  }
-  
-  TBranch * qabranch = PHOS()->TreeQA()->GetBranch("PHOS");
-  if (!qabranch) { 
-    if (fDebug)
-      cout << "WARNING: AliPHOSLoader::ReadTreeQA -> Cannot find QA Alarms for PHOS" << endl ;
-    return ; 
-  }   
-  
-//  if(!Alarms()) PostQA();
-
-  qabranch->SetAddress(AlarmsRef()) ;
-
-  qabranch->GetEntry(0) ;
-  
-}
-
 
 //____________________________________________________________________________ 
 Int_t AliPHOSLoader::ReadRecPoints()

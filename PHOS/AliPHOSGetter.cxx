@@ -329,11 +329,6 @@ if( strstr(opt,"W")  ){
     ReadRaw(event) ;
   }    
  
-
-//   if( strstr(opt,"Q")   && (fCurentEvent[9]!=event) )
-//     ReadTreeQA() ;
-//   }    
- 
 }
 
 

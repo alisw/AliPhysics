@@ -16,8 +16,6 @@ class TFile;
 
 // --- AliRoot header files ---
 #include "AliPHOSv0.h"
-class AliPHOSQAIntCheckable ; 
-class AliPHOSQAFloatCheckable ; 
 
 class AliPHOSv1 : public AliPHOSv0 {
 
@@ -74,11 +72,6 @@ public:
 
 protected:
 
-  AliPHOSQAIntCheckable   * fQAHitsMul ;  // QA Hits Multiplicity checkable
-  TClonesArray * fQAHitsMulB ;            // QA Hits Multiplicity / Block checkable
-  AliPHOSQAFloatCheckable * fQATotEner ;  // QA Total Energy checkable
-  TClonesArray * fQATotEnerB ;            // QA Total Energy / Block checkable
-
   Float_t fLightYieldMean ;         // Mean lightyield in the PbOW4 xtal per GeV (Poisson distribution)
   Float_t fIntrinsicPINEfficiency ; // Photo efficiency of the PIN diode   
   Float_t fLightYieldAttenuation ;  // Attenuation of the light through the crystal
@@ -88,7 +81,7 @@ protected:
   Float_t fLightFactor ;            //! a calculated factor
   Float_t fAPDFactor ;              //! a calculated factor
 
-  ClassDef(AliPHOSv1,1)  // Implementation of PHOS manager class for layout EMC+PPSD
+  ClassDef(AliPHOSv1,2)  // Implementation of PHOS manager class for layout EMC+PPSD
 
 };
 
