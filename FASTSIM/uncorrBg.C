@@ -25,7 +25,7 @@ void uncorrBg(Int_t nev = 1000000, Double_t bmin = 0., Double_t bmax = 5.)
     
     Float_t lumi   = 5.e26;   // cm^-2 s^-1
     Float_t time   = 1.e6;    // s
-    Float_t rate   = lumi/1.e24 * glauber->CrossSection(bmin, bmax); // Hz
+    Float_t rate   = lumi/1.e27 * glauber->CrossSection(bmin, bmax); // Hz
     Float_t fhard  = glauber->FractionOfHardCrossSection(bmin, bmax);
     Float_t fgeo   = glauber->CrossSection(bmin, bmax) / glauber->CrossSection(0, 100.);
     Float_t events = rate * time;
