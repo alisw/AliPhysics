@@ -114,8 +114,8 @@ Int_t AliHBTReaderInternal::Read(AliHBTRun* particles, AliHBTRun *tracks)
  //
   Info("Read","");
   Int_t i; //iterator and some temprary values
-  Int_t totalNevents = 0; //total number of read events
-  Int_t Nevents = 0;
+  Int_t totalnevents = 0; //total number of read events
+  Int_t nevents = 0;
   Int_t currentdir = 0;
   Int_t Ndirs;
   Int_t counter;
@@ -144,7 +144,9 @@ Int_t AliHBTReaderInternal::Read(AliHBTRun* particles, AliHBTRun *tracks)
 
   TClonesArray* pbuffer = new TClonesArray("AliHBTParticle",15000);
   TClonesArray* tbuffer = new TClonesArray("AliHBTParticle",15000);
-
+//  pbuffer->BypassStreamer(kFALSE);
+//  tbuffer->BypassStreamer(kFALSE);
+  
   do  //do{}while; is OK even if 0 dirs specified. In that case we try to read from "./"
    {
     
@@ -184,11 +186,11 @@ Int_t AliHBTReaderInternal::Read(AliHBTRun* particles, AliHBTRun *tracks)
         partbranch->SetAddress(&pbuffer);
       }
      
-     Nevents = (Int_t)tree->GetEntries();
+     nevents = (Int_t)tree->GetEntries();
      Info("Read","________________________________________________________");
-     Info("Read","Found %d event(s) in directory %s",Nevents,GetDirName(currentdir).Data());
+     Info("Read","Found %d event(s) in directory %s",nevents,GetDirName(currentdir).Data());
      
-     for (Int_t currentEvent =0; currentEvent<Nevents;currentEvent++)
+     for (Int_t currentEvent =0; currentEvent<nevents;currentEvent++)
       {
        Info("Read","Event %d",currentEvent);
        tree->GetEvent(currentEvent);
@@ -207,31 +209,31 @@ Int_t AliHBTReaderInternal::Read(AliHBTRun* particles, AliHBTRun *tracks)
                                                           //if not take next partilce
                AliHBTParticle* part = new AliHBTParticle(*tpart);
                AliHBTParticle* track = new AliHBTParticle(*ttrack);
-               particles->AddParticle(totalNevents,part);//put track and particle on the run
-               tracks->AddParticle(totalNevents,track);
+               particles->AddParticle(totalnevents,part);//put track and particle on the run
+               tracks->AddParticle(totalnevents,track);
                counter++;
              }
-            Info("Read","   Read: %d particles and tracks",counter);
+            Info("Read","   Read: %d particles and tracks.",counter);
         }
        else
         {  
          if (partbranch)
           {
+            Info("Read","Found %d particles in total.",pbuffer->GetEntries());	
             for(i = 0; i < pbuffer->GetEntries(); i++)
-             {
+             { 
                tpart = dynamic_cast<AliHBTParticle*>(pbuffer->At(i));
                if(tpart == 0x0) continue; //if returned pointer is NULL
                if(tpart->GetPDG() == 0x0) continue; //if particle has crezy PDG code (not known to our database)
                if(Pass(tpart)) continue; //check if we are intersted with particles of this type 
                                          //if not take next partilce
- 
                AliHBTParticle* part = new AliHBTParticle(*tpart);
-               particles->AddParticle(totalNevents,part);//put track and particle on the run
+               particles->AddParticle(totalnevents,part);//put track and particle on the run
                counter++;
              }
-            Info("Read","   Read: %d particles and tracks",counter);
+            Info("Read","   Read: %d particles.",counter);
           }
-         else Info("Read","   Read: 0 particles");
+         else Info("Read","   Read: 0 particles.");
          
          if (trackbranch)
           {
@@ -243,14 +245,14 @@ Int_t AliHBTReaderInternal::Read(AliHBTRun* particles, AliHBTRun *tracks)
                if(Pass(tpart)) continue; //check if we are intersted with particles of this type 
                                                    //if not take next partilce
                AliHBTParticle* part = new AliHBTParticle(*tpart);
-               tracks->AddParticle(totalNevents,part);//put track and particle on the run
+               tracks->AddParticle(totalnevents,part);//put track and particle on the run
                counter++;
              }
             Info("Read","   Read: %d tracks",counter);
           }
-         else Info("Read","   Read: 0 tracks");
+         else Info("Read","   Read: 0 tracks.");
         }
-        totalNevents++;
+        totalnevents++;
        }
 
     /***************************/
@@ -319,6 +321,8 @@ Int_t AliHBTReaderInternal::Write(AliHBTReader* reader,const char* outfile)
 
   TClonesArray* pbuffer = new TClonesArray("AliHBTParticle",15000);
   TClonesArray* tbuffer = new TClonesArray("AliHBTParticle",15000);
+//  pbuffer->BypassStreamer(kFALSE);
+//  tbuffer->BypassStreamer(kFALSE);
 
   TClonesArray &particles = *pbuffer;
   TClonesArray &tracks = *tbuffer;
@@ -333,8 +337,8 @@ Int_t AliHBTReaderInternal::Write(AliHBTReader* reader,const char* outfile)
 
   TBranch *trackbranch = 0x0, *partbranch = 0x0;
   
-  if (trck) trackbranch = tracktree->Branch("tracks","TClonesArray",&tbuffer);
-  if (part) partbranch = tracktree->Branch("particles","TClonesArray",&pbuffer);
+  if (trck) trackbranch = tracktree->Branch("tracks",&tbuffer,32000,0);
+  if (part) partbranch = tracktree->Branch("particles",&pbuffer,32000,0);
   
   if ( (trck) && (part) && (NP != NT))
    {
