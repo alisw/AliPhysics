@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.3  2000/06/12 15:49:44  jbarbosa
+  Removed verbose output.
+
   Revision 1.2  2000/06/12 15:18:19  jbarbosa
   Cleaned up version.
 
@@ -199,7 +202,7 @@ Bool_t AliRICHClusterFinder::Centered(AliRICHRawCluster *cluster)
     Int_t nd=0;
     for (Int_t i=0; i<nn; i++) {
 	if (fHitMap->TestHit(x[i],y[i]) == kUsed) {
-	    yN[nd]=x[i];
+	    xN[nd]=x[i];
 	    yN[nd]=y[i];
 	    nd++;
 	    
