@@ -23,6 +23,7 @@ class AliRunLoader;
 class AliRun;
 class AliDetector;
 class AliHeader;
+class AliRawReader;
 
 class AliPMDdigit;
 class AliPMDClustering;
@@ -38,6 +39,7 @@ class AliPMDClusterFinder
   virtual ~AliPMDClusterFinder();
 
   void Digits2RecPoints(Int_t ievt);
+  void Digits2RecPoints(Int_t ievt, AliRawReader *rawReader);
   void SetCellEdepCut(Float_t ecut);
   void SetDebug(Int_t idebug);
   void AddRecPoint(Int_t idet, Int_t ismn, Float_t * clusdata);
@@ -65,7 +67,7 @@ class AliPMDClusterFinder
   static const Int_t fgkCol = 96; // Total number of cols in one unitmodule
   Double_t fCellADC[fgkRow][fgkCol]; // Array containing individual cell ADC
 
-  ClassDef(AliPMDClusterFinder,4) // To run PMD clustering
+  ClassDef(AliPMDClusterFinder,5) // To run PMD clustering
 };
 #endif
 

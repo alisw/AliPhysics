@@ -40,13 +40,14 @@
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "AliHeader.h"
+#include "AliRawReader.h"
 
 #include "AliPMDdigit.h"
 #include "AliPMDClusterFinder.h"
 #include "AliPMDClustering.h"
 #include "AliPMDcluster.h"
 #include "AliPMDrecpoint1.h"
-
+#include "AliPMDRawStream.h"
 
 ClassImp(AliPMDClusterFinder)
 
@@ -140,13 +141,12 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 	  ypos   = pmddigit->GetColumn();
 	  adc    = pmddigit->GetADC();
 	  //Int_t trno   = pmddigit->GetTrackNumber();
-
 	  fCellADC[xpos][ypos] = (Double_t) adc;
 	}
 
       idet = det;
       ismn = smn;
-      pmdclust->DoClust(idet,ismn,fCellADC,pmdcont);
+      //      pmdclust->DoClust(idet,ismn,fCellADC,pmdcont);
       
       Int_t nentries1 = pmdcont->GetEntries();
 //      cout << " nentries1 = " << nentries1 << endl;
@@ -179,6 +179,177 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
   delete pmdcont;
     
   //  cout << " ***** End::Digits2RecPoints *****" << endl;
+}
+// ------------------------------------------------------------------------- //
+
+void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
+{
+  // Converts digits to recpoints after running clustering
+  // algorithm on CPV plane and PREshower plane
+  //
+
+  Float_t  clusdata[5];
+
+
+  rawReader->Reset();
+  AliPMDRawStream pmdinput(rawReader);
+
+  TObjArray *pmdcont = new TObjArray();
+  AliPMDClustering *pmdclust = new AliPMDClustering();
+  pmdclust->SetDebug(fDebug);
+  pmdclust->SetEdepCut(fEcut);
+
+  fRunLoader->GetEvent(ievt);
+
+  ResetRecpoint();
+  fTreeR = fPMDLoader->TreeR();
+  if (fTreeR == 0x0)
+    {
+      fPMDLoader->MakeTree("R");
+      fTreeR = fPMDLoader->TreeR();
+    }
+
+  Int_t bufsize = 16000;
+  fTreeR->Branch("PMDRecpoint", &fRecpoints, bufsize); 
+
+  Int_t irownew  = 0;
+  Int_t icolnew  = 0;
+  Int_t irownew1 = 0;
+  Int_t icolnew1 = 0;
+  const Int_t kDet = 2;
+  const Int_t kSMN = 24;
+  const Int_t kRow = 48;
+  const Int_t kCol = 96;
+  Int_t preADC[kSMN][kRow][kCol];
+  Int_t cpvADC[kSMN][kRow][kCol];
+
+  for (Int_t i = 0; i < kSMN; i++)
+    {
+      for (Int_t j = 0; j < kRow; j++)
+	{
+	  for (Int_t k = 0; k < kCol; k++)
+	    {
+	      preADC[i][j][k] = 0;
+	      cpvADC[i][j][k] = 0;
+	    }
+	}
+    }
+  ResetCellADC();
+
+  while(pmdinput.Next())
+    {
+      Int_t det = pmdinput.GetDetector();
+      Int_t smn = pmdinput.GetSMN();
+      //Int_t mcm = pmdinput.GetMCM();
+      //Int_t chno = pmdinput.GetChannel();
+      Int_t row = pmdinput.GetRow();
+      Int_t col = pmdinput.GetColumn();
+      Int_t sig = pmdinput.GetSignal();
+
+      //cout << " det = " << det << " smn = " << smn 
+      //   << " row = " << row << " col = " << col
+      //   << " sig = " << sig << endl;
+
+      if(smn < 6)
+	{
+	  irownew1 = 95 - row;
+	  icolnew1 = col;
+	}
+      else if(smn >= 6 && smn < 12)
+	{
+	  irownew1 = row;
+	  icolnew1 = 47 - col;
+	}
+      else if(smn >= 12 && smn < 18)
+	{
+	  irownew1 = 47 - row;
+	  icolnew1 = col;
+	}
+      else if(smn >= 18 && smn < 24)
+	{
+	  irownew1 = row;
+	  icolnew1 = 95 - col;
+	}
+
+      if(smn < 12)
+	{
+	  // SupeModule 1 and 2 : Rows are inverted to columns and vice versa
+	  // and at the time of calculating the eta,phi it is again reverted
+	  // back
+	  irownew = icolnew1;
+	  icolnew = irownew1;
+	}
+      else if( smn >= 12 && smn < 24)
+	{
+	  irownew = irownew1;
+	  icolnew = icolnew1;
+	}
+
+      if (det == 0)
+	{
+	  preADC[smn][irownew][icolnew] = sig;
+	}
+      else if (det == 1)
+	{
+	  cpvADC[smn][irownew][icolnew] = sig;
+	}
+
+    } // while loop
+
+  for (Int_t idet = 0; idet < kDet; idet++)
+    {
+      for (Int_t ismn = 0; ismn < kSMN; ismn++)
+	{
+	  for (Int_t irow = 0; irow < kRow; irow++)
+	    {
+	      for (Int_t icol = 0; icol < kCol; icol++)
+		{
+		  if (idet == 0)
+		    {
+		      fCellADC[irow][icol] = 
+			(Double_t) preADC[ismn][irow][icol];
+		    }
+		  else if (idet == 1)
+		    {
+		      fCellADC[irow][icol] = 
+			(Double_t) cpvADC[ismn][irow][icol];
+		    }
+		} // row
+	    }     // col
+	  pmdclust->DoClust(idet,ismn,fCellADC,pmdcont);
+	  Int_t nentries1 = pmdcont->GetEntries();
+	  //      cout << " nentries1 = " << nentries1 << endl;
+	  for (Int_t ient1 = 0; ient1 < nentries1; ient1++)
+	    {
+	      AliPMDcluster *pmdcl = 
+		(AliPMDcluster*)pmdcont->UncheckedAt(ient1);
+	      idet        = pmdcl->GetDetector();
+	      ismn        = pmdcl->GetSMN();
+	      clusdata[0] = pmdcl->GetClusX();
+	      clusdata[1] = pmdcl->GetClusY();
+	      clusdata[2] = pmdcl->GetClusADC();
+	      clusdata[3] = pmdcl->GetClusCells();
+	      clusdata[4] = pmdcl->GetClusRadius();
+	      
+	      AddRecPoint(idet,ismn,clusdata);
+	    }
+	  pmdcont->Clear();
+	  
+	  fTreeR->Fill();
+	  ResetRecpoint();
+	  
+	} // smn
+    }     // det (pre, cpv)
+
+  ResetCellADC();
+  fPMDLoader = fRunLoader->GetLoader("PMDLoader");  
+  fPMDLoader->WriteRecPoints("OVERWRITE");
+
+  //   delete the pointers
+  delete pmdclust;
+  delete pmdcont;
+
+  //  cout << " ***** End::Digits2RecPoints :: Raw *****" << endl;
 }
 // ------------------------------------------------------------------------- //
 void AliPMDClusterFinder::SetCellEdepCut(Float_t ecut)
