@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.14  2001/02/03 00:00:29  nilsen
+New version of AliITSgeom and related files. Now uses automatic streamers,
+set up for new formatted .det file which includes detector information.
+Additional smaller modifications are still to come.
+
 Revision 1.11  2000/10/02 16:32:35  barbera
 Forward declaration added
 
@@ -230,8 +235,8 @@ AliITSgeom::AliITSgeom(Int_t itype,Int_t nlayers,Int_t *nlads,Int_t *ndets,
     for(i=0;i<nlayers;i++){fNlad[i] = nlads[i];fNdet[i] = ndets[i];}
     fNmodules = mods;
     fGm       = new TObjArray(mods,0);
-    fShape    = new TObjArray(3); // default value
-    for(i=0;i<3;i++) fShape->AddAt(0,i);
+    fShape    = new TObjArray(5); // default value
+    for(i=0;i<5;i++) fShape->AddAt(0,i);
     strcpy(fVersion,"test");
     return;
 }
@@ -277,9 +282,9 @@ AliITSgeom::~AliITSgeom(){
 //______________________________________________________________________
 void AliITSgeom::ReadNewFile(const char *filename){
     Int_t ncmd=9;
-    char *cmda[]={"Version"        ,"fTrans"  ,"fNmodules",
-	          "fNlayers"       ,"fNladers","fNdetectors",
-	          "fNDetectorTypes","fShape"  ,"Matrix"};
+    const char *cmda[]={"Version"        ,"fTrans"  ,"fNmodules",
+	                "fNlayers"       ,"fNladers","fNdetectors",
+	                "fNDetectorTypes","fShape"  ,"Matrix"};
     Int_t i,j,lNdetTypes,ldet;
     char cmd[20],c;
     AliITSgeomSPD *spd;
@@ -290,6 +295,7 @@ void AliITSgeom::ReadNewFile(const char *filename){
     char *filtmp;
 
     filtmp = gSystem->ExpandPathName(filename);
+    cout << "AliITSgeom, Reading New .det file " << filtmp << endl;
     fp = new ifstream(filtmp,ios::in);  // open file to write
     while(fp->get(c)!=NULL){ // for ever loop
 	if(c==' ') continue; // remove blanks
@@ -308,7 +314,8 @@ void AliITSgeom::ReadNewFile(const char *filename){
 		} // end if c=='*'
 	    } // end if second /
 	} // end if first /
-	fp->unget();
+	fp->putback(c);
+//	fp->unget();
 	*fp >> cmd;
 	for(i=0;i<ncmd;i++) if(strcmp(cmd,cmda[i])==0) break;
 	switch (i){
@@ -349,7 +356,7 @@ void AliITSgeom::ReadNewFile(const char *filename){
 	    break;
 	case 7:  // fShape
 	    *fp >> ldet;
-	    if(fShape==0) fShape = new TObjArray(4,0);
+	    if(fShape==0) fShape = new TObjArray(5,0);
 	    switch (ldet){
 	    case kSPD :
 		ReSetShape(ldet,(TObject*) new AliITSgeomSPD());
@@ -403,6 +410,7 @@ void AliITSgeom::WriteNewFile(const char *filename){
     char *filtmp;
 
     filtmp = gSystem->ExpandPathName(filename);
+    cout << "AliITSgeom, Writing New .det file " << filtmp << endl;
     fp = new ofstream(filtmp,ios::out);  // open file to write
     *fp << "//Comment lines begin with two //, one #, or one !" << endl;
     *fp << "#Blank lines are skipped including /* and */ sections." << endl;
@@ -410,7 +418,8 @@ void AliITSgeom::WriteNewFile(const char *filename){
     *fp << "/* In AliITSgeom.h are defined an enumerated type called" << endl;
     *fp << " AliITSDetectors These are kSPD=" << (Int_t) kSPD ;
     *fp << ", kSDD=" << (Int_t) kSDD << ", kSSD=" << (Int_t) kSSD;
-    *fp << ", and kSSDp=" << (Int_t) kSSDp << "*/" << endl;
+    *fp << ", kSSDp=" << (Int_t) kSSDp << ", and kSDDp=" << (Int_t) kSDDp;
+    *fp << "*/" << endl;
     *fp << "Version " << fVersion << endl;//This should be consistant with the
                                            // geometry version.
     *fp << "fTrans " << fTrans << endl;
@@ -466,6 +475,7 @@ AliITSgeom::AliITSgeom(const char *filename){
    char *filtmp;
 
    filtmp = gSystem->ExpandPathName(filename);
+   cout << "AliITSgeom reading old .det file " << filtmp << endl;
    fShape = 0;
    strcpy(fVersion,"DefauleV5");
    pf = fopen(filtmp,"r");

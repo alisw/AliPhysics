@@ -17,6 +17,7 @@
 // the information needed to do the coordinate transformation are kept in
 // a specialized structure for ease of implementation.
 /////////////////////////////////////////////////////////////////////////
+#include <iostream.h>
 #include <TObjArray.h>
 #include <TVector.h>
 
@@ -26,7 +27,7 @@ class ifstream;
 class ofstream;
 
 
-typedef enum {kSPD=0, kSDD=1, kSSD=2, kSSDp=3} AliITSDetector;
+typedef enum {kSPD=0, kSDD=1, kSSD=2, kSSDp=3,kSDDp=4} AliITSDetector;
 
 //_______________________________________________________________________
 
@@ -67,7 +68,7 @@ class AliITSgeom : public TObject {
     // set of transformations. Typical values of ishape are kSPD, kSDD, kSSD,
     // SSD2.
     Bool_t IsShapeDefined(Int_t ishape){
-	if(fShape!=0) return (fShape->At(ishape)!=0);else return fShape!=0;}
+	if(fShape!=0){return ((fShape->At(ishape))!=0);}else return kFALSE;}
 //
     //     This function returns a pointer to the particular AliITSgeomMatrix
     // class for a specific module index.
