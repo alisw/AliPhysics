@@ -72,6 +72,7 @@ ClassImp(AliPHOSRecParticle)
 //____________________________________________________________________________
 const Int_t AliPHOSRecParticle::GetNPrimaries() const  
 {   
+  // retrieve the total number of primaries
   AliHeader *h = gAlice->GetHeader();
   return  h->GetNprimary(); 
   // return  gAlice->GetNtrack(); 
@@ -80,7 +81,7 @@ const Int_t AliPHOSRecParticle::GetNPrimaries() const
 //____________________________________________________________________________
 const Int_t AliPHOSRecParticle::GetNPrimariesToRecParticles() const  
 { 
-
+  // returns the number of primariies which contribute to the recparticle
   Int_t rv = 0 ;
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
   Int_t emcRPindex = ((AliPHOSTrackSegment*)gime->TrackSegments()->At(GetPHOSTSIndex()))->GetEmcIndex();
@@ -91,6 +92,7 @@ const Int_t AliPHOSRecParticle::GetNPrimariesToRecParticles() const
 //____________________________________________________________________________
 const TParticle * AliPHOSRecParticle::GetPrimary(Int_t index) const  
 {
+  // retrieves the one of primaries which contribute to the recparticle
   if ( index > GetNPrimariesToRecParticles() ) { 
     if (fDebug) 
       Warning("GetPrimary", "%d is larger that the number of primaries %d", index, GetNPrimaries()) ;
