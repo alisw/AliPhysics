@@ -14,7 +14,7 @@ SRCS          = AliMAG.cxx      AliABSO.cxx       \
                 AliFRAME.cxx    AliFRAMEv0.cxx    AliFRAMEv1.cxx \
                 AliHALL.cxx       AliSHIL.cxx \
                 AliPIPE.cxx     AliPIPEv0.cxx     AliPIPEv1.cxx \
-		AliBODY.cxx
+		AliPIPEv3.cxx 	AliBODY.cxx
 
 # C++ Headers
 
