@@ -5,7 +5,6 @@
 
 // $Id$
 
-#include "Riostream.h"
 #include <math.h>
  
 #include "TObject.h"
@@ -23,7 +22,8 @@ class AliCalorimeter : public TObject
  public:
   AliCalorimeter();                                // Default constructor
   AliCalorimeter(Int_t nrow,Int_t ncol);           // Create a calorimeter matrix
-  ~AliCalorimeter();                               // Destructor
+  virtual ~AliCalorimeter();                       // Destructor
+  AliCalorimeter(AliCalorimeter& c);               // Copy constructor
   Int_t GetNrows();                                // Return number of rows of the matrix
   Int_t GetNcolumns();                             // Return number of columns of the matrix
   void SetSignal(Int_t row,Int_t col,Float_t s);   // Set signal for a certain module

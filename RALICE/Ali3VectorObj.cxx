@@ -58,22 +58,27 @@
  
 ClassImp(Ali3VectorObj) // Class implementation to enable ROOT I/O
  
-Ali3VectorObj::Ali3VectorObj()
+Ali3VectorObj::Ali3VectorObj() : TObject(),Ali3Vector()
 {
+// Default constructor
 // Creation of an Ali3VectorObj object and initialisation of parameters.
 // All attributes initialised to 0.
 }
 ///////////////////////////////////////////////////////////////////////////
-Ali3VectorObj::Ali3VectorObj(Ali3Vector& q)
+Ali3VectorObj::Ali3VectorObj(Ali3Vector& q) : TObject(),Ali3Vector(q)
 {
 // Creation of an Ali3VectorObj object and initialisation of parameters.
 // All attributes are initialised to the values of the input Ali3Vector.
- Load(q);
 }
 ///////////////////////////////////////////////////////////////////////////
 Ali3VectorObj::~Ali3VectorObj()
 {
 // Destructor to delete dynamically allocated memory.
+}
+///////////////////////////////////////////////////////////////////////////
+Ali3VectorObj::Ali3VectorObj(Ali3VectorObj& v) : TObject(v),Ali3Vector(v)
+{
+// Copy constructor
 }
 ///////////////////////////////////////////////////////////////////////////
 void Ali3VectorObj::Load(Ali3Vector& q)

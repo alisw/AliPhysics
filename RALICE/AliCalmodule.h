@@ -5,15 +5,14 @@
 
 // $Id$
 
-#include "Riostream.h"
- 
 #include "AliSignal.h"
  
 class AliCalmodule : public AliSignal
 {
  public:
   AliCalmodule();                                          // Default constructor
-  ~AliCalmodule();                                         // Default destructor
+  virtual ~AliCalmodule();                                 // Default destructor
+  AliCalmodule(AliCalmodule& m);                           // Copy constructor
   AliCalmodule(Int_t row,Int_t col,Float_t sig);           // Create a module and initialise data
   virtual void SetSignal(Int_t row,Int_t col,Float_t sig); // Set or change data for certain module
   virtual void AddSignal(Int_t row,Int_t col,Float_t sig); // Add signal to a certain module
@@ -28,6 +27,7 @@ class AliCalmodule : public AliSignal
   Int_t GetDeadValue();                                    // Return the value of the dead module indicator
   void SetGain(Float_t gain);                              // Set gain of the module's readout system
   Float_t GetGain();                                       // Return the gain value
+  virtual AliCalmodule* MakeCopy(AliCalmodule& m);         // Make a deep copy and provide its pointer
  
  protected:
   Int_t fRow;      // The current row number
@@ -36,6 +36,6 @@ class AliCalmodule : public AliSignal
   Int_t fDead;     // Flag to indicate dead module (1=dead 0=alive)
   Float_t fGain;   // Gain of the module's readout system
  
- ClassDef(AliCalmodule,2) // Description of a module in a calorimeter system.
+ ClassDef(AliCalmodule,3) // Description of a module in a calorimeter system.
 };
 #endif

@@ -77,6 +77,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "Ali3Vector.h"
+#include "Riostream.h"
  
 ClassImp(Ali3Vector) // Class implementation to enable ROOT I/O
  
@@ -84,6 +85,29 @@ Ali3Vector::Ali3Vector()
 {
 // Creation of an Ali3Vector object and initialisation of parameters
 // All attributes initialised to 0
+ SetZero();
+}
+///////////////////////////////////////////////////////////////////////////
+Ali3Vector::~Ali3Vector()
+{
+// Destructor to delete dynamically allocated memory
+}
+///////////////////////////////////////////////////////////////////////////
+Ali3Vector::Ali3Vector(const Ali3Vector& v)
+{
+// Copy constructor
+ fV=v.fV;
+ fTheta=v.fTheta;
+ fPhi=v.fPhi;
+ fDx=v.fDx;
+ fDy=v.fDy;
+ fDz=v.fDz;
+ fDresult=v.fDresult;
+}
+///////////////////////////////////////////////////////////////////////////
+void Ali3Vector::SetZero()
+{
+// (Re)set all attributes to zero.
  fV=0;
  fTheta=0;
  fPhi=0;
@@ -91,11 +115,6 @@ Ali3Vector::Ali3Vector()
  fDy=0;
  fDz=0;
  fDresult=0;
-}
-///////////////////////////////////////////////////////////////////////////
-Ali3Vector::~Ali3Vector()
-{
-// Destructor to delete dynamically allocated memory
 }
 ///////////////////////////////////////////////////////////////////////////
 void Ali3Vector::SetVector(Double_t* v,TString f)
@@ -164,7 +183,7 @@ void Ali3Vector::SetVector(Double_t* v,TString f)
    break;
 
   default: // Unsupported reference frame
-   cout << "*Ali3Vector::SetVector* Unsupported frame : " << f << endl
+   cout << "*Ali3Vector::SetVector* Unsupported frame : " << f.Data() << endl
         << " Possible frames are 'car', 'sph' and 'cyl'." << endl; 
    fV=0;
    fTheta=0;
@@ -202,7 +221,7 @@ void Ali3Vector::GetVector(Double_t* v,TString f)
    break;
 
   default: // Unsupported reference frame
-   cout << "*Ali3Vector::GetVector* Unsupported frame : " << f << endl
+   cout << "*Ali3Vector::GetVector* Unsupported frame : " << f.Data() << endl
         << " Possible frames are 'car', 'sph' and 'cyl'." << endl; 
    for (Int_t i=0; i<3; i++)
    {
@@ -277,7 +296,7 @@ void Ali3Vector::SetErrors(Double_t* e,TString f)
    break;
 
   default: // Unsupported reference frame
-   cout << "*Ali3Vector::SetErrors* Unsupported frame : " << f << endl
+   cout << "*Ali3Vector::SetErrors* Unsupported frame : " << f.Data() << endl
         << " Possible frames are 'car', 'sph' and 'cyl'." << endl; 
    fDx=0;
    fDy=0;
@@ -375,7 +394,7 @@ void Ali3Vector::GetErrors(Double_t* e,TString f)
    break;
 
   default: // Unsupported reference frame
-   cout << "*Ali3Vector::GetErrors* Unsupported frame : " << f << endl
+   cout << "*Ali3Vector::GetErrors* Unsupported frame : " << f.Data() << endl
         << " Possible frames are 'car', 'sph' and 'cyl'." << endl; 
    for (Int_t i=0; i<3; i++)
    {
@@ -416,14 +435,14 @@ void Ali3Vector::Data(TString f)
   Double_t vec[3],err[3];
   GetVector(vec,f);
   GetErrors(err,f);
-  cout << " Vector in " << f << " coordinates : "
+  cout << " Vector in " << f.Data() << " coordinates : "
        << vec[0] << " " << vec[1] << " " << vec[2] << endl; 
-  cout << "   Err. in " << f << " coordinates : "
+  cout << "   Err. in " << f.Data() << " coordinates : "
        << err[0] << " " << err[1] << " " << err[2] << endl; 
  }
  else
  {
-  cout << " *Ali3Vector::Data* Unsupported frame : " << f << endl
+  cout << " *Ali3Vector::Data* Unsupported frame : " << f.Data() << endl
        << "  Possible frames are 'car', 'sph' and 'cyl'." << endl; 
  }
 }

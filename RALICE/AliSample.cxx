@@ -43,6 +43,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliSample.h"
+#include "Riostream.h"
  
 ClassImp(AliSample) // Class implementation to enable ROOT I/O
  

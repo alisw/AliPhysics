@@ -107,6 +107,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliRandom.h"
+#include "Riostream.h"
  
 ClassImp(AliRandom) // Class implementation to enable ROOT I/O
  

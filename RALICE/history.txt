@@ -349,3 +349,32 @@
 18-feb-2003 NvE Memberfunction ShowCalorimeters() introduced in AliEvent to display an overview of all
                 available calorimeter systems.
                 Date/time format changed and ShowCalorimeters() invoked in AliEvent::HeaderData().
+08-mar-2003 NvE Compiler option /GR introduced for MSVC++ in mklibs.bat to explicitly enable
+                the C++ RTTI. This prevents a warning when creating shared libraries
+                using the "old streamer method" (i.e. NO "+" behind the class names
+                in the Linkdef file).
+10-mar-2003 NvE AliPosition datamembers of AliTrack changed into AliPositionObj* to enable
+                minimisation of memory occupation and output file size in case a track
+                has not all attributes set.
+13-mar-2003 NvE Memberfunction SetZero() introduced for Ali3Vector and Ali4Vector.
+20-mar-2003 NvE Statement #include "Riostream.h" moved from header file into implementation file
+                for all classes and MSVC compiler option /Za replaced by /Ze in order to prevent
+                ANSI compliant compiler problems.
+15-apr-2003 NvE Waveform histogram introduced in AliSignal.
+29-apr-2003 NvE Memberfunction MakeCopy introduced for AliSignal and AliCalmodule.
+                This memberfunction enables automatic creation of new objects of the
+                correct type depending on the argument type, a feature which may be very useful
+                for containers like AliCalorimeter when adding objects in case the
+                container owns the objects. This feature allows e.g. AliCalorimeter
+                to store either AliCalmodule objects or objects derived from AliCalmodule,
+                provided these derived classes also have a proper MakeCopy memberfunction. 
+17-jun-2003 NvE All TString objects "s" replaced by "s.Data()" in cout statements to comply
+                with MSVC++7.NET compiler and allow mixing with MSVC++6 libraries.
+                The classes in which these modifications were made are Ali3Vector, Ali4Vector,
+                AliSignal and AliEvent. 
+20-jun-2003 NvE Copy constructor introduced for nearly all classes and also all destructors
+                explicitly declared virtual.
+11-jul-2003 NvE Functionality of AliObjMatrix extended by enabling removal of objects and
+                introduction of a linear object array for fast looping over the stored objects.
+15-aug-2003 NvE Usage of TMCParticle removed from AliCollider; only Pythia intrinsic functionality
+                is used.

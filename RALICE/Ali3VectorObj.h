@@ -12,11 +12,12 @@
 class Ali3VectorObj : public TObject,public Ali3Vector
 {
  public:
-  Ali3VectorObj();               // Default constructor
-  Ali3VectorObj(Ali3Vector& q);  // Constructor
-  ~Ali3VectorObj();              // Destructor
-  void Load(Ali3Vector& q);      // Load all attributes of input Ali3Vector
+  Ali3VectorObj();                       // Default constructor
+  Ali3VectorObj(Ali3Vector& q);          // Constructor
+  virtual ~Ali3VectorObj();              // Destructor
+  Ali3VectorObj(Ali3VectorObj& q);       // Copy constructor
+  void Load(Ali3Vector& q);              // Load all attributes of input Ali3Vector
 
- ClassDef(Ali3VectorObj,1) // Handling of 3-vectors in various reference frames.
+ ClassDef(Ali3VectorObj,2) // Handling of 3-vectors in various reference frames.
 };
 #endif

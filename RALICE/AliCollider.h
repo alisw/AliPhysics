@@ -3,11 +3,9 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $Id: AliCollider.h,v 1.2 2002/12/02 15:10:37 nick Exp $
+// $Id: AliCollider.h,v 1.3 2002/12/11 14:45:12 nick Exp $
 
-#include "Riostream.h"
 #include "TPythia6.h"
-#include "TMCParticle.h"
 #include "TString.h"
 #include "TFile.h"
 #include "TTree.h" 
@@ -19,7 +17,7 @@ class AliCollider : public TPythia6
 {
  public:
   AliCollider();                                        // Default constructor
-  ~AliCollider();                                       // Default destructor
+  virtual ~AliCollider();                               // Default destructor
   void SetOutputFile(TString name);                     // Initialise the ROOT output data file
   void SetVertexMode(Int_t mode);                       // Select mode for (sec.) vertex structure creation
   Int_t GetVertexMode();                                // Provide vertex structure creation mode
@@ -60,6 +58,6 @@ class AliCollider : public TPythia6
 
   void GetFractions(Float_t zp,Float_t ap,Float_t zt,Float_t at); // Determine various N-N collision fractions
 
- ClassDef(AliCollider,2) // Pythia based universal physics event generator
+ ClassDef(AliCollider,3) // Pythia based universal physics event generator
 };
 #endif

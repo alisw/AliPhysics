@@ -5,7 +5,6 @@
 
 // $Id$
 
-#include "Riostream.h"
 #include <math.h>
  
 #include "TObject.h"
@@ -20,9 +19,9 @@ class AliVertex : public AliJet,public AliPosition
  public:
   AliVertex();                            // Default constructor
   AliVertex(Int_t n);                     // Create a vertex to hold initially n tracks
-  ~AliVertex();                           // Default destructor
-  virtual void SetOwner(Bool_t own=kTRUE);// Set ownership of all added objects
+  virtual ~AliVertex();                   // Default destructor
   AliVertex(AliVertex& v);                // Copy constructor
+  virtual void SetOwner(Bool_t own=kTRUE);// Set ownership of all added objects
   void Reset();                           // Reset all values and stored vertex and jet lists
   void ResetVertices();                   // Reset stored vertex list
   void AddJet(AliJet& j,Int_t tracks=1);  // Add a jet (and its tracks) to the vertex

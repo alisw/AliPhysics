@@ -39,7 +39,7 @@
 // pos[1]=78.25
 // pos[3]=12.93
 // s->SetPosition(pos,"car");
-// m->EnterObject(6,21,s);
+// matrix->EnterObject(6,21,s);
 //
 // s=new AliSignal();
 // s->SetSignal(25.84);
@@ -47,7 +47,7 @@
 // pos[1]=-53.88
 // pos[3]=22.69
 // s->SetPosition(pos,"car");
-// m->EnterObject(8,13,s);
+// matrix->EnterObject(8,13,s);
 //
 // s=new AliSignal();
 // s->SetSignal(87.25);
@@ -55,7 +55,7 @@
 // pos[1]=932.576
 // pos[3]=-1382.754
 // s->SetPosition(pos,"car");
-// m->EnterObject(64,3,s);
+// matrix->EnterObject(64,3,s);
 //
 // Int_t nrows=matrix->GetMaxRow();
 // Int_t ncols=matrix->GetMaxColumn();
@@ -77,6 +77,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliObjMatrix.h"
+#include "Riostream.h"
  
 ClassImp(AliObjMatrix) // Class implementation to enable ROOT I/O
  
@@ -91,7 +92,7 @@ AliObjMatrix::AliObjMatrix()
  fSwap=0;
  fMaxrow=0;
  fMaxcol=0;
- fNobjects=0;
+ fObjects=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliObjMatrix::~AliObjMatrix()
@@ -101,6 +102,11 @@ AliObjMatrix::~AliObjMatrix()
  {
   delete fRows;
   fRows=0;
+ }
+ if (fObjects)
+ {
+  delete fObjects;
+  fObjects=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -115,10 +121,14 @@ void AliObjMatrix::Reset()
   delete fRows;
   fRows=0;
  }
+ if (fObjects)
+ {
+  delete fObjects;
+  fObjects=0;
+ }
 
  fMaxrow=0;
  fMaxcol=0;
- fNobjects=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliObjMatrix::SetOwner(Int_t own)
@@ -190,7 +200,7 @@ void AliObjMatrix::EnterObject(Int_t row,Int_t col,TObject* obj)
 // Enter an object to the matrix structure at location (row,col).
 // In case the location already contained an object, the existing object
 // will first be removed before the new object is stored.
-// According to the status of the copy flag (see the SetCopy() function)
+// According to the status of the owner flag (see the SetOwner() function)
 // the existing object will also be deleted.
 // Note : The first location in the matrix is indicated as (1,1).
  if (row<1 || col<1)
@@ -233,10 +243,50 @@ void AliObjMatrix::EnterObject(Int_t row,Int_t col,TObject* obj)
  }
 
  TObject* old=(TObject*)mrow->At(colx-1);
- if (!old) fNobjects++;
- if (old && fOwn) delete old;
+ if (old)
+ {
+  fObjects->Remove(old);
+  fObjects->Compress();
+  if (fOwn) delete old;
+ }
 
  mrow->AddAt(obj,colx-1);
+
+ if (!fObjects) fObjects=new TObjArray();
+ fObjects->Add(obj);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliObjMatrix::RemoveObject(Int_t row,Int_t col)
+{
+// Remove the object stored at the matrix location (row,col).
+// In case the object was owned by the matrix, it will be deleted.
+//
+// Note : The first location in the matrix is indicated as (1,1).
+
+ TObject* obj=0;
+
+ if (!fRows || row<1 || col<1) return;
+
+
+ Int_t rowx=row;
+ if (fSwap) rowx=col;
+ Int_t colx=col;
+ if (fSwap) colx=row;
+
+ TObjArray* mrow=0;
+ if (rowx <= fRows->GetSize()) mrow=(TObjArray*)fRows->At(rowx-1);
+
+ if (!mrow) return;
+
+ if (colx <= mrow->GetSize()) obj=(TObject*)mrow->At(colx-1);
+
+ if (obj)
+ {
+  fObjects->Remove(obj);
+  fObjects->Compress();
+  mrow->Remove(obj);
+  if (fOwn) delete obj;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 TObject* AliObjMatrix::GetObject(Int_t row,Int_t col)
@@ -266,6 +316,38 @@ TObject* AliObjMatrix::GetObject(Int_t row,Int_t col)
  return obj;
 }
 ///////////////////////////////////////////////////////////////////////////
+TObject* AliObjMatrix::GetObject(Int_t j)
+{
+// Provide a pointer to the j-th stored object.
+// In case the index j is invalid, a value 0 will be returned.
+// The first stored object is indicated as j=1.
+//
+// Note : Do NOT delete the object.
+//        To remove an object, the memberfunction RemoveObject()
+//        should be used.
+
+ TObject* obj=0;
+ Int_t nobj=0;
+ if (fObjects) nobj=fObjects->GetSize();
+
+ if (j>0 && j<=nobj) obj=(TObject*)fObjects->At(j-1);
+
+ return obj;
+}
+///////////////////////////////////////////////////////////////////////////
+TObjArray* AliObjMatrix::GetObjects()
+{
+// Provide references to all the stored objects.
+// In case no objects are present, a value 0 will be returned.
+//
+// Note : Do NOT make any changes to the reference array apart from
+//        changing the order of the pointers of the various objects.
+//        For addition or removal of objects, the memberfunctions
+//        EnterObject() and RemoveObject() should be used.
+
+ return fObjects;
+}
+///////////////////////////////////////////////////////////////////////////
 Int_t AliObjMatrix::GetMaxRow()
 {
 // Provide the maximum row number index.
@@ -281,6 +363,9 @@ Int_t AliObjMatrix::GetMaxColumn()
 Int_t AliObjMatrix::GetNobjects()
 {
 // Provide the number of stored objects.
- return fNobjects;
+ Int_t nobj=0;
+ if (fObjects) nobj=fObjects->GetEntries();
+
+ return nobj;
 }
 ///////////////////////////////////////////////////////////////////////////

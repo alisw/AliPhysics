@@ -6,7 +6,6 @@
 // $Id$
 
 #include <math.h>
-#include "Riostream.h"
 
 #include "Rtypes.h"
  

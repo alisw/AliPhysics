@@ -90,10 +90,11 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliTrack.h"
+#include "Riostream.h"
  
 ClassImp(AliTrack) // Class implementation to enable ROOT I/O
  
-AliTrack::AliTrack()
+AliTrack::AliTrack() : TObject(),Ali4Vector()
 {
 // Default constructor
 // All variables initialised to 0
@@ -109,6 +110,12 @@ void AliTrack::Init()
  fMasses=0;
  fDmasses=0;
  fPmasses=0;
+ fBegin=0;
+ fEnd=0;
+ fImpactXY=0;
+ fImpactXZ=0;
+ fImpactYZ=0;
+ fClosest=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliTrack::~AliTrack()
@@ -125,66 +132,97 @@ AliTrack::~AliTrack()
   delete fSignals;
   fSignals=0;
  }
+ if (fMasses)
+ {
+  delete fMasses;
+  fMasses=0;
+ }
+ if (fDmasses)
+ {
+  delete fDmasses;
+  fDmasses=0;
+ }
+ if (fPmasses)
+ {
+  delete fPmasses;
+  fPmasses=0;
+ }
+ if (fBegin)
+ {
+  delete fBegin;
+  fBegin=0;
+ }
+ if (fEnd)
+ {
+  delete fEnd;
+  fEnd=0;
+ }
+ if (fImpactXY)
+ {
+  delete fImpactXY;
+  fImpactXY=0;
+ }
+ if (fImpactXZ)
+ {
+  delete fImpactXZ;
+  fImpactXZ=0;
+ }
+ if (fImpactYZ)
+ {
+  delete fImpactYZ;
+  fImpactYZ=0;
+ }
+ if (fClosest)
+ {
+  delete fClosest;
+  fClosest=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliTrack::AliTrack(AliTrack& t)
+AliTrack::AliTrack(AliTrack& t) : TObject(t),Ali4Vector(t)
 {
 // Copy constructor
  Init();
 
- fQ=t.GetCharge();
- fChi2=t.GetChi2();
- fNdf=t.GetNdf();
- fUserId=t.GetId();
- fCode=t.GetParticleCode();
- fNdec=t.GetNdecay();
- fNsig=t.GetNsignals();
- fNmasses=t.GetNMassHypotheses();
- Set4Momentum((Ali4Vector&)t);
- fBegin=t.GetBeginPoint();
- fEnd=t.GetEndPoint();
- fImpactXY=t.GetImpactPoint("z");
- fImpactXZ=t.GetImpactPoint("y");
- fImpactYZ=t.GetImpactPoint("x");
- fClosest=t.GetClosestPoint();
+ fQ=t.fQ;
+ fNdec=t.fNdec;
+ fNsig=t.fNsig;
+ fNmasses=t.fNmasses;
+ if (fNmasses)
+ {
+  fMasses=new TArrayD(*(t.fMasses));
+  fDmasses=new TArrayD(*(t.fDmasses));
+  fPmasses=new TArrayD(*(t.fPmasses));
+ }
+ if (t.fBegin) fBegin=new AliPositionObj(*(t.fBegin));
+ if (t.fEnd) fEnd=new AliPositionObj(*(t.fEnd));
+ if (t.fImpactXY) fImpactXY=new AliPositionObj(*(t.fImpactXY));
+ if (t.fImpactXZ) fImpactXZ=new AliPositionObj(*(t.fImpactXZ));
+ if (t.fImpactYZ) fImpactYZ=new AliPositionObj(*(t.fImpactYZ));
+ if (t.fClosest) fClosest=new AliPositionObj(*(t.fClosest));
+ fUserId=t.fUserId;
+ fChi2=t.fChi2;
+ fNdf=t.fNdf;
+ fCode=t.fCode;
 
- AliTrack* tx;
  if (fNdec)
  {
   fDecays=new TObjArray(fNdec);
   fDecays->SetOwner();
   for (Int_t it=1; it<=fNdec; it++)
   {
-   tx=t.GetDecayTrack(it);
+   AliTrack* tx=t.GetDecayTrack(it);
    fDecays->Add(new AliTrack(*tx));
   }
  }
 
- AliSignal* sx;
  if (fNsig)
  {
   fSignals=new TObjArray(fNsig);
   for (Int_t is=1; is<=fNsig; is++)
   {
-   sx=t.GetSignal(is);
+   AliSignal* sx=t.GetSignal(is);
    fSignals->Add(sx);
-  }
- }
-
- Double_t prob,m,dm;
- if (fNmasses)
- {
-  fMasses=new TArrayD(fNmasses);
-  fDmasses=new TArrayD(fNmasses);
-  fPmasses=new TArrayD(fNmasses);
-  for (Int_t ih=1; ih<=fNmasses; ih++)
-  {
-   prob=t.GetMassHypothesisProb(ih);
-   m=t.GetMassHypothesis(ih);
-   dm=t.GetResultError();
-   fMasses->AddAt(m,ih-1);
-   fDmasses->AddAt(dm,ih-1);
-   fPmasses->AddAt(prob,ih-1);
   }
  }
 }
@@ -213,13 +251,6 @@ void AliTrack::Reset()
   delete fSignals;
   fSignals=0;
  }
- Double_t b[3]={0,0,0};
- fBegin.SetPosition(b,"sph");
- fEnd.SetPosition(b,"sph");
- fImpactXY.SetPosition(b,"sph");
- fImpactXZ.SetPosition(b,"sph");
- fImpactYZ.SetPosition(b,"sph");
- fClosest.SetPosition(b,"sph");
  if (fMasses)
  {
   delete fMasses;
@@ -234,6 +265,36 @@ void AliTrack::Reset()
  {
   delete fPmasses;
   fPmasses=0;
+ }
+ if (fBegin)
+ {
+  delete fBegin;
+  fBegin=0;
+ }
+ if (fEnd)
+ {
+  delete fEnd;
+  fEnd=0;
+ }
+ if (fImpactXY)
+ {
+  delete fImpactXY;
+  fImpactXY=0;
+ }
+ if (fImpactXZ)
+ {
+  delete fImpactXZ;
+  fImpactXZ=0;
+ }
+ if (fImpactYZ)
+ {
+  delete fImpactYZ;
+  fImpactYZ=0;
+ }
+ if (fClosest)
+ {
+  delete fClosest;
+  fClosest=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -314,8 +375,8 @@ void AliTrack::ListAll(TString f)
 // Provide complete track and decay information within the coordinate frame f
 
  Data(f); // Information of the current track
- cout << " Begin-point :"; fBegin.Data(f);
- cout << " End-point   :"; fEnd.Data(f);
+ if (fBegin) { cout << " Begin-point :"; fBegin->Data(f); }
+ if (fEnd)   { cout << " End-point   :"; fEnd->Data(f); }
  for (Int_t is=1; is<=GetNsignals(); is++)
  {
   ((AliSignal*)GetSignal(is))->Data(f);
@@ -570,25 +631,39 @@ AliSignal* AliTrack::GetSignal(Int_t j)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliTrack::SetBeginPoint(AliPosition p)
+void AliTrack::SetBeginPoint(AliPosition& p)
 {
 // Store the position of the track begin-point.
- fBegin=p;
+ if (!fBegin)
+ {
+  fBegin=new AliPositionObj(p);
+ }
+ else
+ {
+  fBegin->Load(p);
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliPosition AliTrack::GetBeginPoint()
+AliPosition* AliTrack::GetBeginPoint()
 {
 // Provide the position of the track begin-point.
  return fBegin;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliTrack::SetEndPoint(AliPosition p)
+void AliTrack::SetEndPoint(AliPosition& p)
 {
 // Store the position of the track end-point.
- fEnd=p;
+ if (!fEnd)
+ {
+  fEnd=new AliPositionObj(p);
+ }
+ else
+ {
+  fEnd->Load(p);
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliPosition AliTrack::GetEndPoint()
+AliPosition* AliTrack::GetEndPoint()
 {
 // Provide the position of the track end-point.
  return fEnd;
@@ -870,7 +945,7 @@ Double_t AliTrack::GetRapidity()
  return y;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliTrack::SetImpactPoint(AliPosition p,TString q)
+void AliTrack::SetImpactPoint(AliPosition& p,TString q)
 {
 // Store the position of the impact-point in the plane "q=0".
 // Here q denotes one of the axes X, Y or Z.
@@ -884,15 +959,36 @@ void AliTrack::SetImpactPoint(AliPosition p,TString q)
  switch (axis)
  {
   case 1: // Impact-point in the plane X=0
-   fImpactYZ=p;
+   if (!fImpactYZ)
+   {
+    fImpactYZ=new AliPositionObj(p);
+   }
+   else
+   {
+    fImpactYZ->Load(p);
+   }
    break;
 
   case 2: // Impact-point in the plane Y=0
-   fImpactXZ=p;
+   if (!fImpactXZ)
+   {
+    fImpactXZ=new AliPositionObj(p);
+   }
+   else
+   {
+    fImpactXZ->Load(p);
+   }
    break;
 
   case 3: // Impact-point in the plane Z=0
-   fImpactXY=p;
+   if (!fImpactXY)
+   {
+    fImpactXY=new AliPositionObj(p);
+   }
+   else
+   {
+    fImpactXY->Load(p);
+   }
    break;
 
   default: // Unsupported axis
@@ -902,13 +998,12 @@ void AliTrack::SetImpactPoint(AliPosition p,TString q)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliPosition AliTrack::GetImpactPoint(TString q)
+AliPosition* AliTrack::GetImpactPoint(TString q)
 {
 // Provide the position of the impact-point in the plane "q=0".
 // Here q denotes one of the axes X, Y or Z.
 // Note : The character to denote the axis may be entered in lower or
 //        in uppercase.
- AliPosition dummy;
  Int_t axis=0;
  if (q=="x" || q=="X") axis=1;
  if (q=="y" || q=="Y") axis=2;
@@ -928,7 +1023,7 @@ AliPosition AliTrack::GetImpactPoint(TString q)
   default: // Unsupported axis
    cout << "*AliTrack::GetImpactPoint* Unsupported axis : " << q << endl
         << " Possible axes are 'X', 'Y' and 'Z'." << endl; 
-   return dummy;
+   return 0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -944,13 +1039,20 @@ Int_t AliTrack::GetId()
  return fUserId;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliTrack::SetClosestPoint(AliPosition p)
+void AliTrack::SetClosestPoint(AliPosition& p)
 {
 // Set position p as the point of closest approach w.r.t. some reference
- fClosest=p;
+ if (!fClosest)
+ {
+  fClosest=new AliPositionObj(p);
+ }
+ else
+ {
+  fClosest->Load(p);
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliPosition AliTrack::GetClosestPoint()
+AliPosition* AliTrack::GetClosestPoint()
 {
 // Provide the point of closest approach w.r.t. some reference
  return fClosest;

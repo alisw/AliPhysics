@@ -46,19 +46,21 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliCalcluster.h"
+#include "Riostream.h"
  
 ClassImp(AliCalcluster) // Class implementation to enable ROOT I/O
  
-AliCalcluster::AliCalcluster()
+AliCalcluster::AliCalcluster() : AliSignal()
 {
-// Default constructer, all data is set to 0
- fCenter=0;
+// Default constructor, all data is set to 0
+ fRow=0;
+ fCol=0;
  fNmods=0;
  fRowdisp=0.;
  fColdisp=0.;
  fNvetos=0;
  fVetos=0;
- SetName("AliCalcluster [sig, sig11, sig33, sig55, ...]");
+ SetName("AliCalcluster [sig, sig11, sig33, sig55,...]");
 }
 ///////////////////////////////////////////////////////////////////////////
 AliCalcluster::~AliCalcluster()
@@ -71,7 +73,27 @@ AliCalcluster::~AliCalcluster()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliCalcluster::AliCalcluster(AliCalmodule& m)
+AliCalcluster::AliCalcluster(AliCalcluster& c) : AliSignal(c)
+{
+// Copy constructor
+ fRow=c.fRow;
+ fCol=c.fCol;
+ fNmods=c.fNmods;
+ fRowdisp=c.fRowdisp;
+ fColdisp=c.fColdisp;
+ fNvetos=c.fNvetos;
+
+ fVetos=new TObjArray();
+ fVetos->SetOwner();
+
+ for (Int_t i=1; i<=fNvetos; i++)
+ {
+  AliSignal* sx=c.GetVetoSignal(i);
+  fVetos->Add(new AliSignal(*sx));
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+AliCalcluster::AliCalcluster(AliCalmodule& m) : AliSignal()
 {
 // Cluster constructor with module m as center.
 // Module data is only entered for a module which contains a signal,
@@ -88,7 +110,8 @@ AliCalcluster::AliCalcluster(AliCalmodule& m)
 
  if (sig>0. && m.GetDeadValue()==0)
  {
-  fCenter=&m;
+  fRow=m.GetRow();
+  fCol=m.GetColumn();
   r=m.GetPosition();
   SetPosition(r);
   SetSignal(sig);
@@ -101,7 +124,8 @@ AliCalcluster::AliCalcluster(AliCalmodule& m)
  }
  else
  {
-  fCenter=0;
+  fRow=0;
+  fCol=0;
   SetPosition(r);
   fNmods=0;
   fRowdisp=0.;
@@ -109,33 +133,19 @@ AliCalcluster::AliCalcluster(AliCalmodule& m)
   fNvetos=0;
   fVetos=0;
  }
- SetName("AliCalcluster [sig, sig11, sig33, sig55, ...]");
+ SetName("AliCalcluster [sig, sig11, sig33, sig55,...]");
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliCalcluster::GetRow()
 {
 // Provide the row number of the cluster center
- if (fCenter)
- {
-  return fCenter->GetRow();
- }
- else
- {
-  return 0;
- }
+ return fRow;
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliCalcluster::GetColumn()
 {
 // Provide the column number of the cluster center
- if (fCenter)
- {
-  return fCenter->GetColumn();
- }
- else
- {
-  return 0;
- }
+ return fCol;
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliCalcluster::GetNmodules()
@@ -189,7 +199,8 @@ void AliCalcluster::Start(AliCalmodule& m)
 
  if (m.GetClusteredSignal()>0. && m.GetDeadValue()==0)
  {
-  fCenter=&m;
+  fRow=m.GetRow();
+  fCol=m.GetColumn();
   r=m.GetPosition();
   SetPosition(r);
   SetSignal(m.GetSignal());
@@ -200,7 +211,8 @@ void AliCalcluster::Start(AliCalmodule& m)
  }
  else
  {
-  fCenter=0;
+  fRow=0;
+  fCol=0;
   SetPosition(r);
   fNmods=0;
   fRowdisp=0.;
@@ -291,17 +303,13 @@ void AliCalcluster::AddVetoSignal(AliSignal& s,Int_t extr)
  } 
 
  Int_t nvalues=s.GetNvalues();
- AliSignal* sx=new AliSignal(nvalues+3); // Additional value added
+ AliSignal* sx=new AliSignal(s); // Additional values will be added
  TString name=s.GetName();
  name.Append(" + additional chi2, ndf and CL values");
  sx->SetName(name);
 
  Double_t vecc[3],vecv[3];
- if (!extr)
- {
-  sx->SetPosition((Ali3Vector&)s);
- }
- else
+ if (extr)
  {
   // Extrapolate the veto hit position
   Double_t scale=1;
@@ -310,15 +318,6 @@ void AliCalcluster::AddVetoSignal(AliSignal& s,Int_t extr)
   if (vecv[0]) scale=vecc[0]/vecv[0];
   Ali3Vector r=s*scale;
   sx->SetPosition(r);
- }
-
- Double_t sig,err;
- for (Int_t i=1; i<=nvalues; i++)
- {
-  sig=s.GetSignal(i);
-  err=s.GetSignalError(i);
-  sx->SetSignal(sig,i);
-  sx->SetSignalError(err,i);
  }
 
  // Calculate the confidence level of association

@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliCollider.cxx,v 1.4 2002/12/11 14:45:12 nick Exp $
+// $Id: AliCollider.cxx,v 1.5 2003/02/03 13:19:44 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliCollider
@@ -104,14 +104,15 @@
 //
 //
 //--- Author: Nick van Eijndhoven 22-nov-2002 Utrecht University
-//- Modified: NvE $Date: 2002/12/11 14:45:12 $ Utrecht University
+//- Modified: NvE $Date: 2003/02/03 13:19:44 $ Utrecht University
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliCollider.h"
+#include "Riostream.h"
  
 ClassImp(AliCollider) // Class implementation to enable ROOT I/O
  
-AliCollider::AliCollider()
+AliCollider::AliCollider() : TPythia6()
 {
 // Default constructor.
 // All variables initialised to default values.
@@ -297,6 +298,11 @@ void AliCollider::Init(char* frame,char* beam,char* target,Float_t win)
  fFrame=frame;
  fWin=win;
  Initialize(frame,beam,target,win);
+
+ cout << " *AliCollider::Init* Standard Pythia initialisation." << endl;
+ cout << " Beam particle : " << beam << " Target particle : " << target
+      << " Frame = " << frame << " Energy = " << win
+      << endl;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliCollider::Init(char* frame,Int_t zp,Int_t ap,Int_t zt,Int_t at,Float_t win)
@@ -370,13 +376,13 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
 // In case of a standard Pythia run for 'elementary' particle interactions,
 // the value of npt is totally irrelevant.
 //
-// The argument 'medit' denotes the edit mode used for Pyedit().
-// Note : medit<0 suppresses the invokation of Pyedit().
-// By default, only 'stable' final particles are kept (i.e. medit=1). 
-//
 // The argument 'mlist' denotes the list mode used for Pylist().
 // Note : mlist<0 suppresses the invokation of Pylist().
 // By default, no listing is produced (i.e. mlist=-1).
+//
+// The argument 'medit' denotes the edit mode used for Pyedit().
+// Note : medit<0 suppresses the invokation of Pyedit().
+// By default, only 'stable' final particles are kept (i.e. medit=1). 
 //
 // In the case of a standard Pythia run concerning 'elementary' particle
 // interactions, the projectile and target particle ID's for the created
@@ -391,6 +397,7 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
  // Counters for the various (proj,targ) combinations : p+p, n+p, p+n and n+n
  Int_t ncols[4]={0,0,0,0};
 
+ Int_t ncol=1;
  if (fNucl)
  {
   if (npt<1 || npt>(fAproj+fAtarg))
@@ -401,7 +408,7 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
   }
 
   // Determine the number of nucleon-nucleon collisions
-  Int_t ncol=npt/2;
+  ncol=npt/2;
   if (npt%2 && fRan.Uniform()>0.5) ncol+=1;
 
   // Determine the number of the various types of N+N interactions
@@ -472,17 +479,19 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
    }
   }
   delete [] rans;
+ }
 
   if (!(fEventnum%fPrintfreq))
   {
    cout << " *AliCollider::MakeEvent* Run : " << fRunnum << " Event : " << fEventnum
         << endl;
-   cout << " npart = " << npt << " ncol = " << ncol 
-        << " ncolpp = " << ncols[0] << " ncolnp = " << ncols[1]
-        << " ncolpn = " << ncols[2] << " ncolnn = " << ncols[3] << endl;
+   if (fNucl)
+   {
+    cout << " npart = " << npt << " ncol = " << ncol 
+         << " ncolpp = " << ncols[0] << " ncolnp = " << ncols[1]
+         << " ncolpn = " << ncols[2] << " ncolnn = " << ncols[3] << endl;
+   }
   }
-
- }
 
  if (!fEvent)
  {
@@ -519,10 +528,8 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
   fEvent->AddVertex(vert,0);
  }
 
- Int_t kf=0,kc=0;
+ Int_t kf=0;
  Float_t charge=0,mass=0;
-
- TMCParticle* part=0;
 
  Int_t ntypes=4;
 
@@ -588,32 +595,23 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
 
    if (mlist >= 0) Pylist(mlist);
 
-   ImportParticles();
-   npart=0;
-   if (fParticles) npart=fParticles->GetEntries();
-
-   for (Int_t jpart=0; jpart<npart; jpart++)
+   npart=GetN();
+   for (Int_t jpart=1; jpart<=npart; jpart++)
    {
-    part=(TMCParticle*)fParticles->At(jpart);
-    if (!part) continue;
-
-    kf=part->GetKF();
-    kc=Pycomp(kf);
-
-    charge=GetKCHG(kc,1)/3.;
-    if (kf<0) charge*=-1;
-    mass=GetPMAS(kc,1);
+    kf=GetK(jpart,2);
+    charge=Pychge(kf)/3.;
+    mass=GetP(jpart,5);
 
     // 3-momentum in GeV/c
-    v[0]=part->GetPx();
-    v[1]=part->GetPy();
-    v[2]=part->GetPz();
+    v[0]=GetP(jpart,1);
+    v[1]=GetP(jpart,2);
+    v[2]=GetP(jpart,3);
     p.SetVector(v,"car");
 
     // Production location in cm.
-    v[0]=(part->GetVx())/10;
-    v[1]=(part->GetVy())/10;
-    v[2]=(part->GetVz())/10;
+    v[0]=GetV(jpart,1)/10;
+    v[1]=GetV(jpart,2)/10;
+    v[2]=GetV(jpart,3)/10;
     r.SetPosition(v,"car");
 
     ntk++;
@@ -696,7 +694,7 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
   }
  }
 
- if (mlist) cout << endl; // Create empty output line after the event
+ if (mlist && !(fEventnum%fPrintfreq)) cout << endl; // Create empty output line after the event
  if (fOutTree) fOutTree->Fill();
 }
 ///////////////////////////////////////////////////////////////////////////

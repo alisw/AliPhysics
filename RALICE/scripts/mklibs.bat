@@ -31,8 +31,8 @@ echo === Automatic ROOT library production of files ralice.lib and ralice.dll ==
 echo .
 
 rem --- The option strings for MSVC++ DLL compilation and linking ---
-set mscomp=/nologo /c /TP /Za /MD /I%ROOTSYS%\include
-set msdll=/nologo /TP /Za /MD /LD /GD /I%ROOTSYS%\include
+set mscomp=/nologo /c /Ze /TP /MD /GR /GX /I%ROOTSYS%\include
+set msdll=/nologo /Ze /TP /MD /LD /GD /GR /GX /I%ROOTSYS%\include
 set mslink=/ENTRY:_DllMainCRTStartup@12 %ROOTSYS%\lib\*.lib
 
 if "%1" == "" goto export

@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliEvent.cxx,v 1.6 2002/04/26 11:23:37 nick Exp $
+// $Id: AliEvent.cxx,v 1.11 2003/02/25 12:36:28 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
@@ -189,14 +189,15 @@
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
-//- Modified: NvE $Date: 2003/02/03 13:19:44 $ UU-SAP Utrecht
+//- Modified: NvE $Date: 2003/02/25 12:36:28 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliEvent.h"
+#include "Riostream.h"
  
 ClassImp(AliEvent) // Class implementation to enable ROOT I/O
  
-AliEvent::AliEvent()
+AliEvent::AliEvent() : AliVertex()
 {
 // Default constructor.
 // All variables initialised to default values.
@@ -216,11 +217,14 @@ AliEvent::AliEvent()
  fCalCopy=0;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliEvent::AliEvent(Int_t n): AliVertex(n)
+AliEvent::AliEvent(Int_t n) : AliVertex(n)
 {
 // Create an event to hold initially a maximum of n tracks
 // All variables initialised to default values
- cout << "AliEvent init with n = " << n << endl;
+ if (n<=0)
+ {
+  cout << " *** This AliVertex initialisation was invoked via the AliEvent ctor." << endl;
+ }
  fDaytime.Set();
  fRun=0;
  fEvent=0;
@@ -247,12 +251,55 @@ AliEvent::~AliEvent()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
+AliEvent::AliEvent(AliEvent& evt) : AliVertex(evt)
+{
+// Copy constructor.
+ fDaytime=evt.fDaytime;
+ fRun=evt.fRun;
+ fEvent=evt.fEvent;
+ fAproj=evt.fAproj;
+ fZproj=evt.fZproj;
+ fPnucProj=evt.fPnucProj;
+ fIdProj=evt.fIdProj;
+ fAtarg=evt.fAtarg;
+ fZtarg=evt.fZtarg;
+ fPnucTarg=evt.fPnucTarg;
+ fIdTarg=evt.fIdTarg;
+ fNcals=evt.fNcals;
+ fCalCopy=evt.fCalCopy;
+
+ fCalorimeters=0;
+ if (fNcals)
+ {
+  fCalorimeters=new TObjArray(fNcals);
+  if (fCalCopy) fCalorimeters->SetOwner();
+  for (Int_t i=1; i<=fNcals; i++)
+  {
+   AliCalorimeter* cal=evt.GetCalorimeter(i);
+   if (cal)
+   {
+    if (fCalCopy)
+    {
+     fCalorimeters->Add(new AliCalorimeter(*cal));
+    }
+    else
+    {
+     fCalorimeters->Add(cal);
+    }
+   }
+  }
+ }
+}
+///////////////////////////////////////////////////////////////////////////
 void AliEvent::Reset()
 {
 // Reset all variables to default values
 // The max. number of tracks is set to the initial value again
 // The max. number of vertices is set to the default value again
 // Note : The CalCopy mode is maintained as it was set by the user before.
+
+ AliVertex::Reset();
+
  fDaytime.Set();
  fRun=0;
  fEvent=0;
@@ -271,8 +318,6 @@ void AliEvent::Reset()
   delete fCalorimeters;
   fCalorimeters=0;
  }
-
- AliVertex::Reset();
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliEvent::SetOwner(Bool_t own)
@@ -443,11 +488,11 @@ void AliEvent::AddCalorimeter(AliCalorimeter& c)
  fNcals++;
  if (fCalCopy)
  {
-  fCalorimeters->AddLast((AliCalorimeter*)c.Clone());
+  fCalorimeters->Add(new AliCalorimeter(c));
  }
  else
  {
-  fCalorimeters->AddLast(&c);
+  fCalorimeters->Add(&c);
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -545,7 +590,7 @@ void AliEvent::ShowCalorimeters()
   for (Int_t i=1; i<=fNcals; i++)
   {
    AliCalorimeter* cal=GetCalorimeter(i);
-   if (cal) cout << " Calorimeter number : " << i << " Name : " << cal->GetName() << endl;
+   if (cal) cout << " Calorimeter number : " << i << " Name : " << (cal->GetName()).Data() << endl;
   }
  }
  else

@@ -5,7 +5,6 @@
 
 // $Id$
 
-#include "Riostream.h"
 #include <math.h>
  
 #include "TObject.h"
@@ -16,8 +15,9 @@ class AliBoost : public TObject
 {
  public:
   AliBoost();                             // Default constructor
-  ~AliBoost();                            // Default destructor
-  void SetBeta(Ali3Vector b);             // Set boost parameters by beta 3-vector
+  virtual ~AliBoost();                    // Default destructor
+  AliBoost(AliBoost& b);                  // Copy constructor
+  void SetBeta(Ali3Vector& b);            // Set boost parameters by beta 3-vector
   void Set4Momentum(Ali4Vector& p);       // Set boost parameters by 4-momentum
   Ali3Vector GetBetaVector();             // Provide the beta 3-vector
   Double_t GetBeta();                     // Provide norm of beta 3-vector
@@ -33,6 +33,6 @@ class AliBoost : public TObject
   Double_t fDgamma;  // Error on the gamma value
   Double_t fDresult; // Error on scalar result
  
- ClassDef(AliBoost,2) // Perform various Lorentz transformations.
+ ClassDef(AliBoost,3) // Perform various Lorentz transformations.
 };
 #endif

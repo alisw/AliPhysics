@@ -60,10 +60,11 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliBoost.h"
+#include "Riostream.h"
  
 ClassImp(AliBoost) // Class implementation to enable ROOT I/O
  
-AliBoost::AliBoost()
+AliBoost::AliBoost() : TObject()
 {
 // Creation of a Lorentz boost object and initialisation of parameters.
 // Beta is set to (0,0,0) and consequently Gamma=1. 
@@ -80,7 +81,16 @@ AliBoost::~AliBoost()
 // Default destructor.
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliBoost::SetBeta(Ali3Vector b)
+AliBoost::AliBoost(AliBoost& b) : TObject(b)
+{
+// Copy constructor
+ fBeta=b.fBeta;
+ fGamma=b.fGamma;
+ fDgamma=b.fDgamma;
+ fDresult=b.fDresult;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliBoost::SetBeta(Ali3Vector& b)
 {
 // Setting of boost parameters on basis of beta 3-vector.
 // The errors on the beta 3-vector are taken from the input 3-vector.

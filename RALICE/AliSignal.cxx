@@ -51,8 +51,7 @@
 // Float_t adc=s.GetSignal();
 // Float_t sigma=s.GetSignalError();
 //
-// AliSignal q(3); // q can store initially 3 signal values with their errors
-//                 // In the example below a signal contains the
+// AliSignal q;    // In the example below a signal contains the
 //                 // following data : timing, ADC and dE/dx
 // q.SetName("TOF hit");
 // q.SetPosition(pos,"car");
@@ -75,18 +74,20 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliSignal.h"
+#include "Riostream.h"
  
 ClassImp(AliSignal) // Class implementation to enable ROOT I/O
  
-AliSignal::AliSignal(Int_t n)
+AliSignal::AliSignal() : TObject(),AliPosition()
 {
 // Creation of an AliSignal object and initialisation of parameters.
-// Initially a total of n (default n=1) values (with errors) can be stored.
+// Several values (with errors) can be stored.
 // If needed, the storage for values (and errors) will be expanded automatically
 // when entering values and/or errors.
  fSignal=0;
  fDsignal=0;
  fName="Unspecified";
+ fHwaveform=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliSignal::~AliSignal()
@@ -102,16 +103,20 @@ AliSignal::~AliSignal()
   delete fDsignal;
   fDsignal=0;
  }
+ if (fHwaveform)
+ {
+  delete fHwaveform;
+  fHwaveform=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliSignal::AliSignal(AliSignal& s)
+AliSignal::AliSignal(AliSignal& s) : TObject(s),AliPosition(s)
 {
 // Copy constructor
  fSignal=0;
  fDsignal=0;
- fName=s.GetName();
- 
- SetPosition((Ali3Vector&)s);
+ fName=s.fName;
+ fHwaveform=0;
 
  Int_t nvalues=s.GetNvalues();
  Double_t sig;
@@ -127,7 +132,10 @@ AliSignal::AliSignal(AliSignal& s)
  {
   err=s.GetSignalError(j);
   SetSignalError(err,j);
- } 
+ }
+
+ TH1F* hist=s.GetWaveform();
+ if (hist) fHwaveform=new TH1F(*hist); 
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::Reset(Int_t mode)
@@ -135,7 +143,9 @@ void AliSignal::Reset(Int_t mode)
 // Reset all signal and position values and errors to 0.
 //
 // mode = 0 Reset position and all signal values and their errors to 0.
+//          The waveform histogram is reset.
 //        1 Reset position and delete the signal and error storage arrays.
+//          The waveform histogram is deleted.
 //
 // The default when invoking Reset() corresponds to mode=0.
 //
@@ -148,6 +158,7 @@ void AliSignal::Reset(Int_t mode)
 //
 // For more specific actions see ResetPosition(), ResetSignals()
 // and DeleteSignals().
+//
 
  if (mode<0 || mode>1)
  {
@@ -176,6 +187,8 @@ void AliSignal::ResetSignals(Int_t mode)
 //        2 Reset only signal errors
 //
 // The default when invoking ResetSignals() corresponds to mode=0.
+//
+// Irrespective of the mode, the waveform histogram is reset.
 
  if (mode<0 || mode>2)
  {
@@ -199,6 +212,8 @@ void AliSignal::ResetSignals(Int_t mode)
    fDsignal->AddAt(0,j);
   }
  }
+
+ if (fHwaveform) fHwaveform->Reset();
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::DeleteSignals(Int_t mode)
@@ -210,6 +225,8 @@ void AliSignal::DeleteSignals(Int_t mode)
 //        2 Delete only signal errors array
 //
 // The default when invoking DeleteSignals() corresponds to mode=0.
+//
+// Irrespective of the mode, the waveform histogram is deleted.
 
  if (mode<0 || mode>2)
  {
@@ -228,6 +245,12 @@ void AliSignal::DeleteSignals(Int_t mode)
  {
   delete fDsignal;
   fDsignal=0;
+ }
+
+ if (fHwaveform)
+ {
+  delete fHwaveform;
+  fHwaveform=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -355,7 +378,7 @@ Float_t AliSignal::GetSignalError(Int_t j)
 void AliSignal::Data(TString f)
 {
 // Provide signal information within the coordinate frame f
- cout << " *AliSignal::Data* Signal of kind : " << fName << endl;
+ cout << " *AliSignal::Data* Signal of kind : " << fName.Data() << endl;
  cout << " Position";
  Ali3Vector::Data(f);
 
@@ -399,5 +422,51 @@ Int_t AliSignal::GetNerrors()
  Int_t n=0;
  if (fDsignal) n=fDsignal->GetSize();
  return n;
+}
+///////////////////////////////////////////////////////////////////////////
+TH1F* AliSignal::GetWaveform()
+{
+// Provide pointer to the 1D waveform histogram.
+ return fHwaveform;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliSignal::SetWaveform(TH1F* waveform)
+{
+// Set the 1D waveform histogram.
+//
+// In case the input argument has the same value as the current waveform
+// histogram pointer value, no action is taken since the user has already
+// modified the actual histogram.
+//
+// In case the input argument is zero, the current waveform histogram
+// is deleted and the pointer set to zero.
+//
+// In all other cases the current waveform histogram is deleted and a new
+// copy of the input histogram is created which becomes the current waveform
+// histogram.
+
+ if (waveform != fHwaveform)
+ {
+  if (fHwaveform)
+  {
+   delete fHwaveform;
+   fHwaveform=0;
+  }
+  if (waveform) fHwaveform=new TH1F(*waveform);
+ } 
+}
+///////////////////////////////////////////////////////////////////////////
+AliSignal* AliSignal::MakeCopy(AliSignal& s)
+{
+// Make a deep copy of the input object and provide the pointer to the copy.
+// This memberfunction enables automatic creation of new objects of the
+// correct type depending on the argument type, a feature which may be very useful
+// for containers when adding objects in case the container owns the objects.
+// This feature allows e.g. AliTrack to store either AliSignal objects or
+// objects derived from AliSignal via the AddSignal memberfunction, provided
+// these derived classes also have a proper MakeCopy memberfunction. 
+
+ AliSignal* sig=new AliSignal(s);
+ return sig;
 }
 ///////////////////////////////////////////////////////////////////////////

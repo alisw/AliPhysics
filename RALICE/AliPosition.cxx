@@ -54,6 +54,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliPosition.h"
+#include "Riostream.h"
  
 ClassImp(AliPosition) // Class implementation to enable ROOT I/O
  
@@ -65,6 +66,11 @@ AliPosition::AliPosition()
 AliPosition::~AliPosition()
 {
 // Destructor to delete dynamically allocated memory
+}
+///////////////////////////////////////////////////////////////////////////
+AliPosition::AliPosition(const AliPosition& p) : Ali3Vector(p)
+{
+// Copy constructor
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliPosition::SetPosition(Double_t* r,TString f)

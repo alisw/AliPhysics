@@ -144,10 +144,11 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliVertex.h"
+#include "Riostream.h"
  
 ClassImp(AliVertex) // Class implementation to enable ROOT I/O
  
-AliVertex::AliVertex()
+AliVertex::AliVertex() : AliJet(),AliPosition()
 {
 // Default constructor.
 // All variables initialised to 0.
@@ -155,7 +156,6 @@ AliVertex::AliVertex()
 // Initial maximum number of sec. vertices is set to the default value.
  Init();
  Reset();
- SetNtinit();
  SetNvmax();
  SetNjmax();
 }
@@ -163,7 +163,6 @@ AliVertex::AliVertex()
 void AliVertex::Init()
 {
 // Initialisation of pointers etc...
- AliJet::Init();
  fNvmax=0;
  fVertices=0;
  fConnects=0;
@@ -175,24 +174,16 @@ void AliVertex::Init()
  fLines=0;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliVertex::AliVertex(Int_t n)
+AliVertex::AliVertex(Int_t n) : AliJet(n),AliPosition()
 {
 // Create a vertex to hold initially a maximum of n tracks
 // All variables initialised to 0
+ if (n<=0)
+ {
+  cout << " *** This AliJet initialisation was invoked via the AliVertex ctor." << endl;
+ }
  Init();
  Reset();
- if (n > 0)
- {
-  SetNtinit(n);
- }
- else
- {
-  cout << endl;
-  cout << " *AliVertex* Initial max. number of tracks entered : " << n << endl;
-  cout << " This is invalid. Default initial maximum will be used." << endl;
-  cout << endl;
-  SetNtinit();
- }
  SetNvmax();
  SetNjmax();
 }
@@ -258,19 +249,18 @@ void AliVertex::SetOwner(Bool_t own)
  AliJet::SetOwner(own);
 }
 ///////////////////////////////////////////////////////////////////////////
-AliVertex::AliVertex(AliVertex& v)
+AliVertex::AliVertex(AliVertex& v) : AliJet(v.fNtinit),AliPosition(v)
 {
 // Copy constructor
  Init();
- Reset();
- SetNtinit();
- SetNvmax();
- SetNjmax();
+ fNvtx=0;
+ fNjets=0;
+ SetNvmax(v.fNvmax);
+ SetNjmax(v.fNjmax);
  SetTrackCopy(v.GetTrackCopy());
  SetVertexCopy(v.GetVertexCopy());
  SetJetCopy(v.GetJetCopy());
  SetId(v.GetId());
- SetPosition(v.GetPosition());
 
  // Copy all tracks except the ones coming from jets
  AliTrack* tx=0;
@@ -900,9 +890,11 @@ void AliVertex::Draw(Int_t secs,Int_t cons,Int_t jets)
  Double_t vec[3]={0,0,0};
  AliTrack* tx=0;
  AliVertex* vx=0;
- AliPosition r;
+ AliPosition* r=0;
  Ali3Vector p;
  Int_t charge;
+
+ AliPosition dummy;
 
  if (fLines) delete fLines;
  fLines=new TObjArray();
@@ -925,10 +917,12 @@ void AliVertex::Draw(Int_t secs,Int_t cons,Int_t jets)
    if (cons==1)
    {
     r=tx->GetBeginPoint();
-    r.GetPosition(vec,"car");
+    if (!r) r=&dummy;
+    r->GetPosition(vec,"car");
     line->SetNextPoint(vec[0],vec[1],vec[2]);
     r=tx->GetEndPoint();
-    r.GetPosition(vec,"car");
+    if (!r) r=&dummy;
+    r->GetPosition(vec,"car");
     line->SetNextPoint(vec[0],vec[1],vec[2]);
     line->SetLineWidth(1);
    }
@@ -936,10 +930,11 @@ void AliVertex::Draw(Int_t secs,Int_t cons,Int_t jets)
   else
   {
    r=tx->GetClosestPoint();
-   r.GetPosition(vec,"car");
+   if (!r) r=&dummy;
+   r->GetPosition(vec,"car");
    line->SetNextPoint(vec[0],vec[1],vec[2]);
    p=tx->Get3Momentum();
-   p=p+r;
+   p=p+(*r);
    p.GetVector(vec,"car");
    line->SetNextPoint(vec[0],vec[1],vec[2]);
    line->SetLineWidth(3);

@@ -103,6 +103,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "AliInvmass.h"
+#include "Riostream.h"
  
 ClassImp(AliInvmass) // Class implementation to enable ROOT I/O
  

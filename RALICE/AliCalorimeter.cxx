@@ -55,10 +55,11 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliCalorimeter.h"
+#include "Riostream.h"
 
 ClassImp(AliCalorimeter) // Class implementation to enable ROOT I/O
  
-AliCalorimeter::AliCalorimeter()
+AliCalorimeter::AliCalorimeter() : TObject()
 {
 // Default constructor, all parameters set to 0
  fNrows=0;
@@ -75,7 +76,7 @@ AliCalorimeter::AliCalorimeter()
  fAttributes=0;
  fGains=0;
  fPositions=0;
- fName=" ";
+ fName="Unspecified";
 }
 ///////////////////////////////////////////////////////////////////////////
 AliCalorimeter::~AliCalorimeter()
@@ -144,7 +145,7 @@ AliCalorimeter::~AliCalorimeter()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliCalorimeter::AliCalorimeter(Int_t nrow,Int_t ncol)
+AliCalorimeter::AliCalorimeter(Int_t nrow,Int_t ncol) : TObject()
 {
 // Create a calorimeter module matrix
  fNrows=nrow;
@@ -189,7 +190,76 @@ AliCalorimeter::AliCalorimeter(Int_t nrow,Int_t ncol)
  fNvetos=0;
  fVetos=0;
 
- fName=" ";
+ fName="Unspecified";
+}
+///////////////////////////////////////////////////////////////////////////
+AliCalorimeter::AliCalorimeter(AliCalorimeter& c) : TObject(c)
+{
+// Copy constructor
+ fNsignals=0;
+ fModules=0;
+ fNclusters=0;
+ fClusters=0;
+ fNvetos=0;
+ fVetos=0;
+
+ fAttributes=0;
+ fGains=0;
+
+ fHmodules=0;
+ fHclusters=0;
+
+ fMatrix=0;
+ fPositions=0;
+
+ fNrows=c.fNrows;
+ fNcolumns=c.fNcolumns;
+ fName=c.fName;
+
+ if (fNrows && fNcolumns)
+ {
+  if (c.fPositions)
+  {
+   for (Int_t irow=1; irow<=fNrows; irow++)
+   {
+    for (Int_t icol=1; icol<=fNcolumns; icol++)
+    {
+     AliPosition* p=c.GetPosition(irow,icol);
+     SetPosition(irow,icol,*p);
+    } 
+   }  
+  }
+
+  TMatrix* mat=c.fAttributes;
+  if (mat) fAttributes=new TMatrix(*mat);
+
+  mat=c.fGains;
+  if (mat) fGains=new TMatrix(*mat);
+
+  if (c.fNclusters)
+  {
+   fClusters=new TObjArray();
+   fClusters->SetOwner();
+   for (Int_t icl=1; icl<=c.fNclusters; icl++)
+   {
+    AliCalcluster* cl=c.GetCluster(icl);
+    fClusters->Add(new AliCalcluster(*cl));
+    fNclusters++;
+   }
+  }
+
+  for (Int_t im=1; im<=c.fNsignals; im++)
+  {
+   AliCalmodule* m=c.GetModule(im);
+   SetSignal(m->GetRow(),m->GetColumn(),m->GetSignal());
+  }
+
+  for (Int_t iv=1; iv<=c.fNvetos; iv++)
+  {
+   AliSignal* s=c.GetVetoSignal(iv);
+   AddVetoSignal(s);
+  }
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliCalorimeter::GetNrows()
@@ -224,6 +294,8 @@ void AliCalorimeter::SetSignal(Int_t row,Int_t col,Float_t sig)
    m=new AliCalmodule();
    AliPosition* r=fPositions[row-1][col-1];
    if (r) m->SetPosition(*r);
+   m->SetGain(GetGain(row,col));
+   if (GetDeadValue(row,col)) m->SetDead();
    fModules->Add(m);
    fMatrix[row-1][col-1]=m;
   }
@@ -354,13 +426,6 @@ void AliCalorimeter::Reset(Int_t mode)
  {
   delete fModules;
   fModules=0;
- }
- for (Int_t i=0; i<fNrows; i++)
- {
-  for (Int_t j=0; j<fNcolumns; j++)
-  {
-   fMatrix[i][j]=0;
-  }
  }
 
  fNclusters=0;
@@ -1153,20 +1218,7 @@ void AliCalorimeter::AddVetoSignal(AliSignal& s)
   fVetos->SetOwner();
  } 
 
- Int_t nvalues=s.GetNvalues();
- AliSignal* sx=new AliSignal(nvalues);
- sx->SetName(s.GetName());
- 
- sx->SetPosition((Ali3Vector&)s);
-
- Double_t sig,err;
- for (Int_t i=1; i<=nvalues; i++)
- {
-  sig=s.GetSignal(i);
-  err=s.GetSignalError(i);
-  sx->SetSignal(sig,i);
-  sx->SetSignalError(err,i);
- } 
+ AliSignal* sx=new AliSignal(s);
 
  fVetos->Add(sx);
  fNvetos++;

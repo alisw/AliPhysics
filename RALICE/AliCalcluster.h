@@ -5,7 +5,6 @@
 
 // $Id$
 
-#include "Riostream.h"
 #include <math.h>
  
 #include "TObjArray.h"
@@ -18,7 +17,8 @@ class AliCalcluster : public AliSignal
 {
  public:
   AliCalcluster();                   // Default constructor, all data initialised to 0
-  ~AliCalcluster();                  // Default destructor
+  virtual ~AliCalcluster();          // Default destructor
+  AliCalcluster(AliCalcluster& c);   // Copy constructor
   AliCalcluster(AliCalmodule& m);    // Create new cluster starting at module m
   Int_t GetRow();                    // Return row number of cluster center
   Int_t GetColumn();                 // Return column number of cluster center
@@ -35,13 +35,14 @@ class AliCalcluster : public AliSignal
   Int_t HasVetoHit(Double_t cl);     // Check for ass. veto hit with conf. level > cl
  
  protected:
-  AliCalmodule* fCenter; // Pointer to the central module of the cluster
+  Int_t fRow;            // Row index of the central module of the cluster
+  Int_t fCol;            // Column index of the central module of the cluster
   Int_t fNmods;          // The number of modules in the cluster
   Float_t fRowdisp;      // Row dispersion of cluster (not normalised)
   Float_t fColdisp;      // Column dispersion of cluster (not normalised)
   Int_t fNvetos;         // The number of associated veto signals
   TObjArray* fVetos;     // The array of associated veto signals
  
- ClassDef(AliCalcluster,3) // Description of a cluster of calorimeter modules.
+ ClassDef(AliCalcluster,4) // Description of a cluster of calorimeter modules.
 };
 #endif

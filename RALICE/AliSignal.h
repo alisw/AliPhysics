@@ -7,14 +7,15 @@
 
 #include "TObject.h"
 #include "TArrayF.h"
+#include "TH1.h"
 
 #include "AliPosition.h"
 
 class AliSignal : public TObject,public AliPosition
 {
  public:
-  AliSignal(Int_t n=1);                                 // Default constructor
-  ~AliSignal();                                         // Destructor
+  AliSignal();                                          // Default constructor
+  virtual ~AliSignal();                                 // Destructor
   AliSignal(AliSignal& s);                              // Copy constructor
   virtual void SetSignal(Double_t sig,Int_t j=1);       // Store j-th signal value
   virtual void AddSignal(Double_t sig,Int_t j=1);       // Add value to j-th signal value
@@ -30,12 +31,17 @@ class AliSignal : public TObject,public AliPosition
   TString GetName();                                    // Provide the name tag indicating the kind of signal
   Int_t GetNvalues();                                   // Provide the number of signal values
   Int_t GetNerrors();                                   // Provide the number of specified errors
+  TH1F* GetWaveform();                                  // Provide pointer of the waveform histogram
+  void SetWaveform(TH1F* waveform);                     // Set the waveform histogram
+  virtual AliSignal* MakeCopy(AliSignal& s);            // Make a deep copy and provide its pointer
+
 
  protected:
   TArrayF* fSignal;  // Signal values
   TArrayF* fDsignal; // Errors on signal values
   TString fName;     // Name tag to identify the kind of signal
+  TH1F* fHwaveform;  // The 1D histogram containing the waveform
 
- ClassDef(AliSignal,6) // Generic handling of (extrapolated) detector signals.
+ ClassDef(AliSignal,7) // Generic handling of (extrapolated) detector signals.
 };
 #endif

@@ -27,10 +27,11 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliCalmodule.h"
+#include "Riostream.h"
  
 ClassImp(AliCalmodule) // Class implementation to enable ROOT I/O
  
-AliCalmodule::AliCalmodule()
+AliCalmodule::AliCalmodule() : AliSignal()
 {
 // Default constructor, all module data is set to 0
  fRow=0;
@@ -45,7 +46,17 @@ AliCalmodule::~AliCalmodule()
 // Default destructor
 }
 ///////////////////////////////////////////////////////////////////////////
-AliCalmodule::AliCalmodule(Int_t row,Int_t col,Float_t sig)
+AliCalmodule::AliCalmodule(AliCalmodule& m) : AliSignal(m)
+{
+// Copy constructor
+ fRow=m.fRow;
+ fCol=m.fCol;
+ fSigc=m.fSigc;
+ fDead=m.fDead;
+ fGain=m.fGain;
+}
+///////////////////////////////////////////////////////////////////////////
+AliCalmodule::AliCalmodule(Int_t row,Int_t col,Float_t sig) : AliSignal()
 {
 // Module constructor with initialisation of module data
  fRow=row;
@@ -145,5 +156,20 @@ Float_t AliCalmodule::GetGain()
 {
 // Provide the gain value of the readout system
  return fGain;
+}
+///////////////////////////////////////////////////////////////////////////
+AliCalmodule* AliCalmodule::MakeCopy(AliCalmodule& m)
+{
+// Make a deep copy of the input object and provide the pointer to the copy.
+// This memberfunction enables automatic creation of new objects of the
+// correct type depending on the argument type, a feature which may be very useful
+// for containers like AliCalorimeter when adding objects in case the
+// container owns the objects. This feature allows e.g. AliCalorimeter
+// to store either AliCalmodule objects or objects derived from AliCalmodule
+// via tha AddSignal memberfunction, provided these derived classes also have
+// a proper MakeCopy memberfunction. 
+
+ AliCalmodule* cal=new AliCalmodule(m);
+ return cal;
 }
 ///////////////////////////////////////////////////////////////////////////

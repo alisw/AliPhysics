@@ -5,7 +5,6 @@
 
 // $Id$
 
-#include "Riostream.h"
 #include <math.h>
  
 #include "TObject.h"
@@ -14,7 +13,8 @@ class AliMath : public TObject
 {
  public:
   AliMath();                              // Default constructor
-  ~AliMath();                             // Destructor
+  virtual ~AliMath();                     // Destructor
+  AliMath(AliMath& m);                    // Copy constructor
   Double_t Gamma(Double_t z);             // Standard gamma function Gamma(z)
   Double_t Gamma(Double_t a,Double_t x);  // Incomplete gamma function P(a,x)
   Double_t LnGamma(Double_t z);           // Compute ln[Gamma(z)]
@@ -32,7 +32,7 @@ class AliMath : public TObject
   Double_t BesselI1(Double_t x);          // Compute modified Bessel function I_1(x)
   Double_t BesselK1(Double_t x);          // Compute modified Bessel function K_1(x)
  
- ClassDef(AliMath,1) // Various mathematical tools for physics analysis.
+ ClassDef(AliMath,2) // Various mathematical tools for physics analysis.
  
 };
 #endif

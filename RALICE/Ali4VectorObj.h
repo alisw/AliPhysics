@@ -12,11 +12,12 @@
 class Ali4VectorObj : public TObject,public Ali4Vector
 {
  public:
-  Ali4VectorObj();               // Default constructor
-  Ali4VectorObj(Ali4Vector& q);  // Constructor
-  ~Ali4VectorObj();              // Destructor
-  void Load(Ali4Vector& q);      // Load all attributes of input Ali4Vector
+  Ali4VectorObj();                       // Default constructor
+  Ali4VectorObj(Ali4Vector& q);          // Constructor
+  virtual ~Ali4VectorObj();              // Destructor
+  Ali4VectorObj(Ali4VectorObj& q);       // Copy constructor
+  void Load(Ali4Vector& q);              // Load all attributes of input Ali4Vector
 
- ClassDef(Ali4VectorObj,1) // Handling of Lorentz 4-vectors in various reference frames.
+ ClassDef(Ali4VectorObj,2) // Handling of Lorentz 4-vectors in various reference frames.
 };
 #endif

@@ -35,10 +35,11 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliMath.h"
+#include "Riostream.h"
  
 ClassImp(AliMath) // Class implementation to enable ROOT I/O
  
-AliMath::AliMath()
+AliMath::AliMath() : TObject()
 {
 // Default constructor
 }
@@ -46,6 +47,11 @@ AliMath::AliMath()
 AliMath::~AliMath()
 {
 // Destructor
+}
+///////////////////////////////////////////////////////////////////////////
+AliMath::AliMath(AliMath& m) : TObject(m)
+{
+// Copy constructor
 }
 ///////////////////////////////////////////////////////////////////////////
 Double_t AliMath::Gamma(Double_t z)

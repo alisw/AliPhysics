@@ -131,6 +131,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "Ali4Vector.h"
+#include "Riostream.h"
  
 ClassImp(Ali4Vector) // Class implementation to enable ROOT I/O
  
@@ -139,14 +140,8 @@ Ali4Vector::Ali4Vector()
 // Creation of a contravariant 4-vector and initialisation of parameters.
 // All values are initialised to 0.
 // Scalar mode is initially selected.
+ SetZero();
  fScalar=1;
- fV2=0;
- fDv2=0;
- fV0=0;
- fDv0=0;
- fDresult=0;
- Double_t a[3]={0,0,0};
- fV.SetVector(a,"sph");
 }
 ///////////////////////////////////////////////////////////////////////////
 Ali4Vector::~Ali4Vector()
@@ -154,7 +149,31 @@ Ali4Vector::~Ali4Vector()
 // Destructor to delete dynamically allocated memory
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali4Vector::SetVector(Double_t v0,Ali3Vector v)
+Ali4Vector::Ali4Vector(const Ali4Vector& v)
+{
+// Copy constructor
+ fScalar=v.fScalar;
+ fV2=v.fV2;
+ fDv2=v.fDv2;
+ fV0=v.fV0;
+ fDv0=v.fDv0;
+ fDresult=v.fDresult;
+ fV=v.fV;
+}
+///////////////////////////////////////////////////////////////////////////
+void Ali4Vector::SetZero()
+{
+// (Re)set all attributes to zero.
+// Note : The (de)selection of the scalar mode is not modified.
+ fV2=0;
+ fDv2=0;
+ fV0=0;
+ fDv0=0;
+ fDresult=0;
+ fV.SetZero();
+}
+///////////////////////////////////////////////////////////////////////////
+void Ali4Vector::SetVector(Double_t v0,Ali3Vector& v)
 {
 // Store contravariant vector.
 // The error on the scalar part is initialised to 0.
@@ -300,7 +319,7 @@ void Ali4Vector::SetScalarError(Double_t dv0)
  fDresult=0;
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali4Vector::Set3Vector(Ali3Vector v)
+void Ali4Vector::Set3Vector(Ali3Vector& v)
 {
 // Set the 3-vector part, the errors are taken from the input Ali3Vector
 // Scalar mode    : The scalar part and its error are not modified,
@@ -486,15 +505,15 @@ void Ali4Vector::Data(TString f)
   GetErrors(err,f);
   Double_t inv=GetInvariant();
   Double_t dinv=GetResultError();
-  cout << " Contravariant vector in " << f << " coordinates : "
+  cout << " Contravariant vector in " << f.Data() << " coordinates : "
        << vec[0] << " " << vec[1] << " " << vec[2] << " " << vec[3] << endl; 
-  cout << " ------------- Errors in " << f << " coordinates : "
+  cout << " ------------- Errors in " << f.Data() << " coordinates : "
        << err[0] << " " << err[1] << " " << err[2] << " " << err[3] << endl; 
   cout << " --- Lorentz invariant (v^i*v_i) : " << inv << " error : " << dinv << endl;
  }
  else
  {
-  cout << " *Ali4Vector::Data* Unsupported frame : " << f << endl
+  cout << " *Ali4Vector::Data* Unsupported frame : " << f.Data() << endl
        << "  Possible frames are 'car', 'sph' and 'cyl'." << endl; 
  }
 }

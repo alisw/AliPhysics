@@ -58,22 +58,26 @@
  
 ClassImp(AliPositionObj) // Class implementation to enable ROOT I/O
  
-AliPositionObj::AliPositionObj()
+AliPositionObj::AliPositionObj() : TObject(),AliPosition()
 {
 // Creation of an AliPositionObj object and initialisation of parameters.
 // All attributes initialised to 0.
 }
 ///////////////////////////////////////////////////////////////////////////
-AliPositionObj::AliPositionObj(Ali3Vector& q)
+AliPositionObj::AliPositionObj(AliPosition& p) : TObject(),AliPosition(p)
 {
 // Creation of an AliPositionObj object and initialisation of parameters.
-// All attributes are initialised to the values of the input Ali3Vector.
- Load(q);
+// All attributes are initialised to the values of the input AliPosition.
 }
 ///////////////////////////////////////////////////////////////////////////
 AliPositionObj::~AliPositionObj()
 {
 // Destructor to delete dynamically allocated memory.
+}
+///////////////////////////////////////////////////////////////////////////
+AliPositionObj::AliPositionObj(const AliPositionObj& p) : TObject(p),AliPosition(p)
+{
+// Copy constructor
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliPositionObj::Load(Ali3Vector& q)

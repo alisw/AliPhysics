@@ -12,11 +12,12 @@
 class AliPositionObj : public TObject,public AliPosition
 {
  public:
-  AliPositionObj();              // Default constructor
-  AliPositionObj(Ali3Vector& q); // Constructor
-  ~AliPositionObj();             // Destructor
-  void Load(Ali3Vector& q);      // Load all attributes of input AliPosition
+  AliPositionObj();                        // Default constructor
+  AliPositionObj(AliPosition& p);          // Constructor
+  virtual ~AliPositionObj();               // Destructor
+  AliPositionObj(const AliPositionObj& p); // Copy constructor
+  void Load(Ali3Vector& q);                // Load all attributes of input AliPosition
 
- ClassDef(AliPositionObj,1) // Handling of positions in various reference frames.
+ ClassDef(AliPositionObj,2) // Handling of positions in various reference frames.
 };
 #endif

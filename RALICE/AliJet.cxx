@@ -91,10 +91,11 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliJet.h"
+#include "Riostream.h"
  
 ClassImp(AliJet) // Class implementation to enable ROOT I/O
  
-AliJet::AliJet()
+AliJet::AliJet() : TObject(),Ali4Vector()
 {
 // Default constructor
 // All variables initialised to 0
@@ -112,7 +113,7 @@ void AliJet::Init()
  fTrackCopy=0;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliJet::AliJet(Int_t n)
+AliJet::AliJet(Int_t n) : TObject(),Ali4Vector()
 {
 // Create a jet to hold initially a maximum of n tracks
 // All variables initialised to 0
@@ -169,20 +170,34 @@ void AliJet::SetOwner(Bool_t own)
  fTrackCopy=mode;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliJet::AliJet(AliJet& j)
+AliJet::AliJet(AliJet& j) : TObject(j),Ali4Vector(j)
 {
 // Copy constructor
- Init();
- Reset();
- SetNtinit();
- SetTrackCopy(j.GetTrackCopy());
- SetId(j.GetId());
+ fNtinit=j.fNtinit;
+ fNtmax=j.fNtmax;
+ fQ=j.fQ;
+ fNtrk=j.fNtrk;
+ fTrackCopy=j.fTrackCopy;
+ fUserId=j.fUserId;
 
- AliTrack* tx=0;
- for (Int_t i=1; i<=j.GetNtracks(); i++)
+ fTracks=0;
+ if (fNtrk)
  {
-  tx=j.GetTrack(i);
-  if (tx) AddTrack(tx);
+  fTracks=new TObjArray(fNtmax);
+  if (fTrackCopy) fTracks->SetOwner();
+ }
+
+ for (Int_t i=1; i<=fNtrk; i++)
+ {
+  AliTrack* tx=j.GetTrack(i);
+  if (fTrackCopy)
+  {
+   fTracks->Add(new AliTrack(*tx));
+  }
+  else
+  {
+   fTracks->Add(tx);
+  }
  } 
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -249,7 +264,7 @@ void AliJet::Data(TString f)
 // Provide jet information within the coordinate frame f
  cout << " *AliJet::Data* Id : " << fUserId << " Invmass : " << GetInvmass() << " Charge : " << fQ
       << " Momentum : " << GetMomentum() << " Ntracks : " << fNtrk << endl;
- cout << " ";
+
  Ali4Vector::Data(f); 
 } 
 ///////////////////////////////////////////////////////////////////////////

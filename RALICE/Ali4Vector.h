@@ -5,7 +5,6 @@
 
 // $Id$
 
-#include "Riostream.h"
 #include <math.h>
  
 #include "Ali3Vector.h"
@@ -15,7 +14,9 @@ class Ali4Vector
  public:
   Ali4Vector();                                     // Default constructor for contravariant vector
   virtual ~Ali4Vector();                            // Destructor
-  virtual void SetVector(Double_t v0,Ali3Vector v); // Store contravariant vector
+  Ali4Vector(const Ali4Vector& v);                  // Copy constructor
+  virtual void SetZero();                           // (Re)set all attributes to zero
+  virtual void SetVector(Double_t v0,Ali3Vector& v);// Store contravariant vector
   virtual void SetVector(Double_t* v,TString f);    // Store contravariant vector v^i in frame f
   virtual void GetVector(Double_t* v,TString f);    // Provide contravariant vector v^i in frame f
   virtual void SetVector(Float_t*  v,TString f);    // Store contravariant vector v^i in frame f
@@ -23,7 +24,7 @@ class Ali4Vector
   virtual void SetScalar(Double_t v0,Double_t dv0=0); // Set the scalar part (with error) of v
   virtual void SetScalarError(Double_t dv0);        // Set error on the scalar part of v
   Double_t GetScalar();                             // Provide the scalar part of v
-  virtual void Set3Vector(Ali3Vector v);            // Set the 3-vector part of v
+  virtual void Set3Vector(Ali3Vector& v);           // Set the 3-vector part of v
   virtual void Set3Vector(Double_t* v,TString f);   // Set the 3-vector part of v in frame f
   virtual void Set3Vector(Float_t*  v,TString f);   // Set the 3-vector part of v in frame f
   Ali3Vector Get3Vector();                          // Provide the 3-vector part of v
@@ -61,6 +62,6 @@ class Ali4Vector
   Double_t GetScaTrans(); // Provide "transverse value" of scalar part w.r.t. z-axis
   Double_t GetScaLong();  // Provide "longitudinal value" of scalar part w.r.t. z-axis
 
- ClassDef(Ali4Vector,2) // Handling of Lorentz 4-vectors in various reference frames.
+ ClassDef(Ali4Vector,3) // Handling of Lorentz 4-vectors in various reference frames.
 };
 #endif
