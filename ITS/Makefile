@@ -9,7 +9,7 @@ PACKAGE = ITS
 
 # C++ sources
 
-SRCS          = AliITS.cxx AliITSv1.cxx AliITSv3.cxx AliITSv5.cxx \
+SRCS          = AliITS.cxx AliITSv1.cxx AliITSv5.cxx \
       AliITSv5symm.cxx AliITSv5asymm.cxx \
       AliITSvPPRcoarseasymm.cxx AliITSvPPRcoarsesymm.cxx\
       AliITSvPPRasymm.cxx AliITSvPPRsymm.cxx\

@@ -15,7 +15,6 @@
  
 #pragma link C++ class  AliITS+;
 #pragma link C++ class  AliITSv1+;
-#pragma link C++ class  AliITSv3+;
 #pragma link C++ class  AliITSv5+;
 #pragma link C++ class  AliITSv5symm+;
 #pragma link C++ class  AliITSv5asymm+;
