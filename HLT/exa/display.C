@@ -21,8 +21,8 @@ void display(int minslice,int maxslice,char *file="tracks.raw",char *path="./",c
   a->Setup(file,path);
   //a->Setup("/prog/alice/data/Rawdata/1_patch/pp/recon_6/tracks.raw","/prog/alice/data/Rawdata/1_patch/pp/recon_6/");
 
-  //a->DisplayAll();
-  a->DisplayTracks();
+  a->DisplayAll();
+  //a->DisplayTracks();
   //a->DisplayClusters();
 
   //a->DisplayClusterRow(1,151,file,"colz");
