@@ -167,7 +167,7 @@ public:
    TFile* GetTreeDFile() const {return fTreeDFile;}
    TFile* GetTreeSFile() const {return fTreeSFile;}
    TFile* GetTreeRFile() const {return fTreeRFile;}
-   void AliRun::PrintTreeFile();
+   void PrintTreeFile();
    
 
    TTree         *TreeD() {return fTreeD;}
