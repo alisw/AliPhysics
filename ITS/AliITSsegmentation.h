@@ -59,7 +59,7 @@ public TObject {
     // Detector width
     virtual Float_t Dz() const {return fDz;}
     // Detector thickness
-    virtual Float_t Dy() const {return fDz;}
+    virtual Float_t Dy() const {return fDy;}
     // Cell size in x
     virtual Float_t Dpx(Int_t) const = 0;
     // Cell size in z 
