@@ -126,9 +126,9 @@ void Opticals()
   Float_t aTrC6F14[kNbins],aTrSiO2[kNbins],aTrCH4[kNbins];
   Float_t aTotTr[kNbins];
   for(Int_t i=0;i<kNbins;i++){
-    aTrC6F14[i]=TMath::Exp(-AliRICHParam::FreonThickness() /(aAbsC6F14[i]+0.0001));
-    aTrSiO2[i] =TMath::Exp(-AliRICHParam::QuartzThickness()/(aAbsSiO2[i] +0.0001));
-    aTrCH4[i]  =TMath::Exp(-AliRICHParam::GapThickness()   /(aAbsCH4[i]  +0.0001));    
+    aTrC6F14[i]=TMath::Exp(-15*mm/(aAbsC6F14[i]+0.0001));
+    aTrSiO2[i] =TMath::Exp(-5*mm/(aAbsSiO2[i] +0.0001));
+    aTrCH4[i]  =TMath::Exp(-8*cm/(aAbsCH4[i]  +0.0001));    
     aTotTr[i]    =aTrC6F14[i]*aTrSiO2[i]*aTrCH4[i]*aQeCsI[i];
   }
   TGraph *pTrC6F14G=new TGraph(kNbins,aPckov,aTrC6F14);pTrC6F14G->SetMarkerStyle(kC6F14M);pTrC6F14G->SetMarkerColor(kC6F14C);  
