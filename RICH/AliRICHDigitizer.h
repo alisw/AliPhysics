@@ -8,6 +8,8 @@
 #include <AliRunDigitizer.h>
 #include <AliRun.h>
 
+class AliRICH;
+
 class AliRICHDigitizer : public AliDigitizer 
 {
 public:

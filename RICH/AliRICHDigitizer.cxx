@@ -73,7 +73,7 @@ void AliRICHDigitizer::Exec(Option_t*)
     pInAL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
     pInRL = pInAL->GetLoader("RICHLoader");
     pInRL->LoadSDigits();
-    pInRL->TreeD()->GetEntries(0);
+    pInRL->TreeD()->GetEntries();
   }//files loop
 
       
