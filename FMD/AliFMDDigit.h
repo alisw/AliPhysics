@@ -13,11 +13,6 @@
 //____________________________________________________________________
 class AliFMDBaseDigit : public TObject 
 {
-protected:
-  UShort_t fDetector;  // (Sub) Detector # (1,2, or 3)
-  Char_t   fRing;      // Ring ID ('I' or 'O')
-  UShort_t fSector;    // Sector # (phi division)
-  UShort_t fStrip;     // Strip # (radial division)
 public: 
   AliFMDBaseDigit();
   AliFMDBaseDigit(UShort_t detector, 
@@ -30,6 +25,12 @@ public:
   UShort_t     Sector()	           const { return fSector;   }
   UShort_t     Strip()	           const { return fStrip;    }
   virtual void Print(Option_t* opt="") const;
+
+protected:
+  UShort_t fDetector;  // (Sub) Detector # (1,2, or 3)
+  Char_t   fRing;      // Ring ID ('I' or 'O')
+  UShort_t fSector;    // Sector # (phi division)
+  UShort_t fStrip;     // Strip # (radial division)
   ClassDef(AliFMDBaseDigit, 1) // Base class for FMD digits 
 };
 

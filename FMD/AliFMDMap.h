@@ -12,6 +12,13 @@
 template <typename Type> 
 class AliFMDMap : public TObject 
 {
+public:
+  AliFMDMap(size_t maxDet=3, size_t maxRing=2, size_t maxSec=40, 
+	    size_t maxStr=512);
+  virtual ~AliFMDMap() {}
+  void Clear();
+  Type& operator()(size_t det, Char_t ring, size_t sec, size_t str);
+  const Type& operator()(size_t det, Char_t ring, size_t sec, size_t str)const;
 private:
   typedef std::vector<Type> ValueVector; // Type of container
   ValueVector fValues;                   // Contained values
@@ -21,13 +28,6 @@ private:
   size_t      fMaxStrips;                // Maximum # of strips
   
   size_t CalcIndex(size_t det, Char_t ring, size_t sec, size_t str) const;
-public:
-  AliFMDMap(size_t maxDet=3, size_t maxRing=2, size_t maxSec=40, 
-	    size_t maxStr=512);
-  virtual ~AliFMDMap() {}
-  void Clear();
-  Type& operator()(size_t det, Char_t ring, size_t sec, size_t str);
-  const Type& operator()(size_t det, Char_t ring, size_t sec, size_t str)const;
   ClassDef(AliFMDMap, 0); // Map of FMD index's to values 
 };
 

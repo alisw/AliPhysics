@@ -7,37 +7,21 @@
  *
  * See cxx source for full Copyright notice                               
  */
+//____________________________________________________________________
+// 
+// Parameters of a sub-detector, and builder of sub detector geometry 
+//
 #ifndef ROOT_TObject
 # include <TObject.h>
 #endif
-
 class TNode;
 class TList;
 class AliFMDRing;
 
 
 //__________________________________________________________________
-struct AliFMDSubDetector : public TObject
+class AliFMDSubDetector : public TObject
 {
-protected:
-  Int_t       fId;                 // Detector number 
-  Double_t    fInnerZ;             // Position of outer ring along z
-  Double_t    fOuterZ;             // Position of outer ring along z 
-  Double_t    fHoneycombThickness; // Thickness of honeycomb plate 
-  Double_t    fKaptionThickness;   // Thickness of kaption of honeycomb
-  Double_t    fInnerHoneyLowR;     // Inner radius of inner honeycomb
-  Double_t    fInnerHoneyHighR;    // Outer radius of inner honeycomb
-  Int_t       fInnerHoneyTopId;    // Volume ID of top of inner honeycomb
-  Int_t       fInnerHoneyBottomId; // Volume ID of bottom of inner honeycomb
-  Double_t    fOuterHoneyLowR;     // Inner radius of outer honeycomb
-  Double_t    fOuterHoneyHighR;    // Outer radius of outer honeycomb
-  Int_t       fOuterHoneyTopId;    // Volume ID of top of outer honeycomb   
-  Int_t       fOuterHoneyBottomId; // Volume ID of bottom of outer honeycomb
-
-  Int_t       fRotationId;         // The ID of the sub-detector rotation
-  
-  AliFMDRing* fInner;              // Reference to inner ring description
-  AliFMDRing* fOuter;              // Reference to outer ring description
 public:  
   AliFMDSubDetector(Int_t n);
   virtual ~AliFMDSubDetector() {}
@@ -76,6 +60,26 @@ public:
   Double_t    GetKaptionThickness()   const { return fKaptionThickness; }
   Int_t       GetId()                 const { return fId; }     
   Bool_t      IsFolder()              const { return kTRUE; }
+
+protected:
+  Int_t       fId;                 // Detector number 
+  Double_t    fInnerZ;             // Position of outer ring along z
+  Double_t    fOuterZ;             // Position of outer ring along z 
+  Double_t    fHoneycombThickness; // Thickness of honeycomb plate 
+  Double_t    fKaptionThickness;   // Thickness of kaption of honeycomb
+  Double_t    fInnerHoneyLowR;     // Inner radius of inner honeycomb
+  Double_t    fInnerHoneyHighR;    // Outer radius of inner honeycomb
+  Int_t       fInnerHoneyTopId;    // Volume ID of top of inner honeycomb
+  Int_t       fInnerHoneyBottomId; // Volume ID of bottom of inner honeycomb
+  Double_t    fOuterHoneyLowR;     // Inner radius of outer honeycomb
+  Double_t    fOuterHoneyHighR;    // Outer radius of outer honeycomb
+  Int_t       fOuterHoneyTopId;    // Volume ID of top of outer honeycomb   
+  Int_t       fOuterHoneyBottomId; // Volume ID of bottom of outer honeycomb
+
+  Int_t       fRotationId;         // The ID of the sub-detector rotation
+  
+  AliFMDRing* fInner;              // Reference to inner ring description
+  AliFMDRing* fOuter;              // Reference to outer ring description
 
   ClassDef(AliFMDSubDetector, 1) // FMD Sub detector base class
 };

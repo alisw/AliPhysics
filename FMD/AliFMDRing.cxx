@@ -73,17 +73,18 @@
 # include <iostream>
 #endif
 
+static const char* kRingFormat         = "FRG%c";
+static const char* kVirtualFormat      = "FV%c%c";
+static const char* kActiveFormat       = "FAC%c";
+static const char* kSectorFormat       = "FSE%c";
+static const char* kStripFormat        = "FST%c";
+static const char* kPrintboardFormat   = "FP%c%c";
+
+
+//____________________________________________________________________
 ClassImp(AliFMDRing);
 
 //____________________________________________________________________
-// Construct a alifmdring. 
-// 
-//     id		Id of the ring (either 'i' or 'o').
-//     lowr		Lower radius of ring (in centimeters).
-//     highr		Upper radius of ring (in centimeters).
-//     r		Radius of the silicon wafers (in centimeters). 
-//     theta		Opening angle of the silicon wafers.
-//     strips		Number of strips. 
 AliFMDRing::AliFMDRing(Char_t id, Bool_t detailed) 
   : fId(id), 
     fDetailed(detailed),
@@ -95,7 +96,17 @@ AliFMDRing::AliFMDRing(Char_t id, Bool_t detailed)
     fNStrips(0), 
     fShape(0),
     fRotMatricies(0)
-{}
+{
+  // Construct a alifmdring. 
+  // 
+  //     id		Id of the ring (either 'i' or 'o').
+  //     lowr		Lower radius of ring (in centimeters).
+  //     highr		Upper radius of ring (in centimeters).
+  //     r		Radius of the silicon wafers (in centimeters). 
+  //     theta		Opening angle of the silicon wafers.
+  //     strips		Number of strips. 
+}
+
 
 //____________________________________________________________________
 void 
@@ -111,6 +122,7 @@ AliFMDRing::Init()
 //____________________________________________________________________
 AliFMDRing::~AliFMDRing() 
 {
+  // Destructor - deletes shape and rotation matricies 
   if (fShape) delete fShape;
   if (fRotMatricies) delete fRotMatricies;
 }
@@ -253,21 +265,21 @@ AliFMDRing::SetupGeometry(Int_t vacuumId, Int_t siId, Int_t pcbId,
   // 
   // The hieracy of the RNGx volume is 
   // 
-  //    RNGx                        // Ring volume
-  //      VFx                       // Container of hybrid + legs
-  //        ACTx                    // Active volume (si sensor approx)
-  //          SECx                  // Section division
-  //            STRx                // Strip division 
-  //        PBTx                    // Print board (bottom)
-  //        PTTx                    // Print board (top)  
-  //        LLEG                    // Support leg (long version)
-  //      VBx                       // Container of hybrid + legs
-  //        ACTx                    // Active volume (si sensor approx)
-  //          SECx                  // Section division
-  //            STRx                // Strip division 
-  //        PBTx                    // Print board (bottom)
-  //        PTTx                    // Print board (top)  
-  //        SLEG                    // Support leg (long version)
+  //    FRGx                        // Ring volume
+  //      FVFx                      // Container of hybrid + legs
+  //        FACx                    // Active volume (si sensor approx)
+  //          FSEx                  // Section division
+  //            FSTx                // Strip division 
+  //        FPTx                    // Print board (bottom)
+  //        FPBx                    // Print board (top)  
+  //        FLL                     // Support leg (long version)
+  //      FVBx                      // Container of hybrid + legs
+  //        FACx                    // Active volume (si sensor approx)
+  //          FSEx                  // Section division
+  //            FSTx                // Strip division 
+  //        FPTx                    // Print board (bottom)
+  //        FPBx                    // Print board (top)  
+  //        FSL                     // Support leg (long version)
   //        
   // Parameters: 
   //
@@ -299,39 +311,38 @@ AliFMDRing::SetupGeometry(Int_t vacuumId, Int_t siId, Int_t pcbId,
   pars[0]             = rmin;
   pars[1]             = fHighR;
   pars[2]             = fRingDepth / 2;
-  name                = Form("RNG%c", fId);
+  name                = Form(kRingFormat, fId);
   fRingId             = gMC->Gsvolu(name.Data(), "TUBE", vacuumId, pars, 3);
   
   // Virtual volume for modules with long legs 
   pars[1]             = rmax;
   pars[3]             = -fTheta;
   pars[4]             =  fTheta;
-  name                = Form("VF%c", fId);
+  name                = Form(kVirtualFormat, 'F', fId);
   fVirtualFrontId     = gMC->Gsvolu(name.Data(), "TUBS", vacuumId, pars, 5);
 
   // Virtual volume for modules with long legs 
   pars[2]             =  (fRingDepth - fModuleSpacing) / 2;
-  name                =  Form("VB%c", fId);
+  name                =  Form(kVirtualFormat, 'B', fId);
   fVirtualBackId      =  gMC->Gsvolu(name.Data(), "TUBS", vacuumId, pars, 5);
   
   // Virtual mother volume for silicon
   pars[2]             =  fSiThickness/2;
   name2               =  name;
-  name                =  Form("ACT%c",fId);
+  name                =  Form(kActiveFormat, fId);
   fActiveId           =  gMC->Gsvolu(name.Data(), "TUBS", vacuumId , pars, 5);
 
   if (fDetailed) {
     // Virtual sector volumes 
     name2               = name;
-    name                = Form("SEC%c",fId);
+    name                = Form(kSectorFormat, fId);
     gMC->Gsdvn2(name.Data(), name2.Data(), 2, 2, -fTheta, vacuumId);
     fSectionId          = gMC->VolId(name.Data());
     
     // Active strip volumes 
     name2               = name;
-    name                = Form("STR%c", fId);
-    gMC->Gsdvt2(name.Data(), name2.Data(), dStrip, 1, 
-		stripOff, siId, fNStrips);
+    name                = Form(kStripFormat, fId);
+    gMC->Gsdvt2(name.Data(), name2.Data(), dStrip, 1,stripOff, siId, fNStrips);
     fStripId            = gMC->VolId(name.Data());
   }
   
@@ -342,14 +353,14 @@ AliFMDRing::SetupGeometry(Int_t vacuumId, Int_t siId, Int_t pcbId,
   pars[1]             = bCorner.Y() - pars[4];
   pars[2]             = fPrintboardThickness / 2; // PCB half thickness
   pars[3]             = (bCorner.X() - cCorner.X()) / 2;
-  name                = Form("PBT%c", fId);
+  name                = Form(kPrintboardFormat, 'T', fId);
   fPrintboardTopId    = gMC->Gsvolu(name.Data(), "TRD1", pcbId, pars, 4);
 
   // Bottom of the print board
   pars[0]             = aCorner.Y() - pars[4];
   pars[1]             = cCorner.Y() - pars[4];
   pars[3]             = (cCorner.X() - aCorner.X()) / 2;
-  name                = Form("PBB%c", fId);
+  name                = Form(kPrintboardFormat, 'B', fId);
   fPrintboardBottomId = gMC->Gsvolu(name.Data(), "TRD1", pcbId, pars, 4);
 
   // Define rotation matricies
@@ -373,7 +384,7 @@ AliFMDRing::SetupGeometry(Int_t vacuumId, Int_t siId, Int_t pcbId,
 			 * fBondingWidth)); 
   
   for (int i = 0; i < nModules; i++) {
-    TString  name2    = Form("RNG%c", fId);
+    TString  name2    = Form(kRingFormat, fId);
 
     Int_t     id      = i;
     // Double_t  theta   = (i + .5) * dTheta;
@@ -382,7 +393,7 @@ AliFMDRing::SetupGeometry(Int_t vacuumId, Int_t siId, Int_t pcbId,
     Double_t  w       = fRingDepth - (isFront ? 0 : fModuleSpacing);
 
     // Place virtual module volume 
-    name = Form("V%c%c", (isFront ? 'F' : 'B'), fId);
+    name = Form(kVirtualFormat, (isFront ? 'F' : 'B'), fId);
     dz   = (w - fRingDepth) / 2;
     gMC->Gspos(name.Data(), id, name2.Data(), 0., 0., dz,fRotations[i]);
 
@@ -393,16 +404,16 @@ AliFMDRing::SetupGeometry(Int_t vacuumId, Int_t siId, Int_t pcbId,
 
     // Place active silicon wafer - this is put so that the front of
     // the silicon is on the edge of the virtual volume. 
-    name  = Form("ACT%c", fId);
+    name  = Form(kActiveFormat, fId);
     dz    = (w - fSiThickness) / 2;
     gMC->Gspos(name.Data(), id, name2.Data(),0.,0.,dz,idRotId);
 
     // Place print board.  This is put immediately behind the silicon
-    name = Form("PBT%c", fId);
+    name = Form(kPrintboardFormat, 'T', fId);
     dz   =  w / 2 - fSiThickness - fPrintboardThickness / 2;
     gMC->Gspos(name.Data(), id, name2.Data(), 
 	       fLowR + pbBotL + pbTopL / 2, 0, dz, pbRotId, "ONLY");
-    name = Form("PBB%c", fId);
+    name = Form(kPrintboardFormat, fId);
     gMC->Gspos(name.Data(), id, name2.Data(), 
 	       fLowR + pbBotL / 2, 0, dz, pbRotId, "ONLY");
 
@@ -410,7 +421,7 @@ AliFMDRing::SetupGeometry(Int_t vacuumId, Int_t siId, Int_t pcbId,
     // This is put immediately behind the pringboard. 
     dz     = (w / 2 - fSiThickness - fPrintboardThickness 
 	     - (fLegLength + (isFront ? fModuleSpacing : 0)) /2);
-    name  = (isFront ? "LLEG" : "SLEG");
+    name  = (isFront ? "FLL" : "FSL");
     gMC->Gspos(name.Data(), id*10 + 1, name2.Data(), 
 	       aCorner.X() + fLegOffset + fLegRadius, 0., dz, idRotId, "");
     Double_t y = cCorner.Y() - yoffset - fLegOffset - fLegRadius;
@@ -440,7 +451,7 @@ AliFMDRing::Geometry(const char* mother, Int_t baseId, Double_t z,
   Double_t offsetZ   = (fSiThickness 
 			+ fPrintboardThickness 
 			+ fLegLength + fModuleSpacing) / 2;
-  name = Form("RNG%c", fId);
+  name = Form(kRingFormat, fId);
   gMC->Gspos(name.Data(), baseId, mother, 0., 0., z - offsetZ, idRotId, "");
 }
 
@@ -472,7 +483,7 @@ AliFMDRing::SimpleGeometry(TList* nodes,
 
   // If the shape hasn't been defined yet, we define it here. 
   if (!fShape) {
-    TString name(Form("ACT%c", fId));
+    TString name(Form(kActiveFormat, fId));
     TString title(Form("Shape of modules in %c Rings", fId));
     Int_t n = fPolygon.GetNVerticies();
     TXTRU* shape = new TXTRU(name.Data(), title.Data(), "void", n, 2);
@@ -512,7 +523,7 @@ AliFMDRing::SimpleGeometry(TList* nodes,
     Bool_t    isFront = (i % 2 == 1);
     mother->cd();
     TRotMatrix* rot = static_cast<TRotMatrix*>(fRotMatricies->At(i));
-    TString name(Form("ACT%c_%d_%d", fId, n, i));
+    TString name(Form("FAC%c_%d_%d", fId, n, i));
     TString title(Form("Active FMD%d volume in %c Ring", n, fId));
     TNode* node = new TNode(name.Data(), title.Data(), fShape, 
 			    0, 0, 
@@ -534,22 +545,22 @@ AliFMDRing::Gsatt()
   // DebugGuard guard("AliFMDRing::Gsatt");
   AliDebug(10, "AliFMDRing::Gsatt");
   TString name;
-  name = Form("RNG%c",fId);
+  name = Form(kRingFormat,fId);
   gMC->Gsatt(name.Data(), "SEEN", 0);
 
-  name = Form("VF%c",fId);
+  name = Form(kVirtualFormat, 'T', fId);
   gMC->Gsatt(name.Data(), "SEEN", 0);
 
-  name = Form("VB%c",fId);
+  name = Form(kVirtualFormat, 'B', fId);
   gMC->Gsatt(name.Data(), "SEEN", 0);
 
-  name = Form("ACT%c",fId);
+  name = Form(kActiveFormat,fId);
   gMC->Gsatt(name.Data(), "SEEN", 1);
 
-  name = Form("PBT%c",fId);
+  name = Form(kPrintboardFormat, 'T', fId);
   gMC->Gsatt(name.Data(), "SEEN", 1);
 
-  name = Form("PBB%c",fId);
+  name = Form(kPrintboardFormat, 'B',fId);
   gMC->Gsatt(name.Data(), "SEEN", 1);
 }
 

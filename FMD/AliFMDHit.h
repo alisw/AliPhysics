@@ -5,77 +5,18 @@
  *
  * See cxx source for full Copyright notice                               
  */
-////////////////////////////////////////////////
+//___________________________________________________________________
 //
-//  Manager and hits classes for set:FMD     
+// AliFMDhit is the hit class for the FMD. Hits are the information
+// that comes from a Monte Carlo at each step as a particle mass
+// through sensitive detector elements as particles are transported
+// through a detector.
 //
-////////////////////////////////////////////////
 #ifndef ALIHIT_H
 # include "AliHit.h"
 #endif
  
 
-///////////////////////////////////////////////////////////////////////
-// AliFMDhit is the hit class for the FMD. Hits are the information
-// that comes from a Monte Carlo at each step as a particle mass through
-// sensitive detector elements as particles are transported through a
-// detector.
-//
-// Data members:
-//
-// Int_t fTrack
-//     See AliHit for a full description. The track number of the track
-// that made this hit.
-//
-// Float_t fX
-//     See AliHit for a full description. The global x position of the
-// hit (in the standard units of the Monte Carlo).
-//
-// Float_t fY
-//     See AliHit for a full description. The global y position of the
-// hit (in the standard units of the Monte Carlo).
-//
-// Float_t fZ
-//     See AliHit for a full description. The global z position of the
-// hit (in the standard units of the Monte Carlo).
-//
-// Int_t fStatus
-//     The track status flag. This flag indicates the track status
-// at the time of creating this hit. It is made up of the following 8
-// status bits from highest order to lowest order bits
-// 0           :  IsTrackAlive():    IsTrackStop():IsTrackDisappeared():
-// IsTrackOut():IsTrackExiting():IsTrackEntering():IsTrackInside()     .
-// See AliMC for a description of these functions. If the function is
-// true then the bit is set to one, otherwise it is zero.
-
-// Int_t fVolume
-//     The number of the FMD detector that contains this hit. 
-
-// Float_t fEdep
-//     The energy lost by the particle during the step ending in this
-// hit. The units are those determined by the Monte Carlo.
-//
-// Float_t fPx
-//     The x momentum, in global coordinates, of the particle that
-// "created" the hit at the time and position of the hit. The units
-// are those determined by the Monte Carlo.
-//
-// Float_t fPy
-//     The y momentum, in global coordinates, of the particle that
-// "created" the hit at the time and position of the hit. The units
-// are those determined by the Monte Carlo.
-//
-// Float_t fPz
-//     The z momentum, in global coordinates, of the particle that
-// "created" the hit at the time and position of the hit. The units
-// are those determined by the Monte Carlo.
-//
-///
-// Float_t fTime
-//     The time of flight associated with the particle ending in this
-// hit. The time is typically measured from the point of creation of the
-// original particle (if this particle is a daughter).  The units
-// are those determined by the Monte Carlo. 
 
 class AliFMDHit : public AliHit 
 {
@@ -111,7 +52,7 @@ public:
   void     Print(Option_t* opt="") const;
 
   void     SetEdep(Float_t edep) { fEdep = edep; }
-private:
+protected:
   UShort_t fDetector;  // (Sub) Detector # (1,2, or 3)
   Char_t   fRing;      // Ring ID ('I' or 'O')
   UShort_t fSector;    // Sector # (phi division)

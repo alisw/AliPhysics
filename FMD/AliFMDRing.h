@@ -22,42 +22,9 @@ class TList;
 
 
 //__________________________________________________________________
-struct AliFMDRing : public TObject
+class AliFMDRing : public TObject
 {
-  Char_t   fId;			 // ID
-  Bool_t   fDetailed;
-  Int_t    fActiveId;		 // Active volume 
-  Int_t    fPrintboardBottomId;  // Print board bottom volume
-  Int_t    fPrintboardTopId;     // Print board top volume
-  Int_t    fRingId;		 // Ring volume
-  Int_t    fSectionId;		 // Section volumes 
-  Int_t    fStripId;		 // Strip volumes 
-  Int_t    fVirtualBackId;	 // Virtual Back volume
-  Int_t    fVirtualFrontId;	 // Virtual Front volume
-
-  Double_t fBondingWidth;	 // With of bonding pad on sensor
-  Double_t fWaferRadius;	 // Size of wafer the sensor was made from 
-  Double_t fSiThickness;	 // Thickness of sensor
-  Double_t fLowR;		 // Lower radius of ring
-  Double_t fHighR;		 // Upper radius of ring
-  Double_t fTheta;		 // Opening angle of the silicon wafers
-  Int_t    fNStrips;		 // Number of strips 
-  Double_t fRingDepth;           // How far the ring extends beyond
-				 // the z value given. 
-  Double_t fLegRadius;		 // Radius of support legs 
-  Double_t fLegLength;		 // Radius of support legs 
-  Double_t fLegOffset;		 // Radius of support legs 
-
-  Double_t fModuleSpacing;	 // Staggering offset 
-  Double_t fPrintboardThickness; // Thickness of print board
-
-  TArrayI    fRotations;	 // Array of rotations
-  TShape*    fShape;             // Shape used for event display
-  TObjArray* fRotMatricies;      // Matricies used for event display
-
-  AliFMDPolygon  fPolygon;		 // Polygon shape 
 public:
-  //----------------------------------------------------------------
   AliFMDRing(Char_t id='\0', Bool_t detailed=kTRUE);
   virtual ~AliFMDRing();
   void   Init();
@@ -113,6 +80,40 @@ public:
 
   void SetModuleSpacing(Double_t       spacing)	  { fModuleSpacing = spacing; }
   void SetPrintboardThickness(Double_t thickness) { fPrintboardThickness = thickness; }
+
+protected:
+  Char_t   fId;			 // ID
+  Bool_t   fDetailed;
+  Int_t    fActiveId;		 // Active volume 
+  Int_t    fPrintboardBottomId;  // Print board bottom volume
+  Int_t    fPrintboardTopId;     // Print board top volume
+  Int_t    fRingId;		 // Ring volume
+  Int_t    fSectionId;		 // Section volumes 
+  Int_t    fStripId;		 // Strip volumes 
+  Int_t    fVirtualBackId;	 // Virtual Back volume
+  Int_t    fVirtualFrontId;	 // Virtual Front volume
+
+  Double_t fBondingWidth;	 // With of bonding pad on sensor
+  Double_t fWaferRadius;	 // Size of wafer the sensor was made from 
+  Double_t fSiThickness;	 // Thickness of sensor
+  Double_t fLowR;		 // Lower radius of ring
+  Double_t fHighR;		 // Upper radius of ring
+  Double_t fTheta;		 // Opening angle of the silicon wafers
+  Int_t    fNStrips;		 // Number of strips 
+  Double_t fRingDepth;           // How far the ring extends beyond
+				 // the z value given. 
+  Double_t fLegRadius;		 // Radius of support legs 
+  Double_t fLegLength;		 // Radius of support legs 
+  Double_t fLegOffset;		 // Radius of support legs 
+
+  Double_t fModuleSpacing;	 // Staggering offset 
+  Double_t fPrintboardThickness; // Thickness of print board
+
+  TArrayI    fRotations;	 // Array of rotations
+  TShape*    fShape;             // Shape used for event display
+  TObjArray* fRotMatricies;      // Matricies used for event display
+
+  AliFMDPolygon  fPolygon;		 // Polygon shape 
 
   ClassDef(AliFMDRing, 1) // FMD Ring volume parameters 
 };

@@ -22,9 +22,6 @@
 // 
 class AliFMDRawStream : public AliAltroRawStream 
 {
-private:
-  UShort_t fSampleRate; // # of ALTRO samples per VA1_ALICE clock
-  Int_t    fPrevTime;   // Last time bin
 public:
   AliFMDRawStream(AliRawReader* reader);
 
@@ -44,6 +41,10 @@ public:
   
   virtual Bool_t   Next();
   
+private:
+  UShort_t fSampleRate; // # of ALTRO samples per VA1_ALICE clock
+  Int_t    fPrevTime;   // Last time bin
+
   ClassDef(AliFMDRawStream, 0) // Read raw FMD Altro data 
 };
 

@@ -120,16 +120,24 @@ AliFMDv1::StepManager()
   // Only process charged particles 
   if(TMath::Abs(gMC->TrackCharge()) <= 0) return; 
 
-  // Only do stuff is the track is in one of the strips. 
   TString vol(gMC->CurrentVolName());
-  if (!vol.Contains("STR")) return;
-
-
+  std::cout << "Is inside " << vol << " ... " << std::endl;
+  // Only do stuff is the track is in one of the strips. 
+  // TString vol(gMC->CurrentVolName());
+  // if (!vol.Contains("STR")) return;
+  Int_t copy;
+  Int_t volumeId = gMC->CurrentVolID(copy);
+  if (volumeId != fInner->GetStripId() || volumeId != fOuter->GetStripId()) {
+    std::cout << "Not a FMD strip volume: " 
+	      << volumeId << " != " << fInner->GetStripId() << " or " 
+	      << fOuter->GetStripId() << std::endl;
+    return;
+  }
+  std::cout << "OK, an FMD strip volume!" << std::endl;
+  
   // Get the strip number.  Note, that GEANT numbers divisions from 1,
   // so we subtract one 
-  Int_t strip;             
-  gMC->CurrentVolID(strip);
-  strip--;                 
+  Int_t strip = copy - 1;
 
   // Get the phi division of the module 
   Int_t phiDiv;                         // * The phi division number (1 or 2)

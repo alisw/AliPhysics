@@ -334,11 +334,11 @@ AliFMD::CreateGeometry()
   par[0]      =  fLegRadius - .1;
   par[1]      =  fLegRadius;
   par[2]      =  fLegLength / 2;
-  name        =  "SLEG";
+  name        =  "FSL";
   fShortLegId =  gMC->Gsvolu(name.Data(),"TUBE",(*fIdtmed)[kPlasticId],par,3);
   
   par[2]      += fModuleSpacing / 2;
-  name        = "LLEG";
+  name        = "FLL";
   fLongLegId  =  gMC->Gsvolu(name.Data(),"TUBE",(*fIdtmed)[kPlasticId],par,3);
 
   fInner->SetupGeometry((*fIdtmed)[kAirId], 
