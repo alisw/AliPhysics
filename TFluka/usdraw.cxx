@@ -4,7 +4,7 @@
 #ifndef WITH_ROOT
 #include "TFluka.h"
 #else
-#include "TFluka.h"
+#include "TFlukaGeo.h"
 #endif
 
 #include "Fdimpar.h"  //(DIMPAR) fluka include
