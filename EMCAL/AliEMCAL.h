@@ -72,7 +72,7 @@ protected:
   Double_t fTimePeak ;         // peaking time of the raw RO signal
   Double_t fTimeRes ;          // decay rime width of the raw RO signal 
 
-  ClassDef(AliEMCAL,7) // Electromagnetic calorimeter (base class)
+  ClassDef(AliEMCAL,8) // Electromagnetic calorimeter (base class)
 
 } ;
 
