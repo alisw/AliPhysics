@@ -114,6 +114,17 @@ void AliLevel3::Init(){
   SetPath("");
   fFindVertex =kTRUE;
   fNPatch = 5;   //number of patches change row in process 
+  fRow[0][0] = 0;     // first row
+//  fRow[0][1] = 173;   // last row
+  fRow[0][1] = 45;
+  fRow[1][0] = 46;
+  fRow[1][1] = 77;
+  fRow[2][0] = 78;
+  fRow[2][1] = 109;
+  fRow[3][0] = 110;
+  fRow[3][1] = 141;
+  fRow[4][0] = 142;
+  fRow[4][1] = 173;   // last row
   fVertexFinder = new AliL3VertexFinder();
   fVertex = new AliL3Vertex();
   fTracker = new AliL3ConfMapper();
@@ -197,24 +208,27 @@ void AliLevel3::ProcessEvent(Int_t first,Int_t last){
 
 void AliLevel3::ProcessSlice(Int_t slice){
   char name[256];
+  Bool_t UseCF = kTRUE;
+#ifdef use_aliroot
+  UseCF = fFileHandler->IsDigit();
+#endif
 //  Int_t row[5][2] = {{ 0,173}};
-  Int_t row[5][2] = {{ 0, 45},{46,77},{78,109},{110,141},{142,173}};
+//  Int_t row[5][2] = {{ 0, 45},{46,77},{78,109},{110,141},{142,173}};
   const Int_t maxpoints=100000;
   const Int_t pointsize = maxpoints * sizeof(AliL3SpacePointData);
   AliL3MemHandler *memory = new AliL3MemHandler();
 
   fTrackMerger->Reset();
   fTrackMerger->SetTransformer(fTransformer);
-  fTrackMerger->SetRows(row[0]);
+  fTrackMerger->SetRows(fRow[0]);
   for(Int_t patch=fNPatch-1;patch>=0;patch--){
-    fFileHandler->Init(slice,patch,row[patch]);
+    fFileHandler->Init(slice,patch,fRow[patch]);
     fFileHandler->Init(fTransformer);
     UInt_t npoints=0;
     AliL3SpacePointData *points =0;
     UInt_t ndigits=0;
     AliL3DigitRowData *digits =0;
     if(fUseBinary){
-
       if(!fDoRoi){ 
         if(0){     //Binary to Memory
           fFileHandler->Free();
@@ -279,11 +293,11 @@ void AliLevel3::ProcessSlice(Int_t slice){
         memory->Free();
       }
 
-
+/*
       points = (AliL3SpacePointData *) memory->Allocate(pointsize);
   
       fClusterFinder = new AliL3ClustFinder(fTransformer);
-      fClusterFinder->InitSlice(slice,patch,row[patch][0],row[patch][1]
+      fClusterFinder->InitSlice(slice,patch,fRow[patch][0],fRow[patch][1]
                                                                ,maxpoints);
       fClusterFinder->SetXYError(0.1);
       fClusterFinder->SetZError(0.2);
@@ -299,11 +313,12 @@ void AliLevel3::ProcessSlice(Int_t slice){
 
     LOG(AliL3Log::kInformational,"AliLevel3::ProcessSlice","Cluster Finder")
       <<AliL3Log::kDec<<"Found "<<npoints<<" Points"<<ENDLOG;
+*/
     }
 
     else{
 #ifdef use_aliroot
-      if(fFileHandler->IsDigit()){
+      if(UseCF){
         sprintf(name,"digits_%d_%d.raw",slice,patch);
 
         if(0){    //Ali to Binary
@@ -321,10 +336,35 @@ void AliLevel3::ProcessSlice(Int_t slice){
           }
         }
       }
-      else   points = fFileHandler->AliPoints2Memory(npoints);
 #endif
     }
 
+    if(UseCF){
+      points = (AliL3SpacePointData *) memory->Allocate(pointsize);
+  
+      fClusterFinder = new AliL3ClustFinder(fTransformer);
+      fClusterFinder->InitSlice(slice,patch,fRow[patch][0],fRow[patch][1]
+                                                               ,maxpoints);
+      fClusterFinder->SetXYError(0.1);
+      fClusterFinder->SetZError(0.2);
+      fClusterFinder->SetOutputArray(points);
+      fClusterFinder->Read(ndigits,digits);
+      fBenchmark->Start("Cluster Finder");
+      fClusterFinder->ProcessDigits();
+      fBenchmark->Stop("Cluster Finder");
+      npoints = fClusterFinder->GetNumberOfClusters();
+      delete fClusterFinder;
+      fClusterFinder =0;
+      fFileHandler->Free();
+    LOG(AliL3Log::kInformational,"AliLevel3::ProcessSlice","Cluster Finder")
+      <<AliL3Log::kDec<<"Found "<<npoints<<" Points"<<ENDLOG;
+    }
+    
+#ifdef use_aliroot
+    // if not use Clusterfinder
+    if(!UseCF)  points = fFileHandler->AliPoints2Memory(npoints);
+#endif
+   
     if(patch == fNPatch-1){
       // Vertex
       if(fFindVertex){
@@ -347,7 +387,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
       }
       fTrackMerger->SetVertex(fVertex);
     }
-    fTracker->InitSector(slice,row[patch]);
+    fTracker->InitSector(slice,fRow[patch]);
     fTracker->SetVertex(fVertex);
     fBenchmark->Start("Tracker Read Hits");
     fTracker->ReadHits(npoints,points);
@@ -364,7 +404,12 @@ void AliLevel3::ProcessSlice(Int_t slice){
 
     if(fWriteOut) 
        WriteSpacePoints(npoints, points, slice, patch); //do after Tracking
-    fFileHandler->Free();
+
+    //free memory
+    if(UseCF)
+      memory->Free();
+    else
+      fFileHandler->Free();
 
     UInt_t ntracks0 =0;
     AliL3TrackSegmentData *trackdata0  = 
@@ -381,7 +426,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
     
     fInterMerger->Reset();
     fInterMerger->SetTransformer(fTransformer);
-    fInterMerger->Init(row[patch],patch);
+    fInterMerger->Init(fRow[patch],patch);
 
     fInterMerger->FillTracks(ntracks0,trackdata0);
     fBenchmark->Start("Inter Merger");

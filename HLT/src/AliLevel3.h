@@ -48,6 +48,7 @@ class AliLevel3 : public TObject {
   #endif
   AliL3Benchmark *fBenchmark;//!
   Int_t fNPatch;
+  Int_t fRow[5][2];
   Char_t fPath[256];
   AliL3Transform *fTransformer; //!
   TDirectory *savedir;
