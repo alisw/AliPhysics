@@ -19,7 +19,7 @@
 
 // --- AliRoot header files ---
 
-#include "AliPHOSv1.h"
+#include "AliPHOSv5.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSPID.h"
 #include "AliPHOSIndexToObject.h"
@@ -33,7 +33,7 @@ public:
   AliPHOSAnalyze(const AliPHOSAnalyze & ana) ; // cpy ctor                   
   virtual ~AliPHOSAnalyze() ;     // dtor
 
-  void AnalyzeOneEvent(Int_t evt = -999) ;  // analyzes a single event ;
+  void ActivePPSD(Int_t Nevents) ;
   void AnalyzeManyEvents(Int_t Nevtents = 100, Int_t Module=0) ;  // analyzes many events   ;
   void Reconstruct(Int_t Nevtents = 100) ;
   void AnalyzeResolutions(Int_t Nevtents) ;  // analyzes Energy and Position resolutions   ;
@@ -46,9 +46,8 @@ public:
   void DisplayRecPoints() ;                 // displays RecPoints in module coordinate  
   void DisplayTrackSegments() ;             // displays TrackSegments in module coordinate  
   Bool_t OpenRootFile(Text_t * name) ;      // opens the root file
-  void SavingHistograms() ;                 // Save histograms in a root file
-  void SaveResolutionHistograms() ;         // Save histograms in a root file
-
+  void SaveHistograms() ;                   // Save histograms in a root file
+  void ResetHistograms() ;                  // 
   AliPHOSAnalyze & operator = (const AliPHOSAnalyze & rvalue)  {
     // assignement operator requested by coding convention
     // but not needed
@@ -62,18 +61,23 @@ public:
   Int_t fEvt ;                        // the evt number being processed 
   AliPHOSGeometry * fGeom ;           // the PHOS Geometry object
   AliPHOSIndexToObject * fObjGetter ; // provides methods to retrieve objects from their index in a list
-  AliPHOSv1 * fPHOS ;                 // the PHOS object from the root file 
+  AliPHOSv5 * fPHOS ;                 // the PHOS object from the root file 
   AliPHOSPID * fPID ;                 // a particle identifier
   AliPHOSReconstructioner * fRec ;    // a reconstructioner  
   TFile * fRootFile ;                 // the root file that contains the data
   AliPHOSTrackSegmentMaker * fTrs ;   // a tracksegmentmaker ;
+
+  TH2F * fhEnergyCorrelations ;     //Energy correlations between Eloss in Convertor and PPSD(2)
+
+
   TH1F * fhEmcDigit ;               // Histo of digit energies in the Emc 
   TH1F * fhVetoDigit ;              // Histo of digit energies in the Veto 
   TH1F * fhConvertorDigit ;         // Histo of digit energies in the Convertor
   TH1F * fhEmcCluster ;             // Histo of Cluster energies in Emc
   TH1F * fhVetoCluster ;            // Histo of Cluster energies in Veto
   TH1F * fhConvertorCluster ;       // Histo of Cluster energies in Convertor
-  TH1F * fhConvertorEmc ;           // 2d Convertor versus Emc energies
+  TH2F * fhConvertorEmc ;           // 2d Convertor versus Emc energies
+
   TH2F * fhPhotonEnergy ;           // Spectrum of detected photons with photon primary
   TH2F * fhPhotonAllEnergy ;        // Total spectrum of detected photons
   TH2F * fhElectronEnergy ;         // Spectrum of detected electrons with electron primary
