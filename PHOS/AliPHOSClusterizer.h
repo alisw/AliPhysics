@@ -23,7 +23,7 @@ class AliPHOSClusterizer : public TTask {
 public:
 
   AliPHOSClusterizer() ;          // ctor
-  AliPHOSClusterizer(const char * headerFile,const char * digitsBrancheTitle=0);
+  AliPHOSClusterizer(const char * headerFile,const char * digitsBrancheTitle);
   virtual ~AliPHOSClusterizer() ; // dtor
 
   virtual Float_t GetEmcClusteringThreshold()const = 0 ; 
