@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/11/22 11:15:41  jchudoba
+Proper deletion of arrays (thanks to Rene Brun)
+
 Revision 1.6  2001/11/02 12:55:45  jchudoba
 cleanup of the code, add const to Get methods
 
@@ -257,6 +260,7 @@ void AliMUONMerger::Digitise()
 //		    segmentation = iChamber->SegmentationModel(cathode);
 		    fDigits[0] = mPad->PadX();  
 		    fDigits[1] = mPad->PadY();
+		    if (!(fHitMap[fNch]->ValidateHit(fDigits[0], fDigits[1]))) continue;
 		    fDigits[2] = icat;
 		    fDigits[3] = iqpad;
 		    fDigits[4] = iqpad;
@@ -309,6 +313,7 @@ void AliMUONMerger::Digitise()
 			Int_t ipx      = mPad->PadX();        // pad number on X
 			Int_t ipy      = mPad->PadY();        // pad number on Y
 			Int_t iqpad    = Int_t(mPad->QPad()); // charge per pad
+			if (!(fHitMap[fNch]->ValidateHit(ipx, ipy))) continue;
 
 			if (cathode != (icat+1)) continue;
 			fDigits[0] = ipx;
