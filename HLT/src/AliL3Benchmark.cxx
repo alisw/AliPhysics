@@ -157,7 +157,7 @@ void AliL3Benchmark::Analyze(const char* name){
 #else
     fprintf(f,"%2d. %s: ",i+1,fNames[i].Data());
 #endif
-    fprintf(f,"%4.0f ms\n",av*1000);
+    fprintf(f,"%4.0f -%4.0f +%4.0f ms\n",av*1000,eyl[i],eyh[i]);
   }
   fclose(f);
   sprintf(filename,"%s.tmp",name);
