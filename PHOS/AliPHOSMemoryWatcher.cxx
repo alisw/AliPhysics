@@ -17,11 +17,8 @@
 /*Basic Memory Leak utility.
     
     You can use this tiny class to *see* if your program is leaking.
-
     Usage:
-
     AliPHOSMemoryWatcher memwatcher;
-
     some program loop on events here {
       if ( nevents % x == 0 ) 
       {
@@ -29,11 +26,9 @@
         memwatcher.watch(nevents);
       }
     }
-
     TFile f("out.root","RECREATE");
     memwatcher.write();
     f.Close();
-
     In the output root file you'll get 3 graphs representing
     the evolAliPHOSon, as a function of the number of events, of :
     - VSIZE is the virtual size (in KBytes) of your program, that is sort of
@@ -42,7 +37,6 @@
     program which is really in physical memory.
     - TIME is an estimate of time per event (really it's the time elasped
     between two calls to watch method)
-
     WARNING: this is far from a bulletproof memory report (it's basically 
     using UNIX command ps -h -p [PID] -o vsize,rssize to do its job).
     It has only been tested on Linux so far.
@@ -51,30 +45,24 @@
     by how much your program is leaking.
 */             
 //*-- Author: Laurent Aphecetche(SUBATECH)
-
-
 // --- std system ---
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
 #include <cassert>
-
 // --- AliRoot header files ---
 #include "AliPHOSMemoryWatcher.h"
-
 // --- ROOT system ---
 #include "TSystem.h"
 #include "TGraph.h"
 #include "TH2.h"
 #include "TStopwatch.h"
-
 //_____________________________________________________________________________
 AliPHOSMemoryWatcher::AliPHOSMemoryWatcher(unsigned int maxsize)
 {
   fMAXSIZE=maxsize;
   fPID = gSystem->GetPid();
   sprintf(fCmd,"ps -h -p %d -o vsize,rssize",fPID);
-
   fX = new int[fMAXSIZE];
   fVSIZE = new int[fMAXSIZE];
   fRSSIZE = new int[fMAXSIZE];
@@ -83,7 +71,6 @@ AliPHOSMemoryWatcher::AliPHOSMemoryWatcher(unsigned int maxsize)
   fDisabled=false;
   fTimer=0;
 }
-
 //_____________________________________________________________________________
 AliPHOSMemoryWatcher::~AliPHOSMemoryWatcher()
 {
@@ -93,25 +80,19 @@ AliPHOSMemoryWatcher::~AliPHOSMemoryWatcher()
   delete[] fTIME;
   delete fTimer;
 }
-
 //_____________________________________________________________________________
 void AliPHOSMemoryWatcher::watch(int x)
 {
   if ( !fDisabled && fSize < fMAXSIZE ) {
-
     if ( fSize==0 ) {
       assert(fTimer==0);
       fTimer = new TStopwatch;
       fTimer->Start(true);
       fTimer->Stop();
     }
-
     static int vsize, rssize;
-
     static FILE* pipe = 0;
-
     pipe = popen(fCmd,"r");
-
     if ( pipe ) {
     
       fscanf(pipe,"%d %d",&vsize,&rssize);
@@ -122,24 +103,19 @@ void AliPHOSMemoryWatcher::watch(int x)
       fTIME[fSize] = fTimer->CpuTime();
       fSize++;
     }
-
     assert(pclose(pipe)!=-1);
-
     fTimer->Start(true);
-
   }
   else {
     fDisabled=true;
     cerr << "AliPHOSMemoryWatcher::watch : I'm full !" << endl;
   }
 }
-
 //_____________________________________________________________________________
 TGraph*
 AliPHOSMemoryWatcher::graphVSIZE(void)
 {
   TGraph* g = 0;
-
   if ( size() )
     {
       g = new TGraph(size());
@@ -149,7 +125,6 @@ AliPHOSMemoryWatcher::graphVSIZE(void)
     }
   return g;
 }
-
 //_____________________________________________________________________________
 TGraph*
 AliPHOSMemoryWatcher::graphRSSIZE(void)
@@ -164,7 +139,6 @@ AliPHOSMemoryWatcher::graphRSSIZE(void)
     }
   return g;
 }
-
 //_____________________________________________________________________________
 TGraph*
 AliPHOSMemoryWatcher::graphTIME(void)
@@ -179,7 +153,6 @@ AliPHOSMemoryWatcher::graphTIME(void)
     }
   return g;
 }
-
 //_____________________________________________________________________________
 TH2*
 AliPHOSMemoryWatcher::frame(void)
@@ -188,24 +161,17 @@ AliPHOSMemoryWatcher::frame(void)
   double xmax=0;
   double ymin=1;
   double ymax=0;
-
   for (unsigned int i=0; i < size() ; i++ ) {
     if ( X(i) < xmin ) xmin = X(i);
     if ( X(i) > xmax ) xmax = X(i);
-
     double y = VSIZE(i)+RSSIZE(i);
-
     if ( y > ymax ) ymax = y;
-
     if ( VSIZE(i) < ymin ) ymin = VSIZE(i);
     if ( RSSIZE(i) < ymin ) ymin = RSSIZE(i);
   }
-
   TH2F* h = new TH2F("frame","",10,xmin,xmax,10,ymin*0.8,ymax*1.2);
-
   return h;
 }
-
 //_____________________________________________________________________________
 void 
 AliPHOSMemoryWatcher::write(void)
@@ -214,4 +180,3 @@ AliPHOSMemoryWatcher::write(void)
   if ( graphRSSIZE() ) graphRSSIZE()->Write("RSSIZE",TObject::kOverwrite);
   if ( graphTIME() ) graphTIME()->Write("TIME",TObject::kOverwrite);
 }
-
