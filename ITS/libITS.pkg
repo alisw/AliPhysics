@@ -95,17 +95,17 @@ SRCS = 	AliITS.cxx \
 		AliITSRawClusterSPD.cxx \
 		AliITSRawClusterSDD.cxx \
 		AliITSRawClusterSSD.cxx\
-                AliITSspdTestBeam.cxx \
+          AliITSspdTestBeam.cxx \
 		AliITSReconstructor.cxx \
-                AliITSv11.cxx \
-                AliITSv11GeomCable.cxx \
-                AliITSv11GeomCableFlat.cxx \
-                AliITSv11GeomCableRound.cxx \
-                AliITSv11Geometry.cxx \
-                AliITSv11GeometrySDD.cxx \
+#          AliITSv11.cxx \
+#          AliITSv11Geometry.cxx \
 #          AliITSv11GeometrySupport.cxx \
 #          AliITSv11GeometrySPD.cxx \
 #          AliITSv11GeometrySDD.cxx \
+#          AliITSv11GeometrySSD.cxx \
+#          AliITSv11GeomCable.cxx \
+#          AliITSv11GeomCableFlat.cxx \
+#          AliITSv11GeomCableRound.cxx \
 
 #          DisplayITSv11.cxx \
 #		 AliITSBaseGeometry.cxx \
