@@ -82,8 +82,8 @@ Int_t	AliITSPid::wpik(Int_t nc,Float_t q)
     Float_t dqpi=(q-qmpi)/sigpi;
     Float_t dqk =(q-qmk )/sigk;
     if( dqk<-1. )return pion();
-    dpi =fabs(dqpi);
-    dk  =fabs(dqk);
+    dpi =TMath::Abs(dqpi);
+    dk  =TMath::Abs(dqk);
     //ppi =1.- TMath::Erf(dpi);  // +0.5;
     //pk  =1.- TMath::Erf(dk);   // +0.5;
     ppi=appi*TMath::Gaus(q,qmpi,sigpi)
