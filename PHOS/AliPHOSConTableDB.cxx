@@ -89,9 +89,9 @@ AliPHOSConTableDB::AliPHOSConTableDB(const AliPHOSConTableDB& cdb):TNamed(cdb.Ge
   AliPHOSConTableDB::~AliPHOSConTableDB()
 {
   if(fAbsIdMap)
-    delete [] fAbsIdMap ;
+    delete fAbsIdMap ;
   if(fRawIdMap)
-    delete [] fRawIdMap ;
+    delete fRawIdMap ;
 }
 
 //____________________________________________________________________________ 
@@ -203,13 +203,13 @@ void AliPHOSConTableDB::Print()const {
 
   Info("Print", message.Data(), GetName(), GetTitle(), fGeom->GetName(), fGeom->GetTitle() ) ; 
 
-  message  = "-------Prototype parameters--------\n" ;
-  message += "    number of columns: %d" ; 
-  message += "    number of raws:    %d" ;
-  message += "    centered in third PHOS module with offsets: " ;
+  message  = "\n-------Prototype parameters--------\n" ;
+  message += "    number of columns: %d \n" ; 
+  message += "    number of raws:    %d \n" ;
+  message += "    centered in third PHOS module with offsets: \n " ;
   message += "    raw: %d of %d\n" ;
   message += "    col: %d of %d\n" ; 
-  message += "------------------------------------" ;
+  message += "------------------------------------ \n" ;
 
   Info("Print", message.Data(), fProtoColumns, fProtoRaws, fRawOffset, fGeom->GetNPhi(), fColOffset,fGeom->GetNZ() );   
 }
