@@ -157,18 +157,20 @@ class AliMUONSt12QuadrantSegmentation : public AliMUONVGeometryDESegmentation
   private:
     // methods
     void UpdateCurrentPadValues(const AliMpPad& pad);
+    void ReadMappingData();
   
     // constants
     static const Float_t  fgkWireD;     // default wire pitch
     static const Float_t  fgkLengthUnit;// conversion between length units
                                         // from mapping (mm) to AliRoot (cm)
-  
     // data members
 
     // From mapping
     //
-    AliMpSector*             fSector;            //  sector (from mapping)
-    AliMpSectorSegmentation* fSectorSegmentation;//  sector segmentation (from mapping)
+    AliMpStationType         fStationType;       // station type
+    AliMpPlaneType           fPlaneType;         // plane type
+    AliMpSector*             fSector;            // ! sector (from mapping)
+    AliMpSectorSegmentation* fSectorSegmentation;// ! sector segmentation (from mapping)
     AliMpVPadIterator*       fSectorIterator;    // ! iterator over pads
 
     // Wire pitch

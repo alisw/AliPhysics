@@ -52,6 +52,8 @@ AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation(
                                        AliMpStationType stationType,
 				       AliMpPlaneType planeType) 
 : AliMUONVGeometryDESegmentation(),
+  fStationType(stationType),
+  fPlaneType(planeType),
   fSector(0),
   fSectorSegmentation(0),
   fSectorIterator(0),
@@ -77,18 +79,7 @@ AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation(
 {
 // Normal constructor
 
-  // set path to mapping data files
-   if (!gSystem->Getenv("MINSTALL")) {    
-     TString dirPath = gSystem->Getenv("ALICE_ROOT");
-     dirPath += "/MUON/mapping"; 
-     AliMpFiles::Instance()->SetTopPath(dirPath);
-     gSystem->Setenv("MINSTALL", dirPath.Data());
-     //cout << "AliMpFiles top path set to " << dirPath << endl;	  
-   }
-  
-  AliMpReader r(stationType, planeType);
-  fSector = r.BuildSector();
-  fSectorSegmentation = new AliMpSectorSegmentation(fSector);
+  ReadMappingData();
 
   fCorrA = new TObjArray(3);
   fCorrA->AddAt(0,0);
@@ -99,6 +90,8 @@ AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation(
 //______________________________________________________________________________
 AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation() 
 : AliMUONVGeometryDESegmentation(),
+  fStationType(kStation1),
+  fPlaneType(kBendingPlane),
   fSector(0),
   fSectorSegmentation(0),
   fSectorIterator(0),
@@ -176,6 +169,27 @@ void AliMUONSt12QuadrantSegmentation::UpdateCurrentPadValues(const AliMpPad& pad
   fZone = fSectorSegmentation->Zone(pad);
 }  
 
+
+//______________________________________________________________________________
+void AliMUONSt12QuadrantSegmentation::ReadMappingData()
+{
+// Reads mapping data
+// ---
+
+  // set path to mapping data files
+   if (!gSystem->Getenv("MINSTALL")) {    
+     TString dirPath = gSystem->Getenv("ALICE_ROOT");
+     dirPath += "/MUON/mapping"; 
+     AliMpFiles::Instance()->SetTopPath(dirPath);
+     gSystem->Setenv("MINSTALL", dirPath.Data());
+     //cout << "AliMpFiles top path set to " << dirPath << endl;	  
+   }
+  
+  AliMpReader r(fStationType, fPlaneType);
+  fSector = r.BuildSector();
+  fSectorSegmentation = new AliMpSectorSegmentation(fSector);
+}
+
 //
 // public methods
 //
@@ -198,10 +212,13 @@ void AliMUONSt12QuadrantSegmentation::SetDAnod(Float_t d)
   fWireD = d;
 }
 
+#include "AliMpMotifMap.h"
 //______________________________________________________________________________
 Bool_t  AliMUONSt12QuadrantSegmentation::HasPad(Float_t x, Float_t y, Float_t /*z*/)
 { 
 // Returns true if a pad exists in the given position
+
+  // fSector->GetMotifMap()->Print();
 
   AliMpPad pad = fSectorSegmentation
                ->PadByPosition(TVector2(x/fgkLengthUnit, y/fgkLengthUnit), false);
@@ -305,7 +322,7 @@ void AliMUONSt12QuadrantSegmentation::Init(Int_t chamber)
 // Initialize segmentation
 // ---
 
-  // find Npx, Npy and save this info
+ // find Npx, Npy and save this info
   
   // reference to chamber
  AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
@@ -614,7 +631,6 @@ Int_t AliMUONSt12QuadrantSegmentation::SigGenCond(Float_t x, Float_t y, Float_t 
   }
 }
 
-
 //______________________________________________________________________________
 void  AliMUONSt12QuadrantSegmentation::SigGenInit(Float_t x, Float_t y, Float_t /*z*/)
 {
@@ -672,4 +688,19 @@ TF1* AliMUONSt12QuadrantSegmentation::CorrFunc(Int_t isec) const
 
   return (TF1*) fCorrA->At(isec);
 } 
+
+//______________________________________________________________________________
+void AliMUONSt12QuadrantSegmentation::Streamer(TBuffer &R__b)
+{
+// Stream an object of class AliMUONSt12QuadrantSegmentation.
+
+  if (R__b.IsReading()) {
+    AliMUONSt12QuadrantSegmentation::Class()->ReadBuffer(R__b, this);
+    ReadMappingData();
+  } 
+  else {
+    AliMUONSt12QuadrantSegmentation::Class()->WriteBuffer(R__b, this);
+  }
+}
+
 

@@ -9,7 +9,7 @@
 #pragma link C++ class AliMUONFactoryV2+; 
 
 #pragma link C++ class AliMUONSt1Segmentation+; 
-#pragma link C++ class AliMUONSt12QuadrantSegmentation+; 
+#pragma link C++ class AliMUONSt12QuadrantSegmentation-; 
 
 #pragma link C++ class AliMUONSt1Response+;
 
