@@ -68,7 +68,11 @@ AliL3Histogram1D::~AliL3Histogram1D()
 
 void AliL3Histogram1D::Reset()
 {
+#if defined(__DECCXX)
+  bzero((char *)fContent,fNcells*sizeof(Double_t));
+#else
   bzero(fContent,fNcells*sizeof(Double_t));
+#endif
   fEntries=0;
 }
 

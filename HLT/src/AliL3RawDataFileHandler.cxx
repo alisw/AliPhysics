@@ -84,9 +84,17 @@ Bool_t AliL3RawDataFileHandler::SetRawInput(Char_t *name)
 
   //Open the raw data file with name.
   fInRaw = new ifstream();
+#ifndef __DECCXX
   fInRaw->open(name,fstream::binary);
+#else
+  fInRaw->open(name);
+#endif
 
+#if defined(__HP_aCC) || defined(__DECCXX)
+  if(!fInRaw->rdbuf()->is_open()){
+#else
   if(!fInRaw->is_open()){
+#endif
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::SetRawInput","File Open")
       <<"Pointer to ifstream = 0x0"<<ENDLOG;
     return kFALSE;
@@ -106,7 +114,11 @@ Bool_t AliL3RawDataFileHandler::SetRawInput(ifstream *file)
   //Open the raw data file with given file.
   fInRaw = file;
 
+#if defined(__HP_aCC) || defined(__DECCXX)
+  if(!fInRaw->rdbuf()->is_open()){
+#else
   if(!fInRaw->is_open()){
+#endif
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::SetRawInput","File Open")
       <<"Pointer to ifstream = 0x0"<<ENDLOG;
     return kFALSE;
@@ -122,7 +134,11 @@ void AliL3RawDataFileHandler::CloseRawInput()
       <<"Nothing to Close"<<ENDLOG;
     return;
   }
+#if defined(__HP_aCC) || defined(__DECCXX)
+  if(fInRaw->rdbuf()->is_open()) fInRaw->close();
+#else
   if(fInRaw->is_open()) fInRaw->close();
+#endif
   delete fInRaw;
   fInRaw = 0;
 }
@@ -136,9 +152,17 @@ Bool_t AliL3RawDataFileHandler::SetRawOutput(Char_t *name)
   }
 
   fOutRaw = new ofstream();
+#ifndef __DECCXX
   fOutRaw->open(name,fstream::binary);
+#else
+  fOutRaw->open(name);
+#endif
 
+#if defined(__HP_aCC) || defined(__DECCXX)
+  if(!fOutRaw->rdbuf()->is_open()){
+#else
   if(!fOutRaw->is_open()){
+#endif
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::SetRawOutput","File Open")
       <<"Pointer to ofstream = 0x0"<<ENDLOG;
     return kFALSE;
@@ -158,7 +182,11 @@ Bool_t AliL3RawDataFileHandler::SetRawOutput(ofstream *file)
   //Open the raw data file with given file.
   fOutRaw = file;
 
+#if defined(__HP_aCC) || defined(__DECCXX)
+  if(!fOutRaw->rdbuf()->is_open()){
+#else
   if(!fOutRaw->is_open()){
+#endif
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::SetRawOutput","File Open")
       <<"Pointer to ofstream = 0x0"<<ENDLOG;
     return kFALSE;
@@ -174,7 +202,11 @@ void AliL3RawDataFileHandler::CloseRawOutput()
       <<"Nothing to Close"<<ENDLOG;
     return;
   }
+#if defined(__HP_aCC) || defined(__DECCXX)
+  if(fOutRaw->rdbuf()->is_open()) fOutRaw->close();
+#else
   if(fOutRaw->is_open()) fOutRaw->close();
+#endif
   delete fOutRaw;
   fOutRaw = 0;
 }
@@ -190,9 +222,17 @@ Bool_t AliL3RawDataFileHandler::SetRawPedestalsInput(Char_t *name)
 
   //Open the raw data file with name.
   fInRawPed = new ifstream();
+#ifndef __DECCXX
   fInRawPed->open(name,fstream::binary);
+#else
+  fInRawPed->open(name);
+#endif
 
+#if defined(__HP_aCC) || defined(__DECCXX)
+  if(!fInRawPed->rdbuf()->is_open()){
+#else
   if(!fInRawPed->is_open()){
+#endif
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::SetRawPedestalsInput","File Open")
       <<"Pointer to ifstream = 0x0"<<ENDLOG;
     return kFALSE;
@@ -212,7 +252,11 @@ Bool_t AliL3RawDataFileHandler::SetRawPedestalsInput(ifstream *file)
   //Open the raw data file with given file.
   fInRawPed = file;
 
+#if defined(__HP_aCC) || defined(__DECCXX)
+  if(!fInRawPed->rdbuf()->is_open()){
+#else
   if(!fInRawPed->is_open()){
+#endif
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::SetRawPedestalsInput","File Open")
       <<"Pointer to ifstream = 0x0"<<ENDLOG;
     return kFALSE;
@@ -228,7 +272,11 @@ void AliL3RawDataFileHandler::CloseRawPedestalsInput()
       <<"Nothing to Close"<<ENDLOG;
     return;
   }
+#if defined(__HP_aCC) || defined(__DECCXX)
+  if(fInRawPed->rdbuf()->is_open()) fInRawPed->close();
+#else
   if(fInRawPed->is_open()) fInRawPed->close();
+#endif
   delete fInRawPed;
   fInRaw = 0;
 }
@@ -360,7 +408,11 @@ Int_t AliL3RawDataFileHandler::ReadRawInput()
     return 0; 
   }
 
+#if defined(__HP_aCC) || defined(__DECCXX)
+  if(!fInRaw->rdbuf()->is_open()){
+#else
   if(!fInRaw->is_open()){
+#endif
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::ReadRawInput","File Open")
       <<"No Input avalible: ifstream not opened"<<ENDLOG;
     return 0;
@@ -457,7 +509,11 @@ Int_t AliL3RawDataFileHandler::StoreRawData(Short_t **charges)
     return 0; 
   }
 
+#if defined(__HP_aCC) || defined(__DECCXX)
+  if(!fOutRaw->rdbuf()->is_open()){
+#else
   if(!fOutRaw->is_open()){
+#endif
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::StoreRawData","File Open")
       <<"No Output avalible: ofstream not opened"<<ENDLOG;
     return 0;
@@ -500,7 +556,11 @@ Int_t AliL3RawDataFileHandler::ReadRawPedestalsInput()
     return 0; 
   }
 
+#if defined(__HP_aCC) || defined(__DECCXX)
+  if(!fInRawPed->rdbuf()->is_open()){
+#else
   if(!fInRawPed->is_open()){
+#endif
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::ReadRawPedestalsInput","File Open")
       <<"No Input avalible: ifstream not opened"<<ENDLOG;
     return 0;

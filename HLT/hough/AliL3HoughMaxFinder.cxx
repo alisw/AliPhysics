@@ -843,7 +843,11 @@ void AliL3HoughMaxFinder::FindPeak1(Int_t y_window,Int_t x_bin_sides)
   for(Int_t i=0; i<nbinsx; i++)
     {
       windowPt[i] = new AxisWindow;
+#if defined(__DECCXX)
+      bzero((char *)windowPt[i],sizeof(AxisWindow));
+#else
       bzero((void*)windowPt[i],sizeof(AxisWindow));
+#endif
       anotherPt[i] = windowPt[i];
     }
   
