@@ -268,11 +268,11 @@ void AliFMDv1::CreateGeometry()
            
      //Granularity
     fSectorsSi1=20;
-    //    fRingsSi1=256*2;
-     fRingsSi1=3; // for drawing only
+        fRingsSi1=256*2;
+	//  fRingsSi1=3; // for drawing only
     fSectorsSi2=40;
-    //   fRingsSi2=128*2;
-       fRingsSi2=3; //for  drawing onl
+       fRingsSi2=128*2;
+       //   fRingsSi2=3; //for  drawing onl
     if(ifmd==1||ifmd==3)
       { 
         gMC->Gsdvn(nameSector, nameSi , fSectorsSi2, 2);

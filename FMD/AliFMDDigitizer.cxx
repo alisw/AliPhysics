@@ -34,6 +34,7 @@
 #include <TRandom.h>
 
 
+#include "AliLog.h"
 #include "AliFMDDigitizer.h"
 #include "AliFMD.h"
 #include "AliFMDhit.h"
@@ -63,9 +64,7 @@ AliFMDDigitizer::AliFMDDigitizer(AliRunDigitizer* manager)
 {
   // ctor which should be used
   //  fDebug =0;
-#ifdef DEBUG
-     Info("AliFMDDigitizer"," processed");
-#endif
+  AliDebug(1," processed");
 }
 
 //------------------------------------------------------------------------
@@ -104,9 +103,7 @@ void AliFMDDigitizer::Exec(Option_t * /*option*/)
   pOutFMD = outRL->GetLoader("FMDLoader");
 
 
-#ifdef DEBUG
-  Info("Hits2Digits Exec"," start...";
-#endif
+  AliDebug(1," start...");
 
 
   Int_t volume, sector, ring, charge;
@@ -131,7 +128,7 @@ void AliFMDDigitizer::Exec(Option_t * /*option*/)
 
   if (inRL == 0x0)
     {
-      Error("Exec","Can not find Run Loader for input stream 0");
+      AliError("Can not find Run Loader for input stream 0");
       return;
     }
 
@@ -141,7 +138,7 @@ void AliFMDDigitizer::Exec(Option_t * /*option*/)
 
   if (fFMD == 0x0)
    {
-     Error("Exec","Can not get FMD from gAlice");
+     AliError("Can not get FMD from gAlice");
      return;
    }
 // Loop over files to digitize
@@ -150,9 +147,7 @@ void AliFMDDigitizer::Exec(Option_t * /*option*/)
   for (Int_t inputFile=0; inputFile<nFiles;inputFile++) 
    {
 
-#ifdef DEBUG
-  Info(" Digitizing event number ",fManager->GetOutputEventNr()) ;
-#endif
+  AliDebug(1,Form(" Digitizing event number %d",fManager->GetOutputEventNr()));
  
     if (fFMD)
      {
@@ -172,7 +167,7 @@ void AliFMDDigitizer::Exec(Option_t * /*option*/)
       if (brHits) {
           fFMD->SetHitsAddressBranch(brHits);
       }else{
-        Fatal("Exec","EXEC Branch FMD hit not found");
+        AliFatal("Branch FMD hit not found");
       }
       TClonesArray *fFMDhits = fFMD->Hits ();
       

@@ -21,7 +21,6 @@ class AliFMDDigitizer : public AliDigitizer {
   Int_t PutNoise(Int_t charge) {return (Int_t)(gRandom->Gaus(charge,500));}
   TClonesArray *Digits() const {return fDigits;}
   TClonesArray *Hits() const {return fHits;}
-   Bool_t GetDebug() const {return fManager->GetDebug();}
 
   
   enum {kBgTag = -1};
