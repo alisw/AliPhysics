@@ -109,6 +109,7 @@
 #include <TStopwatch.h>
 #include <TSystem.h>
 
+#include "AliLog.h"
 #include "AliDigitizer.h"
 #include "AliGenerator.h"
 #include "AliModule.h"
@@ -238,6 +239,8 @@ void AliSimulation::SetGAliceFile(const char* fileName)
     fGAliceFileName = absFileName;
     delete[] absFileName;
   }
+
+  AliDebug(2, Form("galice file name set to %s", fileName));
 }
 
 //_____________________________________________________________________________
@@ -291,10 +294,10 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   // hits -> digits
   if (!fMakeDigitsFromHits.IsNull()) {
     if (fBkgrdFileNames && (fBkgrdFileNames->GetEntriesFast() > 0)) {
-      Warning("Run", "Merging and direct creation of digits from hits " 
-	      "was selected for some detectors. "
-	      "No merging will be done for the following detectors: %s",
-	      fMakeDigitsFromHits.Data());
+      AliWarning(Form("Merging and direct creation of digits from hits " 
+                 "was selected for some detectors. "
+                 "No merging will be done for the following detectors: %s",
+                 fMakeDigitsFromHits.Data()));
     }
     if (!RunHitsDigitization(fMakeDigitsFromHits)) {
       if (fStopOnError) return kFALSE;
@@ -321,29 +324,28 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   stopwatch.Start();
 
   if (!gAlice) {
-    Error("RunSimulation", "no gAlice object. Restart aliroot and try again.");
+    AliError("no gAlice object. Restart aliroot and try again.");
     return kFALSE;
   }
   if (gAlice->Modules()->GetEntries() > 0) {
-    Error("RunSimulation", 
-	  "gAlice was already run. Restart aliroot and try again.");
+    AliError("gAlice was already run. Restart aliroot and try again.");
     return kFALSE;
   }
 
-  Info("RunSimulation", "initializing gAlice with config file %s",
-       fConfigFileName.Data());
+  AliInfo(Form("initializing gAlice with config file %s",
+          fConfigFileName.Data()));
   gAlice->Init(fConfigFileName.Data());
   AliRunLoader* runLoader = gAlice->GetRunLoader();
   if (!runLoader) {
-    Error("RunSimulation", "gAlice has no run loader object. "
-	  "Check your config file: %s", fConfigFileName.Data());
+    AliError(Form("gAlice has no run loader object. "
+                  "Check your config file: %s", fConfigFileName.Data()));
     return kFALSE;
   }
   SetGAliceFile(runLoader->GetFileName());
 
   if (!gAlice->Generator()) {
-    Error("RunSimulation", "gAlice has no generator object. "
-	  "Check your config file: %s", fConfigFileName.Data());
+    AliError(Form("gAlice has no generator object. "
+                  "Check your config file: %s", fConfigFileName.Data()));
     return kFALSE;
   }
   if (nEvents <= 0) nEvents = fNEvents;
@@ -354,9 +356,9 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
     Int_t signalPerBkgrd = GetNSignalPerBkgrd(nEvents);
     const char* fileName = ((TObjString*)
 			    (fBkgrdFileNames->At(0)))->GetName();
-    Info("RunSimulation", "The vertex will be taken from the background "
-	 "file %s with nSignalPerBackground = %d", 
-	 fileName, signalPerBkgrd);
+    AliInfo(Form("The vertex will be taken from the background "
+                 "file %s with nSignalPerBackground = %d", 
+                 fileName, signalPerBkgrd));
     AliVertexGenFile* vtxGen = new AliVertexGenFile(fileName, signalPerBkgrd);
     gAlice->Generator()->SetVertexGenerator(vtxGen);
   }
@@ -374,30 +376,30 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
     loaderName += "Loader";
     AliLoader* loader = runLoader->GetLoader(loaderName);
     if (!loader) {
-      Error("RunSimulation", "no loader for %s found\n"
-	    "Number of events per file not set for %s %s", 
-	    detName, typeName, detName);
+      AliError(Form("RunSimulation", "no loader for %s found\n"
+                    "Number of events per file not set for %s %s", 
+                    detName, typeName, detName));
       continue;
     }
     AliDataLoader* dataLoader = 
       loader->GetDataLoader(typeName);
     if (!dataLoader) {
-      Error("RunSimulation", "no data loader for %s found\n"
-	    "Number of events per file not set for %s %s", 
-	    typeName, detName, typeName);
+      AliError(Form("no data loader for %s found\n"
+                    "Number of events per file not set for %s %s", 
+                    typeName, detName, typeName));
       continue;
     }
     dataLoader->SetNumberOfEventsPerFile(fEventsPerFile[i]->GetUniqueID());
-    Info("RunSimulation", "number of events per file set to %d for %s %s",
-	 fEventsPerFile[i]->GetUniqueID(), detName, typeName);
+    AliDebug(1, Form("number of events per file set to %d for %s %s",
+                     fEventsPerFile[i]->GetUniqueID(), detName, typeName));
   }
 
-  Info("RunSimulation", "running gAlice");
+  AliInfo("running gAlice");
   gAlice->Run(nEvents);
 
   delete runLoader;
 
-  Info("RunSimulation", "execution time:");
+  AliInfo("execution time:");
   stopwatch.Print();
 
   return kTRUE;
@@ -420,25 +422,24 @@ Bool_t AliSimulation::RunSDigitization(const char* detectors)
     AliModule* det = (AliModule*) detArray->At(iDet);
     if (!det || !det->IsActive()) continue;
     if (IsSelected(det->GetName(), detStr)) {
-      Info("RunSDigitization", "creating summable digits for %s", 
-	   det->GetName());
+      AliInfo(Form("creating summable digits for %s", det->GetName()));
       TStopwatch stopwatchDet;
       stopwatchDet.Start();
       det->Hits2SDigits();
-      Info("RunSDigitization", "execution time for %s:", det->GetName());
+      AliInfo(Form("execution time for %s:", det->GetName()));
       stopwatchDet.Print();
     }
   }
 
   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
-    Error("RunSDigitization", "the following detectors were not found: %s", 
-	  detStr.Data());
+    AliError(Form("the following detectors were not found: %s",
+                  detStr.Data()));
     if (fStopOnError) return kFALSE;
   }
 
   delete runLoader;
 
-  Info("RunSDigitization", "execution time:");
+  AliInfo("execution time:");
   stopwatch.Print();
 
   return kTRUE;
@@ -482,7 +483,7 @@ Bool_t AliSimulation::RunDigitization(const char* detectors,
 	!IsSelected(det->GetName(), detExcl)) {
       AliDigitizer* digitizer = det->CreateDigitizer(manager);
       if (!digitizer) {
-	Error("RunDigitization", "no digitizer for %s", det->GetName());
+	AliError(Form("no digitizer for %s", det->GetName()));
 	if (fStopOnError) return kFALSE;
       } else {
 	digitizer->SetRegionOfInterest(fRegionOfInterest);
@@ -491,19 +492,19 @@ Bool_t AliSimulation::RunDigitization(const char* detectors,
   }
 
   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
-    Error("RunDigitization", "the following detectors were not found: %s", 
-	  detStr.Data());
+    AliError(Form("the following detectors were not found: %s", 
+                  detStr.Data()));
     if (fStopOnError) return kFALSE;
   }
 
   if (!manager->GetListOfTasks()->IsEmpty()) {
-    Info("RunDigitization", "executing digitization");
+    AliInfo("executing digitization");
     manager->Exec("");
   }
 
   delete manager;
 
-  Info("RunDigitization", "execution time:");
+  AliInfo("execution time:");
   stopwatch.Print();
 
   return kTRUE;
@@ -526,21 +527,20 @@ Bool_t AliSimulation::RunHitsDigitization(const char* detectors)
     AliModule* det = (AliModule*) detArray->At(iDet);
     if (!det || !det->IsActive()) continue;
     if (IsSelected(det->GetName(), detStr)) {
-      Info("RunHitsDigitization", "creating digits from hits for %s", 
-	   det->GetName());
+      AliInfo(Form("creating digits from hits for %s", det->GetName()));
       det->Hits2Digits();
     }
   }
 
   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
-    Error("RunHitsDigitization", "the following detectors were not found: %s", 
-	  detStr.Data());
+    AliError(Form("the following detectors were not found: %s", 
+                  detStr.Data()));
     if (fStopOnError) return kFALSE;
   }
 
   delete runLoader;
 
-  Info("RunHitsDigitization", "execution time:");
+  AliInfo("execution time:");
   stopwatch.Print();
 
   return kTRUE;
@@ -594,7 +594,7 @@ Bool_t AliSimulation::WriteRawData(const char* detectors,
     }
   }
 
-  Info("WriteRawData", "execution time:");
+  AliInfo("execution time:");
   stopwatch.Print();
 
   return kTRUE;
@@ -610,14 +610,14 @@ Bool_t AliSimulation::WriteRawFiles(const char* detectors)
 
   // write raw data to DDL files
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
-    Info("WriteRawFiles", "processing event %d", iEvent);
+    AliInfo(Form("processing event %d", iEvent));
     runLoader->GetEvent(iEvent);
     TString baseDir = gSystem->WorkingDirectory();
     char dirName[256];
     sprintf(dirName, "raw%d", iEvent);
     gSystem->MakeDirectory(dirName);
     if (!gSystem->ChangeDirectory(dirName)) {
-      Error("WriteRawData", "couldn't change to directory %s", dirName);
+      AliError(Form("couldn't change to directory %s", dirName));
       if (fStopOnError) return kFALSE; else continue;
     }
 
@@ -627,16 +627,15 @@ Bool_t AliSimulation::WriteRawFiles(const char* detectors)
       AliModule* det = (AliModule*) detArray->At(iDet);
       if (!det || !det->IsActive()) continue;
       if (IsSelected(det->GetName(), detStr)) {
-	Info("WriteRawData", "creating raw data from digits for %s", 
-	     det->GetName());
+	AliInfo(Form("creating raw data from digits for %s", det->GetName()));
 	det->Digits2Raw();
       }
     }
 
     gSystem->ChangeDirectory(baseDir);
     if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
-      Error("WriteRawData", "the following detectors were not found: %s", 
-	    detStr.Data());
+      AliError(Form("the following detectors were not found: %s", 
+                    detStr.Data()));
       if (fStopOnError) return kFALSE;
     }
   }
@@ -670,7 +669,7 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName)
 
   char* path = gSystem->Which(gSystem->Getenv("PATH"), "dateStream");
   if (!path) {
-    Error("ConvertRawFilesToDate", "the program dateStream was not found");
+    AliError("the program dateStream was not found");
     if (fStopOnError) return kFALSE;
   } else {
     delete[] path;
@@ -679,8 +678,7 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName)
   AliRunLoader* runLoader = LoadRun("READ");
   if (!runLoader) return kFALSE;
 
-  Info("ConvertRawFilesToDate", 
-       "converting raw data DDL files to DATE file %s", dateFileName);
+  AliInfo(Form("converting raw data DDL files to DATE file %s", dateFileName));
   char command[256];
   sprintf(command, "dateStream -o %s -# %d -C", 
 	  dateFileName, runLoader->GetNumberOfEvents());
@@ -742,14 +740,14 @@ Bool_t AliSimulation::ConvertDateToRoot(const char* dateFileName,
 
   char* path = gSystem->Which(gSystem->Getenv("PATH"), "alimdc");
   if (!path) {
-    Error("ConvertDateToRoot", "the program alimdc was not found");
+    AliError("the program alimdc was not found");
     if (fStopOnError) return kFALSE;
   } else {
     delete[] path;
   }
 
-  Info("ConvertDateToRoot", "converting DATE file %s to root file %s", 
-       dateFileName, rootFileName);
+  AliInfo(Form("converting DATE file %s to root file %s", 
+               dateFileName, rootFileName));
 
   gSystem->Exec("rm -rf /tmp/mdc1");
   gSystem->Exec("rm -rf /tmp/mdc2");
@@ -776,15 +774,14 @@ AliRunLoader* AliSimulation::LoadRun(const char* mode) const
     AliRunLoader::Open(fGAliceFileName.Data(), 
 		       AliConfig::GetDefaultEventFolderName(), mode);
   if (!runLoader) {
-    Error("LoadRun", "no run loader found in file %s", 
-	  fGAliceFileName.Data());
+    AliError(Form("no run loader found in file %s", fGAliceFileName.Data()));
     return NULL;
   }
   runLoader->LoadgAlice();
   gAlice = runLoader->GetAliRun();
   if (!gAlice) {
-    Error("LoadRun", "no gAlice object found in file %s", 
-	  fGAliceFileName.Data());
+    AliError(Form("no gAlice object found in file %s", 
+                  fGAliceFileName.Data()));
     return NULL;
   }
   return runLoader;
@@ -824,18 +821,17 @@ Int_t AliSimulation::GetNSignalPerBkgrd(Int_t nEvents) const
     if (nSignalPerBkgrd <= 0) {
       nSignalPerBkgrd = (nEvents-1) / nBkgrdEvents + 1;
     } else if (result && (result != nSignalPerBkgrd)) {
-      Info("GetNSignalPerBkgrd", "the number of signal events per "
-	   "background event will be changed from %d to %d for stream %d", 
-	   nSignalPerBkgrd, result, iBkgrdFile+1);
+      AliInfo(Form("the number of signal events per background event "
+                   "will be changed from %d to %d for stream %d", 
+                   nSignalPerBkgrd, result, iBkgrdFile+1));
       nSignalPerBkgrd = result;
     }
 
     if (!result) result = nSignalPerBkgrd;
     if (nSignalPerBkgrd * nBkgrdEvents < nEvents) {
-      Warning("GetNSignalPerBkgrd", "not enough background events (%d) for "
-	      "%d signal events using %d signal per background events for "
-	      "stream %d", 
-	      nBkgrdEvents, nEvents, nSignalPerBkgrd, iBkgrdFile+1);
+      AliWarning(Form("not enough background events (%d) for %d signal events "
+                      "using %d signal per background events for stream %d",
+                      nBkgrdEvents, nEvents, nSignalPerBkgrd, iBkgrdFile+1));
     }
   }
 
