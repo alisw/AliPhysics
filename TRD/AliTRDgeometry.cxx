@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2001/08/02 08:30:45  cblume
+Fix positions of cooling material
+
 Revision 1.12  2001/05/21 16:45:47  hristov
 Last minute changes (C.Blume)
 
@@ -467,9 +470,9 @@ Bool_t AliTRDgeometry::Local2Global(Int_t iplan, Int_t icham, Int_t isect
 
   Int_t    idet      = GetDetector(iplan,icham,isect); // Detector number
 
-  Float_t  padRow    = local[0];                       // Pad Row position
-  Float_t  padCol    = local[1];                       // Pad Column position
-  Float_t  timeSlice = local[2];                       // Time "position"
+  Float_t  padRow    = local[0]+0.5;                   // Pad Row position
+  Float_t  padCol    = local[1]+0.5;                   // Pad Column position
+  Float_t  timeSlice = local[2]+0.5;                   // Time "position"
 
   Float_t  row0      = GetRow0(iplan,icham,isect);
   Float_t  col0      = GetCol0(iplan);

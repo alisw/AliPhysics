@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.25  2001/06/27 09:54:44  cblume
+Moved fField initialization to InitDetector()
+
 Revision 1.24  2001/05/21 16:45:47  hristov
 Last minute changes (C.Blume)
 
@@ -1277,6 +1280,17 @@ Bool_t AliTRDdigitizer::MakeDigits()
                                                     ,totalSizeDict0
                                                     ,totalSizeDict1
                                                     ,totalSizeDict2);        
+
+  return kTRUE;
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDdigitizer::Merge(TTree *trees, Int_t *mask, Int_t nin, Int_t event)
+{
+  //
+  // Merges the summable digits of different events
+  //
 
   return kTRUE;
 

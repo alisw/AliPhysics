@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+/* $Id$ */                   
 
 #include <TNamed.h>
 
@@ -25,36 +25,45 @@ class AliTRDpid : public TNamed {
 
   virtual void          Copy(TObject &p);
   virtual Bool_t        Init();
-  virtual Bool_t        AssignLQ(TObjArray *tarray);
-  virtual Bool_t        AssignLQ(AliTRDtrack *t);
-  virtual Bool_t        FillQspectra();
-  virtual Bool_t        FillQspectra(const AliTRDtrack *t);
-  virtual Bool_t        CreateHistograms(const Int_t nmom
-                                       , const Float_t minmom
-                                       , const Float_t maxmom);
-  virtual Float_t       LQPion(const Float_t *charge);
-  virtual Float_t       LQElectron(const Float_t *charge);
+  virtual Bool_t        AssignLikelihood();
+  virtual Bool_t        AssignLikelihood(TObjArray *tarray);
+  virtual Bool_t        AssignLikelihood(AliTRDtrack *t) = 0;
+  virtual Bool_t        FillSpectra();
+  virtual Bool_t        FillSpectra(TObjArray *tarray);
+  virtual Bool_t        FillSpectra(const AliTRDtrack *t) = 0;
   virtual Bool_t        Open(const Char_t *name, Int_t event = 0);
   virtual Bool_t        Open(const Char_t *namekine
                            , const Char_t *namecluster
                            , const Char_t *nametracks, Int_t event = 0); 
-  virtual Int_t         Pid(const AliTRDtrack *t);
+  virtual Int_t         MCpid(const AliTRDtrack *t);
+  virtual Int_t         MCpid(const AliTRDtrack *t, Int_t *pdg, Int_t *nFound, Int_t *indices);
   virtual Bool_t        ReadCluster(const Char_t *name);
   virtual Bool_t        ReadTracks(const Char_t *name);
   virtual Bool_t        ReadKine(const Char_t *name, Int_t event);
-  virtual Bool_t        SumCharge(const AliTRDtrack *t, Float_t *charge);
+  virtual Bool_t        SumCharge(const AliTRDtrack *t, Float_t *charge, Int_t *nCluster);
 
-  inline  Int_t         GetIndexLQ(const Int_t imom, const Int_t ipid);
-  inline  Int_t         GetIndexLQ(const Float_t mom, const Int_t ipid);
-  inline  Int_t         GetIndexQ(const Int_t imom, const Int_t ipla, const Int_t ipid);   
-  inline  Int_t         GetIndexQ(const Float_t mom, const Int_t ipla, const Int_t ipid);
+  virtual Int_t         GetIndex(const AliTRDtrack *t) = 0;
 
-          TObjArray*    GetQHist() const                    { return fQHist;  };
-          TObjArray*    GetLQHist() const                   { return fLQHist; };
+          void          SetGeometry(AliTRDgeometry *geo)    { fGeometry      = geo;    };
+          void          SetTrackArray(TObjArray *tarray)    { fTrackArray    = tarray; };
+          void          SetClusterArray(TObjArray *carray)  { fClusterArray  = carray; };
 
-          void          SetGeometry(AliTRDgeometry *geo)    { fGeometry     = geo;    };
-          void          SetTrackArray(TObjArray *tarray)    { fTrackArray   = tarray; };
-          void          SetClusterArray(TObjArray *carray)  { fClusterArray = carray; };
+          void          SetPIDratioMin(Float_t min)         { fPIDratioMin   = min;    };
+          void          SetPIDpurePoints(Bool_t pure)       { fPIDpurePoints = pure;   };
+          void          SetPIDindexMin(Int_t min)           { fPIDindexMin   = min;    };
+          void          SetPIDindexMax(Int_t max)           { fPIDindexMax   = max;    };
+
+          void          SetThreePadOnly(Bool_t only)        { fThreePadOnly  = only;   };
+
+          TObjArray    *GetTrackArray()                     { return fTrackArray;      }; 
+          TObjArray    *GetClusterArray()                   { return fClusterArray;    };
+
+          Float_t       GetPIDratioMin()                    { return fPIDratioMin;     };
+          Bool_t        GetPIDpurePoints()                  { return fPIDpurePoints;   };
+          Float_t       GetPIDindexMin()                    { return fPIDindexMin;     };
+          Float_t       GetPIDindexMax()                    { return fPIDindexMax;     };
+
+          Bool_t        GetThreePadOnly()                   { return fThreePadOnly;    };
 
  protected:
 
@@ -64,17 +73,19 @@ class AliTRDpid : public TNamed {
     kPion     = 1                    //  Pion pid
   };
 
-  Int_t           fNMom;             //  Number of momentum bins
-  Float_t         fMinMom;           //  Lower momentum
-  Float_t         fMaxMom;           //  Upper momentum
-  Float_t         fWidMom;           //  Width of the momentum bins
-  TObjArray      *fLQHist;           //  Array of L-Q histograms
-  TObjArray      *fQHist;            //  Array of Q histograms
+  Float_t         fPIDratioMin;      //  Minimum fraction of cluster from one particle
+  Bool_t          fPIDpurePoints;    //  Require pure (nono overlapping) cluster
+  Int_t           fPIDindexMin;      //  Lower index MC particles to be considered
+  Int_t           fPIDindexMax;      //  Upper index MC particles to be considered
+
+  Bool_t          fThreePadOnly;     //  Use only three pad cluster in the charge sum
+
   TObjArray      *fTrackArray;       //! Array containing the tracks
   TObjArray      *fClusterArray;     //! Array containing the cluster
   AliTRDgeometry *fGeometry;         //! The TRD geometry
+  TFile          *fFileKine;         //! The kine input file
 
-  ClassDef(AliTRDpid,1)              //  Assigns e/pi propability to the tracks 
+  ClassDef(AliTRDpid,1)              //  Assigns the e/pi propability to the tracks 
 
 };
 #endif

@@ -30,7 +30,7 @@ public:
 
 protected:
  
-   unsigned fN;
+   UInt_t fN;
    AliTRDcluster *fClusters[kMAX_CLUSTER_PER_TIME_BIN];
    UInt_t fIndex[kMAX_CLUSTER_PER_TIME_BIN]; 
 

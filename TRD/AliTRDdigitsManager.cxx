@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2001/05/16 14:57:28  alibrary
+New files for folders and Stack
+
 Revision 1.11  2001/03/13 09:30:35  cblume
 Update of digitization. Moved digit branch definition to AliTRD
 
@@ -159,6 +162,18 @@ void AliTRDdigitsManager::SetRaw()
   
 }
 
+//_____________________________________________________________________________
+Short_t AliTRDdigitsManager::GetDigitAmp(Int_t row, Int_t col,Int_t time
+                                       , Int_t det) const
+{
+  //
+  // Returns the amplitude of a digit
+  //
+
+  return ((Short_t) GetDigits(det)->GetData(row,col,time));
+
+}
+ 
 //_____________________________________________________________________________
 Bool_t AliTRDdigitsManager::MakeBranch(char *file)
 {

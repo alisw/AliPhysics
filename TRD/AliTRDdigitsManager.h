@@ -49,6 +49,7 @@ class AliTRDdigitsManager : public TObject {
           AliTRDdataArrayI   *GetDigits(Int_t det) const;
           AliTRDdataArrayI   *GetDictionary(Int_t det, Int_t i) const;
           Int_t               GetTrack(Int_t track, AliTRDdigit *Digit) const;
+          Short_t             GetDigitAmp(Int_t row, Int_t col, Int_t time, Int_t det) const;
 
  protected:
 

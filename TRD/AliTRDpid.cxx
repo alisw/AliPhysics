@@ -15,14 +15,17 @@
 
 /*
 $Log$
+Revision 1.1  2001/05/07 08:08:05  cblume
+Update of TRD code
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//   The TRD particle identification class                                   //
+//   The TRD particle identification base class                              //
 //                                                                           //
 //   Its main purposes are:                                                  //
-//      - Creation and bookkeeping of the propability distributions          //
+//      - Provide I/O framework for all neccessary files                     //
 //      - Assignment of a e/pi propability to a given track                  //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
@@ -54,16 +57,17 @@ AliTRDpid::AliTRDpid():TNamed()
   // AliTRDpid default constructor
   // 
 
-  fNMom   = 0;
-  fMinMom = 0;
-  fMaxMom = 0;
-  fWidMom = 0;
+  fTrackArray    = NULL;
+  fClusterArray  = NULL;
+  fGeometry      = NULL;
+  fFileKine      = NULL;
 
-  fQHist        = NULL;
-  fLQHist       = NULL;
-  fTrackArray   = NULL;
-  fClusterArray = NULL;
-  fGeometry     = NULL;
+  fPIDratioMin   = 0.0;
+  fPIDpurePoints = kFALSE;
+  fPIDindexMin   = 0;
+  fPIDindexMax   = 0;
+
+  fThreePadOnly  = kFALSE;
 
 }
 
@@ -74,16 +78,10 @@ AliTRDpid::AliTRDpid(const char* name, const char* title):TNamed(name,title)
   // AliTRDpid constructor
   //
 
-  fNMom   = 0;
-  fMinMom = 0;
-  fMaxMom = 0;
-  fWidMom = 0;
-
-  fQHist        = NULL;
-  fLQHist       = NULL;
   fTrackArray   = NULL;
   fClusterArray = NULL;
   fGeometry     = NULL;
+  fFileKine     = NULL;
 
   Init();
 
@@ -117,15 +115,7 @@ AliTRDpid::~AliTRDpid()
     delete fTrackArray;
   }
 
-  if (fQHist) {
-    fQHist->Delete();
-    delete fQHist;
-  }
-
-  if (fLQHist) {
-    fLQHist->Delete();
-    delete fLQHist;
-  }
+  fFileKine->Close();
 
 }
 
@@ -148,17 +138,15 @@ void AliTRDpid::Copy(TObject &p)
   // Copy function
   //
 
-  fQHist->Copy(*((AliTRDpid &) p).fQHist);
-  fLQHist->Copy(*((AliTRDpid &) p).fLQHist);
-
-  ((AliTRDpid &) p).fTrackArray   = NULL;    
-  ((AliTRDpid &) p).fClusterArray = NULL;    
-  ((AliTRDpid &) p).fGeometry     = NULL;    
-
-  ((AliTRDpid &) p).fNMom   = fNMom;
-  ((AliTRDpid &) p).fMinMom = fMinMom;
-  ((AliTRDpid &) p).fMaxMom = fMaxMom;
-  ((AliTRDpid &) p).fWidMom = fWidMom;
+  ((AliTRDpid &) p).fTrackArray    = NULL;    
+  ((AliTRDpid &) p).fClusterArray  = NULL;    
+  ((AliTRDpid &) p).fGeometry      = NULL;    
+  ((AliTRDpid &) p).fFileKine      = NULL;
+  ((AliTRDpid &) p).fPIDratioMin   = fPIDratioMin;
+  ((AliTRDpid &) p).fPIDpurePoints = fPIDpurePoints;
+  ((AliTRDpid &) p).fPIDindexMin   = fPIDindexMin;
+  ((AliTRDpid &) p).fPIDindexMax   = fPIDindexMax;
+  ((AliTRDpid &) p).fThreePadOnly  = fThreePadOnly;
 
 }
 
@@ -169,18 +157,36 @@ Bool_t AliTRDpid::Init()
   // Initializes the PID object 
   //
 
-  fClusterArray = new TObjArray();
-  fTrackArray   = new TObjArray();
+  fClusterArray  = new TObjArray();
+  fTrackArray    = new TObjArray();
+
+  fPIDratioMin   = 0.7;
+  fPIDpurePoints = kTRUE;
+  fPIDindexMin   = -1;
+  fPIDindexMax   = -1;
+
+  fThreePadOnly  = kFALSE;
 
   return kTRUE;
 
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDpid::AssignLQ(TObjArray *tarray)
+Bool_t AliTRDpid::AssignLikelihood()
 {
   //
-  // Assigns the e / pi Q-likelihood to all tracks in the array
+  // Assigns the e / pi likelihood to all tracks.
+  //
+
+  return AssignLikelihood(fTrackArray);
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDpid::AssignLikelihood(TObjArray *tarray)
+{
+  //
+  // Assigns the e / pi likelihood to all tracks in the array <tarray>.
   //
 
   Bool_t status = kTRUE;
@@ -189,9 +195,9 @@ Bool_t AliTRDpid::AssignLQ(TObjArray *tarray)
 
   TIter nextTrack(tarray);  
   while ((track = (AliTRDtrack *) nextTrack())) {
-    if (!AssignLQ(track)) {
+    if (!AssignLikelihood(track)) {
       status = kFALSE;
-      break;
+      continue;
     }
   }
 
@@ -200,141 +206,32 @@ Bool_t AliTRDpid::AssignLQ(TObjArray *tarray)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDpid::AssignLQ(AliTRDtrack *t)
+Bool_t AliTRDpid::FillSpectra()
 {
   //
-  // Assigns the e / pi Q-likelihood to a given track
+  // Fills the energy loss distributions with all tracks.
   //
 
-  const Int_t kNplane = AliTRDgeometry::Nplan();
-  Float_t charge[kNplane];
-
-  // Calculate the total charge in each plane
-  if (!SumCharge(t,charge)) return kFALSE;
-
-  // Assign the likelihoods 
-  t->SetLikelihoodPion(LQPion(charge));
-  t->SetLikelihoodElectron(LQElectron(charge));
-
-  return kTRUE;  
+  return FillSpectra(fTrackArray);
 
 }
-
+  
 //_____________________________________________________________________________
-Bool_t AliTRDpid::CreateHistograms(const Int_t nmom
-                                 , const Float_t minmom
-                                 , const Float_t maxmom)
+Bool_t AliTRDpid::FillSpectra(TObjArray *tarray)
 {
   //
-  // Creates the likelihood histograms
-  //
-
-  Int_t imom;
-  Int_t ipid;
-  Int_t ipla;
-
-  const Int_t kNpla = AliTRDgeometry::Nplan();
-
-  fNMom   = nmom;
-  fMinMom = minmom;
-  fMaxMom = maxmom;
-  fWidMom = (maxmom - minmom) / ((Float_t) nmom);
-
-  // The L-Q distributions
-  fLQHist = new TObjArray(kNpid * nmom);
-  for (imom = 0; imom < nmom;  imom++) {
-    for (ipid = 0; ipid < kNpid; ipid++) {
-      Int_t index = GetIndexLQ(imom,ipid);
-      Char_t name[10];
-      Char_t title[80];
-      sprintf(name ,"hLQ%03d",index);
-      if (ipid == kElectron) {
-        sprintf(title,"L-Q electron p-bin %03d",imom);
-      }
-      else {
-        sprintf(title,"L-Q pion p-bin %03d",imom);
-      }
-      TH1F *hTmp  = new TH1F(name,title,416,-0.02,1.02);
-      fLQHist->AddAt(hTmp,index);
-    }
-  }
-
-  // The Q-distributions
-  fQHist = new TObjArray(kNpla * kNpid * nmom);
-  for (imom = 0; imom < nmom;  imom++) {
-    for (ipid = 0; ipid < kNpid; ipid++) {
-      for (ipla = 0; ipla < kNpla; ipla++) {
-        Int_t index = GetIndexQ(imom,ipla,ipid);
-        Char_t name[10];
-        Char_t title[80];
-        sprintf(name ,"hQ%03d",index);
-        if (ipid == kElectron) {
-          sprintf(title,"Q electron p-bin %03d plane %d",imom,ipla);
-        }
-        else {
-          sprintf(title,"Q pion p-bin %03d plane %d",imom,ipla);
-        }
-        TH1F *hTmp  = new TH1F(name,title,100,0.0,5000.0);
-        fQHist->AddAt(hTmp,index);
-      }
-    }
-  }
-
-  return kTRUE;
-
-}
-
-//_____________________________________________________________________________
-Bool_t AliTRDpid::FillQspectra()
-{
-  //
-  // Fills the Q-spectra histograms.
+  // Fills the energy loss distributions with all tracks in <tarray>.
   //
   
   Bool_t status = kTRUE;
 
   AliTRDtrack *track;
 
-  TIter nextTrack(fTrackArray);
+  TIter nextTrack(tarray);
   while ((track = (AliTRDtrack *) nextTrack())) {
-    if (!FillQspectra(track)) {
+    if (!FillSpectra(track)) {
       status = kFALSE;
-      break;
-    }
-  }
-
-  return status;
-
-}
-
-//_____________________________________________________________________________
-Bool_t AliTRDpid::FillQspectra(const AliTRDtrack *t)
-{
-  //
-  // Fills the Q-spectra histograms with track <t>.
-  //
-
-  const Int_t kNpla = AliTRDgeometry::Nplan();
-
-  if (isnan(t->GetP())) return kTRUE;
-
-  printf("----------------------------------------------------------\n");
-  Float_t charge[kNpla];
-  Float_t mom  = t->GetP();
-  Int_t   ipid = Pid(t);
-
-  if (!SumCharge(t,charge)) return kFALSE;
-
-  printf(" ipid   = %d\n",ipid);
-  printf(" mom    = %f\n",mom);
-  printf(" charge = %8.2f, %8.2f, %8.2f, %8.2f, %8.2f, %8.2f\n"
-        ,charge[0],charge[1],charge[2],charge[3],charge[4],charge[5]);
-
-  for (Int_t ipla = 0; ipla < kNpla; ipla++) {
-    Int_t index = GetIndexQ(mom,ipla,ipid);    
-    if (index > -1) {
-      TH1F *hTmp = (TH1F *) fQHist->UncheckedAt(index);
-      hTmp->Fill(charge[ipla]);
+      continue;
     }
   }  
 
@@ -346,15 +243,15 @@ Bool_t AliTRDpid::FillQspectra(const AliTRDtrack *t)
 Bool_t AliTRDpid::Open(const Char_t *name, Int_t event)
 {
   //
-  // Opens and reads the kine tree, the geometry, the cluster array.
-  // and the track array from the file <name>
+  // Opens and reads the kine tree, the geometry, the cluster array
+  // and the track array from the file <name>.
   //
 
   Bool_t status = kTRUE;
 
-  status = ReadKine(name,event);
   status = ReadCluster(name);
   status = ReadTracks(name);
+  status = ReadKine(name,event);
 
   return status;
 
@@ -369,14 +266,14 @@ Bool_t AliTRDpid::Open(const Char_t *namekine
   //
   // Opens and reads the kine tree and the geometry from file <namekine>,
   // the cluster array from file <namecluster>,
-  // and the track array from the file <nametracks>
+  // and the track array from the file <nametracks>.
   //
 
   Bool_t status = kTRUE;
 
-  status = ReadKine(namekine,event);
   status = ReadCluster(namecluster);
   status = ReadTracks(nametracks);
+  status = ReadKine(namekine,event);
 
   return status;
 
@@ -389,19 +286,19 @@ Bool_t AliTRDpid::ReadKine(const Char_t *name, Int_t event)
   // Opens and reads the kine tree and the geometry from the file <name>.
   //
 
-  TFile *file = (TFile *) gROOT->GetListOfFiles()->FindObject(name);
-  if (!file) {
+  TFile *fFileKine = (TFile *) gROOT->GetListOfFiles()->FindObject(name);
+  if (!fFileKine) {
     printf("AliTRDpid::ReadKine -- ");
     printf("Open file %s\n",name);
-    file = new TFile(name);
-    if (!file) {
+    fFileKine = new TFile(name);
+    if (!fFileKine) {
       printf("AliTRDpid::ReadKine -- ");
       printf("Cannot open file %s\n",name);
       return kFALSE;
     }
   }
 
-  gAlice = (AliRun *) file->Get("gAlice");
+  gAlice = (AliRun *) fFileKine->Get("gAlice");
   if (!gAlice) {
     printf("AliTRDpid::ReadKine -- ");
     printf("No AliRun object found\n");    
@@ -423,8 +320,6 @@ Bool_t AliTRDpid::ReadKine(const Char_t *name, Int_t event)
     return kFALSE;
   }
 
-  file->Close(); 
-
   return kTRUE;
 
 }
@@ -435,8 +330,15 @@ Bool_t AliTRDpid::ReadCluster(const Char_t *name)
   //
   // Opens and reads the cluster array from the file <name>.
   //
+ 
+  TDirectory *savedir = gDirectory;                                                   
 
-  fClusterArray->Delete();
+  if (fClusterArray) {
+    fClusterArray->Delete();
+  }
+  else {
+    fClusterArray = new TObjArray();
+  }
 
   printf("AliTRDpid::ReadCluster -- ");
   printf("Open file %s\n",name);
@@ -452,6 +354,8 @@ Bool_t AliTRDpid::ReadCluster(const Char_t *name)
 
   delete tracker;
 
+  savedir->cd();
+
   return kTRUE;
 
 }
@@ -462,8 +366,15 @@ Bool_t AliTRDpid::ReadTracks(const Char_t *name)
   //
   // Opens and reads the track array from the file <name>.
   //
+ 
+  TDirectory *savedir = gDirectory;                                                   
 
-  fTrackArray->Delete();
+  if (fTrackArray) {
+    fTrackArray->Delete();
+  }
+  else {
+    fTrackArray = new TObjArray();
+  }
 
   TFile *file = (TFile *) gROOT->GetListOfFiles()->FindObject(name);
   if (!file) {
@@ -490,93 +401,38 @@ Bool_t AliTRDpid::ReadTracks(const Char_t *name)
 
   file->Close();
 
+  savedir->cd();
+
   return kTRUE;
 
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDpid::GetIndexQ(const Float_t mom, const Int_t ipla, const Int_t ipid)
+Int_t AliTRDpid::MCpid(const AliTRDtrack *t)
 {
   //
-  // Returns the Q-spectrum histogram index
-  //
-
-  if ((mom < fMinMom) || (mom > fMaxMom))  return -1;
-  Int_t imom = ((Int_t) ((mom - fMinMom) / fWidMom));
-  return GetIndexQ(imom,ipla,ipid);
-
-}
-
-//_____________________________________________________________________________
-Int_t AliTRDpid::GetIndexQ(const Int_t imom, const Int_t ipla, const Int_t ipid)
-{
-  //
-  // Returns the Q-spectrum histogram index
-  //
-
-  const Int_t kNpla = AliTRDgeometry::Nplan();
-  if ((ipid < 0) || (ipid >= kNpid)) return -1;
-  return imom * (kNpid * kNpla) + ipla * kNpid + ipid; 
-
-}
-
-//_____________________________________________________________________________
-Int_t AliTRDpid::GetIndexLQ(const Float_t mom, const Int_t ipid)
-{
-  //
-  // Returns the Q-likelihood histogram index
-  //
-
-  if ((mom < fMinMom) || (mom > fMaxMom))  return -1;
-  Int_t imom = ((Int_t) ((mom - fMinMom) / fWidMom));
-  return GetIndexLQ(imom,ipid);
-
-}
-
-//_____________________________________________________________________________
-Int_t AliTRDpid::GetIndexLQ(const Int_t imom, const Int_t ipid)
-{
-  //
-  // Returns the Q-likelihood histogram index
-  //
-
-  if ((ipid < 0) || (ipid >= kNpid)) return -1;
-  return imom * kNpid + ipid; 
-
-}
-
-//_____________________________________________________________________________
-Int_t AliTRDpid::Pid(const AliTRDtrack *t)
-{
-  //
-  // Determines the pid of the track <t>
-  // For a given track to be assigned an electron or pion pid it requires
-  // that more than a fraction of 0.7 of all associated cluster are 'pure'
-  // clusters -- meaning to have only contribution from one particle --
-  // of the specific particle type.
+  // Determines the pid of the MC track <t>.
   //
 
   // PDG codes
   const Int_t kPdgEl =  11;
   const Int_t kPdgPi = 211;
 
-  // Minimum fraction of cluster from one particle
-  const Float_t kRatioMin = 0.7;
-
   AliTRDcluster *cluster;
   TParticle     *particle;
 
-  Int_t   nClusterEl = 0;
-  Int_t   nClusterPi = 0;
-  Int_t   nClusterNo = 0;
+  Int_t   nClusterEl   = 0;
+  Int_t   nClusterPi   = 0;
+  Int_t   nClusterPure = 0;
+  Int_t   nClusterMix  = 0;
 
-  Float_t ratioEl    = 0;
-  Float_t ratioPi    = 0;
+  Float_t ratioEl      = 0;
+  Float_t ratioPi      = 0;
 
-  Int_t   ipid       = -1;
+  Int_t   ipid         = -1;
 
   if (!fClusterArray) {
-    printf("AliTRDpid::Pid -- ");
+    printf("AliTRDpid::MCpid -- ");
     printf("ClusterArray not defined. Initialize the PID object first\n");
     return -1;  
   }
@@ -594,23 +450,37 @@ Int_t AliTRDpid::Pid(const AliTRDtrack *t)
     // Get the first two MC track indices
     Int_t track0 = cluster->GetTrackIndex(0);
     Int_t track1 = cluster->GetTrackIndex(1);
-    printf(" track0 = %d, track1 = %d\n",track0,track1);
 
-    // Take only 'pure' cluster 
-    if ((track0 > -1) && (track1 == -1)) {
+    // Check on the track index to find the right primaries
+    if ((track0 >  fPIDindexMin) && 
+        (track0 <= fPIDindexMax)) {
 
-      particle = gAlice->Particle(track0);
-      switch (TMath::Abs(particle->GetPdgCode())) {
-      case kPdgEl:
-        nClusterEl++;
-        break;
-      case kPdgPi:
-        nClusterPi++;
-        break;
-      default:
-        nClusterNo++;
-        break;
-      };
+      // Check whether it is a pure cluster, i.e. not overlapping
+      Bool_t accept = kTRUE;
+      if ((fPIDpurePoints) && (track1 != -1)) {
+        accept = kFALSE;
+      }
+      if (accept) {
+
+        particle = gAlice->Particle(track0);
+        if (particle->GetFirstMother() == -1) {
+          switch (TMath::Abs(particle->GetPdgCode())) {
+          case kPdgEl:
+            nClusterEl++;
+            break;
+          case kPdgPi:
+            nClusterPi++;
+            break;
+          };
+          nClusterPure++;
+        }
+
+      }
+      else {
+ 
+        nClusterMix++;
+
+      }
 
     }
 
@@ -619,23 +489,125 @@ Int_t AliTRDpid::Pid(const AliTRDtrack *t)
   if (nCluster) {
     ratioEl = ((Float_t) nClusterEl) / ((Float_t) nCluster);
     ratioPi = ((Float_t) nClusterPi) / ((Float_t) nCluster);
-    if      (ratioEl > kRatioMin) {
+    if      (ratioEl > fPIDratioMin) {
       ipid = kElectron;
     }
-    else if (ratioPi > kRatioMin) {
+    else if (ratioPi > fPIDratioMin) {
       ipid = kPion;
     }
   }
-  printf(" nCluster = %d, nClusterEl = %d, nClusterPi = %d, nClusterNo = %d\n"
-	 ,nCluster,nClusterEl,nClusterPi,nClusterNo);
-  printf(" ratioEl = %f, ratioPi = %f\n",ratioEl,ratioPi);
+//   printf("AliTRDpid::MCpid -- ");
+//   printf("nCluster = %d, nClusterEl = %d, nClusterPi = %d\n"
+//   	 ,nCluster,nClusterEl,nClusterPi);
+//   printf("AliTRDpid::MCpid -- ");
+//   printf("nClusterPure = %d, nClusterMix = %d\n"
+//   	 ,nClusterPure,nClusterMix);
+//   printf("AliTRDpid::MCpid -- ");
+//   printf("ratioEl = %f, ratioPi = %f, ipid = %d\n",ratioEl,ratioPi,ipid);
 
   return ipid;
 
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDpid::SumCharge(const AliTRDtrack *t, Float_t *charge)
+Int_t AliTRDpid::MCpid(const AliTRDtrack *t, Int_t *pdg
+                                           , Int_t *nFound
+                                           , Int_t *indices)
+{
+  //
+  // Determines the pid of the MC track <t>.
+  // Returns the number of different MC particles that contribute to this
+  // track. <pdg> contains their PDG code, ordered by their frequency.
+  // <nFound> contains the corresponding number of cluster that contain
+  // contributions to this cluster.
+  //
+
+  const Int_t kNtrack = 3;
+  const Int_t kNpart  = 200;
+
+  AliTRDcluster *cluster;
+  TParticle     *particle;
+
+  Int_t nPart    = 0;
+  Int_t iPart    = 0;
+  Int_t iTrack   = 0;
+  Int_t iCluster = 0;
+
+  if (!fClusterArray) {
+    printf("AliTRDpid::MCpid -- ");
+    printf("ClusterArray not defined. Initialize the PID object first\n");
+    return -1;  
+  }
+  
+  Int_t sort[kNpart];
+  Int_t pdgTmp[kNpart];
+  Int_t nFoundTmp[kNpart];
+  Int_t indicesTmp[kNpart];
+  for (iPart = 0; iPart < kNpart; iPart++) {
+    pdg[iPart]        = 0;
+    nFound[iPart]     = 0;
+    indices[iPart]    = 0;
+    pdgTmp[iPart]     = 0;
+    nFoundTmp[iPart]  = 0;
+    indicesTmp[iPart] = 0;
+    sort[iPart]       = 0;
+  }
+
+  // Loop through all clusters associated to this track
+  Int_t nCluster = t->GetNclusters();
+  for (iCluster = 0; iCluster < nCluster; iCluster++) {
+
+    // Get a cluster
+    Int_t index = t->GetClusterIndex(iCluster);
+    if (!(cluster = (AliTRDcluster *) fClusterArray->UncheckedAt(index))) {
+      break;
+    } 
+
+    // Get the MC track indices
+    for (iTrack = 0; iTrack < kNtrack; iTrack++) {
+
+      Int_t trackIndex = cluster->GetTrackIndex(iTrack);
+      if (trackIndex >= 0) {
+        particle = gAlice->Particle(trackIndex);
+        Int_t  pdgCode = particle->GetPdgCode(); 
+        Bool_t newPart = kTRUE;
+        for (iPart = 0; iPart < nPart; iPart++) {
+         if (trackIndex == indicesTmp[iPart]) {
+            nFoundTmp[iPart]++;
+            newPart = kFALSE;
+            break;
+  	  }
+        }
+        if ((newPart) && (nPart < kNpart)) {
+          indicesTmp[nPart] = trackIndex;
+          pdgTmp[nPart]     = pdgCode;
+          nFoundTmp[nPart]++;
+          nPart++;
+        }
+      }
+
+    }
+
+  }
+
+  // Sort the arrays by the frequency of the appearance of a MC track
+  TMath::Sort(nPart,nFoundTmp,sort,kTRUE);
+  for (iPart = 0; iPart < nPart; iPart++) {
+    pdg[iPart]     = pdgTmp[sort[iPart]];
+    nFound[iPart]  = nFoundTmp[sort[iPart]];
+    indices[iPart] = indicesTmp[sort[iPart]];
+//     printf(" iPart = %d, pdg = %d, nFound = %d, indices = %d\n"
+// 	  ,iPart,pdg[iPart],nFound[iPart],indices[iPart]);
+  }
+
+  return nPart;
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDpid::SumCharge(const AliTRDtrack *t
+                           , Float_t *charge
+                           , Int_t   *nCluster)
 {
   //
   // Sums up the charge in each plane for track <t>.
@@ -647,7 +619,8 @@ Bool_t AliTRDpid::SumCharge(const AliTRDtrack *t, Float_t *charge)
 
   const Int_t kNplane = AliTRDgeometry::Nplan();
   for (Int_t iPlane = 0; iPlane < kNplane; iPlane++) {
-    charge[iPlane] = 0.0;
+    charge[iPlane]   = 0.0;
+    nCluster[iPlane] = 0;
   }
 
   if (!fClusterArray) {
@@ -662,45 +635,46 @@ Bool_t AliTRDpid::SumCharge(const AliTRDtrack *t, Float_t *charge)
   }
   
   // Loop through all clusters associated to this track
-  Int_t nCluster = t->GetNclusters();
-  for (Int_t iCluster = 0; iCluster < nCluster; iCluster++) {
+  Int_t nClus = t->GetNclusters();
+  for (Int_t iClus = 0; iClus < nClus; iClus++) {
 
     // Get a cluster
-    Int_t index = t->GetClusterIndex(iCluster);
+    Int_t index = t->GetClusterIndex(iClus);
     if (!(cluster = (AliTRDcluster *) fClusterArray->UncheckedAt(index))) {
       status = kFALSE;
       break;
     } 
 
+    if (fThreePadOnly) {
+      if ((!cluster->From2pad()) &&
+          (!cluster->From3pad())) continue;
+    }
+
     // Sum up the charge
     Int_t plane    = fGeometry->GetPlane(cluster->GetDetector());
-    charge[plane] += cluster->GetQ();
+    //charge[plane] += cluster->GetQ();
+    // Corrected charge
+    charge[plane] += t->GetClusterdQdl(iClus);
+    nCluster[plane]++;
 
   }
+//   printf("AliTRDpid::SumCharge -- ");
+//   printf("charge = %d, %d, %d, %d, %d, %d\n"
+//   	 ,(Int_t) charge[0]
+//          ,(Int_t) charge[1]
+//          ,(Int_t) charge[2]
+//          ,(Int_t) charge[3]
+//          ,(Int_t) charge[4]
+//          ,(Int_t) charge[5]);
+//   printf("AliTRDpid::SumCharge -- ");
+//   printf("nCluster = %d, %d, %d, %d, %d, %d\n"
+//          ,nCluster[0]
+//          ,nCluster[1]
+//          ,nCluster[2]
+//          ,nCluster[3]
+//          ,nCluster[4]
+//          ,nCluster[5]);
 
   return status;
 
 }
-
-//_____________________________________________________________________________
-Float_t AliTRDpid::LQElectron(const Float_t *charge)
-{
-  //
-  // Returns the Q-likelihood to be a electron
-  //
-
-  return 1;
-
-}
-
-//_____________________________________________________________________________
-Float_t AliTRDpid::LQPion(const Float_t *charge)
-{
-  //
-  // Returns the Q-likelihood to be a pion
-  //
-
-  return 0;
-
-}
-

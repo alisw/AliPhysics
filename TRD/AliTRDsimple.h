@@ -1,0 +1,34 @@
+#ifndef ALITRDSIMPLE_H
+#define ALITRDSIMPLE_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+ 
+/* $Id$ */
+ 
+#include <TObject.h>
+
+class AliTRDsimpleGen;
+ 
+class AliTRDsimple : public TObject {
+ 
+ public:     
+
+  AliTRDsimple();
+  AliTRDsimple(const AliTRDsimple &s); 
+                                                                                
+  virtual ~AliTRDsimple();
+  AliTRDsimple &operator=(const AliTRDsimple &s);    
+
+  virtual void             Copy(TObject &s);
+  virtual void             ProcessEvent(Int_t ievent);
+
+  virtual AliTRDsimpleGen *GetGenerator()             { return fGenerator; };
+
+ protected:
+
+  AliTRDsimpleGen      *fGenerator;   //  The generator class for the simple simulator
+
+  ClassDef(AliTRDsimple,1)            //  Simplified TRD slow simulator
+ 
+};
+#endif                                                                          

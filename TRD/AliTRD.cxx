@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.32  2001/10/08 06:57:33  hristov
+Branches for  TRD digits are created only during the digitisation
+
 Revision 1.31  2001/08/30 09:30:30  hristov
 The split level of branches is set to 99
 
@@ -641,12 +644,15 @@ void AliTRD::CreateMaterials()
   //     Define Materials 
   //////////////////////////////////////////////////////////////////////////
 
-  AliMaterial( 1, "Al ",  26.98, 13.0, 2.7     ,     8.9 ,    37.2);
-  AliMaterial( 2, "Air",  14.61,  7.3, 0.001205, 30420.0 , 67500.0);
-  AliMaterial( 4, "Xe ", 131.29, 54.0, dxe     ,  1447.59,     0.0);
-  AliMaterial( 5, "Cu ",  63.54, 29.0, 8.96    ,     1.43,    14.8);
-  AliMaterial( 6, "C  ",  12.01,  6.0, 2.265   ,    18.8 ,    74.4);
-  AliMaterial(12, "G10",  20.00, 10.0, 1.7     ,    19.4 ,   999.0);
+  AliMaterial( 1, "Al"   ,  26.98, 13.0, 2.7     ,     8.9 ,    37.2);
+  AliMaterial( 2, "Air"  ,  14.61,  7.3, 0.001205, 30420.0 , 67500.0);
+  AliMaterial( 4, "Xe"   , 131.29, 54.0, dxe     ,  1447.59,     0.0);
+  AliMaterial( 5, "Cu"   ,  63.54, 29.0, 8.96    ,     1.43,    14.8);
+  AliMaterial( 6, "C"    ,  12.01,  6.0, 2.265   ,    18.8 ,    74.4);
+  AliMaterial(12, "G10"  ,  20.00, 10.0, 1.7     ,    19.4 ,   999.0);
+  AliMaterial(15, "Sn"   , 118.71, 50.0, 7.31    ,     1.21,    14.8);
+  AliMaterial(16, "Si"   ,  28.09, 14.0, 2.33    ,     9.36,    37.2);
+  AliMaterial(17, "Epoxy",  17.75,  8.9, 1.8     ,    21.82,   999.0);
 
   // Mixtures 
   AliMixture(3, "Polyethilene",   ape, zpe, dpe, -2, wpe);
@@ -734,6 +740,33 @@ void AliTRD::CreateMaterials()
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Rohacell (plexiglas) for the radiator
   AliMedium(15, "Rohacell",  14, 0, isxfld, sxmgmx
+                , tmaxfd, stemax, deemax, epsil, stmin);
+  // Al layer in MCMs
+  AliMedium(16, "MCM-Al"  ,   1, 0, isxfld, sxmgmx
+                , tmaxfd, stemax, deemax, epsil, stmin);
+  // Sn layer in MCMs
+  AliMedium(17, "MCM-Sn"  ,  15, 0, isxfld, sxmgmx
+                , tmaxfd, stemax, deemax, epsil, stmin);
+  // Cu layer in MCMs
+  AliMedium(18, "MCM-Cu"  ,   5, 0, isxfld, sxmgmx
+                , tmaxfd, stemax, deemax, epsil, stmin);
+  // G10 layer in MCMs
+  AliMedium(19, "MCM-G10" ,  12, 0, isxfld, sxmgmx
+                , tmaxfd, stemax, deemax, epsil, stmin);
+  // Si in readout chips
+  AliMedium(20, "Chip-Si" ,  16, 0, isxfld, sxmgmx
+                , tmaxfd, stemax, deemax, epsil, stmin);
+  // Epoxy in readout chips
+  AliMedium(21, "Chip-Ep" ,  17, 0, isxfld, sxmgmx
+                , tmaxfd, stemax, deemax, epsil, stmin);
+  // PE in connectors
+  AliMedium(22, "Conn-PE" ,   3, 0, isxfld, sxmgmx
+                , tmaxfd, stemax, deemax, epsil, stmin);
+  // Cu in connectors
+  AliMedium(23, "Chip-Cu" ,   5, 0, isxfld, sxmgmx
+                , tmaxfd, stemax, deemax, epsil, stmin);
+  // Al of cooling pipes
+  AliMedium(24, "Cooling" ,   1, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
 
   // Save the density values for the TRD absorbtion
