@@ -9,13 +9,14 @@
 #ifndef TG4V_RUN_CONFIGURATION_H
 #define TG4V_RUN_CONFIGURATION_H
 
+class TG4TrackingAction;
+class TG4SteppingAction;
+
 class G4VUserDetectorConstruction;
 class G4VModularPhysicsList;
 class G4VUserPrimaryGeneratorAction;
 class G4UserRunAction;
 class G4UserEventAction;
-class G4UserTrackingAction;
-class G4UserSteppingAction;
 class G4UserStackingAction;
 class G4RunManager;
 
@@ -48,8 +49,8 @@ class TG4VRunConfiguration
     G4VUserPrimaryGeneratorAction*  fPrimaryGenerator;     //primary generator
     G4UserRunAction*                fRunAction;            //run action
     G4UserEventAction*              fEventAction;          //event action
-    G4UserTrackingAction*           fTrackingAction;       //tracking action
-    G4UserSteppingAction*           fSteppingAction;       //stepping action
+    TG4TrackingAction*              fTrackingAction;       //tracking action
+    TG4SteppingAction*              fSteppingAction;       //stepping action
     G4UserStackingAction*           fStackingAction;       //stacking action
 };
 

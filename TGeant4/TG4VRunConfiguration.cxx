@@ -4,6 +4,8 @@
 // See the class description in the header file.
 
 #include "TG4VRunConfiguration.h"
+#include "TG4TrackingAction.h"
+#include "TG4SteppingAction.h"
 #include "TG4Globals.h"
 
 #include <G4VUserDetectorConstruction.hh>
@@ -11,8 +13,6 @@
 #include <G4VUserPrimaryGeneratorAction.hh>
 #include <G4UserRunAction.hh>
 #include <G4UserEventAction.hh>
-#include <G4UserTrackingAction.hh>
-#include <G4UserSteppingAction.hh>
 #include <G4UserStackingAction.hh>
 #include <G4RunManager.hh>
 
