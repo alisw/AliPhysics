@@ -542,8 +542,9 @@ void AliEMCALClusterizerv1::MakeClusters()
 	// start a new Tower RecPoint
 	if(fNumberOfTowerClusters >= towerRecPoints->GetSize()) 
 	  towerRecPoints->Expand(2*fNumberOfTowerClusters+1) ;
-  	
-	towerRecPoints->AddAt(new  AliEMCALTowerRecPoint(""), fNumberOfTowerClusters) ;
+	AliEMCALTowerRecPoint * rp = new  AliEMCALTowerRecPoint("") ; 
+	rp->SetTower() ; 
+	towerRecPoints->AddAt(rp, fNumberOfTowerClusters) ;
 	clu = dynamic_cast<AliEMCALTowerRecPoint *>(towerRecPoints->At(fNumberOfTowerClusters)) ; 
   	fNumberOfTowerClusters++ ; 
 	clu->AddDigit(*digit, Calibrate(digit->GetAmp(),digit->IsInPreShower())) ; 
