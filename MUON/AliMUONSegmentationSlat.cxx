@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/10/22 16:55:43  morsch
+Use only x-symmetry in global to local transformations and delegation.
+
 Revision 1.3  2000/10/18 11:42:06  morsch
 - AliMUONRawCluster contains z-position.
 - Some clean-up of useless print statements during initialisations.
@@ -426,8 +429,8 @@ void AliMUONSegmentationSlat::Init(Int_t chamber)
     Int_t ndiv[4];
 // Pad division
     for (i=0; i<4; i++) ndiv[i]=(*fNDiv)[i];
-// Half distance between slat planes
-    fDz=1.76;
+//
+    fDz=0.813;
 // Slat height    
     fSlatY=40.;
     for (i=0; i<15; i++) fSlatX[i]=0.;
