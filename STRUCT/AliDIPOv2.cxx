@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2001/06/21 11:59:25  morsch
+Some more details in compensator geometry.
+
 Revision 1.16  2001/06/20 16:07:08  morsch
 Compensator dipole MBWMD (MCB@SPS) added.
 
@@ -115,7 +118,7 @@ void AliDIPOv2::CreateSpectrometerDipole()
 
   //  AliMC* gMC = AliMC::GetMC();
 
-  Float_t cpar[5], tpar[15], ypar[12];
+  Float_t cpar[5], tpar[18], ypar[12];
   Float_t dz, dx, dy;
   Int_t idrotm[1899];
   Float_t accMax, the1, phi1, the2, phi2, the3, phi3;
@@ -131,36 +134,41 @@ void AliDIPOv2::CreateSpectrometerDipole()
   accMax = 9.;   // ANGLE POLAIRE MAXIMUM 
 
   //       DIPOLE MAGNET 
+  const Float_t kZDipole = 975; 
 
   tpar[0] = 0.; 
   tpar[1] = 360.;
-  tpar[2] = 4.; 
+  tpar[2] = 5.; 
   //
-  tpar[3] = -250.55;
-  tpar[4] = 144.;
+  tpar[3] = -250.55+kZDipole;
+  tpar[4] = 30.5;
   tpar[5] = 527.34; 
   //
-  tpar[6] = -160.7;
-  tpar[7] = 144.;
+  tpar[6] = -160.7+kZDipole;
+  tpar[7] = 30.5;
   tpar[8] = 527.34; 
   //
-  tpar[9] = 150.8;
-  tpar[10] = 193.3;
+  tpar[9] = 30.+kZDipole;
+  tpar[10] = 30.5;
   tpar[11] = 527.34;
-  //
-  tpar[12] = 250.55;
+
+  tpar[12] = 150.8+kZDipole;
   tpar[13] = 193.3;
   tpar[14] = 527.34;
+  //
+  tpar[15] = 250.55+kZDipole;
+  tpar[16] = 193.3;
+  tpar[17] = 527.34;
 
 
-  gMC->Gsvolu("DDIP", "PCON", idtmed[1814], tpar, 15);  
+  gMC->Gsvolu("DDIP", "PCON", idtmed[1814], tpar, 18);  
   //       COILS 
   // air - m.f. 
   cpar[0] = 207.;
   cpar[1] = 274.;
   cpar[2] = 37.65;
   cpar[3] = 119.;
-  cpar[4] = 241. ; 
+  cpar[4] = 241.; 
   //   coil - high cuts
   gMC->Gsvolu("DC1 ", "TUBS", idtmed[kCoil+40], cpar, 5);
   cpar[3] = -61.;
@@ -187,10 +195,10 @@ void AliDIPOv2::CreateSpectrometerDipole()
 //  dz =  37.65 - 243.55
   dz = -205.9-2.45;
   dx = 5.;
-  gMC->Gspos("DC1 ", 1, "DDIP", dx, 0.,  dz, 0, "ONLY");
-  gMC->Gspos("DC1 ", 2, "DDIP", dx, 0., -dz, 0, "ONLY");
-  gMC->Gspos("DC2 ", 1, "DDIP", -dx, 0.,  dz, 0, "ONLY");
-  gMC->Gspos("DC2 ", 2, "DDIP", -dx, 0., -dz, 0, "ONLY");
+  gMC->Gspos("DC1 ", 1, "DDIP",  dx, 0.,  dz+kZDipole, 0, "ONLY");
+  gMC->Gspos("DC1 ", 2, "DDIP",  dx, 0., -dz+kZDipole, 0, "ONLY");
+  gMC->Gspos("DC2 ", 1, "DDIP", -dx, 0.,  dz+kZDipole, 0, "ONLY");
+  gMC->Gspos("DC2 ", 2, "DDIP", -dx, 0., -dz+kZDipole, 0, "ONLY");
   the1 = 180.;
   phi1 = 0.;
   the2 = 90.;
@@ -222,13 +230,13 @@ void AliDIPOv2::CreateSpectrometerDipole()
 //*  coil high cuts
   gMC->Gsvolu("DC11", "TUBS", idtmed[kCoil+40], cpar, 5);
 
-  dx = TMath::Sin(30.5*kDegrad) * -(207.+33.5)+5./TMath::Sin(30.5*kDegrad) ; 
+  dx = TMath::Sin(30.5*kDegrad) * -(207.+33.5)+5./TMath::Sin(30.5*kDegrad); 
   dy = TMath::Cos(30.5*kDegrad) * -(207.+33.5);  
   dz = cpar[1] - 243.55-2.45;
-  gMC->Gspos("DC11", 1, "DDIP",  dx, dy,  dz, idrotm[1800], "ONLY");
-  gMC->Gspos("DC11", 2, "DDIP",  dx, dy, -dz, idrotm[1802], "ONLY");
-  gMC->Gspos("DC11", 3, "DDIP", -dx, dy,  dz, idrotm[1801], "ONLY");
-  gMC->Gspos("DC11", 4, "DDIP", -dx, dy, -dz, idrotm[1803], "ONLY");
+  gMC->Gspos("DC11", 1, "DDIP",  dx, dy,  dz+kZDipole, idrotm[1800], "ONLY");
+  gMC->Gspos("DC11", 2, "DDIP",  dx, dy, -dz+kZDipole, idrotm[1802], "ONLY");
+  gMC->Gspos("DC11", 3, "DDIP", -dx, dy,  dz+kZDipole, idrotm[1801], "ONLY");
+  gMC->Gspos("DC11", 4, "DDIP", -dx, dy, -dz+kZDipole, idrotm[1803], "ONLY");
 
 
 
@@ -241,13 +249,13 @@ void AliDIPOv2::CreateSpectrometerDipole()
 //*  coil high cuts
   gMC->Gsvolu("DC12", "TUBS", idtmed[kCoil+40], cpar, 5);
 
-  dx = TMath::Sin(30.5*kDegrad) * -(207.+33.5)+5./TMath::Sin(30.5*kDegrad) ; 
+  dx = TMath::Sin(30.5*kDegrad) * -(207.+33.5)+5./TMath::Sin(30.5*kDegrad); 
   dy = TMath::Cos(30.5*kDegrad) *(207.+33.5);  
   dz = cpar[1] - 243.55-2.45;
-  gMC->Gspos("DC12", 1, "DDIP",  dx, dy,  dz, idrotm[1801], "ONLY");
-  gMC->Gspos("DC12", 2, "DDIP",  dx, dy, -dz, idrotm[1803], "ONLY");
-  gMC->Gspos("DC12", 3, "DDIP", -dx, dy,  dz, idrotm[1800], "ONLY");
-  gMC->Gspos("DC12", 4, "DDIP", -dx, dy, -dz, idrotm[1802], "ONLY");
+  gMC->Gspos("DC12", 1, "DDIP",  dx, dy,  dz+kZDipole, idrotm[1801], "ONLY");
+  gMC->Gspos("DC12", 2, "DDIP",  dx, dy, -dz+kZDipole, idrotm[1803], "ONLY");
+  gMC->Gspos("DC12", 3, "DDIP", -dx, dy,  dz+kZDipole, idrotm[1800], "ONLY");
+  gMC->Gspos("DC12", 4, "DDIP", -dx, dy, -dz+kZDipole, idrotm[1802], "ONLY");
 
   the1 = 90.;
   phi1 = 61.;
@@ -288,11 +296,11 @@ void AliDIPOv2::CreateSpectrometerDipole()
 
   dx =-53.62;
   dy =-241.26819;
-  dz = 0.0; 
-  gMC->Gspos("DL1 ", 1, "DDIP", dx,  dy, dz, idrotm[1804], "ONLY");
-  gMC->Gspos("DL1 ", 2, "DDIP", dx, -dy, dz, idrotm[1805], "ONLY");
-  gMC->Gspos("DL1 ", 3, "DDIP",-dx,  dy, dz, idrotm[1806], "ONLY");
-  gMC->Gspos("DL1 ", 4, "DDIP",-dx, -dy, dz, idrotm[1807], "ONLY");
+  dz = 0.; 
+  gMC->Gspos("DL1 ", 1, "DDIP", dx,  dy, dz+kZDipole, idrotm[1804], "ONLY");
+  gMC->Gspos("DL1 ", 2, "DDIP", dx, -dy, dz+kZDipole, idrotm[1805], "ONLY");
+  gMC->Gspos("DL1 ", 3, "DDIP",-dx,  dy, dz+kZDipole, idrotm[1806], "ONLY");
+  gMC->Gspos("DL1 ", 4, "DDIP",-dx, -dy, dz+kZDipole, idrotm[1807], "ONLY");
 
   // Contactor
 
@@ -309,9 +317,9 @@ void AliDIPOv2::CreateSpectrometerDipole()
   gMC->Gsvolu("DCO1", "TUBS", idtmed[1818], cpar, 5);
   dx = -5.;
   dz = 168.25-1.5-1.;
-  gMC->Gspos("DCO1", 1, "DDIP", dx, 0, dz, 0, "ONLY");
+  gMC->Gspos("DCO1", 1, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
   dz = 243.55+4.5+1.5+1.;
-  gMC->Gspos("DCO1", 2, "DDIP", dx, 0, dz, 0, "ONLY");
+  gMC->Gspos("DCO1", 2, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
   
   // 9.06.2000
 
@@ -324,9 +332,9 @@ void AliDIPOv2::CreateSpectrometerDipole()
   gMC->Gsvolu("DCO2", "TUBS", idtmed[1818], cpar, 5);
   dx = +5.;
   dz = 168.25-1.5-1.;
-  gMC->Gspos("DCO2", 1, "DDIP", dx, 0, dz, 0, "ONLY");
+  gMC->Gspos("DCO2", 1, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
   dz = 243.55+4.5+1.5+1.;
-  gMC->Gspos("DCO2", 2, "DDIP", dx, 0, dz, 0, "ONLY");
+  gMC->Gspos("DCO2", 2, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
  
 
 
@@ -341,9 +349,9 @@ void AliDIPOv2::CreateSpectrometerDipole()
   gMC->Gsvolu("DCO3", "TUBS", idtmed[1812], cpar, 5);
   dx = -5;
   dz = 168.25-0.75;
-  gMC->Gspos("DCO3", 1, "DDIP", dx,  0, dz, 0, "ONLY");
+  gMC->Gspos("DCO3", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
   dz = 243.55+4.5+0.75;
-  gMC->Gspos("DCO3", 2, "DDIP", dx,  0, dz, 0, "ONLY");
+  gMC->Gspos("DCO3", 2, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
   // 9.06.2000
 
@@ -352,9 +360,9 @@ void AliDIPOv2::CreateSpectrometerDipole()
   gMC->Gsvolu("DCO4", "TUBS", idtmed[1812], cpar, 5);
   dx = +5;
   dz = 168.25-0.75;
-  gMC->Gspos("DCO4", 1, "DDIP", dx,  0, dz, 0, "ONLY");
-  dz = 243.55+4.5+0.75;
-  gMC->Gspos("DCO4", 2, "DDIP", dx,  0, dz, 0, "ONLY");
+  gMC->Gspos("DCO4", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  dz = 243.55+4.5+0.75 ;
+  gMC->Gspos("DCO4", 2, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
  
   // G10 face plane
@@ -369,7 +377,7 @@ void AliDIPOv2::CreateSpectrometerDipole()
 
   dx = -5;
   dz = 243.55+2.25;
-  gMC->Gspos("DCO5", 1, "DDIP", dx,  0, dz, 0, "ONLY");
+  gMC->Gspos("DCO5", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
   // 9.06.2000
 
@@ -379,8 +387,8 @@ void AliDIPOv2::CreateSpectrometerDipole()
   gMC->Gsvolu("DCO6", "TUBS", idtmed[1810], cpar, 5);
 
   dx = +5;
-   dz = 243.55+2.25;
-  gMC->Gspos("DCO6", 1, "DDIP", dx,  0, dz, 0, "ONLY");
+  dz = 243.55+2.25;
+  gMC->Gspos("DCO6", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
   //Steel supported planes
 
@@ -394,7 +402,7 @@ void AliDIPOv2::CreateSpectrometerDipole()
 
   dx = -5;
   dz = 168.25+1.;
-  gMC->Gspos("DCO7", 1, "DDIP", dx, 0, dz, 0, "ONLY");
+  gMC->Gspos("DCO7", 1, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
 
   // 9.06.2000
   cpar[0] = 274.+1.5+2.;
@@ -408,7 +416,7 @@ void AliDIPOv2::CreateSpectrometerDipole()
 
   dx = +5;
   dz = 168.25+1.;
-  gMC->Gspos("DCO8", 1, "DDIP", dx, 0, dz, 0, "ONLY");
+  gMC->Gspos("DCO8", 1, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
 
   //
 
@@ -422,7 +430,7 @@ void AliDIPOv2::CreateSpectrometerDipole()
 
   dx = -5;
   dz = 168.25+1.;
-  gMC->Gspos("DCO9", 1, "DDIP", dx, 0, dz, 0, "ONLY");
+  gMC->Gspos("DCO9", 1, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
 
   // 9.06.2000
 
@@ -436,13 +444,13 @@ void AliDIPOv2::CreateSpectrometerDipole()
 
   dx = +5;
   dz = 168.25+1.;
-  gMC->Gspos("DCOA", 1, "DDIP", dx, 0, dz, 0, "ONLY");
+  gMC->Gspos("DCOA", 1, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
 
 
   // Sides steel planes
 
   cpar[0] = 207. - 1.5 -2.;
-  cpar[1] = 207. - 1.5 ;
+  cpar[1] = 207. - 1.5;
   cpar[2] = ((243.55+4.5+1.5)-168.25)/2;
   cpar[3] = -50.;
   cpar[4] = 50.; 
@@ -456,13 +464,13 @@ void AliDIPOv2::CreateSpectrometerDipole()
 
   dx=-5.;
   dz = ((243.55+4.5+1.5)+168.25)/2;
-  gMC->Gspos("DCOB", 1, "DDIP", dx,  0, dz, 0, "ONLY");
-  gMC->Gspos("DCOC", 1, "DDIP", dx,  0, dz, 0, "ONLY");
+  gMC->Gspos("DCOB", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  gMC->Gspos("DCOC", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
   // 9.06.2000
 
   cpar[0] = 207. - 1.5 -2.;
-  cpar[1] = 207. - 1.5 ;
+  cpar[1] = 207. - 1.5;
   cpar[2] = ((243.55+4.5+1.5)-168.25)/2;
   cpar[3] = 180.-50.;
   cpar[4] = 180.+50.; 
@@ -476,14 +484,14 @@ void AliDIPOv2::CreateSpectrometerDipole()
 
   dx=+5.;
   dz = ((243.55+4.5+1.5)+168.25)/2;
-  gMC->Gspos("DCOD", 1, "DDIP", dx,  0, dz, 0, "ONLY");
-  gMC->Gspos("DCOE", 1, "DDIP", dx,  0, dz, 0, "ONLY");
+  gMC->Gspos("DCOD", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  gMC->Gspos("DCOE", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
 
   // Top and bottom resin  planes
 
-  cpar[0] = 207. - 1.5 ;
-  cpar[1] = 207. ;
+  cpar[0] = 207. - 1.5;
+  cpar[1] = 207.;
   cpar[2] = ((243.55+4.5+1.5)-168.25)/2;
   cpar[3] = -50.;
   cpar[4] = 50.; 
@@ -498,12 +506,12 @@ void AliDIPOv2::CreateSpectrometerDipole()
 
   dx=-5.;
   dz = ((243.55+4.5+1.5)+168.25)/2;
-  gMC->Gspos("DCOF", 1, "DDIP", dx,  0, dz, 0, "ONLY");
-  gMC->Gspos("DCOG", 1, "DDIP", dx,  0, dz, 0, "ONLY");
+  gMC->Gspos("DCOF", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  gMC->Gspos("DCOG", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
   // 9.06.2000
-  cpar[0] = 207. - 1.5 ;
-  cpar[1] = 207. ;
+  cpar[0] = 207. - 1.5;
+  cpar[1] = 207.;
   cpar[2] = ((243.55+4.5+1.5)-168.25)/2;
 
   cpar[3] = 180.-50.;
@@ -519,8 +527,8 @@ void AliDIPOv2::CreateSpectrometerDipole()
 
   dx=+5.;
   dz = ((243.55+4.5+1.5)+168.25)/2;
-  gMC->Gspos("DCOH", 1, "DDIP", dx,  0, dz, 0, "ONLY");
-  gMC->Gspos("DCOI", 1, "DDIP", dx,  0, dz, 0, "ONLY");
+  gMC->Gspos("DCOH", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  gMC->Gspos("DCOI", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
 
   // Aluminum cabels
@@ -538,10 +546,10 @@ void AliDIPOv2::CreateSpectrometerDipole()
   //  dx = 5. + 1.5 +2.;
   dx=-5.;
   dz = 168.25 + 5.05 + 5.05/2;
-  gMC->Gspos("DCOJ", 1, "DDIP", dx,  0, dz, 0, "ONLY");
+  gMC->Gspos("DCOJ", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
   dz = 243.55 - 5.05/2;
-  gMC->Gspos("DCOJ", 2, "DDIP", dx,  0, dz, 0, "ONLY");
+  gMC->Gspos("DCOJ", 2, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
   // 9.06.2000
 
@@ -555,22 +563,22 @@ void AliDIPOv2::CreateSpectrometerDipole()
   //  dx = 5. + 1.5 +2.;
   dx=+5.;
   dz = 168.25 + 5.05 + 5.05/2;
-  gMC->Gspos("DCOK", 1, "DDIP", dx,  0, dz, 0, "ONLY");
+  gMC->Gspos("DCOK", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
   dz = 243.55 - 5.05/2;
-  gMC->Gspos("DCOK", 2, "DDIP", dx,  0, dz, 0, "ONLY");
+  gMC->Gspos("DCOK", 2, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
  
   //   YOKE 
 
 // Top and bottom blocks
-  ypar[0] = 298.1 ; 
+  ypar[0] = 298.1; 
   ypar[1] = 69.5;
   ypar[2] = 155.75;
 
 // iron- high cuts
   gMC->Gsvolu("DY1 ", "BOX ", idtmed[1858], ypar, 3);
-  ypar[0] = 144.+10. ; 
+  ypar[0] = 144.+10.; 
   ypar[1] = 193.3+10.;
   ypar[2] = 5.;
   ypar[3] = 155.75;
@@ -581,7 +589,7 @@ void AliDIPOv2::CreateSpectrometerDipole()
 
   dy = 365.5;
   dz = 4.95;
-  gMC->Gspos("DY1 ", 1, "DDIP", 0.,  dy, -dz, 0, "ONLY");
+  gMC->Gspos("DY1 ", 1, "DDIP", 0.,  dy, -dz+kZDipole, 0, "ONLY");
 
   the1 = 270.;
   phi1 = 0.;
@@ -590,22 +598,22 @@ void AliDIPOv2::CreateSpectrometerDipole()
   the3 = 0.;
   phi3 = 0.;
   AliMatrix(idrotm[1808], the1, phi1, the2, phi2, the3, phi3);
-  gMC->Gspos("DY1 ", 2, "DDIP", 0., -dy, -dz, idrotm[1808] , "ONLY");
+  gMC->Gspos("DY1 ", 2, "DDIP", 0., -dy, -dz+kZDipole, idrotm[1808] , "ONLY");
 
 // side walls
-  //  ypar[0] = 579./2. ; 
-  ypar[0] = 296. ; 
+  //  ypar[0] = 579./2.; 
+  ypar[0] = 296.; 
   ypar[1] = 0.;
   ypar[2] = 0.;
   ypar[3] = 155.75;
-  ypar[4] = 47.9 ;
+  ypar[4] = 47.9;
   ypar[5] = 72.55;
-  ypar[6] = 4.3058039629 ;
+  ypar[6] = 4.3058039629;
   // z+ 
   ypar[7] = 155.75;
-  ypar[8] = 47.9 ;
+  ypar[8] = 47.9;
   ypar[9] = 72.55;
-  ypar[10] = 4.3058039629 ;
+  ypar[10] = 4.3058039629;
 
 // iron - high cuts
 
@@ -639,17 +647,17 @@ void AliDIPOv2::CreateSpectrometerDipole()
   phi1 = 0.;
   the2 = 180.;
   phi2 = 0.;
-  the3 = 90. ;
+  the3 = 90.;
   phi3 = 90.;
   AliMatrix(idrotm[1810], the1, phi1, the2, phi2, the3, phi3);
 
   dx = 228.875;
   dz = - 4.95;
-  gMC->Gspos("DY2 ", 1, "DDIP", dx, 0.0,  dz, idrotm[1809], "ONLY");
-  gMC->Gspos("DY2 ", 2, "DDIP", -dx, 0.0,  dz, idrotm[1810], "ONLY");
+  
+  gMC->Gspos("DY2 ", 1, "DDIP",  dx, 0.0,  dz+kZDipole, idrotm[1809], "ONLY");
+  gMC->Gspos("DY2 ", 2, "DDIP", -dx, 0.0,  dz+kZDipole, idrotm[1810], "ONLY");
 
-  dz=975.;
-  gMC->Gspos("DDIP", 1, "ALIC", 0., 0., dz, 0, "MANY");
+  gMC->Gspos("DDIP", 1, "ALIC", 0., 0., 0., 0, "ONLY");
 
   gMC->Gsatt("DDIP", "SEEN", 0);
 //  gMC->Gsatt("DC21", "SEEN", 0);
