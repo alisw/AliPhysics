@@ -229,7 +229,9 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     Float_t        dist[10000];
     Float_t       cxpos[10000];
     Float_t       crecL[10000];
-    Float_t trackPos[4][nSteps];
+    Float_t * trackPos[4];
+    for (Int_t ii=0; ii<4; ii++) trackPos[ii] = new Float_t[nSteps];
+    //    Float_t trackPos[4][nSteps];
      
     // Determine a window around the track
 
@@ -250,7 +252,9 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     if (phi>=TMath::Pi())phi-=2*TMath::Pi();
     Double_t z=par[1];   
 
-    Int_t clind[6][fN];
+    Int_t * clind[6];
+    for (Int_t ii=0;ii<6;ii++) clind[ii] = new Int_t[fN];
+    //    Int_t clind[6][fN];
     Int_t nc=0;
     
     // find the clusters in the window of the track
@@ -262,7 +266,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       
       Double_t dph=TMath::Abs(c->GetPhi()-phi);
       if (dph>TMath::Pi()) dph-=2.*TMath::Pi();
-      if (fabs(dph)>dphi) continue;
+      if (TMath::Abs(dph)>dphi) continue;
     
       clind[0][nc] = c->GetDetInd(0);
       clind[1][nc] = c->GetDetInd(1);
@@ -343,8 +347,13 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 	  if(isInside)break;
 	}//end if accept
       } //end for on the clusters
+
+
       if(isInside)break;
     } //end for on the steps     
+
+    for (Int_t ii=0;ii<6;ii++) delete [] clind[ii];
+
 
     if (nfound == 0 ) {
       fnunmatch++;
@@ -414,6 +423,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     t->SetIntegratedTimes(time);
 
     delete trackTOFout;
+    for (Int_t ii=0; ii<4; ii++) delete [] trackPos[ii];
   }
 }
 //_________________________________________________________________________

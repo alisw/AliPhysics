@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2004/04/13 09:42:51  decaro
+Track reconstruction code for TOF: updating
+
 Revision 1.3  2003/12/29 18:40:39  hristov
 Copy/paste error corrected
 
@@ -262,7 +265,7 @@ Bool_t AliTOFGeometry::IsInsideThePad(Int_t *det, Float_t *pos)
   Float_t yr = yt;
   Float_t zr = -xt*TMath::Sin(alpha/kRaddeg)+zt*TMath::Cos(alpha/kRaddeg);
 
-  if(fabs(xr)<=0.75 && fabs(yr)<= (fgkXPad*0.5) && fabs(zr)<= (fgkZPad*0.5))
+  if(TMath::Abs(xr)<=0.75 && TMath::Abs(yr)<= (fgkXPad*0.5) && TMath::Abs(zr)<= (fgkZPad*0.5))
     isInside=true; 
   return isInside;
 
