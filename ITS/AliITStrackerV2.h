@@ -44,6 +44,8 @@ private:
      new(&fTrackToFollow) AliITStrackV2(t);
   }
 
+  //The two subclasses are public in order to access one from the another
+ public: 
 class AliITSdetector {
 private:
   Double_t fR;    // polar coordinates 
@@ -96,6 +98,7 @@ public:
   Int_t InRoad() const ;
 };
 
+ private:
   Int_t fI;                       // index of the current layer
   static AliITSlayer fLayers[kMaxLayer]; // ITS layers
   AliITStrackV2 fTracks[kMaxLayer]; // track estimations at the ITS layers
