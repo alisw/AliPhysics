@@ -133,7 +133,7 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * rd):
 {
   // ctor
   fManager = rd ; 
-  SetName(fManager->GetInputFolderName(0)) ;
+  //  SetName(fManager->GetInputFolderName(0)) ;
   // take title as name of stream 0
   SetTitle(dynamic_cast<AliStream*>(fManager->GetInputStream(0))->GetFileName(0));
   InitParameters() ; 
@@ -145,6 +145,8 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * rd):
   AliPHOSDigitizer::~AliPHOSDigitizer()
 {
   // dtor
+  AliPHOSGetter * gime = AliPHOSGetter::Instance(GetTitle(),fEventFolderName);
+  gime->PhosLoader()->CleanDigitizer();
   delete [] fInputFileNames ; 
   delete [] fEventNames ; 
  

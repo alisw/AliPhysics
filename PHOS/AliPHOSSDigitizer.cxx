@@ -103,6 +103,13 @@ AliPHOSSDigitizer::AliPHOSSDigitizer(const AliPHOSSDigitizer & sd)
 
 
 //____________________________________________________________________________ 
+AliPHOSSDigitizer::~AliPHOSSDigitizer() {
+  //dtor
+  AliPHOSGetter * gime =
+    AliPHOSGetter::Instance(GetTitle(),fEventFolderName.Data());  
+  gime->PhosLoader()->CleanSDigitizer();
+}
+//____________________________________________________________________________ 
 void AliPHOSSDigitizer::Init()
 {
   // Uses the getter to access the required files

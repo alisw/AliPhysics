@@ -28,7 +28,7 @@ public:
   AliPHOSSDigitizer() ;          // ctor
   AliPHOSSDigitizer(const char * alirunFileName, const char * eventFolderName = AliConfig::fgkDefaultEventFolderName) ; 
   AliPHOSSDigitizer(const AliPHOSSDigitizer & sd) ; // cpy ctor
-  virtual ~AliPHOSSDigitizer() {;} // dtor
+  virtual ~AliPHOSSDigitizer(); // dtor
 
   Float_t        Calibrate(Int_t amp)const {return (amp - fA)/fB ; }
   Int_t          Digitize(Float_t Energy)const { return (Int_t ) ( fA + Energy*fB); }

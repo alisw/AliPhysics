@@ -29,7 +29,7 @@ public:
   AliEMCALSDigitizer() ;          // ctor
   AliEMCALSDigitizer(const char * alirunFileName, const char * eventFolderName = AliConfig::fgkDefaultEventFolderName) ; 
   AliEMCALSDigitizer(const AliEMCALSDigitizer & sd) ;
-  virtual ~AliEMCALSDigitizer() {;} // dtor
+  virtual ~AliEMCALSDigitizer(); // dtor
 
   Float_t       Calibrate(Int_t amp)const {return (amp - fA)/fB ; }
   Int_t         Digitize(Float_t Energy)const { return (Int_t ) ( fA + Energy*fB); }

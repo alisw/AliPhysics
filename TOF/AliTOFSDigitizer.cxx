@@ -59,7 +59,7 @@
 ClassImp(AliTOFSDigitizer)
 
 //____________________________________________________________________________ 
-  AliTOFSDigitizer::AliTOFSDigitizer():TTask("AliTOFSDigitizer","") 
+  AliTOFSDigitizer::AliTOFSDigitizer():TTask("TOFSDigitizer","") 
 {
   // ctor
 
@@ -74,7 +74,7 @@ ClassImp(AliTOFSDigitizer)
 }
 
 //____________________________________________________________________________ 
-AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_t nEvents):TTask("AliTOFSDigitizer","")
+AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_t nEvents):TTask("TOFSDigitizer","")
 {
   ftail    = 0;
   fSelectedSector=-1; // by default we sdigitize all sectors
@@ -129,6 +129,7 @@ AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_
 AliTOFSDigitizer::~AliTOFSDigitizer()
 {
   // dtor
+  fTOFLoader->CleanSDigitizer();
 }
 
 //____________________________________________________________________________ 

@@ -98,6 +98,14 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const AliEMCALSDigitizer & sd) : TTask(sd
 
 
 //____________________________________________________________________________ 
+AliEMCALSDigitizer::~AliEMCALSDigitizer() {
+  // dtor
+  AliEMCALGetter * gime = 
+    AliEMCALGetter::Instance(GetTitle(), fEventFolderName.Data());  
+  gime->EmcalLoader()->CleanSDigitizer();
+}
+
+//____________________________________________________________________________ 
 void AliEMCALSDigitizer::Init(){
   // Initialization: open root-file, allocate arrays for hits and sdigits,
   // attach task SDigitizer to the list of EMCAL tasks
