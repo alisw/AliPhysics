@@ -11,6 +11,7 @@
 
 #pragma link C++ class  TFluka+;
 #pragma link C++ class  FlukaVolume+;
+#pragma link C++ class  TFlukaCerenkov+;
 #endif
 
 
