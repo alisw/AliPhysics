@@ -61,7 +61,7 @@ AliRawReaderRoot::AliRawReaderRoot(const char* fileName, Int_t eventNumber)
   fSubEventIndex = 0;
   fSubEvent = NULL;
   fRawData = NULL;
-  fMiniHeader = NULL;
+  fHeader = NULL;
 
   fCount = 0;
   fPosition = fEnd = NULL;
@@ -77,7 +77,7 @@ AliRawReaderRoot::AliRawReaderRoot(AliRawEvent* event)
   fSubEventIndex = 0;
   fSubEvent = NULL;
   fRawData = NULL;
-  fMiniHeader = NULL;
+  fHeader = NULL;
 
   fCount = 0;
   fPosition = fEnd = NULL;
@@ -94,7 +94,7 @@ AliRawReaderRoot::AliRawReaderRoot(const AliRawReaderRoot& rawReader) :
   fSubEventIndex = rawReader.fSubEventIndex;
   fSubEvent = rawReader.fSubEvent;
   fRawData = rawReader.fRawData;
-  fMiniHeader = rawReader.fMiniHeader;
+  fHeader = rawReader.fHeader;
 
   fCount = rawReader.fCount;
   fPosition = rawReader.fPosition;
@@ -231,8 +231,8 @@ Int_t AliRawReaderRoot::GetEquipmentElementSize() const
 
 Bool_t AliRawReaderRoot::ReadHeader()
 {
-// read a mini header at the current position
-// returns kFALSE if the mini header could not be read
+// read a data header at the current position
+// returns kFALSE if the data header could not be read
 
   fErrorCode = 0;
   if (!fEvent) return kFALSE;
@@ -265,34 +265,29 @@ Bool_t AliRawReaderRoot::ReadHeader()
     // continue with the next sub event if no data left in the payload
     if (fPosition >= fEnd) continue;
 
-    // check that there are enough bytes left for the mini header
-    if (fPosition + sizeof(AliMiniHeader) > fEnd) {
-      Error("ReadHeader", "could not read mini header data!");
+    // check that there are enough bytes left for the data header
+    if (fPosition + sizeof(AliRawDataHeader) > fEnd) {
+      Error("ReadHeader", "could not read data header!");
       Warning("ReadHeader", "skipping %d bytes", fEnd - fPosition);
       fSubEvent->GetHeader()->Dump();
       fCount = 0;
       fPosition = fEnd;
-      fErrorCode = kErrNoMiniHeader;
+      fErrorCode = kErrNoDataHeader;
       continue;
     }
 
-    // "read" and check the mini header
-    fMiniHeader = (AliMiniHeader*) fPosition;
-    fPosition += sizeof(AliMiniHeader);
-    if (!CheckMiniHeader()) {
-      Error("ReadHeader", "wrong magic word in mini header!");
-      Warning("ReadHeader", "skipping %d bytes", fEnd - fPosition);
-      fSubEvent->GetHeader()->Dump();
-      fCount = 0;
-      fPosition = fEnd;
-      fErrorCode = kErrMiniMagic;
-      continue;
+    // "read" the data header
+    fHeader = (AliRawDataHeader*) fPosition;
+    fPosition += sizeof(AliRawDataHeader);
+    if (fHeader->fSize != 0xFFFFFFFF) {
+      fCount = fHeader->fSize - sizeof(AliRawDataHeader);
+    } else {
+      fCount = fEnd - fPosition;
     }
-    fCount = fMiniHeader->fSize;
 
-    // check consistency of data size in the mini header and in the sub event
+    // check consistency of data size in the header and in the sub event
     if (fPosition + fCount > fEnd) {  
-      Error("ReadHeader", "size in mini header exceeds event size!");
+      Error("ReadHeader", "size in data header exceeds event size!");
       Warning("ReadHeader", "skipping %d bytes", fEnd - fPosition);
       fSubEvent->GetHeader()->Dump();
       fCount = 0;
@@ -346,7 +341,7 @@ Bool_t AliRawReaderRoot::Reset()
   fSubEventIndex = 0;
   fSubEvent = NULL;
   fRawData = NULL;
-  fMiniHeader = NULL;
+  fHeader = NULL;
 
   fCount = 0;
   fPosition = fEnd = NULL;
@@ -388,25 +383,25 @@ Int_t AliRawReaderRoot::CheckData() const
     // continue with the next sub event if no data left in the payload
     if (position >= end) continue;
 
-    // check that there are enough bytes left for the mini header
-    if (position + sizeof(AliMiniHeader) > end) {
-      result |= kErrNoMiniHeader;
+    // check that there are enough bytes left for the data header
+    if (position + sizeof(AliRawDataHeader) > end) {
+      result |= kErrNoDataHeader;
       position = end;
       continue;
     }
 
-    // "read" and check the mini header
-    AliMiniHeader* miniHeader = (AliMiniHeader*) position;
-    position += sizeof(AliMiniHeader);
-    if (!CheckMiniHeader(miniHeader)) {
-      result |= kErrMiniMagic;
+    // check consistency of data size in the header and in the sub event
+    AliRawDataHeader* header = (AliRawDataHeader*) position;
+    if (fHeader->fSize != 0xFFFFFFFF) {
+      if (position + header->fSize > end) {
+	result |= kErrSize;
+	position = end;
+      } else {
+	position += header->fSize;
+      }
+    } else {
       position = end;
-      continue;
     }
-
-    // check consistency of data size in the mini header and in the sub event
-    if (position + miniHeader->fSize > end) result |= kErrSize;
-    position += miniHeader->fSize;
   };
 
   return result;

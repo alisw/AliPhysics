@@ -17,8 +17,8 @@ class AliRawReaderDate: public AliRawReader {
     AliRawReaderDate& operator = (const AliRawReaderDate& rawReader);
     virtual ~AliRawReaderDate();
 
-    void             RequireMiniHeader(Bool_t required = kTRUE)
-      {fRequireMiniHeader = required;};
+    void             RequireHeader(Bool_t required = kTRUE)
+      {fRequireHeader = required;};
 
     virtual UInt_t   GetType() const;
     virtual UInt_t   GetRunNumber() const;
@@ -45,7 +45,7 @@ class AliRawReaderDate: public AliRawReader {
   protected :
     virtual Bool_t   ReadNext(UChar_t* data, Int_t size);
 
-    Bool_t           fRequireMiniHeader; // if false, data without mini header is accepted
+    Bool_t           fRequireHeader; // if false, data without header is accepted
 
     eventHeaderStruct* fEvent;      // raw data super event
     eventHeaderStruct* fSubEvent;   // raw data sub event

@@ -4,7 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 #include <TObject.h>
-#include "AliMiniHeader.h"
+#include "AliRawDataHeader.h"
 
 
 class AliRawReader: public TObject {
@@ -19,6 +19,8 @@ class AliRawReader: public TObject {
     void             SelectEquipment(Int_t equipmentType, 
 				     Int_t minEquipmentId = -1, 
 				     Int_t maxEquipmentId = -1);
+    void             SkipInvalid(Bool_t skip = kTRUE)
+      {fSkipInvalid = skip;};
 
     virtual UInt_t   GetType() const = 0;
     virtual UInt_t   GetRunNumber() const = 0;
@@ -35,18 +37,22 @@ class AliRawReader: public TObject {
     virtual const UInt_t* GetEquipmentAttributes() const = 0;
     virtual Int_t    GetEquipmentElementSize() const = 0;
 
+    Int_t            GetDetectorID() const 
+      {if (GetEquipmentId() >= 0) return (GetEquipmentId() >> 8); else return -1;};
+    Int_t            GetDDLID() const 
+      {if (GetEquipmentId() >= 0) return (GetEquipmentId() & 0xFF); else return -1;};
+
     Int_t            GetDataSize() const 
-      {if (fMiniHeader) return fMiniHeader->fSize; 
+      {if (fHeader) return fHeader->fSize - sizeof(AliRawDataHeader); 
       else return GetEquipmentSize();};
 
-    Int_t            GetDetectorID() const 
-      {if (fMiniHeader) return fMiniHeader->fDetectorID; else return -1;};
-    Int_t            GetDDLID() const 
-      {if (fMiniHeader) return fMiniHeader->fDDLID; else return -1;};
     Int_t            GetVersion() const 
-      {if (fMiniHeader) return fMiniHeader->fVersion; else return -1;};
+      {if (fHeader) return fHeader->fVersion; else return -1;};
+    Bool_t           IsValid() const 
+      {if (fHeader) return fHeader->TestAttribute(0); 
+      else return kFALSE;};
     Bool_t           IsCompressed() const 
-      {if (fMiniHeader) return fMiniHeader->fCompressionFlag != 0; 
+      {if (fHeader) return fHeader->TestAttribute(1); 
       else return kFALSE;};
 
     virtual Bool_t   ReadHeader() = 0;
@@ -57,8 +63,8 @@ class AliRawReader: public TObject {
 
     virtual Bool_t   Reset() = 0;
 
-    enum {kErrMagic=1, kErrNoMiniHeader=2, kErrMiniMagic=4, 
-	  kErrSize=8, kErrOutOfBounds=16};
+    enum {kErrMagic=1, kErrNoDataHeader=2, 
+	  kErrSize=4, kErrOutOfBounds=8};
     virtual Int_t    CheckData() const;
     Int_t            GetErrorCode() {return fErrorCode;};
 
@@ -67,18 +73,15 @@ class AliRawReader: public TObject {
   protected :
     Bool_t           IsSelected() const;
 
-    Bool_t           CheckMiniHeader(AliMiniHeader* miniHeader = NULL) const;
     virtual Bool_t   ReadNext(UChar_t* data, Int_t size) = 0;
 
-    AliMiniHeader*   fMiniHeader;  // current mini header
+    AliRawDataHeader* fHeader;     // current data header
     Int_t            fCount;       // counter of bytes to be read for current DDL
 
-    Int_t            fSelectDetectorID;  // id of selected detector (<0 = no selection)
-    Int_t            fSelectMinDDLID;    // minimal index of selected DDLs (<0 = no selection)
-    Int_t            fSelectMaxDDLID;    // maximal index of selected DDLs (<0 = no selection)
     Int_t            fSelectEquipmentType;  // type of selected equipment (<0 = no selection)
     Int_t            fSelectMinEquipmentId; // minimal index of selected equipment (<0 = no selection)
     Int_t            fSelectMaxEquipmentId; // maximal index of selected equipment (<0 = no selection)
+    Bool_t           fSkipInvalid;       // skip invalid data
 
     Int_t            fErrorCode;         // code of last error
 

@@ -21,32 +21,47 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliRawReaderFile.h"
+#include <TSystem.h>
 
 
 ClassImp(AliRawReaderFile)
 
 
-AliRawReaderFile::AliRawReaderFile(const char* fileName, Bool_t addNumber)
+AliRawReaderFile::AliRawReaderFile(Int_t eventNumber) :
+  fDirName("raw"),
+  fDirectory(NULL),
+  fStream(NULL),
+  fEquipmentId(-1),
+  fBuffer(NULL),
+  fBufferSize(0)
 {
-// create an object to read digits from the given input file(s)
-// if addNumber is true, a number starting at 1 is appended to the file name
+// create an object to read digits from the given event
 
-  fFileName = fileName;
-  if (!addNumber) {
-    fFileNumber = -1;
-#ifndef __DECCXX
-    fStream = new fstream(fileName, ios::binary|ios::in);
-#else
-    fStream = new fstream(fileName, ios::in);
-#endif
-  } else {
-    fFileNumber = 0;
-    fStream = NULL;
-    OpenNextFile();
+  fDirName += eventNumber;
+  fDirectory = gSystem->OpenDirectory(fDirName);
+  if (!fDirectory) {
+    Error("AliRawReaderFile", "could not open directory %s", fDirName.Data());
   }
-  fMiniHeader = new AliMiniHeader;
-  fBuffer = NULL;
-  fBufferSize = 0;
+  OpenNextFile();
+  fHeader = new AliRawDataHeader;
+}
+
+AliRawReaderFile::AliRawReaderFile(const char* dirName) :
+  fDirName(dirName),
+  fDirectory(NULL),
+  fStream(NULL),
+  fEquipmentId(-1),
+  fBuffer(NULL),
+  fBufferSize(0)
+{
+// create an object to read digits from the given directory
+
+  fDirectory = gSystem->OpenDirectory(fDirName);
+  if (!fDirectory) {
+    Error("AliRawReaderFile", "could not open directory %s", fDirName.Data());
+  }
+  OpenNextFile();
+  fHeader = new AliRawDataHeader;
 }
 
 AliRawReaderFile::AliRawReaderFile(const AliRawReaderFile& rawReader) :
@@ -66,6 +81,7 @@ AliRawReaderFile::~AliRawReaderFile()
 {
 // close the input file
 
+  if (fDirectory) gSystem->FreeDirectory(fDirectory);
   if (fStream) {
 #if defined(__HP_aCC) || defined(__DECCXX)
     if (fStream->rdbuf()->is_open()) fStream->close();
@@ -74,7 +90,7 @@ AliRawReaderFile::~AliRawReaderFile()
 #endif
     delete fStream;
   }
-  delete fMiniHeader;
+  delete fHeader;
   if (fBuffer) delete[] fBuffer;
 }
 
@@ -92,17 +108,27 @@ Bool_t AliRawReaderFile::OpenNextFile()
 #endif
     delete fStream;
     fStream = NULL;
+    fEquipmentId = -1;
   }
-  if (fFileNumber < 0) return kFALSE;
 
-  fFileNumber++;
-  char fileName[256];
-  sprintf(fileName, "%s%d", fFileName.Data(), fFileNumber);
+  if (!fDirectory) return kFALSE;
+  TString entry;
+  while (entry = gSystem->GetDirEntry(fDirectory)) {
+    if (entry.IsNull()) return kFALSE;
+    if (!entry.EndsWith(".ddl")) continue;
+    char* fileName = gSystem->ConcatFileName(fDirName, entry);
 #ifndef __DECCXX 
-  fStream = new fstream(fileName, ios::binary|ios::in);
+    fStream = new fstream(fileName, ios::binary|ios::in);
 #else
-  fStream = new fstream(fileName, ios::in);
+    fStream = new fstream(fileName, ios::in);
 #endif
+    break;
+  }
+
+  if (!fStream) return kFALSE;
+  entry.Remove(0, entry.Last('_')+1);
+  entry.Remove(entry.Length()-4);
+  fEquipmentId = atoi(entry.Data());
 #if defined(__HP_aCC) || defined(__DECCXX)
   return (fStream->rdbuf()->is_open());
 #else
@@ -111,19 +137,25 @@ Bool_t AliRawReaderFile::OpenNextFile()
 }
 
 
-Bool_t AliRawReaderFile::ReadMiniHeader()
+Bool_t AliRawReaderFile::ReadHeader()
 {
-// read a mini header at the current stream position
+// read a data header at the current stream position
 // returns kFALSE if the mini header could not be read
 
   if (!fStream) return kFALSE;
   do {
     if (fCount > 0) fStream->seekg(Int_t(fStream->tellg()) + fCount);
-    while (!fStream->read((char*) fMiniHeader, sizeof(AliMiniHeader))) {
+    while (!fStream->read((char*) fHeader, sizeof(AliRawDataHeader))) {
       if (!OpenNextFile()) return kFALSE;
     }
-    CheckMiniHeader();
-    fCount = fMiniHeader->fSize;
+    if (fHeader->fSize != 0xFFFFFFFF) {
+      fCount = fHeader->fSize - sizeof(AliRawDataHeader);
+    } else {
+      UInt_t currentPos = fStream->tellg();
+      fStream->seekg(0, ios::end);
+      fCount = UInt_t(fStream->tellg()) - currentPos;
+      fStream->seekg(currentPos);
+    }
   } while (!IsSelected());
   return kTRUE;
 }
@@ -134,7 +166,7 @@ Bool_t AliRawReaderFile::ReadNextData(UChar_t*& data)
 // returns kFALSE if the data could not be read
 
   while (fCount == 0) {
-    if (!ReadMiniHeader()) return kFALSE;
+    if (!ReadHeader()) return kFALSE;
   }
   if (fBufferSize < fCount) {
     if (fBuffer) delete[] fBuffer;
@@ -169,7 +201,13 @@ Bool_t AliRawReaderFile::Reset()
 {
 // reset the current stream position to the beginning of the file
 
-  if ((fFileNumber > 0) && fStream) {
+  void* directory = gSystem->OpenDirectory(fDirName);
+  if (!directory) {
+    Error("Reset", "could not open directory %s", fDirName.Data());
+    return kFALSE;
+  }
+
+  if (fStream) {
 #if defined(__HP_aCC) || defined(__DECCXX)
     if (fStream->rdbuf()->is_open()) fStream->close();
 #else
@@ -177,23 +215,12 @@ Bool_t AliRawReaderFile::Reset()
 #endif
     delete fStream;
     fStream = NULL;
-    fFileNumber = 0;
   }
 
-  if (!fStream) {
-    if (fFileNumber < 0) {
-#ifndef __DECCXX
-      fStream = new fstream(fFileName, ios::binary|ios::in);
-#else
-      fStream = new fstream(fFileName, ios::in);
-#endif
-    } else {
-      if (!OpenNextFile()) return kFALSE;
-    }
-  }
+  if (fDirectory) gSystem->FreeDirectory(fDirectory);
+  fDirectory = directory;
 
-  if (!fStream || !fStream->rdbuf()->is_open()) return kFALSE;
-  fStream->seekg(0);
+  OpenNextFile();
   fCount = 0;
   return kTRUE;
 }

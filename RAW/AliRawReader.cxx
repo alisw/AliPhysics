@@ -20,7 +20,7 @@
 //
 // The derived classes, which operate on concrete raw data formats,
 // should implement
-// - ReadHeader to read the next (mini or equipment) header
+// - ReadHeader to read the next (data/equipment) header
 // - ReadNextData to read the next raw data block (=1 DDL)
 // - ReadNext to read a given number of bytes
 // - several getters like GetType
@@ -42,14 +42,12 @@ ClassImp(AliRawReader)
 
 
 AliRawReader::AliRawReader() :
-  fMiniHeader(NULL),
+  fHeader(NULL),
   fCount(0),
-  fSelectDetectorID(-1),
-  fSelectMinDDLID(-1),
-  fSelectMaxDDLID(-1),
   fSelectEquipmentType(-1),
   fSelectMinEquipmentId(-1),
   fSelectMaxEquipmentId(-1),
+  fSkipInvalid(kFALSE),
   fErrorCode(0)
 {
 // default constructor: initialize data members
@@ -58,14 +56,12 @@ AliRawReader::AliRawReader() :
 
 AliRawReader::AliRawReader(const AliRawReader& rawReader) :
   TObject(rawReader),
-  fMiniHeader(rawReader.fMiniHeader),
+  fHeader(rawReader.fHeader),
   fCount(rawReader.fCount),
-  fSelectDetectorID(rawReader.fSelectDetectorID),
-  fSelectMinDDLID(rawReader.fSelectMinDDLID),
-  fSelectMaxDDLID(rawReader.fSelectMaxDDLID),
   fSelectEquipmentType(rawReader.fSelectEquipmentType),
   fSelectMinEquipmentId(rawReader.fSelectMinEquipmentId),
   fSelectMaxEquipmentId(rawReader.fSelectMaxEquipmentId),
+  fSkipInvalid(rawReader.fSkipInvalid),
   fErrorCode(0)
 {
 // copy constructor
@@ -76,12 +72,13 @@ AliRawReader& AliRawReader::operator = (const AliRawReader& rawReader)
 {
 // assignment operator
 
-  fMiniHeader = rawReader.fMiniHeader;
+  fHeader = rawReader.fHeader;
   fCount = rawReader.fCount;
 
-  fSelectDetectorID = rawReader.fSelectDetectorID;
-  fSelectMinDDLID = rawReader.fSelectMinDDLID;
-  fSelectMaxDDLID = rawReader.fSelectMaxDDLID;
+  fSelectEquipmentType = rawReader.fSelectEquipmentType;
+  fSelectMinEquipmentId = rawReader.fSelectMinEquipmentId;
+  fSelectMaxEquipmentId = rawReader.fSelectMaxEquipmentId;
+  fSkipInvalid = rawReader.fSkipInvalid;
 
   fErrorCode = rawReader.fErrorCode;
 
@@ -95,9 +92,11 @@ void AliRawReader::Select(Int_t detectorID, Int_t minDDLID, Int_t maxDDLID)
 // range of DDLs (minDDLID <= DDLID <= maxDDLID).
 // no selection is applied if a value < 0 is used.
 
-  fSelectDetectorID = detectorID;
-  fSelectMinDDLID = minDDLID;
-  fSelectMaxDDLID = maxDDLID;
+  fSelectEquipmentType = 0;
+  if (minDDLID < 0) minDDLID = 0;
+  fSelectMinEquipmentId = (detectorID << 8) + minDDLID;
+  if (maxDDLID < 0) maxDDLID = 0xFF;
+  fSelectMaxEquipmentId = (detectorID << 8) + maxDDLID;
 }
 
 void AliRawReader::SelectEquipment(Int_t equipmentType, 
@@ -116,14 +115,7 @@ Bool_t AliRawReader::IsSelected() const
 {
 // apply the selection (if any)
 
-  if (fSelectDetectorID >= 0) {
-    if (!fMiniHeader) return kFALSE;
-    if (fMiniHeader->fDetectorID != fSelectDetectorID) return kFALSE;
-    if ((fSelectMinDDLID >= 0) && (fMiniHeader->fDDLID < fSelectMinDDLID))
-      return kFALSE;
-    if ((fSelectMaxDDLID >= 0) && (fMiniHeader->fDDLID > fSelectMaxDDLID))
-      return kFALSE;
-  }
+  if (fSkipInvalid && !IsValid()) return kFALSE;
 
   if (fSelectEquipmentType >= 0) {
     if (GetEquipmentType() != fSelectEquipmentType) return kFALSE;
@@ -138,20 +130,6 @@ Bool_t AliRawReader::IsSelected() const
   return kTRUE;
 }
 
-
-Bool_t AliRawReader::CheckMiniHeader(AliMiniHeader* miniHeader) const
-{
-// check the magic number of the mini header
-
-  if (!miniHeader) miniHeader = fMiniHeader;
-  if (!miniHeader) return kFALSE;
-  UInt_t magicWord = miniHeader->fMagicWord[2]*65536 +
-    miniHeader->fMagicWord[1]*256 + miniHeader->fMagicWord[0];
-  if (magicWord != AliMiniHeader::kMagicWord) {
-    return kFALSE;
-  }
-  return kTRUE;
-}
 
 Bool_t AliRawReader::ReadNextInt(UInt_t& data)
 {
@@ -271,11 +249,9 @@ void AliRawReader::DumpData(Int_t limit)
     }
     printf("element size = %d\n", GetEquipmentElementSize());
 
-    printf("mini header:\n"
-	   " size = %d  detector = %d  DDL = %d\n"
-	   " version = %d  compression = %d\n",
-	   GetDataSize(), GetDetectorID(), GetDDLID(),
-	   GetVersion(), IsCompressed());
+    printf("data header:\n"
+	   " size = %d  version = %d  valid = %d  compression = %d\n",
+	   GetDataSize(), GetVersion(), IsValid(), IsCompressed());
 
     printf("\n");
     if (limit == 0) continue;

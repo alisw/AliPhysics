@@ -14,7 +14,8 @@ class fstream;
 
 class AliRawReaderFile: public AliRawReader {
   public :
-    AliRawReaderFile(const char* fileName, Bool_t addNumber = kTRUE);
+    AliRawReaderFile(Int_t eventNumber);
+    AliRawReaderFile(const char* dirName);
     AliRawReaderFile(const AliRawReaderFile& rawReader);
     AliRawReaderFile& operator = (const AliRawReaderFile& rawReader);
     virtual ~AliRawReaderFile();
@@ -25,10 +26,16 @@ class AliRawReaderFile: public AliRawReader {
     virtual const UInt_t* GetTriggerPattern() const {return 0;};
     virtual const UInt_t* GetDetectorPattern() const {return 0;};
     virtual const UInt_t* GetAttributes() const {return 0;};
+    virtual UInt_t   GetLDCId() const {return 0;};
     virtual UInt_t   GetGDCId() const {return 0;};
 
+    virtual Int_t    GetEquipmentSize() const {return 0;};
+    virtual Int_t    GetEquipmentType() const {return 0;};
+    virtual Int_t    GetEquipmentId() const {return fEquipmentId;};
+    virtual const UInt_t* GetEquipmentAttributes() const {return NULL;};
+    virtual Int_t    GetEquipmentElementSize() const {return 0;};
 
-    virtual Bool_t   ReadMiniHeader();
+    virtual Bool_t   ReadHeader();
     virtual Bool_t   ReadNextData(UChar_t*& data);
 
     virtual Bool_t   Reset();
@@ -38,9 +45,10 @@ class AliRawReaderFile: public AliRawReader {
 
     virtual Bool_t   ReadNext(UChar_t* data, Int_t size);
 
-    TString          fFileName;    // name of input files
-    Int_t            fFileNumber;  // number of current input file
+    TString          fDirName;     // name of the input directory
+    void*            fDirectory;   // pointer to the input directory
     fstream*         fStream;      // stream of raw digits
+    Int_t            fEquipmentId; // equipment ID from file name
     UChar_t*         fBuffer;      // buffer for payload
     Int_t            fBufferSize;  // size of fBuffer in bytes
 
