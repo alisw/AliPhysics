@@ -160,7 +160,7 @@ AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit)
   
   Int_t toAdd = fNprimary ;
   if(digit.fNprimary>0){
-    if(fAmp < digit.fAmp){//most energetic primary in digit => first primaries in list from second digit
+    if(fAmp < digit.fAmp){//most energetic primary in second digit => first primaries in list from second digit
       for (Int_t index = 0 ; index < digit.fNprimary ; index++){
 	for (Int_t old = 0 ; old < fNprimary ; old++) { //already have this primary?
 	  if(fPrimary[old] == (digit.fPrimary)[index]){
@@ -170,7 +170,8 @@ AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit)
 	  }
 	}
       }
-      if(digit.fNprimary+toAdd >fNMaxPrimary)  //Do not change primary list
+      Int_t nNewPrimaries = digit.fNprimary+toAdd ;
+      if(nNewPrimaries >fNMaxPrimary)  //Do not change primary list
 	Error("Operator +", "Increase NMaxPrimary") ;
       else{
 	for(Int_t index = fNprimary-1 ; index >=0 ; index--){ //move old primaries	
@@ -183,6 +184,7 @@ AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit)
 	for(Int_t index = 0; index < digit.fNprimary ; index++){
 	  fPrimary[index] = (digit.fPrimary)[index] ;	
 	}
+	fNprimary = nNewPrimaries ;
       }
     }
     else{ //add new primaries to the end
