@@ -36,7 +36,6 @@ SRCS          = AliITS.cxx AliITSv1.cxx AliITSv3.cxx AliITSv5.cxx \
 		AliITSClusterFinderSDD.cxx AliITSRawData.cxx \
 		AliITSHuffman.cxx AliITSClusterFinderSSD.cxx \
 		AliITSclusterSSD.cxx AliITSpackageSSD.cxx \
-		AliITSdictSSD.cxx \
 		AliITSstatistics.cxx AliITSstatistics2.cxx \
                 AliITSTrackV1.cxx AliITSIOTrack.cxx \
 		AliITSRad.cxx AliITSgeoinfo.cxx AliITSTrackerV1.cxx\
