@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2000/11/30 07:12:50  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.11  2000/10/20 06:30:06  fca
 Use version 0 to avoid streamer generation
 
@@ -54,6 +57,9 @@ AliPythia* AliPythia::fgAliPythia=NULL;
 AliPythia::AliPythia()
 {
 // Default Constructor
+//
+//  Set random number
+    if (!sRandom) sRandom=fRandom;
 }
 
 void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfunc)
@@ -188,7 +194,8 @@ void AliPythia::SetNuclei(Int_t a1, Int_t a2)
 	
 
 AliPythia* AliPythia::Instance()
-{
+{ 
+// Set random number generator 
     if (fgAliPythia) {
 	return fgAliPythia;
     } else {
@@ -198,6 +205,22 @@ AliPythia* AliPythia::Instance()
 }
 
 
+
+#ifndef WIN32
+#define pyr    pyr_
+#define pyrset pyrset_
+#define pyrget pyrget_
+#else
+#define pyr    PYR
+#define pyrset PYRSET
+#define pyrget PYRGET
+#endif
+
+extern "C" {
+  Double_t pyr(Int_t*) {return sRandom->Rndm();}
+  void pyrset(Int_t*,Int_t*) {}
+  void pyrget(Int_t*,Int_t*) {}
+}
 
 
 

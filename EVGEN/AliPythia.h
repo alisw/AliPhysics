@@ -6,9 +6,10 @@
 /* $Id$ */
 
 #include <TPythia6.h>
+#include <AliRndm.h>
 #include "GenTypeDefs.h"
 
-class AliPythia:public TPythia6
+class AliPythia : public TPythia6, public AliRndm
 {
  public:
     virtual ~AliPythia(){;}
@@ -30,7 +31,7 @@ class AliPythia:public TPythia6
  private: 
     AliPythia();
 
-    ClassDef(AliPythia,0) //ALICE UI to PYTHIA
+    ClassDef(AliPythia,1) //ALICE UI to PYTHIA
 };
 
 #endif

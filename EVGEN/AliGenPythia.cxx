@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.29  2000/12/04 11:22:03  morsch
+Init of sRandom as in 1.15
+
 Revision 1.28  2000/12/02 11:41:39  morsch
 Use SetRandom() to initialize random number generator in constructor.
 
@@ -564,19 +567,3 @@ void AliGenPythia::Streamer(TBuffer &R__b)
 }
 
 
-
-#ifndef WIN32
-#define pyr    pyr_
-#define pyrset pyrset_
-#define pyrget pyrget_
-#else
-#define pyr    PYR
-#define pyrset PYRSET
-#define pyrget PYRGET
-#endif
-
-extern "C" {
-  Double_t pyr(Int_t*) {return sRandom->Rndm();}
-  void pyrset(Int_t*,Int_t*) {}
-  void pyrget(Int_t*,Int_t*) {}
-}
