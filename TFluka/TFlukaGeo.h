@@ -120,7 +120,9 @@ class TFluka : public TVirtualMC {
   
   // set methods
   virtual void     SetProcess(const char* flagName, Int_t flagValue);
+    virtual void     SetProcess(const char* flagName, Int_t flagValue, Int_t imed);
   virtual void     SetCut(const char* cutName, Double_t cutValue);
+  virtual void     SetCut(const char* cutName, Double_t cutValue, Int_t imed);
   virtual Double_t Xsec(char*, Double_t, Int_t, Int_t);
   
   // particle table usage         
@@ -267,10 +269,10 @@ class TFluka : public TVirtualMC {
   void SetInputFileName(const char* n) {sInputFileName = n;}
 
   // - SetProcess and SetCut
-  Int_t GetProcessNb() const {return iNbOfProc;}
-  void SetProcessNb(Int_t l) {iNbOfProc = l;}
-  Int_t GetCutNb() const {return iNbOfProc;}
-  void SetCutNb(Int_t l) {iNbOfCut = l;}
+  Int_t GetProcessNb() const {return fNbOfProc;}
+  void SetProcessNb(Int_t l) {fNbOfProc = l;}
+  Int_t GetCutNb() const {return fNbOfProc;}
+  void SetCutNb(Int_t l) {fNbOfCut = l;}
 
   // - Verbosity level
   Int_t GetVerbosityLevel() const {return fVerbosityLevel;}
@@ -342,12 +344,14 @@ class TFluka : public TVirtualMC {
   Bool_t   fTrackIsExiting;   // Flag for track exiting  
   Bool_t   fTrackIsNew;       // Flag for new track
   //variables for SetProcess and SetCut
-  Int_t    iNbOfProc;
-  Int_t    iProcessValue[100];
-  Char_t   sProcessFlag[100][5];
-  Int_t    iNbOfCut;
-  Double_t fCutValue[100];
-  Char_t   sCutFlag[100][7];
+  Int_t    fNbOfProc;
+  Int_t    fProcessValue[1000];
+  Int_t    fProcessMedium[1000];
+  Char_t   fProcessFlag[1000][5];
+  Int_t    fNbOfCut;
+  Double_t fCutValue[1000];
+  Char_t   fCutFlag[1000][7];
+  Int_t    fCutMedium[1000];
 
   //Geometry through TGeo
   Int_t*               fMaterials;         //!Array of indices
