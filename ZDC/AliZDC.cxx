@@ -29,6 +29,8 @@
 #include <TGeometry.h>
 #include <TNode.h>
 #include <TTree.h>
+#include <TFile.h>
+#include <TSystem.h>
 
 // --- AliRoot header files
 #include "AliDetector.h"
@@ -38,6 +40,7 @@
 #include "AliZDCDigit.h"
 #include "AliZDCDigitizer.h"
 #include "AliZDCRawStream.h"
+#include "AliZDCCalibData.h"
 
 #include "AliRawDataHeader.h"
 #include "AliLoader.h"
@@ -46,6 +49,8 @@
 
  
 ClassImp(AliZDC)
+
+AliZDC *gZDC;
  
 //_____________________________________________________________________________
 AliZDC::AliZDC()
@@ -79,9 +84,16 @@ AliZDC::AliZDC(const char *name, const char *title)
   // Allocate the hits array  
   fHits   = new TClonesArray("AliZDCHit",1000);
   gAlice->GetMCApp()->AddHitList(fHits);
+  
+  char sensname[5],senstitle[25];
+  sprintf(sensname,"ZDC");
+  sprintf(senstitle,"ZDC dummy");
+  SetName(sensname); SetTitle(senstitle);
 
   fDigits     = 0;
   fNdigits    = 0;
+  
+  gZDC=this;
 
 }
 //____________________________________________________________________________ 
@@ -92,6 +104,7 @@ AliZDC::~AliZDC()
   //
 
   fIshunt   = 0;
+  gZDC=0;
 
 }
 //_____________________________________________________________________________
@@ -449,3 +462,68 @@ void AliZDC::SetTreeAddress(){
   AliDetector::SetTreeAddress();
 }
  
+ 
+//Calibration methods (by Alberto Colla)
+ 
+ 
+//________________________________________________________________
+void AliZDC::CreateCalibData()
+{
+  // 
+  //if (fCalibData) delete fCalibData; // delete previous version
+  fCalibData = new AliZDCCalibData(GetName());
+}
+//________________________________________________________________
+void AliZDC::WriteCalibData(Int_t option)
+{
+  //
+  const int kCompressLevel = 9;
+  const char defname[] = "$(ALICE)/AliRoot/data/AliZDCCalib.root";
+  char* fnam = gAlice->GetZDCCalibFName();
+  if (!fnam || fnam[0]=='\0') {
+    fnam = gSystem->ExpandPathName(defname);
+    Warning("WriteCalibData","No File Name is provided, using default %s",fnam);
+  }
+  TFile* cdfile = TFile::Open(fnam,"UPDATE","",kCompressLevel);
+
+  // Writes Calibration Data to current directory. 
+  // User MUST take care of corresponding file opening and ->cd()... !!!
+  // By default, the object is overwritten. Use 0 option for opposite.
+  if (option) option = TObject::kOverwrite;
+  if (fCalibData) fCalibData->Write(0,option);
+  else if (fCalibData) fCalibData->Write(0,option);
+
+  cdfile->Close();
+  delete cdfile;
+}
+
+//________________________________________________________________
+void AliZDC::LoadCalibData()
+{
+  //
+  char* fnam = gAlice->GetZDCCalibFName();
+  if (!fnam || fnam[0]=='\0') return; 
+  if (!gAlice->IsFileAccessible(fnam)) {
+    Error("LoadCalibData","ZDC Calibration Data file is not accessible, %s",fnam);
+    exit(1);
+  }
+  TFile* cdfile = TFile::Open(fnam);
+
+  // Loads Calibration Data from current directory. 
+  // User MUST take care of corresponding file opening and ->cd()...!!!
+  //
+  if (fCalibData) delete fCalibData; // delete previous version
+  TString dtname = "Calib_";
+  dtname += GetName();
+  fCalibData = (AliZDCCalibData*) gDirectory->Get(dtname.Data());
+  if (!fCalibData) { 
+    Error("LoadCalibData","No Calibration data found for %s",GetName());
+    exit(1);
+  }
+
+  cdfile->Close();
+  delete cdfile;
+}
+
+
+//Calibration methods (by Alberto Colla)

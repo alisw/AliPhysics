@@ -10,6 +10,8 @@
 ////////////////////////////////////////////////
 
 #include "AliDetector.h"
+
+class AliZDCCalibData;
  
 class AliZDC : public AliDetector {
 
@@ -36,11 +38,27 @@ public:
   void  NoShower(){fNoShower=1;}
   void  Shower()  {fNoShower=0;}
 
+
+//Calibration methods (by Alberto Colla)
+  void          CreateCalibData();
+  void          WriteCalibData(Int_t option=TObject::kOverwrite);
+  void          LoadCalibData();
+  void          SetCalibData(AliZDCCalibData* data) {fCalibData = data;}
+  AliZDCCalibData* GetCalibData() const  {return fCalibData;}
+//Calibration methods (by Alberto Colla)
+
+
 protected:
 
   Int_t        fNoShower;	// Flag to switch off the shower	
+
+//Calibration methods (by Alberto Colla)
+  AliZDCCalibData* fCalibData;	// Calibration data for ZDC
+//Calibration methods (by Alberto Colla)
   
   ClassDef(AliZDC,4)  	// Zero Degree Calorimeter base class
 };
  
+R__EXTERN  AliZDC *gZDC;
+
 #endif
