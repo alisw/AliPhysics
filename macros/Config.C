@@ -89,33 +89,35 @@ void Config()
     // track by track
     //
     //gener->SetVertexSmear(perTrack); 
+    // Field (L3 0.4 T)
+    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
+    rootfile->cd();
+    gAlice->SetField(field);    
 
-    gAlice->SetField(-999, 2);  //Specify maximum magnetic field in Tesla (neg. ==> default field)
 
-    Int_t   iABSO = 1;
-    Int_t   iCRT = 1;
-    Int_t   iDIPO = 1;
-    Int_t   iFMD = 1;
-    Int_t   iFRAME = 1;
-    Int_t   iHALL = 1;
-    Int_t   iITS = 1;
-    Int_t   iMAG = 1;
-    Int_t   iMUON = 1;
-    Int_t   iPHOS = 1;
-    Int_t   iPIPE = 1;
-    Int_t   iPMD = 1;
-    Int_t   iRICH = 1;
-    Int_t   iSHIL = 1;
-    Int_t   iSTART = 1;
-    Int_t   iTOF = 1;
-    Int_t   iTPC = 1;
-    Int_t   iTRD = 1;
-    Int_t   iZDC = 1;
-    Int_t   iEMCAL = 0;
+    Int_t   iABSO  =  1;
+    Int_t   iDIPO  =  1;
+    Int_t   iFMD   =  1;
+    Int_t   iFRAME =  1;
+    Int_t   iHALL  =  1;
+    Int_t   iITS   =  1;
+    Int_t   iMAG   =  1;
+    Int_t   iMUON  =  1;
+    Int_t   iPHOS  =  1;
+    Int_t   iPIPE  =  1;
+    Int_t   iPMD   =  1;
+    Int_t   iRICH  =  1;
+    Int_t   iSHIL  =  1;
+    Int_t   iSTART =  1;
+    Int_t   iTOF   =  1;
+    Int_t   iTPC   =  1;
+    Int_t   iTRD   =  1;
+    Int_t   iZDC   =  1;
+    Int_t   iEMCAL =  1;
+    Int_t   iCRT   =  0;
 
     //=================== Alice BODY parameters =============================
     AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
-
 
     if (iMAG)
     {
@@ -151,15 +153,19 @@ void Config()
     {
         //=================== FRAME parameters ============================
 
-        AliFRAME *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
-
+        AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
+	if (geo == kHoles) {
+	    FRAME->SetHoles(1);
+	} else {
+	    FRAME->SetHoles(0);
+	}
     }
 
     if (iSHIL)
     {
         //=================== SHIL parameters ============================
 
-        AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding");
+        AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding Version 2");
     }
 
 
@@ -170,9 +176,9 @@ void Config()
         AliPIPE *PIPE = new AliPIPEv0("PIPE", "Beam Pipe");
     }
  
-  if(iITS) {
+    if(iITS) {
 
-//=================== ITS parameters ============================
+    //=================== ITS parameters ============================
     //
     // As the innermost detector in ALICE, the Inner Tracking System "impacts" on
     // almost all other detectors. This involves the fact that the ITS geometry
@@ -190,17 +196,17 @@ void Config()
     //
     //AliITS *ITS  = new AliITSv5asymm("ITS","Updates ITS TDR detailed version with asymmetric services");
     //
-    AliITSvPPRasymm *ITS  = new AliITSvPPRasymm("ITS","New ITS PPR detailed version with asymmetric services");
-    ITS->SetMinorVersion(2);					 // don't touch this parameter if you're not an ITS developer
-    ITS->SetReadDet(kFALSE);					 // don't touch this parameter if you're not an ITS developer
+	AliITSvPPRasymm *ITS  = new AliITSvPPRasymm("ITS","New ITS PPR detailed version with asymmetric services");
+	ITS->SetMinorVersion(2);					 // don't touch this parameter if you're not an ITS developer
+	ITS->SetReadDet(kFALSE);					 // don't touch this parameter if you're not an ITS developer
     //    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
-    ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
-    ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
-    ITS->SetThicknessChip1(200.);  // chip thickness on layer 1 must be in the range [150,300]
-    ITS->SetThicknessChip2(200.);  // chip thickness on layer 2 must be in the range [150,300]
-    ITS->SetRails(1);	     // 1 --> rails in ; 0 --> rails out
-    ITS->SetCoolingFluid(1);   // 1 --> water ; 0 --> freon
-    //
+	ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
+	ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
+	ITS->SetThicknessChip1(200.);  // chip thickness on layer 1 must be in the range [150,300]
+	ITS->SetThicknessChip2(200.);  // chip thickness on layer 2 must be in the range [150,300]
+	ITS->SetRails(0);	     // 1 --> rails in ; 0 --> rails out
+	ITS->SetCoolingFluid(1);   // 1 --> water ; 0 --> freon
+	//
     //AliITSvPPRsymm *ITS  = new AliITSvPPRsymm("ITS","New ITS PPR detailed version with symmetric services");
     //ITS->SetMinorVersion(2);                                       // don't touch this parameter if you're not an ITS developer
     //ITS->SetReadDet(kFALSE);                                       // don't touch this parameter if you're not an ITS developer
@@ -209,7 +215,7 @@ void Config()
     //ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
     //ITS->SetThicknessChip1(200.);  // chip thickness on layer 1 must be in the range [150,300]
     //ITS->SetThicknessChip2(200.);  // chip thickness on layer 2 must be in the range [150,300]
-    //ITS->SetRails(1);              // 1 --> rails in ; 0 --> rails out
+    //ITS->SetRails(0);              // 1 --> rails in ; 0 --> rails out
     //ITS->SetCoolingFluid(1);       // 1 --> water ; 0 --> freon
     //
     //
@@ -218,11 +224,11 @@ void Config()
     //                                                     
     //
     //AliITSvPPRcoarseasymm *ITS  = new AliITSvPPRcoarseasymm("ITS","New ITS PPR coarse version with asymmetric services");
-    //ITS->SetRails(1);                // 1 --> rails in ; 0 --> rails out
+    //ITS->SetRails(0);                // 1 --> rails in ; 0 --> rails out
     //ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
     //
     //AliITS *ITS  = new AliITSvPPRcoarsesymm("ITS","New ITS PPR coarse version with symmetric services");
-    //ITS->SetRails(1);                // 1 --> rails in ; 0 --> rails out
+    //ITS->SetRails(0);                // 1 --> rails in ; 0 --> rails out
     //ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
     //                      
     //
@@ -235,9 +241,8 @@ void Config()
     // ITSgeometry.tme) in a format understandable to the CAD system EUCLID.
     // The default (=0) means that you dont want to use this facility.
     //
-    ITS->SetEUCLID(0);  
-  }
-  
+	ITS->SetEUCLID(0);  
+    }
 
     if (iTPC)
     {
@@ -267,16 +272,21 @@ void Config()
 
     }
 
-    if (iTOF)
-    {
+
+    if (iTOF) {
+	if (geo == kHoles) {
         //=================== TOF parameters ============================
-        AliTOF *TOF = new AliTOFv2("TOF", "normal TOF");
+	    AliTOF *TOF = new AliTOFv2FHoles("TOF", "TOF with Holes");
+	} else {
+	    AliTOF *TOF = new AliTOFv4T0("TOF", "normal TOF");
+	}
     }
+
 
     if (iRICH)
     {
         //=================== RICH parameters ===========================
-        AliRICH *RICH = new AliRICHv1("RICH", "normal RICH");
+        AliRICH *RICH = new AliRICHv3("RICH", "normal RICH");
 
     }
 
@@ -288,13 +298,6 @@ void Config()
         AliZDC *ZDC = new AliZDCv2("ZDC", "normal ZDC");
     }
 
-    if (iCRT)
-    {
-        //=================== CASTOR parameters ============================
-
-        AliCRT *CRT = new AliCRTv0("CRT", "normal CRT");
-    }
-
     if (iTRD)
     {
         //=================== TRD parameters ============================
@@ -303,24 +306,24 @@ void Config()
 
         // Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 90% Xe + 10% CO2)
         TRD->SetGasMix(1);
-
-        // With hole in front of PHOS
-        TRD->SetPHOShole();
-        // With hole in front of RICH
-        TRD->SetRICHhole();
-        // Switch on TR
-        AliTRDsim *TRDsim = TRD->CreateTR();
+	if (geo == kHoles) {
+	    // With hole in front of PHOS
+	    TRD->SetPHOShole();
+	    // With hole in front of RICH
+	    TRD->SetRICHhole();
+	}
+	    // Switch on TR
+	    AliTRDsim *TRDsim = TRD->CreateTR();
     }
 
     if (iFMD)
     {
         //=================== FMD parameters ============================
-
-        AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
+	AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
         FMD->SetRingsSi1(256);
-        FMD->SetRingsSi2(64);
+        FMD->SetRingsSi2(128);
         FMD->SetSectorsSi1(20);
-        FMD->SetSectorsSi2(24);
+        FMD->SetSectorsSi2(40);      
    }
 
     if (iMUON)
@@ -333,27 +336,14 @@ void Config()
 
     if (iPHOS)
     {
-        AliPHOS *PHOS = new AliPHOSv1("PHOS", "GPS2");
+        AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
     }
 
 
     if (iPMD)
     {
         //=================== PMD parameters ============================
-
         AliPMD *PMD = new AliPMDv1("PMD", "normal PMD");
-
-        PMD->SetPAR(1., 1., 0.8, 0.02);
-        PMD->SetIN(6., 18., -580., 27., 27.);
-        PMD->SetGEO(0.0, 0.2, 4.);
-        PMD->SetPadSize(0.8, 1.0, 1.0, 1.5);
-
-    }
-
-    if (iEMCAL && !iRICH)
-    {
-        //=================== EMCAL parameters ============================
-        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCALArch1a");
     }
 
     if (iSTART)
@@ -362,6 +352,23 @@ void Config()
         AliSTART *START = new AliSTARTv1("START", "START Detector");
     }
 
+    if (iEMCAL)
+    {
+        //=================== EMCAL parameters ============================
+        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCALArch1a");
+    }
+
+     if (iCRT)
+    {
+        //=================== CRT parameters ============================
+        AliCRT *CRT = new AliCRTv0("CRT", "normal ACORDE");
+    }
+
+     if (iVZERO)
+    {
+        //=================== CRT parameters ============================
+        AliVZERO *VZERO = new AliVZEROv2("VZERO", "normal VZERO");
+    }
 
 }
 
