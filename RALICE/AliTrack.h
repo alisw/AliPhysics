@@ -20,6 +20,7 @@ class AliTrack : public TObject,public Ali4Vector
  public:
   AliTrack();                       // Default constructor
   ~AliTrack();                      // Destructor
+  AliTrack(AliTrack& t);            // Copy constructor
   void Reset();                     // Reset all values to 0
   void Set4Momentum(Ali4Vector& p); // Set track 4-momentum
   void Set3Momentum(Ali3Vector& p); // Set track 3-momentum
@@ -70,6 +71,7 @@ class AliTrack : public TObject,public Ali4Vector
 
  
  protected:
+  void Init();           // Initialisation of pointers etc...
   Float_t fQ;            // The charge of the particle
   Int_t fNdec;           // The number of decay products
   TObjArray* fDecays;    // The array of decay produced tracks

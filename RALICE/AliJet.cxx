@@ -97,20 +97,24 @@ AliJet::AliJet()
 // Default constructor
 // All variables initialised to 0
 // Initial maximum number of tracks is set to the default value
+ Init();
+ Reset();
+ SetNtinit();
+}
+///////////////////////////////////////////////////////////////////////////
+void AliJet::Init()
+{
+// Initialisation of pointers etc...
  fTracks=0;
  fNtinit=0;
  fTrackCopy=0;
- Reset();
- SetNtinit();
 }
 ///////////////////////////////////////////////////////////////////////////
 AliJet::AliJet(Int_t n)
 {
 // Create a jet to hold initially a maximum of n tracks
 // All variables initialised to 0
- fTracks=0;
- fNtinit=0;
- fTrackCopy=0;
+ Init();
  Reset();
  if (n > 0)
  {
@@ -131,10 +135,26 @@ AliJet::~AliJet()
 // Default destructor
  if (fTracks)
  {
-  if (fTrackCopy) fTracks->Delete();
   delete fTracks;
   fTracks=0;
  }
+}
+///////////////////////////////////////////////////////////////////////////
+AliJet::AliJet(AliJet& j)
+{
+// Copy constructor
+ Init();
+ Reset();
+ SetNtinit();
+ SetTrackCopy(j.GetTrackCopy());
+ SetId(j.GetId());
+
+ AliTrack* tx=0;
+ for (Int_t i=1; i<=j.GetNtracks(); i++)
+ {
+  tx=j.GetTrack(i);
+  if (tx) AddTrack(tx);
+ } 
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliJet::SetNtinit(Int_t n)
@@ -144,7 +164,6 @@ void AliJet::SetNtinit(Int_t n)
  fNtmax=n;
  if (fTracks)
  {
-  if (fTrackCopy) fTracks->Delete();
   delete fTracks;
   fTracks=0;
  }
@@ -162,15 +181,18 @@ void AliJet::Reset()
  if (fNtinit > 0) SetNtinit(fNtinit);
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliJet::AddTrack(AliTrack& t)
+void AliJet::AddTrack(AliTrack& t,Int_t copy)
 {
 // Add a track to the jet.
-// Note : In case TrackCopy is set, the originally entered track
-//        will be automatically reset.
+// Note : The optional parameter "copy" is for internal use only.
 // In case the maximum number of tracks has been reached
 // space will be extended to hold an additional amount of tracks as
 // was initially reserved.
- if (!fTracks) fTracks=new TObjArray(fNtmax);
+ if (!fTracks)
+ {
+  fTracks=new TObjArray(fNtmax);
+  if (fTrackCopy) fTracks->SetOwner();
+ }
  if (fNtrk == fNtmax) // Check if maximum track number is reached
  {
   fNtmax+=fNtinit;
@@ -179,9 +201,9 @@ void AliJet::AddTrack(AliTrack& t)
  
  // Add the track to this jet
  fNtrk++;
- if (fTrackCopy)
+ if (fTrackCopy && copy)
  {
-  fTracks->Add(t.Clone());
+  fTracks->Add(new AliTrack(t));
  }
  else
  {

@@ -178,6 +178,7 @@ AliCalorimeter::AliCalorimeter(Int_t nrow,Int_t ncol)
  }
  
  fModules=new TObjArray();  // Default size, expanded automatically
+ fModules->SetOwner();
  
  fHmodules=0;
  fHclusters=0;
@@ -732,6 +733,7 @@ void AliCalorimeter::Group(Int_t n)
    fClusters=0;
   }
   fClusters=new TObjArray();
+  fClusters->SetOwner();
   fNclusters=0;
   Int_t row=0;
   Int_t col=0;
@@ -1064,6 +1066,7 @@ void AliCalorimeter::AddVetoSignal(Float_t* r,TString f,Float_t s)
  {
   fNvetos=0;
   fVetos=new TObjArray();
+  fVetos->SetOwner();
  } 
 
  fVetos->Add(new AliSignal);

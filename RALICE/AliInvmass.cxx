@@ -123,14 +123,12 @@ AliInvmass::~AliInvmass()
 // Destructor to delete dynamically allocated memory
  if (fMinv)
  {
-  fMinv->Delete();
   delete fMinv;
   fMinv=0;
  }
 
  if (fMbkg)
  {
-  fMbkg->Delete();
   delete fMbkg;
   fMbkg=0;
  }
@@ -206,14 +204,12 @@ void AliInvmass::Combine(TObjArray* a1,TObjArray* a2)
  
  if ((!fBkg || fMode==1) && fMinv)
  {
-  fMinv->Delete();
   delete fMinv;
   fMinv=0;
  }
  
  if (fBkg && (fMode !=1) && fMbkg)
  {
-  fMbkg->Delete();
   delete fMbkg;
   fMbkg=0;
  }
@@ -298,12 +294,20 @@ void AliInvmass::Combine(TObjArray* a1,TObjArray* a2)
     t->SetCharge(q1+q2);
     if (!fBkg || fMode==1) 
     {
-     if (!fMinv) fMinv=new TObjArray();
+     if (!fMinv)
+     {
+      fMinv=new TObjArray();
+      fMinv->SetOwner();
+     }
      fMinv->Add(t);
     }
     else
     {
-     if (!fMbkg) fMbkg=new TObjArray();
+     if (!fMbkg)
+     {
+      fMbkg=new TObjArray();
+      fMbkg->SetOwner();
+     }
      fMbkg->Add(t);
     }
    }

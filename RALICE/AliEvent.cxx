@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliEvent.cxx,v 1.3 2001/07/04 15:59:20 nick Exp $
+// $Id: AliEvent.cxx,v 1.4 2001/07/06 09:30:59 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
@@ -187,7 +187,7 @@
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
-//- Modified: NvE $Date: 2001/07/04 15:59:20 $ UU-SAP Utrecht
+//- Modified: NvE $Date: 2001/07/06 09:30:59 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliEvent.h"
@@ -223,7 +223,6 @@ AliEvent::~AliEvent()
 // Default destructor
  if (fCalorimeters)
  {
-  if (fCalCopy) fCalorimeters->Delete();
   delete fCalorimeters;
   fCalorimeters=0;
  }
@@ -241,7 +240,6 @@ void AliEvent::Reset()
  fNcals=0;
  if (fCalorimeters)
  {
-  if (fCalCopy) fCalorimeters->Delete();
   delete fCalorimeters;
   fCalorimeters=0;
  }
@@ -325,13 +323,17 @@ Int_t AliEvent::GetNcalorimeters()
 void AliEvent::AddCalorimeter(AliCalorimeter& c)
 {
 // Add a calorimeter system to the event
- if (!fCalorimeters) fCalorimeters=new TObjArray();
+ if (!fCalorimeters)
+ {
+  fCalorimeters=new TObjArray();
+  if (fCalCopy) fCalorimeters->SetOwner();
+ }
  
  // Add the calorimeter system to this event
  fNcals++;
  if (fCalCopy)
  {
-  fCalorimeters->AddLast(c.Clone());
+  fCalorimeters->AddLast((AliCalorimeter*)c.Clone());
  }
  else
  {

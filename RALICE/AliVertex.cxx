@@ -151,30 +151,32 @@ AliVertex::AliVertex()
 // All variables initialised to 0.
 // Initial maximum number of tracks is set to the default value.
 // Initial maximum number of sec. vertices is set to the default value.
- fNvmax=0;
- fVertices=0;
- fConnects=0;
- fVertexCopy=0;
- fNjmax=0;
- fJets=0;
- fJetCopy=0;
+ Init();
  Reset();
  SetNtinit();
  SetNvmax();
  SetNjmax();
 }
 ///////////////////////////////////////////////////////////////////////////
-AliVertex::AliVertex(Int_t n)
+void AliVertex::Init()
 {
-// Create a vertex to hold initially a maximum of n tracks
-// All variables initialised to 0
+// Initialisation of pointers etc...
+ AliJet::Init();
  fNvmax=0;
  fVertices=0;
  fConnects=0;
  fVertexCopy=0;
  fNjmax=0;
  fJets=0;
+ fJetTracks=0;
  fJetCopy=0;
+}
+///////////////////////////////////////////////////////////////////////////
+AliVertex::AliVertex(Int_t n)
+{
+// Create a vertex to hold initially a maximum of n tracks
+// All variables initialised to 0
+ Init();
  Reset();
  if (n > 0)
  {
@@ -197,21 +199,96 @@ AliVertex::~AliVertex()
 // Default destructor
  if (fVertices)
  {
-  if (fVertexCopy) fVertices->Delete();
   delete fVertices;
   fVertices=0;
  }
  if (fConnects)
  {
-  fConnects->Delete();
   delete fConnects;
   fConnects=0;
  }
  if (fJets)
  {
-  if (fJetCopy) fJets->Delete();
   delete fJets;
   fJets=0;
+ }
+ if (fJetTracks)
+ {
+  delete fJetTracks;
+  fJetTracks=0;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+AliVertex::AliVertex(AliVertex& v)
+{
+// Copy constructor
+ Init();
+ Reset();
+ SetNtinit();
+ SetNvmax();
+ SetNjmax();
+ SetTrackCopy(v.GetTrackCopy());
+ SetVertexCopy(v.GetVertexCopy());
+ SetJetCopy(v.GetJetCopy());
+ SetId(v.GetId());
+ SetPosition(v.GetPosition());
+
+ // Copy all tracks except the ones coming from jets
+ AliTrack* tx=0;
+ Int_t jetflag=0,connect=0;
+ AliTrack* tx2=0;
+ for (Int_t it=1; it<=v.GetNtracks(); it++)
+ {
+  tx=v.GetTrack(it);
+  if (tx)
+  {
+   jetflag=v.IsJetTrack(tx);
+   connect=v.IsConnectTrack(tx);
+
+   if (!jetflag && !connect) AddTrack(tx);
+
+   if (connect)
+   {
+    if (!fConnects)
+    {
+     fConnects=new TObjArray(fNvmax);
+     if (!fTrackCopy) fConnects->SetOwner();
+    }
+    tx2=new AliTrack(*tx);
+    fConnects->Add(tx2);
+    AddTrack(tx2,0);
+   } 
+  }
+ }
+
+ // Copy all the (secondary) vertices without re-creating connecting tracks
+ // The connecting tracks have already been copied above
+ AliVertex* vx=0;
+ for (Int_t iv=1; iv<=v.GetNvertices(); iv++)
+ {
+  vx=v.GetVertex(iv);
+  if (vx) AddVertex(vx,0); 
+ }
+
+ // Copy all the jets including the jet tracks for these jets for which
+ // this was also the case in the original vertex
+ AliJet* jx=0;
+ for (Int_t ij=1; ij<=v.GetNjets(); ij++)
+ {
+  jx=v.GetJet(ij);
+  if (jx)
+  {
+   jetflag=0;
+   if (jx->GetNtracks())
+   {
+    tx=jx->GetTrack(1);
+    if (tx)
+    {
+     jetflag=v.IsJetTrack(tx);
+    }
+   }
+   AddJet(jx,jetflag);
+  } 
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -228,7 +305,6 @@ void AliVertex::SetNvmax(Int_t n)
  }
  if (fVertices)
  {
-  if (fVertexCopy) fVertices->Delete();
   delete fVertices;
   fVertices=0;
  }
@@ -247,7 +323,6 @@ void AliVertex::SetNjmax(Int_t n)
  }
  if (fJets)
  {
-  if (fJetCopy) fJets->Delete();
   delete fJets;
   fJets=0;
  }
@@ -270,13 +345,17 @@ void AliVertex::Reset()
  if (fNvmax>0) SetNvmax(fNvmax);
  if (fConnects)
  {
-  fConnects->Delete();
   delete fConnects;
   fConnects=0;
  }
 
  fNjets=0;
  if (fNjmax>0) SetNjmax(fNjmax);
+ if (fJetTracks)
+ {
+  delete fJetTracks;
+  fJetTracks=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliVertex::ResetVertices()
@@ -298,6 +377,7 @@ void AliVertex::ResetVertices()
     fNtrk--;
     (Ali4Vector&)(*this)-=(Ali4Vector&)(*t);
     fQ-=t->GetCharge();
+    if (fTrackCopy) delete t;
    }
   }
   fTracks->Compress();
@@ -307,7 +387,6 @@ void AliVertex::ResetVertices()
  if (fNvmax>0) SetNvmax(fNvmax);
  if (fConnects)
  {
-  fConnects->Delete();
   delete fConnects;
   fConnects=0;
  }
@@ -326,7 +405,11 @@ void AliVertex::AddJet(AliJet& j,Int_t tracks)
 //        be stored according to the mode specified by SetJetCopy().
 //        The latter will enable jet studies based on a fixed list of tracks
 //        as contained e.g. in an AliVertex or AliEvent. 
- if (!fJets) fJets=new TObjArray(fNjmax);
+ if (!fJets)
+ {
+  fJets=new TObjArray(fNjmax);
+  if (fJetCopy) fJets->SetOwner();
+ }
  if (fNjets == fNjmax) // Check if maximum jet number is reached
  {
   fNjmax++;
@@ -334,24 +417,32 @@ void AliVertex::AddJet(AliJet& j,Int_t tracks)
  }
 
  // Add the jet to the list 
- fNjets++;
- if (fJetCopy)
+ AliJet* jx=&j;
+ if (fJetCopy) jx=new AliJet(j);
+
+ if (jx)
  {
-  fJets->Add(j.Clone());
- }
- else
- {
-  fJets->Add(&j);
+  fNjets++;
+  fJets->Add(jx); 
  }
 
  // Add the tracks of the jet to this vertex
  if (tracks)
  {
-  AliTrack* tj;
-  for (Int_t i=1; i<=j.GetNtracks(); i++)
+  if (!fJetTracks)
   {
-   tj=j.GetTrack(i);
-   AddTrack(tj);
+   fJetTracks=new TObjArray();
+  }
+  Int_t copy=1-(jx->GetTrackCopy());
+  AliTrack* tj;
+  for (Int_t i=1; i<=jx->GetNtracks(); i++)
+  {
+   tj=jx->GetTrack(i);
+   if (tj)
+   {
+    AddTrack(tj,copy);
+    fJetTracks->Add(tj);
+   }
   }
  }
 }
@@ -372,7 +463,11 @@ void AliVertex::AddVertex(AliVertex& v,Int_t connect)
 //        has to introduce the connecting track lateron by hand
 //        explicitly in order to match the kinematics and charge.
 //
- if (!fVertices) fVertices=new TObjArray(fNvmax);
+ if (!fVertices)
+ {
+  fVertices=new TObjArray(fNvmax);
+  if (fVertexCopy) fVertices->SetOwner();
+ }
  if (fNvtx == fNvmax) // Check if maximum vertex number is reached
  {
   fNvmax++;
@@ -380,36 +475,31 @@ void AliVertex::AddVertex(AliVertex& v,Int_t connect)
  }
 
  // Add the linked (secondary) vertex to the list 
- fNvtx++;
- if (fVertexCopy)
+ AliVertex* vx=&v;
+ if (fVertexCopy) vx=new AliVertex(v);
+
+ if (vx)
  {
-  fVertices->Add(v.Clone());
- }
- else
- {
-  fVertices->Add(&v);
- }
+  fNvtx++;
+  fVertices->Add(vx);
+ } 
 
  // Create connecting track and update 4-momentum and charge for current vertex
  if (connect)
  {
-  AliPosition r1=GetPosition();
-  AliPosition r2=v.GetPosition();
-  Float_t q=v.GetCharge();
-  Ali3Vector p=v.Get3Momentum();
-  Double_t v2=v.GetInvariant();
-  Double_t dv2=v.Ali4Vector::GetResultError();
-
   AliTrack* t=new AliTrack();
-  t->SetBeginPoint(r1);
-  t->SetEndPoint(r2);
-  t->SetCharge(q);
-  t->Set3Momentum(p);
-  t->SetInvariant(v2,dv2);
+  t->SetBeginPoint(GetPosition());
+  t->SetEndPoint(v.GetPosition());
+  t->SetCharge(v.GetCharge());
+  t->Set4Momentum((Ali4Vector&)v);
 
-  AddTrack(t);
+  AddTrack(t,0);
 
-  if (!fConnects) fConnects=new TObjArray(fNvmax);
+  if (!fConnects)
+  {
+   fConnects=new TObjArray(fNvmax);
+   if (!fTrackCopy) fConnects->SetOwner();
+  }
   fConnects->Add(t);
  }
 }
@@ -705,5 +795,33 @@ Int_t AliVertex::GetJetCopy()
 // 0 ==> No private copies are made; pointers of original jets are stored.
 // 1 ==> Private copies of the jets are made and these pointers are stored.
  return fJetCopy;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliVertex::IsConnectTrack(AliTrack* t)
+{
+// Indicate whether a track from the tracklist was created via the
+// connection of a (secondary) vertex or not.
+// In case the track was the result of (secondary) vertex addition the
+// return value is 1, otherwise the value 0 will be returned.
+ Int_t connect=0;
+ if (fConnects)
+ {
+  if (fConnects->FindObject(t)) connect=1;
+ }
+ return connect;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliVertex::IsJetTrack(AliTrack* t)
+{
+// Indicate whether a track from the tracklist was created via the
+// addition of a jet or not.
+// In case the track was the result of jet addition the return value is 1,
+// otherwise the value 0 will be returned.
+ Int_t jetflag=0;
+ if (fJetTracks)
+ {
+  if (fJetTracks->FindObject(t)) jetflag=1;
+ }
+ return jetflag;
 }
 ///////////////////////////////////////////////////////////////////////////

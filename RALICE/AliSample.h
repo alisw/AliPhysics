@@ -47,5 +47,7 @@ class AliSample
   Float_t fSigma[fMaxdim];         // Standard deviation for each variable
   Float_t fCov[fMaxdim][fMaxdim];  // Covariances of pairs of variables
   Float_t fCor[fMaxdim][fMaxdim];  // Correlations of pairs of variables
+
+ ClassDef(AliSample,0) // Statistics tools for various multi-dimensional data samples.
 };
 #endif

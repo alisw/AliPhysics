@@ -290,3 +290,13 @@
 12-jul-2001 NvE Memberfunction GetDistance() introduced for AliPosition and support for
                 point of closest approach introduced in AliTrack.
 24-jul-2001 NvE Support for Chi2 and NDF information of track fit introduced in AliTrack.
+01-dec-2001 NvE SetOwner() introduced for certain TObjArray's in AliCalcluster, AliEvent,
+                AliInvmass, AliJet, AliTrack and AliVertex to adapt to the new memory
+                management of ROOT 3.01 (and later) in case of reading trees.
+06-dec-2001 NvE Memory usage optimised for AliVertex & co. and memory leak due to
+                cloning solved.
+07-dec-2001 NvE ClassDef() and ClassImp() statements introduced for AliSample.
+17-dec-2001 NvE Copy constructor and Init() memberfunction introduced for AliTrack & co.
+14-jan-2002 NvE New schema evolution activated via the "+" behind the classnames
+                in RALICELinkDef.h. Note that the new schema evolution only works
+                correctly for ROOT version 3.02/07 and later.

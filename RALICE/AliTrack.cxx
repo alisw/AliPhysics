@@ -97,12 +97,18 @@ AliTrack::AliTrack()
 {
 // Default constructor
 // All variables initialised to 0
+ Init();
+ Reset();
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTrack::Init()
+{
+// Initialisation of pointers etc...
  fDecays=0;
  fSignals=0;
  fMasses=0;
  fDmasses=0;
  fPmasses=0;
- Reset();
 }
 ///////////////////////////////////////////////////////////////////////////
 AliTrack::~AliTrack()
@@ -110,7 +116,6 @@ AliTrack::~AliTrack()
 // Destructor to delete memory allocated for decay tracks array
  if (fDecays)
  {
-  fDecays->Delete();
   delete fDecays;
   fDecays=0;
  }
@@ -119,6 +124,67 @@ AliTrack::~AliTrack()
   fSignals->Clear();
   delete fSignals;
   fSignals=0;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+AliTrack::AliTrack(AliTrack& t)
+{
+// Copy constructor
+ Init();
+
+ fQ=t.GetCharge();
+ fChi2=t.GetChi2();
+ fNdf=t.GetNdf();
+ fUserId=t.GetId();
+ fNdec=t.GetNdecay();
+ fNsig=t.GetNsignals();
+ fNmasses=t.GetNMassHypotheses();
+ Set4Momentum((Ali4Vector&)t);
+ fBegin=t.GetBeginPoint();
+ fEnd=t.GetEndPoint();
+ fImpactXY=t.GetImpactPoint("z");
+ fImpactXZ=t.GetImpactPoint("y");
+ fImpactYZ=t.GetImpactPoint("x");
+ fClosest=t.GetClosestPoint();
+
+ AliTrack* tx;
+ if (fNdec)
+ {
+  fDecays=new TObjArray(fNdec);
+  fDecays->SetOwner();
+  for (Int_t it=1; it<=fNdec; it++)
+  {
+   tx=t.GetDecayTrack(it);
+   fDecays->Add(new AliTrack(*tx));
+  }
+ }
+
+ AliSignal* sx;
+ if (fNsig)
+ {
+  fSignals=new TObjArray(fNsig);
+  for (Int_t is=1; is<=fNsig; is++)
+  {
+   sx=t.GetSignal(is);
+   fSignals->Add(sx);
+  }
+ }
+
+ Double_t prob,m,dm;
+ if (fNmasses)
+ {
+  fMasses=new TArrayD(fNmasses);
+  fDmasses=new TArrayD(fNmasses);
+  fPmasses=new TArrayD(fNmasses);
+  for (Int_t ih=1; ih<=fNmasses; ih++)
+  {
+   prob=t.GetMassHypothesisProb(ih);
+   m=t.GetMassHypothesis(ih);
+   dm=t.GetResultError();
+   fMasses->AddAt(m,ih-1);
+   fDmasses->AddAt(dm,ih-1);
+   fPmasses->AddAt(prob,ih-1);
+  }
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -136,7 +202,6 @@ void AliTrack::Reset()
  SetVector(a,"sph");
  if (fDecays)
  {
-  fDecays->Delete();
   delete fDecays;
   fDecays=0;
  }
@@ -407,10 +472,11 @@ void AliTrack::Decay(Double_t m1,Double_t m2,Double_t thcms,Double_t phicms)
  // Enter the boosted data into the decay tracks array
  if (fDecays)
  {
-  fDecays->Delete();
   delete fDecays;
+  fDecays=0;
  }
  fDecays=new TObjArray();
+ fDecays->SetOwner();
 
  fDecays->Add(new AliTrack);
  ((AliTrack*)fDecays->At(0))->Set4Momentum(p1);
@@ -430,15 +496,23 @@ AliTrack* AliTrack::GetDecayTrack(Int_t j)
 {
 // Provide decay produced track number j
 // Note : j=1 denotes the first decay track
- if ((j >= 1) && (j <= fNdec))
+ if (!fDecays)
  {
-  return (AliTrack*)fDecays->At(j-1);
+  cout << " *AliTrack::GetDecayTrack* No tracks present." << endl;
+  return 0;
  }
  else
  {
-  cout << " *AliTrack* decay track number : " << j << " out of range." << endl;
-  cout << " -- Decay track number 1 (if any) returned." << endl;
-  return (AliTrack*)fDecays->At(0);
+  if ((j >= 1) && (j <= fNdec))
+  {
+   return (AliTrack*)fDecays->At(j-1);
+  }
+  else
+  {
+   cout << " *AliTrack* decay track number : " << j << " out of range."
+        << " Ndec = " << fNdec << endl;
+   return 0;  
+  }
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -474,15 +548,23 @@ AliSignal* AliTrack::GetSignal(Int_t j)
 {
 // Provide the related AliSignal number j.
 // Note : j=1 denotes the first signal.
- if ((j >= 1) && (j <= fNsig))
+ if (!fSignals)
  {
-  return (AliSignal*)fSignals->At(j-1);
+  cout << " *AliTrack::GetSignal* No signals present." << endl;
+  return 0;
  }
  else
  {
-  cout << " *AliTrack* signal number : " << j << " out of range." << endl;
-  cout << " -- Signal number 1 (if any) returned." << endl;
-  return (AliSignal*)fDecays->At(0);
+  if ((j >= 1) && (j <= fNsig))
+  {
+   return (AliSignal*)fSignals->At(j-1);
+  }
+  else
+  {
+   cout << " *AliTrack* signal number : " << j << " out of range."
+        << " Nsig = " << fNsig << endl;
+   return 0;
+  }
  }
 }
 ///////////////////////////////////////////////////////////////////////////

@@ -20,6 +20,7 @@ class AliVertex : public AliJet,public AliPosition
   AliVertex();                            // Default constructor
   AliVertex(Int_t n);                     // Create a vertex to hold initially n tracks
   ~AliVertex();                           // Default destructor
+  AliVertex(AliVertex& v);                // Copy constructor
   void Reset();                           // Reset all values and stored vertex and jet lists
   void ResetVertices();                   // Reset stored vertex list
   void AddJet(AliJet& j,Int_t tracks=1);  // Add a jet (and its tracks) to the vertex
@@ -41,8 +42,11 @@ class AliVertex : public AliJet,public AliPosition
   void SetNjmax(Int_t n=2);               // Set the initial max. number of jets
   void SetJetCopy(Int_t j);               // (De)activate creation of private copies in fJets
   Int_t GetJetCopy();                     // Provide JetCopy flag value      
+  Int_t IsConnectTrack(AliTrack* t);      // Indicate if track is created by vertex connection
+  Int_t IsJetTrack(AliTrack* t);          // Indicate if track is resulting from jet addition
 
  protected:
+  void Init();          // Initialisation of pointers etc... 
   Int_t fNvmax;         // The maximum number of (secondary) vertices
   Int_t fNvtx;          // The number of (secondary) vertices
   TObjArray* fVertices; // Array to hold the pointers to the (secondary) vertices
@@ -51,6 +55,7 @@ class AliVertex : public AliJet,public AliPosition
   Int_t fNjmax;         // The maximum number of jets
   Int_t fNjets;         // The number of jets
   TObjArray* fJets;     // Array to hold the pointers to the jets
+  TObjArray* fJetTracks;// Array to hold the pointers to tracks introduced by jet addition
   Int_t fJetCopy;       // Flag to denote creation of private copies in fJets
 
  private:

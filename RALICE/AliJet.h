@@ -20,9 +20,10 @@ class AliJet : public TObject,public Ali4Vector
   AliJet();                          // Default constructor
   AliJet(Int_t n);                   // Create a Jet to hold initially n Tracks
   ~AliJet();                         // Default destructor
+  AliJet(AliJet& j);                 // Copy constructor
   void Reset();                      // Reset all values
-  virtual void AddTrack(AliTrack& t);// Add a track to the jet
-  virtual void AddTrack(AliTrack* t) { AddTrack(*t); }
+  void AddTrack(AliTrack& t,Int_t copy=1);// Add a track to the jet
+  void AddTrack(AliTrack* t,Int_t copy=1) { AddTrack(*t,copy); }
   void Info(TString f);              // Print jet information in coordinate frame f 
   void List(TString f="car");        // Print jet prim. track information for coord. frame f
   void ListAll(TString f="car");     // Print jet prim. and decay track information for coord. frame f
@@ -46,6 +47,7 @@ class AliJet : public TObject,public Ali4Vector
   Int_t GetId();                     // Provide the user defined identifier
 
  protected:
+  void Init();               // Initialisation of pointers etc...
   void SetNtinit(Int_t n=2); // Set the initial max. number of tracks for this Jet
   Int_t fNtinit;             // The initial max. number of tracks for this jet
   Int_t fNtmax;              // The maximum number of tracks for this Jet

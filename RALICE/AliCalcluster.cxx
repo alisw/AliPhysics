@@ -52,7 +52,6 @@ AliCalcluster::~AliCalcluster()
 // Destructor to delete dynamically allocated memory
  if (fVetos)
  {
-  fVetos->Delete();
   delete fVetos;
   fVetos=0;
  }
@@ -259,6 +258,7 @@ void AliCalcluster::AddVetoSignal(Float_t* r,TString f,Float_t s)
  {
   fNvetos=0;
   fVetos=new TObjArray();
+  fVetos->SetOwner();
  } 
 
  fVetos->Add(new AliSignal(1));
@@ -278,17 +278,23 @@ AliSignal* AliCalcluster::GetVetoSignal(Int_t i)
 {
 // Provide access to the i-th veto signal of this cluster.
 // Note : The first hit corresponds to i=1.
-
- if (i>0 && i<=fNvetos)
+ if (!fVetos)
  {
-  return (AliSignal*)fVetos->At(i-1);
+  cout << " *AliCalcluster::GetVetoSignal* No veto signals present." << endl;
+  return 0;
  }
  else
  {
-  cout << " *AliCalcluster::GetVetoSignal* Signal number " << i
-       << " out of range." << endl;
-  cout << " --- First signal (if any) returned." << endl;
-  return (AliSignal*)fVetos->At(0);
+  if (i>0 && i<=fNvetos)
+  {
+   return (AliSignal*)fVetos->At(i-1);
+  }
+  else
+  {
+   cout << " *AliCalcluster::GetVetoSignal* Signal number " << i << " out of range."
+        << " Nvetos = " << fNvetos << endl;
+   return 0;
+  }
  }
 }
 ///////////////////////////////////////////////////////////////////////////

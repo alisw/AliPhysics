@@ -17,7 +17,7 @@
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliSample
-// Perform statistics on various multi-dimensional data samples
+// Perform statistics on various multi-dimensional data samples.
 // A data sample can be filled using the "Enter" and/or "Remove" functions,
 // whereas the "Reset" function resets the complete sample to 'empty'.
 // The info which can be extracted from a certain data sample are the
@@ -43,6 +43,8 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliSample.h"
+ 
+ClassImp(AliSample) // Class implementation to enable ROOT I/O
  
 AliSample::AliSample()
 {
