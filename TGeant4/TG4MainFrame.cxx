@@ -12,13 +12,13 @@
 
 #include "TG4MainFrame.h"
 #include "TG4Editor.h"
+#include "TG4ListTreeFrame.h"
 #include "TG4VolumesFrames.h"
 #include "TG4MaterialsFrames.h"
 #include "TG4GuiVolume.h"
 #include "TG4Globals.h"
 
 #include <TGListTree.h>
-#include <TGCanvas.h>
 #include <TGTab.h>
 #include <TGMenu.h>
 #include <TApplication.h>
@@ -26,7 +26,6 @@
 #include <TGTextBuffer.h>
 
 #include <G4LogicalVolume.hh>
-
 
 ClassImp(TG4MainFrame)
 
@@ -60,36 +59,23 @@ TG4MainFrame::TG4MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
 
    AddFrame(fMenuBar, fMenuBarLayout);
  
-//------>Volumes tab
-
+//------>Adding a tab
    fTab = new TGTab(this, 400, 400);
-   TGCompositeFrame* tf = fTab->AddTab("Volumes");
-
    TGLayoutHints* lTabLayout = new TGLayoutHints(kLHintsBottom | kLHintsExpandX |
                                           kLHintsExpandY, 2, 2, 5, 1);
    AddFrame(fTab, lTabLayout);
 
-//------>TGCanvas and a canvas container  
-   fCanvasWindow = new TGCanvas(tf, 400, 240);
- 
-//----->List    fVolumesListTree
-   fVolumesListTree= new TGListTree(fCanvasWindow->GetViewPort(), 10, 10, kHorizontalFrame,
-                        fgWhitePixel);
-   fVolumesListTree->Associate(this);
-   fCanvasWindow->SetContainer(fVolumesListTree);
+//------->Frame for ListTree of logical volumes
+   TGCompositeFrame* tf = fTab->AddTab("Volumes");
+   flistTreeFrame = new TG4ListTreeFrame( tf, this);
+   fVolumesListTree=flistTreeFrame->GetVolumesListTree();
 
- 
-   TGLayoutHints *lCanvasLayout = new TGLayoutHints(kLHintsExpandX | kLHintsExpandY);
-   tf->AddFrame(fCanvasWindow, lCanvasLayout);
- 
-//----------------------------------------------------------------------------- 
-
-//----->Volumes Properties
+//----->Frame for volumes properties
    tf = fTab->AddTab("Volumes Properties");
    fvolumesFrames = new TG4VolumesFrames( tf, this);
 
 
-//----->Materials Properties
+//----->Frame for materials properties
    tf = fTab->AddTab("Materials Properties");
    fmaterialsFrames = new TG4MaterialsFrames( tf, this);
 
@@ -136,8 +122,8 @@ TG4MainFrame::~TG4MainFrame()
    delete fMenuBar;
    delete fTab;
 
-   delete fCanvasWindow;
    delete fVolumesListTree;
+   delete flistTreeFrame;
    delete fvolumesFrames;   
    delete fmaterialsFrames;
 }
@@ -183,7 +169,7 @@ Bool_t TG4MainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
    TGTextBuffer* lMsgBAnnBf1 = new TGTextBuffer(100);
    TGTextBuffer* lMsgBAnnBf2 = new TGTextBuffer(100);
    lMsgBTtleBf->AddText(0, "MsgBox");
-   lMsgBAnnBf1->AddText(0, "Volumes drawing coming soon!");
+   lMsgBAnnBf1->AddText(0, "Volumes drawing almost completed !");
    lMsgBAnnBf2->AddText(0, "YOU'RE CLOSING THE MAIN WINDOW!");
 
 
@@ -295,7 +281,7 @@ const char *editortxt =
 //----->Cases to Handle mouse click
    //-->case 1 
 	case kCT_ITEMCLICK: 
-     // Button 1: Select volume
+    //---> Button 1: Select volume
             if (parm1 == kButton1){
 	    TGListTreeItem* item = fVolumesListTree->GetSelected();
              if (item) {
@@ -310,22 +296,15 @@ const char *editortxt =
 	      };
 	    }; 
 	      
-     // Button 3: Draw Volume
+    //---> Button 3: Draw Volume
             if (parm1 == kButton3){
              TGListTreeItem* item = fVolumesListTree->GetSelected();
-              if (item) {
-	     
-	     TG4GuiVolume* volume=((TG4GuiVolume*) item->GetUserData());   
-	     G4LogicalVolume* lvolume = volume->GetLogicalVolume();
-
-	      if  ( lvolume ) {
-	       G4cout << "The selected logical volume name is   " 
-	            << lvolume->GetName() << G4endl;
-		  };
-	       };
+	     if (item){
+                flistTreeFrame->DrawSelectedVolume(item);};
 	    }; 
 		  
 	    break;
+
    //-->case 2	    
 	case kCT_ITEMDBLCLICK:
 	    if (parm1 == kButton1) {
