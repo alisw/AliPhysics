@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.8  2000/02/14 14:49:38  morsch
+Correct particle type for gamma and neutrons
+More consistent calculation of momentum from kin. energy and mass
+
 Revision 1.7  1999/11/03 17:43:20  fca
 New version from G.Martinez & A.Morsch
 
@@ -149,7 +153,7 @@ void AliGenFLUKAsource::Generate()
     Int_t itrtyp;
     Int_t iwgt;
     Int_t i, j, part, nt;
-    static Int_t irwn;
+    static Int_t irwn=0;
     //
     Float_t random[2];
   //
