@@ -983,6 +983,11 @@ void AliTOFv4T0::StepManager()
     gMC->Gmtod(xm,xpad,1);
     gMC->Gmtod(pm,ppad,2);
 
+    
+    if (TMath::Abs(ppad[1])>1) {
+      Warning("StepManager","Abs(ppad) > 1");
+      ppad[1]=TMath::Sign((Float_t)1,ppad[1]);
+    }
     incidenceAngle = TMath::ACos(ppad[1])*kRaddeg;
 
 
