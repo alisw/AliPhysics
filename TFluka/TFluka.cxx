@@ -468,29 +468,38 @@ Int_t TFluka::IdFromPDG(Int_t pdg) const
 
 Int_t TFluka::PDGFromId(Int_t id) const 
 {
+
   //
   // Return PDG code and pseudo ENDF code from Fluka code
 
   //IPTOKP array goes from official to internal
+
+    if (id == -1) {
+// Cerenkov photon
+	if (fVerbosityLevel >= 1)
+	    printf("\n PDGFromId: Cerenkov Photon \n");
+	return  50000050;
+    }
+    
     if (id == 0) {
-      if (fVerbosityLevel >= 1)
-	printf("PDGFromId: Error id = 0");
+	if (fVerbosityLevel >= 1)
+	    printf("PDGFromId: Error id = 0\n");
 	return -1;
     }
     
-  Int_t intfluka = GetFlukaIPTOKP(id);
+    Int_t intfluka = GetFlukaIPTOKP(id);
     if (intfluka == 0) {
-      if (fVerbosityLevel >= 1)
-	printf("PDGFromId: Error intfluka = 0");
+	if (fVerbosityLevel >= 1)
+	    printf("PDGFromId: Error intfluka = 0: %d\n", id);
 	return -1;
     } else if (intfluka < 0) {
-      if (fVerbosityLevel >= 1)
-	printf("PDGFromId: Error intfluka < 0");
+	if (fVerbosityLevel >= 1)
+	    printf("PDGFromId: Error intfluka < 0: %d\n", id);
 	return -1;
     }
     if (fVerbosityLevel >= 3)
-    printf("mpdgha called with %d %d \n", id, intfluka);
-  return mpdgha(intfluka);
+	printf("mpdgha called with %d %d \n", id, intfluka);
+    return mpdgha(intfluka);
 }
 
 //_____________________________________________________________________________
