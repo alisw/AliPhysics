@@ -268,7 +268,7 @@ void AliRawDB::MakeTree()
    if (fESD) {
      fESDTree = new TTree("esdTree", Form("ALICE MDC%d HLT ESD tree", kMDC));
      fESDTree->SetAutoSave(2000000000);  // autosave when 2 Gbyte written
-     split   = 99;
+     split   = 0;
      fESDTree->Branch("ESD", "AliESD", &fESD, bufsize, split);
    }
 
