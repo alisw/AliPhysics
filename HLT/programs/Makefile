@@ -66,7 +66,7 @@ CXXFLAGS = -O2 -Wall -ggdb $(INCLUDES)
 LDFLAGS  = -O2 $(LIBS)
 
 
-PRGS	= runit read speedtest convbin gettransform
+PRGS	= runit read speedtest convbin gettransform runvhdlcf
 
 
 all : $(PRGS)
