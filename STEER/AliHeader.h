@@ -19,7 +19,8 @@ public:
   virtual  Int_t GetRun() const {return fRun;}
   
   virtual  void  SetNprimary(Int_t nprimary) {fNprimary = nprimary;}
-  virtual  Int_t GetNprimary() const {return fNprimary;}
+  virtual  Int_t GetNprimary()   const {return fNprimary;}
+  virtual  Int_t GetNsecondary() const {return fNtrack-fNprimary;}
   
   virtual  void  SetNvertex(Int_t vertex) {fNvertex = vertex;}
   virtual  Int_t GetNvertex() const {return fNvertex;}

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.55  2001/02/12 15:52:54  buncic
+Removed OpenBaseFile().
+
 Revision 1.54  2001/02/07 10:39:05  hristov
 Remove default value for argument
 
@@ -589,7 +592,11 @@ void AliRun::FinishEvent()
   // Write out the kinematics
   if (fTreeK) {
     CleanParents();
-    //    fTreeK->Fill();
+    if(fTreeK->GetEntries() ==0) {
+      // set the fParticleFileMap size for the first time
+      fParticleFileMap.Set(fHgwmk+1);
+    }
+     //    fTreeK->Fill();
     Bool_t allFilled = kFALSE;
     TObject *part;
     for(i=0; i<fHgwmk+1; ++i) if((part=fParticleMap->At(i))) {
@@ -611,6 +618,9 @@ void AliRun::FinishEvent()
       if(!allFilled) allFilled = kTRUE;
     }  
   }
+  
+  // Set number of tracks to event header 
+  fHeader.SetNtrack(fNtrack);
   
   // Write out the digits
   if (fTreeD) {
@@ -1396,6 +1406,23 @@ TParticle* AliRun::Particle(Int_t i)
 {
   if(!(*fParticleMap)[i]) {
     Int_t nentries = fParticles->GetEntries();
+    
+    // algorithmic way of getting entry index
+    // (primary particles are filled after secondaries)
+    Int_t entry;
+    if (i<fHeader.GetNprimary())
+      entry = i+fHeader.GetNsecondary();
+    else 
+      entry = i-fHeader.GetNprimary();
+      
+    // only check the algorithmic way and give
+    // the fatal error if it is wrong
+    if (entry != fParticleFileMap[i]) {
+      Fatal("Particle",
+        "!!!! The algorithmic way is WRONG: !!!\n entry: %d map: %d",
+	entry, fParticleFileMap[i]); 
+    }  
+      
     fTreeK->GetEntry(fParticleFileMap[i]);
     new ((*fParticles)[nentries]) TParticle(*fParticleBuffer);
     fParticleMap->AddAt((*fParticles)[nentries],i);
