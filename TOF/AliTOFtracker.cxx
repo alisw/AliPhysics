@@ -157,8 +157,16 @@ Int_t AliTOFtracker::PropagateBack(AliESD* event) {
   //Make TOF PID
   fTOFpid->MakePID(event);
 
-  delete fSeeds;
-  delete fTracks;
+  if (fSeeds) {
+    fSeeds->Delete();
+    delete fSeeds;
+    fSeeds = 0x0;
+  }
+  if (fTracks) {
+    fTracks->Delete();
+    delete fTracks;
+    fTracks = 0x0;
+  }
   return 0;
   
 }
@@ -215,13 +223,19 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
   };
   
   Int_t nSteps=(Int_t)(fTOFHeigth/0.1);
+
+  //PH Arrays (moved outside of the loop)
+  Float_t * trackPos[4];
+  for (Int_t ii=0; ii<4; ii++) trackPos[ii] = new Float_t[nSteps];
+  Int_t * clind[6];
+  for (Int_t ii=0;ii<6;ii++) clind[ii] = new Int_t[fN];
   
   for (Int_t i=0; i<fNseedsTOF; i++) {
 
     AliTOFtrack *track =(AliTOFtrack*)fTracks->UncheckedAt(i);
     AliESDtrack *t =(AliESDtrack*)fSeeds->UncheckedAt(track->GetSeedIndex());
+    if(t->GetTOFsignal()>0. ) continue;
     AliTOFtrack *trackTOFin =new AliTOFtrack(*track);
-    if(t->GetTOFsignal()>0. )continue;
 
     // Some init 
 
@@ -229,9 +243,6 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     Float_t        dist[10000];
     Float_t       cxpos[10000];
     Float_t       crecL[10000];
-    Float_t * trackPos[4];
-    for (Int_t ii=0; ii<4; ii++) trackPos[ii] = new Float_t[nSteps];
-    //    Float_t trackPos[4][nSteps];
      
     // Determine a window around the track
 
@@ -252,9 +263,6 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     if (phi>=TMath::Pi())phi-=2*TMath::Pi();
     Double_t z=par[1];   
 
-    Int_t * clind[6];
-    for (Int_t ii=0;ii<6;ii++) clind[ii] = new Int_t[fN];
-    //    Int_t clind[6][fN];
     Int_t nc=0;
     
     // find the clusters in the window of the track
@@ -352,11 +360,11 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       if(isInside)break;
     } //end for on the steps     
 
-    for (Int_t ii=0;ii<6;ii++) delete [] clind[ii];
 
 
     if (nfound == 0 ) {
       fnunmatch++;
+      delete trackTOFin;
       continue;
     }
     
@@ -423,8 +431,9 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     t->SetIntegratedTimes(time);
 
     delete trackTOFout;
-    for (Int_t ii=0; ii<4; ii++) delete [] trackPos[ii];
   }
+  for (Int_t ii=0; ii<4; ii++) delete [] trackPos[ii];
+  for (Int_t ii=0;ii<6;ii++) delete [] clind[ii];
 }
 //_________________________________________________________________________
 Int_t AliTOFtracker::LoadClusters(TTree *dTree) {
