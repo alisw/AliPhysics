@@ -6,10 +6,10 @@
 /* $Id$ */
 
 #include <TObject.h>
-#include "TBRIK.h"
+
 //#include "AliITSgeom.h"
 
-
+class TBRIK;
 class AliITSgeom;
 
 class AliITSgeomSSD: public TObject {

@@ -15,6 +15,17 @@
 
 /*
 $Log$
+Revision 1.4.4.15  2000/10/02 15:52:05  barbera
+Forward declaration added
+
+Revision 1.10  2000/09/05 14:25:50  nilsen
+Made fixes for HP compiler. All function parameter default values placed
+in .h file. Fixed the usual problem with HP comilers and the "for(Int_t i..."
+business. Replaced casting (Double_t [3][3]) to (Double_t (*)[3]) for HP.
+Lastly removed all "const" before function parameters which were 2 dim. arrays,
+because on HP root generates some strange code (?). Thanks Peter for the
+changes.
+
 Revision 1.9  2000/08/29 20:19:03  nilsen
 Removed dependancy on structure AliITSeomS and replaced it with class
 AliITSgeomMatrix. Added many new functions with many new arguments. Most

@@ -1,3 +1,5 @@
+#include <TRandom.h>
+#include <TArrayS.h>
 
 #include "AliITSdcsSSD.h"
 #include "AliITSresponseSSD.h"

@@ -6,9 +6,9 @@
 /* $Id$ */
 
 #include "AliITSgeomSPD.h"
-#include "TBRIK.h"
 
 
+class TBRIK;
 class AliITSgeomSPD300:public AliITSgeomSPD {
 
  public:
@@ -18,9 +18,9 @@ class AliITSgeomSPD300:public AliITSgeomSPD {
     virtual ~AliITSgeomSPD300();
     AliITSgeomSPD300& operator=(AliITSgeomSPD300 &source);
     TShape *GetShape() {return fShapeSPD;} // returns shape of sensitive volume
-    Float_t GetDx() {return fdx;} // returns width of seneitive volume cm
-    Float_t GetDy() {return fdy;} // returns thickness of seneitive volume cm
-    Float_t GetDz() {return fdz;} // returns lenght of seneitive volume cm
+    Float_t GetDx() {return fDx;} // returns width of seneitive volume cm
+    Float_t GetDy() {return fDy;} // returns thickness of seneitive volume cm
+    Float_t GetDz() {return fDz;} // returns lenght of seneitive volume cm
     Int_t   GetNbinsX() {return fNbinx;} // returns number of x pixels
     Float_t GetBinSizeX(Int_t i) {return fBinSizeX[i];} // x pixel size cm
     Int_t   GetNbinsZ() {return fNbinz;}  // number of z pixels
@@ -37,13 +37,13 @@ class AliITSgeomSPD300:public AliITSgeomSPD {
     // dy => 1/2 r*phi size of active volume (cm)
     // dz => 1/2 size of active volume (cm)
     TBRIK   *fShapeSPD;   // Shape of sensitive volume
-    Float_t fdx;          // Brick half width cm
-    Float_t fdy;          // Brick half thickness cm
-    Float_t fdz;          // Brick half length cm
-    Float_t *fBinSizeX;  // Pixel size in X, cm
+    Float_t fDx;          // Brick half width cm
+    Float_t fDy;          // Brick half thickness cm
+    Float_t fDz;          // Brick half length cm
     Int_t   fNbinx;      // Number of pixels in x
-    Float_t *fBinSizeZ;  // Pixel size in Z, cm
     Int_t   fNbinz;      // Number of pixels in z
+    Float_t *fBinSizeX;  //[fNbinx] Pixel size in X, cm
+    Float_t *fBinSizeZ;  //[fNbinz] Pixel size in Z, cm
 
     ClassDef(AliITSgeomSPD300,2) // ITS SPD detector geometry class for 300X50 micron pixel size.
 };

@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.2.4.7  2000/10/02 15:52:05  barbera
+Forward declaration added
+
+Revision 1.6  2000/07/10 16:07:18  fca
+Release version of ITS code
+
 Revision 1.3  2000/03/07 18:46:59  nilsen
 Merged form ITS-working to HEAD. Minor changes
 

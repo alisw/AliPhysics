@@ -20,6 +20,15 @@ AliITSdigit::AliITSdigit(Int_t *digits) {
 
 ClassImp(AliITSdigitSPD)
   
+    AliITSdigitSPD::AliITSdigitSPD() {
+    // default constructor
+    fSignal=fCoord1=fCoord2=0;
+    fTracks[0]=fTracks[1]=fTracks[2]=-3;
+    fHits[0]=fHits[1]=fHits[2]=-1;
+  }
+  
+  
+  
   //_________________________________________________________________________
   AliITSdigitSPD::AliITSdigitSPD(Int_t *digits) {
   //
@@ -50,6 +59,15 @@ AliITSdigitSPD::AliITSdigitSPD(Int_t *digits,Int_t *tracks,Int_t *hits) {
 
 
 ClassImp(AliITSdigitSDD)
+
+  AliITSdigitSDD::AliITSdigitSDD() {
+    // default constructor
+    fSignal=fCoord1=fCoord2=0;
+    fTracks[0]=fTracks[1]=fTracks[2]=-3;
+    fHits[0]=fHits[1]=fHits[2]=-1;
+    fPhysics=0; fTcharges[0]=fTcharges[1]=fTcharges[2]=0;
+  }
+
   //________________________________________________________________________
 AliITSdigitSDD::AliITSdigitSDD(Float_t phys,Int_t *digits) {
   //
@@ -107,6 +125,14 @@ AliITSTransientDigit&
 }
 
 ClassImp(AliITSdigitSSD)
+
+  AliITSdigitSSD::AliITSdigitSSD() {
+    // default constructor
+    fSignal=fCoord1=fCoord2=0;
+    fTracks[0]=fTracks[1]=fTracks[2]=-3;
+    fHits[0]=fHits[1]=fHits[2]=-1;
+  }
+
   //__________________________________________________________________________
 AliITSdigitSSD::AliITSdigitSSD(Int_t *digits) {
   //

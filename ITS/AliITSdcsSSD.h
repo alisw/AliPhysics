@@ -23,11 +23,12 @@
 //
 
 #include <TObject.h>
-#include <TArrayS.h>
-#include <TRandom.h>
 
+class TArrayS;
+class TRandom;
 class AliITSsegmentation;
 class AliITSresponse;
+
 
 
 class AliITSdcsSSD: public TObject {
@@ -41,7 +42,7 @@ public:
     //
     
     AliITSdcsSSD(AliITSsegmentation *s, AliITSresponse *r);
-    ~AliITSdcsSSD();
+    virtual ~AliITSdcsSSD();
     AliITSdcsSSD(const AliITSdcsSSD &source); // copy constructor
     AliITSdcsSSD& operator=(const AliITSdcsSSD &source); // assignment operator
     

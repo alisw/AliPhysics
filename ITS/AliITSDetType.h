@@ -87,7 +87,7 @@ protected:
   TString              fDigClassName;      // string
   TString              fClustClassName;    // string
   
-  ClassDef(AliITSDetType,1)
+  ClassDef(AliITSDetType,1)     // container for simulation and reconstruction
     
 };
 

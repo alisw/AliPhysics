@@ -11,10 +11,9 @@
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 #include <TObject.h>
-#include <TObjArray.h>
 
 class AliITSInStream;
-
+class TObjectArray;
 class AliITSHNode: public TObject  {
 
  public:

@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.1.2.6  2000/10/02 15:52:05  barbera
+Forward declaration added
+
+Revision 1.4  2000/09/07 17:30:45  nilsen
+fixed a bug in SixAnglesFromMatrix.
+
 Revision 1.3  2000/09/05 14:25:50  nilsen
 Made fixes for HP compiler. All function parameter default values placed
 in .h file. Fixed the usual problem with HP comilers and the "for(Int_t i..."

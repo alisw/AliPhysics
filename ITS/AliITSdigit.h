@@ -4,9 +4,9 @@
 ////////////////////////////////////////////////
 //  Digits classes for set:ITS                //
 ////////////////////////////////////////////////
-
-#include <TObject.h>
 #include <TObjArray.h>
+#include <TObject.h>
+
 
 //___________________________________________
 class AliITSdigit: public TObject  {
@@ -41,13 +41,8 @@ public:
                                   // 3 hits temporarily - it will be only 1
   
 public:
-  AliITSdigitSPD() {
-    // constructor
-    fSignal=fCoord1=fCoord2=0;
-    fTracks[0]=fTracks[1]=fTracks[2]=-3;
-    fHits[0]=fHits[1]=fHits[2]=-1;
-  }
-  
+
+  AliITSdigitSPD();
   AliITSdigitSPD(Int_t *digits);
   AliITSdigitSPD(Int_t *digits, Int_t *tracks, Int_t *hits);
   
@@ -75,14 +70,8 @@ public:
   Float_t     fPhysics;           // signal particles contribution to signal
   
 public:
-  AliITSdigitSDD() {
-    // constructor
-    fSignal=fCoord1=fCoord2=0;
-    fTracks[0]=fTracks[1]=fTracks[2]=-3;
-    fHits[0]=fHits[1]=fHits[2]=-1;
-    fPhysics=0; fTcharges[0]=fTcharges[1]=fTcharges[2]=0;
-  }
-  
+
+  AliITSdigitSDD();  
   AliITSdigitSDD(Float_t phys,Int_t *digits);
   AliITSdigitSDD( Float_t phys, Int_t *digits, Int_t *tracks, Int_t *hits, Float_t *charges);
   
@@ -133,13 +122,7 @@ public:
                                   // 3 hits temporarily - it will be only 1
   
 public:
-  AliITSdigitSSD() {
-    // constructor
-    fSignal=fCoord1=fCoord2=0;
-    fTracks[0]=fTracks[1]=fTracks[2]=-3;
-    fHits[0]=fHits[1]=fHits[2]=-1;
-  }
-  
+  AliITSdigitSSD();
   AliITSdigitSSD(Int_t *digits);
   AliITSdigitSSD(Int_t *digits, Int_t *tracks, Int_t *hits);
   

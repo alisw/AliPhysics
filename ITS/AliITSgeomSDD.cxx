@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.2.4.8  2000/10/02 15:52:05  barbera
+Forward declaration added
+
+Revision 1.7  2000/07/10 16:07:18  fca
+Release version of ITS code
+
 Revision 1.2.4.2  2000/03/04 23:55:35  nilsen
 Fixed up comments/documentation.
 
@@ -28,6 +34,7 @@ Introduction of the Copyright and cvs Log
 */
 
 #include "AliITSgeomSDD.h"
+#include <TBRIK.h>
 
 ClassImp(AliITSgeomSDD)
 AliITSgeomSDD::AliITSgeomSDD(){
