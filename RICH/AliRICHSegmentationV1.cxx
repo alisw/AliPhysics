@@ -145,6 +145,9 @@ void AliRICHSegmentationV1::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
 //
 // Please check origin of pad numbering !!!
 
+  ix=9999; //PH Fake values which should not be returned
+  iy=9999;
+
   Int_t sector=Sector(x,y);
 
   //printf("Sector: %d\n",sector);
