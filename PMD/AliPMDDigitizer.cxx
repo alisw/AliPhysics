@@ -51,15 +51,28 @@
 
 ClassImp(AliPMDDigitizer)
 
-AliPMDDigitizer::AliPMDDigitizer()
+AliPMDDigitizer::AliPMDDigitizer() :
+  fRunLoader(0),
+  fPMDHit(0),
+  fPMD(0),
+  fPMDLoader(0),
+  fHits(0),
+  fPArray(0),
+  fParticle(0),
+  fTreeH(0),
+  fTreeS(0),
+  fTreeD(0),
+  fSDigits(new TClonesArray("AliPMDsdigit", 1000)),
+  fDigits(new TClonesArray("AliPMDdigit", 1000)),
+  fCell(new TObjArray()),
+  fPMDcell(0),
+  fNsdigit(0),
+  fNdigit(0),
+  fDetNo(0),
+  fZPos(361.5)// in units of cm, This is the default position of PMD
 {
   // Default Constructor
   //
-  if (!fSDigits) fSDigits = new TClonesArray("AliPMDsdigit", 1000);  
-  fNsdigit = 0;
-  if (!fDigits) fDigits = new TClonesArray("AliPMDdigit", 1000);  
-  fNdigit = 0;
-
   for (Int_t i = 0; i < fgkTotUM; i++)
     {
       for (Int_t j = 0; j < fgkRow; j++)
@@ -68,21 +81,33 @@ AliPMDDigitizer::AliPMDDigitizer()
 	    {
 	      fCPV[i][j][k] = 0.; 
 	      fPRE[i][j][k] = 0.; 
+	      fPRECounter[i][j][k] =  0; 
+	      fPRETrackNo[i][j][k] = -1; 
+	      fCPVTrackNo[i][j][k] = -1; 
 	    }
 	}
     }
 
-  if (!fCell) fCell = new TObjArray();
-
-  fZPos = 361.5; // in units of cm, This is the default position of PMD
 }
 AliPMDDigitizer::~AliPMDDigitizer()
 {
   // Default Destructor
   //
-  delete fSDigits;
-  delete fDigits;
-  delete fCell;
+  if (fSDigits) {
+    fSDigits->Delete();
+    delete fSDigits;
+    fSDigits=0;
+  }
+  if (fDigits) {
+    fDigits->Delete();
+    delete fDigits;
+    fDigits=0;
+  }
+  if (fCell) {
+    fCell->Delete();
+    delete fCell;
+    fCell=0;
+  }
 }
 //
 // Member functions
