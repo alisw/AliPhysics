@@ -284,7 +284,7 @@ Int_t TG4StepManager::CurrentVolID(Int_t& copyNo) const
 // ---
 
   G4VPhysicalVolume* physVolume = GetCurrentPhysicalVolume(); 
-  copyNo = physVolume->GetCopyNo();
+  copyNo = physVolume->GetCopyNo() + 1;
 
   // sensitive detector ID
   return GetVolumeID(physVolume);
@@ -301,7 +301,7 @@ Int_t TG4StepManager::CurrentVolOffID(Int_t off, Int_t&  copyNo) const
   G4VPhysicalVolume* mother = GetCurrentOffPhysicalVolume(off); 
 
   if (mother) {
-    copyNo = mother->GetCopyNo();
+    copyNo = mother->GetCopyNo() + 1;
 
     // sensitive detector ID
     return GetVolumeID(mother);
@@ -416,22 +416,6 @@ void TG4StepManager::Gmtod(Float_t* xm, Float_t* xd, Int_t iflag)
   xd[1] = theLocalPoint.y();
   xd[2] = theLocalPoint.z();
      
- /* 
-   // does not work ???
-   G4ThreeVector direction(0,0,0);
-   G4bool RelativeSearch = true;
-   G4Navigator* theNavigator =
-     G4TransportationManager::GetTransportationManager()->
-     GetNavigatorForTracking();
-
-   G4VPhysicalVolume* pPhysVol;
-   pPhysVol
-     = LocateGlobalPointAndSetup(theGlobalPoint, &direction, RelativeSearch);  
-   //LocateGlobalPointWithinVolume(theGlobalPoint);
-
-   G4AffineTransform at
-     = theNavigator->GetGlobalToLocalTransform();
- */  
 } 
  
 void TG4StepManager::Gdtom(Float_t* xd, Float_t* xm, Int_t iflag) 
