@@ -25,6 +25,20 @@
 
 ClassImp(AliITSMapA2)
 
+AliITSMapA2::AliITSMapA2()
+{
+  // default constructor
+  fSegmentation = 0;
+  fNpz=0;
+  fNpx=0;
+  fMaxIndex=0;         
+  
+  fHitMap = 0;
+  fObjects = 0;
+  fNobjects = 0;
+  fMapThreshold=0.;
+}
+
   AliITSMapA2::AliITSMapA2(AliITSsegmentation *seg)
 {
   //constructor
@@ -37,6 +51,8 @@ ClassImp(AliITSMapA2)
   
   fHitMap = new Double_t[fMaxIndex];
   fMapThreshold=0.;
+  fObjects = 0;
+  fNobjects = 0;
   ClearMap();
 }
 //--------------------------------------
@@ -52,6 +68,8 @@ ClassImp(AliITSMapA2)
   
   fHitMap = new Double_t[fMaxIndex];
   fMapThreshold=0.;
+  fObjects = 0;
+  fNobjects = 0;
   ClearMap();
 }
 
@@ -59,6 +77,7 @@ ClassImp(AliITSMapA2)
 AliITSMapA2::AliITSMapA2(AliITSsegmentation *seg, TObjArray *obj, Double_t thresh)
 {
   //constructor
+  fNobjects = 0;
   fScaleSizeZ=1;
   fScaleSizeX=1;
   fSegmentation = seg;
@@ -117,7 +136,7 @@ void  AliITSMapA2::FillMap()
 {
   
   // fills signal map from digits - apply a threshold for signal
-   
+  
   if (!fObjects) return; 
   
   Int_t ndigits = fObjects->GetEntriesFast();
@@ -127,7 +146,7 @@ void  AliITSMapA2::FillMap()
   for (Int_t ndig=0; ndig<ndigits; ndig++) {
     dig = (AliITSdigit*)fObjects->UncheckedAt(ndig);
     Double_t signal = (Double_t)(dig->fSignal);
-    if (signal >= fMapThreshold) SetHit(dig->fCoord1,dig->fCoord2,signal);
+    if (signal > fMapThreshold) SetHit(dig->fCoord1,dig->fCoord2,signal);
   }
 }
 
@@ -194,6 +213,8 @@ Double_t AliITSMapA2::GetSignal(Int_t index)
 FlagType AliITSMapA2::TestHit(Int_t iz, Int_t ix)
 {
   // check if the entry has already been flagged
+
+    if (CheckedIndex(iz, ix) < 0) return kEmpty;
     Int_t inf=(Int_t)fHitMap[CheckedIndex(iz, ix)];
     
     if (inf <= -1000) {
@@ -219,7 +240,7 @@ void  AliITSMapA2::FillMapFromHist()
     Int_t nsamples = hist->GetNbinsX();
     for( Int_t j=0; j<nsamples; j++) {
       Double_t signal = (Double_t)(hist->GetBinContent(j+1));
-      if (signal >= fMapThreshold) SetHit(i,j,signal);
+      if (signal > fMapThreshold) SetHit(i,j,signal);
     }
   }
   
@@ -236,7 +257,7 @@ void  AliITSMapA2::FillHist()
     TH1F *hist =(TH1F *)fObjects->UncheckedAt(i);
     for( Int_t j=0; j<fNpx; j++) {
       Double_t signal=GetSignal(i,j);
-      if (signal >= fMapThreshold) hist->Fill((Float_t)j,signal);
+      if (signal > fMapThreshold) hist->Fill((Float_t)j,signal);
     }
   }
   
