@@ -56,7 +56,6 @@ AliL3ConfMapper::~AliL3ConfMapper()
   if(fTrack) {
     delete fTrack;
   }
-
 }
  
 void AliL3ConfMapper::InitVolumes()
@@ -87,16 +86,16 @@ void AliL3ConfMapper::InitVolumes()
   memset(fVolume,0,fBounds*sizeof(AliL3ConfMapContainer));
   memset(fRow,0,fNumRowSegmentPlusOne*sizeof(AliL3ConfMapContainer));
   
-  Int_t max_num_of_tracks = 2000;
-  Int_t max_num_of_hits = 120000;
+  Int_t maxnumoftracks = 2000;
+  Int_t maxnumofhits = 120000;
   
   if(fHit)
     delete [] fHit;
   if(fTrack)
     delete fTrack;
     
-  fHit = new AliL3ConfMapPoint[max_num_of_hits];
-  fTrack = new AliL3TrackArray("AliL3ConfMapTrack",max_num_of_tracks);
+  fHit = new AliL3ConfMapPoint[maxnumofhits];
+  fTrack = new AliL3TrackArray("AliL3ConfMapTrack",maxnumoftracks);
 }
 
 void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
@@ -134,7 +133,7 @@ void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
   fPhiMin = -10*AliL3Transform::ToRad();//fParam->GetAngle(sector) - 10/todeg;
   fPhiMax =  10*AliL3Transform::ToRad();//fParam->GetAngle(sector) + 10/todeg;
 
-  nTracks=0;
+  fNTracks=0;
   fMainVertexTracks = 0;
   fClustersUnused = 0;
   fEtaHitsOutOfRange=0;
@@ -179,7 +178,7 @@ void AliL3ConfMapper::SetPointers()
   Float_t etaSlice = (fEtaMax-fEtaMin)/fNumEtaSegment;
 
   Int_t volumeIndex;
-  Int_t local_counter=0;
+  Int_t localcounter=0;
   for(Int_t j=0; j<fClustersUnused; j++)
     {
       //AliL3ConfMapPoint *thisHit = (AliL3ConfMapPoint*)fHit->At(j);
@@ -209,7 +208,7 @@ void AliL3ConfMapper::SetPointers()
 	  fEtaHitsOutOfRange++;
 	  continue;
 	}
-      local_counter++;
+      localcounter++;
       
       volumeIndex = (localrow-fRowMin)*fNumPhiEtaSegmentPlusOne+thisHit->phiIndex*fNumEtaSegmentPlusOne+thisHit->etaIndex;
       
@@ -228,7 +227,7 @@ void AliL3ConfMapper::SetPointers()
 	fRow[(localrow-fRowMin)].last = (void *)thisHit;
     }
   
-  if(fClustersUnused>0 && local_counter==0)
+  if(fClustersUnused>0 && localcounter==0)
     LOG(AliL3Log::kError,"AliL3ConfMapper::SetPointers","Parameters")
       <<AliL3Log::kDec<<"No points passed to track finder, hits out of range: "
       <<fEtaHitsOutOfRange+fPhiHitsOutOfRange<<ENDLOG;
@@ -327,7 +326,7 @@ void AliL3ConfMapper::NonVertexTracking()
   SetVertexConstraint(false);
   ClusterLoop();
   LOG(AliL3Log::kInformational,"AliL3ConfMapper::NonVertexTracking","ntracks")<<AliL3Log::kDec<<
-    "Number of nonvertex tracks found: "<<(nTracks-fMainVertexTracks)<<ENDLOG;
+    "Number of nonvertex tracks found: "<<(fNTracks-fMainVertexTracks)<<ENDLOG;
   return;
 }
 
@@ -375,13 +374,13 @@ void AliL3ConfMapper::SetTrackCuts(Double_t hitChi2Cut, Double_t goodHitChi2, Do
   SetMaxDist(maxdist,vertexconstraint);
 }
 
-void AliL3ConfMapper::SetTrackletCuts(Double_t maxangle,Double_t goodDist, Bool_t vertex_constraint)
+void AliL3ConfMapper::SetTrackletCuts(Double_t maxangle,Double_t goodDist, Bool_t vc)
 {
   //Sets cuts of tracklets. Right now this is only:
   //maxangle:  Maximum angle when forming segments (if trackletlength > 2)
  
   fGoodDist=goodDist;
-  SetMaxAngleTracklet(maxangle, vertex_constraint);
+  SetMaxAngleTracklet(maxangle, vc);
 }
 
 void AliL3ConfMapper::ClusterLoop()
@@ -393,18 +392,18 @@ void AliL3ConfMapper::ClusterLoop()
   if(fClustersUnused < fMinPoints[fVertexConstraint])
     return;
   
-  Int_t row_segm,lastrow = fRowMin + fMinPoints[fVertexConstraint];
+  Int_t rowsegm,lastrow = fRowMin + fMinPoints[fVertexConstraint];
   AliL3ConfMapPoint *hit;
   
   //Loop over rows, and try to create tracks from the hits.
   //Starts at the outermost row, and loops as long as a track can be build, due to length.
   
-  for(row_segm = fRowMax; row_segm >= lastrow; row_segm--)
+  for(rowsegm = fRowMax; rowsegm >= lastrow; rowsegm--)
     {
-      if(fRow[(row_segm-fRowMin)].first && ((AliL3ConfMapPoint*)fRow[(row_segm-fRowMin)].first)->GetPadRow() < fRowMin + 1)
+      if(fRow[(rowsegm-fRowMin)].first && ((AliL3ConfMapPoint*)fRow[(rowsegm-fRowMin)].first)->GetPadRow() < fRowMin + 1)
 	break;
 
-      for(hit = (AliL3ConfMapPoint*)fRow[(row_segm-fRowMin)].first; hit!=0; hit=hit->nextRowHit)
+      for(hit = (AliL3ConfMapPoint*)fRow[(rowsegm-fRowMin)].first; hit!=0; hit=hit->nextRowHit)
 	{
 	  if(hit->GetUsage() == true)
 	    continue;
@@ -421,12 +420,12 @@ void AliL3ConfMapper::CreateTrack(AliL3ConfMapPoint *hit)
 {
   //Tries to create a track from the initial hit given by ClusterLoop()
 
-  AliL3ConfMapPoint *closest_hit = NULL;
+  AliL3ConfMapPoint *closesthit = NULL;
   AliL3ConfMapTrack *track = NULL;
   
   Int_t point;
-  Int_t tracks = nTracks;
-  nTracks++;
+  Int_t tracks = fNTracks;
+  fNTracks++;
 
   track = (AliL3ConfMapTrack*)fTrack->NextTrack();
 
@@ -450,31 +449,31 @@ void AliL3ConfMapper::CreateTrack(AliL3ConfMapPoint *hit)
   
   for(point=1; point<fTrackletLength[fVertexConstraint]; point++)
     {
-      if((closest_hit = GetNextNeighbor(hit)))
+      if((closesthit = GetNextNeighbor(hit)))
 	{//closest hit exist
 	  
 	  //   Calculate track length in sz plane
-	  dx = ((AliL3ConfMapPoint*)closest_hit)->GetX() - ((AliL3ConfMapPoint*)hit)->GetX();
-	  dy = ((AliL3ConfMapPoint*)closest_hit)->GetY() - ((AliL3ConfMapPoint*)hit)->GetY();
+	  dx = ((AliL3ConfMapPoint*)closesthit)->GetX() - ((AliL3ConfMapPoint*)hit)->GetX();
+	  dy = ((AliL3ConfMapPoint*)closesthit)->GetY() - ((AliL3ConfMapPoint*)hit)->GetY();
 	  //track->fLength += (Double_t)sqrt ( dx * dx + dy * dy ) ;
 	  Double_t length = track->GetLength()+(Double_t)sqrt ( dx * dx + dy * dy );
 	  track->SetLength(length);
 
-	  //closest_hit->SetS(track->fLength);
-	  closest_hit->SetS(track->GetLength());
+	  //closesthit->SetS(track->fLength);
+	  closesthit->SetS(track->GetLength());
 
 	  //update fit parameters
-	  track->UpdateParam(closest_hit);
-	  trackhitnumber[track->GetNumberOfPoints()-1] = closest_hit->GetHitNumber();
+	  track->UpdateParam(closesthit);
+	  trackhitnumber[track->GetNumberOfPoints()-1] = closesthit->GetHitNumber();
 	
-	  hit = closest_hit;
+	  hit = closesthit;
 	}
       else
 	{
 	  //closest hit does not exist:
 	  track->DeleteCandidate();
 	  fTrack->RemoveLast();
-	  nTracks--;
+	  fNTracks--;
 	  point = fTrackletLength[fVertexConstraint];
 	}
     }
@@ -490,7 +489,7 @@ void AliL3ConfMapper::CreateTrack(AliL3ConfMapPoint *hit)
 	  track->SetProperties(false);
 	  track->DeleteCandidate();
 	  fTrack->RemoveLast();
-	  nTracks--;
+	  fNTracks--;
 	}
       
       else//good tracklet ->proceed, follow the trackfit
@@ -504,29 +503,29 @@ void AliL3ConfMapper::CreateTrack(AliL3ConfMapPoint *hit)
 	  for(point = fTrackletLength[fVertexConstraint]; point <= fNumRowSegment; point++)
 	    {
 	      track->SetChiSq1(fHitChi2Cut[fVertexConstraint]);
-	      closest_hit = GetNextNeighbor((AliL3ConfMapPoint*)track->GetLastHit(),track);
+	      closesthit = GetNextNeighbor((AliL3ConfMapPoint*)track->GetLastHit(),track);
 	      
-	      if(closest_hit)
+	      if(closesthit)
 		{
 		  //keep total chi:
 		  Double_t lxyChi2 = track->GetChiSq1()-track->GetChiSq2();
 		  xyChi2 += lxyChi2;
-		  closest_hit->xyChi2 = lxyChi2;
+		  closesthit->xyChi2 = lxyChi2;
 		  		  
 		  //update track length:
-		  //track->fLength = closest_hit->GetS();
-		  track->SetLength(closest_hit->GetS());
+		  //track->fLength = closesthit->GetS();
+		  track->SetLength(closesthit->GetS());
 		  szChi2 += track->GetChiSq2();
-		  closest_hit->szChi2 = track->GetChiSq2();
+		  closesthit->szChi2 = track->GetChiSq2();
 		  
-		  track->UpdateParam(closest_hit);
-		  trackhitnumber[track->GetNumberOfPoints()-1] = closest_hit->GetHitNumber();
+		  track->UpdateParam(closesthit);
+		  trackhitnumber[track->GetNumberOfPoints()-1] = closesthit->GetHitNumber();
 		  
 		  //add closest hit to track
-		  closest_hit->SetUsage(true);
-		  closest_hit->SetTrackNumber(tracks-1);
+		  closesthit->SetUsage(true);
+		  closesthit->SetTrackNumber(tracks-1);
 		  
-		}//closest_hit
+		}//closesthit
 	      
 	      else
 		{
@@ -539,13 +538,13 @@ void AliL3ConfMapper::CreateTrack(AliL3ConfMapPoint *hit)
 	  //store track chi2:
 	  track->SetChiSq1(xyChi2);
 	  track->SetChiSq2(szChi2);
-	  Double_t normalized_chi2 = (track->GetChiSq1()+track->GetChiSq2())/track->GetNumberOfPoints();
+	  Double_t normalizedchi2 = (track->GetChiSq1()+track->GetChiSq2())/track->GetNumberOfPoints();
 	  
 	  //remove tracks with not enough points already now
-	  if(track->GetNumberOfPoints() < fMinPoints[fVertexConstraint] || normalized_chi2 > fTrackChi2Cut[fVertexConstraint])
+	  if(track->GetNumberOfPoints() < fMinPoints[fVertexConstraint] || normalizedchi2 > fTrackChi2Cut[fVertexConstraint])
 	    {
 	      track->SetProperties(false);
-	      nTracks--;
+	      fNTracks--;
 	      track->DeleteCandidate();
 	      fTrack->RemoveLast();
 	      tracks--;
@@ -570,73 +569,73 @@ void AliL3ConfMapper::CreateTrack(AliL3ConfMapPoint *hit)
   return;
 }
 
-AliL3ConfMapPoint *AliL3ConfMapper::GetNextNeighbor(AliL3ConfMapPoint *start_hit,
+AliL3ConfMapPoint *AliL3ConfMapper::GetNextNeighbor(AliL3ConfMapPoint *starthit,
 					  AliL3ConfMapTrack *track)
 {
   //When forming segments: Finds closest hit to input hit
   //When forming tracks: Find closest hit to track fit.
   
-  Double_t dist,closest_dist = fMaxDist[fVertexConstraint];
+  Double_t dist,closestdist = fMaxDist[fVertexConstraint];
   
   AliL3ConfMapPoint *hit = NULL;
-  AliL3ConfMapPoint *closest_hit = NULL;
+  AliL3ConfMapPoint *closesthit = NULL;
     
-  Int_t sub_row_segm;
-  Int_t sub_phi_segm;
-  Int_t sub_eta_segm;
+  Int_t subrowsegm;
+  Int_t subphisegm;
+  Int_t subetasegm;
   Int_t volumeIndex;
-  Int_t test_hit;
+  Int_t testhit;
 
-  Int_t max_row = start_hit->GetPadRow()-1;
-  Int_t min_row;
+  Int_t maxrow = starthit->GetPadRow()-1;
+  Int_t minrow;
 
   if(track) //finding hit close to trackfit
     {
-      min_row = start_hit->GetPadRow()-fRowScopeTrack[fVertexConstraint];
+      minrow = starthit->GetPadRow()-fRowScopeTrack[fVertexConstraint];
     }
   else
     {
-      min_row = start_hit->GetPadRow()-fRowScopeTracklet[fVertexConstraint];
+      minrow = starthit->GetPadRow()-fRowScopeTracklet[fVertexConstraint];
     }
 
   //make a smart loop
-  Int_t loop_eta[25] = {0,0,0,-1,-1,-1,1,1,1, 0,0,-1,-1,1,1,-2,-2,-2,-2,-2,2,2,2,2,2};
-  Int_t loop_phi[25] = {0,-1,1,0,-1,1,0,-1,1, -2,2,-2,2,-2,2,-2,-1,0,1,2,-2,-1,0,1,2};
+  Int_t loopeta[25] = {0,0,0,-1,-1,-1,1,1,1, 0,0,-1,-1,1,1,-2,-2,-2,-2,-2,2,2,2,2,2};
+  Int_t loopphi[25] = {0,-1,1,0,-1,1,0,-1,1, -2,2,-2,2,-2,2,-2,-1,0,1,2,-2,-1,0,1,2};
   
-  if(min_row < fRowMin)
-    min_row = fRowMin;
-  if(max_row < fRowMin)
+  if(minrow < fRowMin)
+    minrow = fRowMin;
+  if(maxrow < fRowMin)
     return 0;  //reached the last padrow under consideration
 
   else
     {
       //loop over sub rows
-      for(sub_row_segm=max_row; sub_row_segm>=min_row; sub_row_segm--)
+      for(subrowsegm=maxrow; subrowsegm>=minrow; subrowsegm--)
 	{
 	  //loop over subsegments, in the order defined above.
 	  for(Int_t i=0; i<9; i++)  
 	    {
-	      sub_phi_segm = start_hit->phiIndex + loop_phi[i];
+	      subphisegm = starthit->phiIndex + loopphi[i];
 	      
-	      if(sub_phi_segm < 0 || sub_phi_segm >= fNumPhiSegment)
+	      if(subphisegm < 0 || subphisegm >= fNumPhiSegment)
 		continue;
 	      /*
-		if(sub_phi_segm<0)
-		sub_phi_segm += fNumPhiSegment;
+		if(subphisegm<0)
+		subphisegm += fNumPhiSegment;
 		
-		else if(sub_phi_segm >=fNumPhiSegment)
-		sub_phi_segm -= fNumPhiSegment;
+		else if(subphisegm >=fNumPhiSegment)
+		subphisegm -= fNumPhiSegment;
 	      */
 	      //loop over sub eta segments
 	      
-	      sub_eta_segm = start_hit->etaIndex + loop_eta[i];
+	      subetasegm = starthit->etaIndex + loopeta[i];
 	      
-	      if(sub_eta_segm < 0 || sub_eta_segm >=fNumEtaSegment)
+	      if(subetasegm < 0 || subetasegm >=fNumEtaSegment)
 		continue;//segment exceeds bounds->skip it
 	      
 	      //loop over hits in this sub segment:
-	      volumeIndex= (sub_row_segm-fRowMin)*fNumPhiEtaSegmentPlusOne +
-		sub_phi_segm*fNumEtaSegmentPlusOne + sub_eta_segm;
+	      volumeIndex=(subrowsegm-fRowMin)*fNumPhiEtaSegmentPlusOne +
+		subphisegm*fNumEtaSegmentPlusOne + subetasegm;
 	      
 	      if(volumeIndex<0)
 		{//debugging
@@ -654,38 +653,38 @@ AliL3ConfMapPoint *AliL3ConfMapper::GetNextNeighbor(AliL3ConfMapPoint *start_hit
 		      //set conformal mapping if looking for nonvertex tracks:
 		      if(!fVertexConstraint)
 			{
-			  hit->SetAllCoord(start_hit);
+			  hit->SetAllCoord(starthit);
 			}
 		     
 		      if(track)//track search - look for nearest neighbor to extrapolated track
 			{
-			  if(!VerifyRange(start_hit,hit))
+			  if(!VerifyRange(starthit,hit))
 			    continue;
 			  			  
-			  test_hit = EvaluateHit(start_hit,hit,track);
+			  testhit = EvaluateHit(starthit,hit,track);
 			  
-			  if(test_hit == 0)//chi2 not good enough, keep looking
+			  if(testhit == 0)//chi2 not good enough, keep looking
 			    continue;
-			  else if(test_hit==2)//chi2 good enough, return it
+			  else if(testhit==2)//chi2 good enough, return it
 			    return hit;
 			  else
-			    closest_hit = hit;//chi2 acceptable, but keep looking
+			    closesthit = hit;//chi2 acceptable, but keep looking
 			  
 			}//track search
 		      
 		      else //tracklet search, look for nearest neighbor
 			{
 			  
-			  if((dist=CalcDistance(start_hit,hit)) < closest_dist)
+			  if((dist=CalcDistance(starthit,hit)) < closestdist)
 			    {
-			      if(!VerifyRange(start_hit,hit))
+			      if(!VerifyRange(starthit,hit))
 				continue;
-			      closest_dist = dist;
-			      closest_hit = hit;
+			      closestdist = dist;
+			      closesthit = hit;
 			 
 			      //if this hit is good enough, return it:
-			      if(closest_dist < fGoodDist)
-			        return closest_hit;
+			      if(closestdist < fGoodDist)
+			        return closesthit;
 			    }
 			  else
 			    continue;//sub hit was farther away than a hit before
@@ -705,13 +704,13 @@ AliL3ConfMapPoint *AliL3ConfMapper::GetNextNeighbor(AliL3ConfMapPoint *start_hit
     }//else
 
   //closest hit found:
-  if(closest_hit)// && closest_dist < mMaxDist)
-    return closest_hit;
+  if(closesthit)// && closestdist < mMaxDist)
+    return closesthit;
   else
     return 0;
 }
 
-Int_t AliL3ConfMapper::EvaluateHit(AliL3ConfMapPoint *start_hit,AliL3ConfMapPoint *hit,AliL3ConfMapTrack *track) 
+Int_t AliL3ConfMapper::EvaluateHit(AliL3ConfMapPoint *starthit,AliL3ConfMapPoint *hit,AliL3ConfMapTrack *track) 
 {
   //Check if space point gives a fit with acceptable chi2.
   
@@ -726,8 +725,8 @@ Int_t AliL3ConfMapper::EvaluateHit(AliL3ConfMapPoint *start_hit,AliL3ConfMapPoin
     return 0;
     
   //calculate s and the distance hit-line
-  dx = start_hit->GetX()-hit->GetX();
-  dy = start_hit->GetY()-hit->GetY();
+  dx = starthit->GetX()-hit->GetX();
+  dy = starthit->GetY()-hit->GetY();
   //slocal = track->fLength+sqrt(dx*dx+dy*dy);
   slocal = track->GetLength()+sqrt(dx*dx+dy*dy);
   
@@ -762,10 +761,11 @@ Double_t AliL3ConfMapper::CalcDistance(const AliL3ConfMapPoint *hit1,const AliL3
 {
   //Return distance between two clusters, defined by Pablo
   
-  Double_t phi_diff = fabs( hit1->GetPhi() - hit2->GetPhi() );
-  if (phi_diff > AliL3Transform::Pi()) phi_diff = AliL3Transform::TwoPi() - phi_diff;
+  Double_t phidiff = fabs( hit1->GetPhi() - hit2->GetPhi() );
+  if (phidiff > AliL3Transform::Pi()) phidiff = AliL3Transform::TwoPi() - phidiff;
   
-  return AliL3Transform::ToDeg()*fabs((Float_t)((hit1->GetPadRow() - hit2->GetPadRow()) * (phi_diff + fabs( hit1->GetEta() - hit2->GetEta()))));
+  return AliL3Transform::ToDeg()*fabs((Float_t)((hit1->GetPadRow() - hit2->GetPadRow()) * 
+         (phidiff + fabs( hit1->GetEta() - hit2->GetEta()))));
 }
 
 Bool_t AliL3ConfMapper::VerifyRange(const AliL3ConfMapPoint *hit1,const AliL3ConfMapPoint *hit2) const
@@ -855,19 +855,19 @@ Int_t AliL3ConfMapper::FillTracks()
   //Fill track parameters. Which basically means do a fit of helix in real space,
   //which should be done in order to get nice tracks.
   
-  Int_t num_of_tracks = nTracks;
-  if(nTracks == 0)
+  Int_t numoftracks = fNTracks;
+  if(fNTracks == 0)
     {
-      LOG(AliL3Log::kError,"AliL3ConfMapper::FillTracks","nTracks")<<AliL3Log::kDec<<
+      LOG(AliL3Log::kError,"AliL3ConfMapper::FillTracks","fNTracks")<<AliL3Log::kDec<<
 	"No tracks found!!"<<ENDLOG;
       return 0;
     }
 
-  LOG(AliL3Log::kInformational,"AliL3ConfMapper::FillTracks","nTracks")<<AliL3Log::kDec<<
-    "Number of found tracks: "<<nTracks<<ENDLOG;
+  LOG(AliL3Log::kInformational,"AliL3ConfMapper::FillTracks","fNTracks")<<AliL3Log::kDec<<
+    "Number of found tracks: "<<fNTracks<<ENDLOG;
   
   //  fTrack->Sort();
-  for(Int_t i=0; i<num_of_tracks; i++)
+  for(Int_t i=0; i<numoftracks; i++)
     {
       AliL3ConfMapTrack *track = (AliL3ConfMapTrack*)fTrack->GetTrack(i);
       track->Fill(fVertex,fMaxDca);

@@ -455,16 +455,16 @@ Bool_t AliL3MemHandler::Memory2Binary(UInt_t nrow,AliL3DigitRowData *data)
     return kFALSE;
   }
   
-  AliL3DigitRowData *row_pt = data; 
+  AliL3DigitRowData *rowPt = data; 
   Int_t outsize = 0;
   for(UInt_t i=0;i<nrow;i++){
-    Int_t size = sizeof(AliL3DigitData) * row_pt->fNDigit 
+    Int_t size = sizeof(AliL3DigitData) * rowPt->fNDigit 
       + sizeof(AliL3DigitRowData);
     outsize += size;
-    fwrite(row_pt,size,1,fOutBinary);
-    Byte_t  *byte_pt =(Byte_t *) row_pt;
-    byte_pt += size;
-    row_pt = (AliL3DigitRowData *) byte_pt;
+    fwrite(rowPt,size,1,fOutBinary);
+    Byte_t  *bytePt =(Byte_t *) rowPt;
+    bytePt += size;
+    rowPt = (AliL3DigitRowData *) bytePt;
   }
   LOG(AliL3Log::kDebug,"AliL3MemHandler::Memory2Binary","Memory")
     <<AliL3Log::kDec<<"Wrote "<<outsize<<" Bytes to Memory ("
@@ -488,24 +488,24 @@ Bool_t AliL3MemHandler::Binary2Memory(UInt_t & nrow,AliL3DigitRowData *data)
     return kFALSE;
   }
   rewind(fInBinary);
-  AliL3DigitRowData *row_pt = data;
+  AliL3DigitRowData *rowPt = data;
   UInt_t rowcount = 0;
   Int_t outsize =0;
   while(!feof(fInBinary)){
-    Byte_t  *byte_pt =(Byte_t *) row_pt;
+    Byte_t  *bytePt =(Byte_t *) rowPt;
 
-    if(fread(row_pt,sizeof(AliL3DigitRowData),1,fInBinary)!=1) break;
+    if(fread(rowPt,sizeof(AliL3DigitRowData),1,fInBinary)!=1) break;
 
-    byte_pt += sizeof(AliL3DigitRowData);
+    bytePt += sizeof(AliL3DigitRowData);
     outsize += sizeof(AliL3DigitRowData);
 
-    Int_t size = sizeof(AliL3DigitData) * row_pt->fNDigit;
+    Int_t size = sizeof(AliL3DigitData) * rowPt->fNDigit;
 
-    //if(fread(byte_pt,size,1,fInBinary)!=1) break;
-    fread(byte_pt,size,1,fInBinary);
-    byte_pt += size;
+    //if(fread(bytePt,size,1,fInBinary)!=1) break;
+    fread(bytePt,size,1,fInBinary);
+    bytePt += size;
     outsize += size;
-    row_pt = (AliL3DigitRowData *) byte_pt;
+    rowPt = (AliL3DigitRowData *) bytePt;
     rowcount++;
   }  
   nrow= rowcount;
@@ -618,20 +618,20 @@ Int_t AliL3MemHandler::Memory2CompMemory(UInt_t nrow,
       <<"Pointer to AliL3DigitRowData = 0x0 "<<ENDLOG;
     return 0;
   }
-  AliL3DigitRowData *row_pt = data;
+  AliL3DigitRowData *rowPt = data;
   UInt_t index=0;
   UInt_t subindex=0;
   
   for(UInt_t i=0;i<nrow;i++){
-    UShort_t value = row_pt->fRow;
+    UShort_t value = rowPt->fRow;
     Write(comp,index,subindex,value);
     UShort_t maxpad=0; 
     UShort_t npad=0;
     Int_t ddd[1000];
     for(Int_t d=0;d<200;d++) ddd[d]=0;
-    for(UInt_t dig=0;dig<row_pt->fNDigit;dig++){
-      if(row_pt->fDigitData[dig].fPad <200){ 
-        ddd[row_pt->fDigitData[dig].fPad]++;
+    for(UInt_t dig=0;dig<rowPt->fNDigit;dig++){
+      if(rowPt->fDigitData[dig].fPad <200){ 
+        ddd[rowPt->fDigitData[dig].fPad]++;
       }
     }
     for(Int_t d=0;d<200;d++){ 
@@ -643,28 +643,28 @@ Int_t AliL3MemHandler::Memory2CompMemory(UInt_t nrow,
     Write(comp,index,subindex,npad);
     UInt_t digit=0;
     for(UShort_t pad=0;pad <= maxpad;pad++){
-      if(digit>=row_pt->fNDigit || row_pt->fDigitData[digit].fPad !=  pad)
+      if(digit>=rowPt->fNDigit || rowPt->fDigitData[digit].fPad !=  pad)
         continue;
       Write(comp,index,subindex,pad);
 //    write zero if time != 0
-      if(digit<row_pt->fNDigit && row_pt->fDigitData[digit].fPad == pad){
-        if(row_pt->fDigitData[digit].fTime>0){
+      if(digit<rowPt->fNDigit && rowPt->fDigitData[digit].fPad == pad){
+        if(rowPt->fDigitData[digit].fTime>0){
           Write(comp,index,subindex,0);
-          Write(comp,index,subindex,row_pt->fDigitData[digit].fTime);
+          Write(comp,index,subindex,rowPt->fDigitData[digit].fTime);
         }
       }
-      while(digit<row_pt->fNDigit && row_pt->fDigitData[digit].fPad == pad){
-        UShort_t charge = row_pt->fDigitData[digit].fCharge;
+      while(digit<rowPt->fNDigit && rowPt->fDigitData[digit].fPad == pad){
+        UShort_t charge = rowPt->fDigitData[digit].fCharge;
         if(charge>=1023){
           charge=1023;
         }
         Write(comp,index,subindex,charge);
-        if(digit+1<row_pt->fNDigit&&row_pt->fDigitData[digit+1].fPad == pad){
-          if(row_pt->fDigitData[digit].fTime +1 !=
-                     row_pt->fDigitData[digit+1].fTime){
+        if(digit+1<rowPt->fNDigit&&rowPt->fDigitData[digit+1].fPad == pad){
+          if(rowPt->fDigitData[digit].fTime +1 !=
+                     rowPt->fDigitData[digit+1].fTime){
             Write(comp,index,subindex,0);
-            UShort_t nzero = row_pt->fDigitData[digit+1].fTime - 
-                             (row_pt->fDigitData[digit].fTime +1);
+            UShort_t nzero = rowPt->fDigitData[digit+1].fTime - 
+                             (rowPt->fDigitData[digit].fTime +1);
             Write(comp,index,subindex,nzero);
           }  
         }
@@ -674,11 +674,11 @@ Int_t AliL3MemHandler::Memory2CompMemory(UInt_t nrow,
       Write(comp,index,subindex,0);
     }
     
-    Int_t size = sizeof(AliL3DigitData) * row_pt->fNDigit+
+    Int_t size = sizeof(AliL3DigitData) * rowPt->fNDigit+
                                             sizeof(AliL3DigitRowData);
-    Byte_t  *byte_pt =(Byte_t *) row_pt;
-    byte_pt += size;
-    row_pt = (AliL3DigitRowData *) byte_pt;
+    Byte_t  *bytePt =(Byte_t *) rowPt;
+    bytePt += size;
+    rowPt = (AliL3DigitRowData *) bytePt;
   }
   while(subindex)
     Write(comp,index,subindex,0);
@@ -703,14 +703,14 @@ Int_t AliL3MemHandler::CompMemory2Memory(UInt_t  nrow,
   }
   Int_t outsize=0;
   
-  AliL3DigitRowData *row_pt = data;
+  AliL3DigitRowData *rowPt = data;
   UInt_t index=0;
   UInt_t subindex=0;
   
   for(UInt_t i=0;i<nrow;i++){
     UInt_t ndigit=0;
     UInt_t row =Read(comp,index,subindex);
-    row_pt->fRow=row;
+    rowPt->fRow=row;
     Generate(row);
     UShort_t npad = Read(comp,index,subindex);
     for(UShort_t p=0;p<npad;p++){
@@ -726,9 +726,9 @@ Int_t AliL3MemHandler::CompMemory2Memory(UInt_t  nrow,
       for(;;){
         while( (charge=Read(comp,index,subindex)) != 0){
           if(time>=fEtaMinTimeBin[row]&&time<=fEtaMaxTimeBin[row])
-	    //AddData(row_pt->fDigitData,ndigit,row,pad,time,charge);
+	    //AddData(rowPt->fDigitData,ndigit,row,pad,time,charge);
 	    //seems we are using this function... but dont know why
-            AddDataRandom(row_pt->fDigitData,ndigit,row,pad,time,charge);
+            AddDataRandom(rowPt->fDigitData,ndigit,row,pad,time,charge);
           time++;
         }
         UShort_t tshift = Read(comp,index,subindex);
@@ -736,13 +736,13 @@ Int_t AliL3MemHandler::CompMemory2Memory(UInt_t  nrow,
         time += tshift;
       }
     }
-    row_pt->fNDigit = ndigit;
-    Int_t size = sizeof(AliL3DigitData) * row_pt->fNDigit+
+    rowPt->fNDigit = ndigit;
+    Int_t size = sizeof(AliL3DigitData) * rowPt->fNDigit+
       sizeof(AliL3DigitRowData);
-    Byte_t  *byte_pt =(Byte_t *) row_pt;
-    byte_pt += size;
+    Byte_t  *bytePt =(Byte_t *) rowPt;
+    bytePt += size;
     outsize += size;
-    row_pt = (AliL3DigitRowData *) byte_pt;
+    rowPt = (AliL3DigitRowData *) bytePt;
   }
   return outsize;
 }
@@ -756,7 +756,7 @@ UInt_t AliL3MemHandler::GetCompMemorySize(UInt_t nrow,AliL3DigitRowData *data) c
       <<"Pointer to AliL3DigitRowData = 0x0 "<<ENDLOG;
     return 0;
   }
-  AliL3DigitRowData *row_pt = data;
+  AliL3DigitRowData *rowPt = data;
   UInt_t index=0;
   
   for(UInt_t i=0;i<nrow;i++){
@@ -765,9 +765,9 @@ UInt_t AliL3MemHandler::GetCompMemorySize(UInt_t nrow,AliL3DigitRowData *data) c
     UShort_t npad=0;
     Int_t ddd[1000];
     for(Int_t d=0;d<200;d++) ddd[d]=0;
-    for(UInt_t dig=0;dig<row_pt->fNDigit;dig++){
-      if(row_pt->fDigitData[dig].fPad <200){ 
-        ddd[row_pt->fDigitData[dig].fPad]++;
+    for(UInt_t dig=0;dig<rowPt->fNDigit;dig++){
+      if(rowPt->fDigitData[dig].fPad <200){ 
+        ddd[rowPt->fDigitData[dig].fPad]++;
       }
     }
     for(Int_t d=0;d<200;d++){ 
@@ -779,21 +779,21 @@ UInt_t AliL3MemHandler::GetCompMemorySize(UInt_t nrow,AliL3DigitRowData *data) c
     index++;
     UInt_t digit=0;
     for(UShort_t pad=0;pad <= maxpad;pad++){
-      if(digit>=row_pt->fNDigit || row_pt->fDigitData[digit].fPad !=  pad)
+      if(digit>=rowPt->fNDigit || rowPt->fDigitData[digit].fPad !=  pad)
         continue;
       index++;
       //    write zero if time != 0
-      if(digit<row_pt->fNDigit && row_pt->fDigitData[digit].fPad == pad){
-        if(row_pt->fDigitData[digit].fTime>0){
+      if(digit<rowPt->fNDigit && rowPt->fDigitData[digit].fPad == pad){
+        if(rowPt->fDigitData[digit].fTime>0){
           index++;
           index++;
         }
       }
-      while(digit<row_pt->fNDigit && row_pt->fDigitData[digit].fPad == pad){
+      while(digit<rowPt->fNDigit && rowPt->fDigitData[digit].fPad == pad){
         index++;
-        if(digit+1<row_pt->fNDigit&&row_pt->fDigitData[digit+1].fPad == pad){
-          if(row_pt->fDigitData[digit].fTime +1 !=
-                     row_pt->fDigitData[digit+1].fTime){
+        if(digit+1<rowPt->fNDigit&&rowPt->fDigitData[digit+1].fPad == pad){
+          if(rowPt->fDigitData[digit].fTime +1 !=
+                     rowPt->fDigitData[digit+1].fTime){
             index++;
             index++;
           }  
@@ -804,11 +804,11 @@ UInt_t AliL3MemHandler::GetCompMemorySize(UInt_t nrow,AliL3DigitRowData *data) c
       index++;
     }
 
-    Int_t size = sizeof(AliL3DigitData) * row_pt->fNDigit+
+    Int_t size = sizeof(AliL3DigitData) * rowPt->fNDigit+
                                             sizeof(AliL3DigitRowData);
-    Byte_t  *byte_pt =(Byte_t *) row_pt;
-    byte_pt += size;
-    row_pt = (AliL3DigitRowData *) byte_pt;
+    Byte_t  *bytePt =(Byte_t *) rowPt;
+    bytePt += size;
+    rowPt = (AliL3DigitRowData *) bytePt;
   }
   while(index%3)
     index++;
@@ -1063,13 +1063,13 @@ Bool_t AliL3MemHandler::Memory2Binary(UInt_t ntrack,AliL3TrackSegmentData *data)
     <<"Pointer to AliL3TrackSegmentData = 0x0 "<<ENDLOG;
     return kFALSE;
   }
-  AliL3TrackSegmentData *track_pt = data;
+  AliL3TrackSegmentData *trackPt = data;
   for(UInt_t i=0;i<ntrack;i++){
-    Int_t size=sizeof(AliL3TrackSegmentData)+track_pt->fNPoints*sizeof(UInt_t); 
-    fwrite(track_pt,size,1,fOutBinary);
-    Byte_t *byte_pt = (Byte_t*) track_pt;
-    byte_pt += size; 
-    track_pt = (AliL3TrackSegmentData*) byte_pt;
+    Int_t size=sizeof(AliL3TrackSegmentData)+trackPt->fNPoints*sizeof(UInt_t); 
+    fwrite(trackPt,size,1,fOutBinary);
+    Byte_t *bytePt = (Byte_t*) trackPt;
+    bytePt += size; 
+    trackPt = (AliL3TrackSegmentData*) bytePt;
   }
   LOG(AliL3Log::kDebug,"AliL3MemHandler::Memory2Binary","File")
   <<AliL3Log::kDec<<"Wrote  "<<ntrack<<" Tracks to File"<<ENDLOG;
@@ -1092,16 +1092,16 @@ Bool_t AliL3MemHandler::Binary2Memory(UInt_t & ntrack,AliL3TrackSegmentData *dat
   }
 
   ntrack=0;
-  AliL3TrackSegmentData *track_pt = data;
+  AliL3TrackSegmentData *trackPt = data;
   rewind(fInBinary);
 
   while(!feof(fInBinary)){
-    if(fread(track_pt,sizeof(AliL3TrackSegmentData),1,fInBinary)!=1) break;
-    Int_t size=track_pt->fNPoints*sizeof(UInt_t);
-    if(fread(track_pt->fPointIDs,size,1,fInBinary)!=1) break;
-    Byte_t *byte_pt = (Byte_t*) track_pt;
-    byte_pt += sizeof(AliL3TrackSegmentData)+size;
-    track_pt = (AliL3TrackSegmentData*) byte_pt;
+    if(fread(trackPt,sizeof(AliL3TrackSegmentData),1,fInBinary)!=1) break;
+    Int_t size=trackPt->fNPoints*sizeof(UInt_t);
+    if(fread(trackPt->fPointIDs,size,1,fInBinary)!=1) break;
+    Byte_t *bytePt = (Byte_t*) trackPt;
+    bytePt += sizeof(AliL3TrackSegmentData)+size;
+    trackPt = (AliL3TrackSegmentData*) bytePt;
     ntrack++; 
   }
   LOG(AliL3Log::kDebug,"AliL3MemHandler::Binary2Memory","File")
