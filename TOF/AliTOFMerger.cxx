@@ -43,7 +43,6 @@ ClassImp(AliTOFMerger)
     fEvNrSig = 0;
     fEvNrBgr = 0;
     fMerge =kDigitize;
-    fFnBgr   = 0;
     fDigits = 0;
     fSDigits =0;
     fFnBgr = 0;
@@ -59,6 +58,16 @@ AliTOFMerger::~AliTOFMerger()
     fSDigits->Delete();
     delete fSDigits ;
     fSDigits = 0;
+  }
+  delete fBgrFile;
+  fBgrFile = 0;
+  if(fFnBgr) {
+    delete[] fFnBgr;
+    fFnBgr = 0;
+  }
+  if(fFnSig) {
+    delete[] fFnSig;
+    fFnSig = 0;
   }
 }
 

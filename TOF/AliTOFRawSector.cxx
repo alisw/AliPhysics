@@ -40,7 +40,7 @@ AliTOFRawSector::AliTOFRawSector()
 // Each sector is in effect a 
 // TClonesArray of 14 AliTOFRoc Objects
 //
-   fRocData = new TClonesArray("AliTOFRoc",14);   
+   fRocData = 0;   
 }
 
 //______________________________________________________________________________
