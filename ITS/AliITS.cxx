@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.55  2001/06/14 14:59:00  barbera
+Tracking V1 decoupled from AliITS
+
 Revision 1.54  2001/05/31 20:37:56  barbera
 Bari/Salerno model set as defaault SPD simulation
 
@@ -327,7 +330,8 @@ AliITS::AliITS(const char *name, const char *title):AliDetector(name,title){
   fCtype = new TObjArray(kNTYPES);
 
 
-  fRecPoints = 0;
+
+  fRecPoints=new TClonesArray("AliITSRecPoint",1000);
   fNRecPoints = 0;
 
   fTreeC = 0;
@@ -766,10 +770,10 @@ void AliITS::MakeTreeC(Option_t *option)
      // one branch for Clusters per type of detector
      Int_t i;
      for (i=0; i<kNTYPES ;i++) {
-       AliITSDetType *iDetType=DetType(i); 
-       iDetType->GetClassNames(digclass,clclass);
-       // clusters
-       (*fCtype)[i] = new TClonesArray(clclass,10000); 
+        AliITSDetType *iDetType=DetType(i); 
+        iDetType->GetClassNames(digclass,clclass);
+	// clusters
+        fCtype->AddAt(new TClonesArray(clclass,1000),i);
         if (kNTYPES==3) sprintf(branchname,"%sClusters%s",GetName(),det[i]);
 	else  sprintf(branchname,"%sClusters%d",GetName(),i+1);
 	if (fCtype   && fTreeC) {
@@ -802,9 +806,17 @@ void AliITS::GetTreeC(Int_t event)
     fTreeC = (TTree*)gDirectory->Get(treeName);
 
     TBranch *branch;
+
     if (fTreeC) {
         Int_t i;
+	char digclass[40];
+	char clclass[40];
 	for (i=0; i<kNTYPES; i++) {
+
+	   AliITSDetType *iDetType=DetType(i); 
+	   iDetType->GetClassNames(digclass,clclass);
+	   // clusters
+	   if(!(*fCtype)[i]) fCtype->AddAt(new TClonesArray(clclass,1000),i); 
 	   if (kNTYPES==3) sprintf(branchname,"%sClusters%s",GetName(),det[i]);
 	   else  sprintf(branchname,"%sClusters%d",GetName(),i+1);
 	   if (fCtype) {
@@ -845,10 +857,9 @@ void AliITS::MakeBranch(Option_t* option, const char *file)
 
    Int_t i;
    for (i=0; i<kNTYPES ;i++) {
-       AliITSDetType *iDetType=DetType(i); 
-       iDetType->GetClassNames(digclass,clclass);
+       DetType(i)->GetClassNames(digclass,clclass);
        // digits
-       if(!((*fDtype)[i])) (*fDtype)[i] = new TClonesArray(digclass,10000);
+       if(!((*fDtype)[i])) fDtype->AddAt(new TClonesArray(digclass,1000),i);
        else ResetDigits(i);
    }
 
@@ -870,7 +881,7 @@ void AliITS::MakeBranch(Option_t* option, const char *file)
   //
     sprintf(branchname,"%sRecPoints",GetName());
  
-    if(!fRecPoints) fRecPoints=new TClonesArray("AliITSRecPoint",10000);
+    //if(!fRecPoints) fRecPoints=new TClonesArray("AliITSRecPoint",1000);
 
     if (fRecPoints && gAlice->TreeR()) {
       MakeBranchInTree(gAlice->TreeR(), 
@@ -887,6 +898,7 @@ void AliITS::SetTreeAddress()
 
   // Set branch address for the Trees.
 
+
   char branchname[30];
   AliDetector::SetTreeAddress();
 
@@ -896,15 +908,23 @@ void AliITS::SetTreeAddress()
   TTree *treeD = gAlice->TreeD();
   TTree *treeR = gAlice->TreeR();
 
+  char digclass[40];
+  char clclass[40];
+
   Int_t i;
   if (treeD) {
       for (i=0; i<kNTYPES; i++) {
-	  if (kNTYPES==3) sprintf(branchname,"%sDigits%s",GetName(),det[i]);
-	  else  sprintf(branchname,"%sDigits%d",GetName(),i+1);
-	  if (fDtype) {
-	      branch = treeD->GetBranch(branchname);
-	      if (branch) branch->SetAddress(&((*fDtype)[i]));
-	  }
+	DetType(i)->GetClassNames(digclass,clclass);
+	  // digits
+        if(!((*fDtype)[i])) fDtype->AddAt(new TClonesArray(digclass,1000),i);
+	else ResetDigits(i);
+
+	if (kNTYPES==3) sprintf(branchname,"%sDigits%s",GetName(),det[i]);
+	else  sprintf(branchname,"%sDigits%d",GetName(),i+1);
+	if (fDtype) {
+	   branch = treeD->GetBranch(branchname);
+	   if (branch) branch->SetAddress(&((*fDtype)[i]));
+	}
       }
   }
 
