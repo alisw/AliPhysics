@@ -404,7 +404,7 @@ void AliTRDv1::CreateGeometry()
 }
  
 //_____________________________________________________________________________
-void AliTRDv1::DrawDetector()
+void AliTRDv1::DrawModule()
 {
   //
   // Draw a shaded view of the Transition Radiation Detector version 1

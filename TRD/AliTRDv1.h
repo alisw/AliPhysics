@@ -17,7 +17,7 @@ public:
   virtual Int_t IsVersion() const {return 1;}
   virtual void  StepManager();
   virtual void  Init();
-  virtual void  DrawDetector();
+  virtual void  DrawModule();
 
 protected:
   Int_t        fIdSens1;    // 1st sensitive volume identifier

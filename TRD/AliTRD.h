@@ -21,7 +21,7 @@ public:
   virtual void  Init();
   virtual Int_t IsVersion() const =0;
   virtual void  StepManager()=0; 
-  virtual void  DrawDetector() {}
+  virtual void  DrawModule() {}
   
   ClassDef(AliTRD,1)       // Transition Radiation Detector base class
 };
