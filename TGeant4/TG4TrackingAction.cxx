@@ -41,6 +41,10 @@ void TG4TrackingAction::PreUserTrackingAction(const G4Track* track)
 // Called by G4 kernel before starting tracking.
 // ---
 
+  // set step manager status
+  TG4StepManager* stepManager = TG4StepManager::Instance();
+  stepManager->SetStep((G4Track*)track, kVertex);
+  
   // call pre-tracking action of derived class
   PreTrackingAction(track);
 
@@ -48,9 +52,6 @@ void TG4TrackingAction::PreUserTrackingAction(const G4Track* track)
   // (this ensures compatibility with G3 that
   // makes first step of zero length)
    
-  TG4StepManager* stepManager = TG4StepManager::Instance();
-  stepManager->SetStep((G4Track*)track, kVertex);
-  
   G4VPhysicalVolume* pv = stepManager->GetCurrentPhysicalVolume();
   
   if (!pv) {
