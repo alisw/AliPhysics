@@ -1,5 +1,5 @@
-#ifndef VZEROHIT_H
-#define VZEROHIT_H
+#ifndef ALIVZEROHIT_H
+#define ALIVZEROHIT_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -9,7 +9,6 @@
 //  Manager and hits classes for set : VZERO  //
 ////////////////////////////////////////////////
  
-#include "AliDetector.h"
 #include "AliHit.h"
 #include "TObjArray.h"
 #include "TArrayF.h"
@@ -46,16 +45,16 @@ private:
   Float_t fCharge;                // Charge of particle
   Float_t fTheta; 
   Float_t fPhi;
-  Float_t fRingNumber;
+  Float_t fRingNumber;            // RingNumber
   
   Float_t fPt;
   Float_t fPmom;
   Float_t fPx;
   Float_t fPy;
   Float_t fPz;
-  Float_t fVx;
-  Float_t fVy;
-  Float_t fVz;
+  Float_t fVx;            //  Vertex x coordinate  
+  Float_t fVy;            //  Vertex y coordinate  
+  Float_t fVz;            //  Vertex z coordinate    
   Float_t fEloss;         //  energy loss  in VZERO detector
   Float_t fTleng;         //  track length in VZERO detector
   

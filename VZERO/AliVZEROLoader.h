@@ -1,5 +1,5 @@
-#ifndef ALIVZEROGETTER_H
-#define ALIVZEROGETTER_H
+#ifndef ALIVZEROLOADER_H
+#define ALIVZEROLOADER_H
 
 //base class for loaders 
 //loader is common for reading data for all detectors

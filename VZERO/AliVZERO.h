@@ -1,5 +1,5 @@
-#ifndef VZERO_H
-#define VZERO_H
+#ifndef ALIVZERO_H
+#define ALIVZERO_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -9,14 +9,16 @@
 //////////////////////////////////////////////////
 
 #include "AliRun.h"
-#include "AliLoader.h" 
+#include "AliMC.h"
 #include "AliDetector.h"
-#include "AliHit.h"
-#include "TNamed.h"
-#include "TTree.h"
+#include "AliVZEROLoader.h"
+ 
+#include <TNamed.h>
+#include <TTree.h>
 
 class AliVZEROhit; 
- 
+class AliVZEROdigit;
+  
 class AliVZERO : public AliDetector {
  
 public:
@@ -50,7 +52,7 @@ public:
 
 protected:
 
-   Int_t fIdSens1;
+   Int_t fIdSens1;           // Sensitive volume  in VZERO
   
 // Stepping Parameters
    Float_t fMaxStepQua;      // Maximum step size inside the quartz volumes

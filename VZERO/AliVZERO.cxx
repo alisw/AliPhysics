@@ -28,12 +28,7 @@
 
 #include <Riostream.h>
 
-#include "AliRun.h"
 #include "AliVZERO.h"
-#include "AliVZEROLoader.h"
-#include "AliVZEROdigit.h"
-#include "AliVZEROhit.h"
-#include "AliMC.h"
 
 ClassImp(AliVZERO)
  
