@@ -72,7 +72,7 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
   }
   AliKalmanTrack::SetMagneticField(mf/10.);
 
-  Info("ReadESD","Reading Event %d",fCurrentEvent);
+  Info("ReadESD","Reading Event %d",fCurrentDir*1000+fCurrentEvent);
   if((!fOwner) || (fEventParticles==0)) 
     fEventParticles = new AliJetEventParticles();
 

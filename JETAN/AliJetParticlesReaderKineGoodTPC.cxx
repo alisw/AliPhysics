@@ -85,7 +85,7 @@ Int_t AliJetParticlesReaderKineGoodTPC::ReadNext()
 	continue;
       }
     
-      Info("ReadNext","Reading Event %d",fCurrentEvent);
+      Info("ReadNext","Reading Event %d",fCurrentDir*1000+fCurrentEvent);
 
       Int_t label,code;
       Float_t px,py,pz,x,y,z;

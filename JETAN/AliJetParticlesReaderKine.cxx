@@ -100,7 +100,7 @@ Int_t AliJetParticlesReaderKine::ReadNext()
 	  continue; 
 	}
      
-      Info("ReadNext","Reading Event %d",fCurrentEvent);
+      Info("ReadNext","Reading Event %d",fCurrentDir*1000+fCurrentEvent);
       fRunLoader->GetEvent(fCurrentEvent);
       AliStack* stack = fRunLoader->Stack();
       if (!stack)
