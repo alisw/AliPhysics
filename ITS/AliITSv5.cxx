@@ -15,18 +15,8 @@
 
 /*
 $Log$
-Revision 1.18  2000/05/19 09:45:40  nilsen
-Fix for HP Unix and Sun systems.
-
-Revision 1.17  2000/05/10 19:57:26  nilsen
-Fixed problem with display.C and ITS versions v1 and v3.
-
-Revision 1.16  2000/03/05 00:11:03  nilsen
-Fixed merge error.
-
-Revision 1.15  2000/02/23 16:25:21  fca
-AliVMC and AliGeant3 classes introduced
-ReadEuclid moved from AliRun to AliModule
+Revision 1.14.4.4  2000/05/19 10:10:21  nilsen
+fix for bug with HP and Sun unix + fix for event display in ITS-working branch
 
 Revision 1.14.4.3  2000/03/04 23:46:38  nilsen
 Fixed up the comments/documentation.
@@ -73,6 +63,10 @@ Introduction of the Copyright and cvs Log
 #include <TGeometry.h>
 #include <TNode.h>
 #include <TTUBE.h>
+#include <TFile.h>    // only required for Tracking function?
+#include <TCanvas.h>
+#include <TObjArray.h>
+#include <TClonesArray.h>
 
 #include "AliRun.h"
 #include "TSystem.h"
@@ -100,6 +94,28 @@ AliITSv5::AliITSv5() {
     fId5Name[4] = "ITS5";
     fId5Name[5] = "ITS6";
 }
+//____________________________________________________________________________
+AliITSv5::AliITSv5(const AliITSv5 &source){
+////////////////////////////////////////////////////////////////////////
+//     Copy Constructor for ITS version 5.
+////////////////////////////////////////////////////////////////////////
+    if(&source == this) return;
+    this->fId5N = source.fId5N;
+    this->fId5Name = new char*[fId5N];
+	 for(Int_t i=0;i<6;i++) strcpy(this->fId5Name[i],source.fId5Name[i]);
+	return;
+}
+//_____________________________________________________________________________
+AliITSv5& AliITSv5::operator=(const AliITSv5 &source){
+////////////////////////////////////////////////////////////////////////
+//    Assignment operator for the ITS version 1.
+////////////////////////////////////////////////////////////////////////
+	if(&source == this) return *this;
+    this->fId5N = source.fId5N;
+    this->fId5Name = new char*[fId5N];
+	 for(Int_t i=0;i<6;i++) strcpy(this->fId5Name[i],source.fId5Name[i]);
+	return *this;
+}
 //_____________________________________________________________________________
 AliITSv5::~AliITSv5() {
 ////////////////////////////////////////////////////////////////////////
@@ -126,18 +142,21 @@ AliITSv5::AliITSv5(const char *name, const char *title) : AliITS(name, title){
 }
 //_____________________________________________________________________________
 void AliITSv5::BuildGeometry(){
+////////////////////////////////////////////////////////////////////////
+//    Geometry builder for the ITS version 5.
+////////////////////////////////////////////////////////////////////////
   //
   // Build ITS TNODE geometry for event display using detailed geometry.
   // This function builds a simple ITS geometry used by the ROOT macro
   // ITSdisplay.C.
 
-  TNode *Top;
+  TNode *top;
   TNode *nd;
-  //const int kColorITS_SPD=kRed;
-  //const int kColorITS_SDD=kGreen;
-  const int kColorITS_SSD=kBlue;
+  //const int kColorITSSPD=kRed;
+  //const int kColorITSSDD=kGreen;
+  const int kColorITSSSD=kBlue;
   //
-  Top=gAlice->GetGeometry()->GetNode("alice");
+  top=gAlice->GetGeometry()->GetNode("alice");
   AliITSgeom  *gm = this->GetITSgeom();
 
   Int_t       lay,lad,det,i;
@@ -169,7 +188,7 @@ void AliITSv5::BuildGeometry(){
 	        cout << "EXCEPTION in   new TRotMatrix" << endl;
                 return;
           }
-         Top->cd();
+         top->cd();
 	  //sprintf(name,"ND%1.1d2.2d2.2d",lay,lad,det); 
          try {
               nd  = new TNode("SPD"," ",box,xg[0],xg[1],xg[2],rm);
@@ -177,7 +196,7 @@ void AliITSv5::BuildGeometry(){
               cout << "EXCEPTION in new TNode" << endl;
               return;
          }
-         nd->SetLineColor(kColorITS_SSD);
+         nd->SetLineColor(kColorITSSSD);
          fNodes->Add(nd);
     }
 
@@ -201,7 +220,7 @@ void AliITSv5::BuildGeometry(){
 	        cout << "EXCEPTION in   new TRotMatrix" << endl;
                 return;
           }
-         Top->cd();
+         top->cd();
 	  //sprintf(name,"ND%1.1d2.2d2.2d",lay,lad,det); 
          try {
               nd  = new TNode("SDD"," ",box,xg[0],xg[1],xg[2],rm);
@@ -209,7 +228,7 @@ void AliITSv5::BuildGeometry(){
               cout << "EXCEPTION in new TNode" << endl;
               return;
          }
-         nd->SetLineColor(kColorITS_SSD);
+         nd->SetLineColor(kColorITSSSD);
          fNodes->Add(nd);
     }
 
@@ -233,7 +252,7 @@ void AliITSv5::BuildGeometry(){
 	        cout << "EXCEPTION in   new TRotMatrix" << endl;
                 return;
           }
-         Top->cd();
+         top->cd();
 	  //sprintf(name,"ND%1.1d2.2d2.2d",lay,lad,det); 
          try {
               nd  = new TNode("SDD"," ",box,xg[0],xg[1],xg[2],rm);
@@ -241,7 +260,7 @@ void AliITSv5::BuildGeometry(){
               cout << "EXCEPTION in new TNode" << endl;
               return;
          }
-         nd->SetLineColor(kColorITS_SSD);
+         nd->SetLineColor(kColorITSSSD);
          fNodes->Add(nd);
     }
  for(lay=5;lay<=5;lay++)
@@ -264,7 +283,7 @@ void AliITSv5::BuildGeometry(){
 	        cout << "EXCEPTION in   new TRotMatrix" << endl;
                 return;
           }
-         Top->cd();
+         top->cd();
 	  //sprintf(name,"ND%1.1d2.2d2.2d",lay,lad,det); 
          try {
               nd  = new TNode("SSD"," ",box,xg[0],xg[1],xg[2],rm);
@@ -272,7 +291,7 @@ void AliITSv5::BuildGeometry(){
               cout << "EXCEPTION in new TNode" << endl;
               return;
          }
-         nd->SetLineColor(kColorITS_SSD);
+         nd->SetLineColor(kColorITSSSD);
          fNodes->Add(nd);
     }
 
@@ -297,7 +316,7 @@ void AliITSv5::BuildGeometry(){
 	        cout << "EXCEPTION in   new TRotMatrix" << endl;
                 return;
           }
-         Top->cd();
+         top->cd();
           //sprintf(name,"ND%1.1d2.2d2.2d",lay,lad,det); 
          try {
               nd  = new TNode("SSD"," ",box,xg[0],xg[1],xg[2],rm);
@@ -305,12 +324,12 @@ void AliITSv5::BuildGeometry(){
               cout << "EXCEPTION in new TNode" << endl;
               return;
          }
-         nd->SetLineColor(kColorITS_SSD);
+         nd->SetLineColor(kColorITSSSD);
          fNodes->Add(nd);
     }
 
 
-}
+} 
 //_____________________________________________________________________________
 void AliITSv5::CreateMaterials(){
 ////////////////////////////////////////////////////////////////////////
@@ -732,6 +751,8 @@ void AliITSv5::Streamer(TBuffer &R__b){
 // only streams the AliITS class as it is required. Since this class
 // dosen't contain any "real" data to be saved, it doesn't.
 ////////////////////////////////////////////////////////////////////////
+
+    printf("AliITSv5Streamer Starting\n");
    if (R__b.IsReading()) {
       Version_t R__v = R__b.ReadVersion(); 
       if (R__v==1) {
@@ -750,5 +771,6 @@ void AliITSv5::Streamer(TBuffer &R__b){
       //R__b << fId5N;
       //R__b.WriteArray(fId5Name, __COUNTER__);
    } // end if R__b.IsReading()
+    printf("AliITSv5Streamer Finishing\n");
 }
 
