@@ -62,6 +62,7 @@
 #pragma link C++ class  AliTrackMap+;
 #pragma link C++ class  AliTrackMapper+;
 #pragma link C++ class  AliCollisionGeometry+;
+#pragma link C++ class  AliMemoryWatcher+;
 #endif
 
 

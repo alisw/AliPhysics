@@ -1,5 +1,5 @@
-#ifndef AliPHOSMEMORYWATCHER_H
-#define AliPHOSMEMORYWATCHER_H
+#ifndef ALIMEMORYWATCHER_H
+#define ALIMEMORYWATCHER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 /* $Id$ */
@@ -8,7 +8,7 @@
     
     You can use this tiny class to *see* if your program is leaking.
     Usage:
-    AliPHOSMemoryWatcher memwatcher;
+    AliMemoryWatcher memwatcher;
     some program loop on events here {
       if ( nevents % x == 0 ) 
       {
@@ -40,16 +40,16 @@
 class TH2;
 class TGraph;
 class TStopwatch;
-class AliPHOSMemoryWatcher : public TObject 
+class AliMemoryWatcher : public TObject 
 {
 public:
-  AliPHOSMemoryWatcher(UInt_t maxsize=10000);
-  AliPHOSMemoryWatcher(AliPHOSMemoryWatcher& mw);
-  AliPHOSMemoryWatcher(const AliPHOSMemoryWatcher & watcher) {
+  AliMemoryWatcher(UInt_t maxsize=10000);
+  AliMemoryWatcher(AliMemoryWatcher& mw);
+  AliMemoryWatcher(const AliMemoryWatcher & watcher) {
     // copy ctor: no implementation yet
     Fatal("cpy ctor", "not implemented") ;
   }
-  ~AliPHOSMemoryWatcher() ;
+  ~AliMemoryWatcher() ;
   void Watch(Int_t x);
   
   UInt_t Size(void) const { return fSize; }
@@ -62,7 +62,7 @@ public:
   TGraph* GraphTIME(void);
   TH2* Frame(void) const ;
   void Write(void);
-  AliPHOSMemoryWatcher & operator = (const AliPHOSMemoryWatcher &) { return *this; } 
+  AliMemoryWatcher & operator = (const AliMemoryWatcher &) { return *this; } 
 private:
   Int_t fPID;          // PID of the process to watch
   char fCmd[1024];     // the command sent to the system to retrieve things ("ps .....")
@@ -75,7 +75,7 @@ private:
   TStopwatch* fTimer;  // the chronometer
   Bool_t fDisabled;    // to switch on/off the monitoring
 
-  ClassDef(AliPHOSMemoryWatcher,1) // General purpose memory watcher
+  ClassDef(AliMemoryWatcher,1) // General purpose memory watcher
 
 } ;
 #endif

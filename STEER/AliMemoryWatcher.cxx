@@ -17,7 +17,7 @@
 //Basic Memory Leak utility.    
 //     You can use this tiny class to *see* if your program is leaking.
 //     Usage:
-//     AliPHOSMemoryWatcher memwatcher;
+//     AliMemoryWatcher memwatcher;
 //     some program loop on events here {
 //       if ( nevents % x == 0 ) 
 //       {
@@ -45,17 +45,17 @@
 // --- std system ---
 class assert ; 
 // --- AliRoot header files ---
-#include "AliPHOSMemoryWatcher.h"
+#include "AliMemoryWatcher.h"
 // --- ROOT system ---
 #include "TSystem.h"
 #include "TGraph.h"
 #include "TH2.h"
 #include "TStopwatch.h"
 
-ClassImp(AliPHOSMemoryWatcher)
+ClassImp(AliMemoryWatcher)
 
 //_____________________________________________________________________________
-AliPHOSMemoryWatcher::AliPHOSMemoryWatcher(UInt_t maxsize)
+AliMemoryWatcher::AliMemoryWatcher(UInt_t maxsize)
 {
   //ctor
   fMAXSIZE=maxsize;
@@ -70,7 +70,7 @@ AliPHOSMemoryWatcher::AliPHOSMemoryWatcher(UInt_t maxsize)
   fTimer=0;
 }
 //_____________________________________________________________________________
-AliPHOSMemoryWatcher::AliPHOSMemoryWatcher(AliPHOSMemoryWatcher& mw)
+AliMemoryWatcher::AliMemoryWatcher(AliMemoryWatcher& mw)
 {
   //copy ctor
   fMAXSIZE = mw.fMAXSIZE ;
@@ -85,7 +85,7 @@ AliPHOSMemoryWatcher::AliPHOSMemoryWatcher(AliPHOSMemoryWatcher& mw)
   fTimer=0;   
 }
 //_____________________________________________________________________________
-AliPHOSMemoryWatcher::~AliPHOSMemoryWatcher()
+AliMemoryWatcher::~AliMemoryWatcher()
 {
   // dtor
   delete[] fVSIZE;
@@ -95,7 +95,7 @@ AliPHOSMemoryWatcher::~AliPHOSMemoryWatcher()
   delete fTimer;
 }
 //_____________________________________________________________________________
-void AliPHOSMemoryWatcher::Watch(Int_t x)
+void AliMemoryWatcher::Watch(Int_t x)
 {
   // Sets the point where CPU parameters have to be monitored
   if ( !fDisabled && fSize < fMAXSIZE ) {
@@ -128,7 +128,7 @@ void AliPHOSMemoryWatcher::Watch(Int_t x)
 }
 //_____________________________________________________________________________
 TGraph*
-AliPHOSMemoryWatcher::GraphVSIZE(void)
+AliMemoryWatcher::GraphVSIZE(void)
 {
   // Fills the graph with the virtual memory sized used
   TGraph* g = 0;
@@ -144,7 +144,7 @@ AliPHOSMemoryWatcher::GraphVSIZE(void)
 }
 //_____________________________________________________________________________
 TGraph*
-AliPHOSMemoryWatcher::GraphRSSIZE(void)
+AliMemoryWatcher::GraphRSSIZE(void)
 {
   // Fills the graph with the real memory sized used
   TGraph* g = 0;
@@ -160,7 +160,7 @@ AliPHOSMemoryWatcher::GraphRSSIZE(void)
 }
 //_____________________________________________________________________________
 TGraph*
-AliPHOSMemoryWatcher::GraphTIME(void)
+AliMemoryWatcher::GraphTIME(void)
 {
   // Fills the raph with the used CPU time
   TGraph* g = 0;
@@ -176,7 +176,7 @@ AliPHOSMemoryWatcher::GraphTIME(void)
 }
 //_____________________________________________________________________________
 TH2*
-AliPHOSMemoryWatcher::Frame(void) const
+AliMemoryWatcher::Frame(void) const
 {
   //creates the frame histo in which the graphs will be plotted 
   Double_t xmin=1E30;
@@ -197,7 +197,7 @@ AliPHOSMemoryWatcher::Frame(void) const
 }
 //_____________________________________________________________________________
 void 
-AliPHOSMemoryWatcher::Write(void)
+AliMemoryWatcher::Write(void)
 {
   // Stores the graphs in a file 
   if ( GraphVSIZE() ) GraphVSIZE()->Write("VSIZE",TObject::kOverwrite);
