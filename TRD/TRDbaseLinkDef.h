@@ -28,4 +28,7 @@
 #pragma link C++ class  AliTRDdigit+;
 #pragma link C++ class  AliTRDdigitsManager+;
 
+#pragma link C++ class  AliTRDrawData+;
+#pragma link C++ class  AliTRDRawStream+;
+
 #endif

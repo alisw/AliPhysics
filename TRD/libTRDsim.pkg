@@ -15,3 +15,5 @@ SRCS= AliTRDhit.cxx \
 HDRS= $(SRCS:.cxx=.h)                
 
 DHDR= TRDsimLinkDef.h
+
+EINCLUDE= RAW

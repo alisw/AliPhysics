@@ -12,8 +12,12 @@ SRCS= AliTRDarrayI.cxx \
       AliTRDgeometryHole.cxx \
       AliTRDparameter.cxx \
       AliTRDdigit.cxx \
-      AliTRDdigitsManager.cxx
+      AliTRDdigitsManager.cxx \
+      AliTRDrawData.cxx \
+      AliTRDRawStream.cxx
 
 HDRS= $(SRCS:.cxx=.h)                
 
 DHDR= TRDbaseLinkDef.h
+
+EINCLUDE= RAW

@@ -28,21 +28,24 @@
 #include "AliTRDgeometryFull.h"
 #include "AliTRDparameter.h"
 #include "AliTRDdataArrayI.h"
-#include "AliTRDarrayI.h"
+#include "AliTRDRawStream.h"
+#include "AliRawDataHeader.h"
 
 ClassImp(AliTRDrawData)
 
 //_____________________________________________________________________________
 AliTRDrawData::AliTRDrawData():TObject()
 {
+  //
+  // Default constructor
+  //
 
   fDebug         = 0;
-  fDigitsManager = NULL;
 
 }
 
 //_____________________________________________________________________________
-AliTRDrawData::AliTRDrawData(const AliTRDrawData &r)
+AliTRDrawData::AliTRDrawData(const AliTRDrawData &r):TObject()
 {
   //
   // AliTRDrawData copy constructor
@@ -58,11 +61,6 @@ AliTRDrawData::~AliTRDrawData()
   //
   // Destructor
   //
-
-  if (fDigitsManager) {
-    delete fDigitsManager;
-    fDigitsManager = NULL;
-  }
 
 }
 
@@ -86,43 +84,19 @@ void AliTRDrawData::Copy(TObject &r)
   //
 
   ((AliTRDrawData &) r).fDebug         = fDebug;
-  ((AliTRDrawData &) r).fDigitsManager = NULL;
 
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDrawData::OpenInput(const Char_t *name)
-{
-  //
-  // Opens a ROOT-file with the TRD digits 
-  //
-
-  // Create the digits manager
-  if (fDigitsManager) {
-    delete fDigitsManager;
-  }
-  fDigitsManager = new AliTRDdigitsManager();
-  fDigitsManager->SetDebug(fDebug);
-
-  // Open the input file
-  return fDigitsManager->Open(name);
-
-}
-
-//_____________________________________________________________________________
-Bool_t AliTRDrawData::Digit2Raw(const Char_t *name1, const Char_t *name2)
+Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
 {
   //
   // Convert the digits to raw data byte stream. The output is written
-  // into the the binary files <name1> and <name2>.
+  // into the the binary files TRD_<DDL number>.ddl.
   //
   // The pseudo raw data format is currently defined like this:
   //
-  //          LDC header (8 bytes)
-  //                  FLAG
-  //                  LDC no.
-  //                  Number of detectors with data (not yet implemented)
-  //                  5 empty bytes
+  //          DDL data header
   //
   //          Subevent (= single chamber) header (8 bytes)
   //                  FLAG
@@ -134,86 +108,54 @@ Bool_t AliTRDrawData::Digit2Raw(const Char_t *name1, const Char_t *name2)
   //          Data bank
   //
 
-  const Int_t kLDCHeaderLength      = 8;
+  const Int_t kNumberOfDDLs         = 18;
   const Int_t kSubeventHeaderLength = 8;
-
-  const Int_t kLDCDummyFlag         = 0xAA;
   const Int_t kSubeventDummyFlag    = 0xBB;
-
-  int headerLDC[2];
   int headerSubevent[2];
 
-  Int_t          ntotalbyte[2] = { 0 };
+  ofstream      *outputFile[kNumberOfDDLs];
+  UInt_t         bHPosition[kNumberOfDDLs];
+  Int_t          ntotalbyte[kNumberOfDDLs];
   Int_t          nbyte = 0;
   Int_t          npads = 0;
-  unsigned char *byte_p;
-  unsigned char *header_p;
+  unsigned char *bytePtr;
+  unsigned char *headerPtr;
+
+  AliTRDdigitsManager* digitsManager = new AliTRDdigitsManager();
+  digitsManager->SetDebug(fDebug);
+
+  // Read in the digit arrays
+  if (!digitsManager->ReadDigits(digitsTree)) {
+    delete digitsManager;
+    return kFALSE;
+  }
 
   AliTRDgeometryFull *geo = new AliTRDgeometryFull();
   AliTRDparameter    *par = new AliTRDparameter("TRDparameter"
                                                ,"TRD parameter class");
   AliTRDdataArrayI   *digits;
 
+  // the event header
+  AliRawDataHeader header;
+
   if (fDebug) {
-    Info("Digit2Raw","Open the LDC output files %s, %s"
-        ,name1,name2);
-  }
-  ofstream *outputFile1 = new ofstream(name1, ios::out | ios::binary);
-  ofstream *outputFile2 = new ofstream(name2, ios::out | ios::binary);
-  ofstream *outputFile;
-
-  if (!fDigitsManager) {
-    Error("Digit2Raw","No input file open\n");
-    return kFALSE;
+    printf("Event header size: %d \n",sizeof(header));
   }
 
-  // Read in the digit arrays
-  if (!fDigitsManager->ReadDigits()) {
-    return kFALSE;
-  }
+  // Open the output files
+  for (Int_t iDDL = 0; iDDL < kNumberOfDDLs; iDDL++) {
+    char name[20];
+    sprintf(name, "TRD_%d.ddl", iDDL + AliTRDRawStream::kDDLOffset);
+#ifndef __DECCXX
+    outputFile[iDDL] = new ofstream(name, ios::binary);
+#else
+    outputFile[iDDL] = new ofstream(name);
+#endif
 
-  // Count the number of chambers with data
-  Int_t ndetLDC0 = 0;
-  Int_t ndetLDC1 = 0;
-
-  if (fDebug > 1) {
-    Info("Digit2Raw","Write the LDC headers");
-  }
-
-  // Write the LDC header 1
-  byte_p    = (unsigned char *) headerLDC;
-  header_p  = byte_p;
-  *byte_p++ = kLDCDummyFlag;
-  *byte_p++ = 1;
-  *byte_p++ = ndetLDC0;
-  *byte_p++ = 0;
-  *byte_p++ = 0;
-  *byte_p++ = 0;
-  *byte_p++ = 0;
-  *byte_p++ = 0;
-  outputFile1->write(header_p,kLDCHeaderLength);
-  ntotalbyte[0] += kLDCHeaderLength;
-
-  if (fDebug > 1) {
-    Info("Digit2Raw","LDC header 0 = %d, %d",headerLDC[0],headerLDC[1]);
-  }
-
-  // Write the LDC header 1
-  byte_p    = (unsigned char *) headerLDC;
-  header_p  = byte_p;
-  *byte_p++ = kLDCDummyFlag;
-  *byte_p++ = 2;
-  *byte_p++ = ndetLDC1;
-  *byte_p++ = 0;
-  *byte_p++ = 0;
-  *byte_p++ = 0;
-  *byte_p++ = 0;
-  *byte_p++ = 0;
-  outputFile2->write(header_p,kLDCHeaderLength);
-  ntotalbyte[1] += kLDCHeaderLength;
-
-  if (fDebug > 1) {
-    Info("Digit2Raw","LDC header 1 = %d, %d",headerLDC[0],headerLDC[1]);
+    // Write a dummy data header
+    bHPosition[iDDL] = outputFile[iDDL]->tellp();
+    outputFile[iDDL]->write((char*)(&header),sizeof(header));
+    ntotalbyte[iDDL] = 0;
   }
 
   // Loop through all detectors
@@ -228,23 +170,14 @@ Bool_t AliTRDrawData::Digit2Raw(const Char_t *name1, const Char_t *name2)
     Int_t bufferMax = rowMax*colMax*timeMax;
     int  *buffer    = new int[bufferMax];
 
-    npads  = 0;
-    nbyte  = 0;
-    byte_p = (unsigned char *) buffer;
+    npads   = 0;
+    nbyte   = 0;
+    bytePtr = (unsigned char *) buffer;
 
-    // Determine the LDC (resp. output file)
-    Int_t ldc;
-    if (sect < 9) {
-      outputFile = outputFile1;
-      ldc = 0;
-    }
-    else {
-      outputFile = outputFile2;
-      ldc = 1;
-    }
+    Int_t iDDL = sect;
 
     // Get the digits array
-    digits = fDigitsManager->GetDigits(det);
+    digits = digitsManager->GetDigits(det);
     digits->Expand();
 
     // Loop through the detector pixel
@@ -266,9 +199,9 @@ Bool_t AliTRDrawData::Digit2Raw(const Char_t *name1, const Char_t *name2)
           npads++;
 
 	  // The pad row number
-          *byte_p++ = row + 1;
+          *bytePtr++ = row + 1;
 	  // The pad column number
-          *byte_p++ = col + 1;
+          *bytePtr++ = col + 1;
           nbyte += 2;
 
           Int_t nzero = 0;
@@ -280,23 +213,23 @@ Bool_t AliTRDrawData::Digit2Raw(const Char_t *name1, const Char_t *name2)
               nzero++;
               if ((nzero ==       256) || 
                   (time  == timeMax-1)) {
-                *byte_p++ = 0;
-                *byte_p++ = nzero-1;
+                *bytePtr++ = 0;
+                *bytePtr++ = nzero-1;
                 nbyte += 2;
                 nzero  = 0;
       	      }
 	    }
             else {
               if (nzero) {
-                *byte_p++ = 0;
-                *byte_p++ = nzero-1;
+                *bytePtr++ = 0;
+                *bytePtr++ = nzero-1;
                 nbyte += 2;
                 nzero  = 0;
 	      }
               // High byte (MSB always set)
-              *byte_p++ = ((data >> 8) | 128);
+              *bytePtr++ = ((data >> 8) | 128);
               // Low byte
-              *byte_p++ = (data & 0xff);
+              *bytePtr++ = (data & 0xff);
               nbyte += 2;
 	    }
 
@@ -310,70 +243,69 @@ Bool_t AliTRDrawData::Digit2Raw(const Char_t *name1, const Char_t *name2)
 
     // Fill the end of the buffer with zeros
     while (nbyte % 4) {  
-      *byte_p++ = 0;
+      *bytePtr++ = 0;
       nbyte++;
     }
 
     if (fDebug > 1) {
-      Info("Digit2Raw","LDC = %d, det = %d, nbyte = %d (%d)",ldc,det,nbyte,bufferMax);
+      Info("Digits2Raw","det = %d, nbyte = %d (%d)",det,nbyte,bufferMax);
     }
 
     // Write the subevent header
-    byte_p    = (unsigned char *) headerSubevent;
-    header_p  = byte_p;
-    *byte_p++ = kSubeventDummyFlag;
-    *byte_p++ = (det   & 0xff);
-    *byte_p++ = (det   >> 8);
-    *byte_p++ = (nbyte & 0xff);
-    *byte_p++ = (nbyte >> 8);
-    *byte_p++ = (npads & 0xff);
-    *byte_p++ = (npads >> 8);
-    *byte_p++ = 0;
-    outputFile->write(header_p,kSubeventHeaderLength);
+    bytePtr    = (unsigned char *) headerSubevent;
+    headerPtr  = bytePtr;
+    *bytePtr++ = kSubeventDummyFlag;
+    *bytePtr++ = (det   & 0xff);
+    *bytePtr++ = (det   >> 8);
+    *bytePtr++ = (nbyte & 0xff);
+    *bytePtr++ = (nbyte >> 8);
+    *bytePtr++ = (npads & 0xff);
+    *bytePtr++ = (npads >> 8);
+    *bytePtr++ = 0;
+    outputFile[iDDL]->write((char*)headerPtr,kSubeventHeaderLength);
 
     // Write the buffer to the file
-    byte_p = (unsigned char *) buffer;
-    outputFile->write(byte_p,nbyte);
+    bytePtr = (unsigned char *) buffer;
+    outputFile[iDDL]->write((char*)bytePtr,nbyte);
 
-    ntotalbyte[ldc] += nbyte + kSubeventHeaderLength;
+    ntotalbyte[iDDL] += nbyte + kSubeventHeaderLength;
 
     delete buffer;
 
   }
 
   if (fDebug) {
-    Info("Digit2Raw","Total size: LDC0 = %d, LDC1 = %d",ntotalbyte[0],ntotalbyte[1]);
+    for (Int_t iDDL = 0; iDDL < kNumberOfDDLs; iDDL++) {
+      Info("Digits2Raw","Total size: DDL %d = %d",iDDL,ntotalbyte[iDDL]);
+    }
   }
 
-  outputFile1->close();
-  outputFile2->close();
+  // Update the data headers and close the output files
+  for (Int_t iDDL = 0; iDDL < kNumberOfDDLs; iDDL++) {
+    header.fSize = UInt_t(outputFile[iDDL]->tellp()) - bHPosition[iDDL];
+    header.SetAttribute(0);  // valid data
+    outputFile[iDDL]->seekp(bHPosition[iDDL]);
+    outputFile[iDDL]->write((char*)(&header),sizeof(header));
+
+    outputFile[iDDL]->close();
+    delete outputFile[iDDL];
+  }
 
   delete geo;
   delete par;
-  delete outputFile1;
-  delete outputFile2;
+  delete digitsManager;
 
   return kTRUE;
 
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDrawData::Raw2Digit(const Char_t *name1, const Char_t *name2)
+AliTRDdigitsManager* AliTRDrawData::Raw2Digits(AliRawReader* rawReader)
 {
+  //
+  // Read the raw data digits and put them into the returned digits manager
+  //
 
-  const Int_t  kLDCHeaderLength      = 8;
-  const Int_t  kSubeventHeaderLength = 8;
-
-  const Int_t  kNldc = 2;
-  const Char_t *name = 0;
-
-  int headerLDC[2];
-  int headerSubevent[2];
-
-  Int_t             npads     = 0;
-  Int_t             nbyte     = 0;
-  unsigned char    *byte_p;
-  ifstream         *inputFile = 0;
   AliTRDdataArrayI *digits    = 0;
 
   AliTRDgeometryFull *geo = new AliTRDgeometryFull();
@@ -381,63 +313,26 @@ Bool_t AliTRDrawData::Raw2Digit(const Char_t *name1, const Char_t *name2)
                                                ,"TRD parameter class");
 
   // Create the digits manager
-  if (fDigitsManager) {
-    delete fDigitsManager;
-  }
-  fDigitsManager = new AliTRDdigitsManager();
-  fDigitsManager->SetDebug(fDebug);
-  fDigitsManager->CreateArrays();
+  AliTRDdigitsManager* digitsManager = new AliTRDdigitsManager();
+  digitsManager->SetDebug(fDebug);
+  digitsManager->CreateArrays();
 
-  for (Int_t ldc = 0; ldc < kNldc; ldc++) {
+  AliTRDRawStream input(rawReader);
 
-    if      (ldc == 0) {
-      name = name1;
-    }
-    else if (ldc == 1) {
-      name = name2;
-    }
-    if (fDebug) {
-      Info("Raw2Digit","Open the LDC input file %s",name);
-    }
-    inputFile = new ifstream(name, ios::in | ios::binary);
+  // Loop through the digits
+  while (input.Next()) {
 
-    // Read the LDC header
-    byte_p = (unsigned char *) headerLDC;
-    inputFile->read(byte_p,kLDCHeaderLength);
+    Int_t det    = input.GetDetector();
+    Int_t npads  = input.GetNPads();
 
-    if (fDebug > 1) {
-      Info("Raw2Digit","LDC header no. %d:",ldc);
-      Info("Raw2Digit","\tflag   = %d",*byte_p++);
-      Info("Raw2Digit","\tldc no = %d",*byte_p++);
-      Info("Raw2Digit","\tndet   = %d",*byte_p++);
-      Info("Raw2Digit","\tempty  = %d",*byte_p++);
-      Info("Raw2Digit","\tempty  = %d",*byte_p++);
-      Info("Raw2Digit","\tempty  = %d",*byte_p++);
-      Info("Raw2Digit","\tempty  = %d",*byte_p++);
-      Info("Raw2Digit","\tempty  = %d",*byte_p++);
-    }
+    if (input.IsNewDetector()) {
 
-    // Loop through the subevents
-    byte_p = (unsigned char *) headerSubevent;
-    while (inputFile->read(byte_p,kSubeventHeaderLength)) {
+      if (digits) digits->Compress(1,0);
 
-      Int_t flag   = *byte_p++;
-      Int_t detl   = *byte_p++;
-      Int_t deth   = *byte_p++;
-      Int_t det    = detl   + (deth   << 8);
-      Int_t nbytel = *byte_p++;
-      Int_t nbyteh = *byte_p++;
-            nbyte  = nbytel + (nbyteh << 8);
-      Int_t npadsl = *byte_p++;
-      Int_t npadsh = *byte_p++;
-            npads  = npadsl + (npadsh << 8);
       if (fDebug > 2) {
-        Info("Raw2Digit","Subevent header:");
-        Info("Raw2Digit","\tflag  = %d",flag);
-        Info("Raw2Digit","\tdet   = %d",det);
-        Info("Raw2Digit","\tnbyte = %d",nbyte);
-        Info("Raw2Digit","\tnpads = %d",npads);
-        Info("Raw2Digit","\tempty = %d",*byte_p++);
+	Info("Raw2Digits","Subevent header:");
+	Info("Raw2Digits","\tdet   = %d",det);
+	Info("Raw2Digits","\tnpads = %d",npads);
       }      
 
       // Create the data buffer
@@ -447,99 +342,24 @@ Bool_t AliTRDrawData::Raw2Digit(const Char_t *name1, const Char_t *name2)
       Int_t rowMax    = par->GetRowMax(plan,cham,sect);
       Int_t colMax    = par->GetColMax(plan);
       Int_t timeMax   = par->GetTimeMax();
-      Int_t bufferMax = rowMax*colMax*timeMax;
-      int   *buffer   = new int[bufferMax];
-      byte_p          = (unsigned char *) buffer;      
-      memset(buffer,0,bufferMax*sizeof(int));
 
       // Add a container for the digits of this detector
-      digits = fDigitsManager->GetDigits(det);
+      digits = digitsManager->GetDigits(det);
       // Allocate memory space for the digits buffer
       if (digits->GetNtime() == 0) {
         digits->Allocate(rowMax,colMax,timeMax);
       }
 
-      // Read the data   
-      inputFile->read(byte_p,nbyte);
-
-      Int_t time;
-      Int_t nzero;
-      Int_t data;
-      Int_t low;
-      Int_t high;
-      Int_t signal;
-
-      // Decompress the data
-      while (nbyte > 0) {
-
-        // The pad row number
-        Int_t row = (*byte_p++) - 1;
-        // The pad column number
-        Int_t col = (*byte_p++) - 1;
-        nbyte -= 2;
-
-        time = nzero = 0;
-
-        while ((time  < timeMax) &&
-               (nbyte >       0)) {
-
-          data = *byte_p++;
-          nbyte--;
-
-          if (data) {
-            if (!nzero) {
-              // signal for given timebim
-              low    = *byte_p++;
-              high   = data & 127;
-              signal = low + (high << 8);
-              if ((row <       0) || (col <       0) || (time <        0) ||
-                  (row >= rowMax) || (col >= colMax) || (time >= timeMax)) {
-                Error("Raw2Digit"
-                     ,"row=%d(%d) col=%d(%d) time=%d(%d)"
-		     ,row,rowMax,col,colMax,time,timeMax);
-	      }
-              else {
-                digits->SetDataUnchecked(row,col,time,signal);
-	      }
-              nbyte--;
-              time++;
-	    }
-            else {
-              time += data + 1;
-              nzero = 0;
-	    }
-	  }
-          else {
-            if (!nzero) {
-              nzero = 1;
-	    }
-            else {
-              time++;
-              nzero = 0;
-	    }
-	  }
-
-	}
-
-      }
-
-      digits->Compress(1,0);
-
-      delete buffer;
-
-      byte_p = (unsigned char *) headerSubevent;
-
     } 
-
-    inputFile->close();
-    delete inputFile;
-    inputFile = 0;
-
+    digits->SetDataUnchecked(input.GetRow(),input.GetColumn(),
+			     input.GetTime(),input.GetSignal());
   }
+
+  if (digits) digits->Compress(1,0);
 
   delete geo;
   delete par;
 
-  return kTRUE;
+  return digitsManager;
 
 }

@@ -17,3 +17,5 @@ SRCS= AliTRDpixel.cxx \
 HDRS= $(SRCS:.cxx=.h)                
 
 DHDR= TRDrecLinkDef.h
+
+EINCLUDE= RAW

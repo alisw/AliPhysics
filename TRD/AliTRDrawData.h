@@ -13,7 +13,9 @@
 
 #include "TObject.h"
 
+class TTree;
 class AliTRDdigitsManager;
+class AliRawReader;
 
 class AliTRDrawData : public TObject {
 
@@ -26,18 +28,13 @@ class AliTRDrawData : public TObject {
 
   virtual void                 Copy(TObject &r);
 
-  virtual Bool_t               OpenInput(const Char_t *name);
-  virtual Bool_t               Digit2Raw(const Char_t *name1 = "trd_ldc0.d", 
-                                         const Char_t *name2 = "trd_ldc1.d");
-  virtual Bool_t               Raw2Digit(const Char_t *name1 = "trd_ldc0.d", 
-                                         const Char_t *name2 = "trd_ldc1.d");
+  virtual Bool_t               Digits2Raw(TTree *digits);
+  virtual AliTRDdigitsManager* Raw2Digits(AliRawReader* rawReader);
   virtual void                 SetDebug(Int_t v = 1) { fDebug = v; };
-  virtual AliTRDdigitsManager *GetDigitsManager()    { return fDigitsManager; };
 
  protected:
 
   Int_t                fDebug;          //  Debug level
-  AliTRDdigitsManager *fDigitsManager;  //! The TRD digits manager
 
   ClassDef(AliTRDrawData,1)             //  TRD raw data class
 

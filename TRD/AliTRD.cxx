@@ -51,6 +51,7 @@
 #include "AliTRDhit.h"
 #include "AliTRDpoints.h"
 #include "AliTRDtrackHits.h"  
+#include "AliTRDrawData.h"
 #include "AliTrackReference.h"
 #include "AliMC.h"
 
@@ -280,6 +281,30 @@ void AliTRD::SDigits2Digits()
   if (digitizer.MakeBranch(fLoader->TreeD())){
     digitizer.WriteDigits();
   }
+
+}
+
+//_____________________________________________________________________________
+void AliTRD::Digits2Raw() 
+{
+  //
+  // convert digits of the current event to raw data
+  //
+
+  fLoader->LoadDigits();
+  TTree* digits = fLoader->TreeD();
+  if (!digits) {
+    Error("Digits2Raw", "no digits tree");
+    return;
+  }
+
+  AliTRDrawData rawWriter;
+//  rawWriter.SetDebug(2);
+  if (!rawWriter.Digits2Raw(digits)) {
+    Error("AliTRD::Digits2Raw","The raw writer could not load the digits tree");
+  }
+
+  fLoader->UnloadDigits();
 
 }
 
