@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2003/01/14 10:50:18  alibrary
+Cleanup of STEER coding conventions
+
 Revision 1.7  2002/02/08 16:50:50  morsch
 Add name and title in constructor.
 
@@ -115,12 +118,10 @@ void AliGenBox::Generate()
   //
     for (j=0;j<3;j++) origin[j]=fOrigin[j];
     if(fVertexSmear==kPerEvent) {
-	Rndm(random,6);
-	for (j=0;j<3;j++) {
-	    origin[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
-		TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
-	}
+	Vertex();
+	for (j=0;j<3;j++) origin[j]=fVertex[j];
     }
+
     for(i=0;i<fNpart;i++) {
 	Rndm(random,3);
 	theta=fThetaMin+random[0]*(fThetaMax-fThetaMin);

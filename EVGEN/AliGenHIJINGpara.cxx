@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2003/03/15 19:48:01  morsch
+AliDecayerPythia replaced by AliDecayer
+
 Revision 1.20  2003/01/28 15:29:07  morsch
 Spelling in name corrected.
 
@@ -362,16 +365,8 @@ void AliGenHIJINGpara::Generate()
     for (j=0;j<3;j++) origin[j]=fOrigin[j];
 
     if(fVertexSmear == kPerEvent) {
-	Float_t dv[3];
-	dv[2] = 1.e10;
-	while(TMath::Abs(dv[2]) > fCutVertexZ*fOsigma[2]) {
-	    Rndm(random,6);
-	    for (j=0; j < 3; j++) {
-		dv[j] = fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
-		    TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
-	    }
-	}
-	for (j=0; j < 3; j++) origin[j] += dv[j];
+	Vertex();
+	for (j=0; j < 3; j++) origin[j] = fVertex[j];
     } // if kPerEvent
     TArrayF eventVertex;
     eventVertex.Set(3);

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2003/03/24 16:38:40  morsch
+Bug corrected.
+
 Revision 1.17  2003/03/24 15:58:27  morsch
 FinishRun() implemented.
 
@@ -120,10 +123,11 @@ AddGenerator(AliGenerator *Generator, char* Name, Float_t RateExp)
 	Generator->SetThetaRange(fThetaMin*180/TMath::Pi(),fThetaMax*180/TMath::Pi());
     if (!(Generator->TestBit(kVertexRange))) 
 	Generator->SetOrigin(fOrigin[0], fOrigin[1], fOrigin[2]);
-    Generator->
-	SetSigma(fOsigma[0], fOsigma[1], fOsigma[2]);
+
+    Generator->SetSigma(fOsigma[0], fOsigma[1], fOsigma[2]);
     Generator->SetVertexSmear(fVertexSmear);
-    Generator->SetTrackingFlag(fTrackIt);    
+    Generator->SetVertexSource(kContainer);
+    Generator->SetTrackingFlag(fTrackIt);
 //
 //  Add generator to list   
     
@@ -167,7 +171,14 @@ AddGenerator(AliGenerator *Generator, char* Name, Float_t RateExp)
     AliGenerator* gen = 0;
 
     TObjArray *partArray = gAlice->Particles();
-    //
+
+//
+//  Generate the vertex position used by all generators
+//    
+    if(fVertexSmear == kPerEvent) Vertex();
+
+    
+  //
     // Loop over generators and generate events
     Int_t igen=0;
     
@@ -191,7 +202,7 @@ AddGenerator(AliGenerator *Generator, char* Name, Float_t RateExp)
 		Fatal("Generate()", "No Collision Geometry Provided");
 	    }
 	}
-	
+	entry->Generator()->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
 	entry->Generator()->Generate();
 	entry->SetLast(partArray->GetEntriesFast());
 	preventry = entry;

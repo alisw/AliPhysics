@@ -58,7 +58,8 @@ public:
     Int_t    fNbp;          // Number of black protons
     Int_t    fNbn;          // Number of black neutrons
     Int_t    fDebug;        // Debug flag
-    TH2F*    fDebugHist;    // Histogram for debugging
+    TH2F*    fDebugHist1;   // Histogram for debugging
+    TH2F*    fDebugHist2;   // Histogram for debugging
     
     //
     AliSlowNucleonModel* fSlowNucleonModel; // The slow nucleon model
