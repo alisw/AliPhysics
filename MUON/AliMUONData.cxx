@@ -23,6 +23,8 @@
 //Root includes
 #include "TNamed.h"
 //AliRoot include
+#include "AliRun.h"
+#include "AliMC.h" 
 #include "AliLoader.h" 
 #include "AliMUONConstants.h"
 #include "AliMUONData.h"
@@ -177,6 +179,7 @@ void AliMUONData::AddHit(Int_t fIshunt, Int_t track, Int_t iChamber,
 			 Float_t phi, Float_t length, Float_t destep)
 {
   // Add new hit to the hit list
+    
   TClonesArray &lhits = *fHits;
   new(lhits[fNhits++]) AliMUONHit(fIshunt, track, iChamber, 
 				  idpart, X, Y, Z, 
@@ -426,7 +429,12 @@ void AliMUONData::MakeBranch(Option_t* option)
   
   // Creating Branches for Hits
   if (TreeH() && cH) {
-    if (fHits == 0x0)  fHits = new TClonesArray("AliMUONHit",1000);
+
+    if (fHits == 0x0)  {
+	fHits = new TClonesArray("AliMUONHit",1000);
+	gAlice->GetMCApp()->AddHitList (fHits);
+    }
+	    
     fNhits = 0;
     sprintf(branchname,"%sHits",GetName());  
     branch = TreeH()->GetBranch(branchname);
