@@ -15,7 +15,7 @@ Process_t;
 typedef enum
 { semielectronic, dielectron, semimuonic, dimuon,
   b_jpsi_dimuon, b_jpsi_dielectron, 
-  b_psip_dimuon, b_psip_dielectron, pitomu, katomu, nodecay, all}
+  b_psip_dimuon, b_psip_dielectron, pitomu, katomu, nodecay, hadronicD, all}
 Decay_t;
 
 typedef enum
