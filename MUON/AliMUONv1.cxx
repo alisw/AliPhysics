@@ -15,6 +15,19 @@
 
 /*
 $Log$
+Revision 1.21  2000/12/20 13:00:22  egangler
+
+Added charge correlation between cathods.
+In Config_slat.C, use
+ MUON->Chamber(chamber-1).SetChargeCorrel(0.11); to set the RMS of
+ q1/q2 to 11 % (number from Alberto)
+ This is stored in AliMUONChamber fChargeCorrel member.
+ At generation time, when a tracks enters the volume,
+ AliMUONv1::StepManager calls
+ AliMUONChamber::ChargeCorrelationInit() to set the current value of
+ fCurrentCorrel which is then used at Disintegration level to scale
+ appropriately the PadHit charges.
+
 Revision 1.20  2000/12/04 17:48:23  gosset
 Modifications for stations 1 et 2 mainly:
 * station 1 with 4 mm gas gap and smaller cathode segmentation...
@@ -1929,7 +1942,6 @@ void AliMUONv1::StepManager()
   TLorentzVector mom;
   Float_t        theta,phi;
   Float_t        destep, step;
-  Float_t        fCharge1=1;
 
   static Float_t eloss, eloss2, xhit, yhit, zhit, tof, tlength;
   const  Float_t kBig=1.e10;

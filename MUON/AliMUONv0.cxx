@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.14  2000/12/21 22:42:55  morsch
+Constructor contains default set-up for segmentation.
+Record charged particles only.
+
 Revision 1.13  2000/10/06 10:03:38  morsch
 Call to gMC->VolId() moved to Init()
 
@@ -113,7 +117,6 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
 //
 //  
     Int_t chamber;
-    Int_t station;
     // Default response: 5 mm of gas
     AliMUONResponseV0* response0 = new AliMUONResponseV0;
     response0->SetSqrtKx3AndDeriveKx2Kx4(0.7131); // sqrt(0.5085)
