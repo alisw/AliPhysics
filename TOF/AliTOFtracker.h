@@ -24,7 +24,7 @@ public:
   virtual Int_t LoadClusters(TTree* tree) 
     {return fTOFpid->LoadClusters(tree, fGeom);};
   virtual void UnloadClusters() {fTOFpid->UnloadClusters();};
-  virtual AliCluster *GetCluster(Int_t index) const {return NULL;};
+  virtual AliCluster *GetCluster(Int_t /*index*/) const {return NULL;};
 
 private:
   AliTOFpidESD*    fTOFpid;  // TOF PID
