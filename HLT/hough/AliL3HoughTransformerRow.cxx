@@ -154,24 +154,6 @@ void AliL3HoughTransformerRow::DeleteHistograms()
   delete [] fParamSpace;
 }
 
-void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t ptmin,
-						Int_t nybin,Float_t phimin,Float_t phimax)
-{
-  //Create the histograms (parameter space).
-  //These are 2D histograms, span by kappa (curvature of track) 
-  //and phi0 (emission angle with x-axis).
-  //The arguments give the range and binning; 
-  //nxbin = #bins in kappa
-  //nybin = #bins in phi0
-  //ptmin = mimium Pt of track (corresponding to maximum kappa)
-  //phi_min = mimimum phi0 
-  //phi_max = maximum phi0 
-    
-  Double_t x = AliL3Transform::GetBFact()*AliL3Transform::GetBField()/ptmin;
-  //Double_t torad = AliL3Transform::Pi()/180;
-  CreateHistograms(nxbin,-1.*x,x,nybin,phimin/**torad*/,phimax/**torad*/);
-}
-
 void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t xmax,
 						Int_t nybin,Float_t ymin,Float_t ymax)
 {
@@ -585,22 +567,22 @@ void AliL3HoughTransformerRow::TransformCircle()
 		  Float_t a2 = beta1minusbeta2/(xoverr2-beta2);
 		  Float_t b2 = (xoverr2-beta1)/(xoverr2-beta2);
 
-		  Float_t kappa1 = (a1*startyoverr1+b1*ymin-xmin)/xbin;
+		  Float_t alpha1 = (a1*startyoverr1+b1*ymin-xmin)/xbin;
 		  Float_t deltaalpha1 = b1*histbin/xbin;
 		  if(b1<0)
-		    kappa1 += deltaalpha1;
-		  Float_t kappa2 = (a2*endyoverr2+b2*ymin-xmin)/xbin;
+		    alpha1 += deltaalpha1;
+		  Float_t alpha2 = (a2*endyoverr2+b2*ymin-xmin)/xbin;
 		  Float_t deltaalpha2 = b2*histbin/xbin;
 		  if(b2>=0)
-		    kappa2 += deltaalpha2;
+		    alpha2 += deltaalpha2;
 
 		  //Fill the histogram along the phirange
-		  for(Int_t b=firstbin; b<=lastbin; b++, kappa1 += deltaalpha1, kappa2 += deltaalpha2)
+		  for(Int_t b=firstbin; b<=lastbin; b++, alpha1 += deltaalpha1, alpha2 += deltaalpha2)
 		    {
-		      Int_t binx1 = 1 + (Int_t)kappa1;
+		      Int_t binx1 = 1 + (Int_t)alpha1;
 		      if(binx1>lastbinx) continue;
 		      if(binx1<firstbinx) binx1 = firstbinx;
-		      Int_t binx2 = 1 + (Int_t)kappa2;
+		      Int_t binx2 = 1 + (Int_t)alpha2;
 		      if(binx2<firstbinx) continue;
 		      if(binx2>lastbinx) binx2 = lastbinx;
 #ifdef do_mc
@@ -711,22 +693,22 @@ void AliL3HoughTransformerRow::TransformCircle()
 	  Float_t a2 = beta1minusbeta2/(xoverr2-beta2);
 	  Float_t b2 = (xoverr2-beta1)/(xoverr2-beta2);
 
-	  Float_t kappa1 = (a1*startyoverr1+b1*ymin-xmin)/xbin;
+	  Float_t alpha1 = (a1*startyoverr1+b1*ymin-xmin)/xbin;
 	  Float_t deltaalpha1 = b1*histbin/xbin;
 	  if(b1<0)
-	    kappa1 += deltaalpha1;
-	  Float_t kappa2 = (a2*endyoverr2+b2*ymin-xmin)/xbin;
+	    alpha1 += deltaalpha1;
+	  Float_t alpha2 = (a2*endyoverr2+b2*ymin-xmin)/xbin;
 	  Float_t deltaalpha2 = b2*histbin/xbin;
 	  if(b2>=0)
-	    kappa2 += deltaalpha2;
+	    alpha2 += deltaalpha2;
 
 	  //Fill the histogram along the phirange
-	  for(Int_t b=firstbin; b<=lastbin; b++, kappa1 += deltaalpha1, kappa2 += deltaalpha2)
+	  for(Int_t b=firstbin; b<=lastbin; b++, alpha1 += deltaalpha1, alpha2 += deltaalpha2)
 	    {
-	      Int_t binx1 = 1 + (Int_t)kappa1;
+	      Int_t binx1 = 1 + (Int_t)alpha1;
 	      if(binx1>lastbinx) continue;
 	      if(binx1<firstbinx) binx1 = firstbinx;
-	      Int_t binx2 = 1 + (Int_t)kappa2;
+	      Int_t binx2 = 1 + (Int_t)alpha2;
 	      if(binx2<firstbinx) continue;
 	      if(binx2>lastbinx) binx2 = lastbinx;
 #ifdef do_mc
@@ -789,7 +771,7 @@ void AliL3HoughTransformerRow::TransformCircle()
   delete [] etaclust;
 }
 
-Int_t AliL3HoughTransformerRow::GetTrackID(Int_t etaindex,Double_t kappa,Double_t psi) const
+Int_t AliL3HoughTransformerRow::GetTrackID(Int_t etaindex,Double_t alpha1,Double_t alpha2) const
 {
   // Returns the MC label for a given peak found in the Hough space
   if(!fDoMC)
@@ -807,10 +789,10 @@ Int_t AliL3HoughTransformerRow::GetTrackID(Int_t etaindex,Double_t kappa,Double_
       return -1;
     }
   AliL3Histogram *hist = fParamSpace[etaindex];
-  Int_t bin = hist->FindLabelBin(kappa,psi);
+  Int_t bin = hist->FindLabelBin(alpha1,alpha2);
   if(bin==-1) {
     LOG(AliL3Log::kWarning,"AliL3HoughTransformerRow::GetTrackID()","")
-      <<"Track candidate outside Hough space boundaries: "<<kappa<<" "<<psi<<ENDLOG;
+      <<"Track candidate outside Hough space boundaries: "<<alpha1<<" "<<alpha2<<ENDLOG;
     return -1;
   }
   Int_t label=-1;

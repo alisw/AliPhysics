@@ -21,7 +21,8 @@ class AliL3HoughTransformerRow : public AliL3HoughBaseTransformer {
   virtual ~AliL3HoughTransformerRow();
 
   //void CreateHistograms(Float_t ptmin,Float_t ptmax,Float_t ptres,Int_t nybin,Float_t psi);
-  void CreateHistograms(Int_t nxbin,Float_t ptmin,Int_t nybin,Float_t phimin,Float_t phimax);
+  void CreateHistograms(Int_t nxbin,Float_t ptmin,Int_t nybin,Float_t phimin,Float_t phimax)
+  {STDCERR<<"This method for creation of parameter space histograms is not supported for this Transformer!"<<STDENDL;}
   void CreateHistograms(Int_t nxbin,Float_t xmin,Float_t xmax,
 			Int_t nybin,Float_t ymin,Float_t ymax);
   void Reset();
@@ -30,7 +31,7 @@ class AliL3HoughTransformerRow : public AliL3HoughBaseTransformer {
   Int_t GetEtaIndex(Double_t eta) const;
   AliL3Histogram *GetHistogram(Int_t etaindex);
   Double_t GetEta(Int_t etaindex,Int_t slice) const;
-  Int_t GetTrackID(Int_t etaindex,Double_t kappa,Double_t psi) const;
+  Int_t GetTrackID(Int_t etaindex,Double_t alpha1,Double_t alpha2) const;
   UChar_t *GetRowCount(Int_t etaindex);
   UChar_t *GetGapCount(Int_t etaindex);
   UChar_t *GetCurrentRowCount(Int_t etaindex);
