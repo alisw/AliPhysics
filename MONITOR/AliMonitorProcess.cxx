@@ -357,7 +357,7 @@ Bool_t AliMonitorProcess::CheckForNewFile()
 	  fLogicalFileName.Data());
     return kFALSE;
   }
-  fFileName = resultEntry->name.c_str();
+  fFileName = resultEntry->name2.c_str();
 #endif
   delete result;
 
