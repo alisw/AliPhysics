@@ -1,4 +1,5 @@
-SRCS= AliD0toKpi.cxx  AliD0toKpiAnalysis.cxx
+SRCS= AliRunAnalysis.cxx AliAnalysis.cxx AliEventCut.cxx \
+      AliD0toKpi.cxx  AliD0toKpiAnalysis.cxx AliFlowAnalysis.cxx
 
 
 HDRS= $(SRCS:.cxx=.h)

@@ -6,6 +6,12 @@
 
 #pragma link C++ class AliD0toKpi+;
 #pragma link C++ class AliD0toKpiAnalysis+;
+#pragma link C++ class AliRunAnalysis+;
+#pragma link C++ class AliAnalysis+;
+
+#pragma link C++ class AliFlowAnalysis+;
+
+#pragma link C++ class AliEventCut+;
 
 
 #endif
