@@ -91,6 +91,7 @@ AliITSclustererV2::AliITSclustererV2(const AliITSgeom *geom) {
   fHlSSD=2.00;
   fTanP=0.0275;
   fTanN=0.0075;
+
 }
 
 
@@ -582,7 +583,9 @@ void AliITSclustererV2::FindClustersSPD(AliITSRawStream* input,
   Int_t kNzBins = fNzSPD + 2;
   Int_t kNyBins = fNySPD + 2;
   Int_t kMaxBin = kNzBins * kNyBins;
-  AliBin* bins = NULL;
+  AliBin *binsSPD = new AliBin[kMaxBin];
+  AliBin *binsSPDInit = new AliBin[kMaxBin];
+  AliBin *bins = NULL;
 
   // read raw data input stream
   while (kTRUE) {
@@ -670,11 +673,12 @@ void AliITSclustererV2::FindClustersSPD(AliITSRawStream* input,
 	}
 
 	nClustersSPD += nClusters;
-	delete bins;
+	bins = NULL;
       }
 
       if (!next) break;
-      bins = new AliBin[kMaxBin];
+      bins = binsSPD;
+      memcpy(binsSPD,binsSPDInit,sizeof(AliBin)*kMaxBin);
     }
 
     // fill the current digit into the bins array
@@ -683,6 +687,9 @@ void AliITSclustererV2::FindClustersSPD(AliITSRawStream* input,
     bins[index].SetMask(1);
     bins[index].SetQ(1);
   }
+
+  delete [] binsSPDInit;
+  delete [] binsSPD;
 
   Info("FindClustersSPD", "found clusters in ITS SPD: %d", nClustersSPD);
 }
@@ -962,7 +969,10 @@ void AliITSclustererV2::FindClustersSDD(AliITSRawStream* input,
   Int_t nClustersSDD = 0;
   Int_t kNzBins = fNzSDD + 2;
   Int_t kMaxBin = kNzBins * (fNySDD+2);
-  AliBin* bins[2] = {NULL, NULL};
+  AliBin *binsSDDInit = new AliBin[kMaxBin];
+  AliBin *binsSDD1 = new AliBin[kMaxBin];
+  AliBin *binsSDD2 = new AliBin[kMaxBin];
+  AliBin *bins[2] = {NULL, NULL};
 
   // read raw data input stream
   while (kTRUE) {
@@ -977,13 +987,14 @@ void AliITSclustererV2::FindClustersSDD(AliITSRawStream* input,
 	FindClustersSDD(bins, kMaxBin, kNzBins, NULL, clusters[iModule]);
 	Int_t nClusters = clusters[iModule]->GetEntriesFast();
 	nClustersSDD += nClusters;
-	delete[] bins[0];
-	delete[] bins[1];
+	bins[0] = bins[1] = NULL;
       }
 
       if (!next) break;
-      bins[0] = new AliBin[kMaxBin];
-      bins[1] = new AliBin[kMaxBin];
+      bins[0]=binsSDD1;
+      bins[1]=binsSDD2;
+      memcpy(binsSDD1,binsSDDInit,sizeof(AliBin)*kMaxBin);
+      memcpy(binsSDD2,binsSDDInit,sizeof(AliBin)*kMaxBin);
     }
 
     // fill the current digit into the bins array
@@ -997,6 +1008,10 @@ void AliITSclustererV2::FindClustersSDD(AliITSRawStream* input,
       bins[side][index].SetIndex(index);
     }
   }
+
+  delete[] binsSDD1;
+  delete[] binsSDD2;
+  delete[] binsSDDInit;
 
   Info("FindClustersSDD", "found clusters in ITS SDD: %d", nClustersSDD);
 }
