@@ -170,16 +170,15 @@ void AliZDCv2::CreateBeamLine()
   Int_t *idtmed = fIdtmed->GetArray();
   
   // -- Mother of the ZDCs (Vacuum PCON)
-  
   zd1 = 2092.;
   
   conpar[0] = 0.;
   conpar[1] = 360.;
   conpar[2] = 2.;
-  conpar[3] = zd1;
+  conpar[3] = -zd1;
   conpar[4] = 0.;
   conpar[5] = 55.;
-  conpar[6] = 13500.;
+  conpar[6] = -13500.;
   conpar[7] = 0.;
   conpar[8] = 55.;
   gMC->Gsvolu("ZDC ", "PCON", idtmed[11], conpar, 9);
