@@ -41,7 +41,7 @@ AliL3Display::AliL3Display(Int_t *slice)
 
   TFile *file = new TFile("/prog/alice/data/GEO/alice.geom");
   if(!file) printf("NO FILE\n");
-  if(file->IsOpen())
+  if(!file->IsOpen())
     LOG(AliL3Log::kError,"AliL3Display::AliL3Display","File Open")
       <<"Geometry file alice.geom does not exist"<<ENDLOG;
   
@@ -363,11 +363,12 @@ void AliL3Display::DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile
       Int_t it=digits->CurrentRow(), ip=digits->CurrentColumn();
       Short_t dig = digits->GetDigit(it,ip);
       if(dig<=param->GetZeroSup()) continue;
+      /*
       if(it < param->GetMaxTBin()-1 && it > 0)
 	if(digits->GetDigit(it+1,ip) <= param->GetZeroSup()
 	   && digits->GetDigit(it-1,ip) <= param->GetZeroSup())
 	  continue;
-      
+      */
       histdig->Fill(ip,it,dig);
     }
   }
@@ -380,12 +381,12 @@ void AliL3Display::DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile
   AliL3Evaluate *eval = new AliL3Evaluate();
   Float_t xyz_cross[3];
   */
-  /*
+  
   for(Int_t p=0;p<5;p++)
     {
       AliL3SpacePointData *points = fClusters[slice][p];
       if(!points) continue;
-
+      
       Int_t npoints = fNcl[slice][p];     
       Float_t xyz[3];
       for(Int_t i=0; i<npoints; i++)
@@ -394,18 +395,17 @@ void AliL3Display::DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile
 	  xyz[0] = points[i].fX;
 	  xyz[1] = points[i].fY;
 	  xyz[2] = points[i].fZ;
-	  transform->Local2Raw(xyz,sector,row);
+	  transform->Global2Raw(xyz,sector,row);
 	  histfast->Fill(xyz[1],xyz[2],1);
 	  
 	  
-	  }
-	  
-	  }
-  */
+	}
+      
+    }
+  
   TCanvas *c1 = new TCanvas("c1","",900,900);
   c1->cd();
   histdig->Draw();
-  return;
   histfast->SetMarkerColor(2);
   histfast->SetMarkerStyle(4);
   histpart->SetMarkerColor(2);
