@@ -78,7 +78,7 @@ protected:
   Float_t fPosZEM[3]; // Position of EM detector
   
   // Parameters for tracking studies
-//  Int_t fpLostIT, fpLostD1, fpLostTDI, fpDetected;
+  Int_t fpLostIT, fpLostD1, fpLostTDI, fpDetected;
   
   
 //  // Parameters for conversion of light yield in ADC channels
