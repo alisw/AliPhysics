@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2000/11/30 11:48:50  kowal2
+TLorentzVector.h adde to satisfy the latest changes by Federico
+
 Revision 1.23  2000/11/14 10:48:57  kowal2
 Correct material used for TSA4. Thanks to J. Barbosa.
 
@@ -232,7 +235,7 @@ void AliTPCv1::CreateGeometry()
   //
 
   dm[30]= 73.3;
-  dm[31]= 60.65;
+  dm[31]= 59.;
   dm[32]= 277.95;
 
   //

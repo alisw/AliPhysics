@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2000/11/14 10:48:57  kowal2
+Correct material used for TSA4. Thanks to J. Barbosa.
+
 Revision 1.20  2000/11/06 17:24:10  kowal2
 Corrected bug in the outer containment vessel and
 the outer field cage geometry.
@@ -218,7 +221,7 @@ void AliTPCv0::CreateGeometry()
   //
 
   dm[30]= 73.3;
-  dm[31]= 60.65;
+  dm[31]= 59.;
   dm[32]= 277.95;
 
   //
