@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2001/01/26 21:44:45  morsch
+Use access functions to AliMUONDigit, ...   member data.
+
 Revision 1.22  2001/01/26 20:00:53  hristov
 Major upgrade of AliRoot code
 Revision 1.20  2001/01/08 11:01:02  gosset
@@ -224,6 +227,14 @@ AliMUONEventReconstructor::AliMUONEventReconstructor(void)
     gAlice->Field()->Dump();
     cout << endl;
   }
+  
+  // Initializions for GEANT background events
+  fBkgGeantFile = 0;
+  fBkgGeantTK = 0;
+  fBkgGeantParticles = 0;
+  fBkgGeantTH = 0;
+  fBkgGeantHits = 0;
+  fBkgGeantEventNumber = -1;
   
   // Initialize to 0 pointers to RecoEvent, tree and tree file
   fRecoEvent = 0;
