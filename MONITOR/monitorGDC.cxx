@@ -135,12 +135,14 @@ int main(int argc, char** argv)
 	AliL3Benchmark *fBenchmark = new AliL3Benchmark();
 	fBenchmark->Start("Overall timing");
 
+	Float_t ptmin = 0.1*AliL3Transform::GetSolenoidField();
+
 	// Run the Hough Transformer
 	fBenchmark->Start("Init");
 	AliL3Hough *hough1 = new AliL3Hough();
 
 	hough1->SetThreshold(4);
-	hough1->CalcTransformerParams(0.4);
+	hough1->CalcTransformerParams(ptmin);
 	hough1->SetPeakThreshold(70,-1);
 	//	printf("Pointer is %x\n",ptr);
 	hough1->Init("./", kFALSE, 100, kFALSE,4,0,(Char_t*)ptr,0.0);
@@ -151,7 +153,7 @@ int main(int argc, char** argv)
 	AliL3Hough *hough2 = new AliL3Hough();
 
 	hough2->SetThreshold(4);
-	hough2->CalcTransformerParams(0.4);
+	hough2->CalcTransformerParams(ptmin);
 	hough2->SetPeakThreshold(70,-1);
 	//	printf("Pointer is %x\n",ptr);
 	hough2->Init("./", kFALSE, 100, kFALSE,4,0,(Char_t*)ptr,0.0);

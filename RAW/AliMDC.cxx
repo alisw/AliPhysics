@@ -806,10 +806,12 @@ Int_t AliMDC::Filter(
     TStopwatch timer;
     timer.Start();
 
+    Float_t ptmin = 0.1*AliL3Transform::GetSolenoidField();
+
     AliL3Hough *hough1 = new AliL3Hough();
     
     hough1->SetThreshold(4);
-    hough1->CalcTransformerParams(0.4);
+    hough1->CalcTransformerParams(ptmin);
     hough1->SetPeakThreshold(70,-1);
     // Attention Z of the vertex to be taken from the event head!
     // So far for debug purposes it is fixed by hand...
@@ -819,7 +821,7 @@ Int_t AliMDC::Filter(
     AliL3Hough *hough2 = new AliL3Hough();
 
     hough2->SetThreshold(4);
-    hough2->CalcTransformerParams(0.4);
+    hough2->CalcTransformerParams(ptmin);
     hough2->SetPeakThreshold(70,-1);
     hough2->Init(100,4,event,3.82147);
     hough2->SetAddHistograms();
