@@ -14,6 +14,7 @@
  **************************************************************************/
 /* $Id$ */
 
+
 //This class conteins all the methods to create raw data 
 //as par a given DDL.
 //It produces DDL with both compressed and uncompressed format.
@@ -225,6 +226,7 @@ Int_t AliTPCDDLRawData::RawDataCompDecompress(Int_t LDCsNumber,Int_t Comp){
       fo.close();
       //The temp file is compressed or decompressed
       AliTPCCompression *util = new AliTPCCompression();
+      //      util->SetVerbose(1);
       if(!Comp)
 	util->CompressDataOptTables(kNumTables,temp,"TempCompDecomp");
       else
@@ -247,11 +249,10 @@ Int_t AliTPCDDLRawData::RawDataCompDecompress(Int_t LDCsNumber,Int_t Comp){
 	flag=1;
       else
 	flag=0;
-      ULong_t aux=0xFFFF;
-      aux<<=16;
+      ULong_t aux=0x0;
+      flag<<=8;
       aux|=flag;
-      aux|=0xFF;
-      miniHeader[2]=miniHeader[2]&aux;
+      miniHeader[2]=miniHeader[2]|aux;
       fdest.write((char*)(miniHeader),sizeof(ULong_t)*3);
       //The compressem temp file is copied into the output file fdest
       for(ULong_t j=0;j<size;j++){
