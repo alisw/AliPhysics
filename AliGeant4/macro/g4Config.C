@@ -47,6 +47,8 @@ void Config()
   // Energy cuts
   // (in development)
   Float_t cut    = 1.e-3; // 1MeV cut by default
+  Float_t tofmax = 1.e10; 
+
   gMC ->SetCut("CUTGAM",cut);
   gMC ->SetCut("CUTELE",cut);
   gMC ->SetCut("CUTNEU",cut);
@@ -56,7 +58,8 @@ void Config()
   gMC ->SetCut("BCUTM",cut);
   gMC ->SetCut("DCUTE",cut);
   gMC ->SetCut("DCUTM",cut);
- //xx gMC ->SetCut("PPCUTM",cut);
+  gMC ->SetCut("PPCUTM",cut);
+  gMC ->SetCut("TOFMAX",tofmax);
 
   // ============================= 
   // Event generator
