@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/30 10:15:48  gosset
+Changes to EventReconstructor...:
+precision fit with multiple Coulomb scattering;
+extrapolation to vertex with Branson correction in absorber (JPC)
+
 Revision 1.2  2000/06/15 07:58:49  morsch
 Code from MUON-dev joined
 
@@ -281,7 +286,9 @@ void AliMUONTrackParam::BransonCorrection()
     first = kFALSE;
     Double_t aNBP = 0.0;
     Double_t aDBP = 0.0;
-    for (Int_t iBound = 0; iBound < 9; iBound++) {
+    Int_t iBound;
+    
+    for (iBound = 0; iBound < 9; iBound++) {
       aNBP = aNBP +
 	(z1[iBound+1] * z1[iBound+1] * z1[iBound+1] -
 	 z1[iBound]   * z1[iBound]   * z1[iBound]    ) / x01[iBound];
@@ -291,7 +298,7 @@ void AliMUONTrackParam::BransonCorrection()
     zBP1 = (2.0 * aNBP) / (3.0 * aDBP);
     aNBP = 0.0;
     aDBP = 0.0;
-    for (Int_t iBound = 0; iBound < 3; iBound++) {
+    for (iBound = 0; iBound < 3; iBound++) {
       aNBP = aNBP +
 	(z2[iBound+1] * z2[iBound+1] * z2[iBound+1] -
 	 z2[iBound]   * z2[iBound ]  * z2[iBound]    ) / x02[iBound];
