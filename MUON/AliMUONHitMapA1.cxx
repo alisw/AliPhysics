@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/01/25 11:43:48  morsch
+Add a "real" default constructor.
+
 Revision 1.6  2000/10/06 09:05:42  morsch
 Correction on upper limits for x- and y- coordinates to make code work with slat chambers.
 
@@ -121,7 +124,7 @@ void  AliMUONHitMapA1::FillHits()
     AliMUONDigit *dig;
     for (Int_t ndig=0; ndig<fNdigits; ndig++) {
 	dig = (AliMUONDigit*)fDigits->UncheckedAt(ndig);
-	SetHit(dig->fPadX,dig->fPadY,ndig);
+	SetHit(dig->PadX(),dig->PadY(),ndig);
     }
 }
 

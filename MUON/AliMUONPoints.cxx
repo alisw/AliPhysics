@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.6  2000/10/03 13:51:57  egangler
+Removal of useless dependencies via forward declarations
+
 Revision 1.5  2000/10/02 21:28:09  fca
 Removal of useless dependecies via forward declarations
 
@@ -201,8 +204,9 @@ void AliMUONPoints::InspectDigit()
       //      sprintf(ptitle[11],"Tracks making this digit");
       //      pad->AddText(ptitle[11]);
   for (int i=0;i<10;i++) {
-      if (digit->fTracks[i] == 0) continue;  
-      sprintf(ptitle[i],"fTrackIndex: %d  Charge: %d",digit->fTracks[i],digit->fTcharges[i]);
+      if (digit->Track(i) == 0) continue;  
+      sprintf(ptitle[i],"fTrackIndex: %d  Charge: %d",
+	      digit->Track(i), digit->TrackCharge(i));
       pad->AddText(ptitle[i]);
   }
       padinspect->cd();
