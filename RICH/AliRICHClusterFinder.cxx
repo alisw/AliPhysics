@@ -22,28 +22,23 @@
 #include "AliRICHDigit.h"
 #include "AliRICHRawCluster.h"
 #include "AliRICHParam.h"
-
-
-
 #include <TTree.h>
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TF1.h>
 #include <TPad.h>
 #include <TGraph.h> 
-#include <TPostScript.h> 
 #include <TMinuit.h>
 
-//----------------------------------------------------------
 static AliSegmentation     *gSegmentation;
 static AliRICHResponse*     gResponse;
 static Int_t                gix[500];
 static Int_t                giy[500];
 static Float_t              gCharge[500];
 static Int_t                gNbins;
-static Int_t                gFirst=kTRUE;
+static Bool_t               gFirst=kTRUE;
 static TMinuit *gMyMinuit ;
-void fcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
+void fcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t);
 static Int_t                gChargeTot;
 
 ClassImp(AliRICHClusterFinder)
@@ -64,7 +59,6 @@ AliRICHClusterFinder::AliRICHClusterFinder(AliRICH *pRICH)
   fCogCorr = 0;
   SetNperMax();
   SetClusterSize();
-  SetDeclusterFlag();
   fNPeaks=-1;
 }//main ctor
 //__________________________________________________________________________________________________
@@ -76,22 +70,10 @@ void AliRICHClusterFinder::Decluster(AliRICHRawCluster *cluster)
     AddRawCluster(*cluster); 
     fNPeaks++;
   }else if(cluster->fMultiplicity==3){// 3-cluster, check topology
-    if(fDeclusterFlag)
       Centered(cluster);// ok, cluster is centered and added in Centered()
-    else{//if(fDeclusterFlag)
-      if(fNPeaks!=0){cluster->fNcluster[0]=fNPeaks;cluster->fNcluster[1]=0;} 
-      AddRawCluster(*cluster); 
-      fNPeaks++;
-    }//if(fDeclusterFlag)	    
   }else{//4-and more-pad clusters
-    if(cluster->fMultiplicity<= fClusterSize){
-      if(fDeclusterFlag)
+    if(cluster->fMultiplicity<= fMaxClusterSize){
         SplitByLocalMaxima(cluster);
-      else{
-        if(fNPeaks!= 0){cluster->fNcluster[0]=fNPeaks; cluster->fNcluster[1]=0;	} 
-        AddRawCluster(*cluster);
-        fNPeaks++;
-      }//if(fDeclusterFlag)	
     }//if <= fClusterSize
   }//if multiplicity 
 }//Decluster()
@@ -168,7 +150,9 @@ Bool_t AliRICHClusterFinder::Centered(AliRICHRawCluster *cluster)
 //__________________________________________________________________________________________________
 void AliRICHClusterFinder::SplitByLocalMaxima(AliRICHRawCluster *c)
 {// Split the cluster according to the number of maxima inside
-    AliRICHDigit* dig[100], *digt;
+  Info("SplitbyLocalMaxima","Start.");
+  
+      AliRICHDigit* dig[100], *digt;
     Int_t ix[100], iy[100], q[100];
     Float_t x[100], y[100];
     Int_t i; // loops over digits
@@ -180,7 +164,7 @@ void AliRICHClusterFinder::SplitByLocalMaxima(AliRICHRawCluster *c)
     ix[i]= dig[i]->PadX();
     iy[i]= dig[i]->PadY();
     q[i] = dig[i]->Signal();
-    Rich()->Param()->Pad2Local(ix[i], iy[i], x[i], y[i]);
+    AliRICHParam::Pad2Local(ix[i], iy[i], x[i], y[i]);
   }
 //  Find local maxima
     Bool_t isLocal[100];
@@ -228,10 +212,10 @@ void AliRICHClusterFinder::SplitByLocalMaxima(AliRICHRawCluster *c)
 	    if (nnew==1) break;
 	}
     }
-// If number of local maxima is 2 try to fit a double gaussian
-    if (nLocal==-100) {
+    if(nLocal==2) {// If number of local maxima is 2 try to fit a double gaussian
+
 //  Initialise global variables for fit
-	gFirst=1;
+	gFirst=kTRUE;
 	gSegmentation=fSegmentation;
 	gResponse    =fResponse;
 	gNbins=mul;
@@ -241,14 +225,11 @@ void AliRICHClusterFinder::SplitByLocalMaxima(AliRICHRawCluster *c)
 	    giy[i]=iy[i];
 	    gCharge[i]=Float_t(q[i]);
 	}
-	if (gFirst) {
-	    gFirst=kFALSE;
-	    gMyMinuit = new TMinuit(5);
-	}
+	if (gFirst)    gMyMinuit = new TMinuit(5);
+	
 	gMyMinuit->SetFCN(fcn);
 	gMyMinuit->mninit(5,10,7);
 	Double_t arglist[20];
-	Int_t ierflag=0;
 	arglist[0]=1;
 // Set starting values 
 	static Double_t vstart[5];
@@ -256,55 +237,54 @@ void AliRICHClusterFinder::SplitByLocalMaxima(AliRICHRawCluster *c)
 	vstart[1]=y[indLocal[0]];	
 	vstart[2]=x[indLocal[1]];
 	vstart[3]=y[indLocal[1]];	
-	vstart[4]=Float_t(q[indLocal[0]])/
-	    Float_t(q[indLocal[0]]+q[indLocal[1]]);
+	vstart[4]=Float_t(q[indLocal[0]])/Float_t(q[indLocal[0]]+q[indLocal[1]]);
 // lower and upper limits
 	static Double_t lower[5], upper[5];
-	Int_t isec=fSegmentation->Sector(ix[indLocal[0]], iy[indLocal[0]]);
-	lower[0]=vstart[0]-fSegmentation->Dpx(isec)/2;
-	lower[1]=vstart[1]-fSegmentation->Dpy(isec)/2;
+	lower[0]=vstart[0]-AliRICHParam::PadSizeX()/2;
+	lower[1]=vstart[1]-AliRICHParam::PadSizeY()/2;
 	
-	upper[0]=lower[0]+fSegmentation->Dpx(isec);
-	upper[1]=lower[1]+fSegmentation->Dpy(isec);
+	upper[0]=vstart[0]+AliRICHParam::PadSizeX()/2;
+	upper[1]=vstart[1]+AliRICHParam::PadSizeY()/2;
 	
-	isec=fSegmentation->Sector(ix[indLocal[1]], iy[indLocal[1]]);
-	lower[2]=vstart[2]-fSegmentation->Dpx(isec)/2;
-	lower[3]=vstart[3]-fSegmentation->Dpy(isec)/2;
+	lower[2]=vstart[2]-AliRICHParam::PadSizeX()/2;
+	lower[3]=vstart[3]-AliRICHParam::PadSizeY()/2;
 	
-	upper[2]=lower[2]+fSegmentation->Dpx(isec);
-	upper[3]=lower[3]+fSegmentation->Dpy(isec);
+	upper[2]=vstart[2]+AliRICHParam::PadSizeX()/2;
+	upper[3]=vstart[3]+AliRICHParam::PadSizeY()/2;
 	
 	lower[4]=0.;
 	upper[4]=1.;
 // step sizes
 	static Double_t step[5]={0.005, 0.03, 0.005, 0.03, 0.01};
+	Int_t iErr;
 	
-	gMyMinuit->mnparm(0,"x1",vstart[0],step[0],lower[0],upper[0],ierflag);
-	gMyMinuit->mnparm(1,"y1",vstart[1],step[1],lower[1],upper[1],ierflag);
-	gMyMinuit->mnparm(2,"x2",vstart[2],step[2],lower[2],upper[2],ierflag);
-	gMyMinuit->mnparm(3,"y2",vstart[3],step[3],lower[3],upper[3],ierflag);
-	gMyMinuit->mnparm(4,"a0",vstart[4],step[4],lower[4],upper[4],ierflag);
+	gMyMinuit->mnparm(0,"x1",vstart[0],step[0],lower[0],upper[0],iErr);
+	gMyMinuit->mnparm(1,"y1",vstart[1],step[1],lower[1],upper[1],iErr);
+	gMyMinuit->mnparm(2,"x2",vstart[2],step[2],lower[2],upper[2],iErr);
+	gMyMinuit->mnparm(3,"y2",vstart[3],step[3],lower[3],upper[3],iErr);
+	gMyMinuit->mnparm(4,"a0",vstart[4],step[4],lower[4],upper[4],iErr);
 // ready for minimisation	
 	gMyMinuit->SetPrintLevel(-1);
-	gMyMinuit->mnexcm("SET OUT", arglist, 0, ierflag);
+	gMyMinuit->mnexcm("SET OUT", arglist, 0, iErr);
 	arglist[0]= -1;
 	arglist[1]= 0;
 	
-	gMyMinuit->mnexcm("SET NOGR", arglist, 0, ierflag);
-	gMyMinuit->mnexcm("SCAN", arglist, 0, ierflag);
-	gMyMinuit->mnexcm("EXIT" , arglist, 0, ierflag);
+	gMyMinuit->mnexcm("SET NOGR", arglist, 0, iErr);
+	gMyMinuit->mnexcm("SIMPLEX", arglist, 0, iErr);
+	gMyMinuit->mnexcm("MIGRAD", arglist, 0, iErr);
+	gMyMinuit->mnexcm("EXIT" , arglist, 0, iErr);
 
 	Double_t xrec[2], yrec[2], qfrac;
 	TString chname;
 	Double_t epxz, b1, b2;
-	Int_t ierflg;
-	gMyMinuit->mnpout(0, chname, xrec[0], epxz, b1, b2, ierflg);	
-	gMyMinuit->mnpout(1, chname, yrec[0], epxz, b1, b2, ierflg);	
-	gMyMinuit->mnpout(2, chname, xrec[1], epxz, b1, b2, ierflg);	
-	gMyMinuit->mnpout(3, chname, yrec[1], epxz, b1, b2, ierflg);	
-	gMyMinuit->mnpout(4, chname, qfrac,   epxz, b1, b2, ierflg);	
- // One cluster for each maximum
-	for (j=0; j<2; j++) {
+	gMyMinuit->mnpout(0, chname, xrec[0], epxz, b1, b2, iErr);	
+	gMyMinuit->mnpout(1, chname, yrec[0], epxz, b1, b2, iErr);	
+	gMyMinuit->mnpout(2, chname, xrec[1], epxz, b1, b2, iErr);	
+	gMyMinuit->mnpout(3, chname, yrec[1], epxz, b1, b2, iErr);	
+	gMyMinuit->mnpout(4, chname, qfrac,   epxz, b1, b2, iErr);	
+        
+        cout<<"xrex[0]="<<xrec[0]<<"yrec[0]="<<yrec[0]<<"xrec[1]="<<xrec[1]<<"yrec[1]="<<yrec[1]<<"qfrac="<<qfrac<<endl;
+	for (j=0; j<2; j++) { // One cluster for each maximum
 	    AliRICHRawCluster cnew;
 	    if (fNPeaks == 0) {
 		cnew.fNcluster[0]=-1;
@@ -321,12 +301,9 @@ void AliRICHClusterFinder::SplitByLocalMaxima(AliRICHRawCluster *c)
 	    } else {
 		cnew.fQ=Int_t(gChargeTot*(1-qfrac));
 	    }
-	    gSegmentation->SetHit(xrec[j],yrec[j],0);
 	    for (i=0; i<mul; i++) {
 		cnew.fIndexMap[cnew.fMultiplicity]=c->fIndexMap[i];
-		gSegmentation->SetPad(gix[i], giy[i]);
-		Float_t q1=gResponse->IntXY(gSegmentation);
-		cnew.fContMap[cnew.fMultiplicity]=Float_t(q[i])/(q1*cnew.fQ);
+		cnew.fContMap[cnew.fMultiplicity]=AliRICHParam::AssignChargeToPad(xrec[j],yrec[j],gix[i], giy[i]);
 		cnew.fMultiplicity++;
 	    }
 	    FillCluster(&cnew,0);
@@ -334,11 +311,10 @@ void AliRICHClusterFinder::SplitByLocalMaxima(AliRICHRawCluster *c)
 	    AddRawCluster(cnew);
 	    fNPeaks++;
 	}
-    }
-
+    }//if 2 maximum in cluster
     Bool_t fitted=kTRUE;
 
-    if (nLocal !=-100 || !fitted) {
+    if (nLocal >2 || !fitted) {
 	// Check if enough local clusters have been found, if not add global maxima to the list 
 	Int_t nPerMax;
 	if (nLocal!=0) {
@@ -415,9 +391,9 @@ void AliRICHClusterFinder::SplitByLocalMaxima(AliRICHRawCluster *c)
 void  AliRICHClusterFinder::FillCluster(AliRICHRawCluster* c, Int_t flag) 
 {//  Completes cluster information starting from list of digits
     AliRICHDigit* dig;
-    Float_t x, y, z;
+    Float_t x, y;
     Int_t  ix, iy;
-    Float_t frac=0;
+    Float_t fraction=0;
     
     c->fPeakSignal=0;
     if (flag) {
@@ -429,7 +405,7 @@ void  AliRICHClusterFinder::FillCluster(AliRICHRawCluster* c, Int_t flag)
 
     for (Int_t i=0; i<c->fMultiplicity; i++){
 	dig= (AliRICHDigit*)fDigits->UncheckedAt(c->fIndexMap[i]);
-	ix=dig->PadX()+c->fOffsetMap[i];
+	ix=dig->PadX();
 	iy=dig->PadY();
 	Int_t q=dig->Signal();
 	if (dig->Physics() >= dig->Signal()) {
@@ -446,8 +422,8 @@ void  AliRICHClusterFinder::FillCluster(AliRICHRawCluster* c, Int_t flag)
 	    c->fTracks[2]=dig->Track(1);
 	   }
 	} else {
-	   if (c->fContMap[i] > frac) {
-              frac=c->fContMap[i];
+	   if (c->fContMap[i] > fraction) {
+              fraction=c->fContMap[i];
 	      c->fPeakSignal=q;
 	    c->fTracks[0]=dig->Hit();
 	    c->fTracks[1]=dig->Track(0);
@@ -455,7 +431,7 @@ void  AliRICHClusterFinder::FillCluster(AliRICHRawCluster* c, Int_t flag)
 	   }
 	}
 	if (flag) {
-	    fSegmentation->GetPadC(ix, iy, x, y, z);
+	    AliRICHParam::Pad2Local(ix,iy,x,y);
 	    c->fX += q*x;
 	    c->fY += q*y;
 	    c->fQ += q;
@@ -471,8 +447,8 @@ void  AliRICHClusterFinder::FillCluster(AliRICHRawCluster* c, Int_t flag)
 //  apply correction to the coordinate along the anode wire
      x=c->fX;   
      y=c->fY;
-     Rich()->Param()->Local2Pad(x,y,ix,iy);
-     Rich()->Param()->Pad2Local(ix,iy,x,y);
+     AliRICHParam::Local2Pad(x,y,ix,iy);
+     AliRICHParam::Pad2Local(ix,iy,x,y);
      Int_t isec=fSegmentation->Sector(ix,iy);
      TF1* cogCorr = fSegmentation->CorrFunc(isec-1);
      
@@ -481,7 +457,7 @@ void  AliRICHClusterFinder::FillCluster(AliRICHRawCluster* c, Int_t flag)
 	 c->fY=c->fY-cogCorr->Eval(yOnPad, 0, 0);
      }
  }
-}//FillCluster(AliRICHRawCluster* c, Int_t flag) 
+}//FillCluster() 
 //__________________________________________________________________________________________________
 void  AliRICHClusterFinder::AddDigit2Cluster(Int_t i, Int_t j, AliRICHRawCluster &c)
 {//Find clusters Add i,j as element of the cluster  
@@ -525,7 +501,7 @@ void  AliRICHClusterFinder::AddDigit2Cluster(Int_t i, Int_t j, AliRICHRawCluster
 	c.fMultiplicity=49;
     }
   Float_t x,y;// Prepare center of gravity calculation
-  Rich()->Param()->Pad2Local(i,j,x,y);
+  AliRICHParam::Pad2Local(i,j,x,y);
   c.fX+=q*x;    c.fY+=q*y;    c.fQ += q;
   fHitMap->FlagHit(i,j);// Flag hit as taken  
 
@@ -558,7 +534,7 @@ void AliRICHClusterFinder::FindRawClusters()
     c.fX /= c.fQ;	// center of gravity
     //c.fX=fSegmentation->GetAnod(c.fX);
     c.fY /= c.fQ;
-    AddRawCluster(c);
+    //AddRawCluster(c);
     
 //    Int_t ix,iy;//  apply correction to the coordinate along the anode wire
 //    Float_t x=c.fX, y=c.fY;	
@@ -605,7 +581,6 @@ void AliRICHClusterFinder::CalibrateCOG()
 void AliRICHClusterFinder::SinoidalFit(Float_t x, Float_t y, TF1 *func)
 {//Sinoidal fit
   static Int_t count=0;
-  Float_t z;
     
     count++;
 
@@ -614,16 +589,16 @@ void AliRICHClusterFinder::SinoidalFit(Float_t x, Float_t y, TF1 *func)
     Float_t xsig[kNs], ysig[kNs];
    
     Int_t ix,iy;
-    fSegmentation->GetPadI(x,y,0,ix,iy);   
-    fSegmentation->GetPadC(ix,iy,x,y,z);   
+    AliRICHParam::Local2Pad(x,y,ix,iy);   
+    AliRICHParam::Pad2Local(ix,iy,x,y);   
     Int_t isec=fSegmentation->Sector(ix,iy);
 // Pad Limits    
-    Float_t xmin = x-fSegmentation->Dpx(isec)/2;
-    Float_t ymin = y-fSegmentation->Dpy(isec)/2;
+    Float_t xmin = x-Rich()->Param()->PadSizeX()/2;
+    Float_t ymin = y-Rich()->Param()->PadSizeY()/2;
 //      	
 //      Integration Limits
-    Float_t dxI=fResponse->SigmaIntegration()*fResponse->ChargeSpreadX();
-    Float_t dyI=fResponse->SigmaIntegration()*fResponse->ChargeSpreadY();
+    Float_t dxI=Rich()->Param()->SigmaIntegration()*Rich()->Param()->ChargeSpreadX();
+    Float_t dyI=Rich()->Param()->SigmaIntegration()*Rich()->Param()->ChargeSpreadY();
 
 //
 //  Scanning
@@ -633,7 +608,7 @@ void AliRICHClusterFinder::SinoidalFit(Float_t x, Float_t y, TF1 *func)
 
 //  y-position
     Float_t yscan=ymin;
-    Float_t dy=fSegmentation->Dpy(isec)/(kNs-1);
+    Float_t dy=Rich()->Param()->PadSizeY()/(kNs-1);
 
     for (i=0; i<kNs; i++) {//      Pad Loop
 	Float_t sum=0;
@@ -650,8 +625,8 @@ void AliRICHClusterFinder::SinoidalFit(Float_t x, Float_t y, TF1 *func)
 		qcheck+=qp;
 		Int_t ixs=fSegmentation->Ix();
 		Int_t iys=fSegmentation->Iy();
-		Float_t xs,ys,zs;
-		fSegmentation->GetPadC(ixs,iys,xs,ys,zs);
+		Float_t xs,ys;
+		AliRICHParam::Pad2Local(ixs,iys,xs,ys);
 		sum+=qp*ys;
 	    }
 	} // Pad loop
@@ -680,8 +655,8 @@ void AliRICHClusterFinder::SinoidalFit(Float_t x, Float_t y, TF1 *func)
 		qcheck+=qp;
 		Int_t ixs=fSegmentation->Ix();
 		Int_t iys=fSegmentation->Iy();
-		Float_t xs,ys,zs;
-		fSegmentation->GetPadC(ixs,iys,xs,ys,zs);
+		Float_t xs,ys;
+		AliRICHParam::Pad2Local(ixs,iys,xs,ys);
 		sum+=qp*xs;
 	    }
 	} // Pad loop
@@ -735,25 +710,20 @@ Float_t DiscrCharge(Int_t i,Double_t *par)
 	for (Int_t jbin=0; jbin<gNbins; jbin++) {
 	    qtot+=gCharge[jbin];
 	}
-	gFirst=0;
-	//printf("\n sum of charge from DiscrCharge %f\n", qtot);
+	gFirst=kFALSE;
 	gChargeTot=Int_t(qtot);
 	
     }
-    gSegmentation->SetPad(gix[i], giy[i]);
-//  First Cluster
-    gSegmentation->SetHit(par[0],par[1],0);
-    Float_t q1=gResponse->IntXY(gSegmentation);
+    Float_t q1=AliRICHParam::AssignChargeToPad(par[0],par[1],gix[i],giy[i]);
     
-//  Second Cluster
-    gSegmentation->SetHit(par[2],par[3],0);
-    Float_t q2=gResponse->IntXY(gSegmentation);
+    Float_t q2=AliRICHParam::AssignChargeToPad(par[2],par[3],gix[i],giy[i]);
+//    cout<<"qtot="<<gChargeTot<<" q1="<<q1<<" q2="<<q2<<" px="<<gix[i]<<" py="<<giy[i]<<endl;
     
     Float_t value = qtot*(par[4]*q1+(1.-par[4])*q2);
     return value;
 }//DiscrCharge(Int_t i,Double_t *par) 
 //__________________________________________________________________________________________________
-void fcn(Int_t &npar, Double_t */*gin*/, Double_t &f, Double_t *par, Int_t /*iflag*/)
+void fcn(Int_t &npar, Double_t */*gin*/, Double_t &f, Double_t *par, Int_t)
 {// Minimisation function
   npar=1;
     Int_t i;
@@ -770,7 +740,7 @@ void fcn(Int_t &npar, Double_t */*gin*/, Double_t &f, Double_t *par, Int_t /*ifl
 	qcont+=q1;
 	qtot+=q0;
     }
-    chisq=chisq+=(qtot-qcont)*(qtot-qcont)*0.5;
+//    chisq=chisq+=(qtot-qcont)*(qtot-qcont)*0.5;
     f=chisq;
 }//
 //__________________________________________________________________________________________________

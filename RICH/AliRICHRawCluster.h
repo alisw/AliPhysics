@@ -15,7 +15,7 @@ public:
   virtual ~AliRICHRawCluster(){;}
   Bool_t IsSortable() const {return kTRUE;}  //virtual
   Int_t  Compare(const TObject *obj) const;  //virtual
-  void   Print(const Option_t *option)const; //virtual  
+  void   Print(const Option_t *option="")const; //virtual  
   Int_t  PhysicsContribution();
 public:
   Int_t       fTracks[3];      //labels of overlapped tracks
@@ -24,13 +24,12 @@ public:
   Float_t     fY  ;            // Y of cluster
   Int_t       fPeakSignal;     // Charge in the peak
   Int_t       fIndexMap[50];   //indeces of digits
-  Int_t       fOffsetMap[50];  // offset map
   Float_t     fContMap[50];    //Contribution from digit
   Int_t       fPhysicsMap[50]; // physics processes
   Int_t       fMultiplicity;   //cluster multiplicity
   Int_t       fNcluster[2];    //number of clusters
   Int_t       fClusterType;    //??
   Int_t       fCtype;          //CL0, CL1, etc...    
-  ClassDef(AliRICHRawCluster,1)  //Cluster object for set:RICH
+  ClassDef(AliRICHRawCluster,2)  //Cluster object for set:RICH
 };
 #endif

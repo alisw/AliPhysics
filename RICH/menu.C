@@ -515,14 +515,14 @@ void TestDigitsOLD()
   d[0]=2;d[1]=2;d[2]=10;d[3]=3;d[4]=4;r->AddDigitOld(2,t,c,d); 
   d[0]=2;d[1]=3;d[2]=10;d[3]=3;d[4]=4;r->AddDigitOld(2,t,c,d);
   
-  d[0]=2;d[1]=2;d[2]=50;d[3]=3;d[4]=4;r->AddDigitOld(3,t,c,d); 
-  d[0]=2;d[1]=3;d[2]=100;d[3]=3;d[4]=4;r->AddDigitOld(3,t,c,d);
-  d[0]=3;d[1]=2;d[2]=100;d[3]=3;d[4]=4;r->AddDigitOld(3,t,c,d);
+  d[0]=2;d[1]=2;d[2]=100;d[3]=3;d[4]=4;r->AddDigitOld(3,t,c,d); 
+  d[0]=2;d[1]=3;d[2]= 50;d[3]=3;d[4]=4;r->AddDigitOld(3,t,c,d);
+  d[0]=2;d[1]=4;d[2]=200;d[3]=3;d[4]=4;r->AddDigitOld(3,t,c,d);
     
   d[0]=2;d[1]=2;d[2]=100;d[3]=3;d[4]=4;r->AddDigitOld(4,t,c,d); 
-  d[0]=2;d[1]=3;d[2]=50;d[3]=3;d[4]=4;r->AddDigitOld(4,t,c,d);
-  d[0]=3;d[1]=2;d[2]=50;d[3]=3;d[4]=4;r->AddDigitOld(4,t,c,d);
-  d[0]=3;d[1]=3;d[2]=100;d[3]=3;d[4]=4;r->AddDigitOld(4,t,c,d);
+  d[0]=2;d[1]=3;d[2]= 50;d[3]=3;d[4]=4;r->AddDigitOld(4,t,c,d);
+  d[0]=2;d[1]=4;d[2]=200;d[3]=3;d[4]=4;r->AddDigitOld(4,t,c,d);
+  d[0]=2;d[1]=5;d[2]= 50;d[3]=3;d[4]=4;r->AddDigitOld(4,t,c,d);
   
   rl->TreeD()->Fill();
   rl->WriteDigits("OVERWRITE");

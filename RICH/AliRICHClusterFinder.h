@@ -34,8 +34,7 @@ public:
   void   AddRawCluster(const AliRICHRawCluster c)  {c.Print("");Rich()->AddClusterOld(fChamber,c);fNRawClusters++;}
   void   FillCluster(AliRICHRawCluster *cluster)   {FillCluster(cluster,1);}
   void   SetNperMax(Int_t npermax=5)               {fNperMax = npermax;}     //Set max. Number of pads per local cluster
-  void   SetDeclusterFlag(Int_t flag=1)            {fDeclusterFlag =flag;}   //Decluster ?
-  void   SetClusterSize(Int_t clsize=10)           {fClusterSize = clsize;}  //Max. cluster size; bigger clusters will be rejected
+  void   SetClusterSize(Int_t clsize=100)          {fMaxClusterSize = clsize;}//Max. cluster size; bigger clusters will be rejected
   
   AliRICH * Rich() {return fRICH;}
 //protected:
@@ -49,8 +48,7 @@ public:
   Int_t                   fChamber;                      //Chamber number
   Int_t                   fNRawClusters;                 //Number of raw clusters
   Int_t                   fNperMax;                      //Number of pad hits per local maximum
-  Int_t                   fDeclusterFlag;                //Split clusters flag
-  Int_t                   fClusterSize;                  //Size of cluster 
+  Int_t                   fMaxClusterSize;               //Max size of cluster allowed
   Int_t                   fNPeaks;                       //Number of maxima in the cluster
   ClassDef(AliRICHClusterFinder,0) //Class for clustering and reconstruction of space points    
 };

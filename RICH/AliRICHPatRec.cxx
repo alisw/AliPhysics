@@ -95,7 +95,7 @@ void AliRICHPatRec::PatRec()
       x=pDig->PadX();
       y=pDig->PadY();
       q=pDig->Signal();
-      pRICH->Param()->Pad2Local(x,y,rx,ry);      
+      AliRICHParam::Pad2Local(x,y,rx,ry);      
 
       //printf("Pad coordinates x:%d, Real coordinates x:%f\n",x,rx);
       //printf("Pad coordinates y:%d, Real coordinates y:%f\n",y,ry);
@@ -112,7 +112,7 @@ void AliRICHPatRec::PatRec()
       Int_t xpad;
       Int_t ypad;
 
-      pRICH->Param()->Local2Pad(fXpad,fYpad,xpad,ypad);
+      AliRICHParam::Local2Pad(fXpad,fYpad,xpad,ypad);
 
       padsUsedX[goodPhotons]=xpad;
       padsUsedY[goodPhotons]=ypad;

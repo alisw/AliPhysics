@@ -14,6 +14,8 @@
  **************************************************************************/
 
 #include "AliRICHRawCluster.h"
+#include <iostream.h>
+
 
 ClassImp(AliRICHRawCluster)
 //__________________________________________________________________________________________________
@@ -21,10 +23,10 @@ ClassImp(AliRICHRawCluster)
 AliRICHRawCluster :: AliRICHRawCluster() 
 {//default ctor
   fTracks[0]=fTracks[1]=fTracks[2]=-1; 
-  fQ=0; fX=fY=0; fMultiplicity=0;
+  fX=fY=0;
+  fQ=fMultiplicity=0;
   for (int k=0;k<50;k++) {
     fIndexMap[k]=-1;
-    fOffsetMap[k]=0;
     fContMap[k]=0;
     fPhysicsMap[k]=-1;
     fCtype=-1;
@@ -59,6 +61,9 @@ Int_t AliRICHRawCluster::PhysicsContribution()
 //__________________________________________________________________________________________________
 void AliRICHRawCluster::Print(Option_t*)const
 {
-  Info("","X=%7.2f, Y=%7.2f, Qdc=%4i, Peak=%4i, Multip=%2i,       T0=%5i T0=%5i T0=%5i",
-           fX,      fY,      fQ,      fPeakSignal,fMultiplicity,    fTracks[0], fTracks[1], fTracks[2]);
+  Info("","X=%7.2f, Y=%7.2f, Qdc=%4i, Peak=%4i, Multip=%2i,      T0=%5i T1=%5i T2=%5i",
+           fX,      fY,      fQ,      fPeakSignal,fMultiplicity, fTracks[0], fTracks[1], fTracks[2]);
+  
+  for(int i=0;i<fMultiplicity;i++)
+    cout<<"D"<<i<<"="<<fIndexMap[i]<<" C="<<fContMap[i]<<endl;
 }//void AliRICHRawCluster::Print(Option_t *option)const
