@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2000/06/09 20:31:34  morsch
+All coding rule violations except RS3 corrected
+
 Revision 1.9  2000/03/07 13:52:54  morsch
 static Int_t irwn=0;
 
@@ -31,11 +34,11 @@ Introduction of the Copyright and cvs Log
 */
 
 #include "AliGenFLUKAsource.h"
-#include "AliGenMUONlib.h"
 #include "AliMC.h"
 #include "AliRun.h"
 #include "AliPDG.h"
-#include <TDirectory.h>
+
+
 #include <TFile.h>
 #include <TTree.h>
 #include <TChain.h>

@@ -6,8 +6,8 @@
 /* $Id$ */
 
 #include "AliGenerator.h"
-#include "TArrayI.h"
 #include "GenTypeDefs.h"
+#include <TArrayI.h>
 
 class AliPythia;
 class TParticle;

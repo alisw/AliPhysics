@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/09 20:32:54  morsch
+All coding rule violations except RS3 corrected
+
 Revision 1.2  1999/11/04 11:30:48  fca
 Improve comments
 
@@ -46,8 +49,7 @@ New version from G.Martinez & A.Morsch
 //======================================================================
 
 #include "AliGenPHOSlib.h"
-#include "TMath.h"
-#include "AliRun.h"
+#include "AliMC.h"
 
 ClassImp(AliGenPHOSlib)
 

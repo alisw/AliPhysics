@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/06/09 20:36:44  morsch
+All coding rule violations except RS3 corrected
+
 Revision 1.7  2000/02/16 14:56:27  morsch
 Convert geant particle code into pdg code before putting particle on the stack.
 
@@ -29,13 +32,13 @@ Introduction of the Copyright and cvs Log
 #include <iostream.h>
 
 #include "AliGenExtFile.h"
-#include "AliGenMUONlib.h"
 #include "AliMC.h"
 #include "AliRun.h"
+
 #include <TDirectory.h>
 #include <TFile.h>
-#include <TTree.h>
 #include <stdlib.h>
+
  ClassImp(AliGenExtFile)
      AliGenExtFile::AliGenExtFile()
 	 :AliGenerator(-1)

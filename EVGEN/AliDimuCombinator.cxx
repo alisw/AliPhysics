@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/06/09 20:35:32  morsch
+All coding rule violations except RS3 corrected
+
 Revision 1.4  2000/03/20 18:03:24  morsch
 Change muon particle code to PDG code.
 
@@ -31,7 +34,7 @@ Introduction of the Copyright and cvs Log
 #include "AliPDG.h" 
 #include <TRandom.h>
 #include <TClonesArray.h>
-#include <TParticle.h>
+
 //
 ClassImp(AliDimuCombinator)
     AliDimuCombinator::AliDimuCombinator(TClonesArray* Partarray) 

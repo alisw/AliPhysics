@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/06/09 20:32:11  morsch
+All coding rule violations except RS3 corrected
+
 Revision 1.7  2000/05/02 08:12:13  morsch
 Coding rule violations corrected.
 
@@ -25,6 +28,7 @@ Introduction of the Copyright and cvs Log
 
 #include "AliGenMUONlib.h"
 #include "AliMC.h"
+
 ClassImp(AliGenMUONlib)
 //
 //  Pions
