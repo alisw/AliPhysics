@@ -20,11 +20,10 @@
 class TObjArray;
 class TF1;
 
-class AliSegmentation;
-
 class AliMUONGeometryModule;
 class AliMUONGeometryStore;
 class AliMUONGeometryDetElement;
+class AliMUONVGeometryDESegmentation;
 
 class AliMUONGeometrySegmentation : public TObject
 {
@@ -34,7 +33,11 @@ class AliMUONGeometrySegmentation : public TObject
     virtual ~AliMUONGeometrySegmentation();
 
     // methods
-    void Add(Int_t detElemId, AliSegmentation* segmentation);  
+    void Add(Int_t detElemId, 
+             AliMUONVGeometryDESegmentation* segmentation); 
+ 
+    // get methods
+    AliMUONGeometryModule* GetGeometry() const;	      
     
     //    
     // redefined methods from AliSegmentation interface
@@ -51,11 +54,11 @@ class AliMUONGeometrySegmentation : public TObject
     //
     virtual Float_t GetAnod(Int_t detElemId, Float_t xlhit) const;
                        // Anode wire coordinate closest to xhit
-    virtual void  GetPadI(Int_t detElemId,
+    virtual Bool_t  GetPadI(Int_t detElemId,
                           Float_t xg, Float_t yg, Float_t  zg, 
                           Int_t& ix, Int_t& iy);
                        // Transform from pad to real coordinates
-    virtual void  GetPadC(Int_t detElemId,
+    virtual Bool_t  GetPadC(Int_t detElemId,
                           Int_t ix, Int_t iy,
                           Float_t& x, Float_t& y, Float_t& z);
                        // Transform from real to pad coordinates
@@ -161,14 +164,19 @@ class AliMUONGeometrySegmentation : public TObject
     Bool_t Notify(Int_t detElemId) const;
   
     // data members
-    mutable  Int_t            fCurrentDetElemId;  
-    mutable  AliMUONGeometryDetElement* fCurrentDetElement;  
-    mutable  AliSegmentation* fCurrentSegmentation;
+    mutable  Int_t                           fCurrentDetElemId;  
+    mutable  AliMUONGeometryDetElement*      fCurrentDetElement;  
+    mutable  AliMUONVGeometryDESegmentation* fCurrentSegmentation;
     AliMUONGeometryModule*    fGeometryModule;
     AliMUONGeometryStore*     fDESegmentations;
  
-   ClassDef(AliMUONGeometrySegmentation,1) // Station1 segmentation
+   ClassDef(AliMUONGeometrySegmentation,2) // Geometry segmentation
 };
+
+// inline functions
+
+inline AliMUONGeometryModule* AliMUONGeometrySegmentation::GetGeometry() const
+{ return fGeometryModule; }	      
 
 #endif //ALI_MUON_GEOMETRY_SEGMENTATION_H
 
