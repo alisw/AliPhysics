@@ -4,17 +4,18 @@ include	lib$(Module).pkg
 
 Sources   	:=$(SRCS)
 
-OutputDir	:=$(KIR_DIR)/$(Module)
-SoLib		:=$(KIR_DIR)/lib$(Module).so
+RootTarget      :=$(shell root-config --arch)
+OutputDir	:=$(KIR_DIR)/tgt_$(RootTarget)/$(Module)
+SoLib		:=$(KIR_DIR)/tgt_$(RootTarget)/lib$(Module).so
 
-ifeq ($(shell root-config --arch),linuxicc)
+ifeq ($(RootTarget),linuxicc)
  Compiler	:=icc
  CompilerOptions:=-O0 -fpstkchk -I$(shell root-config --incdir) -I$(ALICE_ROOT)/include
  SoOptions      := -Wl,-soname,lib$(Module).so -shared -O -g	
 else
  Compiler       :=g++
- CompilerOptions:=-O -g -W -Wall -fPIC -pipe -fmessage-length=0 -I$(shell root-config --incdir) -I$(ALICE_ROOT)/include
- SoOptions      := -Wl,-soname,lib$(Module).so -shared -O -g	
+ CompilerOptions:=-g -W -Wall -Werror -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -I$(shell root-config --incdir) -I$(ALICE_ROOT)/include
+ SoOptions      :=-O -g -shared -Wl,-soname,lib$(Module).so  
 endif
 
 ifdef ALIVERBOSE
