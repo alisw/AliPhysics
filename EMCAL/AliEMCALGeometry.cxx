@@ -64,7 +64,7 @@ void AliEMCALGeometry::Init(void)
   fEnvelop[0] = fIPDistance ; 
   fEnvelop[1] = fIPDistance + fShellThickness ;
   fEnvelop[2] = fZLength ; 
-
+  fGap2Active = 1.0 ; 
   // material
   fAmat = 207.2;  
   fZmat = 82.;   

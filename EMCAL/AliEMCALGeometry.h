@@ -65,7 +65,7 @@ public:
   const Float_t GetEnvelop(Int_t index) const { return fEnvelop[index] ; }  
   const Float_t GetShellThickness() const { return fShellThickness ; }
   const Float_t GetZLength() const { return fZLength ; } 
-
+  const Float_t GetGap2Active() const {return  fGap2Active ; }
   // material 
   const Float_t GetAmat()   const { return  fAmat ; }  
   const Float_t GetZmat()   const { return  fZmat ; }   
@@ -98,6 +98,7 @@ private:
   Float_t fIPDistance ;              // Distance of the inner surface to the interaction point
   Float_t fShellThickness ;          // Total thickness in (x,y) direction
   Float_t fZLength ;                 // Total length in z direction
+  Float_t fGap2Active ;              // Gap between the envelop and the active material
 
   //material
   Float_t fAmat ;  // average atomic weight of the active material
