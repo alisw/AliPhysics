@@ -92,6 +92,7 @@ void AliGenMC::Init()
     case kBPsiPrimeDiElectron:
 	fChildSelect[0] = kElectron;	
 	break;
+    case kHardMuons:	
     case kSemiMuonic:
     case kDiMuon:
     case kBJpsiDiMuon:
