@@ -107,7 +107,7 @@ void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
   //cos: 0.766044 sin: 0.642788
   
   Int_t max_num_of_tracks = 3000;
-  Int_t max_num_of_hits = 120000;
+  Int_t max_num_of_hits = 150000;
 
   fHit = new AliL3ConfMapPoint[max_num_of_hits];
   fTrack = new AliL3TrackArray("AliL3ConfMapTrack",max_num_of_tracks);
