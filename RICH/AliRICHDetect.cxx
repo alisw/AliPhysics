@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.14  2001/05/14 13:25:54  hristov
+  stdlib.h included (for Alpha)
+
   Revision 1.13  2001/05/10 12:26:31  jbarbosa
   Totally reworked version of reconstruction algorithm.
 
@@ -83,6 +86,10 @@ AliRICHDetect::AliRICHDetect() : TObject()
 {
 
 // Default constructor 
+
+  fc1 = 0;
+  fc2 = 0;
+  fc3 = 0;
 
 }
 

@@ -44,6 +44,11 @@ ClassImp(AliTOFMerger)
     fEvNrBgr = 0;
     fMerge =kDigitize;
     fFnBgr   = 0;
+    fDigits = 0;
+    fSDigits =0;
+    fFnBgr = 0;
+    fFnSig = 0;
+    fBgrFile = 0;
 }
 
 //------------------------------------------------------------------------

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2001/09/24 16:41:15  hristov
+New version of FMD code (A.Maevskaia)
+
 Revision 1.1  2001/05/29 12:01:06  hristov
 Last minute changes and new code for event mixing and reconstruction (A.Maevskaia)
 
@@ -57,8 +60,12 @@ ClassImp(AliFMDMerger)
 // Default constructor    
     fEvNrSig = 0;
     fEvNrBgr = 0;
-    fMerge =kDigitize;
+    fMerge   = kDigitize;
+    fDigits  = 0;
+    fSDigits = 0;
     fFnBgr   = 0;
+    fFnSig   = 0;
+    fBgrFile = 0;
 }
 
 //------------------------------------------------------------------------

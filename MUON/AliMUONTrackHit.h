@@ -18,7 +18,10 @@ class AliMUONTrackHit : public TObject {
  public:
   AliMUONTrackHit(){
     // Constructor
-    ;} // Constructor
+    fHitForRecPtr = 0;
+    fNextTrackHitWithSameHitForRec = 0;
+    fPrevTrackHitWithSameHitForRec = 0;
+  } // Constructor
   virtual ~AliMUONTrackHit(); // Destructor
   AliMUONTrackHit (const AliMUONTrackHit& AliMUONTrackHit); // copy constructor
   AliMUONTrackHit& operator=(const AliMUONTrackHit& AliMUONTrackHit); // assignment operator

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.42  2001/10/15 08:21:55  morsch
+Vertex truncation settings moved to AliGenMC.
+
 Revision 1.41  2001/10/08 08:45:42  morsch
 Possibility of vertex cut added.
 
@@ -135,6 +138,8 @@ AliGenPythia::AliGenPythia()
                  :AliGenMC()
 {
 // Default Constructor
+  fParticles = 0;
+  fPythia    = 0;
   fDecayer = new AliDecayerPythia();
   SetEventListRange();
 }

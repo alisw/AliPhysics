@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/11/30 07:12:49  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.6  2000/10/02 21:28:14  fca
 Removal of useless dependecies via forward declarations
 
@@ -64,6 +67,7 @@ ClassImp(AliRecPoint)
 AliRecPoint::AliRecPoint()
 {
   // ctor  
+  fGeom = 0;
   fAmp = 0.0 ; 
   
   fLocPos.SetXYZ(0., 0., 0.) ;

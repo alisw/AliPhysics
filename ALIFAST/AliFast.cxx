@@ -184,7 +184,7 @@ ClassImp(AliFast)
    fTree          = 0;
    fMakers        = 0;
    fMode          = 0;
-   //   fMCMaker       = 0;
+   fMCMaker       = 0;
    fTrackMaker    = 0;
    fDisplay       = 0;
    fDet           = new AliFDet("Detector","Make AliFast detector");

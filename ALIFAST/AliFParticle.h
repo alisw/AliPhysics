@@ -27,7 +27,12 @@ private:
    TPolyLine3D      *fLine;                 //pointer to line3D
    
 public:
-                     AliFParticle() {;}
+                     AliFParticle() {
+                       fParticles = 0;
+                       fDisplay   = 0;
+                       fMCParticle = 0;
+                       fLine = 0;
+                     }
                      AliFParticle(const char *name);
    virtual          ~AliFParticle();
    virtual void      Clear(Option_t *option="");

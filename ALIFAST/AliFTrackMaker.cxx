@@ -71,6 +71,11 @@ ClassImp(AliFTrackMaker)
 AliFTrackMaker::AliFTrackMaker()
 {
    fNTracks = 0;
+   fResID1Test = 0;
+   fResID2Test = 0;
+   fResID3Test = 0;
+   fResID4Test = 0;
+   fResID5Test = 0;
 }
 
 //_____________________________________________________________________________

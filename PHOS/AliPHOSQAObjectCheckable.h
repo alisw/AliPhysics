@@ -23,7 +23,9 @@ class AliPHOSQAObjectCheckable : public AliPHOSQAVirtualCheckable {
 
 public:
 
-  AliPHOSQAObjectCheckable(){}           // default ctor not to be used
+  AliPHOSQAObjectCheckable(){
+    fObject = 0;
+  }           // default ctor not to be used
   AliPHOSQAObjectCheckable(const char * name) ;          // ctor
   AliPHOSQAObjectCheckable(AliPHOSQAObjectCheckable& obj) {assert(0==1);}
   virtual ~AliPHOSQAObjectCheckable() ; // dtor

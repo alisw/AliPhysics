@@ -49,12 +49,15 @@ AliPHOS:: AliPHOS() : AliDetector()
 {
   // Create folder and task hierarchy
   fName="PHOS";
-
+  fQATask = 0;
+  fTreeQA = 0;
 }
 
 //____________________________________________________________________________
 AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name, title) 
 {
+  fQATask = 0;
+  fTreeQA = 0;
 }
 
 

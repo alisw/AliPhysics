@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2001/07/25 15:23:50  hristov
+Changes needed to run with Root 3.01 (R.Brun)
+
 Revision 1.15  2001/05/16 14:57:22  alibrary
 New files for folders and Stack
 
@@ -94,6 +97,18 @@ AliDisplay::AliDisplay()
   // Default constructor
   //
   fCanvas = 0;
+  fTrigPad = 0;
+  fCutPad = 0;
+  fEtaPad = 0;
+  fButtons = 0;
+  fPad = 0;
+  fCutSlider = 0;
+  fEtaSlider = 0;
+  fRangeSlider = 0;
+  fPickButton = 0;
+  fZoomButton = 0;
+  fArcButton = 0;
+  fFruits = 0;
 }
 
 //_____________________________________________________________________________

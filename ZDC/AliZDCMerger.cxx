@@ -53,7 +53,9 @@ AliZDCMerger::AliZDCMerger()
     fBgrFile     = 0;
     fNEvBgr	 = 0;
     fTrHBgr      = 0;
+    fHitsBgr     = 0;
     fTrSDBgr     = 0;
+    fTrDBgr      = 0;
     fImpPar      = 0;
     fSpecn       = 0;
     fSpecp       = 0;

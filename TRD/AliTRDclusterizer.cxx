@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/05/07 08:06:44  cblume
+Speedup of the code. Create only AliTRDcluster
+
 Revision 1.7  2001/03/30 14:40:14  cblume
 Update of the digitization parameter
 
@@ -95,6 +98,7 @@ AliTRDclusterizer::AliTRDclusterizer():TNamed()
   fInputFile   = NULL;
   fOutputFile  = NULL;
   fClusterTree = NULL;
+  fTRD         = 0;
   fEvent       = 0;
   fVerbose     = 0;
 

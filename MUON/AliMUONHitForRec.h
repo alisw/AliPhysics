@@ -16,7 +16,9 @@ class AliMUONHitForRec : public TObject {
  public:
   AliMUONHitForRec(){
     // Constructor
-    ;} // Constructor
+    fFirstTrackHitPtr = 0;
+    fLastTrackHitPtr = 0;
+  } // Constructor
   virtual ~AliMUONHitForRec(){
     // Destructor
     ;} // Destructor

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2001/10/04 14:30:28  coppedis
+Event merging for ZDC
+
 Revision 1.25  2001/10/04 14:24:15  coppedis
 Event merging for ZDC
 
@@ -124,6 +127,13 @@ AliZDC::AliZDC()
 
   fDigits   = 0;
   fNdigits  = 0;
+
+  fMergedHits = 0;
+  fTreeSD = 0;
+  fTreeMD = 0;
+
+  fNRecPoints = 0;
+  fRecPoints = 0;
   
 }
  
@@ -148,6 +158,11 @@ AliZDC::AliZDC(const char *name, const char *title)
   // Allocate the digits array  
   fDigits = new TClonesArray("AliZDCDigit",1000);
   
+  fTreeSD = 0;
+  fTreeMD = 0;
+
+  fNRecPoints = 0;
+  fRecPoints = 0;
 
 }
 //____________________________________________________________________________ 

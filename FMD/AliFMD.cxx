@@ -71,7 +71,8 @@ AliFMD::AliFMD ():AliDetector ()
   fHits     = 0;
   fDigits   = 0;
   fSDigits  = 0;
-  fReconParticles=0; 
+  fReconParticles=0;
+  fMerger = 0;
 }
 
 //_____________________________________________________________________________

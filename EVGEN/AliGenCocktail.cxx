@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2001/06/18 13:07:30  morsch
+Forward kinematic ranges to entries only if not set by user.
+
 Revision 1.11  2001/01/30 09:23:12  hristov
 Streamers removed (R.Brun)
 
@@ -62,6 +65,8 @@ AliGenCocktail::AliGenCocktail()
 {
 // Constructor
     fEntries = new TList;
+    flnk1 = 0;
+    flnk2 = 0;
     fNGenerators=0;
 }
 

@@ -19,7 +19,7 @@ class AliTRDtimeBin : public TObject {
  
 public: 
 
-  AliTRDtimeBin() {fN=0;}
+  AliTRDtimeBin();
   void InsertCluster(AliTRDcluster*,UInt_t);
  
   operator Int_t() const {return fN;}

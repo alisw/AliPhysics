@@ -21,7 +21,9 @@ private:
    TObject          *fFruit;            //Pointer to original fruit
    
 public:
-                     AliFFruit() {;}
+                     AliFFruit() {
+                       fFruit=0;
+                     }
                      AliFFruit(TObject *obj, Float_t eta, Float_t phi, Float_t pt, Int_t type);
    virtual          ~AliFFruit() {;}
    virtual void      Delete(Option_t *option="");

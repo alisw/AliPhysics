@@ -62,6 +62,11 @@ ClassImp(AliVZEROv0)
 //--------------------------------------------------------------------
 AliVZEROv0:: AliVZEROv0():AliVZERO()
 {
+  fRootFile = 0;
+  fhMultiplicity = 0;
+  fhGEANTcode = 0;
+  fhCerenkov = 0;
+  fhToF = 0;
 }
 //--------------------------------------------------------------------
 AliVZEROv0::AliVZEROv0(const char *name, const char *title):

@@ -40,8 +40,11 @@ public:
   AliPHOSGeometry() {
     // default ctor 
     // must be kept public for root persistency purposes, but should never be called by the outside world
-    fPHOSAngle = 0 ; 
-  } ;  
+    fPHOSAngle = 0 ;
+    fGeometryEMCA = 0;
+    fGeometrySUPP = 0;
+    fgGeom = 0;
+  }  
 
   AliPHOSGeometry(const AliPHOSGeometry & geom) {
     // cpy ctor requested by Coding Convention but not yet needed

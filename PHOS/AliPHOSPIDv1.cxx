@@ -99,7 +99,13 @@ AliPHOSPIDv1::AliPHOSPIDv1():AliPHOSPID()
   fRecPointsTitle    = "" ; 
   fRecParticlesTitle = "" ; 
   fIDOptions         = "dis time" ; 
-  fRecParticlesInRun = 0 ; 
+  fRecParticlesInRun = 0 ;
+  fEmcRecPoints = 0;
+  fCpvRecPoints = 0;
+  fTrackSegments = 0;
+  fRecParticles = 0;
+  fClusterizer = 0;
+  fTSMaker = 0;
 }
 
 //____________________________________________________________________________

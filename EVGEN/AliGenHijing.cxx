@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.29  2001/10/15 08:12:24  morsch
+- Vertex smearing with truncated gaussian.
+- Store triggered jet info before and after final state radiation into mc-heade
+
 Revision 1.28  2001/10/08 11:55:25  morsch
 Store 4-momenta of trigegred jets in event header.
 Possibility to switch of initial and final state radiation.
@@ -165,6 +169,8 @@ AliGenHijing::AliGenHijing(Int_t npart)
 //
 // Set random number generator   
     sRandom = fRandom;
+    fHijing = 0;
+
 }
 
 AliGenHijing::AliGenHijing(const AliGenHijing & Hijing)

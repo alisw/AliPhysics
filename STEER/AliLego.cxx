@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.27  2001/07/20 09:32:18  morsch
+Protection against uncomplete backward stepping in dumping added.
+
 Revision 1.26  2001/05/30 12:18:13  morsch
 Fastidious printf commented.
 
@@ -134,10 +137,13 @@ AliLego::AliLego()
   //
   // Default constructor
   //
+  fGener    = 0;
   fHistRadl = 0;
   fHistAbso = 0;
   fHistGcm2 = 0;
   fHistReta = 0;
+  fVolumesFwd = 0;
+  fVolumesBwd = 0;
 }
 
 //___________________________________________

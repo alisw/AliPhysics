@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.15  2001/10/09 07:34:09  hristov
+  Modifications needed by Root.03.01.06 (J.Chudoba)
+
   Revision 1.14  2001/05/16 14:57:20  alibrary
   New files for folders and Stack
 
@@ -120,7 +123,7 @@ AliRICHDisplay::AliRICHDisplay()
 { 
 
 // default constructor
-
+    fColPad = 0;
     fPoints = 0;
     fPhits = 0;
     fPCerenkovs = 0;

@@ -35,8 +35,15 @@ ClassImp(AliFDisplay)
 //_____________________________________________________________________________
 AliFDisplay::AliFDisplay() : AliFVirtualDisplay()
 {
-   fParticle  = 0;
+   fCanvas    = 0;
+   fTrigPad   = 0;
+   fButtons   = 0;
+   fPad       = 0;
+   fTubin     = 0;
+   fTubout    = 0;
+   fNodin     = 0;
    fFruits    = 0;
+   fParticle  = 0;   
 }
 
 //_____________________________________________________________________________

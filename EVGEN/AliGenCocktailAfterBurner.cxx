@@ -49,6 +49,8 @@ AliGenCocktailAfterBurner::AliGenCocktailAfterBurner()
     SetName("AliGenCocktailAfterBurner");
     SetTitle("AliGenCocktailAfterBurner");
     fInternalStacks =0;
+    fActiveStack = 0;
+    fCurrentGenerator = 0;
     fCurrentEvent =0;
     fAfterBurnerEntries = new TList();
     fNAfterBurners = 0;

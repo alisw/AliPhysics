@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/05/16 14:57:20  alibrary
+New files for folders and Stack
+
 Revision 1.2  2001/03/14 18:16:08  jbarbosa
 Corrected bug (more to correct).
 File "points.dat" is no longer created.
@@ -64,7 +67,8 @@ AliRICHMerger::AliRICHMerger()
     fHitMap     = 0;
     fList       = 0;
     fTrList     = 0;
-    fAddress    = 0; 
+    fAddress    = 0;
+    fBgrFile    = 0;
 }
 
 //------------------------------------------------------------------------

@@ -45,7 +45,9 @@ AliEMCAL::AliEMCAL():AliDetector()
 {
   // ctor 
   //We do not create objects, because these pointers will be overwritten during reading from file.
+  fGeom = 0;
   fSDigits       = 0 ;
+  fDigits = 0;
 }
 //____________________________________________________________________________
 AliEMCAL::AliEMCAL(const char* name, const char* title): AliDetector(name,title) 

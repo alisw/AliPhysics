@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.32  2001/07/27 17:09:36  morsch
+Use local SetTrack, KeepTrack and SetHighWaterMark methods
+to delegate either to local stack or to stack owned by AliRun.
+(Piotr Skowronski, A.M.)
+
 Revision 1.31  2001/07/13 10:58:54  morsch
 - Some coded moved to AliGenMC
 - Improved handling of secondary vertices.
@@ -122,6 +127,7 @@ AliGenParam::AliGenParam()
 //
 // Set random number generator   
     sRandom = fRandom;
+    fDecayer = 0;
 }
 
 AliGenParam::AliGenParam(Int_t npart, AliGenLib * Library,  Int_t param, char* tname):AliGenMC(npart)

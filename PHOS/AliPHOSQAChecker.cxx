@@ -48,7 +48,8 @@ ClassImp(AliPHOSQAChecker)
    else    // create  //Folders/Task/QA/PHOS
      aliceQA->Add(this) ; 
   
-  fCheckablesList = new TList() ; 
+  fCheckablesList = new TList() ;
+  fCheckable = 0;
 }
 
 //____________________________________________________________________________ 

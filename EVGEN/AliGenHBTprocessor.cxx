@@ -79,6 +79,7 @@ AliGenHBTprocessor::AliGenHBTprocessor() : AliGenerator(-1)
   //
   // Standard constructor
   // Sets default veues of all parameters
+  fHbtPStatCodes = 0;
   SetName("AliGenHBTprocessor");
   SetTitle("AliGenHBTprocessor");
   

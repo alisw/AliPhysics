@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/10/04 15:56:07  jchudoba
+TTask inheritance
+
 Revision 1.4  2001/09/19 06:23:50  jchudoba
 Move some tasks to AliStream and AliMergeCombi classes
 
@@ -143,6 +146,9 @@ AliRunDigitizer::AliRunDigitizer(Int_t nInputStreams, Int_t sperb) : TTask("AliR
   fDebug = 0;
   if (GetDebug()>2) 
     cerr<<"AliRunDigitizer::AliRunDigitizer() called"<<endl;
+  //PH
+  fTreeD = 0;
+  for (i=0; i<MAXSTREAMSTOMERGE; i++) fInputFiles[i]=0;
 }
 
 ////////////////////////////////////////////////////////////////////////

@@ -46,6 +46,8 @@ ClassImp(AliPHOSvImpacts)
 AliPHOSvImpacts::AliPHOSvImpacts():AliPHOSv1()
 {
   // ctor
+  fEMCImpacts = 0;
+  fPPSDImpacts = 0;
 }
 
 //____________________________________________________________________________

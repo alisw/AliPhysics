@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.29  2001/10/17 14:19:24  hristov
+delete replaced by delete []
+
 Revision 1.28  2001/10/05 12:02:01  vicinanz
 Minor improvements on Merger and SDigitizer
 
@@ -148,7 +151,9 @@ AliTOF::AliTOF()
   fIshunt   = 0;
   fSDigits       = 0 ;
   fDigits        = 0 ;
+  fReconParticles = 0;
   fName="TOF";
+  fMerger = 0;
 /* fp
   CreateTOFFolders();
 */

@@ -21,7 +21,10 @@ class AliMUONTrack : public TObject {
  public:
   AliMUONTrack(){
     // Constructor
-    ;} // Constructor
+    fgFitter = 0;
+    fEventReconstructor = 0;
+    fTrackHitsPtr = 0;
+  } // Constructor
   virtual ~AliMUONTrack(); // Destructor
   AliMUONTrack (const AliMUONTrack& AliMUONTrack); // copy constructor
   AliMUONTrack& operator=(const AliMUONTrack& AliMUONTrack); // assignment operator
