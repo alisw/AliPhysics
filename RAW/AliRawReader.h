@@ -63,6 +63,9 @@ class AliRawReader: public TObject {
     Bool_t           IsCompressed() const 
       {if (fHeader) return fHeader->TestAttribute(1); 
       else return kFALSE;};
+    UInt_t           GetStatusBits() const
+      {if (fHeader) return fHeader->GetStatus(); 
+      else return 0;};
 
     virtual Bool_t   ReadHeader() = 0;
     virtual Bool_t   ReadNextData(UChar_t*& data) = 0;
