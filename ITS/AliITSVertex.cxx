@@ -40,7 +40,7 @@ AliITSVertex::AliITSVertex() {
 }
 //--------------------------------------------------------------------------
 AliITSVertex::AliITSVertex(Double_t positionZ,Double_t sigmaZ,
-			   Int_t nContributors, const char *vtxName) {
+			   Int_t nContributors,Char_t *vtxName) {
   //
   // Constructor for vertex Z from pixels
   //
@@ -54,9 +54,8 @@ AliITSVertex::AliITSVertex(Double_t positionZ,Double_t sigmaZ,
 
 }
 //------------------------------------------------------------------------- 
-AliITSVertex::AliITSVertex(Double_t phi,
-			   Double_t position[3],Double_t covmatrix[6],
-			   Double_t chi2,Int_t nContributors, const char *vtxName) {
+AliITSVertex::AliITSVertex(Double_t position[3],Double_t covmatrix[6],
+			   Double_t chi2,Int_t nContributors,Char_t *vtxName) {
 //
 // Constructor for vertex in 3D from tracks
 //
@@ -73,7 +72,6 @@ AliITSVertex::AliITSVertex(Double_t phi,
     fCovZZ         = covmatrix[5];
 
 
-    fPhi           = phi;
     fChi2          = chi2;
     fNContributors = nContributors;
 
@@ -82,7 +80,7 @@ AliITSVertex::AliITSVertex(Double_t phi,
 }
 //--------------------------------------------------------------------------
 AliITSVertex::AliITSVertex(Double_t position[3],Double_t sigma[3],
-			   const char *vtxName) {
+			   Char_t *vtxName) {
 //
 // Constructor for smearing of true position
 //
@@ -104,7 +102,7 @@ AliITSVertex::AliITSVertex(Double_t position[3],Double_t sigma[3],
 }
 //--------------------------------------------------------------------------
 AliITSVertex::AliITSVertex(Double_t position[3],Double_t sigma[3],
-			   Double_t snr[3], const char *vtxName) {
+			   Double_t snr[3],Char_t *vtxName) {
   //
   // Constructor for Pb-Pb
   //
@@ -144,7 +142,6 @@ void AliITSVertex::SetToZero() {
   fCovYZ         = 0;
   fCovZZ         = 0;
 
-  fPhi           = 0;
   fChi2          = 0;
   fNContributors = 0;
 
@@ -162,17 +159,6 @@ void AliITSVertex::GetXYZ(Double_t position[3]) const {
 //
 // Return position of the vertex in global frame
 //
-  position[0] = fPosition[0]*TMath::Cos(fPhi)-fPosition[1]*TMath::Sin(fPhi);
-  position[1] = fPosition[0]*TMath::Sin(fPhi)+fPosition[1]*TMath::Cos(fPhi);
-  position[2] = fPosition[2];
-
-  return;
-}
-//--------------------------------------------------------------------------
-void AliITSVertex::GetXYZ_ThrustFrame(Double_t position[3]) const {
-//
-// Return position of the vertex in thrust frame
-//
   position[0] = fPosition[0];
   position[1] = fPosition[1];
   position[2] = fPosition[2];
@@ -181,19 +167,6 @@ void AliITSVertex::GetXYZ_ThrustFrame(Double_t position[3]) const {
 }
 //--------------------------------------------------------------------------
 void AliITSVertex::GetSigmaXYZ(Double_t sigma[3]) const {
-//
-// Return errors on vertex position in global frame
-//
-  Double_t cm[6];
-  GetCovMatrix(cm);
-  sigma[0] = TMath::Sqrt(cm[0]);
-  sigma[1] = TMath::Sqrt(cm[2]);
-  sigma[2] = TMath::Sqrt(cm[5]);
-
-  return;
-}
-//--------------------------------------------------------------------------
-void AliITSVertex::GetSigmaXYZ_ThrustFrame(Double_t sigma[3]) const {
 //
 // Return errors on vertex position in thrust frame
 //
@@ -205,23 +178,6 @@ void AliITSVertex::GetSigmaXYZ_ThrustFrame(Double_t sigma[3]) const {
 }
 //--------------------------------------------------------------------------
 void AliITSVertex::GetCovMatrix(Double_t covmatrix[6]) const {
-//
-// Return covariance matrix of the vertex
-//
-  Double_t cPhi = TMath::Cos(fPhi);
-  Double_t sPhi = TMath::Sin(fPhi);
-
-  covmatrix[0] = fCovXX*cPhi*cPhi-2.*fCovXY*cPhi*sPhi+fCovYY*sPhi*sPhi;
-  covmatrix[1] = (fCovXX-fCovYY)*cPhi*sPhi+fCovXY*(cPhi*cPhi-sPhi*sPhi);
-  covmatrix[2] = fCovXX*sPhi*sPhi+2.*fCovXY*cPhi*sPhi+fCovYY*cPhi*cPhi;
-  covmatrix[3] = fCovXZ*cPhi-fCovYZ*sPhi;
-  covmatrix[4] = fCovXZ*sPhi+fCovYZ*cPhi;
-  covmatrix[5] = fCovZZ;
-
-  return;
-}
-//--------------------------------------------------------------------------
-void AliITSVertex::GetCovMatrix_ThrustFrame(Double_t covmatrix[6]) const {
 //
 // Return covariance matrix of the vertex
 //
@@ -239,14 +195,14 @@ Double_t AliITSVertex::GetXv() const {
 //
 // Return global x
 //
-  return fPosition[0]*TMath::Cos(fPhi)-fPosition[1]*TMath::Sin(fPhi);
+  return fPosition[0];
 }
 //--------------------------------------------------------------------------
 Double_t AliITSVertex::GetYv() const {
 //
 // Return global y
 //
-  return fPosition[0]*TMath::Sin(fPhi)+fPosition[1]*TMath::Cos(fPhi);
+  return fPosition[1];
 }
 //--------------------------------------------------------------------------
 Double_t AliITSVertex::GetZv() const {
@@ -260,27 +216,21 @@ Double_t AliITSVertex::GetXRes() const {
 //
 // Return error on global x
 //
-  Double_t cm[6];
-  GetCovMatrix(cm);
-  return TMath::Sqrt(cm[0]);
+  return TMath::Sqrt(fCovXX);
 }
 //--------------------------------------------------------------------------
 Double_t AliITSVertex::GetYRes() const {
 //
 // Return error on global y
 //
-  Double_t cm[6];
-  GetCovMatrix(cm);
-  return TMath::Sqrt(cm[2]);
+  return TMath::Sqrt(fCovYY);
 }
 //--------------------------------------------------------------------------
 Double_t AliITSVertex::GetZRes() const {
 //
 // Return error on global z
 //
-  Double_t cm[6];
-  GetCovMatrix(cm);
-  return TMath::Sqrt(cm[5]);
+  return TMath::Sqrt(fCovZZ);
 }
 //--------------------------------------------------------------------------
 void AliITSVertex::GetSNR(Double_t snr[3]) const {
@@ -296,10 +246,6 @@ void AliITSVertex::PrintStatus() const {
 //
 // Print out information on all data members
 //
-  if(fPhi) {
-    printf(" ! The vertex fitting has been done in the thrust frame !\n");
-    printf("   The rotation angle is %f. Numbers are given in the rotated frame.\n",fPhi);
-  }
   printf(" Vertex position:\n");
   printf("   x = %f +- %f\n",fPosition[0],TMath::Sqrt(fCovXX));
   printf("   y = %f +- %f\n",fPosition[1],TMath::Sqrt(fCovYY));
