@@ -30,8 +30,6 @@
 #include "AliRun.h"
 #include "AliMagF.h"
 
-extern AliRun* gAlice;
-
 const AliMagF *AliTracker::fgkFieldMap=0;
 
 ClassImp(AliTracker)
@@ -49,9 +47,13 @@ AliTracker::AliTracker():
   //--------------------------------------------------------------------
   // The default constructor.
   //--------------------------------------------------------------------
- AliMagF *field=gAlice->Field();
- if (field==0) AliFatal("Can't access the field map !");
- SetFieldMap(field);
+  AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
+  if (!runLoader) AliFatal("Can't get the default run loader");
+  if (!runLoader->GetAliRun()) runLoader->LoadgAlice();
+  if (!runLoader->GetAliRun()) AliFatal("Can't get the AliRun object");
+  AliMagF *field=runLoader->GetAliRun()->Field();
+  if (field==0) AliFatal("Can't access the field map !");
+  SetFieldMap(field);
 }
 
 void AliTracker::SetFieldMap(const AliMagF* map) {
