@@ -44,7 +44,8 @@ class AliL3Transform {
   static Double_t fOuter1PRFSigma;
   static Double_t fOuter2PRFSigma;
   static Double_t fTimeSigma; //Minimal longitudinal width
-
+  static Int_t fADCSat;
+  
  public:
 
   static Bool_t Init(Char_t* path,Bool_t UseAliTPCParam=kFALSE); //init for different AliRoot versions
@@ -77,6 +78,7 @@ class AliL3Transform {
   static Double_t GetPadLength(Int_t padrow);
   static Double_t GetPRFSigma(Int_t padrow);
   static Double_t GetTimeSigma() {return fTimeSigma;}
+  static Int_t GetADCSat() {return fADCSat;}
   static Int_t GetNSectorLow() {return fNSectorLow;}
   static Int_t GetNSectorUp() {return fNSectorUp;}
   

@@ -407,7 +407,7 @@ void AliL3MemHandler::Generate(Int_t row)
   for(Int_t n=0;n<nrandom;n++){
     Int_t pad = (int)((float)rand()/RAND_MAX*npad);
     Int_t time =(int)((float)rand()/RAND_MAX*ntime+fEtaMinTimeBin[row] );
-    Int_t charge = (int)((float)rand()/RAND_MAX*1023);
+    Int_t charge = (int)((float)rand()/RAND_MAX*AliL3Transform::GetADCSat());
     DigitizePoint(row,pad,time,charge);
   }
   QSort(fDPt,0,fNDigits);
@@ -544,7 +544,7 @@ void AliL3MemHandler::MergeDataRandom(AliL3DigitData *data, UInt_t & ndata,
   data[ndata].fCharge = charge;
   while(ComparePoints(row,pad,time)==0){
     Int_t ch = data[ndata].fCharge + fDPt[fNUsed]->fCharge;
-    if(charge>1023) ch = 1023;
+    if(charge>=AliL3Transform::GetADCSat()) ch = AliL3Transform::GetADCSat();
     data[ndata].fCharge = ch;
     fNUsed++;
   }
@@ -651,8 +651,8 @@ Int_t AliL3MemHandler::Memory2CompMemory(UInt_t nrow,
       }
       while(digit<row_pt->fNDigit && row_pt->fDigitData[digit].fPad == pad){
         UShort_t charge = row_pt->fDigitData[digit].fCharge;
-        if(charge>=1024){
-          charge=1023;
+        if(charge>=AliL3Transform::GetADCSat()){
+          charge=AliL3Transform::GetADCSat();
         }
         Write(comp,index,subindex,charge);
         if(digit+1<row_pt->fNDigit&&row_pt->fDigitData[digit+1].fPad == pad){

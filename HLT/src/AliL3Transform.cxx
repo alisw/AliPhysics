@@ -95,6 +95,7 @@ Double_t AliL3Transform::fInnerPRFSigma = 0.20381128787994384766 ;
 Double_t AliL3Transform::fOuter1PRFSigma = 0.29932481050491333008 ;
 Double_t AliL3Transform::fOuter2PRFSigma = 0.29932320117950439453 ;
 Double_t AliL3Transform::fTimeSigma = 0.22880862653255462646 ;
+Int_t AliL3Transform::fADCSat = 1023;
 Int_t AliL3Transform::fNSlice = 36 ;
 Int_t AliL3Transform::fNRow = 159 ;
 Double_t AliL3Transform::fNRotShift = 0.5 ;
@@ -483,6 +484,7 @@ Bool_t AliL3Transform::Init(Char_t* path,Bool_t UseAliTPCParam)
     else if(strcmp(d1,"fOuter1PRFSigma")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fOuter1PRFSigma=(Double_t)ddummy;}
     else if(strcmp(d1,"fOuter2PRFSigma")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fOuter2PRFSigma=(Double_t)ddummy;}
     else if(strcmp(d1,"fTimeSigma")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fTimeSigma=(Double_t)ddummy;}
+    else if(strcmp(d1,"fADCSat")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fADCSat=(Int_t)dummy;}
     else if(strcmp(d1,"fNRow")==0){
       fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNRow=(Int_t)dummy;
       if(fNRow!=159){
@@ -644,7 +646,8 @@ Bool_t AliL3Transform::MakeInitFile(Char_t *filename,Char_t *path)
   fprintf(f,"  fOuter2PRFSigma = %.20f ;\n",param->GetOuter2PRF()->GetSigmaX());
   
   fprintf(f,"  fTimeSigma = %.20f ;\n",param->GetTimeRF()->GetSigma());
-  
+  fprintf(f,"  fADCSat = %d ;\n",param->GetADCSat());
+
   fprintf(f,"\n  //slices:\n");
   fprintf(f,"  fNSlice = %d ;\n",nSectorLow);
   fprintf(f,"  fNRow = %d ;\n",nRow);
