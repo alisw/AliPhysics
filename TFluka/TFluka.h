@@ -315,9 +315,9 @@ class TFluka : public TVirtualMC {
   //Index of fluka region at each step
   Int_t fCurrentFlukaRegion;
   //Map between volume name and media indices
-  map<TString, Int_t, less<TString> > fVolumeMediaMap;
+  std::map<TString, Int_t, std::less<TString> > fVolumeMediaMap;
   //Map between region and media indices
-  vector<Int_t> fMediaByRegion;
+  std::vector<Int_t> fMediaByRegion;
 
 
   ClassDef(TFluka,1)  //C++ interface to Fluka montecarlo

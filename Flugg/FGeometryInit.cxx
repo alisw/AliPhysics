@@ -624,9 +624,9 @@ void FGeometryInit::PrintMaterialTables(G4std::ostream& os) {
   size_t nElements = G4Element::GetNumberOfElements();
   size_t nMaterials = G4Material::GetNumberOfMaterials();
 
-  os << "* In Geant4 there are " << nMaterials << " materials" << endl;
-  os << "* In Geant4 there are " << nElements  << " elements"  << endl;
-  os << "* In Geant4 there are " << nIsotopes  << " isotopes"  << endl;
+  os << "* In Geant4 there are " << nMaterials << " materials" << G4endl;
+  os << "* In Geant4 there are " << nElements  << " elements"  << G4endl;
+  os << "* In Geant4 there are " << nIsotopes  << " isotopes"  << G4endl;
 
   //Materials
   G4cout << "\t* Printing FLUKA materials..." << G4endl;
