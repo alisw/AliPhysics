@@ -27,6 +27,8 @@ AliAODPair::AliAODPair(Bool_t rev):
  fQOutLCMSNotCalc(kTRUE),
  fQLongLCMS(0.0),
  fQLongLCMSNotCalc(kTRUE),
+ fQtLCMS(0.0),
+ fQtLCMSNotCalc(kTRUE),
  fQInv(0.0),
  fQInvNotCalc(kTRUE),
  fInvMass(0.0),
@@ -80,6 +82,8 @@ AliAODPair::AliAODPair(AliVAODParticle* part1, AliVAODParticle* part2, Bool_t re
  fQOutLCMSNotCalc(kTRUE),
  fQLongLCMS(0.0),
  fQLongLCMSNotCalc(kTRUE),
+ fQtLCMS(0.0),
+ fQtLCMSNotCalc(kTRUE),
  fQInv(0.0),
  fQInvNotCalc(kTRUE),
  fInvMass(0.0),
@@ -133,6 +137,8 @@ AliAODPair::AliAODPair(const AliAODPair& in):
  fQOutLCMSNotCalc(kTRUE),
  fQLongLCMS(0.0),
  fQLongLCMSNotCalc(kTRUE),
+ fQtLCMS(0.0),
+ fQtLCMSNotCalc(kTRUE),
  fQInv(0.0),
  fQInvNotCalc(kTRUE),
  fInvMass(0.0),
@@ -297,6 +303,17 @@ Double_t AliAODPair::GetQLongLCMS()
  return fQLongLCMS; 
 }
 /************************************************************************/
+
+Double_t AliAODPair::GetQtLCMS()
+{
+ //returns Q transverse CMS longitudionally co-moving
+ if (fQtLCMSNotCalc)
+  {
+    fQtLCMS = TMath::Hypot(GetQOutLCMS(),GetQSideLCMS());
+    fQtLCMSNotCalc = kFALSE;
+  }
+ return fQtLCMS; 
+}
 
 Double_t AliAODPair::GetKt()
 {
