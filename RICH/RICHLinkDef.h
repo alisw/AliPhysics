@@ -5,6 +5,7 @@
 #pragma link C++ enum   Response_t;
 #pragma link C++ class  AliRICH-;
 #pragma link C++ class  AliRICHv0;
+#pragma link C++ class  AliRICHv1;
 #pragma link C++ class  AliRICHHit;
 #pragma link C++ class  AliRICHPadHit;
 #pragma link C++ class  AliRICHDigit;
@@ -27,6 +28,7 @@
 #pragma link C++ class  AliRICHHitMap;
 #pragma link C++ class  AliRICHHitMapA1;
 #pragma link C++ class  AliRICHClusterFinder;
+#pragma link C++ class  AliRICHPatRec;
 #endif
 
 
