@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/10/02 21:28:19  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.8  2000/06/09 11:10:07  cblume
 Compiler warnings and coding conventions, next round
 
@@ -61,6 +64,8 @@ Add new TRD classes
 //  slowDigitsCreate.C macro.                                                //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+
+#include <stdlib.h>
 
 #include <TMath.h>
 #include <TVector.h>
