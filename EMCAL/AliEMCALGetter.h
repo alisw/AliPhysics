@@ -200,7 +200,7 @@ class AliEMCALGetter : public TObject {
 
  private:
 
-  TFile *        fFile ;              //!
+  static TFile *        fFile ;              //!
   TString        fHeaderFile ;        //! File in which gAlice lives
   TString        fBranchTitle ;       //!
   //TString        fTrackSegmentsTitle ;//! 
