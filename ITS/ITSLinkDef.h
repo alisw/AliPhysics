@@ -126,6 +126,7 @@
 // This class will always be for ITS only
 #pragma link C++ class  AliITSvtest+;
 
+#pragma link C++ class AliITSclustererV2+;
 #pragma link C++ class AliITSclusterV2+;
 #pragma link C++ class AliITStrackV2+;
 #pragma link C++ class AliITStrackerV2+;
