@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/12/04 16:30:02  morsch
+Update to geometry defined for the Muon Spectrometer Addendum to the TDR.
+
 */
 
 
@@ -1599,14 +1602,14 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   cpar[1]=R11;
   cpar[2]=18.;
   cpar[3]=R11;
-  cpar[4]=18.0;
+  cpar[4]=17.9;
   gMC->Gsvolu("YCS2", "CONE", idtmed[kAir], cpar, 5);
   dz=zch11+cpar[0];
   gMC->Gspos("YCS2", 1, "ALIC", 0., 0., dz, 0, "ONLY");
 
   Float_t ptubs[5];
   ptubs[0] = R11;
-  ptubs[1] = 18.;
+  ptubs[1] = 17.9;
   ptubs[2] =   0.;
 // phi_min, phi_max
   ptubs[3] =   0.;
