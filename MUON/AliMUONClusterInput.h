@@ -44,6 +44,8 @@ class AliMUONClusterInput : public TObject {
 // 
  protected:
     AliMUONClusterInput(){;}
+    AliMUONClusterInput(const AliMUONClusterInput& clusterInput){;}
+    AliMUONClusterInput & operator = (const AliMUONClusterInput& rhs);
  private:
     static AliMUONClusterInput* fgClusterInput; // singleton instance
     // Digits
