@@ -18,11 +18,11 @@ class AliHBTLLWeightsPID: public TObject
  {
  public:
    AliHBTLLWeightsPID();
-   AliHBTLLWeightsPID(const AliHBTLLWeightsPID &source) {
+   AliHBTLLWeightsPID(const AliHBTLLWeightsPID &source):TObject(source) {
      //Copy ctor needed by the coding conventions but not used
      Fatal("AliHBTLLWeightsPID","copy ctor not implemented");
    }
-   AliHBTLLWeightsPID & operator=(const AliHBTLLWeightsPID &source) {
+   AliHBTLLWeightsPID & operator=(const AliHBTLLWeightsPID &/*source*/) {
      //Assignment operator needed by the coding conventions but not used
      Fatal("AliHBTLLWeightsPID","assignment operator not implemented");
      return * this;
