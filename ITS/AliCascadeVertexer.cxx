@@ -78,7 +78,7 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
 	 AliITStrackV2 *b=(AliITStrackV2*)trks.UncheckedAt(j);
 
          if (TMath::Abs(b->GetD())<fDBachMin) continue;
-         if (b->Get1Pt()<0.) continue;  // bachelor's charge 
+         if (b->Get1Pt()>0.) continue;  // bachelor's charge 
           
 	 AliV0vertex v0(*v), *pv0=&v0;
          AliITStrackV2 bt(*b), *pbt=&bt;
@@ -124,7 +124,7 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
 	 AliITStrackV2 *b=(AliITStrackV2*)trks.UncheckedAt(j);
 
          if (TMath::Abs(b->GetD())<fDBachMin) continue;
-         if (b->Get1Pt()>0.) continue;  // bachelor's charge 
+         if (b->Get1Pt()<0.) continue;  // bachelor's charge 
           
 	 AliV0vertex v0(*v), *pv0=&v0;
          AliITStrackV2 bt(*b), *pbt=&bt;
@@ -254,8 +254,8 @@ V0sTracks2CascadeVertices(TTree *vTree,TTree *tTree, TTree *xTree) {
 
           if (TMath::Abs(bachtrk->GetD())<fDBachMin) continue;        // eliminate to small impact parameters
 
-          if (lV0ver->GetPdgCode()==kLambda0 && bachtrk->Get1Pt()<0.) continue;     // condition on V0 label 
-          if (lV0ver->GetPdgCode()==kLambda0Bar && bachtrk->Get1Pt()>0.) continue;  // + good sign for bachelor
+          if (lV0ver->GetPdgCode()==kLambda0 && bachtrk->Get1Pt()>0.) continue;     // condition on V0 label 
+          if (lV0ver->GetPdgCode()==kLambda0Bar && bachtrk->Get1Pt()<0.) continue;  // + good sign for bachelor
           
 	  AliV0vertex lV0(*lV0ver), *pV0=&lV0;
           AliITStrackV2 bt(*bachtrk), *pbt=&bt;

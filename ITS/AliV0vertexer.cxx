@@ -63,7 +63,7 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESD *event) {
        continue;
      }
 
-     if (iotrack->Get1Pt() > 0.) {nneg++; negtrks.AddLast(iotrack);}
+     if (iotrack->Get1Pt() < 0.) {nneg++; negtrks.AddLast(iotrack);}
      else {npos++; postrks.AddLast(iotrack);}
    }   
 
