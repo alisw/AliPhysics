@@ -116,6 +116,7 @@ the AliITS class.
 #include "AliV0vertexer.h"
 #include "AliCascadeVertexer.h"
 #include "AliESD.h"
+#include "AliRun.h"
 
 ClassImp(AliITS)
 

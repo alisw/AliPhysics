@@ -20,6 +20,7 @@
 //  of cluster equal to fgkMaxNumberOfClusters    //
 ////////////////////////////////////////////////////
 
+#include "AliRun.h"
 #include "AliITS.h"
 #include "AliITSgeom.h"
 #include "AliITStrackSA.h"
