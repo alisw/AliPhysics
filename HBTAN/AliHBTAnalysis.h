@@ -11,6 +11,7 @@ class AliHBTPairCut;
 class AliHBTPair;
 
 class AliHBTRun;
+class AliHBTEvent;
 class AliHBTReader;
 class AliHBTOnePairFctn;      
 class AliHBTTwoPairFctn;
@@ -41,11 +42,15 @@ class AliHBTAnalysis: public TObject
      void WriteFunctions();
      
      void SetBufferSize(Int_t buffsize){fBufferSize=buffsize;}
-    
+     
+     Bool_t IsNonIdentAnalysis();
    protected:
      
      Bool_t RunCoherencyCheck();
      
+     void FilterOut(AliHBTEvent* outpart1, AliHBTEvent* outpart2, AliHBTEvent* inpart,
+                    AliHBTEvent* outtrack1, AliHBTEvent* outtrack2, AliHBTEvent* intrack);
+     void FilterOut(AliHBTEvent* out1, AliHBTEvent* out2, AliHBTEvent* in);
      
      AliHBTReader* fReader;//!
      
@@ -53,10 +58,13 @@ class AliHBTAnalysis: public TObject
      virtual void ProcessParticles();
      virtual void ProcessTracksAndParticles();
      
+     virtual void ProcessTracksAndParticlesNonIdentAnal();
+     virtual void ProcessParticlesNonIdentAnal();
+     virtual void ProcessTracksNonIdentAnal();
      
      AliHBTOnePairFctn**  fTrackFunctions; //!array of pointers to functions that analyze rekonstructed tracks
      AliHBTOnePairFctn**  fParticleFunctions; //!array of pointers to functions that analyze generated particles
-     AliHBTTwoPairFctn** fParticleAndTrackFunctions; //!array of pointers to functions that analyze both 
+     AliHBTTwoPairFctn**  fParticleAndTrackFunctions; //!array of pointers to functions that analyze both 
                                         //reconstructed tracks and generated particles
 		//i.e. - resolution analyzers
      UInt_t fNTrackFunctions; //!
