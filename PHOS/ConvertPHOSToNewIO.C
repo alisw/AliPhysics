@@ -12,7 +12,6 @@
 #include <TObjectTable.h>
 #include <iostream.h>
 #include <fstream.h>
-#include "AliMC.h"
 #include <TFile.h>
 #include <TStyle.h>
 #include <TCanvas.h>
