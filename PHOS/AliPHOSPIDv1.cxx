@@ -511,9 +511,9 @@ void  AliPHOSPIDv1::SetParameters()
   fParameters = new TMatrixD(22,3) ;
  
 #if defined (__GNUC__)&&(__GNUC__ >= 3)
-  ifstream paramFile5(fFileNamePar5, ios_base::out) ; 
+  ifstream paramFile5(fFileNamePar5) ; 
 #else
-  ifstream paramFile5(fFileNamePar5, ios::out) ; 
+  ifstream paramFile5(fFileNamePar5) ; 
 #endif  
 
   Int_t i,j ;
@@ -526,9 +526,9 @@ void  AliPHOSPIDv1::SetParameters()
   paramFile5.close();
  
 #if defined (__GNUC__)&&(__GNUC__ >= 3)
-  ifstream paramFile100(fFileNamePar100, ios_base::out) ; 
+  ifstream paramFile100(fFileNamePar100) ; 
 #else
-  ifstream paramFile100(fFileNamePar100, ios::out) ; 
+  ifstream paramFile100(fFileNamePar100) ; 
 #endif
   
   Int_t l,k ;
@@ -541,9 +541,9 @@ void  AliPHOSPIDv1::SetParameters()
   paramFile100.close();
  
 #if defined (__GNUC__)&&(__GNUC__ >= 3)
-  ifstream paramFile(fFileNamePar100, ios_base::out) ; 
+  ifstream paramFile(fFileNamePar100) ; 
 #else
-  ifstream paramFile(fFileNamePar100, ios::out) ; 
+  ifstream paramFile(fFileNamePar100) ; 
 #endif
   Int_t h,n;
   for(h = 0; h< 22; h++){
