@@ -1,79 +1,34 @@
 #ifndef ALIL3_HOUGHTRANSFORMERVHDL
 #define ALIL3_HOUGHTRANSFORMERVDHL
 
-#include "AliL3RootTypes.h"
-#include "AliL3HoughBaseTransformer.h"
-#include "AliL3FFloat.h"
-
+#include "AliL3Histogram.h"
+#include "AliL3HoughTransformerLUT.h"
 class AliL3Histogram;
 
-class AliL3HoughTransformerVhdl : public AliL3HoughBaseTransformer 
+class AliL3HoughTransformerVhdl : public AliL3HoughTransformerLUT 
 {
-
- private:
-
-  AliL3Histogram **fParamSpace; //!
-
-#ifdef VHDLVERSION
-  Int_t fMinRow;
-  Int_t fMaxRow;
-  Int_t fNRows;
-  Int_t fNEtas;
-  Int_t fNPhi0;
-  Int_t fSector;
-  Int_t fSectorRow;
-  Int_t fZSign;
-  AliL3FFloat fZLengthPlusOff;
-  AliL3FFloat fTimeWidth;
-  AliL3FFloat fPadPitch;
-  AliL3FFloat fEtaSlice;
-
-  //VESTBO: Here is the problem: it seems that
-  //values into the arrays somehow overwrite 
-  //other data member. And that even in the
-  //static version, where I dont use heap!!!
-#ifdef VHDLSTATIC
-  /*
-    AliL3FFloat fLUTX[32]; 
-    AliL3FFloat fLUTY[32]; 
-    AliL3FFloat fLUTEta[256]; 
-    AliL3FFloat fLUTphi0[256]; 
-    AliL3FFloat fLUT2sinphi0[256];   
-    AliL3FFloat fLUT2cosphi0[256];
-  */
-#else
-  AliL3FFloat *fLUTX; //!
-  AliL3FFloat *fLUTY; //!
-  AliL3FFloat *fLUTEta; //!
-  AliL3FFloat *fLUTphi0; //!
-  AliL3FFloat *fLUT2sinphi0; //!   
-  AliL3FFloat *fLUT2cosphi0; //!
-#endif
-
-
-#if 0  
-  Float_t CalcRoverZ2(Float_t eta);
-  Float_t CalcEta(Float_t roverz2);
-  Float_t CalcX(Int_t row);
-  Float_t CalcY(Int_t pad, Int_t row);
-  Float_t CalcZ(Int_t time);  
-
-  Int_t FindIndex(Double_t rz2);
-#endif
-#endif
-  void DeleteHistograms();
+ protected:
+  Float_t fEpsilon;
+  Float_t fSinEpsilon;
+  Float_t fCosEpsilon;
+  Int_t fIts;
 
  public:
 
   AliL3HoughTransformerVhdl(); 
-  AliL3HoughTransformerVhdl(Int_t slice,Int_t patch,Int_t n_eta_segments);
+  AliL3HoughTransformerVhdl(Int_t slice,Int_t patch,Int_t n_eta_segments,Int_t n_its=0);
   virtual ~AliL3HoughTransformerVhdl();
 
   void CreateHistograms(Int_t nxbin,Double_t ptmin,Int_t nybin,Double_t phimin,Double_t phimax);
   void CreateHistograms(Int_t nxbin,Double_t xmin,Double_t xmax,
 			Int_t nybin,Double_t ymin,Double_t ymax);
-  void Reset();
+
   void TransformCircle();
+#if 0
+
+
+  void Reset();
+
   void TransformCircleC(Int_t row_range) {STDCERR<<"TransformCircleC is not defined!"<<STDENDL;}
   void TransformLine() {STDCERR<<"TransformLine is not defined!"<<STDENDL;}
 
@@ -81,10 +36,10 @@ class AliL3HoughTransformerVhdl : public AliL3HoughBaseTransformer
   AliL3Histogram *GetHistogram(Int_t eta_index);
   Double_t GetEta(Int_t eta_index,Int_t slice);
 
-#ifdef VHDLVERSION
-  void Print();
-  void Init(Int_t slice=0,Int_t patch=0,Int_t n_eta_segments=100);
+
 #endif
+  void Init(Int_t slice=0,Int_t patch=0,Int_t n_eta_segments=100,Int_t n_its=-1);
+  void Print();
 
   ClassDef(AliL3HoughTransformerVhdl,1) //Normal Hough transformation class
 
