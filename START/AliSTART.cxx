@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2000/12/04 08:48:19  alibrary
+Fixing problems in the HEAD
+
 Revision 1.11  2000/10/13 13:14:08  hristov
 Bug fixes and code cleaning
 
@@ -106,7 +109,7 @@ AliSTART::AliSTART(const char *name, const char *title)
   //
   // Initialise Hit array
   fHits       = new TClonesArray("AliSTARThit",  405);
-  //  gAlice->AddHitList(fHits);
+  gAlice->AddHitList(fHits);
   //  fDigits     = new TClonesArray("AliSTARTdigit",500);
   
   fIshunt     =  0;
