@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2002/11/02 15:15:58  hristov
+Corrected with respect to the previous versions
+
 Revision 1.6  2002/11/01 19:48:35  nilsen
 Fixed bug in material numbering for new FMD part of code. Removed large part
 of commented code (if still needed it is in AliITSvPPRasymm.cxx).
@@ -4764,30 +4767,30 @@ void AliITSvPPRasymmFMD::CreateMaterials(){
   Z[1] = 6.0; A[1] = 12.011; // Carbon
   Z[2] = 7.0; A[2] = 14.00674; // Nitrogen
   Z[3] = 8.0; A[3] = 15.9994; // Oxigen
-  Z[4] = 13.0; A[4] = 26.981539; // Alulminum
-  Z[5] = 14.0; A[5] = 28.0855; // Silicon
-  Z[6] = 24.0; A[6] = 51.9961; //Cromium
-  Z[7] = 25.0; A[7] = 54.938049; // Manganese
-  Z[8] = 26.0; A[8] = 55.845; // Iron
-  Z[9] = 27.0; A[9] = 58.9332; // Cobolt
-  Z[10] = 28.0; A[10] = 58.6934; // Nickle
-  Z[11] = 29.0; A[11] = 63.546; // Copper
-  Z[12] = 47.0; A[12] = 107.8682; // Silver
+  Z[4] = 14.0; A[4] = 28.0855; // Silicon
+  Z[5] = 24.0; A[5] = 51.9961; //Cromium
+  Z[6] = 25.0; A[6] = 54.938049; // Manganese
+  Z[7] = 26.0; A[7] = 55.845; // Iron
+  Z[8] = 28.0; A[8] = 58.6934; // Nickle
+  Z[9] = 29.0; A[9] = 63.546; // Copper
+  Z[10] = 13.0; A[10] = 26.981539; // Alulminum
+  Z[11] = 47.0; A[11] = 107.8682; // Silver
+  Z[12] = 27.0; A[12] = 58.9332; // Cobolt
   W[0] = 0.019965;
   W[1] = 0.340961;
   W[2] = 0.041225;
   W[3] = 0.200352;
-  W[4] = 0.008121;
-  W[5] = 0.000386;
-  W[6] = 0.001467;
-  W[7] = 0.000155;
-  W[8] = 0.005113;
-  W[9] = 0.000000;
-  W[10] = 0.000993;
-  W[11] = 0.381262;
+  W[4] = 0.000386;
+  W[5] = 0.001467;
+  W[6] = 0.000155;
+  W[7] = 0.005113;
+  W[8] = 0.000993;
+  W[9] = 0.381262;
+  W[10] = 0.008121;
+  W[11] = 0.000000;
   W[12] = 0.000000;
   den = (538.16+6161.7)/(3671.58978); // g/cm^3 Volume does not exclude holes
-  AliMixture(86,"AIRFMDSDD$",A,Z,den,+13,W);
+  AliMixture(86,"AIRFMDSDD$",A,Z,den,+11,W);
   AliMedium(86,"AIRFMDSDD$",86,0,ifield,fieldm,tmaxfdAir,stemaxAir,deemaxAir,epsilAir,stminAir);
 
   //AliMaterial(87,"AIRFMDSSD$",0.14610E+02,0.73000E+01,0.12050E-02,0.30423E+05,0.99900E+03);
@@ -4796,17 +4799,17 @@ void AliITSvPPRasymmFMD::CreateMaterials(){
   W[1] = 0.325901;
   W[2] = 0.031848;
   W[3] = 0.147668;
-  W[4] = 0.014546;
-  W[5] = 0.030609;
-  W[6] = 0.013993;
-  W[7] = 0.001479;
-  W[8] = 0.048792;
-  W[9] = 0.000000;
-  W[10] = 0.009477;
-  W[11] = 0.350697;
-  W[12] = 0.005213;
+  W[4] = 0.030609;
+  W[5] = 0.013993;
+  W[6] = 0.001479;
+  W[7] = 0.048792;
+  W[8] = 0.009477;
+  W[9] = 0.350697;
+  W[10] = 0.014546;
+  W[11] = 0.005213;
+  W[12] = 0.000000;
   den = (2180.4+7666.3)/(9753.553259); // volume does not exclude holes
-  AliMixture(87,"AIRFMDSSD$",A,Z,den,+13,W); 
+  AliMixture(87,"AIRFMDSSD$",A,Z,den,+12,W); 
   AliMedium(87,"AIRFMDSSD$",87,0,ifield,fieldm,tmaxfdAir,stemaxAir,deemaxAir,epsilAir,stminAir);
 
   //AliMaterial(88,"ITS SANDW CFMDSDD$",0.12011E+02,0.60000E+01,0.41000E+00,0.90868E+02,0.99900E+03);
@@ -4815,17 +4818,17 @@ void AliITSvPPRasymmFMD::CreateMaterials(){
   W[1] = 0.461870;
   W[2] = 0.033662;
   W[3] = 0.163595;
-  W[4] = 0.006631;
-  W[5] = 0.000315;
-  W[6] = 0.001197;
-  W[7] = 0.000127;
-  W[8] = 0.004175;
-  W[9] = 0.000000;
-  W[10] = 0.000811;
-  W[11] = 0.311315;
+  W[4] = 0.000315;
+  W[5] = 0.001197;
+  W[6] = 0.000127;
+  W[7] = 0.004175;
+  W[8] = 0.000811;
+  W[9] = 0.311315;
+  W[10] = 0.006631;
+  W[11] = 0.000000;
   W[12] = 0.000000;
   den = (538.16+76671)/(3671.58978); // Volume does not excludeholes
-  AliMixture(88,"ITS SANDW CFMDSDD$",A,Z,den,+13,W); 
+  AliMixture(88,"ITS SANDW CFMDSDD$",A,Z,den,+11,W); 
   AliMedium(88,"ITS SANDW CFMDSDD$",88,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
   //AliMaterial(89,"ITS SANDW CFMDSSD$",0.12011E+02,0.60000E+01,0.41000E+00,0.90868E+02,0.99900E+03);
@@ -4834,17 +4837,17 @@ void AliITSvPPRasymmFMD::CreateMaterials(){
   W[1] = 0.520598;
   W[2] = 0.022650;
   W[3] = 0.105018;
-  W[4] = 0.010345;
-  W[5] = 0.021768;
-  W[6] = 0.009952;
-  W[7] = 0.001051;
-  W[8] = 0.034700;
-  W[9] = 0.000000;
-  W[10] = 0.006740;
-  W[11] = 0.249406;
-  W[12] = 0.0003707;
+  W[4] = 0.021768;
+  W[5] = 0.009952;
+  W[6] = 0.001051;
+  W[7] = 0.034700;
+  W[8] = 0.006740;
+  W[9] = 0.249406;
+  W[10] = 0.010345;
+  W[11] = 0.0003707;
+  W[12] = 0.000000;
   den = (2180.4+11665.)/(3671.58978); // Volume does not exclude holes
-  AliMixture(89,"ITS SANDW CFMDSSD$",A,Z,den,+13,W); 
+  AliMixture(89,"ITS SANDW CFMDSSD$",A,Z,den,+12,W); 
   AliMedium(89,"ITS SANDW CFMDSSD$",89,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
   //AliMaterial(97,"SPD SERVICES$",0.12011E+02,0.60000E+01,0.41000E+00,0.90868E+02,0.99900E+03);
@@ -4853,17 +4856,17 @@ void AliITSvPPRasymmFMD::CreateMaterials(){
   W[1] = 0.304704;
   W[2] = 0.042510;
   W[3] = 0.121715;
-  W[4] = 0.000000;
-  W[5] = 0.001118;
-  W[6] = 0.030948;
-  W[7] = 0.003270;
-  W[8] = 0.107910;
-  W[9] = 0.000000;
-  W[10] = 0.020960;
-  W[11] = 0.360895;
+  W[4] = 0.001118;
+  W[5] = 0.030948;
+  W[6] = 0.003270;
+  W[7] = 0.107910;
+  W[8] = 0.020960;
+  W[9] = 0.360895;
+  W[10] = 0.000000;
+  W[11] = 0.000000;
   W[12] = 0.000000;
   den = 1251.3/(0.05*2.0*TMath::Pi()*(7.75*7.75 - 3.7*3.7)); // g/cm^3
-  AliMixture(97,"SPD SERVICES$",A,Z,den,+13,W); 
+  AliMixture(97,"SPD SERVICES$",A,Z,den,+10,W); 
   AliMedium(97,"SPD SERVICES$",97,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
 
