@@ -253,7 +253,7 @@ Int_t AliReaderESD::ReadESD(AliESD* esd)
      Error("ReadESD","ESD is NULL");
      return 1;
    }
-
+  
   TDatabasePDG* pdgdb = TDatabasePDG::Instance();
   if (pdgdb == 0x0)
    {
@@ -543,17 +543,20 @@ Int_t AliReaderESD::ReadESD(AliESD* esd)
       }
      else
       {
-        if (particle->P() < 0.00001)
+        if ( fReadSim && stack  )
          {
-           Info("ReadNext","###################################");
-           Info("ReadNext","###################################");
-           Info("ReadNext","Track Label %d",esdtrack->GetLabel());
-           TParticle *p = stack->Particle(esdtrack->GetLabel());
-           Info("ReadNext","");
-           p->Print();
-           Info("ReadNext","");
-           particle->Print();
-         }
+           if (particle->P() < 0.00001)
+            {
+              Info("ReadNext","###################################");
+              Info("ReadNext","###################################");
+              Info("ReadNext","Track Label %d",esdtrack->GetLabel());
+              TParticle *p = stack->Particle(esdtrack->GetLabel());
+              Info("ReadNext","");
+              p->Print();
+              Info("ReadNext","");
+              particle->Print();
+            }
+         }   
       } 
 
    }//for (Int_t i = 0;i<ntr; i++)  -- loop over tracks
