@@ -240,7 +240,7 @@ const TString AliPHOSPIDv1::GetFileNamePrincipal(TString particle) const
 }
 
 //____________________________________________________________________________
-const Float_t  AliPHOSPIDv1::GetParameterCalibration(const Int_t i) const 
+const Float_t  AliPHOSPIDv1::GetParameterCalibration(Int_t i) const 
 {
   // Get the i-th parameter "Calibration"
   Float_t param = 0.;
@@ -268,7 +268,7 @@ const Float_t  AliPHOSPIDv1::GetParameterCpv2Emc(Int_t i, TString axis) const
 }
 
 //____________________________________________________________________________
-const Float_t  AliPHOSPIDv1::GetParameterTimeGate(const Int_t i) const
+const Float_t  AliPHOSPIDv1::GetParameterTimeGate(Int_t i) const
 {
   // Get TimeGate parameter depending on Purity-Efficiency i:
   // i=0 - Low purity, i=1 - Medium purity, i=2 - High purity
