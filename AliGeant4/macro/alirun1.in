@@ -52,7 +52,7 @@ exit
 # /hits/verbose 1
 # /event/verbose 2
 # /run/verbose 2
-# /aliTracking/verbose 3
+# /aliVerbose/trackingAction 3
 # /aliTracking/loopVerbose 5
 # /aliEvent/verbose 2
 # /particle/select pi-
