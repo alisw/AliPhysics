@@ -1,4 +1,4 @@
-{
+void user() {
   // change AliFast default parameters
 
    gAliFast->SetSmearing(1);
