@@ -61,7 +61,7 @@ ROOTLIBS      = $(shell $(ROOTSYS)/bin/root-config --glibs) -lMinuit -lHtml
 # Alice libraries
 
 ALILIBS	      = -L$(LIBDIR) -lMUON -lTPC -lPMD -lTRD -lFMD -lTOF \
-                -lITS -lPHOSdummy -lPHOS -lCASTOR -lRICH -lZDC -lSTRUCT \
+                -lITS -lPHOS -lCASTOR -lRICH -lZDC -lSTRUCT \
                 -lTGeant3 -lSTART -lEVGEN -lSTEER
 
 # CERN Libraries 
