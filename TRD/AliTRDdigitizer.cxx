@@ -401,7 +401,8 @@ Bool_t AliTRDdigitizer::Open(const Char_t *file, Int_t nEvent)
 
   // Connect the AliRoot file containing Geometry, Kine, and Hits
   
-  fRunLoader = AliRunLoader::Open(file,AliConfig::fgkDefaultEventFolderName);
+  fRunLoader = AliRunLoader::Open(file,AliConfig::fgkDefaultEventFolderName,
+				  "UPDATE");
   
   if (!fRunLoader)
    {

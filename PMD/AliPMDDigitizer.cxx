@@ -92,7 +92,8 @@ void AliPMDDigitizer::OpengAliceFile(const char *file, Option_t *option)
   // Loads galice.root file and corresponding header, kinematics
   // hits and sdigits or digits depending on the option
   //
-  fRunLoader = AliRunLoader::Open(file,AliConfig::fgkDefaultEventFolderName);
+  fRunLoader = AliRunLoader::Open(file,AliConfig::fgkDefaultEventFolderName,
+				  "UPDATE");
   
   if (!fRunLoader)
    {
