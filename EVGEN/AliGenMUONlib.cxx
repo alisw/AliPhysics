@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2003/03/25 12:01:11  morsch
+Quarkonia for pp @ 14 TeV added.
+
 Revision 1.20  2003/03/13 11:54:39  morsch
 Limited pT range for parameterized Upsilon and J/Psi pT distributions.
 
@@ -348,7 +351,14 @@ Double_t AliGenMUONlib::YJpsiPP( Double_t *px, Double_t *dummy)
 Int_t AliGenMUONlib::IpJpsi(TRandom *)
 {
 // J/Psi composition
-    return 443;
+    Int_t ip;
+    Float_t r = gRandom->Rndm();
+    if (r < 0.98) {
+	ip = 443;
+    } else {
+	ip = 100443;
+    }
+    return ip;
 }
 
 //                      Upsilon
@@ -496,7 +506,18 @@ Double_t AliGenMUONlib::YUpsilonPP( Double_t *px, Double_t *dummy)
 Int_t AliGenMUONlib::IpUpsilon(TRandom *)
 {
 // y composition
-    return 553;
+    Int_t ip;
+    Float_t r = gRandom->Rndm();
+    
+    if (r < 0.712) {
+	ip = 553;
+    } else if (r < 0.896) {
+	ip = 100553;
+    } else {
+	ip = 200553;
+    }
+
+    return ip;
 }
 
 //
