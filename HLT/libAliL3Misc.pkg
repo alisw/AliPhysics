@@ -23,8 +23,8 @@ HDRS:= $(SRCS:.cxx=.h) $(HLTEHDRS)
 DHDR:= misc/AliL3MiscLinkDef.h
 
 EDEFINE      := ${HLTDEFS}
-PACKCXXFLAGS := $(CXXFLAGS) ${HLTDEFS}
-PACKCFLAGS   := $(CFLAGS)   ${HLTDEFS}
-PACKDCXXFLAGS:= $(CXXFLAGS) ${HLTDEFS}
+PACKCXXFLAGS := $(filter-out -pedantic-errors, $(filter-out -Werror,$(CXXFLAGS))) ${HLTDEFS}
+PACKCFLAGS   := $(filter-out -ansi,$(filter-out -pedantic-errors, $(filter-out -Werror,$(CFLAGS))))   ${HLTDEFS}
+PACKDCXXFLAGS:= $(filter-out -pedantic-errors, $(filter-out -Werror,$(CXXFLAGS))) ${HLTDEFS}
 
 EINCLUDE:= HLT/src HLT/hough HLT/comp HLT/misc TPC STEER CONTAINERS 
