@@ -1,16 +1,22 @@
 #ifndef ALIHBTQOUTVsQINVRESOLFCTN_H
 #define ALIHBTQOUTVsQINVRESOLFCTN_H
-//General Remark:
-//CMSLC means
-//Center of Mass System Longitudially Co-moving
+//__________________________________________________________________
+////////////////////////////////////////////////////////////////////
+//                                                                //
+// General Remark:                                                //
+// CMSLC means                                                    //
+// Center of Mass System Longitudially Co-moving                  //
+//                                                                //
+//                                                                //
+// This class creates resolution function of Qout                 //
+// (difference of simulated pair Qout and recontructed pair)      //
+// in function of QInv                                            //
+// it inherits from AliHBTTwoPairFctn2D                           //
+//  it needs two pairs to compare                                 //
+//  and is two dimentional: numerator and denominator are TH2D    //
+//                                                                //
+////////////////////////////////////////////////////////////////////
 
-
-//this class creates resolution function of Qout 
-//(difference of simulated pair Qout and recontructed pair)
-//in function of QInv
-//it inherits from AliHBTTwoPairFctn2D
-//  it needs two pairs to compare
-//  and is two dimentional: numerator and denominator are TH2D
 
 class AliHBTKtResolVsQInvFctn;  //Kt Res   Vs   QInvCMSLC 
 
@@ -56,7 +62,6 @@ class AliHBTKtResolVsQInvFctn: public AliHBTTwoPairFctn2D
     }
   protected:
   private: 
-  public:
     ClassDef(AliHBTKtResolVsQInvFctn,1)
  };
 
@@ -79,7 +84,6 @@ class AliHBTQInvResolVsQInvFctn: public AliHBTTwoPairFctn2D
     }
   protected:
   private: 
-  public:
     ClassDef(AliHBTQInvResolVsQInvFctn,1)
  };
 
@@ -102,7 +106,6 @@ class AliHBTQOutResolVsQInvFctn: public AliHBTTwoPairFctn2D
     }
   protected:
   private: 
-  public:
     ClassDef(AliHBTQOutResolVsQInvFctn,1)
  };
 
@@ -123,7 +126,6 @@ class AliHBTQSideResolVsQInvFctn: public AliHBTTwoPairFctn2D
    TH1* GetResult(){return fNumerator;} 
   protected:
   private:
-  public:
     ClassDef(AliHBTQSideResolVsQInvFctn,1)
  };
 
@@ -144,7 +146,6 @@ class AliHBTQLongResolVsQInvFctn: public AliHBTTwoPairFctn2D
    TH1* GetResult(){return fNumerator;} 
   protected:
   private:
-  public:
     ClassDef(AliHBTQLongResolVsQInvFctn,1)
  };
 
@@ -165,7 +166,6 @@ class AliHBTQInvResolVsKtFctn: public AliHBTTwoPairFctn2D
    TH1* GetResult(){return fNumerator;} 
   protected:
   private:
-  public:
     ClassDef(AliHBTQInvResolVsKtFctn,1)
  };
 /***********************************************************************/
@@ -184,7 +184,6 @@ class AliHBTQOutResolVsKtFctn: public AliHBTTwoPairFctn2D
     }
   protected:
   private:
-  public:
     ClassDef(AliHBTQOutResolVsKtFctn,1)
  };
 /***********************************************************************/
@@ -203,7 +202,6 @@ class AliHBTQSideResolVsKtFctn: public AliHBTTwoPairFctn2D
     }
   protected:
   private:
-  public:
     ClassDef(AliHBTQSideResolVsKtFctn,1)
  };
 /***********************************************************************/
@@ -223,7 +221,6 @@ class AliHBTQLongResolVsKtFctn: public AliHBTTwoPairFctn2D
    TH1* GetResult(){return fNumerator;}
   protected:
   private:
-  public:
     ClassDef(AliHBTQLongResolVsKtFctn,1)
  };
 /***********************************************************************/
@@ -243,7 +240,6 @@ class AliHBTQOutResolVsQOutFctn: public AliHBTTwoPairFctn2D
    TH1* GetResult(){return fNumerator;}  
   protected:
   private:
-  public:
     ClassDef(AliHBTQOutResolVsQOutFctn,1)
  };
 
@@ -265,7 +261,6 @@ class AliHBTQSideResolVsQSideFctn: public AliHBTTwoPairFctn2D
    TH1* GetResult(){return fNumerator;}  
   protected:
   private:
-  public:
     ClassDef(AliHBTQSideResolVsQSideFctn,1)
  };
 
@@ -288,7 +283,6 @@ class AliHBTQLongResolVsQLongFctn: public AliHBTTwoPairFctn2D
    TH1* GetResult(){return fNumerator;}  
   protected:
   private:
-  public:
     ClassDef(AliHBTQLongResolVsQLongFctn,1)
  };
 
@@ -313,7 +307,6 @@ class AliHBTPairThetaResolVsQInvFctn: public AliHBTTwoPairFctn2D
     }
   protected:
   private: 
-  public:
     ClassDef(AliHBTPairThetaResolVsQInvFctn,1)
  };
 
@@ -337,7 +330,6 @@ class AliHBTPairPhiResolVsQInvFctn: public AliHBTTwoPairFctn2D
     }
   protected:
   private: 
-  public:
     ClassDef(AliHBTPairPhiResolVsQInvFctn,1)
  };
 
@@ -361,7 +353,6 @@ class AliHBTPairThetaResolVsKtFctn: public AliHBTTwoPairFctn2D
     }
   protected:
   private: 
-  public:
     ClassDef(AliHBTPairThetaResolVsKtFctn,1)
  };
 
@@ -385,7 +376,6 @@ class AliHBTPairPhiResolVsKtFctn: public AliHBTTwoPairFctn2D
     }
   protected:
   private: 
-  public:
     ClassDef(AliHBTPairPhiResolVsKtFctn,1)
  };
 

@@ -25,26 +25,44 @@ Zbigniew.Chajecki@cern.ch
 #include <Riostream.h>
 ClassImp( AliHBTMonitorFunction )
 
-AliHBTMonitorFunction::AliHBTMonitorFunction()
+AliHBTMonitorFunction::AliHBTMonitorFunction():
+ fParticleCut(new AliHBTEmptyParticleCut())
 {
-  fParticleCut = new AliHBTEmptyParticleCut(); //dummy cut
+  //ctor
 }
 /******************************************************************/
-AliHBTMonitorFunction::AliHBTMonitorFunction(const char* name,const char* title):TNamed(name,title)
+AliHBTMonitorFunction::AliHBTMonitorFunction(const char* name,const char* title):
+ TNamed(name,title),
+ fParticleCut(new AliHBTEmptyParticleCut())
 {
-  fParticleCut = new AliHBTEmptyParticleCut(); //dummy cut
+  //ctor
 }
 /******************************************************************/
+AliHBTMonitorFunction::AliHBTMonitorFunction(const AliHBTMonitorFunction& /*in*/):
+ TNamed(),
+ fParticleCut(new AliHBTEmptyParticleCut())
+{
+  //cpy ctor
+  MayNotUse("AliHBTMonitorFunction(const AliHBTMonitorFunction&");
+}
+/******************************************************************/
+const AliHBTMonitorFunction& AliHBTMonitorFunction::operator=(const AliHBTMonitorFunction& /*in*/)
+{
+  //assigment operator
+  MayNotUse("operator=");
+  return *this;
+}
 
 AliHBTMonitorFunction::~AliHBTMonitorFunction()
  {
+  //dtor
   if (fParticleCut) delete fParticleCut;
  }
 /******************************************************************/
 
-void AliHBTMonitorFunction::
-Write()
+void AliHBTMonitorFunction::Write()
  {
+   //Writes an function to disk
    if (GetResult()) GetResult()->Write();
  }
 /******************************************************************/
@@ -69,11 +87,9 @@ void AliHBTMonitorFunction::SetParticleCut(AliHBTParticleCut* cut)
  fParticleCut = (AliHBTParticleCut*)cut->Clone();
  
 }
-
 /******************************************************************/
 
-void AliHBTMonitorFunction::
-Rename(const Char_t * name)
+void AliHBTMonitorFunction::Rename(const Char_t * name)
  {
  //renames the function and histograms
   SetName(name);
@@ -83,12 +99,10 @@ Rename(const Char_t * name)
                                            //result histogram
   GetResult()->SetName(numstr.Data());
   GetResult()->SetTitle(numstr.Data());
-  
-  
  }
+/******************************************************************/
 
-void AliHBTMonitorFunction::
-Rename(const Char_t * name, const Char_t * title)
+void AliHBTMonitorFunction::Rename(const Char_t * name, const Char_t * title)
  {
  //renames and retitle the function and histograms
  
@@ -118,25 +132,26 @@ ClassImp( AliHBTMonTwoParticleFctn )  //z.ch.
 /******************************************************************/
 /******************************************************************/
 ClassImp( AliHBTMonOneParticleFctn1D )
-AliHBTMonOneParticleFctn1D::AliHBTMonOneParticleFctn1D()
+AliHBTMonOneParticleFctn1D::AliHBTMonOneParticleFctn1D():
+ fResult(0x0)
  {
-   fResult = 0x0;
+   //ctor
  }
+/******************************************************************/
 
-AliHBTMonOneParticleFctn1D::
-AliHBTMonOneParticleFctn1D(Int_t nbins, Double_t maxXval, Double_t minXval)
+AliHBTMonOneParticleFctn1D::AliHBTMonOneParticleFctn1D(Int_t nbins, Double_t maxXval, Double_t minXval)
  {
+   //ctor
    TString numstr = fName + " Result";  //title and name of the 
                                            //result histogram
-         
    fResult   = new TH1D(numstr.Data(),numstr.Data(),nbins,minXval,maxXval);
  }
 
-AliHBTMonOneParticleFctn1D::
-AliHBTMonOneParticleFctn1D(const Char_t *name, const Char_t *title,
+AliHBTMonOneParticleFctn1D::AliHBTMonOneParticleFctn1D(const Char_t *name, const Char_t *title,
                     Int_t nbins, Double_t maxXval, Double_t minXval)
 	:AliHBTMonOneParticleFctn(name,title)
 {
+  //ctor
    TString numstr = fName + " Result";  //title and name of the 
                                            //result histogram
          
@@ -145,7 +160,8 @@ AliHBTMonOneParticleFctn1D(const Char_t *name, const Char_t *title,
 /******************************************************************/
 AliHBTMonOneParticleFctn1D::~AliHBTMonOneParticleFctn1D()
 {
-  delete fResult;
+ //dtor
+ delete fResult;
 }
 /******************************************************************/
 
@@ -160,26 +176,28 @@ void AliHBTMonOneParticleFctn1D::Process(AliHBTParticle* particle)
  
 ClassImp( AliHBTMonOneParticleFctn2D )
 
-AliHBTMonOneParticleFctn2D::
-AliHBTMonOneParticleFctn2D(Int_t nXbins, Double_t maxXval, Double_t minXval , 
+AliHBTMonOneParticleFctn2D::AliHBTMonOneParticleFctn2D(Int_t nXbins, Double_t maxXval, Double_t minXval , 
                     Int_t nYbins, Double_t maxYval, Double_t minYval)
 
 {
+  //ctor
    TString numstr = fName + " Result";  //title and name of the 
                                            //result histogram
         
    fResult   = new TH2D(numstr.Data(),numstr.Data(),
                            nXbins,minXval,maxXval,
 	       nYbins,minYval,maxYval);
-	       
 }	  
+/******************************************************************/
 
 AliHBTMonOneParticleFctn2D::~AliHBTMonOneParticleFctn2D()
 {
+  //dtor
   delete fResult;
 }
 void AliHBTMonOneParticleFctn2D::Process(AliHBTParticle* particle)
 {
+  //fills the function for one particle
   particle = CheckParticle(particle);
   if(particle) 
    { 
@@ -201,6 +219,7 @@ AliHBTMonOneParticleFctn3D(Int_t nXbins, Double_t maxXval, Double_t minXval,
                     Int_t nZbins, Double_t maxZval, Double_t minZval)
 
 {
+  //ctor
    TString numstr = fName + " Result";  //title and name of the 
                                            //result histogram
  
@@ -214,6 +233,7 @@ AliHBTMonOneParticleFctn3D(Int_t nXbins, Double_t maxXval, Double_t minXval,
 
 AliHBTMonOneParticleFctn3D::~AliHBTMonOneParticleFctn3D()
 {
+  //dtor
   delete fResult;
 }
 /******************************************************************/
@@ -227,6 +247,7 @@ ClassImp( AliHBTMonTwoParticleFctn1D)
 AliHBTMonTwoParticleFctn1D::
 AliHBTMonTwoParticleFctn1D(Int_t nbins, Double_t maxval, Double_t minval)
  {
+   //ctor
    TString numstr = fName + " Result";  //title and name of the 
                                            //result histogram
          
@@ -240,6 +261,7 @@ AliHBTMonTwoParticleFctn1D(const Char_t* name, const Char_t* title,
                     Int_t nbins, Double_t maxval, Double_t minval)
 	:AliHBTMonTwoParticleFctn(name,title)
  {
+   //ctor
    TString numstr = fName + " Result";  //title and name of the 
                                            //result histogram
 
@@ -252,12 +274,14 @@ AliHBTMonTwoParticleFctn1D(const Char_t* name, const Char_t* title,
 /******************************************************************/
 AliHBTMonTwoParticleFctn1D::~AliHBTMonTwoParticleFctn1D()
 {
+  //dtor
   delete fResult;
 }
 /******************************************************************/
 void AliHBTMonTwoParticleFctn1D::
 Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle)
 {
+  //fills the function for one particle
   partparticle  = CheckParticle(partparticle);
   trackparticle = CheckParticle(trackparticle);
   if( partparticle && trackparticle) 
@@ -277,6 +301,7 @@ AliHBTMonTwoParticleFctn2D(Int_t nXbins, Double_t maxXval, Double_t minXval ,
                     Int_t nYbins, Double_t maxYval, Double_t minYval)
 
 {
+  //ctor
    TString numstr = fName + " Result";  //title and name of the 
                                            //result histogram
          
@@ -288,12 +313,14 @@ AliHBTMonTwoParticleFctn2D(Int_t nXbins, Double_t maxXval, Double_t minXval ,
 /******************************************************************/
 AliHBTMonTwoParticleFctn2D::~AliHBTMonTwoParticleFctn2D()
 {
+  //dtor
   delete fResult;
 }
 /******************************************************************/
 void AliHBTMonTwoParticleFctn2D::
 Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle)
 {
+  //fills the function for one particle
   partparticle  = CheckParticle(partparticle);
   trackparticle = CheckParticle(trackparticle);
   if( partparticle && trackparticle) 
@@ -311,6 +338,7 @@ ClassImp(AliHBTMonTwoParticleFctn3D)
 void AliHBTMonTwoParticleFctn3D::
 Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle)
 {
+  //fills the function for one particle
   partparticle  = CheckParticle(partparticle);
   trackparticle = CheckParticle(trackparticle);
   if( partparticle && trackparticle) 

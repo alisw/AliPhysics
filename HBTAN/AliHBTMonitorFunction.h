@@ -1,4 +1,26 @@
-//Zbigniew.Chajecki@cern.ch
+//__________________________________________________________________
+////////////////////////////////////////////////////////////////////
+//
+/******************************************************************/
+/*
+Base classes for monitor functions
+
+          monitor function
+               /    \
+              /      \
+             /        \
+            /          \
+           /            \
+          /              \
+         /                \
+   one particle     two particle  
+     /  |  \            /  |  \
+    /   |   \          /   |   \
+   1D  2D   3D        1D  2D   3D
+
+Zbigniew.Chajecki@cern.ch
+
+*/
 
 #ifndef ALIMONITORFUNCTION_H
 #define ALIMONITORFUNCTION_H
@@ -9,7 +31,6 @@
 #include <TH2.h>
 #include <TH3.h>
 
-//class AliHBTAnalysis;
 
 class AliHBTMonitorFunction: public TNamed
 //Abstract base class for HBT functions
@@ -17,7 +38,11 @@ class AliHBTMonitorFunction: public TNamed
   public:
     AliHBTMonitorFunction();
     AliHBTMonitorFunction(const char* name,const char* title);
+    AliHBTMonitorFunction(const AliHBTMonitorFunction& /*in*/);
     virtual ~AliHBTMonitorFunction();
+    
+    const AliHBTMonitorFunction& operator=(const AliHBTMonitorFunction& /*in*/);
+    
     
     virtual TH1* GetResult() = 0;
 
@@ -26,25 +51,25 @@ class AliHBTMonitorFunction: public TNamed
     void Rename(const Char_t * name); 
     void Rename(const Char_t * name, const Char_t * title); 
     
-    void SetParticleCut(AliHBTParticleCut*);
+    void SetParticleCut(AliHBTParticleCut* cut);
 
-    virtual AliHBTParticle* CheckParticle(AliHBTParticle* particle);
+    virtual AliHBTParticle* CheckParticle(AliHBTParticle* particle) const;
 
   protected:
-    AliHBTParticleCut*      fParticleCut;
+    AliHBTParticleCut*      fParticleCut;//Particle cut
     
-  public:  
+  private:  
    ClassDef(AliHBTMonitorFunction,1)
 };
 /******************************************************************/
 /******************************************************************/
-inline AliHBTParticle* AliHBTMonitorFunction::CheckParticle(AliHBTParticle* particle)
+inline AliHBTParticle* AliHBTMonitorFunction::CheckParticle(AliHBTParticle* particle) const
 {
   //check if particle meets the cut criteria
   if(fParticleCut->Pass(particle)) //if the particle is BAD
-       { 
-        return 0x0;//it is BAD as well - so return
-       }
+   { 
+     return 0x0;//it is BAD as well - so return
+   }
   return particle; 
 }
 
@@ -62,7 +87,7 @@ class AliHBTMonOneParticleFctn: public AliHBTMonitorFunction
     virtual void Process(AliHBTParticle* particle) = 0;
     
   protected:
-  public:  
+  private:  
    ClassDef(AliHBTMonOneParticleFctn,1)
   
 };
@@ -83,9 +108,9 @@ class AliHBTMonOneParticleFctn1D: public AliHBTMonOneParticleFctn
  protected:
   virtual Double_t GetValue(AliHBTParticle* particle) = 0; 
 
-  TH1D* fResult;
+  TH1D* fResult;//histogram to be filled
   
- public:
+ private:
   ClassDef(AliHBTMonOneParticleFctn1D,2)
 };
 /******************************************************************/
@@ -104,9 +129,9 @@ class AliHBTMonOneParticleFctn2D: public AliHBTMonOneParticleFctn
  protected:
   virtual void GetValues(AliHBTParticle* particle, Double_t&, Double_t&) = 0;
 
-  TH2D* fResult;
+  TH2D* fResult;//histogram to be filled
   
- public:
+ private:
   ClassDef(AliHBTMonOneParticleFctn2D,1)
 };
 /******************************************************************/
@@ -125,9 +150,9 @@ class AliHBTMonOneParticleFctn3D: public AliHBTMonOneParticleFctn
   TH1* GetResult(){return fResult;}
 
  protected:
-  TH3D* fResult;
+  TH3D* fResult;//histogram to be filled
 
- public:
+ private:
   ClassDef(AliHBTMonOneParticleFctn3D,1)
 };
 /******************************************************************/
@@ -143,7 +168,7 @@ class AliHBTMonTwoParticleFctn: public AliHBTMonitorFunction
     Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle) = 0;
 	     
   protected:
-  public:  
+  private:  
    ClassDef(AliHBTMonTwoParticleFctn,1)
   
 };
@@ -153,7 +178,7 @@ class AliHBTMonTwoParticleFctn1D: public AliHBTMonTwoParticleFctn
 {
  public:
   AliHBTMonTwoParticleFctn1D(Int_t nbins = 200, Double_t maxval = 1.5, Double_t minval = 0.0);
-  AliHBTMonTwoParticleFctn1D(const char*,const char*,
+  AliHBTMonTwoParticleFctn1D(const char* name,const char* title,
                       Int_t nbins = 200, Double_t maxval = 1.5, Double_t minval = 0.0);
   virtual ~AliHBTMonTwoParticleFctn1D();
   
@@ -164,9 +189,9 @@ class AliHBTMonTwoParticleFctn1D: public AliHBTMonTwoParticleFctn
  protected:
   virtual Double_t GetValue(AliHBTParticle* trackparticle, AliHBTParticle* partparticle) = 0;
 
-  TH1D* fResult;
+  TH1D* fResult;//histogram to be filled
 
- public:
+ private:
   ClassDef(AliHBTMonTwoParticleFctn1D,1)
 };
 /******************************************************************/
@@ -184,9 +209,9 @@ class AliHBTMonTwoParticleFctn2D: public AliHBTMonTwoParticleFctn
  protected:
   virtual void GetValues(AliHBTParticle*,AliHBTParticle*, Double_t&, Double_t&) = 0;
 
-  TH2D* fResult;
+  TH2D* fResult;//histogram to be filled
   
- public:
+ private:
   ClassDef(AliHBTMonTwoParticleFctn2D,1)
 };
 
@@ -207,9 +232,9 @@ class AliHBTMonTwoParticleFctn3D: public AliHBTMonTwoParticleFctn
  protected:
   virtual void GetValues(AliHBTParticle*,AliHBTParticle*, Double_t&, Double_t&,Double_t&) = 0;
 
-  TH3D* fResult;
+  TH3D* fResult; //histogram to be filled
   
- public:
+ private:
   ClassDef(AliHBTMonTwoParticleFctn3D,1)
 };
 

@@ -1,3 +1,20 @@
+//__________________________________________________________________
+////////////////////////////////////////////////////////////////////
+//                                                                //
+// General Remark:                                                //
+// CMSLC means                                                    //
+// Center of Mass System Longitudially Co-moving                  //
+//                                                                //
+//                                                                //
+// This class creates resolution function of Qout                 //
+// (difference of simulated pair Qout and recontructed pair)      //
+// in function of QInv                                            //
+// it inherits from AliHBTTwoPairFctn2D                           //
+//  it needs two pairs to compare                                 //
+//  and is two dimentional: numerator and denominator are TH2D    //
+//                                                                //
+////////////////////////////////////////////////////////////////////
+
 #include "AliHBTQResolutionFctns.h"
 
 
@@ -10,6 +27,7 @@ AliHBTKtResolVsQInvFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                         Int_t nYbins, Double_t maxYval, Double_t minYval):
  AliHBTTwoPairFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+//ctor
  Rename("KtResolVsQInv","K_{t} Resolution vs. Q_{Inv}");
 }
 /******************************************************************/
@@ -21,6 +39,7 @@ AliHBTQInvResolVsQInvFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                           Int_t nYbins, Double_t maxYval, Double_t minYval):
 	         AliHBTTwoPairFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+//ctor
  Rename("QInvResolVsQInv","Q_{Inv} Resolution vs. Q_{Inv}");
 }
 /******************************************************************/
@@ -33,6 +52,7 @@ AliHBTQOutResolVsQInvFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                           Int_t nYbins, Double_t maxYval, Double_t minYval):
 	         AliHBTTwoPairFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+//ctor
  Rename("QOutResolVsQInv","Q_{Out} Resolution vs. Q_{Inv}");
 }
 /******************************************************************/
@@ -46,6 +66,7 @@ AliHBTQSideResolVsQInvFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                           Int_t nYbins, Double_t maxYval, Double_t minYval):
 	         AliHBTTwoPairFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+//ctor
  Rename("QSideResolVsQInv","Q_{Side} Resolution vs. Q_{Inv}");
 }
 
@@ -60,6 +81,7 @@ AliHBTQLongResolVsQInvFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                            Int_t nYbins, Double_t maxYval, Double_t minYval):
                            AliHBTTwoPairFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+//ctor
  Rename("QLongResolVsQInv","Q_{Long} Resolution vs. Q_{Inv}");
 }
 
@@ -74,6 +96,7 @@ AliHBTQInvResolVsKtFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                         Int_t nYbins, Double_t maxYval, Double_t minYval):
                            AliHBTTwoPairFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+//ctor
  Rename("QInvResolVsKt","Q_{Inv} Resolution vs. K_{t}");
 }
 
@@ -87,6 +110,7 @@ AliHBTQOutResolVsKtFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                            Int_t nYbins, Double_t maxYval, Double_t minYval):
                            AliHBTTwoPairFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+//ctor
  Rename("QOutResolVsKt","Q_{Out} Resolution vs. K_{t} ");
 }
 
@@ -101,6 +125,7 @@ AliHBTQSideResolVsKtFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                            Int_t nYbins, Double_t maxYval, Double_t minYval):
                            AliHBTTwoPairFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+//ctor
  Rename("QSideResolVsKt","Q_{Side} Resolution vs. K_{t} ");
 }
 
@@ -114,6 +139,7 @@ AliHBTQLongResolVsKtFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                            Int_t nYbins, Double_t maxYval, Double_t minYval):
                              AliHBTTwoPairFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+//ctor
  Rename("QLongResolVsKt","Q_{Long} Resolution vs. K_{t} ");
 }
 
@@ -128,6 +154,7 @@ AliHBTQOutResolVsQOutFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                            Int_t nYbins, Double_t maxYval, Double_t minYval):
                            AliHBTTwoPairFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+//ctor
  Rename("QOutResolVsQOut","Q_{Out} Resolution vs. Q_{Out} ");
 }
  
@@ -141,6 +168,7 @@ AliHBTQSideResolVsQSideFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                            Int_t nYbins, Double_t maxYval, Double_t minYval):
                            AliHBTTwoPairFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+//ctor
  Rename("QSideResolVsQSide","Q_{Side} Resolution vs. Q_{Side} ");
 }
 
@@ -154,6 +182,7 @@ AliHBTQLongResolVsQLongFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                            Int_t nYbins, Double_t maxYval, Double_t minYval):
                            AliHBTTwoPairFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+//ctor
  Rename("QLongResolVsQLong","Q_{Long} Resolution vs. Q_{Long} ");
 }
 
@@ -170,6 +199,7 @@ AliHBTPairThetaResolVsQInvFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                            Int_t nYbins, Double_t maxYval, Double_t minYval):
                            AliHBTTwoPairFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+//ctor
  Rename("PairThetaResolVsQInv","Pair Theta Angle Resolution vs. Q_{Inv} ");
 }
 /******************************************************************/
@@ -183,6 +213,7 @@ AliHBTPairPhiResolVsQInvFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                            Int_t nYbins, Double_t maxYval, Double_t minYval):
                            AliHBTTwoPairFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+//ctor
  Rename("PairPhiResolVsQInv","Pair Phi Angle Resolution vs. Q_{Inv} ");
 }
 /******************************************************************/
@@ -197,6 +228,7 @@ AliHBTPairThetaResolVsKtFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                            Int_t nYbins, Double_t maxYval, Double_t minYval):
                            AliHBTTwoPairFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+//ctor
  Rename("PairThetaResolVsKt","Pair Theta Angle Resolution vs. K_{t} ");
 }
 /******************************************************************/
@@ -210,6 +242,7 @@ AliHBTPairPhiResolVsKtFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
                            Int_t nYbins, Double_t maxYval, Double_t minYval):
                            AliHBTTwoPairFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
 {
+//ctor
  Rename("PairPhiResolVsKt","Pair Phi Angle Resolution vs. K_{t} ");
 }
 /******************************************************************/
