@@ -24,6 +24,10 @@ public:
   AliITStrackerV2():AliTracker(){}
   AliITStrackerV2(const AliITSgeom *geom);
   AliCluster *GetCluster(Int_t index) const;
+  AliITSclusterV2 *GetClusterLayer(Int_t layn, Int_t ncl) const
+                        {return fgLayers[layn].GetCluster(ncl);}
+  Int_t GetNumberOfClustersLayer(Int_t layn) const 
+                        {return fgLayers[layn].GetNumberOfClusters();}
   Int_t LoadClusters(TTree *cf);
   void UnloadClusters();
   Int_t Clusters2Tracks(TTree *in, TTree *out);
@@ -72,7 +76,7 @@ public:
     Int_t GetNumberOfClusters() const {return fN;}
     Int_t GetNladders() const {return fNladders;}
     Int_t GetNdetectors() const {return fNdetectors;}
-  private:
+  protected:
     Double_t fR;                // mean radius of this layer
     Double_t fPhiOffset;        // offset of the first detector in Phi
     Int_t fNladders;            // number of ladders
@@ -89,7 +93,7 @@ public:
     Int_t FindClusterIndex(Double_t z) const;
   };
 
-private:
+protected:
   void CookLabel(AliKalmanTrack *t,Float_t wrong) const;
   Double_t GetEffectiveThickness(Double_t y, Double_t z) const;
   void  FollowProlongation();

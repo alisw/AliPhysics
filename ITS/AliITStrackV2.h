@@ -79,7 +79,7 @@ public:
   Double_t GetPredictedChi2(const AliCluster *cluster) const;
   Int_t Invariant() const;
  
-private:
+protected:
   Double_t fX;              // X-coordinate of this track (reference plane)
   Double_t fAlpha;          // rotation angle
 
