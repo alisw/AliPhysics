@@ -102,13 +102,9 @@ AliTRD::AliTRD(const char *name, const char *title)
     exit(1);
   } 
 
-  // Define the TRD geometry according to the FRAME geometry
-  if      (frame->IsVersion() == 0) {
-    // Geometry with hole
-    fGeometry = new AliTRDgeometryHole();
-  }
-  else if (frame->IsVersion() == 1) {
-    // Geometry without hole
+  // Define the TRD geometry
+  if ((frame->IsVersion() == 0) ||
+      (frame->IsVersion() == 1)) {
     fGeometry = new AliTRDgeometryFull();
   }
   else {
@@ -788,15 +784,15 @@ void AliTRD::Init()
     printf("\n");
   }
 
-  if      (fGeometry->IsVersion() == 0) {
-    printf("%s: Geometry for spaceframe with holes initialized\n",ClassName());
-  }
-  else if (fGeometry->IsVersion() == 1) {
-    printf("%s: Geometry for spaceframe without holes initialized\n",ClassName());
+  if (fGeometry->IsVersion() == 1) {
+    printf("%s: Full geometry version initialized\n",ClassName());
     if (fGeometry->GetPHOShole())
       printf("%s: Leave space in front of PHOS free\n",ClassName());
     if (fGeometry->GetRICHhole())
       printf("%s: Leave space in front of RICH free\n",ClassName());
+  }
+  else {
+    printf("%s: Not a valid geometry\n",ClassName());
   }
   
   if (fGasMix == 1) {
