@@ -687,15 +687,18 @@ void AliRICHv3::CreateGeometry()
    
    Double_t dRotAngle      = geometry->GetRotationAngle();     // the whole RICH is to be rotated in x-y plane + means clockwise rotation 
    Double_t dRotAngleRad   = dRotAngle*kDegrad;
-   
     
+   
    TRotMatrix *pRotMatrix; // tmp pointer
    
    TVector3 vector(0,dOffset,0); // Position of chamber 2 without rotation
     
 // Chamber 0  standalone (no other chambers in this row) 
-                   AliMatrix(idrotm[1000],      90, -dRotAngle           , 90-dAlpha     , 90-dRotAngle        , dAlpha        , -90           ); 
-   pRotMatrix=new TRotMatrix("rot993","rot993", 90, -dRotAngle           , 90-dAlpha     , 90-dRotAngle        , dAlpha        , -90           );
+   pRotMatrix = new TRotMatrix("rot993","rot993", 0., 0., 0.,0.,0.,0.);
+   const Double_t* r   = pRotMatrix->SetAngles(90., 0., 90.-dAlpha , 90.,  dAlpha, -90.);
+   Double_t* rr  = RotateXY(r, -dRotAngleRad);
+   AliMatrix(idrotm[1000], rr[0], rr[1], rr[2], rr[3], rr[4], rr[5]);
+   pRotMatrix->SetAngles(rr[0], rr[1], rr[2], rr[3], rr[4], rr[5]);
 
    vector.SetXYZ(0,dOffset,0);  vector.RotateX(dAlphaRad); 
    vector.RotateZ(-dRotAngleRad);
@@ -703,54 +706,67 @@ void AliRICHv3::CreateGeometry()
    gMC->Gspos("RICH",1,"ALIC",vector.X(),vector.Y(),vector.Z(),idrotm[1000], "ONLY");           
    Chamber(0).SetChamberTransform(vector.X(),vector.Y(),vector.Z(),pRotMatrix);
 // Chamber 1   
-                   AliMatrix(idrotm[1001],      90, -dBeta-dRotAngle     , 90            , 90-dBeta-dRotAngle  , 0             ,   0           );  
-   pRotMatrix=new TRotMatrix("rot994","rot994", 90, -dBeta-dRotAngle     , 90            , 90-dBeta-dRotAngle  , 0             ,   0           );  
-   
+   pRotMatrix = new TRotMatrix("rot994","rot994", 0., 0., 0.,0.,0.,0.);
+   r   = pRotMatrix->SetAngles(90., -dBeta, 90., 90.-dBeta,  0., 0.);
+   rr  = RotateXY(r, -dRotAngleRad);
+   AliMatrix(idrotm[1001], rr[0], rr[1], rr[2], rr[3], rr[4], rr[5]);
+   pRotMatrix->SetAngles(rr[0], rr[1], rr[2], rr[3], rr[4], rr[5]);
    vector.SetXYZ(0,dOffset,0);  vector.RotateZ(-dBetaRad); 
    vector.RotateZ(-dRotAngleRad);
    
    gMC->Gspos("RICH",2,"ALIC",vector.X(),vector.Y(),vector.Z(),idrotm[1001], "ONLY");           
    Chamber(1).SetChamberTransform(vector.X(),vector.Y(),vector.Z(),pRotMatrix);
+
 // Chamber 2   the top one with no Alpha-Beta rotation
-                   AliMatrix(idrotm[1002],      90, -dRotAngle           , 90            , 90-dRotAngle        , 0             ,   0           );
-   pRotMatrix=new TRotMatrix("rot995","rot995", 90, -dRotAngle           , 90            , 90-dRotAngle        , 0             ,   0           );
-   
+   pRotMatrix = new TRotMatrix("rot995","rot995", 0., 0., 0.,0.,0.,0.);
+   r   = pRotMatrix->SetAngles(90., 0., 90., 90.,  0., 0.);
+   rr  = RotateXY(r, -dRotAngleRad);
+   AliMatrix(idrotm[1002], rr[0], rr[1], rr[2], rr[3], rr[4], rr[5]);
+   pRotMatrix->SetAngles(rr[0], rr[1], rr[2], rr[3], rr[4], rr[5]);
    vector.SetXYZ(0,dOffset,0);
    vector.RotateZ(-dRotAngleRad);
-      
    gMC->Gspos("RICH",3,"ALIC",vector.X(),vector.Y(),vector.Z(),idrotm[1002], "ONLY");           
    Chamber(2).SetChamberTransform(vector.X(),vector.Y(),vector.Z(),pRotMatrix);
 // Chamber 3
-                   AliMatrix(idrotm[1003],      90,  dBeta-dRotAngle     , 90.           , 90+dBeta-dRotAngle  , 0             ,   0           );
-   pRotMatrix=new TRotMatrix("rot996","rot996", 90,  dBeta-dRotAngle     , 90.           , 90+dBeta-dRotAngle  , 0             ,   0           );
-   
+   pRotMatrix = new TRotMatrix("rot996","rot996", 0., 0., 0.,0.,0.,0.);
+   r   = pRotMatrix->SetAngles(90., dBeta, 90., 90.+dBeta,  0., 0.);
+   rr  = RotateXY(r, -dRotAngleRad);
+   AliMatrix(idrotm[1003], rr[0], rr[1], rr[2], rr[3], rr[4], rr[5]);
+   pRotMatrix->SetAngles(rr[0], rr[1], rr[2], rr[3], rr[4], rr[5]);
    vector.SetXYZ(0,dOffset,0);  vector.RotateZ(dBetaRad); 
    vector.RotateZ(-dRotAngleRad);
    
    gMC->Gspos("RICH",4,"ALIC",vector.X(),vector.Y(),vector.Z(),idrotm[1003], "ONLY");           
    Chamber(3).SetChamberTransform(vector.X(),vector.Y(),vector.Z(),pRotMatrix);
+
 // Chamber 4   
-                   AliMatrix(idrotm[1004],      90,  360-dBeta-dRotAngle , 108.2         , 90-dBeta-dRotAngle  , 18.2          ,  90-dBeta     );
-   pRotMatrix=new TRotMatrix("rot997","rot997", 90,  360-dBeta-dRotAngle , 108.2         , 90-dBeta-dRotAngle  , 18.2          ,  90-dBeta     );
-   
+   pRotMatrix = new TRotMatrix("rot997","rot997", 0., 0., 0.,0.,0.,0.);
+   r   = pRotMatrix->SetAngles(90., 360.-dBeta, 108.2, 90.-dBeta,  18.2, 90.-dBeta);
+   rr  = RotateXY(r, -dRotAngleRad);
+   AliMatrix(idrotm[1004], rr[0], rr[1], rr[2], rr[3], rr[4], rr[5]);
+   pRotMatrix->SetAngles(rr[0], rr[1], rr[2], rr[3], rr[4], rr[5]);
    vector.SetXYZ(0,dOffset,0);  vector.RotateZ(-dBetaRad); vector.RotateX(-dAlphaRad); 
    vector.RotateZ(-dRotAngleRad);
    
    gMC->Gspos("RICH",5,"ALIC",vector.X(),vector.Y(),vector.Z(),idrotm[1004], "ONLY");
    Chamber(4).SetChamberTransform(vector.X(),vector.Y(),vector.Z(),pRotMatrix);
 // Chamber 5   
-                   AliMatrix(idrotm[1005],      90, -dRotAngle           , 90+dAlpha     , 90-dRotAngle        , dAlpha        ,  90           );     
-   pRotMatrix=new TRotMatrix("rot998","rot998", 90, -dRotAngle           , 90+dAlpha     , 90-dRotAngle        , dAlpha        ,  90           );     
-   
+   pRotMatrix = new TRotMatrix("rot998","rot998", 0., 0., 0.,0.,0.,0.);
+   r   = pRotMatrix->SetAngles(90., 0., 90.+dAlpha, 90.,  dAlpha, 90.);
+   rr  = RotateXY(r, -dRotAngleRad);
+   AliMatrix(idrotm[1005], rr[0], rr[1], rr[2], rr[3], rr[4], rr[5]);
+   pRotMatrix->SetAngles(rr[0], rr[1], rr[2], rr[3], rr[4], rr[5]);   
    vector.SetXYZ(0,dOffset,0); vector.RotateX(-dAlphaRad); 
    vector.RotateZ(-dRotAngleRad);
       
    gMC->Gspos("RICH",6,"ALIC",vector.X(),vector.Y(),vector.Z(),idrotm[1005], "ONLY");           
    Chamber(5).SetChamberTransform(vector.X(),vector.Y(),vector.Z(),pRotMatrix);
-// Chamber 6           
-                   AliMatrix(idrotm[1006],      90,  dBeta-dRotAngle     , 108.2         , 90+dBeta-dRotAngle  , 18.2          ,  90+dBeta     );    
-   pRotMatrix=new TRotMatrix("rot999","rot999", 90,  dBeta-dRotAngle     , 108.2         , 90+dBeta-dRotAngle  , 18.2          ,  90+dBeta     );    
-   
+// Chamber 6          
+   pRotMatrix = new TRotMatrix("rot999","rot999", 0., 0., 0.,0.,0.,0.);
+   r   = pRotMatrix->SetAngles(90., dBeta, 108.2, 90.+dBeta,  18.2, 90.+dBeta);
+   rr  = RotateXY(r, -dRotAngleRad);
+   AliMatrix(idrotm[1006], rr[0], rr[1], rr[2], rr[3], rr[4], rr[5]);
+   pRotMatrix->SetAngles(rr[0], rr[1], rr[2], rr[3], rr[4], rr[5]);
    vector.SetXYZ(0,dOffset,0);  vector.RotateZ(dBetaRad); vector.RotateX(-dAlphaRad); 
    vector.RotateZ(-dRotAngleRad);
       
@@ -1483,3 +1499,29 @@ void AliRICHv3::StepManager()
     /*************************************************End of MIP treatment**************************************/
    //}
 }// void AliRICHv3::StepManager()
+
+Double_t* AliRICHv3::RotateXY(const Double_t* r, Double_t a)
+{
+    // Rotatation in xy-plane
+    // by angle a
+    // The resulting rotation matrix is given back in the G3 notation. 
+    Double_t* rr = new Double_t[6];
+    Double_t m[9];
+    Int_t i,j,k;
+    
+    for (i = 0; i < 3; i++) {
+	j = 3*i;
+	m[j]   = r[j] * TMath::Cos(a) - r[j+1] * TMath::Sin(a);
+	m[j+1] = r[j] * TMath::Sin(a) + r[j+1] * TMath::Cos(a);
+	m[j+2] = r[j+2];
+    }
+    
+    for (i = 0; i < 3; i++) {
+	    j = 3*i;
+	    k = 2*i;
+	    rr[k]    = TMath::ACos(m[j+2])        * kRaddeg;
+	    rr[k+1]  = TMath::ATan2(m[j+1], m[j]) * kRaddeg;
+    }
+    return rr;
+}
+
