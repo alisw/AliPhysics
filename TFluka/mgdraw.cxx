@@ -41,9 +41,10 @@ void mgdraw(Int_t& icode, Int_t& mreg)
 	    printf("Normal step %d %d \n", oldreg, mreg);
     }
     fluka->SetIcode(icode);
-
-    cout << endl << " !!! I am in mgdraw - calling Stepping()" << endl;
-    cout << endl << " Track Id =" << trackId << endl;
+    if (verbosityLevel >= 3) {
+	cout << endl << " !!! I am in mgdraw - calling Stepping()" << endl;
+	cout << endl << " Track Id =" << trackId << endl;
+    }
     
     fluka->FutoTest();
 
