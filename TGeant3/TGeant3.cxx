@@ -977,6 +977,19 @@ const char* TGeant3::VolName(Int_t id) const
 }
 
 //_____________________________________________________________________________
+Float_t TGeant3::Xsec(char* reac, Float_t energy, Int_t part, Int_t mate)
+{
+  Int_t gpart = IdFromPDG(part);
+  if(!strcmp(reac,"PHOT"))
+  {
+    if(part!=22) {
+      Error("Xsec","Can calculate photoelectric only for photons\n");
+    }
+  }
+  return 0;
+}
+
+//_____________________________________________________________________________
 void TGeant3::TrackPosition(TLorentzVector &xyz) const
 {
   //

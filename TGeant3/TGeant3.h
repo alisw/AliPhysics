@@ -555,6 +555,7 @@ public:
   Int_t PDGFromId(Int_t pdg) const;
   void  DefineParticles();
   const char* VolName(Int_t id) const;
+  Float_t Xsec(char*, Float_t, Int_t, Int_t);
   void  TrackPosition(TLorentzVector &xyz) const;
   void  TrackMomentum(TLorentzVector &xyz) const;  
   Int_t NofVolumes() const;
