@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2001/02/27 23:18:24  barbera
+Full parameterization of detector and chip thicknesses for layer 1 and layer 2 of SPD as requested by the project leader
+
 Revision 1.17  2001/02/19 22:14:55  nilsen
 Fix for all 4 versions 11, 12, 21, and 22.
 
@@ -154,13 +157,17 @@ AliITSvPPRasymm::AliITSvPPRasymm(const char *name, const char *title) : AliITS(n
     fIdSens    = new Int_t[fIdN];
     for(i=0;i<fIdN;i++) fIdSens[i] = 0;
     fMajorVersion = IsVersion();
-    fMinorVersion = 22;
+    fMinorVersion = 2;
     fEuclidOut    = kFALSE; // Don't write Euclide file
     fGeomDetOut   = kFALSE; // Don't write .det file
     fGeomDetIn    = kTRUE; // Read .det file
+    SetThicknessDet1();
+    SetThicknessDet2();
+    SetThicknessChip1();
+    SetThicknessChip2();	 	 	 
 
-    fEuclidGeometry="$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm22.euc";
-    strncpy(fEuclidGeomDet,"$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm22.det",60);
+    fEuclidGeometry="$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.euc";
+    strncpy(fEuclidGeomDet,"$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det",60);
     strncpy(fRead,fEuclidGeomDet,60);
     strncpy(fWrite,fEuclidGeomDet,60);
 }
@@ -272,7 +279,37 @@ void AliITSvPPRasymm::CreateGeometry(){
   Float_t dchip2=300.;    // total chip thickness on layer 2 (micron)
   
   Float_t dbus=200.;      // total bus thickness on both layers (micron)
-   
+
+  ddet1 = GetThicknessDet1();
+  ddet2 = GetThicknessDet2();
+  dchip1 = GetThicknessChip1();
+  dchip2 = GetThicknessChip2();    
+
+  
+  if(ddet1 < 100. || ddet1 > 300.) {
+     cout << "The detector thickness for layer 1 is outside [100,300] microns."
+	  " The default value of 300 microns will be used." << endl;
+	  ddet1=300.;
+  }
+  
+  if(ddet2 < 100. || ddet2 > 300.) {
+     cout << "The detector thickness for layer 2 is outside [100,300] microns."
+	  " The default value of 300 microns will be used." << endl;
+	  ddet2=300.;
+  }
+  
+  if(dchip1 < 150. || dchip1 > 300.) {
+     cout << "The chip thickness for layer 1 is outside [150,300] microns."
+	  " The default value of 300 microns will be used." << endl;
+	  dchip1=300.;
+  }
+  
+  if(dchip2 < 150. || dchip2 > 300.) {
+     cout << "The chip thickness for layer 2 is outside [150,300] microns."
+	  " The default value of 300 microns will be used." << endl;
+	  dchip2=300.;
+  }      
+  
   ddet1  = ddet1*0.0001/2.; // conversion from tot length in um to half in cm
   ddet2  = ddet2*0.0001/2.; // conversion from tot length in um to half in cm	
   dchip1 = dchip1*0.0001/2.;// conversion from tot length in um to half in cm	
@@ -832,7 +869,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   // SPD - option 'a' 
   // (this is NOT the default)
 
-  if (option == 1 && thickness == 2) {
+  if (option == 1) {
   
      dits[0] = 3.7;
      dits[1] = 7.75;
@@ -1185,7 +1222,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   // SPD - option 'b' 
   // (this is the default)
 
-  if (option == 2 && thickness == 2) {
+  if (option == 2) {
   
      dits[0] = 3.7;
      dits[1] = 7.75;
@@ -2447,7 +2484,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   // SPD - option 'a' 
   // (this is NOT the default)
 
-  if (option == 1 && thickness == 2) {
+  if (option == 1) {
 
      gMC->Gspos("I12A",5,"IT12",0.0,0.0,0.0,idrotm[238],"MANY");
      gMC->Gspos("I12A",6,"IT12",0.0,0.0,0.0,idrotm[236],"MANY");
@@ -2615,7 +2652,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   // SPD - option 'b' 
   // (this is the default)
 
-  if (option == 2 && thickness == 2) {
+  if (option == 2) {
 
      gMC->Gspos("I12B",1,"IT12",0.0,0.0,0.0,0,"MANY");
      gMC->Gspos("I12B",8,"IT12",0.0,0.0,0.0,idrotm[233],"MANY");
@@ -4078,7 +4115,7 @@ void AliITSvPPRasymm::InitAliITSgeom(){
     Int_t mod,lay,lad,det,i,j,k;
     char names[nlayers][ndeep][4];
     Int_t itsGeomTreeCopys[nlayers][ndeep];
-    if(fMinorVersion == 11 || fMinorVersion == 21){ // Option A
+    if(fMinorVersion == 1){ // Option A
     char *namesA[nlayers][ndeep] = {
      {"ALIC","ITSV","ITSD","IT12","I12A","I10A","I103","I101","ITS1"}, // lay=1
      {"ALIC","ITSV","ITSD","IT12","I12A","I20A","I1D3","I1D1","ITS2"}, // lay=2
@@ -4096,7 +4133,7 @@ void AliITSvPPRasymm::InitAliITSgeom(){
 	for(k=0;k<4;k++) names[i][j][k] = namesA[i][j][k];
 	itsGeomTreeCopys[i][j] = itsGeomTreeCopysA[i][j];
     } // end for i,j
-    }else if(fMinorVersion == 22 || fMinorVersion == 12){ // Option B
+    }else if(fMinorVersion == 2){ // Option B
     char *namesB[nlayers][ndeep] = {
      {"ALIC","ITSV","ITSD","IT12","I12B","I10B","I107","I101","ITS1"}, // lay=1
      {"ALIC","ITSV","ITSD","IT12","I12B","I20B","I1D7","I1D1","ITS2"}, // lay=2

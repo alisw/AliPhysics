@@ -41,6 +41,18 @@ class AliITSvPPRasymm : public AliITS {
 	                     fEuclidGeometry=f;fEuclidOut = kTRUE;}
     virtual void   SetMinorVersion(Int_t v=22){ // Choose between existing minor versions
 	fMinorVersion = v;}
+    virtual void   SetThicknessDet1(Float_t v=300.){ 
+	 // Set detector thickness in layer 1
+	 fDet1 = v;}
+    virtual void   SetThicknessDet2(Float_t v=300.){ 
+	 // Set detector thickness in layer 2
+	 fDet2 = v;}
+    virtual void   SetThicknessChip1(Float_t v=300.){ 
+	 // Set chip thickness in layer 1
+	 fChip1 = v;}	 	 
+    virtual void   SetThicknessChip2(Float_t v=300.){ 
+	 // Set chip thickness in layer 2
+	 fChip2 = v;}
     virtual Bool_t GetEUCLID(){return fEuclidOut;}// returns value Euclid flag.
     virtual const char  *GetEULIIDFileName() const{ // return .euc file name
 	                               return fEuclidGeometry.Data();}
@@ -56,7 +68,18 @@ class AliITSvPPRasymm : public AliITS {
 	return fMajorVersion;}
     virtual Int_t GetMinorVersion(){// return Major Version Number
 	return fMinorVersion;}
-
+    virtual Float_t GetThicknessDet1(){ 
+	 // Get detector thickness in layer 1
+	 return fDet1;}
+    virtual Float_t GetThicknessDet2(){ 
+	 // Get detector thickness in layer 2
+	 return fDet2;}
+    virtual Float_t GetThicknessChip1(){ 
+	 // Get chip thickness in layer 1
+	 return fChip1;}	 	 
+    virtual Float_t GetThicknessChip2(){ 
+	 // Get chip thickness in layer 2
+	 return fChip2;}
  private:
     void InitAliITSgeom();
 
@@ -69,6 +92,10 @@ class AliITSvPPRasymm : public AliITS {
     char   fEuclidGeomDet[60];// file where detector transormation are define.
     char   fRead[60];         //! file name to read .det file
     char   fWrite[60];        //! file name to write .det file
+	 Float_t  fDet1;           // thickness of detector in SPD layer 1
+	 Float_t  fDet2;           // thickness of detector in SPD layer 2
+	 Float_t  fChip1;          // thickness of chip in SPD layer 1	 
+	 Float_t  fChip2;          // thickness of chip in SPD layer 2	 
 
     ClassDef(AliITSvPPRasymm,1)  //Hits manager for set:ITS version 8 
                                  // PPR detailed Geometry asymmetric
