@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.11  2000/10/20 13:22:26  morsch
+- skip particle type 92 (string)
+- Charmed and beauty baryions (5122, 4122) are considered as stable consistent with
+  mesons.
+
 Revision 1.10  2000/10/17 15:10:20  morsch
 Write first all the parent particles to the stack and then the final state particles.
 
@@ -211,7 +216,7 @@ void AliGenHijing::Generate()
 		    imo = (mother->GetPdgCode() != 92) ? imo=*(newPos+imo) : -1;
 		}
 // Put particle on the stack ... 
-		printf("\n set track mother: %d %d %d %d %d %d ",i,imo, kf, nt+1, selected, hasSelectedDaughters);
+//		printf("\n set track mother: %d %d %d %d %d %d ",i,imo, kf, nt+1, selected, hasSelectedDaughters);
 
 		gAlice->SetTrack(0,imo,kf,p,origin,polar,
 				 tof,"Primary",nt);
@@ -258,7 +263,7 @@ void AliGenHijing::Generate()
 		gAlice->SetTrack(fTrackIt,imo,kf,p,origin,polar,
 				 tof,"Secondary",nt);
 
-		printf("\n set track final: %d %d %d",imo, kf, nt);
+//		printf("\n set track final: %d %d %d",imo, kf, nt);
 		gAlice->KeepTrack(nt);
 		*(newPos+i)=nt;
 	    } // selected
@@ -407,7 +412,6 @@ Bool_t AliGenHijing::DaughtersSelection(TParticle* iparticle, TClonesArray* part
 	    TParticle *  jparticle       = (TParticle *) particles->At(i);	
 	    Int_t ip=jparticle->GetPdgCode();
 	    if (KinematicSelection(jparticle)&&SelectFlavor(ip)) {
-		printf("\n selected ip %d %d %d ", ip, imin, imax);
 		selected=kTRUE; break;
 	    }
 	    if (DaughtersSelection(jparticle, particles)) {selected=kTRUE; break; }
