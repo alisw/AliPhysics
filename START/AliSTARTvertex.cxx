@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.3  2000/10/02 21:28:13  fca
+Removal of useless dependecies via forward declarations
+ 
 Revision 1.2  2000/07/13 16:41:29  fca
 New START corrected for coding conventions
 
@@ -22,14 +25,15 @@ Vertex reconstruction
 
 */ 
 #include <TObject.h>
-#include <TDirectory.h>
-
 #include "AliSTARTvertex.h"
 #include "AliSTARTdigit.h"
 #include "AliSTARThit.h"
 #include "AliSTART.h"
 #include "AliRun.h"
 #include "AliMC.h"
+
+//#include "TTree.h"
+#include "TDirectory.h"
 
 ClassImp(AliSTARTvertex)
 
@@ -39,9 +43,7 @@ AliSTARTvertex::AliSTARTvertex( Int_t * Zposit)
   //     The creator for the AliSTARTvertex class. This routine fills the
   // AliSTARTvertex data members from the array vertex.
   // The order of the elements in the vertex array are
-  // fEvent = digits[0], fZposition = vertex[1],
-  // fTime_diff = Vertex[2]
-  // Therefore the array digits is expected to be at least 3 elements long.
+  //  fZposition = vertex[0],
   //
 
   Zposit = &fZposition ;
@@ -49,7 +51,10 @@ AliSTARTvertex::AliSTARTvertex( Int_t * Zposit)
 
 void AliSTARTvertex::Reconstruct(Int_t evNumber=1) 
 {
- 
+  /***************************************************
+  Resonstruct digits to vertex position
+  ****************************************************/
+
   Int_t timediff;
   Float_t timePs;
   char nameTD[8],nameTR[8];
@@ -74,31 +79,19 @@ void AliSTARTvertex::Reconstruct(Int_t evNumber=1)
   bd = td->GetBranch("START");
   bd->SetAddress(&digits);
   bd->GetEvent(0);
-  printf(" Digits: "); digits->MyDump();    
   sprintf(nameTR,"TreeR%d",evNumber);
   TTree *tr = new TTree(nameTR,"START");
   bRec = tr->Branch("START","AliSTARTvertex",&vertex,buffersize,split);
-
-  //  td->Print(); td->Show(0); td->GetBranch("START")->Dump();
-        digits->MyDump();
-       printf("digits-> %d \n",digits->GetTime());
-  
   if(digits->GetTime()!=999999)
     {
       timediff=digits->GetTime();     //time in number of channels
       timePs=(timediff-128)*10.;       // time in Ps channel_width =10ps
-      printf(" timediff %d in PS %f\n",timediff,timePs);
       Float_t c = 299792458/1.e9;  //speed of light cm/ps
       //Float_t c = 0.3;  //speed of light mm/ps
       Float_t Zposit=timePs*c;// for 0 vertex
-      //    Float_t Zposit=timePs*c/2.;// for spread vertex
-      //      printf(" Z position %f\n",Zposit);
-      //      vertex->GetVertex();
       vertex->Set(Zposit);
       tr->Fill();
       tr->Write();
-      //hTimediff->Fill(timePs);
-      //hVertex->Fill(Zposit);
       }
 
 }

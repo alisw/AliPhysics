@@ -8,8 +8,6 @@
 ////////////////////////////////////////////////
  
 #include "AliDetector.h"
-#include "AliHit.h"
-#include "TNamed.h"
 #include "TTree.h"
 class TDirectory;
 R__EXTERN TDirectory *  gDirectory;
@@ -40,6 +38,8 @@ public:
    
 protected:
    Int_t fIdSens;    // Sensetive Cherenkov radiator
+
+private:
   ClassDef(AliSTART,1)  //Base class for the T0 aka START detector
 };
 

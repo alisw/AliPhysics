@@ -387,22 +387,13 @@ void AliSTARTv1::StepManager()
     if(gMC->IsTrackInside()) 	{
       Float_t de=gMC->Edep(); 
       edep=edep+de;
-      //       printf ("E deposition %f\n",edep);
-      //    for (i=0; i<=6; i++){
-      //    printf(" HITS on START inside %f\n",hits[i]); 
-      } 
-    }
-    if(gMC->IsTrackExiting())	{
-      Float_t de=gMC->Edep(); 
-      edep=edep+de;
-      hits[3]=edep*1e3;
-      Int_t i;
-      for (i=0; i<=6; i++){
-	//printf(" HITS on START Exit %f\n",hits[i]); } 
-      //      for (i=0; i<=1; i++) { printf("START vol %d\n",vol[i]);}
-     
-      new(lhits[fNhits++]) AliSTARThit(fIshunt,gAlice->CurrentTrack(),vol,hits);      
-    }
+    } 
+  }
+  if(gMC->IsTrackExiting())	{
+    Float_t de=gMC->Edep(); 
+    edep=edep+de;
+    hits[3]=edep*1e3;
+    new(lhits[fNhits++]) AliSTARThit(fIshunt,gAlice->CurrentTrack(),vol,hits);      
   }
 //---------------------------------------------------------------------
 }

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2000/12/18 11:39:41  alibrary
+Quick fix to avoid crash in display waiting for new version
+
 Revision 1.12  2000/12/04 08:48:19  alibrary
 Fixing problems in the HEAD
 
@@ -92,7 +95,7 @@ AliSTART::AliSTART()
   //
   // Default constructor for class AliSTART
   //
-  fIshunt   = 0;
+  fIshunt   = 1;
   fHits     = 0;
   fDigits   = 0;
 }
@@ -110,9 +113,8 @@ AliSTART::AliSTART(const char *name, const char *title)
   // Initialise Hit array
   fHits       = new TClonesArray("AliSTARThit",  405);
   gAlice->AddHitList(fHits);
-  //  fDigits     = new TClonesArray("AliSTARTdigit",500);
   
-  fIshunt     =  0;
+  fIshunt     =  1;
   fIdSens   =  0;
   SetMarkerColor(kRed);
 }
@@ -132,11 +134,8 @@ void AliSTART::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 void AliSTART::AddDigit(Int_t *tracks,Int_t *digits)
 {
   
-  //  Add a START digit to the list
+  //  Add a START digit to the list. Dummy function.
   
-//  printf (" AddDigit*******");
-    // TClonesArray &ldigits = *fDigits;
-    // new(ldigits[fNdigits++]) AliSTARTdigit(tracks,digits);
 }
 
 //_____________________________________________________________________________
@@ -147,7 +146,7 @@ void AliSTART::BuildGeometry()
   //
   TNode *node, *top;
   const int kColorSTART  = 19;
-  //
+
   top=gAlice->GetGeometry()->GetNode("alice");
 
   // START define the different volumes
@@ -215,7 +214,7 @@ void AliSTART::MakeBranch(Option_t* option)
 
   TTree *td = gAlice->TreeD();
   digits = new AliSTARTdigit();
-  td->Branch(branchname,"AliSTARTdigit",digits, buffersize);
+  td->Branch(branchname,"AliSTARTdigit",&digits, buffersize);
   printf("Making Branch %s for digits\n",branchname);
     
 /*
@@ -331,16 +330,14 @@ void AliSTART::Hit2digit(Int_t evnum)
        timeDiff = (Int_t)(timediff); // time ( ps) channel numbres
        digits->Set(timeAv,timeDiff);
      }
-       else
-	 {timeAv=999999; timeDiff=99999;}
-       td->Fill();
-       digits->MyDump();
-       printf("digits-> %d \n",digits->GetTime());
-       td->Write();
-       //     } //timediff
-   
+    else
+      {timeAv=999999; timeDiff=99999;}
+      
+    td->Fill();
+    printf("digits-> %d \n",digits->GetTime());
+    td->Write();
 
-} // end macro
+}
 
 
 

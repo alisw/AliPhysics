@@ -26,7 +26,7 @@ public:
 protected:
    Int_t fIdSens1; // Sensetive volume  in START
  
-  ClassDef(AliSTARTv1,1)  //Class for START version 0
+  ClassDef(AliSTARTv1,1)  //Class for START version 1
 };
 
 #endif

@@ -19,7 +19,7 @@ class AliSTARTdigit: public TObject  {
     virtual ~AliSTARTdigit() {}
     void Set(Int_t, Int_t);
     Int_t GetTime();
-    void MyDump(); 
+    void Print(); 
 
 
     ClassDef(AliSTARTdigit,1)  //Digit (Header) object for set:START
@@ -35,7 +35,7 @@ inline Int_t AliSTARTdigit::GetTime(){return fTimeDiff;}
 inline void AliSTARTdigit::Set(Int_t Timeav, Int_t Timediff)
   {fTimeAverage=Timeav; fTimeDiff=Timediff;}
 
-inline void AliSTARTdigit::MyDump(){
+inline void AliSTARTdigit::Print(){
   printf("AliSTARTdigit: fTimeAverage=%d, fTimeDiff=%d\n",
 	 fTimeAverage, fTimeDiff);
 }

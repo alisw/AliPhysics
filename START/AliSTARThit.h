@@ -1,5 +1,5 @@
-#ifndef ALISTARTHIT_H
-#define ALISTARTHIT_H
+#ifndef ALISTARThit_H
+#define ALISTARThit_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -8,7 +8,6 @@
 //  Manager and hits classes for set:START     //
 ////////////////////////////////////////////////
  
-#include "AliDetector.h"
 #include "AliHit.h"
  
 class AliSTARThit : public AliHit {
@@ -29,4 +28,4 @@ public:
 };
 
 
-#endif//AliSTARThit_H
+#endif//ALISTARThit_H
