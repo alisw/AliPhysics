@@ -9,16 +9,25 @@
 #pragma link C++ class AliHBTEvent+;
 #pragma link C++ class AliHBTRun+;
 #pragma link C++ class AliHBTFunction+;
+#pragma link C++ class AliHBTMonitorFunction+;
 
 #pragma link C++ class AliHBTOnePairFctn+;
-#pragma link C++ class AliHBTTwoPairFctn+;
 #pragma link C++ class AliHBTOnePairFctn1D+;
 #pragma link C++ class AliHBTOnePairFctn2D+;
 #pragma link C++ class AliHBTOnePairFctn3D+;
-
+#pragma link C++ class AliHBTTwoPairFctn+;
 #pragma link C++ class AliHBTTwoPairFctn1D+;
 #pragma link C++ class AliHBTTwoPairFctn2D+;
 #pragma link C++ class AliHBTTwoPairFctn3D+;
+
+#pragma link C++ class AliHBTMonOneParticleFctn+;
+#pragma link C++ class AliHBTMonOneParticleFctn1D+;
+#pragma link C++ class AliHBTMonOneParticleFctn2D+;
+#pragma link C++ class AliHBTMonOneParticleFctn3D+;
+#pragma link C++ class AliHBTMonTwoParticleFctn+;
+#pragma link C++ class AliHBTMonTwoParticleFctn1D+;
+#pragma link C++ class AliHBTMonTwoParticleFctn2D+;
+#pragma link C++ class AliHBTMonTwoParticleFctn3D+;
 
 #pragma link C++ class AliHBTPair+;
 #pragma link C++ class AliHBTParticleCut-;
@@ -65,20 +74,68 @@
 
 #pragma link C++ class AliHBTInvMassCorrelFctn+;
 
-#pragma link C++ class AliHBTQOutResolVSQInvFctn+;
-#pragma link C++ class AliHBTQSideResolVSQInvFctn+;
-#pragma link C++ class AliHBTQLongResolVSQInvFctn+;
-#pragma link C++ class AliHBTQInvResolVSKtFctn+;
-#pragma link C++ class AliHBTQOutResolVSKtFctn+;
-#pragma link C++ class AliHBTQSideResolVSKtFctn+;
-#pragma link C++ class AliHBTQLongResolVSKtFctn+;
-#pragma link C++ class AliHBTQOutResolVSQOutFctn+;
-#pragma link C++ class AliHBTQSideResolVSQSideFctn+;
-#pragma link C++ class AliHBTQLongResolVSQLongFctn+;
+#pragma link C++ class AliHBTQInvResolVsQInvFctn+;
+#pragma link C++ class AliHBTQOutResolVsQInvFctn+;
+#pragma link C++ class AliHBTQSideResolVsQInvFctn+;
+#pragma link C++ class AliHBTQLongResolVsQInvFctn+;
+
+#pragma link C++ class AliHBTQInvResolVsKtFctn+;
+#pragma link C++ class AliHBTQOutResolVsKtFctn+;
+#pragma link C++ class AliHBTQSideResolVsKtFctn+;
+#pragma link C++ class AliHBTQLongResolVsKtFctn+;
+
+#pragma link C++ class AliHBTQOutResolVsQOutFctn+;
+#pragma link C++ class AliHBTQSideResolVsQSideFctn+;
+#pragma link C++ class AliHBTQLongResolVsQLongFctn+;
+
+#pragma link C++ class AliHBTPairThetaResolVsQInvFctn+;
+#pragma link C++ class AliHBTPairPhiResolVsQInvFctn+;
+#pragma link C++ class AliHBTPairThetaResolVsKtFctn+;
+#pragma link C++ class AliHBTPairPhiResolVsKtFctn+;
+
+#pragma link C++ class AliHBTQInvDistributionVsKtFctn+;
+#pragma link C++ class AliHBTQOutDistributionVsKtFctn+;
+#pragma link C++ class AliHBTQSideDistributionVsKtFctn+;
+#pragma link C++ class AliHBTQLongDistributionVsKtFctn+;
+
+#pragma link C++ class AliHBTMonPxDistributionFctn+;
+#pragma link C++ class AliHBTMonPyDistributionFctn+;
+#pragma link C++ class AliHBTMonPzDistributionFctn+;
+#pragma link C++ class AliHBTMonPDistributionFctn+;
+#pragma link C++ class AliHBTMonPtDistributionFctn+;
+#pragma link C++ class AliHBTMonPhiDistributionFctn+;
+#pragma link C++ class AliHBTMonThetaDistributionFctn+;
+
+#pragma link C++ class AliHBTMonPxDistributionVsPtFctn+;
+#pragma link C++ class AliHBTMonPyDistributionVsPtFctn+;
+#pragma link C++ class AliHBTMonPzDistributionVsPtFctn+;
+#pragma link C++ class AliHBTMonPDistributionVsPtFctn+;
+#pragma link C++ class AliHBTMonPhiDistributionVsPtFctn+;
+#pragma link C++ class AliHBTMonThetaDistributionVsPtFctn+;
+
+#pragma link C++ class AliHBTMonPxResolutionFctn+;
+#pragma link C++ class AliHBTMonPyResolutionFctn+;
+#pragma link C++ class AliHBTMonPzResolutionFctn+;
+#pragma link C++ class AliHBTMonPResolutionFctn+;
+#pragma link C++ class AliHBTMonPtResolutionFctn+;
+#pragma link C++ class AliHBTMonPhiResolutionFctn+;
+#pragma link C++ class AliHBTMonThetaResolutionFctn+;
+
+#pragma link C++ class AliHBTMonPxResolutionVsPtFctn+;
+#pragma link C++ class AliHBTMonPyResolutionVsPtFctn+;
+#pragma link C++ class AliHBTMonPzResolutionVsPtFctn+;
+#pragma link C++ class AliHBTMonPResolutionVsPtFctn+;
+#pragma link C++ class AliHBTMonPtResolutionVsPtFctn+;
+#pragma link C++ class AliHBTMonPhiResolutionVsPtFctn+;
+#pragma link C++ class AliHBTMonThetaResolutionVsPtFctn+;
+
+#pragma link C++ class AliHBTTwoTrackEffFctn+;
+#pragma link C++ class AliHBTTwoTrackEffFctn3D+;
 
 #pragma link C++ class AliHBTLLWeights+;
 #pragma link C++ class AliHBTLLWeightQInvFctn+;
-#pragma link C++ class AliHBTTwoTrackEffFctn+;
-#pragma link C++ class AliHBTTwoTrackEffFctn3D+;
+#pragma link C++ class AliHBTLLWeightTheorQInvFctn+;
+
+
 
 #endif

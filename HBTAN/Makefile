@@ -17,11 +17,14 @@ SRCS          = AliHBTAnalysis.cxx AliHBTFunction.cxx \
 		AliHBTPair.cxx AliHBTPairCut.cxx\
                 AliHBTCorrelFctn.cxx \
                 AliHBTReader.cxx AliHBTReaderTPC.cxx\
-                AliHBTQResolutionFctns.cxx AliHBTReaderPPprod.cxx\
+                AliHBTReaderPPprod.cxx\
 		AliHBTReaderITSv1.cxx AliHBTReaderITSv2.cxx\
 		AliHBTReaderKineTree.cxx AliHBTReaderInternal.cxx\
-		AliHBTTwoTrackEffFctn.cxx\
-		AliHBTLLWeights.cxx AliHBTLLWeightFctn.cxx
+		AliHBTTwoTrackEffFctn.cxx \
+		AliHBTQResolutionFctns.cxx AliHBTQDistributionFctns.cxx \
+		AliHBTMonitorFunction.cxx \
+		AliHBTMonResolutionFctns.cxx AliHBTMonDistributionFctns.cxx \
+		AliHBTLLWeights.cxx AliHBTLLWeightFctn.cxx 
 
 # Fortran sources
 
@@ -47,7 +50,7 @@ COBJS         = $(patsubst %.c,tgt_$(ALICE_TARGET)/%.o,$(CSRCS))
 
 # C++ Objects
 
-OBJS          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
+OBJS          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO) 
 
 # C++ compilation flags
 
@@ -69,7 +72,7 @@ ALIBRARY	= $(LIBDIR)/libHBTAN.a
 default:	$(SLIBRARY)
 
 
-$(LIBDIR)/libHBTAN.$(SL): $(OBJS) $(FOBJS)
+$(LIBDIR)/libHBTAN.$(SL): $(OBJS) $(FOBJS) 
 
 $(DICT):			$(HDRS)
 

@@ -16,6 +16,8 @@ class AliHBTReader;
 class AliHBTOnePairFctn;      
 class AliHBTTwoPairFctn;
 
+class AliHBTMonOneParticleFctn;
+class AliHBTMonTwoParticleFctn;
 
 class TList;
 
@@ -31,10 +33,14 @@ class AliHBTAnalysis: public TObject
 
      void SetGlobalPairCut(AliHBTPairCut* cut);
      
-     void AddTrackFunction(AliHBTOnePairFctn*);
-     void AddParticleFunction(AliHBTOnePairFctn*);
-     void AddParticleAndTrackFunction(AliHBTTwoPairFctn*);
+     void AddTrackFunction(AliHBTOnePairFctn* f);
+     void AddParticleFunction(AliHBTOnePairFctn* f);
+     void AddParticleAndTrackFunction(AliHBTTwoPairFctn* f);
      
+     void AddParticleMonitorFunction(AliHBTMonOneParticleFctn* f);    //z.ch.
+     void AddTrackMonitorFunction(AliHBTMonOneParticleFctn* f);    //z.ch.
+     void AddParticleAndTrackMonitorFunction(AliHBTMonTwoParticleFctn* f);//z.ch.
+
      void AddResolutionFunction(AliHBTTwoPairFctn* f){AddParticleAndTrackFunction(f);}
      
      void SetReader(AliHBTReader* r){fReader = r;}
@@ -67,10 +73,19 @@ class AliHBTAnalysis: public TObject
      AliHBTTwoPairFctn**  fParticleAndTrackFunctions; //!array of pointers to functions that analyze both 
                                         //reconstructed tracks and generated particles
 		//i.e. - resolution analyzers
+
+     AliHBTMonOneParticleFctn**  fParticleMonitorFunctions; // array of pointers to monitoring functions
+     AliHBTMonOneParticleFctn**  fTrackMonitorFunctions; // which are used for single particle analysis,
+     AliHBTMonTwoParticleFctn**  fParticleAndTrackMonitorFunctions;  // cut monitoring, etc.
+
      UInt_t fNTrackFunctions; //!
      UInt_t fNParticleFunctions; //!
      UInt_t fNParticleAndTrackFunctions; //!
 		
+     UInt_t fNParticleMonitorFunctions; //! 
+     UInt_t fNTrackMonitorFunctions; //! 
+     UInt_t fNParticleAndTrackMonitorFunctions; //! 
+
      /**********************************************/
      /* Control parameters  */
 
