@@ -316,8 +316,11 @@ void AliTrackPoints::MakeITSPointsInnerFromVertexOuterFromTPC(AliESDtrack* track
     fX[i] = x;
     fY[i] = y;
     fZ[i] = z;
-    Info("MakeITSPoints","X %f Y %f Z %f R asked %f R obtained %f",
-             fX[i],fY[i],fZ[i],r[i],TMath::Hypot(fX[i],fY[i]));
+    if ( GetDebug() > 2 )
+      {
+         Info("MakeITSPoints","X %f Y %f Z %f R asked %f R obtained %f",
+                fX[i],fY[i],fZ[i],r[i],TMath::Hypot(fX[i],fY[i]));
+      }
   }   
  
  for (Int_t i = 3; i < 6; i++)
@@ -328,8 +331,11 @@ void AliTrackPoints::MakeITSPointsInnerFromVertexOuterFromTPC(AliESDtrack* track
     fX[i] = ax;
     fY[i] = ay;
     fZ[i] = az;
-    Info("MakeITSPoints","X %f Y %f Z %f R asked %f R obtained %f",
-             fX[i],fY[i],fZ[i],r[i],TMath::Hypot(fX[i],fY[i]));
+    if ( GetDebug() > 2 )
+     {
+       Info("MakeITSPoints","X %f Y %f Z %f R asked %f R obtained %f",
+                fX[i],fY[i],fZ[i],r[i],TMath::Hypot(fX[i],fY[i]));
+     }
   }
  
 }
