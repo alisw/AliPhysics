@@ -14,14 +14,12 @@
  **************************************************************************/
 
 /* $Id$ */
-
-//
-//
-// Hadron correction base class
-//
-//
-//
-//
+//--
+//--
+//--  Hadron correction base class
+//--
+//--
+//--
 
 
 #include "AliEMCALHadronCorrection.h"
