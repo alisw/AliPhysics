@@ -18,6 +18,8 @@
 #include <TVector.h>
 #include <TFile.h>
 #include <TTree.h>
+#include <TStopwatch.h>
+
 #include "TParticle.h"
 #include "AliRun.h"
 #include "AliITS.h"
@@ -35,7 +37,6 @@
 #include "AliITSRad.h"   
 #include "../TPC/AliTPCtracker.h"
 #include "AliITSTrackerV1.h"
-
 
 ClassImp(AliITSTrackerV1)
 
@@ -60,7 +61,7 @@ AliITSTrackerV1::AliITSTrackerV1(AliITS* IITTSS, Bool_t flag) {
   TVector det(9);
   
   //cout<<" nlad ed ndet \n";
-  Int_t ia;                              // fuori
+  Int_t ia;                             
   for(ia=0; ia<6; ia++) {
     fNlad[ia]=g1->GetNladders(ia+1);
     fNdet[ia]=g1->GetNdetectors(ia+1);
@@ -69,10 +70,13 @@ AliITSTrackerV1::AliITSTrackerV1(AliITS* IITTSS, Bool_t flag) {
   //getchar();
 
   //cout<<" raggio medio = ";
-  Int_t ib;                                  // fuori
+  Int_t ib;                                
   for(ib=0; ib<6; ib++) {  
     g1->GetCenterThetaPhi(ib+1,ll,dd,det);
-    fAvrad[ib]=TMath::Sqrt(det(0)*det(0)+det(1)*det(1));
+	 Double_t r1=TMath::Sqrt(det(0)*det(0)+det(1)*det(1));
+	 g1->GetCenterThetaPhi(ib+1,ll,dd+1,det);
+	 Double_t r2=TMath::Sqrt(det(0)*det(0)+det(1)*det(1));
+    fAvrad[ib]=(r1+r2)/2.;
 	 //cout<<fAvrad[ib]<<" ";
   }
   //cout<<"\n"; getchar();
@@ -100,6 +104,71 @@ AliITSTrackerV1::AliITSTrackerV1(AliITS* IITTSS, Bool_t flag) {
   //getchar();
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+////////////////// allocate memory and define matrices fzmin, fzmax, fphimin and fphimax /////////////////////////////////
+
+  Double_t epsz=1.2;
+  Double_t epszdrift=0.05;
+
+  fzmin = new Double_t*[6]; fzmax = new Double_t*[6];
+  Int_t im1, im2, im2max;
+  for(im1=0; im1<6; im1++) {
+    im2max=fNdet[im1];
+    fzmin[im1] = new Double_t[im2max]; fzmax[im1] = new Double_t[im2max];
+  }
+
+  for(im1=0; im1<6; im1++) {
+    im2max=fNdet[im1];
+    for(im2=0; im2<im2max; im2++) {
+	   g1->GetCenterThetaPhi(im1+1,1,im2+1,det);
+	   if(im2!=0) fzmin[im1][im2]=det(2)-fDetz[im1];
+		else   
+	   fzmin[im1][im2]=det(2)-(fDetz[im1])*epsz;
+		if(im2!=(im2max-1)) fzmax[im1][im2]=det(2)+fDetz[im1];
+		else
+		fzmax[im1][im2]=det(2)+fDetz[im1]*epsz;
+		if(im1==2 || im1==3) {fzmin[im1][im2]-=epszdrift; fzmax[im1][im2]+=epszdrift;}
+	 }
+  }
+
+  fphimin = new Double_t*[6]; fphimax = new Double_t*[6];
+  for(im1=0;im1<6;im1++) {
+    im2max=fNlad[im1];
+	 fphimin[im1] = new Double_t[im2max]; fphimax[im1] = new Double_t[im2max];
+  }
+  
+  fphidet = new Double_t*[6];
+  for(im1=0; im1<6; im1++) {
+    im2max=fNlad[im1];
+	 fphidet[im1] = new Double_t[im2max];
+  }
+
+  Float_t global[3],local[3];
+  Double_t pigre=TMath::Pi();
+  Double_t xmin,ymin,xmax,ymax;
+    
+  for(im1=0; im1<6; im1++) {
+    im2max=fNlad[im1];
+    for(im2=0; im2<im2max; im2++) {
+	   Int_t idet=2;
+	   g1->GetCenterThetaPhi(im1+1,im2+1,idet,det);
+      fphidet[im1][im2]= TMath::ATan2(Double_t(det(1)),Double_t(det(0))); 
+		if(fphidet[im1][im2]<0.) fphidet[im1][im2]+=2.*pigre;  
+	   local[1]=local[2]=0.;  
+      local[0]= -(fDetx[im1]);    
+      if(im1==0) local[0]= (fDetx[im1]);   //to take into account different reference system
+		g1->LtoG(im1+1,im2+1,idet,local,global);
+		xmax=global[0]; ymax=global[1];
+		local[0]= (fDetx[im1]);   
+      if(im1==0) local[0]= -(fDetx[im1]);  //take into account different reference system
+		g1->LtoG(im1+1,im2+1,idet,local,global);
+      xmin=global[0]; ymin=global[1];
+		fphimin[im1][im2]= TMath::ATan2(ymin,xmin); if(fphimin[im1][im2]<0.) fphimin[im1][im2]+=2.*pigre; 
+      fphimax[im1][im2]= TMath::ATan2(ymax,xmax); if(fphimax[im1][im2]<0.) fphimax[im1][im2]+=2.*pigre;
+	 }
+  }  
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 //////////////////////////////////////// gets magnetic field factor ////////////////////////////////
 
   AliMagF * fieldPointer = gAlice->Field();
@@ -114,49 +183,122 @@ AliITSTrackerV1::AliITSTrackerV1(const AliITSTrackerV1 &cobj) {
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
 // copy constructor
     
-    *fITS = *cobj.fITS;
-	 *fresult = *cobj.fresult;
-    fPtref = cobj.fPtref;
-	 //frecPoints = fITS->RecPoints();
-	 //*frecPoints = *cobj.frecPoints;
-	 **fvettid = **cobj.fvettid;
-	 fflagvert = cobj.fflagvert;
-	 Int_t imax=200,jmax=450;
-	 frl = new AliITSRad(imax,jmax);	 
-	 *frl = *cobj.frl;
-	 fFieldFactor = cobj.fFieldFactor;
-	 Int_t i;
-	 for(i=0; i<6; i++) {
-	   fNlad[i] = cobj.fNlad[i];
-      fNdet[i] = cobj.fNdet[i]; 
-	   fAvrad[i] = cobj.fAvrad[i];
-	   fDetx[i] = cobj.fDetx[i];
-	   fDetz[i] = cobj.fDetz[i];
-	}
+  *fITS = *cobj.fITS;
+  *fresult = *cobj.fresult;
+  fPtref = cobj.fPtref;
+  **fvettid = **cobj.fvettid;
+  fflagvert = cobj.fflagvert;
+  Int_t imax=200,jmax=450;
+  frl = new AliITSRad(imax,jmax);	 
+  *frl = *cobj.frl;
+  fFieldFactor = cobj.fFieldFactor;
+  Int_t i,im1,im2,im2max;
+  for(i=0; i<6; i++) {
+	 fNlad[i] = cobj.fNlad[i];
+    fNdet[i] = cobj.fNdet[i]; 
+	 fAvrad[i] = cobj.fAvrad[i];
+	 fDetx[i] = cobj.fDetx[i];
+	 fDetz[i] = cobj.fDetz[i];
+  }
+  fzmin = new Double_t*[6]; fzmax = new Double_t*[6];
+  for(im1=0; im1<6; im1++) {
+    im2max=fNdet[im1];
+    fzmin[im1] = new Double_t[im2max]; fzmax[im1] = new Double_t[im2max];
+  }
+    fphimin = new Double_t*[6]; fphimax = new Double_t*[6];
+  for(im1=0;im1<6;im1++) {
+    im2max=fNlad[im1];
+	 fphimin[im1] = new Double_t[im2max]; fphimax[im1] = new Double_t[im2max];
+  }
+  
+  fphidet = new Double_t*[6];
+  for(im1=0; im1<6; im1++) {
+    im2max=fNlad[im1];
+	 fphidet[im1] = new Double_t[im2max];
+  }
+  for(im1=0; im1<6; im1++) {
+    im2max=fNdet[im1];
+    for(im2=0; im2<im2max; im2++) {
+		fzmin[im1][im2]=cobj.fzmin[im1][im2];
+		fzmax[im1][im2]=cobj.fzmax[im1][im2];
+    }		
+  }		
+  for(im1=0; im1<6; im1++) {
+    im2max=fNlad[im1];
+    for(im2=0; im2<im2max; im2++) {
+	   fphimin[im1][im2]=cobj.fphimin[im1][im2];
+		fphimax[im1][im2]=cobj.fphimax[im1][im2];
+		fphidet[im1][im2]=cobj.fphidet[im1][im2];  
+	 }
+  }	 	 
+}
+
+AliITSTrackerV1::~AliITSTrackerV1(){
+//Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it  
+// class destructor
+  
+  //cout<<"                 CpuTimeKalman       = "<<fTimerKalman->CpuTime()<<"\n";
+  //cout<<"                 CpuTimeIntersection = "<<fTimerIntersection->CpuTime()<<"\n";
+  //cout<<"                 CpuTimeIntersection = "<<TStopwatch::GetCPUTime()<<"\n"; 
+  //delete fTimerKalman;
+  //delete fTimerIntersection;
 
 }
+
 
 AliITSTrackerV1 &AliITSTrackerV1::operator=(AliITSTrackerV1 obj) {
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it  
 // assignement operator
 
-    *fITS = *obj.fITS;
-	 *fresult = *obj.fresult;
-    fPtref = obj.fPtref;
-	 **fvettid = **obj.fvettid;
-	 fflagvert = obj.fflagvert;
-	 Int_t imax=200,jmax=450;
-	 frl = new AliITSRad(imax,jmax);	 
-	 *frl = *obj.frl;
-	 fFieldFactor = obj.fFieldFactor;
-	 Int_t i;
-	 for(i=0; i<6; i++) {
-	   fNlad[i] = obj.fNlad[i];
-      fNdet[i] = obj.fNdet[i]; 
-	   fAvrad[i] = obj.fAvrad[i];
-	   fDetx[i] = obj.fDetx[i];
-	   fDetz[i] = obj.fDetz[i];
-	}
+  *fITS = *obj.fITS;
+  *fresult = *obj.fresult;
+  fPtref = obj.fPtref;
+  **fvettid = **obj.fvettid;
+  fflagvert = obj.fflagvert;
+  Int_t imax=200,jmax=450;
+  frl = new AliITSRad(imax,jmax);	 
+  *frl = *obj.frl;
+  fFieldFactor = obj.fFieldFactor;
+  Int_t i;
+  for(i=0; i<6; i++) {
+	 fNlad[i] = obj.fNlad[i];
+    fNdet[i] = obj.fNdet[i]; 
+	 fAvrad[i] = obj.fAvrad[i];
+	 fDetx[i] = obj.fDetx[i];
+	 fDetz[i] = obj.fDetz[i];
+  }
+  fzmin = new Double_t*[6]; fzmax = new Double_t*[6];
+  Int_t im1, im2, im2max;
+  for(im1=0; im1<6; im1++) {
+    im2max=fNdet[im1];
+    fzmin[im1] = new Double_t[im2max]; fzmax[im1] = new Double_t[im2max];
+  }
+    fphimin = new Double_t*[6]; fphimax = new Double_t*[6];
+  for(im1=0;im1<6;im1++) {
+    im2max=fNlad[im1];
+	 fphimin[im1] = new Double_t[im2max]; fphimax[im1] = new Double_t[im2max];
+  }
+  
+  fphidet = new Double_t*[6];
+  for(im1=0; im1<6; im1++) {
+    im2max=fNlad[im1];
+	 fphidet[im1] = new Double_t[im2max];
+  }
+  for(im1=0; im1<6; im1++) {
+    im2max=fNdet[im1];
+    for(im2=0; im2<im2max; im2++) {
+		fzmin[im1][im2]=obj.fzmin[im1][im2];
+		fzmax[im1][im2]=obj.fzmax[im1][im2];
+    }		
+  }		
+  for(im1=0; im1<6; im1++) {
+    im2max=fNlad[im1];
+    for(im2=0; im2<im2max; im2++) {
+	   fphimin[im1][im2]=obj.fphimin[im1][im2];
+		fphimax[im1][im2]=obj.fphimax[im1][im2];
+		fphidet[im1][im2]=obj.fphidet[im1][im2];  
+	 }
+  }
 
   return *this;
   
@@ -286,7 +428,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
     for (ii=0;ii<numbpoints; ii++) *(fvettid[mod]+ii)=0;
   }
 
-  AliTPCtrack *track=0;  // sono qui
+  AliTPCtrack *track=0;
 
      
   if(minTr < 0) {minTr = 0; maxTr = nt-1;}   
@@ -412,7 +554,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
   list->AddLast(&trackITS);
   
   fPtref=TMath::Abs( (trackITS).GetPt() );
-  cout << "\n Pt = " << fPtref <<"\n";  //stampa
+  //cout << "\n Pt = " << fPtref <<"\n";  //stampa
 
   RecursiveTracking(list);  // nuova ITS 
   list->Delete();
@@ -447,11 +589,11 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
     // cout<<" progressive track number = "<<j<<"\r";
    // cout<<j<<"\r";
     Int_t numOfCluster=(*fresult).GetNumClust();  
-    cout<<" progressive track number = "<<j<<"\n";    // stampa
+    //cout<<" progressive track number = "<<j<<"\n";    // stampa
     Long_t labITS=(*fresult).GetLabel();
-    cout << " ITS track label = " << labITS << "\n"; 	// stampa	    
+    //cout << " ITS track label = " << labITS << "\n"; 	// stampa	    
     int lab=track->GetLabel();		    
-    cout << " TPC track label = " << lab <<"\n";      // stampa
+    //cout << " TPC track label = " << lab <<"\n";      // stampa
 	 
 	     
 //propagation to vertex
@@ -543,10 +685,11 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
         ioTrack->SetIdModule(il,idmodule);
       }
       
-    //  cout<<"  +++++++++++++  pt e ptg = "<<pt<<" "<<ptg<<"  ++++++++++\n";
+      //cout<<"  +++++++++++++  pt e ptg = "<<pt<<" "<<ptg<<"  ++++++++++\n"; getchar();
 
        ///////////////////////////////
-      Double_t difpt= (pt-ptg)/ptg*100.;  	            	                
+      Double_t difpt= (pt-ptg)/ptg*100.;
+		//cout<<" difpt = "<<difpt<<"\n"; getchar();  	            	                
       dataOut(kkk)=difpt; kkk++;                                             
       Double_t lambdag=TMath::ATan(pzg/ptg);
       Double_t   lam=TMath::ATan(tgl);      
@@ -663,17 +806,17 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
      	         
     Int_t layerInit = (*trackITS).GetLayer();
     Int_t layernew = layerInit - 2;  // -1 for new layer, -1 for matrix index 
-					  
-    //Int_t NLadder[]= {20, 40, 14, 22, 34, 38};   //vecchio
-    //Int_t NDetector[]= {4,  4,   6,  8, 23, 26}; //vecchio
 				 		
     TList listoftrack;    	 
     Int_t ladp, ladm, detp,detm,ladinters,detinters; 	
     Int_t layerfin=layerInit-1;
-	 Double_t rFin=fAvrad[layerfin-1];  
+	 //Double_t rFin=fAvrad[layerfin-1];  
     // cout<<"Prima di intersection \n";
-
-    Int_t  outinters=Intersection(*trackITS, rFin, layerfin, ladinters, detinters);
+	 
+	 //if(!fTimerIntersection) fTimerIntersection = new TStopwatch();          // timer		 
+	 //fTimerIntersection->Continue();                                         // timer 
+    Int_t  outinters=Intersection(*trackITS, layerfin, ladinters, detinters);
+	 //fTimerIntersection->Stop();                                             // timer
 	 	 
    // cout<<" outinters = "<<outinters<<"\n";
    //  cout<<" Layer ladder detector intersection ="<<layerfin<<" "<<ladinters<<" "<<detinters<<"\n";
@@ -836,10 +979,15 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
 	  sigmanew[0]= sigmaphi;
 	  sigmanew[1]=sigma[1];
 
-	  if(fflagvert) 	 
-	    KalmanFilterVert(newTrack,cluster,sigmanew);  
-	  else		    	  		 		  
+	  //if(!fTimerKalman) fTimerKalman = new TStopwatch();          // timer		 
+	  //fTimerKalman->Continue();                                   // timer                                                          // timer 
+	  if(fflagvert){	 
+	    KalmanFilterVert(newTrack,cluster,sigmanew);
+	  }
+	  else{
 	    KalmanFilter(newTrack,cluster,sigmanew);
+	  }
+	  //fTimerKalman->Stop();                                       // timer
 	       
       		  
           (*newTrack).PutCluster(layernew, vecclust);
@@ -875,48 +1023,30 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
 
 }   
 
-Int_t AliITSTrackerV1::Intersection(AliITSTrackV1 &track, Double_t rk,Int_t layer, Int_t &ladder, 
-Int_t &detector) { 
+Int_t AliITSTrackerV1::Intersection(AliITSTrackV1 &track, Int_t layer, Int_t &ladder, Int_t &detector) { 
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
 // Found the intersection and the detector 
 
+  Double_t rk=fAvrad[layer-1];
   if(track.DoNotCross(rk)){ /*cout<< " Do not cross \n";*/ return -1;} 
   track.Propagation(rk);
   Double_t zinters=track.GetZ();
   Double_t phinters=track.Getphi();
   //cout<<"zinters = "<<zinters<<"  phinters = "<<phinters<<"\n";
-
-  //////////////////////////////////      limits for Geometry 5      /////////////////////////////
-  
-  //Int_t NLadder[]= {20, 40, 14, 22, 34, 38};
-  //Int_t NDetector[]= {4,  4,   6,  8, 23, 26}; 
-
-  //Float_t Detx[]= {0.64, 0.64, 3.509, 3.509, 3.65, 3.65 };
-  //Float_t Detz[]= {4.19, 4.19, 3.75 , 3.75 , 2   , 2    };
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////  
   
   TVector det(9);
   TVector listDet(2);
   TVector distZCenter(2);  
-  AliITSgeom *g1 = ((AliITS*)gAlice->GetDetector("ITS"))->GetITSgeom();
+  //AliITSgeom *g1 = ((AliITS*)gAlice->GetDetector("ITS"))->GetITSgeom();
   
   Int_t iz=0; 
-  Double_t epsz=1.2;
-  Double_t epszpixel=0.05;
-
   Int_t iD;
+  
   for(iD = 1; iD<= fNdet[layer-1]; iD++) {
-    g1->GetCenterThetaPhi(layer,1,iD,det);
-	 Double_t zmin=det(2)-fDetz[layer-1];   
-	 if(iD==1) zmin=det(2)-(fDetz[layer-1])*epsz;		
-	 Double_t zmax=det(2)+fDetz[layer-1];    
-	 if(iD==fNdet[layer-1]) zmax=det(2)+(fDetz[layer-1])*epsz;   
-    //added to take into account problem on drift
-    if(layer == 4 || layer==3) zmin=zmin-epszpixel; zmax=zmax+epszpixel;
-    //cout<<"zmin zinters zmax det(2)= "<<zmin<<" "<<zinters<<" "<<zmax<<" "<<det(2)<<"\n";	
-    if(zinters > zmin && zinters <= zmax) { 
-      if(iz>1) {cout<< " Errore su iz in Intersection \n"; getchar();}
+	 if(zinters > fzmin[layer-1][iD-1] && zinters <= fzmax[layer-1][iD-1]) {
+      if(iz>1) {
+		  cout<< " Errore su iz in Intersection \n"; getchar();
+		}
       else {
         listDet(iz)= iD; distZCenter(iz)=TMath::Abs(zinters-det(2)); iz++;
       }
@@ -926,53 +1056,28 @@ Int_t &detector) {
   if(iz==0) {/* cout<< " No detector along Z \n";*/ return -2;}
   detector=Int_t (listDet(0));
   if(iz>1 && (distZCenter(0)>distZCenter(1)))   detector=Int_t (listDet(1));
-  
-  AliITSgeom *g2 = ((AliITS*)gAlice->GetDetector("ITS"))->GetITSgeom(); 
-  Float_t global[3];
-  Float_t local[3];
+
   TVector listLad(2);
   TVector distPhiCenter(2);
   Int_t ip=0;
   Double_t pigre=TMath::Pi();
   
   Int_t iLd;   
-  for(iLd = 1; iLd<= fNlad[layer-1]; iLd++) {  
-          g1->GetCenterThetaPhi(layer,iLd,detector,det);
- // Double_t phidet=PhiDef(Double_t(det(0)),Double_t(det(1)));  //vecchio
-    Double_t phidet= TMath::ATan2(Double_t(det(1)),Double_t(det(0))); if(phidet<0.) phidet+=2.*TMath::Pi(); //nuovo 
-  // cout<<" layer phidet e det(6) = "<< layer<<" "<<phidet<<" "<<det(6)<<"\n"; getchar();
-  Double_t xmin,ymin,xmax,ymax;	
- // Double_t phiconfr=0.0;
-  //cout<<" phiconfr inizio =  "<<phiconfr <<"\n"; getchar();  
-  local[1]=local[2]=0.;  
-  local[0]= -(fDetx[layer-1]);    
-  if(layer==1)    local[0]= (fDetx[layer-1]);  //take into account different reference system   
-  g2->LtoG(layer,iLd,detector,local,global);
-  xmax=global[0]; ymax=global[1];
-  local[0]= (fDetx[layer-1]);   
-  if(layer==1)    local[0]= -(fDetx[layer-1]);  //take into account different reference system 
-  g2->LtoG(layer,iLd,detector,local,global);
-  xmin=global[0]; ymin=global[1];
- // Double_t phimin=PhiDef(xmin,ymin);  //vecchio
-     Double_t phimin= TMath::ATan2(ymin,xmin); if(phimin<0.) phimin+=2.*TMath::Pi();  //nuovo 
- // Double_t phimax=PhiDef(xmax,ymax);
-    Double_t phimax= TMath::ATan2(ymax,xmax); if(phimax<0.) phimax+=2.*TMath::Pi();  //nuovo 
-  //cout<<" xmin ymin = "<<xmin<<" "<<ymin<<"\n";
-  // cout<<" xmax ymax = "<<xmax<<" "<<ymax<<"\n";  
-  // cout<<" iLd phimin phimax ="<<iLd<<" "<<phimin<<" "<<phimax<<"\n";
-
-  Double_t phiconfr=phinters;
- if(phimin>phimax ){    
-     if(phimin <5.5) {cout<<" Error in Intersection for phi \n"; getchar();}
-    phimin=phimin-(2.*pigre);
-    if(phinters>(1.5*pigre)) phiconfr=phinters-(2.*pigre); 
-    if(phidet>(1.5*pigre)) phidet=phidet-(2.*pigre);
-  }              
-  //  cout<<" phiconfr finale = "<<phiconfr<<"\n"; getchar(); 
-  if(phiconfr>phimin && phiconfr<= phimax) {
-    if(ip>1) {
-      cout<< " Errore su ip in Intersection \n"; getchar();
+  for(iLd = 1; iLd<= fNlad[layer-1]; iLd++) {
+    Double_t phimin=fphimin[layer-1][iLd-1];
+    Double_t phimax=fphimax[layer-1][iLd-1];
+    Double_t phidet=fphidet[layer-1][iLd-1];
+    Double_t phiconfr=phinters;
+    if(phimin>phimax) {  
+      //if(phimin <5.5) {cout<<" Error in Intersection for phi \n"; getchar();}
+      phimin-=(2.*pigre);
+      if(phinters>(1.5*pigre)) phiconfr=phinters-(2.*pigre); 
+      if(phidet>(1.5*pigre)) phidet-=(2.*pigre);
     }
+    if(phiconfr>phimin && phiconfr<= phimax) {
+      if(ip>1) {
+        cout<< " Errore su ip in Intersection \n"; getchar();
+      }
       else  {
         listLad(ip)= iLd; distPhiCenter(ip)=TMath::Abs(phiconfr-phidet); ip++;
       }  
@@ -980,11 +1085,10 @@ Int_t &detector) {
   }
   if(ip==0) { cout<< " No detector along phi \n"; getchar();}
   ladder=Int_t (listLad(0));
-  if(ip>1 && (distPhiCenter(0)>distPhiCenter(1)))   ladder=Int_t (listLad(1));       
+  if(ip>1 && (distPhiCenter(0)>distPhiCenter(1)))  ladder=Int_t (listLad(1));    
 
   return 0;
 }
-
 
 void AliITSTrackerV1::KalmanFilter(AliITSTrackV1 *newTrack,TVector &cluster,Double_t sigma[2]){ 
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it

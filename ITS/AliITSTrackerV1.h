@@ -30,6 +30,7 @@ class AliITSTrackV1;
 class AliITS;
 class AliITSRad;
 class AliITSgeoinfo;
+class TStopwatch;
 
 class AliITSTrackerV1 : public TObject {
 
@@ -38,15 +39,16 @@ class AliITSTrackerV1 : public TObject {
 	 AliITSTrackerV1(AliITS* IITTSS, Bool_t flag);
 	 
 	 AliITSTrackerV1(const AliITSTrackerV1 &cobj);
+	 
+	 ~AliITSTrackerV1();
 	   
     AliITSTrackerV1 &operator=(AliITSTrackerV1 obj);
 	 
 	 void DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile *file);
 	 
 	 void RecursiveTracking(TList *trackITSlist);
-
-    Int_t Intersection(AliITSTrackV1 &track, Double_t rk,Int_t layer, Int_t &ladder, Int_t &detector); 
-
+ 
+    Int_t Intersection(AliITSTrackV1 &track, Int_t layer, Int_t &ladder, Int_t &detector); 
     void KalmanFilter(AliITSTrackV1 *newtrack, TVector &cluster, Double_t sigma[2]);
     
     void KalmanFilterVert(AliITSTrackV1 *newtrack, TVector &cluster, Double_t sigma[2]);
@@ -63,13 +65,23 @@ class AliITSTrackerV1 : public TObject {
 	 
 	 Int_t fNlad[6];            // Number of ladders for a given layer
 	 Int_t fNdet[6];            // Number of detector for a given layer
-	 Float_t fAvrad[6];         // Average radius for a given layer
-	 Float_t fDetx[6];          // Semidimension of detectors along x axis for a given layer
-	 Float_t fDetz[6];          // Semidimension of detectors along z axis for a given layer
+	 Double_t fAvrad[6];        // Average radius for a given layer
+	 Double_t fDetx[6];         // Semidimension of detectors along x axis for a given layer
+	 Double_t fDetz[6];         // Semidimension of detectors along z axis for a given layer
 	 
-	 Double_t fFieldFactor;      // Magnetic filed factor
+	 Double_t **fzmin;          // Matrix of zmin for a given layer and a given detector
+	 Double_t **fzmax;          // Matrix of zmax for a given layer and a given detector
 	 
-
+	 Double_t **fphimin;        // Matrix of phimin for a given layer and a given ladder
+	 Double_t **fphimax;        // Matrix of phimax for a given layer and a given ladder
+	 
+	 Double_t **fphidet;        // azimuthal angle for a given layer and a given ladder
+	 
+	 Double_t fFieldFactor;     // Magnetic filed factor
+	 
+	 //TStopwatch *fTimerKalman;         // timer for kalman filter
+	 //TStopwatch *fTimerIntersection;   // timer for Intersection
+	 
     ClassDef(AliITSTrackerV1,1)
 };
 
