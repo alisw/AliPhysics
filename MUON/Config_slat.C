@@ -99,7 +99,7 @@ geant3->SetCUTS(1.e-4, 1.e-4, 1.e-3, 1.e-4, 1.e-3, cut,  cut,  cut, cut,  cut, 1
      //vertex position
      gener->SetSigma(1,1,0);           //Sigma in (X,Y,Z) (cm) on IP position
      gener->SetPart(kMuonMinus); 
-     gener->SetRange(60, -300, 300, 60, -300., 300., 1, 1200, 1200);
+     gener->SetRange(60, -300, 300, 60, -300., 300., 1, 900, 900);
      break;
  case doublescan:  
 //*********************************************
@@ -356,12 +356,12 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  AliMUONResponseV0* response0 = new AliMUONResponseV0;
  response0->SetSqrtKx3AndDeriveKx2Kx4(0.7131);
  response0->SetSqrtKy3AndDeriveKy2Ky4(0.7642);
-// response0->SetSqrtKx3(0.7131);
-// response0->SetKx2(1.0107);
-// response0->SetKx4(0.4036);
-// response0->SetSqrtKy3(0.7642);
-// response0->SetKy2(0.9706);
-// response0->SetKy4(0.3831);
+ //response0->SetSqrtKx3(0.7131);
+ //response0->SetKx2(1.0107);
+ //response0->SetKx4(0.4036);
+ //response0->SetSqrtKy3(0.7642);
+ //response0->SetKy2(0.9706);
+ //response0->SetKy4(0.3831);
  response0->SetPitch(0.25);
  response0->SetSigmaIntegration(10.);
  response0->SetChargeSlope(50);
@@ -473,34 +473,25 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 // Configuration for Chamber TC5/6  (Station 3) ----------          
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  Int_t   nseg3[4]={4, 4, 2, 1};
-/*
- Int_t   npcb5[32] = {0,0,2,0,
-		      0,1,2,0,
-		      0,2,1,1,
-		      0,2,1,0,
-		      0,2,1,0, 
-		      0,2,1,1, 
+ Int_t   npcb5[36] = {0,0,2,0,
+		      0,0,3,0,
+		      0,1,3,0,
+		      0,2,2,0,
 		      0,1,2,0, 
-		      0,0,2,0};
- */ 
- Int_t   npcb5[32] = {0,0,1,1,
-		      0,1,1,1,
-		      0,2,1,1,
-		      0,2,1,1,
-		      0,2,1,1, 
-		      0,2,1,1, 
-		      0,1,1,1, 
-		      0,0,1,1};
+		      0,2,2,0, 
+		      0,1,3,0, 
+		      0,0,3,0,
+                      0,0,2,0};
 
  Float_t shift = 1.5/2.;
  // Float_t xpos5[8]    = {2., 2., 2., 42., 42., 2., 2., 2.};
- Float_t xpos5[8]    = {2., 2., 2., 2., 2., 2., 2., 2.};
- Float_t ypos5       = -(4.*(40.-2.*shift)+shift);
+ Float_t xpos5[9]    = {2., 2., 2., 2.,32., 2., 2., 2., 2.};
+ Float_t ypos5       = -(20.+4.*(40.-2.*shift));
 
  chamber=5;
  MUON->SetNsec(chamber-1,2);
  AliMUONSegmentationSlat *seg51=new AliMUONSegmentationSlat;
- seg51->SetNSlats(8); 
+ seg51->SetNSlats(9); 
  seg51->SetShift(shift);  
  seg51->SetNPCBperSector(npcb5); 
  seg51->SetSlatXPositions(xpos5);
@@ -511,7 +502,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  MUON->SetSegmentationModel(chamber-1, 1, seg51);
 
  AliMUONSegmentationSlatN *seg52=new AliMUONSegmentationSlatN;
- seg52->SetNSlats(8); 
+ seg52->SetNSlats(9); 
  seg52->SetShift(shift);  
  seg52->SetNPCBperSector(npcb5); 
  seg52->SetSlatXPositions(xpos5);
@@ -525,7 +516,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  chamber=6;
  MUON->SetNsec(chamber-1,2);
  AliMUONSegmentationSlat *seg61=new AliMUONSegmentationSlat;
- seg61->SetNSlats(8); 
+ seg61->SetNSlats(9); 
  seg61->SetShift(shift);  
  seg61->SetNPCBperSector(npcb5); 
  seg61->SetSlatXPositions(xpos5);
@@ -536,7 +527,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  MUON->SetSegmentationModel(chamber-1, 1, seg61);
 
  AliMUONSegmentationSlatN *seg62=new AliMUONSegmentationSlatN;
- seg62->SetNSlats(8); 
+ seg62->SetNSlats(9); 
  seg62->SetShift(shift);  
  seg62->SetNPCBperSector(npcb5); 
  seg62->SetSlatXPositions(xpos5);
@@ -559,19 +550,18 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  MUON->SetNsec(chamber-1,2);
 //
  AliMUONSegmentationSlat *seg71=new AliMUONSegmentationSlat;
- Int_t npcb7[44] = {0,0,0,2,
-		    0,0,0,3,
+ Int_t npcb7[44] = {0,0,0,3,
 		    0,0,2,2,
-		    0,1,2,2,
-		    0,2,1,2,
-                    0,2,1,1, 
-		    0,2,1,2, 
-		    0,1,2,2, 
+		    0,0,3,2,
+		    0,2,2,1,
+		    0,2,2,1,
+                    0,1,2,1, 
+		    0,2,2,1, 
+		    0,2,2,1, 
+		    0,0,3,2, 
 		    0,0,2,2, 
-		    0,0,0,3, 
-		    0,0,0,2};
- Float_t xpos7[11]   = {2., 2., 2., 2., 34.5, 39.5, 34.5, 2., 2., 2., 2.};
- //  Float_t xpos7[11]   = {2., 2., 2., 2., 2., 39.5, 2., 2., 2., 2., 2.};
+		    0,0,0,3};
+ Float_t xpos7[11]   = {2., 2., 2., 2., 2., 39.5, 2., 2., 2., 2., 2.};
  Float_t ypos7       = -(20.+5.*(40.-2.*shift));
  
  seg71->SetNSlats(11);  
@@ -639,22 +629,22 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  MUON->SetNsec(chamber-1,2);
 //
  AliMUONSegmentationSlat *seg91=new AliMUONSegmentationSlat;
- Int_t   npcb9[52] = {0,0,0,2,
+ Int_t   npcb9[52] = {0,0,0,3,
 		      0,0,0,4,
 		      0,0,2,3,
 		      0,0,3,3,
 		      0,2,2,2,
-		      0,3,2,2,
-                      0,3,2,2, 
-		      0,3,2,2, 
+		      0,2,2,2,
+                      0,1,2,2, 
+		      0,2,2,2, 
 		      0,2,2,2, 
 		      0,0,3,3, 
 		      0,0,2,3, 
 		      0,0,0,4, 
-		      0,0,0,2 };   
+		      0,0,0,3};   
 
  // Float_t xpos9[13]   = {2., 2., 2., 2., 2., 2., 39.5 , 2., 2., 2., 2., 2., 2.};
- Float_t xpos9[13]   = {2., 2., 2., 2., 2., 34.5, 39.5 , 34.5, 2., 2., 2., 2., 2.};
+ Float_t xpos9[13]   = {2., 2., 2., 2., 2., 2., 39.5, 2., 2., 2., 2., 2., 2.};
  Float_t ypos9       = -(20.+6.*(40.-2.*shift));
 
  seg91->SetNSlats(13);  
