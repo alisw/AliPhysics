@@ -36,6 +36,7 @@ public:
   AliESDtrack();
   AliESDtrack(const AliESDtrack& track);
   virtual ~AliESDtrack();
+  void MakeMiniESDtrack();
   void SetID(Int_t id) { fID =id;}
   Int_t GetID(){ return fID;}
   void SetStatus(ULong_t flags) {fFlags|=flags;}
