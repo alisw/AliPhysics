@@ -1048,7 +1048,11 @@ Int_t AliAttrib::GetSlotIndex(TString name) const
   {
    TObjString* so=(TObjString*)fNames->At(i);
    if (so) s=so->GetString();
-   if (s==name) index=i+1;
+   if (s==name)
+   {
+    index=i+1;
+    break;
+   }
   }
  }
  return index;

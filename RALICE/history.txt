@@ -554,3 +554,4 @@
                 to serve data analysis efforts for various experiments.
 01-dec-2004 NvE Install scripts like e.g. "gcclib" renamed to "gcclib.sh" etc... in /scripts.
                 The old scripts (i.e. without the .sh extension) will be deleted in due time.
+12-jan-2005 NvE Bug fix in AliAttrib::GetSlotIndex() by exiting as soon as matching name is found.
