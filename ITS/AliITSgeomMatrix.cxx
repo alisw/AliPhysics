@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2002/10/22 14:45:40  alibrary
+Introducing Riostream.h
+
 Revision 1.15  2002/10/14 14:57:00  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -566,7 +569,6 @@ void AliITSgeomMatrix::GtoLMomentumTracking(const Double_t g[3],
 	l[2] = +l0[2];
     } // end if
     return;
-	return;
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::LtoGMomentumTracking(const Double_t l[3],
