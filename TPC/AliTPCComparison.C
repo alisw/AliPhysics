@@ -22,7 +22,6 @@ struct GoodTrackTPC {
 
 Int_t AliTPCComparison(Int_t event=0) {
 
-AliKalmanTrack::SetConvConst(1000/0.299792458/gAlice->Field()->SolenoidField());
    cerr<<"Doing comparison...\n";
 
    const Int_t MAX=20000;
