@@ -61,7 +61,7 @@ public:
  
 class AliPMDhit : public AliHit {
 public:
-  Int_t      fVolume[5];  //array of volumes
+  Int_t      fVolume[8];  //array of volumes
   Float_t    fEnergy;     //Total energy deposited in eV
 public:
   AliPMDhit() {}
