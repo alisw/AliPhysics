@@ -62,7 +62,7 @@ class AliGenHijing : public AliGenMC
     virtual void    SetJetEtaRange(Float_t etamin = -20., Float_t etamax = 20.)
 	{fEtaMinJet = etamin; fEtaMaxJet = etamax;}
     virtual void    SetJetPhiRange(Float_t phimin = -180., Float_t phimax = 180.)
-	{fPhiMinJet = phimin; fPhiMaxJet = phimax;}
+	{fPhiMinJet = TMath::Pi()*phimin/180.; fPhiMaxJet = TMath::Pi()*phimax/180.;}
     virtual void    SetBoostLHC(Int_t flag=0)         {fLHC        = flag;}
     
 	    
