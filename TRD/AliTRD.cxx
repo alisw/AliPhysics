@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.39  2002/06/12 09:54:35  cblume
+Update of tracking code provided by Sergei
+
 Revision 1.38  2002/03/28 14:59:07  cblume
 Coding conventions
 
@@ -156,12 +159,14 @@ Introduction of the Copyright and cvs Log
 #include <TFile.h>
 #include <TROOT.h>
 #include <TParticle.h>
+#include <TLorentzVector.h>
 
 #include "AliRun.h"
 #include "AliConst.h"
 #include "AliDigit.h"
 #include "AliMagF.h"
 #include "AliMC.h"                                                              
+#include "AliTrackReference.h"
  
 #include "AliTRD.h"
 #include "AliTRDhit.h"
@@ -340,6 +345,27 @@ void AliTRD::AddCluster(Float_t *pos, Int_t det, Float_t amp
   };
 
   fRecPoints->Add(c);
+
+}
+
+//_____________________________________________________________________________
+void  AliTRD::AddTrackReference(Int_t label, TLorentzVector p, TLorentzVector x)
+{
+  //
+  // Add a trackrefernce to the list
+  //
+
+  if (!fTrackReferences) {
+    Error("AddTrackReference","Container fTrackRefernce not active\n");
+    return;
+  }
+
+  Int_t nref = fTrackReferences->GetEntriesFast();
+  TClonesArray &lref = *fTrackReferences;
+  AliTrackReference * ref =  new(lref[nref]) AliTrackReference();
+  ref->SetMomentum(p[0],p[1],p[2]);
+  ref->SetPosition(x[0],x[1],x[2]);
+  ref->SetTrack(label);
 
 }
 
