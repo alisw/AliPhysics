@@ -179,6 +179,25 @@ MUONmassPlot("galice.root",0,99999);
 .q
 EOF
 
+
+============================================================
+ How to run MUONRecoCheck macro
+============================================================
+To check the muon reconstruction by comparing the reconstructed tracks
+with the reference tracks made of "AliTrackReference" for the hits and
+kinematic informations (TParticle) for the vertex.
+This macro can be used to check the track reconstruction e.g. efficiency,
+momentum resolution ... but also to make physics analysis whenever
+track identification is needed.   
+
+To compile MUONRecoCheck.C
+.includepath $ALICE_ROOT/STEER
+.includepath $ALICE_ROOT/MUON
+.L $ALICE_ROOT/MUON/MUONRecoCheck.C+
+
+// To run MUONRecoCheck
+MUONRecoCheck(nEvent,"galice.root"); // nEvent = nb of events
+
 ===========================================================
  Still working ..............
 ===========================================================

@@ -403,10 +403,10 @@ void AliMUONTrackParam::BransonCorrection()
 
   pYZ = TMath::Abs(1.0 / fInverseBendingMomentum);
   sign = 1;      
-  if (fInverseBendingMomentum < 0) sign = -1;     
-  pZ = -pYZ / (TMath::Sqrt(1.0 + fBendingSlope * fBendingSlope)); // spectro (z<0)
-  pX = pZ * fNonBendingSlope; 
-  pY = pZ * fBendingSlope; 
+  if (fInverseBendingMomentum < 0) sign = -1;  
+  pZ = Pz();
+  pX = Px(); 
+  pY = Py(); 
   pTotal = TMath::Sqrt(pYZ *pYZ + pX * pX);
   xEndAbsorber = fNonBendingCoor; 
   yEndAbsorber = fBendingCoor; 
@@ -494,9 +494,9 @@ void AliMUONTrackParam::FieldCorrection(Double_t Z)
   pYZ = TMath::Abs(1.0 / fInverseBendingMomentum);
   c = TMath::Sign(1.0,fInverseBendingMomentum); // particle charge 
  
-  pZ = -pYZ / (TMath::Sqrt(1.0 + fBendingSlope * fBendingSlope));  // spectro. (z<0)
-  pX = pZ * fNonBendingSlope; 
-  pY = pZ * fBendingSlope;
+  pZ = Pz();
+  pX = Px(); 
+  pY = Py();
   pT = TMath::Sqrt(pX*pX+pY*pY);
 
   if (TMath::Abs(pZ) <= 0) return;
@@ -520,4 +520,53 @@ void AliMUONTrackParam::FieldCorrection(Double_t Z)
   
   fInverseBendingMomentum = c / TMath::Sqrt(pYNew*pYNew+pZ*pZ);
  
+}
+  //__________________________________________________________________________
+Double_t AliMUONTrackParam::Px()
+{
+  // return px from track paramaters
+  Double_t pYZ, pZ, pX;
+  pYZ = 0;
+  if (  TMath::Abs(fInverseBendingMomentum) > 0 )
+    pYZ = TMath::Abs(1.0 / fInverseBendingMomentum);
+  pZ = -pYZ / (TMath::Sqrt(1.0 + fBendingSlope * fBendingSlope));  // spectro. (z<0)
+  pX = pZ * fNonBendingSlope; 
+  return pX;
+}
+  //__________________________________________________________________________
+Double_t AliMUONTrackParam::Py()
+{
+  // return px from track paramaters
+  Double_t pYZ, pZ, pY;
+  pYZ = 0;
+  if (  TMath::Abs(fInverseBendingMomentum) > 0 )
+    pYZ = TMath::Abs(1.0 / fInverseBendingMomentum);
+  pZ = -pYZ / (TMath::Sqrt(1.0 + fBendingSlope * fBendingSlope));  // spectro. (z<0)
+  pY = pZ * fBendingSlope; 
+  return pY;
+}
+  //__________________________________________________________________________
+Double_t AliMUONTrackParam::Pz()
+{
+  // return px from track paramaters
+  Double_t pYZ, pZ;
+  pYZ = 0;
+  if (  TMath::Abs(fInverseBendingMomentum) > 0 )
+    pYZ = TMath::Abs(1.0 / fInverseBendingMomentum);
+  pZ = -pYZ / (TMath::Sqrt(1.0 + fBendingSlope * fBendingSlope));  // spectro. (z<0)
+  return pZ;
+}
+  //__________________________________________________________________________
+Double_t AliMUONTrackParam::P()
+{
+  // return p from track paramaters
+  Double_t  pYZ, pZ, p;
+  pYZ = 0;
+  if (  TMath::Abs(fInverseBendingMomentum) > 0 )
+    pYZ = TMath::Abs(1.0 / fInverseBendingMomentum);
+  pZ = -pYZ / (TMath::Sqrt(1.0 + fBendingSlope * fBendingSlope));  // spectro. (z<0)
+  p = TMath::Abs(pZ) * 
+    TMath::Sqrt(1.0 + fBendingSlope * fBendingSlope + fNonBendingSlope * fNonBendingSlope);
+  return p;
+  
 }

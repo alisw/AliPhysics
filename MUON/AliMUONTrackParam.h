@@ -33,6 +33,10 @@ class AliMUONTrackParam : public TObject
   void SetBendingCoor(Double_t BendingCoor) {fBendingCoor = BendingCoor;}
   Double_t GetNonBendingCoor(void) const {return fNonBendingCoor;}
   void SetNonBendingCoor(Double_t NonBendingCoor) {fNonBendingCoor = NonBendingCoor;}
+  Double_t Px();  // return px
+  Double_t Py();  // return py
+  Double_t Pz();  // return pz
+  Double_t P();   // return total momentum
 
   void ExtrapToZ(Double_t Z);
   void ExtrapToStation(Int_t Station, AliMUONTrackParam *TrackParam);

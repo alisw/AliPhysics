@@ -17,6 +17,8 @@ class AliMUONHitForRec : public TObject {
  public:
   AliMUONHitForRec(); // Constructor
   virtual ~AliMUONHitForRec(){} // Destructor
+  AliMUONHitForRec (const AliMUONHitForRec& AliMUONHitForRec); // copy constructor
+  AliMUONHitForRec& operator=(const AliMUONHitForRec& AliMUONHitForRec); // assignment operator
   AliMUONHitForRec(AliMUONHit* mHit); // Constructor from GEANT hit
   AliMUONHitForRec(AliMUONRawCluster* theRawCluster); // Constructor from raw cluster
 
@@ -58,9 +60,6 @@ class AliMUONHitForRec : public TObject {
   Bool_t IsSortable() const { return kTRUE; }
   Int_t Compare(const TObject* HitForRec) const; // "Compare" function for sorting
 
- protected:
-  AliMUONHitForRec (const AliMUONHitForRec& AliMUONHitForRec); // copy constructor
-  AliMUONHitForRec& operator=(const AliMUONHitForRec& AliMUONHitForRec); // assignment operator
 
  private:
   Double_t fBendingCoor; // coordinate (cm) in bending plane
@@ -78,13 +77,13 @@ class AliMUONHitForRec : public TObject {
   Int_t fGeantSignal; // Geant signal (1) or background (0)
 
   // links forward to the segment(s) if HitForRec in first chamber of a station
-  Int_t fIndexOfFirstSegment; // index of first Segment
-  Int_t fNSegments; // number of Segments
+  Int_t fIndexOfFirstSegment; //! index of first Segment
+  Int_t fNSegments; //! number of Segments
 
   // links forward to reconstructed track hits
-  AliMUONTrackHit *fFirstTrackHitPtr ; // pointer to first TrackHit made with HitForRec
-  AliMUONTrackHit *fLastTrackHitPtr ; // pointer to last TrackHit made with HitForRec
-  Int_t fNTrackHits; // number of TrackHit's made with HitForRec
+  AliMUONTrackHit *fFirstTrackHitPtr ; //! pointer to first TrackHit made with HitForRec
+  AliMUONTrackHit *fLastTrackHitPtr ; //! pointer to last TrackHit made with HitForRec
+  Int_t fNTrackHits; //! number of TrackHit's made with HitForRec
   
   ClassDef(AliMUONHitForRec, 1) // Hit for reconstruction in ALICE dimuon spectrometer
     };

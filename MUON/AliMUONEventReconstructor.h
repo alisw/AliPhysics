@@ -219,6 +219,7 @@ class AliMUONEventReconstructor : public TObject {
   void FollowTracks(void);
   void RemoveDoubleTracks(void);
   void UpdateTrackParamAtHit(void);
+  void UpdateHitForRecAtHit(void);
   void ValidateTracksWithTrigger(void);
 
 

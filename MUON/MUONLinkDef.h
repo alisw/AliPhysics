@@ -98,6 +98,7 @@
 #pragma link C++ class  AliMUONSt2GeometryBuilder+;
 #pragma link C++ class  AliMUONSlatGeometryBuilder+;
 #pragma link C++ class  AliMUONTriggerGeometryBuilder+;
+#pragma link C++ class  AliMUONRecoCheck+;
 
 #endif
 

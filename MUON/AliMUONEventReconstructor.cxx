@@ -987,6 +987,7 @@ void AliMUONEventReconstructor::MakeTracks(void)
     // Remove double tracks
     RemoveDoubleTracks();
     UpdateTrackParamAtHit();
+    UpdateHitForRecAtHit();
   }
   return;
 }
@@ -1540,6 +1541,26 @@ void AliMUONEventReconstructor::UpdateTrackParamAtHit()
     while (trackHit) {
       trackParam = trackHit->GetTrackParam();
       track->AddTrackParamAtHit(trackParam);
+      trackHit = (AliMUONTrackHit*) (track->GetTrackHitsPtr())->After(trackHit); 
+    } // trackHit    
+    track = (AliMUONTrack*) fRecTracksPtr->After(track);
+  } // track
+  return;
+}
+
+  //__________________________________________________________________________
+void AliMUONEventReconstructor::UpdateHitForRecAtHit()
+{
+  // Set cluster parameterss after track fitting. Fill fHitForRecAtHit of AliMUONTrack's
+  AliMUONTrack *track;
+  AliMUONTrackHit *trackHit;
+  AliMUONHitForRec *hitForRec;
+  track = (AliMUONTrack*) fRecTracksPtr->First();
+  while (track) {
+    trackHit = (AliMUONTrackHit*) (track->GetTrackHitsPtr())->First();
+    while (trackHit) {
+      hitForRec = trackHit->GetHitForRecPtr();
+      track->AddHitForRecAtHit(hitForRec);
       trackHit = (AliMUONTrackHit*) (track->GetTrackHitsPtr())->After(trackHit); 
     } // trackHit    
     track = (AliMUONTrack*) fRecTracksPtr->After(track);

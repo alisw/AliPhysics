@@ -14,6 +14,7 @@
 #include <TClonesArray.h>
 
 #include "AliMUONTrackParam.h" // object belongs to the class
+#include "AliMUONHitForRec.h"  // object belongs to the class
 
 //const Int_t kMaxTrackingChamber=10;
         // not used
@@ -41,9 +42,13 @@ class AliMUONTrack : public TObject
   void SetTrackParamAtVertex(void); // Set track parameters at vertex from last stations 4 & 5
   void SetTrackParamAtVertex(AliMUONTrackParam* TrackParam) {fTrackParamAtVertex = *TrackParam;}
   TClonesArray *GetTrackParamAtHit(void) const {return fTrackParamAtHit;}
+  TClonesArray *GetHitForRecAtHit(void) const {return fHitForRecAtHit;}
   void ResetTrackParamAtHit(void) { fTrackParamAtHit->Delete(); }
+  void ResetHitForRecAtHit(void) { fHitForRecAtHit->Delete(); }
   void AddTrackParamAtHit(const AliMUONTrackParam *trackParam) 
     {new ((*fTrackParamAtHit)[fTrackParamAtHit->GetEntriesFast()]) AliMUONTrackParam(*trackParam);}
+  void AddHitForRecAtHit(const AliMUONHitForRec *hitForRec) 
+    {new ((*fHitForRecAtHit)[fHitForRecAtHit->GetEntriesFast()]) AliMUONHitForRec(*hitForRec);}
 
   TObjArray* GetTrackHitsPtr(void) const {return fTrackHitsPtr;}
   Int_t GetNTrackHits(void) const {return fNTrackHits;}
@@ -66,6 +71,10 @@ class AliMUONTrack : public TObject
   void SetTrackParamAtHit(Int_t indexHit, AliMUONTrackParam *TrackParam) const;
   Int_t HitsInCommon(AliMUONTrack* Track) const;
   void MatchTriggerTrack(TClonesArray* TriggerTrackArray);
+  Bool_t* CompatibleTrack(AliMUONTrack* Track, Double_t Sigma2Cut) const; // return array of compatible chamber
+  
+  Int_t GetTrackID() const {return fTrackID;}
+  void SetTrackID(Int_t trackID) {fTrackID = trackID;}
 
   static TVirtualFitter* Fitter(void) {return fgFitter;}
 
@@ -75,6 +84,7 @@ class AliMUONTrack : public TObject
   AliMUONEventReconstructor* fEventReconstructor; //!   Pointer to EventReconstructor
   AliMUONTrackParam fTrackParamAtVertex; // Track parameters at vertex
   TClonesArray *fTrackParamAtHit; // Track parameters at hit
+  TClonesArray *fHitForRecAtHit; // Cluster parameters at hit
   TObjArray *fTrackHitsPtr; //!  Pointer to array of pointers to TrackHit's
   Int_t fNTrackHits; // Number of TrackHit's
   Int_t fFitMCS; // 0(1) for fit without(with) multiple Coulomb scattering
@@ -84,6 +94,8 @@ class AliMUONTrack : public TObject
   Bool_t fMatchTrigger; // 1 if track matches with trigger track, 0 if not
   Double_t fChi2MatchTrigger; // chi2 of trigger/track matching 
  
+  Int_t fTrackID; // track ID = track number in TrackRefs
+
   ClassDef(AliMUONTrack, 2) // Reconstructed track in ALICE dimuon spectrometer
     };
 	

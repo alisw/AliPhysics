@@ -62,6 +62,8 @@ AliMUONTrack::AliMUONTrack()
   fEventReconstructor = 0;
   fTrackHitsPtr = new TObjArray(10);
   fTrackParamAtHit = new TClonesArray("AliMUONTrackParam",10);  
+  fHitForRecAtHit = new TClonesArray("AliMUONHitForRec",10); 
+  fTrackID = 0;
 }
 
   //__________________________________________________________________________
@@ -78,6 +80,7 @@ AliMUONTrack::AliMUONTrack(AliMUONSegment* BegSegment, AliMUONSegment* EndSegmen
   fTrackHitsPtr->Sort(); // sort TrackHits according to increasing Z
   SetTrackParamAtVertex(); // set track parameters at vertex
   fTrackParamAtHit = new TClonesArray("AliMUONTrackParam",10);
+  fHitForRecAtHit = new TClonesArray("AliMUONHitForRec",10);
   // set fit conditions...
   fFitMCS = 0;
   fFitNParam = 3;
@@ -85,6 +88,7 @@ AliMUONTrack::AliMUONTrack(AliMUONSegment* BegSegment, AliMUONSegment* EndSegmen
   fFitFMin = -1.0;
   fMatchTrigger = kFALSE;
   fChi2MatchTrigger = 0;
+  fTrackID = 0;
   return;
 }
 
@@ -102,6 +106,7 @@ AliMUONTrack::AliMUONTrack(AliMUONSegment* Segment, AliMUONHitForRec* HitForRec,
   fTrackHitsPtr->Sort(); // sort TrackHits according to increasing Z
   SetTrackParamAtVertex(); // set track parameters at vertex
   fTrackParamAtHit = new TClonesArray("AliMUONTrackParam",10);
+  fHitForRecAtHit = new TClonesArray("AliMUONHitForRec",10);
   // set fit conditions...
   fFitMCS = 0;
   fFitNParam = 3;
@@ -109,6 +114,7 @@ AliMUONTrack::AliMUONTrack(AliMUONSegment* Segment, AliMUONHitForRec* HitForRec,
   fFitFMin = -1.0;
   fMatchTrigger = kFALSE;
   fChi2MatchTrigger = 0;
+  fTrackID = 0;
   return;
 }
 
@@ -125,6 +131,12 @@ AliMUONTrack::~AliMUONTrack()
     // delete the TClonesArray of pointers to TrackParam
     delete fTrackParamAtHit;
     fTrackParamAtHit = NULL;
+  }
+
+  if (fHitForRecAtHit) {
+    // delete the TClonesArray of pointers to HitForRec
+    delete fHitForRecAtHit;
+    fHitForRecAtHit = NULL;
   }
 }
 
@@ -153,6 +165,13 @@ AliMUONTrack::AliMUONTrack (const AliMUONTrack& theMUONTrack)
 	AliMUONTrackParam(*(AliMUONTrackParam*)(theMUONTrack.fTrackParamAtHit)->At(index));}
   }
 
+  // necessary to make a copy of the objects and not only the pointers in TClonesArray.
+  fHitForRecAtHit  =  new TClonesArray("AliMUONHitForRec",10);
+  for (Int_t index = 0; index < (theMUONTrack.fHitForRecAtHit)->GetEntriesFast(); index++) {
+    {new ((*fHitForRecAtHit)[fHitForRecAtHit->GetEntriesFast()]) 
+	AliMUONHitForRec(*(AliMUONHitForRec*)(theMUONTrack.fHitForRecAtHit)->At(index));}
+  }
+
   fNTrackHits       =  theMUONTrack.fNTrackHits;
   fFitMCS           =  theMUONTrack.fFitMCS;
   fFitNParam        =  theMUONTrack.fFitNParam;
@@ -160,6 +179,7 @@ AliMUONTrack::AliMUONTrack (const AliMUONTrack& theMUONTrack)
   fFitStart         =  theMUONTrack.fFitStart;
   fMatchTrigger     =  theMUONTrack.fMatchTrigger;
   fChi2MatchTrigger =  theMUONTrack.fChi2MatchTrigger;
+  fTrackID          =  theMUONTrack.fTrackID;
 }
 
   //__________________________________________________________________________
@@ -192,6 +212,13 @@ AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& theMUONTrack)
 	AliMUONTrackParam(*(AliMUONTrackParam*)(theMUONTrack.fTrackParamAtHit)->At(index));}
   }
 
+  // necessary to make a copy of the objects and not only the pointers in TClonesArray.
+  fHitForRecAtHit  =  new TClonesArray("AliMUONHitForRec",10);
+  for (Int_t index = 0; index < (theMUONTrack.fHitForRecAtHit)->GetEntriesFast(); index++) {
+    {new ((*fHitForRecAtHit)[fHitForRecAtHit->GetEntriesFast()]) 
+	AliMUONHitForRec(*(AliMUONHitForRec*)(theMUONTrack.fHitForRecAtHit)->At(index));}
+  }
+
   fNTrackHits         =  theMUONTrack.fNTrackHits;
   fFitMCS             =  theMUONTrack.fFitMCS;
   fFitNParam          =  theMUONTrack.fFitNParam;
@@ -199,6 +226,7 @@ AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& theMUONTrack)
   fFitStart           =  theMUONTrack.fFitStart;
   fMatchTrigger       =  theMUONTrack.fMatchTrigger;
   fChi2MatchTrigger   =  theMUONTrack.fChi2MatchTrigger;
+  fTrackID            =  theMUONTrack.fTrackID;
 
   return *this;
 }
@@ -305,6 +333,45 @@ void AliMUONTrack::RecursiveDump(void) const
     hitForRec->Dump();
   }
   return;
+}
+  
+  //__________________________________________________________________________
+Bool_t* AliMUONTrack::CompatibleTrack(AliMUONTrack * Track, Double_t Sigma2Cut) const
+{
+  // Return kTRUE/kFALSE for each chamber if hit is compatible or not 
+  TClonesArray *hitArray, *thisHitArray;
+  AliMUONHitForRec *hit, *thisHit;
+  Int_t chamberNumber;
+  Float_t deltaZ;
+  Float_t deltaZMax = 1.; // 1 cm
+  Float_t chi2 = 0;
+  Bool_t *nCompHit = new Bool_t[AliMUONConstants::NTrackingCh()]; 
+
+  for ( Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ch++) {
+    nCompHit[ch] = kFALSE;
+  }
+
+  thisHitArray = this->GetHitForRecAtHit();
+
+  hitArray =  Track->GetHitForRecAtHit();
+
+  for (Int_t iHthis = 0; iHthis < thisHitArray->GetEntriesFast(); iHthis++) {
+    thisHit = (AliMUONHitForRec*) thisHitArray->At(iHthis);
+    chamberNumber = thisHit->GetChamberNumber();
+    if (chamberNumber < 0 || chamberNumber > AliMUONConstants::NTrackingCh()) continue; 
+    nCompHit[chamberNumber] = kFALSE;
+    for (Int_t iH = 0; iH < hitArray->GetEntriesFast(); iH++) {
+      hit = (AliMUONHitForRec*) hitArray->At(iH);
+      deltaZ = TMath::Abs(thisHit->GetZ() - hit->GetZ());
+      chi2 = thisHit->NormalizedChi2WithHitForRec(hit,Sigma2Cut); // set cut to 4 sigmas
+      if (chi2 < 3. && deltaZ < deltaZMax) {
+	nCompHit[chamberNumber] = kTRUE;
+	break;
+      }
+    }  
+  }
+  
+  return nCompHit;
 }
 
   //__________________________________________________________________________

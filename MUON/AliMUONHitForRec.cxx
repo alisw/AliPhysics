@@ -98,24 +98,45 @@ AliMUONHitForRec::AliMUONHitForRec(AliMUONRawCluster* theRawCluster)
 }
 
   //__________________________________________________________________________
-AliMUONHitForRec::AliMUONHitForRec (const AliMUONHitForRec& rhs)
-  : TObject(rhs)
+AliMUONHitForRec::AliMUONHitForRec (const AliMUONHitForRec& theMUONHitForRec)
+  :  TObject(theMUONHitForRec)
 {
-// Protected copy constructor
+  fBendingCoor = theMUONHitForRec.fBendingCoor;
+  fNonBendingCoor = theMUONHitForRec.fNonBendingCoor;
+  fZ = theMUONHitForRec.fZ;
+  fBendingReso2 = theMUONHitForRec.fBendingReso2;
+  fNonBendingReso2 = theMUONHitForRec.fNonBendingReso2;
+  fChamberNumber = theMUONHitForRec.fChamberNumber;
+  fHitNumber = theMUONHitForRec.fHitNumber;
+  fTHTrack = theMUONHitForRec.fTHTrack;
+  fGeantSignal = theMUONHitForRec.fGeantSignal;
+  fIndexOfFirstSegment = theMUONHitForRec.fIndexOfFirstSegment;
+  fNSegments = theMUONHitForRec.fNSegments;
+  fFirstTrackHitPtr = theMUONHitForRec.fFirstTrackHitPtr;
+  fLastTrackHitPtr = theMUONHitForRec.fLastTrackHitPtr;
+  fNTrackHits = theMUONHitForRec.fNTrackHits;
 
-  AliFatal( "Not implemented.");
 }
 
   //__________________________________________________________________________
-AliMUONHitForRec & AliMUONHitForRec::operator=(const AliMUONHitForRec& rhs)
+AliMUONHitForRec & AliMUONHitForRec::operator=(const AliMUONHitForRec& theMUONHitForRec)
 {
-// Protected assignement operator
+  fBendingCoor = theMUONHitForRec.fBendingCoor;
+  fNonBendingCoor = theMUONHitForRec.fNonBendingCoor;
+  fZ = theMUONHitForRec.fZ;
+  fBendingReso2 = theMUONHitForRec.fBendingReso2;
+  fNonBendingReso2 = theMUONHitForRec.fNonBendingReso2;
+  fChamberNumber = theMUONHitForRec.fChamberNumber;
+  fHitNumber = theMUONHitForRec.fHitNumber;
+  fTHTrack = theMUONHitForRec.fTHTrack;
+  fGeantSignal = theMUONHitForRec.fGeantSignal;
+  fIndexOfFirstSegment = theMUONHitForRec.fIndexOfFirstSegment;
+  fNSegments = theMUONHitForRec.fNSegments;
+  fFirstTrackHitPtr = theMUONHitForRec.fFirstTrackHitPtr;
+  fLastTrackHitPtr = theMUONHitForRec.fLastTrackHitPtr;
+  fNTrackHits = theMUONHitForRec.fNTrackHits;
 
-  if (this == &rhs) return *this;
-
-  AliFatal( "Not implemented.");
-    
-  return *this;  
+  return *this;
 }
   //__________________________________________________________________________
 /*AZ
