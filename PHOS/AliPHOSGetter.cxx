@@ -2297,15 +2297,7 @@ TObject * AliPHOSGetter::ReturnO(TString what, TString name, TString file) const
     }   
  }
   else if ( what.CompareTo("Alarms") == 0 ){ 
-    if (name.IsNull() ) 
-      phosO = dynamic_cast<TObject *>(fQAFolder->FindObject("PHOS")) ;  
-    else {
-      folder = dynamic_cast<TFolder *>(fQAFolder->FindObject("PHOS")) ; 
-      if (!folder) 
-	phosO = 0 ; 
-      else 
-	phosO = dynamic_cast<TObject *>(folder->FindObject(name)) ;  
-    }
+      phosO = dynamic_cast<TFolder *>(fQAFolder->FindObject("PHOS")) ;        
   }
   if (!phosO) {
     if(fDebug)
