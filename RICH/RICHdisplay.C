@@ -17,9 +17,8 @@ RICHdisplay (Int_t nevent=0) {
     TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
     if (file) file->Close(); 
     file = new TFile("galice.root","UPDATE");
-    file->ls();
-    
-    printf ("I'm after Map \n");
+       
+    //printf ("I'm after Map \n");
     
 // Get AliRun object from file or create it if not on file
     
@@ -35,7 +34,7 @@ RICHdisplay (Int_t nevent=0) {
 	if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
     }
     
-    printf ("I'm after gAlice \n");
+    //printf ("I'm after gAlice \n");
     
     // Create Event Display object
     AliRICHDisplay *richdisplay = new AliRICHDisplay(750);

@@ -16,7 +16,7 @@ RICHpatrec (Int_t evNumber1=0,Int_t evNumber2=0) {
     file = new TFile("galice.root","UPDATE");
     file->ls();
     
-    printf ("I'm after Map \n");
+    //printf ("I'm after Map \n");
     
 // Get AliRun object from file or create it if not on file
     
@@ -31,7 +31,7 @@ RICHpatrec (Int_t evNumber1=0,Int_t evNumber2=0) {
 	if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
     }
     
-    printf ("I'm after gAlice \n");
+    //printf ("I'm after gAlice \n");
     
     AliRICH *RICH  = (AliRICH*) gAlice->GetDetector("RICH"); 
     
