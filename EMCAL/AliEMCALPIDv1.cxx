@@ -109,7 +109,6 @@ TVector3 AliEMCALPIDv1::GetMomentumDirection(AliEMCALRecPoint * emc)const
   
 
   dir = emcglobalpos ;  
-  dir.SetZ( -dir.Z() ) ;   // why ?  
   // dir.SetMag(1.) ; Removed to avoid warings !!!!!!!!!!!!!! TO BE REVISED
 
   //account correction to the position of IP
