@@ -13,7 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
 
 #include <Riostream.h>
 
@@ -73,7 +72,7 @@ AliRICHv3::~AliRICHv3()
    if(GetDebug()) cout<<ClassName()<<"::dtor()>\n";
       
    if(fChambers) {
-     AliRICHChamber *ch = GetChamber(0); 
+     AliRICHChamber *ch =C(0); 
      if(ch) {
        delete ch->GetGeometryModel();
        delete ch->GetResponseModel();
@@ -543,7 +542,8 @@ void AliRICHv3::CreateGeometry()
    rr  = RotateXY(r, -dRotAngleRad);
    AliMatrix(idrotm[1006], rr[0], rr[1], rr[2], rr[3], rr[4], rr[5]);
    pRotMatrix->SetAngles(rr[0], rr[1], rr[2], rr[3], rr[4], rr[5]);
-   vector.SetXYZ(0,dOffset,0);  vector.RotateZ(dBetaRad); vector.RotateX(-dAlphaRad); 
+//   vector.SetXYZ(0,dOffset,0);  vector.RotateZ(dBetaRad); vector.RotateX(-dAlphaRad); //kir
+   vector.SetXYZ(0,dOffset,0);  vector.RotateZ(dBetaRad); vector.RotateX(dAlphaRad); //kir
    vector.RotateZ(-dRotAngleRad);
       
    gMC->Gspos("RICH",7,"ALIC",vector.X(),vector.Y(),vector.Z(),idrotm[1006], "ONLY");
@@ -805,7 +805,6 @@ void AliRICHv3::StepManager()
     Float_t        theta,phi;
     Float_t        destep, step;
     Double_t        ranf[2];
-    Int_t          nPads=1;
     Float_t        coscerenkov;
     static Float_t eloss, xhit, yhit, tlength;
     const  Float_t kBig=1.e10;
@@ -1084,17 +1083,13 @@ void AliRICHv3::StepManager()
 		    cherenkovLoss  += destep;
 		    ckovData[7]=cherenkovLoss;
 		    
-		    //nPads = Hits2SDigits(localPos[0],localPos[2],cherenkovLoss,idvol,kCerenkov);//for photons in CsI kir
+		    ckovData[17] = Hits2SDigits(localPos[0],localPos[2],cherenkovLoss,idvol,kCerenkov);//for photons in CsI 
 		    		    
 		    if (fNsdigits > (Int_t)ckovData[8]) {
 			ckovData[8]= ckovData[8]+1;
 			ckovData[9]= (Float_t) fNsdigits;
 		    }
 
-		    //printf("Cerenkov loss: %f\n", cherenkovLoss);
-
-		    ckovData[17] = nPads;
-		    //printf("nPads:%d",nPads);
 		    
 		    //TClonesArray *Hits = RICH->Hits();
 		    AliRICHhit *mipHit =  (AliRICHhit*) (fHits->UncheckedAt(0));
@@ -1138,9 +1133,7 @@ void AliRICHv3::StepManager()
 
     /**********************************************Charged particles treatment*************************************/
 
-    else if (gMC->TrackCharge())
-    //else if (1 == 1)
-      {
+    else if (gMC->TrackCharge()){
 //If MIP
 	/*if (gMC->IsTrackEntering())
 	  {                
@@ -1159,7 +1152,7 @@ void AliRICHv3::StepManager()
 	    fFreonProd=1;
 	  }
 
-	if (gMC->VolId("GAP ")== gMC->CurrentVolID(copy)) {
+	if (gMC->VolId("GAP ")== gMC->CurrentVolID(copy)) {//is in GAP?
 // Get current particle id (ipart), track position (pos)  and momentum (mom)
 	    
 	    gMC->CurrentVolOffID(3,copy);
@@ -1259,9 +1252,7 @@ void AliRICHv3::StepManager()
 		    {
 		      if(gMC->TrackPid() == kNeutron)
 			printf("\n\n\n\n\n Neutron Making Pad Hit!!! \n\n\n\n");
-		      //nPads = Hits2SDigits(xhit,yhit,eloss,idvol,kMip); //for MIP kir
-		      hits[17] = nPads;
-		      //printf("nPads:%d",nPads);
+		      hits[17] = Hits2SDigits(xhit,yhit,eloss,idvol,kMip); //for MIP 
 		    }
 		}
 		
@@ -1279,21 +1270,13 @@ void AliRICHv3::StepManager()
 		// Check additional signal generation conditions 
 		// defined by the segmentation
 		// model (boundary crossing conditions) 
-	    } else if 
-          //PH		(((AliRICHChamber*) (*fChambers)[idvol])
-		(((AliRICHChamber*)fChambers->At(idvol))
-		 ->SigGenCond(localPos[0], localPos[2], localPos[1]))
-	    {
-          //PH		((AliRICHChamber*) (*fChambers)[idvol])
-		((AliRICHChamber*)fChambers->At(idvol))
-		    ->SigGenInit(localPos[0], localPos[2], localPos[1]);
+	    }else if(((AliRICHChamber*)fChambers->At(idvol))->SigGenCond(localPos[0], localPos[2], localPos[1])){
+		((AliRICHChamber*)fChambers->At(idvol))->SigGenInit(localPos[0], localPos[2], localPos[1]);
 		if (eloss > 0) 
 		  {
 		    if(gMC->TrackPid() == kNeutron)
 		      printf("\n\n\n\n\n Neutron Making Pad Hit!!! \n\n\n\n");
-		    //nPads = Hits2SDigits(xhit,yhit,eloss,idvol,kMip);//for N kir
-		    hits[17] = nPads;
-		    //printf("Npads:%d",NPads);
+		    hits[17] = Hits2SDigits(xhit,yhit,eloss,idvol,kMip);//for n
 		  }
 		xhit     = localPos[0];
 		yhit     = localPos[2]; 
@@ -1305,7 +1288,7 @@ void AliRICHv3::StepManager()
 		eloss   += destep;
 		tlength += step ;
 	    }
-	}
-      }
+	}//is in GAP?
+      }//is MIP?
     /*************************************************End of MIP treatment**************************************/
 }//void AliRICHv3::StepManager()
