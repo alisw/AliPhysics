@@ -4,7 +4,6 @@
 // author: j. g. contreras jgcn@moni.mda.cinvestav.mx
 // date: december 22, 2000
 
-#include <stream.h>
 #include "THerwig6.h"
 #include "TClonesArray.h"
 #include "TParticle.h"
