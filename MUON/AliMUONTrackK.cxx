@@ -1351,10 +1351,13 @@ void AliMUONTrackK::Recover(void)
     if (trackK == this) continue;
     //if (trackK->GetRecover() != 1) continue;
     if (trackK->fNTrackHits >= fNTrackHits-1) {
+      /*
       for (Int_t j=0; j<fNTrackHits-1; j++) {
 	if ((*trackK->fTrackHitsPtr)[j] != ((*fTrackHitsPtr)[j])) break;
 	return;
       } // for (Int_t j=0;
+      */
+      if ((*trackK->fTrackHitsPtr)[0] == ((*fTrackHitsPtr)[0])) return;
     }
   } // for (Int_t i=0;
 
@@ -1402,10 +1405,13 @@ void AliMUONTrackK::Recover(void)
     if (trackK == this) continue;
     //if (trackK->GetRecover() != 1) continue;
     if (trackK->fNTrackHits >= indxSkip-1) {
+      /*
       for (Int_t j=0; j<indxSkip-1; j++) {
 	if ((*trackK->fTrackHitsPtr)[j] != ((*fTrackHitsPtr)[j])) break;
 	return;
       } // for (Int_t j=0;
+      */
+      if ((*trackK->fTrackHitsPtr)[0] == ((*fTrackHitsPtr)[0])) return;
     }
   } // for (Int_t i=0;
 
