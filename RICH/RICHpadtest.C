@@ -150,7 +150,7 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
        
 
        //cout<<"nev  "<<nev<<endl;
-       printf ("\nProcessing event: %d\n",nev);
+       printf ("\n**********************************\nProcessing Event: %d\n\n",nev);
        //cout<<"nparticles  "<<nparticles<<endl;
        printf ("Particles       : %d\n",nparticles);
        if (nev < evNumber1) continue;
@@ -194,20 +194,20 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 
 	   Int_t nhits = Hits->GetEntriesFast();
 	   if (nhits) Nh+=nhits;
-	   //printf("nhits %d\n",nhits);
+	   printf("Hits            : %d\n",nhits);
 	   for (Int_t hit=0;hit<nhits;hit++) {
               mHit = (AliRICHHit*) Hits->UncheckedAt(hit);
               Int_t nch  = mHit->fChamber;              // chamber number
-              Float_t x  = mHit->fX;                    // x-pos of hit
-              Float_t y  = mHit->fZ;                    // y-pos
+	      Float_t x  = mHit->X();                    // x-pos of hit
+              Float_t y  = mHit->Z();                    // y-pos
 	      Float_t phi = mHit->fPhi;                 //Phi angle of incidence
 	      Float_t theta = mHit->fTheta;             //Theta angle of incidence
-	      Int_t index = mHit->fTrack;
+	      Int_t index = mHit->Track();
 	      Int_t particle = mHit->fParticle;        
 	      Int_t freon = mHit->fLoss;    
 
-	     hitsX->Fill(x,(float) 1);
-	     hitsY->Fill(y,(float) 1);
+	      hitsX->Fill(x,(float) 1);
+	      hitsY->Fill(y,(float) 1);
 
 	      //printf("Particle:%d\n",particle);
 	      
@@ -262,15 +262,16 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 	   //if (current->GetPdgCode() < 50000051 && current->GetPdgCode() > 50000040)
 	   //totalphotonsevent->Fill(ncerenkovs,(float) 1);
 
-	   if (ncerenkovs) {
+ 	   if (ncerenkovs) {
+	     printf("Cerenkovs       : %d\n",ncerenkovs);
 	     totalphotonsevent->Fill(ncerenkovs,(float) 1);
 	     for (Int_t hit=0;hit<ncerenkovs;hit++) {
 		   cHit = (AliRICHCerenkov*) Cerenkovs->UncheckedAt(hit);
 		   Int_t nchamber = cHit->fChamber;     // chamber number
-		   Int_t index =    cHit->fTrack;
+		   Int_t index =    cHit->Track();
 		   Int_t pindex =   cHit->fIndex;
-		   Float_t cx  =      cHit->fX;                // x-position
-		   Float_t cy  =      cHit->fZ;                // y-position
+		   Float_t cx  =      cHit->X();                // x-position
+		   Float_t cy  =      cHit->Z();                // y-position
 		   Int_t cmother =  cHit->fCMother;      // Index of mother particle
 		   Int_t closs =    cHit->fLoss;           // How did the particle get lost? 
 		  //printf ("Cerenkov hit, X:%d, Y:%d\n",cx,cy); 
@@ -305,16 +306,16 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 			 mom[0] = current->Px();
 			 mom[1] = current->Py();
 			 mom[2] = current->Pz();
-			 /*mom[0] = cHit->fMomX;
-			   mom[1] = cHit->fMomZ;
-			   mom[2] = cHit->fMomY;*/
+			 //mom[0] = cHit->fMomX;
+			  // mom[1] = cHit->fMomZ;
+			   //mom[2] = cHit->fMomY;
 			 Float_t energymip = MIP->Energy();
 			 Float_t Mip_px = mipHit->fMomX;
 			 Float_t Mip_py = mipHit->fMomY;
 			 Float_t Mip_pz = mipHit->fMomZ;
-			 /*Float_t Mip_px = MIP->Px();
-			   Float_t Mip_py = MIP->Py();
-			   Float_t Mip_pz = MIP->Pz();*/
+			 //Float_t Mip_px = MIP->Px();
+			   //Float_t Mip_py = MIP->Py();
+			   //Float_t Mip_pz = MIP->Pz();
 			 
 			 
 			 
@@ -332,8 +333,8 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 			 
 			 Float_t mix = MIP->Vx();
 			 Float_t miy = MIP->Vy();
-			 Float_t mx = mipHit->fX;
-			 Float_t my = mipHit->fZ;
+			 Float_t mx = mipHit->X();
+			 Float_t my = mipHit->Z();
 			 //printf("FX %e, FY %e, VX %e, VY %e\n",cx,cy,mx,my);
 			 Float_t dx = cx - mx;
 			 Float_t dy = cy - my;
@@ -357,6 +358,7 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 	   }
 	   
 	   if (nrawclusters) {
+	     printf("Raw Clusters    : %d\n",nrawclusters);
 	       for (Int_t hit=0;hit<nrawclusters;hit++) {
 		   rcHit = (AliRICHRawCluster*) Rawclusters->UncheckedAt(hit);
 		   //Int_t nchamber = rcHit->fChamber;     // chamber number
@@ -772,7 +774,8 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
        }
    }
    //printf("The total number of pads which give a signal: %d %d\n",Nh,Nh1);
-   printf("End of macro\n");
+   printf("\nEnd of macro\n");
+   printf("**********************************\n");
 }
 
 
