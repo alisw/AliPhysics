@@ -624,7 +624,9 @@ Int_t AliITStrackV2::Improve(Double_t x0,Double_t xyz[3],Double_t ers[3]) {
   Double_t theta2=14.1*14.1/(beta2*p2*1e6)*x0;
   //Double_t theta2=1.0259e-6*14*14/28/(beta2*p2)*x0*9.36*2.33;
   {
-  Double_t parp=0.5*(fP4*fX + dy*TMath::Sqrt(4/r2-fP4*fP4));
+  Double_t dummy=4/r2-fP4*fP4;
+  if (dummy < 0) return 0;
+  Double_t parp=0.5*(fP4*fX + dy*TMath::Sqrt(dummy));
   Double_t sigma2p = theta2*(1.- GetSnp()*GetSnp())*(1. + GetTgl()*GetTgl());
   sigma2p += fC00/r2*(1.- dy*dy/r2)*(1.- dy*dy/r2);
   sigma2p += ers[1]*ers[1]/r2;
