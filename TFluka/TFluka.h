@@ -137,8 +137,10 @@ class TFluka : public TVirtualMC {
   //
   
   // action methods
-  virtual void StopTrack()
-    {printf("WARNING: StopTrack not yet implemented !\n");}
+  virtual void   StopTrack();
+  virtual void   ResetStoppingCondition() {fStopped = kFALSE;}
+  virtual Bool_t GetStoppingCondition()   {return fStopped;}
+
   virtual void StopEvent()
     {printf("WARNING: StopEvent not yet implemented !\n");}   
   virtual void StopRun()
@@ -202,6 +204,7 @@ class TFluka : public TVirtualMC {
   virtual Int_t    NSecondaries() const ;
   virtual void     GetSecondary(Int_t isec, Int_t& particleId, 
 			TLorentzVector& position, TLorentzVector& momentum);
+  virtual Bool_t   SecondariesAreOrdered() const {return kFALSE;}
   virtual TMCProcess ProdProcess(Int_t iproc) const ;
   virtual Int_t    StepProcesses(TArrayI &/*proc*/) const
     {printf("WARNING: StepProcesses not yet implemented !\n"); return -1;}
@@ -357,6 +360,8 @@ class TFluka : public TVirtualMC {
   Bool_t   fFieldFlag;        // Flag for magnetic field
   Bool_t   fGeneratePemf;     // Flag for automatic .pemf generation
   Int_t    fDummyBoundary;    // Flag for crossing dummy boundaries
+  Bool_t   fStopped;          // Flag for stopping 
+  
   //variables for SetProcess and SetCut
   Int_t    fNbOfProc;                // Current number of processes 
   Int_t    fProcessValue[10000];     // User values assigned to processes

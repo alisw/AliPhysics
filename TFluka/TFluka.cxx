@@ -43,6 +43,7 @@
 #include "Fpaprop.h"       //(PAPROP) fluka common
 #include "Ffheavy.h"       //(FHEAVY) fluka common
 #include "Fopphst.h"       //(OPPHST) fluka common
+#include "Fstack.h"        //(STACK) fluka common
 
 #include "TVirtualMC.h"
 #include "TMCProcess.h"
@@ -106,6 +107,7 @@ TFluka::TFluka()
    fMaterials = 0;
    fDummyBoundary = 0;
    fFieldFlag = 1;
+   fStopped   = 0;
 } 
  
 //______________________________________________________________________________ 
@@ -130,6 +132,7 @@ TFluka::TFluka(const char *title, Int_t verbosity, Bool_t isRootGeometrySupporte
    fGeom = new TFlukaMCGeometry("geom", "ALICE geometry");
    if (verbosity > 2) fGeom->SetDebugMode(kTRUE);
    fMaterials = 0;
+   fStopped   = 0;
 }
 
 //______________________________________________________________________________ 
@@ -708,7 +711,7 @@ Int_t TFluka::PDGFromId(Int_t id) const
 
     if (id == -1) {
 // Cerenkov photon
-	if (fVerbosityLevel >= 1)
+	if (fVerbosityLevel >= 3)
 	    printf("\n PDGFromId: Cerenkov Photon \n");
 	return  50000050;
     }
@@ -735,6 +738,13 @@ Int_t TFluka::PDGFromId(Int_t id) const
     return mpdgha(intfluka);
 }
 
+void TFluka::StopTrack()
+{
+    // Set stopping conditions
+    // Works for photons and charged particles
+    fStopped = kTRUE;
+}
+  
 //_____________________________________________________________________________
 // methods for physics management
 //____________________________________________________________________________ 
@@ -2617,8 +2627,7 @@ extern "C" {
 	
 	TFluka* fluka =  (TFluka*) gMC;
 	TVirtualMCStack* cppstack = fluka->GetStack();
-	Int_t parent = cppstack->GetCurrentTrackNumber();
-	
+	Int_t parent =  TRACKR.ispusr[mkbmx2-1];
 	cppstack->PushTrack(1, parent, 50000050,
 			    px, py, pz, e,
                             vx, vy, vz, tof,
