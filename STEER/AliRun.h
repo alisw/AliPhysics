@@ -13,6 +13,7 @@
 #include "AliGenerator.h"
 #include "AliLego.h"
 
+const enum {kMaxModules = 25, kLenModuleName=7};
 
 class AliDisplay;
 
@@ -38,7 +39,8 @@ protected:
   TStopwatch    fTimer;        //Timer object
   AliMagF      *fField;        //Magnetic Field Map
   AliMC        *fMC;           //pointer to MonteCarlo object
-  char          fDnames[21][7];//Array of detector names
+  char          fDnames[kMaxModules][kLenModuleName];
+                               //Array of detector names
   TArrayI      *fImedia;       //Array of correspondence between media and detectors
   Int_t         fNdets;        //Number of detectors
   Float_t       fTrRmax;       //Maximum radius for tracking
