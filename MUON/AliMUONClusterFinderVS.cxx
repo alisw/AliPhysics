@@ -146,16 +146,16 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 
 	// One local maximum on cathodes 1 and 2 (X->cathode 2, Y->cathode 1)
 	if (fNLocal[0]==1 &&  fNLocal[1]==1) {
-	    fXInit[0]=c->fX[1];
-	    fYInit[0]=c->fY[0];
+	    fXInit[0]=c->GetX(1);
+	    fYInit[0]=c->GetY(0);
 	    // One local maximum on cathode 1 (X,Y->cathode 1)
 	} else if (fNLocal[0]==1) {
-	    fXInit[0]=c->fX[0];
-	    fYInit[0]=c->fY[0];
+	    fXInit[0]=c->GetX(0);
+	    fYInit[0]=c->GetY(0);
 	    // One local maximum on cathode 2  (X,Y->cathode 2)
 	} else {
-	    fXInit[0]=c->fX[1];
-	    fYInit[0]=c->fY[1];
+	    fXInit[0]=c->GetX(1);
+	    fYInit[0]=c->GetY(1);
 	}
 	if (fDebugLevel)
 	    fprintf(stderr,"\n cas (1) CombiSingleMathiesonFit(c)\n");
@@ -168,16 +168,16 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	if (fDebugLevel)
 	    fprintf(stderr," chi2 %f ",chi2);
 
-	c->fX[0]=fXFit[0];
-	c->fY[0]=fYFit[0];
+	c->SetX(0, fXFit[0]);
+	c->SetY(0, fYFit[0]);
 
-	c->fX[1]=fXFit[0];
-	c->fY[1]=fYFit[0];
+	c->SetX(1,fXFit[0]);
+	c->SetY(1,fYFit[0]);
 	c->fChi2[0]=chi2;
 	c->fChi2[1]=chi2;
         // Force on anod
-	c->fX[0]=fSeg[0]->GetAnod(c->fX[0]);
-	c->fX[1]=fSeg[1]->GetAnod(c->fX[1]);
+	c->SetX(0, fSeg[0]->GetAnod(c->GetX(0)));
+	c->SetX(1, fSeg[1]->GetAnod(c->GetX(1)));
 	
 // If reasonable chi^2 add result to the list of rawclusters
 	if (chi2 < 0.3) {
@@ -451,9 +451,9 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 			    AliMUONRawCluster cnew;
 			    Int_t cath;    
 			    for (cath=0; cath<2; cath++) {
-				cnew.fX[cath]=Float_t(xm[ico][1]);
-				cnew.fY[cath]=Float_t(ym[ico][0]);
-				cnew.fZ[cath]=fZPlane;
+				cnew.SetX(cath, Float_t(xm[ico][1]));
+				cnew.SetY(cath, Float_t(ym[ico][0]));
+				cnew.SetZ(cath, fZPlane);
 				
 				cnew.fMultiplicity[cath]=c->fMultiplicity[cath];
 			      	for (i=0; i<fMul[cath]; i++) {
@@ -736,9 +736,9 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 		    AliMUONRawCluster cnew;
 		    Int_t cath;    
 		    for (cath=0; cath<2; cath++) {
-			cnew.fX[cath]=Float_t(xm[ico][1]);
-			cnew.fY[cath]=Float_t(ym[ico][0]);
-			cnew.fZ[cath]=fZPlane;
+			cnew.SetX(cath, Float_t(xm[ico][1]));
+			cnew.SetY(cath, Float_t(ym[ico][0]));
+			cnew.SetZ(cath, fZPlane);
 			cnew.fMultiplicity[cath]=c->fMultiplicity[cath];
 			for (i=0; i<fMul[cath]; i++) {
 			    cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
@@ -874,9 +874,9 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 		    AliMUONRawCluster cnew;
 		    Int_t cath;    
 		    for (cath=0; cath<2; cath++) {
-			cnew.fX[cath]=Float_t(xm[ico][1]);
-			cnew.fY[cath]=Float_t(ym[ico][0]);
-			cnew.fZ[cath]=fZPlane;
+			cnew.SetX(cath, Float_t(xm[ico][1]));
+			cnew.SetY(cath, Float_t(ym[ico][0]));
+			cnew.SetZ(cath, fZPlane);
 			cnew.fMultiplicity[cath]=c->fMultiplicity[cath];
 			for (i=0; i<fMul[cath]; i++) {
 			    cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
@@ -950,9 +950,9 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 		Int_t cath;    
 		AliMUONRawCluster cnew;
 		for (cath=0; cath<2; cath++) {
-		    cnew.fX[cath]=Float_t(xm[ico][1]);
-		    cnew.fY[cath]=Float_t(ym[ico][0]);
-		    cnew.fZ[cath]=fZPlane;
+		    cnew.SetX(cath, Float_t(xm[ico][1]));
+		    cnew.SetY(cath, Float_t(ym[ico][0]));
+		    cnew.SetZ(cath, fZPlane);
 		    cnew.fMultiplicity[cath]=c->fMultiplicity[cath];
 		    for (i=0; i<fMul[cath]; i++) {
 			cnew.fIndexMap[i][cath]=c->fIndexMap[i][cath];
@@ -1195,9 +1195,9 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t flag, Int_
     
     
     if (flag) {
-	c->fX[cath]=0;
-	c->fY[cath]=0;
-	c->fQ[cath]=0;
+	c->SetX(cath,0.);
+	c->SetY(cath,0.);
+	c->SetCharge(cath,0);
     }
 
     if (fDebugLevel)
@@ -1230,9 +1230,9 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t flag, Int_
 //
 	if (flag) {
 	    fSeg[cath]->GetPadC(ix, iy, x, y, z);
-	    c->fX[cath] += q*x;
-	    c->fY[cath] += q*y;
-	    c->fQ[cath] += q;
+	    c->AddX(cath, q*x);
+	    c->AddY(cath, q*y);
+	    c->AddCharge(cath, q);
 	}
     } // loop over digits
     if (fDebugLevel)
@@ -1240,23 +1240,23 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t flag, Int_
 
 
     if (flag) {
-    	c->fX[cath]/=c->fQ[cath];
+      	c->SetX(cath, c->GetX(cath)/c->GetCharge(cath));
 // Force on anod
-     	c->fX[cath]=fSeg[cath]->GetAnod(c->fX[cath]);
-     	c->fY[cath]/=c->fQ[cath]; 
+     	c->SetX(cath, fSeg[cath]->GetAnod(c->GetX(cath)));
+      	c->SetY(cath, c->GetY(cath)/c->GetCharge(cath)); 
 //
 //  apply correction to the coordinate along the anode wire
 //
-     	x=c->fX[cath];   
-     	y=c->fY[cath];
+     	x=c->GetX(cath);   
+     	y=c->GetY(cath);
      	fSeg[cath]->GetPadI(x, y, fZPlane, ix, iy);
      	fSeg[cath]->GetPadC(ix, iy, x, y, z);
      	Int_t isec=fSeg[cath]->Sector(ix,iy);
     	TF1* cogCorr = fSeg[cath]->CorrFunc(isec-1);
 	
      	if (cogCorr) {
-	    Float_t yOnPad=(c->fY[cath]-y)/fSeg[cath]->Dpy(isec);
-	    c->fY[cath]=c->fY[cath]-cogCorr->Eval(yOnPad, 0, 0);
+	    Float_t yOnPad=(c->GetY(cath)-y)/fSeg[cath]->Dpy(isec);
+	    c->SetY(cath, c->GetY(cath)-cogCorr->Eval(yOnPad, 0, 0));
      	}
     }
 }
@@ -1283,9 +1283,9 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t cath)
 	fSeg[cath]->
 	GetPadC(dig->PadX(),dig->PadY(),xpad,ypad, zpad);
 	if (fDebugLevel)
-	    fprintf(stderr,"x %f y %f cx %f cy %f\n",xpad,ypad,c->fX[0],c->fY[0]);
-	dx = xpad - c->fX[0];
-	dy = ypad - c->fY[0];
+	    fprintf(stderr,"x %f y %f cx %f cy %f\n",xpad,ypad,c->GetX(0),c->GetY(0));
+	dx = xpad - c->GetX(0);
+	dy = ypad - c->GetY(0);
 	dr = TMath::Sqrt(dx*dx+dy*dy);
 
 	if (dr < dr0) {
@@ -1311,7 +1311,7 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t cath)
 
 //  apply correction to the coordinate along the anode wire
 // Force on anod
-    c->fX[cath]=fSeg[cath]->GetAnod(c->fX[cath]);
+    c->SetX(cath,fSeg[cath]->GetAnod(c->GetX(cath)));
 }
 
 void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONRawCluster &c){
@@ -1377,9 +1377,9 @@ void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONR
     Float_t x, y, z;
     fSeg[cath]->GetPadC(i, j, x, y, z);
     
-    c.fX[cath] += q*x;
-    c.fY[cath] += q*y;
-    c.fQ[cath] += q;
+    c.AddX(cath,q*x);
+    c.AddY(cath,q*y);
+    c.AddCharge(cath,q);
 //
 // Flag hit as "taken"  
     fHitMap[cath]->FlagHit(i,j);
@@ -1506,25 +1506,25 @@ void AliMUONClusterFinderVS::FindRawClusters()
 	    FindCluster(i,j,cath,c);
 //          ^^^^^^^^^^^^^^^^^^^^^^^^
 	    // center of gravity
-	    if (c.fX[0]!=0.) c.fX[0] /= c.fQ[0];
+	    if (c.GetX(0)!=0.) c.SetX(0, c.GetX(0)/c.GetCharge(0)); // c.fX[0] /= c.fQ[0];
 // Force on anod
-	    c.fX[0]=fSeg[0]->GetAnod(c.fX[0]);
-	    if (c.fY[0]!=0.) c.fY[0] /= c.fQ[0];
+	    c.SetX(0,fSeg[0]->GetAnod(c.GetX(0)));
+	    if (c.GetY(0)!=0.) c.SetY(0, c.GetY(0)/c.GetCharge(0)); // c.fY[0] /= c.fQ[0];
       	    
-	    if(c.fQ[1]!=0.) c.fX[1] /= c.fQ[1];
+	    if(c.GetCharge(1)!=0.) c.SetX(1, c.GetX(1)/c.GetCharge(1));  // c.fX[1] /= c.fQ[1];
 	    	    			
 	   // Force on anod
-	    c.fX[1]=fSeg[0]->GetAnod(c.fX[1]);
-	     if(c.fQ[1]!=0.) c.fY[1] /= c.fQ[1];
+	    c.SetX(1, fSeg[0]->GetAnod(c.GetX(1)));
+	    if(c.GetCharge(1)!=0.) c.SetY(1, c.GetY(1)/c.GetCharge(1));// c.fY[1] /= c.fQ[1];
 	    
-	    c.fZ[0] = fZPlane;
-	    c.fZ[1] = fZPlane;	    
+	    c.SetZ(0, fZPlane);
+	    c.SetZ(1, fZPlane);	    
 
 	    if (fDebugLevel) {
 		fprintf(stderr,"\n Cathode 1 multiplicite %d X(CG) %f Y(CG) %f\n",
-			c.fMultiplicity[0],c.fX[0],c.fY[0]);
+			c.fMultiplicity[0],c.GetX(0),c.GetY(0));
 		fprintf(stderr," Cathode 2 multiplicite %d X(CG) %f Y(CG) %f\n",
-			c.fMultiplicity[1],c.fX[1],c.fY[1]);
+			c.fMultiplicity[1],c.GetX(1),c.GetY(1));
 	    }
 //      Analyse cluster and decluster if necessary
 //	
@@ -1570,14 +1570,14 @@ Float_t AliMUONClusterFinderVS::SingleMathiesonFit(AliMUONRawCluster *c, Int_t c
     clusterInput.Fitter()->mnexcm("SET NOW", arglist, 0, ierflag);
 // Set starting values 
     static Double_t vstart[2];
-    vstart[0]=c->fX[1];
-    vstart[1]=c->fY[0];
+    vstart[0]=c->GetX(1);
+    vstart[1]=c->GetY(0);
     
     
 // lower and upper limits
     static Double_t lower[2], upper[2];
     Int_t ix,iy;
-    fSeg[cath]->GetPadI(c->fX[cath], c->fY[cath], fZPlane, ix, iy);
+    fSeg[cath]->GetPadI(c->GetX(cath), c->GetY(cath), fZPlane, ix, iy);
     Int_t isec=fSeg[cath]->Sector(ix, iy);
     lower[0]=vstart[0]-fSeg[cath]->Dpx(isec)/2;
     lower[1]=vstart[1]-fSeg[cath]->Dpy(isec)/2;
@@ -1961,13 +1961,13 @@ void AliMUONClusterFinderVS::Split(AliMUONRawCluster* c)
 		cnew.fNcluster[1]=0;
 	    }
 	    cnew.fMultiplicity[cath]=0;
-	    cnew.fX[cath]=Float_t(fXFit[j]);
-	    cnew.fY[cath]=Float_t(fYFit[j]);
-	    cnew.fZ[cath]=fZPlane;
+	    cnew.SetX(cath, Float_t(fXFit[j]));
+	    cnew.SetY(cath, Float_t(fYFit[j]));
+	    cnew.SetZ(cath, fZPlane);
 	    if (j==0) {
-		cnew.fQ[cath]=Int_t(clusterInput.TotalCharge(cath)*fQrFit[cath]);
+		cnew.SetCharge(cath, Int_t(clusterInput.TotalCharge(cath)*fQrFit[cath]));
 	    } else {
-		cnew.fQ[cath]=Int_t(clusterInput.TotalCharge(cath)*(1-fQrFit[cath]));
+		cnew.SetCharge(cath, Int_t(clusterInput.TotalCharge(cath)*(1-fQrFit[cath])));
 	    }
 	    fSeg[cath]->SetHit(fXFit[j],fYFit[j],fZPlane);
 	    for (i=0; i<fMul[cath]; i++) {
@@ -1976,14 +1976,14 @@ void AliMUONClusterFinderVS::Split(AliMUONRawCluster* c)
 		fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
 		Float_t q1=fInput->Response()->IntXY(fSeg[cath]);
 		cnew.fContMap[i][cath]
-		    =(q1*Float_t(cnew.fQ[cath]))/Float_t(fQ[i][cath]);
+		    =(q1*Float_t(cnew.GetCharge(cath)))/Float_t(fQ[i][cath]);
 		cnew.fMultiplicity[cath]++;
 	    }
 	    FillCluster(&cnew,0,cath);
 	} // cathode loop
 	
 	cnew.fClusterType=cnew.PhysicsContribution();
-	if (cnew.fQ[0]>0 && cnew.fQ[1]>0) AddRawCluster(cnew);
+	if (cnew.GetCharge(0)>0 && cnew.GetCharge(1)>0) AddRawCluster(cnew);
 	fNPeaks++;
     }
 }

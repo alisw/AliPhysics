@@ -937,9 +937,9 @@ void AliMUONDisplay::LoadCoG(Int_t chamber, Int_t /*cathode*/)
         points->SetHitIndex(-1);
         points->SetTrackIndex(-1);
         points->SetDigitIndex(-1);
-        points->SetPoint(iraw,mRaw->fX[0],mRaw->fY[0],zpos);
+        points->SetPoint(iraw,mRaw->GetX(0),mRaw->GetY(0),zpos);
 	fRpoints->AddAt(points,iraw);
-	//	printf("%f and %f and %f\n",mRaw->fX[0],mRaw->fY[0],mRaw->fZ[0]);
+	//	printf("%f and %f and %f\n",mRaw->GetX(0),mRaw->GetY(0),mRaw->GetZ(0));
     }
 }
 //___________________________________________

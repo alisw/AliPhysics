@@ -806,7 +806,7 @@ void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
       hitForRec->SetChamberNumber(ch);
       hitForRec->SetHitNumber(iclus);
       // Z coordinate of the raw cluster (cm)
-      hitForRec->SetZ(clus->fZ[0]);
+      hitForRec->SetZ(clus->GetZ(0));
       if (fPrintLevel >= 10) {
 	cout << "chamber (0...): " << ch <<
 	  " raw cluster (0...): " << iclus << endl;

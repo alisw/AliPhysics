@@ -445,9 +445,9 @@ next:
   cout << " *** Reconstructed hits *** " << endl;
   for (Int_t i=0; i<listMUONrawclust ->GetEntries(); i++) {
     mRaw = (AliMUONRawCluster*)listMUONrawclust ->UncheckedAt(i);
-    if (TMath::Abs(mRaw->fZ[0]-zpad0) > 1) continue; // different slat
-    p2[0] = p1[0] = mRaw->fX[0];        // x-pos of hit
-    p2[1] = p1[1] = mRaw->fY[0];        // y-pos
+    if (TMath::Abs(mRaw->GetZ(0)-zpad0) > 1) continue; // different slat
+    p2[0] = p1[0] = mRaw->GetX(0);        // x-pos of hit
+    p2[1] = p1[1] = mRaw->GetY(0);        // y-pos
     if (p1[0] < hist->GetXaxis()->GetXmin() || 
 	p1[0] > hist->GetXaxis()->GetXmax()) continue;
     if (p1[1] < hist->GetYaxis()->GetXmin() || 
@@ -469,7 +469,7 @@ next:
       if (fHist[ihist]->GetCellContent(ix,iy) > 0.5) {iok = 1; break;}
     }
     if (!iok) continue;
-    printf(" X=%10.4f, Y=%10.4f, Z=%10.4f\n",p1[0],p1[1],mRaw->fZ[0]);
+    printf(" X=%10.4f, Y=%10.4f, Z=%10.4f\n",p1[0],p1[1],mRaw->GetZ(0));
     if (view) {
       view->WCtoNDC(p1, &xNDC[0]);
       view->WCtoNDC(p2, &xNDC[3]);
@@ -2300,10 +2300,10 @@ void AliMUONClusterFinderAZ::AddRawCluster(Double_t x, Double_t y, Double_t fmin
 
   Int_t cath;    
   for (cath=0; cath<2; cath++) {
-    cnew.fX[cath] = x;
-    cnew.fY[cath] = y;
-    cnew.fZ[cath] = fZpad;
-    cnew.fQ[cath] = 100;
+    cnew.SetX(cath, x);
+    cnew.SetY(cath, y);
+    cnew.SetZ(cath, fZpad);
+    cnew.SetCharge(cath, 100);
     cnew.fPeakSignal[cath] = 20;
     cnew.fMultiplicity[cath] = 5;
     cnew.fNcluster[cath] = 1;

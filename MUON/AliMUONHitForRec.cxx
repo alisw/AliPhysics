@@ -71,8 +71,8 @@ AliMUONHitForRec::AliMUONHitForRec(AliMUONRawCluster* RawCluster)
 {
   // Constructor for AliMUONHitForRec from a raw cluster.
   // Fills the bending and non bending coordinates.
-  fNonBendingCoor = RawCluster->fX[0];
-  fBendingCoor = RawCluster->fY[0];
+  fNonBendingCoor = RawCluster->GetX(0);
+  fBendingCoor = RawCluster->GetY(0);
   // other fields will be updated in
   // AliMUONEventReconstructor::AddHitsForRecFromRawClusters,
   // except the following ones
