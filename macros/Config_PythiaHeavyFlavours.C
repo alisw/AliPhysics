@@ -6,10 +6,9 @@
 // Mangano, Nason and Ridolfi.                                       //
 //                                                                   //
 // For details and for the NORMALIZATION of the yields see:          //
-// - "Charm and beauty production at the LHC", ALICE note submitted  //
-//   and available at: http://www.pd.infn.it/alipd/Docs.html         //
-// - Current version of the ALICE PPR (Chapter 6.5)                  //
-//   at: http://alice.web.cern.ch/Alice/ppr/web/CurrentVersion.html  //
+//   N.Carrer and A.Dainese,                                         //
+//   "Charm and beauty production at the LHC",                       //
+//   ALICE-INT-2003-019, [arXiv:hep-ph/0312255].                     //
 //*******************************************************************//
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
@@ -51,6 +50,7 @@ enum ProcessHvFl_t
 {
   kCharmPbPb5500,  kCharmpPb8800,  kCharmpp14000,
   kD0PbPb5500,     kD0pPb8800,     kD0pp14000,
+  kDPlusPbPb5500,     kDPluspPb8800,     kDPluspp14000,
   kBeautyPbPb5500, kBeautypPb8800, kBeautypp14000
 };
 //--- Decay Mode ---
@@ -101,8 +101,9 @@ void Config()
   UInt_t seed=curtime-procid;
 
   //  gRandom->SetSeed(seed);
+  //  cerr<<"Seed for random number generation= "<<seed<<endl; 
   gRandom->SetSeed(12345);
-  cerr<<"Seed for random number generation= "<<seed<<endl; 
+  
 
   // libraries required by geant321
 #if defined(__CINT__)
@@ -575,6 +576,33 @@ AliGenPythia *PythiaHVQ(ProcessHvFl_t proc) {
     comment = comment.Append(" D0 in pp at 14 TeV");
     gener = new AliGenPythia(nEvts);
     gener->SetProcess(kPyD0ppMNR);
+    gener->SetStrucFunc(kCTEQ4L);
+    gener->SetPtHard(2.1,-1.0);
+    gener->SetEnergyCMS(14000.);
+    break;
+  case kDPlusPbPb5500:
+    comment = comment.Append(" DPlus in Pb-Pb at 5.5 TeV");
+    gener = new AliGenPythia(nEvts);
+    gener->SetProcess(kPyDPlusPbPbMNR);
+    gener->SetStrucFunc(kCTEQ4L);
+    gener->SetPtHard(2.1,-1.0);
+    gener->SetEnergyCMS(5500.);
+    gener->SetNuclei(208,208);
+    break;
+  case kDPluspPb8800:
+    comment = comment.Append(" DPlus in p-Pb at 8.8 TeV");
+    gener = new AliGenPythia(nEvts);
+    gener->SetProcess(kPyDPluspPbMNR);
+    gener->SetStrucFunc(kCTEQ4L);
+    gener->SetPtHard(2.1,-1.0);
+    gener->SetEnergyCMS(8800.);
+    gener->SetProjectile("P",1,1);
+    gener->SetTarget("Pb",208,82);
+    break;
+  case kDPluspp14000:
+    comment = comment.Append(" DPlus in pp at 14 TeV");
+    gener = new AliGenPythia(nEvts);
+    gener->SetProcess(kPyDPlusppMNR);
     gener->SetStrucFunc(kCTEQ4L);
     gener->SetPtHard(2.1,-1.0);
     gener->SetEnergyCMS(14000.);
