@@ -20,7 +20,7 @@ class TFile;
 
 class AliTPCtracker {
 public:
-   static void Clusters2Tracks(const AliTPCParam *par, TFile *of);
+   static Int_t Clusters2Tracks(const AliTPCParam *par, TFile *of);
 
 //**************** Internal tracker class ********************** 
    class AliTPCRow {

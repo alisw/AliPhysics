@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/30 12:07:50  kowal2
+Updated from the TPC-PreRelease branch
+
 Revision 1.1.2.2  2000/06/25 08:38:41  kowal2
 Splitted from AliTPCtracking
 
@@ -29,27 +32,4 @@ Splitted from AliTPCtracking
 #include "AliTPCcluster.h"
 
 ClassImp(AliTPCcluster)
- 
-//_____________________________________________________________________________
-AliTPCcluster::AliTPCcluster() {
-  //default constructor
-  fTracks[0]=fTracks[1]=fTracks[2]=0; 
-  fY=fZ=fQ=fSigmaY2=fSigmaZ2=0.;
-}
-
-//_____________________________________________________________________________
-AliTPCcluster::AliTPCcluster(Float_t *hits, Int_t *lab)
-{
-  //
-  // Creates a simulated cluster for the TPC
-  //
-  fTracks[0]  = lab[0];
-  fTracks[1]  = lab[1];
-  fTracks[2]  = lab[2];
-  fY          = hits[0];
-  fZ          = hits[1];
-  fQ          = hits[2];
-  fSigmaY2    = hits[3];
-  fSigmaZ2    = hits[4];
-}
 
