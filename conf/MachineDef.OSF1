@@ -30,9 +30,10 @@ DEPINC	      = -I/usr/include/cxx
 
 LD            = cxx
 LDFLAGS       = $(OPT)
+
+SHLD          = ld
 SOFLAGS       = -L/usr/lib/cmplrs/cxx -rpath /usr/lib/cmplrs/cxx -expect_unresolved \
 	-g0 -O1 -msym -shared /usr/lib/cmplrs/cc/crt0.o /usr/lib/cmplrs/cxx/_main.o
-SHLD          = ld
 SHLIB        = -lcxxstd -lcxx -lexc -lots -lc -lUfor -lfor -lFutil -lm
 
 G3LIBS        = -lgeant321

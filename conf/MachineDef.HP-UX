@@ -30,6 +30,8 @@ DEPINC	      = -I /opt/CC/include/CC/
 
 LD            = CC
 LDFLAGS       = $(OPT) +a1 -z
+
+SHLD	      = $(LD)
 SOFLAGS       = -b /usr/lib/libm.sl 
 
 G3LIBS        = -lgeant321

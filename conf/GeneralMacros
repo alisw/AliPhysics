@@ -6,11 +6,7 @@ $(SLIBRARY):
                 ifeq ($(PLATFORM),aix)
 		   @$(SHLD) -o $@ $(LIBS) -p 0 $^
                 else
-                   ifeq ($(PLATFORM),alpha)
-		      @$(SHLD) $(SOFLAGS) $(LDFLAGS) $^ $(SHLIB) -o $@ 
-                   else
-		      @$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(SHLIB) -o $@
-                   endif
+		   @$(SHLD) $(SOFLAGS) $(LDFLAGS) $^ $(SHLIB) -o $@
                 endif
 		@chmod 555 $@
 		@echo "$@ done"

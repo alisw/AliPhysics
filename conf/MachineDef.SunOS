@@ -31,6 +31,8 @@ DEPINC        = -I/opt/SUNWspro/SC4.0/include/CC -I/opt/SUNWspro/SC4.0/include/c
 		
 LD            = /opt/SUNWspro/bin/CC
 LDFLAGS       = $(OPT) -Qoption ld -t
+
+SHLD	      = $(LD)
 SOFLAGS       = -G
 SHLIB         = -L/opt/SUNWspro/lib -lF77 -lM77 /opt/SUNWspro/lib/libsunmath.so.1
 

@@ -32,6 +32,8 @@ DEPINC        = -I/usr/local/include/g++ -I/usr/local/include \
 		
 LD            = g++
 LDFLAGS       = $(OPT)
+
+SHLD	      = $(LD)
 SOFLAGS       = -Wl,-soname,$(notdir $@) -shared 
 SHLIB         = -lg2c
 
