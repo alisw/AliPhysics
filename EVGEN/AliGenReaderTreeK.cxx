@@ -32,7 +32,7 @@
 #include "AliRun.h"
 #include "AliRunLoader.h"
 
-ClassImp(AliGenReaderTreeK);
+ClassImp(AliGenReaderTreeK)
 
 const TString AliGenReaderTreeK::fgkEventFolderName("GenReaderTreeK");
 

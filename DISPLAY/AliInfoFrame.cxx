@@ -28,7 +28,7 @@
 #include "AliInfoFrame.h"
 #include "AliDisplay2.h"
 
-ClassImp(AliInfoFrame);
+ClassImp(AliInfoFrame)
 
 //_____________________________________________________________
 AliInfoFrame::AliInfoFrame(TGCompositeFrame *p, UInt_t w, UInt_t h)
@@ -92,7 +92,7 @@ AliInfoFrame::AliInfoFrame(TGCompositeFrame *p, UInt_t w, UInt_t h)
   fMainFrame->Layout();
   fMainFrame->MapSubwindows();
   fMainFrame->MapWindow();
-};
+}
 
 //_____________________________________________________________
 AliInfoFrame::~AliInfoFrame(void){

@@ -75,7 +75,7 @@
 #include <TClonesArray.h>               // ROOT_TClonesArray
 
 //____________________________________________________________________
-ClassImp(AliFMDMultAlgorithm);
+ClassImp(AliFMDMultAlgorithm)
 
 //____________________________________________________________________
 AliFMDMultAlgorithm::AliFMDMultAlgorithm(const char* name, const char* title)

@@ -29,7 +29,7 @@
 #include <AliRawReader.h>		// ALIRAWREADER_H
 
 //____________________________________________________________________
-ClassImp(AliFMDRawStream);
+ClassImp(AliFMDRawStream)
 
 //____________________________________________________________________
 AliFMDRawStream::AliFMDRawStream(AliRawReader* reader, UShort_t sampleRate) 

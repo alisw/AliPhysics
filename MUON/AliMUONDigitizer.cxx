@@ -65,7 +65,7 @@ AliMUONDigitizer::AliMUONDigitizer() :
 	fMUON = NULL;
 	fMUONData = NULL;
 	fTrigDec = NULL;
-};
+}
 
 //___________________________________________
 AliMUONDigitizer::AliMUONDigitizer(AliRunDigitizer* manager) : 
@@ -85,7 +85,7 @@ AliMUONDigitizer::AliMUONDigitizer(AliRunDigitizer* manager) :
 	fMUON = NULL;
 	fMUONData = NULL;
 	fTrigDec = NULL;
-};
+}
 
 //___________________________________________
 AliMUONDigitizer::AliMUONDigitizer(const AliMUONDigitizer& rhs)
@@ -144,7 +144,7 @@ void AliMUONDigitizer::Exec(Option_t* option)
 	{
 		AliWarning("No inputs set, nothing to do.");
 		return;
-	};
+	}
 
 	if (!FetchLoaders(fManager->GetInputFolderName(0), fRunLoader, fGime) ) return;
 	if (! FetchGlobalPointers(fRunLoader) ) return;
@@ -173,7 +173,7 @@ void AliMUONDigitizer::Exec(Option_t* option)
 		if (! InitInputData(fGime) ) continue;
 		GenerateTransientDigits();
 		CleanupInputData(fGime);
-	};
+	}
 
 	Bool_t ok = FetchLoaders(fManager->GetOutputFolderName(), fRunLoader, fGime);
 	if (ok) ok = InitOutputData(fGime);
@@ -183,7 +183,7 @@ void AliMUONDigitizer::Exec(Option_t* option)
 
 	CleanupArrays();
 	CleanupTriggerArrays();
-};
+}
 
 //--------------------------------------------------------------------------
 void AliMUONDigitizer::AddOrUpdateTransientDigit(AliMUONTransientDigit* mTD)
@@ -198,7 +198,7 @@ void AliMUONDigitizer::AddOrUpdateTransientDigit(AliMUONTransientDigit* mTD)
 	}
 	else 
 		AddTransientDigit(mTD);
-};
+}
 
 //------------------------------------------------------------------------
 void AliMUONDigitizer::UpdateTransientDigit(AliMUONTransientDigit* mTD)
@@ -225,13 +225,13 @@ void AliMUONDigitizer::UpdateTransientDigit(AliMUONTransientDigit* mTD)
 			ntracks));
 		AliDebug(1,Form( "Reseting the number of tracks to be %d.", kMAXTRACKS));
 		ntracks = kMAXTRACKS;
-	};
+	}
 	
 	for (Int_t i = 0; i < ntracks; i++)
 	{
 		pdigit->UpdateTrackList( mTD->GetTrack(i), mTD->GetCharge(i) );
-	};
-};
+	}
+}
 
 //------------------------------------------------------------------------
 void AliMUONDigitizer::AddTransientDigit(AliMUONTransientDigit* mTD)
@@ -245,7 +245,7 @@ void AliMUONDigitizer::AddTransientDigit(AliMUONTransientDigit* mTD)
 	fTDList->AddAtAndExpand(mTD, fTDCounter);
 	fHitMap[iNchCpl]->SetHit( mTD->PadX(), mTD->PadY(), fTDCounter);
 	fTDCounter++;
-};
+}
 
 //------------------------------------------------------------------------
 Bool_t AliMUONDigitizer::ExistTransientDigit(AliMUONTransientDigit* mTD)
@@ -257,7 +257,7 @@ Bool_t AliMUONDigitizer::ExistTransientDigit(AliMUONTransientDigit* mTD)
 	// Choosing the maping of the cathode plane of the chamber:
 	Int_t iNchCpl= mTD->Chamber() + (mTD->Cathode()-1) * AliMUONConstants::NCh();
 	return( fHitMap[iNchCpl]->TestHit(mTD->PadX(), mTD->PadY()) );
-};
+}
 
 //-----------------------------------------------------------------------
 void AliMUONDigitizer::CreateDigits()
@@ -284,10 +284,10 @@ void AliMUONDigitizer::CreateDigits()
 
 			Int_t q = GetSignalFrom(td);
 			if (q > 0) AddDigit(td, q);
-		};
+		}
 		FillOutputData();
-	};
-};
+	}
+}
 
 //------------------------------------------------------------------------
 void AliMUONDigitizer::AddDigit(AliMUONTransientDigit* td, Int_t responseCharge)
@@ -320,13 +320,13 @@ void AliMUONDigitizer::AddDigit(AliMUONTransientDigit* td, Int_t responseCharge)
 			nptracks));
 		AliDebug(1, Form("Reseting the number of tracks to be %d.", kMAXTRACKS));
 		nptracks = kMAXTRACKS;
-	};
+	}
 	
 	for (Int_t i = 0; i < nptracks; i++) 
 	{
 		tracks[i]   = td->GetTrack(i);
 		charges[i]  = td->GetCharge(i);
-	};
+	}
 
 	// Sort list of tracks according to charge
 	SortTracks(tracks,charges,nptracks);
@@ -337,15 +337,15 @@ void AliMUONDigitizer::AddDigit(AliMUONTransientDigit* td, Int_t responseCharge)
 		{
 			tracks[i]  = -1;
 			charges[i] = 0;
-		};
-	};
+		}
+	}
 
 	AliDebug(4,Form( "Adding digit with charge %d.", responseCharge));
 
 	OnWriteTransientDigit(td);
 	AddDigit(td->Chamber(), tracks, charges, digits);
 	AddDigitTrigger(td->Chamber(), tracks, charges, digits);
-};
+}
 
 //------------------------------------------------------------------------
 void AliMUONDigitizer::OnCreateTransientDigit(AliMUONTransientDigit* /*digit*/, TObject* /*source_object*/)
@@ -354,7 +354,7 @@ void AliMUONDigitizer::OnCreateTransientDigit(AliMUONTransientDigit* /*digit*/, 
 	//
 	// This is derived by Digitisers that want to trace which digits were made from
 	// which hits.
-};
+}
 
 //------------------------------------------------------------------------
 void AliMUONDigitizer::OnWriteTransientDigit(AliMUONTransientDigit* /*digit*/)
@@ -363,7 +363,7 @@ void AliMUONDigitizer::OnWriteTransientDigit(AliMUONTransientDigit* /*digit*/)
 	//
 	// This is derived by Digitisers that want to trace which digits were made from
 	// which hits.
-};
+}
 
 //------------------------------------------------------------------------
 Bool_t AliMUONDigitizer::FetchLoaders(const char* foldername, AliRunLoader*& runloader, AliMUONLoader*& muonloader)
@@ -388,7 +388,7 @@ Bool_t AliMUONDigitizer::FetchLoaders(const char* foldername, AliRunLoader*& run
 	}
 	return kTRUE;
 
-};
+}
 
 //------------------------------------------------------------------------
 Bool_t AliMUONDigitizer::FetchGlobalPointers(AliRunLoader* runloader)
@@ -409,13 +409,13 @@ Bool_t AliMUONDigitizer::FetchGlobalPointers(AliRunLoader* runloader)
 	{
 		AliError(Form("Could not find the AliRun object in runloader 0x%X.", (void*)runloader));
 		return kFALSE;
-	};
+	}
 	fMUON = (AliMUON*) gAlice->GetDetector("MUON");
 	if (fMUON == NULL)
 	{
 		AliError(Form("Could not find the MUON module in runloader 0x%X.", (void*)runloader));
 		return kFALSE;
-	};
+	}
 
 	AliMUONLoader *muonloader = (AliMUONLoader*) runloader->GetLoader("MUONLoader");
 	if (muonloader == NULL) 
@@ -430,7 +430,7 @@ Bool_t AliMUONDigitizer::FetchGlobalPointers(AliRunLoader* runloader)
 	{
 		AliError(Form("Could not find AliMUONData object in runloader 0x%X.", (void*)runloader));
 		return kFALSE;
-	};
+	}
 
 	return kTRUE;
 }
@@ -465,8 +465,8 @@ void AliMUONDigitizer::ParseOptions(Option_t* options)
 	{
 		AliInfo("Called with option \"debug\".");
 		SetDebug(99);
-	};
-};
+	}
+}
 
 //------------------------------------------------------------------------
 void AliMUONDigitizer::InitArrays()
@@ -496,8 +496,8 @@ void AliMUONDigitizer::InitArrays()
 		AliDebug(4,Form( "Creating hit map for chamber %d, cathode 2.", i+1));
 		AliSegmentation* c2Segmentation = chamber->SegmentationModel(2); // Cathode plane 2
 		fHitMap[i+AliMUONConstants::NCh()] = new AliMUONHitMapA1(c2Segmentation, fTDList);
-	};
-};
+	}
+}
 
 //------------------------------------------------------------------------
 void AliMUONDigitizer::CleanupArrays()
@@ -510,7 +510,7 @@ void AliMUONDigitizer::CleanupArrays()
 		AliDebug(4,Form( "Deleting hit map for chamber %d, cathode %d.", 
 			i%AliMUONConstants::NCh()+1, i/AliMUONConstants::NCh()+1));
 		delete fHitMap[i];
-	};
+	}
 	delete [] fHitMap;
 	fHitMap = NULL;
 	
@@ -519,7 +519,7 @@ void AliMUONDigitizer::CleanupArrays()
 	delete fTDList;
 	fTDList = NULL;
 
-};
+}
 
 //------------------------------------------------------------------------
 void AliMUONDigitizer::SortTracks(Int_t *tracks, Int_t *charges, Int_t ntr) const
@@ -586,4 +586,4 @@ void AliMUONDigitizer::SortTracks(Int_t *tracks, Int_t *charges, Int_t ntr) cons
 			tracks[i] = jtr[i];
 		}
 	}
-};
+}

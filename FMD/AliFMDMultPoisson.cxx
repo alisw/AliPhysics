@@ -33,7 +33,7 @@
 #include <TTree.h>               	// ROOT_TTree
 
 //____________________________________________________________________
-ClassImp(AliFMDMultPoisson);
+ClassImp(AliFMDMultPoisson)
 
 //____________________________________________________________________
 AliFMDMultPoisson::AliFMDMultPoisson()

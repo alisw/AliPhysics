@@ -22,7 +22,7 @@
 #include "AliFMDEdepMap.h"		// ALIFMDEDEPMAP_H
 
 //____________________________________________________________________
-ClassImp(AliFMDEdepMap);
+ClassImp(AliFMDEdepMap)
 
 //____________________________________________________________________
 AliFMDEdepMap::AliFMDEdepMap(const AliFMDEdepMap& other)

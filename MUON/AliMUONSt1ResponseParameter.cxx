@@ -33,7 +33,7 @@
 #include "AliMUONSt1ResponseParameter.h"
 #include "AliLog.h"
 
-ClassImp(AliMUONSt1ResponseParameter);
+ClassImp(AliMUONSt1ResponseParameter)
 
 //_________________________________________________________________________
 AliMUONSt1ResponseParameter::AliMUONSt1ResponseParameter()

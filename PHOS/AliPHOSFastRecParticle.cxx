@@ -34,7 +34,7 @@
 #include "TPad.h"
 #include "TPaveText.h"
 
-ClassImp(AliPHOSFastRecParticle) ; 
+ClassImp(AliPHOSFastRecParticle) 
 
 //____________________________________________________________________________
 AliPHOSFastRecParticle::AliPHOSFastRecParticle() : TParticle()

@@ -25,7 +25,7 @@ AliMUONDataInterface::AliMUONDataInterface()
 // Set all internal pointers to NULL and indices to -1.
 
 	Reset();
-};
+}
 
 AliMUONDataInterface::AliMUONDataInterface(const AliMUONDataInterface& rhs)
   : TObject(rhs)
@@ -43,7 +43,7 @@ AliMUONDataInterface::~AliMUONDataInterface()
 
 	if (fRunloader != NULL)
 		delete fRunloader;
-};
+}
 
 AliMUONDataInterface&  
 AliMUONDataInterface::operator=(const AliMUONDataInterface& rhs)
@@ -75,7 +75,7 @@ void AliMUONDataInterface::Reset()
 	fDigitAddressSet = kFALSE;
 	fClusterAddressSet = kFALSE;
 	fTriggerAddressSet = kFALSE;
-};
+}
 
 
 Bool_t AliMUONDataInterface::LoadLoaders(TString filename, TString foldername)
@@ -89,7 +89,7 @@ Bool_t AliMUONDataInterface::LoadLoaders(TString filename, TString foldername)
 		AliError(Form("Could not find or load the run loader for the file: %s and folder: %s", 
 			(const char*)filename, (const char*)foldername));
 		return kFALSE;
-	};
+	}
 	fMuonloader = fRunloader->GetLoader("MUONLoader");
 	if (fMuonloader == NULL)
 	{
@@ -97,7 +97,7 @@ Bool_t AliMUONDataInterface::LoadLoaders(TString filename, TString foldername)
 			(const char*)filename, (const char*)foldername));
 		fRunloader = NULL;
 		return kFALSE;
-	};
+	}
 	
 	// Need to connect the muon loader to the AliMUONData object,
 	// else class to fData will return NULL.
@@ -107,7 +107,7 @@ Bool_t AliMUONDataInterface::LoadLoaders(TString filename, TString foldername)
 	fFoldername = foldername;
 	fEventnumber = -1;  // Reset the event number to force the event to be loaded.
 	return kTRUE;
-};
+}
 
 
 Bool_t AliMUONDataInterface::FetchLoaders(TString filename, TString foldername)
@@ -127,7 +127,7 @@ Bool_t AliMUONDataInterface::FetchLoaders(TString filename, TString foldername)
 		// Fetch the current file and folder names.
 		fFilename = fRunloader->GetFileName();
 		fFoldername = fRunloader->GetEventFolder()->GetName();
-	};
+	}
 
 	// If filename or foldername are not the same as the ones currently selected then
 	// reopen the file.
@@ -135,9 +135,9 @@ Bool_t AliMUONDataInterface::FetchLoaders(TString filename, TString foldername)
 	{
 		delete fRunloader;
 		return LoadLoaders(filename, foldername);
-	};
+	}
 	return kTRUE;
-};
+}
 
 
 Bool_t AliMUONDataInterface::FetchEvent(Int_t event)
@@ -156,7 +156,7 @@ Bool_t AliMUONDataInterface::FetchEvent(Int_t event)
 		fDigitAddressSet = kFALSE;
 		fClusterAddressSet = kFALSE;
 		fTriggerAddressSet = kFALSE;
-	};
+	}
 	if ( event != fEventnumber )
 	{
 		if ( fRunloader->GetEvent(event) < 0 ) return kFALSE;
@@ -169,9 +169,9 @@ Bool_t AliMUONDataInterface::FetchEvent(Int_t event)
 		fDigitAddressSet = kFALSE;
 		fClusterAddressSet = kFALSE;
 		fTriggerAddressSet = kFALSE;
-	};
+	}
 	return kTRUE;
-};
+}
 
 
 Bool_t AliMUONDataInterface::FetchTreeK()
@@ -185,10 +185,10 @@ Bool_t AliMUONDataInterface::FetchTreeK()
 		{
 			AliError("Could not load TreeK.");
 			return kFALSE;
-		};
-	};
+		}
+	}
 	return kTRUE;
-};
+}
 
 
 Bool_t AliMUONDataInterface::FetchTreeH()
@@ -203,7 +203,7 @@ Bool_t AliMUONDataInterface::FetchTreeH()
 		{
 			AliError("Could not load TreeH.");
 			return kFALSE;
-		};
+		}
 		fData.SetTreeAddress("H");
 		fHitAddressSet = kTRUE;
 	}
@@ -211,9 +211,9 @@ Bool_t AliMUONDataInterface::FetchTreeH()
 	{
 		fData.SetTreeAddress("H");
 		fHitAddressSet = kTRUE;
-	};
+	}
 	return kTRUE;
-};
+}
 
 
 Bool_t AliMUONDataInterface::FetchTreeS()
@@ -228,7 +228,7 @@ Bool_t AliMUONDataInterface::FetchTreeS()
 		{
 			AliError("Could not load TreeS.");
 			return kFALSE;
-		};
+		}
 		fData.SetTreeAddress("S");
 		fSDigitAddressSet = kTRUE;
 	}
@@ -236,9 +236,9 @@ Bool_t AliMUONDataInterface::FetchTreeS()
 	{
 		fData.SetTreeAddress("S");
 		fSDigitAddressSet = kTRUE;
-	};
+	}
 	return kTRUE;
-};
+}
 
 
 Bool_t AliMUONDataInterface::FetchTreeD()
@@ -253,7 +253,7 @@ Bool_t AliMUONDataInterface::FetchTreeD()
 		{
 			AliError("Could not load TreeD.");
 			return kFALSE;
-		};
+		}
 		fData.SetTreeAddress("D");
 		fDigitAddressSet = kTRUE;
 	}
@@ -261,9 +261,9 @@ Bool_t AliMUONDataInterface::FetchTreeD()
 	{
 		fData.SetTreeAddress("D");
 		fDigitAddressSet = kTRUE;
-	};
+	}
 	return kTRUE;
-};
+}
 
 
 Bool_t AliMUONDataInterface::FetchTreeR()
@@ -278,15 +278,15 @@ Bool_t AliMUONDataInterface::FetchTreeR()
 		{
 			AliError("Could not load TreeR.");
 			return kFALSE;
-		};
+		}
 		
 		// Need to reset these flags so that the cluster and trigger address
 		// gets reset after this method. 
 		fClusterAddressSet = kFALSE;
 		fTriggerAddressSet = kFALSE;
-	};
+	}
 	return kTRUE;
-};
+}
 
 
 Int_t AliMUONDataInterface::NumberOfEvents(TString filename, TString foldername)
@@ -295,7 +295,7 @@ Int_t AliMUONDataInterface::NumberOfEvents(TString filename, TString foldername)
 
 	if ( ! FetchLoaders(filename, foldername) ) return -1;
 	return fRunloader->GetNumberOfEvents();
-};
+}
 
 
 Int_t AliMUONDataInterface::NumberOfParticles(TString filename, TString foldername, Int_t event)
@@ -306,7 +306,7 @@ Int_t AliMUONDataInterface::NumberOfParticles(TString filename, TString folderna
 	if ( ! FetchEvent(event) ) return -1;
 	if ( ! FetchTreeK() ) return -1;
 	return (Int_t) fRunloader->TreeK()->GetEntriesFast();
-};
+}
 
 
 TParticle* AliMUONDataInterface::Particle(
@@ -325,7 +325,7 @@ TParticle* AliMUONDataInterface::Particle(
 	treeK->GetBranch("Particles")->SetAddress(&p);
 	treeK->GetEvent(particle);
 	return p;
-};
+}
 
 
 Int_t AliMUONDataInterface::NumberOfTracks(TString filename, TString foldername, Int_t event)
@@ -337,7 +337,7 @@ Int_t AliMUONDataInterface::NumberOfTracks(TString filename, TString foldername,
 	if ( ! FetchEvent(event) ) return -1;
 	if ( ! FetchTreeH() ) return -1;
 	return fData.GetNtracks();
-};
+}
 
 
 Int_t AliMUONDataInterface::NumberOfHits(
@@ -356,9 +356,9 @@ Int_t AliMUONDataInterface::NumberOfHits(
 		fData.ResetHits();
 		fData.GetTrack(track);
 		fTrack = track;
-	};
+	}
 	return fData.Hits()->GetEntriesFast();
-};
+}
 
 
 AliMUONHit* AliMUONDataInterface::Hit(
@@ -378,9 +378,9 @@ AliMUONHit* AliMUONDataInterface::Hit(
 		fData.ResetHits();
 		fData.GetTrack(track);
 		fTrack = track;
-	};
+	}
 	return static_cast<AliMUONHit*>( fData.Hits()->At(hit) );
-};
+}
 
 
 Int_t AliMUONDataInterface::NumberOfSDigits(
@@ -403,9 +403,9 @@ Int_t AliMUONDataInterface::NumberOfSDigits(
 		fData.ResetSDigits();
 		fData.GetCathodeS(cathode);
 		fSCathode = cathode;
-	};
+	}
 	return fData.SDigits(chamber)->GetEntriesFast();
-};
+}
 
 
 AliMUONDigit* AliMUONDataInterface::SDigit(
@@ -428,9 +428,9 @@ AliMUONDigit* AliMUONDataInterface::SDigit(
 		fData.ResetSDigits();
 		fData.GetCathodeS(cathode);
 		fSCathode = cathode;
-	};
+	}
 	return static_cast<AliMUONDigit*>( fData.SDigits(chamber)->At(sdigit) );
-};
+}
 
 
 Int_t AliMUONDataInterface::NumberOfDigits(
@@ -452,9 +452,9 @@ Int_t AliMUONDataInterface::NumberOfDigits(
 		fData.ResetDigits();
 		fData.GetCathode(cathode);
 		fCathode = cathode;
-	};
+	}
 	return fData.Digits(chamber)->GetEntriesFast();
-};
+}
 
 
 AliMUONDigit* AliMUONDataInterface::Digit(
@@ -477,9 +477,9 @@ AliMUONDigit* AliMUONDataInterface::Digit(
 		fData.ResetDigits();
 		fData.GetCathode(cathode);
 		fCathode = cathode;
-	};
+	}
 	return static_cast<AliMUONDigit*>( fData.Digits(chamber)->At(digit) );
-};
+}
 
 
 Int_t AliMUONDataInterface::NumberOfRawClusters(
@@ -500,9 +500,9 @@ Int_t AliMUONDataInterface::NumberOfRawClusters(
 		fData.ResetRawClusters();
 		fData.GetRawClusters();
 		fClusterAddressSet = kTRUE;
-	};
+	}
 	return fData.RawClusters(chamber)->GetEntriesFast();
-};
+}
 
 
 AliMUONRawCluster* AliMUONDataInterface::RawCluster(
@@ -524,9 +524,9 @@ AliMUONRawCluster* AliMUONDataInterface::RawCluster(
 		fData.ResetRawClusters();
 		fData.GetRawClusters();
 		fClusterAddressSet = kTRUE;
-	};
+	}
 	return static_cast<AliMUONRawCluster*>( fData.RawClusters(chamber)->At(cluster) );
-};
+}
 
 
 Int_t AliMUONDataInterface::NumberOfLocalTriggers(TString filename, TString foldername, Int_t event)
@@ -544,9 +544,9 @@ Int_t AliMUONDataInterface::NumberOfLocalTriggers(TString filename, TString fold
 		fData.ResetTrigger();
 		fData.GetTrigger();
 		fTriggerAddressSet = kTRUE;
-	};
+	}
 	return fData.LocalTrigger()->GetEntriesFast();
-};
+}
 
 
 AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(
@@ -566,9 +566,9 @@ AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(
 		fData.ResetTrigger();
 		fData.GetTrigger();
 		fTriggerAddressSet = kTRUE;
-	};
+	}
 	return static_cast<AliMUONLocalTrigger*>( fData.LocalTrigger()->At(trigger) );
-};
+}
 
 
 Bool_t AliMUONDataInterface::SetFile(TString filename, TString foldername)
@@ -577,7 +577,7 @@ Bool_t AliMUONDataInterface::SetFile(TString filename, TString foldername)
 // kTRUE is returned if the run and muon loaders were found, else kFALSE. 
 
 	return FetchLoaders(filename, foldername);
-};
+}
 
 
 Bool_t AliMUONDataInterface::GetEvent(Int_t event)
@@ -586,7 +586,7 @@ Bool_t AliMUONDataInterface::GetEvent(Int_t event)
 // kTRUE is returned if the event was found, else kFALSE is returned.
 
 	return FetchEvent(event);
-};
+}
 
 
 Int_t AliMUONDataInterface::NumberOfEvents()
@@ -598,9 +598,9 @@ Int_t AliMUONDataInterface::NumberOfEvents()
 	{
 		AliError("File not set.");
 		return -1;
-	};
+	}
 	return fRunloader->GetNumberOfEvents();
-};
+}
 
 
 Int_t AliMUONDataInterface::NumberOfParticles()
@@ -612,10 +612,10 @@ Int_t AliMUONDataInterface::NumberOfParticles()
 	{
 		AliError("File not set.");
 		return -1;
-	};
+	}
 	if ( ! FetchTreeK() ) return -1;
 	return (Int_t) fRunloader->TreeK()->GetEntriesFast();
-};
+}
 
 
 TParticle* AliMUONDataInterface::Particle(Int_t particle)
@@ -627,19 +627,19 @@ TParticle* AliMUONDataInterface::Particle(Int_t particle)
 	{
 		AliError("File not set.");
 		return NULL;
-	};
+	}
 	if (fEventnumber < 0)
 	{
 		AliError("Event not chosen.");
 		return NULL;
-	};
+	}
 	if ( ! FetchTreeK() ) return NULL;
 	TTree* treeK = fRunloader->TreeK();
 	TParticle* p = NULL;
 	treeK->GetBranch("Particles")->SetAddress(&p);
 	treeK->GetEvent(particle);
 	return p;
-};
+}
 
 
 Int_t AliMUONDataInterface::NumberOfTracks()
@@ -651,15 +651,15 @@ Int_t AliMUONDataInterface::NumberOfTracks()
 	{
 		AliError("File not set.");
 		return -1;
-	};
+	}
 	if (fEventnumber < 0)
 	{
 		AliError( "Event not chosen.");
 		return -1;
-	};
+	}
 	if ( ! FetchTreeH() ) return -1;
 	return fData.GetNtracks();
-};
+}
 
 
 Int_t AliMUONDataInterface::NumberOfHits(Int_t track)
@@ -671,21 +671,21 @@ Int_t AliMUONDataInterface::NumberOfHits(Int_t track)
 	{
 		AliError("File not set.");
 		return -1;
-	};
+	}
 	if (fEventnumber < 0)
 	{
 		AliError("Event not chosen.");
 		return -1;
-	};
+	}
 	if ( ! FetchTreeH() ) return -1;
 	if (fTrack < 0 || fTrack != track)
 	{
 		fData.ResetHits();
 		fData.GetTrack(track);
 		fTrack = track;
-	};
+	}
 	return fData.Hits()->GetEntriesFast();
-};
+}
 
 
 AliMUONHit* AliMUONDataInterface::Hit(Int_t track, Int_t hit)
@@ -697,21 +697,21 @@ AliMUONHit* AliMUONDataInterface::Hit(Int_t track, Int_t hit)
 	{
 		AliError("File not set.");
 		return NULL;
-	};
+	}
 	if (fEventnumber < 0)
 	{
 		AliError("Event not chosen.");
 		return NULL;
-	};
+	}
 	if ( ! FetchTreeH() ) return NULL;
 	if (fTrack < 0 || fTrack != track)
 	{
 		fData.ResetHits();
 		fData.GetTrack(track);
 		fTrack = track;
-	};
+	}
 	return static_cast<AliMUONHit*>( fData.Hits()->At(hit) );
-};
+}
 
 
 Int_t AliMUONDataInterface::NumberOfSDigits(Int_t chamber, Int_t cathode)
@@ -726,12 +726,12 @@ Int_t AliMUONDataInterface::NumberOfSDigits(Int_t chamber, Int_t cathode)
 	{
 		AliError("File not set.");
 		return -1;
-	};
+	}
 	if (fEventnumber < 0)
 	{
 		AliError("Event not chosen.");
 		return -1;
-	};
+	}
 
 	if ( ! FetchTreeS() ) return -1;
 	if ( fSCathode != cathode )
@@ -739,9 +739,9 @@ Int_t AliMUONDataInterface::NumberOfSDigits(Int_t chamber, Int_t cathode)
 		fData.ResetSDigits();
 		fData.GetCathodeS(cathode);
 		fSCathode = cathode;
-	};
+	}
 	return fData.SDigits(chamber)->GetEntriesFast();
-};
+}
 
 
 AliMUONDigit* AliMUONDataInterface::SDigit(Int_t chamber, Int_t cathode, Int_t sdigit)
@@ -756,12 +756,12 @@ AliMUONDigit* AliMUONDataInterface::SDigit(Int_t chamber, Int_t cathode, Int_t s
 	{
 		AliError("File not set.");
 		return NULL;
-	};
+	}
 	if (fEventnumber < 0)
 	{
 		AliError("Event not chosen.");
 		return NULL;
-	};
+	}
 
 	if ( ! FetchTreeS() ) return NULL;
 	if ( fSCathode != cathode )
@@ -769,9 +769,9 @@ AliMUONDigit* AliMUONDataInterface::SDigit(Int_t chamber, Int_t cathode, Int_t s
 		fData.ResetSDigits();
 		fData.GetCathodeS(cathode);
 		fSCathode = cathode;
-	};
+	}
 	return static_cast<AliMUONDigit*>( fData.SDigits(chamber)->At(sdigit) );
-};
+}
 
 
 Int_t AliMUONDataInterface::NumberOfDigits(Int_t chamber, Int_t cathode)
@@ -786,12 +786,12 @@ Int_t AliMUONDataInterface::NumberOfDigits(Int_t chamber, Int_t cathode)
 	{
 		AliError("File not set.");
 		return -1;
-	};
+	}
 	if (fEventnumber < 0)
 	{
 		AliError("Event not chosen.");
 		return -1;
-	};
+	}
 	
 	if ( ! FetchTreeD() ) return -1;
 	if ( fCathode != cathode )
@@ -799,9 +799,9 @@ Int_t AliMUONDataInterface::NumberOfDigits(Int_t chamber, Int_t cathode)
 		fData.ResetDigits();
 		fData.GetCathode(cathode);
 		fCathode = cathode;
-	};
+	}
 	return fData.Digits(chamber)->GetEntriesFast();
-};
+}
 
 
 AliMUONDigit* AliMUONDataInterface::Digit(Int_t chamber, Int_t cathode, Int_t digit)
@@ -816,12 +816,12 @@ AliMUONDigit* AliMUONDataInterface::Digit(Int_t chamber, Int_t cathode, Int_t di
 	{
 		AliError("File not set.");
 		return NULL;
-	};
+	}
 	if (fEventnumber < 0)
 	{
 		AliError("Event not chosen.");
 		return NULL;
-	};
+	}
 
 	if ( ! FetchTreeD() ) return NULL;
 	if ( fCathode != cathode )
@@ -829,9 +829,9 @@ AliMUONDigit* AliMUONDataInterface::Digit(Int_t chamber, Int_t cathode, Int_t di
 		fData.ResetDigits();
 		fData.GetCathode(cathode);
 		fCathode = cathode;
-	};
+	}
 	return static_cast<AliMUONDigit*>( fData.Digits(chamber)->At(digit) );
-};
+}
 
 
 Int_t AliMUONDataInterface::NumberOfRawClusters(Int_t chamber)
@@ -845,12 +845,12 @@ Int_t AliMUONDataInterface::NumberOfRawClusters(Int_t chamber)
 	{
 		AliError("File not set.");
 		return -1;
-	};
+	}
 	if (fEventnumber < 0)
 	{
 		AliError("Event not chosen.");
 		return -1;
-	};
+	}
 
 	if ( ! FetchTreeR() ) return -1;
 	if ( ! fClusterAddressSet )
@@ -859,9 +859,9 @@ Int_t AliMUONDataInterface::NumberOfRawClusters(Int_t chamber)
 		fData.ResetRawClusters();
 		fData.GetRawClusters();
 		fClusterAddressSet = kTRUE;
-	};
+	}
 	return fData.RawClusters(chamber)->GetEntriesFast();
-};
+}
 
 
 AliMUONRawCluster* AliMUONDataInterface::RawCluster(Int_t chamber, Int_t cluster)
@@ -875,12 +875,12 @@ AliMUONRawCluster* AliMUONDataInterface::RawCluster(Int_t chamber, Int_t cluster
 	{
 		AliError("File not set.");
 		return NULL;
-	};
+	}
 	if (fEventnumber < 0)
 	{
 		AliError("Event not chosen.");
 		return NULL;
-	};
+	}
 
 	if ( ! FetchTreeR() ) return NULL;
 	if ( ! fClusterAddressSet )
@@ -889,9 +889,9 @@ AliMUONRawCluster* AliMUONDataInterface::RawCluster(Int_t chamber, Int_t cluster
 		fData.ResetRawClusters();
 		fData.GetRawClusters();
 		fClusterAddressSet = kTRUE;
-	};
+	}
 	return static_cast<AliMUONRawCluster*>( fData.RawClusters(chamber)->At(cluster) );
-};
+}
 
 
 Int_t AliMUONDataInterface::NumberOfLocalTriggers()
@@ -903,12 +903,12 @@ Int_t AliMUONDataInterface::NumberOfLocalTriggers()
 	{
 		AliError("File not set.");
 		return -1;
-	};
+	}
 	if (fEventnumber < 0)
 	{
 		AliError("Event not chosen.");
 		return -1;
-	};
+	}
 
 	if ( ! FetchTreeR() ) return -1;
 	if ( ! fTriggerAddressSet )
@@ -917,9 +917,9 @@ Int_t AliMUONDataInterface::NumberOfLocalTriggers()
 		fData.ResetTrigger();
 		fData.GetTrigger();
 		fTriggerAddressSet = kTRUE;
-	};
+	}
 	return fData.LocalTrigger()->GetEntriesFast();
-};
+}
 
 
 AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(Int_t trigger)
@@ -931,12 +931,12 @@ AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(Int_t trigger)
 	{
 		AliError("File not set.");
 		return NULL;
-	};
+	}
 	if (fEventnumber < 0)
 	{
 		AliError( "Event not chosen.");
 		return NULL;
-	};
+	}
 
 	if ( ! FetchTreeR() ) return NULL;
 	if ( ! fTriggerAddressSet )
@@ -945,6 +945,6 @@ AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(Int_t trigger)
 		fData.ResetTrigger();
 		fData.GetTrigger();
 		fTriggerAddressSet = kTRUE;
-	};
+	}
 	return static_cast<AliMUONLocalTrigger*>( fData.LocalTrigger()->At(trigger) );
-};
+}

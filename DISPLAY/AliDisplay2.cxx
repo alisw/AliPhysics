@@ -56,7 +56,7 @@
  AliDisplay2 *gAliDisplay2;
 
 
-ClassImp(AliDisplay2);
+ClassImp(AliDisplay2)
 //_____________________________________________________________
 AliDisplay2::AliDisplay2(const TGWindow *p, UInt_t w, UInt_t h)
 			:TObject()
@@ -365,7 +365,7 @@ void AliDisplay2::Enable(Int_t m)
     fMode = kTracks|fMode;
     Update();
   }
-};    
+}
 
 //_____________________________________________________________
 void AliDisplay2::Disable(Int_t m)

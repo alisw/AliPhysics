@@ -27,7 +27,7 @@
 #include <Riostream.h>		// ROOT_Riostream
 
 //____________________________________________________________________
-ClassImp(AliFMDMult);
+ClassImp(AliFMDMult)
 
 //____________________________________________________________________
 AliFMDMult::AliFMDMult(Float_t  particles, UShort_t method)

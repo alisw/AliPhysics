@@ -34,7 +34,7 @@
 #include <Riostream.h>		// ROOT_Riostream
 
 //____________________________________________________________________
-ClassImp(AliFMDMultRegion);
+ClassImp(AliFMDMultRegion)
 
 
 //____________________________________________________________________

@@ -22,7 +22,7 @@
 #include "AliMUONSegmentationSlatModuleN.h"
 
 //___________________________________________
-ClassImp(AliMUONSegmentationSlatN);
+ClassImp(AliMUONSegmentationSlatN)
 
 AliMUONSegmentationSlatN::AliMUONSegmentationSlatN()
   : AliMUONSegmentationSlat()

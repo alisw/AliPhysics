@@ -31,7 +31,7 @@
 #include "AliGenGeVSimEventHeader.h"
 
 
-ClassImp(AliGenGeVSimEventHeader);
+ClassImp(AliGenGeVSimEventHeader)
 
 
 ////////////////////////////////////////////////////////////////////////////////

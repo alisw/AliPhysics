@@ -43,7 +43,7 @@
 #include <TClonesArray.h>	// ROOT_TClonesArray
 
 //____________________________________________________________________
-ClassImp(AliFMDRawWriter);
+ClassImp(AliFMDRawWriter)
 
 //____________________________________________________________________
 AliFMDRawWriter::AliFMDRawWriter(AliFMD* fmd) 

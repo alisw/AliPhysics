@@ -25,7 +25,7 @@
 
 #include "AliMUONRawCluster.h"
 
-ClassImp(AliMUONRawCluster);
+ClassImp(AliMUONRawCluster)
 
 
 AliMUONRawCluster::AliMUONRawCluster() 

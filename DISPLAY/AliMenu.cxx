@@ -40,7 +40,7 @@ const char *gAliImgTypes[] = {"GIF files","*.gif",0,0};
 const char helpTxt[] = "\tAliDisplay v2.0\n\t\tHelp\n\n\nWelcome in the AliDisplay help.\nHere is a list of useful subjects which discribes\nthe main functionnalities of the software\n \nEvent:Use the arrows to get the next or previous event\nView:Each button corresponds to a different view\nDetectors:Select the module you want to see\nOptions:Select the view mode\nSliders:Use the rapidity (or eta) slider to cut the set of hits\n\tAnd the momentum slider to cut with respect to the momentum\n";
 
 
-ClassImp(AliMenu);
+ClassImp(AliMenu)
 
 //_____________________________________________________________
 AliMenu::AliMenu(TGCompositeFrame *p, UInt_t w, UInt_t h, UInt_t options)

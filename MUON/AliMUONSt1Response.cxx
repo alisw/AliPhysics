@@ -47,7 +47,7 @@
 #include "AliMUONTransientDigit.h"
 #include "AliLog.h"
 
-ClassImp(AliMUONSt1Response);
+ClassImp(AliMUONSt1Response)
 
 const TString AliMUONSt1Response::fgkTopDir = getenv("ALICE_ROOT");
 const TString AliMUONSt1Response::fgkDataDir = "/MUON/data/";

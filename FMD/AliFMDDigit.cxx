@@ -63,7 +63,7 @@
 #include "Riostream.h"		// ROOT_Riostream
 
 //====================================================================
-ClassImp(AliFMDBaseDigit);
+ClassImp(AliFMDBaseDigit)
 
 //____________________________________________________________________
 AliFMDBaseDigit::AliFMDBaseDigit()
@@ -106,7 +106,7 @@ AliFMDBaseDigit::Print(Option_t* /* option*/) const
 }
 
 //====================================================================
-ClassImp(AliFMDDigit);
+ClassImp(AliFMDDigit)
 
 //____________________________________________________________________
 AliFMDDigit::AliFMDDigit()
@@ -154,7 +154,7 @@ AliFMDDigit::Print(Option_t* /* option*/) const
 }
 
 //====================================================================
-ClassImp(AliFMDSDigit);
+ClassImp(AliFMDSDigit)
 
 //____________________________________________________________________
 AliFMDSDigit::AliFMDSDigit()

@@ -37,7 +37,7 @@
 #include "AliTPCParam.h"
 #include "AliTPCcluster.h"
 
-ClassImp(AliDisplayClusters);
+ClassImp(AliDisplayClusters)
 
 //_____________________________________________________________
 AliDisplayClusters::AliDisplayClusters()

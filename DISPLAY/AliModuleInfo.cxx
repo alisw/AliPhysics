@@ -23,7 +23,7 @@
 
 #include "AliModuleInfo.h"
 
-ClassImp(AliModuleInfo);
+ClassImp(AliModuleInfo)
 
 //_____________________________________________________________
 AliModuleInfo::AliModuleInfo(int n)

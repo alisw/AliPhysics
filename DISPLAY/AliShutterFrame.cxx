@@ -31,7 +31,7 @@
 #include "AliShutterFrame.h"
 
 
-ClassImp(AliShutterFrame);
+ClassImp(AliShutterFrame)
 
 //_____________________________________________________________
 AliShutterFrame::AliShutterFrame(TGCompositeFrame *p, UInt_t /*w*/, UInt_t h)

@@ -38,7 +38,7 @@
 #include "AliITSsimulationSSD.h"
 #include "AliITSTableSSD.h"
 
-ClassImp(AliITSsimulationSSD);
+ClassImp(AliITSsimulationSSD)
 ////////////////////////////////////////////////////////////////////////
 // Version: 0
 // Written by Enrico Fragiacomo

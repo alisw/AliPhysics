@@ -30,7 +30,7 @@
 #include "AliDisplay2.h"
 #include "AliSettingFrame.h"
 
-ClassImp(AliSettingFrame);
+ClassImp(AliSettingFrame)
 
 //_____________________________________________________________
 AliSettingFrame::AliSettingFrame(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h)

@@ -29,7 +29,7 @@
 #include "AliLog.h"
 #include "AliPHOSGridFile.h" 
 
-ClassImp(AliPHOSGridFile) ;
+ClassImp(AliPHOSGridFile)
 
 //____________________________________________________________________________
 AliPHOSGridFile::AliPHOSGridFile(TString grid)

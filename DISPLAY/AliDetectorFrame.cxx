@@ -32,7 +32,7 @@
 
 #include "AliModule.h"
 
-ClassImp(AliDetectorFrame);
+ClassImp(AliDetectorFrame)
 
 int AliDetectorFrame::fgBaseId = 1000;
 

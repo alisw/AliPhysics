@@ -40,7 +40,7 @@
 #include "AliPHOSEMCAGeometry.h" 
 #include "AliPHOSRecPoint.h"
 
-ClassImp(AliPHOSGeometry) ;
+ClassImp(AliPHOSGeometry)
 
 // these initialisations are needed for a singleton
 AliPHOSGeometry * AliPHOSGeometry::fgGeom = 0 ;

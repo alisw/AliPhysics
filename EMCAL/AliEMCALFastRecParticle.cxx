@@ -34,7 +34,7 @@
 #include "TPad.h"
 #include "TPaveText.h"
 
-ClassImp(AliEMCALFastRecParticle) ; 
+ClassImp(AliEMCALFastRecParticle) 
 
 //____________________________________________________________________________
 AliEMCALFastRecParticle::AliEMCALFastRecParticle() : TParticle()

@@ -53,7 +53,7 @@ const Char_t* AliFMDRing::fgkPrintboardFormat   = "F%cP%c";
 
 
 //____________________________________________________________________
-ClassImp(AliFMDRing);
+ClassImp(AliFMDRing)
 
 //____________________________________________________________________
 AliFMDRing::AliFMDRing(Char_t id, Bool_t detailed) 

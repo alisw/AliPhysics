@@ -52,7 +52,7 @@
 // #include <TClonesArray.h>	// ROOT_TClonesArray
 
 //____________________________________________________________________
-ClassImp(AliFMDRawReader);
+ClassImp(AliFMDRawReader)
 
 //____________________________________________________________________
 AliFMDRawReader::AliFMDRawReader(AliFMD* fmd, AliRawReader* reader) 

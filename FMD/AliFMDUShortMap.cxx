@@ -23,7 +23,7 @@
 #include "AliFMDUShortMap.h"		// ALIFMDUSHORTMAP_H
 
 //____________________________________________________________________
-ClassImp(AliFMDUShortMap);
+ClassImp(AliFMDUShortMap)
 
 //____________________________________________________________________
 AliFMDUShortMap::AliFMDUShortMap(const AliFMDUShortMap& other)

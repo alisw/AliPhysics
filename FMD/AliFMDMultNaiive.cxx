@@ -32,7 +32,7 @@
 #include <TTree.h>               	// ROOT_TTree
 
 //____________________________________________________________________
-ClassImp(AliFMDMultNaiive);
+ClassImp(AliFMDMultNaiive)
 
 //____________________________________________________________________
 AliFMDMultNaiive::AliFMDMultNaiive()

@@ -22,7 +22,7 @@
 #include "AliFMDMap.h"		// ALIFMDMAP_H
 
 //____________________________________________________________________
-ClassImp(AliFMDMap);
+ClassImp(AliFMDMap)
 
 //____________________________________________________________________
 AliFMDMap::AliFMDMap(size_t maxDet, 

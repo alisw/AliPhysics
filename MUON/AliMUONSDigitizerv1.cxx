@@ -60,7 +60,7 @@ void AliMUONSDigitizerv1::AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_
 // Derived to write to the s-digit tree TreeS.
 
 	fMUONData->AddSDigit(chamber, tracks, charges, digits);   
-};
+}
 
 //------------------------------------------------------------------------
 Int_t AliMUONSDigitizerv1::GetSignalFrom(AliMUONTransientDigit* td)
@@ -68,7 +68,7 @@ Int_t AliMUONSDigitizerv1::GetSignalFrom(AliMUONTransientDigit* td)
 // Returns the transient digit signal as is without applying the chamber response.
 	AliDebug(4,"Returning TransientDigit signal.");
 	return td->Signal(); 
-};
+}
 
 //------------------------------------------------------------------------
 Bool_t AliMUONSDigitizerv1::InitOutputData(AliMUONLoader* muonloader)
@@ -86,14 +86,14 @@ Bool_t AliMUONSDigitizerv1::InitOutputData(AliMUONLoader* muonloader)
 		{
 			AliError("Could not create TreeS.");
 			return kFALSE;
-		};
-	};
+		}
+	}
 
 	fMUONData->MakeBranch("S");
 	fMUONData->SetTreeAddress("S");
 	
 	return kTRUE;
-};
+}
 
 //------------------------------------------------------------------------
 void AliMUONSDigitizerv1::FillOutputData()
@@ -103,7 +103,7 @@ void AliMUONSDigitizerv1::FillOutputData()
 	AliDebug(3,"Filling trees with s-digits.");
 	fMUONData->Fill("S");
 	fMUONData->ResetSDigits();
-};
+}
 
 //------------------------------------------------------------------------
 void AliMUONSDigitizerv1::CleanupOutputData(AliMUONLoader* muonloader)
@@ -113,4 +113,4 @@ void AliMUONSDigitizerv1::CleanupOutputData(AliMUONLoader* muonloader)
 	muonloader->WriteSDigits("OVERWRITE");
 	fMUONData->ResetSDigits();
 	muonloader->UnloadSDigits();
-};
+}

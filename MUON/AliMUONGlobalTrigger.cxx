@@ -18,7 +18,7 @@
 
 #include "AliMUONGlobalTrigger.h"
 
-ClassImp(AliMUONGlobalTrigger);
+ClassImp(AliMUONGlobalTrigger)
 //----------------------------------------------------------------------
 AliMUONGlobalTrigger::AliMUONGlobalTrigger()
   : TObject()

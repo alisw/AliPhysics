@@ -27,7 +27,7 @@
 #include "AliShutterItem.h"
 #include "AliDisplay2.h"
 
-ClassImp(AliShutterItem);
+ClassImp(AliShutterItem)
 
 //_____________________________________________________________
 AliShutterItem::AliShutterItem(TGShutter *s, const char *text, UInt_t id)

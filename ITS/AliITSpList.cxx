@@ -32,7 +32,7 @@
 
 //______________________________________________________________________
 
-ClassImp(AliITSpList);
+ClassImp(AliITSpList)
 //______________________________________________________________________
 AliITSpList::AliITSpList(){
     // Default constructor

@@ -112,12 +112,12 @@ void AliMUONDigitizerv1::GenerateTransientDigits()
 				// Tracking Chamber
 				// Initialize hit position (cursor) in the segmentation model 
 				chamber.SigGenInit(mHit->X(), mHit->Y(), mHit->Z());
-			}; // else do nothing for Trigger Chambers
+			} // else do nothing for Trigger Chambers
 			
 			MakeTransientDigitsFromHit(itrack, ihit, mHit);
 		} // hit loop
 	} // track loop      
-};
+}
 
 //--------------------------------------------------------------------------
 void AliMUONDigitizerv1::MakeTransientDigitsFromHit(Int_t track, Int_t iHit, AliMUONHit * mHit)
@@ -159,7 +159,7 @@ void AliMUONDigitizerv1::MakeTransientDigitsFromHit(Int_t track, Int_t iHit, Ali
 		{
 			charge = digits[3] + fMask;
 			digits[4] = 0;    // No signal due to physics since this is now background.
-		};
+		}
 		digits[5] = iHit+fMask;    // Hit number in the list
 
 		AliDebug(5,Form("MakeTransientDigitsFromHit", 
@@ -171,22 +171,22 @@ void AliMUONDigitizerv1::MakeTransientDigitsFromHit(Int_t track, Int_t iHit, Ali
 
 		OnCreateTransientDigit(mTD, mHit);
 		AddOrUpdateTransientDigit(mTD);
-	};
-};
+	}
+}
 
 //------------------------------------------------------------------------
 void AliMUONDigitizerv1::AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[6])
 {
 // Derived to add digits to TreeD.
   fMUONData->AddDigit(chamber, tracks, charges, digits);  
-};
+}
 
 //------------------------------------------------------------------------
 void AliMUONDigitizerv1::AddDigitTrigger(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[6])
 {
 // Derived to add digits to TreeD for trigger.
   fTrigDec->AddDigit(chamber, tracks, charges, digits); 
-};
+}
 
 //------------------------------------------------------------------------
 void AliMUONDigitizerv1::FillTriggerOutput()
@@ -196,7 +196,7 @@ void AliMUONDigitizerv1::FillTriggerOutput()
 	AliDebug(3,"Filling trees with trigger.");
 	fMUONData->Fill("GLT");
 	fMUONData->ResetTrigger();
-};
+}
 
 //------------------------------------------------------------------------
 void AliMUONDigitizerv1::CreateTrigger()
@@ -206,7 +206,7 @@ void AliMUONDigitizerv1::CreateTrigger()
   fTrigDec->Digits2Trigger(); 
   FillTriggerOutput();	
 
-};
+}
 
 //------------------------------------------------------------------------
 Int_t AliMUONDigitizerv1::GetSignalFrom(AliMUONTransientDigit* td)
@@ -222,7 +222,7 @@ Int_t AliMUONDigitizerv1::GetSignalFrom(AliMUONTransientDigit* td)
 	AliMUONResponse* response = chamber.ResponseModel();
 	q = response->DigitResponse(q, td);
 	return q;
-};
+}
 
 //------------------------------------------------------------------------
 Bool_t AliMUONDigitizerv1::InitOutputData(AliMUONLoader* muonloader)
@@ -242,14 +242,14 @@ Bool_t AliMUONDigitizerv1::InitOutputData(AliMUONLoader* muonloader)
 		{
 			AliError("Could not create TreeD.");
 			return kFALSE;
-		};
-	};
+		}
+	}
 
 	fMUONData->MakeBranch("D");
 	fMUONData->SetTreeAddress("D");
 	
 	return kTRUE;
-};
+}
 
 //------------------------------------------------------------------------
 void AliMUONDigitizerv1::FillOutputData()
@@ -259,7 +259,7 @@ void AliMUONDigitizerv1::FillOutputData()
 	AliDebug(3, "Filling trees with digits.");
 	fMUONData->Fill("D");
 	fMUONData->ResetDigits();
-};
+}
 
 //------------------------------------------------------------------------
 void AliMUONDigitizerv1::CleanupOutputData(AliMUONLoader* muonloader)
@@ -269,7 +269,7 @@ void AliMUONDigitizerv1::CleanupOutputData(AliMUONLoader* muonloader)
 	AliDebug(3, "Writing digits and releasing pointers.");
 	muonloader->WriteDigits("OVERWRITE");
 	muonloader->UnloadDigits();
-};
+}
 
 
 //------------------------------------------------------------------------
@@ -289,12 +289,12 @@ Bool_t AliMUONDigitizerv1::InitInputData(AliMUONLoader* muonloader)
 		{
 			AliError("Can not load the hits tree.");
 			return kFALSE;
-		};
-	};
+		}
+	}
 
 	fMUONData->SetTreeAddress("H");
 	return kTRUE;
-};
+}
 
 //------------------------------------------------------------------------
 void AliMUONDigitizerv1::CleanupInputData(AliMUONLoader* muonloader)
@@ -304,5 +304,5 @@ void AliMUONDigitizerv1::CleanupInputData(AliMUONLoader* muonloader)
 	AliDebug(3, "Releasing loaded hits.");
 	fMUONData->ResetHits();
 	muonloader->UnloadHits();
-};
+}
 

@@ -35,7 +35,7 @@
 #include <TString.h>		// ROOT_TString
 
 //____________________________________________________________________
-ClassImp(AliFMDSubDetector);
+ClassImp(AliFMDSubDetector)
 
 //____________________________________________________________________
 const Char_t* AliFMDSubDetector::fgkHoneyTopFormat         = "F%d%cH";

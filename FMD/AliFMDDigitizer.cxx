@@ -205,10 +205,10 @@
 #include <AliRunLoader.h>	// ALIRUNLOADER_H
     
 //____________________________________________________________________
-ClassImp(AliFMDEdepMap);
+ClassImp(AliFMDEdepMap)
 
 //====================================================================
-ClassImp(AliFMDBaseDigitizer);
+ClassImp(AliFMDBaseDigitizer)
 
 //____________________________________________________________________
 AliFMDBaseDigitizer::AliFMDBaseDigitizer()  
@@ -466,7 +466,7 @@ AliFMDBaseDigitizer::ConvertToCount(Float_t   edep,
 
 
 //====================================================================
-ClassImp(AliFMDDigitizer);
+ClassImp(AliFMDDigitizer)
 
 //____________________________________________________________________
 AliFMDDigitizer::AliFMDDigitizer()  
@@ -595,7 +595,7 @@ AliFMDDigitizer::CheckDigit(Float_t         /* edep */,
 }
 
 //====================================================================
-ClassImp(AliFMDSDigitizer);
+ClassImp(AliFMDSDigitizer)
 
 //____________________________________________________________________
 AliFMDSDigitizer::AliFMDSDigitizer()  

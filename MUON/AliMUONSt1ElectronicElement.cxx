@@ -30,7 +30,7 @@
 #include "AliMUONSt1ElectronicElement.h"
 #include "AliMpPad.h"
 
-ClassImp(AliMUONSt1ElectronicElement);
+ClassImp(AliMUONSt1ElectronicElement)
 
 //______________________________________________________________________________
 AliMUONSt1ElectronicElement::AliMUONSt1ElectronicElement()

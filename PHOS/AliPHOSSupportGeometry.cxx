@@ -26,7 +26,7 @@
 
 #include "AliPHOSSupportGeometry.h"
 
-ClassImp(AliPHOSSupportGeometry) ;
+ClassImp(AliPHOSSupportGeometry)
 
 //____________________________________________________________________________
 AliPHOSSupportGeometry::AliPHOSSupportGeometry()

@@ -30,7 +30,7 @@
 
 #include "AliPHOSCPVGeometry.h"
 
-ClassImp(AliPHOSCPVGeometry) ;
+ClassImp(AliPHOSCPVGeometry)
 
 //____________________________________________________________________________
 AliPHOSCPVGeometry::AliPHOSCPVGeometry()

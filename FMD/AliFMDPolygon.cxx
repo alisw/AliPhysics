@@ -32,7 +32,7 @@
 #include "TError.h"		// ROOT_TError
 
 //____________________________________________________________________
-ClassImp(AliFMDPolygon);
+ClassImp(AliFMDPolygon)
 
 //____________________________________________________________________
 AliFMDPolygon::AliFMDPolygon()

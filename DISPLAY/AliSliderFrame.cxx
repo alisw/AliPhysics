@@ -28,7 +28,7 @@
 #include "AliSliderFrame.h"
 #include "AliDisplay2.h"
 
-ClassImp(AliSliderFrame);
+ClassImp(AliSliderFrame)
 
 //_____________________________________________________________
 AliSliderFrame::AliSliderFrame(const TGWindow *p, UInt_t w, UInt_t h)

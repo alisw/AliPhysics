@@ -23,7 +23,7 @@
 // 
 #include "AliFMDBoolMap.h"	//ALIFMDBOOLMAP_H
 //__________________________________________________________
-ClassImp(AliFMDBoolMap);
+ClassImp(AliFMDBoolMap)
 //__________________________________________________________
 AliFMDBoolMap::AliFMDBoolMap(const AliFMDBoolMap& other)
   : AliFMDMap(other.fMaxDetectors,

@@ -32,7 +32,7 @@
 #include "AliL3Logging.h"
 #endif
 
-ClassImp(AliDisplayHLT);
+ClassImp(AliDisplayHLT)
 
 //_____________________________________________________________
 AliDisplayHLT::AliDisplayHLT()

@@ -87,9 +87,9 @@ void AliMUONDigitizerv2::GenerateTransientDigits()
 		{
 			sDigit = (AliMUONDigit*) muonSDigits->UncheckedAt(k);
 			MakeTransientDigitFromSDigit(ich,sDigit);
-		};
+		}
 	} // SDigits loop, end loop over chamber
-};
+}
 
 //------------------------------------------------------------------------
 void AliMUONDigitizerv2::MakeTransientDigitFromSDigit(Int_t iChamber, AliMUONDigit* sDigit)
@@ -122,18 +122,18 @@ void AliMUONDigitizerv2::MakeTransientDigitFromSDigit(Int_t iChamber, AliMUONDig
 		Int_t track = sDigit->Track(itrack);
 		if (track < 0) break;  // Check if we reached the end of the track list.
 		mTD->AddToTrackList( track + fMask, sDigit->TrackCharge(itrack) );
-	};
+	}
 
 	OnCreateTransientDigit(mTD, sDigit);
 	AddOrUpdateTransientDigit(mTD);
-};
+}
 
 //------------------------------------------------------------------------
 void AliMUONDigitizerv2::AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[6])
 {
 // Override to add new digits to the digits tree TreeD.
 	fMUONData->AddDigit(chamber, tracks, charges, digits);   
-};
+}
 
 //------------------------------------------------------------------------
 Bool_t AliMUONDigitizerv2::InitInputData(AliMUONLoader* muonloader)
@@ -152,12 +152,12 @@ Bool_t AliMUONDigitizerv2::InitInputData(AliMUONLoader* muonloader)
 		{
 			AliError("Can not load the s-digits tree.");
 			return kFALSE;
-		};
-	};
+		}
+	}
 
 	fMUONData->SetTreeAddress("S");
 	return kTRUE;
-};
+}
 
 //------------------------------------------------------------------------
 void AliMUONDigitizerv2::CleanupInputData(AliMUONLoader* muonloader)
@@ -167,4 +167,4 @@ void AliMUONDigitizerv2::CleanupInputData(AliMUONLoader* muonloader)
 	AliDebug(3,"Releasing loaded s-digits.");
 	fMUONData->ResetSDigits();
 	muonloader->UnloadSDigits();
-};
+}

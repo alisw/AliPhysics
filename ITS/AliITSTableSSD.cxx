@@ -16,7 +16,7 @@
 #include <Riostream.h>
 #include "AliITSTableSSD.h"
 
-ClassImp(AliITSTableSSD);
+ClassImp(AliITSTableSSD)
 ////////////////////////////////////////////////////////////////////////
 // Version: 0
 // Origin: Massimo Masera

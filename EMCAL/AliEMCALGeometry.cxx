@@ -37,7 +37,7 @@
 // --- EMCAL headers
 #include "AliEMCALGeometry.h"
 
-ClassImp(AliEMCALGeometry);
+ClassImp(AliEMCALGeometry)
 
 AliEMCALGeometry *AliEMCALGeometry::fgGeom = 0;
 Bool_t            AliEMCALGeometry::fgInit = kFALSE;

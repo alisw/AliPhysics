@@ -24,7 +24,7 @@
 // Debugging flag
 //#define MYTRIGDEBUG
 
-ClassImp(AliFastMuonTriggerEff);
+ClassImp(AliFastMuonTriggerEff)
 
 AliFastMuonTriggerEff::AliFastMuonTriggerEff():
     AliFastResponse("Efficiency", "Muon Trigger Efficiency")

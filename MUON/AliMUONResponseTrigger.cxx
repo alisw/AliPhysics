@@ -29,7 +29,7 @@ AliMUONResponseTrigger::AliMUONResponseTrigger()
   : AliMUONResponseV0()
 {
 // Default constructor
-};
+}
 
 //------------------------------------------------------------------   
 Int_t AliMUONResponseTrigger::SetGenerCluster(){

@@ -17,7 +17,7 @@
 
 #include "AliMUONLocalTrigger.h"
 
-ClassImp(AliMUONLocalTrigger);
+ClassImp(AliMUONLocalTrigger)
 //----------------------------------------------------------------------
 AliMUONLocalTrigger::AliMUONLocalTrigger()
   : TObject()

@@ -104,7 +104,7 @@
 #include "AliFMDMultNaiive.h"		   // ALIFMDMULTNAIIVE_H
 
 //____________________________________________________________________
-ClassImp(AliFMDReconstructor);
+ClassImp(AliFMDReconstructor)
 
 //____________________________________________________________________
 AliFMDReconstructor::AliFMDReconstructor() 

@@ -124,7 +124,7 @@
 #include "AliFMDRawWriter.h"	// ALIFMDRAWWRITER_H
 
 //____________________________________________________________________
-ClassImp(AliFMD);
+ClassImp(AliFMD)
 
 //____________________________________________________________________
 const Char_t* AliFMD::fgkShortLegName = "FSSL";

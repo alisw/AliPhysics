@@ -29,7 +29,7 @@
 
 #include "AliPHOSEMCAGeometry.h"
 
-ClassImp(AliPHOSEMCAGeometry) ;
+ClassImp(AliPHOSEMCAGeometry)
 
 //____________________________________________________________________________
 AliPHOSEMCAGeometry::AliPHOSEMCAGeometry()

@@ -27,7 +27,7 @@
 #include <Riostream.h>		// ROOT_Riostream
 
 //____________________________________________________________________
-ClassImp(AliFMD3Support);
+ClassImp(AliFMD3Support)
 
 //____________________________________________________________________
 const Char_t* AliFMD3Support::fgkNoseName   = "F3SN";

@@ -28,6 +28,6 @@
 
 #include "AliPHOSCPVBaseGeometry.h"
 
-ClassImp(AliPHOSCPVBaseGeometry) ;
+ClassImp(AliPHOSCPVBaseGeometry)
 
 //____________________________________________________________________________

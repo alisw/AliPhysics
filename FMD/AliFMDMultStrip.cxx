@@ -31,7 +31,7 @@
 #include <Riostream.h>		// ROOT_Riostream
 
 //____________________________________________________________________
-ClassImp(AliFMDMultStrip);
+ClassImp(AliFMDMultStrip)
 
 
 //____________________________________________________________________

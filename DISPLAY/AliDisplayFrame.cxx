@@ -42,7 +42,7 @@
 #include "AliRun.h"
 
 
-ClassImp(AliDisplayFrame);
+ClassImp(AliDisplayFrame)
 
 //_____________________________________________________________
 AliDisplayFrame::AliDisplayFrame(const TGWindow *p, UInt_t w, UInt_t h)

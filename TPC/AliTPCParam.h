@@ -427,7 +427,7 @@ inline Int_t * AliTPCParam::GetResBin(Int_t i)
   //return response bin i  - bin given by  padrow [0] pad[1] timebin[2] 
   if (i<fCurrentMax) return &fResponseBin[i*3];
   else return 0;
-};
+}
   
 inline Float_t &AliTPCParam::GetResWeight(Int_t i)
 {
