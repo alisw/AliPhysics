@@ -15,14 +15,15 @@
 #include <TShape.h>
 #include <TParticle.h>
 #include <TFile.h>
+#ifdef use_aliroot
+#include <TClonesArray.h>
+#include <AliRun.h>
+#include <AliSimDigits.h>
+#include <AliTPCParam.h>
+#endif
 
 #include "AliL3Logging.h"
 #include "AliL3Display.h"
-#ifdef use_aliroot
-#include "AliRun.h"
-#include "AliSimDigits.h"
-#include "AliTPCParam.h"
-#endif
 #include "AliL3Transform.h"
 #include "AliL3Track.h"
 #include "AliL3TrackArray.h"
@@ -365,8 +366,11 @@ void AliL3Display::DisplayClusterRow(Int_t slice,Int_t padrow,Char_t *digitsFile
   
 #ifdef use_aliroot
   TFile *file = new TFile(digitsFile);
-  AliTPCParam *param = (AliTPCParam*)file->Get("75x40_100x60");
-  TTree *TD=(TTree*)file->Get("TreeD_75x40_100x60_0");
+  AliTPCParam *param = (AliTPCParam*)file->Get(AliL3Transform::GetParamName());
+
+  Char_t dname[100];
+  sprintf(dname,"TreeD_%s_0",AliL3Transform::GetParamName());
+  TTree *TD=(TTree*)file->Get(dname);
   AliSimDigits da, *digits=&da;
   TD->GetBranch("Segment")->SetAddress(&digits); //Return pointer to branch segment.
   

@@ -52,6 +52,8 @@ class AliL3Transform {
   static void ReadInit(Char_t *path);
   static void SetBField(Double_t f) {fBField = f;}
 
+  static const Char_t* GetParamName() {return "75x40_100x60_150x60";}
+
   static Int_t GetFirstRow(Int_t patch) {return fRows[patch][0];}
   static Int_t GetLastRow(Int_t patch) {return fRows[patch][1];}
   static Int_t GetNRows(Int_t patch) {return fNRows[patch];}

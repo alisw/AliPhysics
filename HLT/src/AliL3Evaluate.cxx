@@ -66,7 +66,7 @@ AliL3Evaluate::AliL3Evaluate(Char_t *mcfile,Int_t *slice)
 
   fEventFile = new TFile(mcfile,"READ");
     
-  fParam = (AliTPCParam*)fEventFile->Get("75x40_100x60");
+  fParam = (AliTPCParam*)fEventFile->Get(AliL3Transform::GetParamName());
   
   fMinSlice = slice[0];
   fMaxSlice = slice[1];
@@ -191,8 +191,10 @@ Bool_t AliL3Evaluate::InitMC()
 {
   if(fIsSlow)
     {
+      Char_t dname[100];
+      sprintf(dname,"TreeD_%s_0",AliL3Transform::GetParamName());
       fDigitsFile->cd();
-      fDigitsTree = (TTree*)fDigitsFile->Get("TreeD_75x40_100x60_0");
+      fDigitsTree = (TTree*)fDigitsFile->Get(dname);
       if(!fDigitsTree) 
 	{
 	  LOG(AliL3Log::kError,"AliL3Evaluate::InitMC","Digits Tree")
@@ -954,7 +956,7 @@ TNtuple *AliL3Evaluate::EvaluatePoints(Char_t *rootfile)
       return 0;
     }
 
-  AliTPCParam *param = (AliTPCParam*)exfile->Get("75x40_100x60");
+  AliTPCParam *param = (AliTPCParam*)exfile->Get(AliL3Transform::GetParamName());
   
   //Get the exact clusters from file:
   AliTPCClustersArray *arr = new AliTPCClustersArray;

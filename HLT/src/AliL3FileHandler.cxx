@@ -4,16 +4,18 @@
 //*-- Copyright &copy Uli 
 
 #include "AliL3StandardIncludes.h"
+#include <TClonesArray.h>
+
 #include <AliTPCDigitsArray.h>
 #include <AliTPCClustersArray.h>
 #include <AliTPCcluster.h>
 #include <AliTPCClustersRow.h>
+#include <AliSimDigits.h>
 
 #include "AliL3Logging.h"
 #include "AliL3Transform.h"
 #include "AliL3MemHandler.h"
 #include "AliL3FileHandler.h"
-
 #include "AliL3DigitData.h"
 #include "AliL3TrackSegmentData.h"
 #include "AliL3SpacePointData.h"
@@ -126,10 +128,10 @@ Bool_t AliL3FileHandler::SetAliInput()
       <<"Ali File "<<fInAli->GetName()<<" does not exist"<<ENDLOG;
     return kFALSE;
   }
-  fParam = (AliTPCParam*)fInAli->Get("75x40_100x60_150x60");
+  fParam = (AliTPCParam*)fInAli->Get(AliL3Transform::GetParamName());
   if(!fParam){ 
     LOG(AliL3Log::kError,"AliL3FileHandler::SetAliInput","File Open")
-      <<"No AliTPCParam 75x40_100x60 in File "<<fInAli->GetName()<<ENDLOG;
+      <<"No AliTPCParam "<<AliL3Transform::GetParamName()<<"in File "<<fInAli->GetName()<<ENDLOG;
     return kFALSE;
   }
   return kTRUE;
@@ -185,7 +187,7 @@ Bool_t AliL3FileHandler::IsDigit(Int_t event)
     return kTRUE;  //may you are use binary input which is Digits!!
   }
   Char_t name[1024];
-  sprintf(name,"TreeD_75x40_100x60_150x60_%d",event);
+  sprintf(name,"TreeD_%s_%d",AliL3Transform::GetParamName(),event);
   TTree *t=(TTree*)fInAli->Get(name);
   if(t){
     LOG(AliL3Log::kInformational,"AliL3FileHandler::IsDigit","File Type")
@@ -355,7 +357,7 @@ Bool_t AliL3FileHandler::GetDigitsTree(Int_t event)
   
   fInAli->cd();
   Char_t dname[100];
-  sprintf(dname,"TreeD_75x40_100x60_150x60_%d",event);
+  sprintf(dname,"TreeD_%s_%d",AliL3Transform::GetParamName(),event);
   fDigitsTree = (TTree*)fInAli->Get(dname);
   if(!fDigitsTree) 
     {
@@ -393,7 +395,11 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
   AliTPCDigitsArray *old_array = new AliTPCDigitsArray();
   old_array->Setup(fParam);
   old_array->SetClass("AliSimDigits");
-  Bool_t ok = old_array->ConnectTree("TreeD_75x40_100x60_0");
+
+  Char_t dname[100];
+  sprintf(dname,"TreeD_%s_0",AliL3Transform::GetParamName());
+
+  Bool_t ok = old_array->ConnectTree(dname);
   if(!ok)
     {
       printf("AliL3FileHandler::AliDigits2RootFile : No digits tree object\n");
@@ -433,7 +439,7 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
     arr->MakeTree();
   else
     {
-      Bool_t ok = arr->ConnectTree("TreeD_75x40_100x60_0");
+      Bool_t ok = arr->ConnectTree(dname);
       if(!ok)
 	{
 	  printf("AliL3FileHandler::AliDigits2RootFile : No digits tree object in existing file\n");
