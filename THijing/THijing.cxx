@@ -242,6 +242,9 @@ Int_t THijing::ImportParticles(TClonesArray *particles, Option_t *option)
   TClonesArray &Particles = *particles;
   Particles.Clear();
   Int_t numpart = HIMAIN1.natt;
+  printf("\n THijing: HIJING stack contains %d particles.", numpart);
+  printf("\n THijing: Total energy:         %f           ", HIMAIN1.eatt);
+  printf("\n THijing: Number of hard scatterings: %d     ", HIMAIN1.jatt);
   Int_t nump = 0;
   if (!strcmp(option,"") || !strcmp(option,"Final")) {
       for (Int_t i = 0; i<=numpart; i++) {
@@ -577,9 +580,9 @@ Float_t  THijing::GetBB() const
 //______________________________________________________________________________
 Int_t THijing::GetKATT(Int_t key1, Int_t key2) const
 {
-   if ( key1<1 || key1>130000 ) {
+   if ( key1<1 || key1>200000 ) {
       printf("ERROR in THijing::GetKATT(key1,key2):\n");
-      printf("      key1=%i is out of range [1..130000]\n",key1);
+      printf("      key1=%i is out of range [1..200000]\n",key1);
       return 0;
    }
 
