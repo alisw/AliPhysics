@@ -57,7 +57,7 @@ class AliEMCALGetter : public TObject {
   AliEMCALGetter(){    // ctor: this is a singleton, the ctor should never be called but cint needs it as public
     Fatal("ctor", "AliEMCALGetter is a singleton default ctor not callable") ;
   } 
-  AliEMCALGetter(const AliEMCALGetter & obj) {
+  AliEMCALGetter(const AliEMCALGetter & obj):TObject(obj) {
     // cpy ctor requested by Coding Convention 
     Fatal("cpy ctor", "not implemented") ;
   } 
@@ -233,7 +233,7 @@ private:
   enum EDataTypes{kHits,kSDigits,kDigits,kRecPoints,kTracks,kNDataTypes};
 
 
-  ClassDef(AliEMCALGetter,1)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
+  ClassDef(AliEMCALGetter,2)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
 
 };
 

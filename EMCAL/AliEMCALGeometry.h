@@ -30,7 +30,7 @@ public:
     // default ctor,  must be kept public for root persistency purposes,
     // but should never be called by the outside world
   };
-  AliEMCALGeometry(const AliEMCALGeometry & geom) {
+  AliEMCALGeometry(const AliEMCALGeometry& geom):AliGeometry(geom) {
     // cpy ctor requested by Coding Convention but not yet needed
     assert(0==1);
   };
@@ -163,7 +163,7 @@ private:
   Float_t fSampling;       // Sampling factor
   Float_t fSummationFraction; // Fraction of the energy collected in the PRE section to be added to the EC section
   
-  ClassDef(AliEMCALGeometry,5) // EMCAL geometry class 
+  ClassDef(AliEMCALGeometry,6) // EMCAL geometry class 
     
     };
 

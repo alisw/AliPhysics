@@ -55,7 +55,7 @@ class AliEMCALLoader : public AliLoader {
  public:
 
   AliEMCALLoader();
-  AliEMCALLoader(const AliEMCALLoader & obj){}
+  AliEMCALLoader(const AliEMCALLoader & obj):AliLoader(obj){}
   AliEMCALLoader(const Char_t *detname,const Char_t *eventfoldername); 
   
   virtual ~AliEMCALLoader() ; 
@@ -226,7 +226,7 @@ private:
   static const TString fgkTrackSegmentsBranchName;//Name for branch
   static const TString fgkRecParticlesBranchName;//Name for branch
   
-  ClassDef(AliEMCALLoader,2)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
+  ClassDef(AliEMCALLoader,3)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
 
 };
 

@@ -21,6 +21,7 @@ class TFolder ;
 // --- AliRoot header files ---
 
 #include "AliDetector.h"
+//class AliDetector;
 class AliEMCALGeometry ; 
 //class AliEMCALQAChecker ;
 
@@ -30,7 +31,7 @@ class AliEMCAL : public AliDetector {
 
   AliEMCAL(); 
   AliEMCAL(const char* name, const char* title="");
-  AliEMCAL(const AliEMCAL & emcal) {
+  AliEMCAL(const AliEMCAL& emcal) : AliDetector(emcal) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
     Fatal("cpy ctor", "not implemented") ;  
@@ -68,7 +69,7 @@ protected:
   TTree * fTreeQA ;            // the QA tree that contains the alarms
   AliEMCALGeometry * fGeom ;   // the geometry object
 
-  ClassDef(AliEMCAL,3) // Electromagnetic calorimeter (base class)
+  ClassDef(AliEMCAL,4) // Electromagnetic calorimeter (base class)
 
 } ;
 
