@@ -56,11 +56,11 @@ public:
   virtual void  BuildGeometry();
   virtual void  CreateGeometry() {}
   virtual void  CreateMaterials();
-  virtual void  Hits2Clusters(TFile *of, Int_t eventn);
+  virtual void  Hits2Clusters(TFile *of, Int_t eventn=0);
   virtual void  Hits2ExactClustersSector(Int_t isec); // MI change calculate "exact" cluster position
   virtual void  SDigits2Digits(Int_t eventnumber=0);
   virtual void  Hits2SDigits(Int_t eventnumber=0);
-  virtual void  Digits2Reco(Int_t eventnumber=0);
+  virtual void  Digits2Reco(Int_t firstevent=0,Int_t lastevent=0);
   virtual void  Hits2Digits(Int_t eventnumber=0);   //MI change
   virtual void  Hits2DigitsSector(Int_t isec);  //MI change
   virtual void  Init();

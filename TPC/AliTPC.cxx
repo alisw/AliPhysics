@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.38  2001/07/20 14:32:43  kowal2
+Processing of many events possible now
+
 Revision 1.37  2001/06/12 07:17:18  kowal2
 Hits2SDigits method implemented (summable digits)
 
@@ -1321,7 +1324,7 @@ void AliTPC::Hits2DigitsSector(Int_t isec)
 
     TObjArray **row;
     
-    printf("*** Processing sector number %d ***\n",isec);
+    //printf("*** Processing sector number %d ***\n",isec);
 
       Int_t nrows =fTPCParam->GetNRow(isec);
 
@@ -1351,7 +1354,7 @@ void AliTPC::Hits2DigitsSector(Int_t isec)
 		Int_t ndig = dig->GetDigitSize(); 
         
  
-     printf("*** Sector, row, compressed digits %d %d %d ***\n",isec,i,ndig);
+       //printf("*** Sector, row, compressed digits %d %d %d ***\n",isec,i,ndig);
 	
         fDigitsArray->ClearRow(isec,i);  
 
@@ -2548,7 +2551,45 @@ void AliTPC::FindTrackHitsIntersection(TClonesArray * arr)
 
 }
 //_______________________________________________________________________________
-void AliTPC::Digits2Reco(Int_t eventnumber)
+void AliTPC::Digits2Reco(Int_t firstevent,Int_t lastevent)
 {
-  // empty for a time being
+  // produces rec points from digits and writes them on the root file
+  // AliTPCclusters.root
+
+  TDirectory *cwd = gDirectory;
+
+
+  AliTPCParam *dig=(AliTPCParam *)gDirectory->Get("75x40_100x60");
+  SetParam(dig);
+  cout<<"AliTPC::Digits2Reco: TPC parameteres have been set"<<endl; 
+  TFile *out;
+  if(!gSystem->Getenv("CONFIG_FILE")){
+    out=TFile::Open("AliTPCclusters.root","recreate");
+  }
+  else {
+    const char *tmp1;
+    const char *tmp2;
+    char tmp3[80];
+    tmp1=gSystem->Getenv("CONFIG_FILE_PREFIX");
+    tmp2=gSystem->Getenv("CONFIG_OUTDIR");
+    sprintf(tmp3,"%s%s/AliTPCclusters.root",tmp1,tmp2);
+    out=TFile::Open(tmp3,"recreate");
+  }
+
+  TStopwatch timer;
+  cout<<"AliTPC::Digits2Reco - determination of rec points begins"<<endl;
+  timer.Start();
+  cwd->cd();
+  for(Int_t iev=firstevent;iev<lastevent+1;iev++){
+
+    printf("Processing event %d\n",iev);
+    Digits2Clusters(out,iev);
+  }
+  cout<<"AliTPC::Digits2Reco - determination of rec points ended"<<endl;
+  timer.Stop();
+  timer.Print();
+  out->Close();
+  cwd->cd(); 
+
+
 }
