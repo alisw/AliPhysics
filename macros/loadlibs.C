@@ -23,9 +23,9 @@ void loadlibs ()
   gSystem->Load("libPMD");
   gSystem->Load("libRICH");
   gSystem->Load("libSTRUCT");
-  gSystem->Load("libTOF");
   gSystem->Load("libTPC");
   gSystem->Load("libTRD");
+  gSystem->Load("libTOF");
   gSystem->Load("libZDC");
   gSystem->Load("libITS");
   gSystem->Load("libCRT");
