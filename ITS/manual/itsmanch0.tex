@@ -63,8 +63,8 @@ run simplely by entering that file's name as the argument, for example
 \texttt{\$ALICE\_ROOT/macros}. Of course the full path of \texttt{MyConfig.C}
 can be used.
 
-Now lets assume you just want to one event using the standard \texttt{Config.C}
-file. This is done simply as
+Now lets assume you just want to simulate one event using the standard
+\texttt{Config.C} file. This is done simply as
 \scriptsize
 \begin{verbatim}
 root [0] gAlice->Run()
@@ -146,7 +146,6 @@ You should see the following screen appear (Figure~\ref{ITSMan:ch0:display0}).
 \begin{figure*}[htbp]
   \begin{center}
     \leavevmode
-%From the ALICE Web sight edited to include the three coordinate axis.
     \epsfig{file=display_Canvas.eps,width=12cm}
     \caption{Typical ALICE hit display output. Note that the geometry being
     displayed is a simplified geometry, not that used by the AliRoot
@@ -168,11 +167,30 @@ For a more interactive way of running \texttt{AliRoot}, instead of typing
 \texttt{root[0] gAlice->Run()} you can run a very nice macro called
 \texttt{menu.C} also located in \texttt{\$ALICE\_ROOT/macros}. Instead of
 running a simulation, it create a menu that that will let you either run an
-\texttt{AliRoot} simulation or do a number of other nice things. Please note,
-that if you want to display any pictures, first they can take a lot of time and
-memory, second you have to run \texttt{Init} first so that the detectors you
-want to display are defined.
+\texttt{AliRoot} simulation or do a number of other nice things, see
+figure~\ref{ITSMan:ch0:menu0}. Please note, that if you want to display any
+pictures, first they can take a lot of time and memory, second you have to run
+\texttt{Init} first so that the detectors you want to display are defined.
 
+\begin{figure*}[htbp]
+  \begin{center}
+    \leavevmode
+    \epsfig{file=menubar.eps,width=5cm}
+    \caption{This shows a number of ``Automated'' commands that can be
+    performed. Simply by clicking on one of these buttons the action will take
+    place. The ``Trees'' refers to the tree of geometric objects that make up
+    the defined AliRoot geometry as defined in \texttt{Config.C}. The
+    ``Pictures'' refer to pictures of the Alice geometry as defined in
+    \texttt{Config.C}. Since these are the detailed pictures they may require a
+    lot of time and memory to execute. ``Hide'', ``Shading'', and ``Box Clip''
+    refer to how the pictures will be displayed. ``Run Lego'' will produce a
+    radiation map of different parts of the defined Alice detector by creating
+    and transporting Geantinos~\cite{GeantMan:Geantino}, a non-interacting
+    particle used only to measure radiation length between points along it's
+    straight line path.}
+    \label{ITSMan:ch0:menu0}
+  \end{center}
+\end{figure*}
 
 \section*{Controling your Run: The Config.C file}
 
@@ -324,21 +342,21 @@ file.
 In lines \texttt{0053} through \texttt{0059} setup the particle generator to be
 used. Line \texttt{0053} defines the type of particle generator to be used. In
 this case it will be the ALICE HIJING parameterized particle distribution. 
-This can be replace with many others
-\footnote{See \texttt{\$ALICE\_ROOT/macros/Config\_gener.C} for more
-examples.}. Its parameter value $84210$ is the number of primary tracks that
-will be generated. For simple testing this number it typically set to a value
-like 50. Lines \texttt{0054} through \texttt{0058} set different parameters for
-the generator. Specifically line \texttt{0054 gener->SetMomentumRange(0,999);}
-set the limits of the momentum range of the particles that will be
-generated. Line \texttt{0055 gener->SetPhiRange(0,360);} sets the angular
-(degrees) range in $\phi$ or around the barrel that the partials will be
-generated in. In this case the full $\phi$ range will be used. The next line
-\texttt{0056 gener->SetThetaRanger(0.28,179.72);} sets the $\theta$ angular
-(degrees) range for the primary tracks to be generated in. In this case
-$0.28^{\circ}$ to $179.72^{\circ}$ covers the pseudorapidity range $-6.0\leq
-\eta \geq +6.0$. With these values of $\theta$ and $\phi$, $84210$ primary
-tracks represents about $8000$ primary particles in the central one unit of
+This can be replace with many others~\footnote{See
+\texttt{\$ALICE\_ROOT/macros/Config\_gener.C} for more examples.}. Its
+parameter value $84210$ is the number of primary tracks that will be
+generated. For simple testing this number it typically set to a value like
+50. Lines \texttt{0054} through \texttt{0058} set different parameters for the
+generator. Specifically line \texttt{0054 gener->SetMomentumRange(0,999);} set
+the limits of the momentum range of the particles that will be generated. Line
+\texttt{0055 gener->SetPhiRange(0,360);} sets the angular (degrees) range in
+$\phi$ or around the barrel that the partials will be generated in. In this
+case the full $\phi$ range will be used. The next line \texttt{0056
+gener->SetThetaRanger(0.28,179.72);} sets the $\theta$ angular (degrees) range
+for the primary tracks to be generated in. In this case $0.28^{\circ}$ to
+$179.72^{\circ}$ covers the pseudorapidity range $-6.0\leq \eta \geq
++6.0$. With these values of $\theta$ and $\phi$, $84210$ primary tracks
+represents about $8000$ primary particles in the central one unit of
 pseudorapidity, the maximum track density that ALICE has been designed for.
 
 Line \texttt{0057 gener->SetOrigin(0,0,0);} sets the central position of the
@@ -447,3 +465,46 @@ v0. All course geometries are required not to generate ``hits'' and therefore
 signals from the ITS may be used or required.
 
 \section*{Other things that can be done}
+
+There are a number of macros that have been written to do different
+things. Take a look at the files in ending in \texttt{.C} in
+\texttt{\$ALICE\_ROOT/macros}. There you will find a number of macros to view
+and/or draw different detector geometries. These are the geometries used by in
+the simulation and so you will need to execute \texttt{gAlice->Init();}
+first. In here are also kept general example macros to read hits and plot some
+information, \texttt{newanal.C} for example. Typically each detector group
+writes their own detector specific macros and places them in their directories,
+\texttt{\$ALICE\_ROOT/ITS/AliITStest.C} which will simulate one event and then
+do the ITS detector simulations and create what are called ``digits'' and also
+reconstruct these ``digits'' into ``reconstructed points''.
+
+There is also another nice macro, requiring Geant 3, that is menu driven and
+lets you display all or part of the Alice geometry. This is located in
+\texttt{\$ALICE\_ROOT/TGeant3} and is called \texttt{TGeant3GUI.C}, see
+figure~\ref{ITSMan:ch0:TGeant3GUI}. As with the other macros, you will need to
+execute \texttt{gAlice->Init();} first. Root also provides some nice features
+that you can use. Either in \texttt{aliroot} or in \texttt{root} you can create
+a root object called a \texttt{TBrowser}, see
+figure~\ref{ITSMan:ch0:TBrowser}. This is a menu driven way to look at or even
+histogram the contents of root files or even memory. These macros are always
+being modified, deleted, changed, and new one added. Take a look at the Alice
+off-line web page \texttt{http://AliSoft.cern.ch/offline/} for a more up to
+date and complete description.
+
+\begin{figure*}[htbp]
+  \begin{center}
+    \leavevmode
+%    \epsfig{file=TGeant3GUI_Canvas.eps,width=12cm}
+    \caption{This shows a typical menu from running \texttt{TGeant3GUI.C}.}
+    \label{ITSMan:ch0:TGeant3GUI}
+  \end{center}
+\end{figure*}
+
+\begin{figure*}[htbp]
+  \begin{center}
+    \leavevmode
+%    \epsfig{file=TBrower_Canvas.eps,width=12cm}
+    \caption{This shows a typical TBrowser window.}
+    \label{ITSMan:ch0:TBrowser}
+  \end{center}
+\end{figure*}
