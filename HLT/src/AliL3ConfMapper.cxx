@@ -99,7 +99,8 @@ void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
   else
     {
       fEtaMin = 0;
-      fEtaMax = sector < 18 ? 0.9 : -0.9;
+      fEtaMax = sector < 18 ? 1 : -1;
+      //fEtaMax = sector < 18 ? 0.9 : -0.9;
     }
   
   //Set the angles to sector 2:
@@ -316,7 +317,6 @@ void AliL3ConfMapper::MainVertexSettings(Int_t trackletlength, Int_t tracklength
   SetMinPoints(tracklength,(Bool_t)true);
   fMaxPhi=maxphi;
   fMaxEta=maxeta;
-  
 }
 
 void AliL3ConfMapper::NonVertexSettings(Int_t trackletlength, Int_t tracklength,
@@ -489,9 +489,9 @@ void AliL3ConfMapper::CreateTrack(AliL3ConfMapPoint *hit)
 		  //add closest hit to track
 		  closest_hit->SetUsage(true);
 		  closest_hit->SetTrackNumber(tracks-1);
-		
+		  
 		}//closest_hit
-	    
+	      
 	      else
 		{
 		  //closest hit does not exist
