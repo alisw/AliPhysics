@@ -2135,7 +2135,7 @@ Int_t AliTRDtracker::ReadClusters(TObjArray *array, TTree *ClusterTree)
   //  printf("found %d entries in %s.\n",nEntries,ClusterTree->GetName());
   
   // Loop through all entries in the tree
-  Int_t nbytes;
+  Int_t nbytes = 0;
   AliTRDcluster *c = 0;
   //  printf("\n");
 
@@ -2202,7 +2202,7 @@ void AliTRDtracker::ReadClusters(TObjArray *array, const Char_t *filename)
   cout<<"found "<<nEntries<<" in clusterTree"<<endl;   
 
   // Loop through all entries in the tree
-  Int_t nbytes;
+  Int_t nbytes = 0;
   AliTRDcluster *c = 0;
 
   //  printf("\n");
@@ -2268,7 +2268,7 @@ void AliTRDtracker::ReadClusters(TObjArray *array, const TFile *inp)
   //  printf("found %d entries in %s.\n",nEntries,clusterTree->GetName());
   
   // Loop through all entries in the tree
-  Int_t nbytes;
+  Int_t nbytes = 0;
   AliTRDcluster *c = 0;
   //  printf("\n");
 
