@@ -1,3 +1,46 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <Riostream.h>
+#include <TRandom.h>
+#include <TSystem.h>
+#include <TVirtualMC.h>
+#include <TGeant3.h>
+#include "STEER/AliRunLoader.h"
+#include "STEER/AliRun.h"
+#include "STEER/AliConfig.h"
+#include "STEER/AliGenerator.h"
+#include "PYTHIA6/AliDecayerPythia.h"
+#include "EVGEN/AliGenHIJINGpara.h"
+#include "THijing/AliGenHijing.h"
+#include "EVGEN/AliGenCocktail.h"
+#include "EVGEN/AliGenSlowNucleons.h"
+#include "EVGEN/AliSlowNucleonModelExp.h"
+#include "PYTHIA6/AliGenPythia.h"
+#include "STEER/AliMagFMaps.h"
+#include "STRUCT/AliBODY.h"
+#include "STRUCT/AliMAG.h"
+#include "STRUCT/AliABSOv0.h"
+#include "STRUCT/AliDIPOv2.h"
+#include "STRUCT/AliHALL.h"
+#include "STRUCT/AliFRAMEv2.h"
+#include "STRUCT/AliSHILv2.h"
+#include "STRUCT/AliPIPEv0.h"
+#include "ITS/AliITSvPPRasymm.h"
+#include "TPC/AliTPCv2.h"
+#include "TOF/AliTOFv2FHoles.h"
+#include "TOF/AliTOFv4T0.h"
+#include "RICH/AliRICHv3.h"
+#include "ZDC/AliZDCv2.h"
+#include "TRD/AliTRDv1.h"
+#include "FMD/AliFMDv1.h"
+#include "MUON/AliMUONv1.h"
+#include "PHOS/AliPHOSv1.h"
+#include "PMD/AliPMDv1.h"
+#include "START/AliSTARTv1.h"
+#include "EMCAL/AliEMCALv1.h"
+#include "CRT/AliCRTv0.h"
+#include "VZERO/AliVZEROv2.h"
+#endif
+
 enum PprRun_t 
 {
     test50,
@@ -6,7 +49,7 @@ enum PprRun_t
     kHijing_per1,  kHijing_per2, kHijing_per3, kHijing_per4,  kHijing_per5,
     kHijing_jj25,  kHijing_jj50, kHijing_jj75, kHijing_jj100, kHijing_jj200, 
     kHijing_gj25,  kHijing_gj50, kHijing_gj75, kHijing_gj100, kHijing_gj200,
-    kHijing_pA
+    kHijing_pA, kPythia
 };
 
 enum PprGeo_t 
@@ -26,39 +69,51 @@ enum PprMag_t
 
 
 // This part for configuration    
-static PprRun_t run = test50;
-static PprGeo_t geo = kHoles;
-static PprRad_t rad = kGluonRadiation;
-static PprMag_t mag = k4kG;
+//static PprRun_t srun = test50;
+static PprRun_t srun = kPythia;
+static PprGeo_t sgeo = kHoles;
+static PprRad_t srad = kGluonRadiation;
+static PprMag_t smag = k4kG;
 
 // Comment line 
 static TString  comment;
 
-
+// Functions
+Float_t EtaToTheta(Float_t arg);
+AliGenerator* GeneratorFactory(PprRun_t srun);
+AliGenHijing* HijingStandard();
 
 void Config()
 {
-
-    // 7-DEC-2000 09:00
-    // Switch on Transition adiation simulation. 6/12/00 18:00
-    // iZDC=1  7/12/00 09:00
     // ThetaRange is (0., 180.). It was (0.28,179.72) 7/12/00 09:00
     // Theta range given through pseudorapidity limits 22/6/2001
 
     // Set Random Number seed
-    // gRandom->SetSeed(12345);
+  gRandom->SetSeed(12345); //Set 0 to use the current time
+    cout<<"Seed for random number generation= "<<gRandom->GetSeed()<<endl; 
 
-    // libraries required by geant321
+
+   // libraries required by geant321
+#if defined(__CINT__)
     gSystem->Load("libgeant321");
+#endif
 
-    new TGeant3("C++ Interface to Geant3");
+    new     TGeant3("C++ Interface to Geant3");
 
-    if (!gSystem->Getenv("CONFIG_FILE"))
-    {
-        TFile  *rootfile = new TFile("galice.root", "recreate");
+    AliRunLoader* rl=0x0;
 
-        rootfile->SetCompressionLevel(2);
-    }
+    cout<<"Config.C: Creating Run Loader ..."<<endl;
+    rl = AliRunLoader::Open("galice.root",
+			    AliConfig::fgkDefaultEventFolderName,
+			    "recreate");
+    if (rl == 0x0)
+      {
+	gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
+	return;
+      }
+    rl->SetCompressionLevel(2);
+    rl->SetNumberOfEventsPerFile(3);
+    gAlice->SetRunLoader(rl);
 
     //
     // Set External decayer
@@ -109,7 +164,7 @@ void Config()
 
 // Generator Configuration
     gAlice->SetDebug(1);
-    AliGenerator* gener = GeneratorFactory(run);
+    AliGenerator* gener = GeneratorFactory(srun);
     gener->SetOrigin(0, 0, 0);    // vertex position
     gener->SetSigma(0, 0, 5.3);   // Sigma in (X,Y,Z) (cm) on IP position
     gener->SetCutVertexZ(1.);     // Truncate at 1 sigma
@@ -117,16 +172,16 @@ void Config()
     gener->SetTrackingFlag(1);
     gener->Init();
     
-    if (mag == k2kG) {
+    if (smag == k2kG) {
 	comment = comment.Append(" | L3 field 0.2 T");
-    } else if (mag == k4kG) {
+    } else if (smag == k4kG) {
 	comment = comment.Append(" | L3 field 0.4 T");
-    } else if (mag == k5kG) {
+    } else if (smag == k5kG) {
 	comment = comment.Append(" | L3 field 0.5 T");
     }
     
     
-    if (rad == kGluonRadiation)
+    if (srad == kGluonRadiation)
     {
 	comment = comment.Append(" | Gluon Radiation On");
 	
@@ -134,7 +189,7 @@ void Config()
 	comment = comment.Append(" | Gluon Radiation Off");
     }
 
-    if (geo == kHoles)
+    if (sgeo == kHoles)
     {
 	comment = comment.Append(" | Holes for PHOS/RICH");
 	
@@ -142,13 +197,12 @@ void Config()
 	comment = comment.Append(" | No holes for PHOS/RICH");
     }
 
-    printf("\n \n Comment: %s \n \n", (char*) comment);
+    printf("\n \n Comment: %s \n \n", comment.Data());
     
     
 // Field (L3 0.4 T)
-    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., mag);
-    rootfile->cd();
-    gAlice->SetField(field);    
+    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., smag);
+    rl->CdGAFile();
     
 //
     Int_t   iABSO   = 1;
@@ -212,7 +266,7 @@ void Config()
         //=================== FRAME parameters ============================
 
         AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
-	if (geo == kHoles) {
+	if (sgeo == kHoles) {
 	    FRAME->SetHoles(1);
 	} else {
 	    FRAME->SetHoles(0);
@@ -332,7 +386,7 @@ void Config()
 
 
     if (iTOF) {
-	if (geo == kHoles) {
+	if (sgeo == kHoles) {
         //=================== TOF parameters ============================
 	    AliTOF *TOF = new AliTOFv2FHoles("TOF", "TOF with Holes");
 	} else {
@@ -364,7 +418,7 @@ void Config()
 
         // Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 90% Xe + 10% CO2)
         TRD->SetGasMix(1);
-	if (geo == kHoles) {
+	if (sgeo == kHoles) {
 	    // With hole in front of PHOS
 	    TRD->SetPHOShole();
 	    // With hole in front of RICH
@@ -437,13 +491,15 @@ Float_t EtaToTheta(Float_t arg){
 
 
 
-AliGenerator* GeneratorFactory(PprRun_t run) {
+AliGenerator* GeneratorFactory(PprRun_t srun) {
     Int_t isw = 3;
-    if (rad == kNoGluonRadiation) isw = 0;
+    if (srad == kNoGluonRadiation) isw = 0;
     
 
-    switch (run) {
+    AliGenerator * gGener = 0x0;
+    switch (srun) {
     case test50:
+      {
 	comment = comment.Append(":HIJINGparam test 50 particles");
 	AliGenHIJINGpara *gener = new AliGenHIJINGpara(50);
 	gener->SetMomentumRange(0, 999999.);
@@ -452,8 +508,11 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
 	Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
 	gener->SetThetaRange(thmin,thmax);
+	gGener=gener;
+      }
 	break;
     case kParam_8000:
+      {
 	comment = comment.Append(":HIJINGparam N=8000");
 	AliGenHIJINGpara *gener = new AliGenHIJINGpara(86030);
 	gener->SetMomentumRange(0, 999999.);
@@ -462,8 +521,11 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
 	Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
 	gener->SetThetaRange(thmin,thmax);
+	gGener=gener;
+      }
 	break;
     case kParam_4000:
+      {
 	comment = comment.Append("HIJINGparam N=4000");
 	AliGenHIJINGpara *gener = new AliGenHIJINGpara(43015);
 	gener->SetMomentumRange(0, 999999.);
@@ -472,8 +534,11 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
 	Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
 	gener->SetThetaRange(thmin,thmax);
+	gGener=gener;
+      }
 	break;
     case kParam_2000:
+      {
 	comment = comment.Append("HIJINGparam N=2000");
 	AliGenHIJINGpara *gener = new AliGenHIJINGpara(21507);
 	gener->SetMomentumRange(0, 999999.);
@@ -482,59 +547,83 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
 	Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
 	gener->SetThetaRange(thmin,thmax);
+	gGener=gener;
+      }
 	break;
 //
 //  Hijing Central
 //
     case kHijing_cent1:
+      {
 	comment = comment.Append("HIJING cent1");
 	AliGenHijing *gener = HijingStandard();
 // impact parameter range
 	gener->SetImpactParameterRange(0., 5.);
+	gGener=gener;
+      }
 	break;
     case kHijing_cent2:
+      {
 	comment = comment.Append("HIJING cent2");
 	AliGenHijing *gener = HijingStandard();
 // impact parameter range
 	gener->SetImpactParameterRange(0., 2.);
+	gGener=gener;
 	break;
+      }
 //
 // Hijing Peripheral 
 //
     case kHijing_per1:
+      {
 	comment = comment.Append("HIJING per1");
 	AliGenHijing *gener = HijingStandard();
 // impact parameter range
 	gener->SetImpactParameterRange(5., 8.6);
+	gGener=gener;
+      }
 	break;
     case kHijing_per2:
+      {
 	comment = comment.Append("HIJING per2");
 	AliGenHijing *gener = HijingStandard();
 // impact parameter range
 	gener->SetImpactParameterRange(8.6, 11.2);
+	gGener=gener;
+      }
 	break;
     case kHijing_per3:
+      {
 	comment = comment.Append("HIJING per3");
 	AliGenHijing *gener = HijingStandard();
 // impact parameter range
 	gener->SetImpactParameterRange(11.2, 13.2);
+	gGener=gener;
+      }
 	break;
     case kHijing_per4:
+      {
 	comment = comment.Append("HIJING per4");
 	AliGenHijing *gener = HijingStandard();
 // impact parameter range
 	gener->SetImpactParameterRange(13.2, 15.);
+	gGener=gener;
+      }
 	break;
     case kHijing_per5:
+      {
 	comment = comment.Append("HIJING per5");
 	AliGenHijing *gener = HijingStandard();
 // impact parameter range
 	gener->SetImpactParameterRange(15., 100.);
+	gGener=gener;
+      }
 	break;
 //
 //  Jet-Jet
 //
     case kHijing_jj25:
+      {
 	comment = comment.Append("HIJING Jet 25 GeV");
 	AliGenHijing *gener = HijingStandard();
 // impact parameter range
@@ -546,9 +635,12 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	gener->SetSimpleJets(!isw);
 	gener->SetJetEtaRange(-0.3,0.3);
 	gener->SetJetPhiRange(75., 165.);   
+	gGener=gener;
+      }
 	break;
 
     case kHijing_jj50:
+      {
 	comment = comment.Append("HIJING Jet 50 GeV");
 	AliGenHijing *gener = HijingStandard();
 // impact parameter range
@@ -560,9 +652,12 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	gener->SetSimpleJets(!isw);
 	gener->SetJetEtaRange(-0.3,0.3);
 	gener->SetJetPhiRange(75., 165.);   
+	gGener=gener;
+      }
 	break;
 
     case kHijing_jj75:
+      {
 	comment = comment.Append("HIJING Jet 75 GeV");
 	AliGenHijing *gener = HijingStandard();
 // impact parameter range
@@ -574,9 +669,12 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	gener->SetSimpleJets(!isw);
 	gener->SetJetEtaRange(-0.3,0.3);
 	gener->SetJetPhiRange(75., 165.);   
+	gGener=gener;
+      }
 	break;
 
     case kHijing_jj100:
+      {
 	comment = comment.Append("HIJING Jet 100 GeV");
 	AliGenHijing *gener = HijingStandard();
 // impact parameter range
@@ -588,9 +686,12 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	gener->SetSimpleJets(!isw);
 	gener->SetJetEtaRange(-0.3,0.3);
 	gener->SetJetPhiRange(75., 165.);   
+	gGener=gener;
+      }
 	break;
 
     case kHijing_jj200:
+      {
 	comment = comment.Append("HIJING Jet 200 GeV");
 	AliGenHijing *gener = HijingStandard();
 // impact parameter range
@@ -602,11 +703,14 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	gener->SetSimpleJets(!isw);
 	gener->SetJetEtaRange(-0.3,0.3);
 	gener->SetJetPhiRange(75., 165.);   
+	gGener=gener;
+      }
 	break;
 //
 // Gamma-Jet
 //
     case kHijing_gj25:
+      {
 	comment = comment.Append("HIJING Gamma 25 GeV");
 	AliGenHijing *gener = HijingStandard();
 // impact parameter range
@@ -618,9 +722,12 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	gener->SetSimpleJets(!isw);
 	gener->SetJetEtaRange(-0.12, 0.12);
         gener->SetJetPhiRange(220., 320.);
+	gGener=gener;
+      }
 	break;
 
     case kHijing_gj50:
+      {
 	comment = comment.Append("HIJING Gamma 50 GeV");
 	AliGenHijing *gener = HijingStandard();
 // impact parameter range
@@ -632,9 +739,12 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	gener->SetSimpleJets(!isw);
 	gener->SetJetEtaRange(-0.12, 0.12);
         gener->SetJetPhiRange(220., 320.);
+	gGener=gener;
+      }
 	break;
 
     case kHijing_gj75:
+      {
 	comment = comment.Append("HIJING Gamma 75 GeV");
 	AliGenHijing *gener = HijingStandard();
 // impact parameter range
@@ -646,9 +756,12 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	gener->SetSimpleJets(!isw);
 	gener->SetJetEtaRange(-0.12, 0.12);
         gener->SetJetPhiRange(220., 320.);
+	gGener=gener;
+      }
 	break;
 
     case kHijing_gj100:
+      {
 	comment = comment.Append("HIJING Gamma 100 GeV");
 	AliGenHijing *gener = HijingStandard();
 // impact parameter range
@@ -660,9 +773,12 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	gener->SetSimpleJets(!isw);
 	gener->SetJetEtaRange(-0.12, 0.12);
         gener->SetJetPhiRange(220., 320.);
+	gGener=gener;
+      }
 	break;
 
     case kHijing_gj200:
+      {
 	comment = comment.Append("HIJING Gamma 200 GeV");
 	AliGenHijing *gener = HijingStandard();
 // impact parameter range
@@ -674,8 +790,11 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	gener->SetSimpleJets(!isw);
 	gener->SetJetEtaRange(-0.12, 0.12);
         gener->SetJetPhiRange(220., 320.);
+	gGener=gener;
+      }
 	break;
     case kHijing_pA:
+      {
 	comment = comment.Append("HIJING pA");
 
 	AliGenCocktail *gener  = new AliGenCocktail();
@@ -712,9 +831,26 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	gray->SetDebug(1);
 	gener->AddGenerator(hijing,"Hijing pPb", 1);
 	gener->AddGenerator(gray,  "Gray Particles",1);
+	gGener=gener;
+      }
 	break;
+    case kPythia:
+      {
+        comment = comment.Append(":Pythia p-p @ 14 TeV");
+        AliGenPythia *gener = new AliGenPythia(-1); 
+        gener->SetMomentumRange(0,999999);
+        gener->SetPhiRange(-180,180);
+        gener->SetThetaRange(0., 180.);
+        gener->SetYRange(-12,12);
+        gener->SetPtRange(0,1000);
+        gener->SetStrucFunc(kCTEQ4L);   
+        gener->SetProcess(kPyMb);
+        gener->SetEnergyCMS(14000.);
+	gGener=gener;
+      }
+    break;
     }
-    return gener;
+    return gGener;
 }
 
 AliGenHijing* HijingStandard()

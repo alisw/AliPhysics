@@ -1,3 +1,48 @@
+// One can use the configuration macro in compiled mode by
+// root [0] gSystem->Load("libgeant321");
+// root [0] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
+//                   -I$ALICE_ROOT -I$ALICE/geant3/TGeant3");
+// root [0] .x grun.C(1,"Config.C++")
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <Riostream.h>
+#include <TRandom.h>
+#include <TSystem.h>
+#include <TVirtualMC.h>
+#include <TGeant3.h>
+#include "STEER/AliRunLoader.h"
+#include "STEER/AliRun.h"
+#include "STEER/AliConfig.h"
+#include "PYTHIA6/AliDecayerPythia.h"
+#include "EVGEN/AliGenCocktail.h"
+#include "EVGEN/AliGenHIJINGpara.h"
+#include "STEER/AliMagFMaps.h"
+#include "STRUCT/AliBODY.h"
+#include "STRUCT/AliMAG.h"
+#include "STRUCT/AliABSOv0.h"
+#include "STRUCT/AliDIPOv2.h"
+#include "STRUCT/AliHALL.h"
+#include "STRUCT/AliFRAMEv2.h"
+#include "STRUCT/AliSHILv2.h"
+#include "STRUCT/AliPIPEv0.h"
+#include "ITS/AliITSvPPRasymm.h"
+#include "TPC/AliTPCv2.h"
+#include "TOF/AliTOFv2FHoles.h"
+#include "TOF/AliTOFv4T0.h"
+#include "RICH/AliRICHv3.h"
+#include "ZDC/AliZDCv2.h"
+#include "TRD/AliTRDv1.h"
+#include "FMD/AliFMDv1.h"
+#include "MUON/AliMUONv1.h"
+#include "PHOS/AliPHOSv1.h"
+#include "PMD/AliPMDv1.h"
+#include "START/AliSTARTv1.h"
+#include "EMCAL/AliEMCALv1.h"
+#include "CRT/AliCRTv0.h"
+#include "VZERO/AliVZEROv2.h"
+#endif
+
+Float_t EtaToTheta(Float_t arg);
 static Int_t    eventsPerRun = 100;
 enum PprGeo_t 
 {
@@ -7,36 +52,35 @@ static PprGeo_t geo = kHoles;
 
 void Config()
 {
-    // 7-DEC-2000 09:00
-    // Switch on Transition Radiation simulation. 6/12/00 18:00
-    // iZDC=1  7/12/00 09:00
     // ThetaRange is (0., 180.). It was (0.28,179.72) 7/12/00 09:00
     // Theta range given through pseudorapidity limits 22/6/2001
 
     // Set Random Number seed
-    // gRandom->SetSeed(12345);
+  gRandom->SetSeed(123456); // Set 0 to use the currecnt time
+    cout<<"Seed for random number generation= "<<gRandom->GetSeed()<<endl; 
 
 
    // libraries required by geant321
+#if defined(__CINT__)
     gSystem->Load("libgeant321");
+#endif
 
     new     TGeant3("C++ Interface to Geant3");
 
-    if (!gSystem->Getenv("CONFIG_FILE"))
-    {
-        cout<<"Config.C: Creating Run Loader ..."<<endl;
-        AliRunLoader* rl = AliRunLoader::Open("galice.root",AliConfig::fgkDefaultEventFolderName,
-                                              "recreate");
-        if (rl == 0x0)
-         {
-           gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
-           return;
-         }
-        rl->SetCompressionLevel(2);
-        rl->SetNumberOfEventsPerFile(3);
-        gAlice->SetRunLoader(rl);
-    }
+    AliRunLoader* rl=0x0;
 
+    cout<<"Config.C: Creating Run Loader ..."<<endl;
+    rl = AliRunLoader::Open("galice.root",
+			    AliConfig::fgkDefaultEventFolderName,
+			    "recreate");
+    if (rl == 0x0)
+      {
+	gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
+	return;
+      }
+    rl->SetCompressionLevel(2);
+    rl->SetNumberOfEventsPerFile(3);
+    gAlice->SetRunLoader(rl);
 
     //
     // Set External decayer
@@ -82,14 +126,12 @@ void Config()
     gMC->SetCut("TOFMAX", tofmax); 
 
 
-
+    int     nParticles = 30;
     if (gSystem->Getenv("CONFIG_NPARTICLES"))
     {
-        int     nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
-    } else
-    {
-        int     nParticles = 30;
+        nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
     }
+
     AliGenCocktail *gener = new AliGenCocktail();
     gener->SetPhiRange(220, 320);
     // Set pseudorapidity range from -8 to 8.
@@ -120,27 +162,27 @@ void Config()
     gAlice->SetField(field);    
 
 
-    Int_t   iABSO  =  0;
+    Int_t   iABSO  =  1;
     Int_t   iDIPO  =  1;
-    Int_t   iFMD   =  0;
+    Int_t   iFMD   =  1;
     Int_t   iFRAME =  1;
     Int_t   iHALL  =  1;
     Int_t   iITS   =  1;
     Int_t   iMAG   =  1;
-    Int_t   iMUON  =  0;
+    Int_t   iMUON  =  1;
     Int_t   iPHOS  =  1;
     Int_t   iPIPE  =  1;
-    Int_t   iPMD   =  0;
-    Int_t   iRICH  =  0;
+    Int_t   iPMD   =  1;
+    Int_t   iRICH  =  1;
     Int_t   iSHIL  =  1;
-    Int_t   iSTART =  0;
-    Int_t   iTOF   =  0;
+    Int_t   iSTART =  1;
+    Int_t   iTOF   =  1;
     Int_t   iTPC   =  1;
-    Int_t   iTRD   =  0;
-    Int_t   iZDC   =  0;
-    Int_t   iEMCAL =  0;
+    Int_t   iTRD   =  1;
+    Int_t   iZDC   =  1;
+    Int_t   iEMCAL =  1;
     Int_t   iCRT   =  0;
-    Int_t   iVZERO =  0;
+    Int_t   iVZERO =  1;
     rl->CdGAFile();
     //=================== Alice BODY parameters =============================
     AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
@@ -380,7 +422,7 @@ void Config()
     if (iEMCAL)
     {
         //=================== EMCAL parameters ============================
-        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCALArch1a");
+        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "G56_2_55_19_104_14");
     }
 
      if (iCRT)
@@ -394,6 +436,8 @@ void Config()
         //=================== CRT parameters ============================
         AliVZERO *VZERO = new AliVZEROv2("VZERO", "normal VZERO");
     }
+
+     cout << "End of Config.C" << endl;
 
 }
 

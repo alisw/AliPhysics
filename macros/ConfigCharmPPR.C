@@ -1,3 +1,38 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <Riostream.h>
+#include <TRandom.h>
+#include <TDatime.h>
+#include <TSystem.h>
+#include <TVirtualMC.h>
+#include <TGeant3.h>
+#include "STEER/AliRunLoader.h"
+#include "STEER/AliRun.h"
+#include "STEER/AliConfig.h"
+#include "PYTHIA6/AliDecayerPythia.h"
+#include "PYTHIA6/AliGenPythia.h"
+#include "STEER/AliMagFCM.h"
+#include "STRUCT/AliBODY.h"
+#include "STRUCT/AliMAG.h"
+#include "STRUCT/AliABSOv0.h"
+#include "STRUCT/AliDIPOv2.h"
+#include "STRUCT/AliHALL.h"
+#include "STRUCT/AliFRAMEv2.h"
+#include "STRUCT/AliSHILv2.h"
+#include "STRUCT/AliPIPEv0.h"
+#include "ITS/AliITSvPPRasymm.h"
+#include "TPC/AliTPCv2.h"
+#include "TOF/AliTOFv2.h"
+#include "RICH/AliRICHv1.h"
+#include "ZDC/AliZDCv1.h"
+#include "TRD/AliTRDv1.h"
+#include "FMD/AliFMDv0.h"
+#include "MUON/AliMUONv1.h"
+#include "PHOS/AliPHOSv1.h"
+#include "PMD/AliPMDv1.h"
+#include "START/AliSTARTv1.h"
+#include "CRT/AliCRTv1.h"
+#endif
+
 void Config()
 {
  
@@ -8,18 +43,36 @@ void Config()
   UInt_t procid=gSystem->GetPid();
   UInt_t seed=curtime-procid;
 
-  gRandom->SetSeed(seed);
+  //  gRandom->SetSeed(seed);
+  gRandom->SetSeed(12345);
   cerr<<"Seed for random number generation= "<<seed<<endl; 
+
+   // libraries required by geant321
+#if defined(__CINT__)
+    gSystem->Load("libgeant321");
+#endif
 
   new TGeant3("C++ Interface to Geant3");
 
   //=======================================================================
   //  Create the output file
    
-  TFile *rootfile = new TFile("galice.root","recreate");
-  rootfile->SetCompressionLevel(2);
+  AliRunLoader* rl=0x0;
 
-  //
+  cout<<"Config.C: Creating Run Loader ..."<<endl;
+  rl = AliRunLoader::Open("galice.root",
+			  AliConfig::fgkDefaultEventFolderName,
+			  "recreate");
+  if (rl == 0x0)
+    {
+      gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
+      return;
+    }
+  rl->SetCompressionLevel(2);
+  rl->SetNumberOfEventsPerFile(3);
+  gAlice->SetRunLoader(rl);
+
+ //
   // Set External decayer
   AliDecayer* decayer = new AliDecayerPythia();
   decayer->SetForceDecay(kAll);
@@ -34,36 +87,36 @@ void Config()
   // --- All positions are in cm, angles in degrees, and P and E in GeV
 
 
-    gMC->SetProcess("DCAY",1);
-    gMC->SetProcess("PAIR",1);
-    gMC->SetProcess("COMP",1);
-    gMC->SetProcess("PHOT",1);
-    gMC->SetProcess("PFIS",0);
-    gMC->SetProcess("DRAY",0);
-    gMC->SetProcess("ANNI",1);
-    gMC->SetProcess("BREM",1);
-    gMC->SetProcess("MUNU",1);
-    gMC->SetProcess("CKOV",1);
-    gMC->SetProcess("HADR",1);
-    gMC->SetProcess("LOSS",2);
-    gMC->SetProcess("MULS",1);
-    gMC->SetProcess("RAYL",1);
+  gMC->SetProcess("DCAY",1);
+  gMC->SetProcess("PAIR",1);
+  gMC->SetProcess("COMP",1);
+  gMC->SetProcess("PHOT",1);
+  gMC->SetProcess("PFIS",0);
+  gMC->SetProcess("DRAY",0);
+  gMC->SetProcess("ANNI",1);
+  gMC->SetProcess("BREM",1);
+  gMC->SetProcess("MUNU",1);
+  gMC->SetProcess("CKOV",1);
+  gMC->SetProcess("HADR",1);
+  gMC->SetProcess("LOSS",2);
+  gMC->SetProcess("MULS",1);
+  gMC->SetProcess("RAYL",1);
+  
+  Float_t cut = 1.e-3;        // 1MeV cut by default
+  Float_t tofmax = 1.e10;
 
-    Float_t cut = 1.e-3;        // 1MeV cut by default
-    Float_t tofmax = 1.e10;
-
-    gMC->SetCut("CUTGAM", cut);
-    gMC->SetCut("CUTELE", cut);
-    gMC->SetCut("CUTNEU", cut);
-    gMC->SetCut("CUTHAD", cut);
-    gMC->SetCut("CUTMUO", cut);
-    gMC->SetCut("BCUTE",  cut); 
-    gMC->SetCut("BCUTM",  cut); 
-    gMC->SetCut("DCUTE",  cut); 
-    gMC->SetCut("DCUTM",  cut); 
-    gMC->SetCut("PPCUTM", cut);
-    gMC->SetCut("TOFMAX", tofmax); 
-
+  gMC->SetCut("CUTGAM", cut);
+  gMC->SetCut("CUTELE", cut);
+  gMC->SetCut("CUTNEU", cut);
+  gMC->SetCut("CUTHAD", cut);
+  gMC->SetCut("CUTMUO", cut);
+  gMC->SetCut("BCUTE",  cut); 
+  gMC->SetCut("BCUTM",  cut); 
+  gMC->SetCut("DCUTE",  cut); 
+  gMC->SetCut("DCUTM",  cut); 
+  gMC->SetCut("PPCUTM", cut);
+  gMC->SetCut("TOFMAX", tofmax); 
+  
 
   // AliGenPythia *gener = new AliGenPythia(ntracks);
   AliGenPythia *gener = new AliGenPythia(-1);
@@ -83,7 +136,7 @@ void Config()
   // The following settings select the Pythia parameters tuned to agree
   // with charm NLO calculation for Pb-Pb @ 5.5 TeV with MNR code.
   //
-  gener->SetProcess(kPyCharmPbMNR);
+  gener->SetProcess(kPyCharmPbPbMNR);
   gener->SetStrucFunc(kCTEQ4L);
   gener->SetPtHard(2.1,-1.0);
   gener->SetEnergyCMS(5500.);
@@ -98,7 +151,7 @@ void Config()
 
   // Field (L3 0.4 T)
   AliMagFCM* field = new AliMagFCM(
-	      "Map2","$(ALICE_ROOT)/data/field01.dat", 2, 1., 10.);
+		     "Map2","$(ALICE_ROOT)/data/field01.dat", 2, 1., 10.);
   field->SetSolenoidField(4.);
   gAlice->SetField(field);    
 

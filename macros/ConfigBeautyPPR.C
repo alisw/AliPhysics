@@ -1,3 +1,38 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <Riostream.h>
+#include <TRandom.h>
+#include <TDatime.h>
+#include <TSystem.h>
+#include <TVirtualMC.h>
+#include <TGeant3.h>
+#include "STEER/AliRunLoader.h"
+#include "STEER/AliRun.h"
+#include "STEER/AliConfig.h"
+#include "PYTHIA6/AliDecayerPythia.h"
+#include "PYTHIA6/AliGenPythia.h"
+#include "STEER/AliMagFCM.h"
+#include "STRUCT/AliBODY.h"
+#include "STRUCT/AliMAG.h"
+#include "STRUCT/AliABSOv0.h"
+#include "STRUCT/AliDIPOv2.h"
+#include "STRUCT/AliHALL.h"
+#include "STRUCT/AliFRAMEv2.h"
+#include "STRUCT/AliSHILv2.h"
+#include "STRUCT/AliPIPEv0.h"
+#include "ITS/AliITSvPPRasymm.h"
+#include "TPC/AliTPCv2.h"
+#include "TOF/AliTOFv2.h"
+#include "RICH/AliRICHv1.h"
+#include "ZDC/AliZDCv1.h"
+#include "TRD/AliTRDv1.h"
+#include "FMD/AliFMDv0.h"
+#include "MUON/AliMUONv1.h"
+#include "PHOS/AliPHOSv1.h"
+#include "PMD/AliPMDv1.h"
+#include "START/AliSTARTv1.h"
+#include "CRT/AliCRTv1.h"
+#endif
+
 void Config()
 {
  
@@ -8,19 +43,35 @@ void Config()
   UInt_t procid=gSystem->GetPid();
   UInt_t seed=curtime-procid;
 
-  gRandom->SetSeed(seed);
+  //  gRandom->SetSeed(seed);
+  gRandom->SetSeed(12345);
   cerr<<"Seed for random number generation= "<<seed<<endl; 
 
   // libraries required by geant321
+#if defined(__CINT__)
   gSystem->Load("libgeant321");
+#endif
 
   new TGeant3("C++ Interface to Geant3");
 
   //=======================================================================
   //  Create the output file
    
-  TFile *rootfile = new TFile("galice.root","recreate");
-  rootfile->SetCompressionLevel(2);
+  AliRunLoader* rl=0x0;
+
+  cout<<"Config.C: Creating Run Loader ..."<<endl;
+  rl = AliRunLoader::Open("galice.root",
+			  AliConfig::fgkDefaultEventFolderName,
+			  "recreate");
+  if (rl == 0x0)
+    {
+      gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
+      return;
+    }
+  rl->SetCompressionLevel(2);
+  rl->SetNumberOfEventsPerFile(3);
+  gAlice->SetRunLoader(rl);
+
   //
   // Set External decayer
   AliDecayer* decayer = new AliDecayerPythia();
@@ -84,7 +135,7 @@ void Config()
   // The following settings select the Pythia parameters tuned to agree
   // with beauty NLO calculation for Pb-Pb @ 5.5 TeV with MNR code.
   //
-  gener->SetProcess(kPyBeautyPbMNR);
+  gener->SetProcess(kPyBeautyPbPbMNR);
   gener->SetStrucFunc(kCTEQ4L);
   gener->SetPtHard(2.75,-1.0);
   gener->SetEnergyCMS(5500.);
