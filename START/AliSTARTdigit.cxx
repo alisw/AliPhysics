@@ -39,115 +39,55 @@ ClassImp(AliSTARTdigit)
 {
   //ctor
   fTimeAverage=9999;
-  fTimeDiff=9999;
   fTimeBestRight=9999;
   fTimeBestLeft=9999;
 
-  fTimeRight = new TArrayI(12);  
-  fTimeLeft  = new TArrayI(12);  
-  fADCRight = new TArrayI(12);  
-  fADCLeft  = new TArrayI(12);  
+  fTime = new TArrayI(24);  
+  fADC  = new TArrayI(24);  
 }
 //-----------------------------------
-void AliSTARTdigit::SetTimeRight (TArrayI &o)
+void AliSTARTdigit::SetTime (TArrayI &o)
 {
   ////////////////////////////////////////
-  fTimeRight = new TArrayI(12);  
+  fTime = new TArrayI(24);  
 
   Int_t i;
-  for (i=0; i<12; i++)
+  for (i=0; i<24; i++)
     {
       Int_t buf=o.At(i);
-      fTimeRight->AddAt(buf,i);
+      fTime->AddAt(buf,i);
     }
 }
 //--------------------------------------------
-void AliSTARTdigit::SetTimeLeft (TArrayI &o)
-{
-  //
-  fTimeLeft  = new TArrayI(12);  
-  Int_t i;
-  for (i=0; i<12; i++)
-    {
-      Int_t buf=o.At(i);
-      fTimeLeft->AddAt(buf,i);
-    }
-}
-//--------------------------------------------
-void AliSTARTdigit::GetTimeLeft (TArrayI &o)
+void AliSTARTdigit::GetTime (TArrayI &o)
 {
   //
   Int_t i;
-  for (i=0; i<12; i++)
+  for (i=0; i<24; i++)
     {
-      o[i]=fTimeLeft->At(i);
+      o[i]=fTime->At(i);
     }
 }
 //--------------------------------------------
-void AliSTARTdigit::GetTimeRight (TArrayI &o)
+void AliSTARTdigit::GetADC (TArrayI &o)
 {
   //
   Int_t i;
-  for (i=0; i<12; i++)
+  for (i=0; i<24; i++)
     {
-      o[i]=fTimeRight->At(i);
+      o[i]=fADC->At(i);
     }
 }
 //--------------------------------------------
-void AliSTARTdigit::GetADCLeft (TArrayI &o)
+void AliSTARTdigit::SetADC (TArrayI &o)
 {
   //
-  Int_t i;
-  for (i=0; i<12; i++)
-    {
-      o[i]=fADCLeft->At(i);
-    }
-}
-//--------------------------------------------
-void AliSTARTdigit::GetADCRight (TArrayI &o)
-{
-  //
- Int_t i;
-  for (i=0; i<12; i++)
-    {
-      o[i]=fADCRight->At(i);
-    }
-}
-//--------------------------------------------
-void AliSTARTdigit::SetADCLeft (TArrayI &o)
-{
-  //
-  fADCLeft  = new TArrayI(12);  
+  fADC  = new TArrayI(24);  
   Int_t i;
   //  Float_t fProcessKoef=1; // for pb 0.001
-  for (i=0; i<12; i++)
+  for (i=0; i<24; i++)
     {
       Int_t buf=(o.At(i));
-      fADCLeft->AddAt(buf,i);
+      fADC->AddAt(buf,i);
     }
-}
-//--------------------------------------------
-void AliSTARTdigit::SetADCRight (TArrayI &o)
-{
-
-  //  Float_t fProcessKoef=1; // for pb 0.001
-  fADCRight  = new TArrayI(12);  
-  Int_t i;
-  for (i=0; i<12; i++)
-    {
-      Int_t buf=(o.At(i));
-      fADCRight->AddAt(buf,i);
-    }
-}
-//------------------------------------------------------
-void AliSTARTdigit::Print()
-{
-  //
-  printf("AliSTARTdigit: fTimeAverage=%d, fTimeDiff=%d\n",
-	 fTimeAverage, fTimeDiff);
-  cout<<" BestTimeRigh "<<fTimeBestRight<<
-    " TimeBestLeft "<<fTimeBestLeft<<endl;
-
-
-
 }
