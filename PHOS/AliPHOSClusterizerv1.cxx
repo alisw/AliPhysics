@@ -777,7 +777,7 @@ void  AliPHOSClusterizerv1::UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
   const AliPHOSGeometry * geom = gime->PHOSGeometry() ;
-  TClonesArray * digits = gime->Digits() ; 
+  const TClonesArray * digits = gime->Digits() ; 
   TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
   TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
 

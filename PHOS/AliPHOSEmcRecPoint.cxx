@@ -211,7 +211,7 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py) const
   TH2F * histo = 0 ;
   TCanvas * histocanvas ; 
 
-  TClonesArray * digits = gime->Digits() ;
+  const TClonesArray * digits = gime->Digits() ;
   
   switch (event) {
     

@@ -216,7 +216,7 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * branchName,c
   
   Int_t iSDigit ;
   AliPHOSDigit * sdigit ;
-  TClonesArray * sdigits = gime->SDigits() ;
+  const TClonesArray * sdigits = gime->SDigits() ;
   Int_t nsdig[5] = {0,0,0,0,0} ;
   if(sdigits){
     for(iSDigit = 0; iSDigit < sdigits->GetEntriesFast() ; iSDigit++)
@@ -244,7 +244,7 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * branchName,c
   //Plot digits
   Int_t iDigit ;
   AliPHOSDigit * digit ;
-  TClonesArray * digits = gime->Digits(); 
+  const TClonesArray * digits = gime->Digits(); 
   if(digits) {
     for(iDigit = 0; iDigit < digits->GetEntriesFast(); iDigit++)
       {
