@@ -27,6 +27,10 @@ class AliTRDgeometryFull : public AliTRDgeometry {
           Bool_t  GetPHOShole() const { return fPHOShole;  };
           Bool_t  GetRICHhole() const { return fRICHhole;  };
 
+  virtual Float_t GetChamberLengthI(Int_t p) { return fClengthI[p];  }; 
+  virtual Float_t GetChamberLengthM(Int_t p) { return fClengthM1[p]; }; 
+  virtual Float_t GetChamberLengthO(Int_t p) { return fClengthO1[p]; }; 
+
  protected:
 
   Bool_t          fPHOShole;                       // Switch for the hole in front of the PHOS

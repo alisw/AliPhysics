@@ -12,7 +12,7 @@ class TParticlePDG;
 class TObjArray;
 
 class AliTRDgeometry;
-// class AliTRDtrackingSector;
+class AliTRDtrackingSector;
 class AliTRDtrack;
 class AliTRDmcTrack;
 

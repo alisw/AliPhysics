@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/03/27 12:48:33  cblume
+Correct for volume overlaps
+
 Revision 1.8  2001/03/13 09:30:35  cblume
 Update of digitization. Moved digit branch definition to AliTRD
 
@@ -210,14 +213,19 @@ void AliTRDgeometry::Init()
   //     +----------------------------+      +------>
   //                                             z
   //                                             
-  // IMPORTANT: time bin 0 is now the one closest to the readout !!!
+  // IMPORTANT: time bin 0 is now the first one in the drift region 
+  // closest to the readout !!!
   //
 
   // The pad column (rphi-direction)  
   SetNColPad(96);
 
-  // The time bucket. Default is 100 ns timbin size
+  // The number of time bins. Default is 100 ns timbin size
   SetNTimeBin(15);
+
+  // Additional time bins before and after the drift region.
+  // Default is to only sample the drift region
+  SetExpandTimeBin(0,0);
 
   // The rotation matrix elements
   Float_t phi = 0;
@@ -237,7 +245,7 @@ void AliTRDgeometry::Init()
 }
 
 //_____________________________________________________________________________
-void AliTRDgeometry::SetNColPad(Int_t npad)
+void AliTRDgeometry::SetNColPad(const Int_t npad)
 {
   //
   // Redefines the number of pads in column direction
@@ -252,10 +260,12 @@ void AliTRDgeometry::SetNColPad(Int_t npad)
 }
 
 //_____________________________________________________________________________
-void AliTRDgeometry::SetNTimeBin(Int_t nbin)
+void AliTRDgeometry::SetNTimeBin(const Int_t nbin)
 {
   //
-  // Redefines the number of time bins
+  // Redefines the number of time bins in the drift region.
+  // The time bin width is defined by the length of the
+  // drift region divided by <nbin>.
   //
 
   fTimeMax     = nbin;
@@ -476,9 +486,9 @@ Bool_t AliTRDgeometry::Local2Global(Int_t iplan, Int_t icham, Int_t isect
   Float_t  rot[3];
 
   // calculate (x,y,z) position in rotated chamber
-  rot[0] = time0 - timeSlice * fTimeBinSize;
-  rot[1] = col0  + padCol    * fColPadSize[iplan];
-  rot[2] = row0  + padRow    * fRowPadSize[iplan][icham][isect];
+  rot[0] = time0 - (timeSlice - fTimeBefore) * fTimeBinSize;
+  rot[1] = col0  + padCol                    * fColPadSize[iplan];
+  rot[2] = row0  + padRow                    * fRowPadSize[iplan][icham][isect];
 
   // Rotate back to original position
   return RotateBack(idet,rot,global);

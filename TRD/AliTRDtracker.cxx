@@ -15,6 +15,9 @@
                                                       
 /*
 $Log$
+Revision 1.9  2001/02/14 18:22:26  cblume
+Change in the geometry of the padplane
+
 Revision 1.8  2000/12/20 13:00:44  cblume
 Modifications for the HP-compiler
 
@@ -680,7 +683,9 @@ Int_t option)
   TObjArray *ioArray = new TObjArray(400);
 
   if( option < 0 ) {
-    branch = tree->GetBranch("RecPoints");
+    //branch = tree->GetBranch("RecPoints");
+    // changed CBL
+    branch = tree->GetBranch("TRDrecPoints");
 
     for (Int_t i=0; i<nentr; i++) {
       branch->SetAddress(&ioArray);
@@ -696,7 +701,7 @@ Int_t option)
     }
   }
   else {
-    branch = tree->GetBranch("Clusters");
+    branch = tree->GetBranch("TRDcluster");
 
     for (Int_t i=0; i<nentr; i++) {
       branch->SetAddress(&ioArray);

@@ -33,12 +33,16 @@ class AliTRDdataArray : public AliTRDsegmentID {
   virtual Int_t  GetNCol() const               { return fNcol;       };
   virtual Int_t  GetNtime() const              { return fNtime;      };
           Int_t  GetIndex(Int_t row, Int_t col, Int_t time) const;
+          Int_t  GetIndexUnchecked(Int_t row, Int_t col, Int_t time) const
+	    { return time * fNrow*fNcol + GetIdx1Unchecked(row,col); };
           Int_t  GetBufType() const            { return fBufType;    };
   virtual Int_t  GetNelems() const             { return fNelems;     };
 
  protected:
 
           Int_t  GetIdx1(Int_t row, Int_t col) const;
+  inline  Int_t  GetIdx1Unchecked(Int_t row, Int_t col) const
+                                               { return row + col * fNrow; };
   inline  Bool_t CheckBounds(const char *where, Int_t idx1, Int_t idx2);
   inline  Bool_t OutOfBoundsError(const char *where, Int_t idx1, Int_t idx2);
  

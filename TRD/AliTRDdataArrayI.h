@@ -36,9 +36,15 @@ class AliTRDdataArrayI : public AliTRDdataArray {
   virtual void   Reset();
 
           void   SetData(Int_t row, Int_t col, Int_t time, Int_t value);
+          void   SetDataUnchecked(Int_t row, Int_t col, Int_t time, Int_t value)
+                                 { SetDataFast(GetIdx1Unchecked(row,col),time,value); };
+
   virtual void   SetThreshold(Int_t threshold) { fThreshold = threshold; };
 
   virtual Int_t  GetData(Int_t row, Int_t col, Int_t time) const;
+          Int_t  GetDataUnchecked(Int_t row, Int_t col, Int_t time) const
+                                 { return GetDataFast(GetIdx1Unchecked(row,col),time); };
+
   virtual Int_t  GetThreshold() const          { return fThreshold;  };
 
   virtual Int_t  GetSize();
@@ -47,8 +53,8 @@ class AliTRDdataArrayI : public AliTRDdataArray {
 
  protected:
 
-  inline  void   SetDataFast(Int_t idx1, Int_t idx2, Int_t value); 
-  inline  Int_t  GetDataFast(Int_t idx1, Int_t idx2) const; 
+  inline  void   SetDataFast(Int_t idx1, Int_t idx2, Int_t value);
+  inline  Int_t  GetDataFast(Int_t idx1, Int_t idx2) const;
 
   Int_t          GetData1(Int_t idx1, Int_t idx2) const; 
   void           Expand1(); 

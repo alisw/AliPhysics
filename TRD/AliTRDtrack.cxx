@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/02/05 14:49:32  hristov
+Compare() declared const (R.Brun)
+
 Revision 1.4  2000/12/08 16:07:02  cblume
 Update of the tracking by Sergei
 
@@ -65,6 +68,10 @@ const Double_t cc[15], Double_t xref, Double_t alpha) {
 
   fN=0;
   fIndex[fN++]=index;
+
+  fLhPion     = 0.0;
+  fLhElectron = 0.0;
+
 }                              
            
 //_____________________________________________________________________________
@@ -91,6 +98,10 @@ AliTRDtrack::AliTRDtrack(const AliTRDtrack& t) {
 
   fN=t.fN;
   for (Int_t i=0; i<fN; i++) fIndex[i]=t.fIndex[i];
+
+  fLhPion     = t.fLhPion;
+  fLhElectron = t.fLhElectron;
+
 }                                                       
 
 //_____________________________________________________________________________
@@ -399,6 +410,10 @@ void AliTRDtrack::Streamer(TBuffer &R__b)
       R__b >> fCtt;
       R__b >> fN;
       for (Int_t i=0; i<fN; i++) R__b >> fIndex[i];
+      if (R__v > 1) {
+        R__b >> fLhElectron;
+        R__b >> fLhPion;
+      }
    } else {                                
       R__b.WriteVersion(AliTRDtrack::IsA());
       TObject::Streamer(R__b);
@@ -429,6 +444,8 @@ void AliTRDtrack::Streamer(TBuffer &R__b)
       R__b << fCtt;
       R__b << fN;
       for (Int_t i=0; i<fN; i++) R__b << fIndex[i];
+      R__b << fLhElectron;
+      R__b << fLhPion;
    }
 }                                                          
 

@@ -3,7 +3,11 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+/* $Id: AliTRDgeometry.h,v 1.8 2001/02/14 18:22:26 cbl
+ public:
+
+  enum { kNplan = 6, kNcham = 5, kNsect = 18, kNdet = 540 };
+ume Exp $ */
 
 #include "AliGeometry.h"
 
@@ -38,43 +42,58 @@ class AliTRDgeometry : public AliGeometry {
                              / fgkSheight * (fgkCheight + fgkCspace); };
   static  Float_t  Cheight() { return fgkCheight; };
   static  Float_t  Cspace()  { return fgkCspace;  };
+  static  Float_t  Ccframe() { return fgkCcframe; };
+  static  Float_t  SeThick() { return fgkSeThick; };
   static  Float_t  MyThick() { return fgkMyThick; };
   static  Float_t  DrThick() { return fgkDrThick; };
+  static  Float_t  AmThick() { return fgkAmThick; };
   static  Float_t  RaThick() { return fgkRaThick; };
+  static  Float_t  DrZpos()  { return fgkDrZpos;  };
 
   virtual void     SetPHOShole() = 0;
   virtual void     SetRICHhole() = 0;
 
-  virtual void     SetNRowPad(Int_t p, Int_t c, Int_t npad) {};
-  virtual void     SetNColPad(Int_t npad);
-  virtual void     SetNTimeBin(Int_t nbin);
+  virtual void     SetNRowPad(const Int_t p, const Int_t c, const Int_t npad) {};
+  virtual void     SetNColPad(const Int_t npad);
+  virtual void     SetNTimeBin(const Int_t nbin);
+  virtual void     SetExpandTimeBin(const Int_t nbefore, const Int_t nafter)
+                                                                  { fTimeBefore = nbefore;
+                                                                    fTimeAfter  = nafter; };
 
   virtual Bool_t   GetPHOShole() const = 0;
   virtual Bool_t   GetRICHhole() const = 0;
 
-  virtual Int_t    GetDetector(Int_t p, Int_t c, Int_t s) const;
-  virtual Int_t    GetPlane(Int_t d)   const;
-  virtual Int_t    GetChamber(Int_t d) const;
-  virtual Int_t    GetSector(Int_t d)  const;
+  virtual Int_t    GetDetector(const Int_t p, const Int_t c, const Int_t s) const;
+  virtual Int_t    GetPlane(const Int_t d)   const;
+  virtual Int_t    GetChamber(const Int_t d) const;
+  virtual Int_t    GetSector(const Int_t d)  const;
 
-  virtual Float_t  GetChamberWidth(Int_t p)                 const { return fCwidth[p]; };
+          Float_t  GetChamberWidth(const Int_t p)           const { return fCwidth[p]; };
    
-  virtual Int_t    GetRowMax(Int_t p, Int_t c, Int_t s)     const { return fRowMax[p][c][s]; };
-  virtual Int_t    GetColMax(Int_t p)                       const { return fColMax[p];       };
-  virtual Int_t    GetTimeMax()                             const { return fTimeMax;         };
- 
-  virtual Float_t  GetRow0(Int_t p, Int_t c, Int_t s)       const { return fRow0[p][c][s]; };
-  virtual Float_t  GetCol0(Int_t p)                         const { return fCol0[p];       };
-  virtual Float_t  GetTime0(Int_t p)                        const { return fTime0[p];      };
+          Int_t    GetRowMax(const Int_t p, const Int_t c, const Int_t s)     
+                                                            const { return fRowMax[p][c][s]; };
+          Int_t    GetColMax(const Int_t p)                 const { return fColMax[p];       };
+          Int_t    GetTimeMax()                             const { return fTimeMax;         };
+          Int_t    GetTimeBefore()                          const { return fTimeBefore;      }; 
+          Int_t    GetTimeAfter()                           const { return fTimeAfter;       }; 
+          Int_t    GetTimeTotal()                           const { return fTimeMax 
+                                                                         + fTimeBefore 
+                                                                         + fTimeAfter; };
 
-  virtual Float_t  GetRowPadSize(Int_t p, Int_t c, Int_t s) const { return fRowPadSize[p][c][s]; };
-  virtual Float_t  GetColPadSize(Int_t p)                   const { return fColPadSize[p];       };
-  virtual Float_t  GetTimeBinSize()                         const { return fTimeBinSize;         };
+          Float_t  GetRow0(const Int_t p, const Int_t c, const Int_t s)       
+                                                            const { return fRow0[p][c][s]; };
+          Float_t  GetCol0(const Int_t p)                   const { return fCol0[p];       };
+          Float_t  GetTime0(const Int_t p)                  const { return fTime0[p];      };
+
+          Float_t  GetRowPadSize(const Int_t p, const Int_t c, const Int_t s) 
+                                                            const { return fRowPadSize[p][c][s]; };
+          Float_t  GetColPadSize(const Int_t p)             const { return fColPadSize[p];       };
+          Float_t  GetTimeBinSize()                         const { return fTimeBinSize;         };
 
   virtual void     GetGlobal(const AliRecPoint *p, TVector3 &pos, TMatrix &mat) const; 
   virtual void     GetGlobal(const AliRecPoint *p, TVector3 &pos) const;   
 
-  static  Double_t GetAlpha() { return 2 * 3.14159265358979323846 / fgkNsect; }; 
+  static  Double_t GetAlpha()  { return 2 * 3.14159265358979323846 / fgkNsect; }; 
 
  protected:
 
@@ -130,7 +149,9 @@ class AliTRDgeometry : public AliGeometry {
 
   Int_t                fRowMax[kNplan][kNcham][kNsect];     // Number of pad-rows
   Int_t                fColMax[kNplan];                     // Number of pad-columns
-  Int_t                fTimeMax;                            // Number of time buckets
+  Int_t                fTimeMax;                            // Number of timebins in the drift region
+  Int_t                fTimeBefore;                         // Number of timebins before the drift region
+  Int_t                fTimeAfter;                          // Number of timebins after the drift region
 
   Float_t              fCwidth[kNplan];                     // Width of the chambers
 

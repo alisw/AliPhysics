@@ -104,7 +104,7 @@ class AliTRDsim : public TObject {
 
   Double_t *fSigma;                //[fSpNBins] Array of sigma values
 
-  TH1D     *fSpectrum;             // TR photon energy spectrum
+  TH1D     *fSpectrum;             //!TR photon energy spectrum
 
   ClassDef(AliTRDsim,1)            // Simulates TR photons
 

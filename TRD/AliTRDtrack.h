@@ -34,7 +34,8 @@ public:
      return TMath::Abs(GetPt())*sqrt(1.+GetTgl()*GetTgl());
    }
    Double_t GetPredictedChi2(const AliTRDcluster*) const ;
-   Double_t GetPt()    const {return 0.3*0.2/GetC()/100;}
+   //Double_t GetPt()    const {return 0.3*0.2/GetC()/100;}
+   Double_t GetPt()    const {return 0.3*0.4/GetC()/100;}
    void     GetPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const ;
    Double_t GetSigmaC2()   const {return fCcc;}
    Double_t GetSigmaTgl2() const {return fCtt;}
@@ -44,6 +45,9 @@ public:
    Double_t GetX()   const {return fX;}
    Double_t GetY()   const {return fY;} // returns running Y
    Double_t GetZ()   const {return fZ;}
+
+   Float_t  GetLikelihoodPion()     const { return fLhPion;     };
+   Float_t  GetLikelihoodElectron() const { return fLhElectron; };
 
    Bool_t   IsSortable() const {return kTRUE;}
 
@@ -58,6 +62,8 @@ public:
 
    void     Update(const AliTRDcluster* c, Double_t chi2, UInt_t i);
 
+   void     SetLikelihoodPion(Float_t l)     { fLhPion     = l; };
+   void     SetLikelihoodElectron(Float_t l) { fLhElectron = l; };
 
 protected:
 
@@ -82,9 +88,11 @@ protected:
 
    Short_t fN;             // number of clusters associated with the track
    UInt_t  fIndex[200];    // global indexes of these clusters  
-			   
 
-   ClassDef(AliTRDtrack,1)  // TRD reconstructed tracks
+   Float_t fLhElectron;    // Likelihood to be an electron
+   Float_t fLhPion;        // Likelihood to be a pion		   
+
+   ClassDef(AliTRDtrack,2)  // TRD reconstructed tracks
 };                     
 
 

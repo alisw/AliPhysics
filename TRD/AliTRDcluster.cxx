@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/12/08 16:07:02  cblume
+Update of the tracking by Sergei
+
 Revision 1.2  2000/10/06 16:49:46  cblume
 Made Getters const
 
@@ -27,38 +30,48 @@ Add the tracking code
 #include "AliTRDgeometry.h"
 #include "AliTRDrecPoint.h"
 
-
 ClassImp(AliTRDcluster)
  
 //_____________________________________________________________________________
-AliTRDcluster::AliTRDcluster() {
-  //default constructor
+AliTRDcluster::AliTRDcluster() 
+{
+  //
+  // Default constructor
+  //
 
-  fDetector = fTimeBin = 0;
-  fTracks[0]=fTracks[1]=fTracks[2]=0; 
-  fY=fZ=fQ=fSigmaY2=fSigmaZ2=0.;
+  fDetector  = 0;
+  fTimeBin   = 0;
+  fTracks[0] = 0;
+  fTracks[1] = 0;
+  fTracks[2] = 0; 
+  fY         = 0;
+  fZ         = 0;
+  fQ         = 0;
+  fSigmaY2   = 0;
+  fSigmaZ2   = 0;
+
 }
 
 //_____________________________________________________________________________
-AliTRDcluster::AliTRDcluster(AliTRDrecPoint *rp)
+AliTRDcluster::AliTRDcluster(const AliTRDrecPoint &p)
 {
   //
-  // constructor from AliTRDrecPoint
+  // Constructor from AliTRDrecPoint
   //
 
-  fDetector   = rp->GetDetector();
-  fTimeBin    = rp->GetLocalTimeBin();
+  fDetector   = p.GetDetector();
+  fTimeBin    = p.GetLocalTimeBin();
 
-  fTracks[0]  = rp->GetTrackIndex(0);
-  fTracks[1]  = rp->GetTrackIndex(1);
-  fTracks[2]  = rp->GetTrackIndex(2);
+  fTracks[0]  = p.GetTrackIndex(0);
+  fTracks[1]  = p.GetTrackIndex(1);
+  fTracks[2]  = p.GetTrackIndex(2);
 
-  fQ          = rp->GetEnergy();
+  fQ          = p.GetEnergy();
 
-  fY          = rp->GetY();
-  fZ          = rp->GetZ();
-  fSigmaY2    = rp->GetSigmaY2();
-  fSigmaZ2    = rp->GetSigmaZ2();  
+  fY          = p.GetY();
+  fZ          = p.GetZ();
+  fSigmaY2    = p.GetSigmaY2();
+  fSigmaZ2    = p.GetSigmaZ2();  
 
   fSigmaY2    = 0.2;
   fSigmaZ2    = 5.;  
@@ -66,25 +79,126 @@ AliTRDcluster::AliTRDcluster(AliTRDrecPoint *rp)
 }
 
 //_____________________________________________________________________________
-AliTRDcluster::AliTRDcluster(AliTRDcluster *cl)
+AliTRDcluster::AliTRDcluster(const AliTRDcluster &c)
 {
   //
   // Copy constructor 
   //
 
-  fDetector   = cl->GetDetector();
-  fTimeBin    = cl->GetLocalTimeBin();
+  ((AliTRDcluster &) c).Copy(*this);
 
-  fTracks[0]  = cl->GetTrackIndex(0);
-  fTracks[1]  = cl->GetTrackIndex(1);
-  fTracks[2]  = cl->GetTrackIndex(2);
+}
 
-  fQ          = cl->GetQ();
+//_____________________________________________________________________________
+AliTRDcluster::~AliTRDcluster()
+{
+  //
+  // AliTRDcluster destructor
+  //
 
-  fY          = cl->GetY();
-  fZ          = cl->GetZ();
-  fSigmaY2    = cl->GetSigmaY2();
-  fSigmaZ2    = cl->GetSigmaZ2();  
+}
+
+//_____________________________________________________________________________
+AliTRDcluster &AliTRDcluster::operator=(const AliTRDcluster &c)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &c) ((AliTRDcluster &) c).Copy(*this);
+  return *this;
+
+}
+
+//_____________________________________________________________________________
+void AliTRDcluster::Copy(TObject &c)
+{
+  //
+  // Copy function
+  //
+
+  ((AliTRDcluster &) c).fDetector   = fDetector;
+  ((AliTRDcluster &) c).fTimeBin    = fTimeBin;
+
+  ((AliTRDcluster &) c).fTracks[0]  = fTracks[0];
+  ((AliTRDcluster &) c).fTracks[1]  = fTracks[1];
+  ((AliTRDcluster &) c).fTracks[2]  = fTracks[2];
+
+  ((AliTRDcluster &) c).fQ          = fQ;
+
+  ((AliTRDcluster &) c).fY          = fY;
+  ((AliTRDcluster &) c).fZ          = fZ;
+  ((AliTRDcluster &) c).fSigmaY2    = fSigmaY2;
+  ((AliTRDcluster &) c).fSigmaZ2    = fSigmaZ2;  
+
+}
+
+
+//_____________________________________________________________________________
+void AliTRDcluster::AddTrackIndex(Int_t *track)
+{
+  //
+  // Adds track index. Currently assumed that track is an array of
+  // size 9, and up to 3 track indexes are stored in fTracks[3].
+  // Indexes are sorted according to:
+  //  1) index of max number of appearances is stored first
+  //  2) if two or more indexes appear equal number of times, the lowest
+  //     ones are stored first;
+  //
+
+  const Int_t size = 9;
+
+  Int_t entries[size][2], i, j, index;
+
+  Bool_t index_added;
+
+  for (i=0; i<size; i++) {
+    entries[i][0]=-1;
+    entries[i][1]=0;
+  }
+
+  for (Int_t k=0; k<size; k++) {
+    index=track[k];
+    index_added=kFALSE; j=0;
+    if (index >= 0) {
+      while ( (!index_added) && ( j < size ) ) {
+        if ((entries[j][0]==index) || (entries[j][1]==0)) {
+          entries[j][0]=index;
+          entries[j][1]=entries[j][1]+1;
+          index_added=kTRUE;
+        }
+        j++;
+      }
+    }
+  }
+
+  // sort by number of appearances and index value
+  Int_t swap=1, tmp0, tmp1;
+  while ( swap > 0) {
+    swap=0;
+    for(i=0; i<(size-1); i++) {
+      if ((entries[i][0] >= 0) && (entries[i+1][0] >= 0)) {
+        if ((entries[i][1] < entries[i+1][1]) ||
+            ((entries[i][1] == entries[i+1][1]) &&
+             (entries[i][0] > entries[i+1][0]))) {
+               tmp0=entries[i][0];
+               tmp1=entries[i][1];
+               entries[i][0]=entries[i+1][0];
+               entries[i][1]=entries[i+1][1];
+               entries[i+1][0]=tmp0;
+               entries[i+1][1]=tmp1;
+               swap++;
+        }
+      }
+    }
+  }
+
+  // set track indexes
+  for(i=0; i<3; i++) {
+    fTracks[i] = entries[i][0];
+  }
+
+  return;
 
 }
 

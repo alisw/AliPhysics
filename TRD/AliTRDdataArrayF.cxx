@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/11/23 14:34:08  cblume
+Fixed bug in expansion routine of arrays (initialize buffers properly)
+
 Revision 1.7  2000/11/20 08:56:07  cblume
 Cleanup of data arrays
 
@@ -230,6 +233,18 @@ Float_t AliTRDdataArrayF::GetData(Int_t row, Int_t col, Int_t time) const
   }
 
   return -1;
+
+}
+
+//_____________________________________________________________________________
+Float_t AliTRDdataArrayF::GetDataFast(Int_t idx1, Int_t idx2) const
+{
+  //
+  // Returns the data value at a given position of the array
+  // No boundary checking
+  //
+
+  return fElements->At(fIndex->At(idx2)+idx1);
 
 }
 
@@ -639,17 +654,6 @@ Float_t AliTRDdataArrayF::GetData1(Int_t idx1, Int_t idx2) const
 
 }
 
-//____________________________________________________________________________
-Float_t AliTRDdataArrayF::GetDataFast(Int_t idx1, Int_t idx2) const
-{
-  //
-  // Returns the value at a given position in the array
-  //
-
-  return fElements->At(fIndex->At(idx2) + idx1); 
-
-}
-
 //_____________________________________________________________________________
 void AliTRDdataArrayF::SetData(Int_t row, Int_t col, Int_t time, Float_t value)
 {
@@ -675,20 +679,14 @@ void AliTRDdataArrayF::SetData(Int_t row, Int_t col, Int_t time, Float_t value)
 }
 
 //_____________________________________________________________________________
-void  AliTRDdataArrayF::SetDataFast(Int_t idx1, Int_t idx2, Float_t value)
+void AliTRDdataArrayF::SetDataFast(Int_t idx1, Int_t idx2, Float_t value)
 {
   //
-  // Set the value at a given position in the array
+  // Sets the data value at a given position of the array
+  // No boundary checking
   //
 
-  if ((idx1 < 0) || (idx1 >= fNdim1) || 
-      (idx2 < 0) || (idx2 >= fNdim2)) { 
-    TObject::Error("SetDataFast"
-                  ,"idx1 %d  idx2 %d out of bounds (size: %d x %d, this: 0x%08x)"
-                  ,idx1,idx2,fNdim1,fNdim2,this);
-  }
-
-  (*fElements)[fIndex->fArray[idx2] + idx1] = value; 
+  (*fElements)[fIndex->fArray[idx2]+idx1] = value;
 
 }
 
