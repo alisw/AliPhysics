@@ -21,7 +21,8 @@
  
 $Log$
 
-
+Revision 1.3  2003/09/04 12:49:56  mhorner
+Changed hadron correction and added saving EMCAL and track contributions
 
 */
 
@@ -260,15 +261,16 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
 	 for(Int_t i=0; i<fNumUnits; i++)
 	   {
              if (fDebug>10) Info("FillUnitArray","Setting all units outside jets");
-	     fUnit[i].SetUnitFlag(kOutJet);           //Set all units to be outside a jet initially
+	     //Set all units to be outside a jet initially
+	     fUnit[i].SetUnitFlag(kOutJet);           
 	     fUnit[i].SetUnitID(i+1);
 	     Float_t eta;
 	     Float_t phi;
 	     geom->EtaPhiFromIndex(fUnit[i].GetUnitID(), eta, phi);
 	     fUnit[i].SetUnitEta(eta);
 	     fUnit[i].SetUnitPhi(phi*TMath::Pi()/180.0);
-
-	     fUnitNoCuts[i].SetUnitFlag(kOutJet);           //Set all units to be outside a jet initially
+	     //Set all units to be outside a jet initially
+	     fUnitNoCuts[i].SetUnitFlag(kOutJet);          
 	     fUnitNoCuts[i].SetUnitID(i+1);
 	     eta = 0.0;
 	     phi = 0.0;
@@ -489,7 +491,9 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
      TParticle         *myP;
      Int_t             numTracksInCone = 0;
      Float_t           trackEnergy = 0.0;
+     Float_t           trackEnergyPtCut =0.0; 
      Float_t           emcalEnergy = 0.0;
+     Float_t           emcalEnergyBGSub = 0.0;
 
      for(Int_t counter=0; counter<numberTracks; counter++)
        {
@@ -520,11 +524,20 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
 	   {
 	     pTArray[index] = myP->Pt();
 	     //Calculate track contribution within jetcone
-	     if(myP->Pt() >= fPtCut) trackEnergy += myP->Pt();
+	     trackEnergy += myP->Pt();
+	     if(myP->Pt() >= fPtCut) trackEnergyPtCut += myP->Pt();
 	     etaArray[index] = eta;
 	     phiArray[index] = phi;
 	     pdgArray[index] = myP->GetPdgCode();
 	     index++;
+	     if(fHadCorr != 0)
+	     {
+		     Double_t   fullP = myP->P();
+		     Double_t   hCEnergy = fHadCorr->GetEnergy(fullP, (Double_t)eta);
+		     emcalEnergy -= hCEnergy*TMath::Sin(myP->Theta());
+		     emcalEnergyBGSub -= hCEnergy*TMath::Sin(myP->Theta());
+	     } //end Hadron Correction loop 
+			   
 	   }//end if
        }//end for
 
@@ -538,7 +551,7 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
 	 Int_t ID = myD->GetId();
 	 geom->EtaPhiFromIndex(ID, eta, phi);
 	 Float_t deta = fJetEta-eta;
-	 Float_t dphi = fJetPhi -phi;
+	 Float_t dphi = fJetPhi -(TMath::Pi()/180.0)*phi;
 	 Float_t rad = TMath::Sqrt( (deta*deta) + (dphi*dphi));
 	 if(rad<=fConeRad)
 	   {
@@ -546,12 +559,16 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
 	 Float_t amp = (Float_t)amplitude;        //Need to typecast to Float_t before doing real energy conversion
 	 Float_t digitEnergy = amp/10000000.0;    //Factor of 10 million needed to convert!
 	 emcalEnergy += digitEnergy;
+	 emcalEnergyBGSub += (digitEnergy - fEBGAve);
 	   }//end if
        }//end count3 for
 
+     //Save in JET object
      fJet.SetTrackList(numTracksInCone,pTArray, etaArray, phiArray, pdgArray);
      fJet.SetEMCALEnergy(emcalEnergy);
+     fJet.SetEMCALEnergyBGSub(emcalEnergyBGSub);
      fJet.SetTrackEnergy(trackEnergy);
+     fJet.SetTrackEnergyPtCut(trackEnergyPtCut);
      fOutputObject.AddJet(&fJet);
      delete[] pTArray;
      delete[] etaArray;
