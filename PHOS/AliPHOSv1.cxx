@@ -71,7 +71,7 @@ AliPHOSv1::AliPHOSv1(const char *name, const char *title):
   //     is used for the digitization part.
  
   fPinElectronicNoise = 0.010 ;
-  fDigitThreshold      = 1. ;   // 1 GeV 
+  fDigitThreshold      = 0.1 ;   // 1 GeV 
 
   // We do not want to save in TreeH the raw hits
   // But save the cumulated hits instead (need to create the branch myself)
@@ -443,7 +443,6 @@ void AliPHOSv1::ResetReconstruction()
   if ( fRecParticles )   fRecParticles->Delete();
   
 }
-//____________________________________________________________________________
 
 //____________________________________________________________________________
 void AliPHOSv1::SetTreeAddress()
