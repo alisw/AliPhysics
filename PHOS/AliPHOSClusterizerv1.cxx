@@ -60,6 +60,7 @@
 #include "AliPHOSCpvRecPoint.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSDigitizer.h"
+#include "AliPHOSCalibrationDB.h"
 
 ClassImp(AliPHOSClusterizerv1)
   
@@ -88,11 +89,7 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(const TString alirunFileName, const T
 {
   // dtor
 
- //  delete fPedestals ;
-//   delete fGains ;
 }
-
-
 //____________________________________________________________________________
 const TString AliPHOSClusterizerv1::BranchName() const 
 {  
@@ -103,14 +100,15 @@ const TString AliPHOSClusterizerv1::BranchName() const
 Float_t  AliPHOSClusterizerv1::Calibrate(Int_t amp, Int_t absId) const
 {  
   //To be replaced later by the method, reading individual parameters from the database
-  //   if(fCalibrationDB)
-  //     return fCalibrationDB->Calibrate(amp,absId) ;
-  //   else{ //simulation
-  if(absId <= fEmcCrystals) //calibrate as EMC 
-    return fADCpedestalEmc + amp*fADCchanelEmc ;        
-  else //calibrate as CPV
-    return fADCpedestalCpv+ amp*fADCchanelCpv ;       
-  //  }
+  if(fCalibrationDB){
+    return fCalibrationDB->Calibrate(amp,absId) ;
+  }
+  else{ //simulation
+    if(absId <= fEmcCrystals) //calibrate as EMC 
+      return fADCpedestalEmc + amp*fADCchanelEmc ;        
+    else //calibrate as CPV
+      return fADCpedestalCpv+ amp*fADCchanelCpv ;       
+  }
 }
 
 //____________________________________________________________________________
@@ -129,20 +127,19 @@ void AliPHOSClusterizerv1::Exec(Option_t *option)
     return ;
   }
 
-  AliPHOSGetter * gime = AliPHOSGetter::Instance(GetTitle()) ; 
+  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
+  GetCalibrationParameters() ;
   
   if (fLastEvent == -1) 
     fLastEvent = gime->MaxEvent() - 1 ;
   else 
     fLastEvent = TMath::Min(fFirstEvent, gime->MaxEvent()); // one event at the time 
   Int_t nEvents   = fLastEvent - fFirstEvent + 1;
-  
+
   Int_t ievent ;
   for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
     gime->Event(ievent, "D");
     
-    GetCalibrationParameters() ;
-
     fNumberOfEmcClusters  = fNumberOfCpvClusters  = 0 ;
     
     MakeClusters() ;
@@ -160,7 +157,8 @@ void AliPHOSClusterizerv1::Exec(Option_t *option)
     fRecPointsInRun += gime->CpvRecPoints()->GetEntriesFast() ;  
     }
   
-  Unload();
+  if(fWrite) //do not unload in "on flight" mode
+    Unload();
   
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSClusterizer");
@@ -270,16 +268,19 @@ void AliPHOSClusterizerv1::GetCalibrationParameters()
 
   AliPHOSGetter * gime = AliPHOSGetter::Instance();
 
-  if ( !gime->Digitizer() ) 
-    gime->LoadDigitizer();
-  AliPHOSDigitizer * dig = gime->Digitizer(); 
-  fADCchanelEmc   = dig->GetEMCchannel() ;
-  fADCpedestalEmc = dig->GetEMCpedestal();
-  
-  fADCchanelCpv   = dig->GetCPVchannel() ;
-  fADCpedestalCpv = dig->GetCPVpedestal() ; 
-
-  //   fCalibrationDB = gime->CalibrationDB();
+  if(gime->IsRawDigits()){
+    fCalibrationDB = gime->CalibrationDB();    
+  }
+  else{
+    if ( !gime->Digitizer() ) 
+      gime->LoadDigitizer();
+    AliPHOSDigitizer * dig = gime->Digitizer(); 
+    fADCchanelEmc   = dig->GetEMCchannel() ;
+    fADCpedestalEmc = dig->GetEMCpedestal();
+    
+    fADCchanelCpv   = dig->GetCPVchannel() ;
+    fADCpedestalCpv = dig->GetCPVpedestal() ; 
+  }  
 }
 
 //____________________________________________________________________________
@@ -287,18 +288,21 @@ void AliPHOSClusterizerv1::Init()
 {
   // Make all memory allocations which can not be done in default constructor.
   // Attach the Clusterizer task to the list of PHOS tasks
-   
-  AliPHOSGetter* gime = AliPHOSGetter::Instance(GetTitle(), fEventFolderName.Data());
+ 
+  AliPHOSGetter* gime = AliPHOSGetter::Instance() ;
+  if(!gime)
+    gime = AliPHOSGetter::Instance(GetTitle(), fEventFolderName.Data());
 
   AliPHOSGeometry * geom = gime->PHOSGeometry();
-  
+
   fEmcCrystals = geom->GetNModules() *  geom->GetNCristalsInModule() ;
 
   if(!gMinuit) 
     gMinuit = new TMinuit(100);
 
-  if ( !gime->Clusterizer() ) 
+  if ( !gime->Clusterizer() ) {
     gime->PostClusterizer(this);
+  }
 }
 
 //____________________________________________________________________________
@@ -313,7 +317,10 @@ void AliPHOSClusterizerv1::InitParameters()
   
   fEmcLocMaxCut            = 0.03 ;
   fCpvLocMaxCut            = 0.03 ;
-  
+
+  fEmcMinE                 = 0.01 ;
+  fCpvMinE                 = 0.0  ;
+
   fW0                      = 4.5 ;
   fW0CPV                   = 4.0 ;
 
@@ -322,6 +329,8 @@ void AliPHOSClusterizerv1::InitParameters()
   fToUnfold                = kTRUE ;
     
   fRecPointsInRun          = 0 ;
+
+  fWrite                   = kTRUE ;
 
   SetEventRange(0,-1) ;
 }
@@ -369,8 +378,21 @@ Int_t AliPHOSClusterizerv1::AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)c
 
   return rv ; 
 }
+//____________________________________________________________________________
+void AliPHOSClusterizerv1::CleanDigits(TClonesArray * digits){
+  for(Int_t i=0; i<digits->GetEntriesFast(); i++){
+    AliPHOSDigit * digit = static_cast<AliPHOSDigit*>(digits->At(i)) ;
+    Float_t cut = IsInEmc(digit) ? fEmcMinE : fCpvMinE ;
+    if(Calibrate(digit->GetAmp(),digit->GetId()) < cut)
+      digits->RemoveAt(i) ;
+  }
+  digits->Compress() ;
+  for (Int_t i = 0 ; i < digits->GetEntriesFast() ; i++) { 
+    AliPHOSDigit *digit = static_cast<AliPHOSDigit*>( digits->At(i) ) ; 
+    digit->SetIndexInList(i) ;     
+  }
 
-
+}
 //____________________________________________________________________________
 Bool_t AliPHOSClusterizerv1::IsInEmc(AliPHOSDigit * digit) const
 {
@@ -422,24 +444,33 @@ void AliPHOSClusterizerv1::WriteRecPoints()
   TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
   TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
   TClonesArray * digits = gime->Digits() ; 
-  
-  TTree * treeR = gime->TreeR();
-
+ 
+ 
   Int_t index ;
-  //Evaluate position, dispersion and other RecPoint properties...
-  for(index = 0; index < emcRecPoints->GetEntries(); index++)
-    dynamic_cast<AliPHOSEmcRecPoint *>( emcRecPoints->At(index) )->EvalAll(fW0,digits) ;
-  
+  //Evaluate position, dispersion and other RecPoint properties..
+  Int_t nEmc = emcRecPoints->GetEntriesFast();
+  for(index = 0; index < nEmc; index++){
+    AliPHOSEmcRecPoint * rp = dynamic_cast<AliPHOSEmcRecPoint *>( emcRecPoints->At(index) );
+    rp->Purify(fEmcMinE) ;
+    if(rp->GetMultiplicity()>0.) //If this RP is not empty
+      rp->EvalAll(fW0,digits) ;
+    else{
+      emcRecPoints->RemoveAt(index) ;
+      delete rp ;
+    }
+  }
+  emcRecPoints->Compress() ;
   emcRecPoints->Sort() ;
-  for(index = 0; index < emcRecPoints->GetEntries(); index++)
+  //  emcRecPoints->Expand(emcRecPoints->GetEntriesFast()) ;
+  for(index = 0; index < emcRecPoints->GetEntries(); index++){
     dynamic_cast<AliPHOSEmcRecPoint *>( emcRecPoints->At(index) )->SetIndexInList(index) ;
-  
-  emcRecPoints->Expand(emcRecPoints->GetEntriesFast()) ; 
+  }
   
   //Now the same for CPV
-  for(index = 0; index < cpvRecPoints->GetEntries(); index++)
-    dynamic_cast<AliPHOSCpvRecPoint *>( cpvRecPoints->At(index) )->EvalAll(fW0CPV,digits) ;
-  
+  for(index = 0; index < cpvRecPoints->GetEntries(); index++){
+    AliPHOSCpvRecPoint * rp = dynamic_cast<AliPHOSCpvRecPoint *>( cpvRecPoints->At(index) );
+    rp->EvalAll(fW0CPV,digits) ;
+  }
   cpvRecPoints->Sort() ;
   
   for(index = 0; index < cpvRecPoints->GetEntries(); index++)
@@ -447,22 +478,26 @@ void AliPHOSClusterizerv1::WriteRecPoints()
   
   cpvRecPoints->Expand(cpvRecPoints->GetEntriesFast()) ;
   
-  Int_t bufferSize = 32000 ;    
-  Int_t splitlevel = 0 ;
- 
-  //First EMC
-  TBranch * emcBranch = treeR->Branch("PHOSEmcRP","TObjArray",&emcRecPoints,bufferSize,splitlevel);
-  emcBranch->SetTitle(BranchName());
+  if(fWrite){ //We write TreeR
+    TTree * treeR = gime->TreeR();
     
-  //Now CPV branch
-  TBranch * cpvBranch = treeR->Branch("PHOSCpvRP","TObjArray",&cpvRecPoints,bufferSize,splitlevel);
-  cpvBranch->SetTitle(BranchName());
+    Int_t bufferSize = 32000 ;    
+    Int_t splitlevel = 0 ;
     
-  emcBranch        ->Fill() ;
-  cpvBranch        ->Fill() ;
-  
-  gime->WriteRecPoints("OVERWRITE");
-  gime->WriteClusterizer("OVERWRITE");
+    //First EMC
+    TBranch * emcBranch = treeR->Branch("PHOSEmcRP","TObjArray",&emcRecPoints,bufferSize,splitlevel);
+    emcBranch->SetTitle(BranchName());
+    
+    //Now CPV branch
+    TBranch * cpvBranch = treeR->Branch("PHOSCpvRP","TObjArray",&cpvRecPoints,bufferSize,splitlevel);
+    cpvBranch->SetTitle(BranchName());
+    
+    emcBranch        ->Fill() ;
+    cpvBranch        ->Fill() ;
+    
+    gime->WriteRecPoints("OVERWRITE");
+    gime->WriteClusterizer("OVERWRITE");
+  }
 }
 
 //____________________________________________________________________________
@@ -481,6 +516,10 @@ void AliPHOSClusterizerv1::MakeClusters()
   cpvRecPoints->Delete() ;
   
   TClonesArray * digits = gime->Digits() ; 
+
+  //Remove digits below threshold
+  CleanDigits(digits) ;
+
 
   TClonesArray * digitsC =  static_cast<TClonesArray*>( digits->Clone() ) ;
   
