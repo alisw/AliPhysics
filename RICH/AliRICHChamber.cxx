@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.1  2000/04/19 12:57:20  morsch
+  Newly structured and updated version (JB, AM)
+
 */
 
 
@@ -119,7 +122,7 @@ void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
     local[0]=xhit;
     // z-position of the wires relative to the RICH mother volume 
     // (2 mmm before CsI) old value: 6.076
-    local[1]=1.276 + fGeometry->GetGapThickness()/2 + fGeometry->GetProximityGapThickness() - .39;
+    local[1]=1.276 + fGeometry->GetGapThickness()/2  - .2;
     //printf("AliRICHChamber feedback origin:%f",local[1]);
     local[2]=yhit;
 
