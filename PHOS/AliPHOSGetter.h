@@ -144,7 +144,7 @@ public:
   
   //========== TrackSegments   TClonesArray * TrackSegments(const char * name = 0) { 
   TClonesArray *           TrackSegments() ;
-  AliPHOSTrackSegment *  TrackSegments(Int_t index) { return static_cast<AliPHOSTrackSegment *>(TrackSegments()->At(index)) ;} 
+  AliPHOSTrackSegment *  TrackSegment(Int_t index) { return static_cast<AliPHOSTrackSegment *>(TrackSegments()->At(index)) ;} 
   TTree *               TreeT() const ;
   AliPHOSTrackSegmentMaker * TrackSegmentMaker() ;
   TString               GetTracksFileName() const { return PhosLoader()->GetTracksFileName() ; } 
@@ -157,7 +157,7 @@ public:
   
   //========== RecParticles ===========
   TClonesArray *         RecParticles() ;
-  AliPHOSRecParticle *   RecPaticles(Int_t index) { return static_cast<AliPHOSRecParticle *>(RecParticles()->At(index)) ;} 
+  AliPHOSRecParticle *   RecParticle(Int_t index) { return static_cast<AliPHOSRecParticle *>(RecParticles()->At(index)) ;} 
   TTree *               TreeP() const ;
   AliPHOSPID * PID() ;
   TString               GetRecParticlesFileName() const { return PhosLoader()->GetRecParticlesFileName() ; } 
