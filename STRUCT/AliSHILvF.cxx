@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2001/04/23 23:12:41  morsch
+Overlap in closing cone corrected (thanks to Ivana Hrivnacova)
+
 Revision 1.5  2001/03/16 16:26:05  morsch
 Put vacuum in beam-pipe not air.
 
@@ -1276,7 +1279,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   par4[20] = R43;
 
   par4[21] = -dl+(zvac12-zvac9);
-  par4[22] = rAbs;
+  par4[22] = rVacu+dVacuS;
   par4[23] = R43;
 
   gMC->Gsvolu("YGO4", "PCON", idtmed[iHeavy+40], par4, 24);
@@ -1313,7 +1316,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   cpar[0]=(zvac12-zvac11)/2.;
   cpar[1] = r3+(zvac11-zvac9-dHorZ) * TMath::Tan(thetaOpen3);
   cpar[2] = cpar[1]+0.001;
-  cpar[3] = rAbs;
+  cpar[3] = rVacu +  dVacuS;
   cpar[4] = cpar[2];
   gMC->Gsvolu("YCC4", "CONE", idtmed[kConcrete+40], cpar, 5);
   dz=dl-cpar[0];
@@ -1466,7 +1469,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 // 4th section: vacuum system 
 //
 // up to closing cone
-  r3V=r3-dr23+dVacuS;
+  r3V=r3-1.0;
 
   cpar0[0]=(zvac11-zvac9)/2;
   cpar0[1]=r3V-dVacuS;
