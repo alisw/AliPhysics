@@ -85,8 +85,10 @@ void AliEventAction::DisplayEvent(const G4Event* event) const
 	  "AliEventAction::DisplayEvent: Unknown trajectory type.");
       }
       else if ( (fDrawFlag == "ALL") ||
-               ((fDrawFlag == "CHARGED") && (trajectory->GetCharge() != 0.))){
-        trajectory->DrawTrajectory(2000); 
+               ((fDrawFlag == "CHARGED") && (trajectory->GetCharge() != 0.))){	       
+	trajectory->DrawTrajectory(50); 
+	    // the argument number defines the size of the step points
+	    // use 2000 to make step points well visible
       }	
     }      
     G4UImanager::GetUIpointer()->ApplyCommand("/vis~/show/view");
