@@ -125,6 +125,7 @@ G4String AliLVStructure::ExtractDirName(const G4String& name) const
   return subDir;
 }
 
+//_____________________________________________________________________________
 void AliLVStructure::ClearAndDestroy(LVStructuresVector* structures) 
 {
 // Clears the structures vectors and deletes all contained 
