@@ -40,26 +40,21 @@ ClassImp(AliITSVertex)
 //______________________________________________________________________
 AliITSVertex::AliITSVertex() {
     // Default Constructor
-
-    fPosition   = 0;
-    fResolution = 0;
-    fSNR        = 0;
+	
+	Int_t i;
+	for (i = 0; i < 3; i++) {
+	    fPosition[i]   = 0.0;
+    	fResolution[i] = 0.0;
+	    fSNR[i]        = 0.0;
+	}
 }
 //______________________________________________________________________
 AliITSVertex::~AliITSVertex() {
-    // Default Constructor
-
-    if(fPosition){ delete [] fPosition; fPosition   = 0;}
-    if(fResolution){ delete []fResolution; fResolution = 0;}
-    if(fSNR){ delete [] fSNR;fSNR        = 0;}
+    // Default Destructor
 }
 //______________________________________________________________________
 void AliITSVertex::Exec(){
 
-   fPosition = new Double_t[3];
-   fResolution = new Double_t[3];
-   fSNR = new Double_t[3];
-  
    AliITS* aliits =(AliITS *)gAlice->GetDetector("ITS");
    AliITSgeom *g2 = ((AliITS*)aliits)->GetITSgeom(); 
    
