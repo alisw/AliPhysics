@@ -23,6 +23,17 @@ public:
   virtual ~AliComplexCluster() {;}
   Bool_t    IsSortable() const;
   Int_t Compare(const TObject *o) const;
+  // the following getters are needed by HLT
+  // please dont remove... C. Loizides
+  Int_t GetTrack(Int_t i){return fTracks[i];} //labels of overlapped tracks
+  Float_t GetX(){return fX;}
+  Float_t GetY(){return fY;}
+  Float_t GetQ(){return fQ;}
+  Float_t GetSigmaX2(){return fSigmaX2;}
+  Float_t GetSigmaY2(){return fSigmaY2;}
+  Float_t GetSigmaXY(){return fSigmaXY;}
+  Float_t GetArea(){return fArea;}
+  Float_t GetMax(){return fMax;}
 private:
   Int_t     fTracks[3];//labels of overlapped tracks
   Float_t   fX ;       //Y of cluster
