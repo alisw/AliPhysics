@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2002/11/19 16:13:24  hristov
+stdlib.h included to declare exit() on HP
+
 Revision 1.23  2002/11/19 11:50:08  hristov
 Removing CONTAINERS (Yu.Belikov)
 
@@ -234,7 +237,9 @@ void AliTPCtracker::LoadClusters() {
       "can't get the segment branch !\n";
     return;
   }
-  AliClusters carray, *addr=&carray; carray.SetClass("AliTPCcluster");
+  AliClusters carray, *addr=&carray;
+  carray.SetClass("AliTPCcluster");
+  carray.SetArray(0);
   branch->SetAddress(&addr);
 
   Int_t nentr=(Int_t)cTree->GetEntries();
