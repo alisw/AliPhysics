@@ -165,7 +165,7 @@ static Int_t CorrectForDeadZoneMaterial(AliITStrackV2 *t) {
      //Double_t x,y,z; t->GetGlobalXYZat(rr,x,y,z);
      //if (TMath::Abs(y)<yyr) t->PropagateTo(rr,-dr,x0r); 
      if (!t->PropagateTo(rcd,-dcd,x0cd)) return 1;
-     if (!t->PropagateTo(riw,-diw,x0iw)) return 1;
+     if (!t->PropagateTo(riw+0.001,-diw,x0iw)) return 1;
   } else {
   ::Error("CorrectForDeadZoneMaterial","track is already in the dead zone !");
     return 1;
@@ -187,7 +187,9 @@ Int_t AliITStrackerV2::Clusters2Tracks(AliESD *event) {
     while (nentr--) {
       AliESDtrack *esd=event->GetTrack(nentr);
 
-      if (esd->GetStatus() != AliESDtrack::kTPCin) continue;
+      if ((esd->GetStatus()&AliESDtrack::kTPCin)==0) continue;
+      if (esd->GetStatus()&AliESDtrack::kTPCout) continue;
+      if (esd->GetStatus()&AliESDtrack::kITSin) continue;
 
       AliITStrackV2 *t=0;
       try {
@@ -363,7 +365,8 @@ Int_t AliITStrackerV2::PropagateBack(AliESD *event) {
   for (Int_t i=0; i<nentr; i++) {
      AliESDtrack *esd=event->GetTrack(i);
 
-     if (esd->GetStatus()!=(AliESDtrack::kTPCin|AliESDtrack::kITSin)) continue;
+     if ((esd->GetStatus()&AliESDtrack::kITSin)==0) continue;
+     if (esd->GetStatus()&AliESDtrack::kITSout) continue;
 
      AliITStrackV2 *t=0;
      try {
@@ -394,7 +397,7 @@ Int_t AliITStrackerV2::PropagateBack(AliESD *event) {
           continue;
         }
         fTrackToFollow.SetLabel(t->GetLabel());
-        fTrackToFollow.CookdEdx();
+        //fTrackToFollow.CookdEdx();
         CookLabel(&fTrackToFollow,0.); //For comparison only
         fTrackToFollow.UpdateESDtrack(AliESDtrack::kITSout);
         UseClusters(&fTrackToFollow);
@@ -421,10 +424,10 @@ Int_t AliITStrackerV2::RefitInward(AliESD *event) {
   for (Int_t i=0; i<nentr; i++) {
     AliESDtrack *esd=event->GetTrack(i);
 
-    ULong_t flags = AliESDtrack::kITSin | AliESDtrack::kTPCrefit;
-
-    if ( (esd->GetStatus() & flags) != flags ) continue;
-    if ( esd->GetStatus() & AliESDtrack::kITSrefit) continue;
+    if ((esd->GetStatus()&AliESDtrack::kITSout) == 0) continue;
+    if (esd->GetStatus()&AliESDtrack::kITSrefit) continue;
+    if (esd->GetStatus()&AliESDtrack::kTPCout)
+    if ((esd->GetStatus()&AliESDtrack::kTPCrefit)==0) continue;
 
     AliITStrackV2 *t=0;
     try {
