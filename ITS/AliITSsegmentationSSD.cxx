@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.10  2001/05/01 22:42:22  nilsen
+Update of SSD simulation and reconstruction code by Boris and Enrico.
+
 Revision 1.9  2001/04/27 14:16:50  nilsen
 Remove dead and/or unused code and printout lines. i.e. cleaned it up a bit.
 
@@ -121,8 +124,10 @@ void AliITSsegmentationSSD::GetPadTxz(Float_t &x,Float_t &z){
                      |0/
     // expects x, z in microns
     */
-    Float_t tanP = TMath::Tan(fStereoP);
-    Float_t tanN = TMath::Tan(-fStereoN);
+    Float_t StereoP, StereoN;
+    Angles(StereoP,StereoN);
+    Float_t tanP = TMath::Tan(StereoP);
+    Float_t tanN = TMath::Tan(-StereoN);
     Float_t x1 = x;
     Float_t z1 = z;
     x1 += fDx/2;
@@ -269,6 +274,8 @@ void AliITSsegmentationSSD::DetToLocal(Int_t ix,Int_t iPN,
     const Double_t kconst = 1.0E-04; // convert microns to cm.
     Float_t flag=kconst*Dx(); // error value
     Double_t th=0.0,dx,dz,i,a,b=0.0,xb[4],zb[4];
+    Float_t StereoP, StereoN;
+    Angles(StereoP,StereoN);
 
     z = 0.0;  // Strip center in z.
     if(iPN<0 || iPN>1){// if error return full detector size in x.
@@ -284,10 +291,10 @@ void AliITSsegmentationSSD::DetToLocal(Int_t ix,Int_t iPN,
     dz = 0.5*kconst*Dz();    // half distance in z in cm
     a  = kconst*Dpx(ix)*(i+0.5)-dx; // Min x value.
     if(iPN==0){ //P-side angle defined backwards.
-	th = TMath::Tan(fStereoP); 
+	th = TMath::Tan(StereoP); 
 	b  = dz*th;
     }else if(iPN==1){ // N-side
-	 th = TMath::Tan(-fStereoN);
+	 th = TMath::Tan(-StereoN);
 	 b  = -dz*th;
     } // end if
     // compute average/center position of the strip.
@@ -337,9 +344,11 @@ Bool_t AliITSsegmentationSSD::GetCrossing(Int_t iP,Int_t iN,
     */
     const Double_t kconst = 1.0E-04; // convert microns to cm.
     Double_t thp,thn,th,dx,dz,p,ip,in;
+    Float_t StereoP, StereoN;
+    Angles(StereoP,StereoN);
     
-    thp = TMath::Tan(fStereoP);
-    thn = TMath::Tan(-fStereoN);
+    thp = TMath::Tan(StereoP);
+    thn = TMath::Tan(-StereoN);
     th  = thp-thn;
     if(th==0.0) { // parall strips then never cross.
 	x = 0.0;
