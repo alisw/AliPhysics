@@ -6,6 +6,7 @@
 #ifdef use_newio
 #include "../RAW/AliRawReader.h"
 #include "../RAW/AliTPCRawStream.h"
+#include <TString.h>
 #else
 #include "AliL3DDLRawReaderFile.h"
 #include "AliL3DDLTPCRawStream.h"

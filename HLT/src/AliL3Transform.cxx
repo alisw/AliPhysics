@@ -742,7 +742,7 @@ Bool_t AliL3Transform::ReadInitFile(Char_t* pathname)
 
   FILE *fptr=fopen(pathname,"r");
   if(!fptr){
-    LOG(AliL3Log::kWarning,"AliL3Transform::Init","File Open")
+    LOG(AliL3Log::kWarning,"AliL3Transform::ReadInitFile","File Open")
       <<"Pointer to Config File \""<<pathname<<"\" 0x0!"<<ENDLOG;
     return kFALSE;
   }
@@ -766,7 +766,7 @@ Bool_t AliL3Transform::ReadInitFile(Char_t* pathname)
 	fscanf(fptr,"%s %d %s",d2,&dummy,d3);
 	fNRowLow=(Int_t)dummy;
 	if(fNRowLow != 63)
-	  LOG(AliL3Log::kError,"AliL3Transform::Init","Overflow")
+	  LOG(AliL3Log::kError,"AliL3Transform::ReadInitFile","Overflow")
 	    <<"Number of inner PadRows should be 63! Check and fgrep the code for 63 to see the consequences of this major change!"<<ENDLOG;
       }
     else if(strcmp(d1,"fNRowUp")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNRowUp=(Int_t)dummy;}
@@ -797,7 +797,7 @@ Bool_t AliL3Transform::ReadInitFile(Char_t* pathname)
     else if(strcmp(d1,"fNRow")==0){
       fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNRow=(Int_t)dummy;
       if(fNRow!=159){
-	LOG(AliL3Log::kError,"AliL3Transform::Init","Overflow")<<"Number of PadRows should be 159! Check and fgrep the code for 159 to see the consequences of this major change!"<<ENDLOG;
+	LOG(AliL3Log::kError,"AliL3Transform::ReadInitFile","Overflow")<<"Number of PadRows should be 159! Check and fgrep the code for 159 to see the consequences of this major change!"<<ENDLOG;
       }
     }
     else if(strcmp(d1,"fNRotShift")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fNRotShift=(Double_t)ddummy;}
@@ -855,12 +855,12 @@ Bool_t AliL3Transform::ReadInitFile(Char_t* pathname)
 
   //Test if new config file has been used.
   if(fVersion==fV_deprecated){
-    LOG(AliL3Log::kError,"AliL3Transform::Init","Version")
+    LOG(AliL3Log::kError,"AliL3Transform::ReadInitFile","Version")
       <<"Version is deprecated, you have to create a new config file."<<ENDLOG;
     return kFALSE;
   }
 
-  LOG(AliL3Log::kInformational,"AliL3Transform::Init","Config")
+  LOG(AliL3Log::kInformational,"AliL3Transform::ReadInitFile","Config")
     <<"Successfully loaded values from config file \""<<pathname<<"\""<<ENDLOG;
 
   return kTRUE;

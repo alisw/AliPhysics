@@ -45,13 +45,8 @@
 //  AliLevel3
 //
 //  Interface class for Level3 tracker.
-//  Tracking is done by calling constructor with input,output 
-//  given as argument. 
-//  You must always remember to set the tracking parameters. E.g.:
-// 
-//  AliLevel3 *level3 = new AliLevel3(inputfile,outputfile);
-//  level3->SetTrackerParam();   //Sets default tracking parameters
-//  level3->ProcessSector(2,2);  //Does tracking on sector 2 (actually 2+38)
+//  For example how to use, see exa/runtracker.C (root)
+//  or programs/runtracker.cxx (standalone program).
 //Begin_Html 
 //<img src="tpcsectorsnb.gif">
 //End_Html
@@ -62,65 +57,25 @@ ClassImp(AliLevel3)
 
 AliLevel3::AliLevel3()
 {
+  //Default constructor. Should also be used when input is from binary files.
+  //In that case the path to where the binary files are located has to be
+  //passed to the AliLevel::Init function.
+  
   fInputFile=0;
 }
 
-#ifdef no_root
 AliLevel3::AliLevel3(Char_t *infile)
 {
-  //Constructor. Calls constructor of the tracker, vertexfinder and merger classes.
-  
-  fInputFile = fopen(infile,"r");
-  
-  if(!fInputFile)
-    {
-      LOG(AliL3Log::kError,"AliLevel3::AliLevel3","File Open")
-	<<"Inputfile "<<infile<<" does not exist!"<<ENDLOG;
-      return;
-    }
-}
-#else
-AliLevel3::AliLevel3(Char_t *infile)
-{
-  //Constructor. Calls constructor of the tracker, vertexfinder and merger classes.
+  //Constructor to use for when input is anything else but binary files,
+  //meaning rootfiles or raw files.
   
   fInputFile = infile;
 
-#if 0
-  fInputFile = new TFile(infile,"READ");
-  
-
-  if(!fInputFile->IsOpen()){
-    LOG(AliL3Log::kError,"AliLevel3::AliLevel3","File Open")
-      <<"Inputfile "<<infile<<" does not exist!"<<ENDLOG;
-    return;
-  }
-#endif
 }
-#endif
-
-#ifdef nonono_root
-AliLevel3::AliLevel3(TFile *in)
-{
-  fInputFile  =  in;
-  if(!in){
-    LOG(AliL3Log::kError,"AliLevel3::AliLevel3","File Open")
-    <<"Pointer to InFile 0x0!"<<ENDLOG;
-    return;
-  }  
-  
-  if(!fInputFile->IsOpen())
-    {
-    LOG(AliL3Log::kError,"AliLevel3::AliLevel3","File Open")
-    <<"Inputfile does not exist"<<ENDLOG;
-      return;
-    }
-}
-#endif
 
 void AliLevel3::Init(Char_t *path,EFileType filetype,Int_t npatches)
 {
-  if((filetype!=kBinary) && !fInputFile)
+  if((filetype!=kBinary) && (filetype!=kDate) && !fInputFile)
     {
       LOG(AliL3Log::kError,"AliLevel3::Init","Files")
 	<<"You have not supplied the input rootfile; use the appropriate ctor!"<<ENDLOG;
@@ -191,6 +146,9 @@ void AliLevel3::Init(Char_t *path,EFileType filetype,Int_t npatches)
   }else if(filetype==kRaw){
     fFileHandler = new AliL3DDLDataFileHandler();
     fFileHandler->SetReaderInput(fInputFile);
+  }else if(filetype==kDate){
+    fFileHandler = new AliL3DDLDataFileHandler();
+    fFileHandler->SetReaderInput(fInputFile,-1);
   }else{
     fFileHandler = new AliL3MemHandler();
   }

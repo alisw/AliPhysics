@@ -477,8 +477,8 @@ Bool_t AliL3MemHandler::Memory2Binary(UInt_t nrow,AliL3DigitRowData *data)
 
 Bool_t AliL3MemHandler::Binary2Memory(UInt_t & nrow,AliL3DigitRowData *data)
 {
-  //Read inputfile into memory as is, and store it in data. No run-length encoding
-  // is assumed.
+  //Read inputfile into memory as is, and store it in data. 
+  // No run-length encoding is assumed.
 
   if(!fInBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::Binary2Memory","File")
@@ -722,7 +722,8 @@ Int_t AliL3MemHandler::CompMemory2Memory(UInt_t  nrow,
       for(;;){
         while( (charge=Read(comp,index,subindex)) != 0){
           if(time>=fEtaMinTimeBin[row]&&time<=fEtaMaxTimeBin[row])
-	    //          AddData(row_pt->fDigitData,ndigit,row,pad,time,charge);
+	    //AddData(row_pt->fDigitData,ndigit,row,pad,time,charge);
+	    //seems we are using this function... but dont know why
             AddDataRandom(row_pt->fDigitData,ndigit,row,pad,time,charge);
           time++;
         }
@@ -1083,41 +1084,7 @@ Bool_t AliL3MemHandler::Binary2Memory(UInt_t & ntrack,AliL3TrackSegmentData *dat
   ntrack=0;
   AliL3TrackSegmentData *track_pt = data;
   rewind(fInBinary);
-/*
-  UInt_t  size,slice,patch,row[2];
-  AliL3EventDataTypeRoot datatype;
-  UInt_t node;
-  if(fread(&datatype,sizeof(AliL3EventDataTypeRoot),1,fInBinary)!=1){
-    LOG(AliL3Log::kFatal,"AliL3MemHandler::Binary2Memory","File")
-    <<"File Read Error "<<ENDLOG;
-    return kFALSE;
-  }
-  if(fread(&node,sizeof(UInt_t),1,fInBinary)!=1){
-    LOG(AliL3Log::kFatal,"AliL3MemHandler::Binary2Memory","File")
-    <<"File Read Error "<<ENDLOG;
-    return kFALSE;
-  }
-  if(fread(&size,sizeof(UInt_t),1,fInBinary)!=1){
-    LOG(AliL3Log::kFatal,"AliL3MemHandler::Binary2Memory","File")
-    <<"File Read Error "<<ENDLOG;
-    return kFALSE;
-  }
-  if(fread(&slice,sizeof(UInt_t),1,fInBinary)!=1){
-    LOG(AliL3Log::kFatal,"AliL3MemHandler::Binary2Memory","File")
-    <<"File Read Error "<<ENDLOG;
-    return kFALSE;
-  }
-  if(fread(&patch,sizeof(UInt_t),1,fInBinary)!=1){
-    LOG(AliL3Log::kFatal,"AliL3MemHandler::Binary2Memory","File")
-    <<"File Read Error "<<ENDLOG;
-    return kFALSE;
-  }
-  if(fread(row,2*sizeof(UInt_t),1,fInBinary)!=1){
-    LOG(AliL3Log::kFatal,"AliL3MemHandler::Binary2Memory","File")
-    <<"File Read Error "<<ENDLOG;
-    return kFALSE;
-  }
-*/
+
   while(!feof(fInBinary)){
     if(fread(track_pt,sizeof(AliL3TrackSegmentData),1,fInBinary)!=1) break;
     Int_t size=track_pt->fNPoints*sizeof(UInt_t);

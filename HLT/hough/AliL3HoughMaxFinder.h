@@ -52,7 +52,7 @@ class AliL3HoughMaxFinder {
   void FindAbsMaxima();
   void FindBigMaxima();
   void FindMaxima(Int_t threshold=0);
-  void FindAdaptedPeaks(Int_t nkappawindow);
+  void FindAdaptedPeaks(Int_t nkappawindow,Float_t cut_ratio);
   //More sophisticated peak finders:
   void FindPeak(Int_t t1,Double_t t2,Int_t t3);
   void FindPeak1(Int_t y_window=2,Int_t x_bin_sides=1);

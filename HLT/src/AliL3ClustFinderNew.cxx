@@ -137,20 +137,23 @@ void AliL3ClustFinderNew::ProcessDigits()
 {
   //Loop over rows, and call processrow
   
-  
   AliL3DigitRowData *tempPt = (AliL3DigitRowData*)fDigitRowData;
   
   for(Int_t i=fFirstRow; i<=fLastRow; i++)
     {
       fCurrentRow = i;
-      //if(tempPt->fRow!=fCurrentRow) continue;
+      if((Int_t)tempPt->fRow!=fCurrentRow){
+	LOG(AliL3Log::kWarning,"AliL3ClustFinderNew::ProcessDigits","Digits")
+	  <<"Row number should match! "<<tempPt->fRow<<" "<<fCurrentRow<<ENDLOG;
+	continue;
+      }
       ProcessRow(tempPt);
       Byte_t *tmp = (Byte_t*)tempPt;
       Int_t size = sizeof(AliL3DigitRowData) + tempPt->fNDigit*sizeof(AliL3DigitData);
       tmp += size;
       tempPt = (AliL3DigitRowData*)tmp;
     }
-  LOG(AliL3Log::kInformational,"AliL3ClustFinderNew::WriteClusters","Space points")
+  LOG(AliL3Log::kInformational,"AliL3ClustFinderNew::ProcessDigits","Space points")
     <<"Cluster finder found "<<fNClusters<<" clusters in slice "<<fCurrentSlice
     <<" patch "<<fCurrentPatch<<ENDLOG;
 }

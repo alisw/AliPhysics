@@ -195,7 +195,7 @@ void AliL3HoughTransformerLUT::Init(Int_t slice,Int_t patch,Int_t n_eta_segments
   }
 }
 
-void AliL3HoughTransformerLUT::CreateHistograms(Int_t nxbin,Double_t pt_min,Int_t nybin,Double_t phimin,Double_t phimax)
+void AliL3HoughTransformerLUT::CreateHistograms(Int_t nxbin,Float_t pt_min,Int_t nybin,Float_t phimin,Float_t phimax)
 {
   //Create the histograms (parameter space).
   //These are 2D histograms, span by kappa (curvature of track) and phi0 (emission angle with x-axis).
@@ -211,7 +211,7 @@ void AliL3HoughTransformerLUT::CreateHistograms(Int_t nxbin,Double_t pt_min,Int_
   CreateHistograms(nxbin,-1.*x,x,nybin,phimin*torad,phimax*torad);
 }
 
-void AliL3HoughTransformerLUT::CreateHistograms(Int_t nxbin,Double_t xmin,Double_t xmax,Int_t nybin,Double_t ymin,Double_t ymax)
+void AliL3HoughTransformerLUT::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t xmax,Int_t nybin,Float_t ymin,Float_t ymax)
 {
   fParamSpace = new AliL3Histogram*[fNEtas];
   

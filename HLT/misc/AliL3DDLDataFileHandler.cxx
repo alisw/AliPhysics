@@ -12,6 +12,7 @@
 #include "AliL3DigitData.h"
 #ifdef use_newio
 #include "../RAW/AliRawReaderRoot.h"
+#include "../RAW/AliRawReaderDate.h"
 #else
 #include "AliL3DDLTPCRawStream.h"
 #include "AliL3DDLRawReaderFile.h"
@@ -61,11 +62,16 @@ void AliL3DDLDataFileHandler::FreeAll()
 #ifdef use_newio
 Bool_t AliL3DDLDataFileHandler::SetReaderInput(Char_t *name,Int_t event)
 {
-  fFilename=name;
   fEvent=event;
   if(fReader) delete fReader;
   if(fTPCStream) delete fTPCStream;
-  fReader=new AliRawReaderRoot(name,event);
+  if(event>=0){
+    fFilename=name;
+    fReader=new AliRawReaderRoot(name,event);
+  } else {
+    fFilename="";
+    fReader=new AliRawReaderDate(name);
+  }
   fTPCStream=new AliTPCRawStream(fReader);
 
   return kTRUE;
@@ -124,7 +130,7 @@ Bool_t AliL3DDLDataFileHandler::IsDigit(Int_t i)
 AliL3DigitRowData * AliL3DDLDataFileHandler::DDLData2Memory(UInt_t &nrow,Int_t event)
 {
 #ifdef use_newio
-  if(event!=fEvent){
+  if((fEvent>=0)&&(event!=fEvent)){
     fEvent=event;
     if(fReader) delete fReader;
     if(fTPCStream) delete fTPCStream;

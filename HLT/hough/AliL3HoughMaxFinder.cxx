@@ -348,7 +348,7 @@ struct Window
   Int_t sum;
 };
 
-void AliL3HoughMaxFinder::FindAdaptedPeaks(Int_t kappawindow)
+void AliL3HoughMaxFinder::FindAdaptedPeaks(Int_t kappawindow,Float_t cut_ratio)
 {
   //Peak finder which looks for peaks with a certain shape.
   //The first step involves a pre-peak finder, which looks for peaks
@@ -413,7 +413,6 @@ void AliL3HoughMaxFinder::FindAdaptedPeaks(Int_t kappawindow)
 	}
     }
   
-  Float_t cut_ratio=0.5;
   Int_t match=0;
   Int_t *starts = new Int_t[hist->GetNbinsY()+1];
   Int_t *maxs = new Int_t[hist->GetNbinsY()+1];

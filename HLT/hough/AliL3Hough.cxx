@@ -596,10 +596,10 @@ void AliL3Hough::FindTrackCandidates()
 	  if(hist->GetNEntries()==0) continue;
 	  fPeakFinder->Reset();
 	  fPeakFinder->SetHistogram(hist);
-	  
-	  //fPeakFinder->FindAbsMaxima();
+
 	  fPeakFinder->SetThreshold(fPeakThreshold[i]);
-	  fPeakFinder->FindAdaptedPeaks(6);
+	  fPeakFinder->FindAdaptedPeaks(6,0.5);
+
 	  //fPeakFinder->FindMaxima(fPeakThreshold[i]); //Simple maxima finder
 	  
 	  for(Int_t k=0; k<fPeakFinder->GetEntries(); k++)
