@@ -34,6 +34,7 @@ HBTAN/module.mk:	 HBTAN/libHBTAN.pkg
 MICROCERN/module.mk:	 MICROCERN/libmicrocern.pkg
 HERWIG/module.mk:        HERWIG/libherwig.pkg HERWIG/libdummyherwig.pkg
 TFluka/module.mk:        TFluka/libTFluka.pkg
+Flugg/module.mk:         Flugg/libFlugg.pkg
 VZERO/module.mk:         VZERO/libVZERO.pkg
 EPEMGEN/module.mk:       EPEMGEN/libEPEMGEN.pkg
 TEPEMGEN/module.mk:      TEPEMGEN/libTEPEMGEN.pkg

@@ -72,6 +72,9 @@ ifeq ($(findstring TFluka,$(MAKECMDGOALS)),TFluka)
 MODULES += TFluka
 endif
 
+ifeq ($(findstring Flugg,$(MAKECMDGOALS)),Flugg)
+MODULES += Flugg
+endif
 
 ##################################################################
 
@@ -164,6 +167,7 @@ ifneq ($(findstring modules,$(MAKECMDGOALS)),modules)
 ifneq ($(MAKECMDGOALS),depend )
 #           Don't include if cleaning of any sort
 ifneq ($(findstring clean,$(MAKECMDGOALS)),clean)
+#$(warning INCLUDEFILES=$(INCLUDEFILES))
 include $(INCLUDEFILES)
 endif
 endif
