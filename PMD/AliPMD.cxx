@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/10/30 09:03:59  morsch
+Prototype for PMD reconstructed hits (AliPMDRecPoint) added.
+
 Revision 1.8  2000/10/20 06:24:40  fca
 Put the PMD at the right position in the event display
 
@@ -73,6 +76,7 @@ AliPMD::AliPMD()
   // Default constructor
   //
   fIshunt = 0;
+  fRecPoints  = NULL;
 }
  
 //_____________________________________________________________________________
