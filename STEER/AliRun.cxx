@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.33  2000/05/16 13:10:40  fca
+New method IsNewTrack and fix for a problem in Father-Daughter relations
+
 Revision 1.32  2000/04/27 10:38:21  fca
 Correct termination of Lego Run and introduce Lego getter in AliRun
 
@@ -230,6 +233,7 @@ AliRun::~AliRun()
     delete fParticles;
   }
   delete fHitLists;
+  delete fPDGDB;
 }
 
 //_____________________________________________________________________________
