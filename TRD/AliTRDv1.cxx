@@ -128,9 +128,9 @@ void AliTRDv1::CreateGeometry()
   pMC->Gsdvn("UTRS", "UTRD", narmsec, 2);
 
   // The minimal width of a sector in rphi-direction
-  Float_t widmi = rmin * TMath::Sin(kPI/nsect);
+  Float_t widmi = rmin * TMath::Tan(kPI/nsect);
   // The maximal width of a sector in rphi-direction
-  Float_t widma = rmax * TMath::Sin(kPI/nsect);
+  Float_t widma = rmax * TMath::Tan(kPI/nsect);
   // The total thickness of the spaceframe (Al + Air)
   Float_t frame = widmi - (widpl1 / 2);
 
