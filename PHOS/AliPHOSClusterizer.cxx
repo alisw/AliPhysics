@@ -59,7 +59,8 @@ AliPHOSClusterizer::~AliPHOSClusterizer()
   // dtor
          
  //Remove this from the parental task before destroying
-  AliPHOSGetter::Instance()->PhosLoader()->CleanReconstructioner();
+  if(AliPHOSGetter::Instance()->PhosLoader())
+    AliPHOSGetter::Instance()->PhosLoader()->CleanReconstructioner();
 }
 
 
