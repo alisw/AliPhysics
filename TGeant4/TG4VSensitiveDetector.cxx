@@ -13,7 +13,7 @@ TG4VSensitiveDetector::TG4VSensitiveDetector(G4String sdName)
     fStepManager(TG4StepManager::Instance())
 {
 //
-  fID = fgSDCounter++;
+  fID = ++fgSDCounter;
 }
 
 TG4VSensitiveDetector::TG4VSensitiveDetector(G4String sdName, G4int id)
@@ -23,7 +23,7 @@ TG4VSensitiveDetector::TG4VSensitiveDetector(G4String sdName, G4int id)
 
 {
 //
-  fgSDCounter++;
+  ++fgSDCounter;
 }
 
 TG4VSensitiveDetector::TG4VSensitiveDetector(
@@ -34,7 +34,7 @@ TG4VSensitiveDetector::TG4VSensitiveDetector(
   fID = right.fID;
   fStepManager = right.fStepManager;
 
-  fgSDCounter++;;
+  ++fgSDCounter;;
 }
 
 TG4VSensitiveDetector::TG4VSensitiveDetector()
