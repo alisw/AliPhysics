@@ -13,7 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
 #include <iostream.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -64,128 +63,123 @@ ClassImp(AliITSsimulationSDD)
 <pre>
 */
 //End_Html
-//_____________________________________________________________________________
-
+//______________________________________________________________________
 Int_t power(Int_t b, Int_t e) {
-  // compute b to the e power, where both b and e are Int_ts.
-  Int_t power = 1,i;
-  for(i=0; i<e; i++) power *= b;
-  return power;
+    // compute b to the e power, where both b and e are Int_ts.
+    Int_t power = 1,i;
+
+    for(i=0; i<e; i++) power *= b;
+    return power;
 }
-
-//_____________________________________________
-
+//______________________________________________________________________
 void FastFourierTransform(AliITSetfSDD *alisddetf,Double_t *real,
                           Double_t *imag,Int_t direction) {
-  // Do a Fast Fourier Transform
-  //printf("FFT: direction %d\n",direction);
+    // Do a Fast Fourier Transform
+    //printf("FFT: direction %d\n",direction);
 
-  Int_t samples = alisddetf->GetSamples();
-  Int_t l = (Int_t) ((log((Float_t) samples)/log(2.))+0.5);
-  Int_t m1 = samples;
-  Int_t m  = samples/2;
-  Int_t m2 = samples/m1;
-  Int_t i,j,k;
-  for(i=1; i<=l; i++) {
-    for(j=0; j<samples; j += m1) {
-      Int_t p = 0;
-      for(k=j; k<= j+m-1; k++) {
-	Double_t wsr = alisddetf->GetWeightReal(p);
-        Double_t wsi = alisddetf->GetWeightImag(p);
-	if(direction == -1) wsi = -wsi;
-	Double_t xr = *(real+k+m);
-	Double_t xi = *(imag+k+m);
-	*(real+k+m) = wsr*(*(real+k)-xr) - wsi*(*(imag+k)-xi);
-	*(imag+k+m) = wsr*(*(imag+k)-xi) + wsi*(*(real+k)-xr);
-	*(real+k) += xr;
-	*(imag+k) += xi;
-	p += m2;
-      }
-    }
-    m1 = m;
-    m /= 2;
-    m2 += m2;
-  } 
+    Int_t samples = alisddetf->GetSamples();
+    Int_t l = (Int_t) ((log((Float_t) samples)/log(2.))+0.5);
+    Int_t m1 = samples;
+    Int_t m  = samples/2;
+    Int_t m2 = samples/m1;
+    Int_t i,j,k;
+    for(i=1; i<=l; i++) {
+	for(j=0; j<samples; j += m1) {
+	    Int_t p = 0;
+	    for(k=j; k<= j+m-1; k++) {
+		Double_t wsr = alisddetf->GetWeightReal(p);
+		Double_t wsi = alisddetf->GetWeightImag(p);
+		if(direction == -1) wsi = -wsi;
+		Double_t xr = *(real+k+m);
+		Double_t xi = *(imag+k+m);
+		*(real+k+m) = wsr*(*(real+k)-xr) - wsi*(*(imag+k)-xi);
+		*(imag+k+m) = wsr*(*(imag+k)-xi) + wsi*(*(real+k)-xr);
+		*(real+k) += xr;
+		*(imag+k) += xi;
+		p += m2;
+	    } // end for k
+	} // end for j
+	m1 = m;
+	m /= 2;
+	m2 += m2;
+    } // end for i
   
-  for(j=0; j<samples; j++) {
-    Int_t j1 = j;
-    Int_t p = 0;
-    Int_t i1;
-    for(i1=1; i1<=l; i1++) {
-      Int_t j2 = j1;
-      j1 /= 2;
-      p = p + p + j2 - j1 - j1;
-    }
-    if(p >= j) {
-      Double_t xr = *(real+j);
-      Double_t xi = *(imag+j);
-      *(real+j) = *(real+p);
-      *(imag+j) = *(imag+p);
-      *(real+p) = xr;
-      *(imag+p) = xi;
-    }
-  }
-  if(direction == -1) {
-    for(i=0; i<samples; i++) {
-      *(real+i) /= samples;
-      *(imag+i) /= samples;
-    }
-  }
+    for(j=0; j<samples; j++) {
+	Int_t j1 = j;
+	Int_t p = 0;
+	Int_t i1;
+	for(i1=1; i1<=l; i1++) {
+	    Int_t j2 = j1;
+	    j1 /= 2;
+	    p = p + p + j2 - j1 - j1;
+	} // end for i1
+	if(p >= j) {
+	    Double_t xr = *(real+j);
+	    Double_t xi = *(imag+j);
+	    *(real+j) = *(real+p);
+	    *(imag+j) = *(imag+p);
+	    *(real+p) = xr;
+	    *(imag+p) = xi;
+	} // end if p>=j
+    } // end for j
+    if(direction == -1) {
+	for(i=0; i<samples; i++) {
+	    *(real+i) /= samples;
+	    *(imag+i) /= samples;
+	} // end for i
+    } // end if direction == -1
   return;
 }
-//_____________________________________________________________________________
-
+//______________________________________________________________________
 AliITSsimulationSDD::AliITSsimulationSDD(){
-  // Default constructor
+    // Default constructor
 
-  fResponse = 0;
-  fSegmentation = 0;
-  fHis = 0;
-  fHitMap1 = 0;
-  fHitMap2 = 0;
-  fElectronics = 0;
-  fStream = 0;
-  fD.Set(0);
-  fT1.Set(0);
-  fT2.Set(0);
-  fTol.Set(0);
-  fNoise.Set(0);
-  fBaseline.Set(0);
-  SetScaleFourier();
-  SetPerpendTracksFlag();
-  SetDoFFT();
-  SetCheckNoise();
-  fInZR = 0;
-  fInZI = 0;
-  fOutZR = 0;
-  fOutZI = 0;
-  fNofMaps = 0;
-  fMaxNofSamples = 0;
-  fITS = 0;
-  fTreeB=0;
+    fResponse      = 0;
+    fSegmentation  = 0;
+    fHis           = 0;
+    fHitMap1       = 0;
+    fHitMap2       = 0;
+    fElectronics   = 0;
+    fStream        = 0;
+    fInZR          = 0;
+    fInZI          = 0;
+    fOutZR         = 0;
+    fOutZI         = 0;
+    fNofMaps       = 0;
+    fMaxNofSamples = 0;
+    fITS           = 0;
+    fTreeB        = 0;
+    fD.Set(0);
+    fT1.Set(0);
+    fT2.Set(0);
+    fTol.Set(0);
+    fNoise.Set(0);
+    fBaseline.Set(0);
+    SetScaleFourier();
+    SetPerpendTracksFlag();
+    SetDoFFT();
+    SetCheckNoise();
 }
-//_____________________________________________________________________________
-AliITSsimulationSDD::AliITSsimulationSDD(AliITSsimulationSDD &source)
-{
-  // Copy constructor to satify Coding roules only.
-  if(this==&source) return;
-  printf("Not allowed to make a copy of AliITSsimulationSDD "
-         "Using default creater instead\n");
-  AliITSsimulationSDD();
-}
-//_____________________________________________________________________________
-AliITSsimulationSDD& AliITSsimulationSDD::operator=(AliITSsimulationSDD &source)
-{
-  // Assignment operator to satify Coding roules only.
-  if(this==&source) return *this;
-  printf("Not allowed to make a = with AliITSsimulationSDD "
-         "Using default creater instead\n");
-  return *this ;
-}
-//_____________________________________________________________________________
+//______________________________________________________________________
+AliITSsimulationSDD::AliITSsimulationSDD(AliITSsimulationSDD &source){
+    // Copy constructor to satify Coding roules only.
 
-AliITSsimulationSDD::AliITSsimulationSDD(AliITSsegmentation *seg,AliITSresponse *resp) 
-{
+    if(this==&source) return;
+    printf("Not allowed to make a copy of AliITSsimulationSDD "
+	   "Using default creater instead\n");
+    AliITSsimulationSDD();
+}
+//______________________________________________________________________
+AliITSsimulationSDD& AliITSsimulationSDD::operator=(AliITSsimulationSDD &source){
+    // Assignment operator to satify Coding roules only.
+
+    if(this==&source) return *this;
+    printf("Not allowed to make a = with AliITSsimulationSDD "
+	   "Using default creater instead\n");
+    return *this ;
+}
+//______________________________________________________________________
+AliITSsimulationSDD::AliITSsimulationSDD(AliITSsegmentation *seg,AliITSresponse *resp){
     // Standard Constructor
 
     fHitMap1      = 0;     // zero just in case of an error
@@ -204,17 +198,16 @@ AliITSsimulationSDD::AliITSsimulationSDD(AliITSsegmentation *seg,AliITSresponse 
     fHitMap2 = new AliITSMapA2(fSegmentation,fScaleSize,1);
     fHitMap1 = new AliITSMapA1(fSegmentation);
 
-    //
-    fNofMaps=fSegmentation->Npz();
-    fMaxNofSamples=fSegmentation->Npx();
-    
-    Float_t sddLength = fSegmentation->Dx();
-    Float_t sddWidth = fSegmentation->Dz();
+    fNofMaps = fSegmentation->Npz();
+    fMaxNofSamples = fSegmentation->Npx();
 
-    Int_t dummy=0;
+    Float_t sddLength = fSegmentation->Dx();
+    Float_t sddWidth  = fSegmentation->Dz();
+
+    Int_t dummy        = 0;
     Float_t anodePitch = fSegmentation->Dpz(dummy);
-    Double_t timeStep = (Double_t)fSegmentation->Dpx(dummy);
-    Float_t driftSpeed=fResponse->DriftSpeed();
+    Double_t timeStep  = (Double_t)fSegmentation->Dpx(dummy);
+    Float_t driftSpeed = fResponse->DriftSpeed();
 
     if(anodePitch*(fNofMaps/2) > sddWidth) {
 	Warning("AliITSsimulationSDD",
@@ -233,7 +226,7 @@ AliITSsimulationSDD::AliITSsimulationSDD(AliITSsegmentation *seg,AliITSresponse 
 
     char opt1[20], opt2[20];
     fResponse->ParamOptions(opt1,opt2);
-    fParam=opt2;
+    fParam = opt2;
     char *same = strstr(opt1,"same");
     if (same) {
 	fNoise.Set(0);
@@ -243,7 +236,6 @@ AliITSsimulationSDD::AliITSsimulationSDD(AliITSsegmentation *seg,AliITSresponse 
 	fBaseline.Set(fNofMaps);
     } // end if
 
-    //
     const char *kopt=fResponse->ZeroSuppOption();
     if (strstr(fParam,"file") ) {
 	fD.Set(fNofMaps);
@@ -265,15 +257,15 @@ AliITSsimulationSDD::AliITSsimulationSDD(AliITSsegmentation *seg,AliITSresponse 
 	SetCompressParam();
     } // end if else strstr
 
-    Bool_t write=fResponse->OutputOption();
+    Bool_t write = fResponse->OutputOption();
     if(write && strstr(kopt,"2D")) MakeTreeB();
 
     // call here if baseline does not change by module
     // ReadBaseline();
 
-    fITS = (AliITS*)gAlice->GetModule("ITS");
-    Int_t size=fNofMaps*fMaxNofSamples;
-    fStream = new AliITSInStream(size);
+    fITS       = (AliITS*)gAlice->GetModule("ITS");
+    Int_t size = fNofMaps*fMaxNofSamples;
+    fStream    = new AliITSInStream(size);
 
     fInZR  = new Double_t [fScaleSize*fMaxNofSamples];
     fInZI  = new Double_t [fScaleSize*fMaxNofSamples];
@@ -281,47 +273,42 @@ AliITSsimulationSDD::AliITSsimulationSDD(AliITSsegmentation *seg,AliITSresponse 
     fOutZI = new Double_t [fScaleSize*fMaxNofSamples];  
 
 }
-
-
-//_____________________________________________________________________________
-
+//______________________________________________________________________
 AliITSsimulationSDD::~AliITSsimulationSDD() { 
-  // destructor
+    // destructor
 
-  delete fHitMap1;
-  delete fHitMap2;
-  delete fStream;
-  delete fElectronics;
+    delete fHitMap1;
+    delete fHitMap2;
+    delete fStream;
+    delete fElectronics;
 
-  fD.Set(0);
-  fT1.Set(0);
-  fT2.Set(0);
-  fTol.Set(0);
-  fNoise.Set(0);
-  fBaseline.Set(0);
-  fITS = 0;
+    fD.Set(0);
+    fT1.Set(0);
+    fT2.Set(0);
+    fTol.Set(0);
+    fNoise.Set(0);
+    fBaseline.Set(0);
+    fITS = 0;
 
-  if (fHis) {
-     fHis->Delete(); 
-     delete fHis;     
-  }     
-  if(fTreeB) delete fTreeB;           
-  if(fInZR) delete [] fInZR;
-  if(fInZI) delete [] fInZI;	
-  if(fOutZR) delete [] fOutZR;
-  if(fOutZI) delete [] fOutZI;
+    if (fHis) {
+	fHis->Delete(); 
+	delete fHis;     
+    } // end if fHis
+    if(fTreeB) delete fTreeB;           
+    if(fInZR)  delete [] fInZR;
+    if(fInZI)  delete [] fInZI;	
+    if(fOutZR) delete [] fOutZR;
+    if(fOutZI) delete [] fOutZI;
 }
-//_____________________________________________________________________________
-
+//______________________________________________________________________
 void AliITSsimulationSDD::DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
-  // create maps to build the lists of tracks
-  // for each digit
-    //cout << "Module: " << md << endl;
-    fModule=md;
-    fEvent=ev;
+    // create maps to build the lists of tracks for each digit
 
     TObjArray *fHits = mod->GetHits();
-    Int_t nhits = fHits->GetEntriesFast();
+    Int_t nhits      = fHits->GetEntriesFast();
+    fModule          = md;
+    fEvent           = ev;
+
     if (!nhits && fCheckNoise) {
         ChargeToSignal();
         GetNoise();
@@ -329,422 +316,350 @@ void AliITSsimulationSDD::DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
         return;
     } else if (!nhits) return;
 
-    //printf("simSDD: module nhits %d %d\n",md,nhits);
+    // inputs to ListOfFiredCells.
+    TObjArray *alist           = new TObjArray;
+    fHitMap1->SetArray(alist);
+    static TClonesArray *padr = 0;
+    if(!padr)            padr = new TClonesArray("TVector",1000);
+    Int_t arg[6]              = {0,0,0,0,0,0};
 
-
-    TObjArray *list=new TObjArray;
-    static TClonesArray *padr=0;
-    if(!padr) padr=new TClonesArray("TVector",1000);
-    Int_t arg[6] = {0,0,0,0,0,0}; 
-    fHitMap1->SetArray(list);
-
-    //    cout << "set Parameters" << endl;
-
-    Int_t nofAnodes=fNofMaps/2;
-
-    Float_t sddLength = fSegmentation->Dx();
-    Float_t sddWidth = fSegmentation->Dz();
-    
-    Int_t dummy=0;
-    Float_t anodePitch = fSegmentation->Dpz(dummy);
-    Float_t timeStep = fSegmentation->Dpx(dummy);
-
-    Float_t driftSpeed=fResponse->DriftSpeed();    
-
-    Float_t maxadc = fResponse->MaxAdc();    
-    Float_t topValue = fResponse->DynamicRange();
-    Float_t CHloss = fResponse->ChargeLoss();
-    Float_t norm = maxadc/topValue;
+    Int_t    dummy      = 0;
+    Int_t    nofAnodes  = fNofMaps/2;
+    Float_t  sddLength  = fSegmentation->Dx();
+    Float_t  sddWidth   = fSegmentation->Dz();
+    Float_t  anodePitch = fSegmentation->Dpz(dummy);
+    Float_t  timeStep   = fSegmentation->Dpx(dummy);
+    Float_t  driftSpeed = fResponse->DriftSpeed();
+    Float_t  maxadc     = fResponse->MaxAdc();    
+    Float_t  topValue   = fResponse->DynamicRange();
+    Float_t  cHloss     = fResponse->ChargeLoss();
+    Float_t  norm       = maxadc/topValue;
+    Float_t  dfCoeff, s1; fResponse->DiffCoeff(dfCoeff,s1); // Signal 2d Shape
+    Double_t eVpairs    = 3.6;  // electron pair energy eV.
+    Float_t  nsigma     = fResponse->NSigmaIntegration(); //
+    Int_t    nlookups   = fResponse->GausNLookUp();       //
 
     // Piergiorgio's part (apart for few variables which I made float
     // when i thought that can be done
-
     // Fill detector maps with GEANT hits
     // loop over hits in the module
 
-    //    TStopwatch timer;
-    //    timer.Start();
+    const Float_t kconv = 1.0e+6;  // GeV->KeV
+    Int_t    itrack      = 0;
+    Int_t    hitDetector; // detector number (lay,lad,hitDetector)
+    Int_t    iWing;       // which detector wing/side.
+    Int_t    detector;    // 2*(detector-1)+iWing
+    Int_t    ii,kk,ka,kt; // loop indexs
+    Int_t    ia,it,index; // sub-pixel integration indexies
+    Int_t    iAnode;      // anode number.
+    Int_t    timeSample;  // time buckett.
+    Int_t    anodeWindow; // anode direction charge integration width
+    Int_t    timeWindow;  // time direction charge integration width
+    Int_t    jamin,jamax; // anode charge integration window
+    Int_t    jtmin,jtmax; // time charge integration window
+    Int_t    ndiv;        // Anode window division factor.
+    Int_t    nsplit;      // the number of splits in anode and time windows==1.
+    Int_t    nOfSplits;   // number of times track length is split into
+    Float_t  nOfSplitsF;  // Floating point version of nOfSplits.
+    Float_t  kkF;         // Floating point version of loop index kk.
+    Float_t  pathInSDD; // Track length in SDD.
+    Float_t  drPath; // average position of track in detector. in microns
+    Float_t  drTime; // Drift time
+    Float_t  nmul;   // drift time window multiplication factor.
+    Float_t  avDrft;  // x position of path length segment in cm.
+    Float_t  avAnode; // Anode for path length segment in Anode number (float)
+    Float_t  xAnode;  // Floating point anode number.
+    Float_t  driftPath; // avDrft in microns.
+    Float_t  width;     // width of signal at anodes.
+    Double_t  depEnergy; // Energy deposited in this GEANT step.
+    Double_t  xL[3],dxL[3]; // local hit coordinates and diff.
+    Double_t sigA; // sigma of signal at anode.
+    Double_t sigT; // sigma in time/drift direction for track segment
+    Double_t aStep,aConst; // sub-pixel size and offset anode
+    Double_t tStep,tConst; // sub-pixel size and offset time
+    Double_t amplitude; // signal amplitude for track segment in nanoAmpere
+    Double_t chargeloss; // charge loss for track segment.
+    Double_t anodeAmplitude; // signal amplitude in anode direction
+    Double_t aExpo;          // exponent of Gaussian anode direction
+    Double_t timeAmplitude;  // signal amplitude in time direction
+    Double_t tExpo;          // exponent of Gaussian time direction
+//  Double_t tof;            // Time of flight in ns of this step.    
 
-    const Float_t kconv=1.0e+6;  // GeV->KeV
-    Int_t ii;
-    Int_t idhit=-1;
-    Float_t xL[3];
-    Float_t xL1[3];
     for(ii=0; ii<nhits; ii++) {
-      //      cout << "hit: " << ii+1 << " of " << nhits << endl;
-      AliITShit *hit = (AliITShit*) fHits->At(ii);
-      AliITShit *hit1 = 0;
-      
-      // Take into account all hits when several GEANT steps are carried out
-      // inside the silicon
-      // Get and use the status of hit(track):
-      // 66  - for entering hit,
-      // 65  - for inside hit,
-      // 68  - for exiting hit,
-      // 33  - for stopping hit.
+	if(!mod->LineSegmentL(ii,xL[0],dxL[0],xL[1],dxL[1],xL[2],dxL[2],
+			      depEnergy,itrack)) continue;
+	depEnergy  *= kconv;
+	hitDetector = mod->GetDet();
+	//tof         = 1.E+09*(mod->GetHit(ii)->GetTOF()); // tof in ns.
+	//if(tof>sddLength/driftSpeed) continue; // hit happed too late.
 
-      //Int_t status = hit->GetTrackStatus(); 
-      Int_t status1 = 0;
-      Int_t hitDetector = hit->GetDetector();
-      Float_t depEnergy = 0.;
-      if(hit->StatusEntering()) { // to be coupled to following hit
-	idhit=ii;
-	hit->GetPositionL(xL[0],xL[1],xL[2]);
-	if(ii<nhits-1) ii++;
-	hit1 = (AliITShit*) fHits->At(ii);
-	hit1->GetPositionL(xL1[0],xL1[1],xL1[2]);
-	status1 = hit1->GetTrackStatus();
-	depEnergy = kconv*hit1->GetIonization(); 	  
-      } else {
-	depEnergy = kconv*hit->GetIonization();  // Deposited energy in keV
-	hit->GetPositionL(xL1[0],xL1[1],xL1[2]);
-      }
-      //      cout << "status: " << status << ", status1: " << status1 << ", dE: " << depEnergy << endl;
-      if(fFlag && status1 == 33) continue;
-      
-      Int_t nOfSplits = 1;
+	// scale path to simulate a perpendicular track
+	// continue if the particle did not lose energy
+	// passing through detector
+	if (!depEnergy) {
+	    cout << "This particle has passed without losing energy!" << endl;
+	    continue;
+	} // end if !depEnergy
 
-      //      hit->Print();
+	pathInSDD = TMath::Sqrt(dxL[0]*dxL[0]+dxL[1]*dxL[1]+dxL[2]*dxL[2]);
 
-//     Int_t status1 = -1;
-//      Int_t ctr = 0;
-      //Take now the entering and inside hits only
-//     if(status == 66) {
-//	do  {
-//	  if(ii<nhits-1) ii++;
-//	  hit1 = (AliITShit*) fHits->At(ii);
-//	  hit1->GetPositionL(xL1[0],xL1[1],xL1[2]);
-//	  status1 = hit1->GetTrackStatus();
-//	  depEnergy += kconv*hit1->GetIonization(); 	  
-//	  if(fFlag && status1 == 65) ctr++;
-//	} while(status1 != 68 && status1 != 33);
-//      }
+	if (fFlag && pathInSDD) { depEnergy *= (0.03/pathInSDD); }
+	drPath = 10000.*(dxL[0]+2.*xL[0])*0.5;
+	if(drPath < 0) drPath = -drPath;
+	drPath = sddLength-drPath;
+	if(drPath < 0) {
+	    cout << "Warning: negative drift path " << drPath << endl;
+	    continue;
+	} // end if drPath < 0
 
+	// Compute number of segments to brake step path into
+	drTime = drPath/driftSpeed;  //   Drift Time
+	sigA   = TMath::Sqrt(2.*dfCoeff*drTime+s1*s1);// Sigma along the anodes
+	// calcuate the number of time the path length should be split into.
+	nOfSplits = (Int_t) (1. + 10000.*pathInSDD/sigA);
+	if(fFlag) nOfSplits = 1;
 
-      // scale path to simulate a perpendicular track
-      // continue if the particle did not lose energy
-      // passing through detector
-      if (!depEnergy) {
-	  printf("This particle has passed without losing energy!\n");
-	  continue;
-      }
-      Float_t pathInSDD = TMath::Sqrt((xL[0]-xL1[0])*(xL[0]-xL1[0])+(xL[1]-xL1[1])*(xL[1]-xL1[1])+(xL[2]-xL1[2])*(xL[2]-xL1[2]));
+	// loop over path segments, init. some variables.
+	depEnergy /= nOfSplits;
+	nOfSplitsF = (Float_t) nOfSplits;
+	for(kk=0;kk<nOfSplits;kk++) { // loop over path segments
+	    kkF       = (Float_t) kk + 0.5;
+	    avDrft    = xL[0]+dxL[0]*kkF/nOfSplitsF;
+	    avAnode   = xL[2]+dxL[2]*kkF/nOfSplitsF;
+	    driftPath = 10000.*avDrft;
 
-      if (fFlag && pathInSDD) { depEnergy *= (0.03/pathInSDD); }
-      Float_t Drft = (xL1[0]+xL[0])*0.5;
-      Float_t drPath = 10000.*Drft;
-      if(drPath < 0) drPath = -drPath;
-      drPath = sddLength-drPath;
-      if(drPath < 0) {
-	cout << "Warning: negative drift path " << drPath << endl;
-	continue;
-      }
-      
-      //   Drift Time
-      Float_t drTime = drPath/driftSpeed;
-      //  Signal 2d Shape
-      Float_t dfCoeff, s1;
-      fResponse->DiffCoeff(dfCoeff,s1);
+	    iWing = 2;  // Assume wing is 2
+	    if(driftPath < 0) { // if wing is not 2 it is 1.
+		iWing     = 1;
+		driftPath = -driftPath;
+	    } // end if driftPath < 0
+	    driftPath = sddLength-driftPath;
+	    detector  = 2*(hitDetector-1) + iWing;
+	    if(driftPath < 0) {
+		cout << "Warning: negative drift path " << driftPath << endl;
+		continue;
+	    } // end if driftPath < 0
+
+	    //   Drift Time
+	    drTime     = driftPath/driftSpeed; // drift time for segment.
+	    timeSample = (Int_t) (fScaleSize*drTime/timeStep + 1);
+	    // compute time Sample including tof information. The tof only 
+	    // effects the time of the signal is recoreded and not the
+	    // the defusion.
+	    // timeSample = (Int_t) (fScaleSize*(drTime+tof)/timeStep + 1);
+	    if(timeSample > fScaleSize*fMaxNofSamples) {
+		cout << "Warning: Wrong Time Sample: " << timeSample << endl;
+		continue;
+	    } // end if timeSample > fScaleSize*fMaxNoofSamples
+
+	    //   Anode
+	    xAnode = 10000.*(avAnode)/anodePitch + nofAnodes/2;  // +1?
+	    if(xAnode*anodePitch > sddWidth || xAnode*anodePitch < 0.) 
+	                  cout << "Warning: Z = " << xAnode*anodePitch << endl;
+	    iAnode = (Int_t) (1.+xAnode); // xAnode?
+	    if(iAnode < 1 || iAnode > nofAnodes) {
+		cout << "Warning: Wrong iAnode: " << iAnode << endl;
+		continue;
+	    } // end if iAnode < 1 || iAnode > nofAnodes
+
+	    // store straight away the particle position in the array
+	    // of particles and take idhit=ii only when part is entering (this
+	    // requires FillModules() in the macro for analysis) :
     
-      // Squared Sigma along the anodes
-      Double_t sig2A = 2.*dfCoeff*drTime+s1*s1;
-      Double_t sigA  = TMath::Sqrt(sig2A);
-      if(pathInSDD) { 
-	nOfSplits = (Int_t) (1 + 10000.*pathInSDD/sigA);
-	//cout << "nOfSplits: " << nOfSplits << ", sigA: " << sigA << ", path: " << pathInSDD << endl;
-      }	
-      if(fFlag) nOfSplits = 1;
-      depEnergy /= nOfSplits;
-
-      for(Int_t kk=0;kk<nOfSplits;kk++) {
-	Float_t avDrft =  
-                xL[0]+(xL1[0]-xL[0])*((kk+0.5)/((Float_t) nOfSplits));
-	Float_t avAnode = 
-                xL[2]+(xL1[2]-xL[2])*((kk+0.5)/((Float_t) nOfSplits));
-	Float_t driftPath = 10000.*avDrft;
-
-	Int_t iWing = 2;
-	if(driftPath < 0) {
-	   iWing = 1;
-	   driftPath = -driftPath;
-	}
-	driftPath = sddLength-driftPath;
-	Int_t detector = 2*(hitDetector-1) + iWing;
-	if(driftPath < 0) {
-	   cout << "Warning: negative drift path " << driftPath << endl;
-	   continue;
-	}
-	 
-	//   Drift Time
-	Float_t driftTime = driftPath/driftSpeed;
-	Int_t timeSample = (Int_t) (fScaleSize*driftTime/timeStep + 1);
-	if(timeSample > fScaleSize*fMaxNofSamples) {
-	   cout << "Warning: Wrong Time Sample: " << timeSample << endl;
-	   continue;
-	}
-
-	//   Anode
-	Float_t xAnode = 10000.*(avAnode)/anodePitch + nofAnodes/2;  // +1?
-	if(xAnode*anodePitch > sddWidth || xAnode*anodePitch < 0.) 
-	  { cout << "Warning: Z = " << xAnode*anodePitch << endl; }
-	Int_t iAnode = (Int_t) (1.+xAnode); // xAnode?
-	if(iAnode < 1 || iAnode > nofAnodes) {
-	  cout << "Warning: Wrong iAnode: " << iAnode << endl;
-	  continue;
-	} 
-
-	// work with the idtrack=entry number in the TreeH for the moment
-	//Int_t idhit,idtrack;
-	//mod->GetHitTrackAndHitIndex(ii,idtrack,idhit);    
-	//Int_t idtrack=mod->GetHitTrackIndex(ii);  
-        // or store straight away the particle position in the array
-	// of particles and take idhit=ii only when part is entering (this
-	// requires FillModules() in the macro for analysis) : 
-	Int_t itrack = hit->GetTrack();
-
-	//  Signal 2d Shape
-	Float_t diffCoeff, s0;
-	fResponse->DiffCoeff(diffCoeff,s0);
-    
-	// Squared Sigma along the anodes
-	Double_t sigma2A = 2.*diffCoeff*driftTime+s0*s0;
-	Double_t sigmaA  = TMath::Sqrt(sigma2A);
-	Double_t sigmaT  = sigmaA/driftSpeed;
-	// Peak amplitude in nanoAmpere
-	Double_t eVpairs = 3.6;
-	Double_t amplitude = fScaleSize*160.*depEnergy/(timeStep*eVpairs*2.*acos(-1.)*sigmaT*sigmaA);
-	amplitude *= timeStep/25.; // WARNING!!!!! Amplitude scaling to account for clock variations (reference value: 40 MHz)
-	Double_t chargeloss = 1.-CHloss*driftPath/1000;
-	amplitude *= chargeloss;
-	Float_t nsigma=fResponse->NSigmaIntegration();
-	Int_t nlookups = fResponse->GausNLookUp();
-	Float_t width = 2.*nsigma/(nlookups-1);
-	// Spread the charge 
-	// Pixel index
-	Int_t ja = iAnode;
-	Int_t jt = timeSample;
-	Int_t ndiv = 2;
-	Float_t nmul = 3.; 
-	if(driftTime > 1200.) { 
-	  ndiv = 4;
-	  nmul = 1.5;
-	}
-	// Sub-pixel index
-	Int_t nsplit = 4; // hard-wired
-	nsplit = (nsplit+1)/2*2;
-	// Sub-pixel size
-	Double_t aStep = anodePitch/(nsplit*fScaleSize);
-	Double_t tStep = timeStep/(nsplit*fScaleSize);
-	// Define SDD window corresponding to the hit
-	Int_t anodeWindow = (Int_t) (fScaleSize*nsigma*sigmaA/anodePitch + 1);
-	Int_t timeWindow = (Int_t) (fScaleSize*nsigma*sigmaT/timeStep + 1);
-	Int_t jamin = (ja - anodeWindow/ndiv - 1)*fScaleSize*nsplit + 1;
-	Int_t jamax = (ja + anodeWindow/ndiv)*fScaleSize*nsplit;
-	if(jamin <= 0) jamin = 1;
-	if(jamax > fScaleSize*nofAnodes*nsplit) jamax = fScaleSize*nofAnodes*nsplit;
-	Int_t jtmin = (Int_t) (jt - timeWindow*nmul - 1)*nsplit + 1; //hard-wired
-	Int_t jtmax = (Int_t) (jt + timeWindow*nmul)*nsplit; //hard-wired
-	if(jtmin <= 0) jtmin = 1;
-	if(jtmax > fScaleSize*fMaxNofSamples*nsplit) jtmax = fScaleSize*fMaxNofSamples*nsplit;
-
-	// Spread the charge in the anode-time window
-        Int_t ka;
-	//cout << "jamin: " << jamin << ", jamax: " << jamax << endl;
-	//cout << "jtmin: " << jtmin << ", jtmax: " << jtmax << endl;
-	for(ka=jamin; ka <=jamax; ka++) {
-	  Int_t ia = (ka-1)/(fScaleSize*nsplit) + 1;
-	  if(ia <= 0) { cout << "Warning: ia < 1: " << endl; continue; }
-	  if(ia > nofAnodes) ia = nofAnodes;
-	  Double_t aExpo = (aStep*(ka-0.5)-xAnode*anodePitch)/sigmaA;
-	  Double_t anodeAmplitude = 0;
-	  if(TMath::Abs(aExpo) > nsigma) {
-	    anodeAmplitude = 0.;
-	    //cout << "aExpo: " << aExpo << endl;
-	  } else {
-	    Int_t i = (Int_t) ((aExpo+nsigma)/width);
-	    //cout << "eval ampl: " << i << ", " << amplitude << endl;
-	    anodeAmplitude = amplitude*fResponse->GausLookUp(i);
-	    //cout << "ampl: " << anodeAmplitude << endl;
-	  }
-	  Int_t index = ((detector+1)%2)*nofAnodes+ia-1; // index starts from 0
-	  if(anodeAmplitude) {
-	    //Double_t rlTime = log(tStep*anodeAmplitude);
-            Int_t kt;
-	    for(kt=jtmin; kt<=jtmax; kt++) {
-	      Int_t it = (kt-1)/nsplit+1;  // it starts from 1
-	      if(it<=0) { cout << "Warning: it < 1: " << endl; continue; } 
-	      if(it>fScaleSize*fMaxNofSamples) it = fScaleSize*fMaxNofSamples;
-	      Double_t tExpo = (tStep*(kt-0.5)-driftTime)/sigmaT;
-	      Double_t timeAmplitude = 0.;
-	      if(TMath::Abs(tExpo) > nsigma) {
-		timeAmplitude = 0.;
-		//cout << "tExpo: " << tExpo << endl;
-	      } else {
-		Int_t i = (Int_t) ((tExpo+nsigma)/width);
-		//cout << "eval ampl: " << i << ", " << anodeAmplitude << endl;
-		timeAmplitude = anodeAmplitude*fResponse->GausLookUp(i);
-	      }
-
-	      // build the list of digits for this module	
-	      arg[0]=index;
-	      arg[1]=it;
-	      arg[2]=itrack;
-	      arg[3]=idhit;
-	      timeAmplitude *= norm;
-	      timeAmplitude *= 10;
-	      ListOfFiredCells(arg,timeAmplitude,list,padr);
-	      //cout << "ampl: " << timeAmplitude << endl;
-	    } // loop over time in window 
-	  } // end if anodeAmplitude
-	} // loop over anodes in window
-      } // end loop over "sub-hits"
-      for(Int_t ki=0; ki<3; ki++) xL[ki] = xL1[ki];
+	    // Sigma along the anodes for track segment.
+	    sigA       = TMath::Sqrt(2.*dfCoeff*drTime+s1*s1);
+	    sigT       = sigA/driftSpeed;
+	    // Peak amplitude in nanoAmpere
+	    amplitude  = fScaleSize*160.*depEnergy/
+		                 (timeStep*eVpairs*2.*acos(-1.)*sigT*sigA);
+	    amplitude *= timeStep/25.; // WARNING!!!!! Amplitude scaling to 
+	                               // account for clock variations 
+                                       // (reference value: 40 MHz)
+	    chargeloss = 1.-cHloss*driftPath/1000;
+	    amplitude *= chargeloss;
+	    width  = 2.*nsigma/(nlookups-1);
+	    // Spread the charge 
+	    // Pixel index
+	    ndiv = 2;
+	    nmul = 3.; 
+	    if(drTime > 1200.) { 
+		ndiv = 4;
+		nmul = 1.5;
+	    } // end if drTime > 1200.
+	    // Sub-pixel index
+	    nsplit = 4; // hard-wired //nsplit=4;nsplit = (nsplit+1)/2*2;
+	    // Sub-pixel size see computation of aExpo and tExpo.
+	    aStep  = anodePitch/(nsplit*fScaleSize*sigA);
+	    aConst = xAnode*anodePitch/sigA;
+	    tStep  = timeStep/(nsplit*fScaleSize*sigT);
+	    tConst = drTime/sigT;
+	    // Define SDD window corresponding to the hit
+	    anodeWindow = (Int_t)(fScaleSize*nsigma*sigA/anodePitch+1);
+	    timeWindow  = (Int_t) (fScaleSize*nsigma*sigT/timeStep+1.);
+	    jamin = (iAnode - anodeWindow/ndiv - 1)*fScaleSize*nsplit +1;
+	    jamax = (iAnode + anodeWindow/ndiv)*fScaleSize*nsplit;
+	    if(jamin <= 0) jamin = 1;
+	    if(jamax > fScaleSize*nofAnodes*nsplit) 
+		                         jamax = fScaleSize*nofAnodes*nsplit;
+	    // jtmin and jtmax are Hard-wired
+	    jtmin = (Int_t)(timeSample-timeWindow*nmul-1)*nsplit+1;
+	    jtmax = (Int_t)(timeSample+timeWindow*nmul)*nsplit;
+	    if(jtmin <= 0) jtmin = 1;
+	    if(jtmax > fScaleSize*fMaxNofSamples*nsplit) 
+		                      jtmax = fScaleSize*fMaxNofSamples*nsplit;
+	    // Spread the charge in the anode-time window
+	    for(ka=jamin; ka <=jamax; ka++) {
+		ia = (ka-1)/(fScaleSize*nsplit) + 1;
+		if(ia <= 0) { cout << "Warning: ia < 1: " << endl; continue; }
+		if(ia > nofAnodes) ia = nofAnodes;
+		aExpo     = (aStep*(ka-0.5)-aConst);
+		if(TMath::Abs(aExpo) > nsigma)  anodeAmplitude = 0.;
+		else {
+		    dummy          = (Int_t) ((aExpo+nsigma)/width);
+		    anodeAmplitude = amplitude*fResponse->GausLookUp(dummy);
+		} // end if TMath::Abs(aEspo) > nsigma
+		// index starts from 0
+		index = ((detector+1)%2)*nofAnodes+ia-1;
+		if(anodeAmplitude) for(kt=jtmin; kt<=jtmax; kt++) {
+		    it = (kt-1)/nsplit+1;  // it starts from 1
+		    if(it<=0){cout<<"Warning: it < 1: "<<endl; continue;} 
+		    if(it>fScaleSize*fMaxNofSamples)
+			                        it = fScaleSize*fMaxNofSamples;
+		    tExpo    = (tStep*(kt-0.5)-tConst);
+		    if(TMath::Abs(tExpo) > nsigma) timeAmplitude = 0.;
+		    else {
+			dummy         = (Int_t) ((tExpo+nsigma)/width);
+			timeAmplitude = anodeAmplitude*
+			                fResponse->GausLookUp(dummy);
+		    } // end if TMath::Abs(tExpo) > nsigma
+		    // build the list of digits for this module	
+		    arg[0]         = index;
+		    arg[1]         = it;
+		    arg[2]         = itrack; // track number
+		    arg[3]         = ii-1; // hit number.
+		    timeAmplitude *= norm;
+		    timeAmplitude *= 10;
+		    ListOfFiredCells(arg,timeAmplitude,alist,padr);
+		} // end if anodeAmplitude and loop over time in window
+	    } // loop over anodes in window
+	} // end loop over "sub-hits"
     } // end loop over hits
-    
-    //    timer.Stop(); timer.Print(); 
-    
-  // introduce the electronics effects and do zero-suppression if required
-  Int_t nentries=list->GetEntriesFast();
-  if (nentries) {
 
-    //    TStopwatch timer1;
-    ChargeToSignal(); 
-    //    timer1.Stop(); cout << "ele: ";  timer1.Print();
+    // introduce the electronics effects and do zero-suppression if required
+    Int_t nentries=alist->GetEntriesFast();
+    if (nentries) {
+	ChargeToSignal();
+	const char *kopt=fResponse->ZeroSuppOption();
+	ZeroSuppression(kopt);
+    } // end if netries
 
-    const char *kopt=fResponse->ZeroSuppOption();
-    ZeroSuppression(kopt);
-  } 
-
-  // clean memory
-  list->Delete();
-  delete list; 
-                      
-  padr->Delete(); 
-
-  fHitMap1->ClearMap();
-  fHitMap2->ClearMap();
-
-  //gObjectTable->Print();
+    // clean memory
+    alist->Delete();
+    delete alist;
+    padr->Delete();
+    fHitMap1->ClearMap();
+    fHitMap2->ClearMap();
 }
-
-
-//____________________________________________
-
+//______________________________________________________________________
 void AliITSsimulationSDD::ListOfFiredCells(Int_t *arg,Double_t timeAmplitude,
-                                           TObjArray *list,TClonesArray *padr){
-  // Returns the list of "fired" cells.
+                                          TObjArray *alist,TClonesArray *padr){
+    // Returns the list of "fired" cells.
 
-                    Int_t index=arg[0];
-                    Int_t ik=arg[1];
-                    Int_t idtrack=arg[2];
-                    Int_t idhit=arg[3];
-                    Int_t counter=arg[4];
-                    Int_t countadr=arg[5];
-                   
-                    Double_t charge=timeAmplitude;
-		    charge += fHitMap2->GetSignal(index,ik-1);
-		    fHitMap2->SetHit(index, ik-1, charge);
+    Int_t index     = arg[0];
+    Int_t ik        = arg[1];
+    Int_t idtrack   = arg[2];
+    Int_t idhit     = arg[3];
+    Int_t counter   = arg[4];
+    Int_t countadr  = arg[5];
+    Double_t charge = timeAmplitude;
+    charge += fHitMap2->GetSignal(index,ik-1);
+    fHitMap2->SetHit(index, ik-1, charge);
 
-                    Int_t digits[3];
-		    Int_t it=(Int_t)((ik-1)/fScaleSize);
-		    
-		    digits[0]=index;
-		    digits[1]=it;
-		    digits[2]=(Int_t)timeAmplitude;
-                    Float_t phys;
-		    if (idtrack >= 0) phys=(Float_t)timeAmplitude;
-		    else phys=0;
-                   
-		    Double_t cellcharge=0.;
-		    AliITSTransientDigit* pdigit;
-		    // build the list of fired cells and update the info
-		    if (!fHitMap1->TestHit(index, it)) {
-		      
-		        new((*padr)[countadr++]) TVector(3);
-			TVector &trinfo=*((TVector*) (*padr)[countadr-1]);
-			trinfo(0)=(Float_t)idtrack;
-			trinfo(1)=(Float_t)idhit;
-			trinfo(2)=(Float_t)timeAmplitude;
+    Int_t digits[3];
+    Int_t it = (Int_t)((ik-1)/fScaleSize);
+    digits[0] = index;
+    digits[1] = it;
+    digits[2] = (Int_t)timeAmplitude;
+    Float_t phys;
+    if (idtrack >= 0) phys = (Float_t)timeAmplitude;
+    else phys = 0;
 
-			list->AddAtAndExpand(
-			    new AliITSTransientDigit(phys,digits),counter);
-			
-			fHitMap1->SetHit(index, it, counter);
-			counter++;
-			pdigit=(AliITSTransientDigit*)list->
-                                                      At(list->GetLast());
-			// list of tracks
-			TObjArray *trlist=(TObjArray*)pdigit->TrackList();
-			trlist->Add(&trinfo);
+    Double_t cellcharge = 0.;
+    AliITSTransientDigit* pdigit;
+    // build the list of fired cells and update the info
+    if (!fHitMap1->TestHit(index, it)) {
+	new((*padr)[countadr++]) TVector(3);
+	TVector &trinfo=*((TVector*) (*padr)[countadr-1]);
+	trinfo(0) = (Float_t)idtrack;
+	trinfo(1) = (Float_t)idhit;
+	trinfo(2) = (Float_t)timeAmplitude;
 
-		    } else {
-			pdigit=
-                         (AliITSTransientDigit*) fHitMap1->GetHit(index, it);
-			for(Int_t kk=0;kk<fScaleSize;kk++) {
-			  cellcharge += fHitMap2->GetSignal(index,fScaleSize*it+kk);
-			}
-			// update charge
-			(*pdigit).fSignal=(Int_t)cellcharge;
-			(*pdigit).fPhysics+=phys;			
-			// update list of tracks
-			TObjArray* trlist=(TObjArray*)pdigit->TrackList();
-			Int_t lastentry=trlist->GetLast();
-			TVector *ptrkp=(TVector*)trlist->At(lastentry);
-			TVector &trinfo=*ptrkp;
-			Int_t lasttrack=Int_t(trinfo(0));
-			//Int_t lasthit=Int_t(trinfo(1));
-			Float_t lastcharge=(trinfo(2));
-			
- 			if (lasttrack==idtrack ) {
-			    lastcharge+=(Float_t)timeAmplitude;
-			    trlist->RemoveAt(lastentry);
-			    trinfo(0)=lasttrack;
-			    //trinfo(1)=lasthit; // or idhit
-			    trinfo(1)=idhit;
-			    trinfo(2)=lastcharge;
-			    trlist->AddAt(&trinfo,lastentry);
-			} else {
-			  
-		            new((*padr)[countadr++]) TVector(3);
-			    TVector &trinfo=*((TVector*) (*padr)[countadr-1]);
-			    trinfo(0)=(Float_t)idtrack;
-			    trinfo(1)=(Float_t)idhit;
-			    trinfo(2)=(Float_t)timeAmplitude;
-			  
-			    trlist->Add(&trinfo);
-			}
+	alist->AddAtAndExpand(new AliITSTransientDigit(phys,digits),counter);
+	fHitMap1->SetHit(index, it, counter);
+	counter++;
+	pdigit=(AliITSTransientDigit*)alist->At(alist->GetLast());
+	// list of tracks
+	TObjArray *trlist=(TObjArray*)pdigit->TrackList();
+	trlist->Add(&trinfo);
+    } else {
+	pdigit = (AliITSTransientDigit*) fHitMap1->GetHit(index, it);
+	for(Int_t kk=0;kk<fScaleSize;kk++) {
+	    cellcharge += fHitMap2->GetSignal(index,fScaleSize*it+kk);
+	}  // end for kk
+	// update charge
+	(*pdigit).fSignal = (Int_t)cellcharge;
+	(*pdigit).fPhysics += phys;			
+	// update list of tracks
+	TObjArray* trlist = (TObjArray*)pdigit->TrackList();
+	Int_t lastentry = trlist->GetLast();
+	TVector *ptrkp = (TVector*)trlist->At(lastentry);
+	TVector &trinfo = *ptrkp;
+	Int_t lasttrack = Int_t(trinfo(0));
+	Float_t lastcharge=(trinfo(2));
+	if (lasttrack==idtrack ) {
+	    lastcharge += (Float_t)timeAmplitude;
+	    trlist->RemoveAt(lastentry);
+	    trinfo(0) = lasttrack;
+	    trinfo(1) = idhit;
+	    trinfo(2) = lastcharge;
+	    trlist->AddAt(&trinfo,lastentry);
+	} else {		  
+	    new((*padr)[countadr++]) TVector(3);
+	    TVector &trinfo=*((TVector*) (*padr)[countadr-1]);
+	    trinfo(0) = (Float_t)idtrack;
+	    trinfo(1) = (Float_t)idhit;
+	    trinfo(2) = (Float_t)timeAmplitude;
+	    trlist->Add(&trinfo);
+	} // end if lasttrack==idtrack
 
 #ifdef print
-			// check the track list - debugging
-                        Int_t trk[20], htrk[20];
-                        Float_t chtrk[20];  
-			Int_t nptracks=trlist->GetEntriesFast();
-			if (nptracks > 2) {
-                            Int_t tr;
-			    for (tr=0;tr<nptracks;tr++) {
-				TVector *pptrkp=(TVector*)trlist->At(tr);
-				TVector &pptrk=*pptrkp;
-				trk[tr]=Int_t(pptrk(0));
-				htrk[tr]=Int_t(pptrk(1));
-				chtrk[tr]=(pptrk(2));
-                                printf("nptracks %d \n",nptracks);
+	// check the track list - debugging
+	Int_t trk[20], htrk[20];
+	Float_t chtrk[20];  
+	Int_t nptracks = trlist->GetEntriesFast();
+	if (nptracks > 2) {
+	    Int_t tr;
+	    for (tr=0;tr<nptracks;tr++) {
+		TVector *pptrkp = (TVector*)trlist->At(tr);
+		TVector &pptrk  = *pptrkp;
+		trk[tr]   = Int_t(pptrk(0));
+		htrk[tr]  = Int_t(pptrk(1));
+		chtrk[tr] = (pptrk(2));
+		printf("nptracks %d \n",nptracks);
 				// set printings
-			    }
-			} // end if nptracks
+	    } // end for tr
+	} // end if nptracks
 #endif
-		    } //  end if pdigit
+    } //  end if pdigit
 
-                    arg[4]=counter;
-                    arg[5]=countadr;
-
-
+    // update counter and countadr for next call.
+    arg[4] = counter;
+    arg[5] = countadr;
 }
-
-
 //____________________________________________
 
 void AliITSsimulationSDD::AddDigit(Int_t i, Int_t j, Int_t signal){
-  // Adds a Digit.
+    // Adds a Digit.
     // tag with -1 signals coming from background tracks
     // tag with -2 signals coming from pure electronic noise
 
@@ -758,275 +673,241 @@ void AliITSsimulationSDD::AddDigit(Int_t i, Int_t j, Int_t signal){
 
     if(do10to8) signal=Convert8to10(signal); 
     AliITSTransientDigit *obj = (AliITSTransientDigit*)fHitMap1->GetHit(i,j);
-    digits[0]=i;
-    digits[1]=j;
-    digits[2]=signal;
+    digits[0] = i;
+    digits[1] = j;
+    digits[2] = signal;
     if (!obj) {
         phys=0;
         Int_t k;
         for (k=0;k<3;k++) {
-	  tracks[k]=-2;
-          charges[k]=0;
-          hits[k]=-1;
-	}
+	    tracks[k]=-2;
+	    charges[k]=0;
+	    hits[k]=-1;
+	} // end for k
         fITS->AddSimDigit(1,phys,digits,tracks,hits,charges); 
     } else {
-      phys=obj->fPhysics;
-      TObjArray* trlist=(TObjArray*)obj->TrackList();
-      Int_t nptracks=trlist->GetEntriesFast();
+	phys=obj->fPhysics;
+	TObjArray* trlist=(TObjArray*)obj->TrackList();
+	Int_t nptracks=trlist->GetEntriesFast();
+	if (nptracks > 20) {
+	    cout<<"Attention - nptracks > 20 "<<nptracks<<endl;
+	    nptracks=20;
+	} // end if nptracks > 20
+	Int_t tr;
+	for (tr=0;tr<nptracks;tr++) {
+	    TVector &pp  =*((TVector*)trlist->At(tr));
+	    trk[tr]=Int_t(pp(0));
+	    htrk[tr]=Int_t(pp(1));
+	    chtrk[tr]=(pp(2));
+	} // end for tr
+	if (nptracks > 1) {
+	    SortTracks(trk,chtrk,htrk,nptracks);
+	} // end if nptracks > 1
+	Int_t i;
+	if (nptracks < 3 ) {
+	    for (i=0; i<nptracks; i++) {
+		tracks[i]=trk[i];
+		charges[i]=chtrk[i];
+		hits[i]=htrk[i];
+	    } // end for i
+	    for (i=nptracks; i<3; i++) {
+		tracks[i]=-3;
+		hits[i]=-1;
+		charges[i]=0;
+	    } // end for i
+	} else {
+	    for (i=0; i<3; i++) {
+		tracks[i]=trk[i];
+		charges[i]=chtrk[i];
+		hits[i]=htrk[i];
+	    } // end for i
+	} // end if/else nptracks < 3
 
-      if (nptracks > 20) {
-	 cout<<"Attention - nptracks > 20 "<<nptracks<<endl;
-	 nptracks=20;
-      }
-      Int_t tr;
-      for (tr=0;tr<nptracks;tr++) {
-	  TVector &pp  =*((TVector*)trlist->At(tr));
-	  trk[tr]=Int_t(pp(0));
-	  htrk[tr]=Int_t(pp(1));
-	  chtrk[tr]=(pp(2));
-      }
-      if (nptracks > 1) {
-	//printf("nptracks > 2  -- %d\n",nptracks);
-	  SortTracks(trk,chtrk,htrk,nptracks);
-      }
-      Int_t i;
-      if (nptracks < 3 ) {
-	 for (i=0; i<nptracks; i++) {
-	     tracks[i]=trk[i];
-	     charges[i]=chtrk[i];
-	     hits[i]=htrk[i];
-	 }
-	 for (i=nptracks; i<3; i++) {
-	     tracks[i]=-3;
-	     hits[i]=-1;
-	     charges[i]=0;
-	 }
-      } else {
-	 for (i=0; i<3; i++) {
-	     tracks[i]=trk[i];
-	     charges[i]=chtrk[i];
-	     hits[i]=htrk[i];
-	 }
-      }
-
-      fITS->AddSimDigit(1,phys,digits,tracks,hits,charges); 
+	fITS->AddSimDigit(1,phys,digits,tracks,hits,charges); 
  
-    }
-
+    } // end if/else !obj
 }
+//______________________________________________________________________
+void AliITSsimulationSDD::SortTracks(Int_t *tracks,Float_t *charges,
+				     Int_t *hits,Int_t ntr){
+    // Sort the list of tracks contributing to a given digit
+    // Only the 3 most significant tracks are acctually sorted
+    //  Loop over signals, only 3 times
 
-//____________________________________________
+    Float_t qmax;
+    Int_t   jmax;
+    Int_t   idx[3]  = {-3,-3,-3};
+    Float_t jch[3]  = {-3,-3,-3};
+    Int_t   jtr[3]  = {-3,-3,-3};
+    Int_t   jhit[3] = {-3,-3,-3};
+    Int_t   i,j,imax;
 
-void AliITSsimulationSDD::SortTracks(Int_t *tracks,Float_t *charges,Int_t *hits,Int_t ntr){
-  //
-  // Sort the list of tracks contributing to a given digit
-  // Only the 3 most significant tracks are acctually sorted
-  //
-  
-  //
-  //  Loop over signals, only 3 times
-  //
+    if (ntr<3) imax = ntr;
+    else imax = 3;
+    for(i=0;i<imax;i++){
+	qmax = 0;
+	jmax = 0;
+	for(j=0;j<ntr;j++){
+	    if((i == 1 && j == idx[i-1] )
+	       ||(i == 2 && (j == idx[i-1] || j == idx[i-2]))) continue;
+	    if(charges[j] > qmax) {
+		qmax = charges[j];
+		jmax=j;
+	    } // end if charges[j]>qmax
+	} // end for j
+	if(qmax > 0) {
+	    idx[i]  = jmax;
+	    jch[i]  = charges[jmax]; 
+	    jtr[i]  = tracks[jmax]; 
+	    jhit[i] = hits[jmax]; 
+	} // end if qmax > 0
+    } // end for i
 
-  
-  Float_t qmax;
-  Int_t jmax;
-  Int_t idx[3] = {-3,-3,-3};
-  Float_t jch[3] = {-3,-3,-3};
-  Int_t jtr[3] = {-3,-3,-3};
-  Int_t jhit[3] = {-3,-3,-3};
-  Int_t i,j,imax;
-  
-  if (ntr<3) imax=ntr;
-  else imax=3;
-  for(i=0;i<imax;i++){
-    qmax=0;
-    jmax=0;
-    
-    for(j=0;j<ntr;j++){
-      
-      if((i == 1 && j == idx[i-1] )
-	 ||(i == 2 && (j == idx[i-1] || j == idx[i-2]))) continue;
-      
-      if(charges[j] > qmax) {
-	qmax = charges[j];
-	jmax=j;
-      }       
-    } 
-    
-    if(qmax > 0) {
-      idx[i]=jmax;
-      jch[i]=charges[jmax]; 
-      jtr[i]=tracks[jmax]; 
-      jhit[i]=hits[jmax]; 
-    }
-    
-  } 
-  
-  for(i=0;i<3;i++){
-    if (jtr[i] == -3) {
-         charges[i]=0;
-         tracks[i]=-3;
-         hits[i]=-1;
-    } else {
-         charges[i]=jch[i];
-         tracks[i]=jtr[i];
-         hits[i]=jhit[i];
-    }
-  }
-
+    for(i=0;i<3;i++){
+	if (jtr[i] == -3) {
+	    charges[i] = 0;
+	    tracks[i]  = -3;
+	    hits[i]    = -1;
+	} else {
+	    charges[i] = jch[i];
+	    tracks[i]  = jtr[i];
+	    hits[i]    = jhit[i];
+	} // end if jtr[i] == -3
+    } // end for i
 }
-//____________________________________________
+//______________________________________________________________________
 void AliITSsimulationSDD::ChargeToSignal() {
-  // add baseline, noise, electronics and ADC saturation effects
+    // add baseline, noise, electronics and ADC saturation effects
 
-  char opt1[20], opt2[20];
-  fResponse->ParamOptions(opt1,opt2);
-  char *read = strstr(opt1,"file");
+    char opt1[20], opt2[20];
+    fResponse->ParamOptions(opt1,opt2);
+    char *read = strstr(opt1,"file");
+    Float_t baseline, noise; 
 
-  Float_t baseline, noise; 
+    if (read) {
+	static Bool_t readfile=kTRUE;
+	//read baseline and noise from file
+	if (readfile) ReadBaseline();
+	readfile=kFALSE;
+    } else fResponse->GetNoiseParam(noise,baseline);
 
-  if (read) {
-      static Bool_t readfile=kTRUE;
-      //read baseline and noise from file
-      if (readfile) ReadBaseline();
-      readfile=kFALSE;
-  } else fResponse->GetNoiseParam(noise,baseline);
+    Float_t contrib=0;
+    Int_t i,k,kk;
+    Float_t maxadc = fResponse->MaxAdc();    
+    if(!fDoFFT) {
+	for (i=0;i<fNofMaps;i++) {
+	    if (read && i<fNofMaps) GetAnodeBaseline(i,baseline,noise);
+	    for(k=0; k<fScaleSize*fMaxNofSamples; k++) {
+		fInZR[k]  = fHitMap2->GetSignal(i,k);
+		contrib   = (baseline + noise*gRandom->Gaus());
+		fInZR[k] += contrib;
+	    } // end for k
+	    for(k=0; k<fMaxNofSamples; k++) {
+		Double_t newcont = 0.;
+		Double_t maxcont = 0.;
+		for(kk=0;kk<fScaleSize;kk++) {
+		    newcont = fInZR[fScaleSize*k+kk];
+		    if(newcont > maxcont) maxcont = newcont;
+		} // end for kk
+		newcont = maxcont;
+		if (newcont >= maxadc) newcont = maxadc -1;
+		if(newcont >= baseline) cout << "newcont: " << newcont << endl;
+		// back to analog: ?
+		fHitMap2->SetHit(i,k,newcont);
+	    }  // end for k
+	} // end for i loop over anodes
+	return;
+    } // end if DoFFT
 
-  Float_t contrib=0;
-
-  Int_t i,k,kk; 
-
-  Float_t maxadc = fResponse->MaxAdc();    
-  if(!fDoFFT) {
     for (i=0;i<fNofMaps;i++) {
-        if  (read && i<fNofMaps) GetAnodeBaseline(i,baseline,noise);
+	if  (read && i<fNofMaps) GetAnodeBaseline(i,baseline,noise);
 	for(k=0; k<fScaleSize*fMaxNofSamples; k++) {
-	   fInZR[k] = fHitMap2->GetSignal(i,k);
-	   contrib = (baseline + noise*gRandom->Gaus());
-	   fInZR[k] += contrib;
-	}
+	    fInZR[k]  = fHitMap2->GetSignal(i,k);
+	    contrib   = (baseline + noise*gRandom->Gaus());
+	    fInZR[k] += contrib;
+	    fInZI[k]  = 0.;
+	} // end for k
+	FastFourierTransform(fElectronics,&fInZR[0],&fInZI[0],1);
+	for(k=0; k<fScaleSize*fMaxNofSamples; k++) {
+	    Double_t rw = fElectronics->GetTraFunReal(k);
+	    Double_t iw = fElectronics->GetTraFunImag(k);
+	    fOutZR[k]   = fInZR[k]*rw - fInZI[k]*iw;
+	    fOutZI[k]   = fInZR[k]*iw + fInZI[k]*rw;
+	} // end for k
+	FastFourierTransform(fElectronics,&fOutZR[0],&fOutZI[0],-1);
 	for(k=0; k<fMaxNofSamples; k++) {
-	   Double_t newcont = 0.;
-	   Double_t maxcont = 0.;
-	   for(kk=0;kk<fScaleSize;kk++) {
-	     
-	     newcont = fInZR[fScaleSize*k+kk];
-	     if(newcont > maxcont) maxcont = newcont;
-	     
-	     //newcont += (fInZR[fScaleSize*k+kk]/fScaleSize);
-	   }
-	   newcont = maxcont;
-	   if (newcont >= maxadc) newcont = maxadc -1;
-	   if(newcont >= baseline) cout << "newcont: " << newcont << endl;
-	   // back to analog: ?
-	   fHitMap2->SetHit(i,k,newcont);
-	}  
-    } // loop over anodes
-    return;
-  } // end if DoFFT
-
-  for (i=0;i<fNofMaps;i++) {
-      if  (read && i<fNofMaps) GetAnodeBaseline(i,baseline,noise);
-      for(k=0; k<fScaleSize*fMaxNofSamples; k++) {
-	fInZR[k] = fHitMap2->GetSignal(i,k);
-	contrib = (baseline + noise*gRandom->Gaus());
-	fInZR[k] += contrib;
-	fInZI[k] = 0.;
-      }
-      FastFourierTransform(fElectronics,&fInZR[0],&fInZI[0],1);
-      for(k=0; k<fScaleSize*fMaxNofSamples; k++) {
- 	Double_t rw = fElectronics->GetTraFunReal(k);
-	Double_t iw = fElectronics->GetTraFunImag(k);
-  	fOutZR[k] = fInZR[k]*rw - fInZI[k]*iw;
-  	fOutZI[k] = fInZR[k]*iw + fInZI[k]*rw;
-      }
-      FastFourierTransform(fElectronics,&fOutZR[0],&fOutZI[0],-1);
-      for(k=0; k<fMaxNofSamples; k++) {
-	Double_t newcont1 = 0.;
-	Double_t maxcont1 = 0.;
-	for(kk=0;kk<fScaleSize;kk++) {
-	  
-	  newcont1 = fOutZR[fScaleSize*k+kk];
-	  if(newcont1 > maxcont1) maxcont1 = newcont1;
-	  
-	  //newcont1 += (fInZR[fScaleSize*k+kk]/fScaleSize);
-	}
-	newcont1 = maxcont1;
-	//cout << "newcont1: " << newcont1 << endl;
-	if (newcont1 >= maxadc) newcont1 = maxadc -1;
-	fHitMap2->SetHit(i,k,newcont1);
-      }      
-  } // loop over anodes
+	    Double_t newcont1 = 0.;
+	    Double_t maxcont1 = 0.;
+	    for(kk=0;kk<fScaleSize;kk++) {
+		newcont1 = fOutZR[fScaleSize*k+kk];
+		if(newcont1 > maxcont1) maxcont1 = newcont1;
+	    } // end for kk
+	    newcont1 = maxcont1;
+	    if (newcont1 >= maxadc) newcont1 = maxadc -1;
+	    fHitMap2->SetHit(i,k,newcont1);
+	} // end for k
+    } // end for i loop over anodes
   return;
-
 }
-
-//____________________________________________
+//______________________________________________________________________
 void AliITSsimulationSDD::GetAnodeBaseline(Int_t i,Float_t &baseline,
                                            Float_t &noise){
-  // Returns the Baseline for a particular anode.
-    baseline=fBaseline[i];
-    noise=fNoise[i];
-
+    // Returns the Baseline for a particular anode.
+    baseline = fBaseline[i];
+    noise    = fNoise[i];
 }
-
-//____________________________________________
+//______________________________________________________________________
 void AliITSsimulationSDD::CompressionParam(Int_t i,Int_t &db,Int_t &tl,
                                            Int_t &th){
-  // Returns the compression alogirthm parameters
-   Int_t size = fD.GetSize();
-   if (size > 2 ) {
-      db=fD[i]; tl=fT1[i]; th=fT2[i];
-   } else {
-      if (size <= 2 && i>=fNofMaps/2) {
-	db=fD[1]; tl=fT1[1]; th=fT2[1];
-      } else {
-        db=fD[0]; tl=fT1[0]; th=fT2[0];
-      }
-   }
+    // Returns the compression alogirthm parameters
+    Int_t size = fD.GetSize();
+    if (size > 2 ) {
+	db=fD[i]; tl=fT1[i]; th=fT2[i];
+    } else {
+	if (size <= 2 && i>=fNofMaps/2) {
+	    db=fD[1]; tl=fT1[1]; th=fT2[1];
+	} else {
+	    db=fD[0]; tl=fT1[0]; th=fT2[0];
+	} // end if size <=2 && i>=fNofMaps/2
+    } // end if size >2
 }
-//____________________________________________
+//______________________________________________________________________
 void AliITSsimulationSDD::CompressionParam(Int_t i,Int_t &db,Int_t &tl){
-  // returns the compression alogirthm parameters
-   Int_t size = fD.GetSize();
-   if (size > 2 ) {
-      db=fD[i]; tl=fT1[i];
-   } else {
-      if (size <= 2 && i>=fNofMaps/2) {
-	db=fD[1]; tl=fT1[1]; 
-      } else {
-        db=fD[0]; tl=fT1[0]; 
-      }
-   }
+    // returns the compression alogirthm parameters
+    Int_t size = fD.GetSize();
 
+    if (size > 2 ) {
+	db=fD[i]; tl=fT1[i];
+    } else {
+	if (size <= 2 && i>=fNofMaps/2) {
+	    db=fD[1]; tl=fT1[1]; 
+	} else {
+	    db=fD[0]; tl=fT1[0]; 
+	} // end if size <=2 && i>=fNofMaps/2
+    } // end if size > 2
 }
-//____________________________________________
+//______________________________________________________________________
 void AliITSsimulationSDD::SetCompressParam(){
-  // Sets the compression alogirthm parameters  
-   Int_t cp[8],i;
-   
-   fResponse->GiveCompressParam(cp);
-   for (i=0; i<2; i++) {
-       fD[i]  =cp[i];
-       fT1[i] =cp[i+2];
-       fT2[i] =cp[i+4];
-       fTol[i]=cp[i+6];
-       printf("\n i, fD, fT1, fT2, fTol %d %d %d %d %d\n",
-                                      i,fD[i],fT1[i],fT2[i],fTol[i]);
-   }
+    // Sets the compression alogirthm parameters  
+    Int_t cp[8],i;
+
+    fResponse->GiveCompressParam(cp);
+    for (i=0; i<2; i++) {
+	fD[i]   = cp[i];
+	fT1[i]  = cp[i+2];
+	fT2[i]  = cp[i+4];
+	fTol[i] = cp[i+6];
+//	printf("\n i, fD, fT1, fT2, fTol %d %d %d %d %d\n",
+//                                      i,fD[i],fT1[i],fT2[i],fTol[i]);
+    } // end for i
 }
-
-//____________________________________________
+//______________________________________________________________________
 void AliITSsimulationSDD::ReadBaseline(){
-      // read baseline and noise from file - either a .root file and in this
-      // case data should be organised in a tree with one entry for each
-      // module => reading should be done accordingly
-      // or a classic file and do smth. like this:
-  //
-  // Read baselines and noise for SDD
-  //
-
+    // read baseline and noise from file - either a .root file and in this
+    // case data should be organised in a tree with one entry for each
+    // module => reading should be done accordingly
+    // or a classic file and do smth. like this:
+    // Read baselines and noise for SDD
 
     Int_t na,pos;
     Float_t bl,n;
@@ -1038,129 +919,115 @@ void AliITSsimulationSDD::ReadBaseline(){
 //
     filtmp = gSystem->ExpandPathName(fFileName.Data());
     FILE *bline = fopen(filtmp,"r");
-    printf("filtmp %s\n",filtmp);
+//    printf("filtmp %s\n",filtmp);
     na = 0;
 
     if(bline) {
-       while(fscanf(bline,"%d %f %f",&pos, &bl, &n) != EOF) {
-          if (pos != na+1) {
-             Error("ReadBaseline","Anode number not in increasing order!",
-                   filtmp);
-             exit(1);
-	  }
-          fBaseline[na]=bl;
-          fNoise[na]=n;
-          na++;
-       }
+	while(fscanf(bline,"%d %f %f",&pos, &bl, &n) != EOF) {
+	    if (pos != na+1) {
+		Error("ReadBaseline","Anode number not in increasing order!",
+		      filtmp);
+		exit(1);
+	    } // end if pos != na+1
+	    fBaseline[na]=bl;
+	    fNoise[na]=n;
+	    na++;
+	} // end while
     } else {
-      Error("ReadBaseline"," THE BASELINE FILE %s DOES NOT EXIST !",
-	  filtmp);
-      exit(1);
+	Error("ReadBaseline"," THE BASELINE FILE %s DOES NOT EXIST !",filtmp);
+	exit(1);
     } // end if(bline)
-    
+
     fclose(bline);
     delete [] filtmp;
-} 
-
-//____________________________________________
-Int_t AliITSsimulationSDD::Convert10to8(Int_t signal) {
-  // To the 10 to 8 bit lossive compression.
-  // code from Davide C. and Albert W.
-
-   if (signal < 128)  return signal;
-   if (signal < 256)  return (128+((signal-128)>>1));
-   if (signal < 512)  return (192+((signal-256)>>3));
-   if (signal < 1024) return (224+((signal-512)>>4));
-   return 0;
-
 }
+//______________________________________________________________________
+Int_t AliITSsimulationSDD::Convert10to8(Int_t signal) const {
+    // To the 10 to 8 bit lossive compression.
+    // code from Davide C. and Albert W.
 
-//____________________________________________
-Int_t AliITSsimulationSDD::Convert8to10(Int_t signal) {
-  // Undo the lossive 10 to 8 bit compression.
-  // code from Davide C. and Albert W.
-   if (signal < 0 || signal > 255) {
-       printf("<Convert8to10> out of range %d \n",signal);
-       return 0;
-   }
-   
-   if (signal < 128) return signal;
-   if (signal < 192) {
-     if (TMath::Odd(signal)) return (128+((signal-128)<<1));
-     else  return (128+((signal-128)<<1)+1);
-   }
-   if (signal < 224) {
-     if (TMath::Odd(signal)) return (256+((signal-192)<<3)+3);
-     else  return (256+((signal-192)<<3)+4);
-   }
-   if (TMath::Odd(signal)) return (512+((signal-224)<<4)+7);
-   else  return (512+((signal-224)<<4)+7);
-   return 0;
-
+    if (signal < 128)  return signal;
+    if (signal < 256)  return (128+((signal-128)>>1));
+    if (signal < 512)  return (192+((signal-256)>>3));
+    if (signal < 1024) return (224+((signal-512)>>4));
+    return 0;
 }
+//______________________________________________________________________
+Int_t AliITSsimulationSDD::Convert8to10(Int_t signal) const {
+    // Undo the lossive 10 to 8 bit compression.
+    // code from Davide C. and Albert W.
+    if (signal < 0 || signal > 255) {
+	cout << "<Convert8to10> out of range "<< signal << endl;
+	return 0;
+    } // end if signal <0 || signal >255
 
-//____________________________________________
+    if (signal < 128) return signal;
+    if (signal < 192) {
+	if (TMath::Odd(signal)) return (128+((signal-128)<<1));
+	else  return (128+((signal-128)<<1)+1);
+    } // end if signal < 192
+    if (signal < 224) {
+	if (TMath::Odd(signal)) return (256+((signal-192)<<3)+3);
+	else  return (256+((signal-192)<<3)+4);
+    } // end if signal < 224
+    if (TMath::Odd(signal)) return (512+((signal-224)<<4)+7);
+    else  return (512+((signal-224)<<4)+7);
+    return 0;
+}
+//______________________________________________________________________
 AliITSMap*   AliITSsimulationSDD::HitMap(Int_t i){
-  //Return the correct map.
+    //Return the correct map.
+
     return ((i==0)? fHitMap1 : fHitMap2);
 }
-
-
-//____________________________________________
+//______________________________________________________________________
 void AliITSsimulationSDD::ZeroSuppression(const char *option) {
-  // perform the zero suppresion
-  if (strstr(option,"2D")) {
-    //Init2D();              // activate if param change module by module
-    Compress2D();
-  } else if (strstr(option,"1D")) {
-    //Init1D();              // activate if param change module by module
-    Compress1D();  
-  } else StoreAllDigits();  
+    // perform the zero suppresion
 
+    if (strstr(option,"2D")) {
+	//Init2D();              // activate if param change module by module
+	Compress2D();
+    } else if (strstr(option,"1D")) {
+	//Init1D();              // activate if param change module by module
+	Compress1D();  
+    } else StoreAllDigits();
 }
-
-//____________________________________________
+//______________________________________________________________________
 void AliITSsimulationSDD::Init2D(){
-     // read in and prepare arrays: fD, fT1, fT2
-     //                         savemu[nanodes], savesigma[nanodes] 
-      // read baseline and noise from file - either a .root file and in this
-      // case data should be organised in a tree with one entry for each
-      // module => reading should be done accordingly
-      // or a classic file and do smth. like this ( code from Davide C. and
-      // Albert W.) :
-  //
-  // Read 2D zero-suppression parameters for SDD
-  //
+    // read in and prepare arrays: fD, fT1, fT2
+    //                         savemu[nanodes], savesigma[nanodes] 
+    // read baseline and noise from file - either a .root file and in this
+    // case data should be organised in a tree with one entry for each
+    // module => reading should be done accordingly
+    // or a classic file and do smth. like this ( code from Davide C. and
+    // Albert W.) :
+    // Read 2D zero-suppression parameters for SDD
 
     if (!strstr(fParam,"file")) return;
 
     Int_t na,pos,tempTh;
     Float_t mu,sigma;
-    Float_t *savemu = new Float_t [fNofMaps];
+    Float_t *savemu    = new Float_t [fNofMaps];
     Float_t *savesigma = new Float_t [fNofMaps];
     char input[100],basel[100],par[100];
     char *filtmp;
-
-
     Int_t minval = fResponse->MinVal();
 
     fResponse->Filenames(input,basel,par);
-    fFileName=par;
-
+    fFileName = par;
 //
     filtmp = gSystem->ExpandPathName(fFileName.Data());
     FILE *param = fopen(filtmp,"r");
     na = 0;
 
     if(param) {
-       while(fscanf(param,"%d %f %f",&pos, &mu, &sigma) != EOF) {
-          if (pos != na+1) {
-             Error("Init2D ","Anode number not in increasing order!",
-                   filtmp);
-             exit(1);
-	  }
-          savemu[na]=mu;
-          savesigma[na]=sigma;
+	while(fscanf(param,"%d %f %f",&pos, &mu, &sigma) != EOF) {
+	    if (pos != na+1) {
+		Error("Init2D ","Anode number not in increasing order!",filtmp);
+		exit(1);
+	    } // end if pos != na+1
+	    savemu[na] = mu;
+          savesigma[na] = sigma;
           if ((2.*sigma) < mu) {
               fD[na] = (Int_t)floor(mu - 2.0*sigma + 0.5);
               mu = 2.0 * sigma;
@@ -1172,40 +1039,33 @@ void AliITSsimulationSDD::Init2D(){
           if (tempTh < 0) tempTh=0;
           fT2[na] = tempTh;
           na++;
-       } // end while
-
+	} // end while
     } else {
-      Error("Init2D "," THE FILE %s DOES NOT EXIST !",
-	  filtmp);
-      exit(1);
+	Error("Init2D "," THE FILE %s DOES NOT EXIST !",filtmp);
+	exit(1);
     } // end if(param)
-    
+
     fclose(param);
     delete [] filtmp;
     delete [] savemu;
     delete [] savesigma;
-} 
-
-//____________________________________________
+}
+//______________________________________________________________________
 void AliITSsimulationSDD::Compress2D(){
-  //
-  // simple ITS cluster finder -- online zero-suppression conditions
-  // 
-  //
+    // simple ITS cluster finder -- online zero-suppression conditions
 
     Int_t db,tl,th;  
-    Int_t minval = fResponse->MinVal();
-    Bool_t write=fResponse->OutputOption();   
-    Bool_t do10to8=fResponse->Do10to8();
-
+    Int_t minval   = fResponse->MinVal();
+    Bool_t write   = fResponse->OutputOption();   
+    Bool_t do10to8 = fResponse->Do10to8();
     Int_t nz, nl, nh, low, i, j; 
 
     for (i=0; i<fNofMaps; i++) {
         CompressionParam(i,db,tl,th);
-        nz=0; 
-        nl=0;
-        nh=0;
-        low=0;
+        nz  = 0; 
+        nl  = 0;
+        nh  = 0;
+        low = 0;
 	for (j=0; j<fMaxNofSamples; j++) {
 	    Int_t signal=(Int_t)(fHitMap2->GetSignal(i,j));
 	    signal -= db; // if baseline eq. is done here
@@ -1215,93 +1075,81 @@ void AliITSsimulationSDD::Compress2D(){
 	        nh++;
 		Bool_t cond=kTRUE;
 		FindCluster(i,j,signal,minval,cond);
-		if (cond && j && ((TMath::Abs(fHitMap2->GetSignal(i,j-1))-th)>=minval)) {
-		  if(do10to8) signal = Convert10to8(signal);
-		  AddDigit(i,j,signal);
-		}
+		if(cond&&j&&((TMath::Abs(fHitMap2->GetSignal(i,j-1))-th)>=minval)){
+		    if(do10to8) signal = Convert10to8(signal);
+		    AddDigit(i,j,signal);
+		} // end if cond&&j&&()
 	    } else if ((signal - tl) >= minval) nl++;
-       } // loop time samples
-       if (write) TreeB()->Fill(nz,nl,nh,low,i+1);
-    } // loop anodes  
+	} // end for j loop time samples
+	if (write) TreeB()->Fill(nz,nl,nh,low,i+1);
+    } //end for i loop anodes
 
-      char hname[30];
-      if (write) {
+    char hname[30];
+    if (write) {
 	sprintf(hname,"TNtuple%d_%d",fModule,fEvent);
 	TreeB()->Write(hname);
 	// reset tree
         TreeB()->Reset();
-      }
-
-} 
-
-//_____________________________________________________________________________
+    } // end if write
+}
+//______________________________________________________________________
 void  AliITSsimulationSDD::FindCluster(Int_t i,Int_t j,Int_t signal,
                                        Int_t minval,Bool_t &cond){
-//
-//  Find clusters according to the online 2D zero-suppression algorithm
-//
-
-    Bool_t do10to8=fResponse->Do10to8();
-
-    Bool_t high=kFALSE;
+    // Find clusters according to the online 2D zero-suppression algorithm
+    Bool_t do10to8 = fResponse->Do10to8();
+    Bool_t high    = kFALSE;
 
     fHitMap2->FlagHit(i,j);
 //
 //  check the online zero-suppression conditions
 //  
-    const Int_t maxNeighbours = 4;
-
+    const Int_t kMaxNeighbours = 4;
     Int_t nn;
     Int_t dbx,tlx,thx;  
-    Int_t xList[maxNeighbours], yList[maxNeighbours];
+    Int_t xList[kMaxNeighbours], yList[kMaxNeighbours];
     fSegmentation->Neighbours(i,j,&nn,xList,yList);
     Int_t in,ix,iy,qns;
     for (in=0; in<nn; in++) {
 	ix=xList[in];
         iy=yList[in];
         if (fHitMap2->TestHit(ix,iy)==kUnused) {
-	   CompressionParam(ix,dbx,tlx,thx);
-           Int_t qn = (Int_t)(fHitMap2->GetSignal(ix,iy));
-	   qn -= dbx; // if baseline eq. is done here
-	   if ((qn-tlx) < minval) {
-	      fHitMap2->FlagHit(ix,iy);
-	      continue;
-	   } else {
-              if ((qn - thx) >= minval) high=kTRUE;
-              if (cond) {
-                 if(do10to8) signal = Convert10to8(signal);
-	 	 AddDigit(i,j,signal);
-	      }
-	      if(do10to8) qns = Convert10to8(qn);
-	      else qns=qn;
-	      if (!high) AddDigit(ix,iy,qns);
-	      cond=kFALSE;
-	      if(!high) fHitMap2->FlagHit(ix,iy);
-	   }
-	} // TestHit
-    } // loop over neighbours
-
+	    CompressionParam(ix,dbx,tlx,thx);
+	    Int_t qn = (Int_t)(fHitMap2->GetSignal(ix,iy));
+	    qn -= dbx; // if baseline eq. is done here
+	    if ((qn-tlx) < minval) {
+		fHitMap2->FlagHit(ix,iy);
+		continue;
+	    } else {
+		if ((qn - thx) >= minval) high=kTRUE;
+		if (cond) {
+		    if(do10to8) signal = Convert10to8(signal);
+		    AddDigit(i,j,signal);
+		} // end if cond
+		if(do10to8) qns = Convert10to8(qn);
+		else qns=qn;
+		if (!high) AddDigit(ix,iy,qns);
+		cond=kFALSE;
+		if(!high) fHitMap2->FlagHit(ix,iy);
+	    } // end if qn-tlx < minval
+	} // end if  TestHit
+    } // end for in loop over neighbours
 }
-
-//____________________________________________
+//______________________________________________________________________
 void AliITSsimulationSDD::Init1D(){
-  // this is just a copy-paste of input taken from 2D algo
-  // Torino people should give input
-  //
-  // Read 1D zero-suppression parameters for SDD
-  //
+    // this is just a copy-paste of input taken from 2D algo
+    // Torino people should give input
+    // Read 1D zero-suppression parameters for SDD
 
     if (!strstr(fParam,"file")) return;
 
     Int_t na,pos,tempTh;
     Float_t mu,sigma;
-    Float_t *savemu = new Float_t [fNofMaps];
+    Float_t *savemu    = new Float_t [fNofMaps];
     Float_t *savesigma = new Float_t [fNofMaps];
     char input[100],basel[100],par[100];
     char *filtmp;
-
-
     Int_t minval = fResponse->MinVal();
+
     fResponse->Filenames(input,basel,par);
     fFileName=par;
 
@@ -1313,79 +1161,69 @@ void AliITSsimulationSDD::Init1D(){
     na = 0;
 
     if (param) {
-          fscanf(param,"%d %d %d %d ", &fT2[0], &fT2[1], &fTol[0], &fTol[1]);
-          while(fscanf(param,"%d %f %f",&pos, &mu, &sigma) != EOF) {
-	       if (pos != na+1) {
-		  Error("Init1D ","Anode number not in increasing order!",
-                   filtmp);
-		  exit(1);
-	       }
-	       savemu[na]=mu;
-	       savesigma[na]=sigma;
-	       if ((2.*sigma) < mu) {
-		 fD[na] = (Int_t)floor(mu - 2.0*sigma + 0.5);
-		 mu = 2.0 * sigma;
-	       } else fD[na] = 0;
-	       tempTh = (Int_t)floor(mu+2.25*sigma+0.5) - minval;
-	       if (tempTh < 0) tempTh=0;
-	       fT1[na] = tempTh;
-	       na++;
-	  } // end while
+	fscanf(param,"%d %d %d %d ", &fT2[0], &fT2[1], &fTol[0], &fTol[1]);
+	while(fscanf(param,"%d %f %f",&pos, &mu, &sigma) != EOF) {
+	    if (pos != na+1) {
+		Error("Init1D ","Anode number not in increasing order!",filtmp);
+		exit(1);
+	    } // end if pos != na+1
+	    savemu[na]=mu;
+	    savesigma[na]=sigma;
+	    if ((2.*sigma) < mu) {
+		fD[na] = (Int_t)floor(mu - 2.0*sigma + 0.5);
+		mu = 2.0 * sigma;
+	    } else fD[na] = 0;
+	    tempTh = (Int_t)floor(mu+2.25*sigma+0.5) - minval;
+	    if (tempTh < 0) tempTh=0;
+	    fT1[na] = tempTh;
+	    na++;
+	} // end while
     } else {
-      Error("Init1D "," THE FILE %s DOES NOT EXIST !",
-	  filtmp);
-      exit(1);
+	Error("Init1D "," THE FILE %s DOES NOT EXIST !",filtmp);
+	exit(1);
     } // end if(param)
-    
+
     fclose(param);
     delete [] filtmp;
     delete [] savemu;
     delete [] savesigma;
-
-
-
-}
- 
-//____________________________________________
+} 
+//______________________________________________________________________
 void AliITSsimulationSDD::Compress1D(){
     // 1D zero-suppression algorithm (from Gianluca A.)
-
-    Int_t dis,tol,thres,decr,diff;  
-
+    Int_t    dis,tol,thres,decr,diff;
     UChar_t *str=fStream->Stream();
-    Int_t counter=0;
+    Int_t    counter=0;
+    Bool_t   do10to8=fResponse->Do10to8();
+    Int_t    last=0;
+    Int_t    k,i,j;
 
-    Bool_t do10to8=fResponse->Do10to8();
-
-    Int_t last=0;
-    Int_t k,i,j;
     for (k=0; k<2; k++) {
-         tol = Tolerance(k);
-         dis = Disable(k);  
-	 for (i=0; i<fNofMaps/2; i++) {
-	     Bool_t firstSignal=kTRUE;
-             Int_t idx=i+k*fNofMaps/2;
-	     CompressionParam(idx,decr,thres); 
-	     for (j=0; j<fMaxNofSamples; j++) {
-		 Int_t signal=(Int_t)(fHitMap2->GetSignal(idx,j));
-                 signal -= decr;  // if baseline eq.
-		 if(do10to8) signal = Convert10to8(signal);
-		 if (signal <= thres) {
-                     signal=0;
-                     diff=128; 
-                     last=0; 
-                     // write diff in the buffer for HuffT
-                     str[counter]=(UChar_t)diff;
-                     counter++;
-                     continue;
-		 }
-                 diff=signal-last;
-                 if (diff > 127) diff=127;
-                 if (diff < -128) diff=-128;
-   
-		 if (signal < dis) {
-		   // tol has changed to 8 possible cases ? - one can write
-		   // this if(TMath::Abs(diff)<tol) ... else ...
+	tol = Tolerance(k);
+	dis = Disable(k);  
+	for (i=0; i<fNofMaps/2; i++) {
+	    Bool_t firstSignal=kTRUE;
+	    Int_t idx=i+k*fNofMaps/2;
+	    CompressionParam(idx,decr,thres); 
+	    for (j=0; j<fMaxNofSamples; j++) {
+		Int_t signal=(Int_t)(fHitMap2->GetSignal(idx,j));
+		signal -= decr;  // if baseline eq.
+		if(do10to8) signal = Convert10to8(signal);
+		if (signal <= thres) {
+		    signal=0;
+		    diff=128; 
+		    last=0; 
+		    // write diff in the buffer for HuffT
+		    str[counter]=(UChar_t)diff;
+		    counter++;
+		    continue;
+		} // end if signal <= thres
+		diff=signal-last;
+		if (diff > 127) diff=127;
+		if (diff < -128) diff=-128;
+		if (signal < dis) {
+		    // tol has changed to 8 possible cases ? - one can write
+		    // this if(TMath::Abs(diff)<tol) ... else ...
 		    if(TMath::Abs(diff)<tol) diff=0;
 		    // or keep it as it was before
 		    /*
@@ -1394,27 +1232,24 @@ void AliITSsimulationSDD::Compress1D(){
                     if (tol==3 && (diff >= -16 && diff <= 15)) diff=0;
 		    */
                     AddDigit(idx,j,last+diff);
-		 } else {
-                   AddDigit(idx,j,signal);
-		 }
-                 
-                 diff += 128;
-                 // write diff in the buffer used to compute Huffman tables
-                 if (firstSignal) str[counter]=(UChar_t)signal;
-		 else str[counter]=(UChar_t)diff;
-		 counter++;
-
-                 last=signal;
-	         firstSignal=kFALSE;
- 	     } // loop time samples
-	 } // loop anodes  one half of detector 
-    }
+		} else {
+		    AddDigit(idx,j,signal);
+		} // end if singal < dis
+		diff += 128;
+		// write diff in the buffer used to compute Huffman tables
+		if (firstSignal) str[counter]=(UChar_t)signal;
+		else str[counter]=(UChar_t)diff;
+		counter++;
+		last=signal;
+		firstSignal=kFALSE;
+	    } // end for j loop time samples
+	} // end for i loop anodes  one half of detector 
+    } //  end for k
 
     // check
     fStream->CheckCount(counter);
 
     // open file and write out the stream of diff's
-   
     static Bool_t open=kTRUE;
     static TFile *outFile;
     Bool_t write = fResponse->OutputOption();
@@ -1425,49 +1260,44 @@ void AliITSsimulationSDD::Compress1D(){
 	    cout<<"filename "<<fFileName<<endl;
 	    outFile=new TFile(fFileName,"recreate");
 	    cout<<"I have opened "<<fFileName<<" file "<<endl;
-	}	    
-	open=kFALSE;
+	} // end if open
+	open = kFALSE;
 	outFile->cd();
         fStream->Write();
     }  // endif write	
 
-     fStream->ClearStream();
+    fStream->ClearStream();
 
-     // back to galice.root file
+    // back to galice.root file
 
-     TTree *fAli=gAlice->TreeK();
-     TFile *file = 0;
-	    
-     if (fAli) file =fAli->GetCurrentFile();
-     file->cd();
+    TTree *fAli=gAlice->TreeK();
+    TFile *file = 0;
 
-
-} 
-//____________________________________________
+    if (fAli) file =fAli->GetCurrentFile();
+    file->cd();
+}
+//______________________________________________________________________
 void AliITSsimulationSDD::StoreAllDigits(){
-  // if non-zero-suppressed data 
-
-    Bool_t do10to8=fResponse->Do10to8();
-
+    // if non-zero-suppressed data
+    Bool_t do10to8 = fResponse->Do10to8();
     Int_t i, j, digits[3];
+
     for (i=0; i<fNofMaps; i++) {
         for (j=0; j<fMaxNofSamples; j++) {
-             Int_t signal=(Int_t)(fHitMap2->GetSignal(i,j));
-	     if(do10to8) signal = Convert10to8(signal);
-	     if(do10to8) signal = Convert8to10(signal); 
-             digits[0]=i;
-             digits[1]=j;
-             digits[2]=signal;
-	     fITS->AddRealDigit(1,digits);
-	}
-    }
+	    Int_t signal=(Int_t)(fHitMap2->GetSignal(i,j));
+	    if(do10to8) signal = Convert10to8(signal);
+	    if(do10to8) signal = Convert8to10(signal); 
+	    digits[0] = i;
+	    digits[1] = j;
+	    digits[2] = signal;
+	    fITS->AddRealDigit(1,digits);
+	} // end for j
+    } // end for i
 } 
-//____________________________________________
-
+//______________________________________________________________________
 void AliITSsimulationSDD::CreateHistograms(Int_t scale){
-  // Creates histograms of maps for debugging
-
-      Int_t i;
+    // Creates histograms of maps for debugging
+    Int_t i;
 
       fHis=new TObjArray(fNofMaps);
       for (i=0;i<fNofMaps;i++) {
@@ -1476,147 +1306,136 @@ void AliITSsimulationSDD::CreateHistograms(Int_t scale){
 	   sprintf(candNum,"%d",i+1);
 	   sddName.Append(candNum);
        //PH	   (*fHis)[i] = new TH1F(sddName.Data(),"SDD maps",
-       //PH                scale*fMaxNofSamples,0.,(Float_t) scale*fMaxNofSamples);
-	   fHis->AddAt(new TH1F(sddName.Data(),"SDD maps",
-                scale*fMaxNofSamples,0.,(Float_t) scale*fMaxNofSamples), i);
-      }
-
+       //PH            scale*fMaxNofSamples,0.,(Float_t) scale*fMaxNofSamples);
+	   fHis->AddAt(new TH1F(sddName.Data(),"SDD maps",scale*fMaxNofSamples,
+				0.,(Float_t) scale*fMaxNofSamples), i);
+      } // end for i
 }
-//____________________________________________
+//______________________________________________________________________
 void AliITSsimulationSDD::FillHistograms(){
-  // fill 1D histograms from map
-  if (!fHis) return; 
-  
-  for( Int_t i=0; i<fNofMaps; i++) {
-    TH1F *hist =(TH1F *)fHis->UncheckedAt(i);
-    Int_t nsamples = hist->GetNbinsX();
-    for( Int_t j=0; j<nsamples; j++) {
-      Double_t signal=fHitMap2->GetSignal(i,j);
-      hist->Fill((Float_t)j,signal);
-    }
-  }
+    // fill 1D histograms from map
+
+    if (!fHis) return;
+
+    for( Int_t i=0; i<fNofMaps; i++) {
+	TH1F *hist =(TH1F *)fHis->UncheckedAt(i);
+	Int_t nsamples = hist->GetNbinsX();
+	for( Int_t j=0; j<nsamples; j++) {
+	    Double_t signal=fHitMap2->GetSignal(i,j);
+	    hist->Fill((Float_t)j,signal);
+	} // end for j
+    } // end for i
 }
-
-//____________________________________________
-
+//______________________________________________________________________
 void AliITSsimulationSDD::ResetHistograms(){
-    //
     // Reset histograms for this detector
-    //
     Int_t i;
+
     for (i=0;i<fNofMaps;i++ ) {
-      //PH	if ((*fHis)[i])    ((TH1F*)(*fHis)[i])->Reset();
+	//PH	if ((*fHis)[i])    ((TH1F*)(*fHis)[i])->Reset();
 	if (fHis->At(i))    ((TH1F*)fHis->At(i))->Reset();
-    }
-
+    } // end for i
 }
-
-
-//____________________________________________
-
+//______________________________________________________________________
 TH1F *AliITSsimulationSDD::GetAnode(Int_t wing, Int_t anode) { 
-  // Fills a histogram from a give anode.  
-  if (!fHis) return 0;
+    // Fills a histogram from a give anode.  
 
-  if(wing <=0 || wing > 2) {
-    cout << "Wrong wing number: " << wing << endl;
-    return NULL;
-  }
-  if(anode <=0 || anode > fNofMaps/2) {
-    cout << "Wrong anode number: " << anode << endl;
-    return NULL;
-  }
+    if (!fHis) return 0;
 
-  Int_t index = (wing-1)*fNofMaps/2 + anode-1;
-  //PH  return (TH1F*)((*fHis)[index]); 
-  return (TH1F*)(fHis->At(index)); 
+    if(wing <=0 || wing > 2) {
+	cout << "Wrong wing number: " << wing << endl;
+	return NULL;
+    } // end if wing <=0 || wing >2
+    if(anode <=0 || anode > fNofMaps/2) {
+	cout << "Wrong anode number: " << anode << endl;
+	return NULL;
+    } // end if ampde <=0 || andoe > fNofMaps/2
+
+    Int_t index = (wing-1)*fNofMaps/2 + anode-1;
+    //PH  return (TH1F*)((*fHis)[index]); 
+    return (TH1F*)(fHis->At(index));
 }
-
-//____________________________________________
-
+//______________________________________________________________________
 void AliITSsimulationSDD::WriteToFile(TFile *hfile) {
-  // Writes the histograms to a file 
-  if (!fHis) return;
+    // Writes the histograms to a file
 
-  hfile->cd();
-  Int_t i;
-  //PH  for(i=0; i<fNofMaps; i++)  (*fHis)[i]->Write(); //fAdcs[i]->Write();
-  for(i=0; i<fNofMaps; i++)  fHis->At(i)->Write(); //fAdcs[i]->Write();
-  return;
+    if (!fHis) return;
+
+    hfile->cd();
+    Int_t i;
+    //PH  for(i=0; i<fNofMaps; i++)  (*fHis)[i]->Write(); //fAdcs[i]->Write();
+    for(i=0; i<fNofMaps; i++)  fHis->At(i)->Write(); //fAdcs[i]->Write();
+    return;
 }
-//____________________________________________
+//______________________________________________________________________
 Float_t AliITSsimulationSDD::GetNoise() {  
-  // Returns the noise value
+    // Returns the noise value
+    //Bool_t do10to8=fResponse->Do10to8();
+    //noise will always be in the liniar part of the signal
+    Int_t decr;
+    Int_t threshold = fT1[0];
+    char opt1[20], opt2[20];
 
-  //Bool_t do10to8=fResponse->Do10to8();
-  //noise will always be in the liniar part of the signal
+    fResponse->ParamOptions(opt1,opt2);
+    fParam=opt2;
+    char *same = strstr(opt1,"same");
+    Float_t noise,baseline;
+    if (same) {
+	fResponse->GetNoiseParam(noise,baseline);
+    } else {
+	static Bool_t readfile=kTRUE;
+	//read baseline and noise from file
+	if (readfile) ReadBaseline();
+	readfile=kFALSE;
+    } // end if same
 
-  Int_t decr;
-  Int_t threshold=fT1[0];
+    TCanvas *c2 = (TCanvas*)gROOT->GetListOfCanvases()->FindObject("c2");
+    if(c2) delete c2->GetPrimitive("noisehist");
+    if(c2) delete c2->GetPrimitive("anode");
+    else     c2=new TCanvas("c2");
+    c2->cd();
+    c2->SetFillColor(0);
 
-  char opt1[20], opt2[20];
-  fResponse->ParamOptions(opt1,opt2);
-  fParam=opt2;
-  char *same = strstr(opt1,"same");
-  Float_t noise,baseline;
-  if (same) {
-    fResponse->GetNoiseParam(noise,baseline);
-  } else {
-     static Bool_t readfile=kTRUE;
-     //read baseline and noise from file
-     if (readfile) ReadBaseline();
-     readfile=kFALSE;
-  }
-
-   TCanvas *c2 = (TCanvas*)gROOT->GetListOfCanvases()->FindObject("c2");
-   if(c2) delete c2->GetPrimitive("noisehist");
-   if(c2) delete c2->GetPrimitive("anode");
-   else     c2=new TCanvas("c2");
-   c2->cd();
-   c2->SetFillColor(0);
-
-   TH1F *noisehist = new TH1F("noisehist","noise",100,0.,(float)2*threshold);
-   TH1F *anode = new TH1F("anode","Anode Projection",fMaxNofSamples,0.,(float)fMaxNofSamples);
-  Int_t i,k;
-  for (i=0;i<fNofMaps;i++) {
-    CompressionParam(i,decr,threshold); 
-    if  (!same) GetAnodeBaseline(i,baseline,noise);
-    anode->Reset();
-    for (k=0;k<fMaxNofSamples;k++) {
-      Float_t signal=(Float_t)fHitMap2->GetSignal(i,k);
-      //if (signal <= (float)threshold) noisehist->Fill(signal-baseline);
-      if (signal <= (float)threshold) noisehist->Fill(signal);
-      anode->Fill((float)k,signal);
-    }
-    anode->Draw();
+    TH1F *noisehist = new TH1F("noisehist","noise",100,0.,(float)2*threshold);
+    TH1F *anode = new TH1F("anode","Anode Projection",fMaxNofSamples,0.,
+			   (float)fMaxNofSamples);
+    Int_t i,k;
+    for (i=0;i<fNofMaps;i++) {
+	CompressionParam(i,decr,threshold); 
+	if  (!same) GetAnodeBaseline(i,baseline,noise);
+	anode->Reset();
+	for (k=0;k<fMaxNofSamples;k++) {
+	    Float_t signal=(Float_t)fHitMap2->GetSignal(i,k);
+	    //if (signal <= (float)threshold) noisehist->Fill(signal-baseline);
+	    if (signal <= (float)threshold) noisehist->Fill(signal);
+	    anode->Fill((float)k,signal);
+	} // end for k
+	anode->Draw();
+	c2->Update();
+    } // end for i
+    TF1 *gnoise = new TF1("gnoise","gaus",0.,threshold);
+    noisehist->Fit("gnoise","RQ");
+    noisehist->Draw();
     c2->Update();
-  }
-  TF1 *gnoise = new TF1("gnoise","gaus",0.,threshold);
-  noisehist->Fit("gnoise","RQ");
-  noisehist->Draw();
-  c2->Update();
-  Float_t mnoise = gnoise->GetParameter(1);
-  cout << "mnoise : " << mnoise << endl;
-  Float_t rnoise = gnoise->GetParameter(2);
-  cout << "rnoise : " << rnoise << endl;
-  delete noisehist;
-  return rnoise;
+    Float_t mnoise = gnoise->GetParameter(1);
+    cout << "mnoise : " << mnoise << endl;
+    Float_t rnoise = gnoise->GetParameter(2);
+    cout << "rnoise : " << rnoise << endl;
+    delete noisehist;
+    return rnoise;
 }
-
-//____________________________________________
-
+//______________________________________________________________________
 void AliITSsimulationSDD::Print() {
+    // Print SDD simulation Parameters
 
-  // Print SDD simulation Parameters
-
-   cout << "**************************************************" << endl;
-   cout << "   Silicon Drift Detector Simulation Parameters   " << endl;
-   cout << "**************************************************" << endl;
-   cout << "Flag for Perpendicular tracks: " << (Int_t) fFlag << endl;
-   cout << "Flag for noise checking: " << (Int_t) fCheckNoise << endl;
-   cout << "Flag to switch off electronics: " << (Int_t) fDoFFT << endl;
-   cout << "Number pf Anodes used: " << fNofMaps << endl;
-   cout << "Number of Time Samples: " << fMaxNofSamples << endl;
-   cout << "Scale size factor: " << fScaleSize << endl;
-   cout << "**************************************************" << endl;
+    cout << "**************************************************" << endl;
+    cout << "   Silicon Drift Detector Simulation Parameters   " << endl;
+    cout << "**************************************************" << endl;
+    cout << "Flag for Perpendicular tracks: " << (Int_t) fFlag << endl;
+    cout << "Flag for noise checking: " << (Int_t) fCheckNoise << endl;
+    cout << "Flag to switch off electronics: " << (Int_t) fDoFFT << endl;
+    cout << "Number pf Anodes used: " << fNofMaps << endl;
+    cout << "Number of Time Samples: " << fMaxNofSamples << endl;
+    cout << "Scale size factor: " << fScaleSize << endl;
+    cout << "**************************************************" << endl;
 }
