@@ -9,25 +9,29 @@
 #include "AliL3ClustFinderNew.h"
 #include "AliL3MemHandler.h"
 #include "AliL3SpacePointData.h"
+#include "AliL3Logger.h"
 
+#define MAXCLUSTER 15000
 /**
  Example program how to run the "standalone" clusterfinder.
+
+ Import: give patch=-1 for one-patch slices.
 */
 
 int main(int argc,char **argv)
 {
   Int_t slice=0;
   Int_t patch=0;
+  Int_t fm=4;
+  Int_t th=10;
 
-  /*
-    AliL3Logger l;
-    l.Set(AliL3Logger::kAll);
-    l.UseStdout();
-    //l.UseStream();
-  */
+  //AliL3Logger l;
+  //l.Set(AliL3Logger::kAll);
+  //l.UseStdout();
+  //l.UseStream();
 
   if(argc<2){
-    cout<<"Usage: runit datafile [slice] [patch]"<<endl;
+    cout<<"Usage: runit datafile [slice] [patch] [match] [threshold]"<<endl;
     return -1;
   }
   if (argc>2) {
@@ -36,9 +40,15 @@ int main(int argc,char **argv)
   if (argc>3) {
     patch=atoi(argv[3]);
   }
+  if (argc>4) {
+    fm=atoi(argv[4]);
+  }
+  if (argc>5) {
+    th=atoi(argv[5]);
+  }
 
   AliL3DigitRowData *digits = 0;
-  unsigned int ndigits=0;
+  unsigned int nrows=0;
   
   //Storing all specific quantities, needed by the Cluster Finder.
   Char_t fname[1024];
@@ -53,7 +63,8 @@ int main(int argc,char **argv)
   if((patch>=0)&&(patch<6)) file.Init(slice,patch);
   else {
     Int_t srows[2]={0,175};
-    file.Init(slice,0,srows);
+    patch=0;
+    file.Init(slice,patch,srows);
   }
 
   //Open the data file:
@@ -64,14 +75,16 @@ int main(int argc,char **argv)
     }
 
   //Store the data in memory, and get the pointer to it:
-  digits = file.CompBinary2Memory(ndigits);
+  digits = file.CompBinary2Memory(nrows);
   file.CloseBinaryInput();
 
   //The cluster finder itself.
   AliL3ClustFinderNew cf; 
 
   //Init cluster finder
-  cf.InitSlice(0,0,0,ndigits-1,10000);
+  cf.InitSlice(slice,patch,0,nrows-1,MAXCLUSTER);
+  cf.SetMatchWidth(fm);
+  cf.SetThreshold(th);
   //cf.SetXYError(0.2);
   //cf.SetZError(0.3);
   cf.SetSTDOutput(kTRUE);
@@ -82,14 +95,14 @@ int main(int argc,char **argv)
   
   //Allocate memory to store found spacepoints 
   AliL3MemHandler fpoints;
-  AliL3SpacePointData *points=(AliL3SpacePointData*)fpoints.Allocate(10000*sizeof(AliL3SpacePointData));
+  AliL3SpacePointData *points=(AliL3SpacePointData*)fpoints.Allocate(MAXCLUSTER*sizeof(AliL3SpacePointData));
   cf.SetOutputArray(points);
 
   //Give the data pointer to the cluster finder
-  cf.Read(ndigits,digits);
+  cf.Read(nrows,digits);
 
   //Start processing:
   cf.ProcessDigits();
-  
-  return 0;
+
+  exit(0);
 }
