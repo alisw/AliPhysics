@@ -23,8 +23,8 @@
 #include <G4UIGAG.hh>
 #endif
 
-#include <TRint.h>
 #include <TROOT.h> 
+#include <TRint.h>
 #include <TCint.h> 
 
 TG4RunManager* TG4RunManager::fgInstance = 0;
