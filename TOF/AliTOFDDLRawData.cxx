@@ -17,7 +17,6 @@
 Revision 0.01  2004/6/11 A.De Caro, S.B.Sellitto, R.Silvestri
         First implementation: global methods RawDataTOF
                                              GetDigits
-                                             (Un)PackWord
 */
 //
 // This class contains the methods to create the Raw Data files
@@ -37,6 +36,7 @@ Revision 0.01  2004/6/11 A.De Caro, S.B.Sellitto, R.Silvestri
 #include "AliTOFdigit.h"
 #include "AliTOFDDLRawData.h"
 #include "AliRawDataHeader.h"
+#include "AliBitPacking.h"
 
 ClassImp(AliTOFDDLRawData)
 
@@ -157,16 +157,16 @@ void AliTOFDDLRawData::GetDigits(TClonesArray *TOFdigits,Int_t nDDL,UInt_t *buf)
     baseWord=0;
     
     word=iTRM;
-    PackWord(baseWord,word, 0, 3); // TRM ID
+    AliBitPacking::PackWord(word,baseWord, 0, 3); // TRM ID
     word=iTDC;
-    PackWord(baseWord,word, 4, 8); // TDC ID
+    AliBitPacking::PackWord(word,baseWord, 4, 8); // TDC ID
     word=iCH;
-    PackWord(baseWord,word, 9,11); // CH ID
+    AliBitPacking::PackWord(word,baseWord, 9,11); // CH ID
 
     // temporary control
     if (totCharge<0) word=TMath::Abs(totCharge);
     else word=totCharge;
-    PackWord(baseWord,word,12,31); // Charge (TOT)
+    AliBitPacking::PackWord(word,baseWord,12,31); // Charge (TOT)
     
     fIndex++;
     buf[fIndex]=baseWord;
@@ -174,9 +174,9 @@ void AliTOFDDLRawData::GetDigits(TClonesArray *TOFdigits,Int_t nDDL,UInt_t *buf)
     baseWord=0;
     
     word=error;
-    PackWord(baseWord,word,0, 7); // Error flag
+    AliBitPacking::PackWord(word,baseWord,0, 7); // Error flag
     word=timeOfFlight;
-    PackWord(baseWord,word,8,31); // time-of-flight
+    AliBitPacking::PackWord(word,baseWord,8,31); // time-of-flight
     
     fIndex++;
     buf[fIndex]=baseWord;
@@ -190,55 +190,6 @@ void AliTOFDDLRawData::GetDigits(TClonesArray *TOFdigits,Int_t nDDL,UInt_t *buf)
   return;
 
 }//end GetDigits
-
-//-------------------------------------------------------------------------------------
-
-void AliTOFDDLRawData::PackWord(UInt_t &BaseWord, UInt_t Word, Int_t StartBit, Int_t StopBit)
-{
-  //This method packs a word into the Baseword buffer starting form the "StartBit" 
-  //and tacking StopBit-StartBit+1 bits
-  UInt_t dummyWord,offSet;
-  Int_t  length;
-  UInt_t sum;
-  //The BaseWord is being filled with 1 from StartBit to StopBit
-  length=StopBit-StartBit+1;
-  sum=(UInt_t)TMath::Power(2,length)-1;
-
-  if(Word > sum){
-    Error("PackWord", "Word to be filled is not within desired length\n"
-	  "Word:%d Start bit:%d Stop Bit:%d",Word,StartBit,StopBit);
-    return;
-  }
-  offSet=sum;
-  offSet<<=StartBit;
-  BaseWord=BaseWord|offSet;
-
-  //The Word to be filled is shifted to the position StartBit
-  //and the remaining  Left and Right bits are filled with 1
-  sum=(UInt_t)TMath::Power(2,StartBit)-1;
-  dummyWord=0xFFFFFFFF<<length;
-  dummyWord +=Word;
-  dummyWord<<=StartBit;
-  dummyWord+=sum;
-  BaseWord=BaseWord&dummyWord;
-
-  return;
-}
-
-//------------------------------------------------------------------------------------------------
-
-void AliTOFDDLRawData::UnpackWord(UInt_t PackedWord, Int_t StartBit, Int_t StopBit, UInt_t &Word)
-{
-  //This method unpacks a words of StopBit-StartBit+1 bits starting from "StopBits"  
-  UInt_t offSet;
-  Int_t length;
-  length=StopBit-StartBit+1;
-  offSet=(UInt_t)TMath::Power(2,length)-1;
-  offSet<<=StartBit;
-  Word=PackedWord&offSet;
-  Word>>=StartBit;
-  return;
-}
 
 //---------------------------------------------------------------------------------------
 
@@ -271,7 +222,7 @@ Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch){
 
     baseWord=0;
     word=i;
-    PackWord(baseWord,word,0, 31); // Number of DDL file
+    AliBitPacking::PackWord(word,baseWord,0, 31); // Number of DDL file
 
     fIndex++;
     buf[fIndex]=baseWord;
