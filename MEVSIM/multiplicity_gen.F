@@ -1692,9 +1692,11 @@ CCC   This Function computes the pseudorapidty for a given mass, pt, y:
          pz = (y/abs(y))*pzmag
       end if
       pmag = sqrt(pt*pt + pz*pz)
-      if(pt.ne.0.0) then
+      if( (pt.ne.0.0) .and. (pmag .ne.pz) .and. (pmag.ne.(-pz)) ) then
+      
          pseudorapidity = 0.5*log((pmag+pz)/(pmag-pz))
-      else if (pt.eq.0.0) then
+      else 
+CCC      if (pt.eq.0.0) then
          pseudorapidity = 86.0
 C-->         write(8,10)
 10       Format(10x,'Function pseudorapidity called with pt=0')
