@@ -9,10 +9,15 @@
 // Clients are the transport code and the primary particle generators
 // Author: andreas.morsch@cern.ch
 
-#include "GenTypeDefs.h"
 #include <TObject.h>
 class TClonesArray;
 class TLorentzVector;
+
+typedef enum
+{ kSemiElectronic, kDiElectron, kSemiMuonic, kDiMuon,
+  kBJpsiDiMuon, kBJpsiDiElectron, 
+  kBPsiPrimeDiMuon, kBPsiPrimeDiElectron, kPiToMu, kKaToMu, kNoDecay, kHadronicD, kAll}
+Decay_t;
 
 class AliDecayer :
 public TObject

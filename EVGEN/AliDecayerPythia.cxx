@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2001/01/30 09:23:11  hristov
+Streamers removed (R.Brun)
+
 Revision 1.3  2000/12/21 16:24:06  morsch
 Coding convention clean-up
 
@@ -110,7 +113,7 @@ void AliDecayerPythia::ForceDecay()
 
     switch (decay) 
     {
-    case semimuonic:
+    case kSemiMuonic:
 	ForceParticleDecay(  411,13,1); // D+/-     
 	ForceParticleDecay(  421,13,1); // D0     
 	ForceParticleDecay(  431,13,1); // D_s     
@@ -120,7 +123,7 @@ void AliDecayerPythia::ForceDecay()
 	ForceParticleDecay(  531,13,1); // B_s     
 	ForceParticleDecay( 5122,13,1); // Lambda_b    
     break;
-    case dimuon:
+    case kDiMuon:
 //	ForceParticleDecay(   41,13,2); // phi
 	ForceParticleDecay(  443,13,2); // J/Psi
 	ForceParticleDecay(20443,13,2); // Psi'
@@ -128,7 +131,7 @@ void AliDecayerPythia::ForceDecay()
 	ForceParticleDecay(20553,13,2); // Upsilon'
 	ForceParticleDecay(30553,13,2); // Upsilon''
 	break;
-    case semielectronic:
+    case kSemiElectronic:
 	
 	ForceParticleDecay(  411,11,1); // D+/-     
 	ForceParticleDecay(  421,11,1); // D0     
@@ -140,7 +143,7 @@ void AliDecayerPythia::ForceDecay()
 	ForceParticleDecay(  531,11,1); // B_s     
 	ForceParticleDecay( 5122,11,1); // Lambda_b     
 	break;
-    case dielectron:
+    case kDiElectron:
 
 	ForceParticleDecay(   41,11,2); // phi
 	ForceParticleDecay(  443,11,2); // J/Psi
@@ -148,45 +151,45 @@ void AliDecayerPythia::ForceDecay()
 	ForceParticleDecay(  553,11,2); // Upsilon
 	ForceParticleDecay(30553,11,2); // Upsilon'
 	break;
-    case b_jpsi_dimuon:
+    case kBJpsiDiMuon:
 	ForceParticleDecay(  511,443,1); // B0     
 	ForceParticleDecay(  521,443,1); // B+/-     
 	ForceParticleDecay(  531,443,1); // B_s     
 	ForceParticleDecay( 5122,443,1); // Lambda_b
 	ForceParticleDecay(  443,13,2);  // J/Psi    
 	break;
-    case b_psip_dimuon:
+    case kBPsiPrimeDiMuon:
 	ForceParticleDecay(  511,30443,1); // B0     
 	ForceParticleDecay(  521,30443,1); // B+/-     
 	ForceParticleDecay(  531,30443,1); // B_s     
 	ForceParticleDecay( 5122,30443,1); // Lambda_b 
 	ForceParticleDecay(30443,13,2);    // Psi'   
 	break;
-    case b_jpsi_dielectron:
+    case kBJpsiDiElectron:
 	ForceParticleDecay(  511,443,1); // B0     
 	ForceParticleDecay(  521,443,1); // B+/-     
 	ForceParticleDecay(  531,443,1); // B_s     
 	ForceParticleDecay( 5122,443,1); // Lambda_b
 	ForceParticleDecay(  443,11,2);  // J/Psi    
 	break;
-    case b_psip_dielectron:
+    case kBPsiPrimeDiElectron:
 	ForceParticleDecay(  511,30443,1); // B0     
 	ForceParticleDecay(  521,30443,1); // B+/-     
 	ForceParticleDecay(  531,30443,1); // B_s     
 	ForceParticleDecay( 5122,30443,1); // Lambda_b 
 	ForceParticleDecay(30443,11,2);    // Psi'   
 	break;
-    case pitomu:
+    case kPiToMu:
 	ForceParticleDecay(211,13,1); // pi->mu     
 	break;
-    case katomu:
+    case kKaToMu:
 	ForceParticleDecay(321,13,1); // K->mu     
 	break;
-    case hadronicD:
+    case kHadronicD:
 	ForceHadronicD();
-    case all:
+    case kAll:
 	break;
-    case nodecay:
+    case kNoDecay:
 	break;
     }
 }
