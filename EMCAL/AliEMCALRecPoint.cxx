@@ -507,7 +507,7 @@ void  AliEMCALRecPoint::EvalPrimaries(TClonesArray * digits)
     Int_t jndex ;
     for ( jndex = 0 ; jndex < nprimaries ; jndex++ ) { // all primaries in digit
       if ( fMulTrack > fMaxTrack ) {
-	fMulTrack = - 1 ;
+	fMulTrack = fMaxTrack ;
 	Error("GetNprimaries", "increase fMaxTrack ")  ;
 	break ;
       }
@@ -525,7 +525,7 @@ void  AliEMCALRecPoint::EvalPrimaries(TClonesArray * digits)
 	fMulTrack++ ;
       } // store it
     } // all primaries in digit
-    delete newprimaryarray ; 
+    delete [] newprimaryarray ; 
   } // all digits
 
   
@@ -533,7 +533,7 @@ void  AliEMCALRecPoint::EvalPrimaries(TClonesArray * digits)
   for(index = 0; index < fMulTrack; index++)
    fTracksList[index] = tempo[index] ;
  
-  delete tempo ;
+  delete [] tempo ;
 
 }
 
