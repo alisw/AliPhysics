@@ -1,4 +1,3 @@
-
 {
   printf("\nWELCOME to the magic world of Level3\n\n"); 
 
@@ -18,16 +17,19 @@
       }
       cout<<"TPC libraries loaded"<<endl;
     }
-  if(0)
+
+  if(1)
     {
       if(getenv("MLUCDIR")) {
         gSystem->Load("$(MLUCDIR/lib/linux-i386/libMLUC");
-        gSystem->Load("$(TOPDIR)/lib_ALIROOT/libAliL3");
-        gSystem->Load("$(TOPDIR)/lib_ALIROOT/libAliL3Hough");
-        gSystem->Load("$(TOPDIR)/lib_ALIROOT/libAliL3Comp");
+        gSystem->Load("$(TOPDIR)/lib_$(USEPACKAGE)/libAliL3");
+        gSystem->Load("$(TOPDIR)/lib_$(USEPACKAGE)/libAliL3Misc");
+        gSystem->Load("$(TOPDIR)/lib_$(USEPACKAGE)/libAliL3Hough");
+        gSystem->Load("$(TOPDIR)/lib_$(USEPACKAGE)/libAliL3Comp");
       } else {
         gSystem->Load("$(LEVEL3)/kip/MLUC/lib/linux-i386/libMLUC.so");
         gSystem->Load("$(LEVEL3)/lib_$(USERNAME)/libAliL3");
+        gSystem->Load("$(LEVEL3)/lib_$(USERNAME)/libAliL3Misc");
         gSystem->Load("$(LEVEL3)/lib_$(USERNAME)/libAliL3Hough");
         gSystem->Load("$(LEVEL3)/lib_$(USERNAME)/libAliL3Comp");
       }

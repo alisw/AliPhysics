@@ -1,8 +1,16 @@
-void runhough(Int_t slice,Char_t *path,Int_t n_eta_segments)
+// $Id$
+
+/**
+   Shows how to use the hough code. Stores tracks parameters
+   in files.
+*/
+
+void runhough(Int_t slice,Char_t *path,Int_t n_eta_segments,Int_t vseg=-1)
 {
   
-  AliL3Transform::Init("/prog/alice/data/new/fixed-slice0/");
-  
+  //AliL3Transform::Init("/prog/alice/data/new/fixed-slice0/");
+  AliL3Transform::Init(path);  
+
   hough = new AliL3Hough();
   Bool_t binary = kTRUE;
   Bool_t bit8 = kTRUE;
@@ -22,11 +30,12 @@ void runhough(Int_t slice,Char_t *path,Int_t n_eta_segments)
       track = (AliL3HoughTrack*)tracks->GetCheckedTrack(i);
       if(!track) continue;
       cout<<"pt "<<track->GetPt()<<" psi "<<track->GetPsi()<<" eta "<<track->GetEta()<<" etaindex "<<track->GetEtaIndex()<<" weight "<<track->GetWeight()<<endl;
+      if(vseg==-1) vseg=track->GetEtaIndex();
     }
   
   hough->WriteTracks(slice);
-  cout<<"Found in total "<<tracks->GetNTracks()<<" tracks"<<endl;
-  display(hough,25);
+  cout<<"Found in slice " << slice << " total "<<tracks->GetNTracks()<<" tracks"<<endl;
+  display(hough,vseg);
   
 }
 

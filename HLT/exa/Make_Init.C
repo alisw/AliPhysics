@@ -1,8 +1,9 @@
-/** $Id$ 
+// $Id$ 
 
-Important macro to get certain Aliroot parameters. They are stored
-in a file "Init.cxx". New init of AliL3Transform uses output to read certain 
-TPC parameters.
+/**
+   Important macro to get certain Aliroot parameters. They are stored
+   in a file "Init.cxx". New init of AliL3Transform uses output to read certain
+   TPC parameters.
 */
 
 void Make_Init(char *file, char *tofile="Init.cxx"){

@@ -1,7 +1,7 @@
+// $Id$
+
 void eval(char *inFile)
 {
-
-
   // Connect the Root Galice file containing Geometry, Kine and Hits
 
   file = new TFile(inFile);

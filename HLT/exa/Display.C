@@ -1,7 +1,8 @@
+// $Id$
+
 /**
    Displays tracks and clusters read from a file. 
    Functionality is now in AliL3Display. See also the
-   display.C macro.
 */
 
 void Display(char *trackfile=0,Bool_t rpoints = kFALSE,Bool_t tpoints = kTRUE,Char_t *gfile="/prog/alice/data/GEO/alice.geom")

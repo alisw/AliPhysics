@@ -1,6 +1,7 @@
+// $Id$
+
 void Eval(char *rootfile="")
 {
-
   AliL3Logger l;
 //  l.UnSet(AliL3Logger::kDebug);
 //  l.UnSet(AliL3Logger::kAll);
@@ -8,14 +9,12 @@ void Eval(char *rootfile="")
   l.UseStdout();
   //l.UseStream();
     
-  int slice[2] = {1,3};
+  int slice[2] = {0,35};
   e = new AliL3Evaluate(rootfile,slice);
   e->SetupSlow("tracks.raw",".");
   //e->SetupFast("tracks.raw","/nfs/david/subatom/alice/data/V3.04/fast/clusters/hg_8k_v0_s1-3_e0_cl.root",".");
   
-  ntuppel = (TNtuple*)e->EvaluatePoints();
-  
-
+  TNtuple *ntuppel = (TNtuple*)e->EvaluatePoints();
   file = new TFile("CFeval_nodeconv.root","RECREATE");
   file->cd();
   ntuppel->Write();
@@ -29,11 +28,9 @@ void plotPt(char *rootfile)
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(1100);  
   
-  
   c = new TCanvas("c","",2);
   SetCanvasOptions(c);
   
-
   f1 = new TFile(rootfile);
 
   hist = new TH1F("hist","",50,-10,10);
@@ -47,13 +44,10 @@ void plotPt(char *rootfile)
   
   TF1 *f = new TF1("f","gaus",-rms,rms);
   hist->Fit("f","R");
-  
-  
 }
 
 void plot(char *rootfile)
 {
-
   gStyle->SetStatColor(10);
   gStyle->SetOptStat(1);
   gStyle->SetOptFit(1);
@@ -62,7 +56,6 @@ void plot(char *rootfile)
   hist = new TH1F("hist","",100,-0.6,0.6);
   SetTH1Options(hist);
   
-
   can = new TCanvas("can","Residuals",900,600);
   can->Divide(2);
   SetCanvasOptions(can);
@@ -85,8 +78,7 @@ void plot(char *rootfile)
   can->cd(2);
   ntuppel_fast->Draw("residual_trans>>hist2","nHits>100 && pt>1.0 && padrow > 0 && zHit < 50");//dipangle < 20*3.1415/180");
   
-    
   can->Update();
-  
-
 }
+
+

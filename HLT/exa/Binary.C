@@ -1,10 +1,18 @@
-/* $Id$ */
+// $Id$
 
 /**
-Macro for converting AliRoot digits into L3 RawData. Binary create for each patch its own file. singlepatch uses one file per slice. 
- */
+   Macro for converting AliRoot digits into L3 RawData. 
+   Binary creates for each patch its own file. 
+   Singlepatch uses one file per slice (sp=kTRUE). 
+*/
 
-Binary(char* in,int first, int last,char *path="."){
+Binary(char* in,int first, int last,char *path=".",Bool_t sp=kFALSE){
+
+  if(sp) {
+    singlepatch(in,first,last,path);
+    return;
+  }
+
   char name[256];
   const Int_t npatch = 6;
   AliL3Logger l;
@@ -39,8 +47,8 @@ void singlepatch(char* in,int first=0, int last=0,char *path=".",int event=0)
   //l.UnSet(AliL3Logger::kDebug);
   //l.UnSet(AliL3Logger::kAll);
   //l.Set(AliL3Logger::kInformational);
-  //l.UseStdout();
-  l.UseStream();
+  l.UseStdout();
+  //l.UseStream();
   
   char name[256];
   AliL3FileHandler *fFileHandler = new AliL3FileHandler(); 

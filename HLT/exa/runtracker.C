@@ -1,3 +1,5 @@
+// $Id$
+
 /**
    Run this macro for cluster finder and track follower (see steering class
    AliLevel3. 
@@ -35,20 +37,20 @@ void runtracker(int minslice,int maxslice,char* path=0,char *rootfile=0,int neve
 
       a->Init(path_to_use);
 
-      phi_segments = 50;
-      eta_segments = 100;
-      trackletlength = 3;
-      tracklength = 5;
-      rowscopetracklet = 2;
-      rowscopetrack = 2;
-      min_pt_fit = 0;
-      maxangle = 1.31;
-      goodDist = 5;
-      maxphi=100;
-      maxeta=100;
-      hitChi2Cut = 100;
-      goodHitChi2 = 20;
-      trackChi2Cut = 50;
+      phi_segments = 50;   //devide the space into phi_segments and eta_segments
+      eta_segments = 100;  //to access the search of points to that area!
+      trackletlength = 3;  //number of hits a tracklet has to have
+      tracklength = 5;     //number of hits a track has to have 
+      rowscopetracklet = 2;//search range of rows for a tracklet
+      rowscopetrack = 2;   //search range of rows for a track
+      min_pt_fit = 0;      
+      maxangle = 1.31;     //maximum angle for the three point look ahead
+      goodDist = 5;        //threshold distance between two hits when building tracklets
+      maxphi=100;          //maximum phi difference for neighboring hits
+      maxeta=100;          //maximum eta difference for neighboring hits
+      hitChi2Cut = 100;    //maximum chi2 of added hit to track
+      goodHitChi2 = 20;    //stop looking for next hit to add if chi2 is less than goodHitChi2
+      trackChi2Cut = 50;   //maximum chi2 for track after final fit
        
       //main vertex tracking parameters:
       a->SetTrackerParam(phi_segments,eta_segments,trackletlength,tracklength,
