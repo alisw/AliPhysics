@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.25  2003/01/28 16:43:35  hristov
+Additional protection: to be discussed with the Root team (M.Ivanov)
+
 Revision 1.24  2002/11/19 16:13:24  hristov
 stdlib.h included to declare exit() on HP
 
@@ -103,6 +106,7 @@ AliTracker(), fkNIS(par->GetNInnerSector()/2), fkNOS(par->GetNOuterSector()/2)
   for (i=0; i<fkNIS; i++) fInnerSec[i].Setup(par,0);
   for (i=0; i<fkNOS; i++) fOuterSec[i].Setup(par,1);
 
+  fParam = (AliTPCParam*) par;
   fSeeds=0;
 }
 
@@ -675,20 +679,20 @@ Int_t AliTPCtracker::Clusters2Tracks(const TFile *inp, TFile *out) {
     alpha=ns*fInnerSec->GetAlpha()+fInnerSec->GetAlphaShift()-t.GetAlpha();
 
     if (t.Rotate(alpha)) {
-       if (FollowProlongation(t)) {
-          if (t.GetNumberOfClusters() >= Int_t(0.4*nrows)) {
-             t.CookdEdx();
-             CookLabel(pt,0.1); //For comparison only
-             iotrack=pt;
-             tracktree.Fill();
-             UseClusters(&t);
-             cerr<<found++<<'\r';
-          }
-       }
+      if (FollowProlongation(t)) {
+        if (t.GetNumberOfClusters() >= Int_t(0.4*nrows)) {
+          t.CookdEdx();
+          CookLabel(pt,0.1); //For comparison only
+          iotrack=pt;
+          tracktree.Fill();
+          UseClusters(&t);
+          cerr<<found++<<'\r';
+        }
+      }
     }
     delete fSeeds->RemoveAt(i); 
   }
-
+  
   tracktree.Write();
 
   cerr<<"Number of found tracks : "<<found<<endl;
@@ -744,12 +748,68 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
   AliTPCtrack *tpcTrack=new AliTPCtrack; 
   tpcTree->SetBranchAddress("tracks",&tpcTrack);
 
-//*** Prepare an array of tracks to be back propagated
+  //*** Prepare an array of tracks to be back propagated
   Int_t nup=fOuterSec->GetNRows(), nlow=fInnerSec->GetNRows();
   Int_t nrows=nlow+nup;
 
+  //
+  // Match ITS tracks with old TPC tracks
+  // the tracks do not have to be sorted [SR, GSI, 18.02.2003]
+  //
+  // the algorithm is linear and uses LUT for sorting
+  // cost of the algorithm: 2 * number of tracks
+  //
+
   TObjArray tracks(15000);
-  Int_t i=0,j=0;
+  Int_t i=0;
+  Int_t tpcN= (Int_t)tpcTree->GetEntries();
+  Int_t bckN= (bckTree)? (Int_t)bckTree->GetEntries() : 0;
+
+  // look up table   
+  const Int_t nLab = 20000; // limit on number of primaries (arbitrary)
+  Int_t lut[nLab];
+  for(Int_t i=0; i<nLab; i++) lut[i] = -1;
+    
+  if (bckTree) {
+    for(Int_t i=0; i<bckN; i++) {
+      bckTree->GetEvent(i);
+      Int_t lab = TMath::Abs(bckTrack->GetLabel());
+      if (lab < nLab) lut[lab] = i;
+    }
+  }
+  
+  for (Int_t i=0; i<tpcN; i++) {
+    tpcTree->GetEvent(i);
+    Double_t alpha=tpcTrack->GetAlpha();
+    
+    if (!bckTree) { 
+
+      // No ITS - use TPC track only
+      
+      fSeeds->AddLast(new AliTPCseed(*tpcTrack, tpcTrack->GetAlpha()));
+      tracks.AddLast(new AliTPCtrack(*tpcTrack));
+    
+    } else {  
+      
+      // with ITS
+      // discard not prolongated tracks (to be discussed)
+
+      Int_t lab = TMath::Abs(tpcTrack->GetLabel());
+      if (lab > nLab || lut[lab] < 0) continue;
+
+      bckTree->GetEvent(lut[lab]);   
+      bckTrack->Rotate(alpha-bckTrack->GetAlpha());
+
+      fSeeds->AddLast(new AliTPCseed(*bckTrack,bckTrack->GetAlpha()));
+      tracks.AddLast(new AliTPCtrack(*tpcTrack));
+    }
+  }
+
+  // end of matching
+
+  /*
+  TObjArray tracks(15000);
+  Int_t i=0, j=0;
   Int_t tpcN=(Int_t)tpcTree->GetEntries();
   Int_t bckN=(Int_t)bckTree->GetEntries();
   if (j<bckN) bckTree->GetEvent(j++);
@@ -767,9 +827,16 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
      }
      tracks.AddLast(new AliTPCtrack(*tpcTrack));
   }
-
+  */
+  
   out->cd();
-  TTree backTree("TreeT_TPCb_0","Tree with back propagated TPC tracks");
+
+  // tree name seedsTPCtoTRD as expected by TRD and as 
+  // discussed and decided in Strasbourg (May 2002)
+  // [SR, GSI, 18.02.2003]
+  
+  //TTree backTree("TreeT_TPCb_0","Tree with back propagated TPC tracks");
+  TTree backTree("seedsTPCtoTRD_0","Tree with back propagated TPC tracks");
   AliTPCtrack *otrack=0;
   backTree.Branch("tracks","AliTPCtrack",&otrack,32000,0);
 
@@ -808,17 +875,22 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
      alpha-=s.GetAlpha();
 
      if (s.Rotate(alpha)) {
-        if (FollowBackProlongation(s,t)) {
-	   if (s.GetNumberOfClusters() >= Int_t(0.4*nrows)) {
-	      s.CookdEdx();
-              s.SetLabel(t.GetLabel());
-	      UseClusters(&s,nc);
-              otrack=ps;
-              backTree.Fill();
-	      cerr<<found++<<'\r';
-              continue;
-	   }
-	}
+       if (FollowBackProlongation(s,t)) {
+         if (s.GetNumberOfClusters() >= Int_t(0.4*nrows)) {
+           s.CookdEdx();
+           s.SetLabel(t.GetLabel());
+           UseClusters(&s,nc);
+           
+           // Propagate to outer reference plane for comparison reasons
+           // reason for keeping fParam object [SR, GSI, 18.02.2003] 
+         
+           ps->PropagateTo(fParam->GetOuterRadiusUp()); 
+           otrack=ps;
+           backTree.Fill();
+           cerr<<found++<<'\r';
+           continue;
+         }
+       }
      }
      delete fSeeds->RemoveAt(i);
   }  

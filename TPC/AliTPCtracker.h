@@ -23,6 +23,7 @@ class AliTPCtracker : public AliTracker {
 public:
    AliTPCtracker():AliTracker(),fkNIS(0),fkNOS(0) {
       fInnerSec=fOuterSec=0; fSeeds=0; 
+      fParam = 0;
    }
    AliTPCtracker(const AliTPCParam *par);
   ~AliTPCtracker();
@@ -158,8 +159,9 @@ private:
 
    Int_t fN;               //number of "active" sectors
    AliTPCSector *fSectors; //pointer to "active" sectors;
-
-   TObjArray *fSeeds;          //array of track seeds
+   
+   AliTPCParam *fParam;      //! TPC parameters for outer reference plane [SR, GSI, 18.02.2003]
+   TObjArray *fSeeds;        //array of track seeds
 };
 
 #endif

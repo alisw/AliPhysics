@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2003/02/06 11:11:36  kowal2
+Added a few get methods by Jiri Chudoba
+
 Revision 1.15  2002/11/25 09:33:30  hristov
 Tracking of secondaries (M.Ivanov)
 
@@ -50,6 +53,13 @@ Logs added
 #include "AliTPCClustersArray.h"
 
 ClassImp(AliTPCtrack)
+
+//_________________________________________________________________________
+AliTPCtrack::AliTPCtrack(): AliKalmanTrack() 
+{
+  fX = fP0 = fP1 = fP2 = fP3 = fP3 = fP4 = 0.0;
+  fAlpha = fdEdx = 0.0;
+}
 
 //_________________________________________________________________________
 AliTPCtrack::AliTPCtrack(UInt_t index, const Double_t xx[5],
@@ -203,6 +213,12 @@ Int_t AliTPCtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho) {
     //if (n>4) cerr<<n<<" AliTPCtrack warning: Propagation failed !\n";
     return 0;
   }
+  
+  // old position for time [SR, GSI 17.02.2003]
+  Double_t oldX = fX;
+  Double_t oldY = fP0;
+  Double_t oldZ = fP1;
+  //
 
   Double_t x1=fX, x2=x1+(xk-x1), dx=x2-x1, y1=fP0, z1=fP1;
   Double_t c1=fP4*x1 - fP2, r1=sqrt(1.- c1*c1);
@@ -266,6 +282,13 @@ Int_t AliTPCtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho) {
   cc=fP4;
   fP4*=(1.- sqrt(p2+GetMass()*GetMass())/p2*dE);
   fP2+=fX*(fP4-cc);
+
+  // Integrated Time [SR, GSI, 17.02.2003]
+  if (IsStartedTimeIntegral()) {
+    Double_t l2 = (fX-oldX)*(fX-oldX)+(fP0-oldY)*(fP0-oldY)+(fP1-oldZ)*(fP1-oldZ);
+    AddTimeStep(TMath::Sqrt(l2));
+  }
+  //
 
   return 1;
 }
