@@ -27,7 +27,6 @@
 #include "STRUCT/AliPIPEv0.h"
 #include "ITS/AliITSvPPRasymmFMD.h"
 #include "TPC/AliTPCv2.h"
-#include "TOF/AliTOFv2FHoles.h"
 #include "TOF/AliTOFv4T0.h"
 #include "RICH/AliRICHv1.h"
 #include "ZDC/AliZDCv2.h"
@@ -328,12 +327,8 @@ void Config()
 
 
     if (iTOF) {
-	if (geo == kHoles) {
         //=================== TOF parameters ============================
-	    AliTOF *TOF = new AliTOFv2FHoles("TOF", "TOF with Holes");
-	} else {
-	    AliTOF *TOF = new AliTOFv4T0("TOF", "normal TOF");
-	}
+	AliTOF *TOF = new AliTOFv4T0("TOF", "normal TOF");
     }
 
 

@@ -21,7 +21,7 @@
 #include "STRUCT/AliPIPEv0.h"
 #include "ITS/AliITSvPPRasymm.h"
 #include "TPC/AliTPCv2.h"
-#include "TOF/AliTOFv2.h"
+#include "TOF/AliTOFv4T0.h"
 #include "RICH/AliRICHv1.h"
 #include "ZDC/AliZDCv1.h"
 #include "TRD/AliTRDv1.h"
@@ -324,7 +324,7 @@ void Config()
 
   if(iTOF) {
     //=================== TOF parameters ============================
-    AliTOF *TOF  = new AliTOFv2("TOF","normal TOF");
+    AliTOF *TOF  = new AliTOFv4T0("TOF","normal TOF");
   }
 
   if(iRICH) {

@@ -300,12 +300,8 @@ void ConfigCommon(Bool_t interactiveSetup)
 
     if (iTOF)
     {
-	if (geo == kHoles) {
         //=================== TOF parameters ============================
-	    AliTOF *TOF = new AliTOFv2FHoles("TOF", "TOF with Holes");
-	} else {
-	    AliTOF *TOF = new AliTOFv4T0("TOF", "normal TOF");
-	}
+	AliTOF *TOF = new AliTOFv4T0("TOF", "normal TOF");
     }
 
     if (iRICH)
