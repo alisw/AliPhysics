@@ -54,7 +54,6 @@
 #include "TFlukaCerenkov.h"
 #include "TLorentzVector.h"
 
-
 // Fluka methods that may be needed.
 #ifndef WIN32 
 # define flukam  flukam_
@@ -1358,11 +1357,7 @@ fin:
 	      fprintf(pAliceInp,"*\n*Hadronic interaction is set OFF\n");
 	      fprintf(pAliceInp,"*Generated from call: SetProcess('HADR',0);\n");
 	      fprintf(pAliceInp,"*Switching off hadronic interactions not foreseen in FLUKA\n");
-	      // zero = ignored
-	      // three = multiple scattering for hadrons and muons is completely suppressed
-	      // zero = no spin-relativistic corrections
-	      // matMin = lower bound of the material indices in which the respective thresholds apply
-	      // matMax = upper bound of the material indices in which the respective thresholds apply
+	      fprintf(pAliceInp,"THRESHOL  %10.1f%10.1f%10.1f%10.1e%10.1f\n",zero, zero, zero, 1.e10, zero);
 	  }
 	  else  {
 	      fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('HADR',?) call.\n");
