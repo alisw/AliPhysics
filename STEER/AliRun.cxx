@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.60  2001/03/21 18:22:30  hristov
+fParticleFileMap fix (I.Hrivnacova)
+
 Revision 1.59  2001/03/12 17:47:03  hristov
 Changes needed on Sun with CC 5.0
 
@@ -681,6 +684,8 @@ void AliRun::FinishRun()
   //
   if(fLego) fLego->FinishRun();
 
+  if(fGenerator) fGenerator->FinishRun();
+  
   // Clean detector information
   TIter next(fModules);
   AliModule *detector;
