@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.40  2002/02/12 11:05:53  morsch
+Get daughter indices right.
+
 Revision 1.39  2002/02/12 09:16:39  morsch
 Correction in SelectFlavor()
 
@@ -245,12 +248,48 @@ void AliGenHijing::Init()
     fHijing=(THijing*) fgMCEvGen;
     fHijing->SetIHPR2(2,  fRadiation);
     fHijing->SetIHPR2(3,  fTrigger);
-    fHijing->SetIHPR2(4,  fQuench);
     fHijing->SetIHPR2(6,  fShadowing);
     fHijing->SetIHPR2(12, fDecaysOff);    
     fHijing->SetIHPR2(21, fKeep);
     fHijing->SetHIPR1(10, fPtMinJet); 	
     fHijing->SetHIPR1(50, fSimpleJet);
+//
+//  Quenching
+//
+//
+//  fQuench = 0:  no quenching
+//  fQuench = 1:  hijing default
+//  fQuench = 2:  new LHC  parameters for HIPR1(11) and HIPR1(14)
+//  fQuench = 3:  new RHIC parameters for HIPR1(11) and HIPR1(14)
+//  fQuench = 4:  new LHC  parameters with log(e) dependence
+//  fQuench = 5:  new RHIC parameters with log(e) dependence
+    fHijing->SetIHPR2(50, 0);
+    if (fQuench > 0) 
+	fHijing->SetIHPR2(4,  1);
+    else
+	fHijing->SetIHPR2(4,  0);
+// New LHC parameters from Xin-Nian Wang
+    if (fQuench == 2) {
+	fHijing->SetHIPR1(14, 1.1);
+	fHijing->SetHIPR1(11, 3.7);
+    } else if (fQuench == 3) {
+	fHijing->SetHIPR1(14, 0.20);
+	fHijing->SetHIPR1(11, 2.5);
+    } else if (fQuench == 4) {
+	fHijing->SetIHPR2(50, 1);
+	fHijing->SetHIPR1(14, 4.*0.34);
+	fHijing->SetHIPR1(11, 3.7);
+    } else if (fQuench == 5) {
+	fHijing->SetIHPR2(50, 1);
+	fHijing->SetHIPR1(14, 0.34);
+	fHijing->SetHIPR1(11, 2.5);
+    }
+    
+    
+    
+//
+//  Initialize Hijing  
+//    
     fHijing->Initialize();
 //
     if (fEvaluate) EvaluateCrossSections();
@@ -676,17 +715,21 @@ Bool_t AliGenHijing::CheckTrigger()
     Double_t phi1      = jet1->Phi();
     Double_t phi2      = jet2->Phi();
     Bool_t   triggered = kFALSE;
-    //Check eta range first...    
-    if ((eta1 < fEtaMaxJet && eta1 > fEtaMinJet) ||
-	(eta2 < fEtaMaxJet && eta2 > fEtaMinJet))
-    {
-	//Eta is okay, now check phi range
-        if ((phi1 < fPhiMaxJet && phi1 > fPhiMinJet) ||
-            (phi2 < fPhiMaxJet && phi2 > fPhiMinJet))
-        {
-	    triggered = kTRUE;
-        }
-    }
+//    printf("\n Trigger: %f %f %f %f",
+//	   fEtaMinJet, fEtaMaxJet, fPhiMinJet, fPhiMaxJet);
+//    printf("\n Jet1: %f %f", phi1, eta1);
+//    printf("\n Jet2: %f %f", phi2, eta2);
+
+    
+    if (
+	(eta1 < fEtaMaxJet && eta1 > fEtaMinJet &&  
+	 phi1 < fPhiMaxJet && phi1 > fPhiMinJet) 
+	||
+	(eta2 < fEtaMaxJet && eta2 > fEtaMinJet &&  
+	 phi2 < fPhiMaxJet && phi2 > fPhiMinJet)
+	) 
+	triggered = kTRUE;
+
     return triggered;
 }
 
