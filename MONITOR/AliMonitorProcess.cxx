@@ -574,19 +574,19 @@ void AliMonitorProcess::CreateHLT(const char* fileName)
   fHLT = new AliLevel3(name);
   fHLT->Init("./", AliLevel3::kRaw, 1);
 
-  fHLT->SetClusterFinderParam(0, 0, kTRUE);
+  fHLT->SetClusterFinderParam(-1, -1, kTRUE);
   
   Int_t phiSegments = 50;
   Int_t etaSegments = 100;
   Int_t trackletlength = 3;
-  Int_t tracklength = 40;//40 or 5
+  Int_t tracklength = 20;//40 or 5
   Int_t rowscopetracklet = 2;
-  Int_t rowscopetrack = 2;
+  Int_t rowscopetrack = 10;
   Double_t minPtFit = 0;
-  Double_t maxangle = 1.31;
+  Double_t maxangle = 0.1745;
   Double_t goodDist = 5;
-  Double_t maxphi = 100;
-  Double_t maxeta = 100;
+  Double_t maxphi = 0.1;
+  Double_t maxeta = 0.1;
   Double_t hitChi2Cut = 15;//100 or 15
   Double_t goodHitChi2 = 5;//20 or 5
   Double_t trackChi2Cut = 10;//50 or 10

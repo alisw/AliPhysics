@@ -33,6 +33,7 @@
 #include "AliL3TrackArray.h"
 #include "AliL3Track.h"
 #include "AliL3Transform.h"
+#include "AliL3Vertex.h"
 #endif
 
 //_____________________________________________________________________________
@@ -89,7 +90,7 @@ void AliMonitorHLT::CreateHistos(TFolder* folder)
 
   fTrackPt = CreateHisto1("TrackPt", "pt distribution of tracks", 
 			  90, 0, 3, "p_{t} [GeV/c]", "#Delta N/N",
-			  AliMonitorHisto::kNormEntries);
+			  AliMonitorHisto::kNormNone);
 
   fTrackEta = CreateHisto1("TrackEta", "eta distribution of tracks", 
 			   100, -2, 2, "#eta", "#Delta N/N",
@@ -101,11 +102,26 @@ void AliMonitorHLT::CreateHistos(TFolder* folder)
 
   fTrackNHits = CreateHisto1("TrackNHits", "Number of hits per track", 
 			   200, 0, 200, "N_{hits}", "#Delta N/N",
-			   AliMonitorHisto::kNormEntries);
+			   AliMonitorHisto::kNormNone);
+
+  fTrackXYvsNHits = CreateHisto2("TrackXYvsNHits", "XY vs Number of hits per track", 
+				 50, 0, 200,50,0,10,
+				 "N_{hits}","Radius [cm]","#Delta N/N",
+				 AliMonitorHisto::kNormNone);
+
+  fTrackZvsNHits = CreateHisto2("TrackZvsNHits", "Z vs Number of hits per track", 
+				 50, 0, 200,50,-20,20,
+				 "N_{hits}","Z [cm]","#Delta N/N",
+				 AliMonitorHisto::kNormNone);
 
   fTrackDEdxVsP = CreateHisto2("TrackDEdxVsP", "dE/dx of tracks", 
 			       100, 0, 3, 100, 0, 1000, 
 			       "p [GeV/c]", "dE/dx", "#Delta N/N",
+			       AliMonitorHisto::kNormEntries);
+
+  fTrackDEdx = CreateHisto1("TrackDEdx", "dE/dx for tracks with 0.4<p<1.0 GeV/c", 
+			       50, 0, 300, 
+			       "dE/dx", "#Delta N/N",
 			       AliMonitorHisto::kNormEntries);
 
   fTrackDz0 = CreateHisto1("TrackDz0", "Dz0 of tracks", 
@@ -116,9 +132,15 @@ void AliMonitorHLT::CreateHistos(TFolder* folder)
 			   130, 80, 250, "#Delta r0 [cm]", "#Delta N/N",
 			   AliMonitorHisto::kNormEntries);
 
-  fTrackAngle = CreateHisto1("TrackAngle", "azimutal distribution of tracks", 
-			   100, -4, 4, " ", "#Delta N/N",
-			   AliMonitorHisto::kNormEntries);
+  fTrackEtaVsPhi = CreateHisto2("TrackEtaVsPhi", "#phi vs #eta", 
+			       20, -1, 1, 25, 0, 360, 
+			       "#eta", "#phi", "#Delta N/N",
+			       AliMonitorHisto::kNormNone);
+
+  fPtEtaVsPhi = CreateHisto2("PtEtaVsPhi", "#phi vs #eta", 
+			       20, -1, 1, 25, 0, 360, 
+			       "#eta", "#phi", "#Delta N/N",
+			       AliMonitorHisto::kNormNone);
 
 }
 
@@ -165,18 +187,28 @@ void AliMonitorHLT::FillHistos(AliRunLoader* /*runLoader*/,
   }
   AliL3TrackArray* tracks = new AliL3TrackArray;
   memHandler.Binary2TrackArray(tracks);
+  Double_t xc,yc,zc;
+  AliL3Vertex vertex;
 
   fNTracks->Fill(tracks->GetNTracks());
   for (Int_t iTrack = 0; iTrack < tracks->GetNTracks(); iTrack++) {
     AliL3Track* track = tracks->GetCheckedTrack(iTrack);
     if(!track) continue;
     track->CalculateHelix();
+    track->GetClosestPoint(&vertex,xc,yc,zc);
+    if(fabs(zc)>10.) continue;
     fTrackPt->Fill(track->GetPt());
     fTrackEta->Fill(track->GetPseudoRapidity());
     fTrackPhi->Fill(track->GetPsi() * TMath::RadToDeg());
+    if(track->GetPt()>3.) {
+      fTrackEtaVsPhi->Fill(track->GetPseudoRapidity(),track->GetPsi() * TMath::RadToDeg());
+      fPtEtaVsPhi->Fill(track->GetPseudoRapidity(),track->GetPsi() * TMath::RadToDeg(),track->GetPt());
+    }
     fTrackDz0->Fill(track->GetZ0());
     fTrackDr0->Fill(track->GetR0());
     fTrackNHits->Fill(track->GetNHits());
+    fTrackXYvsNHits->Fill(track->GetNHits(),TMath::Sqrt(xc*xc+yc*yc));
+    fTrackZvsNHits->Fill(track->GetNHits(),zc);
 
     // Track dEdx
     Int_t nc=track->GetNHits();
@@ -193,7 +225,6 @@ void AliMonitorHLT::FillHistos(AliRunLoader* /*runLoader*/,
       Float_t corr=1.; if (padrow>63) corr=0.67;
       sampleDEdx[iHit] = clusters[iSector][position].fCharge/pWidth*corr;
       Double_t crossingangle = track->GetCrossingAngle(padrow,iSector);
-      fTrackAngle->Fill(crossingangle);
       Double_t s = sin(crossingangle);
       Double_t t = track->GetTgl();
       sampleDEdx[iHit] *= TMath::Sqrt((1-s*s)/(1+t*t));
@@ -219,6 +250,8 @@ void AliMonitorHLT::FillHistos(AliRunLoader* /*runLoader*/,
     trackDEdx /= (nu-nl+1);
 
     fTrackDEdxVsP->Fill(track->GetP(),trackDEdx);
+    if(track->GetP()>0.4 && track->GetP()<1.0)
+      fTrackDEdx->Fill(trackDEdx);
   }
 
   delete tracks;

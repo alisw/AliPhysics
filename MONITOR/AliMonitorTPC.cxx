@@ -104,7 +104,7 @@ void AliMonitorTPC::CreateHistos(TFolder* folder)
 
   fTrackPt = CreateHisto1("TrackPt", "pt distribution of tracks", 
 			  90, 0, 3, "p_{t} [GeV/c]", "#Delta N/N",
-			  AliMonitorHisto::kNormEntries);
+			  AliMonitorHisto::kNormNone);
 
   fTrackEta = CreateHisto1("TrackEta", "eta distribution of tracks", 
 			   100, -2, 2, "#eta", "#Delta N/N",
@@ -117,12 +117,28 @@ void AliMonitorTPC::CreateHistos(TFolder* folder)
 
   fTrackNCl = CreateHisto1("TrackNCl", "Number of clusters per track", 
 			   200, 0, 200, "N_{clusters}", "#Delta N/N",
-			   AliMonitorHisto::kNormEntries);
+			   AliMonitorHisto::kNormNone);
 
   fTrackDEdxVsP = CreateHisto2("TrackDEdxVsP", "dE/dx of tracks", 
 			       100, 0, 3, 100, 0, 200, 
 			       "p [GeV/c]", "dE/dx", "#Delta N/N",
 			       AliMonitorHisto::kNormEntries);
+
+  fTrackDEdx = CreateHisto1("TrackDEdx", "dE/dx of tracks with 0.4<p<1.0 GeV/c", 
+			       50, 0, 100, 
+			       "dE/dx", "#Delta N/N",
+			       AliMonitorHisto::kNormEntries);
+
+  fTrackEtaVsPhi = CreateHisto2("TrackEtaVsPhi", "#phi vs #eta", 
+			       20, -1, 1, 25, 0, 360, 
+			       "#eta", "#phi", "#Delta N/N",
+			       AliMonitorHisto::kNormNone);
+
+  fPtEtaVsPhi = CreateHisto2("PtEtaVsPhi", "#phi vs #eta", 
+			       20, -1, 1, 25, 0, 360, 
+			       "#eta", "#phi", "#Delta N/N",
+			       AliMonitorHisto::kNormNone);
+
 }
 
 
@@ -195,8 +211,14 @@ void AliMonitorTPC::FillHistos(AliRunLoader* runLoader,
     fTrackPt->Fill(track->Pt());
     fTrackEta->Fill(track->Eta());
     fTrackPhi->Fill(track->Phi() * TMath::RadToDeg());
+    if(track->Pt()>3.) {
+      fTrackEtaVsPhi->Fill(track->Eta(),track->Phi() * TMath::RadToDeg());
+      fPtEtaVsPhi->Fill(track->Eta(),track->Phi() * TMath::RadToDeg(),track->Pt());
+    }
     fTrackNCl->Fill(track->GetNumberOfClusters());
     fTrackDEdxVsP->Fill(track->P(), track->GetdEdx());
+    if(track->P()>0.4 && track->P()<1.0)
+      fTrackDEdx->Fill(track->GetdEdx());
 
     fData->SetData(i, track->Pt(), track->Eta(), 
 		   track->Phi() * TMath::RadToDeg());

@@ -33,9 +33,13 @@ private:
   AliMonitorHisto* fTrackPhi;           // phi distribution of HLT tracks
   AliMonitorHisto* fTrackNHits;         // number of hits per HLT track
   AliMonitorHisto* fTrackDEdxVsP;       // dedx distribution of HLT tracks
+  AliMonitorHisto* fTrackDEdx;          // dedx distribution of HLT tracks for a given momentum region
   AliMonitorHisto* fTrackDz0;           // dz0 distribution of HLT tracks
   AliMonitorHisto* fTrackDr0;           // dr0 distribution of HLT tracks
-  AliMonitorHisto* fTrackAngle;         // azimutal distribution of HLT tracks
+  AliMonitorHisto* fTrackEtaVsPhi;      // phi vs eta for HLT tracks
+  AliMonitorHisto* fPtEtaVsPhi;         // phi vs eta for HLT tracks
+  AliMonitorHisto* fTrackZvsNHits;
+  AliMonitorHisto* fTrackXYvsNHits;
 
   ClassDef(AliMonitorHLT, 0)   // creation and filling of monitor histograms for HLT
 };
