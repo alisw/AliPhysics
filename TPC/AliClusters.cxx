@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/10/05 16:17:27  kowal2
+New class replacing AliCluster
+
 Revision 1.3  2000/06/30 12:07:49  kowal2
 Updated from the TPC-PreRelease branch
 
@@ -86,7 +89,7 @@ Bool_t AliClusters::SetClass(const Text_t *classname)
   //
   //set class of stored object
   if ( fClass !=0 ) {
-    delete fClass;
+    //    delete fClass;
     fClass = 0;
   }
  
