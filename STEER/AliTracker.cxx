@@ -67,9 +67,11 @@ void AliTracker::CookLabel(AliKalmanTrack *t, Float_t wrong) const {
   Int_t max=0;
   for (i=0; i<noc; i++) if (mx[i]>max) {max=mx[i]; lab=lb[i];}
     
+  max=0;
   for (i=0; i<noc; i++) {
     AliCluster *c=clusters[i];
-    if (TMath::Abs(c->GetLabel(1)) == lab ||
+    if (TMath::Abs(c->GetLabel(0)) == lab ||
+        TMath::Abs(c->GetLabel(1)) == lab ||
         TMath::Abs(c->GetLabel(2)) == lab ) max++;
   }
 
