@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.3  2000/06/13 13:06:38  jbarbosa
+  Fixed compiling error for HP (multiple declaration)
+
   Revision 1.2  2000/06/12 15:36:16  jbarbosa
   Cleaned up version.
 
@@ -83,10 +86,9 @@ AliRICHv1::AliRICHv1(const char *name, const char *title)
 
     fCkovNumber=0;
     fFreonProd=0;
-    Int_t i=0;
-
+  
     fChambers = new TObjArray(kNCH);
-    for (i=0; i<kNCH; i++) {
+    for (Int_t i=0; i<kNCH; i++) {
     
 	(*fChambers)[i] = new AliRICHChamber();  
 	
@@ -110,7 +112,7 @@ void AliRICHv1::Init()
     // 
     // Initialize Tracking Chambers
     //
-    for (i=1; i<kNCH; i++) {
+    for (Int_t i=1; i<kNCH; i++) {
 	//printf ("i:%d",i);
 	( (AliRICHChamber*) (*fChambers)[i])->Init();  
     }  
