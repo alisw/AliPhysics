@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:17  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:55  cernlib
 * Geant
 *
@@ -36,7 +39,7 @@ C.
 #include "geant321/gcdraw.inc"
 #include "geant321/gcshno.inc"
       CHARACTER*4 KNAME,MOTHER
-      DIMENSION PAR(50),PARM(50),ATT(20)
+      DIMENSION PAR(100),PARM(100),ATT(20)
       SAVE ATT
       DATA ATT /1.,1.,1.,1.,1.,15*0./
 C.

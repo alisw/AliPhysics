@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:17  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:56  cernlib
 * Geant
 *
@@ -37,7 +40,7 @@ C.
 #include "geant321/gcdraw.inc"
 #include "geant321/gcunit.inc"
       CHARACTER*4 KNAME,JSHAPE
-      DIMENSION UPAR(50),PAR(50),ATT(20)
+      DIMENSION UPAR(100),PAR(100),ATT(20)
       SAVE ATT,NATT
       DATA ATT/1.,1.,1.,1.,1.,15*0./
       DATA NATT/10/

@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:17  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:56  cernlib
 * Geant
 *
@@ -22,11 +25,11 @@ C.    ******************************************************************
 C.
 #include "geant321/gcbank.inc"
 #include "geant321/gcunit.inc"
-      DIMENSION PAR(50),ATT(20)
+      DIMENSION PAR(100),ATT(20)
 C.
 C.              --------------------------------------------
 C.
-      IF(NPAR.LT.0.OR.NPAR.GT.50) GO TO 900
+      IF(NPAR.LT.0.OR.NPAR.GT.100) GO TO 900
       IF(NATT.LE.0.OR.NATT.GT.20) GO TO 900
 C
       IF(JVO.LE.0) GO TO 910

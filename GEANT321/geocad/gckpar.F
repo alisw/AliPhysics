@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:17  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:47  cernlib
 * Geant
 *
@@ -13,7 +16,7 @@
 *
 #include "geant321/gconsp.inc"
 *
-      DIMENSION PAR(50)
+      DIMENSION PAR(100)
 *
       IF (ISH.EQ.4) THEN
 * ***    trap

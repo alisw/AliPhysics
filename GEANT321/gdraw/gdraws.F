@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:03  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:24  cernlib
 * Geant
 *
@@ -59,7 +62,7 @@ C.
       DIMENSION CPHIS(NLPC+1),SPHIS(NLPC+1)
 *
       DIMENSION X(3,46), U(46), V(46)
-      DIMENSION PAR(50),P(3,8),PP(3,8)
+      DIMENSION PAR(100),P(3,8),PP(3,8)
 C.
 C.    ------------------------------------------------------------------
 C.

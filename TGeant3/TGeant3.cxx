@@ -15,10 +15,18 @@
 
 /*
 $Log$
+Revision 1.46  2000/12/21 17:35:05  morsch
+Last updates on the right version (1.44).
+(1.45) does not compile.
+
 Revision 1.45  2000/12/21 16:49:56  morsch
 Adding particles to the PDG database delegated to AliPDG.
 
 $Log$
+Revision 1.46  2000/12/21 17:35:05  morsch
+Last updates on the right version (1.44).
+(1.45) does not compile.
+
 Revision 1.44  2000/12/20 09:46:51  alibrary
 dlsym not supported on HP, reverting to gcomad
 
@@ -3862,7 +3870,7 @@ void TGeant3::WriteEuclid(const char* filnam, const char* topvol,
   Float_t zc, densc, radlc, abslc, c0, tmaxfd;
   Int_t nparc, numb;
   Int_t iomate[100], iotmed[100];
-  Float_t par[50], att[20], ubuf[50];
+  Float_t par[100], att[20], ubuf[50];
   Float_t *qws;
   Int_t   *iws;
   Int_t level, ndiv, iaxe;

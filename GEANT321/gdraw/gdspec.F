@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:03  fca
+* AliRoot sources
+*
 * Revision 1.3  1996/10/01 14:12:05  ravndal
 * right units for SPHE specs.
 *
@@ -36,7 +39,7 @@ C.
       CHARACTER*4 IBOX(5),ITRD1(5),ITUBE(5),ITUBS(5)
       CHARACTER*4 ITRD2(6),ICON(5),ICONS(7),ISPH(6),ITRAP(11),IPARA(6),
      +IPGON(7),IPCON(6),IGTRA(12),IHYPE(4),IELTU(3)
-      DIMENSION PAR(50),IPAR(12),IPA(3),ISPAR(3)
+      DIMENSION PAR(100),IPAR(12),IPA(3),ISPAR(3)
       DIMENSION U0(3),V0(3),THE(3),PHI(3),ISHT(2)
       DIMENSION U01(3),V01(3)
       DIMENSION NNDM(100),INDM(5,100),ATT(10)

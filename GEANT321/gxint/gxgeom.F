@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:21  fca
+* AliRoot sources
+*
 * Revision 1.2  1996/04/30 11:25:57  ravndal
 * Implicit Fortran data type convention overlooked
 *
@@ -36,7 +39,7 @@ C.
       CHARACTER*24 FNAME
       CHARACTER*4 ANAME
       CHARACTER*24 INST,SITE,DEPT,RESP
-      DIMENSION ARRAY(50),UBUF(1)
+      DIMENSION ARRAY(100),UBUF(1)
       DATA UBUF/1./
 C.
 C.    ------------------------------------------------------------------

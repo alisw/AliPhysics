@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:03  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:27  cernlib
 * Geant
 *
@@ -33,7 +36,7 @@ C.
 *            is the number of line elements to form a complete
 *            circle in the surface definitions for a cut tube.
 *
-      DIMENSION PAR(50),P(3,8)
+      DIMENSION PAR(100),P(3,8)
       DIMENSION XMAX1(2,42),XMIN1(2,42),XMAX2(2,42),XMIN2(2,42)
 C.
 C.    ------------------------------------------------------------------

@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:04  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:30  cernlib
 * Geant
 *
@@ -28,7 +31,7 @@ C.
       COMMON/SP3D/ISPFLA
 *
       CHARACTER*4 NAME,NAMSEE,ISON
-      DIMENSION PAR(50)
+      DIMENSION PAR(100)
       DIMENSION U0(3),V0(3),THE(3),PHI(3)
       DIMENSION U01(3),V01(3)
       DIMENSION NNDM(100),INDM(5,100),ATT(10)

@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:17  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:57  cernlib
 * Geant
 *
@@ -24,7 +27,7 @@ C.    *                                                        *
 C.    **********************************************************
 C.
 #include "geant321/gcbank.inc"
-      DIMENSION PAR(50),ATT(20)
+      DIMENSION PAR(100),ATT(20)
 C.
 C.         -----------------------------------------
 C.

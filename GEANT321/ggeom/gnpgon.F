@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.2  2001/02/24 10:46:32  fca
+* Moving to double precision and introducing an additional security check
+*
 * Revision 1.1.1.1  1999/05/18 15:55:17  fca
 * AliRoot sources
 *
@@ -37,8 +40,8 @@ C.
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 #include "geant321/gconsp.inc"
  
-      REAL X(6), PAR(50), SNEXT, SNXT, SAFE
-      DIMENSION TPAR(50)
+      REAL X(6), PAR(100), SNEXT, SNXT, SAFE
+      DIMENSION TPAR(100)
  
 C-----------------------------------------------------------------
  

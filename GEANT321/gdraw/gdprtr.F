@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:03  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:23  cernlib
 * Geant
 *
@@ -37,7 +40,7 @@ C.
 #include "geant321/gcdraw.inc"
       DIMENSION X(5),Y(5)
       DIMENSION NAMT0(16),NAM0(4)
-      DIMENSION PAR(50)
+      DIMENSION PAR(100)
       DIMENSION NNDM(14),INDM(4,14)
       DIMENSION ATT(10)
       CHARACTER*4 NAME,NAMSEE,ISON

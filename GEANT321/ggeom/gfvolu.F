@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:17  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:49  cernlib
 * Geant
 *
@@ -25,7 +28,7 @@ C.
 #include "geant321/gcunit.inc"
 #include "geant321/gcnum.inc"
       CHARACTER*4 ISHAP(30),NAME,NAMS
-*     DIMENSION PAR(50),ATT(20)
+*     DIMENSION PAR(100),ATT(20)
       SAVE ISHAP
       DATA ISHAP/'BOX ','TRD1','TRD2','TRAP','TUBE','TUBS','CONE',
      +           'CONS','SPHE','PARA','PGON','PCON','ELTU','HYPE',

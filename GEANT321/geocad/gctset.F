@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:17  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:46  cernlib
 * Geant
 *
@@ -24,7 +27,7 @@ C
 #include "geant321/gcsetf.inc"
  
 C
-      DIMENSION PAR(50)
+      DIMENSION PAR(100)
 C
       REAL  Z,DX,DY,DZ,RMIN,RMAX,PHIMIN,PHIMAX
       REAL  LXL,LYL,LZL,LXH,LYH,LZH

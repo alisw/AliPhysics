@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:03  fca
+* AliRoot sources
+*
 * Revision 1.2  1996/02/27 10:02:05  ravndal
 * Drawing of PCON's optimized for 'HIDE ON'
 *
@@ -76,7 +79,7 @@ C.
 #include "geant321/gconsp.inc"
       SAVE NWPROD
       COMMON /QUEST/IQUEST(100)
-      DIMENSION PAR(50),P(3,8)
+      DIMENSION PAR(100),P(3,8)
 *SG
       DIMENSION RRMIN(3),RRMAX(3)
       DIMENSION SLI1(4),SLI2(4),SPI1(4),SPI2(4)

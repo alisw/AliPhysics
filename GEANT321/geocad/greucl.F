@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:17  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:47  cernlib
 * Geant
 *
@@ -26,7 +29,7 @@
       CHARACTER    KEY*4, CARD*76
       CHARACTER*20 NATMED, NAMATE
       CHARACTER*4  NAME, MOTHER, SHAPE, KONLY
-      REAL PAR(50)
+      REAL PAR(100)
 *
 #include "geant321/gcnum.inc"
 #include "geant321/gcunit.inc"

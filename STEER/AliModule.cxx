@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2001/01/26 19:58:48  hristov
+Major upgrade of AliRoot code
+
 Revision 1.13  2000/11/30 07:12:49  alibrary
 Introducing new Rndm and QA classes
 
@@ -393,7 +396,7 @@ void AliModule::ReadEuclid(const char* filnam, char* topvol)
   char key[5], card[77], natmed[21];
   char name[5], mother[5], shape[5], konly[5], volst[7000][5];
   char *filtmp;
-  Float_t par[50];
+  Float_t par[100];
   Float_t teta1, phi1, teta2, phi2, teta3, phi3, orig, step;
   Float_t xo, yo, zo;
   const Int_t kMaxRot=5000;

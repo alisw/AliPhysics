@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:17  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:47  cernlib
 * Geant
 *
@@ -38,7 +41,7 @@
       CHARACTER*20 NATMED, NAMATE
       CHARACTER*4  NAME, MOTHER, SHAPE(16), KONLY
 *
-      DIMENSION PAR(50), ATT(20)
+      DIMENSION PAR(100), ATT(20)
 *
       DATA SHAPE/'BOX ','TRD1','TRD2','TRAP','TUBE','TUBS','CONE',
      +           'CONS','SPHE','PARA','PGON','PCON','ELTU','HYPE',

@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:17  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:50  cernlib
 * Geant
 *
@@ -38,7 +41,7 @@ C.    ****************************************************************
 #include "geant321/gcshno.inc"
 #include "geant321/gctmed.inc"
 #include "geant321/gcunit.inc"
-      DIMENSION X(3),U(3),XL(3),UL(3),DXL(3),PAR(50),SPAR(50),ATT(20)
+      DIMENSION X(3),U(3),XL(3),UL(3),DXL(3),PAR(100),SPAR(100),ATT(20)
       DIMENSION PERP(10)
 #if !defined(CERNLIB_SINGLE)
       DOUBLE PRECISION PERP,PMIN0
