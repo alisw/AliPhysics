@@ -15,6 +15,9 @@
                                                       
 /*
 $Log$
+Revision 1.31  2003/11/06 09:28:15  cblume
+Next round of coding conventions
+
 Revision 1.30  2003/09/18 09:06:07  cblume
 Geometry update, Removal of compiler warnings
 
@@ -937,15 +940,83 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
       //found++;
     }
 
-    if (track->PropagateTo(376.)) { //Propagation to the TOF (I.Belikov)
+    //Propagation to the TOF (I.Belikov)
+    Double_t xtof=378.;
+    Double_t c2=track->GetC()*xtof - track->GetEta();
+    if (TMath::Abs(c2)>=0.9999999) continue;
+
+    Double_t ymax=xtof*TMath::Tan(0.5*AliTRDgeometry::GetAlpha());
+    Double_t y=track->GetYat(xtof);
+    if (y > ymax) {
+       if (!track->Rotate(AliTRDgeometry::GetAlpha())) return 1;
+    } else if (y <-ymax) {
+       if (!track->Rotate(-AliTRDgeometry::GetAlpha())) return 1;
+    }
+
+    if (track->PropagateTo(xtof)) {
        seed->UpdateTrackParams(track, AliESDtrack::kTRDout);
        found++;
     }
+    //End of propagation to the TOF
 
   }
   
   cerr<<"Number of seeds: "<<fNseeds<<endl;  
   cerr<<"Number of back propagated TRD tracks: "<<found<<endl;
+
+  fSeeds->Clear(); fNseeds=0;
+
+  return 0;
+
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDtracker::RefitInward(AliESD* event)
+{
+  //
+  // Refits tracks within the TRD. The ESD event is expected to contain seeds 
+  // at the outer part of the TRD. 
+  // The tracks are propagated to the innermost time bin 
+  // of the TRD and the ESD event is updated
+  // Origin: Thomas KUHR (Thomas.Kuhr@cern.ch)
+  //
+
+  Int_t timeBins = fTrSec[0]->GetNumberOfTimeBins();
+  Float_t foundMin = fgkMinClustersInTrack * timeBins; 
+  Int_t nseed = 0;
+  Int_t found = 0;
+  Int_t innerTB = fTrSec[0]->GetInnerTimeBin();
+
+  Int_t n = event->GetNumberOfTracks();
+  for (Int_t i=0; i<n; i++) {
+    AliESDtrack* seed=event->GetTrack(i);
+    ULong_t status=seed->GetStatus();
+    if ( (status & AliESDtrack::kTRDout ) == 0 ) continue;
+    if ( (status & AliESDtrack::kTRDin) != 0 ) continue;
+    nseed++;
+
+    AliTRDtrack* seed2 = new AliTRDtrack(*seed);
+    seed2->ResetCovariance(); 
+    AliTRDtrack *pt = new AliTRDtrack(*seed2,seed2->GetAlpha());
+    AliTRDtrack &t=*pt; 
+    FollowProlongation(t, innerTB); 
+    if (t.GetNumberOfClusters() >= foundMin) {
+      UseClusters(&t);
+      CookLabel(pt, 1-fgkLabelFraction);
+      //      t.CookdEdx();
+    }
+    found++;
+//    cout<<found<<'\r';     
+
+    if(PropagateToTPC(t)) {
+      seed->UpdateTrackParams(pt, AliESDtrack::kTRDin);
+    }  
+    delete seed2;
+    delete pt;
+  }     
+
+  cout<<"Number of loaded seeds: "<<nseed<<endl;  
+  cout<<"Number of found tracks from loaded seeds: "<<found<<endl;
 
   return 0;
 
@@ -1443,6 +1514,102 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
 
 
 }         
+
+//---------------------------------------------------------------------------
+Int_t AliTRDtracker::Refit(AliTRDtrack& t, Int_t rf)
+{
+  // Starting from current position on track=t this function tries
+  // to extrapolate the track up to timeBin=0 and to reuse already
+  // assigned clusters. Returns the number of clusters
+  // expected to be found in sensitive layers
+  // get indices of assigned clusters for each layer
+  // Origin: Thomas KUHR (Thomas.Kuhr@cern.ch)
+
+  Int_t iCluster[90];
+  for (Int_t i = 0; i < 90; i++) iCluster[i] = 0;
+  for (Int_t i = 0; i < t.GetNumberOfClusters(); i++) {
+    Int_t index = t.GetClusterIndex(i);
+    AliTRDcluster *cl=(AliTRDcluster*) GetCluster(index);
+    if (!cl) continue;
+    Int_t detector=cl->GetDetector();
+    Int_t localTimeBin=cl->GetLocalTimeBin();
+    Int_t sector=fGeom->GetSector(detector);
+    Int_t plane=fGeom->GetPlane(detector);
+
+    Int_t trackingSector = CookSectorIndex(sector);
+
+    Int_t gtb = fTrSec[trackingSector]->CookTimeBinIndex(plane,localTimeBin);
+    if(gtb < 0) continue; 
+    Int_t layer = fTrSec[trackingSector]->GetLayerNumber(gtb);
+    iCluster[layer] = index;
+  }
+  t.ResetClusters();
+
+  Int_t ns=Int_t(2*TMath::Pi()/AliTRDgeometry::GetAlpha()+0.5);     
+
+  Double_t alpha=t.GetAlpha();
+  alpha = TVector2::Phi_0_2pi(alpha);
+
+  Int_t s=Int_t(alpha/AliTRDgeometry::GetAlpha())%AliTRDgeometry::kNsect;  
+  Double_t radLength, rho, x, dx, y, ymax, z;
+
+  Int_t expectedNumberOfClusters = 0;
+  Bool_t lookForCluster;
+
+  alpha=AliTRDgeometry::GetAlpha();  // note: change in meaning
+
+ 
+  for (Int_t nr=fTrSec[0]->GetLayerNumber(t.GetX()); nr>rf; nr--) { 
+
+    y = t.GetY(); z = t.GetZ();
+
+    // first propagate to the inner surface of the current time bin 
+    fTrSec[s]->GetLayer(nr)->GetPropagationParameters(y,z,dx,rho,radLength,lookForCluster);
+    x = fTrSec[s]->GetLayer(nr)->GetX()-dx/2; y = t.GetY(); z = t.GetZ();
+    if(!t.PropagateTo(x,radLength,rho)) break;
+    y = t.GetY();
+    ymax = x*TMath::Tan(0.5*alpha);
+    if (y > ymax) {
+      s = (s+1) % ns;
+      if (!t.Rotate(alpha)) break;
+      if(!t.PropagateTo(x,radLength,rho)) break;
+    } else if (y <-ymax) {
+      s = (s-1+ns) % ns;                           
+      if (!t.Rotate(-alpha)) break;   
+      if(!t.PropagateTo(x,radLength,rho)) break;
+    } 
+
+    y = t.GetY(); z = t.GetZ();
+
+    // now propagate to the middle plane of the next time bin 
+    fTrSec[s]->GetLayer(nr-1)->GetPropagationParameters(y,z,dx,rho,radLength,lookForCluster);
+    x = fTrSec[s]->GetLayer(nr-1)->GetX(); y = t.GetY(); z = t.GetZ();
+    if(!t.PropagateTo(x,radLength,rho)) break;
+    y = t.GetY();
+    ymax = x*TMath::Tan(0.5*alpha);
+    if (y > ymax) {
+      s = (s+1) % ns;
+      if (!t.Rotate(alpha)) break;
+      if(!t.PropagateTo(x,radLength,rho)) break;
+    } else if (y <-ymax) {
+      s = (s-1+ns) % ns;                           
+      if (!t.Rotate(-alpha)) break;   
+      if(!t.PropagateTo(x,radLength,rho)) break;
+    } 
+
+    if(lookForCluster) expectedNumberOfClusters++;       
+
+    // use assigned cluster
+    if (!iCluster[nr-1]) continue;
+    AliTRDcluster *cl=(AliTRDcluster*)GetCluster(iCluster[nr-1]);
+    Double_t h01 = GetTiltFactor(cl);
+    Double_t chi2=t.GetPredictedChi2(cl, h01);
+    t.SetSampledEdx(cl->GetQ()/dx,t.GetNumberOfClusters()); 
+    t.Update(cl,chi2,iCluster[nr-1],h01);
+  }
+
+  return expectedNumberOfClusters;
+}                
 
 //___________________________________________________________________
 

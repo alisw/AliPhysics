@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2003/09/18 09:06:07  cblume
+Geometry update, Removal of compiler warnings
+
 Revision 1.23  2003/07/22 15:56:14  hristov
 Implementing ESD functionality in the NewIO (Yu.Belikov)
 
@@ -243,8 +246,7 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack& t)
   SetLabel(t.GetLabel());
   SetChi2(0.);
   SetMass(t.GetMass());
-  SetNumberOfClusters(0); 
-  // WARNING: cluster indices are NOT copied !!!
+  SetNumberOfClusters(t.GetTRDclusters(fIndex)); 
 
   fdEdx=0;
 

@@ -71,8 +71,19 @@ public:
    Double_t GetY()    const {return fY;}
    Double_t GetZ()    const {return fZ;}
 
+   Double_t GetYat(Double_t xk) const {
+//-----------------------------------------------------------------
+// This function calculates the Y-coordinate of a track at the plane x=xk.
+// Needed for matching with the TOF (I.Belikov)
+//-----------------------------------------------------------------
+      Double_t c1=fC*fX - fE, r1=TMath::Sqrt(1.- c1*c1);
+      Double_t c2=fC*xk - fE, r2=TMath::Sqrt(1.- c2*c2);
+      return fY + (xk-fX)*(c1+c2)/(r1+r2);
+   }
+
    Int_t    PropagateTo(Double_t xr, Double_t x0=8.72, Double_t rho=5.86e-3);
    void     ResetCovariance();   
+   void ResetClusters() { SetChi2(0.); SetNumberOfClusters(0); }
    Int_t    Rotate(Double_t angle);
 
    void     SetdEdx(Float_t dedx) {fdEdx=dedx;}  

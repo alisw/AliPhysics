@@ -38,7 +38,7 @@ class AliTRDtracker : public AliTracker {
   Int_t         Clusters2Tracks(AliESD* event);
   Int_t         PropagateBack(const TFile *in, TFile *out);
   Int_t         PropagateBack(AliESD* event);
-  Int_t         RefitInward(AliESD* /*event*/) {return 0;}
+  Int_t         RefitInward(AliESD* event);
 
   Int_t         LoadClusters(TTree *cTree);
   void          UnloadClusters(){UnloadEvent();}
@@ -260,7 +260,7 @@ class AliTRDtracker : public AliTracker {
 
   Int_t         FollowProlongation(AliTRDtrack& t, Int_t rf);
   Int_t         FollowBackProlongation(AliTRDtrack& t);
-  //Int_t         FolowRefitInward(AliTRDtrack *seed, AliTPCtrack *track);
+  Int_t         Refit(AliTRDtrack& t, Int_t rf);
 
   Int_t         PropagateToTPC(AliTRDtrack& t);
   Int_t         PropagateToOuterPlane(AliTRDtrack& t, Double_t x);
