@@ -134,7 +134,7 @@ void AliStream::ChangeMode(Option_t* option)
 Bool_t AliStream::OpenNextFile()
 {
   if (++fCurrentFileIndex > fFileNames->GetLast()) {
-    cerr<<"No more files in the stream"<<endl;
+    Error("OpenNextFile", "No more files in the stream") ;
     return kFALSE;
   }
 
@@ -157,7 +157,7 @@ Bool_t AliStream::OpenNextFile()
   if (currentloader == 0x0) 
    {
 // cannot open file specified on input. Do not skip it silently.
-    cerr<<"Cannot open session "<<filename<<endl;
+    Error("OpenNextFile", "Cannot open session ");
     return kFALSE;
    }
    
