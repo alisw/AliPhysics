@@ -13,7 +13,7 @@ FSRCS	      =
 
 # C++ sources
 
-SRCS          = AliZDC.cxx AliZDCv1.cxx AliGenZDC.cxx
+SRCS          = AliZDC.cxx AliZDCv1.cxx AliZDCHit.cxx AliZDCDigit.cxx AliGenZDC.cxx
 
 # C++ Headers
 
