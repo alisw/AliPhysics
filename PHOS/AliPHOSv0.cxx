@@ -631,6 +631,7 @@ void AliPHOSv0::CreateGeometry()
     this->CreateGeometryforCPV() ;
   else
     cout << "AliPHOSv0::CreateGeometry : no charged particle identification system installed" << endl; 
+  this->CreateGeometryforSupport() ; 
   
   // --- Position  PHOS mdules in ALICE setup ---
   
@@ -1265,6 +1266,126 @@ void AliPHOSv0::CreateGeometryforCPV()
 
 }
 
+
+//____________________________________________________________________________
+void AliPHOSv0::CreateGeometryforSupport()
+{
+  // Create the PHOS' support geometry for GEANT
+    //BEGIN_HTML
+  /*
+    <H2>
+    Geant3 geometry of the PHOS's support
+    </H2>
+    <P><CENTER>
+    <IMG Align=BOTTOM ALT="EMC geant tree" SRC="../images/PHOS_support.gif"> 
+    </CENTER><P>
+  */
+  //END_HTML  
+  
+  Float_t par[5], x0,y0,z0 ; 
+  Int_t   i,j,copy;
+
+  // Get pointer to the array containing media indexes
+  Int_t *idtmed = fIdtmed->GetArray() - 699 ;
+
+  // --- Dummy box containing two rails on which PHOS support moves
+  // --- Put these rails to the bottom of the L3 magnet
+
+  par[0] =  fGeom->GetRailRoadSize(0) / 2.0 ;
+  par[1] =  fGeom->GetRailRoadSize(1) / 2.0 ;
+  par[2] =  fGeom->GetRailRoadSize(2) / 2.0 ;
+  gMC->Gsvolu("PRRD", "BOX ", idtmed[798], par, 3) ;
+
+  y0     = -(fGeom->GetRailsDistanceFromIP() - fGeom->GetRailRoadSize(1) / 2.0) ;
+  gMC->Gspos("PRRD", 1, "ALIC", 0.0, y0, 0.0, 0, "ONLY") ; 
+
+  // --- Dummy box containing one rail
+
+  par[0] =  fGeom->GetRailOuterSize(0) / 2.0 ;
+  par[1] =  fGeom->GetRailOuterSize(1) / 2.0 ;
+  par[2] =  fGeom->GetRailOuterSize(2) / 2.0 ;
+  gMC->Gsvolu("PRAI", "BOX ", idtmed[798], par, 3) ;
+
+  for (i=0; i<2; i++) {
+    x0     = (2*i-1) * fGeom->GetDistanceBetwRails()  / 2.0 ;
+    gMC->Gspos("PRAI", i, "PRRD", x0, 0.0, 0.0, 0, "ONLY") ; 
+  }
+
+  // --- Upper and bottom steel parts of the rail
+
+  par[0] =  fGeom->GetRailPart1(0) / 2.0 ;
+  par[1] =  fGeom->GetRailPart1(1) / 2.0 ;
+  par[2] =  fGeom->GetRailPart1(2) / 2.0 ;
+  gMC->Gsvolu("PRP1", "BOX ", idtmed[716], par, 3) ;
+
+  y0     = - (fGeom->GetRailOuterSize(1) - fGeom->GetRailPart1(1))  / 2.0 ;
+  gMC->Gspos("PRP1", 1, "PRAI", 0.0, y0, 0.0, 0, "ONLY") ;
+  y0     =   (fGeom->GetRailOuterSize(1) - fGeom->GetRailPart1(1))  / 2.0 - fGeom->GetRailPart3(1);
+  gMC->Gspos("PRP1", 2, "PRAI", 0.0, y0, 0.0, 0, "ONLY") ;
+
+  // --- The middle vertical steel parts of the rail
+
+  par[0] =  fGeom->GetRailPart2(0) / 2.0 ;
+  par[1] =  fGeom->GetRailPart2(1) / 2.0 ;
+  par[2] =  fGeom->GetRailPart2(2) / 2.0 ;
+  gMC->Gsvolu("PRP2", "BOX ", idtmed[716], par, 3) ;
+
+  y0     =   - fGeom->GetRailPart3(1) / 2.0 ;
+  gMC->Gspos("PRP2", 1, "PRAI", 0.0, y0, 0.0, 0, "ONLY") ; 
+
+  // --- The most upper steel parts of the rail
+
+  par[0] =  fGeom->GetRailPart3(0) / 2.0 ;
+  par[1] =  fGeom->GetRailPart3(1) / 2.0 ;
+  par[2] =  fGeom->GetRailPart3(2) / 2.0 ;
+  gMC->Gsvolu("PRP3", "BOX ", idtmed[716], par, 3) ;
+
+  y0     =   (fGeom->GetRailOuterSize(1) - fGeom->GetRailPart3(1))  / 2.0 ;
+  gMC->Gspos("PRP3", 1, "PRAI", 0.0, y0, 0.0, 0, "ONLY") ; 
+
+  // --- The wall of the cradle
+  // --- The wall is empty: steel thin walls and air inside
+
+  par[1] =  TMath::Sqrt(
+			TMath::Power((fGeom->GetIPtoOuterCoverDistance() + fGeom->GetOuterBoxSize(1)),2) +
+			TMath::Power((fGeom->GetOuterBoxSize(0)/2),2)) + 10.;
+  par[0] =  par[1] - fGeom->GetCradleWall(1) ;
+  par[2] =  fGeom->GetCradleWall(2) / 2.0 ;
+  par[3] =  fGeom->GetCradleWall(3) ;
+  par[4] =  fGeom->GetCradleWall(4) ;
+  gMC->Gsvolu("PCRA", "TUBS", idtmed[716], par, 5) ;
+
+  par[0] -=  fGeom->GetCradleWallThickness() ;
+  par[1] -=  fGeom->GetCradleWallThickness() ;
+  par[2] -=  fGeom->GetCradleWallThickness() ;
+  gMC->Gsvolu("PCRE", "TUBS", idtmed[798], par, 5) ;
+  gMC->Gspos ("PCRE", 1, "PCRA", 0.0, 0.0, 0.0, 0, "ONLY") ; 
+
+  for (i=0; i<2; i++) {
+    z0 = (2*i-1) * (fGeom->GetOuterBoxSize(2) + fGeom->GetCradleWall(2)) / 2.0 ;
+    gMC->Gspos("PCRA", i, "ALIC", 0.0, 0.0, z0, 0, "ONLY") ; 
+  }
+
+  // --- The "wheels" of the cradle
+  
+  par[0] = fGeom->GetCradleWheel(0) / 2;
+  par[1] = fGeom->GetCradleWheel(1) / 2;
+  par[2] = fGeom->GetCradleWheel(2) / 2;
+  gMC->Gsvolu("PWHE", "BOX ", idtmed[716], par, 3) ;
+
+  y0 = -(fGeom->GetRailsDistanceFromIP() - fGeom->GetRailRoadSize(1) -
+	 fGeom->GetCradleWheel(1)/2) ;
+  for (i=0; i<2; i++) {
+    z0 = (2*i-1) * ((fGeom->GetOuterBoxSize(2) + fGeom->GetCradleWheel(2)) / 2.0 +
+                    fGeom->GetCradleWall(2));
+    for (j=0; j<2; j++) {
+      copy = 2*i + j;
+      x0 = (2*j-1) * fGeom->GetDistanceBetwRails()  / 2.0 ;
+      gMC->Gspos("PWHE", copy, "ALIC", x0, y0, z0, 0, "ONLY") ; 
+    }
+  }
+
+}
 
 //____________________________________________________________________________
 void AliPHOSv0::Init(void)
