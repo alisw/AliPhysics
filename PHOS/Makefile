@@ -13,6 +13,9 @@ SRCS          =  AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx \
                  AliPHOSv3.cxx AliPHOSv4.cxx \
                  AliPHOSHit.cxx \
                  AliPHOSGeometry.cxx \
+		 AliEMCAGeometry.cxx \
+		 AliCPVGeometry.cxx AliCPVBaseGeometry.cxx AliPPSDGeometry.cxx \
+		 AliPHOSCPV.cxx \
                  AliPHOSDigit.cxx  \
                  AliPHOSRecPoint.cxx AliPHOSEmcRecPoint.cxx AliPHOSPpsdRecPoint.cxx \
 		 AliPHOSClusterizer.cxx AliPHOSClusterizerv1.cxx  AliPHOSLink.cxx \
