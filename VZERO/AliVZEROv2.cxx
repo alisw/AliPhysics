@@ -23,6 +23,7 @@
 //   Geometry of the  4th of november 2002                          //
 //  (circular instead of trapezoidal shapes as in previous versions //
 //   plus changes in cell dimensions and offsets)                   // 
+//   New coordinate system implemented in october 2003              //
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
@@ -53,6 +54,8 @@
 #include <TParticle.h>
 
 #include "AliLoader.h"
+
+#include "AliConst.h"
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliVZEROdigit.h"
@@ -134,7 +137,7 @@ void AliVZEROv2::CreateGeometry()
   r5                =    r0 + height;
 
 // Creation of mother volume V0LE - left part - :
-// Entrance face at  -350.0 cm ...
+// Entrance face at  +350.0 cm  (new coordinate system) ...
 
    Float_t   partube[3];
    
@@ -145,7 +148,7 @@ void AliVZEROv2::CreateGeometry()
    gMC->Gsvolu("V0LE","TUBE",idtmed[3005],partube,3);
      
 // Creation of five rings - left part - :
-// Entrance face at -350.0 cm ... 
+// Entrance face at +350.0 cm  (new coordinate system) ... 
 
 // Mother volume V0L0 in which will be set 5 scintillator cells 
 
@@ -272,7 +275,7 @@ void AliVZEROv2::CreateGeometry()
   partubs[2]     =  fThickness1/2.0;
   
   gMC->Gsvolu("V0R1","TUBS",idtmed[3005],partubs,5);  // scintillator volume
-  gMC->Gspos("V0R1",1,"V0R0", 0.0, 0.0 , offset, 0,"ONLY"); 
+  gMC->Gspos("V0R1",1,"V0R0", 0.0, 0.0 , -offset, 0,"ONLY"); 
 
 // Elementary cell of ring 2 :
 
@@ -282,7 +285,7 @@ void AliVZEROv2::CreateGeometry()
   partubs[1]     =  r2;
 
   gMC->Gsvolu("V0R2","TUBS",idtmed[3005],partubs,5);  // scintillator volume
-  gMC->Gspos("V0R2",1,"V0R0", 0.0, 0.0 , offset - offset_fibers, 0,"ONLY"); 
+  gMC->Gspos("V0R2",1,"V0R0", 0.0, 0.0 , -offset + offset_fibers, 0,"ONLY"); 
 
 
 // Elementary cell of ring 3 :
@@ -293,7 +296,7 @@ void AliVZEROv2::CreateGeometry()
   partubs[1]     =  r3;
 
   gMC->Gsvolu("V0R3","TUBS",idtmed[3005],partubs,5);  // scintillator volume
-  gMC->Gspos("V0R3",1,"V0R0", 0.0, 0.0 , offset -  2.0 * offset_fibers, 0,"ONLY");
+  gMC->Gspos("V0R3",1,"V0R0", 0.0, 0.0 , -offset + 2.0 * offset_fibers, 0,"ONLY");
 
 // Elementary cell of ring 4 :
   
@@ -303,7 +306,7 @@ void AliVZEROv2::CreateGeometry()
   partubs[1]     =  r4;
 
   gMC->Gsvolu("V0R4","TUBS",idtmed[3005],partubs,5);  // scintillator volume
-  gMC->Gspos("V0R4",1,"V0R0", 0.0, 0.0 ,  offset - 3.0 * offset_fibers, 0,"ONLY");
+  gMC->Gspos("V0R4",1,"V0R0", 0.0, 0.0 ,  -offset + 3.0 * offset_fibers, 0,"ONLY");
 
 // Elementary cells of ring 5 :
 
@@ -313,13 +316,13 @@ void AliVZEROv2::CreateGeometry()
   partubs[4]     = 120.0-30.0;
   
   gMC->Gsvolu("V0R5","TUBS",idtmed[3005],partubs,5);  // scintillator volume
-  gMC->Gspos("V0R5",1,"V0R0", 0.0, 0.0 , offset - 4.0 * offset_fibers, 0,"ONLY");  
+  gMC->Gspos("V0R5",1,"V0R0", 0.0, 0.0 , -offset + 4.0 * offset_fibers, 0,"ONLY");  
 
   partubs[3]     = 120.0-30.0;
   partubs[4]     = 120.0-15.0;
   
   gMC->Gsvolu("V0R6","TUBS",idtmed[3005],partubs,5);  // scintillator volume
-  gMC->Gspos("V0R6",1,"V0R0", 0.0, 0.0 ,  offset - 4.0 * offset_fibers, 0,"ONLY");
+  gMC->Gspos("V0R6",1,"V0R0", 0.0, 0.0 ,  -offset + 4.0 * offset_fibers, 0,"ONLY");
    
   Float_t  phi_deg = 180./6.; 
 
@@ -333,7 +336,7 @@ void AliVZEROv2::CreateGeometry()
 	n_detec_R++;
        }
 
-  gMC->Gspos("V0RI",1,"ALIC",0.0,0.0,zdet,0,"ONLY");
+  gMC->Gspos("V0RI",1,"ALIC",0.0,0.0,-zdet,0,"ONLY");
  
   n_cells_R = (n_detec_R - 1) * 6;  
   printf("    Number of cells on Right side =   %d\n",  n_cells_R);    
@@ -348,7 +351,7 @@ void AliVZEROv2::CreateGeometry()
         n_detec_L++;
        }
 
-  gMC->Gspos("V0LE",1,"ALIC",0.0,0.0,-350.0-fThickness1/2.0,0,"ONLY");
+  gMC->Gspos("V0LE",1,"ALIC",0.0,0.0,350.0+fThickness1/2.0,0,"ONLY");
  
   n_cells_L = (n_detec_L - 1) * 6;
   printf("    Number of cells on Left side  =   %d\n",  n_cells_L);    
@@ -370,7 +373,7 @@ void AliVZEROv2::BuildGeometry()
   printf(" VZERO BuildGeometry ");
   for(i=0;i<30;i++) printf("*");
   printf("\n");
- 
+
   TNode *Top; 
 
   TNode *V0Rnode, *V0Rnode0, *V0Rnode6 , *V0Rnode7, *V0Rnode8, *V0Rnode9;
@@ -418,7 +421,7 @@ void AliVZEROv2::BuildGeometry()
  		
   Top->cd();
   
-  V0Rnode = new TNode("V0RI","V0RI",V0RI,0.0,0.0,+zdet,0);
+  V0Rnode = new TNode("V0RI","V0RI",V0RI,0.0,0.0,-zdet,0);
   
   V0Rnode->SetLineColor(kYellow);
   fNodes->Add(V0Rnode);  
@@ -559,42 +562,42 @@ void AliVZEROv2::BuildGeometry()
     
     sprintf(NameNode,"SUBDER%d",n_detec_R);
     V0Rnode0->cd();    
-    V0Rnode1 = new TNode(NameNode,NameNode,V0R1,0.0,0.0, offset,0);	 
+    V0Rnode1 = new TNode(NameNode,NameNode,V0R1,0.0,0.0, -offset,0);	 
     V0Rnode1->SetLineColor(kColorVZERO);
     fNodes->Add(V0Rnode1);
     n_detec_R++;
     
     sprintf(NameNode,"SUBDER%d",n_detec_R);
     V0Rnode0->cd();    
-    V0Rnode2 = new TNode(NameNode,NameNode,V0R2,0.0,0.0, offset - offset_fibers,0);	 
+    V0Rnode2 = new TNode(NameNode,NameNode,V0R2,0.0,0.0, -offset + offset_fibers,0);	 
     V0Rnode2->SetLineColor(kColorVZERO);
     fNodes->Add(V0Rnode2);
     n_detec_R++;
 
     sprintf(NameNode,"SUBDER%d",n_detec_R);
     V0Rnode0->cd();    
-    V0Rnode3 = new TNode(NameNode,NameNode,V0R3,0.0,0.0, offset - 2.0*offset_fibers,0);	 
+    V0Rnode3 = new TNode(NameNode,NameNode,V0R3,0.0,0.0, -offset + 2.0*offset_fibers,0);	 
     V0Rnode3->SetLineColor(kColorVZERO);
     fNodes->Add(V0Rnode3);
     n_detec_R++;
 
     sprintf(NameNode,"SUBDER%d",n_detec_R);
     V0Rnode0->cd();    
-    V0Rnode4 = new TNode(NameNode,NameNode,V0R4,0.0,0.0, offset - 3.0*offset_fibers,0);	 
+    V0Rnode4 = new TNode(NameNode,NameNode,V0R4,0.0,0.0, -offset + 3.0*offset_fibers,0);	 
     V0Rnode4->SetLineColor(kColorVZERO);
     fNodes->Add(V0Rnode4);
     n_detec_R++;
      
     sprintf(NameNode,"SUBDER%d",n_detec_R);
     V0Rnode0->cd();    
-    V0Rnode5 = new TNode(NameNode,NameNode,V0R5,0.0,0.0, offset - 4.0*offset_fibers,0);	 
+    V0Rnode5 = new TNode(NameNode,NameNode,V0R5,0.0,0.0, -offset + 4.0*offset_fibers,0);	 
     V0Rnode5->SetLineColor(kColorVZERO);
     fNodes->Add(V0Rnode5);
     n_detec_R++;
     
     sprintf(NameNode,"SUBDER%d",n_detec_R);
     V0Rnode0->cd();    
-    V0Rnode6 = new TNode(NameNode,NameNode,V0R6,0.0,0.0, offset - 4.0*offset_fibers,0);	 
+    V0Rnode6 = new TNode(NameNode,NameNode,V0R6,0.0,0.0, -offset + 4.0*offset_fibers,0);	 
     V0Rnode6->SetLineColor(kColorVZERO);
     fNodes->Add(V0Rnode6);
     n_detec_R++;
@@ -623,7 +626,7 @@ void AliVZEROv2::BuildGeometry()
  		
   Top->cd();
   
-  V0Lnode = new TNode("V0LE","V0LE",V0LE,0.0,0.0,-350.0-fThickness1/2.0,0);
+  V0Lnode = new TNode("V0LE","V0LE",V0LE,0.0,0.0,350.0+fThickness1/2.0,0);
   
   V0Lnode->SetLineColor(kBlue);
   fNodes->Add(V0Lnode);
@@ -766,7 +769,7 @@ void AliVZEROv2::BuildGeometry()
     V0Lnode0->SetVisibility(2);
     
   }    
-      
+     
 }  
     
 //------------------------------------------------------------------------
