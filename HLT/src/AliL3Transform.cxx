@@ -1034,6 +1034,11 @@ Bool_t AliL3Transform::MakeInitFile(Char_t *rootfilename,Char_t *filename)
     if(i<fNSectorLow) fSectorLow[i]=1;
     else fSectorLow[i]=0;
   }
+
+  delete gAlice;
+  rootfile->Close();
+  delete rootfile;
+
   return SaveInitFile(filename);
 #endif
 }

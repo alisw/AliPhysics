@@ -172,6 +172,7 @@ void AliL3FileHandler::FreeDigitsTree()
 	<<"Cannot free digitstree, it is not present"<<ENDLOG;
       return;
     }
+  delete fDigits;
   fDigits=0;
 #ifndef use_newio
   fDigitsTree->Delete();
@@ -615,10 +616,11 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
       return 0;
     }
   
+  delete fDigits;
+  fDigits=0;
 #ifdef use_newio 
   /* Dont understand why we have to do 
      reload the tree, but otherwise the code crashes */
-  fDigits=0;
   fDigitsTree=0;
   if(!GetDigitsTree(event)) return 0;
 #else
