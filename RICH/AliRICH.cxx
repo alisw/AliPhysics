@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.31  2000/10/26 20:18:33  jbarbosa
+  Supports for methane and freon vessels
+
   Revision 1.30  2000/10/24 13:19:12  jbarbosa
   Geometry updates.
 
@@ -96,7 +99,8 @@
 #include "AliRICHDigit.h"
 #include "AliRICHTransientDigit.h"
 #include "AliRICHRawCluster.h"
-#include "AliRICHRecHit.h"
+#include "AliRICHRecHit1D.h"
+#include "AliRICHRecHit3D.h"
 #include "AliRICHHitMapA1.h"
 #include "AliRICHClusterFinder.h"
 #include "AliRun.h"
@@ -134,7 +138,8 @@ AliRICH::AliRICH()
       {
 	fNdch[i]       = 0;
 	fNrawch[i]   = 0;
-	fNrechits[i] = 0;
+	fNrechits1D[i] = 0;
+	fNrechits3D[i] = 0;
       }
 }
 
@@ -162,7 +167,8 @@ AliRICH::AliRICH(const char *name, const char *title)
     
     fDchambers = new TObjArray(kNCH);
 
-    fRecHits = new TObjArray(kNCH);
+    fRecHits1D = new TObjArray(kNCH);
+    fRecHits3D = new TObjArray(kNCH);
     
     Int_t i;
    
@@ -184,7 +190,10 @@ AliRICH::AliRICH(const char *name, const char *title)
     //fNrechits      = new Int_t[kNCH];
     
     for (i=0; i<kNCH ;i++) {
-	(*fRecHits)[i] = new TClonesArray("AliRICHRecHit",1000); 
+      (*fRecHits1D)[i] = new TClonesArray("AliRICHRecHit1D",1000);
+    }
+    for (i=0; i<kNCH ;i++) {
+      (*fRecHits3D)[i] = new TClonesArray("AliRICHRecHit3D",1000);	
     }
     //printf("Created fRecHits with adress:%p",fRecHits);
 
@@ -268,15 +277,27 @@ void AliRICH::AddRawCluster(Int_t id, const AliRICHRawCluster& c)
 }
 
 //_____________________________________________________________________________
-void AliRICH::AddRecHit(Int_t id, Float_t *rechit, Float_t *photons, Int_t *padsx, Int_t* padsy)
+void AliRICH::AddRecHit1D(Int_t id, Float_t *rechit, Float_t *photons, Int_t *padsx, Int_t* padsy)
 {
   
   //
   // Add a RICH reconstructed hit to the list
   //
 
-    TClonesArray &lrec = *((TClonesArray*)(*fRecHits)[id]);
-    new(lrec[fNrechits[id]++]) AliRICHRecHit(id,rechit,photons,padsx,padsy);
+    TClonesArray &lrec1D = *((TClonesArray*)(*fRecHits1D)[id]);
+    new(lrec1D[fNrechits1D[id]++]) AliRICHRecHit1D(id,rechit,photons,padsx,padsy);
+}
+
+//_____________________________________________________________________________
+void AliRICH::AddRecHit3D(Int_t id, Float_t *rechit)
+{
+  
+  //
+  // Add a RICH reconstructed hit to the list
+  //
+
+    TClonesArray &lrec3D = *((TClonesArray*)(*fRecHits3D)[id]);
+    new(lrec3D[fNrechits3D[id]++]) AliRICHRecHit3D(id,rechit);
 }
 
 //___________________________________________
@@ -1294,13 +1315,22 @@ void AliRICH::MakeBranch(Option_t* option)
 
   // one branch for rec hits per chamber
   for (i=0; i<kNCH ;i++) {
-    sprintf(branchname,"%sRecHits%d",GetName(),i+1);
+    sprintf(branchname,"%sRecHits1D%d",GetName(),i+1);
     
-    if (fRecHits   && gAlice->TreeR()) {
-      gAlice->TreeR()->Branch(branchname,&((*fRecHits)[i]), kBufferSize);
-      printf("Making Branch %s for rec. hits in chamber %d\n",branchname,i+1);
+    if (fRecHits1D   && gAlice->TreeR()) {
+      gAlice->TreeR()->Branch(branchname,&((*fRecHits1D)[i]), kBufferSize);
+      printf("Making Branch %s for 1D rec. hits in chamber %d\n",branchname,i+1);
     }	
   }
+  for (i=0; i<kNCH ;i++) {
+    sprintf(branchname,"%sRecHits3D%d",GetName(),i+1);
+    
+    if (fRecHits3D   && gAlice->TreeR()) {
+      gAlice->TreeR()->Branch(branchname,&((*fRecHits3D)[i]), kBufferSize);
+      printf("Making Branch %s for 3D rec. hits in chamber %d\n",branchname,i+1);
+    }	
+  }
+  
 }
 
 //___________________________________________
@@ -1347,12 +1377,20 @@ void AliRICH::SetTreeAddress()
       }
       
       for (i=0; i<kNCH; i++) {
-	sprintf(branchname,"%sRecHits%d",GetName(),i+1);
-	if (fRecHits) {
+	sprintf(branchname,"%sRecHits1D%d",GetName(),i+1);
+	if (fRecHits1D) {
 	  branch = treeR->GetBranch(branchname);
-	  if (branch) branch->SetAddress(&((*fRecHits)[i]));
+	  if (branch) branch->SetAddress(&((*fRecHits1D)[i]));
 	  }
       }
+      
+     for (i=0; i<kNCH; i++) {
+	sprintf(branchname,"%sRecHits3D%d",GetName(),i+1);
+	if (fRecHits3D) {
+	  branch = treeR->GetBranch(branchname);
+	  if (branch) branch->SetAddress(&((*fRecHits3D)[i]));
+	  }
+      } 
       
   }
 }
@@ -1393,15 +1431,28 @@ void AliRICH::ResetRawClusters()
 }
 
 //____________________________________________
-void AliRICH::ResetRecHits()
+void AliRICH::ResetRecHits1D()
 {
   //
   // Reset number of raw clusters and the raw clust array for this detector
   //
   
   for ( int i=0;i<kNCH;i++ ) {
-	if ((*fRecHits)[i])    ((TClonesArray*)(*fRecHits)[i])->Clear();
-	if (fNrechits)  fNrechits[i]=0;
+	if ((*fRecHits1D)[i])    ((TClonesArray*)(*fRecHits1D)[i])->Clear();
+	if (fNrechits1D)  fNrechits1D[i]=0;
+    }
+}
+
+//____________________________________________
+void AliRICH::ResetRecHits3D()
+{
+  //
+  // Reset number of raw clusters and the raw clust array for this detector
+  //
+  
+  for ( int i=0;i<kNCH;i++ ) {
+	if ((*fRecHits3D)[i])    ((TClonesArray*)(*fRecHits3D)[i])->Clear();
+	if (fNrechits3D)  fNrechits3D[i]=0;
     }
 }
 
@@ -2010,7 +2061,8 @@ void AliRICH::Streamer(TBuffer &R__b)
     AliRICHResponse      *response;
     TClonesArray         *digitsaddress;
     TClonesArray         *rawcladdress;
-    TClonesArray         *rechitaddress;
+    TClonesArray         *rechitaddress1D;
+    TClonesArray         *rechitaddress3D;
       
     if (R__b.IsReading()) {
 	Version_t R__v = R__b.ReadVersion(); if (R__v) { }
@@ -2021,11 +2073,13 @@ void AliRICH::Streamer(TBuffer &R__b)
 	R__b >> fCerenkovs; // diff
 	R__b >> fDchambers;
 	R__b >> fRawClusters;
-	R__b >> fRecHits;  //diff
+	R__b >> fRecHits1D;  //diff
+	R__b >> fRecHits3D;  //diff
 	R__b >> fDebugLevel;  //diff
 	R__b.ReadStaticArray(fNdch);
 	R__b.ReadStaticArray(fNrawch);
-	R__b.ReadStaticArray(fNrechits);
+	R__b.ReadStaticArray(fNrechits1D);
+	R__b.ReadStaticArray(fNrechits3D);
 //
 	R__b >> fChambers;
 // Stream chamber related information
@@ -2038,8 +2092,10 @@ void AliRICH::Streamer(TBuffer &R__b)
 	    response->Streamer(R__b);	  
 	    rawcladdress=(TClonesArray*) (*fRawClusters)[i];
 	    rawcladdress->Streamer(R__b);
-	    rechitaddress=(TClonesArray*) (*fRecHits)[i];
-	    rechitaddress->Streamer(R__b);
+	    rechitaddress1D=(TClonesArray*) (*fRecHits1D)[i];
+	    rechitaddress1D->Streamer(R__b);
+	    rechitaddress3D=(TClonesArray*) (*fRecHits3D)[i];
+	    rechitaddress3D->Streamer(R__b);
 	    digitsaddress=(TClonesArray*) (*fDchambers)[i];
 	    digitsaddress->Streamer(R__b);
 	}
@@ -2070,12 +2126,14 @@ void AliRICH::Streamer(TBuffer &R__b)
 	R__b << fCerenkovs; // diff
 	R__b << fDchambers;
 	R__b << fRawClusters;
-	R__b << fRecHits; //diff
+	R__b << fRecHits1D; //diff
+	R__b << fRecHits3D; //diff
 	R__b << fDebugLevel; //diff
 	R__b.WriteArray(fNdch, kNCH);
 	R__b.WriteArray(fNrawch, kNCH);
-	R__b.WriteArray(fNrechits, kNCH);
-	//
+	R__b.WriteArray(fNrechits1D, kNCH);
+	R__b.WriteArray(fNrechits3D, kNCH);
+//
 	R__b << fChambers;
 //  Stream chamber related information
 	for (Int_t i =0; i<kNCH; i++) {
@@ -2087,8 +2145,10 @@ void AliRICH::Streamer(TBuffer &R__b)
 	    response->Streamer(R__b);
 	    rawcladdress=(TClonesArray*) (*fRawClusters)[i];
 	    rawcladdress->Streamer(R__b);
-	    rechitaddress=(TClonesArray*) (*fRecHits)[i];
-	    rechitaddress->Streamer(R__b);
+	    rechitaddress1D=(TClonesArray*) (*fRecHits1D)[i];
+	    rechitaddress1D->Streamer(R__b);
+	    rechitaddress3D=(TClonesArray*) (*fRecHits3D)[i];
+	    rechitaddress3D->Streamer(R__b);
 	    digitsaddress=(TClonesArray*) (*fDchambers)[i];
 	    digitsaddress->Streamer(R__b);
 	}

@@ -150,9 +150,9 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
        
 
        //cout<<"nev  "<<nev<<endl;
-       printf ("\n**********************************\nProcessing Event: %d\n\n",nev);
+       printf ("\n**********************************\nProcessing Event: %d\n",nev);
        //cout<<"nparticles  "<<nparticles<<endl;
-       printf ("Particles       : %d\n",nparticles);
+       printf ("Particles       : %d\n\n",nparticles);
        if (nev < evNumber1) continue;
        if (nparticles <= 0) return;
        
@@ -166,8 +166,8 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
        Int_t nrawclusters = Rawclusters->GetEntriesFast();
        //printf (" nrawclusters:%d\n",nrawclusters);
        gAlice->TreeR()->GetEvent(nent-1);
-       TClonesArray *RecHits = RICH->RecHitsAddress(2);
-       Int_t nrechits = RecHits->GetEntriesFast();
+       TClonesArray *RecHits1D = RICH->RecHitsAddress1D(2);
+       Int_t nrechits1D = RecHits1D->GetEntriesFast();
        //printf (" nrechits:%d\n",nrechits);
        TTree *TH = gAlice->TreeH(); 
        Int_t ntracks = TH->GetEntries();
@@ -180,7 +180,7 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 // Start loop on tracks in the hits containers
        Int_t Nc=0;
        for (Int_t track=0; track<ntracks;track++) {
-	   printf ("Processing Track: %d\n",track);
+	   printf ("\nProcessing Track: %d\n",track);
 	   gAlice->ResetHits();
 	   Int_t nbytes += TH->GetEvent(track);
 	   if (RICH)  {
@@ -383,17 +383,17 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 	       }
 	   }
 
-	   if(nrechits)
+	   if(nrechits1D)
 	     {
-	       for (Int_t hit=0;hit<nrechits;hit++) {
-		 recHit = (AliRICHRecHit*) RecHits->UncheckedAt(hit);
-		 Float_t r_omega = recHit->fOmega;                  // Cerenkov angle
-		 Float_t r_theta = recHit->fTheta;                  // Theta angle of incidence
-		 Float_t r_phi   = recHit->fPhi;                    // Phi angle if incidence
-		 Float_t *cer_pho = recHit->fCerPerPhoton;        // Cerenkov angle per photon
-		 Int_t *padsx = recHit->fPadsUsedX;           // Pads Used fo reconstruction (x)
-		 Int_t *padsy = recHit->fPadsUsedY;           // Pads Used fo reconstruction (y)
-		 Int_t goodPhotons = recHit->fGoodPhotons;    // Number of pads used for reconstruction
+	       for (Int_t hit=0;hit<nrechits1D;hit++) {
+		 recHit1D = (AliRICHRecHit1D*) RecHits1D->UncheckedAt(hit);
+		 Float_t r_omega = recHit1D->fOmega;                  // Cerenkov angle
+		 Float_t r_theta = recHit1D->fTheta;                  // Theta angle of incidence
+		 Float_t r_phi   = recHit1D->fPhi;                    // Phi angle if incidence
+		 Float_t *cer_pho = recHit1D->fCerPerPhoton;        // Cerenkov angle per photon
+		 Int_t *padsx = recHit1D->fPadsUsedX;           // Pads Used fo reconstruction (x)
+		 Int_t *padsy = recHit1D->fPadsUsedY;           // Pads Used fo reconstruction (y)
+		 Int_t goodPhotons = recHit1D->fGoodPhotons;    // Number of pads used for reconstruction
 		 
 		 Omega->Fill(r_omega,(float) 1);
 		 Theta->Fill(r_theta*180/TMath::Pi(),(float) 1);

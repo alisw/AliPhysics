@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.8  2000/10/03 21:44:09  morsch
+  Use AliSegmentation and AliHit abstract base classes.
+
   Revision 1.7  2000/10/02 21:28:12  fca
   Removal of useless dependecies via forward declarations
 
@@ -85,7 +88,8 @@
 #include "AliRICHPadHit.h"
 #include "AliRICHDigit.h"
 #include "AliRICHRawCluster.h"
-#include "AliRICHRecHit.h"
+#include "AliRICHRecHit1D.h"
+#include "AliRICHRecHit3D.h"
 #include "AliRICHEllipse.h"
 
 ClassImp(AliRICHDisplay)
@@ -816,54 +820,111 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
    AliRICH *pRICH  = (AliRICH*)gAlice->GetModule("RICH");
    AliRICHChamber*  iChamber;
 
-   TClonesArray *pRICHrechits  = pRICH->RecHitsAddress(chamber);
+   TClonesArray *pRICHrechits1D  = pRICH->RecHitsAddress1D(chamber);
    printf ("Chamber:%d\n", chamber);
-   if (pRICHrechits == 0) return;
+   if (pRICHrechits1D != 0)
+     {
 
-   //RICH->ResetRecHits();
+       //RICH->ResetRecHits();
 
 
-   Int_t nent=(Int_t)gAlice->TreeR()->GetEntries();
-   gAlice->TreeR()->GetEvent(nent-1+cathode-1);
-   Int_t nrechits = pRICHrechits->GetEntriesFast();
-   printf ("nrechits:%d\n",nrechits);
-   if (nrechits == 0) return;
-   if (fRecpoints == 0) fRecpoints = new TObjArray(50);
-   
-   iChamber = &(pRICH->Chamber(chamber));
-   AliRICHRecHit  *mRec;
-   AliRICHPoints *points = 0;
-   //AliRICHEllipse *ellipse = 0;
-   //
-   //loop over all rechits and store their position  
+       Int_t nent1D=(Int_t)gAlice->TreeR()->GetEntries();
+       gAlice->TreeR()->GetEvent(nent1D-1+cathode-1);
+       Int_t nrechits1D = pRICHrechits1D->GetEntriesFast();
+       printf ("nrechits1D:%d\n",nrechits1D);
+       if (nrechits1D != 0)
+	 {
+	   if (fRecpoints == 0) fRecpoints = new TObjArray(50);
+	   
+	   iChamber = &(pRICH->Chamber(chamber));
+	   AliRICHRecHit1D  *mRec1D;
+	   AliRICHPoints *points1D = 0;
+	   //AliRICHEllipse *ellipse = 0;
+	   //
+	   //loop over all rechits and store their position  
+	   
+	   points1D = new AliRICHPoints(nrechits1D);
+	   for (Int_t irec=0;irec<nrechits1D;irec++) {
+	     mRec1D   = (AliRICHRecHit1D*)pRICHrechits1D->UncheckedAt(irec);
+	     fRecpoints->AddAt(points1D,irec);
+	     points1D->SetMarkerColor(38);
+	     points1D->SetMarkerStyle(8);
+	     points1D->SetMarkerSize(1.);
+	     points1D->SetParticle(-1);
+	     points1D->SetHitIndex(-1);
+	     points1D->SetTrackIndex(-1);
+	     points1D->SetDigitIndex(-1);
+	     Float_t  vectorLoc[3]={mRec1D->fX,6.276,mRec1D->fY};
+	     Float_t  vectorGlob[3];
+	     iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
+	     points1D->SetPoint(irec,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
+	     //Float_t theta = iChamber->GetRotMatrix()->GetTheta();
+	     //Float_t phi   = iChamber->GetRotMatrix()->GetPhi();	   
+	     //ellipse=new TEllipse(vectorGlob[0],vectorGlob[2],10,10,0,360,phi);
+	     printf("Generating ellipse %d\n",irec);
+	     AliRICHEllipse *ellipse=new AliRICHEllipse(mRec1D->fX,mRec1D->fY,mRec1D->fOmega,mRec1D->fTheta,mRec1D->fPhi,mRec1D->fEmissPoint);
+	     ellipse->CerenkovRingDrawing(chamber,irec);
+	     //ellipse->SetFillStyle(1001);
+	     ellipse->SetMarkerColor(38);
+	     ellipse->Draw();
+	     //marker->SetRefObject((TObject*)points1D);
+	     //points1D->Set3DMarker(0, marker); 
+	   }
+	 }
+     }
 
-   points = new AliRICHPoints(nrechits);
-   for (Int_t irec=0;irec<nrechits;irec++) {
-       mRec   = (AliRICHRecHit*)pRICHrechits->UncheckedAt(irec);
-       fRecpoints->AddAt(points,irec);
-       points->SetMarkerColor(38);
-       points->SetMarkerStyle(8);
-       points->SetMarkerSize(1.);
-       points->SetParticle(-1);
-       points->SetHitIndex(-1);
-       points->SetTrackIndex(-1);
-       points->SetDigitIndex(-1);
-       Float_t  vectorLoc[3]={mRec->fX,6.276,mRec->fY};
-       Float_t  vectorGlob[3];
-       iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
-       points->SetPoint(irec,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
-       //Float_t theta = iChamber->GetRotMatrix()->GetTheta();
-       //Float_t phi   = iChamber->GetRotMatrix()->GetPhi();	   
-       //ellipse=new TEllipse(vectorGlob[0],vectorGlob[2],10,10,0,360,phi);
-       printf("Generating ellipse %d\n",irec);
-       AliRICHEllipse *ellipse=new AliRICHEllipse(mRec->fX,mRec->fY,mRec->fOmega,mRec->fTheta,mRec->fPhi,mRec->fEmissPoint);
-       ellipse->CerenkovRingDrawing(chamber,irec);
-       //ellipse->SetFillStyle(1001);
-       ellipse->SetMarkerColor(38);
-       ellipse->Draw();
-       //marker->SetRefObject((TObject*)points);
-       //points->Set3DMarker(0, marker); 
-   }
+   TClonesArray *pRICHrechits3D  = pRICH->RecHitsAddress3D(chamber);
+   printf ("Chamber:%d\n", chamber);
+   if (pRICHrechits3D != 0)
+     {
+       
+       //RICH->ResetRecHits();
+       
+       
+       Int_t nent3D=(Int_t)gAlice->TreeR()->GetEntries();
+       gAlice->TreeR()->GetEvent(nent3D-1+cathode-1);
+       Int_t nrechits3D = pRICHrechits3D->GetEntriesFast();
+       printf ("nrechits3D:%d\n",nrechits3D);
+       if (nrechits3D != 0)
+	 {
+	   if (fRecpoints == 0) fRecpoints = new TObjArray(50);
+	   
+	   iChamber = &(pRICH->Chamber(chamber));
+	   AliRICHRecHit3D  *mRec3D;
+	   AliRICHPoints *points3D = 0;
+	   //AliRICHEllipse *ellipse = 0;
+	   //
+	   //loop over all rechits and store their position  
+	   
+	   points3D = new AliRICHPoints(nrechits3D);
+	   for (Int_t irec=0;irec<nrechits3D;irec++) {
+	     mRec3D   = (AliRICHRecHit3D*)pRICHrechits3D->UncheckedAt(irec);
+	     fRecpoints->AddAt(points3D,irec);
+	     points3D->SetMarkerColor(42);
+	     points3D->SetMarkerStyle(8);
+	     points3D->SetMarkerSize(1.);
+	     points3D->SetParticle(-1);
+	     points3D->SetHitIndex(-1);
+	     points3D->SetTrackIndex(-1);
+	     points3D->SetDigitIndex(-1);
+	     Float_t  vectorLoc[3]={mRec3D->fX,6.276,mRec3D->fY};
+	     Float_t  vectorGlob[3];
+	     iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
+	     points3D->SetPoint(irec,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
+	     //Float_t theta = iChamber->GetRotMatrix()->GetTheta();
+	     //Float_t phi   = iChamber->GetRotMatrix()->GetPhi();	   
+	     //ellipse=new TEllipse(vectorGlob[0],vectorGlob[2],10,10,0,360,phi);
+	     printf("Generating ellipse %d\n",irec);
+	     AliRICHEllipse *ellipse=new AliRICHEllipse(mRec3D->fX,mRec3D->fY,mRec3D->fOmega,mRec3D->fTheta,mRec3D->fPhi,0.75);
+	     ellipse->CerenkovRingDrawing(chamber,irec);
+	     //ellipse->SetFillStyle(1001);
+	     ellipse->SetMarkerColor(42);
+	     ellipse->Draw();
+	     //marker->SetRefObject((TObject*)points3D);
+	     //points3D->Set3DMarker(0, marker); 
+	   }
+	 }
+     }
 }
 //___________________________________________
 void AliRICHDisplay::LoadDigits()

@@ -19,7 +19,8 @@ static const int kNCH=7;
 class AliRICHHit;
 class AliRICHPadHit;
 class AliRICHRawCluster;
-class AliRICHRecHit;
+class AliRICHRecHit1D;
+class AliRICHRecHit3D;
 class AliRICHClusterFinder;
 class AliRICHDetect;
 class AliRICHChamber;
@@ -40,7 +41,8 @@ class AliRICH : public  AliDetector {
     virtual void   AddPadHit(Int_t *clhits);
     virtual void   AddDigits(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits);
     virtual void   AddRawCluster(Int_t id, const AliRICHRawCluster& cluster);
-    virtual void   AddRecHit(Int_t id, Float_t* rechit, Float_t* photons, Int_t* padsx, Int_t* padsy);
+    virtual void   AddRecHit1D(Int_t id, Float_t* rechit, Float_t* photons, Int_t* padsx, Int_t* padsy);
+    virtual void   AddRecHit3D(Int_t id, Float_t* rechit);
 
 
     virtual void   BuildGeometry();
@@ -59,7 +61,8 @@ class AliRICH : public  AliDetector {
     virtual void   ResetHits();
     virtual void   ResetDigits();
     virtual void   ResetRawClusters();
-    virtual void   ResetRecHits();
+    virtual void   ResetRecHits1D();
+    virtual void   ResetRecHits3D();
     virtual void   FindClusters(Int_t nev,Int_t lastEntry);
     virtual void   Digitise(Int_t nev,Int_t flag,Option_t *opt=" ",Text_t *name=" ");
 // 
@@ -90,9 +93,13 @@ class AliRICH : public  AliDetector {
     Int_t                *Ndch() {return fNdch;}
     virtual TClonesArray *DigitsAddress(Int_t id) {return ((TClonesArray *) (*fDchambers)[id]);}
 // Return pointers to rec. hits
-    TObjArray            *RecHits() {return fRecHits;}
-    Int_t                *Nrechits() {return fNrechits;}
-    virtual TClonesArray *RecHitsAddress(Int_t id) {return ((TClonesArray *) (*fRecHits)[id]);}
+    TObjArray            *RecHits1D() {return fRecHits1D;}
+    Int_t                *Nrechits1D() {return fNrechits1D;}
+    virtual TClonesArray *RecHitsAddress1D(Int_t id) {return ((TClonesArray *) (*fRecHits1D)[id]);}
+    TObjArray            *RecHits3D() {return fRecHits3D;}
+    Int_t                *Nrechits3D() {return fNrechits3D;}
+    virtual TClonesArray *RecHitsAddress3D(Int_t id) {return ((TClonesArray *) (*fRecHits3D)[id]);}
+    
 // Return pointers to reconstructed clusters
     virtual TClonesArray *RawClustAddress(Int_t id) {return ((TClonesArray *) (*fRawClusters)[id]);}    
 // Assignment operator
@@ -106,13 +113,15 @@ class AliRICH : public  AliDetector {
     TClonesArray         *fPadHits;            // List of clusters
     TObjArray            *fDchambers;          // List of digits
     TClonesArray         *fCerenkovs;          // List of cerenkovs
-    Int_t                fNdch[kNCH];               // Number of digits
+    Int_t                 fNdch[kNCH];         // Number of digits
     Text_t               *fFileName;           // Filename for event mixing
     TObjArray            *fRawClusters;        // List of raw clusters
-    TObjArray            *fRecHits;            // List of rec. hits
-    Int_t                fNrawch[kNCH];             // Number of raw clusters
-    Int_t                fNrechits[kNCH];           // Number of rec hits 
-    Int_t                 fDebugLevel;          // Source debugging level
+    TObjArray            *fRecHits1D;          // List of rec. hits
+    TObjArray            *fRecHits3D;          // List of rec. hits
+    Int_t                 fNrawch[kNCH];       // Number of raw clusters
+    Int_t                 fNrechits1D[kNCH];   // Number of rec hits 
+    Int_t                 fNrechits3D[kNCH];   // Number of rec hits 
+    Int_t                 fDebugLevel;         // Source debugging level
 
     Int_t fCkovNumber;                   // Number of Cerenkov photons
     Int_t fCkovQuarz;                    // Cerenkovs crossing quartz
