@@ -40,6 +40,7 @@ class AliModulesComposition : public G4VUserDetectorConstruction
     void SwitchDetOn(G4String moduleNameVer);
     void SwitchDetOn(G4String moduleName, G4int version);
     void SwitchDetOnDefault(G4String moduleName);
+    void SwitchDetOnPPR(G4String moduleName);
     void SwitchDetOff(G4String moduleName);
     void PrintSwitchedDets() const;
     void PrintAvailableDets() const;
@@ -99,7 +100,7 @@ class AliModulesComposition : public G4VUserDetectorConstruction
     G4bool  fForceAllLVSensitive; //option applied to all modules 
                                   //(overrides modules specific setting)
     G4bool  fReadGeometry;        //option applied to all modules
-    G4bool  fWriteGeometry;       //option applied to all modules  
+    G4bool  fWriteGeometry;       //option applied to all modules     
 };
 
 // inline methods
