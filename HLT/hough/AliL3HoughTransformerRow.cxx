@@ -77,7 +77,7 @@ AliL3HoughTransformerRow::~AliL3HoughTransformerRow()
       for(Int_t i=0; i<GetNEtaSegments(); i++)
 	{
 	  if(!fgTrackID[i]) continue;
-	  delete fgTrackID[i];
+	  delete [] fgTrackID[i];
 	}
       delete [] fgTrackID;
       fgTrackID = 0;
@@ -232,9 +232,9 @@ void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t
       Int_t ymin = hist->GetFirstYbin();
       Int_t ymax = hist->GetLastYbin();
       Int_t nxbins = hist->GetNbinsX()+2;
-      for(Int_t ybin=ymin; ybin<=ymax; ybin++)
+      for(Int_t ybin=ymin-1; ybin<=(ymax+1); ybin++)
 	{
-	  for(Int_t xbin=xmin; xbin<=xmax; xbin++)
+	  for(Int_t xbin=xmin-1; xbin<=(xmax+1); xbin++)
 	    {
 	      //cvetan: we get strange warning on gcc-2.95
 	      //warning: large integer implicitly truncated to unsigned type

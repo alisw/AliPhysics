@@ -349,7 +349,7 @@ Double_t AliL3Histogram::GetBinCenterY(Int_t ybin) const
 Double_t AliL3Histogram::GetPreciseBinCenterX(Float_t xbin) const
 {
   // Returns the position of the center of a bin using precise values inside the bin
-  if(xbin < (fFirstXbin-0.5) || xbin > (fLastXbin+0.5))
+  if(xbin < (fFirstXbin-1.5) || xbin > (fLastXbin+1.5))
     {
       LOG(AliL3Log::kError,"AliL3Histogram::GetBinCenterX","xbin")
 	<<"Bin-value out of range "<<xbin<<ENDLOG;
@@ -362,7 +362,7 @@ Double_t AliL3Histogram::GetPreciseBinCenterX(Float_t xbin) const
 Double_t AliL3Histogram::GetPreciseBinCenterY(Float_t ybin) const
 {
   // Returns the position of the center of a bin using precise values inside the bin
-  if(ybin < (fFirstYbin-0.5) || ybin > (fLastYbin+0.5))
+  if(ybin < (fFirstYbin-1.5) || ybin > (fLastYbin+1.5))
     {
       LOG(AliL3Log::kError,"AliL3Histogram::GetBinCenterY","ybin")
 	<<"Bin-value out of range "<<ybin<<ENDLOG;
