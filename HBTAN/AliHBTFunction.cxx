@@ -59,7 +59,7 @@ AliHBTFunction::~AliHBTFunction()
 }
 /******************************************************************/
 
-void AliHBTFunction::Write()
+void AliHBTFunction::WriteFunction()
 {
 //writes result of the function to file
    if (GetNumerator()) GetNumerator()->Write();
@@ -162,7 +162,7 @@ void AliHBTFunction::Rename(const Char_t * name, const Char_t * title)
  }
 /******************************************************************/
 
-void AliHBTFunction::Init()
+void AliHBTFunction::InitFunction()
 {
 //Iniotializes fctn.: Resets histograms
 //In case histograms are not created in ctor, builds with default parameters

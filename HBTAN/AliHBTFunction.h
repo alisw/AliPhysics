@@ -48,8 +48,8 @@ class AliHBTFunction: public TNamed
     virtual TH1* GetDenominator() const = 0;
     virtual TH1* GetResult() = 0;
 
-    virtual void Write();
-    virtual void Init();
+    virtual void WriteFunction();
+    virtual void InitFunction();
     
     TH1* GetRatio(Double_t normfactor = 1.0);
     void Rename(const Char_t * name); //renames the function and histograms ==title is the same that name
@@ -411,8 +411,8 @@ class AliHBTOnePairFctn1D: public AliHBTOnePairFctn, public AliHBTFunction1D
 
   void ProcessSameEventParticles(AliHBTPair* pair);
   void ProcessDiffEventParticles(AliHBTPair* pair);
-  void Write(){AliHBTFunction::Write();}
-  void Init(){AliHBTFunction::Init();}
+  void Write(){WriteFunction();}
+  void Init(){InitFunction();}
  protected:
   //retruns velue to be histogrammed
   virtual Double_t GetValue(AliHBTPair* pair) = 0; 
@@ -453,8 +453,8 @@ class AliHBTOnePairFctn2D: public AliHBTOnePairFctn, public AliHBTFunction2D
   
   void ProcessSameEventParticles(AliHBTPair* pair);
   void ProcessDiffEventParticles(AliHBTPair* pair);
-  void Write(){AliHBTFunction::Write();}
-  void Init(){AliHBTFunction::Init();}
+  void Write(){WriteFunction();}
+  void Init(){InitFunction();}
  protected:
   virtual void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y) = 0;
   ClassDef(AliHBTOnePairFctn2D,2)
@@ -496,8 +496,8 @@ class AliHBTOnePairFctn3D: public AliHBTOnePairFctn, public AliHBTFunction3D
 
   void ProcessSameEventParticles(AliHBTPair* pair);
   void ProcessDiffEventParticles(AliHBTPair* pair);
-  void Write(){AliHBTFunction::Write();}
-  void Init(){AliHBTFunction::Init();}
+  void Write(){WriteFunction();}
+  void Init(){InitFunction();}
  protected:
   virtual void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y, Double_t& z) = 0;
  ClassDef(AliHBTOnePairFctn3D,2)
@@ -532,8 +532,9 @@ class AliHBTTwoPairFctn1D: public AliHBTTwoPairFctn, public AliHBTFunction1D
 
   void ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   void ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
-  void Write(){AliHBTFunction::Write();}
-  void Init(){AliHBTFunction::Init();}
+  void Write(){WriteFunction();}
+  void Init(){InitFunction();}
+  
  protected:
   virtual Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* partpair) = 0;
 
@@ -575,8 +576,8 @@ class AliHBTTwoPairFctn2D: public AliHBTTwoPairFctn, public AliHBTFunction2D
   
   void ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   void ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
-  void Write(){AliHBTFunction::Write();}
-  void Init(){AliHBTFunction::Init();}
+  void Write(){WriteFunction();}
+  void Init(){InitFunction();}
 
  protected:
   virtual void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y) = 0;
@@ -621,8 +622,8 @@ class AliHBTTwoPairFctn3D: public AliHBTTwoPairFctn, public AliHBTFunction3D
 
   void ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   void ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
-  void Write(){AliHBTFunction::Write();}
-  void Init(){AliHBTFunction::Init();}
+  void Write(){WriteFunction();}
+  void Init(){InitFunction();}
 
  protected:
   virtual void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y, Double_t& z) = 0;
