@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.58  2002/10/21 09:01:33  alibrary
+Getting rid of unused variable
+
 Revision 1.57  2002/10/14 14:57:29  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -266,7 +269,6 @@ Log message added
 #include "AliMUONTriggerDecision.h"
 #include "AliRun.h"
 #include "AliHeader.h"
-#include "AliMC.h"
 #include "AliMUONClusterInput.h"
 #include "AliMUONMerger.h"	
 #include "Riostream.h"

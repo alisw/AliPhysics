@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.5  2002/10/23 07:24:57  alibrary
+Introducing Riostream.h
+
 Revision 1.4  2001/01/26 20:00:53  hristov
 Major upgrade of AliRoot code
 
@@ -69,7 +72,6 @@ Both read digits from raw data or use the Monte-Carlo.
 #include "TTUBE.h"
 #include "AliMUONClusterFinder.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "Riostream.h"
 #include "AliCallf77.h" 
 #include "AliConst.h"
@@ -311,7 +313,6 @@ void AliMUONproto::Init()
    
    //
    // Set the chamber (sensitive region) GEANT identifier
-   AliMC* gMC = AliMC::GetMC(); 
    ((AliMUONChamber*)(*fChambers)[0])->SetGid(gMC->VolId("C01G"));
 
    printf("\n\n\n Finished Init for Prototype ALICE2 - CPC chamber type\n\n\n");

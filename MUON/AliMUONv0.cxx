@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2002/10/23 07:24:57  alibrary
+Introducing Riostream.h
+
 Revision 1.22  2002/10/14 14:57:29  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -97,7 +100,6 @@ Gammas and neutrons are also scored in the stepmanager
 #include "AliMUONv0.h"
 #include "AliMUONChamber.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliMagF.h"
 #include "AliMUONHit.h"
 #include "AliMUONPadHit.h"

@@ -29,7 +29,7 @@
 #include "AliDecayer.h"
 
 TFluka::TFluka(const char* name, const char* title)
-  : AliMC(name, title)
+  : TVirtualMC(name, title)
 {
   // create geometry manager
   fGeometryManager = new TG4GeometryManager();
@@ -478,7 +478,7 @@ void  TFluka::GetSecondary(Int_t isec, Int_t& particleId,
   TG4Globals:: Warning("TFluka::GetSecondary(..) is not implemented."); 
 } 
 
-AliMCProcess TFluka::ProdProcess(Int_t isec) const 
+TMCProcess TFluka::ProdProcess(Int_t isec) const 
 { 
   TG4Globals:: Warning("TFluka::ProdProcess(..) is not implemented."); 
   return kPNoProcess; 

@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.28  2002/11/20 14:13:16  morsch
+- FindChargedJets() added.
+- Destructor corrected.
+- Geometry cuts taken from AliEMCALGeometry.
+
 Revision 1.27  2002/11/15 17:39:10  morsch
 GetPythiaParticleName removed.
 
@@ -140,7 +145,6 @@ Revision 1.3  2002/01/18 05:07:56  morsch
 #include "AliEMCAL.h"
 #include "AliHeader.h"
 #include "AliPDG.h"
-#include "AliMC.h"
 
 // Interface to FORTRAN
 #include "Ecommon.h"

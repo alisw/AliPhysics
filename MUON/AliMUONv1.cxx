@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.37  2002/10/23 07:24:57  alibrary
+Introducing Riostream.h
+
 Revision 1.36  2002/10/14 14:57:29  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -174,7 +177,6 @@ Log messages included.
 
 #include "AliMUONv1.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliMagF.h"
 #include "AliCallf77.h"
 #include "AliConst.h" 
@@ -2039,7 +2041,6 @@ void AliMUONv1::Init()
    
    //
    // Set the chamber (sensitive region) GEANT identifier
-   AliMC* gMC = AliMC::GetMC(); 
    ((AliMUONChamber*)(*fChambers)[0])->SetGid(gMC->VolId("S01G"));
    ((AliMUONChamber*)(*fChambers)[1])->SetGid(gMC->VolId("S02G"));
 
