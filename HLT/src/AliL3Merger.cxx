@@ -1,3 +1,5 @@
+//$Id$
+
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy Uli 
 
@@ -189,14 +191,17 @@ AliL3Track * AliL3Merger::MultiMerge(AliL3TrackArray *mergedtracks,AliL3Track **
   }
   AliL3Track *tpf=tracks[0];
   AliL3Track *tpl=tracks[ntrack-1];
-
+  AliL3Track *best = tpf;
+  if(tpf->GetNHits()<tpl->GetNHits() && Is2Global())
+    best = tpl;//Best means = most points and therefore best fit (in global case)
+  
   newtrack->SetNHits(nps);
   newtrack->SetHits(nps,nn);
   newtrack->SetFirstPoint(tpf->GetFirstPointX(),tpf->GetFirstPointY(),tpf->GetFirstPointZ());
   newtrack->SetLastPoint(tpl->GetLastPointX(),tpl->GetLastPointY(),tpl->GetLastPointZ());
-  newtrack->SetPt(tpf->GetPt());
-  newtrack->SetPsi(tpf->GetPsi());
-  newtrack->SetTgl(tpf->GetTgl());
+  newtrack->SetPt(best->GetPt());
+  newtrack->SetPsi(best->GetPsi());
+  newtrack->SetTgl(best->GetTgl());
   newtrack->SetCharge(tpf->GetCharge());
   return newtrack;
 }
@@ -311,7 +316,7 @@ Double_t AliL3Merger::TrackDiff(AliL3Track *innertrack,AliL3Track *outertrack){
   SortGlobalTracks(tracks,2);
   innertrack = tracks[0]; 
   outertrack = tracks[1];
-
+  
   x[0] = innertrack->GetFirstPointX();
   x[1] = innertrack->GetLastPointX();
   x[2] = outertrack->GetFirstPointX();
@@ -327,22 +332,22 @@ Double_t AliL3Merger::TrackDiff(AliL3Track *innertrack,AliL3Track *outertrack){
   z[2] = outertrack->GetFirstPointZ();
   z[3] = outertrack->GetLastPointZ();
 
-
+  
   outertrack->CalculatePoint(x[0]);
   if(!outertrack->IsPoint()) return diff;
   dy[0] = fabs(y[0] - outertrack->GetPointY());
   dz[0] = fabs(z[0] - outertrack->GetPointZ());
-
+  
   outertrack->CalculatePoint(x[1]);
   if(!outertrack->IsPoint()) return diff;
   dy[1] = fabs(y[1] - outertrack->GetPointY());
   dz[1] = fabs(z[1] - outertrack->GetPointZ());
-
+  
   innertrack->CalculatePoint(x[2]);
   if(!innertrack->IsPoint()) return diff;
   dy[2] = fabs(y[2] - innertrack->GetPointY());
   dz[2] = fabs(z[2] - innertrack->GetPointZ());
-
+  
   innertrack->CalculatePoint(x[3]);
   if(!innertrack->IsPoint()) return diff;
   dy[3] = fabs(y[3] - innertrack->GetPointY());
