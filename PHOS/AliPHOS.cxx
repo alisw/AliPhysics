@@ -30,6 +30,8 @@ class TFile;
 #include <TFolder.h> 
 #include <TTree.h>
 #include <TVirtualMC.h> 
+#include <TH1F.h> 
+#include <TF1.h> 
 #include <TRandom.h> 
 
 // --- Standard library ---
@@ -46,31 +48,33 @@ class TFile;
 
 ClassImp(AliPHOS)
 //____________________________________________________________________________
-AliPHOS:: AliPHOS() : AliDetector()
+  AliPHOS:: AliPHOS() : AliDetector()
 {
   // Default ctor
-  fName="PHOS";
+  fName   = "PHOS" ;
   fQATask = 0;
   fTreeQA = 0;
   fDebug  = 0; 
-  fRan    = new TRandom(123456) ; 
 }
 
 //____________________________________________________________________________
-AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name, title) 
+AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name, title)
 {
   //   ctor : title is used to identify the layout
   
-  fQATask = 0;
-  fTreeQA = 0;
-  fDebug  = 0; 
-  fRan    = new TRandom(123456) ; 
+  fQATask = 0 ; 
+  fTreeQA = 0 ;
+  fDebug  = 0 ; 
+  fTimeMax  = 1.28E-5 ; 
+  fTimePeak = 2.0E-6 ;
+  fTimeRes = 1.5E-6 ; 
+  fHighGainFactor = 40;
+  fHighGainOffset = 0x200 ; 
 }
 
 //____________________________________________________________________________
 AliPHOS::~AliPHOS() 
 {  
-  delete fRan ; 
 }
 
 //____________________________________________________________________________
@@ -409,19 +413,13 @@ void AliPHOS::Digits2Raw()
   }
 
   // some digitization constants
-  const Int_t    kDDLOffset = 0x600;
-  const Double_t kTimeMax = 1.28E-5;
-  const Int_t    kTimeBins = 256;
-  const Double_t kTimePeak = 2.0E-6;
-  const Double_t kTimeRes = 1.5E-6;
-  const Int_t    kThreshold = 3;
-  const Int_t    kHighGainFactor = 40;
-  const Int_t    kHighGainOffset = 0x200;
+  const Int_t    kDDLOffset = 0x600; // assigned to PHOS
+  const Int_t    kThreshold = 3; // skip digits below this threshold
 
   AliAltroBuffer* buffer = NULL;
   Int_t prevDDL = -1;
-  Int_t adcValuesLow[kTimeBins];
-  Int_t adcValuesHigh[kTimeBins];
+  Int_t adcValuesLow[fkTimeBins];
+  Int_t adcValuesHigh[fkTimeBins];
 
   // loop over digits (assume ordered digits)
   for (Int_t iDigit = 0; iDigit < digits->GetEntries(); iDigit++) {
@@ -460,58 +458,34 @@ void AliPHOS::Digits2Raw()
     }
 
     // out of time range signal (?)
-    if (digit->GetTime() > kTimeMax) {
+    if (digit->GetTimeR() > fTimeMax) {
       buffer->FillBuffer(digit->GetAmp());
-      buffer->FillBuffer(kTimeBins);  // time bin
+      buffer->FillBuffer(fkTimeBins);  // time bin
       buffer->FillBuffer(3);          // bunch length
       buffer->WriteTrailer(3, relId[3], relId[2], module);  // trailer
       
     // simulate linear rise and gaussian decay of signal
     } else {
-      Bool_t highGain = kFALSE;
-
-      // fill time bin values :
-      // 1. the signal starts at the time given by the digit
-      // 2. the rise is linear and the maximum is reached kTimePeak after start
-      // 3. the decay is gaussian with a sigma of kTimeRes
-      // 4. the signal is binned into kTimeBins bins 
-      for (Int_t iTime = 0; iTime < kTimeBins; iTime++) {
-	Double_t time = iTime * kTimeMax/kTimeBins;
-	Int_t signal = 0;
-	if (time < digit->GetTime() + kTimePeak) {	// signal is rising
-	  signal = static_cast<Int_t>(fRan->Rndm() + digit->GetAmp() * 
-			 (time - digit->GetTime()) / kTimePeak);
-	} else {                                        // signal is decaying
-	  signal = static_cast<Int_t>(fRan->Rndm() + digit->GetAmp() * 
-                 TMath::Gaus(time, digit->GetTime() + kTimePeak, kTimeRes));
-	}
-	if (signal < 0) 
-	  signal = 0;
-	adcValuesLow[iTime] = signal;
-	if (signal > 0x3FF) // larger than 10 bits 
-	  adcValuesLow[iTime] = 0x3FF;
-	adcValuesHigh[iTime] = signal / kHighGainFactor;
-	if (adcValuesHigh[iTime] > 0) 
-	  highGain = kTRUE;
-      }
-
+      Bool_t highGain = RawSampledResponse(digit->GetTimeR(), digit->GetAmp(), adcValuesHigh, adcValuesLow) ; 
+      
+      
       // write low and eventually high gain channel
       buffer->WriteChannel(relId[3], relId[2], module, 
-			   kTimeBins, adcValuesLow, kThreshold);
+			   fkTimeBins, adcValuesLow, kThreshold);
       if (highGain) {
-	buffer->WriteChannel(relId[3], relId[2], module + kHighGainOffset, 
-			     kTimeBins, adcValuesHigh, 1);
+	buffer->WriteChannel(relId[3], relId[2], module + fHighGainOffset, 
+			     fkTimeBins, adcValuesHigh, 1);
       }
     }
   }
-
+  
   // write real header and close last file
   if (buffer) {
     buffer->Flush();
     buffer->WriteDataHeader(kFALSE, kFALSE);
     delete buffer;
   }
-
+  
   gime->PhosLoader()->UnloadDigits();
 }
 
@@ -533,6 +507,56 @@ AliLoader* AliPHOS::MakeLoader(const char* topfoldername)
 // --> to be discussed and made eventually coherent
  fLoader = new AliPHOSLoader(GetName(),topfoldername);
  return fLoader;
+}
+
+//__________________________________________________________________
+Double_t AliPHOS::RawResponseFunction(Double_t *x, Double_t *par)
+{
+  // Shape of the electronics raw reponse:
+  // 1. the signal rises linearly from par[4] to par[1] to reach the maximu par[3]
+  // 2. the signal decays with a gaussian shape for par[4]+par[1] with a sigma of par[2]
+  
+  Float_t xx = x[0] ; 
+ 
+  Double_t signal = 0. ; 
+  
+  if (xx < par[4] + par[1]) 	// signal is rising
+    signal = (gRandom->Rndm() + par[3]) * (xx - par[4]) / (par[1] - par[4]) ; 
+  else                                         // signal is decaying
+    signal = (gRandom->Rndm() + par[3]) * TMath::Gaus(xx, par[4] + par[1], par[2]) ;
+  
+  return signal < 0. ? 0. : signal ; 
+}
+
+//__________________________________________________________________
+Bool_t AliPHOS::RawSampledResponse(const Float_t dtime, const Int_t damp, Int_t * adcH, Int_t * adcL) const 
+{
+  // for a start time dtime and an amplitude damp given by digit, 
+  // calculates the raw sampled response
+
+  const Int_t kRawSignalOverflow = 0x3FF ; 
+  Bool_t highGain = kFALSE ; 
+
+  TF1 f1("signal", RawResponseFunction, 0, fkTimeBins, 5);
+
+  f1.SetParNames("Time Max", "Peaking time", "Decay width", "Amp max", "Start time") ; 
+  f1.SetParameter(0, fTimeMax) ; 
+  f1.SetParameter(1, fTimePeak) ; 
+  f1.SetParameter(2, fTimeRes) ; 
+  f1.SetParameter(3, damp) ; 
+  f1.SetParameter(4, dtime) ; 
+
+  for (Int_t iTime = 0; iTime < fkTimeBins; iTime++) {
+    Double_t time = iTime * fTimeMax/fkTimeBins;
+    Double_t signal = f1.Eval(time) ;     
+    adcL[iTime] =  static_cast<Int_t>(signal + 0.5) ;
+    if ( adcL[iTime] > kRawSignalOverflow)  // larger than 10 bits 
+      adcL[iTime] = kRawSignalOverflow ;
+    adcH[iTime] = static_cast<Int_t>(0.5 + (signal / fHighGainFactor)) ;
+    if (adcH[iTime] > 0) 
+      highGain = kTRUE;  
+  }
+  return highGain ; 
 }
 
 //____________________________________________________________________________

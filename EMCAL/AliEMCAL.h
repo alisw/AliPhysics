@@ -45,21 +45,32 @@ class AliEMCAL : public AliDetector {
   {return AliEMCALGeometry::GetInstance(GetTitle(),"") ;  }   
   virtual void    Hits2SDigits();
   virtual Int_t   IsVersion(void) const = 0 ;   
+  Int_t GetRawFormatHighGainFactor() const { return fHighGainFactor ; }  
+  Int_t GetRawFormatHighGainOffset() const { return fHighGainOffset ; }  
+  Int_t GetRawFormatTimeBins() const { return fkTimeBins ; }    
+  Double_t GetRawFormatTimeMax() const { return fTimeMax ; }   
+  Double_t GetRawFormatTimePeak() const { return fTimePeak ; }    
+  Double_t GetRawFormatTimeRes() const { return fTimeRes ; }   
   virtual AliLoader* MakeLoader(const char* topfoldername);
+  static Double_t  RawResponseFunction(Double_t *x, Double_t *par) ; 
   virtual void SetTreeAddress() ;              
   virtual const TString Version() const {return TString(" ") ; }   
   AliEMCAL & operator = (const AliEMCAL & /*rvalue*/)  {
     Fatal("operator =", "not implemented") ;  return *this ; }
  
-  
-
 protected:
 
-  //AliEMCALGeometry * fGeom ;   // the geometry object
+ Bool_t  RawSampledResponse(const Float_t dtime, const Int_t damp, Int_t * adcH, Int_t * adcL) const ; 
+
   Int_t fBirkC0;    // constants for Birk's Law implementation
   Double_t fBirkC1; // constants for Birk's Law implementation
   Double_t fBirkC2; // constants for Birk's Law implementation
-  TRandom * fRan ;             //! random number generator
+  Int_t    fHighGainFactor ;   // High gain attenuation factor of the raw RO signal
+  Int_t    fHighGainOffset ;   // offset added to the module id to distinguish high and low gain data
+  static const Int_t fkTimeBins = 256 ;     // number of sampling bins of the raw RO signal  
+  Double_t fTimeMax ;          // maximum sampled time of the raw RO signal
+  Double_t fTimePeak ;         // peaking time of the raw RO signal
+  Double_t fTimeRes ;          // decay rime width of the raw RO signal 
 
   ClassDef(AliEMCAL,7) // Electromagnetic calorimeter (base class)
 
