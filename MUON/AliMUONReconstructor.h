@@ -15,6 +15,9 @@ class AliMUONReconstructor: public AliReconstructor
     virtual ~AliMUONReconstructor();
 
     virtual void         Reconstruct(AliRunLoader* runLoader) const;
+    virtual void         Reconstruct(AliRunLoader* runLoader,
+				   AliRawReader* rawReader) const;
+
     virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
  
   ClassDef(AliMUONReconstructor, 0)   // class for the MUON reconstruction

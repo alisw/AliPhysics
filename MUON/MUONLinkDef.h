@@ -54,6 +54,7 @@
 #pragma link C++ class  AliMUONSubEventTracker+;
 #pragma link C++ class  AliMUONSubEventTrigger+;
 #pragma link C++ class  AliMUONRawData+;
+#pragma link C++ class  AliMUONRawStream+;
 #pragma link C++ class  AliMUONReconstructor+;
 #pragma link C++ class  AliMUONSegmentationSlatModule+;
 #pragma link C++ class  AliMUONSegmentationSlatModuleN+;

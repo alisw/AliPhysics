@@ -27,6 +27,7 @@
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliESD.h"
+#include "AliMUONReconstructor.h"
 
 #include "AliMUONData.h"
 #include "AliMUONEventReconstructor.h"
@@ -37,7 +38,7 @@
 #include "AliMUONTrackParam.h"
 #include "AliMUONTriggerTrack.h"
 #include "AliESDMuonTrack.h"
-#include "AliMUONReconstructor.h"
+#include "AliRawReader.h"
 
 ClassImp(AliMUONReconstructor)
 //_____________________________________________________________________________
@@ -136,6 +137,96 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
   delete recoEvent;
   delete trigDec;
 }
+
+//_____________________________________________________________________________
+void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* rawReader) const
+{
+//  AliLoader
+  AliLoader* loader = runLoader->GetLoader("MUONLoader");
+
+// used local container for each method
+// passing fLoader as argument, could be avoided ???
+  AliMUONEventReconstructor* recoEvent = new AliMUONEventReconstructor(loader);
+  AliMUONData* dataEvent = recoEvent->GetMUONData();
+
+  AliMUONClusterReconstructor* recoCluster = new AliMUONClusterReconstructor(loader);
+  AliMUONData* dataCluster = recoCluster->GetMUONData();
+
+  AliMUONTriggerDecision* trigDec = new AliMUONTriggerDecision(loader,0,dataCluster);
+  //  AliMUONData* dataTrig = trigDec->GetMUONData();
+
+
+  for (Int_t i = 0; i < 10; i++) {
+    AliMUONClusterFinderVS *recModel = new AliMUONClusterFinderVS();
+    recModel->SetGhostChi2Cut(10);
+    recoCluster->SetReconstructionModel(i,recModel);
+  } 
+
+  loader->LoadDigits("READ");
+  loader->LoadRecPoints("RECREATE");
+  loader->LoadTracks("RECREATE");
+  
+  //   Loop over events  
+ Int_t iEvent = 0;
+            
+ while (rawReader->NextEvent()) {
+    printf("Event %d\n",iEvent);
+    runLoader->GetEvent(iEvent++);
+
+    //----------------------- digit2cluster & Digits2Trigger -------------------
+    if (!loader->TreeR()) loader->MakeRecPointsContainer();
+     
+    // tracking branch
+    dataCluster->MakeBranch("RC");
+    dataCluster->SetTreeAddress("D,RC");
+    recoCluster->Digits2Clusters(rawReader); 
+    dataCluster->Fill("RC"); 
+
+    // trigger branch
+    dataCluster->MakeBranch("TC");
+    dataCluster->SetTreeAddress("TC");
+    trigDec->Trigger2Trigger(); 
+    dataCluster->Fill("TC");
+
+    loader->WriteRecPoints("OVERWRITE");
+
+    //---------------------------- Track & TriggerTrack ---------------------
+    if (!loader->TreeT()) loader->MakeTracksContainer();
+
+    // trigger branch
+    dataEvent->MakeBranch("RL"); //trigger track
+    dataEvent->SetTreeAddress("RL");
+    recoEvent->EventReconstructTrigger();
+    dataEvent->Fill("RL");
+
+    // tracking branch
+    dataEvent->MakeBranch("RT"); //track
+    dataEvent->SetTreeAddress("RT");
+    recoEvent->EventReconstruct();
+    dataEvent->Fill("RT");
+
+    loader->WriteTracks("OVERWRITE");  
+  
+    //--------------------------- Resetting branches -----------------------
+    dataCluster->ResetDigits();
+    dataCluster->ResetRawClusters();
+    dataCluster->ResetTrigger();
+
+    dataEvent->ResetRawClusters();
+    dataEvent->ResetTrigger();
+    dataEvent->ResetRecTracks();
+    dataEvent->ResetRecTriggerTracks();
+  
+  }
+  loader->UnloadDigits();
+  loader->UnloadRecPoints();
+  loader->UnloadTracks();
+
+  delete recoCluster;
+  delete recoEvent;
+  delete trigDec;
+}
+
 //_____________________________________________________________________________
 void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
 {

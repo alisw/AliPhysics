@@ -18,7 +18,7 @@ class AliMUONChamber;
 class AliMUONRawCluster;
 class AliMUONClusterFinderVS;
 class AliMUONData;
-
+class AliRawReader;
 
 class AliMUONClusterReconstructor : public TObject 
 {
@@ -31,6 +31,7 @@ class AliMUONClusterReconstructor : public TObject
     
   // Cluster Finding & Trigger
   virtual void   Digits2Clusters();
+  virtual void   Digits2Clusters(AliRawReader* rawReader);
 
 
   // void EventDump(void);  // dump reconstructed event

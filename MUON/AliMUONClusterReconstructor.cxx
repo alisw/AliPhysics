@@ -17,22 +17,16 @@
 
 ////////////////////////////////////
 //
-// MUON event reconstructor in ALICE
+// MUON cluster reconstructor for MUON
 //
-// This class contains as data:
-// * the parameters for the event reconstruction
-// * a pointer to the array of hits to be reconstructed (the event)
-// * a pointer to the array of segments made with these hits inside each station
-// * a pointer to the array of reconstructed tracks
-//
-// It contains as methods, among others:
-// * MakeEventToBeReconstructed to build the array of hits to be reconstructed
-// * MakeSegments to build the segments
-// * MakeTracks to build the tracks
-//
+// Should implement a virtual class ClusterFinder to chose between VS and AZ method
 ////////////////////////////////////
 
 #include "AliMUONClusterReconstructor.h"
+#include "AliRun.h" // for gAlice
+#include "AliRunLoader.h"
+#include "AliLoader.h"
+
 #include "AliMUON.h"
 #include "AliMUONDigit.h"
 #include "AliMUONConstants.h"
@@ -40,9 +34,8 @@
 #include "AliMUONClusterFinderVS.h"
 #include "AliMUONClusterInput.h"
 #include "AliMUONRawCluster.h"
-#include "AliRun.h" // for gAlice
-#include "AliRunLoader.h"
-#include "AliLoader.h"
+#include "AliRawReader.h" // for raw data
+
 
 const Int_t AliMUONClusterReconstructor::fgkDefaultPrintLevel = 0;
 
@@ -204,4 +197,13 @@ void AliMUONClusterReconstructor::Digits2Clusters()
     } // for ich
     delete dig1;
     delete dig2;
+}
+
+//____________________________________________________________________
+void AliMUONClusterReconstructor::Digits2Clusters(AliRawReader* /*rawReader*/)
+{
+
+//  Perform cluster finding form raw data
+
+   Fatal("Digits2Clusters","clusterization not implemented for raw data input");
 }
