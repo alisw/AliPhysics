@@ -48,8 +48,11 @@
 #pragma link C++ class AliH2F+;
 
 #pragma link C++ class AliTPCTrackHits+;
+#pragma link C++ class AliTPCTrackHitsV2+;
+
 #pragma link C++ class AliTrackHitsInfo+;
 #pragma link C++ class AliTrackHitsParam+;
+#pragma link C++ class AliTrackHitsParamV2+;
 #pragma link C++ class AliHitInfo+;
 
 
