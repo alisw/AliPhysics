@@ -9,7 +9,10 @@
 #include <Riostream.h>
 #include <Riostream.h>
 #include <TObject.h>
-#include <TObjArray.h>
+
+class TObjArray;
+class TArrayI;
+class TArrayF;
 
 //______________________________________________________________________
 class AliITSdigit: public TObject  {
@@ -71,6 +74,8 @@ class AliITSdigitSPD: public AliITSdigit {
     virtual Int_t GetTrack(Int_t i) const {return fTracks[i];}
     // returns hit number kept in the array element i of fHits 
     virtual Int_t GetHit(Int_t i) const {return fHits[i];}
+    // returns TArrayI of unduplicated track numbers (summed over hits).
+    virtual Int_t GetListOfTracks(TArrayI &t);
     //copy the array trks[fkSspd] into fTracks
     virtual void SetTracks(const Int_t *trks){
 	for(Int_t i=0;i<fkSspd;i++) fTracks[i]=trks[i];}
@@ -121,6 +126,10 @@ class AliITSdigitSDD: public AliITSdigit {
     virtual Int_t GetTrack(Int_t i) const {return fTracks[i];}
     // returns hit number kept in the array element i of fHits 
     virtual Int_t GetHit(Int_t i) const {return fHits[i];}
+    // Return charge deposited by this track/hit
+    virtual Float_t GetCharge(Int_t i){return fTcharges[i];}
+    // returns TArrayI of unduplicated track numbers (summed over hits).
+    virtual Int_t GetListOfTracks(TArrayI &t,TArrayF &c);
     //copy the array trks[fkSsdd] into fTracks
     virtual void SetTracks(const Int_t *trks){
 	for(Int_t i=0;i<fkSsdd;i++) fTracks[i]=trks[i];}
@@ -206,6 +215,8 @@ class AliITSdigitSSD: public AliITSdigit {
     virtual Int_t GetTrack(Int_t i) const {return fTracks[i];}
     // returns hit number kept in the array element i of fHits 
     virtual Int_t GetHit(Int_t i) const {return fHits[i];}
+    // returns TArrayI of unduplicated track numbers (summed over hits).
+    virtual Int_t GetListOfTracks(TArrayI &t);
     //copy the array trks[fkSssd] into fTracks
     virtual void SetTracks(const Int_t *trks){
 	for(Int_t i=0;i<fkSssd;i++) fTracks[i]=trks[i];}

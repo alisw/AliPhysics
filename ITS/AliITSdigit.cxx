@@ -17,6 +17,10 @@
 ////////////////////////////////////////////////
 //  Digits classes for all ITS detectors      //
 ////////////////////////////////////////////////
+#include <TObjArray.h>
+#include <TArrayI.h>
+#include <TArrayF.h>
+#include <TMath.h>
 #include "AliITSdigit.h"
 
 //______________________________________________________________________
@@ -92,6 +96,37 @@ AliITSdigitSPD::AliITSdigitSPD(const Int_t *digits,const Int_t *tracks,
     fSignalSPD    = digits[2];
 }
 //______________________________________________________________________
+Int_t AliITSdigitSPD::GetListOfTracks(TArrayI &t){
+    // Fills the TArrayI t with the tracks found in fTracks removing
+    // duplicated tracks, but otherwise in the same order. It will return
+    // the number of tracks and fill the remaining elements to the array
+    // t with -1.
+    // Inputs:
+    //   TArrayI  &t Reference to a TArrayI to contain the list of
+    //               nonduplicated track numbers.
+    // Output:
+    //   TArrayI  &t The input array filled with the nonduplicated track
+    //               numbers.
+    // Return:
+    //   Int_t The number of none -1 entries in the TArrayI t.
+    Int_t nt = t.GetSize();
+    Int_t nth = this->GetNTracks();
+    Int_t n = 0,i,j;
+    Bool_t inlist = kFALSE;
+
+    t.Reset(-1); // -1 array.
+    for(i=0;i<nth;i++) {
+	if(this->GetTrack(i) == -1) continue;
+	inlist = kFALSE;
+	for(j=0;j<n;j++)if(this->GetTrack(i) == t.At(j)) inlist = kTRUE;
+	if(!inlist){ // add to end of list
+	    t.AddAt(this->GetTrack(i),n);
+	    if(n<nt) n++;
+	} // end if
+    } // end for i
+    return n;
+}
+//______________________________________________________________________
 void AliITSdigitSPD::Print(ostream *os){
     //Standard output format for this class
     Int_t i;
@@ -158,6 +193,69 @@ AliITSdigitSDD::AliITSdigitSDD(Float_t phys,const Int_t *digits,
 	fTracks[i]   = tracks[i];
 	fHits[i]     = hits[i];
     } // end for i
+}
+//______________________________________________________________________
+Int_t AliITSdigitSDD::GetListOfTracks(TArrayI &t,TArrayF &c){
+    // Fills the TArrayI t with the tracks found in fTracks removing
+    // duplicated tracks, summing up their charge, and ordering the tracks
+    // by the charge contributed to this digit. It will return
+    // the number of tracks and fill the remaining elements to the array
+    // t with -1.
+    // Inputs:
+    //   TArrayI  &t Reference to a TArrayI to contain the list of
+    //               nonduplicated track numbers.
+    //   TArrayF  &c Reference to a TArrayF to contain the summed charge
+    //               contributed by each track.
+    // Output:
+    //   TArrayI  &t The input array filled with the nonduplicated track
+    //               numbers.
+    //   TArrayF  &c The input array filled with the summed charge 
+    //               contributed by the corresponding track in the array t.
+    // Return:
+    //   Int_t The number of none -1 entries in the TArrayI t.
+    Int_t nt = t.GetSize();
+    nt = TMath::Min(nt,c.GetSize());
+    Int_t nth = this->GetNTracks();
+    Int_t n = 0,i,j;
+    Bool_t inlist = kFALSE;
+
+    t.Reset(-1); // -1 array.
+    c.Reset(0.0); // zero array.
+    for(i=0;i<nth;i++) {
+	if(this->GetTrack(i) == -1) continue;
+	inlist = kFALSE;
+	for(j=0;j<n;j++)if(this->GetTrack(i) == t.At(j)){
+	    inlist = kTRUE;
+	    c.AddAt(this->GetCharge(i)+c.At(j),j);
+	} // end for j/end if
+	if(!inlist){ // add to end of list
+	    t.AddAt(this->GetTrack(i),n);
+	    c.AddAt(this->GetCharge(i),n);
+	    if(n<nt) n++;
+	} // end if
+    } // end for i
+
+    // Now lets sort the TArrays according to the charge. This algorithm
+    // is based on the method from Chapter 8 section 1 Straight Insertion
+    // sort. Wiliam H. Press, Saul A. Teukolsky, William T. Vetterling
+    // and Brian P. Flannery, "Numerical Recipeis in C, The Art of Scientific
+    // Computing", second Edition page 330 (1997).
+    Int_t   tr;
+    Float_t ch;
+    for(i=0;i<n;i++){
+	tr = t.At(i);
+	ch = c.At(i);
+	j = i-1;
+	while(j>-1 && c.At(j)>ch){
+	    t.AddAt(t.At(j+1),j);
+	    c.AddAt(c.At(j+1),j);
+	    j--;
+	} // end while
+	t.AddAt(tr,j+1);
+	c.AddAt(ch,j+1);
+    } // end for i
+    //
+    return n;
 }
 //______________________________________________________________________
 void AliITSdigitSDD::Print(ostream *os){
@@ -266,6 +364,37 @@ AliITSdigitSSD::AliITSdigitSSD(const Int_t *digits,const Int_t *tracks,
 	fTracks[i] = tracks[i];
 	fHits[i]   = hits[i];
     } // end for i
+}
+//______________________________________________________________________
+Int_t AliITSdigitSSD::GetListOfTracks(TArrayI &t){
+    // Fills the TArrayI t with the tracks found in fTracks removing
+    // duplicated tracks, but otherwise in the same order. It will return
+    // the number of tracks and fill the remaining elements to the array
+    // t with -1.
+    // Inputs:
+    //   TArrayI  &t Reference to a TArrayI to contain the list of
+    //               nonduplicated track numbers.
+    // Output:
+    //   TArrayI  &t The input array filled with the nonduplicated track
+    //               numbers.
+    // Return:
+    //   Int_t The number of none -1 entries in the TArrayI t.
+    Int_t nt = t.GetSize();
+    Int_t nth = this->GetNTracks();
+    Int_t n = 0,i,j;
+    Bool_t inlist = kFALSE;
+
+    t.Reset(-1); // -1 array.
+    for(i=0;i<nth;i++) {
+	if(this->GetTrack(i) == -1) continue;
+	inlist = kFALSE;
+	for(j=0;j<n;j++)if(this->GetTrack(i) == t.At(j)) inlist = kTRUE;
+	if(!inlist){ // add to end of list
+	    t.AddAt(this->GetTrack(i),n);
+	    if(n<nt) n++;
+	} // end if
+    } // end for i
+    return n;
 }
 //______________________________________________________________________
 void AliITSdigitSSD::Print(ostream *os){
