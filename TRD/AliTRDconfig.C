@@ -48,18 +48,36 @@ void Config()
   // ************* STEERING parameters FOR ALICE SIMULATION **************
   // --- Specify event type to be tracked through the ALICE setup
   // --- All positions are in cm, angles in degrees, and P and E in GeV
-  //AliGenHIJINGpara *gener = new AliGenHIJINGpara(250);
-  AliGenBox *gener = new AliGenBox(100);
-  gener->SetMomentumRange(1.0,3.0);
-  gener->SetPhiRange(80.0,100.0);
-  gener->SetThetaRange(70.0,110.0);
-  gener->SetPart(11);             // Only electrons 
-  gener->SetOrigin(0,0,0);        // Vertex position
-  gener->SetSigma(0,0,0);         // Sigma in (X,Y,Z) (cm) on IP position
+
+  AliGenCocktail *gener = new AliGenCocktail();
+
+  AliGenBox *genEl = new AliGenBox(100);
+  genEl->SetOrigin(0,0,0);        // Vertex position
+  genEl->SetSigma(0,0,0);         // Sigma in (X,Y,Z) (cm) on IP position
+  genEl->SetPart(11);             // Only electrons 
+
+  AliGenBox *genPi = new AliGenBox(100);
+  genPi->SetOrigin(0,0,0);        // Vertex position
+  genPi->SetSigma(0,0,0);         // Sigma in (X,Y,Z) (cm) on IP position
+  genPi->SetPart(-211);           // Only pions 
+
+  gener->AddGenerator(genEl,"Electrons",1);
+  gener->AddGenerator(genPi,"Pions"    ,1);
+
+  AliGenerator *gg = gener->FirstGenerator()->Generator();
+  gg->SetMomentumRange(1.0,3.0);
+  gg->SetPhiRange(75.0,95.0);
+  gg->SetThetaRange(70.0,110.0);
+  gg = gener->NextGenerator()->Generator();
+  gg->SetMomentumRange(2.5,3.0);
+  gg->SetPhiRange(75.0,95.0);
+  gg->SetThetaRange(70.0,110.0);
+
   gener->Init();
 
-  //Specify maximum magnetic field in Tesla (neg. ==> default field)
-  gAlice->SetField(-999,2);    
+  // Specify maximum magnetic field in Tesla (neg. ==> default field)
+  // 0.4 T
+  gAlice->SetField(-999,2,2.0);    
 
   Int_t iMAG   = 1;
   Int_t iITS   = 1;
@@ -171,6 +189,12 @@ void Config()
     TRD->SetSensChamber(2);
     TRD->SetSensSector(13);
   
+    // Get the pointer to the geometry object
+    AliTRDgeometry *TRDgeometry = TRD->GetGeometry();
+
+    // The number of timebins
+    TRDgeometry->SetNTimeBin(15);
+
     // Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 90% Xe + 10% CO2)
     TRD->SetGasMix(1);
 

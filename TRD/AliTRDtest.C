@@ -33,6 +33,18 @@ Int_t AliTRDtest()
   gROOT->LoadMacro("$(ALICE_ROOT)/TRD/AliTRDanalyzeDigits.C");
   if (rc = AliTRDanalyzeDigits()) return rc;
 
+  // Create the cluster
+  gROOT->LoadMacro("$(ALICE_ROOT)/TRD/AliTRDcreateCluster.C");
+  if (rc = AliTRDcreateCluster()) return rc;
+
+  if (gAlice) delete gAlice;
+  TFile *file = (TFile *) gROOT->GetListOfFiles()->FindObject("TRD_test.root");
+  gAlice = (AliRun *) file->Get("gAlice");
+
+  // Analyze the digits
+  gROOT->LoadMacro("$(ALICE_ROOT)/TRD/AliTRDanalyzeCluster.C");
+  if (rc = AliTRDanalyzeCluster()) return rc;
+
   return rc;
 
 }

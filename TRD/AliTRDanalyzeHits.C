@@ -67,10 +67,12 @@ Int_t AliTRDanalyzeHits()
       Float_t z = hit->Z();
       Float_t q = hit->GetCharge();
 
-      if (q > 0) 
+      if      (q > 0) { 
         hQdedx->Fill(q);
-      else
+      }
+      else if (q < 0) {
         hQtr->Fill(TMath::Abs(q));
+      }
 
       hZY->Fill(z,y);
       hXZ->Fill(x,z);

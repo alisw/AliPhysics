@@ -16,8 +16,13 @@ Int_t AliTRDcreateDigits()
   // Create the TRD digitzer 
   AliTRDdigitizer *Digitizer = new AliTRDdigitizer("digitizer","Digitizer class");
 
-  // Set the parameter
-  Digitizer->SetDiffusion();
+  // Set the parameter  
+  Digitizer->SetGasGain(3300.);
+  Digitizer->SetChipGain(8.0);
+  Digitizer->SetNoise(1000.);
+  Digitizer->SetADCinRange(1000.);
+  Digitizer->SetADCoutRange(1023.);
+  Digitizer->SetADCthreshold(0);
   Digitizer->SetVerbose(1);
 
   // Create the digits
