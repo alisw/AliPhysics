@@ -1508,7 +1508,7 @@ Int_t AliMDC::Run()
       if (rawdb->FileFull()) {
 
          printf("Written raw DB at a rate of %.1f MB/s\n",
-                Float_t(fMaxFileSize / timer.RealTime() / 1000000.));
+                rawdb->GetBytesWritten() / timer.RealTime() / 1000000.);
 
          // Write stats object to raw db, run db and MySQL
          stats->WriteToDB(rawdb);
@@ -1545,7 +1545,7 @@ Int_t AliMDC::Run()
    }
 
    printf("Written raw DB at a rate of %.1f MB/s\n",
-          Float_t(fMaxFileSize / timer.RealTime() / 1000000.));
+          rawdb->GetBytesWritten() / timer.RealTime() / 1000000.);
 
    // Write stats to raw db and run db and delete stats object
    stats->WriteToDB(rawdb);
