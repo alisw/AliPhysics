@@ -80,7 +80,6 @@ class AliFastGlauber : public TObject {
     Float_t GetSigmaHard()       const {return fSigmaHard;}
     Float_t GetSigmaNN()         const {return fSigmaNN;}
     Int_t GetA()                 const {return fA;}
-    Int_t GetEllDef()            const {return fEllDef;}
     const TString* GetFileName() const {return &fName;}
     Float_t GetBmin() const {return fBmin;}
     Float_t GetBmax() const {return fBmax;}
@@ -117,6 +116,7 @@ class AliFastGlauber : public TObject {
     void StoreAlmonds()   const;
 
     void SetLengthDefinition(Int_t def=1) {fEllDef=def;}
+    Int_t GetLengthDef() const {return fEllDef;}
     void SetCentralityClass(Double_t xsecFrLow=0.0,Double_t xsecFrUp=0.1);    
     void GetRandomBHard(Double_t& b);
     void GetRandomXY(Double_t& x,Double_t& y);

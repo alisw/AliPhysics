@@ -1461,8 +1461,8 @@ void AliFastGlauber::CalculateI0I1(Double_t& integral0,Double_t& integral1,
 {
   // 
   // Calculate integrals: 
-  //  integral0 =    \int_0^ellCut dl*(T_A*T_B)(x0+l*ux,y0+l*uy)
-  //  integral1 =    \int_0^ellCut dl*l*(T_A*T_B)(x0+l*ux,y0+l*uy)
+  //  integral0 = \int_0^ellCut dl*(T_A*T_B)(x0+l*ux,y0+l*uy)
+  //  integral1 = \int_0^ellCut dl*l*(T_A*T_B)(x0+l*ux,y0+l*uy)
   //
   // for a parton with production point (x0,y0)
   // and propagation direction (ux=cos(phi0),uy=sin(phi0)) 
