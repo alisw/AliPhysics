@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.3  2000/10/11 09:19:12  egangler
+Corrected some bugs - it should compile now
+
 Revision 1.2  2000/06/15 07:58:49  morsch
 Code from MUON-dev joined
 
@@ -199,7 +202,7 @@ void AliMUONproto::GetRawDigits(Int_t evnb, Int_t *lptr, Int_t ilen) {
     
     char hname[30];
     sprintf(hname, "TreeD%d", evnb);
-    gAlice->TreeD()->Write(hname);
+    gAlice->TreeD()->Write(hname,TObject::kOverwrite);
     // reset tree
     gAlice->TreeD()->Reset();
 

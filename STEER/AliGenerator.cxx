@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2000/12/21 15:30:18  fca
+Correcting coding convention violations
+
 Revision 1.9  2000/10/04 10:08:01  fca
 Correction of minor typing mistakes
 
@@ -69,7 +72,8 @@ AliGenerator::AliGenerator()
   //
   // Default constructor
   //
-    printf("\n AliGenerator Default Constructor\n\n");
+    if (gAlice->GetDebug()>0)
+        printf("\n AliGenerator Default Constructor\n\n");
     
     gAlice->SetGenerator(this);
     SetThetaRange(); ResetBit(kThetaRange);
@@ -97,7 +101,8 @@ AliGenerator::AliGenerator(Int_t npart)
   //
   // Standard constructor
   //
-    printf("\n AliGenerator Constructor initializing number of particles \n\n");
+    if (gAlice->GetDebug()>0)
+        printf("\n AliGenerator Constructor initializing number of particles \n\n");
     gAlice->SetGenerator(this);
     SetThetaRange(); ResetBit(kThetaRange);
     SetPhiRange(); ResetBit(kPhiRange);

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.27  2001/01/13 17:29:33  kowal2
+Sun compiler correction
+
 Revision 1.26  2001/01/10 07:59:43  kowal2
 Corrections to load points from the noncompressed hits.
 
@@ -106,6 +109,7 @@ Introduction of the Copyright and cvs Log
 #include <TFile.h>       
 #include "AliRun.h"
 #include <iostream.h>
+#include <stdlib.h>
 #include <fstream.h>
 #include "AliMC.h"
 #include "AliMagF.h"
@@ -753,7 +757,6 @@ void AliTPC::Hits2Clusters(TFile *of)
   //
   TParticle *particle; // pointer to a given particle
   AliTPChit *tpcHit; // pointer to a sigle TPC hit
-  TClonesArray *particles; //pointer to the particle list
   Int_t sector;
   Int_t ipart;
   Float_t xyz[5];
@@ -766,7 +769,6 @@ void AliTPC::Hits2Clusters(TFile *of)
   
   TTree *tH = gAlice->TreeH();
   Stat_t ntracks = tH->GetEntries();
-  particles=gAlice->Particles();
 
   //Switch to the output file
   of->cd();
@@ -828,7 +830,7 @@ void AliTPC::Hits2Clusters(TFile *of)
 	 continue; 
        }
 	ipart=tpcHit->Track();
-	particle=(TParticle*)particles->UncheckedAt(ipart);
+	particle=gAlice->Particle(ipart);
 	pl=particle->Pz();
 	pt=particle->Pt();
 	if(pt < 1.e-9) pt=1.e-9;
@@ -924,7 +926,6 @@ void AliTPC::Hits2ExactClustersSector(Int_t isec)
   //
   TParticle *particle; // pointer to a given particle
   AliTPChit *tpcHit; // pointer to a sigle TPC hit
-  TClonesArray *particles; //pointer to the particle list
   Int_t sector,nhits;
   Int_t ipart;
   const Int_t kcmaxhits=30000;
@@ -941,8 +942,7 @@ void AliTPC::Hits2ExactClustersSector(Int_t isec)
   
   TTree *tH = gAlice->TreeH();
   Stat_t ntracks = tH->GetEntries();
-  particles=gAlice->Particles();
-  Int_t npart = particles->GetEntriesFast();
+  Int_t npart = gAlice->GetNtrack();
     
   //------------------------------------------------------------
   // Loop over tracks
@@ -967,7 +967,7 @@ void AliTPC::Hits2ExactClustersSector(Int_t isec)
       sector=tpcHit->fSector; // sector number
       if(sector != isec) continue; 
       ipart=tpcHit->Track();
-      if (ipart<npart) particle=(TParticle*)particles->UncheckedAt(ipart);
+      if (ipart<npart) particle=gAlice->Particle(ipart);
       
       //find row number
 
@@ -1064,6 +1064,68 @@ void AliTPC::Hits2ExactClustersSector(Int_t isec)
   xxxx->Delete();
  
 }
+//___________________________________________
+void AliTPC::SDigits2Digits()
+{
+  AliTPCParamSR *param=(AliTPCParamSR*)gDirectory->Get("75x40_100x60");
+  AliTPCPRF2D    * prfinner   = new AliTPCPRF2D;
+  AliTPCPRF2D    * prfouter   = new AliTPCPRF2D;
+  AliTPCRF1D     * rf    = new AliTPCRF1D(kTRUE);
+
+  TDirectory *cwd = gDirectory;
+  rf->SetGauss(param->GetZSigma(),param->GetZWidth(),1.);
+  rf->SetOffset(3*param->GetZSigma());
+  rf->Update();
+  TFile *f=TFile::Open("$ALICE_ROOT/TPC/AliTPCprf2d.root");
+  if (!f->IsOpen()) { 
+     cerr<<"Can't open $ALICE_ROOT/TPC/AliTPCprf2d.root !\n";
+     exit(3);
+  }
+  prfinner->Read("prf_07504_Gati_056068_d02");
+  prfouter->Read("prf_10006_Gati_047051_d03");
+  f->Close();
+  cwd->cd();
+  
+  param->SetInnerPRF(prfinner);
+  param->SetOuterPRF(prfouter); 
+  param->SetTimeRF(rf);
+
+  SetParam(param);
+
+  cerr<<"Digitizing TPC...\n";
+
+  //setup TPCDigitsArray 
+  AliTPCDigitsArray *arr = new AliTPCDigitsArray; 
+  arr->SetClass("AliSimDigits");
+  arr->Setup(param);
+  SetParam(param);
+ 
+  arr->MakeTree(fDigitsFile);
+
+  SetDigitsArray(arr);
+
+  Hits2Digits();
+   
+  // Hits2DigitsSector(1);         
+  // Hits2DigitsSector(2);             
+  // Hits2DigitsSector(3);             
+  // Hits2DigitsSector(1+18);             
+  // Hits2DigitsSector(2+18);             
+  // Hits2DigitsSector(3+18);             
+
+  // Hits2DigitsSector(36+1);             
+  // Hits2DigitsSector(36+2);             
+  // Hits2DigitsSector(36+3);             
+  // Hits2DigitsSector(36+1+18);             
+  // Hits2DigitsSector(36+2+18);             
+  // Hits2DigitsSector(36+3+18); 
+     
+  //write results
+
+  char treeName[100];
+  sprintf(treeName,"TreeD_%s",param->GetTitle());
+  GetDigitsArray()->GetTree()->Write(treeName,TObject::kOverwrite);
+}
 
 //__________________________________________________________________  
 void AliTPC::Hits2Digits()  
@@ -1126,7 +1188,7 @@ void AliTPC::Hits2DigitsSector(Int_t isec)
 
       Int_t i;
 
-      if (fDigitsArray->GetTree()==0) fDigitsArray->MakeTree();
+      if (fDigitsArray->GetTree()==0) fDigitsArray->MakeTree(fDigitsFile);
 
       for (i=0;i<nrows;i++){
 
@@ -1648,7 +1710,7 @@ void AliTPC::Init()
 }
 
 //_____________________________________________________________________________
-void AliTPC::MakeBranch(Option_t* option)
+void AliTPC::MakeBranch(Option_t* option, char *file)
 {
   //
   // Create Tree branches for the TPC.
@@ -1657,16 +1719,16 @@ void AliTPC::MakeBranch(Option_t* option)
   char branchname[10];
   sprintf(branchname,"%s",GetName());
 
-  AliDetector::MakeBranch(option);
+  AliDetector::MakeBranch(option,file);
 
   char *d = strstr(option,"D");
 
   if (fDigits   && gAlice->TreeD() && d) {
-    gAlice->TreeD()->Branch(branchname,&fDigits, buffersize);
-    printf("Making Branch %s for digits\n",branchname);
+    gAlice->MakeBranchInTree(gAlice->TreeD(), 
+                             branchname, &fDigits, buffersize, file) ;
   }	
 
-  if (fHitType&2) MakeBranch2(option); // MI change 14.09.2000
+  if (fHitType&2) MakeBranch2(option,file); // MI change 14.09.2000
 }
  
 //_____________________________________________________________________________
@@ -1832,28 +1894,6 @@ void AliTPC::TransportElectron(Float_t *xyz, Int_t *index)
   //add nonisochronity (not implemented yet)
   
 }
-//_____________________________________________________________________________
-void AliTPC::Streamer(TBuffer &R__b)
-{
-  //
-  // Stream an object of class AliTPC.
-  //
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      AliDetector::Streamer(R__b);
-      R__b >> fTPCParam;
-      if (R__v < 2) return;
-      R__b >> fNsectors;
-      R__b >> fHitType;
-
-   } else {
-      R__b.WriteVersion(AliTPC::IsA());
-      AliDetector::Streamer(R__b);
-      R__b << fTPCParam;
-      R__b << fNsectors;
-      R__b << fHitType; 
-   }
-}
   
 ClassImp(AliTPCdigit)
  
@@ -1893,7 +1933,7 @@ AliHit(shunt,track)
 //________________________________________________________________________
 // Additional code because of the AliTPCTrackHits
 
-void AliTPC::MakeBranch2(Option_t *option)
+void AliTPC::MakeBranch2(Option_t *option,char *file)
 {
   //
   // Create a new branch in the current Root Tree
@@ -1907,11 +1947,21 @@ void AliTPC::MakeBranch2(Option_t *option)
   char *cH = strstr(option,"H");
   //
   if (fTrackHits   && gAlice->TreeH() && cH) {    
-    //    gAlice->TreeH()->Branch(branchname,&fTrackHits, fBufferSize);
     AliObjectBranch * branch = new AliObjectBranch(branchname,"AliTPCTrackHits",&fTrackHits, 
 						   gAlice->TreeH(),fBufferSize,1);
     gAlice->TreeH()->GetListOfBranches()->Add(branch);
     printf("* AliDetector::MakeBranch * Making Branch %s for trackhits\n",branchname);
+    if (file) {
+        TBranch *b = gAlice->TreeH()->GetBranch(branchname);
+        TDirectory *wd = gDirectory;
+        b->SetFile(file);
+        TIter next( b->GetListOfBranches());
+        while ((b=(TBranch*)next())) {
+           b->SetFile(file);
+        }
+        wd->cd(); 
+   	    cout << "Diverting branch " << branchname << " to file " << file << endl;  
+    }
   }	
 }
 
@@ -1948,11 +1998,10 @@ void AliTPC::AddHit2(Int_t track, Int_t *vol, Float_t *hits)
 { 
   //
   // add hit to the list  
-  TClonesArray &particles = *(gAlice->Particles());
   Int_t rtrack;
   if (fIshunt) {
     int primary = gAlice->GetPrimary(track);
-    ((TParticle *)particles[primary])->SetBit(kKeepBit);
+    gAlice->Particle(primary)->SetBit(kKeepBit);
     rtrack=primary;
   } else {
     rtrack=track;

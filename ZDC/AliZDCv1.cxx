@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/01/16 07:43:33  hristov
+Initialisation of ZDC hits
+
 Revision 1.10  2000/12/14 15:20:02  coppedis
 Hits2Digits method for digitization
 
@@ -1111,20 +1114,22 @@ Int_t AliZDCv1::Digitize(Int_t Det, Int_t Quad, Int_t Light)
    
   return ADCch;
 }
+
+//____________________________________________________________________________
+void AliZDCv1::FinishEvent()
+{
+//  Code moved to Hits2SDigits();
+}
+
+//_____________________________________________________________________________
+void AliZDCv1::SDigits2Digits()
+{
+   Hits2Digits(gAlice->GetNtrack());
+}
+
 //_____________________________________________________________________________
 void AliZDCv1::Hits2Digits(Int_t ntracks)
 {
-  // Creation of the digits from hits 
-
-  if(fDigits!=0) fDigits->Clear();
-  else fDigits = new TClonesArray ("AliZDCDigit",1000);
-
-  char branchname[10];
-  sprintf(branchname,"%s",GetName());
-  gAlice->TreeD()->Branch(branchname,&fDigits, fBufferSize);
-  
-  gAlice->TreeD()->GetEvent(0);
-  
   AliZDCDigit *newdigit;
   AliZDCHit   *hit;
 
@@ -1221,7 +1226,7 @@ void AliZDCv1::Hits2Digits(Int_t ntracks)
   
 }
 //_____________________________________________________________________________
- void AliZDCv1::MakeBranch(Option_t *opt)
+ void AliZDCv1::MakeBranch(Option_t *opt, char *file)
 {
   //
   // Create a new branch in the current Root Tree
@@ -1229,12 +1234,20 @@ void AliZDCv1::Hits2Digits(Int_t ntracks)
 
   AliDetector::MakeBranch(opt);
   
-  char branchname[10];
+  Char_t branchname[10];
   sprintf(branchname,"%s",GetName());
   char *cD = strstr(opt,"D");
 
   if (fDigits   && gAlice->TreeD() && cD) {
-    gAlice->TreeD()->Branch(branchname,&fDigits, fBufferSize);
+
+    // Creation of the digits from hits 
+
+    if(fDigits!=0) fDigits->Clear();
+    else fDigits = new TClonesArray ("AliZDCDigit",1000);
+    char branchname[10];
+    sprintf(branchname,"%s",GetName());
+    gAlice->MakeBranchInTree(gAlice->TreeD(), 
+                             branchname, &fDigits, fBufferSize, file) ;
     printf("* AliZDCv1::MakeBranch    * Making Branch %s for digits\n\n",branchname);
   }     
 }

@@ -35,7 +35,7 @@ class AliMUONRecoEvent:public TObject {
 private:
    Int_t             fNevr;               // event number
    Int_t             fNtracks;            // number of tracks
-   TClonesArray      *fTracks;            // list of AliMUONRecoTracks
+   TClonesArray      *fTracks;            //-> list of AliMUONRecoTracks
    
 public:
                      AliMUONRecoEvent(Int_t eventNo = 0);

@@ -12,6 +12,8 @@
 
 #include <TObject.h>
 
+class TFile;
+
 class AliTRDsegmentArray;
 class AliTRDdataArrayI;
 class AliTRDdigit;
@@ -28,7 +30,7 @@ class AliTRDdigitsManager : public TObject {
   AliTRDdigitsManager &operator=(const AliTRDdigitsManager &m);
 
   virtual void                Copy(TObject &m);
-  virtual Bool_t              MakeBranch();
+  virtual Bool_t              MakeBranch(char *file=0);
   virtual Bool_t              ReadDigits();
   virtual Bool_t              WriteDigits();
 

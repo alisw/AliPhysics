@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.48  2001/01/17 10:50:50  hristov
+Corrections to destructors
+
 Revision 1.47  2000/12/18 10:44:01  morsch
 Possibility to set field map by passing pointer to objet of type AliMagF via
 SetField().
@@ -134,6 +137,7 @@ Introduction of the Copyright and cvs Log
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <iostream.h>
  
 #include <TFile.h>
 #include <TRandom.h>
@@ -186,6 +190,7 @@ AliRun::AliRun()
   fTreeH     = 0;
   fTreeE     = 0;
   fTreeR     = 0;
+  fTreeS     = 0;
   fParticles = 0;
   fGeometry  = 0;
   fDisplay   = 0;
@@ -203,6 +208,9 @@ AliRun::AliRun()
   fRandom = 0;
   fMCQA = 0;
   fTransParName = "\0";
+  fBaseFileName = "\0";
+  fParticleBuffer = 0;
+  fParticleMap = new TObjArray(10000);
 }
 
 //_____________________________________________________________________________
@@ -223,6 +231,7 @@ AliRun::AliRun(const char *name, const char *title)
   fTreeH     = 0;
   fTreeE     = 0;
   fTreeR     = 0;
+  fTreeS     = 0;
   fTrRmax    = 1.e10;
   fTrZmax    = 1.e10;
   fGenerator = 0;
@@ -233,6 +242,10 @@ AliRun::AliRun(const char *name, const char *title)
 
   // Set random number generator
   gRandom = fRandom = new TRandom3();
+
+  if (gSystem->Getenv("CONFIG_SEED")) {
+     gRandom->SetSeed((UInt_t)atoi(gSystem->Getenv("CONFIG_SEED")));
+  }
   
   gROOT->GetListOfBrowsables()->Add(this,name);
   //
@@ -252,7 +265,7 @@ AliRun::AliRun(const char *name, const char *title)
   fEvent     = 0;
   //
   // Create the particle stack
-  fParticles = new TClonesArray("TParticle",100);
+  fParticles = new TClonesArray("TParticle",1000);
   
   fDisplay = 0;
   //
@@ -272,6 +285,9 @@ AliRun::AliRun(const char *name, const char *title)
   fHitLists  = new TList();
   //
   SetTransPar();
+  fBaseFileName = "\0";
+  fParticleBuffer = 0;
+  fParticleMap = new TObjArray(10000);
 }
 
 
@@ -279,7 +295,7 @@ AliRun::AliRun(const char *name, const char *title)
 AliRun::~AliRun()
 {
   //
-  // Defaullt AliRun destructor
+  // Default AliRun destructor
   //
   delete fImedia;
   delete fField;
@@ -293,6 +309,7 @@ AliRun::~AliRun()
   delete fTreeH;
   delete fTreeE;
   delete fTreeR;
+  delete fTreeS;
   if (fModules) {
     fModules->Delete();
     delete fModules;
@@ -339,6 +356,7 @@ void AliRun::Browse(TBrowser *b)
   if (fTreeD) b->Add(fTreeD,fTreeD->GetName());
   if (fTreeE) b->Add(fTreeE,fTreeE->GetName());
   if (fTreeR) b->Add(fTreeR,fTreeR->GetName());
+  if (fTreeS) b->Add(fTreeS,fTreeS->GetName());
   
   TIter next(fModules);
   AliModule *detector;
@@ -392,12 +410,12 @@ void AliRun::CleanParents()
   // Clean Particles stack.
   // Set parent/daughter relations
   //
-  TClonesArray &particles = *(gAlice->Particles());
+  TObjArray &particles = *fParticleMap;
   TParticle *part;
   int i;
-  for(i=0; i<fNtrack; i++) {
-    part = (TParticle *)particles.UncheckedAt(i);
-    if(!part->TestBit(kDaughtersBit)) {
+  for(i=0; i<fHgwmk+1; i++) {
+    part = (TParticle *)particles.At(i);
+    if(part) if(!part->TestBit(kDaughtersBit)) {
       part->SetFirstDaughter(-1);
       part->SetLastDaughter(-1);
     }
@@ -420,8 +438,7 @@ void AliRun::DumpPart (Int_t i) const
   //
   // Dumps particle i in the stack
   //
-  TClonesArray &particles = *fParticles;
-  ((TParticle*) particles[i])->Print();
+  ((TParticle*) (*fParticleMap)[i])->Print();
 }
 
 //_____________________________________________________________________________
@@ -430,7 +447,7 @@ void AliRun::DumpPStack () const
   //
   // Dumps the particle stack
   //
-  TClonesArray &particles = *fParticles;
+  TObjArray &particles = *fParticleMap;
   printf(
 	 "\n\n=======================================================================\n");
   for (Int_t i=0;i<fNtrack;i++) 
@@ -474,18 +491,6 @@ void AliRun::SetField(Int_t type, Int_t version, Float_t scale,
   } else {
     Warning("SetField","Invalid map %d\n",version);
   }
-}
-
-//_____________________________________________________________________________
-void AliRun::FillTree()
-{
-  //
-  // Fills all AliRun TTrees
-  //
-  if (fTreeK) fTreeK->Fill();
-  if (fTreeH) fTreeH->Fill();
-  if (fTreeD) fTreeD->Fill();
-  if (fTreeR) fTreeR->Fill();
 }
  
 //_____________________________________________________________________________
@@ -566,7 +571,14 @@ void AliRun::FinishEvent()
   // Write out the kinematics
   if (fTreeK) {
     CleanParents();
-    fTreeK->Fill();
+    //    fTreeK->Fill();
+    TObject *part;
+    for(i=0; i<fHgwmk+1; ++i) if((part=fParticleMap->At(i))) {
+      fParticleBuffer = (TParticle*) part;
+      fParticleFileMap[i]= (Int_t) fTreeK->GetEntries();
+      fTreeK->Fill();
+      (*fParticleMap)[i]=0;
+    } else printf("Why = 0 part # %d?\n",i);
   }
   
   // Write out the digits
@@ -574,7 +586,12 @@ void AliRun::FinishEvent()
     fTreeD->Fill();
     ResetDigits();
   }
-  
+
+   if (fTreeS) {
+    fTreeS->Fill();
+    ResetSDigits();
+  }
+ 
   // Write out reconstructed clusters  
   if (fTreeR) {
     fTreeR->Fill();
@@ -587,17 +604,12 @@ void AliRun::FinishEvent()
   ResetStack();
   
   // Write Tree headers
-  //  Int_t ievent = fHeader.GetEvent();
-  //  char hname[30];
-  //  sprintf(hname,"TreeK%d",ievent);
   if (fTreeK) fTreeK->Write(0,TObject::kOverwrite);
-  //  sprintf(hname,"TreeH%d",ievent);
   if (fTreeH) fTreeH->Write(0,TObject::kOverwrite);
-  //  sprintf(hname,"TreeD%d",ievent);
   if (fTreeD) fTreeD->Write(0,TObject::kOverwrite);
-  //  sprintf(hname,"TreeR%d",ievent);
   if (fTreeR) fTreeR->Write(0,TObject::kOverwrite);
-
+  if (fTreeS) fTreeS->Write(0,TObject::kOverwrite);
+  
   ++fEvent;
 }
 
@@ -620,19 +632,15 @@ void AliRun::FinishRun()
   
   //Output energy summary tables
   EnergySummary();
-  
-  // file is retrieved from whatever tree
-  TFile *file = 0;
-  if (fTreeK) file = fTreeK->GetCurrentFile();
-  if ((!file) && (fTreeH)) file = fTreeH->GetCurrentFile();
-  if ((!file) && (fTreeD)) file = fTreeD->GetCurrentFile();
-  if ((!file) && (fTreeE)) file = fTreeE->GetCurrentFile();
-  if( NULL==file ) {
-    Error("FinishRun","There isn't root file!");
-    exit(1);
-  }
+
+  TFile *file = fTreeE->GetCurrentFile();
+
   file->cd();
+  
   fTreeE->Write(0,TObject::kOverwrite);
+  
+  // Write AliRun info and all detectors parameters
+  Write();
   
   // Clean tree information
   if (fTreeK) {
@@ -650,10 +658,7 @@ void AliRun::FinishRun()
   if (fTreeE) {
     delete fTreeE; fTreeE = 0;
   }
-  
-  // Write AliRun info and all detectors parameters
-  Write();
-  
+    
   // Close output file
   file->Write();
 }
@@ -669,7 +674,7 @@ void AliRun::FlagTrack(Int_t track)
 
   curr=track;
   while(1) {
-    particle=(TParticle*)fParticles->UncheckedAt(curr);
+    particle=(TParticle*)fParticleMap->At(curr);
     
     // If the particle is flagged the three from here upward is saved already
     if(particle->TestBit(kKeepBit)) return;
@@ -787,27 +792,42 @@ Int_t AliRun::GetEvent(Int_t event)
   //
 
   // Reset existing structures
-  ResetStack();
+  //  ResetStack();
   ResetHits();
   ResetDigits();
+  ResetSDigits();
   
   // Delete Trees already connected
   if (fTreeK) delete fTreeK;
   if (fTreeH) delete fTreeH;
   if (fTreeD) delete fTreeD;
   if (fTreeR) delete fTreeR;
+  if (fTreeS) delete fTreeS;
 
   // Get header from file
   if(fTreeE) fTreeE->GetEntry(event);
   else Error("GetEvent","Cannot file Header Tree\n");
+  TFile *file = fTreeE->GetCurrentFile();
+
+  file->cd();
   
   // Get Kine Tree from file
   char treeName[20];
   sprintf(treeName,"TreeK%d",event);
   fTreeK = (TTree*)gDirectory->Get(treeName);
-  if (fTreeK) fTreeK->SetBranchAddress("Particles", &fParticles);
+  if (fTreeK) fTreeK->SetBranchAddress("Particles", &fParticleBuffer);
   else    Error("GetEvent","cannot find Kine Tree for event:%d\n",event);
+  // Create the particle stack
+  if(!fParticles) fParticles = new TClonesArray("TParticle",1000);
+  // Build the pointer list
+  if(fParticleMap) {
+    fParticleMap->Clear();
+    fParticleMap->Expand(fTreeK->GetEntries());
+  } else
+    fParticleMap = new TObjArray(fTreeK->GetEntries());
   
+  file->cd();
+
   // Get Hits Tree header from file
   sprintf(treeName,"TreeH%d",event);
   fTreeH = (TTree*)gDirectory->Get(treeName);
@@ -815,13 +835,16 @@ Int_t AliRun::GetEvent(Int_t event)
     Error("GetEvent","cannot find Hits Tree for event:%d\n",event);
   }
   
+  file->cd();
+
   // Get Digits Tree header from file
   sprintf(treeName,"TreeD%d",event);
   fTreeD = (TTree*)gDirectory->Get(treeName);
   if (!fTreeD) {
-    Warning("GetEvent","cannot find Digits Tree for event:%d\n",event);
+    // Warning("GetEvent","cannot find Digits Tree for event:%d\n",event);
   }
   
+  file->cd();
   
   // Get Reconstruct Tree header from file
   sprintf(treeName,"TreeR%d",event);
@@ -829,6 +852,8 @@ Int_t AliRun::GetEvent(Int_t event)
   if (!fTreeR) {
     //    printf("WARNING: cannot find Reconstructed Tree for event:%d\n",event);
   }
+
+  file->cd();
  
   // Set Trees branch addresses
   TIter next(fModules);
@@ -837,8 +862,7 @@ Int_t AliRun::GetEvent(Int_t event)
     detector->SetTreeAddress();
   }
   
-  if (fTreeK) fTreeK->GetEvent(0);
-  fNtrack = Int_t (fParticles->GetEntries());
+  fNtrack = Int_t (fTreeK->GetEntries());
   return fNtrack;
 }
 
@@ -884,10 +908,10 @@ void AliRun::GetNextTrack(Int_t &mtrack, Int_t &ipart, Float_t *pmom,
   fCurrent=-1;
   TParticle *track;
   for(Int_t i=fNtrack-1; i>=0; i--) {
-    track=(TParticle*) fParticles->UncheckedAt(i);
-    if(!track->TestBit(kDoneBit)) {
+    track=(TParticle*) fParticleMap->At(i);
+    if(track) if(!track->TestBit(kDoneBit)) {
       //
-      // The track has not yet been processed
+      // The track exists and has not yet been processed
       fCurrent=i;
       ipart=track->GetPdgCode();
       pmom[0]=track->Px();
@@ -913,7 +937,7 @@ void AliRun::GetNextTrack(Int_t &mtrack, Int_t &ipart, Float_t *pmom,
   if (fCurrent >= nprimaries) return;
   if (fCurrent < nprimaries-1) {
     fTimer.Stop();
-    track=(TParticle*) fParticles->UncheckedAt(fCurrent+1);
+    track=(TParticle*) fParticleMap->At(fCurrent+1);
     //    track->SetProcessTime(fTimer.CpuTime());
   }
   fTimer.Start();
@@ -931,7 +955,7 @@ Int_t AliRun::GetPrimary(Int_t track) const
   parent=track;
   while (1) {
     current=parent;
-    part = (TParticle *)fParticles->UncheckedAt(current);
+    part = (TParticle *)fParticleMap->At(current);
     parent=part->GetFirstMother();
     if(parent<0) return current;
   }
@@ -948,9 +972,12 @@ void AliRun::InitMC(const char *setup)
     Warning("Init","Cannot initialise AliRun twice!\n");
     return;
   }
-
+    
+  OpenBaseFile("recreate");
+  
   gROOT->LoadMacro(setup);
   gInterpreter->ProcessLine(fConfigFunction.Data());
+
 
   gMC->DefineParticles();  //Create standard MC particles
 
@@ -1092,6 +1119,27 @@ void AliRun::SetTransPar(char *filename)
 }
 
 //____________________________________________________________________________
+void AliRun::SetBaseFile(char *filename)
+{
+  fBaseFileName = *filename;
+}
+
+//____________________________________________________________________________
+void AliRun::OpenBaseFile(const char *option)
+{
+  if(!strlen(fBaseFileName.Data())) {
+    const char *filename;
+    if ((filename=gSystem->Getenv("CONFIG_FILE"))) {
+      fBaseFileName=filename;
+    } else {
+      fBaseFileName="galice.root";
+    }  
+  }
+  TFile *rootfile = new TFile(fBaseFileName.Data(),option); 
+  rootfile->SetCompressionLevel(2);
+}
+
+//____________________________________________________________________________
 void AliRun::ReadTransPar()
 {
   //
@@ -1198,7 +1246,46 @@ void AliRun::ReadTransPar()
 }
 
 //_____________________________________________________________________________
-void AliRun::MakeTree(Option_t *option)
+void AliRun::MakeBranchInTree(TTree *tree, const char* name, void* address, Int_t size, char *file)
+{ 
+    if (GetDebug()>1)
+        printf("* MakeBranch * Making Branch %s \n",name);
+
+    TBranch *branch = tree->Branch(name,address,size);
+
+    if (file) {
+        TDirectory *cwd = gDirectory;
+        branch->SetFile(file);
+        TIter next( branch->GetListOfBranches());
+        while ((branch=(TBranch*)next())) {
+           branch->SetFile(file);
+        }   
+        if (GetDebug()>1)
+            printf("* MakeBranch * Diverting Branch %s to file %s\n",name,file);
+        cwd->cd();
+    } 
+}
+
+//_____________________________________________________________________________
+void AliRun::MakeBranchInTree(TTree *tree, const char* name, const char *classname, void* address, Int_t size, Int_t splitlevel, char *file)
+{ 
+    TDirectory *cwd = gDirectory;
+    TBranch *branch = tree->Branch(name,classname,address,size,splitlevel);
+    if (GetDebug()>1)
+      printf("* MakeBranch * Making Branch %s \n",name);
+    if (file) {
+        branch->SetFile(file);
+        TIter next( branch->GetListOfBranches());
+        while ((branch=(TBranch*)next())) {
+           branch->SetFile(file);
+        } 
+       if (GetDebug()>1)
+           printf("* MakeBranch * Diverting Branch %s to file %s\n",name,file);
+        cwd->cd();
+    }
+}
+//_____________________________________________________________________________
+void AliRun::MakeTree(Option_t *option, char *file)
 {
   //
   //  Create the ROOT trees
@@ -1213,12 +1300,15 @@ void AliRun::MakeTree(Option_t *option)
   char *oE = strstr(option,"E");
   char *oD = strstr(option,"D");
   char *oR = strstr(option,"R");
+  char *oS = strstr(option,"S");
   //
+  
   if (oK && !fTreeK) {
     sprintf(hname,"TreeK%d",fEvent);
     fTreeK = new TTree(hname,"Kinematics");
     //  Create a branch for particles
-    fTreeK->Branch("Particles",&fParticles,4000);
+    MakeBranchInTree(fTreeK, 
+                     "Particles", "TParticle", &fParticleBuffer, 4000, 1, file) ;
     fTreeK->Write();
   }
   if (oH && !fTreeH) {
@@ -1232,6 +1322,11 @@ void AliRun::MakeTree(Option_t *option)
     fTreeD = new TTree(hname,"Digits");
     fTreeD->Write();
   }
+  if (oS && !fTreeS) {
+    sprintf(hname,"TreeS%d",fEvent);
+    fTreeS = new TTree(hname,"SDigits");
+    fTreeS->Write();
+  }
   if (oR && !fTreeR) {
     sprintf(hname,"TreeR%d",fEvent);
     fTreeR = new TTree(hname,"Reconstruction");
@@ -1240,9 +1335,11 @@ void AliRun::MakeTree(Option_t *option)
   if (oE && !fTreeE) {
     fTreeE = new TTree("TE","Header");
     //  Create a branch for Header
-    fTreeE->Branch("Header","AliHeader",&gAliHeader,4000);
+    MakeBranchInTree(fTreeE, 
+                     "Header", "AliHeader", &gAliHeader, 4000, 1, file) ;
     fTreeE->Write();
   }
+  
   //
   // Create a branch for hits/digits for each detector
   // Each branch is a TClonesArray. Each data member of the Hits classes
@@ -1250,7 +1347,7 @@ void AliRun::MakeTree(Option_t *option)
   TIter next(fModules);
   AliModule *detector;
   while((detector = (AliModule*)next())) {
-     if (oH || oD || oR) detector->MakeBranch(option);
+     if (oH || oR) detector->MakeBranch(option,file);
   }
 }
 
@@ -1267,65 +1364,85 @@ Int_t AliRun::PurifyKine(Int_t lastSavedTrack, Int_t nofTracks)
 }
 
 //_____________________________________________________________________________
+TParticle* AliRun::Particle(Int_t i)
+{
+  if(!(*fParticleMap)[i]) {
+    Int_t nentries = fParticles->GetEntries();
+    fTreeK->GetEntry(fParticleFileMap[i]);
+    new ((*fParticles)[nentries]) TParticle(*fParticleBuffer);
+    fParticleMap->AddAt((*fParticles)[nentries],i);
+  }
+  return (TParticle *) (*fParticleMap)[i];
+}
+
+//_____________________________________________________________________________
 void AliRun::PurifyKine()
 {
   //
   // Compress kinematic tree keeping only flagged particles
   // and renaming the particle id's in all the hits
   //
-  TClonesArray &particles = *fParticles;
+  //  TClonesArray &particles = *fParticles;
+  TObjArray &particles = *fParticleMap;
   int nkeep=fHgwmk+1, parent, i;
-  TParticle *part, *partnew, *father;
-  int *map = new int[particles.GetEntries()];
+  TParticle *part, *father;
+  TArrayI map(particles.GetLast()+1);
 
   // Save in Header total number of tracks before compression
   fHeader.SetNtrack(fHeader.GetNtrack()+fNtrack-fHgwmk);
 
+  // If no tracks generated return now
+  if(fHgwmk+1 == fNtrack) return;
+
+  Int_t toshrink = fNtrack-fHgwmk-1;
+
   // First pass, invalid Daughter information
   for(i=0; i<fNtrack; i++) {
     // Preset map, to be removed later
-    if(i<=fHgwmk) map[i]=i ; else map[i] = -99;
-    ((TParticle *)particles.UncheckedAt(i))->ResetBit(kDaughtersBit);
+    if(i<=fHgwmk) map[i]=i ; 
+    else {
+      map[i] = -99;
+      //      particles.UncheckedAt(i)->ResetBit(kDaughtersBit);
+      if((part=(TParticle*) particles.At(i))) part->ResetBit(kDaughtersBit);
+    }
   }
+  // Invalid daughter information for the parent of the first particle
+  // generated. This may or may not be the current primary according to
+  // whether decays have been recorded among the primaries
+  part = (TParticle *)particles.At(fHgwmk+1);
+  particles.At(part->GetFirstMother())->ResetBit(kDaughtersBit);
   // Second pass, build map between old and new numbering
   for(i=fHgwmk+1; i<fNtrack; i++) {
-    part = (TParticle *)particles.UncheckedAt(i);
-    if(part->TestBit(kKeepBit)) {
+    if(particles.At(i)->TestBit(kKeepBit)) {
       
       // This particle has to be kept
       map[i]=nkeep;
-      if(i!=nkeep) {
-	
-	// Old and new are different, have to copy
-	partnew = (TParticle *)particles.UncheckedAt(nkeep);
-	// Change due to a bug in the HP compiler
-	//	*partnew = *part;
-	memcpy(partnew,part,sizeof(TParticle));
-      } else partnew = part;
+      // If old and new are different, have to move the pointer
+      if(i!=nkeep) particles[nkeep]=particles.At(i);
+      part = (TParticle*) particles.At(nkeep);
       
       // as the parent is always *before*, it must be already
       // in place. This is what we are checking anyway!
-      if((parent=partnew->GetFirstMother())>fHgwmk) {
-	if(map[parent]==-99) printf("map[%d] = -99!\n",parent);
-	partnew->SetFirstMother(map[parent]);
-      }
+      if((parent=part->GetFirstMother())>fHgwmk) 
+	if(map[parent]==-99) Fatal("PurifyKine","map[%d] = -99!\n",parent);
+	else part->SetFirstMother(map[parent]);
+
       nkeep++;
     }
   }
-  fNtrack=nkeep;
   
   // Fix daughters information
-  for (i=0; i<fNtrack; i++) {
-    part = (TParticle *)particles.UncheckedAt(i);
+  for (i=fHgwmk+1; i<nkeep; i++) {
+    part = (TParticle *)particles.At(i);
     parent = part->GetFirstMother();
     if(parent>=0) {
-      father = (TParticle *)particles.UncheckedAt(parent);
+      father = (TParticle *)particles.At(parent);
       if(father->TestBit(kDaughtersBit)) {
       
 	if(i<father->GetFirstDaughter()) father->SetFirstDaughter(i);
 	if(i>father->GetLastDaughter())  father->SetLastDaughter(i);
       } else {
-	// Iitialise daughters info for first pass
+	// Initialise daughters info for first pass
 	father->SetFirstDaughter(i);
 	father->SetLastDaughter(i);
 	father->SetBit(kDaughtersBit);
@@ -1333,24 +1450,6 @@ void AliRun::PurifyKine()
     }
   }
   
-#ifdef old
-  // Now loop on all detectors and reset the hits
-  AliHit *OneHit;
-  TIter next(fModules);
-  AliModule *detector;
-  while((detector = (AliModule*)next())) {
-    if (!detector->Hits()) continue;
-    TClonesArray &vHits=*(detector->Hits());
-    if(vHits.GetEntries() != detector->GetNhits())
-      printf("vHits.GetEntries()!=detector->GetNhits(): %d != %d\n",
-	     vHits.GetEntries(),detector->GetNhits());
-    for (i=0; i<detector->GetNhits(); i++) {
-      OneHit = (AliHit *)vHits.UncheckedAt(i);
-      OneHit->SetTrack(map[OneHit->GetTrack()]);
-    }
-  }
-#else
-
   // Now loop on all registered hit lists
   TIter next(fHitLists);
   TCollection *hitList;
@@ -1361,7 +1460,6 @@ void AliRun::PurifyKine()
       hit->SetTrack(map[hit->GetTrack()]);
     }
   }
-#endif
 
   // 
   // This for detectors which have a special mapping mechanism
@@ -1371,13 +1469,28 @@ void AliRun::PurifyKine()
    TIter nextmod(fModules);
    AliModule *detector;
    while((detector = (AliModule*)nextmod())) {
-     detector->RemapTrackHitIDs(map);
+     detector->RemapTrackHitIDs(map.GetArray());
    }
   
+   // Now the output bit, from fHgwmk to nkeep we write everything and we erase
+   if(nkeep>fParticleFileMap.GetSize()) fParticleFileMap.Set(Int_t (nkeep*1.5));
 
-  fHgwmk=nkeep-1;
-  particles.SetLast(fHgwmk);
-  delete [] map;
+
+   for (i=fHgwmk+1; i<nkeep; ++i) {
+     fParticleBuffer = (TParticle*) particles.At(i);
+     fParticleFileMap[i]=(Int_t) fTreeK->GetEntries();
+     fTreeK->Fill();
+     particles[i]=0;
+   }
+
+   for (i=nkeep; i<fNtrack; ++i) particles[i]=0;
+
+   fLoadPoint-=toshrink;
+   for(i=fLoadPoint; i<fLoadPoint+toshrink; ++i) fParticles->RemoveAt(i);
+
+   fNtrack=nkeep;
+   fHgwmk=nkeep-1;
+   //   delete [] map;
 }
 
 //_____________________________________________________________________________
@@ -1399,6 +1512,7 @@ void AliRun::BeginEvent()
   ResetStack();
   ResetHits();
   ResetDigits();
+  ResetSDigits();
 
   // Initialise event header
   fHeader.Reset(fRun,fEvent);
@@ -1418,13 +1532,17 @@ void AliRun::BeginEvent()
     sprintf(hname,"TreeD%d",fEvent);
     fTreeD->SetName(hname);
   }
+  if(fTreeS) {
+    fTreeS->Reset();
+    sprintf(hname,"TreeS%d",fEvent);
+    fTreeS->SetName(hname);
+  }
   if(fTreeR) {
     fTreeR->Reset();
     sprintf(hname,"TreeR%d",fEvent);
     fTreeR->SetName(hname);
   }
 }
-
 //_____________________________________________________________________________
 void AliRun::ResetDigits()
 {
@@ -1435,6 +1553,19 @@ void AliRun::ResetDigits()
   AliModule *detector;
   while((detector = (AliModule*)next())) {
      detector->ResetDigits();
+  }
+}
+
+//_____________________________________________________________________________
+void AliRun::ResetSDigits()
+{
+  //
+  //  Reset all Detectors digits
+  //
+  TIter next(fModules);
+  AliModule *detector;
+  while((detector = (AliModule*)next())) {
+     detector->ResetSDigits();
   }
 }
 
@@ -1479,12 +1610,108 @@ void AliRun::RunMC(Int_t nevent, const char *setup)
   if (!fInitDone) InitMC(setup);
   
   // Create the Root Tree with one branch per detector
-  MakeTree("KHDER");
+
+  if (gSystem->Getenv("CONFIG_SPLIT_FILE")) {
+    MakeTree("E");
+    MakeTree("K","Kine.root");
+    MakeTree("H","Hits.root");
+    MakeTree("R","Reco.root");
+  } else {
+    MakeTree("EKHR");
+  }
 
   gMC->ProcessRun(nevent);
 
   // End of this run, close files
   if(nevent>0) FinishRun();
+}
+
+//_____________________________________________________________________________
+
+void AliRun::Hits2Digits(const char *selected)
+{
+   Hits2SDigits(selected);
+   SDigits2Digits(selected);
+}
+
+//_____________________________________________________________________________
+
+void AliRun::Hits2SDigits(const char *selected)
+{
+  //
+  // Main function to be called to convert hits to digits. 
+
+   gAlice->GetEvent(0);
+
+   TObjArray *detectors = gAlice->Detectors();
+
+   TIter next(detectors);
+
+   AliDetector *detector;
+
+   TDirectory *cwd = gDirectory;
+
+   MakeTree("S");
+   
+   while((detector = (AliDetector*)next())) {
+     if (selected) {
+       if (strcmp(detector->GetName(),selected)) continue;
+     }
+     if (detector->IsActive()){ 
+       if (gSystem->Getenv("CONFIG_SPLIT_FILE")) {
+         if (GetDebug()>0)
+             cout << "Processing " << detector->GetName() << "..." << endl;
+         char * outFile = new char[strlen (detector->GetName())+18];
+         sprintf(outFile,"SDigits.%s.root",detector->GetName());
+         detector->MakeBranch("S",outFile);
+         delete outFile;
+       } else {
+         detector->MakeBranch("S");
+       }   
+       cwd->cd();  
+       detector->Hits2SDigits(); 
+     }  
+   }
+}
+
+//_____________________________________________________________________________
+
+void AliRun::SDigits2Digits(const char *selected)
+{
+  //
+  // Main function to be called to convert hits to digits. 
+
+   gAlice->GetEvent(0);
+
+   TObjArray *detectors = gAlice->Detectors();
+
+   TIter next(detectors);
+
+   AliDetector *detector;
+
+   TDirectory *cwd = gDirectory;
+
+   MakeTree("D");
+   
+   while((detector = (AliDetector*)next())) {
+     if (selected) {
+       if (strcmp(detector->GetName(),selected)) continue;
+     }
+     if (detector->IsActive()){ 
+       if (gSystem->Getenv("CONFIG_SPLIT_FILE")) {
+         if (GetDebug()>0)
+             cout << "Processing " << detector->GetName() << "..." << endl;
+         char * outFile = new char[strlen (detector->GetName())+16];
+         sprintf(outFile,"Digits.%s.root",detector->GetName());
+         detector->MakeBranch("D",outFile);
+         delete outFile;
+       } else {
+         detector->MakeBranch("D");
+       }   
+       cwd->cd();  
+       detector->SDigits2Digits(); 
+     }  
+   }
 }
 
 //_____________________________________________________________________________
@@ -1626,19 +1853,21 @@ void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
   
   //printf("Loading particle %s mass %f ene %f No %d ip %d pos %f %f %f mom %f %f %f kS %d m %s\n",
   //pname,mass,e,fNtrack,pdg,vpos[0],vpos[1],vpos[2],pmom[0],pmom[1],pmom[2],kS,mecha);
-  
-  particle=new(particles[fNtrack]) TParticle(pdg,kS,parent,-1,kfirstdaughter,
+
+  particle=new(particles[fLoadPoint++]) TParticle(pdg,kS,parent,-1,kfirstdaughter,
 					     klastdaughter,pmom[0],pmom[1],pmom[2],
 					     e,vpos[0],vpos[1],vpos[2],tof);
-  ((TParticle*)particles[fNtrack])->SetPolarisation(TVector3(polar[0],polar[1],polar[2]));
-  ((TParticle*)particles[fNtrack])->SetWeight(weight);
+  particle->SetPolarisation(TVector3(polar[0],polar[1],polar[2]));
+  particle->SetWeight(weight);
   particle->SetUniqueID(mech);
   if(!done) particle->SetBit(kDoneBit);
-  //Declare that the daughter information is valid
-  ((TParticle*)particles[fNtrack])->SetBit(kDaughtersBit);
-  
+  //  Declare that the daughter information is valid
+  particle->SetBit(kDaughtersBit);
+  //  Add the particle to the stack
+  fParticleMap->AddAtAndExpand(particle,fNtrack);
+
   if(parent>=0) {
-    particle=(TParticle*) fParticles->UncheckedAt(parent);
+    particle=(TParticle*) fParticleMap->At(parent);
     particle->SetLastDaughter(fNtrack);
     if(particle->GetFirstDaughter()<0) particle->SetFirstDaughter(fNtrack);
   } else { 
@@ -1659,8 +1888,7 @@ void AliRun::KeepTrack(const Int_t track)
   //
   // flags a track to be kept
   //
-  TClonesArray &particles = *fParticles;
-  ((TParticle*)particles[track])->SetBit(kKeepBit);
+  fParticleMap->At(track)->SetBit(kKeepBit);
 }
  
 //_____________________________________________________________________________
@@ -1691,67 +1919,23 @@ void AliRun::StepManager(Int_t id)
 //_____________________________________________________________________________
 void AliRun::Streamer(TBuffer &R__b)
 {
-  //
-  // Stream an object of class AliRun.
-  //
-  if (R__b.IsReading()) {
-    Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-    TNamed::Streamer(R__b);
-    if (!gAlice) gAlice = this;
-    gROOT->GetListOfBrowsables()->Add(this,"Run");
-    fTreeE = (TTree*)gDirectory->Get("TE");
-    if (fTreeE) fTreeE->SetBranchAddress("Header", &gAliHeader);
-    else    Error("Streamer","cannot find Header Tree\n");
-    R__b >> fNtrack;
-    R__b >> fHgwmk;
-    R__b >> fDebug;
-    fHeader.Streamer(R__b);
-    R__b >> fModules;
-    R__b >> fParticles;
-    R__b >> fField; 
-    //    R__b >> fMC;
-    R__b >> fNdets;
-    R__b >> fTrRmax;
-    R__b >> fTrZmax;
-    R__b >> fGenerator;
-    if(R__v>1) {
-      R__b >> fPDGDB;        //Particle factory object!
+   // Stream an object of class AliRun.
+
+   if (R__b.IsReading()) {
+      if (!gAlice) gAlice = this;
+
+      AliRun::Class()->ReadBuffer(R__b, this);
+      //
+      gROOT->GetListOfBrowsables()->Add(this,"Run");
+
+      fTreeE = (TTree*)gDirectory->Get("TE");
+      if (fTreeE) fTreeE->SetBranchAddress("Header", &gAliHeader);
+      else    Error("Streamer","cannot find Header Tree\n");
       fTreeE->GetEntry(0);
-    } else {
-      fHeader.SetEvent(0);
-      fPDGDB     = TDatabasePDG::Instance();        //Particle factory object!
-    }
-    if(R__v>2) {
-      fConfigFunction.Streamer(R__b);
-    } else {
-      fConfigFunction="Config();";
-    }
-    if(R__v>3) {
-      R__b >> fRandom;
+
       gRandom = fRandom;
-      R__b >> fMCQA;
-    } else {
-      fRandom = gRandom = new TRandom3();
-      fMCQA = new AliMCQA();
-    }
-  } else {
-    R__b.WriteVersion(AliRun::IsA());
-    TNamed::Streamer(R__b);
-    R__b << fNtrack;
-    R__b << fHgwmk;
-    R__b << fDebug;
-    fHeader.Streamer(R__b);
-    R__b << fModules;
-    R__b << fParticles;
-    R__b << fField;
-    //    R__b << fMC;
-    R__b << fNdets;
-    R__b << fTrRmax;
-    R__b << fTrZmax;
-    R__b << fGenerator;
-    R__b << fPDGDB;        //Particle factory object!
-    fConfigFunction.Streamer(R__b);
-    R__b << fRandom;
-    R__b << fMCQA;
-  }
-} 
+   } else {
+      AliRun::Class()->WriteBuffer(R__b, this);
+   }
+}
+

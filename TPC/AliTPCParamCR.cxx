@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/11/02 07:33:15  kowal2
+Improvements of the code.
+
 Revision 1.3  2000/06/30 12:07:50  kowal2
 Updated from the TPC-PreRelease branch
 
@@ -45,7 +48,7 @@ New Detector parameters handling class
 
 #include <iostream.h>
 #include <TMath.h>
-#include <TObject.h>
+#include <TClass.h>
 #include <AliTPCParamCR.h>
 #include "AliTPCPRF2D.h"
 #include "AliTPCRF1D.h"
@@ -246,15 +249,10 @@ void AliTPCParamCR::Streamer(TBuffer &R__b)
    // Stream an object of class AliTPC.
 
    if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      //      TObject::Streamer(R__b);
-      AliTPCParam::Streamer(R__b);
-      //      if (R__v < 2) return;
-       Update();
+      AliTPCParamCR::Class()->ReadBuffer(R__b, this);
+      Update();
    } else {
-      R__b.WriteVersion(AliTPCParamCR::IsA());
-      //TObject::Streamer(R__b);  
-      AliTPCParam::Streamer(R__b);    
+      AliTPCParamCR::Class()->WriteBuffer(R__b, this);
    }
 }
 

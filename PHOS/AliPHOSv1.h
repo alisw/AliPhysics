@@ -13,6 +13,8 @@
 // --- ROOT system ---
 #include "TClonesArray.h"
 
+class TFile;
+
 // --- AliRoot header files ---
 #include "AliPHOSv0.h"
 #include "AliPHOSGeometry.h"
@@ -44,7 +46,7 @@ public:
     // Gives the version number 
     return 1 ; 
   }
-  virtual void   MakeBranch(Option_t* opt) ;
+  virtual void   MakeBranch(Option_t* opt, char *file=0 ) ;
   void           Reconstruction(AliPHOSReconstructioner * Reconstructioner) ;
   void           ResetClusters(){} ;
   virtual void   ResetHits() ; 
@@ -66,6 +68,8 @@ public:
     assert(0==1) ;
     return *this ; 
   }
+
+  // IHEP's CPV specific functions
 
   AliPHOSCPVModule &GetEMCModule(int n) { return *(AliPHOSCPVModule*)fEMCModules->operator[](n); }
   AliPHOSCPVModule &GetCPVModule(int n) { return *(AliPHOSCPVModule*)fCPVModules->operator[](n); }

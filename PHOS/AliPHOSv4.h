@@ -18,6 +18,8 @@
 #include "TClonesArray.h"
 #include "TRandom.h"
 
+class TFile;
+
 // --- AliRoot header files ---
 #include "AliPHOS.h"
 #include "AliPHOSGeometry.h"
@@ -58,7 +60,7 @@ public:
     return 4 ; 
   }
 
-  void    MakeBranch(Option_t* opt) ;
+  void    MakeBranch(Option_t* opt, char *file=0) ;
   Double_t MakeEnergy(const Double_t energy) ;                       // makes the detected energy    
   TVector3 MakePosition(const Double_t energy, const TVector3 pos, const Double_t th, const Double_t ph) ; 
                                                                      // makes the detected position

@@ -37,7 +37,7 @@ class AliTRDsegmentArrayBase: public TNamed {
   virtual Bool_t           ConnectTree(const char *treeName);
           Bool_t           MakeArray(Int_t n);    
   virtual AliTRDsegmentID *NewSegment(); 
-  virtual void             MakeTree();           
+  virtual void             MakeTree(char *file = 0);           
   virtual AliTRDsegmentID *LoadSegment(Int_t index);
   virtual AliTRDsegmentID *LoadEntry(Int_t index); 
   virtual void             StoreSegment(Int_t index);

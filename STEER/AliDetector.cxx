@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/01/17 10:50:50  hristov
+Corrections to destructors
+
 Revision 1.9  2000/12/12 18:19:06  alibrary
 Introduce consistency check when loading points
 
@@ -53,7 +56,8 @@ Introduction of the Copyright and cvs Log
 #include <assert.h>
 
 #include <TTree.h>
-#include "TBrowser.h"
+#include <TBrowser.h>
+#include <TFile.h>
 
 #include "AliDetector.h"
 #include "AliRun.h"
@@ -78,6 +82,7 @@ AliDetector::AliDetector()
   fDigits     = 0;
   fTimeGate   = 200.e-9;
   fBufferSize = 16000;
+  fDigitsFile = 0;
 }
  
 //_____________________________________________________________________________
@@ -97,6 +102,7 @@ AliDetector::AliDetector(const char* name,const char *title):AliModule(name,titl
   fNdigits    = 0;
   fPoints     = 0;
   fBufferSize = 16000;
+  fDigitsFile = 0;
 }
  
 //_____________________________________________________________________________
@@ -120,6 +126,7 @@ AliDetector::~AliDetector()
     delete fDigits;
     fDigits     = 0;
   }
+  if (fDigitsFile) delete [] fDigitsFile;
 }
  
 //_____________________________________________________________________________
@@ -267,22 +274,32 @@ void AliDetector::LoadPoints(Int_t)
 }
 
 //_____________________________________________________________________________
-void AliDetector::MakeBranch(Option_t *option)
+void AliDetector::MakeBranch(Option_t *option, char *file)
 {
   //
   // Create a new branch in the current Root Tree
   // The branch of fHits is automatically split
   //
+ 
   char branchname[10];
   sprintf(branchname,"%s",GetName());
   //
   // Get the pointer to the header
   char *cH = strstr(option,"H");
   //
-  if (fHits   && gAlice->TreeH() && cH) {
-    gAlice->TreeH()->Branch(branchname,&fHits, fBufferSize);
-    printf("* AliDetector::MakeBranch * Making Branch %s for hits\n",branchname);
+  if (fHits && gAlice->TreeH() && cH) {
+    gAlice->MakeBranchInTree(gAlice->TreeH(), 
+                             branchname, &fHits, fBufferSize, file) ;
   }	
+  
+  char *cD = strstr(option,"D");
+
+  if (cD) {
+    if (file) {
+       fDigitsFile = new char[strlen (file)];
+       strcpy(fDigitsFile,file);
+    }
+  }
 }
 
 //_____________________________________________________________________________
@@ -343,39 +360,4 @@ void AliDetector::SetTreeAddress()
   }
 }
 
-//_____________________________________________________________________________
-void AliDetector::Streamer(TBuffer &R__b)
-{
-  //
-  // Stream an object of class Detector.
-  //
-  if (R__b.IsReading()) {
-    Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-    TNamed::Streamer(R__b);
-    TAttLine::Streamer(R__b);
-    TAttMarker::Streamer(R__b);
-    AliModule::Streamer(R__b);
-    R__b >> fTimeGate;
-    R__b >> fIshunt;
-    //R__b >> fNhits;
-    //
-    // Stream the pointers but not the TClonesArrays
-    R__b >> fHits; // diff
-    R__b >> fDigits; // diff
-    
-  } else {
-    R__b.WriteVersion(AliDetector::IsA());
-    TNamed::Streamer(R__b);
-    TAttLine::Streamer(R__b);
-    TAttMarker::Streamer(R__b);
-    AliModule::Streamer(R__b);
-    R__b << fTimeGate;
-    R__b << fIshunt;
-    //R__b << fNhits;
-    //
-    // Stream the pointers but not the TClonesArrays
-    R__b << fHits; // diff
-    R__b << fDigits; // diff
-  }
-}
  

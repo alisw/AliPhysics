@@ -9,6 +9,8 @@ Int_t AliTPCFindClusters() {
      return 3;
    }
 
+   TDirectory *cwd = gDirectory;
+
    gAlice->GetEvent(0);
 
    AliTPC *TPC = (AliTPC*)gAlice->GetDetector("TPC"); 
@@ -25,7 +27,7 @@ Int_t AliTPCFindClusters() {
       cerr<<"Making clusters...\n";
       {
        AliTPCv1 &tpc=*((AliTPCv1*)TPC);
-       tpc.SetParam(dig); timer.Start(); tpc.Hits2Clusters(out); 
+       tpc.SetParam(dig); timer.Start(); cwd->cd(); tpc.Hits2Clusters(out); 
       }
       break;
    case 2:
@@ -33,7 +35,7 @@ Int_t AliTPCFindClusters() {
       {
        delete gAlice; gAlice=0;
        AliTPCv2 tpc; 
-       tpc.SetParam(dig); timer.Start(); tpc.Digits2Clusters(out); 
+       tpc.SetParam(dig); timer.Start(); cwd->cd(); tpc.Digits2Clusters(out); 
       }
       break;
    default:

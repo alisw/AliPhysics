@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/11/02 09:25:53  cblume
+Change also the dictionary to AliTRDdataArray
+
 Revision 1.8  2000/11/01 15:20:13  cblume
 Change AliTRDdataArrayI to AliTRDdataArray in MakeBranch()
 
@@ -56,8 +59,11 @@ Add new class AliTRDdigitsManager
 //  AliTRDdataArray objects.                                                 //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+#include <iostream.h>
  
+#include <TROOT.h>
 #include <TTree.h>                                                              
+#include <TFile.h>
 
 #include "AliRun.h"
 
@@ -146,7 +152,7 @@ void AliTRDdigitsManager::SetRaw()
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdigitsManager::MakeBranch()
+Bool_t AliTRDdigitsManager::MakeBranch(char *file)
 {
   //
   // Creates the branches for the digits and the dictionary in the digits tree
@@ -156,17 +162,18 @@ Bool_t AliTRDdigitsManager::MakeBranch()
 
   Bool_t status = kTRUE;
 
+  //TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("TRD.Digits.root");
+
   if (gAlice->TreeD()) {
 
     // Make the branch for the digits
     if (fDigits) {
-      //const AliTRDdataArrayI *kDigits = 
-      //     (AliTRDdataArrayI *) fDigits->At(0);
       const AliTRDdataArray *kDigits = 
            (AliTRDdataArray *) fDigits->At(0);
       if (kDigits) {
-        gAlice->TreeD()->Branch("TRDdigits",kDigits->IsA()->GetName()
-                                           ,&kDigits,buffersize,1);
+          gAlice->MakeBranchInTree(gAlice->TreeD(), 
+                                   "TRDdigits", kDigits->IsA()->GetName(),
+                                   &kDigits,buffersize, 1,file) ;
         printf("AliTRDdigitsManager::MakeBranch -- ");
         printf("Making branch TRDdigits\n");
       }
@@ -183,19 +190,18 @@ Bool_t AliTRDdigitsManager::MakeBranch()
       Char_t branchname[15];
       sprintf(branchname,"TRDdictionary%d",iDict);
       if (fDictionary[iDict]) {
-        //const AliTRDdataArrayI *kDictionary = 
-        //     (AliTRDdataArrayI *) fDictionary[iDict]->At(0);
         const AliTRDdataArray *kDictionary = 
              (AliTRDdataArray *) fDictionary[iDict]->At(0);
         if (kDictionary) {
-          gAlice->TreeD()->Branch(branchname,kDictionary->IsA()->GetName()
-                                            ,&kDictionary,buffersize,1);
+            gAlice->MakeBranchInTree(gAlice->TreeD(), 
+                                     branchname,kDictionary->IsA()->GetName(),
+                                     &kDictionary,buffersize, 1,file) ;
           printf("AliTRDdigitsManager::MakeBranch -- ");
           printf("Making branch %s\n",branchname);
-	}
+	    }
         else {
           status = kFALSE;
-	}
+	    }
       }
       else {
         status = kFALSE;

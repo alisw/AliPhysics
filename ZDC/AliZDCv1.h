@@ -23,7 +23,9 @@ public:
   virtual void  CreateZDC();
   virtual void  CreateMaterials();
   Int_t         Digitize(Int_t Det, Int_t Quad, Int_t Light);
-  virtual void  MakeBranch(Option_t* opt);
+  virtual void  FinishEvent();
+  virtual void  SDigits2Digits();
+  virtual void  MakeBranch(Option_t* opt, char *file=0);
   virtual Int_t IsVersion() const {return 1;}
   virtual void  DrawModule();
   virtual void  Init();

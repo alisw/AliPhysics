@@ -15,12 +15,18 @@
 
 /*
 $Log$
+Revision 1.4  2000/12/21 22:14:38  morsch
+Clean-up of coding rule violations.
+
 Revision 1.3  2000/12/21 17:51:54  morsch
 RN3 violations corrected
 
 Revision 1.2  2000/11/23 10:09:39  gosset
 Bug correction in AliMUONRecoDisplay.
 Copyright, $Log$
+Copyright, Revision 1.4  2000/12/21 22:14:38  morsch
+Copyright, Clean-up of coding rule violations.
+Copyright,
 Copyright, Revision 1.3  2000/12/21 17:51:54  morsch
 Copyright, RN3 violations corrected
 Copyright,, $Id$, comments at the right place for automatic documentation,
@@ -172,7 +178,6 @@ void AliMUONRecoDisplay::MapEvent(Int_t nevent)
    if (fEvGen) fEvGen->Clear();
    fEvGen->SetNoEvent(nevent);
    // get list of particles
-   TClonesArray *particles = gAlice->Particles();
    // connect MUON module
    AliDetector *pMUON = gAlice->GetDetector("MUON");
    if (!pMUON) {
@@ -190,7 +195,7 @@ void AliMUONRecoDisplay::MapEvent(Int_t nevent)
    for (Int_t track=0; track<ntracks; track++) {
       hit = (AliMUONHit *) pMUON->FirstHit(track);
       if (!hit) continue;
-      particle = (TParticle *) particles->UncheckedAt(hit->Track());
+      particle = gAlice->Particle(hit->Track());
       if (IsReconstructible(track) && TMath::Abs(particle->GetPdgCode())==13) {
          gtrack = fEvGen->AddEmptyTrack();
 	 gtrack->SetSign(TMath::Sign((Int_t)1, -particle->GetPdgCode()));

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/07/12 08:56:25  fca
+Coding convention correction and warning removal
+
 Revision 1.4  2000/07/11 18:24:59  fca
 Coding convention corrections + few minor bug fixes
 
@@ -42,10 +45,9 @@ AliHit::AliHit(Int_t shunt, Int_t track)
   //
   // Standard constructor
   //
-  TClonesArray &particles = *(gAlice->Particles());
   if(shunt) {
     int primary = gAlice->GetPrimary(track);
-    ((TParticle *)particles[primary])->SetBit(kKeepBit);
+    gAlice->Particle(primary)->SetBit(kKeepBit);
     fTrack=primary;
   } else {
     fTrack=track;

@@ -93,7 +93,6 @@ Int_t AliITSHits2Digits()
   AliITSsimulationSSD *sim2=new AliITSsimulationSSD(seg2,res2);
   ITS->SetSimulationModel(2,sim2);
 
-
   cerr<<"Digitizing ITS...\n";
   
   TStopwatch timer;

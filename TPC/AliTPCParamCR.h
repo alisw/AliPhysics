@@ -42,9 +42,9 @@ public:
   AliTPCPRF2D * GetOuterPRF() const {return fOuterPRF;}
   AliTPCRF1D  * GetTimeRF()   const {return fTimeRF;}
 protected:
-  AliTPCPRF2D * fInnerPRF;         //pad response function object for inner sector
-  AliTPCPRF2D * fOuterPRF;         //pad response function object for inner sector  
-  AliTPCRF1D  * fTimeRF;           //time response function object
+  AliTPCPRF2D * fInnerPRF;         //!pad response function object for inner sector
+  AliTPCPRF2D * fOuterPRF;         //!pad response function object for inner sector  
+  AliTPCRF1D  * fTimeRF;           //!time response function object
   Float_t       fFacSigma;         //factor-how many sigma of response I accept
   ClassDef(AliTPCParamCR,1)  //parameter  object for set:TPC
 };

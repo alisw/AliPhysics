@@ -11,7 +11,7 @@ class TTree;
 class TGeometry;
 class TDatabasePDG;
 class TRandom;
-class AliMCQA;
+class TParticle;
 #include <TArrayI.h>
 #include "TClonesArray.h"
 #include <TArrayF.h>
@@ -29,6 +29,7 @@ class AliLegoGenerator;
 class AliGenerator;
 class AliLegoGenerator;
 #include "AliMCProcess.h"
+class AliMCQA;
 
 enum {kKeepBit=1, kDaughtersBit=2, kDoneBit=4};
 
@@ -56,7 +57,6 @@ public:
    virtual  void  DumpPart (Int_t i) const;
    virtual  void  DumpPStack () const;
    virtual AliMagF *Field() const {return fField;}
-   virtual  void  FillTree();
    virtual  void  PreTrack();
    virtual  void  PostTrack();
    virtual  void  FinishPrimary();
@@ -85,21 +85,31 @@ public:
 			       Float_t &tof);
    Int_t          GetNtrack() const {return fNtrack;}
    virtual  Int_t GetPrimary(Int_t track) const;
+   virtual  void  Hits2Digits(const char *detector=0);
+   virtual  void  Hits2SDigits(const char *detector=0);
+   virtual  void  SDigits2Digits(const char *detector=0);
    virtual  void  InitMC(const char *setup="Config.C");
    virtual  void  Init(const char *setup="Config.C") {InitMC(setup);}
    Bool_t         IsFolder() const {return kTRUE;}
    virtual AliLego* Lego() const {return fLego;}
-   virtual  void  MakeTree(Option_t *option="KH");
-   TClonesArray  *Particles() {return fParticles;};
+   virtual  void  MakeTree(Option_t *option="KH", char *file = 0);
+   virtual  void  MakeBranchInTree(TTree *tree, const char* cname, void* address, Int_t size=32000, char *file=0);
+   virtual  void  MakeBranchInTree(TTree *tree, const char* cname, const char* name, void* address, Int_t size=32000, Int_t splitlevel=1, char *file=0);
+
+   TObjArray     *Particles() {return fParticleMap;};
+   TParticle     *Particle(Int_t i);
    virtual  void  PurifyKine();
    virtual  Int_t PurifyKine(Int_t lastSavedTrack, Int_t nofTracks);
    virtual  void  BeginEvent();
    virtual  void  ResetDigits();
+   virtual  void  ResetSDigits();
    virtual  void  ResetHits();
    virtual  void  ResetPoints();
    virtual  void  SetTransPar(char *filename="$(ALICE_ROOT)/data/galice.cuts");
+   virtual  void  SetBaseFile(char *filename="galice.root");
+   virtual  void  OpenBaseFile(const char *option);
    virtual  void  ReadTransPar();
-   virtual  void  ResetStack() {fCurrent=-1;fHgwmk=0;fNtrack=0;fParticles->Clear();}
+   virtual  void  ResetStack() {fCurrent=-1;fHgwmk=fNtrack=fLoadPoint=0;fParticles->Clear();}
    virtual  void  RunMC(Int_t nevent=1, const char *setup="Config.C");
    virtual  void  Run(Int_t nevent=1, const char *setup="Config.C") 
   {RunMC(nevent,setup);}
@@ -131,47 +141,54 @@ public:
 
 
    TTree         *TreeD() {return fTreeD;}
+   TTree         *TreeS() {return fTreeS;}
    TTree         *TreeE() {return fTreeE;}
    TTree         *TreeH() {return fTreeH;}
    TTree         *TreeK() {return fTreeK;}
    TTree         *TreeR() {return fTreeR;}
 
 protected:
-  Int_t         fRun;          //Current run number
-  Int_t         fEvent;        //Current event number (from 1)
-  Int_t         fNtrack;       //Number of tracks
-  Int_t         fHgwmk;        //Last track purified
-  Int_t         fCurrent;      //Last track returned from the stack
-  Int_t         fDebug;        //Debug flag
-  AliHeader     fHeader;       //Header information
-  TTree        *fTreeD;        //Pointer to Tree for Digits
-  TTree        *fTreeK;        //Pointer to Tree for Kinematics
-  TTree        *fTreeH;        //Pointer to Tree for Hits
-  TTree        *fTreeE;        //Pointer to Tree for Header
-  TTree        *fTreeR;        //Pointer to Tree for Reconstructed Objects
-  TObjArray    *fModules;      //List of Detectors
-  TClonesArray *fParticles;    //Pointer to list of particles
-  TGeometry    *fGeometry;     //Pointer to geometry
-  AliDisplay   *fDisplay;      //Pointer to event display
-  TStopwatch    fTimer;        //Timer object
-  AliMagF      *fField;        //Magnetic Field Map
-  AliMC        *fMC;           //pointer to MonteCarlo object
-  TArrayI      *fImedia;       //Array of correspondence between media and detectors
-  Int_t         fNdets;        //Number of detectors
-  Float_t       fTrRmax;       //Maximum radius for tracking
-  Float_t       fTrZmax;       //Maximu z for tracking
-  AliGenerator *fGenerator;    //Generator used in the MC
-  Bool_t        fInitDone;     //true when initialisation done
-  AliLego      *fLego;         //pointer to aliLego object if it exists
-  TDatabasePDG *fPDGDB;        //Particle factory object!
-  TList        *fHitLists;     //Lists of hits to be remapped by PurifyKine
-  TArrayF       fEventEnergy;  //Energy deposit for current event
-  TArrayF       fSummEnergy;   //Energy per event in each volume
-  TArrayF       fSum2Energy;   //Energy squared per event in each volume
-  TString       fConfigFunction; //Configuration file to be executed
-  TRandom      *fRandom;       // Pointer to the random number generator
-  AliMCQA      *fMCQA;         //Pointer to MC Quality assurance class
-  TString       fTransParName; // Name of the transport parameters file
+  Int_t          fRun;               //! Current run number
+  Int_t          fEvent;             //! Current event number (from 1)
+  Int_t          fNtrack;            //  Number of tracks
+  Int_t          fHgwmk;             //! Last track purified
+  Int_t          fLoadPoint;         //! Next free position in the particle buffer
+  Int_t          fCurrent;           //! Last track returned from the stack
+  Int_t          fDebug;             //  Debug flag
+  AliHeader      fHeader;            //  Header information
+  TTree         *fTreeD;             //! Pointer to Tree for Digits
+  TTree         *fTreeS;             //! Pointer to Tree for SDigits
+  TTree         *fTreeK;             //! Pointer to Tree for Kinematics
+  TTree         *fTreeH;             //! Pointer to Tree for Hits
+  TTree         *fTreeE;             //! Pointer to Tree for Header
+  TTree         *fTreeR;             //! Pointer to Tree for Reconstructed Objects
+  TObjArray     *fModules;           //  List of Detectors
+  TClonesArray  *fParticles;         //! Pointer to list of particles
+  TGeometry     *fGeometry;          //  Pointer to geometry
+  AliDisplay    *fDisplay;           //! Pointer to event display
+  TStopwatch     fTimer;             //  Timer object
+  AliMagF       *fField;             //  Magnetic Field Map
+  AliMC         *fMC;                //! Pointer to MonteCarlo object
+  TArrayI       *fImedia;            //! Array of correspondence between media and detectors
+  Int_t          fNdets;             //  Number of detectors
+  Float_t        fTrRmax;            //  Maximum radius for tracking
+  Float_t        fTrZmax;            //  Maximu z for tracking
+  AliGenerator  *fGenerator;         //  Generator used in the MC
+  Bool_t         fInitDone;          //! True when initialisation done
+  AliLego       *fLego;              //! Pointer to aliLego object if it exists
+  TDatabasePDG  *fPDGDB;             //  Particle factory object
+  TList         *fHitLists;          //! Lists of hits to be remapped by PurifyKine
+  TArrayF        fEventEnergy;       //! Energy deposit for current event
+  TArrayF        fSummEnergy;        //! Energy per event in each volume
+  TArrayF        fSum2Energy;        //! Energy squared per event in each volume
+  TString        fConfigFunction;    //  Configuration file to be executed
+  TRandom       *fRandom;            //  Pointer to the random number generator
+  AliMCQA       *fMCQA;              //  Pointer to MC Quality assurance class
+  TString        fTransParName;      //  Name of the transport parameters file
+  TString        fBaseFileName;      //  Name of the base root file
+  TParticle     *fParticleBuffer;    //! Pointer to current particle for writing
+  TObjArray     *fParticleMap;       //! Map of particles in the supporting TClonesArray
+  TArrayI        fParticleFileMap;   //  Map of particles in the file
 
 private:
 

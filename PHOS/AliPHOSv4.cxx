@@ -31,6 +31,7 @@
 #include "TParticle.h"
 #include "TTree.h"
 #include "TGeometry.h"
+#include "TFile.h"
 
 // --- Standard library ---
 
@@ -238,18 +239,19 @@ Float_t AliPHOSv4::GetBigBox(Int_t index)
 }
 
 //___________________________________________________________________________
-void AliPHOSv4::MakeBranch(Option_t* opt)
+void AliPHOSv4::MakeBranch(Option_t* opt, char *file)
 {  
   // Create new branch in the current reconstructed Root Tree
  
-  AliDetector::MakeBranch(opt) ;
+  AliDetector::MakeBranch(opt,file) ;
   
   char branchname[10];
   sprintf(branchname,"%s",GetName());
   char *cd = strstr(opt,"R");
   
   if (fFastRecParticles && gAlice->TreeR() && cd) {
-    gAlice->TreeR()->Branch(branchname, &fFastRecParticles, fBufferSize);
+    gAlice->MakeBranchInTree(gAlice->TreeR(), 
+                             branchname, &fFastRecParticles, fBufferSize, file) ;
   }
 }
 

@@ -14,6 +14,7 @@
 class TClonesArray;
 class TBrowser;
 class TArrayI;
+class TFile;
 
 class AliModule : public TNamed , public TAttLine, public TAttMarker,
                   public AliRndm {
@@ -71,6 +72,10 @@ public:
   Error("AddDigit","Digits cannot be added to module %s\n",fName.Data());}
   virtual void        AddHit(Int_t, Int_t*, Float_t *) {
   Error("AddDigit","Hits cannot be added to module %s\n",fName.Data());}
+  virtual void        Hits2SDigits() {}
+  virtual void        SDigits2Digits() {}
+  virtual void        Digits2Raw() {}
+  virtual void        Raw2Digits() {}
   virtual void        Browse(TBrowser *) {}
   virtual void        CreateGeometry() {}
   virtual void        CreateMaterials() {}
@@ -87,9 +92,10 @@ public:
   //virtual void        Hits2Digits() {}
   virtual void        Init() {}
   virtual void        LoadPoints(Int_t ) {}
-  virtual void        MakeBranch(Option_t *) {}
+  virtual void        MakeBranch(Option_t *, char *file=0 ) {}
   virtual void        Paint(Option_t *) {}
   virtual void        ResetDigits() {}
+  virtual void        ResetSDigits() {}
   virtual void        ResetHits() {}
   virtual void        ResetPoints() {}
   virtual void        SetTreeAddress() {}
@@ -108,13 +114,13 @@ public:
 protected:      
   // Data members
   
-  TString       fEuclidMaterial;  //Name of the Euclid file for materials (if any)
-  TString       fEuclidGeometry;  //Name of the Euclid file for geometry (if any)
+  TString       fEuclidMaterial;  //!Name of the Euclid file for materials (if any)
+  TString       fEuclidGeometry;  //!Name of the Euclid file for geometry (if any)
   
-  TArrayI      *fIdtmed;      //List of tracking medium numbers
-  TArrayI      *fIdmate;      //List of material numbers
-  Int_t         fLoMedium;   //Minimum tracking medium ID for this Module
-  Int_t         fHiMedium;   //Maximum tracking medium ID for this Module
+  TArrayI      *fIdtmed;      //!List of tracking medium numbers
+  TArrayI      *fIdmate;      //!List of material numbers
+  Int_t         fLoMedium;   //!Minimum tracking medium ID for this Module
+  Int_t         fHiMedium;   //!Maximum tracking medium ID for this Module
 
   Bool_t        fActive;      //Detector activity flag
   TList        *fHistograms;  //List of histograms

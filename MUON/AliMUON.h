@@ -50,7 +50,7 @@ class AliMUON : public  AliDetector {
     TClonesArray  *PadHits() {return fPadHits;}
     TClonesArray  *LocalTrigger() {return fLocalTrigger;}
     TClonesArray  *GlobalTrigger() {return fGlobalTrigger;}
-    virtual void   MakeBranch(Option_t *opt=" ");
+    virtual void   MakeBranch(Option_t *opt=" ", char *file=0);
     void           SetTreeAddress();
     virtual void   ResetHits();
     virtual void   ResetDigits();
@@ -59,6 +59,7 @@ class AliMUON : public  AliDetector {
     // Cluster Finding
     virtual void   FindClusters(Int_t event ,Int_t lastEntry);
     // Digitisation 
+    virtual void   SDigits2Digits();      
     virtual void   Digitise(Int_t nev,Int_t bgrEvent, Option_t *opt1=" ",
     			    Option_t *opt2=" ",Text_t *name=" ");
     virtual void   SortTracks(Int_t *tracks,Int_t *charges, Int_t ntr);

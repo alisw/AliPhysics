@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.7  2000/11/02 09:10:57  jbarbosa
+  Removed AliRICHRecHit.h from include.
+
   Revision 1.6  2000/10/03 21:44:09  morsch
   Use AliSegmentation and AliHit abstract base classes.
 
@@ -162,10 +165,8 @@ TParticle *AliRICHPoints::GetParticle() const
   //
   //   Returns pointer to particle index in AliRun::fParticles
   //
-  TClonesArray *particles = gAlice->Particles();
-  Int_t nparticles = particles->GetEntriesFast();
-  if (fIndex < 0 || fIndex >= nparticles) return 0;
-  return (TParticle*)particles->UncheckedAt(fIndex);
+  if (fIndex < 0 || fIndex >= gAlice->GetNtrack()) return 0;
+  return gAlice->Particle(fIndex);
 }
 
 //_____________________________________________________________________________
@@ -276,8 +277,7 @@ void AliRICHPoints::ShowRing(Int_t highlight) {
 	if (marker)
 	  marker->Draw();
       }
-      TClonesArray *particles=gAlice->Particles();
-      TParticle *p = (TParticle*)particles->UncheckedAt(fIndex);
+      TParticle *p = gAlice->Particle(fIndex);
       printf("\nTrack index %d\n",fTrackIndex);
       printf("Particle ID %d\n",p->GetPdgCode());
       printf("Parent %d\n",p->GetFirstMother());

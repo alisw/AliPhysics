@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2001/01/17 10:56:08  hristov
+Corrections to destructors
+
 Revision 1.15  2001/01/01 13:10:42  hristov
 Local definition of digits removed
 
@@ -83,7 +86,9 @@ Introduction of the Copyright and cvs Log
 #include "TNode.h"
 #include "TRandom.h"
 #include "TGeometry.h"
+#include "TFile.h"
 #include "TParticle.h"
+
 #include "AliRun.h"
 #include "AliSTART.h"
 #include "AliSTARTdigit.h"
@@ -213,7 +218,7 @@ void AliSTART::Init()
 }
 
 //---------------------------------------------------------------------------
-void AliSTART::MakeBranch(Option_t* option)
+void AliSTART::MakeBranch(Option_t* option, char *file)
 {
   //
   // Specific START branches
@@ -223,16 +228,22 @@ void AliSTART::MakeBranch(Option_t* option)
   char branchname[10];
   sprintf(branchname,"%s",GetName());
 
-  AliDetector::MakeBranch(option);
+  AliDetector::MakeBranch(option,file);
 
-  TTree *td = gAlice->TreeD();
-  digits = new AliSTARTdigit();
-  td->Branch(branchname,"AliSTARTdigit",&digits, buffersize);
-  printf("Making Branch %s for digits\n",branchname);
-    
+  char *cD = strstr(option,"D");
+  
+  if (cD) {
+    digits = new AliSTARTdigit();
+    gAlice->MakeBranchInTree(gAlice->TreeD(), 
+                             branchname, "AliSTARTdigit", digits, buffersize, 1, file) ;
+  } 
 /*
-  gAlice->TreeR()->Branch(branchname,"Int_t",&fZposit, buffersize);
-  printf("Making Branch %s for vertex position %d\n",branchname);
+  char *cR = strstr(option,"R");
+  
+  if (cR)   {  
+    gAlice->MakeBranchInTree(gAlice->TreeR(), 
+                             branchname, "Int_t", &fZposit, buffersize, 1, file) ;
+  }
   */
 }    
 
@@ -278,7 +289,6 @@ void AliSTART::Hit2digit(Int_t evnum)
     if (nparticles <= 0) return;
     printf("\n nparticles %d\n",nparticles);
     
-    TClonesArray *particles = gAlice->Particles();
    
     sprintf(nameTH,"TreeH%d",evnum);
     printf("%s\n",nameTH);
@@ -289,7 +299,7 @@ void AliSTART::Hit2digit(Int_t evnum)
     for (Int_t track=0; track<ntracks;track++) {
       gAlice->ResetHits();
       nbytes += th->GetEvent(track);
-      particle=(TParticle*)particles->UncheckedAt(track);
+      particle=gAlice->Particle(track);
       nhits =fHits->GetEntriesFast();
       
       for (hit=0;hit<nhits;hit++) {

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1.2.1  2001/01/15 13:38:32  barbera
+New ITS detailed geometry to be used for the PPR
+
 Revision 1.12  2000/12/10 16:00:44  barbera
 Added last definition of special media like end-ladder boxes and cones
 
@@ -238,20 +241,21 @@ void AliITSvPPRsymm::CreateGeometry(){
 ////////////////////////////////////////////////////////////////////////
   
   //INNER RADII OF THE SILICON LAYERS 
-  Float_t rl[6]    = { 3.8095,7.,15.,24.,38.1,43.5765 };   
+  //  Float_t rl[6]    = { 3.8095,7.,15.,24.,38.1,43.5765 };   
   //THICKNESSES OF LAYERS (in % radiation length)
   Float_t drl[6]   = { 1.03,1.03,0.94,0.95,0.91,0.87 };   
   //HALF LENGTHS OF LAYERS  
+  /*
   Float_t dzl[6]   = { 14.35,14.35,25.1,32.1,49.405,55.27 };
   //LENGTHS OF END-LADDER BOXES (ALL INCLUDED)
   Float_t dzb[6]   = { 12.4,12.4,13.5,15.,7.5,7.5 };    
   //THICKNESSES OF END-LADDER BOXES (ALL INCLUDED)
   Float_t drb[6]   = { rl[1]-rl[0],0.2,5.,5.,4.,4. };         
+  */
 
  
   Float_t dits[50], rlim, zmax;
-  Float_t zpos;
-  Float_t pcits[50], xltpc;
+  Float_t xltpc;
   Int_t idrotm[999], i;
   Float_t dgh[50];
   

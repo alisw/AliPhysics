@@ -13,6 +13,7 @@
 #include "AliHit.h"
 
 class TClonesArray;
+class TFile;
 class AliPMDRecPoint;
 
 class AliPMD : public AliDetector {
@@ -39,7 +40,7 @@ public:
   virtual void  SetPadSize(Float_t, Float_t, Float_t, Float_t);
   virtual void  StepManager();
   virtual void  AddRecPoint(const AliPMDRecPoint &p);
-  virtual void  MakeBranch(Option_t* option);
+  virtual void  MakeBranch(Option_t* option, char *file=0);
   virtual void  SetTreeAddress();
   virtual void  ResetHits();
   

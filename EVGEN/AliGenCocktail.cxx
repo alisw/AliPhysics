@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/12/21 16:24:06  morsch
+Coding convention clean-up
+
 Revision 1.8  2000/10/27 13:53:29  morsch
 AddGenerator: check testbit before setting the pT and momentum range
 (D.Y. Peressounko)
@@ -117,7 +120,7 @@ AddGenerator(AliGenerator *Generator, char* Name, Float_t RateExp)
     AliGenCocktailEntry *entry;
     AliGenCocktailEntry *e1;
     AliGenCocktailEntry *e2;
-    TClonesArray *partArray = gAlice->Particles();
+    TObjArray *partArray = gAlice->Particles();
     //
     // Loop over generators and generate events
     Int_t igen=0;

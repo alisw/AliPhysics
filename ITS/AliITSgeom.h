@@ -645,11 +645,11 @@ class AliITSgeom : public TObject {
  private:
     Int_t            fTrans;   //Flag to keep track of which transformation 
     Int_t            fNlayers; //The number of layers.
-    Int_t            *fNlad;   //Array of the number of ladders/layer(layer)
-    Int_t            *fNdet;   //Array of the number of detectors/ladder(layer)
+    Int_t            fNmodules;//The total number of modules
+    Int_t            *fNlad;   //!Array of the number of ladders/layer(layer)
+    Int_t            *fNdet;   //!Array of the number of detectors/ladder(layer)
     AliITSgeomMatrix **fGm;    //[fNmodules] Structure of trans. and rotation.
     TObjArray        *fShape;  //Array of shapes and detector information.
-    Int_t            fNmodules;//The total number of modules
     
     ClassDef(AliITSgeom,2) // ITS geometry class
 };

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2000/12/08 12:53:27  cblume
+Change in Copy() function for HP-compiler
+
 Revision 1.16  2000/12/07 12:20:46  cblume
 Go back to array compression. Use sampled PRF to speed up digitization
 
@@ -1062,7 +1065,7 @@ Bool_t AliTRDdigitizer::WriteDigits()
   printf("AliTRDdigitizer::WriteDigits -- ");
   printf("Write the digits tree %s for event %d.\n"
         ,treeName,fEvent);
-  gAlice->TreeD()->Write(treeName,2);
+  gAlice->TreeD()->Write(treeName,TObject::kOverwrite);
  
   return kTRUE;
 

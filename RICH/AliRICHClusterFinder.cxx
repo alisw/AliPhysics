@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.8  2000/11/02 09:11:12  jbarbosa
+  Removed AliRICHRecHit.h from include.
+
   Revision 1.7  2000/10/03 21:44:09  morsch
   Use AliSegmentation and AliHit abstract base classes.
 
@@ -1136,44 +1139,4 @@ AliRICHClusterFinder& AliRICHClusterFinder::operator=(const AliRICHClusterFinder
 // Assignment operator
     return *this;
     
-}
-
-//______________________________________________________________________________
-void AliRICHClusterFinder::Streamer(TBuffer &R__b)
-{
-   // Stream an object of class AliRICHClusterFinder.
-
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      TObject::Streamer(R__b);
-      R__b >> fSegmentation;
-      R__b >> fResponse;
-      R__b >> fRawClusters;
-      R__b >> fHitMap;
-      R__b >> fCogCorr;
-      R__b >> fDigits;
-      R__b >> fNdigits;
-      R__b >> fChamber;
-      R__b >> fNRawClusters;
-      R__b >> fNperMax;
-      R__b >> fDeclusterFlag;
-      R__b >> fClusterSize;
-      R__b >> fNPeaks;
-   } else {
-      R__b.WriteVersion(AliRICHClusterFinder::IsA());
-      TObject::Streamer(R__b);
-      R__b << fSegmentation;
-      R__b << fResponse;
-      R__b << fRawClusters;
-      R__b << fHitMap;
-      R__b << fCogCorr;
-      R__b << fDigits;
-      R__b << fNdigits;
-      R__b << fChamber;
-      R__b << fNRawClusters;
-      R__b << fNperMax;
-      R__b << fDeclusterFlag;
-      R__b << fClusterSize;
-      R__b << fNPeaks;
-   }
 }

@@ -356,20 +356,21 @@ void AliPHOSv1::Hit2Digit(Int_t ntracks){
   gAlice->TreeD()->Write(0,TObject::kOverwrite) ;
  
 }
+
 //___________________________________________________________________________
-void AliPHOSv1::MakeBranch(Option_t* opt)
+void AliPHOSv1::MakeBranch(Option_t* opt, char *file)
 {  
   // Create new branche in the current Root Tree in the digit Tree
   AliDetector::MakeBranch(opt) ;
   
   // Create new branches EMC<i> for hits in EMC modules
   
-  for( Int_t i=0; i<fGeom->GetNModules(); i++ ) GetEMCModule(i).MakeBranch("EMC",i+1);
+  for( Int_t i=0; i<fGeom->GetNModules(); i++ ) GetEMCModule(i).MakeBranch("EMC",i+1,file);
   
   // Create new branches CPV<i> for hits in CPV modules for IHEP geometry
   
   if ( strcmp(fGeom->GetName(),"IHEP") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0 ) {
-    for( Int_t i=0; i<fGeom->GetNCPVModules(); i++ ) GetCPVModule(i).MakeBranch("CPV",i+1);
+    for( Int_t i=0; i<fGeom->GetNCPVModules(); i++ ) GetCPVModule(i).MakeBranch("CPV",i+1,file);
   }
   
 }

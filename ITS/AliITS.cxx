@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.28  2000/12/18 14:02:00  barbera
+new version of the ITS tracking to take into account the new TPC track parametrization
+
 Revision 1.27  2000/12/08 13:49:27  barbera
 Hidden declaration in a for loop removed to be compliant with HP-UX compiler
 
@@ -727,21 +730,25 @@ void AliITS::GetTreeC(Int_t event)
 
 }
 //_____________________________________________________________________________
-void AliITS::MakeBranch(Option_t* option){
+void AliITS::MakeBranch(Option_t* option, char *file)
+{
   //
   // Creates Tree branches for the ITS.
   //
-
-
+  //
   Int_t buffersize = 4000;
   char branchname[30];
   sprintf(branchname,"%s",GetName());
 
-  AliDetector::MakeBranch(option);
+  AliDetector::MakeBranch(option,file);
 
+  char *cD = strstr(option,"D");
+  char *cR = strstr(option,"R");
 
-// one branch for digits per type of detector
-  
+  if (cD) {
+  //
+  // one branch for digits per type of detector
+  //
    char *det[3] = {"SPD","SDD","SSD"};
 
    char digclass[40];
@@ -758,30 +765,33 @@ void AliITS::MakeBranch(Option_t* option){
        (*fCtype)[i] = new TClonesArray(clclass,10000); 
    }
 
-
-  for (i=0; i<fgkNTYPES ;i++) {
+   for (i=0; i<fgkNTYPES ;i++) {
       if (fgkNTYPES==3) sprintf(branchname,"%sDigits%s",GetName(),det[i]);
-      else  sprintf(branchname,"%sDigits%d",GetName(),i+1);
-      
-      if (fDtype   && gAlice->TreeD()) {
-	  gAlice->TreeD()->Branch(branchname,&((*fDtype)[i]), buffersize);
-	  cout << "Making Branch " << branchname;
-	  cout << " for digits of type "<< i+1 << endl;
+      else  sprintf(branchname,"%sDigits%d",GetName(),i+1);      
+      if (fDtype && gAlice->TreeD()) {
+        gAlice->MakeBranchInTree(gAlice->TreeD(), 
+                                 branchname, &((*fDtype)[i]), buffersize, file) ;
+	    cout << "Making Branch " << branchname;
+	    cout << " for digits of type "<< i+1 << endl;
       }	
+    }
   }
 
+  if (cR) {
+  //
   // only one branch for rec points for all detector types
-  sprintf(branchname,"%sRecPoints",GetName());
+  //
+    sprintf(branchname,"%sRecPoints",GetName());
+ 
+    fRecPoints=new TClonesArray("AliITSRecPoint",10000);
 
-  fRecPoints=new TClonesArray("AliITSRecPoint",10000);
-
-  if (fRecPoints && gAlice->TreeR()) {
-    gAlice->TreeR()->Branch(branchname,&fRecPoints, buffersize);
-    cout << "Making Branch " << branchname;
-    cout << " for reconstructed space points" << endl;
+    if (fRecPoints && gAlice->TreeR()) {
+      gAlice->MakeBranchInTree(gAlice->TreeR(), 
+                               branchname, &fRecPoints, buffersize, file) ;
+      cout << "Making Branch " << branchname;
+      cout << " for reconstructed space points" << endl;
+    }
   }	
-
-
 }
 
 //___________________________________________
@@ -912,8 +922,8 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,Option_t *option,
 	//printf("background - ntracks1 - %d\n",ntracks1);
    }
 
-    Int_t npart = gAlice->GetEvent(evnt);
-    if(npart<=0) return;
+    //Int_t npart = gAlice->GetEvent(evnt);
+    //if(npart<=0) return;
     TClonesArray *itsHits = this->Hits();
     Int_t lay,lad,det,index;
     AliITShit *itsHit=0;
@@ -980,6 +990,86 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,Option_t *option,
 
 }
 
+//____________________________________________________________________________
+
+void AliITS::SDigits2Digits()
+{
+  
+  AliITSgeom *geom = GetITSgeom();
+  
+  // SPD
+  AliITSDetType *iDetType;
+  iDetType=DetType(0);
+  AliITSsegmentationSPD *seg0=(AliITSsegmentationSPD*)iDetType->GetSegmentationModel();
+  AliITSresponseSPD *res0 = (AliITSresponseSPD*)iDetType->GetResponseModel();
+  AliITSsimulationSPD *sim0=new AliITSsimulationSPD(seg0,res0);
+  SetSimulationModel(0,sim0);
+  // test
+  // printf("SPD dimensions %f %f \n",seg0->Dx(),seg0->Dz());
+  // printf("SPD npixels %d %d \n",seg0->Npz(),seg0->Npx());
+  // printf("SPD pitches %d %d \n",seg0->Dpz(0),seg0->Dpx(0));
+  // end test
+  // 
+  // SDD
+  //Set response functions
+  Float_t baseline = 10.;
+  Float_t noise = 1.75;
+  
+  // SDD compression param: 2 fDecrease, 2fTmin, 2fTmax or disable, 2 fTolerance
+
+  iDetType=DetType(1);
+  AliITSresponseSDD *res1 = (AliITSresponseSDD*)iDetType->GetResponseModel();
+  if (!res1) {
+    res1=new AliITSresponseSDD();
+    SetResponseModel(1,res1);
+  }
+   res1->SetMagicValue(900.);
+   Float_t maxadc = res1->MaxAdc();    
+   Float_t topValue = res1->MagicValue();
+   Float_t norm = maxadc/topValue;
+
+   Float_t fCutAmp = baseline + 2.*noise;
+   fCutAmp *= norm;
+   Int_t cp[8]={0,0,(int)fCutAmp,(int)fCutAmp,0,0,0,0}; //1D
+
+  //res1->SetZeroSupp("2D");
+  res1->SetZeroSupp("1D");
+  res1->SetNoiseParam(noise,baseline);
+  res1->SetDo10to8(kTRUE);
+  res1->SetCompressParam(cp);
+  res1->SetMinVal(4);
+  res1->SetDiffCoeff(3.6,40.);
+  //res1->SetMagicValue(96.95);
+  AliITSsegmentationSDD *seg1=(AliITSsegmentationSDD*)iDetType->GetSegmentationModel();
+  if (!seg1) {
+    seg1 = new AliITSsegmentationSDD(geom,res1);
+    SetSegmentationModel(1,seg1);
+  }
+  AliITSsimulationSDD *sim1=new AliITSsimulationSDD(seg1,res1);
+  sim1->SetDoFFT(1);
+  sim1->SetCheckNoise(kFALSE);
+  SetSimulationModel(1,sim1);
+
+  // SSD
+  iDetType=DetType(2);
+  AliITSsegmentationSSD *seg2=(AliITSsegmentationSSD*)iDetType->GetSegmentationModel();
+  AliITSresponseSSD *res2 = (AliITSresponseSSD*)iDetType->GetResponseModel();
+  res2->SetSigmaSpread(3.,2.);
+  AliITSsimulationSSD *sim2=new AliITSsimulationSSD(seg2,res2);
+  SetSimulationModel(2,sim2);
+ 
+  cerr<<"Digitizing ITS...\n";
+ 
+  TStopwatch timer;
+  timer.Start();
+  HitsToDigits(0,0,-1," ","All"," ");
+  timer.Stop(); timer.Print();
+
+  delete sim0;
+  delete sim1;
+  delete sim2;
+}
+
 
 //____________________________________________________________________________
 void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size, Option_t *option, Option_t *opt,Text_t *filename)
@@ -1041,7 +1131,7 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size, Option_t *optio
 
    char hname[30];
    sprintf(hname,"TreeD%d",evNumber);
-   gAlice->TreeD()->Write(hname);
+   gAlice->TreeD()->Write(hname,TObject::kOverwrite);
    // reset tree
    gAlice->TreeD()->Reset();
 
@@ -1118,7 +1208,7 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt)
 
    char hname[30];
    sprintf(hname,"TreeR%d",evNumber);
-   gAlice->TreeR()->Write(hname);
+   gAlice->TreeR()->Write(hname,TObject::kOverwrite);
    // reset tree
    gAlice->TreeR()->Reset();
 
@@ -1191,7 +1281,7 @@ Option_t *option,Option_t *opt,Text_t *filename)
 
    char hname[30];
    sprintf(hname,"TreeR%d",evNumber);
-   gAlice->TreeR()->Write(hname);
+   gAlice->TreeR()->Write(hname,TObject::kOverwrite);
    // reset tree
    gAlice->TreeR()->Reset();
 

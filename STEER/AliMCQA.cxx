@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2001/01/17 10:50:50  hristov
+Corrections to destructors
+
 Revision 1.3  2000/12/18 14:16:31  alibrary
 HP compatibility fix
 
@@ -223,19 +226,55 @@ void AliMCQA::StepManager(Int_t id)
   //
   // Fill Global histograms first
   //
-  hist = (TH1F*) fQAHist->FindObject("hMCVcalls");
-  hist->Fill(gMC->CurrentVolID(copy));
-  hist = (TH1F*) fQAHist->FindObject("hMCMcalls");
-  hist->Fill(id);
+
+
+  static TH1F* mcvcalls = (TH1F*) fQAHist->FindObject("hMCVcalls");
+  mcvcalls->Fill(gMC->CurrentVolID(copy));
+  static TH1F* mcmcalls = (TH1F*) fQAHist->FindObject("hMCMcalls");
+  mcmcalls->Fill(id);
+
   //
   // Now the step manager histograms
   //
   if(fOldId != id) {
-    TLorentzVector p, x;
+    static  Double_t mpi0=0;
+    static  Double_t mpip=0;
+    static  Double_t mpim=0;
+    static  Double_t mep=0;
+    static  Double_t mem=0;
+    Double_t mass=0;
+    Int_t num = gMC->TrackPid();
+
+    switch (num) {
+    case 111: 
+      if (mpi0==0) mpi0=gAlice->PDGDB()->GetParticle(num)->Mass(); 
+      mass=mpi0;
+      break;
+    case 211:
+      if (mpip==0) mpip=gAlice->PDGDB()->GetParticle(num)->Mass(); 
+      mass=mpip;
+      break;
+    case -211:
+      if (mpim==0) mpim=gAlice->PDGDB()->GetParticle(num)->Mass(); 
+      mass=mpim;
+      break;
+    case 11:
+      if (mep==0) mep=gAlice->PDGDB()->GetParticle(num)->Mass(); 
+      mass=mep;
+      break;
+    case -11:
+      if (mem==0) mem=gAlice->PDGDB()->GetParticle(num)->Mass(); 
+      mass=mem;
+      break;
+    default:
+      mass =gAlice->PDGDB()->GetParticle(num)->Mass();
+      break; 
+    }
+
+    static TLorentzVector p, x;
     gMC->TrackMomentum(p);
     gMC->TrackPosition(x);
-    Double_t energy = TMath::Max(
-      p[3]-gAlice->PDGDB()->GetParticle(gMC->TrackPid())->Mass(),1.e-12);
+    Double_t energy = TMath::Max(p[3]-mass,1.e-12);
     if(fOldId > -1) {
       if(!fDetDone[fOldId] && !gMC->IsNewTrack()) {
 	TList *histold = (TList*) (*fQAList)[fOldId];

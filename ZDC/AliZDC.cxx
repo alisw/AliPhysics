@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2000/12/12 13:17:01  coppedis
+Minor corrections suggested by P. Hristov
+
 Revision 1.12  2000/12/01 08:19:01  coppedis
 Adding a message error if ZDC is constructed without DIPO
 
@@ -51,8 +54,9 @@ Introduction of the Copyright and cvs Log
 // --- ROOT system
 #include <TBRIK.h>
 #include <TNode.h>
-#include "TGeometry.h"
-#include "TTree.h"
+#include <TGeometry.h>
+#include <TFile.h>
+#include <TTree.h>
 
 // --- AliRoot header files
 #include "AliZDC.h"
@@ -77,9 +81,7 @@ AliZDC::AliZDC()
 
   fNhits = 0;
   fNStHits = 0;
-  
   fStHits = new TClonesArray("AliZDCHit",1000);
-  
   fNPrimaryHits = 0;
 }
  

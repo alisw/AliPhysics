@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.40  2001/01/24 20:58:03  jbarbosa
+  Enhanced BuildGeometry. Now the photocathodes are drawn.
+
   Revision 1.39  2001/01/22 21:40:24  jbarbosa
   Removing magic numbers
 
@@ -298,6 +301,26 @@ void AliRICH::AddCerenkov(Int_t track, Int_t *vol, Float_t *cerenkovs)
     TClonesArray &lcerenkovs = *fCerenkovs;
     new(lcerenkovs[fNcerenkovs++]) AliRICHCerenkov(fIshunt,track,vol,cerenkovs);
     //printf ("Done for Cerenkov %d\n\n\n\n",fNcerenkovs);
+}
+//___________________________________________
+void AliRICH::SDigits2Digits()
+{
+
+//
+// Gennerate digits
+//
+   AliRICHChamber*       iChamber;
+   
+   printf("Generating tresholds...\n");
+
+   for(Int_t i=0;i<7;i++) {
+       iChamber = &(Chamber(i));
+       iChamber->GenerateTresholds();
+   }
+       
+   int nparticles = gAlice->GetNtrack();
+   cout << "RICH: Particles       :" <<nparticles<<endl;
+   if (nparticles > 0) Digitise(0,0);
 }
 //___________________________________________
 void AliRICH::AddPadHit(Int_t *clhits)
@@ -1607,67 +1630,78 @@ Int_t AliRICH::DistancetoPrimitive(Int_t , Int_t )
 }
 
 //___________________________________________
-void AliRICH::MakeBranch(Option_t* option)
+void AliRICH::MakeBranch(Option_t* option, char *file)
 {
   // Create Tree branches for the RICH.
     
     const Int_t kBufferSize = 4000;
     char branchname[20];
-    
-    
-    AliDetector::MakeBranch(option);
-    sprintf(branchname,"%sCerenkov",GetName());
-    if (fCerenkovs   && gAlice->TreeH()) {
-	gAlice->TreeH()->Branch(branchname,&fCerenkovs, kBufferSize);
-	printf("Making Branch %s for Cerenkov Hits\n",branchname);
-    }
-    
-    sprintf(branchname,"%sPadHits",GetName());
-    if (fPadHits   && gAlice->TreeH()) {
-	gAlice->TreeH()->Branch(branchname,&fPadHits, kBufferSize);
-	printf("Making Branch %s for PadHits\n",branchname);
-    }
-    
-// one branch for digits per chamber
-    Int_t i;
-    
-    for (i=0; i<kNCH ;i++) {
-	sprintf(branchname,"%sDigits%d",GetName(),i+1);
-	
-	if (fDchambers   && gAlice->TreeD()) {
-	    gAlice->TreeD()->Branch(branchname,&((*fDchambers)[i]), kBufferSize);
-	    printf("Making Branch %s for digits in chamber %d\n",branchname,i+1);
-	}	
-    }
-
-// one branch for raw clusters per chamber
-  for (i=0; i<kNCH ;i++) {
-      sprintf(branchname,"%sRawClusters%d",GetName(),i+1);
       
-      if (fRawClusters   && gAlice->TreeR()) {
-	 gAlice->TreeR()->Branch(branchname,&((*fRawClusters)[i]), kBufferSize);
-	 printf("Making Branch %s for raw clusters in chamber %d\n",branchname,i+1);
-      }	
-  }
+    AliDetector::MakeBranch(option,file);
+   
+    char *cH = strstr(option,"H");
+    char *cD = strstr(option,"D");
+    char *cR = strstr(option,"R");
 
-  // one branch for rec hits per chamber
-  for (i=0; i<kNCH ;i++) {
-    sprintf(branchname,"%sRecHits1D%d",GetName(),i+1);
+    if (cH) {
+      sprintf(branchname,"%sCerenkov",GetName());
+      if (fCerenkovs   && gAlice->TreeH()) {
+        gAlice->MakeBranchInTree(gAlice->TreeH(), 
+                                 branchname, &fCerenkovs, kBufferSize, file) ;
+      }    
+      sprintf(branchname,"%sPadHits",GetName());
+      if (fPadHits   && gAlice->TreeH()) {
+        gAlice->MakeBranchInTree(gAlice->TreeH(), 
+                                 branchname, &fPadHits, kBufferSize, file) ;
+      }
+    }
     
-    if (fRecHits1D   && gAlice->TreeR()) {
-      gAlice->TreeR()->Branch(branchname,&((*fRecHits1D)[i]), kBufferSize);
-      printf("Making Branch %s for 1D rec. hits in chamber %d\n",branchname,i+1);
-    }	
-  }
-  for (i=0; i<kNCH ;i++) {
-    sprintf(branchname,"%sRecHits3D%d",GetName(),i+1);
+    if (cD) {
+    //
+    // one branch for digits per chamber
+    //
+      Int_t i;
     
-    if (fRecHits3D   && gAlice->TreeR()) {
-      gAlice->TreeR()->Branch(branchname,&((*fRecHits3D)[i]), kBufferSize);
-      printf("Making Branch %s for 3D rec. hits in chamber %d\n",branchname,i+1);
-    }	
-  }
-  
+      for (i=0; i<kNCH ;i++) {
+	    sprintf(branchname,"%sDigits%d",GetName(),i+1);	
+	    if (fDchambers   && gAlice->TreeD()) {
+           gAlice->MakeBranchInTree(gAlice->TreeD(), 
+                                    branchname, &((*fDchambers)[i]), kBufferSize, file) ;
+	    }	
+      }
+    }
+
+    if (cR) {    
+    //
+    // one branch for raw clusters per chamber
+    //
+      Int_t i;
+
+      for (i=0; i<kNCH ;i++) {
+        sprintf(branchname,"%sRawClusters%d",GetName(),i+1);      
+        if (fRawClusters && gAlice->TreeR()) {
+           gAlice->MakeBranchInTree(gAlice->TreeR(), 
+                                    branchname, &((*fRawClusters)[i]), kBufferSize, file) ;
+        }	  
+      }
+     //
+     // one branch for rec hits per chamber
+     // 
+     for (i=0; i<kNCH ;i++) {
+       sprintf(branchname,"%sRecHits1D%d",GetName(),i+1);    
+       if (fRecHits1D   && gAlice->TreeR()) {
+          gAlice->MakeBranchInTree(gAlice->TreeR(), 
+                                   branchname, &((*fRecHits1D)[i]), kBufferSize, file) ;
+       }	
+     }
+     for (i=0; i<kNCH ;i++) {
+       sprintf(branchname,"%sRecHits3D%d",GetName(),i+1);  
+       if (fRecHits3D   && gAlice->TreeR()) {
+          gAlice->MakeBranchInTree(gAlice->TreeR(), 
+                                   branchname, &((*fRecHits3D)[i]), kBufferSize, file) ;
+      }	
+    }
+  }  
 }
 
 //___________________________________________
@@ -1750,7 +1784,7 @@ void AliRICH::ResetDigits()
   // Reset number of digits and the digits array for this detector
   //
     for ( int i=0;i<kNCH;i++ ) {
-	if ((*fDchambers)[i])   (*fDchambers)[i]->Clear();
+	if (fDchambers && (*fDchambers)[i])   (*fDchambers)[i]->Clear();
 	if (fNdch)  fNdch[i]=0;
     }
 }
@@ -2389,126 +2423,6 @@ void AliRICH::FindClusters(Int_t nev,Int_t lastEntry)
     //gObjectTable->Print();
 }
 
-
-//______________________________________________________________________________
-void AliRICH::Streamer(TBuffer &R__b)
-{
-    // Stream an object of class AliRICH.
-    AliRICHChamber       *iChamber;
-    AliSegmentation  *segmentation;
-    AliRICHResponse      *response;
-    TClonesArray         *digitsaddress;
-    TClonesArray         *rawcladdress;
-    TClonesArray         *rechitaddress1D;
-    TClonesArray         *rechitaddress3D;
-      
-    if (R__b.IsReading()) {
-	Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-	AliDetector::Streamer(R__b);
-	R__b >> fNPadHits;
-	R__b >> fPadHits;   // diff
-	R__b >> fNcerenkovs;
-	R__b >> fCerenkovs; // diff
-	R__b >> fDchambers;
-	R__b >> fRawClusters;
-	R__b >> fRecHits1D;  //diff
-	R__b >> fRecHits3D;  //diff
-	R__b >> fDebugLevel;  //diff
-	R__b.ReadStaticArray(fNdch);
-	R__b.ReadStaticArray(fNrawch);
-	R__b.ReadStaticArray(fNrechits1D);
-	R__b.ReadStaticArray(fNrechits3D);
-//
-	R__b >> fChambers;
-// Stream chamber related information
-	for (Int_t i =0; i<kNCH; i++) {
-	    iChamber=(AliRICHChamber*) (*fChambers)[i];
-	    iChamber->Streamer(R__b);
-	    segmentation=iChamber->GetSegmentationModel();
-	    segmentation->Streamer(R__b);
-	    response=iChamber->GetResponseModel();
-	    response->Streamer(R__b);	  
-	    rawcladdress=(TClonesArray*) (*fRawClusters)[i];
-	    rawcladdress->Streamer(R__b);
-	    rechitaddress1D=(TClonesArray*) (*fRecHits1D)[i];
-	    rechitaddress1D->Streamer(R__b);
-	    rechitaddress3D=(TClonesArray*) (*fRecHits3D)[i];
-	    rechitaddress3D->Streamer(R__b);
-	    digitsaddress=(TClonesArray*) (*fDchambers)[i];
-	    digitsaddress->Streamer(R__b);
-	}
-      R__b >> fDebugLevel;
-      R__b >> fCkovNumber;
-      R__b >> fCkovQuarz;
-      R__b >> fCkovGap;
-      R__b >> fCkovCsi;
-      R__b >> fLostRfreo;
-      R__b >> fLostRquar;
-      R__b >> fLostAfreo;
-      R__b >> fLostAquarz;
-      R__b >> fLostAmeta;
-      R__b >> fLostCsi;
-      R__b >> fLostWires;
-      R__b >> fFreonProd;
-      R__b >> fMipx;
-      R__b >> fMipy;
-      R__b >> fFeedbacks;
-      R__b >> fLostFresnel;
-      
-    } else {
-	R__b.WriteVersion(AliRICH::IsA());
-	AliDetector::Streamer(R__b);
-	R__b << fNPadHits;
-	R__b << fPadHits; // diff
-	R__b << fNcerenkovs;
-	R__b << fCerenkovs; // diff
-	R__b << fDchambers;
-	R__b << fRawClusters;
-	R__b << fRecHits1D; //diff
-	R__b << fRecHits3D; //diff
-	R__b << fDebugLevel; //diff
-	R__b.WriteArray(fNdch, kNCH);
-	R__b.WriteArray(fNrawch, kNCH);
-	R__b.WriteArray(fNrechits1D, kNCH);
-	R__b.WriteArray(fNrechits3D, kNCH);
-//
-	R__b << fChambers;
-//  Stream chamber related information
-	for (Int_t i =0; i<kNCH; i++) {
-	    iChamber=(AliRICHChamber*) (*fChambers)[i];
-	    iChamber->Streamer(R__b);
-	    segmentation=iChamber->GetSegmentationModel();
-	    segmentation->Streamer(R__b);
-	    response=iChamber->GetResponseModel();
-	    response->Streamer(R__b);
-	    rawcladdress=(TClonesArray*) (*fRawClusters)[i];
-	    rawcladdress->Streamer(R__b);
-	    rechitaddress1D=(TClonesArray*) (*fRecHits1D)[i];
-	    rechitaddress1D->Streamer(R__b);
-	    rechitaddress3D=(TClonesArray*) (*fRecHits3D)[i];
-	    rechitaddress3D->Streamer(R__b);
-	    digitsaddress=(TClonesArray*) (*fDchambers)[i];
-	    digitsaddress->Streamer(R__b);
-	}
-      R__b << fDebugLevel;
-      R__b << fCkovNumber;
-      R__b << fCkovQuarz;
-      R__b << fCkovGap;
-      R__b << fCkovCsi;
-      R__b << fLostRfreo;
-      R__b << fLostRquar;
-      R__b << fLostAfreo;
-      R__b << fLostAquarz;
-      R__b << fLostAmeta;
-      R__b << fLostCsi;
-      R__b << fLostWires;
-      R__b << fFreonProd;
-      R__b << fMipx;
-      R__b << fMipy;
-      R__b << fFeedbacks;
-      R__b << fLostFresnel;
-    }
-}
 AliRICHPadHit* AliRICH::FirstPad(AliRICHHit*  hit,TClonesArray *clusters ) 
 {
 //

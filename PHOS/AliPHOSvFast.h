@@ -44,7 +44,7 @@ public:
   virtual AliPHOSGeometry * GetGeometry() { return fGeom ; }  
   virtual void   Init(void) ;                                        // does nothing
   Int_t   IsVersion(void) const { return -1 ; }
-  void    MakeBranch(Option_t* opt) ;
+  void    MakeBranch(Option_t* opt, char *file=0) ;
   Double_t MakeEnergy(const Double_t energy) ;                       // makes the detected energy    
   TVector3 MakePosition(const Double_t energy, const TVector3 pos, const Double_t th, const Double_t ph) ; 
                                                                      // makes the detected position

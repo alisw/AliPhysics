@@ -15,9 +15,15 @@
 
 /*
 $Log$
+Revision 1.3  2000/12/21 17:51:54  morsch
+RN3 violations corrected
+
 Revision 1.2  2000/11/23 10:09:38  gosset
 Bug correction in AliMUONRecoDisplay.
-Copyright, $Log$, $Id$, comments at the right place for automatic documentation,
+Copyright, $Log$
+Copyright, Revision 1.3  2000/12/21 17:51:54  morsch
+Copyright, RN3 violations corrected
+Copyright,, $Id$, comments at the right place for automatic documentation,
 in AliMUONRecoEvent and AliMUONRecoDisplay
 
 */
@@ -58,6 +64,7 @@ in AliMUONRecoEvent and AliMUONRecoDisplay
 #include <iostream.h>
 #include <AliRun.h>
 #include <TClonesArray.h>
+#include <TClass.h>
 #include "AliMUONRecoEvent.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
@@ -204,19 +211,11 @@ void AliMUONRecoEvent::Streamer(TBuffer &R__b)
 {
 // Streams an object of class AliMUONRecoEvent
    if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      TObject::Streamer(R__b);
-      R__b >> fNevr;
-      R__b >> fNtracks;
       fTracks->Clear();
-      fTracks->Streamer(R__b);
+      AliMUONRecoEvent::Class()->ReadBuffer(R__b, this);
    } else {
       cout << "...writing event to file...\n";
-      R__b.WriteVersion(AliMUONRecoEvent::IsA());
-      TObject::Streamer(R__b);
-      R__b << fNevr;
-      R__b << fNtracks;
-      fTracks->Streamer(R__b);
+      AliMUONRecoEvent::Class()->WriteBuffer(R__b, this);
    }
 }
 

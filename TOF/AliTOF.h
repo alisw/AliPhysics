@@ -8,11 +8,13 @@
 ////////////////////////////////////////////////
 //  Manager and hits classes for set: TOF     //
 ////////////////////////////////////////////////
+#include "TObject.h"
+
+class TFile;
  
 #include "AliDetector.h"
 #include "AliHit.h"
 #include "AliDigit.h" 
-#include "TObject.h"
 #include "AliTOFD.h"
 
 class AliTOF : public AliDetector {
@@ -65,7 +67,7 @@ public:
   virtual void    CreateGeometry();
   virtual void    CreateMaterials();
   virtual void    Init();
-  virtual void    MakeBranch(Option_t*);
+  virtual void    MakeBranch(Option_t*, char *file=0);
   virtual void    FinishEvent();
   virtual Int_t   IsVersion() const =0;
   Int_t           DistancetoPrimitive(Int_t px, Int_t py);
@@ -73,6 +75,7 @@ public:
   virtual void    TOFpc(Float_t, Float_t, Float_t,
                         Float_t, Float_t,Float_t) {}
   virtual void    DrawModule();
+  virtual void    SDigits2Digits();
           void    Hits2Digits(Int_t evNumber=0);
           void    Digits2Raw (Int_t evNumber=0);
           void    Raw2Digits (Int_t evNumber=0);

@@ -12,6 +12,9 @@
 #include <TObjArray.h> // used in inline function GetModule.
 
 #include "AliDetector.h"
+#include "AliITSsimulationSPD.h"
+#include "AliITSsimulationSDD.h"
+#include "AliITSsimulationSSD.h"
 
 class TString;
 class TTree;
@@ -67,7 +70,7 @@ class AliITS : public AliDetector {
     // create separate tree for clusters - declustering refining
     virtual  void  MakeTreeC(Option_t *option="C");
     void           GetTreeC(Int_t event);
-    virtual void   MakeBranch(Option_t *opt=" ");
+    virtual void   MakeBranch(Option_t *opt=" ", char *file=0);
     void           SetTreeAddress();
     virtual void   SetEUCLID(Bool_t euclid=1) {fEuclidOut = euclid;}
     virtual void   StepManager() {}
@@ -77,6 +80,7 @@ class AliITS : public AliDetector {
                        Int_t nmodules,Option_t *opt,Text_t *filename);
     virtual void   ClearModules();
     // Digitisation
+    virtual void   SDigits2Digits();  
     void HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size,
                  Option_t *add, Option_t *det, Text_t *filename);
     // Reconstruct hits

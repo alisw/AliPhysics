@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/10/02 16:32:51  barbera
+Automatic streamer used and forward declarations added
+
 Revision 1.3.4.7  2000/10/02 15:54:49  barbera
 Automatic streamer used and forward declarations added
 
@@ -459,8 +462,7 @@ TParticle * AliITShit::GetParticle(){
 // this hit. From the TParticle all kinds of information about this 
 // particle can be found. See the TParticle class.
 ////////////////////////////////////////////////////////////////////////
-    TClonesArray *parts = gAlice->Particles();
-    return ((TParticle*)parts->UncheckedAt(this->GetTrack()));
+    return gAlice->Particle(GetTrack());
 }
 /*
 //___________________________________________________________________________

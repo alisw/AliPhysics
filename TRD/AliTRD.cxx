@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2000/11/01 14:53:20  cblume
+Merge with TRD-develop
+
 
 Revision 1.17.2.6  2000/10/15 23:29:08  cblume
 Introduced more detailed geometry for the display
@@ -99,6 +102,7 @@ Introduction of the Copyright and cvs Log
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <stdlib.h>
+#include <iostream.h>
 
 #include <TMath.h>
 #include <TNode.h>
@@ -121,6 +125,7 @@ Introduction of the Copyright and cvs Log
 #include "AliTRDgeometryHole.h"
 #include "AliTRDgeometryFull.h"
 #include "AliTRDrecPoint.h"
+#include "AliTRDdigitsManager.h"
 
 ClassImp(AliTRD)
  
@@ -251,6 +256,39 @@ void AliTRD::AddRecPoint(Float_t *pos, Int_t *digits, Int_t det, Float_t amp
   recPoint->SetTrackingYZ(0.,0.);  // variance values set inside
   fRecPoints->Add(recPoint);
 
+}
+//___________________________________________
+void AliTRD::SDigits2Digits()
+{
+  //
+  // Create digits
+  //
+  AliTRDdigitizer *Digitizer = new AliTRDdigitizer("digitizer","TRD digitizer class");
+
+  // Set the parameter
+  Digitizer->SetDiffusion();
+  Digitizer->SetVerbose(1);
+  
+  //Digitizer->SetExB();
+  //Digitizer->SetElAttach();
+  //Digitizer->SetAttachProb();
+
+  Digitizer->InitDetector();
+    
+  // Create the digits
+  Digitizer->MakeDigits();
+  cout<<"After MakeDigits"<<endl;
+  
+  // Write the digits into the input file
+  if (Digitizer->Digits()->MakeBranch(fDigitsFile))
+  {
+    Digitizer->WriteDigits();
+    cout<<"After write digits"<<endl;
+
+    // Save the digitizer class in the AliROOT 
+    Digitizer->Write();
+    cout<<"After write digitizer"<<endl;
+  }
 }
 
 //_____________________________________________________________________________
@@ -795,7 +833,7 @@ void AliTRD::LoadPoints(Int_t track)
 }
 
 //_____________________________________________________________________________
-void AliTRD::MakeBranch(Option_t* option)
+void AliTRD::MakeBranch(Option_t* option, char *file)
 {
   //
   // Create Tree branches for the TRD digits and cluster.
@@ -804,14 +842,13 @@ void AliTRD::MakeBranch(Option_t* option)
   //Int_t  buffersize = 4000;
   //Char_t branchname[15];
 
-  AliDetector::MakeBranch(option);
+  AliDetector::MakeBranch(option,file);
 
   //Char_t *r = strstr(option,"R");
   //sprintf(branchname,"%srecPoints",GetName());
   //if (fRecPoints && gAlice->TreeR() && r) {
-  //  gAlice->TreeR()->Branch(branchname,fRecPoints->IsA()->GetName()
-  //                         ,&fRecPoints,buffersize,0);
-  //  printf("* AliTRD::MakeBranch * Making Branch %s for points in TreeR\n",branchname);
+  //  MakeBranchInTree(gAlice->TreeR(), 
+  //                  branchname, &fRecPoints,buffersize, file) ;
   //}
 
 }

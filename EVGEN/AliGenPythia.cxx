@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.31  2001/01/17 10:54:31  hristov
+Better protection against FPE
+
 Revision 1.30  2000/12/18 08:55:35  morsch
 Make AliPythia dependent generartors work with new scheme of random number generation
 
@@ -471,11 +474,10 @@ void AliGenPythia::AdjustWeights()
 {
 // Adjust the weights after generation of all events
 //
-    TClonesArray *partArray = gAlice->Particles();
     TParticle *part;
     Int_t ntrack=gAlice->GetNtrack();
     for (Int_t i=0; i<ntrack; i++) {
-	part= (TParticle*) partArray->UncheckedAt(i);
+	part= gAlice->Particle(i);
 	part->SetWeight(part->GetWeight()*fKineBias);
     }
 }

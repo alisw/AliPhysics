@@ -15,6 +15,7 @@
 #include "AliRICHChamber.h"
 static const int kNCH=7;
 
+class TFile;
 
 class AliRICHHit;
 class AliRICHPadHit;
@@ -56,7 +57,7 @@ class AliRICH : public  AliDetector {
 //
     TClonesArray  *PadHits() {return fPadHits;}
     TClonesArray  *Cerenkovs() {return fCerenkovs;}
-    virtual void   MakeBranch(Option_t *opt=" ");
+    virtual void   MakeBranch(Option_t *opt=" ", char *file=0);
     void           SetTreeAddress();
     virtual void   ResetHits();
     virtual void   ResetDigits();
@@ -65,6 +66,7 @@ class AliRICH : public  AliDetector {
     virtual void   ResetRecHits3D();
     virtual void   FindClusters(Int_t nev,Int_t lastEntry);
     virtual void   Digitise(Int_t nev,Int_t flag,Option_t *opt=" ",Text_t *name=" ");
+    virtual void   SDigits2Digits();
 // 
 // Configuration Methods (per station id)
 //
@@ -114,7 +116,7 @@ class AliRICH : public  AliDetector {
     TObjArray            *fDchambers;          // List of digits
     TClonesArray         *fCerenkovs;          // List of cerenkovs
     Int_t                 fNdch[kNCH];         // Number of digits
-    Text_t               *fFileName;           // Filename for event mixing
+    Text_t               *fFileName;           //! Filename for event mixing
     TObjArray            *fRawClusters;        // List of raw clusters
     TObjArray            *fRecHits1D;          // List of rec. hits
     TObjArray            *fRecHits3D;          // List of rec. hits

@@ -21,7 +21,7 @@ class AliRICHTresholdMap : public AliHitMap
  public:
   
   AliRICHTresholdMap(AliSegmentation *seg);
-  //AliRICHTresholdMap() {}
+  AliRICHTresholdMap() {fSegmentation = 0; fHitMap=0;}
   virtual ~AliRICHTresholdMap();
   virtual  void    FillHits();
   virtual  void    Clear(const char *opt = "");    

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/11/20 08:56:07  cblume
+Cleanup of data arrays
+
 Revision 1.6  2000/11/01 14:53:21  cblume
 Merge with TRD-develop
 
@@ -305,7 +308,7 @@ void AliTRDsegmentArrayBase::ClearSegment(Int_t index)
 }
 
 //_____________________________________________________________________________
-void AliTRDsegmentArrayBase::MakeTree()
+void AliTRDsegmentArrayBase::MakeTree(char *file)
 {
   //
   // Create a tree for the segment
@@ -317,6 +320,8 @@ void AliTRDsegmentArrayBase::MakeTree()
   fTree   = new TTree("Segment Tree","Tree with segments");
 
   fBranch = fTree->Branch("Segment",psegment->IsA()->GetName(),&psegment,64000,1);
+  if (file) 
+      fBranch->SetFile(file);      
 
   delete psegment;
 

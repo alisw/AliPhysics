@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/10/02 21:28:14  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.5  2000/07/11 18:24:59  fca
 Coding convention corrections + few minor bug fixes
 
@@ -181,10 +184,8 @@ TParticle *AliPoints::GetParticle() const
   //
   //   Returns pointer to particle index in AliRun::fParticles
   //
-  TClonesArray *particles = gAlice->Particles();
-  Int_t nparticles = particles->GetEntriesFast();
-  if (fIndex < 0 || fIndex >= nparticles) return 0;
-  return (TParticle*)particles->UncheckedAt(fIndex);
+  if (fIndex < 0 || fIndex >= gAlice->GetNtrack()) return 0;
+  else return gAlice->Particle(fIndex);
 }
 
 //_____________________________________________________________________________

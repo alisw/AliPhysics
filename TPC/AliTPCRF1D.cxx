@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/06/30 12:07:50  kowal2
+Updated from the TPC-PreRelease branch
+
 Revision 1.5.4.3  2000/06/26 07:39:42  kowal2
 Changes to obey the coding rules
 
@@ -326,69 +329,17 @@ void AliTPCRF1D::Update()
 void AliTPCRF1D::Streamer(TBuffer &R__b)
 {
    // Stream an object of class AliTPCRF1D.
-  Float_t dummy;
    if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      TObject::Streamer(R__b);     
-      //read pad parameters
-      R__b >> fpadWidth;
-      //read charge parameters
-      R__b >> fType[0];
-      R__b >> fType[1];
-      R__b >> fType[2];
-      R__b >> fType[3];
-      R__b >> fType[4];
-      R__b >> forigsigma;
-      R__b >> fkNorm;
-      R__b >> dummy;  //dummuy instead fK3X in previous
-      R__b >> fPadDistance; 
-      R__b >> fInteg;
-      R__b >> fOffset;
+      AliTPCRF1D::Class()->ReadBuffer(R__b, this);
       //read functions
-      if (fGRF!=0) { 
-	delete [] fGRF;  
-	fGRF=0;
-      }
-      if (strncmp(fType,"User",3)==0){
-	fGRF= new TF1;
-	R__b>>fGRF;   
-      }
  
-      if (strncmp(fType,"Gauss",3)==0) 
-	fGRF = new TF1("fun",funGauss,-5.,5.,4);
-      if (strncmp(fType,"Cosh",3)==0) 
-	fGRF = new TF1("fun",funCosh,-5.,5.,4);
-      if (strncmp(fType,"Gati",3)==0) 
-	fGRF = new TF1("fun",funGati,-5.,5.,4);   
-      R__b >>fDSTEPM1;  
-      R__b >>fNRF;
-      R__b.ReadFastArray(fcharge,fNRF); 
-      R__b.ReadFastArray(funParam,5); 
-      if (fGRF!=0) fGRF->SetParameters(funParam);     
+      if (strncmp(fType,"Gauss",3)==0) {delete fGRF; fGRF = new TF1("fun",funGauss,-5.,5.,4);}
+      if (strncmp(fType,"Cosh",3)==0)  {delete fGRF; fGRF = new TF1("fun",funCosh,-5.,5.,4);}
+      if (strncmp(fType,"Gati",3)==0)  {delete fGRF; fGRF = new TF1("fun",funGati,-5.,5.,4);}  
+      if (fGRF) fGRF->SetParameters(funParam);     
 
    } else {
-      R__b.WriteVersion(AliTPCRF1D::IsA());
-      TObject::Streamer(R__b);   
-      //write pad width
-      R__b << fpadWidth;
-      //write charge parameters
-      R__b << fType[0];
-      R__b << fType[1];
-      R__b << fType[2];
-      R__b << fType[3];
-      R__b << fType[4];
-      R__b << forigsigma;
-      R__b << fkNorm;
-      R__b << dummy;  //dummuy instead fK3X in previouis
-      R__b << fPadDistance;
-      R__b << fInteg;
-      R__b << fOffset;
-      //write interpolation parameters
-      if (strncmp(fType,"User",3)==0) R__b <<fGRF;   
-      R__b <<fDSTEPM1;
-      R__b <<fNRF;    
-      R__b.WriteFastArray(fcharge,fNRF); 
-      R__b.WriteFastArray(funParam,5);              
+      AliTPCRF1D::Class()->WriteBuffer(R__b, this);
    }
 }
  

@@ -13,6 +13,8 @@
 // --- ROOT system ---
 #include "TClonesArray.h"
 
+class TFile;
+
 // --- AliRoot header files ---
 #include "AliPHOS.h"
 #include "AliPHOSGeometry.h"

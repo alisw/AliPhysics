@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/11/01 14:53:21  cblume
+Merge with TRD-develop
+
 Revision 1.1.2.2  2000/09/18 13:41:29  cblume
 Changed fDetector to UShort and fQ to Short_t. Use customized streamer
 
@@ -79,27 +82,5 @@ AliTRDhit::~AliTRDhit()
   //
   // AliTRDhit destructor
   //
-
-}
-
-//_____________________________________________________________________________
-void AliTRDhit::Streamer(TBuffer &R__b)
-{
-  //
-  // Stream an object of class AliTRDhit.
-  //
-
-  if (R__b.IsReading()) {
-    Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-    AliHit::Streamer(R__b);
-    R__b >> fDetector;
-    R__b >> fQ;
-  } 
-  else {
-    R__b.WriteVersion(AliTRDhit::IsA());
-    AliHit::Streamer(R__b);
-    R__b << fDetector;
-    R__b << fQ;
-  }
 
 }

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2000/12/04 08:48:18  alibrary
+Fixing problems in the HEAD
+
 Revision 1.11  2000/11/17 10:15:24  morsch
 Call to AliDetector::ResetHits() added to method  AliPMD::ResetHits()
 
@@ -66,6 +69,7 @@ Introduction of the Copyright and cvs Log
 #include <TTree.h>
 #include <TGeometry.h>
 #include <TClonesArray.h>
+#include <TFile.h>
 
 #include "AliPMD.h"
 #include "AliRun.h"
@@ -85,6 +89,7 @@ AliPMD::AliPMD()
 
   // Always make the TClonesArray, otherwise the automatic streamer gets angry
   fRecPoints  = new TClonesArray("AliPMDRecPoint",10000); 
+
 }
  
 //_____________________________________________________________________________
@@ -257,21 +262,26 @@ void AliPMD::AddRecPoint(const AliPMDRecPoint &p)
     new(lrecpoints[fNRecPoints++]) AliPMDRecPoint(p);
 }
 
-void AliPMD::MakeBranch(Option_t* option)
+void AliPMD::MakeBranch(Option_t* option, char *file)
 {
     // Create Tree branches for the PMD
-    printf("Make Branch - TreeR address %p\n",gAlice->TreeR());
     
-    const Int_t kBufferSize = 4000;
-    char branchname[30];
+    char *cR = strstr(option,"R");
+    
+    AliDetector::MakeBranch(option,file);
 
-    AliDetector::MakeBranch(option);
-
-    sprintf(branchname,"%sRecPoints",GetName());
-    if (fRecPoints   && gAlice->TreeR()) {
-	gAlice->TreeR()->Branch(branchname, &fRecPoints, kBufferSize);
-	printf("Making Branch %s for reconstructed hits\n",branchname);
-    }	
+    if (cR) {
+      printf("Make Branch - TreeR address %p\n",gAlice->TreeR());
+    
+      const Int_t kBufferSize = 4000;
+      char branchname[30];
+      
+      sprintf(branchname,"%sRecPoints",GetName());
+      if (fRecPoints   && gAlice->TreeR()) {
+        gAlice->MakeBranchInTree(gAlice->TreeR(), 
+                                 branchname, &fRecPoints, kBufferSize, file) ;
+      }
+   }	
 }
 
 

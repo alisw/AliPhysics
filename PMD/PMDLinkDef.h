@@ -8,10 +8,10 @@
 #pragma link off all classes;
 #pragma link off all functions;
  
-#pragma link C++ class  AliPMD;
-#pragma link C++ class  AliPMDv0;
-#pragma link C++ class  AliPMDv1;
-#pragma link C++ class  AliPMDv2;
-#pragma link C++ class  AliPMDhit;
-#pragma link C++ class  AliPMDRecPoint;
+#pragma link C++ class  AliPMD+;
+#pragma link C++ class  AliPMDv0+;
+#pragma link C++ class  AliPMDv1+;
+#pragma link C++ class  AliPMDv2+;
+#pragma link C++ class  AliPMDhit+;
+#pragma link C++ class  AliPMDRecPoint+;
 #endif

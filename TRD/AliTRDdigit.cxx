@@ -17,6 +17,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/11/01 14:53:20  cblume
+Merge with TRD-develop
+
 Revision 1.1.2.4  2000/10/17 02:27:34  cblume
 Get rid of global constants
 
@@ -107,29 +110,5 @@ Int_t AliTRDdigit::DecodeAmp() const
   //
 
   return 0;
-
-}
-
-//______________________________________________________________________________
-void AliTRDdigit::Streamer(TBuffer &R__b)
-{
-  //
-  // Stream an object of class AliTRDdigit.
-  //
-
-  if (R__b.IsReading()) {
-    Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-    AliDigitNew::Streamer(R__b);
-    R__b >> fRow;
-    R__b >> fCol;
-    R__b >> fTime;
-  } 
-  else {
-    R__b.WriteVersion(AliTRDdigit::IsA());
-    AliDigitNew::Streamer(R__b);
-    R__b << fRow;
-    R__b << fCol;
-    R__b << fTime;
-  }
 
 }

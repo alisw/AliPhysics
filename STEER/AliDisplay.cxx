@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2000/12/21 15:30:18  fca
+Correcting coding convention violations
+
 Revision 1.12  2000/12/12 13:18:59  hristov
 Protection against FPE
 
@@ -322,8 +325,9 @@ void AliDisplay::ShowTrack(Int_t idx)
          pm->Draw("same");
 //       fPad->Update();
 //       fPad->Modified();
-         TClonesArray *particles=gAlice->Particles();
-         TParticle *p = (TParticle*)particles->UncheckedAt(idx);
+	 //         TClonesArray *particles=gAlice->Particles();
+	 //         TParticle *p = (TParticle*)particles->UncheckedAt(idx);
+	 TParticle *p = gAlice->Particle(idx);
          printf("\nTrack index %d\n",idx);
          printf("Particle ID %d\n",p->GetPdgCode());
          printf("Parent %d\n",p->GetFirstMother());

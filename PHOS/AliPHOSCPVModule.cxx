@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.5  2000/11/30 11:58:21  schutz
+  make it compile with Federico  modifications
+
   Revision 1.4  2000/11/20 09:50:03  schutz
   AliPHOSCPVHit inherits from AliHit
 
@@ -39,6 +42,7 @@
  
 // --- ROOT system ---
 #include <TTree.h>
+#include <TFile.h>
 
 // --- Standard library ---
 #include <stdio.h>
@@ -147,7 +151,7 @@ void AliPHOSCPVModule::Print(Option_t *opt)
 
 //______________________________________________________________________________
 
-void AliPHOSCPVModule::MakeBranch(char *title,Int_t i)
+void AliPHOSCPVModule::MakeBranch(char *title,Int_t i,char *file)
 {
   //
   // Create a new branch for a EMC or CPV module #i in the current Root Tree
@@ -155,7 +159,8 @@ void AliPHOSCPVModule::MakeBranch(char *title,Int_t i)
 
   char branchname[10];
   sprintf(branchname,"%s%d",title,i);
-  gAlice->TreeH()->Branch(branchname,&fHits, 1000);
+  gAlice->MakeBranchInTree(gAlice->TreeH(), 
+                           branchname, &fHits, 1000, file) ;  
 }
 
 //_____________________________________________________________________________

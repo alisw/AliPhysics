@@ -7,6 +7,7 @@
 
 #include <AliModule.h>
 class AliHit;
+class TTree;
 
 class AliDetector : public AliModule {
 
@@ -34,7 +35,7 @@ public:
   virtual void        Browse(TBrowser *b);
   virtual void        FinishRun();
   virtual void        LoadPoints(Int_t track);
-  virtual void        MakeBranch(Option_t *opt=" ");
+  virtual void        MakeBranch(Option_t *opt=" ", char *file=0 );
   virtual void        ResetDigits();
   virtual void        ResetHits();
   virtual void        ResetPoints();
@@ -53,12 +54,13 @@ protected:
   Float_t       fTimeGate;    //Time gate in seconds
 
   Int_t         fIshunt;      //1 if the hit is attached to the primary
-  Int_t         fNhits;       //Number of hits
-  Int_t         fNdigits;     //Number of digits
-  Int_t         fBufferSize;  //buffer size for Tree detector branches
+  Int_t         fNhits;       //!Number of hits
+  Int_t         fNdigits;     //!Number of digits
+  Int_t         fBufferSize;  //!buffer size for Tree detector branches
   TClonesArray *fHits;        //List of hits for one track only
   TClonesArray *fDigits;      //List of digits for this detector
-  TObjArray    *fPoints;      //Array of points for each track (all tracks in memory)
+  char         *fDigitsFile;  //!File to store branches of digits tree for detector 
+  TObjArray    *fPoints;      //!Array of points for each track (all tracks in memory)
 
   ClassDef(AliDetector,1)  //Base class for ALICE detectors
 };

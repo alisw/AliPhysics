@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2000/10/19 09:58:14  vicinanz
+Updated Hits2Digit procedure
+
 Revision 1.16  2000/10/02 21:28:17  fca
 Removal of useless dependecies via forward declarations
 
@@ -78,6 +81,7 @@ Introduction of the Copyright and cvs Log
 #include "TObject.h"
 #include "TRandom.h"
 #include "TTree.h"
+#include "TFile.h"
 
 #include "AliRun.h"
 #include "AliMC.h"
@@ -378,7 +382,7 @@ void AliTOF::Init()
 }
 
 //____________________________________________________________________________
-void AliTOF::MakeBranch(Option_t* option)
+void AliTOF::MakeBranch(Option_t* option, char *file)
 //
 // Initializes the Branches of the TOF inside the 
 // trees written for each event. 
@@ -388,16 +392,17 @@ void AliTOF::MakeBranch(Option_t* option)
 //
 {
 
-  AliDetector::MakeBranch(option);
+  AliDetector::MakeBranch(option,file);
 
   Int_t buffersize = 4000;
   Char_t branchname[10];
   sprintf(branchname,"%s",GetName());
+  
   char *D = strstr(option,"D");
 
   if (fDigits && gAlice->TreeD() && D){
-     gAlice->TreeD()->Branch(branchname,&fDigits,buffersize);
-     printf("Making Branch %s for digits \n",branchname);
+     gAlice->MakeBranchInTree(gAlice->TreeD(), 
+                              branchname, &fDigits,buffersize, file) ;
   }
 }
 
@@ -407,6 +412,18 @@ void AliTOF::FinishEvent()
 //  Hits2Digits();
 }
 
+//___________________________________________
+void AliTOF::SDigits2Digits()
+{
+//
+// Genneratedigits
+//
+    int nparticles = gAlice->GetNtrack();
+    cout << "Particles       :" <<nparticles<<endl;
+    if (nparticles > 0 ) {
+      Hits2Digits(0);
+    }
+}
 
 //____________________________________________________________________________
 void AliTOF::Hits2Digits(Int_t evNumber)
@@ -430,7 +447,7 @@ void AliTOF::Hits2Digits(Int_t evNumber)
   Float_t  digit[2];
   TClonesArray* TOFhits=this->Hits();
 
-  Int_t nparticles = gAlice->GetEvent(evNumber); 
+  Int_t nparticles =  gAlice->GetNtrack();
   if (nparticles <= 0) return;
 
   TD = gAlice->TreeD();

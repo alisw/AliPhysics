@@ -31,10 +31,10 @@ protected:
   Int_t          fSecUps[12];       // List of upper sectors selected
   Int_t          fNsectors;         // Number of sectors in TPC
   //MI changes
-  AliTPCDigitsArray * fDigitsArray;              //detector digit object  
-  AliTPCClustersArray * fClustersArray; //detector cluster object
+  AliTPCDigitsArray * fDigitsArray;              //!detector digit object  
+  AliTPCClustersArray * fClustersArray; //!detector cluster object
   AliTPCParam *fTPCParam;           // pointer to TPC parameters 
-  AliTPCTrackHits *fTrackHits;      //hits for given track M.I.
+  AliTPCTrackHits *fTrackHits;      //!hits for given track M.I.
   Int_t  fHitType; // if fNewHit = 1 old data structure if 2 new hits
   //  3 both types  
 
@@ -56,16 +56,17 @@ public:
   virtual void  CreateMaterials();
   virtual void  Hits2Clusters(TFile *of);
   virtual void  Hits2ExactClustersSector(Int_t isec); // MI change calculate "exact" cluster position
+  virtual void  SDigits2Digits();
 
   virtual void  Hits2Digits();   //MI change
-  virtual void Hits2DigitsSector(Int_t isec);  //MI change
+  virtual void  Hits2DigitsSector(Int_t isec);  //MI change
   virtual void  Init();
   virtual Int_t IsVersion() const =0;
   virtual void  Digits2Clusters(TFile *of);
   virtual void  Clusters2Tracks(TFile *of);
 
   Int_t         GetNsectors()       {return fNsectors;}
-  virtual void  MakeBranch(Option_t *opt=" ");
+  virtual void  MakeBranch(Option_t *opt=" ", char *file=0 );
   virtual void  ResetDigits();
   virtual void  SetSecAL(Int_t sec);
   virtual void  SetSecAU(Int_t sec);
@@ -89,7 +90,7 @@ public:
   void SetClustersArray(AliTPCClustersArray *clusters) {fClustersArray = clusters;} //MI change
 
 // additional function neccesary for the new hits 
-   virtual void MakeBranch2(Option_t *opt=" ");  //
+   virtual void MakeBranch2(Option_t *opt=" ", char *file=0);  //
    virtual void SetTreeAddress();
    virtual void SetTreeAddress2();
    virtual void AddHit2(Int_t a1,  Int_t *a2, Float_t *a3);  //

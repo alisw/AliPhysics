@@ -150,13 +150,11 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
   
   gAlice->GetEvent(Nevent);
   
-  TClonesArray * primaryList  = gAlice->Particles();
-  
   TParticle * primary ;
   Int_t iPrimary ;
-  for ( iPrimary = 0 ; iPrimary < primaryList->GetEntries() ; iPrimary++)
+  for ( iPrimary = 0 ; iPrimary < gAlice->GetNtrack() ; iPrimary++)
     {
-      primary = (TParticle*)primaryList->At(iPrimary) ;
+      primary = gAlice->Particle(iPrimary) ;
       Int_t primaryType = primary->GetPdgCode() ;
       if( (primaryType == 211)||(primaryType == -211)||(primaryType == 2212)||(primaryType == -2212) ) {
         Int_t moduleNumber ;
@@ -256,7 +254,7 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
         Double_t distance = minDistance ;
 	  
 	for ( index = 0 ; index < numberofprimaries ; index++){
-	  primary = (TParticle*)primaryList->At(listofprimaries[index]) ;
+	  primary = gAlice->Particle(listofprimaries[index]) ;
 	  Int_t moduleNumber ;
 	  Double_t primX, primZ ;
 	  fGeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
@@ -271,7 +269,7 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
 	
         if(closestPrimary >=0 ){
 	  
-          Int_t primaryType = ((TParticle *)primaryList->At(closestPrimary))->GetPdgCode() ;
+          Int_t primaryType = gAlice->Particle(closestPrimary)->GetPdgCode() ;
 	  
           if(primaryType==22)
             recPhot->Fill(recZ,recX,recParticle->Energy()) ;
@@ -1015,13 +1013,12 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
       gAlice->TreeK()->GetEvent(0) ;
       
       //=========== Gets the list of Primari Particles
-      TClonesArray * primaryList  = gAlice->Particles();     
 
       TParticle * primary ;
       Int_t iPrimary ;
-      for ( iPrimary = 0 ; iPrimary < primaryList->GetEntries() ; iPrimary++)
+      for ( iPrimary = 0 ; iPrimary < gAlice->GetNtrack() ; iPrimary++)
 	{
-	  primary = (TParticle*)primaryList->UncheckedAt(iPrimary) ;
+	  primary = gAlice->Particle(iPrimary) ;
 	  Int_t primaryType = primary->GetPdgCode() ;
 	  if( primaryType == 22 ) {
 	    Int_t moduleNumber ;
@@ -1065,7 +1062,7 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
 	  Double_t dXmin = 0.; 
 	  Double_t dZmin = 0. ;
 	  for ( index = 0 ; index < numberofprimaries ; index++){
-	    primary = (TParticle*)primaryList->UncheckedAt(listofprimaries[index]) ;
+	    primary = gAlice->Particle(listofprimaries[index]) ;
 	    Int_t moduleNumber ;
 	    Double_t primX, primZ ;
 	    fGeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
@@ -1086,8 +1083,8 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
 	  if(closestPrimary >=0 ){
 	    totalRPwithPrim++;
 	    
-	    Int_t primaryType = ((TParticle *)primaryList->At(closestPrimary))->GetPdgCode() ;
-//  	    TParticlePDG* pDGparticle = ((TParticle *)primaryList->At(closestPrimary))->GetPDG();
+	    Int_t primaryType = gAlice->Particle(closestPrimary)->GetPdgCode() ;
+//  	    TParticlePDG* pDGparticle = gAlice->ParticleAt(closestPrimary)->GetPDG();
 //  	    Double_t charge =  PDGparticle->Charge() ;
 // 	    if(charge)
 // 	      cout <<"Primary " <<primaryType << " E " << ((TParticle *)primaryList->At(closestPrimary))->Energy() << endl ;
@@ -1096,8 +1093,8 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
 	      {
 	      case 22:
 		primaryCode = 0;  //Photon
-		fhAllEnergy   ->Fill(((TParticle *) primaryList->At(closestPrimary))->Energy(), recParticle->Energy()) ;
-		fhAllPosition ->Fill(((TParticle *) primaryList->At(closestPrimary))->Energy(), minDistance) ;
+		fhAllEnergy   ->Fill(gAlice->Particle(closestPrimary)->Energy(), recParticle->Energy()) ;
+		fhAllPosition ->Fill(gAlice->Particle(closestPrimary)->Energy(), minDistance) ;
 		fhAllPositionX->Fill(dXmin);
 		fhAllPositionZ->Fill(dZmin);
 		break;
@@ -1140,13 +1137,13 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
 	      {
 	      case AliPHOSFastRecParticle::kGAMMA:
 		if(primaryType == 22){
-		  fhPhotEnergy->Fill(((TParticle *) primaryList->At(closestPrimary))->Energy(), recParticle->Energy() ) ; 
-		  fhEMEnergy->Fill(((TParticle *) primaryList->At(closestPrimary))->Energy(), recParticle->Energy() ) ; 
-		  fhPPSDEnergy->Fill(((TParticle *) primaryList->At(closestPrimary))->Energy(), recParticle->Energy() ) ; 
+		  fhPhotEnergy->Fill(gAlice->Particle(closestPrimary)->Energy(), recParticle->Energy() ) ; 
+		  fhEMEnergy->Fill(gAlice->Particle(closestPrimary)->Energy(), recParticle->Energy() ) ; 
+		  fhPPSDEnergy->Fill(gAlice->Particle(closestPrimary)->Energy(), recParticle->Energy() ) ; 
 
-		  fhPhotPosition->Fill(((TParticle *) primaryList->At(closestPrimary))->Energy(),minDistance) ;
-		  fhEMPosition->Fill(((TParticle *) primaryList->At(closestPrimary))->Energy(),minDistance) ;
-		  fhPPSDPosition->Fill(((TParticle *) primaryList->At(closestPrimary))->Energy(),minDistance) ;
+		  fhPhotPosition->Fill(gAlice->Particle(closestPrimary)->Energy(),minDistance) ;
+		  fhEMPosition->Fill(gAlice->Particle(closestPrimary)->Energy(),minDistance) ;
+		  fhPPSDPosition->Fill(gAlice->Particle(closestPrimary)->Energy(),minDistance) ;
 
 		  fhPhotReg->Fill(CorrectEnergy(recParticle->Energy()) ) ;
 		  fhPhotEM->Fill(CorrectEnergy(recParticle->Energy()) ) ;
@@ -1183,8 +1180,8 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
 	      case  AliPHOSFastRecParticle::kELECTRON:
 		if(primaryType == 22){ 
 		  fhPhotElec->Fill(CorrectEnergy(recParticle->Energy()) ) ;
-		  fhEMEnergy->Fill(((TParticle *) primaryList->At(closestPrimary))->Energy(), recParticle->Energy() ) ; 
-		  fhEMPosition->Fill(((TParticle *) primaryList->At(closestPrimary))->Energy(),minDistance) ;
+		  fhEMEnergy->Fill(gAlice->Particle(closestPrimary)->Energy(), recParticle->Energy() ) ; 
+		  fhEMPosition->Fill(gAlice->Particle(closestPrimary)->Energy(),minDistance) ;
 		  fhPhotEM->Fill(CorrectEnergy(recParticle->Energy()) ) ;
 		  fhPhotPPSD->Fill(CorrectEnergy(recParticle->Energy()) ) ;
 		}	  
@@ -1218,8 +1215,8 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
 		break ;
 	      case  AliPHOSFastRecParticle::kNEUTRALEM:
 		if(primaryType == 22){
-		  fhEMEnergy->Fill(((TParticle *)primaryList->At(closestPrimary))->Energy(),recParticle->Energy() ) ; 
-		  fhEMPosition->Fill(((TParticle *)primaryList->At(closestPrimary))->Energy(),minDistance ) ;
+		  fhEMEnergy->Fill(gAlice->Particle(closestPrimary)->Energy(),recParticle->Energy() ) ; 
+		  fhEMPosition->Fill(gAlice->Particle(closestPrimary)->Energy(),minDistance ) ;
 		
 		  fhPhotNuEM->Fill(CorrectEnergy(recParticle->Energy()) ) ;
 		  fhPhotEM->Fill(CorrectEnergy(recParticle->Energy()) ) ;
@@ -1248,8 +1245,8 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
 	      case  AliPHOSFastRecParticle::kGAMMAHA:
 		  if(primaryType == 22){ //photon
 		    fhPhotGaHa->Fill(CorrectEnergy(recParticle->Energy()) ) ;
-		    fhPPSDEnergy->Fill(((TParticle *) primaryList->At(closestPrimary))->Energy(), recParticle->Energy() ) ; 
-		    fhPPSDPosition->Fill(((TParticle *) primaryList->At(closestPrimary))->Energy(),minDistance) ;
+		    fhPPSDEnergy->Fill(gAlice->Particle(closestPrimary)->Energy(), recParticle->Energy() ) ; 
+		    fhPPSDPosition->Fill(gAlice->Particle(closestPrimary)->Energy(),minDistance) ;
 		    fhPhotPPSD->Fill(CorrectEnergy(recParticle->Energy()) ) ;
 		  }
 		  if(primaryType == 2112){ //neutron

@@ -187,12 +187,6 @@ ClassImp(AliMUONEventReconstructor) // Class implementation in ROOT context
   //__________________________________________________________________________
 AliMUONEventReconstructor::AliMUONEventReconstructor(void)
 {
-  fBkgGeantFile = 0;
-  fBkgGeantTK = 0;
-  fBkgGeantParticles = 0;
-  fBkgGeantTH = 0;
-  fBkgGeantHits = 0;
-
   // Constructor for class AliMUONEventReconstructor
   SetReconstructionParametersToDefaults();
   // Memory allocation for the TClonesArray of hits for reconstruction
@@ -1414,7 +1408,6 @@ void AliMUONEventReconstructor::EventDump(void)
 
   AliMUONTrack *track;
   AliMUONTrackParam *trackParam, *trackParam1;
-  TClonesArray *particles; // pointer to the particle list
   TParticle *p;
   Double_t bendingSlope, nonBendingSlope, pYZ;
   Double_t pX, pY, pZ, x, y, z, c;
@@ -1468,12 +1461,11 @@ void AliMUONEventReconstructor::EventDump(void)
 	     z, x, y, pX, pY, pZ, c);
   }
   // informations about generated particles
-  particles = gAlice->Particles();
-  np = particles->GetEntriesFast();
+  np = gAlice->GetNtrack();
   printf(" **** number of generated particles: %d  \n", np);
   
   for (Int_t iPart = 0; iPart < np; iPart++) {
-    p = (TParticle*) particles->UncheckedAt(iPart);
+    p = gAlice->Particle(iPart);
     printf(" particle %d: type= %d px= %f py= %f pz= %f pdg= %d\n",
 	   iPart, p->GetPdgCode(), p->Px(), p->Py(), p->Pz(), p->GetPdgCode());    
   }

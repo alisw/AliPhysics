@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/10/05 16:08:15  kowal2
+Changes due to a new class AliComplexCluster. Forward declarations.
+
 Revision 1.3  2000/07/10 20:57:39  hristov
 Update of TPC code and macros by M.Kowalski
 
@@ -627,17 +630,6 @@ Float_t   AliTPCClusterFinder::GetVirtualSignal(Float_t ri, Float_t rj)
   if (sumw>0)  return (sum/sumw);
   else 
     return -1;
-}
-
-
-
-void AliTPCClusterFinder::Streamer(TBuffer & R__b)
-{
-  if (R__b.IsReading()) {
-    //      Version_t R__v = R__b.ReadVersion();
-   } else {
-      R__b.WriteVersion(AliTPCClusterFinder::IsA());    
-   } 
 }
 
 

@@ -35,7 +35,7 @@ public:
   void     Clear(Option_t *opt="");
   void     Print(Option_t *opt="");
   void     AddHit(Int_t shunt, Int_t track, TLorentzVector p, Float_t *xy, Int_t ipart);
-  void     MakeBranch    (char *title, Int_t i);
+  void     MakeBranch    (char *title, Int_t i, char *file=0);
   void     SetTreeAddress(char *title, Int_t i);
   
   TClonesArray *Hits         (void) {return fHits;}

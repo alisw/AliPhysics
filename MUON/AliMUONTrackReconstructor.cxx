@@ -178,7 +178,6 @@ AliMUONTrackReconstructor::AliMUONTrackReconstructor()
    fSSigmaCut = 4.0;
    fSXPrec    = 0.01; 
    fSYPrec    = 0.144;
-   fFileName = 0;
 }
 
 //_____________________________________________________________________________
@@ -273,11 +272,11 @@ void AliMUONTrackReconstructor::Init(Double_t &seff, Double_t &sb0, Double_t &sb
 //__________________________________________
 void AliMUONTrackReconstructor::FinishEvent()
 {
-// Finish
-    TTree *treeK = gAlice->TreeK();
-    TFile *file1 = 0;
-    if (treeK) file1 = treeK->GetCurrentFile();
-    file1->cd();
+   // Finish
+   // TTree *treeK = gAlice->TreeK();
+   // TFile *file1 = 0;
+   // if (treeK) file1 = treeK->GetCurrentFile();
+   // file1->cd();
 }
 
 //_____________________________________
@@ -749,9 +748,8 @@ void trackf_read_fit(Int_t &ievr, Int_t &nev, Int_t &nhittot1, Int_t *izch, Doub
 	      mHit=(AliMUONHit*)pMUON->NextHit()) 
 	  {
 	      if (mHit->fChamber > 10) continue;
-	      TClonesArray *fPartArray = gAlice->Particles();
 	      Int_t ftrack = mHit->Track();
-	      Int_t id = ((TParticle*) fPartArray->UncheckedAt(ftrack))->GetPdgCode();
+	      Int_t id = gAlice->Particle(ftrack)->GetPdgCode();
 	      
 	      if (id==kMuonPlus||id==kMuonMinus) {
 		  xgeant[nhittot1]   = mHit->Y();
@@ -805,10 +803,9 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
 	      if (maxidg<=20000) {
 		
 		if (mHit->fChamber > 10) continue;
-		TClonesArray *fPartArray = gAlice->Particles();
 		TParticle *particle;
 		Int_t ftrack = mHit->Track();
-		Int_t id = ((TParticle*) fPartArray->UncheckedAt(ftrack))->GetPdgCode();
+		Int_t id = gAlice->Particle(ftrack)->GetPdgCode();
 
 //		if (id==kMuonPlus||id==kMuonMinus) {
 		    
@@ -836,7 +833,7 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
 
 		    ptotg[maxidg]  = mHit->fPTot;          // P of hit 
 		    
-		    particle = (TParticle*) fPartArray->UncheckedAt(ftrack);
+		    particle = gAlice->Particle(ftrack);
 		    Float_t thet = particle->Theta();
 		    thet = thet*180./3.1416;
 		    
@@ -846,7 +843,7 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
 		    if (iparent >= 0) {
 			Int_t ip;
 			while(1) {
-			    ip=((TParticle*) fPartArray->UncheckedAt(iparent))->GetFirstMother();
+			    ip=gAlice->Particle(iparent)->GetFirstMother();
 			    if (ip < 0) {
 				break;
 			    } else {
@@ -857,7 +854,7 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
 		    //printf("iparent - %d\n",iparent);
 		    Int_t id1  = ftrack; // numero de la particule generee au vertex
 		    Int_t idum = track+1;
-		    Int_t id2 = ((TParticle*) fPartArray->UncheckedAt(iparent))->GetPdgCode();
+		    Int_t id2 = gAlice->Particle(iparent)->GetPdgCode();
 
 		    if (id2==443) id2=114;
 		    else id2=116;
@@ -1009,7 +1006,6 @@ void trackf_read_spoint(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *
 		itypg[mpoi]=0;
 		ihit = ihit-1;
 		if (ihit >=0 && itrack >=0) {
-		    TClonesArray *fPartArray = gAlice->Particles();
 		    gAlice->ResetHits();
 		    gAlice->TreeH()->GetEvent(itrack);
 		    TClonesArray *pMUONhits  = pMUON->Hits();
@@ -1021,10 +1017,8 @@ void trackf_read_spoint(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *
 		    if (id == kMuonPlus)  itypg[mpoi]=5;
 		    if (id == kMuonMinus) itypg[mpoi]=6;
 		    TParticle *particle;
-		    particle = (TParticle*) 
-			(fPartArray->UncheckedAt(mHit->Track()));
-		    TParticle* particleM=(TParticle*) 
-			(fPartArray->UncheckedAt(particle->GetFirstMother()));
+		    particle = gAlice->Particle(mHit->Track());
+		    TParticle* particleM=gAlice->Particle(particle->GetFirstMother());
 		    Int_t iparent=particleM->GetPdgCode();
 		    printf("\n Particle Id:%d %d \n", id, iparent);
 		    if (iparent == 443) id2=114;

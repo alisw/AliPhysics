@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/12/20 13:00:45  cblume
+Modifications for the HP-compiler
+
 Revision 1.6  2000/12/12 10:20:10  cblume
 Initialize fSepctrum = 0 in ctors
 
@@ -736,61 +739,5 @@ Int_t AliTRDsim::Locate(Double_t *xv, Int_t n, Double_t xval
   dx = xval - xv[kl];
 
   return 0;
-
-}
-
-//_____________________________________________________________________________
-void AliTRDsim::Streamer(TBuffer &R__b)
-{
-  //
-  // Stream an object of class AliTRDsim.
-  //
-
-  if (R__b.IsReading()) {
-    Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-    TObject::Streamer(R__b);
-    R__b >> fNFoils;
-    R__b >> fFoilThick;
-    R__b >> fGapThick;
-    R__b >> fFoilDens;
-    R__b >> fGapDens;
-    R__b >> fFoilOmega;
-    R__b >> fGapOmega;
-    R__b >> fFoilZ;
-    R__b >> fGapZ;
-    R__b >> fFoilA;
-    R__b >> fGapA;
-    R__b >> fTemp;
-    R__b >> fSpNBins;
-    R__b >> fSpRange;
-    R__b >> fSpBinWidth;
-    R__b >> fSpLower;
-    R__b >> fSpUpper;
-    R__b.ReadArray(fSigma);
-    R__b >> fSpectrum;
-  } 
-  else {
-    R__b.WriteVersion(AliTRDsim::IsA());
-    TObject::Streamer(R__b);
-    R__b << fNFoils;
-    R__b << fFoilThick;
-    R__b << fGapThick;
-    R__b << fFoilDens;
-    R__b << fGapDens;
-    R__b << fFoilOmega;
-    R__b << fGapOmega;
-    R__b << fFoilZ;
-    R__b << fGapZ;
-    R__b << fFoilA;
-    R__b << fGapA;
-    R__b << fTemp;
-    R__b << fSpNBins;
-    R__b << fSpRange;
-    R__b << fSpBinWidth;
-    R__b << fSpLower;
-    R__b << fSpUpper;
-    R__b.WriteArray(fSigma, fSpNBins);
-    R__b << (TObject*) fSpectrum;
-  }
 
 }

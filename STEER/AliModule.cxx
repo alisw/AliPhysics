@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2000/11/30 07:12:49  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.12  2000/10/02 21:28:14  fca
 Removal of useless dependecies via forward declarations
 
@@ -630,36 +633,4 @@ void AliModule::ReadEuclidMedia(const char* filnam)
   Warning("ReadEuclidMedia","reading error or premature end of file\n");
 } 
  
-//_____________________________________________________________________________
-void AliModule::Streamer(TBuffer &R__b)
-{
-  //
-  // Stream an object of class Module.
-  //
-  if (R__b.IsReading()) {
-    Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-    TNamed::Streamer(R__b);
-    TAttLine::Streamer(R__b);
-    TAttMarker::Streamer(R__b);
-    fEuclidMaterial.Streamer(R__b);
-    fEuclidGeometry.Streamer(R__b);
-    R__b >> fActive;
-    R__b >> fHistograms;
-    //
-    // Stream the pointers but not the TClonesArrays
-    R__b >> fNodes; // diff
-  } else {
-    R__b.WriteVersion(AliModule::IsA());
-    TNamed::Streamer(R__b);
-    TAttLine::Streamer(R__b);
-    TAttMarker::Streamer(R__b);
-    fEuclidMaterial.Streamer(R__b);
-    fEuclidGeometry.Streamer(R__b);
-    R__b << fActive;
-    R__b << fHistograms;
-    //
-    // Stream the pointers but not the TClonesArrays
-    R__b << fNodes; // diff
-  }
-}
  

@@ -51,7 +51,7 @@ private:
   Double_t funParam[5];//parameters of used charge function
   Int_t  fNRF;      //number of interpolations point
   Float_t fDSTEPM1;    //element step for point
-  Float_t* fcharge; // field with RF
+  Float_t* fcharge; //[fNPRF] field with RF
   Float_t  forigsigma;//sigma of original distribution;
   Float_t fpadWidth;  //width of pad
   Float_t fkNorm;     //normalisation factor of the charge integral

@@ -11,6 +11,8 @@
 
 #include "AliDetector.h"
 
+class TFile;
+
 class AliRun;
 class AliDigit;
 
@@ -44,7 +46,7 @@ class AliTRD : public AliDetector {
   TObjArray         *RecPoints() const              { return fRecPoints;   };
   virtual void       Init();
   virtual Int_t      IsVersion() const = 0;
-  virtual void       MakeBranch(Option_t* option);     
+  virtual void       MakeBranch(Option_t* option, char *file=0);     
   virtual void       ResetRecPoints();
   virtual void       StepManager() = 0; 
   virtual void       SetTreeAddress();
@@ -67,6 +69,8 @@ class AliTRD : public AliDetector {
   virtual Int_t      GetSensPlane() const       = 0;
   virtual Int_t      GetSensSector() const      = 0;
   virtual Int_t      GetSensSectorRange() const = 0; 
+
+  virtual void       SDigits2Digits();
 
   virtual AliTRDsim *CreateTR()     = 0;
   virtual AliTRDsim *GetTR() const  = 0;
