@@ -1,26 +1,106 @@
+void ControlPlots()
+{  
+  Int_t iChamber=1;
+  
+  TH1F *pCqH1=new TH1F("clusq","Clusters Charge;q [QDC]",300,0,4000);
+  al->LoadHeader();  al->LoadKinematics();
+  
+  Bool_t isHits=!rl->LoadHits();  
+    Bool_t isSDigits=!rl->LoadSDigits();  
+      Bool_t isClusters=!rl->LoadRecPoints();
+        Bool_t isDigits=!rl->LoadDigits();
+  
+  for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
+    al->GetEvent(iEventN);    
+    if(isHits){
+      for(Int_t iPrimN=0;iPrimN<rl->TreeH()->GetEntries();iPrimN++){//prims loop
+        rl->TreeH()->GetEntry(iPrimN);      
+        Int_t iTotalHits=0,iTotalCerenkovs=0,iTotalSpecials=0;
+        iTotalHits+=r->Hits()->GetEntries();
+        iTotalCerenkovs+=r->Cerenkovs()->GetEntries();
+        iTotalSpecials+=r->Specials()->GetEntries();
+      }//prims loop
+    }//isHits
+    if(isSDigits){
+      rl->TreeS()->GetEntry(0);
+    }//isSdigits
+    if(isDigits){
+      rl->TreeD()->GetEntry(0);
+      for(int i=1;i<=7;i++);
+    }//isDigits
+    if(isClusters){
+      rl->TreeR()->GetEntry(0);
+      Int_t iTotalClusters=0;
+      for(int i=1;i<=7;i++) iTotalClusters+=r->Clusters(i)->GetEntries();    
+      for(Int_t iClusterN=0;iClusterN<r->Clusters(iChamber)->GetEntries();iClusterN++){
+        pCqH1->Fill(((AliRICHcluster*)r->Clusters(iChamber)->At(i))->Q());
+      }//clusters loop
+    }//isClusters
+  }//events loop 
+  if(isHits) rl->UnloadHits();  
+    if(isSDigits) rl->UnloadSDigits(); 
+      if(isDigits) rl->UnloadDigits(); 
+        if(isClusters) rl->UnloadRecPoints();
+  al->UnloadHeader();  al->UnloadKinematics();
+  pCqH1->Draw();
+}//void ControlPlots()
+//__________________________________________________________________________________________________
 void MainTrank()
 {
   TStopwatch sw;TDatime time;
-  OLD_S_SD(); SD_D(); //D_C();
+  OLD_S_SD(); SD_D(); D_C();
   cout<<"\nInfo in <MainTrank>: Start time: ";time.Print();
   cout<<"Info in <MainTrank>: Stop  time: ";time.Set();  time.Print();
   cout<<"Info in <MainTrank>: Time  used: ";sw.Print();
 }
-
+//__________________________________________________________________________________________________
+void sh()
+{
+  if(rl->LoadHits()) return;
+  
+  Int_t iTotalHits=0;
+  for(Int_t iPrimN=0;iPrimN<rl->TreeH()->GetEntries();iPrimN++){//prims loop
+    rl->TreeH()->GetEntry(iPrimN);      
+    r->Hits()->Print();
+    iTotalHits+=r->Hits()->GetEntries();
+  }
+  Info("sh","totally %i hits",iTotalHits);
+  rl->UnloadHits();
+}
+//__________________________________________________________________________________________________
+void ssp()
+{
+  if(rl->LoadHits()) return;
+  
+  Int_t iTotalSpecials=0;
+  for(Int_t iPrimN=0;iPrimN<rl->TreeH()->GetEntries();iPrimN++){//prims loop
+    rl->TreeH()->GetEntry(iPrimN);      
+    r->Specials()->Print();
+    iTotalSpecials+=r->Specials()->GetEntries();
+  }
+  Info("ssp","totally %i specials",iTotalSpecials);
+  rl->UnloadHits();
+}
+//__________________________________________________________________________________________________
 void ss()
 {
   if(rl->LoadSDigits()) return;
   rl->TreeS()->GetEntry(0);
   r->SDigits()->Print();
-  Info("ss","totally %i",r->SDigits()->GetEntries());
+  Info("ss","totally %i sdigits",r->SDigits()->GetEntries());
   rl->UnloadSDigits();
 }
-
+//__________________________________________________________________________________________________
 void sd()
 {
   if(rl->LoadDigits()) return;
   rl->TreeD()->GetEntry(0);
-  for(int i=1;i<=7;i++) r->Digits(i)->Print();
+  Int_t iTotalDigits=0;
+  for(int i=1;i<=7;i++){
+    r->Digits(i)->Print();
+    iTotalDigits+=r->Digits(i)->GetEntries();
+  }
+  Info("sd","totally %i digits",iTotalDigits);
   rl->UnloadDigits();
 }
 
@@ -80,13 +160,16 @@ void OLD_S_SD()
     for(Int_t iPrimN=0;iPrimN<rl->TreeH()->GetEntries();iPrimN++){//prims loop
       rl->TreeH()->GetEntry(iPrimN);
       for(Int_t i=0;i<r->Specials()->GetEntries();i++){//specials loop          
-        Int_t padx= ((AliRICHSDigit*)r->Specials()->At(i))->PadX();
-        Int_t pady= ((AliRICHSDigit*)r->Specials()->At(i))->PadY();
+        Int_t padx= ((AliRICHSDigit*)r->Specials()->At(i))->PadX()+r->Param()->NpadsX()/2;
+        Int_t pady= ((AliRICHSDigit*)r->Specials()->At(i))->PadY()+r->Param()->NpadsY()/2;
         Double_t q=  ((AliRICHSDigit*)r->Specials()->At(i))->QPad();
         Int_t hitN= ((AliRICHSDigit*)r->Specials()->At(i))->HitNumber()-1;//!!! important -1
         Int_t chamber=((AliRICHhit*)r->Hits()->At(hitN))->C();
         Int_t track=((AliRICHhit*)r->Hits()->At(hitN))->GetTrack();
-        r->AddSDigit(chamber,padx+r->Param()->NpadsX()/2,pady+r->Param()->NpadsY()/2,q,track);
+        if(padx<1 || padx>r->Param()->NpadsX() ||pady<1 || pady>r->Param()->NpadsY())
+          Error("OLD_S_SD","pad is out of valid range padx= %i pady=%i event %i",padx,pady,iEventN);
+        else
+          r->AddSDigit(chamber,padx,pady,q,track);
       }//specials loop
     }//prims loop
     rl->TreeS()->Fill();
@@ -94,7 +177,7 @@ void OLD_S_SD()
   }//events loop  
     rl->UnloadHits();     rl->UnloadSDigits();  
   Info("OLD_S_SD","Stop.");    
-}//Specials2Sdigits()
+}//OLD_S_SD()
 //__________________________________________________________________________________________________
 void H_SD()
 {
@@ -133,7 +216,7 @@ void H_SD()
   rl->UnloadHits();
   rl->UnloadSDigits();  
   Info("H_SD","Stop.");  
-}//Hits2Sdigits()
+}//H_SD()
 //__________________________________________________________________________________________________
 void SD_D()
 {
@@ -143,7 +226,7 @@ void SD_D()
   
   for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
     al->GetEvent(iEventN);
-    
+    cout<<"Event "<<iEventN<<endl;  
     rl->MakeTree("D");r->MakeBranch("D"); //create TreeD with RICH branches 
     r->ResetSDigits();r->ResetDigits();//reset lists of sdigits and digits
     rl->TreeS()->GetEntry(0);  
@@ -162,20 +245,16 @@ void SD_D()
         q+=pSdig->Q();
         if(iNdigitsPerPad<=3)
           tr[iNdigitsPerPad-1]=pSdig->T(0);
-        else
-          Info("","More then 3 sdigits for the given pad");
+//        else
+//          Info("","More then 3 sdigits for the given pad");
       }else{//new pad, add the pevious one
-        if(id!=kBad&&r->Param()->IsOverTh(chamber,x,y,q)) {
-           
-           r->AddDigit(chamber,x,y,q,tr[0],tr[1],tr[2]);//ch-xpad-ypad-qdc-tr1-2-3
-         }
+        if(id!=kBad) r->AddDigit(chamber,x,y,q,tr[0],tr[1],tr[2]);//ch-xpad-ypad-qdc-tr1-2-3
         chamber=pSdig->C();x=pSdig->X();y=pSdig->Y();q=pSdig->Q();tr[0]=pSdig->T(0);id=pSdig->Id();
         iNdigitsPerPad=1;tr[1]=tr[2]=kBad;
       }
     }//sdigits loop (sorted)
   
-    if(r->SDigits()->GetEntries()&&r->Param()->IsOverTh(chamber,x,y,q))
-                  r->AddDigit(chamber,x,y,q,tr[0],tr[1],tr[2]);//add the last digit
+    if(r->SDigits()->GetEntries())r->AddDigit(chamber,x,y,q,tr[0],tr[1],tr[2]);//add the last digit
         
     rl->TreeD()->Fill();  
     rl->WriteDigits("OVERWRITE");
@@ -183,55 +262,9 @@ void SD_D()
   rl->UnloadSDigits();     rl->UnloadDigits();  
   r->ResetSDigits();r->ResetDigits();//reset lists of sdigits and digits
   Info("SD_D","Stop.");  
-}
-
-
-
-void OLD_SD_D()
-{
-  Info("SD_DOLD","Start.");  
-
-  rl->LoadSDigits();
-  
-  for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
-    al->GetEvent(iEventN);
-    
-    rl->MakeTree("D");r->MakeBranch("D"); //create TreeD with RICH branches 
-    r->ResetSDigits();r->ResetDigitsOld();//reset lists of sdigits and digits
-    rl->TreeS()->GetEntry(0);  
-    r->SDigits()->Sort();
-  
-    Int_t kBad=-101;
-    
-    Int_t tr[3],q[3],dig[5]; for(Int_t i=0;i<3;i++) tr[i]=q[i]=kBad;    for(Int_t i=0;i<5;i++) dig[i]=kBad;        
-    Int_t chamber=kBad,id=kBad,iNdigitsPerPad=kBad;//how many sdigits for a given pad
-        
-    for(Int_t i=0;i<r->SDigits()->GetEntries();i++){//sdigits loop (sorted)
-      AliRICHdigit *pSdig=(AliRICHdigit*)r->SDigits()->At(i);
-      if(pSdig->Id()==id){//still the same pad
-        iNdigitsPerPad++;
-        dig[2]+=pSdig->Q();//sum up qdc
-        if(iNdigitsPerPad<=3)
-          tr[iNdigitsPerPad-1]=pSdig->T(0);
-        else
-          Info("","More then 3 sdigits for the given pad");
-      }else{//new pad, add the pevious one
-        if(id!=kBad) r->AddDigitOld(chamber,tr,q,dig);
-        chamber=pSdig->C();dig[0]=pSdig->X();dig[1]=pSdig->Y();dig[2]=pSdig->Qdc();tr[0]=pSdig->T(0);id=pSdig->Id();
-        iNdigitsPerPad=1;tr[1]=tr[2]=kBad;
-      }
-    }//sdigits loop (sorted)
-    r->AddDigitOld(chamber,tr,q,dig);//add the last digit
-        
-    rl->TreeD()->Fill();  
-    rl->WriteDigits("OVERWRITE");
-  }//events loop
-  rl->UnloadSDigits();     rl->UnloadDigits();  
-  r->ResetSDigits();r->ResetDigitsOld();//reset lists of sdigits and digits
-  Info("SD_DOLD","Stop.");  
-}
+}//SD_D()
 //__________________________________________________________________________________________________
-void Show3()
+void Show()
 {  
   cout<<endl;
   al->LoadHeader();  al->LoadKinematics();
@@ -291,69 +324,6 @@ void Show3()
   cout<<endl;
 }//void Show()
 //__________________________________________________________________________________________________
-void ControlPlots()
-{  
-  Int_t iChamber = 1;
-  TH1F *pqclusterH1 = new TH1F("qclus","charge of clusters;Q (ADC);events",2000,0.,2000);
-
-    al->LoadHeader();  al->LoadKinematics();
-  
-  rl->LoadHits();  
-    Bool_t isSdigits=!rl->LoadSDigits();  
-      Bool_t isClusters=!rl->LoadRecPoints();
-        Bool_t isDigits=!rl->LoadDigits();//loaders
-  
-  for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
-    Int_t iNparticles=a->GetEvent(iEventN);
-    Int_t iNprims=rl->TreeH()->GetEntries();
-    
-    Int_t iTotalHits=0,iTotalCerenkovs=0,iTotalSpecials=0;
-    for(Int_t iPrimN=0;iPrimN<iNprims;iPrimN++){//prims loop
-      rl->TreeH()->GetEntry(iPrimN);      
-      iTotalHits+=r->Hits()->GetEntries();
-      iTotalCerenkovs+=r->Cerenkovs()->GetEntries();
-      iTotalSpecials+=r->Specials()->GetEntries();
-      TParticle *pPrim=al->Stack()->Particle(iPrimN);
-    }//prims loop
-    if(isSdigits){
-      rl->TreeS()->GetEntry(0);
-    }
-    if(isDigits){
-      rl->TreeD()->GetEntry(0);
-      for(int i=1;i<=7;i++);
-    }
-    if(isClusters){
-      rl->TreeR()->GetEntry(0);
-      for(Int_t iclus=0;iclus<r->Clusters(iChamber)->GetEntries();iclus++) {
-        pqclusterH1->Fill(((AliRICHcluster*)r->Clusters(iChamber)->At(iclus))->Q());
-      }
-    }
-    cout<<endl;
-  }//events loop
-  pqclusterH1->Draw();
-  rl->UnloadHits();  
-    if(isSdigits) rl->UnloadSDigits(); 
-      if(isDigits) rl->UnloadDigits(); 
-        if(isClusters) rl->UnloadRecPoints();
-  al->UnloadHeader();
-  al->UnloadKinematics();
-}//void Controlòlots()
-//__________________________________________________________________________________________________
-void DebugOFF()
-{
-  Info("DebugOFF","");
-  a->SetDebug(0);
-  r->SetDebug(0);
-  AliLoader::SetDebug(0);
-}//void DebugOFF()
-
-void DebugON()
-{
-  Info("DebugON","");  
-  a->SetDebug(1);
-  r->SetDebug(1);
-  AliLoader::SetDebug(1);
-}//void DebugON()
 
 
 AliRun *a;
@@ -388,50 +358,6 @@ Bool_t ReadAlice()
   Info("ReadAlice","Run contains %i event(s)",gAlice->GetEventsPerRun());      
   return kTRUE;
 }
-//__________________________________________________________________________________________________
-void GeoTest()
-{
-
-  TBRIK *pAliceBRIK=new TBRIK("aliceBRIK","ALICE mother volume","void",500,500,500);
-  TBRIK *pArmBRIK=new TBRIK("armBRIK","RICH arm1","void",pRICH->GetSizeX(),pRICH->GetSizeY(),pRICH->GetSizeZ());
-   
-   TNode *pAliceNode=new TNode("aliceNode","Mother volume","aliceBRIK");
-   pAliceNode->cd();
-
-// ARM 1 LEFT      
-   TRotation rot1;
-   TVector3  v1(0,pRICH->GetOffset(),0);
-   
-         
-   rot1.RotateX(pRICH->GetYZAngle()*kDegrad);        v1.RotateX(pRICH->GetYZAngle()*kDegrad);
-   rot1.RotateZ(pRICH->GetXYAngle()*kDegrad);        v1.RotateZ(pRICH->GetXYAngle()*kDegrad);
-   rot1.RotateZ(pRICH->GetRotAngle()*kDegrad);       v1.RotateZ(pRICH->GetRotAngle()*kDegrad);
-         
-   TRotMatrix *pArm1RotMatrix=new TRotMatrix("rotArm1","rotArm1",rot1.ThetaX()*kRaddeg, rot1.PhiX()*kRaddeg,
-                                                                 rot1.ThetaY()*kRaddeg, rot1.PhiY()*kRaddeg,
-                                                                 rot1.ThetaZ()*kRaddeg, rot1.PhiZ()*kRaddeg);
-
-   TNode *pArm1Node=new TNode("arm1Node","Left arm","armBRIK",v1.X(),v1.Y(),v1.Z(),"rotArm1");
-   arm1Node->SetLineColor(kRed);
-   
-// ARM 2 LEFT      
-   TRotation rot2;
-   TVector3  v2(0,pRICH->GetOffset(),0);
-   
-         
-   rot2.RotateX( pRICH->YZAngle()*kDegrad);        v2.RotateX(pRICH->GetYZAngle()*kDegrad);
-   rot2.RotateZ(-pRICH->XYAngle()*kDegrad);        v2.RotateZ(-pRICH->GetXYAngle()*kDegrad);
-   rot2.RotateZ( pRICH->RotAngle()*kDegrad);        v2.RotateZ(pRICH->GetRotAngle()*kDegrad);
-         
-   TRotMatrix *pArm2RotMatrix=new TRotMatrix("rotArm2","rotArm2",rot2.ThetaX()*kRaddeg, rot2.PhiX()*kRaddeg,
-                                                                 rot2.ThetaY()*kRaddeg, rot2.PhiY()*kRaddeg,
-                                                                 rot2.ThetaZ()*kRaddeg, rot2.PhiZ()*kRaddeg);
-
-   TNode *pArm2Node=new TNode("arm2Node","Left arm","armBRIK",v2.X(),v2.Y(),v2.Z(),"rotArm2");
-   arm2Node->SetLineColor(kBlue);
-   
-   aliceNode->Draw();
-}//void GeoTest()
 //__________________________________________________________________________________________________
 void PrintGeo(Float_t rotDeg=0)
 {
@@ -539,42 +465,6 @@ void TestResponse()
   pStack->Draw("nostack");
   pLeg->Draw();
 }//TestResponse()
-//__________________________________________________________________________________________________
-void TestDigitsOLD()
-{
-  Info("TestDigitsOLD","Creating test digits.");
-  rl->MakeTree("D");r->MakeBranch("D");
-
-
-  Int_t t[10];
-  Int_t c[10];
-  Int_t d[5];
-  t[0]=100;t[1]=200;t[2]=300;
-  c[0]=10;c[1]=20;c[2]=30;
-
-
-  d[0]=1;d[1]=1;d[2]=10;d[3]=3;d[4]=4;r->AddDigitOld(1,t,c,d);
-
-  d[0]=2;d[1]=2;d[2]=10;d[3]=3;d[4]=4;r->AddDigitOld(2,t,c,d);
-  d[0]=2;d[1]=3;d[2]=10;d[3]=3;d[4]=4;r->AddDigitOld(2,t,c,d);
-
-  d[0]=2;d[1]=2;d[2]=100;d[3]=3;d[4]=4;r->AddDigitOld(3,t,c,d);
-  d[0]=2;d[1]=3;d[2]= 50;d[3]=3;d[4]=4;r->AddDigitOld(3,t,c,d);
-  d[0]=2;d[1]=4;d[2]=200;d[3]=3;d[4]=4;r->AddDigitOld(3,t,c,d);
-
-  d[0]=2;d[1]=2;d[2]=100;d[3]=3;d[4]=4;r->AddDigitOld(6,t,c,d);
-  d[0]=2;d[1]=3;d[2]= 50;d[3]=3;d[4]=4;r->AddDigitOld(6,t,c,d);
-  d[0]=2;d[1]=4;d[2]=200;d[3]=3;d[4]=4;r->AddDigitOld(6,t,c,d);
-  d[0]=2;d[1]=5;d[2]= 50;d[3]=3;d[4]=4;r->AddDigitOld(6,t,c,d);
-  d[0]=2;d[1]=6;d[2]=300;d[3]=3;d[4]=4;r->AddDigitOld(6,t,c,d);
-  d[0]=2;d[1]=7;d[2]= 50;d[3]=3;d[4]=4;r->AddDigitOld(6,t,c,d);
-
-  rl->TreeD()->Fill();
-  rl->WriteDigits("OVERWRITE");
-  rl->UnloadDigits();
-  r->ResetDigitsOld();
-  Info("TestDigitsOLD","Stop.");
-}//void TestDigits()
 //__________________________________________________________________________________________________
 void TestSD()
 {
@@ -751,18 +641,14 @@ void menu()
   TControlBar *pMenu = new TControlBar("vertical","RICH main");
        
   if(ReadAlice()){//it's from file, reconstruct
-    pMenu->AddButton("hits->sdigits->digits","MainTrank()","Convert");
-    pMenu->AddButton("Debug ON",     "DebugON();",   "Switch debug on-off");   
-    pMenu->AddButton("Debug OFF",    "DebugOFF();",   "Switch debug on-off");   
+    pMenu->AddButton("hits->sdigits->digits->clusters","MainTrank()","Convert");
     
     pMenu->AddButton("hits->sdigits",    "H_SD()",       "Perform first phase converstion");
     pMenu->AddButton("sdigits->digits",  "SD_D()",       "Perform first phase converstion");
     pMenu->AddButton("digits->clusters", "D_C()",        "Perform first phase converstion");
 
-    pMenu->AddButton("OLD Show","Show3()","Shows the structure of events in files");
+    pMenu->AddButton("Show","Show()","Shows the structure of events in files");
     pMenu->AddButton("OLD specials->sdigits",          "OLD_S_SD()",       "Perform first phase converstion");
-    pMenu->AddButton("OLD sdigits->digits",         "OLD_SD_D()","Perform second phase converstion");
-    pMenu->AddButton("OLD digits->clusters",     "OLD_D_C()",  "Perform second phase converstion");
     
   }else{//it's aliroot, simulate
     pMenu->AddButton("Run",         "a->Run(1)",       "Process!");
@@ -772,9 +658,13 @@ void menu()
   pMenu->AddButton("Test submenu",    "TestMenu()",            "Shows test submenu");
   pMenu->AddButton("Browser",         "new TBrowser;",         "Start ROOT TBrowser");
   pMenu->AddButton("Display Fast",    "DisplFast()",           "Display Fast");
-  pMenu->AddButton("Control Plots",    "ControlPlots()",           "Control Plots");
+  pMenu->AddButton("Control Plots",   "ControlPlots()",        "Display some control histograms");
+  pMenu->AddButton("Debug ON",     "DebugON();",   "Switch debug on-off");   
+  pMenu->AddButton("Debug OFF",    "DebugOFF();",   "Switch debug on-off");   
   pMenu->AddButton("Quit",            ".q",                    "Close session");
   pMenu->Show();
   a=gAlice;//for manual manipulation convinience
 }//menu()
 //__________________________________________________________________________________________________
+void DebugOFF(){  Info("DebugOFF","");  a->SetDebug(0);  r->SetDebug(0);  AliLoader::SetDebug(0);}
+void DebugON() {  Info("DebugON","");   a->SetDebug(1);  r->SetDebug(1);  AliLoader::SetDebug(1);}

@@ -20,7 +20,6 @@
 #pragma link C++ class  AliRICHPoints+;
 #pragma link C++ class  AliRICHDisplay+;
 #pragma link C++ class  AliRICHMap+;
-#pragma link C++ class  AliRICHTresholdMap+;
 #pragma link C++ class  AliRICHClusterFinder+;
 #pragma link C++ class  AliRICHRecon+;
 #pragma link C++ class  AliRICHDigitizer+;
