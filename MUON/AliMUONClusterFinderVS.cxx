@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:48  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.3  2000/06/09 21:58:33  morsch
 Most coding rule violations corrected.
 
@@ -784,9 +787,17 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
     } else if (fNLocal[0]>2 || fNLocal[1]>2) {
 	
 	Int_t param = fNLocal[0]*fNLocal[1];
-
-	Float_t xm[param][2], ym[param][2];
-	Int_t ixm[param][2], iym[param][2];
+	Int_t ii;
+	
+	Float_t ** xm = new Float_t * [2];
+	for (ii=0; ii<2; ii++) xm[ii]=new Float_t [param];
+	Float_t ** ym = new Float_t * [2];
+	for (ii=0; ii<2; ii++) ym[ii]=new Float_t [param];
+	Int_t ** ixm = new Int_t * [2];
+	for (ii=0; ii<2; ii++) ixm[ii]=new Int_t [param];
+	Int_t ** iym = new Int_t * [2];
+	for (ii=0; ii<2; ii++) iym[ii]=new Int_t [param];
+	
 	Int_t isec, ico;
 	Float_t dpx, dpy, dx, dy;
 
@@ -839,6 +850,10 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 		fNPeaks++;
 	    }
 	}
+	delete [] xm;
+	delete [] ym;
+	delete [] ixm;
+	delete [] iym;
     }
 }
 
@@ -1336,13 +1351,14 @@ void AliMUONClusterFinderVS::FindRawClusters()
 
 //
 //      reset Cluster object
-	for (int k=0;k<c.fMultiplicity[0];k++) {
-	    c.fIndexMap[k][0]=0;
-	}
-	for (int k=0;k<c.fMultiplicity[1];k++) {
-	    c.fIndexMap[k][1]=0;
-	}
+	{ // begin local scope
+	    for (int k=0;k<c.fMultiplicity[0];k++) c.fIndexMap[k][0]=0;
+	} // end local scope
 
+	{ // begin local scope
+	    for (int k=0;k<c.fMultiplicity[1];k++) c.fIndexMap[k][1]=0;
+	} // end local scope
+	
 	c.fMultiplicity[0]=c.fMultiplicity[0]=0;
 
 	
