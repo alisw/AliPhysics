@@ -59,7 +59,7 @@ void AliTracker::SetFieldMap(const AliMagF* map) {
   //This passes the field map to the reconstruction.
   //--------------------------------------------------------------------
   if (map==0) AliFatalClass("Can't access the field map !");
-  AliKalmanTrack::SetConvConst(1000/0.299792458/map->SolenoidField());
+  AliKalmanTrack::SetConvConst(1000/0.299792458/(map->SolenoidField()+1e-13));
   fgkFieldMap=map;
 }
 
