@@ -102,7 +102,8 @@ void AliL3HoughTransformer::CreateHistograms(Int_t nxbin,Double_t xmin,Double_t 
 #ifdef do_mc
   if(fDoMC)
     {
-      Int_t ncells = (nxbin+2)*(nybin+2);
+      AliL3Histogram *hist = fParamSpace[0];
+      Int_t ncells = (hist->GetNbinsX()+2)*(hist->GetNbinsY()+2);
       cout<<"Allocating "<<GetNEtaSegments()*ncells*sizeof(TrackIndex)<<" bytes to fTrackID"<<endl;
       fTrackID = new TrackIndex*[GetNEtaSegments()];
       for(Int_t i=0; i<GetNEtaSegments(); i++)
