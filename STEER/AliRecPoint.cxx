@@ -116,7 +116,7 @@ void AliRecPoint::AddDigit(AliDigitNew & digit)
   
   
   if ( fMulDigit >= fMaxDigit ) { // increase the size of the list 
-    int * tempo = new ( int[fMaxDigit*=2] ) ; 
+    int * tempo = new int[fMaxDigit*2]; 
     
     Int_t index ; 
     
