@@ -64,7 +64,10 @@ public:
                                        {fEventEnergy[id]+=edep;}
    virtual  void  ResetHits();
    virtual  void  TrackingLimits( Float_t rmax=1.e10, Float_t zmax=1.e10)
-    {fTrRmax=rmax; fTrZmax=zmax;}
+       {fTrRmax=rmax; fTrZmax=zmax;}
+   virtual  void  DecayLimits( Float_t rmin = -1., Float_t rmax = -1., Int_t pdg = 0)
+       {fRDecayMin = rmin; fRDecayMax = rmax; fDecayPdg = pdg;}
+   
    virtual  void  Init();
    virtual  void  SetTransPar(const char *filename="$(ALICE_ROOT)/data/galice.cuts");
    virtual  void  Browse(TBrowser *b);
@@ -101,8 +104,7 @@ public:
    TClonesArray   *TrackReferences()   const {return fTrackReferences;}
    virtual void   RemapTrackReferencesIDs(Int_t *map); //remaping track references MI
    virtual void   ResetTrackReferences();
-   
-
+   virtual void   FixParticleDecaytime();
 
 private:
    void Copy (TObject &mc) const;
@@ -112,6 +114,9 @@ private:
    TArrayF        fSum2Energy;        //! Energy squared per event in each volume
    Float_t        fTrRmax;            //  Maximum radius for tracking
    Float_t        fTrZmax;            //  Maximu z for tracking
+   Float_t        fRDecayMax;         //  Maximum radius for decay
+   Float_t        fRDecayMin;         //  Minimum radius for decay
+   Int_t          fDecayPdg;          //  PDG code of particle with forced decay length
    TArrayI       *fImedia;            //! Array of correspondence between media and detectors
    TString        fTransParName;      //  Name of the transport parameters file
    AliMCQA       *fMCQA;              //  Pointer to MC Quality assurance class

@@ -26,6 +26,8 @@
 #include <TStopwatch.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
+#include "TGeant3.h"
+
  
 #include "AliLog.h"
 #include "AliDetector.h"
@@ -36,6 +38,7 @@
 #include "AliMCQA.h"
 #include "AliRun.h"
 #include "AliStack.h"
+#include "AliMagF.h"
 #include "AliTrackReference.h"
 
 
@@ -57,6 +60,7 @@ AliMC::AliMC() :
 
 {
   //default constructor
+  DecayLimits();
 }
 
 //_______________________________________________________________________
@@ -77,10 +81,9 @@ AliMC::AliMC(const char *name, const char *title) :
   //constructor
   // Set transport parameters
   SetTransPar();
-
+  DecayLimits();
   // Prepare the tracking medium lists
   for(Int_t i=0;i<1000;i++) (*fImedia)[i]=-99;
-
 }
 
 //_______________________________________________________________________
@@ -251,10 +254,22 @@ void AliMC::Stepping()
   //
   // Called at every step during transport
   //
-
+    
   Int_t id = DetFromMate(gMC->GetMedium());
   if (id < 0) return;
 
+
+  if ( gMC->IsNewTrack()            && 
+       gMC->TrackTime() == 0.       &&
+       fRDecayMin > 0.              &&  
+       fRDecayMax > fRDecayMin      &&
+       gMC->TrackPid() == fDecayPdg ) 
+  {
+      FixParticleDecaytime();
+  } 
+    
+
+  
   //
   // --- If lego option, do it and leave 
   if (gAlice->Lego())
@@ -623,6 +638,7 @@ void AliMC::MediaTable()
     if((det=dynamic_cast<AliModule*>(dets[kz]))) {
         TArrayI &idtmed = *(det->GetIdtmed()); 
         for(nz=0;nz<100;nz++) {
+	    
 	// Find max and min material number
 	if((idt=idtmed[nz])) {
 	  det->LoMedium() = det->LoMedium() < idt ? det->LoMedium() : idt;
@@ -1010,4 +1026,53 @@ void AliMC::RemapTrackReferencesIDs(Int_t *map)
     }
   }
   fTrackReferences->Compress();
+}
+
+void AliMC::FixParticleDecaytime()
+{
+    //
+    // Fix the particle decay time according to rmin and rmax for decays
+    //
+
+    TLorentzVector p;
+    gMC->TrackMomentum(p);
+    Double_t tmin, tmax;
+    Double_t b;
+
+    // Transverse velocity 
+    Double_t vt    = p.Pt() / p.E();
+    
+    if ((b = gAlice->Field()->SolenoidField()) > 0.) {     // [kG]
+
+	// Radius of helix
+	
+	Double_t rho   = p.Pt() / 0.0003 / b; // [cm]
+	
+	// Revolution frequency
+	
+	Double_t omega = vt / rho;
+	
+	// Maximum and minimum decay time
+	//
+	// Check for curlers first
+	if (fRDecayMax * fRDecayMax / rho / rho / 2. > 1.) return;
+	
+	//
+ 
+	tmax  = TMath::ACos(1. - fRDecayMax * fRDecayMax / rho / rho / 2.) / omega;   // [ct]
+	tmin  = TMath::ACos(1. - fRDecayMin * fRDecayMin / rho / rho / 2.) / omega;   // [ct]
+    } else {
+	tmax =  fRDecayMax / vt;                                                      // [ct] 
+	tmin =  fRDecayMin / vt;	                                              // [ct]
+    }
+    
+    //
+    // Dial t using the two limits
+    Double_t t = tmin + (tmax - tmin) * gRandom->Rndm();                              // [ct]
+    //
+    //
+    // Force decay time in transport code
+    //
+    TGeant3 * geant = (TGeant3*) gMC;
+    geant->Gcphys()->sumlif = t / p.Beta() / p.Gamma();
 }
