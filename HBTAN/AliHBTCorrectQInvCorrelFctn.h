@@ -1,5 +1,5 @@
-#ifndef ALIHBTCORRECTCORRELFCTN_H
-#define ALIHBTCORRECTCORRELFCTN_H
+#ifndef ALIHBTCORRECTQINVCORRELFCTN_H
+#define ALIHBTCORRECTQINVCORRELFCTN_H
 //____________________
 ///////////////////////////////////////////////////////
 //                                                   //
@@ -13,7 +13,7 @@
 
 #include "AliHBTFunction.h"
 
-  class AliHBTCorrectQInvCorrelFctn: public AliHBTOnePairFctn1D
+class AliHBTCorrectQInvCorrelFctn: public AliHBTOnePairFctn1D
 {
   public:
     AliHBTCorrectQInvCorrelFctn(const char* name = "qinvcorrectedCF", 
@@ -25,13 +25,16 @@
     AliHBTCorrectQInvCorrelFctn(TH1D* measqinv, 
                                 const char* name = "qinvcorrectedCF", 
                                 const char* title= "Corrected Q_{inv} Correlation Fonction");
+    AliHBTCorrectQInvCorrelFctn(const AliHBTCorrectQInvCorrelFctn& in);
+    
     virtual ~AliHBTCorrectQInvCorrelFctn();
-    void SetInitialValues(Double_t lambda, Double_t r);
-    void Init();
-    void ProcessSameEventParticles(AliHBTPair* pair);//process particles from same event (real pair)
-    void ProcessDiffEventParticles(AliHBTPair* pair);//process particles coming from different events (mixed pairs)
-    void SetMeasuredHistogram(TH1D* meas){fMeasCorrelFctn = meas;}
-    TH1* GetResult();//returns the result histogram
+    
+    void     SetInitialValues(Double_t lambda, Double_t r);
+    void     Init();
+    void     ProcessSameEventParticles(AliHBTPair* pair);//process particles from same event (real pair)
+    void     ProcessDiffEventParticles(AliHBTPair* pair);//process particles coming from different events (mixed pairs)
+    void     SetMeasuredHistogram(TH1D* meas){fMeasCorrelFctn = meas;}
+    TH1*     GetResult();//returns the result histogram
     Double_t GetRadius()const{ return TMath::Sqrt(fR2);}//returns assumed radius
     Double_t GetLambda()const{ return fLambda;}//retutrns assumed intercept parameter
     void     SetRadiusConvergenceTreshold(Double_t ct){fRConvergenceTreshold=ct;}//if fitted and assumed R us different less then that number con
@@ -44,6 +47,7 @@
     void     SetMeasNum(TH1D* measnum){fMeasNumer = measnum;}
     void     SetMeasDen(TH1D* h){fMeasDenom = h;}
     void     MakeMeasCF();
+    
   protected:
     virtual void BuildHistos(Int_t nbins, Float_t max, Float_t min);
     Double_t GetCoulombCorrection(AliHBTPair* /*pair*/){return 1.0;}
@@ -53,9 +57,9 @@
     Double_t GetModelValue(Double_t qinv);
 
     //Our ideal numerator 
-    TH1D* fMeasCorrelFctn;
-    TH1D* fMeasNumer;
-    TH1D* fMeasDenom;  
+    TH1D* fMeasCorrelFctn; //Measured correlation function
+    TH1D* fMeasNumer;//Measured numerator correlation function
+    TH1D* fMeasDenom;  //Measured denominator correlation function
     
     TH1D* fSmearedNumer; //! Numerator of smeard q
     TH1D* fSmearedDenom; //! Denominator of smeard q
@@ -82,51 +86,17 @@
     Double_t fFittedR;//fitted radius
     Double_t fFittedLambda;//fitted Interception parameter
         
-    Float_t  fRConvergenceTreshold;
-    Float_t  fLambdaConvergenceTreshold;
+    Float_t  fRConvergenceTreshold;//fRConvergenceTreshold
+    Float_t  fLambdaConvergenceTreshold;//fLambdaConvergenceTreshold
+    
   private:
-  public:
     ClassDef(AliHBTCorrectQInvCorrelFctn,1)
 };
 
-inline
-Double_t AliHBTCorrectQInvCorrelFctn::GetModelValue(Double_t qinv)
+inline Double_t AliHBTCorrectQInvCorrelFctn::GetModelValue(Double_t qinv)
 {
   //factor 0.038936366329 conected with units change GeV<->SI
   return 1.0 + fLambda*TMath::Exp(-fR2*qinv*qinv/0.038936366329);
 }
-
-//____________________
-///////////////////////////////////////////////////////
-//                                                   //
-// AliHBTCorrectQ3DCorrelFctn                        //
-//                                                   //
-// Class for calculating Q Invariant correlation     //
-// taking to the account resolution of the           //
-// detector and coulomb effects.                     //
-//                                                   //
-///////////////////////////////////////////////////////
-
-class AliHBTCorrectQ3DCorrelFctn: public AliHBTOnePairFctn3D
-{
-  public:
-   AliHBTCorrectQ3DCorrelFctn(const char* name = "qinvcorrectedCF", 
-                               const char* title= "Corrected Q_{inv} Correlation Fonction");
-   virtual ~AliHBTCorrectQ3DCorrelFctn();
-   
-  protected:
-    TH3D* fMeasCorrelFctn;
-    
-    TH3D* fSmearedNumer; //! Numerator of smeard q
-    TH3D* fSmearedDenom; //! Denominator of smeard q
-    TH3D* fMeasNumer;  //! Numerator of ideal q calculated on basis of model equation
-    TH3D* fMeasDenom;  //! Denominator of ideal q calculated on basis of model equation
-
-    
-  private:
-  
-  public:
-    ClassDef(AliHBTCorrectQ3DCorrelFctn,1)
-};
 
 #endif

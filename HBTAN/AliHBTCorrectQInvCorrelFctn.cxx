@@ -1,4 +1,4 @@
-#include "AliHBTCorrectCorrelFctn.h"
+#include "AliHBTCorrectQInvCorrelFctn.h"
 //____________________
 ///////////////////////////////////////////////////////
 //                                                   //
@@ -108,11 +108,35 @@ AliHBTCorrectQInvCorrelFctn::AliHBTCorrectQInvCorrelFctn(const char* name, const
   fRConvergenceTreshold(0.3),
   fLambdaConvergenceTreshold(0.05)
 {
+//ctor
 }	            
 /******************************************************************/
+AliHBTCorrectQInvCorrelFctn::AliHBTCorrectQInvCorrelFctn(const AliHBTCorrectQInvCorrelFctn& in):
+  AliHBTOnePairFctn1D(in),
+  fMeasCorrelFctn(0x0),
+  fMeasNumer(0x0),
+  fMeasDenom(0x0),
+  fSmearedNumer(0x0),
+  fSmearedDenom(0x0),
+  fDPtOverPtRMS(0),
+  fThetaA(0),
+  fThetaB(0),
+  fThetaAlpha(0),
+  fPhiA(0),
+  fPhiB(0),
+  fPhiAlpha(0),
+  fR2(0.0),
+  fLambda(0.0),
+  fRConvergenceTreshold(0),
+  fLambdaConvergenceTreshold(0)
+{
+//cpy ;ctor
+ in.Copy(*this);
+}
 
 AliHBTCorrectQInvCorrelFctn::~AliHBTCorrectQInvCorrelFctn()
 {
+//dtor
   delete fMeasCorrelFctn;
   delete fSmearedNumer;
   delete fSmearedDenom;
@@ -148,6 +172,7 @@ void AliHBTCorrectQInvCorrelFctn::BuildHistos(Int_t nbins, Float_t max, Float_t 
 
 void AliHBTCorrectQInvCorrelFctn::Init()
 {
+//Init
   AliHBTOnePairFctn1D::Init();
   Info("Init","");
   fSmearedNumer->Reset();
@@ -161,6 +186,7 @@ void AliHBTCorrectQInvCorrelFctn::Init()
 
 void AliHBTCorrectQInvCorrelFctn::ProcessSameEventParticles(AliHBTPair* pair)
 {
+ //Processes particles that originates from the same event
   if (fMeasNumer == 0x0) return;
   pair = CheckPair(pair);
   if( pair == 0x0) return;
@@ -208,32 +234,34 @@ void AliHBTCorrectQInvCorrelFctn::Smear(AliHBTPair* pair,AliHBTPair& smeared)
 
 void AliHBTCorrectQInvCorrelFctn::Smear(AliHBTParticle* part, AliHBTParticle* smeared)
 {
+ //Smears momenta
   Double_t sin2theta = TMath::Sin(part->Theta());
   sin2theta = sin2theta*sin2theta;
   Double_t pt = part->Pt();
 
-  double DpT_div_pT = gRandom->Gaus(0.0,fDPtOverPtRMS);
-  double Dphi = gRandom->Gaus(0.0,fPhiA+fPhiB*TMath::Power(pt,fPhiAlpha));
-  double Dtheta = gRandom->Gaus(0.0,fPhiA+fPhiB*TMath::Power(pt,fThetaAlpha));
+  double dPtDivPt = gRandom->Gaus(0.0,fDPtOverPtRMS);
+  double dphi = gRandom->Gaus(0.0,fPhiA+fPhiB*TMath::Power(pt,fPhiAlpha));
+  double dtheta = gRandom->Gaus(0.0,fPhiA+fPhiB*TMath::Power(pt,fThetaAlpha));
   
-  Double_t smearedPx = part->Px()*(1.0+DpT_div_pT) - part->Py()*Dphi;
-//  fourmom.setX(px*(1.0+DpT_div_pT) - py*Dphi);
-  Double_t smearedPy = part->Py()*(1.0+DpT_div_pT) - part->Px()*Dphi;
-//  fourmom.setY(py*(1.0+DpT_div_pT) + px*Dphi);
-  Double_t smearedPz = part->Pz()*(1.0+DpT_div_pT) - pt*Dtheta/sin2theta;
-//  fourmom.setZ(pz*(1.0+DpT_div_pT) - pT*Dtheta/sin2theta);
+  Double_t smearedPx = part->Px()*(1.0+dPtDivPt) - part->Py()*dphi;
+//  fourmom.setX(px*(1.0+dPtDivPt) - py*dphi);
+  Double_t smearedPy = part->Py()*(1.0+dPtDivPt) - part->Px()*dphi;
+//  fourmom.setY(py*(1.0+dPtDivPt) + px*dphi);
+  Double_t smearedPz = part->Pz()*(1.0+dPtDivPt) - pt*dtheta/sin2theta;
+//  fourmom.setZ(pz*(1.0+dPtDivPt) - pT*dtheta/sin2theta);
   
   Double_t mass2 = part->GetMass()*part->GetMass();
-  Double_t E = mass2 + smearedPx*smearedPx + 
+  Double_t e = mass2 + smearedPx*smearedPx + 
                        smearedPy*smearedPy + 
                        smearedPz*smearedPz;
 	   
-  smeared->SetMomentum(smearedPx,smearedPy,smearedPz,TMath::Sqrt(E));
+  smeared->SetMomentum(smearedPx,smearedPy,smearedPz,TMath::Sqrt(e));
 }
 /******************************************************************/
 
 void AliHBTCorrectQInvCorrelFctn::SetInitialValues(Double_t lambda, Double_t r)
 {
+ //Sets Initial Values
   fLambda = lambda;
   fR2 = r*r;
 }
@@ -262,7 +290,7 @@ void AliHBTCorrectQInvCorrelFctn::MakeMeasCF()
 TH1* AliHBTCorrectQInvCorrelFctn::GetResult()
 {
   //In case we don't have yet Measured Correlation Function
-  //Try to get it
+  //Try to get it 
   //result is
   //        N[meas]   N[ideal]/D[ideal]
   //C(Q) =  ------- * -----------------
@@ -371,6 +399,7 @@ Bool_t AliHBTCorrectQInvCorrelFctn::IsConverged()
 
 Double_t AliHBTCorrectQInvCorrelFctn::GetFittedRadius()
 {
+ //Returns Fitted radius
   if (fFittedR <= 0.0) Fit();
   return fFittedR;
 }
@@ -378,6 +407,7 @@ Double_t AliHBTCorrectQInvCorrelFctn::GetFittedRadius()
 
 Double_t AliHBTCorrectQInvCorrelFctn::GetFittedLambda()
 {
+ //Returns Fitted Intercept paramter
   if (fFittedR <= 0.0) Fit();
   return fFittedLambda;
 }
@@ -385,6 +415,7 @@ Double_t AliHBTCorrectQInvCorrelFctn::GetFittedLambda()
 
 void AliHBTCorrectQInvCorrelFctn::WriteAll()
 {
+//Writes function and all additional information
   Write();
   if (fMeasCorrelFctn) fMeasCorrelFctn->Write();
   if (fMeasNumer ) fMeasNumer->Write();
@@ -401,41 +432,3 @@ void AliHBTCorrectQInvCorrelFctn::WriteAll()
    }
 }
 
-/******************************************************************/
-/******************************************************************/
-/******************************************************************/
-
-//____________________
-///////////////////////////////////////////////////////
-//                                                   //
-// AliHBTCorrectQ3DCorrelFctn                        //
-//                                                   //
-// Class for calculating Q Invariant correlation     //
-// taking to the account resolution of the           //
-// detector and coulomb effects.                     //
-//                                                   //
-///////////////////////////////////////////////////////
-
-
-AliHBTCorrectQ3DCorrelFctn::AliHBTCorrectQ3DCorrelFctn(const char* name, const char* title):
- AliHBTOnePairFctn3D(name,title),
- fMeasCorrelFctn(0x0),
- fSmearedNumer(0x0),
- fSmearedDenom(0x0),
- fMeasNumer(0x0),
- fMeasDenom(0x0)
-{
-
-}
-/******************************************************************/
-
-AliHBTCorrectQ3DCorrelFctn::~AliHBTCorrectQ3DCorrelFctn()
-{
- delete fMeasCorrelFctn;
- delete fSmearedNumer;
- delete fSmearedDenom;
- delete fMeasNumer;
- delete fMeasDenom;
-}
-
-/******************************************************************/
