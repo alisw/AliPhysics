@@ -25,7 +25,8 @@ class AliGenReader : public TObject
     enum Code_t {kPDG, kGEANT3};
     void SetParticleCode(Code_t code) {fCode = code;}
     virtual TParticle* NextParticle(){return NULL;}
-    
+    virtual void RewindEvent();
+        
     AliGenReader & operator=(const AliGenReader & rhs);
  protected:
     const Text_t *fFileName;      // Name of file to read from

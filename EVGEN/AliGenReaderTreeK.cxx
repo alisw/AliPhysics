@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2002/03/22 08:25:33  morsch
+TreeE connected correctly.
+
 Revision 1.3  2001/12/12 11:21:37  morsch
 Dummy copy constructor added.
 
@@ -112,6 +115,11 @@ TParticle* AliGenReaderTreeK::NextParticle()
     return part;
 }
 
+void AliGenReaderTreeK::RewindEvent()
+{
+  // Go back to the first particle of the event
+  fNparticle = 0;
+}
 
 
 AliGenReaderTreeK& AliGenReaderTreeK::operator=(const  AliGenReaderTreeK& rhs)

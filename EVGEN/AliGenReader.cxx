@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.1  2001/11/09 09:09:59  morsch
+Base class with responsibility to read events and particles from a file. To be used
+with AliGenExtFile.
+
 */
 #include "AliGenReader.h"
 ClassImp(AliGenReader)
@@ -26,9 +30,9 @@ AliGenReader& AliGenReader::operator=(const  AliGenReader& rhs)
     return *this;
 }
 
-
-
-
-
-
-
+void AliGenReader::RewindEvent()
+{
+  // Go back to the first particle of the event.
+  // Need to be implemented in the implementation classes. Interface dies.
+  Fatal("AliGenReader::RewindEvent","\nMethod RewindEvent not present in the implementation class.\n");
+}

@@ -22,6 +22,7 @@ class AliGenReaderTreeK : public AliGenReader
     // Read
     virtual Int_t NextEvent();
     virtual TParticle*  NextParticle();
+    virtual void RewindEvent();
     AliGenReaderTreeK & operator=(const AliGenReaderTreeK & rhs);
     
  protected:
