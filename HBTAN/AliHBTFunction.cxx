@@ -83,13 +83,24 @@ AliHBTFunction & AliHBTFunction::operator= (const AliHBTFunction & source)
 void AliHBTFunction::WriteFunction()
 {
 //writes result of the function to file
+   if (AliHBTParticle::GetDebug()) Info("AliHBTFunction","%s",GetName());
    if (fWriteNumAndDen)
     { 
+     if (AliHBTParticle::GetDebug()) Info("AliHBTFunction","Writing Num & Den");
      if (GetNumerator()) GetNumerator()->Write();
      if (GetDenominator()) GetDenominator()->Write();
+     if (AliHBTParticle::GetDebug()) Info("AliHBTFunction","Writing Num & Den Done");
     } 
+   if (AliHBTParticle::GetDebug()) Info("AliHBTFunction","Getting Result");
    TH1* res = GetResult();
-   if (res) res->Write();
+   if (AliHBTParticle::GetDebug()) Info("AliHBTFunction","Getting Result Done");
+   
+   if (res) 
+    { 
+      if (AliHBTParticle::GetDebug()) Info("AliHBTFunction","Writing Result");
+      res->Write();
+      if (AliHBTParticle::GetDebug()) Info("AliHBTFunction","Writing Result Done");
+    }
 }
 /******************************************************************/
 
@@ -190,9 +201,14 @@ void AliHBTFunction::InitFunction()
 {
 //Iniotializes fctn.: Resets histograms
 //In case histograms are not created in ctor, builds with default parameters
+  Info("InitFunction","%s",GetName());
   if ( !(GetNumerator()&&GetDenominator()) ) BuildHistos();
   GetNumerator()->Reset();
   GetDenominator()->Reset();
+
+  GetNumerator()->SetDirectory(0x0);
+  GetDenominator()->SetDirectory(0x0);
+  Info("InitFunction","Done");
 }
 
 /******************************************************************/
