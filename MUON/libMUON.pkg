@@ -9,7 +9,7 @@ SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
 	       AliMUONSegmentationTrigger.cxx  AliMUONResponseTrigger.cxx\
                AliMUONResponseTriggerV1.cxx\
 	       AliMUONSegmentationTriggerX.cxx AliMUONSegmentationTriggerY.cxx \
-               AliMUONSegmentationV1.cxx AliMUON.cxx AliMUONv0.cxx AliMUONv1.cxx AliMUONv3.cxx \
+               AliMUONSegmentationV1.cxx AliMUON.cxx AliMUONv0.cxx AliMUONv1.cxx \
                AliMUONDisplay.cxx AliMUONPoints.cxx \
                AliMUONClusterFinderVS.cxx \
                AliMUONHitMapA1.cxx \
@@ -28,7 +28,8 @@ SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
 	       AliMUONSegmentationSlat.cxx AliMUONSegmentationSlatN.cxx \
 	       AliMUONRecoEvent.cxx AliMUONRecoDisplay.cxx \
                AliMUONMerger.cxx AliMUONFactory.cxx AliMUONDigitizer.cxx AliMUONDigitizerv1.cxx \
-               AliMUONTrackK.cxx AliMUONClusterFinderAZ.cxx AliMUONPixel.cxx
+               AliMUONTrackK.cxx AliMUONClusterFinderAZ.cxx AliMUONPixel.cxx \
+               AliMUONLoader.cxx
 
 SRCS     += AliMUONv2.cxx AliMUONSt1Segmentation.cxx AliMUONSt1Response.cxx \
 	    AliMUONSt1ElectronicElement.cxx AliMUONSt1SpecialMotif.cxx \

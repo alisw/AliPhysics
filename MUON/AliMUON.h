@@ -12,6 +12,7 @@
 ////////////////////////////////////////////////
 #include "AliDetector.h"
 
+class AliLoader;
 class AliMUONChamber;
 class AliMUONLocalTrigger;
 class AliMUONGlobalTrigger;
@@ -58,13 +59,16 @@ class AliMUON : public  AliDetector {
     TClonesArray  *PadHits() {return fPadHits;}
     TClonesArray  *LocalTrigger() {return fLocalTrigger;}
     TClonesArray  *GlobalTrigger() {return fGlobalTrigger;}
-    virtual void   MakeBranch(Option_t *opt=" ");
-    virtual void   MakeBranchInTreeD(TTree *treeD, const char *file=0);
-    void           SetTreeAddress();
-    virtual void   ResetHits();
-    virtual void   ResetDigits();
-    virtual void   ResetTrigger();
-    virtual void   ResetRawClusters();
+
+    virtual AliLoader* MakeLoader(const char* topfoldername); //builds standard getter (AliLoader type)
+
+    virtual void       MakeBranch(Option_t *opt=" ");
+    virtual void       MakeBranchInTreeD(TTree *treeD, const char *file=0);
+    void               SetTreeAddress();
+    virtual void       ResetHits();
+    virtual void       ResetDigits();
+    virtual void       ResetTrigger();
+    virtual void       ResetRawClusters();
     // Cluster Finding
     virtual void   Digits2Reco();
     virtual void   FindClusters();

@@ -49,6 +49,7 @@
 #include "AliHeader.h"
 #include "AliHitMap.h"
 #include "AliLoader.h"
+#include "AliMUONLoader.h"
 #include "AliMUON.h"
 #include "AliMUONChamberTrigger.h"
 #include "AliMUONClusterFinderVS.h"
@@ -755,7 +756,22 @@ void AliMUON::SDigits2Digits()
     fLoader->TreeD()->Reset();
 }
 
-//___________________________________________
+
+//__________________________________________________________________________
+AliLoader* AliMUON::MakeLoader(const char* topfoldername)
+{ 
+//builds standard getter (AliLoader type)
+//if detector wants to use castomized getter, it must overload this method
+
+ if (GetDebug())
+   Info("MakeLoader",
+        "Creating standard getter for detector %s. Top folder is %s.",
+         GetName(),topfoldername);
+     
+ fLoader = new AliMUONLoader(GetName(),topfoldername);
+ return fLoader;
+}
+//__________________________________________________________________________
 // To be removed
 void AliMUON::MakePadHits(Float_t xhit,Float_t yhit, Float_t zhit,
 			  Float_t eloss, Float_t tof,  Int_t idvol)
