@@ -9,7 +9,6 @@
 #include <TObject.h>
 
 typedef enum {kEmpty, kUsed, kUnused} FlagType;
-const Int_t kMaxNpadx=1200, kMaxNpady=1200;
 
 class AliMUONHitMap :
 public TObject {
