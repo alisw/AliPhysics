@@ -54,7 +54,7 @@
 //                  
 //*-- Author: Yves Schutz (SUBATECH)  & Gines Martinez (SUBATECH) & 
 //            Dmitri Peressounko (SUBATECH & Kurchatov Institute)
-//            Complitely redesined by Dmitri Peressounko, March 2001
+//            Completely redesined by Dmitri Peressounko, March 2001
 
 // --- ROOT system ---
 #include "TROOT.h"
@@ -93,11 +93,12 @@ AliPHOSPIDv1::AliPHOSPIDv1():AliPHOSPID()
   fFormula           = 0 ;
   fDispersion        = 0. ; 
   fCpvEmcDistance    = 0 ; 
+  fTimeGate          = 2.e-9 ;
   fHeaderFileName    = "" ; 
   fTrackSegmentsTitle= "" ; 
   fRecPointsTitle    = "" ; 
   fRecParticlesTitle = "" ; 
-  fIDOptions         = "" ; 
+  fIDOptions         = "dis time" ; 
   fRecParticlesInRun = 0 ; 
 }
 
@@ -109,19 +110,20 @@ AliPHOSPIDv1::AliPHOSPIDv1(const char * headerFile,const char * name) : AliPHOSP
   fFormula        = new TFormula("LambdaCuts","(x>1)*(x<2.5)*(y>0)*(y<x)") ;   
   fDispersion     = 2.0 ; 
   fCpvEmcDistance = 3.0 ;
+  fTimeGate          = 2.e-9 ;
  
   fHeaderFileName     = GetTitle() ; 
   fTrackSegmentsTitle = GetName() ; 
   fRecPointsTitle     = GetName() ; 
   fRecParticlesTitle  = GetName() ; 
-  fIDOptions          = "" ;
- 
+  fIDOptions          = "dis time" ;
+    
   TString tempo(GetName()) ; 
   tempo.Append(":") ;
   tempo.Append(Version()) ; 
   SetName(tempo) ; 
   fRecParticlesInRun = 0 ; 
-   
+
   Init() ;
 
 }
@@ -129,122 +131,12 @@ AliPHOSPIDv1::AliPHOSPIDv1(const char * headerFile,const char * name) : AliPHOSP
 //____________________________________________________________________________
 AliPHOSPIDv1::~AliPHOSPIDv1()
 { 
-  //dtor 
+  if(fTrackSegments) fTrackSegments->Delete() ; 
+  if(fEmcRecPoints) fEmcRecPoints->Delete() ; 
+  if(fCpvRecPoints) fCpvRecPoints->Delete() ;
+  if(fRecParticles) fRecParticles->Delete() ;
 }
 
-//____________________________________________________________________________
-Bool_t AliPHOSPIDv1::ReadTrackSegments(Int_t event)
-{
-  // Reads TrackSegments an extracts the title of the RecPoints 
-  // branch from which TS were made of.
-  // Then reads both TrackSegments and RecPoints.
-
-  //Fist read Track Segment Branch and extract RecPointsBranch from fTSMaker
-
-  // Get TreeR header from file
-  if(gAlice->TreeR()==0){
-    cerr << "ERROR: AliPHOSPIDv1::ReadTrackSegments -> There is no Reconstruction Tree" << endl;
-    return kFALSE;
-  }
- 
-  // Find TrackSegments
-  TBranch * tsbranch      = 0;
-  TBranch * tsmakerbranch = 0;
-  TObjArray * lob = (TObjArray*)gAlice->TreeR()->GetListOfBranches() ;
-  TIter next(lob) ; 
-  TBranch * branch = 0 ;  
-  Bool_t phostsfound = kFALSE, tsmakerfound = kFALSE ; 
-  
-  TString taskName(GetName()) ; 
-  taskName.ReplaceAll(Version(), "") ;
-
-  while ( (branch = (TBranch*)next()) && (!phostsfound || !tsmakerfound) ) {
-    if ( (strcmp(branch->GetName(), "PHOSTS")==0) && (strcmp(branch->GetTitle(), taskName.Data())==0) ) {
-      phostsfound = kTRUE ;
-      tsbranch    = branch ; 
-  
-    } else if ( (strcmp(branch->GetName(), "AliPHOSTrackSegmentMaker")==0) && (strcmp(branch->GetTitle(), taskName.Data())==0) ) {
-      tsmakerfound  = kTRUE ; 
-      tsmakerbranch = branch ;
-    }
-  }
-  if ( !phostsfound || !tsmakerfound ) {
-    cerr << "WARNING: AliPHOSPIDv1::ReadTrackSegments -> TrackSegments and/or TrackSegmentMaker branch with name " << taskName.Data() 
-	 << " not found" << endl ;
-    return kFALSE ; 
-  }   
- 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  
-  TClonesArray * trackSegments = gime->TrackSegments() ;
-  trackSegments->Clear() ; 
-  tsbranch->SetAddress(&trackSegments) ;
-
-  AliPHOSTrackSegmentMaker * tsmaker = 0 ; 
-  tsmakerbranch->SetAddress(&tsmaker) ;
-  tsmakerbranch->GetEntry(0) ;
-  TString tsmakerName( fRecParticlesTitle ) ; 
-  tsmakerName.Append(tsmaker->Version()) ; 
-  tsmaker = gime->TrackSegmentMaker(tsmakerName) ; 
-
-  tsbranch->GetEntry(0) ;
-  tsmakerbranch->GetEntry(0) ;
-
-  fRecPointsTitle = tsmaker->GetRecPointsBranch() ;
-
-  // Find RecPoints
-  TBranch * emcbranch = 0;
-  TBranch * cpvbranch = 0;
-  TBranch * clusterizerbranch = 0;
-  lob = (TObjArray*)gAlice->TreeR()->GetListOfBranches() ;
-  TIter next2(lob) ; 
-  branch = 0 ;  
-  Bool_t phosemcfound = kFALSE, phoscpvfound = kFALSE, clusterizerfound = kFALSE ; 
-  
-  while ( (branch = (TBranch*)next2()) && (!phosemcfound || !phoscpvfound || !clusterizerfound) ) {
-    if ( (strcmp(branch->GetName(), "PHOSEmcRP")==0) && (strcmp(branch->GetTitle(), taskName.Data())==0) ) {
-      phosemcfound = kTRUE ;
-      emcbranch = branch ; 
-    }
-    
-    else if ( (strcmp(branch->GetName(), "PHOSCpvRP")==0) && (strcmp(branch->GetTitle(), taskName.Data())==0) ) {
-      phoscpvfound = kTRUE ;
-      cpvbranch = branch ; 
-      
-    } else if ( (strcmp(branch->GetName(), "AliPHOSClusterizer")==0) && (strcmp(branch->GetTitle(), taskName.Data())==0) ) {
-      clusterizerfound = kTRUE ; 
-      clusterizerbranch = branch ;
-    }
-  }
-  if ( !phosemcfound || !phoscpvfound || !clusterizerfound ) {
-    cerr << "WARNING: AliPHOSTrackPIDv1::ReadTrackSegments -> emc(cpv)RecPoints and/or Clusterizer branch with name " << taskName.Data() 
-	 << " not found" << endl ;
-    return kFALSE ; 
-  }   
- 
-  TObjArray * emcRecPoints = gime->EmcRecPoints() ;
-  emcRecPoints->Clear() ; 
-  emcbranch->SetAddress(&emcRecPoints) ;
-  
-  TObjArray * cpvRecPoints = gime->CpvRecPoints() ;
-  cpvRecPoints->Clear() ; 
-  cpvbranch->SetAddress(&cpvRecPoints) ;
-  
-  
-  AliPHOSClusterizer * clusterizer = 0 ; 
-  clusterizerbranch->SetAddress(&clusterizer) ;
-  clusterizerbranch->GetEntry(0) ;
-  TString clusterizerName( fTrackSegmentsTitle ) ; 
-  clusterizerName.Append(clusterizer->Version()) ; 
-  clusterizer = gime->Clusterizer(clusterizerName) ; 
-
-  emcbranch->GetEntry(0) ;
-  cpvbranch->GetEntry(0) ;
-  clusterizerbranch->GetEntry(0) ;
- 
-  return kTRUE ;
-  
-}
 
 //____________________________________________________________________________
 Float_t  AliPHOSPIDv1::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cpv, Option_t *  Axis)const
@@ -278,7 +170,7 @@ Float_t  AliPHOSPIDv1::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cp
 void  AliPHOSPIDv1::Exec(Option_t * option) 
 {
   //Steering method
-
+  
   if( strcmp(GetName(), "")== 0 ) 
     Init() ;
   
@@ -289,7 +181,7 @@ void  AliPHOSPIDv1::Exec(Option_t * option)
     Print("") ; 
     return ; 
   }
-  
+
   gAlice->GetEvent(0) ;
   //check, if the branch with name of this" already exits?
   TObjArray * lob = (TObjArray*)gAlice->TreeR()->GetListOfBranches() ;
@@ -299,7 +191,7 @@ void  AliPHOSPIDv1::Exec(Option_t * option)
   
   TString taskName(GetName()) ; 
   taskName.Remove(taskName.Index(Version())-1) ;
-  
+
   while ( (branch = (TBranch*)next()) && (!phospidfound || !pidfound) ) {
     if ( (strcmp(branch->GetName(), "PHOSPID")==0) && (strcmp(branch->GetTitle(), taskName.Data())==0) ) 
       phospidfound = kTRUE ;
@@ -307,7 +199,7 @@ void  AliPHOSPIDv1::Exec(Option_t * option)
     else if ( (strcmp(branch->GetName(), "AliPHOSPID")==0) && (strcmp(branch->GetTitle(), taskName.Data())==0) ) 
       pidfound = kTRUE ; 
   }
-  
+
   if ( phospidfound || pidfound ) {
     cerr << "WARNING: AliPHOSPIDv1::Exec -> RecParticles and/or PIDtMaker branch with name " 
 	 << taskName.Data() << " already exits" << endl ;
@@ -319,20 +211,16 @@ void  AliPHOSPIDv1::Exec(Option_t * option)
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
   
   for(ievent = 0; ievent < nevents; ievent++){
-
     gime->Event(ievent,"R") ;
-
-    //    if(!ReadTrackSegments(ievent)) //reads TrackSegments for event ievent
-    //  continue ;
-
+    
     MakeRecParticles() ;
-
+    
     WriteRecParticles(ievent);
-
+    
     if(strstr(option,"deb"))
       PrintRecParticles(option) ;
   }
-
+  
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSPID");
     cout << "AliPHOSPID:" << endl ;
@@ -340,7 +228,7 @@ void  AliPHOSPIDv1::Exec(Option_t * option)
 	 <<  gBenchmark->GetCpuTime("PHOSPID")/nevents << " seconds per event " << endl ;
     cout << endl ;
   }
-
+  
 }
 //____________________________________________________________________________
 void AliPHOSPIDv1::Init()
@@ -360,10 +248,6 @@ void AliPHOSPIDv1::Init()
     return ;
   } 
    
-  //add Task to //YSAlice/tasks/Reconstructioner/PHOS
-  //  TTask * aliceRe  = (TTask*)gROOT->FindObjectAny("YSAlice/tasks/Reconstructioner") ; 
-  //  TTask * phosRe   = (TTask*)aliceRe->GetListOfTasks()->FindObject("PHOS") ;
-  //  phosRe->Add(this) ; 
   gime->PostPID(this) ;
   // create a folder on the white board //YSAlice/WhiteBoard/RecParticles/PHOS/recparticlesName
   gime->PostRecParticles(taskName.Data() ) ; 
@@ -391,12 +275,14 @@ void  AliPHOSPIDv1::MakeRecParticles(){
   
   Bool_t ellips = fIDOptions.Contains("ell",TString::kIgnoreCase ) ;
   Bool_t disp   = fIDOptions.Contains("dis",TString::kIgnoreCase ) ;
+  Bool_t time   = fIDOptions.Contains("tim",TString::kIgnoreCase ) ;
   
   while ( (ts = (AliPHOSTrackSegment *)next()) ) {
     
     new( (*recParticles)[index] ) AliPHOSRecParticle() ;
     rp = (AliPHOSRecParticle *)recParticles->At(index) ; 
     rp->SetTraskSegment(index) ;
+    rp->SetIndexInList(index) ;
     
     AliPHOSEmcRecPoint * emc = 0 ;
     if(ts->GetEmcIndex()>=0)
@@ -406,13 +292,9 @@ void  AliPHOSPIDv1::MakeRecParticles(){
     if(ts->GetCpvIndex()>=0)
       cpv = (AliPHOSRecPoint *)   cpvRecPoints->At(ts->GetCpvIndex()) ;
     
-    AliPHOSRecPoint    * ppsd = 0 ;
-    if(ts->GetPpsdIndex()>=0)
-      ppsd= (AliPHOSRecPoint *)   cpvRecPoints->At(ts->GetPpsdIndex()) ;
-
     //set momentum and energy first
     Float_t    e = emc->GetEnergy() ;
-    TVector3 dir = GetMomentumDirection(emc,cpv,ppsd) ; 
+    TVector3 dir = GetMomentumDirection(emc,cpv) ; 
     dir.SetMag(e) ;
 
     rp->SetMomentum(dir.X(),dir.Y(),dir.Z(),e) ;
@@ -432,22 +314,19 @@ void  AliPHOSPIDv1::MakeRecParticles(){
       if(emc->GetDispersion() > fDispersion )
 	showerprofile = 1 ;  // not narrow
     
-    
-    // Looking at the photon conversion detector
-    Int_t pcdetector= 0 ;  //1 hit and 0 no hit
-    if(ppsd)
-      if(GetDistance(emc, ppsd, "R") < fCpvEmcDistance) 
-	pcdetector = 1 ;  
-    
+    Int_t slow = 0 ;
+    if(time)
+      if(emc->GetTime() > fTimeGate )
+	slow = 0 ; 
+        
     // Looking at the CPV detector
     Int_t cpvdetector= 0 ;  //1 hit and 0 no hit     
     if(cpv)
       if(GetDistance(emc, cpv,  "R") < fCpvEmcDistance) 
 	cpvdetector = 1 ;  
     
-    Int_t type = showerprofile + 2 * pcdetector + 4 * cpvdetector ;
-    rp->SetType(type) ;
-    rp->SetIndexInList(index) ;
+    Int_t type = showerprofile + 2 * slow  + 4 * cpvdetector ;
+    rp->SetType(type) ; 
     index++ ; 
   }
   
@@ -464,13 +343,15 @@ void  AliPHOSPIDv1:: Print(Option_t * option) const
     cout <<  "    TrackSegments Branch title: " << fTrackSegmentsTitle.Data() << endl ;
     cout <<  "    RecParticles Branch title   " << fRecParticlesTitle.Data() << endl;
     cout <<  "with parameters: " << endl ;
-    cout <<  "    Maximal EMC - CPV (PPSD) distance (cm) " << fCpvEmcDistance << endl ;
+    cout <<  "    Maximal EMC - CPV  distance (cm) " << fCpvEmcDistance << endl ;
     if(fIDOptions.Contains("dis",TString::kIgnoreCase ))
-      cout <<  "                            dispersion cut " << fDispersion << endl ;
+      cout <<  "                    dispersion cut " << fDispersion << endl ;
     if(fIDOptions.Contains("ell",TString::kIgnoreCase )){
-      cout << "Eliptic cuts function: " << endl ;
+      cout << "             Eliptic cuts function: " << endl ;
       cout << fFormula->GetTitle() << endl ;
     }
+    if(fIDOptions.Contains("tim",TString::kIgnoreCase ))
+      cout << "             Time Gate uzed: " << fTimeGate <<  endl ;
     cout <<  "============================================" << endl ;
 }
 
@@ -492,7 +373,7 @@ void  AliPHOSPIDv1::WriteRecParticles(Int_t event)
   taskName.Remove(taskName.Index(Version())-1) ;
   TClonesArray * recParticles = gime->RecParticles(taskName) ; 
   recParticles->Expand(recParticles->GetEntriesFast() ) ;
-  
+
   //Make branch in TreeR for RecParticles 
   char * filename = 0;
   if(gSystem->Getenv("CONFIG_SPLIT_FILE")!=0){   //generating file name
@@ -515,12 +396,12 @@ void  AliPHOSPIDv1::WriteRecParticles(Int_t event)
     }   
     cwd->cd();
   }
-
+  
   //second, pid
   Int_t splitlevel = 0 ; 
   AliPHOSPIDv1 * pid = this ;
   TBranch * pidBranch = gAlice->TreeR()->Branch("AliPHOSPID","AliPHOSPIDv1",&pid,bufferSize,splitlevel);
-  pidBranch->SetTitle(fRecParticlesTitle);
+  pidBranch->SetTitle(fRecParticlesTitle.Data());
   if (filename) {
     pidBranch->SetFile(filename);
     TIter next( pidBranch->GetListOfBranches());
@@ -533,7 +414,7 @@ void  AliPHOSPIDv1::WriteRecParticles(Int_t event)
   
   rpBranch->Fill() ;
   pidBranch->Fill() ;
-
+  
   gAlice->TreeR()->Write(0,kOverwrite) ;  
   
 }
@@ -572,14 +453,12 @@ void  AliPHOSPIDv1::PlotDispersionCuts()const
 }
 
 //____________________________________________________________________________
-TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv,AliPHOSRecPoint * ppsd)const 
+TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv)const 
 { 
   // Calculates the momentum direction:
   //   1. if only a EMC RecPoint, direction is given by IP and this RecPoint
-  //   2. if a EMC RecPoint and one PPSD RecPoint, direction is given by the line through the 2 recpoints 
-  //   3. if a EMC RecPoint and two PPSD RecPoints, dirrection is given by the average line through 
-  //      the 2 pairs of recpoints  
-  // However because of the poor position resolution of PPSD the direction is always taken as if we were 
+  //   2. if a EMC RecPoint and CPV RecPoint, direction is given by the line through the 2 recpoints 
+  //  However because of the poor position resolution of PPSD the direction is always taken as if we were 
   //  in case 1.
 
   TVector3 dir(0,0,0) ; 
@@ -628,13 +507,12 @@ void AliPHOSPIDv1::PrintRecParticles(Option_t * option)
   TString taskName(GetName()) ; 
   taskName.Remove(taskName.Index(Version())-1) ;
   TClonesArray * recParticles = gime->RecParticles(taskName) ; 
-
- 
+  
   cout << "AliPHOSPIDv1: event "<<gAlice->GetEvNumber()  << endl ;
   cout << "       found " << recParticles->GetEntriesFast() << " RecParticles " << endl ;
 
   fRecParticlesInRun += recParticles->GetEntriesFast() ; 
-
+  
   if(strstr(option,"all")) {  // printing found TS
     
     cout << "  PARTICLE "   
@@ -651,29 +529,29 @@ void AliPHOSPIDv1::PrintRecParticles(Option_t * option)
       
       Text_t particle[11];
       switch(rp->GetType()) {
-      case  AliPHOSFastRecParticle::kNEUTRALEM:
-	strcpy( particle, "NEUTRAL_EM");
+      case  AliPHOSFastRecParticle::kNEUTRALEMFAST:
+	strcpy( particle, "NEUTRAL EM FAST");
 	break;
-      case  AliPHOSFastRecParticle::kNEUTRALHA:
-	strcpy(particle, "NEUTRAL_HA");
+      case  AliPHOSFastRecParticle::kNEUTRALHAFAST:
+	strcpy(particle, "NEUTRAL HA FAST");
 	break;
-      case  AliPHOSFastRecParticle::kGAMMA:
-	strcpy(particle, "GAMMA");
+      case  AliPHOSFastRecParticle::kNEUTRALEMSLOW:
+	strcpy(particle, "NEUTRAL EM SLOW");
 	break ;
-      case  AliPHOSFastRecParticle::kGAMMAHA: 
-	strcpy(particle, "GAMMA_H");
+      case  AliPHOSFastRecParticle::kNEUTRALHASLOW: 
+	strcpy(particle, "NEUTRAL HA SLOW");
 	break ;
-      case  AliPHOSFastRecParticle::kABSURDEM:
-	strcpy(particle, "ABSURD_EM") ;
+      case  AliPHOSFastRecParticle::kCHARGEDEMFAST:
+	strcpy(particle, "CHARGED EM FAST") ;
 	break ;
-      case  AliPHOSFastRecParticle::kABSURDHA:
-	strcpy(particle, "ABSURD_HA") ;
+      case  AliPHOSFastRecParticle::kCHARGEDHAFAST:
+	strcpy(particle, "CHARGED HA FAST") ;
 	break ;	
-      case  AliPHOSFastRecParticle::kELECTRON:
-	strcpy(particle, "ELECTRON") ;
+      case  AliPHOSFastRecParticle::kCHARGEDEMSLOW:
+	strcpy(particle, "CHARGEDEMSLOW") ;
 	break ;
-      case  AliPHOSFastRecParticle::kCHARGEDHA:
-	strcpy(particle, "CHARGED_HA") ;
+      case  AliPHOSFastRecParticle::kCHARGEDHASLOW:
+	strcpy(particle, "CHARGED HA SLOW") ;
 	break ; 
       }
       
@@ -681,8 +559,8 @@ void AliPHOSPIDv1::PrintRecParticles(Option_t * option)
       //    Int_t nprimaries;
       //    primaries = rp->GetPrimaries(nprimaries);
       
-      cout << setw(15) << particle << "  "
-	   << setw(3) <<  rp->GetIndexInList() << " "  ;
+      cout << setw(10) << particle << "  "
+	   << setw(5) <<  rp->GetIndexInList() << " "  ;
 	//	   << setw(4) <<  nprimaries << "  ";
 	//      for (Int_t iprimary=0; iprimary<nprimaries; iprimary++)
 	//	cout << setw(4)  <<  primaries[iprimary] << " ";

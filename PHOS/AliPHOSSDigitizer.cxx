@@ -195,22 +195,22 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
       for ( i = 0 ; i < hits->GetEntries() ; i++ ) {
 	AliPHOSHit * hit = (AliPHOSHit *) hits->At(i) ;
 	// Assign primary number only if contribution is significant
-
+	
 	if( hit->GetEnergy() > fPrimThreshold)
-	  new((*sdigits)[nSdigits]) AliPHOSDigit( hit->GetPrimary(), hit->GetId(), Digitize( hit->GetEnergy() ) ) ;
+	  new((*sdigits)[nSdigits]) AliPHOSDigit(hit->GetPrimary(),hit->GetId(),
+						  Digitize(hit->GetEnergy()), hit->GetTime()) ;
 	else
-	  new((*sdigits)[nSdigits]) AliPHOSDigit( -1               , hit->GetId(), Digitize( hit->GetEnergy() ) ) ;
+	  new((*sdigits)[nSdigits]) AliPHOSDigit( -1              , hit->GetId(), 
+						   Digitize(hit->GetEnergy()), hit->GetTime()) ;
+	nSdigits++ ;	
 	
-	nSdigits++ ;  
-	
-      } 
-
+      }
     } // loop over tracks
     
     sdigits->Sort() ;
     
     nSdigits = sdigits->GetEntriesFast() ;
-
+    
     sdigits->Expand(nSdigits) ;
     Int_t i ;
     for (i = 0 ; i < nSdigits ; i++) { 

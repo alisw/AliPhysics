@@ -28,7 +28,6 @@
 #include "TMath.h" 
 #include "TCanvas.h" 
 #include "TClonesArray.h" 
-#include "AliPHOSGetter.h" 
 
 // --- Standard library ---
 
@@ -37,8 +36,7 @@
 // --- AliRoot header files ---
 
 #include "AliPHOSCpvRecPoint.h"
-#include "AliPHOSPpsdRecPoint.h"
-
+#include "AliPHOSGetter.h"
 ClassImp(AliPHOSCpvRecPoint)
 
 //____________________________________________________________________________
@@ -93,48 +91,37 @@ Int_t AliPHOSCpvRecPoint::Compare(const TObject * obj) const
 
   Int_t rv ; 
 
-  if( (strcmp(obj->ClassName() , "AliPHOSPpsdRecPoint" )) == 0)  // PPSD Rec Point
-    {
-      AliPHOSPpsdRecPoint * clu = (AliPHOSPpsdRecPoint *)obj ; 
-      if(this->GetPHOSMod()  < clu->GetPHOSMod() ) 
-	rv = -1 ;
-      else 
-	rv = 1 ;
-      return rv ;
-    }
-  else
-    {
-      AliPHOSCpvRecPoint * clu  = (AliPHOSCpvRecPoint *) obj ; 
-      
-      Int_t phosmod1 = GetPHOSMod() ;
-      Int_t phosmod2 = clu->GetPHOSMod() ;
-      
-      TVector3 locpos1; 
-      GetLocalPosition(locpos1) ;
-      TVector3 locpos2;  
-      clu->GetLocalPosition(locpos2) ;  
-      
-      if(phosmod1 == phosmod2 ) {
-	Int_t rowdif = (Int_t)TMath::Ceil(locpos1.X()/delta)-(Int_t)TMath::Ceil(locpos2.X()/delta) ;
-	if (rowdif> 0) 
-	  rv = 1 ;
-	else if(rowdif < 0) 
-	  rv = -1 ;
-	else if(locpos1.Z()>locpos2.Z()) 
-	  rv = -1 ;
-	else 
-	  rv = 1 ; 
-      }
-      
-      else {
-	if(phosmod1 < phosmod2 ) 
-	  rv = -1 ;
-	else 
-	  rv = 1 ;
-      }
-      
-      return rv ; 
-    }
+  AliPHOSCpvRecPoint * clu  = (AliPHOSCpvRecPoint *) obj ; 
+  
+  Int_t phosmod1 = GetPHOSMod() ;
+  Int_t phosmod2 = clu->GetPHOSMod() ;
+  
+  TVector3 locpos1; 
+  GetLocalPosition(locpos1) ;
+  TVector3 locpos2;  
+  clu->GetLocalPosition(locpos2) ;  
+  
+  if(phosmod1 == phosmod2 ) {
+    Int_t rowdif = (Int_t)TMath::Ceil(locpos1.X()/delta)-(Int_t)TMath::Ceil(locpos2.X()/delta) ;
+    if (rowdif> 0) 
+      rv = 1 ;
+    else if(rowdif < 0) 
+      rv = -1 ;
+    else if(locpos1.Z()>locpos2.Z()) 
+      rv = -1 ;
+    else 
+      rv = 1 ; 
+  }
+  
+  else {
+    if(phosmod1 < phosmod2 ) 
+      rv = -1 ;
+    else 
+      rv = 1 ;
+  }
+  
+  return rv ; 
+
 }
 
 //______________________________________________________________________________

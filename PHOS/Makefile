@@ -9,17 +9,17 @@ PACKAGE = PHOS
 
 # C++ sources
 
-SRCS          =  AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx \
-                 AliPHOSv3.cxx AliPHOSv4.cxx AliPHOSvImpacts.cxx \
+SRCS          =  AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx \
+                 AliPHOSvFast.cxx AliPHOSvImpacts.cxx \
                  AliPHOSImpact.cxx \
                  AliPHOSHit.cxx \
                  AliPHOSGeometry.cxx \
 		 AliPHOSEMCAGeometry.cxx \
 		 AliPHOSCPVGeometry.cxx AliPHOSCPVBaseGeometry.cxx \
-		 AliPHOSPPSDGeometry.cxx AliPHOSSupportGeometry.cxx \
+		 AliPHOSSupportGeometry.cxx \
 		 AliPHOSCPVDigit.cxx AliPHOSDigit.cxx  \
                  AliPHOSRecPoint.cxx AliPHOSEmcRecPoint.cxx \
-		 AliPHOSPpsdRecPoint.cxx AliPHOSCpvRecPoint.cxx \
+		 AliPHOSCpvRecPoint.cxx \
 		 AliPHOSClusterizer.cxx AliPHOSClusterizerv1.cxx  \
                  AliPHOSLink.cxx AliPHOSSDigitizer.cxx AliPHOSDigitizer.cxx\
 		 AliPHOSReconstructioner.cxx  AliPHOSTrackSegment.cxx \
@@ -76,20 +76,7 @@ include $(ALICE_ROOT)/conf/GeneralMacros
 
 -include tgt_$(ALICE_TARGET)/Make-depend 
 
-test:	
-		@echo " ____________________________________________________________ "
-		@echo " "
-		@echo " Starting the test of the simulation/reconstruction software. Please don't take the warning messages into account. "
-		@echo " ____________________________________________________________ "
-		@aliroot -b -q testsim.C > out
-		@aliroot -b -q testsimexam.C > out
-		@aliroot -b -q testreconSDigits.C > out
-	      	@aliroot -b -q testreconDigits.C > out
-		@aliroot -b -q testreconRecPoints.C > out
-		@aliroot -b -q testreconTrackSegments.C > out
-		@aliroot -b -q testreconRecParticles.C > out
-		@rm out
-#		@rm galice.root
+
 
 
 

@@ -51,6 +51,7 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint() : AliPHOSRecPoint()
   fAmp   = 0. ;   
   fCoreEnergy = 0 ; 
   fEnergyList = 0 ;
+  fTime = -1. ;
   fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
    
 }
@@ -174,117 +175,114 @@ Int_t AliPHOSEmcRecPoint::Compare(const TObject * obj) const
 
   return rv ; 
 }
-
 //______________________________________________________________________________
 void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py) const
 {
-//   Commented by Dmitri Peressounko: there is no possibility to ensure, 
-//   that AliPHOSGetter keeps the correct information.
+  
+  // Execute action corresponding to one event
+  //  This member function is called when a AliPHOSRecPoint is clicked with the locator
+  //
+  //  If Left button is clicked on AliPHOSRecPoint, the digits are switched on    
+  //  and switched off when the mouse button is released.
+  
+    
+  AliPHOSGetter * gime =  AliPHOSGetter::GetInstance() ; 
+  if(!gime) return ;
+  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
+  
+  static TGraph *  digitgraph = 0 ;
+  
+  if (!gPad->IsEditable()) return;
+  
+  TH2F * histo = 0 ;
+  TCanvas * histocanvas ; 
 
-//   // Execute action corresponding to one event
-//   //  This member function is called when a AliPHOSRecPoint is clicked with the locator
-//   //
-//   //  If Left button is clicked on AliPHOSRecPoint, the digits are switched on    
-//   //  and switched off when the mouse button is released.
-//   //
-
-//   //   static Int_t pxold, pyold;
-
-//   AliPHOSGetter * gime =  AliPHOSGetter::GetInstance() ; 
+  TClonesArray * digits = gime->Digits() ;
   
-//   static TGraph *  digitgraph = 0 ;
+  switch (event) {
+    
+  case kButton1Down: {
+    AliPHOSDigit * digit ;
+    Int_t iDigit;
+    Int_t relid[4] ;
+    
+    const Int_t kMulDigit = AliPHOSEmcRecPoint::GetDigitsMultiplicity() ; 
+    Float_t * xi = new Float_t[kMulDigit] ; 
+    Float_t * zi = new Float_t[kMulDigit] ; 
+    
+    // create the histogram for the single cluster 
+    // 1. gets histogram boundaries
+    Float_t ximax = -999. ; 
+    Float_t zimax = -999. ; 
+    Float_t ximin = 999. ; 
+    Float_t zimin = 999. ;
+    
+    for(iDigit=0; iDigit<kMulDigit; iDigit++) {
+      digit = (AliPHOSDigit *) digits->At(fDigitsList[iDigit])  ;
+      phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+      phosgeom->RelPosInModule(relid, xi[iDigit], zi[iDigit]);
+      if ( xi[iDigit] > ximax )
+	ximax = xi[iDigit] ; 
+      if ( xi[iDigit] < ximin )
+	ximin = xi[iDigit] ; 
+      if ( zi[iDigit] > zimax )
+	zimax = zi[iDigit] ; 
+      if ( zi[iDigit] < zimin )
+	zimin = zi[iDigit] ;     
+    }
+    ximax += phosgeom->GetCrystalSize(0) / 2. ;
+    zimax += phosgeom->GetCrystalSize(2) / 2. ;
+    ximin -= phosgeom->GetCrystalSize(0) / 2. ;
+    zimin -= phosgeom->GetCrystalSize(2) / 2. ;
+    Int_t xdim = (int)( (ximax - ximin ) / phosgeom->GetCrystalSize(0) + 0.5  ) ; 
+    Int_t zdim = (int)( (zimax - zimin ) / phosgeom->GetCrystalSize(2) + 0.5 ) ;
+    
+    // 2. gets the histogram title
+    
+    Text_t title[100] ; 
+    sprintf(title,"Energy=%1.2f GeV ; Digits ; %d ", GetEnergy(), GetDigitsMultiplicity()) ;
+    
+    if (!histo) {
+      delete histo ; 
+      histo = 0 ; 
+    }
+    histo = new TH2F("cluster3D", title,  xdim, ximin, ximax, zdim, zimin, zimax)  ;
+    
+    Float_t x, z ; 
+    for(iDigit=0; iDigit<kMulDigit; iDigit++) {
+      digit = (AliPHOSDigit *) digits->At(fDigitsList[iDigit])  ;
+      phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+      phosgeom->RelPosInModule(relid, x, z);
+      histo->Fill(x, z, fEnergyList[iDigit] ) ;
+    }
+    
+    if (!digitgraph) {
+      digitgraph = new TGraph(kMulDigit,xi,zi);
+      digitgraph-> SetMarkerStyle(5) ; 
+      digitgraph-> SetMarkerSize(1.) ;
+      digitgraph-> SetMarkerColor(1) ;
+      digitgraph-> Paint("P") ;
+    }
+    
+    //    Print() ;
+    histocanvas = new TCanvas("cluster", "a single cluster", 600, 500) ; 
+    histocanvas->Draw() ; 
+    histo->Draw("lego1") ; 
+    
+    delete[] xi ; 
+    delete[] zi ; 
+    
+    break;
+  }
   
-//   if (!gPad->IsEditable()) return;
+  case kButton1Up: 
+    if (digitgraph) {
+      delete digitgraph  ;
+      digitgraph = 0 ;
+    }
+    break;
   
-//   TH2F * histo = 0 ;
-//   TCanvas * histocanvas ; 
-  
-//   switch (event) {
-    
-//   case kButton1Down: {
-//     AliPHOSDigit * digit ;
-//     AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-//     AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
-//     Int_t iDigit;
-//     Int_t relid[4] ;
-    
-//     const Int_t kMulDigit = AliPHOSEmcRecPoint::GetDigitsMultiplicity() ; 
-//     Float_t * xi = new Float_t[kMulDigit] ; 
-//     Float_t * zi = new Float_t[kMulDigit] ; 
-    
-//     // create the histogram for the single cluster 
-//     // 1. gets histogram boundaries
-//     Float_t ximax = -999. ; 
-//     Float_t zimax = -999. ; 
-//     Float_t ximin = 999. ; 
-//     Float_t zimin = 999. ;
-    
-//     for(iDigit=0; iDigit<kMulDigit; iDigit++) {
-//       digit = (AliPHOSDigit *) ( gime->Digit(fDigitsList[iDigit]) ) ;
-//       phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
-//       phosgeom->RelPosInModule(relid, xi[iDigit], zi[iDigit]);
-//       if ( xi[iDigit] > ximax )
-// 	ximax = xi[iDigit] ; 
-//       if ( xi[iDigit] < ximin )
-// 	ximin = xi[iDigit] ; 
-//       if ( zi[iDigit] > zimax )
-// 	zimax = zi[iDigit] ; 
-//       if ( zi[iDigit] < zimin )
-// 	zimin = zi[iDigit] ;     
-//     }
-//     ximax += phosgeom->GetCrystalSize(0) / 2. ;
-//     zimax += phosgeom->GetCrystalSize(2) / 2. ;
-//     ximin -= phosgeom->GetCrystalSize(0) / 2. ;
-//     zimin -= phosgeom->GetCrystalSize(2) / 2. ;
-//     Int_t xdim = (int)( (ximax - ximin ) / phosgeom->GetCrystalSize(0) + 0.5  ) ; 
-//     Int_t zdim = (int)( (zimax - zimin ) / phosgeom->GetCrystalSize(2) + 0.5 ) ;
-    
-//     // 2. gets the histogram title
-    
-//     Text_t title[100] ; 
-//     sprintf(title,"Energy=%1.2f GeV ; Digits ; %d ", GetEnergy(), GetDigitsMultiplicity()) ;
-    
-//     if (!histo) {
-//       delete histo ; 
-//       histo = 0 ; 
-//     }
-//     histo = new TH2F("cluster3D", title,  xdim, ximin, ximax, zdim, zimin, zimax)  ;
-    
-//     Float_t x, z ; 
-//     for(iDigit=0; iDigit<kMulDigit; iDigit++) {
-//       digit = (AliPHOSDigit *) ( gime->Digit(fDigitsList[iDigit]) ) ;
-//       phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
-//       phosgeom->RelPosInModule(relid, x, z);
-//       histo->Fill(x, z, fEnergyList[iDigit] ) ;
-//     }
-    
-//     if (!digitgraph) {
-//       digitgraph = new TGraph(kMulDigit,xi,zi);
-//       digitgraph-> SetMarkerStyle(5) ; 
-//       digitgraph-> SetMarkerSize(1.) ;
-//       digitgraph-> SetMarkerColor(1) ;
-//       digitgraph-> Paint("P") ;
-//     }
-    
-//     Print() ;
-//     histocanvas = new TCanvas("cluster", "a single cluster", 600, 500) ; 
-//     histocanvas->Draw() ; 
-//     histo->Draw("lego1") ; 
-    
-//     delete[] xi ; 
-//     delete[] zi ; 
-    
-//     break;
-//   }
-  
-//   case kButton1Up: 
-//     if (digitgraph) {
-//       delete digitgraph  ;
-//       digitgraph = 0 ;
-//     }
-//     break;
-  
-//    }
+   }
 }
 
 //____________________________________________________________________________
@@ -631,9 +629,20 @@ Int_t  AliPHOSEmcRecPoint::GetNumberOfLocalMax(Int_t *  maxAt, Float_t * maxAtEn
   }
   return iDigitN ;
 }
-
-
-
+//____________________________________________________________________________
+void AliPHOSEmcRecPoint::EvalTime(TClonesArray * digits){
+  
+  Float_t maxE = 0;
+  Int_t maxAt = 0;
+  for(Int_t idig=0; idig < fMulDigit; idig++){
+    if(fEnergyList[idig] > maxE){
+      maxE = fEnergyList[idig] ;
+      maxAt = idig;
+    }
+  }
+  fTime = ((AliPHOSDigit*) digits->At(fDigitsList[maxAt]))->GetTime() ;
+  
+}
 //____________________________________________________________________________
 void AliPHOSEmcRecPoint::Print(Option_t * option) 
 {

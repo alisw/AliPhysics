@@ -36,8 +36,7 @@ ClassImp(AliPHOSTrackSegment)
 
 //____________________________________________________________________________
 AliPHOSTrackSegment::AliPHOSTrackSegment( AliPHOSEmcRecPoint * emc , 
-					  AliPHOSRecPoint * ppsdrp1,
-					  AliPHOSRecPoint * ppsdrp2  ) 
+					  AliPHOSRecPoint * ppsdrp1)
 {
   // ctor
 
@@ -51,10 +50,6 @@ AliPHOSTrackSegment::AliPHOSTrackSegment( AliPHOSEmcRecPoint * emc ,
  else 
     fPpsdUpRecPoint = -1 ;
 
-  if( ppsdrp2  ) 
-    fPpsdLowRecPoint = ppsdrp2->GetIndexInList() ;
-  else 
-    fPpsdLowRecPoint = -1 ;
 
   fIndexInList = -1 ;
 }
@@ -75,7 +70,6 @@ void AliPHOSTrackSegment::Copy(TObject & obj)
 
    TObject::Copy(obj) ;
    ( (AliPHOSTrackSegment &)obj ).fEmcRecPoint     = fEmcRecPoint ; 
-   ( (AliPHOSTrackSegment &)obj ).fPpsdLowRecPoint = fPpsdLowRecPoint ; 
    ( (AliPHOSTrackSegment &)obj ).fPpsdUpRecPoint  = fPpsdUpRecPoint ; 
    ( (AliPHOSTrackSegment &)obj ).fIndexInList     = fIndexInList ; 
 }
@@ -94,10 +88,6 @@ void AliPHOSTrackSegment::Print(Option_t * opt) const
   else
     cout << "No CPV RecPoint " << endl ;
 
-  if(fPpsdLowRecPoint >= 0)
-    cout << "PPSD RecPoint #     " << fPpsdLowRecPoint << endl ;
-  else
-    cout << "No PPSD RecPoint " << endl ;
   
   cout << "------------------------------------ " << endl ; 
   

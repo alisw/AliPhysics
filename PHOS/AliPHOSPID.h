@@ -40,11 +40,11 @@ public:
   virtual void Init()= 0 ;
   virtual void Print(Option_t * option) const = 0 ; 
   virtual void PlotDispersionCuts()const = 0;
-  virtual Bool_t ReadTrackSegments(Int_t event)= 0 ;
   virtual void SetIdentificationMethod(char * option) = 0 ;
   virtual void SetShowerProfileCut(char *  formula) = 0  ; 
   virtual void SetDispersionCut(Float_t cut) = 0  ;   
   virtual void SetCpvtoEmcDistanceCut(Float_t cut ) = 0;
+  virtual void SetTimeGate(Float_t gate) = 0  ;
   virtual void SetTrackSegmentsBranch(const char* title) = 0 ;
   virtual void SetRecParticlesBranch (const char* title) = 0 ;
   virtual const char * Version() const = 0 ;   

@@ -69,16 +69,20 @@ AliPHOSv0()
   fQAHitsMulB = 0 ; 
   fQATotEner  = 0 ; 
   fQATotEnerB = 0 ; 
+
+  fLightYieldMean         = 0. ;         
+  fIntrinsicPINEfficiency = 0. ; 
+  fLightYieldAttenuation  = 0. ;  
+  fRecalibrationFactor    = 0. ;    
+  fElectronsPerGeV        = 0. ;
+  fAPDGain                = 0. ;    
+
 }
 
 //____________________________________________________________________________
 AliPHOSv1::AliPHOSv1(const char *name, const char *title):
  AliPHOSv0(name,title) 
 {
-  // ctor : title is used to identify the layout
-  //        GPS2 = 5 modules (EMC + PPSD)
-  //        IHEP = 5 modules (EMC + CPV )
-  //        MIXT = 4 modules (EMC + CPV ) and 1 module (EMC + PPSD)
   //
   // We store hits :
   //   - fHits (the "normal" one), which retains the hits associated with
@@ -98,6 +102,24 @@ AliPHOSv1::AliPHOSv1(const char *name, const char *title):
   fNhits = 0 ;
 
   fIshunt     =  1 ; // All hits are associated with primary particles
+
+  //Photoelectron statistics:
+  // The light yield is a poissonian distribution of the number of
+  // photons created in the PbWo4 crystal, calculated using following formula
+  // NumberOfPhotons = EnergyLost * LightYieldMean* APDEfficiency *
+  //              exp (-LightYieldAttenuation * DistanceToPINdiodeFromTheHit);
+  // LightYieldMean is parameter calculated to be over 47000 photons per GeV
+  // APDEfficiency is 0.02655
+  // k_0 is 0.0045 from Valery Antonenko
+  // The number of electrons created in the APD is
+  // NumberOfElectrons = APDGain * LightYield
+  // The APD Gain is 300
+  fLightYieldMean = 47000;
+  fIntrinsicPINEfficiency = 0.02655 ; //APD= 0.1875/0.1271 * 0.018 (PIN)
+  fLightYieldAttenuation = 0.0045 ; 
+  fRecalibrationFactor = 13.418/ fLightYieldMean ;
+  fElectronsPerGeV = 2.77e+8 ;
+  fAPDGain= 300. ;
 
   Int_t nb   = GetGeometry()->GetNModules() ; 
   
@@ -148,8 +170,7 @@ AliPHOSv1::~AliPHOSv1()
 void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, Float_t * hits)
 {
   // Add a hit to the hit list.
-  // A PHOS hit is the sum of all hits in a single crystal
-  //   or in a single PPSD gas cell
+  // A PHOS hit is the sum of all hits in a single crystal from one primary and within soem taime gate
 
   Int_t hitCounter ;
   AliPHOSHit *newHit ;
@@ -161,7 +182,8 @@ void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, 
 
   for ( hitCounter = fNhits-1 ; hitCounter >= 0 && !deja ; hitCounter-- ) {
     curHit = (AliPHOSHit*) (*fHits)[hitCounter] ;
-    if(curHit->GetPrimary() != primary) break ; // We add hits with the same primary, while GEANT treats primaries succesively 
+    if(curHit->GetPrimary() != primary) break ; 
+           // We add hits with the same primary, while GEANT treats primaries succesively 
     if( *curHit == *newHit ) {
       *curHit + *newHit ;
       deja = kTRUE ;
@@ -171,14 +193,13 @@ void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, 
   if ( !deja ) {
     new((*fHits)[fNhits]) AliPHOSHit(*newHit) ;
     // get the block Id number
-    Int_t * relid = new Int_t[geom->GetNModules()] ; 
+    Int_t relid[4] ;
     geom->AbsToRelNumbering(Id, relid) ;
     // and fill the relevant QA checkable (only if in PbW04)
     if ( relid[1] == 0 ) {
       fQAHitsMul->Update(1) ; 
       ((AliPHOSQAIntCheckable*)(*fQAHitsMulB)[relid[0]-1])->Update(1) ;
     } 
-    delete relid ; 
     fNhits++ ;
   }
 
@@ -235,16 +256,14 @@ void AliPHOSv1::FinishEvent()
     }
   } 
 }
-
 //____________________________________________________________________________
 void AliPHOSv1::StepManager(void)
 {
-
-  // Accumulates hits as long as the track stays in a single crystal or PPSD gas Cell
+   // Accumulates hits as long as the track stays in a single crystal or CPV gas Cell
 
   Int_t          relid[4] ;           // (box, layer, row, column) indices
   Int_t          absid    ;           // absolute cell ID number
-  Float_t        xyze[4]={0,0,0,0}  ; // position wrt MRS and energy deposited
+  Float_t        xyze[5]={-1000,-1000,-1000,0,0}  ; // position wrt MRS, time and energy deposited
   TLorentzVector pos      ;           // Lorentz vector of the track current position
   Int_t          copy     ;
 
@@ -252,171 +271,153 @@ void AliPHOSv1::StepManager(void)
   Int_t primary     =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
   TString name      =  GetGeometry()->GetName() ; 
 
-
-  if ( name == "GPS2" || name == "MIXT" ) {            // ======> CPV is a GPS' PPSD
-
-    if( gMC->CurrentVolID(copy) == gMC->VolId("PPCE") ) // We are inside a gas cell 
-    {
-      gMC->TrackPosition(pos) ;
-      xyze[0] = pos[0] ;
-      xyze[1] = pos[1] ;
-      xyze[2] = pos[2] ;
-      xyze[3] = gMC->Edep() ; 
-
-      if ( xyze[3] != 0 ) { // there is deposited energy 
-       	gMC->CurrentVolOffID(5, relid[0]) ;  // get the PHOS Module number
-	if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(5),"PHO1") == 0 ){
-	  relid[0] += GetGeometry()->GetNModules() - GetGeometry()->GetNPPSDModules();
-	}
-       	gMC->CurrentVolOffID(3, relid[1]) ;  // get the Micromegas Module number 
-      // 1-> GetGeometry()->GetNumberOfModulesPhi() * GetGeometry()->GetNumberOfModulesZ() upper
-      //   > GetGeometry()->GetNumberOfModulesPhi() * GetGeometry()->GetNumberOfModulesZ() lower
-       	gMC->CurrentVolOffID(1, relid[2]) ;  // get the row number of the cell
-        gMC->CurrentVolID(relid[3]) ;        // get the column number 
-
-	// get the absolute Id number
-
-       	GetGeometry()->RelToAbsNumbering(relid, absid) ; 
-
-	// add current hit to the hit list      
-	  AddHit(fIshunt, primary, tracknumber, absid, xyze);
-
-
-      } // there is deposited energy 
-    } // We are inside the gas of the CPV  
-  } // GPS2 configuration
-
-  if ( name == "IHEP" || name == "MIXT" ) {       // ======> CPV is a IHEP's one
-
-    // Yuri Kharlov, 28 September 2000
-
-    if( gMC->CurrentVolID(copy) == gMC->VolId("PCPQ") &&
-	(gMC->IsTrackEntering() ) &&
-	gMC->TrackCharge() != 0) {      
-      
-      gMC -> TrackPosition(pos);
-      Float_t xyzm[3], xyzd[3] ;
-      Int_t i;
-      for (i=0; i<3; i++) xyzm[i] = pos[i];
-      gMC -> Gmtod (xyzm, xyzd, 1);    // transform coordinate from master to daughter system
-
-      Float_t        xyd[3]={0,0,0}   ;   //local posiiton of the entering
-      xyd[0]  = xyzd[0];
-      xyd[1]  =-xyzd[1];
-      xyd[2]  =-xyzd[2];
-
-      
-      // Current momentum of the hit's track in the local ref. system
-        TLorentzVector pmom     ;        //momentum of the particle initiated hit
-      gMC -> TrackMomentum(pmom);
-      Float_t pm[3], pd[3];
-      for (i=0; i<3; i++) pm[i]   = pmom[i];
-      gMC -> Gmtod (pm, pd, 2);        // transform 3-momentum from master to daughter system
-      pmom[0] = pd[0];
-      pmom[1] =-pd[1];
-      pmom[2] =-pd[2];
-
-      // Digitize the current CPV hit:
-
-      // 1. find pad response and
-      
-      Int_t moduleNumber;
-      gMC->CurrentVolOffID(3,moduleNumber);
-      moduleNumber--;
-
-
-      TClonesArray *cpvDigits = new TClonesArray("AliPHOSCPVDigit",0);   // array of digits for current hit
-      CPVDigitize(pmom,xyd,moduleNumber,cpvDigits);
-      
-      Float_t xmean = 0;
-      Float_t zmean = 0;
-      Float_t qsum  = 0;
-      Int_t   idigit,ndigits;
-
-      // 2. go through the current digit list and sum digits in pads
-
-      ndigits = cpvDigits->GetEntriesFast();
-      for (idigit=0; idigit<ndigits-1; idigit++) {
-	AliPHOSCPVDigit  *cpvDigit1 = (AliPHOSCPVDigit*) cpvDigits->UncheckedAt(idigit);
-	Float_t x1 = cpvDigit1->GetXpad() ;
-	Float_t z1 = cpvDigit1->GetYpad() ;
-	for (Int_t jdigit=idigit+1; jdigit<ndigits; jdigit++) {
-	  AliPHOSCPVDigit  *cpvDigit2 = (AliPHOSCPVDigit*) cpvDigits->UncheckedAt(jdigit);
-	  Float_t x2 = cpvDigit2->GetXpad() ;
-	  Float_t z2 = cpvDigit2->GetYpad() ;
-	  if (x1==x2 && z1==z2) {
-	    Float_t qsum = cpvDigit1->GetQpad() + cpvDigit2->GetQpad() ;
-	    cpvDigit2->SetQpad(qsum) ;
-	    cpvDigits->RemoveAt(idigit) ;
-	  }
-	}
-      }
-      cpvDigits->Compress() ;
-
-      // 3. add digits to temporary hit list fTmpHits
-
-      ndigits = cpvDigits->GetEntriesFast();
-      for (idigit=0; idigit<ndigits; idigit++) {
-	AliPHOSCPVDigit  *cpvDigit = (AliPHOSCPVDigit*) cpvDigits->UncheckedAt(idigit);
-	relid[0] = moduleNumber + 1 ;                             // CPV (or PHOS) module number
-	relid[1] =-1 ;                                            // means CPV
-	relid[2] = cpvDigit->GetXpad() ;                          // column number of a pad
-	relid[3] = cpvDigit->GetYpad() ;                          // row    number of a pad
-	
-	// get the absolute Id number
-	GetGeometry()->RelToAbsNumbering(relid, absid) ; 
-
-	// add current digit to the temporary hit list
-	xyze[0] = 0. ;
-	xyze[1] = 0. ;
-	xyze[2] = 0. ;
-	xyze[3] = cpvDigit->GetQpad() ;                           // amplitude in a pad
-	primary = -1;                                             // No need in primary for CPV
-	AddHit(fIshunt, primary, tracknumber, absid, xyze);
-
-	if (cpvDigit->GetQpad() > 0.02) {
-	  xmean += cpvDigit->GetQpad() * (cpvDigit->GetXpad() + 0.5);
-	  zmean += cpvDigit->GetQpad() * (cpvDigit->GetYpad() + 0.5);
-	  qsum  += cpvDigit->GetQpad();
-	}
-      }
-      delete cpvDigits;
-    }
-  } // end of IHEP configuration
+  Int_t moduleNumber ;
   
+  if( gMC->CurrentVolID(copy) == gMC->VolId("PCPQ") &&
+      (gMC->IsTrackEntering() ) &&
+      gMC->TrackCharge() != 0) {      
+      
+    gMC -> TrackPosition(pos);
 
+    Float_t xyzm[3], xyzd[3] ;
+    Int_t i;
+    for (i=0; i<3; i++) xyzm[i] = pos[i];
+    gMC -> Gmtod (xyzm, xyzd, 1);    // transform coordinate from master to daughter system
+    
+    Float_t        xyd[3]={0,0,0}   ;   //local posiiton of the entering
+    xyd[0]  = xyzd[0];
+    xyd[1]  =-xyzd[2];
+    xyd[2]  =-xyzd[1];
+  
+    // Current momentum of the hit's track in the local ref. system
+    TLorentzVector pmom     ;        //momentum of the particle initiated hit
+    gMC -> TrackMomentum(pmom);
+    Float_t pm[3], pd[3];
+    for (i=0; i<3; i++)  
+      pm[i]   = pmom[i];
+
+    gMC -> Gmtod (pm, pd, 2);        // transform 3-momentum from master to daughter system
+    pmom[0] = pd[0];
+    pmom[1] =-pd[2];
+    pmom[2] =-pd[1];
+      
+    // Digitize the current CPV hit:
+    
+    // 1. find pad response and    
+    gMC->CurrentVolOffID(3,moduleNumber);
+    moduleNumber--;
+    
+    TClonesArray *cpvDigits = new TClonesArray("AliPHOSCPVDigit",0);   // array of digits for current hit
+    CPVDigitize(pmom,xyd,moduleNumber,cpvDigits);
+      
+    Float_t xmean = 0;
+    Float_t zmean = 0;
+    Float_t qsum  = 0;
+    Int_t   idigit,ndigits;
+    
+    // 2. go through the current digit list and sum digits in pads
+    
+    ndigits = cpvDigits->GetEntriesFast();
+    for (idigit=0; idigit<ndigits-1; idigit++) {
+      AliPHOSCPVDigit  *cpvDigit1 = (AliPHOSCPVDigit*) cpvDigits->UncheckedAt(idigit);
+      Float_t x1 = cpvDigit1->GetXpad() ;
+      Float_t z1 = cpvDigit1->GetYpad() ;
+      for (Int_t jdigit=idigit+1; jdigit<ndigits; jdigit++) {
+	AliPHOSCPVDigit  *cpvDigit2 = (AliPHOSCPVDigit*) cpvDigits->UncheckedAt(jdigit);
+	Float_t x2 = cpvDigit2->GetXpad() ;
+	Float_t z2 = cpvDigit2->GetYpad() ;
+	if (x1==x2 && z1==z2) {
+	  Float_t qsum = cpvDigit1->GetQpad() + cpvDigit2->GetQpad() ;
+	  cpvDigit2->SetQpad(qsum) ;
+	  cpvDigits->RemoveAt(idigit) ;
+	}
+      }
+    }
+    cpvDigits->Compress() ;
+    
+    // 3. add digits to temporary hit list fTmpHits
+    
+    ndigits = cpvDigits->GetEntriesFast();
+    for (idigit=0; idigit<ndigits; idigit++) {
+      AliPHOSCPVDigit  *cpvDigit = (AliPHOSCPVDigit*) cpvDigits->UncheckedAt(idigit);
+      relid[0] = moduleNumber + 1 ;                             // CPV (or PHOS) module number
+      relid[1] =-1 ;                                            // means CPV
+      relid[2] = cpvDigit->GetXpad() ;                          // column number of a pad
+      relid[3] = cpvDigit->GetYpad() ;                          // row    number of a pad
+      
+      // get the absolute Id number
+      GetGeometry()->RelToAbsNumbering(relid, absid) ; 
+      
+      // add current digit to the temporary hit list
+
+      xyze[3] = gMC->TrackTime() ;
+      xyze[4] = cpvDigit->GetQpad() ;                          // amplitude in a pad
+      primary = -1;                                             // No need in primary for CPV
+      AddHit(fIshunt, primary, tracknumber, absid, xyze);
+      
+      if (cpvDigit->GetQpad() > 0.02) {
+	xmean += cpvDigit->GetQpad() * (cpvDigit->GetXpad() + 0.5);
+	zmean += cpvDigit->GetQpad() * (cpvDigit->GetYpad() + 0.5);
+	qsum  += cpvDigit->GetQpad();
+      }
+    }
+    delete cpvDigits;
+  }
+
+ 
+  
   if(gMC->CurrentVolID(copy) == gMC->VolId("PXTL") ) { //  We are inside a PBWO crystal
+
     gMC->TrackPosition(pos) ;
     xyze[0] = pos[0] ;
     xyze[1] = pos[1] ;
     xyze[2] = pos[2] ;
-    xyze[3] = gMC->Edep() ;
-
+    Float_t global[3], local[3] ;
+    global[0] = pos[0] ;
+    global[1] = pos[1] ;
+    global[2] = pos[2] ;
+    Float_t lostenergy = gMC->Edep(); 
   
-    if ( xyze[3] != 0 ) {  // Track is inside the crystal and deposits some energy 
+    if ( lostenergy != 0 ) {  // Track is inside the crystal and deposits some energy 
+      
+      xyze[3] = gMC->TrackTime() ;     
 
-      gMC->CurrentVolOffID(10, relid[0]) ; // get the PHOS module number ;
+      gMC->CurrentVolOffID(10, moduleNumber) ; // get the PHOS module number ;
       
       // fill the relevant QA Checkables
-      fQATotEner->Update( xyze[3] ) ;                                             // total energy in PHOS
-      ((AliPHOSQAFloatCheckable*)(*fQATotEnerB)[relid[0]-1])->Update( xyze[3] ) ; // energy in this block  
+      fQATotEner->Update( xyze[4] ) ;                                             // total energy in PHOS
+      ((AliPHOSQAFloatCheckable*)(*fQATotEnerB)[moduleNumber-1])->Update( xyze[4] ) ; // energy in this block  
 
-      if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(10),"PHO1") == 0 )
-	relid[0] += GetGeometry()->GetNModules() - GetGeometry()->GetNPPSDModules();      
+      Int_t strip ;
+      gMC->CurrentVolOffID(3, strip);
+      Int_t cell ;
+      gMC->CurrentVolOffID(2, cell);
 
-      relid[1] = 0   ;                    // means PBW04
-      gMC->CurrentVolOffID(4, relid[2]) ; // get the row number inside the module
-      gMC->CurrentVolOffID(3, relid[3]) ; // get the cell number inside the module
+      Int_t row = 1 + GetGeometry()->GetNZ() - strip % GetGeometry()->GetNZ() ;
+      Int_t col = (Int_t) TMath::Ceil((Double_t) strip/GetGeometry()->GetNZ()) -1 ;
+
+      absid = (moduleNumber-1)*GetGeometry()->GetNCristalsInModule() + 
+	row + (col*GetGeometry()->GetEMCAGeometry()->GetNCellsInStrip() + cell-1)*GetGeometry()->GetNZ() ;
+
+      gMC->Gmtod(global, local, 1) ;
       
-      // get the absolute Id number
-      GetGeometry()->RelToAbsNumbering(relid, absid) ; 
-
+      //Calculates the light yield, the number of photns produced in the
+      //crystal 
+      Float_t lightYield = gRandom->Poisson(fLightYieldMean * lostenergy *
+					    fIntrinsicPINEfficiency * 
+					    exp(-fLightYieldAttenuation *
+						(local[1]+GetGeometry()->GetCrystalSize(1)/2.0 ))
+					    ) ;
+      //Calculates de energy deposited in the crystal  
+      xyze[4] = (fRecalibrationFactor/100.) * fAPDGain * lightYield  ;
+      
       // add current hit to the hit list
-	AddHit(fIshunt, primary,tracknumber, absid, xyze);
-
-
+      AddHit(fIshunt, primary,tracknumber, absid, xyze);
+      
+      
     } // there is deposited energy
   } // we are inside a PHOS Xtal
+
 }
 
 //____________________________________________________________________________

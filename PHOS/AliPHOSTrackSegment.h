@@ -30,8 +30,7 @@ public:
 
   AliPHOSTrackSegment() {} 
   AliPHOSTrackSegment(AliPHOSEmcRecPoint * EmcRecPoint , 
-		      AliPHOSRecPoint * PpsdUp, 
-		      AliPHOSRecPoint * PpsdLow  ) ; // ctor
+		      AliPHOSRecPoint * PpsdUp) ;
   AliPHOSTrackSegment(const AliPHOSTrackSegment & ts) ;  // ctor                   
   virtual ~AliPHOSTrackSegment() {  } 
 
@@ -39,7 +38,6 @@ public:
 
   Int_t   GetIndexInList() const {  return fIndexInList ;   } 
   Int_t   GetEmcIndex()    const {  return fEmcRecPoint ;   }
-  Int_t   GetPpsdIndex()   const {  return fPpsdLowRecPoint;}
   Int_t   GetCpvIndex()    const {  return fPpsdUpRecPoint; }
 
   virtual void  Print(Option_t * option) const;
@@ -52,8 +50,7 @@ public:
   
   Int_t fEmcRecPoint ;     // The EMC reconstructed point index in array stored in TreeR/PHOSEmcRP
   Int_t fIndexInList ;     // the index of this TrackSegment in the list stored in TreeR (to be set by analysis)
-  Int_t fPpsdLowRecPoint ; // The PPSD reconstructed point from the lower layer index in array stored in TreeR/PHOSPpsdRP
-  Int_t fPpsdUpRecPoint ;  // The PPSD reconstructed point from the upper layer index in array stored in TreeR/PHOSPpsdRP
+  Int_t fPpsdUpRecPoint ;  // The CPV reconstructed point from the upper layer index in array stored in TreeR/PHOSPpsdRP
   
   ClassDef(AliPHOSTrackSegment,1)  // Track segment in PHOS
 

@@ -36,14 +36,15 @@ public:
   virtual char * GetRecParticlesBranch()const {return (char*) fRecParticlesTitle.Data() ;}      
   virtual char * GetTrackSegmentsBranch()const{return (char*) fTrackSegmentsTitle.Data(); }
   virtual const Int_t GetRecParticlesInRun() const  {return fRecParticlesInRun ;}  
-  
+
   virtual void Init() ;
   virtual void PlotDispersionCuts()const ;
   virtual void Print(Option_t * option)const ; 
   virtual void SetIdentificationMethod(char * option = "CPV DISP" ){fIDOptions = option ;} 
   virtual void SetShowerProfileCut(char * formula = "0.35*0.35 - (x-1.386)*(x-1.386) - 1.707*1.707*(y-1.008)*(y-1.008)") ;
   virtual void SetDispersionCut(Float_t cut){fDispersion = cut ; } 
-  virtual void SetCpvtoEmcDistanceCut(Float_t cut ) {fCpvEmcDistance = cut ;}
+  virtual void SetCpvtoEmcDistanceCut(Float_t cut )      {fCpvEmcDistance = cut ;}
+  virtual void SetTimeGate(Float_t gate)                 {fTimeGate = gate ;}
   virtual void SetTrackSegmentsBranch(const char* title) { fTrackSegmentsTitle = title;}
   virtual void SetRecParticlesBranch (const char* title) { fRecParticlesTitle = title;} 
   virtual const char * Version() const { return "pid-v1" ; }  
@@ -51,10 +52,9 @@ public:
  private:
 
   void     MakeRecParticles(void ) ;
-  Float_t  GetDistance(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv, Option_t * Axis)const ; // Relative Distance PPSD-EMC
-  TVector3 GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv, AliPHOSRecPoint * ppsd)const ;
+  Float_t  GetDistance(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv, Option_t * Axis)const ; // Relative Distance CPV-EMC
+  TVector3 GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv)const ;
   void     PrintRecParticles(Option_t * option) ;
-  virtual Bool_t ReadTrackSegments(Int_t event) ;
   virtual void WriteRecParticles(Int_t event) ; 
 
  private:
@@ -76,7 +76,9 @@ public:
   TFormula             * fFormula ;           // formula to define cut on the shouer elips axis
   Float_t                fDispersion ;        // dispersion cut
   Float_t                fCpvEmcDistance ;    // Max EMC-CPV distance
+  Float_t                fTimeGate ;          // Time of the latest EmcRecPoint accepted as EM
   Int_t                  fRecParticlesInRun ; //! Total number of recparticles in one run
+
   ClassDef( AliPHOSPIDv1,1)  // Particle identifier implementation version 1
 
 };

@@ -164,23 +164,23 @@ TString AliPHOSFastRecParticle::Name()
   
   TString  name ; 
   switch (fType) {
-  case kGAMMA:
+  case kNEUTRALEMFAST:
     name = "PHOTON" ;
     break ; 
-   case kELECTRON:
+   case kCHARGEDEMFAST:
      name = "ELECTRON" ;
     break ; 
-   case kCHARGEDHA:
-    name = "CHARGED_HA" ;
+   case kCHARGEDHAFAST:
+    name = "CHARGED_HA_FAST" ;
     break ; 
-  case kNEUTRALHA:
-    name = "NEUTRAL_HA" ; 
+  case kNEUTRALHASLOW:
+    name = "NEUTRAL_HA_SLOW" ; 
     break ; 
-  case kNEUTRALEM:
-    name = "NEUTRAL_EM" ; 
+  case kNEUTRALEMSLOW:
+    name = "NEUTRAL_EM_SLOW" ; 
     break ; 
-  case kGAMMAHA:
-    name = "PHOTON_HA" ; 
+  case kNEUTRALHAFAST:
+    name = "NEUTRAL_HA_FAST" ; 
     break ; 
 
   }

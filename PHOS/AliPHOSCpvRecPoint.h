@@ -45,11 +45,10 @@ public:
   virtual void ExecuteEvent(Int_t event, Int_t px, Int_t py) const ; 
 
   void   GetClusterLengths(Int_t &lengX, Int_t &lengZ) const {lengX = fLengX ;lengZ = fLengZ ;}
-  Bool_t IsEmc(void) const {return kFALSE ;   }              // tells that this is not a EMC
-  Bool_t IsCPV(void) const {return (fPHOSMod <= ((AliPHOSGeometry*) fGeom)->GetNCPVModules()) ; }     
-                                                                  // true if the recpoint is in CPV
+  Bool_t IsEmc(void) const {return kFALSE ; }        // tells that this is not a EMC
+  Bool_t IsCPV(void) const {return kTRUE  ; }        // true if the recpoint is in CPV
   Bool_t IsSortable() const { return kTRUE ; }    // tells that this is a sortable object
-  void        Print(Option_t * opt = "void") ; 
+  void   Print(Option_t * opt = "void") ; 
 
   AliPHOSCpvRecPoint & operator = (const AliPHOSCpvRecPoint & rvalue)  {
     // assignement operator requested by coding convention but not needed

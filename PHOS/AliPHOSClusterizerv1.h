@@ -31,9 +31,9 @@ class AliPHOSClusterizerv1 : public AliPHOSClusterizer {
   
 public:
   
-  AliPHOSClusterizerv1() ;             // ctor            
+  AliPHOSClusterizerv1() ;         
   AliPHOSClusterizerv1(const char * headerFile, const char * name = "Default");
-  virtual ~AliPHOSClusterizerv1(){}    // dtor
+  virtual ~AliPHOSClusterizerv1()  ;
   
   Int_t           AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)const ; 
                                // Checks if digits are in neighbour cells 
@@ -43,13 +43,13 @@ public:
   virtual Float_t GetEmcClusteringThreshold()const{ return fEmcClusteringThreshold;}
   virtual Float_t GetEmcLocalMaxCut()const        { return fEmcLocMaxCut;} 
   virtual Float_t GetEmcLogWeight()const          { return fW0;}  
+  virtual Float_t GetEmcTimeGate() const          { return fEmcTimeGate ; }
   virtual Float_t GetCpvClusteringThreshold()const{ return fCpvClusteringThreshold;  } 
   virtual Float_t GetCpvLocalMaxCut()const        { return fCpvLocMaxCut;} 
   virtual Float_t GetCpvLogWeight()const          { return fW0CPV;}  
-  virtual Float_t GetPpsdClusteringThreshold() const { return fPpsdClusteringThreshold;  } 
-  virtual char *  GetRecPointsBranch() const     { return (char*) fRecPointsBranchTitle.Data() ;}
-  virtual const Int_t GetRecPointsInRun() const  {return fRecPointsInRun ;}  
-  virtual char *  GetDigitsBranch() const        { return (char*) fDigitsBranchTitle.Data() ;}
+  virtual char *  GetRecPointsBranch() const      { return (char*) fRecPointsBranchTitle.Data() ;}
+  virtual const Int_t GetRecPointsInRun() const  {return fRecPointsInRun ;} 
+  virtual char *  GetDigitsBranch() const         { return (char*) fDigitsBranchTitle.Data() ;}
 
   void    Exec(Option_t *option);                // Does the job
 
@@ -58,10 +58,10 @@ public:
   virtual void SetEmcClusteringThreshold(Float_t cluth)  { fEmcClusteringThreshold = cluth ; }
   virtual void SetEmcLocalMaxCut(Float_t cut)            { fEmcLocMaxCut = cut ; }
   virtual void SetEmcLogWeight(Float_t w)                { fW0 = w ; }
+  virtual void SetEmcTimeGate(Float_t gate)              {fEmcTimeGate = gate ;}
   virtual void SetCpvClusteringThreshold(Float_t cluth)  { fCpvClusteringThreshold = cluth ; }
   virtual void SetCpvLocalMaxCut(Float_t cut)            { fCpvLocMaxCut = cut ; }
   virtual void SetCpvLogWeight(Float_t w)                { fW0CPV = w ; }
-  virtual void SetPpsdClusteringThreshold(Float_t cluth) { fPpsdClusteringThreshold = cluth ; }
   virtual void SetDigitsBranch(const char * title) { fDigitsBranchTitle = title  ;}
   virtual void SetRecPointsBranch(const char *title){fRecPointsBranchTitle = title; }
   virtual void SetUnfolding(Bool_t toUnfold = kTRUE ) {fToUnfold = toUnfold ;}  
@@ -80,12 +80,10 @@ private:
   void Init() ;
 
   virtual Bool_t IsInEmc (AliPHOSDigit * digit)const ;     // Tells if id digit is in EMC
-  virtual Bool_t IsInPpsd(AliPHOSDigit * digit)const ;     // Tells if id digit is in PPSD
   virtual Bool_t IsInCpv (AliPHOSDigit * digit)const ;     // Tells if id digit is in CPV
 
   virtual void   MakeClusters( ) ;            
   virtual void   MakeUnfolding() ;
-  Bool_t         ReadDigits(Int_t event) ;
   void           UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,Int_t Nmax, 
 		       int * maxAt,Float_t * maxAtEnergy ) ; //Unfolds cluster using TMinuit package
   void           WriteRecPoints(Int_t event) ;
@@ -99,22 +97,21 @@ private:
 
   Bool_t  fToUnfold ;                // To perform unfolding 
 
-
   Int_t   fNumberOfEmcClusters ;     // number of EMC clusters found 
-  Int_t   fNumberOfCpvClusters ;     // number of CPV+PPSD clusters found
+  Int_t   fNumberOfCpvClusters ;     // number of CPV clusters found
  
   Float_t fPedestal ;                // Calibration parameters 
   Float_t fSlope ;                   // read from Digitizer
 
   Float_t fEmcClusteringThreshold ;  // minimum energy to include a EMC digit in a cluster
-  Float_t fPpsdClusteringThreshold ; // minimum energy to include a PPSD digit in a cluster
   Float_t fCpvClusteringThreshold ;  // minimum energy to include a CPV digit in a cluster
   Float_t fEmcLocMaxCut ;            // minimum energy difference to distinguish local maxima in a cluster
   Float_t fW0 ;                      // logarithmic weight for the cluster center of gravity calculation
   Float_t fCpvLocMaxCut ;            // minimum energy difference to distinguish local maxima in a CPV cluster
   Float_t fW0CPV ;                   // logarithmic weight for the CPV cluster center of gravity calculation
   Int_t fRecPointsInRun ;            //! Total number of recpoints in one run
-
+  Float_t fEmcTimeGate ;             // Maximum time difference between the digits in ont EMC cluster
+    
   ClassDef(AliPHOSClusterizerv1,1)   // Clusterizer implementation version 1
 
 };

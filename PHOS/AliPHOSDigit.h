@@ -32,7 +32,7 @@ class AliPHOSDigit : public AliDigitNew {
  public:
   
   AliPHOSDigit() ;
-  AliPHOSDigit(Int_t primary, Int_t id, Int_t DigEnergy, Int_t index = -1) ;
+  AliPHOSDigit(Int_t primary, Int_t id, Int_t DigEnergy, Float_t Time, Int_t index = -1) ;
   AliPHOSDigit(const AliPHOSDigit & digit) ;
   virtual ~AliPHOSDigit() ;
 
@@ -44,6 +44,7 @@ class AliPHOSDigit : public AliDigitNew {
     // returns the number of primaries
     return fNprimary ; }
   Int_t   GetPrimary(Int_t index) const ; 
+  Float_t GetTime(void) const {return fTime ;}
   Bool_t  IsSortable() const { 
     // says that AliPHOSDigits are sortable (needed for Sort method
     return kTRUE ; }
@@ -51,13 +52,15 @@ class AliPHOSDigit : public AliDigitNew {
   void    SetAmp(Int_t Amp) { 
     // sets the amplitude data member 
     fAmp=Amp ; } 
+  void    SetTime(Float_t Time) {fTime = Time ;}
   void ShiftPrimary(Int_t shift); // shift to semarate different TreeK in merging
 
  private:
 
   Int_t fNprimary ;     // Number of primaries
   Int_t fNMaxPrimary ;  //! Max Number of primaries
-  Int_t fPrimary[5] ;   // Array of primaries       
+  Int_t fPrimary[5] ;   // Array of primaries      
+  Float_t fTime ; 
     
   ClassDef(AliPHOSDigit,1)   // Digit in PHOS 
 

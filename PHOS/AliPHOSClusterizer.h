@@ -29,10 +29,10 @@ public:
   virtual Float_t GetEmcClusteringThreshold()const = 0 ; 
   virtual Float_t GetEmcLocalMaxCut()const = 0 ; 
   virtual Float_t GetEmcLogWeight()const = 0 ; 
+  virtual Float_t GetEmcTimeGate() const = 0 ;
   virtual Float_t GetCpvClusteringThreshold()const = 0 ; 
   virtual Float_t GetCpvLocalMaxCut()const = 0 ; 
   virtual Float_t GetCpvLogWeight()const = 0 ; 
-  virtual Float_t GetPpsdClusteringThreshold()const = 0 ; 
   virtual char *  GetRecPointsBranch() const = 0 ;
   virtual const Int_t GetRecPointsInRun()  const = 0 ; 
   virtual char *  GetDigitsBranch() const = 0 ;
@@ -43,10 +43,10 @@ public:
   virtual void SetEmcClusteringThreshold(Float_t cluth) = 0 ; 
   virtual void SetEmcLocalMaxCut(Float_t cut) = 0 ; 
   virtual void SetEmcLogWeight(Float_t w) = 0 ; 
+  virtual void SetEmcTimeGate(Float_t gate) = 0 ;
   virtual void SetCpvClusteringThreshold(Float_t cluth) = 0 ; 
   virtual void SetCpvLocalMaxCut(Float_t cut) = 0 ; 
   virtual void SetCpvLogWeight(Float_t w) = 0 ; 
-  virtual void SetPpsdClusteringThreshold(Float_t cluth) = 0 ; 
   virtual void SetDigitsBranch(const char * title) = 0 ;
   virtual void SetRecPointsBranch(const char *title) = 0 ;
   virtual void SetUnfolding(Bool_t toUnfold ) = 0 ;

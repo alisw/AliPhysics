@@ -40,10 +40,7 @@ public:
   Int_t       Compare(const TObject * obj) const;                         // method for sorting  
 
   virtual void  EvalAll(Float_t logWeight,TClonesArray * digits) ;
-          void  EvalCoreEnergy(Float_t logWeight,TClonesArray * digits) ;             
-  virtual void  EvalLocalPosition(Float_t logWeight,TClonesArray * digits) ;// computes the position in the PHOS module 
-  virtual void  EvalDispersion(Float_t logWeight,TClonesArray * digits) ;   // computes the dispersion of the shower
-  virtual void  EvalElipsAxis(Float_t logWeight, TClonesArray * digits );   // computes the axis of shower ellipsoide
+
   virtual void  ExecuteEvent(Int_t event, Int_t px, Int_t py) const; 
 
   Float_t         GetCoreEnergy()const {return fCoreEnergy ;}
@@ -59,6 +56,7 @@ public:
   virtual Int_t GetNumberOfLocalMax(Int_t *  maxAt, Float_t * maxAtEnergy,
                                     Float_t locMaxCut,TClonesArray * digits ) const ; 
                                                                    // searches for the local maxima 
+  Float_t     GetTime(void) const{return  fTime ; } 
   Bool_t      IsEmc(void) const { return kTRUE ; }                 // true if the recpoint is in EMC
   Bool_t      IsSortable() const {return kTRUE ; }                 // says that emcrecpoints are sortable objects 
   void        Print(Option_t * opt = "void") ; 
@@ -70,13 +68,18 @@ public:
   }
 
  protected:
-
+          void  EvalCoreEnergy(Float_t logWeight,TClonesArray * digits) ;             
+  virtual void  EvalLocalPosition(Float_t logWeight,TClonesArray * digits) ;// computes the position in the PHOS module 
+  virtual void  EvalDispersion(Float_t logWeight,TClonesArray * digits) ;   // computes the dispersion of the shower
+  virtual void  EvalElipsAxis(Float_t logWeight, TClonesArray * digits );   // computes the axis of shower ellipsoide
+          void  EvalTime( TClonesArray * digits );
   virtual Bool_t AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * digit2 ) const ;
 
   Float_t fCoreEnergy ;       // energy in a shower core 
   Float_t fLambda[2] ;        // shower ellipse axes
   Float_t fDispersion ;       // shower dispersion
   Float_t *fEnergyList ;      //[fMulDigit] energy of digits
+  Float_t fTime ;             // Time of the digit with maximal energy deposition
   
   ClassDef(AliPHOSEmcRecPoint,1)  // EMC RecPoint (cluster)
 

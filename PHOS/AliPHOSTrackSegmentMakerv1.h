@@ -37,8 +37,8 @@ public:
    
   virtual ~ AliPHOSTrackSegmentMakerv1() ; // dtor
   
-  virtual char*  GetRecPointsBranch    (void)const {return (char*)fRecPointsBranchTitle.Data() ;}
-  virtual char*  GetTrackSegmentsBranch(void)const {return (char*)fTrackSegmentsBranchTitle.Data() ;}
+  virtual char*  GetRecPointsBranch    (void)const{return (char*)fRecPointsBranchTitle.Data() ;}
+  virtual char*  GetTrackSegmentsBranch(void)const{return (char*)fTrackSegmentsBranchTitle.Data() ;}
   virtual const Int_t GetTrackSegmentsInRun()const {return fTrackSegmentsInRun ;}  
 
   virtual void   Exec(Option_t * option) ;
@@ -63,7 +63,6 @@ private:
   Float_t GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * EmcClu , AliPHOSRecPoint * Ppsd , Bool_t & TooFar )const ; // see R0
   void    Init() ;
   void    PrintTrackSegments(Option_t *option) ;
-  virtual Bool_t ReadRecPoints(Int_t event) ;
   virtual void   WriteTrackSegments(Int_t event) ;
 
 private:  
@@ -75,16 +74,12 @@ private:
 
   Float_t fR0 ;        // Maximum distance between a EMC RecPoint and a PPSD RecPoint   
 
-  TClonesArray * fLinkLowArray ;  //!
   TClonesArray * fLinkUpArray  ;  //!
-
 
   Int_t fEmcFirst;     //! Index of first EMC RecPoint belonging to currect PHOS module
   Int_t fEmcLast ;     //!
   Int_t fCpvFirst;     //! Cpv upper layer     
   Int_t fCpvLast;      //! 
-  Int_t fPpsdFirst;    //! Cpv low layer     
-  Int_t fPpsdLast;     //!
   Int_t fModule ;      //! number of module being processed
   Int_t fTrackSegmentsInRun ; //! Total number of track segments in one run
 
