@@ -28,10 +28,10 @@ SRCS          = AliITS.cxx AliITSv1.cxx AliITSv5.cxx AliITSvSPD02.cxx \
 		AliITSstatistics.cxx AliITSstatistics2.cxx \
                 AliITSTrackV1.cxx AliITSIOTrack.cxx \
 		AliITSRad.cxx AliITSgeoinfo.cxx AliITSTrackerV1.cxx\
-		AliITSvtest.cxx	\
+		AliITSvtest.cxx	AliITSStrLine.cxx\
                 AliITSclusterV2.cxx AliITStrackV2.cxx AliITStrackerV2.cxx \
 		AliITSVertex.cxx AliITSVertexer.cxx AliITSVertexerIons.cxx \
-                AliITSVertexerPPZ.cxx \
+                AliITSVertexerPPZ.cxx AliITSVertexerTracks.cxx\
                 AliV0vertex.cxx AliV0vertexer.cxx \
                 AliITSPid.cxx AliITStrackV2Pid.cxx AliCascadeVertex.cxx \
                 AliCascadeVertexer.cxx  AliITSneuralTrack.cxx \
