@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2001/04/27 08:35:01  coppedis
+Remove some lines for proton acceptance studies
+
 Revision 1.18  2001/04/20 10:08:45  coppedis
 Preliminary version of optics 6.2 - Insertion of TDI
 
@@ -1020,11 +1023,10 @@ void AliZDCv1::CreateMaterials()
   Float_t epsil  = .01, stmin=0.01, stemax = 1.;
   Int_t   isxfld = gAlice->Field()->Integ();
   Float_t fieldm = gAlice->Field()->Max();
-  Float_t tmaxfd=gAlice->Field()->Max();
   Int_t   ifield = 0, isvolActive = 1, isvol = 0, inofld = 0;
   
   fieldm = 0.;
-  tmaxfd = 0.05;
+  tmaxfd = 0.;
   AliMedium(1, "ZTANT", 1, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
 //  AliMedium(1, "ZW", 1, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(2, "ZBRASS",2, isvolActive, inofld, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
