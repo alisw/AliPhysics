@@ -24,11 +24,8 @@
 
 #include "AliMonitorV0s.h"
 #include "AliMonitorHisto.h"
-#include "AliITSLoader.h"
-#include "AliV0vertex.h"
-#include "AliRunLoader.h"
+#include "AliESD.h"
 #include <TFolder.h>
-#include <TTree.h>
 #include <TPDGCode.h>
 
 
@@ -86,33 +83,22 @@ void AliMonitorV0s::CreateHistos(TFolder* folder)
 
 
 //_____________________________________________________________________________
-void AliMonitorV0s::FillHistos(AliRunLoader* runLoader, 
-			       AliRawReader*)
+void AliMonitorV0s::FillHistos(AliRunLoader* /*runLoader*/, 
+			       AliRawReader*, AliESD* esd)
 {
-// fill the TPC-ITS correlation monitor histogrms
+// fill the V0s monitor histogrms
 
-  AliITSLoader* itsLoader = (AliITSLoader*) runLoader->GetLoader("ITSLoader");
-  if (!itsLoader) return;
-
-  itsLoader->LoadV0s();
-  TTree* v0s = itsLoader->TreeV0();
-  if (!v0s) return;
-  AliV0vertex* vertex = new AliV0vertex;
-  v0s->SetBranchAddress("vertices", &vertex);
-
-  for (Int_t i = 0; i < v0s->GetEntries(); i++) {
-    v0s->GetEntry(i);
+  for (Int_t i = 0; i < esd->GetNumberOfV0s(); i++) {
+    AliESDv0* v0 = esd->GetV0(i);
+    if (!v0) continue;
     Double_t x, y, z;
-    vertex->GetXYZ(x, y, z);
+    v0->GetXYZ(x, y, z);
     fRadius->Fill(TMath::Sqrt(x*x + y*y));
-    vertex->ChangeMassHypothesis(kK0Short); 
-    fMassK0->Fill(vertex->GetEffMass());
-    vertex->ChangeMassHypothesis(kLambda0); 
-    fMassLambda->Fill(vertex->GetEffMass());
-    vertex->ChangeMassHypothesis(kLambda0Bar); 
-    fMassAntiLambda->Fill(vertex->GetEffMass());
+    v0->ChangeMassHypothesis(kK0Short); 
+    fMassK0->Fill(v0->GetEffMass());
+    v0->ChangeMassHypothesis(kLambda0); 
+    fMassLambda->Fill(v0->GetEffMass());
+    v0->ChangeMassHypothesis(kLambda0Bar); 
+    fMassAntiLambda->Fill(v0->GetEffMass());
   }
-
-  delete vertex;
-  itsLoader->UnloadV0s();
 }

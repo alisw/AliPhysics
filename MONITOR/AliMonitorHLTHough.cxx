@@ -129,7 +129,8 @@ void AliMonitorHLTHough::CreateHistos(TFolder* folder)
 
 //_____________________________________________________________________________
 void AliMonitorHLTHough::FillHistos(AliRunLoader* /*runLoader*/, 
-				    AliRawReader* /*rawReader*/)
+				    AliRawReader* /*rawReader*/, 
+				    AliESD* /*esd*/)
 {
 // fill the HLT Hough transform monitor histograms
 

@@ -147,7 +147,7 @@ void AliMonitorHLT::CreateHistos(TFolder* folder)
 
 //_____________________________________________________________________________
 void AliMonitorHLT::FillHistos(AliRunLoader* /*runLoader*/, 
-			       AliRawReader* /*rawReader*/)
+			       AliRawReader* /*rawReader*/, AliESD* /*esd*/)
 {
 // fill the HLT monitor histogrms
 

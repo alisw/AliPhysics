@@ -28,9 +28,9 @@
 #include "AliITSRawStreamSDD.h"
 #include "AliITSRawStreamSSD.h"
 #include "AliITSclusterV2.h"
-#include "AliITStrackV2.h"
 #include "AliRunLoader.h"
 #include "AliRawReader.h"
+#include "AliESD.h"
 #include <TFolder.h>
 #include <TTree.h>
 
@@ -135,7 +135,7 @@ void AliMonitorITS::CreateHistos(TFolder* folder)
 			   AliMonitorHisto::kNormEntries);
 
   fTrackPhi = CreateHisto1("TrackPhi", "phi distribution of tracks", 
-			   120, 0, 360, "#phi [#circ]", "#Delta N/N",
+			   120, -180, 180, "#phi [#circ]", "#Delta N/N",
 			   AliMonitorHisto::kNormEntries);
 
   fTrackDEdxVsP = CreateHisto2("TrackDEdxVsP", "dE/dx of tracks", 
@@ -147,7 +147,7 @@ void AliMonitorITS::CreateHistos(TFolder* folder)
 
 //_____________________________________________________________________________
 void AliMonitorITS::FillHistos(AliRunLoader* runLoader, 
-			       AliRawReader* rawReader)
+			       AliRawReader* rawReader, AliESD* esd)
 {
 // fill the ITS monitor histogrms
 
@@ -204,31 +204,23 @@ void AliMonitorITS::FillHistos(AliRunLoader* runLoader,
   itsLoader->UnloadRecPoints();
 
 
-  itsLoader->LoadTracks();
-  TTree* tracks = itsLoader->TreeT();
-  if (!tracks) return;
-  AliITStrackV2* track = new AliITStrackV2;
-  tracks->SetBranchAddress("tracks", &track);
+  Int_t nTracks = 0;
+  Int_t nTPCTracks = 0;
+  for (Int_t i = 0; i < esd->GetNumberOfTracks(); i++) {
+    AliESDtrack* track = esd->GetTrack(i);
+    if (!track) continue;
+    if ((track->GetStatus() | AliESDtrack::kTPCin) != 0) nTPCTracks++;
+    if ((track->GetStatus() | AliESDtrack::kITSin) == 0) continue;
+    nTracks++;
 
-  fNTracks->Fill(tracks->GetEntries());
-  for (Int_t i = 0; i < tracks->GetEntries(); i++) {
-    tracks->GetEntry(i);
-    fTrackPt->Fill(track->Pt());
-    fTrackEta->Fill(track->Eta());
-    fTrackPhi->Fill(track->Phi() * TMath::RadToDeg());
-    fTrackDEdxVsP->Fill(track->P(), track->GetdEdx());
+    Double_t pxyz[3];
+    track->GetPxPyPz(pxyz);
+    TVector3 pTrack(pxyz);
+    fTrackPt->Fill(pTrack.Pt());
+    fTrackEta->Fill(pTrack.Eta());
+    fTrackPhi->Fill(pTrack.Phi() * TMath::RadToDeg());
+    fTrackDEdxVsP->Fill(pTrack.Mag(), track->GetITSsignal());
   }
-
-  AliLoader* tpcLoader = runLoader->GetLoader("TPCLoader");
-  if (tpcLoader) {
-    tpcLoader->LoadTracks();
-    TTree* tracksTPC = tpcLoader->TreeT();
-    if (tracksTPC) {
-      fNTracksITSTPC->Fill(tracks->GetEntries(), tracksTPC->GetEntries());
-    }
-    tpcLoader->UnloadTracks();
-  }
-
-  delete track;
-  itsLoader->UnloadTracks();
+  fNTracks->Fill(nTracks);
+  fNTracksITSTPC->Fill(nTracks, nTPCTracks);
 }

@@ -17,7 +17,7 @@ public:
 
   virtual void     CreateHistos(TFolder* folder);
   virtual void     FillHistos(AliRunLoader* runLoader, 
-			      AliRawReader* rawReader);
+			      AliRawReader* rawReader, AliESD* esd);
 
 private:
   AliMonitorHisto* fRadius;             // radius of V0 vertices

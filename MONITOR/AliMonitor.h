@@ -12,6 +12,7 @@ class TFolder;
 class TTree;
 class AliRunLoader;
 class AliRawReader;
+class AliESD;
 class AliMonitorTrend;
 
 
@@ -25,7 +26,8 @@ public:
   virtual void     CreateHistos(TFolder* folder) = 0;
   virtual void     CreateBranches(TTree* tree);
   virtual void     FillHistos(AliRunLoader* runLoader, 
-			      AliRawReader* rawReader) = 0;
+			      AliRawReader* rawReader,
+			      AliESD* esd) = 0;
 
 protected:
   TFolder*         fFolder;    // sub folder for monitor histograms

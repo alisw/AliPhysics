@@ -19,7 +19,7 @@ public:
 
   virtual void     CreateHistos(TFolder* folder);
   virtual void     FillHistos(AliRunLoader* runLoader, 
-			      AliRawReader* rawReader);
+			      AliRawReader* rawReader, AliESD* esd);
 
 private:
   AliITSgeom*      fGeom;               // ITS geometry

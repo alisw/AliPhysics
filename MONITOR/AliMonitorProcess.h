@@ -18,6 +18,7 @@ class TTree;
 #include <TString.h>
 #include <TSystem.h>
 
+class AliESD;
 class AliITSgeom;
 class AliRawReader;
 class AliRunLoader;
@@ -73,9 +74,9 @@ private:
   Bool_t           CheckForNewFile();
   Bool_t           ProcessFile();
   Int_t            GetNumberOfEvents(const char* fileName) const;
-  Bool_t           ReconstructTPC(AliRawReader* rawReader);
-  Bool_t           ReconstructITS(AliRawReader* rawReader);
-  Bool_t           ReconstructV0s();
+  Bool_t           ReconstructTPC(AliRawReader* rawReader, AliESD* esd);
+  Bool_t           ReconstructITS(AliRawReader* rawReader, AliESD* esd);
+  Bool_t           ReconstructV0s(AliESD* esd);
 #ifdef ALI_HLT
   void             CreateHLT(const char* fileName);
   void             CreateHLTHough(const char* fileName);
@@ -129,6 +130,7 @@ private:
     AliMonitorInterruptHandler(const AliMonitorInterruptHandler& handler);
     AliMonitorInterruptHandler& operator = 
       (const AliMonitorInterruptHandler& handler);
+    virtual ~AliMonitorInterruptHandler() {};
     virtual Bool_t Notify();
   private:
     AliMonitorProcess* fProcess;       // process to notify

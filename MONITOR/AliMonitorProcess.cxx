@@ -33,6 +33,7 @@
 #include <TServerSocket.h>
 #include <TSocket.h>
 
+#include "AliESD.h"
 #include "AliITS.h"
 #include "AliITSLoader.h"
 #include "AliITSclustererV2.h"
@@ -420,14 +421,15 @@ Bool_t AliMonitorProcess::ProcessFile()
     Info("ProcessFile", "run: %d  event: %d %d\n", rawReader.GetRunNumber(), 
 	 rawReader.GetEventId()[0], rawReader.GetEventId()[1]);
 
+    AliESD esd;
     CheckForConnections();
-    if (!ReconstructTPC(&rawReader)) return kFALSE;
+    if (!ReconstructTPC(&rawReader, &esd)) return kFALSE;
     if (fStopping) break;
     CheckForConnections();
-    if (!ReconstructITS(&rawReader)) return kFALSE;
+    if (!ReconstructITS(&rawReader, &esd)) return kFALSE;
     if (fStopping) break;
     CheckForConnections();
-    if (!ReconstructV0s()) return kFALSE;
+    if (!ReconstructV0s(&esd)) return kFALSE;
     if (fStopping) break;
     CheckForConnections();
     if (!ReconstructHLT(iEvent)) return kFALSE;
@@ -442,7 +444,8 @@ Bool_t AliMonitorProcess::ProcessFile()
     for (Int_t iMonitor = 0; iMonitor < fMonitors.GetEntriesFast(); iMonitor++) {
       CheckForConnections();
       SetStatus(kFilling);
-      ((AliMonitor*) fMonitors[iMonitor])->FillHistos(fRunLoader, &rawReader);
+      ((AliMonitor*) fMonitors[iMonitor])->FillHistos(fRunLoader, &rawReader, 
+						      &esd);
       if (fStopping) break;
     }
     if (fStopping) break;
@@ -543,7 +546,7 @@ Int_t AliMonitorProcess::GetNumberOfEvents(const char* fileName) const
 }
 
 //_____________________________________________________________________________
-Bool_t AliMonitorProcess::ReconstructTPC(AliRawReader* rawReader)
+Bool_t AliMonitorProcess::ReconstructTPC(AliRawReader* rawReader, AliESD* esd)
 {
 // find TPC clusters and tracks
 
@@ -555,7 +558,6 @@ Bool_t AliMonitorProcess::ReconstructTPC(AliRawReader* rawReader)
     return kFALSE;
   }
   gSystem->Unlink("TPC.RecPoints.root");
-  gSystem->Unlink("TPC.Tracks.root");
 
   // cluster finder
   Info("ReconstructTPC", "reconstructing clusters...");
@@ -568,24 +570,17 @@ Bool_t AliMonitorProcess::ReconstructTPC(AliRawReader* rawReader)
 
   // track finder
   Info("ReconstructTPC", "reconstructing tracks...");
-  tpcLoader->LoadTracks("recreate");
-  {
-    AliTPCtrackerMI tracker(fTPCParam);
-    tracker.SetIO();
-    tracker.LoadClusters();
-    tracker.Clusters2Tracks();
-    tracker.WriteTracks();
-    tracker.UnloadClusters();
-    tpcLoader->WriteTracks("OVERWRITE");
-  }
-
+  AliTPCtrackerMI tracker(fTPCParam);
+  tracker.LoadClusters(tpcLoader->TreeR());
+  tracker.Clusters2Tracks(esd);
+  tracker.UnloadClusters();
   tpcLoader->UnloadRecPoints();
-  tpcLoader->UnloadTracks();
+
   return kTRUE;
 }
 
 //_____________________________________________________________________________
-Bool_t AliMonitorProcess::ReconstructITS(AliRawReader* rawReader)
+Bool_t AliMonitorProcess::ReconstructITS(AliRawReader* rawReader, AliESD* esd)
 {
 // find ITS clusters and tracks
 
@@ -596,13 +591,7 @@ Bool_t AliMonitorProcess::ReconstructITS(AliRawReader* rawReader)
     Error("ReconstructITS", "no ITS loader found");
     return kFALSE;
   }
-  AliLoader* tpcLoader = fRunLoader->GetLoader("TPCLoader");
-  if (!tpcLoader) {
-    Error("ReconstructITS", "no TPC loader found");
-    return kFALSE;
-  }
   gSystem->Unlink("ITS.RecPoints.root");
-  gSystem->Unlink("ITS.Tracks.root");
 
   // cluster finder
   Info("ReconstructITS", "reconstructing clusters...");
@@ -613,52 +602,30 @@ Bool_t AliMonitorProcess::ReconstructITS(AliRawReader* rawReader)
 
   // track finder
   Info("ReconstructITS", "reconstructing tracks...");
-  itsLoader->LoadTracks("recreate");
-  itsLoader->MakeTracksContainer();
-  tpcLoader->LoadTracks();
   AliITStrackerV2 tracker(fITSgeom);
   tracker.LoadClusters(itsLoader->TreeR());
-  tracker.Clusters2Tracks(tpcLoader->TreeT(), itsLoader->TreeT());
+  tracker.Clusters2Tracks(esd);
   tracker.UnloadClusters();
-  itsLoader->WriteTracks("OVERWRITE");
 
   itsLoader->UnloadRecPoints();
-  itsLoader->UnloadTracks();
-  tpcLoader->UnloadTracks();
   return kTRUE;
 }
 
 //_____________________________________________________________________________
-Bool_t AliMonitorProcess::ReconstructV0s()
+Bool_t AliMonitorProcess::ReconstructV0s(AliESD* esd)
 {
 // find V0s
 
   SetStatus(kRecV0s);
 
-  AliITSLoader* itsLoader = (AliITSLoader*) fRunLoader->GetLoader("ITSLoader");
-  if (!itsLoader) {
-    Error("ReconstructV0", "no ITS loader found");
-    return kFALSE;
-  }
-  gSystem->Unlink("ITS.V0s.root");
-
   // V0 finder
   Info("ReconstructV0s", "reconstructing V0s...");
-  itsLoader->LoadTracks("read");
-  itsLoader->LoadV0s("recreate");
   AliV0vertexer vertexer;
-  TTree* tracks = itsLoader->TreeT();
-  if (!tracks) {
-    Error("ReconstructV0s", "no ITS tracks tree found");
-    return kFALSE;
-  }
-  if (!itsLoader->TreeV0()) itsLoader->MakeTree("V0");
-  TTree* v0s = itsLoader->TreeV0();
-  vertexer.Tracks2V0vertices(tracks, v0s);
-  itsLoader->WriteV0s("OVERWRITE");
+  Double_t vtx[3];
+  esd->GetVertex()->GetXYZ(vtx);
+  vertexer.SetVertex(vtx);
+  vertexer.Tracks2V0vertices(esd);
 
-  itsLoader->UnloadTracks();
-  itsLoader->UnloadV0s();
   return kTRUE;
 }
 

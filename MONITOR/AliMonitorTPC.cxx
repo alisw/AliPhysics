@@ -30,9 +30,9 @@
 #include "AliTPCRawStream.h"
 #include "AliTPCClustersRow.h"
 #include "AliTPCclusterMI.h"
-#include "AliTPCtrack.h"
 #include "AliRunLoader.h"
 #include "AliRawReader.h"
+#include "AliESD.h"
 #include <TFolder.h>
 #include <TTree.h>
 
@@ -112,7 +112,7 @@ void AliMonitorTPC::CreateHistos(TFolder* folder)
 			   AliMonitorHisto::kNormEntries);
 
   fTrackPhi = CreateHisto1("TrackPhi", "phi distribution of tracks", 
-			   120, 0, 360, "#phi [#circ]", "#Delta N/N",
+			   120, -180, 180, "#phi [#circ]", "#Delta N/N",
 			   AliMonitorHisto::kNormEntries);
   fTrackPhi->SetDescription("The phi distribution should be flat on average.\nIf it is not flat check for dead TPC sectors.");
 
@@ -154,7 +154,7 @@ void AliMonitorTPC::CreateBranches(TTree* tree)
 
 //_____________________________________________________________________________
 void AliMonitorTPC::FillHistos(AliRunLoader* runLoader, 
-			       AliRawReader* rawReader)
+			       AliRawReader* rawReader, AliESD* esd)
 {
 // fill the TPC monitor histogrms
 
@@ -198,33 +198,34 @@ void AliMonitorTPC::FillHistos(AliRunLoader* runLoader,
   tpcLoader->UnloadRecPoints();
 
 
-  tpcLoader->LoadTracks();
-  TTree* tracks = tpcLoader->TreeT();
-  if (!tracks) return;
-  AliTPCtrack* track = new AliTPCtrack;
-  tracks->SetBranchAddress("tracks", &track);
+  Int_t nTracks = 0;
+  for (Int_t i = 0; i < esd->GetNumberOfTracks(); i++) {
+    AliESDtrack* track = esd->GetTrack(i);
+    if (!track || ((track->GetStatus() | AliESDtrack::kTPCin) == 0)) continue;
+    nTracks++;
 
-  Int_t nTracks = (Int_t) tracks->GetEntries();
+    Double_t pxyz[3];
+    track->GetInnerPxPyPz(pxyz);
+    TVector3 pTrack(pxyz);
+    Double_t p = pTrack.Mag();
+    Double_t pt = pTrack.Pt();
+    Double_t eta = pTrack.Eta();
+    Double_t phi = pTrack.Phi() * TMath::RadToDeg();
+
+    fTrackPt->Fill(pt);
+    fTrackEta->Fill(eta);
+    fTrackPhi->Fill(phi);
+    if (pt > 3.) {
+      fTrackEtaVsPhi->Fill(eta, phi);
+      fPtEtaVsPhi->Fill(eta, phi, pTrack.Pt());
+    }
+    fTrackNCl->Fill(track->GetTPCclusters(NULL));
+    fTrackDEdxVsP->Fill(p, track->GetTPCsignal());
+    if(p>0.4 && p<1.0)
+      fTrackDEdx->Fill(track->GetTPCsignal());
+
+    fData->SetData(i, pt, eta, phi); 
+  }
   fNTracks->Fill(nTracks);
   fData->SetNTracks(nTracks);
-  for (Int_t i = 0; i < nTracks; i++) {
-    tracks->GetEntry(i);
-    fTrackPt->Fill(track->Pt());
-    fTrackEta->Fill(track->Eta());
-    fTrackPhi->Fill(track->Phi() * TMath::RadToDeg());
-    if(track->Pt()>3.) {
-      fTrackEtaVsPhi->Fill(track->Eta(),track->Phi() * TMath::RadToDeg());
-      fPtEtaVsPhi->Fill(track->Eta(),track->Phi() * TMath::RadToDeg(),track->Pt());
-    }
-    fTrackNCl->Fill(track->GetNumberOfClusters());
-    fTrackDEdxVsP->Fill(track->P(), track->GetdEdx());
-    if(track->P()>0.4 && track->P()<1.0)
-      fTrackDEdx->Fill(track->GetdEdx());
-
-    fData->SetData(i, track->Pt(), track->Eta(), 
-		   track->Phi() * TMath::RadToDeg());
-  }
-
-  delete track;
-  tpcLoader->UnloadTracks();
 }
