@@ -37,7 +37,6 @@ public:
   AliESDtrack *GetTrack(Int_t i) const {
     return (AliESDtrack *)fTracks.UncheckedAt(i);
   }
-
   AliESDMuonTrack *GetMuonTrack(Int_t i) const {
     return (AliESDMuonTrack *)fMuonTracks.UncheckedAt(i);
   }
@@ -84,7 +83,10 @@ public:
   Int_t GetNumberOfPmdTracks() const {return fPmdTracks.GetEntriesFast();}
   Int_t GetNumberOfV0s()      const {return fV0s.GetEntriesFast();}
   Int_t GetNumberOfCascades() const {return fCascades.GetEntriesFast();}
-  
+  Int_t GetNumberOfPHOSParticles() const {return fPHOSParticles;}
+  void  SetNumberOfPHOSParticles(Int_t part) { fPHOSParticles = part ; }
+  void  SetFirstPHOSParticle(Int_t index) { fFirstPHOSParticle = index ; } 
+
   Float_t GetT0zVertex() const {return fT0zVertex;}
   void SetT0zVertex(Float_t z) {fT0zVertex=z;}
 
@@ -107,8 +109,10 @@ protected:
   TClonesArray  fPmdTracks;      // PMD ESD tracks
   TClonesArray  fV0s;            // V0 vertices
   TClonesArray  fCascades;       // Cascade vertices
+  Int_t         fPHOSParticles;  // Number of PHOS particles (stored as fTracks)
+  Int_t         fFirstPHOSParticle; // First PHOS particle in the fTracks list 
   
-  ClassDef(AliESD,4)  //ESD class 
+  ClassDef(AliESD,5)  //ESD class 
                       //ver. 2: Magnetic Field Added; skowron
 };
 
