@@ -66,7 +66,7 @@ include $(ALICE_ROOT)/conf/GeneralMacros
 ############################### Specific Macros ###############################
 
 STRUCT_DIRS	= html conf macros data share include Euclid picts \
-                  Makefile README .rootrc
+                  doc etc Makefile .rootrc
 
 LIBRARY_DIRS	= MINICERN GEANT321 PYTHIA PDF
 
