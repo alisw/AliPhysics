@@ -1,4 +1,4 @@
-enum gentype_t {hijing, gun, box, pythia, param, cocktail, fluka, halo, ntuple, scan};
+enum gentype_t {hijing,hijingParam, gun, box, pythia, param, cocktail, fluka, halo, ntuple, scan};
 
 gentype_t gentype=param;
 
@@ -90,7 +90,7 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
      gener->SetRange(20, -100, 100, 20, -100, 100, 1, 500, 500);
      break;
      
- case hijing:
+ case hijingParam:
      AliGenHIJINGpara *gener = new AliGenHIJINGpara(ntracks);
      gener->SetMomentumRange(0,999);
      gener->SetPhiRange(0,360);
@@ -98,7 +98,46 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
      gener->SetOrigin(0,0,0);        //vertex position
      gener->SetSigma(0,0,0);         //Sigma in (X,Y,Z) (cm) on IP position
      break;
-
+ case hijing:
+      case hijing:
+     AliGenHijing *gener = new AliGenHijing(-1);
+// centre of mass energy 
+     gener->SetEnergyCMS(5500);
+// reference frame
+     gener->SetReferenceFrame("CMS     ");
+// projectile
+     gener->SetProjectile("A       ", 208, 82);
+     gener->SetTarget    ("A       ", 208, 82);
+// impact parameter range
+     gener->SetImpactParameterRange(0, 3.);
+// evaluate cross section before run
+     gener->SetEvaluate(1);
+// tell hijing to keep the full parent child chain
+     gener->KeepFullEvent();
+// enable jet quenching
+     gener->SetJetQuenching(1);
+// enable shadowing
+     gener->SetShadowing(1);
+// neutral pion and heavy particle decays switched off
+     gener->SetDecaysOff(1);
+// trigger
+     gener->SetTrigger(0);
+// kinematic selection
+     gener->SetSelectAll(0);
+// momentum range
+     gener->SetMomentumRange(0,999);
+// phi range
+     gener->SetPhiRange(-180,180);
+// theta range 
+     gener->SetThetaRange(0,180.);
+// select flavor (0: no, 4: charm+beauty, 5:beauty)
+     gener->SetFlavor(4);
+//     
+     gener->SetOrigin(0., 0.0 ,0);
+     gener->SetSigma(0,0,5.3);
+     gener->SetVertexSmear(perEvent); 
+// no tracking
+     gener->SetTrackingFlag(0);
  case pythia:
 //********************************************
 // Example for Charm  Production with Pythia *
