@@ -1,4 +1,14 @@
 #include "AliHBTPositionRandomizer.h"
+//___________________________________________________
+////////////////////////////////////////////////////////////////////////////////
+// 
+// class AliHBTPositionRandomizer
+//
+// These class randomizes particle vertex positions
+// Piotr.Skowronski@cern.ch
+//
+////////////////////////////////////////////////////////////////////////////////
+
 #include <TRandom.h>
 #include "AliHBTRun.h"
 #include "AliHBTEvent.h"
@@ -35,6 +45,36 @@ AliHBTPositionRandomizer::AliHBTPositionRandomizer(AliHBTReader* reader):
 {
 //constructor
 } 
+/*********************************************************************/
+
+AliHBTPositionRandomizer::AliHBTPositionRandomizer(const AliHBTPositionRandomizer& in):
+ AliHBTReader(in),
+ fReader(),
+ fRandomizer(0x0),
+ fModel(0),
+ fAddToExistingPos(kFALSE),
+ fOnlyParticlesFromVertex(kFALSE),
+ fVX(0.0),
+ fVY(0.0),
+ fVZ(0.0)
+{
+  //cpy constructor
+  in.Copy(*this);
+}
+/*********************************************************************/
+AliHBTPositionRandomizer::~AliHBTPositionRandomizer()
+{
+  //dtor
+  delete fReader;
+  delete fRandomizer;
+}
+/*********************************************************************/
+const AliHBTPositionRandomizer& AliHBTPositionRandomizer::operator=(const AliHBTPositionRandomizer& in)
+{
+  //assigment operator
+  in.Copy(*this);
+  return *this;
+}
 /*********************************************************************/
 
 AliHBTEvent* AliHBTPositionRandomizer::GetParticleEvent() 
@@ -80,7 +120,7 @@ AliHBTEvent* AliHBTPositionRandomizer::GetParticleEvent(Int_t n)
 
 /*********************************************************************/
 
-void AliHBTPositionRandomizer::Randomize(AliHBTRun* run)
+void AliHBTPositionRandomizer::Randomize(AliHBTRun* run) const
 {
 // randomizes postions of all particles in the run
   if (run == 0x0) return;
@@ -91,10 +131,10 @@ void AliHBTPositionRandomizer::Randomize(AliHBTRun* run)
    }
 }
 /*********************************************************************/
-void AliHBTPositionRandomizer::Randomize(AliHBTEvent* event)
+void AliHBTPositionRandomizer::Randomize(AliHBTEvent* event) const
 {
 // randomizes postions of all particles in the event
-  static const Double_t fmtocm = 1.e-13;
+  static const Double_t kfmtocm = 1.e-13;
   Info("Randomize(AliHBTEvent*)","");
   if (event == 0x0) return;
 
@@ -103,7 +143,7 @@ void AliHBTPositionRandomizer::Randomize(AliHBTEvent* event)
      AliHBTParticle* p = event->GetParticle(i);
      Double_t x,y,z,t=0.0;
      fRandomizer->Randomize(x,y,z,p);
-     p->SetProductionVertex(x*fmtocm,y*fmtocm,z*fmtocm,t*fmtocm);
+     p->SetProductionVertex(x*kfmtocm,y*kfmtocm,z*kfmtocm,t*kfmtocm);
    }
   event->SetRandomized();
 }
@@ -111,12 +151,14 @@ void AliHBTPositionRandomizer::Randomize(AliHBTEvent* event)
 
 void AliHBTPositionRandomizer::SetGaussianBall(Double_t r)
 {
+ //Sets Gaussian Ball Model
   SetGaussianBall(r,r,r);
 }
 /*********************************************************************/
 
 void AliHBTPositionRandomizer::SetGaussianBall(Double_t rx, Double_t ry, Double_t rz)
 {
+ //Sets Gaussian Ball Model
   delete fRandomizer;
   fRandomizer = new AliHBTRndmGaussBall(rx,ry,rz);
 }
@@ -124,6 +166,7 @@ void AliHBTPositionRandomizer::SetGaussianBall(Double_t rx, Double_t ry, Double_
 
 void AliHBTPositionRandomizer::SetCyllinderSurface(Double_t r, Double_t l)
 {
+ //Sets Cylinder Surface Model
   delete fRandomizer;
   fRandomizer = new  AliHBTRndmCyllSurf(r,l);
 }
@@ -171,7 +214,7 @@ AliHBTRndmGaussBall::AliHBTRndmGaussBall(Float_t rx, Float_t ry, Float_t rz):
 }
 /*********************************************************************/
 
-void AliHBTRndmGaussBall::Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTParticle*/*particle*/)
+void AliHBTRndmGaussBall::Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTParticle*/*particle*/) const
 {
 //randomizez gauss for each coordinate separately
   x = gRandom->Gaus(0.0,fRx);
@@ -186,13 +229,13 @@ void AliHBTRndmGaussBall::Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTPa
 //                                                                   //
 ///////////////////////////////////////////////////////////////////////
 
-void AliHBTRndmCyllSurf::Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTParticle* particle)
+void AliHBTRndmCyllSurf::Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTParticle* particle) const
 {
+//Randomizes x,y,z
    Double_t r = fR + gRandom->Gaus(0.0, 1.0);
    Double_t sf = r/particle->Pt();//scaling factor for position transformation ->
                              //we move direction of string momentum but legth defined by r
    x = sf*particle->Px();
    y = sf*particle->Py();
    z = gRandom->Uniform(-fL,fL);
-  
 }
