@@ -1027,7 +1027,7 @@ void AliPHOSv0::CreateGeometryforPPSD()
 
   gMC->Gsvolu("CAPS", "BOX ", idtmed[710], cappsd, 3) ; 
 
-  y0 = y0 - ( fGeom->GetAvalancheGap() +  fGeom->GetAvalancheGap() ) / 2. - fGeom->GetCathodeThickness()  / 2. ; 
+  y0 = y0 - ( fGeom->GetConversionGap() +  fGeom->GetAvalancheGap() ) / 2. - fGeom->GetCathodeThickness()  / 2. ; 
 
   gMC->Gspos("CAPS", 1, "MPPS", 0.0, y0, 0.0, 0, "ONLY") ; 
 
