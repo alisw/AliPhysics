@@ -100,6 +100,7 @@ class AliITSv11 : public AliITS {
  private:
     void InitAliITSgeom();
     void SPDCone(TGeoVolume *Moth);
+    void SPDThermalSheald(TGeoVolume *Moth);
     void SDDCone(TGeoVolume *Moth);
     void SSDCone(TGeoVolume *Moth);
     Double_t RmaxFrom2Points(TGeoPcon *p,Int_t i1,Int_t i2,Double_t z);
