@@ -703,8 +703,8 @@ CreateNewRecPoint(Float_t P, Float_t dP, Float_t N, Float_t dN,
      rnew.SetdEdX(dedx);
      rnew.SetSigmaX2( kRMSx* kRMSx); 
      rnew.SetSigmaZ2( kRMSz* kRMSz);
-     rnew.SetSigmaX2(1); 
-     rnew.SetSigmaZ2(1);
+     //rnew.SetSigmaX2(1);   //This has to be verified
+     //rnew.SetSigmaZ2(1);   //This has to be verified
      rnew.fTracks[0]=tr[0];
      rnew.fTracks[1]=tr[1];
      rnew.fTracks[2]=tr[2];
