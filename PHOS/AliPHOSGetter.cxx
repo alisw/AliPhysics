@@ -91,7 +91,7 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
   fPrimaries = new TObjArray(1) ;
 
   if ( fHeaderFile != "aliroot" ) { // to call the getter without a file
-    
+
     //open headers file
     TFile * file = (TFile*) gROOT->GetFile(fHeaderFile.Data() ) ;
     
@@ -114,6 +114,7 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
       }
     }
   }
+  fDebug="";
 }
 //____________________________________________________________________________ 
 void AliPHOSGetter::CreateWhiteBoard() const
@@ -237,8 +238,9 @@ void AliPHOSGetter::Post(const char * headerFile, const char * opt, const char *
       sdigitsF2 = sdigitsF->AddFolder(subdir, foldertitle); 
     else {
       if ( sdigitsF2->FindObject( sdigitsName.Data() ) ) {
-	cerr <<"INFO: AliPHOSGetter::Post S -> Folder " << subdir << ", " << foldertitle
-	     << " already exists!" << endl ;  
+	if (fDebug.Contains("S"))
+	  cerr <<"INFO: AliPHOSGetter::Post S -> Folder " << subdir << ", " << foldertitle
+	       << " already exists!" << endl ;  
 	return ; 
       }
     }
@@ -270,7 +272,8 @@ void AliPHOSGetter::Post(const char * headerFile, const char * opt, const char *
     } else {
       AliPHOSSDigitizer * phossd = (AliPHOSSDigitizer*)phos->GetListOfTasks()->FindObject(sdigitsName.Data()) ; 
       if (phossd) { 
-	cout << "INFO: AliPHOSGetter::Post Ser -> Task " << sdigitsName.Data() << " already exists" << endl ; 
+	if (fDebug.Contains("Ser"))
+	  cout << "INFO: AliPHOSGetter::Post Ser -> Task " << sdigitsName.Data() << " already exists" << endl ; 
 	return ; 
       } else 
 	phos->Add(sdigitizer) ;
@@ -292,8 +295,9 @@ void AliPHOSGetter::Post(const char * headerFile, const char * opt, const char *
     }    
     digitsF->SetTitle(foldertitle) ; 
     if ( digitsF->FindObject( digitsName.Data() ) ) {
-      cerr <<"INFO: AliPHOSGetter::Post D -> Object " << digitsName.Data() 
-	   << " already exists!" << endl ;  
+      if (fDebug.Contains("D"))
+	cerr <<"INFO: AliPHOSGetter::Post D -> Object " << digitsName.Data() 
+	     << " already exists!" << endl ;  
       return ; 
     } 
     else 
@@ -320,7 +324,8 @@ void AliPHOSGetter::Post(const char * headerFile, const char * opt, const char *
     } else {
       AliPHOSDigitizer * phosd = (AliPHOSDigitizer*)phos->GetListOfTasks()->FindObject(digitsName.Data()) ; 
       if (phosd) { 
-	cout << "INFO: AliPHOSGetter::Post Der -> Task " << digitsName.Data() << " already exists" << endl ; 
+	if (fDebug.Contains("Der"))
+	  cout << "INFO: AliPHOSGetter::Post Der -> Task " << digitsName.Data() << " already exists" << endl ; 
 	return ; 
       } else 
 	phos->Add(digitizer) ;
@@ -348,8 +353,9 @@ void AliPHOSGetter::Post(const char * headerFile, const char * opt, const char *
     }    
     // TString title("PHOS Digits") ; 
     if ( emcrpF->FindObject( recpointsName.Data() ) ||  cpvrpF->FindObject( recpointsName.Data() ) ) {
-      cerr <<"INFO: AliPHOSGetter::Post R -> Object " << recpointsName.Data() 
-	   << " already exists!" << endl ;  
+      if (fDebug.Contains("R"))
+	cerr <<"INFO: AliPHOSGetter::Post R -> Object " << recpointsName.Data() 
+	     << " already exists!" << endl ;  
       return ; 
     } 
     else {
@@ -384,7 +390,8 @@ void AliPHOSGetter::Post(const char * headerFile, const char * opt, const char *
     } else {
        AliPHOSClusterizer * phoscl = (AliPHOSClusterizer*)phos->GetListOfTasks()->FindObject(recpointsName.Data()) ; 
       if (phoscl) { 
-	cout << "INFO: AliPHOSGetter::Post Rer -> Task " << recpointsName.Data() << " already exists" << endl ; 
+	if (fDebug.Contains("Rer"))
+	  cout << "INFO: AliPHOSGetter::Post Rer -> Task " << recpointsName.Data() << " already exists" << endl ; 
 	return ; 
       } else 
 	phos->Add(clusterizer) ;
@@ -407,8 +414,9 @@ void AliPHOSGetter::Post(const char * headerFile, const char * opt, const char *
       abort() ; 
     }    
     if ( tracksegmentsF->FindObject( tracksegmentsName.Data() ) ) {
-      cerr <<"INFO: AliPHOSGetter::Post T -> Object " << tracksegmentsName.Data() 
-	   << " already exists!" << endl ;  
+      if (fDebug.Contains("T"))
+	cerr <<"INFO: AliPHOSGetter::Post T -> Object " << tracksegmentsName.Data() 
+	     << " already exists!" << endl ;  
       return ; 
     } 
     else 
@@ -441,7 +449,8 @@ void AliPHOSGetter::Post(const char * headerFile, const char * opt, const char *
     } else {
        AliPHOSTrackSegmentMaker * phosts = (AliPHOSTrackSegmentMaker*)phos->GetListOfTasks()->FindObject(tracksegmentsName.Data()) ; 
       if (phosts) { 
-	cout << "INFO: AliPHOSGetter::Post Ter -> Task " << tracksegmentsName.Data() << " already exists" << endl ; 
+	if (fDebug.Contains("Ter"))
+	  cout << "INFO: AliPHOSGetter::Post Ter -> Task " << tracksegmentsName.Data() << " already exists" << endl ; 
 	return ; 
       } else 
 	phos->Add(tracksegmentmaker) ;
@@ -464,8 +473,9 @@ void AliPHOSGetter::Post(const char * headerFile, const char * opt, const char *
       abort() ; 
     }    
     if ( recparticlesF->FindObject( recparticlesName.Data() ) ) {
-      cerr <<"INFO: AliPHOSGetter::Post P -> Object " << recparticlesName.Data() 
-	   << " already exists!" << endl ;  
+      if (fDebug.Contains("P"))
+	cerr <<"INFO: AliPHOSGetter::Post P -> Object " << recparticlesName.Data() 
+	     << " already exists!" << endl ;  
       return ; 
     } 
     else 
@@ -498,7 +508,8 @@ void AliPHOSGetter::Post(const char * headerFile, const char * opt, const char *
     } else {
        AliPHOSPID * phospid = (AliPHOSPID*)phos->GetListOfTasks()->FindObject(recparticlesName.Data()) ; 
       if (phospid) { 
-	cout << "INFO: AliPHOSGetter::Post Per -> Task " << recparticlesName.Data() << " already exists" << endl ; 
+	if (fDebug.Contains("Per"))
+	  cout << "INFO: AliPHOSGetter::Post Per -> Task " << recparticlesName.Data() << " already exists" << endl ; 
 	return ; 
       } else 
 	phos->Add(pid) ;
@@ -699,11 +710,11 @@ void AliPHOSGetter::ReadTreeR()
   Post(fHeaderFile, "Rer", clusterizerName) ; 
 
   TObjArray * emcRecPoints = EmcRecPoints(fRecPointsTitle) ;
-  emcRecPoints->Clear() ; 
+  emcRecPoints->Delete() ; 
   emcbranch->SetAddress(&emcRecPoints) ;
 
   TObjArray * cpvRecPoints = CpvRecPoints(fRecPointsTitle) ;
-  cpvRecPoints->Clear() ; 
+  cpvRecPoints->Delete() ; 
   cpvbranch->SetAddress(&cpvRecPoints) ;
 
   clusterizer = Clusterizer(clusterizerName) ;

@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <iostream.h>
 
+#include <TTree.h>
 class TString ;
 class TParticle ;
 class TTask ;
@@ -30,6 +31,7 @@ class TFolder ;
 
 // --- AliRoot header files ---
 
+#include <AliRun.h>
 class AliPHOS ;
 class AliPHOSGeometry ;
 class AliPHOSHit ;
@@ -65,8 +67,8 @@ class AliPHOSGetter : public TObject {
   
   void Post(const char * file, const char * opt, const char * name = 0, const Int_t event=-1) const ;  
   void  Event(Int_t event) ; // reads event from file 
-  //     Int_t EventNumber(){ return fEvent; }
-  //     Int_t MaxEvent()   { return fMaxEvent;}
+  //     Int_t EventNumber(){ return (Int_t) gAlice->GetEvNumber() ; }
+  Int_t MaxEvent()          { return (Int_t) gAlice->TreeE()->GetEntries() ; }
   static AliPHOSGetter * GetInstance(const char* headerFile,
 				     const char* branchTitle = "No Name" ) ; 
   static AliPHOSGetter * GetInstance() ; 
@@ -143,6 +145,7 @@ class AliPHOSGetter : public TObject {
   const TParticle *           Primary(Int_t index) const ;
   const Int_t                 NPrimaries()const { return fNPrimaries; }
 
+  void  SetDebug(TString opt) {fDebug = opt;} // Set debug level
 
   AliPHOSGetter & operator = (const AliPHOSGetter & ) {
     // assignement operator requested by coding convention
@@ -173,6 +176,8 @@ class AliPHOSGetter : public TObject {
   TString        fRecParticlesTitle ;//!
   TString        fDigitsTitle ;   //!
   TString        fSDigitsTitle ;  //!
+
+  TString        fDebug ;         // Debug level
 
   Int_t          fNPrimaries ;    //! # of primaries
   
