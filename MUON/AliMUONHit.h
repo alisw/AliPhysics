@@ -27,6 +27,10 @@ class AliMUONHit : public AliHit {
     Float_t Px()       {return fPx;}
     Float_t Py()       {return fPy;}
     Float_t Pz()       {return fPz;}
+    Float_t Cx()       {return fPx/fPTot;} // why remove existing methods ??
+    Float_t Cy()       {return fPy/fPTot;}
+    Float_t Cz()       {return fPz/fPTot;}
+
  private:
     Int_t     fChamber;       // Chamber number
     Float_t   fParticle;      // Geant3 particle type
