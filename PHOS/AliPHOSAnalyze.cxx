@@ -88,7 +88,6 @@
 #include "AliPHOSSDigitizer.h"
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSRecParticle.h"
-#include "AliPHOSIndexToObject.h"
 #include "AliPHOSCpvRecPoint.h"
 #include "AliPHOSPpsdRecPoint.h"
 #include "AliPHOSGetter.h"
