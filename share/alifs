@@ -1,0 +1,166 @@
+#!/bin/sh
+#############################################################################
+# alifs - a front-end shell for CASTOR and SHIFT
+#############################################################################
+#
+# modification history
+# $Log$
+#
+# SYNOPSIS
+# alifs <command>
+#
+# DESCRIPTION
+# This is an interface script to underlying mass storage manager. At present it supports CASTOR on RH6.1 and offers some basic Unix like commands:
+#
+# o) list directory
+#       alifs ls [-cdilRTu] [--class] [--comment] path 
+#
+# o) move (rename) file or directory
+#       alifs mv oldname newname...
+#
+# o) remove file or directory
+#       alifs rm [-f] [-i] [-r] dirname... 
+#
+# o) create directory
+#       alifs mkdir [-m absolute_mode] [-p] dirname...
+# 
+#  CASTOR file system is accessible via RFIO (root must be configured configured with --enable-rfio switch and linked with appropriate libshift.a library). It provides experiment topl level directory (/castor/cern.ch/alice) and user directories following the AFS naming scheeme (like /castor/cern.ch/user/b/buncic).
+#For more info on CASTOR commands, see related man pages (nsls, nsrename, nsrm, nsmkdir).
+#   
+#
+# AUTHOR:
+# Predrag Buncic, e-mail: Predrag.Buncic@cern.ch 
+#
+# CREATION DATE:
+# 15-Feb-2001
+#C<
+###########################################################################
+Configure()
+{
+  if [ "$CASTOR_USER_POOL" = "" ]
+  then
+    CASTOR_USER_POOL=$STAGE_POOL 
+  fi
+
+  if [ "$CASTOR_BIN" = "" ]
+  then
+    case `uname` in
+      Linux)
+         CASTOR_BIN=/afs/cern.ch/asis/packages/CASTOR/castor-1.3.1.1/i386_redhat61/usr.local/bin
+         EXEC_SHELL=/bin/sh
+         ;;
+        *) 
+         ;;
+    esac
+  fi
+
+  if [ ! -d $CASTOR_BIN ] 
+  then
+    printf "CASTOR is not supported on this platform.\n"
+    exit 255
+  fi
+
+  if [ "$EXEC_SHELL" = "" ]
+  then
+    EXEC_SHELL=bin/sh
+    for shell in bash zsh ksh
+    do
+      for dir in /bin /usr/bin /usr/local/bin
+      do
+        if [ -x $dir/$shell ]
+        then
+          EXEC_SHELL=$dir/$shell
+          break 2
+        fi
+      done
+    done
+    export EXEC_SHELL 
+    exec $EXEC_SHELL -norc  -noprofile $0 $*
+  fi
+}
+###########################################################################
+ALIFS::Usage()
+{
+   printf "Usage: alifs <command [options]>\n"
+   exit 
+}
+###########################################################################
+ALIFS::Makeman()
+###########################################################################
+{
+   mandir=../man/man4 
+   ./mangen -n tool $0
+   if [ $? -eq 0 ]
+   then
+     [ ! -d $mandir ]  && mkdir -p $mandir
+     mv `basename $0`.? $mandir
+     exit
+   fi
+}
+###########################################################################
+ALIFS::ls()
+{
+   $CASTOR_BIN/nsls $*
+}
+###########################################################################
+ALIFS::mkdir()
+{
+   $CASTOR_BIN/nsmkdir $*
+}
+###########################################################################
+ALIFS::mv()
+{
+   $CASTOR_BIN/nsrename $*
+}
+###########################################################################
+ALIFS::rm()
+{
+   $CASTOR_BIN/nsrm $*
+}
+###########################################################################
+Configure $*
+###########################################################################
+ALIFS()
+{
+  cmd=$1; shift 1
+
+  case `type -t ALIFS::$cmd` in
+     function)
+              ALIFS::$cmd $*
+              ;;
+            *) 
+              ALIFS::Usage;
+              ;;
+  esac 
+
+  exit
+}
+###########################################################################
+###########################################################################
+
+for param in $*
+do
+    case $param in
+        -trace)
+            shift 1
+            set -vx
+            ;;
+        -echo)
+            shift 1
+            ECHO="echo "
+            ;;
+        -makeman)
+            shift 1
+            ALIFS::Makeman
+            ;;
+        -p)
+            shift 1
+            POOL=$1; shift 1
+            ;;
+        *)
+            ALIFS $*
+            ;;
+    esac
+done
+
+

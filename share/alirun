@@ -5,6 +5,9 @@
 #
 # modification history
 # $Log$
+# Revision 1.4  2001/02/08 18:55:43  buncic
+# Support for writing to remote file systems (shift/castor).
+#
 # Revision 1.3  2001/02/01 18:00:23  buncic
 # Use bash in place of sh for compatibility
 #
@@ -14,7 +17,6 @@
 # Revision 1.1  2001/01/26 21:22:02  hristov
 # Major upgrade of AliRoot code
 #
-#############################################################################
 #
 # SYNOPSIS
 # alirun [[-d <TPC+ITS+..>|-all]]
@@ -40,6 +42,7 @@
 #     - Digits .............. digitisation
 #     - SDigits ............. creation of sumable digits
 #     - SDigits2Digits ...... conversion SDigits->Digits 
+#     - Reco ................ reconstruction
 #
 # -d <TPC+ITS+..> | -d all | -all 
 #    Selects detector for which <command> will be run. If none of these options was specified, an internal loop in AliRoot over all active detectors is assumed.  Otherwise, for each detector, input file(s) are re-opened in update mode, command (or macro) is executed and the file is closed. Option -all is equivalent to MUON+RICH+TOF+ITS+TPC+PHOS+PMD+CASTOR+TRD. Detectors are processed in order as they appear on the command line.   
@@ -48,7 +51,11 @@
 #    Name of the top level Root file where Root trees will be stored (branches may reside in the same file or be diverted to separate files (see -split option). By default, file is named galice.root.
 #
 # -o <directory> 
-#    A directory where output file(s) will be stored. If does not exist, it will be created. If not specified, current directory is used.
+#    A directory where output file(s) will be stored. If does not exist, it will be created. If not specified, current directory is used. One can prefix the directory name with a string indicting file transport protocols (as supported by ROOT). In addition, some file transport protocols are selected by name signatures. At present the following methods are available:
+#
+#  o) if file name begins with rfio:, shift:, castor:, hpss:, /shift, /castor, /hpss => rfio (remote file i/o) protocol (requires rfiod on server side)
+#  o) if file name begins with root:, roots: =>  root and secure root protocol (requires rootd on server side)
+#  o) if file name begins with http: => HTTP protocol (requires modified apache server on server side)
 #
 # -split
 #    If specified, this option will tell AliRoot to divert branches of Root trees into separate files.
@@ -96,6 +103,9 @@
 # -debug
 #    Execute AliRoot under gdb. 
 #
+# -debugger <command_name>
+#    Execute AliRoot under debugger other than gdb. 
+#
 # -break <breakpoint>
 #    Execute AliRoot under gdb and set <breakpoint>.
 #
@@ -103,21 +113,21 @@
 #    Create man page for alirun. 
 #   
 # EXAMPLES
-#    Run sumulation for 1 event, 100 particles and store output in file test.root in /tmp/event.1 directory:
+#    Run sumulation for 1 event, 100 particles and store output in file galice.root in /tmp/event.1 directory:
 # 
-#    alirun -o /tmp/event.1 -f test.root -p 100 -verbose -c Hits
+#    alirun -o /tmp/event.1 -p 100 -c Hits
 #
-#    Run sumulation for 1 event, 100 particles and store output in default file galice.root in /tmp/event.1 directory. In adition, divert branches of TreeD,TreeR and TreeK into separate files:
+#    Run sumulation for 1 event, 100 particles and store output in file test.root in /tmp/event.2 directory. In adition, divert branches of TreeD,TreeR and TreeK into separate files:
 #    
-#    alirun -o /tmp/event.2 -split -p 100 -verbose -c Hits
+#    alirun -o /tmp/event.2 -f test.root -split -p 100 -c Hits
 #
 #   Use output from first step and create TOF and RICH digits. Output is in the same direcory and in file test.root
 #
-#    alirun -d TOF+RICH -o /tmp/event.1 -f test.root  -verbose -c Digits
+#    alirun -d TOF+RICH -o /tmp/event.1 -c Digits
 #
 #   Use output from second step and create digits for all detectors. Output is in the same direcory and branches are diverted to separate files:
 #
-#    alirun -d all -o /tmp/event.2 -split  -verbose -c Digits
+#    alirun -d all -o /tmp/event.2 -f test.root -split -c Digits
 #
 # AUTHOR:
 #    Predrag Buncic, e-mail: Predrag.Buncic@cern.ch 
@@ -127,6 +137,7 @@
 #
 #C<
 ###########################################################################
+
 if [ "$ALIRUN_SHELL" = "" ]
 then
   ALIRUN_SHELL=bin/sh
@@ -143,6 +154,7 @@ then
   done
   exec $ALIRUN_SHELL -norc  -noprofile $0 $*
 fi
+
 ###########################################################################
 AliRun()
 ###########################################################################
@@ -168,28 +180,43 @@ Mktemp()
 }
 
 ###########################################################################
-Configure()
+ConfigureIO()
 ###########################################################################
 {
-   if [ -x /usr/local/bin/rfmkdir ] 
+   if [ "$1" != "" ]
    then
-     MKDIR="/usr/local/bin/rfmkdir"
-   else
-     MKDIR="mkdir"
-   fi
-   if [ -x /usr/local/bin/rfrm ] 
-   then
-     RMDIR="echo y | /usr/local/bin/rfrm -r"
-   else
-     RMDIR="rm -rf"
-   fi
-   if [ -x /usr/local/bin/rfstat ] 
-   then
-     STAT="/usr/local/bin/rfstat" 
-   else
-     STAT="test -d"
+      case $1 in
+         CASTOR)
+              MKDIR="alifs mkdir"
+              RMDIR="alifs rm -r"
+              STAT="/usr/local/bin/rfstat"
+              if [ "$STAGE_HOST" = "" ]
+              then
+                unset STAGE_HOST
+              fi  
+              if [ "$STAGE_POOL" = "" ]
+              then
+                unset STAGE_POOL
+              fi  
+              ;;
+         RFIO)
+              MKDIR="/usr/local/bin/rfmkdir"
+              RMDIR="echo y | /usr/local/bin/rfrm -r"
+              STAT="/usr/local/bin/rfstat" 
+              ;;
+         LOCAL)
+              MKDIR="mkdir"
+              RMDIR="rm -rf"
+              STAT="test -d"
+              ;;
+            *)
+              printf "%s I/O not yet supported by alirun.\n" $1
+              exit 255 
+              ;;
+      esac
    fi
 }
+
 
 ###########################################################################
 Cleanup()
@@ -211,13 +238,16 @@ AliRoot()
        macro=`HitsMacro`
        ;;
     Digits)
-       macro=`DigitsMacro Hits2Digits`
+       macro=`GenericMacro Hits2Digits`
        ;;
     SDigits)
-       macro=`DigitsMacro Hits2SDigits`
+       macro=`GenericMacro Hits2SDigits`
        ;;
     SDigits2Digits)
-       macro=`DigitsMacro SDigits2Digits`
+       macro=`GenericMacro SDigits2Digits`
+       ;;
+    Reco)
+       macro=`GenericMacro RunReco`
        ;;
     *.C|*.C\(*\)) 
        macro=$1
@@ -254,11 +284,15 @@ b $BREAK
 c
 where
 EOF
-    $ECHO gdb -q -x $ALIRUN_TMPDIR/gdb aliroot 
+    $ECHO $ALIRUN_DEBUGGER -q -x $ALIRUN_TMPDIR/gdb aliroot 
   else
     if [ "$VERBOSE" = "TRUE" ] 
     then
       $ECHO aliroot -q -b $macro 
+      if [ $? -ne 0 ] 
+      then
+        exit $?    
+      fi 
     else
       $ECHO aliroot -q -b $macro > $stdout 2>&1
       if [ $? -ne 0 ] 
@@ -288,7 +322,7 @@ void Simulate()
 {
    TFile *file = TFile::Open(gSystem->Getenv("CONFIG_FILE"),"recreate");
 
-   //file->UseCache();
+   $USE_CACHE;
 
    file->SetCompressionLevel(2);
 
@@ -305,17 +339,17 @@ EOF
 }
 
 ###########################################################################
-DigitsMacro()
+GenericMacro()
 ###########################################################################
 {
   mode=$1
 
-  macro=$ALIRUN_TMPDIR/Digitize.C 
+  macro=$ALIRUN_TMPDIR/$mode.C 
 
   cat <<EOF> $macro
 
 ////////////////////////////////////////////////////////////////////////////
-void Digitize()
+void $mode()
 {
    TFile *file = TFile::Open(gSystem->Getenv("CONFIG_FILE"),"update");
    if (! file ) {
@@ -324,7 +358,7 @@ void Digitize()
    }
    file->SetCompressionLevel(2);
 
-   //file->UseCache();
+   $USE_CACHE;
 
    if (gAlice) delete gAlice;
    
@@ -393,20 +427,19 @@ AliRunDigits()
   fi
 }
 
-
-###########################################################################
-Configure;
 ###########################################################################
 
-ALL="MUON RICH TOF ITS TPC PHOS PMD CASTOR ZDC TRD"; # export ALL
-DETECTORS="";                                        # export DETECTORS
+ALL="MUON RICH TOF ITS TPC PHOS PMD CASTOR ZDC TRD"; 
+DETECTORS="";                                        
 FILE="galice.root";  
 
 CONFIG=$ALICE_ROOT/macros/Config.C;                  export CONFIG
 CONFIG_NPARTICLES=50;                                export CONFIG_NPARTICLES
 CONFIG_PATH=`pwd`;                                   export CONFIG_PATH
+CONFIG_BATCH="TRUE";                                 export CONFIG_BATCH
 
 ALIRUN_TMPDIR=`Mktemp`; export ALIRUN_TMPDIR
+ALIRUN_DEBUGGER=gdb
 
 DEBUG="FALSE"
 BREAK=""
@@ -416,6 +449,7 @@ CMDLIST="Usage"
 FORK="FALSE"
 FORK_LSF="FALSE"
 ECHO=""
+USE_CACHE="file->UseCache()"
 
 if [ -x /usr/local/lsf/bin/lsrun ] 
 then
@@ -437,6 +471,10 @@ do
         -debug)
             shift 1
             DEBUG="TRUE"
+            ;;
+        -debugger)
+            shift 1
+            ALIRUN_DEBUGGER=$1
             ;;
         -break)
             shift 1
@@ -507,6 +545,10 @@ do
             shift 1
             CONFIG_SEED=$1; export CONFIG_SEED
             ;;
+        -nocache)
+            shift 1
+            USE_CACHE=""
+            ;;
         -c) 
             shift 1
             CMDLIST=$*
@@ -514,7 +556,12 @@ do
             ;;
         -C) 
             shift 1
-            CONFIG=$1; export CONFIG
+            CONFIG=$1;
+            if [ `dirname $CONFIG` = "." ]
+            then
+              CONFIG=`pwd`/$CONFIG
+            fi 
+            export CONFIG             
             ;;
         *)
             shift 1
@@ -530,36 +577,56 @@ else
 fi
 
 case $CONFIG_OUTDIR in
-  rfio:*|/shift/*|shift:*|/castor/*|castor:*)
-          ROOT_FILE_TYPE="rfio:"
+  rfio:*|/shift/*|shift:*)
+          CONFIG_FILE_PREFIX="rfio:"
+          ConfigureIO RFIO
+          ;;
+  /castor/*|castor:*|hpss:*)
+          CONFIG_FILE_PREFIX="rfio:"
+          ConfigureIO CASTOR
+          ;;
+  hpss:*)
+          CONFIG_FILE_PREFIX="rfio:"
+          ConfigureIO RFIO
           ;;
   root:*)
-          ROOT_FILE_TYPE="root:"
+          CONFIG_FILE_PREFIX="root:"
+          ConfigureIO ROOT
+          ;;
+  roots:*)
+          CONFIG_FILE_PREFIX="roots:"
+          ConfigureIO ROOT
           ;;
   http:*)
-          ROOT_FILE_TYPE="http:"
+          CONFIG_FILE_PREFIX="http:"
+          ConfigureIO HTTP
           ;;
   file:*)
-          ROOT_FILE_TYPE=""
+          CONFIG_FILE_PREFIX=""
+          ConfigureIO LOCAL
           ;;
+       /*)
+          CONFIG_FILE_PREFIX=""
+          ConfigureIO LOCAL
+          ;; 
         *)
-          ROOT_FILE_TYPE=""
+          CONFIG_FILE_PREFIX=`pwd`/
+          ConfigureIO LOCAL
           ;; 
 esac
 
 export CONFIG_OUTDIR
-export CONFIG_ROOT_FILE_TYPE
+export CONFIG_FILE_PREFIX
 
-for dir in $CONFIG_OUTDIR $ALIRUN_TMPDIR
-do
-  $STAT $dir > /dev/null 2>&1
-  if [ $? -ne 0 ] 
-  then 
-    $MKDIR -p $dir
-  fi
-done
+$STAT $CONFIG_OUTDIR > /dev/null 2>&1
+if [ $? -ne 0 ] 
+then 
+  $MKDIR -p $CONFIG_OUTDIR
+fi
 
-CONFIG_FILE=$ROOT_FILE_TYPE$CONFIG_OUTDIR/$FILE; export CONFIG_FILE
+mkdir -p $ALIRUN_TMPDIR
+
+CONFIG_FILE=$CONFIG_FILE_PREFIX$CONFIG_OUTDIR/$FILE; export CONFIG_FILE
 
 trap Cleanup 2
 
