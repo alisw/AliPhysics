@@ -119,7 +119,7 @@ void AliPHOSSDigitizer::Init()
   
   if( strcmp(GetTitle(), "") == 0 )
     SetTitle("galice.root") ;
-  
+
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), GetName()) ;     
   if ( gime == 0 ) {
     cerr << "ERROR: AliPHOSSDigitizer::Init -> Could not obtain the Getter object !" << endl ; 
@@ -230,7 +230,7 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     }
 
     if(gAlice->TreeS() == 0)
-      gAlice->MakeTree("S",fSplitFile);
+      gAlice->MakeTree("S", fSplitFile);
     
     //First list of sdigits
     Int_t bufferSize = 32000 ;    
@@ -339,9 +339,8 @@ void AliPHOSSDigitizer::SetSplitFile(const TString splitFileName)
     AliceGeom->Write();
   }
 
-  cwd->cd() ; 
   gAlice->MakeTree("S",fSplitFile);
-  cout << "INFO: AliPHOSSDigitizer::SetSPlitFile -> SDigits will be stored in " << splitFileName.Data() << endl ; 
+  cwd->cd() ; 
 }
 
 //__________________________________________________________________
