@@ -164,9 +164,10 @@ Int_t AliEMCALGeometry::TowerIndex(Int_t ieta,Int_t iphi) const {
   //   Int_t index // Tower index number 
   
   if ( (ieta <= 0 || ieta>GetNEta()) || 
-       (iphi <= 0 || iphi>GetNPhi())) 
-    Fatal("TowerIndex", "Unexpected parameters eta = %d phi = %d!", ieta, iphi) ; 
-  
+       (iphi <= 0 || iphi>GetNPhi())) {
+    Error("TowerIndex", "Unexpected parameters eta = %d phi = %d!", ieta, iphi) ; 
+    return -1;
+  }
   return ( (iphi - 1)*GetNEta() + ieta ); 
 }
 
@@ -185,9 +186,13 @@ void AliEMCALGeometry::TowerIndexes(Int_t index,Int_t &ieta,Int_t &iphi) const {
   if ( IsInECA(index) ) { // ECAL index
     nindex = index ;
   }
-  else 
-    Fatal("TowerIndexes", "Unexpected Id number!") ;
-   
+  else {
+    Error("TowerIndexes", "Unexpected Id number!") ;
+    ieta = -1;
+    iphi = -1;
+    return;
+  }   
+
   if (nindex%GetNZ()) 
     iphi = nindex / GetNZ() + 1 ; 
   else 
@@ -322,8 +327,10 @@ void AliEMCALGeometry::PosInAlice(Int_t absid, Float_t &theta, Float_t &phi) con
   Float_t d = 0. ; 
   if (IsInECA(absid))
     d = GetIP2ECASection() - GetIPDistance() ; 
-  else 
-    Fatal("PosInAlice", "Unexpected id # %d!", absid) ; 
+  else {
+    Error("PosInAlice", "Unexpected id # %d!", absid) ; 
+    return;
+  }
 
   Float_t correction = 1 + d/GetIPDistance() ; 
   Float_t tantheta = TMath::Tan(theta) * correction ; 
@@ -384,8 +391,10 @@ void AliEMCALGeometry::XYZFromIndex(Int_t absid,  TVector3 &v) const {
     
     if ( IsInECA(absid) ) 
       cylradius = GetIP2ECASection() ;
-    else 
-      Fatal("XYZFromIndex", "Unexpected Tower section") ;  
+    else {
+      Error("XYZFromIndex", "Unexpected Tower section") ;
+      return;
+    }
 
     Double_t  kDeg2Rad = TMath::DegToRad() ; 
     v.SetX(cylradius * TMath::Cos(phi * kDeg2Rad ) );
