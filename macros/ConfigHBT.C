@@ -48,6 +48,11 @@ void Config()
     // Set Random Number seed
     // gRandom->SetSeed(12345);
 
+   // libraries required by geant321
+#if defined(__CINT__)
+    gSystem->Load("libgeant321");
+#endif
+
     new     TGeant3("C++ Interface to Geant3");
 
     cout<<"Config.C: Creating Run Loader ..."<<endl;
