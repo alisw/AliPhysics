@@ -21,52 +21,52 @@
 //
 // The L3 Binary File handler 
 //
-/**
-  This class does all the memory I/O handling on raw binary files.
-  For the moment the compressed binary files are run-length encoded, using
-  10 bit digits.
+//
+//  This class does all the memory I/O handling on raw binary files.
+//  For the moment the compressed binary files are run-length encoded, using
+//  10 bit digits.
+//  
+//  Examples:
+//  
+//  1) Reading a binary file:
+//  
+//  AliL3MemHandler file;
+//  file.SetBinaryInput(filename);
+//  
+//  UInt_t ndigits;
+//  AliL3DigitRowData *data = file.CompBinary2Memory(ndigits);
+//  
+//  for(int i=0; i<NumberOfRowsInPatch; i++) 
+//    {
+//    
+//    AliL3DigitData *dataPt = (AliL3DigitData*)data->fDigitData;
+//    for(int j=0; j<data->fNDigit; j++) 
+//      {
+//      pad = dataPt[j].fPad;
+//      time = dataPt[j].fTime;
+//      charge = dataPt[j].fCharge;
+//     }
+//     
+//    file.UpdateRowPointer(data);
+//  
+//    }
+//  file.CloseBinaryInput();
+//  ________________________
+//  
+//  2) Writing a binary file:
+//  
+//  //First of all you need to store the data in memory,
+//  //and have a pointer to it of type AliL3DigitRowData.
+//  //E.g. if you just want to write the data you read in example 1)
+//  //into a new file, you can do the following:
+//  
+//  AliL3MemHandler newfile;
+//  newfile.SetBinaryOutput(newfilename);
+//  newfile.Memory2CompBinary((UInt_t)NumberOfRowsInPatch,(AliL3DigitRowData*)data);
+//  newfile.CloseBinaryOutput();
   
-  Examples:
   
-  1) Reading a binary file:
-  
-  AliL3MemHandler file;
-  file.SetBinaryInput(filename);
-  
-  UInt_t ndigits;
-  AliL3DigitRowData *data = file.CompBinary2Memory(ndigits);
-  
-  for(int i=0; i<NumberOfRowsInPatch; i++) 
-    {
-    
-    AliL3DigitData *dataPt = (AliL3DigitData*)data->fDigitData;
-    for(int j=0; j<data->fNDigit; j++) 
-      {
-      pad = dataPt[j].fPad;
-      time = dataPt[j].fTime;
-      charge = dataPt[j].fCharge;
-      }
-      
-    file.UpdateRowPointer(data);
-  
-    }
-  file.CloseBinaryInput();
-  ________________________
-  
-  2) Writing a binary file:
-  
-  //First of all you need to store the data in memory,
-  //and have a pointer to it of type AliL3DigitRowData.
-  //E.g. if you just want to write the data you read in example 1)
-  //into a new file, you can do the following:
-  
-  AliL3MemHandler newfile;
-  newfile.SetBinaryOutput(newfilename);
-  newfile.Memory2CompBinary((UInt_t)NumberOfRowsInPatch,(AliL3DigitRowData*)data);
-  newfile.CloseBinaryOutput();
-  
-  
-*/
+
 ClassImp(AliL3MemHandler)
 
 AliL3MemHandler::AliL3MemHandler()
@@ -95,7 +95,7 @@ AliL3MemHandler::AliL3MemHandler()
 
 AliL3MemHandler::~AliL3MemHandler()
 {
-  ///Destructor
+  //Destructor
   if(fPt) delete[] fPt;
   if(fDigits) delete [] fDigits;
   if(fDPt) delete [] fDPt;
@@ -103,7 +103,7 @@ AliL3MemHandler::~AliL3MemHandler()
 
 void AliL3MemHandler::ResetROI()
 {
-  //*Resets the Look-up table for Region of Interest mode.
+  //Resets the Look-up table for Region of Interest mode.
   
   for(Int_t i=fRowMin; i<=fRowMax; i++)
     {
@@ -115,15 +115,14 @@ void AliL3MemHandler::ResetROI()
 
 void AliL3MemHandler::SetROI(Float_t *eta,Int_t *slice)
 {
-  /**
-     Init the Look-up table for the Region of Interest mode.
-     Here you can specify a certain etaregion, - all data
-     outside this region will be discarded:
-     eta[0] = mimium eta
-     eta[1] = maximum eta
-     slice[0] = mimumum slice
-     slice[1] = maximum slice
-  */
+  // Init the Look-up table for the Region of Interest mode.
+  //   Here you can specify a certain etaregion, - all data
+  //   outside this region will be discarded:
+  //   eta[0] = mimium eta
+  //   eta[1] = maximum eta
+  //   slice[0] = mimumum slice
+  //   slice[1] = maximum slice
+  
   if(eta[1]==0)
     {
       LOG(AliL3Log::kWarning,"AliL3MemHandler::SetROI","Eta Values")
@@ -169,9 +168,8 @@ void AliL3MemHandler::SetROI(Float_t *eta,Int_t *slice)
 
 Bool_t AliL3MemHandler::SetBinaryInput(char *name)
 {
-  /**
-     Set the input binary file.
-   */
+  //Set the input binary file.
+
   fInBinary = fopen(name,"r");
   if(!fInBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::SetBinaryInput","File Open")
@@ -183,9 +181,8 @@ Bool_t AliL3MemHandler::SetBinaryInput(char *name)
 
 Bool_t AliL3MemHandler::SetBinaryInput(FILE *file)
 {
-  /**
-     Set the input binary file.
-   */
+  //Set the input binary file.
+
   fInBinary = file;
   if(!fInBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::SetBinaryInput","File Open")
@@ -197,9 +194,8 @@ Bool_t AliL3MemHandler::SetBinaryInput(FILE *file)
 
 void AliL3MemHandler::CloseBinaryInput()
 {
-  /**
-     Close the input file.
-   */
+  //Close the input file.
+
   if(!fInBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::CloseBinaryInput","File Close")
       <<"Nothing to Close"<<ENDLOG;
@@ -211,9 +207,7 @@ void AliL3MemHandler::CloseBinaryInput()
 
 Bool_t AliL3MemHandler::SetBinaryOutput(char *name)
 {
-  /**
-     Set the binary output file.
-  */
+  //Set the binary output file.
   fOutBinary = fopen(name,"w");
   if(!fOutBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::SetBinaryOutput","File Open")
@@ -225,9 +219,8 @@ Bool_t AliL3MemHandler::SetBinaryOutput(char *name)
 
 Bool_t AliL3MemHandler::SetBinaryOutput(FILE *file)
 {
-  /**
-     Set the binary output file.
-  */
+  //Set the binary output file.
+  
   fOutBinary = file;
   if(!fOutBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::SetBinaryOutput","File Open")
@@ -251,9 +244,8 @@ void AliL3MemHandler::CloseBinaryOutput()
 
 UInt_t AliL3MemHandler::GetFileSize()
 {
-  /**
-     Returns the file size in bytes of the input file.
-   */
+  //Returns the file size in bytes of the input file.
+  
   if(!fInBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::GetFileSize","File")
       <<"No Input File"<<ENDLOG;
@@ -272,9 +264,8 @@ Byte_t *AliL3MemHandler::Allocate()
 
 Byte_t *AliL3MemHandler::Allocate(AliL3TrackArray *array)
 {
-  /**
-     Allocate memory for tracks in memory. Used by TrackArray2Binary()
-  */
+  //Allocate memory for tracks in memory. Used by TrackArray2Binary()
+  
   if(!array){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::Allocate","Memory")
       <<"Pointer to AliL3TrackArray = 0x0 "<<ENDLOG;
@@ -285,9 +276,8 @@ Byte_t *AliL3MemHandler::Allocate(AliL3TrackArray *array)
 
 Byte_t *AliL3MemHandler::Allocate(UInt_t size)
 {
-  /**
-     Allocate memory of size in bytes.
-  */
+  //Allocate memory of size in bytes.
+  
   if(fPt){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::Allocate","Memory")
       <<"Delete Memory"<<ENDLOG;
@@ -303,9 +293,8 @@ Byte_t *AliL3MemHandler::Allocate(UInt_t size)
 
 void AliL3MemHandler::Free()
 {
-  /**
-     Clear the memory, if allocated.
-   */
+  //Clear the memory, if allocated.
+  
   if(!fPt){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::Free","Memory")
       <<"No Memory allocated - can't Free"<<ENDLOG;
@@ -319,18 +308,15 @@ void AliL3MemHandler::Free()
 ///////////////////////////////////////// Random
 void AliL3MemHandler::SetRandomSeed()
 {
-  /**
-     If you are adding random data to the original data.
-   */
+  //If you are adding random data to the original data.
   time_t *tp=0;
   SetRandomSeed(time(tp));
 }
 
 void AliL3MemHandler::SetRandomCluster(Int_t maxnumber)
 {
-  /**
-     If you are adding random data to the original data.
-   */
+  //If you are adding random data to the original data.
+  
   IsRandom = kTRUE;
   fNRandom = maxnumber;
   fNDigits = 0;
@@ -343,9 +329,9 @@ void AliL3MemHandler::SetRandomCluster(Int_t maxnumber)
 void AliL3MemHandler::QSort(AliL3RandomDigitData **a, Int_t first, Int_t last)
 {
   
-  //* Sort array of AliL3RandomDigitData pointers using a quicksort algorithm.
-  //* Uses CompareDigits() to compare objects.
-  //* Thanks to Root!
+  // Sort array of AliL3RandomDigitData pointers using a quicksort algorithm.
+  // Uses CompareDigits() to compare objects.
+  // Thanks to Root!
   
   static AliL3RandomDigitData *tmp;
   static int i;           // "static" to save stack space
@@ -395,9 +381,8 @@ UInt_t AliL3MemHandler::GetRandomSize()
 
 void AliL3MemHandler::Generate(Int_t row)
 {
-  /**
-     Generate random data on row, if you didn't ask for this, nothing happens here.
-   */
+  //Generate random data on row, if you didn't ask for this, nothing happens here.
+  
   if(!IsRandom) return;
   ResetRandom();
   fNDigits = 0;
@@ -422,9 +407,7 @@ void AliL3MemHandler::Generate(Int_t row)
 void AliL3MemHandler::DigitizePoint(Int_t row, Int_t pad, 
 				    Int_t time,Int_t charge)
 {
-  /**
-     Making one single random cluster.
-   */
+  //Making one single random cluster.
   for(Int_t j=-1;j<2;j++){
     for(Int_t k=-1;k<2;k++){
       Int_t dcharge = charge;
@@ -450,10 +433,8 @@ void AliL3MemHandler::DigitizePoint(Int_t row, Int_t pad,
 ///////////////////////////////////////// Digit IO  
 Bool_t AliL3MemHandler::Memory2Binary(UInt_t nrow,AliL3DigitRowData *data)
 {
-  /**
-     Write data to the outputfile as is. No run-length encoding is done.
+  //Write data to the outputfile as is. No run-length encoding is done.
   
-   */
   if(!fOutBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::Memory2Binary","File")
       <<"No Output File"<<ENDLOG;
@@ -484,10 +465,9 @@ Bool_t AliL3MemHandler::Memory2Binary(UInt_t nrow,AliL3DigitRowData *data)
 
 Bool_t AliL3MemHandler::Binary2Memory(UInt_t & nrow,AliL3DigitRowData *data)
 {
-  /**
-     Read inputfile into memory as is, and store it in data. No run-length encoding
-     is assumed.
-   */
+  //Read inputfile into memory as is, and store it in data. No run-length encoding
+  // is assumed.
+
   if(!fInBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::Binary2Memory","File")
       <<"No Input File"<<ENDLOG;
@@ -609,10 +589,8 @@ UShort_t AliL3MemHandler::Test(UInt_t *comp,
 Int_t AliL3MemHandler::Memory2CompMemory(UInt_t nrow,
 					 AliL3DigitRowData *data,UInt_t *comp)
 {
-  /**
-     Performs run-length encoding on data stored in memory pointed to by data.
-     The compressed data is written to comp.
-   */
+  //Performs run-length encoding on data stored in memory pointed to by data.
+  //The compressed data is written to comp.
   if(!comp){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::Memory2CompMemory","Memory")
       <<"Pointer to compressed data = 0x0 "<<ENDLOG;
@@ -693,10 +671,9 @@ Int_t AliL3MemHandler::Memory2CompMemory(UInt_t nrow,
 Int_t AliL3MemHandler::CompMemory2Memory(UInt_t  nrow,
 					 AliL3DigitRowData *data,UInt_t *comp)
 {
-  /**
-     Uncompress the run-length encoded data in memory pointed to by comp, and
-     store it in data.
-   */
+  //Uncompress the run-length encoded data in memory pointed to by comp, and
+  //  store it in data.
+   
   if(!comp){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::CompMemory2Memory","Memory")
       <<"Pointer to compressed data = 0x0 "<<ENDLOG;
@@ -754,9 +731,8 @@ Int_t AliL3MemHandler::CompMemory2Memory(UInt_t  nrow,
 
 UInt_t AliL3MemHandler::GetCompMemorySize(UInt_t nrow,AliL3DigitRowData *data)
 {
-  /**
-     Return the size of RLE data, after compressing data.
-   */
+  //Return the size of RLE data, after compressing data.
+  
   if(!data){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::GetCompMemorySize","Memory")
       <<"Pointer to AliL3DigitRowData = 0x0 "<<ENDLOG;
@@ -894,10 +870,7 @@ UInt_t AliL3MemHandler::GetNRow(UInt_t *comp,UInt_t size)
 Bool_t AliL3MemHandler::CompMemory2CompBinary(UInt_t nrow,UInt_t *comp,
 					      UInt_t size)
 {
-  /**
-     Write the RLE data in comp to the output file.
-     
-  */
+  //Write the RLE data in comp to the output file.
   
   if(!fOutBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::CompMemory2CompBinary","File")
@@ -924,9 +897,8 @@ Bool_t AliL3MemHandler::CompMemory2CompBinary(UInt_t nrow,UInt_t *comp,
 
 Bool_t AliL3MemHandler::CompBinary2CompMemory(UInt_t & nrow,UInt_t *comp)
 {
-  /**
-     Read the RLE data from file, and store it in comp. No unpacking yet.
-   */
+  //Read the RLE data from file, and store it in comp. No unpacking yet.
+
   if(!fInBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::CompBinary2CompMemory","File")
       <<"No Output File"<<ENDLOG;
@@ -949,10 +921,8 @@ Bool_t AliL3MemHandler::CompBinary2CompMemory(UInt_t & nrow,UInt_t *comp)
 
 AliL3DigitRowData *AliL3MemHandler::CompBinary2Memory(UInt_t & nrow)
 {
-  /**
-     Read the RLE inputfile, unpack it and return the pointer to it.
-     
-   */
+  // Read the RLE inputfile, unpack it and return the pointer to it.
+  
   AliL3MemHandler * handler = new AliL3MemHandler();
   handler->SetBinaryInput(fInBinary);
   UInt_t *comp =(UInt_t *)handler->Allocate();
@@ -967,9 +937,7 @@ AliL3DigitRowData *AliL3MemHandler::CompBinary2Memory(UInt_t & nrow)
 
 Bool_t AliL3MemHandler::Memory2CompBinary(UInt_t nrow,AliL3DigitRowData *data)
 {
-  /**
-     Perform RLE on the data, and write it to the output file.
-   */
+  //Perform RLE on the data, and write it to the output file.
   Bool_t out = kTRUE;
   AliL3MemHandler * handler = new AliL3MemHandler();
   UInt_t size = GetCompMemorySize(nrow,data);
@@ -985,9 +953,7 @@ Bool_t AliL3MemHandler::Memory2CompBinary(UInt_t nrow,AliL3DigitRowData *data)
 ///////////////////////////////////////// Point IO  
 Bool_t AliL3MemHandler::Memory2Binary(UInt_t npoint,AliL3SpacePointData *data)
 {
-  /**
-     Writing spacepoints stored in data to the outputfile.
-   */
+  //Writing spacepoints stored in data to the outputfile.
   if(!fOutBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::Memory2Binary","File")
       <<"No Output File"<<ENDLOG;
@@ -1007,10 +973,7 @@ Bool_t AliL3MemHandler::Memory2Binary(UInt_t npoint,AliL3SpacePointData *data)
 Bool_t AliL3MemHandler::Transform(UInt_t npoint,AliL3SpacePointData *data,
 				  Int_t slice, AliL3Transform* trans)
 {
-  /**
-     Transform the space points in data, to global coordinates in slice.
-     
-   */
+  //Transform the space points in data, to global coordinates in slice.
   if(!data){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::Transform","Memory")
     <<"Pointer to AliL3SpacePointData = 0x0 "<<ENDLOG;
@@ -1036,9 +999,7 @@ Bool_t AliL3MemHandler::Transform(UInt_t npoint,AliL3SpacePointData *data,
 
 Bool_t AliL3MemHandler::Binary2Memory(UInt_t & npoint,AliL3SpacePointData *data)
 {
-  /**
-     Read the space points in inputfile, and store it in data.
-   */
+  //Read the space points in inputfile, and store it in data.
   if(!fInBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::Binary2Memory","File")
     <<"No Input File"<<ENDLOG;
@@ -1105,9 +1066,7 @@ Bool_t AliL3MemHandler::Binary2Memory(UInt_t & npoint,AliL3SpacePointData *data)
 ///////////////////////////////////////// Track IO  
 Bool_t AliL3MemHandler::Memory2Binary(UInt_t ntrack,AliL3TrackSegmentData *data)
 {
-  /**
-     Write the tracks stored in data, to outputfile.
-   */
+  //Write the tracks stored in data, to outputfile.
   if(!fOutBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::Memory2Binary","File")
     <<"No Output File"<<ENDLOG;
@@ -1134,9 +1093,8 @@ Bool_t AliL3MemHandler::Memory2Binary(UInt_t ntrack,AliL3TrackSegmentData *data)
 
 Bool_t AliL3MemHandler::Binary2Memory(UInt_t & ntrack,AliL3TrackSegmentData *data)
 {
-  /**
-     Read the tracks in inputfile, and store it in data.
-   */
+  //Read the tracks in inputfile, and store it in data.
+  
   if(!fInBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::Binary2Memory","File")
     <<"No Input File"<<ENDLOG;
@@ -1202,9 +1160,7 @@ Bool_t AliL3MemHandler::Binary2Memory(UInt_t & ntrack,AliL3TrackSegmentData *dat
 
 Bool_t AliL3MemHandler::TrackArray2Binary(AliL3TrackArray *array)
 {
-  /**
-     Write the trackarray to the outputfile.
-   */
+  //Write the trackarray to the outputfile.
   if(!fOutBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::TrackArray2Binary","File")
     <<"No Output File"<<ENDLOG;
@@ -1225,10 +1181,8 @@ Bool_t AliL3MemHandler::TrackArray2Binary(AliL3TrackArray *array)
 
 Bool_t AliL3MemHandler::Binary2TrackArray(AliL3TrackArray *array)
 {
-  /**
-     Read the tracks in inputfile, and fill it in trackarray. 
-     array should already be constructed.
-   */
+  //Read the tracks in inputfile, and fill it in trackarray. 
+  //array should already be constructed.
   if(!fInBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::Binary2TrackArray","File")
     <<"No Input File"<<ENDLOG;
@@ -1249,9 +1203,7 @@ Bool_t AliL3MemHandler::Binary2TrackArray(AliL3TrackArray *array)
 
 Bool_t AliL3MemHandler::TrackArray2Memory(UInt_t & ntrack,AliL3TrackSegmentData *data,AliL3TrackArray *array)
 {
-  /**
-     Fill the trackarray into the AliTrackSegmentData structures before writing to outputfile.
-   */
+  //Fill the trackarray into the AliTrackSegmentData structures before writing to outputfile.
   if(!data){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::TrackArray2Memory","Memory")
     <<"Pointer to AliL3TrackSegmentData = 0x0 "<<ENDLOG;
@@ -1268,9 +1220,8 @@ Bool_t AliL3MemHandler::TrackArray2Memory(UInt_t & ntrack,AliL3TrackSegmentData 
 
 Bool_t AliL3MemHandler::Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *data,AliL3TrackArray *array)
 {
-  /**
-     Fill the tracks in data into trackarray.
-   */
+  //Fill the tracks in data into trackarray.
+  
   if(!data){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::Memory2TrackArray","Memory")
     <<"Pointer to AliL3TrackSegmentData = 0x0 "<<ENDLOG;
@@ -1288,9 +1239,8 @@ Bool_t AliL3MemHandler::Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *d
 Bool_t AliL3MemHandler::Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *data,AliL3TrackArray *array,Int_t slice,
 					  AliL3Transform* trans)
 {
-  /**
-     Fill the tracks in data into trackarray, and rotate the tracks to global coordinates.
-   */
+  //Fill the tracks in data into trackarray, and rotate the tracks to global coordinates.
+  
   if(!data){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::Memory2TrackArray","Memory")
     <<"Pointer to AliL3TrackSegmentData = 0x0 "<<ENDLOG;
