@@ -118,6 +118,7 @@ void AliPHOSGeometry::Init(void)
   else {
     fgInit = kFALSE ; 
     cout << "PHOS Geometry setup: option not defined " << fName << endl ; 
+    abort() ; 
   }
 }
 
