@@ -22,7 +22,7 @@ const Int_t kMAXZOOMS = 20;
 
 class AliDisplay : public TObject {
 
-private:
+protected:
    Int_t             fZoomMode;             //=1 if in zoom mode
    Bool_t            fDrawAllViews;         //Flag True if AllViews selected
    Bool_t            fDrawParticles;        //Flag True if particles to be drawn
