@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.4  2000/06/15 15:46:59  jbarbosa
+  Corrected compilation errors on HP-UX (replaced pow with TMath::Power)
+
   Revision 1.3  2000/06/13 13:15:41  jbarbosa
   Still some code cleanup done (variable names)
 
@@ -295,7 +298,7 @@ void AliRICHDetect::Detect()
 
     //Start filling rec. hits
     
-    Float_t rechit[5];
+    Float_t rechit[6];
     
     rechit[0] = (Float_t)( maxi*kPi/(kDimensionTheta*4));
     rechit[1]   = (Float_t)( maxj*kPi/(kDimensionPhi*4));
@@ -305,11 +308,12 @@ void AliRICHDetect::Detect()
     //rechit[2] = (Float_t)( maxk);
     rechit[3] = cx;
     rechit[4] = cy;
+    rechit[5] = 0.5;
     
     //printf ("track %d, theta %f, phi %f, omega %f\n\n\n",track,rechit[0],rechit[1],rechit[2]);
     
     // fill rechits
-    pRICH->AddRecHit(nch-1,rechit);
+    //pRICH->AddRecHit(nch-1,rechit);
   }			
   //printf("\n\n\n\n");
   gAlice->TreeR()->Fill();
