@@ -54,25 +54,25 @@ G4double TG4G3Defaults::CutValue(G4int g3Cut)
 
   switch (g3Cut) {
     case kCUTGAM:  
-      return fgkCUTGAM; break;
+      return fgkCUTGAM;
     case kCUTELE:  
-      return fgkCUTELE; break;
+      return fgkCUTELE;
     case kCUTNEU:  
-      return fgkCUTNEU; break;
+      return fgkCUTNEU;
     case kCUTHAD:  
-      return fgkCUTHAD; break;
+      return fgkCUTHAD;
     case kCUTMUO:  
-      return fgkCUTMUO; break;
+      return fgkCUTMUO;
     case kBCUTE:   
-      return fgkBCUTE;  break;
+      return fgkBCUTE; 
     case kBCUTM:   
-      return fgkBCUTM;  break; 
+      return fgkBCUTM; 
     case kDCUTE:   
-      return fgkDCUTE;  break;
+      return fgkDCUTE; 
     case kDCUTM:   
-      return fgkDCUTM;  break;
+      return fgkDCUTM; 
     case kPPCUTM:  
-      return fgkPPCUTM; break;
+      return fgkPPCUTM;
     default:
       TG4Globals::Warning("TG4G3Defaults::CutValue: Inconsistent cut.");
       return 0.;      
@@ -86,29 +86,29 @@ TG3FlagValue TG4G3Defaults::FlagValue(G4int g3Flag)
 
   switch (g3Flag) {
     case kPAIR:
-      return fgkPAIR; break;
+      return fgkPAIR;
     case kCOMP:
-      return fgkCOMP; break;
+      return fgkCOMP;
     case kPHOT:
-      return fgkPHOT; break;
+      return fgkPHOT;
     case kPFIS:
-      return fgkPFIS; break;
+      return fgkPFIS;
     case kDRAY:
-      return fgkDRAY; break;
+      return fgkDRAY;
     case kANNI:
-      return fgkANNI; break;
+      return fgkANNI;
     case kBREM:
-      return fgkBREM; break;
+      return fgkBREM;
     case kHADR:
-      return fgkHADR; break;
+      return fgkHADR;
     case kMUNU:
-      return fgkMUNU; break;
+      return fgkMUNU;
     case kDCAY:
-      return fgkDCAY; break;
+      return fgkDCAY;
     case kLOSS:
-      return fgkLOSS; break;
+      return fgkLOSS;
     case kMULS:
-      return fgkMULS; break;
+      return fgkMULS;
     default:
       TG4Globals::Warning("TG4G3Defaults::FlagValue: Inconsistent flag.");
       return kUnset;      
