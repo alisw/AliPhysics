@@ -61,9 +61,7 @@ class AliPHOSGetter : public TObject {
     abort() ; 
   } 
   
-  virtual ~AliPHOSGetter(){
-    // dtor
-  }
+  virtual ~AliPHOSGetter() ; 
   
   Bool_t PostGeometry( void ) const ;  
   Bool_t PostHits(void ) const ;  
