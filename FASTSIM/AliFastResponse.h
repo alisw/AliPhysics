@@ -11,7 +11,7 @@ class AliFastParticle;
 class AliFastResponse : public TNamed {
  public:
     AliFastResponse(){;}
-    AliFastResponse(char* Name, char* Title) : TNamed(Name, Title) {}
+    AliFastResponse(const char* Name, const char* Title): TNamed(Name, Title){}
     virtual ~AliFastResponse(){}
     virtual void    Init()                                                  = 0;
     virtual Float_t Evaluate(Float_t  /*pt*/,  Float_t  /*theta*/ , Float_t   /*phi*/)

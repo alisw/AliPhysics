@@ -18,6 +18,12 @@ class AliFastMuonTriggerEff : public AliFastResponse {
     virtual void    Evaluate(Float_t charge, Float_t pt, Float_t theta, Float_t phi,
 			     Float_t& effLow, Float_t& effHigh);
     virtual Float_t Evaluate(Float_t charge, Float_t pt, Float_t theta, Float_t phi);
+    virtual Float_t Evaluate(Float_t pt, Float_t theta, Float_t phi) {
+      return AliFastResponse::Evaluate(pt, theta, phi);
+    }
+    virtual Float_t Evaluate(AliFastParticle* part) {
+      return AliFastResponse::Evaluate(part);
+    }
     virtual void    SetCut(Int_t cut = kLow) {fCut = cut;}
     virtual Float_t Cut() {return fCut;}
   protected:

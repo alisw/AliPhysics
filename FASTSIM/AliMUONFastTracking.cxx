@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2003/11/13 14:21:57  morsch
+Coding Rule violation corrections.
+
 Revision 1.6  2003/08/12 15:16:25  morsch
 Saver initialisation of fFitp  array. (Lenaic COUEDEL)
 
@@ -814,7 +817,7 @@ AliMUONFastTracking& AliMUONFastTracking::operator=(const  AliMUONFastTracking& 
     return *this;
 }
 
-void AliMUONFastTracking::Copy(AliMUONFastTracking&) const
+void AliMUONFastTracking::Copy(TObject&) const
 {
     //
     // Copy 
