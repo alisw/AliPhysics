@@ -3,16 +3,16 @@
 //
 // See the class description in the header file.
 
-#include "TG4SpecialFlags.h"
+#include "TG4SpecialControls.h"
 #include "TG4Limits.h"
 
 #include <G4StepStatus.hh>
 #include <G4ProcessManager.hh>
 #include <G4ProcessVector.hh>
 
-TG4SpecialFlags::TG4SpecialFlags(const G4String& aName)
+TG4SpecialControls::TG4SpecialControls(const G4String& aName)
   : G4VProcess(aName),
-    fSwitchFlags(kUnswitch)
+    fSwitchControls(kUnswitch)
 {
    // verboseLevel = 1;
    if (verboseLevel>0) {
@@ -20,32 +20,33 @@ TG4SpecialFlags::TG4SpecialFlags(const G4String& aName)
    }
 }
 
-TG4SpecialFlags::TG4SpecialFlags(const TG4SpecialFlags& right) {
+TG4SpecialControls::TG4SpecialControls(const TG4SpecialControls& right) {
 // 
   TG4Globals::Exception(
-    "TG4SpecialFlags is protected from copying.");
+    "TG4SpecialControls is protected from copying.");
 }
 
-TG4SpecialFlags::~TG4SpecialFlags() {
+TG4SpecialControls::~TG4SpecialControls() {
 //
 }
 
 // operators
 
-TG4SpecialFlags& TG4SpecialFlags::operator=(const TG4SpecialFlags& right)
+TG4SpecialControls& TG4SpecialControls::operator=(
+                                          const TG4SpecialControls& right)
 {
   // check assignement to self
   if (this == &right) return *this;
 
   TG4Globals::Exception(
-    "TG4SpecialFlags is protected from assigning.");
+    "TG4SpecialControls is protected from assigning.");
     
   return *this;  
 } 
 
 // public methods   
           
-G4double TG4SpecialFlags::PostStepGetPhysicalInteractionLength(
+G4double TG4SpecialControls::PostStepGetPhysicalInteractionLength(
                            const G4Track& track, G4double previousStepSize,
 			   G4ForceCondition* condition)
 {
@@ -66,35 +67,35 @@ G4double TG4SpecialFlags::PostStepGetPhysicalInteractionLength(
   TG4Limits* limits 
     = (TG4Limits*) track.GetVolume()->GetLogicalVolume()->GetUserLimits();
 
-  if (fSwitchFlags != kUnswitch) {
+  if (fSwitchControls != kUnswitch) {
     if (status == fGeomBoundary) {
-      if  ((limits) && (limits->IsFlag())) {
-        // particle is exiting a logical volume with special flags
-        // and entering another logical volume with special flags 
+      if  ((limits) && (limits->IsControl())) {
+        // particle is exiting a logical volume with special controls
+        // and entering another logical volume with special controls 
 	proposedStep = minStep;
-        fSwitchFlags = kReswitch;
+        fSwitchControls = kReswitch;
         if (verboseLevel>0) G4cout << "kReswitch" << G4endl;
       }
       else {
-        // particle is exiting a logical volume with special flags
-        // and entering a logical volume without special flags 
+        // particle is exiting a logical volume with special controls
+        // and entering a logical volume without special controls 
 	proposedStep = minStep;
-        fSwitchFlags = kUnswitch;
+        fSwitchControls = kUnswitch;
         if (verboseLevel>0) G4cout << "kUnswitch" << G4endl;
       }
     }
   }
-  else if ((limits) && (limits->IsFlag())) {
-       // particle is entering a logical volume with special flags
+  else if ((limits) && (limits->IsControl())) {
+       // particle is entering a logical volume with special controls
        // that have not yet been set
        proposedStep = minStep;
-       fSwitchFlags = kSwitch;
+       fSwitchControls = kSwitch;
        if (verboseLevel>0) G4cout << "kSwitch" << G4endl;
   }  
   return proposedStep;
 }
 
-G4VParticleChange* TG4SpecialFlags::PostStepDoIt(
+G4VParticleChange* TG4SpecialControls::PostStepDoIt(
                       const G4Track& track, const G4Step& step)
 {
 // Changes processes activation of the current track
@@ -109,7 +110,7 @@ G4VParticleChange* TG4SpecialFlags::PostStepDoIt(
   G4ProcessVector* processVector = processManager->GetProcessList();
   // processManager->DumpInfo();
 
-  if ((fSwitchFlags==kUnswitch) || (fSwitchFlags==kReswitch)) {
+  if ((fSwitchControls==kUnswitch) || (fSwitchControls==kReswitch)) {
     // set processes activation back
     for (G4int i=0; i<fSwitchedProcesses.entries(); i++) {
       if (verboseLevel>0) {
@@ -118,22 +119,22 @@ G4VParticleChange* TG4SpecialFlags::PostStepDoIt(
                << G4endl;
       }
       processManager
-        ->SetProcessActivation(fSwitchedProcesses[i],fSwitchedFlags[i]);
+        ->SetProcessActivation(fSwitchedProcesses[i],fSwitchedControls[i]);
     }
     fSwitchedProcesses.clear();
-    fSwitchedFlags.clear();
+    fSwitchedControls.clear();
   }
 
-  if ((fSwitchFlags==kSwitch) ||  (fSwitchFlags==kReswitch)) {
-    // set TG4Limits processes flags
+  if ((fSwitchControls==kSwitch) ||  (fSwitchControls==kReswitch)) {
+    // set TG4Limits processes controls
     for (G4int i=0; i<processManager->GetProcessListLength(); i++) {
-      G4int flag = limits->GetFlag((*processVector)[i]);
-      if (flag != kUnset) {
-        // store the current processes flags;
+      G4int control = limits->GetControl((*processVector)[i]);
+      if (control != kUnset) {
+        // store the current processes controls;
         fSwitchedProcesses.insert((*processVector)[i]);
-        //fSwitchedFlags.insert(processManager->GetProcessActivation(i));
-        fSwitchedFlags.push_back(processManager->GetProcessActivation(i));
-        if (flag == kInActivate) {
+        //fSwitchedControls.insert(processManager->GetProcessActivation(i));
+        fSwitchedControls.push_back(processManager->GetProcessActivation(i));
+        if (control == kInActivate) {
           if (verboseLevel>0) {
             G4cout << "Set process inactivation for " 
                    << (*processVector)[i]->GetProcessName() << " in " 
@@ -143,7 +144,7 @@ G4VParticleChange* TG4SpecialFlags::PostStepDoIt(
           processManager->SetProcessActivation(i,false);
         }  
         else {
-	  // ((flag == kActivate) || (flag == kActivate2)) 
+	  // ((control == kActivate) || (control == kActivate2)) 
           if (verboseLevel>0) {
             G4cout << "Set process activation for " 
                    << (*processVector)[i]->GetProcessName() << " in " 

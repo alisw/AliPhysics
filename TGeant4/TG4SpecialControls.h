@@ -1,7 +1,7 @@
 // $Id$
 // Category: physics
 //
-// Special process that applies process control flags 
+// Special process that applies G3 process controls.
 
 #ifndef TG4_SPECIAL_FLAGS_H
 #define TG4_SPECIAL_FLAGS_H
@@ -12,15 +12,15 @@
 #include <G4ProcessVector.hh>
 #include <globals.hh>
 
-class TG4SpecialFlags : public G4VProcess 
+class TG4SpecialControls : public G4VProcess 
 {
   enum Switch { kSwitch, kReswitch, kUnswitch };
 
   public:     
-    TG4SpecialFlags(const G4String& processName ="specialFlag" );
+    TG4SpecialControls(const G4String& processName ="specialControl" );
     // --> protected
-    // TG4SpecialFlags(const TG4SpecialFlags& right);
-    virtual ~TG4SpecialFlags();
+    // TG4SpecialControls(const TG4SpecialControls& right);
+    virtual ~TG4SpecialControls();
 
     // methods
 
@@ -50,18 +50,18 @@ class TG4SpecialFlags : public G4VProcess
                          { return 0; }
 
   protected:
-    TG4SpecialFlags(const TG4SpecialFlags& right);
+    TG4SpecialControls(const TG4SpecialControls& right);
     
     //operators
-    TG4SpecialFlags& operator = (const TG4SpecialFlags& right);
+    TG4SpecialControls& operator = (const TG4SpecialControls& right);
     
   private:  
     // data members
-    Switch           fSwitchFlags;       //directive passed from PostStepGetPIL
+    Switch           fSwitchControls;       //directive passed from PostStepGetPIL
                                          //to PostStepDoIt
     G4ProcessVector  fSwitchedProcesses; //vector of the processes activation of
                                          //which is changed by this process
-    TG4boolVector    fSwitchedFlags;     //vector for storing the current values of 
+    TG4boolVector    fSwitchedControls;     //vector for storing the current values of 
                                          //the processes activation   
 };
 
