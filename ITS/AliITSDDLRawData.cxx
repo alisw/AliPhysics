@@ -23,13 +23,13 @@
 //SSD
 
 #include <stdlib.h>
-#include "Riostream.h"
+#include <Riostream.h>
 #include <TClonesArray.h>
 #include <TTree.h>
-#include "TMath.h"
-#include <AliITS.h>
-#include <AliITSgeom.h>
-#include <AliITSdigit.h>
+#include <TMath.h>
+#include "AliITS.h"
+#include "AliITSgeom.h"
+#include "AliITSdigit.h"
 #include "AliITSDDLRawData.h"
 
 ClassImp(AliITSDDLRawData)
@@ -317,7 +317,7 @@ void AliITSDDLRawData::UnpackWord(ULong_t PackedWord, Int_t StartBit, Int_t Stop
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Int_t AliITSDDLRawData::RawDataSPD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
+Int_t AliITSDDLRawData::RawDataSPD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber,Int_t eventNumber){
   //This method creates the Raw data files for SPD detectors
   //Silicon Pixel Detector
   const Int_t kDDLsNumber=20;       // Number of DDL in SPD
@@ -365,7 +365,7 @@ Int_t AliITSDDLRawData::RawDataSPD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
   Int_t detector=1;         // 1==>ITS (Pixel) 2==>ITS (Drift) 3==>ITS (Strip) 0==>TPC ......
   ULong_t size=0;           // size of the data block that follows the mini header
   Int_t magicWord=0x123456;  // Magic word used to distinguish between data and garbage
-  sprintf(fileName,"SPDslice%d",sliceNumber); //The name of  the output file. There are as many slides as the number of LDC
+  sprintf(fileName,"Ev%dSPDslice%d",eventNumber,sliceNumber); //The name of  the output file. There are as many slides as the number of LDC
 #ifndef __DECCXX
   outfile.open(fileName,ios::binary);
 #else
@@ -410,7 +410,7 @@ Int_t AliITSDDLRawData::RawDataSPD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
     if(countDDL==ddlsPerFile){
       outfile.close();
       sliceNumber++;
-      sprintf(fileName,"SPDslice%d",sliceNumber); 
+      sprintf(fileName,"Ev%dSPDslice%d",eventNumber,sliceNumber); 
       if(i!=(kDDLsNumber-1))
 #ifndef __DECCXX
 	outfile.open(fileName,ios::binary);
@@ -426,7 +426,7 @@ Int_t AliITSDDLRawData::RawDataSPD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Int_t AliITSDDLRawData::RawDataSSD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
+Int_t AliITSDDLRawData::RawDataSSD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber,Int_t eventNumber){
   //This method creates the Raw data files for SSD detectors
   //Strip detector
   const Int_t kDDLsNumber=16;        // Number of DDL in SSD
@@ -633,7 +633,7 @@ Int_t AliITSDDLRawData::RawDataSSD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
   Int_t detector=3;             // 1==>ITS (Pixel) 2==>ITS (Drift) 3==>ITS (Strip) 0==>TPC ......
   ULong_t size=0;               // size of the data block that follows the mini header
   Int_t magicWord=0x123456;     // Magic word used to distinguish between data and garbage
-  sprintf(fileName,"SSDslice%d",sliceNumber); //The name of  the output file. There are as many slides as the number of LDC
+  sprintf(fileName,"Ev%dSSDslice%d",eventNumber,sliceNumber); //The name of  the output file. There are as many slides as the number of LDC
 #ifndef __DECCXX
   outfile.open(fileName,ios::binary);
 #else
@@ -681,7 +681,7 @@ Int_t AliITSDDLRawData::RawDataSSD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
     if(countDDL==ddlsPerFile){
       outfile.close();
       sliceNumber++;
-      sprintf(fileName,"SSDslice%d",sliceNumber); 
+      sprintf(fileName,"Ev%dSSDslice%d",eventNumber,sliceNumber); 
       if(i!=(kDDLsNumber-1))
 #ifndef __DECCXX
 	outfile.open(fileName,ios::binary);
@@ -697,7 +697,7 @@ Int_t AliITSDDLRawData::RawDataSSD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Int_t AliITSDDLRawData::RawDataSDD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
+Int_t AliITSDDLRawData::RawDataSDD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber,Int_t eventNumber){
     //This method creates the Raw data files for SDD detectors
   //Silicon Drift detector
   const Int_t kDDLsNumber=12;       // Number of DDL in SPD
@@ -737,7 +737,7 @@ Int_t AliITSDDLRawData::RawDataSDD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
   Int_t detector=2;             // 1==>ITS (Pixel) 2==>ITS (Drift) 3==>ITS (Strip) 0==>TPC ......
   ULong_t size=0;               // size of the data block that follows the mini header
   Int_t magicWord=0x123456;     // Magic word used to distinguish between data and garbage
-  sprintf(fileName,"SDDslice%d",sliceNumber); //The name of  the output file. There are as many slides as the number of LDC
+  sprintf(fileName,"Ev%dSDDslice%d",eventNumber,sliceNumber); //The name of  the output file. There are as many slides as the number of LDC
 #ifndef __DECCXX
   outfile.open(fileName,ios::binary);
 #else
@@ -785,7 +785,7 @@ Int_t AliITSDDLRawData::RawDataSDD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber){
     if(countDDL==ddlsPerFile){
       outfile.close();
       sliceNumber++;
-      sprintf(fileName,"SDDslice%d",sliceNumber); 
+      sprintf(fileName,"Ev%dSDDslice%d",eventNumber,sliceNumber); 
       if(i!=(kDDLsNumber-1))
 #ifndef __DECCXX
 	outfile.open(fileName,ios::binary);
@@ -874,7 +874,7 @@ void  AliITSDDLRawData::WriteHit(ULong_t *buf,Int_t RowAddr,Int_t HitAddr,ULong_
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void AliITSDDLRawData::TestFormat(){
+void AliITSDDLRawData::TestFormat(Int_t eventNumber){
   //This method generates a text file containing SPD information
   //Used for debugging
   ifstream f;
@@ -886,7 +886,7 @@ void AliITSDDLRawData::TestFormat(){
   ULong_t miniHeader[3];
   Int_t miniHeaderSize=sizeof(ULong_t)*3;
   for(Int_t i=1;i<=ldcsNumber;i++){
-    sprintf(filename,"SPDslice%d",i);  
+    sprintf(filename,"Ev%dSPDslice%d",eventNumber,i);  
 #ifndef __DECCXX
     f.open(filename,ios::binary|ios::in);
 #else

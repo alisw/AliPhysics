@@ -15,6 +15,7 @@ void AliTPCH5OptimizedTables(const char* fSource="AltroFormat.dat",const char* f
   TStopwatch timer;
   //verbose level can be: 0=silent 1=few messages 2=pedantic output
   util->SetVerbose(1);
+  
   Int_t choice;
   do{
     cout<<"**** Chose the tables set **** "<<endl;
@@ -51,13 +52,13 @@ void AliTPCH5OptimizedTables(const char* fSource="AltroFormat.dat",const char* f
     break;
   }
   };
-
+  
   //BE CAREFUL, the following method must be used only for debugging and
   //it is highly suggested to use it only for debugging files
   //reasonably small, because otherwise the size of the txt files can reach
   //quickly several MB wasting time and disk space.
 
-  //  util->ReadAltroFormat("File1.txt",fSource);
+  //util->ReadAltroFormat("File1.txt",fSource);
   
   //The source file is compressed 
   timer.Start();

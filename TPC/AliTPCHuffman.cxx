@@ -309,7 +309,7 @@ void AliTPCHTable::CompleteTable(Int_t k){
   ULong_t val;
   switch(k){
   case 0:
-    max=700;
+    max=fSize;
     val=1;
     break;
   case 1:

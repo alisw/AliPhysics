@@ -26,9 +26,9 @@
 #include <TObjArray.h>
 #include <Riostream.h>
 #include <TMath.h>
-#include "AliTPCCompression.h"
 #include "AliTPCBuffer160.h"
 #include "AliTPCHuffman.h"
+#include "AliTPCCompression.h"
 
 ClassImp(AliTPCCompression)
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -41,6 +41,7 @@ AliTPCCompression::AliTPCCompression(){
   fBuffer=0;
   fVerbose=0;
   fFillWords=0;
+  fPointBuffer=0;
   return;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -53,6 +54,7 @@ AliTPCCompression::AliTPCCompression(const AliTPCCompression &source){
   this->fBuffer=source.fBuffer;
   this->fVerbose=source.fVerbose;
   this->fFillWords=source.fFillWords;
+  this->fPointBuffer=source.fPointBuffer;
   return;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -65,6 +67,7 @@ AliTPCCompression&  AliTPCCompression::operator=(const AliTPCCompression &source
   this->fBuffer=source.fBuffer;
   this->fVerbose=source.fVerbose;
   this->fFillWords=source.fFillWords;
+  this->fPointBuffer=source.fPointBuffer;
   return *this;
 } 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -118,7 +121,6 @@ void AliTPCCompression::NextTable(Int_t Val,Int_t &NextTableType,Int_t &BunchLen
   return;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -346,11 +348,11 @@ Int_t AliTPCCompression::CreateTables(const char* fSource,const Int_t NumTables)
   FillTables(fSource,table,NumTables);
 
   //This part will be used in the table optimization phase
-  /*
+  
   for(Int_t i=0;i<NumTables;i++){
     table[i]->CompleteTable(i);
   }
-  */
+  
   if(fVerbose){
     cout<<"Entropy of Bunch length table........."<<table[0]->GetEntropy()<<endl;
     cout<<"Entropy of Time bin table............."<<table[1]->GetEntropy()<<endl;
@@ -571,121 +573,6 @@ ULong_t AliTPCCompression::Mirror(ULong_t val,UChar_t len)const{
   }
   return specular;
 }
-//////////////////////////////////////////////////////////////////////////////////////////////////
-Int_t AliTPCCompression::CompressData(AliTPCHTable* table[],Int_t NumTable,const char* fSource,const char* fDest){
-  //This method is used to compress the data stored in the Altro format file using specific tables
-  //calculated considering the frequencies of the symbol of the file that has to be compressed
-  cout<<" COMPRESSION "<<endl;
-  cout<<"compression of the file "<<fSource<<" Output File: "<<fDest<<endl;
-  //the output file is open
-#ifndef __DECCXX 
-  f.open(fDest,ios::binary|ios::out);
-#else
-  f.open(fDest,ios::out);
-#endif
-  //Tables are written into the output file
-  for(Int_t k=0;k<NumTable;k++){
-    Int_t dim=table[k]->Size();
-    //Table dimension is written into a file
-    f.write((char*)(&dim),sizeof(Int_t));
-    //One table is written into a file
-    for(Int_t i=0;i<dim;i++){
-      UChar_t codeLen=table[k]->CodeLen()[i];
-      ULong_t code=(ULong_t)table[k]->Code()[i];
-      f.write((char*)(&codeLen),sizeof(UChar_t));
-      f.write((char*)(&code),sizeof(ULong_t));
-    } //end for
-  }//end for
-
-  // Source file is open
-  AliTPCBuffer160 buff(fSource,0);
-  //coded words are written into the output file
-  Int_t numWords,padNum,rowNum,secNum=0;
-  ULong_t storedWords=0;
-  Int_t value=0;
-  ULong_t numPackets=0;
-  while(buff.ReadTrailerBackward(numWords,padNum,rowNum,secNum) !=-1 ){
-    numPackets++;
-    if (numWords%4){
-      for(Int_t j=0;j<(4-numWords%4);j++){
-	value=buff.GetNextBackWord();
-      }//end for
-    }//end if
-
-    Int_t packet[1024];
-    Int_t timePos[345];
-    Int_t tp=0;
-    for(Int_t i=0;i<345;i++)timePos[i]=0;
-    for(Int_t i=0;i<1024;i++)packet[i]=0;
-
-    Int_t nextTableType=0;
-    Int_t bunchLen=0;
-    Int_t count=0;
-    for(Int_t i=0;i<numWords;i++){
-      value=buff.GetNextBackWord();
-      packet[i]=value;
-      if(nextTableType==1){
-	timePos[tp]=i;
-	tp++;
-      }
-      NextTable(value,nextTableType,bunchLen,count);
-    }//end for
-    //computing the Time gap between two bunches
-    Int_t temp=0;
-    tp--;
-    Int_t previousTime=packet[timePos[tp]];
-    for(Int_t i=tp-1;i>=0;i--){
-      Int_t timPos=timePos[i];
-      Int_t bunchLen=packet[timPos-1]-2;
-      temp=packet[timPos];
-      packet[timPos]=packet[timPos]-previousTime-bunchLen;
-      previousTime=temp;
-    }//end for
-    nextTableType=0;
-    count=0;
-    bunchLen=0;
-    Int_t timeBin=0;
-    //All the words for one pad are compressed and stored in the compress file
-    for(Int_t i=0;i<numWords;i++){
-      value=packet[i];
-      if(nextTableType==1)timeBin=value;
-      if(nextTableType>1){
-	//	ULong_t val=(ULong_t)table[nextTableType]->Code()[value];     // val is the code
-	Double_t val=table[nextTableType]->Code()[value];     // val is the code
-	UChar_t len=table[nextTableType]->CodeLen()[value];  // len is the length (number of bits)of val
-	StoreValue(Mirror((ULong_t)val,len),len);
-	storedWords++;
-      }//end if
-      NextTable(value,nextTableType,bunchLen,count);
-      if(nextTableType==0){
-	//	ULong_t val=(ULong_t)table[1]->Code()[timeBin];     // val is the code
-	Double_t val=table[1]->Code()[timeBin];     // val is the code
-	UChar_t len=table[1]->CodeLen()[timeBin];  // len is the length (number of bits)of val
-	StoreValue(Mirror((ULong_t)val,len),len);
-	//val=(ULong_t)table[nextTableType]->Code()[(bunchLen+2)];     // val is the code
-	val=table[nextTableType]->Code()[(bunchLen+2)];     // val is the code
-	len=table[nextTableType]->CodeLen()[(bunchLen+2)];  // len is the length (number of bits)of val
-	StoreValue(Mirror((ULong_t)val,len),len);
-	storedWords+=2;
-      }
-    }//end for
-    //Trailer
-    StoreValue(numWords,10);
-    StoreValue(padNum,10);
-    StoreValue(rowNum,10);
-    StoreValue(secNum,9);
-    StoreValue(1,1);
-    storedWords+=4;
-  }//end  while
-  StoreValue(numPackets,32);
-  cout<<"Number of strored packet: "<<numPackets<<endl;
-  StoreValue(1,1);
-  //The last buffen cannot be completely full
-  Flush();
-  cout<<"Number of stored words: "<<storedWords<<endl;
-  f.close();
-  return 0;
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Int_t AliTPCCompression::CompressDataOptTables(Int_t NumTable,const char* fSource,const char* fDest){
@@ -871,60 +758,7 @@ Int_t AliTPCCompression::CompressDataOptTables(Int_t NumTable,const char* fSourc
 ////////////////////////////////////////////////////////////////////////////////////////
 /*                               DECOMPRESSION                                        */
 ////////////////////////////////////////////////////////////////////////////////////////
-void AliTPCCompression::CreateTrees(AliTPCHNode *RootNode[],const Int_t NumTables){
-  //The first part of the compressed file cotains the tables
-  //The following for loop is used to generate the Huffman trees acording to the tables
-  if(fVerbose)
-    cout<<"Creating the Huffman trees \n";
-  AliTPCHNode *node=0;
-  //  ULong_t code;
-  Double_t code;
-  UChar_t codeLen;
-  //loop over the numbero of tables
-  for(Int_t k=0;k<NumTables;k++){
-    RootNode[k]=new AliTPCHNode(); //RootNode is the root of the tree
-    Int_t dim;//this variable contains the table dimension
-    f.read((char*)(&dim),sizeof(Int_t));
-    if (fVerbose)
-      cout<<"Table dimension: "<<dim<<endl;
-    //loop over the words of a table
-    for(Int_t i=0;i<dim;i++){
-      f.read((char*)(&codeLen),sizeof(UChar_t));
-      //f.read((char*)(&code),sizeof(ULong_t));
-      f.read((char*)(&code),sizeof(Double_t));
-      node=RootNode[k];
-      for(Int_t j=1;j<=codeLen;j++){
-	ULong_t bit,val=0;
-	val=(ULong_t)TMath::Power(2,codeLen-j);
-	bit=(ULong_t)code&val; 
-	AliTPCHNode *temp=node;
-	if(bit){
-	  node=node->GetRight();
-	  if(!node){
-	    node=new AliTPCHNode();
-	    temp->SetRight(node);
-	  }//end if
-	}//end if
-	else{
-	  node=node->GetLeft();
-	  if(!node){
-	    node=new AliTPCHNode();
-	    temp->SetLeft(node);
-	  }//end if
-	}//end else
-      }//end for
-      if(codeLen){
-	node->SetSymbol(i);
-	node->SetFrequency(codeLen);
-      }//end if
-      //cout<<node->GetSymbol()<<"  "<<(Int_t)node->GetFrequency()<<endl;
-    }//end for 
-  }//end for 
-  if (fVerbose)
-    cout<<"Trees generated \n";
-  //At this point the trees are been built
-}
-//////////////////////////////////////////////////////////////////////////////////////////////////
+
 void AliTPCCompression::CreateTreesFromFile(AliTPCHNode *RootNode[],const Int_t NumTables){
   //For each table this method builds the associate Huffman tree starting from the codeword and 
   //the codelength of each symbol 
@@ -947,6 +781,7 @@ void AliTPCCompression::CreateTreesFromFile(AliTPCHNode *RootNode[],const Int_t 
 #else
     fTable.open(filename);
 #endif
+    if(!fTable){cout<<"Tables don't exist !!!"<<endl;exit(1);}
     fTable.read((char*)(&dim),sizeof(Int_t));
     if (fVerbose)
       cout<<"Table dimension: "<<dim<<endl;
@@ -1030,23 +865,66 @@ ULong_t AliTPCCompression::ReadWord(Int_t NumberOfBit){
   return result;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void AliTPCCompression::ReadTrailer(Int_t &WordsNumber,Int_t &PadNumber,Int_t &RowNumber,Int_t &SecNumber){
+ULong_t AliTPCCompression::ReadWordBuffer(Int_t NumberOfBit){
+  //This method retrieves a word of a specific number of bits from the file through the buffer 
+  ULong_t result=0;
+  ULong_t bit=0;
+  for (Int_t i=0;i<NumberOfBit;i++){
+    if (fReadBits==32){
+      fPointBuffer-=8;
+      fBuffer=0;
+      for(Int_t i=0;i<4;i++){
+	ULong_t val=0;
+	val=*fPointBuffer;
+	val&=0xFF;
+	fPointBuffer++;
+	val<<=8*i;
+	fBuffer=fBuffer|val;
+      }//end for
+      fReadBits=0;
+    }//end if
+    ULong_t mask=0;
+    mask=(ULong_t)TMath::Power(2,fReadBits);
+    bit=fBuffer&mask;
+    bit=bit>>fReadBits;
+    fReadBits++;
+    bit=bit<<i;
+    result=result|bit;
+  }//end for
+  return result;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+void AliTPCCompression::ReadTrailer(Int_t &WordsNumber,Int_t &PadNumber,Int_t &RowNumber,Int_t &SecNumber,Bool_t Memory){
   //It retrieves a trailer 
-  ReadWord(1);
-  SecNumber=ReadWord(9);
-  RowNumber=ReadWord(10);
-  PadNumber=ReadWord(10);
-  WordsNumber=ReadWord(10);
+  if(Memory){
+    ReadWordBuffer(1);
+    SecNumber=ReadWordBuffer(9);
+    RowNumber=ReadWordBuffer(10);
+    PadNumber=ReadWordBuffer(10);
+    WordsNumber=ReadWordBuffer(10);
+  }
+  else{
+    ReadWord(1);
+    SecNumber=ReadWord(9);
+    RowNumber=ReadWord(10);
+    PadNumber=ReadWord(10);
+    WordsNumber=ReadWord(10);
+  }
   return;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
-ULong_t AliTPCCompression::GetDecodedWord(AliTPCHNode* root){
+ULong_t AliTPCCompression::GetDecodedWord(AliTPCHNode* root,Bool_t Memory){
   //This method retrieves a decoded word.
   AliTPCHNode *node=root;
   ULong_t symbol=0;
   Bool_t decoded=0;
   while(!decoded){
-    ULong_t bit=ReadWord(1);
+    ULong_t bit=0;
+    if(Memory)
+      bit=ReadWordBuffer(1);
+    else
+      bit=ReadWord(1);
     if(bit)
       node=node->GetRight();
     else
@@ -1059,83 +937,6 @@ ULong_t AliTPCCompression::GetDecodedWord(AliTPCHNode* root){
   return symbol;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
-Int_t AliTPCCompression::DecompressData(Int_t NumTables,const char* fname,char* fDest){
-  //Decompression method 
-  cout<<"   DECOMPRESSION:"<<endl;
-  cout<<"Source File "<<fname<<" Destination File "<<fDest<<endl;
-#ifndef __DECCXX 
-  f.open(fname,ios::binary|ios::in);
-#else
-  f.open(fname,ios::in);
-#endif
-  if(!f){cout<<"File doesn't exist:"<<fname<<endl;;return -1;}
-  AliTPCHNode ** rootNode = new AliTPCHNode*[NumTables];
-  //Creation of the Huffman trees
-  CreateTrees(rootNode,NumTables);
-  //to go to the end of the file
-  f.seekg(0,ios::end);
-  //to get the file dimension in byte
-  fPos=f.tellg();
-  fPos-=sizeof(ULong_t);
-  f.seekg(fPos);
-  fReadBits=0;
-  fBuffer=0;
-  f.read((char*)(&fBuffer),sizeof(ULong_t));
-  Int_t bit=0;
-  ULong_t mask=0x1;
-  while(!bit){
-    bit=fBuffer&mask;
-    mask=mask<<1;
-    fReadBits++;
-  }
-  ULong_t packetNumber=ReadWord(sizeof(ULong_t)*8);
-  cout<<"Number of Packect: "<<packetNumber<<endl;
-  AliTPCBuffer160 bufferFile(fDest,1);
-  ULong_t k=0;
-  ULong_t wordsRead=0; //number of read coded words 
-  while(k<packetNumber){
-    Int_t numWords,padNumber,rowNumber,secNumber=0;
-    ReadTrailer(numWords,padNumber,rowNumber,secNumber);
-    k++;
-    wordsRead+=4;
-    Int_t previousTime=-1;
-    Int_t time=0;
-    Int_t nextTableType=0;
-    Int_t bunchLen=0;
-    Int_t count=0;
-    for(Int_t i=0;i<numWords;i++){
-      ULong_t symbol=GetDecodedWord(rootNode[nextTableType]);
-      wordsRead++;
-      //Time reconstruction
-      if (nextTableType==1){
-	if (previousTime!=-1){
-	  previousTime=symbol+previousTime+bunchLen;
-	}
-	else previousTime=symbol;
-	time=previousTime;
-      }
-      if(nextTableType>1)
-	bufferFile.FillBuffer(symbol);
-      NextTable(symbol,nextTableType,bunchLen,count); 
-      if(nextTableType==0){
-	bufferFile.FillBuffer(time);
-	bufferFile.FillBuffer(bunchLen+2);
-	bunchLen=0;
-      }
-    }//end for
-    bufferFile.WriteTrailer(numWords,padNumber,rowNumber,secNumber);
-  }//end while
-  cout<<"Number of decoded words:"<<wordsRead<<endl;
-  f.close();
-  //The trees are deleted 
-  for(Int_t j=0;j<NumTables;j++){
-      DeleteHuffmanTree(rootNode[j]);
-  }//end for
-  delete [] rootNode; 
-  return 0; 
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Int_t AliTPCCompression::DecompressDataOptTables(Int_t NumTables,const char* fname,char* fDest){
   //This method decompress a file using separate Huffman tables
@@ -1177,7 +978,7 @@ Int_t AliTPCCompression::DecompressDataOptTables(Int_t NumTables,const char* fna
   ULong_t wordsRead=0; //number of read coded words 
   while(k<packetNumber){
     Int_t numWords,padNumber,rowNumber,secNumber=0;
-    ReadTrailer(numWords,padNumber,rowNumber,secNumber);
+    ReadTrailer(numWords,padNumber,rowNumber,secNumber,kFALSE);
     k++;
     wordsRead+=4;
     Int_t previousTime=-1;
@@ -1186,7 +987,7 @@ Int_t AliTPCCompression::DecompressDataOptTables(Int_t NumTables,const char* fna
     Int_t bunchLen=0;
     Int_t count=0;
     for(Int_t i=0;i<numWords;i++){
-      ULong_t symbol=GetDecodedWord(rootNode[nextTableType]);
+      ULong_t symbol=GetDecodedWord(rootNode[nextTableType],kFALSE);
       wordsRead++;
       //Time reconstruction
       if (nextTableType==1){
@@ -1219,7 +1020,110 @@ Int_t AliTPCCompression::DecompressDataOptTables(Int_t NumTables,const char* fna
   return 0; 
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+Int_t AliTPCCompression::Decompress(AliTPCHNode *RootNode[],const Int_t NumTables,char* PointBuffer,ULong_t BufferSize,UShort_t out[],ULong_t &dim){
+  //This method decompress a file using separate Huffman tables
+
+  fPointBuffer=PointBuffer+BufferSize-4;
+  fReadBits=0;
+  fBuffer=0;
+  
+  for(Int_t i=0;i<4;i++){
+    ULong_t val=0;
+    val=*fPointBuffer;
+    val&=0xFF;
+    fPointBuffer++;
+    val<<=8*i;
+    fBuffer=fBuffer|val;
+  }//end for
+  Int_t bit=0;
+  ULong_t mask=0x1;
+  while(!bit){
+    bit=fBuffer&mask;
+    mask=mask<<1;
+    fReadBits++;
+  }//end while
+  ULong_t packetNumber=ReadWordBuffer(sizeof(ULong_t)*8); //32 bits
+  if (fVerbose){
+    cout<<"First one has been found "<<endl;
+    cout<<"Number of packets:"<<packetNumber<<endl;
+  }//end if
+  AliTPCBuffer160 bufferFile("DDL1.dat",1);
+  ULong_t k=0;
+  ULong_t wordsRead=0; //number of read coded words
+  while(k<packetNumber){
+    Int_t numWords,padNumber,rowNumber,secNumber=0;
+    ReadTrailer(numWords,padNumber,rowNumber,secNumber,kTRUE);
+    out[dim]=numWords;
+    dim++;
+    out[dim]=padNumber;
+    dim++;
+    out[dim]=rowNumber;
+    dim++;
+    out[dim]=secNumber;
+    dim++;
+    //ftxt<<"S:"<<secNumber<<" R:"<<rowNumber<<" P:"<<padNumber<<" W:"<<numWords<<endl;
+    //    padDigits->SetPadID(padNumber,rowNumber,secNumber,DDL);
+    k++;
+    wordsRead+=4;
+    Int_t previousTime=-1;
+    Int_t time=0;
+    Int_t nextTableType=0;
+    Int_t bunchLen=0;
+    Int_t count=0;
+    Int_t timeDigit=0;
+    for(Int_t i=0;i<numWords;i++){
+      ULong_t symbol=GetDecodedWord(RootNode[nextTableType],kTRUE);
+      wordsRead++;
+      //Time reconstruction
+      if (nextTableType==1){
+	if (previousTime!=-1){
+	  previousTime=symbol+previousTime+bunchLen;
+	}
+	else previousTime=symbol;
+	time=previousTime;
+	out[dim]=bunchLen+2;
+	dim++;
+	out[dim]=time;
+	dim++;
+	timeDigit=time-bunchLen;
+      }
+      if(nextTableType>1){
+	//
+	bufferFile.FillBuffer(symbol);
+	//
+	//ftxt<<symbol<<endl;
+	out[dim]=symbol;
+	dim++;
+	timeDigit++;
+	//padDigits->SetDigits(symbol,timeDigit);
+      }
+      NextTable(symbol,nextTableType,bunchLen,count); 
+      if(nextTableType==0){
+	//
+	bufferFile.FillBuffer(time);
+	bufferFile.FillBuffer(bunchLen+2);
+	//ftxt<<time<<endl;
+	//  ftxt<<(bunchLen+2)<<endl;
+	bunchLen=0;
+      }
+    }//end for
+    bufferFile.WriteTrailer(numWords,padNumber,rowNumber,secNumber);
+  }//end while
+  return 0; 
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+Int_t AliTPCCompression::DestroyTables(AliTPCHNode *RootNode[],const Int_t NumTables){
+  //The trees are deleted
+  for(Int_t j=0;j<NumTables;j++){
+    DeleteHuffmanTree(RootNode[j]);
+  }//end for
+  if(fVerbose)
+    cout<<"Huffman trees destroyed"<<endl;
+  return 0;
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AliTPCCompression::ReadAltroFormat(char* fileOut,char* fileIn)const{
   //This method creates a text file containing the same information stored in 

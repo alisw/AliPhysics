@@ -15,14 +15,14 @@ class AliTPCDDLRawData:public TObject{
   virtual ~AliTPCDDLRawData(){;}//destructor
   AliTPCDDLRawData(const AliTPCDDLRawData &source); // copy constructor
   AliTPCDDLRawData& operator=(const AliTPCDDLRawData &source); // ass. op.
-  void  RawData(Int_t LDCsNumber);
+  void  RawData(Int_t LDCsNumber,Int_t EventNumber);
   //This method is used to create the slides (sequence of files)
-  Int_t RawDataCompDecompress(Int_t LDCsNumber,Int_t Comp=0);
+  Int_t RawDataCompDecompress(Int_t LDCsNumber,Int_t EventNumber,Int_t Comp=0);
   //This method is used to create the compressed slides starting from the uncompressed ones 
   //or it can be used to decompress a sequence of compressed slices
   void  RawDataAltro()const;
   //This method is used to create the Altro format file from "AliTPCDDL.dat"
-  void RawDataAltroDecode(Int_t LDCsNumber,Int_t Comp=0);
+  void RawDataAltroDecode(Int_t LDCsNumber,Int_t EventNumber,Int_t Comp=0);
   //This method is used to construct an Altro format file starting from
   //the slices compressed or uncompressed
   void SetVerbose(Int_t Verbose){fVerbose=Verbose;}

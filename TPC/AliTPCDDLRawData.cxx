@@ -46,7 +46,7 @@ AliTPCDDLRawData& AliTPCDDLRawData::operator=(const AliTPCDDLRawData &source){
 
 
 ////////////////////////////////////////////////////////////////////////////
-void AliTPCDDLRawData::RawData(Int_t LDCsNumber){
+void AliTPCDDLRawData::RawData(Int_t LDCsNumber,Int_t EventNumber){
   //Raw data slides generation
   //Number of DDL=2*36+4*36=216
   //2 DDL for each inner sector
@@ -75,7 +75,7 @@ void AliTPCDDLRawData::RawData(Int_t LDCsNumber){
   //AliTPCBuffer160 is used in write mode to generate AltroFormat.dat file
   Int_t sliceNumber=1;
   char  filename[15];
-  sprintf(filename,"TPCslice%d",sliceNumber); 
+  sprintf(filename,"Ev%dTPCslice%d",EventNumber,sliceNumber); 
   cout<<"   Creating "<<filename<<endl;
   AliTPCBuffer160 *buffer=new AliTPCBuffer160(filename,1);
 
@@ -129,7 +129,7 @@ void AliTPCDDLRawData::RawData(Int_t LDCsNumber){
 	      //cout<<"Mini header for DDL:"<<PSecNumber<<" Sub-sec:"<<PSubSector<<endl;
 	      delete buffer;
 	      sliceNumber++;
-	      sprintf(filename,"TPCslice%d",sliceNumber);
+	      sprintf(filename,"Ev%dTPCslice%d",EventNumber,sliceNumber);
 	      cout<<"   Creating "<<filename<<endl;
 	      buffer=new AliTPCBuffer160(filename,1);
 	      buffer->WriteMiniHeader(0,data.Sec,data.SubSec,0,0);//Dummy;
@@ -171,7 +171,7 @@ void AliTPCDDLRawData::RawData(Int_t LDCsNumber){
 ////////////////////////////////////////////////////////////////////////////
 
 
-Int_t AliTPCDDLRawData::RawDataCompDecompress(Int_t LDCsNumber,Int_t Comp){
+Int_t AliTPCDDLRawData::RawDataCompDecompress(Int_t LDCsNumber,Int_t EventNumber,Int_t Comp){
   //This method is used to compress and decompress the slides
   static const Int_t kNumTables=5;
   char filename[20];
@@ -182,12 +182,12 @@ Int_t AliTPCDDLRawData::RawDataCompDecompress(Int_t LDCsNumber,Int_t Comp){
   Int_t flag=0;
   for(Int_t i=1;i<=LDCsNumber;i++){
     if(!Comp){
-      sprintf(filename,"TPCslice%d",i);
-      sprintf(dest,"TPCslice%d.comp",i);
+      sprintf(filename,"Ev%dTPCslice%d",EventNumber,i);
+      sprintf(dest,"Ev%dTPCslice%d.comp",EventNumber,i);
     }
     else{
-      sprintf(filename,"TPCslice%d.comp",i);
-      sprintf(dest,"TPCslice%d.decomp",i);
+      sprintf(filename,"Ev%dTPCslice%d.comp",EventNumber,i);
+      sprintf(dest,"Ev%dTPCslice%d.decomp",EventNumber,i);
     }
 #ifndef __DECCXX
     f.open(filename,ios::binary|ios::in);
@@ -195,7 +195,8 @@ Int_t AliTPCDDLRawData::RawDataCompDecompress(Int_t LDCsNumber,Int_t Comp){
     f.open(filename,ios::in);
 #endif
     if(!f){cout<<"BE CAREFUL!! There isn't enough data to generate "<<LDCsNumber<<" slices"<<endl;break;}
-    cout<<filename<<"  "<<dest<<endl;
+    if (fVerbose)
+      cout<<filename<<"  "<<dest<<endl;
     ofstream fdest;
 #ifndef __DECCXX
     fdest.open(dest,ios::binary);
@@ -358,7 +359,7 @@ void AliTPCDDLRawData::RawDataAltro()const{
 }
 
 /////////////////////////////////////////////////////////////////////////
-void AliTPCDDLRawData::RawDataAltroDecode(Int_t LDCsNumber,Int_t Comp){
+void AliTPCDDLRawData::RawDataAltroDecode(Int_t LDCsNumber,Int_t EventNumber,Int_t Comp){
   //This method merges the slides in only one file removing at the same 
   //time all the mini headers. The file so obtained must be Altro format
   //complaiant.
@@ -380,10 +381,12 @@ void AliTPCDDLRawData::RawDataAltroDecode(Int_t LDCsNumber,Int_t Comp){
   ULong_t size=0;
   //Int_t MagicWord,DDLNumber,SecNumber,SubSector,Detector,flag=0;
   for(Int_t i=1;i<=LDCsNumber;i++){
-    if(!Comp)
-      sprintf(filename,"TPCslice%d",i);  
-    else
-      sprintf(filename,"TPCslice%d.decomp",i);  
+    if(!Comp){
+      sprintf(filename,"Ev%dTPCslice%d",EventNumber,i);  
+    }
+    else{
+      sprintf(filename,"Ev%dTPCslice%d.decomp",EventNumber,i);  
+    }
 #ifndef __DECCXX
     f.open(filename,ios::binary|ios::in);
 #else

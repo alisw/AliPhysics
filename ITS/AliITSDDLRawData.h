@@ -17,13 +17,13 @@ class AliITSDDLRawData:public TObject{
   virtual ~AliITSDDLRawData(){;}//destructor
   AliITSDDLRawData(const AliITSDDLRawData &source); // copy constructor
   AliITSDDLRawData& operator=(const AliITSDDLRawData &source); // ass. op.
- Int_t RawDataSPD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber=2);
+ Int_t RawDataSPD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber,Int_t eventNumber);
   // This method generates the files with the Silicon pixel detector data
-  Int_t RawDataSDD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber=4); 
+  Int_t RawDataSDD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber,Int_t eventNumbe); 
   // This method generates the files with the Silicon drift detector data
-  Int_t RawDataSSD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber=2);
+  Int_t RawDataSSD(AliITS *ITS,TTree *TD ,Int_t LDCsNumber,Int_t eventNumbe);
   // This method generates the files with the Silicon pixel detector data
-  void  TestFormat();
+  void  TestFormat(Int_t eventNumber);
   // A debugging method used to test the files generated for the SPD.
   void SetVerbose(Int_t Verbose){fVerbose=Verbose;}
   // To set the verbose level

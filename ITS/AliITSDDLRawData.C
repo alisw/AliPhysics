@@ -1,6 +1,5 @@
-#if !defined(__CINT__) || defined(__MAKECINT__)
-
-#include <iostream.h>
+#if !defined(__CINT__)
+#include <Riostream.h>
 #include "AliITSDDLRawData.h"
 #endif
 
@@ -27,9 +26,13 @@ void AliITSDDLRawData(char* DigitsFile="galiceD.root"){
 #ifdef __NOCOMPILED__
   }
 #endif
+  Int_t eventNumber=0;
+  Int_t spdLDCs=2;
+  Int_t sddLDCs=4;
+  Int_t ssdLDCs=2;
   TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(DigitsFile);
   if (!file){
-    file = TFile::Open(DigitsFile);
+    file = new TFile(DigitsFile);
   }//end if
   file->ls();
 
@@ -68,7 +71,10 @@ void AliITSDDLRawData(char* DigitsFile="galiceD.root"){
     
     
     //TTree *TD = gAlice->TreeD();
-    
+    cout<<"Insert the event number:";
+    cin>>eventNumber;
+    cout<<endl;
+
     AliITSDDLRawData *util=new AliITSDDLRawData();
     //Verbose level
     // 0: Silent
@@ -84,26 +90,23 @@ void AliITSDDLRawData(char* DigitsFile="galiceD.root"){
     //SILICON PIXEL DETECTOR
     cout<<"Formatting data for SPD"<<endl;
     timer.Start();
-    util->RawDataSPD(ITS,TD);
-    //  util->RawDataSPD(ITS,TD,20);
+    util->RawDataSPD(ITS,TD,spdLDCs,eventNumber);
     timer.Stop();
     timer.Print();
     //ONLY FOR DEBUGGING 
-    util->TestFormat();
-
+    //    util->TestFormat(eventNumber);
+    
     //SILICON DRIFT DETECTOR
     cout<<"Formatting data for SDD"<<endl;
     timer.Start();
-    //util->RawDataSDD(ITS,TD,12);
-    util->RawDataSDD(ITS,TD);
+    util->RawDataSDD(ITS,TD,sddLDCs,eventNumber);
     timer.Stop();
     timer.Print();
     
     //SILICON STRIP DETECTOR
     cout<<"Formatting data for SSD"<<endl;
     timer.Start();
-    //util->RawDataSSD(ITS,TD,16);
-    util->RawDataSSD(ITS,TD);
+    util->RawDataSSD(ITS,TD,ssdLDCs,eventNumber);
     timer.Stop();
     timer.Print();
     
