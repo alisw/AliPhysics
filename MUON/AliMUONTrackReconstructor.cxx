@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.7  2001/01/26 21:54:46  morsch
+Use access functions to AliMUONHit member data.
+
 
 Revision 1.6  2001/01/26 20:00:53  hristov
 Major upgrade of AliRoot code
@@ -751,11 +754,7 @@ void trackf_read_fit(Int_t &ievr, Int_t &nev, Int_t &nhittot1, Int_t *izch, Doub
 	      mHit;
 	      mHit=(AliMUONHit*)pMUON->NextHit()) 
 	  {
-<<<<<<< AliMUONTrackReconstructor.cxx
 	      if (mHit->Chamber() > 10) continue;
-=======
-	      if (mHit->fChamber > 10) continue;
->>>>>>> 1.6
 	      Int_t ftrack = mHit->Track();
 	      Int_t id = gAlice->Particle(ftrack)->GetPdgCode();
 	      
@@ -810,11 +809,7 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
 	  {
 	      if (maxidg<=20000) {
 		
-<<<<<<< AliMUONTrackReconstructor.cxx
 		if (mHit->Chamber() > 10) continue;
-=======
-		if (mHit->fChamber > 10) continue;
->>>>>>> 1.6
 		TParticle *particle;
 		Int_t ftrack = mHit->Track();
 		Int_t id = gAlice->Particle(ftrack)->GetPdgCode();
