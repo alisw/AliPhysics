@@ -3,10 +3,12 @@
 
 #include "AliL3RootTypes.h"
 #include <math.h>
+#include <TObject.h>
+#include <TObjArray.h>
 
 class AliITStrackV2;
 
-class AliD0Trigger {
+class AliD0Trigger : public TObjArray{
  
  private:
   AliITStrackV2 * posTrack; //!
@@ -21,6 +23,7 @@ class AliD0Trigger {
   AliD0Trigger();
   AliD0Trigger(double c[7],double Bfield,double pv[3]);
   AliD0Trigger(AliITStrackV2 * posT, AliITStrackV2 * negT);
+  AliD0Trigger(double c[7],double Bfield,double pv[3],AliITStrackV2 * posT, AliITStrackV2 * negT);
   virtual ~AliD0Trigger();
 
   void SetTracks(AliITStrackV2 * posT, AliITStrackV2 * negT);

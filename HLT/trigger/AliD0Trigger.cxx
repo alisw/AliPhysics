@@ -12,10 +12,26 @@ AliD0Trigger::AliD0Trigger()
   posTrack=0;
   negTrack=0;
 }
-AliD0Trigger::AliD0Trigger(double c[6],double b,double pv[3])
+AliD0Trigger::AliD0Trigger(double c[7],double b,double pv[3])
 {
   posTrack=0;
   negTrack=0;
+  cutV0low=c[0]; 
+  cutV0high=c[1];
+  cutInvMass=c[2]; 
+  cutPointAngle=c[3];
+  cutd0d0=c[4];
+  cutCosThetaStar=c[5];
+  cutpTchild=c[6];
+  Bfield=b;
+  primaryVertex[0]=pv[0];
+  primaryVertex[1]=pv[1];
+  primaryVertex[2]=pv[2];
+}
+AliD0Trigger::AliD0Trigger(double c[7],double b,double pv[3],AliITStrackV2 * posT, AliITStrackV2 * negT)
+{
+  posTrack=posT;
+  negTrack=negT;
   cutV0low=c[0]; 
   cutV0high=c[1];
   cutInvMass=c[2]; 

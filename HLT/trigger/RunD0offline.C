@@ -3,6 +3,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 //-- --- standard headers------------- 
 #include <iostream.h>
+#include <fstream.h>
 //--------Root headers ---------------
 #include <TSystem.h>
 #include <TFile.h>
@@ -11,6 +12,7 @@
 #include <TObject.h>
 #include <TVector3.h>
 #include <TTree.h>
+#include <TObjArray>
 #include <TParticle.h>
 #include <TArray.h>
 //----- AliRoot headers ---------------
@@ -28,6 +30,15 @@
 #include "AliD0Trigger.h"
 #endif
 //-------------------------------------
+typedef struct {
+  Int_t lab;
+  Int_t pdg;
+  Int_t mumlab;
+  Int_t mumpdg;
+  Float_t Vx,Vy,Vz;
+  Float_t Px,Py,Pz;
+} RECTRACK;
+
 // field (T)
 const Double_t kBz = 0.4;
 
@@ -49,7 +60,7 @@ const Double_t cuts[7] = {0.005,     // 0.005 cuts[0] = lowest V0 cut  (cm)
 			  0.012,     // 0.012 cuts[2] = inv. mass cut (diferense) (Gev/c)
 			  0.8,       // 0.8   cuts[3] = min. cosine value for pointing angle
 			  -5000,     // -5000 cuts[4] = d0d0
-			  0,       // 0.8   cuts[5] = costhetastar
+			  0,         // 0.8   cuts[5] = costhetastar
 			  0.5};      // 0.5   cuts[6] = ptchild
 //cut for distance of closest aprach
 double cutDCA=0.05;   //0.05
@@ -67,35 +78,33 @@ void   SelectTracks(TTree& itsTree,
 //void PtD0(Char_t* path="./");
 
 Int_t iTrkP,iTrkN,itsEntries;
-Char_t trksName[100];
+Char_t trksName[100],refsName[100];
 Int_t nTrksP=0,nTrksN=0;
 Int_t nD0=0;
 int ev=0;
 double mom[6];
 int event[10000];
 int index=0;
+Bool_t isSignal;
+Int_t nTotEv=0,nD0recSgn=0,nD0recBkgS=0,nD0recBkg=0,nD0rec1ev=0;
+Int_t pdg[2],mum[2],mumlab[2];
+RECTRACK rectrk;
 
 void RunD0offline(Char_t* path="./",bool h=false,bool PtD0=false) {
-  Char_t falice[1024];
-  sprintf(falice,"%s/galice.root",path);
-  TFile *f = new TFile(falice);   
-  gAlice=(AliRun*)f->Get("gAlice");
-  int nEvent=gAlice->GetEventsPerRun();
-  //int nEvent=20;
-  delete gAlice;
-
-  const Char_t *name="AliD0offline";
-  cerr<<'\n'<<name<<"...\n";
-  cout<<"#Events: "<<nEvent<<endl;
-  gBenchmark->Start(name); 
-
+    
   AliKalmanTrack::SetConvConst(100/0.299792458/kBz);
-
+  
   // Open file with ITS tracks
   Char_t fnameTrack[1024];
   //sprintf(fnameTrack,"%s/AliITStracksV2.root",path);
   sprintf(fnameTrack,"%s/AliITStracksV2.root",path);
   TFile* itstrks = TFile::Open(fnameTrack);
+  
+  Char_t refFile[1024];
+  //sprintf(fnameTrack,"%s/ITStracksRefFile.root",path);
+  sprintf(refFile,"%s/ITStracksRefFile.root",path);
+  TFile* itsrefs = TFile::Open(refFile);
+  
 
   //the offline stuff
   // define the cuts for vertexing
@@ -106,16 +115,29 @@ void RunD0offline(Char_t* path="./",bool h=false,bool PtD0=false) {
 		      -1.0, // min. allowed cosine of V0's pointing angle
 		      0.0, // min. radius of the fiducial volume
 		      2.9};// max. radius of the fiducial volume
-
+  
   TH1F *h1 = new TH1F("h1","Transvers momentun of reconstructed D0",100,0,10);
   TH1F *h2 = new TH1F("h2","Transvers momentun of D0 with |Eta|<0.9",100,0,10);
   TH1F *h3 = new TH1F("h3","Eta reconstructed of D0",100,-5,5);
   TH1F *h4 = new TH1F("h4","Eta of D0",100,-5,5);
+  
+  Char_t falice[1024];
+  sprintf(falice,"%s/galice.root",path);
+  TFile *f = new TFile(falice);   
+  gAlice=(AliRun*)f->Get("gAlice");
+  int nEvent=gAlice->GetEventsPerRun();
+  //int nEvent=20;
+  cout<<"#Events: "<<nEvent<<endl;
+  delete gAlice;
 
+  const Char_t *name="AliD0offline";
+  cerr<<'\n'<<name<<"...\n";
+  gBenchmark->Start(name); 
+  
   for(ev=0;ev<nEvent;ev++) {
     
     cout<<"\n Event: "<<ev<<endl;
-
+    
     // tracks from ITS
     sprintf(trksName,"TreeT_ITS_%d",ev);
     TTree *itsTree=(TTree*)itstrks->Get(trksName);
@@ -123,9 +145,18 @@ void RunD0offline(Char_t* path="./",bool h=false,bool PtD0=false) {
     itsEntries = (Int_t)itsTree->GetEntries();
     printf("+++\n+++ Number of tracks in ITS: %d\n+++\n\n",itsEntries);
     
+    // tree from reference file
+    
+    sprintf(refsName,"Tree_Ref_%d",ev);
+    TTree *refTree=(TTree*)itsrefs->Get(refsName);
+    refTree->SetBranchAddress("rectracks",&rectrk);
+
     //Getting primary Vertex
     GetPrimaryVertex(ev,path);
     
+    // count the total number of events
+    nTotEv++;
+
     // call function which applies sigle track selection and
     // separetes positives and negatives
     TObjArray trksP(itsEntries/2);
@@ -146,10 +177,24 @@ void RunD0offline(Char_t* path="./",bool h=false,bool PtD0=false) {
     
     for(iTrkP=0; iTrkP<nTrksP; iTrkP++) {
       postrack = (AliITStrackV2*)trksP.At(iTrkP);
+
+      // get info on tracks PDG and mothers PDG from reference file
+      refTree->GetEvent(itsEntryP[iTrkP]);
+      pdg[0] = rectrk.pdg;
+      mum[0] = rectrk.mumpdg;
+      mumlab[0] = rectrk.mumlab;
+
       for(iTrkN=0; iTrkN<nTrksN; iTrkN++) {
 	negtrack = (AliITStrackV2*)trksN.At(iTrkN);
+
+	// get info on tracks PDG and mothers PDG from reference file
+	refTree->GetEvent(itsEntryN[iTrkN]);
+	pdg[1] = rectrk.pdg;
+	mum[1] = rectrk.mumpdg;
+	mumlab[1] = rectrk.mumlab;
+
 	D0->SetTracks(postrack,negtrack);
-	//
+
 	// ----------- DCA MINIMIZATION ------------------
 	//
 	// find the DCA and propagate the tracks to the DCA 
@@ -172,18 +217,43 @@ void RunD0offline(Char_t* path="./",bool h=false,bool PtD0=false) {
 		h1->Fill(D0->Pt());
 		h3->Fill(D0->Eta());
 	      }
+	      
+	      if(mumlab[0]==mumlab[1] && TMath::Abs(mum[0])==421 && TMath::Abs(mum[1])==421) { 
+		nD0recSgn++;
+	      } 
+	      else { 
+		if(TMath::Abs(mum[0])==421 || TMath::Abs(mum[0])==411 ||
+		   TMath::Abs(mum[1])==421 || TMath::Abs(mum[1])==411) {
+		  nD0recBkgS++;
+		} else {
+		  nD0recBkg++;
+		}  
+	      }
 	    }
 	  } 
 	}
       }
     } 
+    
+    //delete D0;
+    //delete itstrks;
+    //delete itsTree;
+    //delete trksP;
+    //delete itsEntryP;
+    //delete trksN;
+    //delete itsEntryN;
   }
-  cout<<"\n#D0: "<<nD0<<endl;
-  for(int i=0;i<nD0;i++)
-    cout<<event[i]<<endl;
+  
+  cout<<"\nMy #D0: "<<nD0<<"\n"<<endl;
+  printf("\n+++\n+++ Total number of events: %d\n+++\n",nTotEv);
+  printf("\n+++\n+++ Total number of D0 candidates:\n
+                 +++    Sgn:   %d\n
+                 +++    BkgS:  %d\n
+                 +++    Bkg:   %d\n+++\n",nD0recSgn,nD0recBkgS,nD0recBkg);
+
   gBenchmark->Stop(name);
   gBenchmark->Show(name);
-
+  
   if(h){
     if(!PtD0){
       TCanvas *c = new TCanvas("c","c",700,1000);
@@ -246,11 +316,11 @@ void RunD0offline(Char_t* path="./",bool h=false,bool PtD0=false) {
       pt->AddText(st);
       sprintf(st,"InvMass Diff:     %g",cuts[2]);
       pt->AddText(st);
-      sprintf(st,"cosPointingAngle: %g",cuts[3]);
+      sprintf(st,"cosPointAng: %g",cuts[3]);
       pt->AddText(st);
       sprintf(st,"d0d0:             %g",cuts[4]);
       pt->AddText(st);
-      sprintf(st,"cosThetaStar:     %g",cuts[5]);
+      sprintf(st,"cosTheta*:     %g",cuts[5]);
       pt->AddText(st);
       sprintf(st,"PtChild:          %g",cuts[6]);
       pt->AddText(st);
@@ -265,12 +335,63 @@ void RunD0offline(Char_t* path="./",bool h=false,bool PtD0=false) {
       h2->Draw();
       c->cd(4);
       h4->Draw();
+    }    
+  }
+  if(h){
+    if(!PtD0){
+      Char_t outName[1024];
+      sprintf(outName,"%s/ReconstructedD0.root",path);
+      TFile* outroot = new TFile(outName,"recreate");
+      h1->Write();
+      h3->Write();
+      outroot->Close();
+      delete outroot;
     }
-    //TFile *outfile = new TFile("results.root","recreate");
-    //h1->Write();
-    //outfile->Close();
-    
-  } 
+  }
+  if(PtD0){
+    Char_t outName[1024];
+    sprintf(outName,"%s/ReconstructedD0.root",path);
+    TFile* outroot = new TFile(outName,"recreate");
+    h1->Write();
+    h2->Write();
+    h3->Write();
+    h4->Write();
+    outroot->Close();
+    delete outroot;
+  }
+  Char_t foutName[1024];
+  sprintf(foutName,"%s/Cuts",path);
+  ofstream fout(foutName);
+  Char_t st2[1024];
+  sprintf(st2,"First Pt:       %g",kPtCut);
+  fout<<st2<<endl;
+  sprintf(st2,"d0 low:         %g",kd0Cut);
+  fout<<st2<<endl;
+  sprintf(st2,"d0 high:        %g",kd0CutHigh);
+  fout<<st2<<endl;
+  sprintf(st2,"V0 low:         %g",cuts[0]);
+  fout<<st2<<endl;
+  sprintf(st2,"V0 high:        %g",cuts[1]);
+  fout<<st2<<endl;
+  sprintf(st2,"InvMass Diff:   %g",cuts[2]);
+  fout<<st2<<endl;
+  sprintf(st2,"cosPointAng:    %g",cuts[3]);
+  fout<<st2<<endl;
+  sprintf(st2,"d0d0:           %g",cuts[4]);
+  fout<<st2<<endl;
+  sprintf(st2,"cosTheta*:      %g",cuts[5]);
+  fout<<st2<<endl;
+  sprintf(st2,"PtChild:        %g",cuts[6]);
+  fout<<st2<<endl;
+  sprintf(st2,"DCA:            %g",cutDCA);
+  fout<<st2<<endl;
+  fout.close();
+
+  Char_t fName[1024];
+  sprintf(fName,"%s/Events",path);
+  ofstream fevent(fName);
+  for(int i=0;i<nD0;i++){fevent<<event[i]<<endl;}
+  fevent.close();
 }
 //___________________________________________________________________________
 void   SelectTracks(TTree& itsTree,
@@ -368,7 +489,7 @@ PtD0(Char_t* path="./",TH1F * h1,TH1F * h4){
   int nkminus =0;
   int npipluss = 0;
   int nEvent=gAlice->GetEventsPerRun();
-   
+  
   for (Int_t i = 0; i <nEvent; i++) {
     cout<<"Event: "<<i<<endl;
     gAlice->GetEvent(i);
