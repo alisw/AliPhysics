@@ -33,9 +33,11 @@ protected:
     Int_t       fNpart;        //Maximum number of particles per event
     Float_t     fParentWeight; //Parent Weight
     Float_t     fChildWeight;  //ChildWeight
+    Int_t       fTrackit;      // Track the generated final state particle if 1
     Int_t       fAnalog;       //Flaf for anolog or pt-weighted generation
    //
     VertexSmear_t     fVertexSmear; //Vertex Smearing mode
+    Int_t       fTrackIt;    // if 1 Track final state particles 
     TArrayF     fOrigin;     //Origin of event
     TArrayF     fOsigma;     //Sigma of the Origin of event
 
@@ -74,6 +76,8 @@ protected:
     virtual void SetChildWeight(Float_t wgt)  {fChildWeight=wgt;}    
     virtual void SetAnalog(Int_t flag=1) {fAnalog=flag;}	
     virtual void SetVertexSmear(VertexSmear_t smear) {fVertexSmear = smear;}
+    virtual void SetTrackingFlag(Int_t flag=1) {fTrackIt=flag;}
+ 	    
     virtual void SetMC(TGenerator *theMC) 
 	{if (!fgMCEvGen) fgMCEvGen =theMC;}
     ClassDef(AliGenerator,1)

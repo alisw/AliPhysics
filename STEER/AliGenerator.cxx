@@ -28,6 +28,8 @@ TGenerator* AliGenerator::fgMCEvGen=0;
 //____________________________________________________________
 AliGenerator::AliGenerator()
 {
+    printf("\n Initialising AliGenerator\n\n");
+    
     gAlice->SetGenerator(this);
     SetThetaRange();
     SetPhiRange();
@@ -35,6 +37,7 @@ AliGenerator::AliGenerator()
     SetPtRange();
     SetYRange();
     SetNumberParticles();
+    SetTrackingFlag();
   //
   //  fName="Default";
   //  fTitle="Base Generator Class";
@@ -49,6 +52,7 @@ AliGenerator::AliGenerator()
 AliGenerator::AliGenerator(Int_t npart)
     : TNamed(" "," ")
 {
+    printf("\n Initialising AliGenerator\n\n");
     gAlice->SetGenerator(this);
     SetThetaRange();
     SetPhiRange();
@@ -56,6 +60,7 @@ AliGenerator::AliGenerator(Int_t npart)
     SetPtRange();
     SetYRange();
     SetNumberParticles(npart);
+    SetTrackingFlag();
   //
   //  fName="Default";
   //  fTitle="Base Generator Class";
