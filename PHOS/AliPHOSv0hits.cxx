@@ -91,7 +91,7 @@ void AliPHOSv0hits::AddHit(Int_t primary, Int_t Id, Float_t * hits)
   //cout << "Vol Id is " << Id << endl;
   //cout << "hits is " << hits[0] << "  " << hits[1] << "  " << hits[2] << "   " << hits[3] <<endl;
 
-  cout << " Adding a hit number " << fNhits << endl ;
+  //  cout << " Adding a hit number " << fNhits << endl ;
 
   TClonesArray &ltmphits = *fHits ;
   AliPHOSHit *newHit ;
@@ -102,11 +102,11 @@ void AliPHOSv0hits::AddHit(Int_t primary, Int_t Id, Float_t * hits)
 
   // We DO want to save in TreeH the raw hits 
   //  TClonesArray &lhits = *fHits;
-  cout << " Adding a hit to fHits TCloneArray number " << fNhits << endl ;     
+  //  cout << " Adding a hit to fHits TCloneArray number " << fNhits << endl ;     
   new(ltmphits[fNhits]) AliPHOSHit(*newHit) ;
   fNhits++ ;
 
-  cout << " Added a hit to fHits TCloneArray number " << fNhits << endl ; 
+  // cout << " Added a hit to fHits TCloneArray number " << fNhits << endl ; 
   // We do not want to save in TreeH the raw hits 
   //   new(lhits[fNhits]) AliPHOSHit(*newHit) ;    
   //   fNhits++ ;
