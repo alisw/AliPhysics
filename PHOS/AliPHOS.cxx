@@ -1,4 +1,3 @@
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -39,55 +38,10 @@ class TFile;
 #include "AliMC.h"
 #include "AliRun.h"
 #include "AliMagF.h"
+#include "AliPHOSGeometry.h"
 
 ClassImp(AliPHOS)
 
-//____________________________________________________________________________
-AliPHOS::AliPHOS():AliDetector()
-{
-  // ctor 
-  //We do not create objects, because these pointers will be overwritten durin reading from file.
-  fSDigits       = 0 ;
-  fDigits        = 0 ;
-  fEmcRecPoints  = 0 ; 
-  fPpsdRecPoints = 0 ;
-  fTrackSegments = 0 ;
-  fRecParticles  = 0 ;
-
-}
-//____________________________________________________________________________
-AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name,title) 
-{
-  // ctor
-
-  fSDigits       = new TClonesArray("AliPHOSDigit",1000) ; 
-  fDigits        = new TClonesArray("AliPHOSDigit",1000) ;
-  fEmcRecPoints  = new TObjArray(100) ; 
-  fPpsdRecPoints = new TObjArray(100) ;
-  fTrackSegments = new TClonesArray("AliPHOSTrackSegment",100);
-  fRecParticles  = new TClonesArray("AliPHOSRecParticle",100);
-  
-}
-//____________________________________________________________________________
-AliPHOS::~AliPHOS()
-{
-  // dtor
-  if(fEmcRecPoints)
-    fEmcRecPoints->Delete() ;
-  delete fEmcRecPoints ;
-  if(fPpsdRecPoints)
-    fPpsdRecPoints->Delete() ;
-  delete fPpsdRecPoints ;
-  if(fTrackSegments)
-    fTrackSegments->Delete() ;
-  delete fTrackSegments ;
-  if(fRecParticles)
-    fRecParticles->Delete() ;
-  delete fRecParticles ;
-  delete fHits ;
-  delete fDigits ;
-  delete fSDigits ;
-}
 
 //____________________________________________________________________________
 void AliPHOS::CreateMaterials()
@@ -367,70 +321,6 @@ void AliPHOS::SetTreeAddress()
     branch = treeH->GetBranch(branchname);
     if (branch) branch->SetAddress(&fHits);
   }
- 
-  // Branch address for digit tree
-  TTree *treeD = gAlice->TreeD();
-
-  if(fDigits)
-      fDigits->Clear();
-
-  if (treeD && fDigits) {
-    branch = treeD->GetBranch(branchname);
-    if (branch) branch->SetAddress(&fDigits);
-  }
-
-  if(fSDigits)
-    fSDigits->Clear();
-
-  if (gAlice->TreeS()  && fSDigits ) {
-    branch = gAlice->TreeS()->GetBranch("PHOS");
-    if (branch) branch->SetAddress(&fSDigits) ;
-  } 
-
-
-  TTree *treeR = gAlice->TreeR();
-   
-  //Branch address for TreeR: EmcRecPoint
-
-  if(fEmcRecPoints)
-    fEmcRecPoints->Delete();
-   
-
-  if ( treeR && fEmcRecPoints ) {
-    branch = treeR->GetBranch("PHOSEmcRP");
-    if (branch) branch->SetAddress(&fEmcRecPoints) ;
-  }
-
-  //Branch address for TreeR: PPSDRecPoint
-
-  if(fPpsdRecPoints)
-    fPpsdRecPoints->Delete();
- 
-  if ( treeR && fPpsdRecPoints ) {
-    branch = treeR->GetBranch("PHOSPpsdRP");
-    if (branch) branch->SetAddress(&fPpsdRecPoints) ;
-  }
-
-  //Branch address for TreeR: TrackSegments
-
-  if(fTrackSegments)
-    fTrackSegments->Clear() ; 
-  
-  if ( treeR && fTrackSegments ) {
-    branch = treeR->GetBranch("PHOSTS");
-    if (branch) branch->SetAddress(&fTrackSegments) ;
-  }
-  
-  //Branch address for TreeR: RecParticles
-
-  if(fRecParticles)
-    fRecParticles->Clear() ;
-  
-  if ( treeR && fRecParticles ) {
-    branch = treeR->GetBranch("PHOSRP");
-    if (branch) branch->SetAddress(&fRecParticles) ;
-  }
-
 }
 
 
