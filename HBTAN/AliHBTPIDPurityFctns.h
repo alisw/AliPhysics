@@ -159,8 +159,8 @@ class AliHBTPairPIDProbVsQOutSQideQLongFctn: public AliHBTOnePairFctn3D, public 
 
   public:
     AliHBTPairPIDProbVsQOutSQideQLongFctn(Int_t nXbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0,
-                             Int_t nYbins = 100, Double_t maxYval = 0.15, Double_t minYval = 0.0,
-                 Int_t nZbins = 100, Double_t maxZval = 0.15, Double_t minZval = 0.0);
+                                          Int_t nYbins = 100, Double_t maxYval = 0.15, Double_t minYval = 0.0,
+                                          Int_t nZbins = 100, Double_t maxZval = 0.15, Double_t minZval = 0.0);
     virtual  ~AliHBTPairPIDProbVsQOutSQideQLongFctn(){}
 
     TH1* GetResult();
@@ -177,9 +177,9 @@ class AliHBTPairPIDProbVsQOutSQideQLongFctn: public AliHBTOnePairFctn3D, public 
 class AliHBTTwoTrackEffFctnPtThetaPhiPerfectPID: public AliHBTTwoPairFctn3D, public AliHBTCorrelFunction
  {
   public:
-    AliHBTTwoTrackEffFctnPtThetaPhiPerfectPID(Int_t nXbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0,
-                                    Int_t nYbins = 100, Double_t maxYval = 0.3, Double_t minYval = 0.0,
-	                Int_t nZbins = 100, Double_t maxZval = 0.3, Double_t minZval = 0.0);
+    AliHBTTwoTrackEffFctnPtThetaPhiPerfectPID(Int_t nXbins = 50, Double_t maxXval = 0.3, Double_t minXval = 0.0,
+                                    Int_t nYbins = 50, Double_t maxYval = 0.3, Double_t minYval = 0.0,
+	                Int_t nZbins = 50, Double_t maxZval = 0.3, Double_t minZval = 0.0);
     virtual ~AliHBTTwoTrackEffFctnPtThetaPhiPerfectPID(){}
     void ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
     void ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
@@ -196,9 +196,9 @@ class AliHBTPairPIDProbVsPtThetaPhiFctn: public AliHBTOnePairFctn3D, public AliH
 {
 
   public:
-    AliHBTPairPIDProbVsPtThetaPhiFctn(Int_t nXbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0,
-                                      Int_t nYbins = 100, Double_t maxYval = 0.15, Double_t minYval = 0.0,
-                                      Int_t nZbins = 100, Double_t maxZval = 0.15, Double_t minZval = 0.0);
+    AliHBTPairPIDProbVsPtThetaPhiFctn(Int_t nXbins = 50, Double_t maxXval = 0.3, Double_t minXval = 0.0,
+                                      Int_t nYbins = 50, Double_t maxYval = 0.3, Double_t minYval = 0.0,
+                                      Int_t nZbins = 50, Double_t maxZval = 0.3, Double_t minZval = 0.0);
     virtual  ~AliHBTPairPIDProbVsPtThetaPhiFctn(){}
 
     TH1* GetResult();
