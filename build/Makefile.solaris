@@ -18,7 +18,7 @@ CXXFLAGS      = $(CXXOPTS)
 CFLAGS	      = 
 
 # rootcint flags
-CINTFLAGS     = $(filter-out -O +w -KPIC -features=rtti,$(CXXFLAGS))
+CINTFLAGS     = 
 
 # CERNLIB defines
 

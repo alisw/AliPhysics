@@ -15,7 +15,7 @@ CXXFLAGS      = $(CXXOPTS)
 CFLAGS	      = $(COPT)
 
 # rootcint flags
-CINTFLAGS     = #$(CXXFLAGS)
+CINTFLAGS     = 
 
 # CERNLIB defines
 
