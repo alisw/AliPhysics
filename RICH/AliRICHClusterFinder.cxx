@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.7  2000/10/03 21:44:09  morsch
+  Use AliSegmentation and AliHit abstract base classes.
+
   Revision 1.6  2000/10/02 21:28:12  fca
   Removal of useless dependecies via forward declarations
 
@@ -47,7 +50,6 @@
 #include "AliRICHPadHit.h"
 #include "AliRICHDigit.h"
 #include "AliRICHRawCluster.h"
-#include "AliRICHRecHit.h"
 
 #include <TTree.h>
 #include <TCanvas.h>
