@@ -611,6 +611,7 @@ void AliMUONv1::CreateGeometry()
        zoffs5 = TMath::Abs(zpos1);
        zoffs6 = TMath::Abs(zpos2);
      }
+
      else {
        gMC->Gsvolu("S05M", "TUBE", idAir, tpar, 3);
        gMC->Gsvolu("S06M", "TUBE", idAir, tpar, 3);
@@ -675,13 +676,16 @@ void AliMUONv1::CreateGeometry()
        spar2[2] = spar[2]; 
        Float_t dzCh3=spar[2] * 1.01;
        // zSlat to be checked (odd downstream or upstream?)
-       Float_t zSlat = (i%2 ==0)? -spar[2] : spar[2]; 
+       Float_t zSlat = (i%2 ==0)? -spar[2] : spar[2];
+
+	if (gAlice->GetModule("DIPO")) {zSlat*=-1.;}
+
        sprintf(volNam5,"S05%d",i);
        gMC->Gsvolu(volNam5,"BOX",slatMaterial,spar2,3);
        gMC->Gspos(volNam5, i*4+1,slats5Mother, -xSlat32, ySlat31, zoffs5-zSlat-2.*dzCh3, 0, "ONLY");
        gMC->Gspos(volNam5, i*4+2,slats5Mother, +xSlat32, ySlat31, zoffs5-zSlat+2.*dzCh3, 0, "ONLY");
        
-       if (i>0) { 
+	if (i>0) { 
 	 gMC->Gspos(volNam5, i*4+3,slats5Mother,-xSlat32, ySlat32, zoffs5-zSlat-2.*dzCh3, 0, "ONLY");
 	 gMC->Gspos(volNam5, i*4+4,slats5Mother,+xSlat32, ySlat32, zoffs5-zSlat+2.*dzCh3, 0, "ONLY");
        }
