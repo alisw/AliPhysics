@@ -32,7 +32,7 @@ SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
 	       AliMUONClusterInput.cxx  \
 	       AliMUONSegmentationSlatModule.cxx AliMUONSegmentationSlatModuleN.cxx \
 	       AliMUONSegmentationSlat.cxx AliMUONSegmentationSlatN.cxx \
-	       AliMUONRecoEvent.cxx AliMUONRecoDisplay.cxx \
+	       AliMUONRecoEvent.cxx AliMUONRecoTrack.cxx AliMUONRecoDisplay.cxx \
                AliMUONMerger.cxx AliMUONFactory.cxx AliMUONDigitizer.cxx AliMUONDigitizerv1.cxx AliMUONDigitizerv2.cxx AliMUONSDigitizerv1.cxx \
                AliMUONTrackK.cxx AliMUONClusterFinderAZ.cxx AliMUONPixel.cxx \
                AliMUONLoader.cxx AliMUONData.cxx  AliMUONDataInterface.cxx 
