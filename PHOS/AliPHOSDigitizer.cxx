@@ -113,7 +113,7 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
   SetTitle("aliroot") ;
   SetName("Default") ;
   InitParameters() ; 
-  fDefaultInit = kTRUE ; 
+  fDefaultInit = kFALSE ; 
 }
 
 //____________________________________________________________________________ 

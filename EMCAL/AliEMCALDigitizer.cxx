@@ -111,6 +111,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
   // ctor
   SetName("Default");    
   SetTitle("aliroot") ;  
+  fDefaultInit = kFALSE ; 
 }
 
 //____________________________________________________________________________ 
