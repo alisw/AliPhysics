@@ -56,6 +56,7 @@ class AliStack : public TVirtualMCStack
     void  FinishRun();
     Bool_t GetEvent();
     void  PurifyKine();
+    void  ReorderKine();
     void  FinishEvent();
     void  FlagTrack(Int_t track);
     void  KeepTrack(Int_t itrack); 

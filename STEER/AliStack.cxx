@@ -205,7 +205,8 @@ void AliStack::PushTrack(Int_t done, Int_t parent, Int_t pdg,
 
   const Int_t kFirstDaughter=-1;
   const Int_t kLastDaughter=-1;
-  
+
+
   TClonesArray &particles = *fParticles;
   TParticle* particle
     = new(particles[fLoadPoint++]) 
@@ -221,6 +222,8 @@ void AliStack::PushTrack(Int_t done, Int_t parent, Int_t pdg,
   //  Declare that the daughter information is valid
   particle->SetBit(kDaughtersBit);
   //  Add the particle to the stack
+  
+  
   fParticleMap->AddAtAndExpand(particle, fNtrack);//CHECK!!
 
   if(parent>=0) {
@@ -296,11 +299,11 @@ void AliStack::PurifyKine()
   TArrayI map(particles.GetLast()+1);
 
   // Save in Header total number of tracks before compression
-
   // If no tracks generated return now
   if(fHgwmk+1 == fNtrack) return;
 
   // First pass, invalid Daughter information
+
   for(i=0; i<fNtrack; i++) {
     // Preset map, to be removed later
     if(i<=fHgwmk) map[i]=i ; 
@@ -365,11 +368,12 @@ void AliStack::PurifyKine()
   TList* hitLists = gAlice->GetMCApp()->GetHitLists();
   TIter next(hitLists);
   TCollection *hitList;
+  
   while((hitList = dynamic_cast<TCollection*>(next()))) {
     TIter nexthit(hitList);
     AliHit *hit;
     while((hit = dynamic_cast<AliHit*>(nexthit()))) {
-      hit->SetTrack(map[hit->GetTrack()]);
+	hit->SetTrack(map[hit->GetTrack()]);
     }
   }
 
@@ -402,11 +406,143 @@ void AliStack::PurifyKine()
 
    Int_t toshrink = fNtrack-fHgwmk-1;
    fLoadPoint-=toshrink;
+
+   
    for(i=fLoadPoint; i<fLoadPoint+toshrink; ++i) fParticles->RemoveAt(i);
 
    fNtrack=nkeep;
    fHgwmk=nkeep-1;
-   //   delete [] map;
+}
+
+void AliStack::ReorderKine()
+{
+//
+// In some transport code children might not come in a continuous sequence.
+// In this case the stack  has  to  be reordered in order to establish the 
+// mother daughter relation using index ranges.
+//    
+  if(fHgwmk+1 == fNtrack) return;
+
+  //
+  // Howmany secondaries have been produced ?
+  Int_t nNew = fNtrack - fHgwmk - 1;
+  
+  if (nNew > 0) {
+      Int_t i, j;
+      TObjArray &particles = *fParticleMap;
+      TArrayI map1(nNew);
+      //
+      // Copy pointers to temporary array
+      TParticle** tmp = new TParticle*[nNew];
+      
+      for (i = 0; i < nNew; i++) {
+	  if (particles.At(fHgwmk + 1 + i)) {
+//	      tmp[i] = (TParticle*) (particles.At(fHgwmk + 1 + i))->Clone();
+	      tmp[i] = (TParticle*) (particles.At(fHgwmk + 1 + i));
+
+//	      if (((TParticle*) (particles.At(fHgwmk + 1 + i)))->TestBit(kKeepBit))
+//		  tmp[i]->SetBit(kKeepBit);
+//	      if (((TParticle*) (particles.At(fHgwmk + 1 + i)))->TestBit(kDoneBit))
+//		  tmp[i]->SetBit(kDoneBit);
+	  } else {
+	      tmp[i] = 0x0;
+	  }
+	  map1[i] = -99;
+      }
+  
+      
+      //
+      // Reset  LoadPoint 
+      // 
+      fLoadPoint = fHgwmk + 1;
+      //
+      // Re-Push particles into stack 
+      // The outer loop is over parents, the inner over children.
+      // -1 refers to the primary particle
+      //
+      for (i = -1; i < nNew - 1; i++) {
+	  Int_t ipa;
+	  TParticle* parP;
+	  if (i == -1) {
+	      ipa  = tmp[0]->GetFirstMother();
+	      parP =dynamic_cast<TParticle*>(particles.At(ipa));
+	  } else {
+	      ipa = (fHgwmk + 1 + i);
+              // Skip deleted particles
+	      if (!tmp[i])                          continue;
+              // Skip particles without children
+	      if (tmp[i]->GetFirstDaughter() == -1) continue;
+	      parP = tmp[i];
+	  }
+          // Reset daughter information
+	  parP->SetFirstDaughter(-1);
+	  parP->SetLastDaughter(-1);
+	  for (j = i + 1; j < nNew; j++) {
+              // Skip deleted particles
+	      if (!tmp[j])        continue;
+              // Skip particles already handled
+	      if (map1[j] != -99) continue;
+	      Int_t jpa = tmp[j]->GetFirstMother();
+              // Check if daughter of current parent
+	      if (jpa == ipa) {
+		  particles[fLoadPoint] = tmp[j];
+		  // Re-establish daughter information
+		  parP->SetLastDaughter(fLoadPoint);
+		  if (parP->GetFirstDaughter() == -1) parP->SetFirstDaughter(fLoadPoint);
+		  // Set Mother information
+		  if (i != -1) {
+		      tmp[j]->SetFirstMother(map1[i]);
+		  } 
+		  // Build the map
+		  map1[j] = fLoadPoint;
+		  // Increase load point
+		  fLoadPoint++;
+	      }
+	  } // children
+      } // parents
+
+      delete[] tmp;
+
+      //
+      // Build map for remapping of hits
+      // 
+      TArrayI map(fNtrack);
+      for (i = 0; i < fNtrack; i ++) {
+	  if (i <= fHgwmk) {
+	      map[i] = i;
+	  } else{
+	      map[i] = map1[i - fHgwmk -1];
+	  }
+      }
+      
+      // Now loop on all registered hit lists
+      
+      TList* hitLists = gAlice->GetMCApp()->GetHitLists();
+      TIter next(hitLists);
+      TCollection *hitList;
+      
+      while((hitList = dynamic_cast<TCollection*>(next()))) {
+	  TIter nexthit(hitList);
+	  AliHit *hit;
+	  while((hit = dynamic_cast<AliHit*>(nexthit()))) {
+	      hit->SetTrack(map[hit->GetTrack()]);
+	  }
+      }
+  
+  // 
+  // This for detectors which have a special mapping mechanism
+  // for hits, such as TPC and TRD
+  //
+  
+      TObjArray* modules = gAlice->Modules();
+      TIter nextmod(modules);
+      AliModule *detector;
+      while((detector = dynamic_cast<AliModule*>(nextmod()))) {
+	  detector->RemapTrackHitIDs(map.GetArray());
+	  detector->RemapTrackReferencesIDs(map.GetArray());
+      }
+      gAlice->GetMCApp()->RemapTrackReferencesIDs(map.GetArray());
+  } // new particles poduced
 }
 
 Bool_t AliStack::KeepPhysics(TParticle* part)
@@ -559,10 +695,10 @@ void AliStack::SetHighWaterMark(Int_t)
   //
   // Set high water mark for last track in event
   //
-  
+
+    
   fHgwmk = fNtrack-1;
   fCurrentPrimary=fHgwmk;
-  
   // Set also number of primary tracks
   fNprimary = fHgwmk+1;
   fNtrack   = fHgwmk+1;      
@@ -780,6 +916,8 @@ TParticle* AliStack::GetNextParticle()
   
   // nothing to be tracked
   fCurrent = -1;
+ 
+  
   return particle;  
 }
 //__________________________________________________________________________________________
