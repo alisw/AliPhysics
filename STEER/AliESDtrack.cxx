@@ -211,6 +211,10 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
          t->GetExternalCovariance(fOc);
       }
     }
+  case kTOFin: 
+    break;
+  case kTOFout: 
+    break;
   case kTRDin: case kTRDrefit:
     fTRDLabel = t->GetLabel();
 
@@ -283,9 +287,8 @@ Double_t AliESDtrack::GetP() const {
   // This function returns the track momentum
   //---------------------------------------------------------------------
   if (TMath::Abs(fRp[4])<=0) return 0;
-  Double_t lam=TMath::ATan(fRp[3]);
   Double_t pt=1./TMath::Abs(fRp[4]);
-  return pt/TMath::Cos(lam);
+  return pt*TMath::Sqrt(1.+ fRp[3]*fRp[3]);
 }
 
 void AliESDtrack::GetConstrainedPxPyPz(Double_t *p) const {
