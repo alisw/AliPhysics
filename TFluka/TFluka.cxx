@@ -558,8 +558,11 @@ void TFluka::Gstpar(Int_t itmed, const char* param, Double_t parval) {
        printf("Gstpar called with %6d %5s %12.4e %6d\n", itmed, param, parval, fGeom->GetFlukaMaterial(itmed));
    Int_t* reglist;
    Int_t nreg;
-   reglist = fGeom->GetMaterialList(itmed, nreg);
-   if (nreg == 0) return;
+   reglist = fGeom->GetMaterialList(fGeom->GetFlukaMaterial(itmed), nreg);
+   if (nreg == 0) {
+       return;
+   }
+   
 //
    Bool_t process = kFALSE;
    if (strncmp(param, "DCAY",  4) == 0 ||
@@ -847,8 +850,6 @@ void TFluka::SetCut(const char* cutName, Double_t cutValue, Int_t imed)
 {
 // Set user cut value for material imed
 //
-    printf("TFluka::SetCut %s %e %d \n", cutName, cutValue, imed);
-    
     TFlukaConfigOption* cut = new TFlukaConfigOption(cutName, cutValue, imed);
     fCuts->Add(cut);
 }
@@ -1016,10 +1017,6 @@ fin:
 	  global = kFALSE;
 
 	  fprintf(pFlukaVmcInp,"*\n*Material specific process setting for #%8d \n", mat);
-	  printf("Process for %d \n", mat);
-	  TGeoMaterial*    material =  (TGeoMaterial*) (GetFlukaMaterials())->At(GetMaterialIndex(mat));
-	  printf("Process for %d %s\n", mat, material->GetName());
-	  
       }
       
     // annihilation
@@ -1793,7 +1790,8 @@ fin:
 	  matMax = matMin;
 	  global = kFALSE;
 	  TGeoMaterial*    material =  (TGeoMaterial*) (GetFlukaMaterials())->At(GetMaterialIndex(mat));
-	  fprintf(pFlukaVmcInp,"*\n*Material specific cut setting for #%8d %s %s %13.3e\n", mat, material->GetName(), cut->GetName(), cut->Cut());  
+	  fprintf(pFlukaVmcInp,"*\n*Material specific cut setting for #%8d %s %s %13.3e\n", 
+		  mat, material->GetName(), cut->GetName(), cut->Cut());  
 
       } 
 
