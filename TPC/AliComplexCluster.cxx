@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2003/11/24 09:43:03  kowal2
+Obsolete - removed
+
 Revision 1.5  2003/09/29 11:27:39  kowal2
 new classes added
 
@@ -46,6 +49,7 @@ New class replacing AliCluster
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliComplexCluster.h"
+
 
 ClassImp(AliComplexCluster)
 //_____________________________________________________________________________

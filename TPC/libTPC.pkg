@@ -9,7 +9,7 @@ SRCS:=  AliTPCLoader.cxx\
         AliTPCClustersArray.cxx \
         AliTPCcluster.cxx AliTPCclusterer.cxx \
         AliTPCtrack.cxx AliTPCtracker.cxx \
-	AliTPCTrackHits.cxx\
+	AliTPCTrackHits.cxx \
 	AliTPCDigitizer.cxx\
 	AliTPCTrackHitsV2.cxx AliTPCtrackerParam.cxx AliTPCkineGrid.cxx \
 	AliTPCclustererMI.cxx AliTPCclusterMI.cxx  AliTPCtrackerMI.cxx \
