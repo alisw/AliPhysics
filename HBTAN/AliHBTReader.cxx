@@ -197,18 +197,19 @@ Int_t AliHBTReader::Read(AliHBTRun* particles, AliHBTRun *tracks)
  //
   Info("Read","");
   
-  if (!particles) //check if an object is instatiated
+  if ( ReadsParticles() && (particles == 0x0) ) //check if an object is instatiated
    {
      Error("Read"," particles object must be instatiated before passing it to the reader");
      return 1;
    }
-  if (!tracks)  //check if an object is instatiated
+  if ( ReadsTracks() && (tracks == 0x0) )  //check if an object is instatiated
    {
      Error("Read"," tracks object must be instatiated before passing it to the reader");
      return 1;
    }
-  particles->Reset();//clear runs == delete all old events
-  tracks->Reset();
+   
+  if (ReadsParticles()) particles->Reset();//clear runs == delete all old events
+  if (ReadsTracks()) tracks->Reset();
   
   Rewind();
   

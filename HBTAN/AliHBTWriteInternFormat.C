@@ -55,7 +55,7 @@ void AliHBTWriteInternFormat(Option_t* datatype, Option_t* processopt="TracksAnd
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libHBTAN");
   cout<<"AliHBTWriteInternFormat.C: ..... Loaded\n";
   
-
+  Bool_t multcheck = kTRUE;
   /***********************************************************/
    
   AliHBTReader* reader;
@@ -70,32 +70,38 @@ void AliHBTWriteInternFormat(Option_t* datatype, Option_t* processopt="TracksAnd
    {
     reader = new AliHBTReaderKineTree();
     processopt="Particles"; //this reader by definition reads only simulated particles
+    multcheck = kFALSE;
    }
   else if(!ESD)
    {
     AliHBTReaderESD* esdreader = new AliHBTReaderESD();
     esdreader->ReadParticles(kTRUE);
     reader = esdreader;
+    multcheck = kTRUE;
    }
   else if(!TPC)
    {
     cout<<"AliHBTWriteInternFormat.C: Creating Reader TPC .....\n";
     reader = new AliHBTReaderTPC();
+    multcheck = kFALSE;
     cout<<"AliHBTWriteInternFormat.C: ..... Created\n";
    }
   else if(!ITSv1)
    {
     reader = new AliHBTReaderITSv1();
+    multcheck = kFALSE;
    }
   else if(!ITSv2)
    {
     cout<<"AliHBTWriteInternFormat.C: Creating Reader ITSv2 .....\n";
     reader = new AliHBTReaderITSv2();
+    multcheck = kFALSE;
     cout<<"AliHBTWriteInternFormat.C: ..... Created\n";
    }
   else if(!intern)
    {
     reader = new AliHBTReaderInternal("data.root");
+    multcheck = kTRUE;
    }
   else
    {
@@ -121,7 +127,7 @@ void AliHBTWriteInternFormat(Option_t* datatype, Option_t* processopt="TracksAnd
    reader->SetDirs(dirs);
 
    cout<<"AliHBTWriteInternFormat.C:   P R O C S E S S I N G .....\n\n";
-   AliHBTReaderInternal::Write(reader,outfile);
+   AliHBTReaderInternal::Write(reader,outfile,multcheck);
    cout<<"\n\nAliHBTWriteInternFormat.C:   F I N I S H E D\n";
    
    if (dirs) delete dirs;

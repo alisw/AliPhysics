@@ -326,14 +326,15 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
 
          part1= partEvent->GetParticle(j);
          track1= trackEvent->GetParticle(j);
-         
-         if( part1->GetPdgCode() != track1->GetPdgCode() )
-          {
-            Fatal("ProcessTracksAndParticles",
-                  "Event %d: Particle %d: PID of simulated particle (%d) not the same of reconstructed track (%d)",
-                  i,j, part1->GetPdgCode(),track1->GetPdgCode() );
-            return;
-          }
+  
+//PID imperfections ???
+//         if( part1->GetPdgCode() != track1->GetPdgCode() )
+//          {
+//            Fatal("ProcessTracksAndParticles",
+//                  "Event %d: Particle %d: PID of simulated particle (%d) not the same of reconstructed track (%d)",
+//                  i,j, part1->GetPdgCode(),track1->GetPdgCode() );
+//            return;
+//          }
          
          Bool_t firstcut = fPairCut->GetFirstPartCut()->Pass(part1);
          
@@ -363,7 +364,7 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
             if (part1->GetUID() == part2->GetUID()) continue;
             partpair->SetParticles(part1,part2);
            
-            track2= trackEvent->GetParticle(k);       
+            track2= trackEvent->GetParticle(k);
             trackpair->SetParticles(track1,track2);
 
             if(fPairCut->Pass(partpair) ) //check pair cut 
@@ -952,14 +953,15 @@ void AliHBTAnalysis::ProcessTracksAndParticlesNonIdentAnal()
 
          part1= partEvent1->GetParticle(j);
          track1= trackEvent1->GetParticle(j);
-         
-         if( part1->GetPdgCode() != track1->GetPdgCode() )
-          {
-            Fatal("ProcessTracksAndParticlesNonIdentAnal",
-                  "Event %d: Particle %d: PID of simulated particle (%d) not the same of reconstructed track (%d)",
-                  i,j, part1->GetPdgCode(),track1->GetPdgCode() );
-            return;
-          }
+  
+//PID reconstruction imperfections
+//         if( part1->GetPdgCode() != track1->GetPdgCode() )
+//          {
+//            Fatal("ProcessTracksAndParticlesNonIdentAnal",
+//                  "Event %d: Particle %d: PID of simulated particle (%d) not the same of reconstructed track (%d)",
+//                  i,j, part1->GetPdgCode(),track1->GetPdgCode() );
+//            return;
+//          }
          
          for(ii = 0; ii<fNParticleMonitorFunctions; ii++)
            fParticleMonitorFunctions[ii]->Process(part1);

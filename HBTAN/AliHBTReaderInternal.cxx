@@ -101,7 +101,7 @@ Int_t AliHBTReaderInternal::ReadNext()
     if (fTree == 0x0)
      if( (i=OpenNextFile()) )
       {
-        Error("ReadNext","Skippimg directory due to problems with opening files. Errorcode %d",i);
+        Error("ReadNext","Skipping directory due to problems with opening files. Errorcode %d",i);
         fCurrentDir++;
         continue;
       }
@@ -226,7 +226,7 @@ Int_t AliHBTReaderInternal::ReadNext()
     
     return 0;
 
-   }while(fCurrentEvent < GetNumberOfDirs());
+   }while(fCurrentDir < GetNumberOfDirs());
 
   return 1;//no more directories to read
 }
@@ -235,7 +235,7 @@ Int_t AliHBTReaderInternal::ReadNext()
 Int_t AliHBTReaderInternal::OpenNextFile()
 {
   //open file in current directory
-   const TString& dirname = GetDirName(fCurrentEvent); 
+   const TString& dirname = GetDirName(fCurrentDir);
    if (dirname == "")
     {
       Error("OpenNextFile","Can not get directory name");
