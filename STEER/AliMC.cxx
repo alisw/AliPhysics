@@ -215,8 +215,10 @@ void AliMC::FinishRun()
   fGenerator->FinishRun();
 
   //Output energy summary tables
-  if (GetDebug()) Info("FinishRun"," EnergySummary()");
-  EnergySummary();
+  if (GetDebug()) {
+    Info("FinishRun"," EnergySummary()");
+    EnergySummary();
+  }
 
 }
 
