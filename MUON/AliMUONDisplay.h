@@ -26,8 +26,6 @@ class TSlider;
 class TButton;
 class TArc;
 
-const Int_t kMAXZOOM = 20;
-
 class AliMUONDisplay : /*splaypublic TObject,*/ public AliDisplay {
 public:
                      AliMUONDisplay();

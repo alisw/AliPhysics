@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/06/26 14:02:38  morsch
+Add class AliMUONConstants with MUON specific constants using static memeber data and access methods.
+
 */
 
 #include "AliMUONConstants.h"
@@ -32,4 +35,5 @@ Float_t AliMUONConstants::fgDefaultChamberZ[14] =
 Float_t  AliMUONConstants::fgDmin[7] = { 35.,  47.,  66.,   80.,  80., 100., 100.};    
 Float_t  AliMUONConstants::fgDmax[7]  = {183., 245., 316.6,  520.,  520., 830., 880.};  
 
+Int_t   AliMUONConstants::fgMaxZoom = 20;
 void AliMUONConstants::Streamer(TBuffer &R__b) {} 

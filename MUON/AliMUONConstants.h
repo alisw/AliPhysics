@@ -25,6 +25,8 @@ class AliMUONConstants : public TObject {
     static Float_t  Dmin(Int_t i) {return fgDmin[i];}
     // return chamber i outer diameter
     static Float_t  Dmax(Int_t i) {return fgDmax[i];}
+    // return maximum zoom for event display
+    static Int_t    MaxZoom() {return fgMaxZoom;}
  private:
     AliMUONConstants(){}
     virtual ~AliMUONConstants(){}
@@ -35,9 +37,10 @@ class AliMUONConstants : public TObject {
     static Int_t  fgNTriggerCircuit;    //  Number of Trigger Circuits
 //
     static Float_t  fgDefaultChamberZ[14];    // ! Z-positions of chambers
-    static Float_t  fgDmin[7];               // ! inner diameter
-    static Float_t  fgDmax[7];               // ! outer diameter
+    static Float_t  fgDmin[7];                // ! inner diameter
+    static Float_t  fgDmax[7];                // ! outer diameter
 //
+    static Int_t    fgMaxZoom;                // Maximum Zoom for event display
     ClassDef(AliMUONConstants, 1)     // Class definition in ROOT context
 };
 	

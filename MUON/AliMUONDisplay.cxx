@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/26 14:02:38  morsch
+Add class AliMUONConstants with MUON specific constants using static memeber data and access methods.
+
 Revision 1.2  2000/06/15 07:58:48  morsch
 Code from MUON-dev joined
 
@@ -850,7 +853,7 @@ void AliMUONDisplay::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 	if (x1 < x0) {temp = x0; x0 = x1; x1 = temp;}
 	if (y1 < y0) {temp = y0; y0 = y1; y1 = temp;}
 	gPad->Range(x0,y0,x1,y1);
-	if (fZooms < kMAXZOOM-1) {
+	if (fZooms < AliMUONConstants::MaxZoom()-1) {
 	    fZooms++;
 	    fZoomX0[fZooms] = x0;
 	    fZoomY0[fZooms] = y0;
