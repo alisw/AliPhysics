@@ -15,7 +15,7 @@ class AliGenReaderTreeK : public AliGenReader
 {
  public:
     AliGenReaderTreeK();
-    AliGenReaderTreeK(const AliGenReaderTreeK &reader){;}
+    AliGenReaderTreeK(const AliGenReaderTreeK &reader);
     virtual ~AliGenReaderTreeK();
     // Initialise 
     virtual void Init();
