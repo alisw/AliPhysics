@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.6  2000/07/20 12:45:27  gosset
+New "EventReconstructor..." structure,
+	hopefully more adapted to tree/streamer.
+"AliMUONEventReconstructor::RemoveDoubleTracks"
+	to keep only one track among similar ones.
+
 Revision 1.5  2000/07/18 16:04:06  gosset
 AliMUONEventReconstructor package:
 * a few minor modifications and more comments
@@ -505,47 +511,52 @@ void TrackChi2MCS(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *P
 
   AliMUONTrackHit *hit;
   Bool_t goodDeterminant;
-  Int_t hitNumber, hitNumber1, hitNumber2, hitNumber3;
-  Double_t zHit[10], paramBendingCoor[10], paramNonBendingCoor[10], ap[10];
-  Double_t hitBendingCoor[10], hitNonBendingCoor[10];
-  Double_t hitBendingReso2[10], hitNonBendingReso2[10];
-  // dimension 10 in parameter ??? related to AliMUONConstants::NTrackingCh() !!!!
-  Int_t numberOfHit = TMath::Min(trackBeingFitted->GetNTrackHits(), 10);
+  Int_t chCurrent, chPrev, hitNumber, hitNumber1, hitNumber2, hitNumber3;
+  Double_t z, z1, z2, z3;
+  AliMUONTrackHit *hit1, *hit2, *hit3;
+  Double_t hbc1, hbc2, pbc1, pbc2;
+  Double_t hnbc1, hnbc2, pnbc1, pnbc2;
+  Int_t numberOfHit = trackBeingFitted->GetNTrackHits();
   TMatrix *covBending = new TMatrix(numberOfHit, numberOfHit);
   TMatrix *covNonBending = new TMatrix(numberOfHit, numberOfHit);
+  Double_t *msa2 = new Double_t[numberOfHit];
 
   // Predicted coordinates and  multiple scattering angles are first calculated
   for (hitNumber = 0; hitNumber < numberOfHit; hitNumber++) {
     hit = (AliMUONTrackHit*) (*(trackBeingFitted->GetTrackHitsPtr()))[hitNumber];
-    zHit[hitNumber] = hit->GetHitForRecPtr()->GetZ();
+    z = hit->GetHitForRecPtr()->GetZ();
     // do something special if 2 hits with same Z ????
     // security against infinite loop ????
-    (&param1)->ExtrapToZ(zHit[hitNumber]); // extrapolation
+    (&param1)->ExtrapToZ(z); // extrapolation
     hit->SetTrackParam(&param1);
-    paramBendingCoor[hitNumber] = (&param1)->GetBendingCoor();
-    paramNonBendingCoor[hitNumber] = (&param1)->GetNonBendingCoor();
-    hitBendingCoor[hitNumber] = hit->GetHitForRecPtr()->GetBendingCoor();
-    hitNonBendingCoor[hitNumber] = hit->GetHitForRecPtr()->GetNonBendingCoor();
-    hitBendingReso2[hitNumber] = hit->GetHitForRecPtr()->GetBendingReso2();
-    hitNonBendingReso2[hitNumber] = hit->GetHitForRecPtr()->GetNonBendingReso2();
-    ap[hitNumber] = MultipleScatteringAngle2(hit); // multiple scatt. angle ^2  
+    // square of multiple scattering angle at current hit, with one chamber
+    msa2[hitNumber] = MultipleScatteringAngle2(hit);
+    // correction for eventual missing hits or multiple hits in a chamber,
+    // according to the number of chambers
+    // between the current hit and the previous one
+    chCurrent = hit->GetHitForRecPtr()->GetChamberNumber();
+    if (hitNumber > 0) msa2[hitNumber] = msa2[hitNumber] * (chCurrent - chPrev);
+    chPrev = chCurrent;
   }
 
   // Calculates the covariance matrix
-  // One chamber is taken into account between successive hits.
-  // "ap" should be changed for taking into account the eventual missing hits
-  // by defining an "equivalent" chamber thickness !!!!
-  for (hitNumber1 = 0; hitNumber1 < numberOfHit; hitNumber1++) {    
+  for (hitNumber1 = 0; hitNumber1 < numberOfHit; hitNumber1++) { 
+    hit1 = (AliMUONTrackHit*) (*(trackBeingFitted->GetTrackHitsPtr()))[hitNumber1];
+    z1 = hit1->GetHitForRecPtr()->GetZ();
     for (hitNumber2 = hitNumber1; hitNumber2 < numberOfHit; hitNumber2++) {
+      hit2 = (AliMUONTrackHit*) (*(trackBeingFitted->GetTrackHitsPtr()))[hitNumber2];
+      z2 = hit2->GetHitForRecPtr()->GetZ();
       // initialization to 0 (diagonal plus upper triangular part)
       (*covBending)(hitNumber2, hitNumber1) = 0.0;
       // contribution from multiple scattering in bending plane:
       // loop over upstream hits
       for (hitNumber3 = 0; hitNumber3 < hitNumber1; hitNumber3++) { 	
+	hit3 = (AliMUONTrackHit*)
+	  (*(trackBeingFitted->GetTrackHitsPtr()))[hitNumber3];
+	z3 = hit3->GetHitForRecPtr()->GetZ();
 	(*covBending)(hitNumber2, hitNumber1) =
 	  (*covBending)(hitNumber2, hitNumber1) +
-	  ((zHit[hitNumber1] - zHit[hitNumber3]) *
-	   (zHit[hitNumber2] - zHit[hitNumber3]) * ap[hitNumber3]); 
+	  ((z1 - z3) * (z2 - z3) * msa2[hitNumber3]); 
       }
       // equal contribution from multiple scattering in non bending plane
       (*covNonBending)(hitNumber2, hitNumber1) =
@@ -554,10 +565,12 @@ void TrackChi2MCS(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *P
 	// Diagonal elements: add contribution from position measurements
 	// in bending plane
 	(*covBending)(hitNumber2, hitNumber1) =
-	  (*covBending)(hitNumber2, hitNumber1) + hitBendingReso2[hitNumber1];
+	  (*covBending)(hitNumber2, hitNumber1) +
+	  hit1->GetHitForRecPtr()->GetBendingReso2();
 	// and in non bending plane
 	(*covNonBending)(hitNumber2, hitNumber1) =
-	  (*covNonBending)(hitNumber2, hitNumber1) + hitNonBendingReso2[hitNumber1];
+	  (*covNonBending)(hitNumber2, hitNumber1) +
+	  hit1->GetHitForRecPtr()->GetNonBendingReso2();
       }
       else {
 	// Non diagonal elements: symmetrization
@@ -593,34 +606,47 @@ void TrackChi2MCS(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *P
   // and it would save a lot of computing time !!!!
   
   // Calculates Chi2
-  if (goodDeterminant) { // with Multiple Scattering if inversion correct
-    for (hitNumber1=0; hitNumber1 < numberOfHit ; hitNumber1++){ 
-      for (hitNumber2=0; hitNumber2 < numberOfHit; hitNumber2++){
+  if (goodDeterminant) {
+    // with Multiple Scattering if inversion correct
+    for (hitNumber1 = 0; hitNumber1 < numberOfHit ; hitNumber1++) { 
+      hit1 = (AliMUONTrackHit*) (*(trackBeingFitted->GetTrackHitsPtr()))[hitNumber1];
+      hbc1 = hit1->GetHitForRecPtr()->GetBendingCoor();
+      pbc1 = hit1->GetTrackParam()->GetBendingCoor();
+      hnbc1 = hit1->GetHitForRecPtr()->GetNonBendingCoor();
+      pnbc1 = hit1->GetTrackParam()->GetNonBendingCoor();
+      for (hitNumber2 = 0; hitNumber2 < numberOfHit; hitNumber2++) {
+	hit2 = (AliMUONTrackHit*)
+	  (*(trackBeingFitted->GetTrackHitsPtr()))[hitNumber2];
+	hbc2 = hit2->GetHitForRecPtr()->GetBendingCoor();
+	pbc2 = hit2->GetTrackParam()->GetBendingCoor();
+	hnbc2 = hit2->GetHitForRecPtr()->GetNonBendingCoor();
+	pnbc2 = hit2->GetTrackParam()->GetNonBendingCoor();
 	Chi2 = Chi2 +
-	  ((*covBending)(hitNumber2, hitNumber1) * 
-	   (hitBendingCoor[hitNumber1] - paramBendingCoor[hitNumber1]) *
-	   (hitBendingCoor[hitNumber2] - paramBendingCoor[hitNumber2]));
-	Chi2 = Chi2 +
+	  ((*covBending)(hitNumber2, hitNumber1) *
+	   (hbc1 - pbc1) * (hbc2 - pbc2)) +
 	  ((*covNonBending)(hitNumber2, hitNumber1) *
-	   (hitNonBendingCoor[hitNumber1] - paramNonBendingCoor[hitNumber1]) *
-	   (hitNonBendingCoor[hitNumber2] - paramNonBendingCoor[hitNumber2]));
+	   (hnbc1 - pnbc1) * (hnbc2 - pnbc2));
       }
     }
-  } else {  // without Multiple Scattering if inversion impossible
-    for (hitNumber1=0; hitNumber1 < numberOfHit ; hitNumber1++) { 
-      Chi2 = Chi2 +
-	((hitBendingCoor[hitNumber1] - paramBendingCoor[hitNumber1]) *
-	 (hitBendingCoor[hitNumber1] - paramBendingCoor[hitNumber1]) /
-	 hitBendingReso2[hitNumber1]);
-      Chi2 = Chi2 +
-	((hitNonBendingCoor[hitNumber1] - paramNonBendingCoor[hitNumber1]) *
-	 (hitNonBendingCoor[hitNumber1] - paramNonBendingCoor[hitNumber1]) /
-	 hitNonBendingReso2[hitNumber1]);      
+  } else {
+    // without Multiple Scattering if inversion impossible
+    for (hitNumber1 = 0; hitNumber1 < numberOfHit ; hitNumber1++) { 
+      hit1 = (AliMUONTrackHit*) (*(trackBeingFitted->GetTrackHitsPtr()))[hitNumber1];
+      hbc1 = hit1->GetHitForRecPtr()->GetBendingCoor();
+      pbc1 = hit1->GetTrackParam()->GetBendingCoor();
+      hnbc1 = hit1->GetHitForRecPtr()->GetNonBendingCoor();
+      pnbc1 = hit1->GetTrackParam()->GetNonBendingCoor();
+      Chi2 = Chi2 + 
+	((hbc1 - pbc1) * (hbc1 - pbc1) /
+	 hit1->GetHitForRecPtr()->GetBendingReso2()) +
+	((hnbc1 - pnbc1) * (hnbc1 - pnbc1) /
+	 hit1->GetHitForRecPtr()->GetNonBendingReso2());
     }
   }
   
   delete covBending;
   delete covNonBending;
+  delete [] msa2;
 }
 
 Double_t MultipleScatteringAngle2(AliMUONTrackHit *TrackHit)
