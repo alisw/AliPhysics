@@ -42,13 +42,17 @@ if [ "$DIR" = "ALL" ]; then
   for DIR in `ls`; do
     if [ -d $DIR ] ; then
       cd $TO/$DIR
-      VER=0
+      VER="d"
       until [ "$VER" = "$MAX" ] ; do
         if [ -f "v"$VER"_test"$GEN""$VIS".in" ] ; then
           echo "test_run_in.sh $DIR v$VER test$GEN$VIS"
           test_run_in.sh $DIR -d $VER -g $GEN -v $VIS
         fi
-        let VER=$VER+1
+        if [ "$VER" = "d" ]; then
+          VER=0
+        else  
+          let VER=$VER+1
+        fi
       done 
       cd $TO
     fi       
@@ -59,13 +63,17 @@ else
   if [ "$DIR" = "STRUCT" ]; then
     cd $TO/$DIR
     for MODULE in `ls`; do
-      VER=0
+      VER="d"
       until [ "$VER" = "$MAX" ] ; do
         if [ -f $MODULE/"v"$VER"_test"$GEN""$VIS".in" ]; then
           echo "test_run_struct.sh $MODULE v$VER test$GEN$VIS"
           test_run_struct.sh $MODULE -d $VER -g $GEN -v $VIS
 	fi  
-        let VER=$VER+1
+        if [ "$VER" = "d" ]; then
+          VER=0
+        else  
+          let VER=$VER+1
+        fi
       done
     done
   else

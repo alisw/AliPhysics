@@ -39,6 +39,11 @@ CURDIR=`pwd`
 
 SRC=$ALICE_ROOT
 TO=$AG4_INSTALL/"test"
+if [ "$VER" = "d" ]; then 
+ VER_REPLACE=""
+else
+ VER_REPLACE="$VER"
+fi
 
 # test if corresponding version order number
 # is defined
@@ -47,9 +52,13 @@ IS_VERSION="NO"
 if [ -f "Ali"$DIR"v"$VER".cxx" ]; then
   IS_VERSION="YES"
 else
-  if [ -f "Ali"$DIR".cxx" && "$VER" = "0" ]; then
+  if [ -f "Ali"$DIR".cxx" -a "$VER" = "0" ]; then
     IS_VERSION="YES" 
-  fi  
+  else
+    if [ "$VER" = "d" -a -d "$TO/$DIR" -a "$DIR" != "STRUCT" ]; then 
+      IS_VERSION="YES"
+    fi
+  fi 
 fi
 if [ "$IS_VERSION" = "NO" ]; then
   cd $CURDIR
@@ -59,9 +68,9 @@ cd $TO
 
 # create basic test macro
 if [ "$VIS" = "0" ]; then 
-  cat $AG4_INSTALL/config/test_default_det_novis.in | sed s/NNN/$VER/g | sed s/WWW/$VER/g | sed s/GGG/$GEN/g |  sed s/VVV/$VIS/g | sed s/XXX/$DIR/g > $TO/$DIR"/v"$VER"_test"$GEN""$VIS".in"
+  cat $AG4_INSTALL/config/test_default_det_novis.in | sed s/NNN/$VER_REPLACE/g | sed s/WWW/$VER_REPLACE/g | sed s/GGG/$GEN/g |  sed s/VVV/$VIS/g | sed s/XXX/$DIR/g > $TO/$DIR"/v"$VER"_test"$GEN""$VIS".in"
 else
-  cat $AG4_INSTALL/config/test_default_det_vis.in | sed s/NNN/$VER/g | sed s/WWW/$VER/g | sed s/GGG/$GEN/g |  sed s/VVV/$VIS/g | sed s/XXX/$DIR/g > $TO/$DIR"/v"$VER"_test"$GEN""$VIS".in"
+  cat $AG4_INSTALL/config/test_default_det_vis.in | sed s/NNN/$VER_REPLACE/g | sed s/WWW/$VER_REPLACE/g | sed s/GGG/$GEN/g |  sed s/VVV/$VIS/g | sed s/XXX/$DIR/g > $TO/$DIR"/v"$VER"_test"$GEN""$VIS".in"
 # create visualisation macro (if it does not yet exist)
   if [ ! -f $TO/$DIR/vis_test$VIS".in" ]; then
     cp $AG4_INSTALL/config/test_default_vis$VIS.in $TO/$DIR/vis_test$VIS.in
@@ -73,4 +82,5 @@ if [ ! -f $TO/$DIR/gen_test$GEN".in" ]; then
   cp $AG4_INSTALL/config/test_default_gen$GEN.in $TO/$DIR/gen_test$GEN.in
 fi
 
+echo "test_create_in.sh $DIR v$VER test$GEN$VIS"
 cd $CURDIR

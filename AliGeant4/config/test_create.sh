@@ -55,7 +55,7 @@ if [ "$DIR" = "ALL" ]; then
       VER=0
       until [ "$VER" = "$MAX" ] ; do
         if [ -f "Ali"$DIR"v"$VER".cxx" ]; then
-          echo "test_create_in.sh $DIR v$VER test$GEN$VIS"
+          #echo "test_create_in.sh $DIR v$VER test$GEN$VIS"
           test_create_in.sh $DIR -d $VER -g $GEN -v $VIS
         fi
         let VER=$VER+1
@@ -72,7 +72,7 @@ else
       VER=0
       until [ "$VER" = "$MAX" ] ; do
         if [ -f $SRC/$DIR/"Ali"$MODULE"v"$VER".cxx" ]; then
-          echo "test_create_struct.sh $MODULE v$VER test$GEN$VIS"
+          #echo "test_create_struct.sh $MODULE v$VER test$GEN$VIS"
           test_create_struct.sh $MODULE -d $VER -g $GEN -v $VIS
 	fi  
         let VER=$VER+1
@@ -80,18 +80,45 @@ else
     done
   else
   
-# specified detector only
-    if [ -d $SRC/$DIR ] ; then    
-    cd $SRC/$DIR
-    VER=0
-      until [ "$VER" = "$MAX" ] ; do
-        if [ -f "Ali"$DIR"v"$VER".cxx" ]; then
-          echo "test_create_in.sh $DIR v$VER test$GEN$VIS"
+# all detectors with default versions only
+    if [ "$DIR" = "ALL_DEFAULT" ]; then
+      cd $SRC
+      for DIR in `ls`; do
+        if [ -d $DIR ]; then
+          cd $SRC/$DIR
+          VER="d"
+          #echo "test_create_in.sh $DIR v$VER test$GEN$VIS"
           test_create_in.sh $DIR -d $VER -g $GEN -v $VIS
         fi
-        let VER=$VER+1
-      done 
-      cd $TO     
+        cd $SRC    
+      done
+    else
+
+# loop over all structures with default versions only
+      if [ "$DIR" = "STRUCT_DEFAULT" ]; then
+        DIR="STRUCT"
+        cd $TO/$DIR
+        for MODULE in `ls`; do
+          VER="d"
+          #echo "test_create_struct.sh $MODULE v$VER test$GEN$VIS"
+          test_create_struct.sh $MODULE -d $VER -g $GEN -v $VIS
+        done
+      else
+  
+# specified detector only
+        if [ -d $SRC/$DIR ]; then    
+          cd $SRC/$DIR
+          VER=0
+          until [ "$VER" = "$MAX" ] ; do
+            if [ -f "Ali"$DIR"v"$VER".cxx" ]; then
+              #echo "test_create_in.sh $DIR v$VER test$GEN$VIS"
+              test_create_in.sh $DIR -d $VER -g $GEN -v $VIS
+            fi
+            let VER=$VER+1
+          done 
+          cd $TO     
+        fi
+      fi
     fi
   fi    
 fi
