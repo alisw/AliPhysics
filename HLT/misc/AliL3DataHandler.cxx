@@ -137,6 +137,7 @@ AliL3DigitRowData *AliL3DataHandler::CompBinary2Memory(UInt_t &nrow)
 	<<"Error reading from file "<<ENDLOG;
       return 0;
     }
+
   UInt_t size = GetMemorySize(nrow,comp);
   AliL3DigitRowData *data = (AliL3DigitRowData*)Allocate(size);
   CompMemory2Memory(nrow,data,comp);
@@ -481,6 +482,7 @@ UInt_t AliL3DataHandler::CompMemory2Memory(UInt_t nrow,AliL3DigitRowData *data,B
 		if( (time += Read(comp,index)) == 2*255)
 		  time += Read(comp,index);
 	    }
+
 	  while(1)
 	    {
 	      while( (charge = Read(comp,index)) != 0)
@@ -493,7 +495,6 @@ UInt_t AliL3DataHandler::CompMemory2Memory(UInt_t nrow,AliL3DigitRowData *data,B
 		  ndigit++;
 		  if(Test(comp,index) != 0)
 		    time++;
-		  
 		}
 	      if(Test(comp,index) == 0)
 		{
