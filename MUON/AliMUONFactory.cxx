@@ -19,6 +19,9 @@
 
 /*
 $Log$
+Revision 1.4  2002/10/14 14:57:29  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.2.10.1  2002/10/11 06:56:47  hristov
 Updating VirtualMC to v3-09-02
 
@@ -51,50 +54,47 @@ Static method Build() builds the MUON system out of chambers, segmentation and r
 
 ClassImp(AliMUONFactory)
 
-    
-void AliMUONFactory::Build(AliMUON* where, const char* what) 
+//__________________________________________________________________________
+AliMUONFactory::AliMUONFactory()
+  : TObject(),
+    fMUON(0),
+    fResponse0(0)
 {
 //
-// Construct MUON from chambers, segmentation and responses
-//
-    char tmp[20];
-    AliMUON* pMUON = where;
-    strcpy(tmp, what);
+}
 
-    if (strcmp(tmp, "default")==0) {
-      if(pMUON->GetDebug()) {
-	
-	printf("\nAliMUONFactory: --------AliMUONFactory------------------------------");
-	printf("\nAliMUONFactory:  Non default version of MUON selected               ");
-	printf("\nAliMUONFactory:  You have to construct yourself the MUON elements !!");	
-	printf("\nAliMUONFactory: ----------------------------------------------------");
-      }
-	pMUON->SetIshunt(0);
-	pMUON->SetMaxStepGas(0.1);
-	pMUON->SetMaxStepAlu(0.1);
+//__________________________________________________________________________
+AliMUONFactory::~AliMUONFactory()
+{
 //
-// Version 0
+}
+
+//__________________________________________________________________________
+void AliMUONFactory::BuildCommon() 
+{
 //
-// First define the number of planes that are segmented (1 or 2) by a call
-// to SetNsec. 
-// Then chose for each chamber (chamber plane) the segmentation 
-// and response model.
-// They should be equal for the two chambers of each station. In a future
-// version this will be enforced.
+// Construct the default response.
 //
-//  
-	Int_t chamber;
+
 	// Default response: 5 mm of gas
-	AliMUONResponseV0* response0 = new AliMUONResponseV0;
-	response0->SetSqrtKx3AndDeriveKx2Kx4(0.7131); // sqrt(0.5085)
-	response0->SetSqrtKy3AndDeriveKy2Ky4(0.7642); // sqrt(0.5840)
-	response0->SetPitch(0.25); // anode-cathode distance
-	response0->SetSigmaIntegration(10.);
-	response0->SetChargeSlope(50);
-	response0->SetChargeSpread(0.18, 0.18);
-	response0->SetMaxAdc(4096);
-	response0->SetZeroSuppression(6);
+	fResponse0 = new AliMUONResponseV0;
+	fResponse0->SetSqrtKx3AndDeriveKx2Kx4(0.7131); // sqrt(0.5085)
+	fResponse0->SetSqrtKy3AndDeriveKy2Ky4(0.7642); // sqrt(0.5840)
+	fResponse0->SetPitch(0.25); // anode-cathode distance
+	fResponse0->SetSigmaIntegration(10.);
+	fResponse0->SetChargeSlope(50);
+	fResponse0->SetChargeSpread(0.18, 0.18);
+	fResponse0->SetMaxAdc(4096);
+	fResponse0->SetZeroSuppression(6);
+}	
 	
+//__________________________________________________________________________
+void AliMUONFactory::BuildStation1() 
+{
+//--------------------------------------------------------
+// Configuration for Chamber TC1/2  (Station 1) ----------           
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 	// Response for 4 mm of gas (station 1)
 	// automatic consistency with width of sensitive medium in CreateGeometry ????
 	AliMUONResponseV0* responseSt1 = new AliMUONResponseV0;
@@ -111,15 +111,15 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
 	responseSt1->SetMaxAdc(4096);
 	responseSt1->SetZeroSuppression(6);
 	
-//--------------------------------------------------------
-// Configuration for Chamber TC1/2  (Station 1) ----------           
-//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        //--------------------------------------------------------
+        // Configuration for Chamber TC1/2  (Station 1) ----------           
+
 	Float_t rseg1[4]={17.5, 55.2, 71.3, 95.5};
 	Int_t   nseg1[4]={4, 4, 2, 1};
 //
-	chamber=1;
-//      ^^^^^^^^^
-	pMUON->SetNsec(chamber-1,2);
+	Int_t chamber=1;
+//      ^^^^^^^^^^^^^^^^
+	fMUON->SetNsec(chamber-1,2);
 //
 	AliMUONSegmentationV01 *seg11=new AliMUONSegmentationV01(4);
 	
@@ -128,7 +128,7 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
 	seg11->SetDAnod(0.20); // smaller distance between anode wires
 	seg11->SetPadDivision(nseg1);
 	
-	pMUON->SetSegmentationModel(chamber-1, 1, seg11);
+	fMUON->SetSegmentationModel(chamber-1, 1, seg11);
 	
 	AliMUONSegmentationV02 *seg12=new AliMUONSegmentationV02(4);
 	seg12->SetSegRadii(rseg1); 
@@ -136,51 +136,57 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
 	seg12->SetDAnod(0.20); // smaller distance between anode wires
 	seg12->SetPadDivision(nseg1);
 	
-	pMUON->SetSegmentationModel(chamber-1, 2, seg12);
+	fMUON->SetSegmentationModel(chamber-1, 2, seg12);
 	
-	pMUON->SetResponseModel(chamber-1, responseSt1); // special response	    
-	pMUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
+	fMUON->SetResponseModel(chamber-1, responseSt1); // special response	    
+	fMUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
 	
 	chamber=2;
 //      ^^^^^^^^^
 //
-	pMUON->SetNsec(chamber-1,2);
+	fMUON->SetNsec(chamber-1,2);
 //
 	AliMUONSegmentationV01 *seg21=new AliMUONSegmentationV01(4);
 	seg21->SetSegRadii(rseg1);
 	seg21->SetPadSize(2.4, 0.4); // smaller pad size
 	seg21->SetDAnod(0.20); // smaller distance between anode wires
 	seg21->SetPadDivision(nseg1);
-	pMUON->SetSegmentationModel(chamber-1, 1, seg21);
+	fMUON->SetSegmentationModel(chamber-1, 1, seg21);
 //
 	AliMUONSegmentationV02 *seg22=new AliMUONSegmentationV02(4);
 	seg22->SetSegRadii(rseg1); 
 	seg22->SetPadSize(0.6, 1.6); // smaller pad size
 	seg22->SetDAnod(0.20); // smaller distance between anode wires
 	seg22->SetPadDivision(nseg1);
-	pMUON->SetSegmentationModel(chamber-1, 2, seg22);
+	fMUON->SetSegmentationModel(chamber-1, 2, seg22);
 	
-	pMUON->SetResponseModel(chamber-1, responseSt1); // special response
-	pMUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
+	fMUON->SetResponseModel(chamber-1, responseSt1); // special response
+	fMUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
 	
+}
+
+//__________________________________________________________________________
+void AliMUONFactory::BuildStation2() 
+{
 //
 //--------------------------------------------------------
 // Configuration for Chamber TC3/4 (Station 2) -----------
 ///^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // Float_t rseg2[4]={23.5, 87.7, 122.4, 122.5};
+
 	Float_t rseg2[4]={23.5, 53.5, 90.5, 122.5};       
 	Int_t   nseg2[4]={4, 4, 2, 1};
 //
-	chamber=3;
-//      ^^^^^^^^^
-	pMUON->SetNsec(chamber-1,2);
+	Int_t chamber=3;
+//      ^^^^^^^^^^^^^^^^
+	fMUON->SetNsec(chamber-1,2);
 //
 	AliMUONSegmentationV01 *seg31=new AliMUONSegmentationV01(4);
 	seg31->SetSegRadii(rseg2);
 	seg31->SetPadSize(3.0, 0.5);
 	seg31->SetDAnod(3.0/3./4);
 	seg31->SetPadDivision(nseg2);
-	pMUON->SetSegmentationModel(chamber-1, 1, seg31);
+	fMUON->SetSegmentationModel(chamber-1, 1, seg31);
 //
 	AliMUONSegmentationV02 *seg32=new AliMUONSegmentationV02(4);
 	seg32->SetSegRadii(rseg2); 
@@ -188,22 +194,22 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
 	seg32->SetPadDivision(nseg2);
 	seg32->SetDAnod(3.0/3./4);
 	
-	pMUON->SetSegmentationModel(chamber-1, 2, seg32);
+	fMUON->SetSegmentationModel(chamber-1, 2, seg32);
 	
-	pMUON->SetResponseModel(chamber-1, response0);	    
-	pMUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
+	fMUON->SetResponseModel(chamber-1, fResponse0);	    
+	fMUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
 	
 	chamber=4;
 //      ^^^^^^^^^
 //
-	pMUON->SetNsec(chamber-1,2);
+	fMUON->SetNsec(chamber-1,2);
 //
 	AliMUONSegmentationV01 *seg41=new AliMUONSegmentationV01(4);
 	seg41->SetSegRadii(rseg2);
 	seg41->SetPadSize(3.0, 0.5);
 	seg41->SetDAnod(3.0/3./4);
 	seg41->SetPadDivision(nseg2);
-	pMUON->SetSegmentationModel(chamber-1, 1, seg41);
+	fMUON->SetSegmentationModel(chamber-1, 1, seg41);
 //
 	AliMUONSegmentationV02 *seg42=new AliMUONSegmentationV02(4);
 	seg42->SetSegRadii(rseg2); 
@@ -211,15 +217,20 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
 	seg42->SetPadDivision(nseg2);
 	seg42->SetDAnod(3.0/3./4);
 	
-	pMUON->SetSegmentationModel(chamber-1, 2, seg42);
+	fMUON->SetSegmentationModel(chamber-1, 2, seg42);
 	
-	pMUON->SetResponseModel(chamber-1, response0);	    
-	pMUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
+	fMUON->SetResponseModel(chamber-1, fResponse0);	    
+	fMUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
+}	
 	
 	
+//__________________________________________________________________________
+void AliMUONFactory::BuildStation3() 
+{
 //--------------------------------------------------------
 // Configuration for Chamber TC5/6  (Station 3) ----------          
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 	Int_t   nseg3[4]={4, 4, 2, 1};
 	Int_t   npcb5[36] = {0,0,2,0,
 			     0,0,3,0,
@@ -235,8 +246,8 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
 	Float_t xpos5[9]    = {2., 2., 2., 2.,33., 2., 2., 2., 2.};
 	Float_t ypos5       = -(20.+4.*(40.-2.*shift));
 	
-	chamber=5;
-	pMUON->SetNsec(chamber-1,2);
+	Int_t chamber=5;
+	fMUON->SetNsec(chamber-1,2);
 	AliMUONSegmentationSlat *seg51=new AliMUONSegmentationSlat(4);
 	seg51->SetNSlats(9); 
 	seg51->SetShift(shift);  
@@ -246,7 +257,7 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
 	seg51->SetPadSize(10.,0.5);
 	seg51->SetDAnod(0.25);
 	seg51->SetPadDivision(nseg3);
-	pMUON->SetSegmentationModel(chamber-1, 1, seg51);
+	fMUON->SetSegmentationModel(chamber-1, 1, seg51);
 	
 	AliMUONSegmentationSlatN *seg52=new AliMUONSegmentationSlatN(4);
 	seg52->SetNSlats(9); 
@@ -257,12 +268,12 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
 	seg52->SetPadSize(1., 10.); // DeltaX(non bending) = 2 * DeltaY(bending)
 	seg52->SetDAnod(0.25);
 	seg52->SetPadDivision(nseg3);
-	pMUON->SetSegmentationModel(chamber-1, 2, seg52);
-	pMUON->SetResponseModel(chamber-1, response0);      
-	pMUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
+	fMUON->SetSegmentationModel(chamber-1, 2, seg52);
+	fMUON->SetResponseModel(chamber-1, fResponse0);      
+	fMUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
 	
 	chamber=6;
-	pMUON->SetNsec(chamber-1,2);
+	fMUON->SetNsec(chamber-1,2);
 	AliMUONSegmentationSlat *seg61=new AliMUONSegmentationSlat(4);
 	seg61->SetNSlats(9); 
 	seg61->SetShift(shift);  
@@ -272,7 +283,7 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
 	seg61->SetPadSize(10.,0.5);
 	seg61->SetDAnod(0.25);
 	seg61->SetPadDivision(nseg3);
-	pMUON->SetSegmentationModel(chamber-1, 1, seg61);
+	fMUON->SetSegmentationModel(chamber-1, 1, seg61);
 	
 	AliMUONSegmentationSlatN *seg62=new AliMUONSegmentationSlatN(4);
 	seg62->SetNSlats(9); 
@@ -283,22 +294,28 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
 	seg62->SetPadSize(1., 10.); // DeltaX(non bending) = 2 * DeltaY(bending)
 	seg62->SetDAnod(0.25);
 	seg62->SetPadDivision(nseg3);
-	pMUON->SetSegmentationModel(chamber-1, 2, seg62);
-	pMUON->SetResponseModel(chamber-1, response0);      
-	pMUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
+	fMUON->SetSegmentationModel(chamber-1, 2, seg62);
+	fMUON->SetResponseModel(chamber-1, fResponse0);      
+	fMUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
+}
+
 	
+//__________________________________________________________________________
+void AliMUONFactory::BuildStation4() 
+{
 //--------------------------------------------------------
 // Configuration for Chamber TC7/8  (Station 4) ----------           
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 	Int_t   nseg4[4]={4, 4, 2, 1};
 	
-	chamber=7;
-//      ^^^^^^^^^
+	Int_t chamber=7;
+//      ^^^^^^^^^^^^^^^^
 	
-	pMUON->SetNsec(chamber-1,2);
+	fMUON->SetNsec(chamber-1,2);
 //
 	AliMUONSegmentationSlat *seg71=new AliMUONSegmentationSlat(4);
+	Float_t shift = 1.5/2.;
 	Int_t npcb7[44] = {0,0,0,3,
 			   0,0,2,2,
 			   0,0,3,2,
@@ -322,11 +339,11 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
 	seg71->SetPadSize(10.,0.5);
 	seg71->SetDAnod(0.25);
 	seg71->SetPadDivision(nseg4);
-	pMUON->SetSegmentationModel(chamber-1, 1, seg71);
+	fMUON->SetSegmentationModel(chamber-1, 1, seg71);
 	
 	AliMUONSegmentationSlatN *seg72=new AliMUONSegmentationSlatN(4);
 	
-	pMUON->SetSegmentationModel(chamber-1, 2, seg72);
+	fMUON->SetSegmentationModel(chamber-1, 2, seg72);
 	seg72->SetNSlats(11);  
 	seg72->SetShift(shift);   
 	seg72->SetNPCBperSector(npcb7); 
@@ -336,12 +353,12 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
 	seg72->SetDAnod(0.25);
 	seg72->SetPadDivision(nseg4);
 	
-	pMUON->SetResponseModel(chamber-1, response0);	    
-	pMUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
+	fMUON->SetResponseModel(chamber-1, fResponse0);	    
+	fMUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
 	
 	chamber=8;
 //      ^^^^^^^^^
-	pMUON->SetNsec(chamber-1,2);
+	fMUON->SetNsec(chamber-1,2);
 //
 	AliMUONSegmentationSlat *seg81=new AliMUONSegmentationSlat(4);
 	
@@ -353,11 +370,11 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
 	seg81->SetPadSize(10.,0.5);
 	seg81->SetDAnod(0.25);
 	seg81->SetPadDivision(nseg4);
-	pMUON->SetSegmentationModel(chamber-1, 1, seg81);
+	fMUON->SetSegmentationModel(chamber-1, 1, seg81);
 	
 	AliMUONSegmentationSlat *seg82=new AliMUONSegmentationSlatN(4);
 	
-	pMUON->SetSegmentationModel(chamber-1, 2, seg82);
+	fMUON->SetSegmentationModel(chamber-1, 2, seg82);
 	seg82->SetNSlats(11);  
 	seg82->SetShift(shift);  
 	seg82->SetNPCBperSector(npcb7); 
@@ -367,19 +384,26 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
 	seg82->SetDAnod(0.25);
 	seg82->SetPadDivision(nseg4);
 	
-	pMUON->SetResponseModel(chamber-1, response0);	    
-	pMUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
-	
+	fMUON->SetResponseModel(chamber-1, fResponse0);	    
+	fMUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
+}
 
+//__________________________________________________________________________
+void AliMUONFactory::BuildStation5() 
+{	
 //--------------------------------------------------------
 // Configuration for Chamber TC9/10  (Station 5) ---------           
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-	chamber=9;
-//      ^^^^^^^^^
 
-	pMUON->SetNsec(chamber-1,2);
+	Int_t chamber=9;
+//      ^^^^^^^^^^^^^^^^
+
+	fMUON->SetNsec(chamber-1,2);
 //
 	AliMUONSegmentationSlat *seg91=new AliMUONSegmentationSlat(4);
+
+	Int_t   nseg4[4]={4, 4, 2, 1};
+	Float_t shift = 1.5/2.;
 	Int_t   npcb9[52] = {0,0,0,3,
 			     0,0,0,4,
 			     0,0,2,3,
@@ -405,11 +429,11 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
 	seg91->SetPadSize(10.,0.5);
 	seg91->SetDAnod(0.25);
 	seg91->SetPadDivision(nseg4);
-	pMUON->SetSegmentationModel(chamber-1, 1, seg91);
+	fMUON->SetSegmentationModel(chamber-1, 1, seg91);
 	
 	AliMUONSegmentationSlatN *seg92=new AliMUONSegmentationSlatN(4);
 	
-	pMUON->SetSegmentationModel(chamber-1, 2, seg92);
+	fMUON->SetSegmentationModel(chamber-1, 2, seg92);
 	seg92->SetNSlats(13);  
 	seg92->SetShift(shift);   
 	seg92->SetNPCBperSector(npcb9); 
@@ -419,12 +443,12 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
 	seg92->SetDAnod(0.25);
 	seg92->SetPadDivision(nseg4);
 	
-	pMUON->SetResponseModel(chamber-1, response0);	    
-	pMUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
+	fMUON->SetResponseModel(chamber-1, fResponse0);	    
+	fMUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
 	
 	chamber=10;
 //      ^^^^^^^^^
-	pMUON->SetNsec(chamber-1,2);
+	fMUON->SetNsec(chamber-1,2);
 //
 	AliMUONSegmentationSlat *seg101=new AliMUONSegmentationSlat(4);
 	
@@ -436,11 +460,11 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
 	seg101->SetPadSize(10.,0.5);
 	seg101->SetDAnod(0.25);
 	seg101->SetPadDivision(nseg4);
-	pMUON->SetSegmentationModel(chamber-1, 1, seg101);
+	fMUON->SetSegmentationModel(chamber-1, 1, seg101);
 	
 	AliMUONSegmentationSlatN *seg102=new AliMUONSegmentationSlatN(4);
 	
-	pMUON->SetSegmentationModel(chamber-1, 2, seg102);
+	fMUON->SetSegmentationModel(chamber-1, 2, seg102);
 	seg102->SetNSlats(13);  
 	seg102->SetShift(shift);   
 	seg102->SetNPCBperSector(npcb9); 
@@ -450,58 +474,91 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
 	seg102->SetDAnod(0.25);
 	seg102->SetPadDivision(nseg4);
 	
-	pMUON->SetResponseModel(chamber-1, response0);	    
-	pMUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
+	fMUON->SetResponseModel(chamber-1, fResponse0);	    
+	fMUON->Chamber(chamber-1).SetChargeCorrel(0.11); // 11% charge spread
+}
 
+//__________________________________________________________________________
+void AliMUONFactory::BuildStation6() 
+{	
 //--------------------------------------------------------
 // Configuration for Trigger Stations -------------------- 
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 // Cluster-size off
 	AliMUONResponseTrigger* responseTrigger0 =  new AliMUONResponseTrigger;
 // Cluster-size on  
 // AliMUONResponseTriggerV1* responseTrigger0 =  new AliMUONResponseTriggerV1;
  
-	chamber=11;
-	pMUON->SetNsec(chamber-1,2);
+	Int_t chamber=11;
+	fMUON->SetNsec(chamber-1,2);
 	AliMUONSegmentationTriggerX *seg111=new AliMUONSegmentationTriggerX;
-	pMUON->SetSegmentationModel(chamber-1, 1, seg111);
+	fMUON->SetSegmentationModel(chamber-1, 1, seg111);
 	AliMUONSegmentationTriggerY *seg112=new AliMUONSegmentationTriggerY;
-	pMUON->SetSegmentationModel(chamber-1, 2, seg112);
+	fMUON->SetSegmentationModel(chamber-1, 2, seg112);
 	
-	pMUON->SetResponseModel(chamber-1, responseTrigger0);      
-	pMUON->Chamber(chamber-1).SetChargeCorrel(0); // same charge on cathodes
+	fMUON->SetResponseModel(chamber-1, responseTrigger0);      
+	fMUON->Chamber(chamber-1).SetChargeCorrel(0); // same charge on cathodes
 	
  
 	chamber=12;
-	pMUON->SetNsec(chamber-1,2);
+	fMUON->SetNsec(chamber-1,2);
 	AliMUONSegmentationTriggerX *seg121=new AliMUONSegmentationTriggerX;
-	pMUON->SetSegmentationModel(chamber-1, 1, seg121);
+	fMUON->SetSegmentationModel(chamber-1, 1, seg121);
 	AliMUONSegmentationTriggerY *seg122=new AliMUONSegmentationTriggerY;
-	pMUON->SetSegmentationModel(chamber-1, 2, seg122);
+	fMUON->SetSegmentationModel(chamber-1, 2, seg122);
 	
-	pMUON->SetResponseModel(chamber-1, responseTrigger0);
-	pMUON->Chamber(chamber-1).SetChargeCorrel(0); // same charge on cathodes
+	fMUON->SetResponseModel(chamber-1, responseTrigger0);
+	fMUON->Chamber(chamber-1).SetChargeCorrel(0); // same charge on cathodes
 	
 	chamber=13;
-	pMUON->SetNsec(chamber-1,2);
+	fMUON->SetNsec(chamber-1,2);
 	AliMUONSegmentationTriggerX *seg131=new AliMUONSegmentationTriggerX;
-	pMUON->SetSegmentationModel(chamber-1, 1, seg131);
+	fMUON->SetSegmentationModel(chamber-1, 1, seg131);
 	AliMUONSegmentationTriggerY *seg132=new AliMUONSegmentationTriggerY;
-	pMUON->SetSegmentationModel(chamber-1, 2, seg132);
-	pMUON->SetResponseModel(chamber-1, responseTrigger0);      
-	pMUON->Chamber(chamber-1).SetChargeCorrel(0); // same charge on cathodes
+	fMUON->SetSegmentationModel(chamber-1, 2, seg132);
+	fMUON->SetResponseModel(chamber-1, responseTrigger0);      
+	fMUON->Chamber(chamber-1).SetChargeCorrel(0); // same charge on cathodes
 	
 	chamber=14;
-	pMUON->SetNsec(chamber-1,2);
+	fMUON->SetNsec(chamber-1,2);
 	AliMUONSegmentationTriggerX *seg141=new AliMUONSegmentationTriggerX;
-	pMUON->SetSegmentationModel(chamber-1, 1, seg141);
+	fMUON->SetSegmentationModel(chamber-1, 1, seg141);
 	AliMUONSegmentationTriggerY *seg142=new AliMUONSegmentationTriggerY;
-	pMUON->SetSegmentationModel(chamber-1, 2, seg142);
+	fMUON->SetSegmentationModel(chamber-1, 2, seg142);
 	
-	pMUON->SetResponseModel(chamber-1, responseTrigger0); 
-	pMUON->Chamber(chamber-1).SetChargeCorrel(0); // same charge on cathodes
-    } else {
-      if(pMUON->GetDebug()) {
+	fMUON->SetResponseModel(chamber-1, responseTrigger0); 
+	fMUON->Chamber(chamber-1).SetChargeCorrel(0); // same charge on cathodes
+}	
+
+//__________________________________________________________________________
+void AliMUONFactory::Build(AliMUON* where, const char* what) 
+{
+//
+// Construct MUON from chambers, segmentation and responses
+//
+
+    fMUON = where;
+    char tmp[20];
+    strcpy(tmp, what);
+
+    if (strcmp(tmp, "default")==0) {
+      // Set default parameters
+      fMUON->SetIshunt(0);
+      fMUON->SetMaxStepGas(0.1);
+      fMUON->SetMaxStepAlu(0.1);
+
+      // Build all stations
+      BuildCommon();
+      BuildStation1();
+      BuildStation2();
+      BuildStation3();
+      BuildStation4();
+      BuildStation5();
+      BuildStation6();
+    } 
+    else {
+      if(fMUON->GetDebug()) {
 	printf("\nAliMUONFactory: --------AliMUONFactory------------------------------");
 	printf("\nAliMUONFactory:  Non default version of MUON selected               ");
 	printf("\nAliMUONFactory:  You have to construct yourself the MUON elements !!");	
@@ -510,3 +567,33 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
     }
 }
 
+//__________________________________________________________________________
+void AliMUONFactory::BuildStation(AliMUON* where, Int_t stationNumber) 
+{
+//
+// Construct MUON from chambers, segmentation and responses
+//
+// Version 0
+//
+// First define the number of planes that are segmented (1 or 2) by a call
+// to SetNsec.
+// Then chose for each chamber (chamber plane) the segmentation
+// and response model.
+// They should be equal for the two chambers of each station. In a future
+// version this will be enforced.
+//
+
+    fMUON = where;
+    if (!fResponse0) BuildCommon(); 
+    
+    switch (stationNumber) {    
+      case 1:  BuildStation1(); break;
+      case 2:  BuildStation2(); break;
+      case 3:  BuildStation3(); break;
+      case 4:  BuildStation4(); break;
+      case 5:  BuildStation5(); break;
+      case 6:  BuildStation6(); break;
+    
+      default: Fatal("Build", "Wrong station number");
+    }  
+}         

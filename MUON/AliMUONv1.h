@@ -21,6 +21,8 @@ public:
    virtual void   Init();
    virtual Int_t  IsVersion() const {return 1;}
    virtual void   StepManager();
+protected:
+   Int_t* fStations; //! allow to externally set which station to create
 private:
    ClassDef(AliMUONv1,1)  // MUON Detector class Version 1
 };

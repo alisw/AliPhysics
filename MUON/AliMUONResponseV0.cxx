@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.6  2000/12/04 17:48:23  gosset
+Modifications for stations 1 et 2 mainly:
+* station 1 with 4 mm gas gap and smaller cathode segmentation...
+* stations 1 and 2 with "grey" frame crosses
+* mean noise at 1.5 ADC channel
+* Ar-CO2 gas (80%+20%)
+
 Revision 1.5  2000/11/21 13:47:55  gosset
 All Mathieson parameters (Sqrt(K3), K2 and K4) set in one function,
 SetSqrtKx3AndDeriveKx2Kx4 or SetSqrtKx3AndDeriveKx2Kx4,
@@ -112,7 +119,7 @@ Float_t AliMUONResponseV0::IntXY(AliSegmentation * segmentation)
 		      fKy4*(TMath::ATan(uy2)-TMath::ATan(uy1)));
 }
 
-Int_t  AliMUONResponseV0::DigitResponse(Int_t digit)
+Int_t  AliMUONResponseV0::DigitResponse(Int_t digit, AliMUONTransientDigit* where)
 {
     // add white noise and do zero-suppression and signal truncation
 //     Float_t meanNoise = gRandom->Gaus(1, 0.2);

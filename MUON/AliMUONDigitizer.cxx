@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2003/01/14 10:50:19  alibrary
+Cleanup of STEER coding conventions
+
 Revision 1.11  2002/10/23 07:24:56  alibrary
 Introducing Riostream.h
 
@@ -319,7 +322,7 @@ void AliMUONDigitizer::Exec(Option_t* option)
 //
 //  Digit Response (noise, threshold, saturation, ...)
       AliMUONResponse * response = iChamber->ResponseModel();
-      q = response->DigitResponse(q);
+      q = response->DigitResponse(q,address);
 	    
       if (!q) continue;
 	    

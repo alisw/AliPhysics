@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2003/01/14 10:50:19  alibrary
+Cleanup of STEER coding conventions
+
 Revision 1.9  2002/03/13 07:04:11  jchudoba
 Connect only MUON branches when reading the event to speed up digitisation.
 
@@ -81,6 +84,7 @@ AliMUONMerger::AliMUONMerger()
     fHitMap     = 0;
     fList       = 0;
     fBgrFile    = 0;
+    fDebug      = 0;
 }
 
 //------------------------------------------------------------------------
@@ -361,7 +365,7 @@ void AliMUONMerger::Digitise()
 //
 //  Digit Response (noise, threshold, saturation, ...)
 	    AliMUONResponse * response = iChamber->ResponseModel();
-	    q = response->DigitResponse(q);
+	    q = response->DigitResponse(q,address);
 	    
 	    if (!q) continue;
 	    
@@ -375,12 +379,15 @@ void AliMUONMerger::Digitise()
 	    Int_t nptracks = address->GetNTracks();
 
 	    if (nptracks > kMAXTRACKS) {
-		printf("\n Attention - nptracks > kMAXTRACKS %d \n", nptracks);
+	        if (fDebug>0)
+		  printf("\n Attention - nptracks > kMAXTRACKS %d \n", nptracks);
 		nptracks = kMAXTRACKS;
 	    }
 	    if (nptracks > 2) {
-		printf("Attention - nptracks > 2  %d \n",nptracks);
-		printf("cat,ich,ix,iy,q %d %d %d %d %d \n",icat,ich,fDigits[0],fDigits[1],q);
+	        if (fDebug>0) {
+		  printf("Attention - nptracks > 2  %d \n",nptracks);
+		  printf("cat,ich,ix,iy,q %d %d %d %d %d \n",icat,ich,fDigits[0],fDigits[1],q);
+		}
 	    }
 	    for (Int_t tr = 0; tr < nptracks; tr++) {
 		tracks[tr]   = address->GetTrack(tr);

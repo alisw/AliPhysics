@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.39  2003/01/14 10:50:19  alibrary
+Cleanup of STEER coding conventions
+
 Revision 1.38  2002/11/21 17:01:56  alibrary
 Removing AliMCProcess and AliMC
 
@@ -198,6 +201,7 @@ AliMUONv1::AliMUONv1() : AliMUON()
 {
 // Constructor
     fChambers = 0;
+    fStations = 0;
 }
  
 //___________________________________________
@@ -205,7 +209,12 @@ AliMUONv1::AliMUONv1(const char *name, const char *title)
        : AliMUON(name,title)
 {
 // Constructor
-    AliMUONFactory::Build(this, title);
+    // By default include all stations
+    fStations = new Int_t[5];
+    for (Int_t i=0; i<5; i++) fStations[i] = 1;
+
+    AliMUONFactory factory;
+    factory.Build(this, title);
 }
 
 //___________________________________________
@@ -270,9 +279,8 @@ void AliMUONv1::CreateGeometry()
      
 
      AliMUONChamber *iChamber, *iChamber1, *iChamber2;
-     Int_t stations[5] = {1, 1, 1, 1, 1};
-     
-     if (stations[0]) {
+
+     if (fStations[0]) {
 	 
 //********************************************************************
 //                            Station 1                             **
@@ -431,7 +439,7 @@ void AliMUONv1::CreateGeometry()
 // 		    idrotm[1101],"ONLY");
 //      }
      }
-     if (stations[1]) {
+     if (fStations[1]) {
 	 
 //********************************************************************
 //                            Station 2                             **
@@ -685,7 +693,7 @@ void AliMUONv1::CreateGeometry()
      Float_t xxmax = (bFrameLength - nulocLength)/2.; 
      Int_t index=0;
      
-     if (stations[2]) {
+     if (fStations[2]) {
 	 
 //********************************************************************
 //                            Station 3                             **
@@ -966,7 +974,7 @@ void AliMUONv1::CreateGeometry()
      }
      }
      
- if (stations[3]) {
+ if (fStations[3]) {
 
 //********************************************************************
 //                            Station 4                             **
@@ -1173,7 +1181,7 @@ void AliMUONv1::CreateGeometry()
 
  }
 
- if (stations[4]) {
+ if (fStations[4]) {
      
 
 //********************************************************************

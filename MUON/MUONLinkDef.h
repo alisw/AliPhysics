@@ -57,4 +57,15 @@
 #pragma link C++ class  AliMUONTrackK+;
 #pragma link C++ class  AliMUONPixel+;
 #pragma link C++ class  AliMUONClusterFinderAZ+;
+
+#ifdef USE_MUON_MAPPING
+#pragma link C++ class  AliMUONv2+;
+#pragma link C++ class  AliMUONSt1Segmentation+;
+#pragma link C++ class  AliMUONSt1Response+;
+#pragma link C++ class  AliMUONSt1ElectronicElement+;
+#pragma link C++ class  AliMUONSt1SpecialMotif+;
+#pragma link C++ class  AliMUONSt1ResponseParameter+;
+#pragma link C++ class  AliMUONSt1ResponseRule+;
+#endif
+
 #endif

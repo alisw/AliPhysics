@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.25  2003/01/14 10:50:19  alibrary
+Cleanup of STEER coding conventions
+
 Revision 1.24  2002/11/21 17:01:56  alibrary
 Removing AliMCProcess and AliMC
 
@@ -125,7 +128,8 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
        : AliMUON(name,title)
 {
 // Constructor
-    AliMUONFactory::Build(this, "default");
+    AliMUONFactory factory;
+    factory.Build(this, title);
 }
 
 void AliMUONv0::CreateGeometry()

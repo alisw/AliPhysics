@@ -37,6 +37,7 @@ class AliMUONMerger {
     void SetBackgroundEventNumber(Int_t i) {fEvNrBgr = i;}    
     void SetBackgroundFileName(char* file) {fFnBgr = file;}        
     void SetMode(MergeMode_t mode) {fMerge = mode;}
+    void SetDebug(Int_t debug) {fDebug = debug;}
 	
     enum {kBgTag = -1};
     
@@ -62,6 +63,7 @@ class AliMUONMerger {
     MergeMode_t fMerge;             // merging type kDigitize, kMerge
     char  *fFnBgr;                  // background file name
     TFile *fBgrFile;                // Pointer to background file
+    Int_t  fDebug;                  // level of debug printing
     
     ClassDef(AliMUONMerger,0)
 };    

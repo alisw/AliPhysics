@@ -9,7 +9,7 @@
 
 class TF1;
 class AliSegmentation;
-
+class AliMUONTransientDigit;
 
 class AliMUONResponse :
 public TObject {
@@ -54,7 +54,9 @@ public TObject {
     // Charge disintegration 
     virtual Float_t IntXY(AliSegmentation *)                  =0;
     // Noise, zero-suppression, adc saturation
-    virtual Int_t DigitResponse(Int_t digit)                  =0;
+    //virtual Int_t DigitResponse(Int_t digit)                =0;
+    virtual Int_t DigitResponse(Int_t digit, 
+                                AliMUONTransientDigit* where) =0;
     // 
     ClassDef(AliMUONResponse,1) // Chamber response virtual base class 
 };

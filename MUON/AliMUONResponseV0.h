@@ -70,7 +70,7 @@ public AliMUONResponse {
     // Charge disintegration
     virtual Float_t  IntXY(AliSegmentation * segmentation);
     // Noise, zero-suppression, adc saturation
-    virtual Int_t DigitResponse(Int_t digit);
+    virtual Int_t DigitResponse(Int_t digit, AliMUONTransientDigit* where);
 
     ClassDef(AliMUONResponseV0,1) // Implementation of Mathieson response
  protected:
