@@ -15,11 +15,15 @@
 
 /*
   $Log$
+  Revision 1.1  2000/06/12 15:21:57  jbarbosa
+  Cleaned up version.
+
 */
 
 #include "AliRICHEllipse.h"
 #include "AliRICH.h"
 #include "AliRun.h"
+#include "AliRICHPatRec.h"
 
 #include <TRandom.h>
 
@@ -55,7 +59,7 @@ AliRICHEllipse::~AliRICHEllipse()
 
 
 //________________________________________________________________________________
-AliRICHEllipse::AliRICHEllipse(Float_t cx, Float_t cy, Float_t omega, Float_t theta, Float_t phi)
+AliRICHEllipse::AliRICHEllipse(Float_t cx, Float_t cy, Float_t omega, Float_t theta, Float_t phi, Float_t emiss)
 { 
 
 //  Constructor for a RICH ellipse
@@ -65,11 +69,12 @@ AliRICHEllipse::AliRICHEllipse(Float_t cx, Float_t cy, Float_t omega, Float_t th
     fOmega = omega;
     fTheta = theta;
     fPhi = phi;
+    fEmissPoint = emiss;
     fh=11.25;
 }
 
 //________________________________________________________________________________
-void AliRICHEllipse::CreatePoints(Int_t chamber)
+/*void AliRICHEllipse::CreatePoints(Int_t chamber)
 {
 
 // Create points along the ellipse equation
@@ -133,9 +138,103 @@ void AliRICHEllipse::CreatePoints(Int_t chamber)
       SetPoint(i,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
       //printf("Coordinates: %f %f %f\n",vectorGlob[0],vectorGlob[1],vectorGlob[2]);
     }
+    }*/
+
+
+void AliRICHEllipse::CerenkovRingDrawing(Int_t chamber,Int_t track)
+{
+
+//to draw Cherenkov ring by known Cherenkov angle
+
+  Int_t nmaxdegrees;
+  Int_t Nphpad;
+  Float_t phpad;
+  Float_t nfreonave, nquartzave;
+  Float_t aveEnerg;
+  Float_t energy[2];
+  Float_t e1, e2, f1, f2;
+  Float_t pointsOnCathode[3];
+
+  printf("Drawing ring in chamber:%d\n",chamber);
+
+
+  AliRICH *pRICH  = (AliRICH*)gAlice->GetModule("RICH");
+  AliRICHChamber*       iChamber;
+  
+  iChamber = &(pRICH->Chamber(chamber));
+
+  AliRICHPatRec *PatRec = new AliRICHPatRec;
+  PatRec->TrackParam(track,chamber);
+
+  printf("Just created PateRec\n");
+
+//parameters to calculate freon window refractive index vs. energy
+
+    Float_t a = 1.177;
+    Float_t b = 0.0172;
+    
+//parameters to calculate quartz window refractive index vs. energy
+/*
+   Energ[0]  = 5.6;
+   Energ[1]  = 7.7;
+*/	
+    energy[0]  = 5.0;
+    energy[1]  = 8.0;
+    e1  = 10.666;
+    e2  = 18.125;
+    f1  = 46.411;
+    f2  = 228.71;
+  
+
+    /*Float_t nquartz = 1.585;
+      Float_t ngas    = 1.;
+      Float_t nfreon  = 1.295;
+      Float_t value;
+    */
+
+
+
+   nmaxdegrees = 360;
+   
+   for (Nphpad=0; Nphpad<nmaxdegrees;Nphpad++) { 
+
+       phpad = (360./(Float_t)nmaxdegrees)*(Float_t)Nphpad;
+      
+       aveEnerg =  (energy[0]+energy[1])/2.;
+       //aveEnerg = 6.5;
+       
+       
+       nfreonave  = a+b*aveEnerg;
+       nquartzave = sqrt(1+(f1/(TMath::Power(e1,2)-TMath::Power(aveEnerg,2)))+
+			 (f2/(TMath::Power(e2,2)-TMath::Power(aveEnerg,2))));
+
+       //nfreonave = 1.295;
+       //nquartzave = 1.585;
+       
+       printf("Calling DistancefromMip %f %f \n",fEmissPoint,fOmega);
+       
+       //Float_t dummy = 
+	 PatRec->DistanceFromMip(nfreonave, nquartzave,fEmissPoint,fOmega, phpad, pointsOnCathode);
+
+       //Float_t points[3];
+
+       //points = pointsOnCathode;
+
+
+       //printf(" values %f %f %f\n",points[0],points[1],points[2]);
+       
+       Float_t vectorLoc[3]={pointsOnCathode[0],pointsOnCathode[2],pointsOnCathode[1]};
+       Float_t  vectorGlob[3];
+       iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
+       SetPoint(Nphpad,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
+      //fCoordEllipse[0][Nphpad] = pointsOnCathode[0];
+      //fCoordEllipse[1][Nphpad] = pointsOnCathode[1];
+       
+       printf(" values %f %f \n",pointsOnCathode[0],pointsOnCathode[1]);
+       
+   }
+
 }
-
-
 
 
 
