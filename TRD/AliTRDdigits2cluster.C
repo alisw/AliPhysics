@@ -22,18 +22,23 @@ void AliTRDdigits2cluster()
   AliTRDclusterizerV1 *clusterizer = 
     new AliTRDclusterizerV1("clusterizer","Clusterizer class"); 
 
-  // Define the parameter object
-  // If no external parameter object is defined, 
-  // default parameter will be used
-  AliTRDparameter *parameter = new AliTRDparameter("TRDparameter"
-						  ,"TRD parameter class");
-  clusterizer->SetParameter(parameter);
+  // Read the parameter
+  TFile *parfile = TFile::Open(infile);
+  AliTRDparameter *par = (AliTRDparameter *) parfile->Get("TRDparameter"); 
+  par->ReInit();
+  clusterizer->SetParameter(par);
+
+  // Set the parameter
+  clusterizer->SetVerbose(1);
 
   // Open the AliRoot file 
+  //  clusterizer->Open(infile,0);
   clusterizer->Open(infile,outfile,0);
+
 
   // Load the digits
   clusterizer->ReadDigits();
+  clusterizer->Dump();
  
   // Find the cluster
   clusterizer->MakeClusters();

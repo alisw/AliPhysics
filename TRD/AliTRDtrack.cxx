@@ -15,13 +15,16 @@
 
 /*
 $Log$
+Revision 1.13  2002/10/22 15:53:08  alibrary
+Introducing Riostream.h
+
 Revision 1.12  2002/10/14 14:57:44  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
 Revision 1.8.10.2  2002/07/24 10:09:31  alibrary
 Updating VirtualMC
 
-Revision 1.11  2002/06/13 12:09:58  hristov
+RRevision 1.11  2002/06/13 12:09:58  hristov
 Minor corrections
 
 Revision 1.10  2002/06/12 09:54:35  cblume
@@ -262,6 +265,7 @@ void AliTRDtrack::CookdEdx(Double_t low, Double_t up) {
 
 
 
+
 //_____________________________________________________________________________
 Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm)
 {
@@ -351,27 +355,41 @@ Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm)
 
 }     
 
+
 //_____________________________________________________________________________
-Int_t AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq, UInt_t index)
+Int_t AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq, UInt_t index,                          Double_t h01)
 {
   // Assignes found cluster to the track and updates track information
 
-  Double_t r00=c->GetSigmaY2(), r01=0., r11=c->GetSigmaZ2();
-  r00+=fCyy; r01+=fCzy; r11+=fCzz;
+
+  Double_t r00=c->GetSigmaY2(), r01=0., r11=c->GetSigmaZ2()*100.0;
+
+  r00+=(fCyy+2.0*h01*fCzy+h01*h01*fCzz);
+  r01+=(fCzy+h01*fCzz);
+  r11+=fCzz;
+
   Double_t det=r00*r11 - r01*r01;
   Double_t tmp=r00; r00=r11/det; r11=tmp/det; r01=-r01/det;
 
-  Double_t k00=fCyy*r00+fCzy*r01, k01=fCyy*r01+fCzy*r11;
-  Double_t k10=fCzy*r00+fCzz*r01, k11=fCzy*r01+fCzz*r11;
-  Double_t k20=fCcy*r00+fCcz*r01, k21=fCcy*r01+fCcz*r11;
-  Double_t k30=fCey*r00+fCez*r01, k31=fCey*r01+fCez*r11;
-  Double_t k40=fCty*r00+fCtz*r01, k41=fCty*r01+fCtz*r11;
+//  Double_t k00=fCyy*r00+fCzy*r01, k01=fCyy*r01+fCzy*r11;
+//  Double_t k10=fCzy*r00+fCzz*r01, k11=fCzy*r01+fCzz*r11;
+//  Double_t k20=fCcy*r00+fCcz*r01, k21=fCcy*r01+fCcz*r11;
+//  Double_t k30=fCey*r00+fCez*r01, k31=fCey*r01+fCez*r11;
+//  Double_t k40=fCty*r00+fCtz*r01, k41=fCty*r01+fCtz*r11;
+
+  Double_t k00=fCyy*r00+fCzy*(r01+h01*r00),k01=fCyy*r01+fCzy*(r11+h01*r01);
+  Double_t k10=fCzy*r00+fCzz*(r01+h01*r00),k11=fCzy*r01+fCzz*(r11+h01*r01);
+  Double_t k20=fCcy*r00+fCcz*(r01+h01*r00),k21=fCcy*r01+fCcz*(r11+h01*r01);
+  Double_t k30=fCey*r00+fCez*(r01+h01*r00),k31=fCey*r01+fCez*(r11+h01*r01);
+  Double_t k40=fCty*r00+fCtz*(r01+h01*r00),k41=fCty*r01+fCtz*(r11+h01*r01);
 
   Double_t dy=c->GetY() - fY, dz=c->GetZ() - fZ;
+
+  dy=dy+h01*dz;
+
   Double_t cur=fC + k20*dy + k21*dz, eta=fE + k30*dy + k31*dz;
   if (TMath::Abs(cur*fX-eta) >= 0.99999) {
-    Int_t n=GetNumberOfClusters(); 
-    if (n>4) cerr<<n<<" AliTRDtrack warning: Filtering failed !\n";
+  //  if (fN>4) cerr<<fN<<" AliTRDtrack warning: Filtering failed !\n";
     return 0;
   }
 
@@ -380,6 +398,13 @@ Int_t AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq, UInt_t index)
   fC  = cur;
   fE  = eta;
   fT += k40*dy + k41*dz;
+
+
+  k01+=h01*k00;
+  k11+=h01*k10;
+  k21+=h01*k20;
+  k31+=h01*k30;
+  k41+=h01*k40;
 
   Double_t c01=fCzy, c02=fCcy, c03=fCey, c04=fCty;
   Double_t c12=fCcz, c13=fCez, c14=fCtz;
@@ -405,10 +430,13 @@ Int_t AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq, UInt_t index)
   SetNumberOfClusters(n+1);  
 
   SetChi2(GetChi2()+chisq); 
+
   //  cerr<<"in update: fIndex["<<fN<<"] = "<<index<<endl;
 
   return 1;
+
 }                     
+
 
 //_____________________________________________________________________________
 Int_t AliTRDtrack::Rotate(Double_t alpha)
@@ -480,30 +508,28 @@ Int_t AliTRDtrack::Rotate(Double_t alpha)
 
 
 //_____________________________________________________________________________
-Double_t AliTRDtrack::GetPredictedChi2(const AliTRDcluster *c) const
+Double_t AliTRDtrack::GetPredictedChi2(const AliTRDcluster *c, Double_t h01) const
 {
-  /*
+  
   Double_t r00=c->GetSigmaY2(), r01=0., r11=c->GetSigmaZ2();
+
   r00+=fCyy; r01+=fCzy; r11+=fCzz;
 
   Double_t det=r00*r11 - r01*r01;
   if (TMath::Abs(det) < 1.e-10) {
-    if (fN>4) cerr<<fN<<" AliTRDtrack warning: Singular matrix !\n";
+    Int_t n=GetNumberOfClusters(); 
+    if (n>4) cerr<<n<<" AliTRDtrack warning: Singular matrix !\n";
     return 1e10;
   }
   Double_t tmp=r00; r00=r11; r11=tmp; r01=-r01;
 
   Double_t dy=c->GetY() - fY, dz=c->GetZ() - fZ;
 
-  return (dy*r00*dy + 2*r01*dy*dz + dz*r11*dz)/det;  
-  */
+  dy=dy+h01*dz;
 
-  Double_t dy=c->GetY() - fY;
-  Double_t r00=c->GetSigmaY2();
+  return (dy*r00*dy + 2*r01*dy*dz + dz*r11*dz)/det; 
 
-  return (dy*dy)/r00;
-
-}            
+}      
 
 
 //_________________________________________________________________________

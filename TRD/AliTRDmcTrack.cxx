@@ -13,16 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  TRD MC track                                                             //
-//  Used for efficiency estimates and matching of reconstructed tracks       //
-//  to MC particles                                                          //                    
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
-
 #include "AliTRDmcTrack.h"
 #include "AliTRDgeometry.h"
+
 
 ClassImp(AliTRDmcTrack)
 
@@ -40,12 +33,14 @@ AliTRDmcTrack::AliTRDmcTrack()
   fCharge = 0;
   fN = 0; 
   
-  for(Int_t i=0; i<200; i++) fIndex[i]=-1;
+  for(Int_t i=0; i<kMAX_CLUSTERS_PER_MC_TRACK; i++) fIndex[i]=-1;
   
   for(Int_t i=0; i<6; i++) {
     for(Int_t j=0; j<3; j++) { 
-      fPin[i][j]=0.; 
-      fPout[i][j] = 0.;
+      Pin[i][j]=0.; 
+      Pout[i][j] = 0.;
+      XYZin[i][j]=0.; 
+      XYZout[i][j] = 0.;
     }
   }
 
@@ -67,47 +62,50 @@ AliTRDmcTrack::AliTRDmcTrack(Int_t label, Bool_t primary, Float_t mass
   fPDG = pdg;
   fN = 0; 
   
-  for(Int_t i=0; i<200; i++) fIndex[i]=-1;
+  for(Int_t i=0; i<kMAX_CLUSTERS_PER_MC_TRACK; i++) fIndex[i]=-1;
   
   for(Int_t i=0; i<6; i++) {
     for(Int_t j=0; j<3; j++) { 
-      fPin[i][j]=0.; 
-      fPout[i][j] = 0.;
+      Pin[i][j]=0.; 
+      Pout[i][j] = 0.;
+      XYZin[i][j]=0.; 
+      XYZout[i][j] = 0.;
     }
   }
 
 }
 
 //_____________________________________________________________________________
-void AliTRDmcTrack::GetPxPyPz(Double_t& px, Double_t& py, Double_t& pz, 
-                              Int_t opt) const 
+void AliTRDmcTrack::GetPxPyPzXYZ(Double_t& px, Double_t& py, Double_t& pz, 
+				 Double_t&  x, Double_t&  y, Double_t&  z, 
+				 Int_t opt) const 
 {
   //
-  // Returns momentum components at the entrance (opt >= 0), or
-  // exit (opt < 0) of TRD. 
+  // Returns track momentum components and coordinates at the entrance 
+  // (opt >= 0), or exit (opt < 0) of TRD. 
   //
 
   Int_t i;
 
   if(opt >= 0) {
     for(i = 0; i < AliTRDgeometry::Nplan(); i++) {
-      if(  fPin[i][0] * fPin[i][0]
-         + fPin[i][1] * fPin[i][1]
-         + fPin[i][2] * fPin[i][2] > 0.0005) break;
+      if(  Pin[i][0] * Pin[i][0]
+         + Pin[i][1] * Pin[i][1]
+         + Pin[i][2] * Pin[i][2] > 0.0005) break;
     }
-    px = fPin[0][0]; py = fPin[0][1]; pz = fPin[0][2];
+    px = Pin[i][0];    py = Pin[i][1];   pz = Pin[i][2];
+     x = XYZin[i][0];   y = XYZin[i][1];  z = XYZin[i][2];
   }
   else {
     for(i = AliTRDgeometry::Nplan() - 1; i >= 0; i--) {
-      if(  fPout[i][0] * fPout[i][0]
-         + fPout[i][1] * fPout[i][1]
-         + fPout[i][2] * fPout[i][2] > 0.0005) break;
+      if(  Pout[i][0] * Pout[i][0]
+         + Pout[i][1] * Pout[i][1]
+         + Pout[i][2] * Pout[i][2] > 0.0005) break;
     }
-    px = fPout[i][0]; py = fPout[i][1]; pz = fPout[i][2];
+    px = Pout[i][0];    py = Pout[i][1];   pz = Pout[i][2];
+     x = XYZout[i][0];   y = XYZout[i][1];  z = XYZout[i][2];
   }
-
   return;
-
 }
 
 //_____________________________________________________________________________
@@ -120,12 +118,12 @@ void AliTRDmcTrack::GetPlanePxPyPz(Double_t& px, Double_t& py, Double_t& pz,
   //
 
   if(opt >= 0) {
-    px = fPin[plane][0]; py = fPin[plane][1]; pz = fPin[plane][2];
+    px = Pin[plane][0]; py = Pin[plane][1]; pz = Pin[plane][2];
   }
   else {
-    px = fPout[plane][0]; py = fPout[plane][1]; pz = fPout[plane][2];
+    px = Pout[plane][0]; py = Pout[plane][1]; pz = Pout[plane][2];
   }
-
   return;
-
 }
+
+

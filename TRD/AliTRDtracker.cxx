@@ -15,6 +15,9 @@
                                                       
 /*
 $Log$
+Revision 1.19  2002/10/22 15:53:08  alibrary
+Introducing Riostream.h
+
 Revision 1.18  2002/10/14 14:57:44  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -316,14 +319,18 @@ Int_t AliTRDtracker::Clusters2Tracks(const TFile *inp, TFile *out)
        for (Int_t i=0; i<n; i++) {
 	 seedTree->GetEvent(i);
 	 seed->ResetCovariance(); 
-	 fSeeds->AddLast(new AliTRDtrack(*seed));
+	 AliTRDtrack *tr = new AliTRDtrack(*seed,seed->GetAlpha());
+	 fSeeds->AddLast(tr);
 	 fNseeds++;
        }          
        delete seed;
+       delete seedTree;
      }
   }
 
   out->cd();
+
+
 
   // find tracks from loaded seeds
 
@@ -341,7 +348,7 @@ Int_t AliTRDtracker::Clusters2Tracks(const TFile *inp, TFile *out)
     }
     iotrack_trd = pt;
     trd_tree.Fill();
-    cerr<<found++<<'\r';     
+    cout<<found++<<'\r';     
 
     if(PropagateToTPC(t)) {
       AliTPCtrack *tpc = new AliTPCtrack(*pt,pt->GetAlpha());
@@ -378,14 +385,13 @@ Int_t AliTRDtracker::Clusters2Tracks(const TFile *inp, TFile *out)
 	Int_t inner=outer-gap;
 
 	nseed=fSeeds->GetEntriesFast();
-	printf("\n initial number of seeds %d\n", nseed); 
       
 	MakeSeeds(inner, outer, turn);
       
 	nseed=fSeeds->GetEntriesFast();
-	printf("\n number of seeds after MakeSeeds %d\n", nseed); 
-	
-      
+	printf("\n turn %d, step %d: number of seeds for TRD inward %d\n", 
+	       turn, i, nseed); 
+	      
 	for (Int_t i=0; i<nseed; i++) {   
 	  AliTRDtrack *pt=(AliTRDtrack*)fSeeds->UncheckedAt(i), &t=*pt; 
 	  FollowProlongation(t,innerTB); 
@@ -393,7 +399,7 @@ Int_t AliTRDtracker::Clusters2Tracks(const TFile *inp, TFile *out)
 	    UseClusters(&t);
 	    CookLabel(pt, 1-fLabelFraction);
 	    t.CookdEdx();
-	    cerr<<found++<<'\r';     
+	    cout<<found++<<'\r';     
 	    iotrack_trd = pt;
 	    trd_tree.Fill();
 	    if(PropagateToTPC(t)) {
@@ -520,8 +526,8 @@ Int_t AliTRDtracker::PropagateBack(const TFile *inp, TFile *out) {
     Int_t foundClr = s.GetNumberOfClusters();
     Int_t last_tb = fTrSec[0]->GetLayerNumber(s.GetX());
 
-    printf("seed %d: found %d out of %d expected clusters, Min is %f\n",
-	   i, foundClr, expectedClr, foundMin);
+    //    printf("seed %d: found %d out of %d expected clusters, Min is %f\n",
+    //	   i, foundClr, expectedClr, foundMin);
 
     if (foundClr >= foundMin) {
       s.CookdEdx(); 
@@ -732,7 +738,9 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack& t, Int_t rf)
 	  minDY = TMath::Abs(c->GetY() - y);
 	  wYcorrect = c->GetY();
 	  wZcorrect = c->GetZ();
-	  wChi2 = t.GetPredictedChi2(c);
+
+	  Double_t h01 = GetTiltFactor(c);
+	  wChi2 = t.GetPredictedChi2(c, h01);
 	}
       }                    
 
@@ -745,7 +753,9 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack& t, Int_t rf)
 	  if (c->GetY() > y+road) break;
 	  if (c->IsUsed() > 0) continue;
 	  if((c->GetZ()-z)*(c->GetZ()-z) > 3 * sz2) continue;
-	  Double_t chi2=t.GetPredictedChi2(c);
+
+	  Double_t h01 = GetTiltFactor(c);
+	  Double_t chi2=t.GetPredictedChi2(c,h01);
 	  
 	  if (chi2 > max_chi2) continue;
 	  max_chi2=chi2;
@@ -762,7 +772,8 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack& t, Int_t rf)
 	    if (c->IsUsed() > 0) continue;
 	    if((c->GetZ()-z)*(c->GetZ()-z) > 2.25 * 12 * sz2) continue;
 	    
-	    Double_t chi2=t.GetPredictedChi2(c);
+	    Double_t h01 = GetTiltFactor(c);
+	    Double_t chi2=t.GetPredictedChi2(c, h01);
 	    
 	    if (chi2 > max_chi2) continue;
 	    max_chi2=chi2;
@@ -775,9 +786,10 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack& t, Int_t rf)
 	if (cl) {
 	  wYclosest = cl->GetY();
 	  wZclosest = cl->GetZ();
+	  Double_t h01 = GetTiltFactor(cl);
 
 	  t.SetSampledEdx(cl->GetQ()/dx,t.GetNumberOfClusters()); 
-	  if(!t.Update(cl,max_chi2,index)) {
+	  if(!t.Update(cl,max_chi2,index,h01)) {
 	    if(!try_again--) return 0;
 	  }  
 	  else try_again=fMaxGap;
@@ -969,7 +981,9 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
 	  minDY = TMath::Abs(c->GetY() - y);
 	  wYcorrect = c->GetY();
 	  wZcorrect = c->GetZ();
-	  wChi2 = t.GetPredictedChi2(c);
+
+	  Double_t h01 = GetTiltFactor(c);
+	  wChi2 = t.GetPredictedChi2(c, h01);
 	}
       }                    
 
@@ -982,7 +996,9 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
 	  if (c->GetY() > y+road) break;
 	  if (c->IsUsed() > 0) continue;
 	  if((c->GetZ()-z)*(c->GetZ()-z) > 3 * sz2) continue;
-	  Double_t chi2=t.GetPredictedChi2(c);
+
+	  Double_t h01 = GetTiltFactor(c);
+	  Double_t chi2=t.GetPredictedChi2(c,h01);
 	  
 	  if (chi2 > max_chi2) continue;
 	  max_chi2=chi2;
@@ -999,7 +1015,8 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
 	    if (c->IsUsed() > 0) continue;
 	    if((c->GetZ()-z)*(c->GetZ()-z) > 2.25 * 12 * sz2) continue;
 	    
-	    Double_t chi2=t.GetPredictedChi2(c);
+	    Double_t h01 = GetTiltFactor(c);
+	    Double_t chi2=t.GetPredictedChi2(c,h01);
 	    
 	    if (chi2 > max_chi2) continue;
 	    max_chi2=chi2;
@@ -1013,7 +1030,8 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
 	  wZclosest = cl->GetZ();
 
 	  t.SetSampledEdx(cl->GetQ()/dx,t.GetNumberOfClusters()); 
-	  if(!t.Update(cl,max_chi2,index)) {
+	  Double_t h01 = GetTiltFactor(cl);
+	  if(!t.Update(cl,max_chi2,index,h01)) {
 	    if(!try_again--) return 0;
 	  }  
 	  else try_again=fMaxGap;
@@ -1363,6 +1381,12 @@ void AliTRDtracker::MakeSeeds(Int_t inner, Int_t outer, Int_t turn)
 	Double_t sy1=r1[is]->GetSigmaY2(), sz1=r1[is]->GetSigmaZ2();
 	Double_t sy2=cl->GetSigmaY2(),     sz2=cl->GetSigmaZ2();
 	Double_t sy3=fSeedErrorSY3, sy=fSeedErrorSY, sz=fSeedErrorSZ;  
+
+	// Tilt changes
+	Double_t h01 = GetTiltFactor(r1[is]);
+        sy1=sy1+sz1*h01*h01;
+        Double_t syz=sz1*h01;
+	// end of tilt changes
 	
 	Double_t f20=(f1trd(x1,y1+sy,x2,y2,x3,y3)-x[2])/sy;
 	Double_t f22=(f1trd(x1,y1,x2,y2+sy,x3,y3)-x[2])/sy;
@@ -1376,7 +1400,8 @@ void AliTRDtracker::MakeSeeds(Int_t inner, Int_t outer, Int_t turn)
 	Double_t f43=(f3trd(x1,y1,x2,y2,z1,z2+sz)-x[4])/sz;    
 	
 	c[0]=sy1;
-	c[1]=0.;       c[2]=sz1;
+	//	c[1]=0.;       c[2]=sz1;
+	c[1]=syz;       c[2]=sz1*100;
 	c[3]=f20*sy1;  c[4]=0.;   c[5]=f20*sy1*f20+f22*sy2*f22+f24*sy3*f24;
 	c[6]=f30*sy1;  c[7]=0.;   c[8]=f30*sy1*f20+f32*sy2*f22+f34*sy3*f24;
 	c[9]=f30*sy1*f30+f32*sy2*f32+f34*sy3*f34;
@@ -2280,8 +2305,20 @@ Int_t AliTRDtracker::AliTRDpropagationLayer::Find(Double_t y) const {
   return m;
 }    
 
+//---------------------------------------------------------
 
+Double_t AliTRDtracker::GetTiltFactor(const AliTRDcluster* c) {
+//
+//  Returns correction factor for tilted pads geometry 
+//
 
+  Double_t h01 = sin(TMath::Pi() / 180.0 * fPar->GetTiltingAngle());
+  Int_t det = c->GetDetector();    
+  Int_t plane = fGeom->GetPlane(det);
+  if((plane == 0) || (plane == 2) || (plane == 4)) h01=-h01;
+  
+  return h01;
+}
 
 
 

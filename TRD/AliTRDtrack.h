@@ -45,7 +45,7 @@ public:
    Double_t GetP()     const {  
      return TMath::Abs(GetPt())*sqrt(1.+GetTgl()*GetTgl());
    }
-   Double_t GetPredictedChi2(const AliTRDcluster*) const ;
+   Double_t GetPredictedChi2(const AliTRDcluster*, Double_t h01) const ;
    Double_t GetPt()    const {return 1./Get1Pt();}   
    void     GetPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const ;
    void     GetGlobalXYZ(Double_t &x, Double_t &y, Double_t &z) const ;
@@ -76,7 +76,10 @@ public:
 
    void     SetSeedLabel(Int_t lab) { fSeedLab=lab; }
 
-   Int_t    Update(const AliTRDcluster* c, Double_t chi2, UInt_t i);
+   Int_t    Update(const AliTRDcluster* c, Double_t chi2, UInt_t i, 
+		   Double_t h01);
+
+
 
 protected:
 

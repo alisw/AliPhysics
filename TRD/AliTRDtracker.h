@@ -40,6 +40,8 @@ class AliTRDtracker : public AliTracker {
   void          SetEventNumber(Int_t event) { fEvent = event; }
   void          SetAddTRDseeds() { fAddTRDseeds = kTRUE; }
 
+  Double_t      GetTiltFactor(const AliTRDcluster* c);
+
   void          ReadClusters(TObjArray *array, const Char_t *filename); 
   Int_t         CookSectorIndex(Int_t gs) { return kTRACKING_SECTORS - 1 - gs; }
 
