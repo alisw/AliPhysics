@@ -203,7 +203,6 @@ Int_t AliHBTAnalysisStavinskyMixing::ProcessSim(AliAOD* /*aodrec*/, AliAOD* aods
   AliAOD* partEvent2;
   
 
-  AliHBTPair* partpair = &ppair;
  
   AliHBTPair * tmppartpair;
   
