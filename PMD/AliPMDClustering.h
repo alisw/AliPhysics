@@ -37,21 +37,20 @@ class AliPMDClustering: public TObject
   AliPMDClustering();
   virtual ~AliPMDClustering();
 
-  void DoClust(Int_t idet, Int_t ismn, Double_t celladc[][96],
-	       TObjArray *pmdcont);
-  void Order();
-
-  Int_t CrClust(Double_t ave, Double_t cutoff, Int_t nmx1);
-  void RefClust(Int_t incr);
-  void GaussFit(Int_t ncell, Int_t nclust, Double_t &x,
-		Double_t &y, Double_t &z, Double_t &xc,
-		Double_t &yc, Double_t &zc, Double_t &rc);
+  void     DoClust(Int_t idet, Int_t ismn, Double_t celladc[][96],
+		   TObjArray *pmdcont);
+  void     Order();
+  
+  Int_t    CrClust(Double_t ave, Double_t cutoff, Int_t nmx1);
+  void     RefClust(Int_t incr);
+  void     GaussFit(Int_t ncell, Int_t nclust, Double_t &x,
+		    Double_t &y, Double_t &z, Double_t &xc,
+		    Double_t &yc, Double_t &zc, Double_t &rc);
   Double_t Distance(Double_t x1, Double_t y1,
 		    Double_t x2, Double_t y2);
   Double_t Ranmar() const;
-  void SetEdepCut(Float_t decut);
-  void SetDebug(Int_t idebug);
-
+  void     SetEdepCut(Float_t decut);
+  
  protected:
 
   static const Double_t fgkSqroot3by2;  // fgkSqroot3by2 = sqrt(3.)/2.
@@ -114,9 +113,8 @@ class AliPMDClustering: public TObject
     coord --- x and y coordinates of center of each cell
   */
 
-  Int_t fDebug;    // Switch for debug (1:Print, 0:Noprint)
   Float_t fCutoff; // Energy(ADC) cutoff per cell before clustering
 
-  ClassDef(AliPMDClustering,3) // Does clustering for PMD
+  ClassDef(AliPMDClustering,5) // Does clustering for PMD
 };
 #endif

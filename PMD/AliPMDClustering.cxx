@@ -42,16 +42,17 @@
 #include "Riostream.h"
 #include <TNtuple.h>
 #include <TObjArray.h>
+#include <stdio.h>
+
 #include "AliPMDcluster.h"
 #include "AliPMDClustering.h"
-#include <stdio.h>
+#include "AliLog.h"
 
 ClassImp(AliPMDClustering)
 
 const Double_t AliPMDClustering::fgkSqroot3by2=0.8660254;  // sqrt(3.)/2.
 
 AliPMDClustering::AliPMDClustering():
-  fDebug(0),
   fCutoff(0.0)
 {
   for(int i = 0; i < kNDIMX; i++)
@@ -108,28 +109,22 @@ void AliPMDClustering::DoClust(Int_t idet, Int_t ismn, Double_t celladc[48][96],
       if (fEdepCell[i1][i2] > cutoff ) nmx1 = nmx1 + 1;
     }
   // nmx1 --- number of cells having ener dep >= cutoff
-  if (fDebug == 1)
-    {
-      cout << " nmx1 " << nmx1 << endl;
-    }
+
+  AliDebug(1,Form("Number of cells having energy >= %f are %d",cutoff,nmx1));
 
   //  if (nmx1 == 0 | nmx1 == -1) return;
 
   if (nmx1 == 0) nmx1 = 1;
   ave=ave/nmx1;
-  if (fDebug == 1)
-    {
-      cout <<"kNMX " << kNMX << " nmx1 " << nmx1<< " ave "<<ave<<
-	" cutoff " << cutoff << endl;
-    }
 
+  AliDebug(1,Form("Number of cells in a SuperM = %d and Average = %f",
+		  kNMX,ave));
+	   
   incr = CrClust(ave, cutoff, nmx1);
   RefClust(incr);
-  if (fDebug == 1)
-    {
-      cout << "fClno " << fClno << endl;
-    }
 
+  AliDebug(1,Form("Detector Plane = %d  Serial Module No = %d Number of clusters = %d",idet, ismn, fClno));
+  
   for(i1=0; i1<=fClno; i1++)
     {
       Float_t cluXC    = (Float_t) fClusters[0][i1];
@@ -225,11 +220,8 @@ int AliPMDClustering::CrClust(double ave, double cutoff, int nmx1)
   // ofstream ofl0("cells_loc",ios::out);
   // initialize fInfocl[2][kNDIMX][kNDIMY]
 
-  if (fDebug == 1)
-    {
-      printf(" *** Inside CrClust **  kNMX = %d nmx1 = %d kNDIMX = %d kNDIMY = %d ave = %f cutoff = %f\n",
-	     kNMX,nmx1,kNDIMX,kNDIMY,ave,cutoff);
-    }
+  AliDebug(1,Form("kNMX = %d nmx1 = %d kNDIMX = %d kNDIMY = %d ave = %f cutoff = %f",kNMX,nmx1,kNDIMX,kNDIMY,ave,cutoff));
+  
   for (j=0; j < kNDIMX; j++){
     for(k=0; k < kNDIMY; k++){
       fInfocl[0][j][k] = 0;
@@ -349,17 +341,16 @@ void AliPMDClustering::RefClust(int incr)
   for(i=0; i<incr; i++){
     if(fInfcl[0][i] != nsupcl){ nsupcl=nsupcl+1; }
     if (nsupcl > 4500) {
-      Error("RefClust", "Too many superclusters!");
+      AliWarning("RefClust: Too many superclusters!");
       nsupcl = 4500;
       break;
     }
     ncl[nsupcl]=ncl[nsupcl]+1;
   }
-  if (fDebug == 1)
-    {
-      cout << " # of cells " <<incr+1 << " # of superclusters " << nsupcl+1
-	   << endl;
-    }
+
+  AliDebug(1,Form("Number of cells = %d Number of Superclusters = %d",
+		  incr+1,nsupcl+1));
+
   id=-1;
   icl=-1;
   for(i=0; i<nsupcl; i++){
@@ -370,7 +361,7 @@ void AliPMDClustering::RefClust(int incr)
       // cluster center at the centyer of the cell
       // cluster radius = half cell dimension
       if (fClno >= 5000) {
-	Error("RefClust", "Too many clusters!");
+	AliWarning("RefClust: Too many clusters! more than 5000");
 	return;
       }
       fClno = fClno + 1;
@@ -390,7 +381,7 @@ void AliPMDClustering::RefClust(int incr)
       id   = id + 1;
       icl  = icl+1;
       if (fClno >= 5000) {
-	Error("RefClust", "Too many clusters!");
+	AliWarning("RefClust: Too many clusters! more than 5000");
 	return;
       }
       fClno = fClno+1;
@@ -536,7 +527,7 @@ void AliPMDClustering::RefClust(int incr)
       }
       for(j=0; j<=ig; j++){
 	if (fClno >= 5000) {
-	  Error("RefClust", "Too many clusters!");
+	  AliWarning("RefClust: Too many clusters! more than 5000");
 	  return;
 	}
 	fClno               = fClno + 1;
@@ -721,7 +712,7 @@ double AliPMDClustering::Ranmar() const
       cm = 16777213./16777216.;
     }
     else{
-      cout << " wrong initialization " << endl;
+      AliWarning("Wrong initialization");
     }
   }
   else{
@@ -745,7 +736,3 @@ void AliPMDClustering::SetEdepCut(Float_t decut)
   fCutoff = decut;
 }
 // ------------------------------------------------------------------------ //
-void AliPMDClustering::SetDebug(Int_t idebug)
-{
-  fDebug = idebug;
-}

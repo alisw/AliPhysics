@@ -27,6 +27,7 @@
 #include <TObjArray.h>
 #include <TClonesArray.h>
 
+#include "AliLog.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "AliRawReader.h"
@@ -38,8 +39,25 @@
 #include "AliPMDrecpoint1.h"
 #include "AliPMDRawStream.h"
 
+
+
 ClassImp(AliPMDClusterFinder)
 
+AliPMDClusterFinder::AliPMDClusterFinder():
+  fRunLoader(0),
+  fPMDLoader(0),
+  fTreeD(0),
+  fTreeR(0),
+  fDigits(new TClonesArray("AliPMDdigit", 1000)),
+  fRecpoints(new TClonesArray("AliPMDrecpoint1", 1000)),
+  fNpoint(0),
+  fEcut(0.)
+{
+//
+// Constructor
+//
+}
+// ------------------------------------------------------------------------- //
 AliPMDClusterFinder::AliPMDClusterFinder(AliRunLoader* runLoader):
   fRunLoader(runLoader),
   fPMDLoader(runLoader->GetLoader("PMDLoader")),
@@ -48,7 +66,6 @@ AliPMDClusterFinder::AliPMDClusterFinder(AliRunLoader* runLoader):
   fDigits(new TClonesArray("AliPMDdigit", 1000)),
   fRecpoints(new TClonesArray("AliPMDrecpoint1", 1000)),
   fNpoint(0),
-  fDebug(0),
   fEcut(0.)
 {
 //
@@ -88,16 +105,17 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 
   TObjArray *pmdcont = new TObjArray();
   AliPMDClustering *pmdclust = new AliPMDClustering();
-  pmdclust->SetDebug(fDebug);
+
   pmdclust->SetEdepCut(fEcut);
 
   fRunLoader->GetEvent(ievt);
-  //cout << " ***** Beginning::Digits2RecPoints *****" << endl;
+
 
   fTreeD = fPMDLoader->TreeD();
   if (fTreeD == 0x0)
     {
-      cout << " Can not get TreeD" << endl;
+      AliFatal("AliPMDClusterFinder: Can not get TreeD");
+
     }
   AliPMDdigit  *pmddigit;
   TBranch *branch = fTreeD->GetBranch("PMDDigit");
@@ -140,7 +158,9 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
       pmdclust->DoClust(idet,ismn,fCellADC,pmdcont);
       
       Int_t nentries1 = pmdcont->GetEntries();
-//      cout << " nentries1 = " << nentries1 << endl;
+
+      AliDebug(1,Form("Total number of clusters/module = %d",nentries1));
+
       for (Int_t ient1 = 0; ient1 < nentries1; ient1++)
 	{
 	  AliPMDcluster *pmdcl = (AliPMDcluster*)pmdcont->UncheckedAt(ient1);
@@ -169,7 +189,201 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
   delete pmdclust;
   delete pmdcont;
     
-  //  cout << " ***** End::Digits2RecPoints *****" << endl;
+}
+// ------------------------------------------------------------------------- //
+
+void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
+					   TTree *clustersTree)
+{
+  // Converts RAW data to recpoints after running clustering
+  // algorithm on CPV and PREshower plane
+  //
+
+  Float_t  clusdata[5];
+
+  TObjArray *pmdcont = new TObjArray();
+  AliPMDClustering *pmdclust = new AliPMDClustering();
+
+  pmdclust->SetEdepCut(fEcut);
+
+  ResetRecpoint();
+
+  Int_t bufsize = 16000;
+  clustersTree->Branch("PMDRecpoint", &fRecpoints, bufsize); 
+
+  const Int_t kDDL = 6;
+  const Int_t kRow = 48;
+  const Int_t kCol = 96;
+
+  Int_t idet = 0;
+  Int_t iSMN = 0;
+  
+  for (Int_t indexDDL = 0; indexDDL < kDDL; indexDDL++)
+    {
+      if (indexDDL < 4)
+	{
+	  iSMN = 6;
+	}
+      else if (indexDDL >= 4)
+	{
+	  iSMN = 12;
+	}
+      Int_t ***precpvADC;
+      precpvADC = new int **[iSMN];
+      for (Int_t i=0; i<iSMN; i++) precpvADC[i] = new int *[kRow];
+      for (Int_t i=0; i<iSMN;i++)
+	{
+	  for (Int_t j=0; j<kRow; j++) precpvADC[i][j] = new int [kCol];
+	}
+      for (Int_t i = 0; i < iSMN; i++)
+	{
+	  for (Int_t j = 0; j < kRow; j++)
+	    {
+	      for (Int_t k = 0; k < kCol; k++)
+		{
+		  precpvADC[i][j][k] = 0;
+		}
+	    }
+	}
+      ResetCellADC();
+      rawReader->Reset();
+      AliPMDRawStream pmdinput(rawReader);
+      rawReader->Select(12, indexDDL, indexDDL);
+      while(pmdinput.Next())
+	{
+	  Int_t det = pmdinput.GetDetector();
+	  Int_t smn = pmdinput.GetSMN();
+	  //Int_t mcm = pmdinput.GetMCM();
+	  //Int_t chno = pmdinput.GetChannel();
+	  Int_t row = pmdinput.GetRow();
+	  Int_t col = pmdinput.GetColumn();
+	  Int_t sig = pmdinput.GetSignal();
+	  
+	  Int_t indexsmn = 0;
+
+	  if (indexDDL < 4)
+	    {
+	      if (det != 0)
+		AliError(Form("*DDL %d and Detector NUMBER %d NOT MATCHING *",
+			      indexDDL, det));
+	      indexsmn = smn - indexDDL * 6;
+	    }
+	  else if (indexDDL == 4)
+	    {
+	      if (det != 1)
+		AliError(Form("*DDL %d and Detector NUMBER %d NOT MATCHING *",
+			      indexDDL, det));
+	      if (smn < 6)
+		{
+		  indexsmn = smn;
+		}
+	      else if (smn >= 12 && smn < 18)
+		{
+		  indexsmn = smn - 6;
+		}
+	    }
+	  else if (indexDDL == 5)
+	    {
+	      if (det != 1)
+		AliError(Form("*DDL %d and Detector NUMBER %d NOT MATCHING *",
+			      indexDDL, det));
+	      if (smn >= 6 && smn < 12)
+		{
+		  indexsmn = smn - 6;
+		}
+	      else if (smn >= 18 && smn < 24)
+		{
+		  indexsmn = smn - 12;
+		}
+	    }	      
+	  precpvADC[indexsmn][row][col] = sig;
+	} // while loop
+
+      Int_t ismn = 0;
+      for (Int_t indexsmn = 0; indexsmn < iSMN; indexsmn++)
+	{
+	  ResetCellADC();
+	  for (Int_t irow = 0; irow < kRow; irow++)
+	    {
+	      for (Int_t icol = 0; icol < kCol; icol++)
+		{
+		  fCellADC[irow][icol] = 
+		    (Double_t) precpvADC[indexsmn][irow][icol];
+		} // row
+	    }     // col
+	  if (indexDDL < 4)
+	    {
+	      ismn = indexsmn + indexDDL * 6;
+	      idet = 0;
+	    }
+	  else if (indexDDL == 4)
+	    {
+	      if (indexsmn < 6)
+		{
+		  ismn = indexsmn;
+		}
+	      else if (indexsmn >= 6 && indexsmn < 12)
+		{
+		  ismn = indexsmn + 6;
+		}
+	      idet = 1;
+	    }
+	  else if (indexDDL == 5)
+	    {
+	      if (indexsmn < 6)
+		{
+		  ismn = indexsmn + 6;
+		}
+	      else if (indexsmn >= 6 && indexsmn < 12)
+		{
+		  ismn = indexsmn + 12;
+		}
+	      idet = 1;
+	    }
+
+
+	  pmdclust->DoClust(idet,ismn,fCellADC,pmdcont);
+	  Int_t nentries1 = pmdcont->GetEntries();
+
+	  AliDebug(1,Form("Total number of clusters/module = %d",nentries1));
+
+	  for (Int_t ient1 = 0; ient1 < nentries1; ient1++)
+	    {
+	      AliPMDcluster *pmdcl = 
+		(AliPMDcluster*)pmdcont->UncheckedAt(ient1);
+	      idet        = pmdcl->GetDetector();
+	      ismn        = pmdcl->GetSMN();
+	      clusdata[0] = pmdcl->GetClusX();
+	      clusdata[1] = pmdcl->GetClusY();
+	      clusdata[2] = pmdcl->GetClusADC();
+	      clusdata[3] = pmdcl->GetClusCells();
+	      clusdata[4] = pmdcl->GetClusRadius();
+
+	      AddRecPoint(idet,ismn,clusdata);
+	    }
+	  pmdcont->Clear();
+	  
+	  //fTreeR->Fill();
+	  clustersTree->Fill();
+	  ResetRecpoint();
+
+
+	} // smn
+
+      for (Int_t i=0; i<iSMN; i++)
+	{
+	  for (Int_t j=0; j<kRow; j++) delete [] precpvADC[i][j];
+	}
+      for (Int_t i=0; i<iSMN; i++) delete [] precpvADC[i];
+      delete precpvADC;
+    } // DDL Loop
+  
+  ResetCellADC();
+  
+  //   delete the pointers
+  delete pmdclust;
+  delete pmdcont;
+
 }
 // ------------------------------------------------------------------------- //
 
@@ -183,7 +397,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 
   TObjArray *pmdcont = new TObjArray();
   AliPMDClustering *pmdclust = new AliPMDClustering();
-  pmdclust->SetDebug(fDebug);
+
   pmdclust->SetEdepCut(fEcut);
 
   fRunLoader->GetEvent(ievt);
@@ -252,15 +466,15 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 	  if (indexDDL < 4)
 	    {
 	      if (det != 0)
-		printf(" *** DDL %d and Detector NUMBER %d NOT MATCHING *** ",
-		       indexDDL, det);
+		AliError(Form("*DDL %d and Detector NUMBER %d NOT MATCHING *",
+			      indexDDL, det));
 	      indexsmn = smn - indexDDL * 6;
 	    }
 	  else if (indexDDL == 4)
 	    {
 	      if (det != 1)
-		printf(" *** DDL %d and Detector NUMBER %d NOT MATCHING *** ",
-		       indexDDL, det);
+		AliError(Form("*DDL %d and Detector NUMBER %d NOT MATCHING *",
+			      indexDDL, det));
 	      if (smn < 6)
 		{
 		  indexsmn = smn;
@@ -273,8 +487,8 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 	  else if (indexDDL == 5)
 	    {
 	      if (det != 1)
-		printf(" *** DDL %d and Detector NUMBER %d NOT MATCHING *** ",
-		       indexDDL, det);
+		AliError(Form("*DDL %d and Detector NUMBER %d NOT MATCHING *",
+			      indexDDL, det));
 	      if (smn >= 6 && smn < 12)
 		{
 		  indexsmn = smn - 6;
@@ -332,7 +546,9 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 
 	  pmdclust->DoClust(idet,ismn,fCellADC,pmdcont);
 	  Int_t nentries1 = pmdcont->GetEntries();
-	  //      cout << " nentries1 = " << nentries1 << endl;
+
+	  AliDebug(1,Form("Total number of clusters/module = %d",nentries1));
+
 	  for (Int_t ient1 = 0; ient1 < nentries1; ient1++)
 	    {
 	      AliPMDcluster *pmdcl = 
@@ -372,17 +588,11 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
   delete pmdclust;
   delete pmdcont;
 
-  //  cout << " ***** End::Digits2RecPoints :: Raw *****" << endl;
 }
 // ------------------------------------------------------------------------- //
 void AliPMDClusterFinder::SetCellEdepCut(Float_t ecut)
 {
   fEcut = ecut;
-}
-// ------------------------------------------------------------------------- //
-void AliPMDClusterFinder::SetDebug(Int_t idebug)
-{
-  fDebug = idebug;
 }
 // ------------------------------------------------------------------------- //
 void AliPMDClusterFinder::AddRecPoint(Int_t idet,Int_t ismn,Float_t *clusdata)

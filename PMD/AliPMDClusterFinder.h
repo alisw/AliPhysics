@@ -19,18 +19,19 @@ class AliLoader;
 class AliRunLoader;
 class AliRawReader;
 
-class AliPMDClusterFinder
+class AliPMDClusterFinder : public TObject
 {
 
  public:
 
+  AliPMDClusterFinder();
   AliPMDClusterFinder(AliRunLoader* runLoader);
   virtual ~AliPMDClusterFinder();
 
   void Digits2RecPoints(Int_t ievt);
+  void Digits2RecPoints(AliRawReader *rawReader, TTree *clustersTree);
   void Digits2RecPoints(Int_t ievt, AliRawReader *rawReader);
   void SetCellEdepCut(Float_t ecut);
-  void SetDebug(Int_t idebug);
   void AddRecPoint(Int_t idet, Int_t ismn, Float_t * clusdata);
   void ResetCellADC();
   void ResetRecpoint();
@@ -51,14 +52,13 @@ class AliPMDClusterFinder
 
   Int_t   fNpoint;          // 
   Int_t   fDetNo;           // Detector Number (0:PRE, 1:CPV)
-  Int_t   fDebug;           // Debugging switch (0:NO, 1:YES)
   Float_t fEcut;            // Energy/ADC cut per cell
 
   static const Int_t fgkRow = 48; // Total number of rows in one unitmodule
   static const Int_t fgkCol = 96; // Total number of cols in one unitmodule
   Double_t fCellADC[fgkRow][fgkCol]; // Array containing individual cell ADC
 
-  ClassDef(AliPMDClusterFinder,6) // To run PMD clustering
+  ClassDef(AliPMDClusterFinder,7) // To run PMD clustering
 };
 #endif
 
