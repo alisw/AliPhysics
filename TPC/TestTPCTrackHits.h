@@ -1,3 +1,11 @@
+#ifndef TESTTPCTRACKHITS_H
+#define TESTTPCTRACKHITS_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id */
+
+
 void ConvertHits(const char * benchmark="0", Bool_t debug=kFALSE);
 void CompareHits(const char * benchmark="1", Bool_t debug=kFALSE);
 
@@ -8,3 +16,4 @@ private:
   AliTPChit fDelta;     //delta of hit information 
   ClassDef(AliTPChitD,1) 
 };
+#endif
