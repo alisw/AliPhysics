@@ -430,7 +430,7 @@ void AliTPC::CreateMaterials()
   // gases - mixtures, ID >= 20 pure gases, <= 10 ID < 20 -compounds
   //----------------------------------------------------------------
 
-  char namate[21]; 
+  char namate[21]=""; 
   density = 0.;
   Float_t am=0;
   Int_t nc;

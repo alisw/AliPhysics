@@ -184,7 +184,7 @@ void AliPHOS::CreateMaterials()
   AliMaterial(15, "Ar$", 39.948, 18.0, dAr, 14.0, 0., 0, 0) ;   
  
  // ArCo2
-  Char_t namate[21];
+  Char_t namate[21]="";
   Float_t aGM[2] ; 
   Float_t zGM[2] ; 
   Float_t wGM[2] ; 

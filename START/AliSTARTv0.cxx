@@ -297,7 +297,7 @@ void AliSTARTv0::CreateMaterials()
 
    AliMixture( 3, "Al2O3   $", aal2o3, zal2o3, denscer, -2, wal2o3);
    AliMixture( 4, "PMT glass   $",aglass,zglass,dglass,-2,wglass);
-   char namate[21];
+   char namate[21]="";
    gMC->Gfmate((*fIdmate)[3], namate, a, z, d, radl, absl, buf, nbuf);
    acer[0]=a;
    zcer[0]=z;

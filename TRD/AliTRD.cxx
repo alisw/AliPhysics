@@ -595,7 +595,7 @@ void AliTRD::CreateMaterials()
   AliMixture(14,"Plexiglas",      apg, zpg, dpg, -3, wpg);
 
   // Gas mixtures
-  Char_t namate[21];
+  Char_t namate[21]="";
   // Xe/CO2-mixture
   // Get properties of Xe 
   gMC->Gfmate((*fIdmate)[4], namate, agm[0], zgm[0], d, radl, absl, buf, nbuf);

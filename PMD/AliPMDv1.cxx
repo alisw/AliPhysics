@@ -841,7 +841,7 @@ void AliPMDv1::CreateMaterials()
  
   // 	define gas-mixtures 
   
-  char namate[21];
+  char namate[21]="";
   gMC->Gfmate((*fIdmate)[3], namate, a, z, d, radl, absl, buf, nbuf);
   ag[1] = a;
   zg[1] = z;
