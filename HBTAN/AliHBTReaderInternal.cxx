@@ -94,7 +94,7 @@ AliHBTReaderInternal& AliHBTReaderInternal::operator=(const AliHBTReaderInternal
   Rewind();//close current session
   AliHBTReader::operator=((const AliHBTReader&)in);
   fFileName = in.fFileName;
-  
+  return *this;
 }
 /********************************************************************/
 AliHBTReaderInternal::~AliHBTReaderInternal()
