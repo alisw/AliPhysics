@@ -130,22 +130,21 @@ void AliFMDv2::CreateGeometry()
       ppcon[1]=360;
       ppcon[2]=4;
       
-      //      ppcon[3]=z[ifmd];
-      ppcon[3]=-wideSupport/2.;
-      ppcon[4]=rin[ifmd];
-      ppcon[5]=rout[ifmd];
+      ppcon[3]=-wideSupport;
+      ppcon[4]=rin[ifmd]+0.1;
+      ppcon[5]=rout[ifmd]+0.1;
       
       ppcon[6]=ppcon[3]+zSi+2*zPCB+2*NylonTube[2];
-      ppcon[7]=rin[ifmd];
-      ppcon[8]=rout[ifmd];
+      ppcon[7]=rin[ifmd]+0.1;
+      ppcon[8]=rout[ifmd]+0.1;
       
       ppcon[9]=ppcon[6];
-      ppcon[10]=RinHoneyComb[ifmd];
-      ppcon[11]=RoutHoneyComb[ifmd];
+      ppcon[10]=RinHoneyComb[ifmd]+0.1;
+      ppcon[11]=RoutHoneyComb[ifmd]+0.1;
 
-      ppcon[12]=ppcon[9]+zHoneyComb+zPCB;
-      ppcon[13]=RinHoneyComb[ifmd];
-      ppcon[14]=RoutHoneyComb[ifmd];
+      ppcon[12]=ppcon[9]+2*zHoneyComb+zPCB;
+      ppcon[13]=RinHoneyComb[ifmd]+0.1;
+      ppcon[14]=RoutHoneyComb[ifmd]+0.1;
       zFMD=z[ifmd]+wideSupport/2.;
       //      cout<<" Si "<<ifmd+1<<" "<<zFMD<<" "<<ppcon[12]<<endl;
       gMC->Gsvolu(nameFMD,"PCON",idtmed[0],ppcon,15);
@@ -157,6 +156,7 @@ void AliFMDv2::CreateGeometry()
       sprintf(nameSi,"GSI%d",ifmd+1);
       sprintf(nameSector,"GSC%d",ifmd+1);
       sprintf(nameRing,"GRN%d",ifmd+1);
+      
       //honeycomb support
       sprintf(nameHoney,"GSU%d",ifmd+1);
       gMC->Gsvolu(nameHoney,"TUBE", idtmed[0], par, 0);  //honeycomb 
@@ -188,17 +188,13 @@ void AliFMDv2::CreateGeometry()
       par[1]=rout[ifmd];
       par[2]=zSi/2;
       gMC->Gsvolu(nameSi,"TUBE", idtmed[4], par, 3);
-      printf ("rin %f rout %f ZFMD %f\n",par[0],par[1],z[ifmd]);
       zInside=ppcon[3]+par[2];
-      //      cout<<" zInside "<<zInside<<endl;
-      gMC->Gspos(nameSi,ifmd+1,nameFMD,0,0,zInside,0, "ONLY");
+       gMC->Gspos(nameSi,ifmd+1,nameFMD,0,0,zInside,0, "ONLY");
       //PCB 1
       zInside += par[2]+zPCB/2;
       par[2]=zPCB/2;
-      //   cout<<"FMD "<<ifmd<<" zInside PCB1 = "<<zInside<<endl;
       gMC->Gsposp(namePCB,1,nameFMD,0,0,zInside,0, "ONLY",par,3);
       zInside += zPCB;
-      //  cout<<"FMD "<<ifmd<<" zInside PCB2 = "<<zInside<<endl;
       gMC->Gsposp(namePCB,2,nameFMD,0,0,zInside,0, "ONLY",par,3);
       Float_t NulonTubeBegin=zInside+2*zPCB;
       par[2]=zPCB/2-0.02;
@@ -215,17 +211,13 @@ void AliFMDv2::CreateGeometry()
       par[0] = RinHoneyComb[ifmd];
       par[1] = RoutHoneyComb[ifmd];
       par[2] = zHoneyComb/2;
-      //  cout<<"FMD "<<ifmd<<" zInside before HoneyComb = "<<zInside<<" par[2] "<<par[2]<<endl;
       zInside += 2*NylonTube[2]+par[2];
-      // cout<<" zInside HoneyComb"<<zInside<<endl;
       gMC->Gsposp(nameHoney,1,nameFMD,0,0,zInside,0, "ONLY",par,3);
       par[2]=0.1/2;
       Float_t zHoney=-zHoneyComb/2+par[2];
-      //  cout<<" zHoney shurka 1 "<<zHoney <<endl;
       gMC->Gsposp(nameHoneyOut,1,nameHoney,0,0,zHoney,0,
 		  "ONLY",par,3); //shkurki
       zHoney=zHoneyComb/2-par[2];
-      //  cout<<" zHoney shurka 2 "<<zHoney <<endl;
       gMC->Gsposp(nameHoneyOut,2,nameHoney,0,0,zHoney,0, "ONLY",par,3);
       par[2]=(zHoneyComb-2.*0.1)/2; //soty vnutri
       gMC->Gsposp(nameHoneyIn,1,nameHoney,0,0,0,0, "ONLY",par,3);
@@ -239,7 +231,6 @@ void AliFMDv2::CreateGeometry()
       par[0]=RoutHoneyComb[ifmd]-9;
       par[1]=RoutHoneyComb[ifmd];
       par[2]=zPCB/2;
-      //  cout<<" rin "<<par[0]<<" rout "<<par[1]<<endl;
       zInside += zHoneyComb/2+par[2];
       gMC->Gsposp(nameLPCB,1,nameFMD,0,0,zInside,0, "ONLY",par,3);
       
@@ -253,49 +244,11 @@ void AliFMDv2::CreateGeometry()
        par[2]=zChips/2;
        gMC->Gsposp(nameLChips,1,nameLPCB,0,0,zInPCB,0, "ONLY",par,3);
       
-       /*
-      if (ifmd==3) {
- 	par[0]=0.1;
-	par[1]=7.;
-	par[2]=0.1;
-	gMC->Gsvolu("GST1","BOX ", idtmed[6], par, 3);  //support carbon stick
-	gMC->Gspos("GST1",1,nameFMD,0.,49.2-par[1],z[3]-0.7,0,"ONLY");
-	gMC->Gspos("GST1",2,nameFMD,0.,-49.2+par[1],z[3]-0.7,0,"ONLY");
-	
-	Float_t pSupportCone[5];
-	pSupportCone[0]=1.5;
-	pSupportCone[1]=34.4;
-	pSupportCone[2]=34.5;
-	pSupportCone[3]=30.;
-	pSupportCone[4]=29.9;
-	gMC->Gsvolu("GCY1","CONE", idtmed[6],pSupportCone , 5);  //support carbon stick
-	gMC->Gspos("GCY1",1,nameFMD,0.,0.,z[3]+1.5,0,"ONLY");
-	
-      }
-     if (ifmd==2) {
- 	par[0]=0.1;
-	par[1]=1.3;
-	par[2]=0.1;
-	gMC->Gsvolu("GST3","BOX ", idtmed[6], par, 3);  //support carbon stick
-	gMC->Gspos("GST3",1,nameFMD,0.,23.-par[1],z[2]+2.1,0,"ONLY");
-	gMC->Gspos("GST3",2,nameFMD,0.,-23.+par[1],z[2]+2.1,0,"ONLY");
-
-	Float_t pSupportCone[5];
-	pSupportCone[0]=1.5;
-	pSupportCone[1]=30.;
-	pSupportCone[2]=29.9;
-	pSupportCone[3]=21.;
-	pSupportCone[4]=20.9;
-	gMC->Gsvolu("GCY2","CONE", idtmed[6],pSupportCone , 5);  //support carbon stick
-	gMC->Gspos("GCY2",1,nameFMD,0.,0.,z[2]+1.5,0,"ONLY");
-	
-     }
-       */
-       
+           
      //Granularity
     fSectorsSi1=20;
     fRingsSi1=256*3;
-    //fRingsSi1=3; // for drawing only
+    // fRingsSi1=3; // for drawing only
     fSectorsSi2=40;
     fRingsSi2=128*3;
     // fRingsSi2=3; //for  drawing onl
