@@ -332,7 +332,7 @@ Int_t AliL3ConfMapFit::FitCircle()
 //
 //   Get charge
 //
-  Double_t q = ( ( yrrav < 0 ) ? 1 : -1 ) ;
+  Int_t q = ( ( yrrav < 0 ) ? 1 : -1 ) ;
 
   fTrack->SetCharge(q);
   

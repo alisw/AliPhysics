@@ -38,7 +38,7 @@ AliL3ConfMapPoint::AliL3ConfMapPoint()
   SetYprimeerr(0.);
   SetIntPoint(0., 0., 0., 0., 0., 0.);
   SetShiftedCoord();
-  SetMCTrackID(0.,0.,0.);
+  SetMCTrackID(0,0,0);
 }
 
 AliL3ConfMapPoint::~AliL3ConfMapPoint()
