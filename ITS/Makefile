@@ -28,9 +28,8 @@ SRCS          = AliITS.cxx AliITSv1.cxx AliITSv3.cxx AliITSv5.cxx \
 		AliITSHuffman.cxx AliITSClusterFinderSSD.cxx \
 		AliITSclusterSSD.cxx AliITSpackageSSD.cxx \
 		AliITSdictSSD.cxx AliITSgeomSPD300.cxx AliITSgeomSPD425.cxx \
-		vertex.cxx AliITSstatistics.cxx AliITSstatistics2.cxx \
-		AnalysisITSAlignment.cxx  AliITSAlignmentTrack.cxx \
-		AliITSAlignmentModule.cxx 
+		AliITSstatistics.cxx AliITSstatistics2.cxx \
+		AliITSAlignmentTrack.cxx AliITSAlignmentModule.cxx 
 
 # Fortran sources
 
