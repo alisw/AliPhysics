@@ -54,6 +54,7 @@ public:
   virtual void   SetTreeAddress(); 
   virtual void   StepManager(void) ;                                // does the tracking through PHOS and a preliminary digitalization
   virtual TString Version(void){ return TString("v0"); }
+
 protected:
 
   Float_t fDigitThreshold ;                       // Threshold for the digit registration 
