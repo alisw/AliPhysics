@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/11/22 11:33:10  coppedis
+Major code revision
+
 Revision 1.5  2000/10/02 21:28:20  fca
 Removal of useless dependecies via forward declarations
 
@@ -49,19 +52,28 @@ Introduction of the Copyright and cvs Log
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+// --- ROOT system
 #include <TBRIK.h>
 #include <TNode.h>
 #include <TMath.h>
+#include <TRandom.h>
 #include <TSystem.h>
+#include <TTree.h>
 
 #include "stdio.h"
+
+// --- AliRoot classes
 #include "AliZDCv1.h"
+#include "AliZDCHit.h"
+#include "AliZDCDigit.h"
 #include "AliRun.h"
+#include "AliDetector.h"
 #include "AliMagF.h"
 #include "AliMC.h"
 #include "AliCallf77.h"
 #include "AliConst.h"
 #include "AliPDG.h"
+#include "TLorentzVector.h"
  
  
 ClassImp(AliZDCv1)
@@ -79,6 +91,7 @@ AliZDCv1::AliZDCv1() : AliZDC()
   //
   // Default constructor for Zero Degree Calorimeter
   //
+  
   fMedSensF1  = 0;
   fMedSensF2  = 0;
   fMedSensZN  = 0;
@@ -96,6 +109,9 @@ AliZDCv1::AliZDCv1(const char *name, const char *title)
   //
   // Standard constructor for Zero Degree Calorimeter 
   //
+
+  fDigits = new TClonesArray("AliZDCDigit",1000);
+
   fMedSensF1  = 0;
   fMedSensF2  = 0;
   fMedSensZN  = 0;
@@ -381,19 +397,19 @@ void AliZDCv1::CreateBeamLine()
   // -- COMPENSATOR DIPOLE (MBXW) 
   //     GAP (VACUUM WITH MAGNETIC FIELD) 
   
-  tubpar[0] = 0.;
-  tubpar[1] = 4.5;
-  tubpar[2] = 340./2.;
-  gMC->Gsvolu("MBXW", "TUBE", idtmed[11], tubpar, 3);
-  gMC->Gspos("MBXW", 1, "ZDC ", 0., 0., tubpar[2] + 805., 0, "ONLY");
+//  tubpar[0] = 0.;
+//  tubpar[1] = 4.5;
+//  tubpar[2] = 340./2.;
+//  gMC->Gsvolu("MBXW", "TUBE", idtmed[11], tubpar, 3);
+//  gMC->Gspos("MBXW", 1, "ZDC ", 0., 0., tubpar[2] + 805., 0, "ONLY");
   
   // --  YOKE (IRON WITHOUT MAGNETIC FIELD) 
   
-  tubpar[0] = 4.5;
-  tubpar[1] = 55.;
-  tubpar[2] = 340./2.;
-  gMC->Gsvolu("YMBX", "TUBE", idtmed[5], tubpar, 3);
-  gMC->Gspos("YMBX", 1, "ZDC ", 0., 0., tubpar[2] + 805., 0, "ONLY");
+//  tubpar[0] = 4.5;
+//  tubpar[1] = 55.;
+//  tubpar[2] = 340./2.;
+//  gMC->Gsvolu("YMBX", "TUBE", idtmed[5], tubpar, 3);
+//  gMC->Gspos("YMBX", 1, "ZDC ", 0., 0., tubpar[2] + 805., 0, "ONLY");
   
   // -- COMPENSATOR DIPOLE (MCBWA) 
   //     GAP (VACUUM WITH MAGNETIC FIELD) 
@@ -710,8 +726,8 @@ void AliZDCv1::DrawModule()
   gMC->Gsatt("R017","SEEN",1);
   gMC->Gsatt("P018","SEEN",1);
   gMC->Gsatt("P019","SEEN",1);
-  gMC->Gsatt("MBXW","SEEN",1);
-  gMC->Gsatt("YMBX","SEEN",1);
+//  gMC->Gsatt("MBXW","SEEN",1);
+//  gMC->Gsatt("YMBX","SEEN",1);
   gMC->Gsatt("MCBW","SEEN",1);
   gMC->Gsatt("YMCB","SEEN",1);
   gMC->Gsatt("MQXL","SEEN",1);
@@ -1052,6 +1068,148 @@ void AliZDCv1::InitTables()
   fclose(fp7);
   fclose(fp8);
 }
+
+//_____________________________________________________________________________
+Int_t AliZDCv1::Digitize(Int_t Det, Int_t Quad, Int_t Light)
+{
+  // Evaluation of the ADC channel corresponding to the light yield Light
+
+//  printf("\n	Digitize -> Det = %d, Quad = %d, Light = %d\n", Det, Quad, Light);
+  
+  Int_t j,i;
+  for(i=0; i<3; i++){
+     for(j=0; j<5; j++){
+        fPedMean[i][j]  = 50.;
+        fPedSigma[i][j] = 10.;
+        fPMGain[i][j]   = 10000000.;
+     }
+  }
+  fADCRes   = 0.00000064; // ADC Resolution: 250 fC/ADCch
+  
+  Float_t Ped = gRandom->Gaus(fPedMean[Det-1][Quad],fPedSigma[Det-1][Quad]);
+  Int_t ADCch = Int_t(Light*fPMGain[Det-1][Quad]*fADCRes+Ped);
+  
+//  printf("	Ped = %f, ADCch = %d\n", Ped, ADCch);
+  return ADCch;
+}
+//_____________________________________________________________________________
+void AliZDCv1::FinishEvent()
+{
+  // Creation of the digits from hits 
+
+  if(fDebug == 1){
+    printf("\n  Event Hits --------------------------------------------------------\n");  
+    printf("\n	Num. of primary hits = %d\n", fNPrimaryHits);  
+    fStHits->Print("");
+  }
+
+  TClonesArray &lDigits = *fDigits;
+  
+  AliZDCDigit *newdigit;
+  AliZDCHit   *hit;
+
+  Int_t PMCZN = 0, PMCZP = 0, PMQZN[4], PMQZP[4], PMZEM = 0;
+  
+  Int_t h;
+  for(h=0; h<4; h++){
+     PMQZN[h] =0;
+     PMQZP[h] =0;
+  }
+  
+  Int_t i;
+  for(i=0; i<fNStHits; i++){
+     hit = (AliZDCHit*)fStHits->At(i);
+     Int_t det   = hit->GetVolume(0);
+     Int_t quad  = hit->GetVolume(1);
+     Int_t lightQ = Int_t(hit->GetLightPMQ());
+     Int_t lightC = Int_t(hit->GetLightPMC());
+//     printf("	     \ni = %d, fNStHits = %d, det = %d, quad = %d,"
+//  	    "lightC = %d lightQ = %d\n", i, fNStHits, det, quad, lightC, lightQ);
+  	    
+     if(det == 1){   //ZN 
+       PMCZN = PMCZN + lightC;
+       PMQZN[quad-1] = PMQZN[quad-1] + lightQ;
+     }
+
+     if(det == 2){   //ZP 
+       PMCZP = PMCZP + lightC;
+       PMQZP[quad-1] = PMQZP[quad-1] + lightQ;
+     }
+
+     if(det == 3){   //ZEM 
+       PMZEM = PMZEM + lightC;
+     }
+  }
+  
+//  printf("\n	   PMCZN = %d, PMQZN[0] = %d, PMQZN[1] = %d, PMQZN[2] = %d, PMQZN[3] = %d\n"
+//         , PMCZN, PMQZN[0], PMQZN[1], PMQZN[2], PMQZN[3]);
+//  printf("\n	   PMCZP = %d, PMQZP[0] = %d, PMQZP[1] = %d, PMQZP[2] = %d, PMQZP[3] = %d\n"
+//         , PMCZP, PMQZP[0], PMQZP[1], PMQZP[2], PMQZP[3]);
+//  printf("\n	   PMZEM = %d\n", PMZEM);
+
+  // ------------------------------------    Hits2Digits
+  // Digits for ZN
+  newdigit = new AliZDCDigit(1, 0, Digitize(1, 0, PMCZN));
+  new(lDigits[fNdigits]) AliZDCDigit(*newdigit);
+  fNdigits++;
+  delete newdigit;
+  
+  Int_t j;
+  for(j=0; j<4; j++){
+     newdigit = new AliZDCDigit(1, j+1, Digitize(1, j+1, PMQZN[j]));
+     new(lDigits[fNdigits]) AliZDCDigit(*newdigit);
+     fNdigits++;
+     delete newdigit;
+  }
+  
+  // Digits for ZP
+  newdigit = new AliZDCDigit(2, 0, Digitize(2, 0, PMCZP));
+  new(lDigits[fNdigits]) AliZDCDigit(*newdigit);
+  fNdigits++;
+  delete newdigit;
+  
+  Int_t k;
+  for(k=0; k<4; k++){
+     newdigit = new AliZDCDigit(2, k+1, Digitize(2, k+1, PMQZP[k]));
+     new(lDigits[fNdigits]) AliZDCDigit(*newdigit);
+     fNdigits++;
+     delete newdigit;
+  }
+  
+  // Digits for ZEM
+  newdigit = new AliZDCDigit(3, 0, Digitize(3, 0, PMZEM));
+  new(lDigits[fNdigits]) AliZDCDigit(*newdigit);
+  fNdigits++;
+  delete newdigit;
+      
+  
+  gAlice->TreeD()->Fill();
+  gAlice->TreeD()->Write();
+
+  if(fDebug == 1){
+    printf("\n  Event Digits -----------------------------------------------------\n");  
+    fDigits->Print("");
+  }
+  
+}
+//_____________________________________________________________________________
+ void AliZDCv1::MakeBranch(Option_t *opt)
+{
+  //
+  // Create a new branch in the current Root Tree
+  //
+
+  AliDetector::MakeBranch(opt);
+  
+  char branchname[10];
+  sprintf(branchname,"%s",GetName());
+  char *cD = strstr(opt,"D");
+
+  if (fDigits   && gAlice->TreeD() && cD) {
+    gAlice->TreeD()->Branch(branchname,&fDigits, fBufferSize);
+    printf("* AliZDCv1::MakeBranch    * Making Branch %s for digits\n\n",branchname);
+  }     
+}
 //_____________________________________________________________________________
 void AliZDCv1::StepManager()
 {
@@ -1061,7 +1219,7 @@ void AliZDCv1::StepManager()
 
   Int_t j;
 
-  Int_t vol[2], ibeta=0, ialfa, ibe;
+  Int_t vol[2], ibeta=0, ialfa, ibe, nphe;
   Float_t x[3], xdet[3], destep, hits[10], m, ekin, um[3], ud[3], be, radius, out;
   TLorentzVector s, p;
   const char *knamed;
@@ -1248,15 +1406,16 @@ void AliZDCv1::StepManager()
        if((vol[0]==1)) {
          if(ibe>fNben) ibe=fNben;
          out =  charge*charge*fTablen[ibeta][ialfa][ibe];
+	 nphe = gRandom->Poisson(out);
 	 if(gMC->GetMedium() == fMedSensF1){
-	   hits[7] = out;  	//fLightPMQ
+	   hits[7] = nphe;  	//fLightPMQ
 	   hits[8] = 0;
 	   hits[9] = 0;
 	   AddHit(gAlice->CurrentTrack(), vol, hits);
 	 }
 	 else{
 	   hits[7] = 0;
-	   hits[8] = out;	//fLightPMC
+	   hits[8] = nphe;	//fLightPMC
 	   hits[9] = 0;
 	   AddHit(gAlice->CurrentTrack(), vol, hits);
 	 }
@@ -1266,15 +1425,16 @@ void AliZDCv1::StepManager()
        if((vol[0]==2)) {
          if(ibe>fNbep) ibe=fNbep;
          out =  charge*charge*fTablep[ibeta][ialfa][ibe];
+	 nphe = gRandom->Poisson(out);
 	 if(gMC->GetMedium() == fMedSensF1){
-	   hits[7] = out;  	//fLightPMQ
+	   hits[7] = nphe;  	//fLightPMQ
 	   hits[8] = 0;
 	   hits[9] = 0;
 	   AddHit(gAlice->CurrentTrack(), vol, hits);
 	 }
 	 else{
 	   hits[7] = 0;
-	   hits[8] = out;	//fLightPMC
+	   hits[8] = nphe;	//fLightPMC
 	   hits[9] = 0;
 	   AddHit(gAlice->CurrentTrack(), vol, hits);
 	 }
@@ -1283,10 +1443,11 @@ void AliZDCv1::StepManager()
        if((vol[0]==3)) {
          if(ibe>fNbep) ibe=fNbep;
          out =  charge*charge*fTablep[ibeta][ialfa][ibe];
-	   hits[7] = out;  	//fLightPMQ
-	   hits[8] = 0;
-	   hits[9] = 0;
-	   AddHit(gAlice->CurrentTrack(), vol, hits);
+	 nphe = gRandom->Poisson(out);
+	 hits[7] = nphe;  	//fLightPMQ
+	 hits[8] = 0;
+	 hits[9] = 0;
+	 AddHit(gAlice->CurrentTrack(), vol, hits);
        } 
      }
        
