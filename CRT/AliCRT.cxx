@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2002/07/12 12:56:18  gamez
+Material numbers, correction
+
 Revision 1.3.2.1  2002/07/12 12:31:30  gamez
 Material numbers, correction
 
@@ -52,12 +55,7 @@ First version of CRT
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-
-#include <iostream.h>
-#include <fstream.h>
-
 #include <TTree.h>
-
 
 #include "AliMC.h"
 #include "AliRun.h"
@@ -65,25 +63,21 @@ First version of CRT
 
 #include "AliCRT.h"
 #include "AliCRTConstants.h"
-#include "AliCRTdigit.h"
 #include "AliCRThit.h"
 
  
 ClassImp(AliCRT)
 
-
-static  AliCRTdigit *digits;
- 
 //_____________________________________________________________________________
 AliCRT::AliCRT()
 {
   //
-  // Default constructor for L3 magnet
+  // Default constructor for the CRT
   //
 
-  fIshunt   = 1;
+  fIshunt   = 0;
   fHits     = 0;
-  fDigits   = 0;
+
 }
  
 //_____________________________________________________________________________
@@ -97,7 +91,6 @@ AliCRT::AliCRT(const char *name, const char *title)
   fIshunt       =  1; // All hits are associated with primary particles  
 
   fHits         =  new TClonesArray("AliCRThit",400) ; 
-  fDigits       =  new TClonesArray("AliCRTdigit",400) ; 
 
   gAlice->AddHitList(fHits);
 
@@ -105,6 +98,25 @@ AliCRT::AliCRT(const char *name, const char *title)
   SetMarkerStyle(2);
   SetMarkerSize(0.4);
 
+}
+
+//_____________________________________________________________________________
+AliCRT::AliCRT(const AliCRT& crt)
+{
+  //
+  // Copy ctor.
+  //
+  crt.Copy(*this);
+}
+
+//_____________________________________________________________________________
+AliCRT& AliCRT::operator= (const AliCRT& crt)
+{
+  //
+  // Asingment operator.
+  //
+  crt.Copy(*this);
+  return *this;
 }
 
 //_____________________________________________________________________________
@@ -132,9 +144,9 @@ void AliCRT::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 //_____________________________________________________________________________
 void AliCRT::AddDigit(Int_t *tracks,Int_t *digits)
 {
-  
+  // 
   //  Add a CRT digit to the list. Dummy function.
-  
+  //
 }
 
 //_____________________________________________________________________________
@@ -160,19 +172,18 @@ void AliCRT::Init() const
 }
 
 //_____________________________________________________________________________
-void AliCRT::ResetHits ()
+void AliCRT::ResetHits()
 {
   // Reset number of clusters and the cluster array for this detector
-  AliDetector::ResetHits ();
+  AliDetector::ResetHits();
 }
 
 //_____________________________________________________________________________
-void AliCRT::ResetDigits ()
+void AliCRT::ResetDigits()
 {
   //
   // Reset number of digits and the digits array for this detector
-  AliDetector::ResetDigits ();
-  //
+  AliDetector::ResetDigits();
 } 
 
 //____________________________________________________________________________
@@ -226,6 +237,9 @@ void AliCRT::CreateMaterials()
   AliMaterial(15, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500.);
   AliMaterial(35, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500.);
   AliMaterial(55, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500.);
+  AliMaterial(75, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500.);
+  AliMaterial(95, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500.);
+
 
   // Scintillator material polystyrene 
   Float_t aP[2] = {12.011, 1.00794};
@@ -251,6 +265,11 @@ void AliCRT::CreateMaterials()
   stmin  = -.8;
   // *************** 
 
+  Float_t atmaxfd = 10.;
+  Float_t adeemax = -0.1;
+  Float_t aepsil = 0.1;
+  Float_t astmin = -10.;
+
   //
   //    Aluminum 
   AliMedium(9,  "ALU_C0          ",  9, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
@@ -263,9 +282,12 @@ void AliCRT::CreateMaterials()
   AliMedium(50, "FE_C2           ", 50, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   //
   //    Air 
-  AliMedium(15, "AIR_C0          ", 15, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(35, "AIR_C1          ", 35, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(55, "AIR_C2          ", 55, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(15, "AIR_C0          ", 15, 0, isxfld, sxmgmx, atmaxfd, stemax, adeemax, aepsil, astmin);
+  AliMedium(35, "AIR_C1          ", 35, 0, isxfld, sxmgmx, atmaxfd, stemax, adeemax, aepsil, astmin);
+  AliMedium(55, "AIR_C2          ", 55, 0, isxfld, sxmgmx, atmaxfd, stemax, adeemax, aepsil, astmin);
+  AliMedium(75, "AIR_C4          ", 75, 0, isxfld, sxmgmx, atmaxfd, stemax, adeemax, aepsil, astmin);
+  AliMedium(75, "AIR_C5          ", 95, 0, isxfld, sxmgmx, atmaxfd, stemax, adeemax, aepsil, astmin);
+
 
 
   // The scintillator of the CPV made of Polystyrene 
@@ -275,9 +297,18 @@ void AliCRT::CreateMaterials()
   //     Molasse -> idtmed[1123]
   AliMedium(24 , "Molasse         ", 24, 0, xfield, xfieldm, tmaxfd, stemax, deemax, xepsil, stmin);
 
+  // Concrete, in case if we need to put hte shafts by ourselves.
+
+  Float_t aconc[10] = { 1.,12.01,15.994,22.99,24.305,26.98,28.086,39.1,40.08,55.85 };
+  Float_t zconc[10] = { 1.,6.,8.,11.,12.,13.,14.,19.,20.,26. };
+  Float_t wconc[10] = { .01,.001,.529107,.016,.002,.033872,.337021,.013,.044,.014 };
+  
+  AliMixture(17, "CONCRETE$", aconc, zconc, 2.35, 10, wconc);
+  //    Concrete 
+  AliMedium(17, "CC_C0            ", 17, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 
 }
-
+/*
 //_____________________________________________________________________________
 void AliCRT::MakeBranch(Option_t* option, const char *file)
 {
@@ -300,4 +331,20 @@ void AliCRT::MakeBranch(Option_t* option, const char *file)
   } 
 
 }
+*/
 //_____________________________________________________________________________
+void AliCRT::SetTreeAddress()
+{
+
+  TBranch *branch;
+  char branchname[20];
+  sprintf(branchname,"%s",GetName());
+  
+  // Branch address for hit tree
+  TTree *treeH = gAlice->TreeH();
+  if (treeH && fHits) {
+    branch = treeH->GetBranch(branchname);
+    if (branch) branch->SetAddress(&fHits);
+  }
+
+}
