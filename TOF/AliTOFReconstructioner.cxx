@@ -385,11 +385,13 @@ void AliTOFReconstructioner::Exec(const char* datafile, Option_t *option)
       } 
     }
 
-    Float_t toftime[fMaxAllTracks]; InitArray(toftime, fMaxAllTracks);
-    //Float_t tofMom[fMaxAllTracks]; InitArray(tofMom, fMaxAllTracks);
+    Float_t * toftime = new Float_t toftime[fMaxAllTracks]; 
+    InitArray(toftime, fMaxAllTracks);
     AliTOFPad* pixelArray = new AliTOFPad[fMaxPixels];
-    Int_t* iTOFpixel        = new Int_t[fMaxAllTracks]; InitArray(iTOFpixel   , fMaxAllTracks);
-    Int_t* kTOFhitFirst     = new Int_t[fMaxAllTracks]; InitArray(kTOFhitFirst, fMaxAllTracks);
+    Int_t* iTOFpixel        = new Int_t[fMaxAllTracks];
+    InitArray(iTOFpixel   , fMaxAllTracks);
+    Int_t* kTOFhitFirst     = new Int_t[fMaxAllTracks];
+    InitArray(kTOFhitFirst, fMaxAllTracks);
     AliTOFRecHit* hitArray  = new AliTOFRecHit[fMaxTOFHits];
     Int_t isHitOnFiredPad=0; // index used to fill hitArray (array used to store informations
                              // about pads that contains an hit)
@@ -397,9 +399,12 @@ void AliTOFReconstructioner::Exec(const char* datafile, Option_t *option)
 
     // TPC arrays
     AliTOFTrack* trackArray = new AliTOFTrack[fMaxTracks];
-    Int_t   iparticle[fMaxAllTracks]; InitArray(iparticle,fMaxAllTracks); 
-    Int_t   iTrackPt[fMaxTracks];     InitArray(iTrackPt, fMaxTracks);  // array 
-    Float_t ptTrack[fMaxTracks];      InitArray( ptTrack, fMaxTracks);  // array for selected track pt  
+    Int_t * iparticle = new Int_t[fMaxAllTracks];
+    InitArray(iparticle,fMaxAllTracks); 
+    Int_t * iTrackPt  = new Int_t[fMaxTracks];
+    InitArray(iTrackPt, fMaxTracks);  // array 
+    Float_t * ptTrack = new Float_t[fMaxTracks];
+    InitArray( ptTrack, fMaxTracks);  // array for selected track pt  
     Int_t   ntotTPCtracks=0; // total number of selected TPC tracks
 
     
@@ -432,12 +437,15 @@ void AliTOFReconstructioner::Exec(const char* datafile, Option_t *option)
     
 
     // free used memory
-    delete [] pixelArray;   pixelArray=0;
-    delete [] iTOFpixel;    iTOFpixel=0;
-    delete [] kTOFhitFirst; kTOFhitFirst=0;
-    delete [] hitArray;     hitArray=0;
-    delete [] trackArray;   trackArray=0;
-
+    delete [] toftime;
+    delete [] pixelArray;
+    delete [] iTOFpixel;
+    delete [] kTOFhitFirst;
+    delete [] hitArray;
+    delete [] trackArray;
+    delete [] iparticle;
+    delete [] iTrackPt;
+    delete [] ptTrack;
 
    for (Int_t i=0; i<AliTOFConstants::fgkNSectors*AliTOFConstants::fgkNPlates; i++) {
       for (Int_t j=0; j<AliTOFConstants::fgkNStripC; j++) {
@@ -1573,7 +1581,7 @@ void AliTOFReconstructioner::ReadTOFHits(Int_t ntracks, TTree* treehits, TClones
   TParticle *particle;
   Int_t nHitOutofTofVolumes; // number of hits out of TOF GEANT volumes (it happens in very
                              // few cases)
-  Int_t npixel[AliTOFConstants::fgkmaxtoftree]; // array used by TOFRecon for check on TOF geometry
+  Int_t * npixel = new Int_t[AliTOFConstants::fgkmaxtoftree]; // array used by TOFRecon for check on TOF geometry
   Int_t npions=0;    // number of pions for the current event
   Int_t nkaons=0;    // number of kaons for the current event
   Int_t nprotons=0;  // number of protons for the current event
@@ -1856,6 +1864,7 @@ void AliTOFReconstructioner::ReadTOFHits(Int_t ntracks, TTree* treehits, TClones
     cout << " Reading TOF hits done" << endl;
   }
 
+  delete [] npixel;
 }
 
 //____________________________________________________________________________
@@ -1866,7 +1875,8 @@ void AliTOFReconstructioner::AddNoiseFromOuter(Option_t *option, Int_t ***MapPix
   // to parameterized fZNoise distribution (to be used with events 
   // generated in the barrel region)
 
-  Float_t zLen[AliTOFConstants::fgkNPlates+1],zStrips[AliTOFConstants::fgkNPlates];
+  Float_t * zLen = new Float_t[AliTOFConstants::fgkNPlates+1];
+  Float_t * zStrips = new Float_t[AliTOFConstants::fgkNPlates];
   zStrips[0]=(Float_t) (AliTOFConstants::fgkNStripC);
   zStrips[1]=(Float_t) (AliTOFConstants::fgkNStripB);
   zStrips[2]=(Float_t) (AliTOFConstants::fgkNStripA);
@@ -2038,6 +2048,8 @@ void AliTOFReconstructioner::AddNoiseFromOuter(Option_t *option, Int_t ***MapPix
   Float_t numberOfPads=AliTOFConstants::fgkPadXSector*AliTOFConstants::fgkNSectors;
   occupancy=100.*ipixel/numberOfPads;   // percentage of fired pads
   printf(" Overall TOF occupancy (percentage of fired pads after adding noise) = %f\n",occupancy); 
+  delete [] zLen;
+  delete [] zStrips;
   
 }
 
@@ -2275,9 +2287,15 @@ void cylcor(Float_t& x, Float_t& y) {
 //____________________________________________________________________________
 void AliTOFReconstructioner::Matching(AliTOFTrack* trackArray, AliTOFRecHit* hitArray, Int_t ***mapPixels, AliTOFPad* pixelArray, Int_t* kTOFhitFirst, Int_t& ipixel, Int_t* iTrackPt, Int_t* iTOFpixel, Int_t ntotTpcTracks)
 {
-  Int_t TestTracks,iTestTrack,itest,ntest[fMaxTestTracks],testPixel[fMaxTestTracks],wPixel=0,itestc;
-  Float_t testLength[fMaxTestTracks],wLength=0.,testRho[fMaxTestTracks],testZ[fMaxTestTracks],wRho=0.,wZ=0.;
-  Float_t weight,testWeight[fMaxTestTracks];
+  Int_t TestTracks,iTestTrack,itest,wPixel=0,itestc;
+  Int_t * ntest = new Int_t[fMaxTestTracks];
+  Int_t * testPixel = new Int_t[fMaxTestTracks];
+  Float_t wLength=0.,wRho=0.,wZ=0.;
+  Float_t * testLength = new Float_t[fMaxTestTracks];
+  Float_t * testRho = new Float_t[fMaxTestTracks];
+  Float_t * testZ = new Float_t[fMaxTestTracks];
+  Float_t weight;
+  Float_t * testWeight = new Float_t[fMaxTestTracks];
   Float_t rotationFactor,phi0,coslam,sinlam,helixRadius,xHelixCenter,yHelixCenter,zHelixCenter,helixFactor;
   Int_t npixel[5],iMapValue,iwork1,iwork2,iwork3,iwork4,ihit=0;
   Int_t charge[48]={ 0, 1,-1, 0, 1,-1, 0, 1,-1, 0,
@@ -2975,6 +2993,12 @@ void AliTOFReconstructioner::Matching(AliTOFTrack* trackArray, AliTOFRecHit* hit
   }
   
   cout << " ********************  End of matching **********" << endl;
+  delete [] ntest;
+  delete [] testPixel;
+  delete [] testLength;
+  delete [] testRho;
+  delete [] testZ;
+  delete [] testWeight;
 }
 
 //____________________________________________________________________________
