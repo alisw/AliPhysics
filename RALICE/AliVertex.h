@@ -46,7 +46,7 @@ class AliVertex : public AliJet,public AliPosition
   Int_t GetJetCopy();                     // Provide JetCopy flag value      
   Int_t IsConnectTrack(AliTrack* t);      // Indicate if track is created by vertex connection
   Int_t IsJetTrack(AliTrack* t);          // Indicate if track is resulting from jet addition
-  virtual void Draw(Option_t* opt) { Draw(1,1,0); } // Override TObject::Draw for default event display
+  virtual void Draw(Option_t*) { Draw(1,1,0); } // Override TObject::Draw for default event display
   virtual void Draw(Int_t secs,Int_t cons=1,Int_t jets=0); // Draw the vertex in an event display
 
  protected:

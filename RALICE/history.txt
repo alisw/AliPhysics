@@ -463,3 +463,5 @@
                 Since this is mainly intended for "backward references" to AliTrack objects,
                 the AliTrack class has been slightly updated for this to provide pointer consistency
                 in case the corresponding AliTrack object is deleted.
+19-dec-2003 NvE Slight modification in AliVertex.h and AliAttribObj.cxx to prevent gcc compiler
+                warning concerning an unused variable.

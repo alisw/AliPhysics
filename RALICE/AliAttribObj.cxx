@@ -45,6 +45,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliAttribObj.h"
+#include "Riostream.h"
  
 ClassImp(AliAttribObj) // Class implementation to enable ROOT I/O
  
@@ -80,6 +81,13 @@ TObject* AliAttribObj::Clone(char* name)
 // for containers when adding objects in case the container owns the objects.
 
  AliAttribObj* att=new AliAttribObj(*this);
+ if (name)
+ {
+  if (strlen(name))
+  {
+   cout << " *" << ClassName() << "::Clone* No support for SetName." << endl;
+  }
+ }
  return att;
 }
 ///////////////////////////////////////////////////////////////////////////
