@@ -45,7 +45,7 @@ Int_t TPCtracks() {
    TTree *tracktree=(TTree*)tf->Get("TPCf");
    if (!tracktree) {cerr<<"Can't get a tree with TPC tracks !\n"; return 4;}   
    TBranch *tbranch=tracktree->GetBranch("tracks");
-   nentr=(Int_t)tracktree->GetEntries();
+   Int_t nentr=(Int_t)tracktree->GetEntries();
    
    AliTPCtrack *iotrack=0;
    for (i=0; i<nentr; i++) {
