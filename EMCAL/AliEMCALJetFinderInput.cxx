@@ -48,7 +48,7 @@ fPartonsArray(0)
 if (fDebug>0) Info("AliEMCALJetFinderInput","Beginning Constructor");	
 
 fInitialised = kFALSE;
-fNDigits = 96*144;     // This is the number of digits
+fNDigits = 19152;     // This is the number of digits
 fNMaxDigits = fNDigits;
 fNMaxTracks = 3000;
 fNMaxParticles = 2000;
