@@ -49,7 +49,7 @@ private:
 
  protected:
 
-  ClassDef(AliTOFPID,1)  // Task class for TOF pid
+  ClassDef(AliTOFPID,0)  // Task class for TOF pid
 
 };
 

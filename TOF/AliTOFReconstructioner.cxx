@@ -450,6 +450,12 @@ void AliTOFReconstructioner::Exec(const char* datafile, Option_t *option)
 
   }//event loop
 
+  // free used memory for ftail
+  if (ftail)
+    {
+      delete ftail;
+      ftail = 0;
+    }
 
   // writing ntuple on output file
   foutputfile->cd();
@@ -1600,6 +1606,9 @@ void AliTOFReconstructioner::ReadTOFHits(Int_t ntracks, TTree* treehits, TClones
     }
   }
 
+  // speed-up the code
+  treehits->SetBranchStatus("*",0); // switch off all branches
+  treehits->SetBranchStatus("TOF*",1); // switch on only TOF
 
   for (Int_t track=0; track<ntracks;track++) { // starting loop on primary tracks for the current event
 
@@ -2097,6 +2106,10 @@ void AliTOFReconstructioner::ReadTPCHits(Int_t ntracks, TTree* treehits, TClones
   Int_t ipart=0, nhits=0, iprim=0;
 
   itrack=0; // itrack: total number of selected TPC tracks
+
+  // speed-up the code
+  treehits->SetBranchStatus("*",0); // switch off all branches
+  treehits->SetBranchStatus("TPC*",1); // switch on only TPC
 
   for (Int_t track=0; track<ntracks;track++) {
     gAlice->ResetHits();

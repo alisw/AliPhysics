@@ -169,9 +169,9 @@ public:
   Bool_t   operator == (const AliTOFReconstructioner & tofrec) const ;
 
 private:
-  TGeant3 *fg3;             // pointer to GEANT geometry
-  TFile   *foutputfile;     // pointer to output file
-  TNtuple *foutputntuple;   // pointer to output ntuple
+  TGeant3 *fg3;             //! pointer to GEANT geometry
+  TFile   *foutputfile;     //! pointer to output file
+  TNtuple *foutputntuple;   //! pointer to output ntuple
   TF1     *fZnoise;         // pointer to formula giving the noise along z direction
   TF1     *ftail;           // pointer to formula for time with tail
   Int_t   fdbg;             // Flag for debug, 0 no debug, 1 debug

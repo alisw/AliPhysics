@@ -234,6 +234,10 @@ void AliTOFT0::Exec(Option_t *option)
 
     Int_t lasttrack=-1;
     Int_t nset=0;
+
+    TH->SetBranchStatus("*",0); // switch off all branches
+    TH->SetBranchStatus("TOF*",1); // switch on only TOF
+
     // Start loop on primary tracks in the hits containers
 
     Int_t ntracks = static_cast<Int_t>(TH->GetEntries());

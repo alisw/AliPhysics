@@ -101,9 +101,15 @@ ClassImp(AliTOFPID)
 //____________________________________________________________________________ 
   AliTOFPID::AliTOFPID(char* headerFile, char *cutsFile, const Option_t* opt):TTask("AliTOFPID","") 
 {
+  felectron = 0;
+  fpion     = 0;
+  fkaon     = 0;
+  fproton   = 0;
   fhfile = TFile::Open(headerFile); // connect file with ntuple
   fcut = TFile::Open(cutsFile); // connect file for cuts
   foutfileName=headerFile;
+  fNtuple   = 0;
+  fgen      = 0;
 
   Init(opt);
   // add Task to //root/Tasks folder
