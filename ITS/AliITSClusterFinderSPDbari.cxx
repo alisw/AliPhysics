@@ -175,7 +175,7 @@ void AliITSClusterFinderSPDbari::ClusterFinder(Int_t ndigits,
   Int_t x1, z1, t1, t2, t3;
   Int_t ndx, ndz, ndxmin, ndxmax, ndzmin, ndzmax;
   Float_t dx, dz; 
-  Int_t i,ipos=0;
+  Int_t i,k,ipos=0;
   Float_t xdum, zdum;      
 
   Int_t numberd=10000;
@@ -242,14 +242,14 @@ void AliITSClusterFinderSPDbari::ClusterFinder(Int_t ndigits,
 	  nclus++;
 	  ifpad[ndigits-1]=nclus-1;
    }
-   for (Int_t i=0 ; i < ndigits ; i++) iclus[ifpad[i]]++;
+   for (i=0 ; i < ndigits ; i++) iclus[ifpad[i]]++;
 
    min=0;
    max=0;
 
    // loop on found clusters 
 
-   for (Int_t i=0 ; i < nclus ; i++)  
+   for (i=0 ; i < nclus ; i++)  
    {
       min = max;
       max += iclus[i];
@@ -259,7 +259,7 @@ void AliITSClusterFinderSPDbari::ClusterFinder(Int_t ndigits,
         //cluster with more than one digit
         nd=iclus[i];
 	    Int_t count=0;
-        for (Int_t k=min;k<min+nd;k++)
+        for (k=min;k<min+nd;k++)
         {
 	       xpad[count] = digx[k];	   
 	       zpad[count] = digz[k];
@@ -286,7 +286,7 @@ void AliITSClusterFinderSPDbari::ClusterFinder(Int_t ndigits,
 	}    
 	else{ 
            xcenter[i] = 0.;
-	   for (Int_t k=0;k<nd;k++) {
+	   for (k=0;k<nd;k++) {
              fSegmentation->GetPadCxz(xpad[k],zpad[k]-1,xdum,zdum);
 	     xcenter[i] += (xdum / nd);
 	   }	               
@@ -297,7 +297,7 @@ void AliITSClusterFinderSPDbari::ClusterFinder(Int_t ndigits,
 	}   
 	else {
 	   zcenter[i] = 0.;
-	   for (Int_t k=0;k<nd;k++) {	      
+	   for (k=0;k<nd;k++) {	      
              fSegmentation->GetPadCxz(xpad[k],zpad[k]-1,xdum,zdum);
 	     zcenter[i] += (zdum / nd);
 	   }
@@ -310,7 +310,7 @@ void AliITSClusterFinderSPDbari::ClusterFinder(Int_t ndigits,
         }
         else {
              errxcenter[i] = 0.;	 		
-             for (Int_t k=0;k<nd;k++){ 
+             for (k=0;k<nd;k++){ 
                fSegmentation->GetPadCxz(xpad[k],zpad[k]-1,xdum,zdum);
                errxcenter[i] += ((xdum-xcenter[i])*(xdum-xcenter[i]))/(nd*(nd-1)); 
              }   
@@ -323,7 +323,7 @@ void AliITSClusterFinderSPDbari::ClusterFinder(Int_t ndigits,
         }
 	else {
 	     errzcenter[i] = 0.;
-	     for (Int_t k=0;k<nd;k++){ 
+	     for (k=0;k<nd;k++){ 
                fSegmentation->GetPadCxz(xpad[k],zpad[k]-1,xdum,zdum);
 	       errzcenter[i] += ((zdum-zcenter[i])*(zdum-zcenter[i]))/(nd*(nd-1));
 	     }
@@ -331,7 +331,7 @@ void AliITSClusterFinderSPDbari::ClusterFinder(Int_t ndigits,
 	}    
 
         // take three track numbers for the cluster
-        for (Int_t k=0;k<nd;k++){
+        for (k=0;k<nd;k++){
           if(tr1pad[k] != -2) tr1clus[i]=tr1pad[k];
           if(tr2pad[k] != -2) tr2clus[i]=tr2pad[k];
           if(tr3pad[k] != -2) tr3clus[i]=tr3pad[k];
