@@ -1414,23 +1414,34 @@ AliTPCclusterMI *AliTPCtrackerMI::GetClusterMI(Int_t index) const {
 
   const AliTPCRow * tpcrow=0;
   AliTPCclusterMI * clrow =0;
+
   if (sec<fkNIS*2){
     tpcrow = &(fInnerSec[sec%fkNIS][row]);
-    if (sec<fkNIS) 
+    if (tpcrow==0) return 0;
+
+    if (sec<fkNIS) {
+      if (tpcrow->fN1<=ncl) return 0;
       clrow = tpcrow->fClusters1;
-    else
+    }
+    else {
+      if (tpcrow->fN2<=ncl) return 0;
       clrow = tpcrow->fClusters2;
+    }
   }
-  else{
+  else {
     tpcrow = &(fOuterSec[(sec-fkNIS*2)%fkNOS][row]);
-    if (sec-2*fkNIS<fkNOS)
+    if (tpcrow==0) return 0;
+
+    if (sec-2*fkNIS<fkNOS) {
+      if (tpcrow->fN1<=ncl) return 0;
       clrow = tpcrow->fClusters1;
-    else
+    }
+    else {
+      if (tpcrow->fN2<=ncl) return 0;
       clrow = tpcrow->fClusters2;
+    }
   }
-  if (tpcrow==0) return 0;
-  if (tpcrow->GetN()<=ncl) return 0;
-  //  return (AliTPCclusterMI*)(*tpcrow)[ncl];      
+
   return &(clrow[ncl]);      
   
 }
