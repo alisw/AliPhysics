@@ -9,23 +9,23 @@
 // z-positions defining the absorber
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // start of inner opening cone
-    const Float_t zOpen   = 300.;
+    const Float_t kZOpen   = 300.;
 // rear end of the absorber
-    const Float_t zRear   = 503.;
+    const Float_t kZRear   = 503.;
 // thickness of rear shield
-    const Float_t dRear  =  35.;
+    const Float_t kDRear  =  35.;
 //
 // angles defining the absorber
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // min acceptance angle
-    const Float_t accMin = 2. *kDegrad;
+    const Float_t kAccMin = 2. *kDegrad;
 // angle of first opening cone
-    Float_t thetaOpen1 = 0.75*kDegrad;    
+    Float_t kThetaOpen1 = 0.75*kDegrad;    
 //
 // inner radius of heavy shield
-    Float_t rAbs = 4.5;
+    Float_t kRAbs = 4.5;
 // innner radius of beam tube
-    Float_t rVacu=2.9;                     
+    Float_t kRVacu=2.9;                     
 #endif
 
 

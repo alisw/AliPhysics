@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2002/10/21 09:09:33  alibrary
+Removing unused variables
+
 Revision 1.13  2002/10/14 14:57:34  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -148,18 +151,20 @@ void AliABSOv0::CreateGeometry()
 
 // 3 < theta < 9
     fNLayers[0] = 5; 
-    fMLayers[0][0]  = kAir;              fZLayers[0][0] = zAbsStart;
-    fMLayers[0][1]  = kC;                fZLayers[0][1] = zAbsCc;             
-    fMLayers[0][2]  = kConcrete;         fZLayers[0][2] = zRear-dRear-dzFe;
-    fMLayers[0][3]  = kSteel;            fZLayers[0][3] = zRear-dRear;
-    fMLayers[0][4]  = kSteel;            fZLayers[0][4] = zRear;
+    fMLayers[0][0]  = kAir;              fZLayers[0][0] = kZAbsStart;
+    fMLayers[0][1]  = kC;                fZLayers[0][1] = kZAbsCc;             
+    fMLayers[0][2]  = kConcrete;         fZLayers[0][2] = kZRear-kDRear-dzFe;
+    fMLayers[0][3]  = kSteel;            fZLayers[0][3] = kZRear-kDRear;
+    fMLayers[0][4]  = kSteel;            fZLayers[0][4] = kZRear;
 // 2 < theta < 3
-    fNLayers[1] = 5; 
-    fMLayers[1][0] = fMLayers[0][0];      fZLayers[1][0] = fZLayers[0][0];
-    fMLayers[1][1] = fMLayers[0][1];      fZLayers[1][1] = fZLayers[0][1];
-    fMLayers[1][2] = fMLayers[0][2];      fZLayers[1][2] = fZLayers[0][2];
-    fMLayers[1][3] = fMLayers[0][3];      fZLayers[1][3] = fZLayers[0][3];
-    fMLayers[1][4] = kNiCuW;              fZLayers[1][4] = fZLayers[0][4];
+    fNLayers[1] = 6; 
+
+    fMLayers[1][0] = kAir          ;      fZLayers[1][0] = fZLayers[0][0]-10.;
+    fMLayers[1][1] = kAl           ;      fZLayers[1][1] = fZLayers[0][0];
+    fMLayers[1][2] = fMLayers[0][1];      fZLayers[1][2] = fZLayers[0][1];
+    fMLayers[1][3] = fMLayers[0][2];      fZLayers[1][3] = fZLayers[0][2];
+    fMLayers[1][4] = fMLayers[0][3];      fZLayers[1][4] = fZLayers[0][3];
+    fMLayers[1][5] = kNiCuW;              fZLayers[1][5] = fZLayers[0][4];
 //    
 
     Float_t dTube=0.1;                     // tube thickness
@@ -173,33 +178,33 @@ void AliABSOv0::CreateGeometry()
   par[1]  = 360.;
   par[2]  = 7.;
     
-  par[3]  = -(zRear-zAbsStart)/2.;
-  par[4]  = rAbs;
-  par[5]  = zAbsStart * TMath::Tan(theta1);
+  par[3]  = -(kZRear-kZAbsStart)/2.;
+  par[4]  = kRAbs;
+  par[5]  = kZAbsStart * TMath::Tan(kTheta1);
 
-  par[6]  = par[3]+(zNose-zAbsStart);
-  par[7]  = rAbs;
-  par[8]  = zNose * TMath::Tan(theta1);
+  par[6]  = par[3]+(kZNose-kZAbsStart);
+  par[7]  = kRAbs;
+  par[8]  = kZNose * TMath::Tan(kTheta1);
 
-  par[9]  = par[3]+(zConeTPC-zAbsStart);
-  par[10] = rAbs;
-  par[11] = par[8] + (par[9] - par[6]) * TMath::Tan(theta2);
+  par[9]  = par[3]+(kZConeTPC-kZAbsStart);
+  par[10] = kRAbs;
+  par[11] = par[8] + (par[9] - par[6]) * TMath::Tan(kTheta2);
 
-  par[12]  = par[3]+(zOpen-zAbsStart);
-  par[13] = rAbs;
-  par[14] = par[11] + (par[12] - par[9]) * TMath::Tan(accMax);
+  par[12]  = par[3]+(kZOpen-kZAbsStart);
+  par[13] = kRAbs;
+  par[14] = par[11] + (par[12] - par[9]) * TMath::Tan(kAccMax);
 
-  par[15] = par[3]+(zRear-dRear-zAbsStart);
-  par[16] = rAbs   + (par[15] - par[12]) * TMath::Tan(thetaOpen1) ;
-  par[17] = par[14] + (par[15] - par[12]) * TMath::Tan(accMax);
+  par[15] = par[3]+(kZRear-kDRear-kZAbsStart);
+  par[16] = kRAbs   + (par[15] - par[12]) * TMath::Tan(kThetaOpen1) ;
+  par[17] = par[14] + (par[15] - par[12]) * TMath::Tan(kAccMax);
 
-  par[18] = par[3]+(zRear-dRear-zAbsStart);
-  par[19] = (zRear-dRear) * TMath::Tan(accMin);
-  par[20] = par[14] + (par[18] - par[12]) * TMath::Tan(accMax);
+  par[18] = par[3]+(kZRear-kDRear-kZAbsStart);
+  par[19] = (kZRear-kDRear) * TMath::Tan(kAccMin);
+  par[20] = par[14] + (par[18] - par[12]) * TMath::Tan(kAccMax);
 
   par[21] = -par[3];
-  par[22] =  zRear* TMath::Tan(accMin);
-  par[23] = par[20] + (par[21] - par[18]) * TMath::Tan(accMax);
+  par[22] =  kZRear* TMath::Tan(kAccMin);
+  par[23] = par[20] + (par[21] - par[18]) * TMath::Tan(kAccMax);
   gMC->Gsvolu("ABSS", "PCON", idtmed[kPb], par, 24);
   { // Begin local scope for i
       for (Int_t i=4; i<18; i+=3) par[i]  = 0;
@@ -210,78 +215,78 @@ void AliABSOv0::CreateGeometry()
 //
 // Steel envelope
 //
-  par[4] = par[5] -dSteel;
-  par[7] = par[8] -dSteel;
-  par[10]= par[11]-dSteel;  
-  par[13]= par[14]-dSteel;  
-  par[16]= par[17]-dSteel;  
-  par[19]= par[20]-dSteel;  
-  par[22]= par[23]-dSteel;  
+  par[4] = par[5] -kDSteel;
+  par[7] = par[8] -kDSteel;
+  par[10]= par[11]-kDSteel;  
+  par[13]= par[14]-kDSteel;  
+  par[16]= par[17]-kDSteel;  
+  par[19]= par[20]-kDSteel;  
+  par[22]= par[23]-kDSteel;  
   gMC->Gsvolu("ABST", "PCON", idtmed[kSteel], par, 24);
   gMC->Gspos("ABST", 1, "ABSS", 0., 0., 0., 0, "ONLY");
 //
 // Polyethylene shield
 // 
-  cpar[0] = (zRear - zConeTPC) / 2.;
-  cpar[1] = zConeTPC * TMath::Tan(accMax);
-  cpar[2] = cpar[1] + dPoly;
-  cpar[3] = zRear * TMath::Tan(accMax);
-  cpar[4] = cpar[3] + dPoly;
+  cpar[0] = (kZRear - kZConeTPC) / 2.;
+  cpar[1] = kZConeTPC * TMath::Tan(kAccMax);
+  cpar[2] = cpar[1] + kDPoly;
+  cpar[3] = kZRear * TMath::Tan(kAccMax);
+  cpar[4] = cpar[3] + kDPoly;
   gMC->Gsvolu("APOL", "CONE", idtmed[kPolyCH2+40], cpar, 5);
-  dz = (zRear-zAbsStart)/2.-cpar[0];
+  dz = (kZRear-kZAbsStart)/2.-cpar[0];
   gMC->Gspos("APOL", 1, "ABSS", 0., 0., dz, 0, "ONLY");
 
 //
 // Tungsten nose to protect TPC
 // 
-  cpar[0] = (zNose - zAbsStart) / 2.;
-  cpar[1] = zAbsStart * TMath::Tan(accMax);
-  cpar[2] = zAbsStart * TMath::Tan(theta1)-dSteel;
-  cpar[3] = zNose * TMath::Tan(accMax);
-  cpar[4] = zNose * TMath::Tan(theta1)-dSteel;
+  cpar[0] = (kZNose - kZAbsStart) / 2.;
+  cpar[1] = kZAbsStart * TMath::Tan(kAccMax);
+  cpar[2] = kZAbsStart * TMath::Tan(kTheta1)-kDSteel;
+  cpar[3] = kZNose * TMath::Tan(kAccMax);
+  cpar[4] = kZNose * TMath::Tan(kTheta1)-kDSteel;
   gMC->Gsvolu("ANOS", "CONE", idtmed[kW], cpar, 5);
   //
-  dz = -(zRear-zAbsStart)/2.+cpar[0];
+  dz = -(kZRear-kZAbsStart)/2.+cpar[0];
   gMC->Gspos("ANOS", 1, "ABSS", 0., 0., dz, 0, "ONLY");
   //
   // Tungsten inner shield
   //
-  Float_t zW = zTwoDeg+.1;
-  Float_t dZ = zW+(zRear-dRear-zW)/2.;
+  Float_t zW = kZTwoDeg+.1;
+  Float_t dZ = zW+(kZRear-kDRear-zW)/2.;
   //
   pcpar[0]  = 0.;
   pcpar[1]  = 360.;
   pcpar[2]  = 3.;
   pcpar[3]  = zW-dZ;
-  pcpar[4]  = rAbs;
-  pcpar[5]  = zW * TMath::Tan(accMin);
-  pcpar[6]  = zOpen-dZ;
-  pcpar[7]  = rAbs;
-  pcpar[8]  = zOpen * TMath::Tan(accMin);
-  pcpar[9]  = zRear-dRear-dZ;
-  pcpar[10] = rAbs+(zRear-dRear-zOpen) * TMath::Tan(thetaOpen1);
-  pcpar[11] = (zRear-dRear) * TMath::Tan(accMin);
+  pcpar[4]  = kRAbs;
+  pcpar[5]  = zW * TMath::Tan(kAccMin);
+  pcpar[6]  = kZOpen-dZ;
+  pcpar[7]  = kRAbs;
+  pcpar[8]  = kZOpen * TMath::Tan(kAccMin);
+  pcpar[9]  = kZRear-kDRear-dZ;
+  pcpar[10] = kRAbs+(kZRear-kDRear-kZOpen) * TMath::Tan(kThetaOpen1);
+  pcpar[11] = (kZRear-kDRear) * TMath::Tan(kAccMin);
   
   gMC->Gsvolu("AWIN", "PCON", idtmed[kNiCuW+40], pcpar, 12);
-  dz=(zW+zRear-dRear)/2-(zAbsStart+zRear)/2.;
+  dz=(zW+kZRear-kDRear)/2-(kZAbsStart+kZRear)/2.;
   gMC->Gspos("AWIN", 1, "ABSS", 0., 0., dz, 0, "ONLY");
 //
 // First part replaced by Carbon  
 //
   cpar[0] = (200.-zW)/2.;
-  cpar[1] = rAbs;
+  cpar[1] = kRAbs;
   cpar[2] = pcpar[5];
-  cpar[3] = rAbs;
-  cpar[4] = 200. * TMath::Tan(accMin);
+  cpar[3] = kRAbs;
+  cpar[4] = 200. * TMath::Tan(kAccMin);
   gMC->Gsvolu("ACNO", "CONE", idtmed[kC], cpar, 5);
   dz = zW-dZ+cpar[0];
   gMC->Gspos("ACNO", 1, "AWIN", 0., 0., dz, 0, "ONLY");
 
 /*  
   Float_t zWW = 383.5;
-  cpar[0] = (zRear-dRear-zWW)/2.;
-  cpar[1] = rAbs + (zWW-zOpen) *  TMath::Tan(thetaOpen1);
-  cpar[2] =  zWW * TMath::Tan(accMin);
+  cpar[0] = (kZRear-kDRear-zWW)/2.;
+  cpar[1] = kRAbs + (zWW-kZOpen) *  TMath::Tan(kThetaOpen1);
+  cpar[2] =  zWW * TMath::Tan(kAccMin);
   cpar[3] = pcpar[10];
   cpar[4] = pcpar[11];
   gMC->Gsvolu("AWNO", "CONE", idtmed[kCu+40], cpar, 5);
@@ -298,47 +303,47 @@ void AliABSOv0::CreateGeometry()
   pcpar[0]  = 0.;
   pcpar[1]  = 360.;
   pcpar[2]  = 3.;
-  pcpar[3]  = -(zRear-zAbsStart)/2.;
-  pcpar[4]  = rAbs;
-  pcpar[5]  = zAbsStart * TMath::Tan(accMax);
-  pcpar[6]  = pcpar[3]+(zTwoDeg-zAbsStart);
-  pcpar[7]  = rAbs;
-  pcpar[8]  = zTwoDeg * TMath::Tan(accMax);
+  pcpar[3]  = -(kZRear-kZAbsStart)/2.;
+  pcpar[4]  = kRAbs;
+  pcpar[5]  = kZAbsStart * TMath::Tan(kAccMax);
+  pcpar[6]  = pcpar[3]+(kZTwoDeg-kZAbsStart);
+  pcpar[7]  = kRAbs;
+  pcpar[8]  = kZTwoDeg * TMath::Tan(kAccMax);
   pcpar[9]  = -pcpar[3];
-  pcpar[10] = zRear * TMath::Tan(accMin);
-  pcpar[11] = zRear * TMath::Tan(accMax);
+  pcpar[10] = kZRear * TMath::Tan(kAccMin);
+  pcpar[11] = kZRear * TMath::Tan(kAccMax);
   gMC->Gsvolu("AITR", "PCON", idtmed[fMLayers[0][4]], pcpar, 12);
   //
   // special Pb medium for last 5 cm of Pb
-  Float_t zr=zRear-2.-0.001;
+  Float_t zr=kZRear-2.-0.001;
   cpar[0] = 1.0;
-  cpar[1] = zr * TMath::Tan(thetaR);
-  cpar[2] = zr * TMath::Tan(accMax);
-  cpar[3] = cpar[1] + TMath::Tan(thetaR) * 2;
-  cpar[4] = cpar[2] + TMath::Tan(accMax) * 2;
+  cpar[1] = zr * TMath::Tan(kThetaR);
+  cpar[2] = zr * TMath::Tan(kAccMax);
+  cpar[3] = cpar[1] + TMath::Tan(kThetaR) * 2;
+  cpar[4] = cpar[2] + TMath::Tan(kAccMax) * 2;
   gMC->Gsvolu("ARPB", "CONE", idtmed[fMLayers[0][4]], cpar, 5);
-  dz=(zRear-zAbsStart)/2.-cpar[0]-0.001;
+  dz=(kZRear-kZAbsStart)/2.-cpar[0]-0.001;
   gMC->Gspos("ARPB", 1, "AITR", 0., 0., dz, 0, "ONLY");
   //
   //     concrete cone: concrete 
   //
-  pcpar[9]  = pcpar[3]+(zRear-dRear-zAbsStart);
-  pcpar[10] = (zRear-dRear) * TMath::Tan(accMin);
-  pcpar[11] = (zRear-dRear) * TMath::Tan(accMax);
+  pcpar[9]  = pcpar[3]+(kZRear-kDRear-kZAbsStart);
+  pcpar[10] = (kZRear-kDRear) * TMath::Tan(kAccMin);
+  pcpar[11] = (kZRear-kDRear) * TMath::Tan(kAccMax);
   gMC->Gsvolu("ACON", "PCON", idtmed[fMLayers[0][2]+40], pcpar, 12);
   gMC->Gspos("ACON", 1, "AITR", 0., 0., 0., 0, "ONLY");
 //
 //    Fe Cone 
 //
-  zr = zRear-dRear-dzFe;
+  zr = kZRear-kDRear-dzFe;
   cpar[0]  = dzFe/2.;
-  cpar[1] = zr * TMath::Tan(accMin);
-  cpar[2] = zr * TMath::Tan(accMax);
-  cpar[3] = cpar[1] + TMath::Tan(accMin) * dzFe;
-  cpar[4] = cpar[2] + TMath::Tan(accMax) * dzFe;
+  cpar[1] = zr * TMath::Tan(kAccMin);
+  cpar[2] = zr * TMath::Tan(kAccMax);
+  cpar[3] = cpar[1] + TMath::Tan(kAccMin) * dzFe;
+  cpar[4] = cpar[2] + TMath::Tan(kAccMax) * dzFe;
   gMC->Gsvolu("ACFE", "CONE",idtmed[fMLayers[0][3]], cpar, 5);
 
-  dz = (zRear-zAbsStart)/2.-dRear-dzFe/2.;
+  dz = (kZRear-kZAbsStart)/2.-kDRear-dzFe/2.;
 
   gMC->Gspos("ACFE", 1, "ACON", 0., 0., dz, 0, "ONLY");
 
@@ -347,67 +352,67 @@ void AliABSOv0::CreateGeometry()
   //
   //     carbon cone: carbon
   //
-  pcpar[9]  = pcpar[3]+(zAbsCc-zAbsStart);
-  pcpar[10]  = zAbsCc * TMath::Tan(accMin);
-  pcpar[11]  = zAbsCc * TMath::Tan(accMax);
+  pcpar[9]  = pcpar[3]+(kZAbsCc-kZAbsStart);
+  pcpar[10]  = kZAbsCc * TMath::Tan(kAccMin);
+  pcpar[11]  = kZAbsCc * TMath::Tan(kAccMax);
   gMC->Gsvolu("ACAR", "PCON", idtmed[fMLayers[0][1]+40], pcpar, 12);
   gMC->Gspos("ACAR", 1, "ACON", 0., 0., 0., 0, "ONLY");
  //
  //     carbon cone outer region
  //
   cpar[0]  = 10.;
-  cpar[1]  = rAbs;
-  cpar[2]  = zAbsStart* TMath::Tan(accMax);
-  cpar[3]  = rAbs;
-  cpar[4]  = cpar[2]+2. * cpar[0] * TMath::Tan(accMax);
+  cpar[1]  = kRAbs;
+  cpar[2]  = kZAbsStart* TMath::Tan(kAccMax);
+  cpar[3]  = kRAbs;
+  cpar[4]  = cpar[2]+2. * cpar[0] * TMath::Tan(kAccMax);
 
   gMC->Gsvolu("ACAO", "CONE", idtmed[fMLayers[0][1]], cpar, 5);
-  dz=-(zRear-zAbsStart)/2.+cpar[0];
+  dz=-(kZRear-kZAbsStart)/2.+cpar[0];
   gMC->Gspos("ACAO", 1, "ACAR", 0., 0., dz, 0, "ONLY");
   //
   //     inner W shield
   Float_t epsi=0.;
   Float_t repsi=1.;
   
-  zr=zRear-(dRear-epsi);
-  cpar[0] = (dRear-epsi)/2.;
-  cpar[1] = zr * TMath::Tan(accMin);
-  cpar[2] = zr * TMath::Tan(thetaR*repsi);
-  cpar[3] = cpar[1] + TMath::Tan(accMin) * (dRear-epsi);
-  cpar[4] = cpar[2] + TMath::Tan(thetaR*repsi) * (dRear-epsi);
+  zr=kZRear-(kDRear-epsi);
+  cpar[0] = (kDRear-epsi)/2.;
+  cpar[1] = zr * TMath::Tan(kAccMin);
+  cpar[2] = zr * TMath::Tan(kThetaR*repsi);
+  cpar[3] = cpar[1] + TMath::Tan(kAccMin) * (kDRear-epsi);
+  cpar[4] = cpar[2] + TMath::Tan(kThetaR*repsi) * (kDRear-epsi);
   gMC->Gsvolu("ARW0", "CONE", idtmed[fMLayers[1][4]+40], cpar, 5);
-  dz=(zRear-zAbsStart)/2.-cpar[0];
+  dz=(kZRear-kZAbsStart)/2.-cpar[0];
   gMC->Gspos("ARW0", 1, "AITR", 0., 0., dz, 0, "ONLY");
   //
   // special W medium for last 5 cm of W
-  zr=zRear-5;
+  zr=kZRear-5;
   cpar[0] = 2.5;
-  cpar[1] = zr * TMath::Tan(accMin);
-  cpar[2] = zr * TMath::Tan(thetaR*repsi);
-  cpar[3] = cpar[1] + TMath::Tan(accMin) * 5.;
-  cpar[4] = cpar[2] + TMath::Tan(thetaR*repsi) * 5.;
+  cpar[1] = zr * TMath::Tan(kAccMin);
+  cpar[2] = zr * TMath::Tan(kThetaR*repsi);
+  cpar[3] = cpar[1] + TMath::Tan(kAccMin) * 5.;
+  cpar[4] = cpar[2] + TMath::Tan(kThetaR*repsi) * 5.;
   gMC->Gsvolu("ARW1", "CONE", idtmed[fMLayers[1][4]+20], cpar, 5);
-  dz=(dRear-epsi)/2.-cpar[0];
+  dz=(kDRear-epsi)/2.-cpar[0];
   gMC->Gspos("ARW1", 1, "ARW0", 0., 0., dz, 0, "ONLY");
   //
   // Cu
-  Float_t drMin=TMath::Tan(thetaR) * 5;
-  Float_t drMax=TMath::Tan(accMax) * 5;
+  Float_t drMin=TMath::Tan(kThetaR) * 5;
+  Float_t drMax=TMath::Tan(kAccMax) * 5;
   gMC->Gsvolu("ARPE", "CONE", idtmed[fMLayers[0][4]], cpar, 0);
   cpar[0]=2.5;
   { // Begin local scope for i
       for (Int_t i=0; i<3; i++) {
-	  zr=zRear-dRear+5+i*10.;
-	  cpar[1] = zr * TMath::Tan(thetaR);
-	  cpar[2] = zr * TMath::Tan(accMax);
+	  zr=kZRear-kDRear+5+i*10.;
+	  cpar[1] = zr * TMath::Tan(kThetaR);
+	  cpar[2] = zr * TMath::Tan(kAccMax);
 	  cpar[3] = cpar[1] + drMin;
 	  cpar[4] = cpar[2] + drMax;
-	  dz=(zRear-zAbsStart)/2.-cpar[0]-5.-(2-i)*10;
+	  dz=(kZRear-kZAbsStart)/2.-cpar[0]-5.-(2-i)*10;
 	  gMC->Gsposp("ARPE", i+1, "AITR", 0., 0., dz, 0, "ONLY",cpar,5);
       }
   } // End local scope for i
   gMC->Gspos("AITR", 1, "ABSS", 0., 0., 0., 0, "ONLY");	
-  dz = (zRear-zAbsStart)/2.+zAbsStart;
+  dz = (kZRear-kZAbsStart)/2.+kZAbsStart;
   gMC->Gspos("ABSM", 1, "ALIC", 0., 0., dz, 0, "ONLY");	
 //
 //
@@ -417,28 +422,28 @@ void AliABSOv0::CreateGeometry()
 //
 //
 // cylindrical piece
-  tpar0[2]=(zOpen-zAbsStart)/2;
-  tpar0[0]=rVacu;
-  tpar0[1]=rVacu+dTube+dInsu+dEnve;
+  tpar0[2]=(kZOpen-kZAbsStart)/2;
+  tpar0[0]=kRVacu;
+  tpar0[1]=kRVacu+dTube+dInsu+dEnve;
   gMC->Gsvolu("AV11", "TUBE", idtmed[kSteel+40], tpar0, 3);
 //
 // insulation
 
   tpar[2]=tpar0[2];
-  tpar[0]=rVacu+dTube;
+  tpar[0]=kRVacu+dTube;
   tpar[1]=tpar[0]+dInsu;
   gMC->Gsvolu("AI11", "TUBE", idtmed[kInsulation+40], tpar, 3);
   gMC->Gspos("AI11", 1, "AV11", 0., 0., 0., 0, "ONLY"); 
 //
-  dz=-(zRear-zAbsStart)/2.+tpar0[2];
+  dz=-(kZRear-kZAbsStart)/2.+tpar0[2];
   gMC->Gspos("AV11", 1, "ABSM", 0., 0., dz, 0, "ONLY"); 
 //
 // conical piece
 
-  cpar0[0]=(zRear-dRear-zOpen)/2;
-  cpar0[1]= rVacu-0.05;
-  cpar0[2]= rVacu+dTube+dInsu+dEnve;
-  Float_t dR=2.*cpar0[0]*TMath::Tan(thetaOpen1);
+  cpar0[0]=(kZRear-kDRear-kZOpen)/2;
+  cpar0[1]= kRVacu-0.05;
+  cpar0[2]= kRVacu+dTube+dInsu+dEnve;
+  Float_t dR=2.*cpar0[0]*TMath::Tan(kThetaOpen1);
   cpar0[3]=cpar0[1]+dR;
   cpar0[4]=cpar0[2]+dR;
   gMC->Gsvolu("AV21", "CONE", idtmed[kSteel+40], cpar0, 5);
@@ -454,7 +459,7 @@ void AliABSOv0::CreateGeometry()
   gMC->Gsvolu("AI21", "CONE", idtmed[kInsulation+40], cpar, 5);
   gMC->Gspos("AI21", 1, "AV21", 0., 0., 0., 0, "ONLY"); 
   
-  dz=(zRear-zAbsStart)/2.-cpar0[0]-dRear;
+  dz=(kZRear-kZAbsStart)/2.-cpar0[0]-kDRear;
   gMC->Gspos("AV21", 1, "ABSM", 0., 0., dz, 0, "ONLY"); 
 //
 // Support cone 
@@ -464,15 +469,15 @@ void AliABSOv0::CreateGeometry()
   par[2]  =   8.0;
   par[3]  =   4.0;
     
-  par[4]  = zRear;
+  par[4]  = kZRear;
   par[5]  = 100.;
   par[6]  = 180.;
   
-  par[7]  = zRear+20.;
+  par[7]  = kZRear+20.;
   par[8]  = 100.;
   par[9]  = 180.;
 
-  par[10] = zRear+20.;
+  par[10] = kZRear+20.;
   par[11] = 178.;
   par[12] = 180.;
 
@@ -488,7 +493,7 @@ void AliABSOv0::CreateGeometry()
   trap[ 0] = (530.-170.)/2.;
   trap[ 2] = 0.;
   trap[ 3] = 2.; 
-  trap[ 4] = (600.-(zRear+2.))/2.;;
+  trap[ 4] = (600.-(kZRear+2.))/2.;;
   trap[ 5] = trap[4];
   trap[ 6] = 0.;
   trap[ 7] = 2.;
@@ -499,7 +504,7 @@ void AliABSOv0::CreateGeometry()
   AliMatrix(idrotm[1600], 180., 0., 90., 0., 90., 90.);
   AliMatrix(idrotm[1601], 180., 0., 90., 0., 90., 270.);
   gMC->Gsvolu("ASST", "TRAP", idtmed[kSteel], trap, 11);
-  dz = (600.+zRear+2.)/2.+(trap[4]-trap[8])/2.;
+  dz = (600.+kZRear+2.)/2.+(trap[4]-trap[8])/2.;
   //  Float_t dy =  170.+trap[0];
   
 //  gMC->Gspos("ASST", 1, "ALIC", 0.,  dy, dz, idrotm[1600], "ONLY");
