@@ -51,7 +51,7 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD, Int_t evtno)
   if (!branch) return;
   branch->SetAddress(&fDigits);  
   
-  Int_t   nmodules = (Int_t) treeD->GetEntries();
+  //  Int_t   nmodules = (Int_t) treeD->GetEntries();
   //  cout << " nmodules = " << nmodules << endl;
 
   const Int_t kSize         = 4608;
