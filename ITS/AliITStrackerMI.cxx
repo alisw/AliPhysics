@@ -1019,6 +1019,7 @@ void  AliITStrackerMI::AliITSlayer::SortClusters()
     if (curY>fYB[1]+fDy5) continue; 
     //
     // slice 10
+    if (TMath::Abs(fYB[1]-fYB[0])<=0) continue;
     Float_t fslice = TMath::Nint(10.*(curY-fYB[0])/(fYB[1]-fYB[0]));
     Float_t ymiddle = fYB[0]+fslice*fDy10;
     for (Int_t di =-1;di<=1;di++){
