@@ -7,7 +7,12 @@ void test(char *clufile="")
   l.UseStdout();
   l.UseStream();
 
-  a = new AliLevel3(); 
+//  TFile * in = new TFile(clufile,"read");
+//  TFile * out= new TFile("dummy.root","recreate");
+
+//  a = new AliLevel3(in,out); 
+  a = new AliLevel3();
+//  a->UseBinaryInput("/heim/franken/binary/onepatch/");
   a->UseBinaryInput("/heim/franken/binary/hg_8k/");
 //  a->DoRoi();
 
