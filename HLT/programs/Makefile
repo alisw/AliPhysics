@@ -59,17 +59,27 @@ DEFSTR += $(EXTRADEF)
 CXXFLAGS = -O2 -Wall -ggdb $(EXTRACXXFLAGS) $(INCLUDES)
 LDFLAGS  = -O2 $(EXTRALDFLAGS) $(LIBS)
 
-PRGS	= runit read speedtest convbin gettransform runvhdlcf
+PRGS	= runit read speedtest convbin gettransform runvhdlcf runhough
 
 
 all : $(PRGS)
 
+#run hough transform on l3 data.
+runhough : runhough.o
+	$(LD) $< $(LDFLAGS) -o $@
+
+#run conventional clusterfinder on altro data
+runvhdlcf : runvhdlcf.o
+	$(LD) $< $(LDFLAGS) -o $@
+
+#run conventional clusterfinder
 runit : runit.o
 	$(LD) $< $(LDFLAGS) -o $@
 
 convbin : ali2raw.o
 	$(LD) $< $(LDFLAGS) -o $@
 
+#read l3 raw data, print it and convert to altro data
 read : read.o
 	$(LD) $< $(LDFLAGS) -o $@
 
@@ -86,20 +96,3 @@ speedtest : speedtest.cxx
 
 clean :
 	rm -f *.o $(PRGS)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
