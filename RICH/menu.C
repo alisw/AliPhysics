@@ -2,6 +2,18 @@
 Double_t r2d = TMath::RadToDeg();
 Double_t d2r = TMath::DegToRad();
 
+void DisplFast()
+{
+  AliRICHDisplFast *d = new AliRICHDisplFast();
+
+  for (int nev=0; nev< a->GetEventsPerRun(); nev++) {    // Event Loop
+    al->GetEvent(nev);
+    cout <<endl<< "Processing event:" <<nev<<endl;
+    d->Display();
+  } // event loop  
+}  
+
+
 void Digits2Recos()
 {
   AliRICHRecon *detect = new AliRICHRecon("RICH patrec algorithm","Reconstruction");
@@ -12,6 +24,7 @@ void Digits2Recos()
     cout <<endl<< "Processing event:" <<nev<<endl;
     detect->StartProcessEvent();
   } // event loop  
+  delete detect;
 }  
 
 
@@ -706,6 +719,7 @@ void menu()
   pMenu->AddButton("Geo submenu",     "GeoMenu()",            "Shows geomentry submenu");
   pMenu->AddButton("Test submenu",    "TestMenu()",            "Shows test submenu");
   pMenu->AddButton("Browser",         "new TBrowser;",         "Start ROOT TBrowser");
+  pMenu->AddButton("Display Fast",    "DisplFast()",           "Display Fast");
   pMenu->AddButton("Quit",            ".q",                    "Close session");
   pMenu->Show();
   a=gAlice;//for manual manipulation convinience

@@ -4,7 +4,7 @@ SRCS   =  AliRICH.cxx AliRICHv0.cxx AliRICHv1.cxx AliRICHv3.cxx\
 	 AliRICHSegmentationV1.cxx AliRICHResponse.cxx AliRICHResponseV0.cxx \
 	 AliRICHClusterFinder.cxx AliRICHMap.cxx AliRICHHitMapA1.cxx\
 	 AliRICHChamber.cxx AliRICHRecon.cxx \
-         AliRICHSDigit.cxx \
+         AliRICHSDigit.cxx AliRICHDisplFast.cxx \
 	 AliRICHDigit.cxx AliRICHTransientDigit.cxx \
 	 AliRICHRawCluster.cxx AliRICHRecHit1D.cxx \
 	 AliRICHDigitizer.cxx

@@ -29,4 +29,5 @@
 #pragma link C++ class  AliRICHClusterFinder+;
 #pragma link C++ class  AliRICHRecon+;
 #pragma link C++ class  AliRICHDigitizer+;
+#pragma link C++ class  AliRICHDisplFast+;
 #endif
