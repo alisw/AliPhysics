@@ -1,19 +1,15 @@
-// @(#):$Name$:$Id$
-// Author: Andrei Gheata 10/07/2003
-
-#ifndef ROOT_TFlukaMCGeometry
-#define ROOT_TFlukaMCGeometry 
-
+#ifndef TFLUKAMCGEOMETRY_H
+#define TFLUKAMCGEOMETRY_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
 
 //
 // Class TFlukaMCGeometry
 // --------------------
 // Implementation of the TVirtualMCGeometry interface
 // for defining and using TGeo geometry with FLUKA.
-//  
+//
+// Author: Andrei Gheata 10/07/2003
 
 #ifndef ROOT_Riostream
 #include "Riostream.h"

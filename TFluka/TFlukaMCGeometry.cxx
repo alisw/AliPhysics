@@ -1,9 +1,23 @@
-// @(#):$Name$:$Id$
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+// $Id$
 // Author: Andrei Gheata 10/07/2003
 
 #include "TObjString.h"
 #include "TFlukaGeo.h"
-//#include "TVirtualMCApplication.h"
 #include "TFlukaMCGeometry.h"
 #include "TGeoManager.h" 
 #include "TGeoVolume.h" 
@@ -849,12 +863,12 @@ void TFlukaMCGeometry::Gdtom(Float_t *xd, Float_t *xm, Int_t iflag)
   //   If IFLAG=1  convert coordinates
   //      IFLAG=2  convert direction cosinus
   //
-   Double_t XM[3], XD[3];
+   Double_t xmL[3], xdL[3];
    Int_t i;
-   for (i=0;i<3;i++) XD[i] = xd[i];
-   if (iflag == 1) gGeoManager->LocalToMaster(XD,XM);
-   else            gGeoManager->LocalToMasterVect(XD,XM);
-   for (i=0;i<3;i++) xm[i]=XM[i];
+   for (i=0;i<3;i++) xdL[i] = xd[i];
+   if (iflag == 1) gGeoManager->LocalToMaster(xdL,xmL);
+   else            gGeoManager->LocalToMasterVect(xdL,xmL);
+   for (i=0;i<3;i++) xm[i]=xmL[i];
 }   
 
 //_____________________________________________________________________________
@@ -879,12 +893,12 @@ void TFlukaMCGeometry::Gmtod(Float_t *xm, Float_t *xd, Int_t iflag)
   //        If IFLAG=1  convert coordinates 
   //           IFLAG=2  convert direction cosinus
   //
-   Double_t XM[3], XD[3];
+   Double_t xmL[3], xdL[3];
    Int_t i;
-   for (i=0;i<3;i++) XM[i]=xm[i];
-   if (iflag == 1) gGeoManager->MasterToLocal(XM,XD);
-   else            gGeoManager->MasterToLocalVect(XM,XD);
-   for (i=0;i<3;i++) xd[i] = XD[i];
+   for (i=0;i<3;i++) xmL[i]=xm[i];
+   if (iflag == 1) gGeoManager->MasterToLocal(xmL,xdL);
+   else            gGeoManager->MasterToLocalVect(xmL,xdL);
+   for (i=0;i<3;i++) xd[i] = xdL[i];
 }
   
 //_____________________________________________________________________________
