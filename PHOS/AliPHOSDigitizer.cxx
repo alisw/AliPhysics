@@ -102,7 +102,7 @@ ClassImp(AliPHOSDigitizer)
   fNADCcpv = (Int_t) TMath::Power(2,12);      // number of channels in CPV ADC
 
   fTimeThreshold = 0.001*10000000 ; //Means 1 MeV in terms of SDigits amplitude
-  fARD = 0 ;                        // We work in the standalong mode
+  fManager = 0 ;                        // We work in the standalong mode
 }
 
 //____________________________________________________________________________ 
@@ -111,16 +111,15 @@ AliPHOSDigitizer::AliPHOSDigitizer(const char *headerFile,const char * name)
   // ctor
   SetName(name) ;
   SetTitle(headerFile) ;
-  fARD = 0 ;                     // We work in the standalong mode
+  fManager = 0 ;                     // We work in the standalong mode
   Init() ;
   
 }
 
 //____________________________________________________________________________ 
-AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * ard)
+AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
 {
   // ctor
-  fARD = ard ;
   SetName("");     //Will call init in the digitizing
   SetTitle("aliroot") ;  
 }
@@ -233,8 +232,8 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
 	while(curSDigit && curSDigit->GetId() == absID){	   
 	  //Shift primary to separate primaries belonging different inputs
 	  Int_t primaryoffset ;
-	  if(fARD)
-	    primaryoffset = fARD->GetMask(i) ; 
+	  if(fManager)
+	    primaryoffset = fManager->GetMask(i) ; 
 	  else
 	    primaryoffset = 10000000*i ;
 	  curSDigit->ShiftPrimary(primaryoffset) ;
@@ -294,8 +293,8 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
 	while(curSDigit && curSDigit->GetId() == absID){	   
 	  //Shift primary to separate primaries belonging different inputs
 	  Int_t primaryoffset ;
-	  if(fARD)
-	    primaryoffset = fARD->GetMask(i) ; 
+	  if(fManager)
+	    primaryoffset = fManager->GetMask(i) ; 
 	  else
 	    primaryoffset = 10000000*i ;
 	  curSDigit->ShiftPrimary(primaryoffset) ;
@@ -390,8 +389,8 @@ void AliPHOSDigitizer::Exec(Option_t *option)
   
   TTree * treeD ;
   
-  if(fARD){
-    treeD = fARD->GetTreeD() ;
+  if(fManager){
+    treeD = fManager->GetTreeD() ;
     nevents = 1 ;    // Will process only one event
   }
   else {
@@ -435,10 +434,10 @@ void AliPHOSDigitizer::Exec(Option_t *option)
 
   for(ievent = 0; ievent < nevents; ievent++){
     
-    if(fARD){
+    if(fManager){
       Int_t input ;
-      for(input = 0 ; input < fARD->GetNinputs(); input ++){
-  	TTree * treeS = fARD->GetInputTreeS(input) ;
+      for(input = 0 ; input < fManager->GetNinputs(); input ++){
+  	TTree * treeS = fManager->GetInputTreeS(input) ;
 	if(!treeS){
 	  cerr << "AliPHOSDigitizer -> No Input " << endl ;
 	  return ;
@@ -509,7 +508,7 @@ Bool_t AliPHOSDigitizer::Init()
 
   fTimeThreshold = 0.001*10000000 ; //Means 1 MeV in terms of SDigits amplitude
     
-  if(fARD)
+  if(fManager)
     SetTitle("aliroot") ;
   else
     SetTitle("galice.root") ;
@@ -533,7 +532,7 @@ Bool_t AliPHOSDigitizer::Init()
   gime->PostDigitizer(this) ;
   
   //Mark that we will use current header file
-  if(!fARD){
+  if(!fManager){
     gime->PostSDigits(GetName(),GetTitle()) ;
     gime->PostSDigitizer(GetName(),GetTitle()) ;
   }
@@ -558,7 +557,7 @@ void AliPHOSDigitizer::MixWith(const char* headerFile)
   if( strcmp(GetName(), "") == 0 )
     Init() ;
 
-  if(fARD){
+  if(fManager){
     cout << "Can not use this method under AliRunDigitizer " << endl ;
     return ;
   }
@@ -729,8 +728,8 @@ void AliPHOSDigitizer::WriteDigits(Int_t event)
 
   TTree * treeD ;
 
-  if(fARD)
-    treeD = fARD->GetTreeD() ;
+  if(fManager)
+    treeD = fManager->GetTreeD() ;
  else
     treeD = gAlice->TreeD();
   

@@ -91,8 +91,6 @@ private:
 
 private:
 
-  AliRunDigitizer * fARD ;          //! Pointer to the Digitization Manager class
-
   Int_t   fEmcCrystals ;            // Number of EMC crystalls in the given geometry
 
   Float_t fPinNoise ;               // Electronics noise in EMC
