@@ -142,11 +142,15 @@ TFluka::~TFluka() {
 //____________________________________________________________________________ 
 void TFluka::Init() {
 
+  FGeometryInit* geominit = FGeometryInit::GetInstance();
   if (fVerbosityLevel >=3)
     cout << "==> TFluka::Init() called." << endl;
 
-    cout << "\t* InitPhysics() - Prepare input file to be called" << endl; 
-    InitPhysics(); // prepare input file
+  cout << "\t* InitPhysics() - Prepare input file to be called" << endl; 
+  geominit->Init();
+  // now we have G4 geometry created and we have to patch alice.inp
+  // with the material mapping file FlukaMat.inp
+  InitPhysics(); // prepare input file with the current physics settings
     cout << "\t* InitPhysics() - Prepare input file was called" << endl; 
 
   if (fVerbosityLevel >=2)
@@ -565,16 +569,34 @@ void TFluka::InitPhysics()
  
 // construct file names
   TString sAliceInp = getenv("ALICE_ROOT");
+  TString sAliceTmp = sAliceInp;
   sAliceInp +="/TFluka/input/";
+  sAliceTmp +="/tmp/flukaMat.inp";
   TString sAliceCoreInp = sAliceInp;
   sAliceInp += GetInputFileName();
   sAliceCoreInp += GetCoreInputFileName();
   ifstream AliceCoreInp(sAliceCoreInp.Data());
+  ifstream AliceFlukaMat(sAliceTmp.Data());
   ofstream AliceInp(sAliceInp.Data());
 
-// copy core input file until (not included) START card
+// copy core input file 
   Char_t sLine[255];
   Float_t fEventsPerRun;
+
+  while (AliceCoreInp.getline(sLine,255)) {
+    if (strncmp(sLine,"GEOEND",6) != 0)
+      AliceInp << sLine << endl; // copy until GEOEND card
+    else {
+      AliceInp << "GEOEND" << endl; // add GEOEND card
+      goto flukamat;
+    }
+  } // end of while until GEOEND card
+
+flukamat:
+  while (AliceFlukaMat.getline(sLine,255)) { // copy flukaMat.inp file
+        AliceInp << sLine << endl;
+  }
+
   while (AliceCoreInp.getline(sLine,255)) {
     if (strncmp(sLine,"START",5) != 0)
       AliceInp << sLine << endl;
@@ -582,7 +604,7 @@ void TFluka::InitPhysics()
       sscanf(sLine+10,"%10f",&fEventsPerRun);
       goto fin;
     }
-  } //end of while
+  } //end of while until START card
 
 fin:
 // in G3 the process control values meaning can be different for
@@ -1927,7 +1949,7 @@ NOBREM:
    AliceInp << setw(10) << "STOP      "; 
    AliceInp << endl;
 
-}
+} // end of InitPhysics
 
 
 void TFluka::SetMaxStep(Double_t)
