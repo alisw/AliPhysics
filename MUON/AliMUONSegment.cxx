@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2001/02/05 14:49:29  hristov
+Compare() declared const (R.Brun)
+
 Revision 1.5  2001/01/08 11:01:02  gosset
 Modifications used for addendum to Dimuon TDR (JP Cussonneau):
 *. MaxBendingMomentum to make both a segment and a track (default 500)
@@ -73,6 +76,31 @@ Addition of files for track reconstruction in C++
 #include "AliRun.h"
 
 ClassImp(AliMUONSegment) // Class implementation in ROOT context
+
+  //__________________________________________________________________________
+AliMUONSegment::AliMUONSegment()
+{
+  // Default constructor
+  fHitForRecPtr1 = 0; // pointer to HitForRec in first chamber
+  fHitForRecPtr2 = 0; // pointer to HitForRec in second chamber
+  // Bending plane:
+  fBendingCoor = 0.0; // Coordinate in bending plane
+  fBendingSlope = 0.0; // Slope in bending plane
+  // Covariance in bending plane:
+  fBendingCoorReso2 = 0.0; // Covariance(coordinate C1 in first chamber)
+  fBendingSlopeReso2 = 0.0; // Covariance(slope)
+  fBendingCoorSlopeReso2 = 0.0; // Covariance(C1,slope)
+  fBendingImpact = 0.0; // Impact parameter in bending plane
+  // Non Bending plane:
+  fNonBendingCoor = 0.0; // Coordinate in non bending plane
+  fNonBendingSlope = 0.0; // Slope in non bending plane
+  // Covariance in non bending plane:
+  fNonBendingCoorReso2 = 0.0; // Covariance(coordinate C1 in first chamber)
+  fNonBendingSlopeReso2 = 0.0; // Covariance(slope)
+  fNonBendingCoorSlopeReso2 = 0.0; // Covariance(C1,slope)
+  fNonBendingImpact = 0.0; // Impact parameter in non bending plane
+  fInTrack = kFALSE; // TRUE if segment belongs to one track
+}
 
   //__________________________________________________________________________
 AliMUONSegment::AliMUONSegment(AliMUONHitForRec* Hit1, AliMUONHitForRec* Hit2)

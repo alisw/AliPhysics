@@ -12,12 +12,13 @@ class AliMUONTrackParam;
 
 class AliMUONSegment : public TObject {
  public:
+  AliMUONSegment(); // default constructor
   virtual ~AliMUONSegment(){
     // Destructor
     ;} // Destructor
   AliMUONSegment (const AliMUONSegment& AliMUONSegment); // copy constructor
   AliMUONSegment& operator=(const AliMUONSegment& AliMUONSegment); // assignment operator
-  AliMUONSegment(AliMUONHitForRec* Hit1=0, AliMUONHitForRec* Hit2=0); // Constructor from two HitForRec's
+  AliMUONSegment(AliMUONHitForRec* Hit1, AliMUONHitForRec* Hit2); // Constructor from two HitForRec's
 
   // Inline functions for Get and Set
   AliMUONHitForRec* GetHitForRec1(void) {
