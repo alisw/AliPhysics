@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.75  2002/10/22 14:45:25  alibrary
+Introducing Riostream.h
+
 Revision 1.74  2002/10/14 14:57:00  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -307,7 +310,6 @@ the AliITS class.
 #include <TTree.h>
 #include <TString.h>
 
-#include "AliMC.h"
 #include "AliHeader.h"
 
 #include "AliITS.h"

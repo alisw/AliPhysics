@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.60  2002/10/22 14:45:47  alibrary
+Introducing Riostream.h
+
 Revision 1.59  2002/10/14 14:57:08  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -220,7 +223,6 @@ New ITS detailed geometry to be used for the PPR
 #include <TBRIK.h>
 #include <TSystem.h>
 
-#include "AliMC.h"
 #include "AliRun.h"
 #include "AliMagF.h"
 #include "AliConst.h"

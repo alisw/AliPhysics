@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.8  2002/11/14 15:09:58  nilsen
+Fixed problem of elements of a Mixture having zero concentration. This was
+done by reordering some of the elements such that those which may have
+zero concentration were at the end of the array and the array size passed
+would thereby exclude those zero concentrations.
+
 Revision 1.7  2002/11/02 15:15:58  hristov
 Corrected with respect to the previous versions
 
@@ -69,7 +75,6 @@ Updated detailed geometry needed by FMD people for some studies
 #include <TBRIK.h>
 #include <TSystem.h>
 
-#include "AliMC.h"
 #include "AliRun.h"
 #include "AliMagF.h"
 #include "AliConst.h"

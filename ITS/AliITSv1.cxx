@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2001/01/30 09:23:13  hristov
+Streamers removed (R.Brun)
+
 Revision 1.22  2000/10/05 20:49:59  nilsen
 Now using root generated streamers.
 
@@ -87,7 +90,6 @@ Introduction of the Copyright and cvs Log
 #include <TClonesArray.h>
 
 
-#include "AliMC.h"
 #include "AliConst.h"
 #include "AliRun.h"
 #include "AliMagF.h"

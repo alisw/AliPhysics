@@ -38,7 +38,6 @@
 #include "AliITSmodule.h"
 #include "AliITSRecPoint.h"
 #include "AliITSRawCluster.h"
-#include "AliMC.h"
 #include "stdlib.h"
 #include "AliKalmanTrack.h" 
 #include "AliMagF.h"

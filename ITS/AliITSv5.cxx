@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.37  2002/10/22 14:45:47  alibrary
+Introducing Riostream.h
+
 Revision 1.36  2002/10/14 14:57:08  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -123,7 +126,6 @@ Introduction of the Copyright and cvs Log
 #include <TBRIK.h>
 #include <TSystem.h>
 
-#include "AliMC.h"
 #include "AliRun.h"
 #include "AliITShit.h"
 #include "AliITSGeant3Geometry.h"

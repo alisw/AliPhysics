@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2002/10/22 14:46:01  alibrary
+Introducing Riostream.h
+
 Revision 1.25  2001/10/18 12:26:38  barbera
 Six cylinders definition in BuildGeometry() improved by comparison with CreateGeometry()
 
@@ -151,7 +154,6 @@ Introduction of the Copyright and cvs Log
 #include <TClonesArray.h>
 
 
-#include "AliMC.h"
 #include "AliMagF.h"
 #include "AliConst.h"
 

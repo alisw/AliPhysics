@@ -37,8 +37,6 @@
 #include "AliFMDv1.h"
 #include "AliFMDv0.h"
 #include "AliRun.h"
-#include "AliMC.h"
-#include <Riostream.h>
 #include <Riostream.h>
 #include "AliMagF.h"
 #include "AliFMDhit.h"
@@ -215,10 +213,9 @@ void AliFMDv1::DrawDetector()
 // Draw a shaded view of the Forward multiplicity detector version 0
 //
 
-AliMC* pMC = AliMC::GetMC();
 
 //Set ALIC mother transparent
-pMC->Gsatt("ALIC","SEEN",0);
+gMC->Gsatt("ALIC","SEEN",0);
 //
 //Set volumes visible
 gMC->Gsatt("FMD1","SEEN",1);
@@ -242,7 +239,6 @@ void AliFMDv1::Init()
 {
 // Initialises version 0 of the Forward Multiplicity Detector
 //
-AliMC* gMC=AliMC::GetMC();
 AliFMD::Init();
 fIdSens1=gMC->VolId("GRN1");
 fIdSens2=gMC->VolId("GRN2");
@@ -268,7 +264,6 @@ void AliFMDv1::StepManager()
 
 
   TClonesArray &lhits = *fHits;
-  AliMC* gMC=AliMC::GetMC();
   if(!gMC->IsTrackAlive()) return; // particle has disappeared
 
   Float_t charge = gMC->TrackCharge();

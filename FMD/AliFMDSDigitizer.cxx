@@ -37,7 +37,6 @@
 #include "AliFMDSDigitizer.h"
 #include "AliRun.h"
 #include "AliDetector.h"
-#include "AliMC.h"
 
 #include "TFile.h"
 #include "TTask.h"
@@ -46,7 +45,6 @@
 #include "TROOT.h"
 #include "TFolder.h"
 #include <stdlib.h>
-#include <Riostream.h>
 #include <Riostream.h>
 
 ClassImp(AliFMDSDigitizer)
