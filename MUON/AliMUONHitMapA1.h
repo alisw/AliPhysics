@@ -12,12 +12,14 @@
 class TObjArray;
 
 class AliSegmentation;
+class AliMUONGeometrySegmentation;
 
 class AliMUONHitMapA1 : public AliHitMap 
 {
  public:
     AliMUONHitMapA1();
-    AliMUONHitMapA1(AliSegmentation *seg, TObjArray *dig);
+    AliMUONHitMapA1(AliSegmentation* seg, TObjArray* dig);
+    AliMUONHitMapA1(Int_t idDE, AliMUONGeometrySegmentation* seg, TObjArray* dig);
     virtual ~AliMUONHitMapA1();
 
     // Fill hits from list of digits into hit map

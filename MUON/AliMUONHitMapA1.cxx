@@ -20,6 +20,7 @@
 
 #include "AliMUONHitMapA1.h"
 #include "AliSegmentation.h"
+#include "AliMUONGeometrySegmentation.h"
 #include "AliMUONDigit.h"
 #include "AliLog.h"
 
@@ -36,7 +37,7 @@ AliMUONHitMapA1::AliMUONHitMapA1()
     fHitMap       = 0;
     fDigits       = 0;
 }
-
+//____________________________________________________________________
 AliMUONHitMapA1::AliMUONHitMapA1(AliSegmentation *seg, TObjArray *dig)
   : AliHitMap()
 {
@@ -49,7 +50,20 @@ AliMUONHitMapA1::AliMUONHitMapA1(AliSegmentation *seg, TObjArray *dig)
     fDigits =  dig;
     Clear();
 }
-
+//________________________________________________________________________________
+AliMUONHitMapA1::AliMUONHitMapA1(Int_t idDE, AliMUONGeometrySegmentation* seg, TObjArray* dig)
+  : AliHitMap()
+{
+// Constructor with new segmentation
+    fNpx  = seg->Npx(idDE)+1;
+    fNpy  = seg->Npy(idDE)+1;
+    fMaxIndex=2*(fNpx+1)*2*(fNpy+1)+2*fNpy;
+    
+    fHitMap = new Int_t[fMaxIndex];
+    fDigits =  dig;
+    Clear();
+}
+//______________________________________________________________
 AliMUONHitMapA1::AliMUONHitMapA1(const AliMUONHitMapA1 & hitMap)
   : AliHitMap(hitMap)
 {
@@ -57,20 +71,19 @@ AliMUONHitMapA1::AliMUONHitMapA1(const AliMUONHitMapA1 & hitMap)
 
   AliFatal("Not implemented.");
 }
-
- 
+//_________________________________
 AliMUONHitMapA1::~AliMUONHitMapA1()
 {
 // Destructor
     if (fHitMap) delete[] fHitMap;
 }
-
+//______________________________________
 void AliMUONHitMapA1::Clear(const char *)
 {
 // Clear hitmap
     memset(fHitMap,0,sizeof(int)*fMaxIndex);
 }
-
+//___________________________________________________
 Bool_t AliMUONHitMapA1::ValidateHit(Int_t ix, Int_t iy)
 {
     //
@@ -80,7 +93,7 @@ Bool_t AliMUONHitMapA1::ValidateHit(Int_t ix, Int_t iy)
     
     return (TMath::Abs(ix) <= fNpx && TMath::Abs(iy) <= fNpy); 
 }
-
+//_________________________________________________________
 Int_t AliMUONHitMapA1::CheckedIndex(Int_t ix, Int_t iy) const
 {
 // Return checked indices ix, iy
@@ -93,8 +106,7 @@ Int_t AliMUONHitMapA1::CheckedIndex(Int_t ix, Int_t iy) const
 	return index;
     }
 }
-
-	
+//_____________________________
 void  AliMUONHitMapA1::FillHits()
 {
 // Fill hits from digits list  
@@ -108,35 +120,34 @@ void  AliMUONHitMapA1::FillHits()
 	SetHit(dig->PadX(),dig->PadY(),ndig);
     }
 }
-
-
+//___________________________________________________________
 void  AliMUONHitMapA1::SetHit(Int_t ix, Int_t iy, Int_t idigit)
 {
 // Assign digit to hit cell ix,iy
 //    fHitMap[kMaxNpady*(ix+fNpx)+(iy+fNpy)]=idigit+1;
     fHitMap[CheckedIndex(ix, iy)]=idigit+1;
 }
-
+//_______________________________________________
 void AliMUONHitMapA1::DeleteHit(Int_t ix, Int_t iy)
 {
 // Delete hit at cell ix,iy
 //    fHitMap[kMaxNpady*(ix+fNpx)+(iy+fNpy)]=0;
     fHitMap[CheckedIndex(ix, iy)]=0;
 }
-
+//_____________________________________________
 void AliMUONHitMapA1::FlagHit(Int_t ix, Int_t iy)
 {
 // Flag hit as used
     fHitMap[CheckedIndex(ix, iy)]=
 	-TMath::Abs(fHitMap[CheckedIndex(ix, iy)]);
 }
-
+//________________________________________________________
 Int_t AliMUONHitMapA1::GetHitIndex(Int_t ix, Int_t iy) const
 {
 // Get absolute value of contents of hit cell ix,iy
     return TMath::Abs(fHitMap[CheckedIndex(ix, iy)])-1;
 }
-
+//_______________________________________________________
 TObject* AliMUONHitMapA1::GetHit(Int_t ix, Int_t iy) const
 {
     // Get pointer to object at hit cell ix, iy
@@ -144,7 +155,7 @@ TObject* AliMUONHitMapA1::GetHit(Int_t ix, Int_t iy) const
     Int_t index=GetHitIndex(ix,iy);
     return (index <0) ? 0 : fDigits->UncheckedAt(GetHitIndex(ix,iy));
 }
-
+//_________________________________________________
 FlagType AliMUONHitMapA1::TestHit(Int_t ix, Int_t iy)
 {
 // Check if hit cell is empty, used or unused
@@ -158,7 +169,7 @@ FlagType AliMUONHitMapA1::TestHit(Int_t ix, Int_t iy)
 	return kUnused;
     }
 }
-
+//________________________________________________________________________
 AliMUONHitMapA1 & AliMUONHitMapA1::operator = (const AliMUONHitMapA1 & rhs) 
 {
 // Protected assignement operator

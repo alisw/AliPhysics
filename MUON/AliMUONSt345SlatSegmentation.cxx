@@ -59,7 +59,7 @@ AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation()
 
 //___________________________________________
 AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation(Bool_t bending) 
-  : AliMUONVGeometryDESegmentation(),
+  :     AliMUONVGeometryDESegmentation(),
  	fBending(bending),
  	fId(0),
 	fDpx(0),
@@ -88,9 +88,27 @@ AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation(Bool_t bending)
   (*fDpyD)[0]=(*fDpyD)[1]=(*fDpyD)[2]=(*fDpyD)[3]=0;       
 }
 //----------------------------------------------------------------------
-AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation(const AliMUONSt345SlatSegmentation& rhs) : AliMUONVGeometryDESegmentation(rhs)
+AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation(const AliMUONSt345SlatSegmentation& rhs) 
+:       AliMUONVGeometryDESegmentation(rhs),
+	fBending(0),
+ 	fId(0),
+	fDpx(0),
+	fDpy(0),
+	fNpx(999999),
+	fNpy(999999),
+	fWireD(0.25),
+	fXhit(0.),
+	fYhit(0.),
+	fIx(0),
+	fIy(0),
+	fX(0.),
+	fY(0.),
+	fIxmin(0),
+	fIxmax(0),
+	fIymin(0),
+	fIymax(0)
 {
-  AliFatal("Not implemented.");
+  // default constructor
 }
 //----------------------------------------------------------------------
 AliMUONSt345SlatSegmentation::~AliMUONSt345SlatSegmentation() 

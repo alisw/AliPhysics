@@ -84,6 +84,7 @@ class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation
     AliMUONSt345SlatSegmentation(const AliMUONSt345SlatSegmentation& rhs);
     AliMUONSt345SlatSegmentation& operator=(const AliMUONSt345SlatSegmentation& rhs);
     
+ private:
     //  Internal geometry of the slat 
     Bool_t      fBending;        // 0: Bending or 1:Non Bending segmentation
     Int_t       fId;             // Identifier of detection element

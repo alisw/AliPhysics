@@ -17,11 +17,14 @@
 
 #include <TMinuit.h> 
 #include <TF1.h>
+#include <TMinuit.h> 
+#include <Riostream.h>
 
 #include "AliMUONClusterFinderVS.h"
 #include "AliMUONDigit.h"
 #include "AliMUONRawCluster.h"
 #include "AliSegmentation.h"
+#include "AliMUONGeometrySegmentation.h"
 #include "AliMUONMathieson.h"
 #include "AliMUONClusterInput.h"
 #include "AliMUONHitMapA1.h"
@@ -41,6 +44,8 @@ AliMUONClusterFinderVS::AliMUONClusterFinderVS()
 {
 // Default constructor
     fInput=AliMUONClusterInput::Instance();
+    fSegmentationType = fInput->GetSegmentationType();
+//     cout <<  " TYPE" << fSegmentationType << endl;
     fHitMap[0] = 0;
     fHitMap[1] = 0;
     fTrack[0]=fTrack[1]=-1;
@@ -48,6 +53,9 @@ AliMUONClusterFinderVS::AliMUONClusterFinderVS()
     fGhostChi2Cut = 1e6; // nothing done by default
     fSeg[0]    = 0;
     fSeg[1]    = 0;
+    fSeg2[0]    = 0;
+    fSeg2[1]    = 0;
+
     for(Int_t i=0; i<100; i++) {
       for (Int_t j=0; j<2; j++) {
         fDig[i][j] = 0;
@@ -115,8 +123,12 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	    // pad charge
 	    fQ[i][cath] = fDig[i][cath]->Signal();
 	    // pad centre coordinates
-	    fSeg[cath]->
+	    if (fSegmentationType == 1)
+	      fSeg[cath]->
 		GetPadC(fIx[i][cath], fIy[i][cath], fX[i][cath], fY[i][cath], fZ[i][cath]);
+	    else
+	      fSeg2[cath]->
+		GetPadC(fInput->DetElemId(), fIx[i][cath], fIy[i][cath], fX[i][cath], fY[i][cath], fZ[i][cath]);
 	} // loop over cluster digits
     }  // loop over cathodes
 
@@ -164,8 +176,13 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	c->SetChi2(0,chi2);
 	c->SetChi2(1,chi2);
         // Force on anod
-	c->SetX(0, fSeg[0]->GetAnod(c->GetX(0)));
-	c->SetX(1, fSeg[1]->GetAnod(c->GetX(1)));
+	if (fSegmentationType == 1) {
+	  c->SetX(0, fSeg[0]->GetAnod(c->GetX(0)));
+	  c->SetX(1, fSeg[1]->GetAnod(c->GetX(1)));
+	} else {
+	  c->SetX(0, fSeg2[0]->GetAnod(fInput->DetElemId(), c->GetX(0)));
+	  c->SetX(1, fSeg2[1]->GetAnod(fInput->DetElemId(), c->GetX(1)));
+	}
 	
 // If reasonable chi^2 add result to the list of rawclusters
 	if (chi2 < 0.3) {
@@ -261,12 +278,22 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	for (ico=0; ico<4; ico++) {
 	    accepted[ico]=kFALSE;
 // cathode one: x-coordinate
-	    isec=fSeg[0]->Sector(ixm[ico][0], iym[ico][0]);
-	    dpx=fSeg[0]->Dpx(isec)/2.;
+	    if (fSegmentationType == 1) {
+	      isec=fSeg[0]->Sector(ixm[ico][0], iym[ico][0]);
+	      dpx=fSeg[0]->Dpx(isec)/2.;
+	    } else {
+	      isec=fSeg2[0]->Sector(fInput->DetElemId(), ixm[ico][0], iym[ico][0]);
+	      dpx=fSeg2[0]->Dpx(fInput->DetElemId(), isec)/2.;
+	    }
 	    dx=TMath::Abs(xm[ico][0]-xm[ico][1]);
 // cathode two: y-coordinate
-	    isec=fSeg[1]->Sector(ixm[ico][1], iym[ico][1]);
-	    dpy=fSeg[1]->Dpy(isec)/2.;
+	    if (fSegmentationType == 1) {
+	      isec=fSeg[1]->Sector(ixm[ico][1], iym[ico][1]);
+	      dpy=fSeg[1]->Dpy(isec)/2.;
+	    } else {
+	      isec=fSeg2[1]->Sector(fInput->DetElemId(), ixm[ico][1], iym[ico][1]);
+	      dpy=fSeg2[1]->Dpy(fInput->DetElemId(), isec)/2.;
+	    }
 	    dy=TMath::Abs(ym[ico][0]-ym[ico][1]);
 	    AliDebug(2,Form("\n %i %f %f %f %f %f %f \n", ico, ym[ico][0], ym[ico][1], dy, dpy, dx, dpx ));
 	    if ((dx <= dpx) && (dy <= dpy+eps)) {
@@ -432,8 +459,11 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 				
 				cnew.SetMultiplicity(cath,c->GetMultiplicity(cath));
 			      	for (i=0; i<fMul[cath]; i++) {
-				    cnew.SetIndex(i, cath, c->GetIndex(i,cath));
+				  cnew.SetIndex(i, cath, c->GetIndex(i,cath));
+				  if (fSegmentationType == 1) 
 				    fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
+				  else 
+				    fSeg2[cath]->SetPad(fInput->DetElemId(), fIx[i][cath], fIy[i][cath]);
 				}
 				AliDebug(1,Form("\nRawCluster %d cath %d\n",ico,cath));
 				AliDebug(1,Form("mult_av %d\n",c->GetMultiplicity(cath)));
@@ -625,11 +655,21 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 
 	for (ico=0; ico<2; ico++) {
 	    accepted[ico]=kFALSE;
-	    isec=fSeg[0]->Sector(ixm[ico][0], iym[ico][0]);
-	    dpx=fSeg[0]->Dpx(isec)/2.;
+	    if (fSegmentationType == 1) {
+	      isec=fSeg[0]->Sector(ixm[ico][0], iym[ico][0]);
+	      dpx=fSeg[0]->Dpx(isec)/2.;
+	    } else {
+	      isec=fSeg2[0]->Sector(fInput->DetElemId(), ixm[ico][0], iym[ico][0]);
+	      dpx=fSeg2[0]->Dpx(fInput->DetElemId(), isec)/2.;
+	    }
 	    dx=TMath::Abs(xm[ico][0]-xm[ico][1]);
-	    isec=fSeg[1]->Sector(ixm[ico][1], iym[ico][1]);
-	    dpy=fSeg[1]->Dpy(isec)/2.;
+	    if (fSegmentationType == 1) {
+	      isec=fSeg[1]->Sector(ixm[ico][1], iym[ico][1]);
+	      dpy=fSeg[1]->Dpy(isec)/2.;
+	    } else {
+	      isec=fSeg2[1]->Sector(fInput->DetElemId(), ixm[ico][1], iym[ico][1]);
+	      dpy=fSeg2[1]->Dpy(fInput->DetElemId(), isec)/2.;
+	    }
 	    dy=TMath::Abs(ym[ico][0]-ym[ico][1]);
 	    AliDebug(2,Form("\n %i %f %f %f %f \n", ico, ym[ico][0], ym[ico][1], dy, dpy ));
 	    if ((dx <= dpx) && (dy <= dpy+eps)) {
@@ -707,7 +747,11 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 			cnew.SetMultiplicity(cath, c->GetMultiplicity(cath));
 			for (i=0; i<fMul[cath]; i++) {
 			    cnew.SetIndex(i, cath, c->GetIndex(i, cath));
-			    fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
+			    if (fSegmentationType == 1) 
+			      fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
+			    else
+			      fSeg2[cath]->SetPad(fInput->DetElemId(), fIx[i][cath], fIy[i][cath]);
+
 			}
 			AliDebug(1,Form("\nRawCluster %d cath %d\n",ico,cath));
 			AliDebug(1,Form("mult_av %d\n",c->GetMultiplicity(cath)));
@@ -760,11 +804,21 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	
 	for (ico=0; ico<2; ico++) {
 	    accepted[ico]=kFALSE;
-	    isec=fSeg[0]->Sector(ixm[ico][0], iym[ico][0]);
-	    dpx=fSeg[0]->Dpx(isec)/2.;
+	    if (fSegmentationType == 1) {
+	      isec=fSeg[0]->Sector(ixm[ico][0], iym[ico][0]);
+	      dpx=fSeg[0]->Dpx(isec)/2.;
+	    } else {
+	      isec=fSeg2[0]->Sector(fInput->DetElemId(), ixm[ico][0], iym[ico][0]);
+	      dpx=fSeg2[0]->Dpx(fInput->DetElemId(), isec)/2.;
+	    }
 	    dx=TMath::Abs(xm[ico][0]-xm[ico][1]);
-	    isec=fSeg[1]->Sector(ixm[ico][1], iym[ico][1]);
-	    dpy=fSeg[1]->Dpy(isec)/2.;
+	    if (fSegmentationType == 1) {
+	      isec=fSeg[1]->Sector(ixm[ico][1], iym[ico][1]);
+	      dpy=fSeg[1]->Dpy(isec)/2.;
+	    } else {
+	      isec=fSeg2[1]->Sector(fInput->DetElemId(), ixm[ico][1], iym[ico][1]);
+	      dpy=fSeg2[1]->Dpy(fInput->DetElemId(), isec)/2.;
+	    }
 	    dy=TMath::Abs(ym[ico][0]-ym[ico][1]);
 	    AliDebug(1,Form("\n %i %f %f %f %f \n", ico, ym[ico][0], ym[ico][1], dy, dpy ));
 	    if ((dx <= dpx) && (dy <= dpy+eps)) {
@@ -843,7 +897,10 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 			cnew.SetMultiplicity(cath, c->GetMultiplicity(cath));
 			for (i=0; i<fMul[cath]; i++) {
 			    cnew.SetIndex(i, cath, c->GetIndex(i, cath));
-			    fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
+			    if (fSegmentationType == 1) 
+			      fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
+			    else 
+			      fSeg2[cath]->SetPad(fInput->DetElemId(), fIx[i][cath], fIy[i][cath]);
 			}
 			AliDebug(1,Form("\nRawCluster %d cath %d\n",ico,cath));
 			AliDebug(1,Form("mult_av %d\n",c->GetMultiplicity(cath)));
@@ -895,11 +952,21 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	AliDebug(1,Form("nIco %d\n",nIco));
 	for (ico=0; ico<nIco; ico++) {
 	    AliDebug(1,Form("ico = %d\n",ico));
-	    isec=fSeg[0]->Sector(ixm[ico][0], iym[ico][0]);
-	    dpx=fSeg[0]->Dpx(isec)/2.;
+	    if (fSegmentationType == 1) {
+	      isec=fSeg[0]->Sector(ixm[ico][0], iym[ico][0]);
+	      dpx=fSeg[0]->Dpx(isec)/2.;
+	    } else {
+	      isec=fSeg2[0]->Sector(fInput->DetElemId(), ixm[ico][0], iym[ico][0]);
+	      dpx=fSeg2[0]->Dpx(fInput->DetElemId(), isec)/2.;
+	    } 
 	    dx=TMath::Abs(xm[ico][0]-xm[ico][1]);
-	    isec=fSeg[1]->Sector(ixm[ico][1], iym[ico][1]);
-	    dpy=fSeg[1]->Dpy(isec)/2.;
+	    if (fSegmentationType == 1) {
+	      isec=fSeg[1]->Sector(ixm[ico][1], iym[ico][1]);
+	      dpy=fSeg[1]->Dpy(isec)/2.;
+	    } else {
+	      isec=fSeg2[1]->Sector(fInput->DetElemId(), ixm[ico][1], iym[ico][1]);
+	      dpy=fSeg2[1]->Dpy(fInput->DetElemId(), isec)/2.;
+	    }
 	    dy=TMath::Abs(ym[ico][0]-ym[ico][1]);
 		AliDebug(1,Form("dx %f dpx %f dy %f dpy %f\n",dx,dpx,dy,dpy));
 		AliDebug(1,Form("  X %f Y %f\n",xm[ico][1],ym[ico][0]));
@@ -914,7 +981,10 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 		    cnew.SetMultiplicity(cath, c->GetMultiplicity(cath));
 		    for (i=0; i<fMul[cath]; i++) {
 			cnew.SetIndex(i, cath, c->GetIndex(i, cath));
-			fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
+			if (fSegmentationType == 1) 
+			  fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
+			else 
+			  fSeg2[cath]->SetPad(fInput->DetElemId(), fIx[i][cath], fIy[i][cath]);
 		    }
 		    FillCluster(&cnew,cath);
 		} 
@@ -957,8 +1027,12 @@ void AliMUONClusterFinderVS::FindLocalMaxima(AliMUONRawCluster* /*c*/)
     for (cath=0; cath<2; cath++) {
 // loop over cluster digits
 	for (i=0; i<fMul[cath]; i++) {
-// get neighbours for that digit and assume that it is local maximum	    
-	    fSeg[cath]->Neighbours(fIx[i][cath], fIy[i][cath], &nn, x, y);
+// get neighbours for that digit and assume that it is local maximum
+	    if (fSegmentationType == 1) 	    
+	      fSeg[cath]->Neighbours(fIx[i][cath], fIy[i][cath], &nn, x, y);
+	    else 
+	      fSeg2[cath]->Neighbours(fInput->DetElemId(), fIx[i][cath], fIy[i][cath], &nn, x, y);
+
 	    isLocal[i][cath]=kTRUE;
 	    Int_t isec= fSeg[cath]->Sector(fIx[i][cath], fIy[i][cath]);
 	    Float_t a0 = fSeg[cath]->Dpx(isec)*fSeg[cath]->Dpy(isec);
@@ -967,8 +1041,14 @@ void AliMUONClusterFinderVS::FindLocalMaxima(AliMUONRawCluster* /*c*/)
 	    for (j=0; j<nn; j++) {
 		if (fHitMap[cath]->TestHit(x[j], y[j])==kEmpty) continue;
 		digt=(AliMUONDigit*) fHitMap[cath]->GetHit(x[j], y[j]);
-		isec=fSeg[cath]->Sector(x[j], y[j]);
-		Float_t a1 = fSeg[cath]->Dpx(isec)*fSeg[cath]->Dpy(isec);
+		Float_t a1;
+		if (fSegmentationType == 1) {
+		  isec=fSeg[cath]->Sector(x[j], y[j]);
+		  a1 = fSeg[cath]->Dpx(isec)*fSeg[cath]->Dpy(isec);
+		} else {
+		  isec=fSeg2[cath]->Sector(fInput->DetElemId(), x[j], y[j]);
+		  a1 = fSeg2[cath]->Dpx(fInput->DetElemId(),isec)*fSeg2[cath]->Dpy(fInput->DetElemId(), isec);
+		}
 		if (digt->Signal()/a1 > fQ[i][cath]/a0) {
 		    isLocal[i][cath]=kFALSE;
 		    break;
@@ -1012,9 +1092,15 @@ void AliMUONClusterFinderVS::FindLocalMaxima(AliMUONRawCluster* /*c*/)
 	cath1=1;
 	
 	for (i=0; i<fMul[cath]; i++) {
+	  if (fSegmentationType == 1) {
 	    isec=fSeg[cath]->Sector(fIx[i][cath],fIy[i][cath]);
 	    dpy=fSeg[cath]->Dpy(isec);
 	    dpx=fSeg[cath]->Dpx(isec);
+	  } else {
+	    isec=fSeg2[cath]->Sector(fInput->DetElemId(), fIx[i][cath],fIy[i][cath]);
+	    dpy=fSeg2[cath]->Dpy(fInput->DetElemId(), isec);
+	    dpx=fSeg2[cath]->Dpx(fInput->DetElemId(), isec);
+	  }
 	    if (isLocal[i][cath]) continue;
 // Pad position should be consistent with position of local maxima on the opposite cathode
 	    if ((TMath::Abs(fX[i][cath]-fX[fIndLocal[0][cath1]][cath1]) > dpx/2.) && 
@@ -1026,25 +1112,41 @@ void AliMUONClusterFinderVS::FindLocalMaxima(AliMUONRawCluster* /*c*/)
 // compare signal to that on the two neighbours on the left and on the right
 // iNN counts the number of neighbours with signal, it should be 1 or 2
 	    Int_t iNN=0;
+	    if (fSegmentationType == 1) {
 
- 	    for (fSeg[cath]
-		     ->FirstPad(fX[i][cath], fY[i][cath], fZPlane, 0., dpy);
-		 fSeg[cath]
-		     ->MorePads();
-		 fSeg[cath]
-		     ->NextPad())
-	    {
-		ix = fSeg[cath]->Ix();
-		iy = fSeg[cath]->Iy();
-		// skip the current pad
-		if (iy == fIy[i][cath]) continue;
+	      for (fSeg[cath]->FirstPad(fX[i][cath], fY[i][cath], fZPlane, 0., dpy);
+		   fSeg[cath]->MorePads();
+		   fSeg[cath]->NextPad())
+		{
+		  ix = fSeg[cath]->Ix();
+		  iy = fSeg[cath]->Iy();
+		  // skip the current pad
+		  if (iy == fIy[i][cath]) continue;
 		
-		if (fHitMap[cath]->TestHit(ix, iy)!=kEmpty) {
+		  if (fHitMap[cath]->TestHit(ix, iy)!=kEmpty) {
 		    iNN++;
 		    digt=(AliMUONDigit*) fHitMap[cath]->GetHit(ix,iy);
 		    if (digt->Signal() > fQ[i][cath]) isLocal[i][cath]=kFALSE;
-		}
-	    } // Loop over pad neighbours in y
+		  }
+		} // Loop over pad neighbours in y
+	    } else {
+
+	      for (fSeg2[cath]->FirstPad(fInput->DetElemId(), fX[i][cath], fY[i][cath], fZPlane, 0., dpy);
+		   fSeg2[cath]->MorePads(fInput->DetElemId());
+		   fSeg2[cath]->NextPad(fInput->DetElemId()))
+		{
+		  ix = fSeg2[cath]->Ix();
+		  iy = fSeg2[cath]->Iy();
+		  // skip the current pad
+		  if (iy == fIy[i][cath]) continue;
+		
+		  if (fHitMap[cath]->TestHit(ix, iy)!=kEmpty) {
+		    iNN++;
+		    digt=(AliMUONDigit*) fHitMap[cath]->GetHit(ix,iy);
+		    if (digt->Signal() > fQ[i][cath]) isLocal[i][cath]=kFALSE;
+		  }
+		} // Loop over pad neighbours in y
+	    }
 	    if (isLocal[i][cath] && iNN>0) {
 		fIndLocal[fNLocal[cath]][cath]=i;
 		fNLocal[cath]++;
@@ -1074,9 +1176,16 @@ void AliMUONClusterFinderVS::FindLocalMaxima(AliMUONRawCluster* /*c*/)
 //
 //  Loop over cluster digits
 	for (i=0; i<fMul[cath]; i++) {
+	  if (fSegmentationType == 1) {
 	    isec=fSeg[cath]->Sector(fIx[i][cath],fIy[i][cath]);
 	    dpx=fSeg[cath]->Dpx(isec);
 	    dpy=fSeg[cath]->Dpy(isec);
+	  } else {
+	    isec=fSeg2[cath]->Sector(fInput->DetElemId(), fIx[i][cath],fIy[i][cath]);
+	    dpx=fSeg2[cath]->Dpx(fInput->DetElemId(), isec);
+	    dpy=fSeg2[cath]->Dpy(fInput->DetElemId(), isec);
+	  }
+	
 	    if (isLocal[i][cath]) continue;
 // Pad position should be consistent with position of local maxima on the opposite cathode
 	    if ((TMath::Abs(fY[i][cath]-fY[fIndLocal[0][cath1]][cath1]) > dpy/2.+eps) && 
@@ -1090,26 +1199,43 @@ void AliMUONClusterFinderVS::FindLocalMaxima(AliMUONRawCluster* /*c*/)
 
 // iNN counts the number of neighbours with signal, it should be 1 or 2
 	    Int_t iNN=0;
- 	    for (fSeg[cath]
-		     ->FirstPad(fX[i][cath], fY[i][cath], fZPlane, dpx, 0.);
-		 fSeg[cath]
-		     ->MorePads();
-		 fSeg[cath]
-		     ->NextPad())
-	    {
+	    if (fSegmentationType == 1) {
+	      for (fSeg[cath]->FirstPad(fX[i][cath], fY[i][cath], fZPlane, dpx, 0.);
+		   fSeg[cath]->MorePads();
+		   fSeg[cath]->NextPad())
+		{
 
-		ix = fSeg[cath]->Ix();
-		iy = fSeg[cath]->Iy();
+		  ix = fSeg[cath]->Ix();
+		  iy = fSeg[cath]->Iy();
 
-		// skip the current pad
-		if (ix == fIx[i][cath]) continue;
+		  // skip the current pad
+		  if (ix == fIx[i][cath]) continue;
 		
-		if (fHitMap[cath]->TestHit(ix, iy)!=kEmpty) {
+		  if (fHitMap[cath]->TestHit(ix, iy)!=kEmpty) {
 		    iNN++;
 		    digt=(AliMUONDigit*) fHitMap[cath]->GetHit(ix,iy);
 		    if (digt->Signal() > fQ[i][cath]) isLocal[i][cath]=kFALSE;
-		}
-	    } // Loop over pad neighbours in x
+		  }
+		} // Loop over pad neighbours in x
+	    } else {
+	      for (fSeg2[cath]->FirstPad(fInput->DetElemId(), fX[i][cath], fY[i][cath], fZPlane, dpx, 0.);
+		   fSeg2[cath]->MorePads(fInput->DetElemId());
+		   fSeg2[cath]->NextPad(fInput->DetElemId()))
+		{
+
+		  ix = fSeg2[cath]->Ix();
+		  iy = fSeg2[cath]->Iy();
+
+		  // skip the current pad
+		  if (ix == fIx[i][cath]) continue;
+		
+		  if (fHitMap[cath]->TestHit(ix, iy)!=kEmpty) {
+		    iNN++;
+		    digt=(AliMUONDigit*) fHitMap[cath]->GetHit(ix,iy);
+		    if (digt->Signal() > fQ[i][cath]) isLocal[i][cath]=kFALSE;
+		  }
+		} // Loop over pad neighbours in x
+	    }
 	    if (isLocal[i][cath] && iNN>0) {
 		fIndLocal[fNLocal[cath]][cath]=i;
 		fNLocal[cath]++;
@@ -1176,7 +1302,11 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t flag, Int_
 	}
 //
 	if (flag) {
+	  if (fSegmentationType == 1) 
 	    fSeg[cath]->GetPadC(ix, iy, x, y, z);
+	  else
+	    fSeg2[cath]->GetPadC(fInput->DetElemId(), ix, iy, x, y, z);
+	
 	    c->AddX(cath, q*x);
 	    c->AddY(cath, q*y);
 	    c->AddCharge(cath, q);
@@ -1188,21 +1318,38 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t flag, Int_
     if (flag) {
       	c->SetX(cath, c->GetX(cath)/c->GetCharge(cath));
 // Force on anod
-     	c->SetX(cath, fSeg[cath]->GetAnod(c->GetX(cath)));
+	if (fSegmentationType == 1) 
+	  c->SetX(cath, fSeg[cath]->GetAnod(c->GetX(cath)));
+	else
+	  c->SetX(cath, fSeg2[cath]->GetAnod(fInput->DetElemId(), c->GetX(cath)));
       	c->SetY(cath, c->GetY(cath)/c->GetCharge(cath)); 
 //
 //  apply correction to the coordinate along the anode wire
 //
      	x=c->GetX(cath);   
      	y=c->GetY(cath);
-     	fSeg[cath]->GetPadI(x, y, fZPlane, ix, iy);
-     	fSeg[cath]->GetPadC(ix, iy, x, y, z);
-     	Int_t isec=fSeg[cath]->Sector(ix,iy);
-    	TF1* cogCorr = fSeg[cath]->CorrFunc(isec-1);
+	TF1* cogCorr;
+	Int_t isec;
+	if (fSegmentationType == 1) {
+	  fSeg[cath]->GetPadI(x, y, fZPlane, ix, iy);
+	  fSeg[cath]->GetPadC(ix, iy, x, y, z);
+	  isec=fSeg[cath]->Sector(ix,iy);
+	  cogCorr = fSeg[cath]->CorrFunc(isec-1);
+	} else {
+	  fSeg2[cath]->GetPadI(fInput->DetElemId(), x, y, fZPlane, ix, iy);
+	  fSeg2[cath]->GetPadC(fInput->DetElemId(), ix, iy, x, y, z);
+	  isec=fSeg2[cath]->Sector(fInput->DetElemId(), ix,iy);
+	  cogCorr = fSeg2[cath]->CorrFunc(fInput->DetElemId(), isec-1);
+	}
 	
      	if (cogCorr) {
-	    Float_t yOnPad=(c->GetY(cath)-y)/fSeg[cath]->Dpy(isec);
-	    c->SetY(cath, c->GetY(cath)-cogCorr->Eval(yOnPad, 0, 0));
+	  Float_t yOnPad;
+	  if (fSegmentationType == 1) 
+	    yOnPad=(c->GetY(cath)-y)/fSeg[cath]->Dpy(isec);
+	  else 
+	    yOnPad=(c->GetY(cath)-y)/fSeg2[cath]->Dpy(fInput->DetElemId(), isec);
+
+	  c->SetY(cath, c->GetY(cath)-cogCorr->Eval(yOnPad, 0, 0));
      	}
     }
 }
@@ -1226,8 +1373,12 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t cath)
     for (Int_t i=0; i<c->GetMultiplicity(cath); i++)
     {
 	dig = fInput->Digit(cath,c->GetIndex(i,cath));
-	fSeg[cath]->
-	GetPadC(dig->PadX(),dig->PadY(),xpad,ypad, zpad);
+	if (fSegmentationType == 1) 
+	  fSeg[cath]->
+	    GetPadC(dig->PadX(),dig->PadY(),xpad,ypad, zpad);
+	else
+	  fSeg2[cath]->
+	    GetPadC(fInput->DetElemId(),dig->PadX(),dig->PadY(),xpad,ypad, zpad);
 	AliDebug(1,Form("x %f y %f cx %f cy %f\n",xpad,ypad,c->GetX(0),c->GetY(0)));
 	dx = xpad - c->GetX(0);
 	dy = ypad - c->GetY(0);
@@ -1254,7 +1405,10 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t cath)
 
 //  apply correction to the coordinate along the anode wire
 // Force on anod
-    c->SetX(cath,fSeg[cath]->GetAnod(c->GetX(cath)));
+    if (fSegmentationType == 1) 
+      c->SetX(cath,fSeg[cath]->GetAnod(c->GetX(cath)));
+    else
+      c->SetX(cath,fSeg2[cath]->GetAnod(fInput->DetElemId(), c->GetX(cath)));
 }
 
 void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONRawCluster &c){
@@ -1318,8 +1472,10 @@ void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONR
 
 // Prepare center of gravity calculation
     Float_t x, y, z;
-    fSeg[cath]->GetPadC(i, j, x, y, z);
-    
+    if (fSegmentationType == 1) 
+      fSeg[cath]->GetPadC(i, j, x, y, z);
+    else
+      fSeg2[cath]->GetPadC(fInput->DetElemId(), i, j, x, y, z);
     c.AddX(cath,q*x);
     c.AddY(cath,q*y);
     c.AddCharge(cath,q);
@@ -1334,7 +1490,10 @@ void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONR
     ix=iy=0;
     Int_t nn;
     Int_t xList[10], yList[10];
-    fSeg[cath]->Neighbours(i,j,&nn,xList,yList);
+    if (fSegmentationType == 1) 
+      fSeg[cath]->Neighbours(i,j,&nn,xList,yList);
+    else 
+      fSeg2[cath]->Neighbours(fInput->DetElemId(), i,j,&nn,xList,yList);
     for (Int_t in=0; in<nn; in++) {
 	ix=xList[in];
 	iy=yList[in];
@@ -1350,40 +1509,86 @@ void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONR
     
 //  Neighbours on opposite cathode 
 //  Take into account that several pads can overlap with the present pad
-    Int_t isec=fSeg[cath]->Sector(i,j);    
+    Int_t isec;
+    if (fSegmentationType == 1) 
+      isec=fSeg[cath]->Sector(i,j);    
+    else
+      isec=fSeg2[cath]->Sector(fInput->DetElemId(), i,j);    
+
     Int_t iop;
     Float_t dx, dy;
 
-    if (cath==0) {
+    if (fSegmentationType == 1) {
+      if (cath==0) {
 	iop = 1;
 	dx  = (fSeg[cath]->Dpx(isec))/2.;
 	dy  = 0.;
-    } else {
+      } else {
 	iop = 0;
 	dx  = 0.;
 	dy  = (fSeg[cath]->Dpy(isec))/2;
-    }
-// loop over pad neighbours on opposite cathode
-    for (fSeg[iop]->FirstPad(x, y, fZPlane, dx, dy);
-	 fSeg[iop]->MorePads();
-	 fSeg[iop]->NextPad())
-    {
+      }
+   
+
+    
+      // loop over pad neighbours on opposite cathode
+      for (fSeg[iop]->FirstPad(x, y, fZPlane, dx, dy);
+	   fSeg[iop]->MorePads();
+	   fSeg[iop]->NextPad())
+	{
 	
-	ix = fSeg[iop]->Ix(); iy = fSeg[iop]->Iy();
-	AliDebug(2,Form("\n ix, iy: %f %f %f %d %d %d", x,y,z,ix, iy, fSector));
-	if (fHitMap[iop]->TestHit(ix,iy)==kUnused){
+	  ix = fSeg[iop]->Ix(); iy = fSeg[iop]->Iy();
+	  AliDebug(2,Form("\n ix, iy: %f %f %f %d %d %d", x,y,z,ix, iy, fSector));
+	  if (fHitMap[iop]->TestHit(ix,iy)==kUnused){
 	    iXopp[nOpp]=ix;
 	    iYopp[nOpp++]=iy;
 	    AliDebug(2,Form("\n Opposite %d %d %d", iop, ix, iy));
-	}
+	  }
 	
-    } // Loop over pad neighbours
-//  This had to go outside the loop since recursive calls inside the iterator are not possible
-//
-    Int_t jopp;
-    for (jopp=0; jopp<nOpp; jopp++) {
+	} // Loop over pad neighbours
+      //  This had to go outside the loop since recursive calls inside the iterator are not possible
+      //
+      Int_t jopp;
+      for (jopp=0; jopp<nOpp; jopp++) {
 	if (fHitMap[iop]->TestHit(iXopp[jopp],iYopp[jopp]) == kUnused) 
-	    FindCluster(iXopp[jopp], iYopp[jopp], iop, c);
+	  FindCluster(iXopp[jopp], iYopp[jopp], iop, c);
+      }
+    } else {
+
+      if (cath==0) {
+	iop = 1;
+	dx  = (fSeg2[cath]->Dpx(fInput->DetElemId(), isec))/2.;
+	dy  = 0.;
+      } else {
+	iop = 0;
+	dx  = 0.;
+	dy  = (fSeg2[cath]->Dpy(fInput->DetElemId(), isec))/2;
+      }
+   
+
+    
+      // loop over pad neighbours on opposite cathode
+      for (fSeg2[iop]->FirstPad(fInput->DetElemId(), x, y, fZPlane, dx, dy);
+	   fSeg2[iop]->MorePads(fInput->DetElemId());
+	   fSeg2[iop]->NextPad(fInput->DetElemId()))
+	{
+	
+	  ix = fSeg2[iop]->Ix(); iy = fSeg2[iop]->Iy();
+	  AliDebug(2,Form("\n ix, iy: %f %f %f %d %d %d", x,y,z,ix, iy, fSector));
+	  if (fHitMap[iop]->TestHit(ix,iy)==kUnused){
+	    iXopp[nOpp]=ix;
+	    iYopp[nOpp++]=iy;
+	    AliDebug(2,Form("\n Opposite %d %d %d", iop, ix, iy));
+	  }
+	
+	} // Loop over pad neighbours
+      //  This had to go outside the loop since recursive calls inside the iterator are not possible
+      //
+      Int_t jopp;
+      for (jopp=0; jopp<nOpp; jopp++) {
+	if (fHitMap[iop]->TestHit(iXopp[jopp],iYopp[jopp]) == kUnused) 
+	  FindCluster(iXopp[jopp], iYopp[jopp], iop, c);
+      }
     }
 }
 
@@ -1400,12 +1605,20 @@ void AliMUONClusterFinderVS::FindRawClusters()
 //  Return if no input datad available
     if (!fInput->NDigits(0) && !fInput->NDigits(1)) return;
 
-    fSeg[0] = fInput->Segmentation(0);
-    fSeg[1] = fInput->Segmentation(1);
+    if (fSegmentationType == 1) {
+      fSeg[0] = fInput->Segmentation(0);
+      fSeg[1] = fInput->Segmentation(1);
 
-    fHitMap[0]  = new AliMUONHitMapA1(fSeg[0], fInput->Digits(0));
-    fHitMap[1]  = new AliMUONHitMapA1(fSeg[1], fInput->Digits(1));
+      fHitMap[0]  = new AliMUONHitMapA1(fSeg[0], fInput->Digits(0));
+      fHitMap[1]  = new AliMUONHitMapA1(fSeg[1], fInput->Digits(1));
 
+    } else {
+      fSeg2[0] = fInput->Segmentation2(0);
+      fSeg2[1] = fInput->Segmentation2(1);
+
+      fHitMap[0]  = new AliMUONHitMapA1(fInput->DetElemId(), fSeg2[0], fInput->Digits(0));
+      fHitMap[1]  = new AliMUONHitMapA1(fInput->DetElemId(), fSeg2[1], fInput->Digits(1));
+    }
  
     AliMUONDigit *dig;
 
@@ -1436,8 +1649,13 @@ void AliMUONClusterFinderVS::FindRawClusters()
 	    // tag the beginning of cluster list in a raw cluster
 	    c.SetNcluster(0,-1);
 	    Float_t xcu, ycu;
-	    fSeg[cath]->GetPadC(i,j,xcu, ycu, fZPlane);
-	    fSector= fSeg[cath]->Sector(i,j)/100;
+	    if (fSegmentationType == 1) {
+	      fSeg[cath]->GetPadC(i,j,xcu, ycu, fZPlane);
+	      fSector= fSeg[cath]->Sector(i,j)/100;
+	    } else {
+	      fSeg2[cath]->GetPadC(fInput->DetElemId(), i,j,xcu, ycu, fZPlane);
+	      fSector= fSeg2[cath]->Sector(fInput->DetElemId(), i,j)/100;
+	    }
 	    AliDebug(1,Form("\n New Seed %d %d ", i,j));
 	
             
@@ -1446,13 +1664,19 @@ void AliMUONClusterFinderVS::FindRawClusters()
 	    // center of gravity
 	    if (c.GetX(0)!=0.) c.SetX(0, c.GetX(0)/c.GetCharge(0)); // c.fX[0] /= c.fQ[0];
 // Force on anod
-	    c.SetX(0,fSeg[0]->GetAnod(c.GetX(0)));
+	    if (fSegmentationType == 1) 
+	      c.SetX(0,fSeg[0]->GetAnod(c.GetX(0)));
+	    else 
+	      c.SetX(0,fSeg2[0]->GetAnod(fInput->DetElemId(), c.GetX(0)));
 	    if (c.GetY(0)!=0.) c.SetY(0, c.GetY(0)/c.GetCharge(0)); // c.fY[0] /= c.fQ[0];
       	    
 	    if(c.GetCharge(1)!=0.) c.SetX(1, c.GetX(1)/c.GetCharge(1));  // c.fX[1] /= c.fQ[1];
 	    	    			
 	   // Force on anod
-	    c.SetX(1, fSeg[0]->GetAnod(c.GetX(1)));
+	    if (fSegmentationType == 1) 
+	      c.SetX(1, fSeg[0]->GetAnod(c.GetX(1)));
+	    else 
+	      c.SetX(1, fSeg2[0]->GetAnod(fInput->DetElemId(),c.GetX(1)));
 	    if(c.GetCharge(1)!=0.) c.SetY(1, c.GetY(1)/c.GetCharge(1));// c.fY[1] /= c.fQ[1];
 	    
 	    c.SetZ(0, fZPlane);
@@ -1513,15 +1737,28 @@ Float_t AliMUONClusterFinderVS::SingleMathiesonFit(AliMUONRawCluster *c, Int_t c
     
 // lower and upper limits
     static Double_t lower[2], upper[2];
-    Int_t ix,iy;
-    fSeg[cath]->GetPadI(c->GetX(cath), c->GetY(cath), fZPlane, ix, iy);
-    Int_t isec=fSeg[cath]->Sector(ix, iy);
-    lower[0]=vstart[0]-fSeg[cath]->Dpx(isec)/2;
-    lower[1]=vstart[1]-fSeg[cath]->Dpy(isec)/2;
+    Int_t ix,iy, isec;
+    if (fSegmentationType == 1) {
+      fSeg[cath]->GetPadI(c->GetX(cath), c->GetY(cath), fZPlane, ix, iy);
+      isec=fSeg[cath]->Sector(ix, iy);
+
+      lower[0]=vstart[0]-fSeg[cath]->Dpx(isec)/2;
+      lower[1]=vstart[1]-fSeg[cath]->Dpy(isec)/2;
     
-    upper[0]=lower[0]+fSeg[cath]->Dpx(isec);
-    upper[1]=lower[1]+fSeg[cath]->Dpy(isec);
+      upper[0]=lower[0]+fSeg[cath]->Dpx(isec);
+      upper[1]=lower[1]+fSeg[cath]->Dpy(isec);
+
+    } else {
+      fSeg2[cath]->GetPadI(fInput->DetElemId(), c->GetX(cath), c->GetY(cath), fZPlane, ix, iy);
+      isec=fSeg2[cath]->Sector(fInput->DetElemId(), ix, iy);
+
+      lower[0]=vstart[0]-fSeg2[cath]->Dpx(fInput->DetElemId(), isec)/2;
+      lower[1]=vstart[1]-fSeg2[cath]->Dpy(fInput->DetElemId(), isec)/2;
     
+      upper[0]=lower[0]+fSeg2[cath]->Dpx(fInput->DetElemId(), isec);
+      upper[1]=lower[1]+fSeg2[cath]->Dpy(fInput->DetElemId(), isec);
+    }
+
 // step sizes
     static Double_t step[2]={0.0005, 0.0005};
     
@@ -1573,44 +1810,80 @@ Float_t AliMUONClusterFinderVS::CombiSingleMathiesonFit(AliMUONRawCluster * /*c*
 // lower and upper limits
     static Float_t lower[2], upper[2];
     Int_t ix,iy,isec;
-    fSeg[0]->GetPadI(fXInit[0], fYInit[0], fZPlane, ix, iy);
-    isec=fSeg[0]->Sector(ix, iy);
-    Float_t dpy=fSeg[0]->Dpy(isec);
-    fSeg[1]->GetPadI(fXInit[0], fYInit[0], fZPlane, ix, iy);
-    isec=fSeg[1]->Sector(ix, iy);
-    Float_t dpx=fSeg[1]->Dpx(isec);
+    Float_t dpy, dpx;
 
+    if (fSegmentationType == 1) {
+      fSeg[0]->GetPadI(fXInit[0], fYInit[0], fZPlane, ix, iy);
+      isec=fSeg[0]->Sector(ix, iy);
+      dpy=fSeg[0]->Dpy(isec);
+      fSeg[1]->GetPadI(fXInit[0], fYInit[0], fZPlane, ix, iy);
+      isec=fSeg[1]->Sector(ix, iy);
+      dpx=fSeg[1]->Dpx(isec);
+
+    } else {
+      fSeg2[0]->GetPadI(fInput->DetElemId(), fXInit[0], fYInit[0], fZPlane, ix, iy);
+      isec=fSeg2[0]->Sector(fInput->DetElemId(), ix, iy);
+      dpy=fSeg2[0]->Dpy(fInput->DetElemId(), isec);
+      fSeg2[1]->GetPadI(fInput->DetElemId(), fXInit[0], fYInit[0], fZPlane, ix, iy);
+      isec=fSeg2[1]->Sector(fInput->DetElemId(), ix, iy);
+      dpx=fSeg2[1]->Dpx(fInput->DetElemId(), isec);
+
+    }
     Int_t icount;
     Float_t xdum, ydum, zdum;
 
 //  Find save upper and lower limits    
     
     icount = 0;
-    
-    for (fSeg[1]->FirstPad(fXInit[0], fYInit[0], fZPlane, dpx, 0.); 
-	 fSeg[1]->MorePads(); fSeg[1]->NextPad())
-    {
-	ix=fSeg[1]->Ix(); iy=fSeg[1]->Iy();
-	fSeg[1]->GetPadC(ix,iy, upper[0], ydum, zdum);	
-	if (icount ==0) lower[0]=upper[0];
-	icount++;
+    if (fSegmentationType == 1) {
+      for (fSeg[1]->FirstPad(fXInit[0], fYInit[0], fZPlane, dpx, 0.); 
+	   fSeg[1]->MorePads(); 
+	   fSeg[1]->NextPad())
+	{
+	  ix=fSeg[1]->Ix(); iy=fSeg[1]->Iy();
+	  fSeg[1]->GetPadC(ix,iy, upper[0], ydum, zdum);	
+	  if (icount ==0) lower[0]=upper[0];
+	  icount++;
+	}
+    } else {
+      for (fSeg2[1]->FirstPad(fInput->DetElemId(),fXInit[0], fYInit[0], fZPlane, dpx, 0.); 
+	   fSeg2[1]->MorePads(fInput->DetElemId()); 
+	   fSeg2[1]->NextPad(fInput->DetElemId()))
+	{
+	  ix=fSeg2[1]->Ix(); iy=fSeg2[1]->Iy();
+	  fSeg2[1]->GetPadC(fInput->DetElemId(), ix,iy, upper[0], ydum, zdum);	
+	  if (icount ==0) lower[0]=upper[0];
+	  icount++;
+	}
     }
-
     if (lower[0]>upper[0]) {xdum=lower[0]; lower[0]=upper[0]; upper[0]=xdum;}
 	
     icount=0;
     AliDebug(1,Form("\n single y %f %f", fXInit[0], fYInit[0]));
     
-    for (fSeg[0]->FirstPad(fXInit[0], fYInit[0], fZPlane, 0., dpy); 
-	 fSeg[0]->MorePads(); fSeg[0]->NextPad())
-    {
-	ix=fSeg[0]->Ix(); iy=fSeg[0]->Iy();
-	fSeg[0]->GetPadC(ix,iy,xdum,upper[1],zdum);	
-	if (icount ==0) lower[1]=upper[1];
-	icount++;
-	AliDebug(1,Form("\n upper lower %d %f %f", icount, upper[1], lower[1]));
+    if (fSegmentationType == 1) {
+      for (fSeg[0]->FirstPad(fXInit[0], fYInit[0], fZPlane, 0., dpy); 
+	   fSeg[0]->MorePads(); 
+	   fSeg[0]->NextPad())
+	{
+	  ix=fSeg[0]->Ix(); iy=fSeg[0]->Iy();
+	  fSeg[0]->GetPadC(ix,iy,xdum,upper[1],zdum);	
+	  if (icount ==0) lower[1]=upper[1];
+	  icount++;
+	  AliDebug(1,Form("\n upper lower %d %f %f", icount, upper[1], lower[1]));
+	}
+    } else {
+      for (fSeg2[0]->FirstPad(fInput->DetElemId(), fXInit[0], fYInit[0], fZPlane, 0., dpy); 
+	   fSeg2[0]->MorePads(fInput->DetElemId()); 
+	   fSeg2[0]->NextPad(fInput->DetElemId()))
+	{
+	  ix=fSeg2[0]->Ix(); iy=fSeg2[0]->Iy();
+	  fSeg2[0]->GetPadC(fInput->DetElemId(), ix,iy,xdum,upper[1],zdum);	
+	  if (icount ==0) lower[1]=upper[1];
+	  icount++;
+	  AliDebug(1,Form("\n upper lower %d %f %f", icount, upper[1], lower[1]));
+	}
     }
-    
     if (lower[1]>upper[1]) {xdum=lower[1]; lower[1]=upper[1]; upper[1]=xdum;}
 
 // step sizes
@@ -1669,20 +1942,42 @@ Bool_t AliMUONClusterFinderVS::DoubleMathiesonFit(AliMUONRawCluster * /*c*/, Int
 	Float_t(fQ[fIndLocal[0][cath]][cath]+fQ[fIndLocal[1][cath]][cath]);
 // lower and upper limits
     static Float_t lower[5], upper[5];
-    Int_t isec=fSeg[cath]->Sector(fIx[fIndLocal[0][cath]][cath], fIy[fIndLocal[0][cath]][cath]);
-    lower[0]=vstart[0]-fSeg[cath]->Dpx(isec);
-    lower[1]=vstart[1]-fSeg[cath]->Dpy(isec);
+    Int_t isec;
+
+    if (fSegmentationType == 1) {
+      isec=fSeg[cath]->Sector(fIx[fIndLocal[0][cath]][cath], fIy[fIndLocal[0][cath]][cath]);
+      lower[0]=vstart[0]-fSeg[cath]->Dpx(isec);
+      lower[1]=vstart[1]-fSeg[cath]->Dpy(isec);
     
-    upper[0]=lower[0]+2.*fSeg[cath]->Dpx(isec);
-    upper[1]=lower[1]+2.*fSeg[cath]->Dpy(isec);
+      upper[0]=lower[0]+2.*fSeg[cath]->Dpx(isec);
+      upper[1]=lower[1]+2.*fSeg[cath]->Dpy(isec);
     
-    isec=fSeg[cath]->Sector(fIx[fIndLocal[1][cath]][cath], fIy[fIndLocal[1][cath]][cath]);
-    lower[2]=vstart[2]-fSeg[cath]->Dpx(isec)/2;
-    lower[3]=vstart[3]-fSeg[cath]->Dpy(isec)/2;
+      isec=fSeg[cath]->Sector(fIx[fIndLocal[1][cath]][cath], fIy[fIndLocal[1][cath]][cath]);
+      lower[2]=vstart[2]-fSeg[cath]->Dpx(isec)/2;
+      lower[3]=vstart[3]-fSeg[cath]->Dpy(isec)/2;
     
-    upper[2]=lower[2]+fSeg[cath]->Dpx(isec);
-    upper[3]=lower[3]+fSeg[cath]->Dpy(isec);
+      upper[2]=lower[2]+fSeg[cath]->Dpx(isec);
+      upper[3]=lower[3]+fSeg[cath]->Dpy(isec);
+
+    } else {
+      isec=fSeg2[cath]->Sector(fInput->DetElemId(),fIx[fIndLocal[0][cath]][cath], 
+			       fIy[fIndLocal[0][cath]][cath]);
+      lower[0]=vstart[0]-fSeg2[cath]->Dpx(fInput->DetElemId(),isec);
+      lower[1]=vstart[1]-fSeg2[cath]->Dpy(fInput->DetElemId(),isec);
     
+      upper[0]=lower[0]+2.*fSeg2[cath]->Dpx(fInput->DetElemId(),isec);
+      upper[1]=lower[1]+2.*fSeg2[cath]->Dpy(fInput->DetElemId(),isec);
+    
+      isec=fSeg2[cath]->Sector(fInput->DetElemId(),fIx[fIndLocal[1][cath]][cath], 
+			      fIy[fIndLocal[1][cath]][cath]);
+      lower[2]=vstart[2]-fSeg2[cath]->Dpx(fInput->DetElemId(),isec)/2;
+      lower[3]=vstart[3]-fSeg2[cath]->Dpy(fInput->DetElemId(),isec)/2;
+    
+      upper[2]=lower[2]+fSeg2[cath]->Dpx(fInput->DetElemId(),isec);
+      upper[1]=lower[1]+2.*fSeg2[cath]->Dpy(fInput->DetElemId(),isec);
+
+    }
+
     lower[4]=0.;
     upper[4]=1.;
 // step sizes
@@ -1744,7 +2039,7 @@ Float_t AliMUONClusterFinderVS::CombiDoubleMathiesonFit(AliMUONRawCluster * /*c*
     static Float_t lower[6], upper[6];
     Int_t ix,iy,isec;
     Float_t dpx, dpy;
-    
+  if (fSegmentationType == 1) {
     fSeg[1]->GetPadI(fXInit[0], fYInit[0], fZPlane, ix, iy);
     isec=fSeg[1]->Sector(ix, iy);
     dpx=fSeg[1]->Dpx(isec);
@@ -1753,84 +2048,174 @@ Float_t AliMUONClusterFinderVS::CombiDoubleMathiesonFit(AliMUONRawCluster * /*c*
     isec=fSeg[0]->Sector(ix, iy);
     dpy=fSeg[0]->Dpy(isec);
 
+  } else {
+    fSeg2[1]->GetPadI(fInput->DetElemId(),fXInit[0], fYInit[0], fZPlane, ix, iy);
+    isec=fSeg2[1]->Sector(fInput->DetElemId(),ix, iy);
+    dpx=fSeg2[1]->Dpx(fInput->DetElemId(), isec);
+
+    fSeg2[0]->GetPadI(fInput->DetElemId(), fXInit[0], fYInit[0], fZPlane, ix, iy);
+    isec=fSeg2[0]->Sector(fInput->DetElemId(), ix, iy);
+    dpy=fSeg2[0]->Dpy(fInput->DetElemId(), isec);
+
+  }
 
     Int_t icount;
     Float_t xdum, ydum, zdum;
     AliDebug(1,Form("\n Cluster Finder: %f %f %f %f  ", fXInit[0], fXInit[1],fYInit[0], fYInit[1] ));
+
+    if (fSegmentationType == 1) {
+ 
+      //  Find save upper and lower limits    
+      icount = 0;
     
-//  Find save upper and lower limits    
-    icount = 0;
-    
-    for (fSeg[1]->FirstPad(fXInit[0], fYInit[0], fZPlane, dpx, 0.); 
-	 fSeg[1]->MorePads(); fSeg[1]->NextPad())
-    {
-	ix=fSeg[1]->Ix(); iy=fSeg[1]->Iy();
-//	if (fHitMap[1]->TestHit(ix, iy) == kEmpty) continue;
-	fSeg[1]->GetPadC(ix,iy,upper[0],ydum,zdum);	
-	if (icount ==0) lower[0]=upper[0];
-	icount++;
-    }
-    if (lower[0]>upper[0]) {xdum=lower[0]; lower[0]=upper[0]; upper[0]=xdum;}    
-//    vstart[0] = 0.5*(lower[0]+upper[0]);
+      for (fSeg[1]->FirstPad(fXInit[0], fYInit[0], fZPlane, dpx, 0.); 
+	   fSeg[1]->MorePads(); 
+	   fSeg[1]->NextPad())
+	{
+	  ix=fSeg[1]->Ix(); iy=fSeg[1]->Iy();
+	  //	if (fHitMap[1]->TestHit(ix, iy) == kEmpty) continue;
+	  fSeg[1]->GetPadC(ix,iy,upper[0],ydum,zdum);	
+	  if (icount ==0) lower[0]=upper[0];
+	  icount++;
+	}
+      if (lower[0]>upper[0]) {xdum=lower[0]; lower[0]=upper[0]; upper[0]=xdum;}    
+      //    vstart[0] = 0.5*(lower[0]+upper[0]);
 
     
-    icount=0;
+      icount=0;
     
-    for (fSeg[0]->FirstPad(fXInit[0], fYInit[0], fZPlane, 0., dpy); 
-	 fSeg[0]->MorePads(); fSeg[0]->NextPad())
-    {
-	ix=fSeg[0]->Ix(); iy=fSeg[0]->Iy();
-//	if (fHitMap[0]->TestHit(ix, iy) == kEmpty) continue;
-	fSeg[0]->GetPadC(ix,iy,xdum,upper[1],zdum);	
-	if (icount ==0) lower[1]=upper[1];
-	icount++;
-    }
+      for (fSeg[0]->FirstPad(fXInit[0], fYInit[0], fZPlane, 0., dpy); 
+	   fSeg[0]->MorePads(); 
+	   fSeg[0]->NextPad())
+	{
+	  ix=fSeg[0]->Ix(); iy=fSeg[0]->Iy();
+	  //	if (fHitMap[0]->TestHit(ix, iy) == kEmpty) continue;
+	  fSeg[0]->GetPadC(ix,iy,xdum,upper[1],zdum);	
+	  if (icount ==0) lower[1]=upper[1];
+	  icount++;
+	}
     
-    if (lower[1]>upper[1]) {xdum=lower[1]; lower[1]=upper[1]; upper[1]=xdum;}    
-//     vstart[1] = 0.5*(lower[1]+upper[1]);
+      if (lower[1]>upper[1]) {xdum=lower[1]; lower[1]=upper[1]; upper[1]=xdum;}    
+      //     vstart[1] = 0.5*(lower[1]+upper[1]);
 
 
-    fSeg[1]->GetPadI(fXInit[1], fYInit[1], fZPlane, ix, iy);
-    isec=fSeg[1]->Sector(ix, iy);
-    dpx=fSeg[1]->Dpx(isec);
-    fSeg[0]->GetPadI(fXInit[1], fYInit[1], fZPlane, ix, iy);
-    isec=fSeg[0]->Sector(ix, iy);
-    dpy=fSeg[0]->Dpy(isec);
+      fSeg[1]->GetPadI(fXInit[1], fYInit[1], fZPlane, ix, iy);
+      isec=fSeg[1]->Sector(ix, iy);
+      dpx=fSeg[1]->Dpx(isec);
+      fSeg[0]->GetPadI(fXInit[1], fYInit[1], fZPlane, ix, iy);
+      isec=fSeg[0]->Sector(ix, iy);
+      dpy=fSeg[0]->Dpy(isec);
 
 
-//  Find save upper and lower limits    
+      //  Find save upper and lower limits    
 
-    icount=0;
+      icount=0;
     
-    for (fSeg[1]->FirstPad(fXInit[1], fYInit[1], fZPlane, dpx, 0); 
-	 fSeg[1]->MorePads(); fSeg[1]->NextPad())
-    {
-	ix=fSeg[1]->Ix(); iy=fSeg[1]->Iy();
-//	if (fHitMap[1]->TestHit(ix, iy) == kEmpty) continue;
-	fSeg[1]->GetPadC(ix,iy,upper[2],ydum,zdum);	
-	if (icount ==0) lower[2]=upper[2];
-	icount++;
-    }
-    if (lower[2]>upper[2]) {xdum=lower[2]; lower[2]=upper[2]; upper[2]=xdum;}    
-    //    vstart[2] = 0.5*(lower[2]+upper[2]);
+      for (fSeg[1]->FirstPad(fXInit[1], fYInit[1], fZPlane, dpx, 0); 
+	   fSeg[1]->MorePads(); fSeg[1]->NextPad())
+	{
+	  ix=fSeg[1]->Ix(); iy=fSeg[1]->Iy();
+	  //	if (fHitMap[1]->TestHit(ix, iy) == kEmpty) continue;
+	  fSeg[1]->GetPadC(ix,iy,upper[2],ydum,zdum);	
+	  if (icount ==0) lower[2]=upper[2];
+	  icount++;
+	}
+      if (lower[2]>upper[2]) {xdum=lower[2]; lower[2]=upper[2]; upper[2]=xdum;}    
+      //    vstart[2] = 0.5*(lower[2]+upper[2]);
 
-    icount=0;
+      icount=0;
     
-    for (fSeg[0]->FirstPad(fXInit[1], fYInit[1], fZPlane, 0, dpy); 
-	 fSeg[0]-> MorePads(); fSeg[0]->NextPad())
-    {
-	ix=fSeg[0]->Ix(); iy=fSeg[0]->Iy();
-//	if (fHitMap[0]->TestHit(ix, iy) != kEmpty) continue;
+      for (fSeg[0]->FirstPad(fXInit[1], fYInit[1], fZPlane, 0, dpy); 
+	   fSeg[0]-> MorePads(); fSeg[0]->NextPad())
+	{
+	  ix=fSeg[0]->Ix(); iy=fSeg[0]->Iy();
+	  //	if (fHitMap[0]->TestHit(ix, iy) != kEmpty) continue;
 	
-	fSeg[0]->GetPadC(ix,iy,xdum,upper[3],zdum);	
-	if (icount ==0) lower[3]=upper[3];
-	icount++;
+	  fSeg[0]->GetPadC(ix,iy,xdum,upper[3],zdum);	
+	  if (icount ==0) lower[3]=upper[3];
+	  icount++;
 
+	}
+      if (lower[3]>upper[3]) {xdum=lower[3]; lower[3]=upper[3]; upper[3]=xdum;}    
+    
+      //     vstart[3] = 0.5*(lower[3]+upper[3]);
+    } else {
+
+    //  Find save upper and lower limits    
+      icount = 0;
+    
+      for (fSeg2[1]->FirstPad(fInput->DetElemId(),fXInit[0], fYInit[0], fZPlane, dpx, 0.); 
+	   fSeg2[1]->MorePads(fInput->DetElemId()); 
+	   fSeg2[1]->NextPad(fInput->DetElemId()))
+	{
+	  ix=fSeg2[1]->Ix(); iy=fSeg2[1]->Iy();
+	  //	if (fHitMap[1]->TestHit(ix, iy) == kEmpty) continue;
+	  fSeg2[1]->GetPadC(fInput->DetElemId(),ix,iy,upper[0],ydum,zdum);	
+	  if (icount ==0) lower[0]=upper[0];
+	  icount++;
+	}
+      if (lower[0]>upper[0]) {xdum=lower[0]; lower[0]=upper[0]; upper[0]=xdum;}    
+      //    vstart[0] = 0.5*(lower[0]+upper[0]);
+
+    
+      icount=0;
+    
+      for (fSeg2[0]->FirstPad(fInput->DetElemId(),fXInit[0], fYInit[0], fZPlane, 0., dpy); 
+	   fSeg2[0]->MorePads(fInput->DetElemId()); 
+	   fSeg2[0]->NextPad(fInput->DetElemId()))
+	{
+	  ix=fSeg2[0]->Ix(); iy=fSeg2[0]->Iy();
+	  //	if (fHitMap[0]->TestHit(ix, iy) == kEmpty) continue;
+	  fSeg2[0]->GetPadC(fInput->DetElemId(),ix,iy,xdum,upper[1],zdum);	
+	  if (icount ==0) lower[1]=upper[1];
+	  icount++;
+	}
+    
+      if (lower[1]>upper[1]) {xdum=lower[1]; lower[1]=upper[1]; upper[1]=xdum;}    
+      //     vstart[1] = 0.5*(lower[1]+upper[1]);
+
+
+      fSeg2[1]->GetPadI(fInput->DetElemId(),fXInit[1], fYInit[1], fZPlane, ix, iy);
+      isec=fSeg2[1]->Sector(fInput->DetElemId(),ix, iy);
+      dpx=fSeg2[1]->Dpx(fInput->DetElemId(),isec);
+      fSeg2[0]->GetPadI(fInput->DetElemId(),fXInit[1], fYInit[1], fZPlane, ix, iy);
+      isec=fSeg2[0]->Sector(fInput->DetElemId(),ix, iy);
+      dpy=fSeg2[0]->Dpy(fInput->DetElemId(),isec);
+
+
+      //  Find save upper and lower limits    
+
+      icount=0;
+    
+      for (fSeg2[1]->FirstPad(fInput->DetElemId(),fXInit[1], fYInit[1], fZPlane, dpx, 0); 
+	   fSeg2[1]->MorePads(fInput->DetElemId()); 
+	   fSeg2[1]->NextPad(fInput->DetElemId()))
+	{
+	  ix=fSeg2[1]->Ix(); iy=fSeg2[1]->Iy();
+	  //	if (fHitMap[1]->TestHit(ix, iy) == kEmpty) continue;
+	  fSeg2[1]->GetPadC(fInput->DetElemId(),ix,iy,upper[2],ydum,zdum);	
+	  if (icount ==0) lower[2]=upper[2];
+	  icount++;
+	}
+      if (lower[2]>upper[2]) {xdum=lower[2]; lower[2]=upper[2]; upper[2]=xdum;}    
+      //    vstart[2] = 0.5*(lower[2]+upper[2]);
+
+      icount=0;
+    
+      for (fSeg2[0]->FirstPad(fInput->DetElemId(),fXInit[1], fYInit[1], fZPlane, 0, dpy); 
+	   fSeg2[0]-> MorePads(fInput->DetElemId()); 
+	   fSeg2[0]->NextPad(fInput->DetElemId()))
+	{
+	  ix=fSeg2[0]->Ix(); iy=fSeg2[0]->Iy();
+	  //	if (fHitMap[0]->TestHit(ix, iy) != kEmpty) continue;
+	
+	  fSeg2[0]->GetPadC(fInput->DetElemId(),ix,iy,xdum,upper[3],zdum);	
+	  if (icount ==0) lower[3]=upper[3];
+	  icount++;
+
+	}
+      if (lower[3]>upper[3]) {xdum=lower[3]; lower[3]=upper[3]; upper[3]=xdum;}  
     }
-    if (lower[3]>upper[3]) {xdum=lower[3]; lower[3]=upper[3]; upper[3]=xdum;}    
-    
-//     vstart[3] = 0.5*(lower[3]+upper[3]);
-    
     lower[4]=0.;
     upper[4]=1.;
     lower[5]=0.;
@@ -1903,11 +2288,21 @@ void AliMUONClusterFinderVS::Split(AliMUONRawCluster* c)
 	    } else {
 		cnew.SetCharge(cath, Int_t(clusterInput.TotalCharge(cath)*(1-fQrFit[cath])));
 	    }
-	    fSeg[cath]->SetHit(fXFit[j],fYFit[j],fZPlane);
+	    if (fSegmentationType == 1) 
+	      fSeg[cath]->SetHit(fXFit[j],fYFit[j],fZPlane);
+	    else 
+	      fSeg2[cath]->SetHit(fInput->DetElemId(), fXFit[j],fYFit[j],fZPlane);
+
 	    for (i=0; i<fMul[cath]; i++) {
+	      Float_t q1;
 		cnew.SetIndex(cnew.GetMultiplicity(cath), cath, c->GetIndex(i,cath));
-		fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
-		Float_t q1 = fInput->Mathieson()->IntXY(fSeg[cath]);
+		if (fSegmentationType == 1) {
+		  fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
+		  q1 = fInput->Mathieson()->IntXY(fSeg[cath]);
+		} else {
+		  fSeg2[cath]->SetPad(fInput->DetElemId(),fIx[i][cath], fIy[i][cath]);
+		  q1 = fInput->Mathieson()->IntXY(fInput->DetElemId(),fSeg2[cath]);
+		}
 		cnew.SetContrib(i, cath, q1*Float_t(cnew.GetCharge(cath))/Float_t(fQ[i][cath]));
 		cnew.SetMultiplicity(cath, cnew.GetMultiplicity(cath)+1 );
 	    }

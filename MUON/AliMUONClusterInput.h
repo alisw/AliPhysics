@@ -34,9 +34,12 @@ class AliMUONClusterInput : public TObject
     TClonesArray* Digits(Int_t cath) const {return fDigits[cath];}
     Int_t NDigits(Int_t cath) const {return fNDigits[cath];}
     AliSegmentation* Segmentation(Int_t cath) const {return fSegmentation[cath];}
+    AliMUONGeometrySegmentation* Segmentation2(Int_t cath) const {return fSegmentation2[cath];}
+
     AliMUONMathieson* Mathieson() const {return fgMathieson;}    
     Float_t ChargeCorrel() const {return fChargeCorrel;}    
     Int_t DetElemId() const {return fDetElemId;}
+    Int_t GetSegmentationType() const {return fSegmentationType;}
 
 // Fitting    
     TMinuit*      Fitter() const {return fgMinuit;}

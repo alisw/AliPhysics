@@ -17,6 +17,7 @@ class TClonesArray;
 class AliMUONClusterInput;
 class AliMUONHitMapA1;
 class AliSegmentation;
+class AliMUONGeometrySegmentation;
 class AliMUONRawCluster;
 class AliMUONDigit;
 
@@ -68,9 +69,11 @@ class AliMUONClusterFinderVS : public TObject
 //  Assignment operator
     AliMUONClusterFinderVS & operator = (const AliMUONClusterFinderVS& rhs);
 
-    AliMUONClusterInput*    fInput;              // ! AliMUONClusterInput instance
-    AliMUONHitMapA1*        fHitMap[2];          // Hit Maps for cathode 1 and 2
-    AliSegmentation*        fSeg[2];             // Segmentations for cathode 1 and 2
+    AliMUONClusterInput*          fInput;              // ! AliMUONClusterInput instance
+    AliMUONHitMapA1*              fHitMap[2];          // Hit Maps for cathode 1 and 2
+    AliSegmentation*              fSeg[2];             // Segmentations for cathode 1 and 2
+    AliMUONGeometrySegmentation*  fSeg2[2];            // New Segmentations for cathode 1 and 2
+
     
 // Configuration    
     Int_t                   fDeclusterFlag;      // flag for declusterin
@@ -112,6 +115,7 @@ class AliMUONClusterFinderVS : public TObject
     Int_t                    fTrack[2];        // Only digits with main contributions from these tracks are
                                                // considered 
     Int_t                    fDebugLevel;      // prinout control
+    Int_t                    fSegmentationType;// new seg
 
 //  Return pointer to raw clusters    
     ClassDef(AliMUONClusterFinderVS,2) //Class for clustering and reconstruction of space points
