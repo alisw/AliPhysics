@@ -74,7 +74,7 @@ AliFMDRawStream::Next()
   if (AliAltroRawStream::Next()) {
     if (fPrevPad != fPad) {
       fSampleRate = fTimeBunch / 128;
-#if 1
+#if 0
       std::cout << "Setting Sample rate to (" << fTimeBunch << "/" 
 		<< 128 << "=" << fSampleRate << std::endl;
 #endif
