@@ -32,7 +32,7 @@ class AliPHOSClusterizerv1 : public AliPHOSClusterizer {
 public:
   
   AliPHOSClusterizerv1() ;         
-  AliPHOSClusterizerv1(const char * headerFile, const char * name = "Default");
+  AliPHOSClusterizerv1(const char * headerFile, const char * name = "Default", const char * from = 0);
   virtual ~AliPHOSClusterizerv1()  ;
   
   virtual Int_t   AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)const ; 
@@ -84,6 +84,7 @@ protected:
   
 private:
 
+  const TString BranchName() const ; 
   void    GetCalibrationParameters(void) ;
   
   Bool_t  FindFit(AliPHOSEmcRecPoint * emcRP, AliPHOSDigit ** MaxAt, Float_t * maxAtEnergy, 
@@ -97,6 +98,7 @@ private:
 
 private:
 
+  TString fFrom ;                    // name of Digits 
   TString fHeaderFileName ;          // name of the file which contains gAlice, Tree headers etc.
   TString fDigitsBranchTitle ;       // name of the file, where digits branch is stored
   TString fRecPointsBranchTitle ;    // name of the file, where RecPoints branchs are stored
@@ -122,7 +124,7 @@ private:
   Int_t fRecPointsInRun ;            //! Total number of recpoints in one run
   Float_t fEmcTimeGate ;             // Maximum time difference between the digits in ont EMC cluster
     
-  ClassDef(AliPHOSClusterizerv1,1)   // Clusterizer implementation version 1
+  ClassDef(AliPHOSClusterizerv1,2)   // Clusterizer implementation version 1
 
 };
 

@@ -28,7 +28,7 @@ class  AliPHOSTrackSegmentMakerv1 : public AliPHOSTrackSegmentMaker {
 public:
 
   AliPHOSTrackSegmentMakerv1() ;                     
-  AliPHOSTrackSegmentMakerv1(const char* headerFile, const char* name = "Default") ;                     
+  AliPHOSTrackSegmentMakerv1(const char* headerFile, const char* name = "Default", const char * from = 0) ;                     
   AliPHOSTrackSegmentMakerv1(const AliPHOSTrackSegmentMakerv1 & tsm) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
@@ -60,6 +60,8 @@ public:
 
 
 private:
+
+  const TString BranchName() const ; 
   Float_t GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * EmcClu , AliPHOSRecPoint * Ppsd , Bool_t & TooFar )const ; // see R0
   void    Init() ;
   void    PrintTrackSegments(Option_t *option) ;
@@ -67,15 +69,15 @@ private:
 
 private:  
 
-  TString fHeaderFileName ;          // name of the file which contains gAlice, Tree headers etc.
-  TString fRecPointsBranchTitle ; // name of the file, where RecPoints branchs are stored
-  TString fTrackSegmentsBranchTitle ;        // name of the file, where TrackSegment branchs is stored
+  TString fFrom ;                     // name of Recpoints 
+  TString fHeaderFileName ;           // name of the file which contains gAlice, Tree headers etc.
+  TString fRecPointsBranchTitle ;     // name of the file, where RecPoints branchs are stored
+  TString fTrackSegmentsBranchTitle ; // name of the file, where TrackSegment branchs is stored
+ 
   Int_t fNTrackSegments ; // number of track segments found 
-
   Float_t fR0 ;        // Maximum distance between a EMC RecPoint and a PPSD RecPoint   
-
+ 
   TClonesArray * fLinkUpArray  ;  //!
-
   Int_t fEmcFirst;     //! Index of first EMC RecPoint belonging to currect PHOS module
   Int_t fEmcLast ;     //!
   Int_t fCpvFirst;     //! Cpv upper layer     
@@ -83,7 +85,7 @@ private:
   Int_t fModule ;      //! number of module being processed
   Int_t fTrackSegmentsInRun ; //! Total number of track segments in one run
 
-  ClassDef( AliPHOSTrackSegmentMakerv1,1)  // Implementation version 1 of algorithm class to make PHOS track segments 
+  ClassDef( AliPHOSTrackSegmentMakerv1,2)  // Implementation version 1 of algorithm class to make PHOS track segments 
 
 };
 

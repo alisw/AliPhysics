@@ -37,9 +37,10 @@
 //  This TTask is normally called from Reconstructioner, but can as well be used in 
 //  standalone mode.
 // Use Case:
-//  root [0] AliPHOSClusterizerv1 * cl = new AliPHOSClusterizerv1("galice.root")  
+//  root [0] AliPHOSClusterizerv1 * cl = new AliPHOSClusterizerv1("galice.root", "recpointsname", "digitsname")  
 //  Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
-//               //reads gAlice from header file "..."                      
+//               // reads gAlice from header file "galice.root", uses digits stored in the branch names "digitsname" (default = "Default")
+//               // and saves recpoints in branch named "recpointsname" (default = "digitsname")                       
 //  root [1] cl->ExecuteTask()  
 //               //finds RecPoints in all events stored in galice.root
 //  root [2] cl->SetDigitsBranch("digits2") 
@@ -106,11 +107,13 @@ ClassImp(AliPHOSClusterizerv1)
 
   fHeaderFileName          = "" ; 
   fDigitsBranchTitle       = "" ;
+  fFrom                    = "" ; 
+ 
   fRecPointsInRun          = 0 ;   
 }
 
 //____________________________________________________________________________
-AliPHOSClusterizerv1::AliPHOSClusterizerv1(const char* headerFile,const char* name)
+AliPHOSClusterizerv1::AliPHOSClusterizerv1(const char* headerFile,const char* name, const char * from)
 :AliPHOSClusterizer(headerFile, name)
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
@@ -140,14 +143,27 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(const char* headerFile,const char* na
   clusterizerName.Append(Version()) ; 
   SetName(clusterizerName) ;
   fRecPointsInRun          = 0 ; 
-
+  if ( from == 0 ) 
+    fFrom = name ; 
+  else
+    fFrom = from ; 
   Init() ;
 
 }
+
 //____________________________________________________________________________
   AliPHOSClusterizerv1::~AliPHOSClusterizerv1()
 {
 }
+
+//____________________________________________________________________________
+const TString AliPHOSClusterizerv1::BranchName() const 
+{  
+  TString branchName(GetName() ) ;
+  branchName.Remove(branchName.Index(Version())-1) ;
+  return branchName ;
+}
+ 
 //____________________________________________________________________________
 Float_t  AliPHOSClusterizerv1::Calibrate(Int_t amp, Int_t absId) const
 {
@@ -215,7 +231,8 @@ void AliPHOSClusterizerv1::Exec(Option_t * option)
     
     MakeClusters() ;
     
-    if(fToUnfold)             MakeUnfolding() ;
+    if(fToUnfold)             
+      MakeUnfolding() ;
 
     WriteRecPoints(ievent) ;
 
@@ -223,8 +240,8 @@ void AliPHOSClusterizerv1::Exec(Option_t * option)
       PrintRecPoints(option) ;
 
     //increment the total number of digits per run 
-    fRecPointsInRun += gime->EmcRecPoints()->GetEntriesFast() ;  
-    fRecPointsInRun += gime->CpvRecPoints()->GetEntriesFast() ;  
+    fRecPointsInRun += gime->EmcRecPoints(BranchName())->GetEntriesFast() ;  
+    fRecPointsInRun += gime->CpvRecPoints(BranchName())->GetEntriesFast() ;  
  }
   
   if(strstr(option,"tim")){
@@ -246,7 +263,7 @@ Bool_t AliPHOSClusterizerv1::FindFit(AliPHOSEmcRecPoint * emcRP, AliPHOSDigit **
   // Cluster will be fitted as a superposition of nPar/3 electromagnetic showers
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  TClonesArray * digits = gime->Digits() ; 
+  TClonesArray * digits = gime->Digits(fFrom) ; 
   
 
   gMinuit->mncler();                     // Reset Minuit's list of paramters
@@ -336,7 +353,7 @@ void AliPHOSClusterizerv1::GetCalibrationParameters()
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
   TString branchname = GetName() ;
   branchname.Remove(branchname.Index(Version())-1) ;
-  AliPHOSDigitizer * dig = gime->Digitizer(branchname) ;
+  AliPHOSDigitizer * dig = gime->Digitizer(fFrom) ;
   fADCchanelEmc   = dig->GetEMCchannel() ;
   fADCpedestalEmc = dig->GetEMCpedestal();
 
@@ -356,7 +373,7 @@ void AliPHOSClusterizerv1::Init()
   TString branchname = GetName() ;
   branchname.Remove(branchname.Index(Version())-1) ;
 
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), branchname) ; 
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), fFrom.Data()) ; 
   if ( gime == 0 ) {
     cerr << "ERROR: AliPHOSClusterizerv1::Init -> Could not obtain the Getter object !" << endl ; 
     return ;
@@ -370,10 +387,10 @@ void AliPHOSClusterizerv1::Init()
 
   gime->PostClusterizer(this) ;
   // create a folder on the white board //YSAlice/WhiteBoard/RecPoints/PHOS/recpointsName
-  gime->PostRecPoints(branchname ) ;
+  gime->PostRecPoints(branchname) ;
 
-  gime->PostDigits(branchname) ;
-  gime->PostDigitizer(branchname) ;
+  gime->PostDigits(fFrom) ;
+  gime->PostDigitizer(fFrom) ;
   
 }
 
@@ -459,13 +476,11 @@ void AliPHOSClusterizerv1::WriteRecPoints(Int_t event)
   // Creates new branches with given title
   // fills and writes into TreeR.
 
-  TString branchName(GetName() ) ;
-  branchName.Remove(branchName.Index(Version())-1) ;
 
   AliPHOSGetter *gime = AliPHOSGetter::GetInstance() ; 
-  TObjArray * emcRecPoints = gime->EmcRecPoints(branchName) ; 
-  TObjArray * cpvRecPoints = gime->CpvRecPoints(branchName) ; 
-  TClonesArray * digits = gime->Digits(branchName) ; 
+  TObjArray * emcRecPoints = gime->EmcRecPoints(BranchName()) ; 
+  TObjArray * cpvRecPoints = gime->CpvRecPoints(BranchName()) ; 
+  TClonesArray * digits = gime->Digits(fFrom) ; 
 
   Int_t index ;
   //Evaluate position, dispersion and other RecPoint properties...
@@ -473,7 +488,6 @@ void AliPHOSClusterizerv1::WriteRecPoints(Int_t event)
     ((AliPHOSEmcRecPoint *)emcRecPoints->At(index))->EvalAll(fW0,digits) ;
 
   emcRecPoints->Sort() ;
-
   for(index = 0; index < emcRecPoints->GetEntries(); index++)
     ((AliPHOSEmcRecPoint *)emcRecPoints->At(index))->SetIndexInList(index) ;
 
@@ -506,7 +520,7 @@ void AliPHOSClusterizerv1::WriteRecPoints(Int_t event)
 
   //First EMC
   TBranch * emcBranch = gAlice->TreeR()->Branch("PHOSEmcRP","TObjArray",&emcRecPoints,bufferSize,splitlevel);
-  emcBranch->SetTitle(branchName);
+  emcBranch->SetTitle(BranchName());
   if (filename) {
     emcBranch->SetFile(filename);
     TIter next( emcBranch->GetListOfBranches());
@@ -520,7 +534,7 @@ void AliPHOSClusterizerv1::WriteRecPoints(Int_t event)
     
   //Now CPV branch
   TBranch * cpvBranch = gAlice->TreeR()->Branch("PHOSCpvRP","TObjArray",&cpvRecPoints,bufferSize,splitlevel);
-  cpvBranch->SetTitle(branchName);
+  cpvBranch->SetTitle(BranchName());
   if (filename) {
     cpvBranch->SetFile(filename);
     TIter next( cpvBranch->GetListOfBranches());
@@ -532,10 +546,10 @@ void AliPHOSClusterizerv1::WriteRecPoints(Int_t event)
   } 
     
   //And Finally  clusterizer branch
-  AliPHOSClusterizerv1 * cl = (AliPHOSClusterizerv1*)gime->Clusterizer(branchName) ;
+  AliPHOSClusterizerv1 * cl = (AliPHOSClusterizerv1*)gime->Clusterizer(BranchName()) ;
   TBranch * clusterizerBranch = gAlice->TreeR()->Branch("AliPHOSClusterizer","AliPHOSClusterizerv1",
 					      &cl,bufferSize,splitlevel);
-  clusterizerBranch->SetTitle(branchName);
+  clusterizerBranch->SetTitle(BranchName());
   if (filename) {
     clusterizerBranch->SetFile(filename);
     TIter next( clusterizerBranch->GetListOfBranches());
@@ -560,17 +574,20 @@ void AliPHOSClusterizerv1::MakeClusters()
 {
   // Steering method to construct the clusters stored in a list of Reconstructed Points
   // A cluster is defined as a list of neighbour digits
-  TString branchName(GetName()) ; 
-  branchName.Remove(branchName.Index(Version())-1) ; 
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
 
-  TObjArray * emcRecPoints = gime->EmcRecPoints(branchName) ; 
-  TObjArray * cpvRecPoints = gime->CpvRecPoints(branchName) ; 
+  TObjArray * emcRecPoints = gime->EmcRecPoints(BranchName()) ; 
+  TObjArray * cpvRecPoints = gime->CpvRecPoints(BranchName()) ; 
   emcRecPoints->Delete() ;
   cpvRecPoints->Delete() ;
   
-  TClonesArray * digits = gime->Digits(branchName) ; 
+  TClonesArray * digits = gime->Digits(fFrom) ; 
+   if ( !digits ) {
+    cerr << "ERROR:  AliPHOSClusterizerv1::MakeClusters -> Digits with name " 
+	 << fFrom << " not found ! " << endl ; 
+    abort() ; 
+  } 
   TClonesArray * digitsC =  (TClonesArray*)digits->Clone() ;
   
  
@@ -680,10 +697,11 @@ void AliPHOSClusterizerv1::MakeUnfolding()
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
   
+
   const AliPHOSGeometry * geom = gime->PHOSGeometry() ;
-  TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
-  TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
-  TClonesArray * digits = gime->Digits() ; 
+  TObjArray * emcRecPoints = gime->EmcRecPoints(BranchName()) ; 
+  TObjArray * cpvRecPoints = gime->CpvRecPoints(BranchName()) ; 
+  TClonesArray * digits = gime->Digits(fFrom) ; 
   
   // Unfold first EMC clusters 
   if(fNumberOfEmcClusters > 0){
@@ -778,10 +796,11 @@ void  AliPHOSClusterizerv1::UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,
   // Performs the unfolding of a cluster with nMax overlapping showers 
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+
   const AliPHOSGeometry * geom = gime->PHOSGeometry() ;
-  const TClonesArray * digits = gime->Digits() ; 
-  TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
-  TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
+  const TClonesArray * digits = gime->Digits(fFrom) ; 
+  TObjArray * emcRecPoints = gime->EmcRecPoints(BranchName()) ; 
+  TObjArray * cpvRecPoints = gime->CpvRecPoints(BranchName()) ; 
 
   Int_t nPar = 3 * nMax ;
   Float_t * fitparameters = new Float_t[nPar] ;
@@ -883,7 +902,6 @@ void AliPHOSClusterizerv1::UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Dou
 {
   // Calculates the Chi square for the cluster unfolding minimization
   // Number of parameters, Gradient, Chi squared, parameters, what to do
-
 
   TList * toMinuit = (TList*) gMinuit->GetObjectFit() ;
 
@@ -1016,8 +1034,8 @@ void AliPHOSClusterizerv1::PrintRecPoints(Option_t * option)
 {
   // Prints list of RecPoints produced at the current pass of AliPHOSClusterizer
 
-  TObjArray * emcRecPoints = AliPHOSGetter::GetInstance()->EmcRecPoints() ; 
-  TObjArray * cpvRecPoints = AliPHOSGetter::GetInstance()->CpvRecPoints() ; 
+  TObjArray * emcRecPoints = AliPHOSGetter::GetInstance()->EmcRecPoints(BranchName()) ; 
+  TObjArray * cpvRecPoints = AliPHOSGetter::GetInstance()->CpvRecPoints(BranchName()) ; 
 
   cout << "AliPHOSClusterizerv1: : event "<<gAlice->GetEvNumber() << endl ;
   cout << "       Found "<< emcRecPoints->GetEntriesFast() << " EMC Rec Points and " 
