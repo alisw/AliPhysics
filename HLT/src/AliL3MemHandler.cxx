@@ -20,10 +20,10 @@
 #include "AliL3TrackArray.h"
 
 /** \class AliL3MemHandler
-// _____________________________________________________________
+//_____________________________________________________________
 // AliL3MemHandler
 //
-// The L3 Binary File handler 
+// The HLT Binary File handler 
 //
 //
 //  This class does all the memory I/O handling on raw binary files.
@@ -68,8 +68,8 @@
 //  newfile.SetBinaryOutput(newfilename);
 //  newfile.Memory2CompBinary((UInt_t)NumberOfRowsInPatch,(AliL3DigitRowData*)data);
 //  newfile.CloseBinaryOutput();
-*/
-
+*/  
+  
 ClassImp(AliL3MemHandler)
   
 AliL3MemHandler::AliL3MemHandler()
