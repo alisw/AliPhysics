@@ -81,7 +81,7 @@ AliTrackReference::AliTrackReference(Int_t label, TVirtualMC *vMC) {
   
   fPx = vec[0];
   fPy = vec[1];
-  fPy = vec[2];
+  fPz = vec[2];
 
   // Set Up status code 
   // Copy Bits from virtual MC
