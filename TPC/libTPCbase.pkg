@@ -3,7 +3,9 @@ SRCS:=  AliTPCLoader.cxx \
         AliDetectorParam.cxx AliTPCParam.cxx \
         AliTPCParamSR.cxx AliTPCParamCR.cxx \
         AliTPCdigit.cxx \
-        AliSimDigits.cxx AliDigitsArray.cxx AliTPCDigitsArray.cxx
+        AliSimDigits.cxx AliDigitsArray.cxx AliTPCDigitsArray.cxx \
+        AliTPCTrackHitsInterfaces.cxx
+
 	
 
 HDRS:= $(SRCS:.cxx=.h)

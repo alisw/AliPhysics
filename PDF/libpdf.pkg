@@ -10,7 +10,6 @@ spdf/afgin2.F \
 spdf/afgint.F \
 spdf/afpolin.F \
 spdf/afratin.F \
-spdf/alphas2.F \
 spdf/augetfv.F \
 spdf/aurgam.F \
 spdf/aurpi1.F \
@@ -145,8 +144,6 @@ spdf/mrseb.F \
 spdf/mrsebp.F \
 spdf/newdo1.F \
 spdf/pdf_beta.F \
-spdf/pdfset.F \
-spdf/pdfsta.F \
 spdf/pdfvers.F \
 spdf/pdxmt.F \
 spdf/pdzxmt.F \
@@ -369,8 +366,6 @@ spdf/strucb.F \
 spdf/struce.F \
 spdf/strucor.F \
 spdf/structf.F \
-spdf/structm.F \
-spdf/structp.F \
 spdf/v3.F \
 spdf/valdis.F \
 spdf/wate32.F \
@@ -388,8 +383,41 @@ spdf/whit6g.F \
 spdf/whit6q.F \
 npdf/eks98.F \
 npdf/eksarp.F \
-npdf/sfeks98.F \
-npdf/structa.F 
+npdf/sfeks98.F 
+
+ifeq (,$(findstring macosx,$(ALICE_TARGET)))
+
+FSRCS+=npdf/structa.F \
+spdf/alphas2.F \
+spdf/pdfset.F \
+spdf/pdfsta.F \
+spdf/structm.F \
+spdf/structp.F
+
+else
+
+FSRCS+=commons.F
+
+TCSRCS=ctmp/npdf/structa.c ctmp/spdf/alphas2.c ctmp/spdf/pdfset.c ctmp/spdf/pdfsta.c \
+ctmp/spdf/structm.c ctmp/spdf/structp.c
+
+CSRCS+=$(TCSRCS)
+
+.SECONDARY: $(TCSRCS)
+
+PDF/ctmp/%.c: PDF/%.F
+	[ -d $(dir $@) ] || mkdir -p $(dir $@)
+ifeq (macosx,$(ALICE_TARGET))
+	$(F77) -E $(pdfINC) $(pdfFFLAGS) $< | f2c -E | sed -e 's/\([0-9,a-z]*_[0-9,a-z]*\)__/\1_/g' > $@
+endif
+ifeq (macosxxlc,$(ALICE_TARGET))
+	$(F77) -d $(pdfINC) -c -o /dev/null $(pdfFFLAGS) $< ; \
+	tmpf=F`basename $@ .c`.f ; export tmpf ; \
+	cat $$tmpf | f2c -E | sed -e 's/\([0-9,a-z]*_[0-9,a-z]*\)__/\1_/g' > $@ ; \
+	rm -f $$tmpf
+endif
+
+endif
 
 PACKFFLAGS := $(FFLAGS) -IPDF/pdf
 

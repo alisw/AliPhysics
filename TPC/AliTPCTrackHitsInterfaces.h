@@ -40,7 +40,13 @@ public:
 	}
 	  void ObjectDump(void *p) {((AliTrackHitsInfo*)p)->Dump();}
 };
+
+#ifndef __APPLE__
 AliClassAliTrackHitsInfo galiclass____AliTrackHitsInfo; 
+#else
+#define galiclass____AliClassAliTrackHitsInfo g_AliClassAliTrackHitsInfo()
+AliClassAliTrackHitsInfo & g_AliClassAliTrackHitsInfo();
+#endif
 
 /************************************************/
 /* Automaticaly generated interface for class     
@@ -76,7 +82,13 @@ public:
 	}
 	  void ObjectDump(void *p) {((AliTrackHitsParam*)p)->Dump();}
 };
+
+#ifndef __APPLE__
 AliClassAliTrackHitsParam galiclass____AliTrackHitsParam; 
+#else
+#define galiclass____AliTrackHitsParam g_AliTrackHitsParam()
+AliClassAliTrackHitsParam & g_AliTrackHitsParam();
+#endif
 
 /************************************************/
 /* Automaticaly generated interface for class     
@@ -112,4 +124,10 @@ public:
 	}
 	  void ObjectDump(void *p) {((AliHitInfo*)p)->Dump();}
 };
+
+#ifndef __APPLE__
 AliClassAliHitInfo galiclass____AliHitInfo; 
+#else
+#define galiclass____AliHitInfo g_AliHitInfo()
+AliClassAliHitInfo & g_AliHitInfo();
+#endif

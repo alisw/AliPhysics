@@ -27,6 +27,9 @@ HDRS:= $(SRCS:.cxx=.h)
 DHDR= STEERLinkDef.h
 
 EINCLUDE:=$(ALICE)/geant3/TGeant3 RAW
+#ifeq (macosx,$(ALICE_TARGET))
+EINCLUDE+=TPC CONTAINERS
+#endif
 
 EXPORT:=$(SRCS:.cxx=.h) AliConst.h AliCallf77.h
 

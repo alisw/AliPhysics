@@ -63,9 +63,11 @@
 #include "AliPDG.h"
 #include "AliRun.h"
 #include "AliStack.h"
+#ifdef __APPLE__
+#include "AliTPCTrackHitsInterfaces.h"
+#endif
 
 AliRun *gAlice;
-
 
 ClassImp(AliRun)
 
@@ -170,6 +172,14 @@ AliRun::AliRun(const char *name, const char *title):
 
   // Add particle list to configuration
   AliConfig::Instance()->Add(fPDGDB); 
+
+#ifdef __APPLE__
+  // Terrible hack to avoid problem with the initialisation of 
+  // static and globals on Mac OS X 
+  AliClassAliTrackHitsInfo p1=galiclass____AliClassAliTrackHitsInfo;
+  AliClassAliTrackHitsParam p2=galiclass____AliTrackHitsParam;
+  AliClassAliHitInfo p3=galiclass____AliHitInfo;
+#endif
 
 }
 
