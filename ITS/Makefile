@@ -17,6 +17,7 @@ SRCS          = AliITS.cxx AliITSv1.cxx AliITSv3.cxx AliITSv5.cxx \
 		AliITSgeom.cxx AliITSgeomMatrix.cxx \
       AliITSgeomSPD.cxx AliITSgeomSDD.cxx \
 		AliITSgeomSSD.cxx AliITSmodule.cxx \
+                AliITSGeant3Geometry.cxx \
 		AliITSsimulationFastPoints.cxx \
 		AliITSsimulationFastPointsV0.cxx AliITSsimulation.cxx \
 		AliITSsimulationSPD.cxx AliITSsimulationSPDbari.cxx \
