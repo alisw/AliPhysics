@@ -12,9 +12,12 @@
 // different events (that are use to fill deniminators)   //
 //                                                        //
 ////////////////////////////////////////////////////////////
-#include "AliTPCtrack.h"
-#include <TMath.h>
 #include "AliTrackReference.h"
+
+#include "AliTPCtrack.h"
+#include "AliESDtrack.h"
+
+#include <TMath.h>
 #include <TClonesArray.h>
 
 ClassImp(AliHBTTrackPoints)
@@ -27,6 +30,106 @@ AliHBTTrackPoints::AliHBTTrackPoints():
  fZ(0x0)
 {
   //constructor
+}
+AliHBTTrackPoints::AliHBTTrackPoints(const AliHBTTrackPoints& in):
+ TObject(in),
+ fN(in.fN),
+ fX(new Float_t[fN]),
+ fY(new Float_t[fN]),
+ fZ(new Float_t[fN])
+{
+//cpy constructor
+  for (Int_t i = 0; i < fN; i++)
+   {
+     fX[i] = in.fX[i];
+     fY[i] = in.fY[i];
+     fZ[i] = in.fZ[i];
+   }
+}
+/***************************************************************/
+
+AliHBTTrackPoints& AliHBTTrackPoints::operator=(const AliHBTTrackPoints& in)
+{
+  //Assigment operator
+  if(this == &in) return *this;
+  TObject::operator=((const TObject&)in);
+  
+  if (in.fN <= 0)
+   {
+    delete [] fX;
+    delete [] fY;
+    delete [] fZ;
+    fN = 0;
+    fX = 0x0;
+    fY = 0x0;
+    fZ = 0x0;
+    return *this;
+   }
+   
+  if ( fN != in.fN )
+   {
+    delete [] fX;
+    delete [] fY;
+    delete [] fZ;
+    fN = in.fN;
+    fX = new Float_t[fN];
+    fY = new Float_t[fN];
+    fZ = new Float_t[fN];
+   }
+
+  for (Int_t i = 0; i < fN; i++)
+   {
+     fX[i] = in.fX[i];
+     fY[i] = in.fY[i];
+     fZ[i] = in.fZ[i];
+   }
+
+  return *this;
+}
+/***************************************************************/
+
+AliHBTTrackPoints::AliHBTTrackPoints(Int_t n, AliESDtrack* track, Float_t mf, Float_t dr, Float_t r0):
+ fN(n),
+ fX(new Float_t[fN]),
+ fY(new Float_t[fN]),
+ fZ(new Float_t[fN])
+{
+  //constructor
+  //mf - magnetic field in kG - needed to calculated curvature out of Pt
+  //r0 - starting radius
+  //dr - calculate points every dr cm, default every 30cm
+  if (track == 0x0)
+   {
+     Error("AliHBTTrackPoints","ESD track is null");
+     fN = 0;
+     delete [] fX;
+     delete [] fY;
+     delete [] fZ;
+     fX = fY = fZ = 0x0;
+     return;
+   }
+
+  Double_t x;
+  Double_t par[5];
+  track->GetInnerExternalParameters(x,par);     //get properties of the track
+  if (x == 0)
+   {
+     Error("AliHBTTrackPoints","This ESD track does not contain TPC information");
+     return;
+   }
+
+  if (mf == 0.0)
+   {
+     Error("AliHBTTrackPoints","Zero Magnetic field passed as parameter.");
+     return;
+   }
+   
+  Double_t alpha = track->GetInnerAlpha();
+  Double_t cc = 1000./0.299792458/mf;//conversion constant
+  Double_t c=par[4]/cc;
+  
+  MakePoints(dr,r0,x,par,c,alpha);
+  
 }
 /***************************************************************/
 
@@ -58,16 +161,30 @@ AliHBTTrackPoints::AliHBTTrackPoints(Int_t n, AliTPCtrack* track, Float_t dr, Fl
  //*      external param3:   tangent of the track momentum dip angle           *
  //*      external param4:   1/pt (1/(GeV/c))                                  *
     
-  Double_t xk;
+  Double_t x = 0;
   Double_t par[5];
-  track->GetExternalParameters(xk,par);     //get properties of the track
+  track->GetExternalParameters(x,par);     //get properties of the track
   
-  Double_t x = track->GetX();
-  Double_t y = track->GetY();
-  Double_t z0 = track->GetZ();
+  Double_t alpha = track->GetAlpha();
+  Double_t c=track->GetC();
+  MakePoints(dr,r0,x,par,c,alpha);
+}  
+
+void AliHBTTrackPoints::MakePoints( Float_t dr, Float_t r0, Double_t x, Double_t* par, Double_t c, Double_t alpha)
+{
+  //Calculates points starting at radius r0
+  //spacing every dr (in radial direction)
+  // according to track parameters
+  // x - position in sector local reference frame. x i parallel to R and sector is symmetric with respect to x
+  // par - track external parameters; array with 5 elements;  look at AliTPCtrack.h or AliESDtrack.h for their meaning
+  // c - track curvature
+  // alpha - sector's rotation angle (phi) == angle needed for local to global transformation
+  
+  Double_t y = par[0];
+  Double_t z0 = par[1];
       
   Double_t phi0local = TMath::ATan2(y,x);
-  Double_t phi0global = phi0local + track->GetAlpha();
+  Double_t phi0global = phi0local + alpha;
   
   if (phi0local<0) phi0local+=2*TMath::Pi();
   if (phi0local>=2.*TMath::Pi()) phi0local-=2*TMath::Pi();
@@ -83,11 +200,11 @@ AliHBTTrackPoints::AliHBTTrackPoints(Int_t n, AliTPCtrack* track, Float_t dr, Fl
   
   if (GetDebug() > 5) 
     Info("AliHBTTrackPoints","Phi Global at first padraw %f, Phi locat %f",phi0global,phi0local);
-  Double_t c=track->GetC();
-  Double_t eta = track->GetEta();
+    
+  Double_t eta = x*c - par[2] ;//par[2] = fX*C - eta; eta==fP2 ; C==fP4
   
   //this calculattions are assuming new (current) model 
-  Double_t tmp = c*x - eta;
+  Double_t tmp = par[2];
   tmp = 1. - tmp*tmp;
   tmp = c*y + TMath::Sqrt(tmp);
   Double_t dca=(TMath::Hypot(eta,tmp) - 1. )/TMath::Abs(c);
@@ -199,8 +316,13 @@ Double_t AliHBTTrackPoints::AvarageDistance(const AliHBTTrackPoints& tr)
 /***************************************************************/
 /***************************************************************/
 /***************************************************************/
+/***************************************************************/
+/***************************************************************/
+/***************************************************************/
 
+/*
 #include "AliRun.h"
+#include "AliESD.h"
 #include "AliRunLoader.h"
 #include "AliTPCtrack.h"
 #include "TTree.h"
@@ -211,8 +333,138 @@ Double_t AliHBTTrackPoints::AvarageDistance(const AliHBTTrackPoints& tr)
 
 
 
-void AliHBTTrackPoints::tp(Int_t entr)
+
+void AliHBTTrackPoints::testesd(Int_t entr,const char* fname )
 {
+//testing routine
+  delete gAlice;
+  gAlice = 0x0;
+  AliRunLoader* rl = AliRunLoader::Open();
+  rl->LoadgAlice();
+  
+  Float_t mf = rl->GetAliRun()->Field()->SolenoidField();
+ 
+  
+  TFile* fFile = TFile::Open(fname);
+  
+  if (fFile == 0x0)
+   {
+     printf("testesd: There is no suche a ESD file\n");
+     return;
+   }
+  AliESD* esd = dynamic_cast<AliESD*>(fFile->Get("0"));
+  AliESDtrack *t = esd->GetTrack(entr);
+  if (t == 0x0)
+   {
+     ::Error("testesd","Can not get track %d",entr);
+     return;
+   }
+
+  
+  Int_t N = 170;
+  AliHBTTrackPoints* tp = new AliHBTTrackPoints(N,t,mf,1.);
+  
+  Float_t xmin = -250;
+  Float_t xmax =  250;
+  
+  Float_t ymin = -250;
+  Float_t ymax =  250;
+
+  Float_t zmin = -250;
+  Float_t zmax =  250;
+  
+  TH2D* hxy = new TH2D("hxy","hxy",1000,xmin,xmax,1000,ymin,ymax);
+  TH2D* hxyt = new TH2D("hxyt","hxyt",1000,xmin,xmax,1000,ymin,ymax);
+  TH2D* hxyTR = new TH2D("hxyTR","hxyTR",1000,xmin,xmax,1000,ymin,ymax);
+
+  TH2D* hxz = new TH2D("hxz","hxz",1000,xmin,xmax,1000,zmin,zmax);
+  TH2D* hxzt = new TH2D("hxzt","hxzt",1000,xmin,xmax,1000,zmin,zmax);
+  TH2D* hxzTR = new TH2D("hxzTR","hxzTR",1000,xmin,xmax,1000,zmin,zmax);
+
+  hxyt->SetDirectory(0x0);   
+  hxy->SetDirectory(0x0);   
+  hxyTR->SetDirectory(0x0);   
+  
+  hxzt->SetDirectory(0x0);   
+  hxz->SetDirectory(0x0);   
+  hxzTR->SetDirectory(0x0);   
+
+  Float_t x,y,z;
+   
+  for (Int_t i = 0;i<N;i++)
+   {  
+      Double_t r = 84.1+i;
+      tp->PositionAt(i,x,y,z);
+      hxy->Fill(x,y);
+      hxz->Fill(x,z);
+      printf("Rdemanded %f\n",r);
+      printf("tpx %f tpy %f tpz %f Rt =%f\n", x,y,z,TMath::Hypot(x,y));
+      
+   }
+
+  rl->LoadTrackRefs();
+  TTree* treeTR = rl->TreeTR();
+  TBranch* b = treeTR->GetBranch("TPC");
+  
+  TClonesArray* trackrefs = new TClonesArray("AliTrackReference", 100);
+  AliTrackReference* tref;
+  b->SetAddress(&trackrefs);
+  
+  Int_t tlab = TMath::Abs(t->GetLabel());
+
+  Int_t netr = (Int_t)treeTR->GetEntries();
+  printf("Found %d entries in TR tree\n",netr);
+  
+  for (Int_t e = 0; e < netr; e++)
+   { 
+     treeTR->GetEntry(e);
+     tref = (AliTrackReference*)trackrefs->At(0);
+     if (tref == 0x0) continue;
+     if (tref->GetTrack() != tlab) continue;
+    
+     printf("Found %d entries in TR array\n",trackrefs->GetEntries());
+     
+     for (Int_t i = 0; i < trackrefs->GetEntries(); i++)
+      {
+        tref = (AliTrackReference*)trackrefs->At(i);
+        if (tref->GetTrack() != tlab) continue;
+        x = tref->X();
+        y = tref->Y();
+        z = tref->Z();
+        printf("Track Ref: x %f y %f z %f\n",tref->X(),tref->Y(),tref->Z());
+
+        hxzTR->Fill(x,z);
+        hxyTR->Fill(x,y);
+        for (Int_t j = 1; j < 10; j++)
+         {
+            hxyTR->Fill(x, y+j*0.1);
+            hxyTR->Fill(x, y-j*0.1);
+            hxyTR->Fill(x+j*0.1,y);
+            hxyTR->Fill(x-j*0.1,y);
+
+            hxzTR->Fill(x,z-j*0.1);
+            hxzTR->Fill(x,z+j*0.1);
+            hxzTR->Fill(x-j*0.1,z);
+            hxzTR->Fill(x+j*0.1,z);
+         }
+      }
+      break; 
+    }  
+  hxy->Draw("");
+//  hxzt->Draw("same");
+  hxyTR->Draw("same");
+  
+  delete rl;
+}
+
+/***************************************************************/
+/***************************************************************/
+/***************************************************************/
+/*
+void AliHBTTrackPoints::testtpc(Int_t entr)
+{
+//testing routine
+
   delete gAlice;
   gAlice = 0x0;
   AliRunLoader* rl = AliRunLoader::Open();
@@ -227,13 +479,22 @@ void AliHBTTrackPoints::tp(Int_t entr)
   Int_t N = 160;
   AliHBTTrackPoints* tp = new AliHBTTrackPoints(N,t,1.);
   
-  TH2D* hxy = new TH2D("hxy","hxy",1000,150,250,1000,150,250);
-  TH2D* hxyt = new TH2D("hxyt","hxyt",1000,150,250,1000,150,250);
-  TH2D* hxyTR = new TH2D("hxyTR","hxyTR",1000,150,250,1000,150,250);
+  Float_t xmin = -250;
+  Float_t xmax =  250;
+  
+  Float_t ymin = -250;
+  Float_t ymax =  250;
 
-  TH2D* hxz = new TH2D("hxz","hxz",1000,150,250,1000,151,251);
-  TH2D* hxzt = new TH2D("hxzt","hxzt",1000,150,250,1000,151,251);
-  TH2D* hxzTR = new TH2D("hxzTR","hxzTR",1000,150,250,1000,151,251);
+  Float_t zmin = -250;
+  Float_t zmax =  250;
+  
+  TH2D* hxy = new TH2D("hxy","hxy",1000,xmin,xmax,1000,ymin,ymax);
+  TH2D* hxyt = new TH2D("hxyt","hxyt",1000,xmin,xmax,1000,ymin,ymax);
+  TH2D* hxyTR = new TH2D("hxyTR","hxyTR",1000,xmin,xmax,1000,ymin,ymax);
+
+  TH2D* hxz = new TH2D("hxz","hxz",1000,xmin,xmax,1000,zmin,zmax);
+  TH2D* hxzt = new TH2D("hxzt","hxzt",1000,xmin,xmax,1000,zmin,zmax);
+  TH2D* hxzTR = new TH2D("hxzTR","hxzTR",1000,xmin,xmax,1000,zmin,zmax);
 
   hxyt->SetDirectory(0x0);   
   hxy->SetDirectory(0x0);   
@@ -329,3 +590,4 @@ void AliHBTTrackPoints::tp(Int_t entr)
   
   delete rl;
 }
+/***************************************************************/

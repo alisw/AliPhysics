@@ -54,7 +54,7 @@ AliHBTEvent::AliHBTEvent(const AliHBTEvent& source):
 }
 /**************************************************************************/ 
 
-AliHBTEvent& AliHBTEvent::operator=(const AliHBTEvent source)
+AliHBTEvent& AliHBTEvent::operator=(const AliHBTEvent& source)
 {
   // assigment operator
   Reset();
