@@ -125,9 +125,10 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
    TH1F *chargedspectra = new TH1F("chargedspectra","Charged particles above 1 GeV Spectra",100,.5,10.);
    TH1F *hitsPhi = new TH1F("hitsPhi","Distribution of phi angle of incidence",100,-180,180);
    TH1F *hitsTheta = new TH1F("hitsTheta","Distribution of Theta angle of incidence",100,0,15);
-   TH1F *Omega = new TH1F("omega","Reconstructed Cerenkov angle per track",200,.5,1);
+   TH1F *Omega1D = new TH1F("omega","Reconstructed Cerenkov angle per track",200,.5,1);
    TH1F *Theta = new TH1F("theta","Reconstructed theta incidence angle per track",200,0,15);
    TH1F *Phi = new TH1F("phi","Reconstructed phi incidence per track",200,-180,180);
+   TH1F *Omega3D = new TH1F("omega","Reconstructed Cerenkov angle per track",200,.5,1);
    TH1F *PhotonCer = new TH1F("photoncer","Reconstructed Cerenkov angle per photon",200,.5,1);
    TH2F *PadsUsed = new TH2F("padsused","Pads Used for Reconstruction",100,-30,30,100,-30,30);
    
@@ -168,6 +169,9 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
        gAlice->TreeR()->GetEvent(nent-1);
        TClonesArray *RecHits1D = RICH->RecHitsAddress1D(2);
        Int_t nrechits1D = RecHits1D->GetEntriesFast();
+       //printf (" nrechits:%d\n",nrechits);
+       TClonesArray *RecHits3D = RICH->RecHitsAddress3D(2);
+       Int_t nrechits3D = RecHits3D->GetEntriesFast();
        //printf (" nrechits:%d\n",nrechits);
        TTree *TH = gAlice->TreeH(); 
        Int_t ntracks = TH->GetEntries();
@@ -388,17 +392,13 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 	       for (Int_t hit=0;hit<nrechits1D;hit++) {
 		 recHit1D = (AliRICHRecHit1D*) RecHits1D->UncheckedAt(hit);
 		 Float_t r_omega = recHit1D->fOmega;                  // Cerenkov angle
-		 Float_t r_theta = recHit1D->fTheta;                  // Theta angle of incidence
-		 Float_t r_phi   = recHit1D->fPhi;                    // Phi angle if incidence
 		 Float_t *cer_pho = recHit1D->fCerPerPhoton;        // Cerenkov angle per photon
 		 Int_t *padsx = recHit1D->fPadsUsedX;           // Pads Used fo reconstruction (x)
 		 Int_t *padsy = recHit1D->fPadsUsedY;           // Pads Used fo reconstruction (y)
 		 Int_t goodPhotons = recHit1D->fGoodPhotons;    // Number of pads used for reconstruction
 		 
-		 Omega->Fill(r_omega,(float) 1);
-		 Theta->Fill(r_theta*180/TMath::Pi(),(float) 1);
-		 Phi->Fill(r_phi*180/TMath::Pi(),(float) 1);
-
+		 Omega1D->Fill(r_omega,(float) 1);
+		
 		 for (Int_t i=0; i<goodPhotons; i++)
 		   {
 		     PhotonCer->Fill(cer_pho[i],(float) 1);
@@ -407,6 +407,22 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 		   }
 		 
 		 //printf("Omega: %f, Theta: %f, Phi: %f\n",r_omega,r_theta,r_phi);
+	       }
+	     }
+
+	   if(nrechits3D)
+	     {
+	       for (Int_t hit=0;hit<nrechits3D;hit++) {
+		 recHit3D = (AliRICHRecHit3D*) RecHits3D->UncheckedAt(hit);
+		 Float_t r_omega = recHit3D->fOmega;                  // Cerenkov angle
+		 Float_t r_theta = recHit3D->fTheta;                  // Theta angle of incidence
+		 Float_t r_phi   = recHit3D->fPhi;                    // Phi angle if incidence
+		 
+				 
+		 Omega3D->Fill(r_omega,(float) 1);
+		 Theta->Fill(r_theta*180/TMath::Pi(),(float) 1);
+		 Phi->Fill(r_phi*180/TMath::Pi(),(float) 1);
+
 	       }
 	     }
        }
@@ -653,7 +669,7 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
        
        
        TCanvas *c5 = new TCanvas("c5","Ring Reconstruction",100,100,900,700);
-       c5->Divide(3,2);
+       c5->Divide(3,3);
        
        c5->cd(1);
        ckovangle->SetFillColor(42);
@@ -670,9 +686,9 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
        hc0->Draw("box"); 
        
        c5->cd(5);
-       Omega->SetFillColor(42);
-       Omega->SetXTitle("angle (radians)");
-       Omega->Draw();
+       Omega1D->SetFillColor(42);
+       Omega1D->SetXTitle("angle (radians)");
+       Omega1D->Draw();
 
        c5->cd(4);
        PhotonCer->SetFillColor(42);
@@ -682,6 +698,11 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
        c5->cd(6);
        PadsUsed->SetXTitle("pads");
        PadsUsed->Draw("box"); 
+       
+       c5->cd(7);
+       Omega3D->SetFillColor(42);
+       Omega3D->SetXTitle("angle (radians)");
+       Omega3D->Draw();
        
        break;
 
