@@ -86,7 +86,7 @@ class AliMUONEventReconstructor : public TObject {
   Double_t fRMin[kMaxMuonTrackingChambers]; // minimum radius (cm)
   Double_t fRMax[kMaxMuonTrackingChambers]; // maximum radius (cm)
   Double_t fSegmentMaxDistBending[kMaxMuonTrackingStations]; // maximum distance (cm) for segments in bending plane
-  Double_t fSegmentMaxDistNonBending[kMaxMuonTrackingStations]; // maximum distance (cm) for segments in bending plane
+  Double_t fSegmentMaxDistNonBending[kMaxMuonTrackingStations]; // maximum distance (cm) for segments in non bending plane
   Double_t fBendingResolution; // chamber resolution (cm) in bending plane
   Double_t fNonBendingResolution; // chamber resolution (cm) in non bending plane
   Double_t fChamberThicknessInX0; // chamber thickness in number of radiation lengths

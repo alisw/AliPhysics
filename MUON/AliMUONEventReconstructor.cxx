@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2000/10/24 09:22:35  gosset
+Method AddHitsForRecFromRawClusters: real Z of raw cluster and not Z of chamber
+
 Revision 1.15  2000/10/12 15:17:30  gosset
 Sign of fSimpleBValue corrected: sign ox Bx and not Bz (thanks to Galina)
 
@@ -714,9 +717,7 @@ void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
       //  original raw cluster
       hitForRec->SetChamberNumber(ch);
       hitForRec->SetHitNumber(iclus);
-      // Z coordinate of the chamber (cm)
-      // could (should) be more exact from chamber geometry ???? 
-//       hitForRec->SetZ((&(pMUON->Chamber(ch)))->Z());
+      // Z coordinate of the raw cluster (cm)
       hitForRec->SetZ(clus->fZ[0]);
       if (fPrintLevel >= 10) {
 	cout << "chamber (0...): " << ch <<
