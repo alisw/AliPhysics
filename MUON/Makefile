@@ -18,7 +18,7 @@ SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
 	       AliMUONSegmentationTrigger.cxx  AliMUONResponseTrigger.cxx\
                AliMUONResponseTriggerV1.cxx\
 	       AliMUONSegmentationTriggerX.cxx AliMUONSegmentationTriggerY.cxx \
-               AliMUONSegmentationV1.cxx AliMUON.cxx AliMUONv0.cxx AliMUONv1.cxx AliMUONvTemp.cxx\
+               AliMUONSegmentationV1.cxx AliMUON.cxx AliMUONv0.cxx AliMUONv1.cxx \
                AliMUONDisplay.cxx AliMUONPoints.cxx \
                AliMUONClusterFinderVS.cxx \
                AliMUONHitMapA1.cxx \
@@ -72,7 +72,7 @@ OBJS          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # C++ compilation flags
 
-CXXFLAGS      = $(CXXOPTS) -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include/
+CXXFLAGS      = $(CXXOPTS) -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include/ 
  
 # FORTRAN compilation flags
 
