@@ -27,7 +27,10 @@
 //#include "AliTrackReference.h"
 //----------------------------
 
-class AliTPCtrackerParam {
+class AliTPCtrackerParam:
+  public TObject
+{
+   
   /////////////////////////////////////////////////////////////////////////
   //                                                                        
   // This class builds AliTPCtrack objects from generated tracks to feed    
@@ -50,9 +53,7 @@ class AliTPCtrackerParam {
 
   // this function performs the parameterized tracking
   //
-  AliTPCtrackerParam(const AliTPCtrackerParam  &p){
-    // dummy copy constructor
-  }
+  AliTPCtrackerParam(const AliTPCtrackerParam& p);
   //
   Int_t BuildTPCtracks(const TFile *inp, TFile *out);
   // these functions are used to create a DB of cov. matrices,

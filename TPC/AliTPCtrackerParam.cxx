@@ -144,6 +144,11 @@ AliTPCtrackerParam::AliTPCtrackerParam(const Int_t kcoll,const Double_t kBz,
 }
 //-----------------------------------------------------------------------------
 AliTPCtrackerParam::~AliTPCtrackerParam() {}
+//____________________________________________________________________________
+AliTPCtrackerParam::AliTPCtrackerParam( const AliTPCtrackerParam& p):TObject(p)
+{
+  // dummy copy constructor
+}
 //----------------------------------------------------------------------------
 AliTPCtrackerParam::AliTPCseedGeant::AliTPCseedGeant(
 		    Double_t x,Double_t y,Double_t z,
