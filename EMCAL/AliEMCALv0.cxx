@@ -48,7 +48,9 @@ ClassImp(AliEMCALv0)
 AliEMCALv0::AliEMCALv0(const char *name, const char *title):
   AliEMCAL(name,title)
 {
-  // ctor
+  // ctor/* $Id$ */
+
+  cout << " $Id$ " << endl ; 
 
 }
 
@@ -75,7 +77,7 @@ void AliEMCALv0::BuildGeometry()
   new TTUBS("Arm1", "Active material of  arm 1", "void", 
 	    fGeom->GetEnvelop(0) + fGeom->GetGap2Active(),                   // rmin 
 	    fGeom->GetEnvelop(0) + fGeom->GetGap2Active() + fGeom->GetLmat(),// rmax 
-	    fGeom->GetLmat()/2.0,     // half length in Z
+	    fGeom->GetEnvelop(2)/2.0, // half length in Z
 	    fGeom->GetArm1PhiMin(),   // minimun phi angle
 	    fGeom->GetArm1PhiMax()    // maximun phi angle
 	    ) ; 
@@ -94,7 +96,7 @@ void AliEMCALv0::BuildGeometry()
   new TTUBS("Arm2", "Active material of  arm 2", "void", 
 	    fGeom->GetEnvelop(0) + fGeom->GetGap2Active(),                   // rmin 
 	    fGeom->GetEnvelop(0) + fGeom->GetGap2Active() + fGeom->GetLmat(),// rmax 
-	    fGeom->GetLmat()/2.0,     // half length in Z	   
+	    fGeom->GetEnvelop(2)/2.0, // half length in Z
 	    fGeom->GetArm2PhiMin(),   // minimun phi angle
 	    fGeom->GetArm2PhiMax()    // maximun phi angle
 	    ) ;
