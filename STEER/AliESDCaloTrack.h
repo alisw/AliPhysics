@@ -18,8 +18,10 @@
 class AliESDCaloTrack : public TObject {
 
 public:
-  AliESDCaloTrack() {}
-  virtual ~AliESDCaloTrack() {}
+  AliESDCaloTrack(): TObject(), fRecParticle(0) {}
+  virtual ~AliESDCaloTrack() {
+    delete fRecParticle;
+  }
   AliESDCaloTrack(TParticle* recpart);
   Float_t Px() { return fRecParticle->Px(); }
   Float_t Py() { return fRecParticle->Py(); }
