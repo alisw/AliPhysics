@@ -22,7 +22,8 @@ const G4int TG4XMLConvertor::fgkMaxMaterialNameLength = 20;
 
 TG4XMLConvertor::TG4XMLConvertor(G4std::ofstream& outFile) 
   : fOutFile(outFile),
-    fIndention("")
+    fBasicIndention("   "),
+    fIndention(fBasicIndention)
 {
 //
 }
@@ -89,8 +90,8 @@ void TG4XMLConvertor::WriteBox(const G4Box* box, G4String materialName)
   PutName(element1, materialName, "!");
   
   // write element
-  //fOutFile.setf(G4std::ios::fixed, G4std::ios::floatfield);
-  fOutFile << element1
+  fOutFile << fBasicIndention
+           << element1
            << G4std::setw(7) << G4std::setprecision(2) << x << "  "
            << G4std::setw(7) << G4std::setprecision(2) << y << "  "
            << G4std::setw(7) << G4std::setprecision(2) << z
@@ -122,7 +123,8 @@ void TG4XMLConvertor::WriteTubs(const G4Tubs* tubs, G4String materialName)
   PutName(element1, materialName, "!");
   
   // write element
-  fOutFile << element1
+  fOutFile << fBasicIndention
+           << element1
            << G4std::setw(7) << G4std::setprecision(2) << rmin << "  "
            << G4std::setw(7) << G4std::setprecision(2) << rmax << "  "
            << G4std::setw(7) << G4std::setprecision(2) << hz
@@ -158,7 +160,8 @@ void TG4XMLConvertor::WriteTrd(const G4Trd* trd, G4String materialName)
   PutName(element1, materialName, "!");
   
   // write element
-  fOutFile << element1
+  fOutFile << fBasicIndention
+           << element1
            << G4std::setw(7) << G4std::setprecision(2) << x1 << "  "
            << G4std::setw(7) << G4std::setprecision(2) << x2 << "  "
            << G4std::setw(7) << G4std::setprecision(2) << y1 << "  "
@@ -170,6 +173,28 @@ void TG4XMLConvertor::WriteTrd(const G4Trd* trd, G4String materialName)
 
 
 // public methods
+
+void TG4XMLConvertor::OpenMaterials(const G4String& version, 
+ 	                 const G4String& date, const G4String& author,
+                         const G4String dtdVersion)
+{
+// Writes section opening.
+// ---
+			 
+  G4String element1 = "<materials  version = \"";
+  G4String element2 = "            date    = \"";
+  G4String element3 = "            author  = \"";
+  G4String element4 = "            DTD_version=\"";
+  G4String element5 = "  >";
+  G4String quota = "\"";   
+  
+  // write element
+  fOutFile << element1 << version << quota << G4endl
+           << element2 << date    << quota << G4endl
+           << element3 << author  << quota << G4endl
+           << element4 << dtdVersion << quota
+           << element5 << G4endl;
+}  
 
 void TG4XMLConvertor::OpenSection(const G4String& name, const G4String& version,
  	                 const G4String& date, const G4String& author,
@@ -210,7 +235,20 @@ void TG4XMLConvertor::OpenComposition(const G4String& name)
 	   << G4endl;
 
   // increase indention
-  fIndention.append("   ");	   
+  IncreaseIndention();	   
+}  
+
+void TG4XMLConvertor::CloseMaterials()
+{
+// Writes materials closing.
+// ---
+
+  // define element
+  G4String element = "</materials>";
+
+  // write element
+  fOutFile << element
+	   << G4endl;
 }  
 
 void TG4XMLConvertor::CloseSection()
@@ -232,7 +270,7 @@ void TG4XMLConvertor::CloseComposition()
 // ---
 
   // decrease indention
-  fIndention.replace(fIndention.find("   "), 3 , "");
+  DecreaseIndention();
 
   // define element
   G4String element = "</composition>";
@@ -262,7 +300,8 @@ void TG4XMLConvertor::WriteMaterial(const G4Material* material)
   G4String element2 = "\" -->";
   
   // write element
-  fOutFile << element1 << name
+  fOutFile << fBasicIndention
+           << element1 << name
 	   << element2
            << G4endl;
 }  
@@ -308,7 +347,8 @@ void TG4XMLConvertor::WriteSolid(const G4VSolid* solid, G4String materialName)
   G4String element2 = "\" -->";
   
   // write element
-  fOutFile << element1 << name
+  fOutFile << fBasicIndention
+           << element1 << name
 	   << element2
            << G4endl;
 }  
@@ -319,11 +359,54 @@ void TG4XMLConvertor::WriteRotation(const G4RotationMatrix* rotation)
 // Not yet implemented, only XML comment element is written.
 // ---
 
-  // only comment line
-  G4String element = "<!-- rotation matrix-->";
+  // return if this rotation was already written
+  G4int nofRotations = fRotations.size();
+  if (nofRotations>0)
+    for (G4int i=0; i<nofRotations; i++) 
+      if (fRotations[i] == rotation) return;
+
+  fRotations.push_back(rotation);  
+
+  // get parameters
+  G4double xx = rotation->xx();
+  G4double xy = rotation->xy();
+  G4double xz = rotation->xz();
+  G4double yx = rotation->yx();
+  G4double yy = rotation->yy();
+  G4double yz = rotation->yz();
+  G4double zx = rotation->zx();
+  G4double zy = rotation->zy();
+  G4double zz = rotation->zz();
+  G4String id = "RM";
+  TG4Globals::AppendNumberToString(id, nofRotations);
+ 
+  // compose element string template
+  G4String quota = "\"\n";
+  G4String element1 = "<rot_matrix   id=\"#######  XX_XY_XZ=\"";
+  G4String element2 = "                           YX_YY_YZ=\"";
+  G4String element3 = "                           ZX_ZY_ZZ=\"";
+  G4String element4 = "\" />";
   
+  // put identifier
+  PutName(element1, id, "#");
+
   // write element
-  fOutFile << element 
+  fOutFile << fBasicIndention
+           << element1
+	   << G4std::setw(8) << G4std::setprecision(5) << xx << "  "  
+	   << G4std::setw(8) << G4std::setprecision(5) << xy << "  "  
+	   << G4std::setw(8) << G4std::setprecision(5) << xz << quota
+           << fBasicIndention
+           << element2
+	   << G4std::setw(8) << G4std::setprecision(5) << yx << "  "  
+	   << G4std::setw(8) << G4std::setprecision(5) << yy << "  "  
+	   << G4std::setw(8) << G4std::setprecision(5) << yz << quota
+	   << fBasicIndention
+           << element3
+	   << G4std::setw(8) << G4std::setprecision(5) << zx << "  "  
+	   << G4std::setw(8) << G4std::setprecision(5) << zy << "  "  
+	   << G4std::setw(8) << G4std::setprecision(5) << zz 
+	   << element4 	   
            << G4endl;
 }  
 
@@ -338,7 +421,7 @@ void TG4XMLConvertor::WritePosition(G4String solidName, G4ThreeVector position)
   G4double z = position.z()/TG3Units::Length();
 
   // compose element string template
-  G4String element1 = "<posXYZ   volume=\"###########   X_Y_Z=\"";
+  G4String element1 = "<posXYZ      volume=\"###########   X_Y_Z=\"";
   G4String element2 = "\" />";
   
   // put solid name
@@ -347,9 +430,9 @@ void TG4XMLConvertor::WritePosition(G4String solidName, G4ThreeVector position)
   // write element
   fOutFile << fIndention
            << element1
-           << G4std::setw(7) << G4std::setprecision(2) << x << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << y << "  "
-           << G4std::setw(7) << G4std::setprecision(2) << z
+           << G4std::setw(8) << G4std::setprecision(2) << x << "  "
+           << G4std::setw(8) << G4std::setprecision(2) << y << "  "
+           << G4std::setw(8) << G4std::setprecision(2) << z
 	   << element2
 	   << G4endl;
 }  
@@ -362,13 +445,40 @@ void TG4XMLConvertor::WritePositionWithRotation(
 // Not yet implemented, only XML comment element is written.
 // ---
 
-  // only comment line
-  G4String element = "<!-- position with rotation -->"; 
+  // get parameters
+  G4double x = position.x()/TG3Units::Length();
+  G4double y = position.y()/TG3Units::Length();
+  G4double z = position.z()/TG3Units::Length();
+  
+  // find rotation
+  G4int i=0;
+  while (i<fRotations.size() && fRotations[i] != rotation) i++; 
+  if (i==fRotations.size()) {
+    G4String text = "TG4XMLConvertor::WritePositionWithRotation: ";
+    text = text + "    Unknown rotation - fatal error.";    
+    TG4Globals::Exception(text);
+  }  
+  G4String id = "RM";
+  TG4Globals::AppendNumberToString(id, i); 
+
+  // compose element string template
+  G4String element1 = "<posXYZRot   volume=\"###########   X_Y_Z=\"";
+  G4String element2 = "\"   rot=\"";
+  G4String element3 = "\" />";
+  
+  // put solid name
+  PutName(element1, solidName, "#");
   
   // write element
   fOutFile << fIndention
-           << element 
-           << G4endl;
+           << element1
+           << G4std::setw(8) << G4std::setprecision(2) << x << "  "
+           << G4std::setw(8) << G4std::setprecision(2) << y << "  "
+           << G4std::setw(8) << G4std::setprecision(2) << z
+	   << element2
+	   << id
+	   << element3
+	   << G4endl;
 }  
 
 void TG4XMLConvertor::WriteEmptyLine()
@@ -379,4 +489,14 @@ void TG4XMLConvertor::WriteEmptyLine()
   fOutFile << G4endl;
 }  
 
+void TG4XMLConvertor::IncreaseIndention()
+{
+  // increase indention
+  fIndention.append(fBasicIndention);	   
+}
 
+void TG4XMLConvertor::DecreaseIndention()
+{
+  // decrease indention
+  fIndention.replace(fIndention.find(fBasicIndention), 3 , "");
+}
