@@ -95,7 +95,7 @@ Int_t AliPHOSClusterizerv1::AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)
       rv=2 ;
 
   }
-  
+  if((relid1[1]>0) && (relid1[1]<16) ) rv = 2 ; //Do NOT clusterize upper PPSD  
   return rv ; 
 }
 
@@ -171,7 +171,10 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl,
 {
   // Steering method to construct the clusters stored in a list of Reconstructed Points
   // A cluster is defined as a list of neighbour digits
-  
+
+  fNumberOfEmcClusters = 0 ;
+  fNumberOfPpsdClusters = 0 ;
+
   // Fill and sort the working digits list
   TObjArray tempodigitslist( dl->GetEntries() ) ;
   FillandSort(dl, &tempodigitslist) ; 
@@ -183,7 +186,7 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl,
 
   while ( (digit = (AliPHOSDigit *)nextdigit()) ) { // scan over the list of digits
     AliPHOSRecPoint * clu ; 
-   
+
     AliPHOSDigit ** clusterdigitslist = new AliPHOSDigit*[dl->GetEntries()] ;   
     Int_t index ;
     if (( ( IsInEmc(digit) ) && ( Calibrate(digit->GetAmp() ) > fEmcClusteringThreshold ) ) || 
@@ -193,8 +196,8 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl,
 
       if  ( IsInEmc(digit) ) {   
 	// start a new EMC RecPoint
-	//        new ((*emcl)[fNumberOfEmcClusters]) AliPHOSEmcRecPoint(fW0, fLocMaxCut) ; if TClonesArray
-	fNumberOfEmcClusters = emcl->GetEntries() ;
+	if(fNumberOfEmcClusters >= emcl->GetSize())
+	  emcl->Expand(2*fNumberOfEmcClusters+1) ;
 	(*emcl)[fNumberOfEmcClusters] = new  AliPHOSEmcRecPoint(fW0, fLocMaxCut) ;
 	clu = (AliPHOSEmcRecPoint *) emcl->At(fNumberOfEmcClusters) ; 
 	fNumberOfEmcClusters++ ; 
@@ -208,10 +211,10 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl,
       else { 
 	
 	// start a new PPSD cluster
-	// new ((*ppsdl)[fNumberOfPpsdClusters]) AliPHOSPpsdRecPoint() ;  if TClonesArray
-	fNumberOfPpsdClusters = ppsdl->GetEntries() ; 
-	(*ppsdl)[fNumberOfPpsdClusters] = new AliPHOSPpsdRecPoint() ;
+	if(fNumberOfPpsdClusters >= ppsdl->GetSize())
+	  ppsdl->Expand(2*fNumberOfPpsdClusters) ;
 	
+	(*ppsdl)[fNumberOfPpsdClusters] = new AliPHOSPpsdRecPoint() ;
 	clu =  (AliPHOSPpsdRecPoint *) ppsdl->At(fNumberOfPpsdClusters)  ;  
 	fNumberOfPpsdClusters++ ; 
 	clu->AddDigit(*digit, Calibrate(digit->GetAmp()) ) ;	
@@ -265,7 +268,6 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl,
 	nextdigit.Reset() ; 
 	
       } // loop over cluster     
- 
    }  //below energy theshold  
   
     delete[] clusterdigitslist ; 
@@ -274,6 +276,10 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl,
 
   tempodigitslist.Clear() ; 
 
+  ppsdl->Sort() ;
+  Int_t index ;
+  for(index = 0; index < ppsdl->GetEntries(); index++)
+    ((AliPHOSPpsdRecPoint *)ppsdl->At(index))->SetIndexInList(index) ;
 }
 
 //____________________________________________________________________________
