@@ -232,8 +232,10 @@ void AliITSClusterFinderSDD::Find1DClusters()
 	  Float_t clusterMult = 0.;
 	  Float_t clusterPeakAmplitude = 0.;
           Int_t its;
+	  Float_t n, baseline;
+	  fResponse->GetNoiseParam(n,baseline);
 	  for(its=tstart; its<=tstop; its++) {
-            fadc=fMapA2->GetSignal(idx,its);
+            fadc=fMapA2->GetSignal(idx,its)-baseline;
 	    clusterCharge += fadc;
 	    if(fadc > clusterPeakAmplitude) clusterPeakAmplitude = fadc;
 	    clusterTime += fadc*its;
