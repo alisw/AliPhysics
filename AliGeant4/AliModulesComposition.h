@@ -81,7 +81,7 @@ class AliModulesComposition : public G4VUserDetectorConstruction
     void ConstructModules();
 
     // get methods
-    AliDetSwitch* GetDetSwitch(const G4String& moduleName);
+    AliDetSwitch* GetDetSwitch(const G4String& moduleName) const;
 
     // data members
     DetSwitchVector  fDetSwitchVector; //vector of AliDetSwitch

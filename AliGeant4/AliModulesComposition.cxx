@@ -148,12 +148,13 @@ void AliModulesComposition::ConstructModules()
 }  
 
 //_____________________________________________________________________________
-AliDetSwitch* AliModulesComposition::GetDetSwitch(const G4String& moduleName)
+AliDetSwitch* AliModulesComposition::GetDetSwitch(
+                                        const G4String& moduleName) const
 {
 // Returns the detector switch with given detector name.
 // ---
 
-  DetSwitchIterator it;
+  DetSwitchConstIterator it;
   for (it = fDetSwitchVector.begin(); it != fDetSwitchVector.end(); it++)
     if ((*it)->GetDetName() == moduleName) return *it; 
 

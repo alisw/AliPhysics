@@ -30,7 +30,7 @@ class AliLVStructure
     G4int operator==(const AliLVStructure &right) const;
 
     // methods
-    void AddNewVolume(G4LogicalVolume* lv, G4String treeStructure);
+    void AddNewVolume(G4LogicalVolume* lv, const G4String& treeStructure);
     void ListTree() const;
     void ListTreeLong() const;
 
@@ -38,20 +38,20 @@ class AliLVStructure
     void SetVerboseLevel(G4int verbose); 
 #ifdef ALICE_VISUALIZE
     void SetTreeVisibility(G4bool visibility);       
-    void SetTreeColour(G4String colName);
+    void SetTreeColour(const G4String& colName);
 #endif             
 
     // get methods
-    G4LogicalVolume* GetVolume(G4String name);
-    G4LogicalVolume* FindVolume(G4String name);
+    G4LogicalVolume* GetVolume(const G4String& name) const;
+    G4LogicalVolume* FindVolume(const G4String& name) const;
 
   protected:
     AliLVStructure(); 
 
   private:
     // methods
-    AliLVStructure* FindSubDirectory(G4String subDir);
-    G4String ExtractDirName(G4String path);
+    AliLVStructure* FindSubDirectory(const G4String& subDir) const;
+    G4String ExtractDirName(const G4String& path) const;
 
     // data members
     G4RWTPtrOrderedVector<AliLVStructure>   fStructures;                     //.

@@ -97,7 +97,7 @@ void AliMagneticField::SetFieldValue(G4ThreeVector fieldVector)
 }
 
 //_____________________________________________________________________________
-G4FieldManager*  AliMagneticField::GetGlobalFieldManager()
+G4FieldManager*  AliMagneticField::GetGlobalFieldManager() const
 {
 // Utility method
 // ---

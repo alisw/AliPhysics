@@ -96,7 +96,7 @@ G4int AliLVStructure::operator==(const AliLVStructure &right) const
 // private methods
 
 //_____________________________________________________________________________
-AliLVStructure* AliLVStructure::FindSubDirectory(G4String subDir)
+AliLVStructure* AliLVStructure::FindSubDirectory(const G4String& subDir) const
 {
 // Finds the subdirectory.
 // ---
@@ -108,7 +108,7 @@ AliLVStructure* AliLVStructure::FindSubDirectory(G4String subDir)
 }
 
 //_____________________________________________________________________________
-G4String AliLVStructure::ExtractDirName(G4String name)
+G4String AliLVStructure::ExtractDirName(const G4String& name) const
 {
 // Extracts the directory name from the path.
 // ---
@@ -123,7 +123,7 @@ G4String AliLVStructure::ExtractDirName(G4String name)
 
 //_____________________________________________________________________________
 void AliLVStructure::AddNewVolume(G4LogicalVolume* lv, 
-                      G4String treeStructure)
+                                  const G4String& treeStructure)
 {
 // Adds new logical volume to the structure.
 // ---
@@ -157,7 +157,7 @@ void AliLVStructure::AddNewVolume(G4LogicalVolume* lv,
 }
 
 //_____________________________________________________________________________
-G4LogicalVolume* AliLVStructure::GetVolume(G4String lvName)
+G4LogicalVolume* AliLVStructure::GetVolume(const G4String& lvName) const
 {
 // Returns logical volume of lvName if present in the structure,
 // returns 0 otherwise.
@@ -171,7 +171,7 @@ G4LogicalVolume* AliLVStructure::GetVolume(G4String lvName)
 }
 
 //_____________________________________________________________________________
-G4LogicalVolume* AliLVStructure::FindVolume(G4String name)
+G4LogicalVolume* AliLVStructure::FindVolume(const G4String& name) const
 {
 // Finds logical volume of given name in all structure tree.
 // ---
@@ -279,7 +279,7 @@ void AliLVStructure::SetTreeVisibility(G4bool visibility)
 }
 
 //_____________________________________________________________________________
-void AliLVStructure::SetTreeColour(G4String colName)
+void AliLVStructure::SetTreeColour(const G4String& colName)
 {
 // Sets colour specified  by name to all logical volumes
 // in the structure tree.
