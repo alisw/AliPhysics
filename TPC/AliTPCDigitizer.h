@@ -18,10 +18,12 @@ class AliTPCDigitizer : public AliDigitizer {
     virtual void Exec(Option_t* option=0);    
     Int_t GetDebug() const {return fDebug;}       // get debug level
     void SetDebug(Int_t level){fDebug = level;}   // set debug level        
- private:    
+ private: 
+    void ExecFast(Option_t* option=0); //digitize - using row pointers
+    void ExecSave(Option_t* option=0); // digitize using controlled arrays   
     Int_t fDebug;
  private:
-    ClassDef(AliTPCDigitizer,1)  // MUON merging/digitization
+    ClassDef(AliTPCDigitizer,2)  // MUON merging/digitization
 };    
 #endif
 
