@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2003/02/12 10:39:05  hristov
+Updated AliTrackReference class (S.Radomski)
+
 Revision 1.1  2002/12/05 20:07:25  nilsen
 Adding new SPD 2002 test-beam geometry, with Config file (setup for testing,
 50 pions in one event and not 50 events with one pion).
@@ -479,7 +482,7 @@ void AliITSvSPD02::InitAliITSgeom(){
 	return;
     } // end if
     cout << "Reading Geometry transformation directly from Geant 3." << endl;
-    const Int_t nlayers = 2;
+    const Int_t nlayers = 6;
     const Int_t ndeep = 5;
     Int_t itsGeomTreeNames[nlayers][ndeep],lnam[20],lnum[20];
     Int_t nlad[nlayers],ndet[nlayers];
