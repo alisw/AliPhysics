@@ -147,7 +147,7 @@ class TFluka : public TVirtualMC {
   virtual void   SetStopEvent(Bool_t flag) {fStopEvent = flag;}
   
   // Set methods
-  virtual void SetMaxStep(Double_t);
+  virtual void SetMaxStep (Double_t step);
   virtual void SetMaxNStep(Int_t);
   virtual void SetUserDecay(Int_t);
   

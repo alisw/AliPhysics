@@ -35,7 +35,7 @@
 #include "TCallf77.h"      //For the fortran calls
 #include "Fdblprc.h"       //(DBLPRC) fluka common
 #include "Fepisor.h"       //(EPISOR) fluka common
-#include "Ffinuc.h"        //(FINUC) fluka common
+#include "Ffinuc.h"        //(FINUC)  fluka common
 #include "Fiounit.h"       //(IOUNIT) fluka common
 #include "Fpaprop.h"       //(PAPROP) fluka common
 #include "Fpart.h"         //(PART)   fluka common
@@ -43,7 +43,8 @@
 #include "Fpaprop.h"       //(PAPROP) fluka common
 #include "Ffheavy.h"       //(FHEAVY) fluka common
 #include "Fopphst.h"       //(OPPHST) fluka common
-#include "Fstack.h"        //(STACK) fluka common
+#include "Fstack.h"        //(STACK)  fluka common
+#include "Fstepsz.h"       //(STEPSZ) fluka common
 
 #include "TVirtualMC.h"
 #include "TMCProcess.h"
@@ -2024,11 +2025,14 @@ fin:
 
 
 //______________________________________________________________________________ 
-void TFluka::SetMaxStep(Double_t)
+void TFluka::SetMaxStep(Double_t step)
 {
-// SetMaxStep is dummy procedure in TFluka !
-  if (fVerbosityLevel >=3)
-  cout << "SetMaxStep is dummy procedure in TFluka !" << endl;
+// Set the maximum step size
+    if (step > 1.e4) return;
+    
+    Int_t mreg, latt;
+    fGeom->GetCurrentRegion(mreg, latt);
+    STEPSZ.stepmx[mreg - 1] = step;
 }
 
 //______________________________________________________________________________ 
@@ -2220,7 +2224,7 @@ Double_t TFluka::Edep() const
 // -->no energy loss along the track
 // if TRACKR.ntrack > 0, TRACKR.mtrack > 0:
 // -->energy loss distributed along the track
-// TRACKR.dtrack = energy deposition of the jth deposition even
+// TRACKR.dtrack = energy deposition of the jth deposition event
 
   // If coming from bxdraw we have 2 steps of 0 length and 0 edep
   Int_t caller = GetCaller();
@@ -2538,6 +2542,7 @@ Int_t TFluka::StepProcesses(TArrayI &proc) const
     default:
 	iproc = ProdProcess(0);
     }
+    proc[0] = iproc;
     return 1;
 }
 //______________________________________________________________________________ 
