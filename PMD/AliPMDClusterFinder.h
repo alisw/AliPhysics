@@ -44,7 +44,7 @@ class AliPMDClusterFinder
   void ResetCellADC();
   void ResetRecpoint();
   void Load();
-  void UnLoad(Option_t * option);
+  void UnLoad();
 
  protected:
   AliRunLoader *fRunLoader; // Pointer to Run Loader

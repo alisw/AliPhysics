@@ -60,6 +60,7 @@ AliPMDClustering::AliPMDClustering():
 	{
 	  fCoord[0][i][j] = i+j/2.;
 	  fCoord[1][i][j] = fgkSqroot3by2*j;
+	  fEdepCell[i][j] = 0;
 	}
     }
 }
@@ -345,6 +346,11 @@ void AliPMDClustering::RefClust(int incr)
   for(i=0; i<4500; i++){ncl[i]=-1;}
   for(i=0; i<incr; i++){
     if(fInfcl[0][i] != nsupcl){ nsupcl=nsupcl+1; }
+    if (nsupcl > 4500) {
+      Error("RefClust", "Too many superclusters!");
+      nsupcl = 4500;
+      break;
+    }
     ncl[nsupcl]=ncl[nsupcl]+1;
   }
   if (fDebug == 1)
@@ -361,6 +367,10 @@ void AliPMDClustering::RefClust(int incr)
       // one  cell super-clusters --> single cluster
       // cluster center at the centyer of the cell
       // cluster radius = half cell dimension
+      if (fClno >= 5000) {
+	Error("RefClust", "Too many clusters!");
+	return;
+      }
       fClno = fClno + 1;
       i1 = fInfcl[1][id];
       i2 = fInfcl[2][id];
@@ -377,6 +387,10 @@ void AliPMDClustering::RefClust(int incr)
       // cluster radius == half cell dimension
       id   = id + 1;
       icl  = icl+1;
+      if (fClno >= 5000) {
+	Error("RefClust", "Too many clusters!");
+	return;
+      }
       fClno = fClno+1;
       i1   = fInfcl[1][id];
       i2   = fInfcl[2][id];
@@ -519,6 +533,10 @@ void AliPMDClustering::RefClust(int incr)
 	}
       }
       for(j=0; j<=ig; j++){
+	if (fClno >= 5000) {
+	  Error("RefClust", "Too many clusters!");
+	  return;
+	}
 	fClno               = fClno + 1;
 	fClusters[0][fClno] = xc[j];
 	fClusters[1][fClno] = yc[j];

@@ -55,7 +55,7 @@ AliPMDClusterFinder::AliPMDClusterFinder(AliRunLoader* runLoader):
   fPMDLoader(runLoader->GetLoader("PMDLoader")),
   fTreeD(0),
   fTreeR(0),
-  fDigits(0),
+  fDigits(new TClonesArray("AliPMDdigit", 1000)),
   fRecpoints(new TClonesArray("AliPMDrecpoint1", 1000)),
   fNpoint(0),
   fDebug(0),
@@ -69,6 +69,12 @@ AliPMDClusterFinder::AliPMDClusterFinder(AliRunLoader* runLoader):
 AliPMDClusterFinder::~AliPMDClusterFinder()
 {
   // Destructor
+  if (fDigits)
+    {
+      fDigits->Delete();
+      delete fDigits;
+      fDigits=0;
+    }
   if (fRecpoints)
     {
       fRecpoints->Delete();
@@ -91,7 +97,6 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
   Float_t  clusdata[5];
 
   TObjArray *pmdcont = new TObjArray();
-  AliPMDcluster  *pmdcl  = new AliPMDcluster;
   AliPMDClustering *pmdclust = new AliPMDClustering();
   pmdclust->SetDebug(fDebug);
   pmdclust->SetEdepCut(fEcut);
@@ -147,7 +152,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 //      cout << " nentries1 = " << nentries1 << endl;
       for (Int_t ient1 = 0; ient1 < nentries1; ient1++)
 	{
-	  pmdcl = (AliPMDcluster*)pmdcont->UncheckedAt(ient1);
+	  AliPMDcluster *pmdcl = (AliPMDcluster*)pmdcont->UncheckedAt(ient1);
 	  idet        = pmdcl->GetDetector();
 	  ismn        = pmdcl->GetSMN();
 	  clusdata[0] = pmdcl->GetClusX();
@@ -220,24 +225,17 @@ void AliPMDClusterFinder::ResetRecpoint()
 // ------------------------------------------------------------------------- //
 void AliPMDClusterFinder::Load()
 {
-  // Unload all the *.root files
+  // Load all the *.root files
   //
   fPMDLoader->LoadDigits("READ");
   fPMDLoader->LoadRecPoints("recreate");
 }
 // ------------------------------------------------------------------------- //
-void AliPMDClusterFinder::UnLoad(Option_t *option)
+void AliPMDClusterFinder::UnLoad()
 {
   // Unload all the *.root files
   //
-  const char *cR = strstr(option,"R");
-
-  fRunLoader->UnloadgAlice();
-
-  if (cR)
-    {
-      fPMDLoader->UnloadDigits();
-      fPMDLoader->UnloadRecPoints();
-    }
+  fPMDLoader->UnloadDigits();
+  fPMDLoader->UnloadRecPoints();
 }
 // ------------------------------------------------------------------------- //

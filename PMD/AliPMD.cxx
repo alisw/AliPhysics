@@ -379,7 +379,7 @@ void  AliPMD::Reconstruct() const
     {
       pmdClus->Digits2RecPoints(iEvent);
     }
-  pmdClus->UnLoad("R");
+  pmdClus->UnLoad();
   delete pmdClus;
 
 }

@@ -30,7 +30,7 @@
 class TNtuple;
 class TObjArray;
 class AliPMDcluster;
-class AliPMDClustering
+class AliPMDClustering: public TObject
 {
 
  public:

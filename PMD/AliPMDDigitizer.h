@@ -63,25 +63,16 @@ class AliPMDDigitizer:public AliDigitizer
   void UnLoad(Option_t * option);
 
  protected:
-  AliRunLoader *fRunLoader;  // Pointer to Run Loader
-  AliPMDhit    *fPMDHit;     // Pointer to specific detector hits
-  AliDetector  *fPMD;        // Get pointers to Alice detectors 
+  AliRunLoader *fRunLoader;  //! Pointer to Run Loader
+  AliPMDhit    *fPMDHit;     //! Pointer to specific detector hits
+  AliDetector  *fPMD;        //! Get pointers to Alice detectors 
                              // and Hits containers 
-  AliLoader    *fPMDLoader;  // Pointer to specific detector loader
+  AliLoader    *fPMDLoader;  //! Pointer to specific detector loader
 
-  TClonesArray *fHits;       // Pointer to hits array
-  TObjArray    *fPArray;     // Pointer to particle array
-  TParticle    *fParticle;   // Pointer to a given particle
+  TClonesArray *fSDigits;    //! List of summable digits
+  TClonesArray *fDigits;     //! List of digits
 
-  TTree        *fTreeH;      // Hits tree
-  TTree        *fTreeS;      // Summable Digits tree
-  TTree        *fTreeD;      // Digits tree
-
-  TClonesArray *fSDigits;    // List of summable digits
-  TClonesArray *fDigits;     // List of digits
-
-  TObjArray    *fCell;       // List of pmd cells
-  AliPMDcell   *fPMDcell;    // Pointer to a PMD cell
+  TObjArray     fCell;       //! List of pmd cells
 
   Int_t   fDebug;            // Debug switch
   Int_t   fNsdigit;          // Summable digits counter
@@ -92,15 +83,15 @@ class AliPMDDigitizer:public AliDigitizer
   static const Int_t fgkTotUM = 24; // Total Unit modules in one detector
   static const Int_t fgkRow   = 48; // Total number of rows in one unitmodule
   static const Int_t fgkCol   = 96; // Total number of cols in one unitmodule
-  Float_t fCPV[fgkTotUM][fgkRow][fgkCol]; // CPV Array containing total edep
-  Float_t fPRE[fgkTotUM][fgkRow][fgkCol]; // PRE Array containing total edep
-  Int_t   fPRECounter[fgkTotUM][fgkRow][fgkCol]; // Number of times each cell
+  Float_t fCPV[fgkTotUM][fgkRow][fgkCol]; //! CPV Array containing total edep
+  Float_t fPRE[fgkTotUM][fgkRow][fgkCol]; //! PRE Array containing total edep
+  Int_t   fPRECounter[fgkTotUM][fgkRow][fgkCol]; //! Number of times each cell
                                                  // is fired in PMD
-  Int_t   fPRETrackNo[fgkTotUM][fgkRow][fgkCol]; // PRE Array containing track number
-  Int_t   fCPVTrackNo[fgkTotUM][fgkRow][fgkCol]; // CPV Array containing track number
+  Int_t   fPRETrackNo[fgkTotUM][fgkRow][fgkCol]; //! PRE Array containing track number
+  Int_t   fCPVTrackNo[fgkTotUM][fgkRow][fgkCol]; //! CPV Array containing track number
 
 
-  ClassDef(AliPMDDigitizer,3)    // To digitize PMD Hits
+  ClassDef(AliPMDDigitizer,4)    // To digitize PMD Hits
 };
 #endif
 
