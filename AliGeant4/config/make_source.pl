@@ -15,6 +15,7 @@
 # subcategories
 @CATLIST = "global";
 @CATLIST = (@CATLIST,"geometry");
+@CATLIST = (@CATLIST,"digits+hits");
 @CATLIST = (@CATLIST,"physics");
 @CATLIST = (@CATLIST,"event");
 @CATLIST = (@CATLIST,"run");
