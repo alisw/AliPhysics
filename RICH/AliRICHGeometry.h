@@ -10,8 +10,8 @@
 #include <TObject.h>
 
 
-class AliRICHGeometry : //Chamber geometry
-public TObject {
+class AliRICHGeometry : public TObject //Chamber geometry definition 
+{
  public:
     // Radiator Thickness
     void   SetGapThickness(Float_t thickness) {fGapThickness=thickness;} 
@@ -58,7 +58,9 @@ public TObject {
     Float_t  GetFreonThickness() {return fFreonThickness;}
     // Get distance between radiator and pads
     Float_t  GetRadiatorToPads() {return fRadiatorToPads;}   
-    
+   void    SetRotationAngle(Float_t rotAngle) {fRotationAngle=rotAngle;}
+   Float_t GetRotationAngle()           const {return fRotationAngle;} 
+          
  private:
     Float_t fGapThickness;            // Gap Thickness
     Float_t fProximityGapThickness;   // Proximity Gap Thickness
@@ -71,9 +73,10 @@ public TObject {
     Float_t fInnerFreonWidth;         // Inner Freon Width
     Float_t fFreonThickness;          // Freon Thickness
     Float_t fRadiatorToPads;          // Distance from radiator to pads
-
+   Float_t fRotationAngle;            // Azimuthal rotation angle in X-Y plane  
     ClassDef(AliRICHGeometry,1)
 };
+    
 #endif
 
 
