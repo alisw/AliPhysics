@@ -123,12 +123,12 @@ void TG4StepManager::Rndm(Float_t* array, const Int_t size) const
 // Random numbers array of the specified size.
 // ---
 
-  G4double* const doubleArray = new G4double[size];
-  RandFlat::shootArray(size,doubleArray);
+  G4double* const kpDoubleArray = new G4double[size];
+  RandFlat::shootArray(size,kpDoubleArray);
   for (G4int i=0; i<size; i++) { 
-    array[i] = doubleArray[i]; 
+    array[i] = kpDoubleArray[i]; 
   } 
-  delete [] doubleArray;
+  delete [] kpDoubleArray;
 }
  
 void TG4StepManager::SetMaxStep(Float_t step)
@@ -165,7 +165,7 @@ void TG4StepManager::SetMaxNStep(Int_t maxNofSteps)
     "TG4StepManager::SetMaxNStep(..) is not yet implemented.");
 }
 
-void TG4StepManager::SetUserDecay(Int_t)
+void TG4StepManager::SetUserDecay(Int_t pdg)
 {
 // Not yet implemented.
 // ---
