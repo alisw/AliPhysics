@@ -9,13 +9,14 @@ reconstruction code works. All comments from every user is greatly encouraged.
 
 \section*{How to Run AliRoot}
 
-At this point, we will assume that aliroot has been compiled and all the
+At this point, we will assume that AliRoot has been compiled and all the
 necessary environment variables have been defined, including your path. We will
 assume you are in an appropriate directory, for example \texttt{/data} or some
 such thing.
 
 to start with type, at your shell prompt, aliroot to start the program.
 
+\scriptsize
 \begin{verbatim}
 # aliroot
 Constant Field Map1 created: map= 1, factor= 1.000000
@@ -41,11 +42,12 @@ WELCOME to ALICE
 
 root [0]
 \end{verbatim}
+\normalsize
 
-This will initialize ROOT and load all of the ALICE libraries. At this point you
-can do anything you can do in ROOT in addition you have access to every class
-defined in the ALICE libraries, including the ALICE global variables. One very
-useful ALICE global variable is \texttt{gAlice} which is of type
+This will initialize ROOT and load all of the ALICE libraries. At this point
+you can do anything you can do in ROOT in addition you have access to every
+class defined in the ALICE libraries, including the ALICE global variables. One
+very useful ALICE global variable is \texttt{gAlice} which is of type
 \texttt{AliRun}. Of the many function defined in the class \texttt{AliRun} are
 \texttt{Init(const char* setup="Config.C")} and 
 \texttt{Run(const char* setup="Config.C")}. \texttt{Run} both executes
@@ -63,6 +65,7 @@ can be used.
 
 Now lets assume you just want to one event using the standard \texttt{Config.C}
 file. This is done simply as
+\scriptsize
 \begin{verbatim}
 root [0] gAlice->Run()
 Warning in <AliRun::SetField>: Invalid magnetic field flag:  -999; Helix trackin
@@ -88,10 +91,12 @@ eometry_5.tme is now read in
           with     1 Str. in     2 Links in   5300 Low words in 2999970 words.
           This store has a fence of   16 words.
 \end{verbatim}
+\normalsize
 \vdots
 lots more messages
 
 \vdots
+\scriptsize
 \begin{verbatim}
  TOC1      0.171%; TSSW      0.001%; TSWC      0.083%; TSCE      0.000%; TWES      0.001%;
  TSWB      0.009%; TPEL      2.240%; TPMW      0.901%; TPEW      0.128%; TESR      0.000%;
@@ -116,8 +121,329 @@ lots more messages
 ***************************************************************************
 root [1] 
 \end{verbatim}
+\normalsize
 
 At this point a file called \texttt{galice.root} is created in your present
 directory. This file contains all of the ``hits'' produced by the simulation,
 all of the particle information, all of the detectors that were defined in the
 simulation, and a lot of other information.
+
+One nice thing to do now is to run the hit display program so that you can see
+the hits you have just produce in the file \texttt{galice.root}. Either from
+your present \texttt{aliroot} session, a new \texttt{aliroot} session, or
+from a new \texttt{root} session, you can run the standard macro
+\texttt{display.C}. Because you should have \texttt{\$ALICE\_ROOT/macros} in
+your path, this is easily done as follows.
+
+\scriptsize
+\begin{verbatim}
+root [1] .x display.C
+\end{verbatim}
+\normalsize
+
+You should see the following screen appear (Figure~\ref{ITSMan:ch0:display0}).
+
+\begin{figure*}[htbp]
+  \begin{center}
+    \leavevmode
+%From the ALICE Web sight edited to include the three coordinate axis.
+    \epsfig{file=display_Canvas.eps,width=12cm}
+    \caption{Typical ALICE hit display output. Note that the geometry being
+    displayed is a simplified geometry, not that used by the AliRoot
+    simulation.}
+    \label{ITSMan:ch0:display0}
+  \end{center}
+\end{figure*}
+
+Just like from \texttt{root}, to exit from \texttt{aliroot} just type
+\texttt{.q} at the prompt.
+
+\scriptsize
+\begin{verbatim}
+root [2] .q
+\end{verbatim}
+\normalsize
+
+For a more interactive way of running \texttt{AliRoot}, instead of typing
+\texttt{root[0] gAlice->Run()} you can run a very nice macro called
+\texttt{menu.C} also located in \texttt{\$ALICE\_ROOT/macros}. Instead of
+running a simulation, it create a menu that that will let you either run an
+\texttt{AliRoot} simulation or do a number of other nice things. Please note,
+that if you want to display any pictures, first they can take a lot of time and
+memory, second you have to run \texttt{Init} first so that the detectors you
+want to display are defined.
+
+
+\section*{Controling your Run: The Config.C file}
+
+There are basicly two files that control nearly every aspect of an
+\texttt{AliRoot} simulations. The first and most important is the file
+\texttt{\$ALICE\_ROOT/macros/Config.C}. This file will be described in more
+detail below. The second file \texttt{\$ALICE\_ROOT/data/galice.cuts} sets the
+non-default energy cuts for a large numbers of materials. For the ITS, Every
+material has energy-loss via delta rays turned on. For each sensitive material
+the lowest energy $\gamma$, $e^{\pm}$, bremsstrahlung, and $\delta$-ray have
+their lowest energy set to $7.0\times 10^{-5}$ GeV or $70$ KeV. This is done to
+assure that low enough energy $\delta$-rays are properly taken into account for
+the signals produce in each detector.
+
+The \texttt{Config.C} file\footnotemark determines just about every thing there
+is to about how \texttt{AliRoot} will run. Lets take a look at the first part
+of this file.
+
+\footnotetext{The name of the file isn't important. It can be specified either
+as an argument to \texttt{gAlice->Run(``Another\_Config.C'')} or as an
+argument to \texttt{gAlice->Init(``Another\_Config.C'')}. The default file
+name is \texttt{Config.C} and is first looked for in your present directory and
+if no such file is found then it uses the one in 
+\texttt{\$ALICE\_ROOT/macros}. }
+
+\scriptsize
+\begin{verbatim}
+0001  void Config()
+0002 {
+0003 
+0004 new AliGeant3("C++ Interface to Geant3");
+0005 
+0006 //=======================================================================
+0007 //  Create the output file
+0008 
+0009 TFile *rootfile = new TFile("galice.root","recreate");
+0010 rootfile->SetCompressionLevel(2);
+0011 TGeant3 *geant3 = (TGeant3*)gMC;
+\end{verbatim}
+\normalsize
+
+This file is a \texttt{C++} macro/program. The first line gives the routine
+name which must be \texttt{Config()}. Line \texttt{0004} Creates the
+\texttt{AliRoot} interface class to GEANT 3.12. Line \texttt{0009} creates the
+root output file and its pointer \texttt{rootfile}. Line \texttt{0010} sets the
+level of compression to be used in writing this file. Level 2 is a lot of
+compression, level 0 is no compression\footnote{see \texttt{TFile} in the
+\texttt{ROOT} documentation for a full description.}. Line \texttt{0011}
+retrieves the basic transport Monte Carlo that was set at line
+\texttt{0004}. Since this is GEANT3.21 this pointer is cast as
+\texttt{TGeant3}. This will allow us to set and modify the simulation according
+to GEANT3.21.
+
+\scriptsize
+\begin{verbatim}
+0012 //
+0013 // Set External decayer
+0014  AliDecayer* decayer = new AliDecayerPythia();
+0015  decayer->SetForceDecay(all);
+0016  decayer->Init();
+0017  gMC->SetExternalDecayer(decayer);
+\end{verbatim}
+\normalsize
+
+In this next section of the file, the default operation of GEANT 3.21 is
+modified by replacing the particle decay mechanism with that of Pythia. This
+has the advantage of treating all particle decays in the same way but also make
+it easier to determine the parent particles from their decayed products. Line
+\texttt{0014} creates the Pythia decay routines, \texttt{0015} sets a flag
+in Pythia to decay all particles, and \texttt{0016} initiates the Pythia
+package. Line \texttt{0017} replaces the default decay routine in the Monte
+Carlo (GEANT 3.12 in this case) with that of Pythia. Next we set some flags
+that are specific to GEANT 3.21.
+
+\scriptsize
+\begin{verbatim}//
+0018 //
+0019 //=======================================================================
+0020 // ******* GEANT STEERING parameters FOR ALICE SIMULATION *******
+0021 geant3->SetTRIG(1); //Number of events to be processed 
+0022 geant3->SetSWIT(4,10);
+0023 geant3->SetDEBU(0,0,1);
+0024 //geant3->SetSWIT(2,2);
+0025 geant3->SetDCAY(1);
+0026 geant3->SetPAIR(1);
+0027 geant3->SetCOMP(1);
+0028 geant3->SetPHOT(1);
+0029 geant3->SetPFIS(0);
+0030 geant3->SetDRAY(0);
+0031 geant3->SetANNI(1);
+0032 geant3->SetBREM(1);
+0033 geant3->SetMUNU(1);
+0034 geant3->SetCKOV(1);
+0035 geant3->SetHADR(1); //Select pure GEANH (HADR 1) or GEANH/NUCRIN (HADR 3)
+0036 geant3->SetLOSS(2);
+0037 geant3->SetMULS(1);
+0038 geant3->SetRAYL(1);
+0039 geant3->SetAUTO(1); //Select automatic STMIN etc... calc. (AUTO 1) or manual (AU TO 0)
+0040 geant3->SetABAN(0); //Restore 3.16 behaviour for abandoned tracks
+0041 geant3->SetOPTI(2); //Select optimisation level for GEANT geometry searches (0,1,2)
+0042 geant3->SetERAN(5.e-7);
+0043 
+0044 Float_t cut    = 1.e-3; // 1MeV cut by default
+0045 Float_t tofmax = 1.e10;
+0046 //             GAM ELEC NHAD CHAD MUON EBREM MUHAB EDEL MUDEL MUPA TOFMAX
+0047 geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
+\end{verbatim}
+\normalsize
+
+In lines \texttt{0021} through \texttt{0042} set different GEANT 3.21 specific
+options and flags. I will not describe all of these, but will refer you to the
+GEANT 3.21 manual. There are a few of possible interest. Line 
+\texttt{0021 geant3->SetTRIG(1);} sets the number of events that will be
+processed. The default is one. Line \texttt{0022 geant3->SetSWIT(4,10);} sets
+how often a line like 
+\texttt{GTREVE\_ROOT : Transporting primary track No 74130} will be
+displayed. Here the 10 means every 10 primary tracks. Most of the rest turn on
+or off different physics processes. These values apply to every material that
+isn't listed in \texttt{\$ALICE\_ROOT/data/galice.cuts} or if that material has
+its corresponding flag or value set to -1. Similarly line \texttt{0047} sets
+the default lowest energy, largest time of flight, for different physics
+processes that are not overwritten by the values in the \texttt{galice.cuts}
+file.
+
+\scriptsize
+\begin{verbatim}
+0048 //
+0049 //=======================================================================
+0050 // ************* STEERING parameters FOR ALICE SIMULATION **************
+0051 // --- Specify event type to be tracked through the ALICE setup
+0052 // --- All positions are in cm, angles in degrees, and P and E in GeV
+0053 AliGenHIJINGpara *gener = new AliGenHIJINGpara(84210);
+0054 gener->SetMomentumRange(0,999);
+0055 gener->SetPhiRange(0,360);
+0056 gener->SetThetaRange(0.28,179.72);
+0057 gener->SetOrigin(0,0,0);        //vertex position
+0058 gener->SetSigma(0,0,0);         //Sigma in (X,Y,Z) (cm) on IP position
+0059 gener->Init();
+0060 // 
+0061 // Activate this line if you want the vertex smearing to happen
+0062 // track by track
+0063 //
+0064 //gener->SetVertexSmear(perTrack); 
+0065 
+0066 gAlice->SetField(-999,2);    //Specify maximum magnetic field in Tesla (neg. ==> default field)
+\end{verbatim}
+\normalsize
+
+In lines \texttt{0053} through \texttt{0059} setup the particle generator to be
+used. Line \texttt{0053} defines the type of particle generator to be used. In
+this case it will be the ALICE HIJING parameterized particle distribution. 
+This can be replace with many others
+\footnote{See \texttt{\$ALICE\_ROOT/macros/Config\_gener.C} for more
+examples.}. Its parameter value $84210$ is the number of primary tracks that
+will be generated. For simple testing this number it typically set to a value
+like 50. Lines \texttt{0054} through \texttt{0058} set different parameters for
+the generator. Specifically line \texttt{0054 gener->SetMomentumRange(0,999);}
+set the limits of the momentum range of the particles that will be
+generated. Line \texttt{0055 gener->SetPhiRange(0,360);} sets the angular
+(degrees) range in $\phi$ or around the barrel that the partials will be
+generated in. In this case the full $\phi$ range will be used. The next line
+\texttt{0056 gener->SetThetaRanger(0.28,179.72);} sets the $\theta$ angular
+(degrees) range for the primary tracks to be generated in. In this case
+$0.28^{\circ}$ to $179.72^{\circ}$ covers the pseudorapidity range $-6.0\leq
+\eta \geq +6.0$. With these values of $\theta$ and $\phi$, $84210$ primary
+tracks represents about $8000$ primary particles in the central one unit of
+pseudorapidity, the maximum track density that ALICE has been designed for.
+
+Line \texttt{0057 gener->SetOrigin(0,0,0);} sets the central position of the
+event origin. Line \texttt{0058 gener->SetSigma(0,0,0);} set the
+$\sigma_{x,y,z}$ range over which multiple events will have their origins
+distributed. The mean position being given by the \texttt{SetOrigin} command
+above. It is also possible in one event, to distribute each primary track over
+a region who's mean is set by the \texttt{SetOrigin} command and who's width is
+set with the \texttt{SetSigma} command. If this is what you want then uncomment
+out line \texttt{0064}. Line \texttt{0059 gener->Init();} initializes the
+particle generation routine defined by \texttt{0053} with any and all
+parameters defined later on. Lastly line \texttt{0066
+gAlice->SetField(-999,2);} defines what kind, if any, magnetic field should be
+used. These values instruct \texttt{AliRoot} to read a magnetic field map from
+\texttt{\$ALICE\_ROOT/data/field02.dat}.
+
+\scriptsize
+\begin{verbatim}
+0067 
+0068 Int_t iMAG=1;
+0069 Int_t iITS=1;
+0070 Int_t iTPC=1;
+0071 Int_t iTOF=1;
+0072 Int_t iRICH=1;
+0073 Int_t iZDC=0;
+0074 Int_t iCASTOR=1;
+0075 Int_t iTRD=1;
+0076 Int_t iABSO=1;
+0077 Int_t iDIPO=1;
+0078 Int_t iHALL=1;
+0079 Int_t iFRAME=1;
+0080 Int_t iSHIL=1;
+0081 Int_t iPIPE=1;
+0082 Int_t iFMD=1;
+0083 Int_t iMUON=1;
+0084 Int_t iPHOS=1;
+0085 Int_t iPMD=0;
+0086 Int_t iSTART=0;
+0087 
+\end{verbatim}
+\normalsize
+
+In these following lines \texttt{0068} through \texttt{0086} a series of flags
+are defined to make it easy to turn on or off different detectors. There is one
+such flag for each detector/major structural element. A value of 1 turns on
+that detector and a value of 0 turns it off. For example, Line 
+\texttt{0068 Int\_t iMAG=1;} turns on the magnetic field for all of 
+ALICE\footnotemark. Line \texttt{0069 Int\_t iITS=1;} turns on the ITS. Line
+\texttt{0073 Int\_t iZDC=0;} turns off the ZDC\footnotemark. Note, in this
+case the ZDC will not even be defined in ALIROOT. You will not be able to make
+any fancy pictures of it or anything. It simply will not exist.
+
+\addtocounter{footnote}{-1}
+\footnotetext{Be car full, if a particular material was defined to have a
+magnetic field this may over ride this flag. This should have been fixed, I
+haven't confirmed that yet.}
+
+\addtocounter{footnote}{1}
+\footnotetext{Since the ZDC is outside of the range of produce primary
+particle, in this example, there is no real use to keep it in the simulation.}
+
+Now the following lines in the \texttt{Config.C} file, depending on the value
+of the above flags, will create the specific detectors and structural
+elements. Since this is an ITS manual, I will show and explain the ITS part of
+this remaining file.
+
+\scriptsize
+\begin{verbatim}
+0138
+0139 if(iITS) {
+0140 //=================== ITS parameters ============================
+0141 //
+0142 // EUCLID is a flag to output (=1) both geometry and media to two ASCII files 
+0143 // (called by default ITSgeometry.euc and ITSgeometry.tme) in a format
+0144 // understandable to the CAD system EUCLID. The default (=0) means that you 
+0145 // dont want to use this facility.
+0146 //
+0147 AliITS *ITS  = new AliITSv5("ITS","normal ITS");
+0148 ITS->SetEUCLID(0);
+0149 }
+0150 
+\end{verbatim}
+\normalsize
+
+This is the section of the \texttt{Config.C} file that defines what the ITS
+is. You will note that if \texttt{iITS} = 0\footnote{A value of 0 is equivalent
+to FALSE. A non-zero value is equivalent to TRUE.}, then this section of the
+file will not be executed and no ITS will be defined. Line \texttt{0147}
+creates the ITS. In this case it creates ITS version 5. There are two necessary
+parameters. The first is the name of this detector ``ITS''. The second is a
+brief description of the detector ``normal ITS''. Both of these are required so
+that AliRoot knows what detector this is. AliRoot does not know about any
+detectors and it is only via this detector name that we can later get access to
+the information stored about the ITS. Line \texttt{0148 ITS-SetEUCLID(0);} sets
+a flag for the ITS describing weather or not to create a file in the
+EUCLID-GEANT3 compatible format. By default this should be 0. In the future we
+may add additional flags and parameters as needed.
+
+On line \texttt{0147 AliITS *ITS = new AliITSv5(``ITS'',''normal ITS'');} this
+create an ITS of type v5. This is the detailed ITS TDR geometry. For a full
+description of the possible ITS geometries see section
+~\ref{ITSMan:ch2:Detaile_geometry_section}. By default, every detailed geometry
+is required to have a corresponding course geometry. In this case that is
+v0. All course geometries are required not to generate ``hits'' and therefore
+\texttt{AliITSv0} does not and therefore can not be used in any study where
+signals from the ITS may be used or required.
+
+\section*{Other things that can be done}
