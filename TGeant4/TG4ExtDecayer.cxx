@@ -22,7 +22,7 @@
 
 #include <math.h>
 
-// constructor
+//_____________________________________________________________________________
 TG4ExtDecayer::TG4ExtDecayer(AliDecayer* externalDecayer)
   : G4VExtDecayer("TG4ExtDecayer"),
     fExternalDecayer(externalDecayer),
@@ -32,13 +32,37 @@ TG4ExtDecayer::TG4ExtDecayer(AliDecayer* externalDecayer)
   fParticlesManager = TG4ParticlesManager::Instance();
 }
 
+//_____________________________________________________________________________
+TG4ExtDecayer::TG4ExtDecayer(const TG4ExtDecayer& right) {
+// 
+  TG4Globals::Exception(
+    "TG4ExtDecayer is protected from copying.");
+}
+
+//_____________________________________________________________________________
 TG4ExtDecayer::~TG4ExtDecayer() {
 //
   delete fDecayProductsArray;
 }
 
+
+// operators
+
+//_____________________________________________________________________________
+TG4ExtDecayer& TG4ExtDecayer::operator=(const TG4ExtDecayer& right)
+{
+  // check assignement to self
+  if (this == &right) return *this;
+
+  TG4Globals::Exception(
+    "TG4ExtDecayer is protected from assigning.");
+    
+  return *this;  
+} 
+
 // public methods
 
+//_____________________________________________________________________________
 G4DecayProducts* TG4ExtDecayer::ImportDecayProducts(const G4Track& track)
 {
   // check if external decayer is defined
