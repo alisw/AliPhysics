@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.85  2002/05/24 13:29:58  hristov
+AliTrackReference added, AliDisplay modified
+
 Revision 1.84  2002/05/21 16:26:07  hristov
 Find correctly TreeK in case CONFIG_SPLIT_FILE is set (Y.Schutz)
 
@@ -941,14 +944,16 @@ Int_t AliRun::GetEvent(Int_t event)
   sprintf(treeName,"TreeH%d",event);
   fTreeH = (TTree*)gDirectory->Get(treeName);
   if (!fTreeH) {
-      Error("GetEvent","cannot find Hits Tree for event:%d\n",event);
+    //Error("GetEvent","cannot find Hits Tree for event:%d\n",event);
+    Warning("GetEvent","cannot find Hits Tree for event:%d\n",event);
   }
 
   // Get TracReferences Tree header from file
   sprintf(treeName,"TreeTR%d",event);
   fTreeTR = (TTree*)gDirectory->Get(treeName);
   if (!fTreeTR) {
-      Error("GetEvent","cannot find TrackRefernces Tree for event:%d\n",event);
+    //Error("GetEvent","cannot find TrackReferences Tree for event:%d\n",event);
+    Warning("GetEvent","cannot find TrackReferences Tree for event:%d\n",event);
   }
 
   // get current file name and compare with names containing trees S,D,R

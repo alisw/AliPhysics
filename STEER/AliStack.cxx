@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2002/04/30 11:47:30  morsch
+KeepPhysics method called by PurifyKine added (N. Carrer, A.M.)
+
 Revision 1.19  2002/03/12 11:06:03  morsch
 Add particle status code to argument list of SetTrack(..).
 
@@ -870,7 +873,8 @@ Bool_t AliStack::GetEvent(Int_t event)
     if (fTreeK) 
       fTreeK->SetBranchAddress("Particles", &fParticleBuffer);
     else {
-      Error("GetEvent","cannot find Kine Tree for event:%d\n",event);
+      //      Error("GetEvent","cannot find Kine Tree for event:%d\n",event);
+      Warning("GetEvent","cannot find Kine Tree for event:%d\n",event);
       return kFALSE;
     }
 //      printf("\n primaries %d", fNprimary);
