@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.51  2001/05/31 10:19:52  morsch
+Fix for new AliRun::RunReco().
+
 Revision 1.50  2001/05/16 14:57:17  alibrary
 New files for folders and Stack
 
@@ -854,10 +857,22 @@ void   AliMUON::SetNsec(Int_t id, Int_t nsec)
 //___________________________________________
 void AliMUON::SDigits2Digits()
 {
-    if (fMerger) {
-	fMerger->Init();
-	fMerger->Digitise();
+
+// write TreeD here 
+
+    if (!fMerger) {
+      if (gAlice->GetDebug()>0) {
+	cerr<<"AliMUON::SDigits2Digits: create default AliMUONMerger "<<endl;
+	cerr<<" no merging, just digitization of 1 event will be done"<<endl;
+      }
+      fMerger = new AliMUONMerger();
     }
+    fMerger->Init();
+    fMerger->Digitise();
+    char hname[30];
+    sprintf(hname,"TreeD%d",gAlice->GetHeader()->GetEvent());
+    gAlice->TreeD()->Write(hname,TObject::kOverwrite);
+    gAlice->TreeD()->Reset();
 }
 
 //___________________________________________
