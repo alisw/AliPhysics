@@ -338,9 +338,9 @@ void AliZDC::Hits2SDigits()
   if(!fMerger){ 
     printf("	ZDC digitization (without merging)\n");
 
-    AliZDCMergedHit *MHit;
+    AliZDCMergedHit *mHit;
     Int_t j, sector[2];
-    Float_t MHits[7];
+    Float_t mHits[7];
     fNMergedhits = 0;
 
     TTree *treeH = TreeH();
@@ -354,21 +354,21 @@ void AliZDC::Hits2SDigits()
                       zdcHit = (AliZDCHit*)this->NextHit()){ 
 		      
 	   for(j=0; j<2; j++) sector[j] = zdcHit->GetVolume(j);
-	   MHits[0] = zdcHit->GetPrimKinEn();
-	   MHits[1] = zdcHit->GetXImpact();
-	   MHits[2] = zdcHit->GetYImpact();
-	   MHits[3] = zdcHit->GetSFlag();
-	   MHits[4] = zdcHit->GetLightPMQ();
-	   MHits[5] = zdcHit->GetLightPMC();
-	   MHits[6] = zdcHit->GetEnergy();
+	   mHits[0] = zdcHit->GetPrimKinEn();
+	   mHits[1] = zdcHit->GetXImpact();
+	   mHits[2] = zdcHit->GetYImpact();
+	   mHits[3] = zdcHit->GetSFlag();
+	   mHits[4] = zdcHit->GetLightPMQ();
+	   mHits[5] = zdcHit->GetLightPMC();
+	   mHits[6] = zdcHit->GetEnergy();
        }//Hits loop
        
-	  MHit = new AliZDCMergedHit(sector, MHits);
-	  new((*fMergedHits)[fNMergedhits]) AliZDCMergedHit(*MHit);	  
+	  mHit = new AliZDCMergedHit(sector, mHits);
+	  new((*fMergedHits)[fNMergedhits]) AliZDCMergedHit(*mHit);	  
 	  TClonesArray &sdigits = *fMergedHits;
-	  new (sdigits[fNMergedhits]) AliZDCMergedHit(*MHit);
+	  new (sdigits[fNMergedhits]) AliZDCMergedHit(*mHit);
 	  fNMergedhits++;
-	  delete MHit;
+	  delete mHit;
     }
       fLoader->TreeS()->Fill();
       fLoader->TreeS()->AutoSave(); 
@@ -412,13 +412,13 @@ void AliZDC::Hits2SDigits()
       if(branchSD) branchSD->SetAddress(&fMergedHits);
       else if(!branchSD) MakeBranchInTreeS(treeS);
     }
-    AliZDCMergedHit *MHit;
+    AliZDCMergedHit *mHit;
     TClonesArray &sdigits = *fMergedHits;
     Int_t imhit;
     //Merged Hits loop
     for(imhit=0; imhit<fNMergedhits; imhit++){
-       MHit = (AliZDCMergedHit*) fMergedHits->UncheckedAt(imhit);
-       new (sdigits[imhit]) AliZDCMergedHit(*MHit);
+       mHit = (AliZDCMergedHit*) fMergedHits->UncheckedAt(imhit);
+       new (sdigits[imhit]) AliZDCMergedHit(*mHit);
     }
     treeS->Fill();
     treeS->AutoSave();
@@ -492,11 +492,11 @@ void AliZDC::Hits2Digits()
 void AliZDC::Digits2Reco()
 {
     printf("	Entering AliZDC::Digits2Reco\n");
-    AliDetector *ZDC  = gAlice->GetDetector("ZDC");
-    TClonesArray *ZDCdigits = ZDC->Digits();
+    AliDetector *zdcd  = gAlice->GetDetector("ZDC");
+    TClonesArray *zdcdigits = zdcd->Digits();
     
-    TTree *TD = fLoader->TreeD();
-    if (TD == 0x0)
+    TTree *td = fLoader->TreeD();
+    if (td == 0x0)
      {
       Int_t retval = fLoader->LoadDigits();
       if (retval)
@@ -504,57 +504,57 @@ void AliZDC::Digits2Reco()
          Error("Digits2Reco","Error while loading Digits");
          return;
        }
-      TD = fLoader->TreeD();
+      td = fLoader->TreeD();
      }
 
 
-    if(TD){
+    if(td){
       char brname[20];
-      sprintf(brname,"%s",ZDC->GetName());
-      TBranch *br = TD->GetBranch(brname);
-      if(br) br->SetAddress(&ZDCdigits);
+      sprintf(brname,"%s",zdcd->GetName());
+      TBranch *br = td->GetBranch(brname);
+      if(br) br->SetAddress(&zdcdigits);
     }
-    else if(!TD) printf("	ERROR -> TreeD NOT found in gAlice object\n");
+    else if(!td) printf("	ERROR -> TreeD NOT found in gAlice object\n");
     
-    Int_t nt = (Int_t) (TD->GetEntries());
+    Int_t nt = (Int_t) (td->GetEntries());
     gAlice->ResetDigits();    
     
     AliZDCDigit *dig;
-    Int_t j, idig, ndigits, ZNraw=0, ZPraw=0, ZEMraw=0;
+    Int_t j, idig, ndigits, znraw=0, zpraw=0, zemraw=0;
     //	---	 Summing raw ADCs for each detector to obtain total light
     for(j=0; j<nt; j++){
-      TD->GetEvent(j);
-      ndigits = ZDCdigits->GetEntries();
-      ZNraw=0;
-      ZPraw=0; 
-      ZEMraw=0;
+      td->GetEvent(j);
+      ndigits = zdcdigits->GetEntries();
+      znraw=0;
+      zpraw=0; 
+      zemraw=0;
       //  ---  Loop over event digits
       for(idig=0; idig<ndigits; idig++){
-         dig = (AliZDCDigit*) ZDCdigits->UncheckedAt(idig);
-         if(dig->GetSector(0) == 1)	 ZNraw  += dig->GetADCValue();
-         else if(dig->GetSector(0) == 2) ZPraw  += dig->GetADCValue();
-         else if(dig->GetSector(0) == 3) ZEMraw += dig->GetADCValue();
+         dig = (AliZDCDigit*) zdcdigits->UncheckedAt(idig);
+         if(dig->GetSector(0) == 1)	 znraw  += dig->GetADCValue();
+         else if(dig->GetSector(0) == 2) zpraw  += dig->GetADCValue();
+         else if(dig->GetSector(0) == 3) zemraw += dig->GetADCValue();
       } // Digits loop
     } //  TreeD entries loop
-    printf("\n	---	ZNraw = %d, ZPraw = %d, ZEMraw = %d\n",ZNraw, ZPraw, ZEMraw);
+    printf("\n	---	znraw = %d, zpraw = %d, zemraw = %d\n",znraw, zpraw, zemraw);
     
   //  ---      Pedestal subtraction
-  Int_t ZNcorr, ZPcorr, ZEMcorr, MeanPed=50;
-  ZNcorr  = ZNraw  - 5*MeanPed;
-  ZPcorr  = ZPraw  - 5*MeanPed;
-  ZEMcorr = ZEMraw - 2*MeanPed;
-  if(ZNcorr<0)  ZNcorr=0;
-  if(ZPcorr<0)  ZPcorr=0;
-  if(ZEMcorr<0) ZEMcorr=0;
- printf("\n    ZNcorr = %d, ZPcorr = %d, ZEMcorr = %d\n",ZNcorr,ZPcorr,ZEMcorr);
+  Int_t zncorr, zpcorr, zemcorr, meanPed=50;
+  zncorr  = znraw  - 5*meanPed;
+  zpcorr  = zpraw  - 5*meanPed;
+  zemcorr = zemraw - 2*meanPed;
+  if(zncorr<0)  zncorr=0;
+  if(zpcorr<0)  zpcorr=0;
+  if(zemcorr<0) zemcorr=0;
+ printf("\n    zncorr = %d, zpcorr = %d, zemcorr = %d\n",zncorr,zpcorr,zemcorr);
   
   //  ---      ADCchannel -> photoelectrons
   // NB-> PM gain = 10^(5), ADC resolution = 6.4*10^(-7)
-  Float_t ZNphe, ZPphe, ZEMphe, ConvFactor = 0.064;
-  ZNphe  = ZNcorr/ConvFactor;
-  ZPphe  = ZPcorr/ConvFactor;
-  ZEMphe = ZEMcorr/ConvFactor;
-  printf("\n    ZNphe = %f, ZPphe = %f, ZEMphe = %f\n",ZNphe, ZPphe, ZEMphe);
+  Float_t znphe, zpphe, zemphe, convFactor = 0.064;
+  znphe  = zncorr/convFactor;
+  zpphe  = zpcorr/convFactor;
+  zemphe = zemcorr/convFactor;
+  printf("\n    znphe = %f, zpphe = %f, zemphe = %f\n",znphe, zpphe, zemphe);
   
   //  ---      Energy calibration
   // Conversion factors for hadronic ZDCs goes from phe yield to TRUE incident 
@@ -563,26 +563,26 @@ void AliZDC::Digits2Reco()
   // NB -> ZN and ZP conversion factors are constant since incident spectators
   // have all the same energy, ZEM energy is obtained through a fit over the whole
   // range of incident particle energies (obtained with full HIJING simulations) 
-  Float_t ZNenergy, ZPenergy, ZEMenergy, ZDCenergy;
-  Float_t ZNphexTeV=329., ZPphexTeV=369.;
-  ZNenergy  = ZNphe/ZNphexTeV;
-  ZPenergy  = ZPphe/ZPphexTeV;
-  ZDCenergy = ZNenergy+ZPenergy;
-  ZEMenergy = -4.81+0.3238*ZEMphe;
-  if(ZEMenergy<0) ZEMenergy=0;
-  printf("    ZNenergy = %f TeV, ZPenergy = %f TeV, ZDCenergy = %f GeV, "
-         "\n		ZEMenergy = %f TeV\n", ZNenergy, ZPenergy, 
-	 ZDCenergy, ZEMenergy);
+  Float_t znenergy, zpenergy, zemenergy, zdcenergy;
+  Float_t znphexTeV=329., zpphexTeV=369.;
+  znenergy  = znphe/znphexTeV;
+  zpenergy  = zpphe/zpphexTeV;
+  zdcenergy = znenergy+zpenergy;
+  zemenergy = -4.81+0.3238*zemphe;
+  if(zemenergy<0) zemenergy=0;
+  printf("    znenergy = %f TeV, zpenergy = %f TeV, zdcenergy = %f GeV, "
+         "\n		zemenergy = %f TeV\n", znenergy, zpenergy, 
+	 zdcenergy, zemenergy);
   
-  if(ZDCenergy==0)
-    printf("\n\n	###	ATTENZIONE!!! -> ev# %d: ZNenergy = %f TeV, ZPenergy = %f TeV, ZDCenergy = %f GeV, "
-         " ZEMenergy = %f TeV\n\n", fMerger->EvNum(), ZNenergy, ZPenergy, ZDCenergy, ZEMenergy); 
+  if(zdcenergy==0)
+    printf("\n\n	###	ATTENZIONE!!! -> ev# %d: znenergy = %f TeV, zpenergy = %f TeV, zdcenergy = %f GeV, "
+         " zemenergy = %f TeV\n\n", fMerger->EvNum(), znenergy, zpenergy, zdcenergy, zemenergy); 
   
   //  ---      Number of incident spectator nucleons
-  Int_t NDetSpecN, NDetSpecP;
-  NDetSpecN = (Int_t) (ZNenergy/2.760);
-  NDetSpecP = (Int_t) (ZPenergy/2.760);
-  printf("\n    NDetSpecN = %d, NDetSpecP = %d\n",NDetSpecN, NDetSpecP);
+  Int_t nDetSpecN, nDetSpecP;
+  nDetSpecN = (Int_t) (znenergy/2.760);
+  nDetSpecP = (Int_t) (zpenergy/2.760);
+  printf("\n    nDetSpecN = %d, nDetSpecP = %d\n",nDetSpecN, nDetSpecP);
   
   //  ---      Number of generated spectator nucleons and impact parameter
   // --------------------------------------------------------------------------------------------------
@@ -644,69 +644,69 @@ void AliZDC::Digits2Reco()
   TF1 *fZEMsp = new TF1("fZEMsp","208.7-0.09006*x+0.000009526*x*x",0.,4000.);
   TF1 *fZEMb  = new TF1("fZEMb","16.06-0.01633*x+1.44e-5*x*x-6.778e-9*x*x*x+1.438e-12*x*x*x*x-1.112e-16*x*x*x*x*x",0.,4000.);
   
-  Int_t NGenSpecN=0, NGenSpecP=0, NGenSpec=0;
-  Double_t ImpPar=0;
+  Int_t nGenSpecN=0, nGenSpecP=0, nGenSpec=0;
+  Double_t impPar=0;
   // Cut value for Ezem (GeV)
   // [1] ### Results in Chiara's PhD thesis -> 0<b<15 fm (Dec 2001)
-  //Float_t EZEMCut = 360.; 
+  //Float_t eZEMCut = 360.; 
   // [2] ### Results from a new production  -> 0<b<18 fm (Apr 2002)
-  Float_t EZEMCut = 420.;
-  Float_t DeltaEZEMSup = 690.; 
-  Float_t DeltaEZEMInf = 270.; 
-  if(ZEMenergy > (EZEMCut+DeltaEZEMSup)){
-    NGenSpecN = (Int_t) (fZNCen->Eval(ZNenergy));
-    NGenSpecP = (Int_t) (fZPCen->Eval(ZPenergy));
-    NGenSpec  = (Int_t) (fZDCCen->Eval(ZDCenergy));
-    ImpPar    = fbCen->Eval(ZDCenergy);
-    //printf("    fZNCen = %f, fZPCen = %f, fZDCCen = %f\n",fZNCen->Eval(ZNenergy),
-    //            fZPCen->Eval(ZPenergy),fZDCCen->Eval(ZDCenergy));
+  Float_t eZEMCut = 420.;
+  Float_t deltaEZEMSup = 690.; 
+  Float_t deltaEZEMInf = 270.; 
+  if(zemenergy > (eZEMCut+deltaEZEMSup)){
+    nGenSpecN = (Int_t) (fZNCen->Eval(znenergy));
+    nGenSpecP = (Int_t) (fZPCen->Eval(zpenergy));
+    nGenSpec  = (Int_t) (fZDCCen->Eval(zdcenergy));
+    impPar    = fbCen->Eval(zdcenergy);
+    //printf("    fZNCen = %f, fZPCen = %f, fZDCCen = %f\n",fZNCen->Eval(znenergy),
+    //            fZPCen->Eval(zpenergy),fZDCCen->Eval(zdcenergy));
   }
-  else if(ZEMenergy < (EZEMCut-DeltaEZEMInf)){
-    NGenSpecN = (Int_t) (fZNPer->Eval(ZNenergy)); 
-    NGenSpecP = (Int_t) (fZPPer->Eval(ZPenergy));
-    NGenSpec  = (Int_t) (fZDCPer->Eval(ZDCenergy));
-    ImpPar    = fbPer->Eval(ZDCenergy);
-    //printf("    fZNPer = %f, fZPPer = %f, fZDCPer = %f\n",fZNPer->Eval(ZNenergy),
-    //            fZPPer->Eval(ZPenergy),fZDCPer->Eval(ZDCenergy));
+  else if(zemenergy < (eZEMCut-deltaEZEMInf)){
+    nGenSpecN = (Int_t) (fZNPer->Eval(znenergy)); 
+    nGenSpecP = (Int_t) (fZPPer->Eval(zpenergy));
+    nGenSpec  = (Int_t) (fZDCPer->Eval(zdcenergy));
+    impPar    = fbPer->Eval(zdcenergy);
+    //printf("    fZNPer = %f, fZPPer = %f, fZDCPer = %f\n",fZNPer->Eval(znenergy),
+    //            fZPPer->Eval(zpenergy),fZDCPer->Eval(zdcenergy));
   }
-  else if(ZEMenergy >= (EZEMCut-DeltaEZEMInf) && ZEMenergy <= (EZEMCut+DeltaEZEMSup)){
-    NGenSpecN = (Int_t) (fZEMn->Eval(ZEMenergy));
-    NGenSpecP = (Int_t) (fZEMp->Eval(ZEMenergy));
-    NGenSpec  = (Int_t)(fZEMsp->Eval(ZEMenergy));
-    ImpPar    =  fZEMb->Eval(ZEMenergy);
-    //printf("    Nspec ZEM = %f, Nspec ZDC = %f\n",fZEMsp->Eval(ZNenergy),fZDCPer->Eval(ZDCenergy));
+  else if(zemenergy >= (eZEMCut-deltaEZEMInf) && zemenergy <= (eZEMCut+deltaEZEMSup)){
+    nGenSpecN = (Int_t) (fZEMn->Eval(zemenergy));
+    nGenSpecP = (Int_t) (fZEMp->Eval(zemenergy));
+    nGenSpec  = (Int_t)(fZEMsp->Eval(zemenergy));
+    impPar    =  fZEMb->Eval(zemenergy);
+    //printf("    Nspec ZEM = %f, Nspec ZDC = %f\n",fZEMsp->Eval(znenergy),fZDCPer->Eval(zdcenergy));
   }
   // [1] ### Results in Chiara's PhD thesis -> 0<b<15 fm (Dec 2001)
-  /*if(ZNenergy>158.5)  NGenSpecN = (Int_t) (fZEMn->Eval(ZEMenergy));
-  if(ZPenergy>58.91)  NGenSpecP = (Int_t) (fZEMp->Eval(ZEMenergy));
-  if(ZDCenergy>220.4) NGenSpec  = (Int_t)(fZEMsp->Eval(ZEMenergy));
-  if(ZDCenergy>225.)  ImpPar    =          fZEMb->Eval(ZEMenergy);*/
+  /*if(znenergy>158.5)  nGenSpecN = (Int_t) (fZEMn->Eval(zemenergy));
+  if(zpenergy>58.91)  nGenSpecP = (Int_t) (fZEMp->Eval(zemenergy));
+  if(zdcenergy>220.4) nGenSpec  = (Int_t)(fZEMsp->Eval(zemenergy));
+  if(zdcenergy>225.)  impPar    =          fZEMb->Eval(zemenergy);*/
   // [2] ### Results from a new production  -> 0<b<18 fm (Apr 2002)
-  if(ZNenergy>162.)  NGenSpecN = (Int_t) (fZEMn->Eval(ZEMenergy));
-  if(ZPenergy>59.75)  NGenSpecP = (Int_t) (fZEMp->Eval(ZEMenergy));
-  if(ZDCenergy>221.5) NGenSpec  = (Int_t)(fZEMsp->Eval(ZEMenergy));
-  if(ZDCenergy>220.)  ImpPar    =  fZEMb->Eval(ZEMenergy);
+  if(znenergy>162.)  nGenSpecN = (Int_t) (fZEMn->Eval(zemenergy));
+  if(zpenergy>59.75)  nGenSpecP = (Int_t) (fZEMp->Eval(zemenergy));
+  if(zdcenergy>221.5) nGenSpec  = (Int_t)(fZEMsp->Eval(zemenergy));
+  if(zdcenergy>220.)  impPar    =  fZEMb->Eval(zemenergy);
   
-  if(NGenSpecN>125)    NGenSpecN=125;
-  else if(NGenSpecN<0) NGenSpecN=0;
-  if(NGenSpecP>82)     NGenSpecP=82;
-  else if(NGenSpecP<0) NGenSpecP=0;
-  if(NGenSpec>207)     NGenSpec=207;
-  else if(NGenSpec<0)  NGenSpec=0;
-  //printf("    NRecSpecN = %d, NRecSpecP = %d, NRecSpec = %d\n",NGenSpecN,NGenSpecP,NGenSpec);
+  if(nGenSpecN>125)    nGenSpecN=125;
+  else if(nGenSpecN<0) nGenSpecN=0;
+  if(nGenSpecP>82)     nGenSpecP=82;
+  else if(nGenSpecP<0) nGenSpecP=0;
+  if(nGenSpec>207)     nGenSpec=207;
+  else if(nGenSpec<0)  nGenSpec=0;
+  //printf("    NRecSpecN = %d, NRecSpecP = %d, NRecSpec = %d\n",nGenSpecN,nGenSpecP,nGenSpec);
   
   //  ---      Number of participants
-  Int_t NPart, NPartTot;
-  NPart = 207-NGenSpecN-NGenSpecP;
-  NPartTot = 207-NGenSpec;
-  //printf("	###	NPart(ZP+ZN) = %d, NPart(ZDC) = %d, b = %f fm\n",NPart,NPartTot,ImpPar);
-  printf("	###	NPart = %d, b = %f fm\n",NPartTot,ImpPar);
+  Int_t nPart, nPartTot;
+  nPart = 207-nGenSpecN-nGenSpecP;
+  nPartTot = 207-nGenSpec;
+  //printf("	###	nPart(ZP+ZN) = %d, nPart(ZDC) = %d, b = %f fm\n",nPart,nPartTot,impPar);
+  printf("	###	nPart = %d, b = %f fm\n",nPartTot,impPar);
   
   //  ---     Writing RecPoints TCA
   // Allocate the RecPoints TCA 
   fRecPoints = new TClonesArray("AliZDCReco",1000);
-  AliZDCReco *reco = new AliZDCReco(ZNenergy,ZPenergy,ZDCenergy,ZEMenergy,
-  	      NDetSpecN,NDetSpecP,NGenSpecN,NGenSpecP,NGenSpec,NPartTot,ImpPar);
+  AliZDCReco *reco = new AliZDCReco(znenergy,zpenergy,zdcenergy,zemenergy,
+  	      nDetSpecN,nDetSpecP,nGenSpecN,nGenSpecP,nGenSpec,nPartTot,impPar);
   new((*fRecPoints)[fNRecPoints]) AliZDCReco(*reco);
   //fNRecPoints++;
   //fRecPoints->Dump();
