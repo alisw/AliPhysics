@@ -263,7 +263,6 @@ void AliRunDigitizer::Digitize(Option_t* option)
 // take gAlice from the first input file. It is needed to access
 //  geometry data
 // If gAlice is already in memory, use it
-  SetDebug(10);
   
   if (!static_cast<AliStream*>(fInputStreams->At(0))->ImportgAlice()) 
    {
@@ -612,7 +611,10 @@ AliRunLoader* AliRunDigitizer::GetOutRunLoader()
   
   if ( fOutputFileName.IsNull() )
    {//guard that sombody calls it without settting file name
-    cout<<"Output file name is empty. Using Input 0 for output\n";
+    if (GetDebug()>0) {
+      Info("GetOutRunLoader", 
+	   "Output file name is empty. Using Input 0 for output");
+    }
     return AliRunLoader::GetRunLoader(GetInputFolderName(0));
    }
 //  InitOutputGlobal();
