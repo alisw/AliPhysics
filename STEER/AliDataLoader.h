@@ -82,6 +82,8 @@ class AliDataLoader: public TNamed
    void               SetFileNameSuffix(const TString& suffix);//adds the suffix before ".root", 
                                                                //e.g. TPC.Digits.root -> TPC.DigitsMerged.root
                                                                //made on Jiri Chudoba demand
+   void               SetNumberOfEventsPerFile(Int_t nevpf) 
+     {fNEventsPerFile = nevpf;}
    const TString      SetFileOffset(const TString& fname);//adds the proper number before .root extension suffix
    void               SetDirName(TString& dirname);
 
@@ -118,6 +120,7 @@ class AliDataLoader: public TNamed
    TDirectory*  fDirectory; //!pointer to TDirectory
    TString      fFileOption; //!file option while opened 
    Int_t        fCompressionLevel; //Compression Level of File
+   Int_t        fNEventsPerFile;  //defines number of events stored per one file
    
    TObjArray*   fBaseLoaders;//base loaders
    Bool_t       fHasTask;// flag if has a task
@@ -127,7 +130,7 @@ class AliDataLoader: public TNamed
    TFolder*     fEventFolder;//!event folder
    TFolder*     fFolder;//! folder with data
    
-   ClassDef(AliDataLoader,1)
+   ClassDef(AliDataLoader,2)
  };
 
 

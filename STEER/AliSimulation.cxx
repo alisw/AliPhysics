@@ -80,6 +80,18 @@
 // RunHitsDigitization and WriteRawData can be used to run only parts of     //
 // the full simulation chain.                                                //
 //                                                                           //
+// The default number of events per file, which is usually set in the        //
+// config file, can be changed for individual detectors and data types       //
+// by calling                                                                //
+//                                                                           //
+//   sim.SetEventsPerFile("PHOS", "Reconstructed Points", 3);                //
+//                                                                           //
+// The first argument is the detector, the second one the data type and the  //
+// last one the number of events per file. Valid data types are "Hits",      //
+// "Summable Digits", "Digits", "Reconstructed Points" and "Tracks".         //
+// The number of events per file has to be set before the simulation of      //
+// hits. Otherwise it has no effect.                                         //
+//                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TObjString.h>
@@ -114,6 +126,7 @@ AliSimulation::AliSimulation(const char* configFileName,
   fNEvents(1),
   fConfigFileName(configFileName),
   fGAliceFileName("galice.root"),
+  fEventsPerFile(),
   fBkgrdFileNames(NULL),
   fUseBkgrdVertex(kTRUE),
   fRegionOfInterest(kTRUE)
@@ -138,11 +151,17 @@ AliSimulation::AliSimulation(const AliSimulation& sim) :
   fNEvents(sim.fNEvents),
   fConfigFileName(sim.fConfigFileName),
   fGAliceFileName(sim.fGAliceFileName),
+  fEventsPerFile(),
   fBkgrdFileNames(NULL),
   fUseBkgrdVertex(sim.fUseBkgrdVertex),
   fRegionOfInterest(sim.fRegionOfInterest)
 {
 // copy constructor
+
+  for (Int_t i = 0; i < sim.fEventsPerFile.GetEntriesFast(); i++) {
+    if (!sim.fEventsPerFile[i]) continue;
+    fEventsPerFile.Add(sim.fEventsPerFile[i]->Clone());
+  }
 
   fBkgrdFileNames = new TObjArray;
   for (Int_t i = 0; i < sim.fBkgrdFileNames->GetEntriesFast(); i++) {
@@ -165,6 +184,8 @@ AliSimulation& AliSimulation::operator = (const AliSimulation& sim)
 AliSimulation::~AliSimulation()
 {
 // clean up
+
+  fEventsPerFile.Delete();
 
   if (fBkgrdFileNames) {
     fBkgrdFileNames->Delete();
@@ -202,6 +223,18 @@ void AliSimulation::SetGAliceFile(const char* fileName)
     fGAliceFileName = absFileName;
     delete[] absFileName;
   }
+}
+
+//_____________________________________________________________________________
+void AliSimulation::SetEventsPerFile(const char* detector, const char* type, 
+				     Int_t nEvents)
+{
+// set the number of events per file for the given detector and data type
+// ("Hits", "Summable Digits", "Digits", "Reconstructed Points" or "Tracks")
+
+  TNamed* obj = new TNamed(detector, type);
+  obj->SetUniqueID(nEvents);
+  fEventsPerFile.Add(obj);
 }
 
 //_____________________________________________________________________________
@@ -314,6 +347,33 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 
   if (!fRunSimulation) {
     gAlice->Generator()->SetTrackingFlag(0);
+  }
+
+  // set the number of events per file for given detectors and data types
+  for (Int_t i = 0; i < fEventsPerFile.GetEntriesFast(); i++) {
+    if (!fEventsPerFile[i]) continue;
+    const char* detName = fEventsPerFile[i]->GetName();
+    const char* typeName = fEventsPerFile[i]->GetTitle();
+    TString loaderName(detName);
+    loaderName += "Loader";
+    AliLoader* loader = runLoader->GetLoader(loaderName);
+    if (!loader) {
+      Error("RunSimulation", "no loader for %s found\n"
+	    "Number of events per file not set for %s %s", 
+	    detName, typeName, detName);
+      continue;
+    }
+    AliDataLoader* dataLoader = 
+      loader->GetDataLoader(typeName);
+    if (!dataLoader) {
+      Error("RunSimulation", "no data loader for %s found\n"
+	    "Number of events per file not set for %s %s", 
+	    typeName, detName, typeName);
+      continue;
+    }
+    dataLoader->SetNumberOfEventsPerFile(fEventsPerFile[i]->GetUniqueID());
+    Info("RunSimulation", "number of events per file set to %d for %s %s",
+	 fEventsPerFile[i]->GetUniqueID(), detName, typeName);
   }
 
   Info("RunSimulation", "running gAlice");

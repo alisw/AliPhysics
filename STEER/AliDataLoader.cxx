@@ -43,6 +43,7 @@ AliDataLoader::AliDataLoader():
  fDirectory(0x0),
  fFileOption(),
  fCompressionLevel(2),
+ fNEventsPerFile(0),
  fBaseLoaders(0x0),
  fHasTask(kFALSE),
  fTaskName(),
@@ -61,6 +62,7 @@ AliDataLoader::AliDataLoader(const char* filename, const char* contname, const c
  fDirectory(0x0),
  fFileOption(0),
  fCompressionLevel(2),
+ fNEventsPerFile(0),
  fBaseLoaders(new TObjArray(4)),
  fHasTask(kFALSE),
  fTaskName(),
@@ -459,6 +461,9 @@ const TString AliDataLoader::SetFileOffset(const TString& fname)
 
 //return fname;
   Long_t offset = (Long_t)GetRunLoader()->GetFileOffset();
+  if (fNEventsPerFile > 0) {
+    offset = GetRunLoader()->GetEventNumber()/fNEventsPerFile;
+  }
   if (offset < 1) return fname;
 
   TString soffset;

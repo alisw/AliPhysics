@@ -30,6 +30,8 @@ public:
   void           SetNumberOfEvents(Int_t nEvents);
   void           SetConfigFile(const char* fileName);
   void           SetGAliceFile(const char* fileName);
+  void           SetEventsPerFile(const char* detector, const char* type, 
+				  Int_t nEvents);
 
   void           SetRunGeneration(Bool_t run) {fRunGeneration = run;};
   void           SetRunSimulation(Bool_t run) {fRunSimulation = run;};
@@ -71,6 +73,8 @@ private:
   Int_t          fNEvents;            // number of events
   TString        fConfigFileName;     // name of the config file
   TString        fGAliceFileName;     // name of the galice file
+  TObjArray      fEventsPerFile;      // number of events per file for given detectors and data types
+
   TObjArray*     fBkgrdFileNames;     // names of background files for merging
   Bool_t         fUseBkgrdVertex;     // use vertex from background in case of merging
   Bool_t         fRegionOfInterest;   // digitization in region of interest
