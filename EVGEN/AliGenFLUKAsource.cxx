@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2000/12/21 16:24:06  morsch
+Coding convention clean-up
+
 Revision 1.12  2000/11/30 07:12:50  alibrary
 Introducing new Rndm and QA classes
 
@@ -77,15 +80,13 @@ Introduction of the Copyright and cvs Log
     // whole volume of the MUON Arm 
     fZshift=0;
     // Set the default file 
-    fFileName="flukasource.root";
+    fFileName="";
 
     fTreeFluka=0;
     fTreeChain = new TChain("h1");
 //
 //  Read all particles
     fNpart=-1;
-
-    
 }
 
 AliGenFLUKAsource::AliGenFLUKAsource(Int_t npart)
@@ -107,7 +108,7 @@ AliGenFLUKAsource::AliGenFLUKAsource(Int_t npart)
     // whole volume of the MUON Arm 
     fZshift=0;
     // Set the default file 
-    fFileName="flukasource.root";
+    fFileName="";
 
     fTreeFluka=0;
     fTreeChain = new TChain("h1"); 
@@ -193,7 +194,8 @@ void AliGenFLUKAsource::Generate()
     TChain *h2=fTreeChain;
     Int_t nentries = (Int_t) h2->GetEntries();
     if (fNpart == -1) fNpart=Int_t(nentries*fFrac);
-  
+    
+
   // loop over number of particles
     Int_t nb=0;
     Int_t ev=gMC->CurrentEvent();
@@ -215,27 +217,31 @@ void AliGenFLUKAsource::Generate()
 	    printf("Generate - I'm out \n");
 	    return;
 	}   
+	
+	Int_t ifip = Int_t(fIp);
+	
 
 	if (fSourceId != -1 && fIgas !=fSourceId) {
 	    irwn++;
 	    continue;
 	}
 	
-	if (fIp > 28 || fIp < 0) {
+	if (ifip > 28 || ifip < 0) {
 	    irwn++;
 	    continue;
 	}
 	
-	if ((fIp != fIkine && fIkine != 6 && fIkine != 9 && fIkine != 10) || fAge > fAgeMax){
+	if ((ifip != fIkine && fIkine != kAll && fIkine != kCharged 
+	     && fIkine != 10) || fAge > fAgeMax){
 	    irwn++;
 	    continue;
-	} else if (fIkine == 9) {
-	    if (fIp == 7 || fIp == 8 || fAge > fAgeMax) { 
+	} else if (fIkine == kCharged) {
+	    if (ifip == 7 || ifip == 8 || fAge > fAgeMax) { 
 		irwn++;
 		continue;
 	    }
-	} else if (fIkine == 10) {
-	    if (fIp == 8 || fAge > fAgeMax) { 
+	} else if (fIkine == kNoNeutron) {
+	    if (ifip == 8 || fAge > fAgeMax) { 
 		irwn++;
 		continue;
 	    }
@@ -244,8 +250,8 @@ void AliGenFLUKAsource::Generate()
 
 	irwn++;
 //
-// PDG code from FLUKA particle type (fIp)
-	part=kIfluge[int(fIp)-1];	
+// PDG code from FLUKA particle type (ifip)
+	part=kIfluge[int(ifip)-1];	
 //
 // Calculate momentum from kinetic energy and mass of the particle
 	gMC->Gfpart(part, name, itrtyp,  
