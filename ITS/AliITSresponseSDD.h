@@ -274,14 +274,8 @@ protected:
   TString         fFileName2;        // baseline & noise val or output coded                                                 // signal or monitored bgr.
   TString         fFileName3;        // param values or output coded signal 
   
-  ClassDef(AliITSresponseSDD,2) // SDD response 
+  ClassDef(AliITSresponseSDD,3) // SDD response 
     
     };
 #endif
-
-
-
-
-
-
-
+    
