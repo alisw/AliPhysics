@@ -383,7 +383,8 @@ void AliITSClusterFinderSPDbari::DigitToPoint(Int_t nclus,
  //
  //
  
-     Float_t l[3],g[3],xg,zg;
+     Float_t l[3],xg,zg;
+//     Float_t g[3];	  
      const Float_t kconv = 1.0e-4; // micron -> cm
 
      // get rec points
@@ -396,7 +397,7 @@ void AliITSClusterFinderSPDbari::DigitToPoint(Int_t nclus,
         l[0] = kconv*xcenter[i];
         l[1] = kconv*fSegmentation->Dy()/2.;
         l[2] = kconv*zcenter[i];
-        AliITSgeom *gm = (AliITSgeom*)fSegmentation->Geometry();   
+//        AliITSgeom *gm = (AliITSgeom*)fSegmentation->Geometry();   
 
         /*
         //--- to be changed
