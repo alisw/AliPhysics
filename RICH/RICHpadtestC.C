@@ -49,4 +49,7 @@ void RICHpadtestC (Int_t evNumber1=0,Int_t evNumber2=0)
     AliRICH *RICH  = (AliRICH*)gAlice->GetDetector("RICH");
     
     RICH->DiagnosticsFE(evNumber1,evNumber2);
+    
+    file->Write();
+
 }

@@ -53,6 +53,8 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
     
     RICH->DiagnosticsSE(diaglevel,evNumber1,evNumber2);
 
+    file->Write();
+
 
 //  Create some histograms
 
