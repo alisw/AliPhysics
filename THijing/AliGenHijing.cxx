@@ -519,7 +519,7 @@ void AliGenHijing::MakeHeader()
     ((AliGenHijingEventHeader*) header)->SetTrials(fTrials);
 // Event Vertex
     header->SetPrimaryVertex(fVertex);
-    gAlice->SetGenEventHeader(header);   
+    if (gAlice) gAlice->SetGenEventHeader(header);   
     fCollisionGeometry = (AliGenHijingEventHeader*)  header;
 }
 
