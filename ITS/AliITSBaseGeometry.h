@@ -533,7 +533,7 @@ class AliITSPConeData : public AliITSBaseVolParams {
     AliITSPConeData(Int_t n) : AliITSBaseVolParams() // Standard constructor
 	{fNz=n;fPhi0=0.0;fDphi=360.0;fZ=new Double_t[n];
 	fRmin=new Double_t[n];fRmax=new Double_t[n];}
-    AliITSPConeData(AliITSPConeData &source) // Copy constructor
+    AliITSPConeData(AliITSPConeData &source) : AliITSBaseVolParams(source) // Copy constructor
 	{ *this = source;}
     virtual ~AliITSPConeData() // Standard destructor
 	{delete[] fZ;delete[] fRmin;delete[] fRmax;fNz=0;}
@@ -695,7 +695,7 @@ class AliITSPGonData : public AliITSBaseVolParams {
     AliITSPGonData(Int_t n) : AliITSBaseVolParams() // Standard constructor
 	{fNz=n;fNphi=0;fPhi0=0.0;fDphi=360.0;fZ=new Double_t[n];
 	fRmin=new Double_t[n];fRmax=new Double_t[n];}
-    AliITSPGonData(AliITSPGonData &source) // Copy constructor
+    AliITSPGonData(AliITSPGonData &source) : AliITSBaseVolParams(source) // Copy constructor
 	{ *this = source;}
     virtual ~AliITSPGonData() // Standard destructor
 	{delete[] fZ;delete[] fRmin;delete[] fRmax;fNz=0;}
@@ -768,15 +768,15 @@ istream &operator>>(istream &os,AliITSPGonData &source);
 //  A basic geometry class for the ITS simulation geometry stucture
 /////////////////////////////////////////////////////////////////////////
 #include <TObject.h>
+#include "AliITS.h"
 
-#include "AliModule.h"
 class TString;
 class TVector3;
 
 class AliITSBaseGeometry : public TObject {
  public:
     AliITSBaseGeometry(); // Default constructor
-    AliITSBaseGeometry(AliModule *its,Int_t iflag); // Standard Constructor
+    AliITSBaseGeometry(AliITS *its,Int_t iflag); // Standard Constructor
     virtual ~AliITSBaseGeometry(); // Destructor
     virtual void BuildDisplayGeometry(){}; // Calls ROOT geometry interface
                                       // to AliRoot display
@@ -955,7 +955,7 @@ class AliITSBaseGeometry : public TObject {
     static Int_t fVolNameSize; // Size of Array fVolName
     static Int_t fVolNameLast; // Last filled element of fVolName
     Double_t fScale; // Scale factor (=1=>[cm]).
-    AliModule *fits; // local pointer to ITS module needed for AliMixture...
+    AliITS *fits; // local pointer to ITS module needed for AliMixture...
 
     ClassDef(AliITSBaseGeometry,1) // Basic ITS Geometry class
 };

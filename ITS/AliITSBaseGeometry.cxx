@@ -77,7 +77,7 @@ AliITSBaseGeometry::AliITSBaseGeometry(){
     fNCreates++; // incrament this creation counter.
 }
 //______________________________________________________________________
-AliITSBaseGeometry::AliITSBaseGeometry(AliModule *its,Int_t iflag){
+AliITSBaseGeometry::AliITSBaseGeometry(AliITS *its,Int_t iflag){
     // Standard construtor for the ITS Base Geometry class.
     // Inputs:
     //    Int_t iflag  flag to indecate specific swiches in the geometry
@@ -86,6 +86,7 @@ AliITSBaseGeometry::AliITSBaseGeometry(AliModule *its,Int_t iflag){
     // Return:
     //    none.
 
+    fScale = iflag; // remove warning message for unused variable
     fScale = 1.0; // Default value.
     fits = its; // get a copy of the pointer to the ITS.
     if(fNCreates==0){ // only for very first init
@@ -283,6 +284,7 @@ void AliITSBaseGeometry::Box(const char *gnam,const TString &dis,
     char name[5];
     Float_t param[3];
 
+    AddVolName(dis);
     param[0] = fScale*dx;
     param[1] = fScale*dy;
     param[2] = fScale*dz;
@@ -341,6 +343,7 @@ void AliITSBaseGeometry::Trapezoid1(const char *gnam,const TString &dis,
     char name[5];
     Float_t param[4];
 
+    AddVolName(dis);
     param[0] = fScale*dxn;
     param[1] = fScale*dxp;
     param[2] = fScale*dy;
@@ -404,6 +407,7 @@ void AliITSBaseGeometry::Trapezoid2(const char *gnam,const TString &dis,
     char name[5];
     Float_t param[5];
 
+    AddVolName(dis);
     param[0] = fScale*dxn;
     param[1] = fScale*dxp;
     param[2] = fScale*dyn;
@@ -492,6 +496,7 @@ void AliITSBaseGeometry::Trapezoid(const char *gnam,const TString &dis,
     char name[5];
     Float_t param[11];
 
+    AddVolName(dis);
     param[0] = fScale*dz;
     param[1] = thet;
     param[2] = phi;
@@ -649,6 +654,7 @@ void AliITSBaseGeometry::TwistedTrapezoid(const char *gnam,
     char name[5];
     Float_t param[12];
 
+    AddVolName(dis);
     param[0] = fScale*dz;
     param[1] = thet;
     param[2] = phi;
@@ -775,6 +781,7 @@ void AliITSBaseGeometry::Tube(const char *gnam,const TString &dis,
     char name[5];
     Float_t param[3];
 
+    AddVolName(dis);
     param[0] = fScale*rmin;
     param[1] = fScale*rmax;
     param[2] = fScale*dz;
@@ -833,6 +840,7 @@ void AliITSBaseGeometry::TubeSegment(const char *gnam,const TString &dis,
     char name[5];
     Float_t param[5];
 
+    AddVolName(dis);
     param[0] = fScale*rmin;
     param[1] = fScale*rmax;
     param[2] = fScale*dz;
@@ -911,6 +919,7 @@ void AliITSBaseGeometry::CutTube(const char *gnam,const TString &dis,
     char name[5];
     Float_t param[11];
 
+    AddVolName(dis);
     param[0] = fScale*rmin;
     param[1] = fScale*rmax;
     param[2] = fScale*dz;
@@ -984,6 +993,7 @@ void AliITSBaseGeometry::TubeElliptical(const char *gnam,const TString &dis,
     char name[5];
     Float_t param[3];
 
+    AddVolName(dis);
     param[0] = fScale*p1;
     param[1] = fScale*p2;
     param[2] = fScale*dz;
@@ -1046,6 +1056,7 @@ void AliITSBaseGeometry::HyperbolicTube(const char *gnam,const TString &dis,
     char name[5];
     Float_t param[4];
 
+    AddVolName(dis);
     param[0] = fScale*rmin;
     param[1] = fScale*rmax;
     param[2] = fScale*dz;
@@ -1109,6 +1120,7 @@ void AliITSBaseGeometry::Cone(const char *gnam,const TString &dis,
     char name[5];
     Float_t param[5];
 
+    AddVolName(dis);
     param[0] = fScale*dz;
     param[1] = fScale*rmin1;
     param[2] = fScale*rmax1;
@@ -1175,6 +1187,7 @@ void AliITSBaseGeometry::ConeSegment(const char *gnam,const TString &dis,
     char name[5];
     Float_t param[7];
 
+    AddVolName(dis);
     param[0] = fScale*dz;
     param[1] = fScale*rmin1;
     param[2] = fScale*rmax1;
@@ -1251,6 +1264,7 @@ void AliITSBaseGeometry::PolyCone(const char *gnam,const TString &dis,
     Float_t *param;
     Int_t n,i;
 
+    AddVolName(dis);
     n = 3+3*nz;
     param = new Float_t[n];
     param[0] = phi1;
@@ -1328,6 +1342,7 @@ void AliITSBaseGeometry::Sphere(const char *gnam,const TString &dis,
     char name[5];
     Float_t param[6];
 
+    AddVolName(dis);
     param[0] = fScale*rmin;
     param[1] = fScale*rmax;
     param[2] = the1;
@@ -1397,6 +1412,7 @@ void AliITSBaseGeometry::Parallelepiped(const char *gnam,const TString &dis,
     char name[5];
     Float_t param[6];
 
+    AddVolName(dis);
     param[0] = fScale*dx;
     param[1] = fScale*dy;
     param[2] = fScale*dz;
@@ -1474,6 +1490,7 @@ void AliITSBaseGeometry::PolyGon(const char *gnam,const TString &dis,
     Float_t *param;
     Int_t n,i;
 
+    AddVolName(dis);
     n = 4+3*nz;
     param = new Float_t[n];
     param[0] = phi1;
