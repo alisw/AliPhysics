@@ -22,6 +22,8 @@ class AliTRDPartID: public TObject {
     inline TF1*     GetBetheBloch() {return fBetheBloch;};
     TF1*            CreateBetheBloch(Double_t mass);
 
+    static AliTRDPartID* GetFromFile(const char* fileName = "pid.root");
+
   private:
     static Double_t fcnBetheBloch(Double_t* xx, Double_t* par);
     static Double_t fcnBetheBlochMass(Double_t* xx, Double_t* par);

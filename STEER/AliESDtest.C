@@ -76,16 +76,8 @@ Int_t AliESDtest(Int_t nev=1,
    AliTRDtracker trdTracker(trdcf);
 
    //An instance of the TRD PID maker
-   TFile* pidFile = TFile::Open("pid.root");
-   if (!pidFile->IsOpen()) {
-     cerr << "Can't get pid.root !\n";
-     return 7;
-   }
-   AliTRDPartID* trdPID = (AliTRDPartID*) pidFile->Get("AliTRDPartID");
-   if (!trdPID) {
-     cerr << "Can't get PID object !\n";
-     return 8;
-   }
+   AliTRDPartID* trdPID = AliTRDPartID::GetFromFile();
+   if (!trdPID) return 7;
 
    TFile *ef=TFile::Open("AliESDs.root","RECREATE");
    if (!ef->IsOpen()) {cerr<<"Can't AliESDs.root !\n"; return 1;}
@@ -145,7 +137,6 @@ Int_t AliESDtest(Int_t nev=1,
    }
    timer.Stop(); timer.Print();
 
-   pidFile->Close();
    trdcf->Close();
    delete geom;
    itscf->Close();
