@@ -10,6 +10,7 @@
 #include "AliGlobals.h"
 #include "AliFiles.h"
 #include "AliRun.h"
+#include "AliModule.h"
 
 #include "TG4GeometryManager.h"
 

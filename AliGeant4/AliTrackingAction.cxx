@@ -16,6 +16,7 @@
 #include <G4VHitsCollection.hh>
 
 #include <TParticle.h>
+#include <TTree.h>
 
 // static data members
 AliTrackingAction* AliTrackingAction::fgInstance = 0;
