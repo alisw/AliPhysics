@@ -11,7 +11,7 @@
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
-#include "AliPDG.h"
+#include <TPDGCode.h>
 
 class AliITStrackV2;
 
