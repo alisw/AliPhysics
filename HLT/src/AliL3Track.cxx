@@ -68,7 +68,6 @@ void AliL3Track::Set(AliL3Track *tpt){
   SetCharge(tpt->GetCharge());
   SetHits(tpt->GetNHits(),(UInt_t *)tpt->GetHitNumbers());
 
-
 }
 
 
