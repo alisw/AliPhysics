@@ -161,13 +161,15 @@ void AliEMCALv1::StepManager(void){
   static Float_t ienergy = 0;
   Int_t copy = 0;
   
+  AliEMCALGeometry * geom = GetGeometry() ; 
+
   if(gMC->IsTrackEntering() && (strcmp(gMC->CurrentVolName(),"XALU") == 0)){ // This Particle in enterring the Calorimeter
     gMC->TrackPosition(pos) ;
     xyzte[0] = pos[0] ;
     xyzte[1] = pos[1] ;
     xyzte[2] = pos[2] ;
     if ( (xyzte[0]*xyzte[0] + xyzte[1]*xyzte[1])  
-	 <  (fGeom->GetEnvelop(0)+fGeom->GetGap2Active()+1.5 )*(fGeom->GetEnvelop(0)+fGeom->GetGap2Active()+1.5 ) ) {
+	 <  (geom->GetEnvelop(0)+geom->GetGap2Active()+1.5 )*(geom->GetEnvelop(0)+geom->GetGap2Active()+1.5 ) ) {
       iparent = tracknumber;
       gMC->TrackMomentum(mom);
       ienergy = mom[3]; 
@@ -201,7 +203,7 @@ void AliEMCALv1::StepManager(void){
       
       gMC->CurrentVolOffID(1, id[0]); // get the POLY copy number;
       gMC->CurrentVolID(id[1]); // get the phi number inside the layer
-      absid = (id[0]-1)*(fGeom->GetNPhi()) + id[1];
+      absid = (id[0]-1)*(geom->GetNPhi()) + id[1];
       
       //Calculates the light yield, the number of photons produced in the
       //plastic layer 

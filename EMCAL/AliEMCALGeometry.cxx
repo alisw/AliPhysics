@@ -56,29 +56,35 @@ void AliEMCALGeometry::Init(void){
     // Initializes the EMCAL parameters
 
     fgInit = kFALSE; // Assume failer untill proven otherwise.
-    if(!(  (strcmp( fName, "EMCALArch1a" ) == 0) |
-	   (strcmp( fName, "EMCALArch1b" ) == 0) | 
-	   (strcmp( fName, "EMCALArch2a" ) == 0) | 
-	   (strcmp( fName, "EMCALArch2b" ) == 0) )){
-	cout <<"Instance " << fName << " undefined" << endl;
+
+    TString name(GetName()) ; 
+		 
+    if( name != "EMCALArch1a" &&
+	name != "EMCALArch1b" && 
+	name != "EMCALArch2a" && 
+	name != "EMCALArch2b"  ){
+      cerr << "ERROR: " << ClassName() << "::Init -> " << name.Data() 
+	   << " is not a known geometry (choose among EMCALArch1a, EMCALArch1b, EMCALArch2a and EMCALArch2b)" 
+	   << endl ; 
+      abort() ;
     } // end if
     //
-    if (((strcmp( fName, "EMCALArch1a" ))    == 0) |
-	((strcmp( fName, "EMCALArch1b" ))    == 0)){
+    if ( name == "EMCALArch1a"  ||
+	 name == "EMCALArch1b" ) {
 	fNZ         = 96;
 	fNPhi       = 144;
     } // end if
-    if (((strcmp( fName, "EMCALArch2a" ))    == 0) |
-	((strcmp( fName, "EMCALArch2b" ))    == 0)){
+    if ( name == "EMCALArch2a"  ||
+	 name, "EMCALArch2b" ) {
 	fNZ         = 112;
 	fNPhi       = 168;
     } // end if
-    if (((strcmp( fName, "EMCALArch1a" ))    == 0) |
-	((strcmp( fName, "EMCALArch2a" ))    == 0)){
+    if ( name == "EMCALArch1a"  ||
+	 name == "EMCALArch2a" ) {
 	fNLayers    = 21;
     } // end if
-    if (((strcmp( fName, "EMCALArch1b" ))    == 0) |
-	((strcmp( fName, "EMCALArch2b" ))    == 0)){
+    if ( name == "EMCALArch1b"  ||
+	 name == "EMCALArch2b" ) {
 	fNLayers    = 25;
     } // end if
 
@@ -108,9 +114,9 @@ void AliEMCALGeometry::Init(void){
 }
 //______________________________________________________________________
 AliEMCALGeometry *  AliEMCALGeometry::GetInstance(){ 
-    // Returns the pointer of the unique instance
-
-    return (AliEMCALGeometry *) fgGeom; 
+  // Returns the pointer of the unique instance
+  
+  return static_cast<AliEMCALGeometry *>( fgGeom ) ; 
 }
 //______________________________________________________________________
 AliEMCALGeometry* AliEMCALGeometry::GetInstance(const Text_t* name,

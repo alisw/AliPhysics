@@ -35,7 +35,7 @@ public:
   // Gives the version number 
   virtual Int_t  IsVersion(void) const {return 1;}
   virtual void StepManager(void) ;
-  virtual TString Version(void){return TString("v0");}
+  virtual const TString Version(void)const {return TString("v0");}
   // assignement operator requested by coding convention but not needed  
   AliEMCALv1 & operator = (const AliEMCALv0 & rvalue){abort();return *this;}
  

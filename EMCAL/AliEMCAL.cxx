@@ -25,46 +25,51 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-// --- Standard library ---
-#include <strstream.h>
-
 // --- ROOT system ---
 class TFile;
 #include "TBranch.h" 
 #include "TClonesArray.h" 
 #include "TTree.h" 
 
-// --- AliRoot header files ---
+// --- Standard library ---
+#include <strstream.h>
 
+// --- AliRoot header files ---
 #include "AliEMCAL.h"
-#include "AliEMCALGeometry.h"
 #include "AliMC.h"
 #include "AliRun.h"
 #include "AliMagF.h"
+#include "AliEMCALGeometry.h"
+//#include "AliEMCALQAChecker.h" 
 
 ClassImp(AliEMCAL)
-
 //____________________________________________________________________________
 AliEMCAL::AliEMCAL():AliDetector()
 {
-  // ctor 
-  //We do not create objects, because these pointers will be overwritten during reading from file.
-  fGeom     = 0;
-}
-//____________________________________________________________________________
-AliEMCAL::AliEMCAL(const char* name, const char* title): AliDetector(name,title) {
-//   ctor : title is used to identify the layout
-  fGeom     = 0;
-//   gets an instance of the geometry parameters class  
-}
-//____________________________________________________________________________
-AliEMCAL::~AliEMCAL(){
-  // dtor
-    delete fHits;
+  // Default ctor 
+  fName="EMCAL";
+  //fQATask = 0;
+  fTreeQA = 0;
 }
 
 //____________________________________________________________________________
-void AliEMCAL::CreateMaterials(){
+AliEMCAL::AliEMCAL(const char* name, const char* title): AliDetector(name,title)
+{
+  //   ctor : title is used to identify the layout
+  
+  //fQATask = 0;
+  fTreeQA = 0;
+}
+
+//____________________________________________________________________________
+AliEMCAL::~AliEMCAL()
+{
+
+}
+
+//____________________________________________________________________________
+void AliEMCAL::CreateMaterials()
+{
   // Definitions of materials to build EMCAL and associated tracking media.
   // media number in idtmed are 1599 to 1698.
 
@@ -130,10 +135,14 @@ void AliEMCAL::CreateMaterials(){
   // --- Generate explicitly delta rays in Lead ---
   gMC->Gstpar(idtmed[1600], "LOSS",3.) ;
   gMC->Gstpar(idtmed[1600], "DRAY",1.) ;
- 
+  gMC->Gstpar(idtmed[1600], "DCUTE",0.00001) ;
+  gMC->Gstpar(idtmed[1600], "DCUTM",0.00001) ;
+
 // --- and in aluminium parts ---
   gMC->Gstpar(idtmed[1602], "LOSS",3.) ;
   gMC->Gstpar(idtmed[1602], "DRAY",1.) ;
+  gMC->Gstpar(idtmed[1602], "DCUTE",0.00001) ;
+  gMC->Gstpar(idtmed[1602], "DCUTM",0.00001) ;
 
 
 // --- and finally thresholds for photons and electrons in the scintillator ---
@@ -143,6 +152,16 @@ void AliEMCAL::CreateMaterials(){
 
 
 }
+
+//____________________________________________________________________________
+AliEMCALGeometry * AliEMCAL::GetGeometry() const 
+{  
+  // gets the pointer to the AliEMCALGeometry unique instance 
+  
+  return AliEMCALGeometry::GetInstance(GetTitle(),"") ;  
+
+}
+
 //____________________________________________________________________________
 void AliEMCAL::SetTreeAddress()
 { 
@@ -157,7 +176,26 @@ void AliEMCAL::SetTreeAddress()
     branch = treeH->GetBranch(branchname);
     if (branch) branch->SetAddress(&fHits);
   }
- 
 }
 
+//____________________________________________________________________________
+void AliEMCAL::WriteQA()
+{
+
+  // Make TreeQA in the output file. 
+
+  if(fTreeQA == 0)
+    fTreeQA = new TTree("TreeQA", "QA Alarms") ;    
+  // Create Alarms branches
+//   Int_t bufferSize = 32000 ;    
+//   Int_t splitlevel = 0 ; 
+//   TFolder * alarmsF = (TFolder*)gROOT->FindObjectAny("Folders/Run/Conditions/QA/PHOS") ; 
+//   TString branchName(alarmsF->GetName());  
+//   TBranch * alarmsBranch = fTreeQA->Branch(branchName,"TFolder", &alarmsF, bufferSize, splitlevel);
+//   TString branchTitle = branchName + " QA alarms" ; 
+//   alarmsBranch->SetTitle(branchTitle);
+//   alarmsBranch->Fill() ; 
+
+  //fTreeQA->Fill() ; 
+}
 

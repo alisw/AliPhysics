@@ -41,20 +41,12 @@ class AliEMCALv0 : public AliEMCAL {
 
   virtual void BuildGeometry();// creates the geometry for the ROOT display
   virtual void CreateGeometry() ;// creates the geometry for GEANT
-
-  virtual AliEMCALGeometry * GetGeometry() const {
-    // gets the pointer to the AliEMCALGeometry unique instance
-    return fGeom ;
-  }
-
-
-
   virtual void   Init(void) ;                                       // does nothing
   virtual Int_t  IsVersion(void) const { 
     // Gives the version number 
     return 0 ; 
   }
-  virtual TString Version(void){ 
+  virtual const TString Version(void) const{ 
     // As above
     return TString("v0") ; 
   }

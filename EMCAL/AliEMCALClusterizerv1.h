@@ -13,6 +13,9 @@
 //  PHOSCpvRP (CPV RecPoints) and AliPHOSClusterizer
 //
 //*-- Author: Yves Schutz (SUBATECH)
+// Modif: 
+//  August 2002 Yves Schutz: clone PHOS as closely as possible and intoduction
+//                           of new  IO (à la PHOS)
 
 // --- ROOT system ---
 
@@ -32,28 +35,26 @@ class AliEMCALClusterizerv1 : public AliEMCALClusterizer {
 public:
   
   AliEMCALClusterizerv1() ;         
-  AliEMCALClusterizerv1(const char * headerFile, const char * name = "Default");
+  AliEMCALClusterizerv1(const char * headerFile, const char * name = "Default", const Bool_t toSplit=kFALSE);
   virtual ~AliEMCALClusterizerv1()  ;
   
   virtual Int_t   AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d2)const ; 
                                // Checks if digits are in neighbour cells 
 
-  const TString BranchName() const ; 
   virtual Float_t Calibrate(Int_t amp, Bool_t inpresho)const ;  // Tranforms Amp to energy 
 
   virtual void    GetNumberOfClustersFound(int * numb )const{  numb[0] = fNumberOfTowerClusters ; 
                                                                numb[1] = fNumberOfPreShoClusters ; }
 
-  virtual Float_t GetEmcClusteringThreshold()const{ return fTowerClusteringThreshold;}
-  virtual Float_t GetEmcLocalMaxCut()const        { return fTowerLocMaxCut;} 
-  virtual Float_t GetEmcLogWeight()const          { return fW0;}  
+  virtual Float_t GetTowerClusteringThreshold()const{ return fTowerClusteringThreshold;}
+  virtual Float_t GetTowerLocalMaxCut()const        { return fTowerLocMaxCut;} 
+  virtual Float_t GetTowerLogWeight()const          { return fW0;}  
   virtual Float_t GetTimeGate() const             { return fTimeGate ; }
-  virtual Float_t GetCpvClusteringThreshold()const{ return fPreShoClusteringThreshold;  } 
-  virtual Float_t GetCpvLocalMaxCut()const        { return fPreShoLocMaxCut;} 
-  virtual Float_t GetCpvLogWeight()const          { return fW0CPV;}  
-  virtual char *  GetRecPointsBranch() const      { return (char*) fRecPointsBranchTitle.Data() ;}
-  virtual const Int_t GetRecPointsInRun() const  {return fRecPointsInRun ;} 
-  virtual char *  GetDigitsBranch() const         { return (char*) fDigitsBranchTitle.Data() ;}
+  virtual Float_t GetPreShoClusteringThreshold()const{ return fPreShoClusteringThreshold;  } 
+  virtual Float_t GetPreShoLocalMaxCut()const        { return fPreShoLocMaxCut;} 
+  virtual Float_t GetPreShoLogWeight()const          { return fW0CPV;}  
+  virtual const char *  GetRecPointsBranch() const{ return GetName() ;}
+  virtual const Int_t GetRecPointsInRun() const   {return fRecPointsInRun ;} 
 
   void    Exec(Option_t *option);                // Does the job
 
@@ -66,9 +67,7 @@ public:
   virtual void SetPreShoClusteringThreshold(Float_t cluth) { fPreShoClusteringThreshold = cluth ; }
   virtual void SetPreShoLocalMaxCut(Float_t cut)           { fPreShoLocMaxCut = cut ; }
   virtual void SetPreShoLogWeight(Float_t w)               { fW0CPV = w ; }
-  virtual void SetDigitsBranch(const char * title) { fDigitsBranchTitle = title  ;}
-  virtual void SetRecPointsBranch(const char *title){fRecPointsBranchTitle = title; }
-  virtual void SetUnfolding(Bool_t toUnfold = kTRUE ) {fToUnfold = toUnfold ;}  
+  virtual void SetUnfolding(Bool_t toUnfold = kTRUE )      {fToUnfold = toUnfold ;}  
   static Double_t ShowerShape(Double_t r) ; // Shape of EM shower used in unfolding; 
                                             //class member function (not object member function)
   static void UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t * x, Int_t iflag)  ;
@@ -85,6 +84,7 @@ protected:
   
 private:
 
+  const TString BranchName() const ; 
   void    GetCalibrationParameters(void) ;
   
   Bool_t  FindFit(AliEMCALTowerRecPoint * emcRP, AliEMCALDigit ** MaxAt, Float_t * maxAtEnergy, 
@@ -100,9 +100,6 @@ private:
 private:
 
   Bool_t  fDefaultInit;              //! Says if the task was created by defaut ctor (only parameters are initialized)
-  TString fHeaderFileName ;          // name of the file which contains gAlice, Tree headers etc.
-  TString fDigitsBranchTitle ;       // name of the file, where digits branch is stored
-  TString fRecPointsBranchTitle ;    // name of the file, where RecPoints branchs are stored
 
   Int_t   fNTowers ;                 // number of Towers in EMCAL
 
@@ -111,6 +108,7 @@ private:
   Int_t   fNumberOfTowerClusters ;     // number of Tower clusters found 
   Int_t   fNumberOfPreShoClusters ;    // number of PreShower clusters found
  
+  //Calibration parameters... to be replaced by database 
   Float_t fADCchannelTower ;           // width of one ADC channel for Tower (GeV)
   Float_t fADCpedestalTower ;          // pedestal of ADC for Tower (GeV) 
   Float_t fADCchannelPreSho ;          // width of one ADC channel for Pre Shower (GeV)
@@ -125,7 +123,7 @@ private:
   Int_t fRecPointsInRun ;            //! Total number of recpoints in one run
   Float_t fTimeGate ;                // Maximum time difference between the digits in ont EMC cluster
     
-  ClassDef(AliEMCALClusterizerv1,1)   // Clusterizer implementation version 1
+  ClassDef(AliEMCALClusterizerv1,2)   // Clusterizer implementation version 1
 
 };
 

@@ -10,17 +10,19 @@
 //                  
 //*-- Author: Yves Schutz (SUBATECH)
 
-#include <assert.h>
+#include <stdlib.h>
 
 // --- ROOT system ---
+
 class TString ;
-class TClonesArray ;
+class TTask ;
+class TFolder ;
 
 // --- AliRoot header files ---
-#include <stdlib.h>
+
 #include "AliDetector.h"
-#include "AliEMCALGeometry.h"
 class AliEMCALGeometry ; 
+//class AliEMCALQAChecker ;
 
 class AliEMCAL : public AliDetector {
 
@@ -38,15 +40,17 @@ class AliEMCAL : public AliDetector {
     // do not use this definition but the one below
     abort() ;
   }
-  virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, 
+  virtual void  AddHit( Int_t shunt, Int_t primary, Int_t track, 
 			 Int_t id, Float_t *hits ) = 0 ;
-
-
-  virtual void   CreateMaterials() ;                     
-  //virtual AliEMCALGeometry * GetGeometry()  = 0 ;   
-  Int_t   IsVersion(void) const { return -1 ; } 
-  virtual void  SetTreeAddress() ;               
-  virtual TString Version() {return TString(" ") ; }  
+  virtual void  CreateMaterials() ;   
+  virtual void  FinishRun() {WriteQA();}                  
+  virtual AliEMCALGeometry * GetGeometry() const ;   
+  virtual Int_t   IsVersion(void) const = 0 ; 
+  //AliEMCALQAChecker * QAChecker() const {return fQATask;}  
+  virtual void  SetTreeAddress() ;
+  virtual TTree * TreeQA() const {return fTreeQA; }                
+  virtual const TString Version() const {return TString(" ") ; }  
+  virtual void WriteQA() ; 
   AliEMCAL & operator = (const AliEMCAL & rvalue)  {
     // assignement operator requested by coding convention
     // but not needed
@@ -56,9 +60,10 @@ class AliEMCAL : public AliDetector {
  
 protected:
 
-  AliEMCALGeometry * fGeom ;                       // Geometry definition
+  //AliEMCALQAChecker * fQATask ; //! PHOS checkers container
+  TTree * fTreeQA ;            // the QA tree that contains the alarms
 
-  ClassDef(AliEMCAL,1) // Electromagnetic calorimeter (base class)
+  ClassDef(AliEMCAL,2) // Electromagnetic calorimeter (base class)
 
 } ;
 

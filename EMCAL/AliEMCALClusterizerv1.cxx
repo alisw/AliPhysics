@@ -27,6 +27,8 @@
      After first PPSD digit remove EMC digits only once
 */
 //*-- Author: Yves Schutz (SUBATECH)  & Dmitri Peressounko (SUBATECH & Kurchatov Institute)
+//  August 2002 Yves Schutz: clone PHOS as closely as possible and intoduction
+//                           of new  IO (à la PHOS)
 //////////////////////////////////////////////////////////////////////////////
 //  Clusterization class. Performs clusterization (collects neighbouring active cells) and 
 //  unfolds the clusters having several local maxima.  
@@ -77,6 +79,7 @@
 #include "AliEMCALTowerRecPoint.h"
 #include "AliEMCAL.h"
 #include "AliEMCALGetter.h"
+#include "AliEMCALGeometry.h"
 #include "AliRun.h"
 
 ClassImp(AliEMCALClusterizerv1)
@@ -91,39 +94,23 @@ ClassImp(AliEMCALClusterizerv1)
 }
 
 //____________________________________________________________________________
-AliEMCALClusterizerv1::AliEMCALClusterizerv1(const char* headerFile,const char* name)
-:AliEMCALClusterizer(headerFile, name)
+AliEMCALClusterizerv1::AliEMCALClusterizerv1(const char* headerFile, const char* name, const Bool_t toSplit)
+:AliEMCALClusterizer(headerFile, name, toSplit)
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
   
   InitParameters() ; 
-  fDefaultInit = kFALSE ; 
   Init() ;
+  fDefaultInit = kFALSE ; 
 
 }
+
 //____________________________________________________________________________
   AliEMCALClusterizerv1::~AliEMCALClusterizerv1()
 {
   // dtor
-  // fDefaultInit = kTRUE if Clusterizer created by default ctor (to get just the parameters)
+  fSplitFile = 0 ; 
   
-  if (!fDefaultInit) {
-    AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
-    
-    // remove the task from the folder list
-    gime->RemoveTask("C",GetName()) ;
-    
-    // remove the RecPoints from the folder list
-    TString name(GetName()) ; 
-    name.Remove(name.Index(":")) ; 
-    gime->RemoveObjects("D", name) ;  //  Digits
-    gime->RemoveObjects("RT", name) ; // TowerRecPoints
-    gime->RemoveObjects("RP", name) ; // PreShoRecPoints
-    
-    // Delete gAlice
-    gime->CloseFile() ; 
-    
-  }
 }
 
 //____________________________________________________________________________
@@ -136,13 +123,15 @@ const TString AliEMCALClusterizerv1::BranchName() const
 
 //____________________________________________________________________________
 Float_t  AliEMCALClusterizerv1::Calibrate(Int_t amp, Bool_t inpresho) const
-{
+{//To be replased later by the method, reading individual parameters from the database
+
   if ( inpresho ) // calibrate as pre shower
      return -fADCpedestalPreSho + amp * fADCchannelPreSho ; 
 
   else //calibrate as tower 
     return -fADCpedestalTower + amp * fADCchannelTower ;                
 }
+
 //____________________________________________________________________________
 void AliEMCALClusterizerv1::Exec(Option_t * option)
 {
@@ -157,47 +146,21 @@ void AliEMCALClusterizerv1::Exec(Option_t * option)
   if(strstr(option,"print"))
     Print("") ; 
 
-  gAlice->GetEvent(0) ;
-  
- //check, if the branch with name of this" already exits?
-  TObjArray * lob = (TObjArray*)gAlice->TreeR()->GetListOfBranches() ;
-  TIter next(lob) ; 
-  TBranch * branch = 0 ;  
-  Bool_t emcaltowerfound = kFALSE, emcalpreshofound = kFALSE, clusterizerfound = kFALSE ; 
-
-  TString branchname = GetName() ;
-  branchname.Remove(branchname.Index(Version())-1) ;
-  
-  while ( (branch = (TBranch*)next()) && (!emcaltowerfound || !emcalpreshofound || !clusterizerfound) ) {
-    if ( (strcmp(branch->GetName(), "EMCALTowerRP")==0) && (strcmp(branch->GetTitle(), branchname.Data())==0) ) 
-      emcaltowerfound = kTRUE ;
-    
-    else if ( (strcmp(branch->GetName(), "EMCALPreShoRP")==0) && (strcmp(branch->GetTitle(), branchname.Data())==0) ) 
-      emcalpreshofound = kTRUE ;
-   
-    else if ((strcmp(branch->GetName(), "AliEMCALClusterizer")==0) && (strcmp(branch->GetTitle(), GetName())==0) ) 
-      clusterizerfound = kTRUE ; 
-  }
-
-  if ( emcalpreshofound || emcaltowerfound || clusterizerfound ) {
-    cerr << "WARNING: AliEMCALClusterizer::Exec -> Tower(PreSho)RecPoints and/or Clusterizer branch with name " 
-	 << branchname.Data() << " already exits" << endl ;
-    return ; 
-  }       
-
   AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ;
-  Int_t nevents = (Int_t) gAlice->TreeE()->GetEntries() ;
+  if(gime->BranchExists("RecPoints"))
+    return ;
+  Int_t nevents = gime->MaxEvent() ;
   Int_t ievent ;
 
   for(ievent = 0; ievent < nevents; ievent++){
+
+    gime->Event(ievent,"D") ;
 
     if(ievent == 0)
       GetCalibrationParameters() ;
 
     fNumberOfTowerClusters = fNumberOfPreShoClusters = 0 ;
-   
-    gime->Event(ievent,"D") ;
-        
+           
     MakeClusters() ;
     
     if(fToUnfold)
@@ -320,10 +283,7 @@ Bool_t AliEMCALClusterizerv1::FindFit(AliEMCALTowerRecPoint * emcRP, AliEMCALDig
 void AliEMCALClusterizerv1::GetCalibrationParameters() 
 {
   AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ;
-  TString branchname = GetName() ;
-  branchname.Remove(branchname.Index(Version())-1) ;
-
-  AliEMCALDigitizer * dig = gime->Digitizer(branchname) ;
+  const AliEMCALDigitizer * dig = gime->Digitizer(BranchName()) ;
 
   fADCchannelTower   = dig->GetTowerchannel() ;
   fADCpedestalTower  = dig->GetTowerpedestal();
@@ -332,6 +292,7 @@ void AliEMCALClusterizerv1::GetCalibrationParameters()
   fADCpedestalPreSho = dig->GetPreShopedestal() ; 
 
 }
+
 //____________________________________________________________________________
 void AliEMCALClusterizerv1::Init()
 {
@@ -344,11 +305,35 @@ void AliEMCALClusterizerv1::Init()
   TString branchname = GetName() ;
   branchname.Remove(branchname.Index(Version())-1) ;
 
-  AliEMCALGetter * gime = AliEMCALGetter::GetInstance(GetTitle(), branchname, "update") ; 
+  AliEMCALGetter * gime = AliEMCALGetter::GetInstance(GetTitle(), branchname.Data(), fToSplit ) ; 
   if ( gime == 0 ) {
     cerr << "ERROR: AliEMCALClusterizerv1::Init -> Could not obtain the Getter object !" << endl ; 
     return ;
   } 
+
+  fSplitFile = 0 ;
+  if(fToSplit){
+    // construct the name of the file as /path/EMCAL.SDigits.root
+    //First - extract full path if necessary
+    TString fileName(GetTitle()) ;
+    Ssiz_t islash = fileName.Last('/') ;
+    if(islash<fileName.Length())
+      fileName.Remove(islash+1,fileName.Length()) ;
+    else
+      fileName="" ;
+    // Next - append the file name 
+    fileName+="EMCAL.RecData." ;
+    if((strcmp(branchname.Data(),"Default")!=0)&&(strcmp(branchname.Data(),"")!=0)){
+      fileName+=branchname ;
+      fileName+="." ;
+    }
+    fileName+="root" ;
+    // Finally - check if the file already opened or open the file
+    fSplitFile = static_cast<TFile*>(gROOT->GetFile(fileName.Data()));   
+    if(!fSplitFile)
+      fSplitFile =  TFile::Open(fileName.Data(),"update") ;
+  }
+
     
   const AliEMCALGeometry * geom = gime->EMCALGeometry() ;
   fNTowers = geom->GetNZ() *  geom->GetNPhi() ;
@@ -357,12 +342,8 @@ void AliEMCALClusterizerv1::Init()
     gMinuit = new TMinuit(100) ;
 
   gime->PostClusterizer(this) ;
-  // create a folder on the white board 
   gime->PostRecPoints(branchname ) ;
-
-  gime->PostDigits(branchname) ;
-  gime->PostDigitizer(branchname) ;
-  
+ 
 }
 
 //____________________________________________________________________________
@@ -384,10 +365,7 @@ void AliEMCALClusterizerv1::InitParameters()
   fTimeGate = 1.e-8 ; 
   
   fToUnfold = kFALSE ;
-  
-  fHeaderFileName     = GetTitle() ; 
-  fDigitsBranchTitle  = GetName() ;
-  
+   
   TString clusterizerName( GetName()) ; 
   if (clusterizerName.IsNull() ) 
     clusterizerName = "Default" ; 
@@ -395,6 +373,7 @@ void AliEMCALClusterizerv1::InitParameters()
   clusterizerName.Append(Version()) ; 
   SetName(clusterizerName) ;
   fRecPointsInRun          = 0 ; 
+
 }
 
 //____________________________________________________________________________
@@ -472,20 +451,33 @@ void AliEMCALClusterizerv1::WriteRecPoints(Int_t event)
   // fills and writes into TreeR.
 
   AliEMCALGetter *gime = AliEMCALGetter::GetInstance() ; 
-  TObjArray * towerRecPoints = gime->TowerRecPoints(BranchName()) ; 
-  TObjArray * preshoRecPoints = gime->PreShowerRecPoints(BranchName()) ; 
-  TClonesArray * digits = gime->Digits(BranchName()) ; 
+  TObjArray * towerRecPoints = gime->TowerRecPoints() ; 
+  TObjArray * preshoRecPoints = gime->PreShowerRecPoints() ; 
+  TClonesArray * digits = gime->Digits() ; 
   TTree * treeR ; 
+  
+  if(fToSplit){
+    if(!fSplitFile)
+      return ;
+    fSplitFile->cd() ;
+    TString name("TreeR") ;
+    name += event ; 
+    treeR = dynamic_cast<TTree*>(fSplitFile->Get(name)); 
+  }
+  else{
+    treeR = gAlice->TreeR();
+  }
 
-  if (!gAlice->TreeR() ) 
+  if(!treeR){
     gAlice->MakeTree("R", fSplitFile);
-  treeR = gAlice->TreeR() ;
-    
-    Int_t index ;
+    treeR = gAlice->TreeR() ;
+  }
+ 
+  Int_t index ;
   //Evaluate position, dispersion and other RecPoint properties...
   for(index = 0; index < towerRecPoints->GetEntries(); index++)
     (dynamic_cast<AliEMCALTowerRecPoint *>(towerRecPoints->At(index)))->EvalAll(fW0,digits) ;
-
+  
   towerRecPoints->Sort() ;
 
   for(index = 0; index < towerRecPoints->GetEntries(); index++)
@@ -504,21 +496,16 @@ void AliEMCALClusterizerv1::WriteRecPoints(Int_t event)
 
   preshoRecPoints->Expand(preshoRecPoints->GetEntriesFast()) ;
   
-  //Make branches in TreeR for RecPoints and Clusterizer
-  
- 
   Int_t bufferSize = 32000 ;    
   Int_t splitlevel = 0 ;
 
   //First Tower branch
-  TBranch * emcBranch = treeR->Branch("EMCALTowerRP","TObjArray",&towerRecPoints,bufferSize,splitlevel);
-  emcBranch->SetTitle(BranchName());
-
-    
+  TBranch * towerBranch = treeR->Branch("EMCALTowerRP","TObjArray",&towerRecPoints,bufferSize,splitlevel);
+  towerBranch->SetTitle(BranchName());
+  
   //Now Pre Shower branch 
-  TBranch * cpvBranch = treeR->Branch("EMCALPreShoRP","TObjArray",&preshoRecPoints,bufferSize,splitlevel);
-  cpvBranch->SetTitle(BranchName());
-
+  TBranch * preshoBranch = treeR->Branch("EMCALPreShoRP","TObjArray",&preshoRecPoints,bufferSize,splitlevel);
+  preshoBranch->SetTitle(BranchName());
     
   //And Finally  clusterizer branch
   AliEMCALClusterizerv1 * cl = (AliEMCALClusterizerv1*)gime->Clusterizer(BranchName()) ;
@@ -526,12 +513,13 @@ void AliEMCALClusterizerv1::WriteRecPoints(Int_t event)
 					      &cl,bufferSize,splitlevel);
   clusterizerBranch->SetTitle(BranchName());
 
-  emcBranch        ->Fill() ;
-  cpvBranch        ->Fill() ;
+  towerBranch        ->Fill() ;
+  preshoBranch        ->Fill() ;
   clusterizerBranch->Fill() ;
 
   treeR->AutoSave() ; //Write(0,kOverwrite) ;  
-  
+  if(gAlice->TreeR()!=treeR)
+    treeR->Delete(); 
 }
 
 //____________________________________________________________________________
@@ -539,18 +527,20 @@ void AliEMCALClusterizerv1::MakeClusters()
 {
   // Steering method to construct the clusters stored in a list of Reconstructed Points
   // A cluster is defined as a list of neighbour digits
-  
-  TString branchName(GetName()) ; 
-  branchName.Remove(branchName.Index(Version())-1) ; 
-  
+    
   AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
   
-  TObjArray * towerRecPoints  = gime->TowerRecPoints(branchName) ; 
-  TObjArray * preshoRecPoints = gime->PreShowerRecPoints(branchName) ; 
+  TObjArray * towerRecPoints  = gime->TowerRecPoints(BranchName()) ; 
+  TObjArray * preshoRecPoints = gime->PreShowerRecPoints(BranchName()) ; 
   towerRecPoints->Delete() ;
   preshoRecPoints->Delete() ;
   
-  TClonesArray * digits = gime->Digits(branchName) ; 
+  TClonesArray * digits = gime->Digits() ; 
+  if ( !digits ) {
+    cerr << "ERROR:  AliEMCALClusterizerv1::MakeClusters -> Digits with name " 
+	 << GetName() << " not found ! " << endl ; 
+    abort() ; 
+  } 
   TClonesArray * digitsC =  dynamic_cast<TClonesArray*>(digits->Clone()) ;
   
   
@@ -976,8 +966,8 @@ void AliEMCALClusterizerv1::Print(Option_t * option)const
     taskName.ReplaceAll(Version(), "") ;
 
     cout << "---------------"<< taskName.Data() << " " << GetTitle()<< "-----------" << endl 
-	 << "Clusterizing digits from the file: " << fHeaderFileName.Data() << endl 
-	 << "                           Branch: " << fDigitsBranchTitle.Data() << endl 
+	 << "Clusterizing digits from the file: " << taskName.Data() << endl 
+	 << "                           Branch: " << GetName() << endl 
 	 << endl 
 	 << "                       EMC Clustering threshold = " << fTowerClusteringThreshold << endl
 	 << "                       EMC Local Maximum cut    = " << fTowerLocMaxCut << endl

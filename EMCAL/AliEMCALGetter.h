@@ -15,7 +15,10 @@
 //*-- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko (RRC KI & SUBATECH)
 //    
 
-
+// Modif: 
+//  August 2002 Yves Schutz: clone PHOS as closely as possible and intoduction
+//                           of new  IO (à la PHOS)
+ 
 // --- ROOT system ---
 #include "TClonesArray.h"
 #include "TFolder.h"  
@@ -32,26 +35,25 @@ class TTask ;
 // --- AliRoot header files ---
 
 #include "AliRun.h"
-#include "AliEMCALv1.h" 
+#include "AliEMCAL.h" 
 #include "AliEMCALHit.h" 
 #include "AliEMCALDigit.h" 
+#include "AliEMCALTowerRecPoint.h"
+//class AliEMCALTrackSegment ;
+//class AliEMCALRecParticle ;
+class AliEMCALGeometry ;
 #include "AliEMCALDigitizer.h" 
 #include "AliEMCALSDigitizer.h"
-#include "AliEMCALTowerRecPoint.h"
-class AliEMCALGeometry ;
-class AliEMCALClusterizerv1 ;
-//class AliEMCALTrackSegment ;
+class AliEMCALClusterizer ;
 //class AliEMCALTrackSegmentMaker ;
-//class AliEMCALRecParticle ;
 //class AliEMCALPID ;
 
 class AliEMCALGetter : public TObject {
   
  public:
   
-  AliEMCALGetter(){ 
-    // ctor: this is a singleton, the ctor should never be called but cint needs it as public
-    cerr << "ERROR: AliPHOGetter is a singleton default ctor not callable" << endl ;
+  AliEMCALGetter(){  // ctor: this is a singleton, the ctor should never be called but cint needs it as public
+    cerr << "ERROR: AliEMCALGetter is a singleton default ctor not callable" << endl ;
     abort() ; 
   } 
   AliEMCALGetter(const AliEMCALGetter & obj) {
@@ -60,146 +62,150 @@ class AliEMCALGetter : public TObject {
     abort() ; 
   } 
   
-  virtual ~AliEMCALGetter() ; 
-  
-  void CloseFile() ;  
-  const TFolder * Folder(const TString what) const ;
-  const Bool_t HasFailed(void) const {return fFailed ;} 
-  Bool_t PostPrimaries(void ) const ;  
-  Bool_t PostHits(void ) const ;  
-  Bool_t PostSDigits(      const char * name,  const char * file = 0) const ;  
-  Bool_t PostDigits(       const char * name ) const ;  
-  Bool_t PostRecPoints(    const char * name ) const ;  
-  //Bool_t PostTrackSegments(const char * name) const ;  
-  //Bool_t PostRecParticles( const char * name) const ;  
-
-  Bool_t PostClusterizer( const char * name) const ;  
-  Bool_t PostClusterizer(AliEMCALClusterizerv1 * clu) const ;  
-  Bool_t PostSDigitizer (AliEMCALSDigitizer * sdigitizer) const ;  
-  Bool_t PostSDigitizer ( const char * name, const char * file ) const ;  
-  Bool_t PostDigitizer (AliEMCALDigitizer * digitizer) const ;  
-  Bool_t PostDigitizer  ( const char * name) const ;  
-  //Bool_t PostTrackSegmentMaker(AliEMCALTrackSegmentMaker * tsm) const ;  
-  //Bool_t PostTrackSegmentMaker(const char * name ) const ;  
-  //Bool_t PostPID  (AliEMCALPID * pid) const ;  
-  //Bool_t PostPID  (const char * name ) const ;  
-  //Bool_t PostQA   (void) const ;
-  
-
-  void   Event(const Int_t event, const char * opt = "HSDR") ;    
-  void   Track(Int_t itrack) ;
-
-  //Method to be used when digitizing under AliRunDigitizer, who opens all files etc.
-  void   ReadTreeS(TTree * treeS,Int_t input) ;
-  
-  Int_t  EventNumber()       { return (Int_t) gAlice->GetEvNumber() ; }
-  Int_t  MaxEvent()          { return (Int_t) gAlice->TreeE()->GetEntries() ; }
-  static AliEMCALGetter * GetInstance(const char* headerFile,
-				     const char* branchTitle = "Default", const Option_t * rw="" ) ; 
-  static AliEMCALGetter *   GetInstance() ; 
-
-  const AliEMCALv1 *         EMCAL()  ;  
-  AliEMCALGeometry * EMCALGeometry() ; 
-   // Alarms
-  //TFolder * Alarms() const { return (TFolder*)(ReturnO("Alarms", 0)) ; }
-  //TObjArray *  Alarms(const char * name ) const { return (TObjArray*)(ReturnO("Alarms", name)) ; }
-
-  // QA Tasks
-  //TTask * QATasks(const char * name = 0) const { return (TTask*)(ReturnT("QATasks", name)) ; }
-
-  // Primaries
-  TClonesArray *  Primaries(void) const { return (TClonesArray*)(ReturnO("Primaries")) ; }
-  
-  
-  // Hits
-  TTree *               TreeH(TString filename="") ; 
-  const TClonesArray *  Hits(void) { return static_cast<const TClonesArray*>(ReturnO("Hits")) ; }
-  const AliEMCALHit *   Hit(Int_t index)  { return static_cast<const AliEMCALHit*>(Hits()->At(index) );}
-  
-  // SDigits
-  TTree *         TreeS(TString filename="") ; 
-  TClonesArray *  SDigits(const char * name = 0, const char * file=0) { 
-    return static_cast<TClonesArray*>(ReturnO("SDigits", name, file)) ; 
-  }
-  const AliEMCALDigit *  SDigit(Int_t index) { return static_cast<const AliEMCALDigit*>(SDigits()->At(index)) ;}
-  
-  AliEMCALSDigitizer *  SDigitizer(const char * name =0) const { 
-    return ((AliEMCALSDigitizer*)(ReturnT("SDigitizer", name))) ; 
-  }
- 
-  // Digits
-  TTree *         TreeD(TString filename="") ; 
-  TClonesArray *  Digits(const char * name = 0)const  { 
-    return static_cast<TClonesArray*>(ReturnO("Digits", name)) ; 
-  }
-  const AliEMCALDigit *  Digit(Int_t index) { return static_cast<const AliEMCALDigit *>(Digits()->At(index)) ;}
-  AliEMCALDigitizer *  Digitizer(const char * name =0) const { 
-    return (AliEMCALDigitizer*)(ReturnT("Digitizer", name)) ; 
-  }
-
-  //  RecPoints
-  TObjArray * TowerRecPoints(const char * name = 0) const { 
-    return (TObjArray*)(ReturnO("TowerRecPoints", name)) ; }
-  TObjArray * PreShowerRecPoints(const char * name = 0) const { 
-    return (TObjArray*)(ReturnO("PreShoRecPoints", name)) ; }
-  const AliEMCALTowerRecPoint *  TowerRecPoint(Int_t index) { 
-    return static_cast<const AliEMCALTowerRecPoint *>(TowerRecPoints()->At(index)) ;}
-  const AliEMCALTowerRecPoint *  PreShowerRecPoint(Int_t index) { 
-    return static_cast<const AliEMCALTowerRecPoint *>(PreShowerRecPoints()->At(index)) ;}
-
-    AliEMCALClusterizerv1 * Clusterizer (const char * name =0) const { 
-    return (AliEMCALClusterizerv1*)(ReturnT("Clusterizer", name)) ; }
-
-  // TrackSegments
-  //TClonesArray * TrackSegments(const char * name = 0) const 
-   //                { return (TClonesArray*)(ReturnO("TrackSegments", name)) ; }
-  //AliEMCALTrackSegmentMaker * TrackSegmentMaker (const char * name =0) const 
-    //               { return (AliEMCALTrackSegmentMaker*)(ReturnT("TrackSegmentMaker", name)) ; }
-
-  // RecParticles
-  //TClonesArray * RecParticles(const char * name = 0) const  
-    //               { return (TClonesArray*)(ReturnO("RecParticles", name)) ; }
-    //AliEMCALPID * PID(const char * name =0) const 
-      //             { return (AliEMCALPID*)(ReturnT("PID", name)) ; }
-
-  // Primaries
-  TTree *                     TreeK(TString filename="") ; 
-  const TParticle *           Primary(Int_t index) const ;
-  const Int_t                 NPrimaries()const { return fNPrimaries; }
-
-  void RemoveTask(TString opt, TString name) const ;
-  void RemoveObjects(TString opt, TString name) const ; 
-  void RemoveSDigits() const ; 
-  void SetDebug(Int_t level) {fDebug = level;} // Set debug level
-
   AliEMCALGetter & operator = (const AliEMCALGetter & ) {
     // assignement operator requested by coding convention, but not needed
     abort() ;
     return *this ; 
   }
+  virtual ~AliEMCALGetter() ; 
   
-  TFolder * SDigitsFolder() { return dynamic_cast<TFolder*>(fSDigitsFolder->FindObject("EMCAL")) ; }
+  //=========== Instantiators ================  
+  static AliEMCALGetter * GetInstance(const char* headerFile,
+				      const char* branchTitle = "Default", 
+				      const Bool_t toSplit = kFALSE ) ; 
+  static AliEMCALGetter * GetInstance() ; 
+ 
+  //=========== General information about run ============== 
+  const Int_t  MaxEvent() const    { return static_cast<Int_t>(gAlice->TreeE()->GetEntries()) ; }
+  const Int_t  EventNumber() const { return static_cast<Int_t>(gAlice->GetEvNumber()) ; }
+  const Bool_t BranchExists(const TString recName) const ;
 
+  //========== EMCALGeometry and EMCAL ============= 
+  const AliEMCAL *   EMCAL() ;  
+  AliEMCALGeometry * EMCALGeometry() ; 
+
+  //========== Methods to read something from file ==========
+  void   Event(const Int_t event, const char * opt = "HSDRP") ;    
+  void   Track(const Int_t itrack) ;
+  void   ReadTreeS(TTree * treeS,Int_t input) ; //Method to be used when 
+                                                //digitizing is under the conytrol of AliRunDigitizer, 
+                                                //which opens all files etc.
+  //========== Alarms ======================
+  //TFolder * Alarms() const { return dynamic_cast<TFolder*>(ReturnO("Alarms", 0)) ; }
+  //const TObjArray *  Alarms(const char * name ) const { return dynamic_cast<const TObjArray*>(ReturnO("Alarms", name)) ; }
+  //const TTask * QATasks(const char * name = 0) const { return ReturnT("QATasks", name) ; }
+
+  //-----------------now getter's data--------------------------------------
+
+  //=========== Primaries ============
+  TTree *           TreeK(TString filename="") ; 
+  TClonesArray *    Primaries(void) const { return dynamic_cast<TClonesArray*>(ReturnO("Primaries")) ; }
+  const TParticle * Primary(Int_t index) const;
+  const Int_t       NPrimaries()const { return fNPrimaries; }
+  const TParticle * Secondary(TParticle * p, Int_t index=1) const ;  
+ 
+  //=========== Hits =================
+  TTree *               TreeH(TString filename="") ; 
+  const TClonesArray *  Hits(void) { return dynamic_cast<const TClonesArray*>(ReturnO("Hits")) ; }
+  const AliEMCALHit *   Hit(Int_t index) { return dynamic_cast<const AliEMCALHit*>(Hits()->At(index) );}
+
+  //=========== SDigits ==============
+  TTree *         TreeS(TString filename="") ; 
+  TClonesArray *  SDigits(const char * name = 0, const char * file=0) { 
+    return dynamic_cast<TClonesArray*>(ReturnO("SDigits", name, file)) ; }
+  const AliEMCALDigit *  SDigit(Int_t index) { return static_cast<const AliEMCALDigit*>(SDigits()->At(index)) ;}
+  const AliEMCALSDigitizer *  SDigitizer(const char * name =0) const { 
+    return (const AliEMCALSDigitizer*)(ReturnT("SDigitizer", name)) ; // here static or dynamic cast does not work ! why ?
+  }
+
+  //========== Digits ================
+  TTree *         TreeD(TString filename="") ; 
+  TClonesArray *  Digits(const char * name = 0)const  { 
+    return dynamic_cast<TClonesArray*>(ReturnO("Digits", name)) ; }
+  const AliEMCALDigit *  Digit(Int_t index) { return static_cast<const AliEMCALDigit *>(Digits()->At(index)) ;}
+  const AliEMCALDigitizer *  Digitizer(const char * name =0) const { 
+    return (const AliEMCALDigitizer*)(ReturnT("Digitizer", name)) ; }
+      
+  //========== RecPoints =============
+  TObjArray * TowerRecPoints(const char * name = 0) const { 
+    return (dynamic_cast<TObjArray*>(ReturnO("TowerRecPoints", name))) ; }
+  const AliEMCALTowerRecPoint *  TowerRecPoint(Int_t index) { return static_cast<const AliEMCALTowerRecPoint *>(TowerRecPoints()->At(index)) ;}
+  TObjArray * PreShowerRecPoints(const char * name = 0) const { 
+    return (dynamic_cast<TObjArray*>(ReturnO("PreShowerRecPoints", name))) ; }
+  const AliEMCALClusterizer * Clusterizer (const char * name =0) const { 
+    return (const AliEMCALClusterizer*)(ReturnT("Clusterizer", name)) ;// here static or dynamic cast does not work ! why ?
+  }
+
+  //========== TrackSegments ==========
+  //TClonesArray * TrackSegments(const char * name = 0) const { 
+  // return (dynamic_cast<TClonesArray*>(ReturnO("TrackSegments", name))) ; }
+  //const AliEMCALTrackSegmentMaker * TrackSegmentMaker (const char * name =0) const {
+  // return (const AliEMCALTrackSegmentMaker*)(ReturnT("TrackSegmentMaker", name)) ;// here static or dynamic cast does not work ! why }
+
+  //========== RecParticles ===========
+  //TClonesArray * RecParticles(const char * name = 0) const { 
+  // return (dynamic_cast<TClonesArray*>(ReturnO("RecParticles", name))) ; }
+  //const AliEMCALPID * PID(const char * name =0) const {
+  // return (const AliEMCALPID*)(ReturnT("PID", name)) ;// here static or dynamic cast does not work ! why }
+
+  //-----------------Auxiliary methods: cleaners-----------------
+  void RemoveTask(TString opt, TString name) const ;
+  void RemoveObjects(TString opt, TString name) const ; 
+  void RemoveSDigits() const ; 
+
+ //-----------------Auxiliary methods: miscellana-----------------
+  void CloseFile() ;  
+  const TFolder * Folder(const TString what) const ;
+  const Bool_t HasFailed(void) const {return fFailed ;} 
+  void ListBranches(Int_t event=0) const ;
+  void NewBranch(TString name, Int_t event = 0) ; 
+  Bool_t NewFile(TString name) ;
+  TFolder * SDigitsFolder() { return dynamic_cast<TFolder*>(fSDigitsFolder->FindObject("EMCAL")) ; }
+  void SetDebug(Int_t level) {fDebug = level;} // Set debug level
+  void SetRecParticlesTitle(const TString title) { fRecParticlesTitle = title ; }
+
+  //------------Auxiliary methods: Posters--------------------
+  const Bool_t PostPrimaries(void ) const ;  
+  const Bool_t PostHits(void ) const ;  
+  const Bool_t PostSDigits(      const char * name,  const char * file = 0) const ;  
+  const Bool_t PostDigits(       const char * name ) const ;  
+  const Bool_t PostRecPoints(    const char * name ) const ;  
+  //const Bool_t PostTrackSegments(const char * name) const ;  
+  //const Bool_t PostRecParticles( const char * name) const ;  
+  const Bool_t PostClusterizer( const char * name) const ;  
+  const Bool_t PostClusterizer(AliEMCALClusterizer * clu) const ;  
+  const Bool_t PostSDigitizer (AliEMCALSDigitizer * sdigitizer) const ;  
+  const Bool_t PostSDigitizer ( const char * name, const char * file ) const ;  
+  const Bool_t PostDigitizer (AliEMCALDigitizer * digitizer) const ;  
+  const Bool_t PostDigitizer  ( const char * name) const ;  
+  //const Bool_t PostTrackSegmentMaker(AliEMCALTrackSegmentMaker * tsm) const ;  
+  //const Bool_t PostTrackSegmentMaker(const char * name ) const ;  
+  //const Bool_t PostPID  (AliEMCALPID * pid) const ;  
+  //const Bool_t PostPID  (const char * name ) const ;  
+  //const Bool_t PostQA   (void) const ;
+  
  private:
 
-  AliEMCALGetter(const char* headerFile, const char* branchTitle ="Default", const Option_t * rw ="") ; 
-  void CreateWhiteBoard() const ; 
+  AliEMCALGetter(const char* headerFile, const char* branchTitle ="Default", const Bool_t toSplit = kFALSE) ; 
   TObject * ReturnO(TString what, TString name=0, TString file=0) const ; 
   const TTask * ReturnT(TString what,TString name=0) const ; 
   void DefineBranchTitles(char* branch, char* branchTitle) ;
-  void ReadTreeD() ;
-  void ReadTreeH() ;
-  void ReadTreeR() ;
-  void ReadTreeS(Int_t event) ;
-  //void ReadTreeQA() ;
-  void ReadPrimaries() ;
+  Int_t ReadTreeD(const Int_t event) ;
+  Int_t ReadTreeH(void) ;
+  Int_t ReadTreeR(const Int_t event) ;
+  Int_t ReadTreeS(const Int_t event) ;
+  void ReadTreeQA(void) ;
+  void ReadPrimaries(void) ;
+  void CleanWhiteBoard(void) ;
+  void CloseSplitFiles(void) ;
+  void SetTitle(const char * title) ;
 
   TObject ** PrimariesRef(void) const ;
   TObject ** HitsRef(void) const ;
   TObject ** SDigitsRef(const char * name, const char * file = 0 ) const;
   TObject ** DigitsRef (const char * name)   const ;
   TObject ** TowerRecPointsRef (const char * name) const ;
-  TObject ** PreShoRecPointsRef (const char * name) const ;
+  TObject ** PreShowerRecPointsRef (const char * name) const ;
   //TObject ** TrackSegmentsRef(const char * name)   const ;
   //TObject ** RecParticlesRef (const char * name)   const ;
   //TObject ** AlarmsRef (void)   const ;
@@ -212,30 +218,32 @@ class AliEMCALGetter : public TObject {
 
  private:
 
-  static TFile *        fFile ;              //!
+  static TFile * fFile ;              //!
+  Bool_t         fToSplit ;           //! Do we work in the split mode
   TString        fHeaderFile ;        //! File in which gAlice lives
   TString        fBranchTitle ;       //!
-  //TString        fTrackSegmentsTitle ;//! 
+  TString        fTrackSegmentsTitle ;//! 
+  TString        fTrackSegmentsFileName ;//! 
   TString        fRecPointsTitle ;    //!
-  //TString        fRecParticlesTitle ; //!
-  TString        fDigitsTitle ;       //!
+  TString        fRecPointsFileName ;    //!
+  TString        fRecParticlesTitle ; //!
+  TString        fRecParticlesFileName ; //!
+  TString        fDigitsTitle ;       //!TDirectory tempo(gDirectory) 
+  TString        fDigitsFileName ;    //! TDirectory tempo(gDirectory)  
   TString        fSDigitsTitle ;      //!
-
+  TString        fSDigitsFileName ;      //!
   Bool_t         fFailed ;            //! true if file is not opened and/or galice not found
   Int_t          fDebug ;             // Debug level
-
   AliRun *       fAlice ;             //! needed to read TreeK if in an other file than fHeaderFile
-  Int_t          fNPrimaries ;        //! # of primaries
-  
+  Int_t          fNPrimaries ;        //! # of primaries 
   TObjArray *    fPrimaries ;         //! list of lists of primaries-for the case of mixing
-
   TFolder *      fModuleFolder ;      //!Folder that contains the modules 
   TFolder *      fPrimariesFolder ;   //!Folder that contains the Primary Particles 
   TFolder *      fHitsFolder ;        //!Folder that contains the Hits 
   TFolder *      fSDigitsFolder ;     //!Folder that contains the SDigits 
   TFolder *      fDigitsFolder ;      //!Folder that contains the Digits 
   TFolder *      fRecoFolder ;        //!Folder that contains the reconstructed objects (RecPoints, TrackSegments, RecParticles) 
-  //TFolder *      fQAFolder ;          //!Folder that contains the QA objects  
+  TFolder *      fQAFolder ;          //!Folder that contains the QA objects  
   TFolder *      fTasksFolder ;       //!Folder that contains the Tasks (sdigitizer, digitizer, reconstructioner)
  
   static AliEMCALGetter * fgObjGetter; // pointer to the unique instance of the singleton 
