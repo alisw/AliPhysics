@@ -67,17 +67,18 @@ AliPHOSv0hits::~AliPHOSv0hits()
   delete fTmpHits ;
   fTmpHits = 0 ; 
 
-  fEmcClusters->Delete() ; 
-  delete fEmcClusters ; 
-  fEmcClusters = 0 ; 
+  fEmcRecPoints->Delete() ; 
+  delete fEmcRecPoints ; 
+  fEmcRecPoints = 0 ; 
 
-  fPpsdClusters->Delete() ;
-  delete fPpsdClusters ;
-  fPpsdClusters = 0 ; 
+  fPpsdRecPoints->Delete() ;
+  delete fPpsdRecPoints ;
+  fPpsdRecPoints = 0 ; 
 
   fTrackSegments->Delete() ; 
   delete fTrackSegments ;
   fTrackSegments = 0 ; 
+ 
 }
 
 //____________________________________________________________________________
