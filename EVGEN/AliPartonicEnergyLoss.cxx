@@ -20,22 +20,22 @@
 
 
 #ifndef WIN32
-# define lookup   lookup_
-# define read     read_
-# define readca3  readca3_
+# define eloss_lookup   eloss_lookup_
+# define eloss_read     eloss_read_
+# define eloss_readca3  eloss_readca3_
 # define type_of_call
 #else
-# define lookup   LOOKUP
-# define read     READ
-# define readca3  READCA3
+# define eloss_lookup   ELOSS_LOOKUP
+# define eloss_read     ELOSS_READ
+# define eloss_readca3  ELOSS_READCA3
 # define type_of_call _stdcall
 #endif
 
 
-extern "C" void type_of_call lookup(Double_t &, Double_t &, 
+extern "C" void type_of_call eloss_lookup(Double_t &, Double_t &, 
 				    Double_t &, Double_t &);
-extern "C" void type_of_call read();
-extern "C" void type_of_call readca3();
+extern "C" void type_of_call eloss_read();
+extern "C" void type_of_call eloss_readca3();
 
 
 ClassImp(AliPartonicEnergyLoss)
@@ -46,7 +46,7 @@ QuenchingWeight(Double_t r, Double_t x, Double_t& cont, Double_t& disc)
 //
 //  Calculate quenching weight
 //
-    lookup(r,x,cont,disc);
+    eloss_lookup(r,x,cont,disc);
 }
 
 void AliPartonicEnergyLoss::RunTest()
@@ -72,7 +72,7 @@ void AliPartonicEnergyLoss::Init()
 //
 //  Read data
 //
-    read();
-    readca3();
+    eloss_read();
+    eloss_readca3();
 }
 
