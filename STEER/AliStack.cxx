@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/05/16 14:57:22  alibrary
+New files for folders and Stack
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -304,16 +307,17 @@ void AliStack::PurifyKine()
   // If no tracks generated return now
   if(fHgwmk+1 == fNtrack) return;
 
-  Int_t toshrink = fNtrack-fHgwmk-1;
-
   // First pass, invalid Daughter information
   for(i=0; i<fNtrack; i++) {
     // Preset map, to be removed later
     if(i<=fHgwmk) map[i]=i ; 
     else {
       map[i] = -99;
-      //      particles.UncheckedAt(i)->ResetBit(kDaughtersBit);
-      if((part=(TParticle*) particles.At(i))) part->ResetBit(kDaughtersBit);
+      if((part=(TParticle*) particles.At(i))) { 
+          part->ResetBit(kDaughtersBit);
+          part->SetFirstDaughter(-1);
+          part->SetLastDaughter(-1);
+      }
     }
   }
   // Invalid daughter information for the parent of the first particle
@@ -396,6 +400,7 @@ void AliStack::PurifyKine()
 
    for (i=nkeep; i<fNtrack; ++i) particles[i]=0;
 
+   Int_t toshrink = fNtrack-fHgwmk-1;
    fLoadPoint-=toshrink;
    for(i=fLoadPoint; i<fLoadPoint+toshrink; ++i) fParticles->RemoveAt(i);
 
