@@ -21,10 +21,9 @@
 //===========================================================
 #include <Riostream.h>
 
-
-#include <TObject.h>
 #include <TString.h>
-#include <TArrayF.h>
+
+#include "AliSegmentation.h"
 
 class TClonesArray;
 class TMap;
@@ -39,31 +38,38 @@ class AliMUONSegmentationDetectionElement : public TObject {
   //AliMUONSegmentationDetectionElement(const char* ElementType="");
   virtual ~AliMUONSegmentationDetectionElement();
 
-  // User functions
+  // User common functions
+
+  AliMUONSegmentIndex     * FindIndexFromPosition(Float_t x, Float_t y, Int_t cathode);
   AliMUONSegmentIndex     * GetIndex(Int_t manu, Int_t channel) const;
-  AliMUONSegmentIndex     * GetIndexFromPosition(Float_t x, Float_t y, Int_t icathode) const;
+  AliMUONSegmentIndex     * GetIndexFromPosition(Float_t x, Float_t y, Int_t cathode) const;
   AliMUONSegmentManuIndex * GetManuIndex( Int_t padx, Int_t pady, Int_t cathode) const ;
   AliMUONSegmentPosition  * GetPosition(Int_t padx, Int_t pady, Int_t cathode) const ;
-
+  TObjArray *               ListOfIndexes()     {return fListOfIndexes;}
+  TObjArray *               ListOfManuIndexes() {return fListOfManuIndexes;}
+  TObjArray *               ListOfPositions()   {return fListOfPositions;}
   
+  void                      Init(const char * DetectionElementType="slat220000N");
+  void                      ReadingSegmentationMappingFile(TString infile, Int_t cathode);
+
+  // virtual functions from AliSegmentation. In future this class should derive from AliSegmentation
+  Float_t      GetAnod(Float_t xhit) const; // Anod wire coordinate closest to xhit
+  void         SetDAnod(Float_t D) {fWireD = D;};  // Wire Pitch
+  void         GetPadI(Float_t x, Float_t y , Int_t cathode, Int_t &padx, Int_t &pady); // Transform from Position to closest Index 
+  void         GetPadC(Int_t ix, Int_t iy, Int_t cathode, Float_t &x, Float_t &y );  // Transform from Index to Position 
+/*   void      FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy);// Initialiser  */
+/*   void      NextPad();  // Stepper  */
+/*   Int_t     MorePads(); // Condition  */
+/*   void      Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10]); // Get next neighbours  */ 
+
+ protected:  
   AliMUONSegmentIndex     * GetIndex( const char * SegmentManuIndexName)const;
   AliMUONSegmentIndex     * GetIndexFromPosition( const char * PositionName)const;
   AliMUONSegmentManuIndex * GetManuIndex( const char * SegmentIndexName) const;
   AliMUONSegmentPosition  * GetPosition( const char * SegmentIndexName) const;
-  TObjArray *            ListOfIndexes() {return fListOfIndexes;}
-  TObjArray *            ListOfManuIndexes() {return fListOfIndexes;}
-  TObjArray *            ListOfPositions() {return fListOfIndexes;}
- 
   AliMUONSegmentManuIndex * FindManuIndex(const char* ManuIndexName="") const;
-  AliMUONSegmentIndex * FindIndex(const char* IndexName="") const;
+  AliMUONSegmentIndex     * FindIndex(const char* IndexName="") const;
 
-  AliMUONSegmentIndex * FindIndexFromPosition(Float_t x, Float_t y, Int_t cathode) const;
-  
-  void     Init(const char * DetectionElementType="slat220000N");
-
-  void     ReadingSegmentationMappingFile(TString infile, Int_t cathode);
-  
- protected:
   AliMUONSegmentationDetectionElement(const AliMUONSegmentationDetectionElement& rhs);
   
  private:
@@ -77,17 +83,19 @@ class AliMUONSegmentationDetectionElement : public TObject {
   static const TString fgkNonBendingExt;  // bending file extention
 
   // data members
-  TString   fDetectionElementType;               //  Type of detection element St1Sector, slat220000N, etc ....
-  TString   fSegmentationMappingFileBending;    //  Segmentation & mapping file for bending plane
-  TString   fSegmentationMappingFileNonBending; //  Segmentation & mapping file for non bending plane
+  Float_t     fWireD;         // Wire pitch in cm
+  Float_t     fWireX0;        // Initial X0 position in local coordinates of the first wire
+  Int_t       fCurrentSegment;// Index of the current segment
+  TString     fDetectionElementType;               //  Type of detection element St1Sector, slat220000N, etc ....
+  TString     fSegmentationMappingFileBending;    //  Segmentation & mapping file for bending plane
+  TString     fSegmentationMappingFileNonBending; //  Segmentation & mapping file for non bending plane
   TObjArray * fListOfIndexes;        // TObject Array fo AliMUONSegmentIndex
   TObjArray * fListOfManuIndexes;   // TObject Array fo AliMUONSegmentManuIndex
   TObjArray * fListOfPositions;  // TObject Array fo AliMUONSegmentPositions
-  TMap *    fMapManuIndexIndex;  // Map with key ManuIndex and value = Index
-  TMap *    fMapIndexManuIndex;// Map with key ManuIndexIndex and value = ManuIndex
-  TMap *    fMapIndexPosition;// Map with key Index and value = Position
-  TMap *    fMapPositionIndex;// Map with key Index and value = Position
-  
+  TMap *      fMapManuIndexIndex;  // Map with key ManuIndex and value = Index
+  TMap *      fMapIndexManuIndex;// Map with key ManuIndexIndex and value = ManuIndex
+  TMap *      fMapIndexPosition;// Map with key Index and value = Position
+  TMap *      fMapPositionIndex;// Map with key Index and value = Position
 
   ClassDef(AliMUONSegmentationDetectionElement,1) // Segmentation for MUON detection elements
     

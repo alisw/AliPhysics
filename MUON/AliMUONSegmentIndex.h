@@ -28,7 +28,7 @@ class AliMUONSegmentIndex : public TNamed {
   Int_t Compare(const TObject *obj) const;
   Int_t GetChannelId() const {return fChannelId;}
   Int_t GetPadX()      const {return fPadX;} 
-  Int_t GetPadY()      const {return fPadX;} 
+  Int_t GetPadY()      const {return fPadY;} 
   Int_t GetCathode()   const {return fCathode;} 
   
   static TString Name(Int_t padx, Int_t pady, Int_t cathode) ;

@@ -27,13 +27,15 @@ class AliMUONSegmentPosition : public TNamed
     virtual ~AliMUONSegmentPosition();
       
     Int_t   Compare(const TObject *obj) const;
+    Float_t Distance(Float_t x, Float_t y);
     Int_t   GetChannelId()const {return fChannelId;}
     Float_t GetXlocal()   const {return fX;}
     Float_t GetYlocal()   const {return fY;}
     Int_t   GetCathode()  const {return fCathode;}
 
+    static  Float_t GetUnit()            {return fUnit;} 
+    static  TString Name(Float_t x, Float_t y, Int_t cathode) ;
 
-    static TString Name(Float_t x, Float_t y, Int_t cathode) ;
     void    Print() const;
 
  private:
@@ -41,7 +43,11 @@ class AliMUONSegmentPosition : public TNamed
     Float_t fX;           // Position X of the center of the segment (pad, strip, etc...)
     Float_t fY;           // Position Y of the center of the segment (pad, strip, etc...)
     Int_t   fCathode;     // Cathode Side Bending 1  or non bending 0 
-     
+    Float_t fPadSizeX;
+    Float_t fPadSizeY;
+
+    static Float_t fUnit;  // Unit for generation of the name 3mm has been choses     
+
     ClassDef(AliMUONSegmentPosition,1) // Loal positions of segments
 	
 };

@@ -32,6 +32,8 @@
 //___________________________________________
 ClassImp(AliMUONSegmentPosition)
 
+Float_t AliMUONSegmentPosition::fUnit = 0.3 ; // 3mm unit for generation of segmenposition name
+
 //
 //___________________________________________
 AliMUONSegmentPosition::AliMUONSegmentPosition() : TNamed()
@@ -51,6 +53,8 @@ AliMUONSegmentPosition::AliMUONSegmentPosition(const Int_t channelId, const Floa
   fX = x;
   fY = y;
   fCathode=cathode;
+  fPadSizeX=0.;
+  fPadSizeY=0.;  
 }
 //_______________________________________________
 AliMUONSegmentPosition::~AliMUONSegmentPosition()
@@ -64,6 +68,12 @@ Int_t AliMUONSegmentPosition::Compare(const TObject *obj) const
   AliMUONSegmentPosition * myobj = ( AliMUONSegmentPosition *) obj;
   return (fChannelId > myobj->GetChannelId()) ? 1 : -1;
 }
+
+//___________________________________________
+Float_t AliMUONSegmentPosition::Distance(Float_t x, Float_t y)
+{
+  return TMath::Sqrt( (fX-x)*(fX-x) + (fY-y)*(fY-y) ) ;
+}
 //___________________________________________
 TString AliMUONSegmentPosition::Name(Float_t x, Float_t y, Int_t cathode) 
 {
@@ -73,8 +83,8 @@ TString AliMUONSegmentPosition::Name(Float_t x, Float_t y, Int_t cathode)
   // xp = TMath::Nint(x*10./3.);
   // yp = TMath::Nint(y+10./3.);
   // sprintf(name,"%d-%d-%d",xp,yp,cathode);
-  Int_t xp = TMath::Nint(x*10./3.);
-  Int_t yp = TMath::Nint(y*10./3.);
+  Int_t xp = TMath::Nint(x/fUnit);
+  Int_t yp = TMath::Nint(y/fUnit);
   char name[15];
   sprintf(name,"%d-%d-%d",xp,yp,cathode);
   return TString(name);
