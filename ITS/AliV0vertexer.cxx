@@ -18,16 +18,106 @@
 //
 //     Origin: Iouri Belikov, IReS, Strasbourg, Jouri.Belikov@cern.ch
 //-------------------------------------------------------------------------
-#include <Riostream.h>
-#include <TPDGCode.h>
 #include <TObjArray.h>
 #include <TTree.h>
 
+#include "AliESD.h"
+#include "AliESDtrack.h"
 #include "AliITStrackV2.h"
 #include "AliV0vertex.h"
 #include "AliV0vertexer.h"
 
 ClassImp(AliV0vertexer)
+
+Int_t AliV0vertexer::Tracks2V0vertices(AliESD *event) {
+  //--------------------------------------------------------------------
+  //This function reconstructs V0 vertices
+  //--------------------------------------------------------------------
+
+   Int_t nentr=event->GetNumberOfTracks();
+
+   TObjArray negtrks(nentr/2);
+   TObjArray postrks(nentr/2);
+
+   Int_t nneg=0, npos=0, nvtx=0;
+
+   Int_t i;
+   for (i=0; i<nentr; i++) {
+     AliESDtrack *esd=event->GetTrack(i);
+     Int_t status=esd->GetStatus();
+
+  if ((status&AliESDtrack::kITSrefit)==0)
+     if ((status&AliESDtrack::kITSout)!=0 || (status&AliESDtrack::kITSin)==0)
+  continue;
+
+     AliITStrackV2 *iotrack=new AliITStrackV2(*esd);
+     iotrack->SetLabel(i);  // now it is the index in array of ESD tracks
+     iotrack->PropagateTo(3.,0.0023,65.19); 
+     iotrack->PropagateTo(2.5,0.,0.);
+
+     if (iotrack->Get1Pt() > 0.) {nneg++; negtrks.AddLast(iotrack);}
+     else {npos++; postrks.AddLast(iotrack);}
+   }   
+
+
+   for (i=0; i<nneg; i++) {
+      //if (i%10==0) cerr<<nneg-i<<'\r';
+      AliITStrackV2 *ntrk=(AliITStrackV2 *)negtrks.UncheckedAt(i);
+
+      if (TMath::Abs(ntrk->GetD(fX,fY))<fDPmin) continue;
+      if (TMath::Abs(ntrk->GetD(fX,fY))>fRmax) continue;
+
+      for (Int_t k=0; k<npos; k++) {
+         AliITStrackV2 *ptrk=(AliITStrackV2 *)postrks.UncheckedAt(k);
+
+         if (TMath::Abs(ptrk->GetD(fX,fY))<fDPmin) continue;
+         if (TMath::Abs(ptrk->GetD(fX,fY))>fRmax) continue;
+
+         if (TMath::Abs(ntrk->GetD(fX,fY))<fDNmin)
+         if (TMath::Abs(ptrk->GetD(fX,fY))<fDNmin) continue;
+
+
+         AliITStrackV2 nt(*ntrk), pt(*ptrk), *pnt=&nt, *ppt=&pt;
+
+         Double_t dca=PropagateToDCA(pnt,ppt);
+         if (dca > fDCAmax) continue;
+
+         AliV0vertex vertex(*pnt,*ppt);
+         if (vertex.GetChi2() > fChi2max) continue;
+	 
+         /*  Think of something better here ! 
+         nt.PropagateToVertex(); if (TMath::Abs(nt.GetZ())<0.04) continue;
+         pt.PropagateToVertex(); if (TMath::Abs(pt.GetZ())<0.04) continue;
+	 */
+
+         Double_t x,y,z; vertex.GetXYZ(x,y,z); 
+         Double_t r2=x*x + y*y; 
+         if (r2 > fRmax*fRmax) continue;
+         if (r2 < fRmin*fRmin) continue;
+
+         Double_t px,py,pz; vertex.GetPxPyPz(px,py,pz);
+         Double_t p2=px*px+py*py+pz*pz;
+         Double_t cost=((x-fX)*px + (y-fY)*py + (z-fZ)*pz)/
+               TMath::Sqrt(p2*((x-fX)*(x-fX) + (y-fY)*(y-fY) + (z-fZ)*(z-fZ)));
+
+        //if (cost < (5*fCPAmax-0.9-TMath::Sqrt(r2)*(fCPAmax-1))/4.1) continue;
+         if (cost < fCPAmax) continue;
+
+         //vertex.ChangeMassHypothesis(); //default is Lambda0 
+
+         event->AddV0(&vertex);
+
+         nvtx++;
+      }
+   }
+
+   Info("Tracks2V0vertices","Number of reconstructed V0 vertices: %d",nvtx);
+
+   negtrks.Delete();
+   postrks.Delete();
+
+   return 0;
+}
 
 Int_t AliV0vertexer::Tracks2V0vertices(TTree *tTree, TTree *vTree) {
   //--------------------------------------------------------------------
@@ -65,7 +155,7 @@ Int_t AliV0vertexer::Tracks2V0vertices(TTree *tTree, TTree *vTree) {
 
 
    for (i=0; i<nneg; i++) {
-      if (i%10==0) cerr<<nneg-i<<'\r';
+      //if (i%10==0) cerr<<nneg-i<<'\r';
       AliITStrackV2 *ntrk=(AliITStrackV2 *)negtrks.UncheckedAt(i);
 
       if (TMath::Abs(ntrk->GetD(fX,fY))<fDPmin) continue;
@@ -102,9 +192,9 @@ Int_t AliV0vertexer::Tracks2V0vertices(TTree *tTree, TTree *vTree) {
          Double_t px,py,pz; vertex.GetPxPyPz(px,py,pz);
          Double_t p2=px*px+py*py+pz*pz;
          Double_t cost=((x-fX)*px + (y-fY)*py + (z-fZ)*pz)/
-                TMath::Sqrt(p2*((x-fX)*(x-fX) + (y-fY)*(y-fY) + (z-fZ)*(z-fZ)));
+               TMath::Sqrt(p2*((x-fX)*(x-fX) + (y-fY)*(y-fY) + (z-fZ)*(z-fZ)));
 
-         //if (cost < (5*fCPAmax-0.9-TMath::Sqrt(r2)*(fCPAmax-1))/4.1) continue;
+        //if (cost < (5*fCPAmax-0.9-TMath::Sqrt(r2)*(fCPAmax-1))/4.1) continue;
          if (cost < fCPAmax) continue;
 
          //vertex.ChangeMassHypothesis(); //default is Lambda0 
@@ -115,7 +205,7 @@ Int_t AliV0vertexer::Tracks2V0vertices(TTree *tTree, TTree *vTree) {
       }
    }
 
-   cerr<<"Number of reconstructed V0 vertices: "<<nvtx<<endl;
+   Info("Tracks2V0vertices","Number of reconstructed V0 vertices: %d",nvtx);
 
    negtrks.Delete();
    postrks.Delete();

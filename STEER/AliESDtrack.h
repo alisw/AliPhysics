@@ -28,6 +28,7 @@ public:
   ULong_t GetStatus() const {return fFlags;}
   Int_t GetLabel() const {return fLabel;}
   Double_t GetAlpha() const {return fRalpha;}
+  void GetExternalParametersAt(Double_t x, Double_t p[5]) const;
   void GetExternalParameters(Double_t &x, Double_t p[5]) const;
   void GetExternalCovariance(Double_t cov[15]) const;
   Double_t GetIntegratedLength() const {return fTrackLength;}

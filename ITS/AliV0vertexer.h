@@ -13,6 +13,7 @@
 
 class TTree;
 class AliITStrackV2;
+class AliESD;
 
 //_____________________________________________________________________________
 class AliV0vertexer : public TObject {
@@ -21,6 +22,8 @@ public:
   AliV0vertexer(const Double_t cuts[7]);
   void SetCuts(const Double_t cuts[7]);
   void SetVertex(Double_t *vtx) { fX=vtx[0]; fY=vtx[1]; fZ=vtx[2]; }
+
+  Int_t Tracks2V0vertices(AliESD *event);
 
   Int_t Tracks2V0vertices(TTree *in, TTree *out);
   Double_t PropagateToDCA(AliITStrackV2 *nt, AliITStrackV2 *pt);

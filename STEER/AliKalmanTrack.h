@@ -87,7 +87,7 @@ public:
 
   static void SetConvConst(Double_t cc) {fgConvConst=cc;}
   static void SetConvConst();
-  Double_t GetConvConst() const {return fgConvConst;}
+  static Double_t GetConvConst() {return fgConvConst;}
 
   static void SetMagneticField(Double_t f) {// f - Magnetic field in T
     fgConvConst=100/0.299792458/f;

@@ -18,27 +18,13 @@
 //
 //    Origin: Christian Kuhn, IReS, Strasbourg, christian.kuhn@ires.in2p3.fr
 //-------------------------------------------------------------------------
-#include <Riostream.h>
 #include <TMath.h>
-#include <TPDGCode.h>
 
 #include "AliCascadeVertex.h"
 #include "AliITStrackV2.h"
 #include "AliV0vertex.h"
 
 ClassImp(AliCascadeVertex)
-
-AliCascadeVertex::AliCascadeVertex() : TObject() {
-  //--------------------------------------------------------------------
-  // Default constructor  (Xi-)
-  //--------------------------------------------------------------------
-  fPdgCode=kXiMinus;
-  fEffMass=1.32131;
-  fChi2=1.e+33;
-  fPos[0]=fPos[1]=fPos[2]=0.;
-  fPosCov[0]=fPosCov[1]=fPosCov[2]=fPosCov[3]=fPosCov[4]=fPosCov[5]=0.;
-}
-
 
 
 inline Double_t det(Double_t a00, Double_t a01, Double_t a10, Double_t a11){
@@ -55,15 +41,14 @@ inline Double_t det (Double_t a00,Double_t a01,Double_t a02,
 }
 
 
-
 AliCascadeVertex::AliCascadeVertex(const AliV0vertex &v,const AliITStrackV2 &t) {
   //--------------------------------------------------------------------
   // Main constructor
   //--------------------------------------------------------------------
   fPdgCode=kXiMinus;
 
-  fV0lab[0]=v.GetNlabel(); fV0lab[1]=v.GetPlabel();
-  fBachLab=t.GetLabel(); 
+  fV0idx[0]=v.GetNindex(); fV0idx[1]=v.GetPindex();
+  fBachIdx=t.GetLabel(); 
 
   //Trivial estimation of the vertex parameters
   Double_t pt, phi, x, par[5];
@@ -122,187 +107,4 @@ AliCascadeVertex::AliCascadeVertex(const AliV0vertex &v,const AliITStrackV2 &t) 
 
 }
 
-/*
-Double_t AliCascadeVertex::ChangeMassHypothesis(Double_t &v0q, Int_t code) {
-  //--------------------------------------------------------------------
-  // This function changes the mass hypothesis for this cascade
-  // and returns the "kinematical quality" of this hypothesis
-  // together with the "quality" of associated V0 (argument v0q) 
-  //--------------------------------------------------------------------
-  Double_t nmass=0.13957, pmass=0.93827, des0=0.9437-0.1723; 
-  Double_t bmass=0.13957, mass =1.3213,  des =1.1243-0.1970;
-
-  fPdgCode=code;
-
-  switch (code) {
-  case 213: 
-       bmass=0.93827; 
-       break;
-  case kXiMinus:
-       break;
-  case kXiPlusBar:
-       nmass=0.93827; pmass=0.13957; des0=-des0; 
-       des=-des;
-       break;
-  case kOmegaMinus: 
-       bmass=0.49368; mass=1.67245; des=1.1355-0.5369;
-       break;
-  case kOmegaPlusBar: 
-       nmass=0.93827; pmass=0.13957; des0=-des0; 
-       bmass=0.49368; mass=1.67245; des=0.5369-1.1355;
-       break;
-  default:
-       cerr<<"AliCascadeVertex::ChangeMassHypothesis: ";
-       cerr<<"Invalide PDG code !  Assuming XiMinus's...\n";
-       fPdgCode=kXiMinus;
-    break;
-  }
-
-  Double_t pxn=fV0mom[0][0], pyn=fV0mom[0][1], pzn=fV0mom[0][2];
-  Double_t pxp=fV0mom[1][0], pyp=fV0mom[1][1], pzp=fV0mom[1][2];
-  Double_t en=TMath::Sqrt(nmass*nmass + pxn*pxn + pyn*pyn + pzn*pzn);
-  Double_t ep=TMath::Sqrt(pmass*pmass + pxp*pxp + pyp*pyp + pzp*pzp);
-  Double_t px0=pxn+pxp, py0=pyn+pyp, pz0=pzn+pzp;
-  Double_t p0=TMath::Sqrt(px0*px0 + py0*py0 + pz0*pz0);
-
-  Double_t gamma0=(en+ep)/1.11568, betagamma0=p0/1.11568;
-  Double_t pln=(pxn*px0 + pyn*py0 + pzn*pz0)/p0;
-  Double_t plp=(pxp*px0 + pyp*py0 + pzp*pz0)/p0;
-  Double_t plps=gamma0*plp - betagamma0*ep;
-
-  Double_t diff0=2*gamma0*plps + betagamma0*des0;
-
-
-  v0q=plp-pln-diff0;
-
-
-  Double_t pxb=fBachMom[0], pyb=fBachMom[1], pzb=fBachMom[2]; 
-
-  Double_t e0=TMath::Sqrt(1.11568*1.11568 + p0*p0);
-  Double_t eb=TMath::Sqrt(bmass*bmass + pxb*pxb + pyb*pyb + pzb*pzb);
-  Double_t pxl=px0+pxb, pyl=py0+pyb, pzl=pz0+pzb;
-  Double_t pl=TMath::Sqrt(pxl*pxl + pyl*pyl + pzl*pzl);
-  
-  fEffMass=TMath::Sqrt((e0+eb)*(e0+eb) - pl*pl);
-
-  Double_t gamma=(e0+eb)/mass, betagamma=pl/mass;
-  Double_t pl0=(px0*pxl + py0*pyl + pz0*pzl)/pl;
-  Double_t plb=(pxb*pxl + pyb*pyl + pzb*pzl)/pl;
-  Double_t pl0s=gamma*pl0 - betagamma*e0;
-
-  Double_t diff=2*gamma*pl0s + betagamma*des;
-
-  return (pl0-plb-diff);
-}
-*/
-
-Double_t AliCascadeVertex::ChangeMassHypothesis(Double_t &v0q, Int_t code) {
-  //--------------------------------------------------------------------
-  // This function changes the mass hypothesis for this cascade
-  // and returns the "kinematical quality" of this hypothesis
-  // together with the "quality" of associated V0 (argument v0q) 
-  //--------------------------------------------------------------------
-  Double_t nmass=0.13957, pmass=0.93827, ps0=0.101; 
-  Double_t bmass=0.13957, mass =1.3213,  ps =0.139;
-
-  fPdgCode=code;
-
-  switch (code) {
-  case 213: 
-       bmass=0.93827; 
-       break;
-  case kXiMinus:
-       break;
-  case kXiPlusBar:
-       nmass=0.93827; pmass=0.13957; 
-       break;
-  case kOmegaMinus: 
-       bmass=0.49368; mass=1.67245; ps=0.211;
-       break;
-  case kOmegaPlusBar: 
-       nmass=0.93827; pmass=0.13957; 
-       bmass=0.49368; mass=1.67245; ps=0.211;
-       break;
-  default:
-       cerr<<"AliCascadeVertex::ChangeMassHypothesis: ";
-       cerr<<"Invalide PDG code !  Assuming XiMinus's...\n";
-       fPdgCode=kXiMinus;
-    break;
-  }
-
-  Double_t pxn=fV0mom[0][0], pyn=fV0mom[0][1], pzn=fV0mom[0][2];
-  Double_t pxp=fV0mom[1][0], pyp=fV0mom[1][1], pzp=fV0mom[1][2];
-  Double_t px0=pxn+pxp, py0=pyn+pyp, pz0=pzn+pzp;
-  Double_t p0=TMath::Sqrt(px0*px0 + py0*py0 + pz0*pz0);
-
-  Double_t e0=TMath::Sqrt(1.11568*1.11568 + p0*p0);
-  Double_t beta0=p0/e0;
-  Double_t pln=(pxn*px0 + pyn*py0 + pzn*pz0)/p0;
-  Double_t plp=(pxp*px0 + pyp*py0 + pzp*pz0)/p0;
-  Double_t pt2=pxp*pxp + pyp*pyp + pzp*pzp - plp*plp;
-
-  Double_t a=(plp-pln)/(plp+pln);
-  a -= (pmass*pmass-nmass*nmass)/(1.11568*1.11568);
-  a = 0.25*beta0*beta0*1.11568*1.11568*a*a + pt2;
-
-
-  v0q=a - ps0*ps0;
-
-
-  Double_t pxb=fBachMom[0], pyb=fBachMom[1], pzb=fBachMom[2]; 
-
-  Double_t eb=TMath::Sqrt(bmass*bmass + pxb*pxb + pyb*pyb + pzb*pzb);
-  Double_t pxl=px0+pxb, pyl=py0+pyb, pzl=pz0+pzb;
-  Double_t pl=TMath::Sqrt(pxl*pxl + pyl*pyl + pzl*pzl);
-  
-  fEffMass=TMath::Sqrt((e0+eb)*(e0+eb) - pl*pl);
-
-  Double_t beta=pl/(e0+eb);
-  Double_t pl0=(px0*pxl + py0*pyl + pz0*pzl)/pl;
-  Double_t plb=(pxb*pxl + pyb*pyl + pzb*pzl)/pl;
-  pt2=p0*p0 - pl0*pl0;
-
-  a=(pl0-plb)/(pl0+plb);
-  a -= (1.11568*1.11568-bmass*bmass)/(mass*mass);
-  a = 0.25*beta*beta*mass*mass*a*a + pt2;
-
-  return (a - ps*ps);
-}
-
-void 
-AliCascadeVertex::GetPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const {
-  //--------------------------------------------------------------------
-  // This function returns the cascade momentum (global)
-  //--------------------------------------------------------------------
-  px=fV0mom[0][0]+fV0mom[1][0]+fBachMom[0]; 
-  py=fV0mom[0][1]+fV0mom[1][1]+fBachMom[1]; 
-  pz=fV0mom[0][2]+fV0mom[1][2]+fBachMom[2]; 
-}
-
-void AliCascadeVertex::GetXYZ(Double_t &x, Double_t &y, Double_t &z) const {
-  //--------------------------------------------------------------------
-  // This function returns cascade position (global)
-  //--------------------------------------------------------------------
-  x=fPos[0]; 
-  y=fPos[1]; 
-  z=fPos[2]; 
-}
-
-Double_t AliCascadeVertex::GetD(Double_t x0, Double_t y0, Double_t z0) const {
-  //--------------------------------------------------------------------
-  // This function returns the cascade impact parameter
-  //--------------------------------------------------------------------
-
-  Double_t x=fPos[0],y=fPos[1],z=fPos[2];
-  Double_t px=fV0mom[0][0]+fV0mom[1][0]+fBachMom[0];
-  Double_t py=fV0mom[0][1]+fV0mom[1][1]+fBachMom[1];
-  Double_t pz=fV0mom[0][2]+fV0mom[1][2]+fBachMom[2];
-
-  Double_t dx=(y0-y)*pz - (z0-z)*py; 
-  Double_t dy=(x0-x)*pz - (z0-z)*px;
-  Double_t dz=(x0-x)*py - (y0-y)*px;
-  Double_t d=TMath::Sqrt((dx*dx+dy*dy+dz*dz)/(px*px+py*py+pz*pz));
-
-  return d;
-}
 

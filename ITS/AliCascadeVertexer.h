@@ -11,6 +11,7 @@
 
 #include "TObject.h"
 
+class AliESD;
 class TTree;
 class AliITStrackV2;
 class AliV0vertex;
@@ -22,6 +23,7 @@ public:
   AliCascadeVertexer(const Double_t cuts[8]);
   void SetCuts(const Double_t cuts[8]);
 
+  Int_t V0sTracks2CascadeVertices(AliESD *event);
   Int_t V0sTracks2CascadeVertices(TTree *v, TTree *t, TTree *x);
   Double_t PropagateToDCA(AliV0vertex *vtx, AliITStrackV2 *trk);
 

@@ -16,14 +16,16 @@
 #include "TObject.h"
 #include "TClonesArray.h"
 #include  "AliESDtrack.h"
+#include  "AliESDv0.h"
+#include  "AliESDcascade.h"
 
 class AliESD : public TObject {
 public:
   AliESD();
   virtual ~AliESD() {
     fTracks.Delete();
-    //fV0s.Delete();
-    //fCascades.Delete();
+    fV0s.Delete();
+    fCascades.Delete();
   }
 
   void SetEventNumber(Int_t n) {fEventNumber=n;}
@@ -35,13 +37,27 @@ public:
     new(fTracks[fTracks.GetEntriesFast()]) AliESDtrack(*t);
   }
 
+  AliESDv0 *GetV0(Int_t i) {
+    return (AliESDv0 *)fV0s.UncheckedAt(i);
+  }
+  void AddV0(const AliESDv0 *v) {
+    new(fV0s[fV0s.GetEntriesFast()]) AliESDv0(*v);
+  }
+
+  AliESDcascade *GetCascade(Int_t i) {
+    return (AliESDcascade *)fCascades.UncheckedAt(i);
+  }
+  void AddCascade(const AliESDcascade *c) {
+    new(fCascades[fCascades.GetEntriesFast()]) AliESDcascade(*c);
+  }
+
   Int_t  GetEventNumber() const {return fEventNumber;}
   Int_t  GetRunNumber() const {return fRunNumber;}
   Long_t GetTrigger() const {return fTrigger;}
   
   Int_t GetNumberOfTracks()   const {return fTracks.GetEntriesFast();}
-  //Int_t GetNumberOfV0s()      const {return fV0s.GetEntriesFast();}
-  //Int_t GetNumberOfCascades() const {return fCascades.GetEntriesFast();}
+  Int_t GetNumberOfV0s()      const {return fV0s.GetEntriesFast();}
+  Int_t GetNumberOfCascades() const {return fCascades.GetEntriesFast();}
   
 protected:
 
@@ -52,8 +68,8 @@ protected:
   Int_t        fRecoVersion;     // Version of reconstruction 
 
   TClonesArray  fTracks;         // ESD tracks
-  //TClonesArray  fV0s;            // V0 vertices
-  //TClonesArray  fCascades;       // Cascade vertices
+  TClonesArray  fV0s;            // V0 vertices
+  TClonesArray  fCascades;       // Cascade vertices
   
   ClassDef(AliESD,1)  //ESD class 
 };

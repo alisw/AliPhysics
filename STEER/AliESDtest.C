@@ -33,6 +33,8 @@
   #include "AliITS.h"
   #include "AliITSgeom.h"
   #include "AliITStrackerV2.h"
+  #include "AliV0vertexer.h"
+  #include "AliCascadeVertexer.h"
   #include "AliITSpidESD.h"
   #include "AliITSLoader.h"
 
@@ -113,6 +115,27 @@ Int_t AliESDtest(Int_t nev=1) {
    Double_t parITS[]={34.,0.15,10.};
    AliITSpidESD itsPID(parITS);
 
+   //An instance of the V0 finder
+   Double_t cuts[]={33,  // max. allowed chi2
+                    0.16,// min. allowed negative daughter's impact parameter 
+                    0.05,// min. allowed positive daughter's impact parameter 
+                    0.080,// max. allowed DCA between the daughter tracks
+                    0.998,// max. allowed cosine of V0's pointing angle
+                    0.9,  // min. radius of the fiducial volume
+                    2.9   // max. radius of the fiducial volume
+                   };
+   AliV0vertexer vtxer(cuts);
+
+   Double_t cts[]={33.,    // max. allowed chi2
+                    0.05,   // min. allowed V0 impact parameter 
+                    0.008,  // window around the Lambda mass 
+                    0.035,  // min. allowed bachelor's impact parameter 
+                    0.10,   // max. allowed DCA between a V0 and a track
+                    0.9985, //max. allowed cosine of the cascade pointing angle
+                    0.9,    // min. radius of the fiducial volume
+                    2.9     // max. radius of the fiducial volume
+                   };
+   AliCascadeVertexer cvtxer=AliCascadeVertexer(cts);
 
 /**** The TPC corner ********************/
 
@@ -214,9 +237,12 @@ Int_t AliESDtest(Int_t nev=1) {
      itsTracker.LoadClusters(itsTree);
      rc+=itsTracker.Clusters2Tracks(event);
 
+     rc+=vtxer.Tracks2V0vertices(event);            // V0 finding
+     rc+=cvtxer.V0sTracks2CascadeVertices(event);   // cascade finding
+
      rc+=itsTracker.PropagateBack(event); 
      itsTracker.UnloadClusters();
-     itsPID.MakePID(event);
+     //itsPID.MakePID(event);
      
      rc+=tpcTracker.PropagateBack(event);
      tpcTracker.UnloadClusters();

@@ -32,9 +32,9 @@ AliESD::AliESD():
   fRunNumber(0),
   fTrigger(0),
   fRecoVersion(0),
-  fTracks("AliESDtrack",15000)
-  //fV0s("AliV0vertex",200),
-  //fCascades("AliCascadeVertex",20)
+  fTracks("AliESDtrack",15000),
+  fV0s("AliESDv0",200),
+  fCascades("AliESDcascade",20)
 {
 }
 

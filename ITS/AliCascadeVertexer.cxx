@@ -18,17 +18,145 @@
 //
 //    Origin: Christian Kuhn, IReS, Strasbourg, christian.kuhn@ires.in2p3.fr
 //-------------------------------------------------------------------------
-#include <Riostream.h>
 #include <TObjArray.h>
-#include <TPDGCode.h>
 #include <TTree.h>
 
+#include "AliESD.h"
+#include "AliESDv0.h"
+#include "AliESDcascade.h"
 #include "AliCascadeVertex.h"
 #include "AliCascadeVertexer.h"
 #include "AliITStrackV2.h"
 #include "AliV0vertex.h"
 
 ClassImp(AliCascadeVertexer)
+
+Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
+  //--------------------------------------------------------------------
+  // This function reconstructs cascade vertices
+  //      Adapted to the ESD by I.Belikov (Jouri.Belikov@cern.ch)
+  //--------------------------------------------------------------------
+
+   Int_t nV0=(Int_t)event->GetNumberOfV0s();
+   TObjArray vtcs(nV0);
+   Int_t i;
+   for (i=0; i<nV0; i++) {
+       const AliESDv0 *esdV0=event->GetV0(i);
+       vtcs.AddLast(new AliV0vertex(*esdV0));
+   }
+
+
+   Int_t ntr=(Int_t)event->GetNumberOfTracks();
+   TObjArray trks(ntr);
+   for (i=0; i<ntr; i++) {
+       AliESDtrack *esdtr=event->GetTrack(i);
+       AliITStrackV2 *iotrack=new AliITStrackV2(*esdtr);
+       iotrack->PropagateTo(3.,0.0023,65.19); iotrack->PropagateTo(2.5,0.,0.);
+       trks.AddLast(iotrack);
+   }   
+
+   Double_t massLambda=1.11568;
+   Int_t ncasc=0;
+
+   // Looking for the cascades...
+   for (i=0; i<nV0; i++) {
+      AliV0vertex *v=(AliV0vertex*)vtcs.UncheckedAt(i);
+      v->ChangeMassHypothesis(kLambda0); // the v0 must be Lambda 
+      if (TMath::Abs(v->GetEffMass()-massLambda)>fMassWin) continue; 
+      if (v->GetD(0,0,0)<fDV0min) continue;
+      for (Int_t j=0; j<ntr; j++) {
+	 AliITStrackV2 *b=(AliITStrackV2*)trks.UncheckedAt(j);
+
+         if (TMath::Abs(b->GetD())<fDBachMin) continue;
+         if (b->Get1Pt()<0.) continue;  // bachelor's charge 
+          
+	 AliV0vertex v0(*v), *pv0=&v0;
+         AliITStrackV2 bt(*b), *pbt=&bt;
+
+         Double_t dca=PropagateToDCA(pv0,pbt);
+         if (dca > fDCAmax) continue;
+
+         AliCascadeVertex cascade(*pv0,*pbt);
+         if (cascade.GetChi2() > fChi2max) continue;
+
+	 Double_t x,y,z; cascade.GetXYZ(x,y,z); 
+         Double_t r2=x*x + y*y; 
+         if (r2 > fRmax*fRmax) continue;   // condition on fiducial zone
+         if (r2 < fRmin*fRmin) continue;
+
+         {
+         Double_t x1,y1,z1; pv0->GetXYZ(x1,y1,z1);
+         if (r2 > (x1*x1+y1*y1)) continue;
+         if (z*z > z1*z1) continue;
+         }
+
+	 Double_t px,py,pz; cascade.GetPxPyPz(px,py,pz);
+         Double_t p2=px*px+py*py+pz*pz;
+         Double_t cost=(x*px+y*py+z*pz)/TMath::Sqrt(p2*(r2+z*z));
+
+         if (cost<fCPAmax) continue; //condition on the cascade pointing angle 
+         //cascade.ChangeMassHypothesis(); //default is Xi
+
+         event->AddCascade(&cascade);
+
+         ncasc++;
+
+      }
+   }
+
+   // Looking for the anti-cascades...
+   for (i=0; i<nV0; i++) {
+      AliV0vertex *v=(AliV0vertex*)vtcs.UncheckedAt(i);
+      v->ChangeMassHypothesis(kLambda0Bar); //the v0 must be anti-Lambda 
+      if (TMath::Abs(v->GetEffMass()-massLambda)>fMassWin) continue; 
+      if (v->GetD(0,0,0)<fDV0min) continue;
+      for (Int_t j=0; j<ntr; j++) {
+	 AliITStrackV2 *b=(AliITStrackV2*)trks.UncheckedAt(j);
+
+         if (TMath::Abs(b->GetD())<fDBachMin) continue;
+         if (b->Get1Pt()>0.) continue;  // bachelor's charge 
+          
+	 AliV0vertex v0(*v), *pv0=&v0;
+         AliITStrackV2 bt(*b), *pbt=&bt;
+
+         Double_t dca=PropagateToDCA(pv0,pbt);
+         if (dca > fDCAmax) continue;
+
+         AliCascadeVertex cascade(*pv0,*pbt);
+         if (cascade.GetChi2() > fChi2max) continue;
+
+	 Double_t x,y,z; cascade.GetXYZ(x,y,z); 
+         Double_t r2=x*x + y*y; 
+         if (r2 > fRmax*fRmax) continue;   // condition on fiducial zone
+         if (r2 < fRmin*fRmin) continue;
+
+         {
+         Double_t x1,y1,z1; pv0->GetXYZ(x1,y1,z1);
+         if (r2 > (x1*x1+y1*y1)) continue;
+         if (z*z > z1*z1) continue;
+         }
+
+	 Double_t px,py,pz; cascade.GetPxPyPz(px,py,pz);
+         Double_t p2=px*px+py*py+pz*pz;
+         Double_t cost=(x*px+y*py+z*pz)/TMath::Sqrt(p2*(r2+z*z));
+
+         if (cost<fCPAmax) continue; //condition on the cascade pointing angle 
+         //cascade.ChangeMassHypothesis(); //default is Xi
+
+         event->AddCascade(&cascade);
+
+         ncasc++;
+
+      }
+   }
+
+Info("V0sTracks2CascadeVertices","Number of reconstructed cascades: %d",ncasc);
+
+   trks.Delete();
+   vtcs.Delete();
+
+   return 0;
+}
 
 Int_t AliCascadeVertexer::
 V0sTracks2CascadeVertices(TTree *vTree,TTree *tTree, TTree *xTree) {
@@ -160,7 +288,7 @@ V0sTracks2CascadeVertices(TTree *vTree,TTree *tTree, TTree *xTree) {
       }
    }
 
-   cerr<<"Number of reconstructed cascades: "<<ncasc<<endl;
+Info("V0sTracks2CascadeVertices","Number of reconstructed cascades: %d",ncasc);
 
    trks.Delete();
    vtxV0.Delete();
@@ -230,7 +358,7 @@ AliCascadeVertexer::PropagateToDCA(AliV0vertex *v, AliITStrackV2 *t) {
 
   x1=x1*cs1 + y1*sn1;
   if (!t->PropagateTo(x1,0.,0.)) {
-    cerr<<"AliV0vertexer::PropagateToDCA: propagation failed !\n";
+    Error("PropagateToDCA","Propagation failed !");
     return 1.e+33;
   }  
 

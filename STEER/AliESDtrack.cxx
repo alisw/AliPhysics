@@ -103,6 +103,24 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags) {
 }
 
 //_______________________________________________________________________
+void AliESDtrack::GetExternalParametersAt(Double_t x, Double_t p[5]) const {
+  //---------------------------------------------------------------------
+  // This function returns external representation of the track parameters
+  // at the plane x
+  //---------------------------------------------------------------------
+  Double_t dx=x-fRx;
+  Double_t c=fRp[4]/AliKalmanTrack::GetConvConst();
+  Double_t f1=fRp[2], f2=f1 + c*dx;
+  Double_t r1=sqrt(1.- f1*f1), r2=sqrt(1.- f2*f2);    
+
+  p[0]=fRp[0]+dx*(f1+f2)/(r1+r2);
+  p[1]=fRp[1]+dx*(f1+f2)/(f1*r2 + f2*r1)*fRp[3];
+  p[2]=fRp[2]+dx*c;
+  p[3]=fRp[3];
+  p[4]=fRp[4];
+}
+
+//_______________________________________________________________________
 void AliESDtrack::GetExternalParameters(Double_t &x, Double_t p[5]) const {
   //---------------------------------------------------------------------
   // This function returns external representation of the track parameters
