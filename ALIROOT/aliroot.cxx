@@ -79,14 +79,4 @@ int main(int argc, char **argv)
   
   return(0);
 }
-#define ffinit ffinit_
-#define ffkey ffkey_
-#define ffgo ffgo_
-
-extern "C" {
-
-void ffinit_() {}
-void ffkey_() {}
-void ffgo_() {}
-}
 
