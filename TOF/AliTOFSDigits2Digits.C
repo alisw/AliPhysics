@@ -1,8 +1,30 @@
-Int_t AliTOFSDigits2Digits(Int_t nev = 1) {
+Int_t AliTOFSDigits2Digits(Int_t numberOfEvents = 0) {
 
-  // Adapted to the NewIO by I.Belikov (Jouri.Belikov@cern.ch)
-  // number 3 is a legacy from AliDigit object
-    
+  /////////////////////////////////////////////////////////////////////////
+  //
+  // Creates TOF digits from the summable digits for all event in the header file
+  //
+  // Use case:
+  // start root
+  // // load the macro
+  // root[0] .L AliTOFSDigits2Digits.C
+  // root[1] AliTOFSDigits2Digits()
+  //
+  // By default, it creates digits for all the events in the header file.
+  //
+  // If you want create digits only the firts event
+  // you can use the following lines:
+  //
+  // root[0] .L AliTOFSDigits2Digits.C
+  // root[1] AliTOFSDigits2Digits(1)
+  //
+  // Created by: F. Pierella
+  // Updated to the new I/O: I.Belikov (Jouri.Belikov@cern.ch)
+  //
+  // Report problems to decaro@sa.infn.it
+  //
+  /////////////////////////////////////////////////////////////////////////
+
   Int_t rc = 0;
 
   if (gAlice)
@@ -11,7 +33,7 @@ Int_t AliTOFSDigits2Digits(Int_t nev = 1) {
       delete gAlice;
       gAlice = 0x0;
     }
-  
+
   AliRunLoader* rl = AliRunLoader::Open("galice.root");
   if (rl == 0x0)
     {
@@ -19,22 +41,22 @@ Int_t AliTOFSDigits2Digits(Int_t nev = 1) {
       rc = 1;   
       return rc;
     }
-  
+
   if (rl->LoadgAlice())
     {
-      cerr<<"Error occured while loading gAlice"<<endl;
+      cerr<<"Error occured while loading gAlice \n";
       rc = 2;
       return rc;
     }
-  
+
   AliLoader *tofl = rl->GetLoader("TOFLoader");
    if (tofl == 0x0)
      {
-       cerr<<"Can not get the TOF Loader"<<endl;
+       cerr<<"Can not get the TOF Loader \n";
        rc = 3;
        return rc;
      }
-   
+
    gAlice=rl->GetAliRun();
    if (!gAlice)
      {
@@ -42,20 +64,20 @@ Int_t AliTOFSDigits2Digits(Int_t nev = 1) {
        rc = 4;
        return rc;
      }
-   
+
    tofl->LoadSDigits("read");
    tofl->LoadDigits("recreate");
-   
+
    Int_t totndig=0;   // total number of digits
    Int_t tottracks=0; // total number of tracks contributing to totndig
-   
-   if (nev>rl->GetNumberOfEvents()) nev=rl->GetNumberOfEvents();
-   
+
+   if (numberOfEvents==0) numberOfEvents=rl->GetNumberOfEvents();
+
    TClonesArray *fSDigits=new TClonesArray("AliTOFSDigit",  1000); 
    TClonesArray *fDigits =new TClonesArray("AliTOFdigit",  1000);
    TClonesArray &da=*fDigits; 
 
-   for (Int_t ievent = 0; ievent < nev; ievent++) {
+   for (Int_t ievent = 0; ievent < numberOfEvents; ievent++) {
      rl->GetEvent(ievent);
      
      TTree *sTree=tofl->TreeS();
@@ -72,8 +94,8 @@ Int_t AliTOFSDigits2Digits(Int_t nev = 1) {
 	 rc = 6;
 	 return rc;
        }
-     branch->SetAddress(&fSDigits);           
-    
+     branch->SetAddress(&fSDigits);
+
     TTree *dTree=tofl->TreeD();
     if (dTree == 0) {
        tofl->MakeTree("D");
@@ -86,15 +108,15 @@ Int_t AliTOFSDigits2Digits(Int_t nev = 1) {
     Int_t nEntries = sTree->GetEntries();                                
     for (Int_t iEntry = 0; iEntry < nEntries; iEntry++) {
       sTree->GetEvent(iEntry);
-      
+
       Int_t ndig = fSDigits->GetEntriesFast();
-      cout << "----------------<AliTOFSDigits2Digits>----------------" << endl;
+      cout << "----------------<AliTOFSDigits2Digits>---------------- \n";
       cout << "Found " << ndig << " TOF SDigits for event " << ievent << endl;
-      cout << "------------------------------------------------------" << endl;
+      cout << "------------------------------------------------------ \n";
 
       for (Int_t k = 0; k < ndig; k++) {
 	Int_t    vol[5];       // location for a digit
-	
+
 	// Get the information for this digit
 	AliTOFSDigit *tofsdigit = (AliTOFSDigit *)fSDigits->UncheckedAt(k);
 
@@ -123,7 +145,7 @@ Int_t AliTOFSDigits2Digits(Int_t nev = 1) {
 	
 	if (isSDigitBad)
 	  {
-	    cout << "<AliTOFSDigits2Digits>  strange sdigit found" << endl;
+	    cout << "<AliTOFSDigits2Digits>  strange sdigit found \n";
 	    rc = 7;
 	    return rc;
 	  }
@@ -131,10 +153,11 @@ Int_t AliTOFSDigits2Digits(Int_t nev = 1) {
 
 	// start loop on number of slots for current sdigit
 	for (Int_t islot = 0; islot < nslot; islot++) {
-	  Float_t  digit[2];     // TOF digit variables
-          const Int_t kMAXDIGITS = 3;
-	  Int_t tracknum[kMAXDIGITS];//contributing tracks for the current slot
-	
+	  Float_t  digit[2];           // TOF digit variables
+          const Int_t kMAXDIGITS = 3;  // number 3 is a legacy from AliDigit object
+
+	  Int_t tracknum[kMAXDIGITS];  //contributing tracks for the current slot
+
 	  Float_t tdc=tofsdigit->GetTdc(islot); digit[0]=tdc;
 	  Float_t adc=tofsdigit->GetAdc(islot); digit[1]=adc;
 
@@ -159,10 +182,9 @@ Int_t AliTOFSDigits2Digits(Int_t nev = 1) {
 	  totndig++;
 	}
 
-
       } // end loop on sdigits
       fSDigits->Clear();
-      
+
     } // end loop on entries
 
     dTree->Fill();
@@ -175,16 +197,16 @@ Int_t AliTOFSDigits2Digits(Int_t nev = 1) {
 
   delete fSDigits;
   delete fDigits;
-  
+
   tofl->UnloadDigits();
   tofl->UnloadSDigits();
   rl->UnloadHeader();
   rl->UnloadgAlice();
-  
-  cout << "----------------------------------------------------------" << endl;
-  cout << "<AliTOFSDigits2Digits> Summary" << endl;
-  cout << "contributing tracks to " << totndig << " digits: " << tottracks << endl; 
-  cout << "----------------------------------------------------------" << endl;
+
+  cout << "---------------------------------------------------------- \n";
+  cout << "<AliTOFSDigits2Digits> Summary \n";
+  cout << "contributing tracks to " << totndig << " digits: " << tottracks << endl;
+  cout << "---------------------------------------------------------- \n";
 
   if (gAlice)
     {

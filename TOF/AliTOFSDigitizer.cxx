@@ -421,7 +421,7 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
     fTOFLoader->UnloadSDigits();
     fTOFLoader->UnloadHits();
     fRunLoader->UnloadKinematics();
-    fRunLoader->UnloadgAlice();
+    //fRunLoader->UnloadgAlice();
 
   // free used memory
   if (ftail){

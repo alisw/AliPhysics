@@ -601,7 +601,7 @@ void AliTOF::ResetSDigits ()
   //
   // Reset number of sdigits and the sdigits array for this detector
   fNSDigits = 0;
-  fSDigits = 0x0;
+  //fSDigits = 0x0;
   //
 } 
 //_____________________________________________________________________________

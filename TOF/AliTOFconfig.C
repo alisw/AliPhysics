@@ -24,7 +24,7 @@
 #include "STRUCT/AliFRAMEv2.h"
 #include "STRUCT/AliSHILv2.h"
 #include "STRUCT/AliPIPEv0.h"
-#include "ITS/AliITSvPPRasymm.h"
+#include "ITS/AliITSvPPRasymmFMD.h"
 #include "TPC/AliTPCv2.h"
 #include "TOF/AliTOFv2FHoles.h"
 #include "TOF/AliTOFv4T0.h"
@@ -49,7 +49,7 @@ enum PprRun_t
     kHijing_per1,  kHijing_per2, kHijing_per3, kHijing_per4,  kHijing_per5,
     kHijing_jj25,  kHijing_jj50, kHijing_jj75, kHijing_jj100, kHijing_jj200, 
     kHijing_gj25,  kHijing_gj50, kHijing_gj75, kHijing_gj100, kHijing_gj200,
-    kHijing_pA //, kPythia
+    kHijing_pA, kPythia6, kPythia6Jets, kD0PbPb5500
 };
 
 enum PprGeo_t 
@@ -69,12 +69,11 @@ enum PprMag_t
 
 
 // This part for configuration    
-//static PprRun_t srun = test50;
-//static PprRun_t srun = kPythia;
-static PprRun_t srun = kHijing_cent2;
+static PprRun_t srun = test50;
+//static PprRun_t srun = kPythia6;
 static PprGeo_t sgeo = kNoHoles;
 static PprRad_t srad = kGluonRadiation;
-static PprMag_t smag = k4kG;
+static PprMag_t smag = k5kG;
 
 // Comment line 
 static TString  comment;
@@ -167,10 +166,9 @@ void Config()
     gAlice->SetDebug(1);
     AliGenerator* gener = GeneratorFactory(srun);
     gener->SetOrigin(0, 0, 0);    // vertex position
-    gener->SetSigma(0, 0, 0);   // Sigma in (X,Y,Z) (cm) on IP position
-    //gener->SetCutVertexZ(1.);     // Truncate at 1 sigma
-    //gener->SetVertexSmear(kPerEvent); 
-    gener->SetThetaRange(45.,135.);
+    gener->SetSigma(0, 0, 5.3);   // Sigma in (X,Y,Z) (cm) on IP position
+    gener->SetCutVertexZ(1.);     // Truncate at 1 sigma
+    gener->SetVertexSmear(kPerEvent); 
     gener->SetTrackingFlag(1);
     gener->Init();
     
@@ -204,29 +202,30 @@ void Config()
     
 // Field (L3 0.4 T)
     AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., smag);
+    field->SetL3ConstField(0); //Using const. field in the barrel
     rl->CdGAFile();
-    
+    gAlice->SetField(field);    
 //
-    Int_t   iABSO   = 1;
-    Int_t   iDIPO   = 0; //1;
-    Int_t   iFMD    = 0; //1;
+    Int_t   iABSO   = 0;
+    Int_t   iDIPO   = 0;
+    Int_t   iFMD    = 0;
     Int_t   iFRAME  = 1;
-    Int_t   iHALL   = 0; //1;
+    Int_t   iHALL   = 0;
     Int_t   iITS    = 1;
     Int_t   iMAG    = 1;
-    Int_t   iMUON   = 0; //1;
-    Int_t   iPHOS   = 0; //1;
+    Int_t   iMUON   = 0;
+    Int_t   iPHOS   = 0;
     Int_t   iPIPE   = 1;
-    Int_t   iPMD    = 0; //1;
-    Int_t   iRICH   = 0; //1;
-    Int_t   iSHIL   = 0; //1;
-    Int_t   iSTART  = 0; //1;
+    Int_t   iPMD    = 0;
+    Int_t   iRICH   = 0;
+    Int_t   iSHIL   = 0;
+    Int_t   iSTART  = 0;
     Int_t   iTOF    = 1;
     Int_t   iTPC    = 1;
     Int_t   iTRD    = 1;
-    Int_t   iZDC    = 0; //1;
-    Int_t   iEMCAL  = 0; //1;
-    Int_t   iVZERO  = 0; //1;
+    Int_t   iZDC    = 0;
+    Int_t   iEMCAL  = 0;
+    Int_t   iVZERO  = 0;
     Int_t   iCRT    = 0;
 
     //=================== Alice BODY parameters =============================
@@ -310,9 +309,9 @@ void Config()
     //
     //AliITS *ITS  = new AliITSv5asymm("ITS","Updates ITS TDR detailed version with asymmetric services");
     //
-	AliITSvPPRasymm *ITS  = new AliITSvPPRasymm("ITS","New ITS PPR detailed version with asymmetric services");
-	ITS->SetMinorVersion(2);					 // don't touch this parameter if you're not an ITS developer
-	ITS->SetReadDet(kFALSE);					 // don't touch this parameter if you're not an ITS developer
+	AliITSvPPRasymmFMD *ITS  = new AliITSvPPRasymmFMD("ITS","New ITS PPR detailed version with asymmetric services");
+	ITS->SetMinorVersion(2);  // don't touch this parameter if you're not an ITS developer
+	ITS->SetReadDet(kTRUE);	  // don't touch this parameter if you're not an ITS developer
     //    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
 	ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
 	ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
@@ -320,19 +319,7 @@ void Config()
 	ITS->SetThicknessChip2(200.);  // chip thickness on layer 2 must be in the range [150,300]
 	ITS->SetRails(0);	     // 1 --> rails in ; 0 --> rails out
 	ITS->SetCoolingFluid(1);   // 1 --> water ; 0 --> freon
-	//
-    //AliITSvPPRsymm *ITS  = new AliITSvPPRsymm("ITS","New ITS PPR detailed version with symmetric services");
-    //ITS->SetMinorVersion(2);                                       // don't touch this parameter if you're not an ITS developer
-    //ITS->SetReadDet(kFALSE);                                       // don't touch this parameter if you're not an ITS developer
-    //ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRsymm2.det"); // don't touch this parameter if you're not an ITS developer
-    //ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
-    //ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
-    //ITS->SetThicknessChip1(200.);  // chip thickness on layer 1 must be in the range [150,300]
-    //ITS->SetThicknessChip2(200.);  // chip thickness on layer 2 must be in the range [150,300]
-    //ITS->SetRails(0);              // 1 --> rails in ; 0 --> rails out
-    //ITS->SetCoolingFluid(1);       // 1 --> water ; 0 --> freon
-    //
-    //
+
     // Coarse geometries (warning: no hits are produced with these coarse geometries and they unuseful 
     // for reconstruction !):
     //                                                     
@@ -499,16 +486,16 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
     case test50:
       {
 	comment = comment.Append(":HIJINGparam test 50 particles");
-	AliGenHIJINGpara *gener = new AliGenHIJINGpara(100);
+	AliGenHIJINGpara *gener = new AliGenHIJINGpara(50);
 	gener->SetMomentumRange(0, 999999.);
 	gener->SetPhiRange(0., 360.);
 	// Set pseudorapidity range from -8 to 8.
-	Float_t thmin = EtaToTheta(1);   // theta min. <---> eta max
-	Float_t thmax = EtaToTheta(-1);  // theta max. <---> eta min 
+	Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
+	Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
 	gener->SetThetaRange(thmin,thmax);
 	gGener=gener;
       }
-	break;
+      break;
     case kParam_8000:
       {
 	comment = comment.Append(":HIJINGparam N=8000");
@@ -521,7 +508,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetThetaRange(thmin,thmax);
 	gGener=gener;
       }
-	break;
+      break;
     case kParam_4000:
       {
 	comment = comment.Append("HIJINGparam N=4000");
@@ -547,7 +534,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetThetaRange(thmin,thmax);
 	gGener=gener;
       }
-	break;
+      break;
 //
 //  Hijing Central
 //
@@ -559,7 +546,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetImpactParameterRange(0., 5.);
 	gGener=gener;
       }
-	break;
+      break;
     case kHijing_cent2:
       {
 	comment = comment.Append("HIJING cent2");
@@ -567,8 +554,8 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 // impact parameter range
 	gener->SetImpactParameterRange(0., 2.);
 	gGener=gener;
-	break;
       }
+      break;
 //
 // Hijing Peripheral 
 //
@@ -580,7 +567,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetImpactParameterRange(5., 8.6);
 	gGener=gener;
       }
-	break;
+      break;
     case kHijing_per2:
       {
 	comment = comment.Append("HIJING per2");
@@ -589,7 +576,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetImpactParameterRange(8.6, 11.2);
 	gGener=gener;
       }
-	break;
+      break;
     case kHijing_per3:
       {
 	comment = comment.Append("HIJING per3");
@@ -598,7 +585,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetImpactParameterRange(11.2, 13.2);
 	gGener=gener;
       }
-	break;
+      break;
     case kHijing_per4:
       {
 	comment = comment.Append("HIJING per4");
@@ -607,7 +594,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetImpactParameterRange(13.2, 15.);
 	gGener=gener;
       }
-	break;
+      break;
     case kHijing_per5:
       {
 	comment = comment.Append("HIJING per5");
@@ -616,7 +603,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetImpactParameterRange(15., 100.);
 	gGener=gener;
       }
-	break;
+      break;
 //
 //  Jet-Jet
 //
@@ -635,7 +622,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetJetPhiRange(75., 165.);   
 	gGener=gener;
       }
-	break;
+      break;
 
     case kHijing_jj50:
       {
@@ -669,7 +656,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetJetPhiRange(75., 165.);   
 	gGener=gener;
       }
-	break;
+      break;
 
     case kHijing_jj100:
       {
@@ -686,7 +673,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetJetPhiRange(75., 165.);   
 	gGener=gener;
       }
-	break;
+      break;
 
     case kHijing_jj200:
       {
@@ -703,7 +690,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetJetPhiRange(75., 165.);   
 	gGener=gener;
       }
-	break;
+      break;
 //
 // Gamma-Jet
 //
@@ -722,7 +709,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
         gener->SetJetPhiRange(220., 320.);
 	gGener=gener;
       }
-	break;
+      break;
 
     case kHijing_gj50:
       {
@@ -739,7 +726,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
         gener->SetJetPhiRange(220., 320.);
 	gGener=gener;
       }
-	break;
+      break;
 
     case kHijing_gj75:
       {
@@ -756,7 +743,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
         gener->SetJetPhiRange(220., 320.);
 	gGener=gener;
       }
-	break;
+      break;
 
     case kHijing_gj100:
       {
@@ -773,7 +760,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
         gener->SetJetPhiRange(220., 320.);
 	gGener=gener;
       }
-	break;
+      break;
 
     case kHijing_gj200:
       {
@@ -790,7 +777,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
         gener->SetJetPhiRange(220., 320.);
 	gGener=gener;
       }
-	break;
+      break;
     case kHijing_pA:
       {
 	comment = comment.Append("HIJING pA");
@@ -831,8 +818,8 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->AddGenerator(gray,  "Gray Particles",1);
 	gGener=gener;
       }
-	break;
-    case kPythia:
+      break;
+    case kPythia6:
       {
         comment = comment.Append(":Pythia p-p @ 14 TeV");
         AliGenPythia *gener = new AliGenPythia(-1); 
@@ -846,7 +833,38 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
         gener->SetEnergyCMS(14000.);
 	gGener=gener;
       }
-    break;
+      break;
+    case kPythia6Jets:
+      {
+        comment = comment.Append(":Pythia jets @ 5.5 TeV");
+        AliGenPythia * gener = new AliGenPythia(-1);
+	gener->SetEnergyCMS(5500.);//        Centre of mass energy
+	gener->SetProcess(kPyJets);//        Process type
+	gener->SetJetEtaRange(-0.5, 0.5);//  Final state kinematic cuts
+	gener->SetJetPhiRange(0., 360.);
+	gener->SetJetEtRange(10., 1000.);
+	gener->SetGluonRadiation(1,1);
+	//    gener->SetPtKick(0.);
+	//   Structure function
+	gener->SetStrucFunc(kCTEQ4L);
+	gener->SetPtHard(86., 104.);// Pt transfer of the hard scattering
+	gener->SetPycellParameters(2., 274, 432, 0., 4., 5., 1.0);
+	gener->SetForceDecay(kAll);//  Decay type (semielectronic, etc.)
+	gGener=gener;
+      }
+      break;
+    case kD0PbPb5500:
+      {
+	comment = comment.Append(" D0 in Pb-Pb at 5.5 TeV");
+	AliGenPythia * gener = new AliGenPythia(10);
+	gener->SetProcess(kPyD0PbPbMNR);
+	gener->SetStrucFunc(kCTEQ4L);
+	gener->SetPtHard(2.1,-1.0);
+	gener->SetEnergyCMS(5500.);
+	gener->SetNuclei(208,208);
+	gGener=gener;
+      }
+      break;
     }
     return gGener;
 }
