@@ -113,7 +113,7 @@ void AliEMCALGeometry::Init(void){
     fHCScintThick      = 0.0;  // cm, Thickness of the sintilator for the hadronic alorimeter section of the tower  
     fNHCLayers         = 0;    // number of scintillator layers in the hadronic calorimeter section
     
-    fSampling          = 12. ; 
+    fSampling          = 11.3 ; 
     fSummationFraction = 0.8 ;
  
     fAlFrontThick      = 3.0;  // cm, Thickness of front Al layer
@@ -132,7 +132,7 @@ void AliEMCALGeometry::Init(void){
     fHCScintThick      = 0.0;  // cm, Thickness of the sintilator for the hadronic alorimeter section of the tower  
     fNHCLayers         = 0;    // number of scintillator layers in the hadronic calorimeter section
     
-    fSampling          = 12. ; 
+    fSampling          = 16. ; 
     fSummationFraction = 0.8 ;
  
     fAlFrontThick      = 3.0;  // cm, Thickness of front Al layer
