@@ -77,7 +77,7 @@ public:
 	      Double_t z, Double_t fi,Int_t q);
  
   Bool_t First(); //set current hit to first hit 
-  Bool_t Next();  //set current hit to next
+  Bool_t Next(Int_t id = -1);  //set current hit to next
   AliTPChit * GetHit();
   AliTrackHitsParam * GetParam();
   AliHitInfo * GetHitInfo();

@@ -78,7 +78,7 @@ struct AliTPCCurrentHit {
 
 
 struct  AliTPCTempHitInfo {
-  enum    { fkStackSize = 10000};
+  enum    { fkStackSize = 100};
   AliTPCTempHitInfo();   
   void     NewParam(Double_t r, Double_t z, Double_t fi, Int_t q);
   void     SetHit(Double_t r, Double_t z, Double_t fi, Int_t q);
@@ -612,6 +612,8 @@ Bool_t AliTPCTrackHits::First()
   return fCurrentHit->fStatus = kTRUE;
 }
 
+
+/*
 Bool_t AliTPCTrackHits::Next()
 {
   //
@@ -671,7 +673,8 @@ Bool_t AliTPCTrackHits::Next()
   fCurrentHit->fHit.SetZ(z);  
   return kTRUE;
 }
-  
+
+*/  
 AliTPChit * AliTPCTrackHits::GetHit()
 {
   //
@@ -679,6 +682,104 @@ AliTPChit * AliTPCTrackHits::GetHit()
   //return &fCurrentHit->fHit;
 
 }  
+
+
+
+Bool_t AliTPCTrackHits::Next(Int_t id)
+{
+  //
+  //  
+  if (!(fCurrentHit->fStatus)) 
+    return kFALSE;
+
+  //  fCurrentHit->fStackIndex++;
+  AliHitInfo * hinfo = (AliHitInfo *)fHitsPosAndQ->At(fCurrentHit->fParamIndex,
+						      fCurrentHit->fStackIndex);
+  AliTrackHitsInfo *info = (AliTrackHitsInfo *)fTrackHitsInfo->At(fCurrentHit->fInfoIndex);
+  if (!info) {
+    fCurrentHit->fStatus = kFALSE;
+    return kFALSE; 
+  }
+  AliTrackHitsParam *param =  (AliTrackHitsParam *)fTrackHitsParam->At(fCurrentHit->fParamIndex);
+
+  if ( (id>=0) && (info!=0) && (info->fVolumeID!=id)){
+    fCurrentHit->fInfoIndex++;
+    info = (AliTrackHitsInfo *)fTrackHitsInfo->At(fCurrentHit->fInfoIndex);
+    if (!info) {
+      fCurrentHit->fStatus = kFALSE;
+      return kFALSE;
+    }
+    fCurrentHit->fParamIndex = info->fHitParamIndex;
+    param =  (AliTrackHitsParam *)fTrackHitsParam->At(fCurrentHit->fParamIndex);
+    fCurrentHit->fStackIndex =0;    
+    fCurrentHit->fR = param->fR;
+    return Next(id);
+  }
+  if (!info) {
+    fCurrentHit->fStatus = kFALSE;
+    return kFALSE; 
+  }
+  if (!hinfo) {
+    hinfo = (AliHitInfo *)fHitsPosAndQ->At(fCurrentHit->fParamIndex+1, 0);
+    if (!hinfo){ 
+      fCurrentHit->fStatus = kFALSE;
+      return kFALSE;
+    }
+    if (hinfo){ 
+      fCurrentHit->fParamIndex++;
+      fCurrentHit->fStackIndex = 0;
+      param = (AliTrackHitsParam *)fTrackHitsParam->At(fCurrentHit->fParamIndex);
+      if (!param){ 
+	fCurrentHit->fStatus = kFALSE;
+	return kFALSE;     
+      }
+      fCurrentHit->fR = param->fR;
+
+      if ((fCurrentHit->fInfoIndex+1<fTrackHitsInfo->GetSize())
+	&&((info+1)->fHitParamIndex<=fCurrentHit->fParamIndex)){
+	fCurrentHit->fInfoIndex++;
+	info = (AliTrackHitsInfo *)fTrackHitsInfo->At(fCurrentHit->fInfoIndex);
+	if (!info){ 
+	  fCurrentHit->fStatus = kFALSE;
+	  return kFALSE;
+	}
+	if ( (id>=0) && (info!=0) && (info->fVolumeID!=id)){
+	  return Next(id);
+	}
+	fCurrentHit->fHit.fSector = info->fVolumeID;
+	fCurrentHit->fHit.SetTrack(info->fTrackID);
+      }
+    }  
+  } 
+  Double_t ratio;
+  { 
+    //    Double_t dfi2 = param->fAn+2*param->fAd*(fCurrentHit->fR-param->fR);
+    Double_t dfi2 = param->fAn;
+    dfi2*=dfi2*fCurrentHit->fR*fCurrentHit->fR;
+    //    Double_t ddz2 = param->fTheta+2*param->fThetaD*(fCurrentHit->fR-param->fR);
+    Double_t ddz2 =  param->fTheta;
+    ddz2*=ddz2;
+    ratio = TMath::Sqrt(1.+ dfi2+ ddz2);  
+  }
+
+  fCurrentHit->fHit.fQ = hinfo->fCharge;
+  fCurrentHit->fR += fStep*hinfo->fHitDistance/ratio;
+  Double_t dR = fCurrentHit->fR - param->fR;
+  //Double_t dR =0;
+  Double_t fi = param->fFi + (param->fAn*dR+param->fAd*dR*dR);
+  Double_t z  = param->fZ + (param->fTheta*dR+param->fThetaD*dR*dR);
+  
+  fCurrentHit->fHit.SetX(fCurrentHit->fR*TMath::Cos(fi));
+  fCurrentHit->fHit.SetY(fCurrentHit->fR*TMath::Sin(fi));
+  fCurrentHit->fHit.SetZ(z);  
+  fCurrentHit->fHit.fSector = info->fVolumeID;
+  fCurrentHit->fHit.SetTrack(info->fTrackID);
+  //
+  fCurrentHit->fStatus = kTRUE;
+  fCurrentHit->fStackIndex++;
+  return kTRUE;
+}
+  
 
 AliTrackHitsParam * AliTPCTrackHits::GetParam()
 {
