@@ -192,10 +192,10 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
   TString eventS ; 
   eventS += event ;
   while ( (folder = (TFolder*)next()) ) {
-   if ( (strcmp(folder->GetTitle(), eventS.Data()) == 0) || (strcmp(folder->GetTitle(), "") == 0) ) {
+    if ( (strcmp(folder->GetTitle(), eventS.Data()) == 0) || (strcmp(folder->GetTitle(), "") == 0) ) {
       Int_t numberoffiles = 0 ; 
       if ( (sdigits = (TClonesArray*)folder->FindObject(GetName()) ) ) {
-	cout << "INFO: AliPHOSDigitizer::Exec -> Adding SDigits " << GetName() << " from " << folder->GetName() << endl ; 
+  	cout << "INFO: AliPHOSDigitizer::Digitize -> Adding SDigits " << GetName() << " from " << folder->GetName() << endl ; 
 	numberoffiles++ ; 
 	Int_t index ; 
 	AliPHOSDigit * curSDigit ; 
@@ -379,47 +379,47 @@ void AliPHOSDigitizer::MixWith(const char* headerFile)
       return ; 
     }
   }
-  Int_t nevent = (Int_t)((TTree*)file->Get("TE"))->GetEntries() ;
-  Int_t ievent ; 
-  for (ievent = 0; ievent < nevent; ievent++) {
-    TString tsname("TreeS") ; 
-    tsname += ievent ; 
-    TTree * ts = (TTree*)file->Get(tsname.Data()) ;
-    if ( !ts ) {
-      cerr << "ERROR: AliPHOSDigitizer::MixWith -> TreeS0 " << " does not exist in " << headerFile << endl ; 
-      return ;
-    }
-    
-    TObjArray * lob = (TObjArray*)ts->GetListOfBranches() ;
-    TIter next(lob) ; 
-    TBranch * branch = 0 ; 
-    TBranch * sdigitsbranch = 0 ; 
-    TBranch * sdigitizerbranch = 0 ; 
-    Bool_t phosfound = kFALSE, sdigitizerfound = kFALSE ; 
-    
-    while ( (branch = (TBranch*)next()) && (!phosfound || !sdigitizerfound) ) {
-      if ( (strcmp(branch->GetName(), "PHOS")==0) && (strcmp(branch->GetTitle(), sDigitsTitle)==0) ) {
-	sdigitsbranch = branch ; 
-	phosfound = kTRUE ;
-      }
-      else if ( (strcmp(branch->GetName(), "AliPHOSSDigitizer")==0) && (strcmp(branch->GetTitle(), sDigitsTitle)==0) ) {
-	sdigitizerbranch = branch ; 
-	sdigitizerfound = kTRUE ; 
-      }
-    }
-    
-    if ( !phosfound || !sdigitizerfound ) {
-      cerr << "WARNING: AliPHOSDigitizer::MixWith -> Cannot find SDigits and/or SDigitizer with name " << sDigitsTitle << endl ;
-      return ; 
-    }   
-    
-    // post the new SDigits to the White Board
-    AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-    gime->Post(headerFile, "S", sDigitsTitle, ievent ) ; 
-    TClonesArray * sdigits = gime->SDigits(sDigitsTitle, headerFile) ;  
-    sdigitsbranch->SetAddress(&sdigits) ;
-    sdigitsbranch->GetEvent(0) ;
+
+  // Read the first event with SDigits from the file-to-mix and post it to SDigits folder
+
+  Int_t ievent =0 ; 
+  TString tsname("TreeS") ; 
+  tsname += ievent ; 
+  TTree * ts = (TTree*)file->Get(tsname.Data()) ;
+  if ( !ts ) {
+    cerr << "ERROR: AliPHOSDigitizer::MixWith -> TreeS0 " << " does not exist in " << headerFile << endl ; 
+    return ;
   }
+    
+  TObjArray * lob = (TObjArray*)ts->GetListOfBranches() ;
+  TIter next(lob) ; 
+  TBranch * branch = 0 ; 
+  TBranch * sdigitsbranch = 0 ; 
+  TBranch * sdigitizerbranch = 0 ; 
+  Bool_t phosfound = kFALSE, sdigitizerfound = kFALSE ; 
+    
+  while ( (branch = (TBranch*)next()) && (!phosfound || !sdigitizerfound) ) {
+    if ( (strcmp(branch->GetName(), "PHOS")==0) && (strcmp(branch->GetTitle(), sDigitsTitle)==0) ) {
+      sdigitsbranch = branch ; 
+      phosfound = kTRUE ;
+    }
+    else if ( (strcmp(branch->GetName(), "AliPHOSSDigitizer")==0) && (strcmp(branch->GetTitle(), sDigitsTitle)==0) ) {
+      sdigitizerbranch = branch ; 
+      sdigitizerfound = kTRUE ; 
+    }
+  }
+    
+  if ( !phosfound || !sdigitizerfound ) {
+    cerr << "WARNING: AliPHOSDigitizer::MixWith -> Cannot find SDigits and/or SDigitizer with name " << sDigitsTitle << endl ;
+    return ; 
+  }   
+    
+  // post the new SDigits to the White Board
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+  gime->Post(headerFile, "S", sDigitsTitle) ; 
+  TClonesArray * sdigits = gime->SDigits(sDigitsTitle, headerFile) ;  
+  sdigitsbranch->SetAddress(&sdigits) ;
+  sdigitsbranch->GetEvent(0) ;
 }
 
 //__________________________________________________________________
@@ -504,57 +504,72 @@ Bool_t AliPHOSDigitizer::ReadSDigits(Int_t event)
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
   
-  TFile * file = (TFile*)gROOT->GetFile(GetTitle()); 
-  file->cd() ;
+  // loop over all opened files and read their SDigits to the White Board
+  TCollection * folderslist = ((TFolder*)gROOT->FindObjectAny("YSAlice/WhiteBoard/SDigits/PHOS"))->GetListOfFolders() ; 
+  TIter next(folderslist) ; 
+  TFolder * folder = 0 ; 
+  TClonesArray * sdigits = 0 ; 
+  while ( (folder = (TFolder*)next()) ) {
+    TFile * file = (TFile*)gROOT->GetFile(folder->GetName()); 
+    file->cd() ;
 
-// Get SDigits Tree header from file
-  TString treeName("TreeS") ;
-  treeName += event ; 
-  TTree * treeS = (TTree*)file->Get(treeName.Data());
-
-  if(treeS==0){
-    cerr << "ERROR: AliPHOSDigitizer::ReadSDigits There is no SDigit Tree" << endl;
-    return kFALSE;
-  }
- 
-  //set address of the SDigits and SDigitizer
-  TBranch * sdigitsBranch = 0;
-  TBranch * sdigitizerBranch = 0;
-  TObjArray * lob = (TObjArray*)gAlice->TreeS()->GetListOfBranches() ;
-  TIter next(lob) ; 
-  TBranch * branch = 0 ;  
-  Bool_t phosfound = kFALSE, sdigitizerfound = kFALSE ; 
-  
-  while ( (branch = (TBranch*)next()) && (!phosfound || !sdigitizerfound) ) {
-   if ( (strcmp(branch->GetName(), "PHOS")==0) && (strcmp(branch->GetTitle(), GetName())==0) ) {
-      phosfound = kTRUE ;
-      sdigitsBranch = branch ; 
-    }
+    // Get SDigits Tree header from file
+    TString treeName("TreeS") ;
+    treeName += event ; 
+    TTree * treeS = (TTree*)file->Get(treeName.Data());
     
-    else if ( (strcmp(branch->GetName(), "AliPHOSSDigitizer")==0) && (strcmp(branch->GetTitle(), GetName())==0) ) {
-      sdigitizerfound = kTRUE ; 
-      sdigitizerBranch = branch ;
+    if(treeS==0){
+      cerr << "ERROR: AliPHOSDigitizer::ReadSDigits There is no SDigit Tree" << endl;
+      return kFALSE;
     }
-  }
-  if ( !phosfound || !sdigitizerfound ) {
-    cerr << "WARNING: AliPHOSDigitizer::ReadSDigits -> Digits and/or Digitizer branch with name " << GetName() 
-	 << " not found" << endl ;
-    return kFALSE ; 
-  }   
-  
-  
-  TClonesArray * sdigits = gime->SDigits() ; 
-  sdigitsBranch->SetAddress(&sdigits) ;
-  sdigits->Clear();
-  
-  AliPHOSSDigitizer * sdigitizer = gime->SDigitizer() ; 
-  sdigitizerBranch->SetAddress(&sdigitizer) ;
-
-  sdigitsBranch->GetEntry(0) ;
-  sdigitizerBranch->GetEntry(0) ;
  
-  fPedestal = sdigitizer->GetPedestalParameter() ;
-  fSlope    = sdigitizer->GetCalibrationParameter() ;
+    //set address of the SDigits and SDigitizer
+    TBranch   * sdigitsBranch    = 0;
+    TBranch   * sdigitizerBranch = 0;
+    TBranch   * branch           = 0 ;  
+    TObjArray * lob = (TObjArray*)treeS->GetListOfBranches() ;
+    TIter next(lob) ; 
+    Bool_t phosfound = kFALSE, sdigitizerfound = kFALSE ; 
+    
+    while ( (branch = (TBranch*)next()) && (!phosfound || !sdigitizerfound) ) {
+      if ( (strcmp(branch->GetName(), "PHOS")==0) && (strcmp(branch->GetTitle(), GetName())==0) ) {
+	phosfound = kTRUE ;
+	sdigitsBranch = branch ; 
+      }
+      
+      else if ( (strcmp(branch->GetName(), "AliPHOSSDigitizer")==0) && (strcmp(branch->GetTitle(), GetName())==0) ) {
+	sdigitizerfound = kTRUE ; 
+	sdigitizerBranch = branch ;
+      }
+    }
+    if ( !phosfound || !sdigitizerfound ) {
+      cerr << "WARNING: AliPHOSDigitizer::ReadSDigits -> Digits and/or Digitizer branch with name " << GetName() 
+	   << " not found" << endl ;
+      return kFALSE ; 
+    }   
+    
+    
+    if ( (sdigits = (TClonesArray*)folder->FindObject(GetName()) ) ) {
+      sdigitsBranch->SetAddress(&sdigits) ;
+      sdigits->Clear();
+      
+      AliPHOSSDigitizer * sdigitizer = gime->SDigitizer() ; 
+      sdigitizerBranch->SetAddress(&sdigitizer) ;
+      
+      sdigitsBranch->GetEntry(0) ;
+      sdigitizerBranch->GetEntry(0) ;
+      
+      fPedestal = sdigitizer->GetPedestalParameter() ;
+      fSlope    = sdigitizer->GetCalibrationParameter() ;
+    }
+  }    
+
+  // After SDigits have been read from all files, return to the first one
+
+  next.Reset();
+  folder = (TFolder*)next();
+  TFile * file = (TFile*)gROOT->GetFile(folder->GetName()); 
+  file->cd() ;
 
   return kTRUE ;
 
@@ -601,7 +616,6 @@ void AliPHOSDigitizer::WriteDigits(Int_t event)
   }
 
   TDirectory *cwd = gDirectory;
-  
   // -- create Digits branch
   Int_t bufferSize = 32000 ;    
   TBranch * digitsBranch = gAlice->TreeD()->Branch("PHOS",&digits,bufferSize);
