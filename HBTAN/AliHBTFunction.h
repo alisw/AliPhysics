@@ -120,7 +120,7 @@ class AliHBTOnePairFctn1D: public AliHBTOnePairFctn
   void ProcessSameEventParticles(AliHBTPair* pair);
   void ProcessDiffEventParticles(AliHBTPair* pair);
   Double_t Scale();  
-  void SetNumberOfBinsToScale();
+  void SetNumberOfBinsToScale(Int_t n = 30){fNBinsToScale = n;}
  protected:
   //retruns velue to be histogrammed
   virtual Double_t GetValue(AliHBTPair* pair) = 0; 
