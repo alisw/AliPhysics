@@ -12,9 +12,9 @@ class AliITSGeant3Geometry : public TObject {
  public:
     AliITSGeant3Geometry();
     virtual ~AliITSGeant3Geometry(){}
-    AliITSGeant3Geometry(const AliITSGeant3Geometry&) {}
-    AliITSGeant3Geometry & operator=(const AliITSGeant3Geometry&) 
-    {return *this;}
+    AliITSGeant3Geometry(const AliITSGeant3Geometry &s) : TObject(s) {}
+    AliITSGeant3Geometry & operator=(const AliITSGeant3Geometry &s) 
+    {if(&s==this) return *this; return *this;}
     
     // Return number of children for volume idvol
     Int_t NChildren(Int_t idvol);

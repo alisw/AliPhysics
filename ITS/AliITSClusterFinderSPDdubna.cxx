@@ -81,8 +81,8 @@ AliITSClusterFinderSPDdubna &AliITSClusterFinderSPDdubna::operator=(const
     return *this;
 }
 //______________________________________________________________________
-AliITSClusterFinderSPDdubna::AliITSClusterFinderSPDdubna(const
-                                         AliITSClusterFinderSPDdubna &s){
+AliITSClusterFinderSPDdubna::AliITSClusterFinderSPDdubna(
+      const AliITSClusterFinderSPDdubna &s): AliITSClusterFinder(s){
     // The Copy constructortor the class AliITSClusterFinderSPDdugna
     // It calles the = operator.
     // Inputs:

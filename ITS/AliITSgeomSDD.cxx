@@ -111,7 +111,7 @@ AliITSgeomSDD::~AliITSgeomSDD(){
     fAnodeLowEdgeR = 0;
 }
 //________________________________________________________________________
-AliITSgeomSDD::AliITSgeomSDD(AliITSgeomSDD &source){
+AliITSgeomSDD::AliITSgeomSDD(AliITSgeomSDD &source) : TObject(source){
     // Copy constructor
     Int_t i;
 
@@ -688,6 +688,11 @@ _____________________________________________
     Float_t anodeLowEdges[kNAnodes+1];
     Int_t i;
 
+    if(npar<3){
+	Error("AliITSgeomSDD256","npar=%d<3. array par must be [3] or greater",
+	      npar);
+	return;
+    } // end if
 //    cout << "AliITSgeomSDD256 default creator called: start" << end;
    anodeLowEdges[0] = kAnodesZ;
     for(i=0;i<kNAnodes;i++)anodeLowEdges[i+1] = kAnodePitch+anodeLowEdges[i];

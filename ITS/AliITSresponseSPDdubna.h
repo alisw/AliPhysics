@@ -17,14 +17,13 @@ class AliITSresponseSPDdubna :  public AliITSresponse {
     //
     // Configuration methods
     //
-    virtual void    SetDiffCoeff(Float_t p1=7.877e-3/*0.00433*/,Float_t dummy=0.) {
+    virtual void SetDiffCoeff(Float_t p1=7.877e-3/*0.00433*/,Float_t dummy=0.){
 	// Diffusion coefficient
-	fDiffCoeff = p1;
-    }
+	fDiffCoeff = p1;dummy = 0.;}
     virtual Double_t DiffusionSigma(Double_t dy);
     virtual void DiffCoeff(Float_t &diffc,Float_t &dummy) {
 	// Get diffusion coefficient
-	diffc= fDiffCoeff;
+	diffc= fDiffCoeff;dummy = 0.0;
     }
     virtual  void   SetNoiseParam(Float_t n=200., Float_t b=0.) {
 	// set noise and baseline

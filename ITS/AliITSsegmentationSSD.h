@@ -22,12 +22,11 @@ public AliITSsegmentation {
                         {fDx=p1; fDz=p2; fDy=p3;}
 
     // Strip size  
-    virtual void    SetPadSize(Float_t pitch=95., Float_t dummy=1.) 
-                         {fPitch=pitch;}
+    virtual void    SetPadSize(Float_t pitch=95.,Float_t d=1.0)
+	{fPitch=pitch;d=1.;}
 
     // Maximum number of strips along the two coordinates  
-    virtual void    SetNPads(Int_t p1=768, Int_t dummy=1) 
-                         {fNstrips=p1;}
+    virtual void    SetNPads(Int_t p1=768,Int_t d=1){fNstrips=p1;d=1;}
     // Returns the maximum number of cells (digits) posible
     virtual Int_t   GetNPads(){return 2*fNstrips;}
 
@@ -51,9 +50,9 @@ public AliITSsegmentation {
     virtual void    GetPadTxz(Float_t &x , Float_t &z);
 
     // Transform from real global to local coordinates
-    virtual void    GetLocal(Int_t module,Float_t *g ,Float_t *l) {}
+    virtual void    GetLocal(Int_t,Float_t *,Float_t *) {}
     // Transform from real local to global coordinates
-    virtual void    GetGlobal(Int_t module,Float_t *l ,Float_t *g) {}
+    virtual void    GetGlobal(Int_t,Float_t *,Float_t *) {}
     // Transformation from Geant cm detector center local coordinates
     // to detector P and N side strip numbers..
     virtual void    LocalToDet(Float_t x,Float_t z,Int_t &iP,Int_t &iN);

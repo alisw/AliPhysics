@@ -213,11 +213,11 @@ class AliITSpList: public AliITSMap {
     // Fill pList from digits. Not functional yet
     void FillMap(){;}
     // Sets threshold for significance. Not of relavance in this case.
-    void SetThreshold(Int_t i){;}
+    void SetThreshold(Int_t i){i=0;}
     // Sets a single hit. Not of relavance in this case.
-    void SetHit(Int_t i,Int_t j,Int_t k){;}
+    void SetHit(Int_t i,Int_t j,Int_t k){i=j=k=0;}
     // Flags a hit. Not of relavence in this case.
-    void FlagHit(Int_t i,Int_t j){;}
+    void FlagHit(Int_t i,Int_t j){i=j=0;}
     // returns the i,j index numbers from the liniarized index computed
     // from GetIndex above.
     void GetCell(Int_t index,Int_t &i,Int_t &j){

@@ -108,7 +108,7 @@ AliITSMapA1& AliITSMapA1::operator=(const AliITSMapA1 &source) {
     return *this;
 }
 //______________________________________________________________________
-AliITSMapA1::AliITSMapA1(const AliITSMapA1 &source){
+AliITSMapA1::AliITSMapA1(const AliITSMapA1 &source) : AliITSMap(source){
     //     Copy Constructor
 
     *this = source;

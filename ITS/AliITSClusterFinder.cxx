@@ -78,7 +78,8 @@ AliITSClusterFinder::~AliITSClusterFinder(){
     fNPeaks       = 0;
 }
 //__________________________________________________________________________
-AliITSClusterFinder::AliITSClusterFinder(const AliITSClusterFinder &source){
+AliITSClusterFinder::AliITSClusterFinder(const AliITSClusterFinder &source) :
+    TObject(source){
     //     Copy Constructor 
     if(&source == this) return;
     this->fDigits = source.fDigits;

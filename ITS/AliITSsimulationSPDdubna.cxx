@@ -98,7 +98,8 @@ AliITSsimulationSPDdubna::~AliITSsimulationSPDdubna(){
 //______________________________________________________________________
 AliITSsimulationSPDdubna::AliITSsimulationSPDdubna(const 
 						   AliITSsimulationSPDdubna 
-						   &source){
+						   &source):
+    AliITSsimulation(source){
     //     Copy Constructor 
     if(&source == this) return;
     this->fMapA2 = source.fMapA2;
@@ -160,6 +161,7 @@ void AliITSsimulationSPDdubna::SDigitiseModule(AliITSmodule *mod, Int_t mask,
 
     Int_t module = 0;
 
+    event = 0; // remove unused variable warning.
     if(!(mod->GetNhits())) return;// if module has no hits don't create Sdigits
     fModule = mod->GetIndex();
     HitToSDigit(mod, module, mask, fpList);
@@ -247,7 +249,7 @@ void AliITSsimulationSPDdubna::DigitiseModule(AliITSmodule *mod, Int_t module,
     //  Return:
     //    none
 
-    fModule = mod->GetIndex();  //This calls the module for HitToSDigit
+    fModule = module = mod->GetIndex();//This calls the module for HitToSDigit
     HitToSDigit(mod,fModule, dummy, fpList);
     ChargeToSignal(fpList);
 //    fMapA2->ClearMap();
@@ -280,6 +282,7 @@ void AliITSsimulationSPDdubna::UpdateMapSignal(Int_t iz, Int_t ix, Int_t trk,
     //    none
 
 //    fMapA2->AddSignal(iz, ix, signal);
+    module = fModule; // remove unused variable warning.
     pList->AddSignal(iz+1,ix+1, trk, ht, fModule, signal);
 }
 //______________________________________________________________________
@@ -305,6 +308,7 @@ void AliITSsimulationSPDdubna::UpdateMapNoise(Int_t iz,
     //    none
 
 //    fMapA2->AddSignal(iz, ix, noise);
+    sig = 0.0; // remove unused variable warning.
     pList->AddNoise(iz+1,ix+1, fModule, noise);
 }
 //______________________________________________________________________
@@ -325,6 +329,7 @@ void AliITSsimulationSPDdubna::HitToSDigit(AliITSmodule *mod, Int_t module,
     Double_t x,y,z,t,tp,st,dt=0.2,el,sig;
     Double_t thick = kmictocm*GetSeg()->Dy();
 
+    module = dummy = pList->GetNEnteries(); // remove unused varuable warning.
     if(nhits<=0) return;
     for(h=0;h<nhits;h++){
 #ifdef DEBUG
@@ -430,6 +435,7 @@ void AliITSsimulationSPDdubna::SpreadCharge(Double_t x0,Double_t y0,
     Float_t x,z;
     Double_t x1,x2,z1,z2,s,sp;
 
+    y0 = ti; // remove unused variable warning.
     if(sig<=0.0) {
 	fpList->AddSignal(iz0+1,ix0+1,t,hi,mod,el);
 	return;
@@ -535,7 +541,7 @@ void AliITSsimulationSPDdubna::HitToSDigitOld(AliITSmodule *mod, Int_t module,
     Float_t xPitch = GetSeg()->Dpx(0);
   
     TObjArray *fHits = mod->GetHits();
-    module = mod->GetIndex();
+    module = dummy = mod->GetIndex();
     Int_t nhits = fHits->GetEntriesFast();
     if (!nhits) return;
 #ifdef DEBUG

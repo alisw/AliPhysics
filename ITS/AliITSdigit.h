@@ -34,9 +34,9 @@ class AliITSdigit: public TObject  {
     // AliITSmodule).
     virtual Int_t *GetHits() {return 0;}
     // returns track number kept in the array element i of fTracks 
-    virtual Int_t GetTrack(Int_t i) const {return 0;}
+    virtual Int_t GetTrack(Int_t) const {return 0;}
     // returns hit number kept in the array element i of fHits 
-    virtual Int_t GetHit(Int_t i) const {return 0;}
+    virtual Int_t GetHit(Int_t) const {return 0;}
     virtual Int_t GetCoord1() const {return fCoord1;} // returns fCoord1
     virtual Int_t GetCoord2() const {return fCoord2;} // returns fCoord2
     virtual Int_t GetSignal() const {return fSignal;} // returns fSignal

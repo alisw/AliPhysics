@@ -57,6 +57,7 @@ void AliITSsimulationFastPointsV0::CreateFastRecPoints(AliITSmodule *mod,Int_t m
   Float_t x1,y1,z1;
   AliITShit *hit;
 
+  if(rndm!=0) module=0; // fix unsued parameter warnings.
   fSx->Reset(); // Start out with things clearly zeroed
   fSz->Reset(); // Start out with things clearly zeroed
   e = 0.; // Start out with things clearly zeroed
@@ -115,7 +116,7 @@ void AliITSsimulationFastPointsV0::AddSPD(Float_t &e,
   rpSPD.fTracks[2]=-3;
   rpSPD.SetX(fSx->GetMean());
   rpSPD.SetZ(fSz->GetMean());
-  rpSPD.SetdEdX(0.0);
+  rpSPD.SetdEdX(e);
   rpSPD.SetQ(1.0);
   a1 = fSx->GetRMS(); a1 *= a1; a1 += kRMSx*kRMSx;
   //  if(a1>1.E5) printf("addSPD: layer=%d track #%d dedx=%e sigmaX2= %e ",

@@ -74,7 +74,7 @@ AliITSmodule::~AliITSmodule() {
     fITS = 0; // We don't delete this pointer since it is just a copy.
 }
 //____________________________________________________________________________
-AliITSmodule::AliITSmodule(const AliITSmodule &source){
+AliITSmodule::AliITSmodule(const AliITSmodule &source):TObject(source){
 ////////////////////////////////////////////////////////////////////////
 //     Copy Constructor 
 ////////////////////////////////////////////////////////////////////////
@@ -86,9 +86,10 @@ AliITSmodule& AliITSmodule::operator=(const AliITSmodule &source){
 ////////////////////////////////////////////////////////////////////////
 //    Assignment operator 
 ////////////////////////////////////////////////////////////////////////
-  Error("AliITSmodule","AliITSmodule class has not to be copied! Exit.");
-  exit(1);
-  return *this; // fake return neded on Sun
+    if(&source == this) return *this;
+    Error("AliITSmodule","AliITSmodule class has not to be copied! Exit.");
+    exit(1);
+    return *this; // fake return neded on Sun
 }
 //_________________________________________________________________________
 // 
@@ -118,6 +119,7 @@ Double_t AliITSmodule::PathLength(Int_t index,AliITShit *itsHit1,
    Float_t  x2g,y2g,z2g;
    Double_t s;
 
+   index = 0;
    itsHit1->GetPositionG(x1g,y1g,z1g);
    itsHit2->GetPositionG(x2g,y2g,z2g);
 
@@ -136,6 +138,7 @@ void AliITSmodule::PathLength(Int_t index,
   // path length
     static Float_t x0,y0,z0;
 
+    index = 0;
     if ((status&0x0002)!=0){ // entering
 	x0 = x;
 	y0 = y;

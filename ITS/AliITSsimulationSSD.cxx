@@ -116,7 +116,8 @@ AliITSsimulationSSD& AliITSsimulationSSD::operator=(
   return *this;
 }
 //______________________________________________________________________
-AliITSsimulationSSD::AliITSsimulationSSD(const AliITSsimulationSSD &source){
+AliITSsimulationSSD::AliITSsimulationSSD(const AliITSsimulationSSD &source):
+    AliITSsimulation(source){
   // copy constructor
 
   *this = source;
@@ -164,6 +165,7 @@ void AliITSsimulationSSD::DigitiseModule(AliITSmodule *mod,
   // Digitizes hits for one SSD module
   Int_t module     = mod->GetIndex();
 
+  dummy0 = dummy1 = 0;  // remove unused variable warning.
   HitsToAnalogDigits(mod,fpList);
   SDigitToDigit(module,fpList);
 
@@ -175,12 +177,13 @@ void AliITSsimulationSSD::SDigitiseModule(AliITSmodule *mod,Int_t dummy0,
                                           Int_t dummy1) {
   // Produces Summable/Analog digits and writes them to the SDigit tree. 
 
-  HitsToAnalogDigits(mod,fpList);
+    dummy0 = dummy1 = 0; // remove unused variable warning
+    HitsToAnalogDigits(mod,fpList);
 
-  WriteSDigits(fpList);
+    WriteSDigits(fpList);
 
-  fpList->ClearMap();
-  fMapA2->ClearMap();
+    fpList->ClearMap();
+    fMapA2->ClearMap();
 }
 //______________________________________________________________________
 void AliITSsimulationSSD::SDigitToDigit(Int_t module,AliITSpList *pList){
@@ -259,8 +262,9 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
 	y = y0 + (j+0.5)*dey;
 	if ( y > (GetSegmentation()->Dy()/2+10)*1.0E-4 ) {
 	    // check if particle is within the detector
-	    Warning("HitToDigit","hit out of detector y0=%e,y=%e,dey=%e,j =%e",
-		    y0,y,dey,j);
+	    Warning("HitToDigit",
+		    "hit out of detector y0=%e,y=%e,dey=%e,j =%e module=%d",
+		    y0,y,dey,j,module);
 	    return;
 	} // end if
 	z = z0 + (j+0.5)*dez;

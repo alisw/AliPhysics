@@ -109,7 +109,7 @@ AliITSv5symm::AliITSv5symm(const char *name, const char *title) : AliITS(name, t
     strncpy(fWrite,fEuclidGeomDet,60);
 }
 //____________________________________________________________________________
-AliITSv5symm::AliITSv5symm(const AliITSv5symm &source){
+AliITSv5symm::AliITSv5symm(const AliITSv5symm &source) : AliITS(source){
 ////////////////////////////////////////////////////////////////////////
 //     Copy Constructor for ITS version 5.
 ////////////////////////////////////////////////////////////////////////

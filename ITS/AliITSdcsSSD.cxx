@@ -55,7 +55,7 @@ AliITSdcsSSD::~AliITSdcsSSD() {
     delete fInvalidN;
 }
 //______________________________________________________________________
-AliITSdcsSSD::AliITSdcsSSD(const AliITSdcsSSD &source){
+AliITSdcsSSD::AliITSdcsSSD(const AliITSdcsSSD &source) : TObject(source){
     //     Copy Constructor 
 
     if(&source == this) return;

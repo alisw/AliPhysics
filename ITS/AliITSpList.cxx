@@ -140,7 +140,7 @@ AliITSpList& AliITSpList::operator=(const AliITSpList &source){
     return *this;
 }
 //______________________________________________________________________
-AliITSpList::AliITSpList(AliITSpList &source){
+AliITSpList::AliITSpList(AliITSpList &source) : AliITSMap(source){
     // Copy operator
     // Inputs:
     //    AliITSpList &source   A AliITSpList Object
@@ -347,7 +347,7 @@ AliITSpListItem& AliITSpListItem::operator=(const AliITSpListItem &source){
     return *this;
 }
 //______________________________________________________________________
-AliITSpListItem::AliITSpListItem(AliITSpListItem &source){
+AliITSpListItem::AliITSpListItem(AliITSpListItem &source) : TObject(source){
     // Copy operator
     // Inputs:
     //    AliITSpListItem &source   A AliITSpListItem Object

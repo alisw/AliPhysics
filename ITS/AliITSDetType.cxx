@@ -48,7 +48,7 @@ AliITSDetType::~AliITSDetType(){
     if(fReconst!=0)      delete fReconst;      fReconst      = 0;
 }
 //______________________________________________________________________
-AliITSDetType::AliITSDetType(const AliITSDetType &source){
+AliITSDetType::AliITSDetType(const AliITSDetType &source) : TObject(source){
   //     Copy Constructor 
 
   if(&source == this) return;

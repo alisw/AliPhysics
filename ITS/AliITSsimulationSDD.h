@@ -126,7 +126,8 @@ class AliITSsimulationSDD : public AliITSsimulation {
     TObjArray*  GetHistArray() {return fHis;}
     // create a separate tree for background monitoring (2D) 
     virtual  void  MakeTreeB(Option_t *option="B") 
-	{ fTreeB = new TNtuple("ntuple","2D backgr","nz:nl:nh:low:anode");}
+	{ if(strstr(option,"B"))
+	     fTreeB = new TNtuple("ntuple", "2D backgr","nz:nl:nh:low:anode");}
     // presently a dummy routine use TreeB() instead
     void GetTreeB(Int_t) { }
     // Return pointer to TreeB

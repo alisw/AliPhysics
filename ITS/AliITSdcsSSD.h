@@ -56,22 +56,16 @@ class AliITSdcsSSD: public TObject {
     Int_t    GetNInvalidP();            //Number of invalid P strips
     Int_t    GetNInvalidN();            //Number of invalid N strips    
     // Creating invalid strips
-    void    SetInvalidP(Int_t strip, Bool_t side){//Set invalid if true   
-    }
-    void    SetInvalidN(Int_t strip, Bool_t side){//Set invalid if true
-    }
+    void    SetInvalidP(Int_t,Bool_t){}//Set invalid if true
+    void    SetInvalidN(Int_t,Bool_t){}//Set invalid if true
     Float_t  GetCouplingPR() {// couplings
-      return fCouplingPR;
-    }
+      return fCouplingPR;}
     Float_t  GetCouplingPL() {// couplings
-      return fCouplingPL;
-    }
+      return fCouplingPL;}
     Float_t  GetCouplingNR() {// couplings
-      return fCouplingNR;
-    }
+      return fCouplingNR;}
     Float_t  GetCouplingNL() {// couplings
-      return fCouplingNL;
-    }
+      return fCouplingNL;}
     
  protected:
     //_____________________________________________

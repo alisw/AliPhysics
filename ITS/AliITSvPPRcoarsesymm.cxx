@@ -82,11 +82,12 @@ AliITSvPPRcoarsesymm::AliITSvPPRcoarsesymm(const char *name, const char *title) 
     fMinorVersion = 0;
 }
 //____________________________________________________________________________
-AliITSvPPRcoarsesymm::AliITSvPPRcoarsesymm(const AliITSvPPRcoarsesymm &source){
+AliITSvPPRcoarsesymm::AliITSvPPRcoarsesymm(const AliITSvPPRcoarsesymm &s) :
+AliITS(s){
 ////////////////////////////////////////////////////////////////////////
 //     Copy Constructor for ITS version 7.
 ////////////////////////////////////////////////////////////////////////
-    if(&source == this) return;
+    if(&s == this) return;
     Warning("Copy Constructor","Not allowed to copy AliITSvPPRcoarsesymm");
     return;
 }

@@ -44,7 +44,8 @@ AliITSDDLRawData::AliITSDDLRawData(){
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-AliITSDDLRawData::AliITSDDLRawData(const AliITSDDLRawData &source){
+AliITSDDLRawData::AliITSDDLRawData(const AliITSDDLRawData &source) : 
+    TObject(source){
   //Copy Constructor
   this->fIndex=source.fIndex;
   this->fHalfStaveModule=source.fHalfStaveModule;

@@ -42,7 +42,9 @@ Float_t AliITSsegmentationSPD::ZFromCol300(Int_t col) {
 //_____________________________________________________________________________
 Float_t AliITSsegmentationSPD::ZpitchFromCol300(Int_t col) {
   // returns Z pixel pitch for 300 micron pixels.
-  return 300.0;
+
+    col = 0; // done to remove unused variable warning.
+    return 300.0;
 }
 //_____________________________________________________________________________
 Float_t AliITSsegmentationSPD::ColFromZ(Float_t z) {
@@ -208,7 +210,8 @@ AliITSsegmentationSPD& AliITSsegmentationSPD::operator=(AliITSsegmentationSPD &s
    return *this;
 }
 //____________________________________________________________________________
-AliITSsegmentationSPD::AliITSsegmentationSPD(AliITSsegmentationSPD &source){
+AliITSsegmentationSPD::AliITSsegmentationSPD(AliITSsegmentationSPD &source) :
+    AliITSsegmentation(source){
   // copy constructor
    *this = source;
 }

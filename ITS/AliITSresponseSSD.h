@@ -19,11 +19,11 @@ class AliITSresponseSSD : public AliITSresponse {
 
     virtual void    SetDiffCoeff(Float_t p1=0.,Float_t dummy=0.) {
 	// Diffusion coefficient
-	fDiffCoeff=p1;
+	fDiffCoeff=p1;dummy = 0.0;
     }
     virtual void    DiffCoeff(Float_t &diffc,Float_t &dummy) {
 	// Get diffusion coefficient
-	diffc= fDiffCoeff;
+	diffc= fDiffCoeff;dummy = 0.0;
     }
 
     virtual  void   SetNoiseParam(Float_t np=420., Float_t nn=625.) {

@@ -44,7 +44,7 @@ class AliITS : public AliDetector {
     AliITS();  // Default creator.
     AliITS(const char *name, const char *title); // standard Creator
     virtual ~AliITS(); // destructor
-    AliITS(AliITS &source); // copy constructor. Not to be used!
+    AliITS(const AliITS &source); // copy constructor. Not to be used!
     AliITS& operator=(AliITS &source); // = operator. Not to be used!
     virtual Int_t IsVersion() const {return 1;}
     virtual Int_t DistancetoPrimitive(Int_t px, Int_t py);

@@ -105,7 +105,7 @@ AliITSMapA2::~AliITSMapA2(){
     if (fHitMapD) delete[] fHitMapD;
 }
 //______________________________________________________________________
-AliITSMapA2::AliITSMapA2(const AliITSMapA2 &source){
+AliITSMapA2::AliITSMapA2(const AliITSMapA2 &source) : AliITSMapA1(source){
     //     Copy Constructor 
 
     if(&source == this) return;
@@ -161,6 +161,7 @@ void AliITSMapA2::FlagHit(Int_t iz, Int_t ix){
 TObject* AliITSMapA2::GetHit(Int_t i, Int_t dummy){
   //return a pointer to the 1D histogram
 
+    dummy = 0; // added to remove unused variable warning.
     if (fObjects) {
 	return fObjects->UncheckedAt(i);
     } else return NULL;

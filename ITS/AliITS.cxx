@@ -275,7 +275,7 @@ AliITS::~AliITS(){
     if (fITSgeom) delete fITSgeom;
 }
 //______________________________________________________________________
-AliITS::AliITS(AliITS &source){
+AliITS::AliITS(const AliITS &source) : AliDetector(source){
     // Copy constructor. This is a function which is not allowed to be
     // done to the ITS. It exits with an error.
     // Inputs:
@@ -738,6 +738,7 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,
     static TFile *file;
     const char *addBgr = strstr(option,"Add");
 
+    evnt = nmodules; // Dummy use of variables to remove warnings
     if (addBgr ) {
         if(first) {
             file=new TFile(filename);
@@ -1345,7 +1346,7 @@ void AliITS::MakeTreeC(Option_t *option){
   AliITSLoader *pITSLoader = (AliITSLoader*)fLoader;    
     
   if (pITSLoader == 0x0) {
-    Error("MakeTreeC","fLoader == 0x0");
+    Error("MakeTreeC","fLoader == 0x0 option=%s",option);
     return;
   }
   if (pITSLoader->TreeC() == 0x0) pITSLoader->MakeTree("C");
@@ -1681,31 +1682,31 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt){
   AliITSDetType      *iDetType = 0;
   Int_t id,module,first=0;
   for(module=0;module<geom->GetIndexMax();module++){
-        id       = geom->GetModuleType(module);
-    if (!all && !det[id]) continue;
-        if(det[id]) first = geom->GetStartDet(id);
-        iDetType = DetType(id);
-        rec = (AliITSClusterFinder*)iDetType->GetReconstructionModel();
-    TClonesArray *itsDigits  = this->DigitsAddress(id);
-        if (!rec) {
-      Error("DigitsToRecPoints",
-            "The reconstruction class was not instanciated!");
-      exit(1);
-        } // end if !rec
-        this->ResetDigits();
-    TTree *TD = pITSloader->TreeD();
-        if (all) {
-      TD->GetEvent(lastentry+module);
-    }
-    else {
-      TD->GetEvent(lastentry+(module-first));
-    }
-        Int_t ndigits = itsDigits->GetEntriesFast();
-        if (ndigits) rec->FindRawClusters(module);
-    pITSloader->TreeR()->Fill(); 
-        ResetRecPoints();
-        treeC->Fill();
-    ResetClusters();
+      id       = geom->GetModuleType(module);
+      if (!all && !det[id]) continue;
+      if(det[id]) first = geom->GetStartDet(id);
+      iDetType = DetType(id);
+      rec = (AliITSClusterFinder*)iDetType->GetReconstructionModel();
+      TClonesArray *itsDigits  = this->DigitsAddress(id);
+      if (!rec) {
+	  Error("DigitsToRecPoints",
+		"The reconstruction class was not instanciated! event=%d",
+		evNumber);
+	  exit(1);
+      } // end if !rec
+      this->ResetDigits();
+      TTree *TD = pITSloader->TreeD();
+      if (all) {
+	  TD->GetEvent(lastentry+module);
+      }else {
+	  TD->GetEvent(lastentry+(module-first));
+      }
+      Int_t ndigits = itsDigits->GetEntriesFast();
+      if (ndigits) rec->FindRawClusters(module);
+      pITSloader->TreeR()->Fill(); 
+      ResetRecPoints();
+      treeC->Fill();
+      ResetClusters();
   } // end for module
 
 

@@ -128,7 +128,7 @@ AliITSvPPRasymm::AliITSvPPRasymm(const char *name, const char *title) : AliITS(n
     strncpy(fWrite,fEuclidGeomDet,60);
 }
 //____________________________________________________________________________
-AliITSvPPRasymm::AliITSvPPRasymm(const AliITSvPPRasymm &source){
+AliITSvPPRasymm::AliITSvPPRasymm(const AliITSvPPRasymm &source):AliITS(source){
 ////////////////////////////////////////////////////////////////////////
 //     Copy Constructor for ITS version 8.
 ////////////////////////////////////////////////////////////////////////

@@ -61,7 +61,8 @@ AliITSRawClusterSDD::AliITSRawClusterSDD(Int_t wing,
     fZ = AnodeOffset/10000.;
 }
 //______________________________________________________________________
-AliITSRawClusterSDD::AliITSRawClusterSDD( const AliITSRawClusterSDD & source){
+AliITSRawClusterSDD::AliITSRawClusterSDD(const AliITSRawClusterSDD & source):
+    AliITSRawCluster(source){
     // copy constructor
 
     fWing          = source.fWing;
@@ -206,6 +207,7 @@ Bool_t AliITSRawClusterSPD::Brother(AliITSRawClusterSPD* cluster,
     Bool_t test2 = kFALSE;  
     Bool_t test3 = kFALSE;
 
+    dx = dz = 0; // to remove unused variable warning.
     // Diagonal clusters are included:
     if(fXStop >= (cluster->XStart() -1) && 
        fXStart <= (cluster->XStop()+1)) test2 = kTRUE;
@@ -235,6 +237,7 @@ ClassImp(AliITSRawClusterSSD)
 AliITSRawClusterSSD::AliITSRawClusterSSD(Float_t Prob,Int_t Sp,Int_t Sn) {  
     // constructor
 
+    Prob = 0.0; // added to remove unused variable warning.
     //fProbability   = Prob;
     fMultiplicity  = Sp;
     fMultiplicityN = Sn;

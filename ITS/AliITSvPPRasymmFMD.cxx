@@ -115,6 +115,7 @@ AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const char *name, const char *title)
 
     fIdN = 6;
     fIdName = new TString[fIdN];
+    fIdName[0] = name; // removes warning message
     fIdName[0] = "ITS1";
     fIdName[1] = "ITS2";
     fIdName[2] = "ITS3";
@@ -140,7 +141,8 @@ AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const char *name, const char *title)
     strncpy(fWrite,fEuclidGeomDet,60);
 }
 //______________________________________________________________________
-AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const AliITSvPPRasymmFMD &source){
+AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const AliITSvPPRasymmFMD &source) :
+ AliITS(source){
     //     Copy Constructor for ITS version 10. This function is not to be
     // used. If any other instance of this function, other than "this" is
     // passed, an error message is returned.

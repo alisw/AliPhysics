@@ -557,6 +557,7 @@ Bool_t AliITSClusterFinderSSD::CreateNewRecPoint(Float_t P,Float_t dP,
 
     if (GetCrossing(P,N)) {
 	//GetCrossingError(dP,dN);
+	dP = dN = prob = 0.0; // to remove unused variable warning.
 	AliITSRawClusterSSD cnew;
 	Int_t nstripsP=clusterP->GetNumOfDigits();
 	Int_t nstripsN=clusterN->GetNumOfDigits();

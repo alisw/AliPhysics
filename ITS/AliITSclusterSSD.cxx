@@ -64,7 +64,8 @@ AliITSclusterSSD::~AliITSclusterSSD(){
     delete fCrossedClusterIndexes;
 }
 //______________________________________________________________________
-AliITSclusterSSD::AliITSclusterSSD(const AliITSclusterSSD &OneSCluster){
+AliITSclusterSSD::AliITSclusterSSD(const AliITSclusterSSD &OneSCluster) : 
+    TObject(OneSCluster){
     // copy constructor
 
     if (this == &OneSCluster) return;

@@ -95,7 +95,7 @@ AliITSv1::AliITSv1(const char *name, const char *title) : AliITS(name, title){
 
 }
 //____________________________________________________________________________
-AliITSv1::AliITSv1(const AliITSv1 &source){
+AliITSv1::AliITSv1(const AliITSv1 &source) : AliITS(source){
 ////////////////////////////////////////////////////////////////////////
 //     Copy Constructor for ITS version 1.
 ////////////////////////////////////////////////////////////////////////

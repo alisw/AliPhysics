@@ -67,7 +67,7 @@ AliITSvtest::AliITSvtest() {
     for(i=0;i<60;i++) fEuclidGeomDet[i] = '\0';
 }
 //____________________________________________________________________________
-AliITSvtest::AliITSvtest(const AliITSvtest &source){
+AliITSvtest::AliITSvtest(const AliITSvtest &source) : AliITS(source){
 ////////////////////////////////////////////////////////////////////////
 //     Copy Constructor for ITS test version.
 ////////////////////////////////////////////////////////////////////////

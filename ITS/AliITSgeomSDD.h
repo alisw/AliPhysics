@@ -40,9 +40,11 @@ class AliITSgeomSDD: public TObject {
     virtual Float_t GetDz() const {// Get TBRIK Dz
 	if(fShapeSDD!=0) return fShapeSDD->GetDz();
 	else return 0.0;}
-    virtual Float_t GetAnodeX(Int_t a,Int_t s) const { // returns X position of anode
-	if(s==0) return fAnodeXL; else return fAnodeXR;}
-    virtual Float_t GetAnodeZ(Int_t a,Int_t s)const { // returns X position of anode
+    virtual Float_t GetAnodeX(Int_t a,Int_t s) const {
+	// returns X position of anode
+	a = 0; if(s==0) return fAnodeXL; else return fAnodeXR;}
+    virtual Float_t GetAnodeZ(Int_t a,Int_t s)const {
+	// returns X position of anode
 	if(s==0) return 0.5*(fAnodeLowEdgeL[a]+fAnodeLowEdgeL[a+1]);
 	else return 0.5*(fAnodeLowEdgeR[a]+fAnodeLowEdgeR[a+1]);}
     virtual void SetNAnodesL(Int_t s)

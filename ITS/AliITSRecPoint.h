@@ -39,8 +39,7 @@ class AliITSRecPoint : public TObject {
     void  Use() { //if fQ<0 cluster is already associated with a track
 	fQ=-fQ;}
     Int_t IsUsed() const {return (fQ<0) ? 1 : 0;} // checks Use condision
-    Int_t Compare(const TObject *o) const { //to be defined
-	return 0;}
+    Int_t Compare(const TObject *) const {return 0;} //to be defined
     // Prints out the content of this class in ASCII format.
     void Print(ostream *os); 
     // Reads in the content of this class in the format of Print

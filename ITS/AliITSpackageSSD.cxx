@@ -86,8 +86,8 @@ AliITSpackageSSD::~AliITSpackageSSD()
 }
 /*******************************************************/
 
-AliITSpackageSSD::AliITSpackageSSD(const AliITSpackageSSD &package)
-{
+AliITSpackageSSD::AliITSpackageSSD(const AliITSpackageSSD &package) : 
+    TObject(package){
   // copy constractor
   Int_t i;  //iterator
  

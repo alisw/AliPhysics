@@ -27,11 +27,10 @@ class AliITSclusterSSD : public TObject{
     AliITSclusterSSD(Int_t ndigits, Int_t *DigitIndexes,
 		     TObjArray *Digits, Bool_t side);		
     AliITSclusterSSD(const AliITSclusterSSD &source); 
-    AliITSclusterSSD&  operator=( const AliITSclusterSSD & source);
+    AliITSclusterSSD& operator=( const AliITSclusterSSD & source);
     void AddDigit(Int_t index){//adds on digit
 	(*fDigitsIndex)[fNDigits++]=index;} 
-    TObjArray* GetPointer2Digits(){// comment to be written 
-	return fDigits;}
+    TObjArray* GetPointer2Digits(){return fDigits;}// comment to be written
     void SetPointer2Digits(TObjArray *digits){// comment to be written
 	fDigits = digits;}
     Int_t GetNumOfDigits(){//Returns number of digits that creates this cluster
@@ -42,8 +41,8 @@ class AliITSclusterSSD : public TObject{
     Int_t GetDigitIndex (Int_t digit) {// comment to be written
 	return (*fDigitsIndex)[digit];}
     Int_t GetDigitStripNo(Int_t digit);
-    Int_t GetFirstDigitStripNo(){// comment to be written
-	return GetDigitStripNo(0);}
+    // comment to be written
+    Int_t GetFirstDigitStripNo(){return GetDigitStripNo(0);}
     Int_t GetLastDigitStripNo(){// comment to be written
 	return GetDigitStripNo(fNDigits-1);}
      //splits this one side cluster for two
@@ -52,7 +51,7 @@ class AliITSclusterSSD : public TObject{
      //return index of cluster that it crosses with
     Int_t GetCross(Int_t crIndex);
     Int_t GetCrossNo() {// Returns number of crosses
-	return fNCrosses;} 
+	return fNCrosses;}
     void DelCross(Int_t index);
     Double_t GetPosition();
     Double_t GetPositionError();
@@ -66,16 +65,12 @@ class AliITSclusterSSD : public TObject{
 	return fLeftNeighbour;}
     void SetRightNeighbour(Bool_t nei) {// comment to be written
 	fRightNeighbour=nei;}
-    void SetLeftNeighbour(Bool_t nei) {// comment to be written
-	fLeftNeighbour=nei;}
-    void SetNTracks(Int_t ntracks) {// set ntracks
-	fNTracks=ntracks;}
-    Int_t GetNTracks(){// comment to be written
-	return fNTracks;}
-    Bool_t GetSide(){// comment to be written
-	return fSide;}
-    Int_t CheckSatus(Int_t *tracks){//check if digits comes from the same track
-	return 0;}  
+    //comment to be written
+    void SetLeftNeighbour(Bool_t nei){fLeftNeighbour=nei;}
+    void SetNTracks(Int_t ntracks) {fNTracks=ntracks;}// set ntracks
+    Int_t GetNTracks(){return fNTracks;}// comment to be written
+    Bool_t GetSide(){return fSide;}// comment to be written
+    Int_t CheckSatus(Int_t *){return 0;}//check if dig's comes from same track
     Int_t *GetTracks(Int_t &nt);
     void Consume(){// comment
 	fConsumed = kTRUE;}

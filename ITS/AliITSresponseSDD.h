@@ -131,7 +131,7 @@ class AliITSresponseSDD : public AliITSresponse {
     }
     // Get number of intervals in which the gaussian lookup table is divided
     Int_t GausNLookUp() {return fNcomps;}
-    Float_t IntPH(Float_t eloss) {// Pulse height from scored quantity (eloss)
+    Float_t IntPH(Float_t) {// Pulse height from scored quantity (eloss)
 	return 0.;}
     Float_t IntXZ(AliITSsegmentation *) {// Charge disintegration 
 	return 0.;}

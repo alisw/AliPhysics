@@ -70,13 +70,9 @@ class AliITSClusterFinder :public TObject{
     virtual Bool_t IsNeighbor(TObjArray *digs,Int_t i,Int_t j[]) const;
     // Given a cluster of digits, creates the nessesary RecPoint. May also
     // do some peak separation.
-    virtual void CreateRecPoints(TObjArray *cluster,Int_t mod){};
-    virtual void FindCluster(Int_t i, Int_t j, AliITSRawCluster *c) {
-	// find cluster
-    }
-    virtual void Decluster(AliITSRawCluster *cluster) {
-	// Decluster
-    }
+    virtual void CreateRecPoints(TObjArray *,Int_t){};
+    virtual void FindCluster(Int_t,Int_t,AliITSRawCluster *) {}// find cluster
+    virtual void Decluster(AliITSRawCluster *) {}// Decluster
     virtual void SetNperMax(Int_t npermax=3) {
 	// Set max. Number of cells per local cluster
 	fNperMax = npermax;
@@ -95,18 +91,12 @@ class AliITSClusterFinder :public TObject{
     virtual void CorrectCOG(){
 	// correct COG
     }
-    virtual Bool_t Centered(AliITSRawCluster *cluster) const {
-	// cluster
+    virtual Bool_t Centered(AliITSRawCluster *) const {// cluster
 	return kTRUE;
     }
-    virtual void   SplitByLocalMaxima(AliITSRawCluster *cluster) {
-	// split by local maxima
-    }
-    virtual void   FillCluster(AliITSRawCluster *cluster, Int_t) {
-	// fiil cluster
-    }
-    virtual void   FillCluster(AliITSRawCluster *cluster) {
-	// fill cluster
+    virtual void SplitByLocalMaxima(AliITSRawCluster *){}//split by local maxima
+    virtual void   FillCluster(AliITSRawCluster *,Int_t) {}// fiil cluster
+    virtual void   FillCluster(AliITSRawCluster *cluster) {// fill cluster
 	FillCluster(cluster,1);
     }
     // set the fitting methods in the derived classes

@@ -63,9 +63,10 @@ AliITSgeomMatrix::AliITSgeomMatrix(){
     fm[0][0] = fm[1][1] = fm[2][2] = 1.0;
 }
 //----------------------------------------------------------------------
-AliITSgeomMatrix::AliITSgeomMatrix(const AliITSgeomMatrix &sourse){
+AliITSgeomMatrix::AliITSgeomMatrix(const AliITSgeomMatrix &sourse) : 
+    TObject(sourse){
 ////////////////////////////////////////////////////////////////////////
-// The standard copy constructor. This make a full / proper copy of
+// The standard Copy constructor. This make a full / proper copy of
 // this class.
 ////////////////////////////////////////////////////////////////////////
 	Int_t i,j;

@@ -163,7 +163,7 @@ void AliITSsegmentationSDD::Print(Option_t *opt) const {
   // Print SDD segmentation Parameters
 
    cout << "**************************************************" << endl;
-   cout << "  Silicon Drift Detector Segmentation Parameters  " << endl;
+   cout << "  Silicon Drift Detector Segmentation Parameters  " << opt << endl;
    cout << "**************************************************" << endl;
    cout << "Number of Time Samples: " << fNsamples << endl;
    cout << "Number of Anodes: " << fNanodes << endl;

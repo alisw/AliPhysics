@@ -81,7 +81,7 @@ void AliITSgeomSPD::ReSetBins(Float_t dy,Int_t nx,Float_t *bx,
     return;
 }
 //______________________________________________________________________
-AliITSgeomSPD::AliITSgeomSPD(AliITSgeomSPD &source){
+AliITSgeomSPD::AliITSgeomSPD(AliITSgeomSPD &source) : TObject(source){
     // Copy constructor
 
     *this = source; // just use the = operator for now.
@@ -343,6 +343,11 @@ AliITSgeomSPD425Short::AliITSgeomSPD425Short(Int_t npar,Float_t *par) :
     for(i=0;i<knbinz;i++) dz += binSizeZ[i];
     dz *= 0.5;
 
+    if(npar<3){
+	Error("AliITSgeomSPD425Short",
+              "npar=%d<3 array par must be at least [3] or larger",npar);
+	return;
+    } // end if
     SetShape("ActiveSPD","Active volume of SPD","SPD SI DET",
 	     par[0],par[1],par[2]);
     if(TMath::Abs(dx-kdx)>1.0E-4 || TMath::Abs(dz-kdz)>1.0E-4) 

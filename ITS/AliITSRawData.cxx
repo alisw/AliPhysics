@@ -40,7 +40,7 @@ AliITSInStream::~AliITSInStream()
 }
 
 //__________________________________________________________________________
-AliITSInStream::AliITSInStream(const AliITSInStream &source){
+AliITSInStream::AliITSInStream(const AliITSInStream &source) : TObject(source){
   //     Copy Constructor 
   if(&source == this) return;
   this->fStreamLen = source.fStreamLen;
@@ -108,7 +108,7 @@ AliITSOutStream::~AliITSOutStream()
 }
 
 //__________________________________________________________________________
-AliITSOutStream::AliITSOutStream(const AliITSOutStream &source){
+AliITSOutStream::AliITSOutStream(const AliITSOutStream &source):TObject(source){
   //     Copy Constructor 
   if(&source == this) return;
   this->fStreamLen = source.fStreamLen;

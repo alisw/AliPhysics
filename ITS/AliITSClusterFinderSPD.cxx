@@ -54,8 +54,8 @@ AliITSClusterFinderSPD::AliITSClusterFinderSPD(){
     SetDz();
 }
 //_____________________________________________________________________
-AliITSClusterFinderSPD::AliITSClusterFinderSPD(const AliITSClusterFinderSPD 
-					       &source){
+AliITSClusterFinderSPD::AliITSClusterFinderSPD(
+         const AliITSClusterFinderSPD &source): AliITSClusterFinder(source){
     //     Copy Constructor 
 
     if(&source == this) return;

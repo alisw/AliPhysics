@@ -36,7 +36,7 @@ AliITSHNode::AliITSHNode(UChar_t sym, ULong_t freq)
 }
 
 //__________________________________________________________________________
-AliITSHNode::AliITSHNode(const AliITSHNode &source){
+AliITSHNode::AliITSHNode(const AliITSHNode &source) : TObject(source){
   //     Copy Constructor 
   if(&source == this) return;
   this->fSymbol = source.fSymbol;
@@ -112,7 +112,7 @@ AliITSHTable::AliITSHTable(Int_t size)
 }
 
 //__________________________________________________________________________
-AliITSHTable::AliITSHTable(const AliITSHTable &source){
+AliITSHTable::AliITSHTable(const AliITSHTable &source) : TObject(source){
   //     Copy Constructor 
   if(&source == this) return;
   this->fSize = source.fSize;

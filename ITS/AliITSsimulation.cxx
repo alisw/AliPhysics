@@ -34,7 +34,8 @@ AliITSsimulation::~AliITSsimulation(){
     delete fpList;
 }
 //__________________________________________________________________________
-AliITSsimulation::AliITSsimulation(const AliITSsimulation &source){
+AliITSsimulation::AliITSsimulation(const AliITSsimulation &source) : 
+    TObject(source){
     //     Copy Constructor 
  
     if(&source == this) return;

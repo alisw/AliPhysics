@@ -303,7 +303,8 @@ AliITSTransientDigit::AliITSTransientDigit(Float_t phys,const Int_t *digits):
     fTrackList   = new TObjArray;  
 }
 //__________________________________________________________________________
-AliITSTransientDigit::AliITSTransientDigit(const AliITSTransientDigit &source){
+AliITSTransientDigit::AliITSTransientDigit(const AliITSTransientDigit &source):
+ AliITSdigitSDD(source){
     // Copy Constructor 
     if(&source == this) return;
     this->fTrackList = source.fTrackList;

@@ -122,7 +122,7 @@ AliITSvSPD02::AliITSvSPD02(const char *title) : AliITS("ITS", title){
     strncpy(fWrite,fEuclidGeomDet,60);
 }
 //______________________________________________________________________
-AliITSvSPD02::AliITSvSPD02(const AliITSvSPD02 &source){
+AliITSvSPD02::AliITSvSPD02(const AliITSvSPD02 &source) : AliITS(source){
     ////////////////////////////////////////////////////////////////////////
     //     Copy Constructor for ITS SPD test beam 2002 version 1.
     // This class is not to be copied. Function only dummy.

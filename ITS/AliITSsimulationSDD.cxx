@@ -164,7 +164,8 @@ AliITSsimulationSDD::AliITSsimulationSDD(){
     SetCheckNoise();
 }
 //______________________________________________________________________
-AliITSsimulationSDD::AliITSsimulationSDD(AliITSsimulationSDD &source){
+AliITSsimulationSDD::AliITSsimulationSDD(AliITSsimulationSDD &source) :
+    AliITSsimulation(source){
     // Copy constructor to satify Coding roules only.
 
     if(this==&source) return;

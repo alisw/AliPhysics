@@ -108,7 +108,8 @@ AliITSsimulationSPD::~AliITSsimulationSPD() {
     } // end if
 }
 //______________________________________________________________________
-AliITSsimulationSPD::AliITSsimulationSPD(const AliITSsimulationSPD &source){
+AliITSsimulationSPD::AliITSsimulationSPD(const AliITSsimulationSPD &source) :
+    AliITSsimulation(source){
     // Copy Constructor
 
     if(&source == this) return;
@@ -182,6 +183,7 @@ void AliITSsimulationSPD::SDigitiseModule(AliITSmodule *mod, Int_t dummy0,
     Int_t    *fcolpixel = new Int_t[number];
     Double_t *fenepixel = new Double_t[number];
 
+    dummy0 = dummy1; // remove unsued variable warning.
     fModule = mod->GetIndex();
 
     // Array of pointers to store the track index of the digits
@@ -208,6 +210,7 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t dummy0,
     Int_t    *fcolpixel = new Int_t[number];
     Double_t *fenepixel = new Double_t[number];
 
+    dummy0 = dummy1; // remove unsued variable warning.
     // Array of pointers to store the track index of the digits
     // leave +1, otherwise pList crashes when col=256, row=192
     fModule = mod->GetIndex();
@@ -625,6 +628,7 @@ void AliITSsimulationSPD::CreateDigit(Int_t module,AliITSpList *pList) {
     Float_t * charges = new Float_t[size]; 
     Int_t j1;
 
+    module=0; // remove unused variable warning.
     for(j1=0;j1<size;j1++){tracks[j1]=-3;hits[j1]=-1;charges[j1]=0.0;}
     for (Int_t r=1;r<=GetNPixelsZ();r++) {
 	for (Int_t c=1;c<=GetNPixelsX();c++) {

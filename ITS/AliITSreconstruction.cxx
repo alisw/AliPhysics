@@ -271,5 +271,7 @@ void AliITSreconstruction::Exec(const Option_t *opt){
 void AliITSreconstruction::SetOutputFile(TString filename){
   // Set a file name for recpoints. Used only if this file is not the file
   // containing digits. This obj is deleted by AliRun.
-  Error("SetOutputFile","Use AliLoader::SetRecPointsFileName(TString&)instead");
+  Error("SetOutputFile",
+	"Use AliLoader::SetRecPointsFileName(TString&)instead filename=%s",
+	filename.Data());
 }

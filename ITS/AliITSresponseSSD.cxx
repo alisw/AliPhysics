@@ -82,7 +82,8 @@ AliITSresponseSSD& AliITSresponseSSD::operator=(const AliITSresponseSSD &src) {
     return *this;
 }
 //_________________________________________________________________________
-AliITSresponseSSD::AliITSresponseSSD(const AliITSresponseSSD &src) {
+AliITSresponseSSD::AliITSresponseSSD(const AliITSresponseSSD &src) :
+    AliITSresponse(src) {
     // copy constructor
 
     *this = src;

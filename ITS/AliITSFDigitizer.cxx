@@ -95,67 +95,64 @@ void AliITSFDigitizer::Exec(Option_t* opt){
 //      Option_t * opt  "deb" ... more verbose output 
 //
 
-  AliITSsimulationFastPoints *sim = new AliITSsimulationFastPoints();
-  AliRunLoader* outrl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
-  if (outrl == 0x0)
-   {
-     Error("Exec","Can not find Run Loader in output folder.");
-     return;
-   }
-
-  AliLoader* outgime = outrl->GetLoader("ITSLoader");
-  if (outgime == 0x0)
-   {
-     Error("Exec","Can not get TOF Loader from Output Run Loader.");
-     return;
-   }
-
-  TTree* outputTreeR = outgime->TreeR();
-  if (outputTreeR == 0x0)
-   {
-     outgime->MakeTree("R");
-     outputTreeR = outgime->TreeR();
-   }
-
-  TClonesArray *recPoints = fITS->RecPoints();
+    AliITSsimulationFastPoints *sim = new AliITSsimulationFastPoints();
+    AliRunLoader* outrl = AliRunLoader::GetRunLoader(
+                                        fManager->GetOutputFolderName());
+    if (outrl == 0x0){
+	Error("Exec","Can not find Run Loader in output folder.");
+	return;
+    }
+    AliLoader* outgime = outrl->GetLoader("ITSLoader");
+    if (outgime == 0x0){
+	Error("Exec","Can not get TOF Loader from Output Run Loader.");
+	return;
+    }
+    if(strstr(opt,"deb"){
+	Info("Exec","sim=%p, outrl=%p, outgime=%p",sim,outrl,outgime);
+    }
+    TTree* outputTreeR = outgime->TreeR();
+    if (outputTreeR == 0x0){
+	outgime->MakeTree("R");
+	outputTreeR = outgime->TreeR();
+    }
+    TClonesArray *recPoints = fITS->RecPoints();
 //  TBranch *branch =
-  fITS->MakeBranchInTree(outputTreeR,"ITSRecPointsF",&recPoints,4000,0);
+    fITS->MakeBranchInTree(outputTreeR,"ITSRecPointsF",&recPoints,4000,0);
   
-  Int_t nModules;
-  fITS->InitModules(-1,nModules);
+    Int_t nModules;
+    fITS->InitModules(-1,nModules);
 
 // load hits into modules
-  for (Int_t iFile = 0; iFile < fManager->GetNinputs(); iFile++) 
-   {
-     AliRunLoader* rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(iFile));
-     if (rl == 0x0)
-      {
-        Error("Exec","Can not find Run Loader in input %d folder.",iFile);
-        return;
-      }
+    for (Int_t iFile = 0; iFile < fManager->GetNinputs(); iFile++){
+	AliRunLoader* rl = AliRunLoader::GetRunLoader(
+                                       fManager->GetInputFolderName(iFile));
+	if (rl == 0x0){
+	    Error("Exec","Can not find Run Loader in input %d folder.",iFile);
+	    return;
+	}
 
-     AliLoader* gime = rl->GetLoader("ITSLoader");
-     if (gime == 0x0)
-      {
-        Error("Exec","Can not get TOF Loader from Input %d Run Loader.",iFile);
-        return;
-      }
+	AliLoader* gime = rl->GetLoader("ITSLoader");
+	if (gime == 0x0){
+	    Error("Exec","Can not get TOF Loader from Input %d Run Loader.",
+		  iFile);
+	    return;
+	}
 
-     gime->LoadHits();
-     fITS->FillModules(gime->TreeH(),fManager->GetMask(iFile));
-     gime->UnloadHits();
-   }
+	gime->LoadHits();
+	fITS->FillModules(gime->TreeH(),fManager->GetMask(iFile));
+	gime->UnloadHits();
+    }
   
 // transform hits to fast rec points
 
-  AliITSgeom *geom = fITS->GetITSgeom();
-  for(Int_t moduleIndex = 0; moduleIndex < geom->GetIndexMax(); moduleIndex++){
-    sim->CreateFastRecPoints(moduleIndex);
-//    branch->Fill();
-    outputTreeR->Fill();
-    fITS->ResetRecPoints();
-  }
-  outrl->WriteRecPoints("OVERWRITE");
+    AliITSgeom *geom = fITS->GetITSgeom();
+    for(Int_t moduleIndex = 0; moduleIndex<geom->GetIndexMax(); moduleIndex++){
+	sim->CreateFastRecPoints(moduleIndex);
+//      branch->Fill();
+	outputTreeR->Fill();
+	fITS->ResetRecPoints();
+    }
+    outrl->WriteRecPoints("OVERWRITE");
 //  outputTreeR->AutoSave();
 }
 ////////////////////////////////////////////////////////////////////////

@@ -16,34 +16,34 @@ public TObject {
     // Set Detector Segmentation Parameters
     //
     // Detector size  
-    virtual void    SetDetSize(Float_t Dx, Float_t Dz, Float_t Dy) {}
+    virtual void    SetDetSize(Float_t,Float_t,Float_t) {}
     // Cell size   
-    virtual void    SetPadSize(Float_t p1, Float_t p2) {}
+    virtual void    SetPadSize(Float_t,Float_t) {}
     // Maximum number of cells along the two coordinates  
-    virtual void    SetNPads(Int_t p1, Int_t p2) {}
+    virtual void    SetNPads(Int_t,Int_t) {}
     // Returns the maximum number of cells (digits) posible
     virtual Int_t   GetNPads(){return 0;}
     // Set angles - find a generic name fit for other detectors as well
     // might be useful for beam test setups (3 angles ?)
-    virtual void    SetAngles(Float_t p1, Float_t p2) {}
+    virtual void    SetAngles(Float_t, Float_t) {}
     // Set layer
-    virtual void SetLayer(Int_t l) {}
+    virtual void SetLayer(Int_t) {}
     // Transform from real to cell coordinates
-    virtual void    GetPadIxz(Float_t x ,Float_t z ,Int_t &ix,Int_t &iz) {}
+    virtual void    GetPadIxz(Float_t,Float_t,Int_t &,Int_t &) {}
     // Transform from cell to real coordinates
-    virtual void    GetPadCxz(Int_t ix, Int_t iz, Float_t &x ,Float_t &z ) {}
+    virtual void    GetPadCxz(Int_t,Int_t,Float_t &,Float_t &) {}
     // Transform from real global to local coordinates
-    virtual void    GetLocal(Int_t module,Float_t *g ,Float_t *l) {}
+    virtual void    GetLocal(Int_t,Float_t *,Float_t *) {}
     // Transform from real local to global coordinates
-    virtual void    GetGlobal(Int_t module,Float_t *l ,Float_t *g) {}
+    virtual void    GetGlobal(Int_t,Float_t *,Float_t *) {}
     // Local transformation of real local coordinates -
-    virtual void    GetPadTxz(Float_t &x ,Float_t &z) {}
+    virtual void    GetPadTxz(Float_t &,Float_t &) {}
     // Transformation from Geant cm detector center local coordinates
     // to detector segmentation/cell coordiantes starting from (0,0).
-    virtual void    LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz){}
+    virtual void    LocalToDet(Float_t,Float_t,Int_t &,Int_t &){}
     // Transformation from detector segmentation/cell coordiantes starting
     // from (0,0) to Geant cm detector center local coordinates.
-    virtual void    DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z){}
+    virtual void    DetToLocal(Int_t,Int_t,Float_t &,Float_t &){}
     // Initialisation
     virtual void Init() {}
     //
@@ -77,16 +77,14 @@ public TObject {
     //
     // Iterate over cells 
     // Initialiser
-    virtual void  FirstPad
-          (Float_t xhit, Float_t zhit, Float_t dx, Float_t dz) {}
+    virtual void  FirstPad(Float_t,Float_t,Float_t,Float_t) {}
     // Stepper
     virtual void  NextPad() {}
     // Condition
     virtual Int_t MorePads() {return 0;}
     //
     // Get next neighbours 
-    virtual void Neighbours(Int_t iX, Int_t iZ, Int_t* Nlist,
-			    Int_t Xlist[10], Int_t Zlist[10]) {}
+    virtual void Neighbours(Int_t,Int_t,Int_t*,Int_t[10],Int_t[10]) {}
     //
     // Current cell cursor during disintegration
     // x-coordinate
@@ -95,14 +93,13 @@ public TObject {
     virtual Int_t  Iz() {return 0;}
     //
     // Signal Generation Condition during Stepping
-    virtual Int_t SigGenCond(Float_t x, Float_t y, Float_t z) {return 0;}
+    virtual Int_t SigGenCond(Float_t,Float_t,Float_t) {return 0;}
     // Initialise signal generation at coord (x,y,z)
-    virtual void  SigGenInit(Float_t x, Float_t y, Float_t z) {}
+    virtual void  SigGenInit(Float_t,Float_t,Float_t) {}
     // Current integration limits 
-    virtual void  IntegrationLimits
-    (Float_t& x1, Float_t& x2, Float_t& z1, Float_t& z2) {}
+    virtual void  IntegrationLimits(Float_t&,Float_t&,Float_t&,Float_t&) {}
     // Test points for auto calibration
-    virtual void GiveTestPoints(Int_t &n, Float_t *x, Float_t *z) {}
+    virtual void GiveTestPoints(Int_t &,Float_t *,Float_t *) {}
     // Function for systematic corrections
     // Set the correction function
     virtual void SetCorrFunc(Int_t, TF1*) {}
@@ -112,8 +109,3 @@ public TObject {
     ClassDef(AliITSsegmentation,1) //Segmentation virtual base class 
 };
 #endif
-
-
-
-
-

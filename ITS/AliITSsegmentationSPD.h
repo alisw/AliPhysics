@@ -36,9 +36,9 @@ public AliITSsegmentation {
     // Transform from pixel to real coordinates
     virtual void    GetPadCxz(Int_t ix,Int_t iz,Float_t &x,Float_t &z);
     // Transform from real global to local coordinates
-    virtual void    GetLocal(Int_t module,Float_t *g ,Float_t *l) {}
+    //virtual void    GetLocal(Int_t module,Float_t *g ,Float_t *l) {}
     // Transform from real local to global coordinates
-    virtual void    GetGlobal(Int_t module,Float_t *l ,Float_t *g) {}
+    //virtual void    GetGlobal(Int_t module,Float_t *l ,Float_t *g) {}
     // Local transformation of real local coordinates -
     virtual void    GetPadTxz(Float_t &x ,Float_t &z);
     // Transformation from Geant cm detector center local coordinates

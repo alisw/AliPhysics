@@ -94,7 +94,8 @@ AliITSgeomSSD::~AliITSgeomSSD(){
     fAngleP = 0.0;
     fAngleN = 0.0;
 }
-AliITSgeomSSD::AliITSgeomSSD(const AliITSgeomSSD &source){
+//______________________________________________________________________
+AliITSgeomSSD::AliITSgeomSSD(const AliITSgeomSSD &source) : TObject(source){
 ////////////////////////////////////////////////////////////////////////
 //    copy  constructor
 ////////////////////////////////////////////////////////////////////////
@@ -167,7 +168,11 @@ void AliITSgeomSSD::Local2Det(Float_t x,Float_t z,Int_t &a,Int_t &c){
 void AliITSgeomSSD::Det2Local(Int_t a,Int_t c,Float_t &x,Float_t &z){
 //    Float_t d,b;
 //    Int_t i;
+    // use AliITSsegmentationSSD.
 
+    x=a;
+    z=c;
+    Error("Det2Locat","Use AliITSsegmentationSSD");
     return;
 }
 //______________________________________________________________________
@@ -324,6 +329,11 @@ AliITSgeomSSD275and75::AliITSgeomSSD275and75(Int_t npar,Float_t *par) :
     Float_t *leA,*leC; // array of low edges anode and cathorde.
     Int_t i;
 
+    if(npar<3){
+	Error("AliITSgeomSSD275and75",
+	      "npar=%d<3. array par must be [3] or larger.",npar);
+	return;
+    } // end if
     leA = new Float_t[kNstrips+1];
     leC = new Float_t[kNstrips+1];
     leA[0] = -kDxyz[0];
@@ -385,6 +395,11 @@ AliITSgeomSSD75and275::AliITSgeomSSD75and275(Int_t npar,Float_t *par) :
     Float_t *leA,*leC; // array of low edges anode and cathorde.
     Int_t i;
 
+    if(npar<3){
+	Error("AliITSgeomSSD75and275",
+	      "npar=%d<3. array par must be [3] or larger.",npar);
+	return;
+    } // end if
     leA = new Float_t[kNstrips+1];
     leC = new Float_t[kNstrips+1];
     leA[0] = -kDxyz[0];

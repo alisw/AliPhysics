@@ -539,7 +539,7 @@ AliITSgeom::AliITSgeom(const char *filename){
     fclose(pf);
 }
 //______________________________________________________________________
-AliITSgeom::AliITSgeom(AliITSgeom &source){
+AliITSgeom::AliITSgeom(AliITSgeom &source) : TObject(source){
     //     The copy constructor for the AliITSgeom class. It calls the
     // = operator function. See the = operator function for more details.
     // Inputs are:

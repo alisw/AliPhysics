@@ -82,7 +82,8 @@ AliITSstatistics2& AliITSstatistics2::operator=(AliITSstatistics2 &source){
 	  return *this;
 }
 //_______________________________________________________________
-AliITSstatistics2::AliITSstatistics2(AliITSstatistics2 &source){
+AliITSstatistics2::AliITSstatistics2(AliITSstatistics2 &source):
+    TObject(source){
 // Copy constructor
 
      if(this==&source) return;

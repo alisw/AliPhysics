@@ -64,7 +64,8 @@ AliITSsegmentationSSD& AliITSsegmentationSSD::operator=(
     return *this;     
 }
 //______________________________________________________________________
-AliITSsegmentationSSD::AliITSsegmentationSSD(AliITSsegmentationSSD &source){
+AliITSsegmentationSSD::AliITSsegmentationSSD(AliITSsegmentationSSD &source):
+    AliITSsegmentation(source){
     // copy constructor
     *this = source;
 }
