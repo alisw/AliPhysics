@@ -63,25 +63,25 @@ void MUONTestTrigger (Int_t evNumber1=0,Int_t evNumber2=0)
 	
 	gloTrg = (AliMUONGlobalTrigger*)globalTrigger->UncheckedAt(i);
 	
-	cout << "fSinglePlusLpt = " << gloTrg->fSinglePlusLpt << "\n"; 
-	cout << "fSinglePlusHpt = " << gloTrg->fSinglePlusHpt << "\n";
-	cout << "fSinglePlusApt = " << gloTrg->fSinglePlusApt << "\n";
+	cout << "fSinglePlusLpt = " << gloTrg->SinglePlusLpt() << "\n"; 
+	cout << "fSinglePlusHpt = " << gloTrg->SinglePlusHpt() << "\n";
+	cout << "fSinglePlusApt = " << gloTrg->SinglePlusApt() << "\n";
 
-	cout << "fSingleMinusLpt = " << gloTrg->fSingleMinusLpt << "\n";
-	cout << "fSingleMinusHpt = " << gloTrg->fSingleMinusHpt << "\n";
-	cout << "fSingleMinusApt = " << gloTrg->fSingleMinusApt << "\n";
+	cout << "fSingleMinusLpt = " << gloTrg->SingleMinusLpt() << "\n";
+	cout << "fSingleMinusHpt = " << gloTrg->SingleMinusHpt() << "\n";
+	cout << "fSingleMinusApt = " << gloTrg->SingleMinusApt() << "\n";
 
-	cout << "fSingleUndefLpt = " << gloTrg->fSingleUndefLpt << "\n";
-	cout << "fSingleUndefHpt = " << gloTrg->fSingleUndefHpt << "\n";
-	cout << "fSingleUndefApt = " << gloTrg->fSingleUndefApt << "\n";
+	cout << "fSingleUndefLpt = " << gloTrg->SingleUndefLpt() << "\n";
+	cout << "fSingleUndefHpt = " << gloTrg->SingleUndefHpt() << "\n";
+	cout << "fSingleUndefApt = " << gloTrg->SingleUndefApt() << "\n";
 
-	cout << "fPairLikeLpt = " << gloTrg->fPairLikeLpt << "\n";
-	cout << "fPairLikeHpt = " << gloTrg->fPairLikeHpt << "\n";
-	cout << "fPairLikeApt = " << gloTrg->fPairLikeApt << "\n";
+	cout << "fPairLikeLpt = " << gloTrg->PairLikeLpt() << "\n";
+	cout << "fPairLikeHpt = " << gloTrg->PairLikeHpt() << "\n";
+	cout << "fPairLikeApt = " << gloTrg->PairLikeApt() << "\n";
 
-	cout << "fPairUnlikeLpt = " << gloTrg->fPairUnlikeLpt << "\n";
-	cout << "fPairUnlikeHpt = " << gloTrg->fPairUnlikeHpt << "\n";
-	cout << "fPairUnlikeApt = " << gloTrg->fPairUnlikeApt << "\n";
+	cout << "fPairUnlikeLpt = " << gloTrg->PairUnlikeLpt() << "\n";
+	cout << "fPairUnlikeHpt = " << gloTrg->PairUnlikeHpt() << "\n";
+	cout << "fPairUnlikeApt = " << gloTrg->PairUnlikeApt() << "\n";
       } // end of loop on Global Trigger
 
       for (Int_t i=0; i<nlocals; i++) { // inspect Local Trigger
@@ -89,13 +89,13 @@ void MUONTestTrigger (Int_t evNumber1=0,Int_t evNumber2=0)
 
 	locTrg = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(i);	
 
-	cout << "fLoCircuit = " << locTrg->fLoCircuit << "\n";
-	cout << "fLoStripX = "  << locTrg->fLoStripX << "\n";
-	cout << "fLoDev = "     << locTrg->fLoDev << "\n";
-	cout << "fLoStripY = "  << locTrg->fLoStripY << "\n";
-	cout << "fLoLpt = "     << locTrg->fLoLpt << "\n";
-	cout << "fLoHpt = "     << locTrg->fLoHpt << "\n";
-	cout << "fLoApt = "     << locTrg->fLoApt << "\n";
+	cout << "fLoCircuit = " << locTrg->LoCircuit() << "\n";
+	cout << "fLoStripX = "  << locTrg->LoStripX() << "\n";
+	cout << "fLoDev = "     << locTrg->LoDev() << "\n";
+	cout << "fLoStripY = "  << locTrg->LoStripY() << "\n";
+	cout << "fLoLpt = "     << locTrg->LoLpt() << "\n";
+	cout << "fLoHpt = "     << locTrg->LoHpt() << "\n";
+	cout << "fLoApt = "     << locTrg->LoApt() << "\n";
 
       } // end of loop on Local Trigger
     } // end of loop on entries of TreeR
