@@ -366,7 +366,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
   
         if(1){     //Ali to Memory
           digits=(AliL3DigitRowData *)fFileHandler->AliDigits2Memory(ndigits,fEvent);
-          if(fWriteOut){   //Memory to Binary
+          if(0){   //Memory to Binary
             fFileHandler->SetBinaryOutput(name);
             fFileHandler->Memory2CompBinary(ndigits,digits);
             fFileHandler->CloseBinaryOutput();
@@ -484,11 +484,12 @@ void AliLevel3::ProcessSlice(Int_t slice){
     fInterMerger->Init(fRow[patch],patch);
 
     fInterMerger->FillTracks(ntracks0,trackdata0);
-    fBenchmark->Start("Inter Merger");
-    // fInterMerger->Merge();
-//    fInterMerger->SlowMerge();
     
-    fBenchmark->Stop("Inter Merger");
+    //fBenchmark->Start("Inter Merger");
+    // fInterMerger->Merge();
+    //    fInterMerger->SlowMerge();
+    
+    //fBenchmark->Stop("Inter Merger");
     /*
     //write inter merged tracks
     if(fWriteOut){
