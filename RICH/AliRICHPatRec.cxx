@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.10  2001/02/27 15:21:06  jbarbosa
+  Transition to SDigits.
+
   Revision 1.9  2001/02/13 20:38:48  jbarbosa
   Changes to make it work with new IO.
 
@@ -104,7 +107,7 @@ void AliRICHPatRec::PatRec()
 
   Float_t rechit[7];
 
-  printf("PatRec started\n");
+  //printf("PatRec started\n");
 
   AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
   TTree *treeH = gAlice->TreeH();
@@ -122,7 +125,7 @@ void AliRICHPatRec::PatRec()
     segmentation=iChamber->GetSegmentationModel();
 
     nent=(Int_t)gAlice->TreeD()->GetEntries();
-    gAlice->TreeD()->GetEvent(1);
+    gAlice->TreeD()->GetEvent(0);
     TClonesArray *pDigitss = pRICH->DigitsAddress(ich);
     ndigits[ich] = pDigitss->GetEntriesFast();
     printf("Digits in chamber %d: %d\n",ich,ndigits[ich]);
