@@ -40,15 +40,17 @@
 
 ClassImp( AliHBTFunction )
 
-AliHBTFunction::AliHBTFunction()
+AliHBTFunction::AliHBTFunction():
+  fPairCut(new AliHBTEmptyPairCut())   //dummy cut
 {
 //Default constructor
-  fPairCut = new AliHBTEmptyPairCut(); //dummy cut
 }
 /******************************************************************/
-AliHBTFunction::AliHBTFunction(const char* name,const char* title):TNamed(name,title)
+AliHBTFunction::AliHBTFunction(const char* name,const char* title):
+  TNamed(name,title),
+  fPairCut(new AliHBTEmptyPairCut()) //dummy cut  
 {
-  fPairCut = new AliHBTEmptyPairCut(); //dummy cut
+//Constructor  
 }
 /******************************************************************/
 
