@@ -111,10 +111,10 @@ void Config()
   if (!isSetInteractively) {
 
     //  Load modules libraries
+    if (!gInterpreter->IsLoaded("g4libs.C")) gROOT->LoadMacro("g4libs.C");
     gInterpreter->ProcessLine("detlibs()");
 
     // Select modules 
-
   Int_t iABSO=1;
   Int_t iCASTOR=1;
   Int_t iDIPO=1;
@@ -139,7 +139,9 @@ void Config()
       iCASTOR=0;
     // Detectors with temporary problem
       iZDC=0;
-
+      iPMD=0;
+      iITS=0;
+      
 // From G3 Config.C
 // Without any modification 
 
