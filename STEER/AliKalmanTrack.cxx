@@ -69,6 +69,186 @@ AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack &t):
   for (Int_t i=0; i<5; i++) 
     fIntegratedTime[i] = t.fIntegratedTime[i];
 }
+
+//_______________________________________________________________________
+Double_t AliKalmanTrack::GetX() const
+{
+  Warning("GetX()","Method must be overloaded !\n");
+  return 0.;
+}
+//_______________________________________________________________________
+Double_t AliKalmanTrack::GetdEdx() const
+{
+  Warning("GetdEdx()","Method must be overloaded !\n");
+  return 0.;
+}
+
+//_______________________________________________________________________
+Double_t AliKalmanTrack::GetY() const
+{
+  Double_t par[5];
+  Double_t localX = GetX();
+  GetExternalParameters(localX, par);
+  return par[0];
+}
+//_______________________________________________________________________
+Double_t AliKalmanTrack::GetZ() const
+{
+  Double_t par[5];
+  Double_t localX = GetX();
+  GetExternalParameters(localX, par);
+  return par[1];
+}
+//_______________________________________________________________________
+Double_t AliKalmanTrack::GetSnp() const
+{
+  Double_t par[5];
+  Double_t localX = GetX();
+  GetExternalParameters(localX, par);
+  return par[2];
+}
+//_______________________________________________________________________
+Double_t AliKalmanTrack::GetTgl() const
+{
+  Double_t par[5];
+  Double_t localX = GetX();
+  GetExternalParameters(localX, par);
+  return par[3];
+}
+//_______________________________________________________________________
+Double_t AliKalmanTrack::Get1Pt() const
+{
+  Double_t par[5];
+  Double_t localX = GetX();
+  GetExternalParameters(localX, par);
+  return par[4];
+}
+
+//_______________________________________________________________________
+Double_t AliKalmanTrack::Phi() const
+{
+// return global phi of track
+
+  Double_t par[5];
+  Double_t localX = GetX();
+  GetExternalParameters(localX, par);
+  Double_t phi = TMath::ASin(par[2]) + GetAlpha();
+  while (phi < 0) phi += TMath::TwoPi();
+  while (phi > TMath::TwoPi()) phi -= TMath::TwoPi();
+  return phi;
+}
+//_______________________________________________________________________
+Double_t AliKalmanTrack::SigmaPhi() const
+{
+// return error of global phi of track
+
+  Double_t par[5];
+  Double_t cov[15];
+  Double_t localX = GetX();
+  GetExternalParameters(localX, par);
+  GetExternalCovariance(cov);
+  return TMath::Sqrt(TMath::Abs(cov[5] / (1. - par[2]*par[2])));
+}
+//_______________________________________________________________________
+Double_t AliKalmanTrack::Theta() const
+{
+// return global theta of track
+
+  Double_t par[5];
+  Double_t localX = GetX();
+  GetExternalParameters(localX, par);
+  return TMath::Pi()/2. - TMath::ATan(par[3]);
+}
+//_______________________________________________________________________
+Double_t AliKalmanTrack::SigmaTheta() const
+{
+// return error of global theta of track
+
+  Double_t par[5];
+  Double_t cov[15];
+  Double_t localX = GetX();
+  GetExternalParameters(localX, par);
+  GetExternalCovariance(cov);
+  return TMath::Sqrt(TMath::Abs(cov[5])) / (1. + par[3]*par[3]);
+}
+//_______________________________________________________________________
+Double_t AliKalmanTrack::Px() const
+{
+// return x component of track momentum
+
+  Double_t par[5];
+  Double_t localX = GetX();
+  GetExternalParameters(localX, par);
+  Double_t phi = TMath::ASin(par[2]) + GetAlpha();
+  return TMath::Cos(phi) / TMath::Abs(par[4]);
+}
+//_______________________________________________________________________
+Double_t AliKalmanTrack::Py() const
+{
+// return y component of track momentum
+
+  Double_t par[5];
+  Double_t localX = GetX();
+  GetExternalParameters(localX, par);
+  Double_t phi = TMath::ASin(par[2]) + GetAlpha();
+  return TMath::Sin(phi) / TMath::Abs(par[4]);
+}
+//_______________________________________________________________________
+Double_t AliKalmanTrack::Pz() const
+{
+// return z component of track momentum
+
+  Double_t par[5];
+  Double_t localX = GetX();
+  GetExternalParameters(localX, par);
+  return par[3] / TMath::Abs(par[4]);
+}
+//_______________________________________________________________________
+Double_t AliKalmanTrack::Pt() const
+{
+// return transverse component of track momentum
+
+  Double_t par[5];
+  Double_t localX = GetX();
+  GetExternalParameters(localX, par);
+  return 1. / TMath::Abs(par[4]);
+}
+//_______________________________________________________________________
+Double_t AliKalmanTrack::SigmaPt() const
+{
+// return error of transverse component of track momentum
+
+  Double_t par[5];
+  Double_t cov[15];
+  Double_t localX = GetX();
+  GetExternalParameters(localX, par);
+  GetExternalCovariance(cov);
+  return TMath::Sqrt(cov[14]) / TMath::Abs(par[4]);
+}
+//_______________________________________________________________________
+Double_t AliKalmanTrack::P() const
+{
+// return total track momentum
+
+  Double_t par[5];
+  Double_t localX = GetX();
+  GetExternalParameters(localX, par);
+  return 1. / TMath::Abs(par[4] * TMath::Sin(TMath::ATan(par[3])));
+}
+//_______________________________________________________________________
+TVector3 AliKalmanTrack::Momentum() const
+{
+// return track momentum vector
+
+  Double_t par[5];
+  Double_t localX = GetX();
+  GetExternalParameters(localX, par);
+  Double_t phi = TMath::ASin(par[2]) + GetAlpha();
+  return TVector3(TMath::Cos(phi) / TMath::Abs(par[4]),
+		  TMath::Sin(phi) / TMath::Abs(par[4]),
+		  par[3] / TMath::Abs(par[4]));
+}
+
 //_______________________________________________________________________
 void AliKalmanTrack::StartTimeIntegral() 
 {

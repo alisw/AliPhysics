@@ -66,7 +66,7 @@ public:
   Double_t Px() const {return TMath::Cos(Phi())/TMath::Abs(Get1Pt());}
   Double_t Py() const {return TMath::Sin(Phi())/TMath::Abs(Get1Pt());}
   Double_t Pz() const {return GetTgl()/TMath::Abs(Get1Pt());}
-  Double_t Pt() const {return 1./Get1Pt();}
+  Double_t Pt() const {return 1./TMath::Abs(Get1Pt());}
   Double_t P() const {return TMath::Sqrt(Pt()*Pt()+Pz()*Pz());}
 
   Int_t Compare(const TObject *o) const;

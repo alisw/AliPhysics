@@ -33,7 +33,7 @@ public:
    Float_t  GetClusterdQdl(Int_t i) const {return fdQdl[i];}    
 
    void     GetCovariance(Double_t cov[15]) const;  
-   Float_t  GetdEdx()  const {return fdEdx;}
+   Double_t GetdEdx()  const {return fdEdx;}
    Double_t GetEta()   const {return fE;}
 
    void     GetExternalCovariance(Double_t cov[15]) const ;   
