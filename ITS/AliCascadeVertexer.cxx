@@ -19,7 +19,6 @@
 //    Origin: Christian Kuhn, IReS, Strasbourg, christian.kuhn@ires.in2p3.fr
 //-------------------------------------------------------------------------
 #include <Riostream.h>
-#include <TFile.h>
 #include <TObjArray.h>
 #include <TPDGCode.h>
 #include <TTree.h>
@@ -31,20 +30,17 @@
 
 ClassImp(AliCascadeVertexer)
 
-Int_t 
-AliCascadeVertexer::V0sTracks2CascadeVertices(const TFile *inp, TFile *out) {
-
+Int_t AliCascadeVertexer::
+V0sTracks2CascadeVertices(TTree *vTree,TTree *tTree, TTree *xTree) {
   //--------------------------------------------------------------------
-  //This function reconstructs cascade vertices
+  // This function reconstructs cascade vertices
   //--------------------------------------------------------------------
-  TFile *in=(TFile*)inp;
-  TDirectory *savedir=gDirectory;
-
-   // Tree for vertices(V0's)
-
-   TTree *vtxTree=(TTree*)gDirectory->Get("TreeV0");
-   TBranch *branch=vtxTree->GetBranch("vertices");
-   Int_t nentrV0=(Int_t)vtxTree->GetEntries();
+   TBranch *branch=vTree->GetBranch("vertices");
+   if (!branch) {
+      Error("V0sTracks2CascadeVertices","Can't get the V0 branch !");
+      return 1;
+   }   
+   Int_t nentrV0=(Int_t)vTree->GetEntries();
    
    TObjArray vtxV0(nentrV0);
 
@@ -55,20 +51,18 @@ AliCascadeVertexer::V0sTracks2CascadeVertices(const TFile *inp, TFile *out) {
 
        AliV0vertex *ioVertex=new AliV0vertex;
        branch->SetAddress(&ioVertex);
-       vtxTree->GetEvent(i);
+       vTree->GetEvent(i);
        nV0++; 
        vtxV0.AddLast(ioVertex);
        
    }
 
-
-   in->cd();
-
-  // Tree for tracks
-
-   TTree *trkTree=(TTree*)in->Get("TreeT_ITS_0");
-   branch=trkTree->GetBranch("tracks");
-   Int_t nentr=(Int_t)trkTree->GetEntries();
+   branch=tTree->GetBranch("tracks");
+   if (!branch) {
+      Error("V0sTracks2CascadeVertices","Can't get the track branch !");
+      return 2;
+   }
+   Int_t nentr=(Int_t)tTree->GetEntries();
 
    TObjArray trks(nentr);
 
@@ -80,7 +74,7 @@ AliCascadeVertexer::V0sTracks2CascadeVertices(const TFile *inp, TFile *out) {
 
        AliITStrackV2 *iotrack=new AliITStrackV2;
        branch->SetAddress(&iotrack);
-       trkTree->GetEvent(i);
+       tTree->GetEvent(i);
 
        iotrack->PropagateTo(3.,0.0023,65.19); iotrack->PropagateTo(2.5,0.,0.);
 
@@ -88,13 +82,10 @@ AliCascadeVertexer::V0sTracks2CascadeVertices(const TFile *inp, TFile *out) {
        
    }   
 
-   // create Tree for cascades 
-
-   out->cd();
-
-   TTree cascTree("TreeCasc","Tree with cascades");
-   AliCascadeVertex *ioCascade=0;
-   cascTree.Branch("cascades","AliCascadeVertex",&ioCascade,32000,0);
+  AliCascadeVertex *ioCascade=0;
+  branch=xTree->GetBranch("cascades");
+  if (!branch) xTree->Branch("cascades","AliCascadeVertex",&ioCascade,32000,3);
+  else branch->SetAddress(&ioCascade); 
 
    // loop on all vertices
 
@@ -162,7 +153,7 @@ AliCascadeVertexer::V0sTracks2CascadeVertices(const TFile *inp, TFile *out) {
          //cascade.ChangeMassHypothesis(); //default is Xi
 
 
-         ioCascade=&cascade; cascTree.Fill();
+         ioCascade=&cascade; xTree->Fill();
 
          ncasc++;
 
@@ -171,12 +162,8 @@ AliCascadeVertexer::V0sTracks2CascadeVertices(const TFile *inp, TFile *out) {
 
    cerr<<"Number of reconstructed cascades: "<<ncasc<<endl;
 
-   cascTree.Write();
-
    trks.Delete();
    vtxV0.Delete();
-
-   savedir->cd();
 
    return 0;
 }

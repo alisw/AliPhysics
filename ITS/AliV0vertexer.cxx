@@ -19,7 +19,6 @@
 //     Origin: Iouri Belikov, IReS, Strasbourg, Jouri.Belikov@cern.ch
 //-------------------------------------------------------------------------
 #include <Riostream.h>
-#include <TFile.h>
 #include <TPDGCode.h>
 #include <TObjArray.h>
 #include <TTree.h>
@@ -30,32 +29,16 @@
 
 ClassImp(AliV0vertexer)
 
-Int_t AliV0vertexer::Tracks2V0vertices(const TFile *inp, TFile *out) {
+Int_t AliV0vertexer::Tracks2V0vertices(TTree *tTree, TTree *vTree) {
   //--------------------------------------------------------------------
   //This function reconstructs V0 vertices
   //--------------------------------------------------------------------
-   TFile *in=(TFile*)inp;
-   TDirectory *savedir=gDirectory; 
-
-   if (!in->IsOpen()) {
-     cerr<<"AliV0vertexer::Tracks2V0vertices(): ";
-     cerr<<"file with ITS tracks has not been open !\n";
-     return 1;
+   TBranch *branch=tTree->GetBranch("tracks");
+   if (!branch) {
+      Error("Tracks2V0vertices","Can't get the branch !");
+      return 1;
    }
-
-   if (!out->IsOpen()) {
-     cerr<<"AliV0vertexer::Tracks2V0vertices(): ";
-     cerr<<"file for V0 vertices has not been open !\n";
-     return 2;
-   }
-
-   in->cd();
-
-   Char_t name[100];
-   sprintf(name,"TreeT_ITS_%d",fEventN);
-   TTree *trkTree=(TTree*)in->Get(name);
-   TBranch *branch=trkTree->GetBranch("tracks");
-   Int_t nentr=(Int_t)trkTree->GetEntries();
+   Int_t nentr=(Int_t)tTree->GetEntries();
 
    TObjArray negtrks(nentr/2);
    TObjArray postrks(nentr/2);
@@ -66,7 +49,7 @@ Int_t AliV0vertexer::Tracks2V0vertices(const TFile *inp, TFile *out) {
    for (i=0; i<nentr; i++) {
        AliITStrackV2 *iotrack=new AliITStrackV2;
        branch->SetAddress(&iotrack);
-       trkTree->GetEvent(i);
+       tTree->GetEvent(i);
 
        iotrack->PropagateTo(3.,0.0023,65.19); iotrack->PropagateTo(2.5,0.,0.);
 
@@ -75,11 +58,10 @@ Int_t AliV0vertexer::Tracks2V0vertices(const TFile *inp, TFile *out) {
    }   
 
 
-   out->cd();
-   sprintf(name,"TreeV%d",fEventN);
-   TTree vtxTree(name,"Tree with V0 vertices");
    AliV0vertex *ioVertex=0;
-   vtxTree.Branch("vertices","AliV0vertex",&ioVertex,32000,0);
+   branch=vTree->GetBranch("vertices");
+   if (!branch) vTree->Branch("vertices","AliV0vertex",&ioVertex,32000,3);
+   else branch->SetAddress(&ioVertex);
 
 
    for (i=0; i<nneg; i++) {
@@ -127,7 +109,7 @@ Int_t AliV0vertexer::Tracks2V0vertices(const TFile *inp, TFile *out) {
 
          //vertex.ChangeMassHypothesis(); //default is Lambda0 
 
-         ioVertex=&vertex; vtxTree.Fill();
+         ioVertex=&vertex; vTree->Fill();
 
          nvtx++;
       }
@@ -135,14 +117,8 @@ Int_t AliV0vertexer::Tracks2V0vertices(const TFile *inp, TFile *out) {
 
    cerr<<"Number of reconstructed V0 vertices: "<<nvtx<<endl;
 
-   vtxTree.Write();
-
    negtrks.Delete();
    postrks.Delete();
-
-   savedir->cd();
-   
-   delete trkTree;
 
    return 0;
 }

@@ -1,18 +1,36 @@
-#ifndef __CINT__
+#if !defined(__CINT__) || defined(__MAKECINT__)
   #include "Riostream.h"
   #include "AliV0vertexer.h"
   #include "TFile.h"
   #include "TStopwatch.h"
+
+  #include "AliRun.h"
+  #include "AliRunLoader.h"
+  #include "AliITSLoader.h"
 #endif
 
-Int_t AliV0FindVertices(Int_t nev=1) {
+extern AliRun *gAlice;
+
+Int_t AliV0FindVertices(Int_t nev=5) {
    cerr<<"Looking for V0 vertices...\n";
 
-   TFile *out=TFile::Open("AliV0vertices.root","new");
-   if (!out->IsOpen()) {cerr<<"Delete old AliV0vertices.root !\n"; return 1;}
-
-   TFile *in=TFile::Open("AliITStracksV2.root");
-   if (!in->IsOpen()) {cerr<<"Can't open AliITStracksV2.root !\n"; return 2;}
+   if (gAlice) {
+      delete gAlice->GetRunLoader();
+      delete gAlice; 
+      gAlice=0;
+   } 
+   AliRunLoader* rl = AliRunLoader::Open("galice.root");
+   if (rl == 0x0) {
+      cerr<<"AliV0FindVertices.C : Can not open session RL=NULL"<< endl;
+      return 1;
+   }
+   AliITSLoader* itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
+   if (itsl == 0x0) {
+      cerr<<"AliV0FindVertices.C : Can not get ITS loader"<<endl;
+      return 2;
+   }
+   itsl->LoadTracks("read");
+   itsl->LoadV0s("recreate");
 
    Double_t cuts[]={33,  // max. allowed chi2
                     0.16,// min. allowed negative daughter's impact parameter 
@@ -25,15 +43,29 @@ Int_t AliV0FindVertices(Int_t nev=1) {
    TStopwatch timer;
    AliV0vertexer vtxer(cuts);
    Int_t rc=0;
+   if (nev>rl->GetNumberOfEvents()) nev=rl->GetNumberOfEvents();
    for (Int_t i=0; i<nev; i++) {
+     rl->GetEvent(i);
      //Double_t vtx[3]={0.,0.,0.}; vtxer.SetVertex(vtx); // primary vertex (cm)
-     vtxer.SetEvent(i);
-     rc=vtxer.Tracks2V0vertices(in,out);
+
+     TTree *tTree=itsl->TreeT();
+     if (!tTree) {
+        cerr<<"AliV0FindVertices.C : Can't get the ITS track tree !"<<endl;
+        return 3;
+     }
+     TTree *vTree=itsl->TreeV0();
+     if (!vTree) {
+        itsl->MakeTree("V0");
+        vTree=itsl->TreeV0();
+     }
+
+     rc=vtxer.Tracks2V0vertices(tTree,vTree);
+
+     itsl->WriteV0s("OVERWRITE");
    }
    timer.Stop(); timer.Print();
     
-   in->Close();
-   out->Close();
+   delete rl;
 
    return rc;
 }

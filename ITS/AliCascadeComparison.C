@@ -7,9 +7,14 @@
  *  Origin: Christian Kuhn, IReS, Strasbourg, christian.kuhn@ires.in2p3.fr  *
  ****************************************************************************/
 
-#ifndef __CINT__
+#if !defined(__CINT__) || defined(__MAKECINT__)
   #include <Riostream.h>
   #include <fstream.h>
+
+  #include "AliRun.h"
+  #include "AliHeader.h"
+  #include "AliRunLoader.h"
+  #include "AliITSLoader.h"
 
   #include "TH1.h"
   #include "TFile.h"
@@ -37,6 +42,8 @@ struct GoodCascade {
 };
 Int_t good_cascades(GoodCascade *gt, Int_t max);
 
+extern AliRun *gAlice;
+
 Int_t AliCascadeComparison(Int_t code=3312) {
   //code= 3312; //kXiMinus 
   //code=-3312; //kXiPlusBar
@@ -44,6 +51,8 @@ Int_t AliCascadeComparison(Int_t code=3312) {
   //code=-3334; //kOmegaPlusBar
 
    cerr<<"Doing comparison...\n";
+
+   TStopwatch timer;
 
    const Double_t cascadeWindow=0.05, cascadeWidth=0.015; 
    Double_t ptncut=0.12, ptpcut=0.33, kine0cut=0.003;
@@ -69,23 +78,66 @@ Int_t AliCascadeComparison(Int_t code=3312) {
    default: cerr<<"Invalid PDG code !\n"; return 1;
    }
 
-   TStopwatch timer;
+   /*** create some histograms ***/
+   TH1F *hp=new TH1F("hp","Angular Resolution",30,-30.,30.); //phi resolution 
+   hp->SetXTitle("(mrad)"); hp->SetFillColor(2);
+   TH1F *hl=new TH1F("hl","Lambda Resolution",30,-30,30);
+   hl->SetXTitle("(mrad)"); hl->SetFillColor(1); hl->SetFillStyle(3013); 
+   TH1F *hpt=new TH1F("hpt","Relative Pt Resolution",30,-10.,10.); 
+   hpt->SetXTitle("(%)"); hpt->SetFillColor(2); 
+
+   TH1F *hx=new TH1F("hx","Position Resolution (X,Y)",30,-3.,3.); //x res. 
+   hx->SetXTitle("(mm)"); hx->SetFillColor(6);
+   TH1F *hy=new TH1F("hy","Position Resolution (Y)",30,-3.,3.);   //y res
+   hy->SetXTitle("(mm)"); hy->SetFillColor(1); hy->SetFillStyle(3013);
+   TH1F *hz=new TH1F("hz","Position Resolution (Z)",30,-3.,3.);   //z res. 
+   hz->SetXTitle("(mm)"); hz->SetFillColor(6);
+
+   Double_t pmin=0.2, pmax=4.2; Int_t nchan=20;
+   TH1F *hgood=new TH1F("hgood","Good Cascades",nchan,pmin,pmax);    
+   TH1F *hfound=new TH1F("hfound","Found Cascades",nchan,pmin,pmax);
+   TH1F *hfake=new TH1F("hfake","Fake Cascades",nchan,pmin,pmax);
+   TH1F *hg=new TH1F("hg","Efficiency for Good Cascades",nchan,pmin,pmax);
+   hg->SetLineColor(4); hg->SetLineWidth(2);
+   TH1F *hf=new TH1F("hf","Probability of Fake Cascades",nchan,pmin,pmax);
+   hf->SetFillColor(1); hf->SetFillStyle(3013); hf->SetLineWidth(2);
+
+   Double_t mmin=cascadeMass-cascadeWindow, mmax=cascadeMass+cascadeWindow;
+   TH1F *cs =new TH1F("cs","Cascade Effective Mass",40, mmin, mmax);
+   cs->SetXTitle("(GeV)");
+   cs->SetLineColor(4); cs->SetLineWidth(4);
+   TH1F *csf =new TH1F("csf","Fake Cascade Effective Mass",40, mmin, mmax);
+   csf->SetXTitle("(GeV)"); csf->SetFillColor(6);
+
+   if (gAlice) {
+      delete gAlice->GetRunLoader();
+      delete gAlice; 
+      gAlice=0;
+   }   
+   AliRunLoader *rl = AliRunLoader::Open("galice.root");
+   if (!rl) {
+       cerr<<"AliV0Comparison.C :Can't start sesion !\n";
+       return 1;
+   }
+   AliITSLoader* itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
+   if (itsl == 0x0) {
+       cerr<<"AliV0Comparison.C : Can not find the ITSLoader\n";
+       delete rl;
+       return 2;
+   }
 
    /*** Load reconstructed cascades ***/
-   TFile *cf=TFile::Open("AliCascadeVertices.root");
-   if (!cf->IsOpen()){cerr<<"Can't open AliCascadeVertices.root !\n";return 2;}
    TObjArray carray(1000);
-   TTree *cTree=(TTree*)cf->Get("TreeCasc");
-   TBranch *branch=cTree->GetBranch("cascades");
-   Int_t nentr=(Int_t)cTree->GetEntries();
+   itsl->LoadCascades();
+   TTree *xTree=itsl->TreeX();
+   TBranch *branch=xTree->GetBranch("cascades");
+   Int_t nentr=(Int_t)xTree->GetEntries();
    for (Int_t i=0; i<nentr; i++) {
        AliCascadeVertex *iovertex=new AliCascadeVertex; 
        branch->SetAddress(&iovertex);
-       cTree->GetEvent(i);
+       xTree->GetEvent(i);
        carray.AddLast(iovertex);
    }
-   delete cTree;
-   cf->Close();
 
    /*** Check if the file with the "good" cascades exists ***/
    GoodCascade gc[100];
@@ -119,37 +171,6 @@ Int_t AliCascadeComparison(Int_t code=3312) {
       } else cerr<<"Can not open file (good_cascades) !\n";
       out.close();
    }
-
-   /*** create some histograms ***/
-   TH1F *hp=new TH1F("hp","Angular Resolution",30,-30.,30.); //phi resolution 
-   hp->SetXTitle("(mrad)"); hp->SetFillColor(2);
-   TH1F *hl=new TH1F("hl","Lambda Resolution",30,-30,30);
-   hl->SetXTitle("(mrad)"); hl->SetFillColor(1); hl->SetFillStyle(3013); 
-   TH1F *hpt=new TH1F("hpt","Relative Pt Resolution",30,-10.,10.); 
-   hpt->SetXTitle("(%)"); hpt->SetFillColor(2); 
-
-   TH1F *hx=new TH1F("hx","Position Resolution (X,Y)",30,-3.,3.); //x res. 
-   hx->SetXTitle("(mm)"); hx->SetFillColor(6);
-   TH1F *hy=new TH1F("hy","Position Resolution (Y)",30,-3.,3.);   //y res
-   hy->SetXTitle("(mm)"); hy->SetFillColor(1); hy->SetFillStyle(3013);
-   TH1F *hz=new TH1F("hz","Position Resolution (Z)",30,-3.,3.);   //z res. 
-   hz->SetXTitle("(mm)"); hz->SetFillColor(6);
-
-   Double_t pmin=0.2, pmax=4.2; Int_t nchan=20;
-   TH1F *hgood=new TH1F("hgood","Good Cascades",nchan,pmin,pmax);    
-   TH1F *hfound=new TH1F("hfound","Found Cascades",nchan,pmin,pmax);
-   TH1F *hfake=new TH1F("hfake","Fake Cascades",nchan,pmin,pmax);
-   TH1F *hg=new TH1F("hg","Efficiency for Good Cascades",nchan,pmin,pmax);
-   hg->SetLineColor(4); hg->SetLineWidth(2);
-   TH1F *hf=new TH1F("hf","Probability of Fake Cascades",nchan,pmin,pmax);
-   hf->SetFillColor(1); hf->SetFillStyle(3013); hf->SetLineWidth(2);
-
-   Double_t mmin=cascadeMass-cascadeWindow, mmax=cascadeMass+cascadeWindow;
-   TH1F *cs =new TH1F("cs","Cascade Effective Mass",40, mmin, mmax);
-   cs->SetXTitle("(GeV)");
-   cs->SetLineColor(4); cs->SetLineWidth(4);
-   TH1F *csf =new TH1F("csf","Fake Cascade Effective Mass",40, mmin, mmax);
-   csf->SetXTitle("(GeV)"); csf->SetFillColor(6);
 
    Double_t pxg=0.,pyg=0.,ptg=0.;
    Int_t nlab=-1, plab=-1, blab=-1;
@@ -310,9 +331,10 @@ Int_t AliCascadeComparison(Int_t code=3312) {
 
    timer.Stop(); timer.Print();
 
+   delete rl;
+
    return 0;
 }
-
 
 
 Int_t good_cascades(GoodCascade *gc, Int_t max) {
@@ -341,16 +363,23 @@ Int_t good_cascades(GoodCascade *gc, Int_t max) {
    }
 
    /*** Get an access to the kinematics ***/
-   if (gAlice) {delete gAlice; gAlice=0;}
-
-   TFile *file=TFile::Open("galice.root");
-   if (!file->IsOpen()) {cerr<<"Can't open galice.root !\n"; exit(4);}
-   if (!(gAlice=(AliRun*)file->Get("gAlice"))) {
-     cerr<<"gAlice has not been found on galice.root !\n";
-     exit(5);
+   AliRunLoader *rl =
+        AliRunLoader::GetRunLoader(AliConfig::fgkDefaultEventFolderName);
+   if (rl == 0x0) {
+  ::Fatal("AliCascadeComparison.C::good_cascades","Can not find Run Loader !");
    }
 
-   Int_t np=gAlice->GetEvent(0);
+   AliITSLoader* itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
+   if (itsl == 0x0) {
+       cerr<<"AliITSComparisonV2.C : Can not find TPCLoader\n";
+       delete rl;
+       return 1;
+   }
+   rl->LoadgAlice();
+   rl->LoadHeader();
+   rl->LoadKinematics();
+   Int_t np = rl->GetHeader()->GetNtrack();
+
    while (np--) {
       cerr<<np<<'\r';
       TParticle *cp=gAlice->Particle(np);
@@ -412,6 +441,7 @@ Int_t good_cascades(GoodCascade *gc, Int_t max) {
 
    }
 
+   delete rl;
 
    return nc;
 }

@@ -7,9 +7,14 @@
  *   Origin: I.Belikov, IReS, Strasbourg, Jouri.Belikov@cern.ch             *
  ****************************************************************************/
 
-#ifndef __CINT__
+#if !defined(__CINT__) || defined(__MAKECINT__)
   #include "Riostream.h"
   #include <fstream.h>
+
+  #include "AliRun.h"
+  #include "AliHeader.h"
+  #include "AliRunLoader.h"
+  #include "AliITSLoader.h"
 
   #include "TH1.h"
   #include "TFile.h"
@@ -35,8 +40,12 @@ struct GoodVertex {
 };
 Int_t good_vertices(GoodVertex *gt, Int_t max);
 
+extern AliRun *gAlice;
+
 Int_t AliV0Comparison(Int_t code=310) { //Lambda=3122, LambdaBar=-3122
    cerr<<"Doing comparison...\n";
+
+   TStopwatch timer;
 
    const Double_t V0window=0.05;
    Double_t ptncut=0.13, ptpcut=0.13, kinecut=0.03; 
@@ -53,13 +62,59 @@ Int_t AliV0Comparison(Int_t code=310) { //Lambda=3122, LambdaBar=-3122
    default: cerr<<"Invalid PDG code !\n"; return 1;
    }
 
-   TStopwatch timer;
+   TH1F *hp=new TH1F("hp","Angular Resolution",30,-30.,30.); //phi resolution 
+   hp->SetXTitle("(mrad)"); hp->SetFillColor(2);
+   TH1F *hl=new TH1F("hl","Lambda Resolution",30,-30,30);
+   hl->SetXTitle("(mrad)"); hl->SetFillColor(1); hl->SetFillStyle(3013); 
+   TH1F *hpt=new TH1F("hpt","Relative Pt Resolution",30,-10.,10.); 
+   hpt->SetXTitle("(%)"); hpt->SetFillColor(2); 
+
+   TH1F *hx=new TH1F("hx","Position Resolution (X,Y)",30,-3.,3.); //x res. 
+   hx->SetXTitle("(mm)"); hx->SetFillColor(6);
+   TH1F *hy=new TH1F("hy","Position Resolution (Y)",30,-3.,3.);   //y res
+   hy->SetXTitle("(mm)"); hy->SetFillColor(1); hy->SetFillStyle(3013);
+   TH1F *hz=new TH1F("hz","Position Resolution (Z)",30,-3.,3.);   //z res. 
+   hz->SetXTitle("(mm)"); hz->SetFillColor(6);
+
+
+   Double_t pmin=0.2, pmax=4.2; Int_t nchan=20;
+   TH1F *hgood=new TH1F("hgood","Good Vertices",nchan,pmin,pmax);    
+   TH1F *hfound=new TH1F("hfound","Found Vertices",nchan,pmin,pmax);
+   TH1F *hfake=new TH1F("hfake","Fake Vertices",nchan,pmin,pmax);
+   TH1F *hg=new TH1F("hg","Efficiency for Good Vertices",nchan,pmin,pmax);
+   hg->SetLineColor(4); hg->SetLineWidth(2);
+   TH1F *hf=new TH1F("hf","Probability of Fake Vertices",nchan,pmin,pmax);
+   hf->SetFillColor(1); hf->SetFillStyle(3013); hf->SetLineWidth(2);
+
+   Double_t mmin=V0mass-V0window, mmax=V0mass+V0window;
+   TH1F *v0s =new TH1F("v0s","V0s Effective Mass",40, mmin, mmax);
+   v0s->SetXTitle("(GeV)");
+   v0s->SetLineColor(4); v0s->SetLineWidth(4);
+   TH1F *v0sf =new TH1F("v0sf","Fake V0s Effective Mass",40, mmin, mmax);
+   v0sf->SetXTitle("(GeV)"); v0sf->SetFillColor(6);
+
+
+   if (gAlice) {
+      delete gAlice->GetRunLoader();
+      delete gAlice; 
+      gAlice=0;
+   }   
+   AliRunLoader *rl = AliRunLoader::Open("galice.root");
+   if (!rl) {
+       cerr<<"AliV0Comparison.C :Can't start sesion !\n";
+       return 1;
+   }
+   AliITSLoader* itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
+   if (itsl == 0x0) {
+       cerr<<"AliV0Comparison.C : Can not find the ITSLoader\n";
+       delete rl;
+       return 2;
+   }
 
    /*** Load reconstructed vertices ***/
-   TFile *vf=TFile::Open("AliV0vertices.root");
-   if (!vf->IsOpen()) {cerr<<"Can't open AliV0vertices.root !\n"; return 2;}
    TObjArray varray(1000);
-   TTree *vTree=(TTree*)vf->Get("TreeV0");
+   itsl->LoadV0s();
+   TTree *vTree=itsl->TreeV0();
    TBranch *branch=vTree->GetBranch("vertices");
    Int_t nentr=(Int_t)vTree->GetEntries();
    for (Int_t i=0; i<nentr; i++) {
@@ -98,40 +153,6 @@ Int_t AliV0Comparison(Int_t code=310) { //Lambda=3122, LambdaBar=-3122
       } else cerr<<"Can not open file (good_vertices) !\n";
       out.close();
    }
-
-   vf->Close();
-
-
-   TH1F *hp=new TH1F("hp","Angular Resolution",30,-30.,30.); //phi resolution 
-   hp->SetXTitle("(mrad)"); hp->SetFillColor(2);
-   TH1F *hl=new TH1F("hl","Lambda Resolution",30,-30,30);
-   hl->SetXTitle("(mrad)"); hl->SetFillColor(1); hl->SetFillStyle(3013); 
-   TH1F *hpt=new TH1F("hpt","Relative Pt Resolution",30,-10.,10.); 
-   hpt->SetXTitle("(%)"); hpt->SetFillColor(2); 
-
-   TH1F *hx=new TH1F("hx","Position Resolution (X,Y)",30,-3.,3.); //x res. 
-   hx->SetXTitle("(mm)"); hx->SetFillColor(6);
-   TH1F *hy=new TH1F("hy","Position Resolution (Y)",30,-3.,3.);   //y res
-   hy->SetXTitle("(mm)"); hy->SetFillColor(1); hy->SetFillStyle(3013);
-   TH1F *hz=new TH1F("hz","Position Resolution (Z)",30,-3.,3.);   //z res. 
-   hz->SetXTitle("(mm)"); hz->SetFillColor(6);
-
-
-   Double_t pmin=0.2, pmax=4.2; Int_t nchan=20;
-   TH1F *hgood=new TH1F("hgood","Good Vertices",nchan,pmin,pmax);    
-   TH1F *hfound=new TH1F("hfound","Found Vertices",nchan,pmin,pmax);
-   TH1F *hfake=new TH1F("hfake","Fake Vertices",nchan,pmin,pmax);
-   TH1F *hg=new TH1F("hg","Efficiency for Good Vertices",nchan,pmin,pmax);
-   hg->SetLineColor(4); hg->SetLineWidth(2);
-   TH1F *hf=new TH1F("hf","Probability of Fake Vertices",nchan,pmin,pmax);
-   hf->SetFillColor(1); hf->SetFillStyle(3013); hf->SetLineWidth(2);
-
-   Double_t mmin=V0mass-V0window, mmax=V0mass+V0window;
-   TH1F *v0s =new TH1F("v0s","V0s Effective Mass",40, mmin, mmax);
-   v0s->SetXTitle("(GeV)");
-   v0s->SetLineColor(4); v0s->SetLineWidth(4);
-   TH1F *v0sf =new TH1F("v0sf","Fake V0s Effective Mass",40, mmin, mmax);
-   v0sf->SetXTitle("(GeV)"); v0sf->SetFillColor(6);
 
 
    Double_t pxg=0.,pyg=0.,ptg=0.;
@@ -284,6 +305,8 @@ Int_t AliV0Comparison(Int_t code=310) { //Lambda=3122, LambdaBar=-3122
 
    timer.Stop(); timer.Print();
 
+   delete rl;
+
    return 0;
 }
 
@@ -313,16 +336,23 @@ Int_t good_vertices(GoodVertex *gv, Int_t max) {
    }
 
    /*** Get an access to the kinematics ***/
-   if (gAlice) {delete gAlice; gAlice=0;}
-
-   TFile *file=TFile::Open("galice.root");
-   if (!file->IsOpen()) {cerr<<"Can't open galice.root !\n"; exit(4);}
-   if (!(gAlice=(AliRun*)file->Get("gAlice"))) {
-     cerr<<"gAlice has not been found on galice.root !\n";
-     exit(5);
+   AliRunLoader *rl = 
+        AliRunLoader::GetRunLoader(AliConfig::fgkDefaultEventFolderName);
+   if (rl == 0x0) {
+     ::Fatal("AliV0Comparison.C::good_vertices","Can not find Run Loader !");
    }
 
-   Int_t np=gAlice->GetEvent(0);
+   AliITSLoader* itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
+   if (itsl == 0x0) {
+       cerr<<"AliITSComparisonV2.C : Can not find TPCLoader\n";
+       delete rl;
+       return 1;
+   }
+   rl->LoadgAlice();
+   rl->LoadHeader();
+   rl->LoadKinematics();
+   Int_t np = rl->GetHeader()->GetNtrack();
+
    while (np--) {
       cerr<<np<<'\r';
       TParticle *p0=gAlice->Particle(np);
@@ -361,9 +391,7 @@ Int_t good_vertices(GoodVertex *gv, Int_t max) {
       nv++;
    }
  
-   delete gAlice; gAlice=0;
-
-   file->Close();  
+   delete rl;
 
    return nv;
 }

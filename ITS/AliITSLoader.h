@@ -33,6 +33,22 @@ class AliITSLoader: public AliLoader
     //    virtual void SetVerticesContName(const char *name){fVertexDataLoader.GetBaseLoader(0)->SetName(name);}
     AliITSVertex *GetVertex(){return static_cast <AliITSVertex*>(fVertexDataLoader.GetBaseLoader(0)->Get());}
 
+    //V0s
+    virtual void   CleanV0s() {fV0DataLoader.GetBaseLoader(0)->Clean();}
+    Int_t          LoadV0s(Option_t* opt=""){return fV0DataLoader.GetBaseLoader(0)->Load(opt);}
+    void           SetV0FileName(const TString& fname){fV0DataLoader.SetFileName(fname);}
+    void           UnloadV0s(){fV0DataLoader.GetBaseLoader(0)->Unload();}
+    virtual Int_t  WriteV0s(Option_t* opt=""){return fV0DataLoader.GetBaseLoader(0)->WriteData(opt);}
+    TTree*         TreeV0(){ return fV0DataLoader.Tree();}
+
+    //Cascades
+    virtual void   CleanCascades() {fCascadeDataLoader.GetBaseLoader(0)->Clean();}
+    Int_t          LoadCascades(Option_t* opt=""){return fCascadeDataLoader.GetBaseLoader(0)->Load(opt);}
+    void           SetCascadeFileName(const TString& fname){fCascadeDataLoader.SetFileName(fname);}
+    void           UnloadCascades(){fCascadeDataLoader.GetBaseLoader(0)->Unload();}
+    virtual Int_t  WriteCascades(Option_t* opt=""){return fCascadeDataLoader.GetBaseLoader(0)->WriteData(opt);}
+    TTree*         TreeX(){ return fCascadeDataLoader.Tree();}
+
     //Back Propagated Tracks
 
     virtual void   CleanBackTracks() {fBackTracksDataLoader.GetBaseLoader(0)->Clean();}
@@ -51,6 +67,11 @@ class AliITSLoader: public AliLoader
 
     virtual void   MakeBackTracksContainer() {fBackTracksDataLoader.MakeTree();}
     Int_t          PostBackTracks(){return fBackTracksDataLoader.GetBaseLoader(0)->Post();}
+    virtual void   MakeV0Container() {fV0DataLoader.MakeTree();}
+    Int_t          PostV0s(){return fV0DataLoader.GetBaseLoader(0)->Post();}
+
+    virtual void   MakeCascadeContainer() {fCascadeDataLoader.MakeTree();}
+    Int_t          PostCascades(){return fCascadeDataLoader.GetBaseLoader(0)->Post();}
 
     // DATA
     AliDataLoader fRawClustersDataLoader;
@@ -61,6 +82,12 @@ class AliITSLoader: public AliLoader
 
     AliDataLoader fVertexDataLoader;
     static const TString fgkDefaultVerticesContainerName;
+
+    AliDataLoader fV0DataLoader;
+    static const TString fgkDefaultV0ContainerName;
+
+    AliDataLoader fCascadeDataLoader;
+    static const TString fgkDefaultCascadeContainerName;
 
    public:
      ClassDef(AliITSLoader,2)

@@ -1,24 +1,36 @@
-#ifndef __CINT__
+#if !defined(__CINT__) || defined(__MAKECINT__)
   #include <Riostream.h>
   #include "AliCascadeVertexer.h"
   #include "TFile.h"
   #include "TStopwatch.h"
+
+  #include "AliRun.h"
+  #include "AliRunLoader.h"
+  #include "AliITSLoader.h"
 #endif
 
-Int_t AliCascadeFindVertices() {
+Int_t AliCascadeFindVertices(Int_t nev=5) {
    cerr<<"Looking for cascade vertices...\n";
 
-   TFile *out=TFile::Open("AliCascadeVertices.root","new");
-   if (!out->IsOpen()) {
-      cerr<<"Delete old AliCascadeVertices.root !\n"; return 1;
+   if (gAlice) {
+      delete gAlice->GetRunLoader();
+      delete gAlice;
+      gAlice=0;
    }
-   TFile *in=TFile::Open("AliITStracksV2.root");
-   if (!in->IsOpen()) {cerr<<"Can't open AliITStracksV2.root !\n"; return 2;}
+   AliRunLoader* rl = AliRunLoader::Open("galice.root");
+   if (rl == 0x0) {
+      cerr<<"AliCascadeFindVertices.C : Can not open session RL=NULL"<< endl;
+      return 1;
+   }
+   AliITSLoader* itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
+   if (itsl == 0x0) {
+      cerr<<"AliCascadeFindVertices.C : Can not get ITS loader"<<endl;
+      return 2;
+   }
+   itsl->LoadTracks("read");
+   itsl->LoadV0s("read");
+   itsl->LoadCascades("recreate");
 
-   TFile *file=TFile::Open("AliV0vertices.root");
-   if (!file->IsOpen()) {
-      cerr<<"Can't open AliV0vertices.root !\n";return 3;
-   }
    Double_t cuts[]={33.,    // max. allowed chi2
                     0.05,   // min. allowed V0 impact parameter 
                     0.008,  // window around the Lambda mass 
@@ -30,13 +42,35 @@ Int_t AliCascadeFindVertices() {
                    };
    TStopwatch timer;
    AliCascadeVertexer *vertexer=new AliCascadeVertexer(cuts);
-   Int_t rc=vertexer->V0sTracks2CascadeVertices(in,out);
+   Int_t rc=0;
+   if (nev>rl->GetNumberOfEvents()) nev=rl->GetNumberOfEvents();
+   for (Int_t i=0; i<nev; i++) {
+     rl->GetEvent(i);
+
+     TTree *tTree=itsl->TreeT();
+     if (!tTree) {
+       cerr<<"AliCascadeFindVertices.C : Can't get the ITS track tree !"<<endl;
+       return 3;
+     }
+     TTree *vTree=itsl->TreeV0();
+     if (!vTree) {
+       cerr<<"AliCascadeFindVertices.C : Can't get the V0 tree !"<<endl;
+       return 4;
+     }
+     TTree *xTree=itsl->TreeX();
+     if (!xTree) {
+        itsl->MakeTree("X");
+        xTree=itsl->TreeX();
+     }
+
+     rc=vertexer->V0sTracks2CascadeVertices(vTree,tTree,xTree);
+
+     itsl->WriteCascades("OVERWRITE");
+   }
    delete vertexer;
    timer.Stop(); timer.Print();
     
-   file->Close();
-   in->Close();
-   out->Close();
+   delete rl;
 
    return rc;
 }
