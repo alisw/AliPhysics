@@ -265,8 +265,8 @@ Int_t iITS    =0;
 Int_t iABSO   =1;
 Int_t iDIPO   =1;
 Int_t iHALL   =0;
-Int_t iSHIL   =1;
-Int_t iPIPE   =0;
+Int_t iSHIL   =0;
+Int_t iPIPE   =1;
 Int_t iFMD    =0;
 Int_t iMUON   =1;
 
@@ -327,7 +327,7 @@ if(iMUON) {
 //=================== MUON parameters ===========================
 
 AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
- MUON->SetIshunt(1);
+ MUON->SetIshunt(0);
  MUON->SetMaxStepGas(0.1);
  MUON->SetMaxStepAlu(0.1);
 //

@@ -331,7 +331,7 @@ if(iMUON) {
 //=================== MUON parameters ===========================
 
 AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
- MUON->SetIshunt(1);
+ MUON->SetIshunt(0);
  MUON->SetMaxStepGas(0.1);
  MUON->SetMaxStepAlu(0.1);
 //
