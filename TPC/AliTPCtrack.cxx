@@ -171,6 +171,7 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t) : AliKalmanTrack() {
   fRemoval    = 0;
   fTrackType  = 0;
   fLab2       = 0;
+  //  SetFakeRatio(t.GetTPCFakeRatio());
 }
 
 //_____________________________________________________________________________
@@ -369,6 +370,7 @@ Int_t AliTPCtrack::PropagateTo(Double_t xk,Double_t /*x0*/,Double_t rho) {
   Double_t d=sqrt((x1-fX)*(x1-fX)+(y1-fP0)*(y1-fP0)+(z1-fP1)*(z1-fP1));
   Double_t p2=(1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt());
   Double_t beta2=p2/(p2 + GetMass()*GetMass());
+  beta2 = TMath::Min(beta2,0.99999999999);
   //Double_t theta2=14.1*14.1/(beta2*p2*1e6)*d/x0*rho;
   Double_t theta2=1.0259e-6*10*10/20/(beta2*p2)*d*rho;
 

@@ -128,6 +128,7 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
     for (Int_t i=0;i<fITSncls;i++) fITSindex[i]=t->GetClusterIndex(i);
     fITSsignal=t->GetPIDsignal();
     fITSLabel = t->GetLabel();
+    fITSFakeRatio = t->GetFakeRatio();
     break;
     
   case kTPCin: case kTPCrefit:
@@ -403,6 +404,9 @@ void AliESDtrack::SetITSpid(const Double_t *p) {
   SetStatus(AliESDtrack::kITSpid);
 }
 
+void AliESDtrack::SetITSChi2MIP(const Float_t *chi2mip){
+  for (Int_t i=0; i<6; i++) fITSchi2MIP[i]=chi2mip[i];
+}
 //_______________________________________________________________________
 void AliESDtrack::GetITSpid(Double_t *p) const {
   // Gets the probability of each particle type (in ITS)

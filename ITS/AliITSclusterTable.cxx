@@ -171,7 +171,8 @@ void AliITSclusterTable::FillArray(TTree* clusterTree){
     else {
       for(Int_t n=0;n<vect[nlr]->GetSize();n++){
 	Int_t mm=vect[nlr]->At(n);
-	if(mm==mod) {fDet[mod]->AddAt(n,nc); nc+=1; }
+	if (nc>=fDet[mod]->GetSize()) fDet[mod]->Set(nc*2+10);  
+	if(mm==mod) {(*fDet[mod])[nc]=n; nc+=1; }
       }
     }
   }

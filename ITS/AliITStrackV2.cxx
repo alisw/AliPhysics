@@ -58,10 +58,14 @@ AliITStrackV2::AliITStrackV2():AliKalmanTrack(),
   fC42(0),
   fC43(0),
   fC44(0),
+  fNUsed(0),
+  fNSkipped(0),
+  fReconstructed(kFALSE),			       
   fESDtrack(0)
   {
   for(Int_t i=0; i<kMaxLayer; i++) fIndex[i]=0;
   for(Int_t i=0; i<4; i++) fdEdxSample[i]=0;
+  for(Int_t i=0; i<6; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0; fChi2MIP[i]=0;}
 }
 
 //____________________________________________________________________________
@@ -98,6 +102,8 @@ AliKalmanTrack(t) {
   fC30=c[6 ];   fC31=c[7 ];   fC32=c[8 ];   fC33=c[9 ];
   fC40=c[10]/x; fC41=c[11]/x; fC42=c[12]/x; fC43=c[13]/x; fC44=c[14]/x/x;
 
+  for(Int_t i=0; i<6; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0;}
+  //
   if (!Invariant()) throw "AliITStrackV2: conversion failed !\n";
 
 }
@@ -145,13 +151,17 @@ AliKalmanTrack() {
     SetIntegratedLength(t.GetIntegratedLength());
   }
   fESDtrack=&t;
-
+  fNUsed = 0;
+  fReconstructed = kFALSE;
+  fNSkipped =0;
+  for(Int_t i=0; i<6; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0;; fChi2MIP[i]=0;}
   //if (!Invariant()) throw "AliITStrackV2: conversion failed !\n";
-
+  SetFakeRatio(t.GetITSFakeRatio());
 }
 
 void AliITStrackV2::UpdateESDtrack(ULong_t flags) {
   fESDtrack->UpdateTrackParams(this,flags);
+  if (flags == AliESDtrack::kITSin) fESDtrack->SetITSChi2MIP(fChi2MIP);
 }
 void AliITStrackV2::SetConstrainedESDtrack(Double_t chi2) {
   fESDtrack->SetConstrainedTrackParams(this,chi2);
@@ -180,6 +190,10 @@ AliITStrackV2::AliITStrackV2(const AliITStrackV2& t) : AliKalmanTrack(t) {
       if (i<4) fdEdxSample[i]=t.fdEdxSample[i];
   }
   fESDtrack=t.fESDtrack;
+  fNUsed = t.fNUsed;
+  fReconstructed = t.fReconstructed;
+  fNSkipped = t.fNSkipped;
+  for(Int_t i=0; i<6; i++) {fDy[i]=t.fDy[i]; fDz[i]=t.fDz[i]; fSigmaY[i]=t.fSigmaY[i]; fSigmaZ[i]=t.fSigmaZ[i];; fChi2MIP[i]=t.fChi2MIP[i];}
 }
 
 //_____________________________________________________________________________
@@ -190,8 +204,8 @@ Int_t AliITStrackV2::Compare(const TObject *o) const {
   AliITStrackV2 *t=(AliITStrackV2*)o;
   //Double_t co=TMath::Abs(t->Get1Pt());
   //Double_t c =TMath::Abs(Get1Pt());
-  Double_t co=t->GetSigmaY2()*t->GetSigmaZ2();
-  Double_t c =GetSigmaY2()*GetSigmaZ2();
+  Double_t co=t->GetSigmaY2()*t->GetSigmaZ2()*TMath::Sqrt(TMath::Abs(fP4));
+  Double_t c =GetSigmaY2()*GetSigmaZ2()*TMath::Sqrt(TMath::Abs(fP4));
   if (c>co) return 1;
   else if (c<co) return -1;
   return 0;
@@ -260,7 +274,7 @@ Double_t AliITStrackV2::GetPredictedChi2(const AliCluster *c) const
   //-----------------------------------------------------------------
   Double_t r00=c->GetSigmaY2(), r01=0., r11=c->GetSigmaZ2();
   r00+=fC00; r01+=fC10; r11+=fC11;
-
+  //
   Double_t det=r00*r11 - r01*r01;
   if (TMath::Abs(det) < 1.e-30) {
     Int_t n=GetNumberOfClusters();
@@ -404,6 +418,7 @@ Int_t AliITStrackV2::Update(const AliCluster* c, Double_t chi2, UInt_t index) {
   Double_t det=r00*r11 - r01*r01;
   Double_t tmp=r00; r00=r11/det; r11=tmp/det; r01=-r01/det;
 
+ 
   Double_t k00=fC00*r00+fC10*r01, k01=fC00*r01+fC10*r11;
   Double_t k10=fC10*r00+fC11*r01, k11=fC10*r01+fC11*r11;
   Double_t k20=fC20*r00+fC21*r01, k21=fC20*r01+fC21*r11;
@@ -411,6 +426,12 @@ Int_t AliITStrackV2::Update(const AliCluster* c, Double_t chi2, UInt_t index) {
   Double_t k40=fC40*r00+fC41*r01, k41=fC40*r01+fC41*r11;
 
   Double_t dy=c->GetY() - fP0, dz=c->GetZ() - fP1;
+  Int_t layer = (index & 0xf0000000) >> 28;
+  fDy[layer] = dy;
+  fDz[layer] = dz;
+  fSigmaY[layer] = TMath::Sqrt(c->GetSigmaY2()+fC00);
+  fSigmaZ[layer] = TMath::Sqrt(c->GetSigmaZ2()+fC11);
+
   Double_t sf=fP2 + k20*dy + k21*dz;
   
   fP0 += k00*dy + k01*dz;
@@ -610,6 +631,25 @@ Double_t AliITStrackV2::GetD(Double_t x, Double_t y) const {
   if (fP4<0) a=-a;
   return a/(1 + TMath::Sqrt(sn*sn + cs*cs));
 }
+
+Double_t AliITStrackV2::GetZat(Double_t x) const {
+  //------------------------------------------------------------------
+  // This function calculates the z at given x point - in current coordinate system
+  //------------------------------------------------------------------
+  Double_t x1=fX, x2=x, dx=x2-x1;
+  //
+  Double_t f1=fP2, f2=f1 + fP4*dx;
+  if (TMath::Abs(f2) >= 0.9999) {
+    return 10000000;
+  }
+
+  Double_t r1=sqrt(1.- f1*f1), r2=sqrt(1.- f2*f2);
+  Double_t z =  fP1 + dx*(f1+f2)/(f1*r2 + f2*r1)*fP3;
+  return z;
+}
+
+
+
 
 Int_t AliITStrackV2::Improve(Double_t x0,Double_t xyz[3],Double_t ers[3]) {
   //------------------------------------------------------------------

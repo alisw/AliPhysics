@@ -170,7 +170,7 @@ Int_t  AliSimDigits::GetTrackID1(Int_t row, Int_t column, Int_t level)
       id = fTracks->At(i);
     }
     id-=2;
-    if ( (row>=rowold) && (row<=rownew) ) return id;
+    if ( (row>=rowold) && (row<rownew) ) return id;
     if (row < rownew ) return -2; //empty track
   }
   return -2;

@@ -23,9 +23,11 @@ public:
 
   virtual ~AliKalmanTrack(){};
   void SetLabel(Int_t lab) {fLab=lab;}
+  void SetFakeRatio(Float_t ratio) {fFakeRatio=ratio;}
 
   Bool_t   IsSortable() const {return kTRUE;}
   Int_t    GetLabel()   const {return fLab;}
+  Float_t    GetFakeRatio()   const {return fFakeRatio;}
   Double_t GetChi2()    const {return fChi2;}
   Double_t GetMass()    const {return fMass;}
   Int_t    GetNumberOfClusters() const {return fN;}
@@ -114,6 +116,7 @@ protected:
   void SetNumberOfClusters(Int_t n) {fN=n;} 
 
   Int_t fLab;             // track label
+  Float_t fFakeRatio;     // fake ratio
   Double_t fChi2;         // total chi2 value for this track
   Double_t fMass;         // mass hypothesis
   Int_t fN;               // number of associated clusters
@@ -126,7 +129,7 @@ protected:
   Double_t fIntegratedTime[5];       // integrated time
   Double_t fIntegratedLength;        // integrated length
   
-  ClassDef(AliKalmanTrack,2)    // Reconstructed track
+  ClassDef(AliKalmanTrack,3)    // Reconstructed track
 };
 
 #endif

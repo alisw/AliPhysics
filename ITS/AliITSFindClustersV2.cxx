@@ -353,7 +353,8 @@ void AliITSFindClustersV2::Exec(const Option_t *opt){
 		else if(lab[2]<0) lab[2] = lad;
 		else Warning("Exec","No empty lables!");
 	    } // end if lab>=0
-	    new(cl[j]) AliITSclusterV2(lab,lp);
+	    Int_t info[3]={0,0,0};
+	    new(cl[j]) AliITSclusterV2(lab,lp,info);
 	} // end for j
 	cTree->Fill();
 	cluster->Delete();

@@ -53,6 +53,7 @@ AliKalmanTrack::AliKalmanTrack():
 AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack &t):
   TObject(t),
   fLab(t.fLab),
+  fFakeRatio(t.fFakeRatio),
   fChi2(t.fChi2),
   fMass(t.fMass),
   fN(t.fN)

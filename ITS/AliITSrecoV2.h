@@ -17,7 +17,8 @@
    const Int_t kLayersNotToSkip[]={0,0,0,0,0,0};
    const Int_t kLastLayerToTrackTo=0;
 
-   const Int_t kMaxLayer=6;
+   const Int_t kMaxLayer  = 6;
+const Double_t kMaxSnp = 0.6;
    const Double_t kSigmaY2[kMaxLayer]={
       1.44e-6, 1.44e-6, 1.444e-5, 1.444e-5, 4.0e-6, 4.0e-6 
    };
@@ -28,6 +29,8 @@
 
    const Double_t kChi2PerCluster=7.;
    const Double_t kMaxChi2=25.;
+   const Double_t kMaxChi2In=16.;
+
    const Double_t kMaxRoad=6.0;
 
    const Double_t kXV=0.0e+0;

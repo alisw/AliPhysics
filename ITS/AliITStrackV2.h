@@ -53,7 +53,7 @@ public:
   void ResetCovariance();
   void ResetClusters() { SetChi2(0.); SetNumberOfClusters(0); }
   void UpdateESDtrack(ULong_t flags);
-  void SetConstrainedESDtrack(Double_t chi2);
+  void SetConstrainedESDtrack(Double_t chi2); 
   
   Int_t GetDetectorIndex() const {return GetLabel();}
   Double_t GetX()    const {return fX;}
@@ -68,6 +68,8 @@ public:
   Double_t
     Get1Pt() const { return (1e-9*TMath::Abs(fP4)/fP4 + fP4)*GetConvConst(); }
   Double_t GetD(Double_t x=0, Double_t y=0) const;
+  Double_t GetZat(Double_t x=0) const;
+
   Double_t GetSigmaY2() const {return fC00;}
   Double_t GetSigmaZ2() const {return fC11;}
   Int_t Compare(const TObject *o) const;
@@ -95,14 +97,19 @@ protected:
   Double_t fC20, fC21, fC22;             // of the
   Double_t fC30, fC31, fC32, fC33;       // track
   Double_t fC40, fC41, fC42, fC43, fC44; // parameters 
-
+  Int_t fNUsed;                          // number of shared clusters
+  Int_t fNSkipped;                       // number of skipped clusters
+  Bool_t fReconstructed;                 // reconstructed - accepted flag
+  Float_t fChi2MIP[6];                   // MIP chi squres 
   UInt_t fIndex[kMaxLayer]; // indices of associated clusters 
-
   Float_t fdEdxSample[4];   // array of dE/dx samples b.b.
-
+  Float_t fDy[6];           //dy in layer
+  Float_t fDz[6];           //dz in layer
+  Float_t fSigmaY[6];       //sigma y 
+  Float_t fSigmaZ[6];       //sigma z
   AliESDtrack *fESDtrack;   //! pointer to the connected ESD track
 
-  ClassDef(AliITStrackV2,2)   //ITS reconstructed track
+  ClassDef(AliITStrackV2,3)   //ITS reconstructed track
 };
 
 inline 

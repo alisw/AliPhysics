@@ -60,11 +60,14 @@ public:
   void GetOuterXYZ(Double_t *r) const;
 
   void SetITSpid(const Double_t *p);
+  void SetITSChi2MIP(const Float_t *chi2mip);
   void GetITSpid(Double_t *p) const;
   Float_t GetITSsignal() const {return fITSsignal;}
   Float_t GetITSchi2() const {return fITSchi2;}
   Int_t GetITSclusters(UInt_t *idx) const;
   Int_t GetITSLabel() const {return fITSLabel;}
+  Float_t GetITSFakeRatio() const {return fITSFakeRatio;}
+
 
   void SetTPCpid(const Double_t *p);
   void GetTPCpid(Double_t *p) const;
@@ -150,12 +153,13 @@ protected:
 
   // ITS related track information
   Float_t fITSchi2;        // chi2 in the ITS
+  Float_t fITSchi2MIP[6];     // chi2s in the ITS
   Int_t   fITSncls;        // number of clusters assigned in the ITS
   UInt_t  fITSindex[6];    //! indices of the assigned ITS clusters
   Float_t fITSsignal;      // detector's PID signal
   Float_t fITSr[kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fITSLabel;       // label according TPC
-
+  Float_t fITSFakeRatio;   // ration of fake tracks
   // TPC related track information
   Float_t fTPCchi2;        // chi2 in the TPC
   Int_t   fTPCncls;        // number of clusters assigned in the TPC
@@ -188,7 +192,7 @@ protected:
   Float_t fRICHsignal;     // detector's PID signal (beta for RICH)
   Float_t fRICHr[kSPECIES];// "detector response probabilities" (for the PID)
   	
-  ClassDef(AliESDtrack,3)  //ESDtrack 
+  ClassDef(AliESDtrack,4)  //ESDtrack 
 };
 
 #endif 

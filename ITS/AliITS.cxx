@@ -1790,6 +1790,7 @@ void AliITS::Reconstruct() const
   AliITSclustererV2 clusterer(GetITSgeom());
   AliRunLoader* runLoader = loader->GetRunLoader();
   Int_t nEvents = runLoader->GetNumberOfEvents();
+  runLoader->LoadKinematics();
 
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
     runLoader->GetEvent(iEvent);

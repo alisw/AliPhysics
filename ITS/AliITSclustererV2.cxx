@@ -122,12 +122,13 @@ Int_t AliITSclustererV2::Digits2Clusters(TTree *dTree, TTree *cTree) {
     dTree->GetEvent(fI);
 
     if     (digitsSPD->GetEntriesFast()!=0) 
-                          FindClustersSPD(digitsSPD,clusters);
-    else if(digitsSDD->GetEntriesFast()!=0) 
-                          FindClustersSDD(digitsSDD,clusters);
-    else if(digitsSSD->GetEntriesFast()!=0) 
-                          FindClustersSSD(digitsSSD,clusters);
-
+      FindClustersSPD(digitsSPD,clusters);
+    else 
+      if(digitsSDD->GetEntriesFast()!=0) 
+	FindClustersSDD(digitsSDD,clusters);
+      else if(digitsSSD->GetEntriesFast()!=0) 
+	FindClustersSSD(digitsSSD,clusters);
+    
     ncl+=clusters->GetEntriesFast();
 
     cTree->Fill();
@@ -162,6 +163,7 @@ void AliITSclustererV2::Digits2Clusters(AliRawReader* rawReader) {
     Error("Digits2Clusters", "no run loader found");
     return;
   }
+  runLoader->LoadKinematics();
   AliLoader* itsLoader = runLoader->GetLoader("ITSLoader");
   if (!itsLoader) {
     Error("Digits2Clusters", "no loader for ITS found");
@@ -222,6 +224,7 @@ void AliITSclustererV2::Digits2Clusters(AliRawReader* rawReader) {
 #include "AliITSsimulationFastPoints.h"
 #include "AliITSRecPoint.h"
 
+/*
 static void CheckLabels(Int_t lab[3]) {
   //------------------------------------------------------------
   // Tries to find mother's labels
@@ -248,6 +251,80 @@ static void CheckLabels(Int_t lab[3]) {
         else ;//cerr<<"CheckLabels : No empty labels !\n";
     }
 }
+*/
+static void CheckLabels(Int_t lab[3]) {
+  //------------------------------------------------------------
+  // Tries to find mother's labels
+  //------------------------------------------------------------
+
+  Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
+  for (Int_t i=0;i<3;i++){
+    Int_t label = lab[i];
+    if (label>=0 && label<ntracks) {
+      TParticle *part=(TParticle*)gAlice->GetMCApp()->Particle(label);
+      if (part->P() < 0.005) {
+	Int_t m=part->GetFirstMother();
+	if (m<0) {	
+	  continue;
+	}
+	if (part->GetStatusCode()>0) {
+	  continue;
+	}
+	lab[i]=m;       
+      }
+    }    
+  }
+  
+}
+
+static void CheckLabels2(Int_t lab[10]) {
+  //------------------------------------------------------------
+  // Tries to find mother's labels
+  //------------------------------------------------------------
+
+  Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
+  for (Int_t i=0;i<10;i++){
+    Int_t label = lab[i];
+    if (label>=0 && label<ntracks) {
+      TParticle *part=(TParticle*)gAlice->GetMCApp()->Particle(label);
+      if (part->P() < 0.005) {
+	Int_t m=part->GetFirstMother();
+	if (m<0) {	
+	  continue;
+	}
+	if (part->GetStatusCode()>0) {
+	  continue;
+	}
+	lab[i]=m;       
+      }
+    }    
+  }
+  //compress labels -- if multi-times the same
+  Int_t lab2[10];
+  for (Int_t i=0;i<10;i++) lab2[i]=-2;
+  for (Int_t i=0;i<10  ;i++){
+    if (lab[i]<0) continue;
+    for (Int_t j=0;j<10 &&lab2[j]!=lab[i];j++){
+      if (lab2[j]<0) {
+	lab2[j]= lab[i];
+	break;
+      }
+    }
+  }
+  for (Int_t j=0;j<10;j++) lab[j]=lab2[j];
+  
+}
+
+static void AddLabel(Int_t lab[10], Int_t label) {
+  for (Int_t i=0;i<10;i++){
+    if (label<0) break;
+    if (lab[i]==label) break;
+    if (lab[i]<0) {
+      lab[i]= label;
+      break;
+    }
+  }
+}
 
 void AliITSclustererV2::RecPoints2Clusters
 (const TClonesArray *points, Int_t idx, TClonesArray *clusters) {
@@ -269,7 +346,8 @@ void AliITSclustererV2::RecPoints2Clusters
     lab[0]=p->GetLabel(0); lab[1]=p->GetLabel(1); lab[2]=p->GetLabel(2);
     lab[3]=fNdet[idx];
     CheckLabels(lab);
-    new (cl[i]) AliITSclusterV2(lab,lp);
+    Int_t dummy[3]={0,0,0};
+    new (cl[i]) AliITSclusterV2(lab,lp, dummy);
   }  
 } 
 
@@ -382,6 +460,11 @@ FindClustersSPD(const TClonesArray *digits, TClonesArray *clusters) {
      lab[1]=-2;
      lab[2]=-2;
      lab[3]=fNdet[fI];
+     Int_t milab[10];
+     for (Int_t ilab=0;ilab<10;ilab++){
+       milab[ilab]=-2;
+     }
+
 
      d=(AliITSdigitSPD*)digits->UncheckedAt(idx[0]);
      Int_t ymin=d->GetCoord2(),ymax=ymin;
@@ -408,21 +491,39 @@ FindClustersSPD(const TClonesArray *digits, TClonesArray *clusters) {
         }
         Float_t qq=d->GetSignal();
         y+=qq*fYSPD[d->GetCoord2()]; z+=qq*fZSPD[d->GetCoord1()]; q+=qq;   
-     }
+	// MI addition - find all labels
+	for (Int_t dlab=0;dlab<3;dlab++){
+	  Int_t digitlab = (d->GetTracks())[dlab];
+	  if (digitlab<0) continue;
+	  for (Int_t index=0;index<10;index++){
+	    if (milab[index]<0)  {
+	      milab[index] = digitlab;	    
+	      break;
+	    }
+	    if (milab[index]==digitlab) break;
+	  }
+	}
+     }     
      y/=q; z/=q;
      y-=fHwSPD; z-=fHlSPD;
 
      Float_t lp[5];
      lp[0]=-(-y+fYshift[fI]); if (fI<=fLastSPD1) lp[0]=-lp[0];
      lp[1]=  -z+fZshift[fI];
-     lp[2]= fYpitchSPD*fYpitchSPD/12.;
-     lp[3]= fZ1pitchSPD*fZ1pitchSPD/12.;
+     // Float_t factor=TMath::Max(double(ni-3.),1.5);
+     Float_t factor=1.5;
+     lp[2]= (fYpitchSPD*fYpitchSPD/12.)*factor;
+     lp[3]= (fZ1pitchSPD*fZ1pitchSPD/12.)*factor;
      //lp[4]= q;
      lp[4]= (zmax-zmin+1)*100 + (ymax-ymin+1);
 
-     //CheckLabels(lab);
+     CheckLabels(lab);
+     CheckLabels2(milab);
+     CheckLabels2(milab);
+     milab[3]=fNdet[fI];
      d=(AliITSdigitSPD*)digits->UncheckedAt(idx[0]);
-     new (cl[n]) AliITSclusterV2(lab,lp); n++; 
+     Int_t info[3] = {ni,0,1};
+     new (cl[n]) AliITSclusterV2(milab,lp,info); n++; 
   }
 
   delete [] bins;
@@ -503,9 +604,10 @@ void AliITSclustererV2::FindClustersSPD(AliITSRawStream* input,
 //	  hit[4] = q;
 	  hit[4] = (zmax-zmin+1)*100 + (ymax-ymin+1);
 
-	  //CheckLabels(label);
+	  CheckLabels(label);
+	  Int_t info[3]={0,0,0};
 	  new (clusters[iModule]->AddrAt(nClusters)) 
-	    AliITSclusterV2(label, hit); 
+	    AliITSclusterV2(label, hit,info); 
 	  nClusters++;
 	}
 
@@ -647,6 +749,11 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
          if (idx[k] < 0) continue; //removed peak
          AliITSclusterV2 c;
          MakeCluster(idx[k], nzBins, bins[s], msk[k], c);
+	 //mi change
+	 Int_t milab[10];
+	 for (Int_t ilab=0;ilab<10;ilab++){
+	   milab[ilab]=-2;
+	 }
 
 	 /*
          Float_t s2 = c.GetSigmaY2()/c.GetQ() - c.GetY()*c.GetY();
@@ -694,73 +801,99 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	   AliBin *b=&bins[s][idx[k]];
 	   AliITSdigitSDD* d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
 	   Int_t l0=(d->GetTracks())[0];
-	   if (l0<0) {
+	   //if (l0<0) {
 	     b=&bins[s][idx[k]-1];
 	     if (b->GetQ()>0) {
 	       d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
 	       l0=(d->GetTracks())[0];
+	       AddLabel(milab, (d->GetTracks())[0]); 
+	       AddLabel(milab, (d->GetTracks())[1]); 
+	       AddLabel(milab, (d->GetTracks())[2]); 
 	     }
-	   }
-	   if (l0<0) {
+	     //}
+	     //if (l0<0) {
 	     b=&bins[s][idx[k]+1];
 	     if (b->GetQ()>0) {
 	       d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
 	       l0=(d->GetTracks())[0];
+	       AddLabel(milab, (d->GetTracks())[0]); 
+	       AddLabel(milab, (d->GetTracks())[1]); 
+	       AddLabel(milab, (d->GetTracks())[2]); 
 	     }
-	   }
-	   if (l0<0) {
+	     // }
+	     //if (l0<0) {
 	     b=&bins[s][idx[k]-nzBins];
 	     if (b->GetQ()>0) {
 	       d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
 	       l0=(d->GetTracks())[0];
+	       AddLabel(milab, (d->GetTracks())[0]); 
+	       AddLabel(milab, (d->GetTracks())[1]); 
+	       AddLabel(milab, (d->GetTracks())[2]); 
 	     }
-	   }
-	   if (l0<0) {
+	     //}
+	     //if (l0<0) {
 	     b=&bins[s][idx[k]+nzBins];
 	     if (b->GetQ()>0) {
 	       d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
 	       l0=(d->GetTracks())[0];
+	       AddLabel(milab, (d->GetTracks())[0]); 
+	       AddLabel(milab, (d->GetTracks())[1]); 
+	       AddLabel(milab, (d->GetTracks())[2]); 
 	     }
-	   }
+	     //}
 
-	   if (l0<0) {
+	     //if (l0<0) {
 	     b=&bins[s][idx[k]+nzBins+1];
 	     if (b->GetQ()>0) {
 	       d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
 	       l0=(d->GetTracks())[0];
+	       AddLabel(milab, (d->GetTracks())[0]); 
+	       AddLabel(milab, (d->GetTracks())[1]); 
+	       AddLabel(milab, (d->GetTracks())[2]); 
 	     }
-	   }
-	   if (l0<0) {
+	     //}
+	     //if (l0<0) {
 	     b=&bins[s][idx[k]+nzBins-1];
 	     if (b->GetQ()>0) {
 	       d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
 	       l0=(d->GetTracks())[0];
+	       AddLabel(milab, (d->GetTracks())[0]); 
+	       AddLabel(milab, (d->GetTracks())[1]); 
+	       AddLabel(milab, (d->GetTracks())[2]); 
 	     }
-	   }
-	   if (l0<0) {
+	     //}
+	     //if (l0<0) {
 	     b=&bins[s][idx[k]-nzBins+1];
 	     if (b->GetQ()>0) {
 	       d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
 	       l0=(d->GetTracks())[0];
+	       AddLabel(milab, (d->GetTracks())[0]); 
+	       AddLabel(milab, (d->GetTracks())[1]); 
+	       AddLabel(milab, (d->GetTracks())[2]); 
 	     }
-	   }
-	   if (l0<0) {
+	     //}
+	     //if (l0<0) {
 	     b=&bins[s][idx[k]-nzBins-1];
 	     if (b->GetQ()>0) {
 	       d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
 	       l0=(d->GetTracks())[0];
+	       AddLabel(milab, (d->GetTracks())[0]); 
+	       AddLabel(milab, (d->GetTracks())[1]); 
+	       AddLabel(milab, (d->GetTracks())[2]); 
 	     }
-	   }
+	     //}
 
 	   {
 	     Int_t lab[3];
 	     lab[0]=(d->GetTracks())[0];
 	     lab[1]=(d->GetTracks())[1];
 	     lab[2]=(d->GetTracks())[2];
-	     //CheckLabels(lab);
-	     c.SetLabel(lab[0],0);
-	     c.SetLabel(lab[1],1);
-	     c.SetLabel(lab[2],2);
+	     CheckLabels(lab);
+	     CheckLabels2(milab); 
+	     c.SetLabel(milab[0],0);
+	     c.SetLabel(milab[1],1);
+	     c.SetLabel(milab[2],2);
+	     c.SetLayer(3);
 	   }
 	 }
 
@@ -893,16 +1026,27 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
         Float_t lp[5];
         lp[0]=-(-ybest+fYshift[fI]);
         lp[1]=  -zbest+fZshift[fI];
-        lp[2]=0.0025*0.0025;  //SigmaY2
-        lp[3]=0.110*0.110;  //SigmaZ2
+        lp[2]=0.0025*0.0025*1.5;  //SigmaY2 - 1.5 safety factor
+        lp[3]=0.110*0.110*1.5;  //SigmaZ2   - 1.5 safety factor
         if (pos[i].GetNd()+neg[j].GetNd() > 4) {
            lp[2]*=9;
            lp[3]*=9;
         }
         lp[4]=qbest;        //Q
-
-        //CheckLabels(lab);
-        new (cl[ncl]) AliITSclusterV2(lab,lp); ncl++;
+	Int_t milab[10];
+	for (Int_t ilab=0;ilab<10;ilab++) milab[ilab]=-2;
+	milab[0]=pos[i].GetLabel(0);
+        milab[1]=neg[j].GetLabel(0);
+	milab[2]=pos[i].GetLabel(1);
+        milab[3]=neg[j].GetLabel(1);
+	milab[4]=pos[i].GetLabel(2);
+        milab[5]=neg[j].GetLabel(2);
+	//
+        CheckLabels(lab);
+	CheckLabels2(milab);
+	milab[3]=(((i<<10) + j)<<10) + idet; // pos|neg|det
+	Int_t info[3] = {0,0,5};
+        new (cl[ncl]) AliITSclusterV2(milab,lp,info); ncl++;
       }
     }
     /*
