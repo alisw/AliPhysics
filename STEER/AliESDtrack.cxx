@@ -25,7 +25,7 @@
 
 #include "AliESDtrack.h"
 #include "AliKalmanTrack.h"
-#include "../ITS/AliITStrackV2.h"
+// #include "../ITS/AliITStrackV2.h"
 
 ClassImp(AliESDtrack)
 
@@ -142,7 +142,8 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
   
   if (flags == kITSin)
    {
-     AliITStrackV2* itstrack = dynamic_cast<AliITStrackV2*>(t);
+     //     AliITStrackV2* itstrack = dynamic_cast<AliITStrackV2*>(t);
+     AliKalmanTrack *itstrack = t;
      if (itstrack)
       {
         itstrack->PropagateTo(3.,0.0028,65.19);

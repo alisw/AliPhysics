@@ -29,16 +29,16 @@
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
+#include <TBranch.h>
+#include <TError.h>
+#include <TFile.h>
+#include <TFolder.h>
+#include <TGeometry.h>
+#include <TObjArray.h>
 #include <TROOT.h>
 #include <TString.h>
-#include <TFolder.h>
 #include <TTask.h>
-#include <TFile.h>
 #include <TTree.h>
-#include <TBranch.h>
-#include <TGeometry.h>
-#include <TError.h>
-#include <TObjArray.h>
 
 #include "AliRun.h"
 #include "AliConfig.h"

@@ -108,6 +108,11 @@ public:
   Double_t GetIntegratedTime(Int_t pdg) const;
   Double_t GetIntegratedLength() const {return fIntegratedLength;}
   void PrintTime() const;
+
+
+  //__________________
+  virtual Int_t PropagateToVertex(Double_t =0., Double_t =0.) {
+Fatal("PropagateToVertex","Not implemented!\n");return -99;}
   
 
 protected:
