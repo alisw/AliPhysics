@@ -13,13 +13,11 @@ EINCLUDE+=TPC CONTAINERS ITS RAW HLT/src HLT/hough HLT/comp
 EDEFINE+= -DUSE_RDM -DUSE_HLT
 # -DUSE_DEBUG for alimdc debug printout
 
-ELIBS:=STEER RAW TPCbase TPCsim TPCrec CONTAINERS AliL3Src AliL3Misc AliL3Hough AliL3Comp shift pythia6 pdf microcern
+ELIBS:=STEER RAW TPCbase TPCsim TPCrec CONTAINERS AliL3Src AliL3Misc AliL3Hough AliL3Comp pythia6 pdf microcern
 
 ifdef DATE_ROOT
 
 ELIBSDIR:=${DATE_MONITOR_DIR}/${DATE_SYS}
 EINCLUDE+= ${DATE_COMMON_DEFS} ${DATE_MONITOR_DIR}
-
-ELIBS += monitor
 
 endif
