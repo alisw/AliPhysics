@@ -58,7 +58,7 @@
 
 #pragma link C++ class AliTPCclusterer-;
 #pragma link C++ class AliTPCDigitizer;
-
+#pragma link C++ class AliTPCtrackerParam; 
 
 
 #endif
