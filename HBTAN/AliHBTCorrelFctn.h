@@ -38,7 +38,7 @@ class AliHBTQOutCMSLCCorrelFctn: public AliHBTOnePairFctn1D
    virtual ~AliHBTQOutCMSLCCorrelFctn(){};
    TH1* GetResult();
  protected:
-   Double_t GetValue(AliHBTPair * pair){return pair->GetQOutCMSLC();}
+   Double_t GetValue(AliHBTPair * pair){return TMath::Abs(pair->GetQOutCMSLC());}
   public:
     ClassDef(AliHBTQOutCMSLCCorrelFctn,1)
  
@@ -55,7 +55,7 @@ class AliHBTQLongCMSLCCorrelFctn: public AliHBTOnePairFctn1D
    virtual ~AliHBTQLongCMSLCCorrelFctn(){};
    TH1* GetResult();
  protected:
-   Double_t GetValue(AliHBTPair * pair){return pair->GetQLongCMSLC();}
+   Double_t GetValue(AliHBTPair * pair){return TMath::Abs(pair->GetQLongCMSLC());}
   public:
     ClassDef(AliHBTQLongCMSLCCorrelFctn,1)
  
@@ -72,7 +72,7 @@ class AliHBTQSideCMSLCCorrelFctn: public AliHBTOnePairFctn1D
    virtual ~AliHBTQSideCMSLCCorrelFctn(){};
    TH1* GetResult();
  protected:
-   Double_t GetValue(AliHBTPair * pair){return pair->GetQSideCMSLC();}
+   Double_t GetValue(AliHBTPair * pair){return TMath::Abs(pair->GetQSideCMSLC());}
   public:
     ClassDef(AliHBTQSideCMSLCCorrelFctn,1)
  
