@@ -45,6 +45,7 @@ AliL3FileHandler::~AliL3FileHandler(){
   //Destructor
   if(fTransformer) delete fTransformer;
   if(fMC) CloseMCOutput();
+  if(fInAli) CloseAliInput();
 }
 
 Bool_t AliL3FileHandler::SetMCOutput(char *name){
@@ -122,6 +123,7 @@ void AliL3FileHandler::CloseAliInput(){
   if(fInAli->IsOpen()) fInAli->Close();
   delete fInAli;
   fInAli = 0;
+    
 }
 
 Bool_t AliL3FileHandler::IsDigit(){
@@ -228,7 +230,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow){
       nrows++;
     }
   Int_t size = sizeof(AliL3DigitData)*ndigitcount
-                                      + nrows*sizeof(AliL3DigitRowData);
+    + nrows*sizeof(AliL3DigitRowData);
 
   LOG(AliL3Log::kDebug,"AliL3FileHandler::AliDigits2Memory","Digits")
   <<AliL3Log::kDec<<"Found "<<ndigitcount<<" Digits"<<ENDLOG;
@@ -293,7 +295,7 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
 
   if(!fInAli)
     {
-      printf("AliL3FileHandler::AliDigits2RootFile : No input alirootfile\n");
+      printf("AliL3FileHandler::AliDigits2RootFile : No rootfile\n");
       return;
     }
   if(!fParam)
@@ -322,20 +324,23 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
   Bool_t create=kFALSE;
   TFile *digFile;
   
-  if(fPatch == 0)
+  digFile = TFile::Open(new_digitsfile,"NEW");
+  if(digFile->IsOpen())
     {    
-      digFile = TFile::Open(new_digitsfile,"RECREATE");
       create = kTRUE;
       fParam->Write(fParam->GetTitle());
     }
   else
     {
+      LOG(AliL3Log::kDebug,"AliL3FileHandler::AliDigits2RootFile","Rootfile")
+	<<"Rootfile did already exist, so I will just open it for updates"<<ENDLOG;
       digFile = TFile::Open(new_digitsfile,"UPDATE");
       create=kFALSE;
     }
   if(!digFile->IsOpen())
     {
-      printf("AliL3FileHandler::AliDigits2RootFile : Error opening a new rootfile\n");
+      LOG(AliL3Log::kError,"AliL3FileHandler::AliDigits2RootFile","Rootfile")
+	<<"Error opening rootfile "<<new_digitsfile<<ENDLOG;
       return;
     }
   
@@ -391,7 +396,9 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
   digFile->cd();
   char treeName[100];
   sprintf(treeName,"TreeD_%s_0",fParam->GetTitle());
+  printf("Writing tree to file.....");
   arr->GetTree()->Write(treeName,TObject::kOverwrite);
+  printf("done\n");
   digFile->Close();
   //arr->GetTree()->Delete();
   //delete arr;
@@ -422,11 +429,14 @@ AliL3SpacePointData * AliL3FileHandler::AliPoints2Memory(UInt_t & npoint){
   }
   TDirectory *savedir = gDirectory;
   fInAli->cd();
-
+  
+  Char_t cname[100];
+  Int_t eventn = 0;
+  sprintf(cname,"TreeC_TPC_%d",eventn);
   AliTPCClustersArray carray;
   carray.Setup(fParam);
   carray.SetClusterType("AliTPCcluster");
-  Bool_t clusterok = carray.ConnectTree("Segment Tree");
+  Bool_t clusterok = carray.ConnectTree(cname);
   if(!clusterok) return 0;
 
   AliTPCClustersRow ** clusterrow = 
