@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/01/17 20:59:24  hristov
+chPrev initialised
+
 Revision 1.8  2001/01/08 11:01:02  gosset
 Modifications used for addendum to Dimuon TDR (JP Cussonneau):
 *. MaxBendingMomentum to make both a segment and a track (default 500)
@@ -102,6 +105,8 @@ Addition of files for track reconstruction in C++
 // Functions to be minimized with Minuit
 void TrackChi2(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *Param, Int_t Flag);
 void TrackChi2MCS(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *Param, Int_t Flag);
+
+void mnvertLocal(Double_t* a, Int_t l, Int_t m, Int_t n, Int_t& ifail);
 
 Double_t MultipleScatteringAngle2(AliMUONTrackHit *TrackHit);
 
@@ -534,7 +539,6 @@ void TrackChi2MCS(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *P
   }
 
   AliMUONTrackHit *hit;
-  Bool_t goodDeterminant;
   Int_t chCurrent, chPrev = 0, hitNumber, hitNumber1, hitNumber2, hitNumber3;
   Double_t z, z1, z2, z3;
   AliMUONTrackHit *hit1, *hit2, *hit3;
@@ -607,50 +611,27 @@ void TrackChi2MCS(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *P
       }
     } // for (hitNumber2 = hitNumber1;...
   } // for (hitNumber1 = 0;...
-  // Normalization of covariance matrices
-  Double_t normCovBending2 = covBending->E2Norm();
-  Double_t normCovNonBending2 = covNonBending->E2Norm();
-  (*covBending) *= 1/normCovBending2;
-  (*covNonBending) *= 1/normCovNonBending2;
-//   if (covBending->Determinant() < 1.e-33) {
-//     printf(" *** covBending *** \n");
-//     covBending->Print();
-//     printf(" *** covNonBending *** \n");
-//     covNonBending->Print();
-//     cout << " number of hits " <<  numberOfHit << endl;
-//     cout << "Momentum = " << 1/Param[0] <<endl;
-//     cout << "normCovBending = " << normCovBending2 << endl; 
-//     cout << "normCovNonBending = " << normCovNonBending2 << endl; 
-//     exit(0);
     
-//   }
-  // Inverts covariance matrix 
-  goodDeterminant = kTRUE;
-  // check whether the Invert method returns flag if matrix cannot be inverted,
-  // and do not calculate the Determinant in that case !!!!
-  if (covBending->Determinant() != 0) {
-    covBending->Invert();
-  } else {
-    goodDeterminant = kFALSE;
-    cout << "Warning in ChiMCS  Determinant Bending=0: " << endl;  
-  }
-  if (covNonBending->Determinant() != 0) {
-    covNonBending->Invert();
-  } else {
-    goodDeterminant = kFALSE;
-    cout << "Warning in ChiMCS  Determinant non Bending=0: " << endl;  
-  }
+  // Inversion of covariance matrices
+  // with "mnvertLocal", local "mnvert" function of Minuit.
+  // One cannot use directly "mnvert" since "TVirtualFitter" does not know it.
+  // One will have to replace this local function by the right inversion function
+  // from a specialized Root package for symmetric positive definite matrices,
+  // when available!!!!
+  Int_t ifailBending;
+  mnvertLocal(&((*covBending)(0,0)), numberOfHit, numberOfHit, numberOfHit,
+	      ifailBending);
+  Int_t ifailNonBending;
+  mnvertLocal(&((*covNonBending)(0,0)), numberOfHit, numberOfHit, numberOfHit,
+	      ifailNonBending);
 
   // It would be worth trying to calculate the inverse of the covariance matrix
   // only once per fit, since it cannot change much in principle,
   // and it would save a lot of computing time !!!!
   
   // Calculates Chi2
-  if (goodDeterminant) {
+  if ((ifailBending == 0) && (ifailNonBending == 0)) {
     // with Multiple Scattering if inversion correct
-    // Inverse  matrices without normalization
-    (*covBending) *= 1/normCovBending2;
-    (*covNonBending) *= 1/normCovNonBending2;
     for (hitNumber1 = 0; hitNumber1 < numberOfHit ; hitNumber1++) { 
       hit1 = (AliMUONTrackHit*) (*(trackBeingFitted->GetTrackHitsPtr()))[hitNumber1];
       hbc1 = hit1->GetHitForRecPtr()->GetBendingCoor();
@@ -720,3 +701,94 @@ Double_t MultipleScatteringAngle2(AliMUONTrackHit *TrackHit)
     varMultipleScatteringAngle * varMultipleScatteringAngle;
   return varMultipleScatteringAngle;
 }
+
+//______________________________________________________________________________
+ void mnvertLocal(Double_t *a, Int_t l, Int_t, Int_t n, Int_t &ifail)
+{
+//*-*-*-*-*-*-*-*-*-*-*-*Inverts a symmetric matrix*-*-*-*-*-*-*-*-*-*-*-*-*
+//*-*                    ==========================
+//*-*        inverts a symmetric matrix.   matrix is first scaled to
+//*-*        have all ones on the diagonal (equivalent to change of units)
+//*-*        but no pivoting is done since matrix is positive-definite.
+//*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+  // taken from TMinuit package of Root (l>=n)
+  // fVERTs, fVERTq and fVERTpp changed to localVERTs, localVERTq and localVERTpp
+  Double_t localVERTs[n], localVERTq[n], localVERTpp[n];
+  // fMaxint changed to localMaxint
+  Int_t localMaxint = n;
+
+    /* System generated locals */
+    Int_t a_offset;
+
+    /* Local variables */
+    Double_t si;
+    Int_t i, j, k, kp1, km1;
+
+    /* Parameter adjustments */
+    a_offset = l + 1;
+    a -= a_offset;
+
+    /* Function Body */
+    ifail = 0;
+    if (n < 1) goto L100;
+    if (n > localMaxint) goto L100;
+//*-*-                  scale matrix by sqrt of diag elements
+    for (i = 1; i <= n; ++i) {
+        si = a[i + i*l];
+        if (si <= 0) goto L100;
+        localVERTs[i-1] = 1 / TMath::Sqrt(si);
+    }
+    for (i = 1; i <= n; ++i) {
+        for (j = 1; j <= n; ++j) {
+            a[i + j*l] = a[i + j*l]*localVERTs[i-1]*localVERTs[j-1];
+        }
+    }
+//*-*-                                       . . . start main loop . . . .
+    for (i = 1; i <= n; ++i) {
+        k = i;
+//*-*-                  preparation for elimination step1
+        if (a[k + k*l] != 0) localVERTq[k-1] = 1 / a[k + k*l];
+        else goto L100;
+        localVERTpp[k-1] = 1;
+        a[k + k*l] = 0;
+        kp1 = k + 1;
+        km1 = k - 1;
+        if (km1 < 0) goto L100;
+        else if (km1 == 0) goto L50;
+        else               goto L40;
+L40:
+        for (j = 1; j <= km1; ++j) {
+            localVERTpp[j-1] = a[j + k*l];
+            localVERTq[j-1]  = a[j + k*l]*localVERTq[k-1];
+            a[j + k*l]   = 0;
+        }
+L50:
+        if (k - n < 0) goto L51;
+        else if (k - n == 0) goto L60;
+        else                goto L100;
+L51:
+        for (j = kp1; j <= n; ++j) {
+            localVERTpp[j-1] = a[k + j*l];
+            localVERTq[j-1]  = -a[k + j*l]*localVERTq[k-1];
+            a[k + j*l]   = 0;
+        }
+//*-*-                  elimination proper
+L60:
+        for (j = 1; j <= n; ++j) {
+            for (k = j; k <= n; ++k) { a[j + k*l] += localVERTpp[j-1]*localVERTq[k-1]; }
+        }
+    }
+//*-*-                  elements of left diagonal and unscaling
+    for (j = 1; j <= n; ++j) {
+        for (k = 1; k <= j; ++k) {
+            a[k + j*l] = a[k + j*l]*localVERTs[k-1]*localVERTs[j-1];
+            a[j + k*l] = a[k + j*l];
+        }
+    }
+    return;
+//*-*-                  failure return
+L100:
+    ifail = 1;
+} /* mnvertLocal */
+
