@@ -24,6 +24,7 @@
 class TG4GeometryManager;
 class TG4DetConstruction;
 class TClonesArray;
+class TGeoMaterial;
 
 
 class TFluka : public TVirtualMC {
@@ -247,6 +248,8 @@ class TFluka : public TVirtualMC {
     virtual Double_t ParticleCharge(int) const {return 0.;}
     virtual Double_t ParticleLifeTime(int) const {return 0.;}
     virtual TMCParticleType ParticleMCType(int) const {return (TMCParticleType) 0;}
+    void   SetDummyBoundary(Int_t mode) {fDummyBoundary = mode;}
+    Int_t  GetDummyBoundary() const {return fDummyBoundary;}
   //
   // control methods
   // ------------------------------------------------
@@ -353,7 +356,8 @@ class TFluka : public TVirtualMC {
   Int_t    iNbOfCut;
   Double_t fCutValue[100];
   Char_t   sCutFlag[100][7];
-                                                                                
+  Int_t    fDummyBoundary;
+  
   //Geometry through Geant4 for the time being!!!
   TG4GeometryManager*  fGeometryManager; //Geometry manager
   TG4DetConstruction*  fDetector;        //Detector
@@ -363,7 +367,6 @@ class TFluka : public TVirtualMC {
   Int_t                fNVolumes;        //!Current number of volumes
   Int_t*               fMediaByRegion;   //!Media by Fluka region
   Int_t                fCurrentFlukaRegion; //Index of fluka region at each step
-
   ClassDef(TFluka,1)  //C++ interface to Fluka montecarlo
 };
 
