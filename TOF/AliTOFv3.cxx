@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.31  2002/11/21 22:46:24  alibrary
+Removing AliMC and AliMCProcess
+
 Revision 1.30  2002/10/22 14:26:28  alibrary
 Introducing Riostream.h
 
@@ -522,7 +525,7 @@ void AliTOFv3::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
 
   AliMatrix (idrotm[0],  90.,  0.,90.,90.,0., 90.);   
   gMC->Gspos("FSTR",j,"FLTA",0.,ycoor, 0.,idrotm[0],"ONLY");
-  if(fDebug) {
+  if(fDebug>=1) {
     printf("%s: %f,  St. %2i, Pl.3 ",ClassName(),ang*kRaddeg,i);
     printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);
   }
@@ -540,7 +543,7 @@ void AliTOFv3::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
     ycoor += (1-(upDown+1)/2)*gap;
     gMC->Gspos("FSTR",j  ,"FLTA",0.,ycoor, zcoor,idrotm[nrot],  "ONLY");
     gMC->Gspos("FSTR",j+1,"FLTA",0.,ycoor,-zcoor,idrotm[nrot+1],"ONLY");
-    if(fDebug) {
+    if(fDebug>=1) {
       printf("%s: %f,  St. %2i, Pl.3 ",ClassName(),ang*kRaddeg,i);
       printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);
     }
@@ -570,7 +573,7 @@ void AliTOFv3::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   ycoor += (1-(upDown+1)/2)*gap;
   gMC->Gspos("FSTR",j  ,"FLTA",0.,ycoor, zcoor,idrotm[nrot],  "ONLY");
   gMC->Gspos("FSTR",j+1,"FLTA",0.,ycoor,-zcoor,idrotm[nrot+1],"ONLY");
-  if(fDebug) {   
+  if(fDebug>=1) {   
     printf("%s: %f,  St. %2i, Pl.3 ",ClassName(),ang*kRaddeg,i);  
     printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);  
   }
@@ -596,7 +599,7 @@ void AliTOFv3::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   ycoor += (1-(upDown+1)/2)*gap;
   zcoor = zpos+(zFLTA*0.5+zFLTB*0.5+db); // Moves to the system of the modulus FLTB
   gMC->Gspos("FSTR",i, "FLTB", 0., ycoor, zcoor,idrotm[nrot], "ONLY");
-  if(fDebug) {   
+  if(fDebug>=1) {   
     printf("%s: %f,  St. %2i, Pl.4 ",ClassName(),ang*kRaddeg,i);  
     printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);  
    }
@@ -617,7 +620,7 @@ void AliTOFv3::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
     ycoor += (1-(upDown+1)/2)*(gap+deltaGapinB);
     zcoor = zpos+(zFLTA*0.5+zFLTB*0.5+db); // Moves to the system of the modulus FLTB
     gMC->Gspos("FSTR",i, "FLTB", 0., ycoor, zcoor,idrotm[nrot], "ONLY");
-    if(fDebug) { 
+    if(fDebug>=1) { 
       printf("%s: %f,  St. %2i, Pl.4 ",ClassName(),ang*kRaddeg,i);
       printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);
     }
@@ -641,7 +644,7 @@ void AliTOFv3::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
     gMC->Gspos("FSTR",i, "FLTB", 0., ycoor+deltaMovingDown+deltaMovingUp, zcoor,idrotm[nrot], "ONLY");
     deltaMovingUp+=0.8; // update delta moving toward the end of the plate
     zpos = zpos - zSenStrip/TMath::Cos(ang);
-    if(fDebug) { 
+    if(fDebug>=1) { 
       printf("%s: %f,  St. %2i, Pl.4 ",ClassName(),ang*kRaddeg,i);
       printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);
     }
@@ -670,7 +673,7 @@ void AliTOFv3::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
     ang /= kRaddeg;
     zcoor = zpos+(zFLTC*0.5+zFLTB+zFLTA*0.5+db*2);
     gMC->Gspos("FSTR",i, "FLTC", 0., ycoor, zcoor,idrotm[nrot], "ONLY");
-    if(fDebug) { 
+    if(fDebug>=1) { 
       printf("%s: %f,  St. %2i, Pl.5 ",ClassName(),ang*kRaddeg,i);
       printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);
     }
