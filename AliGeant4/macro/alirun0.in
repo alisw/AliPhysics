@@ -5,10 +5,10 @@
 # run with standard AliRoot generator (defined in Config.C).
 #
 
-/aliDet/switchOn ALL
-/aliDet/forceAllSensitive true
+/aliDet/switchOn RICH
 
 # switch off detectors with errors
+/aliDet/switchOff RICH
 /aliDet/switchOff CASTOR
 /aliDet/switchOff ZDC
 
