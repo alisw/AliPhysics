@@ -544,7 +544,7 @@ void AliPHOSv1::StepManager(void)
 
   if ( name == "GPS2" || name == "MIXT" ) {            // ======> CPV is a GPS' PPSD
 
-    if( gMC->CurrentVolID(copy) == gMC->VolId("PCEL") ) // We are inside a gas cell 
+    if( gMC->CurrentVolID(copy) == gMC->VolId("PPCE") ) // We are inside a gas cell 
     {
       gMC->TrackPosition(pos) ;
       xyze[0] = pos[0] ;

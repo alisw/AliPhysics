@@ -1070,8 +1070,8 @@ void AliPHOSv0::CreateGeometryforPPSD()
   gMC->Gsvolu("PGGP", "BOX ", idtmed[715], ggppsd, 3) ; 
   
   // --- Divide GGPP in X (phi) and Z directions --
-  gMC->Gsdvn("PROW", "PGGP", fGeom->GetNumberOfPadsPhi(), 1) ;
-  gMC->Gsdvn("PCEL", "PROW", fGeom->GetNumberOfPadsZ() ,  3) ;
+  gMC->Gsdvn("PPRO", "PGGP", fGeom->GetNumberOfPadsPhi(), 1) ;
+  gMC->Gsdvn("PPCE", "PPRO", fGeom->GetNumberOfPadsZ() ,  3) ;
 
   y0 = y0 - fGeom->GetAnodeThickness() / 2.  - ( fGeom->GetConversionGap() +  fGeom->GetAvalancheGap() ) / 2. ; 
 
