@@ -540,8 +540,13 @@ void AliHBTAnalysis::ProcessTracks()
          
          trackbuffer.ResetIter();
          
+         Int_t m = 0;
          while (( trackEvent2 = trackbuffer.Next() ))
           {
+            m++;
+            if ( (j%fDisplayMixingInfo) == 0)
+               Info("ProcessTracks",
+                    "Mixing track %d from event %d with tracks from event %d",j,i,i-m);
             for(Int_t l = 0; l<trackEvent2->GetNumberOfParticles();l++)   //  ... on all particles
               {
 
@@ -616,10 +621,10 @@ void AliHBTAnalysis::ProcessParticles()
          /******   filling numerators    ********/
          /***************************************/
          if ( (j%fDisplayMixingInfo) == 0) 
-               Info("ProcessParts",
+               Info("ProcessParticles",
                     "Mixing particle %d from event %d with particles from event %d",j,i,i);
          
-         part1= partEvent->GetParticle(j);
+         part1 = partEvent->GetParticle(j);
          Bool_t firstcut = fPairCut->GetFirstPartCut()->Pass(part1);
          
          if ( (firstcut == kFALSE) || (fPairCut->GetSecondPartCut()->Pass(part1) == kFALSE) )
@@ -662,8 +667,13 @@ void AliHBTAnalysis::ProcessParticles()
          
          partbuffer.ResetIter();
          
+         Int_t m = 0;
          while (( partEvent2 = partbuffer.Next() ))
           {
+            m++;
+            if ( (j%fDisplayMixingInfo) == 0)
+               Info("ProcessParticles",
+                    "Mixing particle %d from event %d with particles from event %d",j,i,i-m);
             for(Int_t l = 0; l<partEvent2->GetNumberOfParticles();l++)   //  ... on all particles
               {
 
