@@ -2,13 +2,20 @@
 #include <TRandom.h>
 #include <TH1.h>
 #include <TMath.h>
-
+#include <TString.h>
+#include <TParticle.h>
 
 
 #include "AliRun.h"
 #include "AliITS.h"
+#include "AliITShit.h"
+#include "AliITSdigit.h"
+#include "AliITSmodule.h"
 #include "AliITSMapA2.h" 
 #include "AliITSsimulationSPD.h"
+#include "AliITSsegmentation.h"
+#include "AliITSresponse.h"
+
 
 
 
@@ -27,9 +34,12 @@ AliITSsimulationSPD::AliITSsimulationSPD()
   // constructor
   fResponse = 0;
   fSegmentation = 0;
+  fMapA2=0;
   fHis = 0;
   fNoise=0.;
   fBaseline=0.;
+  fNPixelsZ=0;
+  fNPixelsX=0;
 }
 
 
@@ -38,6 +48,7 @@ AliITSsimulationSPD::AliITSsimulationSPD()
 AliITSsimulationSPD::AliITSsimulationSPD(AliITSsegmentation *seg, AliITSresponse *resp) {
   // standard constructor
 
+      fHis = 0;
       fResponse = resp;
       fSegmentation = seg;
 
@@ -135,18 +146,20 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t 
     // Fill detector maps with GEANT hits
     // loop over hits in the module
     static Bool_t first;
-    Int_t lasttrack=-2;
+    Int_t lasttrack=-2,idhit=-1;
     Int_t hit, iZi, jz, jx;
     for (hit=0;hit<nhits;hit++) {
         AliITShit *iHit = (AliITShit*) fHits->At(hit);
 	Int_t layer = iHit->GetLayer();
 
 	// work with the idtrack=entry number in the TreeH
-	Int_t idhit,idtrack;
-	mod->GetHitTrackAndHitIndex(hit,idtrack,idhit);    
+	//Int_t idhit,idtrack;
+	//mod->GetHitTrackAndHitIndex(hit,idtrack,idhit);    
 	//Int_t idtrack=mod->GetHitTrackIndex(hit);  
         // or store straight away the particle position in the array
 	// of particles : 
+
+        if(iHit->StatusEntering()) idhit=hit;
         Int_t itrack = iHit->GetTrack();
         Int_t dray = 0;
    
@@ -539,6 +552,7 @@ void AliITSsimulationSPD::ChargeToSignal(Float_t **pList)
 	 digits[2]=1;
 	 for(j1=0;j1<3;j1++){
 	   if (pList[gi]) {
+	     tracks[j1]=-3;
 	     tracks[j1] = (Int_t)(*(pList[gi]+j1));
 	     hits[j1] = (Int_t)(*(pList[gi]+j1+6));
 	   }else {
@@ -586,16 +600,15 @@ void AliITSsimulationSPD::CreateHistograms()
 
       printf("SPD - create histograms\n");
 
+      fHis=new TObjArray(fNPixelsZ);
+      TString spdName("spd_");
       for (Int_t i=0;i<fNPixelsZ;i++) {
-	   TString *spdname = new TString("spd_");
 	   Char_t pixelz[4];
 	   sprintf(pixelz,"%d",i+1);
-	   spdname->Append(pixelz);
-	   (*fHis)[i] = new TH1F(spdname->Data(),"SPD maps",
+	   spdName.Append(pixelz);
+	   (*fHis)[i] = new TH1F(spdName.Data(),"SPD maps",
                               fNPixelsX,0.,(Float_t) fNPixelsX);
-	   delete spdname;
       }
-
 }
 
 //____________________________________________
