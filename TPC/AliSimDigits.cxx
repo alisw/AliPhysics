@@ -34,7 +34,7 @@
 #include "AliArrayS.h"
 #include "AliDigits.h"
 #include "AliSimDigits.h"
-#include "AliTPC.h"
+#include "AliTPCdigit.h"
 #include <TClonesArray.h>
 
 

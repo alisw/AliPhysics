@@ -1,0 +1,11 @@
+SRCS:=  AliTPCFast.cxx \
+        AliTPCtrackerParam.cxx AliTPCkineGrid.cxx
+        
+	
+
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR:= TPCfastLinkDef.h
+
+EINCLUDE:= CONTAINERS RAW
+

@@ -27,6 +27,8 @@
 //#include "AliTrackReference.h"
 //----------------------------
 
+class AliTPC;
+
 class AliTPCtrackerParam:
   public TObject
 {

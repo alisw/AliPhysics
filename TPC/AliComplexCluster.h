@@ -19,6 +19,7 @@ class AliComplexCluster : public TObject {
   friend class AliTPC;
   friend class AliTPCClusterFinder;
   friend class AliClusters;
+  friend class AliTPCFast;
 public:
 
   AliComplexCluster() {

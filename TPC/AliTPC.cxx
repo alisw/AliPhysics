@@ -49,15 +49,12 @@
 #include <TSystem.h>     
 #include <TTUBS.h>
 #include <TTree.h>
-#include <TVector.h>
 #include <TVirtualMC.h>
 #include <TString.h>
 #include <TF2.h>
 #include <TStopwatch.h>
 
 #include "AliArrayBranch.h"
-#include "AliClusters.h"
-#include "AliComplexCluster.h"
 #include "AliDigits.h"
 #include "AliMagF.h"
 #include "AliPoints.h"
@@ -66,8 +63,6 @@
 #include "AliSimDigits.h"
 #include "AliTPC.h"
 #include "AliTPC.h"
-#include "AliTPCClustersArray.h"
-#include "AliTPCClustersRow.h"
 #include "AliTPCDigitsArray.h"
 #include "AliTPCLoader.h"
 #include "AliTPCPRF2D.h"
@@ -75,15 +70,11 @@
 #include "AliTPCRF1D.h"
 #include "AliTPCTrackHits.h"
 #include "AliTPCTrackHitsV2.h"
-#include "AliTPCcluster.h"
 #include "AliTrackReference.h"
 #include "AliMC.h"
 #include "AliTPCDigitizer.h"
 #include "AliTPCBuffer.h"
 #include "AliTPCDDLRawData.h"
-#include "AliTPCclustererMI.h"
-#include "AliTPCtrackerMI.h"
-#include "AliTPCpidESD.h"
 
 
 ClassImp(AliTPC) 
@@ -109,18 +100,6 @@ AliTPCFastMatrix::AliTPCFastMatrix(Int_t rowlwb, Int_t rowupb, Int_t collwb, Int
    {
    };
 //_____________________________________________________________________________
-class AliTPCFastVector : public TVector {
-public :
-  AliTPCFastVector(Int_t size);
-  virtual ~AliTPCFastVector(){;}
-  Float_t & UncheckedAt(Int_t index) const  {return  fElements[index];} //fast acces  
-  
-};
-
-AliTPCFastVector::AliTPCFastVector(Int_t size):TVector(size){
-};
-
-//_____________________________________________________________________________
 AliTPC::AliTPC()
 {
   //
@@ -131,7 +110,6 @@ AliTPC::AliTPC()
   fDigits   = 0;
   fNsectors = 0;
   fDigitsArray = 0;
-  fClustersArray = 0;
   fDefaults = 0;
   fTrackHits = 0; 
   fTrackHitsOld = 0;   
@@ -155,7 +133,6 @@ AliTPC::AliTPC(const char *name, const char *title)
   fHits     = new TClonesArray("AliTPChit",  176);
   gAlice->GetMCApp()->AddHitList(fHits); 
   fDigitsArray = 0;
-  fClustersArray= 0;
   fDefaults = 0;
   //
   fTrackHits = new AliTPCTrackHitsV2;  
@@ -328,15 +305,6 @@ Int_t AliTPC::DistancetoPrimitive(Int_t , Int_t ) const
   //
   return 9999;
 }
-
-void AliTPC::Clusters2Tracks() const 
- {
-  //-----------------------------------------------------------------
-  // This is a track finder.
-  //-----------------------------------------------------------------
-  Error("Clusters2Tracks",
-  "Dummy function !  Call AliTPCtracker::Clusters2Tracks(...) instead !");
- }
 
 
 //_____________________________________________________________________________
@@ -852,16 +820,6 @@ void    AliTPC::SetActiveSectors(Int_t flag)
 
 
 
-void AliTPC::Digits2Clusters(Int_t /*eventnumber*/) const
-{
-  //-----------------------------------------------------------------
-  // This is a simple cluster finder.
-  //-----------------------------------------------------------------
-  Error("Digits2Clusters",
-  "Dummy function !  Call AliTPCclusterer::Digits2Clusters(...) instead !");
-}
-
-
 //_____________________________________________________________________________
 void AliTPC::Digits2Raw()
 {
@@ -959,390 +917,6 @@ void AliTPC::Digits2Raw()
     rawWriter.RawDataCompDecompress(kTRUE);
     gSystem->Unlink("Statistics");
   }
-}
-
-
-extern Double_t SigmaY2(Double_t, Double_t, Double_t);
-extern Double_t SigmaZ2(Double_t, Double_t);
-//_____________________________________________________________________________
-void AliTPC::Hits2Clusters(Int_t /*eventn*/)
-{
-  //--------------------------------------------------------
-  // TPC simple cluster generator from hits
-  // obtained from the TPC Fast Simulator
-  // The point errors are taken from the parametrization
-  //--------------------------------------------------------
-
-  //-----------------------------------------------------------------
-  // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
-  //-----------------------------------------------------------------
-  // Adopted to Marian's cluster data structure by I.Belikov, CERN,
-  // Jouri.Belikov@cern.ch
-  //----------------------------------------------------------------
-  
-  /////////////////////////////////////////////////////////////////////////////
-  //
-  //---------------------------------------------------------------------
-  //   ALICE TPC Cluster Parameters
-  //--------------------------------------------------------------------
-       
-  
-
-  // Cluster width in rphi
-  const Float_t kACrphi=0.18322;
-  const Float_t kBCrphi=0.59551e-3;
-  const Float_t kCCrphi=0.60952e-1;
-  // Cluster width in z
-  const Float_t kACz=0.19081;
-  const Float_t kBCz=0.55938e-3;
-  const Float_t kCCz=0.30428;
-
-
-  if (!fLoader) {
-     cerr<<"AliTPC::Hits2Clusters(): output file not open !\n";
-     return;
-  }
-
-  //if(fDefaults == 0) SetDefaults();
-
-  Float_t sigmaRphi,sigmaZ,clRphi,clZ;
-  //
-  TParticle *particle; // pointer to a given particle
-  AliTPChit *tpcHit; // pointer to a sigle TPC hit
-  Int_t sector;
-  Int_t ipart;
-  Float_t xyz[5];
-  Float_t pl,pt,tanth,rpad,ratio;
-  Float_t cph,sph;
-  
-  //---------------------------------------------------------------
-  //  Get the access to the tracks 
-  //---------------------------------------------------------------
-  
-  TTree *tH = TreeH();
-  if (tH == 0x0)
-   {
-     Fatal("Hits2Clusters","Can not find TreeH in folder");
-     return;
-   }
-  SetTreeAddress();
-  
-  Stat_t ntracks = tH->GetEntries();
-
-  //Switch to the output file
-  
-  if (fLoader->TreeR() == 0x0) fLoader->MakeTree("R");
-  
-  cout<<"fTPCParam->GetTitle() = "<<fTPCParam->GetTitle()<<endl;
-  
-  AliRunLoader* rl = (AliRunLoader*)fLoader->GetEventFolder()->FindObject(AliRunLoader::GetRunLoaderName());
-  rl->CdGAFile();
-  //fTPCParam->Write(fTPCParam->GetTitle());
-
-  AliTPCClustersArray carray;
-  carray.Setup(fTPCParam);
-  carray.SetClusterType("AliTPCcluster");
-  carray.MakeTree(fLoader->TreeR());
-
-  Int_t nclusters=0; //cluster counter
-  
-  //------------------------------------------------------------
-  // Loop over all sectors (72 sectors for 20 deg
-  // segmentation for both lower and upper sectors)
-  // Sectors 0-35 are lower sectors, 0-17 z>0, 17-35 z<0
-  // Sectors 36-71 are upper sectors, 36-53 z>0, 54-71 z<0
-  //
-  // First cluster for sector 0 starts at "0"
-  //------------------------------------------------------------
-   
-  for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++){
-    //MI change
-    fTPCParam->AdjustCosSin(isec,cph,sph);
-    
-    //------------------------------------------------------------
-    // Loop over tracks
-    //------------------------------------------------------------
-    
-    for(Int_t track=0;track<ntracks;track++){
-      ResetHits();
-      tH->GetEvent(track);
-      //
-      //  Get number of the TPC hits
-      //     
-       tpcHit = (AliTPChit*)FirstHit(-1);
-
-      // Loop over hits
-      //
-       while(tpcHit){
- 
-	 if (tpcHit->fQ == 0.) {
-           tpcHit = (AliTPChit*) NextHit();
-           continue; //information about track (I.Belikov)
-	 }
-	sector=tpcHit->fSector; // sector number
-
-       if(sector != isec){
-	 tpcHit = (AliTPChit*) NextHit();
-	 continue; 
-       }
-	ipart=tpcHit->Track();
-	particle=gAlice->GetMCApp()->Particle(ipart);
-	pl=particle->Pz();
-	pt=particle->Pt();
-	if(pt < 1.e-9) pt=1.e-9;
-	tanth=pl/pt;
-	tanth = TMath::Abs(tanth);
-	rpad=TMath::Sqrt(tpcHit->X()*tpcHit->X() + tpcHit->Y()*tpcHit->Y());
-	ratio=0.001*rpad/pt; // pt must be in MeV/c - historical reason
-
-	//   space-point resolutions
-	
-	sigmaRphi=SigmaY2(rpad,tanth,pt);
-	sigmaZ   =SigmaZ2(rpad,tanth   );
-	
-	//   cluster widths
-	
-	clRphi=kACrphi-kBCrphi*rpad*tanth+kCCrphi*ratio*ratio;
-	clZ=kACz-kBCz*rpad*tanth+kCCz*tanth*tanth;
-	
-	// temporary protection
-	
-	if(sigmaRphi < 0.) sigmaRphi=0.4e-3;
-	if(sigmaZ < 0.) sigmaZ=0.4e-3;
-	if(clRphi < 0.) clRphi=2.5e-3;
-	if(clZ < 0.) clZ=2.5e-5;
-	
-	//
-	
-	//
-	// smearing --> rotate to the 1 (13) or to the 25 (49) sector,
-	// then the inaccuracy in a X-Y plane is only along Y (pad row)!
-	//
-        Float_t xprim= tpcHit->X()*cph + tpcHit->Y()*sph;
-	Float_t yprim=-tpcHit->X()*sph + tpcHit->Y()*cph;
-	xyz[0]=gRandom->Gaus(yprim,TMath::Sqrt(sigmaRphi));   // y
-          Float_t alpha=(isec < fTPCParam->GetNInnerSector()) ?
-	  fTPCParam->GetInnerAngle() : fTPCParam->GetOuterAngle();
-          Float_t ymax=xprim*TMath::Tan(0.5*alpha);
-          if (TMath::Abs(xyz[0])>ymax) xyz[0]=yprim; 
-	xyz[1]=gRandom->Gaus(tpcHit->Z(),TMath::Sqrt(sigmaZ)); // z
-          if (TMath::Abs(xyz[1])>fTPCParam->GetZLength()) xyz[1]=tpcHit->Z(); 
-	xyz[2]=sigmaRphi;                                     // fSigmaY2
-	xyz[3]=sigmaZ;                                        // fSigmaZ2
-	xyz[4]=tpcHit->fQ;                                    // q
-
-        AliTPCClustersRow *clrow=carray.GetRow(sector,tpcHit->fPadRow);
-        if (!clrow) clrow=carray.CreateRow(sector,tpcHit->fPadRow);	
-
-        Int_t tracks[3]={tpcHit->Track(), -1, -1};
-	AliTPCcluster cluster(tracks,xyz);
-
-        clrow->InsertCluster(&cluster); nclusters++;
-
-        tpcHit = (AliTPChit*)NextHit();
-        
-
-      } // end of loop over hits
-
-    }   // end of loop over tracks
-
-    Int_t nrows=fTPCParam->GetNRow(isec);
-    for (Int_t irow=0; irow<nrows; irow++) {
-        AliTPCClustersRow *clrow=carray.GetRow(isec,irow);
-        if (!clrow) continue;
-        carray.StoreRow(isec,irow);
-        carray.ClearRow(isec,irow);
-    }
-
-  } // end of loop over sectors  
-
-  //  cerr<<"Number of made clusters : "<<nclusters<<"                        \n";
-  fLoader->WriteRecPoints("OVERWRITE");
-  
-  
-} // end of function
-
-//_________________________________________________________________
-void AliTPC::Hits2ExactClustersSector(Int_t isec)
-{
-  //--------------------------------------------------------
-  //calculate exact cross point of track and given pad row
-  //resulting values are expressed in "digit" coordinata
-  //--------------------------------------------------------
-
-  //-----------------------------------------------------------------
-  // Origin: Marian Ivanov  GSI Darmstadt, m.ivanov@gsi.de
-  //-----------------------------------------------------------------
-  //
-  if (fClustersArray==0){    
-    return;
-  }
-  //
-  TParticle *particle; // pointer to a given particle
-  AliTPChit *tpcHit; // pointer to a sigle TPC hit
-  //  Int_t sector,nhits;
-  Int_t ipart;
-  const Int_t kcmaxhits=30000;
-  AliTPCFastVector * xxxx = new AliTPCFastVector(kcmaxhits*4);
-  AliTPCFastVector & xxx = *xxxx;
-  Int_t maxhits = kcmaxhits;
-  //construct array for each padrow
-  for (Int_t i=0; i<fTPCParam->GetNRow(isec);i++) 
-    fClustersArray->CreateRow(isec,i);
-  
-  //---------------------------------------------------------------
-  //  Get the access to the tracks 
-  //---------------------------------------------------------------
-  
-  TTree *tH = TreeH();
-  if (tH == 0x0)
-   {
-     Fatal("Hits2Clusters","Can not find TreeH in folder");
-     return;
-   }
-  SetTreeAddress();
-
-  Stat_t ntracks = tH->GetEntries();
-  Int_t npart = gAlice->GetMCApp()->GetNtrack();
-  //MI change
-  TBranch * branch=0;
-  if (fHitType>1) branch = tH->GetBranch("TPC2");
-  else branch = tH->GetBranch("TPC");
-
-  //------------------------------------------------------------
-  // Loop over tracks
-  //------------------------------------------------------------
-
-  for(Int_t track=0;track<ntracks;track++){ 
-    Bool_t isInSector=kTRUE;
-    ResetHits();
-     isInSector = TrackInVolume(isec,track);
-    if (!isInSector) continue;
-    //MI change
-    branch->GetEntry(track); // get next track
-    //
-    //  Get number of the TPC hits and a pointer
-    //  to the particles
-    // Loop over hits
-    //
-    Int_t currentIndex=0;
-    Int_t lastrow=-1;  //last writen row
-
-    //M.I. changes
-
-    tpcHit = (AliTPChit*)FirstHit(-1);
-    while(tpcHit){
-      
-      Int_t sector=tpcHit->fSector; // sector number
-      if(sector != isec){
-	tpcHit = (AliTPChit*) NextHit();
-	continue; 
-      }
-
-      ipart=tpcHit->Track();
-      if (ipart<npart) particle=gAlice->GetMCApp()->Particle(ipart);
-      
-      //find row number
-
-      Float_t  x[3]={tpcHit->X(),tpcHit->Y(),tpcHit->Z()};
-      Int_t    index[3]={1,isec,0};
-      Int_t    currentrow = fTPCParam->GetPadRow(x,index) ;	
-      if (currentrow<0) {tpcHit = (AliTPChit*)NextHit(); continue;}
-      if (lastrow<0) lastrow=currentrow;
-      if (currentrow==lastrow){
-	if ( currentIndex>=maxhits){
-	  maxhits+=kcmaxhits;
-	  xxx.ResizeTo(4*maxhits);
-	}     
-	xxx(currentIndex*4)=x[0];
-	xxx(currentIndex*4+1)=x[1];
-	xxx(currentIndex*4+2)=x[2];	
-	xxx(currentIndex*4+3)=tpcHit->fQ;
-	currentIndex++;	
-      }
-      else 
-	if (currentIndex>2){
-	  Float_t sumx=0;
-	  Float_t sumx2=0;
-	  Float_t sumx3=0;
-	  Float_t sumx4=0;
-	  Float_t sumy=0;
-	  Float_t sumxy=0;
-	  Float_t sumx2y=0;
-	  Float_t sumz=0;
-	  Float_t sumxz=0;
-	  Float_t sumx2z=0;
-	  Float_t sumq=0;
-	  for (Int_t index=0;index<currentIndex;index++){
-	    Float_t x,x2,x3,x4;
-	    x=x2=x3=x4=xxx(index*4);
-	    x2*=x;
-	    x3*=x2;
-	    x4*=x3;
-	    sumx+=x;
-	    sumx2+=x2;
-	    sumx3+=x3;
-	    sumx4+=x4;
-	    sumy+=xxx(index*4+1);
-	    sumxy+=xxx(index*4+1)*x;
-	    sumx2y+=xxx(index*4+1)*x2;
-	    sumz+=xxx(index*4+2);
-	    sumxz+=xxx(index*4+2)*x;
-	    sumx2z+=xxx(index*4+2)*x2;	 
-	    sumq+=xxx(index*4+3);
-	  }
-	  Float_t centralPad = (fTPCParam->GetNPads(isec,lastrow)-1)/2;
-	  Float_t det=currentIndex*(sumx2*sumx4-sumx3*sumx3)-sumx*(sumx*sumx4-sumx2*sumx3)+
-	    sumx2*(sumx*sumx3-sumx2*sumx2);
-	  
-	  Float_t detay=sumy*(sumx2*sumx4-sumx3*sumx3)-sumx*(sumxy*sumx4-sumx2y*sumx3)+
-	    sumx2*(sumxy*sumx3-sumx2y*sumx2);
-	  Float_t detaz=sumz*(sumx2*sumx4-sumx3*sumx3)-sumx*(sumxz*sumx4-sumx2z*sumx3)+
-	    sumx2*(sumxz*sumx3-sumx2z*sumx2);
-	  
-	  Float_t detby=currentIndex*(sumxy*sumx4-sumx2y*sumx3)-sumy*(sumx*sumx4-sumx2*sumx3)+
-	    sumx2*(sumx*sumx2y-sumx2*sumxy);
-	  Float_t detbz=currentIndex*(sumxz*sumx4-sumx2z*sumx3)-sumz*(sumx*sumx4-sumx2*sumx3)+
-	    sumx2*(sumx*sumx2z-sumx2*sumxz);
-	  
-	  if (TMath::Abs(det)<0.00001){
-	     tpcHit = (AliTPChit*)NextHit();
-	    continue;
-	  }
-	
-	  Float_t y=detay/det+centralPad;
-	  Float_t z=detaz/det;	
-	  Float_t by=detby/det; //y angle
-	  Float_t bz=detbz/det; //z angle
-	  sumy/=Float_t(currentIndex);
-	  sumz/=Float_t(currentIndex);
-
-	  AliTPCClustersRow * row = (fClustersArray->GetRow(isec,lastrow));
-	  if (row!=0) {
-	    AliComplexCluster* cl = new((AliComplexCluster*)row->Append()) AliComplexCluster ;
-	    //	  AliComplexCluster cl;
-	    cl->fX=z;
-	    cl->fY=y;
-	    cl->fQ=sumq;
-	    cl->fSigmaX2=bz;
-	    cl->fSigmaY2=by;
-	    cl->fTracks[0]=ipart;
-	  }
-	  currentIndex=0;
-	  lastrow=currentrow;
-	} //end of calculating cluster for given row
-	
-	
-      tpcHit = (AliTPChit*)NextHit();
-    } // end of loop over hits
-  }   // end of loop over tracks 
-  //write padrows to tree 
-  for (Int_t ii=0; ii<fTPCParam->GetNRow(isec);ii++) {
-    fClustersArray->StoreRow(isec,ii);    
-    fClustersArray->ClearRow(isec,ii);        
-  }
-  xxxx->Delete();
- 
 }
 
 
@@ -2524,23 +2098,6 @@ void AliTPC::TransportElectron(Float_t *xyz, Int_t *index)
   //add nonisochronity (not implemented yet)  
 }
   
-ClassImp(AliTPCdigit)
- 
-//_____________________________________________________________________________
-AliTPCdigit::AliTPCdigit(Int_t *tracks, Int_t *digits):
-  AliDigit(tracks)
-{
-  //
-  // Creates a TPC digit object
-  //
-  fSector     = digits[0];
-  fPadRow     = digits[1];
-  fPad        = digits[2];
-  fTime       = digits[3];
-  fSignal     = digits[4];
-}
-
- 
 ClassImp(AliTPChit)
  
 //_____________________________________________________________________________
@@ -2997,177 +2554,6 @@ void AliTPC::LoadPoints3(Int_t)
 
 
 
-void AliTPC::FindTrackHitsIntersection(TClonesArray * /*arr*/)
-{
-
-  //
-  //fill clones array with intersection of current point with the
-  //middle of the row
-  Int_t sector;
-  Int_t ipart;
-  
-  const Int_t kcmaxhits=30000;
-  AliTPCFastVector * xxxx = new AliTPCFastVector(kcmaxhits*4);
-  AliTPCFastVector & xxx = *xxxx;
-  Int_t maxhits = kcmaxhits;
-      
-  //
-  AliTPChit * tpcHit=0;
-  tpcHit = (AliTPChit*)FirstHit2(-1);
-  Int_t currentIndex=0;
-  Int_t lastrow=-1;  //last writen row
-
-  while (tpcHit){
-    if (tpcHit==0) continue;
-    sector=tpcHit->fSector; // sector number
-    ipart=tpcHit->Track();
-    
-    //find row number
-    
-    Float_t  x[3]={tpcHit->X(),tpcHit->Y(),tpcHit->Z()};
-    Int_t    index[3]={1,sector,0};
-    Int_t    currentrow = fTPCParam->GetPadRow(x,index) ;	
-    if (currentrow<0) continue;
-    if (lastrow<0) lastrow=currentrow;
-    if (currentrow==lastrow){
-      if ( currentIndex>=maxhits){
-	maxhits+=kcmaxhits;
-	xxx.ResizeTo(4*maxhits);
-      }     
-      xxx(currentIndex*4)=x[0];
-      xxx(currentIndex*4+1)=x[1];
-      xxx(currentIndex*4+2)=x[2];	
-      xxx(currentIndex*4+3)=tpcHit->fQ;
-      currentIndex++;	
-    }
-    else 
-      if (currentIndex>2){
-	Float_t sumx=0;
-	Float_t sumx2=0;
-	Float_t sumx3=0;
-	Float_t sumx4=0;
-	Float_t sumy=0;
-	Float_t sumxy=0;
-	Float_t sumx2y=0;
-	Float_t sumz=0;
-	Float_t sumxz=0;
-	Float_t sumx2z=0;
-	Float_t sumq=0;
-	for (Int_t index=0;index<currentIndex;index++){
-	  Float_t x,x2,x3,x4;
-	  x=x2=x3=x4=xxx(index*4);
-	  x2*=x;
-	  x3*=x2;
-	  x4*=x3;
-	  sumx+=x;
-	  sumx2+=x2;
-	  sumx3+=x3;
-	  sumx4+=x4;
-	  sumy+=xxx(index*4+1);
-	  sumxy+=xxx(index*4+1)*x;
-	  sumx2y+=xxx(index*4+1)*x2;
-	  sumz+=xxx(index*4+2);
-	  sumxz+=xxx(index*4+2)*x;
-	  sumx2z+=xxx(index*4+2)*x2;	 
-	  sumq+=xxx(index*4+3);
-	}
-	Float_t centralPad = (fTPCParam->GetNPads(sector,lastrow)-1)/2;
-	Float_t det=currentIndex*(sumx2*sumx4-sumx3*sumx3)-sumx*(sumx*sumx4-sumx2*sumx3)+
-	  sumx2*(sumx*sumx3-sumx2*sumx2);
-	
-	Float_t detay=sumy*(sumx2*sumx4-sumx3*sumx3)-sumx*(sumxy*sumx4-sumx2y*sumx3)+
-	  sumx2*(sumxy*sumx3-sumx2y*sumx2);
-	Float_t detaz=sumz*(sumx2*sumx4-sumx3*sumx3)-sumx*(sumxz*sumx4-sumx2z*sumx3)+
-	  sumx2*(sumxz*sumx3-sumx2z*sumx2);
-	
-	Float_t detby=currentIndex*(sumxy*sumx4-sumx2y*sumx3)-sumy*(sumx*sumx4-sumx2*sumx3)+
-	  sumx2*(sumx*sumx2y-sumx2*sumxy);
-	Float_t detbz=currentIndex*(sumxz*sumx4-sumx2z*sumx3)-sumz*(sumx*sumx4-sumx2*sumx3)+
-	  sumx2*(sumx*sumx2z-sumx2*sumxz);
-	
-	Float_t y=detay/det+centralPad;
-	Float_t z=detaz/det;	
-	Float_t by=detby/det; //y angle
-	Float_t bz=detbz/det; //z angle
-	sumy/=Float_t(currentIndex);
-	sumz/=Float_t(currentIndex);
-	
-	AliComplexCluster cl;
-	cl.fX=z;
-	cl.fY=y;
-	cl.fQ=sumq;
-	cl.fSigmaX2=bz;
-	cl.fSigmaY2=by;
-	cl.fTracks[0]=ipart;
-	
-	AliTPCClustersRow * row = (fClustersArray->GetRow(sector,lastrow));
-	if (row!=0) row->InsertCluster(&cl);
-	currentIndex=0;
-	lastrow=currentrow;
-      } //end of calculating cluster for given row
-        	
-  } // end of loop over hits
-  xxxx->Delete();
-
-}
-//_______________________________________________________________________________
-void AliTPC::Digits2Reco(Int_t firstevent,Int_t lastevent)
-{
-  // produces rec points from digits and writes them on the root file
-  // AliTPCclusters.root
-
-  TDirectory *cwd = gDirectory;
-
-
-  AliTPCParamSR *dig=(AliTPCParamSR *)gDirectory->Get("75x40_100x60");
-  if(dig){
-    printf("You are running 2 pad-length geom hits with 3 pad-length geom digits\n");
-    delete dig;
-    dig = new AliTPCParamSR();
-  }
-  else
-  {
-   dig=(AliTPCParamSR *)gDirectory->Get("75x40_100x60_150x60"); 
-  }
-  if(!dig){
-   printf("No TPC parameters found\n");
-   exit(3);
-  }
-   
-  SetParam(dig);
-  cout<<"AliTPC::Digits2Reco: TPC parameteres have been set"<<endl; 
-  TFile *out;
-  if(!gSystem->Getenv("CONFIG_FILE")){
-    out=TFile::Open("AliTPCclusters.root","recreate");
-  }
-  else {
-    const char *tmp1;
-    const char *tmp2;
-    char tmp3[80];
-    tmp1=gSystem->Getenv("CONFIG_FILE_PREFIX");
-    tmp2=gSystem->Getenv("CONFIG_OUTDIR");
-    sprintf(tmp3,"%s%s/AliTPCclusters.root",tmp1,tmp2);
-    out=TFile::Open(tmp3,"recreate");
-  }
-
-  TStopwatch timer;
-  cout<<"AliTPC::Digits2Reco - determination of rec points begins"<<endl;
-  timer.Start();
-  cwd->cd();
-  for(Int_t iev=firstevent;iev<lastevent+1;iev++){
-
-    printf("Processing event %d\n",iev);
-    Digits2Clusters(iev);
-  }
-  cout<<"AliTPC::Digits2Reco - determination of rec points ended"<<endl;
-  timer.Stop();
-  timer.Print();
-  out->Close();
-  cwd->cd(); 
-
-
-}
-
 AliLoader* AliTPC::MakeLoader(const char* topfoldername)
 {
 //Makes TPC loader
@@ -3221,47 +2607,4 @@ AliTPCParam* AliTPC::LoadTPCParam(TFile *file) {
 
 }
 
-
-//____________________________________________________________________________
-Double_t SigmaY2(Double_t r, Double_t tgl, Double_t pt)
-{
-  //
-  // Parametrised error of the cluster reconstruction (pad direction)
-  //
-  // Sigma rphi
-  const Float_t kArphi=0.41818e-2;
-  const Float_t kBrphi=0.17460e-4;
-  const Float_t kCrphi=0.30993e-2;
-  const Float_t kDrphi=0.41061e-3;
-
-  pt=TMath::Abs(pt)*1000.;
-  Double_t x=r/pt;
-  tgl=TMath::Abs(tgl);
-  Double_t s=kArphi - kBrphi*r*tgl + kCrphi*x*x + kDrphi*x;
-  if (s<0.4e-3) s=0.4e-3;
-  s*=1.3; //Iouri Belikov
-
-  return s;
-}
-
-
-//____________________________________________________________________________
-Double_t SigmaZ2(Double_t r, Double_t tgl)
-{
-  //
-  // Parametrised error of the cluster reconstruction (drift direction)
-  //
-  // Sigma z
-  const Float_t kAz=0.39614e-2;
-  const Float_t kBz=0.22443e-4;
-  const Float_t kCz=0.51504e-1;
-
-
-  tgl=TMath::Abs(tgl);
-  Double_t s=kAz - kBz*r*tgl + kCz*tgl*tgl;
-  if (s<0.4e-3) s=0.4e-3;
-  s*=1.3; //Iouri Belikov
-
-  return s;
-}
 

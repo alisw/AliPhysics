@@ -32,9 +32,6 @@
 #include "AliTPCParam.h"
 #include "AliClusters.h"
 
-extern Double_t SigmaY2(Double_t, Double_t, Double_t);
-extern Double_t SigmaZ2(Double_t, Double_t);
-
 ClassImp(AliTPCtracker)
 
 //_____________________________________________________________________________
@@ -313,8 +310,8 @@ Int_t AliTPCtracker::FollowProlongation(AliTPCseed& t, Int_t rf) {
     Double_t maxchi2=kMaxCHI2;
     const AliTPCRow &krow=fSectors[s][nr];
     Double_t pt=t.GetConvConst()/(100/0.299792458/0.2)/t.Get1Pt();
-    Double_t sy2=SigmaY2(t.GetX(),t.GetTgl(),pt);
-    Double_t sz2=SigmaZ2(t.GetX(),t.GetTgl());
+    Double_t sy2=AliTPCcluster::SigmaY2(t.GetX(),t.GetTgl(),pt);
+    Double_t sz2=AliTPCcluster::SigmaZ2(t.GetX(),t.GetTgl());
     Double_t road=4.*sqrt(t.GetSigmaY2() + sy2), y=t.GetY(), z=t.GetZ();
 
     if (road>kMaxROAD) {
@@ -450,8 +447,8 @@ Int_t AliTPCtracker::FollowBackProlongation
     Int_t index=0;
     Double_t maxchi2=kMaxCHI2;
     Double_t pt=seed.GetConvConst()/(100/0.299792458/0.2)/seed.Get1Pt();
-    Double_t sy2=SigmaY2(seed.GetX(),seed.GetTgl(),pt);
-    Double_t sz2=SigmaZ2(seed.GetX(),seed.GetTgl());
+    Double_t sy2=AliTPCcluster::SigmaY2(seed.GetX(),seed.GetTgl(),pt);
+    Double_t sz2=AliTPCcluster::SigmaZ2(seed.GetX(),seed.GetTgl());
     Double_t road=4.*sqrt(seed.GetSigmaY2() + sy2), z=seed.GetZ();
     if (road>kMaxROAD) {
       Warning("FollowBackProlongation","Too broad road !"); 

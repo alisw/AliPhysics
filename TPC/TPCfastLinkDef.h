@@ -4,13 +4,14 @@
 
 /* $Id$ */
 
-
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
  
-#pragma link C++ class  AliTPCPid+;
+#pragma link C++ class AliTPCFast;
 
+#pragma link C++ class AliTPCtrackerParam; 
+#pragma link C++ class AliTPCkineGrid;
 
 #endif
 

@@ -141,7 +141,6 @@ public:
    //   
    AliCluster * GetCluster (int) const {return 0;}
    AliTPCclusterMI *GetClusterMI(Int_t index) const;
-   Int_t Clusters2Tracks(const TFile */*in*/, TFile */*out*/) const {return 0;}
    Int_t Clusters2Tracks();
    virtual void  CookLabel(AliTPCseed *t,Float_t wrong) const; 
    
@@ -157,7 +156,6 @@ public:
    Int_t UpdateClusters(AliTPCseed& t,  Int_t nr);
    Int_t FollowToNextCluster( AliTPCseed& t, Int_t nr);
 
-   virtual Int_t PropagateBack (const TFile *, TFile *) const {return 0;}
    Int_t PropagateBack(TObjArray * arr);
    Int_t PropagateBack(AliESD * event);
    Int_t PropagateBack(AliTPCseed *pt, Int_t row0, Int_t row1);   

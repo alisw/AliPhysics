@@ -1,0 +1,13 @@
+SRCS:=  AliTPC.cxx \
+        AliTPCv0.cxx AliTPCv1.cxx AliTPCv2.cxx AliTPCv3.cxx \
+        AliTPCTrackHits.cxx AliTPCTrackHitsV2.cxx \
+        AliTPCDigitizer.cxx \
+        AliTPCBuffer.cxx AliTPCDDLRawData.cxx
+
+
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR:= TPCsimLinkDef.h
+
+EINCLUDE:= CONTAINERS RAW
+

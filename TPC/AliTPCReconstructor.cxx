@@ -25,7 +25,6 @@
 #include "AliTPCReconstructor.h"
 #include "AliRunLoader.h"
 #include "AliRun.h"
-#include "AliTPC.h"
 #include "AliTPCclustererMI.h"
 #include "AliTPCtrackerMI.h"
 #include "AliTPCpidESD.h"
@@ -104,19 +103,12 @@ AliTPCParam* AliTPCReconstructor::GetTPCParam(AliRunLoader* runLoader) const
 {
 // get the TPC parameters
 
-  if (!runLoader->GetAliRun()) runLoader->LoadgAlice();
-  if (!runLoader->GetAliRun()) {
-    Error("GetTPCParam", "couldn't get AliRun object");
-    return NULL;
-  }
-  AliTPC* tpc = (AliTPC*) runLoader->GetAliRun()->GetDetector("TPC");
-  if (!tpc) {
-    Error("GetTPCParam", "couldn't get TPC detector");
-    return NULL;
-  }
-  if (!tpc->GetParam()) {
-    Error("GetTPCParam", "no TPC parameters available");
-    return NULL;
-  }
-  return tpc->GetParam();
+  TDirectory* saveDir = gDirectory;
+  runLoader->CdGAFile();
+
+  AliTPCParam* param = (AliTPCParam*) gDirectory->Get("75x40_100x60_150x60");
+  if (!param) Error("GetTPCParam", "no TPC parameters found");
+
+  saveDir->cd();
+  return param;
 }

@@ -1,0 +1,14 @@
+SRCS:=  AliTPCLoader.cxx \
+        AliTPCPRF2D.cxx AliTPCRF1D.cxx \
+        AliDetectorParam.cxx AliTPCParam.cxx \
+        AliTPCParamSR.cxx AliTPCParamCR.cxx \
+        AliTPCdigit.cxx \
+        AliSimDigits.cxx AliDigitsArray.cxx AliTPCDigitsArray.cxx
+	
+
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR:= TPCbaseLinkDef.h
+
+EINCLUDE:= CONTAINERS RAW
+

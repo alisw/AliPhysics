@@ -24,7 +24,6 @@
 //                                                                           //
 //                                                                          //
 ///////////////////////////////////////////////////////////////////////////////
-#include "AliTPC.h"
 #include "AliTPCParam.h" 
 #include "AliSegmentArray.h" 
 #include "AliComplexCluster.h"

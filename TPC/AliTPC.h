@@ -11,9 +11,7 @@
 #include "AliDetector.h"
 #include "AliHit.h" 
 #include "AliDigit.h" 
-//#include "TLorentzVector.h" 
-
-//#include "AliTPCLoader.h"
+#include <TVector.h>
 
 
 class TMatrix;
@@ -25,7 +23,6 @@ class TTree;
 class TFile;
 class AliTPCParam;
 class AliTPCDigitsArray;
-class AliTPCClustersArray;
 class AliTPCTrackHitsV2; // M.I.
 class AliTPCTrackHits; // M.I.  -MI4 old hits - to be removed later
 //class TLorentzVector;
@@ -47,8 +44,6 @@ public:
   virtual void  BuildGeometry();
   virtual void  CreateGeometry() {}
   virtual void  CreateMaterials();
-  virtual void  Hits2Clusters(Int_t eventn=0);
-  virtual void  Hits2ExactClustersSector(Int_t isec); // MI change calculate "exact" cluster position
   
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
   virtual void  SDigits2Digits(){;} //MI change -cycling to production
@@ -57,14 +52,11 @@ public:
   virtual void  Hits2SDigits(); // MI - cycling around
   virtual void  Hits2SDigits2(Int_t eventnumber=0);
 
-  virtual void  Digits2Reco(Int_t firstevent=0,Int_t lastevent=0);
   virtual void  Hits2Digits();
   virtual void  Hits2Digits(Int_t eventnumber);   //MI change
   virtual void  Hits2DigitsSector(Int_t isec);  //MI change
   virtual void  Init();
   virtual Int_t IsVersion() const =0;
-  virtual void  Digits2Clusters(Int_t eventnumber=0) const;
-  virtual void  Clusters2Tracks() const;
 
   virtual void  Digits2Raw();
 
@@ -86,11 +78,9 @@ public:
   virtual void  StepManager()=0;
   virtual void  DrawDetector() {}
   AliTPCDigitsArray*  GetDigitsArray() {return fDigitsArray;} //MI change
-  AliTPCClustersArray* GetClustersArray(){return fClustersArray;} //MI change
   AliTPCParam *GetParam(){return fTPCParam;} // M.K, M.I changes
   void SetParam(AliTPCParam *param){fTPCParam=param;} // M.K, M.I changes
   void SetDigitsArray(AliTPCDigitsArray* param) {fDigitsArray=param;}  //MI change
-  void SetClustersArray(AliTPCClustersArray *clusters) {fClustersArray = clusters;} //MI change
 
 // additional function neccesary for the new hits 
    virtual void MakeBranch2(Option_t *opt=" ", const char *file=0);  //
@@ -108,9 +98,6 @@ public:
    virtual void LoadPoints3(Int_t dumy);
    virtual void FinishPrimary();
    virtual void RemapTrackHitIDs(Int_t *map);
-   virtual void FindTrackHitsIntersection(TClonesArray * arr);
-   //fill clones array with intersection of current point with the
-   //middle of the row
    void SetHitType(Int_t type){fHitType =type;} //set type of hit container
    void SetDigitsSwitch(Int_t sw){fDigitsSwitch = sw;}
    void SetDefSwitch(Int_t def){fDefaults = def;}
@@ -120,6 +107,7 @@ public:
    void    SetActiveSectors(Int_t * sectors, Int_t n);  //set active sectors
    Int_t GetHitType() const {return fHitType;}
    void    SetActiveSectors(Int_t flag=0); //loop over al hits and set active only hitted sectors
+   Bool_t  TrackInVolume(Int_t id,Int_t track);  //return true if current track is in volume
 
 // static functions
    static AliTPCParam* LoadTPCParam(TFile *file); 
@@ -133,7 +121,6 @@ protected:
   Int_t          fNsectors;         // Number of sectors in TPC
   //MI changes
   AliTPCDigitsArray * fDigitsArray;              //!detector digit object  
-  AliTPCClustersArray * fClustersArray; //!detector cluster object
   AliTPCParam *fTPCParam;           // pointer to TPC parameters 
   AliTPCTrackHitsV2 *fTrackHits;      //!hits for given track M.I.
   AliTPCTrackHits *fTrackHitsOld;      //!hits for given track M.I. MIold -
@@ -151,7 +138,6 @@ protected:
    
  private:
   //
-   Bool_t  TrackInVolume(Int_t id,Int_t track);  //return true if current track is in volume
   void SetDefaults();
   void DigitizeRow(Int_t irow,Int_t isec,TObjArray **rowTriplet);
   Float_t GetSignal(TObjArray *p1, Int_t ntr, AliTPCFastMatrix *m1, 
@@ -174,25 +160,6 @@ protected:
 
 
 //_____________________________________________________________________________
-
-class AliTPCdigit : public AliDigit {
-public:
-   Int_t     fSector;     //array of volumes
-   Int_t     fPadRow;     //Row number
-   Int_t     fPad ;       //Pad number
-   Int_t     fTime;       //Time bucket
-   Int_t     fSignal;     //Signal amplitude
- 
-public:
-   AliTPCdigit() {}
-   AliTPCdigit(Int_t *tracks, Int_t *digits);
-   virtual ~AliTPCdigit() {}
- 
-   ClassDef(AliTPCdigit,1)  // Time Projection Chamber digits
-};
- 
- 
-//_____________________________________________________________________________
  
 class AliTPChit : public AliHit {
 public:
@@ -209,6 +176,15 @@ public:
    void SetZ(Float_t z){fZ = z;}
  
    ClassDef(AliTPChit,1)  // Time Projection Chamber hits
+};
+
+//_____________________________________________________________________________
+class AliTPCFastVector : public TVector {
+public :
+  AliTPCFastVector(Int_t size):TVector(size){};
+  virtual ~AliTPCFastVector(){;}
+  Float_t & UncheckedAt(Int_t index) const  {return  fElements[index];} //fast acces  
+  
 };
 
 #endif

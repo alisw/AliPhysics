@@ -25,6 +25,9 @@ public:
   Int_t IsUsed() const {return (fQ<0) ? 1 : 0;}
   Float_t GetQ() const {return TMath::Abs(fQ);}
 
+  static Double_t SigmaY2(Double_t r, Double_t tgl, Double_t pt);
+  static Double_t SigmaZ2(Double_t r, Double_t tgl);
+
 private:
   Float_t   fQ ;       //Q of cluster (in ADC counts)
   
