@@ -21,6 +21,7 @@ class AliPHOSClusterizer ;
 class AliPHOSTrackSegmentMaker ;
 class AliPHOSPID ;
 class AliPHOSSDigitizer ;
+class AliESD ;
 
 // --- Standard library ---
 
@@ -40,7 +41,8 @@ public:
    
   virtual ~AliPHOSReconstructioner() ;
 
-  virtual void Exec(Option_t) ;
+  virtual void Exec(Option_t *) ;
+  void Clusters2Tracks(Int_t ievent, AliESD *event);
 
   AliPHOSDigitizer         * GetDigitizer()  const { return fDigitizer   ; }
   AliPHOSClusterizer       * GetClusterizer()const { return fClusterizer ; }
@@ -59,7 +61,7 @@ public:
 
   AliPHOSReconstructioner & operator = (const AliPHOSReconstructioner & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed
-    Fatal("operator =", "not implementeyd") ;
+    Fatal("operator =", "not implemented") ;
     return *this ; 
   }
   

@@ -64,12 +64,15 @@
 
 // --- AliRoot header files ---
 #include "AliRunLoader.h"
+#include "AliESD.h"
+#include "AliESDCaloTrack.h"
 #include "AliPHOSReconstructioner.h"
 #include "AliPHOSClusterizerv1.h"
 #include "AliPHOSDigitizer.h"
 #include "AliPHOSSDigitizer.h"
 #include "AliPHOSTrackSegmentMakerv1.h"
 #include "AliPHOSPIDv1.h"
+#include "AliPHOSGetter.h"
 
 #include "AliPHOSLoader.h"
 
@@ -160,7 +163,7 @@ TTask("AliPHOSReconstructioner",evFoldName)
   fIsInitialized = kTRUE ;
 } 
 //____________________________________________________________________________
-void AliPHOSReconstructioner::Exec(Option_t opt)
+void AliPHOSReconstructioner::Exec(Option_t *opt)
 {
   //check, if the names of branches, which should be made conicide with already
   //existing
@@ -168,6 +171,32 @@ void AliPHOSReconstructioner::Exec(Option_t opt)
     return ; 
   if(!fIsInitialized)
     Init() ;
+}
+//____________________________________________________________________________
+void AliPHOSReconstructioner:: Clusters2Tracks(Int_t ievent, AliESD *event)
+{
+  // Convert PHOS reconstructed particles into ESD object for event# ievent.
+  // ESD object is returned as an argument event
+
+  if(!fIsInitialized) Init() ;
+
+  fClusterizer->SetEventRange(ievent,ievent);
+  fClusterizer->ExecuteTask();
+
+  fTSMaker    ->SetEventRange(ievent,ievent);
+  fTSMaker    ->ExecuteTask();
+  
+  fPID        ->SetEventRange(ievent,ievent);
+  fPID        ->ExecuteTask();
+
+  AliPHOSGetter *gime = AliPHOSGetter::Instance();
+  TClonesArray *recParticles = gime->RecParticles();
+  Int_t nOfRecParticles = recParticles->GetEntries();
+  for (Int_t recpart=0; recpart<nOfRecParticles; recpart++) {
+    AliESDCaloTrack *ct = new AliESDCaloTrack((AliPHOSRecParticle*)recParticles->At(recpart));
+    event->AddCaloTrack(ct);
+  }
+  
 }
 //____________________________________________________________________________
  void AliPHOSReconstructioner::Init()
