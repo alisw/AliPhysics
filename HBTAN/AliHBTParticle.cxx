@@ -54,6 +54,7 @@ AliHBTParticle::AliHBTParticle(Int_t pdg, Float_t prob, Int_t idx,
 }
 //______________________________________________________________________________
 AliHBTParticle::AliHBTParticle(const AliHBTParticle& in):
+   TObject(in),
    fPdgIdx(in.fPdgIdx), fIdxInEvent(in.fIdxInEvent),
    fNPids(in.fNPids),fPids(new Int_t[fNPids]),fPidProb(new Float_t[fNPids]),
    fCalcMass(in.GetCalcMass()),
@@ -78,6 +79,45 @@ AliHBTParticle::AliHBTParticle(const TParticle &p,Int_t idx):
 {
  //all copied in the initialization
  SetPdgCode(p.GetPdgCode());
+}
+//______________________________________________________________________________
+
+AliHBTParticle::~AliHBTParticle()
+{
+//dtor  
+  delete [] fPids;
+  delete [] fPidProb;
+}
+//______________________________________________________________________________
+
+AliHBTParticle& AliHBTParticle::operator=(const AliHBTParticle& in)
+{
+//assigment operator
+  
+  fNPids = in.fNPids;
+  delete [] fPids;
+  delete [] fPidProb;
+  Int_t* fPids = new Int_t[fNPids];
+  Float_t* fPidProb = new Float_t[fNPids];
+  for (Int_t i = 0; i < fNPids;i++)
+   {
+     fPids[i]    = in.fPids[i];
+     fPidProb[i] = in.fPidProb[i];
+   }
+   
+  fPdgIdx = in.fPdgIdx; 
+  fIdxInEvent = in.fIdxInEvent;  
+  fCalcMass = in.GetCalcMass();
+  fPx = in.Px();
+  fPy = in.Py();
+  fPz = in.Pz();
+  fE = in.Energy(); 
+  fVx = in.Vx();
+  fVy = in.Vy();
+  fVz = in.Vz();
+  fVt = in.T();
+  
+  return *this;
 }
 //______________________________________________________________________________
 

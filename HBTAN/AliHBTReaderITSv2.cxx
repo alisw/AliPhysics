@@ -1,22 +1,18 @@
-
 #include "AliHBTReaderITSv2.h"
 
-#include <Riostream.h>
-#include <Riostream.h>
+#include <Varargs.h>
+
 #include <TString.h>
 #include <TObjString.h>
 #include <TTree.h>
-#include <TFile.h>
 #include <TParticle.h>
 
 #include <AliRun.h>
 #include <AliRunLoader.h>
 #include <AliLoader.h>
+#include <AliStack.h>
 #include <AliMagF.h>
-#include <AliITS.h>
 #include <AliITStrackV2.h>
-#include <AliITStrackerV2.h>
-#include <AliITSgeom.h>
 
 #include "AliHBTRun.h"
 #include "AliHBTEvent.h"
@@ -26,322 +22,285 @@
 
 ClassImp(AliHBTReaderITSv2)
 
-AliHBTReaderITSv2::AliHBTReaderITSv2():fFileName("galice.root")
+AliHBTReaderITSv2::AliHBTReaderITSv2():
+ fFileName("galice.root"),
+ fRunLoader(0x0),
+ fITSLoader(0x0),
+ fMagneticField(0.0),
+ fUseMagFFromRun(kTRUE)
 {
   //constructor, 
   //Defaults:
   //  galicefilename = "galice.root"
-  fParticles = 0x0;
-  fTracks    = 0x0;
-  fIsRead = kFALSE;
 }
 /********************************************************************/
 
-AliHBTReaderITSv2::AliHBTReaderITSv2(const Char_t* galicefilename):fFileName(galicefilename)
+AliHBTReaderITSv2::AliHBTReaderITSv2(const Char_t* galicefilename):
+ fFileName(galicefilename),
+ fRunLoader(0x0),
+ fITSLoader(0x0),
+ fMagneticField(0.0),
+ fUseMagFFromRun(kTRUE)
 {
   //constructor, 
   //Defaults:
   //  galicefilename = "galice.root"
-  fParticles = new AliHBTRun();
-  fTracks    = new AliHBTRun();
-  fIsRead = kFALSE;
 }
 /********************************************************************/
 
 AliHBTReaderITSv2::AliHBTReaderITSv2(TObjArray* dirs, const Char_t* galicefilename): 
-       AliHBTReader(dirs), fFileName(galicefilename)
+ AliHBTReader(dirs),
+ fFileName(galicefilename),
+ fRunLoader(0x0),
+ fITSLoader(0x0),
+ fMagneticField(0.0),
+ fUseMagFFromRun(kTRUE)
 {
   //constructor, 
   //Defaults:
   //  galicefilename = "galice.root"
   
-  fParticles = new AliHBTRun();
-  fTracks    = new AliHBTRun();
-  fIsRead = kFALSE;
+}
+/********************************************************************/
+ 
+void AliHBTReaderITSv2::Rewind()
+{
+  //rewinds reading
+  delete fRunLoader;
+  fRunLoader = 0x0;
+  fCurrentDir = 0;
+  fNEventsRead= 0;
 }
 /********************************************************************/
 
 AliHBTReaderITSv2::~AliHBTReaderITSv2()
- {
-   if (fParticles) delete fParticles;
-   if (fTracks) delete fTracks;
- }
-/********************************************************************/
-/********************************************************************/
-
-AliHBTEvent* AliHBTReaderITSv2::GetParticleEvent(Int_t n)
- {
- //returns Nth event with simulated particles
- if (!fIsRead) 
-  { 
-    if (fParticles == 0x0) fParticles = new AliHBTRun();
-    if (fTracks == 0x0) fTracks    = new AliHBTRun();
-    if(Read(fParticles,fTracks))
-     {
-       Error("GetParticleEvent","Error in reading");
-       return 0x0;
-     }
-  }
- return (fParticles)?fParticles->GetEvent(n):0x0;
+{
+  //dtor
+  delete fRunLoader;
 }
 /********************************************************************/
-
-AliHBTEvent* AliHBTReaderITSv2::GetTrackEvent(Int_t n)
- {
- //returns Nth event with reconstructed tracks
- if (!fIsRead) 
-  { 
-    if (fParticles == 0x0) fParticles = new AliHBTRun();
-    if (fTracks == 0x0) fTracks    = new AliHBTRun();
-    if(Read(fParticles,fTracks))
-     {
-       Error("GetTrackEvent","Error in reading");
-       return 0x0;
-     }
-   }
-  return (fTracks)?fTracks->GetEvent(n):0x0;
- }
-/********************************************************************/
-
-Int_t AliHBTReaderITSv2::GetNumberOfPartEvents()
- {
- //returns number of events of particles
-  if (!fIsRead)
-   {
-    if (fParticles == 0x0) fParticles = new AliHBTRun();
-    if (fTracks == 0x0) fTracks    = new AliHBTRun();
-    if(Read(fParticles,fTracks))
-     {
-       Error("GetNumberOfPartEvents","Error in reading");
-       return 0;
-     }
-   }
-  return (fParticles)?fParticles->GetNumberOfEvents():0;
- }
-
-/********************************************************************/
-Int_t AliHBTReaderITSv2::GetNumberOfTrackEvents()
- {
- //returns number of events of tracks
-  if (!fIsRead) 
-   {
-    if (fParticles == 0x0) fParticles = new AliHBTRun();
-    if (fTracks == 0x0) fTracks    = new AliHBTRun();
-    if(Read(fParticles,fTracks))
-     {
-       Error("GetNumberOfTrackEvents","Error in reading");
-       return 0;
-     }
-   }
-  return (fTracks)?fTracks->GetNumberOfEvents():0;
- }
-/********************************************************************/
-/********************************************************************/
-
  
-Int_t AliHBTReaderITSv2::Read(AliHBTRun* particles, AliHBTRun *tracks)
+Int_t AliHBTReaderITSv2::ReadNext()
 {
-//reads data
- Int_t Nevents = 0; //number of events found in given directory
- Int_t Ndirs; //number of the directories to be read
- Int_t Ntracks; //number of tracks in current event
- Int_t currentdir = 0; //number of events in the current directory 
- Int_t totalNevents = 0; //total number of events read from all directories up to now
+//reads data from next event
+  
  register Int_t i = 0; //iterator
  
 // AliITStrackerV2 *tracker; // ITS tracker - used for cooking labels
- TTree *tracktree; // tree for tracks
+ TTree *tracktree = 0x0; // tree for tracks
+ AliITStrackV2 *iotrack = 0x0;
  
  Double_t xk;
  Double_t par[5]; //Kalman track parameters
  Float_t phi, lam, pt;//angles and transverse momentum
  Int_t label; //label of the current track
-
- AliITStrackV2 *iotrack = 0x0; //buffer track for reading data from tree
-
- if (!particles) //check if an object is instatiated
-  {
-    Error("Read"," particles object must instatiated before passing it to the reader");
-  }
- if (!tracks)  //check if an object is instatiated
-  {
-    Error("Read"," tracks object must instatiated before passing it to the reader");
-  }
- particles->Reset();//clear runs == delete all old events
- tracks->Reset();
-
- if (fDirs) //if array with directories is supplied by user
-  {
-    Ndirs = fDirs->GetEntries(); //get the number if directories
-  }
- else
-  {
-    Ndirs = 0; //if the array is not supplied read only from current directory
-  }
  
-// cout<<"Found "<<Ndirs<<" directory entries"<<endl;
  
+ if (fParticlesEvent == 0x0)  fParticlesEvent = new AliHBTEvent();
+ if (fTracksEvent == 0x0)  fTracksEvent = new AliHBTEvent();
+
+ fParticlesEvent->Reset();
+ fTracksEvent->Reset();
  do //do while is good even if Ndirs==0 (than read from current directory)
    {
-    TString filename = GetDirName(currentdir);
-    if (filename.IsNull())
+    if (fRunLoader == 0x0) 
+      if (OpenNextFile()) continue;//directory counter is increased inside in case of error
+
+    if (fCurrentEvent == fRunLoader->GetNumberOfEvents())
      {
-       Error("Read","Can not get directory name");
-       currentdir++;
-       continue;
+       //read next directory
+       delete fRunLoader;//close current session
+       fRunLoader = 0x0;//assure pointer is null
+       fCurrentDir++;//go to next dir
+       continue;//directory counter is increased inside in case of error
      }
-    filename = filename +"/"+ fFileName;
-    AliRunLoader* rl = AliRunLoader::Open(filename);
-    if( rl == 0x0)
-     {
-       Error("Read","Exiting due to problems with opening files.");
-       currentdir++;
-       continue;
-     }
-    
-    rl->LoadHeader();
-    rl->LoadKinematics();
-    rl->LoadgAlice();
-    gAlice = rl->GetAliRun();
-    AliITS* its = (AliITS*)gAlice->GetModule("ITS");
-    
-    AliLoader* itsl = rl->GetLoader("ITSLoader");
-    
-    if ((its == 0x0) || ( itsl== 0x0))
-     {
-       Error("Read","Can not found ITS in this run");
-       delete rl;
-       rl = 0x0;
-       currentdir++;
-       continue;
-     }
-    Nevents = rl->GetNumberOfEvents();
- 
-    if (Nevents > 0)//check if tree E exists
-     {
-      Info("Read","________________________________________________________");
-      Info("Read","Found %d event(s) in directory %s",Nevents,GetDirName(currentdir).Data());
-      Float_t mf;
-      if (fUseMagFFromRun)
-       {
-         mf = gAlice->Field()->SolenoidField();
-         Info("Read","Setting Magnetic Field from run: B=%fT",mf/10.);
-       }
-      else
-       {
-         Info("Read","Setting Own Magnetic Field: B=%fT",fMagneticField);
-         mf = fMagneticField*10.;
-       }
-      AliKalmanTrack::SetConvConst(1000/0.299792458/mf);
-      if (iotrack == 0x0) iotrack = new AliITStrackV2();
-     }
-    else
-     {//if not return an error
-       Error("Read","No events in this run");
-       delete rl;
-       rl = 0x0;
-       currentdir++;
-       continue;
-     }
-    
-    AliITSgeom *geom= its->GetITSgeom();
-    if (!geom) 
-     { 
-       Error("Read","Can't get the ITS geometry!"); 
-       delete rl;
-       rl = 0x0;
-       currentdir++;
-       continue;
-     }
-
-    itsl->LoadTracks();
-
-    for(Int_t currentEvent =0; currentEvent<Nevents;currentEvent++)//loop over all events
-     {
-       cout<<"Reading Event "<<currentEvent<<endl;
-       rl->GetEvent(currentEvent);
-       tracktree=itsl->TreeT();
-       
-       if (!tracktree) 
-         {
-           Error("Read","Can't get a tree with ITS tracks"); 
-           continue;
-         }
-       TBranch *tbranch=tracktree->GetBranch("tracks");
-       Ntracks=(Int_t)tracktree->GetEntries();
-
-       Int_t accepted = 0;
-       Int_t tpcfault = 0;
-       Int_t itsfault = 0;
-       for (i=0; i<Ntracks; i++) //loop over all tpc tracks
-        { 
-          if(i%100 == 0)cout<<"all: "<<i<<"   accepted: "<<accepted<<"   tpc faults: "<<tpcfault<<"\r";
-          
-          tbranch->SetAddress(&iotrack);
-          tracktree->GetEvent(i);
-
-          label=iotrack->GetLabel();
-          if (label < 0) 
-           {
-             tpcfault++;
-             continue;
-           }
-
-          TParticle *p = (TParticle*)gAlice->Particle(label);
-          if(p == 0x0) continue; //if returned pointer is NULL
-          if(p->GetPDG() == 0x0) continue; //if particle has crezy PDG code (not known to our database)
-
-          if(Pass(p->GetPdgCode())) continue; //check if we are intersted with particles of this type 
-                                              //if not take next partilce
-            
-          AliHBTParticle* part = new AliHBTParticle(*p,i);
-          if(Pass(part)) { delete part; continue;}//check if meets all criteria of any of our cuts
-                                                  //if it does not delete it and take next good track
-
-          iotrack->PropagateTo(3.,0.0028,65.19);
-          iotrack->PropagateToVertex();
- 
-          iotrack->GetExternalParameters(xk,par);     //get properties of the track
-          phi=TMath::ASin(par[2]) + iotrack->GetAlpha(); 
-          if (phi<-TMath::Pi()) phi+=2*TMath::Pi();
-          if (phi>=TMath::Pi()) phi-=2*TMath::Pi();
-          lam=par[3]; 
-          pt=1.0/TMath::Abs(par[4]);
-            
-          Double_t tpx = pt * TMath::Cos(phi); //track x coordinate of momentum
-          Double_t tpy = pt * TMath::Sin(phi); //track y coordinate of momentum
-          Double_t tpz = pt * lam; //track z coordinate of momentum
-           
-          Double_t mass = p->GetMass();
-          Double_t tEtot = TMath::Sqrt( tpx*tpx + tpy*tpy + tpz*tpz + mass*mass);//total energy of the track
-            
-          AliHBTParticle* track = new AliHBTParticle(p->GetPdgCode(), i, tpx, tpy , tpz, tEtot, 0., 0., 0., 0.);
-          if(Pass(track))//check if meets all criteria of any of our cuts
-                         //if it does not delete it and take next good track
-           { 
-            delete track;
-            delete part;
-            continue;
-           }
-          particles->AddParticle(totalNevents,part);//put track and particle on the run
-          tracks->AddParticle(totalNevents,track);
-          accepted++;
-        }//end of loop over tracks in the event
-       
-       totalNevents++;
-       cout<<"all: "<<i<<"   accepted: "<<accepted<<"   tpc faults: "<<tpcfault<<"   its faults: "<<itsfault<<endl;
      
-     }//end of loop over events in current directory
-    delete rl;
-    currentdir++;
-   }while(currentdir < Ndirs);//end of loop over directories specified in fDirs Obj Array
+    Info("ReadNext","Reading Event %d",fCurrentEvent);
+     
+    fRunLoader->GetEvent(fCurrentEvent);
+    
+    tracktree=fITSLoader->TreeT();
+    if (!tracktree) 
+     {
+       Error("ReadNext","Can't get a tree with ITS tracks"); 
+       fCurrentEvent++;
+       continue;
+     }
+      
+    TBranch *tbranch=tracktree->GetBranch("tracks");
+    if (!tbranch) 
+     {
+       Error("ReadNext","Can't get a branch with ITS tracks"); 
+       fCurrentEvent++;
+       continue;
+     }
+
+    AliStack* stack = fRunLoader->Stack();
+    if (stack == 0x0)
+     {
+       Error("ReadNext","Can not get stack for current event",fCurrentEvent);
+       fCurrentEvent++;
+       continue;
+     }
+     
+    //must be here because on the beginning conv. const. is not set yet 
+    if (iotrack == 0x0) iotrack = new AliITStrackV2(); //buffer track for reading data from tree
+    
+    Int_t ntr = (Int_t)tracktree->GetEntries();
+    
+    for (i=0; i < ntr; i++) //loop over all tpc tracks
+     { 
+       tbranch->SetAddress(&iotrack);
+       tracktree->GetEvent(i);
+
+       label=iotrack->GetLabel();
+       if (label < 0) 
+        {
+          continue;
+        }
+
+       TParticle *p = stack->Particle(label);
+       if(p == 0x0) continue; //if returned pointer is NULL
+       if(p->GetPDG() == 0x0) continue; //if particle has crezy PDG code (not known to our database)
+
+       if(Pass(p->GetPdgCode())) continue; //check if we are intersted with particles of this type 
+                                           //if not take next partilce
+
+       AliHBTParticle* part = new AliHBTParticle(*p,i);
+       if(Pass(part)) { delete part; continue;}//check if meets all criteria of any of our cuts
+                                               //if it does not delete it and take next good track
+
+       iotrack->PropagateTo(3.,0.0028,65.19);
+       iotrack->PropagateToVertex();
+
+       iotrack->GetExternalParameters(xk,par);     //get properties of the track
+       phi=TMath::ASin(par[2]) + iotrack->GetAlpha(); 
+       if (phi<-TMath::Pi()) phi+=2*TMath::Pi();
+       if (phi>=TMath::Pi()) phi-=2*TMath::Pi();
+       lam=par[3]; 
+       pt=1.0/TMath::Abs(par[4]);
+
+       Double_t tpx = pt * TMath::Cos(phi); //track x coordinate of momentum
+       Double_t tpy = pt * TMath::Sin(phi); //track y coordinate of momentum
+       Double_t tpz = pt * lam; //track z coordinate of momentum
+
+       Double_t mass = p->GetMass();
+       Double_t tEtot = TMath::Sqrt( tpx*tpx + tpy*tpy + tpz*tpz + mass*mass);//total energy of the track
+
+       AliHBTParticle* track = new AliHBTParticle(p->GetPdgCode(), i, tpx, tpy , tpz, tEtot, 0., 0., 0., 0.);
+       if(Pass(track))//check if meets all criteria of any of our cuts
+                      //if it does not delete it and take next good track
+        { 
+         delete track;
+         delete part;
+         continue;
+        }
+        
+       fParticlesEvent->AddParticle(part);
+       fTracksEvent->AddParticle(track);
+     }//end of loop over tracks in the event
+       
+    Info("ReadNext","Read %d tracks and %d particles from event %d (event %d in dir %d).",
+            fParticlesEvent->GetNumberOfParticles(), fTracksEvent->GetNumberOfParticles(),
+            fNEventsRead,fCurrentEvent,fCurrentDir);
+     
+    fCurrentEvent++;
+    fNEventsRead++;
+    delete iotrack;
+    return 0;
+   }while(fCurrentDir < GetNumberOfDirs());//end of loop over directories specified in fDirs Obj Array
 
  delete iotrack;
- fIsRead = kTRUE;
- return 0;
+ return 1;
 }
 
 /********************************************************************/
+Int_t AliHBTReaderITSv2::OpenNextFile()
+{
+  //opens next file
+  TString filename = GetDirName(fCurrentDir);
+  if (filename.IsNull())
+   {
+     DoOpenError("Can not get directory name");
+     return 1;
+   }
+  filename = filename +"/"+ fFileName;
+  fRunLoader = AliRunLoader::Open(filename,AliConfig::fgkDefaultEventFolderName);
+  if( fRunLoader == 0x0)
+   {
+     DoOpenError("Can not open session.");
+     return 1;
+   }
+
+  if (fRunLoader->GetNumberOfEvents() <= 0)
+   {
+     DoOpenError("There is no events in this directory.");
+     return 1;
+   }
+
+  if (fRunLoader->LoadKinematics())
+   {
+     DoOpenError("Error occured while loading kinematics.");
+     return 1;
+   }
+  fITSLoader = fRunLoader->GetLoader("ITSLoader");
+  if ( fITSLoader == 0x0)
+   {
+     DoOpenError("Exiting due to problems with opening files.");
+     return 1;
+   }
+   
+  Info("OpenNextSession","________________________________________________________");
+  Info("OpenNextSession","Found %d event(s) in directory %s",
+        fRunLoader->GetNumberOfEvents(),GetDirName(fCurrentDir).Data());
+  Float_t mf;
+  if (fUseMagFFromRun)
+   {
+     if (fRunLoader->LoadgAlice())
+      {
+        DoOpenError("Error occured while loading AliRun.");
+        return 1;
+      }
+     mf = fRunLoader->GetAliRun()->Field()->SolenoidField();
+     Info("OpenNextSession","Setting Magnetic Field from run: B=%fT",mf/10.);
+     fRunLoader->UnloadgAlice();
+   }
+  else
+   {
+     Info("OpenNextSession","Setting Own Magnetic Field: B=%fT",fMagneticField);
+     if (fMagneticField == 0x0)
+      {
+        Fatal("OpenNextSession","Magnetic field can not be 0.");
+        return 1;//pro forma
+      }
+     mf = fMagneticField*10.;
+   }
+  AliKalmanTrack::SetConvConst(1000/0.299792458/mf);
+
+  if (fITSLoader->LoadTracks())
+   {
+     DoOpenError("Error occured while loading TPC tracks.");
+     return 1;
+   }
+  
+  fCurrentEvent = 0;
+  return 0;
+}
 /********************************************************************/
 
+void AliHBTReaderITSv2::DoOpenError( const char *va_(fmt), ...)
+{
+  // Does error display and clean-up in case error caught on Open Next Session
 
+   va_list ap;
+   va_start(ap,va_(fmt));
+   Error("OpenNextFile", va_(fmt), ap);
+   va_end(ap);
+   
+   delete fRunLoader;
+   fRunLoader = 0x0;
+   fITSLoader = 0x0;
+   fCurrentDir++;
+}
+
+/********************************************************************/

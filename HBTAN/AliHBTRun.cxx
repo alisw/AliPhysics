@@ -66,5 +66,20 @@ void AliHBTRun::AddParticle(Int_t event, Int_t pdg, Int_t idx,
  if(!GetEvent(event))  fEvents->AddAtAndExpand(new AliHBTEvent, event);
  GetEvent(event)->AddParticle(pdg,idx,px,py,pz,etot,vx,vy,vz,time);
 }
-
 /**************************************************************************/ 
+
+void AliHBTRun::SetEvent(Int_t number, AliHBTEvent* event)
+{
+  //adds an event to the run
+  // makes an own copy of the event!
+  if (event == 0x0)
+   {
+     delete fEvents->RemoveAt(number);
+     return;
+   }
+  AliHBTEvent* ev = GetEvent(number);
+  if (ev) *ev = *event;
+  else fEvents->AddAtAndExpand(new AliHBTEvent(*event), number);
+}
+/**************************************************************************/ 
+

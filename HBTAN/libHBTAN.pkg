@@ -12,7 +12,7 @@ AliHBTQResolutionFctns.cxx      AliHBTQDistributionFctns.cxx \
 AliHBTMonDistributionFctns.cxx  AliHBTMonResolutionFctns.cxx \
 AliHBTLLWeights.cxx             AliHBTLLWeightFctn.cxx \
 AliHBTLLWeightsPID.cxx          AliHBTLLWeightTheorFctn.cxx \
-AliHBTPositionRandomizer.cxx
+AliHBTPositionRandomizer.cxx AliHBTEventBuffer.cxx
 
 FSRCS   = fsiini.F  fsiw.F  led_bldata.F  ltran12.F
 

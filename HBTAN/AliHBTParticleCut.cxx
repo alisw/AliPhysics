@@ -15,7 +15,8 @@ AliHBTParticleCut::AliHBTParticleCut()
  }
 /******************************************************************/
 
-AliHBTParticleCut::AliHBTParticleCut(const AliHBTParticleCut& in)
+AliHBTParticleCut::AliHBTParticleCut(const AliHBTParticleCut& in):
+ TObject()
 {
   fCuts = new AliHbtBaseCut* [fkgMaxCuts];//last property in the property
                                          //property enum => defines number of properties
@@ -347,7 +348,7 @@ AliHBTLogicalOperCut::~AliHBTLogicalOperCut()
 }
 /******************************************************************/
 
-Bool_t AliHBTLogicalOperCut::AliHBTDummyBaseCut::Pass(AliHBTParticle*p)
+Bool_t AliHBTLogicalOperCut::AliHBTDummyBaseCut::Pass(AliHBTParticle* /*part*/)
 {
   Warning("Pass","You are using dummy base cut! Probobly some logical cut is not set up properly");
   return kFALSE;//accept

@@ -28,8 +28,10 @@ public:
 
   AliHBTParticle(const TParticle& p,Int_t idx);
 
-  virtual ~AliHBTParticle(){};
-
+  virtual ~AliHBTParticle();
+  
+  AliHBTParticle& operator=(const AliHBTParticle& in); 
+  
   void           SetPIDprobability(Int_t pdg, Float_t prob = 1.0);
   Float_t        GetPIDprobability(Int_t pdg);
   

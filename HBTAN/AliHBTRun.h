@@ -35,6 +35,7 @@ class AliHBTRun: public TObject
                                 Double_t px, Double_t py, Double_t pz, Double_t etot,
                                 Double_t vx, Double_t vy, Double_t vz, Double_t time); 
     
+    void            SetEvent(Int_t number, AliHBTEvent* event);
     AliHBTParticle* GetParticle(Int_t event, Int_t n); //returns nth particle from event
     AliHBTEvent*    GetEvent(Int_t event) const; //returns AliHBTEvent number "event"
     

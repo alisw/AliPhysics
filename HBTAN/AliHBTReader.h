@@ -2,6 +2,7 @@
 #define ALIHBTREADER_H
 
 #include <TNamed.h>
+#include <TObjArray.h>
 
 //Reader Base class (reads particles and tracks and
 //puts it to the AliHBTRun objects
@@ -10,7 +11,6 @@
 class AliHBTRun;
 class AliHBTEvent;
 class AliHBTParticleCut;
-class TObjArray;
 class AliHBTParticle;
 class TString;
  
@@ -20,26 +20,50 @@ class AliHBTReader: public TNamed
     AliHBTReader();
     AliHBTReader(TObjArray*);
     virtual ~AliHBTReader();
-    //in the future this class is will read global tracking
-    virtual Int_t Read(AliHBTRun* particles, AliHBTRun *tracks) = 0;
     
-    virtual AliHBTEvent* GetParticleEvent(Int_t) = 0;
-    virtual AliHBTEvent* GetTrackEvent(Int_t) = 0;
-    virtual Int_t GetNumberOfPartEvents() = 0;
-    virtual Int_t GetNumberOfTrackEvents() = 0;
+    virtual Int_t        Next();
+    virtual void         Rewind() = 0;
     
-    void AddParticleCut(AliHBTParticleCut* cut);
+    virtual Bool_t       ReadsTracks() const = 0;
+    virtual Bool_t       ReadsParticles() const = 0;
     
-    void SetDirs(TObjArray* dirs){fDirs = dirs;} //sets array directories names
-
-    virtual AliHBTEvent* GetNextParticleEvent(){return 0x0;}
-    virtual AliHBTEvent* GetNextTrackEvent(){return 0x0;}
-
+    void                 AddParticleCut(AliHBTParticleCut* cut);
+    
+    virtual Int_t        Read(AliHBTRun* particles, AliHBTRun *tracks);
+    
+    virtual AliHBTEvent* GetParticleEvent() const {return fParticlesEvent;}
+    virtual AliHBTEvent* GetTrackEvent() const {return fTracksEvent;}
+    
+    virtual AliHBTEvent* GetParticleEvent(Int_t);
+    virtual AliHBTEvent* GetTrackEvent(Int_t);
+    
+    virtual Int_t        GetNumberOfPartEvents();
+    virtual Int_t        GetNumberOfTrackEvents();
+    
+    void                 SetDirs(TObjArray* dirs){fDirs = dirs;} //sets array directories names
+    void                 SetEventBuffering(Bool_t flag){fBufferEvents = flag;}
+    
+    virtual Int_t GetNumberOfDirs() const {return (fDirs)?fDirs->GetEntries():0;}
   protected:
     
-    TObjArray *fCuts;//array with particle cuts
-    TObjArray *fDirs;//arry with directories to read data from
-
+    TObjArray*    fCuts;//array with particle cuts
+    TObjArray*    fDirs;//arry with directories to read data from
+    
+    Int_t         fCurrentEvent;//!  number of current event in current directory
+    Int_t         fCurrentDir;//! number of current directory
+    
+    Int_t         fNEventsRead;//!total 
+        
+    AliHBTEvent*  fTracksEvent;    //! tracks read from current event
+    AliHBTEvent*  fParticlesEvent; //! particles read from current event
+    
+    AliHBTRun*    fParticles; //!simulated particles
+    AliHBTRun*    fTracks; //!reconstructed tracks (particles)
+    
+    Bool_t        fIsRead;//!flag indicating if the data are already read
+    Bool_t        fBufferEvents;//flag indicating if the data should be bufferred
+    
+    virtual Int_t ReadNext() = 0; //this methods reads next event and put result in fTracksEvent and/or fParticlesEvent
     Bool_t Pass(AliHBTParticle*);
     Bool_t Pass(Int_t pid);
 

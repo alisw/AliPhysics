@@ -12,6 +12,8 @@
 
 #include <TString.h>
 class TFile;
+class AliRunLoader;
+class AliTPCLoader;
 
 class AliHBTReaderTPC: public AliHBTReader
 {
@@ -22,25 +24,30 @@ class AliHBTReaderTPC: public AliHBTReader
 
     virtual ~AliHBTReaderTPC();
     
-    Int_t Read(AliHBTRun* particles, AliHBTRun *tracks);//reads tracks and particles and puts them in runs
+    void          Rewind();
     
-    AliHBTEvent* GetParticleEvent(Int_t);//returns pointer to event with particles
-    AliHBTEvent* GetTrackEvent(Int_t);//returns pointer to event with particles 
-    Int_t GetNumberOfPartEvents();//returns number of particle events
-    Int_t GetNumberOfTrackEvents();//returns number of track events
+    Bool_t        ReadsTracks() const {return kTRUE;}
+    Bool_t        ReadsParticles() const {return kTRUE;}
+    
+    void          SetMagneticField(Float_t mf){fMagneticField=mf;}
+    void          UseMagneticFieldFromRun(Bool_t flag = kTRUE){fUseMagFFromRun=flag;}
     
   protected:
     //in the future this class is will read global tracking
+    Int_t         ReadNext();
+    Int_t         OpenNextSession();
+    void          DoOpenError(const char* msgfmt, ...);
     
-    AliHBTRun* fParticles; //!simulated particles
-    AliHBTRun* fTracks; //!reconstructed tracks (particles)
+    TString       fFileName;//name of the file with galice.root
+    AliRunLoader* fRunLoader;//!RL
+    AliTPCLoader* fTPCLoader;//!TPCLoader
+    Float_t       fMagneticField;//magnetic field value that was enforced while reading
+    Bool_t        fUseMagFFromRun;//flag indicating if using field specified in gAlice (kTRUE)
+                               // or enforece other defined by fMagneticField
 
-    TString fFileName;//name of the file with galice.root
-
-    Bool_t fIsRead;//!flag indicating if the data are already read
   private:
   public:
-    ClassDef(AliHBTReaderTPC,2)
+    ClassDef(AliHBTReaderTPC,3)
 };
 
 

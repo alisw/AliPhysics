@@ -3,9 +3,10 @@
 
 #include "AliHBTReader.h"
 
-#include <TString.h>
 
-class TFile;
+class AliLoader;
+class AliRunLoader;
+class TString;
 
 class AliHBTReaderITSv2: public AliHBTReader
 {
@@ -17,29 +18,29 @@ class AliHBTReaderITSv2: public AliHBTReader
 
     virtual ~AliHBTReaderITSv2();
     
-    Int_t Read(AliHBTRun*, AliHBTRun*);//reads tracks and particles and puts them in runs
+    void          Rewind();
     
-    AliHBTEvent* GetParticleEvent(Int_t);//returns pointer to event with particles
-    AliHBTEvent* GetTrackEvent(Int_t);//returns pointer to event with particles 
-    Int_t GetNumberOfPartEvents();//returns number of particle events
-    Int_t GetNumberOfTrackEvents();//returns number of track events
-
-    void SetMagneticField(Float_t mf){fMagneticField=mf;}
-    void UseMagneticFieldFromRun(Bool_t flag = kTRUE){fUseMagFFromRun=flag;}
+    Bool_t        ReadsTracks() const {return kTRUE;}
+    Bool_t        ReadsParticles() const {return kTRUE;}
+    
+    void          SetMagneticField(Float_t mf){fMagneticField=mf;}
+    void          UseMagneticFieldFromRun(Bool_t flag = kTRUE){fUseMagFFromRun=flag;}
     
   protected:
     
-    AliHBTRun* fParticles; //!simulated particles
-    AliHBTRun* fTracks; //!reconstructed tracks (particles)
-    
-    TString fFileName;//name of the file with galice.root
-  
-    Bool_t fIsRead;//!flag indicating if the data are already read
-
-    Float_t    fMagneticField;//magnetic field value that was enforced while reading
-    Bool_t     fUseMagFFromRun;//flag indicating if using field specified in gAlice (kTRUE)
+    Int_t         ReadNext();//reads tracks and particles and puts them in runs
+    Int_t         OpenNextFile();
+    void          DoOpenError( const char *va_(fmt), ...);
+        
+    TString       fFileName;//name of the file with galice.root
+    AliRunLoader* fRunLoader;//!Run Loader
+    AliLoader*    fITSLoader;//! ITS Loader
+        
+    Float_t       fMagneticField;//magnetic field value that was enforced while reading
+    Bool_t        fUseMagFFromRun;//flag indicating if using field specified in gAlice (kTRUE)
                                // or enforece other defined by fMagneticField
-    ClassDef(AliHBTReaderITSv2,1)
+    
+    ClassDef(AliHBTReaderITSv2,2)
 };
 
 #endif

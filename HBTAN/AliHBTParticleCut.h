@@ -342,15 +342,15 @@ class AliHBTLogicalOperCut:  public AliHbtBaseCut
      AliHBTLogicalOperCut(AliHbtBaseCut* first, AliHbtBaseCut* second);
      virtual   ~AliHBTLogicalOperCut();
    protected:
-     Double_t  GetValue(AliHBTParticle * p){MayNotUse("GetValue");return 0.0;}
+     Double_t  GetValue(AliHBTParticle * /*part*/){MayNotUse("GetValue");return 0.0;}
      
      AliHbtBaseCut* fFirst;   //second cut
      AliHbtBaseCut* fSecond;  //first cut
    private:  
     class  AliHBTDummyBaseCut: public AliHbtBaseCut 
      {
-       Double_t  GetValue(AliHBTParticle * p){return 0.0;}
-       Bool_t    Pass(AliHBTParticle*p);
+       Double_t  GetValue(AliHBTParticle * /*part*/){return 0.0;}
+       Bool_t    Pass(AliHBTParticle* /*part*/);
      };
      
     ClassDef(AliHBTLogicalOperCut,1)

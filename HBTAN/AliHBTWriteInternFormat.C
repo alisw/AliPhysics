@@ -60,6 +60,7 @@ void AliHBTWriteInternFormat(Option_t* datatype, Option_t* processopt="TracksAnd
    
   AliHBTReader* reader;
   Int_t kine = strcmp(datatype,"Kine");
+  Int_t ESD = strcmp(datatype,"ESD");
   Int_t TPC = strcmp(datatype,"TPC");
   Int_t ITSv1 = strcmp(datatype,"ITSv1");
   Int_t ITSv2 = strcmp(datatype,"ITSv2");
@@ -70,10 +71,16 @@ void AliHBTWriteInternFormat(Option_t* datatype, Option_t* processopt="TracksAnd
     reader = new AliHBTReaderKineTree();
     processopt="Particles"; //this reader by definition reads only simulated particles
    }
+  else if(!ESD)
+   {
+    AliHBTReaderESD* esdreader = new AliHBTReaderESD();
+    esdreader->ReadParticles(kTRUE);
+    reader = esdreader;
+   }
   else if(!TPC)
    {
     cout<<"AliHBTWriteInternFormat.C: Creating Reader TPC .....\n";
-    reader = new AliHBTReaderTPC("tpc.tracks.root","tpc.clusters.root");
+    reader = new AliHBTReaderTPC();
     cout<<"AliHBTWriteInternFormat.C: ..... Created\n";
    }
   else if(!ITSv1)
@@ -83,12 +90,12 @@ void AliHBTWriteInternFormat(Option_t* datatype, Option_t* processopt="TracksAnd
   else if(!ITSv2)
    {
     cout<<"AliHBTWriteInternFormat.C: Creating Reader ITSv2 .....\n";
-    reader = new AliHBTReaderITSv2("its.tracksv2.root","its.clustersv2.root");
+    reader = new AliHBTReaderITSv2();
     cout<<"AliHBTWriteInternFormat.C: ..... Created\n";
    }
   else if(!intern)
    {
-    reader = new AliHBTReaderInternal("TPC.root");
+    reader = new AliHBTReaderInternal("data.root");
    }
   else
    {
@@ -115,7 +122,7 @@ void AliHBTWriteInternFormat(Option_t* datatype, Option_t* processopt="TracksAnd
 
    cout<<"AliHBTWriteInternFormat.C:   P R O C S E S S I N G .....\n\n";
    AliHBTReaderInternal::Write(reader,outfile);
-   cout<<"\n\nAliHBTWriteInternFormat.C:   F I N I S H E D";
+   cout<<"\n\nAliHBTWriteInternFormat.C:   F I N I S H E D\n";
    
    if (dirs) delete dirs;
    delete reader;

@@ -13,6 +13,8 @@
 
 #include <TString.h>
 class TFile;
+class TTree;
+class TBranch;
 class TClonesArray;
 
 class AliHBTReaderInternal: public AliHBTReader
@@ -23,23 +25,27 @@ class AliHBTReaderInternal: public AliHBTReader
     AliHBTReaderInternal(TObjArray* dirs, const char *filename);
     virtual ~AliHBTReaderInternal();
     
-    Int_t Read(AliHBTRun* particles, AliHBTRun *tracks);//reads tracks and particles and puts them in runs
+    void          Rewind();
+    
+    Bool_t        ReadsTracks() const {return kTRUE;}
+    Bool_t        ReadsParticles() const {return kTRUE;}
+    
     static Int_t Write(AliHBTReader* reader,const char* outfile = "data.root", Bool_t multcheck = kFALSE);//reads tracks from runs and writes them to file
     
-    AliHBTEvent* GetParticleEvent(Int_t);//returns pointer to event with particles
-    AliHBTEvent* GetTrackEvent(Int_t);//returns pointer to event with particles 
-    Int_t GetNumberOfPartEvents();//returns number of particle events
-    Int_t GetNumberOfTrackEvents();//returns number of track events
-    
   protected:
-    AliHBTRun* fParticles; //!simulated particles
-    AliHBTRun* fTracks; //!reconstructed tracks (particles)
-    Bool_t     fIsRead;//!flag indicating if the data are already read    
-    TString    fFileName;//name of the file with tracks
-
-    Int_t      OpenFile(TFile*& aFile,Int_t event);//opens file to be read for given event 
+    
+    TString       fFileName;//name of the file with tracks
+    TBranch*      fPartBranch;//!branch with particles
+    TBranch*      fTrackBranch;//!branch with tracks
+    TTree*        fTree;//!tree
+    TFile*        fFile;//!file
+    TClonesArray* fPartBuffer;//!buffer array that tree is read to
+    TClonesArray* fTrackBuffer;//!
+        
+    Int_t         ReadNext();//reads next event
+    Int_t         OpenNextFile();//opens file to be read for given event 
     static Bool_t FindIndex(TClonesArray* arr,Int_t idx);
     
-    ClassDef(AliHBTReaderInternal,1)
+    ClassDef(AliHBTReaderInternal,2)
 };
 #endif 

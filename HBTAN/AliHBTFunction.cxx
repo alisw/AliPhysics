@@ -687,10 +687,10 @@ void AliHBTFunction3D::BuildHistos(Int_t nxbins, Float_t xmax, Float_t xmin,
                                            //denominator histogram
          
    fNumerator   = new TH3D(numstr.Data(),numstr.Data(),
-                           nxbins,xmin,xmin,nybins,ymin,ymin,nzbins,zmin,zmin);
+                           nxbins,xmin,xmax,nybins,ymin,ymax,nzbins,zmin,zmax);
 	       
    fDenominator = new TH3D(denstr.Data(),denstr.Data(),
-                           nxbins,xmin,xmin,nybins,ymin,ymin,nzbins,zmin,zmin);
+                           nxbins,xmin,xmax,nybins,ymin,ymax,nzbins,zmin,zmax);
    
    fNumerator->Sumw2();
    fDenominator->Sumw2();

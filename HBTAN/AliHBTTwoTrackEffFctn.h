@@ -28,8 +28,8 @@ class AliHBTTwoTrackEffFctn3D: public AliHBTOnePairFctn3D
     AliHBTTwoTrackEffFctn3D();
     virtual ~AliHBTTwoTrackEffFctn3D(){}
 
-    void ProcessSameEventParticles(AliHBTPair* pair){}
-    void ProcessDiffEventParticles(AliHBTPair* pair){}
+    void ProcessSameEventParticles(AliHBTPair* /*pair*/){}
+    void ProcessDiffEventParticles(AliHBTPair* /*pair*/){}
 
   protected:
     void GetValues(AliHBTPair*,Double_t&, Double_t&,Double_t&);

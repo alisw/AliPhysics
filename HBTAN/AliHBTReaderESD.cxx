@@ -7,6 +7,8 @@
 #include <TFile.h>
 #include <TParticle.h>
 
+#include <AliRunLoader.h>
+#include <AliStack.h>
 #include <AliESDtrack.h>
 #include <AliESD.h>
 
@@ -15,13 +17,16 @@
 #include "AliHBTParticle.h"
 #include "AliHBTParticleCut.h"
 
+AliHBTReaderESD r;
+
 ClassImp(AliHBTReaderESD)
 
-AliHBTReaderESD::AliHBTReaderESD(const Char_t* esdfilename):
- fParticles(new AliHBTRun()),
- fTracks(new AliHBTRun()),
+AliHBTReaderESD::AliHBTReaderESD(const Char_t* esdfilename, const Char_t* galfilename):
  fESDFileName(esdfilename),
- fIsRead(kFALSE)
+ fGAlFileName(galfilename),
+ fFile(0x0),
+ fRunLoader(0x0),
+ fReadParticles(kFALSE)
 {
   //cosntructor
   if ( ((Int_t)kNSpecies) != ((Int_t)AliESDtrack::kSPECIES))
@@ -29,12 +34,13 @@ AliHBTReaderESD::AliHBTReaderESD(const Char_t* esdfilename):
 }
 /********************************************************************/
   
-AliHBTReaderESD::AliHBTReaderESD(TObjArray* dirs,const Char_t* esdfilename):
+AliHBTReaderESD::AliHBTReaderESD(TObjArray* dirs,const Char_t* esdfilename, const Char_t* galfilename):
  AliHBTReader(dirs), 
- fParticles(new AliHBTRun()),
- fTracks(new AliHBTRun()),
  fESDFileName(esdfilename),
- fIsRead(kFALSE)
+ fGAlFileName(galfilename),
+ fFile(0x0),
+ fRunLoader(0x0),
+ fReadParticles(kFALSE)
 {
   //cosntructor
   if ( ((Int_t)kNSpecies) != ((Int_t)AliESDtrack::kSPECIES))
@@ -45,239 +51,215 @@ AliHBTReaderESD::AliHBTReaderESD(TObjArray* dirs,const Char_t* esdfilename):
 AliHBTReaderESD::~AliHBTReaderESD()
 {
  //desctructor
-  delete fParticles;
-  delete fTracks;
+  delete fFile;
+  delete fRunLoader;
 }
-/********************************************************************/
-
-AliHBTEvent* AliHBTReaderESD::GetParticleEvent(Int_t n)
- {
- //returns Nth event with simulated particles
-   if (!fIsRead) 
-    if(Read(fParticles,fTracks))
-     {
-       Error("GetParticleEvent","Error in reading");
-       return 0x0;
-     }
-   return fParticles->GetEvent(n);
- }
-/********************************************************************/
-
-AliHBTEvent* AliHBTReaderESD::GetTrackEvent(Int_t n)
- {
- //returns Nth event with reconstructed tracks
-   if (!fIsRead) 
-    if(Read(fParticles,fTracks))
-     {
-       Error("GetTrackEvent","Error in reading");
-       return 0x0;
-     }
-   return fTracks->GetEvent(n);
- }
-/********************************************************************/
-
-Int_t AliHBTReaderESD::GetNumberOfPartEvents()
- {
- //returns number of events of particles
-   if (!fIsRead) 
-    if ( Read(fParticles,fTracks))
-     {
-       Error("GetNumberOfPartEvents","Error in reading");
-       return 0;
-     }
-   return fParticles->GetNumberOfEvents();
- }
-
-/********************************************************************/
-Int_t AliHBTReaderESD::GetNumberOfTrackEvents()
- {
- //returns number of events of tracks
-  if (!fIsRead)
-    if(Read(fParticles,fTracks))
-     {
-       Error("GetNumberOfTrackEvents","Error in reading");
-       return 0;
-     }
-  return fTracks->GetNumberOfEvents();
- }
-/********************************************************************/
-
-
-Int_t AliHBTReaderESD::Read(AliHBTRun* particles, AliHBTRun *tracks)
+/**********************************************************/
+Int_t AliHBTReaderESD::ReadNext()
 {
- //reads data and puts put to the particles and tracks objects
- //reurns 0 if everything is OK
- //
-  Info("Read","");
-  Int_t totalNevents = 0;
-  Int_t currentdir = 0; //number of current directory name is fDirs array
+//reads next event from fFile
+  
+  //****** Tentative particle type "concentrations"
+  static const Double_t concentr[5]={0.05, 0., 0.85, 0.10, 0.05};
   
   Double_t pidtable[kNSpecies];//array used for reading pid probabilities from ESD track
   Double_t w[kNSpecies];
   Double_t mom[3];//momentum
   Double_t pos[3];//position
-   //****** Tentative particle type "concentrations"
-  const Double_t concentr[5]={0.05, 0., 0.85, 0.10, 0.05};
   
+  if (AliHBTParticle::fgDebug)
+    Info("ReadNext","Entered");
+    
   TDatabasePDG* pdgdb = TDatabasePDG::Instance();
   if (pdgdb == 0x0)
    {
-     Error("Read","Can not get PDG Database Instance.");
+     Error("Next","Can not get PDG Database Instance.");
      return 1;
    }
-  if (!particles) //check if an object is instatiated
-   {
-     Error("Read"," particles object must instatiated before passing it to the reader");
-     return 1;
-   }
-  if (!tracks)  //check if an object is instatiated
-   {
-     Error("Read"," tracks object must instatiated before passing it to the reader");
-     return 1;
-   }
-  particles->Reset();//clear runs == delete all old events
-  tracks->Reset();
-
-  Int_t Ndirs;
-  if (fDirs) //if array with directories is supplied by user
-   {
-     Ndirs = fDirs->GetEntries(); //get the number if directories
-   }
-  else
-   {
-     Ndirs = 0; //if the array is not supplied read only from current directory
-   }
-
+  
+  if (fParticlesEvent == 0x0)  fParticlesEvent = new AliHBTEvent();
+  if (fTracksEvent == 0x0)  fTracksEvent = new AliHBTEvent();
+  
+  fParticlesEvent->Reset();
+  fTracksEvent->Reset();
+        
   do  //do{}while; is OK even if 0 dirs specified. In that case we try to read from "./"
    {
-     TFile* file = OpenFile(currentdir);
-     if (file == 0x0)
-       {
-         Error("Read","Cannot get File for dir no. %d",currentdir);
-         currentdir++;
-         continue;
-       } 
-       
-     for(Int_t currentEvent = 0; ;currentEvent++)//loop over all events
+     if (fFile == 0x0)
       {
-       TString esdname;
-       esdname+=currentEvent;
-       AliESD* esd = dynamic_cast<AliESD*>(file->Get(esdname));
-       if (esd == 0x0)
+       fFile = OpenFile(fCurrentDir);//rl is opened here
+       if (fFile == 0x0)
          {
-           if (AliHBTParticle::fgDebug > 2 )
-            {
-              Info("Read","Can not find ESD object named %s.",esdname.Data());
-            }
-           currentdir++;
-           break;//we have to assume there is no more ESD objects in the file
-         } 
-       
-       Info("Read","Reading Event %d",currentEvent);
-  
-       Int_t ntr = esd->GetNumberOfTracks();
-       Info("Read","Found %d tracks.",ntr);
-       for (Int_t i = 0;i<ntr; i++)
-        {
-          AliESDtrack *esdtrack = esd->GetTrack(i);
-          if (esdtrack == 0x0)
-           {
-             Error("Read","Can not get track %d", i);
-             continue;
-           }
-          if ((esdtrack->GetStatus()&AliESDtrack::kESDpid) == kFALSE) 
-           {
-             if (AliHBTParticle::fgDebug > 2) 
-               Info("Read","Particle skipped: PID BIT is not set.");
-             continue;
-           }
-
-          esdtrack->GetESDpid(pidtable);
-          esdtrack->GetPxPyPz(mom);
-          esdtrack->GetXYZ(pos);
-          Double_t rc=0.;
-
-           //Here we apply Bayes' formula
-          for (Int_t s=0; s<AliESDtrack::kSPECIES; s++) rc+=concentr[s]*pidtable[s];
-          if (rc==0.0) 
-           {
-             if (AliHBTParticle::fgDebug > 2) 
-               Info("Read","Particle rejected since total bayessian PID probab. is zero.");
-             continue;
-           }
-
-          for (Int_t s=0; s<AliESDtrack::kSPECIES; s++) w[s]=concentr[s]*pidtable[s]/rc;
-
-          if (AliHBTParticle::fgDebug > 4)
-           { 
-             Info("Read","###########################################################################");
-             Info("Read","Momentum: %f %f %f",mom[0],mom[1],mom[2]);
-             Info("Read","Position: %f %f %f",pos[0],pos[1],pos[2]);
-             Info("Read","Radius: %f ,rc: %f",TMath::Hypot(pos[0],pos[1]),rc);
-             TString msg("Pid list got from track:");
-             for (Int_t s = 0;s<kNSpecies;s++)
-              {
-                msg+="\n    ";
-                msg+=s;
-                msg+="(";
-                msg+=GetSpeciesPdgCode((ESpecies)s);
-                msg+="): ";
-                msg+=w[s];
-                msg+=" (";
-                msg+=pidtable[s];
-                msg+=")";
-              }
-             Info("Read","%s",msg.Data());
-           }//if (AliHBTParticle::fgDebug>4)
-           
-          for (Int_t s = 0; s<kNSpecies; s++)
-           {
-             if (w[s] == 0.0) continue;
-
-             Int_t pdgcode = GetSpeciesPdgCode((ESpecies)s);
-             if(Pass(pdgcode)) continue; //check if we are intersted with particles of this type 
-
-             Double_t mass = pdgdb->GetParticle(pdgcode)->Mass();
-             Double_t tEtot = TMath::Sqrt( mom[0]*mom[0] + mom[1]*mom[1] + mom[2]*mom[2] + mass*mass);//total energy of the track
-
-             AliHBTParticle* track = new AliHBTParticle(pdgcode, w[s],i, 
-                                                        mom[0], mom[1], mom[2], tEtot,
-                                                        pos[0], pos[1], pos[2], 0.);
-             //copy probabilitis of other species (if not zero)
-             for (Int_t k = 0; k<kNSpecies; k++)
-              {
-                if (k == s) continue;
-                if (w[k] == 0.0) continue;
-                track->SetPIDprobability(GetSpeciesPdgCode( (ESpecies)k ),w[k]);
-              }
-             if(Pass(track))//check if meets all criteria of any of our cuts
-                            //if it does not delete it and take next good track
-               { 
-                 delete track;
-                 continue;
-               }
-             tracks->AddParticle(totalNevents,track);
-             if (AliHBTParticle::fgDebug > 4 )
-              {
-                Info("Read","\n\nAdding Particle with incarnation %d",pdgcode);
-                track->Print();
-              }
-           }//for (Int_t s = 0; s<kNSpecies; s++)
-
-        }//for (Int_t i = 0;i<ntr; i++)  -- loop over tracks
-       totalNevents++;
-      }//for(Int_t currentEvent = 0; ;currentEvent++) -- for over ESD in single file
+           Error("ReadNext","Cannot get fFile for dir no. %d",fCurrentDir);
+           fCurrentDir++;
+           continue;
+         }
+       fCurrentEvent = 0;
+      } 
       
-   }while(currentdir < Ndirs);//end of loop over directories specified in fDirs Obj Array
+     //try to read
+     TString esdname;
+     esdname+=fCurrentEvent;
+     AliESD* esd = dynamic_cast<AliESD*>(fFile->Get(esdname));
+     if (esd == 0x0)
+      {
+        if (AliHBTParticle::fgDebug > 2 )
+          {
+            Info("ReadNext","Can not find ESD object named %s.",esdname.Data());
+          }
+        fCurrentDir++;
+        delete fFile;//we have to assume there is no more ESD objects in the fFile
+        delete fRunLoader;
+        fFile = 0x0;
+        continue;
+      }
+     AliStack* stack = 0x0;
+     if (fReadParticles && fRunLoader)
+      {
+        fRunLoader->GetEvent(fCurrentEvent);
+        stack = fRunLoader->Stack();
+      }
+     Info("ReadNext","Reading Event %d",fCurrentEvent);
   
-  fIsRead = kTRUE;
-  return 0;
-}      
-/**********************************************************/
+     Int_t ntr = esd->GetNumberOfTracks();
+     Info("ReadNext","Found %d tracks.",ntr);
+     for (Int_t i = 0;i<ntr; i++)
+      {
+        AliESDtrack *esdtrack = esd->GetTrack(i);
+        if (esdtrack == 0x0)
+         {
+           Error("Next","Can not get track %d", i);
+           continue;
+         }
+        if ((esdtrack->GetStatus()&AliESDtrack::kESDpid) == kFALSE) 
+         {
+           if (AliHBTParticle::fgDebug > 2) 
+             Info("ReadNext","Particle skipped: PID BIT is not set.");
+           continue;
+         }
+
+        esdtrack->GetESDpid(pidtable);
+        esdtrack->GetPxPyPz(mom);
+        esdtrack->GetXYZ(pos);
+        
+        //Particle from kinematics
+        AliHBTParticle* particle = 0;
+        Bool_t keeppart = kFALSE;
+        if ( fReadParticles && stack  )
+         {
+           if (esdtrack->GetLabel() < 0) continue;//this is fake -  we are not able to match any track 
+           TParticle *p = stack->Particle(esdtrack->GetLabel());
+           if (p==0x0) 
+            {
+              Error("ReadNext","Can not find track with such label.");
+              continue;
+            }
+           particle = new AliHBTParticle(*p,i);
+         }
+         
+        //Here we apply Bayes' formula
+        Double_t rc=0.;
+        for (Int_t s=0; s<AliESDtrack::kSPECIES; s++) rc+=concentr[s]*pidtable[s];
+        if (rc==0.0) 
+         {
+           if (AliHBTParticle::fgDebug > 2) 
+             Info("ReadNext","Particle rejected since total bayessian PID probab. is zero.");
+           continue;
+         }
+
+        for (Int_t s=0; s<AliESDtrack::kSPECIES; s++) w[s]=concentr[s]*pidtable[s]/rc;
+
+        if (AliHBTParticle::fgDebug > 4)
+         { 
+           Info("ReadNext","###########################################################################");
+           Info("ReadNext","Momentum: %f %f %f",mom[0],mom[1],mom[2]);
+           Info("ReadNext","Position: %f %f %f",pos[0],pos[1],pos[2]);
+           TString msg("Pid list got from track:");
+           for (Int_t s = 0;s<kNSpecies;s++)
+            {
+              msg+="\n    ";
+              msg+=s;
+              msg+="(";
+              msg+=GetSpeciesPdgCode((ESpecies)s);
+              msg+="): ";
+              msg+=w[s];
+              msg+=" (";
+              msg+=pidtable[s];
+              msg+=")";
+            }
+           Info("ReadNext","%s",msg.Data());
+         }//if (AliHBTParticle::fgDebug>4)
+
+        for (Int_t s = 0; s<kNSpecies; s++)
+         {
+           if (w[s] == 0.0) continue;
+
+           Int_t pdgcode = GetSpeciesPdgCode((ESpecies)s);
+           if(Pass(pdgcode)) continue; //check if we are intersted with particles of this type 
+
+           Double_t mass = pdgdb->GetParticle(pdgcode)->Mass();
+           Double_t tEtot = TMath::Sqrt( mom[0]*mom[0] + mom[1]*mom[1] + mom[2]*mom[2] + mass*mass);//total energy of the track
+
+           AliHBTParticle* track = new AliHBTParticle(pdgcode, w[s],i, 
+                                                      mom[0], mom[1], mom[2], tEtot,
+                                                      pos[0], pos[1], pos[2], 0.);
+           //copy probabilitis of other species (if not zero)
+           for (Int_t k = 0; k<kNSpecies; k++)
+            {
+              if (k == s) continue;
+              if (w[k] == 0.0) continue;
+              track->SetPIDprobability(GetSpeciesPdgCode( (ESpecies)k ),w[k]);
+            }
+           if(Pass(track))//check if meets all criteria of any of our cuts
+                          //if it does not delete it and take next good track
+            { 
+              delete track;
+              continue;
+            }
+           
+           fTracksEvent->AddParticle(track);
+           if (particle) fParticlesEvent->AddParticle(particle);
+           keeppart = kTRUE;
+               
+           if (AliHBTParticle::fgDebug > 4 )
+            {
+              Info("ReadNext","\n\nAdding Particle with incarnation %d",pdgcode);
+              track->Print();
+            }
+         }//for (Int_t s = 0; s<kNSpecies; s++)
+         
+        if (keeppart == kFALSE) delete particle;//particle was not stored in event
+        
+      }//for (Int_t i = 0;i<ntr; i++)  -- loop over tracks
+     
+     Info("ReadNext","Read %d tracks and %d particles from event %d (event %d in dir %d).",
+            fParticlesEvent->GetNumberOfParticles(), fTracksEvent->GetNumberOfParticles(),
+            fNEventsRead,fCurrentEvent,fCurrentDir);
+      
+     fCurrentEvent++;
+     fNEventsRead++;
+     delete esd;
+     return 0;//success -> read one event
+   }while(fCurrentDir < GetNumberOfDirs());//end of loop over directories specified in fDirs Obj Array  
    
+  return 1; //no more directories to read
+}
+/**********************************************************/
+void AliHBTReaderESD::Rewind()
+{
+  delete fFile;
+  fFile = 0;
+  delete fRunLoader;
+  fCurrentDir = 0;
+  fNEventsRead = 0;
+  fCurrentEvent++;
+  
+}
+/**********************************************************/
+
 TFile* AliHBTReaderESD::OpenFile(Int_t n)
 {
-//opens file with kine tree
+//opens fFile with kine tree
 
  const TString& dirname = GetDirName(n);
  if (dirname == "")
@@ -290,15 +272,33 @@ TFile* AliHBTReaderESD::OpenFile(Int_t n)
 
  if ( ret == 0x0)
   {
-    Error("OpenFiles","Can't open file %s",filename.Data());
+    Error("OpenFiles","Can't open fFile %s",filename.Data());
     return 0x0;
   }
  if (!ret->IsOpen())
   {
-    Error("OpenFiles","Can't open file  %s",filename.Data());
+    Error("OpenFiles","Can't open fFile  %s",filename.Data());
     return 0x0;
   }
  
+ if (fReadParticles)
+  {
+   fRunLoader = AliRunLoader::Open(dirname +"/"+ fGAlFileName);
+   if (fRunLoader == 0x0)
+    {
+      Error("OpenFiles","Can't get RunLoader for directory %s",dirname.Data());
+      delete ret;
+      return 0x0;
+    }
+   fRunLoader->LoadHeader();
+   if (fRunLoader->LoadKinematics())
+    {
+      Error("Next","Error occured while loading kinematics.");
+      delete fRunLoader;
+      delete ret;
+      return 0x0;
+    }
+  }
  return ret;
 }
 /**********************************************************/

@@ -8,6 +8,7 @@
 #pragma link C++ class AliHBTParticle+;
 #pragma link C++ class AliHBTEvent+;
 #pragma link C++ class AliHBTRun+;
+#pragma link C++ class AliHBTEventBuffer+;
 #pragma link C++ class AliHBTFunction+;
 #pragma link C++ class AliHBTMonitorFunction+;
 

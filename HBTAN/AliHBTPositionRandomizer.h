@@ -64,7 +64,7 @@ class AliHBTRndmGaussBall: public AliHBTRndm
    AliHBTRndmGaussBall(Float_t r);
    AliHBTRndmGaussBall(Float_t rx, Float_t ry, Float_t rz);
    ~AliHBTRndmGaussBall(){}
-   void Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTParticle*p);
+   void Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTParticle*/*particle*/);
   private:
    Float_t fRx;
    Float_t fRy;
@@ -79,7 +79,7 @@ class AliHBTRndmCyllSurf: public AliHBTRndm
    AliHBTRndmCyllSurf(Float_t r, Float_t l):fR(r),fL(l){}
    ~AliHBTRndmCyllSurf(){}
    
-   void Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTParticle*p);
+   void Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTParticle* particle);
   private:
    Float_t fR;
    Float_t fL;

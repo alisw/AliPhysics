@@ -26,7 +26,8 @@ AliHBTPairCut::AliHBTPairCut():
 }
 /**********************************************************/
 
-AliHBTPairCut::AliHBTPairCut(const AliHBTPairCut& in)
+AliHBTPairCut::AliHBTPairCut(const AliHBTPairCut& in):
+ TNamed(in)
 {
   //copy constructor
   fCuts = new AliHbtBasePairCut*[fgkMaxCuts];

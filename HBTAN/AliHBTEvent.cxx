@@ -36,7 +36,42 @@ AliHBTEvent::AliHBTEvent():
    }
  }
 /**************************************************************************/ 
+ 
+AliHBTEvent::AliHBTEvent(const AliHBTEvent& source):
+ TObject(source),
+ fSize(source.fSize),
+ fParticles(new AliHBTParticle* [fSize]),
+ fNParticles(source.fNParticles),
+ fOwner(source.fNParticles),
+ fRandomized(source.fRandomized)
+{
+//copy constructor
+  for(Int_t i =0; i<fNParticles; i++)
+   {
+      fParticles[i] = new AliHBTParticle( *(source.fParticles[i]) );
+   }
+  
+}
+/**************************************************************************/ 
 
+AliHBTEvent& AliHBTEvent::operator=(const AliHBTEvent source)
+{
+  // assigment operator
+  Reset();
+  if (fParticles) delete [] fParticles;
+  fSize = source.fSize;
+  fParticles = new AliHBTParticle* [fSize];
+  fNParticles = source.fNParticles;
+  fOwner = source.fNParticles;
+  fRandomized = source.fRandomized;
+      
+  for(Int_t i =0; i<fNParticles; i++)
+   {
+      fParticles[i] = new AliHBTParticle( *(source.fParticles[i]) );
+   }
+  return *this;
+}
+/**************************************************************************/ 
 AliHBTEvent::~AliHBTEvent()
  {
 //destructor   
@@ -54,7 +89,11 @@ void  AliHBTEvent::Reset()
   if(fParticles && fOwner)
     {
       for(Int_t i =0; i<fNParticles; i++)
-        delete fParticles[i];
+       {
+         for (Int_t j = i+1; j<fNParticles; j++)
+           if (fParticles[j] == fParticles[i]) fParticles[j] = 0x0;
+         delete fParticles[i];
+       }
     }
    fNParticles = 0;
 } 

@@ -16,30 +16,26 @@ class AliHBTReaderKineTree: public AliHBTReader
     AliHBTReaderKineTree(TString&);
     AliHBTReaderKineTree(TObjArray*,const Char_t *filename="galice.root");
 
-    virtual ~AliHBTReaderKineTree(){}
+    virtual ~AliHBTReaderKineTree();
     
-    Int_t        Read(AliHBTRun* particles, AliHBTRun* /*tracks*/);//reads tracks and particles and puts them in runs
-
-    AliHBTEvent* GetParticleEvent(Int_t);//returns pointer to event with particles
-    AliHBTEvent* GetTrackEvent(Int_t){return 0x0;}//returns pointer to event with particles
-    Int_t        GetNumberOfPartEvents();//returns number of particle events
-    Int_t        GetNumberOfTrackEvents(){return 0;}//returns number of track events
-
+    void          Rewind();
+    
+    Bool_t        ReadsTracks() const {return kFALSE;}
+    Bool_t        ReadsParticles() const {return kTRUE;}
     
    protected:
-    TString       fFileName;
-    AliHBTRun*    fParticles; //!simulated particles
-
-    AliRunLoader* OpenFile(Int_t);
-
-    Bool_t fIsRead;//!flag indicating if the data are already read
+    Int_t         ReadNext();//reads tracks and particles and puts them in runs
+    Int_t         OpenNextFile();
+   
+    TString       fFileName;//file name 
+    AliRunLoader* fRunLoader;
     
     static const TString fgkEventFolderName;
     
    private:
    
    public:
-     ClassDef(AliHBTReaderKineTree,1)
+     ClassDef(AliHBTReaderKineTree,2)
  };
 
 #endif

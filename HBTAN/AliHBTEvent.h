@@ -21,7 +21,11 @@ class AliHBTEvent: public TObject
  {
   public:
     AliHBTEvent();
+    AliHBTEvent(const AliHBTEvent& source);
     virtual ~AliHBTEvent();
+    
+    AliHBTEvent& operator=(const AliHBTEvent source);
+        
     static const UInt_t fgkInitEventSize; //initial number of the array
                                           //if expanded, this size is used also
     AliHBTParticle* GetParticle(Int_t n);  //gets particle 

@@ -150,7 +150,7 @@ AliHBTRndmGaussBall::AliHBTRndmGaussBall(Float_t rx, Float_t ry, Float_t rz):
 }
 /*********************************************************************/
 
-void AliHBTRndmGaussBall::Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTParticle*p)
+void AliHBTRndmGaussBall::Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTParticle*/*particle*/)
 {
 //randomizez gauss for each coordinate separately
   x = gRandom->Gaus(0.0,fRx);
@@ -165,13 +165,13 @@ void AliHBTRndmGaussBall::Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTPa
 //                                                                   //
 ///////////////////////////////////////////////////////////////////////
 
-void AliHBTRndmCyllSurf::Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTParticle*p)
+void AliHBTRndmCyllSurf::Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTParticle* particle)
 {
    Double_t r = fR + gRandom->Gaus(0.0, 1.0);
-   Double_t sf = r/p->Pt();//scaling factor for position transformation ->
+   Double_t sf = r/particle->Pt();//scaling factor for position transformation ->
                              //we move direction of string momentum but legth defined by r
-   x = sf*p->Px();
-   y = sf*p->Py();
+   x = sf*particle->Px();
+   y = sf*particle->Py();
    z = gRandom->Uniform(-fL,fL);
   
 }

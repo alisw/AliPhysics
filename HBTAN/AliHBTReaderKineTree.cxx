@@ -1,6 +1,5 @@
 #include "AliHBTReaderKineTree.h"
 
-#include <Riostream.h>
 #include <TString.h>
 #include <TObjString.h>
 #include <TTree.h>
@@ -21,114 +20,86 @@ ClassImp(AliHBTReaderKineTree)
 /**********************************************************/
 const TString AliHBTReaderKineTree::fgkEventFolderName("HBTReaderKineTree");
 
-AliHBTReaderKineTree::AliHBTReaderKineTree():fFileName("galice.root")
+AliHBTReaderKineTree::AliHBTReaderKineTree():
+ fFileName("galice.root"),
+ fRunLoader(0x0)
 {
-  fParticles = new AliHBTRun();
-  fIsRead = kFALSE;
-}
-
-AliHBTReaderKineTree::
-AliHBTReaderKineTree(TString& fname):fFileName(fname)
-{
-  fParticles = new AliHBTRun();
-  fIsRead = kFALSE;
-}
-
-
-/**********************************************************/
-AliHBTReaderKineTree::
-AliHBTReaderKineTree(TObjArray* dirs,const Char_t *filename):AliHBTReader(dirs),fFileName(filename)
-{
-  fParticles = new AliHBTRun();
-  fIsRead = kFALSE;
+  //ctor
 }
 /**********************************************************/
 
-AliHBTEvent* AliHBTReaderKineTree::GetParticleEvent(Int_t n)
- {
- //returns Nth event with simulated particles
-   if (!fIsRead) 
-    if(Read(fParticles,0x0))
-     {
-       Error("GetParticleEvent","Error in reading");
-       return 0x0;
-     }
-
-   return fParticles->GetEvent(n);
- }
-
-/********************************************************************/
-
-Int_t AliHBTReaderKineTree::GetNumberOfPartEvents()
- {
- //returns number of events of particles
-   if (!fIsRead)
-    if(Read(fParticles,0x0))
-     {
-       Error("GetNumberOfPartEvents","Error in reading");
-       return 0;
-     }
-   return fParticles->GetNumberOfEvents();
- }
-
-
+AliHBTReaderKineTree::AliHBTReaderKineTree(TString& fname):
+ fFileName(fname),
+ fRunLoader(0x0)
+{
+  //ctor
+}
 /**********************************************************/
-Int_t AliHBTReaderKineTree::Read(AliHBTRun* particles, AliHBTRun* /*tracks*/)
+
+AliHBTReaderKineTree::AliHBTReaderKineTree(TObjArray* dirs,const Char_t *filename):
+ AliHBTReader(dirs),
+ fFileName(filename),
+ fRunLoader(0x0)
+{
+  //ctor
+}
+/**********************************************************/
+
+AliHBTReaderKineTree::~AliHBTReaderKineTree()
+{
+  //dtor
+  delete fRunLoader;
+}
+/**********************************************************/
+
+void AliHBTReaderKineTree::Rewind()
+{
+  delete fRunLoader;
+  fRunLoader = 0x0;
+  fCurrentDir = 0;
+  fNEventsRead= 0;  
+}
+/**********************************************************/
+
+Int_t AliHBTReaderKineTree::ReadNext()
 {
  //Reads Kinematics Tree
   
  Info("Read","");
- 
- if (!particles) //check if an object is instatiated
-   {
-     Error("Read"," particles object must instatiated before passing it to the reader");
-     return 1;
-   }  
- particles->Reset();//clear runs == delete all old events
- 
- Int_t Ndirs;//total number of directories specified in fDirs array
- Int_t Nevents; //number of events read in current directory
- Int_t totalNevents = 0; //total number of read events 
- Int_t currentdir = 0; //number of current directory name is fDirs array
-
- if (fDirs) //if array with directories is supplied by user
-  {
-    Ndirs = fDirs->GetEntries(); //get the number if directories
-  }
- else
-  {
-    Ndirs = 0; //if the array is not supplied read only from current directory
-  }
+ if (fParticlesEvent == 0x0)  fParticlesEvent = new AliHBTEvent();
+ fParticlesEvent->Reset();
 
  do  //do{}while; is OK even if 0 dirs specified. In that case we try to read from "./"
   { 
-    Info("Read","________________________________________________________");
-    AliRunLoader * rl = OpenFile(currentdir);
-
-    if (rl == 0x0)
-     {
-      Error("Read","Cannot open session");
-      return 2;
-     }
-    rl->LoadHeader();
-    rl->LoadKinematics("READ");
-    Nevents = rl->GetNumberOfEvents();
+    if (fRunLoader == 0x0) 
+      if (OpenNextFile()) 
+        { 
+          fCurrentDir++;
+          continue;
+        }
     
-    for(Int_t currentEvent =0; currentEvent<Nevents;currentEvent++)//loop over all events
+    if (fCurrentEvent == fRunLoader->GetNumberOfEvents())
      {
-//      cout<<"processing event "<<currentEvent<<" in current dir."<<endl;
-      rl->GetEvent(currentEvent);
-      AliStack* stack = rl->Stack();
-      if (!stack)
-       {
-         Error("Read","Can not get stack for event %d",currentEvent);
-         continue;
-       }
-      Int_t npart = stack->GetNtrack();
-      Int_t nnn = 0;
-      for (Int_t i = 0;i<npart; i++)
-       {
-         
+       //read next directory
+       delete fRunLoader;//close current session
+       fRunLoader = 0x0;//assure pointer is null
+       fCurrentDir++;//go to next dir
+       continue;//directory counter is increased inside in case of error
+     }
+     
+    Info("ReadNext","Reading Event %d",fCurrentEvent);
+    
+    fRunLoader->GetEvent(fCurrentEvent);
+    
+    AliStack* stack = fRunLoader->Stack();
+    if (!stack)
+     {
+       Error("ReadNext","Can not get stack for event %d",fCurrentEvent);
+       continue;
+     }
+    Int_t npart = stack->GetNtrack();
+    for (Int_t i = 0;i<npart; i++)
+      {
          TParticle * p = stack->Particle(i);
 //         if (p->GetFirstMother() >= 0) continue; do not apply with pythia etc
          
@@ -138,44 +109,56 @@ Int_t AliHBTReaderKineTree::Read(AliHBTRun* particles, AliHBTRun* /*tracks*/)
          AliHBTParticle* part = new AliHBTParticle(*p,i);
          if(Pass(part)) { delete part; continue;}//check if meets all criteria of any of our cuts
                                                   //if it does not delete it and take next good track
-         particles->AddParticle(totalNevents,part);//put track and particle on the run
-
-         if ( (nnn%100) == 0) 
-          {
-            cout<<nnn<<"\r";
-            fflush(0);
-          }
-         nnn++;
-       }
-      Info("Read","Total read %d",nnn);
-      totalNevents++;
-     }
-     delete rl;
-     currentdir++;
-  }while(currentdir < Ndirs);//end of loop over directories specified in fDirs Obj Array
- fIsRead = kTRUE;
- return 0;
+         fParticlesEvent->AddParticle(part);//put particle in event
+      }
+    Info("ReadNext","Read %d particles from event %d (event %d in dir %d).",
+                     fParticlesEvent->GetNumberOfParticles(),
+                     fNEventsRead,fCurrentEvent,fCurrentDir);
+      
+    fCurrentEvent++;
+    fNEventsRead++;
+    return 0;
+  }while(fCurrentDir < GetNumberOfDirs());//end of loop over directories specified in fDirs Obj Array
+  
+ return 1;
 }
+/**********************************************************/
 
-AliRunLoader* AliHBTReaderKineTree::OpenFile(Int_t n)
+Int_t AliHBTReaderKineTree::OpenNextFile()
 {
 //opens file with kine tree
-
- const TString& dirname = GetDirName(n);
+ Info("OpenNextFile","________________________________________________________");
+ 
+ const TString& dirname = GetDirName(fCurrentEvent);
  if (dirname == "")
   {
-   Error("OpenFiles","Can not get directory name");
-   return 0x0;
+   Error("OpenNextFile","Can not get directory name");
+   return 1;
   }
  TString filename = dirname +"/"+ fFileName;
 
- AliRunLoader *ret = AliRunLoader::Open(filename.Data(),fgkEventFolderName,"READ"); 
+ fRunLoader = AliRunLoader::Open(filename.Data(),fgkEventFolderName,"READ"); 
 
- if ( ret == 0x0)
+ if ( fRunLoader == 0x0)
   {
-    Error("OpenFiles","Can't open session from file %s",filename.Data());
+    Error("OpenNextFile","Can't open session from file %s",filename.Data());
     return 0x0;
   }
- 
- return ret;
+  
+ if (fRunLoader->GetNumberOfEvents() <= 0)
+  {
+    Error("OpenNextFile","There is no events in this directory.");
+    delete fRunLoader;
+    fRunLoader = 0x0;
+    return 1;
+  }
+  
+ if (fRunLoader->LoadKinematics())
+  {
+    Error("OpenNextFile","Error occured while loading kinematics.");
+    return 1;
+  }
+  
+ fCurrentEvent = 0;
+ return 0;
 }
