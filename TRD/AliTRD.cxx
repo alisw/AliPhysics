@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.29  2001/05/21 16:45:47  hristov
+Last minute changes (C.Blume)
+
 Revision 1.28  2001/05/16 14:57:27  alibrary
 New files for folders and Stack
 
@@ -267,7 +270,7 @@ AliTRD::~AliTRD()
 
 //_____________________________________________________________________________
 void AliTRD::AddCluster(Float_t *pos, Int_t *digits, Int_t det, Float_t amp
-                       , Int_t *tracks, Int_t iType)
+                       , Int_t *tracks, Float_t sigmaY2, Int_t iType)
 {
   //
   // Add a cluster for the TRD
@@ -295,7 +298,7 @@ void AliTRD::AddCluster(Float_t *pos, Int_t *digits, Int_t det, Float_t amp
   c->SetY(- (col0 + padCol * colSize));
   c->SetZ(   row0 + padRow * rowSize);
   
-  c->SetSigmaY2(0.05 * 0.05);
+  c->SetSigmaY2((sigmaY2 + 1./12.) * colSize*colSize);   
   c->SetSigmaZ2(rowSize * rowSize / 12.);
 
   switch (iType) {

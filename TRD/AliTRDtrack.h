@@ -15,18 +15,21 @@ class AliTRDtrack : public TObject {
 public:
 
    AliTRDtrack() { fN=0;}
-   AliTRDtrack(UInt_t index, const Double_t xx[5],
+   AliTRDtrack(const AliTRDcluster *c, UInt_t index, const Double_t xx[5],
                const Double_t cc[15], Double_t xr, Double_t alpha);  
    AliTRDtrack(const AliTRDtrack& t);    
 
-   Int_t  Compare(const TObject *o) const;
+   Int_t    Compare(const TObject *o) const;
+   void     CookdEdx(Double_t low=0.05, Double_t up=0.70);   
 
    Double_t GetAlpha() const {return fAlpha;}
    Double_t GetC()     const {return fC;}
    Int_t    GetClusterIndex(Int_t i) const {return fIndex[i];}    
+   Float_t  GetClusterdQdl(Int_t i) const {return fdQdl[i];}    
    Double_t GetChi2()  const {return fChi2;}
+   Double_t GetZchi2()  const {return fZchi2;}
    void     GetCovariance(Double_t cov[15]) const;  
-   Double_t GetdEdX()  const {return fdEdx;}
+   Double_t GetdEdx()  const {return fdEdx;}
    Double_t GetEta()   const {return fE;}
    Int_t    GetLabel() const {return fLab;}
    Int_t    GetNclusters() const {return fN;}
@@ -34,8 +37,7 @@ public:
      return TMath::Abs(GetPt())*sqrt(1.+GetTgl()*GetTgl());
    }
    Double_t GetPredictedChi2(const AliTRDcluster*) const ;
-   //Double_t GetPt()    const {return 0.3*0.2/GetC()/100;}
-   Double_t GetPt()    const {return 0.3*0.4/GetC()/100;}
+   Double_t GetPt()    const {return 0.299792458*0.4/GetC()/100;}
    void     GetPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const ;
    Double_t GetSigmaC2()   const {return fCcc;}
    Double_t GetSigmaTgl2() const {return fCtt;}
@@ -45,16 +47,13 @@ public:
    Double_t GetX()   const {return fX;}
    Double_t GetY()   const {return fY;} // returns running Y
    Double_t GetZ()   const {return fZ;}
-
-   Float_t  GetLikelihoodPion()     const { return fLhPion;     };
+ 
    Float_t  GetLikelihoodElectron() const { return fLhElectron; };
-
+ 
    Bool_t   IsSortable() const {return kTRUE;}
 
    Int_t    PropagateTo(Double_t xr,
                    Double_t x0=8.72,Double_t rho=5.86e-3,Double_t pm=0.139);
-   void     PropagateToVertex(
-                   Double_t x0=36.66,Double_t rho=1.2e-3,Double_t pm=0.139);
    Int_t    Rotate(Double_t angle);
 
    void     SetLabel(Int_t lab=0) {fLab=lab;}
@@ -62,13 +61,13 @@ public:
 
    void     Update(const AliTRDcluster* c, Double_t chi2, UInt_t i);
 
-   void     SetLikelihoodPion(Float_t l)     { fLhPion     = l; };
-   void     SetLikelihoodElectron(Float_t l) { fLhElectron = l; };
+   void     SetLikelihoodElectron(Float_t l) { fLhElectron = l; };   
 
 protected:
 
    Int_t    fLab;         // track label  
-   Double_t fChi2;        // total chi2 value for the track  
+   Double_t fChi2;        // total chi2 value for R*phi measurements
+   Double_t fZchi2;       // total chi2 value for Z measurements  
    Float_t  fdEdx;        // dE/dx 
 
    Double_t fAlpha;       // rotation angle
@@ -88,11 +87,12 @@ protected:
 
    Short_t fN;             // number of clusters associated with the track
    UInt_t  fIndex[200];    // global indexes of these clusters  
+   Float_t fdQdl[200];     // cluster amplitudes corrected for track angles    
+			   
+   Float_t fLhElectron;    // Likelihood to be an electron    
 
-   Float_t fLhElectron;    // Likelihood to be an electron
-   Float_t fLhPion;        // Likelihood to be a pion		   
+   ClassDef(AliTRDtrack,2) // TRD reconstructed tracks
 
-   ClassDef(AliTRDtrack,2)  // TRD reconstructed tracks
 };                     
 
 

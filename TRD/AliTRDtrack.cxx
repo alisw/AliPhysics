@@ -15,9 +15,6 @@
 
 /*
 $Log$
-Revision 1.5  2001/02/05 14:49:32  hristov
-Compare() declared const (R.Brun)
-
 Revision 1.4  2000/12/08 16:07:02  cblume
 Update of the tracking by Sergei
 
@@ -46,8 +43,8 @@ ClassImp(AliTRDtrack)
 
 //_____________________________________________________________________________
 
-AliTRDtrack::AliTRDtrack(UInt_t index, const Double_t xx[5],
-const Double_t cc[15], Double_t xref, Double_t alpha) {
+AliTRDtrack::AliTRDtrack(const AliTRDcluster *c, UInt_t index, 
+const Double_t xx[5], const Double_t cc[15], Double_t xref, Double_t alpha) {
   //-----------------------------------------------------------------
   // This is the main track constructor.
   //-----------------------------------------------------------------
@@ -67,11 +64,12 @@ const Double_t cc[15], Double_t xref, Double_t alpha) {
   fCty=cc[10]; fCtz=cc[11]; fCtc=cc[12]; fCte=cc[13]; fCtt=cc[14];
 
   fN=0;
-  fIndex[fN++]=index;
+  fIndex[fN]=index;
 
-  fLhPion     = 0.0;
-  fLhElectron = 0.0;
-
+  Float_t q = c->GetQ();
+  Double_t s = fX*fC - fE, t=fT;
+  q *= TMath::Sqrt((1-s*s)/(1+t*t)); 
+  fdQdl[fN++] = q;
 }                              
            
 //_____________________________________________________________________________
@@ -97,11 +95,10 @@ AliTRDtrack::AliTRDtrack(const AliTRDtrack& t) {
   fCty=t.fCty;  fCtz=t.fCtz;  fCtc=t.fCtc;  fCte=t.fCte;  fCtt=t.fCtt;
 
   fN=t.fN;
-  for (Int_t i=0; i<fN; i++) fIndex[i]=t.fIndex[i];
-
-  fLhPion     = t.fLhPion;
-  fLhElectron = t.fLhElectron;
-
+  for (Int_t i=0; i<fN; i++) {
+    fIndex[i]=t.fIndex[i];
+    fdQdl[i]=t.fdQdl[i];
+  }
 }                                                       
 
 //_____________________________________________________________________________
@@ -129,6 +126,37 @@ Int_t AliTRDtrack::Compare(const TObject *o) const {
   else if (c<co) return -1;
   return 0;
 }                
+
+//_____________________________________________________________________________
+void AliTRDtrack::CookdEdx(Double_t low, Double_t up) {
+  //-----------------------------------------------------------------
+  // Calculates dE/dX within the "low" and "up" cuts.
+  //-----------------------------------------------------------------
+  Int_t i;
+  Int_t nc=GetNclusters();
+
+  Float_t sorted[200];
+  for (i=0; i<200; i++) sorted[i]=fdQdl[i];
+
+  Int_t swap; 
+  do {
+    swap=0;
+    for (i=0; i<nc-1; i++) {
+      if (sorted[i]<=sorted[i+1]) continue;
+      Float_t tmp=sorted[i];
+      sorted[i]=sorted[i+1]; sorted[i+1]=tmp;
+      swap++;
+    }
+  } while (swap);
+
+  Int_t nl=Int_t(low*nc), nu=Int_t(up*nc);
+  Float_t dedx=0;
+  for (i=nl; i<=nu; i++) dedx += sorted[i];
+  dedx /= (nu-nl+1);
+  SetdEdx(dedx);
+}                     
+
+
 
 //_____________________________________________________________________________
 Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm)
@@ -212,24 +240,11 @@ Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm)
 
 
 //_____________________________________________________________________________
-void AliTRDtrack::PropagateToVertex(Double_t x0,Double_t rho,Double_t pm)
-{
-  // This function propagates tracks to the "vertex".
-
-  Double_t c=fC*fX - fE;
-  Double_t tgf=-fE/(fC*fY + sqrt(1-c*c));
-  Double_t snf=tgf/sqrt(1.+ tgf*tgf);
-  Double_t xv=(fE+snf)/fC;
-  PropagateTo(xv,x0,rho,pm); 
-}          
-
-
-//_____________________________________________________________________________
 void AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq, UInt_t index)
 {
   // Assignes found cluster to the track and updates track information
 
-  Double_t r00=c->GetSigmaY2(), r01=0., r11=c->GetSigmaZ2()*12;
+  Double_t r00=c->GetSigmaY2(), r01=0., r11=c->GetSigmaZ2();
   r00+=fCyy; r01+=fCzy; r11+=fCzz;
   Double_t det=r00*r11 - r01*r01;
   Double_t tmp=r00; r00=r11/det; r11=tmp/det; r01=-r01/det;
@@ -272,7 +287,13 @@ void AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq, UInt_t index)
 
   fCtt-=k40*c04+k41*c14;
 
-  fIndex[fN++]=index;
+  fIndex[fN]=index;
+
+  Float_t q = c->GetQ();
+  Double_t s = fX*fC - fE, t=fT;
+  q *= TMath::Sqrt((1-s*s)/(1+t*t)); 
+  fdQdl[fN++] = q;
+
   fChi2 += chisq;   
 
   //  cerr<<"in update: fIndex["<<fN<<"] = "<<index<<endl;
@@ -339,12 +360,11 @@ Int_t AliTRDtrack::Rotate(Double_t alpha)
 }                         
 
 
-
-
 //_____________________________________________________________________________
 Double_t AliTRDtrack::GetPredictedChi2(const AliTRDcluster *c) const
 {
-  Double_t r00=c->GetSigmaY2(), r01=0., r11=c->GetSigmaZ2()*12;
+  /*
+  Double_t r00=c->GetSigmaY2(), r01=0., r11=c->GetSigmaZ2();
   r00+=fCyy; r01+=fCzy; r11+=fCzz;
 
   Double_t det=r00*r11 - r01*r01;
@@ -357,6 +377,13 @@ Double_t AliTRDtrack::GetPredictedChi2(const AliTRDcluster *c) const
   Double_t dy=c->GetY() - fY, dz=c->GetZ() - fZ;
 
   return (dy*r00*dy + 2*r01*dy*dz + dz*r11*dz)/det;  
+  */
+
+  Double_t dy=c->GetY() - fY;
+  Double_t r00=c->GetSigmaY2();
+
+  return (dy*dy)/r00;
+
 }            
 
 
@@ -410,10 +437,7 @@ void AliTRDtrack::Streamer(TBuffer &R__b)
       R__b >> fCtt;
       R__b >> fN;
       for (Int_t i=0; i<fN; i++) R__b >> fIndex[i];
-      if (R__v > 1) {
-        R__b >> fLhElectron;
-        R__b >> fLhPion;
-      }
+      for (Int_t i=0; i<fN; i++) R__b >> fdQdl[i];
    } else {                                
       R__b.WriteVersion(AliTRDtrack::IsA());
       TObject::Streamer(R__b);
@@ -444,8 +468,7 @@ void AliTRDtrack::Streamer(TBuffer &R__b)
       R__b << fCtt;
       R__b << fN;
       for (Int_t i=0; i<fN; i++) R__b << fIndex[i];
-      R__b << fLhElectron;
-      R__b << fLhPion;
+      for (Int_t i=0; i<fN; i++) R__b << fdQdl[i];
    }
 }                                                          
 

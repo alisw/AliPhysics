@@ -70,6 +70,7 @@ class AliTRDdigitizer : public TNamed {
           Float_t      GetDiffusionT() const            { return fDiffusionT;         };
           Float_t      GetDiffusionL() const            { return fDiffusionL;         };
           Float_t      GetElAttachProp() const          { return fElAttachProp;       };
+          Int_t        GetExB() const                   { return fExBOn;              };
           Float_t      GetOmegaTau() const              { return fOmegaTau;           };
           Float_t      GetDriftVelocity() const         { return fDriftVelocity;      };
           Float_t      GetPadCoupling() const           { return fPadCoupling;        };

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/05/07 08:06:44  cblume
+Speedup of the code. Create only AliTRDcluster
+
 Revision 1.7  2001/02/14 18:22:26  cblume
 Change in the geometry of the padplane
 
@@ -317,7 +320,7 @@ Bool_t AliTRDclusterizerV0::MakeClusters()
           Int_t detector  = recPoint1->GetDetector();
           Int_t digits[3] = {0};
 	  Int_t tr[9] = {-1}; 
-          fTRD->AddCluster(smear,digits,detector,0.0,tr,0);
+          fTRD->AddCluster(smear,digits,detector,0.0,tr,0,0);
 
 	}
 

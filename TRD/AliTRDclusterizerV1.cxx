@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2001/05/21 17:42:58  hristov
+Constant casted to avoid the ambiguity
+
 Revision 1.11  2001/05/21 16:45:47  hristov
 Last minute changes (C.Blume)
 
@@ -71,6 +74,7 @@ Add new TRD classes
 #include <TF1.h>
 #include <TTree.h>
 #include <TH1.h>
+#include <TFile.h>
 
 #include "AliRun.h"
 
@@ -245,6 +249,17 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   // Get the geometry
   AliTRDgeometry *geo = fTRD->GetGeometry();
 
+  Float_t timeBinSize = geo->GetTimeBinSize();
+  // Half of ampl.region
+  const Float_t kAmWidth = AliTRDgeometry::AmThick()/2.; 
+
+  AliTRDdigitizer *digitizer = (AliTRDdigitizer*) fInputFile->Get("digitizer");
+  printf("AliTRDclusterizerV1::MakeCluster -- ");
+  printf("Got digitizer\n");
+  Float_t omegaTau = digitizer->GetOmegaTau();
+  printf("AliTRDclusterizerV1::MakeCluster -- ");
+  printf("OmegaTau = %f \n",omegaTau);
+ 
   printf("AliTRDclusterizerV1::MakeCluster -- ");
   printf("Start creating clusters.\n");
 
@@ -347,9 +362,9 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
           for ( col = 2;  col <  nColMax;    col++) {
             for (time = 0; time < nTimeTotal; time++) {
 
-              Int_t signalL = digits->GetDataUnchecked(row,col  ,time);
-              Int_t signalM = digits->GetDataUnchecked(row,col-1,time);
-              Int_t signalR = digits->GetDataUnchecked(row,col-2,time);
+              Int_t signalL = TMath::Abs(digits->GetDataUnchecked(row,col  ,time));
+              Int_t signalM = TMath::Abs(digits->GetDataUnchecked(row,col-1,time));
+              Int_t signalR = TMath::Abs(digits->GetDataUnchecked(row,col-2,time));
  
 	      // Look for the maximum
               if (signalM >= maxThresh) {
@@ -521,6 +536,18 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 
 		}
 
+                Float_t clusterSigmaY2 = (clusterSignal[2] + clusterSignal[0]) / clusterCharge 
+                                       - (clusterPads[1]-col-0.5) * (clusterPads[1]-col-0.5);
+
+                // Correct for ExB displacement
+                if (digitizer->GetExB()) { 
+                  Int_t   local_time_bin = (Int_t) clusterPads[2];
+                  Float_t driftLength    = local_time_bin * timeBinSize + kAmWidth;
+                  Float_t colSize        = geo->GetColPadSize(iplan);
+                  Float_t deltaY         = omegaTau*driftLength/colSize;
+                  clusterPads[1]         = clusterPads[1] - deltaY;
+                }
+                                       
                 if (fVerbose) {
                   printf("-----------------------------------------------------------\n");
                   printf("Create cluster no. %d\n",nClusters);
@@ -549,6 +576,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                                 ,idet
                                 ,clusterCharge
                                 ,clusterTracks
+				,clusterSigmaY2
                                 ,iType);
 
               }
@@ -617,8 +645,8 @@ Float_t AliTRDclusterizerV1::Unfold(Float_t eps, Float_t* padSignal)
                      / ((1-ratio)*padSignal[2] + padSignal[3] + padSignal[4]);
 
     // Set cluster charge ratio
-    Float_t ampLeft  = padSignal[1];
-    Float_t ampRight = padSignal[3];
+    Float_t ampLeft  = padSignal[1] / PadResponse(0 - maxLeft );
+    Float_t ampRight = padSignal[3] / PadResponse(0 - maxRight);
 
     // Apply pad response to parameters
     newLeftSignal[0]  = ampLeft  * PadResponse(-1 - maxLeft);

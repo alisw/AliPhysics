@@ -23,13 +23,10 @@ public:
  
   AliTRDtimeBin& operator[](Int_t i);
   Int_t GetNtimeBins() const { return fN; }
-  Double_t GetX(Int_t l) const;
-  Double_t GetMaxY(Int_t l) const; 
-  //Double_t GetAlpha() const { return 2*TMath::Pi()/kNsect; } 
-  Int_t GetTimeBinNumber(Double_t x) const;
-  Int_t GetTimeBin(Int_t det, Int_t local_tb) const;
-  Float_t GetPitch() const {return fTimeBinSize;}   
-
+  Double_t GetX(Int_t tb) const;
+  Int_t   GetTimeBinNumber(Double_t x) const;
+  Int_t   GetTimeBin(Int_t det, Int_t local_tb) const;
+  Bool_t  TECframe(Int_t tb, Double_t y, Double_t z) const;
 
 protected:
 
@@ -37,10 +34,10 @@ protected:
   AliTRDgeometry          *fGeom;       // Pointer to TRD geometry
   AliTRDtimeBin           *fTimeBin;    // Pointer to array of AliTRDtimeBin
   Float_t                  fTimeBinSize;  // Time bin size in cm  
-
-
+					      
   ClassDef(AliTRDtrackingSector,1)  // Provides tools to address clusters which lay within one sector
 
 }; 
+
 
 #endif 
