@@ -13,7 +13,19 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/*
+$Log$
+Revision 1.3  2002/11/15 14:27:45  hristov
+First version of the parallel TPC tracking (M.Ivanov)
+
+Revision 1.2  2001/02/05 14:43:13  hristov
+Compare() declared const
+
+Revision 1.1  2000/10/05 16:17:27  kowal2
+New class replacing AliCluster
+
+
+*/
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -56,6 +68,7 @@ ClassImp(AliTPCExactPoint)
 ClassImp(AliTPCClusterPoint)
 ClassImp(AliTPCTrackerPoint)
 ClassImp(AliTPCTrackPoint)
+ClassImp(AliTPCTrackPoint2)
 ClassImp(AliTPCTrackPointRef)
 
 

@@ -7,6 +7,7 @@
 
 #include "TObject.h"
 #include "TMath.h"
+#include "AliTPCclusterMI.h"
 
 class AliComplexCluster : public TObject {
 public:
@@ -47,10 +48,16 @@ class AliTPCTrackerPoint  {
   Short_t   fTX;        // x position of the cluster  in cm - 10 mum prec
   Short_t   fTZ;        // current prolongation in Z  in cm - 10 mum prec.
   Short_t   fTY;        // current prolongation in Y  in cm - 10 mum prec.
-  Char_t   fTAngleZ;   // angle 
-  Char_t   fTAngleY;   // angle
+  Char_t    fTAngleZ;    // angle 
+  Char_t    fTAngleY;    // angle 
+  UShort_t  fSigmaZ;     // shape  Z - normalised shape - normaliziation 1 - precision 2 percent
+  UShort_t  fSigmaY;     // shape  Y - normalised shape - normaliziation 1 - precision 2 percent
+  UShort_t  fErrZ;       // z error estimate - in  mm - 50 mum precision 
+  UShort_t  fErrY;       // y error estimate - in  mm - 50 mum precision 
  public:
-  AliTPCTrackerPoint(){fTX=0; fTY=0; fTZ=0; fTAngleZ=0; fTAngleY=0;}
+  Char_t   fIsShared;     // indicate sharing of the point between several tracks
+
+  AliTPCTrackerPoint(){fTX=0; fTY=0; fTZ=0; fTAngleZ=0; fTAngleY=0; fIsShared = 0;}
   inline Float_t  GetX() {return (fTX*0.01);}
   inline Float_t  GetZ() {return (fTZ*0.01);}
   inline Float_t  GetY() {return (fTY*0.01);}
@@ -62,6 +69,15 @@ class AliTPCTrackerPoint  {
   void     SetZ(Float_t z){ fTZ = Short_t(TMath::Nint(z*100.));} 
   void     SetAngleZ(Float_t anglez) {fTAngleZ = Char_t(TMath::Nint(anglez*50.));}
   void     SetAngleY(Float_t angley) {fTAngleY = Char_t(TMath::Nint(angley*50.));}
+  inline Float_t  GetSigmaZ() {return (fSigmaZ*0.02);}
+  inline Float_t  GetSigmaY() {return (fSigmaY*0.02);}  
+  inline Float_t  GetErrZ()   {return (fErrZ*0.005);}
+  inline Float_t  GetErrY()   {return (fErrY*0.005);}
+  void     SetErrZ(Float_t errz) {fErrZ = UChar_t(TMath::Nint(errz*200.));}
+  void     SetErrY(Float_t erry) {fErrY = UChar_t(TMath::Nint(erry*200.));}
+
+  void     SetSigmaZ(Float_t sigmaz) {fSigmaZ = UChar_t(TMath::Nint(sigmaz*50.));}
+  void     SetSigmaY(Float_t sigmay) {fSigmaY = UChar_t(TMath::Nint(sigmay*50.));}
   //
  public:
   ClassDef(AliTPCTrackerPoint,1)  
@@ -71,19 +87,15 @@ class AliTPCClusterPoint  {
  private:
   Short_t  fCZ;       // current cluster position Z in cm - 100 mum precision
   Short_t  fCY;       // current cluster position Y in cm - 100 mum precision
-  UChar_t  fErrZ;     // z error estimate - in  mm - 50 mum precision 
-  UChar_t  fErrY;     // y error estimate - in  mm - 50 mum precision 
   UChar_t  fSigmaZ;   // shape  Z - normalised shape - normaliziation 1 - precision 2 percent
   UChar_t  fSigmaY;   // shape  Y - normalised shape - normaliziation 1 - precision 2 percent
   UShort_t fQ;        // total charge in cluster 
   UShort_t fMax;      // charge at maximum  
   Char_t   fCType;    // type of the cluster
  public:
-  AliTPCClusterPoint(){fCZ=fCY=fSigmaZ=fSigmaY=fErrZ=fErrY=fQ=fMax=fCType=0;}
+  AliTPCClusterPoint(){fCZ=fCY=fSigmaZ=fSigmaY=fQ=fMax=fCType=0;}
   inline Float_t  GetZ()    {return (fCZ*0.01);}
   inline Float_t  GetY()    {return (fCY*0.01);}
-  inline Float_t  GetErrZ()   {return (fErrZ*0.005);}
-  inline Float_t  GetErrY()   {return (fErrY*0.005);}
   inline Float_t  GetSigmaZ() {return (fSigmaZ*0.02);}
   inline Float_t  GetSigmaY() {return (fSigmaY*0.02);}  
   inline Int_t  GetType()   {return fCType;}
@@ -93,8 +105,6 @@ class AliTPCClusterPoint  {
   //
   void     SetY(Float_t y){ fCY = Short_t(TMath::Nint(y*100.));} 
   void     SetZ(Float_t z){ fCZ = Short_t(TMath::Nint(z*100.));} 
-  void     SetErrZ(Float_t errz) {fErrZ = UChar_t(TMath::Nint(errz*200.));}
-  void     SetErrY(Float_t erry) {fErrY = UChar_t(TMath::Nint(erry*200.));}
   void     SetSigmaZ(Float_t sigmaz) {fSigmaZ = UChar_t(TMath::Nint(sigmaz*50.));}
   void     SetSigmaY(Float_t sigmay) {fSigmaY = UChar_t(TMath::Nint(sigmay*50.));}
   void     SetQ(Float_t q) {fQ = UShort_t(q);}
@@ -112,26 +122,58 @@ class AliTPCExactPoint : public TObject{
   AliTPCExactPoint(){fEZ=fEY=fEAngleZ=fEAngleY=fEAmp=fEPrim=fTrackID=0;}
   Float_t fEZ;       // current "exact" position according simulation
   Float_t fEY;       // current "exact" position according simulation
+  Float_t fEX;       // x poistion of the cluster
   Float_t fEAngleZ;  // angle Z
   Float_t fEAngleY;  // angle Y
   Float_t fEAmp;     // total charge deposited in row
   Float_t fEPrim;    // primary charge deposited in row
   Int_t   fTrackID;  // id of the track
+  Int_t   fRow;      // row
+  Int_t   fSec;      //sector
   ClassDef(AliTPCExactPoint,1)  
 };
 
 
 class AliTPCTrackPoint: public TObject{
  public:
-  AliTPCTrackPoint(){ fIsShared = kFALSE;}
-  AliTPCClusterPoint & GetCPoint(){return fCPoint;}
+  AliTPCTrackPoint(){}
+  // AliTPCClusterPoint & GetCPoint(){return fCPoint;}
   AliTPCTrackerPoint & GetTPoint(){return fTPoint;}
+  AliTPCclusterMI & GetCPoint(){return fCPoint;}  
  public:
-  AliTPCClusterPoint fCPoint;
+  //  AliTPCClusterPoint fCPoint; 
+  //Char_t fIsShared;
   AliTPCTrackerPoint fTPoint;
-  Bool_t fIsShared;  // indicate sharing of the point between several tracks
+  AliTPCclusterMI    fCPoint;
   ClassDef(AliTPCTrackPoint,1)  
 };
+
+class AliTPCTrackPoint2: public AliTPCTrackPoint{
+ public:
+  AliTPCTrackPoint2(){}
+  Float_t fGX;    //global poition of the point
+  Float_t fGY;    //global poition of the point
+  Float_t fGZ;    //global poition of the point
+  //
+  Float_t fDY;    //distortion of the clusters from the global helix (3 point interpolation)
+  Float_t fDZ;    //distortion of the clusters from the global helix (3 point interpolation)
+  //
+  Float_t fDYU;  //derivation in y up
+  Float_t fDYD;  //distortion of y down
+  //
+  Float_t fDZU;  //derivation in y up
+  Float_t fDZD;  //distortion of y down
+  //
+  Float_t fDDY;  //derivation in y,z up-down
+  Float_t fDDZ;  //derivation in y,z up-down
+  //
+  Int_t   fID;            //id of the corresponding track
+  Int_t   fLab;           //MC label of the track
+ public:
+  ClassDef(AliTPCTrackPoint2,1)  
+};
+
+
 
 
 class AliTPCTrackPointRef: public AliTPCTrackPoint{
