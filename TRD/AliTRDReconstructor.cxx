@@ -39,6 +39,9 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
 // reconstruct clusters
 
+  AliLoader *loader=runLoader->GetLoader("TRDLoader");
+  loader->LoadRecPoints("recreate");
+
   AliTRDclusterizerV1 clusterer("clusterer", "TRD clusterizer");
   runLoader->CdGAFile();
   AliTRDparameter* trdParam = GetTRDparameter(runLoader); 
