@@ -90,24 +90,20 @@
 
 // system includes
 
-#include <Riostream.h>
-
 // ROOT includes
 
-#include "TFile.h"
-#include "TList.h"
-#include "TTree.h"
+#include <Riostream.h>
+class TList;
 
 // AliROOT includes
 
 #include "AliDigitizer.h"
-#include "AliMergeCombi.h"
-#include "AliRunLoader.h"
+#include "AliHeader.h"
 #include "AliLoader.h"
+#include "AliMergeCombi.h"
 #include "AliRun.h"
 #include "AliRunDigitizer.h"
-#include "AliStream.h"
-#include "AliHeader.h"
+#include "AliRunLoader.h"
 
 ClassImp(AliRunDigitizer)
 
@@ -134,10 +130,9 @@ AliRunDigitizer::AliRunDigitizer():
  fCombinationFileName(0),
  fDebug(0)
 {
-// root requires default ctor, where no new objects can be created
-// do not use this ctor, it is supplied only for root needs
-
-//  fOutputStream = 0x0;
+  //
+  // root requires default ctor, where no new objects can be created
+  // do not use this ctor, it is supplied only for root needs
 }
 
 //_______________________________________________________________________
@@ -161,7 +156,10 @@ AliRunDigitizer::AliRunDigitizer(Int_t nInputStreams, Int_t sperb):
  fDebug(0)
 
 {
-// ctor which should be used to create a manager for merging/digitization
+  //
+  // ctor which should be used to create 
+  // a manager for merging/digitization
+  //
   if (nInputStreams == 0) 
    {//kidding
     Fatal("AliRunDigitizer","Specify nr of input streams");
@@ -213,13 +211,19 @@ AliRunDigitizer::AliRunDigitizer(const AliRunDigitizer& dig):
 
 void AliRunDigitizer::Copy(TObject&) const
 {
+  //
+  // Non implemented copy function
+  //
   Fatal("Copy","Not installed\n");
 }
 
 //_______________________________________________________________________
 
-AliRunDigitizer::~AliRunDigitizer() {
-// dtor
+AliRunDigitizer::~AliRunDigitizer() 
+{
+  //
+  // dtor
+  //
   delete fInputStreams;
   delete fCombi;
   delete fOutRunLoader;
@@ -227,7 +231,9 @@ AliRunDigitizer::~AliRunDigitizer() {
 //_______________________________________________________________________
 void AliRunDigitizer::AddDigitizer(AliDigitizer *digitizer)
 {
-// add digitizer to the list of active digitizers
+  //
+  // add digitizer to the list of active digitizers
+  //
   this->Add(digitizer);
 }
 //_______________________________________________________________________
@@ -292,7 +298,9 @@ void AliRunDigitizer::Digitize(Option_t* option)
 //_______________________________________________________________________
 Bool_t AliRunDigitizer::ConnectInputTrees()
 {
-//loads events 
+  //
+  // loads events 
+  //
   Int_t eventNr[kMaxStreamsToMerge], delta[kMaxStreamsToMerge];
   fCombi->Combination(eventNr, delta);
   for (Int_t i=0;i<fNinputs;i++) 
@@ -315,7 +323,10 @@ Bool_t AliRunDigitizer::ConnectInputTrees()
 //_______________________________________________________________________
 Bool_t AliRunDigitizer::InitGlobal()
 {
-// called once before Digitize() is called, initialize digitizers and output
+  //
+  // Method called once before Digitize() is called
+  // initialize digitizers and output
+  //
   fOutputInitialized = kFALSE;
   TList* subTasks = this->GetListOfTasks();
   if (subTasks) {
@@ -330,18 +341,23 @@ Bool_t AliRunDigitizer::InitGlobal()
 
 void AliRunDigitizer::SetOutputFile(TString fn)
 {
-// the output will be to separate file, not to the signal file
- //here should be protection to avoid setting the same file as any input 
+  //
+  // The output will be to separate file, 
+  // not to the signal file here should be protection 
+  //to avoid setting the same file as any input 
+  //
   Info("SetOutputFile","Setting Output File Name %s ",fn.Data());
   fOutputFileName = fn;
-//  InitOutputGlobal();
+  // InitOutputGlobal();
 }
 
 //_______________________________________________________________________
 Bool_t AliRunDigitizer::InitOutputGlobal()
 {
-// Creates the output file, called by InitEvent()
-//Needs to be called after all inputs are opened  
+  //
+  // Creates the output file, called by InitEvent()
+  // Needs to be called after all inputs are opened  
+  //
   if (fOutputInitialized) return kTRUE;
   
   if ( !fOutputFileName.IsNull())
@@ -384,7 +400,9 @@ Bool_t AliRunDigitizer::InitOutputGlobal()
 
 void AliRunDigitizer::InitEvent()
 {
-//redirects output properly
+  //
+  // redirects output properly
+  //
   if (GetDebug()>2)
    {
     Info("InitEvent","fEvent = %d",fEvent);
@@ -392,14 +410,15 @@ void AliRunDigitizer::InitEvent()
    }
   if (fOutputInitialized == kFALSE) InitOutputGlobal();
   
-// if fOutputFileName was not given, write output to signal directory
+  // if fOutputFileName was not given, write output to signal directory
 }
 //_______________________________________________________________________
 
 void AliRunDigitizer::FinishEvent()
 {
-// called at the end of loop over digitizers
-
+  //
+  // called at the end of loop over digitizers
+  //
   
   if (GetOutRunLoader() == 0x0)
    {
@@ -442,9 +461,10 @@ void AliRunDigitizer::FinishEvent()
 
 void AliRunDigitizer::FinishGlobal()
 {
-// called at the end of Exec
-// save unique objects to the output file
-
+  //
+  // called at the end of Exec
+  // save unique objects to the output file
+  //
   if (GetOutRunLoader() == 0x0)
    {
      Error("FinishGlobal","Can not get RunLoader from Output Stream folder");
@@ -552,8 +572,9 @@ TParticle* AliRunDigitizer::GetParticle(Int_t /*i*/, Int_t /*input*/, Int_t /*ev
 //_______________________________________________________________________
 void AliRunDigitizer::ExecuteTask(Option_t* option)
 {
-// overwrite ExecuteTask to do Digitize only
-
+  //
+  // overwrite ExecuteTask to do Digitize only
+  //
   if (!IsActive()) return;
   Digitize(option);
   fHasExecuted = kTRUE;
@@ -563,23 +584,30 @@ void AliRunDigitizer::ExecuteTask(Option_t* option)
 //_______________________________________________________________________
 const TString& AliRunDigitizer::GetInputFolderName(Int_t i) const
 {
+  //
+  // Get the input Folder Name
+  //
   AliStream* stream = dynamic_cast<AliStream*>(fInputStreams->At(i));
   if (stream == 0x0)
-   {
-     Fatal("GetInputFolderName","Can not get the input stream. Index = %d. Exiting",i);
-   }
+    Fatal("GetInputFolderName","Can not get the input stream. Index = %d. Exiting",i);
   return stream->GetFolderName();
 }
 //_______________________________________________________________________
 
 const char* AliRunDigitizer::GetOutputFolderName()
 {
+  //
+  // Get output folder name
+  //
   return GetOutRunLoader()->GetEventFolder()->GetName();
 }
 //_______________________________________________________________________
 
 AliRunLoader* AliRunDigitizer::GetOutRunLoader()
 {
+  //
+  // Returns Run Loader
+  //
   if (fOutRunLoader) return fOutRunLoader;
   
   if ( fOutputFileName.IsNull() )

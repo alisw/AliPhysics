@@ -5,11 +5,17 @@
 
 /* $Id$ */
 
-#include "Riostream.h"
+//
+// This is the basic class for any
+// ALICE detector module, whether it is 
+// sensitive or not. Detector classes depend
+// on this.
+//
 
-#include "TAttLine.h"
-#include "TAttMarker.h"
-#include "TNamed.h"
+#include <Riostream.h>
+#include <TAttLine.h>
+#include <TAttMarker.h>
+#include <TNamed.h>
 
 #include "AliRndm.h"
 
@@ -115,7 +121,7 @@ public:
   virtual void        MakeBranch(Option_t * /*opt =" "*/) {}
   virtual void        MakeTree(Option_t *) {}//skowron 
 
-  virtual AliLoader*  MakeLoader(const char* topfoldername);//skowron   
+  virtual AliLoader*  MakeLoader(const char* topfoldername) const;//skowron   
   virtual AliLoader*  GetLoader() const {return 0x0;} //skowron
   
 

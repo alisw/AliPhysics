@@ -11,7 +11,7 @@
 //       Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
 #include <TObject.h>
-#include "TError.h"
+//#include "TError.h"
 
 class AliKalmanTrack;
 class AliCluster;
@@ -22,9 +22,13 @@ class AliMagF;
 class AliTracker : public TObject {
 public:
 
-  enum {kTrackInward, kTrackBack, kTrackRefit} Propagation_t;
+  enum {kTrackInward, kTrackBack, kTrackRefit} Propagation_t; //type of propagation
   
   AliTracker();
+  AliTracker(const AliTracker &atr): TObject(atr)
+    {Fatal("Copy ctor","Not Implemented!\n");}
+  AliTracker & operator=(const AliTracker &)
+    {Fatal("= op","Not Implemented\n");return *this;}
   virtual ~AliTracker(){}
   virtual Int_t Clusters2Tracks(AliESD *event)=0;
   virtual Int_t PropagateBack(AliESD *event)=0;
@@ -59,7 +63,7 @@ private:
   static const AliMagF *fgkFieldMap; //field map
   Int_t fEventN;//event number
 
-  Int_t fStoreBarrel;
+  Int_t fStoreBarrel; //Store Barrel information
 
   Double_t fX;  //X-coordinate of the primary vertex
   Double_t fY;  //Y-coordinate of the primary vertex

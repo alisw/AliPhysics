@@ -735,7 +735,7 @@ void AliModule::ResetTrackReferences()
  
 //_____________________________________________________________________________
 
-AliLoader*  AliModule::MakeLoader(const char* /*topfoldername*/) 
+AliLoader*  AliModule::MakeLoader(const char* /*topfoldername*/) const
  {
    return 0x0;
  }//skowron   
@@ -818,6 +818,9 @@ void AliModule::MakeBranchTR(Option_t */*option*/)
 //_____________________________________________________________________________
 TTree* AliModule::TreeTR()
 {
+  //
+  // Return TR tree pointer
+  //
   if ( fRunLoader == 0x0)
    {
      Error("TreeTR","Can not get the run loader");
