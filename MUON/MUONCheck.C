@@ -19,7 +19,7 @@
 // Macro for checking aliroot output and associated files contents
 // Gines Martinez, Subatech June 2003
 //
-
+#if !defined(__CINT__) || defined(__MAKECINT__)
 // ROOT includes
 #include "TBranch.h"
 #include "TClonesArray.h"
@@ -45,12 +45,12 @@
 #include "AliMUONGlobalTrigger.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONTrack.h"
-
+#endif
 
 
 void MUONkine(char * filename="galice.root",Int_t event2Check=0)
 {
-  TClonesArray * ListOfParticles = new TClonesArray("TParticle",1000);
+  //  TClonesArray * ListOfParticles = new TClonesArray("TParticle",1000);
   TParticle * particle = new TParticle();
   // Creating Run Loader and openning file containing Hits
   AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
@@ -68,7 +68,7 @@ void MUONkine(char * filename="galice.root",Int_t event2Check=0)
     // Getting event ievent
     RunLoader->GetEvent(ievent); 
     RunLoader->TreeK()->GetBranch("Particles")->SetAddress(&particle);
-    nparticles = RunLoader->TreeK()->GetEntries();
+    nparticles = (Int_t)RunLoader->TreeK()->GetEntries();
     printf(">>> Event %d, Number of particles is %d \n",ievent, nparticles);
     for(iparticle=0; iparticle<nparticles; iparticle++) {
       RunLoader->TreeK()->GetEvent(iparticle);
@@ -162,7 +162,7 @@ void MUONdigits(char * filename="galice.root", Int_t event2Check=0)
     Int_t ichamber, nchambers;
     nchambers = AliMUONConstants::NCh(); ;
     muondata.SetTreeAddress("D"); 
-    char branchname[30];    
+    //    char branchname[30];    
  
     Int_t icathode, ncathodes;
     ncathodes=2;
@@ -192,8 +192,7 @@ void MUONdigits(char * filename="galice.root", Int_t event2Check=0)
 	  Int_t TCharges1 = mDigit->TrackCharge(1);
 	  Int_t TCharges2 = mDigit->TrackCharge(2);
 	  
-	  printf(">>> Digit %4d cathode %1d hit %4d PadX %3d PadY %3d Signal %4d Physics %4d Track0 %4d TrackCharge0 %4d Track1 %'d 
-	  TrackCharge1 %4d Track2 %4d TrackCharge2 %4d \n",idigit, Cathode,Hit, PadX, PadY, Signal, Physics, 
+	  printf(">>> Digit %4d cathode %1d hit %4d PadX %3d PadY %3d Signal %4d Physics %4d Track0 %4d TrackCharge0 %4d Track1 %'d TrackCharge1 %4d Track2 %4d TrackCharge2 %4d \n",idigit, Cathode,Hit, PadX, PadY, Signal, Physics, 
 	  Track0, TCharges0, Track1, TCharges1, Track2, TCharges2);
 	} // end digit loop
       } // end chamber loop
@@ -220,7 +219,7 @@ void MUONrecpoints(char * filename="galice.root", Int_t event2Check=0) {
 
   Int_t ievent, nevents;
   nevents = RunLoader->GetNumberOfEvents();
-  AliMUONRawCluster * mRecPoint;
+  AliMUONRawCluster * mRecPoint = 0;
   
   for(ievent=0; ievent<nevents; ievent++) {
     if (event2Check!=0) ievent=event2Check;
@@ -263,19 +262,19 @@ void MUONrecpoints(char * filename="galice.root", Int_t event2Check=0) {
 //                                    //   charge chi2 compatibility
 //                                    // 2 none give satisfactory chi2
 
-	Int_t Track0 = mRecPoint->fTracks[0];
-	Int_t Track1 = mRecPoint->fTracks[1]; 
-	Int_t Track2 = mRecPoint->fTracks[2];
-	Int_t Q0 = mRecPoint->fQ[0];
-	Int_t Q1 = mRecPoint->fQ[1];
-	Float_t x0 = mRecPoint->fX[0];
-	Float_t x1 = mRecPoint->fX[1];
-	Float_t y0 = mRecPoint->fY[0];
-	Float_t y1 = mRecPoint->fY[1];
-	Float_t z0 = mRecPoint->fZ[0];
-	Float_t z1 = mRecPoint->fZ[1];
-	Float_t chi2_0 =  mRecPoint->fChi2[0];
-	Float_t chi2_1 =  mRecPoint->fChi2[1];
+	Int_t Track0 = mRecPoint->GetTrack(0);
+	Int_t Track1 = mRecPoint->GetTrack(1); 
+	Int_t Track2 = mRecPoint->GetTrack(2);
+	Int_t Q0 = mRecPoint->GetCharge(0);
+	Int_t Q1 = mRecPoint->GetCharge(1);
+	Float_t x0 = mRecPoint->GetX(0);
+	Float_t x1 = mRecPoint->GetX(1);
+	Float_t y0 = mRecPoint->GetY(0);
+	Float_t y1 = mRecPoint->GetY(1);
+	Float_t z0 = mRecPoint->GetZ(0);
+	Float_t z1 = mRecPoint->GetZ(1);
+	Float_t chi2_0 =  mRecPoint->GetChi2(0);
+	Float_t chi2_1 =  mRecPoint->GetChi2(1);
 
 	printf(">>> RecPoint %4d x %6.3f %6.3f y %6.3f %6.3f z %6.3f %6.3f Q0 %4d  Q1 %4d Hit %4d Track1 %4d Track2 %4d Chi2 %6.3f %6.3f \n",
 irecpoint, x0, x1, y0, y1, z0, z1, Q0, Q1, Track0, Track1, Track2, chi2_0, chi2_1);
@@ -400,7 +399,7 @@ void MUONRecTracks (char * filename="galice.root", Int_t event2Check=0 ){
     Int_t ievent, nevents;
   nevents = RunLoader->GetNumberOfEvents();
   
-  AliMUONTrack * rectrack;
+  //  AliMUONTrack * rectrack;
   
   for (ievent=0; ievent<nevents; ievent++) {
     if (event2Check!=0) ievent=event2Check;
