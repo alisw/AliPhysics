@@ -35,7 +35,7 @@
 #include "AliEMCALRecParticle.h"
 #include "AliPHOSRecParticle.h"
 #include "AliKalmanTrack.h"
-#include "AliPHOSAliEnFile.h"
+#include "AliPHOSGridFile.h"
 #endif
 
 void Match(TParticle * pp, AliESDtrack * cp, Double_t * dist) ; 
@@ -49,8 +49,10 @@ const TString kVers("V4.01.Rev.00") ;
 Bool_t Ana(const TString type = "per5", const Int_t run = 1, const Int_t nOfEvt = 1) 
 { 
   Double_t dist[3] ; 
-  // get the LFN file name in the AliEn catalogue ; 
-  AliPHOSAliEnFile lfn ; 
+  // get the LFN file name in the Grid catalogue ; 
+  AliPHOSGridFile lfn ; 
+  if (!lfn.IsConnected()) 
+    return kFALSE ; 
   lfn.SetPath(kYear, kProd, kVers, type) ;  
   lfn.SetRun(run) ; 
 
