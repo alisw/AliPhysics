@@ -263,7 +263,7 @@ void AliPHOSGeometry::EmcXtalCoverage(Double_t & theta, Double_t & phi, Option_t
  
 
 //____________________________________________________________________________
-void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TMatrix & gmat) const
+void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TMatrix & /*gmat*/) const
 {
   // Calculates the coordinates of a RecPoint and the error matrix in the ALICE global coordinate system
  
@@ -291,7 +291,6 @@ void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TM
   
   TRotation dummy = rot.Invert() ;  // to transform from original frame to rotate frame
   gpos.Transform(rot) ; // rotate the baby 
-  gmat = 0;             // Not implemented yet
 
 }
 
