@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.27  2001/10/02 13:03:13  vicinanz
+Minor improvements on the code
+
 Revision 1.26  2001/09/27 10:39:20  vicinanz
 SDigitizer and Merger added
 
@@ -789,9 +792,9 @@ void AliTOF::TOFHits2SDigits()
 		tofHit = (AliTOFhit*) TOFhits->UncheckedAt(hit);
 	        vol[0] = tofHit->GetSector();
 	        vol[1] = tofHit->GetPlate();
-	        vol[2] = tofHit->GetPadx();
-	        vol[3] = tofHit->GetPadz();
-	        vol[4] = tofHit->GetStrip();
+	        vol[2] = tofHit->GetStrip();
+	        vol[3] = tofHit->GetPadx();
+	        vol[4] = tofHit->GetPadz();
 
 	        // 95% of efficiency to be inserted here
 	        // edge effect to be inserted here

@@ -168,9 +168,9 @@ void AliTOFMerger::ReadWriteDigit(Int_t iEvNum)
 
 	vol[0] = tofsdigit->GetSector();
 	vol[1] = tofsdigit->GetPlate();
-	vol[2] = tofsdigit->GetPadx();
-	vol[3] = tofsdigit->GetPadz();
-	vol[4] = tofsdigit->GetStrip();
+	vol[2] = tofsdigit->GetStrip();
+	vol[3] = tofsdigit->GetPadx();
+	vol[4] = tofsdigit->GetPadz();
 
 	digit[0] = tofsdigit->GetTdc();
 	digit[1] = tofsdigit->GetAdc();

@@ -135,9 +135,9 @@ void AliTOFSDigitizer::Exec(Option_t *option) {
 		  tofHit = (AliTOFhit *) TOFhits->UncheckedAt(hit);
 	        vol[0] = tofHit->GetSector();
 	        vol[1] = tofHit->GetPlate();
-	        vol[2] = tofHit->GetPadx();
-	        vol[3] = tofHit->GetPadz();
-	        vol[4] = tofHit->GetStrip();
+	        vol[2] = tofHit->GetStrip();
+	        vol[3] = tofHit->GetPadx();
+	        vol[4] = tofHit->GetPadz();
 
 	        // 95% of efficiency to be inserted here
 	        // edge effect to be inserted here
