@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.43  2001/07/28 12:02:54  hristov
+Branch split level set to 99
+
 Revision 1.42  2001/07/28 11:38:52  hristov
 Loop variable declared once
 
@@ -1003,7 +1006,8 @@ void AliTPC::Hits2Clusters(TFile *of, Int_t eventn)
 
   cerr<<"Number of made clusters : "<<nclusters<<"                        \n";
 
-  carray.GetTree()->Write(cname);
+  carray.GetTree()->SetName(cname);
+  carray.GetTree()->Write();
 
   savedir->cd(); //switch back to the input file
   
@@ -1244,7 +1248,8 @@ void AliTPC::SDigits2Digits2(Int_t eventnumber)
 
   //  sprintf(treeName,"TreeD_%s_%d",fTPCParam->GetTitle(),eventnumber);
   
-  arr->GetTree()->Write(dname);  
+  arr->GetTree()->SetName(dname);  
+  arr->GetTree()->Write();  
   delete arr;
 }
 
@@ -1339,7 +1344,8 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
 
   sprintf(treeName,"TreeD_%s_%d",fTPCParam->GetTitle(),eventnumber);
   
-  GetDigitsArray()->GetTree()->Write(treeName);  
+  GetDigitsArray()->GetTree()->SetName(treeName);  
+  GetDigitsArray()->GetTree()->Write();  
 
 
 }
@@ -1384,7 +1390,8 @@ void AliTPC::Hits2SDigits2(Int_t eventnumber)
 
   sprintf(treeName,"TreeS_%s_%d",fTPCParam->GetTitle(),eventnumber);
   
-  GetDigitsArray()->GetTree()->Write(treeName); 
+  GetDigitsArray()->GetTree()->SetName(treeName); 
+  GetDigitsArray()->GetTree()->Write(); 
 
 }
 
@@ -1428,7 +1435,8 @@ void AliTPC::Hits2SDigits()
 
   sprintf(treeName,"TreeD_%s_%d",fTPCParam->GetTitle(),eventnumber);
   
-  GetDigitsArray()->GetTree()->Write(treeName); 
+  GetDigitsArray()->GetTree()->SetName(treeName); 
+  GetDigitsArray()->GetTree()->Write(); 
 
 }
 

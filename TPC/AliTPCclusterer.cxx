@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/07/20 14:32:44  kowal2
+Processing of many events possible now
+
 Revision 1.4  2001/04/17 08:06:27  hristov
 Possibility to define the magnetic field in the reconstruction (Yu.Belikov)
 
@@ -274,7 +277,8 @@ void AliTPCclusterer::Digits2Clusters(const AliTPCParam *par, TFile *of, Int_t e
 
   cerr<<"Number of found clusters : "<<nclusters<<"                        \n";
 
-  carray.GetTree()->Write(cname);
+  carray.GetTree()->SetName(cname);
+  carray.GetTree()->Write();
   savedir->cd();
 }
 
