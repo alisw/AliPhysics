@@ -92,9 +92,9 @@ AliRoot$(VERSION).tar.gz AliLibs$(VERSION).tar.gz AliOffline$(VERSION).tar.gz:
 		@ls -1d $^ | sed -e "s/^/$(ALICE_LEVEL)\//" > /tmp/saves
 	 	@cd $(ALICE) ; \
                 gtar cvfz $@ --exclude '*.o' --exclude '*Cint.*' \
-                --exclude '*/roothtml/*' --exclude '*/CVS' \
+                --exclude 'roothtml' --exclude 'CVS' \
 		--exclude Make-depend --exclude '*html/gif' \
-		--exclude "tgt_*" \
+		--exclude "*tgt_*" \
                 `cat /tmp/saves` 
 
 htmldocnew:		FORCE
