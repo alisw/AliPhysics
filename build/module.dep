@@ -21,7 +21,7 @@ START/module.mk:	 START/libSTART.pkg
 STEER/module.mk:	 STEER/libSTEER.pkg
 STRUCT/module.mk:	 STRUCT/libSTRUCT.pkg
 THijing/module.mk:	 THijing/libTHijing.pkg
-TMEVSIM/module.mk:	 TMEVSIM/libTMevSim.pkg
+TMEVSIM/module.mk:	 TMEVSIM/libTMEVSIM.pkg
 TOF/module.mk:		 TOF/libTOF.pkg
 TPC/module.mk:		 TPC/libTPC.pkg
 TRD/module.mk:		 TRD/libTRD.pkg
