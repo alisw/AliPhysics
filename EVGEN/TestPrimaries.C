@@ -68,7 +68,6 @@ void TestPrimaries(Int_t evNumber1=0, Int_t evNumber2=0)
 	      phiH->Fill(phi*180./TMath::Pi(),wgt);
 	    else
 	      phiH1->Fill(phi*180./TMath::Pi(),wgt);
-	    phiH->Fill(phi*180./TMath::Pi(),wgt);
 	    etaH->Fill(eta,5.*wgt);    
 	    eetaH->Fill(eta,E);    
 	    yH->Fill(y,5.*wgt);      
