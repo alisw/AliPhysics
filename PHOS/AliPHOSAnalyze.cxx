@@ -116,6 +116,7 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
     
     cout << "AnalyzeOneEvent > Found  " << nId << "  digits in PHOS"   << endl ;  
     
+   
     fPHOS->Reconstruction(fRec);  
     
     // =========== End of reconstruction
@@ -354,8 +355,8 @@ Bool_t AliPHOSAnalyze::Init(Int_t evt)
     
     //========== Create the Clusterizer
 
-    fClu = new AliPHOSClusterizerv1() ; 
-    fClu->SetEmcEnergyThreshold(0.025) ; 
+    fClu =  new AliPHOSClusterizerv1() ; 
+    fClu->SetEmcEnergyThreshold(0.030) ; 
     fClu->SetEmcClusteringThreshold(0.50) ; 
     fClu->SetPpsdEnergyThreshold    (0.0000002) ; 
     fClu->SetPpsdClusteringThreshold(0.0000001) ; 
@@ -368,6 +369,7 @@ Bool_t AliPHOSAnalyze::Init(Int_t evt)
     
     fTrs = new AliPHOSTrackSegmentMakerv1() ;
     cout <<  "AnalyzeOneEvent > using tack segment maker " << fTrs->GetName() << endl ; 
+    fTrs->UnsetUnfoldFlag() ;
     
     //========== Creates the particle identifier
     
@@ -614,6 +616,7 @@ void AliPHOSAnalyze::DisplayRecPoints()
 	  if (relid[0] == module && relid[1] == 0)  
 	    {  
 	      energy = fClu->Calibrate(digit->GetAmp()) ;
+              cout << "Energy is " << energy << " and threshold is " << fClu->GetEmcEnergyThreshold() << endl; 
 	      if (energy >  fClu->GetEmcEnergyThreshold()  ){
 		nDigits++ ;
 		etot += energy ; 
