@@ -14,6 +14,7 @@
 
 #include <TNamed.h>
 #include <TString.h>
+#include <TObjArray.h>
 
 class AliRunLoader;
 

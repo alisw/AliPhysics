@@ -842,7 +842,7 @@ void AliModule::Digits2Raw()
 
   const Int_t kNDetectors = 16;
   const char* kDetectors[kNDetectors] = {"TPC", "ITSSPD", "ITSSDD", "ITSSSD", "TRD", "TOF", "PHOS", "RICH", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "START", "VZERO", "CRT"};
-  const Int_t kDetectorDDLs[kNDetectors] = {216, 20, 12, 16, 18, 5, 1, 5, 1, 7, 1, 1, 3, 1, 1};
+  const Int_t kDetectorDDLs[kNDetectors] = {216, 20, 12, 16, 18, 72, 20, 5, 1, 20, 1, 1, 6, 1, 1};
   Int_t nDDLs = 1;
   Int_t ddlOffset = 0;
   for (Int_t i = 0; i < kNDetectors; i++) {
@@ -858,7 +858,7 @@ void AliModule::Digits2Raw()
 
   digitsFile.seekg(0, ios::end);
   UInt_t size = digitsFile.tellg();
-  UInt_t ddlSize = size/nDDLs;
+  UInt_t ddlSize = 4 * (size / (4*nDDLs));
   Char_t* buffer = new Char_t[ddlSize+1];
 
   for (Int_t iDDL = 0; iDDL < nDDLs; iDDL++) {

@@ -657,8 +657,8 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName)
                                          "EMCAL", "MUON", "FMD", "ZDC", 
                                          "PMD", "START", "VZERO", "CRT"};
   const Int_t kDetectorDDLs[kNDetectors]   = {216, 20, 12, 16, 
-                                              18, 5, 10, 5, 
-                                              1, 7, 1, 1, 
+                                              18, 72, 20, 5, 
+                                              1, 20, 1, 1, 
                                               6, 1, 1, 1};
   const Float_t kDetectorLDCs[kNDetectors] = {46, 2, 2, 1, 
                                               4, 2, 1, 2, 
@@ -679,7 +679,7 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName)
   Info("ConvertRawFilesToDate", 
        "converting raw data DDL files to DATE file %s", dateFileName);
   char command[256];
-  sprintf(command, "dateStream -o %s -# %d", 
+  sprintf(command, "dateStream -o %s -# %d -C", 
 	  dateFileName, runLoader->GetNumberOfEvents());
   FILE* pipe = gSystem->OpenPipe(command, "w");
 
