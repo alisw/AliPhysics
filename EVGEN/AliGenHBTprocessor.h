@@ -1,12 +1,15 @@
-#ifndef ALIGENHBTPROCESSOR_H
-#define ALIGENHBTPROCESSOR_H
+// Implementation of the interface for THBTprocessor
+// which is a wrapper itself to Fortran 
+// program "HBT processor" written by Lanny Ray
+// Author: Piotr Krzysztof Skowronski <Piotr.Skowronski@cern.ch>
+// 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
 
-// Implementation of the interface for THBTprocessor
-// Author: Piotr Krzysztof Skowronski <Piotr.Skowronski@cern.ch>
+#ifndef ALIGENHBTPROCESSOR_H
+#define ALIGENHBTPROCESSOR_H
 
 #include "AliGenerator.h"
 #include <AliPDG.h>
@@ -19,8 +22,8 @@ enum {kHBTPMaxParticleTypes = 50};
 class AliGenHBTprocessor : public AliGenerator 
 { 
 //Wrapper class for THBTProcessor 
-//which is an wrapper to Fortran 
-//program HBT processor written by Lanny Ray
+//which is a wrapper itself to Fortran 
+//program "HBT processor" written by Lanny Ray
 //
 //Piotr.Skowronski@cern.ch
 
@@ -31,7 +34,7 @@ class AliGenHBTprocessor : public AliGenerator
 
     virtual void Init();
     virtual void Generate();
-    virtual void GetParticles(TClonesArray * particles);
+    virtual void GetParticles(TClonesArray * particles) const;
     Int_t        IdFromPDG(Int_t pdg) const;
     Int_t        PDGFromId(Int_t id) const;
 
@@ -137,32 +140,6 @@ class AliGenHBTprocessor : public AliGenerator
       Int_t fSwitchCoulomb;         // Coulomb correction selection options
       Int_t fSwitchFermiBose;      // For fermions or bosons
 
-//   Numbers of particles and pairs:
-
-      Int_t fNPart1Trk;           // Total # PID #1 in 'trk', all flags
-      Int_t fNPart2Trk;           // Total # PID #2 in 'trk', all flags
-      Int_t fNPartTotTrk;         // Total # all part. in 'trk', all flgs
-      Int_t fNPartUsed1Trk;      // # PID#1, used (flag=0) in 'trk'
-      Int_t fNPartUsed2Trk;      // # PID#2, used (flag=0) in 'trk'
-
-      Int_t fNPart1Trk2;          // Total # PID #1 in 'trk2', all flags
-      Int_t fNPart2Trk2;          // Total # PID #2 in 'trk2', all flags
-      Int_t fNPartTotTrk2;        // Total # all part. in 'trk2', all flgs
-      Int_t fNPartUsed1Trk2;     // # PID#1, used (flag=0) in 'trk2'
-      Int_t fNPartUsed2Trk2;     // # PID#2, used (flag=0) in 'trk2'
-
-      Int_t fNPartUsed1Ref;      // # PID#1, used (flag=0) in Reference
-      Int_t fNPartUsed2Ref;      // # PID#2, used (flag=0) in Reference
-      Int_t fNPartUsed1Inc;      // # PID#1, used (flag=0) in Inclusive 
-      Int_t fNPartUsed2Inc;      // # PID#2, used (flag=0) in Inclusive
-
-      Int_t fNumPairsLike;         // # like pairs used (flag=0) in fit 
-      Int_t fNumPairsUnlike;       // # unlike pairs used (flag=0) in fit
-      Int_t fNumPairsLikeRef;     // # like pairs used (flag=0) in Ref. 
-      Int_t fNumPairsUnlike_ref;   // # unlike pairs used (flag=0) in Ref. 
-      Int_t fNumPairsLikeInc;     // # like pairs used (flag=0) in Incl. 
-      Int_t fNumPairsUnlike_inc;   // # unlike pairs used (flag=0) in Incl. 
-
 //   Counters:
 
       Int_t fEventLineCounter;     // Input event text file line counter
@@ -222,8 +199,8 @@ class AliGenHBTprocessor : public AliGenerator
       Float_t    fPhiBinSize;          // One-body phi bin size in (degrees)
       
       Float_t    fEtaBinSize ;         // One-body eta bin size
-      Float_t    fEtaMin;               // One-body eta min/max
-      Float_t    fEtaMax;
+      Float_t    fEtaMin;              // One-body eta min
+      Float_t    fEtaMax;              // One-body eta max
 //   Two-Body Histograms and Correlation Mesh for 1D and 3D distributions:
 //                                       // projections onto single axis.
 
@@ -250,6 +227,7 @@ class AliGenHBTprocessor : public AliGenerator
 
 
       /******* P R O T E C T E D   M E T H O D S  *****/
+  private:
   public:    
         //conveerts Eta (pseudorapidity) to etha(azimuthal angle). Returns radians 
     static Double_t EtaToTheta(Double_t arg){return 2.*TMath::ATan(TMath::Exp(-arg));}

@@ -302,8 +302,9 @@ void AliGenHBTprocessor::Generate()
 
 
 /*******************************************************************/
-void AliGenHBTprocessor::GetParticles(TClonesArray * particles)
- {//practically dumm
+void AliGenHBTprocessor::GetParticles(TClonesArray * particles) const
+ {
+ //practically dumm
    if (!particles)
     {
       cout<<"Particles has to be initialized"<<endl;
