@@ -33,8 +33,7 @@ class AliHBTQOutCMSLCCorrelFctn: public AliHBTOnePairFctn1D
 //Q OutCMSLCaraint Correlation Function
 //1D two particle function 
  public:
-   AliHBTQOutCMSLCCorrelFctn(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0):
-                        AliHBTOnePairFctn1D(nbins,maxXval,minXval){}
+   AliHBTQOutCMSLCCorrelFctn(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0);
    virtual ~AliHBTQOutCMSLCCorrelFctn(){};
    TH1* GetResult();
  protected:
@@ -50,8 +49,7 @@ class AliHBTQLongCMSLCCorrelFctn: public AliHBTOnePairFctn1D
 //Q LongCMSLCaraint Correlation Function
 //1D two particle function 
  public:
-   AliHBTQLongCMSLCCorrelFctn(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0):
-                        AliHBTOnePairFctn1D(nbins,maxXval,minXval){}
+   AliHBTQLongCMSLCCorrelFctn(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0);
    virtual ~AliHBTQLongCMSLCCorrelFctn(){};
    TH1* GetResult();
  protected:
@@ -67,8 +65,7 @@ class AliHBTQSideCMSLCCorrelFctn: public AliHBTOnePairFctn1D
 //Q SideCMSLCaraint Correlation Function
 //1D two particle function 
  public:
-   AliHBTQSideCMSLCCorrelFctn(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0):
-                        AliHBTOnePairFctn1D(nbins,maxXval,minXval){}
+   AliHBTQSideCMSLCCorrelFctn(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0);
    virtual ~AliHBTQSideCMSLCCorrelFctn(){}
    TH1* GetResult();
  protected:

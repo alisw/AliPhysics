@@ -12,13 +12,13 @@ ClassImp(AliHBTQInvCorrelFctn)
 //by 
 //  of particles from different events
 
-AliHBTQInvCorrelFctn::
-AliHBTQInvCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
-                     AliHBTOnePairFctn1D(nbins,maxXval,minXval)
+AliHBTQInvCorrelFctn::AliHBTQInvCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
+ AliHBTOnePairFctn1D(nbins,maxXval,minXval)
 {
+ fWriteNumAndDen = kTRUE;//change default behaviour
  Rename("qinvcf","Q_{inv} Correlation Function");
 }
-
+/*************************************************************************************/ 
 
 TH1* AliHBTQInvCorrelFctn::GetResult()
 {  
@@ -29,8 +29,19 @@ TH1* AliHBTQInvCorrelFctn::GetResult()
 /*************************************************************************************/ 
 
 ClassImp(AliHBTQOutCMSLCCorrelFctn)
+    
+AliHBTQOutCMSLCCorrelFctn::AliHBTQOutCMSLCCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
+ AliHBTOnePairFctn1D(nbins,maxXval,minXval)
+{
+  //ctor
+ fWriteNumAndDen = kTRUE;//change default behaviour
+ Rename("qoutcf","Q_{out} Correlation Function");
+}
+/*************************************************************************************/ 
+    
 TH1* AliHBTQOutCMSLCCorrelFctn::GetResult()
 {
+ //returns result of the function
  return GetRatio(Scale());
 }
 /*************************************************************************************/ 
@@ -38,8 +49,19 @@ TH1* AliHBTQOutCMSLCCorrelFctn::GetResult()
 /*************************************************************************************/ 
 
 ClassImp(AliHBTQLongCMSLCCorrelFctn)
+    
+AliHBTQLongCMSLCCorrelFctn::AliHBTQLongCMSLCCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
+ AliHBTOnePairFctn1D(nbins,maxXval,minXval)
+{
+  //ctor
+ fWriteNumAndDen = kTRUE;//change default behaviour
+ Rename("qlongcf","Q_{long} Correlation Function");
+}
+/*************************************************************************************/ 
+    
 TH1* AliHBTQLongCMSLCCorrelFctn::GetResult()
 {
+ //returns result of the function
  return GetRatio(Scale());
 }
 /*************************************************************************************/ 
@@ -47,8 +69,19 @@ TH1* AliHBTQLongCMSLCCorrelFctn::GetResult()
 /*************************************************************************************/ 
 
 ClassImp(AliHBTQSideCMSLCCorrelFctn)
+    
+AliHBTQSideCMSLCCorrelFctn::AliHBTQSideCMSLCCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
+ AliHBTOnePairFctn1D(nbins,maxXval,minXval)
+{
+ //ctor
+ fWriteNumAndDen = kTRUE;//change default behaviour
+ Rename("qsidecf","Q_{side} Correlation Function");
+}
+/*************************************************************************************/ 
+    
 TH1* AliHBTQSideCMSLCCorrelFctn::GetResult()
 {
+ //returns result
  return GetRatio(Scale());
 }
 
@@ -59,15 +92,17 @@ TH1* AliHBTQSideCMSLCCorrelFctn::GetResult()
 
 ClassImp(AliHBTInvMassCorrelFctn)
 
-AliHBTInvMassCorrelFctn::
-AliHBTInvMassCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
-                        AliHBTOnePairFctn1D(nbins,maxXval,minXval)
+AliHBTInvMassCorrelFctn::AliHBTInvMassCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
+ AliHBTOnePairFctn1D(nbins,maxXval,minXval)
 {
-  Rename("InvMass CF","Invariant Mass Correlation Function");
+ //ctor 
+ fWriteNumAndDen = kTRUE;//change default behaviour
+ Rename("InvMass CF","Invariant Mass Correlation Function");
 }
 
 TH1* AliHBTInvMassCorrelFctn::GetResult()
 {
+ //returns result
  TString name = fName + " Result";
  return (TH1*)GetNumerator()->Clone(name.Data());
 }
@@ -77,10 +112,11 @@ TH1* AliHBTInvMassCorrelFctn::GetResult()
 
 ClassImp(AliHBTTwoKStarCorrelFctn)
 
-AliHBTTwoKStarCorrelFctn::
-AliHBTTwoKStarCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
-                     AliHBTOnePairFctn1D(nbins,maxXval,minXval)
+AliHBTTwoKStarCorrelFctn::AliHBTTwoKStarCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
+ AliHBTOnePairFctn1D(nbins,maxXval,minXval)
 {
+ //ctor 
+ fWriteNumAndDen = kTRUE;//change default behaviour
  Rename("twokstarcf","2K^{*} Correlation Function");
 }
 
@@ -88,6 +124,7 @@ AliHBTTwoKStarCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
 
 TH1* AliHBTTwoKStarCorrelFctn::GetResult()
 {  
+ //returns result
  return GetRatio(Scale());
 }
 

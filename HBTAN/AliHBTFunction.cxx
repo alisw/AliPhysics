@@ -41,15 +41,17 @@
 ClassImp( AliHBTFunction )
 
 AliHBTFunction::AliHBTFunction():
-  fPairCut(new AliHBTEmptyPairCut())   //dummy cut
+ fPairCut(new AliHBTEmptyPairCut()), //dummy cut  
+ fWriteNumAndDen(kFALSE)
 {
 //Default constructor
 }
 /******************************************************************/
 
 AliHBTFunction::AliHBTFunction(const char* name,const char* title):
-  TNamed(name,title),
-  fPairCut(new AliHBTEmptyPairCut()) //dummy cut  
+ TNamed(name,title),
+ fPairCut(new AliHBTEmptyPairCut()), //dummy cut  
+ fWriteNumAndDen(kFALSE)
 {
 //Constructor  
 }
@@ -57,7 +59,8 @@ AliHBTFunction::AliHBTFunction(const char* name,const char* title):
 
 AliHBTFunction::AliHBTFunction(const AliHBTFunction & source):
  TNamed(source),
- fPairCut((AliHBTPairCut*)source.fPairCut->Clone())
+ fPairCut((AliHBTPairCut*)source.fPairCut->Clone()),
+ fWriteNumAndDen(source.fWriteNumAndDen)
 {
 // Copy constructor needed by the coding conventions
 }
@@ -80,8 +83,11 @@ AliHBTFunction & AliHBTFunction::operator= (const AliHBTFunction & source)
 void AliHBTFunction::WriteFunction()
 {
 //writes result of the function to file
-   if (GetNumerator()) GetNumerator()->Write();
-   if (GetDenominator()) GetDenominator()->Write();
+   if (fWriteNumAndDen)
+    { 
+     if (GetNumerator()) GetNumerator()->Write();
+     if (GetDenominator()) GetDenominator()->Write();
+    } 
    TH1* res = GetResult();
    if (res) res->Write();
 }

@@ -50,12 +50,12 @@ class AliHBTFunction: public TNamed
     void SetPairCut(AliHBTPairCut* cut);
     
     virtual AliHBTPair* CheckPair(AliHBTPair* pair);
-    
+    void  SetWriteNumAndDen(Bool_t flag = kFALSE){fWriteNumAndDen = flag;}
   protected:
     virtual void BuildHistos() = 0;//builds default histograms
     AliHBTPairCut*   fPairCut;     //pair cut
-    
-    ClassDef(AliHBTFunction,2)
+    Bool_t           fWriteNumAndDen; //flag indicating whether numerator and denominator should be writted together with a result
+    ClassDef(AliHBTFunction,3)
 };
 /******************************************************************/
 inline AliHBTPair* AliHBTFunction::CheckPair(AliHBTPair* pair)
