@@ -11,7 +11,9 @@ PACKAGE = EMCAL
 
 SRCS          =  AliEMCAL.cxx  AliEMCALGeometry.cxx AliEMCALv0.cxx \
 	         AliEMCALv1.cxx AliEMCALHit.cxx AliEMCALDigit.cxx \
-                 AliEMCALSDigitizer.cxx AliEMCALDigitizer.cxx  AliEMCALGetter.cxx 
+	         AliEMCALSDigitizer.cxx AliEMCALDigitizer.cxx  \
+	         AliEMCALGetter.cxx AliEMCALTick.cxx 
+#                AliEMCALRecPoint.cxx AliEMCALEmcRecPoint.cxx AliEMCALClusterizer.cxx 
 
 # C++ Headers
 
