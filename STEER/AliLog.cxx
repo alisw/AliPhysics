@@ -762,9 +762,8 @@ void AliLog::PrintMessage(UInt_t type, const char* message,
     {"Fatal", "Error", "Warning", "Info", "Debug"};
 
   if (fPrintType[type]) {
-    fprintf(stream, "%s in ", typeNames[type]);
+    fprintf(stream, "%c-", typeNames[type][0]);
   }
-  fprintf(stream, "<");
   if (fPrintModule[type] && module) {
     fprintf(stream, "%s/", module);
   }
@@ -772,9 +771,9 @@ void AliLog::PrintMessage(UInt_t type, const char* message,
     fprintf(stream, "%s::", className);
   }
   if (message) {
-    fprintf(stream, "%s>: %s", function, message);
+    fprintf(stream, "%s: %s", function, message);
   } else {
-    fprintf(stream, "%s>", function);
+    fprintf(stream, "%s", function);
   }
   if (fPrintLocation[type] && file) {
     fprintf(stream, " (%s:%.0d)", file, line);
