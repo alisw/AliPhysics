@@ -558,7 +558,7 @@ void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth){
     TGeoVolume *vB1,*vB2,*vB3,*vBh1,*vBh2,*vBh3;
     TGeoVolume *vC1,*vC2,*vC3,*vCh1,*vCh2,*vCh3;
     TGeoVolume *vD,*vDs,*vDw,*vDws,*vM;
-    vM = new TGeoVolume("ITSspdThermalShealdMotherM",sM,medSPDair);
+    vM = new TGeoVolume("ITSspdThermalShealdMother",sM,medSPDair);
     vM->SetVisibility(kTRUE);
     vM->SetLineColor(7); // light Blue
     vM->SetLineWidth(1);
