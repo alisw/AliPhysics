@@ -29,7 +29,7 @@
 ClassImp(AliITStrackSA)
 
 //_____________________________________
-AliITStrackSA:: AliITStrackSA() : AliITStrackV2(){
+AliITStrackSA:: AliITStrackSA() : AliITStrackMI(){
 // Default constructor  
   SetNumberOfClusters(0);
   SetNumberOfClustersSA(0);
@@ -38,15 +38,15 @@ AliITStrackSA:: AliITStrackSA() : AliITStrackV2(){
 
 
 //___________________________________________________
-AliITStrackSA::AliITStrackSA(const AliITStrackV2& t) : 
-AliITStrackV2(t){
+AliITStrackSA::AliITStrackSA(const AliITStrackMI& t) : 
+AliITStrackMI(t){
 // Copy a V2 track into a SA track
   SetNumberOfClustersSA(0);
   ResetIndexSA();
 }
 //___________________________________________________
 AliITStrackSA::AliITStrackSA(const AliITStrackSA& t) : 
-AliITStrackV2(t){
+AliITStrackMI(t){
 // Copy constructor
 
   ResetIndexSA();

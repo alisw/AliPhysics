@@ -15,17 +15,15 @@
 
 //-------------------------------------------------------------------------
 //               Implementation of the ITS tracker class
-//    It reads AliITSclusterV2 clusters and creates AliITStrackV2 tracks
+//    It reads AliITSclusterV2 clusters and creates AliITStrackMI tracks
 //                   and fills with them the ESD
-//          Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
-//                  Marian Ivanov, CERN, Marian.Ivanov@cern.ch 
+//          Origin: Marian Ivanov, CERN, Marian.Ivanov@cern.ch 
 //     dEdx analysis by: Boris Batyunya, JINR, Boris.Batiounia@cern.ch
 //     
 //-------------------------------------------------------------------------
 #include "AliITSrecoV2.h"
 #include <TTree.h>
 #include "AliITSgeom.h"
-#include "AliTPCtrack.h"
 #include "AliESD.h"
 #include "AliITSclusterV2.h"
 #include "AliITStrackerMI.h"
@@ -179,7 +177,7 @@ void AliITStrackerMI::UnloadClusters() {
   for (Int_t i=0; i<kMaxLayer; i++) fgLayers[i].ResetClusters();
 }
 
-static Int_t CorrectForDeadZoneMaterial(AliITStrackV2 *t) {
+static Int_t CorrectForDeadZoneMaterial(AliITStrackMI *t) {
   //--------------------------------------------------------------------
   // Correction for the material between the TPC and the ITS
   // (should it belong to the TPC code ?)
@@ -230,9 +228,9 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESD *event) {
       if (esd->GetStatus()&AliESDtrack::kTPCout) continue;
       if (esd->GetStatus()&AliESDtrack::kITSin) continue;
 
-      AliITStrackV2 *t=0;
+      AliITStrackMI *t=0;
       try {
-        t=new AliITStrackV2(*esd);
+        t=new AliITStrackMI(*esd);
       } catch (const Char_t *msg) {
         Warning("Clusters2Tracks",msg);
         delete t;
@@ -280,7 +278,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESD *event) {
      for (Int_t i=0; i<nentr; i++) {
 //       cerr<<fPass<<"    "<<i<<'\r';
        fCurrentEsdTrack = i;
-       AliITStrackV2 *t=(AliITStrackV2*)itsTracks.UncheckedAt(i);
+       AliITStrackMI *t=(AliITStrackMI*)itsTracks.UncheckedAt(i);
        if (t==0) continue;              //this track has been already tracked
        if (t->fReconstructed&&(t->fNUsed<1.5)) continue;  //this track was  already  "succesfully" reconstructed
        if ( (TMath::Abs(t->GetD(GetX(),GetY()))  >3.) && fConstraint[fPass]) continue;
@@ -296,7 +294,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESD *event) {
 
        SortTrackHypothesys(fCurrentEsdTrack,20,0);  //MI change
        //
-       AliITStrackV2 * besttrack = GetBestHypothesys(fCurrentEsdTrack,t,15);
+       AliITStrackMI * besttrack = GetBestHypothesys(fCurrentEsdTrack,t,15);
        if (!besttrack) continue;
        besttrack->SetLabel(tpcLabel);
        //       besttrack->CookdEdx();
@@ -339,106 +337,6 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESD *event) {
 }
 
 
-
-Int_t AliITStrackerMI::Clusters2Tracks(TTree *tpcTree, TTree *itsTree) {
-  //--------------------------------------------------------------------
-  // This functions reconstructs ITS tracks
-  // The clusters must be already loaded !
-  //--------------------------------------------------------------------
-  Int_t nentr=0; TObjArray itsTracks(15000);
-
-   Warning("Clusters2Tracks(TTree *, TTree *)",
-      "Will be removed soon !   Use Clusters2Tracks(AliESD *) instead.");
-
-  {/* Read TPC tracks */ 
-    AliTPCtrack *itrack=new AliTPCtrack; 
-    TBranch *branch=tpcTree->GetBranch("tracks");
-    if (!branch) {
-       Error("Clusters2Tracks","Can't get the branch !");
-       return 1;
-    }
-    tpcTree->SetBranchAddress("tracks",&itrack);
-    nentr=(Int_t)tpcTree->GetEntries();
-
-    Info("Clusters2Tracks","Number of TPC tracks: %d\n",nentr);
-
-    for (Int_t i=0; i<nentr; i++) {
-       tpcTree->GetEvent(i);
-       AliITStrackV2 *t=0;
-       try {
-           t=new AliITStrackV2(*itrack);
-       } catch (const Char_t *msg) {
-           Warning("Clusters2Tracks",msg);
-           delete t;
-           continue;
-       }
-       if (TMath::Abs(t->GetD())>4) {
-	 delete t;
-	 continue;
-       }
-
-       if (CorrectForDeadZoneMaterial(t)!=0) {
-	 Warning("Clusters2Tracks",
-                 "failed to correct for the material in the dead zone !\n");
-	 delete t;
-         continue;
-       }
-
-       itsTracks.AddLast(t);
-    }
-    delete itrack;
-  }
-  itsTracks.Sort();
-  nentr=itsTracks.GetEntriesFast();
-
-
-  AliITStrackV2 *otrack=&fBestTrack;
-  TBranch *branch=itsTree->GetBranch("tracks");
-  if (!branch) itsTree->Branch("tracks","AliITStrackV2",&otrack,32000,3);
-  else branch->SetAddress(&otrack);
-
-  for (fPass=0; fPass<2; fPass++) {
-     Int_t &constraint=fConstraint[fPass]; if (constraint<0) continue;
-     for (Int_t i=0; i<nentr; i++) {
-       AliITStrackV2 *t=(AliITStrackV2*)itsTracks.UncheckedAt(i);
-       if (t==0) continue;           //this track has been already tracked
-       Int_t tpcLabel=t->GetLabel(); //save the TPC track label
-
-       ResetTrackToFollow(*t);
-       ResetBestTrack();
-       /*
-       for (FollowProlongation(); fI<kMaxLayer; fI++) {
-          while (TakeNextProlongation()) FollowProlongation();
-       }
-       */
-       FollowProlongationTree(t,i);
-       if (fBestTrack.GetNumberOfClusters() == 0) continue;
-
-       if (fConstraint[fPass]) {
-          ResetTrackToFollow(*t);
-	  if (!RefitAt(3.7, &fTrackToFollow, &fBestTrack)) continue;
-          ResetBestTrack();
-       }
-
-       fBestTrack.SetLabel(tpcLabel);
-       //fBestTrack.CookdEdx();
-       CookdEdx(&fBestTrack);
-
-       CookLabel(&fBestTrack,0.); //For comparison only
-       itsTree->Fill();
-       //UseClusters(&fBestTrack);
-       delete itsTracks.RemoveAt(i);
-     }
-  }
-
-  nentr=(Int_t)itsTree->GetEntries();
-  Info("Clusters2Tracks","Number of prolonged tracks: %d\n",nentr);
-
-  itsTracks.Delete();
-
-  return 0;
-}
-
 Int_t AliITStrackerMI::PropagateBack(AliESD *event) {
   //--------------------------------------------------------------------
   // This functions propagates reconstructed ITS tracks back
@@ -454,9 +352,9 @@ Int_t AliITStrackerMI::PropagateBack(AliESD *event) {
      if ((esd->GetStatus()&AliESDtrack::kITSin)==0) continue;
      if (esd->GetStatus()&AliESDtrack::kITSout) continue;
 
-     AliITStrackV2 *t=0;
+     AliITStrackMI *t=0;
      try {
-        t=new AliITStrackV2(*esd);
+        t=new AliITStrackMI(*esd);
      } catch (const Char_t *msg) {
         Warning("PropagateBack",msg);
         delete t;
@@ -516,9 +414,9 @@ Int_t AliITStrackerMI::RefitInward(AliESD *event) {
     if (esd->GetStatus()&AliESDtrack::kTPCout)
       if ((esd->GetStatus()&AliESDtrack::kTPCrefit)==0) continue;
 
-    AliITStrackV2 *t=0;
+    AliITStrackMI *t=0;
     try {
-        t=new AliITStrackV2(*esd);
+        t=new AliITStrackMI(*esd);
     } catch (const Char_t *msg) {
         Warning("RefitInward",msg);
         delete t;
@@ -597,7 +495,7 @@ AliCluster *AliITStrackerMI::GetCluster(Int_t index) const {
 }
 
 
-void AliITStrackerMI::FollowProlongationTree(AliITStrackV2 * otrack, Int_t esdindex) 
+void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdindex) 
 {
   //--------------------------------------------------------------------
   // Follow prolongation tree
@@ -605,17 +503,17 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackV2 * otrack, Int_t esdin
 
   //setup tree of the prolongations
   //
-  static AliITStrackV2 tracks[7][100];
-  AliITStrackV2 *currenttrack;
-  static AliITStrackV2 currenttrack1;
-  static AliITStrackV2 currenttrack2;  
-  static AliITStrackV2 backuptrack;
+  static AliITStrackMI tracks[7][100];
+  AliITStrackMI *currenttrack;
+  static AliITStrackMI currenttrack1;
+  static AliITStrackMI currenttrack2;  
+  static AliITStrackMI backuptrack;
   Int_t ntracks[7];
   Int_t nindexes[7][100];
   Float_t normalizedchi2[100];
   for (Int_t ilayer=0;ilayer<6;ilayer++) ntracks[ilayer]=0;
   otrack->fNSkipped=0;
-  new (&(tracks[6][0])) AliITStrackV2(*otrack);
+  new (&(tracks[6][0])) AliITStrackMI(*otrack);
   ntracks[6]=1;
   nindexes[6][0]=0;
   // 
@@ -640,7 +538,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackV2 * otrack, Int_t esdin
 	if (itrack>1&&tracks[ilayer+1][nindexes[ilayer+1][itrack]].fNUsed>2. && nused>3) continue;
       }
 
-      new(&currenttrack1)  AliITStrackV2(tracks[ilayer+1][nindexes[ilayer+1][itrack]]);
+      new(&currenttrack1)  AliITStrackMI(tracks[ilayer+1][nindexes[ilayer+1][itrack]]);
       if (ilayer==3 || ilayer==1) {
 	Double_t rs=0.5*(fgLayers[ilayer+1].GetR() + r);
 	Double_t d=0.0034, x0=38.6;
@@ -663,7 +561,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackV2 * otrack, Int_t esdin
       //propagate to the intersection
       const AliITSdetector &det=layer.GetDetector(idet);
       phi=det.GetPhi();
-      new(&currenttrack2)  AliITStrackV2(currenttrack1);
+      new(&currenttrack2)  AliITStrackMI(currenttrack1);
       if (!currenttrack1.Propagate(phi,det.GetR())) {	
 	continue;
       }
@@ -726,11 +624,11 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackV2 * otrack, Int_t esdin
 	  Float_t pz = (z - c->GetZ()) , py=(y - c->GetY());
 	  if (pz*pz*msz+py*py*msy>1.) continue;
 	  //
-	  new (&backuptrack) AliITStrackV2(currenttrack2);
+	  new (&backuptrack) AliITStrackMI(currenttrack2);
 	  change = kTRUE;
 	  currenttrack =&currenttrack2;
 	  if (!currenttrack->Propagate(det.GetPhi(),det.GetR())) {
-	    new (currenttrack) AliITStrackV2(backuptrack);
+	    new (currenttrack) AliITStrackMI(backuptrack);
 	    change = kFALSE;
 	    continue;
 	  }
@@ -745,10 +643,10 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackV2 * otrack, Int_t esdin
 	if (chi2<kMaxChi2s[ilayer]){
 	  if (c->GetQ()==0) deadzone=1;	    // take dead zone only once	  
 	  if (ntracks[ilayer]>=100) continue;
-	  AliITStrackV2 * updatetrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackV2(*currenttrack);
+	  AliITStrackMI * updatetrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackMI(*currenttrack);
 	  updatetrack->fClIndex[ilayer]=0;
 	  if (change){
-	    new (&currenttrack2) AliITStrackV2(backuptrack);
+	    new (&currenttrack2) AliITStrackMI(backuptrack);
 	  }
 	  if (c->GetQ()!=0){
 	    if (!UpdateMI(updatetrack,c,chi2,(ilayer<<28)+ci)) continue; 
@@ -784,7 +682,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackV2 * otrack, Int_t esdin
       } // loop over possible cluster prolongation      
       //      if (fConstraint[fPass]&&itrack<2&&currenttrack1.fNSkipped==0 && deadzone==0){	
       if (itrack<2&&currenttrack1.fNSkipped==0 && deadzone==0&&ntracks[ilayer]<100){	
-	AliITStrackV2* vtrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackV2(currenttrack1);
+	AliITStrackMI* vtrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackMI(currenttrack1);
 	vtrack->fClIndex[ilayer]=0;
 	fI = ilayer;
 	Double_t d=GetEffectiveThickness(0,0); //Think of this !!!!
@@ -818,12 +716,12 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackV2 * otrack, Int_t esdin
   //printf("%d\t%d\t%d\t%d\t%d\t%d\n",ntracks[0],ntracks[1],ntracks[2],ntracks[3],ntracks[4],ntracks[5]);
 
   for (Int_t i=0;i<TMath::Min(20,ntracks[0]);i++) {
-    AliITStrackV2 & track= tracks[0][nindexes[0][i]];
+    AliITStrackMI & track= tracks[0][nindexes[0][i]];
     if (!fConstraint[fPass]&&track.fNormChi2[0]>7.)continue;
-    AddTrackHypothesys(new AliITStrackV2(track), esdindex);
+    AddTrackHypothesys(new AliITStrackMI(track), esdindex);
   }
   for (Int_t i=0;i<TMath::Min(4,ntracks[1]);i++) {
-    AliITStrackV2 & track= tracks[1][nindexes[1][i]];
+    AliITStrackMI & track= tracks[1][nindexes[1][i]];
     if (track.GetNumberOfClusters()<4) continue;
     if (!fConstraint[fPass]&&track.fNormChi2[1]>7.)continue;
     if (fConstraint[fPass]) track.fNSkipped+=1;
@@ -834,13 +732,13 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackV2 * otrack, Int_t esdin
 	track.fNSkipped = 6-track.fN+track.fNDeadZone;
       }
     }
-    AddTrackHypothesys(new AliITStrackV2(track), esdindex);
+    AddTrackHypothesys(new AliITStrackMI(track), esdindex);
   }
   //}
   
   if (!fConstraint[fPass]){  
     for (Int_t i=0;i<TMath::Min(3,ntracks[2]);i++) {
-      AliITStrackV2 & track= tracks[2][nindexes[2][i]];
+      AliITStrackMI & track= tracks[2][nindexes[2][i]];
       if (track.GetNumberOfClusters()<4) continue;
       if (!fConstraint[fPass]&&track.fNormChi2[2]>7.)continue;
       if (fConstraint[fPass]) track.fNSkipped+=2;      
@@ -851,7 +749,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackV2 * otrack, Int_t esdin
 	  track.fNSkipped = 6-track.fN+track.fNDeadZone;
 	}
       }
-      AddTrackHypothesys(new AliITStrackV2(track), esdindex);
+      AddTrackHypothesys(new AliITStrackMI(track), esdindex);
     }
   }
 }
@@ -1423,7 +1321,7 @@ Int_t AliITStrackerMI::AliITSlayer::InRoad() const {
 }
 
 Bool_t 
-AliITStrackerMI::RefitAt(Double_t xx,AliITStrackV2 *t,const AliITStrackV2 *c) {
+AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,const AliITStrackMI *c) {
   //--------------------------------------------------------------------
   // This function refits the track "t" at the position "x" using
   // the clusters from "c"
@@ -1559,7 +1457,7 @@ AliITStrackerMI::RefitAt(Double_t xx,AliITStrackV2 *t,const AliITStrackV2 *c) {
 }
 
 
-Double_t AliITStrackerMI::GetNormalizedChi2(AliITStrackV2 * track, Int_t mode)
+Double_t AliITStrackerMI::GetNormalizedChi2(AliITStrackMI * track, Int_t mode)
 {
   //
   // calculate normalized chi2
@@ -1656,11 +1554,11 @@ Double_t AliITStrackerMI::GetNormalizedChi2(AliITStrackV2 * track, Int_t mode)
 }
 
 
-Double_t AliITStrackerMI::GetMatchingChi2(AliITStrackV2 * track1, AliITStrackV2 * track2)
+Double_t AliITStrackerMI::GetMatchingChi2(AliITStrackMI * track1, AliITStrackMI * track2)
 {
   //
   // return matching chi2 between two tracks
-  AliITStrackV2 track3(*track2);
+  AliITStrackMI track3(*track2);
   track3.Propagate(track1->GetAlpha(),track1->GetX());
   TMatrixD vec(5,1);
   vec(0,0)=track1->fP0-track3.fP0;
@@ -1720,7 +1618,7 @@ Double_t  AliITStrackerMI::GetDeadZoneProbability(Double_t zpos, Double_t zerr)
 }
 
 
-Double_t AliITStrackerMI::GetTruncatedChi2(AliITStrackV2 * track, Float_t fac)
+Double_t AliITStrackerMI::GetTruncatedChi2(AliITStrackMI * track, Float_t fac)
 {
   //
   // calculate normalized chi2
@@ -1749,7 +1647,7 @@ Double_t AliITStrackerMI::GetTruncatedChi2(AliITStrackV2 * track, Float_t fac)
 }
 
 
-Double_t AliITStrackerMI::GetInterpolatedChi2(AliITStrackV2 * forwardtrack, AliITStrackV2 * backtrack)
+Double_t AliITStrackerMI::GetInterpolatedChi2(AliITStrackMI * forwardtrack, AliITStrackMI * backtrack)
 {
   //
   // calculate normalized chi2
@@ -1794,7 +1692,7 @@ Float_t  *AliITStrackerMI::GetWeight(Int_t index) {
   return fgLayers[l].GetWeight(c);
 }
 
-void AliITStrackerMI::RegisterClusterTracks(AliITStrackV2* track,Int_t id)
+void AliITStrackerMI::RegisterClusterTracks(AliITStrackMI* track,Int_t id)
 {
   //---------------------------------------------
   // register track to the list
@@ -1811,7 +1709,7 @@ void AliITStrackerMI::RegisterClusterTracks(AliITStrackV2* track,Int_t id)
     }
   }
 }
-void AliITStrackerMI::UnRegisterClusterTracks(AliITStrackV2* track, Int_t id)
+void AliITStrackerMI::UnRegisterClusterTracks(AliITStrackMI* track, Int_t id)
 {
   //---------------------------------------------
   // unregister track from the list
@@ -1827,7 +1725,7 @@ void AliITStrackerMI::UnRegisterClusterTracks(AliITStrackV2* track, Int_t id)
     }
   }
 }
-Float_t AliITStrackerMI::GetNumberOfSharedClusters(AliITStrackV2* track,Int_t id, Int_t list[6], AliITSclusterV2 *clist[6])
+Float_t AliITStrackerMI::GetNumberOfSharedClusters(AliITStrackMI* track,Int_t id, Int_t list[6], AliITSclusterV2 *clist[6])
 {
   //-------------------------------------------------------------
   //get number of shared clusters
@@ -1874,7 +1772,7 @@ Float_t AliITStrackerMI::GetNumberOfSharedClusters(AliITStrackV2* track,Int_t id
   return shared;
 }
 
-Int_t AliITStrackerMI::GetOverlapTrack(AliITStrackV2 *track, Int_t trackID, Int_t &shared, Int_t clusterlist[6],Int_t overlist[6])
+Int_t AliITStrackerMI::GetOverlapTrack(AliITStrackMI *track, Int_t trackID, Int_t &shared, Int_t clusterlist[6],Int_t overlist[6])
 {
   //
   // find first shared track 
@@ -1984,28 +1882,28 @@ Int_t AliITStrackerMI::GetOverlapTrack(AliITStrackV2 *track, Int_t trackID, Int_
 }
 
 
-AliITStrackV2 *  AliITStrackerMI::GetBest2Tracks(Int_t trackID1, Int_t trackID2, Float_t th0, Float_t th1){
+AliITStrackMI *  AliITStrackerMI::GetBest2Tracks(Int_t trackID1, Int_t trackID2, Float_t th0, Float_t th1){
   //
   // try to find track hypothesys without conflicts
   // with minimal chi2;
   TClonesArray *arr1 = (TClonesArray*)fTrackHypothesys.At(trackID1);
   Int_t entries1 = arr1->GetEntriesFast();
   TClonesArray *arr2 = (TClonesArray*)fTrackHypothesys.At(trackID2);
-  if (!arr2) return (AliITStrackV2*) arr1->UncheckedAt(0);
+  if (!arr2) return (AliITStrackMI*) arr1->UncheckedAt(0);
   Int_t entries2 = arr2->GetEntriesFast();
-  if (entries2<=0) return (AliITStrackV2*) arr1->UncheckedAt(0);
+  if (entries2<=0) return (AliITStrackMI*) arr1->UncheckedAt(0);
   //
-  AliITStrackV2 * track10=(AliITStrackV2*) arr1->UncheckedAt(0);
-  AliITStrackV2 * track20=(AliITStrackV2*) arr2->UncheckedAt(0);
+  AliITStrackMI * track10=(AliITStrackMI*) arr1->UncheckedAt(0);
+  AliITStrackMI * track20=(AliITStrackMI*) arr2->UncheckedAt(0);
   if (TMath::Abs(1./track10->Get1Pt())>0.5+TMath::Abs(1/track20->Get1Pt())) return track10;
 
   for (Int_t itrack=0;itrack<entries1;itrack++){
-    AliITStrackV2 * track=(AliITStrackV2*) arr1->UncheckedAt(itrack);
+    AliITStrackMI * track=(AliITStrackMI*) arr1->UncheckedAt(itrack);
     UnRegisterClusterTracks(track,trackID1);
   }
   //
   for (Int_t itrack=0;itrack<entries2;itrack++){
-    AliITStrackV2 * track=(AliITStrackV2*) arr2->UncheckedAt(itrack);
+    AliITStrackMI * track=(AliITStrackMI*) arr2->UncheckedAt(itrack);
     UnRegisterClusterTracks(track,trackID2);
   }
   Int_t index1=0;
@@ -2083,11 +1981,11 @@ AliITStrackV2 *  AliITStrackerMI::GetBest2Tracks(Int_t trackID1, Int_t trackID2,
   Float_t * ny2 = GetNy(trackID2), * nz2 = GetNz(trackID2); 
 
   for (Int_t itrack1=0;itrack1<entries1;itrack1++){
-    AliITStrackV2 * track1=(AliITStrackV2*) arr1->UncheckedAt(itrack1);
+    AliITStrackMI * track1=(AliITStrackMI*) arr1->UncheckedAt(itrack1);
     //if (track1->fFakeRatio>0) continue;
     RegisterClusterTracks(track1,trackID1);
     for (Int_t itrack2=0;itrack2<entries2;itrack2++){
-      AliITStrackV2 * track2=(AliITStrackV2*) arr2->UncheckedAt(itrack2);
+      AliITStrackMI * track2=(AliITStrackMI*) arr2->UncheckedAt(itrack2);
 
       //      Float_t current = w1*track1->fChi2MIP[0]+w2*track2->fChi2MIP[0];
       //if (track2->fFakeRatio>0) continue;
@@ -2190,7 +2088,7 @@ AliITStrackV2 *  AliITStrackerMI::GetBest2Tracks(Int_t trackID1, Int_t trackID2,
   //  if (maxconflicts<4 && maxchi2<th0){   
   if (maxchi2<th0*2.){   
     Float_t orig = track10->fFakeRatio*track10->GetNumberOfClusters();
-    AliITStrackV2* track1=(AliITStrackV2*) arr1->UncheckedAt(index1);
+    AliITStrackMI* track1=(AliITStrackMI*) arr1->UncheckedAt(index1);
     track1->fChi2MIP[5] = maxconflicts;
     track1->fChi2MIP[6] = maxchi2;
     track1->fChi2MIP[7] = 0.01+orig-(track1->fFakeRatio*track1->GetNumberOfClusters());
@@ -2207,12 +2105,12 @@ AliITStrackV2 *  AliITStrackerMI::GetBest2Tracks(Int_t trackID1, Int_t trackID2,
   }   
   
   for (Int_t itrack=0;itrack<entries1;itrack++){
-    AliITStrackV2 * track=(AliITStrackV2*) arr1->UncheckedAt(itrack);
+    AliITStrackMI * track=(AliITStrackMI*) arr1->UncheckedAt(itrack);
     UnRegisterClusterTracks(track,trackID1);
   }
   //
   for (Int_t itrack=0;itrack<entries2;itrack++){
-    AliITStrackV2 * track=(AliITStrackV2*) arr2->UncheckedAt(itrack);
+    AliITStrackMI * track=(AliITStrackMI*) arr2->UncheckedAt(itrack);
     UnRegisterClusterTracks(track,trackID2);
   }
 
@@ -2248,7 +2146,7 @@ void AliITStrackerMI::UseClusters(const AliKalmanTrack *t, Int_t from) const {
 }
 
 
-void AliITStrackerMI::AddTrackHypothesys(AliITStrackV2 * track, Int_t esdindex)
+void AliITStrackerMI::AddTrackHypothesys(AliITStrackMI * track, Int_t esdindex)
 {
   //------------------------------------------------------------------
   // add track to the list of hypothesys
@@ -2278,9 +2176,9 @@ void AliITStrackerMI::SortTrackHypothesys(Int_t esdindex, Int_t maxcut, Int_t mo
   //- find preliminary besttrack as a reference
   Float_t minchi2=10000;
   Int_t maxn=0;
-  AliITStrackV2 * besttrack=0;
+  AliITStrackMI * besttrack=0;
   for (Int_t itrack=0;itrack<array->GetEntriesFast();itrack++){
-    AliITStrackV2 * track = (AliITStrackV2*)array->At(itrack);
+    AliITStrackMI * track = (AliITStrackMI*)array->At(itrack);
     if (!track) continue;
     Float_t chi2 = NormalizedChi2(track,0);
     //
@@ -2324,7 +2222,7 @@ void AliITStrackerMI::SortTrackHypothesys(Int_t esdindex, Int_t maxcut, Int_t mo
   Int_t * index         = new Int_t[entries];  
   for (Int_t i=0;i<entries;i++) chi2[i] =10000;
   for (Int_t itrack=0;itrack<entries;itrack++){
-    AliITStrackV2 * track = (AliITStrackV2*)array->At(itrack);
+    AliITStrackMI * track = (AliITStrackMI*)array->At(itrack);
     if (track){
       track->fChi2MIP[0] = GetNormalizedChi2(track, mode);            
       if (track->fChi2MIP[0]<kMaxChi2PerCluster[0]) 
@@ -2335,7 +2233,7 @@ void AliITStrackerMI::SortTrackHypothesys(Int_t esdindex, Int_t maxcut, Int_t mo
   }
   //
   TMath::Sort(entries,chi2,index,kFALSE);
-  besttrack = (AliITStrackV2*)array->At(index[0]);
+  besttrack = (AliITStrackMI*)array->At(index[0]);
   if (besttrack&&besttrack->fChi2MIP[0]<kMaxChi2PerCluster[0]){
     for (Int_t i=0;i<6;i++){
       if (besttrack->fClIndex[i]>0){
@@ -2350,7 +2248,7 @@ void AliITStrackerMI::SortTrackHypothesys(Int_t esdindex, Int_t maxcut, Int_t mo
   // calculate one more time with updated normalized errors
   for (Int_t i=0;i<entries;i++) chi2[i] =10000;  
   for (Int_t itrack=0;itrack<entries;itrack++){
-    AliITStrackV2 * track = (AliITStrackV2*)array->At(itrack);
+    AliITStrackMI * track = (AliITStrackMI*)array->At(itrack);
     if (track){      
       track->fChi2MIP[0] = GetNormalizedChi2(track,mode);            
       if (track->fChi2MIP[0]<kMaxChi2PerCluster[0]) 
@@ -2364,7 +2262,7 @@ void AliITStrackerMI::SortTrackHypothesys(Int_t esdindex, Int_t maxcut, Int_t mo
   if (entries>0){
     TObjArray * newarray = new TObjArray();  
     TMath::Sort(entries,chi2,index,kFALSE);
-    besttrack = (AliITStrackV2*)array->At(index[0]);
+    besttrack = (AliITStrackMI*)array->At(index[0]);
     if (besttrack){
       //
       for (Int_t i=0;i<6;i++){
@@ -2380,7 +2278,7 @@ void AliITStrackerMI::SortTrackHypothesys(Int_t esdindex, Int_t maxcut, Int_t mo
       Float_t minn = besttrack->GetNumberOfClusters()-3;
       Int_t accepted=0;
       for (Int_t i=0;i<entries;i++){
-	AliITStrackV2 * track = (AliITStrackV2*)array->At(index[i]);	
+	AliITStrackMI * track = (AliITStrackMI*)array->At(index[i]);	
 	if (!track) continue;
 	if (accepted>maxcut) break;
 	track->fChi2MIP[0] = GetNormalizedChi2(track,mode);
@@ -2420,7 +2318,7 @@ void AliITStrackerMI::SortTrackHypothesys(Int_t esdindex, Int_t maxcut, Int_t mo
 
 
 
-AliITStrackV2 * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackV2 * original, Int_t checkmax)
+AliITStrackMI * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackMI * original, Int_t checkmax)
 {
   //-------------------------------------------------------------
   // try to find best hypothesy
@@ -2432,20 +2330,20 @@ AliITStrackV2 * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackV2
   Int_t entries = array->GetEntriesFast();
   if (!entries) return 0;  
   Float_t minchi2 = 100000;
-  AliITStrackV2 * besttrack=0;
+  AliITStrackMI * besttrack=0;
   //
-  AliITStrackV2 * backtrack    = new AliITStrackV2(*original);
-  AliITStrackV2 * forwardtrack = new AliITStrackV2(*original);
+  AliITStrackMI * backtrack    = new AliITStrackMI(*original);
+  AliITStrackMI * forwardtrack = new AliITStrackMI(*original);
   //
   for (Int_t i=0;i<entries;i++){    
-    AliITStrackV2 * track = (AliITStrackV2*)array->At(i);    
+    AliITStrackMI * track = (AliITStrackMI*)array->At(i);    
     if (!track) continue;
     track->fChi2MIP[1] = 1000000;
     track->fChi2MIP[2] = 1000000;
     track->fChi2MIP[3] = 1000000;
     //
     // backtrack
-    backtrack = new(backtrack) AliITStrackV2(*track); 
+    backtrack = new(backtrack) AliITStrackMI(*track); 
     backtrack->ResetCovariance();
     backtrack->ResetCovariance();
     backtrack->ResetClusters();
@@ -2491,7 +2389,7 @@ AliITStrackV2 * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackV2
     if(!isOK) continue;
     //
     //forward track - without constraint
-    forwardtrack = new(forwardtrack) AliITStrackV2(*original);
+    forwardtrack = new(forwardtrack) AliITStrackMI(*original);
     forwardtrack->ResetClusters();
     x = track->GetX();
     if (!RefitAt(x,forwardtrack,track))  continue;
@@ -2522,7 +2420,7 @@ AliITStrackV2 * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackV2
       forwardtrack->fChi2MIP[ichi] = track->fChi2MIP[ichi];
     }
     if (chi2 < minchi2){
-      //besttrack = new AliITStrackV2(*forwardtrack);
+      //besttrack = new AliITStrackMI(*forwardtrack);
       besttrack = track;
       besttrack->SetLabel(track->GetLabel());
       besttrack->fFakeRatio = track->fFakeRatio;
@@ -2535,7 +2433,7 @@ AliITStrackV2 * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackV2
   delete forwardtrack;
   Int_t accepted=0;
   for (Int_t i=0;i<entries;i++){    
-    AliITStrackV2 * track = (AliITStrackV2*)array->At(i);   
+    AliITStrackMI * track = (AliITStrackMI*)array->At(i);   
     if (!track) continue;
     if (accepted>checkmax || track->fChi2MIP[3]>kMaxChi2PerCluster[3]*6. || 
 	(track->GetNumberOfClusters()<besttrack->GetNumberOfClusters()-1.)||
@@ -2551,16 +2449,16 @@ AliITStrackV2 * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackV2
   array->Compress();
   SortTrackHypothesys(esdindex,checkmax,1);
   array = (TObjArray*) fTrackHypothesys.At(esdindex);
-  besttrack = (AliITStrackV2*)array->At(0);  
+  besttrack = (AliITStrackMI*)array->At(0);  
   if (!besttrack)  return 0;
   besttrack->fChi2MIP[8]=0;
   fBestTrackIndex[esdindex]=0;
   entries = array->GetEntriesFast();
-  AliITStrackV2 *longtrack =0;
+  AliITStrackMI *longtrack =0;
   minchi2 =1000;
   Float_t minn=besttrack->GetNumberOfClusters()+besttrack->fNDeadZone;
   for (Int_t itrack=entries-1;itrack>0;itrack--){
-    AliITStrackV2 * track = (AliITStrackV2*)array->At(itrack);
+    AliITStrackMI * track = (AliITStrackMI*)array->At(itrack);
     if (!track->fConstrain) continue;
     if (track->GetNumberOfClusters()+track->fNDeadZone<minn) continue;
     if (track->fChi2MIP[0]-besttrack->fChi2MIP[0]>0.0) continue;
@@ -2629,7 +2527,7 @@ AliITStrackV2 * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackV2
 
       Bool_t cansign = kTRUE;
       for (Int_t itrack=0;itrack<entries; itrack++){
-	AliITStrackV2 * track = (AliITStrackV2*)array->At(i);   
+	AliITStrackMI * track = (AliITStrackMI*)array->At(i);   
 	if (!track) continue;
 	if (track->fChi2MIP[0]>besttrack->fChi2MIP[0]+2.*shared+1.) break;
 	if ( (track->fClIndex[ilayer]>0) && (track->fClIndex[ilayer]!=besttrack->fClIndex[ilayer])){
@@ -2658,17 +2556,17 @@ void  AliITStrackerMI::GetBestHypothesysMIP(TObjArray &itsTracks)
 
   Int_t nentries = itsTracks.GetEntriesFast();
   for (Int_t i=0;i<nentries;i++){
-    AliITStrackV2* track = (AliITStrackV2*)itsTracks.At(i);
+    AliITStrackMI* track = (AliITStrackMI*)itsTracks.At(i);
     if (!track) continue;
     TObjArray * array = (TObjArray*) fTrackHypothesys.At(i);
     if (!array) continue;
     if (array->GetEntriesFast()<=0) continue;
     //
-    AliITStrackV2* longtrack=0;
+    AliITStrackMI* longtrack=0;
     Float_t minn=0;
     Float_t maxchi2=1000;
     for (Int_t j=0;j<array->GetEntriesFast();j++){
-      AliITStrackV2* track = (AliITStrackV2*)array->At(j);
+      AliITStrackMI* track = (AliITStrackMI*)array->At(j);
       if (!track) continue;
       if (track->GetNumberOfClusters()+track->fNDeadZone<minn) continue;
       if (track->GetNumberOfClusters()+track->fNDeadZone>minn) maxchi2 = track->fChi2MIP[0]; 
@@ -2678,7 +2576,7 @@ void  AliITStrackerMI::GetBestHypothesysMIP(TObjArray &itsTracks)
       longtrack=track;
       break;
     }    
-    AliITStrackV2 * besttrack = (AliITStrackV2*)array->At(0);
+    AliITStrackMI * besttrack = (AliITStrackMI*)array->At(0);
     if (!longtrack) {longtrack = besttrack;}
     else besttrack= longtrack;
     if (besttrack){
@@ -2717,7 +2615,7 @@ void  AliITStrackerMI::GetBestHypothesysMIP(TObjArray &itsTracks)
 } 
 
 
-void AliITStrackerMI::CookLabel(AliITStrackV2 *track,Float_t wrong) const {
+void AliITStrackerMI::CookLabel(AliITStrackMI *track,Float_t wrong) const {
   //--------------------------------------------------------------------
   //This function "cooks" a track label. If label<0, this track is fake.
   //--------------------------------------------------------------------
@@ -2750,7 +2648,7 @@ void AliITStrackerMI::CookLabel(AliITStrackV2 *track,Float_t wrong) const {
 
 
 
-void AliITStrackerMI::CookdEdx(AliITStrackV2* track)
+void AliITStrackerMI::CookdEdx(AliITStrackMI* track)
 {
   //
   //
@@ -2808,7 +2706,7 @@ void  AliITStrackerMI::MakeCoeficients(Int_t ntracks){
 }
 
 
-Double_t AliITStrackerMI::GetPredictedChi2MI(AliITStrackV2* track, const AliITSclusterV2 *cluster,Int_t layer) 
+Double_t AliITStrackerMI::GetPredictedChi2MI(AliITStrackMI* track, const AliITSclusterV2 *cluster,Int_t layer) 
 {
   //
   //
@@ -2837,7 +2735,7 @@ Double_t AliITStrackerMI::GetPredictedChi2MI(AliITStrackV2* track, const AliITSc
 
 }
 
-Int_t    AliITStrackerMI::UpdateMI(AliITStrackV2* track, const AliITSclusterV2* cl,Double_t chi2,Int_t index) const 
+Int_t    AliITStrackerMI::UpdateMI(AliITStrackMI* track, const AliITSclusterV2* cl,Double_t chi2,Int_t index) const 
 {
   //
   //
@@ -3101,14 +2999,14 @@ void AliITStrackerMI::SignDeltas( TObjArray *ClusterArray, Float_t vz)
 }
 
 
-void AliITStrackerMI::UpdateESDtrack(AliITStrackV2* track, ULong_t flags) const
+void AliITStrackerMI::UpdateESDtrack(AliITStrackMI* track, ULong_t flags) const
 {
   //
   //
   track->UpdateESDtrack(flags);
-  AliITStrackV2 * oldtrack = (AliITStrackV2*)(track->fESDtrack->GetITStrack());
+  AliITStrackMI * oldtrack = (AliITStrackMI*)(track->fESDtrack->GetITStrack());
   if (oldtrack) delete oldtrack; 
-  track->fESDtrack->SetITStrack(new AliITStrackV2(*track));
+  track->fESDtrack->SetITStrack(new AliITStrackMI(*track));
 }
 
 
@@ -3128,7 +3026,7 @@ void  AliITStrackerMI::FindV0(AliESD */*event*/)
   for (Int_t i=0;i<entries;i++){
     TObjArray * array = (TObjArray*)fTrackHypothesys.At(i);
     if (!array) continue;
-    AliITStrackV2 * track = (AliITStrackV2*)array->At(fBestTrackIndex[i]);
+    AliITStrackMI * track = (AliITStrackMI*)array->At(fBestTrackIndex[i]);
     if (track){
       dist[i] = TMath::Sqrt(track->fD[0]*track->fD[0]+track->fD[1]*track->fD[1]);
       trackarray.AddAt(track,i);
@@ -3136,11 +3034,11 @@ void  AliITStrackerMI::FindV0(AliESD */*event*/)
     }
   }
   for (Int_t itrack0=0;itrack0<entries;itrack0++){
-    AliITStrackV2 * track0 = (AliITStrackV2*)trackarray.At(itrack0);
+    AliITStrackMI * track0 = (AliITStrackMI*)trackarray.At(itrack0);
     if (!track0) continue;
     if (dist[itrack0]<0.2) continue;
     for (Int_t itrack1=itrack0+1;itrack1<entries;itrack1++){
-      AliITStrackV2 * track1 = (AliITStrackV2*)trackarray.At(itrack1);
+      AliITStrackMI * track1 = (AliITStrackMI*)trackarray.At(itrack1);
       if (!track1) continue;
       if (dist[itrack1]<0.2) continue;
       if (track1->fP4*track0->fP4>0) continue; //the same sign
@@ -3186,12 +3084,12 @@ Double_t  AliITStrackerMI::FindBestPair(Int_t esdtrack0, Int_t esdtrack1,AliITSR
   Int_t bestpair[2];
   //
   for (Int_t itrack0=0;itrack0<entries0;itrack0++){
-    AliITStrackV2 * track0 = (AliITStrackV2*)array0->At(itrack0);
+    AliITStrackMI * track0 = (AliITStrackMI*)array0->At(itrack0);
     if (!track0) continue;
     if (track0->fX<criticalradius-1) continue;
     if (track0->fX>criticalradius+5) continue;
     for (Int_t itrack1=0;itrack1<entries1;itrack1++){
-      AliITStrackV2 * track1 = (AliITStrackV2*)array1->At(itrack1);
+      AliITStrackMI * track1 = (AliITStrackMI*)array1->At(itrack1);
       if (!track1) continue;      
       if (track1->fX<criticalradius-1) continue;
       if (track1->fX>criticalradius+5) continue;

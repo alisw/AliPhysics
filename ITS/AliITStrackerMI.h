@@ -5,24 +5,21 @@
 
 //-------------------------------------------------------------------------
 //                          ITS tracker
-//     reads AliITSclusterMI clusters and creates AliITStrackV2 tracks
-//           Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
-//                   Marian Ivanov, CERN, Marian.Ivanov@cern.ch
+//     reads AliITSclusterMI clusters and creates AliITStrackMI tracks
+//           Origin: Marian Ivanov, CERN, Marian.Ivanov@cern.ch
 //-------------------------------------------------------------------------
 
 #include <TObjArray.h>
 
 #include "AliTracker.h"
-#include "AliITStrackV2.h"
+#include "AliITStrackMI.h"
 #include "AliITSclusterV2.h"
 
-class AliITSclusterV2;
 class AliESD;
 class AliITSgeom;
 class TTree;
 class AliHelix;
 class AliV0vertex;
-
 
 
 class AliITSRecV0Info: public TObject {
@@ -61,11 +58,10 @@ public:
                         {return fgLayers[layn].GetNumberOfClusters();}
   Int_t LoadClusters(TTree *cf);
   void UnloadClusters();
-  Int_t Clusters2Tracks(TTree *in, TTree *out);
   Int_t Clusters2Tracks(AliESD *event);
   Int_t PropagateBack(AliESD *event);
   Int_t RefitInward(AliESD *event);
-  Bool_t RefitAt(Double_t x, AliITStrackV2 *seed, const AliITStrackV2 *t);
+  Bool_t RefitAt(Double_t x, AliITStrackMI *seed, const AliITStrackMI *t);
   void SetupFirstPass(Int_t *flags, Double_t *cuts=0);
   void SetupSecondPass(Int_t *flags, Double_t *cuts=0);
 
@@ -74,8 +70,8 @@ public:
   void UseClusters(const AliKalmanTrack *t, Int_t from=0) const;
   void GetNTeor(Int_t layer, const AliITSclusterV2* cl, Float_t theta, Float_t phi, Float_t &ny, Float_t &nz);
   Int_t  GetError(Int_t layer, const AliITSclusterV2*cl, Float_t theta, Float_t phi, Float_t expQ, Float_t &erry, Float_t &errz);
-  Double_t GetPredictedChi2MI(AliITStrackV2* track, const AliITSclusterV2 *cluster,Int_t layer);
-  Int_t UpdateMI(AliITStrackV2* track, const AliITSclusterV2* cl,Double_t chi2,Int_t layer) const;
+  Double_t GetPredictedChi2MI(AliITStrackMI* track, const AliITSclusterV2 *cluster,Int_t layer);
+  Int_t UpdateMI(AliITStrackMI* track, const AliITSclusterV2* cl,Double_t chi2,Int_t layer) const;
   class AliITSdetector { 
   public:
     AliITSdetector(){}
@@ -197,47 +193,47 @@ protected:
   Double_t  TestV0(AliHelix *h1, AliHelix *h2, AliITSRecV0Info *vertex);  //try to find V0 - return DCA
   Double_t  FindBestPair(Int_t esdtrack0, Int_t esdtrack1,AliITSRecV0Info *vertex);  // try to find best pair from the tree of track hyp.
   void CookLabel(AliKalmanTrack *t,Float_t wrong) const;
-  void CookLabel(AliITStrackV2 *t,Float_t wrong) const;
+  void CookLabel(AliITStrackMI *t,Float_t wrong) const;
   Double_t GetEffectiveThickness(Double_t y, Double_t z) const;
-  void FollowProlongationTree(AliITStrackV2 * otrack, Int_t esdindex);
+  void FollowProlongationTree(AliITStrackMI * otrack, Int_t esdindex);
   void ResetBestTrack() {
-     fBestTrack.~AliITStrackV2();
-     new(&fBestTrack) AliITStrackV2(fTrackToFollow);
+     fBestTrack.~AliITStrackMI();
+     new(&fBestTrack) AliITStrackMI(fTrackToFollow);
   }
-  void ResetTrackToFollow(const AliITStrackV2 &t) {
-     fTrackToFollow.~AliITStrackV2();
-     new(&fTrackToFollow) AliITStrackV2(t);
+  void ResetTrackToFollow(const AliITStrackMI &t) {
+     fTrackToFollow.~AliITStrackMI();
+     new(&fTrackToFollow) AliITStrackMI(t);
   }
-  void CookdEdx(AliITStrackV2* track);
-  Double_t GetNormalizedChi2(AliITStrackV2 * track, Int_t mode);
-  Double_t GetTruncatedChi2(AliITStrackV2 * track, Float_t fac);
-  Double_t NormalizedChi2(AliITStrackV2 * track, Int_t layer);
-  Double_t GetInterpolatedChi2(AliITStrackV2 * forwardtrack, AliITStrackV2 * backtrack);  
-  Double_t GetMatchingChi2(AliITStrackV2 * track1, AliITStrackV2 * track2);
+  void CookdEdx(AliITStrackMI* track);
+  Double_t GetNormalizedChi2(AliITStrackMI * track, Int_t mode);
+  Double_t GetTruncatedChi2(AliITStrackMI * track, Float_t fac);
+  Double_t NormalizedChi2(AliITStrackMI * track, Int_t layer);
+  Double_t GetInterpolatedChi2(AliITStrackMI * forwardtrack, AliITStrackMI * backtrack);  
+  Double_t GetMatchingChi2(AliITStrackMI * track1, AliITStrackMI * track2);
   Double_t GetDeadZoneProbability(Double_t zpos, Double_t zerr);
 
   Float_t    *GetWeight(Int_t index);
-  void AddTrackHypothesys(AliITStrackV2 * track, Int_t esdindex);
+  void AddTrackHypothesys(AliITStrackMI * track, Int_t esdindex);
   void SortTrackHypothesys(Int_t esdindex, Int_t maxcut, Int_t mode);
-  AliITStrackV2 * GetBestHypothesys(Int_t esdindex, AliITStrackV2 * original, Int_t checkmax); 
+  AliITStrackMI * GetBestHypothesys(Int_t esdindex, AliITStrackMI * original, Int_t checkmax); 
   void  GetBestHypothesysMIP(TObjArray &itsTracks); 
-  void RegisterClusterTracks(AliITStrackV2* track, Int_t id);
-  void UnRegisterClusterTracks(AliITStrackV2* track, Int_t id);
-  Float_t GetNumberOfSharedClusters(AliITStrackV2* track,Int_t id, Int_t list[6], AliITSclusterV2 *clist[6]);
-  Int_t GetOverlapTrack(AliITStrackV2 *track, Int_t trackID, Int_t &shared, Int_t clusterlist[6], Int_t overlist[6]);
-  AliITStrackV2 * GetBest2Tracks(Int_t trackID1, Int_t treackID2, Float_t th0, Float_t th1);
+  void RegisterClusterTracks(AliITStrackMI* track, Int_t id);
+  void UnRegisterClusterTracks(AliITStrackMI* track, Int_t id);
+  Float_t GetNumberOfSharedClusters(AliITStrackMI* track,Int_t id, Int_t list[6], AliITSclusterV2 *clist[6]);
+  Int_t GetOverlapTrack(AliITStrackMI *track, Int_t trackID, Int_t &shared, Int_t clusterlist[6], Int_t overlist[6]);
+  AliITStrackMI * GetBest2Tracks(Int_t trackID1, Int_t treackID2, Float_t th0, Float_t th1);
   Float_t  * GetErrY(Int_t trackindex) const {return &fCoeficients[trackindex*48];}
   Float_t  * GetErrZ(Int_t trackindex) const {return &fCoeficients[trackindex*48+12];}
   Float_t  * GetNy(Int_t trackindex) const {return &fCoeficients[trackindex*48+24];}
   Float_t  * GetNz(Int_t trackindex) const {return &fCoeficients[trackindex*48+36];}
   void       SignDeltas( TObjArray *ClusterArray, Float_t zv);
   void MakeCoeficients(Int_t ntracks);
-  void UpdateESDtrack(AliITStrackV2* track, ULong_t flags) const;
+  void UpdateESDtrack(AliITStrackMI* track, ULong_t flags) const;
   Int_t fI;                              // index of the current layer
   static AliITSlayer fgLayers[kMaxLayer];// ITS layers
-  AliITStrackV2 fTracks[kMaxLayer];      // track estimations at the ITS layers
-  AliITStrackV2 fBestTrack;              // "best" track 
-  AliITStrackV2 fTrackToFollow;          // followed track
+  AliITStrackMI fTracks[kMaxLayer];      // track estimations at the ITS layers
+  AliITStrackMI fBestTrack;              // "best" track 
+  AliITStrackMI fTrackToFollow;          // followed track
   TObjArray     fTrackHypothesys;        // ! array with track hypothesys- ARRAY is the owner of tracks- MI
   Int_t         fBestTrackIndex[100000]; // ! index of the best track
   Int_t         fCurrentEsdTrack;        // ! current esd track           - MI
@@ -249,7 +245,7 @@ protected:
   Float_t * fCoeficients;                //! working array with errors and mean cluser shape
  private:
   AliITStrackerMI(const AliITStrackerMI * tracker){;}
-  ClassDef(AliITStrackerMI,1)   //ITS tracker V2
+  ClassDef(AliITStrackerMI,2)   //ITS tracker MI
 };
 
 
@@ -302,7 +298,7 @@ inline void AliITStrackerMI::CookLabel(AliKalmanTrack *t,Float_t wrong) const {
    }
 }
 
-inline Double_t AliITStrackerMI::NormalizedChi2(AliITStrackV2 * track, Int_t layer)
+inline Double_t AliITStrackerMI::NormalizedChi2(AliITStrackMI * track, Int_t layer)
 {
   //--------------------------------------------------------------------
   //get normalize chi2

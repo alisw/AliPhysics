@@ -658,7 +658,7 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
   for(Int_t i=0;i<fGeom->GetNlayers();i++){
     firstmod[i]=fGeom->GetModuleIndex(i+1,1,1);
   }  
-  AliITStrackV2* otrack2;
+
   Int_t nclusters = tr->GetNumberOfClustersSA();
   TObjArray** listlayer = new TObjArray*[fGeom->GetNlayers()];
   for(Int_t i=0;i<fGeom->GetNlayers();i++){
@@ -817,14 +817,14 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
             
               //fit with Kalman filter using AliITStrackerMI::RefitAt()
           
-              AliITStrackV2* ot = new AliITStrackV2(*trac);
+              AliITStrackMI* ot = new AliITStrackSA(*trac);
               
               ot->ResetCovariance();
               ot->ResetClusters();
               
               if(RefitAt(49.,ot,trac)){ //fit from layer 1 to layer 6
 
-                otrack2 = new AliITStrackV2(*ot);
+                AliITStrackMI *otrack2 = new AliITStrackMI(*ot);
                 otrack2->ResetCovariance(); 
                 otrack2->ResetClusters();
                 //fit from layer 6 to layer 1

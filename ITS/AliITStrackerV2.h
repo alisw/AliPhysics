@@ -8,9 +8,6 @@
 //     reads AliITSclusterV2 clusters and creates AliITStrackV2 tracks
 //           Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
-
-#include <TObjArray.h>
-
 #include "AliTracker.h"
 #include "AliITSrecoV2.h"
 #include "AliITStrackV2.h"
@@ -45,7 +42,7 @@ public:
 
   void UseClusters(const AliKalmanTrack *t, Int_t from=0) const;
 
-  class AliITSdetector { 
+  class AliITSdetector {
   public:
     AliITSdetector(){}
     AliITSdetector(Double_t r,Double_t phi) {fR=r; fPhi=phi;}
@@ -57,21 +54,18 @@ public:
   };
 
   class AliITSlayer {
-    friend class AliITStrackerV2;
   public:
     AliITSlayer();
     AliITSlayer(Double_t r, Double_t p, Double_t z, Int_t nl, Int_t nd);
    ~AliITSlayer();
     Int_t InsertCluster(AliITSclusterV2 *c);
     void ResetClusters();
-    void ResetWeights();
     void SelectClusters(Double_t zmi,Double_t zma,Double_t ymi,Double_t yma);
     const AliITSclusterV2 *GetNextCluster(Int_t &ci);
     void ResetRoad();
     Double_t GetRoad() const {return fRoad;}
     Double_t GetR() const {return fR;}
-    AliITSclusterV2 *GetCluster(Int_t i) const {return i<fN? fClusters[i]:0;} 
-    Float_t         *GetWeight(Int_t i) {return i<fN ?&fClusterWeight[i]:0;}
+    AliITSclusterV2 *GetCluster(Int_t i) const {return fClusters[i];} 
     AliITSdetector &GetDetector(Int_t n) const { return fDetectors[n]; }
     Int_t FindDetectorIndex(Double_t phi, Double_t z) const;
     Double_t GetThickness(Double_t y, Double_t z, Double_t &x0) const;
@@ -79,7 +73,6 @@ public:
     Int_t GetNumberOfClusters() const {return fN;}
     Int_t GetNladders() const {return fNladders;}
     Int_t GetNdetectors() const {return fNdetectors;}
-    Int_t FindClusterIndex(Double_t z) const;
   protected:
     Double_t fR;                // mean radius of this layer
     Double_t fPhiOffset;        // offset of the first detector in Phi
@@ -89,14 +82,14 @@ public:
     AliITSdetector *fDetectors; // array of detectors
     Int_t fN;                   // number of clusters
     AliITSclusterV2 *fClusters[kMaxClusterPerLayer]; // pointers to clusters
-    Float_t  fClusterWeight[kMaxClusterPerLayer]; // probabilistic weight of the cluster
     Double_t fZmax;      //    edges
     Double_t fYmin;      //   of  the
     Double_t fYmax;      //   "window"
     Int_t fI;            // index of the current cluster within the "window"
     Double_t fRoad;      // road defined by the cluster density
+    Int_t FindClusterIndex(Double_t z) const;
   };
-  
+
 protected:
   void CookLabel(AliKalmanTrack *t,Float_t wrong) const;
   Double_t GetEffectiveThickness(Double_t y, Double_t z) const;
@@ -110,24 +103,17 @@ protected:
      fTrackToFollow.~AliITStrackV2();
      new(&fTrackToFollow) AliITStrackV2(t);
   }
-  Float_t    *GetWeight(Int_t index);
-  void AddTrackHypothesys(AliITStrackV2 * track, Int_t esdindex);
-  void SortTrackHypothesys(Int_t esdindex, Float_t likelihoodlevel);
-  void CompressTrackHypothesys(Int_t esdindex, Float_t likelihoodlevel, Int_t maxsize);
-  AliITStrackV2 * GetBestHypothesys(Int_t esdindex, AliITStrackV2 * original, Int_t checkmax); 
-  AliITStrackV2 * GetBestHypothesysMIP(Int_t esdindex, AliITStrackV2 * original); 
   Int_t fI;                              // index of the current layer
   static AliITSlayer fgLayers[kMaxLayer];// ITS layers
   AliITStrackV2 fTracks[kMaxLayer];      // track estimations at the ITS layers
   AliITStrackV2 fBestTrack;              // "best" track 
   AliITStrackV2 fTrackToFollow;          // followed track
-  TObjArray     fTrackHypothesys;        // ! array with track hypothesys- ARRAY is the owner of tracks- MI
-  Int_t         fCurrentEsdTrack;        // ! current esd track           - MI
   Int_t fPass;                           // current pass through the data 
   Int_t fConstraint[2];                  // constraint flags
 
   Int_t fLayersNotToSkip[kMaxLayer];     // layer masks
   Int_t fLastLayerToTrackTo;             // the innermost layer to track to
+
   ClassDef(AliITStrackerV2,1)   //ITS tracker V2
 };
 
@@ -163,12 +149,7 @@ inline void AliITStrackerV2::CookLabel(AliKalmanTrack *t,Float_t wrong) const {
    Int_t tpcLabel=t->GetLabel();
    if (tpcLabel<0) return;
    AliTracker::CookLabel(t,wrong);
-   if (tpcLabel!=TMath::Abs(t->GetLabel())){
-     t->SetFakeRatio(1.);
-   }
-   if (tpcLabel !=t->GetLabel()) {
-     t->SetLabel(-tpcLabel);      
-   }
+   if (tpcLabel != t->GetLabel()) t->SetLabel(-tpcLabel); 
 }
 
 #endif

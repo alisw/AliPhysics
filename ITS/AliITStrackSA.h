@@ -9,15 +9,15 @@
 //                                                //
 ////////////////////////////////////////////////////
 
-#include "AliITStrackV2.h"
+#include "AliITStrackMI.h"
 
-class AliITStrackSA : public AliITStrackV2 {
+class AliITStrackSA : public AliITStrackMI {
 
 
  public:
 
   AliITStrackSA();
-  AliITStrackSA(const AliITStrackV2& t);
+  AliITStrackSA(const AliITStrackMI& t);
   AliITStrackSA(const AliITStrackSA& t);
   AliITStrackSA(Int_t layer, Int_t ladder, Int_t detector, 
                 Double_t Ycoor, Double_t Zcoor, Double_t phi, 
@@ -38,7 +38,7 @@ class AliITStrackSA : public AliITStrackV2 {
   UInt_t  fSain[fgkMaxNumberOfClusters];   // cluster index (SA)
   Int_t fNSA;          // number of clusters SA 
  
-  ClassDef(AliITStrackSA,1)
+  ClassDef(AliITStrackSA,2)
 };
 
 #endif
