@@ -60,7 +60,7 @@ class AliL3MemHandler{
   
   void Reset(){CloseBinaryInput();CloseBinaryOutput();Free();}  
   void Init(AliL3Transform *t){fTransformer = t;}
-  void Init(Int_t s,Int_t p,Int_t* row){fSlice=s;fPatch=p;fRowMin=row[0];fRowMax=row[1]; ResetROI();}
+  void Init(Int_t s,Int_t p,const Int_t* row){fSlice=s;fPatch=p;fRowMin=row[0];fRowMax=row[1]; ResetROI();}
 
   Bool_t SetBinaryInput(char *name);
   Bool_t SetBinaryInput(FILE *file);
@@ -100,7 +100,8 @@ class AliL3MemHandler{
   Bool_t Binary2Memory(UInt_t & npoint,AliL3SpacePointData *data);
   Bool_t Transform(UInt_t npoint,AliL3SpacePointData *data,
                               Int_t slice, AliL3Transform* trans);
-
+  void UpdateRowPointer(AliL3DigitRowData *&tempPt);
+  
   //Track IO
   Bool_t Memory2Binary(UInt_t ntrack,AliL3TrackSegmentData *data);
   Bool_t Binary2Memory(UInt_t & ntrack,AliL3TrackSegmentData *data);
@@ -111,8 +112,9 @@ class AliL3MemHandler{
   Bool_t Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *data,
                                              AliL3TrackArray *array);
   Bool_t Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *data,
-                   AliL3TrackArray *array,Int_t slice, AliL3Transform* trans);
-
+			   AliL3TrackArray *array,Int_t slice, AliL3Transform* trans);
+  
+  
   //Memory Allocation
   UInt_t GetAllocatedSize(){return fSize;}  
   UInt_t GetFileSize();

@@ -1098,3 +1098,12 @@ Bool_t AliL3MemHandler::Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *d
   return kTRUE;
 }
 
+void AliL3MemHandler::UpdateRowPointer(AliL3DigitRowData *&tempPt)
+{
+  //Update the data pointer to the next padrow
+  
+  Byte_t *tmp = (Byte_t*)tempPt;
+  Int_t size = sizeof(AliL3DigitRowData) + tempPt->fNDigit*sizeof(AliL3DigitData);
+  tmp += size;
+  tempPt = (AliL3DigitRowData*)tmp;
+}
