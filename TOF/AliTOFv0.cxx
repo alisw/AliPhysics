@@ -6,7 +6,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliTOFv0Class.gif">
+<img src="picts/AliTOFv0Class.gif">
 */
 //End_Html
 //                                                                           //
@@ -43,7 +43,7 @@ void AliTOFv0::CreateGeometry()
   // Authors :   Maxim Martemianov, Boris Zagreev (ITEP)   18/09/98 
   //Begin_Html
   /*
-    <img src="gif/AliTOFv0.gif">
+    <img src="picts/AliTOFv0.gif">
   */
   //End_Html
   //

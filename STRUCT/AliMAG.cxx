@@ -4,7 +4,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliMAGClass.gif">
+<img src="picts/AliMAGClass.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
@@ -39,7 +39,7 @@ AliMAG::AliMAG(const char *name, const char *title)
   //
   //Begin_Html
   /*
-    <img src="gif/aliMAG.gif">
+    <img src="picts/aliMAG.gif">
   */
   //End_Html
   
@@ -56,12 +56,12 @@ void AliMAG::CreateGeometry()
   //
   //Begin_Html
   /*
-    <img src="gif/mag.gif">
+    <img src="picts/mag.gif">
   */
   //End_Html
   //Begin_Html
   /*
-    <img src="gif/tree_mag.gif">
+    <img src="picts/tree_mag.gif">
   */
   //End_Html
   

@@ -10,7 +10,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliDetectorClass.gif">
+<img src="picts/AliDetectorClass.gif">
 */
 //End_Html
 //                                                                           //

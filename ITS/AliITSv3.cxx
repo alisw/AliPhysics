@@ -4,7 +4,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliITSv3Class.gif">
+<img src="picts/AliITSv3Class.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
@@ -55,12 +55,12 @@ void AliITSv3::CreateGeometry()
   //
   //Begin_Html
   /*
-    <img src="gif/AliITSv3Tree.gif">
+    <img src="picts/AliITSv3Tree.gif">
   */
   //End_Html
   //Begin_Html
   /*
-    <img src="gif/AliITSv3.gif">
+    <img src="picts/AliITSv3.gif">
   */
   //End_Html
 

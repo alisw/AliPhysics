@@ -10,7 +10,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliModuleClass.gif">
+<img src="picts/AliModuleClass.gif">
 */
 //End_Html
 //                                                                           //

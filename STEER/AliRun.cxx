@@ -12,12 +12,12 @@
 //   -Supports the event display.                                            //
 //Begin_Html
 /*
-<img src="gif/AliRunClass.gif">
+<img src="picts/AliRunClass.gif">
 */
 //End_Html
 //Begin_Html
 /*
-<img src="gif/alirun.gif">
+<img src="picts/alirun.gif">
 */
 //End_Html
 //                                                                           //
@@ -1266,17 +1266,17 @@ void AliRun::RunLego(const char *setup,Int_t ntheta,Float_t themin,
   //  Use macro "lego.C" to visualize the 3 lego plots in spherical coordinates
   //Begin_Html
   /*
-    <img src="gif/AliRunLego1.gif">
+    <img src="picts/AliRunLego1.gif">
   */
   //End_Html
   //Begin_Html
   /*
-    <img src="gif/AliRunLego2.gif">
+    <img src="picts/AliRunLego2.gif">
   */
   //End_Html
   //Begin_Html
   /*
-    <img src="gif/AliRunLego3.gif">
+    <img src="picts/AliRunLego3.gif">
   */
   //End_Html
   //

@@ -4,7 +4,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliTPCv1Class.gif">
+<img src="picts/AliTPCv1Class.gif">
 */
 //End_Html
 //                                                                           //
@@ -48,12 +48,12 @@ void AliTPCv1::CreateGeometry()
   //
   //Begin_Html
   /*
-    <img src="gif/AliTPCv1.gif">
+    <img src="picts/AliTPCv1.gif">
   */
   //End_Html
   //Begin_Html
   /*
-    <img src="gif/AliTPCv1Tree.gif">
+    <img src="picts/AliTPCv1Tree.gif">
   */
   //End_Html
 
@@ -97,7 +97,7 @@ void AliTPCv1::CreateGeometry()
   
   //Begin_Html
   /*
-    <img src="gif/spec_tgas1.gif">
+    <img src="picts/spec_tgas1.gif">
   */
   //End_Html
   
@@ -114,7 +114,7 @@ void AliTPCv1::CreateGeometry()
   
   //Begin_Html
   /*
-    <img src="gif/spec_tpsg1.gif">
+    <img src="picts/spec_tpsg1.gif">
   */
   //End_Html
   
@@ -168,7 +168,7 @@ void AliTPCv1::CreateGeometry()
   
   //Begin_Html
   /*
-    <img src="gif/spec_trcs1.gif">
+    <img src="picts/spec_trcs1.gif">
   */
   //End_Html
   
@@ -180,7 +180,7 @@ void AliTPCv1::CreateGeometry()
   
   //Begin_Html
   /*
-    <img src="gif/spec_tsga1.gif">
+    <img src="picts/spec_tsga1.gif">
   */
   //End_Html
 
@@ -390,7 +390,7 @@ void AliTPCv1::CreateGeometry()
   
   //Begin_Html
   /*
-    <img src="gif/spec_tspo1.gif">
+    <img src="picts/spec_tspo1.gif">
   */
   //End_Html
   
@@ -555,7 +555,7 @@ void AliTPCv1::CreateGeometry()
 
   //Begin_Html
   /*
-    <img src="gif/spec_tpiv1.gif">
+    <img src="picts/spec_tpiv1.gif">
   */
   //End_Html
   

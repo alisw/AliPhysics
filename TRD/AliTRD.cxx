@@ -7,7 +7,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliTRDClass.gif">
+<img src="picts/AliTRDClass.gif">
 */
 //End_Html
 //                                                                           //

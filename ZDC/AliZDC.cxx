@@ -7,7 +7,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliZDCClass.gif">
+<img src="picts/AliZDCClass.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
@@ -228,7 +228,7 @@ ClassImp(AliZDCv1)
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliZDCv1Class.gif">
+<img src="picts/AliZDCv1Class.gif">
 */
 //End_Html
 //                                                                           //
@@ -261,12 +261,12 @@ void AliZDCv1::CreateGeometry()
   //
   //Begin_Html
   /*
-    <img src="gif/AliZDCv1.gif">
+    <img src="picts/AliZDCv1.gif">
   */
   //End_Html
   //Begin_Html
   /*
-    <img src="gif/AliZDCv1Tree.gif">
+    <img src="picts/AliZDCv1Tree.gif">
   */
   //End_Html
 

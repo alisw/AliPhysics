@@ -10,7 +10,7 @@
 // developed.                                                           //
 //Begin_Html
 /*
-<img src="gif/newg.gif">
+<img src="picts/newg.gif">
 */
 //End_Html
 //////////////////////////////////////////////////////////////////////////

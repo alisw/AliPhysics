@@ -33,7 +33,7 @@ AliTPCD::AliTPCD(Text_t *  name,
 
 //Begin_Html
 /*
-<img src="gif/alitpcd.gif">
+<img src="picts/alitpcd.gif">
 */
 //End_Html
   SetName(name);

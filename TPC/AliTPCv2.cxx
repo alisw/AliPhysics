@@ -4,7 +4,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliTPCv2Class.gif">
+<img src="picts/AliTPCv2Class.gif">
 */
 //End_Html
 //                                                                           //
@@ -40,12 +40,12 @@ void AliTPCv2::CreateGeometry()
   //
   //Begin_Html
   /*
-    <img src="gif/AliTPCv2.gif">
+    <img src="picts/AliTPCv2.gif">
   */
   //End_Html
   //Begin_Html
   /*
-    <img src="gif/AliTPCv2Tree.gif">
+    <img src="picts/AliTPCv2Tree.gif">
   */
   //End_Html
 

@@ -4,7 +4,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliPIPEClass.gif">
+<img src="picts/AliPIPEClass.gif">
 */
 //End_Html
 //                                                                           //

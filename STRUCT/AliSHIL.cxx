@@ -5,7 +5,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliSHILClass.gif">
+<img src="picts/AliSHILClass.gif">
 */
 //End_Html
 //                                                                           //
@@ -48,12 +48,12 @@ void AliSHIL::CreateGeometry()
   //
   //Begin_Html
   /*
-    <img src="gif/AliSHIL.gif">
+    <img src="picts/AliSHIL.gif">
   */
   //End_Html
   //Begin_Html
   /*
-    <img src="gif/AliSHILTree.gif">
+    <img src="picts/AliSHILTree.gif">
   */
   //End_Html
 

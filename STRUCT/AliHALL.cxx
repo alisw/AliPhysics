@@ -5,7 +5,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliHALLClass.gif">
+<img src="picts/AliHALLClass.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
@@ -53,7 +53,7 @@ void AliHALL::CreateGeometry()
   //
   //Begin_Html
   /*
-    <img src="gif/AliHALLTree.gif">
+    <img src="picts/AliHALLTree.gif">
   */
   //End_Html
   //
@@ -62,7 +62,7 @@ void AliHALL::CreateGeometry()
   //
   //Begin_Html
   /*
-    <img src="gif/AliHALLSmall.gif">
+    <img src="picts/AliHALLSmall.gif">
   */
   //End_Html
   //
@@ -71,7 +71,7 @@ void AliHALL::CreateGeometry()
   //
   //Begin_Html
   /*
-    <img src="gif/AliHALLLarge.gif">
+    <img src="picts/AliHALLLarge.gif">
   */
   //End_Html
 

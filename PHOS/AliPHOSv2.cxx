@@ -63,7 +63,7 @@ AliPHOSv2::AliPHOSv2(const char *name, const char *title):
   
   //Begin_Html
   /*
-    <img src="gif/aliphos.gif">
+    <img src="picts/aliphos.gif">
   */
   //End_Html
   

@@ -7,7 +7,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliRICHClass.gif">
+<img src="picts/AliRICHClass.gif">
 */
 //End_Html
 //                                                                           //
@@ -1397,7 +1397,7 @@ ClassImp(AliRICHv1)
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliRICHv1Class.gif">
+<img src="picts/AliRICHv1Class.gif">
 */
 //End_Html
 //                                                                           //
@@ -1440,12 +1440,12 @@ void AliRICHv1::CreateGeometry()
   //
   //Begin_Html
   /*
-    <img src="gif/AliRICHv1.gif">
+    <img src="picts/AliRICHv1.gif">
   */
   //End_Html
   //Begin_Html
   /*
-    <img src="gif/AliRICHv1Tree.gif">
+    <img src="picts/AliRICHv1Tree.gif">
   */
   //End_Html
 

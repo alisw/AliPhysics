@@ -12,7 +12,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/TPaveTreeClass.gif">
+<img src="picts/TPaveTreeClass.gif">
 */
 //End_Html
 //                                                                           //

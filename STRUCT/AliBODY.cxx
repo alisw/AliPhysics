@@ -5,7 +5,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliBODYClass.gif">
+<img src="picts/AliBODYClass.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
@@ -52,7 +52,7 @@ void AliBODY::CreateGeometry()
   //
   //Begin_Html
   /*
-    <img src="gif/AliBODYTree.gif">
+    <img src="picts/AliBODYTree.gif">
   */
   //End_Html
   //
@@ -61,7 +61,7 @@ void AliBODY::CreateGeometry()
   //  
   //Begin_Html
   /*
-    <img src="gif/AliBODYLarge.gif">
+    <img src="picts/AliBODYLarge.gif">
   */
   //End_Html
   //
@@ -69,7 +69,7 @@ void AliBODY::CreateGeometry()
   //
   //Begin_Html
   /*
-    <img src="gif/AliBODYSmall.gif">
+    <img src="picts/AliBODYSmall.gif">
   */
   //End_Html
 

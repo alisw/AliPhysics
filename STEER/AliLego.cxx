@@ -22,7 +22,7 @@
 //
 //Begin_Html
 /*
-<img src="gif/alilego.gif">
+<img src="picts/alilego.gif">
 */
 //End_Html
 //

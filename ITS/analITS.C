@@ -10,7 +10,7 @@ void analITS (Int_t evNumber=0)
 //     Root > anal(2);    //process third event
 //Begin_Html
 /*
-<img src="gif/anal.gif">
+<img src="picts/anal.gif">
 */
 //End_Html
 /////////////////////////////////////////////////////////////////////////

@@ -4,7 +4,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliFRAMEClass.gif">
+<img src="picts/AliFRAMEClass.gif">
 */
 //End_Html
 //                                                                           //
@@ -40,12 +40,12 @@ void AliFRAMEv1::CreateGeometry()
   //
   //Begin_Html
   /*
-    <img src="gif/AliFRAME.gif">
+    <img src="picts/AliFRAME.gif">
   */
   //End_Html
   //Begin_Html
   /*
-    <img src="gif/AliFRAMETree.gif">
+    <img src="picts/AliFRAMETree.gif">
   */
   //End_Html
   AliMC* pMC = AliMC::GetMC();

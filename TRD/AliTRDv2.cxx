@@ -4,7 +4,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliTRDv2Class.gif">
+<img src="picts/AliTRDv2Class.gif">
 */
 //End_Html
 //                                                                           //
@@ -76,12 +76,12 @@ void AliTRDv2::CreateGeometry()
   //
   //Begin_Html
   /*
-    <img src="gif/AliTRDv2.gif">
+    <img src="picts/AliTRDv2.gif">
   */
   //End_Html
   //Begin_Html
   /*
-    <img src="gif/AliTRDv2Tree.gif">
+    <img src="picts/AliTRDv2Tree.gif">
   */
   //End_Html
   

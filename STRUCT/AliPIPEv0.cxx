@@ -26,14 +26,14 @@ void AliPIPEv0::CreateGeometry()
   printf("Create PIPEv0 geometry\n ");
 //Begin_Html
 /*
-<img src="gif/pipe.gif">
+<img src="picts/pipe.gif">
 */
 //End_Html
 
 
 //Begin_Html
 /*
-<img src="gif/tree_pipe.gif">
+<img src="picts/tree_pipe.gif">
 */
 //End_Html
 

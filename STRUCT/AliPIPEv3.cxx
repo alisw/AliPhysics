@@ -4,7 +4,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliPIPEClass.gif">
+<img src="picts/AliPIPEClass.gif">
 */
 //End_Html
 //                                                                           //
@@ -41,12 +41,12 @@ void AliPIPEv3::CreateGeometry()
   //
   //Begin_Html
   /*
-    <img src="gif/AliPIPE.gif">
+    <img src="picts/AliPIPE.gif">
   */
   //End_Html
   //Begin_Html
   /*
-    <img src="gif/AliPIPETree.gif">
+    <img src="picts/AliPIPETree.gif">
   */
   //End_Html
 

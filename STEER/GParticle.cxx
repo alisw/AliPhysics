@@ -7,7 +7,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/GParticleClass.gif">
+<img src="picts/GParticleClass.gif">
 */
 //End_Html
 //                                                                           //

@@ -6,7 +6,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliDIPOClass.gif">
+<img src="picts/AliDIPOClass.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>

@@ -5,7 +5,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliABSOClass.gif">
+<img src="picts/AliABSOClass.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
@@ -53,12 +53,12 @@ void AliABSO::CreateGeometry()
   //
   //Begin_Html
   /*
-    <img src="gif/AliABSOTree.gif">
+    <img src="picts/AliABSOTree.gif">
   */
   //End_Html
   //Begin_Html
   /*
-    <img src="gif/AliABSO.gif">
+    <img src="picts/AliABSO.gif">
   */
   //End_Html
 

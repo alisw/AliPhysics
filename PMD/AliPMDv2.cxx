@@ -4,7 +4,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliPMDv2Class.gif">
+<img src="picts/AliPMDv2Class.gif">
 */
 //End_Html
 //                                                                           //
@@ -194,12 +194,12 @@ void AliPMDv2::CreateGeometry()
   //
   //Begin_Html
   /*
-    <img src="gif/AliPMDv2.gif">
+    <img src="picts/AliPMDv2.gif">
   */
   //End_Html
   //Begin_Html
   /*
-    <img src="gif/AliPMDv2Tree.gif">
+    <img src="picts/AliPMDv2Tree.gif">
   */
   //End_Html
   CreatePads();

@@ -4,7 +4,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliPointsClass.gif">
+<img src="picts/AliPointsClass.gif">
 */
 //End_Html
 //                                                                           //

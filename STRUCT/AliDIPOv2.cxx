@@ -4,7 +4,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliDIPOv2Class.gif">
+<img src="picts/AliDIPOv2Class.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
@@ -51,12 +51,12 @@ void AliDIPOv2::CreateGeometry()
   //
   //Begin_Html
   /*
-    <img src="gif/AliDIPOv2Tree.gif">
+    <img src="picts/AliDIPOv2Tree.gif">
   */
   //End_Html
   //Begin_Html
   /*
-    <img src="gif/AliDIPOv2.gif">
+    <img src="picts/AliDIPOv2.gif">
   */
   //End_Html
 

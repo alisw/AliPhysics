@@ -115,7 +115,7 @@ AliDisplay::AliDisplay(Int_t size)
 //   If you are lost, you can click on HELP in any Root canvas or browser.
 //Begin_Html
 /*
-<img src="gif/alidisplay.gif">
+<img src="picts/alidisplay.gif">
 */
 //End_Html
    

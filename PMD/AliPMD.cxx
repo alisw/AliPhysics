@@ -8,7 +8,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliPMDClass.gif">
+<img src="picts/AliPMDClass.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
@@ -192,7 +192,7 @@ void AliPMD::StepManager()
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliPMDv1Class.gif">
+<img src="picts/AliPMDv1Class.gif">
 */
 //End_Html
 //                                                                           //

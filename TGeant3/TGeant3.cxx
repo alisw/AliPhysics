@@ -4,7 +4,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/TGeant3Class.gif">
+<img src="picts/TGeant3Class.gif">
 */
 //End_Html
 //                                                                           //

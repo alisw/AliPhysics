@@ -2,7 +2,7 @@
 
 //Begin_Html
 /*
-<img src="gif/ecut.gif">
+<img src="picts/ecut.gif">
 */
 //End_Html
    AliDisplay *edisplay;

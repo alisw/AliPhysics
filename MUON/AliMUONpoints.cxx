@@ -4,7 +4,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliMUONpointsClass.gif">
+<img src="picts/AliMUONpointsClass.gif">
 */
 //End_Html
 //                                                                           //

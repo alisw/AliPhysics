@@ -5,7 +5,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliCASTORClass.gif">
+<img src="picts/AliCASTORClass.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
@@ -142,12 +142,12 @@ void AliCASTORv1::CreateGeometry()
   //
   //Begin_Html
   /*
-    <img src="gif/AliCASTORTree.gif">
+    <img src="picts/AliCASTORTree.gif">
   */
   //End_Html
   //Begin_Html
   /*
-    <img src="gif/AliCASTOR.gif">
+    <img src="picts/AliCASTOR.gif">
   */
   //End_Html
   //

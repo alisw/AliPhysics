@@ -4,7 +4,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliITSv4Class.gif">
+<img src="picts/AliITSv4Class.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>

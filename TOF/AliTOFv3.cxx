@@ -6,7 +6,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliTOFv3Class.gif">
+<img src="picts/AliTOFv3Class.gif">
 */
 //End_Html
 //                                                                           //
@@ -45,7 +45,7 @@ void AliTOFv3::CreateGeometry()
   //
   //Begin_Html
   /*
-    <img src="gif/AliTOFv3.gif">
+    <img src="picts/AliTOFv3.gif">
   */
   //End_Html
   //

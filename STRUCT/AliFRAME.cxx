@@ -5,7 +5,7 @@
 //                                                                           //
 //Begin_Html
 /*
-<img src="gif/AliFRAMEClass.gif">
+<img src="picts/AliFRAMEClass.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>

@@ -15,7 +15,7 @@ ClassImp(AliGenParam)
 
   //Begin_Html
   /*
-    <img src="gif/AliGenParam.gif">
+    <img src="picts/AliGenParam.gif">
   */
   //End_Html
 
@@ -68,7 +68,7 @@ void AliGenParam::Init()
 //  End of the test !!!
   //Begin_Html
   /*
-    <img src="gif/AliGenParam.gif">
+    <img src="picts/AliGenParam.gif">
   */
   //End_Html
  

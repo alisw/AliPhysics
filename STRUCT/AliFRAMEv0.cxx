@@ -33,14 +33,14 @@ void AliFRAMEv0::CreateGeometry()
   printf("Create FRAMEv0 geometry ");
 //Begin_Html
 /*
-<img src="gif/frame.gif">
+<img src="picts/frame.gif">
 */
 //End_Html
 
 
 //Begin_Html
 /*
-<img src="gif/tree_frame.gif">
+<img src="picts/tree_frame.gif">
 */
 //End_Html
 

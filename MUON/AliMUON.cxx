@@ -39,7 +39,7 @@ AliMUON::AliMUON(const char *name, const char *title)
 {
 //Begin_Html
 /*
-<img src="gif/alimuon.gif">
+<img src="picts/alimuon.gif">
 */
 //End_Html
  
