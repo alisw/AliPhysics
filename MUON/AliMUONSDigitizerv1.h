@@ -10,9 +10,11 @@
 // SDigits from Hits 
 // J.P Cussonneau Subatech Feb 2004
 
-#include "AliMUONDigitizerv1.h"
+#include "AliMUONDigitizer.h"
 
-class AliMUONSDigitizerv1 : public AliMUONDigitizerv1
+class AliMUONHit;
+
+class AliMUONSDigitizerv1 : public AliMUONDigitizer
 {
   public:    
 	AliMUONSDigitizerv1();
@@ -21,12 +23,19 @@ class AliMUONSDigitizerv1 : public AliMUONDigitizerv1
 	// Preferred constructor to call which sets the manager.
 	AliMUONSDigitizerv1(AliRunDigitizer * manager);
 
-	// The following methods are inherited from AliMUONDigitizerv1
-	virtual void AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[7]);
-	virtual Int_t GetSignalFrom(AliMUONTransientDigit* td);
-	virtual Bool_t InitOutputData(AliMUONLoader* muonloader);
-	virtual void FillOutputData();
-	virtual void CleanupOutputData(AliMUONLoader* muonloader);
+	// methods from old AliMUONDigitizerv1
+	void MakeTransientDigitsFromHit(Int_t itrack, Int_t ihit, AliMUONHit * mHit);
+	void GenerateTransientDigits();
+
+	void AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[7]);
+	Int_t GetSignalFrom(AliMUONTransientDigit* td);
+	Bool_t InitOutputData(AliMUONLoader* muonloader);
+	void FillOutputData();
+	void CleanupOutputData(AliMUONLoader* muonloader);
+
+	// methods from old AliMUONDigitizerv1
+	virtual Bool_t InitInputData(AliMUONLoader* muonloader);
+	virtual void CleanupInputData(AliMUONLoader* muonloader);
 
 	// to disable trigger in SDigitizer
 	void CreateTrigger(){return;}

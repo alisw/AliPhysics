@@ -6,12 +6,12 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
-#include "AliMUONDigitizerv1.h"
+#include "AliMUONDigitizer.h"
 #include "AliMUONDigit.h"
 
 class AliMUONLoader;
 
-class AliMUONDigitizerv2 : public AliMUONDigitizerv1
+class AliMUONDigitizerv2 : public AliMUONDigitizer
 {
   public:    
 	AliMUONDigitizerv2();
@@ -24,10 +24,22 @@ class AliMUONDigitizerv2 : public AliMUONDigitizerv1
 	void MakeTransientDigitFromSDigit(Int_t iChamber, AliMUONDigit* sDigit);
 
 	// The following methods are inherited from AliMUONDigitizerv1 and overridden.
-	virtual void GenerateTransientDigits();
-	virtual void AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[7]);
-	virtual Bool_t InitInputData(AliMUONLoader* muonloader);
-	virtual void CleanupInputData(AliMUONLoader* muonloader);
+	void GenerateTransientDigits();
+	void AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[7]);
+	Bool_t InitInputData(AliMUONLoader* muonloader);
+	void CleanupInputData(AliMUONLoader* muonloader);
+
+	// methods from old AliMUONDigitizerv1
+	Int_t GetSignalFrom(AliMUONTransientDigit* td);
+	Bool_t InitOutputData(AliMUONLoader* muonloader);
+	void CleanupOutputData(AliMUONLoader* muonloader);
+	void FillOutputData();
+
+	// for trigger purpose
+	virtual void CreateTrigger();
+	virtual void CleanupTriggerArrays();
+	virtual void AddDigitTrigger(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[7]);
+	virtual void FillTriggerOutput();
 
 	ClassDef(AliMUONDigitizerv2, 0) 
 };    

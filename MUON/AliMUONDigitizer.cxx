@@ -25,11 +25,8 @@
 #include "AliMUONHitMapA1.h"
 #include "AliMUON.h"
 #include "AliMUONLoader.h"
-#include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
-#include "AliMUONDigitizer.h"
 #include "AliMUONTransientDigit.h"
-#include "AliMUONHitMapA1.h"
 #include "AliMUONTriggerDecision.h"
 #include "AliLog.h"
 

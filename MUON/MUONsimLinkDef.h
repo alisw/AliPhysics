@@ -21,7 +21,6 @@
 #pragma link C++ class AliMUONPadHit+; 
 
 #pragma link C++ class AliMUONDigitizer+; 
-#pragma link C++ class AliMUONDigitizerv1+; 
 #pragma link C++ class AliMUONDigitizerv2+; 
 #pragma link C++ class AliMUONSDigitizerv1+; 
 #pragma link C++ class AliMUONMerger+; 

@@ -14,7 +14,6 @@ SRCS:= AliMUONv0.cxx \
        AliMUONPadHit.cxx \
        AliMUONSt1Decoder.cxx \
        AliMUONDigitizer.cxx \
-       AliMUONDigitizerv1.cxx \
        AliMUONDigitizerv2.cxx \
        AliMUONSDigitizerv1.cxx \
        AliMUONMerger.cxx \
