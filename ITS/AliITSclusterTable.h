@@ -18,6 +18,7 @@
 
 #include <TArrayI.h>
 #include <TArrayD.h>
+#include <TArrayF.h>
 #include <TObject.h>
 
 class TTree;
@@ -35,8 +36,8 @@ class AliITSclusterTable : public TObject {
   void FillArray(TTree* clusterTree);
   void FillArrayLabel(Int_t numberofparticles);
   void FillArrayCoorAngles();
-  void GetCoorAngles(AliITSclusterV2* cl,Int_t module,Double_t &phi,Double_t &lambda,Double_t &x,Double_t &y,Double_t &z);
-  void GetCoorErrors(AliITSclusterV2* cl, Int_t module,Double_t &sx,Double_t &sy, Double_t &sz);
+  void GetCoorAngles(AliITSclusterV2* cl,Int_t module,Double_t &phi,Double_t &lambda,Float_t &x,Float_t &y,Float_t &z);
+  void GetCoorErrors(AliITSclusterV2* cl, Int_t module,Float_t &sx,Float_t &sy, Float_t &sz);
   virtual ~AliITSclusterTable();
 
 
@@ -47,23 +48,23 @@ class AliITSclusterTable : public TObject {
   Int_t      ThisParticleIsTrackable(Int_t label,Int_t numberofpoints=6);
   Double_t   GetPhiCluster(Int_t layer, Int_t i){return fPhiList[layer]->At(i);}
   Double_t   GetLambdaCluster(Int_t layer, Int_t i) {return fLambdaList[layer]->At(i);}
-  Double_t   GetXCluster(Int_t layer, Int_t i){return fXList[layer]->At(i);}
-  Double_t   GetYCluster(Int_t layer, Int_t i) {return fYList[layer]->At(i);}
-  Double_t   GetZCluster(Int_t layer, Int_t i) {return fZList[layer]->At(i);}
-  Double_t   GetXClusterError(Int_t layer, Int_t i) {return fSxList[layer]->At(i);}
-  Double_t   GetYClusterError(Int_t layer, Int_t i) {return fSyList[layer]->At(i);}
-  Double_t   GetZClusterError(Int_t layer, Int_t i) {return fSzList[layer]->At(i);}
+  Float_t   GetXCluster(Int_t layer, Int_t i){return fXList[layer]->At(i);}
+  Float_t   GetYCluster(Int_t layer, Int_t i) {return fYList[layer]->At(i);}
+  Float_t   GetZCluster(Int_t layer, Int_t i) {return fZList[layer]->At(i);}
+  Float_t   GetXClusterError(Int_t layer, Int_t i) {return fSxList[layer]->At(i);}
+  Float_t   GetYClusterError(Int_t layer, Int_t i) {return fSyList[layer]->At(i);}
+  Float_t   GetZClusterError(Int_t layer, Int_t i) {return fSzList[layer]->At(i);}
 
   TArrayI*   GetListOfClusters(Int_t mod) const {return fDet[mod];}
   TArrayI*   GetNClustersSameLabel(Int_t label) const {return fLbl[label];}
   TArrayD*   GetListOfPhi(Int_t layer) const {return fPhiList[layer];}
   TArrayD*   GetListOfLambda(Int_t layer) const {return fLambdaList[layer];}
-  TArrayD*   GetListOfX(Int_t layer) const {return fXList[layer];}
-  TArrayD*   GetListOfY(Int_t layer) const {return fYList[layer];}
-  TArrayD*   GetListOfZ(Int_t layer) const {return fZList[layer];}
-  TArrayD*   GetListOfSx(Int_t layer)const {return fSxList[layer];}
-  TArrayD*   GetListOfSy(Int_t layer)const {return fSyList[layer];}
-  TArrayD*   GetListOfSz(Int_t layer)const {return fSzList[layer];}
+  TArrayF*   GetListOfX(Int_t layer) const {return fXList[layer];}
+  TArrayF*   GetListOfY(Int_t layer) const {return fYList[layer];}
+  TArrayF*   GetListOfZ(Int_t layer) const {return fZList[layer];}
+  TArrayF*   GetListOfSx(Int_t layer)const {return fSxList[layer];}
+  TArrayF*   GetListOfSy(Int_t layer)const {return fSyList[layer];}
+  TArrayF*   GetListOfSz(Int_t layer)const {return fSzList[layer];}
  protected: 
 
   // copy constructor (NO copy allowed: the constructor is protected
@@ -81,12 +82,12 @@ class AliITSclusterTable : public TObject {
                            // with the same label for each label.
   TArrayD**    fPhiList;   //Array of cluster azimuthal angles on each layer
   TArrayD**    fLambdaList;//Array of cluster Lambda angles on each layer
-  TArrayD**    fXList;     //Array of cluster x coordinates on each layer
-  TArrayD**    fYList;     //Array of cluster y coordinates on each layer
-  TArrayD**    fZList;    // Array of cluster z coordinates on each layer
-  TArrayD**    fSxList;    //Array of cluster errors on x on each layer
-  TArrayD**    fSyList;    //Array of cluster errors on y on each layer
-  TArrayD**    fSzList;    //Array of cluster errors on z on each layer
+  TArrayF**    fXList;     //Array of cluster x coordinates on each layer
+  TArrayF**    fYList;     //Array of cluster y coordinates on each layer
+  TArrayF**    fZList;    // Array of cluster z coordinates on each layer
+  TArrayF**    fSxList;    //Array of cluster errors on x on each layer
+  TArrayF**    fSyList;    //Array of cluster errors on y on each layer
+  TArrayF**    fSzList;    //Array of cluster errors on z on each layer
  
   AliITSgeom *fGeom;      //! ITS geometry
   AliITStrackerSA *fTracker; //! SA tracker

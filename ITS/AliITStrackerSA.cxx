@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -20,7 +21,6 @@
 //  tracks are saved as AliITStrackV2 objects     //
 ////////////////////////////////////////////////////
 
-#include <stdlib.h>
 #include "TArrayI.h"
 #include <TBranch.h>
 #include <TMath.h>
@@ -115,8 +115,8 @@ AliITStrackerSA::AliITStrackerSA(AliITStrackerSA& tracker):AliITStrackerV2(){
   }
   fVertexer = tracker.fVertexer;
   fGeom = tracker.fGeom;
-  fFlagLoad = tracker.fFlagLoad;
   fTable = tracker.fTable;
+  fListOfTracks = tracker.fListOfTracks;
 }
 
 //____________________________________________________________________________
@@ -130,11 +130,11 @@ AliITStrackerSA::~AliITStrackerSA(){
   fVert = 0;
   fVertexer = 0;
   fGeom = 0;
-  fFlagLoad = 0;
   if(fPhiWin)delete []fPhiWin;
   if(fLambdaWin)delete []fLambdaWin;
   fTable =0;
-}
+  fListOfTracks->Delete();
+ }
 
 //____________________________________________________________________________
 void AliITStrackerSA::Init(){
@@ -151,11 +151,11 @@ void AliITStrackerSA::Init(){
     fVert = 0;
     fVertexer = 0;
     fGeom = 0;
-    fFlagLoad = 0;
     SetWindowSizes();
     fTable = 0;
     fITSclusters = 0;
     SetSixPoints();
+    fListOfTracks=new TObjArray(0,0);
 }
 //_______________________________________________________________________
 void AliITStrackerSA::ResetForFinding(){
@@ -169,6 +169,7 @@ void AliITStrackerSA::ResetForFinding(){
     fCoef3=0;
     fPointc[0]=0;
     fPointc[1]=0;
+    fListOfTracks->Delete();
 }
 //____________________________________________________________________________
 void AliITStrackerSA::FindTracks(TTree *out,Int_t evnumber){
@@ -298,7 +299,7 @@ void AliITStrackerSA::FindTracks(TTree *out,Int_t evnumber){
             AliITSclusterV2* kl = (AliITSclusterV2*)GetCluster(index);
             if(kl->IsUsed()==1) kl->Use();
           }
-          continue;
+	  continue;
         }
         outrack=tr2;  
         out->Fill();
@@ -411,6 +412,7 @@ Int_t AliITStrackerSA::FindTracks(AliESD* event){
 
   // Track finder using the ESD object
 
+
   if(!fITSclusters){
     Fatal("FindTracks","ITS cluster tree is not accessed - Abort!!!\n Please use method SetClusterTree to pass the pointer to the tree\n");
     return -1;
@@ -429,10 +431,11 @@ Int_t AliITStrackerSA::FindTracks(AliESD* event){
   }
 
   //Fill array with cluster indices for each module
-  fTable = new AliITSclusterTable(fGeom,this,primaryVertex);
-  fTable->FillArray(fITSclusters);
-  fTable->FillArrayCoorAngles();
-  
+  if(!fTable){
+    fTable = new AliITSclusterTable(fGeom,this,primaryVertex);
+    fTable->FillArray(fITSclusters);
+    fTable->FillArrayCoorAngles();
+   }
 
   Int_t * firstmod = new Int_t[fGeom->GetNlayers()];
   for(Int_t i=0;i<fGeom->GetNlayers();i++){
@@ -505,19 +508,19 @@ Int_t AliITStrackerSA::FindTracks(AliESD* event){
             AliITSclusterV2* kl = (AliITSclusterV2*)GetCluster(index);
             if(kl->IsUsed()==1) kl->Use();
           }
-          continue;
+	  continue;
         }
 	
 	AliESDtrack outtrack;
 	outtrack.UpdateTrackParams(tr2,AliESDtrack::kITSin);
 	event->AddTrack(&outtrack);
-        
 	ntrack++;
         Int_t nct = tr2->GetNumberOfClusters();
 	while(nct--){
           Int_t index = tr2->GetClusterIndex(nct);     
           AliITSclusterV2* kl = (AliITSclusterV2*)GetCluster(index);      
           if(kl->IsUsed()==0) kl->Use();
+	  
         }
       } 
       else{
@@ -526,7 +529,7 @@ Int_t AliITStrackerSA::FindTracks(AliESD* event){
           Int_t index = trs->GetClusterIndexSA(nct);
           AliITSclusterV2* kl = (AliITSclusterV2*)GetCluster(index);
           if(kl->IsUsed()==1) kl->Use();
-        }
+	}
       }
       delete trs;
       delete[] nn;
@@ -583,13 +586,13 @@ Int_t AliITStrackerSA::FindTracks(AliESD* event){
               AliITSclusterV2* kl = (AliITSclusterV2*)GetCluster(index);
               if(kl->IsUsed()==1) kl->Use();
             }
+
             continue;
           }
 
 	  AliESDtrack outtrack;
 	  outtrack.UpdateTrackParams(tr2,AliESDtrack::kITSin);
 	  event->AddTrack(&outtrack);
-
           Int_t nct = tr2->GetNumberOfClusters();
           while(nct--){
             Int_t index = tr2->GetClusterIndex(nct);     
@@ -632,7 +635,6 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
   for(Int_t i=0;i<fGeom->GetNlayers();i++){
     firstmod[i]=fGeom->GetModuleIndex(i+1,1,1);
   }  
-  TObjArray* listoftracks=new TObjArray(0,0);
   AliITStrackV2* otrack2;
   Int_t nclusters = tr->GetNumberOfClustersSA();
   TObjArray** listlayer = new TObjArray*[fGeom->GetNlayers()];
@@ -797,7 +799,7 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
                 otrack2->ResetCovariance(); 
                 otrack2->ResetClusters();
                 //fit from layer 6 to layer 1
-                if(RefitAt(3.7,otrack2,ot)) listoftracks->AddLast(otrack2);
+                if(RefitAt(3.7,otrack2,ot)) fListOfTracks->AddLast(otrack2);
                               
               }       
           
@@ -821,9 +823,8 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
 
   delete [] end;
 
-  Int_t dim=listoftracks->GetEntries();
+  Int_t dim=fListOfTracks->GetEntries();
   if(dim==0){
-    delete listoftracks;
     for(Int_t i=0;i<fGeom->GetNlayers();i++){
       delete listlayer[i];
     }
@@ -831,7 +832,7 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
     return 0;
   }
 
-  AliITStrackV2* otrack =(AliITStrackV2*)FindTrackLowChiSquare(listoftracks,dim);
+  AliITStrackV2* otrack =(AliITStrackV2*)FindTrackLowChiSquare(fListOfTracks,dim);
 
   if(otrack==0) return 0;
   Int_t * indexc = new Int_t[fGeom->GetNlayers()];
@@ -871,7 +872,6 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
                        cl4->GetLabel(2),labl[2],numberofpoints);
   
   otrack->SetLabel(label);  
-  delete listoftracks;
   for(Int_t i=0;i<fGeom->GetNlayers();i++){
     delete listlayer[i];
   }
@@ -882,9 +882,10 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
 }
 
 //_______________________________________________________________________
-void AliITStrackerSA::UseFoundTracksV2(Int_t evnum,TTree* treev2, TTree* clustertree){
+void AliITStrackerSA::UseFoundTracksV2(Int_t evnum,TTree* treev2){
   // Marks as used clusters belonging to tracks found with V2 TPC+ITS tracking
   //(or AliITStrackV2 tracks found with function FindTracks of this class)
+  
 
   //Get primary vertex
   if(fVertexer){
@@ -906,9 +907,6 @@ void AliITStrackerSA::UseFoundTracksV2(Int_t evnum,TTree* treev2, TTree* cluster
     fTable->FillArray(fITSclusters);
     fTable->FillArrayCoorAngles();
   }
-  SetEventNumber(evnum);
-  if(GetFlagLoadedClusters()==0) LoadClusters(clustertree);
-  SetFlagLoadedClusters(1);
 
   TBranch* bra = (TBranch*)treev2->GetBranch("tracks");
   if(!bra) Warning("UseFoundTracksV2","No branch for track tree");
@@ -929,33 +927,20 @@ void AliITStrackerSA::UseFoundTracksV2(Int_t evnum,TTree* treev2, TTree* cluster
 }
 
 //_______________________________________________________________________
-void AliITStrackerSA::UseFoundTracksV2(Int_t evnum,AliESD *event, TTree* 
-clustertree){
+void AliITStrackerSA::UseFoundTracksV2(AliESD *event){
   // Marks as used clusters belonging to tracks found with V2 TPC+ITS tracking
 
   //Get primary vertex
-  if(fVertexer){
-    if(fVert)delete fVert;
-    fVert = fVertexer->FindVertexForCurrentEvent(evnum);
-  }
-  else {
-    gAlice->GetEvent(evnum);
-    if(!fVert){
-      Fatal("FindTracks","Vertex is missing\n");
-      return;
-    }
-  }
+
   Double_t primaryVertex[3];
-  fVert->GetXYZ(primaryVertex);
+  event->GetVertex()->GetXYZ(primaryVertex);
 
   if(!fTable){
     fTable = new AliITSclusterTable(fGeom,this,primaryVertex);
     fTable->FillArray(fITSclusters);
     fTable->FillArrayCoorAngles(); 
   }
-  SetEventNumber(evnum);
-  if(GetFlagLoadedClusters()==0) LoadClusters(clustertree);
-  SetFlagLoadedClusters(1);
+
   Int_t ntracks = event->GetNumberOfTracks();
   while (ntracks--) {
     AliESDtrack *esd=event->GetTrack(ntracks);
@@ -1012,36 +997,55 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
   Int_t nm[8]={0,0,0,0,0,0,0,0};
   nm[0] = lay.FindDetectorIndex(fi+phiwindow,zed);
   nm[1] = lay.FindDetectorIndex(fi-phiwindow,zed);
-  nm[2]  = lay.FindDetectorIndex(fi,zed1);
-  nm[3]  = lay.FindDetectorIndex(fi,zed2);
-  nm[4]  = lay.FindDetectorIndex(fi+phiwindow,zed1);
-  nm[5]  = lay.FindDetectorIndex(fi-phiwindow,zed1);
-  nm[6]  = lay.FindDetectorIndex(fi+phiwindow,zed2);
-  nm[7]  = lay.FindDetectorIndex(fi-phiwindow,zed2);
+  nm[2] = lay.FindDetectorIndex(fi,zed1);
+  nm[3] = lay.FindDetectorIndex(fi,zed2);
+  nm[4] = lay.FindDetectorIndex(fi+phiwindow,zed1);
+  nm[5] = lay.FindDetectorIndex(fi-phiwindow,zed1);
+  nm[6] = lay.FindDetectorIndex(fi+phiwindow,zed2);
+  nm[7] = lay.FindDetectorIndex(fi-phiwindow,zed2);
+
 
   Int_t nn=0;
   TArrayI* array =(TArrayI*)table->GetListOfClusters(nmod);
-  TArrayI* list = new TArrayI(array->GetSize());
+  TArrayI* listc = new TArrayI(array->GetSize());
   for(Int_t i=0;i<array->GetSize();i++){
     Int_t in=(Int_t)array->At(i);
-    list->AddAt(in,nn);
+    listc->AddAt(in,nn);
     nn++;
   }
   
-//  Info("SearchClusters", "layer %d, module %d", layer, nmod);
+  Int_t k=0;
+  Int_t val;
+  while(k<8){
+    for(Int_t h=k+1;h<8;h++){
+      if(nm[k]>nm[h]){
+	val=nm[k];
+	nm[k]=nm[h];
+	nm[h]=val;
+      }
+     
+   }
+    k++;
+  }
+ 
+  Int_t value=-5;
+ 
   for(Int_t ii=0;ii<8;ii++){
-    if(nm[ii]!=nmod && nm[ii]>=0){
+    if(nm[ii]!=value && nm[ii]!=nmod && nm[ii]>=0){
       TArrayI* ar =(TArrayI*)table->GetListOfClusters(nm[ii]+firstmod[layer]);
-      list->Set(list->GetSize()+ar->GetSize());
+      listc->Set(listc->GetSize()+ar->GetSize());
       for(Int_t j=0;j<ar->GetSize();j++){
-        Int_t in=(Int_t)ar->At(j);
-        list->AddAt(in,nn);
-        nn++;
+	Int_t in=(Int_t)ar->At(j);
+	listc->AddAt(in,nn);
+	nn++;
+	value=nm[ii];
       }
     }
   }
-  for(Int_t i=0;i<list->GetSize();i++){
-    Int_t index = (Int_t)list->At(i);
+ 
+  
+  for(Int_t i=0;i<listc->GetSize();i++){
+    Int_t index = (Int_t)listc->At(i);
     AliITSclusterV2* cllay = lay.GetCluster(index);
     if(cllay==0) continue;
     if(cllay->IsUsed()==1) continue;  
@@ -1052,9 +1056,9 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
        TMath::Abs(fPhiEstimate-phi)<phiwindow){
       nc+=1;
       fLambdac = lambda;
-      if(trs->GetNumberOfClustersSA()==20){
+      if(trs->GetNumberOfClustersSA()==15){
 	delete[] firstmod;
-        delete list;
+        delete listc;
         return 0;
       }
       trs->AddClusterSA(layer,index);
@@ -1065,7 +1069,7 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
     }
 
   }
-  delete list;
+  delete listc;
   delete [] firstmod;
   return nc;
 
@@ -1281,24 +1285,21 @@ void AliITStrackerSA::SetWindowSizes(Int_t n, Double_t *phi, Double_t *lam){
   }
   else {  // default values
     
-    Double_t phid[40]   = {0.001,0.0015,0.002,0.0023,0.0025,0.0027,0.003,
-			   0.0033,0.0035,0.0037,0.004,0.0043,0.0045,0.0047,
+    Double_t phid[32]   = {0.002,0.003,0.004,0.0045,0.0047,
 			   0.005,0.0053,0.0055,
 			   0.006,0.0063,0.0065,0.007,0.0073,0.0075,0.0077,
 			   0.008,0.0083,0.0085,0.0087,0.009,0.0095,0.0097,
 			   0.01,0.0105,0.011,0.0115,0.012,0.0125,0.013,0.0135,
 			   0.014};
-    Double_t lambdad[40] = {0.001,0.0015,0.002,0.0023,0.0025,0.0027,0.003,
-			    0.0033,0.0035,0.0037,0.004,0.0043,0.0045,0.0047,
+    Double_t lambdad[32] = {0.002,0.003,0.004,0.0045,0.0047,
 			    0.005,0.0053,0.0055,
 			    0.006,0.0063,0.0065,0.007,0.0073,0.0075,0.0077,
 			    0.008,0.0083,0.0085,0.0087,0.009,0.0095,0.0097,
 			    0.01,0.015,0.011,0.0115,0.012,0.0125,0.013,0.0135,
 			    0.014};
     
-    if(fNloop!=40){
-      fNloop = 40;
-      Warning("SetWindowSizes","Number of loop forced to the default value %d",fNloop);
+    if(fNloop!=32){
+      fNloop = 32;
     }
    
     fPhiWin = new Double_t[fNloop];

@@ -44,8 +44,8 @@ class AliITStrackerSA : public AliITStrackerV2 {
   void SetSixPoints(Bool_t sp = kTRUE){fSixPoints = sp;}
   Bool_t GetSixPoints() const {return fSixPoints;}
   void SetWindowSizes(Int_t n=46, Double_t *phi=0, Double_t *lam=0);
-  void UseFoundTracksV2(Int_t evnum,TTree* treev2, TTree* clustertree);
-  void UseFoundTracksV2(Int_t evnum,AliESD *event, TTree* clustertree);
+  void UseFoundTracksV2(Int_t evnum,TTree* treev2);
+  void UseFoundTracksV2(AliESD *event);
 
  protected:
 
@@ -56,12 +56,8 @@ class AliITStrackerSA : public AliITStrackerV2 {
   AliITStrackerSA& operator=(const AliITStrackerSA& /* trkr */);
   //Initialization
   void Init();
-  Int_t     GetFlagLoadedClusters() const {return fFlagLoad;}
-   
-  void     ResetForFinding();
-  void     SetFlagLoadedClusters(Int_t d) {fFlagLoad=d;}
-
-  void     UpdatePoints();
+  void ResetForFinding();
+  void UpdatePoints();
 
   static Double_t Curvature(Double_t x1,Double_t y1,Double_t x2,Double_t y2,
                      Double_t x3,Double_t y3);
@@ -85,10 +81,10 @@ class AliITStrackerSA : public AliITStrackerV2 {
  
 
   Double_t fPhiEstimate; //Estimation of phi angle on next layer
-  Double_t fPoint1[2];   //! coord. of 1-st point to evaluate the curvature
-  Double_t fPoint2[2];   //! coord. of 2-nd point to evaluate the curvature
-  Double_t fPoint3[2];   //! coord. of 3-rd point to evaluate the curvature
-  Double_t fPointc[2];   //! current point coord (for curvature eval.)
+  Float_t fPoint1[2];   //! coord. of 1-st point to evaluate the curvature
+  Float_t fPoint2[2];   //! coord. of 2-nd point to evaluate the curvature
+  Float_t fPoint3[2];   //! coord. of 3-rd point to evaluate the curvature
+  Float_t fPointc[2];   //! current point coord (for curvature eval.)
   Double_t fLambdac;    //! current value of the Lambda angle in the window
   Double_t fPhic;       //! current value of the Phi angle in the window
   Float_t fCoef1;       //! param. of the equation of the circ. approx a layer
@@ -100,8 +96,8 @@ class AliITStrackerSA : public AliITStrackerV2 {
   AliESDVertex *fVert;        //! primary vertex
   AliITSVertexer *fVertexer;  //! vertexer 
   AliITSgeom *fGeom;          //! ITS geometry
+  TObjArray *fListOfTracks;   //! container for found tracks 
   TTree *fITSclusters;        //! pointer to ITS tree of clusters
-  Int_t fFlagLoad;            //  flag for loaded clusters (1==already loaded)
   Bool_t fSixPoints;          // If true 6/6 points are required (default). 5/6 otherwise
   AliITSclusterTable* fTable; //  table with clusters
   ClassDef(AliITStrackerSA,1)

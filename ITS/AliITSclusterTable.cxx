@@ -30,7 +30,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 
-#include <stdlib.h>
+// #include <stdlib.h>
 #include "AliITSclusterTable.h"
 #include "AliITSclusterV2.h"
 #include "AliITSgeom.h"
@@ -39,7 +39,6 @@
 #include<TClonesArray.h>
 #include<TTree.h>
 ClassImp(AliITSclusterTable)
-
 //__________________________________________________________
 AliITSclusterTable::AliITSclusterTable(){
 // Default constructor
@@ -79,7 +78,6 @@ AliITSclusterTable::AliITSclusterTable(AliITSgeom* geom, AliITStrackerSA* tracke
   fSyList =0;
   fSzList =0;
 }
-
 //______________________________________________________________________
 AliITSclusterTable::AliITSclusterTable(const AliITSclusterTable &tab) : 
                     TObject(tab) {
@@ -138,7 +136,6 @@ void AliITSclusterTable::FillArray(TTree* clusterTree){
   fDet = new TArrayI*[nm];
 
   TArrayI** vect = new TArrayI*[fGeom->GetNlayers()];
-  
   Int_t * firstmod = new Int_t[fGeom->GetNlayers()+1];
   firstmod[fGeom->GetNlayers()]=fGeom->GetIndexMax();  // upper limit
   for(Int_t nlayer=0;nlayer<fGeom->GetNlayers();nlayer++){
@@ -156,7 +153,6 @@ void AliITSclusterTable::FillArray(TTree* clusterTree){
   TClonesArray* clus = new TClonesArray("AliITSclusterV2",10000);
   brancht->SetAddress(&clus);
  
-  
   for(Int_t mod=0;mod<nm;mod++){
     Int_t nc=0;
     clusterTree->GetEvent(mod);
@@ -171,12 +167,11 @@ void AliITSclusterTable::FillArray(TTree* clusterTree){
     else {
       for(Int_t n=0;n<vect[nlr]->GetSize();n++){
 	Int_t mm=vect[nlr]->At(n);
-	if (nc>=fDet[mod]->GetSize()) fDet[mod]->Set(nc*2+10);  
+	if(nc>=fDet[mod]->GetSize()) fDet[mod]->Set(nc*2+10);
 	if(mm==mod) {(*fDet[mod])[nc]=n; nc+=1; }
       }
     }
   }
-
 
   clus->Delete();
   delete clus;
@@ -188,7 +183,6 @@ void AliITSclusterTable::FillArray(TTree* clusterTree){
 //_________________________________________________________________
 void AliITSclusterTable::FillArrayLabel(Int_t numberofparticles){
   //
-
 
   fLbl = new TArrayI*[numberofparticles];
   const Int_t knm =fGeom->GetNlayers();
@@ -247,16 +241,15 @@ Int_t AliITSclusterTable::FindIndex(Int_t ndim, Int_t *ptr, Int_t value){
 
 void AliITSclusterTable::FillArrayCoorAngles(){
   //Fill arrays with phi,lambda and indices of clusters for each layer
-  Info("FillArrayCoorAngles","Filling Array...");
-
+ 
   fPhiList = new TArrayD*[fGeom->GetNlayers()];
   fLambdaList = new TArrayD*[fGeom->GetNlayers()];
-  fXList = new TArrayD*[fGeom->GetNlayers()];
-  fYList = new TArrayD*[fGeom->GetNlayers()];
-  fZList = new TArrayD*[fGeom->GetNlayers()];
-  fSxList = new TArrayD*[fGeom->GetNlayers()];
-  fSyList = new TArrayD*[fGeom->GetNlayers()];
-  fSzList = new TArrayD*[fGeom->GetNlayers()];
+  fXList = new TArrayF*[fGeom->GetNlayers()];
+  fYList = new TArrayF*[fGeom->GetNlayers()];
+  fZList = new TArrayF*[fGeom->GetNlayers()];
+  fSxList = new TArrayF*[fGeom->GetNlayers()];
+  fSyList = new TArrayF*[fGeom->GetNlayers()];
+  fSzList = new TArrayF*[fGeom->GetNlayers()];
 
   Int_t * firstmod = new Int_t[fGeom->GetNlayers()+1];
   firstmod[fGeom->GetNlayers()]=fGeom->GetIndexMax();  // upper limit
@@ -266,18 +259,18 @@ void AliITSclusterTable::FillArrayCoorAngles(){
     Int_t ncl = fTracker->GetNumberOfClustersLayer(nlay);
     fPhiList[nlay] = new TArrayD(ncl);
     fLambdaList[nlay]=new TArrayD(ncl);
-    fXList[nlay]=new TArrayD(ncl);
-    fYList[nlay]=new TArrayD(ncl);
-    fZList[nlay]=new TArrayD(ncl);
-    fSxList[nlay]=new TArrayD(ncl);
-    fSyList[nlay]=new TArrayD(ncl);
-    fSzList[nlay]=new TArrayD(ncl);
+    fXList[nlay]=new TArrayF(ncl);
+    fYList[nlay]=new TArrayF(ncl);
+    fZList[nlay]=new TArrayF(ncl);
+    fSxList[nlay]=new TArrayF(ncl);
+    fSyList[nlay]=new TArrayF(ncl);
+    fSzList[nlay]=new TArrayF(ncl);
 
     for(Int_t j=0;j<ncl;j++){
       AliITSclusterV2* cl = fTracker->GetClusterLayer(nlay,j);
       Double_t phi=0;Double_t lambda=0;
-      Double_t x=0;Double_t y=0;Double_t z=0;
-      Double_t sx=0;Double_t sy=0;Double_t sz=0;
+      Float_t x=0;Float_t y=0;Float_t z=0;
+      Float_t sx=0;Float_t sy=0;Float_t sz=0;
       Int_t module = cl->GetDetectorIndex()+firstmod[nlay];
       GetCoorAngles(cl,module,phi,lambda,x,y,z);
       GetCoorErrors(cl,module,sx,sy,sz);
@@ -296,8 +289,7 @@ void AliITSclusterTable::FillArrayCoorAngles(){
   
   delete [] firstmod;
 }
-
-void AliITSclusterTable::GetCoorAngles(AliITSclusterV2* cl,Int_t module,Double_t &phi,Double_t &lambda, Double_t &x, Double_t &y,Double_t &z){
+void AliITSclusterTable::GetCoorAngles(AliITSclusterV2* cl,Int_t module,Double_t &phi,Double_t &lambda, Float_t &x, Float_t &y,Float_t &z){
   //Returns values of phi (azimuthal) and lambda angles for a given cluster
   
   Double_t rot[9];     fGeom->GetRotMatrix(module,rot);
@@ -308,8 +300,8 @@ void AliITSclusterTable::GetCoorAngles(AliITSclusterV2* cl,Int_t module,Double_t
   Double_t phi1=TMath::Pi()/2+alpha;
   if (lay==1) phi1+=TMath::Pi();
 
-  Double_t cp=TMath::Cos(phi1), sp=TMath::Sin(phi1);
-  Double_t r=tx*cp+ty*sp;
+  Float_t cp=TMath::Cos(phi1), sp=TMath::Sin(phi1);
+  Float_t r=tx*cp+ty*sp;
 
   x= r*cp - cl->GetY()*sp;
   y= r*sp + cl->GetY()*cp;
@@ -319,7 +311,7 @@ void AliITSclusterTable::GetCoorAngles(AliITSclusterV2* cl,Int_t module,Double_t
   lambda=TMath::ATan2(z-fPrimaryVertex[2],TMath::Sqrt((x-fPrimaryVertex[0])*(x-fPrimaryVertex[0])+(y-fPrimaryVertex[1])*(y-fPrimaryVertex[1])));
 }
 
-void AliITSclusterTable::GetCoorErrors(AliITSclusterV2* cl, Int_t module,Double_t &sx,Double_t &sy, Double_t &sz){
+void AliITSclusterTable::GetCoorErrors(AliITSclusterV2* cl, Int_t module,Float_t &sx,Float_t &sy, Float_t &sz){
 
   //returns x,y,z of cluster in global coordinates
 
@@ -330,9 +322,8 @@ void AliITSclusterTable::GetCoorErrors(AliITSclusterV2* cl, Int_t module,Double_
   Double_t phi=TMath::Pi()/2+alpha;
   if (lay==1) phi+=TMath::Pi();
 
-  Double_t cp=TMath::Cos(phi), sp=TMath::Sin(phi);
+  Float_t cp=TMath::Cos(phi), sp=TMath::Sin(phi);
 
- 
   sx = TMath::Sqrt(sp*sp*cl->GetSigmaY2());
   sy = TMath::Sqrt(cp*cp*cl->GetSigmaY2());
   sz = TMath::Sqrt(cl->GetSigmaZ2());
