@@ -142,7 +142,7 @@ include build/module.dep
 #-------------------------------------------------------------------------------
 # Check if module.mk is present for the library
 
-%.mk: build/module.tpl
+%.mk: build/module.tpl build/header.tpl build/clean.tpl share/alibtool
 ifndef ALIQUIET
 	@echo "***** Creating $@ file *****";
 endif
