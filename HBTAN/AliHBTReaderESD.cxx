@@ -327,7 +327,7 @@ Int_t AliHBTReaderESD::ReadESD(AliESD* esd)
      pos[1] -= vertexpos[1];
      pos[2] -= vertexpos[2];
 
-     Int_t charge = (extp[4] > 0)?-1:1;//if curvature=-charg/Pt is positive charge is negative
+     Int_t charge = (extp[4] > 0)?1:-1;//if curvature=charg/Pt is positive charge is positive
 
      //Particle from kinematics
      AliHBTParticle* particle = 0;
@@ -451,6 +451,8 @@ Int_t AliHBTReaderESD::ReadESD(AliESD* esd)
          {
            Info("ReadNext","\n\nAdding Particle with incarnation %d",pdgcode);
            track->Print();
+           if (particle) particle->Print();
+           Info("ReadNext","\n----------------------------------------------\n");
          }
       }//for (Int_t s = 0; s<kNSpecies; s++)
 
