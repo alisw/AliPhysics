@@ -208,9 +208,9 @@ G4RWTPtrOrderedVector<G4LogicalVolume> TG4VisManager::GetLVList(G4String name)
  G4LogicalVolume* pLV = 0; 
  if (pLVStore)
  {
-   for (G4int i=0; i<pLVStore->entries(); i++)
+   for (G4int i=0; i<pLVStore->size(); i++)
    {
-     pLV = pLVStore->at(i);  
+     pLV = (*pLVStore)[i];  
      if (CaseInsensitiveEqual(name,pLV->GetName())) 
      {
        if (!lvList.contains(pLV)) lvList.append(pLV);
@@ -222,9 +222,9 @@ G4RWTPtrOrderedVector<G4LogicalVolume> TG4VisManager::GetLVList(G4String name)
  G4VPhysicalVolume* pPV = 0;
  if (pPVStore) 
  {
-   for (G4int i=0; i<pPVStore->entries(); i++)
+   for (G4int i=0; i<pPVStore->size(); i++)
    {
-     pPV = pPVStore->at(i); 
+     pPV = (*pPVStore)[i]; 
      if (CaseInsensitiveEqual(name,pPV->GetName())) 
      {
        pLV = pPV->GetLogicalVolume();
@@ -249,9 +249,9 @@ G4RWTPtrOrderedVector<G4VPhysicalVolume> TG4VisManager::GetPVList(G4String name)
     return pvList;
   }
   G4VPhysicalVolume* pPV = 0;
-  for (G4int i=0; i<pPVStore->entries(); i++)
+  for (G4int i=0; i<pPVStore->size(); i++)
   {
-    pPV = pPVStore->at(i);
+    pPV = (*pPVStore)[i];
     if (CaseInsensitiveEqual(name,pPV->GetName()))
     {
       if (!pvList.contains(pPV)) pvList.append(pPV);
@@ -321,9 +321,9 @@ G4bool TG4VisManager::IsSharedVisAttributes(const G4LogicalVolume* pLV)
   G4LogicalVolume* pLVCurrent = 0;
   const G4VisAttributes* pVisAtt = pLV->GetVisAttributes();
   if (!pVisAtt) return false;
-  for (G4int i=0; i<pLVStore->entries(); i++)
+  for (G4int i=0; i<pLVStore->size(); i++)
   {
-    pLVCurrent = pLVStore->at(i);
+    pLVCurrent = (*pLVStore)[i];
     if (pLVCurrent != pLV)
     {
       if (pLVCurrent->GetVisAttributes() == pVisAtt) 
@@ -566,9 +566,9 @@ void TG4VisManager::SetColors()
     return;
   }
   // parse the LV tree and set colours according to material density
-  for (G4int i=0; i<pLVStore->entries(); i++)
+  for (G4int i=0; i<pLVStore->size(); i++)
   {
-    pLV = pLVStore->at(i);
+    pLV = (*pLVStore)[i];
 //    G4cout << "VOLUME : " << pLV->GetName() << G4endl;
     const G4Material* pMaterial = pLV->GetMaterial();
     const G4State kState = pMaterial->GetState();
@@ -704,9 +704,9 @@ void TG4VisManager::Gsatt(const char* name, const char* att, Int_t val)
  if (doForAll)
  {
      G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
-     for (G4int i=0; i<pLVStore->entries(); i++)
+     for (G4int i=0; i<pLVStore->size(); i++)
      {
-         lv = pLVStore->at(i);
+         lv = (*pLVStore)[i];
 	 SetG4Attribute(lv,attribute,ival);
      }
      return;
