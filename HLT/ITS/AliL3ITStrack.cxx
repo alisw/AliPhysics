@@ -29,8 +29,8 @@
 ClassImp(AliL3ITStrack)
 
 //____________________________________________________________________________
-AliL3ITStrack::AliL3ITStrack():AliITStrackV2(),
-  fESDHLTtrack(0)
+AliL3ITStrack::AliL3ITStrack()
+              :AliITStrackV2(),fESDHLTtrack(0)
 {
   //------------------------------------------------------------------
   //Constructor
@@ -38,7 +38,9 @@ AliL3ITStrack::AliL3ITStrack():AliITStrackV2(),
 }
 
 //____________________________________________________________________________
-AliL3ITStrack::AliL3ITStrack(const AliL3ITStrack& t) : AliITStrackV2(t) {
+AliL3ITStrack::AliL3ITStrack(const AliL3ITStrack& t) 
+              : AliITStrackV2(t), fESDHLTtrack(0)
+{
   //------------------------------------------------------------------
   //Copy constructor
   //------------------------------------------------------------------
@@ -46,7 +48,25 @@ AliL3ITStrack::AliL3ITStrack(const AliL3ITStrack& t) : AliITStrackV2(t) {
 }
 
 //____________________________________________________________________________
-AliL3ITStrack::AliL3ITStrack(AliESDHLTtrack& t, Double_t zvertex) throw (const Char_t *) {
+AliL3ITStrack::AliL3ITStrack(AliESDHLTtrack& t, Double_t zvertex) throw (const Char_t *) 
+              : AliITStrackV2(), fESDHLTtrack(0) 
+{
+  // The method constructs an AliL3ITStrack object from an ESD HLT track
+ 
+  fESDHLTtrack=&t;
+  Set(t,zvertex);
+}
+
+//____________________________________________________________________________
+AliL3ITStrack::AliL3ITStrack(const AliESDHLTtrack& t, Double_t zvertex) throw (const Char_t *) 
+              : AliITStrackV2(), fESDHLTtrack(0) 
+{
+  // The method constructs an AliL3ITStrack object from an ESD HLT track
+  Set(t,zvertex);
+}
+
+//____________________________________________________________________________
+void AliL3ITStrack::Set(const AliESDHLTtrack& t, Double_t zvertex) throw (const Char_t *) {
   // The method constructs an AliL3ITStrack object from an ESD HLT track
  
   SetChi2(0.);
@@ -124,11 +144,9 @@ AliL3ITStrack::AliL3ITStrack(AliESDHLTtrack& t, Double_t zvertex) throw (const C
   fC30=0;   fC31=0;   fC32=0;
   fC40=0;   fC41=0;   fC42=0;   fC43=0;
 
-  fESDHLTtrack=&t;
   fESDtrack=0;
 
   SetFakeRatio(0.);
-
 }
 
 //_____________________________________________________________________________
@@ -144,4 +162,24 @@ Int_t AliL3ITStrack::Compare(const TObject *o) const {
   if (c>co) return 1;
   else if (c<co) return -1;
   return 0;
+}
+
+Bool_t AliL3ITStrack::GetPxPyPzAt(Double_t x,Double_t *p) const {
+  //---------------------------------------------------------------------
+  // This function returns the global track momentum components
+  // at the position "x" using the helix track approximation
+  //---------------------------------------------------------------------
+  p[0]=fP4;
+  p[1]=fP2+(x-fX)*fP4/AliKalmanTrack::GetConvConst(); 
+  p[2]=fP3;
+
+  if (TMath::Abs(p[0])<=0)        return kFALSE;
+  if (TMath::Abs(p[1])> 0.999999) return kFALSE;
+
+  Double_t pt=1./TMath::Abs(p[0]);
+  Double_t cs=TMath::Cos(fAlpha), sn=TMath::Sin(fAlpha);
+  Double_t r=TMath::Sqrt(1 - p[1]*p[1]);
+  p[0]=pt*(r*cs - p[1]*sn); p[1]=pt*(p[1]*cs + r*sn); p[2]=pt*p[2];
+
+  return kTRUE;
 }
