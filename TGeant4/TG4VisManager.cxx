@@ -349,8 +349,11 @@ void TG4VisManager::SetG4Attribute(G4LogicalVolume* const lv,
  G4VisAttributes* newVisAttributes;
  if (!visAttributes)
    newVisAttributes    = new G4VisAttributes(false);
- else
-   newVisAttributes    = new G4VisAttributes(visAttributes);
+ else {
+   G4bool visibility = visAttributes->IsVisible();
+   G4Colour colour   = visAttributes->GetColour();
+   newVisAttributes = new G4VisAttributes(visibility, colour);
+ }
 
  const G4int kAbsVal = abs(val);	// the functionality is given by the abs value
 
