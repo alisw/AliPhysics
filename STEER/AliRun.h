@@ -6,7 +6,7 @@
 #include <TStopwatch.h>
 #include <TTree.h>
 #include <TGeometry.h>
-#include "AliModule.h"
+#include "AliDetector.h"
 #include "AliHeader.h"
 #include "AliMagF.h"
 #include "AliMC.h"
