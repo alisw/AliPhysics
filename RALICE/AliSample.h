@@ -1,5 +1,10 @@
 #ifndef ALISAMPLE_H
 #define ALISAMPLE_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////////
 // Class AliSample
 // Perform statistics on various multi-dimensional data samples

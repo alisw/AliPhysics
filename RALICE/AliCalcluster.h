@@ -1,5 +1,10 @@
 #ifndef ALICALCLUSTER_H
 #define ALICALCLUSTER_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////////
 // Class AliCalcluster
 // Description of a cluster of calorimeter modules.

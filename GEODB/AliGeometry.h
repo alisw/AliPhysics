@@ -1,3 +1,10 @@
+#ifndef ALIGEOMETRY_H
+#define ALIGEOMETRY_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 // -*- C++ -*-
 // 
 // 1999/01/05
@@ -13,9 +20,6 @@
 // The Geometry class holds the detector,s geometry. Essentially it has a pointer
 // to the Top Level AliGNode and an array of pointers to rules that specify the
 // complete desgn below that node.
-
-#ifndef ALIGEOMETRY_H
-#define ALIGEOMETRY_H
 
 #include <TFile.h>
 #include <TNamed.h>

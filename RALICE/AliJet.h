@@ -1,5 +1,10 @@
 #ifndef ALIJET_H
 #define ALIJET_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////////
 // Class AliJet
 // Creation and investigation of a jet of particle tracks.

@@ -1,5 +1,9 @@
 #ifndef MUONSegResV0_H
 #define MUONSegResV0_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
 
 #include "AliMUONSegRes.h"
 class AliMUONchamber;

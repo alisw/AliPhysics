@@ -1,5 +1,10 @@
 #ifndef ALIRANDOM_H
 #define ALIRANDOM_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////////
 // Class AliRandom
 // Generate universal random numbers on all common machines.

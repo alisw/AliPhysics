@@ -1,3 +1,4 @@
+#ifdef __CINT__
 ////////////////////////////////////////////////////////////////////////////////
 // All classes of RALICE
 // This class list is used to create the RALICE dictionary via rootcint
@@ -7,8 +8,11 @@
 //
 //--- NvE 12-apr-1998 UU-SAP Utrecht
 ////////////////////////////////////////////////////////////////////////////////
- 
-#ifdef __CINT__
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
  #pragma link off all globals;
  #pragma link off all classes;
  #pragma link off all functions;

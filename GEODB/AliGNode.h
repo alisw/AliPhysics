@@ -1,5 +1,9 @@
 #ifndef ALIGNODE_H
 #define ALIGNODE_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
 
 #include <TObjArray.h>
 #include <TNamed.h>

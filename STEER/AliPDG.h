@@ -1,6 +1,10 @@
 #ifndef ALIPDG_H 
 #define ALIPDG_H 
- 
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 typedef enum {kRootino=0,kDown=1,kDownBar=-1,kUp=2,kUpBar=-2,kStrange=3,
 	  kStrangeBar=-3,kCharm=4,kCharmBar=-4,kBottom=5,
 	  kBottomBar=-5,kTop=6,kTopBar=-6,kGluon=21,kPythia92=92,

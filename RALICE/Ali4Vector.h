@@ -1,5 +1,10 @@
 #ifndef ALI4VECTOR_H
 #define ALI4VECTOR_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////////
 // Class Ali4Vector
 // Handling of Lorentz 4-vectors in various reference frames.

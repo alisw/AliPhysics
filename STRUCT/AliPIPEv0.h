@@ -1,5 +1,10 @@
 #ifndef PIPEv0_H
 #define PIPEv0_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 /////////////////////////////////////////////////////////
 //  Manager and class for detector: PIPE  version 0    //
 /////////////////////////////////////////////////////////

@@ -1,5 +1,10 @@
 #ifndef ALIMATH_H
 #define ALIMATH_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////////
 // Class AliMath
 // Various mathematical tools which may be very convenient while

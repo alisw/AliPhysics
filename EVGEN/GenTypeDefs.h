@@ -1,5 +1,10 @@
 #ifndef _GenTypeDefs_H
 #define _GenTypeDefs_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 typedef enum {pion_p, kaon_p, phi_p, jpsi_p, upsilon_p, charm_p, beauty_p}
 Param_t;
 

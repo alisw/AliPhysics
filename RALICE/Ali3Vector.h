@@ -1,5 +1,10 @@
 #ifndef ALI3VECTOR_H
 #define ALI3VECTOR_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////////
 // Class Ali3Vector
 // Handling of 3-vectors in various reference frames.

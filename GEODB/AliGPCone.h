@@ -1,5 +1,9 @@
 #ifndef AliGPCone_H
 #define AliGPCone_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
 
 #include "AliGTube.h"
 const Int_t kDiv = 20;               //default number of divisions

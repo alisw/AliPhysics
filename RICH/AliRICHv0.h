@@ -1,5 +1,10 @@
 #ifndef RICHv0_H
 #define RICHv0_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 /////////////////////////////////////////////////////////
 //  Manager and hits classes for set:RICH version 0    //
 /////////////////////////////////////////////////////////

@@ -1,5 +1,10 @@
 #ifndef ALIPOSITION_H
 #define ALIPOSITION_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////////
 // Class AliPosition
 // Handling of positions in various reference frames.

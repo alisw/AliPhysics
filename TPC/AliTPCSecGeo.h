@@ -1,5 +1,9 @@
 #ifndef TPCSecGeo_H
+#define TPCSecGeo_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
 
 //Some things from the old AliTPCSecGeo
 
