@@ -8,25 +8,33 @@ void AnaJets(Int_t evNumber1=0, Int_t evNumber2=0)
     }
 // Connect the Root Galice file containing Geometry, Kine and Hits
     
-    TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
-    
+    TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("jets.root");
+    TFile *source = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
+
     if (!file) {
 	printf("\n Creating galice.root \n");
-	file = new TFile("galice.root");
+	file = new TFile("jets.root");
+    } else {
+	printf("\n galice.root found in file list");
+    }
+
+ if (!source) {
+	printf("\n Creating galice.root \n");
+	source = new TFile("galice.root");
     } else {
 	printf("\n galice.root found in file list");
     }
 // Get AliRun object from file or create it if not on file
-    if (!gAlice) {
-	gAlice = (AliRun*)(file->Get("gAlice"));
+ //   if (!gAlice) {
+	gAlice = (AliRun*)(source->Get("gAlice"));
 	if (gAlice) printf("AliRun object found on file\n");
 	if (!gAlice) {
 	    printf("\n create new gAlice object");
 	    gAlice = new AliRun("gAlice","Alice test program");
 	}
-    }
+	// }
 // Book histos    
-    TH1F *eH   = new TH1F("eH","Energy",    150,  0.0, 150.);
+    TH1F *eH   = new TH1F("eH","Energy",    200,  0.0, 200.);
     TH1F *etaH = new TH1F("eEta","Eta",     180, -0.9,  0.9);
     TH1F *phiH = new TH1F("ePhi","Phi",      62, -3.1,  3.1);
     TH1F *tH   = new TH1F("tH","n tracks",   30,  0.5, 29.5);
@@ -44,7 +52,8 @@ void AnaJets(Int_t evNumber1=0, Int_t evNumber2=0)
 	Int_t nbytes     = 0;
 	AliEMCAL *pEMCAL  = (AliEMCAL*) gAlice->GetModule("EMCAL");
 	if (pEMCAL) {
-	    TTree *TR = gAlice->TreeR();
+	  TTree *TR =(TTree *)(file->Get("TreeR0"));
+	 
 	    Int_t nent=TR->GetEntries();
 	    TR->SetBranchAddress("EMCALJets", &jets);
 	    nbytes += TR->GetEntry(0);
@@ -67,7 +76,7 @@ void AnaJets(Int_t evNumber1=0, Int_t evNumber2=0)
 		mJet->TrackList(ptT, etaT, phiT);
 		for (Int_t it = 0; it < mJet->NTracks(); it++)
 		{
-		    printf("\n Track: %5d pT %8.3f eta %8.3f phi %8.3f",
+		    printf(" Track: %5d pT %8.3f eta %8.3f phi %8.3f \n",
 			   it, ptT[it], etaT[it], phiT[it]);
 		    ptH->Fill(ptT[it]);
 		    Float_t dPhi = phiT[it]-mJet->Phi();
