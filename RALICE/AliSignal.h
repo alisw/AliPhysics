@@ -40,17 +40,18 @@ class AliSignal : public TNamed,public AliPosition,public AliAttrib
   virtual void Data(TString f="car") const;                     // Print all signal info for coord. frame f
   virtual void List(Int_t j=0) const;                           // Print signal info for the j-th (all) slot(s)
   virtual void List(TString name) const;                        // Print signal info for the name-specified slot
+  void ListWaveform(Int_t j=0) const;                           // Print info for the j-th (all) waveform(s)
   Int_t GetNvalues() const;                                     // Provide the number of signal values
   Int_t GetNerrors() const;                                     // Provide the number of specified errors
   Int_t GetNwaveforms() const;                                  // Provide the number of specified waveforms
-  void SetWaveform(TH1F* waveform,Int_t j=1);                   // Set the waveform histogram for the j-th slot
-  void SetWaveform(TH1F* waveform,TString name);                // Set the waveform histo for the name-specified slot
-  TH1F* GetWaveform(Int_t j=1) const;                           // Pointer to the waveform histo of the j-th slot
-  TH1F* GetWaveform(TString name) const;                        // Pointer to the waveform of the name-specified slot
-  void ResetWaveform(Int_t j=1);                                // Reset the waveform histo of the j-th slot
-  void ResetWaveform(TString name);                             // Reset the waveform histo of the name-specified slot
-  void DeleteWaveform(Int_t j=1);                               // Delete waveform histo of the j-th slot
-  void DeleteWaveform(TString name);                            // Delete waveform histo of the name-specified slot
+  void SetWaveform(TH1F* waveform,Int_t j=1);                   // Set the histogram for the j-th waveform
+  TH1F* GetWaveform(Int_t j=1) const;                           // Pointer to the histo of the j-th waveform
+  TH1F* GetWaveform(TString name) const;                        // Pointer to the waveform with the specified name
+  Int_t GetWaveformIndex(TString name) const;                   // Index of the waveform with the specified name
+  void ResetWaveform(Int_t j=1);                                // Reset the histo of the j-th waveform
+  void ResetWaveform(TString name);                             // Reset the waveform histo with the specified name
+  void DeleteWaveform(Int_t j=1);                               // Delete histo of the j-th waveform
+  void DeleteWaveform(TString name);                            // Delete waveform histo with the specified name
   Int_t GetNlinks(TObject* obj=0,Int_t j=0) const;              // Number of links for the specified object
   Int_t GetNlinks(TObject* obj,TString name) const;             // Number of links for the specified object
   void SetLink(TObject* obj,Int_t j=1,Int_t k=1);               // Link object to the j-th slot at position k
@@ -79,6 +80,6 @@ class AliSignal : public TNamed,public AliPosition,public AliAttrib
   AliObjMatrix* fLinks;                        // Pointers of objects related to the various slots
   TObject* fDevice;                            // Pointer to the device that owns this signal
 
- ClassDef(AliSignal,13) // Generic handling of (extrapolated) detector signals.
+ ClassDef(AliSignal,14) // Generic handling of (extrapolated) detector signals.
 };
 #endif

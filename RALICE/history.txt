@@ -543,3 +543,8 @@
                 Memberfunction GetIdHit introduced in AliDevice and AliEvent and AliJet::GetIdTrack
                 optimised for speed.
                 Memberfunction GetIdDevice introduced in AliEvent.
+27-nov-2004 NvE Protection for j<1 introduced in AliSignal::SetWaveform().
+                The waveforms in AliSignal have now become completely decoupled from signal slots,
+                so support for setting waveforms by specifying a slotname has been removed. 
+                Printout info in AliSignal::Data() and AliSignal::List() improved and memberfunctions
+                ListWaveform() and GetWaveformIndex() introduced in AliSignal.

@@ -565,6 +565,10 @@ void AliSignal::Data(TString f) const
   cout << endl;
  }
 
+ // Provide an overview of the stored waveforms
+ ListWaveform(-1);
+
+ // Provide an overview of all the data and attribute slots
  List(-1);
 } 
 ///////////////////////////////////////////////////////////////////////////
@@ -587,20 +591,27 @@ void AliSignal::List(Int_t j) const
   const char* name=GetName();
   const char* title=GetTitle();
 
-  cout << " *" << ClassName() << "::Data*";
+  cout << " *" << ClassName() << "::Data* Id :" << GetUniqueID();
   if (strlen(name))  cout << " Name : " << name;
   if (strlen(title)) cout << " Title : " << title;
   cout << endl;
+  if (fDevice)
+  {
+   const char* devname=fDevice->GetName();
+   const char* devtitle=fDevice->GetTitle();
+   cout << "   Owned by device : " << fDevice->ClassName();
+   if (strlen(devname))  cout << " Name : " << devname;
+   if (strlen(devtitle)) cout << " Title : " << devtitle;
+   cout << endl;
+  }
  }
 
  Int_t nvalues=GetNvalues();
  Int_t nerrors=GetNerrors();
- Int_t nwforms=GetNwaveforms();
  Int_t nlinkslots=0;
  if (fLinks) nlinkslots=fLinks->GetMaxColumn();
  Int_t n=nvalues;
  if (nerrors>n) n=nerrors;
- if (nwforms>n) n=nwforms;
  if (nlinkslots>n) n=nlinkslots;
 
  TObject* obj=0;
@@ -617,16 +628,6 @@ void AliSignal::List(Int_t j) const
    if (i<=nerrors) cout << " error : " << GetSignalError(i);
    AliAttrib::List(i);
    cout << endl;
-   obj=GetWaveform(i);
-   if (obj)
-   {
-    const char* wfname=obj->GetName();
-    const char* wftitle=obj->GetTitle();
-    cout << "    Waveform : " << obj->ClassName();
-    if (strlen(wfname))  cout << " Name : " << wfname;
-    if (strlen(wftitle)) cout << " Title : " << wftitle;
-    cout << endl;
-   }
    obj=0;
    nrefs=GetIndices(obj,i,posarr);
    for (Int_t k=0; k<nrefs; k++)
@@ -657,16 +658,6 @@ void AliSignal::List(Int_t j) const
    if (j<=nerrors) cout << " error : " << GetSignalError(j);
    AliAttrib::List(j);
    cout << endl;
-   obj=GetWaveform(j);
-   if (obj)
-   {
-    const char* wfnamej=obj->GetName();
-    const char* wftitlej=obj->GetTitle();
-    cout << "    Waveform : " << obj->ClassName();
-    if (strlen(wfnamej))  cout << " Name : " << wfnamej;
-    if (strlen(wftitlej)) cout << " Title : " << wftitlej;
-    cout << endl;
-   }
    obj=0;
    nrefs=GetIndices(obj,j,posarr);
    for (Int_t kj=0; kj<nrefs; kj++)
@@ -704,6 +695,77 @@ void AliSignal::List(TString name) const
  if (j>0) List(j);
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliSignal::ListWaveform(Int_t j) const
+{
+// Provide information for the j-th waveform.
+// The first waveform is at j=1.
+// In case j=0 (default) the info of all waveforms will be listed.
+// In case j=-1 the info of all waveforms will be listed, but the header
+// information will be suppressed.
+
+ if (j<-1) 
+ {
+  cout << " *AliSignal::ListWaveform* Invalid argument j = " << j << endl;
+  return;
+ }
+
+ if (j != -1)
+ {
+  const char* name=GetName();
+  const char* title=GetTitle();
+
+  cout << " *" << ClassName() << "::Data* Id :" << GetUniqueID();
+  if (strlen(name))  cout << " Name : " << name;
+  if (strlen(title)) cout << " Title : " << title;
+  cout << endl;
+  if (fDevice)
+  {
+   const char* devname=fDevice->GetName();
+   const char* devtitle=fDevice->GetTitle();
+   cout << "   Owned by device : " << fDevice->ClassName();
+   if (strlen(devname))  cout << " Name : " << devname;
+   if (strlen(devtitle)) cout << " Title : " << devtitle;
+   cout << endl;
+  }
+ }
+
+ Int_t n=GetNwaveforms();
+ TObject* obj=0;
+
+ if (j<=0)
+ {
+  for (Int_t i=1; i<=n; i++)
+  {
+   obj=GetWaveform(i);
+   if (obj)
+   {
+    const char* wfname=obj->GetName();
+    const char* wftitle=obj->GetTitle();
+    cout << "    Waveform " << i << " : " << obj->ClassName();
+    if (strlen(wfname))  cout << " Name : " << wfname;
+    if (strlen(wftitle)) cout << " Title : " << wftitle;
+    cout << endl;
+   }
+  }
+ }
+ else
+ {
+  if (j<=n)
+  {
+   obj=GetWaveform(j);
+   if (obj)
+   {
+    const char* wfnamej=obj->GetName();
+    const char* wftitlej=obj->GetTitle();
+    cout << "    Waveform " << j << " : " << obj->ClassName();
+    if (strlen(wfnamej))  cout << " Name : " << wfnamej;
+    if (strlen(wftitlej)) cout << " Title : " << wftitlej;
+    cout << endl;
+   }
+  }
+ }
+}
+///////////////////////////////////////////////////////////////////////////
 Int_t AliSignal::GetNvalues() const
 {
 // Provide the number of values for this signal.
@@ -730,7 +792,7 @@ Int_t AliSignal::GetNwaveforms() const
 ///////////////////////////////////////////////////////////////////////////
 TH1F* AliSignal::GetWaveform(Int_t j) const
 {
-// Provide pointer to the waveform histogram of the j-th slot.
+// Provide pointer to the j-th waveform histogram.
  TH1F* waveform=0;
  if (j <= GetNwaveforms()) waveform=(TH1F*)fWaveforms->At(j-1);
  return waveform;
@@ -738,30 +800,50 @@ TH1F* AliSignal::GetWaveform(Int_t j) const
 ///////////////////////////////////////////////////////////////////////////
 TH1F* AliSignal::GetWaveform(TString name) const
 {
-// Provide pointer to the waveform histogram of the name-specified slot.
-//
-// This procedure involves a slot-index search based on the specified name
-// at each invokation. This may become slow in case many slots have been
-// defined and/or when this procedure is invoked many times.
-// In such cases it is preferable to use indexed addressing in the user code
-// either directly or via a few invokations of GetSlotIndex().
-
- Int_t j=GetSlotIndex(name);
- TH1F* waveform=0;
- if (j>0) waveform=GetWaveform(j);
- return waveform;
+// Provide pointer to the waveform histogram with the specified name.
+// In case no match is found, zero is returned.
+ Int_t n=GetNwaveforms();
+ TString str;
+ for (Int_t i=1; i<=n; i++)
+ {
+  TH1F* waveform=GetWaveform(i);
+  if (waveform)
+  {
+   str=waveform->GetName();
+   if (str == name) return waveform;
+  }
+ }
+ return 0; // No match found
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliSignal::GetWaveformIndex(TString name) const
+{
+// Provide index to the waveform histogram with the specified name.
+// In case no match is found, zero is returned.
+ Int_t n=GetNwaveforms();
+ TString str;
+ for (Int_t i=1; i<=n; i++)
+ {
+  TH1F* waveform=GetWaveform(i);
+  if (waveform)
+  {
+   str=waveform->GetName();
+   if (str == name) return i;
+  }
+ }
+ return 0; // No match found
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::SetWaveform(TH1F* waveform,Int_t j)
 {
-// Set the 1D waveform histogram for the j-th slot.
+// Set the 1D waveform histogram for the j-th waveform.
 //
 // Notes :
-//  The waveform of the first signal value is at j=1.
+//  The first waveform position at j=1.
 //  j=1 is the default value.
 //
 // In case the value of the index j exceeds the maximum number of reserved
-// slots for the waveforms, the number of reserved slots for the waveforms
+// positions for the waveforms, the number of reserved positions for the waveforms
 // is increased automatically.
 //
 // In case the histo pointer argument has the same value as the current waveform
@@ -774,6 +856,8 @@ void AliSignal::SetWaveform(TH1F* waveform,Int_t j)
 // In all other cases the current waveform histogram is deleted and a new
 // copy of the input histogram is created which becomes the current waveform
 // histogram.
+
+ if (j<1) return;
 
  if (!fWaveforms)
  {
@@ -800,26 +884,12 @@ void AliSignal::SetWaveform(TH1F* waveform,Int_t j)
  } 
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliSignal::SetWaveform(TH1F* waveform,TString name)
-{
-// Set the 1D waveform histogram corresponding for the name-specified slot.
-//
-// This procedure involves a slot-index search based on the specified name
-// at each invokation. This may become slow in case many slots have been
-// defined and/or when this procedure is invoked many times.
-// In such cases it is preferable to use indexed addressing in the user code
-// either directly or via a few invokations of GetSlotIndex().
-
- Int_t j=GetSlotIndex(name);
- if (j>0) SetWaveform(waveform,j);
-}
-///////////////////////////////////////////////////////////////////////////
 void AliSignal::ResetWaveform(Int_t j)
 {
-// Reset the waveform of the j-th (default j=1) slot.
+// Reset the histogram of the j-th (default j=1) waveform.
 // This memberfunction invokes TH1F::Reset() for the corresponding waveform(s).
 // To actually delete the histograms from memory, use DeleteWaveform().
-// Notes : The first signal value is at j=1.
+// Notes : The first position is at j=1.
 //         j=0 ==> All waveforms will be reset.
  
  if (!fWaveforms) return;
@@ -851,22 +921,15 @@ void AliSignal::ResetWaveform(Int_t j)
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::ResetWaveform(TString name)
 {
-// Reset the waveform of the name-specified slot.
-//
-// This procedure involves a slot-index search based on the specified name
-// at each invokation. This may become slow in case many slots have been
-// defined and/or when this procedure is invoked many times.
-// In such cases it is preferable to use indexed addressing in the user code
-// either directly or via a few invokations of GetSlotIndex().
-
- Int_t j=GetSlotIndex(name);
+// Reset the waveform with the specified name.
+ Int_t j=GetWaveformIndex(name);
  if (j>0) ResetWaveform(j);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::DeleteWaveform(Int_t j)
 {
-// Delete the waveform of the j-th (default j=1) slot.
-// Notes : The first signal value is at j=1.
+// Delete the histogram of the j-th (default j=1) waveform.
+// Notes : The first position is at j=1.
 //         j=0 ==> All waveforms will be deleted.
  
  if (!fWaveforms) return;
@@ -899,15 +962,8 @@ void AliSignal::DeleteWaveform(Int_t j)
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::DeleteWaveform(TString name)
 {
-// Delete the waveform of the name-specified slot.
-//
-// This procedure involves a slot-index search based on the specified name
-// at each invokation. This may become slow in case many slots have been
-// defined and/or when this procedure is invoked many times.
-// In such cases it is preferable to use indexed addressing in the user code
-// either directly or via a few invokations of GetSlotIndex().
-
- Int_t j=GetSlotIndex(name);
+// Delete the waveform with the specified name.
+ Int_t j=GetWaveformIndex(name);
  if (j>0) DeleteWaveform(j);
 }
 ///////////////////////////////////////////////////////////////////////////
