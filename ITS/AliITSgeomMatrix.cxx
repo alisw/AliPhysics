@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.13  2002/01/28 21:49:19  nilsen
+Fixed a logical bug in functions GtoLPositionError, LtoGPositionError,
+GtoLPositionErrorTracking, and LtoGPositionErrorTracking.
+
 Revision 1.12  2001/10/12 22:07:20  nilsen
 A patch for C++ io manipulation functions so that they will work both
 with GNU gcc 2.96 and GNU gcc 3.01 compilers. Needs to be tested with
@@ -695,7 +699,11 @@ void AliITSgeomMatrix::Print(ostream *os){
     Int_t fmt;
 #endif
 #else
+#if defined __ICC
+    ios::fmtflags fmt;
+#else
     Int_t fmt;
+#endif
 #endif
 
     fmt = os->setf(ios::scientific);  // set scientific floating point output

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2002/03/09 18:35:35  nilsen
+Added functions to print out Hit data members.
+
 Revision 1.12  2002/03/08 16:05:05  nilsen
 Standeard io streamers added to make debugging et al. easier.
 
@@ -486,7 +489,11 @@ void AliITShit::Print(ostream *os){
     Int_t fmt;
 #endif
 #else
+#if defined __ICC
+    ios::fmtflags fmt;
+#else
     Int_t fmt;
+#endif
 #endif
  
     fmt = os->setf(ios::scientific);  // set scientific floating point output

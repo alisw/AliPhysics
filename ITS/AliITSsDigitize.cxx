@@ -15,7 +15,12 @@
  
 /*
 $Log$
+Revision 1.1  2002/03/28 16:25:26  nilsen
+New TTask method for creating SDigits from Hits.
+
 */
+
+#include <iostream.h>
  
 #include <TROOT.h>
 #include <TFile.h>

@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.15  2001/11/19 16:17:03  nilsen
+Applyed fixes to bugs found by Rene Brun. With many thanks. Some additonal
+bugs found by Rene require more work to fix. Will be fixed soon.
+
 Revision 1.14  2001/10/19 21:32:35  nilsen
 Minor changes to remove compliation warning on gcc 2.92.2 compiler, and
 cleanded up a little bit of code.
@@ -258,7 +262,11 @@ void AliITSgeomSDD::Print(ostream *os) const {
     Int_t fmt;
 #endif
 #else
+#if defined __ICC
+    ios::fmtflags fmt;
+#else
     Int_t fmt;
+#endif
 #endif
 
     fmt = os->setf(ios::scientific);  // set scientific floating point output
@@ -323,6 +331,10 @@ istream &operator>>(istream &is,AliITSgeomSDD &r){
 //======================================================================
 /*
 $Log$
+Revision 1.15  2001/11/19 16:17:03  nilsen
+Applyed fixes to bugs found by Rene Brun. With many thanks. Some additonal
+bugs found by Rene require more work to fix. Will be fixed soon.
+
 Revision 1.14  2001/10/19 21:32:35  nilsen
 Minor changes to remove compliation warning on gcc 2.92.2 compiler, and
 cleanded up a little bit of code.
@@ -797,6 +809,10 @@ istream &operator>>(istream &is,AliITSgeomSDD256 &r){
 //======================================================================
 /*
 $Log$
+Revision 1.15  2001/11/19 16:17:03  nilsen
+Applyed fixes to bugs found by Rene Brun. With many thanks. Some additonal
+bugs found by Rene require more work to fix. Will be fixed soon.
+
 Revision 1.14  2001/10/19 21:32:35  nilsen
 Minor changes to remove compliation warning on gcc 2.92.2 compiler, and
 cleanded up a little bit of code.

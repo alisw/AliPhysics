@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.14  2001/11/19 16:17:03  nilsen
+Applyed fixes to bugs found by Rene Brun. With many thanks. Some additonal
+bugs found by Rene require more work to fix. Will be fixed soon.
+
 Revision 1.13  2001/10/12 22:07:20  nilsen
 A patch for C++ io manipulation functions so that they will work both
 with GNU gcc 2.96 and GNU gcc 3.01 compilers. Needs to be tested with
@@ -227,7 +231,11 @@ void AliITSgeomSSD::Print(ostream *os) const {
     Int_t fmt;
 #endif
 #else
+#if defined __ICC
+    ios::fmtflags fmt;
+#else
     Int_t fmt;
+#endif
 #endif
 
     fmt = os->setf(ios::scientific);  // set scientific floating point output
@@ -289,6 +297,10 @@ istream &operator>>(istream &is,AliITSgeomSSD &r){
 //======================================================================
 /*
 $Log$
+Revision 1.14  2001/11/19 16:17:03  nilsen
+Applyed fixes to bugs found by Rene Brun. With many thanks. Some additonal
+bugs found by Rene require more work to fix. Will be fixed soon.
+
 Revision 1.13  2001/10/12 22:07:20  nilsen
 A patch for C++ io manipulation functions so that they will work both
 with GNU gcc 2.96 and GNU gcc 3.01 compilers. Needs to be tested with
@@ -369,6 +381,10 @@ istream &operator>>(istream &is,AliITSgeomSSD175 &r){
 //======================================================================
 /*
 $Log$
+Revision 1.14  2001/11/19 16:17:03  nilsen
+Applyed fixes to bugs found by Rene Brun. With many thanks. Some additonal
+bugs found by Rene require more work to fix. Will be fixed soon.
+
 Revision 1.13  2001/10/12 22:07:20  nilsen
 A patch for C++ io manipulation functions so that they will work both
 with GNU gcc 2.96 and GNU gcc 3.01 compilers. Needs to be tested with
@@ -458,6 +474,10 @@ istream &operator>>(istream &is,AliITSgeomSSD275and75 &r){
 //======================================================================
 /*
 $Log$
+Revision 1.14  2001/11/19 16:17:03  nilsen
+Applyed fixes to bugs found by Rene Brun. With many thanks. Some additonal
+bugs found by Rene require more work to fix. Will be fixed soon.
+
 Revision 1.13  2001/10/12 22:07:20  nilsen
 A patch for C++ io manipulation functions so that they will work both
 with GNU gcc 2.96 and GNU gcc 3.01 compilers. Needs to be tested with

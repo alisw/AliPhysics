@@ -49,6 +49,7 @@
 //
 //     "PROPER WEIGHTS":  (1+R^2)^2/(\sigma_x^2 + \sigma_y^2 + \sigma_MS^2)
 //
+#include <iostream.h>
 #include "AliITSRiemannFit.h"
 #include "AliRun.h"
 #include "TClonesArray.h"
