@@ -234,6 +234,8 @@ public AliRICHGeometry {
     virtual void   SetInnerFreonWidth(Float_t width)            {fInnerFreonWidth=width;}
     // Freon Thickness
     virtual void   SetFreonThickness(Float_t thickness)    {fFreonThickness=thickness;}
+    // Freon Thickness
+    virtual void   SetRadiatorToPads(Float_t distance)   {fRadiatorToPads=distance;}
 
     // Radiator thickness
     virtual Float_t  GetGapThickness(){return fGapThickness;}
@@ -255,6 +257,9 @@ public AliRICHGeometry {
     virtual Float_t  GetInnerFreonWidth(){return fInnerFreonWidth;}
     // Freon Thickness
     virtual Float_t  GetFreonThickness(){return fFreonThickness;}
+    // Get distance between radiator and pads
+    virtual Float_t  GetRadiatorToPads(){return fRadiatorToPads;}   
+    
 
     //Self-explainable:
 
@@ -268,6 +273,8 @@ public AliRICHGeometry {
     Float_t fInnerFreonLength;
     Float_t fInnerFreonWidth;
     Float_t fFreonThickness;
+    
+    Float_t fRadiatorToPads;      // Distance from radiator to pads
 
     ClassDef(AliRICHGeometryV0,1)
 };

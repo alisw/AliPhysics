@@ -179,6 +179,8 @@ public TObject {
     virtual void   SetInnerFreonWidth(Float_t t)            =0;
     // Quartz Thickness
     virtual void   SetFreonThickness(Float_t t)        =0;
+    // Distance between radiator and pads
+    virtual void   SetRadiatorToPads(Float_t)                =0;
 
     // Radiator thickness
     virtual Float_t  GetGapThickness()             =0;
@@ -200,6 +202,8 @@ public TObject {
     virtual Float_t  GetInnerFreonWidth()               =0;
     // Freon Thickness
     virtual Float_t  GetFreonThickness()                =0;
+    // Get distance between radiator and pads
+    virtual Float_t  GetRadiatorToPads()                =0;
 
     ClassDef(AliRICHGeometry,1)
 };
