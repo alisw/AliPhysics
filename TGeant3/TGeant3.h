@@ -431,7 +431,7 @@ public:
   const char* VolName(Int_t id) const;
   void  TrackPosition(Float_t *xyz) const;
   void  TrackMomentum(Float_t *xyz) const;  
-  Int_t Nvolumes() const;
+  Int_t NofVolumes() const;
   Float_t TrackTime() const;  
   Float_t TrackCharge() const;
   Float_t TrackMass() const;

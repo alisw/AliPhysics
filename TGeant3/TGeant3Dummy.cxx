@@ -29,7 +29,7 @@ void    TGeant3::GeomIter() {}
 Int_t   TGeant3::CurrentMaterial(Float_t &, Float_t &, Float_t &, Float_t &, Float_t &) const {return 0;}
 Int_t   TGeant3::NextVolUp(Text_t*, Int_t&) {return 0;}
 Int_t   TGeant3::CurrentVol(Text_t*, Int_t&) const {return 0;}
-Int_t   TGeant3::Nvolumes() const {return 0;}
+Int_t   TGeant3::NofVolumes() const {return 0;}
 Int_t   TGeant3::CurrentVolOff(Int_t, Text_t*, Int_t&) const {return 0;}
 void    TGeant3::TrackPosition(Float_t*) const {}
 void    TGeant3::TrackMomentum(Float_t*) const {}

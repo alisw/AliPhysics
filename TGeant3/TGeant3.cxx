@@ -607,7 +607,7 @@ Int_t TGeant3::VolId(Text_t *name) const
 }
 
 //_____________________________________________________________________________
-Int_t TGeant3::Nvolumes() const 
+Int_t TGeant3::NofVolumes() const 
 {
   //
   // Return total number of volumes in the geometry
