@@ -142,6 +142,8 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
     Float_t px=kesdtrack->GetPx();
     Float_t py=kesdtrack->GetPy();
     Float_t pz=kesdtrack->GetPz();
+    if(TMath::IsNaN(px)||TMath::IsNaN(py)||TMath::IsNaN(pz)) continue;
+    if(TMath::Abs(px)>1e3||TMath::Abs(py)>1e3||TMath::Abs(pz)>1e3) continue;
     //cout << px << " " << py << " " << pz <<  " " << TMath::Sqrt(px*px+py*py) << endl;
 
     if(0&&fTrackerType){
@@ -172,7 +174,7 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
       Double_t xc=0.,yc=0.,zc=0.;
       l3.GetClosestPoint(&v,xc,yc,zc);
       if(TMath::Abs(zc)>10.) continue;
-      l3.SetFirstPoint(xc,yc,zc);
+      l3.SetFirstPoint(0,0,0);
       //cout << "Pos: " << xc << " " << yc << " " << zc << endl;
       l3.UpdateToFirstPoint();
       px=l3.GetPx();
