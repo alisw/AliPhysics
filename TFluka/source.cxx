@@ -162,10 +162,11 @@ extern "C" {
     /* User dependent flag:*/
     STACK.louse[STACK.lstack] = 0;
     /* User dependent spare variables:*/
-    for (Int_t ispr = 0; ispr < mkbmx1; ispr++)
+    Int_t ispr = 0;
+    for (ispr = 0; ispr < mkbmx1; ispr++)
       STACK.sparek[STACK.lstack][ispr] = zerzer;
     /* User dependent spare flags:*/
-    for (Int_t ispr = 0; ispr < mkbmx2; ispr++)
+    for (ispr = 0; ispr < mkbmx2; ispr++)
 	STACK.ispark[STACK.lstack][ispr] = 0;
     /* Save the track number of the stack particle:*/
     STACK.ispark[STACK.lstack][mkbmx2-1] = STACK.lstack;
