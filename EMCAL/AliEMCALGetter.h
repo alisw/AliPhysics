@@ -21,6 +21,8 @@
 #include "TClonesArray.h"
 class TParticle ;
 class TTree ; 
+class TGraph ;
+class TF1 ;
 
 // --- Standard library ---
 
@@ -207,6 +209,8 @@ private:
 
 
   void ReadPrimaries(void) ;
+ 
+  void FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHighGain, TF1* signalF, Int_t & amp, Double_t & time) ; 
 
 private:
 

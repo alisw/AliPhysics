@@ -43,8 +43,10 @@
 #include <TFile.h>
 #include <TROOT.h>
 #include <TSystem.h>
-#include <TH1D.h>
 #include <TF1.h>
+#include <TGraph.h>
+//#include <TCanvas.h>
+//#include <TFrame.h>
 
 // --- Standard library ---
 
@@ -457,6 +459,110 @@ void AliEMCALGetter::ReadPrimaries()
 }
 
 //____________________________________________________________________________ 
+void AliEMCALGetter::FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHighGain, TF1* signalF, Int_t & amp, Double_t & time)
+{
+  // Fits the raw signal time distribution 
+
+  const Int_t kNoiseThreshold = 0 ;
+  Double_t timezero1 = 0., timezero2 = 0., timemax = 0. ;
+  Double_t signal = 0., signalmax = 0. ;       
+  Double_t energy = time = 0. ; 
+
+  if (lowGainFlag) {
+    timezero1 = timezero2 = signalmax = timemax = 0. ;
+    signalF->FixParameter(0, EMCAL()->GetRawFormatLowCharge()) ; 
+    signalF->FixParameter(1, EMCAL()->GetRawFormatLowGain()) ; 
+    Int_t index ; 
+    for (index = 0; index < EMCAL()->GetRawFormatTimeBins(); index++) {
+      gLowGain->GetPoint(index, time, signal) ; 
+      if (signal > kNoiseThreshold && timezero1 == 0.) 
+	timezero1 = time ;
+      if (signal <= kNoiseThreshold && timezero1 > 0. && timezero2 == 0.)
+	timezero2 = time ; 
+      if (signal > signalmax) {
+	signalmax = signal ; 
+	timemax   = time ; 
+      }
+    }
+    signalmax /= EMCAL()->RawResponseFunctionMax(EMCAL()->GetRawFormatLowCharge(), 
+						EMCAL()->GetRawFormatLowGain()) ;
+    if ( timezero1 + EMCAL()->GetRawFormatTimePeak() < EMCAL()->GetRawFormatTimeMax() * 0.4 ) { // else its noise 
+      signalF->SetParameter(2, signalmax) ; 
+      signalF->SetParameter(3, timezero1) ;    	    
+      gLowGain->Fit(signalF, "QRON", "", 0., timezero2); //, "QRON") ; 
+      energy = signalF->GetParameter(2) ; 
+      time   = signalF->GetMaximumX() - EMCAL()->GetRawFormatTimePeak() - EMCAL()->GetRawFormatTimeTrigger() ;
+    }
+  } else {
+    timezero1 = timezero2 = signalmax = timemax = 0. ;
+    signalF->FixParameter(0, EMCAL()->GetRawFormatHighCharge()) ; 
+    signalF->FixParameter(1, EMCAL()->GetRawFormatHighGain()) ; 
+    Int_t index ; 
+    for (index = 0; index < EMCAL()->GetRawFormatTimeBins(); index++) {
+      gHighGain->GetPoint(index, time, signal) ;               
+      if (signal > kNoiseThreshold && timezero1 == 0.) 
+	timezero1 = time ;
+      if (signal <= kNoiseThreshold && timezero1 > 0. && timezero2 == 0.)
+	timezero2 = time ; 
+      if (signal > signalmax) {
+	signalmax = signal ;   
+	timemax   = time ; 
+      }
+    }
+    signalmax /= EMCAL()->RawResponseFunctionMax(EMCAL()->GetRawFormatHighCharge(), 
+						EMCAL()->GetRawFormatHighGain()) ;;
+    if ( timezero1 + EMCAL()->GetRawFormatTimePeak() < EMCAL()->GetRawFormatTimeMax() * 0.4 ) { // else its noise  
+      signalF->SetParameter(2, signalmax) ; 
+      signalF->SetParameter(3, timezero1) ;               
+      gHighGain->Fit(signalF, "QRON", "", 0., timezero2) ; 
+      energy = signalF->GetParameter(2) ; 
+      time   = signalF->GetMaximumX() - EMCAL()->GetRawFormatTimePeak() - EMCAL()->GetRawFormatTimeTrigger() ;
+    }
+  }
+  
+  if (time == 0. && energy == 0.) 
+    amp = 0 ; 
+  else {
+  AliEMCALDigitizer * digitizer = Digitizer() ; 
+  amp = static_cast<Int_t>( (energy - digitizer->GetECApedestal()) / digitizer->GetECAchannel() + 0.5 ) ; 
+  }
+  // dessin
+//   TCanvas * c1 = new TCanvas("c1","A Simple Graph Example",200,10,700,500);
+//   c1->SetFillColor(42);
+//   c1->SetGrid();
+//   gLowGain->SetLineColor(2);
+//   gLowGain->SetLineWidth(4);
+//   gLowGain->SetMarkerColor(4);
+//   gLowGain->SetMarkerStyle(21);
+//   gLowGain->SetTitle("Lowgain");
+//   gLowGain->GetXaxis()->SetTitle("X title");
+//   gLowGain->GetYaxis()->SetTitle("Y title");
+//   gLowGain->Draw("ACP");
+  
+//   c1->Update();
+//   c1->GetFrame()->SetFillColor(21);
+//   c1->GetFrame()->SetBorderSize(12);
+//   c1->Modified();
+  
+//   TCanvas * c2 = new TCanvas("c2","A Simple Graph Example",200,10,700,500);
+//   c2->SetFillColor(42);
+//   c2->SetGrid();
+//   gHighGain->SetLineColor(2);
+//   gHighGain->SetLineWidth(4);
+//   gHighGain->SetMarkerColor(4);
+//   gHighGain->SetMarkerStyle(21);
+//   gHighGain->SetTitle("Highgain");
+//   gHighGain->GetXaxis()->SetTitle("X title");
+//   gHighGain->GetYaxis()->SetTitle("Y title");
+//     gHighGain->Draw("ACP");
+  
+//   c2->Update();
+//   c2->GetFrame()->SetFillColor(21);
+//   c2->GetFrame()->SetBorderSize(12);
+//   c2->Modified();
+}
+
+//____________________________________________________________________________ 
 Int_t AliEMCALGetter::ReadRaw(Int_t event)
 {
   // reads the raw format data, converts it into digits format and store digits in Digits()
@@ -465,73 +571,60 @@ Int_t AliEMCALGetter::ReadRaw(Int_t event)
   AliRawReaderFile rawReader(event) ; 
   AliEMCALRawStream in(&rawReader);
   
-  const Int_t kHighGainIdOffset = EMCALGeometry()->GetNTowers()
-    * EMCALGeometry()->GetNPhi()
-    * EMCALGeometry()->GetNZ() 
-    * 2 ;
-  
   Bool_t first = kTRUE ;
-  
-  TH1D hLowGain("hLowGain", "Low Gain", 1000, 0., EMCAL()->GetRawFormatTimeMax()) ; 
-  TH1D hHighGain("hHighGain", "High Gain", 1000, 0., EMCAL()->GetRawFormatTimeMax()) ; 
-  
-  // fit half the gaussian decay rather than AliEMCAL::RawResponseFunction because thiswould give a floating point
-  // exception during error calculation ... To solve... 
-  TF1 * gauss = new TF1("gauss", "gaus", 
-			EMCAL()->GetRawFormatTimePeak(), 
-			EMCAL()->GetRawFormatTimeMax() ) ;   
+ 
+  TF1 * signalF = new TF1("signal", AliEMCAL::RawResponseFunction, 0, EMCAL()->GetRawFormatTimeMax(), 4);
+  signalF->SetParNames("Charge", "Gain", "Amplitude", "TimeZero") ; 
+ 
   
   Int_t id = -1;
-  Bool_t hgflag = kFALSE ; 
-  
+  Bool_t lowGainFlag = kFALSE ; 
+
   TClonesArray * digits = Digits() ;
   digits->Clear() ; 
   Int_t idigit = 0 ; 
-  
+  Int_t amp = 0 ; 
+  Double_t time = 0. ; 
+
+  TGraph * gLowGain = new TGraph(EMCAL()->GetRawFormatTimeBins()) ; 
+  TGraph * gHighGain= new TGraph(EMCAL()->GetRawFormatTimeBins()) ;  
+
   while ( in.Next() ) { // EMCAL entries loop 
-    
     if ( in.IsNewId() ) {
       if (!first) {
-	hLowGain.Fit(gauss, "QRON") ; 
-	Int_t ampL =  static_cast<Int_t>(gauss->Eval(gauss->GetParameter(2)) + 0.5) ; 
-	Double_t timeL  = EMCAL()->GetRawFormatTimePeak() - gauss->GetParameter(2) ;
-	if (timeL < 0 ) // happens with noise 
-	  timeL =  EMCAL()->GetRawFormatTimePeak() ;  
-	if (hgflag) {
-	  hHighGain.Fit(gauss, "QRON") ; 
-	  Int_t ampH =  static_cast<Int_t>(gauss->Eval(gauss->GetParameter(2)) + 0.5) ; 
-	  Double_t timeH  = EMCAL()->GetRawFormatTimePeak() - gauss->GetParameter(2) ; 
-	  if (timeH < 0 ) // happens with noise 
-	    timeH =  EMCAL()->GetRawFormatTimePeak() ;  
-	  new((*digits)[idigit]) AliEMCALDigit( -1, -1, id+kHighGainIdOffset, ampH, timeH) ;
+	FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, amp, time) ; 
+	if (amp > 0) {
+	  new((*digits)[idigit]) AliEMCALDigit( -1, -1, id, amp, time) ;	
 	  idigit++ ; 
 	}
-	else {
-	  new((*digits)[idigit]) AliEMCALDigit( -1, -1, id, ampL, timeL) ;
-	  idigit++ ; 
-	}
-      }
+	Int_t index ; 
+	for (index = 0; index < EMCAL()->GetRawFormatTimeBins(); index++) {
+	  gLowGain->SetPoint(index, index * EMCAL()->GetRawFormatTimeMax() / EMCAL()->GetRawFormatTimeBins(), 0) ;  
+	  gHighGain->SetPoint(index, index * EMCAL()->GetRawFormatTimeMax() / EMCAL()->GetRawFormatTimeBins(), 0) ; 
+	} 
+      }  
       first = kFALSE ; 
-      hLowGain.Reset() ; 
-      hHighGain.Reset() ; 
       id = in.GetId() ; 
-      if (id > 9999 ) { // fixme 
-	hgflag = kTRUE ; 
-      } else 
-	hgflag = kFALSE ; 
+      if (in.GetModule() == EMCAL()->GetRawFormatLowGainOffset() ) 
+	lowGainFlag = kTRUE ; 
+      else 
+	lowGainFlag = kFALSE ; 
     }
-    if (hgflag)
-      hHighGain.Fill(
-		     in.GetTime() * EMCAL()->GetRawFormatTimeMax() / EMCAL()->GetRawFormatTimeBins(), 
-		     in. GetSignal() * EMCAL()->GetRawFormatHighGainFactor() ) ;
+    if (lowGainFlag)
+      gLowGain->SetPoint(in.GetTime(), 
+			 in.GetTime()* EMCAL()->GetRawFormatTimeMax() / EMCAL()->GetRawFormatTimeBins(), 
+			 in.GetSignal()) ;
     else 
-      hLowGain.Fill(
-		    in.GetTime() * EMCAL()->GetRawFormatTimeMax() / EMCAL()->GetRawFormatTimeBins(), 
-		    in. GetSignal() ) ;
+      gHighGain->SetPoint(in.GetTime(), 
+			  in.GetTime() * EMCAL()->GetRawFormatTimeMax() / EMCAL()->GetRawFormatTimeBins(), 
+			  in.GetSignal() ) ;
+    
   } // EMCAL entries loop
-  
-  delete gauss ; 
-  
+  digits->Sort() ; 
+
+  delete signalF ; 
+  delete gLowGain, gHighGain ; 
+    
   return Digits()->GetEntriesFast() ; 
 }
   

@@ -25,6 +25,7 @@ public :
   AliEMCALRawStream(AliRawReader* rawReader);
   
   Int_t            GetId() const {return fPad;};
+  Int_t            GetModule() const {return fSector;}
   Int_t            GetPrevId() const {return fPrevPad;};
   Int_t            GetSignal() const {return fSignal;};
   Int_t            GetTime() const {return fTime;};

@@ -46,6 +46,12 @@ class TFile;
 #include "AliAltroBuffer.h"
 
 ClassImp(AliEMCAL)
+Double_t AliEMCAL::fgCapa        = 1.;        // 1pF 
+Int_t    AliEMCAL::fgOrder       = 2 ;
+Double_t AliEMCAL::fgTimeMax     = 2.56E-5 ;  // each sample is over 100 ns fTimeMax/fTimeBins
+Double_t AliEMCAL::fgTimePeak    = 4.1E-6 ;   // 4 micro seconds
+Double_t AliEMCAL::fgTimeTrigger = 100E-9 ;      // 100ns, just for a reference
+ 
 //____________________________________________________________________________
 AliEMCAL::AliEMCAL():AliDetector()
 {
@@ -58,11 +64,10 @@ AliEMCAL::AliEMCAL(const char* name, const char* title): AliDetector(name,title)
 {
   //   ctor : title is used to identify the layout
 
-  fTimeMax  = 1.28E-5 ; 
-  fTimePeak = 2.0E-6 ;
-  fTimeRes = 1.5E-6 ; 
-  fHighGainFactor = 40;
-  fHighGainOffset = 0x200 ; 
+  fHighCharge        = 8.2 ;          // adjusted for a high gain range of 5.12 GeV (10 bits)
+  fHighGain          = 6.64 ; 
+  fHighLowGainFactor = 16. ;          // adjusted for a low gain range of 82 GeV (10 bits) 
+  fLowGainOffset     = 1 ;            // offset added to the module id to distinguish high and low gain data
 }
 
 //____________________________________________________________________________
@@ -75,6 +80,10 @@ AliEMCAL::~AliEMCAL()
 void AliEMCAL::Copy(AliEMCAL & emcal)
 {
   TObject::Copy(emcal) ; 
+  emcal.fHighCharge        = fHighCharge ;
+  emcal.fHighGain          = fHighGain ; 
+  emcal.fHighLowGainFactor = fHighLowGainFactor ;  
+  emcal.fLowGainOffset     = fLowGainOffset;   
 }
 
 //____________________________________________________________________________
@@ -172,24 +181,24 @@ void AliEMCAL::CreateMaterials()
 //____________________________________________________________________________
 void AliEMCAL::Digits2Raw()
 {
-// convert digits of the current event to raw data
+  // convert digits of the current event to raw data
+  AliEMCALLoader * loader = dynamic_cast<AliEMCALLoader*>(fLoader) ; 
 
   // get the digits
-  AliEMCALGetter * gime = AliEMCALGetter::Instance(AliRunLoader::GetGAliceName()) ; 
-  if (!gime) {
-    Error("Digits2Raw", "EMCAL Getter not instantiated") ;
-    return ; 
-  }
-  gime->Event(gime->EventNumber(), "D") ; 
-  TClonesArray* digits = gime->Digits() ;
+  loader->LoadDigits();
+  TClonesArray* digits = loader->Digits() ;
 
   if (!digits) {
     Error("Digits2Raw", "no digits found !");
     return;
   }
 
+  // get the digitizer 
+  loader->LoadDigitizer();
+  AliEMCALDigitizer * digitizer = dynamic_cast<AliEMCALDigitizer *>(loader->Digitizer())  ; 
+  
   // get the geometry
-  AliEMCALGeometry* geom = gime->EMCALGeometry();
+  AliEMCALGeometry* geom = GetGeometry();
   if (!geom) {
     Error("Digits2Raw", "no geometry found !");
     return;
@@ -197,17 +206,16 @@ void AliEMCAL::Digits2Raw()
 
   // some digitization constants
   const Int_t    kDDLOffset = 0x800;
-  const Int_t    kThreshold = 3;
+  const Int_t    kThreshold = 1;
   const Int_t    kChannelsperDDL = 897 ; 
-
   AliAltroBuffer* buffer = NULL;
   Int_t prevDDL = -1;
   Int_t adcValuesLow[fkTimeBins];
   Int_t adcValuesHigh[fkTimeBins];
-
+  
   // loop over digits (assume ordered digits)
   for (Int_t iDigit = 0; iDigit < digits->GetEntries(); iDigit++) {
-    AliEMCALDigit* digit = gime->Digit(iDigit);
+    AliEMCALDigit* digit = dynamic_cast<AliEMCALDigit *>(digits->At(iDigit)) ;
     if (digit->GetAmp() < kThreshold) 
       continue;
     Int_t iDDL = digit->GetId() / kChannelsperDDL ;
@@ -233,32 +241,37 @@ void AliEMCAL::Digits2Raw()
     }
 
     // out of time range signal (?)
-    if (digit->GetTimeR() > fTimeMax) {
+    if (digit->GetTimeR() > GetRawFormatTimeMax() ) {
       buffer->FillBuffer(digit->GetAmp());
-      buffer->FillBuffer(fkTimeBins);  // time bin
+      buffer->FillBuffer(GetRawFormatTimeBins() );  // time bin
       buffer->FillBuffer(3);          // bunch length
       buffer->WriteTrailer(3, idDDL, 0, 0);  // trailer
-      
-    // simulate linear rise and gaussian decay of signal
-    } else {
-      Bool_t highGain = kFALSE;
 
-      // write low and eventually high gain channel
-      buffer->WriteChannel(iDDL, 0, 0, 
-			   fkTimeBins, adcValuesLow, kThreshold);
-      if (highGain) {
-	buffer->WriteChannel(iDDL, 0, fHighGainOffset, 
-			     fkTimeBins, adcValuesHigh, 1);
-      }
+      // calculate the time response function
+    } else {
+      Double_t energy = 0 ;  
+      energy = digit->GetAmp() * digitizer->GetECAchannel() + digitizer->GetECApedestal() ; 
+      
+      Bool_t lowgain = RawSampledResponse(digit->GetTimeR(), energy, adcValuesHigh, adcValuesLow) ; 
+      
+      if (lowgain) 
+	buffer->WriteChannel(iDDL, 0, fLowGainOffset, 
+			     GetRawFormatTimeBins(), adcValuesLow, kThreshold);
+      else 
+	buffer->WriteChannel(iDDL, 0, 0, 
+			     GetRawFormatTimeBins(), adcValuesHigh, kThreshold);
+      
     }
   }
+  
   // write real header and close last file
   if (buffer) {
     buffer->Flush();
     buffer->WriteDataHeader(kFALSE, kFALSE);
     delete buffer;
   }
-  gime->EmcalLoader()->UnloadDigits();
+
+  loader->UnloadDigits();
 }
 
 //____________________________________________________________________________
@@ -285,50 +298,67 @@ AliLoader* AliEMCAL::MakeLoader(const char* topfoldername)
 Double_t AliEMCAL::RawResponseFunction(Double_t *x, Double_t *par)
 {
   // Shape of the electronics raw reponse:
-  // 1. the signal rises linearly from par[4] to par[1] to reach the maximu par[3]
-  // 2. the signal decays with a gaussian shape for par[4]+par[1] with a sigma of par[2]
+  // It is a semi-gaussian, 2nd order Gamma function of the general form
+  // v(t) = n**n * Q * A**n / C *(t/tp)**n * exp(-n * t/tp) with 
+  // tp : peaking time par[0]
+  // n  : order of the function
+  // C  : integrating capacitor in the preamplifier
+  // A  : open loop gain of the preamplifier
+  // Q  : the total APD charge to be measured Q = C * energy
   
-  Float_t xx = x[0] ; 
- 
-  Double_t signal = 0. ; 
+  Double_t signal ;
+  Double_t xx = x[0] - ( fgTimeTrigger + par[3] ) ; 
   
-  if (xx < par[4] + par[1]) 	// signal is rising
-    signal = (gRandom->Rndm() + par[3]) * (xx - par[4]) / (par[1] - par[4]) ; 
-  else                                         // signal is decaying
-    signal = (gRandom->Rndm() + par[3]) * TMath::Gaus(xx, par[4] + par[1], par[2]) ;
-  
-  return signal < 0. ? 0. : signal ; 
+  if (xx < 0 || xx > fgTimeMax) 
+    signal = 0. ;  
+  else { 
+    Double_t fac = par[0] * TMath::Power(fgOrder, fgOrder) * TMath::Power(par[1], fgOrder) / fgCapa ; 
+    signal = fac * par[2] * TMath::Power(xx / fgTimePeak, fgOrder) * TMath::Exp(-fgOrder * (xx / fgTimePeak)) ; 
+  }
+  return signal ;  
 }
 
 //__________________________________________________________________
-Bool_t AliEMCAL::RawSampledResponse(const Float_t dtime, const Int_t damp, Int_t * adcH, Int_t * adcL) const 
+Double_t AliEMCAL::RawResponseFunctionMax(Double_t charge, Double_t gain) 
+{
+  return ( charge * TMath::Power(fgOrder, fgOrder) * TMath::Power(gain, fgOrder) 
+     / ( fgCapa * TMath::Exp(fgOrder) ) );  
+
+}
+//__________________________________________________________________
+Bool_t AliEMCAL::RawSampledResponse(
+const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const 
 {
   // for a start time dtime and an amplitude damp given by digit, 
-  // calculates the raw sampled response
+  // calculates the raw sampled response AliEMCAL::RawResponseFunction
 
   const Int_t kRawSignalOverflow = 0x3FF ; 
-  Bool_t highGain = kFALSE ; 
+  Bool_t lowGain = kFALSE ; 
 
-  TF1 f1("signal", RawResponseFunction, 0, fkTimeBins, 5);
+  TF1 signalF("signal", RawResponseFunction, 0, GetRawFormatTimeMax(), 4);
 
-  f1.SetParNames("Time Max", "Peaking time", "Decay width", "Amp max", "Start time") ; 
-  f1.SetParameter(0, fTimeMax) ; 
-  f1.SetParameter(1, fTimePeak) ; 
-  f1.SetParameter(2, fTimeRes) ; 
-  f1.SetParameter(3, damp) ; 
-  f1.SetParameter(4, dtime) ; 
+  for (Int_t iTime = 0; iTime < GetRawFormatTimeBins(); iTime++) {
+    signalF.SetParameter(0, GetRawFormatHighCharge() ) ; 
+    signalF.SetParameter(1, GetRawFormatHighGain() ) ; 
+    signalF.SetParameter(2, damp) ; 
+    signalF.SetParameter(3, dtime) ; 
+    Double_t time = iTime * GetRawFormatTimeMax() / GetRawFormatTimeBins() ;
+    Double_t signal = signalF.Eval(time) ;     
+    if ( static_cast<Int_t>(signal+0.5) > kRawSignalOverflow ){  // larger than 10 bits 
+      signal = kRawSignalOverflow ;
+      lowGain = kTRUE ; 
+    }
+    adcH[iTime] =  static_cast<Int_t>(signal + 0.5) ;
 
-  for (Int_t iTime = 0; iTime < fkTimeBins; iTime++) {
-    Double_t time = iTime * fTimeMax/fkTimeBins;
-    Double_t signal = f1.Eval(time) ;     
-    adcL[iTime] =  static_cast<Int_t>(signal + 0.5) ;
-    if ( adcL[iTime] > kRawSignalOverflow)  // larger than 10 bits 
-      adcL[iTime] = kRawSignalOverflow ;
-    adcH[iTime] = static_cast<Int_t>(0.5 + (signal / fHighGainFactor)) ;
-    if (adcH[iTime] > 0) 
-      highGain = kTRUE;  
+    signalF.SetParameter(0, GetRawFormatLowCharge() ) ;     
+    signalF.SetParameter(1, GetRawFormatLowGain() ) ; 
+    signal = signalF.Eval(time) ;  
+    if ( static_cast<Int_t>(signal+0.5) > kRawSignalOverflow)  // larger than 10 bits 
+      signal = kRawSignalOverflow ;
+    adcL[iTime] = static_cast<Int_t>(0.5 + signal ) ; 
+
   }
-  return highGain ; 
+  return lowGain ; 
 }
 
 //____________________________________________________________________________
