@@ -1,8 +1,8 @@
-#define __NOCOMPILED__
-#ifdef __COMPILED__
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include<iostream.h>
 #include<TROOT.h>
 #include<TArrayI.h>
+#include<TBranch.h>
 #include<TCanvas.h>
 #include<TClassTable.h>
 #include<TClonesArray.h>
@@ -25,27 +25,48 @@
 #include <AliITSsegmentationSDD.h>
 #include <AliITSsegmentationSSD.h>
 #endif
-Int_t AliITSGeoPlot (char *opt="All+Rec", char *filename="galice.root") {
+void GetHitsCoor(TObject *its, Int_t mod, TObjArray & histos, Int_t subd,Bool_t verb);
+Int_t GetRecCoor(TObject *ge, TClonesArray *ITSrec, Int_t mod, TH2F *h2, TH1F *h1, Bool_t verb);
+void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, Int_t mod, Bool_t verbose, TObjArray & histos);
+
+Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+Rec", char *filename="galice.root",TString FileDigits="galice.root", TString FileRec="galice.root", Int_t isfastpoints = 0) {
   /*******************************************************************
    *  This macro displays geometrical information related to the
    *  hits, digits and rec points in ITS.
    *  There are histograms that are not displayed (i.e. energy
    *  deposition) but that are saved onto a file (see below)
    *
+   *  INPUT arguments:
+   *
+   *  Int_t evesel:  the selected event number. It's =0 by default
+   *
    *  Options: Any combination of:
    *    1) subdetector name:  "SPD", "SDD", "SSD", "All" (default)
    *    2) Printouts:        "Verbose" Almost everything is printed out: 
    *                          it is wise to redirect the output onto a file
-   *                    e.g.: .x ITSgeoplot.C("All+Verbose") > out.log 
+   *                    e.g.: .x AliITSGeoPlot.C("All+Verbose") > out.log 
    *    3) Rec Points option: "Rec"   ---> Uses Rec. Points (default)
    *                           otherwise ---> uses hits and digits only
    *    Examples:
-   *       .x ITSgeoplot();  (All subdetectors; no-verbose; no-recpoints)
-   *       .x ITSgeoplot("SPD+SSD+Verbose+Rec"); 
+   *       .x AliITSGeoPlot();  (All subdetectors; no-verbose; no-recpoints)
+   *       .x AliITSGeoPlot("SPD+SSD+Verbose+Rec"); 
+   *   
+   *    filename:   It's "galice.root" by default. Hits, kine and the 
+   *                AliRun object are supposed to be stored on this file
+   *    FileDigits: It's "galice.root" by defaults. It is the file where
+   *                digits are stored
+   *    FileRec:    It's "galice.root" by defaults. It is the file where
+   *                recpoints are stored
+   *    isfastpoints: integer. It is set to 0 by defaults. This means that
+   *                slow reconstruction is assumed. If fast recpoint are in
+   *                in use, isfastpoints must be set =1.
+   *    BEWARE:     to analyze digits/recpoints  produced with aliroot 
+   *                versions older than v3-07-Release, the input parameters 
+   *                filename, FileDigits, FileRec and isfastpoints must be left
+   *                to their default value 
    *
    *  OUTPUT: It produces a root file with a list of histograms
-   *          The list can be accessed either with the Root TBrowser
-   *          or with the simple macro ITSgeoplotread.C
+   *    
    *  WARNING: spatial information for SSD/DIGITS is obtained by pairing
    *          digits on p and n side originating from the same track, when
    *          possible. This (mis)use of DIGITS is tolerated for debugging 
@@ -53,31 +74,25 @@ Int_t AliITSGeoPlot (char *opt="All+Rec", char *filename="galice.root") {
    *          starting from info really available... 
    * 
    *  COMPILATION: this macro can be compiled. 
-   *      1)       Change the first line above from its default 
-   *               value (#define __NOCOMPILED__) to
-   *               #define __COMPILED__
-   *      2)       You need to set your include path with
+   *      1)       You need to set your include path with
    * gSystem->SetIncludePath("-I- -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -g");
    *      3)       If you are using root instead of aliroot you need to
    *               execute the macro loadlibs.C in advance
    *      4)       To compile this macro from root (or aliroot):
-   *                 ---  .L ITSgeoplot.C++
-   *                 ---  ITSgeoplot("ListOfParametersIfAny");
+   *                 ---  .L AliITSGeoPlot.C++
+   *                 ---  AliITSGeoPlot();
    *     
    *  M.Masera  14/05/2001 18:30
-   *            Use DetToLocal instead of GetCxz for SPD and SDD
+   *  Last rev. 05/06/2002          
    ********************************************************************/
 
-  extern void GetHitsCoor(TObject *its, Int_t mod, TObjArray & histos, Int_t subd,Bool_t verb);
-  extern Int_t GetRecCoor(TObject *ge, TClonesArray *ITSrec, Int_t mod, TH2F *h2, TH1F *h1, Bool_t verb);
-  extern void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, Int_t mod, Bool_t verbose, TObjArray & histos);
   //Options
   TString choice(opt);
   Bool_t All = choice.Contains("All");
   Bool_t verbose=choice.Contains("Verbose");
   Bool_t userec=choice.Contains("Rec");
   Int_t retcode=1; //return code
-#ifdef __NOCOMPILED__
+#if !(!defined(__CINT__) || defined(__MAKECINT__))
   if (gClassTable->GetID("AliRun") < 0) {
     gROOT->LoadMacro("loadlibs.C");
     loadlibs();
@@ -88,7 +103,7 @@ Int_t AliITSGeoPlot (char *opt="All+Rec", char *filename="galice.root") {
       delete gAlice;
       gAlice=0;
     }
-#ifdef __NOCOMPILED__
+#if !(!defined(__CINT__) || defined(__MAKECINT__))
   }
 #endif
   // Connect the Root input  file containing Geometry, Kine and Hits
@@ -110,7 +125,13 @@ Int_t AliITSGeoPlot (char *opt="All+Rec", char *filename="galice.root") {
       return retcode;
     }
   }
-  Int_t nparticles = gAlice->GetEvent(0);
+  if(!(FileDigits.Data() == filename)){
+    gAlice->SetTreeDFileName(FileDigits);
+  }
+  if(!(FileRec.Data() == filename)){
+    gAlice->SetTreeRFileName(FileRec);
+  }
+  Int_t nparticles = gAlice->GetEvent(evesel);
   if(verbose) {
     cout<<" "<<endl<<" "<<endl;
     cout<<"******* Event processing started   *******"<<endl;
@@ -139,12 +160,25 @@ Int_t AliITSGeoPlot (char *opt="All+Rec", char *filename="galice.root") {
   //RECPOINTS
   TTree *TR = gAlice->TreeR();
   TClonesArray *ITSrec  = ITS->RecPoints();
-  if(userec && (!TR || !ITSrec)){
-    userec = kFALSE;
-    cout<<" "<<endl<<"======================================================="<<endl;
-    cout<<"WARNING: there are no RECPOINTS on this file ! "<<endl;
-    cout<<"======================================================="<<endl<<" "<<endl;
+  TBranch *branch = 0;
+  if(userec && TR && ITSrec){
+    if(isfastpoints==1){
+      branch = gAlice->TreeR()->GetBranch("ITSRecPointsF");
+      cout<<"using fast points\n";
+    }
+    else {
+      branch = gAlice->TreeR()->GetBranch("ITSRecPoints");
+    }
+    if(branch)branch->SetAddress(&ITSrec);
   }
+
+  if(userec && (!TR || !ITSrec || !branch)){
+    userec = kFALSE;
+    cout<<"\n ======================================================= \n";
+    cout<<"WARNING: there are no RECPOINTS on this file ! \n";
+    cout<<"======================================================= \n \n";
+  }
+
   //local variables
   Int_t mod;   //module number
   Int_t nbytes = 0; 
@@ -225,9 +259,9 @@ Int_t AliITSGeoPlot (char *opt="All+Rec", char *filename="galice.root") {
       Bool_t usedigits = kTRUE;
       if(!ITSdigits){
         usedigits = kFALSE;
-        cout<<" "<<endl<<"======================================================="<<endl;
-        cout<<"WARNING: there are no DIGITS on this file ! "<<endl;
-        cout<<"======================================================="<<endl<<" "<<endl;
+        cout<<"\n ======================================================= \n";
+        cout<<"WARNING: there are no DIGITS on this file ! \n";
+        cout<<"======================================================= \n \n";
       }
       // Get segmentation model
       AliITSDetType *iDetType=ITS->DetType(subd);
@@ -254,9 +288,10 @@ Int_t AliITSGeoPlot (char *opt="All+Rec", char *filename="galice.root") {
         bidi->Fill(pos[0],pos[1]);
         uni->Fill(pos[2]);
         if(verbose){
-          cout<<"==========================================================="<<endl;
+          cout<<"=========================================================\n";
           cout<<detna<<" module="<<mod<<endl;
-          cout<<"Mod. coordinates: "<<pos[0]<<", "<<pos[1]<<", "<<pos[2]<<" Radius "<<ragdet<<endl;
+          cout<<"Mod. coordinates: "<<pos[0]<<", "<<pos[1]<<", ";
+          cout<<pos[2]<<" Radius "<<ragdet<<endl;
         }
 
         // Hits
@@ -265,7 +300,8 @@ Int_t AliITSGeoPlot (char *opt="All+Rec", char *filename="galice.root") {
         //RecPoints     
         if(userec){
           ITS->ResetRecPoints();
-          TR->GetEvent(mod);
+          //          TR->GetEvent(mod);
+          branch->GetEvent(mod);
           TH2F *bidi=(TH2F*)histos.At(6+subd*9);
           TH1F *uni=(TH1F*)histos.At(7+subd*9);
           nrecp=GetRecCoor(geom,ITSrec,mod,bidi,uni,verbose);
@@ -334,7 +370,7 @@ Int_t AliITSGeoPlot (char *opt="All+Rec", char *filename="galice.root") {
     } // if(All.....
   } // end of loop on subdetectors
   // Save the histograms
-  TFile *fh = new TFile("ITSgeoplot.root","recreate");
+  TFile *fh = new TFile("AliITSGeoPlot.root","recreate");
   // The list is written to file as a single entry
   TList *lihi = new TList();
   // copy the pointers to the histograms to a TList object.
@@ -377,7 +413,8 @@ void GetHitsCoor(TObject *its, Int_t mod, TObjArray & histos, Int_t subd,Bool_t 
         ener->Fill(edep);
         if(verb){
           cout<<"hit # "<<hit<<" Global coordinates "<<x<<" "<<y<<" "<<z<<endl;
-          cout<<"track # "<<iHit->GetTrack()<<" energy deposition (KeV)= "<<edep<<endl;
+          cout<<"track # "<<iHit->GetTrack()<<" energy deposition (KeV)= ";
+          cout<<edep<<endl;
         }
       }
     }
@@ -401,9 +438,12 @@ Int_t GetRecCoor(TObject *ge, TClonesArray *ITSrec, Int_t mod, TH2F *h2, TH1F *h
       lc[2]=recp->GetZ();
       geom->LtoG(mod,lc,gc);
       if(verb){
-        cout<<"recp # "<<irec<<" local coordinates. lx= "<<lc[0]<<" lz= "<<lc[2]<<endl;
+        cout<<"recp # "<<irec<<" local coordinates. lx= "<<lc[0]<<" lz= ";
+        cout<<lc[2]<<endl;
         Float_t r=sqrt(gc[0]*gc[0]+gc[1]*gc[1]);
-        cout<<"Global coor. + radius "<<gc[0]<<" "<<gc[1]<<" "<<gc[2]<<" "<<r<<endl;
+        cout<<"Global coor. + radius "<<gc[0]<<" "<<gc[1]<<" "<<gc[2]<<" ";
+        cout<<r<<endl;
+        cout<<"Associated track "<<recp->GetLabel(0)<<endl;
       }
       h2->Fill(gc[0],gc[1]);
       h1->Fill(gc[2]);
@@ -480,21 +520,25 @@ void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, In
         Int_t coor2=digs->fCoord2;
         Int_t tra0=digs->GetTrack(0);
         if(verbose){
-          cout<<"digit # "<<digit<<" fCoord1= "<<coor1<<" fCoord2= "<<coor2<<" track "<<tra0<<" "<<endl;
-          if(subd<2)cout<<"local coordinates -- x="<<lcoor[0]<<", z="<<lcoor[2]<<endl;
+          cout<<"digit # "<<digit<<" fCoord1= "<<coor1<<" fCoord2= ";
+          cout<<coor2<<" track "<<tra0<<" "<<endl;
+          if(subd<2)cout<<"local coordinates -- x="<<lcoor[0]<<", z=";
+          cout<<lcoor[2]<<endl;
           if(subd==2){
             if(pair[digit]==-1){
               cout<<"(digit  not paired)"<<endl;
             }
             else {
-              cout<<"local coordinates -- x="<<lcoor[0]<<", z="<<lcoor[2]<<endl;
+              cout<<"local coordinates -- x="<<lcoor[0]<<", z="<<lcoor[2];
+              cout<<endl;
               Int_t dtmp=pair[digit];
               AliITSdigitSSD *dig2=(AliITSdigitSSD*)ITSdigits->UncheckedAt(dtmp);
               Int_t coor1b=dig2->fCoord1;
               Int_t coor2b=dig2->fCoord2;
               Int_t tra0b=dig2->GetTrack(0);
               cout<<"(digit paired with digit #"<<dtmp<<endl;
-              cout<<"with fCoord1= "<<coor1b<<" fCoord2= "<<coor2b<<" track "<<tra0b<<")"<<endl;
+              cout<<"with fCoord1= "<<coor1b<<" fCoord2= "<<coor2b;
+              cout<<" track "<<tra0b<<")"<<endl;
             }
           }
         }
@@ -505,7 +549,8 @@ void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, In
           lcoor[1]=0.;
           geom->LtoG(mod,lcoor,gcoor);  // global coord. in cm
           ragdig=sqrt(gcoor[0]*gcoor[0]+gcoor[1]*gcoor[1]);
-          if(verbose)cout<<"global coordinates "<<gcoor[0]<<" "<<gcoor[1]<<" "<<gcoor[2]<<" Radius "<<ragdig<<endl;
+          if(verbose)cout<<"global coordinates "<<gcoor[0]<<" "<<gcoor[1];
+          cout<<" "<<gcoor[2]<<" Radius "<<ragdig<<endl;
           //Fill histograms
           TH2F *bidi = (TH2F*)histos.At(subd*9);
           TH1F *uni = (TH1F*)histos.At(3+subd*9);
