@@ -3,13 +3,10 @@
 
 #include "AliL3Track.h"
 
-class AliL3Transform;
-
 class AliL3HoughTrack : public AliL3Track {
   
  private:
-
-  AliL3Transform *fTransform; //!
+  
   Double_t fMinDist;
   Int_t fWeight;
   Int_t fEtaIndex;

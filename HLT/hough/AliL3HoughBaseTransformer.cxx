@@ -15,6 +15,9 @@
 // AliL3HoughBaseTransformer
 //
 // The base class for implementations of Hough Transform on ALICE TPC data.
+//
+// This is an abstract class, and is only meant to provide the interface
+// to the different implementations.
 
 ClassImp(AliL3HoughBaseTransformer)
 
@@ -23,7 +26,6 @@ AliL3HoughBaseTransformer::AliL3HoughBaseTransformer()
   //Default constructor
   fTransform = 0;
   fDigitRowData = 0;
-  
 }
 
 AliL3HoughBaseTransformer::AliL3HoughBaseTransformer(Int_t slice,Int_t patch,Int_t n_eta_segments)
@@ -33,14 +35,12 @@ AliL3HoughBaseTransformer::AliL3HoughBaseTransformer(Int_t slice,Int_t patch,Int
   fNEtaSegments = n_eta_segments;
   fEtaMin = 0;
   fEtaMax = fSlice < 18 ? 0.9 : -0.9;
-  fTransform = new AliL3Transform();
   fThreshold = 0;
-  fDigitRowData=0;
+  fDigitRowData = 0;
+  fTransform = 0;
 }
 
 AliL3HoughBaseTransformer::~AliL3HoughBaseTransformer()
 {
-  if(fTransform)
-    delete fTransform;
-}
 
+}

@@ -4,7 +4,7 @@
 #include "AliL3RootTypes.h"
 
 
-class AliL3HoughTransformer;
+class AliL3HoughBaseTransformer;
 class AliL3Transform;
 class AliL3HoughTrack;
 class AliL3DigitRowData;
@@ -29,14 +29,14 @@ class AliL3HoughEval {
   Bool_t fRemoveFoundTracks;
   
   AliL3Transform *fTransform; //!
-  AliL3HoughTransformer *fHoughTransformer; //!
+  AliL3HoughBaseTransformer *fHoughTransformer; //!
   AliL3DigitRowData **fRowPointers; //!
   
  public:
   AliL3HoughEval(); 
   virtual ~AliL3HoughEval();
   
-  void InitTransformer(AliL3HoughTransformer *transformer);
+  void InitTransformer(AliL3HoughBaseTransformer *transformer);
   void GenerateLUT();
   void DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist);
   Bool_t LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Bool_t remove=kFALSE);

@@ -24,7 +24,6 @@ AliL3HoughTrack::AliL3HoughTrack()
   
   fWeight = 0;
   fMinDist=0;
-  fTransform = new AliL3Transform();
   fDLine = 0;
   fPsiLine = 0;
   fIsHelix = true;
@@ -34,9 +33,7 @@ AliL3HoughTrack::AliL3HoughTrack()
 
 AliL3HoughTrack::~AliL3HoughTrack()
 {
-  //Destructor
-  if(fTransform)
-    delete fTransform;
+  
 }
 
 void AliL3HoughTrack::Set(AliL3Track *track)
@@ -205,6 +202,7 @@ void AliL3HoughTrack::SetLineParameters(Double_t psi,Double_t D,Int_t weight,Int
 
   //Transform line parameters to coordinate system of slice:
   
+  /*
   D = D + fTransform->Row2X(ref_row)*cos(psi);
 
   fDLine = D;
@@ -213,7 +211,7 @@ void AliL3HoughTrack::SetLineParameters(Double_t psi,Double_t D,Int_t weight,Int
   SetNHits(weight);
   SetRowRange(rowrange[0],rowrange[1]);
   fIsHelix = false;
-
+  */
 }
 
 void AliL3HoughTrack::SetBestMCid(Int_t mcid,Double_t min_dist)
@@ -230,7 +228,7 @@ void AliL3HoughTrack::SetBestMCid(Int_t mcid,Double_t min_dist)
 void AliL3HoughTrack::GetLineCrossingPoint(Int_t padrow,Double_t *xy)
 {
   
-
+  /*
   if(fIsHelix)
     {
       printf("AliL3HoughTrack::GetLineCrossingPoint : Track is not a line\n");
@@ -244,7 +242,7 @@ void AliL3HoughTrack::GetLineCrossingPoint(Int_t padrow,Double_t *xy)
   Double_t yhit = a*xhit + b;
   xy[0] = xhit;
   xy[1] = yhit;
-
+  */
 }
 
 /*

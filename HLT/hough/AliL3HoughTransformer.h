@@ -30,7 +30,7 @@ class AliL3HoughTransformer : public AliL3HoughBaseTransformer {
   AliL3Histogram *GetHistogram(Int_t eta_index);
   
 
-  ClassDef(AliL3HoughTransformer,1) //Hough transformation class
+  ClassDef(AliL3HoughTransformer,1) //Normal Hough transformation class
 
 };
 

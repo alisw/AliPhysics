@@ -28,8 +28,7 @@ AliL3HoughTransformer::AliL3HoughTransformer()
 AliL3HoughTransformer::AliL3HoughTransformer(Int_t slice,Int_t patch,Int_t n_eta_segments) : AliL3HoughBaseTransformer(slice,patch,n_eta_segments)
 {
   //Normal constructor
-  
-   fParamSpace = 0;
+  fParamSpace = 0;
 }
 
 AliL3HoughTransformer::~AliL3HoughTransformer()
@@ -123,7 +122,14 @@ void AliL3HoughTransformer::TransformCircle()
   AliL3DigitRowData *tempPt = GetDataPointer();
   if(!tempPt)
     {
-      printf("\nAliL3HoughTransformer::TransformCircle : No input data!!!\n\n");
+      LOG(AliL3Log::kError,"AliL3HoughTransformer::TransformCircle","Data")
+	<<"No input data "<<ENDLOG;
+      return;
+    }
+  if(!fTransform)
+    {
+      LOG(AliL3Log::kError,"AliL3HoughTransformer::TransformCircle","Transformer")
+	<<"No AliL3Transform object"<<ENDLOG;
       return;
     }
   
@@ -194,7 +200,15 @@ void AliL3HoughTransformer::TransformCircleC(Int_t row_range)
   
   AliL3DigitRowData *tempPt = GetDataPointer();
   if(!tempPt)
-    printf("\nAliL3HoughTransformer::TransformCircleC() : Zero data pointer\n");
+    LOG(AliL3Log::kError,"AliL3HoughTransformer::TransformCircleC","Data")
+      <<"No input data "<<ENDLOG;
+ 
+  if(!fTransform)
+    {
+      LOG(AliL3Log::kError,"AliL3HoughTransformer::TransformCircleC","Transformer")
+	<<"No AliL3Transform object"<<ENDLOG;
+      return;
+    }
   
   Int_t counter=0;
   for(Int_t i=NRows[GetPatch()][0]; i<=NRows[GetPatch()][1]; i++)
@@ -283,7 +297,14 @@ void AliL3HoughTransformer::TransformLine()
   AliL3DigitRowData *tempPt = GetDataPointer();
   if(!tempPt)
     {
-      printf("\nAliL3HoughTransformer::TransformLine : No input data!!!\n\n");
+      LOG(AliL3Log::kError,"AliL3HoughTransformer::TransformLine","Data")
+	<<"No input data "<<ENDLOG;
+      return;
+    }
+  if(!fTransform)
+    {
+      LOG(AliL3Log::kError,"AliL3HoughTransformer::TransformLine","Transformer")
+	<<"No AliL3Transform object"<<ENDLOG;
       return;
     }
   

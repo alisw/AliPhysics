@@ -241,9 +241,10 @@ Double_t AliL3Histogram::GetBinCenterY(Int_t ybin)
   
 }
 
-#ifdef use_root
+
 void AliL3Histogram::Draw(Char_t *option)
 {
+#ifdef use_root
   fRootHisto = new TH2F(fName,"",fNxbins,fXmin,fXmax,fNybins,fYmin,fYmax);
   for(Int_t bin=0; bin<fNcells; bin++)
     {
@@ -251,6 +252,9 @@ void AliL3Histogram::Draw(Char_t *option)
     }
   
   fRootHisto->Draw(option);
+  return;
+#endif
+  cerr<<"AliL3Histogram::Draw : You need to compile with ROOT in order to draw histogram"<<endl;
   
 }
-#endif
+

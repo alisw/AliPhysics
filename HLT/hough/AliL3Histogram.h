@@ -1,7 +1,9 @@
 #ifndef ALIL3_HISTOGRAM
 #define ALIL3_HISTOGRAM
 
+#include <stream.h>
 #include "AliL3RootTypes.h"
+
 #ifdef use_root
 #include <TH2.h>
 #endif
@@ -49,10 +51,12 @@ class AliL3Histogram {
   void AddBinContent(Int_t bin,Int_t weight);
   void Add(AliL3Histogram *h1,Double_t weight=1);
   void SetThreshold(Int_t i) {fThreshold = i;}
+  void Draw(Char_t *option="hist");
 
 #ifdef use_root
-  void Draw(Char_t *option="hist");
-  TH2F *GetRootHisto() {return fRootHisto;}
+  TH2F *GetRootHisto();
+#else
+  void *GetRootHisto();
 #endif
     
   Double_t GetXmin() {return fXmin;}
@@ -73,5 +77,24 @@ class AliL3Histogram {
   ClassDef(AliL3Histogram,1) //2D histogram class
     
 };
+
+#ifdef use_root
+inline TH2F *AliL3Histogram::GetRootHisto()
+{
+  if(!fRootHisto)
+    {
+      cerr<<"AliL3Histogram::GetRootHisto() : You must first Draw histogram before accessing it"<<endl;
+      return 0;
+    }
+  else
+    return fRootHisto;
+}
+#else
+inline void *AliL3Histogram::GetRootHisto()
+{
+  cerr<<"AliL3Histogram::GetRootHisto() : You must compile with ROOT in order to interface the ROOT histogram"<<endl;
+  return 0;
+}
+#endif
 
 #endif

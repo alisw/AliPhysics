@@ -14,7 +14,7 @@
 #include "AliL3TrackArray.h"
 #include "AliL3Logging.h"
 #include "AliL3HoughEval.h"
-#include "AliL3HoughTransformer.h"
+#include "AliL3HoughBaseTransformer.h"
 #include "AliL3DigitData.h"
 #include "AliL3HoughTrack.h"
 #include "AliL3Transform.h"
@@ -54,7 +54,7 @@ AliL3HoughEval::~AliL3HoughEval()
     }
 }
 
-void AliL3HoughEval::InitTransformer(AliL3HoughTransformer *transformer)
+void AliL3HoughEval::InitTransformer(AliL3HoughBaseTransformer *transformer)
 {
   fHoughTransformer = transformer;
   fSlice = fHoughTransformer->GetSlice();

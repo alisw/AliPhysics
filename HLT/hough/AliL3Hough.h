@@ -4,7 +4,7 @@
 #include "AliL3RootTypes.h"
 
 class AliL3HoughMaxFinder;
-class AliL3HoughTransformer;
+class AliL3HoughBaseTransformer;
 class AliL3Histogram;
 class AliL3MemHandler;
 class AliL3FileHandler;
@@ -14,6 +14,7 @@ class AliL3TrackArray;
 class AliL3HoughMerger;
 class AliL3HoughIntMerger;
 class AliL3HoughGlobalMerger;
+class AliL3Transform;
 
 class AliL3Hough {
   
@@ -25,18 +26,20 @@ class AliL3Hough {
   Bool_t fWriteDigits;
   Int_t fNEtaSegments;
   Int_t fNPatches;
+  Int_t fPeakThreshold;
 #ifdef use_aliroot
   AliL3FileHandler **fMemHandler; //!
 #else
   AliL3MemHandler **fMemHandler; //!
 #endif
-  AliL3HoughTransformer **fHoughTransformer; //!
+  AliL3HoughBaseTransformer **fHoughTransformer; //!
   AliL3HoughEval **fEval; //!
   AliL3HoughMaxFinder *fPeakFinder; //!
   AliL3TrackArray **fTracks; //!
   AliL3HoughMerger *fMerger; //!
   AliL3HoughIntMerger *fInterMerger; //!
   AliL3HoughGlobalMerger *fGlobalMerger; //!
+  AliL3Transform *fTransform; //!
 
   void CleanUp();
   void Init();
@@ -49,7 +52,7 @@ class AliL3Hough {
   
   void Process(Int_t minslice,Int_t maxslice);
   void ReadData(Int_t slice);
-  void Transform();
+  void Transform(Int_t row_range = -1);
   void ProcessSliceIter();
   void ProcessPatchIter(Int_t patch);
   void MergePatches();
@@ -69,9 +72,10 @@ class AliL3Hough {
   void SetAddHistograms() {fAddHistograms = kTRUE;}
   void DoIterative() {fDoIterative = kTRUE;}
   void SetWriteDigits() {fWriteDigits = kTRUE;}
+  void SetPeakThreshold(Int_t i) {fPeakThreshold = i;}
   
   //Getters
-  AliL3HoughTransformer *GetTransformer(Int_t i) {if(!fHoughTransformer[i]) return 0; return fHoughTransformer[i];}
+  AliL3HoughBaseTransformer *GetTransformer(Int_t i) {if(!fHoughTransformer[i]) return 0; return fHoughTransformer[i];}
   AliL3TrackArray *GetTracks(Int_t i) {if(!fTracks[i]) return 0; return fTracks[i];}
   AliL3HoughEval *GetEval(Int_t i) {if(!fEval[i]) return 0; return fEval[i];}
   AliL3HoughMerger *GetMerger() {if(!fMerger) return 0; return fMerger;}
