@@ -67,12 +67,14 @@
 # define fluka_closeinp fluka_closeinp_
 # define mcihad mcihad_
 # define mpdgha mpdgha_
+# define newplo newplo_
 #else 
 # define flukam  FLUKAM
 # define fluka_openinp FLUKA_OPENINP
 # define fluka_closeinp FLUKA_CLOSEINP
 # define mcihad MCIHAD
 # define mpdgha MPDGHA
+# define newplo NEWPLO
 #endif
 
 extern "C" 
@@ -81,6 +83,7 @@ extern "C"
   // Prototypes for FLUKA functions
   //
   void type_of_call flukam(const int&);
+  void type_of_call newplo();
   void type_of_call fluka_openinp(const int&, DEFCHARA);
   void type_of_call fluka_closeinp(const int&);
   int  type_of_call mcihad(const int&);
@@ -305,6 +308,9 @@ Bool_t TFluka::ProcessRun(Int_t nevent) {
   if (fVerbosityLevel >=3)
     cout << "<== TFluka::ProcessRun(" << nevent << ") called." 
 	 << endl;
+  // Write fluka specific scoring output
+  newplo();
+  
   return kTRUE;
 }
 
