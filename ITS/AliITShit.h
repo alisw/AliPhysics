@@ -5,12 +5,11 @@
 
 /* $Id$ */
 
-
 #include "AliHit.h" 
 
+class ostream;
+class istream;
 class TParticle;
-
-
 
 class AliITShit : public AliHit {
 ////////////////////////////////////////////////////////////////////////
@@ -224,7 +223,7 @@ class AliITShit : public AliHit {
 	 
 }; 
 // Input and output function for standard C++ input/output.
-ostream &operator<<(ostream &os,AliITShit &source);
-istream &operator>>(istream &os,AliITShit &source);
+ostream& operator<<(ostream &os,AliITShit &source);
+istream& operator>>(istream &os,AliITShit &source);
 
 #endif
