@@ -104,11 +104,11 @@ class AliITSgeomMatrix : public TObject {
 	// given a position error matrix in ALICE Cartesian global
 	// coordinates [cm] returns a position error matrix in detector/
 	// module local Cartesian local coordinates [cm]
-	void GtoLPositionError(const Double_t g[3][3],Double_t l[3][3]);
+	void GtoLPositionError(Double_t g[3][3],Double_t l[3][3]);
 	// given a position error matrix in detector/module Cartesian local
 	// coordinates [cm] returns a position error matrix in ALICE
 	// Cartesian global coordinates [cm]
-	void LtoGPositionError(const Double_t l[3][3],Double_t g[3][3]);
+	void LtoGPositionError(Double_t l[3][3],Double_t g[3][3]);
 	// Tracking Related Routines
 	void GtoLPositionTracking(const Double_t g[3],Double_t l[3]);
 	// Given a position in Cartesian Tracking global coordinates [cm]
@@ -125,12 +125,12 @@ class AliITSgeomMatrix : public TObject {
 	// given a position error matrix in Tracking Cartesian global
 	// coordinates [cm] returns a position error matrix in detector/
 	// module local Cartesian local coordinates [cm]
-	void GtoLPositionErrorTracking(const Double_t g[3][3],
+	void GtoLPositionErrorTracking(Double_t g[3][3],
 				       Double_t l[3][3]);
 	// given a position error matrix in detector/module Cartesian local
 	// coordinates [cm] returns a position error matrix in Tracking
 	// Cartesian global coordinates [cm]
-	void LtoGPositionErrorTracking(const Double_t l[3][3],
+	void LtoGPositionErrorTracking(Double_t l[3][3],
 				       Double_t g[3][3]);
 	// Computes the distance squared [cm^2] between a point t[3] and
 	// this module/detector

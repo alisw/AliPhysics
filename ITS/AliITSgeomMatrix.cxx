@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.10  2001/08/24 21:06:37  nilsen
+Added more documentation, fixed up some coding violations, and some
+forward declorations.
+
 Revision 1.9  2001/03/23 15:21:56  nilsen
 Added Cylinderical Coordinates for use with Tracking. Fixed a but in the
 Streamer, It was not setting a value for frot[3] as it should when reading.
@@ -415,7 +419,7 @@ void AliITSgeomMatrix::LtoGMomentum(const Double_t l[3],Double_t g[3]){
 	return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::GtoLPositionError(const Double_t g[3][3],
+void AliITSgeomMatrix::GtoLPositionError(      Double_t g[3][3],
                                                Double_t l[3][3]){
 ////////////////////////////////////////////////////////////////////////
 // Given an Uncertainty matrix in Global coordinates it is rotated so that 
@@ -430,7 +434,7 @@ void AliITSgeomMatrix::GtoLPositionError(const Double_t g[3][3],
 	return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::LtoGPositionError(const Double_t l[3][3],
+void AliITSgeomMatrix::LtoGPositionError(      Double_t l[3][3],
                                                Double_t g[3][3]){
 ////////////////////////////////////////////////////////////////////////
 // Given an Uncertainty matrix in Local coordinates it is rotated so that 
@@ -570,7 +574,7 @@ void AliITSgeomMatrix::LtoGMomentumTracking(const Double_t l[3],
 	return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::GtoLPositionErrorTracking(const Double_t g[3][3],
+void AliITSgeomMatrix::GtoLPositionErrorTracking(     Double_t g[3][3],
 						 Double_t l[3][3]){
 ////////////////////////////////////////////////////////////////////////
 // A slightly different coordinate system is used when tracking.
@@ -600,7 +604,7 @@ void AliITSgeomMatrix::GtoLPositionErrorTracking(const Double_t g[3][3],
 	return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::LtoGPositionErrorTracking(const Double_t l[3][3],
+void AliITSgeomMatrix::LtoGPositionErrorTracking( Double_t l[3][3],
 						 Double_t g[3][3]){
 ////////////////////////////////////////////////////////////////////////
 // A slightly different coordinate system is used when tracking.
