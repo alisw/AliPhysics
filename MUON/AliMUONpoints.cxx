@@ -112,7 +112,7 @@ AliMUONhit *AliMUONpoints::GetHit() const
   //
   //   Returns pointer to hit index in AliRun::fParticles
   //
-  AliMUON *MUON  = (AliMUON*)gAlice->GetDetector("MUON");
+  AliMUON *MUON  = (AliMUON*)gAlice->GetModule("MUON");
   gAlice->TreeH()->GetEvent(fTrackIndex);
   TClonesArray *MUONhits  = MUON->Hits();
   Int_t nhits = MUONhits->GetEntriesFast();
@@ -131,7 +131,7 @@ AliMUONdigit *AliMUONpoints::GetDigit() const
   Int_t chamber=display->GetChamber();
   Int_t cathode=display->GetCathode();
    
-  AliMUON *MUON  = (AliMUON*)gAlice->GetDetector("MUON");
+  AliMUON *MUON  = (AliMUON*)gAlice->GetModule("MUON");
   TClonesArray *MUONdigits  = MUON->DigitsAddress(chamber-1);
   gAlice->TreeD()->GetEvent(cathode);
   Int_t ndigits = MUONdigits->GetEntriesFast();
@@ -214,7 +214,7 @@ void AliMUONpoints::GetCenterOfGravity()
   Int_t chamber=display->GetChamber();
   Int_t cathode=display->GetCathode();
    
-  AliMUON *MUON  = (AliMUON*)gAlice->GetDetector("MUON");
+  AliMUON *MUON  = (AliMUON*)gAlice->GetModule("MUON");
   AliMUONchamber *iChamber;
   AliMUONsegmentation *segmentation;
   iChamber =&(MUON->Chamber(chamber-1));

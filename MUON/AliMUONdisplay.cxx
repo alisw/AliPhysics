@@ -614,7 +614,7 @@ void AliMUONdisplay::LoadDigits(Int_t chamber, Int_t cathode)
  
    ResetPoints();
 
-   AliMUON *MUON  = (AliMUON*)gAlice->GetDetector("MUON");
+   AliMUON *MUON  = (AliMUON*)gAlice->GetModule("MUON");
    AliMUONchamber*  iChamber;
    AliMUONsegmentation*  segmentation;
 
@@ -684,7 +684,7 @@ void AliMUONdisplay::LoadHits(Int_t chamber)
  
    ResetPhits();
 
-   AliMUON *MUON  = (AliMUON*)gAlice->GetDetector("MUON");
+   AliMUON *MUON  = (AliMUON*)gAlice->GetModule("MUON");
    AliMUONchamber*  iChamber;
 
    iChamber = &(MUON->Chamber(chamber-1));

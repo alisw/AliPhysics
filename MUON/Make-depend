@@ -2,117 +2,249 @@
  
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-AliMUON.o: /soft/root/include/TTUBE.h /soft/root/include/TNode.h
-AliMUON.o: /soft/root/include/TRandom.h /soft/root/include/TObject.h
-AliMUON.o: /soft/root/include/TVector.h /soft/root/include/TObjArray.h
+AliMUON.o: /soft/root/include/TTUBE.h /soft/root/include/TShape.h
+AliMUON.o: /soft/root/include/TNamed.h /soft/root/include/TObject.h
+AliMUON.o: /soft/root/include/Rtypes.h /soft/root/include/RConfig.h
+AliMUON.o: /usr/include/stdio.h /usr/local/include/g++/libio.h
+AliMUON.o: /usr/include/_G_config.h /usr/include/gnu/types.h
+AliMUON.o: /usr/include/features.h /usr/include/sys/cdefs.h
+AliMUON.o: /usr/include/gnu/stubs.h
+AliMUON.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliMUON.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliMUON.o: /usr/include/stdio_lim.h /soft/root/include/DllImport.h
+AliMUON.o: /soft/root/include/Varargs.h /soft/root/include/TStorage.h
+AliMUON.o: /soft/root/include/TBuffer.h /usr/include/string.h
+AliMUON.o: /soft/root/include/Bytes.h /soft/root/include/TList.h
+AliMUON.o: /soft/root/include/TSeqCollection.h
+AliMUON.o: /soft/root/include/TCollection.h /soft/root/include/TIterator.h
+AliMUON.o: /soft/root/include/TString.h /soft/root/include/TMath.h
+AliMUON.o: /soft/root/include/TRefCnt.h /soft/root/include/TMaterial.h
+AliMUON.o: /soft/root/include/TAttFill.h /soft/root/include/Gtypes.h
+AliMUON.o: /soft/root/include/Htypes.h /soft/root/include/TAttLine.h
+AliMUON.o: /soft/root/include/X3DBuffer.h /soft/root/include/TPolyLine3D.h
+AliMUON.o: /soft/root/include/TNode.h /soft/root/include/TRotMatrix.h
+AliMUON.o: /soft/root/include/TRandom.h /soft/root/include/TVector.h
+AliMUON.o: /soft/root/include/TError.h /soft/root/include/TObjArray.h
 AliMUON.o: AliMUON.h /hdb2/offline/pro/include/AliDetector.h
-AliMUON.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
-AliMUON.o: /soft/root/include/TBrowser.h /soft/root/include/TAttLine.h
-AliMUON.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
-AliMUON.o: /soft/root/include/Gtypes.h /hdb2/offline/pro/include/AliHit.h
-AliMUON.o: AliMUONConst.h /hdb2/offline/pro/include/AliDigit.h
+AliMUON.o: /hdb2/offline/pro/include/AliModule.h
+AliMUON.o: /soft/root/include/TClonesArray.h /soft/root/include/TBrowser.h
+AliMUON.o: /soft/root/include/TBrowserImp.h /soft/root/include/TAttMarker.h
+AliMUON.o: /soft/root/include/TArrayI.h /soft/root/include/TArray.h
+AliMUON.o: /hdb2/offline/pro/include/AliHit.h AliMUONConst.h
+AliMUON.o: /hdb2/offline/pro/include/AliDigit.h
 AliMUON.o: /hdb2/offline/pro/include/AliRun.h /soft/root/include/TROOT.h
-AliMUON.o: /soft/root/include/TList.h /soft/root/include/TStopwatch.h
-AliMUON.o: /soft/root/include/TTree.h /soft/root/include/TGeometry.h
+AliMUON.o: /soft/root/include/TDirectory.h /soft/root/include/TDatime.h
+AliMUON.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
+AliMUON.o: /soft/root/include/TBranch.h /soft/root/include/TStringLong.h
+AliMUON.o: /soft/root/include/TCut.h /soft/root/include/TGeometry.h
+AliMUON.o: /soft/root/include/THashList.h
 AliMUON.o: /hdb2/offline/pro/include/AliHeader.h
 AliMUON.o: /hdb2/offline/pro/include/AliMagF.h
 AliMUON.o: /hdb2/offline/pro/include/AliMC.h
 AliMUON.o: /hdb2/offline/pro/include/AliGenerator.h
 AliMUON.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
 AliMUON.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
+AliMUON.o: /soft/root/include/TH1.h /soft/root/include/TAxis.h
+AliMUON.o: /soft/root/include/TAttAxis.h /usr/local/include/g++/fstream.h
 AliMUON.o: /usr/local/include/g++/iostream.h
-AliMUON.o: /usr/local/include/g++/streambuf.h /usr/local/include/g++/libio.h
-AliMUON.o: /usr/include/_G_config.h /usr/include/gnu/types.h
-AliMUON.o: /usr/include/features.h /usr/include/sys/cdefs.h
-AliMUON.o: /usr/include/gnu/stubs.h
-AliMUON.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
-AliMUON.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliMUON.o: /usr/local/include/g++/streambuf.h /soft/root/include/TLego.h
+AliMUON.o: /soft/root/include/TF1.h /soft/root/include/TFormula.h
+AliMUON.o: /soft/root/include/TMethodCall.h /soft/root/include/TGaxis.h
+AliMUON.o: /soft/root/include/TLine.h /soft/root/include/TAttText.h
+AliMUON.o: /soft/root/include/TArrayC.h /soft/root/include/TArrayS.h
+AliMUON.o: /soft/root/include/TArrayD.h
 AliMUON.o: /hdb2/offline/pro/include/AliCallf77.h
-AliMUONdisplay.o: /soft/root/include/TROOT.h /soft/root/include/TTree.h
-AliMUONdisplay.o: /soft/root/include/TButton.h /soft/root/include/TColor.h
-AliMUONdisplay.o: /soft/root/include/TCanvas.h /soft/root/include/TView.h
+AliMUONdisplay.o: /soft/root/include/TROOT.h /soft/root/include/TDirectory.h
+AliMUONdisplay.o: /soft/root/include/TDatime.h /soft/root/include/TTree.h
+AliMUONdisplay.o: /soft/root/include/TBranch.h
+AliMUONdisplay.o: /soft/root/include/TStringLong.h /soft/root/include/TCut.h
+AliMUONdisplay.o: /soft/root/include/TButton.h /soft/root/include/TPad.h
+AliMUONdisplay.o: /soft/root/include/TVirtualPad.h
+AliMUONdisplay.o: /soft/root/include/TAttPad.h /soft/root/include/Gtypes.h
+AliMUONdisplay.o: /soft/root/include/Htypes.h /soft/root/include/TFrame.h
+AliMUONdisplay.o: /soft/root/include/TWbox.h /soft/root/include/TBox.h
+AliMUONdisplay.o: /soft/root/include/TObject.h /soft/root/include/Rtypes.h
+AliMUONdisplay.o: /soft/root/include/RConfig.h /usr/include/stdio.h
+AliMUONdisplay.o: /usr/local/include/g++/libio.h /usr/include/_G_config.h
+AliMUONdisplay.o: /usr/include/gnu/types.h /usr/include/features.h
+AliMUONdisplay.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
+AliMUONdisplay.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliMUONdisplay.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliMUONdisplay.o: /usr/include/stdio_lim.h /soft/root/include/DllImport.h
+AliMUONdisplay.o: /soft/root/include/Varargs.h /soft/root/include/TStorage.h
+AliMUONdisplay.o: /soft/root/include/TBuffer.h /usr/include/string.h
+AliMUONdisplay.o: /soft/root/include/Bytes.h /soft/root/include/TAttLine.h
+AliMUONdisplay.o: /soft/root/include/TAttFill.h /soft/root/include/TGXW.h
+AliMUONdisplay.o: /soft/root/include/TNamed.h /soft/root/include/TList.h
+AliMUONdisplay.o: /soft/root/include/TSeqCollection.h
+AliMUONdisplay.o: /soft/root/include/TCollection.h
+AliMUONdisplay.o: /soft/root/include/TIterator.h /soft/root/include/TString.h
+AliMUONdisplay.o: /soft/root/include/TMath.h /soft/root/include/TRefCnt.h
+AliMUONdisplay.o: /soft/root/include/TAttText.h
+AliMUONdisplay.o: /soft/root/include/TAttMarker.h
+AliMUONdisplay.o: /soft/root/include/GuiTypes.h /soft/root/include/Buttons.h
+AliMUONdisplay.o: /soft/root/include/TColor.h /soft/root/include/TCanvas.h
+AliMUONdisplay.o: /soft/root/include/TAttCanvas.h
+AliMUONdisplay.o: /soft/root/include/TCanvasImp.h /soft/root/include/TView.h
 AliMUONdisplay.o: /soft/root/include/TText.h
 AliMUONdisplay.o: /soft/root/include/TPolyMarker3D.h
+AliMUONdisplay.o: /soft/root/include/X3DBuffer.h
 AliMUONdisplay.o: /soft/root/include/TPolyMarker.h
-AliMUONdisplay.o: /soft/root/include/TPaveLabel.h
-AliMUONdisplay.o: /soft/root/include/TPaveText.h /soft/root/include/TList.h
+AliMUONdisplay.o: /soft/root/include/TPaveLabel.h /soft/root/include/TPave.h
+AliMUONdisplay.o: /soft/root/include/TPaveText.h /soft/root/include/TLine.h
 AliMUONdisplay.o: /soft/root/include/TDiamond.h /soft/root/include/TNode.h
-AliMUONdisplay.o: /soft/root/include/TArc.h /soft/root/include/TTUBE.h
+AliMUONdisplay.o: /soft/root/include/TRotMatrix.h /soft/root/include/TArc.h
+AliMUONdisplay.o: /soft/root/include/TEllipse.h /soft/root/include/TTUBE.h
+AliMUONdisplay.o: /soft/root/include/TShape.h /soft/root/include/TMaterial.h
+AliMUONdisplay.o: /soft/root/include/TPolyLine3D.h
 AliMUONdisplay.o: /soft/root/include/TSlider.h
 AliMUONdisplay.o: /soft/root/include/TSliderBox.h /soft/root/include/TGaxis.h
-AliMUONdisplay.o: /soft/root/include/TGXW.h /soft/root/include/TMath.h
-AliMUONdisplay.o: /soft/root/include/X3DBuffer.h
-AliMUONdisplay.o: /soft/root/include/DllImport.h
 AliMUONdisplay.o: /hdb2/offline/pro/include/AliRun.h
 AliMUONdisplay.o: /soft/root/include/TBrowser.h
+AliMUONdisplay.o: /soft/root/include/TBrowserImp.h
 AliMUONdisplay.o: /soft/root/include/TStopwatch.h
 AliMUONdisplay.o: /soft/root/include/TGeometry.h
-AliMUONdisplay.o: /hdb2/offline/pro/include/AliDetector.h
-AliMUONdisplay.o: /soft/root/include/TNamed.h
+AliMUONdisplay.o: /soft/root/include/THashList.h
+AliMUONdisplay.o: /hdb2/offline/pro/include/AliModule.h
 AliMUONdisplay.o: /soft/root/include/TClonesArray.h
-AliMUONdisplay.o: /soft/root/include/TAttLine.h
-AliMUONdisplay.o: /soft/root/include/TAttMarker.h
-AliMUONdisplay.o: /soft/root/include/TArrayI.h /soft/root/include/Gtypes.h
+AliMUONdisplay.o: /soft/root/include/TArrayI.h /soft/root/include/TArray.h
 AliMUONdisplay.o: /hdb2/offline/pro/include/AliHit.h
-AliMUONdisplay.o: /soft/root/include/TObject.h
 AliMUONdisplay.o: /hdb2/offline/pro/include/AliHeader.h
 AliMUONdisplay.o: /hdb2/offline/pro/include/AliMagF.h
-AliMUONdisplay.o: /soft/root/include/TVector.h
+AliMUONdisplay.o: /soft/root/include/TVector.h /soft/root/include/TError.h
 AliMUONdisplay.o: /hdb2/offline/pro/include/AliMC.h
 AliMUONdisplay.o: /hdb2/offline/pro/include/AliGenerator.h
 AliMUONdisplay.o: /soft/root/include/TArrayF.h
 AliMUONdisplay.o: /soft/root/include/TGenerator.h
 AliMUONdisplay.o: /hdb2/offline/pro/include/AliLego.h
-AliMUONdisplay.o: /soft/root/include/TH2.h AliMUON.h AliMUONConst.h
-AliMUONdisplay.o: /hdb2/offline/pro/include/AliDigit.h
+AliMUONdisplay.o: /soft/root/include/TH2.h /soft/root/include/TH1.h
+AliMUONdisplay.o: /soft/root/include/TAxis.h /soft/root/include/TAttAxis.h
+AliMUONdisplay.o: /usr/local/include/g++/fstream.h
+AliMUONdisplay.o: /usr/local/include/g++/iostream.h
+AliMUONdisplay.o: /usr/local/include/g++/streambuf.h
+AliMUONdisplay.o: /soft/root/include/TLego.h /soft/root/include/TF1.h
+AliMUONdisplay.o: /soft/root/include/TFormula.h
+AliMUONdisplay.o: /soft/root/include/TMethodCall.h
+AliMUONdisplay.o: /soft/root/include/TArrayC.h /soft/root/include/TArrayS.h
+AliMUONdisplay.o: /soft/root/include/TArrayD.h
+AliMUONdisplay.o: /hdb2/offline/pro/include/AliDetector.h AliMUON.h
+AliMUONdisplay.o: AliMUONConst.h /hdb2/offline/pro/include/AliDigit.h
 AliMUONdisplay.o: /soft/root/include/TObjArray.h AliMUONdisplay.h
 AliMUONdisplay.o: /hdb2/offline/pro/include/AliDisplay.h AliMUONpoints.h
 AliMUONdisplay.o: /hdb2/offline/pro/include/AliPoints.h
 AliMUONdisplay.o: /hdb2/offline/pro/include/GParticle.h
 AliMUONpoints.o: AliMUONdisplay.h /soft/root/include/TObject.h
+AliMUONpoints.o: /soft/root/include/Rtypes.h /soft/root/include/RConfig.h
+AliMUONpoints.o: /usr/include/stdio.h /usr/local/include/g++/libio.h
+AliMUONpoints.o: /usr/include/_G_config.h /usr/include/gnu/types.h
+AliMUONpoints.o: /usr/include/features.h /usr/include/sys/cdefs.h
+AliMUONpoints.o: /usr/include/gnu/stubs.h
+AliMUONpoints.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliMUONpoints.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliMUONpoints.o: /usr/include/stdio_lim.h /soft/root/include/DllImport.h
+AliMUONpoints.o: /soft/root/include/Varargs.h /soft/root/include/TStorage.h
+AliMUONpoints.o: /soft/root/include/TBuffer.h /usr/include/string.h
+AliMUONpoints.o: /soft/root/include/Bytes.h
 AliMUONpoints.o: /hdb2/offline/pro/include/AliDisplay.h AliMUONpoints.h
-AliMUONpoints.o: /soft/root/include/TPolyMarker3D.h AliMUON.h
+AliMUONpoints.o: /soft/root/include/TPolyMarker3D.h
+AliMUONpoints.o: /soft/root/include/X3DBuffer.h AliMUON.h
 AliMUONpoints.o: /hdb2/offline/pro/include/AliDetector.h
-AliMUONpoints.o: /soft/root/include/TNamed.h
+AliMUONpoints.o: /hdb2/offline/pro/include/AliModule.h
+AliMUONpoints.o: /soft/root/include/TNamed.h /soft/root/include/TList.h
+AliMUONpoints.o: /soft/root/include/TSeqCollection.h
+AliMUONpoints.o: /soft/root/include/TCollection.h
+AliMUONpoints.o: /soft/root/include/TIterator.h /soft/root/include/TString.h
+AliMUONpoints.o: /soft/root/include/TMath.h /soft/root/include/TRefCnt.h
 AliMUONpoints.o: /soft/root/include/TClonesArray.h
-AliMUONpoints.o: /soft/root/include/TBrowser.h /soft/root/include/TAttLine.h
+AliMUONpoints.o: /soft/root/include/TBrowser.h
+AliMUONpoints.o: /soft/root/include/TBrowserImp.h
+AliMUONpoints.o: /soft/root/include/TAttLine.h
 AliMUONpoints.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
-AliMUONpoints.o: /soft/root/include/Gtypes.h
+AliMUONpoints.o: /soft/root/include/TArray.h
 AliMUONpoints.o: /hdb2/offline/pro/include/AliHit.h AliMUONConst.h
 AliMUONpoints.o: /hdb2/offline/pro/include/AliDigit.h
-AliMUONpoints.o: /soft/root/include/TVector.h /soft/root/include/TObjArray.h
+AliMUONpoints.o: /soft/root/include/TVector.h /soft/root/include/TError.h
+AliMUONpoints.o: /soft/root/include/TObjArray.h
 AliMUONpoints.o: /hdb2/offline/pro/include/AliPoints.h
 AliMUONpoints.o: /hdb2/offline/pro/include/GParticle.h
-AliMUONpoints.o: /soft/root/include/TMath.h
 AliMUONpoints.o: /hdb2/offline/pro/include/AliRun.h
-AliMUONpoints.o: /soft/root/include/TROOT.h /soft/root/include/TList.h
-AliMUONpoints.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
+AliMUONpoints.o: /soft/root/include/TROOT.h /soft/root/include/TDirectory.h
+AliMUONpoints.o: /soft/root/include/TDatime.h /soft/root/include/TStopwatch.h
+AliMUONpoints.o: /soft/root/include/TTree.h /soft/root/include/TBranch.h
+AliMUONpoints.o: /soft/root/include/TStringLong.h /soft/root/include/TCut.h
 AliMUONpoints.o: /soft/root/include/TGeometry.h
+AliMUONpoints.o: /soft/root/include/THashList.h
 AliMUONpoints.o: /hdb2/offline/pro/include/AliHeader.h
 AliMUONpoints.o: /hdb2/offline/pro/include/AliMagF.h
 AliMUONpoints.o: /hdb2/offline/pro/include/AliMC.h
 AliMUONpoints.o: /hdb2/offline/pro/include/AliGenerator.h
 AliMUONpoints.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
 AliMUONpoints.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
-AliMUONpoints.o: /soft/root/include/TPad.h /soft/root/include/TView.h
-AliMUONsegmentv1.o: /soft/root/include/TTUBE.h /soft/root/include/TNode.h
+AliMUONpoints.o: /soft/root/include/TH1.h /soft/root/include/TAxis.h
+AliMUONpoints.o: /soft/root/include/TAttAxis.h
+AliMUONpoints.o: /usr/local/include/g++/fstream.h
+AliMUONpoints.o: /usr/local/include/g++/iostream.h
+AliMUONpoints.o: /usr/local/include/g++/streambuf.h
+AliMUONpoints.o: /soft/root/include/TLego.h /soft/root/include/TF1.h
+AliMUONpoints.o: /soft/root/include/TFormula.h
+AliMUONpoints.o: /soft/root/include/TMethodCall.h /soft/root/include/TGaxis.h
+AliMUONpoints.o: /soft/root/include/TLine.h /soft/root/include/TAttText.h
+AliMUONpoints.o: /soft/root/include/TArrayC.h /soft/root/include/TArrayS.h
+AliMUONpoints.o: /soft/root/include/TArrayD.h /soft/root/include/TPad.h
+AliMUONpoints.o: /soft/root/include/TVirtualPad.h
+AliMUONpoints.o: /soft/root/include/TAttPad.h /soft/root/include/Gtypes.h
+AliMUONpoints.o: /soft/root/include/Htypes.h /soft/root/include/TFrame.h
+AliMUONpoints.o: /soft/root/include/TWbox.h /soft/root/include/TBox.h
+AliMUONpoints.o: /soft/root/include/TAttFill.h /soft/root/include/TGXW.h
+AliMUONpoints.o: /soft/root/include/GuiTypes.h /soft/root/include/Buttons.h
+AliMUONpoints.o: /soft/root/include/TView.h
+AliMUONsegmentv1.o: /soft/root/include/TTUBE.h /soft/root/include/TShape.h
+AliMUONsegmentv1.o: /soft/root/include/TNamed.h /soft/root/include/TObject.h
+AliMUONsegmentv1.o: /soft/root/include/Rtypes.h /soft/root/include/RConfig.h
+AliMUONsegmentv1.o: /usr/include/stdio.h /usr/local/include/g++/libio.h
+AliMUONsegmentv1.o: /usr/include/_G_config.h /usr/include/gnu/types.h
+AliMUONsegmentv1.o: /usr/include/features.h /usr/include/sys/cdefs.h
+AliMUONsegmentv1.o: /usr/include/gnu/stubs.h
+AliMUONsegmentv1.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliMUONsegmentv1.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliMUONsegmentv1.o: /usr/include/stdio_lim.h /soft/root/include/DllImport.h
+AliMUONsegmentv1.o: /soft/root/include/Varargs.h
+AliMUONsegmentv1.o: /soft/root/include/TStorage.h
+AliMUONsegmentv1.o: /soft/root/include/TBuffer.h /usr/include/string.h
+AliMUONsegmentv1.o: /soft/root/include/Bytes.h /soft/root/include/TList.h
+AliMUONsegmentv1.o: /soft/root/include/TSeqCollection.h
+AliMUONsegmentv1.o: /soft/root/include/TCollection.h
+AliMUONsegmentv1.o: /soft/root/include/TIterator.h
+AliMUONsegmentv1.o: /soft/root/include/TString.h /soft/root/include/TMath.h
+AliMUONsegmentv1.o: /soft/root/include/TRefCnt.h
+AliMUONsegmentv1.o: /soft/root/include/TMaterial.h
+AliMUONsegmentv1.o: /soft/root/include/TAttFill.h /soft/root/include/Gtypes.h
+AliMUONsegmentv1.o: /soft/root/include/Htypes.h /soft/root/include/TAttLine.h
+AliMUONsegmentv1.o: /soft/root/include/X3DBuffer.h
+AliMUONsegmentv1.o: /soft/root/include/TPolyLine3D.h
+AliMUONsegmentv1.o: /soft/root/include/TNode.h
+AliMUONsegmentv1.o: /soft/root/include/TRotMatrix.h
 AliMUONsegmentv1.o: /soft/root/include/TRandom.h AliMUONv0.h AliMUON.h
 AliMUONsegmentv1.o: /hdb2/offline/pro/include/AliDetector.h
-AliMUONsegmentv1.o: /soft/root/include/TNamed.h
+AliMUONsegmentv1.o: /hdb2/offline/pro/include/AliModule.h
 AliMUONsegmentv1.o: /soft/root/include/TClonesArray.h
 AliMUONsegmentv1.o: /soft/root/include/TBrowser.h
-AliMUONsegmentv1.o: /soft/root/include/TAttLine.h
+AliMUONsegmentv1.o: /soft/root/include/TBrowserImp.h
 AliMUONsegmentv1.o: /soft/root/include/TAttMarker.h
-AliMUONsegmentv1.o: /soft/root/include/TArrayI.h /soft/root/include/Gtypes.h
-AliMUONsegmentv1.o: /hdb2/offline/pro/include/AliHit.h
-AliMUONsegmentv1.o: /soft/root/include/TObject.h AliMUONConst.h
+AliMUONsegmentv1.o: /soft/root/include/TArrayI.h /soft/root/include/TArray.h
+AliMUONsegmentv1.o: /hdb2/offline/pro/include/AliHit.h AliMUONConst.h
 AliMUONsegmentv1.o: /hdb2/offline/pro/include/AliDigit.h
-AliMUONsegmentv1.o: /soft/root/include/TVector.h
+AliMUONsegmentv1.o: /soft/root/include/TVector.h /soft/root/include/TError.h
 AliMUONsegmentv1.o: /soft/root/include/TObjArray.h AliMUONsegmentv1.h
 AliMUONsegmentv1.o: /hdb2/offline/pro/include/AliRun.h
-AliMUONsegmentv1.o: /soft/root/include/TROOT.h /soft/root/include/TList.h
+AliMUONsegmentv1.o: /soft/root/include/TROOT.h
+AliMUONsegmentv1.o: /soft/root/include/TDirectory.h
+AliMUONsegmentv1.o: /soft/root/include/TDatime.h
 AliMUONsegmentv1.o: /soft/root/include/TStopwatch.h
-AliMUONsegmentv1.o: /soft/root/include/TTree.h /soft/root/include/TGeometry.h
+AliMUONsegmentv1.o: /soft/root/include/TTree.h /soft/root/include/TBranch.h
+AliMUONsegmentv1.o: /soft/root/include/TStringLong.h
+AliMUONsegmentv1.o: /soft/root/include/TCut.h /soft/root/include/TGeometry.h
+AliMUONsegmentv1.o: /soft/root/include/THashList.h
 AliMUONsegmentv1.o: /hdb2/offline/pro/include/AliHeader.h
 AliMUONsegmentv1.o: /hdb2/offline/pro/include/AliMagF.h
 AliMUONsegmentv1.o: /hdb2/offline/pro/include/AliMC.h
@@ -120,66 +252,121 @@ AliMUONsegmentv1.o: /hdb2/offline/pro/include/AliGenerator.h
 AliMUONsegmentv1.o: /soft/root/include/TArrayF.h
 AliMUONsegmentv1.o: /soft/root/include/TGenerator.h
 AliMUONsegmentv1.o: /hdb2/offline/pro/include/AliLego.h
-AliMUONsegmentv1.o: /soft/root/include/TH2.h
+AliMUONsegmentv1.o: /soft/root/include/TH2.h /soft/root/include/TH1.h
+AliMUONsegmentv1.o: /soft/root/include/TAxis.h /soft/root/include/TAttAxis.h
+AliMUONsegmentv1.o: /usr/local/include/g++/fstream.h
 AliMUONsegmentv1.o: /usr/local/include/g++/iostream.h
 AliMUONsegmentv1.o: /usr/local/include/g++/streambuf.h
-AliMUONsegmentv1.o: /usr/local/include/g++/libio.h /usr/include/_G_config.h
-AliMUONsegmentv1.o: /usr/include/gnu/types.h /usr/include/features.h
-AliMUONsegmentv1.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
-AliMUONsegmentv1.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
-AliMUONsegmentv1.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
-AliMUONv0.o: /soft/root/include/TTUBE.h /soft/root/include/TNode.h
+AliMUONsegmentv1.o: /soft/root/include/TLego.h /soft/root/include/TF1.h
+AliMUONsegmentv1.o: /soft/root/include/TFormula.h
+AliMUONsegmentv1.o: /soft/root/include/TMethodCall.h
+AliMUONsegmentv1.o: /soft/root/include/TGaxis.h /soft/root/include/TLine.h
+AliMUONsegmentv1.o: /soft/root/include/TAttText.h
+AliMUONsegmentv1.o: /soft/root/include/TArrayC.h /soft/root/include/TArrayS.h
+AliMUONsegmentv1.o: /soft/root/include/TArrayD.h
+AliMUONv0.o: /soft/root/include/TTUBE.h /soft/root/include/TShape.h
+AliMUONv0.o: /soft/root/include/TNamed.h /soft/root/include/TObject.h
+AliMUONv0.o: /soft/root/include/Rtypes.h /soft/root/include/RConfig.h
+AliMUONv0.o: /usr/include/stdio.h /usr/local/include/g++/libio.h
+AliMUONv0.o: /usr/include/_G_config.h /usr/include/gnu/types.h
+AliMUONv0.o: /usr/include/features.h /usr/include/sys/cdefs.h
+AliMUONv0.o: /usr/include/gnu/stubs.h
+AliMUONv0.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliMUONv0.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliMUONv0.o: /usr/include/stdio_lim.h /soft/root/include/DllImport.h
+AliMUONv0.o: /soft/root/include/Varargs.h /soft/root/include/TStorage.h
+AliMUONv0.o: /soft/root/include/TBuffer.h /usr/include/string.h
+AliMUONv0.o: /soft/root/include/Bytes.h /soft/root/include/TList.h
+AliMUONv0.o: /soft/root/include/TSeqCollection.h
+AliMUONv0.o: /soft/root/include/TCollection.h /soft/root/include/TIterator.h
+AliMUONv0.o: /soft/root/include/TString.h /soft/root/include/TMath.h
+AliMUONv0.o: /soft/root/include/TRefCnt.h /soft/root/include/TMaterial.h
+AliMUONv0.o: /soft/root/include/TAttFill.h /soft/root/include/Gtypes.h
+AliMUONv0.o: /soft/root/include/Htypes.h /soft/root/include/TAttLine.h
+AliMUONv0.o: /soft/root/include/X3DBuffer.h /soft/root/include/TPolyLine3D.h
+AliMUONv0.o: /soft/root/include/TNode.h /soft/root/include/TRotMatrix.h
 AliMUONv0.o: /soft/root/include/TRandom.h AliMUONv0.h AliMUON.h
 AliMUONv0.o: /hdb2/offline/pro/include/AliDetector.h
-AliMUONv0.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
-AliMUONv0.o: /soft/root/include/TBrowser.h /soft/root/include/TAttLine.h
-AliMUONv0.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
-AliMUONv0.o: /soft/root/include/Gtypes.h /hdb2/offline/pro/include/AliHit.h
-AliMUONv0.o: /soft/root/include/TObject.h AliMUONConst.h
+AliMUONv0.o: /hdb2/offline/pro/include/AliModule.h
+AliMUONv0.o: /soft/root/include/TClonesArray.h /soft/root/include/TBrowser.h
+AliMUONv0.o: /soft/root/include/TBrowserImp.h /soft/root/include/TAttMarker.h
+AliMUONv0.o: /soft/root/include/TArrayI.h /soft/root/include/TArray.h
+AliMUONv0.o: /hdb2/offline/pro/include/AliHit.h AliMUONConst.h
 AliMUONv0.o: /hdb2/offline/pro/include/AliDigit.h
-AliMUONv0.o: /soft/root/include/TVector.h /soft/root/include/TObjArray.h
+AliMUONv0.o: /soft/root/include/TVector.h /soft/root/include/TError.h
+AliMUONv0.o: /soft/root/include/TObjArray.h
 AliMUONv0.o: /hdb2/offline/pro/include/AliRun.h /soft/root/include/TROOT.h
-AliMUONv0.o: /soft/root/include/TList.h /soft/root/include/TStopwatch.h
-AliMUONv0.o: /soft/root/include/TTree.h /soft/root/include/TGeometry.h
+AliMUONv0.o: /soft/root/include/TDirectory.h /soft/root/include/TDatime.h
+AliMUONv0.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
+AliMUONv0.o: /soft/root/include/TBranch.h /soft/root/include/TStringLong.h
+AliMUONv0.o: /soft/root/include/TCut.h /soft/root/include/TGeometry.h
+AliMUONv0.o: /soft/root/include/THashList.h
 AliMUONv0.o: /hdb2/offline/pro/include/AliHeader.h
 AliMUONv0.o: /hdb2/offline/pro/include/AliMagF.h
 AliMUONv0.o: /hdb2/offline/pro/include/AliMC.h
 AliMUONv0.o: /hdb2/offline/pro/include/AliGenerator.h
 AliMUONv0.o: /soft/root/include/TArrayF.h /soft/root/include/TGenerator.h
 AliMUONv0.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
+AliMUONv0.o: /soft/root/include/TH1.h /soft/root/include/TAxis.h
+AliMUONv0.o: /soft/root/include/TAttAxis.h /usr/local/include/g++/fstream.h
 AliMUONv0.o: /usr/local/include/g++/iostream.h
-AliMUONv0.o: /usr/local/include/g++/streambuf.h
-AliMUONv0.o: /usr/local/include/g++/libio.h /usr/include/_G_config.h
-AliMUONv0.o: /usr/include/gnu/types.h /usr/include/features.h
-AliMUONv0.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
-AliMUONv0.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
-AliMUONv0.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliMUONv0.o: /usr/local/include/g++/streambuf.h /soft/root/include/TLego.h
+AliMUONv0.o: /soft/root/include/TF1.h /soft/root/include/TFormula.h
+AliMUONv0.o: /soft/root/include/TMethodCall.h /soft/root/include/TGaxis.h
+AliMUONv0.o: /soft/root/include/TLine.h /soft/root/include/TAttText.h
+AliMUONv0.o: /soft/root/include/TArrayC.h /soft/root/include/TArrayS.h
+AliMUONv0.o: /soft/root/include/TArrayD.h
 AliMUONv0.o: /hdb2/offline/pro/include/AliCallf77.h
-AliMUONv0.o: /hdb2/offline/pro/include/AliConst.h /soft/root/include/TMath.h
-AliMUONv01.o: /soft/root/include/TTUBE.h /soft/root/include/TNode.h
+AliMUONv0.o: /hdb2/offline/pro/include/AliConst.h
+AliMUONv01.o: /soft/root/include/TTUBE.h /soft/root/include/TShape.h
+AliMUONv01.o: /soft/root/include/TNamed.h /soft/root/include/TObject.h
+AliMUONv01.o: /soft/root/include/Rtypes.h /soft/root/include/RConfig.h
+AliMUONv01.o: /usr/include/stdio.h /usr/local/include/g++/libio.h
+AliMUONv01.o: /usr/include/_G_config.h /usr/include/gnu/types.h
+AliMUONv01.o: /usr/include/features.h /usr/include/sys/cdefs.h
+AliMUONv01.o: /usr/include/gnu/stubs.h
+AliMUONv01.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliMUONv01.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliMUONv01.o: /usr/include/stdio_lim.h /soft/root/include/DllImport.h
+AliMUONv01.o: /soft/root/include/Varargs.h /soft/root/include/TStorage.h
+AliMUONv01.o: /soft/root/include/TBuffer.h /usr/include/string.h
+AliMUONv01.o: /soft/root/include/Bytes.h /soft/root/include/TList.h
+AliMUONv01.o: /soft/root/include/TSeqCollection.h
+AliMUONv01.o: /soft/root/include/TCollection.h /soft/root/include/TIterator.h
+AliMUONv01.o: /soft/root/include/TString.h /soft/root/include/TMath.h
+AliMUONv01.o: /soft/root/include/TRefCnt.h /soft/root/include/TMaterial.h
+AliMUONv01.o: /soft/root/include/TAttFill.h /soft/root/include/Gtypes.h
+AliMUONv01.o: /soft/root/include/Htypes.h /soft/root/include/TAttLine.h
+AliMUONv01.o: /soft/root/include/X3DBuffer.h /soft/root/include/TPolyLine3D.h
+AliMUONv01.o: /soft/root/include/TNode.h /soft/root/include/TRotMatrix.h
 AliMUONv01.o: /soft/root/include/TRandom.h AliMUONv01.h AliMUON.h
 AliMUONv01.o: /hdb2/offline/pro/include/AliDetector.h
-AliMUONv01.o: /soft/root/include/TNamed.h /soft/root/include/TClonesArray.h
-AliMUONv01.o: /soft/root/include/TBrowser.h /soft/root/include/TAttLine.h
+AliMUONv01.o: /hdb2/offline/pro/include/AliModule.h
+AliMUONv01.o: /soft/root/include/TClonesArray.h /soft/root/include/TBrowser.h
+AliMUONv01.o: /soft/root/include/TBrowserImp.h
 AliMUONv01.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
-AliMUONv01.o: /soft/root/include/Gtypes.h /hdb2/offline/pro/include/AliHit.h
-AliMUONv01.o: /soft/root/include/TObject.h AliMUONConst.h
-AliMUONv01.o: /hdb2/offline/pro/include/AliDigit.h
-AliMUONv01.o: /soft/root/include/TVector.h /soft/root/include/TObjArray.h
-AliMUONv01.o: /soft/root/include/TArrayF.h /hdb2/offline/pro/include/AliRun.h
-AliMUONv01.o: /soft/root/include/TROOT.h /soft/root/include/TList.h
+AliMUONv01.o: /soft/root/include/TArray.h /hdb2/offline/pro/include/AliHit.h
+AliMUONv01.o: AliMUONConst.h /hdb2/offline/pro/include/AliDigit.h
+AliMUONv01.o: /soft/root/include/TVector.h /soft/root/include/TError.h
+AliMUONv01.o: /soft/root/include/TObjArray.h /soft/root/include/TArrayF.h
+AliMUONv01.o: /hdb2/offline/pro/include/AliRun.h /soft/root/include/TROOT.h
+AliMUONv01.o: /soft/root/include/TDirectory.h /soft/root/include/TDatime.h
 AliMUONv01.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
-AliMUONv01.o: /soft/root/include/TGeometry.h
+AliMUONv01.o: /soft/root/include/TBranch.h /soft/root/include/TStringLong.h
+AliMUONv01.o: /soft/root/include/TCut.h /soft/root/include/TGeometry.h
+AliMUONv01.o: /soft/root/include/THashList.h
 AliMUONv01.o: /hdb2/offline/pro/include/AliHeader.h
 AliMUONv01.o: /hdb2/offline/pro/include/AliMagF.h
 AliMUONv01.o: /hdb2/offline/pro/include/AliMC.h
 AliMUONv01.o: /hdb2/offline/pro/include/AliGenerator.h
 AliMUONv01.o: /soft/root/include/TGenerator.h
 AliMUONv01.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
+AliMUONv01.o: /soft/root/include/TH1.h /soft/root/include/TAxis.h
+AliMUONv01.o: /soft/root/include/TAttAxis.h /usr/local/include/g++/fstream.h
 AliMUONv01.o: /usr/local/include/g++/iostream.h
-AliMUONv01.o: /usr/local/include/g++/streambuf.h
-AliMUONv01.o: /usr/local/include/g++/libio.h /usr/include/_G_config.h
-AliMUONv01.o: /usr/include/gnu/types.h /usr/include/features.h
-AliMUONv01.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
-AliMUONv01.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
-AliMUONv01.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stdarg.h
+AliMUONv01.o: /usr/local/include/g++/streambuf.h /soft/root/include/TLego.h
+AliMUONv01.o: /soft/root/include/TF1.h /soft/root/include/TFormula.h
+AliMUONv01.o: /soft/root/include/TMethodCall.h /soft/root/include/TGaxis.h
+AliMUONv01.o: /soft/root/include/TLine.h /soft/root/include/TAttText.h
+AliMUONv01.o: /soft/root/include/TArrayC.h /soft/root/include/TArrayS.h
+AliMUONv01.o: /soft/root/include/TArrayD.h
