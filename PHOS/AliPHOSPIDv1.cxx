@@ -173,13 +173,16 @@ void AliPHOSPIDv1::InitParameters()
   fNEvent            = 0 ;            
   fRecParticlesInRun = 0 ;
   SetParameters() ; // fill the parameters matrix from parameters file
+  SetEventRange(0,-1) ;
 }
 
 //________________________________________________________________________
-void  AliPHOSPIDv1::Exec(Option_t * option) 
+void  AliPHOSPIDv1::Exec(Option_t *option)
 {
-  //Steering method
-  
+  // Steering method to perform particle reconstruction and identification
+  // for the event range from fFirstEvent to fLastEvent.
+  // This range is optionally set by SetEventRange().
+  // if fLastEvent=-1 (by default), then process events until the end.
 
   if(strstr(option,"tim"))
     gBenchmark->Start("PHOSPID");
@@ -192,11 +195,11 @@ void  AliPHOSPIDv1::Exec(Option_t * option)
 
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
  
-  Int_t nevents = gime->MaxEvent() ;       
-  Int_t ievent ;
+  if (fLastEvent == -1) fLastEvent = gime->MaxEvent() - 1 ;
+  else fLastEvent = TMath::Min(fLastEvent,gime->MaxEvent());
+  Int_t nEvents   = fLastEvent - fFirstEvent + 1;
 
-
-  for(ievent = 0; ievent < nevents; ievent++){
+  for (Int_t ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
     gime->Event(ievent,"TR") ;
     if(gime->TrackSegments() && //Skip events, where no track segments made
        gime->TrackSegments()->GetEntriesFast()) {
@@ -212,7 +215,7 @@ void  AliPHOSPIDv1::Exec(Option_t * option)
     gBenchmark->Stop("PHOSPID");
     Info("Exec", "took %f seconds for PID %f seconds per event", 
 	 gBenchmark->GetCpuTime("PHOSPID"),  
-	 gBenchmark->GetCpuTime("PHOSPID")/nevents) ;
+	 gBenchmark->GetCpuTime("PHOSPID")/nEvents) ;
   }
  
   Unload();

@@ -182,6 +182,7 @@ void  AliPHOSTrackSegmentMakerv1::InitParameters()
   fCpvLast   = 0 ;   
   fLinkUpArray = 0 ;
   fTrackSegmentsInRun       = 0 ; 
+  SetEventRange(0,-1) ;
 }
 
 
@@ -299,9 +300,12 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
 }
 
 //____________________________________________________________________________
-void  AliPHOSTrackSegmentMakerv1::Exec(Option_t * option)
+void  AliPHOSTrackSegmentMakerv1::Exec(Option_t *option)
 {
-  // STEERing method
+  // Steering method to perform track segment construction for events
+  // in the range from fFirstEvent to fLastEvent.
+  // This range is optionally set by SetEventRange().
+  // if fLastEvent=-1 (by default), then process events until the end.
   
   if(strstr(option,"tim"))
     gBenchmark->Start("PHOSTSMaker");
@@ -315,10 +319,11 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t * option)
   
   const AliPHOSGeometry * geom = gime->PHOSGeometry() ; 
 
-  Int_t nevents = gime->MaxEvent() ;    
-  Int_t ievent ;
+  if (fLastEvent == -1) fLastEvent = gime->MaxEvent() - 1 ;
+  else fLastEvent = TMath::Min(fLastEvent,gime->MaxEvent());
+  Int_t nEvents   = fLastEvent - fFirstEvent + 1;
 
-  for(ievent = 0; ievent < nevents; ievent++) {
+  for (Int_t ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
     gime->Event(ievent,"R") ;
     //Make some initializations 
     fNTrackSegments = 0 ;
@@ -351,7 +356,7 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t * option)
     gBenchmark->Stop("PHOSTSMaker");
     Info("Exec", "took %f seconds for making TS %f seconds per event", 
           gBenchmark->GetCpuTime("PHOSTSMaker"), 
-          gBenchmark->GetCpuTime("PHOSTSMaker")/nevents) ;
+          gBenchmark->GetCpuTime("PHOSTSMaker")/nEvents) ;
    }
   Unload();
 }

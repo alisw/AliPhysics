@@ -114,23 +114,28 @@ Float_t  AliPHOSClusterizerv1::Calibrate(Int_t amp, Int_t absId) const
 }
 
 //____________________________________________________________________________
-void AliPHOSClusterizerv1::Exec(Option_t * option)
+void AliPHOSClusterizerv1::Exec(Option_t *option)
 {
-  // Steering method
+  // Steering method to perform clusterization for events
+  // in the range from fFirstEvent to fLastEvent.
+  // This range is optionally set by SetEventRange().
+  // if fLastEvent=-1 (by default), then process events until the end.
 
   if(strstr(option,"tim"))
     gBenchmark->Start("PHOSClusterizer"); 
   
-  if(strstr(option,"print"))
+  if(strstr(option,"print")) {
     Print() ; 
+    return ;
+  }
 
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
   
-  Int_t nevents = gime->MaxEvent() ;
-  Int_t ievent ;
+  if (fLastEvent == -1) fLastEvent = gime->MaxEvent() - 1 ;
+  else fLastEvent = TMath::Min(fLastEvent,gime->MaxEvent());
+  Int_t nEvents   = fLastEvent - fFirstEvent + 1;
   
-  for(ievent = 0; ievent < nevents; ievent++)
-   {
+  for (Int_t ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
     gime->Event(ievent, "D");
 
     GetCalibrationParameters() ;
@@ -158,7 +163,7 @@ void AliPHOSClusterizerv1::Exec(Option_t * option)
     gBenchmark->Stop("PHOSClusterizer");
     Info("Exec", "  took %f seconds for Clusterizing %f seconds per event \n",
 	 gBenchmark->GetCpuTime("PHOSClusterizer"), 
-	 gBenchmark->GetCpuTime("PHOSClusterizer")/nevents ) ; 
+	 gBenchmark->GetCpuTime("PHOSClusterizer")/nEvents ) ; 
   } 
 }
 
@@ -316,6 +321,7 @@ void AliPHOSClusterizerv1::InitParameters()
     
   fRecPointsInRun          = 0 ;
 
+  SetEventRange(0,-1) ;
 }
 
 //____________________________________________________________________________

@@ -48,7 +48,8 @@ public:
   virtual void SetCpvLocalMaxCut(Float_t)         = 0;
   virtual void SetCpvLogWeight(Float_t)           = 0;
   virtual void SetUnfolding(Bool_t)               = 0;
-  void   SetEventFolderName(TString name) { fEventFolderName = name ; }
+  void SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
+  void SetEventFolderName(TString name) { fEventFolderName = name ; }
 
   AliPHOSClusterizer & operator = (const AliPHOSClusterizer & /*rvalue*/)  {return *this ;} 
  
@@ -56,9 +57,10 @@ public:
 
 protected:
   TString fEventFolderName ;  // event folder name
+  Int_t   fFirstEvent;        // first event to process
+  Int_t   fLastEvent;         // last  event to process
 
-
-  ClassDef(AliPHOSClusterizer,3)  // Clusterization algorithm class 
+  ClassDef(AliPHOSClusterizer,4)  // Clusterization algorithm class 
 
 } ;
 

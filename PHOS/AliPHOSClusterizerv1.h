@@ -58,7 +58,7 @@ public:
   virtual const char *  GetRecPointsBranch() const{ return GetName() ;}
   virtual const Int_t GetRecPointsInRun() const   {return fRecPointsInRun ;} 
 
-  void    Exec(Option_t *option);                // Does the job
+  virtual void    Exec(Option_t *option);   // Does the job
 
   void Print()const ;
 

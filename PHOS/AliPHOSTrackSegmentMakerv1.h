@@ -40,7 +40,7 @@ public:
   //  virtual char*  GetTrackSegmentsBranch(void)const{return (char*)fTrackSegmentsBranchTitle.Data() ;}
   virtual const Int_t GetTrackSegmentsInRun()const {return fTrackSegmentsInRun ;}  
 
-  virtual void   Exec(Option_t * option) ;
+  virtual void   Exec(Option_t *option); // Does the job
           void   FillOneModule() ;       // Finds range in which RecPoints belonging current PHOS module are
 
           void   MakeLinks() const;      //Evaluates distances(links) between EMC and PPSD

@@ -36,20 +36,22 @@ class AliPHOSPID : public TTask {
   AliPHOSPID(const AliPHOSPID & pid) : TTask(pid) {;} 
   virtual ~AliPHOSPID() ; // dtor
 
-  virtual void Exec(Option_t *) = 0;
   virtual const Int_t GetRecParticlesInRun()  const { Warning("GetRecParticlesInRun", "not defined" ) ; return 0 ;} 
   virtual void Print() const { Warning("Print", "not defined" ) ;}
-  void   SetEventFolderName(TString name) { fEventFolderName = name ; }
+  void SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
+  void SetEventFolderName(TString name) { fEventFolderName = name ; }
   virtual const char * Version() const { Warning("Version", "not defined" ) ; return 0 ; }  
   virtual void WriteRecParticles() = 0;
 
 protected:
   TString fEventFolderName ;  // event folder name
+  Int_t   fFirstEvent;        // first event to process
+  Int_t   fLastEvent;         // last  event to process
 
 private: 
   virtual void Init() { Warning("Init", "not defined" ) ; } 
 
-  ClassDef(AliPHOSPID,3)  // Particle Identifier algorithm (base class)
+  ClassDef(AliPHOSPID,4)  // Particle Identifier algorithm (base class)
 
 } ;
 

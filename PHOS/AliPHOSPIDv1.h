@@ -35,7 +35,7 @@ public:
   
   virtual ~AliPHOSPIDv1() ; // dtor
   
-  virtual void Exec(Option_t * option) ;
+  virtual void Exec(Option_t *option);  // Does the job
 
   //Get file name that contain the PCA
   const TString GetFileNamePrincipal(TString particle) const;

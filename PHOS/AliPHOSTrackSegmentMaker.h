@@ -35,19 +35,20 @@ public:
   AliPHOSTrackSegmentMaker(const AliPHOSTrackSegmentMaker & tsmaker) : TTask(tsmaker) { ; } 
   virtual ~ AliPHOSTrackSegmentMaker() ;
 
-  virtual void    Exec(Option_t *) = 0;
-
   virtual const Int_t GetTrackSegmentsInRun()  const {Warning("GetTrackSegmentsInRun", "Not Defined" ) ; return 0 ; } 
 
   virtual void    Print()const {Warning("Print", "Not Defined" ) ; }
-  void   SetEventFolderName(TString name) { fEventFolderName = name ; }
+  void SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
+  void SetEventFolderName(TString name) { fEventFolderName = name ; }
 
   virtual void WriteTrackSegments() = 0;
   
 protected:
   TString fEventFolderName ;  // event folder name
+  Int_t   fFirstEvent;        // first event to process
+  Int_t   fLastEvent;         // last  event to process
 
-  ClassDef( AliPHOSTrackSegmentMaker,3)    // Algorithm class to make PHOS track segments (Base Class)
+  ClassDef( AliPHOSTrackSegmentMaker,4)  // Algorithm class to make PHOS track segments (Base Class)
 };
 
 #endif // ALIPHOSTRACKSEGMENTMAKER_H
