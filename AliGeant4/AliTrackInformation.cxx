@@ -5,7 +5,7 @@
 
 #include "AliTrackInformation.h"
 
-G4Allocator<AliTrackInformation> trackInfoAllocator;
+G4Allocator<AliTrackInformation> gAliTrackInfoAllocator;
 
 AliTrackInformation::AliTrackInformation()
   : G4VUserTrackInformation(),

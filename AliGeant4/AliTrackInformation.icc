@@ -3,7 +3,7 @@
 
 // inline operators
 
-extern G4Allocator<AliTrackInformation> trackInfoAllocator;
+extern G4Allocator<AliTrackInformation> gAliTrackInfoAllocator;
 
 inline void* AliTrackInformation::operator new(size_t) 
 {
@@ -11,7 +11,7 @@ inline void* AliTrackInformation::operator new(size_t)
 // ---
 
   void *trackInfo;
-  trackInfo = (void *) trackInfoAllocator.MallocSingle();
+  trackInfo = (void *) gAliTrackInfoAllocator.MallocSingle();
   return trackInfo;
 }
 
@@ -20,7 +20,7 @@ inline void AliTrackInformation::operator delete(void *trackInfo)
 // Override "delete" for "G4Allocator".
 // ---
 
-  trackInfoAllocator.FreeSingle((AliTrackInformation *) trackInfo);
+  gAliTrackInfoAllocator.FreeSingle((AliTrackInformation *) trackInfo);
 }
 
 // inline methods
