@@ -34,6 +34,9 @@ AliL3Evaluate::AliL3Evaluate()
   fMCFile = NULL;
   fTracks = NULL;
   fMCclusterfile = NULL;
+  fNFastPoints = 0;
+  fMcIndex = 0;
+  fMcId = 0;
 }
 
 AliL3Evaluate::AliL3Evaluate(Char_t *mcfile,Int_t *slice)
@@ -59,42 +62,26 @@ AliL3Evaluate::AliL3Evaluate(Char_t *mcfile,Int_t *slice)
 
 AliL3Evaluate::~AliL3Evaluate()
 {
-  if(fDigitsTree) 
-    fDigitsTree->Delete();
-  
-
-  /*if(fMCFile) 
-    {
-      fMCFile->Close();
-      delete fMCFile;
-    }
-  */
-  if(fTransform)
-    delete fTransform;
-  if(fTracks)
-    delete fTracks;
-  if(fPtRes)
-    delete fPtRes;
-  if(fNGoodTracksPt)
-    delete fNGoodTracksPt;
-  if(fNFoundTracksPt)
-    delete fNFoundTracksPt;
-  if(fNFakeTracksPt)
-    delete fNFakeTracksPt;
-  if(fTrackEffPt)
-    delete fTrackEffPt;
-  if(fFakeTrackEffPt)
-    delete fFakeTrackEffPt;
-  if(fNGoodTracksEta)
-    delete fNGoodTracksEta;
-  if(fNFoundTracksEta)
-    delete fNFoundTracksEta;
-  if(fNFakeTracksEta)
-    delete fNFakeTracksEta;
-  if(fTrackEffEta)
-    delete fTrackEffEta;
-  if(fFakeTrackEffEta)
-    delete fFakeTrackEffEta;
+  if(fDigitsTree) fDigitsTree->Delete();
+  if(fMCFile) {
+    fMCFile->Close();
+    delete fMCFile;
+  }
+  if(fTransform) delete fTransform;
+  if(fTracks) delete fTracks;
+  if(fPtRes) delete fPtRes;
+  if(fNGoodTracksPt) delete fNGoodTracksPt;
+  if(fNFoundTracksPt) delete fNFoundTracksPt;
+  if(fNFakeTracksPt) delete fNFakeTracksPt;
+  if(fTrackEffPt) delete fTrackEffPt;
+  if(fFakeTrackEffPt) delete fFakeTrackEffPt;
+  if(fNGoodTracksEta) delete fNGoodTracksEta;
+  if(fNFoundTracksEta) delete fNFoundTracksEta;
+  if(fNFakeTracksEta) delete fNFakeTracksEta;
+  if(fTrackEffEta) delete fTrackEffEta;
+  if(fFakeTrackEffEta) delete fFakeTrackEffEta;
+  if(fMcIndex) delete [] fMcIndex;
+  if(fMcId)    delete [] fMcId;
 }
 
 void AliL3Evaluate::Setup(Char_t *trackfile,Char_t *path)
@@ -157,6 +144,7 @@ void AliL3Evaluate::SetupFast(Char_t *trackfile,Char_t *mcClusterfile,Char_t *pa
   //Setup for using the fast simulator.
 
   fIsSlow = false;
+  GetFastClusterIDs(path);
   
   fMCclusterfile = new TFile(mcClusterfile);
   if(!fMCclusterfile->IsOpen())
@@ -168,25 +156,6 @@ void AliL3Evaluate::SetupFast(Char_t *trackfile,Char_t *mcClusterfile,Char_t *pa
   if(!SetMCParticleArray())
     LOG(AliL3Log::kError,"AliL3Evaluation::SetupFast","Particle array")
       <<"Error setting up particle array"<<ENDLOG;
-}
-
-void AliL3Evaluate::CreateHistos(Int_t nbin,Int_t xlow,Int_t xup)
-{
-  //Create the histograms 
-  
-  fPtRes = new TH1F("fPtRes","Relative Pt resolution",30,-10.,10.); 
-  fNGoodTracksPt = new TH1F("fNGoodTracksPt","Good tracks vs pt",nbin,xlow,xup);    
-  fNFoundTracksPt = new TH1F("fNFoundTracksPt","Found tracks vs pt",nbin,xlow,xup);
-  fNFakeTracksPt = new TH1F("fNFakeTracksPt","Fake tracks vs pt",nbin,xlow,xup);
-  fTrackEffPt = new TH1F("fTrackEffPt","Tracking efficiency vs pt",nbin,xlow,xup);
-  fFakeTrackEffPt = new TH1F("fFakeTrackEffPt","Efficiency for fake tracks vs pt",nbin,xlow,xup);
-  
-  fNGoodTracksEta = new TH1F("fNGoodTracksEta","Good tracks vs eta",20,-50,50);
-  fNFoundTracksEta = new TH1F("fNFoundTracksEta","Found tracks vs eta",20,-50,50);
-  fNFakeTracksEta = new TH1F("fNFakeTracksEta","Fake tracks vs eta",20,-50,50);
-  fTrackEffEta = new TH1F("fTrackEffEta","Tracking efficienct vs eta",20,-50,50);
-  fFakeTrackEffEta = new TH1F("fFakeTrackEffEta","Efficiency for fake tracks vs eta",20,-50,50);
-
 }
 
 Bool_t AliL3Evaluate::SetDigitsTree()
@@ -407,6 +376,221 @@ void AliL3Evaluate::EvaluateGlobal(Int_t min_points,Int_t good_number)
   CalcEffHistos();
 }
 
+void AliL3Evaluate::AssignIDs()
+{
+  //Assign MC id to the tracks.
+  
+  fTracks->QSort();
+  LOG(AliL3Log::kDebug,"AliL3Evaluate::AssignIDs","Track Loop")
+    <<"Assigning MC id to the found tracks...."<<ENDLOG;
+  for(Int_t i=0; i<fTracks->GetNTracks(); i++)
+    {
+      AliL3Track *track = (AliL3Track*)fTracks->GetCheckedTrack(i);
+      if(!track) continue; 
+      if(track->GetNumberOfPoints() < fMinPointsOnTrack) break;
+      Int_t tID = GetMCTrackLabel(track);
+      track->SetMCid(tID);
+      printf("track %i id %d\n",i,tID);
+    }
+}
+
+
+struct S {Int_t lab; Int_t max;};
+Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track){ 
+  //Returns the MCtrackID of the belonging clusters.
+  //If MCLabel < 0, means that track is fake.
+  //Fake track means that more than 10 percent of clusters are assigned incorrectly.
+
+  Int_t num_of_clusters = track->GetNumberOfPoints();
+  S *s=new S[num_of_clusters];
+  Int_t i;
+  for (i=0; i<num_of_clusters; i++) s[i].lab=s[i].max=0;
+  UInt_t *hitnum = track->GetHitNumbers();  
+  UInt_t id;
+    
+  Int_t **  trackID = GetClusterIDs(track);
+
+  Int_t lab=123456789;
+  for (i=0; i<num_of_clusters; i++) 
+    {
+      //Tricks to get the clusters belonging to this track:
+      id = hitnum[i];
+      Int_t slice = (id>>25) & 0x7f;
+      Int_t patch = (id>>22) & 0x7;
+      UInt_t pos = id&0x3fffff;	      
+      
+      AliL3SpacePointData *points = fClusters[slice][patch];
+      if(!points) continue; 
+      if(pos>=fNcl[slice][patch]) 
+	{
+	  LOG(AliL3Log::kError,"AliL3Evaluate::GetMCTrackLabel","Clusterarray")
+	    <<AliL3Log::kDec<<"ERROR"<<ENDLOG;
+	  continue;
+	}
+      
+      //Get the label of the cluster:
+      //printf("label %d %d %d\n",trackID[i][0],trackID[i][1],trackID[i][2]);
+      lab=abs(trackID[i][0]);
+      Int_t j;
+      for (j=0; j<num_of_clusters; j++)
+        if (s[j].lab==lab || s[j].max==0) break;
+      s[j].lab=lab;
+      s[j].max++;
+    }
+  
+  Int_t max=0;
+  for (i=0; i<num_of_clusters; i++) 
+    if (s[i].max>max) {max=s[i].max; lab=s[i].lab;}
+  
+  delete[] s;
+  
+  for (i=0; i<num_of_clusters; i++) 
+    {
+      id = hitnum[i];
+      Int_t slice = (id>>25) & 0x7f;
+      Int_t patch = (id>>22) & 0x7;
+      UInt_t pos = id&0x3fffff;	      
+      
+      AliL3SpacePointData *points = fClusters[slice][patch];
+      if(!points) continue; 
+      if(pos>=fNcl[slice][patch]) 
+	{
+	  LOG(AliL3Log::kError,"AliL3Evaluate::GetMCTrackLabel","Clusterarray")
+	    <<AliL3Log::kDec<<"ERROR"<<ENDLOG;
+	  continue;
+	}
+      
+      if (abs(trackID[i][1]) == lab || 
+	  abs(trackID[i][2]) == lab ) max++;
+    }
+  
+  //check if more than 10% of the clusters are incorrectly assigned (fake track):
+  if (1.-Float_t(max)/num_of_clusters > 0.10) 
+    {
+      return -lab;
+    }
+  
+  delete [] trackID;
+  return lab;
+}
+
+
+Int_t **AliL3Evaluate::GetClusterIDs(AliL3Track *track)
+{
+  //Return the MC information of all clusters belonging to track.
+
+  Int_t num_of_clusters = track->GetNumberOfPoints();
+  Int_t **trackID = new Int_t*[num_of_clusters];
+  
+  UInt_t *hitnum = track->GetHitNumbers();  
+  UInt_t id;
+  
+  Float_t xyz[3];
+  Int_t padrow;
+  for(Int_t i=0; i<num_of_clusters; i++)
+    {
+      id = hitnum[i];
+      Int_t slice = (id>>25) & 0x7f;
+      Int_t patch = (id>>22) & 0x7;
+      UInt_t pos = id&0x3fffff;	      
+      
+      AliL3SpacePointData *points = fClusters[slice][patch];
+      
+      if(!points) 
+	{
+	  LOG(AliL3Log::kError,"AliL3Evaluate::GetClusterIDs","Clusterarray")
+	    <<"No points at slice "<<slice<<" patch "<<patch<<" pos "<<pos<<ENDLOG;
+	  continue;
+	}
+      if(pos>=fNcl[slice][patch]) 
+	{
+	  LOG(AliL3Log::kError,"AliL3Evaluate::GetClusterIDs","Clusterarray")
+	    <<AliL3Log::kDec<<"ERROR"<<ENDLOG;
+	  continue;
+	}
+      
+      xyz[0] = points[pos].fX;
+      xyz[1] = points[pos].fY;
+      xyz[2] = points[pos].fZ;
+      //sector = points[pos].fSector;
+      padrow = points[pos].fPadRow;
+      Int_t se,ro;
+      fTransform->Slice2Sector(slice,padrow,se,ro);
+      fTransform->Global2Raw(xyz,se,ro);
+      
+      if(fIsSlow)
+	{
+	  Int_t p = fRowid[slice][padrow];
+	  
+	  if(!fDigitsTree->GetEvent(p)) 
+	    LOG(AliL3Log::kError,"AliL3Evaluate::GetClusterIDs","Digits Tree")
+	      <<"Error reading digits tree"<<ENDLOG;
+	  
+	  trackID[i] = new Int_t[3];
+	  trackID[i][0] = fDigits->GetTrackID((Int_t)xyz[2],(Int_t)xyz[1],0);
+	  trackID[i][1] = fDigits->GetTrackID((Int_t)xyz[2],(Int_t)xyz[1],1);
+	  trackID[i][2] = fDigits->GetTrackID((Int_t)xyz[2],(Int_t)xyz[1],2);
+	}
+      else
+	{
+	  Int_t tmp_pid=0;
+	  for(Int_t ii=0; ii<fNFastPoints; ii++)
+	    {
+	      tmp_pid = fMcId[ii];
+	      if(fMcIndex[ii] == id) break;
+	    }
+	  trackID[i] = new Int_t[3];
+	  trackID[i][0] = tmp_pid;
+	  trackID[i][1] = -1;
+	  trackID[i][2] = -1;
+	}
+    }
+  return trackID;
+}
+
+void AliL3Evaluate::GetFastClusterIDs(Char_t *path)
+{
+  //Get the MC id of space points in case of using the fast simulator. 
+  char fname[256];
+  sprintf(fname,"%s/point_mc.dat",path);
+  FILE *infile = fopen(fname,"r");
+  if(!infile) return;
+  Int_t hitid,hitmc,i;
+  
+  for(i=0; ; i++)
+    if(fscanf(infile,"%d %d",&hitid,&hitmc)==EOF) break;
+  rewind(infile);
+  fNFastPoints = i;
+  fMcId = new Int_t[fNFastPoints];
+  fMcIndex = new UInt_t[fNFastPoints];
+  
+  for(i=0; i<fNFastPoints; i++)
+    {
+      if(fscanf(infile,"%d %d",&hitid,&hitmc)==EOF) break;
+      fMcId[i] = hitmc;
+      fMcIndex[i] = hitid;
+    }
+  fclose(infile);
+}
+
+void AliL3Evaluate::CreateHistos(Int_t nbin,Int_t xlow,Int_t xup)
+{
+  //Create the histograms 
+  
+  fPtRes = new TH1F("fPtRes","Relative Pt resolution",30,-10.,10.); 
+  fNGoodTracksPt = new TH1F("fNGoodTracksPt","Good tracks vs pt",nbin,xlow,xup);    
+  fNFoundTracksPt = new TH1F("fNFoundTracksPt","Found tracks vs pt",nbin,xlow,xup);
+  fNFakeTracksPt = new TH1F("fNFakeTracksPt","Fake tracks vs pt",nbin,xlow,xup);
+  fTrackEffPt = new TH1F("fTrackEffPt","Tracking efficiency vs pt",nbin,xlow,xup);
+  fFakeTrackEffPt = new TH1F("fFakeTrackEffPt","Efficiency for fake tracks vs pt",nbin,xlow,xup);
+  
+  fNGoodTracksEta = new TH1F("fNGoodTracksEta","Good tracks vs eta",20,-50,50);
+  fNFoundTracksEta = new TH1F("fNFoundTracksEta","Found tracks vs eta",20,-50,50);
+  fNFakeTracksEta = new TH1F("fNFakeTracksEta","Fake tracks vs eta",20,-50,50);
+  fTrackEffEta = new TH1F("fTrackEffEta","Tracking efficienct vs eta",20,-50,50);
+  fFakeTrackEffEta = new TH1F("fFakeTrackEffEta","Efficiency for fake tracks vs eta",20,-50,50);
+}
+
 void AliL3Evaluate::FillEffHistos(TObjArray *good_particles,Int_t *particle_id)
 {  
   //Fill the efficiency histograms.
@@ -476,241 +660,6 @@ void AliL3Evaluate::CalcEffHistos(){
   fTrackEffEta->SetLineColor(4);
   fFakeTrackEffEta->SetFillColor(2);
        
-}
-
-void AliL3Evaluate::AssignIDs()
-{
-  //Assign MC id to the tracks.
-  
-  UInt_t *index=0,tmp_ind=0;
-  Int_t *pID=0,npoints=0;
-  
-  if(!fIsSlow)
-    {
-      pID = GetFastIDs(tmp_ind,npoints);
-      index = (UInt_t*)tmp_ind;
-    }
-  
-  fTracks->QSort();
-  LOG(AliL3Log::kDebug,"AliL3Evaluate::AssignIDs","Track Loop")
-    <<"Assigning MC id to the found tracks...."<<ENDLOG;
-  for(Int_t i=0; i<fTracks->GetNTracks(); i++)
-    {
-      AliL3Track *track = (AliL3Track*)fTracks->GetCheckedTrack(i);
-      if(!track) 
-	{
-	  LOG(AliL3Log::kWarning,"AliL3Evaluate::AssignIDs","Track Loop")
-	    <<AliL3Log::kDec<<"No track in track array, index "<<i<<ENDLOG;
-	  continue;
-	}
-      if(track->GetNumberOfPoints() < fMinPointsOnTrack) break;
-      Int_t tID;
-      if(!fIsSlow)
-	tID = GetMCTrackLabel(track,index,pID,npoints);
-      else
-	tID = GetMCTrackLabel(track);
-      track->SetMCid(tID);
-      printf("track %i id %d\n",i,tID);
-    }
-  
-  if(pID)   delete [] pID;
-  if(index) delete [] index;
-}
-
-
-struct S {Int_t lab; Int_t max;};
-Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track,UInt_t *index,Int_t *pID,Int_t npoints) 
-{
-  //Returns the MCtrackID of the belonging clusters.
-  //If MCLabel < 0, means that track is fake.
-  //Fake track means that more than 10 percent of clusters are assigned incorrectly.
-  
-  Int_t num_of_clusters = track->GetNumberOfPoints();
-  S *s=new S[num_of_clusters];
-  Int_t i;
-  for (i=0; i<num_of_clusters; i++) s[i].lab=s[i].max=0;
-  UInt_t *hitnum = track->GetHitNumbers();  
-  UInt_t id;
-
-  Int_t **trackID;
-    
-  if(fIsSlow)
-    trackID = GetClusterIDs(track);
-  else
-    trackID = GetClusterIDs(track,index,pID,npoints);
-  
-
-  Int_t lab=123456789;
-  for (i=0; i<num_of_clusters; i++) 
-    {
-      //Tricks to get the clusters belonging to this track:
-      id = hitnum[i];
-      Int_t slice = (id>>25) & 0x7f;
-      Int_t patch = (id>>22) & 0x7;
-      UInt_t pos = id&0x3fffff;	      
-      
-      AliL3SpacePointData *points = fClusters[slice][patch];
-      
-      if(!points) 
-	continue;
-      
-      if(pos>=fNcl[slice][patch]) 
-	{
-	  LOG(AliL3Log::kError,"AliL3Evaluate::GetMCTrackLabel","Clusterarray")
-	    <<AliL3Log::kDec<<"ERROR"<<ENDLOG;
-	  continue;
-	}
-      
-      //Get the label of the cluster:
-      //printf("label %d %d %d\n",trackID[i][0],trackID[i][1],trackID[i][2]);
-      lab=abs(trackID[i][0]);
-      Int_t j;
-      for (j=0; j<num_of_clusters; j++)
-        if (s[j].lab==lab || s[j].max==0) break;
-      s[j].lab=lab;
-      s[j].max++;
-    }
-  
-  Int_t max=0;
-  for (i=0; i<num_of_clusters; i++) 
-    if (s[i].max>max) {max=s[i].max; lab=s[i].lab;}
-  
-  delete[] s;
-  
-  for (i=0; i<num_of_clusters; i++) 
-    {
-      id = hitnum[i];
-      Int_t slice = (id>>25) & 0x7f;
-      Int_t patch = (id>>22) & 0x7;
-      UInt_t pos = id&0x3fffff;	      
-      
-      AliL3SpacePointData *points = fClusters[slice][patch];
-      
-      if(!points) 
-	continue;
-      
-      if(pos>=fNcl[slice][patch]) 
-	{
-	  LOG(AliL3Log::kError,"AliL3Evaluate::GetMCTrackLabel","Clusterarray")
-	    <<AliL3Log::kDec<<"ERROR"<<ENDLOG;
-	  continue;
-	}
-      
-      if (abs(trackID[i][1]) == lab || 
-	  abs(trackID[i][2]) == lab ) max++;
-    }
-  
-  //check if more than 10% of the clusters are incorrectly assigned (fake track):
-  if (1.-Float_t(max)/num_of_clusters > 0.10) 
-    {
-      return -lab;
-    }
-  
-  delete [] trackID;
-  return lab;
-}
-
-
-Int_t **AliL3Evaluate::GetClusterIDs(AliL3Track *track,UInt_t *index,Int_t *pID,Int_t npoints)
-{
-  //Return the MC information of all clusters belonging to track.
-  
-  Int_t num_of_clusters = track->GetNumberOfPoints();
-  Int_t **trackID = new Int_t*[num_of_clusters];
-  
-  UInt_t *hitnum = track->GetHitNumbers();  
-  UInt_t id;
-
-  
-  Float_t xyz[3];
-  Int_t sector,padrow;
-  for(Int_t i=0; i<num_of_clusters; i++)
-    {
-      id = hitnum[i];
-      Int_t slice = (id>>25) & 0x7f;
-      Int_t patch = (id>>22) & 0x7;
-      UInt_t pos = id&0x3fffff;	      
-      
-      AliL3SpacePointData *points = fClusters[slice][patch];
-      
-      if(!points) 
-	{
-	  LOG(AliL3Log::kError,"AliL3Evaluate::GetClusterIDs","Clusterarray")
-	    <<"No points at slice "<<slice<<" patch "<<patch<<" pos "<<pos<<ENDLOG;
-	  continue;
-	}
-      if(pos>=fNcl[slice][patch]) 
-	{
-	  LOG(AliL3Log::kError,"AliL3Evaluate::GetClusterIDs","Clusterarray")
-	    <<AliL3Log::kDec<<"ERROR"<<ENDLOG;
-	  continue;
-	}
-      
-      xyz[0] = points[pos].fX;
-      xyz[1] = points[pos].fY;
-      xyz[2] = points[pos].fZ;
-      //sector = points[pos].fSector;
-      padrow = points[pos].fPadRow;
-      Int_t se,ro;
-      fTransform->Slice2Sector(slice,padrow,se,ro);
-      fTransform->Global2Raw(xyz,se,ro);
-      
-      if(fIsSlow)
-	{
-	  Int_t p = fRowid[slice][padrow];
-	  
-	  if(!fDigitsTree->GetEvent(p)) 
-	    LOG(AliL3Log::kError,"AliL3Evaluate::GetClusterIDs","Digits Tree")
-	      <<"Error reading digits tree"<<ENDLOG;
-	  
-	  trackID[i] = new Int_t[3];
-	  trackID[i][0] = fDigits->GetTrackID((Int_t)xyz[2],(Int_t)xyz[1],0);
-	  trackID[i][1] = fDigits->GetTrackID((Int_t)xyz[2],(Int_t)xyz[1],1);
-	  trackID[i][2] = fDigits->GetTrackID((Int_t)xyz[2],(Int_t)xyz[1],2);
-	}
-      else
-	{
-	  Int_t tmp_pid=0;
-	  for(Int_t ii=0; ii<npoints; ii++)
-	    {
-	      tmp_pid = pID[ii];
-	      if(index[ii] == id) break;
-	    }
-	  trackID[i] = new Int_t[3];
-	  trackID[i][0] = tmp_pid;
-	  trackID[i][1] = -1;
-	  trackID[i][2] = -1;
-	}
-    }
-  return trackID;
-}
-
-Int_t *AliL3Evaluate::GetFastIDs(UInt_t &tmp_ind,Int_t &npoints)
-{
-  //Get the MC id of space points in case of using the fast simulator. 
-
-  FILE *infile = fopen("point_mc.dat","r");
-  if(!infile) return 0;
-  Int_t hitid,hitmc,i;
-  
-  for(i=0; ; i++)
-    if(fscanf(infile,"%d %d",&hitid,&hitmc)==EOF) break;
-  npoints = i;
-  rewind(infile);
-  Int_t *pID = new Int_t[npoints];
-  UInt_t *ind = new UInt_t[npoints];
-  tmp_ind = (UInt_t)ind;
-  
-  for(i=0; i<npoints; i++)
-    {
-      if(fscanf(infile,"%d %d",&hitid,&hitmc)==EOF) break;
-      pID[i] = hitmc;
-      ind[i] = hitid;
-    }
-  fclose(infile);
-
-  return pID;
-
 }
 
 void AliL3Evaluate::Write2File(Char_t *outputfile)

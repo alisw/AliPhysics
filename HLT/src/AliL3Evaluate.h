@@ -38,8 +38,8 @@ class AliL3Evaluate : public TObject {
   Int_t fMinPointsOnTrack;  //Minimum points on track to be considered.
   Bool_t fIsSlow;
   Int_t fNFastPoints;
-  UInt_t fMcIndex;
-  Int_t fMcId;
+  UInt_t *fMcIndex;//!
+  Int_t *fMcId;//!
   
   //Histograms
   TH1F *fPtRes;
@@ -60,9 +60,9 @@ class AliL3Evaluate : public TObject {
   Bool_t SetDigitsTree();
   Bool_t SetMCParticleArray();
   TObjArray *DefineGoodTracks(Int_t slice,Int_t *padrow,Int_t good_number,Int_t *particle_id);
-  Int_t GetMCTrackLabel(AliL3Track *track,UInt_t *index=0,Int_t *pID=0,Int_t npoints=0);
-  Int_t **GetClusterIDs(AliL3Track *track,UInt_t *index=0,Int_t *pID=0,Int_t npoints=0);
-  Int_t *GetFastIDs(UInt_t &tmp_ind,Int_t &npoints);
+  Int_t GetMCTrackLabel(AliL3Track *track);
+  Int_t **GetClusterIDs(AliL3Track *track);
+  void GetFastClusterIDs(Char_t *path);
   void Setup(Char_t *trackfile,Char_t *path);
 
  public:
@@ -71,8 +71,8 @@ class AliL3Evaluate : public TObject {
 
   virtual ~AliL3Evaluate();
 
-  void SetupFast(Char_t *trackfile,Char_t *mcClusterfile,Char_t *path="./");
-  void SetupSlow(Char_t *trackfile,Char_t *path="./");
+  void SetupFast(Char_t *trackfile,Char_t *mcClusterfile,Char_t *path=".");
+  void SetupSlow(Char_t *trackfile,Char_t *path=".");
   void CreateHistos(Int_t nbin=20,Int_t xlow=0,Int_t xup=4);
   void EvaluatePatch(Int_t slice,Int_t patch,Int_t min_points,Int_t good_number);
   void EvaluateSlice(Int_t slice,Int_t min_points,Int_t good_number);
