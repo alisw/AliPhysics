@@ -123,8 +123,13 @@ class AliFastGlauber : public TObject {
     void GetRandomPhi(Double_t& phi);
     Double_t CalculateLength(Double_t b=0.,Double_t x0=0.,Double_t y0=0.,
                              Double_t phi0=0.);
+    void GetLengthAndPhi(Double_t& ell,Double_t &phi,Double_t b=-1.);
     void GetLength(Double_t& ell,Double_t b=-1.);
-    void GetLengthsBackToBack(Double_t& ell1,Double_t& ell2,Double_t b=-1.);
+    void GetLengthsBackToBackAndPhi(Double_t& ell1,Double_t& ell2,
+				    Double_t &phi,
+				    Double_t b=-1.);
+    void GetLengthsBackToBack(Double_t& ell1,Double_t& ell2,
+			      Double_t b=-1.);
     void GetLengthsForPythia(Int_t n,Double_t* phi,Double_t* ell,
 			     Double_t b=-1.);
     void PlotBDistr(Int_t n=1000);
@@ -136,8 +141,14 @@ class AliFastGlauber : public TObject {
 		       Double_t b=0.,
 		       Double_t x0=0.,Double_t y0=0.,Double_t phi0=0.,
 		       Double_t ellCut=20.) const;
+    void GetI0I1AndPhi(Double_t& integral0,Double_t& integral1,Double_t &phi,
+		 Double_t ellCut=20.,Double_t b=-1.);
     void GetI0I1(Double_t& integral0,Double_t& integral1,
 		 Double_t ellCut=20.,Double_t b=-1.);
+    void GetI0I1BackToBackAndPhi(Double_t& integral01,Double_t& integral11,
+				 Double_t& integral02,Double_t& integral12,
+				 Double_t& phi,
+				 Double_t ellCut=20.,Double_t b=-1.);
     void GetI0I1BackToBack(Double_t& integral01,Double_t& integral11,
 			   Double_t& integral02,Double_t& integral12,
 			   Double_t ellCut=20.,Double_t b=-1.);

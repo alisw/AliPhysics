@@ -1295,31 +1295,56 @@ Double_t AliFastGlauber::CalculateLength(Double_t b,Double_t x0,Double_t y0,Doub
   }
 }
 
+void AliFastGlauber::GetLengthAndPhi(Double_t& ell,Double_t& phi,Double_t b)
+{
+  //
+  // Return length from random b, x0, y0, phi0 
+  // Return also phi0
+  //
+  Double_t x0,y0,phi0;
+  if(b<0.) GetRandomBHard(b);
+  GetRandomXY(x0,y0);
+  GetRandomPhi(phi0);
+  phi = phi0;
+  ell = CalculateLength(b,x0,y0,phi0);
+  return;
+}
+
 void AliFastGlauber::GetLength(Double_t& ell,Double_t b)
 {
   //
   // Return length from random b, x0, y0, phi0 
   //
-  Double_t x0,y0,phi0;
-  if(b<0.) GetRandomBHard(b);
-  GetRandomXY(x0,y0);
-  GetRandomPhi(phi0);
-  ell = CalculateLength(b,x0,y0,phi0);
+  Double_t phi;
+  GetLengthAndPhi(ell,phi,b);
   return;
 }
 
-void AliFastGlauber::GetLengthsBackToBack(Double_t& ell1,Double_t& ell2,Double_t b)
+void AliFastGlauber::GetLengthsBackToBackAndPhi(Double_t& ell1,Double_t& ell2,Double_t &phi,Double_t b)
 {
   //
   // Return 2 lengths back to back from random b, x0, y0, phi0 
-  //
+  // Return also phi0 
+ // 
   Double_t x0,y0,phi0;
   if(b<0.) GetRandomBHard(b);
   GetRandomXY(x0,y0);
   GetRandomPhi(phi0);
   const Double_t kphi0plusPi = phi0+TMath::Pi();
+  phi = phi0;
   ell1 = CalculateLength(b,x0,y0,phi0);
   ell2 = CalculateLength(b,x0,y0,kphi0plusPi);
+  return;
+}
+
+void AliFastGlauber::GetLengthsBackToBack(Double_t& ell1,Double_t& ell2,
+					  Double_t b)
+{
+  //
+  // Return 2 lengths back to back from random b, x0, y0, phi0 
+  // 
+  Double_t phi;
+  GetLengthsBackToBackAndPhi(ell1,ell2,phi,b);
   return;
 }
 
@@ -1474,17 +1499,51 @@ void AliFastGlauber::CalculateI0I1(Double_t& integral0,Double_t& integral1,
   return;  
 }
 
+void AliFastGlauber::GetI0I1AndPhi(Double_t& integral0,Double_t& integral1,
+				   Double_t& phi,
+				   Double_t ellCut,Double_t b)
+{
+  //
+  // Return I0 and I1 from random b, x0, y0, phi0 
+  // Return also phi
+  //
+  Double_t x0,y0,phi0;
+  if(b<0.) GetRandomBHard(b);
+  GetRandomXY(x0,y0);
+  GetRandomPhi(phi0);
+  phi = phi0;
+  CalculateI0I1(integral0,integral1,b,x0,y0,phi0,ellCut);
+  return;
+}
+
 void AliFastGlauber::GetI0I1(Double_t& integral0,Double_t& integral1,
 			     Double_t ellCut,Double_t b)
 {
   //
   // Return I0 and I1 from random b, x0, y0, phi0 
   //
+  Double_t phi;
+  GetI0I1AndPhi(integral0,integral1,phi,ellCut,b);
+  return;
+}
+
+void AliFastGlauber::GetI0I1BackToBackAndPhi(Double_t& integral01,Double_t& integral11,
+					     Double_t& integral02,Double_t& integral12,
+					     Double_t& phi,
+					     Double_t ellCut,Double_t b)
+{
+  //
+  // Return 2 pairs of I0 and I1 back to back from random b, x0, y0, phi0 
+  // Return also phi0
+  //
   Double_t x0,y0,phi0;
   if(b<0.) GetRandomBHard(b);
   GetRandomXY(x0,y0);
   GetRandomPhi(phi0);
-  CalculateI0I1(integral0,integral1,b,x0,y0,phi0,ellCut);
+  phi = phi0;
+  const Double_t kphi0plusPi = phi0+TMath::Pi();
+  CalculateI0I1(integral01,integral11,b,x0,y0,phi0,ellCut);
+  CalculateI0I1(integral02,integral12,b,x0,y0,kphi0plusPi,ellCut);
   return;
 }
 
@@ -1495,13 +1554,9 @@ void AliFastGlauber::GetI0I1BackToBack(Double_t& integral01,Double_t& integral11
   //
   // Return 2 pairs of I0 and I1 back to back from random b, x0, y0, phi0 
   //
-  Double_t x0,y0,phi0;
-  if(b<0.) GetRandomBHard(b);
-  GetRandomXY(x0,y0);
-  GetRandomPhi(phi0);
-  const Double_t kphi0plusPi = phi0+TMath::Pi();
-  CalculateI0I1(integral01,integral11,b,x0,y0,phi0,ellCut);
-  CalculateI0I1(integral02,integral12,b,x0,y0,kphi0plusPi,ellCut);
+  Double_t phi;
+  GetI0I1BackToBackAndPhi(integral01,integral11,integral02,integral12,
+			  phi,ellCut,b);
   return;
 }
 
