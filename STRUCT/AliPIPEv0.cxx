@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2000/11/28 16:06:57  morsch
+Undulated beam-pipe replaced by Al-Be (40,60) pipe 1.5 mm thick.
+
 Revision 1.10  2000/11/24 13:00:37  morsch
 - Geometry and materials imported from euclid output
 - include comments
@@ -671,10 +674,11 @@ void AliPIPEv0::DrawModule()
 //___________________________________________
 void AliPIPEv0::CreateMaterials()
 {
+  //
+  // Define materials for beam pipe
+  //
+
   printf("Create PIPEv0 materials \n");
-  //
-  // Define materials for muon absorber
-  //
   Int_t   isxfld = gAlice->Field()->Integ();
   Float_t sxmgmx = gAlice->Field()->Max();
   // Steel (Inox)  

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2000/10/02 21:28:15  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.13  2000/06/11 12:34:49  morsch
 Coding rule violations corrected
 
@@ -109,6 +112,8 @@ void AliFRAMEv0::CreateGeometry()
 //___________________________________________
 void AliFRAMEv0::CreateMaterials()
 {
+// Create Geant materials
+//
   char *filetmp;
   printf("Create FRAMEv0 materials\n");
   filetmp = gSystem->ExpandPathName(fEuclidMaterial.Data());
