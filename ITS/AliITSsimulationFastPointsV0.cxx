@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/10/02 16:34:28  barbera
+Forward declarations added
+
 Revision 1.1.2.4  2000/10/02 16:03:20  barbera
 Forward declarations added
 
@@ -41,6 +44,11 @@ ClassImp(AliITSsimulationFastPointsV0)
 
 AliITSsimulationFastPointsV0::AliITSsimulationFastPointsV0()
 {
+  // default constructor
+  fSx = 0;
+  fSz = 0;
+}
+AliITSsimulationFastPointsV0::AliITSsimulationFastPointsV0(const char *dataType){
   //constructor
   fSx = new AliITSstatistics(2);
   fSz = new AliITSstatistics(2);
@@ -50,8 +58,8 @@ AliITSsimulationFastPointsV0::AliITSsimulationFastPointsV0()
 AliITSsimulationFastPointsV0::~AliITSsimulationFastPointsV0()
 {
   //destructor
-  delete fSx;
-  delete fSz;
+  if(fSx) delete fSx;
+  if(fSz) delete fSz;
 
 }
 

@@ -17,15 +17,27 @@
 #include "AliRun.h"
 #include "AliITS.h"
 
-//----------------------------------------------------------
-
-//----------------------------------------------------------
-
 ClassImp(AliITSClusterFinder)
 
-AliITSClusterFinder::AliITSClusterFinder
-(AliITSsegmentation *seg, AliITSresponse *response, TClonesArray *digits)   
-{
+//----------------------------------------------------------------------
+AliITSClusterFinder::AliITSClusterFinder(){
+    // default cluster finder
+
+    fSegmentation = 0;
+    fResponse     = 0;
+    fMap          = 0;
+    fDigits       = 0;
+    fNdigits      = 0;
+    fNRawClusters = 0;
+    fNperMax      = 0;
+    fDeclusterFlag= 0;
+    fClusterSize  = 0;
+    fNPeaks       = 0;
+}
+//----------------------------------------------------------------------
+AliITSClusterFinder::AliITSClusterFinder(AliITSsegmentation *seg, 
+					 AliITSresponse *response, 
+					 TClonesArray *digits){
   // cluster finder
     fSegmentation=seg;
     fResponse=response;
@@ -42,89 +54,70 @@ AliITSClusterFinder::AliITSClusterFinder
 
     fNPeaks=-1;
 }
+//----------------------------------------------------------------------
+AliITSClusterFinder::~AliITSClusterFinder(){
+    // destructor cluster finder
 
-//----------------------------------------------------------
-AliITSClusterFinder::AliITSClusterFinder()
-{
-  // constructor
-    fResponse=0;
+    // Zero local pointers. Other classes own these pointers.
     fSegmentation = 0;
-    
-    fDigits=0;
-    fNdigits = 0;
-
-    fNRawClusters=0;
-    fMap = 0;
-
-
-    SetNperMax();
-    SetClusterSize();
-    SetDeclusterFlag();
-
-    fNPeaks=-1;
+    fResponse     = 0;
+    fMap          = 0;
+    fDigits       = 0;
+    fNdigits      = 0;
+    fNRawClusters = 0;
+    fNperMax      = 0;
+    fDeclusterFlag= 0;
+    fClusterSize  = 0;
+    fNPeaks       = 0;
 }
- 
 //__________________________________________________________________________
 AliITSClusterFinder::AliITSClusterFinder(const AliITSClusterFinder &source){
-  //     Copy Constructor 
-  if(&source == this) return;
-  this->fDigits = source.fDigits;
-  this->fNdigits = source.fNdigits;
-  this->fResponse = source.fResponse;
-  this->fSegmentation = source.fSegmentation;
-  this->fNRawClusters = source.fNRawClusters;
-  this->fMap = source.fMap;
-  this->fNperMax = source.fNperMax;
-  this->fDeclusterFlag = source.fDeclusterFlag;
-  this->fClusterSize = source.fClusterSize;
-  this->fNPeaks = source.fNPeaks;
-  return;
+    //     Copy Constructor 
+    if(&source == this) return;
+    this->fDigits = source.fDigits;
+    this->fNdigits = source.fNdigits;
+    this->fResponse = source.fResponse;
+    this->fSegmentation = source.fSegmentation;
+    this->fNRawClusters = source.fNRawClusters;
+    this->fMap = source.fMap;
+    this->fNperMax = source.fNperMax;
+    this->fDeclusterFlag = source.fDeclusterFlag;
+    this->fClusterSize = source.fClusterSize;
+    this->fNPeaks = source.fNPeaks;
+    return;
 }
+//______________________________________________________________________
+AliITSClusterFinder& AliITSClusterFinder::operator=(const AliITSClusterFinder &source) {
+    //    Assignment operator
 
-//_________________________________________________________________________
-AliITSClusterFinder& 
-  AliITSClusterFinder::operator=(const AliITSClusterFinder &source) {
-  //    Assignment operator
-  if(&source == this) return *this;
-  this->fDigits = source.fDigits;
-  this->fNdigits = source.fNdigits;
-  this->fResponse = source.fResponse;
-  this->fSegmentation = source.fSegmentation;
-  this->fNRawClusters = source.fNRawClusters;
-  this->fMap = source.fMap;
-  this->fNperMax = source.fNperMax;
-  this->fDeclusterFlag = source.fDeclusterFlag;
-  this->fClusterSize = source.fClusterSize;
-  this->fNPeaks = source.fNPeaks;
-  return *this;
+    if(&source == this) return *this;
+    this->fDigits = source.fDigits;
+    this->fNdigits = source.fNdigits;
+    this->fResponse = source.fResponse;
+    this->fSegmentation = source.fSegmentation;
+    this->fNRawClusters = source.fNRawClusters;
+    this->fMap = source.fMap;
+    this->fNperMax = source.fNperMax;
+    this->fDeclusterFlag = source.fDeclusterFlag;
+    this->fClusterSize = source.fClusterSize;
+    this->fNPeaks = source.fNPeaks;
+    return *this;
 }
+//----------------------------------------------------------------------
+void AliITSClusterFinder::AddCluster(Int_t branch, AliITSRawCluster *c){
+    // Add a raw cluster copy to the list
 
-//----------------------------------------------------------
-void AliITSClusterFinder::AddCluster(Int_t branch, AliITSRawCluster *c)
-{
-  //
-  // Add a raw cluster copy to the list
-  //
     AliITS *iTS=(AliITS*)gAlice->GetModule("ITS");
     iTS->AddCluster(branch,c); 
     fNRawClusters++;
-
 }
+//----------------------------------------------------------------------
+void AliITSClusterFinder::AddCluster(Int_t branch, AliITSRawCluster *c, 
+				     AliITSRecPoint &rp){
+    // Add a raw cluster copy to the list
 
-
-//----------------------------------------------------------
-void AliITSClusterFinder::AddCluster(Int_t branch, AliITSRawCluster *c, AliITSRecPoint &rp)
-{
-  //
-  // Add a raw cluster copy to the list
-  //
     AliITS *iTS=(AliITS*)gAlice->GetModule("ITS");
     iTS->AddCluster(branch,c); 
     fNRawClusters++;
     iTS->AddRecPoint(rp); 
 }
-
-
-
-
-

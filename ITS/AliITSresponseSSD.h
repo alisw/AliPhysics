@@ -12,6 +12,7 @@ class AliITSresponseSSD : public AliITSresponse {
 
  public:
     AliITSresponseSSD();
+    AliITSresponseSSD(const char *dataType);
     virtual ~AliITSresponseSSD();
     AliITSresponseSSD(const AliITSresponseSSD &source); // copy constructor
     AliITSresponseSSD& operator=(const AliITSresponseSSD &source); // ass. op.
@@ -113,10 +114,3 @@ class AliITSresponseSSD : public AliITSresponse {
     ClassDef(AliITSresponseSSD,1) //Response class for SSD
 };
 #endif
-
-
-
-
-
-
-

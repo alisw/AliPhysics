@@ -12,6 +12,7 @@ class AliITSsimulationFastPointsV0 : public AliITSsimulation
 
 public:
   AliITSsimulationFastPointsV0(); // default constructor
+  AliITSsimulationFastPointsV0(const char *dataType); // standard constructor
   virtual ~AliITSsimulationFastPointsV0(); 
   void CreateFastRecPoints(AliITSmodule *mod,Int_t module,TRandom *rndm);
 private:

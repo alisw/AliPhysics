@@ -8,20 +8,20 @@
 
 // response for SDD
 
-class AliITSresponseSDD :
-  public AliITSresponse {
-public:
-  //
-  // Configuration methods
-  //
+class AliITSresponseSDD : public AliITSresponse {
+ public:
+    //
+    // Configuration methods
+    //
   
-  AliITSresponseSDD();
-  virtual ~AliITSresponseSDD();
+    AliITSresponseSDD();
+    AliITSresponseSDD(const char *dataType);
+    virtual ~AliITSresponseSDD();
 
-  void SetElectronics(Int_t p1=1) {
-    // Electronics: Pascal (1) or OLA (2)
-    fElectronics=p1;
-  }
+    void SetElectronics(Int_t p1=1) {
+	// Electronics: Pascal (1) or OLA (2)
+	fElectronics=p1;
+    }
   
   Int_t Electronics() {
     // Electronics: 1 = Pascal; 2 = OLA
@@ -254,14 +254,7 @@ protected:
   TString         fFileName2;        // baseline & noise val or output coded                                                 // signal or monitored bgr.
   TString         fFileName3;        // param values or output coded signal 
   
-  ClassDef(AliITSresponseSDD,2) // SDD response 
-    
-    };
+  ClassDef(AliITSresponseSDD,2) // SDD response
+};
 #endif
-
-
-
-
-
-
 

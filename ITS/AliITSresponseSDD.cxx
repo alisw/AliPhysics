@@ -18,12 +18,42 @@
 
 #include "AliITSresponseSDD.h"
 
+ClassImp(AliITSresponseSDD)
+//______________________________________________________________________
+AliITSresponseSDD::AliITSresponseSDD(){
+    // Default constructor
 
-//___________________________________________
-ClassImp(AliITSresponseSDD)	
-
-AliITSresponseSDD::AliITSresponseSDD()
-{
+    fGaus = 0;
+    SetDeadChannels();
+    SetMaxAdc();
+    SetDiffCoeff();
+    SetDriftSpeed();
+    SetNSigmaIntegration();
+    // SetClock();
+    SetNoiseParam();
+    SetNoiseAfterElectronics();
+    SetElectronics();
+    SetDynamicRange();
+    SetChargeLoss();
+    SetMinVal();
+    SetParamOptions();
+    SetZeroSupp();
+    SetDataType();
+    SetFilenames();
+    SetOutputOption();
+    SetDo10to8();
+    // set the default zero suppression parameters
+    fCPar[0]=0;
+    fCPar[1]=0;
+    fCPar[2]=(Int_t)(fBaseline + 2.*fNoiseAfterEl + 0.2);
+    fCPar[3]=(Int_t)(fBaseline + 2.*fNoiseAfterEl + 0.2);
+    fCPar[4]=0;
+    fCPar[5]=0;
+    fCPar[6]=0;
+    fCPar[7]=0;
+}
+//______________________________________________________________________
+AliITSresponseSDD::AliITSresponseSDD(const char *dataType){    
   // constructor
   //   fModules = 520;
   //   fChips = 4;
@@ -33,7 +63,7 @@ AliITSresponseSDD::AliITSresponseSDD()
    SetDiffCoeff();
    SetDriftSpeed();
    SetNSigmaIntegration();
-   SetNLookUp();
+   SetNLookUp();    // Sets fGaus
    // SetClock();
    SetNoiseParam();
    SetNoiseAfterElectronics();
@@ -43,7 +73,7 @@ AliITSresponseSDD::AliITSresponseSDD()
    SetMinVal();
    SetParamOptions();
    SetZeroSupp();
-   SetDataType();
+   SetDataType(dataType);
    SetFilenames();
    SetOutputOption();
    SetDo10to8();

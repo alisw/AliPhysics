@@ -23,14 +23,27 @@ ClassImp(AliITSresponseSSD)
 
 //______________________________________________________________________
 AliITSresponseSSD::AliITSresponseSSD(){
+    // Default Constructor
+
+    fDetPar = 0;
+    fNPar   = 0;
+    fNoiseP = 0;
+    fNoiseN = 0;
+    fSigmaP = 0;
+    fSigmaN = 0;
+    fDiffCoeff = 0;
+    fADCpereV  = 0;
+}
+//______________________________________________________________________
+AliITSresponseSSD::AliITSresponseSSD(const char *dataType){
     // constructor
 
     SetDiffCoeff();
     SetNoiseParam();
-    SetDataType();
+    SetDataType(dataType);
     SetSigmaSpread();
     SetParamOptions();
-    SetNDetParam();
+    SetNDetParam();   // Sets fNPar=6 by default.
     SetADCpereV();
     fDetPar = new Float_t[fNPar];
     if (fNPar==6) {
