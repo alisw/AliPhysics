@@ -28,7 +28,7 @@ public:
   void DigitiseModule(AliITSmodule *mod,Int_t module,Int_t dummy);
   void UpdateMapSignal(Int_t i, Int_t j, Int_t trk, Int_t ht,
 		       Int_t module, Double_t signal, AliITSpList *pList);
-  void UpdateMapNoise(Int_t i, Int_t j, Int_t ix, Int_t iz, Int_t module,
+  void UpdateMapNoise(Int_t ix, Int_t iz, Int_t module,
 		      Double_t sig, Float_t noise, AliITSpList *pList);
   void HitToDigit(AliITSmodule *mod,Int_t module,Int_t dummy);
   void HitToSDigit(AliITSmodule *mod, Int_t module, Int_t dummy,
