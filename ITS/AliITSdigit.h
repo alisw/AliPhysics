@@ -26,6 +26,9 @@ public:
   virtual ~AliITSdigit() {
     // destructor
   }
+
+  virtual int *GetTracks() {return 0;}
+  virtual Int_t *GetHits() {return 0;}
   
   ClassDef(AliITSdigit,1)     // Real data digit object for set:ITS
     };
@@ -52,6 +55,11 @@ public:
   virtual int *GetTracks() {
     // returns pointer to the array of tracks which make this digit
     return &fTracks[0];
+  }
+
+  virtual Int_t *GetHits(){
+    // returns the pointer to the array of hits which made this digit
+    return &fHits[0];
   }
   
     ClassDef(AliITSdigitSPD,1)   // Simulated digit object for SPD
@@ -83,6 +91,11 @@ public:
     return &fTracks[0];
   }
   
+  virtual Int_t *GetHits(){
+    // returns the pointer to the array of hits which made this digit
+    return &fHits[0];
+  }
+ 
   ClassDef(AliITSdigitSDD,1)   // Simulated digit object for SDD
     };
 
@@ -149,7 +162,12 @@ public:
     // returns pointer to the array of tracks which make this digit
     return &fTracks[0];
     }
-  
+
+  virtual Int_t *GetHits(){
+    // returns the pointer to the array of hits which made this digit
+    return &fHits[0];
+  }
+   
   ClassDef(AliITSdigitSSD,1)   // Simulated digit object for SSD
     };
 
