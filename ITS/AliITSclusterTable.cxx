@@ -30,6 +30,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 
+#include <stdlib.h>
 #include "AliITSclusterTable.h"
 #include "AliITSclusterV2.h"
 #include "AliITSgeom.h"
