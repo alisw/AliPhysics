@@ -71,7 +71,7 @@ AliHBTReader::~AliHBTReader()
 Int_t AliHBTReader::Next()
 {
 //moves to next event
-  if ((fNEventsRead > fLast) && (fLast > 0) )
+  if ((fNEventsRead > fLast) && (fLast > 0) ) return kTRUE;
    
   do
    {
@@ -324,6 +324,9 @@ void AliHBTReader::Blend()
   //randomly change positions of the particles after reading
   //is used to check if some distr depends on order of particles
   //(tracking gives particles Pt sorted)
+  
+  if (fParticlesEvent == 0x0) return;
+  
   for (Int_t i = 2; i < fParticlesEvent->GetNumberOfParticles(); i++)
    {
      Int_t with = gRandom->Integer(i);
