@@ -218,6 +218,7 @@ void  AliPHOSRecPoint::EvalPrimaries(TClonesArray * digits)
   TVector3  pos ;
   TMatrix  mat ;
   GetGlobalPosition(pos,mat) ;
+  pos.SetZ(-pos.Z()) ;
   Int_t module ;
   Double_t x,z ;
   geom->ImpactOnEmc(pos.Theta(),pos.Phi(),module,z,x);
