@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.49  2001/11/30 11:55:37  hristov
+Noise table created in Hits2SDigits (M.Ivanov)
+
 Revision 1.48  2001/11/24 16:10:21  kowal2
 Faster algorithms.
 
@@ -1545,7 +1548,7 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
 
   fDigitsSwitch=0; // standard digits
 
-  cerr<<"Digitizing TPC...\n";
+  cerr<<"Digitizing TPC -- normal digits...\n";
 
  for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) Hits2DigitsSector(isec);
 
@@ -1588,7 +1591,7 @@ void AliTPC::Hits2SDigits2(Int_t eventnumber)
   arr->MakeTree(fDigitsFile);
   SetDigitsArray(arr);
 
-  cerr<<"Digitizing TPC...\n"; 
+  cerr<<"Digitizing TPC -- summable digits...\n"; 
 
   fDigitsSwitch=1; // summable digits
   
@@ -1639,7 +1642,7 @@ void AliTPC::Hits2SDigits()
   arr->MakeTree(fDigitsFile);
   SetDigitsArray(arr);
 
-  cerr<<"Digitizing TPC...\n"; 
+  cerr<<"Digitizing TPC -- summable digits...\n"; 
 
   //  fDigitsSwitch=1; // summable digits  -for the moment direct
 
