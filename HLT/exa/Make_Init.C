@@ -14,7 +14,7 @@ void Make_Init(char *file){
     return;
   }
 
-  int fNTimeBins = 446;
+  int fNTimeBins = par->GetMaxTBin();
   int fNRowLow = par->GetNRowLow();
   int fNRowUp  = par->GetNRowUp();
   int fNRow= fNRowLow+ fNRowUp;
