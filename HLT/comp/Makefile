@@ -12,18 +12,19 @@ SOFLAGS     = -shared
 
 TOPDIR = $(HOME)/level3code
 OBJDIR = tgt_Linux
+LIBDIR = $(LEVEL3)/lib_$(USERNAME)
 
-SRCS	= AliL3Modeller.cxx AliL3ModelTrack.cxx
+SRCS	= AliL3Modeller.cxx AliL3ModelTrack.cxx AliL3Compress.cxx
 
 DICT = AliL3CompCint.cxx
 DICTH = AliL3CompCint.h
 DICTO = $(OBJDIR)/AliL3CompCint.o
 
-HDRS = $(SRCS:.cxx=.h) AliL3CompLinkDef.h
+HDRS = $(SRCS:.cxx=.h) bitio.h errhand.h AliL3CompLinkDef.h
 
-OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(DICTO)
+OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(OBJDIR)/bitio.o $(OBJDIR)/errhand.o $(DICTO)
 
-LEVELSO = $(LEVEL3)/lib_$(USERNAME)/libAliL3Comp.so
+LEVELSO = $(LIBDIR)/libAliL3Comp.so
 
 all : $(OBJDIR) $(LEVELSO)
 
@@ -41,10 +42,16 @@ $(OBJDIR)/%.o : %.cxx
 
 $(OBJDIR) : 
 	test ! -e $(OBJDIR) && mkdir -p $(OBJDIR)
+	test ! -e $(LIBDIR) && mkdir -p $(LIBDIR)
+
+$(OBJDIR)/bitio.o : bitio.c
+	$(CXX) -c -o $(OBJDIR)/bitio.o bitio.c
+$(OBJDIR)/errhand.o : errhand.c
+	$(CXX) -c -o $(OBJDIR)/errhand.o errhand.c
 
 clean :
 	rm -f $(OBJDIR)/*.o
-	rm -f $(LEVEL3)/lib_$(USERNAME)/libAliL3Comp.so
+	rm -f $(LIBDIR)/libAliL3Comp.so
 	rm $(DICT) $(DICTH) 
 so :
-	rm -f $(LEVEL3)/lib_$(USERNAME)/libAliL3Comp.so
+	rm -f $(LIBDIR)/libAliL3Comp.so
