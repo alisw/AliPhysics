@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.34  2000/05/18 10:45:38  fca
+Delete Particle Factory properly
+
 Revision 1.33  2000/05/16 13:10:40  fca
 New method IsNewTrack and fix for a problem in Father-Daughter relations
 
@@ -530,11 +533,21 @@ void AliRun::FinishRun()
   fTreeE->Write();
   
   // Clean tree information
-  delete fTreeK; fTreeK = 0;
-  delete fTreeH; fTreeH = 0;
-  delete fTreeD; fTreeD = 0;
-  delete fTreeR; fTreeR = 0;
-  delete fTreeE; fTreeE = 0;
+  if (fTreeK) {
+    delete fTreeK; fTreeK = 0;
+  }
+  if (fTreeH) {
+    delete fTreeH; fTreeH = 0;
+  }
+  if (fTreeD) {
+    delete fTreeD; fTreeD = 0;
+  }
+  if (fTreeR) {
+    delete fTreeR; fTreeR = 0;
+  }
+  if (fTreeE) {
+    delete fTreeE; fTreeE = 0;
+  }
   
   // Write AliRun info and all detectors parameters
   Write();
@@ -1418,7 +1431,7 @@ void AliRun::SetCurrentTrack(Int_t track)
 //_____________________________________________________________________________
 void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
 		      Float_t *vpos, Float_t *polar, Float_t tof,
-		      const char *mecha, Int_t &ntr, Float_t weight)
+		      const char *mecha, Int_t &ntr, Float_t weight=1)
 { 
   //
   // Load a track on the stack
