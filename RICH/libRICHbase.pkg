@@ -1,4 +1,4 @@
-SRCS:= AliRICHParam.cxx AliRICHChamber.cxx AliRICH.cxx AliRICHDisplFast.cxx
+SRCS:= AliRICHParam.cxx AliRICHChamber.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 DHDR:= RICHbaseLinkDef.h
