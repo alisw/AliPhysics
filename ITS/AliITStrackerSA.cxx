@@ -1144,17 +1144,18 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
   Double_t zmax=r*tgl + zvertex + dz;
   Double_t zmin=r*tgl + zvertex - dz;
 
-  Int_t ncl=lay.GetNumberOfClusters();
-  for (Int_t index=lay.FindClusterIndex(zmin); index<ncl; index++) {
+  Int_t indmin = lay.FindClusterIndex(zmin);
+  Int_t indmax = lay.FindClusterIndex(zmax);
+  for (Int_t index=indmin; index<indmax; index++) {
      AliITSclusterV2 *c=lay.GetCluster(index);
      if (c->IsUsed()) continue;
      if (c->GetQ()<=0) continue;
      if (c->TestBit(kSAflag)==kTRUE) continue;
-     if (c->GetZ() > zmax) break;
-     Double_t phi   =fTable->GetPhiCluster(layer,index);
-     Double_t lambda=fTable->GetLambdaCluster(layer,index);
 
+     Double_t phi   =fTable->GetPhiCluster(layer,index);
      if (TMath::Abs(phi-fPhiEstimate)>phiwindow) continue;
+
+     Double_t lambda=fTable->GetLambdaCluster(layer,index);
      if (TMath::Abs(lambda-fLambdac)>lambdawindow) continue;
 
      if(trs->GetNumberOfClustersSA()==15) return 0;
