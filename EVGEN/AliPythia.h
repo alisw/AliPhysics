@@ -40,11 +40,12 @@ class AliPythia : public TPythia6, public AliRndm
     virtual void ProcInit
 	(Process_t process, Float_t energy, StrucFunc_t strucfunc);
     // treat protons as inside nuclei
-    virtual void    SetNuclei(Int_t a1, Int_t a2);
+    virtual void  SetNuclei(Int_t a1, Int_t a2);
     // Print particle properties
     virtual void PrintParticles();
     virtual void ResetDecayTable();
     virtual void SetDecayTable();
+    virtual void Pyclus(Int_t& nclus);
     // return instance of the singleton
     static  AliPythia* Instance();
 

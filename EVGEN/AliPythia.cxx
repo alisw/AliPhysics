@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2002/11/14 00:37:32  morsch
+Warning message for kPyJets added.
+
 Revision 1.25  2002/10/14 14:55:35  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -94,6 +97,16 @@ Introduction of the Copyright and cvs Log
 
 ClassImp(AliPythia)
 
+#ifndef WIN32
+# define pyclus pyclus_
+# define type_of_call
+#else
+# define pyclus PYCLUS
+# define type_of_call _stdcall
+#endif
+
+extern "C" void type_of_call pyclus(Int_t & );
+
 //_____________________________________________________________________________
 
 AliPythia* AliPythia::fgAliPythia=NULL;
@@ -110,6 +123,8 @@ AliPythia::AliPythia()
 void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfunc)
 {
 // Initialise the process to generate 
+    if (!sRandom) sRandom = gRandom;
+    
     fProcess = process;
     fEcms = energy;
     fStrucFunc = strucfunc;
@@ -215,23 +230,9 @@ void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfun
 	break;
     case kPyJets:
 //
-	printf("\n*************************************************\n");
-	printf("\nWARNING !\n");
-	printf("The kPyJet option uses simplified jet-production\n");
-	printf("without gluon radiation \n");
-	printf("\n*************************************************\n");
+//  QCD Jets
 //
 	SetMSEL(1);
-// no initial state radiation   
-	SetMSTP(61,0);
-// no final state radiation
-	SetMSTP(71,0);
-// no primordial pT
-	SetMSTP(91,0);
-//	SetMSTP(111,0);	
-	SetMSTU(16,1);	
-	SetMSTJ(1,1);
-	
 	break;
     case kPyDirectGamma:
 	SetMSEL(10);
@@ -402,15 +403,25 @@ void  AliPythia::SetDecayTable()
     for (i = 1; i < 2001; i++) fDefMDME[i] = GetMDME(i,1);
 }
 
+void  AliPythia::Pyclus(Int_t& njet)
+{
+//  Call Pythia clustering algorithm
+//
+    pyclus(njet);
+}
+
+
 
 #ifndef WIN32
 #define pyr    pyr_
 #define pyrset pyrset_
 #define pyrget pyrget_
+#define pyclus pyclus_
 #else
 #define pyr    PYR
 #define pyrset PYRSET
 #define pyrget PYRGET
+#define pyclus PYCLUS
 #endif
 
 extern "C" {
@@ -423,6 +434,7 @@ extern "C" {
   void pyrset(Int_t*,Int_t*) {}
   void pyrget(Int_t*,Int_t*) {}
 }
+
 
 
 
