@@ -1,7 +1,3 @@
-/* $id$
-Author: Constantin Loizides <mailto: loizides@ikf.physik.uni-frankfurt.de>
-*/
-
 #ifndef ALIL3ALTROMEMHANDLER_H
 #define ALIL3ALTROMEMHANDLER_H
 
@@ -10,7 +6,7 @@ Author: Constantin Loizides <mailto: loizides@ikf.physik.uni-frankfurt.de>
 
 //Maximum Size of Altro Packet equals 1000 Bit
 #define ALTRO_SIZE 125
-//Maximum 10Bit ADCs to be stored in one Packet
+//Maximum 10Bit data to be stored in one Packet
 #define MAX_VALS 94
 
 class AliL3AltroMemHandler {
@@ -35,18 +31,10 @@ class AliL3AltroMemHandler {
    Bool_t flag;
    void WriteTrailer();
    void Clear();
+   ClassDef(AliL3AltroMemHandler,1)
 };
 
 #endif
-
-
-
-
-
-
-
-
-
 
 
 

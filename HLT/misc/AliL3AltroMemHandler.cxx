@@ -7,6 +7,15 @@ Author: Constantin Loizides <mailto: loizides@ikf.physik.uni-frankfurt.de>
 #include <string.h>
 #include "AliL3AltroMemHandler.h"
 
+/** \class AliL3AltroMemHandler
+// Converts digits in memory into a backlinked ALTRO like data format.
+// The file misc/read.cxx shows how to use this class.
+// As soon as you have more than 35 digits per pad, this class needs to
+// improved to properly handle the backlinked list.
+*/
+
+ClassImp(AliL3AltroMemHandler)
+
 AliL3AltroMemHandler::AliL3AltroMemHandler(){
   Clear();
 };
@@ -121,10 +130,3 @@ Bool_t AliL3AltroMemHandler::SetBinaryOutput(FILE *file){
   }
   return kTRUE;
 }
-
-
-
-
-
-
-
