@@ -14,6 +14,7 @@ class G4Timer;
     // times system function this declaration must be the first
 
 class AliRunActionMessenger;
+class AliSDConstruction;
 class G4Run;
 
 class AliRunAction : public G4UserRunAction
@@ -41,6 +42,9 @@ class AliRunAction : public G4UserRunAction
     AliRunAction& operator=(const AliRunAction& right);
 
   private:
+    // methods
+    AliSDConstruction* GetSDConstruction() const;
+
     // data members
     AliRunActionMessenger*  fMessenger;    //messenger 
     G4Timer*                fTimer;        //G4Timer
