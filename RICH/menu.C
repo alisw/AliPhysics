@@ -1,12 +1,12 @@
 void Digits2Recos()
 {
-  AliRICHPatRec *detect = new AliRICHPatRec("RICH patrec algorithm","Reconstruction");
+  AliRICHRecon *detect = new AliRICHRecon("RICH patrec algorithm","Reconstruction");
     
 
   for (int nev=0; nev<= a->GetEventsPerRun(); nev++) {    // Event Loop
     al->GetEvent(nev);
     cout <<endl<< "Processing event:" <<nev<<endl;
-    detect->PatRec();
+    detect->StartProcessEvent();
   } // event loop  
 }  
 
