@@ -13,6 +13,7 @@
 
 // --- ROOT system ---
 
+class TClonesArray;
 #include "TParticle.h"
 
 // --- Standard library ---

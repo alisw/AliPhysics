@@ -86,8 +86,8 @@ void AliEMCALRecPoint::AddDigit(AliEMCALDigit & digit, Float_t Energy)
 
   if ( fMulDigit >= fMaxDigit ) { // increase the size of the lists 
     fMaxDigit*=2 ; 
-    Int_t * tempo = new ( Int_t[fMaxDigit] ) ; 
-    Float_t * tempoE =  new ( Float_t[fMaxDigit] ) ;
+    Int_t * tempo = new Int_t[fMaxDigit]; 
+    Float_t * tempoE =  new Float_t[fMaxDigit];
 
     Int_t index ;     
     for ( index = 0 ; index < fMulDigit ; index++ ){
@@ -96,10 +96,10 @@ void AliEMCALRecPoint::AddDigit(AliEMCALDigit & digit, Float_t Energy)
     }
     
     delete [] fDigitsList ; 
-    fDigitsList =  new ( Int_t[fMaxDigit] ) ;
+    fDigitsList =  new Int_t[fMaxDigit];
  
     delete [] fEnergyList ;
-    fEnergyList =  new ( Float_t[fMaxDigit] ) ;
+    fEnergyList =  new Float_t[fMaxDigit];
 
     for ( index = 0 ; index < fMulDigit ; index++ ){
       fDigitsList[index] = tempo[index] ;

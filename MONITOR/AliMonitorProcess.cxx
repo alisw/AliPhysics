@@ -25,43 +25,44 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TGrid.h>
+#include <TGridResult.h>
+#include <TMessage.h>
+#include <TROOT.h>
+#include <TServerSocket.h>
+#include <TSocket.h>
 
-#include "AliMonitorProcess.h"
-#include "AliMonitorTPC.h"
-#include "AliMonitorITS.h"
-#include "AliMonitorV0s.h"
+#include "AliITS.h"
+#include "AliITSLoader.h"
+#include "AliITSclustererV2.h"
+#include "AliITStrackerV2.h"
+#include "AliLoader.h"
 #include "AliMonitorHLT.h"
 #include "AliMonitorHLTHough.h"
+#include "AliMonitorITS.h"
+#include "AliMonitorProcess.h"
+#include "AliMonitorTPC.h"
+#include "AliMonitorV0s.h"
 #include "AliRawReaderRoot.h"
-#include "AliLoader.h"
 #include "AliRun.h"
 #include "AliTPC.h"
 #include "AliTPCclustererMI.h"
 #include "AliTPCtrackerMI.h"
-#include "AliITS.h"
-#include "AliITSclustererV2.h"
-#include "AliITStrackerV2.h"
-#include "AliITSLoader.h"
 #include "AliV0vertexer.h"
-#include <TGrid.h>
-#include <TSocket.h>
-#include <TServerSocket.h>
-#include <TMessage.h>
-#include <TGridResult.h>
-#include <TROOT.h>
+
 #ifdef ALI_HLT
-#include <AliLevel3.h>
-#include <AliL3Transform.h>
+#include <AliL3ClusterFitter.h>
+#include <AliL3DDLDataFileHandler.h>
+#include <AliL3Fitter.h>
+#include <AliL3Hough.h>
+#include <AliL3HoughBaseTransformer.h>
+#include <AliL3HoughMaxFinder.h>
+#include <AliL3StandardIncludes.h>
 #include <AliL3Track.h>
 #include <AliL3TrackArray.h>
-#include <AliL3StandardIncludes.h>
-#include <AliL3HoughMaxFinder.h>
-#include <AliL3HoughBaseTransformer.h>
-#include <AliL3Hough.h>
-#include <AliL3ClusterFitter.h>
+#include <AliL3Transform.h>
 #include <AliL3Vertex.h>
-#include <AliL3Fitter.h>
-#include <AliL3DDLDataFileHandler.h>
+#include <AliLevel3.h>
 #endif
 
 ClassImp(AliMonitorProcess) 
