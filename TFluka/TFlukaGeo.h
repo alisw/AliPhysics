@@ -318,11 +318,6 @@ class TFluka : public TVirtualMC {
   void SetTrackIsInside()  {fTrackIsExiting  = kFALSE; fTrackIsEntering = kFALSE;}
   void SetTrackIsNew(Bool_t flag=kTRUE) {fTrackIsNew = flag;}
   
-  //
-  // test
-  // ------------------------------------------------
-  //
-  virtual void     FutoTest() ;
 
  private:
   TFluka(const TFluka &mc): TVirtualMC(mc) {;}

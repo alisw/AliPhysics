@@ -562,8 +562,6 @@ Double_t TFluka::Xsec(char*, Double_t, Int_t, Int_t)
 
 void TFluka::InitPhysics()
 {
-// Last material number taken from the "corealice.inp" file, presently 31
-// !!! it should be available from Flugg !!!
   Int_t i, j, k;
   Double_t fCut;
   FGeometryInit* geominit = FGeometryInit::GetInstance();
@@ -2023,12 +2021,7 @@ void TFluka::TrackPosition(Double_t& x, Double_t& y, Double_t& z) const
     y = GetYsco();
     z = GetZsco();
   }
-  else if (caller == 4) { // mgdraw
-    x = TRACKR.xtrack[TRACKR.ntrack];
-    y = TRACKR.ytrack[TRACKR.ntrack];
-    z = TRACKR.ztrack[TRACKR.ntrack];
-  }
-  else if (caller == 5) { // sodraw
+  else if (caller == 4 || caller == 5) { // mgdraw, sodraw
     x = TRACKR.xtrack[TRACKR.ntrack];
     y = TRACKR.ytrack[TRACKR.ntrack];
     z = TRACKR.ztrack[TRACKR.ntrack];
@@ -2118,7 +2111,7 @@ Double_t TFluka::TrackLength() const
 {
 // TRACKR.cmtrck = cumulative curved path since particle birth
   Int_t caller = GetCaller();
-  if (caller == 111 || caller==12 || caller == 3 || caller == 4 || caller == 6) //bxdraw,endraw,mgdraw,usdraw
+  if (caller == 11 || caller==12 || caller == 3 || caller == 4 || caller == 6) //bxdraw,endraw,mgdraw,usdraw
     return TRACKR.cmtrck;
   else 
     return -1.0;
@@ -2213,18 +2206,6 @@ Double_t TFluka::Etot() const
 Bool_t   TFluka::IsNewTrack() const
 {
 // Return true for the first call of Stepping()
-/*
-// True if the track has positive cummulative length
-  Int_t caller = GetCaller();
-  if (caller != 2) { // not eedraw
-    if (TRACKR.cmtrck > 0.0)
-      return 1; 
-    else
-      return 0; 
-  }
-  else
-    return 0;
-*/    
    return fTrackIsNew;
 }
 
@@ -2349,7 +2330,6 @@ void     TFluka::GetSecondary(Int_t isec, Int_t& particleId,
       position.SetY(fYsco);
       position.SetZ(fZsco);
       position.SetT(TRACKR.atrack);
-//    position.SetT(TRACKR.atrack+FINUC.agesec[isec]); //not yet implem.
       momentum.SetPx(FINUC.plr[isec]*FINUC.cxr[isec]);
       momentum.SetPy(FINUC.plr[isec]*FINUC.cyr[isec]);
       momentum.SetPz(FINUC.plr[isec]*FINUC.czr[isec]);
@@ -2362,7 +2342,6 @@ void     TFluka::GetSecondary(Int_t isec, Int_t& particleId,
       position.SetY(fYsco);
       position.SetZ(fZsco);
       position.SetT(TRACKR.atrack);
-//    position.SetT(TRACKR.atrack+FHEAVY.agheav[jsec]); //not yet implem.
       momentum.SetPx(FHEAVY.pheavy[jsec]*FHEAVY.cxheav[jsec]);
       momentum.SetPy(FHEAVY.pheavy[jsec]*FHEAVY.cyheav[jsec]);
       momentum.SetPz(FHEAVY.pheavy[jsec]*FHEAVY.czheav[jsec]);
@@ -2653,156 +2632,3 @@ void TFluka::Gdtom(Double_t* xd, Double_t* xm, Int_t iflag)
     }
 
 // ===============================================================
-void TFluka::FutoTest() 
-{
-    Int_t icode, mreg, newreg, particleId;
-    Double_t rull, xsco, ysco, zsco;
-    TLorentzVector position, momentum;
-    icode = GetIcode();
-    if (icode == 0) {
-	if (fVerbosityLevel >=3)
-	    cout << " icode=" << icode << endl;
-    } else if (icode > 0 && icode <= 5) {
-// mgdraw
-	mreg = GetMreg();
-	if (fVerbosityLevel >=3)
-	    cout << " icode=" << icode
-		 << " mreg=" << mreg
-		 << endl;
-	TrackPosition(position);
-	TrackMomentum(momentum);
-	if (fVerbosityLevel >=3) {
-	    cout << "TLorentzVector positionX=" << position.X()
-		 << "positionY=" << position.Y()
-		 << "positionZ=" << position.Z()
-		 << "timeT=" << position.T() << endl;
-	    cout << "TLorentzVector momentumX=" << momentum.X()
-		 << "momentumY=" << momentum.Y()
-		 << "momentumZ=" << momentum.Z()
-		 << "energyE=" << momentum.E() << endl;
-	    cout << "TrackStep=" << TrackStep() << endl;
-	    cout << "TrackLength=" << TrackLength() << endl;
-	    cout << "TrackTime=" << TrackTime() << endl;
-	    cout << "Edep=" << Edep() << endl;
-	    cout << "TrackPid=" << TrackPid() << endl;
-	    cout << "TrackCharge=" << TrackCharge() << endl;
-	    cout << "TrackMass=" << TrackMass() << endl;
-	    cout << "Etot=" << Etot() << endl;
-	    cout << "IsNewTrack=" << IsNewTrack() << endl;
-	    cout << "IsTrackInside=" << IsTrackInside() << endl;
-	    cout << "IsTrackEntering=" << IsTrackEntering() << endl;
-	    cout << "IsTrackExiting=" << IsTrackExiting() << endl;
-	    cout << "IsTrackOut=" << IsTrackOut() << endl;
-	    cout << "IsTrackDisappeared=" << IsTrackDisappeared() << endl;
-	    cout << "IsTrackAlive=" << IsTrackAlive() << endl;
-	}
-	
-	Float_t x = position.X();
-	Float_t y = position.Y();
-	Float_t z = position.Z();
-	Float_t xm[3];
-	Float_t xd[3];
-	xm[0] = x; xm[1] = y; xm[2] = z;
-	if (fVerbosityLevel >= 3)
-	    printf("Global trackPosition: %f %f %f \n", x, y, z);
-	Gmtod(xm, xd, 1);
-	if (fVerbosityLevel >= 3)
-	    printf("Local trackPosition: %f %f %f \n", xd[0], xd[1], xd[2]);
-	Gdtom(xd, xm, 1);
-	if (fVerbosityLevel >= 3)
-	    printf("New trackPosition: %f %f %f \n", xm[0], xm[1], xm[2]);
-    } else if((icode >= 10 && icode <= 15) ||
-	      (icode >= 20 && icode <= 24) ||
-	      (icode >= 30 && icode <= 33) ||
-	      (icode >= 40 && icode <= 41) ||
-	      (icode >= 50 && icode <= 52)) {
-// endraw
-	mreg = GetMreg();
-	rull = GetRull();
-	xsco = GetXsco();
-	ysco = GetYsco();
-	zsco = GetZsco();
-	
-	if (fVerbosityLevel >=3) {     
-	    cout << " icode=" << icode
-		 << " mreg=" << mreg
-		 << " rull=" << rull
-		 << " xsco=" << xsco
-		 << " ysco=" << ysco
-		 << " zsco=" << zsco << endl;
-	}
-	TrackPosition(position);
-	TrackMomentum(momentum);
-	if (fVerbosityLevel >=3) {
-	    cout << "Edep=" << Edep() << endl;
-	    cout << "Etot=" << Etot() << endl;
-	    cout << "TrackPid=" << TrackPid() << endl;
-	    cout << "TrackCharge=" << TrackCharge() << endl;
-	    cout << "TrackMass=" << TrackMass() << endl;
-	    cout << "IsTrackOut=" << IsTrackOut() << endl;
-	    cout << "IsTrackDisappeared=" << IsTrackDisappeared() << endl;
-	    cout << "IsTrackStop=" << IsTrackStop() << endl;
-	    cout << "IsTrackAlive=" << IsTrackAlive() << endl;
-	}
-    } else if((icode >= 100 && icode <= 105) ||
-	      (icode == 208) ||
-	      (icode == 210) ||
-	      (icode == 212) ||
-	      (icode >= 214 && icode <= 215) ||
-	      (icode == 217) ||
-	      (icode == 219) ||
-	      (icode == 221) ||
-	      (icode == 225) ||
-	      (icode == 300) ||
-	      (icode == 400)) {
-// usdraw
-	  mreg = GetMreg();
-	  xsco = GetXsco();
-	  ysco = GetYsco();
-	  zsco = GetZsco();
-	  
-	  if (fVerbosityLevel >=3) {
-	      cout << " icode=" << icode
-		   << " mreg=" << mreg
-		   << " xsco=" << xsco
-		   << " ysco=" << ysco
-		   << " zsco=" << zsco << endl;
-	      cout << "TrackPid=" << TrackPid() << endl;
-	      cout << "NSecondaries=" << NSecondaries() << endl;
-	  }
-	  
-	  for (Int_t isec=0; isec< NSecondaries(); isec++) {
-	      TFluka::GetSecondary(isec, particleId, position, momentum);
-	      if (fVerbosityLevel >=3) {
-		  cout << "TLorentzVector positionX=" << position.X()
-		       << "positionY=" << position.Y()
-		       << "positionZ=" << position.Z()
-		       << "timeT=" << position.T() << endl;
-		  cout << "TLorentzVector momentumX=" << momentum.X()
-		       << "momentumY=" << momentum.Y()
-		       << "momentumZ=" << momentum.Z()
-		       << "energyE=" << momentum.E() << endl;
-		  cout << "TrackPid=" << particleId << endl;
-	      }
-	  }
-    } else if((icode == 19) ||
-	      (icode == 29) ||
-	      (icode == 39) ||
-	      (icode == 49) ||
-	      (icode == 59)) {
-	mreg = GetMreg();
-	newreg = GetNewreg();
-	xsco = GetXsco();
-	ysco = GetYsco();
-	zsco = GetZsco();
-	if (fVerbosityLevel >=3) {
-	    cout << " icode=" << icode
-		 << " mreg=" << mreg
-		 << " newreg=" << newreg
-		 << " xsco=" << xsco
-		 << " ysco=" << ysco
-		 << " zsco=" << zsco << endl;
-	}
-    }
-} // end of FutoTest
-

@@ -324,32 +324,28 @@ class TFluka : public TVirtualMC {
   void SetTrackIsExiting() {fTrackIsExiting  = kTRUE; fTrackIsEntering = kFALSE;}
   void SetTrackIsInside()  {fTrackIsExiting  = kFALSE; fTrackIsEntering = kFALSE;}
   void SetTrackIsNew(Bool_t flag=kTRUE) {fTrackIsNew = flag;}
-  //
-  // test
-  // ------------------------------------------------
-  //
-  virtual void     FutoTest() ;
 
  private:
   TFluka(const TFluka &mc): TVirtualMC(mc) {;}
   TFluka & operator=(const TFluka &) {return (*this);}
-
+                                                                                
  protected:
   Int_t   fVerbosityLevel; //Verbosity level (0 lowest - 3 highest)
-
+                                                                                
   TString sInputFileName;     //Name of the real input file (e.g. alice.inp)
   TString sCoreInputFileName; //Name of the input file (e.g. corealice.inp)
-
+                                                                                
   Int_t    fCaller; //Parameter to indicate who is the caller of the Fluka Draw
-  Int_t    fIcode;  //Fluka Draw procedures formal parameter 
+  Int_t    fIcode;  //Fluka Draw procedures formal parameter
   Int_t    iNewreg; //Fluka Draw procedures formal parameter
   Double_t fRull;   //Fluka Draw procedures formal parameter
   Double_t fXsco;   //Fluka Draw procedures formal parameter
   Double_t fYsco;   //Fluka Draw procedures formal parameter
   Double_t fZsco;   //Fluka Draw procedures formal parameter
   Bool_t   fTrackIsEntering;  // Flag for track entering
-  Bool_t   fTrackIsExiting;   // Flag for track exiting  
+  Bool_t   fTrackIsExiting;   // Flag for track exiting
   Bool_t   fTrackIsNew;       // Flag for new track
+                                                                                
   //variables for SetProcess and SetCut
   Int_t    iNbOfProc;
   Int_t    iProcessValue[100];
@@ -357,18 +353,11 @@ class TFluka : public TVirtualMC {
   Int_t    iNbOfCut;
   Double_t fCutValue[100];
   Char_t   sCutFlag[100][7];
-
-
+                                                                                
   //Geometry through Geant4 for the time being!!!
-  TG4GeometryManager*  fGeometryManager; //Geometry manager
-  TG4DetConstruction*  fDetector;        //Detector
-
-  TClonesArray*        fVolumeMediaMap;  //!Transient list of volumes
   Int_t                fNVolumes;        //!Current number of volumes
-  Int_t*               fMediaByRegion;   //!Media by Fluka region
-
-  
-  Int_t fCurrentFlukaRegion; //Index of fluka region at each step
+  Int_t                fCurrentFlukaRegion; //Index of fluka region at each step  TFlukaMCGeometry    *fGeom;               // TGeo-FLUKA interface
+                                                                                
   ClassDef(TFluka,1)  //C++ interface to Fluka montecarlo
 };
 
