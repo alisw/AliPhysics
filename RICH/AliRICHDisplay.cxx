@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.4  2000/06/12 15:21:08  jbarbosa
+  Cleaned up version.
+
   Revision 1.3  2000/06/09 14:52:08  jbarbosa
   New tentative ellipse drawing routine
 
@@ -802,7 +805,7 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
    AliRICHChamber*  iChamber;
 
    TClonesArray *pRICHrechits  = pRICH->RecHitsAddress(chamber);
-   printf ("Chamber:%d has adress:%p\n", chamber, pRICHrechits );
+   printf ("Chamber:%d\n", chamber);
    if (pRICHrechits == 0) return;
 
    //RICH->ResetRecHits();
@@ -841,8 +844,8 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
        //Float_t phi   = iChamber->GetRotMatrix()->GetPhi();	   
        //ellipse=new TEllipse(vectorGlob[0],vectorGlob[2],10,10,0,360,phi);
        printf("Generating ellipse %d\n",irec);
-       AliRICHEllipse *ellipse=new AliRICHEllipse(mRec->fX,mRec->fY,mRec->fOmega,mRec->fTheta,mRec->fPhi);
-       ellipse->CreatePoints(chamber);
+       AliRICHEllipse *ellipse=new AliRICHEllipse(mRec->fX,mRec->fY,mRec->fOmega,mRec->fTheta,mRec->fPhi,mRec->fEmissPoint);
+       ellipse->CerenkovRingDrawing(chamber,irec);
        //ellipse->SetFillStyle(1001);
        ellipse->SetMarkerColor(38);
        ellipse->Draw();
