@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.55  2002/04/13 22:21:12  nilsen
+New default value of noise for SDD simulations introduced.
+
 Revision 1.54  2002/03/28 16:17:03  nilsen
 Set new Geant Step size and related parameters for the ITS materials.
 
@@ -29205,19 +29208,11 @@ void AliITSvPPRasymm::SetDefaults(){
     iDetType=DetType(kSDD);
     s1 = (AliITSgeomSDD*) fITSgeom->GetShape(kSDD);// Get shape info. Do it this way for now.
     AliITSresponseSDD *resp1=new AliITSresponseSDD("simulated");
-    resp1->SetZeroSupp("1D");
-    resp1->SetDriftSpeed(7.3); // set drift speed to 7.3 microns/ns.
-    Float_t a,b;
-    resp1->GetNoiseParam(a,b);
-    a = resp1->GetNoiseAfterElectronics();
-    Int_t cp[8] = {0,0,(Int_t)(2.*a+b+.5),(Int_t)(2.*a+b+.5),0,0,0,0};
-    resp1->SetCompressParam(cp);
     SetResponseModel(kSDD,resp1);
     AliITSsegmentationSDD *seg1=new AliITSsegmentationSDD(fITSgeom,resp1);
     seg1->SetDetSize(s1->GetDx()*kconv, // base this on AliITSgeomSDD
 		     s1->GetDz()*2.*kconv, // for now.
 		     s1->GetDy()*2.*kconv); // x,z,y full width in microns.
-    bx[0] = (s1->GetDx()*kconv/(seg1->Dpx(0))*resp1->DriftSpeed())+1.;// clock in Mhz
     seg1->SetNPads(256,256);// Use AliITSgeomSDD for now
     SetSegmentationModel(kSDD,seg1);
     const char *kData1=(iDetType->GetResponseModel())->DataType();
