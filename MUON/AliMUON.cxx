@@ -552,6 +552,7 @@ void AliMUON::ResetDigits()
     //
     // Reset number of digits and the digits array for this detector
     //
+    if (fDchambers == 0x0) return;
     for ( int i=0;i<AliMUONConstants::NCh();i++ ) {
       //PH	if ((*fDchambers)[i])    ((TClonesArray*)(*fDchambers)[i])->Clear();
 	if ((*fDchambers)[i])    ((TClonesArray*)fDchambers->At(i))->Clear();
