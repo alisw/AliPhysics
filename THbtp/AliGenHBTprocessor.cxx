@@ -95,7 +95,7 @@ static TRandom* sRandom;
 AliGenCocktailAfterBurner*  GetGenerator();
 /*******************************************************************/
 AliGenHBTprocessor::AliGenHBTprocessor(const AliGenHBTprocessor& in):
- fEventMerge(1)
+  AliGenerator(in), fEventMerge(1)
 {
 //copy contructor
   // AliGenHBTprocessor::AliGenHBTprocessor();
@@ -667,7 +667,7 @@ void AliGenHBTprocessor::SetPzRange(Float_t pzmin, Float_t pzmax)
    fPzMax =pzmax; 
    fHBTprocessor->SetPzRange(pzmin,pzmax);
  }
-void AliGenHBTprocessor::SetMomentumRange(Float_t pmin, Float_t pmax)
+void AliGenHBTprocessor::SetMomentumRange(Float_t /*pmin*/, Float_t /*pmax*/)
  {
  //default pmin=0, pmax=0
  //Do not use this method!

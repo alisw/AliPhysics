@@ -397,7 +397,7 @@ void THBTprocessor::Initialize()
 /*****************************************************************************************/
 
 
-Int_t THBTprocessor::ImportParticles(TClonesArray *particles, Option_t *option)
+Int_t THBTprocessor::ImportParticles(TClonesArray *particles, Option_t */*option*/)
  {
   //Copy particle data into TClonesArray
   if (particles == 0) return 0;
