@@ -55,7 +55,8 @@ class AliPHOSRawReaderDate: public AliRawReader {
     virtual Bool_t   RewindEvents();
 
     virtual Int_t    CheckData() const;
-
+    
+    virtual const UInt_t* GetSubEventAttributes() const { return 0;}
   protected :
  
   inline void ChangeOrder(Int_t & dword) {
