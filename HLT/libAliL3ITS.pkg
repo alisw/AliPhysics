@@ -2,7 +2,7 @@
 
 include HLT/hlt.conf
 
-SRCS:= ITS/AliL3ITStrack.cxx ITS/AliL3ITStracker.cxx
+SRCS:= ITS/AliL3ITStrack.cxx ITS/AliL3ITStracker.cxx ITS/AliL3ITSVertexerZ.cxx
 
 HDRS:= $(SRCS:.cxx=.h) $(HLTEHDRS)
 

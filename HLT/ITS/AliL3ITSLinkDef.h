@@ -8,6 +8,7 @@
 #ifdef use_aliroot
 #pragma link C++ class AliL3ITStrack; 
 #pragma link C++ class AliL3ITStracker; 
+#pragma link C++ class AliL3ITSVertexerZ;
 #endif
 
 #endif
