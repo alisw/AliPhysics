@@ -42,7 +42,8 @@ AliEMCALRecParticle.cxx \
 AliEMCALFastRecParticle.cxx \
 AliEMCALPID.cxx \
 AliEMCALPIDv1.cxx \
-AliEMCALLoader.cxx
+AliEMCALLoader.cxx \
+AliEMCALReconstructioner.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
