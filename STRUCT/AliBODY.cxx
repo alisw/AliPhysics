@@ -105,10 +105,12 @@ void AliBODY::CreateGeometry()
     dALIC[1]=360;
     dALIC[2]=4;
     dALIC[3]=2;
-    dALIC[4]=-3000;
+
+    dALIC[4]=-15000;
     dALIC[5]=0;
     dALIC[6]=2000;
-    dALIC[7]=15000;
+
+    dALIC[7]=3000;
     dALIC[8]=0;
     dALIC[9]=2000;
     gMC->Gsvolu("ALIC","PGON",idtmed[1],dALIC,10);
