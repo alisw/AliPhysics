@@ -43,7 +43,9 @@ public:
   Int_t Update(const AliCluster* cl,Double_t chi2,UInt_t i);
   Int_t Improve(Double_t x0,Double_t yv,Double_t zv);
   void SetdEdx(Double_t dedx) {fdEdx=dedx;}
-  void CookdEdx(Double_t low=0., Double_t up=1.) {}
+  void SetSampledEdx(Float_t q, Int_t i);  // b.b.
+  //void CookdEdx(Double_t low=0., Double_t up=1.) {}
+  void CookdEdx(Double_t low=0., Double_t up=0.8); // b.b.
   void SetDetectorIndex(Int_t i) {SetLabel(i);}
   void ResetCovariance();
   void ResetClusters() { SetChi2(0.); SetNumberOfClusters(0); }
@@ -93,6 +95,8 @@ private:
 
   UInt_t fIndex[kMaxLayer]; // indices of associated clusters 
 
+  Float_t fdEdxSample[8];   // array of dE/dx samples b.b.
+
   ClassDef(AliITStrackV2,1)   //ITS reconstructed track
 };
 
@@ -104,6 +108,20 @@ void AliITStrackV2::GetExternalParameters(Double_t& xr, Double_t x[5]) const {
      xr=fX;          
      x[0]=GetY(); x[1]=GetZ(); x[2]=GetSnp(); x[3]=GetTgl(); x[4]=Get1Pt();
 }
+//b.b.
+inline
+void AliITStrackV2::SetSampledEdx(Float_t q, Int_t i) {
+  //----------------------------------------------------------------------
+  //
+  //----------------------------------------------------------------------
+  Double_t s=GetSnp(), t=GetTgl();
+  //cout<<"before  corr!!  i,q="<<i<<" "<<q<<" "<<endl;
+  q *= TMath::Sqrt((1-s*s)/(1+t*t));
+  fdEdxSample[i]=q;
+  //cout<<"after corr!! i,q="<<i<<" "<<q<<" "<<endl;
+}
+
+
 
 #endif
 

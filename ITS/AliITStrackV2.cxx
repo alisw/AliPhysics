@@ -88,7 +88,13 @@ AliITStrackV2::AliITStrackV2(const AliITStrackV2& t) : AliKalmanTrack(t) {
   fC40=t.fC40;  fC41=t.fC41;  fC42=t.fC42;  fC43=t.fC43;  fC44=t.fC44;
 
   Int_t n=GetNumberOfClusters();
-  for (Int_t i=0; i<n; i++) fIndex[i]=t.fIndex[i];
+  //for (Int_t i=0; i<n; i++) fIndex[i]=t.fIndex[i];
+  //b.b.
+  for (Int_t i=0; i<n; i++) {
+    fIndex[i]=t.fIndex[i];
+    fdEdxSample[i]=t.fdEdxSample[i];
+  }
+
 }
 /*
 //_____________________________________________________________________________
@@ -512,15 +518,15 @@ Int_t AliITStrackV2::Invariant() const {
   
   //if (TMath::Abs(fP1)>11.5)
   //if (fP1*fP4<0) {
-  //   if (n>kWARN) cout<<"fP1*fP4="<<fP1*fP4<<' '<<fP1<<endl; return 0;}
+  //   if (n>kWARN) cerr<<"fP1*fP4="<<fP1*fP4<<' '<<fP1<<endl; return 0;}
   
-  if (TMath::Abs(fP2)>=1) {if (n>kWARN) cout<<"fP2="<<fP2<<endl; return 0;}
+  if (TMath::Abs(fP2)>=1) {if (n>kWARN) cerr<<"fP2="<<fP2<<endl; return 0;}
 
-  if (fC00<=0) {if (n>kWARN) cout<<"fC00="<<fC00<<endl; return 0;}
-  if (fC11<=0) {if (n>kWARN) cout<<"fC11="<<fC11<<endl; return 0;}
-  if (fC22<=0) {if (n>kWARN) cout<<"fC22="<<fC22<<endl; return 0;}
-  if (fC33<=0) {if (n>kWARN) cout<<"fC33="<<fC33<<endl; return 0;}
-  if (fC44<=0) {if (n>kWARN) cout<<"fC44="<<fC44<<endl; return 0;}
+  if (fC00<=0) {if (n>kWARN) cerr<<"fC00="<<fC00<<endl; return 0;}
+  if (fC11<=0) {if (n>kWARN) cerr<<"fC11="<<fC11<<endl; return 0;}
+  if (fC22<=0) {if (n>kWARN) cerr<<"fC22="<<fC22<<endl; return 0;}
+  if (fC33<=0) {if (n>kWARN) cerr<<"fC33="<<fC33<<endl; return 0;}
+  if (fC44<=0) {if (n>kWARN) cerr<<"fC44="<<fC44<<endl; return 0;}
   /*
   TMatrixD m(5,5);
   m(0,0)=fC00; 
@@ -537,7 +543,7 @@ Int_t AliITStrackV2::Invariant() const {
   Double_t det=m.Determinant(); 
 
   if (det <= 0) {
-      if (n>kWARN) { cout<<" bad determinant "<<det<<endl; m.Print(); } 
+      if (n>kWARN) { cerr<<" bad determinant "<<det<<endl; m.Print(); } 
       return 0;
   }
   */
@@ -833,3 +839,54 @@ void AliITStrackV2::ResetCovariance() {
   fC40=0.;  fC41=0.;  fC42=0.;  fC43=0.;  fC44*=10.;
 
 }
+
+void AliITStrackV2::CookdEdx(Double_t low, Double_t up) {
+  //-----------------------------------------------------------------
+  // This funtion calculates dE/dX within the "low" and "up" cuts.
+  //-----------------------------------------------------------------
+  Int_t i;
+  Int_t nc=GetNumberOfClusters();
+  if(nc != 6) cout<<"!!!Warning: ncl isn't 6, ="<<nc<<endl;
+
+  // The clusters order is: SSD-2, SSD-1, SDD-2, SDD-1, SPD-2, SPD-1
+  // Take only SSD and SDD
+  nc=4;
+  Int_t swap;//stupid sorting
+
+  cout<<"Start sorting (low,up,nc)..."<<low<<" "<<up<<" "<<nc<<endl;
+
+  /*
+  for (i=0; i<6; i++) {  // b.b.
+      cout<<"! cl befor sort: cl,dEdx ="<<i<<","<<fdEdxSample[i]<<endl;
+    }
+  */
+
+  do {
+    swap=0;
+    for (i=0; i<nc-1; i++) {
+      if (fdEdxSample[i]<=fdEdxSample[i+1]) continue;
+      Float_t tmp=fdEdxSample[i];
+      fdEdxSample[i]=fdEdxSample[i+1]; fdEdxSample[i+1]=tmp;
+      swap++;
+    }
+  } while (swap);
+
+  for (i=0; i<nc; i++) { // b.b.
+    cout<<" i, sorted dEdx ="<<i<<","<<fdEdxSample[i]<<endl;
+  }
+  Int_t nl=Int_t(low*nc), nu=Int_t(up*(nc-1)); //b.b. to take two lowest dEdX
+                                               // values from four ones choose
+                                               // nu=2
+
+  cout<<" Cook: nl,nu, dEdX samples ="<<nl<<" "<<nu<<" ";
+  Float_t dedx=0;
+  for (i=nl; i<nu; i++){
+    dedx += fdEdxSample[i]; cout<<" "<<fdEdxSample[i]<<" ";}
+  cout<<endl;
+  dedx /= float(nu);
+
+  cout<<"! CookdEdx end: dedx ="<<dedx<<endl;
+  SetdEdx(dedx);
+}
+  
+

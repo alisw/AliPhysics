@@ -630,6 +630,10 @@ cout<<fI<<" chi2="<<chi2<<' '<<t.GetY()<<' '<<t.GetZ()<<' '<<dy<<' '<<dz<<endl;
      //cerr<<"AliITStrackerV2::TakeNextProlongation: filtering failed !\n";
      return 0;
   }
+  // b.b. change for the dEdX
+  fTrackToFollow.SetSampledEdx(c->GetQ(),
+                               fTrackToFollow.GetNumberOfClusters()-1);
+
   if (constraint) fTrackToFollow.Improve(d/21.82*2.33,GetY(),GetZ());
 
 #ifdef DEBUG
