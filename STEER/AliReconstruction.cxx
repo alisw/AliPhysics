@@ -277,6 +277,9 @@ Bool_t AliReconstruction::RunReconstruction(const TString& detectors)
 {
 // run the reconstruction
 
+  TStopwatch stopwatch;
+  stopwatch.Start();
+
   TString detStr = detectors;
   TObjArray* detArray = gAlice->Detectors();
   for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
@@ -285,7 +288,11 @@ Bool_t AliReconstruction::RunReconstruction(const TString& detectors)
     if (IsSelected(det->GetName(), detStr)) {
       Info("RunReconstruction", "running reconstruction for %s", 
 	   det->GetName());
+      TStopwatch stopwatchDet;
+      stopwatchDet.Start();
       det->Reconstruct();
+      Info("RunReconstruction", "execution time for %s:", det->GetName());
+      stopwatchDet.Print();
     }
   }
 
@@ -295,6 +302,9 @@ Bool_t AliReconstruction::RunReconstruction(const TString& detectors)
     if (fStopOnError) return kFALSE;
   }
 
+  Info("RunReconstruction", "execution time:");
+  stopwatch.Print();
+
   return kTRUE;
 }
 
@@ -302,6 +312,9 @@ Bool_t AliReconstruction::RunReconstruction(const TString& detectors)
 Bool_t AliReconstruction::RunTracking(AliESD* esd)
 {
 // run the barrel tracking
+
+  TStopwatch stopwatch;
+  stopwatch.Start();
 
   // get the primary vertex (from MC for the moment)
   TArrayF vertex(3);     
@@ -417,6 +430,9 @@ Bool_t AliReconstruction::RunTracking(AliESD* esd)
   fITSTracker->UnloadClusters();
   fITSLoader->UnloadRecPoints();
 
+  Info("RunTracking", "execution time:");
+  stopwatch.Print();
+
   return kTRUE;
 }
 
@@ -424,6 +440,9 @@ Bool_t AliReconstruction::RunTracking(AliESD* esd)
 Bool_t AliReconstruction::FillESD(AliESD* esd, const TString& detectors)
 {
 // fill the event summary data
+
+  TStopwatch stopwatch;
+  stopwatch.Start();
 
   TString detStr = detectors;
   TObjArray* detArray = gAlice->Detectors();
@@ -442,6 +461,9 @@ Bool_t AliReconstruction::FillESD(AliESD* esd, const TString& detectors)
 	  detStr.Data());
     if (fStopOnError) return kFALSE;
   }
+
+  Info("FillESD", "execution time:");
+  stopwatch.Print();
 
   return kTRUE;
 }
