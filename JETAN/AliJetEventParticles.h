@@ -30,6 +30,7 @@ class AliJetEventParticles: public TObject
   void SetHeader(TString& s){fHeader=s;}
   void Reset(Int_t size=-1); //deletes all entries
   void Clear(Option_t *option="") {TObject::Clear(option);Reset();}
+  void Set(const AliJetEventParticles& source);
   
   //adds particle to the event
   void AddParticle(AliJetParticle* p);  
@@ -62,7 +63,7 @@ class AliJetEventParticles: public TObject
   Double_t GetXJet() const {return fXJet;}
   Double_t GetYJet() const {return fYJet;}    
   void     GetZQuench(Double_t z[4]) const;
-  TString  getHeader() const {return fHeader;}
+  TString  GetHeader() const {return fHeader;}
 
   Float_t  GetImpact() const {return fImpact;}
   Int_t    GetNhard()  const {return fNHardScatters;}

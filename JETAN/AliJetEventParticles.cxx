@@ -17,6 +17,8 @@
 ClassImp(AliJetEventParticles)
 
 AliJetEventParticles::AliJetEventParticles(Int_t size) :
+  TObject(), 
+  fHeader(),
   fNParticles(0),
   fParticles(new TClonesArray("AliJetParticle",size)),
   fVertexX(0.),
@@ -46,6 +48,7 @@ AliJetEventParticles::AliJetEventParticles(Int_t size) :
 
 AliJetEventParticles::AliJetEventParticles(const AliJetEventParticles& source) :
   TObject(source), 
+  fHeader(),
   fNParticles(source.fNParticles),
   fParticles(new TClonesArray("AliJetParticle",source.fNParticles)),
   fVertexX(source.GetVertexX()),
@@ -84,6 +87,48 @@ AliJetEventParticles::AliJetEventParticles(const AliJetEventParticles& source) :
   source.Hard(1,fHard[0][1],fHard[1][1],fHard[2][1],fHard[3][1],fHard[4][1]);
 }
 
+void AliJetEventParticles::Set(const AliJetEventParticles& source)
+{
+  source.Copy(*this); 
+  fHeader=source.GetHeader();
+  fNParticles=source.fNParticles;
+  if(fParticles) delete fParticles;
+  fParticles=new TClonesArray("AliJetParticle",fNParticles);
+  fVertexX=source.GetVertexX();
+  fVertexY=source.GetVertexY();
+  fVertexZ=source.GetVertexZ();
+  fTrials=source.Trials();
+  fNJets=source.NTriggerJets();
+  fNUQJets=source.NUQTriggerJets();
+  fXJet=source.GetXJet();
+  fYJet=source.GetXJet();
+  fImpact=source.GetImpact();
+  fNHardScatters=source.GetNhard();
+  fNwNwColl=source.GetNpart();
+
+  for(Int_t i =0; i<fNParticles; i++)
+    {
+      const AliJetParticle *kjp=(const AliJetParticle *)source.fParticles->At(i);
+      new((*fParticles)[i]) AliJetParticle(*(kjp));
+    }
+  for (Int_t i = 0; i < 4; i++) fZquench[i] = 0.;
+  for (Int_t i = 0; i < 10; i++) 
+    for (Int_t j = 0; j < 4; j++) {
+      fJets[j][i]=0;    // Trigger jets
+      fUQJets[j][i]=0;  // Unquenched trigger jets
+    }
+  source.GetZQuench(fZquench);
+  for (Int_t i = 0; i < NTriggerJets(); i++){
+    source.TriggerJet(i,fJets[0][i],fJets[1][i],fJets[2][i],fJets[3][i]);
+  }
+  for (Int_t i = 0; i < NUQTriggerJets(); i++){
+    source.UQJet(i,fUQJets[0][i],fUQJets[1][i],fUQJets[2][i],fUQJets[3][i]);
+  }
+
+  source.Hard(0,fHard[0][0],fHard[1][0],fHard[2][0],fHard[3][0],fHard[4][0]);
+  source.Hard(1,fHard[0][1],fHard[1][1],fHard[2][1],fHard[3][1],fHard[4][1]);
+}
+
 AliJetEventParticles::~AliJetEventParticles()
 {
   //destructor   
@@ -93,6 +138,7 @@ AliJetEventParticles::~AliJetEventParticles()
 
 void  AliJetEventParticles::Reset(Int_t size)
 {
+  fHeader="";
   //deletes all particles from the event
   if(fParticles) fParticles->Clear();
   if(size>=0) fParticles->Expand(size);
@@ -147,7 +193,6 @@ void AliJetEventParticles::AddSignal(const AliJetEventParticles& source)
   fNUQJets=source.NUQTriggerJets();
   fXJet=source.GetXJet();
   fYJet=source.GetXJet();
-
 
   for (Int_t i = 0; i < 4; i++) fZquench[i] = 0.;
   for (Int_t i = 0; i < 10; i++) 
