@@ -84,7 +84,6 @@ void AliFMDv0::CreateGeometry()
   //
 
   Int_t *idtmed = fIdtmed->GetArray();
-   
   Int_t ifmd;
   Int_t idrotm[999];
   Float_t zfmd,par[3];
@@ -92,26 +91,19 @@ void AliFMDv0::CreateGeometry()
 
   Float_t rin[6], rout[6],zpos;
 
-  Float_t etain[5]= {3.58, 1.94, 3.58, 1.94, 5.28};
-  Float_t etaout[6]={2.03, 1.51, 2.03, 1.51, 3.71};
+  Float_t etain[5]= {3.40, 2.29, 3.68, 2.29, 5.09};
+  Float_t etaout[6]={2.01, 1.70, 2.28, 1.70, 3.68};
   //  Float_t z[6]={64., 85., -64., -85., -270., -630};
-  Float_t z[6]={62.8, 75.2, -62.8, -75.2, -345.};
+  Float_t z[6]={62.8, 75.2, -83.4, -75.2, -340.};
   Float_t zDet=0.03;
   Float_t zElectronic=0.1;
   Float_t zSupport=1.;
-  /*
-  Float_t etain[6]= {3.3, 2.0, 3.3, 2.0, 4.5, 5.5};
-  Float_t etaout[6]={2.0, 1.6, 2.0, 1.6, 3.3, 4.5};
-  Float_t z[6]={64., 85., -64., -85., -240., -630};
-  Float_t zDet=0.04;
-  Float_t zElectronic=0.75;
-  Float_t zSupport=1.;
-  */
 
   Float_t zFMD=1.;
 //-------------------------------------------------------------------
  //  FMD 
  //------------------------------------------------------------------
+	cout<<" !!!!!!!!!!!New FMD geometry !!!!!!!!!"<<endl;
 
   AliMatrix(idrotm[901], 90, 0, 90, 90, 180, 0);
 
