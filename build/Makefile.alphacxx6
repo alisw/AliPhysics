@@ -5,8 +5,8 @@ CXX           = cxx
 F77	      = f77
 
 # Global optimisation
-OPT           = -g -O
-NOOPT	      = -g
+OPT           = -O
+NOOPT	      = -O0 
 
 CXXOPT	      = $(OPT)
 CXXNOOPT      = $(NOOPT)
@@ -35,8 +35,8 @@ LDFLAGS       =
 
 SHLD	      = ld
 SOFLAGS       =  -L/usr/lib/cmplrs/cxx -rpath /usr/lib/cmplrs/cxx \
-	        -expect_unresolved "*" -msym -shared -taso
-	        /usr/lib/cmplrs/cc/crt0.o /usr/lib/cmplrs/cxx/_main.o
+                 -expect_unresolved "*" -msym -shared -taso \
+                 /usr/lib/cmplrs/cc/crt0.o /usr/lib/cmplrs/cxx/_main.o
 
 SHLIB         = -lUfor -lfor -lFutil
 SOEXT 	      = so
