@@ -20,11 +20,11 @@ TG4G3ControlVector::TG4G3ControlVector()
 
 TG4G3ControlVector::TG4G3ControlVector(const TG4G3ControlVector& right)
 {
-  // copy fControlVector 
+  // allocation
   fControlVector = new TG4ControlValueVector;
-  for (G4int i=0; i<kNoG3Controls; i++) {
-    fControlVector->insert((*right.fControlVector)[i]);
-  }   
+  
+  // copy stuff
+  *this = right;  
 }
 
 TG4G3ControlVector::~TG4G3ControlVector() {
@@ -41,7 +41,7 @@ TG4G3ControlVector& TG4G3ControlVector::operator=(
   if (this == &right) return *this;
 
   // initialize fControlVector 
-  fControlVector->clear();
+  fControlVector->clear();;
   for (G4int i=0; i<kNoG3Controls; i++) {
     fControlVector->insert((*right.fControlVector)[i]);
   }

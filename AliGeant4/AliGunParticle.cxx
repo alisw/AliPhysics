@@ -47,11 +47,8 @@ AliGunParticle::AliGunParticle( G4ParticleDefinition* particleDef,
 
 AliGunParticle::AliGunParticle(const AliGunParticle& right) {
 //
-  fParticleDefinition = right.fParticleDefinition;
-  fParticleMomentum = right.fParticleMomentum;
-  fPosition = right.fPosition; 
-  fTime = right.fTime;
-  fPolarization = right.fPolarization; 
+  // copy stuff
+  *this = right;
 }
 
 AliGunParticle::~AliGunParticle() {

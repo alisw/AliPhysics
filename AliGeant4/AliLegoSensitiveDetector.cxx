@@ -21,8 +21,8 @@ AliLegoSensitiveDetector::AliLegoSensitiveDetector(
   : TG4VSensitiveDetector(right)			     
 {
 //
-  fLego = right.fLego;
-  fStandardSD = right.fStandardSD;
+  // copy stuff
+  *this = right;
 }
 
 AliLegoSensitiveDetector::AliLegoSensitiveDetector() {

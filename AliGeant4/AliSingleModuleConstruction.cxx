@@ -45,15 +45,11 @@ AliSingleModuleConstruction::AliSingleModuleConstruction(
   : AliModuleConstruction(right)				
 {
 //
-  fVersion = right.fVersion;
-  fType = right.fType;
-  fProcessConfig = right.fProcessConfig;
-  fAllLVSensitive = right.fAllLVSensitive;
-  fSDManager = right.fSDManager;
-
-  G4String moduleName = right.fModuleName;
-  moduleName.toLower();
-  fMessenger = new AliSingleModuleConstructionMessenger(this, moduleName);
+  // allocation in assignement operator
+  fMessenger = 0;
+  
+  // copy stuff
+  *this = right;
 }
 
 AliSingleModuleConstruction::AliSingleModuleConstruction() {
@@ -81,7 +77,13 @@ AliSingleModuleConstruction::operator=(const AliSingleModuleConstruction& right)
   fProcessConfig = right.fProcessConfig;
   fAllLVSensitive = right.fAllLVSensitive;
   fSDManager = right.fSDManager;
-  
+ 
+  // messenger is protected from copying  
+  if (fMessenger) delete fMessenger;
+  G4String moduleName = right.fModuleName;
+  moduleName.toLower();
+  fMessenger = new AliSingleModuleConstructionMessenger(this, moduleName);
+ 
   return *this;
 }
 
@@ -161,6 +163,7 @@ void AliSingleModuleConstruction::Configure(const AliFiles& files)
   if (fProcessConfig) {
     gROOT->LoadMacro(rootFilePath);
     G4String macroName = files.GetDefaultMacroName();
+    //macroName = macroName + "_" + fModuleName;
     macroName = macroName + "(";
     AliGlobals::AppendNumberToString(macroName, fVersion);
     macroName = macroName + ")";

@@ -35,18 +35,11 @@ AliModuleConstruction::AliModuleConstruction(G4String moduleName)
 AliModuleConstruction::AliModuleConstruction(const AliModuleConstruction& right)
 {
 //
-  fModuleName = right.fModuleName; 
-  fModuleFrameName = right.fModuleFrameName;
-  fModuleFrameLV = right.fModuleFrameLV;
-  fAliModule = right.fAliModule;
-  fReadGeometry = right.fReadGeometry;
-  fWriteGeometry = right.fWriteGeometry;
-  fDataFilePath = right.fDataFilePath;
-
-  // new messenger
-  G4String moduleName = fModuleName;
-  moduleName.toLower();
-  fMessenger = new AliModuleConstructionMessenger(this, moduleName);
+  // allocation in assignement operator
+  fMessenger = 0;
+  
+  // copy stuff
+  *this = right;
 }
 
 AliModuleConstruction::AliModuleConstruction()
@@ -84,6 +77,12 @@ AliModuleConstruction::operator=(const AliModuleConstruction& right)
   fReadGeometry = right.fReadGeometry;
   fWriteGeometry = right.fWriteGeometry;
   fDataFilePath = right.fDataFilePath;
+
+  // new messenger
+  if (fMessenger) delete fMessenger;
+  G4String moduleName = fModuleName;
+  moduleName.toLower();
+  fMessenger = new AliModuleConstructionMessenger(this, moduleName);
 
   return *this;
 }

@@ -31,25 +31,8 @@ AliLVStructure::AliLVStructure(G4String path)
 
 AliLVStructure::AliLVStructure(const AliLVStructure& right)
 {
-  // copy vector of structures
-  fStructures.clearAndDestroy();
-  G4int i;
-  for (i=0; i<right.fStructures.entries(); i++) {
-    // new full structure tree has to be created
-    AliLVStructure* rhsStructure = right.fStructures[i];
-    fStructures.insert(new AliLVStructure(*rhsStructure)); 
-  }  
-  
-  // copy vector of logical volumes
-  fLogicalVolumes.clear();
-  for (i=0; i<right.fLogicalVolumes.entries(); i++) {
-    G4LogicalVolume* rhsLV = right.fLogicalVolumes[i];
-    fLogicalVolumes.insert(rhsLV); 
-  }  
-  
-  fPathName = right.fPathName;
-  fDirName = right.fPathName;
-  fVerboseLevel = right.fVerboseLevel;
+  // copy stuff
+  *this = right;
 }
 
 AliLVStructure::AliLVStructure() {

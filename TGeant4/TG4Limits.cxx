@@ -24,8 +24,12 @@ TG4Limits::TG4Limits(const TG4Limits& right)
   : G4UserLimits(right) 
 {
 //    
-  fCutVector = new TG4G3CutVector(*right.fCutVector);
-  fControlVector = new TG4G3ControlVector(*right.fControlVector);
+  // allocation
+  fCutVector = new TG4G3CutVector();
+  fControlVector = new TG4G3ControlVector();
+
+  // copy stuff
+  *this = right;
 }  
 
 TG4Limits::~TG4Limits() {

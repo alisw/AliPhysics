@@ -13,17 +13,17 @@
 TG4G3CutVector::TG4G3CutVector()
 {
   // initialize fCutVector 
-  fCutVector = new TG4doubleVector;
+  fCutVector = new TG4doubleVector();
   for (G4int i=0; i<kNoG3Cuts; i++) fCutVector->insert(0.); 
 }
 
 TG4G3CutVector::TG4G3CutVector(const TG4G3CutVector& right)
 {
-  // copy fCutVector 
-  fCutVector = new TG4doubleVector;
-  for (G4int i=0; i<kNoG3Cuts; i++) {
-    fCutVector->insert((*right.fCutVector)[i]);
-  }   
+ // allocation
+  fCutVector = new TG4doubleVector();
+
+  // copy stuff
+  *this = right;
 }
 
 TG4G3CutVector::~TG4G3CutVector() {

@@ -22,13 +22,8 @@ AliDetSwitch::AliDetSwitch(G4String detName, G4int nofVersions,
 
 AliDetSwitch::AliDetSwitch(const AliDetSwitch& right) {
 //
-  fDetName = right.fDetName;
-  fNofVersions = right.fNofVersions;
-  fDefaultVersion = right.fDefaultVersion;
-  fPPRVersion = right.fPPRVersion;
-  fIsStandalone = right.fIsStandalone;
-  fType = right.fType;
-  fSwitchedVersion = right.fSwitchedVersion;
+  // copy stuff
+  *this = right;
 }
 
 AliDetSwitch::~AliDetSwitch(){

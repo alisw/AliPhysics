@@ -19,16 +19,13 @@ AliParticleGun::AliParticleGun() {
 }
 
 AliParticleGun::AliParticleGun(const AliParticleGun& right)
+  : G4VPrimaryGenerator(right)
 {
-  // particles vector
-  fGunParticlesVector.clearAndDestroy();
-  for (G4int i=0; i<right.fGunParticlesVector.entries(); i++) {
-    AliGunParticle* rhsParticle = right.fGunParticlesVector[i];
-    AliGunParticle* newParticle = new AliGunParticle(*rhsParticle);
-    fGunParticlesVector.insert(newParticle);
-  }  
-
+  // allocation
   fMessenger = new AliParticleGunMessenger(this);
+
+  // copy stuff
+  *this = right;
 }
 
 AliParticleGun::~AliParticleGun() {
@@ -44,6 +41,9 @@ AliParticleGun& AliParticleGun::operator=(const AliParticleGun& right)
   // check assignement to self
   if (this == &right) return *this;
 
+  // base class assignment
+  this->G4VPrimaryGenerator::operator=(right);
+
   // particles vector
   fGunParticlesVector.clearAndDestroy();
   for (G4int i=0; i<right.fGunParticlesVector.entries(); i++) {
@@ -51,7 +51,7 @@ AliParticleGun& AliParticleGun::operator=(const AliParticleGun& right)
     AliGunParticle* newParticle = new AliGunParticle(*rhsParticle);
     fGunParticlesVector.insert(newParticle);
   }
-  
+
   return *this;  
 }
   

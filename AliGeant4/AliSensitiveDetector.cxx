@@ -33,7 +33,8 @@ AliSensitiveDetector::AliSensitiveDetector(const AliSensitiveDetector& right)
   : TG4VSensitiveDetector(right)
 {
 //
-  fModule = right.fModule;
+  // copy stuff
+  *this = right;
 }  
   
 AliSensitiveDetector::AliSensitiveDetector(){

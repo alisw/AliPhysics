@@ -24,20 +24,8 @@ AliMoreModulesConstruction::AliMoreModulesConstruction() {
 AliMoreModulesConstruction::AliMoreModulesConstruction(
                                const AliMoreModulesConstruction& right)
 {
-  // delete current module constructions
-  fModuleConstructionVector.erase(
-    fModuleConstructionVector.begin(), fModuleConstructionVector.end());
-    
-  // create new module constructions   
-  G4int nofModules = right.fModuleConstructionVector.size();
-  for (G4int i=0; i<nofModules; i++) {
-    G4String name = right.fModuleConstructionVector[i]->GetDetName();
-    G4int version = right.fModuleConstructionVector[i]->GetVersion();
-    AliModuleType type = right.fModuleConstructionVector[i]->GetType();
-    AddModule(name, version, type);
-  }  
-  
-  fSDManager = right.fSDManager;
+  // copy stuff
+  *this = right;
 }  
   			       
 
@@ -68,7 +56,7 @@ AliMoreModulesConstruction::operator=(const AliMoreModulesConstruction& right)
     AliModuleType type = right.fModuleConstructionVector[i]->GetType();
     AddModule(name, version, type);
   }  
-  
+
   fSDManager = right.fSDManager;
 
   return *this;  
