@@ -130,14 +130,11 @@ class AliPHOSFastRecParticle : public TParticle {
     return pid ;
   }
   
-  TString Name() ; 
+  TString Name() const ; 
   virtual void Paint(Option_t * option="");
-  virtual void Print(const char * opt) ; 
+  virtual void Print(Option_t * option = "") const ; 
   
-  void SetType(Int_t type) { 
-    // sets the particle type 
-    fType = type ; 
-  }	    
+  void SetType(Int_t type) ;
   
   void SetIndexInList(Int_t val) { 
     // sets the value of the index in the list 

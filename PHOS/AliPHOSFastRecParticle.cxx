@@ -164,7 +164,7 @@ void AliPHOSFastRecParticle::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 }
 
 //____________________________________________________________________________
-TString AliPHOSFastRecParticle::Name()
+TString AliPHOSFastRecParticle::Name()const
 {
   // Returns the name of the particle type (only valid if PIDv1 is employed)
 
@@ -200,22 +200,42 @@ TString AliPHOSFastRecParticle::Name()
   if((fType == 448) || (fType == 449) ||(fType == 192)||(fType == 193)||(fType == 64)||(fType == 64))
     name = "CHARGED_SLOW_EM" ;    //PCA = 111, 011 or 001 TOF =000 CPV = 000 or 001  
   
-  
-  if ( name.Contains("PHOTON") )
-    fPdgCode = 22 ; // Sets the pdg GetName() to gamma  
-  if ( name.Contains("NEUTRAL") )
-    fPdgCode = 2112 ; // Sets the pdg GetName() to neutron 
-  if ( name.Contains("CHARGED_FAST_EM") )
-    fPdgCode = 11 ; // Sets the pdg GetName() to electron 
-  if ( name.Contains("CHARGED_SLOW_EM") )
-    fPdgCode = 13 ; // Sets the pdg GetName() to muon
-  if ( name.Contains("CHARGED_FAST_HADRON") )
-    fPdgCode = 211 ; // Sets the pdg GetName() to pion
-  if ( name.Contains("CHARGED_SLOW_HADRON") )
-    fPdgCode = 2212 ; // Sets the pdg GetName() to proton
-  
   return name ; 
 }
+
+
+//______________________________________________________________________________
+void AliPHOSFastRecParticle::SetType(Int_t type) { 
+  // sets the particle type 
+  fType = type ; 
+  
+  if((type == 127) || (fType == 511) || (fType == 255) ||(fType == 383)||(fType == 447)){
+    fPdgCode = 22 ; 
+    return ;
+  }
+  
+  if ((fType == 63)|| ((fType < 8)&&(fType > 0)) ){
+    fPdgCode = 2112 ; 
+    return ;
+  }
+  if ( ((fType == 504) || (fType == 505) ||(fType == 248)||(fType == 249)||(fType == 120)||(fType == 121)) ){
+    fPdgCode = 11 ; 
+    return ;
+  }
+  if ((fType == 448) || (fType == 449) ||(fType == 192)||(fType == 193)||(fType == 64)||(fType == 64)){
+    fPdgCode = 13 ; 
+    return ;
+  }
+  if((fType == 56)||(fType == 57)){
+    fPdgCode = 211 ; 
+    return ;
+  }
+  if (fType == 0){
+    fPdgCode = 2212 ; 
+    return ;
+  }
+
+}	    
 
 //______________________________________________________________________________
 void AliPHOSFastRecParticle::Paint(Option_t *)
@@ -239,7 +259,7 @@ void AliPHOSFastRecParticle::Paint(Option_t *)
 }
 
 //____________________________________________________________________________
-void AliPHOSFastRecParticle::Print(const char * opt)
+void AliPHOSFastRecParticle::Print(Option_t * opt)const
 {
   // Print the type, energy and momentum of the reconstructed particle
   
