@@ -12,10 +12,10 @@
 
 class AliRICHGeometry :public TObject  
 {
- public:
+public:
+// ctor & dtor staff      
    inline AliRICHGeometry(); // default ctor
-   inline void Print();
-          
+// inline methods:          
    void    SetGapThickness(Float_t thickness)          {fGapThickness=thickness;}    // Radiator Thickness 
    Float_t GetGapThickness()                      const{return fGapThickness;}       // Radiator thickness
 
@@ -50,7 +50,18 @@ class AliRICHGeometry :public TObject
    Float_t GetRadiatorToPads()                    const{return fRadiatorToPads;}   
 
    void    SetRotationAngle(Float_t rotAngle)          {fRotationAngle=rotAngle;}
-   Float_t GetRotationAngle()                    const {return fRotationAngle;} 
+   Float_t GetRotationAngle()                    const {return fRotationAngle;}
+       
+   void    SetAlphaAngle(Float_t alphaAngle)           {fAlphaAngle=alphaAngle;} // Angle between modules in YZ plane
+   Float_t GetAlphaAngle()                       const {return fAlphaAngle;}     // Angle between modules in YZ plane
+   
+   void    SetBetaAngle(Float_t betaAngle)             {fBetaAngle=betaAngle;}   // Angle between modules in XY plane
+   Float_t GetBetaAngle()                        const {return fBetaAngle;}      // Angle between modules in XY plane
+   
+   void    SetOffset(Float_t offset)                   {fOffset=offset;}         // Modules offset from IP
+   Float_t GetOffset()                           const {return fOffset;}         // Modules offset from IP
+   
+   inline void Print(Option_t *option)const;
           
 private:
    Float_t fGapThickness;            // Gap Thickness
@@ -65,6 +76,9 @@ private:
    Float_t fFreonThickness;          // Freon Thickness
    Float_t fRadiatorToPads;          // Distance from radiator to pads
    Float_t fRotationAngle;           // Azimuthal rotation angle in X-Y plane  
+   Float_t fAlphaAngle;              // Angle between modules in YZ plane
+   Float_t fBetaAngle;               // Angle between modules in XY plane
+   Float_t fOffset;                  // Modules offset from IP 
    ClassDef(AliRICHGeometry,2)       // Chamber's main geometry parameters
 };
 
@@ -73,35 +87,44 @@ inline AliRICHGeometry::AliRICHGeometry()
 {
 // Define the default values:
       
-   fGapThickness           =     8;   // Gap Thickness
-   fProximityGapThickness  =   0.4;   // Proximity Gap Thickness
-   fQuartzLength           =   133;   // Quartz Length
-   fQuartzWidth            = 127.9;   // Quartz Width
-   fQuartzThickness        =   0.5;   // Quartz Thickness
-   fOuterFreonLength       =   133;   // Outer Freon Length
-   fOuterFreonWidth        =  41.3;   // Outer Freon Width
-   fInnerFreonLength       =   133;   // Inner Freon Length
-   fInnerFreonWidth        =  41.3;   // Inner Freon Width
-   fFreonThickness         =   1.5;   // Freon Thickness
-   fRadiatorToPads         =     0;   // Distance from radiator to pads
-   fRotationAngle          =   -30;   // Azimuthal rotation angle in X-Y plane  
+   SetGapThickness         (8);     // Gap Thickness
+   SetProximityGapThickness(0.4);   // Proximity Gap Thickness
+   SetQuartzLength         (133);   // Quartz Length
+   SetQuartzWidth          (127.9); // Quartz Width
+   SetQuartzThickness      (0.5);   // Quartz Thickness
+   SetOuterFreonLength     (133);   // Outer Freon Length
+   SetOuterFreonWidth      (41.3);  // Outer Freon Width
+   SetInnerFreonLength     (133);   // Inner Freon Length
+   SetInnerFreonWidth      (41.3);  // Inner Freon Width
+   SetFreonThickness       (1.5);   // Freon Thickness
+   SetRadiatorToPads       (0);     // Distance from radiator to pads
+   SetRotationAngle        (-30);   // Azimuthal rotation angle in X-Y plane
+   SetAlphaAngle           (19.5);  // Angle between modules in YZ plane
+   SetBetaAngle            (20);    // Angle vetween modules in XY plane     
+   SetOffset               (490+1.267); // ???1.267??? Modules offset from IP 
 }//AliRICHGeometry::ctor()
 
-inline void AliRICHGeometry::Print()
+inline void AliRICHGeometry::Print(Option_t *option)const
 {
    TObject::Print();
-   cout<<"Radiator Gap thickness:  "<<fGapThickness<<endl;
-   cout<<"Proximity Gap thickness: "<<fProximityGapThickness<<endl;
-   cout<<"Quartz window length:    "<<fQuartzLength<<endl;
-   cout<<"Quartz window width:     "<<fQuartzWidth<<endl;
-   cout<<"Quartz window thickness: "<<fQuartzThickness<<endl;
-   cout<<"Outer freon length:      "<<fOuterFreonLength<<endl;
-   cout<<"Outer freon width:       "<<fOuterFreonWidth<<endl;
-   cout<<"Inner freon length:      "<<fInnerFreonLength<<endl;
-   cout<<"Inner freon width:       "<<fInnerFreonWidth<<endl;
-   cout<<"Freon thickness:         "<<fFreonThickness<<endl;
-   cout<<"RadiatorToPads:          "<<fRadiatorToPads<<endl;
-   cout<<"Rotation angle:          "<<fRotationAngle<<endl;
+   cout<<"Radiator Gap thickness:  "<<GetGapThickness()          <<endl;
+   cout<<"Proximity Gap thickness: "<<GetProximityGapThickness() <<endl;
+   cout<<"Quartz window length:    "<<GetQuartzLength()          <<endl;
+   cout<<"Quartz window width:     "<<GetQuartzWidth()           <<endl;
+   cout<<"Quartz window thickness: "<<GetQuartzThickness()       <<endl;
+   cout<<"Outer freon length:      "<<GetOuterFreonLength()      <<endl;
+   cout<<"Outer freon width:       "<<GetOuterFreonWidth()       <<endl;
+   cout<<"Inner freon length:      "<<GetInnerFreonLength()      <<endl;
+   cout<<"Inner freon width:       "<<GetInnerFreonWidth()       <<endl;
+   cout<<"Freon thickness:         "<<GetFreonThickness()        <<endl;
+   cout<<"RadiatorToPads:          "<<GetRadiatorToPads()        <<endl;
+   cout<<"Rotation angle:          "<<GetRotationAngle()         <<endl;
+   cout<<"Alpha Angle:             "<<GetAlphaAngle()            <<endl;
+   cout<<"Beta angle:              "<<GetBetaAngle()             <<endl;
+   cout<<"Modules offset from IP:  "<<GetOffset()                <<endl;
 }//void AliRICHGeometry::Print()
+
+//______________________________________________________
+// Definition and manipulation with parameters describing RICH parametrised geometry.
 
 #endif //AliRICHGeometry_h
