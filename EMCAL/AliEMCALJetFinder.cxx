@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2002/01/31 09:37:36  morsch
+Geometry parameters in constructor and call of SetCellSize()
+
 Revision 1.12  2002/01/23 13:40:23  morsch
 Fastidious debug print statement removed.
 
@@ -500,6 +503,8 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 	Float_t p     = MPart->P();
 	Float_t phi   = MPart->Phi();
 	Float_t eta   = MPart->Eta();
+	Float_t theta = MPart->Theta();
+	
 	
 	if (fDebug > 0) {
 	    if (part == 6 || part == 7)
@@ -588,8 +593,9 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 //
 	fNtS++;
 	
-	fLego->Fill(eta, phi, p);
-	if (fHCorrection && !curls) fLego->Fill(eta, phiHC, -dpH);
+	fLego->Fill(eta, phi, pT);
+	if (fHCorrection && !curls) 
+	    fLego->Fill(eta, phiHC, -dpH*TMath::Sin(theta));
     } // primary loop
     DumpLego();
 }
@@ -640,7 +646,7 @@ void AliEMCALJetFinder::FillFromHits(Int_t flag)
 
 	    if (fDebug > 1) printf("\n Hit %f %f %f %f", x, y, z, eloss);
 	    
-	    fLego->Fill(eta, phi, fSamplingF*eloss);
+	    fLego->Fill(eta, phi, fSamplingF*eloss*TMath::Sin(theta));
 	} // Hit Loop
     } // Track Loop
     DumpLego();
