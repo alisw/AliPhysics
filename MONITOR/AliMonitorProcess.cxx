@@ -345,17 +345,19 @@ Bool_t AliMonitorProcess::CheckForNewFile()
   result = fGrid->GetPhysicalFileNames(fLogicalFileName.Data());
   fFileName = result->Next();
 #else
-  handle = fGrid->GetPhysicalFileNames(fLogicalFileName.Data());
+  fileName = fAlienDir + "/" + fLogicalFileName;
+  handle = fGrid->GetPhysicalFileNames(fileName.Data());
   if (!handle) {
     Error("CheckForNewFile", "could not get physical file names for %s", 
-	  fLogicalFileName.Data());
+	  fileName.Data());
     return kFALSE;
   }
   result = fGrid->CreateGridResult(handle);
+  result->Reset();
   Grid_Result_t* resultEntry = result->Next();
   if (!resultEntry) {
     Error("CheckForNewFile", "could not get physical file names for %s", 
-	  fLogicalFileName.Data());
+	  fileName.Data());
     return kFALSE;
   }
   fFileName = resultEntry->name2.c_str();
