@@ -114,7 +114,10 @@ Float_t  AliEMCALClusterizerv1::Calibrate(Int_t amp) const
 //____________________________________________________________________________
 void AliEMCALClusterizerv1::Exec(Option_t * option)
 {
-  // Steering method
+  // Steering method to perform clusterization for events
+  // in the range from fFirstEvent to fLastEvent.
+  // This range is optionally set by SetEventRange().
+  // if fLastEvent=-1 (by default), then process events until the end.
 
   if(strstr(option,"tim"))
     gBenchmark->Start("EMCALClusterizer"); 
@@ -124,11 +127,15 @@ void AliEMCALClusterizerv1::Exec(Option_t * option)
 
   AliEMCALGetter * gime = AliEMCALGetter::Instance() ;
 
-  Int_t nevents = gime->MaxEvent() ;
+  if (fLastEvent == -1) 
+    fLastEvent = gime->MaxEvent() - 1 ;
+  else 
+    fLastEvent = TMath::Min(fLastEvent,gime->MaxEvent());
+  Int_t nEvents   = fLastEvent - fFirstEvent + 1;
+
   Int_t ievent ;
 
-  for(ievent = 0; ievent < nevents; ievent++){
-
+  for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
     gime->Event(ievent,"D") ;
 
     GetCalibrationParameters() ;

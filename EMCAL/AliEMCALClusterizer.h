@@ -43,10 +43,17 @@ public:
   virtual void SetECALogWeight(Float_t)           = 0;
   virtual void SetTimeGate(Float_t)               = 0;
   virtual void SetUnfolding(Bool_t)               = 0;
+  void SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
+  void SetEventFolderName(TString name) { fEventFolderName = name ; }
+
+  AliEMCALClusterizer & operator = (const AliEMCALClusterizer & /*rvalue*/)  {return *this ;} 
+
   virtual const char * Version() const {Warning("Version", "Not Defined") ; return 0 ; } 
 
 protected:
   TString fEventFolderName ;  // event folder name
+  Int_t   fFirstEvent;        // first event to process
+  Int_t   fLastEvent;         // last  event to process
 
   ClassDef(AliEMCALClusterizer,4)  // Clusterization algorithm class 
 
