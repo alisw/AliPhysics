@@ -59,7 +59,7 @@ void Config()
   // --- Specify event type to be tracked through the ALICE setup
   // --- All positions are in cm, angles in degrees, and P and E in GeV
 
-  AliGenHIJINGpara *gener = new AliGenHIJINGpara(50);
+  AliGenHIJINGpara *gener = new AliGenHIJINGpara(500);
   gener->SetMomentumRange(0,999);
   gener->SetPhiRange(0,360);
   gener->SetThetaRange(10,170);
