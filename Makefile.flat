@@ -53,7 +53,13 @@ endif
 ALIROOTMODULES:= STEER \
 	 TGeant3 PHOS TRD TPC ZDC MUON PMD FMD TOF ITS \
          CASTOR RICH START STRUCT EVGEN RALICE ALIFAST \
-	 THijing CONTAINERS MEVSIM TMEVSIM THbtp HBTP EMCAL HBTAN
+	 THijing CONTAINERS MEVSIM TMEVSIM THbtp HBTP EMCAL HBTAN \
+
+
+GEANT4MODULES:=	TGeant4 AliGeant4
+ifeq ($(MAKECMDGOALS),geant4)
+ALIROOTMODULES += $(GEANT4MODULES)
+endif
 
 CERNMODULES:= PDF PYTHIA PYTHIA6 GEANT321 MINICERN HIJING
 
@@ -166,11 +172,15 @@ include build/dummy.d
 
 # targets
 
-.PHONY:		alilibs aliroot makedistr clean
+.PHONY:		alilibs aliroot geant4 makedistr clean
 
 modules: $(patsubst %,%/module.mk,$(MODULES)) 	
 
+geant4modules: $(patsubst %,%/module.mk,$(GEANT4MODULES)) 
+
 aliroot: $(BINPATH) $(ALLEXECS) alilibs bin
+
+geant4: aliroot
 
 alilibs: $(LIBPATH) $(ALLLIBS) lib modules
 
