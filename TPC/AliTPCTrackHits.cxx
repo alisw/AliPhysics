@@ -34,12 +34,12 @@
 //                                                                          //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "TVector3.h"
-#include "TClonesArray.h"    
+//#include "TVector3.h"
+//#include "TClonesArray.h"    
 #include "AliTPCTrackHits.h"
 #include "AliTPC.h"
 
-#include <Riostream.h>
+//#include <Riostream.h>
 
 
 
@@ -89,16 +89,16 @@ struct  AliTPCTempHitInfo {
 	    Double_t fSumX4, Int_t n,
 	      Double_t &a, Double_t &b, Double_t &c);
   void  Fit(AliTrackHitsParam * param);
-  Double_t fSumDr;    //
-  Double_t fSumDr2;   //
-  Double_t fSumDr3;   //  
-  Double_t fSumDr4;   //
-  Double_t fSumDFi;  //
-  Double_t fSumDFiDr; //  
-  Double_t fSumDFiDr2;//
-  Double_t fSumDZ;     //
-  Double_t fSumDZDr;  //
-  Double_t fSumDZDr2;  //
+  Double_t fSumDr;    //fSumDr
+  Double_t fSumDr2;   //fSumDr2
+  Double_t fSumDr3;   //  fSumDr3
+  Double_t fSumDr4;   //fSumDr4
+  Double_t fSumDFi;  //fSumDFi
+  Double_t fSumDFiDr; // fSumDFiDr 
+  Double_t fSumDFiDr2;//fSumDFiDr2
+  Double_t fSumDZ;     //fSumDZ
+  Double_t fSumDZDr;  //fSumDZDr
+  Double_t fSumDZDr2;  //fSumDZDr2
   Double_t fOldR;     //previos r
   Double_t fPositionStack[3*fkStackSize];  //position stack 
   UInt_t   fQStack[fkStackSize];           //Q stack
@@ -285,6 +285,11 @@ AliTPCTrackHits::AliTPCTrackHits()
 
 } 
 
+AliTPCTrackHits::AliTPCTrackHits(const AliTPCTrackHits& r) : TObject(r)
+{
+}
+
+
 AliTPCTrackHits::~AliTPCTrackHits()
 {
   //
@@ -318,6 +323,7 @@ void AliTPCTrackHits::Clear()
 void AliTPCTrackHits::AddHitKartez(Int_t volumeID, Int_t trackID, Double_t x, 
 	      Double_t y, Double_t z,Int_t q)
 {
+  //add hits (cartesian)
   Double_t r = TMath::Sqrt(x*x+y*y);
   Double_t fi = TMath::ACos(x/r);
   if (y<0) fi*=-1.;
@@ -675,7 +681,7 @@ Bool_t AliTPCTrackHits::Next()
 }
 
 */  
-AliTPChit * AliTPCTrackHits::GetHit()
+AliTPChit * AliTPCTrackHits::GetHit() const
 {
   //
    return (fCurrentHit->fStatus)? &fCurrentHit->fHit:0;
