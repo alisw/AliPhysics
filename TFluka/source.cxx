@@ -174,7 +174,7 @@ extern "C" {
     for (ispr = 0; ispr < mkbmx2; ispr++)
 	STACK.ispark[STACK.lstack][ispr] = 0;
     /* Save the track number of the stack particle:*/
-    STACK.ispark[STACK.lstack][mkbmx2-1] = STACK.lstack;
+    STACK.ispark[STACK.lstack][mkbmx2-1] = itrack;
     STACK.nparma++;
     STACK.numpar[STACK.lstack] = STACK.nparma;
     STACK.nevent[STACK.lstack] = 0;
