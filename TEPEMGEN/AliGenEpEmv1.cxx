@@ -109,7 +109,7 @@ void AliGenEpEmv1::Init()
   fMass = TDatabasePDG::Instance()->GetParticle(11)->Mass();
 
   SetMC(new TEpEmGen());
-  fEpEmGen = (TEpEmGen*) fgMCEvGen;
+  fEpEmGen = (TEpEmGen*) fMCEvGen;
   fEpEmGen ->Initialize(fYMin,fYMax,fPtMin,fPtMax);
   fEvent = 0;
 }
