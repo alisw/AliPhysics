@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2001/06/20 16:07:08  morsch
+Compensator dipole MBWMD (MCB@SPS) added.
+
 Revision 1.15  2001/03/16 15:34:37  morsch
 Mothervolume defined MANY because overlap with station 3 mothervolume not avoidable (A. de Falco)
 
@@ -668,23 +671,24 @@ void AliDIPOv2::CreateCompensatorDipole()
     
 //  Mother volumes
     gMC->Gsvolu("DCM0", "BOX", idtmed[1814], pbox, 3);
+
 //
-//  Mother volume constaining lower coil
+//  Mother volume containing lower coil
     pbox[0] = 58.5/2.;
     pbox[1] = 30.0;
+    pbox[2] = 152.5;
+    
     gMC->Gsvolu("DCML", "BOX", idtmed[1809], pbox, 3);
 //
 // Base
     pbox[0] = 62.5;
     pbox[1] = 15.0;
     gMC->Gsvolu("DCBA", "BOX", idtmed[1809], pbox, 3);
-
-
 //
 // Coil: straight sections, horizontal
     pbox[0] =   6.;
     pbox[1] =  11.;
-    pbox[2] = 148.;
+    pbox[2] = 135.;
     gMC->Gsvolu("DCH1", "BOX", idtmed[1816], pbox, 3);
 //
 // Coil: straight sections, horizontal
@@ -702,9 +706,9 @@ void AliDIPOv2::CreateCompensatorDipole()
 
 //
 // Coil: straight sections, vertical
-    pbox[0] =  6.;
-    pbox[1] = 27.;
-    pbox[2] = 11.;
+    pbox[0] =  6.0;
+    pbox[1] =  9.5;
+    pbox[2] = 11.0;
     
     gMC->Gsvolu("DCCV", "BOX", idtmed[1816], pbox, 3);
 //
@@ -716,41 +720,73 @@ void AliDIPOv2::CreateCompensatorDipole()
     ptubs[2] =  8.;
     ptubs[3] =  0.;
     ptubs[4] = 90.;
-    gMC->Gsvolu("DCC1", "TUBS", idtmed[1809], ptubs, 5);
+//    gMC->Gsvolu("DCC1", "TUBS", idtmed[1809], ptubs, 5);
     ptubs[0] = 13.;
     ptubs[1] = 35.;
     ptubs[2] =  6.;
-    gMC->Gsvolu("DCC2", "TUBS", idtmed[1816], ptubs, 5);
-
+    ptubs[3] =  0.;
+    ptubs[4] = 90.;
+    gMC->Gsvolu("DCC1", "TUBS", idtmed[1816], ptubs, 5);
+//
+// Clamps
+    Float_t ppgon[10];
+    ppgon[0] =  0.;
+    ppgon[1] = 90.;
+    ppgon[2] =  1.;
+    ppgon[3] =  2.;
+    ppgon[4] = -1.;
+    ppgon[5] =  0.;
+    ppgon[6] = 24.75;
+    ppgon[7] =  1.;
+    ppgon[8] =  0.;
+    ppgon[9] = 24.75;
+    gMC->Gsvolu("DCLA", "PGON", idtmed[1809], ppgon, 10);
 //
 // Assemble all
 //
     AliMatrix(idrotm[1811], -90., 0., 90., 90.,   0., 0.);
-    AliMatrix(idrotm[1812],   0., 0., 90., 90.,  90., 0.);
+    AliMatrix(idrotm[1812],   0., 0., 90., 90.,  90., 0.);  
     AliMatrix(idrotm[1813], 180., 0., 90., 90.,  90., 0.);
+    AliMatrix(idrotm[1814],   0., 180., 90., 270.,  90., 0.);
+    AliMatrix(idrotm[1815], 180., 180., 90., 270.,  90., 0.);  
+	
+    gMC->Gspos("DCH1", 1, "DCML", 23.25, -13., -17.5, 0, "ONLY");
+    gMC->Gspos("DCCV", 1, "DCM0",  12., 19., -159., 0, "ONLY");
+    gMC->Gspos("DCCV", 2, "DCM0", -12., 19., -159., 0, "ONLY");
+    gMC->Gspos("DCCV", 3, "DCML", 23.25, 20.5, 141.5, 0, "ONLY");
 
-    gMC->Gspos("DCH1", 1, "DCML", 23.25, -13., 0., 0, "ONLY");
-    gMC->Gspos("DCCV", 1, "DCML", 23.25, 3,  159., 0, "ONLY");
-    gMC->Gspos("DCCV", 2, "DCML", 23.25, 3, -159., 0, "ONLY");
-
-    gMC->Gspos("DCML", 1, "DCM0", -33.25, -2.5, 0., 0, "ONLY");
-    gMC->Gspos("DCML", 2, "DCM0",  33.25, -2.5, 0., idrotm[1811], "ONLY");
+    gMC->Gspos("DCML", 1, "DCM0", -33.25, -2.5, 17.5, 0, "ONLY");
+    gMC->Gspos("DCML", 2, "DCM0",  33.25, -2.5, 17.5, idrotm[1811], "ONLY");
 
 
-    gMC->Gspos("DCH2", 1, "DCMU", 0., 6.5, 0., 0, "ONLY");
+    gMC->Gspos("DCH2", 1, "DCMU", 2., 6.5, 0., 0, "ONLY");
     gMC->Gspos("DCMU", 1, "DCM0", -12., 45., 0., 0, "ONLY");
     gMC->Gspos("DCMU", 2, "DCM0",  12., 45., 0., idrotm[1811], "ONLY");
 
-    gMC->Gspos("DCC2", 1, "DCC1", 0., 0., 0., 0, "ONLY");
+//    gMC->Gspos("DCC2", 1, "DCC1", 0., 0., 0., 0, "ONLY");
     
     gMC->Gspos("DCC1", 1, "DCM0", -12., 27.5,  135., idrotm[1812], "ONLY");
     gMC->Gspos("DCC1", 2, "DCM0",  12., 27.5,  135., idrotm[1812], "ONLY");
     gMC->Gspos("DCC1", 3, "DCM0", -12., 27.5, -135., idrotm[1813], "ONLY");
     gMC->Gspos("DCC1", 4, "DCM0",  12., 27.5, -135., idrotm[1813], "ONLY");
 
+    gMC->Gspos("DCC1", 5, "DCM0",  12., 27.5-32.+13., -135., idrotm[1815], "ONLY");
+    gMC->Gspos("DCC1", 6, "DCM0", -12., 27.5-32.+13., -135., idrotm[1815], "ONLY");
+    
+    gMC->Gspos("DCC1", 7, "DCML", 23.25, -13+13.+11., 117.5, idrotm[1814], "ONLY");
 
-    gMC->Gspos("DCBA", 1, "DCM0",  0., -47.5 , 0., 0, "ONLY");
+    gMC->Gspos("DCLA", 1, "DCM0",  20., 27.5, -134., 0, "ONLY");
+    gMC->Gspos("DCLA", 2, "DCM0",  20., 27.5,  -44., 0, "ONLY");
+    gMC->Gspos("DCLA", 3, "DCM0",  20., 27.5,   46., 0, "ONLY");
+    gMC->Gspos("DCLA", 4, "DCM0",  20., 27.5,  134., 0, "ONLY");
 
+    gMC->Gspos("DCLA", 5, "DCM0",  -20., 27.5, -134., idrotm[1811], "ONLY");
+    gMC->Gspos("DCLA", 6, "DCM0",  -20., 27.5,  -44., idrotm[1811], "ONLY");
+    gMC->Gspos("DCLA", 7, "DCM0",  -20., 27.5,   46., idrotm[1811], "ONLY");
+    gMC->Gspos("DCLA", 8, "DCM0",  -20., 27.5,  134., idrotm[1811], "ONLY");
+
+
+    gMC->Gspos("DCBA", 1, "DCM0",  0., -47.5 , 17.5, 0, "ONLY");
     gMC->Gspos("DCM0", 1, "ALIC",  0., -6.75, -975., 0, "ONLY");
 
 
