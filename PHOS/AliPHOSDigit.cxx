@@ -33,12 +33,12 @@
 ClassImp(AliPHOSDigit)
 
 //____________________________________________________________________________
-  AliPHOSDigit::AliPHOSDigit() : fPrimary(0)
+  AliPHOSDigit::AliPHOSDigit() 
 {
   fNprimary = 0 ;  
-  Int_t index ; 
-  for (index = 1 ; index <= 3 ; index++)
-    SetPrimary(index, -1) ; 
+  fPrimary1 = -1 ; 
+  fPrimary2 = -1 ; 
+  fPrimary3 = -1 ;
 }
 
 //____________________________________________________________________________
@@ -46,11 +46,8 @@ AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t DigEnergy)
 {  
   fId         = id ;
   fAmp        = DigEnergy ;
-  fPrimary    = new Int_t[1] ; 
-  fPrimary[0] = primary ;
+  fPrimary1   = primary ;
   fNprimary   = 1 ; 
-  SetPrimary(1, primary) ; 
-
 }
 
 //____________________________________________________________________________
@@ -58,22 +55,15 @@ AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit)
 {  
   fId       = digit.fId;
   fAmp      = digit.fAmp ;
-  fNprimary = digit.GetNprimary() ;
-  fPrimary  = new Int_t[fNprimary] ;
-  Int_t * primary = digit.GetPrimary() ;
-  Int_t  index ;
-  for ( index = 0 ; index < fNprimary ; index++ ) {
-    fPrimary[index] = primary[index] ;
-    SetPrimary( index+1, digit.GetPrimary(index+1) ) ; 
-  }
-
+  fNprimary = digit.fNprimary ;
+  fPrimary1 = digit.fPrimary1 ;
+  fPrimary2 = digit.fPrimary2 ;
+  fPrimary3 = digit.fPrimary3 ;
 }
 
 //____________________________________________________________________________
 AliPHOSDigit::~AliPHOSDigit()
 {
-  if ( fPrimary != 0 ) 
-    delete fPrimary ; 
 }
 
 //____________________________________________________________________________
@@ -133,51 +123,45 @@ Bool_t AliPHOSDigit::operator==(AliPHOSDigit const & digit) const
 AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit) 
 {
   fAmp += digit.fAmp ;
-  
-  Int_t * tempo = new Int_t[fNprimary] ; 
-  Int_t index ; 
-  
-  Int_t oldfNprimary = fNprimary ; 
-
-  for ( index = 0 ; index < oldfNprimary ; index++ ){
-    tempo[index] = fPrimary[index] ; 
-  }  
  
-  delete fPrimary ; 
-  fNprimary += digit.GetNprimary() ; 
-  fPrimary = new Int_t[fNprimary] ; 
-  
-  for ( index = 0 ; index < oldfNprimary  ; index++ ) { 
-    fPrimary[index] = tempo[index] ; 
-  }
-
-  Int_t jndex = 0 ; 
-  for ( index = oldfNprimary ; index < fNprimary ; index++ ) { 
-    fPrimary[index] = digit.fPrimary[jndex] ; 
-    jndex++ ; 
-  }
-
   // Here comes something crummy ... but I do not know how to stream pointers
   // because AliPHOSDigit is in a TCLonesArray
+  
+  Int_t tempo1[3] ; 
+  tempo1[0] = fPrimary1 ; 
+  tempo1[1] = fPrimary2 ; 
+  tempo1[2] = fPrimary3 ; 
 
-  if ( fNprimary > 3 ) {
+  Int_t tempo2[3] ; 
+  tempo2[0] = digit.fPrimary1 ; 
+  tempo2[1] = digit.fPrimary2 ; 
+  tempo2[2] = digit.fPrimary3 ; 
+
+  Int_t max1 = fNprimary ; 
+  Int_t max2 = digit.fNprimary ; 
+ 
+  if ( fNprimary >= 3 ) {
+    cout << "AliPHOSDigit + operator  ERROR > too many primaries, modify AliPHOSDigit" << endl ; 
+  } 
+  else {
+    fNprimary += digit.fNprimary ; 
+    if ( fNprimary > 3 ) {
       cout << "AliPHOSDigit + operator  ERROR > too many primaries, modify AliPHOSDigit" << endl ; 
       fNprimary = 3 ;
-  }    
-  else {
-      switch (fNprimary) {  
-      case 1 :
-	SetPrimary(1, fPrimary[0]) ; 
-	break ; 
-      case 2 :
-	SetPrimary(2, fPrimary[1]) ; 
-	break ; 
-      case 3:
-	SetPrimary(3, fPrimary[2]) ; 
-	break ; 
-      }
     }
+    
+    Int_t tempo3[3] ;
+    Int_t index ; 
+    for (index = 0 ; index < max1 ; index++)
+      tempo3[index] = tempo1[index] ;
+    for (index = 0 ; index < max2 ; index++)
+      tempo3[index+max1] = tempo2[index] ; 
+    
+    fPrimary1 = tempo3[0] ; 
+    fPrimary2 = tempo3[1] ; 
+    fPrimary3 = tempo3[2] ; 
 
+  }
  // end of crummy stuff      
 
   return *this ;
@@ -191,19 +175,4 @@ ostream& operator << ( ostream& out , const AliPHOSDigit & digit)
   return out ;
 }
 
-//____________________________________________________________________________
-void AliPHOSDigit::SetPrimary(Int_t index, Int_t value) 
-{
-  switch (index) {
-  case 1 : 
-    fPrimary1 = value ; 
-    break ; 
-  case 2 : 
-    fPrimary2 = value ; 
-    break ; 
-  case 3 :
-    fPrimary3 = value ; 
-    break ; 
-  }
 
- }
