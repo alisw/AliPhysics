@@ -1,0 +1,4 @@
+./alimdc 1000000000 0 -0 -datebig.raw     # endless loop to RFIO
+./alimdc 1000000000 0 +0 -datebig.raw     # endless loop to rootd
+./alimdc 1000000000 0  0 -datebig.raw     # endless loop to local file in /tmp
+./alimdc 1000000000 0 @0 -datebig.raw     # endless loop to /dev/null

@@ -1,0 +1,96 @@
+##### MACROS #####
+
+ROOTH         = TH1.h
+
+SRCS          = AliRawEvent.cxx
+
+HDRS          = AliRawEvent.h LinkDef.h
+
+DICT          = AliRawDict.cxx
+DICTH         = $(DICT:.cxx=.h)
+DICTO         = $(DICT:.cxx=.o)
+
+MAIN          = alimdc.cxx
+MAINO         = $(MAIN:.cxx=.o)
+
+OBJS          = $(SRCS:.cxx=.o) $(DICTO)
+
+ALLDICT       = $(DICT) $(DICTH)
+ALLSRCS       = $(SRCS) $(HDRS) $(MAIN) DateEvent.h
+ALLOBJS       = $(OBJS) $(MAINO)
+
+ALIRAW        = libAliRaw.so
+ALIMDC        = alimdc
+
+
+
+##### RULES #####
+
+.SUFFIXES: .cxx
+.PHONY: all rdm smi evb hlt debug
+
+.cxx.o:
+	$(CXX) $(OPT) $(CXXFLAGS) -c $<
+
+
+##### TARGETS #####
+
+all:            $(ALIRAW) $(ALIMDC)
+
+rdm:            $(ALIRAW) $(ALIMDC)
+
+smi:            $(ALIRAW) $(ALIMDC)
+
+evb:            $(ALIRAW) $(ALIMDC)
+
+hlt:            $(ALIRAW) $(ALIMDC)
+
+$(ALIRAW):      $(DICT) $(OBJS)
+		rm -f $(ALIRAW)
+                ifeq ($(PLATFORM),aix)
+		   $(SHLD) -o $(ALIRAW) $(LIBS) -p 0 $(OBJS)
+                else
+                   ifeq ($(PLATFORM),alpha)
+		      $(SHLD) -o $(ALIRAW) $(OBJS) -lcxxstd -lcxx -lexc -lots -lc
+                   else
+		      $(LD) $(SOFLAGS) $(LDFLAGS) $(OBJS) -o $(ALIRAW)
+                   endif
+                endif
+		chmod 555 $(ALIRAW)
+		@echo "$(ALIRAW) done"
+
+
+$(ALIMDC):      $(MAINO) $(ALIRAW)
+                ifeq ($(PLATFORM),aix)
+		   ln -fs $(ALILRAW) libAliRaw.a
+		   $(LD) $(LDFLAGS) $(MAINO) libAliRaw.a \
+		   $(LIBS) -o $(ALIMDC)
+                else
+		   $(LD) $(LDFLAGS) $(MAINO) $(ALIRAW) \
+		   $(LIBS) -o $(ALIMDC)
+                endif
+		@if [ `id -u -n` = "alicemdc" ]; then \
+		   chmod 6755 alimdc; \
+		fi
+
+$(DICT):        $(HDRS)
+		@echo "Generating dictionary ..."
+		rootcint -f $(DICT) -c $(ROOTH) $(HDRS)
+
+$(DICTO):       $(DICT)
+		$(CXX) $(NOOPT) $(CXXFLAGS) -c $(DICT)
+
+depend:
+		rmkdepend -fMake-depend -- $(CXXFLAGS) -- $(SRCS) $(MAIN) \
+		> /dev/null 2>&1
+
+dist:
+		rm -f alimdc.tar.gz ; \
+		tar cvf alimdc.tar AA* $(ALLSRCS) .rootrc *.C Make* ; \
+		gzip alimdc.tar
+
+clean:
+		@rm -f $(ALLOBJS) $(ALLDICT)
+
+distclean:      clean
+		@rm -f $(ALIMDC) $(ALIRAW)

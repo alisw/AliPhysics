@@ -1,0 +1,62 @@
+# Makefile for ALICE MDC program for Linux
+
+include $(ROOTSYS)/test/Makefile.arch
+
+LDFLAGS      += -Wl,-rpath,/ROOT/Linux/CurrentRelease/root/lib \
+                -Wl,-rpath,/date/smi/linux \
+                -Wl,-rpath,/date/dim/linux \
+                -Wl,-rpath,/adcRoot/alimdc4
+
+ifneq ($(findstring rdm,$(MAKECMDGOALS)),)
+CXXFLAGS += -DUSE_RDM
+endif
+
+ifneq ($(findstring debug,$(MAKECMDGOALS)),)
+CXXFLAGS += -DUSE_DEBUG -g
+endif
+
+ifneq ($(findstring smi,$(MAKECMDGOALS)),)
+#SMIDIR    = ./smi
+#DIMDIR    = ./dim
+SMIDIR    = ../date/smi
+DIMDIR    = ../date/dim
+CXXFLAGS += -DUSE_SMI -I$(SMIDIR)/smixx -I$(DIMDIR)/dim
+LIBS     += -L$(SMIDIR)/linux -lsmiui -lsmi -L$(DIMDIR)/linux -ldim
+endif
+
+ifneq ($(findstring evb,$(MAKECMDGOALS)),)
+ifneq ($(findstring rdm,$(MAKECMDGOALS)),)
+EBDIR     = ./eb
+BMDIR     = ./eb
+DBMDIR    = ./eb
+DBDIR     = ./eb
+FIFODIR   = ./eb
+INFODIR   = ./eb
+else
+EBDIR     = ../date/eventBuilder
+BMDIR     = ../date/banksManager
+DBMDIR    = ../date/bufferManager
+DBDIR     = ../date/db
+FIFODIR   = ../date/simpleFifo
+INFODIR   = ../date/infoLogger
+endif
+CXXFLAGS += -DUSE_EB -I$(EBDIR)
+LIBS     += -L$(EBDIR)/Linux -L$(BMDIR)/Linux -L$(DBMDIR)/Linux \
+            -L$(DBDIR)/Linux -L$(FIFODIR)/Linux -L$(INFODIR)/Linux \
+            -lDateEb -lBanksManager -lDateBufferManager \
+            -lDb -lFifo -lInfo
+endif
+
+ifneq ($(findstring hlt,$(MAKECMDGOALS)),)
+CXXFLAGS += -DUSE_HLT -I$(ALITPC)
+LIBS     += -L$(ALITPC) -lSTEER -lTPC
+endif
+
+##### MACROS and TARGETS #####
+
+include Make-macros
+
+
+##### DEPENDENCIES #####
+
+include Make-depend
