@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/10/03 21:48:07  morsch
+Adopt to const declaration of some of the methods in AliSegmentation.
+
 Revision 1.4  2000/10/02 16:58:29  egangler
 Cleaning of the code :
 -> coding conventions
@@ -125,7 +128,7 @@ void AliMUONSegmentationV02::NextPad()
 //      get x-pad coordiante for 1 pad in row (fIx)
 	GetPadI(xc,fYmin,ixc,fIy);
     } else {
-	printf("\n Error: Stepping outside integration region\n ");
+	fIx=fIy=-1;
     }
     GetPadC(fIx,fIy,fX,fY);
     fSector=Sector(fIx,fIy);
@@ -142,11 +145,14 @@ Int_t AliMUONSegmentationV02::MorePads()
 //
 // Are there more pads in the integration region
 {
+    return  (fIx != -1  || fIy != -1);
+/*
     if ((fY >= fYmax  && fIx >= fIxmax) || fX==0) {
 	return 0;
     } else {
 	return 1;
     }
+*/
 }
 
 void AliMUONSegmentationV02::

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/10/03 21:48:07  morsch
+Adopt to const declaration of some of the methods in AliSegmentation.
+
 Revision 1.7  2000/10/02 21:28:09  fca
 Removal of useless dependecies via forward declarations
 
@@ -324,7 +327,8 @@ void AliMUONSegmentationV01::NextPad()
 //      get x-pad coordiante for first pad in row (fIx)
 	GetPadI(fXmin,yc,fIx,iyc);
     } else {
-	printf("\n Error: Stepping outside integration region\n ");
+	fIx=-1;
+	fIy=-1;
     }
     GetPadC(fIx,fIy,fX,fY);
     fSector=Sector(fIx,fIy);
@@ -338,11 +342,14 @@ Int_t AliMUONSegmentationV01::MorePads()
 //
 // Are there more pads in the integration region
 {
+    return  (fIx != -1  || fIy != -1);
+/*
     if ((fX >= fXmax  && fIy >= fIymax) || fY==0) {
 	return 0;
     } else {
 	return 1;
     }
+*/
 }
 
 void AliMUONSegmentationV01::
