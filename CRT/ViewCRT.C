@@ -1,21 +1,25 @@
 void ViewCRT()
 {
    gMC->Gsatt("ALIC","seen",0);
-   gMC->Gsatt("L3MO","seen",1); // L3 Magnet
-   gMC->Gsatt("CRT1","seen",1); // Scintillators
 
-   // Draw the molasse volumes
-   gMC->Gsatt("CMO1","seen",0); // Exactly above the HALL
-   gMC->Gsatt("CMO2","seen",0); // Molasse, along the PM25
-   gMC->Gsatt("CMO3","seen",0); // molasse along the PGC2
-   gMC->Gsatt("CMO4","seen",0); // Molasse, behind the PX24 upper part
-   gMC->Gsatt("CMO5","seen",0); // molasse behind px24, lower part
-   gMC->Gsatt("CMO6","seen",0); // behind the PX24
-   gMC->Gsatt("CMO7","seen",0); // behind the PGC2
-   gMC->Gsatt("CMO8","seen",0); // on the right side.
-   gMC->Gsatt("CMO9","seen",0); // on the left side.
-   gMC->Gsatt("CM10","seen",0); // betwen PX24 & PM25.
-   gMC->Gsatt("CM11","seen",0); // betwen PGC2 & PM25.
-   gMC->Gsatt("CM12","seen",0); // box above the hall.
+   gMC->Gsatt("L3MO","seen",0); // L3 Magnet, Mother
+   gMC->Gsatt("L3CO","seen",1); // Coils
+   gMC->Gsatt("L3C1","seen",1); // Coils
+   gMC->Gsatt("L3YO","seen",1); // Yoke
+   gMC->Gsatt("L3DO","seen",0); // return Yoke (DOOR)
+   gMC->Gsatt("L3FR","seen",1); // DOOR
+   gMC->Gsatt("L3IR","seen",0); // Inner layer
+   gMC->Gsatt("L3O1","seen",1); // Door opening
+   gMC->Gsatt("L3O2","seen",1); // Door opening
 
+   gMC->Gsatt("CRT1", "seen", 0); // CRT Mother
+   gMC->Gsatt("CRT2", "seen", 0); // Module air box
+   gMC->Gsatt("CRT3", "seen", 1); // Scintillators
+   gMC->Gsatt("CRT3", "colo", 2); // Scintillators
+   gMC->Gsatt("CRT4", "seen", 1); // Aluminium frame (long bars)
+   gMC->Gsatt("CRT4", "colo", 3); //
+   gMC->Gsatt("CRT5", "seen", 1); // Aluminium frame (short bars)
+   gMC->Gsatt("CRT5", "colo", 3); //
+   gMC->Gsatt("CRT6", "seen", 1); // Module support
+   gMC->Gsatt("CRT6", "colo", 3); //
 }
