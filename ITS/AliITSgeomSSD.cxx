@@ -48,7 +48,7 @@ AliITSgeomSSD::AliITSgeomSSD(const AliITSgeomSSD &source){
 //    copy  constructor
 ////////////////////////////////////////////////////////////////////////
 
-    this->fShapeSSD = source.fShapeSSD;
+    this->fShapeSSD = new TBRIK(*(source.fShapeSSD));
     return;
 }  
 
@@ -57,7 +57,7 @@ AliITSgeomSSD& AliITSgeomSSD::operator=(const AliITSgeomSSD &source) {
 //    assignment operator
 ////////////////////////////////////////////////////////////////////////
 
-    this->fShapeSSD = source.fShapeSSD;
+    this->fShapeSSD = new TBRIK(*(source.fShapeSSD));
     return *this;
 }
 

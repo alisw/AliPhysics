@@ -46,7 +46,7 @@ AliITSgeomSDD::AliITSgeomSDD(){
 AliITSgeomSDD::AliITSgeomSDD(AliITSgeomSDD &source){
   // Copy constructor
    if(this==&source) return;
-   this->fShapeSDD = source.fShapeSDD;
+   this->fShapeSDD = new TBRIK(*(source.fShapeSDD));
    this->fDx = source.fDx;
    this->fDy = source.fDy;
    this->fDz = source.fDz;
@@ -55,7 +55,7 @@ AliITSgeomSDD::AliITSgeomSDD(AliITSgeomSDD &source){
 AliITSgeomSDD& AliITSgeomSDD::operator=(AliITSgeomSDD &source){
   // = operator
    if(this==&source) return *this;
-   this->fShapeSDD = source.fShapeSDD;
+   this->fShapeSDD = new TBRIK(*(source.fShapeSDD));
    this->fDx = source.fDx;
    this->fDy = source.fDy;
    this->fDz = source.fDz;

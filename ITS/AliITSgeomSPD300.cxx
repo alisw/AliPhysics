@@ -87,7 +87,7 @@ AliITSgeomSPD300::AliITSgeomSPD300(Float_t dy,Int_t nx,Float_t *bx,
 AliITSgeomSPD300::AliITSgeomSPD300(AliITSgeomSPD300 &source){
   // copy constructor
     if(&source == this) return;
-    this->fShapeSPD = source.fShapeSPD;
+    this->fShapeSPD = new TBRIK(*(source.fShapeSPD));
     this->fdx = source.fdx;
     this->fdy = source.fdy;
     this->fdz = source.fdz;
@@ -104,7 +104,7 @@ AliITSgeomSPD300::AliITSgeomSPD300(AliITSgeomSPD300 &source){
 AliITSgeomSPD300& AliITSgeomSPD300::operator=(AliITSgeomSPD300 &source){
   // = operator
     if(&source == this) return *this;
-    this->fShapeSPD = source.fShapeSPD;
+    this->fShapeSPD = new TBRIK(*(source.fShapeSPD));
     this->fdx = source.fdx;
     this->fdy = source.fdy;
     this->fdz = source.fdz;
