@@ -16,11 +16,12 @@
 class AliRawEvent;
 class AliRawData;
 class TFile;
+class TBranch;
 
 
 class AliRawReaderRoot: public AliRawReader {
   public :
-    AliRawReaderRoot(const char* fileName, Int_t eventNumber);
+    AliRawReaderRoot(const char* fileName, Int_t eventNumber = -1);
     AliRawReaderRoot(AliRawEvent* event);
     AliRawReaderRoot(const AliRawReaderRoot& rawReader);
     AliRawReaderRoot& operator = (const AliRawReaderRoot& rawReader);
@@ -46,12 +47,17 @@ class AliRawReaderRoot: public AliRawReader {
 
     virtual Bool_t   Reset();
 
+    virtual Bool_t   NextEvent();
+    virtual Bool_t   RewindEvents();
+
     virtual Int_t    CheckData() const;
 
   protected :
     virtual Bool_t   ReadNext(UChar_t* data, Int_t size);
 
     TFile*           fFile;         // raw data root file
+    TBranch*         fBranch;       // branch of raw events
+    Int_t            fEventIndex;   // index of the event in the tree
     AliRawEvent*     fEvent;        // (super) event
     Int_t            fSubEventIndex; // index of current sub event
     AliRawEvent*     fSubEvent;     // current sub event

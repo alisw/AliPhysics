@@ -49,6 +49,7 @@ AliRawReader::AliRawReader() :
   fSelectMinEquipmentId(-1),
   fSelectMaxEquipmentId(-1),
   fSkipInvalid(kFALSE),
+  fSelectEventType(-1),
   fErrorCode(0)
 {
 // default constructor: initialize data members
@@ -63,6 +64,7 @@ AliRawReader::AliRawReader(const AliRawReader& rawReader) :
   fSelectMinEquipmentId(rawReader.fSelectMinEquipmentId),
   fSelectMaxEquipmentId(rawReader.fSelectMaxEquipmentId),
   fSkipInvalid(rawReader.fSkipInvalid),
+  fSelectEventType(rawReader.fSelectEventType),
   fErrorCode(0)
 {
 // copy constructor
@@ -80,6 +82,7 @@ AliRawReader& AliRawReader::operator = (const AliRawReader& rawReader)
   fSelectMinEquipmentId = rawReader.fSelectMinEquipmentId;
   fSelectMaxEquipmentId = rawReader.fSelectMaxEquipmentId;
   fSkipInvalid = rawReader.fSkipInvalid;
+  fSelectEventType = rawReader.fSelectEventType;
 
   fErrorCode = rawReader.fErrorCode;
 
@@ -112,6 +115,14 @@ void AliRawReader::SelectEquipment(Int_t equipmentType,
   fSelectMaxEquipmentId = maxEquipmentId;
 }
 
+void AliRawReader::SelectEvents(Int_t type)
+{
+// read only events with the given type.
+// no selection is applied if a value < 0 is used.
+
+  fSelectEventType = type;
+}
+
 Bool_t AliRawReader::IsSelected() const
 {
 // apply the selection (if any)
@@ -126,6 +137,17 @@ Bool_t AliRawReader::IsSelected() const
     if ((fSelectMaxEquipmentId >= 0) && 
 	(GetEquipmentId() > fSelectMaxEquipmentId))
       return kFALSE;
+  }
+
+  return kTRUE;
+}
+
+Bool_t AliRawReader::IsEventSelected() const
+{
+// apply the event selection (if any)
+
+  if (fSelectEventType >= 0) {
+    if (GetType() != (UInt_t) fSelectEventType) return kFALSE;
   }
 
   return kTRUE;

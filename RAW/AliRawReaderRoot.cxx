@@ -40,12 +40,20 @@
 ClassImp(AliRawReaderRoot)
 
 
-AliRawReaderRoot::AliRawReaderRoot(const char* fileName, Int_t eventNumber)
+AliRawReaderRoot::AliRawReaderRoot(const char* fileName, Int_t eventNumber) :
+  fFile(NULL),
+  fBranch(NULL),
+  fEventIndex(eventNumber),
+  fEvent(NULL),
+  fSubEventIndex(0),
+  fSubEvent(NULL),
+  fRawData(NULL),
+  fPosition(NULL),
+  fEnd(NULL)
 {
 // create an object to read digits from the given input file for the
 // event with the given number
 
-  fEvent = NULL;
   TDirectory* dir = gDirectory;
   fFile = TFile::Open(fileName);
   dir->cd();
@@ -58,60 +66,95 @@ AliRawReaderRoot::AliRawReaderRoot(const char* fileName, Int_t eventNumber)
     Error("AliRawReaderRoot", "no raw data tree found");
     return;
   }
-  TBranch* branch = tree->GetBranch("rawevent");
-  if (!branch) {
+  fBranch = tree->GetBranch("rawevent");
+  if (!fBranch) {
     Error("AliRawReaderRoot", "no raw data branch found");
     return;
   }
 
   fEvent = new AliRawEvent;
-  branch->SetAddress(&fEvent);
-  if (branch->GetEntry(eventNumber) <= 0) {
-    Error("AliRawReaderRoot", "no event with number %d found", eventNumber);
-    return;
+  fBranch->SetAddress(&fEvent);
+  if (fEventIndex >= 0) {
+    if (fBranch->GetEntry(fEventIndex) <= 0) {
+      Error("AliRawReaderRoot", "no event with number %d found", fEventIndex);
+      return;
+    }
   }
-  
-  fSubEventIndex = 0;
-  fSubEvent = NULL;
-  fRawData = NULL;
-  fHeader = NULL;
-
-  fCount = 0;
-  fPosition = fEnd = NULL;
 }
 
-AliRawReaderRoot::AliRawReaderRoot(AliRawEvent* event)
+AliRawReaderRoot::AliRawReaderRoot(AliRawEvent* event) :
+  fFile(NULL),
+  fBranch(NULL),
+  fEventIndex(-1),
+  fEvent(event),
+  fSubEventIndex(0),
+  fSubEvent(NULL),
+  fRawData(NULL),
+  fPosition(NULL),
+  fEnd(NULL)
 {
 // create an object to read digits from the given raw event
 
-  fFile = NULL;
-  fEvent = event;
-  
-  fSubEventIndex = 0;
-  fSubEvent = NULL;
-  fRawData = NULL;
-  fHeader = NULL;
-
-  fCount = 0;
-  fPosition = fEnd = NULL;
 }
 
 AliRawReaderRoot::AliRawReaderRoot(const AliRawReaderRoot& rawReader) :
-  AliRawReader(rawReader)
+  AliRawReader(rawReader),
+  fFile(NULL),
+  fBranch(NULL),
+  fEventIndex(rawReader.fEventIndex),
+  fEvent(NULL),
+  fSubEventIndex(rawReader.fSubEventIndex),
+  fSubEvent(NULL),
+  fRawData(NULL),
+  fPosition(NULL),
+  fEnd(NULL)
 {
 // copy constructor
 
-  fFile = NULL;
-  fEvent = rawReader.fEvent;
-  
-  fSubEventIndex = rawReader.fSubEventIndex;
-  fSubEvent = rawReader.fSubEvent;
-  fRawData = rawReader.fRawData;
-  fHeader = rawReader.fHeader;
+  if (rawReader.fFile) {
+    TDirectory* dir = gDirectory;
+    fFile = TFile::Open(rawReader.fFile->GetName());
+    dir->cd();
+    if (!fFile || !fFile->IsOpen()) {
+      Error("AliRawReaderRoot", "could not open file %s", 
+	    rawReader.fFile->GetName());
+      return;
+    }
+    TTree* tree = (TTree*) fFile->Get("RAW");
+    if (!tree) {
+      Error("AliRawReaderRoot", "no raw data tree found");
+      return;
+    }
+    fBranch = tree->GetBranch("rawevent");
+    if (!fBranch) {
+      Error("AliRawReaderRoot", "no raw data branch found");
+      return;
+    }
 
-  fCount = rawReader.fCount;
-  fPosition = rawReader.fPosition;
-  fEnd = rawReader.fEnd;
+    fEvent = new AliRawEvent;
+    fBranch->SetAddress(&fEvent);
+    if (fEventIndex >= 0) {
+      if (fBranch->GetEntry(fEventIndex) <= 0) {
+	Error("AliRawReaderRoot", "no event with number %d found", 
+	      fEventIndex);
+	return;
+      }
+    }
+  } else {
+    fEvent = rawReader.fEvent;
+  }
+
+  if (fSubEventIndex > 0) {
+    fSubEvent = fEvent->GetSubEvent(fSubEventIndex-1);
+    fRawData = fSubEvent->GetRawData();
+      fCount = 0;
+    fHeader = (AliRawDataHeader*) ((UChar_t*) fRawData->GetBuffer() + 
+      ((UChar_t*) rawReader.fHeader - 
+       (UChar_t*) rawReader.fRawData->GetBuffer()));
+    fPosition = (UChar_t*) fRawData->GetBuffer() + 
+      (rawReader.fPosition - (UChar_t*) rawReader.fRawData->GetBuffer());
+    fEnd = ((UChar_t*) fRawData->GetBuffer()) + fRawData->GetSize();
+  }
 }
 
 AliRawReaderRoot& AliRawReaderRoot::operator = (const AliRawReaderRoot& 
@@ -359,6 +402,38 @@ Bool_t AliRawReaderRoot::Reset()
   fCount = 0;
   fPosition = fEnd = NULL;
   return kTRUE;
+}
+
+
+Bool_t AliRawReaderRoot::NextEvent()
+{
+// go to the next event in the root file
+
+  if (!fFile) return kFALSE;
+
+  do {
+    if (fBranch->GetEntry(fEventIndex+1) <= 0) {
+      delete fEvent;
+      fEvent = new AliRawEvent;
+      fBranch->SetAddress(&fEvent);
+      return kFALSE;
+    }
+    fEventIndex++;
+  } while (!IsEventSelected());
+  return Reset();
+}
+
+Bool_t AliRawReaderRoot::RewindEvents()
+{
+// go back to the beginning of the root file
+
+  if (!fFile) return kFALSE;
+
+  fEventIndex = -1;
+  delete fEvent;
+  fEvent = new AliRawEvent;
+  fBranch->SetAddress(&fEvent);
+  return Reset();
 }
 
 

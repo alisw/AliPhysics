@@ -40,10 +40,10 @@ AliRawReaderDate::AliRawReaderDate(
 #endif
 				   ) :
   fRequireHeader(kTRUE),
+  fFile(NULL),
   fEvent(NULL),
   fSubEvent(NULL),
   fEquipment(NULL),
-  fIsOwner(kFALSE),
   fPosition(NULL),
   fEnd(NULL)
 {
@@ -65,36 +65,36 @@ AliRawReaderDate::AliRawReaderDate(
 #endif
 				   ) :
   fRequireHeader(kTRUE),
+  fFile(NULL),
   fEvent(NULL),
   fSubEvent(NULL),
   fEquipment(NULL),
-  fIsOwner(kFALSE),
   fPosition(NULL),
   fEnd(NULL)
 {
 // create an object to read digits from the given date event
 
 #ifdef ALI_DATE
-  FILE* file = fopen(fileName, "rb");
-  if (!file) {
+  fFile = fopen(fileName, "rb");
+  if (!fFile) {
     Error("AliRawReaderDate", "could not open file %s", fileName);
     return;
   }
+  if (eventNumber < 0) return;
+
   eventHeaderStruct header;
   UInt_t headerSize = sizeof(eventHeaderStruct);
-  while (fread(&header, 1, headerSize, file) == headerSize) {
+  while (fread(&header, 1, headerSize, fFile) == headerSize) {
     if (eventNumber == 0) {
       UChar_t* buffer = new UChar_t[header.eventSize];
-      fseek(file, -headerSize, SEEK_CUR);
-      if (fread(buffer, 1, header.eventSize, file) != header.eventSize) break;
+      fseek(fFile, -headerSize, SEEK_CUR);
+      if (fread(buffer, 1, header.eventSize, fFile) != header.eventSize) break;
       fEvent = (eventHeaderStruct*) buffer;
-      fIsOwner = kTRUE;
       break;
     }
-    fseek(file, header.eventSize-headerSize, SEEK_CUR);
+    fseek(fFile, header.eventSize-headerSize, SEEK_CUR);
     eventNumber--;
   }
-  fclose(file);
 
 #else
   Fatal("AliRawReaderDate", "this class was compiled without DATE");
@@ -104,25 +104,25 @@ AliRawReaderDate::AliRawReaderDate(
 AliRawReaderDate::AliRawReaderDate(const AliRawReaderDate& rawReader) :
   AliRawReader(rawReader),
   fRequireHeader(rawReader.fRequireHeader),
+  fFile(rawReader.fFile),
   fEvent(rawReader.fEvent),
   fSubEvent(rawReader.fSubEvent),
   fEquipment(rawReader.fEquipment),
-  fIsOwner(kFALSE),
   fPosition(rawReader.fPosition),
   fEnd(rawReader.fEnd)
 
 {
 // copy constructor
 
+  Fatal("AliRawReaderDate", "copy constructor not implemented");
 }
 
 AliRawReaderDate& AliRawReaderDate::operator = (const AliRawReaderDate& 
-						rawReader)
+						/*rawReader*/)
 {
 // assignment operator
 
-  this->~AliRawReaderDate();
-  new(this) AliRawReaderDate(rawReader);
+  Fatal("operator =", "assignment operator not implemented");
   return *this;
 }
 
@@ -131,7 +131,10 @@ AliRawReaderDate::~AliRawReaderDate()
 // destructor
 
 #ifdef ALI_DATE
-  if (fIsOwner) delete[] fEvent;
+  if (fFile) {
+    delete[] fEvent;
+    fclose(fFile);
+  }
 #endif
 }
 
@@ -458,6 +461,48 @@ Bool_t AliRawReaderDate::Reset()
   fCount = 0;
   fPosition = fEnd = NULL;
   return kTRUE;
+}
+
+
+Bool_t AliRawReaderDate::NextEvent()
+{
+// go to the next event in the date file
+
+  if (!fFile) return kFALSE;
+
+  eventHeaderStruct header;
+  UInt_t headerSize = sizeof(eventHeaderStruct);
+  if (fEvent) delete[] fEvent;
+  fEvent = &header;
+
+  while (fread(&header, 1, headerSize, fFile) == headerSize) {
+    if (!IsEventSelected()) {
+      fseek(fFile, header.eventSize-headerSize, SEEK_CUR);
+      continue;
+    }
+    UChar_t* buffer = new UChar_t[header.eventSize];
+    fseek(fFile, -headerSize, SEEK_CUR);
+    if (fread(buffer, 1, header.eventSize, fFile) != header.eventSize) {
+      Error("NextEvent", "could not read event from file");
+      delete[] buffer;
+      break;
+    }
+    fEvent = (eventHeaderStruct*) buffer;
+    return kTRUE;
+  };
+
+  fEvent = NULL;
+  return kFALSE;
+}
+
+Bool_t AliRawReaderDate::RewindEvents()
+{
+// go back to the beginning of the date file
+
+  if (!fFile) return kFALSE;
+
+  fseek(fFile, 0, SEEK_SET);
+  return Reset();
 }
 
 

@@ -20,9 +20,7 @@ struct equipmentHeaderStruct;
 class AliRawReaderDate: public AliRawReader {
   public :
     AliRawReaderDate(void* event);
-    AliRawReaderDate(const char* fileName, Int_t eventNumber);
-    AliRawReaderDate(const AliRawReaderDate& rawReader);
-    AliRawReaderDate& operator = (const AliRawReaderDate& rawReader);
+    AliRawReaderDate(const char* fileName, Int_t eventNumber = -1);
     virtual ~AliRawReaderDate();
 
     void             RequireHeader(Bool_t required = kTRUE)
@@ -48,6 +46,9 @@ class AliRawReaderDate: public AliRawReader {
 
     virtual Bool_t   Reset();
 
+    virtual Bool_t   NextEvent();
+    virtual Bool_t   RewindEvents();
+
     virtual Int_t    CheckData() const;
 
   protected :
@@ -55,13 +56,17 @@ class AliRawReaderDate: public AliRawReader {
 
     Bool_t           fRequireHeader; // if false, data without header is accepted
 
+    FILE*            fFile;         // DATE file
     eventHeaderStruct* fEvent;      // raw data super event
     eventHeaderStruct* fSubEvent;   // raw data sub event
     equipmentHeaderStruct* fEquipment; // raw data equipment header
-    Bool_t           fIsOwner;      // flag for ownership of fEvent
 
     UChar_t*         fPosition;     // current position in the raw data
     UChar_t*         fEnd;          // end position of the current data block
+
+  private:
+    AliRawReaderDate(const AliRawReaderDate& rawReader);
+    AliRawReaderDate& operator = (const AliRawReaderDate& rawReader);
 
     ClassDef(AliRawReaderDate, 0) // class for reading raw digits from a root file
 };

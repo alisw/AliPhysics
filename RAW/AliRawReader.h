@@ -29,6 +29,7 @@ class AliRawReader: public TObject {
 				     Int_t maxEquipmentId = -1);
     void             SkipInvalid(Bool_t skip = kTRUE)
       {fSkipInvalid = skip;};
+    void             SelectEvents(Int_t type);
 
     virtual UInt_t   GetType() const = 0;
     virtual UInt_t   GetRunNumber() const = 0;
@@ -71,6 +72,9 @@ class AliRawReader: public TObject {
 
     virtual Bool_t   Reset() = 0;
 
+    virtual Bool_t   NextEvent() = 0;
+    virtual Bool_t   RewindEvents() = 0;
+
     enum {kErrMagic=1, kErrNoDataHeader=2, 
 	  kErrSize=4, kErrOutOfBounds=8};
     virtual Int_t    CheckData() const;
@@ -80,6 +84,7 @@ class AliRawReader: public TObject {
 
   protected :
     Bool_t           IsSelected() const;
+    Bool_t           IsEventSelected() const;
 
     virtual Bool_t   ReadNext(UChar_t* data, Int_t size) = 0;
 
@@ -90,6 +95,7 @@ class AliRawReader: public TObject {
     Int_t            fSelectMinEquipmentId; // minimal index of selected equipment (<0 = no selection)
     Int_t            fSelectMaxEquipmentId; // maximal index of selected equipment (<0 = no selection)
     Bool_t           fSkipInvalid;       // skip invalid data
+    Int_t            fSelectEventType;   // type of selected events (<0 = no selection)
 
     Int_t            fErrorCode;         // code of last error
 

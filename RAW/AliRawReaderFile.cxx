@@ -38,7 +38,8 @@ ClassImp(AliRawReaderFile)
 
 
 AliRawReaderFile::AliRawReaderFile(Int_t eventNumber) :
-  fDirName("raw"),
+  fEventIndex(eventNumber),
+  fDirName("."),
   fDirectory(NULL),
   fStream(NULL),
   fEquipmentId(-1),
@@ -46,17 +47,15 @@ AliRawReaderFile::AliRawReaderFile(Int_t eventNumber) :
   fBufferSize(0)
 {
 // create an object to read digits from the given event
+// in the current directory
 
-  fDirName += eventNumber;
-  fDirectory = gSystem->OpenDirectory(fDirName);
-  if (!fDirectory) {
-    Error("AliRawReaderFile", "could not open directory %s", fDirName.Data());
-  }
+  fDirectory = OpenDirectory();
   OpenNextFile();
   fHeader = new AliRawDataHeader;
 }
 
-AliRawReaderFile::AliRawReaderFile(const char* dirName) :
+AliRawReaderFile::AliRawReaderFile(const char* dirName, Int_t eventNumber) :
+  fEventIndex(eventNumber),
   fDirName(dirName),
   fDirectory(NULL),
   fStream(NULL),
@@ -66,10 +65,7 @@ AliRawReaderFile::AliRawReaderFile(const char* dirName) :
 {
 // create an object to read digits from the given directory
 
-  fDirectory = gSystem->OpenDirectory(fDirName);
-  if (!fDirectory) {
-    Error("AliRawReaderFile", "could not open directory %s", fDirName.Data());
-  }
+  fDirectory = OpenDirectory();
   OpenNextFile();
   fHeader = new AliRawDataHeader;
 }
@@ -105,6 +101,30 @@ AliRawReaderFile::~AliRawReaderFile()
 }
 
 
+TString AliRawReaderFile::GetDirName() const
+{
+// return the current directory name
+
+  TString dirName(fDirName);
+  if (fEventIndex >= 0) {
+    dirName += "/raw";
+    dirName += fEventIndex;
+  }
+  return dirName;
+}
+
+void* AliRawReaderFile::OpenDirectory()
+{
+// open and return the directory
+
+  TString dirName = GetDirName();
+  void* directory = gSystem->OpenDirectory(dirName);
+  if (!directory) {
+    Error("OpenDirectory", "could not open directory %s", dirName.Data());
+  }
+  return directory;
+}
+
 Bool_t AliRawReaderFile::OpenNextFile()
 {
 // open the next file
@@ -126,7 +146,7 @@ Bool_t AliRawReaderFile::OpenNextFile()
   while (entry = gSystem->GetDirEntry(fDirectory)) {
     if (entry.IsNull()) return kFALSE;
     if (!entry.EndsWith(".ddl")) continue;
-    char* fileName = gSystem->ConcatFileName(fDirName, entry);
+    char* fileName = gSystem->ConcatFileName(GetDirName(), entry);
 #ifndef __DECCXX 
     fStream = new fstream(fileName, ios::binary|ios::in);
 #else
@@ -209,13 +229,10 @@ Bool_t AliRawReaderFile::ReadNext(UChar_t* data, Int_t size)
 
 Bool_t AliRawReaderFile::Reset()
 {
-// reset the current stream position to the beginning of the file
+// reset the current stream position to the first DDL file of the curevent
 
-  void* directory = gSystem->OpenDirectory(fDirName);
-  if (!directory) {
-    Error("Reset", "could not open directory %s", fDirName.Data());
-    return kFALSE;
-  }
+  void* directory = OpenDirectory();
+  if (!directory) return kFALSE;
 
   if (fStream) {
 #if defined(__HP_aCC) || defined(__DECCXX)
@@ -235,3 +252,30 @@ Bool_t AliRawReaderFile::Reset()
   return kTRUE;
 }
 
+Bool_t AliRawReaderFile::NextEvent()
+{
+// go to the next event directory
+
+  if (fEventIndex < -1) return kFALSE;
+
+  do {
+    TString dirName = fDirName + "/raw";
+    dirName += (fEventIndex + 1);
+    void* directory = gSystem->OpenDirectory(dirName);
+    if (!directory) return kFALSE;
+    gSystem->FreeDirectory(directory);
+
+    fEventIndex++;
+    Reset();
+  } while (!IsEventSelected());
+
+  return kTRUE;
+}
+
+Bool_t AliRawReaderFile::RewindEvents()
+{
+// reset the event counter
+
+  if (fEventIndex >= 0)  fEventIndex = -1;
+  return Reset();
+}

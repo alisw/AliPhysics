@@ -22,8 +22,8 @@ class fstream;
 
 class AliRawReaderFile: public AliRawReader {
   public :
-    AliRawReaderFile(Int_t eventNumber);
-    AliRawReaderFile(const char* dirName);
+    AliRawReaderFile(Int_t eventNumber = -1);
+    AliRawReaderFile(const char* dirName, Int_t eventNumber = -1);
     AliRawReaderFile(const AliRawReaderFile& rawReader);
     AliRawReaderFile& operator = (const AliRawReaderFile& rawReader);
     virtual ~AliRawReaderFile();
@@ -48,11 +48,17 @@ class AliRawReaderFile: public AliRawReader {
 
     virtual Bool_t   Reset();
 
+    virtual Bool_t   NextEvent();
+    virtual Bool_t   RewindEvents();
+
   protected :
+    TString          GetDirName() const;
+    void*            OpenDirectory();
     Bool_t           OpenNextFile();
 
     virtual Bool_t   ReadNext(UChar_t* data, Int_t size);
 
+    Int_t            fEventIndex;  // index of the event
     TString          fDirName;     // name of the input directory
     void*            fDirectory;   // pointer to the input directory
     fstream*         fStream;      // stream of raw digits
