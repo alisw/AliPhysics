@@ -1,5 +1,15 @@
 #ifndef ALIHBTREADERITSV1_H
 #define ALIHBTREADERITSV1_H
+//____________________________________________________________________
+//////////////////////////////////////////////////////////////////////
+//                                                                  //
+//  class AliHBTReaderITSv1                                         //
+//                                                                  //
+//  Reader for ITSv1 tracks. Not maintained since v1 is not         //
+//  supposed to be used                                             //
+//                                                                  //
+//////////////////////////////////////////////////////////////////////
+
 
 #include "AliHBTReader.h"
 
@@ -27,8 +37,8 @@ class AliHBTReaderITSv1: public AliHBTReader
     Int_t GetNumberOfTrackEvents();//returns number of track events
     
   protected:
-    TString fITSTracksFileName;
-    TString fGAliceFileName;
+    TString fITSTracksFileName; //name of the file with tracks
+    TString fGAliceFileName;//name of the file containing Run Loader
     
     AliHBTRun* fParticles; //!simulated particles
     AliHBTRun* fTracks; //!reconstructed tracks (particles)
@@ -37,9 +47,8 @@ class AliHBTReaderITSv1: public AliHBTReader
    
     TFile* OpenTrackFile(Int_t);//opens files to be read for given directoru nomber in fDirs Array
     TFile* OpenGAliceFile(Int_t);
-
+    
   private:
-  public:
     ClassDef(AliHBTReaderITSv1,1)
 };
 

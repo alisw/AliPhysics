@@ -137,6 +137,26 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   
   analysis->SetReader(reader);
 
+  /***********************************************************/    
+  /*****   W E I G H T S        ******************************/    
+  /***********************************************************/    
+
+  AliHBTLLWeights::Instance()->SetParticlesTypes(kPiPlus,kPiPlus);
+  AliHBTLLWeights::Instance()->SetColoumb(kFALSE);
+  AliHBTLLWeights::Instance()->SetStrongInterSwitch(kFALSE);
+
+  AliHBTLLWeights::Instance()->SetRandomPosition(kFALSE);
+//AliHBTLLWeights::Instance()->SetR1dw(8.0);
+
+  AliHBTLLWeights::Instance()->Init();
+  AliHBTLLWeights::Instance()->Set();
+
+  //example function
+  AliHBTWeightTheorQInvFctn  *wqinvcfP = new AliHBTWeightTheorQInvFctn(nbins,qmax);
+  wqinvcfP->SetNumberOfBinsToScale(binstoscale);
+  wqinvcfP->Rename("wqinvcfP","Lednicky Q_{inv} Theoretical Correlation Function "+system);
+  analysis->AddParticleFunction(wqinvcfP);
+
   /************************************************************/
   /****   Q INV Correlation Function   ************************/
   /************************************************************/

@@ -1,3 +1,12 @@
+//____________________________________________________________________
+//////////////////////////////////////////////////////////////////////
+//                                                                  //
+//  class AliHBTReaderITSv1                                         //
+//                                                                  //
+//  Reader for ITSv1 tracks. Not maintained since v1 is not         //
+//  supposed to be used                                             //
+//                                                                  //
+//////////////////////////////////////////////////////////////////////
 
 #include "AliHBTReaderITSv1.h"
 #include "AliHBTEvent.h"
@@ -17,10 +26,10 @@
 #include <TObjString.h>
 
 #include <AliRun.h>
+#include <AliStack.h>
 #include <AliMagF.h>
 #include <AliKalmanTrack.h>
 #include <AliITSIOTrack.h>
-#include "AliMC.h"
 
 ClassImp(AliHBTReaderITSv1)
 /********************************************************************/
@@ -108,7 +117,6 @@ Int_t AliHBTReaderITSv1::GetNumberOfTrackEvents()
 
 Int_t AliHBTReaderITSv1::Read(AliHBTRun* particles, AliHBTRun *tracks)
 {
- cout<<"AliHBTReaderITSv1::Read()"<<endl;
  Int_t Nevents = 0;
  AliITSIOTrack *iotrack=new AliITSIOTrack;
  Int_t currentdir = 0;
@@ -171,7 +179,7 @@ Int_t AliHBTReaderITSv1::Read(AliHBTRun* particles, AliHBTRun *tracks)
       
       gAliceFile->cd();
       gAlice->GetEvent(currentEvent);
-      gAlice->GetMCApp()->Particles();
+      gAlice->Stack()->Particles();
 
       Int_t nentr=(Int_t)tracktree->GetEntries();
       
@@ -189,7 +197,7 @@ Int_t AliHBTReaderITSv1::Read(AliHBTRun* particles, AliHBTRun *tracks)
            continue;
          }
 
-        TParticle *p = (TParticle*)gAlice->GetMCApp()->Particle(label);
+        TParticle *p = (TParticle*)gAlice->Stack()->Particle(label);
         if(!p)
          {
            Warning("Read","Can not get particle with label &d",label);

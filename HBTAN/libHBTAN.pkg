@@ -1,7 +1,7 @@
 SRCS          =       AliHBTWeights.cxx AliHBTCrab.cxx AliHBTAnalysis.cxx  \
 AliHBTReader.cxx      AliHBTReaderKineTree.cxx \
 AliHBTReaderESD.cxx   AliHBTReaderInternal.cxx \
-AliHBTReaderTPC.cxx   AliHBTReaderPPprod.cxx \
+AliHBTReaderTPC.cxx   \
 AliHBTReaderITSv1.cxx AliHBTReaderITSv2.cxx    \
 AliHBTParticle.cxx    AliHBTParticleCut.cxx \
 AliHBTPair.cxx        AliHBTPairCut.cxx \

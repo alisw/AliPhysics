@@ -72,7 +72,6 @@
 #pragma link C++ class AliHBTReaderTPC+;
 #pragma link C++ class AliHBTReaderITSv1+;
 #pragma link C++ class AliHBTReaderITSv2+;
-#pragma link C++ class AliHBTReaderPPprod+;
 #pragma link C++ class AliHBTReaderKineTree+;
 #pragma link C++ class AliHBTReaderInternal+;
 
