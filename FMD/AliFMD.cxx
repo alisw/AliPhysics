@@ -127,6 +127,10 @@
 ClassImp(AliFMD);
 
 //____________________________________________________________________
+const Char_t* AliFMD::fgkShortLegName = "FSSL";
+const Char_t* AliFMD::fgkLongLegName  = "FSLL";
+
+//____________________________________________________________________
 AliFMD::AliFMD()
   : fInner(0), 
     fOuter(0),
@@ -376,37 +380,35 @@ AliFMD::CreateGeometry()
   fInner->Init();
   fOuter->Init();
 
-  TString name;
   Double_t par[3];
 
+  Int_t airId = (*fIdtmed)[kAirId];
+  Int_t alId  = (*fIdtmed)[kAlId];
+  Int_t cId   = (*fIdtmed)[kCarbonId];
+  Int_t siId  = (*fIdtmed)[kSiId];
+  Int_t pcbId = (*fIdtmed)[kPcbId];
+  Int_t plaId = (*fIdtmed)[kPlasticId];
+  Int_t pbId  = fPrintboardRotationId;
+  Int_t idId  = fIdentityRotationId;
+  
   par[0]      =  fLegRadius - .1;
   par[1]      =  fLegRadius;
   par[2]      =  fLegLength / 2;
-  name        =  "FSL";
-  fShortLegId =  gMC->Gsvolu(name.Data(),"TUBE",(*fIdtmed)[kPlasticId],par,3);
+  fShortLegId =  gMC->Gsvolu(fgkShortLegName,"TUBE", plaId, par, 3);
   
   par[2]      += fModuleSpacing / 2;
-  name        = "FLL";
-  fLongLegId  =  gMC->Gsvolu(name.Data(),"TUBE",(*fIdtmed)[kPlasticId],par,3);
+  fLongLegId  =  gMC->Gsvolu(fgkLongLegName,"TUBE", plaId, par, 3);
 
-  fInner->SetupGeometry((*fIdtmed)[kAirId], 
-			(*fIdtmed)[kSiId], 
-			(*fIdtmed)[kPcbId], 
-			fPrintboardRotationId, 
-			fIdentityRotationId);
-  fOuter->SetupGeometry((*fIdtmed)[kAirId], 
-			(*fIdtmed)[kSiId], 
-			(*fIdtmed)[kPcbId], 
-			fPrintboardRotationId, 
-			fIdentityRotationId);
+  fInner->SetupGeometry(airId, siId, pcbId, pbId, idId);
+  fOuter->SetupGeometry(airId, siId, pcbId, pbId, idId);
 
-  fFMD1->SetupGeometry((*fIdtmed)[kAirId], (*fIdtmed)[kAlId]);
-  fFMD2->SetupGeometry((*fIdtmed)[kAirId], (*fIdtmed)[kAlId]);
-  fFMD3->SetupGeometry((*fIdtmed)[kAirId], (*fIdtmed)[kAlId]);
+  fFMD1->SetupGeometry(airId, alId, cId);
+  fFMD2->SetupGeometry(airId, alId, cId);
+  fFMD3->SetupGeometry(airId, alId, cId);
   
-  fFMD1->Geometry("ALIC", fPrintboardRotationId, fIdentityRotationId);
-  fFMD2->Geometry("ALIC", fPrintboardRotationId, fIdentityRotationId);
-  fFMD3->Geometry("ALIC", fPrintboardRotationId, fIdentityRotationId);    
+  fFMD1->Geometry("ALIC", pbId, idId);
+  fFMD2->Geometry("ALIC", pbId, idId);
+  fFMD3->Geometry("ALIC", pbId, idId);    
 }    
 
 //____________________________________________________________________
@@ -558,7 +560,7 @@ void AliFMD::CreateMaterials()
     minStepSize  = .001;
     id           = kPcbId;
     AliMixture(id, "FMD PCB$", as, zs, density, 14, ws);
-    AliMedium(kPcbId, "FMD PCB$", id,1,fieldType,maxField,maxBending,
+    AliMedium(kPcbId, "FMD PCB$", id,0,fieldType,maxField,maxBending,
 	      maxStepSize,maxEnergyLoss,precision,minStepSize);
   }
   
@@ -640,6 +642,8 @@ AliFMD::DrawDetector()
   
   //Set ALIC mother transparent
   gMC->Gsatt("ALIC","SEEN",0);
+  gMC->Gsatt(fgkShortLegName,"SEEN",1);
+  gMC->Gsatt(fgkLongLegName,"SEEN",1);
 
   //Set volumes visible
   fFMD1->Gsatt();

@@ -139,6 +139,9 @@ public:
   enum { 
     kBaseDDL = 0x1000 // DDL offset for the FMD
   };
+  // 
+  static const Char_t* fgkShortLegName;  // Format for short support legs
+  static const Char_t* fgkLongLegName;   // Format for long support legs
 protected:
   TClonesArray*      HitsArray();
   TClonesArray*      DigitsArray();
@@ -174,7 +177,7 @@ protected:
   UShort_t           fVA1MipRange;          // # MIPs the pre-amp can do    
   UShort_t           fAltroChannelSize;     // Largest # to store in 1 ADC ch.
   UShort_t           fSampleRate;           // Times the ALTRO samples pre-amp.
-  
+
   ClassDef(AliFMD,9)     // Base class FMD entry point
 };
 

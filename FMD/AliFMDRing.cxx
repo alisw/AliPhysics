@@ -30,6 +30,7 @@
 #include <math.h>               // fmod
 #include <AliLog.h>		// ALILOG_H
 #include "AliFMDRing.h"		// ALIFMDRING_H
+#include "AliFMD.h"		// ALIFMD_H
 #include <TMath.h>		// ROOT_TMath
 #include <TH2.h>		// ROOT_TH2
 #include <TVirtualMC.h>		// ROOT_TVirtualMC
@@ -43,12 +44,12 @@
 #include <TRotMatrix.h>		// ROOT_TRotMatrix
 #include <TList.h>		// ROOT_TList
 
-const Char_t* AliFMDRing::fgkRingFormat         = "FRG%c";
-const Char_t* AliFMDRing::fgkVirtualFormat      = "FV%c%c";
-const Char_t* AliFMDRing::fgkActiveFormat       = "FAC%c";
-const Char_t* AliFMDRing::fgkSectorFormat       = "FSE%c";
-const Char_t* AliFMDRing::fgkStripFormat        = "FST%c";
-const Char_t* AliFMDRing::fgkPrintboardFormat   = "FP%c%c";
+const Char_t* AliFMDRing::fgkRingFormat         = "F%cRG";
+const Char_t* AliFMDRing::fgkVirtualFormat      = "F%cV%c";
+const Char_t* AliFMDRing::fgkActiveFormat       = "F%cAC";
+const Char_t* AliFMDRing::fgkSectorFormat       = "F%cAP";
+const Char_t* AliFMDRing::fgkStripFormat        = "F%cAR";
+const Char_t* AliFMDRing::fgkPrintboardFormat   = "F%cP%c";
 
 
 //____________________________________________________________________
@@ -381,12 +382,12 @@ AliFMDRing::SetupGeometry(Int_t vacuumId, Int_t siId, Int_t pcbId,
   pars[1]             = rmax;
   pars[3]             = -fTheta;
   pars[4]             =  fTheta;
-  name                = Form(fgkVirtualFormat, 'F', fId);
+  name                = Form(fgkVirtualFormat, fId, 'F');
   fVirtualFrontId     = gMC->Gsvolu(name.Data(), "TUBS", vacuumId, pars, 5);
 
   // Virtual volume for modules with long legs 
   pars[2]             =  (fRingDepth - fModuleSpacing) / 2;
-  name                =  Form(fgkVirtualFormat, 'B', fId);
+  name                =  Form(fgkVirtualFormat, fId, 'B');
   fVirtualBackId      =  gMC->Gsvolu(name.Data(), "TUBS", vacuumId, pars, 5);
   
   // Virtual mother volume for silicon
@@ -416,14 +417,14 @@ AliFMDRing::SetupGeometry(Int_t vacuumId, Int_t siId, Int_t pcbId,
   pars[1]             = bCorner.Y() - pars[4];
   pars[2]             = fPrintboardThickness / 2; // PCB half thickness
   pars[3]             = (bCorner.X() - cCorner.X()) / 2;
-  name                = Form(fgkPrintboardFormat, 'T', fId);
+  name                = Form(fgkPrintboardFormat, fId, 'T');
   fPrintboardTopId    = gMC->Gsvolu(name.Data(), "TRD1", pcbId, pars, 4);
 
   // Bottom of the print board
   pars[0]             = aCorner.Y() - pars[4];
   pars[1]             = cCorner.Y() - pars[4];
   pars[3]             = (cCorner.X() - aCorner.X()) / 2;
-  name                = Form(fgkPrintboardFormat, 'B', fId);
+  name                = Form(fgkPrintboardFormat, fId, 'B');
   fPrintboardBottomId = gMC->Gsvolu(name.Data(), "TRD1", pcbId, pars, 4);
 
   // Define rotation matricies
@@ -456,7 +457,7 @@ AliFMDRing::SetupGeometry(Int_t vacuumId, Int_t siId, Int_t pcbId,
     Double_t  w       = fRingDepth - (isFront ? 0 : fModuleSpacing);
 
     // Place virtual module volume 
-    name = Form(fgkVirtualFormat, (isFront ? 'F' : 'B'), fId);
+    name = Form(fgkVirtualFormat, fId, (isFront ? 'F' : 'B'));
     dz   = (w - fRingDepth) / 2;
     gMC->Gspos(name.Data(), id, name2.Data(), 0., 0., dz,fRotations[i]);
 
@@ -472,11 +473,11 @@ AliFMDRing::SetupGeometry(Int_t vacuumId, Int_t siId, Int_t pcbId,
     gMC->Gspos(name.Data(), id, name2.Data(),0.,0.,dz,idRotId);
 
     // Place print board.  This is put immediately behind the silicon
-    name = Form(fgkPrintboardFormat, 'T', fId);
+    name = Form(fgkPrintboardFormat, fId, 'T');
     dz   =  w / 2 - fSiThickness - fPrintboardThickness / 2;
     gMC->Gspos(name.Data(), id, name2.Data(), 
 	       fLowR + pbBotL + pbTopL / 2, 0, dz, pbRotId, "ONLY");
-    name = Form(fgkPrintboardFormat, 'B', fId);
+    name = Form(fgkPrintboardFormat, fId, 'B');
     gMC->Gspos(name.Data(), id, name2.Data(), 
 	       fLowR + pbBotL / 2, 0, dz, pbRotId, "ONLY");
 
@@ -484,7 +485,7 @@ AliFMDRing::SetupGeometry(Int_t vacuumId, Int_t siId, Int_t pcbId,
     // This is put immediately behind the pringboard. 
     dz     = (w / 2 - fSiThickness - fPrintboardThickness 
 	     - (fLegLength + (isFront ? fModuleSpacing : 0)) /2);
-    name  = (isFront ? "FLL" : "FSL");
+    name  = (isFront ? AliFMD::fgkLongLegName : AliFMD::fgkShortLegName);
     gMC->Gspos(name.Data(), id*10 + 1, name2.Data(), 
 	       aCorner.X() + fLegOffset + fLegRadius, 0., dz, idRotId, "");
     Double_t y = cCorner.Y() - yoffset - fLegOffset - fLegRadius;
@@ -515,6 +516,8 @@ AliFMDRing::Geometry(const char* mother, Int_t baseId, Double_t z,
 			+ fPrintboardThickness 
 			+ fLegLength + fModuleSpacing) / 2;
   name = Form(fgkRingFormat, fId);
+  AliDebug(10, Form("Placing ring %s in %s at z=%lf-%lf=%lf", 
+		    name.Data(), mother, z, offsetZ, z-offsetZ));
   gMC->Gspos(name.Data(), baseId, mother, 0., 0., z - offsetZ, idRotId, "");
 }
 
@@ -611,19 +614,25 @@ AliFMDRing::Gsatt()
   name = Form(fgkRingFormat,fId);
   gMC->Gsatt(name.Data(), "SEEN", 0);
 
-  name = Form(fgkVirtualFormat, 'T', fId);
+  name = Form(fgkVirtualFormat, fId, 'F');
   gMC->Gsatt(name.Data(), "SEEN", 0);
 
-  name = Form(fgkVirtualFormat, 'B', fId);
+  name = Form(fgkVirtualFormat, fId, 'B');
   gMC->Gsatt(name.Data(), "SEEN", 0);
 
   name = Form(fgkActiveFormat,fId);
   gMC->Gsatt(name.Data(), "SEEN", 1);
 
-  name = Form(fgkPrintboardFormat, 'T', fId);
+  name = Form(fgkSectorFormat,fId);
+  gMC->Gsatt(name.Data(), "SEEN", 0);
+
+  name = Form(fgkStripFormat,fId);
+  gMC->Gsatt(name.Data(), "SEEN", 0);
+
+  name = Form(fgkPrintboardFormat, fId, 'T');
   gMC->Gsatt(name.Data(), "SEEN", 1);
 
-  name = Form(fgkPrintboardFormat, 'B',fId);
+  name = Form(fgkPrintboardFormat, fId, 'B');
   gMC->Gsatt(name.Data(), "SEEN", 1);
 }
 
