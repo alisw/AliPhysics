@@ -190,9 +190,10 @@ extern "C" {
 	STACK.numpar[STACK.lstack] = STACK.nparma;
 	STACK.nevent[STACK.lstack] = 0;
 	STACK.dfnear[STACK.lstack] = +zerzer;
-    
+	
 	/* Particle age (s)*/
 	STACK.agestk[STACK.lstack] = +zerzer;
+	STACK.cmpath[STACK.lstack] = +zerzer;
 	STACK.aknshr[STACK.lstack] = -twotwo;
 
 	/* Group number for "low" energy neutrons, set to 0 anyway*/
@@ -303,7 +304,7 @@ extern "C" {
 	OPPHST.wtopph [OPPHST.lstopp - 1] = particle->GetWeight();
 	OPPHST.poptph [OPPHST.lstopp - 1] = particle->P();
 	OPPHST.agopph [OPPHST.lstopp - 1] = particle->T();	
-	OPPHST.cmpopp [OPPHST.lstopp - 1] = 0.;
+	OPPHST.cmpopp [OPPHST.lstopp - 1] = +zerzer;
 	OPPHST.loopph [OPPHST.lstopp - 1] = 0;
 //	Int_t mother = particle->GetFirstMother();
 	OPPHST.louopp [OPPHST.lstopp - 1] = itrack;
