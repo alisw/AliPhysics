@@ -15,11 +15,8 @@
 
 #include "TFolder.h" 
 #include "TNamed.h" 
-#include "TTask.h" 
 
 // --- Standard library ---
-
-#include <assert.h>
 
 // --- AliRoot header files ---
 
@@ -35,7 +32,7 @@ public:
     fAlarms = 0;
   }           // default ctor not to be used
   AliPHOSQAVirtualCheckable(const char * name) ;          // ctor
-  AliPHOSQAVirtualCheckable(AliPHOSQAVirtualCheckable& obj) {assert(0==1);}
+  AliPHOSQAVirtualCheckable(AliPHOSQAVirtualCheckable& obj) {Fatal("AliPHOSQAVirtualCheckable", "CPY CTOR not implemented") ;}
   virtual ~AliPHOSQAVirtualCheckable() ; // dtor
 
   void AddChecker(AliPHOSQAChecker * ch) ; 

@@ -42,6 +42,13 @@ ClassImp(AliPHOSQAIntCheckable)
   fValue = 0 ; 
 }
 
+//____________________________________________________________________________ 
+  AliPHOSQAIntCheckable::AliPHOSQAIntCheckable(AliPHOSQAIntCheckable & ich) : AliPHOSQAVirtualCheckable(ich.GetName()) 
+{
+  //ctor initial value is zero
+  fType  = "I" ; 
+  fValue = ich.fValue ; 
+}
 
 //____________________________________________________________________________ 
   AliPHOSQAIntCheckable::~AliPHOSQAIntCheckable()

@@ -23,11 +23,9 @@
 
 // --- ROOT system ---
 
-#include "TClass.h"
 #include "TFolder.h"
 #include "TROOT.h"
-#include "TTree.h"
-
+#include "TObjArray.h"
 
 // --- Standard library ---
 
@@ -36,8 +34,7 @@
 #include "AliPHOSQAVirtualCheckable.h"
 #include "AliPHOSQAChecker.h"
 #include "AliPHOSQAAlarm.h" 
-#include "AliPHOSGetter.h" 
-#include "AliPHOS.h" 
+  //#include "AliPHOSGetter.h" 
 
 ClassImp(AliPHOSQAVirtualCheckable)
 
