@@ -38,9 +38,9 @@
 // min acceptance angle
     const Float_t acc_min = 2. *kDegrad;     
 // opening angle of inner shielding cone
-//    const Float_t theta_open  = 0.7*kDegrad;
+    const Float_t theta_open  = 0.7*kDegrad;
     const Float_t theta_open1 = 1.1*kDegrad;
-    const Float_t theta_open1 = 0.70*kDegrad;
+//    const Float_t theta_open1 = 0.70*kDegrad;
     const Float_t theta_open2 = 0.8*kDegrad;
     const Float_t theta_open3 = 0.9*kDegrad;
 //
@@ -180,7 +180,7 @@
 // Chamber positions
 //
 const Float_t dzch=10.;
-const Float_t zch1=515.;
+const Float_t zch1=532.5;
 const Float_t zch2=690.;
 
 #endif
