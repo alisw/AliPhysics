@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.44  2000/12/20 09:46:51  alibrary
+dlsym not supported on HP, reverting to gcomad
+
 Revision 1.43  2000/12/20 08:39:39  fca
 Support for Cerenkov and process list in Virtual MC
 
@@ -138,6 +141,7 @@ Introduction of the Copyright and cvs Log
 
 #include "AliCallf77.h" 
 #include "AliDecayer.h" 
+#include "AliPDG.h" 
 
 #ifndef WIN32 
 # define gzebra  gzebra_ 
@@ -650,6 +654,70 @@ void TGeant3::LoadAddress()
   // Assigns the address of the GEANT common blocks to the structures
   // that allow their access from C++
   //
+  void *handle = dlopen (NULL, RTLD_LAZY);
+
+#ifndef WIN32
+  fQuest  = (Quest_t *)  dlsym(handle,"quest_");
+  fGcbank = (Gcbank_t *) dlsym(handle,"gcbank_");
+  fGclink = (Gclink_t *) dlsym(handle,"gclink_");
+  fGccuts = (Gccuts_t *) dlsym(handle,"gccuts_");
+  fGcmulo = (Gcmulo_t *) dlsym(handle,"gcmulo_");
+  fGcflag = (Gcflag_t *) dlsym(handle,"gcflag_");
+  fGckine = (Gckine_t *) dlsym(handle,"gckine_");
+  fGcking = (Gcking_t *) dlsym(handle,"gcking_");
+  fGckin2 = (Gckin2_t *) dlsym(handle,"gckin2_");
+  fGckin3 = (Gckin3_t *) dlsym(handle,"gckin3_");
+  fGcmate = (Gcmate_t *) dlsym(handle,"gcmate_");
+  fGctmed = (Gctmed_t *) dlsym(handle,"gctmed_");
+  fGctrak = (Gctrak_t *) dlsym(handle,"gctrak_");
+  fGctpol = (Gctpol_t *) dlsym(handle,"gctpol_");
+  fGcvolu = (Gcvolu_t *) dlsym(handle,"gcvolu_");
+  fGcnum  = (Gcnum_t *)  dlsym(handle,"gcnum_");
+  fGcsets = (Gcsets_t *) dlsym(handle,"gcsets_");
+  fGcphys = (Gcphys_t *) dlsym(handle,"gcphys_");
+  fGcphlt = (Gcphlt_t *) dlsym(handle,"gcphlt_");
+  fGcopti = (Gcopti_t *) dlsym(handle,"gcopti_");
+  fGctlit = (Gctlit_t *) dlsym(handle,"gctlit_");
+  fGcvdma = (Gcvdma_t *) dlsym(handle,"gcvdma_");
+  
+  // Commons for GEANE
+  fErtrio = (Ertrio_t *) dlsym(handle,"ertrio_");
+  fEropts = (Eropts_t *) dlsym(handle,"eropts_");
+  fEroptc = (Eroptc_t *) dlsym(handle,"eroptc_");
+  fErwork = (Erwork_t *) dlsym(handle,"erwork_");
+#else  
+  fQuest  = (Quest_t *)  dlsym(handle,"QUEST");
+  fGcbank = (Gcbank_t *) dlsym(handle,"GCBANK");
+  fGclink = (Gclink_t *) dlsym(handle,"GCLINK");
+  fGccuts = (Gccuts_t *) dlsym(handle,"GCCUTS");
+  fGcmulo = (Gcmulo_t *) dlsym(handle,"GCMULO");
+  fGcflag = (Gcflag_t *) dlsym(handle,"GCFLAG");
+  fGckine = (Gckine_t *) dlsym(handle,"GCKINE");
+  fGcking = (Gcking_t *) dlsym(handle,"GCKING");
+  fGckin2 = (Gckin2_t *) dlsym(handle,"GCKIN2");
+  fGckin3 = (Gckin3_t *) dlsym(handle,"GCKIN3");
+  fGcmate = (Gcmate_t *) dlsym(handle,"GCMATE");
+  fGctmed = (Gctmed_t *) dlsym(handle,"GCTMED");
+  fGctrak = (Gctrak_t *) dlsym(handle,"GCTRAK");
+  fGctpol = (Gctpol_t *) dlsym(handle,"GCTPOL");
+  fGcvolu = (Gcvolu_t *) dlsym(handle,"GCVOLU");
+  fGcnum  = (Gcnum_t *)  dlsym(handle,"GCNUM");
+  fGcsets = (Gcsets_t *) dlsym(handle,"GCSETS");
+  fGcphys = (Gcphys_t *) dlsym(handle,"GCPHYS");
+  fGcphlt = (Gcphlt_t *) dlsym(handle,"GCPHLT");
+  fGcopti = (Gcopti_t *) dlsym(handle,"GCOPTI");
+  fGctlit = (Gctlit_t *) dlsym(handle,"GCTLIT");
+  fGcvdma = (Gcvdma_t *) dlsym(handle,"GCVDMA");
+  
+  // Commons for GEANE
+  fErtrio = (Ertrio_t *) dlsym(handle,"ERTRIO");
+  fEropts = (Eropts_t *) dlsym(handle,"EROPTS");
+  fEroptc = (Eroptc_t *) dlsym(handle,"EROPTC");
+  fErwork = (Erwork_t *) dlsym(handle,"ERWORK");
+#endif
+  
+  // Variables for ZEBRA store
+  //
    Int_t *addr;
    gcomad(PASSCHARD("QUEST"), (int*&) fQuest PASSCHARL("QUEST"));
    gcomad(PASSCHARD("GCBANK"),(int*&) fGcbank  PASSCHARL("GCBANK"));
@@ -918,379 +986,79 @@ void TGeant3::DefineParticles()
   // and numbers above 5 000 000 for special applications
   //
 
+
+
   const Int_t kion=10000000;
 
   const Int_t kspe=50000000;
-
-  TDatabasePDG *pdgDB = TDatabasePDG::Instance();
-
-  const Double_t kAu2Gev=0.9314943228;
-  const Double_t khSlash = 1.0545726663e-27;
-  const Double_t kErg2Gev = 1/1.6021773349e-3;
-  const Double_t khShGev = khSlash*kErg2Gev;
-  const Double_t kYear2Sec = 3600*24*365.25;
-//
-// Bottom mesons
-// mass and life-time from PDG
-  pdgDB->AddParticle("B(s)*0","B(s)*0",
-		     5.4163, kTRUE, 0.047, +0.,"Meson",  533);
-
-  pdgDB->AddParticle("B(s)*0 bar","B(s)*0 bar",
-		     5.4163, kTRUE, 0.047, -0.,"Meson", -533);
-
-// Charmed baryons
-// 
-// value for mass used by Hijing
-  pdgDB->AddParticle("Sigma(c)*+","Sigma(c)*+",
-		     2.4536, kTRUE, -1., +1.,"Baryon",  4214);
-
-  pdgDB->AddParticle("Sigma(c)*-","Sigma(c)*-",
-		     2.4536, kTRUE, -1., -1.,"Baryon", -4214);
-// equivalent to 4312 ? Hijing uses m=2.55
-  pdgDB->AddParticle("Xsi(c)0","Xsi(c)0",
-		     2.4703, kTRUE, -1., +0.,"Baryon",  4132);
-
-  pdgDB->AddParticle("Xsi(c)0 bar","Xsi(c)0 bar",
-		     2.4703, kTRUE, -1., -0.,"Baryon", -4132);
-// equivalent to 4322 ? Hijing uses m=2.55
-  pdgDB->AddParticle("Xi(c)+","Xi(c)+",
-		     2.4656, kFALSE, -1., +1.,"Baryon",  4232);
   
-  pdgDB->AddParticle("Xi(c)-","Xi(c)-",
-		     2.4656, kFALSE, -1., -1.,"Baryon", -4232);
-// mass values from Hijing
-
-  pdgDB->AddParticle("Xsi(c)*0","Xsi(c)*0",
-		     2.63, kTRUE, -1., +0.,"Baryon",  4314);
-
-  pdgDB->AddParticle("Xsi(c)*0 bar","Xsi(c)*0 bar",
-		     2.63, kTRUE, -1., -0.,"Baryon", -4314);
-
-  pdgDB->AddParticle("Xsi(c)*+","Xsi(c)*+",
-		     2.63, kTRUE, -1., +1.,"Baryon",  4324);
-
-  pdgDB->AddParticle("Xsi(c)*-","Xsi(c)*-",
-		     2.63, kTRUE, -1., -1.,"Baryon", -4324);
-
-// pdg mass value, Hijing uses m=2.73.
-  pdgDB->AddParticle("Omega(c)0","Omega(c)0",
-		     2.7040, kFALSE, khShGev/0.064e-12, +0.,"Baryon",  4332);
-  
-  pdgDB->AddParticle("Omega(c)0 bar","Omega(c)0 bar",
-		     2.7040, kFALSE, khShGev/0.064e-12, -0.,"Baryon", -4332);
-// mass value from Hijing
-  pdgDB->AddParticle("Omega(c)*0","Omega(c)*0",
-		     2.8000, kFALSE, -1., +0.,"Baryon",  4334);
-  
-  pdgDB->AddParticle("Omega(c)*0 bar","Omega(c)*0",
-		     2.8000, kFALSE, -1., -0.,"Baryon", -4334);
-
-
-// Xi(cc)
-
-  pdgDB->AddParticle("Xsi(cc)+","Xsi(cc)+",
-		     3.60, kTRUE, -1., +1.,"Baryon",  4412);
-
-  pdgDB->AddParticle("Xsi(cc) bar-","Xsi(cc) bar-",
-		     3.60, kTRUE, -1., -1.,"Baryon", -4412);
-
-  pdgDB->AddParticle("Xsi*(cc)+","Xsi*(cc)+",
-		     3.66, kTRUE, -1., +1.,"Baryon",  4414);
-
-  pdgDB->AddParticle("Xsi*(cc) bar-","Xsi*(cc) bar-",
-		     3.66, kTRUE, -1., -1.,"Baryon", -4414);
-
-
-  pdgDB->AddParticle("Xsi(cc)++","Xsi(cc)++",
-		     3.60, kTRUE, -1., +2.,"Baryon",  4422);
-
-  pdgDB->AddParticle("Xsi(cc) bar--","Xsi(cc) bar--",
-		     3.60, kTRUE, -1., -2.,"Baryon", -4422);
-
-
-  pdgDB->AddParticle("Xsi*(cc)++","Xsi*(cc)++",
-		     3.66, kTRUE, -1., +2.,"Baryon",  4424);
-
-  pdgDB->AddParticle("Xsi*(cc) bar-","Xsi*(cc) bar-",
-		     3.66, kTRUE, -1., -2.,"Baryon", -4424);
-
-  pdgDB->AddParticle("Omega(cc)+","Omega(cc)+",
-		     3.78, kTRUE, -1., +1.,"Baryon",  4432);
-
-  pdgDB->AddParticle("Omega(cc) bar-","Omega(cc) bar-",
-		     3.78, kTRUE, -1., -1.,"Baryon", -4432);
-
-  pdgDB->AddParticle("Omega*(cc)+","Omega*(cc)+",
-		     3.82, kTRUE, -1., +1.,"Baryon",  4434);
-
-  pdgDB->AddParticle("Omega*(cc) bar-","Omega*(cc) bar-",
-		     3.82, kTRUE, -1., -1.,"Baryon", -4434);
-
-
-  pdgDB->AddParticle("Omega*(ccc)+","Omega*(cc)++",
-		     4.91, kTRUE, -1., +2.,"Baryon",  4444);
-
-  pdgDB->AddParticle("Omega*(ccc) bar--","Omega*(cc) bar--",
-		     4.91, kTRUE, -1., -2.,"Baryon", -4444);
-
-
-
-// Bottom baryons
-//
-// mass value from Hijing
-  pdgDB->AddParticle("Sigma(b)*+","Sigma(b)*+",
-		     5.8100, kFALSE, -1., +1.,"Baryon", 5224);
-
-  pdgDB->AddParticle("Sigma(b)*-","Sigma(b)*-",
-		     5.8100, kFALSE, -1., -1.,"Baryon", -5224);
-
-
-  pdgDB->AddParticle("Xi(b)0","Xi(b)0",
-		     5.8400, kFALSE, -1., +0.,"Baryon", 5232);
-
-  pdgDB->AddParticle("Xi(b)0 bar","Xi(b)0 bar",
-		     5.8100, kFALSE, -1., -0.,"Baryon", -5232);
-
-// B(s) 
-  pdgDB->AddParticle("Xi'(b)-","Xi'(b)-",
-		     5.9600, kFALSE, -1., -1.,"Baryon", 5312);
-
-  pdgDB->AddParticle("Xi'(b) bar+","Xi'(b) bar+",
-		     5.9600, kFALSE, -1.,  1.,"Baryon", -5312);
-
-  pdgDB->AddParticle("Xi*(b)-","Xi*(b)-",
-		     5.9700, kFALSE, -1., -1.,"Baryon", 5314);
-
-  pdgDB->AddParticle("Xi*(b) bar+","Xi*(b) bar+",
-		     5.9700, kFALSE, -1.,  1.,"Baryon", -5314);
-
-  pdgDB->AddParticle("Xi'(b)0","Xi'(b)0",
-		     5.9600, kFALSE, -1., -0.,"Baryon", 5322);
-
-  pdgDB->AddParticle("Xi'(b) bar0","Xi'(b) bar0",
-		     5.9600, kFALSE, -1.,  0.,"Baryon", -5322);
-
-  pdgDB->AddParticle("Xi*(b)0","Xi*(b)0",
-		     5.9700, kFALSE, -1., -0.,"Baryon", 5324);
-
-  pdgDB->AddParticle("Xi*(b) bar0","Xi*(b) bar0",
-		     5.9700, kFALSE, -1.,  0.,"Baryon", -5324);
-
-  pdgDB->AddParticle("Omega(b)-","Omega(b)-",
-		     6.1200, kFALSE, -1., -1.,"Baryon", 5332);
-
-  pdgDB->AddParticle("Omega(b) bar+","Omega(b) bar+",
-		     6.1200, kFALSE, -1.,  1.,"Baryon", -5332);
-
-  pdgDB->AddParticle("Omega*(b)-","Omega*(b)-",
-		     6.1300, kFALSE, -1., -1.,"Baryon", 5334);
-
-  pdgDB->AddParticle("Omega*(b) bar+","Omega*(b) bar+",
-		     6.1300, kFALSE, -1.,  1.,"Baryon", -5334);
-
-
-  pdgDB->AddParticle("Omega*(b)-","Omega*(b)-",
-		     6.1300, kFALSE, -1., -1.,"Baryon", 5334);
-
-  pdgDB->AddParticle("Omega*(b) bar+","Omega*(b) bar+",
-		     6.1300, kFALSE, -1.,  1.,"Baryon", -5334);
-
-// B(c) 
-
-  pdgDB->AddParticle("Omega(bc)0","Omega(bc)0",
-		     7.1900, kFALSE, -1., -0.,"Baryon", 5342);
-
-  pdgDB->AddParticle("Omega(bc) bar0","Omega(bc) bar0",
-		     7.1900, kFALSE, -1.,  0.,"Baryon", -5342);
-
-  pdgDB->AddParticle("Xi'(bc)0","Xi'(bc)0",
-		     7.0400, kFALSE, -1., -0.,"Baryon", 5412);
-
-  pdgDB->AddParticle("Xi'(bc) bar0","Xi'(bc) bar0",
-		     7.0400, kFALSE, -1.,  0.,"Baryon", -5412);
-
-  pdgDB->AddParticle("Xi*(bc)0","Xi*(bc)0",
-		     7.0500, kFALSE, -1., -0.,"Baryon", 5414);
-
-  pdgDB->AddParticle("Xi*(bc) bar0","Xi*(bc) bar0",
-		     7.0500, kFALSE, -1.,  0.,"Baryon", -5414);
-
-  pdgDB->AddParticle("Xi'(bc)+","Xi'(bc)+",
-		     7.0400, kFALSE, -1., +1.,"Baryon", 5422);
-
-  pdgDB->AddParticle("Xi'(bc) bar-","Xi'(bc) bar-",
-		     7.0400, kFALSE, -1., -1.,"Baryon", -5422);
-
-  pdgDB->AddParticle("Xi*(bc)+","Xi*(bc)+",
-		     7.0500, kFALSE, -1., +1.,"Baryon", 5424);
-
-  pdgDB->AddParticle("Xi*(bc) bar-","Xi*(bc) bar-",
-		     7.0500, kFALSE, -1., -1.,"Baryon", -5424);
-
-  pdgDB->AddParticle("Omega'(bc)0","Omega'(bc)0",
-		     7.2100, kFALSE, -1., -0.,"Baryon", 5432);
-
-  pdgDB->AddParticle("Omega'(bc) bar0","Omega'(bc) bar0",
-		     7.2100, kFALSE, -1.,  0.,"Baryon", -5432);
-
-  pdgDB->AddParticle("Omega*(bc)0","Omega*(bc)0",
-		     7.2200, kFALSE, -1., -0.,"Baryon", 5434);
-
-  pdgDB->AddParticle("Omega*(bc) bar0","Omega*(bc) bar0",
-		     7.2200, kFALSE, -1.,  0.,"Baryon", -5434);
-// B(bcc)
-  pdgDB->AddParticle("Omega(bcc)+","Omega(bcc)+",
-		     8.3100, kFALSE, -1., +1.,"Baryon", 5442);
-
-  pdgDB->AddParticle("Omega(bcc) bar-","Omega(bcc) bar-",
-		     8.3100, kFALSE, -1., -1.,"Baryon", -5442);
-
-  pdgDB->AddParticle("Omega*(bcc)+","Omega*(bcc)+",
-		    8.3100, kFALSE, -1., +1.,"Baryon", 5444);
-
-  pdgDB->AddParticle("Omega*(bcc) bar-","Omega*(bcc) bar-",
-		     8.3100, kFALSE, -1., -1.,"Baryon", -5444);
-
-
-
-
-// B(bb)
-
-  pdgDB->AddParticle("Xsi(bb)-","Xsi(bb)-",
-		     10.4200, kFALSE, -1., -1.,"Baryon", 5512);
-  
-  pdgDB->AddParticle("Xsi(bb) bar+","Xsi(bb) bar+",
-		     10.4200, kFALSE, -1., +1.,"Baryon", -5512);
-
-  pdgDB->AddParticle("Xsi*(bb)-","Xsi*(bb)-",
-		     10.4400, kFALSE, -1., -1.,"Baryon", 5514);
-  
-  pdgDB->AddParticle("Xsi*(bb) bar+","Xsi*(bb) bar+",
-		     10.4400, kFALSE, -1., +1.,"Baryon", -5514);
-
-  pdgDB->AddParticle("Xsi(bb)0","Xsi(bb)0",
-		     10.4200, kFALSE, -1., -0.,"Baryon", 5522);
-  
-  pdgDB->AddParticle("Xsi(bb) bar0","Xsi(bb) bar0",
-		     10.4200, kFALSE, -1., +0.,"Baryon", -5522);
-
-  pdgDB->AddParticle("Xsi*(bb)0","Xsi*(bb)0",
-		     10.4400, kFALSE, -1., -0.,"Baryon", 5524);
-  
-  pdgDB->AddParticle("Xsi*(bb) bar0","Xsi*(bb) bar0",
-		     10.4400, kFALSE, -1., +0.,"Baryon", -5524);
-
-  pdgDB->AddParticle("Omega*(bb)-","Omega(bb)-",
-		     10.6000, kFALSE, -1., -1.,"Baryon", 5532);
-
-  pdgDB->AddParticle("Omega(bb) bar+","Omega(bb) bar+",
-		     10.6000, kFALSE, -1., +1.,"Baryon", -5532);
-
-  pdgDB->AddParticle("Omega*(bb)-","Omega*(bb)-",
-		     10.6000, kFALSE, -1., -1.,"Baryon", 5534);
-
-  pdgDB->AddParticle("Omega*(bb) bar+","Omega*(bb) bar+",
-		     10.6000, kFALSE, -1., +1.,"Baryon", -5534);
-
-// B(bbc)
-
-  pdgDB->AddParticle("Omega(bbc)0","Omega(bbc)0",
-		     11.7100, kFALSE, -1., -0.,"Baryon", 5542);
-
-  pdgDB->AddParticle("Omega(bbc) bar0","Omega(bbc) bar0",
-		     11.7100, kFALSE, -1., +0.,"Baryon", -5542);
-
-  pdgDB->AddParticle("Omega*(bbc)0","Omega*(bbc)0",
-		     11.7100, kFALSE, -1., -0.,"Baryon", 5544);
-
-  pdgDB->AddParticle("Omega*(bbc) bar0","Omega*(bbc) bar0",
-		     11.7100, kFALSE, -1., +0.,"Baryon", -5544);
-// B(bbb)
-
-  pdgDB->AddParticle("Omega*(bbb)-","Omega*(bbb)-",
-		     15.1000, kFALSE, -1., -1.,"Baryon", 5544);
-
-  pdgDB->AddParticle("Omega*(bbb) bar+","Omega*(bbb) bar+",
-		     15.100, kFALSE, -1., +1.,"Baryon", -5544);
-
 //
 //
-  pdgDB->AddParticle("Deuteron","Deuteron",2*kAu2Gev+8.071e-3,kTRUE,
-		     0,1,"Ion",kion+10020);
   fPDGCode[fNPDGCodes++]=kion+10020;   // 45 = Deuteron
 
-  pdgDB->AddParticle("Triton","Triton",3*kAu2Gev+14.931e-3,kFALSE,
-		     khShGev/(12.33*kYear2Sec),1,"Ion",kion+10030);
   fPDGCode[fNPDGCodes++]=kion+10030;   // 46 = Triton
 
-  pdgDB->AddParticle("Alpha","Alpha",4*kAu2Gev+2.424e-3,kTRUE,
-		     khShGev/(12.33*kYear2Sec),2,"Ion",kion+20040);
   fPDGCode[fNPDGCodes++]=kion+20040;   // 47 = Alpha
 
-  fPDGCode[fNPDGCodes++]=0;   // 48 = geantino mapped to rootino
+  fPDGCode[fNPDGCodes++]=0;            // 48 = geantino mapped to rootino
 
-  pdgDB->AddParticle("HE3","HE3",3*kAu2Gev+14.931e-3,kFALSE,
-		     0,2,"Ion",kion+20030);
   fPDGCode[fNPDGCodes++]=kion+20030;   // 49 = HE3
 
-  pdgDB->AddParticle("Cherenkov","Cherenkov",0,kFALSE,
-		     0,0,"Special",kspe+50);
-  fPDGCode[fNPDGCodes++]=kspe+50;   // 50 = Cherenkov
+  fPDGCode[fNPDGCodes++]=kspe+50;      // 50 = Cherenkov
 
   Gspart(51, "FeedbackPhoton", 7, 0., 0.,1.e20 );
-  pdgDB->AddParticle("FeedbackPhoton","FeedbackPhoton",0,kFALSE,
-		     0,0,"Special",kspe+51);
-  fPDGCode[fNPDGCodes++]=kspe+51;   // 51 = FeedbackPhoton
+  fPDGCode[fNPDGCodes++]=kspe+51;      // 51 = FeedbackPhoton
+
   Gspart(52, "Lambda_c+", 4, 2.2849, +1., 2.06e-13);
-  fPDGCode[fNPDGCodes++]=4122;   //52 = Lambda_c+
+  fPDGCode[fNPDGCodes++]=4122;         //52 = Lambda_c+
 
   Gspart(53, "Lambda_c-", 4, 2.2849, -1., 2.06e-13);
-  fPDGCode[fNPDGCodes++]=-4122; //53 = Lambda_c-  
+  fPDGCode[fNPDGCodes++]=-4122;        //53 = Lambda_c-  
 
   Gspart(54, "D_s+", 4, 1.9685, +1., 4.67e-13);
-  fPDGCode[fNPDGCodes++]=431;   //54 = D_s+
+  fPDGCode[fNPDGCodes++]=431;          //54 = D_s+
 
   Gspart(55, "D_s-", 4, 1.9685, -1., 4.67e-13);
-  fPDGCode[fNPDGCodes++]=-431; //55 = D_s-
+  fPDGCode[fNPDGCodes++]=-431;         //55 = D_s-
 
   Gspart(56, "Tau+", 5, 1.77705, +1., 2.9e-13);
-  fPDGCode[fNPDGCodes++]=15;   //56 = Tau+
+  fPDGCode[fNPDGCodes++]=15;           //56 = Tau+
 
   Gspart(57, "Tau-", 5, 1.77705, -1., 2.9e-13);
-  fPDGCode[fNPDGCodes++]=-15;  //57 = Tau-  
+  fPDGCode[fNPDGCodes++]=-15;          //57 = Tau-  
 
   Gspart(58, "B0",     3, 5.2792, +0., 1.56e-12);
-  fPDGCode[fNPDGCodes++]=511;   //58 = B0
+  fPDGCode[fNPDGCodes++]=511;          //58 = B0
 
   Gspart(59, "B0 bar", 3, 5.2792, -0., 1.56e-12);
-  fPDGCode[fNPDGCodes++]=-511;  //58 = B0bar
+  fPDGCode[fNPDGCodes++]=-511;         //58 = B0bar
 
   Gspart(60, "B+",     4, 5.2789, +1., 1.65e-12);
-  fPDGCode[fNPDGCodes++]=521;   //60 = B+
+  fPDGCode[fNPDGCodes++]=521;          //60 = B+
 
   Gspart(61, "B-",     4, 5.2789, -1., 1.65e-12);
-  fPDGCode[fNPDGCodes++]=-521;  //61 = B-
+  fPDGCode[fNPDGCodes++]=-521;         //61 = B-
 
   Gspart(62, "Bs",     3, 5.3693, +0., 1.54e-12);
-  fPDGCode[fNPDGCodes++]=521;   //62 = B_s
+  fPDGCode[fNPDGCodes++]=521;          //62 = B_s
 
   Gspart(63, "Bs bar", 3, 5.3693, -0., 1.54e-12);
-  fPDGCode[fNPDGCodes++]=-521;  //63 = B_s bar
+  fPDGCode[fNPDGCodes++]=-521;         //63 = B_s bar
 
   Gspart(64, "Lambda_b",     3, 5.624, +0., 1.24e-12);
-  fPDGCode[fNPDGCodes++]=5122;   //64 = Lambda_b
+  fPDGCode[fNPDGCodes++]=5122;         //64 = Lambda_b
 
   Gspart(65, "Lambda_b bar", 3, 5.624, -0., 1.24e-12);
-  fPDGCode[fNPDGCodes++]=-5122;  //65 = Lambda_b bar
+  fPDGCode[fNPDGCodes++]=-5122;        //65 = Lambda_b bar
 
   Gspart(66, "J/Psi", 3.09688, 3, 0., 0.);
-  fPDGCode[fNPDGCodes++]=443;       // 66 = J/Psi
+  fPDGCode[fNPDGCodes++]=443;          // 66 = J/Psi
 
   Gspart(67, "Psi Prime", 3, 3.686, 0., 0.);
-  fPDGCode[fNPDGCodes++]=20443;    // 67 = Psi prime
+  fPDGCode[fNPDGCodes++]=20443;        // 67 = Psi prime
 
   Gspart(68, "Upsilon(1S)", 9.46037, 3, 0., 0.);
-  fPDGCode[fNPDGCodes++]=553;       // 68 = Upsilon(1S)
+  fPDGCode[fNPDGCodes++]=553;          // 68 = Upsilon(1S)
 
   Gspart(69, "Upsilon(2S)", 10.0233, 3, 0., 0.);
   fPDGCode[fNPDGCodes++]=20553;       // 69 = Upsilon(2S)
@@ -1440,6 +1208,9 @@ void TGeant3::DefineParticles()
     Gsdk(ipa, bratio, mode);
     */
 
+//
+
+    AliPDG::AddParticlesToPdgDataBase();
 }
 
 //_____________________________________________________________________________
