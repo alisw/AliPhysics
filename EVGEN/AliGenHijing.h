@@ -96,6 +96,10 @@ class AliGenHijing : public AliGenMC
     Int_t       fSpectators;     // put spectators on stack
     TGraph*     fDsigmaDb;       // dSigma/db for the system
     TGraph*     fDnDb;           // dNBinaryCollisions/db    
+// ZDC proposal (by Chiara) to store num. of SPECTATORS protons and neutrons
+    Int_t 	fSpecn;		 // Num. of spectator neutrons
+    Int_t 	fSpecp;		 // Num. of spectator protons
+     
  private:
     // adjust the weight from kinematic cuts
     void   AdjustWeights();

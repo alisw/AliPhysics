@@ -20,7 +20,9 @@ class AliGenHijingEventHeader : public AliGenEventHeader
   Float_t TotalEnergy()  {return fTotalEnergy;} 
   Int_t   HardScatters() {return fNHardScatters;}
   Int_t   ProjectileParticipants()  {return fNProjectileParticipants;}
-  Int_t   TargetParticipants()      {return fNTargetParticipants;}	  
+  Int_t   TargetParticipants()      {return fNTargetParticipants;}
+  Int_t   Spectatorsn()	{return fSpecn;}
+  Int_t   Spectatorsp()	{return fSpecp;}
   Int_t   NN()    {return fNNColl;}
   Int_t   NNw()   {return fNNwColl;}
   Int_t   NwN()   {return fNwNColl;}
@@ -32,6 +34,8 @@ class AliGenHijingEventHeader : public AliGenEventHeader
       {fNProjectileParticipants=np, fNTargetParticipants=nt;}
   void SetCollisions(Int_t nn, Int_t nnw, Int_t nwn, Int_t nwnw)
       {fNNColl=nn, fNNwColl=nnw, fNwNColl=nwn,  fNwNwColl=nwnw;}
+  void SetSpectators(Int_t nspecn, Int_t nspecp)
+      {fSpecn=nspecn, fSpecp=nspecp;}
   
 protected:
   Float_t fTotalEnergy;              // Total energy of produced particles
@@ -42,6 +46,8 @@ protected:
   Int_t   fNNwColl;                  // Number of N-Nwounded collisions
   Int_t   fNwNColl;                  // Number of Nwounded-N collisons
   Int_t   fNwNwColl;                 // Number of Nwounded-Nwounded collisions
+  Int_t   fSpecn;                    // Number of spectators neutrons
+  Int_t   fSpecp;                    // Number of spectators protons
   
   
   ClassDef(AliGenHijingEventHeader,1) // Event header for hijing event

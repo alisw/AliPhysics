@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2001/07/13 17:30:22  morsch
+Derive from AliGenMC.
+
 Revision 1.22  2001/06/11 13:09:23  morsch
 - Store cross-Section and number of binary collisions as a function of impact parameter
 - Pass AliGenHijingEventHeader to gAlice.
@@ -100,6 +103,7 @@ AliGenerator interface class to HIJING using THijing (test version)
 #include "AliGenHijing.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliRun.h"
+#include "AliPDG.h"
 
 #include <TArrayI.h>
 #include <TParticle.h>
@@ -219,6 +223,10 @@ void AliGenHijing::Generate()
   while(1)
   {
 //    Generate one event
+// --------------------------------------------------------------------------
+      fSpecn	= 0;  
+      fSpecp	= 0;
+// --------------------------------------------------------------------------
       fHijing->GenerateEvent();
       fTrials++;
       fHijing->ImportParticles(particles,"All");
@@ -287,11 +295,19 @@ void AliGenHijing::Generate()
         TParticle *  iparticle       = (TParticle *) particles->At(i);
 // Is this a final state particle ?
         if (!Stable(iparticle)) continue;
-//	    
+
         Bool_t  hasMother            =  (iparticle->GetFirstMother()   >=0);
         Bool_t  selected             =  kTRUE;
         kf        = iparticle->GetPdgCode();
         ks        = iparticle->GetStatusCode();
+// --------------------------------------------------------------------------
+// Count spectator neutrons and protons
+        if(ks == 0 || ks == 1 || ks == 10 || ks == 11){
+	  if(kf == kNeutron) fSpecn += 1;
+	  if(kf == kProton)  fSpecp += 1;
+	}
+// --------------------------------------------------------------------------
+//	    
         if (!fSelectAll) {
 	    selected = KinematicSelection(iparticle,0)&&SelectFlavor(kf);
 	    if (!fSpectators && selected) selected = (ks != 0 && ks != 1 && ks != 10
@@ -479,6 +495,7 @@ void AliGenHijing::MakeHeader()
 			  fHijing->GetN01(),
 			  fHijing->GetN10(),
 			  fHijing->GetN11());
+   ((AliGenHijingEventHeader*) header)->SetSpectators(fSpecn, fSpecp);
    gAlice->SetGenEventHeader(header);
    
 }
