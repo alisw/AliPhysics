@@ -70,7 +70,7 @@ void stupre()
   for (kp = EMFSTK.npstrt - 1; kp <= EMFSTK.npemf - 1; kp++) {
 
 //* save the parent track number and reset it at each loop
-    Int_t done = 1;
+    Int_t done = 0;
 
     Int_t parent =  TRACKR.ispusr[mkbmx2-1];
     
