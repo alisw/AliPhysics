@@ -740,7 +740,6 @@ void AliRICHDisplay::LoadDigits()
    ResetPoints();
    AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
    AliRICHChamber*       iChamber;
-   AliSegmentation*      segmentation;
    Int_t nAllDigits=0;
    Int_t ich;
 
@@ -791,8 +790,7 @@ void AliRICHDisplay::LoadDigits()
 	   points->SetMarkerColor(color);
 	   points->SetMarkerStyle(21);
 	   points->SetMarkerSize(0.5);
-	   Float_t xpad, ypad, zpad;
-	   segmentation->GetPadC(mdig->X(), mdig->Y(),xpad, ypad, zpad);
+	   Float_t xpad, ypad;
 	   Float_t vectorLoc[3]={xpad,5,ypad};
 	   Float_t  vectorGlob[3];
 	   iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
@@ -803,7 +801,6 @@ void AliRICHDisplay::LoadDigits()
 	   points->SetPoint(0,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
 	   //printf("Y position (digit): %f\n", vectorGlob[1]);
 	   
-	   segmentation->GetPadC(mdig->X(), mdig->Y(), xpad, ypad, zpad);
 	   Float_t theta = iChamber->GetRotMatrix()->GetTheta();
 	   Float_t phi   = iChamber->GetRotMatrix()->GetPhi();	   
 	   marker=new TMarker3DBox(vectorGlob[0],vectorGlob[1],vectorGlob[2],
