@@ -25,5 +25,5 @@ AliTrackReference::AliTrackReference()
   //
   // Default constructor
   //
-  fTrack=0;	
+  fTrack = fX = fY = fZ = fPx = fPy = fPz = fLength = 0;
 }
