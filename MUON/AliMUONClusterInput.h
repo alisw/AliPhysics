@@ -16,6 +16,7 @@ class AliMUONResponse;
 
 class AliMUONClusterInput : public TObject {
  public:
+    virtual ~AliMUONClusterInput();
     static AliMUONClusterInput* Instance();
 //  Configuration
     void SetDigits(Int_t chamber, TClonesArray* dig1, TClonesArray* dig2);

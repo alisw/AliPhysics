@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/03/20 13:33:23  egangler
+Small cleanup
+
 Revision 1.9  2001/01/26 21:38:49  morsch
 Use access functions to AliMUONDigit member data.
 
@@ -98,6 +101,13 @@ AliMUONClusterInput* AliMUONClusterInput::Instance()
     
     return fgClusterInput;
 }
+
+AliMUONClusterInput::~AliMUONClusterInput()
+{
+// Destructor
+    delete fgMinuit;
+}
+
 
 void AliMUONClusterInput::SetDigits(Int_t chamber, TClonesArray* dig1, TClonesArray* dig2)
 {
