@@ -222,8 +222,7 @@ void  AliITSClusterFinderSPD::GroupClusters()
   AliITSRawClusterSPD *clusterI;
   AliITSRawClusterSPD *clusterJ;
   
-  //Int_t *label=new Int_t[nofClusters];  // activate this for DEC machines
-  Int_t label[nofClusters];   
+  Int_t *label=new Int_t[nofClusters];  // activate this for DEC machines
   Int_t i,j;
   for(i=0; i<nofClusters; i++) label[i] = 0;
   for(i=0; i<nofClusters; i++) {
@@ -256,6 +255,9 @@ void  AliITSClusterFinderSPD::GroupClusters()
   fClusters->Compress();
   //Int_t totalNofClusters = fClusters->GetEntriesFast();
   //cout << " Nomber of clusters at the group end ="<< totalNofClusters<<endl;
+  
+  delete [] nofClusters;
+  delete nofClusters;
   
   return;
   
