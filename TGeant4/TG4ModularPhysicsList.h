@@ -54,7 +54,7 @@ class TG4ModularPhysicsList: public G4VModularPhysicsList
     void ConstructGeneral();	
 
   private:
-    TG4ExtDecayer*  fExtDecayer;
+    TG4ExtDecayer*  fExtDecayer; //external decayer
 };
 
 #endif //TG4_MODULAR_PHYSICS_LIST_H

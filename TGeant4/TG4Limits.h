@@ -49,11 +49,11 @@ class TG4Limits: public G4UserLimits
 
   private:
     // static data members
-    static const G4double  fgkDefaultMaxStep;
+    static const G4double  fgkDefaultMaxStep; // default max step value
 
     // data members
-    G4bool              fIsCut;    //true if any cut value is set
-    G4bool              fIsControl;//true if any flag value is set
+    G4bool              fIsCut;        //true if any cut value is set
+    G4bool              fIsControl;    //true if any flag value is set
     TG4G3CutVector*     fCutVector;    //TG4CutVector
     TG4G3ControlVector* fControlVector;//TG4ControlVector
 };
