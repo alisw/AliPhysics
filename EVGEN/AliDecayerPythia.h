@@ -30,7 +30,7 @@ public AliDecayer
     virtual void    ForceDecay();
     
     virtual Float_t GetPartialBranchingRatio(Int_t ipart);
-    virtual Float_t  AliDecayerPythia::GetLifetime(Int_t kf);
+    virtual Float_t GetLifetime(Int_t kf);
     
  private:
     void     DefineParticles();
