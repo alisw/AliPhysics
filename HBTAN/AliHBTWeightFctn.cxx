@@ -495,6 +495,17 @@ void AliHBTWeightQOutSQideQLongFctn::ProcessSameEventParticles(AliHBTPair* track
     Double_t out = TMath::Abs(trackpair->GetQOutCMSLC());
     Double_t side = TMath::Abs(trackpair->GetQSideCMSLC());
     Double_t lon = TMath::Abs(trackpair->GetQLongCMSLC());
+    
+    if (out < 0.005)
+     if (side < 0.005)
+       if (lon < 0.005)
+        {
+          trackpair->Particle1()->Print();
+          trackpair->Particle2()->Print();
+          Info("","Delta Theta %f, Delta Phi %f",
+              trackpair->GetDeltaTheta(),trackpair->GetDeltaPhi());
+        }
+    
     fNumerator->Fill(out,side,lon,weight);//here we fill in q's corresponding to track pair 
                                           //weight calculated for the simulated one
   }
@@ -508,7 +519,11 @@ void AliHBTWeightQOutSQideQLongFctn::ProcessDiffEventParticles(AliHBTPair* track
   partpair  = CheckPair(partpair);
   if ( trackpair && partpair)  
    {
-     fDenominator->Fill(trackpair->GetQOutCMSLC(),trackpair->GetQSideCMSLC(),trackpair->GetQLongCMSLC());
+     Double_t out = TMath::Abs(trackpair->GetQOutCMSLC());
+     Double_t side = TMath::Abs(trackpair->GetQSideCMSLC());
+     Double_t lon = TMath::Abs(trackpair->GetQLongCMSLC());
+   
+     fDenominator->Fill(out,side,lon);
    }
 }
 /*************************************************************/
