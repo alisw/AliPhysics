@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2001/10/12 11:13:59  morsch
+Missing break statements added (thanks to Nicola Carrer)
+
 Revision 1.15  2001/03/27 10:54:50  morsch
 Add ResetDecayTable() and SsetDecayTable() methods.
 
@@ -100,7 +103,7 @@ void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfun
 //  heavy quark masses
 
 	SetPMAS(4,1,1.2);
-
+	SetMSTU(16,2);
 //
 //    primordial pT
 	SetMSTP(91,1);
@@ -111,6 +114,7 @@ void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfun
     case kPyBeauty:
 	SetMSEL(5);
 	SetPMAS(5,1,4.75);
+	SetMSTU(16,2);
 	break;
     case kPyJpsi:
 	SetMSEL(0);
@@ -160,17 +164,27 @@ void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfun
 	SetMSUB(95,1);	
 //      Multiple interactions switched on
 	SetMSTP(81,1);
-	SetMSTP(82,1);
+	SetMSTP(82,2);
 //      Low-pT cut-off for hard scattering
 	SetPARP(81,1.9);
 //      model for subsequent non-hardest interaction
-//      90% gg->gg 10% gg->qq
+//	90% gg->gg 10% gg->qq
 	SetPARP(86,0.9);
 //      90% of gluon interactions have minimum string length
 	SetPARP(85,0.9);
 	break;
     case kPyJets:
 	SetMSEL(1);
+// no initial state radiation   
+	SetMSTP(61,0);
+// no final state radiation
+	SetMSTP(71,0);
+// no primordial pT
+	SetMSTP(91,0);
+//	SetMSTP(111,0);	
+	SetMSTU(16,1);	
+	SetMSTJ(1,1);
+	
 	break;
     case kPyDirectGamma:
 	SetMSEL(10);
