@@ -43,7 +43,7 @@ protected:
     Float_t      fSolenoidUser;    // User set solenoid field setting  
     Int_t        fL3Option;        // Option for field inside L3
     Int_t        fFieldRead;       // Field has been read in
-    ClassDef(AliMagFMaps,2)        // Class for all Alice MagField using three Maps with Constant Mesh
+    ClassDef(AliMagFMaps,3)        // Class for all Alice MagField using three Maps with Constant Mesh
 };
 
 #endif

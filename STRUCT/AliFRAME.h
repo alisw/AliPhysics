@@ -22,7 +22,7 @@ public:
   virtual Int_t IsVersion() const =0;
  protected:
   Int_t fRefVolumeId;    // Id of the reference volume
-   ClassDef(AliFRAME,1)  //Class for Space Frame
+   ClassDef(AliFRAME,2)  //Class for Space Frame
 };
 
 #endif
