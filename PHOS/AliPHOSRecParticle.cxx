@@ -32,7 +32,14 @@
 #include "AliPHOSRecParticle.h"
 #include "AliPHOSGetter.h" 
 
-ClassImp(AliPHOSRecParticle)
+//____________________________________________________________________________
+  AliPHOSRecParticle::AliPHOSRecParticle(): fPHOSTrackSegment(0)  ,  fDebug( kFALSE )
+{
+  // ctor
+  const Int_t nSPECIES = AliESDtrack::kSPECIES;
+  for(Int_t i = 0; i<nSPECIES ; i++)
+    fPID[i]=0.;
+}
 
 
 //____________________________________________________________________________
@@ -65,7 +72,9 @@ ClassImp(AliPHOSRecParticle)
   fPolarTheta  = rp.fPolarTheta;
   fPolarPhi    = rp.fPolarPhi;
   fParticlePDG = rp.fParticlePDG; 
-  
+  const Int_t nSPECIES = AliESDtrack::kSPECIES;
+  for(Int_t i = 0; i<nSPECIES ; i++)
+    fPID[i]=rp.fPID[i];
 }
 
 //____________________________________________________________________________
@@ -121,6 +130,8 @@ const Double_t * AliPHOSRecParticle::GetPID()
   // 6       pi0 at high pt
   // 7       neutron
   // 8       K0L
+
+ 
   const Int_t nSPECIES = AliESDtrack::kSPECIES;
   if (IsElectron()     ) fPID[0] = 1.0;
   if (IsChargedHadron()) {

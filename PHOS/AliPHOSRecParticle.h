@@ -27,7 +27,7 @@ class AliPHOSRecParticle : public AliPHOSFastRecParticle {
 
  public:
   
-  AliPHOSRecParticle() { fPHOSTrackSegment = 0 ; fDebug = kFALSE ; } 
+  AliPHOSRecParticle() ; 
   AliPHOSRecParticle(const AliPHOSRecParticle & rp) ;  // ctor
   virtual ~AliPHOSRecParticle(){  }
 
