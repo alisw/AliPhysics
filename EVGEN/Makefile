@@ -9,7 +9,8 @@ PACKAGE = EVGEN
 
 # C++ sources
 
-SRCS          = AliSimpleGen.cxx AliGenCocktail.cxx AliGenFLUKAsource.cxx \
+SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
+		AliGenCocktail.cxx AliGenFLUKAsource.cxx \
                 AliGenMUONlib.cxx AliGenParam.cxx AliGenPythia.cxx \
                 AliPythia.cxx AliDimuCombinator.cxx AliGenHalo.cxx \
                 AliGenExtFile.cxx AliGenScan.cxx AliGenPHOSlib.cxx \
