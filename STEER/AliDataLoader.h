@@ -149,8 +149,8 @@ class AliBaseLoader: public TNamed
     virtual Int_t      Reload();
     virtual Int_t      WriteData(Option_t* opt="");
     virtual void       Clean();
-    virtual Int_t      Post();
-    virtual Int_t      Post(TObject* data);
+    virtual Int_t      Post();//Takes from file and sends to proper TFolder (Data Folder)
+    virtual Int_t      Post(TObject* data);//Sends to proper TFolder (Data Folder)
     virtual TObject*   Get() const = 0; 
     Bool_t             IsLoaded()const{return fIsLoaded;}
     void               SetDataLoader(AliDataLoader* dl){fDataLoader = dl;}

@@ -820,7 +820,8 @@ Int_t AliBaseLoader::Post()
      }
     else
      {
-        Warning("Post","Can not find %s in file %s", GetName(),GetDataLoader()->GetFile()->GetName());
+        Error("Post","Can not find %s in file %s", GetName(),GetDataLoader()->GetFile()->GetName());
+        return 5;
      }
    }
   return 0;
