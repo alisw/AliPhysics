@@ -15,6 +15,7 @@ class AliHbtBasePairCut;
 enum AliHBTPairCutProperty
  {
   kHbtPairCutPropQInv, //Q invariant
+  kHbtPairCutPropKt,
   kHbtPairCutPropNone
  };
 
@@ -35,7 +36,7 @@ class AliHBTPairCut: public TObject
     void AddBasePairCut(AliHbtBasePairCut*);
     
     void SetQInvRange(Double_t min, Double_t max);
-    
+    void SetKtRange(Double_t min, Double_t max);
   protected:
     AliHBTParticleCut*      fFirstPartCut;
     AliHBTParticleCut*      fSecondPartCut;
@@ -134,6 +135,19 @@ class AliHBTQInvCut: public AliHbtBasePairCut
    private:
    public:
      ClassDef(AliHBTQInvCut,1)
+ };
+
+
+class AliHBTKtCut: public AliHbtBasePairCut
+ {
+   public:
+    AliHBTKtCut(Double_t min = 0.0, Double_t max = 0.0):AliHbtBasePairCut(min,max,kHbtPairCutPropKt){}
+    virtual ~AliHBTKtCut(){}
+   protected:
+    virtual Double_t  GetValue(AliHBTPair* pair){return pair->GetKt();}
+   private:
+   public:
+     ClassDef(AliHBTKtCut,1)
  };
 
 #endif

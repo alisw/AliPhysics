@@ -139,6 +139,14 @@ void AliHBTPairCut::SetQInvRange(Double_t min, Double_t max)
 
 }
 
+void AliHBTPairCut::SetKtRange(Double_t min, Double_t max)
+{
+  AliHBTKtCut* cut= (AliHBTKtCut*)FindCut(kHbtPairCutPropKt);
+  if(cut) cut->SetRange(min,max);
+  else fCuts[fNCuts++] = new AliHBTKtCut(min,max);
+}
+/**********************************************************/
+
 AliHbtBasePairCut* AliHBTPairCut::FindCut(AliHBTPairCutProperty property)
 {
  for (Int_t i = 0;i<fNCuts;i++)
@@ -195,3 +203,5 @@ void AliHBTEmptyPairCut::Streamer(TBuffer &b)
 ClassImp(AliHbtBasePairCut)
 
 ClassImp(AliHBTQInvCut)
+
+ClassImp(AliHBTKtCut)
