@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.6  2000/10/02 21:28:12  fca
+  Removal of useless dependecies via forward declarations
+
   Revision 1.5  2000/06/30 16:30:28  dibari
   Disabled writing to rechits.
 
@@ -124,8 +127,9 @@ void AliRICHDetect::Detect()
   
   //printf("Area de uma elipse com teta 0 e Omega 45:%f",Area(0,45));
     
+  Int_t track;
 	
-  for (Int_t track=0; track<ntracks;track++) {
+  for (track=0; track<ntracks;track++) {
     gAlice->ResetHits();
     gAlice->TreeH()->GetEvent(track);
     TClonesArray *pHits  = pRICH->Hits();
@@ -317,7 +321,8 @@ void AliRICHDetect::Detect()
     //printf ("track %d, theta %f, phi %f, omega %f\n\n\n",track,rechit[0],rechit[1],rechit[2]);
     
     // fill rechits
-    //pRICH->AddRecHit(nch-1,rechit);
+    pRICH->AddRecHit3D(nch-1,rechit);
+    printf("Chamber:%d",nch);
   }			
   //printf("\n\n\n\n");
   gAlice->TreeR()->Fill();
@@ -325,12 +330,12 @@ void AliRICHDetect::Detect()
   //Stat_t ndig=TR->GetEntries();
   TClonesArray *fRec;
   for (i=0;i<kNCH;i++) {
-    fRec=pRICH->RecHitsAddress(i);
+    fRec=pRICH->RecHitsAddress3D(i);
     int ndig=fRec->GetEntriesFast();
     printf ("Chamber %d, rings %d\n",i,ndig);
   }
   //printf("Number of rec. hits: %d",ndig);
-  pRICH->ResetRecHits();
+  pRICH->ResetRecHits3D();
   //char hname[30];
   //sprintf(hname,"TreeR%d",track);
   //gAlice->TreeR()->Write(hname);

@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.7  2000/10/03 21:44:09  morsch
+  Use AliSegmentation and AliHit abstract base classes.
+
   Revision 1.6  2000/10/02 21:28:12  fca
   Removal of useless dependecies via forward declarations
 
@@ -40,7 +43,7 @@
 #include "AliRICHPadHit.h"
 #include "AliRICHDigit.h"
 #include "AliRICHRawCluster.h"
-#include "AliRICHRecHit.h"
+#include "AliRICHRecHit1D.h"
 #include "AliRun.h"
 #include "AliDetector.h"
 #include "AliRICH.h"
@@ -168,18 +171,18 @@ void AliRICHPatRec::PatRec()
 
     //printf("Center coordinates:%f %f\n",rechit[3],rechit[4]);
     
-    pRICH->AddRecHit(ich,rechit,fEtaPhotons,padsUsedX,padsUsedY);
+    pRICH->AddRecHit1D(ich,rechit,fEtaPhotons,padsUsedX,padsUsedY);
     
   }    
 
   gAlice->TreeR()->Fill();
   TClonesArray *fRec;
   for (i=0;i<kNCH;i++) {
-    fRec=pRICH->RecHitsAddress(i);
+    fRec=pRICH->RecHitsAddress1D(i);
     int ndig=fRec->GetEntriesFast();
     printf ("Chamber %d, rings %d\n",i,ndig);
   }
-  pRICH->ResetRecHits();
+  pRICH->ResetRecHits1D();
   
 }     
 
@@ -199,7 +202,7 @@ Int_t AliRICHPatRec::TrackParam(Int_t itr, Int_t &ich)
   Float_t part;
   Float_t pX, pY, pZ;
 
-  printf("Calling TrackParam\n");
+  //printf("Calling TrackParam\n");
 
     gAlice->ResetHits();
     TTree *treeH = gAlice->TreeH();
@@ -419,7 +422,10 @@ void AliRICHPatRec::BackgroundEstimation()
     funBkg = tan(etaStepAvg)*TMath::Power((1.+TMath::Power(tan(etaStepAvg),2)),
 				  5.52)-7.803 + 22.02*tan(etaStepAvg);
     */
-    thetaSig = asin(nfreon/ngas*sin(etaStepAvg));
+    
+    //printf("etaStepAvg: %f, etaStepMax: %f, etaStepMin: %f", etaStepAvg,etaStepMax,etaStepMin);
+
+    thetaSig = TMath::ASin(nfreon/ngas*TMath::Sin(etaStepAvg));
     funBkg = tan(thetaSig)*(1.+TMath::Power(tan(thetaSig),2))*nfreon
        /ngas*cos(etaStepAvg)/cos(thetaSig);
     areaBkg += stepEta*funBkg;
