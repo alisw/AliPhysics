@@ -231,6 +231,10 @@ void AliAltroBuffer::FillBuffer(Int_t val)
 {
 //Fills the Buffer with 16 ten bits words and write into a file 
 
+  if ((val > 0x3FF) || (val < 0)) {
+    Error("FillBuffer", "Value out of range (10 bits): %d", val);
+    val = 0x3FF;
+  }
   fFreeCellBuffer--;
   if (fShift < 10) {
     Int_t temp = val;
