@@ -149,7 +149,7 @@ void AliGenPythia::Generate()
     {
 	fPythia->PyEvnt();
 	fTrials++;
-	fPythia->ImportParticles(particles);
+	fPythia->ImportParticles(particles,"All");
 	Int_t np = particles->GetEntriesFast();
 	printf("\n **************************************************%d\n",np);
 	Int_t nc=0;
