@@ -160,6 +160,6 @@ protected:
   TClonesArray *fTrackReferences;     //!list of track references - for one primary track only -MI
   Int_t         fMaxIterTrackRef;     //!for track refernce iterator routines
   Int_t         fCurrentIterTrackRef; //!for track refernce iterator routines
-  ClassDef(AliModule,4)  //Base class for ALICE Modules
+  ClassDef(AliModule,5)  //Base class for ALICE Modules
 };
 #endif

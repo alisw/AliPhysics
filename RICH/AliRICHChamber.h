@@ -129,7 +129,7 @@ protected:
   TRotation     fRot;             //chamber rotation in MRS
   TRotMatrix   *fpRotMatrix;      //rotation matrix of the chamber with respect to MRS 
   AliRICHParam *fpParam;          //main RICH parameters description  
-  ClassDef(AliRICHChamber,1)      //single RICH chamber description
+  ClassDef(AliRICHChamber,2)      //single RICH chamber description
 };//class AliRICHChamber
 
 void AliRICHChamber::SetCenter(Double_t x,Double_t y,Double_t z)

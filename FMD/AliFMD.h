@@ -53,7 +53,7 @@ public:
 
   TClonesArray *fReconParticles;
 
- ClassDef(AliFMD,5)  //Class for the FMD detector
+ ClassDef(AliFMD,6)  //Class for the FMD detector
 };
 #endif // AliFMD_H
 
