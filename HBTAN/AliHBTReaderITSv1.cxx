@@ -5,7 +5,7 @@
 #include "AliHBTParticle.h"
 #include "AliHBTParticleCut.h"
 
-#include <iostream.h>
+#include <Riostream.h>
 
 #include <TROOT.h>
 #include <TFile.h>

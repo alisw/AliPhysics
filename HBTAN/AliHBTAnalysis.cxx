@@ -1,7 +1,7 @@
 
 #include "AliHBTAnalysis.h"
 
-#include <iostream.h>
+#include <Riostream.h>
 
 #include "AliHBTRun.h"
 #include "AliHBTEvent.h"

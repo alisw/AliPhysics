@@ -1,6 +1,6 @@
 #include "AliHBTParticleCut.h"
 
-#include <iostream.h>
+#include <Riostream.h>
 
 ClassImp(AliHBTParticleCut)
 const Int_t AliHBTParticleCut::fkgMaxCuts = 50;
@@ -202,7 +202,7 @@ void AliHBTParticleCut::Streamer(TBuffer &b)
    UInt_t R__s, R__c;
    if (b.IsReading()) 
     {
-      Version_t v = b.ReadVersion(&R__s, &R__c);
+      /* Version_t v = */ b.ReadVersion(&R__s, &R__c);
       TObject::Streamer(b);
       b >> fPID;
       b >> fNCuts;

@@ -1,4 +1,4 @@
-#include <iostream.h>
+#include <Riostream.h>
 #include "AliHBTLLWeights.h"
 #include "AliPDG.h"
 #include "AliHBTPair.h"

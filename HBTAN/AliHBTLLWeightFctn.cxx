@@ -1,4 +1,4 @@
-#include <iostream.h>
+#include <Riostream.h>
 #include "AliHBTLLWeightFctn.h"
 #include "AliHBTLLWeights.h"
 

@@ -1,7 +1,7 @@
 #include "AliHBTReaderKineTree.h"
 
-#include <iostream.h>
-//#include <fstream.h>
+#include <Riostream.h>
+//#include <Riostream.h>
 #include <TString.h>
 #include <TObjString.h>
 #include <TTree.h>

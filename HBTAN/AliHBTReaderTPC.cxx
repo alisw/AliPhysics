@@ -1,7 +1,7 @@
 #include "AliHBTReaderTPC.h"
 
-#include <iostream.h>
-//#include <fstream.h>
+#include <Riostream.h>
+//#include <Riostream.h>
 #include <TTree.h>
 #include <TFile.h>
 #include <TParticle.h>

@@ -4,7 +4,7 @@
 #include <TObjString.h>
 #include <TObjArray.h>
 #include <TClass.h>
-#include <iostream.h>
+#include <Riostream.h>
 
 #include "AliHBTParticleCut.h"
 

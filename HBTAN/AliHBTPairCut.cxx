@@ -1,6 +1,6 @@
 #include "AliHBTPairCut.h"
 #include "AliHBTPair.h"
-#include <iostream.h>
+#include <Riostream.h>
 
 
 ClassImp(AliHBTPairCut)

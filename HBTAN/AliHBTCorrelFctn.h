@@ -3,7 +3,7 @@
 
 #include "AliHBTFunction.h"
 #include "AliHBTParticle.h"
-#include <iostream.h>
+#include <Riostream.h>
 //Set of functions:
 //   Q Invaraint Correlation Function
 //   Invariant Mass Function

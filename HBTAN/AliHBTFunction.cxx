@@ -27,7 +27,7 @@ Base classes for HBT functions
 /******************************************************************/
 /******************************************************************/
 
-#include <iostream.h>
+#include <Riostream.h>
 ClassImp( AliHBTFunction )
 
 AliHBTFunction::AliHBTFunction()

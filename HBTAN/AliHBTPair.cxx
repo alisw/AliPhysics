@@ -1,6 +1,6 @@
 #include "AliHBTPair.h"
 #include "AliHBTParticle.h"
-#include <iostream.h>
+#include <Riostream.h>
 
 ClassImp(AliHBTPair)
 

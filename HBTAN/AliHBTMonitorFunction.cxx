@@ -22,7 +22,7 @@ Zbigniew.Chajecki@cern.ch
 /******************************************************************/
 /******************************************************************/
 
-#include <iostream.h>
+#include <Riostream.h>
 ClassImp( AliHBTMonitorFunction )
 
 AliHBTMonitorFunction::AliHBTMonitorFunction()
