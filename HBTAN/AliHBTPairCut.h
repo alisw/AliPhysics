@@ -21,6 +21,10 @@ enum AliHBTPairCutProperty
   kHbtPairCutPropQSideCMSLC,
   kHbtPairCutPropQOutCMSLC,
   kHbtPairCutPropQLongCMSLC,
+  kHbtPairCutPropDeltaPhi,
+  kHbtPairCutPropDeltaTheta,
+  kHbtPairCutPropDeltaP,
+  kHbtPairCutPropDeltaPt,
   kHbtPairCutPropAvSepar,
   kHbtPairCutPropClOverlap,
   kHbtPairCutPropNone
@@ -221,6 +225,34 @@ class AliHBTQLongCMSLCCut: public AliHbtBasePairCut
     {return pair->GetQLongCMSLC();}
 
   ClassDef(AliHBTQLongCMSLCCut,1)
+};
+/******************************************************************/
+
+class AliHBTDeltaPhiCut: public AliHbtBasePairCut
+{
+ public:
+  AliHBTDeltaPhiCut(Double_t min = 0.0, Double_t max = 0.0):
+    AliHbtBasePairCut(min,max,kHbtPairCutPropDeltaPhi){}
+  virtual ~AliHBTDeltaPhiCut(){}
+ protected:
+  virtual Double_t  GetValue(AliHBTPair* pair) const 
+    {return TMath::Abs(pair->GetDeltaPhi());}
+
+  ClassDef(AliHBTDeltaPhiCut,1)
+};
+/******************************************************************/
+
+class AliHBTDeltaThetaCut: public AliHbtBasePairCut
+{
+ public:
+  AliHBTDeltaThetaCut(Double_t min = 0.0, Double_t max = 0.0):
+    AliHbtBasePairCut(min,max,kHbtPairCutPropDeltaTheta){}
+  virtual ~AliHBTDeltaThetaCut(){}
+ protected:
+  virtual Double_t  GetValue(AliHBTPair* pair) const 
+    {return TMath::Abs(pair->GetDeltaTheta());}
+
+  ClassDef(AliHBTDeltaThetaCut,1)
 };
 /******************************************************************/
 
