@@ -21,7 +21,6 @@
 //_________________________________________________________
 
 #include <TObject.h>
-#include "AliHBTParticle.h"
 #include "AliHBTPairCut.h"
 #include "AliHBTParticleCut.h"
 
@@ -83,8 +82,8 @@ class AliHBTAnalysis: public TObject
      Bool_t RunCoherencyCheck();
      
      void FilterOut(AliHBTEvent* outpart1, AliHBTEvent* outpart2, AliHBTEvent* inpart,
-                    AliHBTEvent* outtrack1, AliHBTEvent* outtrack2, AliHBTEvent* intrack);
-     void FilterOut(AliHBTEvent* out1, AliHBTEvent* out2, AliHBTEvent* in);
+                    AliHBTEvent* outtrack1, AliHBTEvent* outtrack2, AliHBTEvent* intrack)const;
+     void FilterOut(AliHBTEvent* out1, AliHBTEvent* out2, AliHBTEvent* in)const;
      void DeleteFunctions();
      
      virtual void ProcessTracks();
@@ -126,10 +125,10 @@ class AliHBTAnalysis: public TObject
      Bool_t fIsOwner;//!defines of all functions are supposed to be deleted while by the way of analysis defaulr false
 
    private:
-     Bool_t (AliHBTAnalysis::*fPass)(AliHBTPair* partpair, AliHBTPair* trackpair) const;//Pointer to function that performes pair cut
-     Bool_t (AliHBTAnalysis::*fPass1)(AliHBTParticle* partpair, AliHBTParticle* trackpair) const;//Pointer to function that performes cut on first particle
-     Bool_t (AliHBTAnalysis::*fPass2)(AliHBTParticle* partpair, AliHBTParticle* trackpair) const;//Pointer to function that performes cut on second particle
-     Bool_t (AliHBTAnalysis::*fPassPairProp)(AliHBTPair* partpair, AliHBTPair* trackpair) const;//Pointer to function that performes pair cut
+     Bool_t (AliHBTAnalysis::*fkPass)(AliHBTPair* partpair, AliHBTPair* trackpair) const;//Pointer to function that performes pair cut
+     Bool_t (AliHBTAnalysis::*fkPass1)(AliHBTParticle* partpair, AliHBTParticle* trackpair) const;//Pointer to function that performes cut on first particle
+     Bool_t (AliHBTAnalysis::*fkPass2)(AliHBTParticle* partpair, AliHBTParticle* trackpair) const;//Pointer to function that performes cut on second particle
+     Bool_t (AliHBTAnalysis::*fkPassPairProp)(AliHBTPair* partpair, AliHBTPair* trackpair) const;//Pointer to function that performes pair cut
      
      Bool_t PassPartAndTrack (AliHBTPair* partpair, AliHBTPair* trackpair) const {return (fPairCut->Pass(partpair))?kTRUE:fPairCut->Pass(trackpair);}
      Bool_t PassPartAndTrack1(AliHBTParticle* part, AliHBTParticle* track) const;
