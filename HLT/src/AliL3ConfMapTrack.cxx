@@ -101,7 +101,7 @@ void AliL3ConfMapTrack::Reset()
   g2Sz  = 0;
   fChiSq[1] = 0; 
   SetLength(0);
-  
+  SetNHits(0);
   
 }
 

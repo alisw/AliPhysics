@@ -49,6 +49,7 @@ AliL3ConfMapPoint::~AliL3ConfMapPoint()
 }
 
 Bool_t AliL3ConfMapPoint::ReadHits(AliL3SpacePointData* hits ){
+  
   SetHitNumber(hits->fID);
   SetPadRow(hits->fPadRow);
   Int_t slice = (hits->fID>>25) & 0x7f;
@@ -60,6 +61,16 @@ Bool_t AliL3ConfMapPoint::ReadHits(AliL3SpacePointData* hits ){
   SetYerr(sqrt(hits->fXYErr));
   SetZerr(sqrt(hits->fZErr));
   return kTRUE;
+}
+
+void AliL3ConfMapPoint::Reset()
+{
+  //Reset this point.
+  SetUsage(kFALSE);
+  SetS(0);
+  nextRowHit = 0;
+  nextVolumeHit=0;
+  nextTrackHit=0;
 }
 
 void AliL3ConfMapPoint::Setup(AliL3Vertex *vertex)

@@ -15,8 +15,7 @@ class AliL3ConfMapPoint {
   Int_t fTrackNumber;
   Int_t fNextHitNumber;
   Bool_t fUsed;
-  
-  Int_t fPadrow;
+    Int_t fPadrow;
   Int_t fSector;
 
   //global coordinates and their errors
@@ -67,9 +66,10 @@ class AliL3ConfMapPoint {
 
   AliL3ConfMapPoint();
   virtual ~AliL3ConfMapPoint();
-
+  
+  void Reset();
   Bool_t ReadHits(AliL3SpacePointData* hits ); //!
- 
+  
   AliL3ConfMapPoint *nextVolumeHit; //!
   AliL3ConfMapPoint *nextRowHit;  //!
   
@@ -124,7 +124,7 @@ class AliL3ConfMapPoint {
   Int_t GetNextHitNumber() const {return fNextHitNumber;}
   Int_t GetTrackNumber() const {return fTrackNumber;}
   //  Int_t const *GetMCTrackID()     const {return fMCTrackID;}
-
+  
   // setter
   void SetX(Double_t f) {x=f;}
   void SetY(Double_t f) {y=f;}

@@ -6,10 +6,11 @@
 #include <iostream.h>
 #include <time.h>
 #include <math.h>
+#include <sys/time.h>
 #include "AliL3ConfMapper.h"
 
 #include "AliL3Defs.h"
-#include "AliL3Logging.h"
+#include "AliL3Logging.h" 
 #include "AliL3Transform.h"
 #include "AliL3Vertex.h"
 #include "AliL3ConfMapTrack.h"
@@ -60,6 +61,46 @@ AliL3ConfMapper::~AliL3ConfMapper()
   }
 
 }
+ 
+void AliL3ConfMapper::InitVolumes()
+{
+  //Data organization.
+  //Allocate volumes, set conformal coordinates and pointers.
+  
+  //Should be done after setting the track parameters
+  
+  fNumRowSegmentPlusOne = 176;//NumRows[0]; //Maximum 32.
+  fNumPhiSegmentPlusOne = fNumPhiSegment+1;
+  fNumEtaSegmentPlusOne = fNumEtaSegment+1;
+  fNumPhiEtaSegmentPlusOne = fNumPhiSegmentPlusOne*fNumEtaSegmentPlusOne;
+  fBounds = fNumRowSegmentPlusOne * fNumPhiSegmentPlusOne * fNumEtaSegmentPlusOne;
+  
+  //Allocate volumes:
+  if(fVolume) delete [] fVolume;
+  if(fRow) delete [] fRow;
+  
+  LOG(AliL3Log::kInformational,"AliL3ConfMapper::InitVolumes","Memory")<<AliL3Log::kDec<<
+    "Allocating "<<fBounds*sizeof(AliL3ConfMapContainer)<<" Bytes to fVolume"<<ENDLOG;
+  LOG(AliL3Log::kInformational,"AliL3ConfMapper::InitVolumes","Memory")<<AliL3Log::kDec<<
+    "Allocating "<<fNumRowSegmentPlusOne*sizeof(AliL3ConfMapContainer)<<" Bytes to fRow"<<ENDLOG;
+  
+  fVolume = new AliL3ConfMapContainer[fBounds];
+  fRow = new AliL3ConfMapContainer[fNumRowSegmentPlusOne];
+  
+  memset(fVolume,0,fBounds*sizeof(AliL3ConfMapContainer));
+  memset(fRow,0,fNumRowSegmentPlusOne*sizeof(AliL3ConfMapContainer));
+  
+  Int_t max_num_of_tracks = 150;
+  Int_t max_num_of_hits = 3000;
+  
+  if(fHit)
+    delete [] fHit;
+  if(fTrack)
+    delete fTrack;
+    
+  fHit = new AliL3ConfMapPoint[max_num_of_hits];
+  fTrack = new AliL3TrackArray("AliL3ConfMapTrack",max_num_of_tracks);
+}
 
 void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
 {
@@ -69,17 +110,7 @@ void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
   //rowrange[0]=innermost row;
   //rowrange[1]=outermostrow;
   //Finally you can specify etaslices to save time (assuming a good seed from TRD...)
-  
-  if(fHit)
-    {
-      delete [] fHit;
-    }
-  
-  if(fTrack) 
-    {
-      delete fTrack;
-    }
-
+    
   //Define tracking area:
   if(rowrange)
     {
@@ -107,15 +138,6 @@ void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
   fPhiMin = -1.*10/todeg;//fParam->GetAngle(sector) - 10/todeg;
   fPhiMax = 10/todeg;//fParam->GetAngle(sector) + 10/todeg;
 
-  //rotation angles for sector 2:
-  //cos: 0.766044 sin: 0.642788
-  
-  Int_t max_num_of_tracks = 3000;
-  Int_t max_num_of_hits = 150000;
-
-  fHit = new AliL3ConfMapPoint[max_num_of_hits];
-  fTrack = new AliL3TrackArray("AliL3ConfMapTrack",max_num_of_tracks);
-  
   nTracks=0;
   fMainVertexTracks = 0;
   fClustersUnused = 0;
@@ -123,6 +145,8 @@ void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
   fNumRowSegment = fRowMax - fRowMin; //number of rows to be considered by tracker
   LOG(AliL3Log::kInformational,"AliL3ConfMapper::InitSector","B-field")
     <<"Tracker initializing assuming magnetic field of "<<BField<<ENDLOG;
+  
+  fTrack->Reset();
 }
 
 
@@ -131,44 +155,28 @@ Bool_t AliL3ConfMapper::ReadHits(UInt_t count, AliL3SpacePointData* hits )
 {
   Int_t nhit=(Int_t)count; 
   for (Int_t i=0;i<nhit;i++)
-    fHit[i].ReadHits(&(hits[i]));
+    {
+      fHit[i].Reset();
+      fHit[i].ReadHits(&(hits[i]));
+    }
   fClustersUnused += nhit;
-  LOG(AliL3Log::kInformational,"AliL3ConfMapper::ReadHits","#hits")<<AliL3Log::kDec
-  <<"hit_counter: "<<nhit<<" count: "<<count<<ENDLOG;
-
+  LOG(AliL3Log::kInformational,"AliL3ConfMapper::ReadHits","#hits")
+    <<AliL3Log::kDec<<"hit_counter: "<<nhit<<" count: "<<count<<ENDLOG;
+  
   return true;
 }
 
 
 void AliL3ConfMapper::SetPointers()
 {
-  //Data organization.
-  //Allocate volumes, set conformal coordinates and pointers.
-  fNumRowSegmentPlusOne = 176;//fNumRowSegment+1;
-  fNumPhiSegmentPlusOne = fNumPhiSegment+1;
-  fNumEtaSegmentPlusOne = fNumEtaSegment+1;
-  fNumPhiEtaSegmentPlusOne = fNumPhiSegmentPlusOne*fNumEtaSegmentPlusOne;
-  fBounds = fNumRowSegmentPlusOne * fNumPhiSegmentPlusOne * fNumEtaSegmentPlusOne;
   
-  //Allocate volumes:
-  if(fVolume) delete [] fVolume;
-  if(fRow) delete [] fRow;
-  
-  LOG(AliL3Log::kInformational,"AliL3ConfMapper::SetPointers","Memory")<<AliL3Log::kDec<<
-    "Allocating "<<fBounds*sizeof(AliL3ConfMapContainer)<<" Bytes to fVolume"<<ENDLOG;
-  LOG(AliL3Log::kInformational,"AliL3ConfMapper::SetPointers","Memory")<<AliL3Log::kDec<<
-    "Allocating "<<fNumRowSegmentPlusOne*sizeof(AliL3ConfMapContainer)<<" Bytes to fRow"<<ENDLOG;
-  
-  fVolume = new AliL3ConfMapContainer[fBounds];
-  fRow = new AliL3ConfMapContainer[fNumRowSegmentPlusOne];
-
-  //set volumes to zero:
+  //Reset detector volumes
   memset(fVolume,0,fBounds*sizeof(AliL3ConfMapContainer));
   memset(fRow,0,fNumRowSegmentPlusOne*sizeof(AliL3ConfMapContainer));
   
   Float_t phiSlice = (fPhiMax-fPhiMin)/fNumPhiSegment;
   Float_t etaSlice = (fEtaMax-fEtaMin)/fNumEtaSegment;
-  
+
   Int_t volumeIndex;
   Int_t local_counter=0;
   for(Int_t j=0; j<fClustersUnused; j++)
@@ -181,12 +189,8 @@ void AliL3ConfMapper::SetPointers()
       
       Int_t localrow = thisHit->GetPadRow();
       
-      //reset pointers:
-      thisHit->nextVolumeHit=thisHit->nextRowHit=0;
-      
       if(localrow < fRowMin || localrow > fRowMax)
 	continue;
-      
 
       //Get indexes:
       thisHit->phiIndex=(Int_t)((thisHit->GetPhi()-fPhiMin)/phiSlice +1);
@@ -204,30 +208,34 @@ void AliL3ConfMapper::SetPointers()
 	  continue;
 	}
       local_counter++;
-            
-      //set volume pointers
-      volumeIndex = localrow*fNumPhiEtaSegmentPlusOne+thisHit->phiIndex*fNumEtaSegmentPlusOne+thisHit->etaIndex;
+      
+      volumeIndex = (localrow-fRowMin)*fNumPhiEtaSegmentPlusOne+thisHit->phiIndex*fNumEtaSegmentPlusOne+thisHit->etaIndex;
+      
       if(fVolume[volumeIndex].first == NULL)
 	fVolume[volumeIndex].first = (void *)thisHit;
       else
-	((AliL3ConfMapPoint *)fVolume[volumeIndex].last)->nextVolumeHit=thisHit;
+ 	((AliL3ConfMapPoint *)fVolume[volumeIndex].last)->nextVolumeHit=thisHit;
       fVolume[volumeIndex].last = (void *)thisHit;
       
       
       //set row pointers
-      if(fRow[localrow].first == NULL)
-	fRow[localrow].first = (void *)thisHit;
+      if(fRow[(localrow-fRowMin)].first == NULL)
+ 	fRow[(localrow-fRowMin)].first = (void *)thisHit;
       else
-	((AliL3ConfMapPoint *)(fRow[localrow].last))->nextRowHit = thisHit;
-      fRow[localrow].last = (void *)thisHit;
-      
+ 	((AliL3ConfMapPoint *)(fRow[(localrow-fRowMin)].last))->nextRowHit = thisHit;
+	fRow[(localrow-fRowMin)].last = (void *)thisHit;
+	
+	
     }
   
   if(fClustersUnused>0 && local_counter==0)
     LOG(AliL3Log::kError,"AliL3ConfMapper::SetPointers","Parameters")
       <<AliL3Log::kDec<<"No points passed to track finder, hits out of range: "
       <<fEtaHitsOutOfRange+fPhiHitsOutOfRange<<ENDLOG;
-  
+
+  LOG(AliL3Log::kInformational,"AliL3ConfMapper::SetPointers","Setup")
+    <<"Setup finished, hits out of range: "<<fEtaHitsOutOfRange+fPhiHitsOutOfRange
+    <<" hits accepted "<<fClustersUnused<<ENDLOG;
 }
 
 void AliL3ConfMapper::MainVertexTracking_a()
@@ -241,9 +249,15 @@ void AliL3ConfMapper::MainVertexTracking_a()
       return;
     }
 
-  
+  Double_t initCpuTime,cpuTime;
+  initCpuTime = CpuTime();
   SetPointers();
   SetVertexConstraint(true);
+  cpuTime = CpuTime() - initCpuTime;
+  if(fBench)
+    LOG(AliL3Log::kInformational,"AliL3ConfMapper::MainVertexTracking_a","Timing")
+      <<AliL3Log::kDec<<"Setup finished in "<<cpuTime*1000<<" ms"<<ENDLOG;
+  
 }
 
 void AliL3ConfMapper::MainVertexTracking_b()
@@ -256,8 +270,15 @@ void AliL3ConfMapper::MainVertexTracking_b()
 	"Tracking parameters not set!"<<ENDLOG;
       return;
     }
-
+  Double_t initCpuTime,cpuTime;
+  initCpuTime = CpuTime();
+  
   ClusterLoop();
+ 
+  cpuTime = CpuTime() - initCpuTime;
+  if(fBench)
+    LOG(AliL3Log::kInformational,"AliL3ConfMapper::MainVertexTracking_b","Timing")
+      <<AliL3Log::kDec<<"Main Tracking finished in "<<cpuTime*1000<<" ms"<<ENDLOG;
 }
 
 void AliL3ConfMapper::MainVertexTracking()
@@ -283,7 +304,7 @@ void AliL3ConfMapper::MainVertexTracking()
   if(fBench)
     LOG(AliL3Log::kInformational,"AliL3ConfMapper::MainVertexTracking","Timing")<<AliL3Log::kDec<<
       "Tracking finished in "<<cpuTime*1000<<" ms"<<ENDLOG;
-    
+  
   return;
 }
 
@@ -364,9 +385,9 @@ void AliL3ConfMapper::ClusterLoop()
   
   for(row_segm = fRowMax; row_segm >= lastrow; row_segm--)
     {
-      if(fRow[row_segm].first && ((AliL3ConfMapPoint*)fRow[row_segm].first)->GetPadRow() < fRowMin + 1)
+      if(fRow[(row_segm-fRowMin)].first && ((AliL3ConfMapPoint*)fRow[(row_segm-fRowMin)].first)->GetPadRow() < fRowMin + 1)
 	break;
-      for(hit = (AliL3ConfMapPoint*)fRow[row_segm].first; hit!=0; hit=hit->nextRowHit)
+      for(hit = (AliL3ConfMapPoint*)fRow[(row_segm-fRowMin)].first; hit!=0; hit=hit->nextRowHit)
 	{
 	  if(hit->GetUsage() == true)
 	    continue;
@@ -449,7 +470,6 @@ void AliL3ConfMapper::CreateTrack(AliL3ConfMapPoint *hit)
             
       if(TrackletAngle(track) > fMaxAngleTracklet[fVertexConstraint])
 	{//proof if the first points seem to be a beginning of a track
-	
 	  track->SetProperties(false);
 	  track->DeleteCandidate();
 	  fTrack->RemoveLast();
@@ -596,7 +616,7 @@ AliL3ConfMapPoint *AliL3ConfMapper::GetNextNeighbor(AliL3ConfMapPoint *start_hit
 		continue;//segment exceeds bounds->skip it
 	      
 	      //loop over hits in this sub segment:
-	      volumeIndex= sub_row_segm*fNumPhiEtaSegmentPlusOne +
+	      volumeIndex= (sub_row_segm-fRowMin)*fNumPhiEtaSegmentPlusOne +
 		sub_phi_segm*fNumEtaSegmentPlusOne + sub_eta_segm;
 	      
 	      if(volumeIndex<0)
@@ -804,6 +824,8 @@ Int_t AliL3ConfMapper::FillTracks()
 Double_t AliL3ConfMapper::CpuTime()
 {
   //Return the Cputime in seconds.
-
-  return (Double_t)(clock()) / CLOCKS_PER_SEC;
+ struct timeval tv;
+ gettimeofday( &tv, NULL );
+ return tv.tv_sec+(((Double_t)tv.tv_usec)/1000000.);
+ //return (Double_t)(clock()) / CLOCKS_PER_SEC;
 }

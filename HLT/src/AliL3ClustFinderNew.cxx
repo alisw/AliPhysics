@@ -93,6 +93,11 @@ void AliL3ClustFinderNew::ProcessDigits()
       tmp += size;
       tempPt = (AliL3DigitRowData*)tmp;
     }
+  LOG(AliL3Log::kInformational,"AliL3ClustFinderNew::WriteClusters","Space points")
+    <<"Cluster finder found "<<fNClusters<<" clusters in slice "<<fCurrentSlice
+    <<" patch "<<fCurrentPatch<<ENDLOG;
+
+
 }
 
 
@@ -332,6 +337,7 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
 #ifdef do_mc
       Int_t trackID[3];
       GetTrackID((Int_t)rint(fpad),(Int_t)rint(ftime),trackID);
+      //cout<<"padrow "<<fCurrentRow<<" pad "<<(Int_t)rint(fpad)<<" time "<<(Int_t)rint(ftime)<<" Trackid "<<trackID[0]<<endl;
       fSpacePointData[counter].fTrackID[0] = trackID[0];
       fSpacePointData[counter].fTrackID[1] = trackID[1];
       fSpacePointData[counter].fTrackID[2] = trackID[2];
@@ -341,6 +347,7 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
 
     }
 
+  
 }
 
 #ifdef do_mc
@@ -348,7 +355,7 @@ void AliL3ClustFinderNew::GetTrackID(Int_t pad,Int_t time,Int_t *trackID)
 {
   AliL3DigitRowData *rowPt = (AliL3DigitRowData*)fDigitRowData;
   
-  trackID[0]=trackID[1]=trackID[2]=-1;
+  trackID[0]=trackID[1]=trackID[2]=-2;
   //cout<<"Looking for pad "<<pad<<" time "<<time<<endl;
   for(Int_t i=fFirstRow; i<=fLastRow; i++)
     {
@@ -362,13 +369,14 @@ void AliL3ClustFinderNew::GetTrackID(Int_t pad,Int_t time,Int_t *trackID)
 	{
 	  Int_t cpad = digPt[j].fPad;
 	  Int_t ctime = digPt[j].fTime;
-	  if(cpad < pad) continue;
-	  if(ctime < time) continue;
-	  if(cpad != pad && ctime != ctime) break;
+	  if(cpad != pad) continue;
+	  if(ctime != time) continue;
+	  //if(cpad != pad && ctime != ctime) continue;
 	  //cout<<"Reading row "<<fCurrentRow<<" pad "<<cpad<<" time "<<ctime<<" trackID "<<digPt[j].fTrackID[0]<<endl;
 	  trackID[0] = digPt[j].fTrackID[0];
 	  trackID[1] = digPt[j].fTrackID[1];
 	  trackID[2] = digPt[j].fTrackID[2];
+	  break;
 	  //cout<<"Reading trackID "<<trackID[0]<<endl;
 	}
       break;

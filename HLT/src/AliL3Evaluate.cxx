@@ -308,6 +308,7 @@ void AliL3Evaluate::DefineGoodTracks(Int_t *slice,Int_t *padrow,Int_t good_numbe
 	  <<"TPC version "<<ver<<" does not match."<<ENDLOG;
       Int_t *count = new Int_t[np]; //np number of particles.
       Int_t i;
+      Float_t xyz[3];
       for (i=0; i<np; i++) count[i]=0;
       for(Int_t sl=slice[0]; sl<=slice[1]; sl++)
 	{
@@ -320,6 +321,17 @@ void AliL3Evaluate::DefineGoodTracks(Int_t *slice,Int_t *padrow,Int_t good_numbe
 	    do {
 	      Int_t it=fDigits->CurrentRow(), ip=fDigits->CurrentColumn();
 	      Short_t dig = fDigits->GetDigit(it,ip);
+	      
+	      if(dig<=fParam->GetZeroSup()) continue;
+	      if(it < fParam->GetMaxTBin()-1 && it > 0)
+		if(fDigits->GetDigit(it+1,ip) <= fParam->GetZeroSup()
+		   && fDigits->GetDigit(it-1,ip) <= fParam->GetZeroSup())
+		  continue;
+	      
+	      fTransform->Raw2Local(xyz,sec,row,ip,it);
+	      if(fParam->GetPadRowRadii(sec,row)<230./250.*fabs(xyz[2]))
+		continue;
+	      
 	      Int_t idx0=fDigits->GetTrackID(it,ip,0); 
 	      Int_t idx1=fDigits->GetTrackID(it,ip,1);
 	      Int_t idx2=fDigits->GetTrackID(it,ip,2);
@@ -377,7 +389,7 @@ void AliL3Evaluate::DefineGoodTracks(Int_t *slice,Int_t *padrow,Int_t good_numbe
     
     //printf("Checking particle %d with code %d\n",i,p->GetPdgCode());
     if (p->GetFirstMother()>=0) continue;  //secondary particle
-    if (good[i] < good_number) continue;
+    if (good[i] < good_number || good[i]>176) continue;
     if (p->Pt()<fMinGoodPt) continue;
     if (TMath::Abs(p->Pz()/p->Pt())>0.999) continue;
     printf("Found good particle %d, nHits %d\n",i,good[i]);
@@ -456,7 +468,7 @@ void AliL3Evaluate::EvaluateGlobal(Int_t min_points,Int_t good_number,Char_t *fn
   Int_t slice[2] = {fMinSlice,fMaxSlice};
   DefineGoodTracks(slice,row,good_number,fname);
   AssignIDs();
-  CreateHistos(20,0,5);
+  CreateHistos(5,0,2);
   printf("filling histos\n");
   FillEffHistos();
   printf("done fillling\n");
@@ -497,7 +509,7 @@ Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track){
   UInt_t *hitnum = track->GetHitNumbers();  
   UInt_t id;
     
-  Int_t **trackID = GetClusterIDs(track);
+  //Int_t **trackID = GetClusterIDs(track);
 
   Int_t lab=123456789;
   for (i=0; i<num_of_clusters; i++) 
@@ -518,8 +530,8 @@ Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track){
 	}
       
       //Get the label of the cluster:
-      //printf("label %d %d %d\n",trackID[i][0],trackID[i][1],trackID[i][2]);
-      lab=abs(trackID[i][0]);
+      
+      lab=abs(points[pos].fTrackID[0]);
       Int_t j;
       for (j=0; j<num_of_clusters; j++)
         if (s[j].lab==lab || s[j].max==0) break;
@@ -549,8 +561,8 @@ Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track){
 	  continue;
 	}
       
-      if (abs(trackID[i][1]) == lab || 
-	  abs(trackID[i][2]) == lab ) max++;
+      if (abs(points[pos].fTrackID[1]) == lab || 
+	  abs(points[pos].fTrackID[2]) == lab ) max++;
     }
   
   //check if more than 10% of the clusters are incorrectly assigned (fake track):
@@ -559,9 +571,6 @@ Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track){
       return -lab;
     }
   
-  for(Int_t j=0; j<track->GetNumberOfPoints(); j++)
-    delete [] trackID[j];
-  delete [] trackID;
   return lab;
 }
 
@@ -695,16 +704,16 @@ void AliL3Evaluate::CreateHistos(Int_t nbin,Int_t xlow,Int_t xup)
   fFakeTrackEffEta = new TH1F("fFakeTrackEffEta","Efficiency for fake tracks vs eta",20,-50,50);
   printf("finished creating histos\n");
 }
-
+/*
 void AliL3Evaluate::FillEffHistos()
 {  
   //Fill the efficiency histograms.
-
+  
   for(Int_t i=0; i<fGoodGen; i++)
     {
       Double_t ptg=fGoodTracks[i].pt,pzg=fGoodTracks[i].pz;
       Float_t dipangle=TMath::ATan2(pzg,ptg)*180./TMath::Pi();
-      printf("filling particle with pt %f and dipangle %f\n",ptg,dipangle);
+      //printf("filling particle with pt %f and dipangle %f\n",ptg,dipangle);
       fNGoodTracksPt->Fill(ptg);
       fNGoodTracksEta->Fill(dipangle);
       Int_t found = 0;
@@ -717,7 +726,7 @@ void AliL3Evaluate::FillEffHistos()
 	  
 	  Int_t tracklabel;
 	  tracklabel = track->GetMCid();
-	  printf("evaluating track id %d\n",tracklabel);
+	  //printf("evaluating track id %d\n",tracklabel);
 	  if(TMath::Abs(tracklabel) != fGoodTracks[i].label) continue;
 	  found=1;
 	  if(tracklabel == fGoodTracks[i].label) {fNFoundTracksPt->Fill(ptg); fNFoundTracksEta->Fill(dipangle);}
@@ -728,6 +737,38 @@ void AliL3Evaluate::FillEffHistos()
 	  break;
 	  
 	}
+    }
+}
+*/
+void AliL3Evaluate::FillEffHistos()
+{  
+  //Fill the efficiency histograms.
+  
+  cout<<endl<<"Note: Doing NAIVE evaluation "<<endl;
+  for(Int_t i=0; i<fGoodGen; i++)
+    {
+      Double_t ptg=fGoodTracks[i].pt,pzg=fGoodTracks[i].pz;
+      Float_t dipangle=TMath::ATan2(pzg,ptg)*180./TMath::Pi();
+      //printf("filling particle with pt %f and dipangle %f\n",ptg,dipangle);
+      fNGoodTracksPt->Fill(ptg);
+      fNGoodTracksEta->Fill(dipangle);
+      
+    }
+  
+  for(Int_t k=0; k<fTracks->GetNTracks(); k++)
+    {
+      AliL3Track *track = fTracks->GetCheckedTrack(k);
+      if(!track) continue;
+      Int_t nHits = track->GetNumberOfPoints();
+      if(nHits < fMinPointsOnTrack) break;
+      if(track->GetPt()<fMinGoodPt) continue;
+      if(fabs(track->GetPseudoRapidity())>0.9) continue;
+
+      fNFoundTracksPt->Fill(track->GetPt()); fNFoundTracksEta->Fill(track->GetPseudoRapidity());
+      //Float_t pt=track->GetPt();
+      //fPtRes->Fill((pt-ptg)/ptg*100.);
+      //fNtuppel->Fill(ptg,pt,nHits);
+            
     }
 }
 
@@ -745,6 +786,10 @@ void AliL3Evaluate::CalcEffHistos(){
     <<AliL3Log::kDec<<"Integral efficiency is about "<<nfound/ngood*100<<ENDLOG;
   LOG(AliL3Log::kInformational,"AliL3Evaluate::FillEffHistos","Efficiency")
     <<AliL3Log::kDec<<"Fake tracks relative is about "<<nfake/ngood*100<<ENDLOG;
+  
+  LOG(AliL3Log::kInformational,"AliL3Evaluate::FillEffHistos","Efficiency")
+    <<AliL3Log::kDec<<"Naive efficiency "<<(Double_t)fGoodFound/(Double_t)fGoodGen<<ENDLOG;
+
   
   fNFoundTracksPt->Sumw2(); fNGoodTracksPt->Sumw2();
   fTrackEffPt->Divide(fNFoundTracksPt,fNGoodTracksPt,1,1.,"b");
@@ -885,11 +930,16 @@ TNtuple *AliL3Evaluate::EvaluatePoints(Char_t *rootfile)
   //The input file to this function, contains the exact clusters calculated
   //in AliTPC::Hits2ExactClusters.
     
- 
+  cout<<"Evaluating points"<<endl;
   TNtuple *ntuppel = new TNtuple("ntuppel","residuals","slice:padrow:resy:resz:zHit:pt");
   
-  TFile *exfile = new TFile(rootfile);
-  
+  TFile *exfile = TFile::Open(rootfile);
+  if(!exfile)
+    {
+      cerr<<"Error opening rootfile "<<rootfile<<endl;
+      return 0;
+    }
+
   AliTPCParam *param = (AliTPCParam*)exfile->Get("75x40_100x60");
   
   //Get the exact clusters from file:
@@ -901,6 +951,7 @@ TNtuple *AliL3Evaluate::EvaluatePoints(Char_t *rootfile)
   Bool_t clusterok = arr->ConnectTree(treeName);//Segment Tree (for offline clusters)
   if(!clusterok) {printf("AliL3Evaluate::EvaluatePoints : Error in clusterloading\n"); return 0;}
   
+  cout<<"Entering loop with "<<(Int_t)arr->GetTree()->GetEntries()<<endl;
   for(Int_t i=0; i<arr->GetTree()->GetEntries(); i++)
     {
       //Get the exact clusters for this row:
@@ -954,74 +1005,87 @@ TNtuple *AliL3Evaluate::EvaluatePoints(Char_t *rootfile)
 
   return ntuppel;
 }
-/*
-TNtuple *AliL3Evaluate::EvaluateGEANT()
+
+void AliL3Evaluate::GetCFeff(Char_t *outfile)
 {
-  TNtuple *ntuppel = new TNtuple("ntuppel","residuals","resy:ptgen:padrow:zHit:slice");
   
-  Int_t good_number=175;
-  Int_t row[2] = {0,175};
-      
-  Float_t xyz_cross[3];
-  Float_t xyz_cl[3];
+  TNtuple *ntuppel = new TNtuple("ntuppel","Cluster finder efficiency","row:ncrossings:nclusters");
   
-  for(Int_t slice=fMinSlice; slice<=fMaxSlice; slice++)
+  AliTPC *TPC = (AliTPC*)gAlice->GetDetector("TPC");
+  
+  TPC->SetParam(fParam);
+  
+  Int_t ver = TPC->IsVersion();
+  LOG(AliL3Log::kInformational,"AliL3Evaluate::DefineGoodTracks","TPC version")
+    <<"TPC version "<<ver<<" found on file"<<ENDLOG;
+  
+  Int_t zero=TPC->GetParam()->GetZeroSup();
+  
+  Int_t np = gAlice->GetNtrack();
+  
+  Int_t crossed,recs;
+  Int_t *count = new Int_t[np]; //np number of particles.
+  Int_t i;
+  Float_t xyz[3];
+  for (i=0; i<np; i++) count[i]=0;
+  for(Int_t sl=fMinSlice; sl<=fMaxSlice; sl++)
     {
-      Int_t *particle_id = new Int_t[fParticles->GetEntriesFast()];
-      TObjArray *good_particles = DefineGoodTracks(slice,row,good_number,particle_id);
-      
-      if(fMCclusterfile)
+      for (i=0; i<=175; i++) 
 	{
-	  fMCclusterfile->Close();
-	  delete fMCclusterfile;
-	  fMCclusterfile = new TFile("/nfs/david/subatom/alice/data/V3.04/fast/clusters/hg_8k_v0_s1-3_e0_cl.root");
-	  fMCclusterfile->cd();
-	}
-      AliTPCClustersArray arr;
-      arr.Setup(fParam);
-      arr.SetClusterType("AliTPCcluster");
-      Bool_t clusterok = arr.ConnectTree("Segment Tree");
-      if(!clusterok) 
-	LOG(AliL3Log::kError,"AliL3Evaluate::DefineGoodTracks","Cluster Array")
-	  <<"Error loading clusters from rootfile"<<ENDLOG;
-      
-      for(Int_t ci=0; ci<arr.GetTree()->GetEntries(); ci++)  
-	{
-	  Int_t sec,row,sl,lr;
-	  AliSegmentID *s = arr.LoadEntry(ci);
-	  fParam->AdjustSectorRow(s->GetID(),sec,row);
-	  fTransform->Sector2Slice(sl,lr,sec,row);
-	  if(sl != slice) {arr.ClearRow(sec,row); continue;}
-	  //if(lr!=pr) {carray.ClearRow(sec,row); continue;}
-	  AliTPCClustersRow *cRow = arr.GetRow(sec,row);
-	  printf("evaluating slice %d row %d\n",slice,lr);
-	  for(Int_t j=0; j<cRow->GetArray()->GetEntriesFast(); j++)
+	  crossed=0;
+	  recs=0;
+	  Int_t index = fRowid[sl][i];
+	  if (!fDigitsTree->GetEvent(index)) continue;
+	  Int_t sec,row;
+	  fParam->AdjustSectorRow(fDigits->GetID(),sec,row);
+	  fDigits->First();
+	  do {
+	    Int_t it=fDigits->CurrentRow(), ip=fDigits->CurrentColumn();
+	    Short_t dig = fDigits->GetDigit(it,ip);
+	    
+	    if(dig<=fParam->GetZeroSup()) continue;
+	    if(it < fParam->GetMaxTBin()-1 && it > 0)
+	      if(fDigits->GetDigit(it+1,ip) <= fParam->GetZeroSup()
+		 && fDigits->GetDigit(it-1,ip) <= fParam->GetZeroSup())
+		continue;
+	    
+	    fTransform->Raw2Local(xyz,sec,row,ip,it);
+	    if(fParam->GetPadRowRadii(sec,row)<230./250.*fabs(xyz[2]))
+	      continue;
+	    
+	    
+	    Int_t idx0=fDigits->GetTrackID(it,ip,0); 
+	    Int_t idx1=fDigits->GetTrackID(it,ip,1);
+	    Int_t idx2=fDigits->GetTrackID(it,ip,2);
+	    
+	    if (idx0>=0 && dig>=zero) count[idx0]+=1;
+	    if (idx1>=0 && dig>=zero) count[idx1]+=1;
+	    if (idx2>=0 && dig>=zero) count[idx2]+=1;
+	  } while (fDigits->Next());
+	  
+	  for (Int_t j=0; j<np; j++) 
 	    {
-	      
-	      AliTPCcluster *cluster=(AliTPCcluster*)(*cRow)[j];
-	      xyz_cl[1] = cluster->GetY();
-	      xyz_cl[2] = cluster->GetZ();
-	      Int_t lab=cluster->GetLabel(0);
-	      if(lab<0) continue;
-	      
-	      for(Int_t pa=0; pa<good_particles->GetEntriesFast(); pa++)
-		{
-		  if(particle_id[pa]!=lab) continue;
-		  TParticle *part = (TParticle*)good_particles->UncheckedAt(pa);
-		  GetParticleCrossingPoint(part,slice,lr,xyz_cross);
-		  Double_t yres = xyz_cl[1] - xyz_cross[1];
-		  ntuppel->Fill(yres,part->Pt(),lr,xyz_cl[2],slice);
-		}
+	      if (count[j]>1) //at least two digits at this padrow 
+		crossed++;
+	      count[j]=0;
 	    }
-	  if(arr.GetRow(sec,row)) 
-	    arr.ClearRow(sec,row);
+	  AliL3SpacePointData *points = fClusters[sl][0];
+	  for(Int_t l=0; l<fNcl[sl][0]; l++)
+	    {
+	      if(points[l].fPadRow != i) continue;
+	      recs++;
+	    }
+	  ntuppel->Fill(i,crossed,recs);
 	}
-      delete [] particle_id;
-      delete good_particles;
     }
-  return ntuppel;
+  delete[] count;
+  
+  TFile *file = TFile::Open(outfile,"RECREATE");
+  ntuppel->Write();
+  file->Close();
+  
 }
-*/
+
 Bool_t AliL3Evaluate::GetParticleCrossingPoint(TParticle *part,Int_t slice,Int_t padrow,Float_t *xyz)
 {
   //Calcluate the crossing point between a generated particle and given padrow.

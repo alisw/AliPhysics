@@ -10,7 +10,6 @@
 
 struct GoodTrack 
 {
-
   Int_t label;
   Double_t eta;
   Int_t code;
@@ -114,7 +113,7 @@ class AliL3Evaluate : public TObject {
   TNtuple *CalculateResiduals();
   TNtuple *EvaluatePoints(Char_t *rootfile);
   Bool_t GetParticleCrossingPoint(TParticle *part,Int_t slice,Int_t padrow,Float_t *xyz);
-  //TNtuple *EvaluateGEANT();
+  void GetCFeff(Char_t *outfile);
 
   ClassDef(AliL3Evaluate,1) //Tracking evaluation class
 };

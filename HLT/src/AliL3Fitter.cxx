@@ -11,7 +11,7 @@
 #include "AliL3Vertex.h"
 #include "AliL3Track.h"
 #include "AliL3SpacePointData.h"
-#include "AliL3FileHandler.h"
+#include "AliL3MemHandler.h"
 
 //_____________________________________________________________
 // AliL3Fitter
@@ -32,12 +32,12 @@ AliL3Fitter::AliL3Fitter(AliL3Vertex *vertex)
 void AliL3Fitter::LoadClusters(Char_t *path)
 {
   Char_t fname[256];
-  AliL3FileHandler *clusterfile[36][6];
+  AliL3MemHandler *clusterfile[36][6];
   for(Int_t s=0; s<=35; s++)
     {
       for(Int_t p=0; p<6; p++)
 	{
-	  clusterfile[s][p] = new AliL3FileHandler();
+	  clusterfile[s][p] = new AliL3MemHandler();
 	  sprintf(fname,"%spoints_%d_%d.raw",path,s,p);
 	  if(!clusterfile[s][p]->SetBinaryInput(fname))
 	    {
