@@ -20,7 +20,8 @@ public:
   virtual ~AliMagFCM() {delete fB;}
   virtual void Field(Float_t *x, Float_t *b);
   virtual void ReadField();
-  virtual void SetSolenoidField(Float_t field = 2.) {fSolenoid = field;}
+  virtual void    SetSolenoidField(Float_t field = 2.) {fSolenoid = field;}
+  virtual Float_t SolenoidField() {return fSolenoid;}
   
   void Copy(AliMagFCM &magf) const;
   virtual AliMagFCM & operator=(const AliMagFCM &magf);
