@@ -209,3 +209,7 @@ ClassImp(AliHbtBasePairCut)
 ClassImp(AliHBTQInvCut)
 
 ClassImp(AliHBTKtCut)
+
+ClassImp(AliHBTQSideCMSLCCut)
+ClassImp(AliHBTQOutCMSLCCut)
+ClassImp(AliHBTQLongCMSLCCut)
