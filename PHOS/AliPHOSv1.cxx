@@ -448,8 +448,10 @@ void AliPHOSv1::ResetHits()
   // Yuri Kharlov, 28 September 2000
 
 
-  fTmpHits->Clear() ;
-  fNTmpHits = 0;
+  if ( fTmpHits ) {
+    fTmpHits->Clear() ;
+    fNTmpHits = 0;
+  }
 
   AliDetector::ResetHits();
   if ( strcmp(fGeom->GetName(),"IHEP") == 0 ) {
