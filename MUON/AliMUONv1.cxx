@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.22  2001/01/17 21:01:21  hristov
+Unused variable removed
+
 Revision 1.21  2000/12/20 13:00:22  egangler
 
 Added charge correlation between cathods.
@@ -2098,13 +2101,14 @@ void AliMUONv1::StepManager()
       Float_t globalPos[3] = {pos[0], pos[1], pos[2]};
       gMC->Gmtod(globalPos,localPos,1); 
 
+      eloss    += destep;
 
       if (eloss > 0 && idvol < AliMUONConstants::NTrackingCh())
 	MakePadHits(0.5*(xhit+pos[0]),0.5*(yhit+pos[1]),pos[2],eloss,tof,idvol);
       xhit     = pos[0];
       yhit     = pos[1]; 
-      zhit     = pos[2]; 
-      eloss    = destep;
+      zhit     = pos[2];
+      eloss = 0;
       tlength += step ;
       //
       // nothing special  happened, add up energy loss
