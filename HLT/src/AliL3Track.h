@@ -5,6 +5,8 @@
 
 #include "AliL3RootTypes.h"
 
+class AliL3Vertex;
+
 class AliL3Track {
   
  private:
@@ -52,7 +54,6 @@ class AliL3Track {
  protected:
 
   static Float_t BFACT;
-  static Float_t bField;
   static Double_t pi;
  
  public:
@@ -64,7 +65,7 @@ class AliL3Track {
   virtual Int_t Compare(const AliL3Track *track) const;
   virtual void CalculateHelix();
   
-  Bool_t CalculateReferencePoint(Double_t angle);//Calculate Reference Point
+  Bool_t CalculateReferencePoint(Double_t angle,Double_t radius=132);//Calculate Reference Point
   Bool_t CalculateEdgePoint(Double_t angle);//Calculate crossing point with line
   Bool_t CalculatePoint(Double_t xplane);//Calculate crossing point with X-plane
   Bool_t IsPoint() {return fIsPoint;}
@@ -72,6 +73,7 @@ class AliL3Track {
   Bool_t GetCrossingPoint(Int_t padrow,Float_t *xyz);
   Double_t GetDistance(Double_t x0,Double_t x1){return 0;}
   
+  void GetClosestPoint(AliL3Vertex *vertex,Double_t &closest_x,Double_t &closest_y,Double_t &closest_z);
   void Rotate(Int_t slice,Bool_t tolocal=kFALSE);
   Bool_t IsLocal() {return fIsLocal;}
 

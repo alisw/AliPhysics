@@ -1,3 +1,5 @@
+//$Id$
+
 // Author: Anders Vestbo <mailto:vestbo$fi.uib.no>, Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy ASV
 
@@ -8,6 +10,7 @@
 #include "AliL3Logging.h"
 #include "AliL3Track.h"
 #include "AliL3Transform.h"
+#include "AliL3Vertex.h"
 #include <math.h>
 
 //_____________________________________________________________
@@ -18,7 +21,6 @@
 ClassImp(AliL3Track)
 
 Float_t AliL3Track::BFACT = 0.0029980;
-Float_t AliL3Track::bField = 0.2;
 Double_t AliL3Track::pi=3.14159265358979323846;
 
 AliL3Track::AliL3Track()
@@ -131,6 +133,14 @@ void AliL3Track::Rotate(Int_t slice,Bool_t tolocal)
     transform->Global2Local(last,slice,kTRUE);
   SetLastPoint(last[0],last[1],last[2]);
   
+  Float_t center[3] = {GetCenterX(),GetCenterY(),0};
+  if(!tolocal)
+    transform->Local2Global(center,slice);
+  else
+    transform->Global2Local(center,slice,kTRUE);
+  SetCenterX(center[0]);
+  SetCenterY(center[1]);
+  
   if(!tolocal)
     fIsLocal=kFALSE;
   else
@@ -142,7 +152,7 @@ void AliL3Track::CalculateHelix(){
   //Calculate Radius, CenterX and Centery from Psi, X0, Y0
   //
   
-  fRadius = fPt / (BFACT*bField);
+  fRadius = fPt / (BFACT*BField);
   if(fRadius) fKappa = 1./fRadius;
   else fRadius = 999999;  //just zero
   Double_t trackPhi0 = fPsi + fQ *0.5 * pi;
@@ -222,13 +232,13 @@ Bool_t AliL3Track::GetCrossingPoint(Int_t padrow,Float_t *xyz)
 }
 
 
-Bool_t AliL3Track::CalculateReferencePoint(Double_t angle){
+Bool_t AliL3Track::CalculateReferencePoint(Double_t angle,Double_t radius){
   // Global coordinate: crossing point with y = ax+ b; a=tan(angle-Pi/2);
   //
-  const Double_t rr=132; //position of referece plane
+  const Double_t rr=radius;//132; //position of referece plane
   const Double_t xr = cos(angle) *rr;
   const Double_t yr = sin(angle) *rr;
-    
+  
   Double_t a = tan(angle-pi/2);
   Double_t b = yr - a * xr;
 
@@ -369,3 +379,46 @@ Bool_t AliL3Track::CalculatePoint(Double_t xplane){
   return IsPoint(kTRUE);
 }
 
+void AliL3Track::GetClosestPoint(AliL3Vertex *vertex,Double_t &closest_x,Double_t &closest_y,Double_t &closest_z)
+{
+  //Calculate the point of closest approach to the vertex
+  
+  
+  Double_t xc = GetCenterX() - vertex->GetX();//Shift the center of curvature with respect to the vertex
+  Double_t yc = GetCenterY() - vertex->GetY();
+  
+  Double_t dist_x1 = xc*(1 + GetRadius()/sqrt(xc*xc + yc*yc));
+  Double_t dist_y1 = yc*(1 + GetRadius()/sqrt(xc*xc + yc*yc));
+  Double_t distance1 = sqrt(dist_x1*dist_x1 + dist_y1*dist_y1);
+  
+  Double_t dist_x2 = xc*(1 - GetRadius()/sqrt(xc*xc + yc*yc));
+  Double_t dist_y2 = yc*(1 - GetRadius()/sqrt(xc*xc + yc*yc));
+  Double_t distance2 = sqrt(dist_x2*dist_x2 + dist_y2*dist_y2);
+  
+  //Choose the closest:
+  if(distance1 < distance2)
+    {
+      closest_x = dist_x1 + vertex->GetX();
+      closest_y = dist_y1 + vertex->GetY();
+    }
+  else
+    {
+      closest_x = dist_x2 + vertex->GetX();
+      closest_y = dist_y2 + vertex->GetY();
+    }
+  
+  //Get the z coordinate:
+  Double_t angle1 = atan2((closest_y-GetCenterY()),(closest_x-GetCenterX()));
+  if(angle1 < 0) angle1 = angle1 + 2*Pi;
+ 
+  Double_t angle2 = atan2((GetFirstPointY()-GetCenterY()),(GetFirstPointX()-GetCenterX()));
+  if(angle2 < 0) angle2 = angle2 + 2*Pi;
+  
+  Double_t diff_angle = angle1 - angle2;
+  diff_angle = fmod(diff_angle,2*Pi);
+  
+  if((GetCharge()*diff_angle) < 0) diff_angle = diff_angle + GetCharge()*2*Pi;
+  Double_t s_tot = fabs(diff_angle)*GetRadius();
+  
+  closest_z = GetFirstPointZ() - s_tot*GetTgl();
+}
