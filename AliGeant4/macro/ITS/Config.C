@@ -33,6 +33,7 @@ void Config(Int_t version)
     //AliITS *ITS  = new AliITSv5asymm("ITS","Updates ITS TDR detailed version with asymmetric services");
     //
     //AliITSvPPRasymm *ITS  = new AliITSvPPRasymm("ITS","New ITS PPR detailed version with asymmetric services");
+/*
     ITS->SetMinorVersion(2);					 // don't touch this parameter if you're not an ITS developer
     ITS->SetReadDet(kFALSE);					 // don't touch this parameter if you're not an ITS developer
     //    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
@@ -42,6 +43,7 @@ void Config(Int_t version)
     ITS->SetThicknessChip2(200.);  // chip thickness on layer 2 must be in the range [150,300]
     ITS->SetRails(1);	     // 1 --> rails in ; 0 --> rails out
     ITS->SetCoolingFluid(1);   // 1 --> water ; 0 --> freon
+*/
     //
     //AliITSvPPRsymm *ITS  = new AliITSvPPRsymm("ITS","New ITS PPR detailed version with symmetric services");
     //ITS->SetMinorVersion(2);                                       // don't touch this parameter if you're not an ITS developer
