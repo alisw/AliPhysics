@@ -307,6 +307,12 @@ void TGeant4::Gsposp(const char *name, Int_t nr, const char *mother,
 } 
 
 //_____________________________________________________________________________
+void TGeant4::Gsbool(const char* onlyVolName, const char* manyVolName) {
+//
+  fGeometryManager->Gsbool(onlyVolName, manyVolName); 
+} 
+
+//_____________________________________________________________________________
 void TGeant4::SetCerenkov(Int_t itmed, Int_t npckov, Float_t *ppckov,
                   Float_t *absco, Float_t *effic, Float_t *rindex) {
 //

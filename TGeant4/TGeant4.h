@@ -103,6 +103,7 @@ class TGeant4: public AliMC
     virtual void  Gsposp(const char *name, Int_t nr, const char *mother,  
                          Float_t x, Float_t y, Float_t z, Int_t irot,
                          const char *konly, Float_t *upar, Int_t np); 
+    virtual void  Gsbool(const char* onlyVolName, const char* manyVolName);
     
     // Euclid		       
     virtual void WriteEuclid(const char* fileName, const char* topVol, 
@@ -246,6 +247,7 @@ class TGeant4: public AliMC
 
         // get methods
     virtual Int_t CurrentEvent() const; 
+    virtual AliMCType GetMCType() const { return kGeant4; }
 
   protected:
     TGeant4();
