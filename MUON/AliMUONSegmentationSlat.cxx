@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2001/07/20 10:03:14  morsch
+Changes needed to work with Root 3.01 (substitute lhs [] operator). (Jiri Chudoba)
+
 Revision 1.12  2001/05/16 14:57:17  alibrary
 New files for folders and Stack
 
@@ -551,7 +554,8 @@ void  AliMUONSegmentationSlat::SetSlatXPositions(Float_t *xpos)
 }
 
 AliMUONSegmentationSlatModule*  AliMUONSegmentationSlat::Slat(Int_t index) const
-{ return ((AliMUONSegmentationSlatModule*) (*fSlats)[index]);}
+  //PH { return ((AliMUONSegmentationSlatModule*) (*fSlats)[index]);}
+{ return ((AliMUONSegmentationSlatModule*) fSlats->At(index));}
 
 
 AliMUONSegmentationSlatModule* AliMUONSegmentationSlat::

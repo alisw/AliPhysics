@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.52  2001/05/16 14:57:20  alibrary
+  New files for folders and Stack
+
   Revision 1.51  2001/05/14 10:18:55  hristov
   Default arguments declared once
 
@@ -243,7 +246,8 @@ AliRICH::AliRICH(const char *name, const char *title)
     Int_t i;
    
     for (i=0; i<kNCH ;i++) {
-	(*fDchambers)[i] = new TClonesArray("AliRICHDigit",10000); 
+      //PH	(*fDchambers)[i] = new TClonesArray("AliRICHDigit",10000); 
+	fDchambers->AddAt(new TClonesArray("AliRICHDigit",10000), i); 
 	fNdch[i]=0;
     }
 
@@ -253,17 +257,20 @@ AliRICH::AliRICH(const char *name, const char *title)
     //printf("Created fRwClusters with adress:%p",fRawClusters);
 
     for (i=0; i<kNCH ;i++) {
-      (*fRawClusters)[i] = new TClonesArray("AliRICHRawCluster",10000); 
+      //PH      (*fRawClusters)[i] = new TClonesArray("AliRICHRawCluster",10000); 
+      fRawClusters->AddAt(new TClonesArray("AliRICHRawCluster",10000), i); 
       fNrawch[i]=0;
     }
 
     //fNrechits      = new Int_t[kNCH];
     
     for (i=0; i<kNCH ;i++) {
-      (*fRecHits1D)[i] = new TClonesArray("AliRICHRecHit1D",1000);
+      //PH      (*fRecHits1D)[i] = new TClonesArray("AliRICHRecHit1D",1000);
+      fRecHits1D->AddAt(new TClonesArray("AliRICHRecHit1D",1000), i);
     }
     for (i=0; i<kNCH ;i++) {
-      (*fRecHits3D)[i] = new TClonesArray("AliRICHRecHit3D",1000);	
+      //PH      (*fRecHits3D)[i] = new TClonesArray("AliRICHRecHit3D",1000);
+      fRecHits3D->AddAt(new TClonesArray("AliRICHRecHit3D",1000), i);
     }
     //printf("Created fRecHits with adress:%p",fRecHits);
 
@@ -335,7 +342,8 @@ Int_t AliRICH::Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol
     
     clhits[0]=fNhits+1;
 
-    ((AliRICHChamber*) (*fChambers)[idvol])->DisIntegration(eloss, xhit, yhit, nnew, newclust, res);
+    //PH    ((AliRICHChamber*) (*fChambers)[idvol])->DisIntegration(eloss, xhit, yhit, nnew, newclust, res);
+    ((AliRICHChamber*)fChambers->At(idvol))->DisIntegration(eloss, xhit, yhit, nnew, newclust, res);
     Int_t ic=0;
     
 //
@@ -490,7 +498,8 @@ void AliRICH::AddDigits(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits)
   //
 
   //printf("fdigits:%p, data: %d\n",((TClonesArray*)(*fDchambers)[id]),digits[0]);
-  TClonesArray &ldigits = *((TClonesArray*)(*fDchambers)[id]);
+  //PH  TClonesArray &ldigits = *((TClonesArray*)(*fDchambers)[id]);
+  TClonesArray &ldigits = *((TClonesArray*)fDchambers->At(id));
   new(ldigits[fNdch[id]++]) AliRICHDigit(tracks,charges,digits);
 }
 
@@ -501,7 +510,8 @@ void AliRICH::AddRawCluster(Int_t id, const AliRICHRawCluster& c)
     // Add a RICH digit to the list
     //
 
-    TClonesArray &lrawcl = *((TClonesArray*)(*fRawClusters)[id]);
+  //PH    TClonesArray &lrawcl = *((TClonesArray*)(*fRawClusters)[id]);
+    TClonesArray &lrawcl = *((TClonesArray*)fRawClusters->At(id));
     new(lrawcl[fNrawch[id]++]) AliRICHRawCluster(c);
 }
 
@@ -513,7 +523,8 @@ void AliRICH::AddRecHit1D(Int_t id, Float_t *rechit, Float_t *photons, Int_t *pa
   // Add a RICH reconstructed hit to the list
   //
 
-    TClonesArray &lrec1D = *((TClonesArray*)(*fRecHits1D)[id]);
+  //PH    TClonesArray &lrec1D = *((TClonesArray*)(*fRecHits1D)[id]);
+    TClonesArray &lrec1D = *((TClonesArray*)fRecHits1D->At(id));
     new(lrec1D[fNrechits1D[id]++]) AliRICHRecHit1D(id,rechit,photons,padsx,padsy);
 }
 
@@ -525,7 +536,8 @@ void AliRICH::AddRecHit3D(Int_t id, Float_t *rechit)
   // Add a RICH reconstructed hit to the list
   //
 
-    TClonesArray &lrec3D = *((TClonesArray*)(*fRecHits3D)[id]);
+  //PH    TClonesArray &lrec3D = *((TClonesArray*)(*fRecHits3D)[id]);
+    TClonesArray &lrec3D = *((TClonesArray*)fRecHits3D->At(id));
     new(lrec3D[fNrechits3D[id]++]) AliRICHRecHit3D(id,rechit);
 }
 
@@ -2017,7 +2029,8 @@ void AliRICH::ResetDigits()
   // Reset number of digits and the digits array for this detector
   //
     for ( int i=0;i<kNCH;i++ ) {
-	if (fDchambers && (*fDchambers)[i])   (*fDchambers)[i]->Clear();
+      //PH	if (fDchambers && (*fDchambers)[i])   (*fDchambers)[i]->Clear();
+	if (fDchambers && fDchambers->At(i))   fDchambers->At(i)->Clear();
 	if (fNdch)  fNdch[i]=0;
     }
 }
@@ -2029,7 +2042,8 @@ void AliRICH::ResetRawClusters()
   // Reset number of raw clusters and the raw clust array for this detector
   //
     for ( int i=0;i<kNCH;i++ ) {
-	if ((*fRawClusters)[i])    ((TClonesArray*)(*fRawClusters)[i])->Clear();
+      //PH	if ((*fRawClusters)[i])    ((TClonesArray*)(*fRawClusters)[i])->Clear();
+	if (fRawClusters->At(i))    ((TClonesArray*)fRawClusters->At(i))->Clear();
 	if (fNrawch)  fNrawch[i]=0;
     }
 }
@@ -2042,7 +2056,8 @@ void AliRICH::ResetRecHits1D()
   //
   
   for ( int i=0;i<kNCH;i++ ) {
-	if ((*fRecHits1D)[i])    ((TClonesArray*)(*fRecHits1D)[i])->Clear();
+    //PH	if ((*fRecHits1D)[i])    ((TClonesArray*)(*fRecHits1D)[i])->Clear();
+	if (fRecHits1D->At(i))    ((TClonesArray*)fRecHits1D->At(i))->Clear();
 	if (fNrechits1D)  fNrechits1D[i]=0;
     }
 }
@@ -2055,7 +2070,8 @@ void AliRICH::ResetRecHits3D()
   //
   
   for ( int i=0;i<kNCH;i++ ) {
-	if ((*fRecHits3D)[i])    ((TClonesArray*)(*fRecHits3D)[i])->Clear();
+    //PH	if ((*fRecHits3D)[i])    ((TClonesArray*)(*fRecHits3D)[i])->Clear();
+	if (fRecHits3D->At(i))    ((TClonesArray*)fRecHits3D->At(i))->Clear();
 	if (fNrechits3D)  fNrechits3D[i]=0;
     }
 }
@@ -2069,7 +2085,8 @@ void   AliRICH::SetGeometryModel(Int_t id, AliRICHGeometry *geometry)
 //
 
 
-    ((AliRICHChamber*) (*fChambers)[id])->GeometryModel(geometry);
+  //PH    ((AliRICHChamber*) (*fChambers)[id])->GeometryModel(geometry);
+    ((AliRICHChamber*)fChambers->At(id))->GeometryModel(geometry);
 }
 
 //___________________________________________
@@ -2080,7 +2097,8 @@ void   AliRICH::SetSegmentationModel(Int_t id, AliSegmentation *segmentation)
 // Setter for the RICH segmentation model
 //
 
-    ((AliRICHChamber*) (*fChambers)[id])->SetSegmentationModel(segmentation);
+  //PH    ((AliRICHChamber*) (*fChambers)[id])->SetSegmentationModel(segmentation);
+    ((AliRICHChamber*)fChambers->At(id))->SetSegmentationModel(segmentation);
 }
 
 //___________________________________________
@@ -2091,7 +2109,8 @@ void   AliRICH::SetResponseModel(Int_t id, AliRICHResponse *response)
 // Setter for the RICH response model
 //
 
-    ((AliRICHChamber*) (*fChambers)[id])->ResponseModel(response);
+  //PH    ((AliRICHChamber*) (*fChambers)[id])->ResponseModel(response);
+    ((AliRICHChamber*)fChambers->At(id))->ResponseModel(response);
 }
 
 void   AliRICH::SetReconstructionModel(Int_t id, AliRICHClusterFinder *reconst)
@@ -2101,7 +2120,8 @@ void   AliRICH::SetReconstructionModel(Int_t id, AliRICHClusterFinder *reconst)
 // Setter for the RICH reconstruction model (clusters)
 //
 
-    ((AliRICHChamber*) (*fChambers)[id])->SetReconstructionModel(reconst);
+  //PH    ((AliRICHChamber*) (*fChambers)[id])->SetReconstructionModel(reconst);
+    ((AliRICHChamber*)fChambers->At(id))->SetReconstructionModel(reconst);
 }
 
 //___________________________________________
@@ -2370,7 +2390,8 @@ void AliRICH::StepManager()
 		  printf("Feedbacks:%d\n",fFeedbacks);
 		}*/	
 		
-		((AliRICHChamber*) (*fChambers)[idvol])
+        //PH		((AliRICHChamber*) (*fChambers)[idvol])
+		((AliRICHChamber*)fChambers->At(idvol))
 		    ->SigGenInit(localPos[0], localPos[2], localPos[1]);
 		if(idvol<kNCH) {	
 		    ckovData[0] = gMC->TrackPid();        // particle type
@@ -2538,7 +2559,8 @@ void AliRICH::StepManager()
 		if(idvol<kNCH) {
 		    //
 		    //  Initialize hit position (cursor) in the segmentation model 
-		    ((AliRICHChamber*) (*fChambers)[idvol])
+          //PH		    ((AliRICHChamber*) (*fChambers)[idvol])
+		    ((AliRICHChamber*)fChambers->At(idvol))
 			->SigGenInit(localPos[0], localPos[2], localPos[1]);
 		}
 	    }
@@ -2580,10 +2602,12 @@ void AliRICH::StepManager()
 		// defined by the segmentation
 		// model (boundary crossing conditions) 
 	    } else if 
-		(((AliRICHChamber*) (*fChambers)[idvol])
+          //PH		(((AliRICHChamber*) (*fChambers)[idvol])
+		(((AliRICHChamber*)fChambers->At(idvol))
 		 ->SigGenCond(localPos[0], localPos[2], localPos[1]))
 	    {
-		((AliRICHChamber*) (*fChambers)[idvol])
+          //PH		((AliRICHChamber*) (*fChambers)[idvol])
+		((AliRICHChamber*)fChambers->At(idvol))
 		    ->SigGenInit(localPos[0], localPos[2], localPos[1]);
 		if (eloss > 0) 
 		  {
@@ -2619,7 +2643,8 @@ void AliRICH::FindClusters(Int_t nev,Int_t lastEntry)
 	gAlice->ResetDigits();
 	gAlice->TreeD()->GetEvent(0);
 	for (Int_t ich=0;ich<kNCH;ich++) {
-	  AliRICHChamber* iChamber=(AliRICHChamber*) (*fChambers)[ich];
+      //PH	  AliRICHChamber* iChamber=(AliRICHChamber*) (*fChambers)[ich];
+	  AliRICHChamber* iChamber=(AliRICHChamber*)fChambers->At(ich);
 	  TClonesArray *pRICHdigits  = this->DigitsAddress(ich);
 	  if (pRICHdigits == 0)	      
 	      continue;

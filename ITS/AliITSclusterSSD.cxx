@@ -134,7 +134,8 @@ Int_t AliITSclusterSSD::GetDigitStripNo(Int_t digit)
   // return strip no of a digit
 	if (digit<0) return -1;
 	return (digit>(fNDigits-1))?-1 :
-            ((AliITSdigitSSD*)((*fDigits)[(*fDigitsIndex)[digit]]))->GetStripNumber();
+      //PH            ((AliITSdigitSSD*)((*fDigits)[(*fDigitsIndex)[digit]]))->GetStripNumber();
+            ((AliITSdigitSSD*)(fDigits->At((*fDigitsIndex)[digit])))->GetStripNumber();
 }
 /************************************************************/
 Int_t AliITSclusterSSD::GetDigitSignal(Int_t digit)
@@ -143,7 +144,8 @@ Int_t AliITSclusterSSD::GetDigitSignal(Int_t digit)
   Int_t index,signal;
   if (digit<0||digit>=fNDigits) return -1;
   index  = (*fDigitsIndex)[digit];
-  signal = ((AliITSdigitSSD*)((*fDigits)[index]))->GetSignal();
+  //PH  signal = ((AliITSdigitSSD*)((*fDigits)[index]))->GetSignal();
+  signal = ((AliITSdigitSSD*)(fDigits->At(index)))->GetSignal();
   /*
   if(signal>1.e5) printf("GetDigitSignal: digit %d index %d signal %d\n",
 			 digit,index, signal);

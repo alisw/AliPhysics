@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.22  2001/05/16 14:57:20  alibrary
+  New files for folders and Stack
+
   Revision 1.21  2001/05/10 12:28:15  jbarbosa
   Repositioned the RICH modules.
 
@@ -159,7 +162,8 @@ AliRICHv0::AliRICHv0(const char *name, const char *title)
     fChambers = new TObjArray(kNCH);
     for (i=0; i<kNCH; i++) {
       
-      (*fChambers)[i] = new AliRICHChamber();  
+      //PH      (*fChambers)[i] = new AliRICHChamber();  
+      fChambers->AddAt(new AliRICHChamber(), i);  
       
     }
   
@@ -196,19 +200,28 @@ void AliRICHv0::Init()
     //
     for (Int_t i=0; i<kNCH; i++) {
 	//printf ("i:%d",i);
-	( (AliRICHChamber*) (*fChambers)[i])->Init(i);  
+      //PH	( (AliRICHChamber*) (*fChambers)[i])->Init(i);  
+	( (AliRICHChamber*) fChambers->At(i))->Init(i);  
     }  
     
     //
     // Set the chamber (sensitive region) GEANT identifier
     
-    ((AliRICHChamber*)(*fChambers)[0])->SetGid(1);  
-    ((AliRICHChamber*)(*fChambers)[1])->SetGid(2);  
-    ((AliRICHChamber*)(*fChambers)[2])->SetGid(3);  
-    ((AliRICHChamber*)(*fChambers)[3])->SetGid(4);  
-    ((AliRICHChamber*)(*fChambers)[4])->SetGid(5);  
-    ((AliRICHChamber*)(*fChambers)[5])->SetGid(6);  
-    ((AliRICHChamber*)(*fChambers)[6])->SetGid(7); 
+    //PH    ((AliRICHChamber*)(*fChambers)[0])->SetGid(1);  
+    //PH    ((AliRICHChamber*)(*fChambers)[1])->SetGid(2);  
+    //PH    ((AliRICHChamber*)(*fChambers)[2])->SetGid(3);  
+    //PH    ((AliRICHChamber*)(*fChambers)[3])->SetGid(4);  
+    //PH    ((AliRICHChamber*)(*fChambers)[4])->SetGid(5);  
+    //PH    ((AliRICHChamber*)(*fChambers)[5])->SetGid(6);  
+    //PH    ((AliRICHChamber*)(*fChambers)[6])->SetGid(7); 
+
+    ((AliRICHChamber*)fChambers->At(0))->SetGid(1);  
+    ((AliRICHChamber*)fChambers->At(1))->SetGid(2);  
+    ((AliRICHChamber*)fChambers->At(2))->SetGid(3);  
+    ((AliRICHChamber*)fChambers->At(3))->SetGid(4);  
+    ((AliRICHChamber*)fChambers->At(4))->SetGid(5);  
+    ((AliRICHChamber*)fChambers->At(5))->SetGid(6);  
+    ((AliRICHChamber*)fChambers->At(6))->SetGid(7);  
 
     segmentation=Chamber(0).GetSegmentationModel(0);
     geometry=Chamber(0).GetGeometryModel();

@@ -233,7 +233,8 @@ AliStack* AliGenCocktailAfterBurner::GetStack(Int_t n)
 	Fatal("AliGenCocktailAfterBurner::GetStack","Asked for non existing stack (%d)",n);
 	return 0; 
     }
-    return ((AliStack*) ((*fInternalStacks)[n]) );
+    //PH    return ((AliStack*) ((*fInternalStacks)[n]) );
+    return ((AliStack*) fInternalStacks->At(n) );
 }
 
 void AliGenCocktailAfterBurner::SetActiveEventNumber(Int_t actev)

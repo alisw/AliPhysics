@@ -11,7 +11,7 @@
 //  Manager and hits classes for set: RICH full version  //
 ///////////////////////////////////////////////////////////
 
-#include "AliRICHv0.h"
+#include "AliRICH.h"
 
 class AliRICHv1 : public AliRICH {
     

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.58  2001/07/26 15:05:29  hristov
+Use global gRandom generator (M.Ivanov)
+
 Revision 1.57  2001/07/24 14:26:11  mariana
 Introduce the function Digits2Reco() and write the defaults for simulation and reconstruction
 
@@ -429,14 +432,16 @@ AliITS::~AliITS(){
 AliITSDetType* AliITS::DetType(Int_t id)
 {
   //return pointer to id detector type
-    return ((AliITSDetType*) (*fDetTypes)[id]);
+  //PH    return ((AliITSDetType*) (*fDetTypes)[id]);
+    return ((AliITSDetType*) fDetTypes->At(id));
 
 }
 //___________________________________________
 void AliITS::SetClasses(Int_t id, const char *digit, const char *cluster)
 {
   //set the digit and cluster classes to be used for the id detector type
-    ((AliITSDetType*) (*fDetTypes)[id])->ClassNames(digit,cluster);
+  //PH    ((AliITSDetType*) (*fDetTypes)[id])->ClassNames(digit,cluster);
+    ((AliITSDetType*) fDetTypes->At(id))->ClassNames(digit,cluster);
 
 }
 //___________________________________________
@@ -444,7 +449,8 @@ void AliITS::SetResponseModel(Int_t id, AliITSresponse *response)
 {
   //set the response model for the id detector type
 
-    ((AliITSDetType*) (*fDetTypes)[id])->ResponseModel(response);
+  //PH    ((AliITSDetType*) (*fDetTypes)[id])->ResponseModel(response);
+    ((AliITSDetType*) fDetTypes->At(id))->ResponseModel(response);
 
 }
 
@@ -453,7 +459,8 @@ void AliITS::SetSegmentationModel(Int_t id, AliITSsegmentation *seg)
 {
   //set the segmentation model for the id detector type
 
-    ((AliITSDetType*) (*fDetTypes)[id])->SegmentationModel(seg);
+  //PH    ((AliITSDetType*) (*fDetTypes)[id])->SegmentationModel(seg);
+    ((AliITSDetType*) fDetTypes->At(id))->SegmentationModel(seg);
 
 }
 
@@ -462,7 +469,8 @@ void AliITS::SetSimulationModel(Int_t id, AliITSsimulation *sim)
 {
   //set the simulation model for the id detector type
 
-   ((AliITSDetType*) (*fDetTypes)[id])->SimulationModel(sim);
+  //PH   ((AliITSDetType*) (*fDetTypes)[id])->SimulationModel(sim);
+   ((AliITSDetType*) fDetTypes->At(id))->SimulationModel(sim);
 
 }
 //___________________________________________
@@ -470,7 +478,8 @@ void AliITS::SetReconstructionModel(Int_t id, AliITSClusterFinder *reconst)
 {
   //set the cluster finder model for the id detector type
 
-   ((AliITSDetType*) (*fDetTypes)[id])->ReconstructionModel(reconst);
+  //PH   ((AliITSDetType*) (*fDetTypes)[id])->ReconstructionModel(reconst);
+   ((AliITSDetType*) fDetTypes->At(id))->ReconstructionModel(reconst);
 
 }
 
@@ -492,7 +501,8 @@ void AliITS::AddRealDigit(Int_t id, Int_t *digits)
 {
   // add a real digit - as coming from data
 
-  TClonesArray &ldigits = *((TClonesArray*)(*fDtype)[id]);
+  //PH  TClonesArray &ldigits = *((TClonesArray*)(*fDtype)[id]);
+  TClonesArray &ldigits = *((TClonesArray*)fDtype->At(id));
   new(ldigits[fNdtype[id]++]) AliITSdigit(digits);
 
 }
@@ -502,7 +512,8 @@ void AliITS::AddSimDigit(Int_t id, AliITSdigit *d)
 
   // add a simulated digit
 
-  TClonesArray &ldigits = *((TClonesArray*)(*fDtype)[id]);
+  //PH  TClonesArray &ldigits = *((TClonesArray*)(*fDtype)[id]);
+  TClonesArray &ldigits = *((TClonesArray*)fDtype->At(id));
 
   switch(id)
   {
@@ -524,7 +535,8 @@ void AliITS::AddSimDigit(Int_t id,Float_t phys,Int_t *digits,Int_t *tracks,Int_t
 
   // add a simulated digit to the list
 
-  TClonesArray &ldigits = *((TClonesArray*)(*fDtype)[id]);
+  //PH  TClonesArray &ldigits = *((TClonesArray*)(*fDtype)[id]);
+  TClonesArray &ldigits = *((TClonesArray*)fDtype->At(id));
   switch(id)
   {
   case 0:
@@ -546,7 +558,8 @@ void AliITS::AddCluster(Int_t id, AliITSRawCluster *c)
 
   // add a cluster to the list
 
-  TClonesArray &lcl = *((TClonesArray*)(*fCtype)[id]);
+  //PH  TClonesArray &lcl = *((TClonesArray*)(*fCtype)[id]);
+  TClonesArray &lcl = *((TClonesArray*)fCtype->At(id));
 
   switch(id)
   {
@@ -586,7 +599,8 @@ void AliITS::ResetDigits()
 
     Int_t i;
     for (i=0;i<kNTYPES;i++ ) {
-	if ((*fDtype)[i])    ((TClonesArray*)(*fDtype)[i])->Clear();
+      //PH	if ((*fDtype)[i])    ((TClonesArray*)(*fDtype)[i])->Clear();
+	if (fDtype->At(i))    ((TClonesArray*)fDtype->At(i))->Clear();
 	if (fNdtype)  fNdtype[i]=0;
     }
 }
@@ -597,7 +611,8 @@ void AliITS::ResetDigits(Int_t i)
     //
     // Reset number of digits and the digits array for this branch
     //
-  if ((*fDtype)[i])    ((TClonesArray*)(*fDtype)[i])->Clear();
+  //PH  if ((*fDtype)[i])    ((TClonesArray*)(*fDtype)[i])->Clear();
+  if (fDtype->At(i))    ((TClonesArray*)fDtype->At(i))->Clear();
   if (fNdtype)  fNdtype[i]=0;
 }
 
@@ -611,7 +626,8 @@ void AliITS::ResetClusters()
 
     Int_t i;
     for (i=0;i<kNTYPES;i++ ) {
-	if ((*fCtype)[i])    ((TClonesArray*)(*fCtype)[i])->Clear();
+      //PH	if ((*fCtype)[i])    ((TClonesArray*)(*fCtype)[i])->Clear();
+	if (fCtype->At(i))    ((TClonesArray*)fCtype->At(i))->Clear();
 	if (fNctype)  fNctype[i]=0;
     }
 
@@ -623,7 +639,8 @@ void AliITS::ResetClusters(Int_t i)
     //
     // Reset number of clusters and the clusters array for this branch
     //
-	if ((*fCtype)[i])    ((TClonesArray*)(*fCtype)[i])->Clear();
+  //PH	if ((*fCtype)[i])    ((TClonesArray*)(*fCtype)[i])->Clear();
+	if (fCtype->At(i))    ((TClonesArray*)fCtype->At(i))->Clear();
 	if (fNctype)  fNctype[i]=0;
 
 }
@@ -876,7 +893,8 @@ void AliITS::GetTreeC(Int_t event)
 	   AliITSDetType *iDetType=DetType(i); 
 	   iDetType->GetClassNames(digclass,clclass);
 	   // clusters
-	   if(!(*fCtype)[i]) fCtype->AddAt(new TClonesArray(clclass,1000),i); 
+       //PH	   if(!(*fCtype)[i]) fCtype->AddAt(new TClonesArray(clclass,1000),i); 
+	   if(!fCtype->At(i)) fCtype->AddAt(new TClonesArray(clclass,1000),i); 
 	   if (kNTYPES==3) sprintf(branchname,"%sClusters%s",GetName(),det[i]);
 	   else  sprintf(branchname,"%sClusters%d",GetName(),i+1);
 	   if (fCtype) {
@@ -919,7 +937,8 @@ void AliITS::MakeBranch(Option_t* option, const char *file)
    for (i=0; i<kNTYPES ;i++) {
        DetType(i)->GetClassNames(digclass,clclass);
        // digits
-       if(!((*fDtype)[i])) fDtype->AddAt(new TClonesArray(digclass,1000),i);
+       //PH       if(!((*fDtype)[i])) fDtype->AddAt(new TClonesArray(digclass,1000),i);
+       if(!(fDtype->At(i))) fDtype->AddAt(new TClonesArray(digclass,1000),i);
        else ResetDigits(i);
    }
 
@@ -976,7 +995,8 @@ void AliITS::SetTreeAddress()
       for (i=0; i<kNTYPES; i++) {
 	DetType(i)->GetClassNames(digclass,clclass);
 	  // digits
-        if(!((*fDtype)[i])) fDtype->AddAt(new TClonesArray(digclass,1000),i);
+    //PH        if(!((*fDtype)[i])) fDtype->AddAt(new TClonesArray(digclass,1000),i);
+        if(!(fDtype->At(i))) fDtype->AddAt(new TClonesArray(digclass,1000),i);
 	else ResetDigits(i);
 
 	if (kNTYPES==3) sprintf(branchname,"%sDigits%s",GetName(),det[i]);

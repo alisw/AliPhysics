@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2001/07/20 10:03:14  morsch
+Changes needed to work with Root 3.01 (substitute lhs [] operator). (Jiri Chudoba)
+
 Revision 1.19  2001/05/16 14:57:17  alibrary
 New files for folders and Stack
 
@@ -670,7 +673,8 @@ void AliMUONSegmentationV01::SetCorrFunc(Int_t isec, TF1* func)
 TF1* AliMUONSegmentationV01::CorrFunc(Int_t isec) const
 { 
 // Get correction function
-    return (TF1*) (*fCorrA)[isec];
+  //PH    return (TF1*) (*fCorrA)[isec];
+    return (TF1*) fCorrA->At(isec);
 }
 
 AliMUONSegmentationV01& AliMUONSegmentationV01::operator 

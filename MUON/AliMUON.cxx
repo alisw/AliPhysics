@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.53  2001/07/20 10:03:13  morsch
+Changes needed to work with Root 3.01 (substitute lhs [] operator). (Jiri Chudoba)
+
 Revision 1.52  2001/06/14 13:49:22  hristov
 Write a TreeD in SDigits2Digits method (needed to be compatible with alirun script)
 
@@ -364,7 +367,8 @@ AliMUON::AliMUON(const char *name, const char *title)
 	      fChambers->AddAt(new AliMUONChamberTrigger(ch),ch);
 	    }
 	    
-	    AliMUONChamber* chamber = (AliMUONChamber*) (*fChambers)[ch];
+        //PH	    AliMUONChamber* chamber = (AliMUONChamber*) (*fChambers)[ch];
+	    AliMUONChamber* chamber = (AliMUONChamber*) fChambers->At(ch);
 	    
 	    chamber->SetGid(0);
 	    // Default values for Z of chambers
@@ -503,7 +507,8 @@ void AliMUON::AddDigits(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits)
     // Add a MUON digit to the list
     //
 
-    TClonesArray &ldigits = *((TClonesArray*)(*fDchambers)[id]);
+  //PH    TClonesArray &ldigits = *((TClonesArray*)(*fDchambers)[id]);
+    TClonesArray &ldigits = *((TClonesArray*)fDchambers->At(id));
     new(ldigits[fNdch[id]++]) AliMUONDigit(tracks,charges,digits);
 }
 
@@ -514,7 +519,8 @@ void AliMUON::AddRawCluster(Int_t id, const AliMUONRawCluster& c)
     // Add a MUON digit to the list
     //
 
-    TClonesArray &lrawcl = *((TClonesArray*)(*fRawClusters)[id]);
+  //PH    TClonesArray &lrawcl = *((TClonesArray*)(*fRawClusters)[id]);
+    TClonesArray &lrawcl = *((TClonesArray*)fRawClusters->At(id));
     new(lrawcl[fNrawch[id]++]) AliMUONRawCluster(c);
 }
 
@@ -695,7 +701,8 @@ void AliMUON::ResetDigits()
     // Reset number of digits and the digits array for this detector
     //
     for ( int i=0;i<AliMUONConstants::NCh();i++ ) {
-	if ((*fDchambers)[i])    ((TClonesArray*)(*fDchambers)[i])->Clear();
+      //PH	if ((*fDchambers)[i])    ((TClonesArray*)(*fDchambers)[i])->Clear();
+	if ((*fDchambers)[i])    ((TClonesArray*)fDchambers->At(i))->Clear();
 	if (fNdch)  fNdch[i]=0;
     }
 }
@@ -706,7 +713,8 @@ void AliMUON::ResetRawClusters()
     // Reset number of raw clusters and the raw clust array for this detector
     //
     for ( int i=0;i<AliMUONConstants::NTrackingCh();i++ ) {
-	if ((*fRawClusters)[i])    ((TClonesArray*)(*fRawClusters)[i])->Clear();
+      //PH	if ((*fRawClusters)[i])    ((TClonesArray*)(*fRawClusters)[i])->Clear();
+	if ((*fRawClusters)[i])    ((TClonesArray*)fRawClusters->At(i))->Clear();
 	if (fNrawch)  fNrawch[i]=0;
     }
 }
@@ -726,8 +734,10 @@ void AliMUON::SetPadSize(Int_t id, Int_t isec, Float_t p1, Float_t p2)
 {
 // Set the pad size for chamber id and cathode isec
     Int_t i=2*(id-1);
-    ((AliMUONChamber*) (*fChambers)[i])  ->SetPadSize(isec,p1,p2);
-    ((AliMUONChamber*) (*fChambers)[i+1])->SetPadSize(isec,p1,p2);
+    //PH    ((AliMUONChamber*) (*fChambers)[i])  ->SetPadSize(isec,p1,p2);
+    //PH    ((AliMUONChamber*) (*fChambers)[i+1])->SetPadSize(isec,p1,p2);
+    ((AliMUONChamber*) fChambers->At(i))  ->SetPadSize(isec,p1,p2);
+    ((AliMUONChamber*) fChambers->At(i+1))->SetPadSize(isec,p1,p2);
 }
 
 //___________________________________________
@@ -736,7 +746,8 @@ void AliMUON::SetChambersZ(const Float_t *Z)
   // Set Z values for all chambers (tracking and trigger)
   // from the array pointed to by "Z"
     for (Int_t ch = 0; ch < AliMUONConstants::NCh(); ch++)
-	((AliMUONChamber*) ((*fChambers)[ch]))->SetZ(Z[ch]);
+      //PH	((AliMUONChamber*) ((*fChambers)[ch]))->SetZ(Z[ch]);
+	((AliMUONChamber*) fChambers->At(ch))->SetZ(Z[ch]);
     return;
 }
 
@@ -754,8 +765,10 @@ void AliMUON::SetChargeSlope(Int_t id, Float_t p1)
 {
 // Set the inverse charge slope for chamber id
     Int_t i=2*(id-1);
-    ((AliMUONChamber*) (*fChambers)[i])->SetChargeSlope(p1);
-    ((AliMUONChamber*) (*fChambers)[i+1])->SetChargeSlope(p1);
+    //PH    ((AliMUONChamber*) (*fChambers)[i])->SetChargeSlope(p1);
+    //PH    ((AliMUONChamber*) (*fChambers)[i+1])->SetChargeSlope(p1);
+    ((AliMUONChamber*) fChambers->At(i))->SetChargeSlope(p1);
+    ((AliMUONChamber*) fChambers->At(i+1))->SetChargeSlope(p1);
 }
 
 //___________________________________________
@@ -763,8 +776,10 @@ void AliMUON::SetChargeSpread(Int_t id, Float_t p1, Float_t p2)
 {
 // Set sigma of charge spread for chamber id
     Int_t i=2*(id-1);
-    ((AliMUONChamber*) (*fChambers)[i])->SetChargeSpread(p1,p2);
-    ((AliMUONChamber*) (*fChambers)[i+1])->SetChargeSpread(p1,p2);
+    //PH    ((AliMUONChamber*) fChambers->At(i))->SetChargeSpread(p1,p2);
+    //PH    ((AliMUONChamber*) fChambers->Ati+1])->SetChargeSpread(p1,p2);
+    ((AliMUONChamber*) fChambers->At(i))->SetChargeSpread(p1,p2);
+    ((AliMUONChamber*) fChambers->At(i+1))->SetChargeSpread(p1,p2);
 }
 
 //___________________________________________
@@ -772,8 +787,10 @@ void AliMUON::SetSigmaIntegration(Int_t id, Float_t p1)
 {
 // Set integration limits for charge spread
     Int_t i=2*(id-1);
-    ((AliMUONChamber*) (*fChambers)[i])->SetSigmaIntegration(p1);
-    ((AliMUONChamber*) (*fChambers)[i+1])->SetSigmaIntegration(p1);
+    //PH    ((AliMUONChamber*) (*fChambers)[i])->SetSigmaIntegration(p1);
+    //PH    ((AliMUONChamber*) (*fChambers)[i+1])->SetSigmaIntegration(p1);
+    ((AliMUONChamber*) fChambers->At(i))->SetSigmaIntegration(p1);
+    ((AliMUONChamber*) fChambers->At(i+1))->SetSigmaIntegration(p1);
 }
 
 //___________________________________________
@@ -781,8 +798,10 @@ void AliMUON::SetMaxAdc(Int_t id, Int_t p1)
 {
 // Set maximum number for ADCcounts (saturation)
     Int_t i=2*(id-1);
-    ((AliMUONChamber*) (*fChambers)[i])->SetMaxAdc(p1);
-    ((AliMUONChamber*) (*fChambers)[i+1])->SetMaxAdc(p1);
+    //PH    ((AliMUONChamber*) (*fChambers)[i])->SetMaxAdc(p1);
+    //PH    ((AliMUONChamber*) (*fChambers)[i+1])->SetMaxAdc(p1);
+    ((AliMUONChamber*) fChambers->At(i))->SetMaxAdc(p1);
+    ((AliMUONChamber*) fChambers->At(i+1))->SetMaxAdc(p1);
 }
 
 //___________________________________________
@@ -836,26 +855,30 @@ void AliMUON::SetAcceptance(Bool_t acc, Float_t angmin, Float_t angmax)
 void   AliMUON::SetSegmentationModel(Int_t id, Int_t isec, AliSegmentation *segmentation)
 {
 // Set the segmentation for chamber id cathode isec
-    ((AliMUONChamber*) (*fChambers)[id])->SetSegmentationModel(isec, segmentation);
+  //PH    ((AliMUONChamber*) (*fChambers)[id])->SetSegmentationModel(isec, segmentation);
+    ((AliMUONChamber*) fChambers->At(id))->SetSegmentationModel(isec, segmentation);
 
 }
 //___________________________________________
 void   AliMUON::SetResponseModel(Int_t id, AliMUONResponse *response)
 {
 // Set the response for chamber id
-    ((AliMUONChamber*) (*fChambers)[id])->SetResponseModel(response);
+  //PH    ((AliMUONChamber*) (*fChambers)[id])->SetResponseModel(response);
+    ((AliMUONChamber*) fChambers->At(id))->SetResponseModel(response);
 }
 
 void   AliMUON::SetReconstructionModel(Int_t id, AliMUONClusterFinderVS *reconst)
 {
 // Set ClusterFinder for chamber id
-    ((AliMUONChamber*) (*fChambers)[id])->SetReconstructionModel(reconst);
+  //PH    ((AliMUONChamber*) (*fChambers)[id])->SetReconstructionModel(reconst);
+    ((AliMUONChamber*) fChambers->At(id))->SetReconstructionModel(reconst);
 }
 
 void   AliMUON::SetNsec(Int_t id, Int_t nsec)
 {
 // Set number of segmented cathods for chamber id
-    ((AliMUONChamber*) (*fChambers)[id])->SetNsec(nsec);
+  //PH    ((AliMUONChamber*) (*fChambers)[id])->SetNsec(nsec);
+    ((AliMUONChamber*) fChambers->At(id))->SetNsec(nsec);
 }
 
 //___________________________________________
@@ -902,7 +925,8 @@ void AliMUON::MakePadHits(Float_t xhit,Float_t yhit, Float_t zhit,
 //    if (idvol == 6) printf("\n ->Disintegration %f %f %f", xhit, yhit, eloss );
     
 
-    ((AliMUONChamber*) (*fChambers)[idvol])
+    //PH    ((AliMUONChamber*) (*fChambers)[idvol])
+    ((AliMUONChamber*) fChambers->At(idvol))
 	->DisIntegration(eloss, tof, xhit, yhit, zhit, nnew, newclust);
     Int_t ic=0;
 //    if (idvol == 6) printf("\n nnew  %d \n", nnew);
@@ -1006,7 +1030,8 @@ void AliMUON::FindClusters()
 //
     ResetRawClusters();        
     for (Int_t ich = 0; ich < 10; ich++) {
-	AliMUONChamber* iChamber = (AliMUONChamber*) (*fChambers)[ich];
+      //PH	AliMUONChamber* iChamber = (AliMUONChamber*) (*fChambers)[ich];
+	AliMUONChamber* iChamber = (AliMUONChamber*) fChambers->At(ich);
 	AliMUONClusterFinderVS* rec = iChamber->ReconstructionModel();
     
 	gAlice->ResetDigits();

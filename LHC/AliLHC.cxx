@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/07/25 17:28:32  morsch
+LHC related code. First commit.
+
 */
 #include "AliLHC.h"
 #include "AliLhcIRegion.h"
@@ -31,8 +34,10 @@ AliLHC::AliLHC()
     fNRegions   = 0;
     fNProcesses = 0;
     fBeams = new TObjArray(2);
-    (*fBeams)[0] = 0;
-    (*fBeams)[1] = 0;    
+    //PH    (*fBeams)[0] = 0;
+    //PH    (*fBeams)[1] = 0;    
+    fBeams->AddAt(0,0);
+    fBeams->AddAt(0,1);    
     fTime = 0;
     fTimeMax = 0;
 }

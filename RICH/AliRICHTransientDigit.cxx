@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.2  2000/10/02 15:53:28  jbarbosa
+  Fixed memory leak (delete fTrackList).
+
   Revision 1.1  2000/06/12 15:35:17  jbarbosa
   Cleaned up version.
 
@@ -42,5 +45,8 @@ AliRICHTransientDigit::AliRICHTransientDigit(Int_t ich, Int_t *digits):
 
 AliRICHTransientDigit::~AliRICHTransientDigit()
 {
-  delete fTrackList;
+  if (fTrackList) {
+    fTrackList->Delete();
+    delete fTrackList;
+  }
 }

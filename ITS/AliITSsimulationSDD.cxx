@@ -1475,8 +1475,10 @@ void AliITSsimulationSDD::CreateHistograms(Int_t scale){
 	   Char_t candNum[4];
 	   sprintf(candNum,"%d",i+1);
 	   sddName.Append(candNum);
-	   (*fHis)[i] = new TH1F(sddName.Data(),"SDD maps",
-                scale*fMaxNofSamples,0.,(Float_t) scale*fMaxNofSamples);
+       //PH	   (*fHis)[i] = new TH1F(sddName.Data(),"SDD maps",
+       //PH                scale*fMaxNofSamples,0.,(Float_t) scale*fMaxNofSamples);
+	   fHis->AddAt(new TH1F(sddName.Data(),"SDD maps",
+                scale*fMaxNofSamples,0.,(Float_t) scale*fMaxNofSamples), i);
       }
 
 }
@@ -1503,7 +1505,8 @@ void AliITSsimulationSDD::ResetHistograms(){
     //
     Int_t i;
     for (i=0;i<fNofMaps;i++ ) {
-	if ((*fHis)[i])    ((TH1F*)(*fHis)[i])->Reset();
+      //PH	if ((*fHis)[i])    ((TH1F*)(*fHis)[i])->Reset();
+	if (fHis->At(i))    ((TH1F*)fHis->At(i))->Reset();
     }
 
 }
@@ -1525,7 +1528,8 @@ TH1F *AliITSsimulationSDD::GetAnode(Int_t wing, Int_t anode) {
   }
 
   Int_t index = (wing-1)*fNofMaps/2 + anode-1;
-  return (TH1F*)((*fHis)[index]); 
+  //PH  return (TH1F*)((*fHis)[index]); 
+  return (TH1F*)(fHis->At(index)); 
 }
 
 //____________________________________________
@@ -1536,7 +1540,8 @@ void AliITSsimulationSDD::WriteToFile(TFile *hfile) {
 
   hfile->cd();
   Int_t i;
-  for(i=0; i<fNofMaps; i++)  (*fHis)[i]->Write(); //fAdcs[i]->Write();
+  //PH  for(i=0; i<fNofMaps; i++)  (*fHis)[i]->Write(); //fAdcs[i]->Write();
+  for(i=0; i<fNofMaps; i++)  fHis->At(i)->Write(); //fAdcs[i]->Write();
   return;
 }
 //____________________________________________

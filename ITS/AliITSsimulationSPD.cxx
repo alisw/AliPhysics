@@ -701,8 +701,10 @@ void AliITSsimulationSPD::CreateHistograms() {
 	   Char_t candnum[4];
 	   sprintf(candnum,"%d",i+1);
 	   spdname.Append(candnum);
-	   (*fHis)[i] = new TH1F(spdname.Data(),"SPD maps",
-                              fNPixelsX,0.,(Float_t) fNPixelsX);
+       //PH	   (*fHis)[i] = new TH1F(spdname.Data(),"SPD maps",
+       //PH                              fNPixelsX,0.,(Float_t) fNPixelsX);
+	   fHis->AddAt(new TH1F(spdname.Data(),"SPD maps",
+                              fNPixelsX,0.,(Float_t) fNPixelsX), i);
       }
 
 }
@@ -715,7 +717,8 @@ void AliITSsimulationSPD::ResetHistograms() {
     //
     Int_t i;
     for(i=0;i<fNPixelsZ;i++ ) {
-	if ((*fHis)[i])    ((TH1F*)(*fHis)[i])->Reset();
+      //PH	if ((*fHis)[i])    ((TH1F*)(*fHis)[i])->Reset();
+ 	if (fHis->At(i))    ((TH1F*)fHis->At(i))->Reset();
     }
 
 }

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2001/05/03 08:11:31  hristov
+stdlib.h included to define exit()
+
 Revision 1.12  2001/04/25 14:50:42  gosset
 Corrections to violations of coding conventions
 
@@ -427,7 +430,8 @@ void AliMUONTrack::SetTrackParamAtHit(Int_t indexHit, AliMUONTrackParam *TrackPa
 {
   // Set track parameters at TrackHit with index "indexHit"
   // from the track parameters pointed to by "TrackParam".
-  AliMUONTrackHit* trackHit = (AliMUONTrackHit*) ((*fTrackHitsPtr)[indexHit]);
+  //PH  AliMUONTrackHit* trackHit = (AliMUONTrackHit*) ((*fTrackHitsPtr)[indexHit]);
+  AliMUONTrackHit* trackHit = (AliMUONTrackHit*) (fTrackHitsPtr->At(indexHit));
   trackHit->SetTrackParam(TrackParam);
 }
 
