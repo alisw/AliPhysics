@@ -27,4 +27,39 @@ ELIBS   := G4brep G4csg G4geomBoolean G4geometrymng G4geomver G4globman \
 	   G4graphics_reps G4hepnumerics G4intercoms G4magneticfield \
 	   G4materials G4specsolids G4step G4stepinterface G4volumes
 
-CXXFLAGS += -fno-for-scope -DGNU_GCC -DGEOMETRY_DEBUG -DG4OPTIMISE -DG4USE_STL -DG4USE_STD_NAMESPACE -DG4VERBOSE -DG4_STORE_TRAJECTORY
+######################
+#Handle Geant4 flags
+######################
+
+# If G4DEBUG or G4NO_OPTIMISE are not specified,
+# the default compilation is optimised ...
+#
+ifdef G4DEBUG
+  CXXFLAGS += -DG4DEBUG
+else
+  ifndef G4NO_OPTIMISE
+    CXXFLAGS += -DG4OPTIMISE
+  endif
+endif
+# Verbosity code can be left out (for better performance)
+# by defining G4_NO_VERBOSE.
+#
+ifndef G4_NO_VERBOSE
+  CXXFLAGS += -DG4VERBOSE
+endif
+# Trajectory related classes can be left out (for better performance)
+# by defining G4_NO_STORE_TRAJECTORY.
+#
+ifndef G4_NO_STORE_TRAJECTORY
+  CPPFLAGS += -DG4_STORE_TRAJECTORY
+endif
+
+# If GEOMETRY_DEBUG is defined, a lot of information is printed out
+# from FLUGG
+#
+ifdef G4GEOMETRY_DEBUG
+  CXXFLAGS += -DG4GEOMETRY_DEBUG
+endif
+
+CXXFLAGS += -DGNU_GCC -DG4USE_STL -DG4USE_STD_NAMESPACE
+
