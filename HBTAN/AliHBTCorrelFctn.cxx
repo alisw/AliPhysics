@@ -1,9 +1,22 @@
 #include "AliHBTCorrelFctn.h"
-//Set of Correlation fuctions
-//AliHBTQInvCorrelFctn - Q Invariant correlatyion function
+//____________________________________________________________________________
+//////////////////////////////////////////////////////////////////////////////
 //
+// class AliHBTQInvCorrelFctn
+// class AliHBTQOutCMSLCCorrelFctn
+// class AliHBTQLongCMSLCCorrelFctn
+// class AliHBTQSideCMSLCCorrelFctn
+// class AliHBTInvMassCorrelFctn
+// class AliHBTTwoKStarCorrelFctn
 //
+// Set of functions:
+//   Q Invaraint Correlation Function
+//   Invariant Mass Function
 //
+// more info: http://aliweb.cern.ch/people/skowron/analyzer/index.html
+// Piotr.Skowronski@cern.ch
+//
+//////////////////////////////////////////////////////////////////////////////
 
 ClassImp(AliHBTQInvCorrelFctn)
 

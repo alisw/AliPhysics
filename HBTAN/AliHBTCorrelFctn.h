@@ -1,15 +1,27 @@
 #ifndef ALIHBTCORRELFUNCTION_H
 #define ALIHBTCORRELFUNCTION_H
+//____________________________________________________________________________
+//////////////////////////////////////////////////////////////////////////////
+//
+// class AliHBTQInvCorrelFctn
+// class AliHBTQOutCMSLCCorrelFctn
+// class AliHBTQLongCMSLCCorrelFctn
+// class AliHBTQSideCMSLCCorrelFctn
+// class AliHBTInvMassCorrelFctn
+// class AliHBTTwoKStarCorrelFctn
+//
+// Set of functions:
+//   Q Invaraint Correlation Function
+//   Invariant Mass Function
+//
+// more info: http://aliweb.cern.ch/people/skowron/analyzer/index.html
+// Piotr.Skowronski@cern.ch
+//
+//////////////////////////////////////////////////////////////////////////////
 
 #include "AliHBTFunction.h"
 #include "AliHBTParticle.h"
 #include <Riostream.h>
-//Set of functions:
-//   Q Invaraint Correlation Function
-//   Invariant Mass Function
-//
-//more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
-//Piotr.Skowronski@cern.ch
 
 /*************************************************************************************/ 
 class AliHBTQInvCorrelFctn: public AliHBTOnePairFctn1D
@@ -22,8 +34,8 @@ class AliHBTQInvCorrelFctn: public AliHBTOnePairFctn1D
    TH1* GetResult();
  protected:
    Double_t GetValue(AliHBTPair * pair){return pair->GetQInv();}
-  public:
-    ClassDef(AliHBTQInvCorrelFctn,1)
+ private:  
+   ClassDef(AliHBTQInvCorrelFctn,1)
  
 };
 /*************************************************************************************/ 
@@ -38,9 +50,8 @@ class AliHBTQOutCMSLCCorrelFctn: public AliHBTOnePairFctn1D
    TH1* GetResult();
  protected:
    Double_t GetValue(AliHBTPair * pair){return pair->GetQOutCMSLC();}
-  public:
+ private:  
     ClassDef(AliHBTQOutCMSLCCorrelFctn,1)
- 
 };
 /*************************************************************************************/ 
 
@@ -54,9 +65,8 @@ class AliHBTQLongCMSLCCorrelFctn: public AliHBTOnePairFctn1D
    TH1* GetResult();
  protected:
    Double_t GetValue(AliHBTPair * pair){return pair->GetQLongCMSLC();}
-  public:
+ private:  
     ClassDef(AliHBTQLongCMSLCCorrelFctn,1)
- 
 };
 /*************************************************************************************/ 
 
@@ -70,9 +80,8 @@ class AliHBTQSideCMSLCCorrelFctn: public AliHBTOnePairFctn1D
    TH1* GetResult();
  protected:
    Double_t GetValue(AliHBTPair * pair){return pair->GetQSideCMSLC();}
-  public:
+ private:  
     ClassDef(AliHBTQSideCMSLCCorrelFctn,1)
- 
 };
 /*************************************************************************************/ 
 
@@ -85,9 +94,8 @@ class AliHBTInvMassCorrelFctn: public AliHBTOnePairFctn1D
    TH1* GetResult();
  protected:
    Double_t GetValue(AliHBTPair * pair) { return pair->GetInvMass();}
-  public:
+ private:  
     ClassDef(AliHBTInvMassCorrelFctn,1)
- 
 };
 
 /*************************************************************************************/ 
@@ -101,10 +109,8 @@ class AliHBTTwoKStarCorrelFctn: public AliHBTOnePairFctn1D
    TH1* GetResult();
  protected:
    Double_t GetValue(AliHBTPair * pair) { return 2.0*pair->GetKStar();}
-  public:
+ private:  
     ClassDef(AliHBTTwoKStarCorrelFctn,1)
- 
 };
-
 
 #endif
