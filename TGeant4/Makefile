@@ -33,7 +33,7 @@ ifneq ($(ALICE_TARGET),OSF1)
 DICT          = TGeant4Cint.cxx
 DICTH         = TGeant4.h TG4VRunConfiguration.h \
 	        TG4Editor.h TG4MainFrame.h TG4GeometryGUI.h TG4GuiVolume.h \
-		TG4MaterialsFrames.h TG4VolumesFrames.h \
+		TG4MaterialsFrames.h TG4VolumesFrames.h TG4ListTreeFrame.h \
 	        TGeant4LinkDef.h
 DICTO         = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(DICT))
 endif
