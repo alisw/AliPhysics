@@ -77,15 +77,15 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   // Called by AliReconstruct after Reconstruct() and global tracking and vertxing 
   //Creates the tracksegments and Recparticles
   
+  Int_t eventNumber = runLoader->GetEventNumber() ;
+
   TString headerFile(runLoader->GetFileName()) ; 
-  TString branchName("Default") ;  
+  TString branchName(runLoader->GetEventFolder()->GetName()) ;  
 
   AliPHOSTrackSegmentMakerv1 tsm(headerFile, branchName);
   tsm.SetESD(esd) ; 
   AliPHOSPIDv1 pid(headerFile, branchName);
 
-  //  AliPHOSGetter *gime = AliPHOSGetter::Instance() ;
-  Int_t eventNumber = runLoader->GetEventNumber() ;
   // do current event; the loop over events is done by AliReconstruction::Run()
   tsm.SetEventRange(eventNumber, eventNumber) ; 
   pid.SetEventRange(eventNumber, eventNumber) ; 
