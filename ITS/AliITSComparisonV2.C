@@ -1,4 +1,10 @@
 /****************************************************************************
+ *           Very important, delicate and rather obscure macro.             *
+ *                                                                          *
+ *               Creates list of "trackable" tracks,                        *
+ *             calculates efficiency, resolutions etc.                      *
+ *  The ESD tracks must be in an appropriate state (kITSin or kITSrefit)    *
+ *                                                                          *
  *           Origin: I.Belikov, CERN, Jouri.Belikov@cern.ch                 *
  ****************************************************************************/
 
@@ -18,8 +24,10 @@
   #include "AliITStrackV2.h"
   #include "AliITSclusterV2.h"
   #include "AliMagF.h"
+  #include "AliESD.h"
 
   #include "TFile.h"
+  #include "TKey.h"
   #include "TTree.h"
   #include "TH1.h"
   #include "TH2.h"
@@ -38,6 +46,9 @@ struct GoodTrackITS {
   Float_t x,y,z;
 };
 
+Int_t good_tracks_its(GoodTrackITS *gt, const Int_t max, 
+const char* evfoldname = AliConfig::fgkDefaultEventFolderName);
+
 extern AliRun *gAlice;
 
 Int_t AliITSComparisonV2() {
@@ -55,28 +66,18 @@ Int_t AliITSComparisonV2() {
    }
    rl->LoadgAlice();
    if (rl->GetAliRun())
-   AliKalmanTrack::
-   SetConvConst(1000/0.299792458/rl->GetAliRun()->Field()->SolenoidField());
+   AliKalmanTrack::SetConvConst(
+     1000/0.299792458/rl->GetAliRun()->Field()->SolenoidField()
+   );
    else {
       cerr<<"AliITSComparisonV2.C :Can't get AliRun !\n";
       return 1;
    }
    //rl->UnloadgAlice();
-    
-   AliITSLoader* itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
-   if (itsl == 0x0) {
-       cerr<<"AliITSComparisonV2.C : Can not find ITSLoader\n";
-       delete rl;
-       return 3;
-   }
    
-   const Int_t MAX=15000;
-   Int_t good_tracks_its(
-     GoodTrackITS *gt, const Int_t max, 
-     const char* evfoldname = AliConfig::fgkDefaultEventFolderName
-   );//declaration only
 
    /* Generate a list of "good" tracks */
+   const Int_t MAX=15000;
    GoodTrackITS gt[MAX];
    Int_t ngood=0;
    ifstream in("good_tracks_its");
@@ -106,22 +107,28 @@ Int_t AliITSComparisonV2() {
       out.close();
    }
 
-   Int_t nentr=0; TObjArray tarray(2000);
-   {/* Load tracks */ 
-     itsl->LoadTracks();
-     TTree *tracktree=itsl->TreeT();
-     if (!tracktree) {cerr<<"Can't get a tree with ITS tracks !\n"; return 4;}
-     TBranch *tbranch=tracktree->GetBranch("tracks");
-     nentr=(Int_t)tracktree->GetEntries();
-
-     for (Int_t i=0; i<nentr; i++) {
-        AliITStrackV2 *iotrack=new AliITStrackV2;
-        tbranch->SetAddress(&iotrack);
-        tracktree->GetEvent(i);
+   TObjArray tarray(2000);
+   { /*Load tracks*/
+   TFile *ef=TFile::Open("AliESDits.root");
+   if ((!ef)||(!ef->IsOpen())) {
+      ::Fatal("AliITSComparisonV2.C","Can't open AliESDits.root !");
+   }
+   TKey *key=0;
+   TIter next(ef->GetListOfKeys());
+   if ((key=(TKey*)next())!=0) {
+     AliESD *event=(AliESD*)key->ReadObj();
+     Int_t ntrk=event->GetNumberOfTracks();
+     for (Int_t i=0; i<ntrk; i++) {
+        AliESDtrack *t=event->GetTrack(i);
+        if ((t->GetStatus()&AliESDtrack::kITSin)==0) continue;
+        AliITStrackV2 *iotrack=new AliITStrackV2(*t);
         tarray.AddLast(iotrack);
      }
-     itsl->UnloadTracks();
+     delete event;
    }
+   ef->Close();
+   }
+   Int_t nentr=tarray.GetEntriesFast();
 
    TH1F *hp=new TH1F("hp","PHI resolution",50,-20.,20.); hp->SetFillColor(4);
    TH1F *hl=new TH1F("hl","LAMBDA resolution",50,-20,20);hl->SetFillColor(4);

@@ -12,12 +12,14 @@
   #include <fstream.h>
 
   #include "AliRun.h"
+  #include "AliMC.h"
   #include "AliHeader.h"
   #include "AliRunLoader.h"
   #include "AliITSLoader.h"
 
   #include "TH1.h"
   #include "TFile.h"
+  #include "TKey.h"
   #include "TTree.h"
   #include "TObjArray.h"
   #include "TStyle.h"
@@ -28,7 +30,7 @@
   #include "TStopwatch.h"
 
   #include "AliRun.h"
-  #include "AliPDG.h"
+  #include "AliESD.h"
   #include "AliV0vertex.h"
 #endif
 
@@ -44,8 +46,54 @@ extern AliRun *gAlice;
 
 Int_t AliV0Comparison(Int_t code=310) { //Lambda=3122, LambdaBar=-3122
    cerr<<"Doing comparison...\n";
-
    TStopwatch timer;
+
+   /*** Check if the file with the "good" vertices exists ***/
+   GoodVertex gv[1000];
+   Int_t ngood=0;
+   ifstream in("good_vertices");
+   if (in) {
+      cerr<<"Reading good vertices...\n";
+      while (in>>gv[ngood].nlab>>gv[ngood].plab>>gv[ngood].code>>
+                 gv[ngood].px>>gv[ngood].py>>gv[ngood].pz>>
+                 gv[ngood].x >>gv[ngood].y >>gv[ngood].z) {
+         ngood++;
+         cerr<<ngood<<'\r';
+         if (ngood==1000) {
+            cerr<<"Too many good vertices !\n";
+            break;
+         }
+      }
+      if (!in.eof()) cerr<<"Read error (good_vertices) !\n";
+   } else {
+     /*** generate a file with the "good" vertices ***/
+      cerr<<"Marking good vertices (this will take a while)...\n";
+      ngood=good_vertices(gv,1000);
+      ofstream out("good_vertices");
+      if (out) {
+         for (Int_t ngd=0; ngd<ngood; ngd++)            
+	    out<<gv[ngd].nlab<<' '<<gv[ngd].plab<<' '<<gv[ngd].code<<' '<<
+                 gv[ngd].px<<' '<<gv[ngd].py<<' '<<gv[ngd].pz<<' '<<
+                 gv[ngd].x <<' '<<gv[ngd].y <<' '<<gv[ngd].z <<endl;
+      } else cerr<<"Can not open file (good_vertices) !\n";
+      out.close();
+   }
+
+   
+   AliESD *event=0;
+   { /*** Load reconstructed vertices ***/
+   TFile *ef=TFile::Open("AliESDv0.root");
+   if ((!ef)||(!ef->IsOpen())) {
+     cerr<<"AliV0Comparison.C: Can't open AliESDv0.root !\n";
+     return 1;
+   }
+   TKey *key=0;
+   TIter next(ef->GetListOfKeys());
+   if ((key=(TKey*)next())!=0) event=(AliESD*)key->ReadObj();
+   ef->Close();
+   }
+   Int_t nentr=event->GetNumberOfV0s();
+
 
    const Double_t V0window=0.05;
    Double_t ptncut=0.13, ptpcut=0.13, kinecut=0.03; 
@@ -94,74 +142,20 @@ Int_t AliV0Comparison(Int_t code=310) { //Lambda=3122, LambdaBar=-3122
    v0sf->SetXTitle("(GeV)"); v0sf->SetFillColor(6);
 
 
-   if (gAlice) {
-      delete gAlice->GetRunLoader();
-      delete gAlice; 
-      gAlice=0;
-   }   
-   AliRunLoader *rl = AliRunLoader::Open("galice.root");
-   if (!rl) {
-       cerr<<"AliV0Comparison.C :Can't start sesion !\n";
-       return 1;
-   }
-   AliITSLoader* itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
-   if (itsl == 0x0) {
-       cerr<<"AliV0Comparison.C : Can not find the ITSLoader\n";
-       delete rl;
-       return 2;
-   }
-
-   /*** Load reconstructed vertices ***/
-   TObjArray varray(1000);
-   itsl->LoadV0s();
-   TTree *vTree=itsl->TreeV0();
-   TBranch *branch=vTree->GetBranch("vertices");
-   Int_t nentr=(Int_t)vTree->GetEntries();
-   for (Int_t i=0; i<nentr; i++) {
-       AliV0vertex *iovertex=new AliV0vertex; branch->SetAddress(&iovertex);
-       vTree->GetEvent(i);
-       varray.AddLast(iovertex);
-   }
-
-   /*** Check if the file with the "good" vertices exists ***/
-   GoodVertex gv[1000];
-   Int_t ngood=0;
-   ifstream in("good_vertices");
-   if (in) {
-      cerr<<"Reading good vertices...\n";
-      while (in>>gv[ngood].nlab>>gv[ngood].plab>>gv[ngood].code>>
-                 gv[ngood].px>>gv[ngood].py>>gv[ngood].pz>>
-                 gv[ngood].x >>gv[ngood].y >>gv[ngood].z) {
-         ngood++;
-         cerr<<ngood<<'\r';
-         if (ngood==1000) {
-            cerr<<"Too many good vertices !\n";
-            break;
-         }
-      }
-      if (!in.eof()) cerr<<"Read error (good_vertices) !\n";
-   } else {
-     /*** generate a file with the "good" vertices ***/
-      cerr<<"Marking good vertices (this will take a while)...\n";
-      ngood=good_vertices(gv,1000);
-      ofstream out("good_vertices");
-      if (out) {
-         for (Int_t ngd=0; ngd<ngood; ngd++)            
-	    out<<gv[ngd].nlab<<' '<<gv[ngd].plab<<' '<<gv[ngd].code<<' '<<
-                 gv[ngd].px<<' '<<gv[ngd].py<<' '<<gv[ngd].pz<<' '<<
-                 gv[ngd].x <<' '<<gv[ngd].y <<' '<<gv[ngd].z <<endl;
-      } else cerr<<"Can not open file (good_vertices) !\n";
-      out.close();
-   }
-
-
    Double_t pxg=0.,pyg=0.,ptg=0.;
    Int_t nlab=-1, plab=-1;
    Int_t i;
    for (i=0; i<nentr; i++) {
-       AliV0vertex *vertex=(AliV0vertex*)varray.UncheckedAt(i);
-       nlab=TMath::Abs(vertex->GetNindex());
-       plab=TMath::Abs(vertex->GetPindex());
+       AliESDv0 *vertex=event->GetV0(i);
+
+       Int_t nidx=TMath::Abs(vertex->GetNindex());
+       Int_t pidx=TMath::Abs(vertex->GetPindex());
+
+       AliESDtrack *ntrack=event->GetTrack(nidx);
+       AliESDtrack *ptrack=event->GetTrack(pidx);
+
+       nlab=TMath::Abs(ntrack->GetLabel());
+       plab=TMath::Abs(ptrack->GetLabel());
 
        /** Kinematical cuts **/
        Double_t pxn,pyn,pzn; vertex->GetNPxPyPz(pxn,pyn,pzn); 
@@ -221,7 +215,7 @@ Int_t AliV0Comparison(Int_t code=310) { //Lambda=3122, LambdaBar=-3122
       cerr<<"Vertex ("<<nlab<<','<<plab<<") has not been found !\n";
    }
 
-   varray.Delete();
+   delete event;
 
    Stat_t ng=hgood->GetEntries();
    Stat_t nf=hfound->GetEntries();
@@ -305,8 +299,6 @@ Int_t AliV0Comparison(Int_t code=310) { //Lambda=3122, LambdaBar=-3122
 
    timer.Stop(); timer.Print();
 
-   delete rl;
-
    return 0;
 }
 
@@ -336,18 +328,17 @@ Int_t good_vertices(GoodVertex *gv, Int_t max) {
    }
 
    /*** Get an access to the kinematics ***/
-   AliRunLoader *rl = 
-        AliRunLoader::GetRunLoader(AliConfig::fgkDefaultEventFolderName);
-   if (rl == 0x0) {
-     ::Fatal("AliV0Comparison.C::good_vertices","Can not find Run Loader !");
-   }
-
-   AliITSLoader* itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
-   if (itsl == 0x0) {
-       cerr<<"AliITSComparisonV2.C : Can not find TPCLoader\n";
-       delete rl;
+   if (gAlice) {
+      delete gAlice->GetRunLoader();
+      delete gAlice; 
+      gAlice=0;
+   }   
+   AliRunLoader *rl = AliRunLoader::Open("galice.root");
+   if (!rl) {
+       cerr<<"AliV0Comparison.C, good_vertices :Can't start session !\n";
        return 1;
    }
+
    rl->LoadgAlice();
    rl->LoadHeader();
    rl->LoadKinematics();

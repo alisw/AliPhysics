@@ -12,13 +12,14 @@
   #include <fstream.h>
 
   #include "AliRun.h"
+  #include "AliMC.h"
   #include "AliHeader.h"
   #include "AliRunLoader.h"
   #include "AliITSLoader.h"
 
   #include "TH1.h"
   #include "TFile.h"
-  #include "TTree.h"
+  #include "TKey.h"
   #include "TObjArray.h"
   #include "TStyle.h"
   #include "TCanvas.h"
@@ -29,7 +30,7 @@
   #include "TPDGCode.h"
 
   #include "AliRun.h"
-  #include "AliPDG.h"
+  #include "AliESD.h"
   #include "AliCascadeVertex.h"
 #endif
 
@@ -49,10 +50,56 @@ Int_t AliCascadeComparison(Int_t code=3312) {
   //code=-3312; //kXiPlusBar
   //code= 3334; //kOmegaMinus
   //code=-3334; //kOmegaPlusBar
-
    cerr<<"Doing comparison...\n";
-
    TStopwatch timer;
+
+   /*** Check if the file with the "good" cascades exists ***/
+   GoodCascade gc[100];
+   Int_t ngood=0;
+   ifstream in("good_cascades");
+   if (in) {
+      cerr<<"Reading good cascades...\n";
+      while (in>>gc[ngood].nlab>>gc[ngood].plab>>
+	         gc[ngood].blab>>gc[ngood].code>>
+                 gc[ngood].px>>gc[ngood].py>>gc[ngood].pz>>
+                 gc[ngood].x >>gc[ngood].y >>gc[ngood].z) {
+         ngood++;
+         cerr<<ngood<<'\r';
+         if (ngood==100) {
+            cerr<<"Too many good cascades !\n";
+            break;
+         }
+      }
+      if (!in.eof()) cerr<<"Read error (good_cascades) !\n";
+   } else {
+     /*** generate a file with the "good" cascades ***/
+      cerr<<"Marking good cascades (this will take a while)...\n";
+      ngood=good_cascades(gc,100);
+      ofstream out("good_cascades");
+      if (out) {
+         for (Int_t ngd=0; ngd<ngood; ngd++)            
+            out<<gc[ngd].nlab<<' '<<gc[ngd].plab<<' '<<
+	         gc[ngd].blab<<' '<<gc[ngd].code<<' '<<
+                 gc[ngd].px<<' '<<gc[ngd].py<<' '<<gc[ngd].pz<<' '<<
+                 gc[ngd].x <<' '<<gc[ngd].y <<' '<<gc[ngd].z <<endl;
+      } else cerr<<"Can not open file (good_cascades) !\n";
+      out.close();
+   }
+
+   AliESD *event=0;
+   { /*** Load reconstructed vertices ***/
+   TFile *ef=TFile::Open("AliESDcas.root");
+   if ((!ef)||(!ef->IsOpen())) {
+     cerr<<"AliCascadeComparison.C: Can't open AliESDcas.root !\n";
+     return 1;
+   }
+   TKey *key=0;
+   TIter next(ef->GetListOfKeys());
+   if ((key=(TKey*)next())!=0) event=(AliESD*)key->ReadObj();
+   ef->Close();
+   }
+   Int_t nentr=event->GetNumberOfCascades();
+
 
    const Double_t cascadeWindow=0.05, cascadeWidth=0.015; 
    Double_t ptncut=0.12, ptpcut=0.33, kine0cut=0.003;
@@ -109,77 +156,23 @@ Int_t AliCascadeComparison(Int_t code=3312) {
    TH1F *csf =new TH1F("csf","Fake Cascade Effective Mass",40, mmin, mmax);
    csf->SetXTitle("(GeV)"); csf->SetFillColor(6);
 
-   if (gAlice) {
-      delete gAlice->GetRunLoader();
-      delete gAlice; 
-      gAlice=0;
-   }   
-   AliRunLoader *rl = AliRunLoader::Open("galice.root");
-   if (!rl) {
-       cerr<<"AliV0Comparison.C :Can't start sesion !\n";
-       return 1;
-   }
-   AliITSLoader* itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
-   if (itsl == 0x0) {
-       cerr<<"AliV0Comparison.C : Can not find the ITSLoader\n";
-       delete rl;
-       return 2;
-   }
-
-   /*** Load reconstructed cascades ***/
-   TObjArray carray(1000);
-   itsl->LoadCascades();
-   TTree *xTree=itsl->TreeX();
-   TBranch *branch=xTree->GetBranch("cascades");
-   Int_t nentr=(Int_t)xTree->GetEntries();
-   for (Int_t i=0; i<nentr; i++) {
-       AliCascadeVertex *iovertex=new AliCascadeVertex; 
-       branch->SetAddress(&iovertex);
-       xTree->GetEvent(i);
-       carray.AddLast(iovertex);
-   }
-
-   /*** Check if the file with the "good" cascades exists ***/
-   GoodCascade gc[100];
-   Int_t ngood=0;
-   ifstream in("good_cascades");
-   if (in) {
-      cerr<<"Reading good cascades...\n";
-      while (in>>gc[ngood].nlab>>gc[ngood].plab>>
-	         gc[ngood].blab>>gc[ngood].code>>
-                 gc[ngood].px>>gc[ngood].py>>gc[ngood].pz>>
-                 gc[ngood].x >>gc[ngood].y >>gc[ngood].z) {
-         ngood++;
-         cerr<<ngood<<'\r';
-         if (ngood==100) {
-            cerr<<"Too many good cascades !\n";
-            break;
-         }
-      }
-      if (!in.eof()) cerr<<"Read error (good_cascades) !\n";
-   } else {
-     /*** generate a file with the "good" cascades ***/
-      cerr<<"Marking good cascades (this will take a while)...\n";
-      ngood=good_cascades(gc,100);
-      ofstream out("good_cascades");
-      if (out) {
-         for (Int_t ngd=0; ngd<ngood; ngd++)            
-            out<<gc[ngd].nlab<<' '<<gc[ngd].plab<<' '<<
-	         gc[ngd].blab<<' '<<gc[ngd].code<<' '<<
-                 gc[ngd].px<<' '<<gc[ngd].py<<' '<<gc[ngd].pz<<' '<<
-                 gc[ngd].x <<' '<<gc[ngd].y <<' '<<gc[ngd].z <<endl;
-      } else cerr<<"Can not open file (good_cascades) !\n";
-      out.close();
-   }
-
    Double_t pxg=0.,pyg=0.,ptg=0.;
    Int_t nlab=-1, plab=-1, blab=-1;
    Int_t i;
    for (i=0; i<nentr; i++) {
-       AliCascadeVertex *cascade=(AliCascadeVertex*)carray.UncheckedAt(i);
-       nlab=TMath::Abs(cascade->GetNindex()); 
-       plab=TMath::Abs(cascade->GetPindex());
-       blab=TMath::Abs(cascade->GetBindex());
+       AliESDcascade *cascade=event->GetCascade(i);
+
+       Int_t nidx=TMath::Abs(cascade->GetNindex());
+       Int_t pidx=TMath::Abs(cascade->GetPindex());
+       Int_t bidx=TMath::Abs(cascade->GetBindex());
+
+       AliESDtrack *ntrack=event->GetTrack(nidx);
+       AliESDtrack *ptrack=event->GetTrack(pidx);
+       AliESDtrack *btrack=event->GetTrack(bidx);
+
+       nlab=TMath::Abs(ntrack->GetLabel()); 
+       plab=TMath::Abs(ptrack->GetLabel());
+       blab=TMath::Abs(btrack->GetLabel());
 
        /** Kinematical cuts **/
        Double_t pxn,pyn,pzn; cascade->GetNPxPyPz(pxn,pyn,pzn); 
@@ -245,7 +238,7 @@ Int_t AliCascadeComparison(Int_t code=3312) {
      cerr<<"Cascade ("<<nlab<<','<<plab<<","<<blab<<") has not been found !\n";
    }
 
-   carray.Delete();
+   delete event;
 
    Stat_t ng=hgood->GetEntries();
    Stat_t nf=hfound->GetEntries();
@@ -331,8 +324,6 @@ Int_t AliCascadeComparison(Int_t code=3312) {
 
    timer.Stop(); timer.Print();
 
-   delete rl;
-
    return 0;
 }
 
@@ -363,18 +354,17 @@ Int_t good_cascades(GoodCascade *gc, Int_t max) {
    }
 
    /*** Get an access to the kinematics ***/
-   AliRunLoader *rl =
-        AliRunLoader::GetRunLoader(AliConfig::fgkDefaultEventFolderName);
-   if (rl == 0x0) {
-  ::Fatal("AliCascadeComparison.C::good_cascades","Can not find Run Loader !");
-   }
-
-   AliITSLoader* itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
-   if (itsl == 0x0) {
-       cerr<<"AliITSComparisonV2.C : Can not find TPCLoader\n";
-       delete rl;
+   if (gAlice) {
+      delete gAlice->GetRunLoader();
+      delete gAlice; 
+      gAlice=0;
+   }   
+   AliRunLoader *rl = AliRunLoader::Open("galice.root");
+   if (!rl) {
+       cerr<<"AliCascadeComparison.C, good_cascades :Can't start session !\n";
        return 1;
    }
+
    rl->LoadgAlice();
    rl->LoadHeader();
    rl->LoadKinematics();
