@@ -320,6 +320,9 @@ AliRun::~AliRun()
 //_______________________________________________________________________
 void AliRun::Copy(AliRun &) const
 {
+  //
+  //  Copy method ... not implemented
+  //
   Fatal("Copy","Not implemented!\n");
 }
 
@@ -605,6 +608,21 @@ void AliRun::EnergySummary()
 void AliRun::Announce() const
 {
   //
+  // Announce the current version of AliRoot
+  //
+  printf("%70s",
+	 "****************************************************************\n");
+  printf("%6s","*");printf("%64s","*\n");
+
+  printf("%6s","*");
+  printf("    You are running AliRoot version v3-09-04\n");
+
+  printf("%6s","*");
+  printf("    The cvs tag for the current program is $Name$\n");
+
+  printf("%6s","*");printf("%64s","*\n");
+  printf("%70s",
+	 "****************************************************************\n");
 }
 
 //_______________________________________________________________________
@@ -911,6 +929,9 @@ void AliRun::ResetGenerator(AliGenerator *generator)
 //_______________________________________________________________________
 void AliRun::SetTransPar(const char *filename)
 {
+  //
+  // Sets the file name for transport parameters
+  //
   fTransParName = filename;
 }
 
@@ -1127,9 +1148,12 @@ void AliRun::MakeTree(Option_t *option, const char *file)
 }
 
 //_______________________________________________________________________
-TParticle* AliRun::Particle(Int_t i)
+TParticle* AliRun::Particle(Int_t i) const
 {
-    return fStack->Particle(i);
+  //
+  // Returns particle i on the simulation stack
+  //
+  return fStack->Particle(i);
 }
 
 //_______________________________________________________________________
@@ -1203,6 +1227,8 @@ void AliRun::InitMC(const char *setup)
   //
   // Initialize the Alice setup
   //
+
+  Announce();
 
   if(fInitDone) {
     Warning("Init","Cannot initialise AliRun twice!\n");
@@ -1894,7 +1920,7 @@ Int_t AliRun::GetNtrack() const {
 }
 
 //_______________________________________________________________________
-TObjArray* AliRun::Particles() {
+TObjArray* AliRun::Particles() const {
   //
   // Returns pointer to Particles array
   //
@@ -1902,7 +1928,7 @@ TObjArray* AliRun::Particles() {
 }
 
 //_______________________________________________________________________
-TTree* AliRun::TreeK() {
+TTree* AliRun::TreeK() const {
   //
   // Returns pointer to the TreeK array
   //

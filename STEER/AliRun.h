@@ -58,7 +58,7 @@ public:
    TObjArray     *Detectors() const {return fModules;}
    TObjArray     *Modules() const {return fModules;}
    Int_t          CurrentTrack() const;
-   AliDisplay    *Display() { return fDisplay;}
+   AliDisplay    *Display() const { return fDisplay;}
    virtual  Int_t DistancetoPrimitive(Int_t px, Int_t py) const;
    virtual  void  DumpPart (Int_t i) const;
    virtual  void  DumpPStack () const;
@@ -87,7 +87,7 @@ public:
    virtual  const char *GetConfigFunction() const 
     {return fConfigFunction.Data();}
    TGeometry     *GetGeometry();
-   AliHeader*     GetHeader() {return fHeader;}
+   AliHeader*     GetHeader() const {return fHeader;}
    virtual  void  SetGenEventHeader(AliGenEventHeader* header);
    Int_t          GetNtrack() const;
    virtual  Int_t GetPrimary(Int_t track) const;
@@ -102,8 +102,8 @@ public:
    virtual  void  MakeTree(Option_t *option="KH", const char *file = 0);
    void           MakeTree(Option_t *option, TFile *file);
 
-   TObjArray     *Particles();
-   TParticle     *Particle(Int_t i);
+   TObjArray     *Particles() const;
+   TParticle     *Particle(Int_t i) const;
    virtual  void  ResetDigits();
    virtual  void  ResetSDigits();
    virtual  void  ResetHits();
@@ -180,15 +180,15 @@ public:
    TFile* GetTreeRFile() const {return fTreeRFile;}
    
 
-   TTree         *TreeD() {return fTreeD;}
-   TTree         *TreeS() {return fTreeS;}
-   TTree         *TreeE() {return fTreeE;}
-   TTree         *TreeH() {return fTreeH;}
-   TTree         *TreeTR() {return fTreeTR;}
-   TTree         *TreeK() ;
-   TTree         *TreeR() {return fTreeR;}
+   TTree         *TreeD() const {return fTreeD;}
+   TTree         *TreeS() const {return fTreeS;}
+   TTree         *TreeE() const {return fTreeE;}
+   TTree         *TreeH() const {return fTreeH;}
+   TTree         *TreeTR() const {return fTreeTR;}
+   TTree         *TreeK() const;
+   TTree         *TreeR() const {return fTreeR;}
 
-   AliStack      *Stack() {return fStack;}
+   AliStack      *Stack() const {return fStack;}
 
 protected:
   virtual  void  Tree2Tree(Option_t *option, const char *detector=0);
