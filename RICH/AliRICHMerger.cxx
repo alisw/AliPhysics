@@ -149,7 +149,7 @@ void AliRICHMerger::Digitise(Int_t nev, Int_t flag)
 
   // keep galice.root for signal and name differently the file for 
   // background when add! otherwise the track info for signal will be lost !
-
+  nev++;//to remove warning
   Int_t particle;
 
   AliRICHChamber*       iChamber;
@@ -192,7 +192,7 @@ void AliRICHMerger::Digitise(Int_t nev, Int_t flag)
     
   for (Int_t i =0; i<kNCH; i++) {
     iChamber= &(pRICH->Chamber(i));
-    segmentation=iChamber->GetSegmentationModel(1);
+    segmentation=iChamber->GetSegmentationModel();
     fHitMap[i] = new AliRICHHitMapA1(segmentation, fList);
   }
   //

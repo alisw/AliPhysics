@@ -90,6 +90,7 @@ AliRICHClusterFinder::AliRICHClusterFinder()
 }
 
 AliRICHClusterFinder::AliRICHClusterFinder(const AliRICHClusterFinder& ClusterFinder)
+                     :TObject(ClusterFinder)
 {
 // Copy Constructor
 }
@@ -1074,8 +1075,9 @@ Float_t DiscrCharge(Int_t i,Double_t *par)
 
 //
 // Minimisation function
-void fcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
+void fcn(Int_t &npar, Double_t */*gin*/, Double_t &f, Double_t *par, Int_t /*iflag*/)
 {
+  npar=1;
     Int_t i;
     Float_t delta;
     Float_t chisq=0;
@@ -1104,7 +1106,7 @@ void AliRICHClusterFinder::SetDigits(TClonesArray *RICHdigits)
     fNdigits = fDigits->GetEntriesFast();
 }
 
-AliRICHClusterFinder& AliRICHClusterFinder::operator=(const AliRICHClusterFinder& rhs)
+AliRICHClusterFinder& AliRICHClusterFinder::operator=(const AliRICHClusterFinder& /*rhs*/)
 {
 // Assignment operator
     return *this;

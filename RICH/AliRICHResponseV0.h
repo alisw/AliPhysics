@@ -87,7 +87,7 @@ public:
     
 inline void AliRICHResponseV0::Print(Option_t* option) const
 {
-   TObject::Print();
+   TObject::Print(option);
    cout<<"Slope of the charge distribution               "<<fChargeSlope		              <<endl;
    cout<<"Width of the charge distribution in x          "<<fChargeSpreadX		      <<endl;
    cout<<"Width of the charge distribution in y          "<<fChargeSpreadY		      <<endl;

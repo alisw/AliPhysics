@@ -33,7 +33,7 @@ public:
            AliRICHChamber(Int_t iModuleN,AliRICHParam *pParam);
            AliRICHChamber(const AliRICHChamber &chamber ) : TNamed(chamber) {}//copy ctor 
   virtual ~AliRICHChamber()                               {;}//dtor
-  AliRICHChamber& operator=(const AliRICHChamber& rhs){return *this;}
+  AliRICHChamber& operator=(const AliRICHChamber&){return *this;}
   void LocaltoGlobal(Float_t pos[3],Float_t Localpos[3]);//Transformation from local to global coordinates, chamber-dependant
   void GlobaltoLocal(Float_t pos[3],Float_t localpos[3]);//Transformation from Global to local coordinates, chamber-dependant 
   void GenerateTresholds();                              //Generate pad dependent tresholds
@@ -47,12 +47,12 @@ public:
   Float_t ROuter()            const{return frMax;}      // Return outer radius of sensitive volum  
   void    SetZPOS(Float_t p1)      {fzPos=p1;}
   Float_t ZPosition()         const{return fzPos;}
-  void              SetGeometryModel(AliRICHGeometry* pRICHGeometry)           {fGeometry=pRICHGeometry;}        
-  AliRICHGeometry*  GetGeometryModel()                                    const{return fGeometry;}
+  void              SetGeometryModel(AliRICHGeometry* pRICHGeometry)            {fGeometry=pRICHGeometry;}        
+  AliRICHGeometry*  GetGeometryModel()                                     const{return fGeometry;}
   void              SetResponseModel(AliRICHResponse* pRICHResponse)            {fResponse=pRICHResponse;}
   AliRICHResponse*  GetResponseModel()                                     const{return fResponse;}
-  void              SetSegmentationModel(AliSegmentation* pRICHSegmentation)   {fSegmentation=pRICHSegmentation;}
-  AliSegmentation*  GetSegmentationModel(Int_t i=0)                       const{return fSegmentation;}
+  void              SetSegmentationModel(AliSegmentation* pRICHSegmentation)    {fSegmentation=pRICHSegmentation;}
+  AliSegmentation*  GetSegmentationModel()                                 const{return fSegmentation;}
   void                  SetReconstructionModel(AliRICHClusterFinder *pRICHReconstruction)    {fReconstruction=pRICHReconstruction;}
   AliRICHClusterFinder* &GetReconstructionModel()                                            {return fReconstruction;}
   void   SigGenInit(Float_t x, Float_t y, Float_t z)   {fSegmentation->SigGenInit(x, y, z) ;}

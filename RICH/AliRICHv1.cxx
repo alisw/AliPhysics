@@ -149,7 +149,7 @@ void AliRICHv1::Init()
     ((AliRICHChamber*)fChambers->At(6))->SetGid(7);  
 
 
-    segmentation=Chamber(0).GetSegmentationModel(0);
+    segmentation=Chamber(0).GetSegmentationModel();
     geometry=Chamber(0).GetGeometryModel();
     response=Chamber(0).GetResponseModel();
     

@@ -94,7 +94,7 @@ void AliRICHv3::CreateGeometry()
   AliRICHChamber*       iChamber;
 
   iChamber = &(pRICH->Chamber(0));
-  segmentation=(AliRICHSegmentationV0*) iChamber->GetSegmentationModel(0);
+  segmentation=(AliRICHSegmentationV0*) iChamber->GetSegmentationModel();
   geometry=iChamber->GetGeometryModel();
 
   Float_t distance;
@@ -574,7 +574,7 @@ void AliRICHv3::BuildGeometry()
     AliRICHGeometry*  geometry;
  
     iChamber = &(pRICH->Chamber(0));
-    AliRICHSegmentationV1* segmentation=(AliRICHSegmentationV1*) iChamber->GetSegmentationModel(0);
+    AliRICHSegmentationV1* segmentation=(AliRICHSegmentationV1*) iChamber->GetSegmentationModel();
     geometry=iChamber->GetGeometryModel();
     
     new TBRIK("S_RICH","S_RICH","void",71.09999,11.5,73.15);

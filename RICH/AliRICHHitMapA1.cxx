@@ -62,7 +62,7 @@ AliRICHHitMapA1::~AliRICHHitMapA1()
     if (fHitMap) delete[] fHitMap;
 }
 
-void AliRICHHitMapA1::Clear(const char *opt)
+void AliRICHHitMapA1::Clear(const char */*opt*/)
 {
 
 // Clear contents of hit map

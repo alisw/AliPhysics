@@ -34,10 +34,9 @@ AliRICHSegmentationV1::AliRICHSegmentationV1()
    Init(0);       // ??? remove 0
 }
 
-void AliRICHSegmentationV1::Init(Int_t id)
-{
-// Recalculates all the values after some of them have been changed
-
+void AliRICHSegmentationV1::Init(Int_t /*id*/)
+{//Recalculates all the values after some of them have been changed
+    
    Float_t csi_length = fNpy*fDpy + fDeadZone;
    Float_t csi_width = fNpx*fDpx + 2*fDeadZone;
 

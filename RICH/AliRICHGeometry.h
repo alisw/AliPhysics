@@ -106,7 +106,7 @@ inline AliRICHGeometry::AliRICHGeometry()
 
 inline void AliRICHGeometry::Print(Option_t *option)const
 {
-   TObject::Print();
+   TObject::Print(option);
    cout<<"Radiator Gap thickness:  "<<GetGapThickness()          <<endl;
    cout<<"Proximity Gap thickness: "<<GetProximityGapThickness() <<endl;
    cout<<"Quartz window length:    "<<GetQuartzLength()          <<endl;

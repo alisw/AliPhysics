@@ -29,8 +29,7 @@ public AliSegmentation {
     virtual Float_t GetAnod(Float_t xhit) const;
     // Transform from pad to real coordinates
     virtual void    GetPadI(Float_t x, Float_t y , Int_t &ix, Int_t &iy);
-    virtual void    GetPadI(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy)  
-	{GetPadI(x, y, ix, iy);}
+    virtual void    GetPadI(Float_t x, Float_t y , Float_t /*z*/, Int_t &ix, Int_t &iy) {GetPadI(x, y, ix, iy);}
     // Transform from real to pad coordinates
     virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y);
     virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z) 
@@ -66,14 +65,12 @@ public AliSegmentation {
     virtual void     SetPad(Int_t ix, Int_t iy);
     // set hit position
     virtual void     SetHit(Float_t xhit , Float_t yhit);
-    virtual void     SetHit(Float_t xhit, Float_t yhit, Float_t zhit)
-	{SetHit(xhit, yhit);}
+    virtual void     SetHit(Float_t xhit, Float_t yhit, Float_t /*zhit*/){SetHit(xhit, yhit);}
     //
     // Iterate over pads
     // Initialiser
     virtual void  FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy);
-    virtual void  FirstPad(Float_t xhit, Float_t yhit, Float_t zhit, Float_t dx, Float_t dy)
-	{FirstPad(xhit, yhit, dx, dy);}
+    virtual void  FirstPad(Float_t xhit, Float_t yhit, Float_t /*zhit*/, Float_t dx, Float_t dy){FirstPad(xhit, yhit, dx, dy);}
     // Stepper
     virtual void  NextPad();
     // Condition
@@ -84,11 +81,9 @@ public AliSegmentation {
 				       dummy);
     // Number of pads read in parallel and offset to add to x 
     // (specific to LYON, but mandatory for display)
-    virtual void GetNParallelAndOffset(Int_t iX, Int_t iY,
-				       Int_t *Nparallel, Int_t *Offset) {*Nparallel=1;*Offset=0;}
+    virtual void GetNParallelAndOffset(Int_t /*iX*/, Int_t /*iY*/,Int_t *Nparallel, Int_t *Offset) {*Nparallel=1;*Offset=0;}
     // Get next neighbours 
-    virtual void Neighbours
-	(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10]);
+    virtual void Neighbours	(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10]);
     //
     // Current Pad during Integration
     // x-coordinate
@@ -98,8 +93,8 @@ public AliSegmentation {
     // current sector
     virtual Int_t  ISector() {return 1;}
     // calculate sector from x-y coordinates
-    virtual Int_t  Sector(Int_t ix, Int_t iy) {return 1;}
-    virtual Int_t  Sector(Float_t x, Float_t y) {return 1;}
+    virtual Int_t  Sector(Int_t,Int_t) {return 1;}
+    virtual Int_t  Sector(Float_t,Float_t) {return 1;}
     //
     // Signal Generation Condition during Stepping
     virtual Int_t SigGenCond(Float_t x, Float_t y, Float_t z);
@@ -113,7 +108,7 @@ public AliSegmentation {
     // Debugging utilities
     virtual void Draw(const char* = "") const; 
     // Function for systematic corrections
-    virtual void SetCorrFunc(Int_t dum, TF1* func) {fCorr=func;}
+    virtual void SetCorrFunc(Int_t /*dum*/, TF1* func) {fCorr=func;}
 
     virtual TF1* CorrFunc(Int_t) const {return fCorr;} 
     ClassDef(AliRICHSegmentationV0,1)

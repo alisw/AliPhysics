@@ -184,7 +184,7 @@ void AliRICHDigitizer::Exec(Option_t* option)
         
   for (Int_t i =0; i<kNCH; i++) {
     iChamber= &(pRICH->Chamber(i));
-    segmentation=iChamber->GetSegmentationModel(1);
+    segmentation=iChamber->GetSegmentationModel();
     fHitMap[i] = new AliRICHHitMapA1(segmentation, fTDList);
   }
 

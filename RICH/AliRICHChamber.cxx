@@ -215,7 +215,7 @@ void AliRICHChamber::GenerateTresholds()
   }      
 }//void AliRICHChamber::GenerateTresholds()
 //______________________________________________________________________________
-void AliRICHChamber::Print(Option_t *option) const
+void AliRICHChamber::Print(Option_t *) const
 {
   Info(fName.Data(),"r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
                      Rho(), Theta()*r2d,Phi()*r2d ,   X(),    Y(),    Z());

@@ -20,23 +20,18 @@
 ClassImp(AliRICHRecHit1D)
 
 AliRICHRecHit1D::AliRICHRecHit1D(Int_t id, Float_t *rechit, Float_t *photons, Int_t *padsx, Int_t* padsy)
-{
-    //
-    // Creates a RICH rec. hit object
-    //
-    fTheta        = rechit[0];
-    fPhi          = rechit[1];
-    fOmega        = rechit[2];
-    fX            = rechit[3];
-    fY            = rechit[4];
-    fEmissPoint   = rechit[5];
-    fGoodPhotons  = (Int_t)rechit[6];
-    for(Int_t i=0; i<100; i++) {
+{// Creates a RICH rec. hit object
+  id++;//to remove warning
+  fTheta        = rechit[0];
+  fPhi          = rechit[1];
+  fOmega        = rechit[2];
+  fX            = rechit[3];
+  fY            = rechit[4];
+  fEmissPoint   = rechit[5];
+  fGoodPhotons  = (Int_t)rechit[6];
+  for(Int_t i=0; i<100; i++) {
 	fCerPerPhoton[i]  = photons[i];
 	fPadsUsedX[i]    = padsx[i];
 	fPadsUsedY[i]    = padsy[i];
-    }
-    
+  }    
 }
-
-

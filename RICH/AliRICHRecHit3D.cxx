@@ -25,6 +25,7 @@ AliRICHRecHit3D::AliRICHRecHit3D(Int_t id, Float_t *rechit, Float_t omega, Float
     //
     // Creates a RICH rec. hit object
     //
+    id++;//to remove warning
     fTheta        = rechit[0];
     fPhi          = rechit[1];
     fOmega        = rechit[2];

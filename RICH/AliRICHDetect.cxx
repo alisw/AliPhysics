@@ -38,7 +38,8 @@
 
 ClassImp(AliRICHDetect)
 //___________________________________________
-AliRICHDetect::AliRICHDetect() : TObject()
+AliRICHDetect::AliRICHDetect() 
+              :TNamed()
 {
 
 // Default constructor 
@@ -51,7 +52,7 @@ AliRICHDetect::AliRICHDetect() : TObject()
 
 //___________________________________________
 AliRICHDetect::AliRICHDetect(const char *name, const char *title)
-    : TObject()
+              :TNamed(name,title)
 {
 
   TStyle *mystyle=new TStyle("Plain","mystyle");
@@ -100,7 +101,7 @@ void AliRICHDetect::Detect(Int_t nev, Int_t type)
   AliRICHGeometry*  geometry;
   
   iChamber = &(pRICH->Chamber(0));
-  segmentation=(AliRICHSegmentationV0*) iChamber->GetSegmentationModel(0);
+  segmentation=(AliRICHSegmentationV0*) iChamber->GetSegmentationModel();
   geometry=iChamber->GetGeometryModel();
  
   
@@ -744,8 +745,8 @@ Int_t ***AliRICHDetect::i3tensor(long nrl, long nrh, long ncl, long nch, long nd
 }
 
 void AliRICHDetect::free_i3tensor(int ***t, long nrl, long nrh, long ncl, long nch,long ndl, long ndh)
-// free a Int_t f3tensor allocated by i3tensor()
-{
+{// free a Int_t f3tensor allocated by i3tensor()
+  nrh++;ndh++;nch++;
   int NR_END=1; 
 
   free((char*) (t[nrl][ncl]+ndl-NR_END));

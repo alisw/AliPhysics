@@ -53,7 +53,7 @@ AliRICHDetectV1::AliRICHDetectV1() : AliRICHDetect()
 
 //___________________________________________
 AliRICHDetectV1::AliRICHDetectV1(const char *name, const char *title)
-    : AliRICHDetect()
+                :AliRICHDetect(name,title)
 {
 
   TStyle *mystyle=new TStyle("Plain","mystyle");
@@ -104,7 +104,7 @@ void AliRICHDetectV1::Detect(Int_t nev, Int_t type)
   AliRICHGeometry*  geometry;
   
   iChamber = &(pRICH->Chamber(0));
-  segmentation=(AliRICHSegmentationV0*) iChamber->GetSegmentationModel(0);
+  segmentation=(AliRICHSegmentationV0*) iChamber->GetSegmentationModel();
   geometry=iChamber->GetGeometryModel();
  
   
@@ -727,6 +727,7 @@ Int_t ***AliRICHDetectV1::i3tensor(long nrl, long nrh, long ncl, long nch, long 
 void AliRICHDetectV1::free_i3tensor(int ***t, long nrl, long nrh, long ncl, long nch,long ndl, long ndh)
 // free a Int_t f3tensor allocated by i3tensor()
 {
+  nrh++;ndh++;nch++;//to remove warning
   int NR_END=1; 
 
   free((char*) (t[nrl][ncl]+ndl-NR_END));

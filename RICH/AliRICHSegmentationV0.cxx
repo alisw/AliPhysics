@@ -252,13 +252,9 @@ Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[7], Int_t Ylist[7])
 */
 }
 
-Float_t AliRICHSegmentationV0::Distance2AndOffset(Int_t iX, Int_t iY, Float_t X, Float_t Y
-, Int_t *dummy)
-
-{
-// Returns the square of the distance between 1 pad
-// labelled by its Channel numbers and a coordinate
-
+Float_t AliRICHSegmentationV0::Distance2AndOffset(Int_t iX, Int_t iY, Float_t X, Float_t Y,Int_t *dummy)
+{// Returns the square of the distance between 1 pad labelled by its Channel numbers and a coordinate
+  dummy=0;
   Float_t x,y;
   GetPadC(iX,iY,x,y);
   return (x-X)*(x-X) + (y-Y)*(y-Y);
@@ -277,7 +273,7 @@ void  AliRICHSegmentationV0::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) co
 
 void AliRICHSegmentationV0::Draw(const char* opt) const
 {
-
+  Info("Draw","%s",opt);
 // Dummy draw routine
 
 /*

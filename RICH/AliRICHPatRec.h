@@ -19,7 +19,8 @@
 
 class AliRICHPatRec;
 
-class AliRICHPatRec : public TObject {
+class AliRICHPatRec : public TNamed
+{
     
  public:
   AliRICHPatRec();

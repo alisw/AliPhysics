@@ -42,7 +42,7 @@
 
 ClassImp(AliRICHPatRec)
 //___________________________________________
-AliRICHPatRec::AliRICHPatRec() : TObject()
+AliRICHPatRec::AliRICHPatRec() : TNamed()
 {
   // Default constructor
   
@@ -50,7 +50,7 @@ AliRICHPatRec::AliRICHPatRec() : TObject()
 }
 //___________________________________________
 AliRICHPatRec::AliRICHPatRec(const char *name, const char *title)
-    : TObject()
+    : TNamed(name,title)
 {
     //Constructor for Bari's pattern recogniton method object
 }
@@ -354,7 +354,9 @@ void AliRICHPatRec::PhotonSelection(Int_t track, Int_t &nphot, Float_t &thetamea
 {
 
 // not implemented yet
-
+  track++;
+  nphot=10;
+  thetamean=4;
   printf("Calling PhotonSelection\n");
 }
 
@@ -472,7 +474,7 @@ void AliRICHPatRec::FlagPhotons(Int_t track, Float_t theta)
 {
 
 // not implemented yet
-
+  track++;theta++;
   printf("Calling FlagPhotons\n");
 }
 

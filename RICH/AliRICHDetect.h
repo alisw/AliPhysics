@@ -15,7 +15,8 @@
 
 class AliRICHDetect;
 
-class AliRICHDetect : public TObject {
+class AliRICHDetect : public TNamed
+{
     
  public:
   AliRICHDetect();
@@ -39,9 +40,6 @@ class AliRICHDetect : public TObject {
   TCanvas *fc4;                   //Online mesh activation data
 
   ClassDef(AliRICHDetect,1)  //Reconstruction module for :RICH version 0
-	};
-
-
-	
-	
+};
+		
 #endif

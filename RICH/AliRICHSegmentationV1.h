@@ -21,7 +21,7 @@ public:
    virtual Int_t  Sector(Float_t x, Float_t y);    // calculate sector from x-y coordinates
 
    virtual void    GetPadI(Float_t x ,Float_t y ,Int_t   &ix,Int_t   &iy);         // Transform from pad to real coordinates
-   virtual void    GetPadI(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy)  {GetPadI(x, y, ix, iy);}
+   virtual void    GetPadI(Float_t x, Float_t y , Float_t /*z*/, Int_t &ix, Int_t &iy)  {GetPadI(x, y, ix, iy);}
     
    virtual void    GetPadC(Int_t   ix,Int_t   iy,Float_t &x ,Float_t &y );    // Transform from real to pad coordinates
    virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z) {z=0; GetPadC(ix, iy, x , y);}
@@ -38,7 +38,7 @@ private:
 
 inline void AliRICHSegmentationV1::Print(Option_t *option)const
 {
-   TObject::Print();
+   TObject::Print(option);
    cout<<"Pad width in cm:         "<<fDpx                 <<endl;
    cout<<"Pad heights in cm:       "<<fDpy                 <<endl;
    cout<<"Pad number along x:      "<<fNpx                 <<endl;
