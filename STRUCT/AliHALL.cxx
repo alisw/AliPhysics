@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/06/11 12:35:41  morsch
+Coding rule violations corrected
+
 Revision 1.7  2000/01/12 15:33:28  morsch
 Muon filter removed
 
@@ -106,7 +109,7 @@ void AliHALL::CreateGeometry()
   Float_t w1, dh, am, bm, dl,cm, hm, dr, dx, xl;
   Int_t idrotm[1999];
   Float_t trdpar[4], trapar[11], hullen;
-  Float_t dz, phi, par[3], zFilterIn;
+  Float_t phi;
   
   Int_t *idtmed = fIdtmed->GetArray()-1899;
   
