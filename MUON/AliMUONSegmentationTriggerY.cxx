@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2002/10/23 07:24:56  alibrary
+Introducing Riostream.h
+
 Revision 1.9  2001/05/16 14:57:17  alibrary
 New files for folders and Stack
 
@@ -84,7 +87,7 @@ void AliMUONSegmentationTriggerY::Init(Int_t chamber)
 {
 // intialize Y segmentation 
   AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
-  if(pMUON->GetDebug()) cout << ClassName() <<": Initialize Trigger Chamber Geometry Y " << "\n";    
+  if(pMUON->GetDebug()>1) printf("%s: Initialize Trigger Chamber Geometry Y\n",ClassName());
   AliMUONSegmentationTrigger::Init(chamber);
     
 // calculate x & y position of Y strips

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2002/10/23 07:24:56  alibrary
+Introducing Riostream.h
+
 Revision 1.7  2001/05/16 14:57:17  alibrary
 New files for folders and Stack
 
@@ -79,7 +82,7 @@ void AliMUONSegmentationTrigger::Init(Int_t chamber)
   AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
   AliMUONChamber* iChamber=&(pMUON->Chamber(chamber));
 
-  if(pMUON->GetDebug()) cout << ClassName() << ": Initialize Trigger Chamber Module Geometry " << "\n";    
+  if(pMUON->GetDebug()>1) printf("%s: Initialize Trigger Chamber Module Geometry\n",ClassName());
 
   Float_t zPos=iChamber->Z();
   Float_t z1Pos=1603.5;
@@ -95,7 +98,7 @@ void AliMUONSegmentationTrigger::Init(Int_t chamber)
   Float_t z1pm=z1PosPlus/z1PosMinus;
   Float_t z1mp=z1PosMinus/z1PosPlus;
 
-  if(pMUON->GetDebug()) cout << ClassName() << ": fZscale = " << fZscale << "\n";
+  if(pMUON->GetDebug()>1) printf("%s: fZscale = %f \n",ClassName(),fZscale);
   
 // calculate yCmin and fYcmax 
   Int_t i;  
@@ -197,8 +200,6 @@ void AliMUONSegmentationTrigger::Init(Int_t chamber)
 // Set parent chamber number
   fChamber=&(pMUON->Chamber(chamber));
   fId=chamber;
-
-  if(pMUON->GetDebug()) cout << ClassName() << ": ---------------------------------------------------- \n";   
 
 }
 

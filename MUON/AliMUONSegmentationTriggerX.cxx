@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2002/10/23 07:24:56  alibrary
+Introducing Riostream.h
+
 Revision 1.13  2002/10/14 14:57:29  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -105,7 +108,7 @@ void AliMUONSegmentationTriggerX::Init(Int_t chamber)
 {
 // intialize X segmentation 
   AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
-  if(pMUON->GetDebug()) cout << ClassName() << ": Initialize Trigger Chamber Geometry X " << "\n";    
+  if(pMUON->GetDebug()>1) printf("%s: Initialize Trigger Chamber Geometry X\n",ClassName());
   AliMUONSegmentationTrigger::Init(chamber);
 
 // calculate x & y position of X strips
