@@ -12,6 +12,7 @@
   #include "TFile.h"
   #include "TTree.h"
   #include "TH1.h"
+  #include "TH2.h"
   #include "TObjArray.h"
   #include "TStyle.h"
   #include "TCanvas.h"
@@ -42,6 +43,7 @@ Int_t AliITSComparisonV2(Int_t event=0) {
      if (!tracktree) {cerr<<"Can't get a tree with ITS tracks !\n"; return 4;}
      TBranch *tbranch=tracktree->GetBranch("tracks");
      nentr=(Int_t)tracktree->GetEntries();
+
      for (Int_t i=0; i<nentr; i++) {
         AliITStrackV2 *iotrack=new AliITStrackV2;
         tbranch->SetAddress(&iotrack);
@@ -88,7 +90,6 @@ Int_t AliITSComparisonV2(Int_t event=0) {
       } else cerr<<"Can not open file (good_tracks_its) !\n";
       out.close();
    }
-   cerr<<"Number of good tracks : "<<ngood<<endl;
 
    TH1F *hp=new TH1F("hp","PHI resolution",50,-20.,20.); hp->SetFillColor(4);
    TH1F *hl=new TH1F("hl","LAMBDA resolution",50,-20,20);hl->SetFillColor(4);
@@ -97,7 +98,6 @@ Int_t AliITSComparisonV2(Int_t event=0) {
    TH1F *hmpt=new TH1F("hmpt","Transverse impact parameter",30,-300,300); 
    hmpt->SetFillColor(6);
    TH1F *hz=new TH1F("hz","Longitudinal impact parameter",30,-300,300); 
-   //hmpt->SetFillColor(6);
 
    AliITStrackV2 *trk=(AliITStrackV2*)tarray.UncheckedAt(0);
    Double_t pmin=0.1*(100/0.299792458/0.2/trk->GetConvConst());
@@ -111,33 +111,56 @@ Int_t AliITSComparisonV2(Int_t event=0) {
    TH1F *hf=new TH1F("hf","Efficiency for fake tracks",30,pmin,pmax);
    hf->SetFillColor(1); hf->SetFillStyle(3013); hf->SetLineWidth(2);
 
-   TH1F *hptw=new TH1F("hptw","Weghted pt",30,pmax,pmin);
+   //TH1F *hptw=new TH1F("hptw","Weghted pt",30,pmax,pmin);
 
-   while (ngood--) {
-      Int_t lab=gt[ngood].lab, tlab=-1;
-      Double_t pxg=gt[ngood].px, pyg=gt[ngood].py, pzg=gt[ngood].pz;
+   TH1F *he =new TH1F("he","dE/dX for pions with 0.4<p<0.5 GeV/c",50,0.,100.);
+   TH2F *hep=new TH2F("hep","dE/dX vs momentum",50,0.,2.,50,0.,200.);
+   hep->SetMarkerStyle(8);
+   hep->SetMarkerSize(0.4);
+
+
+   Int_t notf[MAX], nnotf=0;
+   Int_t fake[MAX], nfake=0;
+   Int_t mult[MAX], numb[MAX], nmult=0;
+
+   Int_t ng;
+   for (ng=0; ng<ngood; ng++) {
+      Int_t lab=gt[ng].lab, tlab=-1;
+      Double_t pxg=gt[ng].px, pyg=gt[ng].py, pzg=gt[ng].pz;
       Double_t ptg=TMath::Sqrt(pxg*pxg+pyg*pyg);
 
-      if (ptg<pmin) continue;
 
-      hgood->Fill(ptg);
+      if (ptg>pmin) hgood->Fill(ptg);
 
       AliITStrackV2 *track=0;
+      Int_t cnt=0;
       Int_t j;
       for (j=0; j<nentr; j++) {
-          track=(AliITStrackV2*)tarray.UncheckedAt(j);
-          tlab=track->GetLabel();
-          if (lab==TMath::Abs(tlab)) break;
+          AliITStrackV2 *trk=(AliITStrackV2*)tarray.UncheckedAt(j);
+          Int_t lbl=trk->GetLabel();
+          if (lab==TMath::Abs(lbl)) {
+	    if (cnt==0) {track=trk; tlab=lbl;}
+            cnt++;
+          }
       }
-      if (j==nentr) {
-	cerr<<"Track "<<lab<<" was not found !\n";
+      if (cnt==0) {
+        notf[nnotf++]=lab;
         continue;
+      } else if (cnt>1){
+        mult[nmult]=lab;
+        numb[nmult]=cnt; nmult++;        
       }
+
+      if (ptg>pmin) {
+        if (lab==tlab) hfound->Fill(ptg);
+        else {
+          fake[nfake++]=lab;
+          hfake->Fill(ptg); 
+        }
+      }
+
       track->PropagateTo(3.,0.0028,65.19);
       track->PropagateToVertex();
-
-      if (lab==tlab) hfound->Fill(ptg);
-      else { hfake->Fill(ptg); cerr<<lab<<" fake\n";}
 
       Double_t xv,par[5]; track->GetExternalParameters(xv,par);
       Float_t phi=TMath::ASin(par[2]) + track->GetAlpha();
@@ -155,20 +178,45 @@ Int_t AliITSComparisonV2(Int_t event=0) {
       Double_t d=10000*track->GetD();
       hmpt->Fill(d);
 
-      hptw->Fill(ptg,TMath::Abs(d));
+      //hptw->Fill(ptg,TMath::Abs(d));
 
       Double_t z=10000*track->GetZ();
       hz->Fill(z);
 
-//if (TMath::Abs(gt[ngood].code)==11 && ptg>4.)
       hpt->Fill((pt_1 - 1/ptg)/(1/ptg)*100.);
 
+      Float_t mom=1./(pt_1*TMath::Cos(lam));
+      Float_t dedx=track->GetdEdx();
+      hep->Fill(mom,dedx,1.);
+      if (TMath::Abs(gt[ng].code)==211)
+         if (mom>0.4 && mom<0.5) he->Fill(dedx,1.);
    }
 
-   Stat_t ng=hgood->GetEntries(); cerr<<"Good tracks "<<ng<<endl;
-   Stat_t nf=hfound->GetEntries();
-   if (ng!=0) 
-      cerr<<"Integral efficiency is about "<<nf/ng*100.<<" %\n";
+
+   cout<<"\nList of Not found tracks :\n";
+   for (ng=0; ng<nnotf; ng++){
+     cout<<notf[ng]<<"\t";
+     if ((ng%9)==8) cout<<"\n";
+   }
+   cout<<"\n\nList of fake  tracks :\n";
+   for (ng=0; ng<nfake; ng++){
+     cout<<fake[ng]<<"\t";
+     if ((ng%9)==8) cout<<"\n";
+   }
+   cout<<"\n\nList of multiple found tracks :\n";
+   for (ng=0; ng<nmult; ng++) {
+       cout<<"id.   "<<mult[ng]
+           <<"     found - "<<numb[ng]<<"times\n";
+   }
+   cout<<endl;
+
+   cerr<<"Number of good tracks : "<<ngood<<endl;
+   cerr<<"Number of found tracks : "<<nentr<<endl;
+
+   ng=(Int_t)hgood->GetEntries(); //cerr<<"Good tracks "<<ng<<endl;
+   if (ng!=0)  
+   cerr<<"Integral efficiency is about "<<hfound->GetEntries()/ng*100.<<" %\n";
+   cerr<<endl;
 
    gStyle->SetOptStat(111110);
    gStyle->SetOptFit(1);
@@ -226,6 +274,22 @@ Int_t AliITSComparisonV2(Int_t event=0) {
    text = new TText(0.453919,1.11408,"Good tracks");
    text->SetTextSize(0.05);
    text->Draw();
+
+
+
+   TCanvas *c2=new TCanvas("c2","",320,32,530,590);
+
+   TPad *p6=new TPad("p6","",0.,0.,1.,.5); p6->Draw();
+   p6->cd(); p6->SetFillColor(42); p6->SetFrameFillColor(10); 
+   he->SetFillColor(2); he->SetFillStyle(3005);  
+   he->SetXTitle("Arbitrary Units"); 
+   he->Fit("gaus"); c2->cd();
+
+   TPad *p7=new TPad("p7","",0.,0.5,1.,1.); p7->Draw(); 
+   p7->cd(); p7->SetFillColor(42); p7->SetFrameFillColor(10);
+   hep->SetXTitle("p (Gev/c)"); hep->SetYTitle("dE/dX (Arb. Units)"); 
+   hep->Draw(); c1->cd();
+
 
    return 0;
 }

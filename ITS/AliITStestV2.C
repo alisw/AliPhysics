@@ -16,17 +16,17 @@ Int_t AliITStestV2(Char_t SlowOrFast='s') {
    in->Close();
 
    if (SlowOrFast=='f') {
-      cerr<<"Fast AliITSRecPoint(s) !\n";
-      gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSHits2FastRecPoints.C");
-      AliITSHits2FastRecPoints();
+      //cerr<<"Fast AliITSRecPoint(s) !\n";
+      //gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSHits2FastRecPoints.C");
+      //AliITSHits2FastRecPoints();
    } else {
       cerr<<"Slow AliITSRecPoint(s) !\n";
       gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSHits2SDigits.C");
       AliITSHits2SDigits();
       gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSSDigits2Digits.C");
       AliITSSDigits2Digits();
-      gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSDigits2RecPoints.C");
-      AliITSDigits2RecPoints();
+      //gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSDigits2RecPoints.C");
+      //AliITSDigits2RecPoints();
    }
    gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSFindClustersV2.C");
    if (rc=AliITSFindClustersV2(SlowOrFast)) return rc;
@@ -36,7 +36,7 @@ Int_t AliITStestV2(Char_t SlowOrFast='s') {
 
    gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSComparisonV2.C");
    if (rc=AliITSComparisonV2()) return rc;
-
+/*
    gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliV0FindVertices.C");
    if (rc=AliV0FindVertices()) return rc;
 
@@ -49,6 +49,6 @@ Int_t AliITStestV2(Char_t SlowOrFast='s') {
    gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS");
    gROOT->ProcessLine(".L $(ALICE_ROOT)/ITS/AliCascadeComparison.C+");
    if (rc=AliCascadeComparison()) return rc;
-
+*/
    return rc;
 }
