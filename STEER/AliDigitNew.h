@@ -12,20 +12,18 @@
 #include "TObject.h"
 
 class AliDigitNew : public TObject {
- public:
-  Int_t     fTracks[3];   //tracks number making this digit (up to 3)
-  
+
  public: 
   AliDigitNew() ;   
-  AliDigitNew(Int_t *track);
   ~AliDigitNew() {;}
-  inline virtual int *GetTracks() {return &fTracks[0];}
-  inline virtual Int_t GetAmp() = 0 ;
-  
- private:
-  
-
- public:  
+  Int_t   GetAmp() const { return fAmp  ; } 
+  Int_t   GetId() const { return fId ; }     
+   
+ protected:
+ 
+  Int_t fId ;                // absolute id
+  Int_t fAmp ;               // digitalized energy
+     
   ClassDef(AliDigitNew,1)  //Base class for all Alice digits
 
 } ;

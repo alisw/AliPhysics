@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  1999/12/17 09:01:14  fca
+Y.Schutz new classes for reconstruction
+
 */
 
 #include "AliDigitNew.h"
@@ -23,13 +26,6 @@ ClassImp(AliDigitNew)
 
 AliDigitNew::AliDigitNew()
 {
-}
-
-AliDigitNew::AliDigitNew(Int_t *tracks)
-{
-  fTracks[0] = tracks[0];
-  fTracks[1] = tracks[1];
-  fTracks[2] = tracks[2];
 }
 
 	 
