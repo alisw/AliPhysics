@@ -5,7 +5,9 @@ Int_t AliTPCtracks() {
 
    gROOT->LoadMacro("$(ALICE_ROOT)/macros/grun.C");
    grun();
-
+  //added new 
+  AliKalmanTrack::SetConvConst(100/0.299792458/0.2/gAlice->Field()->Factor());
+  
    Int_t ver=gAlice->GetDetector("TPC")->IsVersion();
    delete gAlice; gAlice=0;
 
@@ -26,9 +28,11 @@ Int_t AliTPCtracks() {
 
    gROOT->LoadMacro("$(ALICE_ROOT)/TPC/AliTPCFindTracks.C");
    if (rc=AliTPCFindTracks()) return rc;
-
+   /*
    gROOT->LoadMacro("$(ALICE_ROOT)/ITS/TPCtracks.C");
    if (rc=TPCtracks()) return rc;
-
+    */
+   gROOT->LoadMacro("$(ALICE_ROOT)/ITS/TPCtracks.C");
+   if (rc=TPCtracks()) return rc;   
    return rc;
 }

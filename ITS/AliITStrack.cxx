@@ -137,12 +137,17 @@ void AliITStrack::LmTPC() {
   Double_t Alpha = fTPCtrack->GetAlpha(); 
  
   //printf("LmTPC: Alpha %f\n",Alpha); 
-
+ //   Double_t xk= fTPCtrack->GetX();
+ // Double_t par[5]; fTPCtrack->GetExternalParameters(xk,par);
+ // cout<< " par = "<<par[0]<<" "<<par[1]<<" "<<par[2]<<" "<<par[3]<<" "<<par[4]<<
+ // "\n ";
+    
   tpctrack(0) = fTPCtrack->GetY();
   tpctrack(1) = fTPCtrack->GetZ();
   tpctrack(2) = fTPCtrack->GetC();
   tpctrack(3) = fTPCtrack->GetEta();
   tpctrack(4) = fTPCtrack->GetTgl();
+  //cout<<" fTPCtrack = "<<fTPCtrack<<"\n";
   //cout<< " tpctracks = "<<tpctrack(0)<<" "<<tpctrack(1)<<" "<<tpctrack(2)<<" "<<tpctrack(3)<<" "<<tpctrack(4)<<
   //"\n ";
 
@@ -441,7 +446,7 @@ void AliITStrack::AddEL(Double_t signdE, Bool_t flagtot, Double_t mass) {
   Double_t sign=1.;
   if((fvTrack)(4) < 0.) sign=-1.; 
   pt=sign*p/sqcl;  
-  Double_t CC=(0.3*0.2)/(pt*100.);
+  Double_t CC=(0.299792458*0.2)/(pt*100.);
   fvTrack(4)=CC; 
     		
 }
@@ -513,7 +518,7 @@ void AliITStrack::AddEL(AliITSRad *rl, Double_t signdE, Bool_t flagtot, Double_t
   Double_t sign=1.;
   if((fvTrack)(4) < 0.) sign=-1.; 
   pt=sign*p/sqcl; 
-  Double_t CC=(0.3*0.2)/(pt*100.);
+  Double_t CC=(0.299792458*0.2)/(pt*100.);
   fvTrack(4)=CC;
   
   

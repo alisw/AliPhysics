@@ -14,7 +14,7 @@ Int_t ITStracks(Int_t evNumber1=0,Int_t evNumber2=0,Int_t nclust=5) {
 
   GoodTrack gt[15000];
   Int_t ngood=0;
-  ifstream in("good_tracks");
+  ifstream in("good_tracks_tpc");
 
   cerr<<"Reading good tracks...\n";
   while (in>>gt[ngood].lab>>gt[ngood].code
@@ -29,7 +29,7 @@ Int_t ITStracks(Int_t evNumber1=0,Int_t evNumber2=0,Int_t nclust=5) {
       break;
     }
   }
-  if (!in.eof()) cerr<<"Read error (good_tracks) !\n";
+  if (!in.eof()) cerr<<"Read error (good_tracks_tpc) !\n";
 
 
   if (gClassTable->GetID("AliRun") < 0) {

@@ -33,7 +33,7 @@ public:
   Double_t Getphi()  const{return fvTrack(0);}
   Double_t GetC() const {return fvTrack(4);}
   Double_t GetD() const{return fvTrack(2);} 
-  Double_t GetPt() const {return 0.3*0.2/(fvTrack(4)*100.);}            
+  Double_t GetPt() const {return 0.299792458*0.2/(fvTrack(4)*100.);}            
   void SetVertex(TVector &vert) { for(Int_t i=0;i<3;i++) fVertex(i) = vert(i);}
   void SetErrorVertex(TVector &evert) {for(Int_t i=0;i<3;i++) fErrorVertex(i) = evert(i);}
 
