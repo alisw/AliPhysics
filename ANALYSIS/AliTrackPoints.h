@@ -46,7 +46,8 @@ class AliTrackPoints: public TObject
     void  SetDebug(Int_t deblevel){fgDebug = deblevel;} 
     static void Testtpc(Int_t entr);
     static void Testesd(Int_t entr,const char* fname = "AliESDs.root");
-
+    void Print(Option_t* /*option*/ = "") const;
+    
   protected:
     void MakePoints( Float_t dr, Float_t r0, Double_t x, Double_t* par, Double_t c, Double_t alpha);
     void MakeITSPoints(AliESDtrack* track);

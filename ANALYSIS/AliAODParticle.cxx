@@ -426,6 +426,10 @@ void AliAODParticle::Print() const
         printf("Not known\n");
       }
    }
+  
+  if (fITSTrackPoints) fITSTrackPoints->Print();
+  if (fTPCTrackPoints) fTPCTrackPoints->Print();
+   
 }
 
 //______________________________________________________________________________

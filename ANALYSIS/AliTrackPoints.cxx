@@ -346,7 +346,7 @@ void AliTrackPoints::MakeITSPointsInnerFromVertexOuterFromTPC(AliESDtrack* track
 void AliTrackPoints::PositionAt(Int_t n, Float_t &x,Float_t &y,Float_t &z)
 {
   //returns position at point n
-  if ((n<0) || (n>fN))
+  if ((n<0) || (n>=fN))
    {
      Error("PositionAt","Point %d out of range",n);
      return;
@@ -423,6 +423,19 @@ Double_t AliTrackPoints::AvarageDistance(const AliTrackPoints& tr)
     }
   return retval;
 }
+/***************************************************************/
+
+void AliTrackPoints::Print(Option_t* /*option*/) const
+{
+
+  Info("Print","There is %d points",fN);
+  for(Int_t i = 0; i < fN; i++)
+   {
+     Info("Print","%d: %f %f %f",i,fX[i],fY[i],fZ[i]);
+   }
+
+}
+
 /***************************************************************/
 /***************************************************************/
 /***************************************************************/
@@ -620,7 +633,7 @@ void AliTrackPoints::Testtpc(Int_t entr)
       hxz->Fill(x,z);
       printf("Rdemanded %f\n",r);
       printf("tpx %f tpy %f tpz %f Rt =%f\n", x,y,z,TMath::Hypot(x,y));
-      
+
       //BUT they are local!!!!
       t->PropagateTo(r);
 //      Double_t phi = t->Phi();
