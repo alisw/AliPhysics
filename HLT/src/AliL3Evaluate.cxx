@@ -136,7 +136,7 @@ AliL3Evaluate::~AliL3Evaluate()
   if(fNtuppel) delete fNtuppel;
 }
 
-
+  
 void AliL3Evaluate::AssignIDs()
 {
   //Assign MC id to the tracks.
@@ -559,22 +559,33 @@ TNtupleD *AliL3Evaluate::CalculateResiduals(Char_t *datapath)
   return ntuppel;
 }
 
-TNtuple *AliL3Evaluate::EvaluatePoints(Char_t *rootfile)
+TNtuple *AliL3Evaluate::EvaluatePoints(Char_t *path)
 {
   //Compare points to the exact crossing points of track and padrows.
   //The input file to this function, contains the exact clusters calculated
   //in AliTPC::Hits2ExactClusters.
-    
+  
   cout<<"Evaluating points"<<endl;
   TNtuple *ntuppel = new TNtuple("ntuppel","residuals","slice:padrow:resy:resz:zHit:pt");
+  ntuppel->SetDirectory(0);
   
-  TFile *exfile = TFile::Open(rootfile);
+  Char_t filename[1024];
+  sprintf(filename,"%s/alirunfile.root",path);
+  TFile *exfile = TFile::Open(filename);
   if(!exfile)
     {
-      cerr<<"Error opening rootfile "<<rootfile<<endl;
+      cerr<<"Error opening rootfile "<<filename<<endl;
       return 0;
     }
-
+  gAlice = (AliRun*)exfile->Get("gAlice");
+  if (!gAlice) 
+    {
+      LOG(AliL3Log::kError,"AliL3Evaluate::InitMC","gAlice")
+	<<"AliRun object non existing on file"<<ENDLOG;
+      return false;
+    }
+  
+  gAlice->GetEvent(0);
   AliTPCParam *param = (AliTPCParam*)exfile->Get(AliL3Transform::GetParamName());
   
   //Get the exact clusters from file:
@@ -603,35 +614,41 @@ TNtuple *AliL3Evaluate::EvaluatePoints(Char_t *rootfile)
       AliL3Transform::Sector2Slice(slice,padrow,cursec,currow);
       if(slice<fMinSlice || slice>fMaxSlice) continue;
       AliL3SpacePointData *points = fClusters[slice][0];
-      
-      Int_t index = fRowid[slice][padrow];
-      if(!fDigitsTree->GetEvent(index))
-	printf("AliL3Evaluate::EvaluatePoints : ERROR IN DIGITSTREE\n");
+      if(!points)
+	{
+	  cerr<<"AliL3Evaluate::EvalutePoints : Error getting clusters "<<endl;
+	  return 0;
+	}
       printf("Checking slice %d padrow %d with %d clusters\n",slice,padrow,num_of_offline);
-      
+      cout<<"There are "<<fNcl[slice][0]<<" clusters here"<<endl;
       for(UInt_t c=0; c<fNcl[slice][0]; c++)
 	{
-	  if(points[c].fPadRow!=padrow) continue;
+	  if((Int_t)points[c].fPadRow!=padrow) continue;
+	  Float_t xyz_cl[3] = {points[c].fX,points[c].fY,points[c].fZ};
+	  Float_t xyz_ex[3];
+	  AliL3Transform::Global2Local(xyz_cl,cursec);
+
 	  for(Int_t m=0; m<num_of_offline; m++)
 	    {
 	      AliComplexCluster *cluster = (AliComplexCluster *)clusters->UncheckedAt(m);
 	      Int_t mcId = cluster->fTracks[0];
-	      //Int_t mcId = cluster->GetLabel(0);
+
 	      if(mcId <0) continue;
 	      TParticle *part = gAlice->Particle(mcId);
-	      
-	      Float_t xyz_cl[3] = {points[c].fX,points[c].fY,points[c].fZ};
-	      Float_t xyz_ex[3];
-	      AliL3Transform::Global2Raw(xyz_cl,cursec,currow);
-	      if(fDigits->GetTrackID((Int_t)rint(xyz_cl[2]),(Int_t)rint(xyz_cl[1]),0)!=mcId &&
-		 fDigits->GetTrackID((Int_t)rint(xyz_cl[2]),(Int_t)rint(xyz_cl[1]),1)!=mcId &&
-		 fDigits->GetTrackID((Int_t)rint(xyz_cl[2]),(Int_t)rint(xyz_cl[1]),2)!=mcId)
+	      if(points[c].fTrackID[0]!=mcId &&
+		 points[c].fTrackID[1]!=mcId &&
+		 points[c].fTrackID[2]!=mcId)
 		continue;
+
 	      AliL3Transform::Raw2Local(xyz_ex,cursec,currow,cluster->fY,cluster->fX);
-	      AliL3Transform::Raw2Local(xyz_cl,cursec,currow,xyz_cl[1],xyz_cl[2]);
+	      
+	      //In function AliTPC::Hits2ExactClusters the time offset is not included,
+	      //so we have to substract it again here.
+	      xyz_ex[2]-=AliL3Transform::GetZOffset();
+	      
 	      Float_t resy = xyz_cl[1] - xyz_ex[1];//cluster->GetY()
 	      Float_t resz = xyz_cl[2] - xyz_ex[2];//cluster->GetZ()
-	      
+
 	      ntuppel->Fill(slice,padrow,resy,resz,xyz_ex[2],part->Pt());
 	    }
 	}      

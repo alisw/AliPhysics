@@ -41,8 +41,8 @@ class AliL3Evaluate {
   AliL3TrackArray *fTracks; //!
   AliTPCParam *fParam;
   AliL3SpacePointData *fClusters[36][6]; //!
-  AliSimDigits *fDigits;
   TTree *fDigitsTree;
+  AliSimDigits *fDigits;
   Int_t fMinSlice;
   Int_t fMaxSlice;
   UInt_t fNcl[36][6];
@@ -74,7 +74,6 @@ class AliL3Evaluate {
   TH1F *fFakeTrackEffEta;
   
   
-  
  public:
   AliL3Evaluate();
   AliL3Evaluate(Char_t *path,Int_t min_clusters,Int_t minhits,Double_t minpt=0.1,Int_t *slice=0);
@@ -91,7 +90,7 @@ class AliL3Evaluate {
   void GetCFeff(Char_t *outfile);
   Int_t GetMCTrackLabel(AliL3Track *track);
   TNtupleD *CalculateResiduals(Char_t *datapath);
-  TNtuple *EvaluatePoints(Char_t *rootfile);
+  TNtuple *EvaluatePoints(Char_t *path);
   
   void SetMinPoints(Int_t f) {fMinPointsOnTrack = f;}
   void SetMinGoodPt(Double_t f) {fMinGoodPt = f;}
