@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/06/13 15:01:38  morsch
+Make kind of heavy shielding material (Pb, NiCuW) dependent on presence of outer cone.
+
 Revision 1.5  2000/06/12 19:40:00  morsch
 New structure of beam pipe and heating jacket.
 Optional outer Pb cone added. Not yet compatible with chamber inner radii.
@@ -104,7 +107,7 @@ void AliSHILv0::CreateGeometry()
 #include "ABSOSHILConst.h"
 #include "SHILConst.h"
 
-  typedef enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
+enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 		kNiCuW=1720, kVacuum=1714, kAir=1714, kConcrete=1716,
 		kPolyCH2=1717, kSteel=1709, kInsulation=1713};	
 //

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/06/12 19:39:01  morsch
+New structure of beam pipe and heating jacket.
+
 Revision 1.4  2000/04/03 08:13:40  fca
 Introduce extra scope for non ANSI compliant C++ compilers
 
@@ -96,7 +99,8 @@ void AliABSOv0::CreateGeometry()
     
     //
     //
-    typedef enum {kC=1605, kAl=1608, kFe=1609, kCu=1610, kW=1611, kPb=1612,
+
+    enum {kC=1605, kAl=1608, kFe=1609, kCu=1610, kW=1611, kPb=1612,
 		  kNiCuW=1620, kVacuum=1615, kAir=1614, kConcrete=1616,
 		  kPolyCH2=1617, kSteel=1609, kInsulation=1613};	  
     
