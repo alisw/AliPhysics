@@ -29,9 +29,10 @@ class AliEventBuffer: public TObject
     void    SetSize(Int_t size){fSize = size;}
     Int_t   GetSize() const {return fSize;}
     void    SetOwner(Bool_t flag) {fEvents.SetOwner(flag);}
+    void    Reset();
   protected:
   private:
-    Int_t   fSize;//size of buffer; if 0 infinite size
+    Int_t   fSize;//size of buffer; if -1 infinite size
     TList   fEvents;//list with arrays
     TIter   fIter;//iterator
     ClassDef(AliEventBuffer,1)

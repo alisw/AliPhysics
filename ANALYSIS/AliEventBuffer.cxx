@@ -39,6 +39,21 @@ AliEventBuffer::~AliEventBuffer()
 }
 /***********************************************************/
 
+void AliEventBuffer::Reset()
+{
+  //Resets the queue
+  if (fEvents.IsOwner())
+   { 
+     AliAOD* e=0x0;
+     while (( e=RemoveLast() )) delete e;
+   }
+  else
+   {
+     fEvents.RemoveAll();
+   } 
+}
+/***********************************************************/
+
 AliAOD* AliEventBuffer::Push(AliAOD* event)
 {
   //adds a new event, and returns old of do not fit in size
