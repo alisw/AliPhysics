@@ -53,11 +53,12 @@ Int_t AliESDpid::MakePID(AliESD *event)
       for (Int_t j=0; j<ns; j++) p[j]*=d[j];
     }
 
-    if ((t->GetStatus()&AliESDtrack::kTOFpid )!=0) {
-      Double_t d[10];
-      t->GetTOFpid(d);
-      for (Int_t j=0; j<ns; j++) p[j]*=d[j];
-    }
+    if (t->GetP()>0.7) // accept the TOF only for the high momenta
+      if ((t->GetStatus()&AliESDtrack::kTOFpid )!=0) {
+	Double_t d[10];
+	t->GetTOFpid(d);
+	for (Int_t j=0; j<ns; j++) p[j]*=d[j];
+      }
 
     t->SetESDpid(p);
   }

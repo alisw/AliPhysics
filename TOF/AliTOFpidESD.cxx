@@ -226,10 +226,6 @@ Double_t dz=5*TMath::Sqrt(cov[2]) + 0.5*fDz + 2.5*TMath::Abs(par[3]);
     Double_t p[10];
     Double_t mom=t->GetP();
     for (Int_t j=0; j<AliESDtrack::kSPECIES; j++) {
-      
-      p[j]=1.00/AliESDtrack::kSPECIES;  // don't do anything
-      if (mom<0.7) continue;            // with the low momenta
-
       Double_t mass=kMasses[j];
       Double_t dpp=0.01;      //mean relative pt resolution;
       if (mom>0.5) dpp=0.01*mom;
