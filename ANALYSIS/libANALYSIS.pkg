@@ -1,9 +1,9 @@
 SRCS= AliAOD.cxx AliEventBuffer.cxx \
-      AliVAODParticle.cxx AliAODParticle.cxx \
-      AliAODPair.cxx        AliAODPairCut.cxx \
-      AliAODParticleCut.cxx AliAODParticleBaseCut.cxx \
-      AliAODRun.cxx \
       AliRunAnalysis.cxx AliAnalysis.cxx \
+      AliVAODParticle.cxx AliAODParticle.cxx \
+      AliAODPair.cxx   AliAODRun.cxx     \
+      AliAODParticleCut.cxx AliAODParticleBaseCut.cxx \
+      AliAODPairCut.cxx AliAODPairBaseCut.cxx \
       AliEventCut.cxx AliEventBaseCut.cxx \
       AliReader.cxx AliReaderESD.cxx AliReaderKineTree.cxx\
       AliTrackPoints.cxx AliClusterMap.cxx \
@@ -15,9 +15,9 @@ DHDR:=ANALYSISLinkDef.h
 
 EXPORT:=AliAOD.h AliEventBuffer.h\
       AliVAODParticle.h     AliAODParticle.h  \
-      AliAODPair.h          AliAODPairCut.h   \
+      AliAODPair.h          AliAODRun.h \
+      AliAODPairCut.h       AliAODPairBaseCut.h \
       AliAODParticleCut.h   AliAODParticleBaseCut.h \
-      AliAODRun.h       \
       AliRunAnalysis.h      AliAnalysis.h     \
       AliEventCut.h         AliEventBaseCut.h \
       AliReader.h           AliReaderESD.h    \
