@@ -694,7 +694,12 @@ public:
    virtual  void  Gftmed(Int_t numed, char *name, Int_t &nmat, Int_t &isvol,  
                          Int_t &ifield, Float_t &fieldm, Float_t &tmaxfd, 
                          Float_t &stemax, Float_t &deemax, Float_t &epsil, 
-                         Float_t &stmin, Float_t *buf=0, Int_t *nbuf=0); 
+                         Float_t &stmin, Float_t *buf=0, Int_t *nbuf=0);
+   virtual  void  Gftmat(Int_t imate, Int_t ipart, char *chmeca, Int_t kdim,
+			 Float_t* tkin, Float_t* value, Float_t* pcut,
+			 Int_t &ixst);
+   virtual  Float_t Gbrelm(Float_t z, Float_t t, Float_t cut);
+   virtual  Float_t Gprelm(Float_t z, Float_t t, Float_t cut);
    virtual  void  Gmate(); 
    virtual  void  Gpart(); 
    virtual  void  Gsckov(Int_t itmed, Int_t npckov, Float_t *ppckov,
