@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.8  2000/12/18 17:45:43  jbarbosa
+  Cleaned up PadHits object.
+
   Revision 1.7  2000/10/03 21:44:09  morsch
   Use AliSegmentation and AliHit abstract base classes.
 
@@ -65,7 +68,6 @@ AliRICHChamber::AliRICHChamber()
     fTresh = 0;
     frMin = 0.1;
     frMax = 140;
-    fnsec = 1;
     for(Int_t i=0; i<50; ++i) fIndexMap[i] = 0;
 }
 
@@ -187,30 +189,27 @@ void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
     Float_t qcheck=0, qp=0;
     
     nnew=0;
-    for (Int_t i=1; i<=fnsec; i++) {
-	qcheck=0;
-	for (fSegmentation->FirstPad(xhit, yhit, 0, dx, dy); 
-	     fSegmentation->MorePads(); 
-	     fSegmentation->NextPad()) 
-	{
-	    qp= fResponse->IntXY(fSegmentation);
-	    qp= TMath::Abs(qp);
-
-	    //printf("Qp:%f\n",qp);
-
-	    if (qp > 1.e-4) {
-		qcheck+=qp;
-		//
-		// --- store signal information
-		newclust[0][nnew]=qp*qtot;
-		newclust[1][nnew]=fSegmentation->Ix();
-		newclust[2][nnew]=fSegmentation->Iy();
-		newclust[3][nnew]=fSegmentation->ISector();
-		nnew++;	
-		//printf("Newcluster:%d\n",i);
-	    }
-	} // Pad loop
-    } // Cathode plane loop
+    for (fSegmentation->FirstPad(xhit, yhit, 0, dx, dy); 
+	 fSegmentation->MorePads(); 
+	 fSegmentation->NextPad()) 
+      {
+	qp= fResponse->IntXY(fSegmentation);
+	qp= TMath::Abs(qp);
+	
+	//printf("Qp:%f\n",qp);
+	
+	if (qp > 1.e-4) {
+	  qcheck+=qp;
+	  //
+	  // --- store signal information
+	  newclust[0][nnew]=qp*qtot;
+	  newclust[1][nnew]=fSegmentation->Ix();
+	  newclust[2][nnew]=fSegmentation->Iy();
+	  newclust[3][nnew]=fSegmentation->ISector();
+	  nnew++;	
+	  //printf("Newcluster:%d\n",i);
+	}
+      } // Pad loop
     //if (fSegmentation->ISector()==2)
       //printf("Nnew:%d\n\n\n\n",nnew);
 }
