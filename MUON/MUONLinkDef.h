@@ -2,7 +2,7 @@
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
-#pragma link C++ class  AliMUON-;
+#pragma link C++ class  AliMUON;
 #pragma link C++ class  AliMUONv0;
 #pragma link C++ class  AliMUONv1;
 #pragma link C++ class  AliMUONHit;
@@ -35,15 +35,15 @@
 #pragma link C++ class  AliMUONTriggerCircuit;
 #pragma link C++ class  AliMUONTriggerLut;
 #pragma link C++ class  AliMUONTriggerDecision;
-#pragma link C++ class  AliMUONEventReconstructor-;
+#pragma link C++ class  AliMUONEventReconstructor;
 #pragma link C++ class  AliMUONHitForRec;
 #pragma link C++ class  AliMUONSegment;
 #pragma link C++ class  AliMUONTrack;
 #pragma link C++ class  AliMUONTrackHit;
 #pragma link C++ class  AliMUONTrackParam;
 #pragma link C++ class  AliMUONTriggerConstants;
-#pragma link C++ class  AliMUONConstants-;
-#pragma link C++ class  AliMUONClusterInput-;
+#pragma link C++ class  AliMUONConstants;
+#pragma link C++ class  AliMUONClusterInput;
 #endif
 
 

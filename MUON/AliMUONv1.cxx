@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.5  2000/06/28 15:16:35  morsch
+(1) Client code adapted to new method signatures in AliMUONSegmentation (see comments there)
+to allow development of slat-muon chamber simulation and reconstruction code in the MUON
+framework. The changes should have no side effects (mostly dummy arguments).
+(2) Hit disintegration uses 3-dim hit coordinates to allow simulation
+of chambers with overlapping modules (MakePadHits, Disintegration).
+
 Revision 1.4  2000/06/26 14:02:38  morsch
 Add class AliMUONConstants with MUON specific constants using static memeber data and access methods.
 
@@ -57,6 +64,7 @@ Log messages included.
 #include "AliMUONHit.h"
 #include "AliMUONPadHit.h"
 #include "AliMUONConstants.h"
+#include "AliMUONTriggerCircuit.h"
 
 ClassImp(AliMUONv1)
  
