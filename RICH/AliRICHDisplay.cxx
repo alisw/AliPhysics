@@ -15,6 +15,10 @@
 
 /*
   $Log$
+  Revision 1.12  2001/03/14 18:15:03  jbarbosa
+  Changes to adapt to new IO.
+  Removed verbose output.
+
   Revision 1.11  2001/02/27 15:21:34  jbarbosa
   Transition to SDigits.
 
@@ -682,7 +686,7 @@ void AliRICHDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
    
    //add clusters to the pad
    DrawClusters();
-   DrawHits();
+   //DrawHits();
 //   DrawCerenkovs();
    if (gAlice->TreeR())
      {
@@ -714,7 +718,8 @@ void AliRICHDisplay::ExecuteEvent(Int_t event, Int_t px, Int_t py)
    
    if (px == 0 && py == 0) { //when called by sliders
        if (event == kButton1Up) {
-	   Draw();
+	 printf("Drawing event %d\n",event);
+	 Draw();
        }
        return;
    }
@@ -812,7 +817,7 @@ void AliRICHDisplay::LoadCoG(Int_t chamber, Int_t cathode)
        points->SetHitIndex(-1);
        points->SetTrackIndex(-1);
        points->SetDigitIndex(-1);
-       Float_t  vectorLoc[3]={mRaw->fX,-5,mRaw->fY};
+       Float_t  vectorLoc[3]={mRaw->fX,5,mRaw->fY};
        Float_t  vectorGlob[3];
        iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
        points->SetPoint(iraw,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
@@ -866,7 +871,7 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
 	     points1D->SetHitIndex(-1);
 	     points1D->SetTrackIndex(-1);
 	     points1D->SetDigitIndex(-1);
-	     Float_t  vectorLoc[3]={mRec1D->fX,-5,mRec1D->fY};
+	     Float_t  vectorLoc[3]={mRec1D->fX,5,mRec1D->fY};
 	     Float_t  vectorGlob[3];
 	     iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
 	     points1D->SetPoint(irec,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
@@ -875,6 +880,8 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
 	     //ellipse=new TEllipse(vectorGlob[0],vectorGlob[2],10,10,0,360,phi);
 	     //printf("Generating ellipse %d\n",irec);
 	     AliRICHEllipse *ellipse=new AliRICHEllipse(mRec1D->fX,mRec1D->fY,mRec1D->fOmega,mRec1D->fTheta,mRec1D->fPhi,mRec1D->fEmissPoint);
+	     printf("Ring at x:%f, y:%f - Omega:%f rad, theta:%3.1f deg, phi:%3.1f deg\n",mRec1D->fX,mRec1D->fY,mRec1D->fOmega,mRec1D->fTheta*180/TMath::Pi(),mRec1D->fPhi*180/TMath::Pi());
+	     printf("fEmissPoint:%f\n",mRec1D->fEmissPoint);
 	     ellipse->CerenkovRingDrawing(chamber,irec);
 	     //ellipse->SetFillStyle(1001);
 	     ellipse->SetMarkerColor(38);
@@ -919,7 +926,7 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
 	     points3D->SetHitIndex(-1);
 	     points3D->SetTrackIndex(-1);
 	     points3D->SetDigitIndex(-1);
-	     Float_t  vectorLoc[3]={mRec3D->fX,-5,mRec3D->fY};
+	     Float_t  vectorLoc[3]={mRec3D->fX,5,mRec3D->fY};
 	     Float_t  vectorGlob[3];
 	     iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
 	     points3D->SetPoint(irec,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
@@ -928,6 +935,7 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
 	     //ellipse=new TEllipse(vectorGlob[0],vectorGlob[2],10,10,0,360,phi);
 	     //printf("Generating ellipse %d\n",irec);
 	     AliRICHEllipse *ellipse=new AliRICHEllipse(mRec3D->fX,mRec3D->fY,mRec3D->fOmega,mRec3D->fTheta,mRec3D->fPhi,0.75);
+	     printf("Ring at x:%f, y:%f - Omega:%f rad, theta:%3.1f deg, phi:%3.1f deg\n",mRec3D->fX,mRec3D->fY,mRec3D->fOmega,mRec3D->fTheta*180/TMath::Pi(),mRec3D->fPhi*180/TMath::Pi());
 	     ellipse->CerenkovRingDrawing(chamber,irec);
 	     //ellipse->SetFillStyle(1001);
 	     ellipse->SetMarkerColor(42);
@@ -1004,7 +1012,7 @@ void AliRICHDisplay::LoadDigits()
 	   points->SetMarkerSize(0.5);
 	   Float_t xpad, ypad, zpad;
 	   segmentation->GetPadC(mdig->fPadX, mdig->fPadY,xpad, ypad, zpad);
-	   Float_t vectorLoc[3]={xpad,-5,ypad};
+	   Float_t vectorLoc[3]={xpad,5,ypad};
 	   Float_t  vectorGlob[3];
 	   iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
 	   points->SetParticle(-1);
@@ -1012,6 +1020,7 @@ void AliRICHDisplay::LoadDigits()
 	   points->SetTrackIndex(-1);
 	   points->SetDigitIndex(digit);
 	   points->SetPoint(0,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
+	   //printf("Y position (digit): %f\n", vectorGlob[1]);
 	   
 	   segmentation->GetPadC(mdig->fPadX, mdig->fPadY, xpad, ypad, zpad);
 	   Float_t theta = iChamber->GetRotMatrix()->GetTheta();
@@ -1093,6 +1102,7 @@ void AliRICHDisplay::LoadHits(Int_t chamber)
             points->SetTrackIndex(track);
             points->SetDigitIndex(-1);
             points->SetPoint(hit,mHit->X(), mHit->Y(), mHit->Z());
+	    //printf("Y position: %f\n", mHit->Y());
 	    npoints++;
 	}
     }
