@@ -39,6 +39,8 @@
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
 #include "AliLog.h"
+#include "AliMpFiles.h"
+#include <TSystem.h>
 
 ClassImp(AliMUONSt12QuadrantSegmentation)
 
@@ -74,6 +76,15 @@ AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation(
   fCorrA(0)
 {
 // Normal constructor
+
+  // set path to mapping data files
+   if (!gSystem->Getenv("MINSTALL")) {    
+     TString dirPath = gSystem->Getenv("ALICE_ROOT");
+     dirPath += "/MUON/mapping"; 
+     AliMpFiles::Instance()->SetTopPath(dirPath);
+     gSystem->Setenv("MINSTALL", dirPath.Data());
+     //cout << "AliMpFiles top path set to " << dirPath << endl;	  
+   }
   
   AliMpReader r(stationType, planeType);
   fSector = r.BuildSector();

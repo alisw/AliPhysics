@@ -11,9 +11,13 @@
 
 #include "AliSegmentation.h"
 #include "AliMUONResponse.h"
+#include "AliMUONGeometrySegmentation.h"
 
 class AliMUONClusterFinderVS;
 class AliMUONGeometryModule;
+class AliMUON;
+class AliMUONHit;
+
 
 class AliMUONChamber : public TObject
 {
@@ -32,6 +36,7 @@ class AliMUONChamber : public TObject
   
 // Initialisation
   virtual void    Init();
+  virtual void    Init(Int_t flag);
 // Set z-position of chamber  
   virtual void    SetZ(Float_t Z) {fZ = Z;}
 // Get z-position of chamber  
@@ -50,8 +55,11 @@ class AliMUONChamber : public TObject
   virtual void    SetResponseModel(AliMUONResponse* thisResponse) {fResponse=thisResponse;}
 //  
 // Set segmentation model
-  virtual void    SetSegmentationModel(Int_t i, AliSegmentation* thisSegmentation) {
-      fSegmentation->AddAt(thisSegmentation,i-1);
+  virtual void    SetSegmentationModel(Int_t isec, AliSegmentation* thisSegmentation) {
+      fSegmentation->AddAt(thisSegmentation,isec-1);
+  }
+  virtual void    SetSegmentationModel(Int_t isec, AliMUONGeometrySegmentation* thissegmentation) {
+      fSegmentation2->AddAt(thissegmentation,isec-1);
   }
 //  
 //  Get pointer to response model
@@ -62,6 +70,10 @@ class AliMUONChamber : public TObject
       return (AliSegmentation *) (*fSegmentation)[isec-1];
   }
   virtual TObjArray* ChamberSegmentation() {return fSegmentation;}
+
+  virtual AliMUONGeometrySegmentation*  SegmentationModel2(Int_t isec) {
+      return (AliMUONGeometrySegmentation*) (*fSegmentation2)[isec-1];
+  }
 
 // Get number of segmentation sectors  
   virtual Int_t Nsec() const        {return fnsec;}
@@ -75,9 +87,11 @@ class AliMUONChamber : public TObject
 //  
 // Ask segmentation if signal should be generated  
   virtual Int_t   SigGenCond(Float_t x, Float_t y, Float_t z);
+  virtual Int_t   SigGenCond(AliMUONHit* hit);
 //
 // Initialisation of segmentation for hit  
   virtual void    SigGenInit(Float_t x, Float_t y, Float_t z);
+  virtual void    SigGenInit(AliMUONHit* hit);
 // Initialisation of charge fluctuation for given hit
   virtual void    ChargeCorrelationInit();
 
@@ -101,6 +115,8 @@ class AliMUONChamber : public TObject
 // Cluster formation method (charge disintegration)
   virtual void   DisIntegration(Float_t eloss, Float_t tof,
 				Float_t xhit, Float_t yhit, Float_t zhit,
+				Int_t& x, Float_t newclust[6][500]);
+  virtual void   DisIntegration(AliMUONHit* hit,
 				Int_t& x, Float_t newclust[6][500]);
 // Initialize geometry related parameters  
   virtual void    InitGeo(Float_t z);
@@ -131,8 +147,11 @@ class AliMUONChamber : public TObject
   Float_t fCurrentCorrel; //! charge correlation for current hit.
 
   TObjArray              *fSegmentation;    // pointer to segmentation
+  TObjArray              *fSegmentation2;   // pointer to geometry segmentation bending & NBending
+
   AliMUONResponse        *fResponse;        // pointer to response
   AliMUONGeometryModule  *fGeometry;        // pointer to geometry
+  AliMUON                *fMUON;            // pointer to MUON
   ClassDef(AliMUONChamber,3) // Muon tracking chamber class
 };
 

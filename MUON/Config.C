@@ -157,8 +157,9 @@ void Config(char directory[100]="", char option[6]="param")
          // If align = true, the detection elements transformations
 	 // are taken from the input files and not from the code
   
-  // ((AliMUONv1*)MUON)->SetStepManagerVersionDE(true);
+//   ((AliMUONv1*)MUON)->SetStepManagerVersionDE(true);
         // To save detection element Id in the hits
+  MUON->SetSegmentationType(1);// default wise to old (1), new (2)
   
   //MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilder(MUON));
   MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilderV2(MUON));

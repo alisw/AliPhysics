@@ -10,6 +10,7 @@
 
 class TF1;
 class AliSegmentation;
+class AliMUONGeometrySegmentation;
 class AliMUONTransientDigit;
 
 class AliMUONResponse : public TObject 
@@ -52,15 +53,17 @@ class AliMUONResponse : public TObject
     // Get anode cathode Pitch
     virtual Float_t Pitch() const                             {return 1.;}
     // Set the charge correlation
-    virtual void SetChargeCorrel(Float_t)              {return;}
+    virtual void SetChargeCorrel(Float_t)                     {return;}
     // Get the charge correlation
     virtual Float_t ChargeCorrel() const                      {return 1.;}
     //  
     // Chamber response methods
     // Pulse height from scored quantity (eloss)
-    virtual Float_t IntPH(Float_t)                      {return 1.;}
+    virtual Float_t IntPH(Float_t)                            {return 1.;}
     // Charge disintegration 
     virtual Float_t IntXY(AliSegmentation *)                  {return 1.;}
+    virtual Float_t IntXY(Int_t, AliMUONGeometrySegmentation*) {return 1.;}
+
     // Noise, zero-suppression, adc saturation
     //virtual Int_t DigitResponse(Int_t )                {return kTRUE;}
     virtual Int_t DigitResponse(Int_t , 

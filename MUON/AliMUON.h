@@ -22,6 +22,7 @@ class TTree;
 
 class AliLoader;
 class AliSegmentation;
+class AliMUONGeometrySegmentation;
 class AliMUONTriggerCircuit;
 class AliMUONData;
 class AliMUONResponse;
@@ -83,6 +84,12 @@ class AliMUON : public  AliDetector
     // Set Segmentation and Response Model
     virtual void   SetSegmentationModel(Int_t id, Int_t isec,
 					AliSegmentation *segmentation);
+    virtual void   SetSegmentationModel(Int_t id, Int_t isec,
+					AliMUONGeometrySegmentation* segmentation);
+
+    void SetSegmentationType(Int_t type) {fSegmentationType = type;}// 1 for old 2 for new, 0 undefined
+    Int_t WhichSegmentation() {return fSegmentationType; }
+
     virtual void   SetResponseModel(Int_t id, AliMUONResponse *response);
     virtual void   SetNsec(Int_t id, Int_t nsec);
 
@@ -133,6 +140,7 @@ class AliMUON : public  AliDetector
     TObjArray*            fChambers;           // List of Tracking Chambers
     TObjArray*            fTriggerCircuits;    // List of Trigger Circuits
     AliMUONGeometryBuilder*     fGeometryBuilder; // Geometry builder 
+    Int_t                 fSegmentationType;    // type for  segmentation
     AliMUONGeometryDEIndexing*  fDEIndexing;   // Geometry DE indexing 
    
     //
@@ -152,7 +160,7 @@ class AliMUON : public  AliDetector
     // Background eent for event mixing
     AliMUONMerger *fMerger;   // ! pointer to merger
     
-    ClassDef(AliMUON,7)  // MUON Detector base class
+    ClassDef(AliMUON,8)  // MUON Detector base class
 };
 #endif
 

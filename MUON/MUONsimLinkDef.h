@@ -6,6 +6,7 @@
 #pragma link C++ class AliMUONv0+; 
 
 #pragma link C++ class AliMUONFactory+; 
+#pragma link C++ class AliMUONFactoryV2+; 
 
 #pragma link C++ class AliMUONSt1Segmentation+; 
 #pragma link C++ class AliMUONSt12QuadrantSegmentation+; 

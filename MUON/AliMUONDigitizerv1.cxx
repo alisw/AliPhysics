@@ -111,7 +111,11 @@ void AliMUONDigitizerv1::GenerateTransientDigits()
 			{
 				// Tracking Chamber
 				// Initialize hit position (cursor) in the segmentation model 
-				chamber.SigGenInit(mHit->X(), mHit->Y(), mHit->Z());
+			  if (GetSegmentation() == 1) // old segmentation
+			    chamber.SigGenInit(mHit->X(), mHit->Y(), mHit->Z());
+			  else 
+			    chamber.SigGenInit(mHit);
+
 			} // else do nothing for Trigger Chambers
 			
 			MakeTransientDigitsFromHit(itrack, ihit, mHit);
@@ -138,13 +142,16 @@ void AliMUONDigitizerv1::MakeTransientDigitsFromHit(Int_t track, Int_t iHit, Ali
 	Int_t nnew=0;              // Number of touched Pads per hit
 	Int_t ichamber = mHit->Chamber()-1;
 	AliMUONChamber& chamber = fMUON->Chamber(ichamber);
-	chamber.DisIntegration(mHit->Eloss(), mHit->Age(), mHit->X(), mHit->Y(), mHit->Z(), nnew, newdigit);
+	if (GetSegmentation() == 1)
+	  chamber.DisIntegration(mHit->Eloss(), mHit->Age(), mHit->X(), mHit->Y(), mHit->Z(), nnew, newdigit);
+	else
+	  chamber.DisIntegration(mHit, nnew, newdigit);
 
 	// Creating new TransientDigits from hit
 	for(Int_t iTD = 0; iTD < nnew; iTD++) 
 	{
 		Int_t charge;   
-		Int_t digits[6];
+		Int_t digits[7];
 		
 		digits[0] = Int_t(newdigit[1][iTD]);  // Padx of the Digit
 		digits[1] = Int_t(newdigit[2][iTD]);  // Pady of the Digit
@@ -161,10 +168,14 @@ void AliMUONDigitizerv1::MakeTransientDigitsFromHit(Int_t track, Int_t iHit, Ali
 			digits[4] = 0;    // No signal due to physics since this is now background.
 		}
 		digits[5] = iHit+fMask;    // Hit number in the list
+		if (GetSegmentation() == 1)
+		  digits[6] = 0;
+		else
+		  digits[6] =  mHit->DetElemId();
 
 		AliDebug(5,Form("MakeTransientDigitsFromHit", 
-				"DisIntegration result %d: PadX %d\tPadY %d\tPlane %d\tCharge %d\tHit %d",
-				iTD, digits[0], digits[1], digits[2], digits[3], digits[5]));
+				"DisIntegration result %d: PadX %d\tPadY %d\tPlane %d\tCharge %d\tHit %d\tidDE %d",
+				iTD, digits[0], digits[1], digits[2], digits[3], digits[5], digits[6]));
 
 		AliMUONTransientDigit* mTD = new AliMUONTransientDigit(ichamber, digits);
 		mTD->AddToTrackList(track + fMask, charge);
@@ -175,14 +186,14 @@ void AliMUONDigitizerv1::MakeTransientDigitsFromHit(Int_t track, Int_t iHit, Ali
 }
 
 //------------------------------------------------------------------------
-void AliMUONDigitizerv1::AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[6])
+void AliMUONDigitizerv1::AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[7])
 {
 // Derived to add digits to TreeD.
   fMUONData->AddDigit(chamber, tracks, charges, digits);  
 }
 
 //------------------------------------------------------------------------
-void AliMUONDigitizerv1::AddDigitTrigger(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[6])
+void AliMUONDigitizerv1::AddDigitTrigger(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[7])
 {
 // Derived to add digits to TreeD for trigger.
   fTrigDec->AddDigit(chamber, tracks, charges, digits); 

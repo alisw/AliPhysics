@@ -2,6 +2,7 @@
 
 SRCS:= AliMUONv0.cxx \
        AliMUONFactory.cxx \
+       AliMUONFactoryV2.cxx \
        AliMUONSt1Segmentation.cxx \
        AliMUONSt12QuadrantSegmentation.cxx \
        AliMUONSt1Response.cxx \

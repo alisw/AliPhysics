@@ -30,10 +30,34 @@
 #include "AliMUONSt345SlatSegmentation.h"
 #include "AliLog.h"
 
-//___________________________________________
 ClassImp(AliMUONSt345SlatSegmentation)
 
 
+AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation() 
+  : AliMUONVGeometryDESegmentation(),
+ 	fBending(0),
+ 	fId(0),
+	fDpx(0),
+	fDpy(0),
+	fNpx(999999),
+	fNpy(999999),
+	fWireD(0.0),
+	fXhit(0.),
+	fYhit(0.),
+	fIx(0),
+	fIy(0),
+	fX(0.),
+	fY(0.),
+	fIxmin(0),
+	fIxmax(0),
+	fIymin(0),
+	fIymax(0)
+{
+  // default constructor
+
+}
+
+//___________________________________________
 AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation(Bool_t bending) 
   : AliMUONVGeometryDESegmentation(),
  	fBending(bending),
@@ -415,7 +439,7 @@ void AliMUONSt345SlatSegmentation::Init(Int_t detectionElementId)
   //  printf("\n Initialise Segmentation SlatModule \n");
 
   
-  printf(" fBending: %d \n",fBending);
+  //  printf(" fBending: %d \n",fBending);
 
   fDxPCB=40;
   fDyPCB=40;

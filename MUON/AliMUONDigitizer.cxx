@@ -119,7 +119,18 @@ AliMUONDigitizer::operator=(const AliMUONDigitizer& rhs)
     
   return *this;  
 }    
-          
+
+//------------------------------------------------------------------------
+Int_t AliMUONDigitizer::GetSegmentation()
+{
+  if (!fMUON->WhichSegmentation()) {
+      AliFatal("No Segmentation Type defined.");
+      return kFALSE;
+  } else 
+    return fMUON->WhichSegmentation();
+
+}
+         
 //------------------------------------------------------------------------
 Bool_t AliMUONDigitizer::Init()
 {
@@ -265,27 +276,28 @@ void AliMUONDigitizer::CreateDigits()
 // Loops over the fTDList for each cathode, gets the correct signal for the 
 // digit and adds the new digit to the output stream.
 
-	AliDebug(2, "Creating digits...");
-	for (Int_t icat = 0; icat < 2; icat++)
-	{
-		//
-		// Filling Digit List
-		Int_t nentries = fTDList->GetEntriesFast();
-		for (Int_t nent = 0; nent < nentries; nent++)
-		{
-			AliMUONTransientDigit* td = (AliMUONTransientDigit*)fTDList->At(nent);
-			if (td == NULL) continue; 
-			
-			// Must be the same cathode, otherwise we will fill a mixture
-			// of digits from both cathodes.
-			if (icat != td->Cathode() - 1) continue;
-			
-			AliDebug(3,Form( "Creating digit from transient digit 0x%X", (void*)td));
+	fTDList->Sort(); // sort by idDE
+        AliDebug(2, "Creating digits...");
+	for (Int_t icat = 0; icat < 2; icat++) {
 
-			Int_t q = GetSignalFrom(td);
-			if (q > 0) AddDigit(td, q);
-		}
-		FillOutputData();
+	  //
+	  // Filling Digit List
+	  Int_t nentries = fTDList->GetEntriesFast();
+	  for (Int_t nent = 0; nent < nentries; nent++) {
+
+	    AliMUONTransientDigit* td = (AliMUONTransientDigit*)fTDList->At(nent);
+	    if (td == NULL) continue; 
+			
+	    // Must be the same cathode, otherwise we will fill a mixture
+	    // of digits from both cathodes.
+	    if (icat != td->Cathode() - 1) continue;
+			
+	    AliDebug(3,Form( "Creating digit from transient digit 0x%X", (void*)td));
+
+	    Int_t q = GetSignalFrom(td);
+	    if (q > 0) AddDigit(td, q);
+	  }
+	  FillOutputData();
 	}
 }
 
@@ -303,7 +315,7 @@ void AliMUONDigitizer::AddDigit(AliMUONTransientDigit* td, Int_t responseCharge)
 
 	Int_t tracks[kMAXTRACKS];
 	Int_t charges[kMAXTRACKS];
-	Int_t digits[6];
+	Int_t digits[7];
       
 	digits[0] = td->PadX();
 	digits[1] = td->PadY();
@@ -311,33 +323,36 @@ void AliMUONDigitizer::AddDigit(AliMUONTransientDigit* td, Int_t responseCharge)
 	digits[3] = responseCharge;
 	digits[4] = td->Physics();
 	digits[5] = td->Hit();
-	
+	if (GetSegmentation() == 1)
+	  digits[6] = 0;
+	else
+	  digits[6] =  td->DetElemId();
+
 	Int_t nptracks = td->GetNTracks();
-	if (nptracks > kMAXTRACKS)
-	{
-		AliDebug(1, Form(
-			"TransientDigit returned the number of tracks to be %d, which is bigger than kMAXTRACKS.",
-			nptracks));
-		AliDebug(1, Form("Reseting the number of tracks to be %d.", kMAXTRACKS));
-		nptracks = kMAXTRACKS;
+	if (nptracks > kMAXTRACKS) {
+
+	  AliDebug(1, Form(
+			   "TransientDigit returned the number of tracks to be %d, which is bigger than kMAXTRACKS.",
+			   nptracks));
+	  AliDebug(1, Form("Reseting the number of tracks to be %d.", kMAXTRACKS));
+	  nptracks = kMAXTRACKS;
 	}
 	
-	for (Int_t i = 0; i < nptracks; i++) 
-	{
-		tracks[i]   = td->GetTrack(i);
-		charges[i]  = td->GetCharge(i);
+	for (Int_t i = 0; i < nptracks; i++) {
+
+	  tracks[i]   = td->GetTrack(i);
+	  charges[i]  = td->GetCharge(i);
 	}
 
 	// Sort list of tracks according to charge
 	SortTracks(tracks,charges,nptracks);
 
-	if (nptracks < kMAXTRACKS )
-	{
-		for (Int_t i = nptracks; i < kMAXTRACKS; i++)
-		{
-			tracks[i]  = -1;
-			charges[i] = 0;
-		}
+	if (nptracks < kMAXTRACKS ) {
+
+	  for (Int_t i = nptracks; i < kMAXTRACKS; i++) {
+	    tracks[i]  = -1;
+	    charges[i] = 0;
+	  }
 	}
 
 	AliDebug(4,Form( "Adding digit with charge %d.", responseCharge));
@@ -529,61 +544,61 @@ void AliMUONDigitizer::SortTracks(Int_t *tracks, Int_t *charges, Int_t ntr) cons
 // Only the 3 most significant tracks are actually sorted
 //
 
-	if (ntr <= 1) return;
+       if (ntr <= 1) return;
 
-	//
-	//  Loop over signals, only 3 times
-	//
+       //
+       //  Loop over signals, only 3 times
+       //
 
-	Int_t qmax;
-	Int_t jmax;
-	Int_t idx[3] = {-2,-2,-2};
-	Int_t jch[3] = {-2,-2,-2};
-	Int_t jtr[3] = {-2,-2,-2};
-	Int_t i, j, imax;
+       Int_t qmax;
+       Int_t jmax;
+       Int_t idx[3] = {-2,-2,-2};
+       Int_t jch[3] = {-2,-2,-2};
+       Int_t jtr[3] = {-2,-2,-2};
+       Int_t i, j, imax;
 
-	if (ntr < 3) imax = ntr;
-	else imax=3;
+       if (ntr < 3) imax = ntr;
+       else imax=3;
 	
-	for(i = 0; i < imax; i++)
-	{
-		qmax=0;
-		jmax=0;
+       for(i = 0; i < imax; i++)
+	 {
+	   qmax=0;
+	   jmax=0;
 
-		for(j = 0; j < ntr; j++)
-		{
-			if (	(i == 1 && j == idx[i-1]) || 
-				(i == 2 && (j == idx[i-1] || j == idx[i-2]))
-			   ) 
-				continue;
+	   for(j = 0; j < ntr; j++)
+	     {
+	       if (	(i == 1 && j == idx[i-1]) || 
+			(i == 2 && (j == idx[i-1] || j == idx[i-2]))
+			) 
+		 continue;
 
-			if(charges[j] > qmax) 
-			{
-				qmax = charges[j];
-				jmax = j;
-			}       
-		} 
+	       if(charges[j] > qmax) 
+		 {
+		   qmax = charges[j];
+		   jmax = j;
+		 }       
+	     } 
 
-		if(qmax > 0)
-		{
-			idx[i] = jmax;
-			jch[i] = charges[jmax]; 
-			jtr[i] = tracks[jmax]; 
-		}
+	   if(qmax > 0)
+	     {
+	       idx[i] = jmax;
+	       jch[i] = charges[jmax]; 
+	       jtr[i] = tracks[jmax]; 
+	     }
 
-	} 
+	 } 
 
-	for(i = 0; i < 3; i++)
-	{
-		if (jtr[i] == -2) 
-		{
-			charges[i] = 0;
-			tracks[i] = 0;
-		} 
-		else 
-		{
-			charges[i] = jch[i];
-			tracks[i] = jtr[i];
-		}
-	}
+       for(i = 0; i < 3; i++)
+	 {
+	   if (jtr[i] == -2) 
+	     {
+	       charges[i] = 0;
+	       tracks[i] = 0;
+	     } 
+	   else 
+	     {
+	       charges[i] = jch[i];
+	       tracks[i] = jtr[i];
+	     }
+	 }
 }

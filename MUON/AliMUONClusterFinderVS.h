@@ -16,7 +16,6 @@ class TClonesArray;
 
 class AliMUONClusterInput;
 class AliMUONHitMapA1;
-class AliMUONResponse;
 class AliSegmentation;
 class AliMUONRawCluster;
 class AliMUONDigit;
@@ -56,7 +55,6 @@ class AliMUONClusterFinderVS : public TObject
     virtual void AddRawCluster(const AliMUONRawCluster& cluster);
 //  Set tracks for debugging    
     virtual void SetTracks(Int_t t1, Int_t t2) {fTrack[0]=t1; fTrack[1]=t2;}
-    virtual Bool_t TestTrack(Int_t t) const;
 //  debug level
     void SetDebugLevel(Int_t level) {fDebugLevel = level;}
     void SetGhostChi2Cut(Float_t cut) {fGhostChi2Cut = cut;}

@@ -24,7 +24,14 @@
 //___________________________________________
 ClassImp(AliMUONTriggerSegmentation)
 
-
+AliMUONTriggerSegmentation::AliMUONTriggerSegmentation() 
+  : AliMUONVGeometryDESegmentation(),
+    fBending(0),
+    fId(0)
+{
+  // default constructor
+}
+//___________________________________________
 AliMUONTriggerSegmentation::AliMUONTriggerSegmentation(Bool_t bending) 
   : AliMUONVGeometryDESegmentation(),
     fBending(!bending),

@@ -84,11 +84,15 @@ void AliMUONClusterInput::SetDigits(Int_t chamber, TClonesArray* dig1, TClonesAr
     AliMUONChamber* iChamber;
 
     pMUON = (AliMUON*) gAlice->GetModule("MUON");
-    iChamber =  &(pMUON->Chamber(chamber));
+    if ((fSegmentationType = pMUON->WhichSegmentation()) != 1)
+      AliFatal("Wrong segmentation type");
 
+    iChamber =  &(pMUON->Chamber(chamber));
     fgMathieson = new AliMUONMathieson();
+
     fSegmentation[0]=iChamber->SegmentationModel(1);
     fSegmentation[1]=iChamber->SegmentationModel(2);
+
     fNseg = 2;
     if (chamber < AliMUONConstants::NTrackingCh()) {
       if (chamber > 1 ) {
@@ -113,9 +117,71 @@ void AliMUONClusterInput::SetDigits(Int_t chamber, TClonesArray* dig)
     AliMUONChamber* iChamber;
 
     pMUON = (AliMUON*) gAlice->GetModule("MUON");
+    if ((fSegmentationType = pMUON->WhichSegmentation()) != 1)
+      AliFatal("Wrong segmentation type");
+
+    iChamber =  &(pMUON->Chamber(chamber));
+    fSegmentation[0]=iChamber->SegmentationModel(1);
+
+    fNseg=1;
+}
+void AliMUONClusterInput::SetDigits(Int_t chamber, Int_t idDE, TClonesArray* dig1, TClonesArray* dig2)
+{
+  // Set pointer to digits with corresponding segmentations and responses (two cathode planes)
+    fChamber = chamber;
+    fDetElemId = idDE;
+    fDigits[0]  = dig1;
+    fDigits[1]  = dig2; 
+    fNDigits[0] = dig1->GetEntriesFast();
+    fNDigits[1] = dig2->GetEntriesFast();
+    
+    AliMUON *pMUON;
+    AliMUONChamber* iChamber;
+
+    pMUON = (AliMUON*) gAlice->GetModule("MUON");
     iChamber =  &(pMUON->Chamber(chamber));
 
-    fSegmentation[0]=iChamber->SegmentationModel(1);
+    fgMathieson = new AliMUONMathieson();
+    if ((fSegmentationType = pMUON->WhichSegmentation()) != 2)
+      AliFatal("Wrong segmentation type");
+
+    fSegmentation2[0]=iChamber->SegmentationModel2(1);
+    fSegmentation2[1]=iChamber->SegmentationModel2(2);
+
+    fNseg = 2;
+    if (chamber < AliMUONConstants::NTrackingCh()) {
+      if (chamber > 1 ) {
+	fgMathieson->SetPitch(AliMUONConstants::Pitch());
+	fgMathieson->SetSqrtKx3AndDeriveKx2Kx4(AliMUONConstants::SqrtKx3());
+	fgMathieson->SetSqrtKy3AndDeriveKy2Ky4(AliMUONConstants::SqrtKy3());
+	fChargeCorrel = AliMUONConstants::ChargeCorrel();
+      } else {
+	fgMathieson->SetPitch(AliMUONConstants::PitchSt1());
+	fgMathieson->SetSqrtKx3AndDeriveKx2Kx4(AliMUONConstants::SqrtKx3St1());
+	fgMathieson->SetSqrtKy3AndDeriveKy2Ky4(AliMUONConstants::SqrtKy3St1());
+	fChargeCorrel = AliMUONConstants::ChargeCorrelSt1();
+      }
+    }
+}
+
+void AliMUONClusterInput::SetDigits(Int_t chamber, Int_t idDE, TClonesArray* dig)
+{
+// Set pointer to digits with corresponding segmentations and responses (one cathode plane)
+
+    fChamber = chamber;
+    fDetElemId = idDE;
+    fDigits[0] = dig;
+
+    AliMUON *pMUON;
+    AliMUONChamber* iChamber;
+
+    pMUON = (AliMUON*) gAlice->GetModule("MUON");
+    iChamber =  &(pMUON->Chamber(chamber));
+    if ((fSegmentationType = pMUON->WhichSegmentation()) != 2)
+      AliFatal("Wrong segmentation type");
+
+    fSegmentation2[0]=iChamber->SegmentationModel2(1);
+
     fNseg=1;
 }
 
@@ -151,7 +217,11 @@ void  AliMUONClusterInput::SetCluster(AliMUONRawCluster* cluster)
 	    qtot+=fCharge[i][cath];
 	    // Current z
 	    Float_t xc, yc;
-	    fSegmentation[cath]->GetPadC(ix,iy,xc,yc,fZ);
+	    if (fSegmentationType == 1)
+	      fSegmentation[cath]->GetPadC(ix,iy,xc,yc,fZ);
+	    else 
+	      fSegmentation2[cath]->GetPadC(fDetElemId,ix,iy,xc,yc,fZ);
+	    
 	} // loop over cluster digits
 	fQtot[cath]=qtot;
 	fChargeTot[cath]=Int_t(qtot);  
@@ -171,10 +241,21 @@ Float_t AliMUONClusterInput::DiscrChargeCombiS1(Int_t i,Double_t *par, Int_t cat
 // par[0]    x-position of cluster
 // par[1]    y-position of cluster
 
-   fSegmentation[cath]->SetPad(fix[i][cath], fiy[i][cath]);
-//  First Cluster
-   fSegmentation[cath]->SetHit(par[0],par[1],fZ);
-   Float_t q1=fgMathieson->IntXY(fSegmentation[cath]);
+    Float_t q1;
+    if (fSegmentationType == 1) {
+
+      fSegmentation[cath]->SetPad(fix[i][cath], fiy[i][cath]);
+      //  First Cluster
+      fSegmentation[cath]->SetHit(par[0],par[1],fZ);
+      q1 = fgMathieson->IntXY(fSegmentation[cath]);
+
+    } else {
+
+      fSegmentation2[cath]->SetPad(fDetElemId, fix[i][cath], fiy[i][cath]);
+      //  First Cluster
+      fSegmentation2[cath]->SetHit(fDetElemId, par[0],par[1],fZ);
+      q1 = fgMathieson->IntXY(fDetElemId, fSegmentation2[cath]);
+   }
     
    Float_t value = fQtot[cath]*q1;
    return value;
@@ -190,17 +271,33 @@ Float_t AliMUONClusterInput::DiscrChargeS2(Int_t i,Double_t *par)
 // par[4]    charge fraction of first  cluster
 // 1-par[4]  charge fraction of second cluster
 
-   fSegmentation[0]->SetPad(fix[i][0], fiy[i][0]);
-//  First Cluster
-   fSegmentation[0]->SetHit(par[0],par[1],fZ);
-   Float_t q1=fgMathieson->IntXY(fSegmentation[0]);
+  Float_t q1, q2;
+  
+  if (fSegmentationType == 1) {
+
+    fSegmentation[0]->SetPad(fix[i][0], fiy[i][0]);
+    //  First Cluster
+    fSegmentation[0]->SetHit(par[0],par[1],fZ);
+    q1 = fgMathieson->IntXY(fSegmentation[0]);
     
-//  Second Cluster
-   fSegmentation[0]->SetHit(par[2],par[3],fZ);
-   Float_t q2=fgMathieson->IntXY(fSegmentation[0]);
+    //  Second Cluster
+    fSegmentation[0]->SetHit(par[2],par[3],fZ);
+    q2 = fgMathieson->IntXY(fSegmentation[0]);
+
+  } else {
+
+    fSegmentation2[0]->SetPad(fDetElemId, fix[i][0], fiy[i][0]);
+    //  First Cluster
+    fSegmentation2[0]->SetHit(fDetElemId, par[0],par[1],fZ);
+    q1 = fgMathieson->IntXY(fSegmentation[0]);
     
-   Float_t value = fQtot[0]*(par[4]*q1+(1.-par[4])*q2);
-   return value;
+    //  Second Cluster
+    fSegmentation2[0]->SetHit(fDetElemId,par[2],par[3],fZ);
+    q2 = fgMathieson->IntXY(fDetElemId, fSegmentation2[0]);
+  }
+
+  Float_t value = fQtot[0]*(par[4]*q1+(1.-par[4])*q2);
+  return value;
 }
 
 Float_t AliMUONClusterInput::DiscrChargeCombiS2(Int_t i,Double_t *par, Int_t cath) 
@@ -213,21 +310,36 @@ Float_t AliMUONClusterInput::DiscrChargeCombiS2(Int_t i,Double_t *par, Int_t cat
 // 1-par[4]  charge fraction of second cluster 
 // par[5]    charge fraction of first  cluster - second cathode
 
-   fSegmentation[cath]->SetPad(fix[i][cath], fiy[i][cath]);
-//  First Cluster
-   fSegmentation[cath]->SetHit(par[0],par[1],fZ);
-   Float_t q1=fgMathieson->IntXY(fSegmentation[cath]);
+  Float_t q1, q2;
+
+  if (fSegmentationType == 1) {
+
+    fSegmentation[cath]->SetPad(fix[i][cath], fiy[i][cath]);
+    //  First Cluster
+    fSegmentation[cath]->SetHit(par[0],par[1],fZ);
+    q1 = fgMathieson->IntXY(fSegmentation[cath]);
     
-//  Second Cluster
-   fSegmentation[cath]->SetHit(par[2],par[3],fZ);
-   Float_t q2=fgMathieson->IntXY(fSegmentation[cath]);
-   Float_t value;
-   if (cath==0) {
-       value = fQtot[0]*(par[4]*q1+(1.-par[4])*q2);
-   } else {
-       value = fQtot[1]*(par[5]*q1+(1.-par[5])*q2);
-   }
-   return value;
+    //  Second Cluster
+    fSegmentation[cath]->SetHit(par[2],par[3],fZ);
+    q2 = fgMathieson->IntXY(fSegmentation[cath]);
+
+  } else {
+    fSegmentation2[cath]->SetPad(fDetElemId,fix[i][cath], fiy[i][cath]);
+    //  First Cluster
+    fSegmentation2[cath]->SetHit(fDetElemId,par[0],par[1],fZ);
+    q1 = fgMathieson->IntXY(fDetElemId, fSegmentation2[cath]);
+    
+    //  Second Cluster
+    fSegmentation2[cath]->SetHit(fDetElemId,par[2],par[3],fZ);
+    q2 = fgMathieson->IntXY(fDetElemId, fSegmentation2[cath]);
+  }
+  Float_t value;
+  if (cath==0) {
+    value = fQtot[0]*(par[4]*q1+(1.-par[4])*q2);
+  } else {
+    value = fQtot[1]*(par[5]*q1+(1.-par[5])*q2);
+  }
+  return value;
 }
 
 AliMUONClusterInput& AliMUONClusterInput

@@ -8,6 +8,7 @@
 
 #include <TObject.h>
 #include <TClonesArray.h> // needed for inline function Digit
+#include "AliMUONGeometrySegmentation.h"
 
 class TMinuit;
 
@@ -24,6 +25,8 @@ class AliMUONClusterInput : public TObject
 //  Configuration
     void SetDigits(Int_t chamber, TClonesArray* dig1, TClonesArray* dig2);
     void SetDigits(Int_t chamber, TClonesArray* dig);
+    void SetDigits(Int_t chamber, Int_t idDE, TClonesArray* dig1, TClonesArray* dig2);
+    void SetDigits(Int_t chamber, Int_t idDE, TClonesArray* dig);
     void SetCluster(AliMUONRawCluster* cluster);
 // Access functions
     Int_t Chamber() const {return fChamber;}
@@ -33,6 +36,7 @@ class AliMUONClusterInput : public TObject
     AliSegmentation* Segmentation(Int_t cath) const {return fSegmentation[cath];}
     AliMUONMathieson* Mathieson() const {return fgMathieson;}    
     Float_t ChargeCorrel() const {return fChargeCorrel;}    
+    Int_t DetElemId() const {return fDetElemId;}
 
 // Fitting    
     TMinuit*      Fitter() const {return fgMinuit;}
@@ -60,6 +64,8 @@ class AliMUONClusterInput : public TObject
     TClonesArray*        fDigits[2];       // ! Array of pointers to digits
     Int_t                fNDigits[2];      // ! Number of digits
     AliSegmentation*     fSegmentation[2]; // ! Segmentation per cathode
+    AliMUONGeometrySegmentation*     fSegmentation2[2]; // ! Geometry Segmentation per cathode
+
     Int_t                fNseg;            // ! number of cathode planes
     Int_t                fChamber;         // ! Current chamber number
     
@@ -74,6 +80,8 @@ class AliMUONClusterInput : public TObject
     Float_t              fQtot[2];         // ! Total charge
     Float_t              fZ;               // ! Current z-position
     Float_t              fChargeCorrel;    // ! charge correlation 
+    Int_t                fSegmentationType;// ! Segmentation type old or new
+    Int_t                fDetElemId;       // ! detection elt id
 
     // Fitter
     static TMinuit*      fgMinuit;          // ! Fitter

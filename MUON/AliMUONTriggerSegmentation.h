@@ -21,6 +21,7 @@ class TArrayI;
 class AliMUONTriggerSegmentation : public AliMUONVGeometryDESegmentation 
 {
  public:
+    AliMUONTriggerSegmentation();
     AliMUONTriggerSegmentation(Bool_t bending);
     virtual ~AliMUONTriggerSegmentation();
       

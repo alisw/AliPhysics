@@ -171,6 +171,7 @@ protected:
 	virtual void CleanupTriggerArrays() = 0;
 	virtual void FillTriggerOutput() = 0;
 	virtual void AddDigitTrigger(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[6]) = 0;
+	virtual Int_t GetSegmentation();
 
 	AliRunLoader* fRunLoader;         //! Global run loader.
 	AliMUONLoader* fGime;             //! MUON specific loader.
@@ -183,6 +184,7 @@ protected:
 	Int_t fTDCounter;               //! nr. of AliMUONTransientDigit
 	Int_t fMask;                    //! mask dependent on input file
 	Bool_t fSignal;                 //! kTRUE if signal file is processed 
+	Int_t fSegmentation;            //! segmentation type 1=old, 2=new;
 
 private:
 

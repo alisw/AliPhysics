@@ -27,6 +27,7 @@
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 
+#include "AliMUON.h"
 #include "AliMUONDigit.h"
 #include "AliMUONConstants.h"
 #include "AliMUONData.h"
@@ -110,6 +111,21 @@ void AliMUONClusterReconstructor::Digits2Clusters()
 //
 //  Perform cluster finding
 //
+
+    AliMUON* pMUON = (AliMUON*) gAlice->GetModule("MUON");
+    if (pMUON->WhichSegmentation() == 1)
+      Digits2ClustersOld();
+    else
+      Digits2ClustersNew();
+
+}
+//____________________________________________________________________
+void AliMUONClusterReconstructor::Digits2ClustersOld()
+{
+
+//
+//  Perform cluster finding
+//
     TClonesArray *dig1, *dig2;
     Int_t ndig, k;
     dig1 = new TClonesArray("AliMUONDigit",1000);
@@ -121,36 +137,134 @@ void AliMUONClusterReconstructor::Digits2Clusters()
 
     for (Int_t ich = 0; ich < 10; ich++) {
 
-	fMUONData->ResetDigits();
-	fMUONData->GetCathode(0);
-	//TClonesArray *
-	muonDigits = fMUONData->Digits(ich); 
-	ndig=muonDigits->GetEntriesFast();
-	AliDebug(1,Form("1 Found %d digits in %p chamber %d", ndig, (void*)muonDigits,ich));
-	TClonesArray &lhits1 = *dig1;
-	Int_t n = 0;
-	for (k = 0; k < ndig; k++) {
-	    digit = (AliMUONDigit*) muonDigits->UncheckedAt(k);
-	    if (fRecModel->TestTrack(digit->Track(0)))
-	      new(lhits1[n++]) AliMUONDigit(*digit);
+        fMUONData->ResetDigits();
+        fMUONData->GetCathode(0);
+        //TClonesArray *
+        muonDigits = fMUONData->Digits(ich); 
+        ndig=muonDigits->GetEntriesFast();
+        AliDebug(1,Form("1 Found %d digits in %p chamber %d", ndig, (void*)muonDigits,ich));
+        TClonesArray &lhits1 = *dig1;
+        Int_t n = 0;
+        for (k = 0; k < ndig; k++) {
+            digit = (AliMUONDigit*) muonDigits->UncheckedAt(k);
+	    new(lhits1[n++]) AliMUONDigit(*digit);
+        }
+        fMUONData->ResetDigits();
+        fMUONData->GetCathode(1);
+        muonDigits =  fMUONData->Digits(ich);  
+        ndig=muonDigits->GetEntriesFast();
+        AliDebug(1,Form("2 Found %d digits in %p %d", ndig, (void*)muonDigits, ich));
+        TClonesArray &lhits2 = *dig2;
+        n=0;
+        
+        for (k=0; k<ndig; k++) {
+            digit= (AliMUONDigit*) muonDigits->UncheckedAt(k);
+	    new(lhits2[n++]) AliMUONDigit(*digit);
+        }
+
+        if (fRecModel) {         
+            AliMUONClusterInput::Instance()->SetDigits(ich, dig1, dig2);
+            fRecModel->FindRawClusters();
+        }
+        // copy into the container
+        TClonesArray* tmp = fRecModel->GetRawClusters();
+        for (Int_t id = 0; id < tmp->GetEntriesFast(); id++) {
+          AliMUONRawCluster* pClus = (AliMUONRawCluster*) tmp->At(id);
+          fMUONData->AddRawCluster(ich, *pClus);
+        }
+        dig1->Delete();
+        dig2->Delete();
+    } // for ich
+    delete dig1;
+    delete dig2;
+}
+//____________________________________________________________________
+void AliMUONClusterReconstructor::Digits2ClustersNew()
+{
+
+    TClonesArray *dig1, *dig2, *digAll;
+    Int_t ndig, k, idDE, idDE_prev;
+    dig1 = new TClonesArray("AliMUONDigit",1000);
+    dig2 = new TClonesArray("AliMUONDigit",1000);
+    digAll = new TClonesArray("AliMUONDigit",2000);
+
+    AliMUONDigit* digit;
+
+    TArrayI id(100); // contains the different IdDE
+    id.Reset();
+  
+// Loop on chambers and on cathode planes     
+    TClonesArray* muonDigits;
+    Int_t n2;
+    Int_t n1;
+    Int_t flag = 0;
+
+    for (Int_t ich = 0; ich < AliMUONConstants::NTrackingCh(); ich++) {
+      n1 = 0;
+      n2 = 0;
+      //cathode 0
+      fMUONData->ResetDigits();
+      fMUONData->GetCathode(0);
+      muonDigits = fMUONData->Digits(ich); 
+      ndig = muonDigits->GetEntriesFast();
+      TClonesArray &lDigit = *digAll;
+
+      idDE_prev = 0;
+
+      for (k = 0; k < ndig; k++) {
+
+	digit = (AliMUONDigit*) muonDigits->UncheckedAt(k);
+	new(lDigit[n1++]) AliMUONDigit(*digit);
+	idDE = digit->DetElemId();
+	if (idDE != idDE_prev)
+	  id.AddAt(idDE,n2++);
+	idDE_prev = idDE;
+      }
+
+      //cathode 1
+      fMUONData->ResetDigits();
+      fMUONData->GetCathode(1);
+      muonDigits =  fMUONData->Digits(ich);  
+      ndig = muonDigits->GetEntriesFast();
+
+      for (k = 0; k < ndig; k++) {
+
+	digit = (AliMUONDigit*) muonDigits->UncheckedAt(k);
+	new(lDigit[n1++]) AliMUONDigit(*digit);
+	idDE = digit->DetElemId();
+	flag = 0;
+
+	for (Int_t n = 0; n < id.GetSize(); n++) {
+	  if (id[n] == idDE) {
+	    flag = 1;
+	    break;
+	  }
+	  if (flag) continue;
+	  id[id.GetSize()+1] = idDE;
 	}
-	fMUONData->ResetDigits();
-	fMUONData->GetCathode(1);
-	muonDigits =  fMUONData->Digits(ich);  
-	ndig=muonDigits->GetEntriesFast();
-	AliDebug(1,Form("2 Found %d digits in %p %d", ndig, (void*)muonDigits, ich));
+      }
+
+      // loop over id DE
+      for (idDE = 0; idDE < id.GetSize(); idDE++) {
+
+	TClonesArray &lhits1 = *dig1;
 	TClonesArray &lhits2 = *dig2;
-	n=0;
-	
-	for (k=0; k<ndig; k++) {
-	    digit= (AliMUONDigit*) muonDigits->UncheckedAt(k);
-	    if (fRecModel->TestTrack(digit->Track(0)))
-	      new(lhits2[n++]) AliMUONDigit(*digit);
+	n1 = n2 = 0;
+
+	for (k = 0; k < digAll->GetEntriesFast(); k++) {
+	  digit = (AliMUONDigit*) digAll->UncheckedAt(k);
+	  if (id[idDE] == digit->DetElemId())
+	    if (digit->Cathode() == 1)
+	      new(lhits1[n1++]) AliMUONDigit(*digit);
+	    else 
+	      new(lhits2[n2++]) AliMUONDigit(*digit);
+
 	}
 
-	if (fRecModel) {	 
-	    AliMUONClusterInput::Instance()->SetDigits(ich, dig1, dig2);
-	    fRecModel->FindRawClusters();
+	// cluster finder
+	if (fRecModel) {
+	  AliMUONClusterInput::Instance()->SetDigits(ich, id[idDE], dig1, dig2);
+	  fRecModel->FindRawClusters();
 	}
 	// copy into the container
 	TClonesArray* tmp = fRecModel->GetRawClusters();
@@ -160,9 +274,13 @@ void AliMUONClusterReconstructor::Digits2Clusters()
 	}
 	dig1->Delete();
 	dig2->Delete();
+	digAll->Delete();
+
+      }
     } // for ich
     delete dig1;
     delete dig2;
+    delete digAll;
 }
 
 //____________________________________________________________________

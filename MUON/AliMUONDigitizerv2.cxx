@@ -98,7 +98,7 @@ void AliMUONDigitizerv2::MakeTransientDigitFromSDigit(Int_t iChamber, AliMUONDig
 // Once the digit is created it is added to the fTDList.
 
 	AliDebug(4,Form("Making transient digit from s-digit for chamber %d.", iChamber));
-	Int_t digits[6];
+	Int_t digits[7];
 	//
 	// Creating a new TransientDigits from SDigit
 	digits[0] = sDigit->PadX();  // Padx of the Digit
@@ -111,9 +111,14 @@ void AliMUONDigitizerv2::MakeTransientDigitFromSDigit(Int_t iChamber, AliMUONDig
 		digits[4] = 0;
 		
 	digits[5] = sDigit->Hit();    // Hit number in the list
+	if (GetSegmentation() == 1)
+	  digits[6] = 0;
+	else
+	  digits[6] = sDigit->DetElemId();
 
-	AliDebug(5,Form("Made digit from sDigit 0x%X: PadX %d\tPadY %d\tPlane %d\tCharge %d\tHit %d",
-			(void*)sDigit, digits[0], digits[1], digits[2], digits[3], digits[5]));
+	AliDebug(5,Form("Made digit from sDigit 0x%X: PadX %d\tPadY %d\tPlane %d\tCharge %d\tHit %d\tidDE %d",
+			(void*)sDigit, digits[0], digits[1], digits[2], digits[3], digits[5], digits[6]));
+
 	
 	AliMUONTransientDigit* mTD = new AliMUONTransientDigit(iChamber, digits);
 	// Copy list of tracks and trackcharge
@@ -129,7 +134,7 @@ void AliMUONDigitizerv2::MakeTransientDigitFromSDigit(Int_t iChamber, AliMUONDig
 }
 
 //------------------------------------------------------------------------
-void AliMUONDigitizerv2::AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[6])
+void AliMUONDigitizerv2::AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[7])
 {
 // Override to add new digits to the digits tree TreeD.
 	fMUONData->AddDigit(chamber, tracks, charges, digits);   

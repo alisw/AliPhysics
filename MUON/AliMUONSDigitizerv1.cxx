@@ -55,7 +55,7 @@ AliMUONSDigitizerv1::~AliMUONSDigitizerv1()
 }
 
 //------------------------------------------------------------------------
-void AliMUONSDigitizerv1::AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[6])
+void AliMUONSDigitizerv1::AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[7])
 {
 // Derived to write to the s-digit tree TreeS.
 

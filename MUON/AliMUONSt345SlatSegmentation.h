@@ -21,6 +21,7 @@ class TArrayI;
 class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation 
 {
  public:
+    AliMUONSt345SlatSegmentation();
     AliMUONSt345SlatSegmentation(Bool_t bending);
     virtual ~AliMUONSt345SlatSegmentation();
       

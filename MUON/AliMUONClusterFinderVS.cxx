@@ -1919,7 +1919,33 @@ void AliMUONClusterFinderVS::Split(AliMUONRawCluster* c)
 	fNPeaks++;
     }
 }
+void AliMUONClusterFinderVS::AddRawCluster(const AliMUONRawCluster& c)
+{
+  //
+  // Add a raw cluster copy to the list
+  //
 
+//     AliMUON *pMUON=(AliMUON*)gAlice->GetModule("MUON");
+//     pMUON->GetMUONData()->AddRawCluster(fInput->Chamber(),c); 
+//     fNRawClusters++;
+
+  
+    TClonesArray &lrawcl = *fRawClusters;
+    new(lrawcl[fNRawClusters++]) AliMUONRawCluster(c);
+    AliDebug(1,Form("\nfNRawClusters %d\n",fNRawClusters));
+}
+
+AliMUONClusterFinderVS& AliMUONClusterFinderVS
+::operator = (const AliMUONClusterFinderVS& rhs)
+{
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  AliFatal("Not implemented.");
+    
+  return *this;  
+}
 
 //
 // Minimisation functions
@@ -2009,51 +2035,3 @@ void fcnCombiS2(Int_t & /*npar*/, Double_t * /*gin*/, Double_t &f, Double_t *par
     }
     f=chisq;
 }
-
-void AliMUONClusterFinderVS::AddRawCluster(const AliMUONRawCluster& c)
-{
-  //
-  // Add a raw cluster copy to the list
-  //
-
-//     AliMUON *pMUON=(AliMUON*)gAlice->GetModule("MUON");
-//     pMUON->GetMUONData()->AddRawCluster(fInput->Chamber(),c); 
-//     fNRawClusters++;
-
-  
-    TClonesArray &lrawcl = *fRawClusters;
-    new(lrawcl[fNRawClusters++]) AliMUONRawCluster(c);
-    AliDebug(1,Form("\nfNRawClusters %d\n",fNRawClusters));
-}
-
-Bool_t AliMUONClusterFinderVS::TestTrack(Int_t t) const {
-// Test if track was user selected
-    if (fTrack[0]==-1 || fTrack[1]==-1) {
-	return kTRUE;
-    } else if (t==fTrack[0] || t==fTrack[1]) {
-	return kTRUE;
-    } else {
-	return kFALSE;
-    }
-}
-
-AliMUONClusterFinderVS& AliMUONClusterFinderVS
-::operator = (const AliMUONClusterFinderVS& rhs)
-{
-// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
-}
-
-
-
-
-
-
-
-
-

@@ -63,6 +63,7 @@
 #include "AliMUONCommonGeometryBuilder.h"
 #include "AliMUONVGeometryBuilder.h"	
 #include "AliMUONGeometryDEIndexing.h"	
+#include "AliMUONGeometrySegmentation.h"
 #include "AliMUONDigitizerv2.h"
 #include "AliMUONSDigitizerv1.h"
 #include "AliMUONRawData.h"
@@ -94,6 +95,7 @@ AliMUON::AliMUON()
     fChambers(0),
     fTriggerCircuits(0),
     fGeometryBuilder(0),
+    fSegmentationType(0),// 0 for undefined
     fDEIndexing(0),
     fAccCut(kFALSE),
     fAccMin(0.),
@@ -121,6 +123,7 @@ AliMUON::AliMUON(const char *name, const char *title)
     fChambers(0),
     fTriggerCircuits(0),
     fGeometryBuilder(0),
+    fSegmentationType(0),// 0 for undefined
     fDEIndexing(0),
     fAccCut(kFALSE),
     fAccMin(0.),
@@ -250,12 +253,26 @@ void AliMUON::BuildGeometry()
 {
 // Geometry for event display
 
-   for (Int_t i=0; i<7; i++) {
-     for (Int_t j=0; j<2; j++) {
-       Int_t id=2*i+j+1;
-       this->Chamber(id-1).SegmentationModel(1)->Draw("eventdisplay");
-     }
-   }
+  if (!fSegmentationType) {
+    AliFatal("No Segmentation Type defined.");
+    return;
+  }
+
+  if (fSegmentationType == 1) {
+    for (Int_t i=0; i<7; i++) {
+      for (Int_t j=0; j<2; j++) {
+	Int_t id=2*i+j+1;
+	this->Chamber(id-1).SegmentationModel(1)->Draw("eventdisplay");
+      }
+    }
+  } else { 
+//     for (Int_t i=0; i<14; i++) {
+//       for (Int_t j=0; j<100; j++) {
+// 	Int_t id= (i+1)*100 + j;
+// 	this->Chamber(i).SegmentationModel2(1)->Draw(id,"eventdisplay");// to be check !
+//       }
+//     }
+ }
 }
 
 //__________________________________________________________________
@@ -416,7 +433,7 @@ Float_t  AliMUON::GetMaxDestepAlu() const
 
 //____________________________________________________________________
  void  AliMUON::SetAlign(Bool_t align)
- {
+{
  // Sets option for alignement to geometry builder
  
    fGeometryBuilder->SetAlign(align);
@@ -424,6 +441,12 @@ Float_t  AliMUON::GetMaxDestepAlu() const
     
 //____________________________________________________________________
 void   AliMUON::SetSegmentationModel(Int_t id, Int_t isec, AliSegmentation *segmentation)
+{
+// Set the segmentation for chamber id cathode isec
+    ((AliMUONChamber*) fChambers->At(id))->SetSegmentationModel(isec, segmentation);
+}
+//____________________________________________________________________
+void   AliMUON::SetSegmentationModel(Int_t id, Int_t isec, AliMUONGeometrySegmentation*  segmentation)
 {
 // Set the segmentation for chamber id cathode isec
     ((AliMUONChamber*) fChambers->At(id))->SetSegmentationModel(isec, segmentation);

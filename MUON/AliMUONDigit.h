@@ -21,6 +21,10 @@ class AliMUONDigit : public TObject {
 
     AliMUONDigit& operator=(const AliMUONDigit& rhs);
     
+    virtual Bool_t IsSortable() const {return kTRUE;}
+    virtual int Compare(const TObject *obj) const;
+
+    virtual Int_t    DetElemId()const     {return fDetElemId;}
     virtual Int_t    PadX() const         {return fPadX;}
     virtual Int_t    PadY() const         {return fPadY;}
     virtual Int_t    Signal() const       {return fSignal;}
@@ -41,7 +45,8 @@ class AliMUONDigit : public TObject {
     Int_t     fTracks[kMAXTRACKS];    // primary tracks making this digit (up to 10)
     Int_t     fPhysics;       // physics contribution to signal 
     Int_t     fHit;           // hit number - temporary solution
+    Int_t     fDetElemId;     // Detection element ID
 
-    ClassDef(AliMUONDigit,1)  //Digits for MUON
+    ClassDef(AliMUONDigit,2)  //Digits for MUON
 };
 #endif

@@ -30,7 +30,7 @@
 #include "AliConst.h" 
 #include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
-#include "AliMUONFactory.h"
+#include "AliMUONFactoryV2.h"
 #include "AliMUONHit.h"
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONGeometryBuilder.h"	
@@ -80,8 +80,6 @@ AliMUONv1::AliMUONv1(const char *name, const char *title)
 // Standard onstructor
 
     // By default include all stations
-    AliMUONFactory factory;
-    factory.Build(this, title);
 
     fStepSum   = new Float_t [AliMUONConstants::NCh()];
     fDestepSum = new Float_t [AliMUONConstants::NCh()];
@@ -167,29 +165,59 @@ void AliMUONv1::CreateMaterials()
 
 //___________________________________________
 void AliMUONv1::Init()
-{
-   // 
-   // Initialize Tracking Chambers
-   //
+{ 
    AliDebug(1,"Start Init for version 1 - CPC chamber type");
    Int_t i;
-   for (i=0; i<AliMUONConstants::NCh(); i++) {
-       ( (AliMUONChamber*) (*fChambers)[i])->Init();
-   }
-   
-   //
+
+ 
+  //
    // Initialize geometry
    //
    fGeometryBuilder->InitGeometry();
-   AliDebug(1,"Finished Init for version 1 - CPC chamber type");
+   AliDebug(1,"Finished Init for version 1 - CPC chamber type");   
 
-   //cp 
-   AliDebug(1,"Start Init for Trigger Circuits");
-   for (i=0; i<AliMUONConstants::NTriggerCircuit(); i++) {
-     ( (AliMUONTriggerCircuit*) (*fTriggerCircuits)[i])->Init(i);
+   AliMUONFactory* factory = 0x0;
+
+   if (fSegmentationType == 1) {
+     factory = new AliMUONFactory();
+     printf("\n Old Segmentation \n");
    }
-   AliDebug(1,"Finished Init for Trigger Circuits");
-   //cp
+
+   if (fSegmentationType == 2) {
+     factory = new AliMUONFactoryV2();
+     printf("\n New Segmentation \n");
+   } 
+
+   factory->Build(this, "default");
+
+   //
+   // Initialize segmentation
+   //
+   if (!fSegmentationType) {
+     AliFatal("No Segmentation Type defined.");
+     return;
+   }
+
+   if (fSegmentationType == 1) {
+   for (i=0; i<AliMUONConstants::NCh(); i++) 
+       ( (AliMUONChamber*) (*fChambers)[i])->Init();
+   }
+
+   if (fSegmentationType == 2) {
+     for (i=0; i<AliMUONConstants::NCh(); i++) 
+       ( (AliMUONChamber*) (*fChambers)[i])->Init(fSegmentationType);// new segmentation
+   }
+ 
+   if (fSegmentationType == 1) {
+    //cp 
+     AliDebug(1,"Start Init for Trigger Circuits");
+     for (i=0; i<AliMUONConstants::NTriggerCircuit(); i++) 
+       ( (AliMUONTriggerCircuit*) (*fTriggerCircuits)[i])->Init(i);
+     AliDebug(1,"Finished Init for Trigger Circuits");
+   } 
+
+
+
 }
 
 //__________________________________________________________________

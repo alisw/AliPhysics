@@ -30,6 +30,7 @@ ClassImp(AliMUONDigit)
     fSignal      = digits.fSignal;
     fPhysics     = digits.fPhysics;
     fHit         = digits.fHit;
+    fDetElemId   = digits.fDetElemId;
 
     for(Int_t i=0; i<kMAXTRACKS; i++) {
 	fTcharges[i]  = digits.fTcharges[i];
@@ -56,7 +57,7 @@ AliMUONDigit::AliMUONDigit(Int_t *digits)
     fSignal      = digits[3];
     fPhysics     = digits[4];
     fHit         = digits[5];
-
+    fDetElemId   = digits[6];
 }
 //_____________________________________________________________________________
 AliMUONDigit::AliMUONDigit(Int_t *tracks, Int_t *charges, Int_t *digits)
@@ -70,6 +71,7 @@ AliMUONDigit::AliMUONDigit(Int_t *tracks, Int_t *charges, Int_t *digits)
     fSignal      = digits[3];
     fPhysics     = digits[4];
     fHit         = digits[5];
+    fDetElemId   = digits[6];
 
     for(Int_t i=0; i<kMAXTRACKS; i++) {
 	fTcharges[i]  = charges[i];
@@ -94,6 +96,7 @@ AliMUONDigit& AliMUONDigit::operator=(const AliMUONDigit& digits)
     fSignal      = digits.fSignal;
     fPhysics     = digits.fPhysics;
     fHit         = digits.fHit;
+    fDetElemId   = digits.fDetElemId;
 
     for(Int_t i=0; i<kMAXTRACKS; i++) {
 	fTcharges[i]  = digits.fTcharges[i];
@@ -101,4 +104,14 @@ AliMUONDigit& AliMUONDigit::operator=(const AliMUONDigit& digits)
     }
 
     return *this;
+}
+//_____________________________________________________________________________
+Int_t AliMUONDigit::Compare(const TObject *obj) const
+{
+// sort by idDE
+
+ AliMUONDigit* d = (AliMUONDigit*) obj;
+
+ return ( fDetElemId > d->DetElemId()) ? 1 : -1;
+
 }

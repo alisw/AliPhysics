@@ -7,6 +7,7 @@
 // Revision of includes 07/05/2004
 
 class AliSegmentation;
+class AliMUONGeometrySegmentation;
 
 class AliMUONMathieson 
 {
@@ -38,6 +39,7 @@ class AliMUONMathieson
     void    SetKy4(Float_t p1) {fKy4 = p1;};
     // Charge disintegration
     Float_t  IntXY(AliSegmentation * segmentation);
+    Float_t  IntXY(Int_t id, AliMUONGeometrySegmentation* segmentation);
 
     ClassDef(AliMUONMathieson,1) // Implementation of Mathieson response
  protected:
