@@ -105,6 +105,7 @@ class AliL3ConfMapper {
   //  AliL3ConfMapper(AliTPCParam *param,AliL3Vertex *vertex,Bool_t bench=(Bool_t)false);
   virtual ~AliL3ConfMapper();
   
+  void InitVolumes();
   void InitSector(Int_t sector,Int_t *rowrange=0,Float_t *etarange=0);
   void SetVertex(AliL3Vertex *vertex){fVertex = vertex;}
   void MainVertexTracking_a();
