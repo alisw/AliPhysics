@@ -19,8 +19,8 @@
 #include "TF1.h"
 
 TObjectTable * gObjectTable;
-TRandom * gRandom;
-AliRun * gAlice;
+TRandom      * gRandom;
+AliRun       * gAlice;
 
 
 void AnaMinv(char * filename)
@@ -36,31 +36,32 @@ void AnaMinv(char * filename)
   TH2F * h_Peta_Pt   = new TH2F("h_Peta_Pt","Pseudo vs pT",40,0.,10.,50,-1.0,1.0);
   TH1F * h_Phi       = new TH1F("h_Phi","Phi photons",400,-4.,4.);
   TH2F * h_Peta_Phi  = new TH2F("h_Peta_Phi","Pseudo vs Phi",200,-4,4,200,-1.0,1.0);
+  TH1F * h_Dispersion= new TH1F("h_Dispersion","Dispersion",50,0.,10.);
+  TH1F * h_Type      = new TH1F("h_Type","Particle Type",10,0.,10.);
 
-  TH1F * h_DeltaR   = new TH1F("h_DeltaR","Delta R",400,0,4);
+  TH1F * h_DeltaR   = new TH1F("h_DeltaR","Delta R",400,0.,2.);
   TH1F * h_Asymmetry= new TH1F("h_Asymmetry","Asymmetry",400, -2., 2.);
 
   AliPHOSGetter * RecData = AliPHOSGetter::GetInstance(filename,"Gines")  ;
  
   AliPHOSRecParticle * RecParticle1;
   AliPHOSRecParticle * RecParticle2;
- 
 
-  Float_t RelativeRCut = 0.0001 ; 
+  Float_t RelativeRCut = 0.00001 ; 
   Float_t AsymmetryCut = 0.7 ;
   Float_t Asymmetry;
+  Float_t Type;
 
   Int_t iEvent, iRecParticle1, iRecParticle2;
   Int_t nRecParticle;
   Float_t invariant_mass, invariant_mass_mixed;
-  TLorentzVector P_photon1, P_photon2, P_photonMixed1, P_photonMixed2 ;
+ 
   Float_t average_multiplicity = 0.;
 
   for(iEvent=0; iEvent<gAlice->TreeE()->GetEntries(); iEvent++)
-    //  for(iEvent=0; iEvent<1000; iEvent++)
     {
-      //     if (iEvent==2) gObjectTable->Print();
-      //if (iEvent==15) gObjectTable->Print();
+      TLorentzVector P_photon1, P_photon2, P_photonMixed1, P_photonMixed2 ;
+
       RecData->Event(iEvent);
       printf(">>> Event %d \n",iEvent);
       nRecParticle=RecData->NRecParticles();
@@ -72,13 +73,16 @@ void AnaMinv(char * filename)
 	    {
 	      RecParticle1 = (AliPHOSRecParticle *)  RecData->RecParticle(iRecParticle1);
 	      RecParticle1->Momentum(P_photon1);
+	      Type = RecParticle1->GetType();
+	      h_Type->Fill(Type);
+	
 
 	      h_Pseudoeta->Fill(P_photon1.PseudoRapidity());
 	      h_Pt->Fill(P_photon1.Pt());
 	      h_Phi->Fill(P_photon1.Phi());
 	      h_Peta_Pt->Fill(P_photon1.Pt(), P_photon1.PseudoRapidity());
 	      h_Peta_Phi->Fill(P_photon1.Phi(), P_photon1.PseudoRapidity() );
-	 
+	    
  	      for(iRecParticle2=iRecParticle1+1; iRecParticle2<nRecParticle; iRecParticle2++)
  		{
  		  RecParticle2 = (AliPHOSRecParticle *)  RecData->RecParticle(iRecParticle2);
@@ -111,6 +115,7 @@ void AnaMinv(char * filename)
 
   for(iEvent=0; iEvent<Background; iEvent++)
     {
+      TLorentzVector P_photon1, P_photon2, P_photonMixed1, P_photonMixed2 ;
       //      printf(">>> Background Event %d \n",iEvent);
       Pt_Mixed1 =  h_Pt->GetRandom(); 
       Pt_Mixed2 =  h_Pt->GetRandom();
@@ -142,6 +147,8 @@ void AnaMinv(char * filename)
   h_Peta_Pt->Write();
   h_Phi->Write();
   h_Peta_Phi->Write();
+  h_Dispersion->Write();
+  h_Type->Write();
   h_Asymmetry->Write();
   h_DeltaR->Write();
   
@@ -184,11 +191,11 @@ void AnaPtSpectrum(char * filename, Int_t NumberPerPtBin, Option_t * particle, O
   Int_t Norma_1 = 100; Float_t Norma_minv_1 = 0.2;
   Int_t Norma_2 = 200; Float_t Norma_minv_2 = 0.4;
 
-  Int_t Minv_1 = 56;
+  Int_t Minv_1 = 46;
   Int_t Minv_2 = 76;
   if (strstr(particle,"eta"))
     {
-      Minv_1 = 234;
+      Minv_1 = 214;
       Minv_2 = 314;
     }
 
@@ -217,8 +224,7 @@ void AnaPtSpectrum(char * filename, Int_t NumberPerPtBin, Option_t * particle, O
     {
       signal     = h_Minv_pT->ProjectionX("signal",         NumberOfPtBins*iHistos+1,NumberOfPtBins*(iHistos+1));
       background = h_Minv_pT_back->ProjectionX("background",NumberOfPtBins*iHistos+1,NumberOfPtBins*(iHistos+1));
-      //signal->Rebin();
-      //background->Rebin();
+      
       ratio = new TH1D(*signal);
       ratio->Sumw2(); 
       ratio->Add(background,-1.0);
@@ -231,10 +237,7 @@ void AnaPtSpectrum(char * filename, Int_t NumberPerPtBin, Option_t * particle, O
       else
 	Renorma = signal->Integral(Norma_1,Norma_2)/background->Integral(Norma_1,Norma_2);
       difference->Add(background,(-1.)*Renorma); 
-       
-      //ratio->Draw();
-      //      background->Draw("same");
-      //     difference->Draw();
+      
 
       Ntota = signal->Integral(Minv_1,Minv_2);
       Nback = background->Integral(Minv_1,Minv_2);
@@ -249,11 +252,8 @@ void AnaPtSpectrum(char * filename, Int_t NumberPerPtBin, Option_t * particle, O
       NmesonsError[iHistos] = TMath::Sqrt( Ntota + Nback*Renorma*Renorma + Nback*Nback*NormaError*NormaError );  
       Pt[iHistos] = (iHistos+0.5)*NumberOfPtBins*PtCalibration;
       PtError[iHistos] = NumberOfPtBins*PtCalibration/2.; 
-      //   ratio->Delete("");
-      //difference->Delete("");
+      
     }
-  // in->Close();
-
 
   char filenameout[80];
   sprintf(filenameout,"%s.PtSpectrum_%d_%s_%s",filename, NumberPerPtBin, particle, opt);
@@ -269,5 +269,6 @@ void AnaPtSpectrum(char * filename, Int_t NumberPerPtBin, Option_t * particle, O
   frame->SetYTitle("Number of neutral mesons per pT bin");
   PtSpectrum->SetMarkerStyle(27);
   PtSpectrum->Draw("P");
+
 
 }
