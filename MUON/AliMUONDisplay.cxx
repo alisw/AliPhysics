@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/06/27 09:46:57  morsch
+kMAXZOOM global constant now in AliMUONConstants
+
 Revision 1.3  2000/06/26 14:02:38  morsch
 Add class AliMUONConstants with MUON specific constants using static memeber data and access methods.
 
@@ -568,13 +571,13 @@ void AliMUONDisplay::DrawSegmentation()
 	for (Int_t j=0; j<seg->Npy(); j++) {
 	    Float_t y0;
 	    y0=j*seg->Dpy()-seg->Dpy()/2.;
-	    for (seg->FirstPad(0.,y0,300,0.); 
+	    for (seg->FirstPad(0.,y0,0,300,0.); 
 		 seg->MorePads();
 		 seg->NextPad())
 	    {
 		if (seg->ISector()==0) continue;
-		Float_t x,y;
-		seg->GetPadCxy(seg->Ix(), seg->Iy(), x, y);
+		Float_t x,y,z;
+		seg->GetPadCxy(seg->Ix(), seg->Iy(), x, y, z);
 		Float_t dpx=seg->Dpx(seg->ISector())/2;
 		Float_t dpy=seg->Dpy(seg->ISector())/2;
 		marker=new TMarker3DBox(x,y,zpos,dpx,dpy,0,0,0);
@@ -589,14 +592,14 @@ void AliMUONDisplay::DrawSegmentation()
 	    Float_t x0=j*seg->Dpx();
 	    Float_t y0=TMath::Sqrt(r*r-x0*x0);
 	    
-	    for (seg->FirstPad(x0,0,0,y0); 
+	    for (seg->FirstPad(x0,0,0,0,y0); 
 		 seg->MorePads();
 		 seg->NextPad())
 	    {
 		if (seg->ISector()==0) continue;
 		
-		Float_t x,y;
-		seg->GetPadCxy(seg->Ix(), seg->Iy(), x, y);
+		Float_t x,y,z;
+		seg->GetPadCxy(seg->Ix(), seg->Iy(), x, y, z);
 		Float_t dpx=seg->Dpx(seg->ISector())/2;
 		Float_t dpy=seg->Dpy(seg->ISector())/2;
 		marker=new TMarker3DBox(x,y,zpos,dpx,dpy,0,0,0);
@@ -934,8 +937,8 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
 	}
 
 	// get the center of the pad - add on x and y half of pad size
-	Float_t xpad, ypad;
-	segmentation->GetPadCxy(mdig->fPadX, mdig->fPadY,xpad, ypad);
+	Float_t xpad, ypad, zpad;
+	segmentation->GetPadCxy(mdig->fPadX, mdig->fPadY,xpad, ypad, zpad);
 	
         Int_t isec=segmentation->Sector(mdig->fPadX, mdig->fPadY);
         Float_t dpx=segmentation->Dpx(isec)/2;
@@ -962,7 +965,7 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
         points->SetPoint(0,xpad,ypad,zpos);	
 	for (Int_t imark=0;imark<nPara; imark++)
 	{
-	    segmentation->GetPadCxy(mdig->fPadX + imark*offset, mdig->fPadY,xpad, ypad);
+	    segmentation->GetPadCxy(mdig->fPadX + imark*offset, mdig->fPadY,xpad, ypad, zpad);
 	    marker=new TMarker3DBox(xpad,ypad,zpos,dpx,dpy,0,0,0);
 	    marker->SetLineColor(2);
 	    marker->SetFillStyle(1001);

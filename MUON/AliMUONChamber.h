@@ -99,7 +99,7 @@ public TObject
 //  
 // Cluster formation method (charge disintegration)
   virtual void   DisIntegration(Float_t eloss, Float_t tof,
-				Float_t xhit, Float_t yhit,
+				Float_t xhit, Float_t yhit, Float_t zhit,
 				Int_t& x, Float_t newclust[6][500]);
 // Initialize geometry related parameters  
   virtual void    InitGeo(Float_t z);

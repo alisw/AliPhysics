@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:48  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.3  2000/06/09 21:27:35  morsch
 Most coding rule violations corrected.
 
@@ -44,7 +47,7 @@ AliMUONChamberTrigger::AliMUONChamberTrigger() : AliMUONChamber()
 
 //-------------------------------------------
 void AliMUONChamberTrigger::DisIntegration(Float_t eloss, Float_t tof, 
-					   Float_t xhit, Float_t yhit, 
+					   Float_t xhit, Float_t yhit, Float_t zhit, 
 					   Int_t& nnew,
 					   Float_t newclust[6][500]) 
 {
@@ -70,7 +73,7 @@ void AliMUONChamberTrigger::DisIntegration(Float_t eloss, Float_t tof,
 // Find the module & strip Id. which has fired
     Int_t ix,iy;
     
-    segmentation->GetPadIxy(xhit,yhit,ix,iy);
+    segmentation->GetPadIxy(xhit,yhit,0,ix,iy);
     segmentation->SetPad(ix,iy);
 
 // treatment of GEANT hits w/o corresponding strip (due to the fact that
@@ -87,7 +90,7 @@ void AliMUONChamberTrigger::DisIntegration(Float_t eloss, Float_t tof,
       newclust[5][nnew]=(Float_t) i;              // counter
       nnew++;
       // set hits
-      segmentation->SetHit(xhit,yhit);
+      segmentation->SetHit(xhit,yhit,zhit);
       // get the list of nearest neighbours
       Int_t nList, xList[2], yList[2];
       segmentation->Neighbours(ix,iy,&nList,xList,yList);
@@ -95,8 +98,8 @@ void AliMUONChamberTrigger::DisIntegration(Float_t eloss, Float_t tof,
       for (Int_t j=0; j<nList; j++){
 	
 	// neighbour real coordinates (just for checks here)
-	Float_t x,y;
-	segmentation->GetPadCxy(xList[j],yList[j],x,y);
+	Float_t x,y,z;
+	segmentation->GetPadCxy(xList[j],yList[j],x,y,z);
 	// set pad (fx fy & fix fiy are the current pad coord. & Id.)
 	segmentation->SetPad(xList[j],yList[j]);
 	// get the chamber (i.e. current strip) response

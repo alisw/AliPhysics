@@ -15,6 +15,14 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/28 12:19:18  morsch
+More consequent seperation of global input data services (AliMUONClusterInput singleton) and the
+cluster and hit reconstruction algorithms in AliMUONClusterFinderVS.
+AliMUONClusterFinderVS becomes the base class for clustering and hit reconstruction.
+It requires two cathode planes. Small modifications in the code will make it usable for
+one cathode plane and, hence, more general (for test beam data).
+AliMUONClusterFinder is now obsolete.
+
 Revision 1.1  2000/06/28 08:06:10  morsch
 Avoid global variables in AliMUONClusterFinderVS by seperating the input data for the fit from the
 algorithmic part of the class. Input data resides inside the AliMUONClusterInput singleton.
@@ -130,7 +138,7 @@ Float_t AliMUONClusterInput::DiscrChargeS1(Int_t i,Double_t *par)
 
    fSegmentation[0]->SetPad(fix[i][0], fiy[i][0]);
 //  First Cluster
-   fSegmentation[0]->SetHit(par[0],par[1]);
+   fSegmentation[0]->SetHit(par[0],par[1],0);
    Float_t q1=fResponse->IntXY(fSegmentation[0]);
     
    Float_t value = fQtot[0]*q1;
@@ -144,7 +152,7 @@ Float_t AliMUONClusterInput::DiscrChargeCombiS1(Int_t i,Double_t *par, Int_t cat
 
    fSegmentation[cath]->SetPad(fix[i][cath], fiy[i][cath]);
 //  First Cluster
-   fSegmentation[cath]->SetHit(par[0],par[1]);
+   fSegmentation[cath]->SetHit(par[0],par[1],0);
    Float_t q1=fResponse->IntXY(fSegmentation[cath]);
     
    Float_t value = fQtot[cath]*q1;
@@ -163,11 +171,11 @@ Float_t AliMUONClusterInput::DiscrChargeS2(Int_t i,Double_t *par)
 
    fSegmentation[0]->SetPad(fix[i][0], fiy[i][0]);
 //  First Cluster
-   fSegmentation[0]->SetHit(par[0],par[1]);
+   fSegmentation[0]->SetHit(par[0],par[1],0);
    Float_t q1=fResponse->IntXY(fSegmentation[0]);
     
 //  Second Cluster
-   fSegmentation[0]->SetHit(par[2],par[3]);
+   fSegmentation[0]->SetHit(par[2],par[3],0);
    Float_t q2=fResponse->IntXY(fSegmentation[0]);
     
    Float_t value = fQtot[0]*(par[4]*q1+(1.-par[4])*q2);
@@ -185,11 +193,11 @@ Float_t AliMUONClusterInput::DiscrChargeCombiS2(Int_t i,Double_t *par, Int_t cat
 
    fSegmentation[cath]->SetPad(fix[i][cath], fiy[i][cath]);
 //  First Cluster
-   fSegmentation[cath]->SetHit(par[0],par[1]);
+   fSegmentation[cath]->SetHit(par[0],par[1],0);
    Float_t q1=fResponse->IntXY(fSegmentation[cath]);
     
 //  Second Cluster
-   fSegmentation[cath]->SetHit(par[2],par[3]);
+   fSegmentation[cath]->SetHit(par[2],par[3],0);
    Float_t q2=fResponse->IntXY(fSegmentation[cath]);
    Float_t value;
    if (cath==0) {

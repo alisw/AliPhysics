@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/06/26 14:02:38  morsch
+Add class AliMUONConstants with MUON specific constants using static memeber data and access methods.
+
 Revision 1.3  2000/06/22 14:10:05  morsch
 HP scope problems corrected (PH)
 
@@ -1609,20 +1612,27 @@ void AliMUONv1::StepManager()
       eloss   += destep;
       tlength += step;
       
-      Float_t x0,y0;
+      Float_t x0,y0,z0;
+      Float_t localPos[3];
+      Float_t globalPos[3] = {pos[0], pos[1], pos[2]};
       
+      
+      gMC->Gmtod(globalPos,localPos,1); 
+
       if(idvol<10) {
 // tracking chambers
 	  x0 = 0.5*(xhit+pos[0]);
 	  y0 = 0.5*(yhit+pos[1]);
+	  z0 = localPos[2];
       } else {
 // trigger chambers
 	  x0=xhit;
 	  y0=yhit;
+	  z0=0.;
       }
       
       
-      if (eloss >0)  MakePadHits(x0,y0,eloss,tof,idvol);
+      if (eloss >0)  MakePadHits(x0,y0,z0,eloss,tof,idvol);
       
 	  
       hits[6]=tlength;
@@ -1645,9 +1655,15 @@ void AliMUONv1::StepManager()
   {
       ((AliMUONChamber*) (*fChambers)[idvol])
 	  ->SigGenInit(pos[0], pos[1], pos[2]);
+      
+      Float_t localPos[3];
+      Float_t globalPos[3] = {pos[0], pos[1], pos[2]};
+      gMC->Gmtod(globalPos,localPos,1); 
+
+
 //      printf("\n-> MakePadHits, reason special %d",ipart);
       if (eloss > 0 && idvol < 10)
-	  MakePadHits(0.5*(xhit+pos[0]),0.5*(yhit+pos[1]),eloss,tof,idvol);
+	  MakePadHits(0.5*(xhit+pos[0]),0.5*(yhit+pos[1]),localPos[2],eloss,tof,idvol);
       xhit     = pos[0];
       yhit     = pos[1]; 
       eloss    = destep;

@@ -14,6 +14,14 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.23  2000/06/28 12:19:17  morsch
+More consequent seperation of global input data services (AliMUONClusterInput singleton) and the
+cluster and hit reconstruction algorithms in AliMUONClusterFinderVS.
+AliMUONClusterFinderVS becomes the base class for clustering and hit reconstruction.
+It requires two cathode planes. Small modifications in the code will make it usable for
+one cathode plane and, hence, more general (for test beam data).
+AliMUONClusterFinder is now obsolete.
+
 Revision 1.22  2000/06/28 08:06:10  morsch
 Avoid global variables in AliMUONClusterFinderVS by seperating the input data for the fit from the
 algorithmic part of the class. Input data resides inside the AliMUONClusterInput singleton.
@@ -807,7 +815,7 @@ void   AliMUON::SetNsec(Int_t id, Int_t nsec)
 
 
 
-void AliMUON::MakePadHits(Float_t xhit,Float_t yhit,
+void AliMUON::MakePadHits(Float_t xhit,Float_t yhit, Float_t zhit,
 			  Float_t eloss, Float_t tof,  Int_t idvol)
 {
 //
@@ -827,7 +835,7 @@ void AliMUON::MakePadHits(Float_t xhit,Float_t yhit,
 //
 //
     ((AliMUONChamber*) (*fChambers)[idvol])
-	->DisIntegration(eloss, tof, xhit, yhit, nnew, newclust);
+	->DisIntegration(eloss, tof, xhit, yhit, zhit, nnew, newclust);
     Int_t ic=0;
     
 //
@@ -996,9 +1004,9 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 		    
 		    if (cathode != (icat+1)) continue;
 		    // fill the info array
-		    Float_t thex, they;
+		    Float_t thex, they, thez;
 		    segmentation=iChamber->SegmentationModel(cathode);
-		    segmentation->GetPadCxy(ipx,ipy,thex,they);
+		    segmentation->GetPadCxy(ipx,ipy,thex,they,thez);
 //		    Float_t rpad=TMath::Sqrt(thex*thex+they*they);
 //		    if (rpad < rmin || iqpad ==0 || rpad > rmax) continue;
 
@@ -1114,9 +1122,9 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 			Int_t iqpad    = Int_t(mPad->fQpad);// charge per pad
 
 			if (cathode != (icat+1)) continue;
-			Float_t thex, they;
+			Float_t thex, they, thez;
 			segmentation=iChamber->SegmentationModel(cathode);
-			segmentation->GetPadCxy(ipx,ipy,thex,they);
+			segmentation->GetPadCxy(ipx,ipy,thex,they,thez);
 			Float_t rpad=TMath::Sqrt(thex*thex+they*they);
 			if (rpad < rmin || iqpad ==0 || rpad > rmax) continue;
 			new((*pAddress)[countadr++]) TVector(2);

@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:48  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.5  2000/06/09 21:27:01  morsch
 Most coding rule violations corrected.
 
@@ -96,7 +99,7 @@ void    AliMUONChamber::SigGenInit(Float_t x, Float_t y, Float_t z)
 }
 
 void AliMUONChamber::DisIntegration(Float_t eloss, Float_t tof, 
-				    Float_t xhit, Float_t yhit,
+				    Float_t xhit, Float_t yhit, Float_t zhit,
 				    Int_t& nnew,Float_t newclust[6][500]) 
 {
 //    
@@ -120,7 +123,7 @@ void AliMUONChamber::DisIntegration(Float_t eloss, Float_t tof,
 	qcheck=0;
 	AliMUONSegmentation * segmentation=
 	    (AliMUONSegmentation *) (*fSegmentation)[i-1];
-	for (segmentation->FirstPad(xhit, yhit, dx, dy); 
+	for (segmentation->FirstPad(xhit, yhit, zhit, dx, dy); 
 	     segmentation->MorePads(); 
 	     segmentation->NextPad()) 
 	{
