@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2002/02/20 08:52:20  morsch
+Correct documentation of SetNuclei method.
+
 Revision 1.18  2002/02/07 10:43:06  morsch
 Tuned pp-min.bias settings (M.Monteno, R.Ugoccioni and N.Carrer)
 
@@ -190,6 +193,43 @@ void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfun
     case kPyDirectGamma:
 	SetMSEL(10);
 	break;
+    case kPyCharmPbMNR:
+      // Tuning of Pythia parameters aimed to get a resonable agreement
+      // between with the NLO calculation by Mangano, Nason, Ridolfi for the
+      // c-cbar single inclusive and double differential distributions.
+      // This parameter settings are meant to work with Pb-Pb collisions
+      // (AliGenPythia::SetNuclei) and with kCTEQ_4L PDFs.
+      // To get a good agreement the minimum ptHard (AliGenPythia::SetPtHard)
+      // has to be set to 2.1GeV. Example in ConfigCharmPPR.C.
+
+      // All QCD processes
+      SetMSEL(1);
+
+      // No multiple interactions
+      SetMSTP(81,0);
+      SetPARP(81,0.0);
+      SetPARP(82,0.0);
+
+      // Initial/final parton shower on (Pythia default)
+      SetMSTP(61,1);
+      SetMSTP(71,1);
+
+      // 2nd order alpha_s
+      SetMSTP(2,2);
+
+      // QCD scales
+      SetMSTP(32,2);
+      SetPARP(34,1.0);
+
+      // Intrinsic <kT^2>
+      SetMSTP(91,1);
+      SetPARP(91,1.304);
+      SetPARP(93,6.52);
+
+      // Set c-quark mass
+      SetPMAS(4,1,1.2);
+
+      break;
     }
 //
 //  Initialize PYTHIA

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.49  2002/02/08 16:50:50  morsch
+Add name and title in constructor.
+
 Revision 1.48  2001/12/20 11:44:28  morsch
 Add kinematic bias for direct gamma production.
 
@@ -237,13 +240,8 @@ void AliGenPythia::Init()
     switch (fProcess) 
     {
     case kPyCharm:
-	fParentSelect[0] =  411;
-	fParentSelect[1] =  421;
-	fParentSelect[2] =  431;
-	fParentSelect[3] = 4122;	
-	fFlavorSelect    = 4;
-	break;
     case kPyCharmUnforced:
+    case kPyCharmPbMNR:
 	fParentSelect[0] =   411;
 	fParentSelect[1] =   421;
 	fParentSelect[2] =   431;
