@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  1999/11/08 07:12:31  fca
+Minor corrections thanks to I.Hrivnacova
+
 Revision 1.8  1999/09/29 09:24:23  fca
 Introduction of the Copyright and cvs Log
 
@@ -160,8 +163,8 @@ void AliPHOSv0::CreateGeometry()
 
 // --- Divide in X and Z direction (same way as PTCB) --- 
     //    gMC->Gsdvn("PCMO", "PCSE", 13, 3);
-    gMC->Gsdvn("PCST", "PCMO", 8, 1);
-    gMC->Gsdvn("PCCE", "PCST", 8, 3);
+    //    gMC->Gsdvn("PCST", "PCMO", 8, 1);
+    //    gMC->Gsdvn("PCCE", "PCST", 8, 3);
 
 // --- Position various PHOS units in ALICE setup --- 
 // --- PHOS itself first --- 
