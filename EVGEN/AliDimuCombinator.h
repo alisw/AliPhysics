@@ -4,8 +4,8 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
-#include <TParticle.h>
 #include <TObject.h>
+#include <TParticle.h>
 
 class TClonesArray;
 class TParticle;
@@ -51,8 +51,8 @@ public:
     void SmearGauss(Float_t width, Float_t & value);
 // Weight
     Bool_t  Correlated(TParticle* part1, TParticle* part2);
-    void    SetRate(Float_t rate){fRate1=rate;}
-    void    SetRate(Float_t rate1, Float_t rate2 ){fRate1=rate1; fRate2=rate2;}
+    void    SetRate(Float_t rate) {fRate1=rate;}
+    void    SetRate(Float_t rate1, Float_t rate2 ) {fRate1=rate1; fRate2=rate2;}
     Float_t Weight(TParticle* part);
     Float_t Weight(TParticle* part1, TParticle* part);
     Float_t DecayProbability(TParticle* part);
@@ -66,20 +66,20 @@ public:
     Int_t Origin(TParticle* part);
     TParticle* Parent(TParticle* part);
     TParticle* Partner();
-    Int_t Type(TParticle *part) {return part->GetPdgCode();}
-private:
+    Int_t Type(TParticle *part);
+ private:
     TClonesArray *fPartArray;      // MC Event
     Int_t fNParticle;              // Number of particles
-    Int_t fimuon1;                 // Index of first muon
-    Int_t fimuon2;                 // Index of second muon
-    Int_t fimin1;                  // Lowest index for first   muon  
-    Int_t fimin2;                  // Lowest index for second  muon 
-    Int_t fimax1;                  // Highest index for first  muon  
-    Int_t fimax2;                  // Highest index for second muon 
+    Int_t fImuon1;                 // Index of first muon
+    Int_t fImuon2;                 // Index of second muon
+    Int_t fImin1;                  // Lowest index for first   muon  
+    Int_t fImin2;                  // Lowest index for second  muon 
+    Int_t fImax1;                  // Highest index for first  muon  
+    Int_t fImax2;                  // Highest index for second muon 
     Float_t fRate1;                // weight factor  
     Float_t fRate2;                // weight factor
-    TParticle *fmuon1;             // First muon
-    TParticle *fmuon2;             // Second muon
+    TParticle *fMuon1;             // First muon
+    TParticle *fMuon2;             // Second muon
     Float_t fPtMin;                // pT-cut 
     Float_t fEtaMin;               // Minimum pseudorapidity cut
     Float_t fEtaMax;               // Maximum pseudorapidity cut
@@ -87,6 +87,9 @@ private:
     ClassDef(AliDimuCombinator,1)  // Tools for dimuon combinatoric studies
 };
 #endif
+
+
+
 
 
 
