@@ -26,18 +26,18 @@ const G4double TG4G3Defaults::fgkDCUTM  = 10. * TeV;
 const G4double TG4G3Defaults::fgkPPCUTM = 0.01 * GeV;
 
 // physics processes
-const TG3FlagValue TG4G3Defaults::fgkPAIR = kActivate;   // 1
-const TG3FlagValue TG4G3Defaults::fgkCOMP = kActivate;   // 1
-const TG3FlagValue TG4G3Defaults::fgkPHOT = kActivate;   // 1
-const TG3FlagValue TG4G3Defaults::fgkPFIS = kInActivate; // 0
-const TG3FlagValue TG4G3Defaults::fgkDRAY = kActivate2;  // 2
-const TG3FlagValue TG4G3Defaults::fgkANNI = kActivate;   // 1
-const TG3FlagValue TG4G3Defaults::fgkBREM = kActivate;   // 1
-const TG3FlagValue TG4G3Defaults::fgkHADR = kActivate;   // 1
-const TG3FlagValue TG4G3Defaults::fgkMUNU = kInActivate; // 0
-const TG3FlagValue TG4G3Defaults::fgkDCAY = kActivate;   // 1
-const TG3FlagValue TG4G3Defaults::fgkLOSS = kActivate2;  // 2
-const TG3FlagValue TG4G3Defaults::fgkMULS = kActivate;   // 1
+const TG4G3ControlValue TG4G3Defaults::fgkPAIR = kActivate;   // 1
+const TG4G3ControlValue TG4G3Defaults::fgkCOMP = kActivate;   // 1
+const TG4G3ControlValue TG4G3Defaults::fgkPHOT = kActivate;   // 1
+const TG4G3ControlValue TG4G3Defaults::fgkPFIS = kInActivate; // 0
+const TG4G3ControlValue TG4G3Defaults::fgkDRAY = kActivate2;  // 2
+const TG4G3ControlValue TG4G3Defaults::fgkANNI = kActivate;   // 1
+const TG4G3ControlValue TG4G3Defaults::fgkBREM = kActivate;   // 1
+const TG4G3ControlValue TG4G3Defaults::fgkHADR = kActivate;   // 1
+const TG4G3ControlValue TG4G3Defaults::fgkMUNU = kInActivate; // 0
+const TG4G3ControlValue TG4G3Defaults::fgkDCAY = kActivate;   // 1
+const TG4G3ControlValue TG4G3Defaults::fgkLOSS = kActivate2;  // 2
+const TG4G3ControlValue TG4G3Defaults::fgkMULS = kActivate;   // 1
 
 TG4G3Defaults::TG4G3Defaults() {
 //
@@ -79,12 +79,12 @@ G4double TG4G3Defaults::CutValue(G4int g3Cut)
   }
 }          
 
-TG3FlagValue TG4G3Defaults::FlagValue(G4int g3Flag)
+TG4G3ControlValue TG4G3Defaults::ControlValue(G4int control)
 {
-// Returns the G3 default value for the specified flag.
+// Returns the G3 default value for the specified control.
 // ---
 
-  switch (g3Flag) {
+  switch (control) {
     case kPAIR:
       return fgkPAIR;
     case kCOMP:
@@ -110,28 +110,30 @@ TG3FlagValue TG4G3Defaults::FlagValue(G4int g3Flag)
     case kMULS:
       return fgkMULS;
     default:
-      TG4Globals::Warning("TG4G3Defaults::FlagValue: Inconsistent flag.");
+      TG4Globals::Warning(
+        "TG4G3Defaults::ControlValue: Inconsistent control.");
       return kUnset;      
   }
 }          
 
-G4bool TG4G3Defaults::IsDefaultCut(TG3Cut g3Cut, G4double value)
+G4bool TG4G3Defaults::IsDefaultCut(TG4G3Cut cut, G4double value)
 {
 // Tests if the parameter value is equal to the G3 default value.
 // ---
 
-  if (abs(value*GeV - CutValue(g3Cut)) > fgkCutTolerance) 
+  if (abs(value*GeV - CutValue(cut)) > fgkCutTolerance) 
     return false;
   else  
     return true;
 }
 
-G4bool TG4G3Defaults::IsDefaultFlag(TG3Flag g3Flag, G4double value)
+G4bool TG4G3Defaults::IsDefaultControl(TG4G3Control control,
+                                              G4double value)
 {
 // Tests if the parameter value is equal to the G3 default value.
 // ---
 
-  if (value == FlagValue(g3Flag)) 
+  if (value == ControlValue(control)) 
     return true;
   else  
     return false;
