@@ -14,7 +14,8 @@ struct GoodTrack
   Double_t eta;
   Int_t code;
   Double_t px,py,pz;
-  Double_t pt;
+  Double_t x,y,z;
+  Int_t nhits;
 };
 typedef struct GoodTrack GoodTrack;
 
@@ -31,15 +32,10 @@ class AliSimDigits;
 class TObjArray;
 class TParticle;
 
-class AliL3Evaluate : public TObject {
+class AliL3Evaluate {
 
  private:
 
-  TFile *fDigitsFile;
-  TFile *fMCclusterfile;  //If you run the fast simulator.
-  TFile *fEventFile;
-  GoodTrack fGoodTracks[15000]; //!
-  TObjArray *fParticles;
   AliL3TrackArray *fTracks; //!
   AliTPCParam *fParam;
   AliL3SpacePointData *fClusters[36][6]; //!
@@ -50,8 +46,10 @@ class AliL3Evaluate : public TObject {
   UInt_t fNcl[36][6];
   Int_t fRowid[36][176];
   Int_t fMinPointsOnTrack;  //Minimum points on track to be considered.
-  Bool_t fIsSlow;
-  Bool_t fNoOverlap;
+  Int_t fMinHitsFromParticle;
+  GoodTrack *fGoodTracks; //!
+  Float_t fMaxFalseClusters;
+  
   Int_t fNFastPoints;
   UInt_t *fMcIndex;//!
   Int_t *fMcId;//!
@@ -73,46 +71,39 @@ class AliL3Evaluate : public TObject {
   TH1F *fTrackEffEta;
   TH1F *fFakeTrackEffEta;
   
-  void FillEffHistos();
-  void CalcEffHistos();
-  void AssignIDs();
-  Bool_t InitMC();
-  void DefineGoodTracks(Int_t *slice,Int_t *padrow,Int_t good_number,Char_t *fname="good_tracks_tpc");
-  Int_t GetMCTrackLabel(AliL3Track *track);
-  Int_t **GetClusterIDs(AliL3Track *track);
-  void GetFastClusterIDs(Char_t *path);
+  
   
  public:
   AliL3Evaluate();
-  AliL3Evaluate(Char_t *mcfile,Int_t *slice);
-  AliL3Evaluate(Int_t *slice);
-
+  AliL3Evaluate(Char_t *path,Int_t min_clusters,Int_t minhits,Double_t minpt=0.1,Int_t *slice=0);
   virtual ~AliL3Evaluate();
 
-  void SetupFast(Char_t *trackfile,Char_t *mcClusterfile,Char_t *path=".");
-  void SetupSlow(Char_t *trackfile,Char_t *digitsfile,Char_t *path=".");
-  void Setup(Char_t *trackfile,Char_t *path);
-  void CreateHistos(Int_t nbin=20,Int_t xlow=0,Int_t xup=4);
-  void EvaluatePatch(Int_t slice,Int_t patch,Int_t min_points,Int_t good_number);
-  void EvaluateSlice(Int_t slice,Int_t min_points,Int_t good_number);
-  void EvaluateGlobal(Int_t min_points,Int_t good_number,Char_t *fname);
+  void CreateHistos(Int_t nbin=20,Float_t xlow=0,Float_t xup=4);
   void Write2File(Char_t *outputfile);
-    
-  TH1F *GetTrackEffPt() {return fTrackEffPt;}
-  TH1F *GetTrackEffEta() {return fTrackEffEta;}
-  TH1F *GetPtRes() {return fPtRes;}
-
-  void SetMinPoints(Int_t f) {fMinPointsOnTrack = f;}
-  void SetMinGoodPt(Double_t f) {fMinGoodPt = f;}
-  void DoSingleTracks() {fNoOverlap = kTRUE;}
-  Int_t GetNGoodTracks() {return fGoodGen;}
-  Int_t GetNFoundTracks() {return fGoodFound;}
-  
+  void FillEffHistos();
+  void FillEffHistosNAIVE();
+  void CalcEffHistos();
+  void AssignIDs();
+  void GetGoodParticles(Char_t *particle_file);
+  void GetFastClusterIDs(Char_t *path);
+  void GetCFeff(Char_t *outfile);
+  Int_t GetMCTrackLabel(AliL3Track *track);
   TNtuple *CalculateResiduals();
   TNtuple *EvaluatePoints(Char_t *rootfile);
-  Bool_t GetParticleCrossingPoint(TParticle *part,Int_t slice,Int_t padrow,Float_t *xyz);
-  void GetCFeff(Char_t *outfile);
+  
+  void SetMinPoints(Int_t f) {fMinPointsOnTrack = f;}
+  void SetMinGoodPt(Double_t f) {fMinGoodPt = f;}
+  void SetMaxFalseClusters(Float_t f) {fMaxFalseClusters = f;}
 
+  Int_t GetNGoodTracks() {return fGoodGen;}
+  Int_t GetNFoundTracks() {return fGoodFound;}
+  TH1F *GetTrackEffPt() {return fTrackEffPt;}
+  TH1F *GetTrackEffEta() {return fTrackEffEta;}
+  TH1F *GetFakeEffEta() {return fFakeTrackEffEta;}
+  TH1F *GetFakeEffPt() {return fFakeTrackEffPt;}
+  TH1F *GetPtRes() {return fPtRes;}
+
+  
   ClassDef(AliL3Evaluate,1) //Tracking evaluation class
 };
 
