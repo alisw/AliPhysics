@@ -61,7 +61,7 @@ protected:
   Double_t fBirkC2; // constants for Birk's Law implementation
   TRandom * fRan ;             //! random number generator
 
-  ClassDef(AliEMCAL,6) // Electromagnetic calorimeter (base class)
+  ClassDef(AliEMCAL,7) // Electromagnetic calorimeter (base class)
 
 } ;
 
