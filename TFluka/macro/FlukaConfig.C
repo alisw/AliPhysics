@@ -77,8 +77,8 @@ void Config()
                                                                                 
   cout<<"Config.C: Creating Run Loader ..."<<endl;
   rl = AliRunLoader::Open("galice.root",
-                          AliConfig::fgkDefaultEventFolderName,
-                          "recreate");
+			    AliConfig::GetDefaultEventFolderName(),
+			    "recreate");
   if (rl == 0x0)
     {
       gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
