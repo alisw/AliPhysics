@@ -12,14 +12,17 @@
 //                                                       //
 ///////////////////////////////////////////////////////////
 
-class TGenerator;
-
 #include "TLorentzVector.h"
 #include "TArrayF.h"
 #include "AliRndm.h"
+#include "AliMCProcess.h"
+class TGenerator;
+class AliStack;
+
 
 typedef enum { kNoSmear, kPerEvent, kPerTrack } VertexSmear_t;
 typedef enum { kExternal, kInternal}            VertexSource_t;
+
 
 class AliGenerator : public TNamed, public AliRndm
 {
@@ -68,8 +71,26 @@ class AliGenerator : public TNamed, public AliRndm
     virtual void GetOrigin(TLorentzVector &o) const
 	{o[0]=fOrigin.At(0);o[1]=fOrigin.At(1);o[2]=fOrigin.At(2);o[3]=0;}
 
-protected:
-    static TGenerator* fgMCEvGen; // Pointer to the generator
+    virtual void SetNumberOfEvents(Int_t n) {fNumberOfEvents=n;}
+    virtual Int_t GetNumberOfEvents() {return fNumberOfEvents;}
+    void SetStack (AliStack *stack) {fStack = stack;}
+    AliStack* GetStack(){return fStack;}
+// Comminication with stack
+ protected:
+    virtual  void  SetTrack(Int_t done, Int_t parent, Int_t pdg,
+                               Float_t *pmom, Float_t *vpos, Float_t *polar,
+                               Float_t tof, AliMCProcess mech, Int_t &ntr,
+                               Float_t weight=1);
+    virtual  void  SetTrack(Int_t done, Int_t parent, Int_t pdg,
+                      Double_t px, Double_t py, Double_t pz, Double_t e,
+                      Double_t vx, Double_t vy, Double_t vz, Double_t tof,
+                      Double_t polx, Double_t poly, Double_t polz,
+                      AliMCProcess mech, Int_t &ntr, Float_t weight=1);
+    virtual void   KeepTrack(Int_t itrack); 
+    virtual void   SetHighWaterMark(Int_t nt);
+    
+ protected:
+    static  TGenerator* fgMCEvGen; // Pointer to the generator
     Float_t     fThetaMin;     //Minimum theta of generation in radians
     Float_t     fThetaMax;     //Maximum theta of generation in radians
     Float_t     fPhiMin;       //Minimum phi of generation in radians
@@ -85,7 +106,7 @@ protected:
     Int_t       fNpart;        //Maximum number of particles per event
     Float_t     fParentWeight; //Parent Weight
     Float_t     fChildWeight;  //ChildWeight
-    Int_t       fAnalog;       //Flaf for anolog or pt-weighted generation
+    Int_t       fAnalog;       //Flag for anolog or pt-weighted generation
    //
     VertexSmear_t     fVertexSmear;  //Vertex Smearing mode
     VertexSource_t    fVertexSource; //Vertex source (internal/external)    
@@ -93,16 +114,27 @@ protected:
     TArrayF     fOrigin;     // Origin of event
     TArrayF     fOsigma;     // Sigma of the Origin of even
     TArrayF     fVertex;     //! Vertex of current event
-    
+    Int_t fNumberOfEvents;
+    AliStack *fStack;        //! Local pointer to stack
+    Int_t fActiveEvent;      //HBT Processor needs more then one event to do correlations
+                             //Due to complications in fortran, it first calls C routine
+                             //that sets the active event to be read. All alihbtp_gettrack
+                             //are addressed to this event
+     
+    Int_t fNParticles;       //number of particles in current event
+
+    /*************************************************************************/
     enum {kThetaRange    = BIT(14),
 	  kVertexRange   = BIT(15),
-	  kPhiRange      = BIT(16), 
+	  kPhiRange      = BIT(16),
 	  kPtRange       = BIT(17),
-	  kYRange        = BIT(18), 
-	  kMomentumRange = BIT(19)
+	  kYRange        = BIT(18),
+	  kMomentumRange = BIT(19)     
     };
-
     ClassDef(AliGenerator,1) // Base class for event generators
 };
 
 #endif
+
+
+
