@@ -46,9 +46,9 @@
 // --- ROOT system ---
 #include "TROOT.h"
 #include "TFile.h"
-#include "TFolder.h"
+  //#include "TFolder.h"
 #include "TTree.h"
-#include "TSystem.h"
+  //#include "TSystem.h"
 #include "TBenchmark.h"
 
 // --- Standard library ---
@@ -56,12 +56,12 @@
 // --- AliRoot header files ---
 
 #include "AliPHOSTrackSegmentMakerv1.h"
-#include "AliPHOSClusterizerv1.h"
+  //#include "AliPHOSClusterizerv1.h"
 #include "AliPHOSTrackSegment.h"
-#include "AliPHOSCpvRecPoint.h"
+  //#include "AliPHOSCpvRecPoint.h"
 #include "AliPHOSLink.h"
 #include "AliPHOSGetter.h"
-#include "AliPHOS.h"
+  //#include "AliPHOS.h"
 #include "AliRun.h"
 
 ClassImp( AliPHOSTrackSegmentMakerv1) 
@@ -73,10 +73,6 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
   // default ctor (to be used mainly by Streamer)
 
   InitParameters() ; 
-//   fHeaderFileName           = "" ;
-//   fRecPointsBranchTitle     = "" ;
-//   fTrackSegmentsBranchTitle = "" ; 
-//   fFrom                     = "" ; 
 
   fTrackSegmentsInRun       = 0 ; 
 
@@ -89,15 +85,9 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
   // ctor
 
   InitParameters() ; 
-//   fHeaderFileName           = GetTitle() ;
-//   fRecPointsBranchTitle     = GetName() ;
-//   fTrackSegmentsBranchTitle = GetName() ; 
+
   fTrackSegmentsInRun       = 0 ; 
 
-//   if ( from == 0 ) 
-//     fFrom = name ; 
-//   else
-//     fFrom = from ; 
   Init() ;
 
   fDefaultInit = kFALSE ; 
@@ -113,24 +103,6 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
   if (!fDefaultInit) {
     delete fLinkUpArray  ;
     
-//     AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-    
-//     // remove the task from the folder list
-//     gime->RemoveTask("T",GetName()) ;
-//     TString name(GetName()) ; 
-//     name.ReplaceAll("tsm", "clu") ; 
-//     gime->RemoveTask("C",name) ;
-    
-//     // remove the data from the folder list
-//     name = GetName() ; 
-//     name.Remove(name.Index(":")) ; 
-//     gime->RemoveObjects("RE", name) ; // EMCARecPoints
-//     gime->RemoveObjects("RC", name) ; // CPVRecPoints
-//     gime->RemoveObjects("T", name) ;  // TrackSegments
-    
-//     // Delete gAlice
-//     gime->CloseFile() ; 
-    
     fSplitFile = 0 ; 
   }
 }
@@ -139,6 +111,7 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
 //____________________________________________________________________________
 const TString AliPHOSTrackSegmentMakerv1::BranchName() const 
 {  
+  // retrieves the branch name 
   TString branchName(GetName() ) ;
   branchName.Remove(branchName.Index(Version())-1) ;
   return branchName ;
@@ -252,6 +225,7 @@ void  AliPHOSTrackSegmentMakerv1::Init()
 //____________________________________________________________________________
 void  AliPHOSTrackSegmentMakerv1::InitParameters()
 {
+  // initializes parameters used for the construction of the tacksegments
   fRcpv      = 10. ;   
   fEmcFirst  = 0 ;    
   fEmcLast   = 0 ;   
@@ -394,31 +368,6 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t * option)
     Print("") ; 
     return ; 
   }
-
-//   gAlice->GetEvent(0) ;
-//   //check, if the branch with name of this" already exits?
-//   if (gAlice->TreeR()) { 
-//     TObjArray * lob = static_cast<TObjArray*>(gAlice->TreeR()->GetListOfBranches()) ;
-//     TIter next(lob) ; 
-//     TBranch * branch = 0 ;  
-//     Bool_t phostsfound = kFALSE, tracksegmentmakerfound = kFALSE ; 
-    
-//     TString branchname = GetName() ;
-//     branchname.Remove(branchname.Index(Version())-1) ;
-    
-//     while ( (branch = static_cast<TBranch*>(next())) && (!phostsfound || !tracksegmentmakerfound) ) {
-//       if ( (strcmp(branch->GetName(), "PHOSTS")==0) && (strcmp(branch->GetTitle(), branchname.Data())==0) ) 
-// 	phostsfound = kTRUE ;
-      
-//       else if ( (strcmp(branch->GetName(), "AliPHOSTrackSegmentMaker")==0) && (strcmp(branch->GetTitle(), GetName())==0) ) 
-// 	tracksegmentmakerfound = kTRUE ; 
-//     }
-    
-//     if ( phostsfound || tracksegmentmakerfound ) {
-//       Warning("Exec", "TrackSegments and/or TrackSegmentMaker branch with name %s already exists", branchname.Data() ) ;
-//       return ; 
-//     }       
-//   }
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
   if(gime->BranchExists("TrackSegments") )

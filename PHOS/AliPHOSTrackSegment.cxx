@@ -29,6 +29,7 @@
 // --- AliRoot header files ---
 
 #include "AliPHOSTrackSegment.h" 
+#include "AliPHOSEmcRecPoint.h"
 
 ClassImp(AliPHOSTrackSegment)
 

@@ -29,7 +29,9 @@ class  AliPHOSTrackSegmentMaker : public TTask {
 public:
 
   AliPHOSTrackSegmentMaker() ;                     
-  AliPHOSTrackSegmentMaker(const char* headerFile, const char* name, const Bool_t toSplit) ;                     
+  AliPHOSTrackSegmentMaker(const char* headerFile, const char* name, const Bool_t toSplit) ;
+  AliPHOSTrackSegmentMaker(const AliPHOSTrackSegmentMaker & ts) ;                     
+  
   
   virtual ~ AliPHOSTrackSegmentMaker() ;
 
@@ -47,7 +49,8 @@ public:
   //  virtual void SetSplitFile(const TString splitFileName = "PHOS.RecData.root") const ; 
   virtual const char * Version() const {Warning("Version", "Not Defined" ) ; return 0 ; }   
   virtual void WriteTrackSegments(Int_t event){Warning("WriteTrackSegments", "Not Defined" ) ; } 
-  
+  AliPHOSTrackSegmentMaker & operator = (const AliPHOSTrackSegmentMaker &ts) {return *this ; }
+
 protected:
   
   TFile * fSplitFile ;             //! file in which TrackSegments will eventually be stored

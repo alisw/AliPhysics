@@ -16,13 +16,14 @@
 // --- ROOT system ---
 
 #include "TObject.h"
+class TClonesArray ; 
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 
-#include "AliPHOSEmcRecPoint.h"
-#include "AliPHOSRecPoint.h"
+class AliPHOSEmcRecPoint ;
+class AliPHOSRecPoint ; 
 
 class AliPHOSTrackSegment : public TObject  {
 
