@@ -29,6 +29,8 @@ public:
   virtual Float_t ZMin() const;	// Minimum overall dimension of the ZDC
   virtual Float_t ZMax() const;	// Maximum overall dimension of the ZDC
   virtual void  MakeBranch(Option_t* opt, const char *file=0);
+  virtual void  MakeBranchInTreeSD(TTree *treeSD, const char *file=0);
+  virtual void  MakeBranchInTreeD(TTree *treeD, const char *file=0);
   virtual void  Hits2SDigits();
   virtual void  SDigits2Digits();
   virtual void  Hits2Digits();
@@ -36,7 +38,7 @@ public:
   virtual void  SetMerger(AliZDCMerger* merger);
   virtual AliZDCMerger* Merger();
   virtual void  StepManager() {}
-  
+    
   // Switching off the shower development in ZDCs
   void  NoShower(){fNoShower=1;}
   void  Shower()  {fNoShower=0;}
@@ -46,16 +48,13 @@ protected:
   Int_t        fNoShower;	// Flag to switch off the shower	
   AliZDCMerger *fMerger;   	// ! pointer to merger
   
+  Int_t        fNMergedhits;    // Number of Merged hits for background
+  TClonesArray *fMergedHits;    // TCA for "merged" hits  
+  TTree	       *fTreeSD;	// TreeS for merging
+  TTree	       *fTreeMD;	// TreeD for merging
+  
   Int_t        fNRecPoints;	// Number of RecPoints
   TClonesArray *fRecPoints;	// List of RecPoints
-
-//  // --- TClonesArray of stored hits -> not reset et finish event
-//  // 	        (for digitization at the end of the event)
-//
-//  TClonesArray *fStHits;
-//  Int_t   fNStHits;
-//  Int_t   fNPrimaryHits;	// Number of primary particles
-
 
   ClassDef(AliZDC,1)  	// Zero Degree Calorimeter base class
 };

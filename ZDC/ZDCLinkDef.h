@@ -16,5 +16,6 @@
 #pragma link C++ class  AliGenZDC+;
 #pragma link C++ class  AliZDCFragment+;
 #pragma link C++ class  AliZDCMerger+;
+#pragma link C++ class  AliZDCMergedHit+;
 
 #endif

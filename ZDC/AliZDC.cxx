@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.25  2001/10/04 14:24:15  coppedis
+Event merging for ZDC
+
 Revision 1.24  2001/09/26 16:03:41  coppedis
 Merging implemented
 
@@ -371,11 +374,11 @@ Float_t AliZDC::ZMax(void) const
 //_____________________________________________________________________________
 void AliZDC::Hits2SDigits()
 {
-  printf("\n	Entering AliZDC::SDigits2Digits()\n");
+//  printf("\n	Entering AliZDC::SDigits2Digits()\n");
   
   //----------------------------------------------------------------
   if(!fMerger){ 
-    printf("\n 	ZDC digitization (without merging)\n");
+//    printf("\n 	ZDC digitization (without merging)\n");
 
     AliZDCMergedHit *MHit;
     Int_t j, sector[2];
@@ -409,14 +412,14 @@ void AliZDC::Hits2SDigits()
 	  fNMergedhits++;
 	  delete MHit;
     }
-    printf("\n	### Filling SDigits tree\n");
+//    printf("\n	### Filling SDigits tree\n");
     gAlice->TreeS()->Fill();
     gAlice->TreeS()->Write(0,TObject::kOverwrite);  
     gAlice->TreeS()->Reset();  
   }
   //----------------------------------------------------------------
   else if(fMerger){
-    printf("\n         ZDC merging and digitization\n");
+//    printf("\n         ZDC merging and digitization\n");
     // ### Initialise merging
     fMerger -> InitMerging();
 
@@ -444,7 +447,7 @@ void AliZDC::Hits2SDigits()
     // ### Get TCA of MergedHits from AliZDCMerger
     fMergedHits  = fMerger->MergedHits();
     fNMergedhits = fMerger->GetNMhits();
-    printf("\n         fNMergedhits (from AliZDCMerger) = %d\n", fNMergedhits);   
+//    printf("\n         fNMergedhits (from AliZDCMerger) = %d\n", fNMergedhits);   
     AliZDCMergedHit *MHit;
     TClonesArray &sdigits = *fMergedHits;
     Int_t imhit;
@@ -465,9 +468,9 @@ void AliZDC::Hits2SDigits()
 //_____________________________________________________________________________
 void AliZDC::SDigits2Digits()
 {
-  printf("\n	Entering AliZDC::SDigits2Digits()\n");
+//  printf("\n	Entering AliZDC::SDigits2Digits()\n");
   if(!fMerger){ // Only digitization
-    printf("\n        ZDC digitization (without merging) \n");
+//    printf("\n        ZDC digitization (without merging) \n");
     fMerger = new AliZDCMerger();    
     fMerger->Digitize(fNMergedhits, fMergedHits);
 
@@ -478,7 +481,7 @@ void AliZDC::SDigits2Digits()
     gAlice->TreeD()->Reset();  
   }
   else if(fMerger){	// Merging and digitization
-    printf("\n        ZDC merging and digitization\n");
+//    printf("\n        ZDC merging and digitization\n");
     fMerger->Digitize(fNMergedhits, fMergedHits);
 
     TFile *bgrFile = fMerger->BgrFile();
@@ -496,7 +499,7 @@ void AliZDC::SDigits2Digits()
     char branchDname[20];
     sprintf(branchDname,"%s",GetName());
     if(fTreeMD && fDigits){
-      printf("\n	fTreeMD!=0 && fDigits!=0\n");
+//      printf("\n	fTreeMD!=0 && fDigits!=0\n");
       branchD = fTreeMD->GetBranch(branchDname);
       if(branchD) branchD->SetAddress(&fDigits);
     }

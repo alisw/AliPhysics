@@ -25,13 +25,14 @@
 #include <TTree.h>
 #include <TFile.h>
 #include <TDirectory.h>
-#include <TH1.h>
+#include <TNtuple.h>
 #include <TSystem.h>
 
 // --- AliRoot header files
 #include "AliZDCMerger.h"
 #include "AliZDC.h"
 #include "AliZDCHit.h"
+#include "AliZDCMergedHit.h"
 #include "AliZDCDigit.h"
 #include "AliZDCFragment.h"
 #include "AliRun.h"
@@ -47,9 +48,10 @@ AliZDCMerger::AliZDCMerger()
 {
 // Default constructor    
     fMerge       = kDigitize;
-    fNEvBgr	 = 0;
+//   fMerge       = kMerge;
     fFnBgr       = 0;
     fBgrFile     = 0;
+    fNEvBgr	 = 0;
     fTrHBgr      = 0;
     fTrSDBgr     = 0;
     fImpPar      = 0;
@@ -61,7 +63,8 @@ AliZDCMerger::AliZDCMerger()
     fSpecnFile   = 0;
     fFnSpecp     = 0;
     fSpecpFile   = 0;
-    
+    fNMhits	 = 0;
+     
 }
 
 //____________________________________________________________________________
@@ -90,7 +93,7 @@ void AliZDCMerger::InitMerging()
     
     // Extract from spectators distribution the signal events:
     // NFreeSpectatorN spectator n & NFreeSpectatorP spectator p 
-    Mixing(fFreeSpn, fFreeSpp);
+    Mixing();
 }
 
 //____________________________________________________________________________
@@ -104,24 +107,23 @@ void AliZDCMerger::Background(Float_t &fImpPar, Int_t &fSpecn, Int_t &fSpecp)
     //     # of spectators n and p (fSpecn, fSpecp)
     fBgrFile->cd();
 
-    // Get AliRun object from file or create it if not on file
-    gAlice = (AliRun*)fBgrFile->Get("gAlice");
-    if (!gAlice) {
-      gAlice = (AliRun*)fBgrFile->Get("gAlice");
-      if (gAlice) printf("AliRun object found on file\n");
-      if (!gAlice) {
-	  printf("\n create new gAlice object");
-	  gAlice = new AliRun("gAlice","Alice test program");
-      }
-    }
-
+//    // Get AliRun object from file or create it if not on file
 //    gAlice = (AliRun*)fBgrFile->Get("gAlice");
+//    if (!gAlice) {
+//      gAlice = (AliRun*)fBgrFile->Get("gAlice");
+//      if (gAlice) printf("AliRun object found on file\n");
+//      if (!gAlice) {
+//	  printf("\n create new gAlice object");
+//	  gAlice = new AliRun("gAlice","Alice test program");
+//      }
+//    }
+
     AliHeader *header = gAlice->GetHeader();
     AliGenEventHeader* mcHeader = header->GenEventHeader();
     fImpPar = ((AliGenHijingEventHeader*) mcHeader)->ImpactParameter();
     fSpecn  = ((AliGenHijingEventHeader*) mcHeader)->Spectatorsn();
     fSpecp  = ((AliGenHijingEventHeader*) mcHeader)->Spectatorsp();
-//      printf("\n	HIJING simulation - b = %f fm, Nspecn = %d, Nspecp = %d\n",fImpPar,fSpecn,fSpecp);
+    printf("\n	HIJING simulation - b = %f fm, Nspecn = %d, Nspecp = %d\n",fImpPar,fSpecn,fSpecp);
 }
 
 //____________________________________________________________________________
@@ -129,8 +131,9 @@ TFile* AliZDCMerger::OpenBgrFile()
 {
     // Initialise background event
     TFile *file = new TFile(fFnBgr,"UPDATE");
-//      printf("\n AliZDCMerger --- Background event -> %s file opened \n", fFnBgr);
+    printf("\n AliZDCMerger --- Background event -> %s file opened \n", fFnBgr);
     fHitsBgr = new TClonesArray("AliZDCHit",1000);
+    fMHits   = new TClonesArray("AliZDCMergedHit",1000);
     return file;
 }
 
@@ -154,189 +157,174 @@ void AliZDCMerger::Fragmentation(Float_t fImpPar, Int_t fSpecn, Int_t fSpecp,
     frag->AttachNeutrons(zz, nn, Ztot, Ntot);
     fFreeSpn = fSpecn-Ztot-2*nAlpha;
     fFreeSpp = fSpecp-Ntot-2*nAlpha;
-//      printf("\n	Fragmentation -> FreeSpn = %d, FreeSpp = %d\n",fFreeSpn,fFreeSpp);
+    printf("\n	Fragmentation -> FreeSpn = %d, FreeSpp = %d\n",fFreeSpn,fFreeSpp);
 }
 
 //____________________________________________________________________________
-void AliZDCMerger::Mixing(Int_t fFreeSpn, Int_t fFreeSpp)
+void AliZDCMerger::Mixing()
 {
-
-//      printf("\n	AliZDCMerger->Mixing\n");
-        
+    
+//    printf("\n	AliZDCMerger->Mixing\n");
+       
     // ### Background event Hits ###########################################
     fBgrFile->cd();
 //    fBgrFile->ls();
     
-    AliZDC *ZDC = (AliZDC *)gAlice->GetModule("ZDC");
+   AliZDC *ZDC = (AliZDC *)gAlice->GetModule("ZDC");
 //    if(ZDC) printf("\n	Ho trovato lo ZDC!\n");
 
     // Hits tree
     if(fTrHBgr) delete fTrHBgr;
-    fTrHBgr = 0;    
+    fTrHBgr = 0;        
     // SDigits tree
     if(fTrSDBgr) delete fTrSDBgr;
     fTrSDBgr = 0;    
 
-//    // Read from Event Tree the # of events of the Hijing file 
-//    TTree *thead = (TTree *) fBgrFile->Get("TE");
-//    if(!te){
-//      printf("\n	ERROR! -> File %s does not contain TreeE\n");
-//    }
-//    fNEvBgr = (Int_t) te->GetEntries();
-    fNEvBgr = 0; // Let's suppose to have 1 full Hijing event per file
+//    fNEvBgr = 0; // Let's suppose to have 1 full Hijing event per file
 
-    // Hits Tree
+    // Hits tree
     char treeBgrName[20];
     sprintf(treeBgrName,"TreeH%d",fNEvBgr);
-    fTrHBgr = (TTree*)gDirectory->Get(treeBgrName); // TreeH
+    fTrHBgr = (TTree*)gDirectory->Get(treeBgrName); 
     if(!fTrHBgr){
       printf("\n ERROR -> Can't find TreeH%d in background file\n",fNEvBgr);
     }    
+//    fTrHBgr->Print();
+    
+    // Branch address
+    TBranch *branch;
+    char branchname[20];
+    sprintf(branchname,"%s",ZDC->GetName());
+    if(fTrHBgr && fHitsBgr){
+//      printf("\n	fTrHBgr!=0 && fHitsBgr!=0\n");
+      branch = fTrHBgr->GetBranch(branchname);
+      if(branch) branch->SetAddress(&fHitsBgr);
+    }
+    
     Int_t ntracks =  (Int_t) fTrHBgr->GetEntries();
-//    printf("\n	--- ntracks = %d\n",ntracks);
+//    printf("\n	--- ntracks = %d\n\n", ntracks);
+    
+    Int_t itrack, nhits, ihit, j, sector[2];
+    AliZDCHit* zdcHit;
+    AliZDCMergedHit *MHit;
+    Float_t MHits[7];
+    TClonesArray &sdigits = *fMHits;	// SDigits TCArray
+    fNMhits = 0;
 
-    // SDigits Tree
-    char treeSBgrName[20];
-    sprintf(treeSBgrName,"TreeS%d",fNEvBgr);
-    fTrSDBgr = (TTree*)gDirectory->Get(treeSBgrName); // TreeH
-    if(!fTrSDBgr){
-      printf("\n ERROR -> Can't find TreeS%d in background file\n",fNEvBgr);
-    }    
-
-    Int_t itrack, i, volume[2], detector, quadrant;
-    TClonesArray &sdigits = *fHitsBgr;	// SDigits TCArray
-    Float_t hits[10];
     // --- Tracks loop
     for(itrack=0; itrack<ntracks; itrack++){
-//       printf("		itrack = %d \n", itrack);
+//       printf("               itrack = %d", itrack);
+//       gAlice->ResetHits();
        fTrHBgr->GetEvent(itrack);
        
-       fTrack = itrack;
-       Int_t NMhits  = 0;
-       for(AliZDCHit* zdcHit=(AliZDCHit*)ZDC->FirstHit(-1); 
-           zdcHit;
-    	   zdcHit = (AliZDCHit*)ZDC->NextHit()){ 
+//       for(AliZDCHit* zdcHit=(AliZDCHit*)ZDC->FirstHit(-1); 
+//	   zdcHit;
+//	   zdcHit = (AliZDCHit*)ZDC->NextHit()){ 
 
-	  for(i=0; i<2; i++) volume[i] = zdcHit->GetVolume(i);
-//	  printf("\n		volume[0] = %d volume[1]= %d \n",volume[0], volume[1]);
-	  if(volume[0] != 3){
-	    // Background hits	
-	    hits[7] = zdcHit->GetLightPMQ();
-	    hits[8] = zdcHit->GetLightPMC();
-//	    printf("\n	Prima ### Background -> PMQ = %f, PMC = %f\n",hits[7],hits[8]);
+       nhits = fHitsBgr->GetEntries();
+//       nhits = ZDCdp->GetNhits();
+//       printf(" 	      nhits = %d \n", nhits);
+       for(ihit=0; ihit<nhits; ihit++){    
+	  zdcHit = (AliZDCHit*) fHitsBgr->UncheckedAt(ihit);
 
-            //Signal hits
-	    detector = volume[0];
-	    quadrant = volume[1];
-	    ExtractSignal(detector, quadrant, fQuadLight, fComLight);	   
-	    hits[7] += fQuadLight;
-	    hits[8] += fComLight;
-//	    printf("\n	Bckg + Signal -> PMQ = %f, PMC = %f\n",hits[7],hits[8]);
-
-            zdcHit->SetLightPMQ(hits[7]);
-            zdcHit->SetLightPMC(hits[8]);
-	    hits[7] = zdcHit->GetLightPMQ();
-	    hits[8] = zdcHit->GetLightPMC();
-//	    printf("\n	Dopo ### Background -> PMQ = %f, PMC = %f\n",hits[7],hits[8]);
-	    	    
-	    new (sdigits[NMhits++]) AliZDCHit(zdcHit);
-//            printf("\n	NMhits = %d\n",NMhits);
-	  }
-          fBgrFile->cd();
-          fTrSDBgr->Fill();
-          fTrSDBgr->Write(0,TObject::kOverwrite);
-       } //Hits loop
-       Digitize();
+	    for(j=0; j<2; j++) sector[j] = zdcHit->GetVolume(j);
+	    MHits[0] = zdcHit->GetPrimKinEn();
+	    MHits[1] = zdcHit->GetXImpact();
+	    MHits[2] = zdcHit->GetYImpact();
+	    MHits[3] = zdcHit->GetSFlag();
+	    MHits[4] = zdcHit->GetLightPMQ();
+	    MHits[5] = zdcHit->GetLightPMC();
+	    MHits[6] = zdcHit->GetEnergy();
+	    MHit = new AliZDCMergedHit(sector, MHits);
+//	    MHit->Print("");
+  	    new((*fMHits)[fNMhits]) AliZDCMergedHit(*MHit);
+	    new (sdigits[fNMhits])  AliZDCMergedHit(*MHit);
+	    delete MHit;
+	    fNMhits++;
+	  }//Hits loop
+	  
     } // Tracks loop
+//    printf("\n	fNMhits (after bckg) = %d, \n",fNMhits); 
+//    fMHits->Dump();
+//    AliZDCMergedHit *pippo7 = (AliZDCMergedHit*) fMHits->At(7);
+//    pippo7->Dump();
+    
         
-//    fBgrFile->Close();
+    // ### Signal event Hits ###########################################
+    // --- Neutrons
+    ExtractSignal(1);
+        
+    // --- Protons
+    ExtractSignal(2);
+//    printf("\n	fNMhits (after signal) = %d \n",fNMhits); 
         
 }
 
 //____________________________________________________________________________
-void AliZDCMerger::ExtractSignal(Int_t detector, Int_t quadrant,
-                                    Float_t &fQuadLight, Float_t &fComLight)
+void AliZDCMerger::ExtractSignal(Int_t SpecType)
 {
 
-//    printf("\n	Entering ExtractSignal method -> detector = %d quadrant = %d\n",
-//           detector, quadrant);
+// printf("\n	Entering in Extract Signal\n");
+ 
+ Int_t NumEvents = 0;
+ if(SpecType == 1){		// --- Signal for spectator neutrons
+   fFnSpecn = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/ZNsignalntu.root");
+   fSpecnFile = TFile::Open(fFnSpecn,"R");
+   fSpecnFile->cd();
+//   printf("\n	--- ExtractSignal x n: file %s opened\n", fFnSpecn);
+   NumEvents = fFreeSpn;
+ }
+ else if(SpecType == 2){	// --- Signal for spectator protons
+   fFnSpecp = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/ZPsignalntu.root");
+   fSpecpFile = TFile::Open(fFnSpecp,"R");
+   fSpecpFile->cd();
+//   printf("\n	--- ExtractSignal x p: file %s opened\n", fFnSpecp);
+   NumEvents = fFreeSpp;
+ }
+// printf("\n		# of free spectator = %d\n", NumEvents);
+// printf("\n         fNMhits (before adding signal) = %d\n",fNMhits);
 
-    // Connect spectator n histo's file
-    fFnSpecn = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/ZNsignal.root");
-    fSpecnFile = TFile::Open(fFnSpecn,"R");
-    fSpecnFile->cd();
-//    fSpecnFile->ls();
-    TH1F *hPMQ1zn = (TH1F*) gDirectory->Get("hPMQ1zn;1");
-    TH1F *hPMQ2zn = (TH1F*) gDirectory->Get("hPMQ2zn;1");
-    TH1F *hPMQ3zn = (TH1F*) gDirectory->Get("hPMQ3zn;1");
-    TH1F *hPMQ4zn = (TH1F*) gDirectory->Get("hPMQ4zn;1");
-    TH1F *hPMC1zn = (TH1F*) gDirectory->Get("hPMC1zn;1");
-    TH1F *hPMC2zn = (TH1F*) gDirectory->Get("hPMC2zn;1");
-    TH1F *hPMC3zn = (TH1F*) gDirectory->Get("hPMC3zn;1");
-    TH1F *hPMC4zn = (TH1F*) gDirectory->Get("hPMC4zn;1");
-//    Axis_t x = hPMQ1zn -> GetRandom();
-//    printf("	hPMQ1zn -> GetRandom() = %f\n",x);
-    
-    // Connect spectator p histo's file
-    fFnSpecp = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/ZPsignal.root");
-    fSpecpFile = TFile::Open(fFnSpecp,"R");
-    fSpecpFile->cd(); 
-//    fSpecpFile->ls();
-    TH1F *hPMQ1zp = (TH1F*) gDirectory->Get("hPMQ1zp;1");
-    TH1F *hPMQ2zp = (TH1F*) gDirectory->Get("hPMQ2zp;1");
-    TH1F *hPMQ3zp = (TH1F*) gDirectory->Get("hPMQ3zp;1");
-    TH1F *hPMQ4zp = (TH1F*) gDirectory->Get("hPMQ4zp;1");
-    TH1F *hPMC1zp = (TH1F*) gDirectory->Get("hPMC1zp;1");
-    TH1F *hPMC2zp = (TH1F*) gDirectory->Get("hPMC2zp;1");
-    TH1F *hPMC3zp = (TH1F*) gDirectory->Get("hPMC3zp;1");
-    TH1F *hPMC4zp = (TH1F*) gDirectory->Get("hPMC4zp;1");
-
-    if(detector == 1){ // --- ZN
-      if(quadrant == 1){
-        fQuadLight = (Float_t) hPMQ1zn -> GetRandom();
-	fComLight = (Float_t) hPMC1zn -> GetRandom();
-      }
-      else if(quadrant == 2){
-        fQuadLight = (Float_t) hPMQ2zn -> GetRandom();
-	fComLight = (Float_t) hPMC2zn -> GetRandom();
-      }
-      else if(quadrant == 3){
-        fQuadLight = (Float_t) hPMQ3zn -> GetRandom();
-	fComLight = (Float_t) hPMC3zn -> GetRandom();
-      }
-      else if(quadrant == 4){
-        fQuadLight = (Float_t) hPMQ4zn -> GetRandom();
-	fComLight = (Float_t) hPMC4zn -> GetRandom();
-      }
-    }
-
-    else if(detector == 2){ // --- ZP
-      fSpecpFile->cd();	// Connect spectator p histo's file
-//      fSpecpFile->ls();
-      if(quadrant == 1){
-        fQuadLight = (Float_t) hPMQ1zp -> GetRandom();
-	fComLight = (Float_t) hPMC1zp -> GetRandom();
-      }
-      else if(quadrant == 2){
-        fQuadLight = (Float_t) hPMQ2zp -> GetRandom();
-	fComLight = (Float_t) hPMC2zp -> GetRandom();
-      }
-      else if(quadrant == 3){
-        fQuadLight = (Float_t) hPMQ3zp -> GetRandom();
-	fComLight = (Float_t) hPMC3zp -> GetRandom();
-      }
-      else if(quadrant == 4){
-        fQuadLight = (Float_t) hPMQ4zp -> GetRandom();
-	fComLight = (Float_t) hPMC4zp -> GetRandom();
-      }
-    }
-//    printf("	---	Exiting ExtractSignal -> fQuadLight = %f, fComLight = %f",
-//           fQuadLight,fComLight);
-
+  TNtuple *ZDCSignal = (TNtuple*) gDirectory->Get("ZDCSignal");
+  Int_t nentries = (Int_t) ZDCSignal->GetEntries();
+//  printf("\n   # entries = %d\n", nentries);
+  Int_t i, j, k;
+  
+  AliZDCMergedHit *MHit; 
+  Float_t *entry, HitsSpec[7];
+  Int_t iev, rnd, Volume[2];
+  for(iev=0; iev<NumEvents; iev++){
+     rnd = (Int_t) (1000*gRandom->Rndm());
+//     printf("\n      rnd = %d\n", rnd);
+     for(i=0; i<nentries; i++){  
+  	ZDCSignal->GetEvent(i);
+  	entry = ZDCSignal->GetArgs();
+  	if(entry[0] == rnd){
+//        printf("\n   entry[0] = %f\n", entry[0]);
+          for(k=0; k<2; k++) Volume[k] = (Int_t) entry[k+1];
+          for(j=0; j<7; j++){
+             HitsSpec[j] = entry[j+3];
+          }
+	  MHit = new AliZDCMergedHit(Volume, HitsSpec);
+	  new((*fMHits)[fNMhits++]) AliZDCMergedHit(*MHit);
+	  delete MHit;
+  	}
+  	else if(entry[0] > rnd) break;
+     }
+  }
+  
+  if(SpecType ==1){
+//    printf("\n         fNMhits (after n signal) = %d\n",fNMhits);
+    fSpecnFile->Close();
+  }
+  else if(SpecType == 2){
+//    printf("\n         fNMhits (after p signal) = %d\n",fNMhits);
+    fSpecpFile->Close();
+  }
+      
 }
 
 //____________________________________________________________________________
-void AliZDCMerger::Digitize()
+void AliZDCMerger::Digitize(Int_t fNMhits, TClonesArray *fMHits)
 {
 
 //  printf("\n	AliZDCMerger->Digitize()");
@@ -344,141 +332,106 @@ void AliZDCMerger::Digitize()
   AliZDC *ZDC = (AliZDC *)gAlice->GetModule("ZDC");
 //  if(ZDC) printf("\n 	Ho trovato lo ZDC!\n");
 
-  Int_t itrack, lightQ, lightC, sector[2], digit;
-  Int_t PMCZN = 0, PMCZP = 0, PMQZN[4], PMQZP[4], PMZEM = 0;
+  Int_t lightQ, lightC, sector[2], digit;
+  Int_t PMCZN = 0, PMCZP = 0, PMQZN[4], PMQZP[4], PMZEM1 = 0, PMZEM2 = 0;
   Int_t i;
   for(i=0; i<4; i++){
      PMQZN[i] = 0;
      PMQZP[i] = 0;
   }
-
-  // ### Digitization "on the flight" (no merging) #######################
-  if(fMerge == kDigitize){
-//    printf("\n		fMerge == kDigitize\n");
-    fTrHBgr = gAlice->TreeH(); // TTree
-    TTree *treeH = gAlice->TreeH();
-    if(!fTrHBgr){
-      printf("\n ERROR -> Can't find TreeH%d in background file\n",fNEvBgr);
-    }    
-    Int_t ntracks =  (Int_t) treeH->GetEntries();
-//    printf("\n	--- ntracks = %d\n",ntracks);
-        
-    // Loop over tracks
-    for(itrack=0; itrack<ntracks; itrack++){
-       gAlice->ResetHits();
-       gAlice->TreeH()->GetEvent(itrack);
-       
-       // Loop over hits
-       for(AliZDCHit* zdcHit=(AliZDCHit*)ZDC->FirstHit(-1); 
-           zdcHit;
-    	   zdcHit = (AliZDCHit*)ZDC->NextHit()){ 
-	  sector[0] = zdcHit->GetVolume(0);
-    	  sector[1] = zdcHit->GetVolume(1);
-    	  lightQ    = Int_t(zdcHit->GetLightPMQ());
-    	  lightC    = Int_t(zdcHit->GetLightPMC());
-//	  printf("\n	Digitise -> DET. = %d, quad = %d", sector[0], sector[1]);
-//	  printf("		    PMQ = %d, PMC = %d",  lightQ, lightC);
-          
-    	  if(sector[0] == 1){	//ZN 
-    	    PMCZN = PMCZN + lightC;
-    	    PMQZN[sector[1]-1] = PMQZN[sector[1]-1] + lightQ;
-    	  }
-          else if(sector[0] == 2){	//ZP 
-    	    PMCZP = PMCZP + lightC;
-    	    PMQZP[sector[1]-1] = PMQZP[sector[1]-1] + lightQ;
-    	  }
-          else if(sector[0] == 3){	//ZEM 
-    	    PMZEM = PMZEM + lightC;
-    	  }
-       } // hits loop
-    } // tracks loop
-  } // if(fMerge)
-
-  // ### Merging and digitization #######################################
-  else if(fMerge == kMerge){
-//    printf("\n		fMerge == kMerge\n");
-
-//    Int_t ntracks =  (Int_t) fTrHBgr->GetEntries();
-//    printf("\n        --- ntracks = %d\n",ntracks);
-//        
-//    // Loop over tracks
-//    for(itrack=0; itrack<ntracks; itrack++){
-       fTrHBgr->GetEvent(fTrack);
-       
-//       printf("\n\n	Track # %d --- Digitise -> ", fTrack);
-       // Loop over hits
-       for(AliZDCHit* zdcHit=(AliZDCHit*)ZDC->FirstHit(-1); 
-           zdcHit;
-    	   zdcHit = (AliZDCHit*)ZDC->NextHit()){ 
-	  sector[0] = zdcHit->GetVolume(0);
-    	  sector[1] = zdcHit->GetVolume(1);
-    	  lightQ    = Int_t(zdcHit->GetLightPMQ());
-    	  lightC    = Int_t(zdcHit->GetLightPMC());
-//	  printf("\n	DET. = %d, quad = %d,PMQ = %d, PMC = %d", 
-//	         sector[0], sector[1],lightQ, lightC);
-          
-    	  if(sector[0] == 1){	//ZN 
-    	    PMCZN = PMCZN + lightC;
-    	    PMQZN[sector[1]-1] = PMQZN[sector[1]-1] + lightQ;
-    	  }
-          else if(sector[0] == 2){	//ZP 
-    	    PMCZP = PMCZP + lightC;
-    	    PMQZP[sector[1]-1] = PMQZP[sector[1]-1] + lightQ;
-    	  }
-          else if(sector[0] == 3){	//ZEM 
-    	    PMZEM = PMZEM + lightC;
-    	  }
-       } // hits loop
-//    } // tracks loop
-  } // if(fMerge)
-
+  
+  AliZDCMergedHit *MHit;
+  Int_t imhit;
+//  printf("\n	   fNMHits = %d\n", fNMhits);
+  // Loop over SDigits
+  for(imhit=0; imhit<fNMhits; imhit++){
+     
+     MHit = (AliZDCMergedHit*) fMHits->UncheckedAt(imhit);
+     sector[0] = MHit->GetSector(0);
+     sector[1] = MHit->GetSector(1);
+  if((sector[1]!=1) && (sector[1]!=2) && (sector[1]!=3) && (sector[1]!=4)){
+//     printf("\n  *** ERROR!!! sector[0] = %d, sector[1] = %d\n",
+// 	      sector[0], sector[1]);
+       sector[1] = 0;
+   }
+     lightQ    = Int_t(MHit->GetLightPMQ());
+     lightC    = Int_t(MHit->GetLightPMC());
+//     printf("\n    imhit = %d -> DET. = %d, quad = %d,PMQ = %d, PMC = %d", 
+//      imhit,sector[0], sector[1],lightQ, lightC);
+     
+     if(sector[0] == 1){   	   //ZN 
+       PMCZN = PMCZN + lightC;
+       PMQZN[sector[1]-1] = PMQZN[sector[1]-1] + lightQ;
+     }
+     else if(sector[0] == 2){	   //ZP 
+       PMCZP = PMCZP + lightC;
+       PMQZP[sector[1]-1] = PMQZP[sector[1]-1] + lightQ;
+     }
+     else if(sector[0] == 3){	   //ZEM 
+       if(sector[1] ==1) PMZEM1 = PMZEM1 + lightC;
+       else              PMZEM2 = PMZEM2 + lightQ;
+     }
+  } // SDigits loop
       
+  // ### Digits creation ###############################################
   // Create digits for ZN
   Int_t PedValue;
   sector[0] = 1; // Detector = ZN
   sector[1] = 0; // Common PM ADC
   digit = Phe2ADCch(1, 0, PMCZN);
 //  printf("\n\n	ZN ###	PMCZN = %d	ADCZN = %d",PMCZN, digit);
+  PedValue = AddPedestal();
+  digit += PedValue;
+//  printf("	PedValue = %d",PedValue);
   ZDC->AddDigit(sector, digit);
   Int_t j;
   for(j=0; j<4; j++){
     sector[1] = j+1; // Towers PM ADCs
     digit = Phe2ADCch(1, j+1, PMQZN[j]);
-//    printf("\n		PMQZN[%d] = %d	ADCZN[%d] = %d",j,PMQZN[j],j,digit);
+//    printf("\n		PMQZN[%d] = %d	phe	ADCZN[%d] = %d ADCch",j,PMQZN[j],j,digit);
     PedValue = AddPedestal();
     digit += PedValue;
 //    printf("	PedValue = %d",PedValue);
     ZDC->AddDigit(sector, digit);
   }
-//    printf("\n");
+//  printf("\n");
   
   // Create digits for ZP
   sector[0] = 2; // Detector = ZP
   sector[1] = 0; // Common PM ADC
   digit = Phe2ADCch(2, 0, PMCZP);
-//  printf("\n	ZP --- PMCZP = %d	ADCZP = %d",PMCZP,digit);
+//  printf("\n	ZP --- PMCZP = %d	phe	ADCZP = %d ADCch",PMCZP,digit);
+  PedValue = AddPedestal();
+  digit += PedValue;
+  printf("	PedValue = %d",PedValue);
   ZDC->AddDigit(sector, digit);
   for(j=0; j<4; j++){
     sector[1] = j+1; // Towers PM ADCs
     digit = Phe2ADCch(2, j+1, PMQZP[j]);
-//    printf("\n	       PMQZP[%d] = %d	ADCZP[%d] = %d",j,PMQZP[j],j,digit);
+//    printf("\n	       PMQZP[%d] = %d	phe	ADCZP[%d] = %d ADCch",j,PMQZP[j],j,digit);
     PedValue = AddPedestal();
     digit += PedValue;
 //    printf("	PedValue = %d",PedValue);
     ZDC->AddDigit(sector, digit);
   }
-//    printf("\n");
+//  printf("\n");
   
   // Create digits for ZEM
-  sector[0] = 3; // Detector = ZZEM
-  sector[1] = 0; // Single PM ADC
-  digit  = Phe2ADCch(3, 0, PMZEM);
-//  printf("\n	ZEM *** PMZEM = %d	ADCZEM = %d",PMZEM,digit);
-    PedValue = AddPedestal();
-    digit += PedValue;
-//    printf("	PedValue = %d\n",PedValue);
+  sector[0] = 3; 
+  sector[1] = 1; // Detector = ZEM1
+  digit  = Phe2ADCch(3, 1, PMZEM1);
+//  printf("\n  ZEM *** PMZEM1 = %d      phe     ADCZEM1 = %d ADCch",PMZEM1,digit);
+  PedValue = AddPedestal();
+  digit += PedValue;
+//  printf("  PedValue = %d\n",PedValue);
   ZDC->AddDigit(sector, digit); 
-
+  sector[1] = 2; // Detector = ZEM2
+  digit  = Phe2ADCch(3, 2, PMZEM2);
+//  printf("\n  ZEM *** PMZEM2 = %d      phe     ADCZEM2 = %d ADCch",PMZEM2,digit);
+  PedValue = AddPedestal();
+  digit += PedValue;
+//  printf("  PedValue = %d\n",PedValue);
+  ZDC->AddDigit(sector, digit); 
 }
 
 //_____________________________________________________________________________

@@ -9,6 +9,7 @@
 
 class AliZDC;
 class AliZDCHit;
+class AliZDCMergedHit;
 class AliZDCDigit;
 
 typedef enum {kDigitize=0, kMerge=1} MergeMode_t;
@@ -23,19 +24,27 @@ public:
    void    Background(Float_t &b, Int_t &nspecn, Int_t &nspecp);
    void    Fragmentation(Float_t b, Int_t nspecn, Int_t nspecp,
                          Int_t &nfreespn, Int_t &nfreespp);
-   void    Mixing(Int_t nfreespn, Int_t nfreespp);
-   void    ExtractSignal(Int_t detector, Int_t quadrant, Float_t &quadLight, 
-                         Float_t &comLight);
-//   void    MergeHit(Int_t track, Int_t *vol, Float_t *hits);
-
-   void    Digitize();
+   void    Mixing();
+   void    ExtractSignal(Int_t SpecType);
+   void    Digitize(Int_t NMhits, TClonesArray *MHits);
    Int_t   Phe2ADCch(Int_t Detector, Int_t Quadrant, Int_t Light);
    Int_t   AddPedestal();
    
+   // Inline functions to return TCA of MergerHits to Hits2SDigits()
+   TClonesArray *MergedHits()   const {return fMHits;}
+   int   GetNMhits()   		const {return fNMhits;}
+
+   // Inline function to return background file Hits2SDigits()
+   TFile *BgrFile()		const {return fBgrFile;}
+
+   // Inline function to return event number
+   Int_t EvNum()		const {return fNEvBgr;}
+   
    // Setters 
-   void SetBackgroundFileName(char* file) {fFnBgr = file;}        
    void SetMode(MergeMode_t mode)         {fMerge = mode;}
-     
+   void SetBackgroundFileName(char* file) {fFnBgr = file;}        
+   void SetBackgroundEventNum(Int_t nev)  {fNEvBgr = nev;}        
+
 private:
    //Open the background file 
    TFile *OpenBgrFile(); 
@@ -44,30 +53,29 @@ protected:
    MergeMode_t  fMerge;		// Merging type kDigitize, kMerge
    
    // Background event
-   Int_t	fNEvBgr;	// Number of events in the background file
    char         *fFnBgr;	// Background file name
    TFile 	*fBgrFile;	// Pointer to background file
+   Int_t	fNEvBgr;	// Number of events in background file
    TTree        *fTrHBgr;	// Hits tree for background event
+   TClonesArray *fHitsBgr;	// TClonesArray of background hits
    TTree        *fTrSDBgr;	// SDigits tree for background event
+   TTree        *fTrDBgr;	// Digits tree for background event
    Float_t 	fImpPar;	// Impact Parameter of the collision
    Int_t        fSpecn;		// Number of spectator n
    Int_t        fSpecp;		// Number of spectator p
-   TClonesArray *fHitsBgr;	// TClonesArray of background hits
 
    // Signal events
    Int_t        fFreeSpn;       // Signal event number x spectator n
    Int_t        fFreeSpp;       // Signal event number x spectator p
-      
-   // File containing hit histograms for spectators
+
    char       	*fFnSpecn;      // Spectator n file name
    TFile      	*fSpecnFile;    // Pointer to signal file -> spectator n
    char       	*fFnSpecp;      // Spectator p file name
    TFile      	*fSpecpFile;    // Pointer to signal file -> spectator p
-   Float_t	fQuadLight;     // Light produced in tower PM
-   Float_t	fComLight;      // Light produced in common PM
    
-   Int_t 	fTrack;
-
+   Int_t	fNMhits;	// Number of Merged hits for background
+   TClonesArray *fMHits;	// TCA for "merged" hits  
+   
 //  // *** Digits
 //  // --- Digitization parameters setters and getters
 //  // 	PM gain
