@@ -499,6 +499,7 @@ void  AliEMCALRecPoint::EvalPrimaries(TClonesArray * digits)
   for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
     digit = dynamic_cast<AliEMCALDigit *>(digits->At( fDigitsList[index] )) ; 
     Int_t nprimaries = digit->GetNprimary() ;
+    if ( nprimaries == 0 ) continue ;
     Int_t * newprimaryarray = new Int_t[nprimaries] ;
     Int_t ii ; 
     for ( ii = 0 ; ii < nprimaries ; ii++)
@@ -520,7 +521,7 @@ void  AliEMCALRecPoint::EvalPrimaries(TClonesArray * digits)
 	  break ;
 	}
       } // end of check
-      if ( !already) { // store it
+      if ( !already && (fMulTrack < fMaxTrack)) { // store it
 	tempo[fMulTrack] = newprimary ; 
 	fMulTrack++ ;
       } // store it
@@ -549,6 +550,7 @@ void  AliEMCALRecPoint::EvalParents(TClonesArray * digits)
   for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
     digit = dynamic_cast<AliEMCALDigit *>(digits->At( fDigitsList[index] )) ; 
     Int_t nparents = digit->GetNiparent() ;
+    if ( nparents == 0 ) continue ;
     Int_t * newparentarray = new Int_t[nparents] ;
     Int_t ii ; 
     for ( ii = 0 ; ii < nparents ; ii++)
@@ -570,7 +572,7 @@ void  AliEMCALRecPoint::EvalParents(TClonesArray * digits)
 	  break ;
 	}
       } // end of check
-      if ( !already) { // store it
+      if ( !already && (fMulTrack < fMaxTrack)) { // store it
 	tempo[fMulParent] = newparent ; 
 	fMulParent++ ;
       } // store it

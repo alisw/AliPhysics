@@ -594,7 +594,10 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
 	continue;
       }
       Double_t xTOF0 = 371. ;          
-      PropagateToOuterPlane(*track,xTOF0); 
+      if (!PropagateToOuterPlane(*track,xTOF0)) {
+        delete track;
+        continue;
+      }
       //      
       Double_t ymax=xtof*TMath::Tan(0.5*AliTRDgeometry::GetAlpha());
       Double_t y=track->GetYat(xtof);
