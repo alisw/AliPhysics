@@ -14,6 +14,7 @@
 #include "TBranch.h"
 #include "TClonesArray.h"
 #include "TStopwatch.h"
+//#include "AliRunDigitizer.h"
 #include "AliVZERODigitizer.h"
 
 void VZEROHits2Digits() 
@@ -22,14 +23,15 @@ void VZEROHits2Digits()
   // Input file name
   Char_t *alifile = "galice.root";   
 
+  // Create the run digitizer 
+  AliRunDigitizer* manager = new AliRunDigitizer(1, 1);
+  manager->SetInputStream(0, alifile);
+  manager->SetOutputFile("H2Dfile");
+
   // Create the VZERO digitizer 
-  AliVZERODigitizer *manager = new AliVZERODigitizer();
+  new AliVZERODigitizer(manager);
 
-  // Open the AliRoot file
-  manager->OpengAliceFile(alifile);
-                                                   
   // Create the digits
-
-  manager->Exec();
+  manager->Exec("");
 
 }
