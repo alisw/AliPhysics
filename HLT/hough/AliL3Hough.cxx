@@ -820,34 +820,36 @@ void AliL3Hough::PrepareForNextPatch(Int_t nextpatch)
       Int_t ymax = hist->GetLastYbin();
       Int_t nxbins = hist->GetNbinsX()+2;
 
-      UChar_t lastyvalue = 0;
-      Int_t endybin = ymin - 1;
-      for(Int_t ybin=ymin; ybin<=ymax; ybin++)
-	{
-	  UChar_t lastxvalue = 0;
-	  UChar_t maxvalue = 0;
-	  Int_t endxbin = xmin - 1;
-	  for(Int_t xbin=xmin; xbin<=xmax; xbin++)
-	    {
-	      Int_t bin = xbin + ybin*nxbins;
-	      UChar_t value = 0;
-	      if(gapcount[bin] < MAX_N_GAPS) {
-		value = 1;
-		maxvalue = 1;
-		if(tracklastrow[bin] > lastpatchlastrow) {
-		  if(lastpatchlastrow > currentrowcount[bin])
-		    gapcount[bin] += (lastpatchlastrow-currentrowcount[bin]-1);
+      if(fLastPatch != -1) {
+	UChar_t lastyvalue = 0;
+	Int_t endybin = ymin - 1;
+	for(Int_t ybin=nextrow[ymin]; ybin<=ymax; ybin = nextrow[++ybin])
+	  {
+	    UChar_t lastxvalue = 0;
+	    UChar_t maxvalue = 0;
+	    Int_t endxbin = xmin - 1;
+	    for(Int_t xbin=xmin; xbin<=xmax; xbin++)
+	      {
+		Int_t bin = xbin + ybin*nxbins;
+		UChar_t value = 0;
+		if(gapcount[bin] < MAX_N_GAPS) {
+		  if(tracklastrow[bin] > lastpatchlastrow) {
+		    if(lastpatchlastrow > currentrowcount[bin])
+		      gapcount[bin] += (lastpatchlastrow-currentrowcount[bin]-1);
+		  }
+		  else {
+		    if(tracklastrow[bin] > currentrowcount[bin])
+		      gapcount[bin] += (tracklastrow[bin]-currentrowcount[bin]-1);
+		  }
+		  if(gapcount[bin] < MAX_N_GAPS) {
+		    value = 1;
+		    maxvalue = 1;
+		    if(trackfirstrow[bin] < nextpatchfirstrow)
+		      currentrowcount[bin] = nextpatchfirstrow;
+		    else
+		      currentrowcount[bin] = trackfirstrow[bin];
+		  }
 		}
-		else {
-		  if(tracklastrow[bin] > currentrowcount[bin])
-		    gapcount[bin] += (tracklastrow[bin]-currentrowcount[bin]-1);
-		}
-		if(trackfirstrow[bin] < nextpatchfirstrow)
-		  currentrowcount[bin] = nextpatchfirstrow;
-		else
-		  currentrowcount[bin] = trackfirstrow[bin];
-	      }
-	      if(fLastPatch != -1) {
 		if(value > 0)
 		  {
 		    nextbin[xbin + ybin*nxbins] = (UChar_t)xbin;
@@ -865,8 +867,6 @@ void AliL3Hough::PrepareForNextPatch(Int_t nextpatch)
 		  }
 		lastxvalue = value;
 	      }
-	    }
-	  if(fLastPatch != -1) {
 	    UChar_t *tempnextbin = nextbin + endxbin + 1 + ybin*nxbins;
 	    memset(tempnextbin,(UChar_t)(xmax+1),xmax-endxbin);
 	    if(maxvalue > 0)
@@ -881,8 +881,38 @@ void AliL3Hough::PrepareForNextPatch(Int_t nextpatch)
 	      }
 	    lastyvalue = maxvalue;
 	  }
-	}
-      if(fLastPatch != -1) {
+	UChar_t *tempnextrow = nextrow + endybin + 1;
+	memset(tempnextrow,(UChar_t)(ymax+1),ymax-endybin);
+      }
+      else {
+	UChar_t lastyvalue = 0;
+	Int_t endybin = ymin - 1;
+	for(Int_t ybin=ymin; ybin<=ymax; ybin++)
+	  {
+	    UChar_t maxvalue = 0;
+	    for(Int_t xbin=xmin; xbin<=xmax; xbin++)
+	      {
+		Int_t bin = xbin + ybin*nxbins;
+		if(gapcount[bin] < MAX_N_GAPS) {
+		  maxvalue = 1;
+		  if(trackfirstrow[bin] < nextpatchfirstrow)
+		    currentrowcount[bin] = nextpatchfirstrow;
+		  else
+		    currentrowcount[bin] = trackfirstrow[bin];
+		}
+	      }
+	    if(maxvalue > 0)
+	      {
+		nextrow[ybin] = (UChar_t)ybin;
+		if(maxvalue > lastyvalue)
+		  {
+		    UChar_t *tempnextrow = nextrow + endybin + 1;
+		    memset(tempnextrow,(UChar_t)ybin,ybin-endybin-1);
+		  }
+		endybin = ybin;
+	      }
+	    lastyvalue = maxvalue;
+	  }
 	UChar_t *tempnextrow = nextrow + endybin + 1;
 	memset(tempnextrow,(UChar_t)(ymax+1),ymax-endybin);
       }
@@ -956,7 +986,7 @@ void AliL3Hough::FindTrackCandidatesRow()
   
       for(Int_t k=0; k<fPeakFinder->GetEntries(); k++)
 	{
-	  if(fPeakFinder->GetWeight(k) < 0) continue;
+	  //	  if(fPeakFinder->GetWeight(k) < 0) continue;
 	  AliL3HoughTrack *track = (AliL3HoughTrack*)fTracks[i]->NextTrack();
 	  Float_t psi = atan((fPeakFinder->GetXPeak(k)-fPeakFinder->GetYPeak(k))/(AliL3HoughTransformerRow::GetBeta1()-AliL3HoughTransformerRow::GetBeta2()));
 	  Float_t kappa = 2.0*(fPeakFinder->GetXPeak(k)*cos(psi)-AliL3HoughTransformerRow::GetBeta1()*sin(psi));
