@@ -21,6 +21,7 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TClonesArray.h"
+#include "TError.h"
 
 #include "AliTOFpidESD.h"
 #include "AliESD.h"
@@ -28,11 +29,15 @@
 #include "AliTOFdigit.h"
 
 #include <TGeant3.h>
-#include <TVirtualMC.h>
 #include "../STRUCT/AliBODY.h"
 #include "../STRUCT/AliFRAMEv2.h"
 #include "AliTOFv2FHoles.h"
+#include "AliTOFConstants.h"
 
+#include <stdlib.h>
+
+class TVirtualMC;
+extern TVirtualMC *gMC;
 
 ClassImp(AliTOFpidESD)
 
@@ -40,15 +45,15 @@ static Int_t InitGeo() {
   //gSystem->Load("libgeant321");
   //new TGeant3("C++ Interface to Geant3");
 
-  AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
-  BODY->CreateGeometry();
+  AliBODY *body = new AliBODY("BODY", "Alice envelop");
+  body->CreateGeometry();
 
-  AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
-  FRAME->SetHoles(1);
-  FRAME->CreateGeometry();
+  AliFRAMEv2 *frame = new AliFRAMEv2("FRAME", "Space Frame");
+  frame->SetHoles(1);
+  frame->CreateGeometry();
 
-  AliTOF *TOF = new AliTOFv2FHoles("TOF", "TOF with Holes");
-  TOF->CreateGeometry();
+  AliTOF *tof = new AliTOFv2FHoles("TOF", "TOF with Holes");
+  tof->CreateGeometry();
 
   return 0;
 } 
@@ -58,9 +63,11 @@ AliTOFpidESD::AliTOFpidESD(Double_t *param) throw (const Char_t *) {
   //
   //  The main constructor
   //
-  if (InitGeo()) throw "AliTOFpidESD: can not initialize the geomtry !\n";
+  if (InitGeo()) throw "AliTOFpidESD: can not initialize the geometry !\n";
 
-  fR=376.; fDy=2.5; fDz=3.5; fN=0; fEventN=0;
+  fR=378.; 
+  fDy=AliTOFConstants::fgkXPad; fDz=AliTOFConstants::fgkZPad; 
+  fN=0; fEventN=0;
 
   fSigma=param[0];
   fRange=param[1];
@@ -68,16 +75,40 @@ AliTOFpidESD::AliTOFpidESD(Double_t *param) throw (const Char_t *) {
 }
 
 static Int_t DtoM(Int_t *dig, Float_t *g) {
-  const Int_t MAX=13;
-  Int_t lnam[MAX],lnum[MAX];
-
-  extern TVirtualMC *gMC;
+  const Int_t kMAX=13;
+  Int_t lnam[kMAX],lnum[kMAX];
 
   TGeant3 *geant3=(TGeant3*)gMC;
-  if (!geant3) {cerr<<"no geant3 found !\n"; return 1;}
+  if (!geant3) {::Info("DtoM","no geant3 found !"); return 1;}
 
   strncpy((Char_t*)(lnam+0),"ALIC",4); lnum[0]=1;
   strncpy((Char_t*)(lnam+1),"B077",4); lnum[1]=1;
+
+//4 padx  if z<=0 then ...
+if ((dig[1]==4)||(dig[1]==3)) dig[4]=AliTOFConstants::fgkNpadX-dig[4];
+else if (dig[1]==2) {
+   if (dig[2]>7) dig[4]=AliTOFConstants::fgkNpadX-dig[4];
+   else if (dig[2]==7) {
+      if (dig[3]==1) dig[4]=AliTOFConstants::fgkNpadX-dig[4];
+      else dig[4]+=1; 
+   } else dig[4]+=1; 
+} else dig[4]+=1;
+
+//3 padz
+if ((dig[1]==3)||(dig[1]==4)) dig[3]=AliTOFConstants::fgkNpadZ-dig[3];
+else dig[3]+=1;
+
+//2 strip
+if (dig[1]==0) dig[2]=AliTOFConstants::fgkNStripC-dig[2]; 
+else if (dig[1]==1) dig[2]=AliTOFConstants::fgkNStripB-dig[2];
+else dig[2]+=1; 
+
+//1 module
+dig[1]=AliTOFConstants::fgkNPlates-dig[1];
+
+//0 sector
+dig[0]+=(AliTOFConstants::fgkNSectors/2); dig[0]%=AliTOFConstants::fgkNSectors;
+dig[0]+=1;
 
   //sector
   switch (dig[0]) {
@@ -162,7 +193,7 @@ static Int_t DtoM(Int_t *dig, Float_t *g) {
          strncpy((Char_t*)(lnam+3),"BTO1",4); lnum[3]=1;
          break;
      default:
-         cerr<<"Wrong sector number : "<<dig[0]<<" !\n";
+         ::Info("DtoM","Wrong sector number : %d !",dig[0]);
          return 2;
   }
   //module
@@ -194,13 +225,13 @@ static Int_t DtoM(Int_t *dig, Float_t *g) {
         strncpy((Char_t*)(lnam+5),"FLTC",4); lnum[5]=0;
         break;
      default:
-        cerr<<"Wrong module number : "<<dig[1]<<" !\n";
+        ::Info("DtoM","Wrong module number : %d !",dig[1]);
         return 3;
   }
 
   //strip
-  if (dig[2]<1 || dig[2]>19) {
-     cerr<<"Wrong strip number : "<<dig[2]<<" !\n";
+  if (dig[2]<0/*1*/ || dig[2]>19) {
+     ::Info("DtoM","Wrong strip number : %d !",dig[2]);
      return 3;
   }
   strncpy((Char_t*)(lnam+6),"FSTR",4); lnum[6]=dig[2];
@@ -208,14 +239,14 @@ static Int_t DtoM(Int_t *dig, Float_t *g) {
 
   //divz
   if (dig[3]<1 || dig[3]>2) {
-     cerr<<"Wrong z-division number : "<<dig[3]<<" !\n";
+     ::Info("DtoM","Wrong z-division number : %d !",dig[3]);
      return 3;
   }
   strncpy((Char_t*)(lnam+8),"FSEZ",4); lnum[8]=dig[3];
 
   //divx
   if (dig[4]<1 || dig[4]>48) {
-     cerr<<"Wrong x-division number : "<<dig[4]<<" !\n";
+     ::Info("DtoM","Wrong x-division number : %d !",dig[4]);
      return 3;
   }
   strncpy((Char_t*)(lnam+9),"FSEX",4); lnum[9]=dig[4];
@@ -223,7 +254,9 @@ static Int_t DtoM(Int_t *dig, Float_t *g) {
 
   Gcvolu_t *gcvolu=geant3->Gcvolu(); gcvolu->nlevel=0;
   Int_t err=geant3->Glvolu(11,lnam,lnum);  //11-th level
-  if (err) {cout<<err<<" Wrong volume !\n"; return 3;}
+  if (err) {
+    ::Info("DtoM","Wrong volume !"); return 3;
+  }
   Float_t l[3]={0.,0.,0}; geant3->Gdtom(l,g,1);
   return 0;
 }
@@ -273,7 +306,7 @@ Int_t AliTOFpidESD::LoadClusters(const TFile *df) {
     h[1]=TMath::ATan2(g[1],g[0]); h[2]=g[2]; 
     h[3]=d->GetTdc(); h[4]=d->GetAdc();
 
-    AliTOFcluster *cl=new AliTOFcluster(h,d->GetTracks());
+    AliTOFcluster *cl=new AliTOFcluster(h,d->GetTracks(),i);
     InsertCluster(cl);
   }  
 
@@ -314,7 +347,7 @@ Int_t AliTOFpidESD::LoadClusters(TTree *dTree) {
     h[1]=TMath::ATan2(g[1],g[0]); h[2]=g[2]; 
     h[3]=d->GetTdc(); h[4]=d->GetAdc();
 
-    AliTOFcluster *cl=new AliTOFcluster(h,d->GetTracks());
+    AliTOFcluster *cl=new AliTOFcluster(h,d->GetTracks(),i);
     InsertCluster(cl);
   }  
 
@@ -361,6 +394,16 @@ Int_t AliTOFpidESD::FindClusterIndex(Double_t z) const {
   return m;
 }
 
+static int cmp(const void *p1, const void *p2) {
+  AliESDtrack *t1=*((AliESDtrack**)p1);
+  AliESDtrack *t2=*((AliESDtrack**)p2);
+  Double_t c1[15]; t1->GetExternalCovariance(c1);
+  Double_t c2[15]; t2->GetExternalCovariance(c2);
+  if (c1[0]*c1[2] <c2[0]*c2[2]) return -1;
+  if (c1[0]*c1[2]==c2[0]*c2[2]) return 0;
+  return 1;
+}
+
 //_________________________________________________________________________
 Int_t AliTOFpidESD::MakePID(AliESD *event)
 {
@@ -368,23 +411,31 @@ Int_t AliTOFpidESD::MakePID(AliESD *event)
   //  This function calculates the "detector response" PID probabilities
   //                Just for a bare hint... 
 
-  static const Double_t masses[]={
+  static const Double_t kMasses[]={
     0.000511, 0.105658, 0.139570, 0.493677, 0.938272, 1.875613
   };
 
   Int_t ntrk=event->GetNumberOfTracks();
-  Int_t nmatch=0;
-  for (Int_t i=0; i<ntrk; i++) {
+  AliESDtrack **tracks=new AliESDtrack*[ntrk];
+
+  Int_t i;
+  for (i=0; i<ntrk; i++) {
     AliESDtrack *t=event->GetTrack(i);
+    tracks[i]=t;
+  }
+  qsort(tracks,ntrk,sizeof(AliESDtrack*),cmp);
+
+  Int_t nmatch=0;
+  for (i=0; i<ntrk; i++) {
+    AliESDtrack *t=tracks[i];
 
     if ((t->GetStatus()&AliESDtrack::kTRDout)==0) continue;
-    if ((t->GetStatus()&AliESDtrack::kTIME)==0) continue;
 
     Double_t x,par[5]; t->GetExternalParameters(x,par);
     Double_t cov[15]; t->GetExternalCovariance(cov);
 
-    Double_t dphi2=3*3*(cov[0] + fDy*fDy/12.)/fR/fR;
-    Double_t dz=3*TMath::Sqrt(cov[2] + fDz*fDz/12.);
+Double_t dphi=(5*TMath::Sqrt(cov[0]) + 0.5*fDy + 2.5*TMath::Abs(par[2]))/fR; 
+Double_t dz=5*TMath::Sqrt(cov[2]) + 0.5*fDz + 2.5*TMath::Abs(par[3]);
 
     Double_t phi=TMath::ATan2(par[0],x) + t->GetAlpha();
     if (phi<-TMath::Pi()) phi+=2*TMath::Pi();
@@ -399,11 +450,11 @@ Int_t AliTOFpidESD::MakePID(AliESD *event)
       if (c->GetZ() > z+dz) break;
       if (c->IsUsed()) continue;
 
-      Double_t dphi=TMath::Abs(c->GetPhi()-phi);
-      if (dphi>TMath::Pi()) dphi-=TMath::Pi();
-      if (dphi*dphi > dphi2) continue;
+      Double_t dph=TMath::Abs(c->GetPhi()-phi);
+      if (dph>TMath::Pi()) dph-=TMath::Pi();
+      if (dph>dphi) continue;
 
-      Double_t d2=dphi*dphi*fR*fR + (c->GetZ()-z)*(c->GetZ()-z);
+      Double_t d2=dph*dph*fR*fR + (c->GetZ()-z)*(c->GetZ()-z);
       if (d2 > d2max) continue;
 
       d2max=d2;
@@ -418,34 +469,51 @@ Int_t AliTOFpidESD::MakePID(AliESD *event)
     nmatch++;
 
     AliTOFcluster *c=fClusters[index];
+    c->Use();
+
+    Double_t tof=50*c->GetTDC()+32; // in ps
+    t->SetTOFsignal(tof);
+    t->SetTOFcluster(c->GetIndex());
+
+    if ((t->GetStatus()&AliESDtrack::kTIME)==0) continue;
 
     Double_t time[10]; t->GetIntegratedTimes(time);
-    Double_t tof=50*c->GetTDC(); // in ps
+
+    //track length correction
+    Double_t rc=TMath::Sqrt(c->GetR()*c->GetR() + c->GetZ()*c->GetZ());
+    Double_t rt=TMath::Sqrt(x*x + par[0]*par[0] + par[1]*par[1]);
+    Double_t dlt=rc-rt;
 
     Double_t p[10];
     Double_t mom=t->GetP();
     for (Int_t j=0; j<AliESDtrack::kSPECIES; j++) {
-      Double_t mass=masses[j];
-      Double_t dp_p=0.03;      //mean relative pt resolution;
-      Double_t sigma=dp_p*time[j]/(1.+ mom*mom/(mass*mass));
+      Double_t mass=kMasses[j];
+      Double_t dpp=0.01;      //mean relative pt resolution;
+      if (mom>0.5) dpp=0.01*mom;
+      Double_t sigma=dpp*time[j]/(1.+ mom*mom/(mass*mass));
       sigma=TMath::Sqrt(sigma*sigma + fSigma*fSigma);
+
+      time[j]+=dlt/3e-2*TMath::Sqrt(mom*mom+mass*mass)/mom;
+
       if (TMath::Abs(tof-time[j]) > fRange*sigma) {
 	p[j]=TMath::Exp(-0.5*fRange*fRange);
         continue;
       }
       p[j]=TMath::Exp(-0.5*(tof-time[j])*(tof-time[j])/(sigma*sigma));
     }
-
-    //if (c->GetLabel(0)!=TMath::Abs(t->GetLabel())) continue;
-
-    t->SetTOFsignal(tof);
-    t->SetTOFcluster(index);
+    /*
+    if (c->GetLabel(0)!=TMath::Abs(t->GetLabel())) {
+       cerr<<"Wrong matching: "<<t->GetLabel()<<endl;
+       continue;
+    }
+    */
     t->SetTOFpid(p);
 
-    c->Use();
   }
 
   Info("MakePID","Number of matched ESD track: %d",nmatch);
+
+  delete[] tracks;
 
   return 0;
 }

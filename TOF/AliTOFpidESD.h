@@ -15,9 +15,8 @@ class AliESD;
 class TFile;
 class TTree;
 
-const Int_t kMaxCluster=77777; //maximal number of the TOF clusters
-
 class AliTOFpidESD : public TObject {
+enum {kMaxCluster=77777}; //maximal number of the TOF clusters
 public:
   AliTOFpidESD(){fR=376.; fDy=2.5; fDz=3.5; fN=0; fEventN=0;}
   AliTOFpidESD(Double_t *param) throw (const Char_t *);
@@ -34,9 +33,10 @@ public:
 public:
   class AliTOFcluster {
   public:
-    AliTOFcluster(Double_t *h, Int_t *l) {
+    AliTOFcluster(Double_t *h, Int_t *l,Int_t idx) {
       fR=h[0]; fPhi=h[1]; fZ=h[2]; fTDC=h[3]; fADC=h[4];
       fLab[0]=l[0]; fLab[1]=l[1]; fLab[2]=l[2];
+      fIdx=idx;
     }
     void Use() {fADC=-fADC;}
 
@@ -47,17 +47,19 @@ public:
     Double_t GetADC() const {return TMath::Abs(fADC);}
     Int_t IsUsed() const {return (fADC<0) ? 1 : 0;}
     Int_t GetLabel(Int_t n) const {return fLab[n];}
+    Int_t GetIndex() const {return fIdx;}
   private:
-    Int_t fLab[3];
-    Double_t fR;
-    Double_t fPhi;
-    Double_t fZ;
-    Double_t fTDC;
-    Double_t fADC;
+    Int_t fLab[3]; //track labels
+    Double_t fR;   //r-coordinate
+    Double_t fPhi; //phi-coordinate
+    Double_t fZ;   //z-coordinate
+    Double_t fTDC; //TDC count
+    Double_t fADC; //ADC count
+    Int_t fIdx;    //index of this cluster
   };
 
 private:
-  Int_t InsertCluster(AliTOFcluster*);
+  Int_t InsertCluster(AliTOFcluster *c);
   Int_t FindClusterIndex(Double_t z) const;
 
   Int_t fEventN;          //event number
