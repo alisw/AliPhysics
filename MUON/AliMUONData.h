@@ -6,15 +6,15 @@
 // Gines Martinez, Subatech,  September 2003
 //
 
-#include "TNamed.h"
-
-#include "AliLoader.h" 
-#include "AliMUONConstants.h"
+#include "AliLoader.h"
 
 class TClonesArray;
+class TNamed;
 class TObjArray;
 class TTree;
 
+
+class AliMUONConstants;
 class AliMUONRawCluster;
 class AliMUONTrack;
 
@@ -45,17 +45,24 @@ class AliMUONData : public TNamed {
     virtual void   AddRecTrack(const AliMUONTrack& track);
 
     TClonesArray*  Hits() {return fHits;}
-    TClonesArray*  Digits(Int_t DetectionPlane, Int_t /*Cathode*/) 
+    TClonesArray*  Digits(Int_t DetectionPlane) 
       {return ( (TClonesArray*) fDigits->At(DetectionPlane) );}
     TClonesArray*  LocalTrigger() {return fLocalTrigger;}
     TClonesArray*  GlobalTrigger() {return fGlobalTrigger;}
     TClonesArray*  RawClusters(Int_t DetectionPlane)
       {return ( (TClonesArray*) fRawClusters->At(DetectionPlane) );}
     TClonesArray*  RecTracks() {return fRecTracks;}
-    
+
+    void           GetTrack(Int_t it) {fLoader->TreeH()->GetEvent(it);}
+    Int_t          GetNtracks()       {return fLoader->TreeH()->GetEntries();}
+    void           GetCathode(Int_t ic) {fLoader->TreeD()->GetEvent(ic);}
+    void           GetRawClusters() {fLoader->TreeR()->GetEvent(0);}
+    void           GetTrigger() {fLoader->TreeR()->GetEvent(0);}
+
     virtual AliLoader* GetLoader() {return fLoader;}
     virtual void       SetLoader(AliLoader * loader) {fLoader=loader;}    
     
+    virtual void   Fill(Option_t* opt=" ");
     virtual void   MakeBranch(Option_t *opt=" ");
     virtual void   SetTreeAddress(Option_t *opt=" ");
     

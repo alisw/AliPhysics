@@ -74,7 +74,7 @@ void MUONTracker (Text_t *FileName = "galice.root", Int_t FirstEvent = 0, Int_t 
       muondata->AddRecTrack(*track);
     }
 
-    MUONLoader->TreeT()->Fill();
+    muondata->Fill("RT");
     MUONLoader->WriteTracks("OVERWRITE");
     muondata->ResetRecTracks();
   } // Event loop

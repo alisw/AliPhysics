@@ -392,7 +392,7 @@ void AliMUONDigitizerv1::Exec(Option_t* option)
 	if ( digits[2] == icat ) muondata->AddDigit(ich,tracks,charges,digits);
       }
       // Filling list of digits per chamber for a given cathode.
-      treeD->Fill();
+      muondata->Fill("D");
       muondata->ResetDigits();    
     } // end loop cathode
     fTDList->Delete();  

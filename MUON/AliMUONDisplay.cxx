@@ -778,17 +778,17 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     AliSegmentation*      segmentation;
     AliMUONResponse*      response;
 
-    TClonesArray *muonDigits  = pMUON->GetMUONData()->Digits(chamber-1,0);
+    TClonesArray *muonDigits  = pMUON->GetMUONData()->Digits(chamber-1);
     if (muonDigits == 0) return;
 
 //     gAlice->ResetDigits();
     Int_t nent = 0;
  
-   if (gAlice->TreeD()) {
-     nent = (Int_t) gAlice->TreeD()->GetEntries();
+   if (pMUON->GetLoader()->TreeD()) {
+     nent = (Int_t) pMUON->GetLoader()->TreeD()->GetEntries();
      printf(" entries %d \n", nent);
      //     gAlice->TreeD()->GetEvent(nent-2+cathode-1);
-     gAlice->TreeD()->GetEvent(cathode-1);
+     pMUON->GetMUONData()->GetCathode(cathode-1);
     }
     
     Int_t ndigits = muonDigits->GetEntriesFast();

@@ -364,7 +364,7 @@ AliLoader* AliMUON::MakeLoader(const char* topfoldername)
         "Creating standard getter for detector %s. Top folder is %s.",
          GetName(),topfoldername);
      
- fLoader   = new AliLoader(GetName(),topfoldername);
+ fLoader   = new AliMUONLoader(GetName(),topfoldername);
  fMUONData = new AliMUONData(fLoader,GetName(),GetName()); 
  return fLoader;
 }
@@ -410,10 +410,7 @@ void AliMUON::Trigger(Int_t nev){
   delete decision;
 
   //  fLoader->TreeR()->Fill();
-  fLoader->TreeR()->GetBranch("MUONGlobalTrigger")->Fill();
-  fLoader->TreeR()->GetBranch("MUONLocalTrigger")->Fill();
- 
- 
+  GetMUONData()->Fill("GLT"); //Filling Global and Local Trigger GLT
   //  char hname[30];
   //  sprintf(hname,"TreeR%d",nev);
   //  fLoader->TreeR()->Write(hname,TObject::kOverwrite);
@@ -428,14 +425,10 @@ void AliMUON::Digits2Reco()
 {
   FindClusters();
   Int_t nev = gAlice->GetHeader()->GetEvent();
-  fLoader->TreeR()->Fill();
-  // char hname[30];
-  // sprintf(hname,"TreeR%d", nev);
-  //fLoader->TreeR()->Write(hname);
-  //fLoader->TreeR()->Reset();
+  GetMUONData()->Fill("RC"); //Filling Reconstructed Cluster
   fLoader->WriteRecPoints("OVERWRITE");
   GetMUONData()->ResetRawClusters();        
-  printf("\n End of cluster finding for event %d", nev);
+  Info("Digits2Reco","End of cluster finding for event %d", nev);
 }
 //____________________________________________________________________
 void AliMUON::FindClusters()
@@ -459,9 +452,9 @@ void AliMUON::FindClusters()
 	AliMUONClusterFinderVS* rec = iChamber->ReconstructionModel();
     
 	ResetDigits();
-	fLoader->TreeD()->GetEvent(0);
+	GetMUONData()->GetCathode(0);
 	//TClonesArray *
-	muonDigits = GetMUONData()->Digits(ich,0);  // cathode plane not yet operational
+	muonDigits = GetMUONData()->Digits(ich); 
 	ndig=muonDigits->GetEntriesFast();
 	printf("\n 1 Found %d digits in %p chamber %d", ndig, muonDigits,ich);
 	TClonesArray &lhits1 = *dig1;
@@ -471,10 +464,9 @@ void AliMUON::FindClusters()
 	    if (rec->TestTrack(digit->Track(0)))
 		new(lhits1[n++]) AliMUONDigit(*digit);
 	}
-	ResetDigits();
-	fLoader->TreeD()->GetEvent(1);
-	//muonDigits  = this->DigitsAddress(ich);
-	muonDigits =  GetMUONData()->Digits(ich,1);  // cathode plane not yet operational
+	GetMUONData()->ResetDigits();
+	GetMUONData()->GetCathode(1);
+	muonDigits =  GetMUONData()->Digits(ich);  
 	ndig=muonDigits->GetEntriesFast();
 	printf("\n 2 Found %d digits in %p %d", ndig, muonDigits, ich);
 	TClonesArray &lhits2 = *dig2;

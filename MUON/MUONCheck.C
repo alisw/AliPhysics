@@ -66,30 +66,25 @@ void MUONhits(char * filename="galice.root")
     printf(">>> Error : Error Opening %s file \n",filename);
     return;
   }
-
   // Loading MUON subsystem
   AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
-  MUONLoader->LoadHits("READ");
-  // Creating MUON data container
-  AliMUONData muondata(MUONLoader,"MUON","MUON");
-
+  MUONLoader->LoadHits("READ");  // Loading Tree of hits for MUON
+  AliMUONData muondata(MUONLoader,"MUON","MUON");  // Creating MUON data container
   Int_t ievent, nevents;
   nevents = RunLoader->GetNumberOfEvents();
 
   for(ievent=0; ievent<nevents; ievent++) {  // Event loop
     printf(">>> Event %d \n",ievent);
-
     // Getting event ievent
     RunLoader->GetEvent(ievent); 
     muondata.SetTreeAddress("H");
-   
     Int_t itrack, ntracks;
-    ntracks = (Int_t) (MUONLoader->TreeH())->GetEntries();
+    ntracks = (Int_t) muondata.GetNtracks();
     for (itrack=0; itrack<ntracks; itrack++) { // Track loop
       printf(">>> Track %d \n",itrack);
 
       //Getting List of Hits of Track itrack
-      (MUONLoader->TreeH())->GetEvent(itrack); 
+      muondata.GetTrack(itrack); 
 
       Int_t ihit, nhits;
       nhits = (Int_t) muondata.Hits()->GetEntriesFast();
@@ -127,16 +122,13 @@ void MUONdigits(char * filename="galice.root")
   // Loading MUON subsystem
   AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
   MUONLoader->LoadDigits("READ");
-
   // Creating MUON data container
   AliMUONData muondata(MUONLoader,"MUON","MUON");
 
   Int_t ievent, nevents;
   nevents = RunLoader->GetNumberOfEvents();
-
   AliMUONDigit * mDigit;
   
-
   for(ievent=0; ievent<nevents; ievent++) {
     printf(">>> Event %d \n",ievent);
     RunLoader->GetEvent(ievent);
@@ -152,19 +144,16 @@ void MUONdigits(char * filename="galice.root")
     //Loop on cathodes 
     for(icathode=0; icathode<ncathodes; icathode++) {
       printf(">>> Cathode %d\n",icathode);
-      MUONLoader->TreeD()->GetEvent(icathode);
+      muondata.GetCathode(icathode);
       // Loop on chambers
       for( ichamber=0; ichamber<nchambers; ichamber++) {
 	printf(">>> Chamber %d\n",ichamber);
-	//	sprintf(branchname,"MUONDigits%d",ichamber+1);
-	//printf(">>>  branchname %s\n",branchname);
 	
 	Int_t idigit, ndigits;
-
-	ndigits = (Int_t) muondata.Digits(ichamber,0)->GetEntriesFast();
+	ndigits = (Int_t) muondata.Digits(ichamber)->GetEntriesFast();
 	
 	for(idigit=0; idigit<ndigits; idigit++) {
-	  mDigit = static_cast<AliMUONDigit*>(muondata.Digits(ichamber,0)->At(idigit));
+	  mDigit = static_cast<AliMUONDigit*>(muondata.Digits(ichamber)->At(idigit));
 	  Int_t PadX   = mDigit->PadX();     // Pad X number
 	  Int_t PadY   = mDigit->PadY();     // Pad Y number
 	  Int_t Signal = mDigit->Signal();   // Physics Signal
@@ -199,19 +188,17 @@ void MUONrecpoints(char * filename="galice.root") {
 
   Int_t ievent, nevents;
   nevents = RunLoader->GetNumberOfEvents();
-
   AliMUONRawCluster * mRecPoint;
   
   for(ievent=0; ievent<nevents; ievent++) {
     printf(">>> Event %d \n",ievent);
     RunLoader->GetEvent(ievent);
-  
     // Addressing
     Int_t ichamber, nchambers;
     nchambers = AliMUONConstants::NTrackingCh();
     muondata.SetTreeAddress("RC"); 
     char branchname[30];    
-    MUONLoader->TreeR()->GetEvent(0);
+    muondata.GetRawClusters();
     // Loop on chambers
     for( ichamber=0; ichamber<nchambers; ichamber++) {
       printf(">>> Chamber %d\n",ichamber);
@@ -219,7 +206,6 @@ void MUONrecpoints(char * filename="galice.root") {
       //printf(">>>  branchname %s\n",branchname);
   
       Int_t irecpoint, nrecpoints;
-      
       nrecpoints = (Int_t) muondata.RawClusters(ichamber)->GetEntriesFast();
       
       for(irecpoint=0; irecpoint<nrecpoints; irecpoint++) {
@@ -295,7 +281,7 @@ void MUONTestTrigger (char * filename="galice.root"){
       RunLoader->GetEvent(ievent);
       
       muondata.SetTreeAddress("GLT"); 
-      MUONLoader->TreeR()->GetEvent(0);
+      muondata.GetTrigger();
       
       globalTrigger = muondata.GlobalTrigger();
       localTrigger = muondata.LocalTrigger();

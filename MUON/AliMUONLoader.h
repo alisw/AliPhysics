@@ -10,9 +10,8 @@
 //                                                                 //
 /////////////////////////////////////////////////////////////////////
 
-class TClonesArray;
-
 class AliMUONData;
+
 
 class AliMUONLoader : public AliLoader {
  public:
@@ -21,6 +20,7 @@ class AliMUONLoader : public AliLoader {
     AliMUONLoader(const Char_t *detname,TFolder* eventfolder);
     virtual ~AliMUONLoader();
 
+ 
  private:
     //descendant classes should
     //use protected interface methods to access these folders

@@ -1,8 +1,9 @@
 
-
 //Root includes
-
+#include "TNamed.h"
 //AliRoot includes
+#include "AliLoader.h" 
+#include "AliMUONConstants.h"
 #include "AliMUONData.h"
 #include "AliMUONDigit.h"
 #include "AliMUONHit.h"
@@ -94,7 +95,7 @@ void AliMUONData::AddDigit(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digit
   //
   // Add a MUON digit to the list of Digits of the detection plane id
   //
-  TClonesArray &ldigits = * Digits(id,0) ; 
+  TClonesArray &ldigits = * Digits(id) ; 
   new(ldigits[fNdigits[id]++]) AliMUONDigit(tracks,charges,digits);
 }
 //_____________________________________________________________________________
@@ -145,6 +146,58 @@ void AliMUONData::AddRecTrack(const AliMUONTrack& track)
   new(lrectracks[fNrectracks++]) AliMUONTrack(track);
 }
 //____________________________________________________________________________
+void AliMUONData::Fill(Option_t* option)
+{
+  // Method to fill the trees
+  const char *cH   = strstr(option,"H");
+  const char *cD   = strstr(option,"D");   // Digits branches in TreeD
+  const char *cRC  = strstr(option,"RC");  // RawCluster branches in TreeR
+  const char *cGLT = strstr(option,"GLT"); // Global and Local Trigger branches in TreeR
+  const char *cRT  = strstr(option,"RT");  // Reconstructed Track in TreeT
+  //const char *cRP  = strstr(option,"RP");  // Reconstructed Particle in TreeP
+  
+  char branchname[30];
+  TBranch * branch = 0x0;
+
+  //
+  // Filling TreeH
+  if ( TreeH() && cH ) {
+    TreeH()->Fill();
+  }  
+  //
+  // Filling TreeD
+  if ( TreeD() && cD) {
+    TreeD()->Fill();
+  }
+  //
+  // filling rawclusters
+  if ( TreeR()  && cRC) {
+    TreeR()->Fill();
+    //  for (int i=0; i<AliMUONConstants::NTrackingCh(); i++) {
+//        sprintf(branchname,"%sRawClusters%d",GetName(),i+1);
+//        branch = TreeR()->GetBranch(branchname);
+//        branch->Fill();
+//      }
+  }
+ //
+  // filling trigger 
+  if ( TreeR()  && cGLT) {
+    sprintf(branchname,"%sLocalTrigger",GetName());
+    branch = TreeR()->GetBranch(branchname); 
+    branch->Fill();
+    sprintf(branchname,"%sGlobalTrigger",GetName());
+    branch = TreeR()->GetBranch(branchname);
+    branch->Fill();
+  }
+  //
+  // filling tracks
+  if ( TreeT() && cRT ) {
+    sprintf(branchname,"%sTrack",GetName());  
+    branch = TreeT()->GetBranch(branchname);
+    branch->Fill();
+  }
+}
+//_____________________________________________________________________________
 void AliMUONData::MakeBranch(Option_t* option)
 {
   //
@@ -199,7 +252,7 @@ void AliMUONData::MakeBranch(Option_t* option)
 	Info("MakeBranch","Branch %s is already in tree.",GetName());
 	return;
       }
-      TClonesArray * digits = Digits(iDetectionPlane,0); 
+      TClonesArray * digits = Digits(iDetectionPlane); 
       branch = TreeD()->Branch(branchname, &digits, kBufferSize);
       Info("MakeBranch","Making Branch %s for digits in detection plane %d\n",branchname,iDetectionPlane+1);
       }
@@ -386,7 +439,7 @@ void AliMUONData::SetTreeAddress(Option_t* option)
     for (int i=0; i<AliMUONConstants::NCh(); i++) {
       sprintf(branchname,"%sDigits%d",GetName(),i+1);
       branch = TreeD()->GetBranch(branchname);
-      TClonesArray * digits = Digits(i,0);
+      TClonesArray * digits = Digits(i);
       if (branch) branch->SetAddress( &digits );
       else Warning("SetTreeAddress","(%s) Failed for Digits Detection plane %d. Can not find branch in tree.",GetName(),i);
     }

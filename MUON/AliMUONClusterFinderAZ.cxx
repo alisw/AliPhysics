@@ -147,7 +147,7 @@ newev:
 newchamber:
   if (ch > 9) {if (fReco) return; nev++; ch = 0; goto newev;}
   //gAlice->ResetDigits();
-  fMuonDigits  = MUON->GetMUONData()->Digits(ch,0);
+  fMuonDigits  = MUON->GetMUONData()->Digits(ch);
   if (fMuonDigits == 0) return;
   iChamber = &(MUON->Chamber(ch));
   fSegmentation[0] = iChamber->SegmentationModel(1);
@@ -185,7 +185,7 @@ next:
     Int_t cath = TMath::Odd(iii);
     gAlice->ResetDigits();
     TD->GetEvent(cath);
-    fMuonDigits  = MUON->GetMUONData()->Digits(ch,0);
+    fMuonDigits  = MUON->GetMUONData()->Digits(ch);
 
     ndigits[cath] = fMuonDigits->GetEntriesFast();
     if (!ndigits[0] && !ndigits[1]) {if (fReco) return; ch++; goto newchamber;}
