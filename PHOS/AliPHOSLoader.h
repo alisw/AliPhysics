@@ -185,6 +185,21 @@ class AliPHOSLoader : public AliLoader {
   AliPHOSCalibrationDB * CalibrationDB(){return  fcdb; }
   void ReadCalibrationDB(const char * name, const char * filename);
   
+ public:
+
+  static const TString fgkHitsName;//Name for TClonesArray with hits from one event
+  static const TString fgkSDigitsName;//Name for TClonesArray 
+  static const TString fgkDigitsName;//Name for TClonesArray 
+  static const TString fgkEmcRecPointsName;//Name for TClonesArray 
+  static const TString fgkCpvRecPointsName;//Name for TClonesArray 
+  static const TString fgkTracksName;//Name for TClonesArray 
+  static const TString fgkRecParticlesName;//Name for TClonesArray
+
+  static const TString fgkEmcRecPointsBranchName;//Name for branch
+  static const TString fgkCpvRecPointsBranchName;//Name for branch
+  static const TString fgkTrackSegmentsBranchName;//Name for branch
+  static const TString fgkRecParticlesBranchName;//Name for branch
+  
 protected:
   TString fBranchTitle;            //Title of the branch
   AliPHOSCalibrationDB * fcdb ;       //!
@@ -201,21 +216,6 @@ private:
   void  ReadTreeQA() ;
   Int_t  fDebug ;             // Debug level
  
- public:
-
-  static const TString fgkHitsName;//Name for TClonesArray with hits from one event
-  static const TString fgkSDigitsName;//Name for TClonesArray 
-  static const TString fgkDigitsName;//Name for TClonesArray 
-  static const TString fgkEmcRecPointsName;//Name for TClonesArray 
-  static const TString fgkCpvRecPointsName;//Name for TClonesArray 
-  static const TString fgkTracksName;//Name for TClonesArray 
-  static const TString fgkRecParticlesName;//Name for TClonesArray
-
-  static const TString fgkEmcRecPointsBranchName;//Name for branch
-  static const TString fgkCpvRecPointsBranchName;//Name for branch
-  static const TString fgkTrackSegmentsBranchName;//Name for branch
-  static const TString fgkRecParticlesBranchName;//Name for branch
-  
   ClassDef(AliPHOSLoader,3)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
 
 };

@@ -13,8 +13,6 @@
 // Modified: Yuri Kharlov (IHEP, Protvino)
 // 15 September 2000
 
-#include <assert.h> 
-
 // --- ROOT system ---
 #include "TObject.h"
 class TObjArray ;
@@ -28,13 +26,13 @@ public:
   AliPHOSEMCAGeometry();
   AliPHOSEMCAGeometry(const AliPHOSEMCAGeometry & cpv) : TObject(cpv) {
     // cpy ctor requested by Coding Convention but not yet needed
-    assert(0==1) ;
+    Fatal("Copy ctor","Not implemented yet");
   } 
   virtual ~AliPHOSEMCAGeometry(void) {}
 
   AliPHOSEMCAGeometry & operator = (const AliPHOSEMCAGeometry  & /*rvalue*/) {
     // assignement operator requested by coding convention but not needed
-    assert(0==1) ;
+    Fatal("Operator = ","Not implemented yet");
     return *this ; 
   }
 
@@ -96,95 +94,94 @@ public:
  
 private:
 
-  Float_t fStripHalfSize[3]   ;
-  Float_t fAirCellHalfSize[3] ;
-  Float_t fWrappedHalfSize[3] ;
-  Float_t fSupportPlateHalfSize[3] ;
-  Float_t fSupportPlateInHalfSize[3] ;
-  Float_t fCrystalHalfSize[3] ;
-  Float_t fAirGapLed ;
-  Float_t fStripWallWidthOut ; // Side to another strip  
-  Float_t fStripWallWidthIn ; 
-  Float_t fTyvecThickness ; 
-  Float_t fTSupport1HalfSize[3] ;
-  Float_t fTSupport2HalfSize[3] ;
-  Float_t fPreampHalfSize[3] ;
-  Float_t fPinDiodeHalfSize[3] ;              // Size of the PIN Diode 
+  Float_t fStripHalfSize[3]   ;        // Strip unit size/2
+  Float_t fAirCellHalfSize[3] ;        // geometry parameter
+  Float_t fWrappedHalfSize[3] ;        // geometry parameter
+  Float_t fSupportPlateHalfSize[3] ;   // geometry parameter
+  Float_t fSupportPlateInHalfSize[3] ; // geometry parameter
+  Float_t fCrystalHalfSize[3] ;        // crystal size/2
+  Float_t fAirGapLed ;                 // geometry parameter
+  Float_t fStripWallWidthOut ;         // Side to another strip  
+  Float_t fStripWallWidthIn ;          // geometry parameter
+  Float_t fTyvecThickness ;            // geometry parameter
+  Float_t fTSupport1HalfSize[3] ;      // geometry parameter
+  Float_t fTSupport2HalfSize[3] ;      // geometry parameter
+  Float_t fPreampHalfSize[3] ;         // geometry parameter
+  Float_t fPinDiodeHalfSize[3] ;       // Size of the PIN Diode 
 
-  Float_t fOuterThermoParams[4] ; 
-  Float_t fCoolerHalfSize[3] ; 
-  Float_t fAirGapHalfSize[3] ;
-  Float_t fInnerThermoHalfSize[3] ;
-  Float_t fAlCoverParams[4] ;
-  Float_t fFiberGlassHalfSize[3] ;
+  Float_t fOuterThermoParams[4] ;      // geometry parameter
+  Float_t fCoolerHalfSize[3] ;         // geometry parameter
+  Float_t fAirGapHalfSize[3] ;         // geometry parameter
+  Float_t fInnerThermoHalfSize[3] ;    // geometry parameter
+  Float_t fAlCoverParams[4] ;          // geometry parameter
+  Float_t fFiberGlassHalfSize[3] ;     // geometry parameter
 
 
-  Float_t fInnerThermoWidthX ;
-  Float_t fInnerThermoWidthY ;
-  Float_t fInnerThermoWidthZ ;
-  Float_t fAirGapWidthX ;
-  Float_t fAirGapWidthY ;
-  Float_t fAirGapWidthZ ;
-  Float_t fCoolerWidthX ;
-  Float_t fCoolerWidthY ;
-  Float_t fCoolerWidthZ ;
-  Float_t fAlCoverThickness ;
-  Float_t fOuterThermoWidthXUp ;
-  Float_t fOuterThermoWidthXLow;
-  Float_t fOuterThermoWidthY ;
-  Float_t fOuterThermoWidthZ ;
-  Float_t fAlFrontCoverX  ;
-  Float_t fAlFrontCoverZ  ; 
-  Float_t fFiberGlassSup2X ;
-  Float_t fFiberGlassSup1X ; 
-  Float_t fFrameHeight ; 
-  Float_t fFrameThickness ; 
-  Float_t fAirSpaceFeeX ;
-  Float_t fAirSpaceFeeZ ;
-  Float_t fAirSpaceFeeY ;
-  Float_t fTCables2HalfSize[3] ; 
-  Float_t fTCables1HalfSize[3] ; 
-  Float_t fWarmUpperThickness ;
-  Float_t fWarmBottomThickness ;
-  Float_t fWarmAlCoverWidthX ;
-  Float_t fWarmAlCoverWidthY ;
-  Float_t fWarmAlCoverWidthZ ;
-  Float_t fWarmAlCoverHalfSize[3] ;
-  Float_t fWarmThermoHalfSize[3] ;
-  Float_t fFiberGlassSup1Y ;
-  Float_t fFiberGlassSup2Y ;
-  Float_t fTSupportDist ;
-  Float_t fTSupport1Thickness ;
-  Float_t fTSupport2Thickness ;
-  Float_t fTSupport1Width ;
-  Float_t fTSupport2Width ;
-  Float_t fFrameXHalfSize[3] ;
-  Float_t fFrameZHalfSize[3] ;
-  Float_t fFrameXPosition[3] ;
-  Float_t fFrameZPosition[3] ;
-  Float_t fFGupXHalfSize[3] ;
-  Float_t fFGupXPosition[3] ;
-  Float_t fFGupZHalfSize[3] ;
-  Float_t fFGupZPosition[3] ;
-  Float_t fFGlowXHalfSize[3] ;
-  Float_t fFGlowXPosition[3] ;
-  Float_t fFGlowZHalfSize[3] ;
-  Float_t fFGlowZPosition[3] ;
-  Float_t fFEEAirHalfSize[3] ;
-  Float_t fFEEAirPosition[3] ;
-  Float_t fEMCParams[4] ;
+  Float_t fInnerThermoWidthX ;         // geometry parameter
+  Float_t fInnerThermoWidthY ;         // geometry parameter
+  Float_t fInnerThermoWidthZ ;         // geometry parameter
+  Float_t fAirGapWidthX ;              // geometry parameter
+  Float_t fAirGapWidthY ;              // geometry parameter
+  Float_t fAirGapWidthZ ;              // geometry parameter
+  Float_t fCoolerWidthX ;              // geometry parameter
+  Float_t fCoolerWidthY ;              // geometry parameter
+  Float_t fCoolerWidthZ ;              // geometry parameter
+  Float_t fAlCoverThickness ;          // geometry parameter
+  Float_t fOuterThermoWidthXUp ;       // geometry parameter
+  Float_t fOuterThermoWidthXLow;       // geometry parameter
+  Float_t fOuterThermoWidthY ;         // geometry parameter
+  Float_t fOuterThermoWidthZ ;         // geometry parameter
+  Float_t fAlFrontCoverX  ;            // geometry parameter
+  Float_t fAlFrontCoverZ  ;            // geometry parameter
+  Float_t fFiberGlassSup2X ;           // geometry parameter
+  Float_t fFiberGlassSup1X ;           // geometry parameter
+  Float_t fFrameHeight ;               // geometry parameter
+  Float_t fFrameThickness ;            // geometry parameter
+  Float_t fAirSpaceFeeX ;              // geometry parameter
+  Float_t fAirSpaceFeeZ ;              // geometry parameter
+  Float_t fAirSpaceFeeY ;              // geometry parameter
+  Float_t fTCables2HalfSize[3] ;       // geometry parameter
+  Float_t fTCables1HalfSize[3] ;       // geometry parameter
+  Float_t fWarmUpperThickness ;        // geometry parameter
+  Float_t fWarmBottomThickness ;       // geometry parameter
+  Float_t fWarmAlCoverWidthX ;         // geometry parameter
+  Float_t fWarmAlCoverWidthY ;         // geometry parameter
+  Float_t fWarmAlCoverWidthZ ;         // geometry parameter
+  Float_t fWarmAlCoverHalfSize[3] ;    // geometry parameter
+  Float_t fWarmThermoHalfSize[3] ;     // geometry parameter
+  Float_t fFiberGlassSup1Y ;           // geometry parameter
+  Float_t fFiberGlassSup2Y ;           // geometry parameter
+  Float_t fTSupportDist ;              // geometry parameter
+  Float_t fTSupport1Thickness ;        // geometry parameter
+  Float_t fTSupport2Thickness ;        // geometry parameter
+  Float_t fTSupport1Width ;            // geometry parameter
+  Float_t fTSupport2Width ;            // geometry parameter
+  Float_t fFrameXHalfSize[3] ;         // geometry parameter
+  Float_t fFrameZHalfSize[3] ;         // geometry parameter
+  Float_t fFrameXPosition[3] ;         // geometry parameter
+  Float_t fFrameZPosition[3] ;         // geometry parameter
+  Float_t fFGupXHalfSize[3] ;          // geometry parameter
+  Float_t fFGupXPosition[3] ;          // geometry parameter
+  Float_t fFGupZHalfSize[3] ;          // geometry parameter
+  Float_t fFGupZPosition[3] ;          // geometry parameter
+  Float_t fFGlowXHalfSize[3] ;         // geometry parameter
+  Float_t fFGlowXPosition[3] ;         // geometry parameter
+  Float_t fFGlowZHalfSize[3] ;         // geometry parameter
+  Float_t fFGlowZPosition[3] ;         // geometry parameter
+  Float_t fFEEAirHalfSize[3] ;         // geometry parameter
+  Float_t fFEEAirPosition[3] ;         // geometry parameter
+  Float_t fEMCParams[4] ;              // geometry parameter
   Float_t fIPtoOuterCoverDistance ;       // Distances from interaction point to outer cover 
   Float_t fIPtoCrystalSurface ;           // Distances from interaction point to Xtal surface
 
   Float_t fSupportPlateThickness ;        // Thickness of the Aluminium support plate for Strip   
 
-  Int_t  fNCellsInStrip ;
-  Int_t  fNStripX ;
-  Int_t  fNStripZ ;
-  Int_t  fNTSupports ;
-  Int_t  fNPhi ;                         // Number of crystal units in X (phi) direction
-  Int_t  fNZ ;                           // Number of crystal units in Z direction
-
+  Int_t  fNCellsInStrip ;              // Number of cells in a strip unit
+  Int_t  fNStripX ;                    // Number of strip units in X
+  Int_t  fNStripZ ;                    // Number of strip units in Z
+  Int_t  fNTSupports ;                 // geometry parameter
+  Int_t  fNPhi ;                       // Number of crystal units in X (phi) direction
+  Int_t  fNZ ;                         // Number of crystal units in Z direction
   ClassDef(AliPHOSEMCAGeometry,1)         // EMCA geometry class 
 
 } ;

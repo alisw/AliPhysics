@@ -186,6 +186,7 @@ const AliPHOS * AliPHOSLoader::PHOS()
 //____________________________________________________________________________ 
 const AliPHOSGeometry * AliPHOSLoader::PHOSGeometry() 
 {
+  // Return PHOS geometry
   AliPHOSGeometry * rv = 0 ; 
   if (PHOS() )
     rv =  PHOS()->GetGeometry();
@@ -218,7 +219,8 @@ Int_t AliPHOSLoader::LoadHits(Option_t* opt)
 
 //____________________________________________________________________________ 
 Int_t AliPHOSLoader::LoadSDigits(Option_t* opt)
-{  //---------- SDigits -------------------------
+{
+  //---------- SDigits -------------------------
   Int_t res;
   //First call the AliLoader's method to send the TreeS to folder
   res = AliLoader::LoadSDigits(opt);
@@ -233,6 +235,7 @@ Int_t AliPHOSLoader::LoadSDigits(Option_t* opt)
 //____________________________________________________________________________ 
 Int_t AliPHOSLoader::LoadDigits(Option_t* opt)
 { 
+  //---------- Digits -------------------------
   Int_t res;
   //First call the AliLoader's method to send the TreeS to folder
   res = AliLoader::LoadDigits(opt);
@@ -245,7 +248,8 @@ Int_t AliPHOSLoader::LoadDigits(Option_t* opt)
 }
 //____________________________________________________________________________ 
 Int_t AliPHOSLoader::LoadRecPoints(Option_t* opt) 
-{ // -------------- RecPoints -------------------------------------------
+{
+  // -------------- RecPoints -------------------------------------------
   Int_t res;
   //First call the AliLoader's method to send the TreeR to folder
   res = AliLoader::LoadRecPoints(opt);
@@ -281,7 +285,8 @@ Int_t  AliPHOSLoader::LoadTracks(Option_t* opt)
 
 //____________________________________________________________________________ 
 Int_t AliPHOSLoader::LoadRecParticles(Option_t* opt) 
-{ // -------------- RecPoints -------------------------------------------
+{
+  // -------------- RecPoints -------------------------------------------
   Int_t res;
   //First call the AliLoader's method to send the TreeT to folder
   res = AliLoader::LoadRecParticles(opt);
@@ -297,6 +302,7 @@ Int_t AliPHOSLoader::LoadRecParticles(Option_t* opt)
 
 Int_t AliPHOSLoader::PostHits()
 {
+  // -------------- Hits -------------------------------------------
   Int_t reval = AliLoader::PostHits();
   if (reval)
    {
@@ -309,6 +315,7 @@ Int_t AliPHOSLoader::PostHits()
 
 Int_t AliPHOSLoader::PostSDigits()
 {
+  // -------------- SDigits -------------------------------------------
   Int_t reval = AliLoader::PostSDigits();
   if (reval)
    {
@@ -321,6 +328,7 @@ Int_t AliPHOSLoader::PostSDigits()
 
 Int_t AliPHOSLoader::PostDigits()
 {
+  // -------------- Digits -------------------------------------------
   Int_t reval = AliLoader::PostDigits();
   if (reval)
    {
@@ -333,6 +341,7 @@ Int_t AliPHOSLoader::PostDigits()
 
 Int_t AliPHOSLoader::PostRecPoints()
 {
+  // -------------- RecPoints -------------------------------------------
   Int_t reval = AliLoader::PostRecPoints();
   if (reval)
    {
@@ -346,6 +355,7 @@ Int_t AliPHOSLoader::PostRecPoints()
 
 Int_t AliPHOSLoader::PostRecParticles()
 {
+  // -------------- RecParticles -------------------------------------------
   Int_t reval = AliLoader::PostRecParticles();
   if (reval)
    {
@@ -358,6 +368,7 @@ Int_t AliPHOSLoader::PostRecParticles()
 
 Int_t AliPHOSLoader::PostTracks()
 {
+  // -------------- Tracks -------------------------------------------
   Int_t reval = AliLoader::PostTracks();
   if (reval)
    {
@@ -690,19 +701,20 @@ Int_t AliPHOSLoader::ReadRecParticles()
 
 AliPHOSGeometry* AliPHOSLoader::GetPHOSGeometry()
 {
-//returns PHOS geometry from gAlice 
-//static Method used by some classes where it is not convienient to pass eventfoldername
- if (gAlice == 0x0)
-  return 0x0;
- AliPHOS* phos=dynamic_cast<AliPHOS*>(gAlice->GetDetector("PHOS"));
- if (phos == 0x0)
-  return 0x0;
- return phos->GetGeometry();
+  //returns PHOS geometry from gAlice 
+  //static Method used by some classes where it is not convienient to pass eventfoldername
+  if (gAlice == 0x0)
+    return 0x0;
+  AliPHOS* phos=dynamic_cast<AliPHOS*>(gAlice->GetDetector("PHOS"));
+  if (phos == 0x0)
+    return 0x0;
+  return phos->GetGeometry();
 }
 /***************************************************************************************/
 
 AliPHOSLoader* AliPHOSLoader::GetPHOSLoader(const  char* eventfoldername)
 {
+  // Return PHOS loader
   AliRunLoader* rn  = AliRunLoader::GetRunLoader(eventfoldername);
   if (rn == 0x0)
    {
@@ -715,7 +727,8 @@ AliPHOSLoader* AliPHOSLoader::GetPHOSLoader(const  char* eventfoldername)
 /***************************************************************************************/
 
 Bool_t AliPHOSLoader::BranchExists(const TString& recName)
- {
+{
+  // Check if a branch named redName exists
   if (fBranchTitle.IsNull()) return kFALSE;
   TString dataname, zername ;
   TTree* tree;
@@ -779,7 +792,8 @@ Bool_t AliPHOSLoader::BranchExists(const TString& recName)
  }
 
 void AliPHOSLoader::SetBranchTitle(const TString& btitle)
- {
+{
+  // Set branch title
   if (btitle.CompareTo(fBranchTitle) == 0) return;
   fBranchTitle = btitle;
   ReloadAll();
@@ -788,6 +802,7 @@ void AliPHOSLoader::SetBranchTitle(const TString& btitle)
 
 void AliPHOSLoader::CleanHits()
 {
+  // Clean Hits array
   AliLoader::CleanHits();
   //Clear an array 
   TClonesArray* hits = Hits();
@@ -797,6 +812,7 @@ void AliPHOSLoader::CleanHits()
 
 void AliPHOSLoader::CleanSDigits()
 {
+  // Clean SDigits array
   AliLoader::CleanSDigits();
   TClonesArray* sdigits = SDigits();
   if (sdigits) sdigits->Clear();
@@ -806,6 +822,7 @@ void AliPHOSLoader::CleanSDigits()
 
 void AliPHOSLoader::CleanDigits()
 {
+  // Clean Digits array
   AliLoader::CleanDigits();
   TClonesArray* digits = Digits();
   if (digits) digits->Clear();
@@ -814,6 +831,7 @@ void AliPHOSLoader::CleanDigits()
 
 void AliPHOSLoader::CleanRecPoints()
 {
+  // Clean RecPoints array
   AliLoader::CleanRecPoints();
   TObjArray* recpoints = EmcRecPoints();
   if (recpoints) recpoints->Clear();
@@ -824,8 +842,7 @@ void AliPHOSLoader::CleanRecPoints()
 
 void AliPHOSLoader::CleanTracks()
 {
-//Cleans Tracks stuff
-  
+  //Cleans Tracks stuff
   AliLoader::CleanTracks();//tree
   
   //and clear the array
@@ -837,7 +854,7 @@ void AliPHOSLoader::CleanTracks()
 
 void AliPHOSLoader::CleanRecParticles()
  {
-
+   // Clean RecParticles array
    TClonesArray *recpar = RecParticles();
    if (recpar) recpar->Clear();
   
@@ -847,7 +864,7 @@ void AliPHOSLoader::CleanRecParticles()
 
 void AliPHOSLoader::ReadCalibrationDB(const char * database,const char * filename)
 {
-
+  // Read calibration data base from file
   if(fcdb && (strcmp(database,fcdb->GetTitle())==0))
     return ;
 
@@ -875,6 +892,7 @@ void AliPHOSLoader::ReadCalibrationDB(const char * database,const char * filenam
 //____________________________________________________________________________ 
 void AliPHOSLoader::MakeHitsArray()
 {
+  // Add Hits array to the data folder
   if (Hits()) return;
   TClonesArray* hits = new TClonesArray("AliPHOSHit",1000);
   hits->SetName(fgkHitsName);
@@ -884,6 +902,7 @@ void AliPHOSLoader::MakeHitsArray()
 //____________________________________________________________________________ 
 void AliPHOSLoader::MakeSDigitsArray()
 {
+  // Add SDigits array to the data folder
   if ( SDigits()) return;
   TClonesArray* sdigits = new TClonesArray("AliPHOSDigit",1);
   sdigits->SetName(fgkSDigitsName);
@@ -893,6 +912,7 @@ void AliPHOSLoader::MakeSDigitsArray()
 //____________________________________________________________________________ 
 void AliPHOSLoader::MakeDigitsArray()
 {
+  // Add Digits array to the data folder
   if ( Digits()) return;
   TClonesArray* digits = new TClonesArray("AliPHOSDigit",1);
   digits->SetName(fgkDigitsName);
@@ -903,6 +923,7 @@ void AliPHOSLoader::MakeDigitsArray()
 //____________________________________________________________________________ 
 void AliPHOSLoader::MakeRecPointsArray()
 {
+  // Add RecPoints array to the data folder
   if ( EmcRecPoints() == 0x0)
    {
     if (GetDebug()>9) Info("MakeRecPointsArray","Making array for EMC");
@@ -923,6 +944,7 @@ void AliPHOSLoader::MakeRecPointsArray()
 //____________________________________________________________________________ 
 void AliPHOSLoader::MakeTrackSegmentsArray()
 {
+  // Add TrackSegments array to the data folder
   if ( TrackSegments()) return;
   TClonesArray * ts = new TClonesArray("AliPHOSTrackSegment",100) ;
   ts->SetName(fgkTracksName);
@@ -933,6 +955,7 @@ void AliPHOSLoader::MakeTrackSegmentsArray()
 //____________________________________________________________________________ 
 void AliPHOSLoader::MakeRecParticlesArray()
 {
+  // Add RecParticles array to the data folder
   if ( RecParticles()) return;
   TClonesArray * rp = new TClonesArray("AliPHOSRecParticle",100) ;
   rp->SetName(fgkRecParticlesName);
