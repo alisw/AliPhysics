@@ -547,21 +547,11 @@ void AliRun::InitMC(const char *setup)
   gROOT->LoadMacro(setup);
   gInterpreter->ProcessLine(fConfigFunction.Data());
 
-  InitLoaders();
-
-  fRunLoader->MakeTree("E");
-  fRunLoader->LoadKinematics("RECREATE");
-  fRunLoader->LoadTrackRefs("RECREATE");
-  fRunLoader->LoadHits("all","RECREATE");
-  
-  
   fRunLoader->CdGAFile();
 
   AliPDG::AddParticlesToPdgDataBase();  
 
   fNdets = fModules->GetLast()+1;
-
-  //
 
   // Added also after in case of interactive initialisation of modules
   fNdets = fModules->GetLast()+1;
@@ -585,10 +575,19 @@ void AliRun::InitMC(const char *setup)
    
    fMCApp->Init();
    
+   //Must be here because some MCs (G4) adds detectors here and not in Config.C
+   InitLoaders();
+   fRunLoader->MakeTree("E");
+   if (fLego == 0x0)
+    {
+      fRunLoader->LoadKinematics("RECREATE");
+      fRunLoader->LoadTrackRefs("RECREATE");
+      fRunLoader->LoadHits("all","RECREATE");
+    }
    fInitDone = kTRUE;
-
    //
    // Save stuff at the beginning of the file to avoid file corruption
+   fRunLoader->CdGAFile();
    Write();
    fEventNrInRun = -1; //important - we start Begin event from increasing current number in run
 }
@@ -767,15 +766,10 @@ void AliRun::RunLego(const char *setup, Int_t nc1, Float_t c1min,
   //
 
   // check if initialisation has been done
-  if (!fInitDone) InitMC(setup);
-  //Save current generator
-  AliGenerator *gen=fMCApp->Generator();
   // If runloader has been initialized, set the number of events per file to nc1 * nc2
-  if (fRunLoader) fRunLoader->SetNumberOfEventsPerFile(nc1 * nc2);
 
   // Set new generator
   if (!gener) gener  = new AliLegoGenerator();
-  fMCApp->ResetGenerator(gener);
   //
   // Configure Generator
   gener->SetRadiusRange(rmin, rmax);
@@ -787,16 +781,19 @@ void AliRun::RunLego(const char *setup, Int_t nc1, Float_t c1min,
   //Create Lego object  
   fLego = new AliLego("lego",gener);
 
+  if (!fInitDone) InitMC(setup);
+  //Save current generator
+  
+  AliGenerator *gen=fMCApp->Generator();
+  fMCApp->ResetGenerator(gener);
   //Prepare MC for Lego Run
   gMC->InitLego();
   
   //Run Lego Object
 
+  if (fRunLoader) fRunLoader->SetNumberOfEventsPerFile(nc1 * nc2);
   //gMC->ProcessRun(nc1*nc2+1);
   gMC->ProcessRun(nc1*nc2);
-  
-  // Create only the Root event Tree
-  fRunLoader->MakeTree("E");
   
   // End of this run, close files
   FinishRun();
@@ -857,17 +854,13 @@ void AliRun::Streamer(TBuffer &R__b)
     AliRun::Class()->WriteBuffer(R__b, this);
   }
 }
-
-
 //_______________________________________________________________________
 
-//_______________________________________________________________________
 void AliRun::SetGenEventHeader(AliGenEventHeader* header)
 {
   fRunLoader->GetHeader()->SetGenEventHeader(header);
 }
-
-//___________________________________________________________________________
+//_______________________________________________________________________
 
 Int_t AliRun::GetEvNumber() const
 { 
@@ -880,6 +873,7 @@ Int_t AliRun::GetEvNumber() const
 
   return fRunLoader->GetEventNumber();
 }
+//_______________________________________________________________________
 
 void AliRun::SetRunLoader(AliRunLoader* rloader)
 {

@@ -798,13 +798,17 @@ TTree* AliStack::TreeK()
         return 0x0;//pro forma
       }
     fTreeK = rl->TreeK();
-    if ( fTreeK == 0x0)
+    if ( fTreeK )
      {
-      Error("TreeK","Can not get TreeK from RL. Ev. Folder is %s",fEventFolderName.Data());
+      ConnectTree();
      }
     else
      {
-      ConnectTree();
+      //don't panic - could be Lego
+      if (AliLoader::fgDebug) 
+       { 
+         Warning("TreeK","Can not get TreeK from RL. Ev. Folder is %s",fEventFolderName.Data());
+       } 
      }
    }
   return fTreeK;//never reached

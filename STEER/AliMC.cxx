@@ -365,9 +365,13 @@ void AliMC::BeginEvent()
     runloader->Stack()->Reset();//clean stack -> tree is unloaded
   else
     runloader->MakeStack();//or make a new one
-    
-  if (GetDebug()) Info("BeginEvent","  fRunLoader->MakeTree(K)");
-  runloader->MakeTree("K");
+  
+  if(gAlice->Lego() == 0x0)
+   { 
+     if (GetDebug()) Info("BeginEvent","  fRunLoader->MakeTree(K)");
+     runloader->MakeTree("K");
+   }
+   
   if (GetDebug()) Info("BeginEvent","  gMC->SetStack(fRunLoader->Stack())");
   gMC->SetStack(gAlice->GetRunLoader()->Stack());//Was in InitMC - but was moved here 
                                      //because we don't have guarantee that 
@@ -381,20 +385,22 @@ void AliMC::BeginEvent()
     gAlice->GetEventNrInRun());
 //  fRunLoader->WriteKinematics("OVERWRITE");  is there any reason to rewrite here since MakeTree does so
 
-  if (GetDebug()) Info("BeginEvent","  fRunLoader->MakeTrackRefsContainer()");
-  runloader->MakeTrackRefsContainer();//for insurance
-
-  if (GetDebug()) Info("BeginEvent","  ResetHits()");
-  ResetHits();
-  if (GetDebug()) Info("BeginEvent","  fRunLoader->MakeTree(H)");
-  runloader->MakeTree("H");
-
-  //
   if(gAlice->Lego()) 
    {
     gAlice->Lego()->BeginEvent();
     return;
    }
+  
+
+  if (GetDebug()) Info("BeginEvent","  ResetHits()");
+  ResetHits();
+  
+  if (GetDebug()) Info("BeginEvent","  fRunLoader->MakeTree(H)");
+  runloader->MakeTree("H");
+  
+  if (GetDebug()) Info("BeginEvent","  fRunLoader->MakeTrackRefsContainer()");
+  runloader->MakeTrackRefsContainer();//for insurance
+
 
   //create new branches and SetAdresses
   TIter next(gAlice->Modules());
@@ -445,13 +451,17 @@ void AliMC::FinishPrimary()
   //  const Int_t times=10;
   // This primary is finished, purify stack
   runloader->Stack()->PurifyKine();
-
+  
   TIter next(gAlice->Modules());
   AliModule *detector;
   while((detector = dynamic_cast<AliModule*>(next()))) {
     detector->FinishPrimary();
-    if(detector->GetLoader())
-       detector->GetLoader()->TreeH()->Fill();
+    AliLoader* loader = detector->GetLoader();
+    if(loader)
+     {
+       TTree* treeH = loader->TreeH();
+       if (treeH) treeH->Fill(); //can be Lego run and treeH can not exist
+     }
   }
 
   // Write out track references if any
@@ -511,10 +521,13 @@ void AliMC::FinishEvent()
     Error("FinishEvent","Can not get TreeE from RL");
    }
   
-  runloader->WriteKinematics("OVERWRITE");
-  runloader->WriteTrackRefs("OVERWRITE");
-  runloader->WriteHits("OVERWRITE");
-
+  if(gAlice->Lego() == 0x0)
+   {
+     runloader->WriteKinematics("OVERWRITE");
+     runloader->WriteTrackRefs("OVERWRITE");
+     runloader->WriteHits("OVERWRITE");
+   }
+   
   if (GetDebug()) 
    { 
      Info("FinishEvent","<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");

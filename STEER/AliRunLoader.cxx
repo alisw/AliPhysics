@@ -1,29 +1,33 @@
 #include "AliRunLoader.h"
-//_____________________________________
-/////////////////////////////////////////////////////////////////////////////////////
-//
-// class AliRunLoader
-//
-//This class aims to be the only one interface for manging data
-//It stores Loaders for all modules which knows the filenames 
-//of the data files to be stored.
-//It aims to substitude AliRun in automatic maging of data positioning
-//thus there won't be necessity of loading gAlice from file in order to 
-//get fast ccess to the data
-//
-//logical place for putting the Loader specific to the given detector is detector itself
-// but, to load detector one need to load gAlice, and by the way all other detectors
-// with their geometries and so on. 
-// So, if one need to open TPC clusters there is no principal need to read everything
-//
-// When RunLoader is read from the file it does not connect to the folder structure
-// it must be connected (mounted) manualy in the macro or class code. 
-// Default event folder is defined by AliConfig::fgkDefaultEventFolderName
-// but can be mounted elsewhere. Usefull specially in merging, when more than session 
-// needs to be loaded
-//
-//////////////////////////////////////////////////////////////////////////////////////
-/**************************************************************************/
+//____________________________________________________________________
+//////////////////////////////////////////////////////////////////////
+//                                                                  //
+// class AliRunLoader                                               //
+//                                                                  //
+// This class aims to be the unque interface for managing data I/O. //
+// It stores Loaders for all modules which, knows names             //
+// of the files were data are to be stored.                         //
+//                                                                  //
+// It aims to substitud AliRun in automatic data managing           //
+// thus there is no necessity of loading gAlice from file in order  //
+// to get access to the data.                                       //
+//                                                                  //
+// Logical place to put the specific Loader to the given            //
+// detector is detector  itself (i.e ITSLoader in ITS).             //
+// But, to load detector object one need to load gAlice, and        //
+// by the way all other detectors with their geometrieces and       //
+// so on. So, if one need to open TPC clusters there is no          //
+// principal need to read everything.                               //
+//                                                                  //
+//                                                                  //
+// When RunLoader is read from the file it does not connect to      //
+// the folder structure automatically. It must be connected         //
+// (mounted) manualy. Default event folder is defined by            //
+// AliConfig::fgkDefaultEventFolderName                             //
+// but can be mounted elsewhere. Usefull specially in merging case, //
+// when more than pone session needs to be loaded                   //
+//                                                                  //
+//////////////////////////////////////////////////////////////////////
 
 #include <TROOT.h>
 #include <TString.h>
@@ -1894,6 +1898,7 @@ void AliRunLoader::Synchronize()
   fKineDataLoader->Synchronize();
   fTrackRefsDataLoader->Synchronize();
   
+  if (fGAFile) fGAFile->Flush();
 }
 /*****************************************************************************/ 
 /*****************************************************************************/ 
