@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2002/10/02 17:56:37  barbera
+Bug in copy 37 of volume I570 corrected (thanks to J. Belikov)
+
 Revision 1.1  2002/09/16 14:45:31  barbera
 Updated detailed geometry needed by FMD people for some studies
 
@@ -26766,39 +26769,59 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   dits[17] = 28.5;
   dits[18] = 57.25;
   dits[19] = 27;
-  dits[20] = 28.5;       
+  dits[20] = 28.5;
 //  gMC->Gsvolu("I093", "PCON", idtmed[272], dits, 21);  // SDD cone
   gMC->Gsvolu("I093", "PCON", idtmed[289], dits, 21);  // SDD cone
 
-  dits[0] = 0;
-  dits[1] = 50;
-  dits[2] = 3;
-  dits[3] = 39;  
-  dits[4] = 14;
-  dits[5] = 18.75;
-  dits[6] = 46.7-3;
-  dits[7] = 14;
-  dits[8] = 18.75;
-  dits[9] = 51.45-3;
-  dits[10] = 18.75;
-  dits[11] = 18.75;
-//  gMC->Gsvolu("I099", "PCON", idtmed[204], dits, 12); // SDD 3 cone hole
-  gMC->Gsvolu("I099", "PCON", idtmed[287], dits, 12); // SDD 3 cone hole
+  // Redefined to make adding material for cables easier (FMD geometry)
+  Double_t s1,s2,b1,b2;
+  s1 = (dits[16]-dits[10])/(dits[15]-dits[9]); // Slope of conical section
+  s2 = (dits[16]-dits[10])/(dits[15]-dits[9]); // Slope of conical section
+  b1 = dits[13] - s1*dits[15]; // inside cone axis intersept
+  b2 = dits[14] - s2*dits[15]; // outside cone axis intersept
+  dits[0] = 0; //dits[0] = 0;
+  dits[1] = 50; //dits[1] = 50;
+  dits[2] = 4; //dits[2] = 3;
 
-  dits[0] = 0;
-  dits[1] = 25;
-  dits[2] = 3;
-  dits[3] = 49;
-  dits[4] = 23.4;
-  dits[5] = 26.4;
-  dits[6] = 56.1-3;
-  dits[7] = 23.4;
-  dits[8] = 26.4;
-  dits[9] = 59.1-3;
-  dits[10] = 26.4;
-  dits[11] = 26.4;
+  dits[4] = 14.0; //dits[4] = 14;            // r inner
+  dits[5] = dits[4]; //dits[5] = 18.75;      // r outer
+  dits[3] = (dits[4]-b2)/s2; //dits[3] = 39;  // Z
+
+  dits[7] = dits[4]; //dits[7] = 14;             // r inner
+  dits[6] = (dits[7]-b1)/s1; //dits[6] = 46.7-3;  // Z
+  dits[8] = s2*dits[6]+b2; //dits[8] = 18.75;     // r outer
+
+  dits[11] = 18.75; //dits[11] = 18.75;           // r outer
+  dits[9] = (dits[11]-b2)/s2; //dits[9] = 51.45-3; // Z
+  dits[10] = s1*dits[9]+b1; //dits[10] = 18.75;    // r inner
+
+  dits[13] = dits[11];         // r inner
+  dits[14] = dits[11];         // r outer
+  dits[12] = (dits[13]-b1)/s1;  // Z
+//  gMC->Gsvolu("I099", "PCON", idtmed[204], dits, 12); // SDD 3 cone hole
+  gMC->Gsvolu("I099", "PCON", idtmed[287], dits, 15); // SDD 3 cone hole
+
+  dits[0] = 0; //dits[0] = 0;
+  dits[1] = 25; //dits[1] = 25;
+  dits[2] = 4; //dits[2] = 3;
+
+  dits[4] = 23.4; //dits[4] = 23.4;  // r inner
+  dits[5] = dits[4]; //dits[5] = 26.4;  // r outer
+  dits[3] = (dits[4]-b2)/s2; //dits[3] = 49;  // Z
+
+  dits[7] = dits[4]; //dits[7] = 23.4;  // r inner
+  dits[6] = (dits[7]-b1)/s1; //dits[6] = 56.1-3;  // Z
+  dits[8] = s2*dits[6]+b2; //dits[8] = 26.4;  // r outer
+
+  dits[11] = 26.4; //dits[11] = 26.4;  // r outer
+  dits[9] = (dits[11]-b2)/s2; //dits[9] = 59.1-3;  // Z
+  dits[10] = s1*dits[9]+b1; //dits[10] = 26.4;  // r inner
+
+  dits[13] = dits[11];         // r inner
+  dits[14] = dits[11];         // r outer
+  dits[12] = (dits[13]-b1)/s1;  // Z
 //  gMC->Gsvolu("I200", "PCON", idtmed[204], dits, 12); // SDD 4 cone hole
-  gMC->Gsvolu("I200", "PCON", idtmed[287], dits, 12); // SDD 4 cone hole
+  gMC->Gsvolu("I200", "PCON", idtmed[287], dits, 15); // SDD 4 cone hole
 
   dits[0] = 10.0;
   dits[1] = 10.5;
@@ -26909,6 +26932,32 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   dits[20] = 32.25;    // was 31.5 
 //  gMC->Gsvolu("I212", "PCON", idtmed[272], dits, 21);  // SSD cone
   gMC->Gsvolu("I212", "PCON", idtmed[290], dits, 21);  // SSD cone
+
+  s1 = (dits[5]-dits[14])/(dits[9]-dits[12]); // Slope of conical section
+  s2 = (dits[10]-dits[13])/(dits[9]-dits[12]); // Slope of conical section
+  b1 = dits[14] - s1*dits[12]; // inside cone axis intersept
+  b2 = dits[13] - s2*dits[12]; // outside cone axis intersept
+  dits[0] = 0;
+  dits[1] = 25;
+  dits[2] = 4; //dits[2] = 5;
+
+  dits[4] = 45.50; //dits[4] = 45.5;  // r inner
+  dits[5] = dits[4]; //dits[5] = 45.5;  // r outer
+  dits[3] = (dits[4] - b2)/s2; //dits[3] = -zmax+3; // z
+
+  dits[8] = dits[4]; //dits[8] = 45.5;  // r outer
+  dits[6] = (dits[8] - b1)/s1; //dits[6] = -69.7+3;; // z
+  dits[7] = s2*dits[6] + b2; //dits[7] = 37;  // r inner
+
+  dits[10] = 37.00; //dits[10] = 37;  // r inner
+  dits[9] = (dits[10]-b2)/s2; //dits[9] = -68.5+3;; // z
+  dits[11] = s1*dits[9]+b1; //dits[11] = 45.5;  // r outer
+
+  dits[13] = dits[10]; //dits[13] = 37;  // r inner
+  dits[14] = dits[13]; //dits[14] = 45.5;   // r outer
+  dits[12] = s2*dits[14] + b2; //dits[12] = -68.5+4.8;; // z
+//  gMC->Gsvolu("I215", "PCON", idtmed[204], dits, 18);  // SSD cone hole 
+  gMC->Gsvolu("I215", "PCON", idtmed[288], dits, 15);  // SSD cone hole 
   
   dits[0] = 28.75;          
   dits[1] = 29.75;   
@@ -26935,26 +26984,6 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   dits[2] = 1.25;
   gMC->Gsvolu("I213", "TUBE", idtmed[224], dits, 3);   // layer 5 electronic support
                                                        // this will change after PPR
-  dits[0] = 0;
-  dits[1] = 25;
-  dits[2] = 5;
-  dits[3] = -zmax+3;
-  dits[4] = 45.5;
-  dits[5] = 45.5;
-  dits[6] = -69.7+3;
-  dits[7] = 37;
-  dits[8] = 45.5;
-  dits[9] = -68.5+3;
-  dits[10] = 37;
-  dits[11] = 45.5;
-  dits[12] = -68.5+4.8;  
-  dits[13] = 37;
-  dits[14] = 45.5; 
-  dits[15] = -63.5+4.8;
-  dits[16] = 37;
-  dits[17] = 45.5;   
-//  gMC->Gsvolu("I215", "PCON", idtmed[204], dits, 18);  // SSD cone hole 
-  gMC->Gsvolu("I215", "PCON", idtmed[288], dits, 18);  // SSD cone hole 
  
   dits[0] = 0;
   dits[1] = 3.2;
@@ -27711,7 +27740,7 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   gMC->Gspos("I570",34,"IT56",21.7497,40.1899,-0.27,idrotm[549],"ONLY");
   gMC->Gspos("I570",35,"IT56",14.7884,43.0772,-0.27,idrotm[550],"ONLY");
   gMC->Gspos("I570",36,"IT56",7.5216,45.0744,-0.27,idrotm[551],"ONLY");
-  gMC->Gspos("I570",37,"IT56",0.,45.545,-0.27,0,"ONLY");
+  gMC->Gspos("I570",37,"IT56",0.00,45.545,-0.27,0,"ONLY");
   gMC->Gspos("I570",38,"IT56",-7.5216,45.0744,-0.27,idrotm[552],"ONLY");
   gMC->Gspos("I570",1,"IT56",-14.7884,43.0772,-0.27,idrotm[553],"ONLY");
   gMC->Gspos("I570",2,"IT56",-21.7497,40.1899,-0.27,idrotm[620],"ONLY");
@@ -28877,19 +28906,113 @@ void AliITSvPPRasymmFMD::CreateMaterials(){
 // special media to take into account services in the SDD and SSD 
 // cones for the FMD
 
-  AliMaterial(86,"AIRFMDSDD$",0.14610E+02,0.73000E+01,0.12050E-02,0.30423E+05,0.99900E+03);
+//  AliMaterial(86,"AIRFMDSDD$",0.14610E+02,0.73000E+01,0.12050E-02,0.30423E+05,0.99900E+03);
+  Float_t A[13],Z[13],W[13],den;
+  // From Pierluigi Barberis calculations of 2SPD+1SDD October 2 2002.
+  Z[0] = 1.0; A[0] = 1.00794; // Hydrogen
+  Z[1] = 6.0; A[1] = 12.011; // Carbon
+  Z[2] = 7.0; A[2] = 14.00674; // Nitrogen
+  Z[3] = 8.0; A[3] = 15.9994; // Oxigen
+  Z[4] = 13.0; A[4] = 26.981539; // Alulminum
+  Z[5] = 14.0; A[5] = 28.0855; // Silicon
+  Z[6] = 24.0; A[6] = 51.9961; //Cromium
+  Z[7] = 25.0; A[7] = 54.938049; // Manganese
+  Z[8] = 26.0; A[8] = 55.845; // Iron
+  Z[9] = 27.0; A[9] = 58.9332; // Cobolt
+  Z[10] = 28.0; A[10] = 58.6934; // Nickle
+  Z[11] = 29.0; A[11] = 63.546; // Copper
+  Z[12] = 47.0; A[12] = 107.8682; // Silver
+  W[0] = 0.019965;
+  W[1] = 0.340961;
+  W[2] = 0.041225;
+  W[3] = 0.200352;
+  W[4] = 0.008121;
+  W[5] = 0.000386;
+  W[6] = 0.001467;
+  W[7] = 0.000155;
+  W[8] = 0.005113;
+  W[9] = 0.000000;
+  W[10] = 0.000993;
+  W[11] = 0.381262;
+  W[12] = 0.000000;
+  den = (538.16+6161.7)/(3671.58978); // g/cm^3 Volume does not exclude holes
+  AliMixture(86,"AIRFMDSDD$",A,Z,den,+13,W);
   AliMedium(86,"AIRFMDSDD$",86,0,ifield,fieldm,tmaxfdAir,stemaxAir,deemaxAir,epsilAir,stminAir);
 
-  AliMaterial(87,"AIRFMDSSD$",0.14610E+02,0.73000E+01,0.12050E-02,0.30423E+05,0.99900E+03);
+  //AliMaterial(87,"AIRFMDSSD$",0.14610E+02,0.73000E+01,0.12050E-02,0.30423E+05,0.99900E+03);
+  // From Pierluigi Barberis calculations of SSD October 2 2002.
+  W[0] = 0.019777;
+  W[1] = 0.325901;
+  W[2] = 0.031848;
+  W[3] = 0.147668;
+  W[4] = 0.014546;
+  W[5] = 0.030609;
+  W[6] = 0.013993;
+  W[7] = 0.001479;
+  W[8] = 0.048792;
+  W[9] = 0.000000;
+  W[10] = 0.009477;
+  W[11] = 0.350697;
+  W[12] = 0.005213;
+  den = (2180.4+7666.3)/(9753.553259); // volume does not exclude holes
+  AliMixture(87,"AIRFMDSSD$",A,Z,den,+13,W); 
   AliMedium(87,"AIRFMDSSD$",87,0,ifield,fieldm,tmaxfdAir,stemaxAir,deemaxAir,epsilAir,stminAir);
 
-  AliMaterial(88,"ITS SANDW CFMDSDD$",0.12011E+02,0.60000E+01,0.41000E+00,0.90868E+02,0.99900E+03);
+  //AliMaterial(88,"ITS SANDW CFMDSDD$",0.12011E+02,0.60000E+01,0.41000E+00,0.90868E+02,0.99900E+03);
+  // From Pierluigi Barberis calculations of 1SDD+Carbon fiber October 2 2002.
+  W[0] = 0.016302;
+  W[1] = 0.461870;
+  W[2] = 0.033662;
+  W[3] = 0.163595;
+  W[4] = 0.006631;
+  W[5] = 0.000315;
+  W[6] = 0.001197;
+  W[7] = 0.000127;
+  W[8] = 0.004175;
+  W[9] = 0.000000;
+  W[10] = 0.000811;
+  W[11] = 0.311315;
+  W[12] = 0.000000;
+  den = (538.16+76671)/(3671.58978); // Volume does not excludeholes
+  AliMixture(88,"ITS SANDW CFMDSDD$",A,Z,den,+13,W); 
   AliMedium(88,"ITS SANDW CFMDSDD$",88,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-  AliMaterial(89,"ITS SANDW CFMDSSD$",0.12011E+02,0.60000E+01,0.41000E+00,0.90868E+02,0.99900E+03);
+  //AliMaterial(89,"ITS SANDW CFMDSSD$",0.12011E+02,0.60000E+01,0.41000E+00,0.90868E+02,0.99900E+03);
+  // From Pierluigi Barberis calculations of SSD+Carbon fiber October 2 2002.
+  W[0] = 0.014065;
+  W[1] = 0.520598;
+  W[2] = 0.022650;
+  W[3] = 0.105018;
+  W[4] = 0.010345;
+  W[5] = 0.021768;
+  W[6] = 0.009952;
+  W[7] = 0.001051;
+  W[8] = 0.034700;
+  W[9] = 0.000000;
+  W[10] = 0.006740;
+  W[11] = 0.249406;
+  W[12] = 0.0003707;
+  den = (2180.4+11665.)/(3671.58978); // Volume does not exclude holes
+  AliMixture(89,"ITS SANDW CFMDSSD$",A,Z,den,+13,W); 
   AliMedium(89,"ITS SANDW CFMDSSD$",89,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-  AliMaterial(97,"SPD SERVICES$",0.12011E+02,0.60000E+01,0.41000E+00,0.90868E+02,0.99900E+03);
+  //AliMaterial(97,"SPD SERVICES$",0.12011E+02,0.60000E+01,0.41000E+00,0.90868E+02,0.99900E+03);
+  // From Pierluigi Barberis calculations of 1SPD October 2 2002.
+  W[0] = 0.005970;
+  W[1] = 0.304704;
+  W[2] = 0.042510;
+  W[3] = 0.121715;
+  W[4] = 0.000000;
+  W[5] = 0.001118;
+  W[6] = 0.030948;
+  W[7] = 0.003270;
+  W[8] = 0.107910;
+  W[9] = 0.000000;
+  W[10] = 0.020960;
+  W[11] = 0.360895;
+  W[12] = 0.000000;
+  den = 1251.3/(0.05*2.0*TMath::Pi()*(7.75*7.75 - 3.7*3.7)); // g/cm^3
+  AliMixture(97,"SPD SERVICES$",A,Z,den,+13,W); 
   AliMedium(97,"SPD SERVICES$",97,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
 
