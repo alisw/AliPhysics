@@ -18,8 +18,8 @@ endif
 ifneq ($(findstring smi,$(MAKECMDGOALS)),)
 #SMIDIR    = ./smi
 #DIMDIR    = ./dim
-SMIDIR    = ../date/smi
-DIMDIR    = ../date/dim
+SMIDIR    = /date/smi
+DIMDIR    = /date/dim
 CXXFLAGS += -DUSE_SMI -I$(SMIDIR)/smixx -I$(DIMDIR)/dim
 LIBS     += -L$(SMIDIR)/linux -lsmiui -lsmi -L$(DIMDIR)/linux -ldim
 endif
@@ -33,12 +33,12 @@ DBDIR     = ./eb
 FIFODIR   = ./eb
 INFODIR   = ./eb
 else
-EBDIR     = ../date/eventBuilder
-BMDIR     = ../date/banksManager
-DBMDIR    = ../date/bufferManager
-DBDIR     = ../date/db
-FIFODIR   = ../date/simpleFifo
-INFODIR   = ../date/infoLogger
+EBDIR     = /date/eventBuilder
+BMDIR     = /date/banksManager
+DBMDIR    = /date/bufferManager
+DBDIR     = /date/db
+FIFODIR   = /date/simpleFifo
+INFODIR   = /date/infoLogger
 endif
 CXXFLAGS += -DUSE_EB -I$(EBDIR)
 LIBS     += -L$(EBDIR)/Linux -L$(BMDIR)/Linux -L$(DBMDIR)/Linux \
