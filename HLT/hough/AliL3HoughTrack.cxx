@@ -66,8 +66,6 @@ void AliL3HoughTrack::Set(AliL3Track *track)
   SetNHits(tpt->GetWeight());
   SetRowRange(tpt->GetFirstRow(),tpt->GetLastRow());
   fIsHelix = false;
-
-
 }
 
 Int_t AliL3HoughTrack::Compare(const AliL3Track *tpt) const
