@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2003/03/05 11:16:15  kowal2
+Logs added
+
 */
 
 
@@ -608,7 +611,7 @@ Double_t AliTPCtrackerMI::f3(Double_t x1,Double_t y1,
 }
 
 
-void AliTPCtrackerMI::LoadClusters()
+Int_t AliTPCtrackerMI::LoadClusters()
 {
   //
   // load clusters to the memory
@@ -616,6 +619,7 @@ void AliTPCtrackerMI::LoadClusters()
   for (Int_t i=0; i<j; i++) {
     fClustersArray.LoadEntry(i);
   }
+  return 0;
 }
 
 void AliTPCtrackerMI::UnloadClusters()
@@ -1859,7 +1863,7 @@ Int_t AliTPCtrackerMI::Clusters2Tracks(const TFile *inp, TFile *out) {
     if ((pt->IsActive()) && (nc>Int_t(0.5*t.fNFoundable) && (t.fNFoundable>Int_t(0.3*nrows)))){
       iotrack=pt;
       tracktree.Fill();
-     cerr<<found++<<'\r';      
+//     cerr<<found++<<'\r';      
     }   
     /*
       pt->RebuildSeed();

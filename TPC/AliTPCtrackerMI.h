@@ -130,7 +130,7 @@ public:
   ~AliTPCtrackerMI();
 
    Int_t ReadSeeds(const TFile *in);
-   void LoadClusters();
+   Int_t LoadClusters();
    void UnloadClusters();
 
    void LoadInnerSectors();

@@ -5,11 +5,11 @@
  * See cxx source for full Copyright notice                               */ 
 
 #include "AliTracker.h" 
+#include "TObjArray.h" 
 
 class TFile;
 class TParticle;
 class TParticlePDG;
-class TObjArray;
 
 class AliTRDgeometry;
 class AliTRDparameter;
@@ -33,11 +33,12 @@ class AliTRDtracker : public AliTracker {
 
   Int_t         Clusters2Tracks(const TFile *in, TFile *out);
   Int_t         PropagateBack(const TFile *in, TFile *out);
-  AliCluster   *GetCluster(Int_t index) const { return NULL; };
+  Int_t         LoadClusters() {LoadEvent(); return 0;};
+  void          UnloadClusters() {UnloadEvent();};
+  AliCluster   *GetCluster(Int_t index) const { return (AliCluster*) fClusters->UncheckedAt(index); };
   virtual void  CookLabel(AliKalmanTrack *t,Float_t wrong) const;
   virtual void  UseClusters(const AliKalmanTrack *t, Int_t from=0) const;  
   
-  void          SetEventNumber(Int_t event) { fEvent = event; }
   void          SetAddTRDseeds() { fAddTRDseeds = kTRUE; }
   void          SetNoTilt() { fNoTilt = kTRUE; }
 
@@ -187,8 +188,6 @@ class AliTRDtracker : public AliTracker {
 
 
  protected:
-
-  Int_t              fEvent;            // Event number
 
   AliTRDgeometry     *fGeom;            // Pointer to TRD geometry
   AliTRDparameter    *fPar;     

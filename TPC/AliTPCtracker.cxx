@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.30  2003/02/28 16:13:32  hristov
+Typos corrected
+
 Revision 1.29  2003/02/28 15:18:16  hristov
 Corrections suggested by J.Chudoba
 
@@ -230,14 +233,14 @@ Double_t f3(Double_t x1,Double_t y1,
 }
 
 //_____________________________________________________________________________
-void AliTPCtracker::LoadClusters() {
+Int_t AliTPCtracker::LoadClusters() {
   //-----------------------------------------------------------------
   // This function loads TPC clusters.
   //-----------------------------------------------------------------
   if (!gFile->IsOpen()) {
     cerr<<"AliTPCtracker::LoadClusters : "<<
       "file with clusters has not been open !\n";
-    return;
+    return 1;
   }
 
   Char_t name[100];
@@ -246,15 +249,16 @@ void AliTPCtracker::LoadClusters() {
   if (!cTree) {
     cerr<<"AliTPCtracker::LoadClusters : "<<
       "can't get the tree with TPC clusters !\n";
-    return;
+    return 2;
   }
 
   TBranch *branch=cTree->GetBranch("Segment");
   if (!branch) {
     cerr<<"AliTPCtracker::LoadClusters : "<<
       "can't get the segment branch !\n";
-    return;
+    return 3;
   }
+//  AliClusters carray, *addr=&carray;
   AliClusters carray, *addr=&carray;
   carray.SetClass("AliTPCcluster");
   carray.SetArray(0);
@@ -299,6 +303,7 @@ void AliTPCtracker::LoadClusters() {
       carray.GetArray()->Clear();
   }
   delete cTree;
+  return 0;
 }
 
 //_____________________________________________________________________________
@@ -787,7 +792,8 @@ Int_t AliTPCtracker::Clusters2Tracks(const TFile *inp, TFile *out) {
           iotrack=pt;
           tracktree.Fill();
           UseClusters(&t);
-          cerr<<found++<<'\r';
+	  found++;
+//          cerr<<found<<'\r';
         }
       }
     }
@@ -898,15 +904,24 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
   //-----------------------------------------------------------------
   // This function propagates tracks back through the TPC.
   //-----------------------------------------------------------------
+  return PropagateBack(inp, NULL, out);
+}
+
+//_____________________________________________________________________________
+Int_t AliTPCtracker::PropagateBack(const TFile *inp, const TFile *inp2, TFile *out) {
+  //-----------------------------------------------------------------
+  // This function propagates tracks back through the TPC.
+  //-----------------------------------------------------------------
   fSeeds=new TObjArray(15000);
 
   TFile *in=(TFile*)inp;
+  TFile *in2=(TFile*)inp2;
   TDirectory *savedir=gDirectory; 
 
   if (!in->IsOpen()) {
      cerr<<"AliTPCtracker::PropagateBack(): ";
-     cerr<<"file with back propagated ITS tracks is not open !\n";
-     //return 1;
+     cerr<<"file with TPC (or back propagated ITS) tracks is not open !\n";
+     return 1;
   }
 
   if (!out->IsOpen()) {
@@ -921,6 +936,7 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
   char tName[100];
   sprintf(tName,"TreeT_ITSb_%d",GetEventNumber());
   TTree *bckTree=(TTree*)in->Get(tName);
+  if (!bckTree && inp2) bckTree=(TTree*)in2->Get(tName);
   if (!bckTree) {
      cerr<<"AliTPCtracker::PropagateBack() ";
      cerr<<"can't get a tree with back propagated ITS tracks !\n";
@@ -1084,7 +1100,8 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
            ps->PropagateTo(fParam->GetOuterRadiusUp()); 
            otrack=ps;
            backTree.Fill();
-           cerr<<found++<<'\r';
+	   found++;
+//           cerr<<found<<'\r';
            continue;
          }
        }
@@ -1101,7 +1118,7 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
   delete bckTrack;
   delete tpcTrack;
 
-  delete bckTree; //Thanks to Mariana Bondila
+  if (bckTree) delete bckTree; //Thanks to Mariana Bondila
   delete tpcTree; //Thanks to Mariana Bondila
 
   UnloadClusters();  

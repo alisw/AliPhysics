@@ -30,12 +30,13 @@ public:
 
    Int_t ReadSeeds(const TFile *in);
 
-   void LoadClusters();
+   Int_t LoadClusters();
    void UnloadClusters();
 
    AliCluster *GetCluster(Int_t index) const;
    Int_t Clusters2Tracks(const TFile *in, TFile *out);
    Int_t PropagateBack(const TFile *in, TFile *out);
+   Int_t PropagateBack(const TFile *in, const TFile *in2, TFile *out);
    Int_t RefitInward(TFile *outTracks, TFile *inTracks);
 
    virtual void  CookLabel(AliKalmanTrack *t,Float_t wrong) const; 

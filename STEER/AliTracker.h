@@ -29,6 +29,8 @@ public:
   void SetEventNumber(Int_t ev) { fEventN=ev; }
 
 //protected:
+  virtual Int_t LoadClusters()=0;
+  virtual void UnloadClusters()=0;
   virtual AliCluster *GetCluster(Int_t index) const=0;
   virtual void  UseClusters(const AliKalmanTrack *t, Int_t from=0) const;
   virtual void  CookLabel(AliKalmanTrack *t,Float_t wrong) const; 
@@ -40,7 +42,7 @@ public:
   Double_t GetSigmaZ() const {return fSigmaZ;}
   Int_t GetEventNumber() const {return fEventN;}
 
-  static Int_t SetFieldFactor(Char_t* fileName, Bool_t closeFile = kTRUE);
+  static Int_t SetFieldFactor(const char* fileName, Bool_t closeFile = kTRUE);
   static Int_t SetFieldFactor(TFile* file, Bool_t deletegAlice = kTRUE);
   static Int_t SetFieldFactor();
   

@@ -125,7 +125,7 @@ Int_t AliTracker::SetFieldFactor(TFile *file, Bool_t deletegAlice) {
   return rc;
 }
 ////////////////////////////////////////////////////////////////////////
-Int_t AliTracker::SetFieldFactor(Char_t* fileName, Bool_t closeFile) {
+Int_t AliTracker::SetFieldFactor(const char* fileName, Bool_t closeFile) {
 //
 // Utility class to set the value of the magnetic field in the barrel
 // gAlice object is read from the file, the file is optionally closed
