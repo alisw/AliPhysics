@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.9  2000/10/06 15:37:22  morsch
+Problems with variable redefinition in for-loop solved.
+Variable names starting with u-case letters changed to l-case.
+
 Revision 1.8  2000/10/06 09:06:31  morsch
 Include Slat chambers (stations 3-5) into geometry (A. de Falco)
 
@@ -1870,7 +1874,7 @@ void AliMUONv1::StepManager()
       
       
 
-      if(idvol<10) {
+      if(idvol<AliMUONConstants::NTrackingCh()) {
 	  //
 	  //  Initialize hit position (cursor) in the segmentation model 
 	  ((AliMUONChamber*) (*fChambers)[idvol])
@@ -1896,7 +1900,7 @@ void AliMUONv1::StepManager()
       Float_t globalPos[3] = {pos[0], pos[1], pos[2]};
       gMC->Gmtod(globalPos,localPos,1); 
 
-      if(idvol<10) {
+      if(idvol<AliMUONConstants::NTrackingCh()) {
 // tracking chambers
 	  x0 = 0.5*(xhit+pos[0]);
 	  y0 = 0.5*(yhit+pos[1]);
@@ -1927,10 +1931,11 @@ void AliMUONv1::StepManager()
       //
       // Check additional signal generation conditions 
       // defined by the segmentation
-      // model (boundary crossing conditions) 
+      // model (boundary crossing conditions)
+      // only for tracking chambers
   } else if 
-      (((AliMUONChamber*) (*fChambers)[idvol])
-       ->SigGenCond(pos[0], pos[1], pos[2]))
+      ((idvol < AliMUONConstants::NTrackingCh()) &&
+       ((AliMUONChamber*) (*fChambers)[idvol])->SigGenCond(pos[0], pos[1], pos[2]))
   {
       ((AliMUONChamber*) (*fChambers)[idvol])
 	  ->SigGenInit(pos[0], pos[1], pos[2]);
@@ -1940,7 +1945,7 @@ void AliMUONv1::StepManager()
       gMC->Gmtod(globalPos,localPos,1); 
 
 
-      if (eloss > 0 && idvol < 10)
+      if (eloss > 0 && idvol < AliMUONConstants::NTrackingCh())
 	MakePadHits(0.5*(xhit+pos[0]),0.5*(yhit+pos[1]),pos[2],eloss,tof,idvol);
       xhit     = pos[0];
       yhit     = pos[1]; 
