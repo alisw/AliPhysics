@@ -334,7 +334,18 @@ C
                ELSE
                  RIN2=0.
                ENDIF
-               IPROC = 102
+               IF(ABS(RIN2-RIN1).LE.PREC) THEN
+*
+* *** The two media have the same refraction coefficient, i.e. nothing
+* *** has to be done
+*
+                  VECT(1)=VOUT(1)
+                  VECT(2)=VOUT(2)
+                  VECT(3)=VOUT(3)
+                  IPROC=0
+               ELSE
+                  IPROC = 102
+               ENDIF
             ELSE
                ISTOP=2
                DESTEP=0
