@@ -195,7 +195,7 @@ protected:
   AliMCQA       *fMCQA;              //  Pointer to MC Quality assurance class
   TString        fTransParName;      //  Name of the transport parameters file
   TString        fBaseFileName;      //  Name of the base root file
-  AliStack*      fStack;             //  ! Particle Stack
+  AliStack*      fStack;             //! Particle Stack
 private:
 
    AliRun(const AliRun &right) 
