@@ -192,7 +192,7 @@ class AliITSresponseSDD : public AliITSresponse {
                                        // signal or monitored bgr.
     TString         fFileName3;        // param values or output coded signal
 
-    ClassDef(AliITSresponseSDD,2) // SDD response 
+    ClassDef(AliITSresponseSDD,3) // SDD response 
     
     };
 #endif
