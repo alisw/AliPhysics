@@ -56,6 +56,7 @@ protected:
   Int_t fNTmpHits ;                               //!  Used internally for digitalization
   Float_t fPinElectronicNoise  ;                  // Electronic Noise in the PIN
   RecPointsList * fPpsdRecPoints ;                // The RecPoints (clusters) list in PPSD 
+  virtual void               ResetReconstruction() ; // Reset reconstructed objects
   AliPHOSReconstructioner * fReconstructioner ;   // Reconstrutioner of the PHOS event: Clusterization and subtracking procedures
   TClonesArray * fTmpHits ;                       //!  Used internally for digitalization 
   AliPHOSTrackSegmentMaker * fTrackSegmentMaker ; // Reconstructioner of the PHOS track segment: 2 x PPSD + 1 x EMC

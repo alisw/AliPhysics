@@ -28,6 +28,7 @@
 #include "TNode.h"
 #include "TRandom.h"
 
+
 // --- Standard library ---
 
 #include <stdio.h>
@@ -1263,9 +1264,8 @@ void AliPHOSv0::MakeBranch(Option_t* opt)
       char branchname[10] ;
       sprintf(branchname, "%sCH", GetName()) ;
       gAlice->TreeD()->Branch(branchname, &fTmpHits, fBufferSize) ;
-    } else 
-      cout << "AliPHOSv0::AliPHOSv0: Failed to create branch PHOSCH in TreeD " << endl ;  
-   }
+    }   
+  }
 
 }
 
@@ -1308,9 +1308,12 @@ void AliPHOSv0::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
   
   char branchname[10] ;
 
+  
+
+
   // 1.
 
-  gAlice->MakeTree("R") ; 
+  //  gAlice->MakeTree("R") ; 
   Int_t splitlevel = 0 ; 
   
   if (fEmcRecPoints) { 
@@ -1377,19 +1380,15 @@ void AliPHOSv0::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
   Int_t size ;
   
   size = fEmcRecPoints->GetEntries() ;
-  cout << size << endl ;
   fEmcRecPoints->Expand(size) ;
  
   size = fPpsdRecPoints->GetEntries() ;
- cout << size << endl ;
   fPpsdRecPoints->Expand(size) ;
 
   size = fTrackSegments->GetEntries() ;
- cout << size << endl ;
   fTrackSegments->Expand(size) ;
 
   size = fRecParticles->GetEntries() ;
- cout << size << endl ;
   fRecParticles->Expand(size) ;
 
   gAlice->TreeR()->Fill() ;
@@ -1397,7 +1396,12 @@ void AliPHOSv0::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
   // 5.
 
   gAlice->TreeR()->Write() ;
-   cout << "writen" << endl ;
+  cout << "writen" << endl ;
+ 
+  // Deleting reconstructed objects
+  ResetReconstruction();
+
+  
 }
 
 //____________________________________________________________________________
@@ -1409,8 +1413,18 @@ void AliPHOSv0::ResetDigits()
     fTmpHits->Delete();
     fNTmpHits = 0 ;
   }
-}
+}  
+//____________________________________________________________________________
+void AliPHOSv0::ResetReconstruction() 
+{ 
+  // Deleting reconstructed objects
+
+  if ( fEmcRecPoints )   fEmcRecPoints->Delete();
+  if ( fPpsdRecPoints )  fPpsdRecPoints->Delete();
+  if ( fTrackSegments )  fTrackSegments->Delete();
+  if ( fRecParticles )   fRecParticles->Delete();
   
+}
 //____________________________________________________________________________
 void AliPHOSv0::StepManager(void)
 {
