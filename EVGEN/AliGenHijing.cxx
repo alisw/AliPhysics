@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.38  2002/02/12 08:53:21  morsch
+SetNoGammas can be used to inhibit writing of gammas and pi0.
+
 Revision 1.37  2002/02/08 16:50:50  morsch
 Add name and title in constructor.
 
@@ -367,7 +370,8 @@ void AliGenHijing::Generate()
 		
 	    }
 // Put particle on the stack ... 
-//		printf("\n set track mother: %d %d %d %d %d %d ",i,imo, kf, nt+1, selected, hasSelectedDaughters);
+// printf("\n set track mother: %d %d %d %d %d %d ",
+// i,imo, kf, nt+1, selected, hasSelectedDaughters);
 	    
 	    SetTrack(0,imo,kf,p,origin,polar, tof,kPPrimary,nt);
 // ... and keep it there
@@ -423,7 +427,7 @@ void AliGenHijing::Generate()
 	    }   
 // Put particle on the stack
 	    SetTrack(fTrackIt,imo,kf,p,origin,polar,
-						     tof,kPNoProcess,nt);
+		     tof,kPNoProcess,nt);
 	    KeepTrack(nt);
 	    *(newPos+i)=nt;
         } // selected
@@ -552,11 +556,18 @@ Bool_t AliGenHijing::SelectFlavor(Int_t pid)
 // 5: beauty
     Bool_t res = 0;
     
-    if (fFlavor == 0) res = kTRUE;
-     Int_t ifl = TMath::Abs(pid/100);
-    if (ifl > 10) ifl/=10;
-    res = (fFlavor == ifl);
-    if (fNoGammas) res = res && (pid != kGamma && pid != kPi0);
+    if (fFlavor == 0) {
+	res = kTRUE;
+    } else {
+	Int_t ifl = TMath::Abs(pid/100);
+	if (ifl > 10) ifl/=10;
+	res = (fFlavor == ifl);
+    }
+//
+//  This part if gamma writing is inhibited
+    if (fNoGammas) 
+	res = res && (pid != kGamma && pid != kPi0);
+//
     return res;
 }
 
