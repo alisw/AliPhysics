@@ -41,7 +41,7 @@ void anal (Int_t evNumber=0)
    Int_t j,hit,ipart;
    Int_t nhits;
    Int_t sector,plane;
-   GParticle *particle;
+   TParticle *particle;
    AliTPChit  *tpcHit;
    AliTRDhit  *trdHit;
 
@@ -82,10 +82,10 @@ void anal (Int_t evNumber=0)
        for (hit=0;hit<nhits;hit++) {
 	 trdHit   = (AliTRDhit*)TRDhits->UncheckedAt(hit);
          ipart    = trdHit->fTrack;
-         particle = (GParticle*)Particles->UncheckedAt(ipart);
+         particle = (TParticle*)Particles->UncheckedAt(ipart);
          plane = trdHit->fPlane;
          hTRD->Fill(plane);
-         if (particle->GetParent() < 0) hTRDprim->Fill(plane);
+         if (particle->GetFirstMother() < 0) hTRDprim->Fill(plane);
        }
      }        
    }
