@@ -564,8 +564,8 @@ void AliTPCv1::CreateGeometry()
   // G10 plug
 
   dm[0] = 76.;
-  dm[2] = 78.;
-  dm[3] = 1.;
+  dm[1] = 78.;
+  dm[2] = 1.;
 
   gMC->Gsvolu("TPG2","TUBE",idtmed[8],dm,3);
 
