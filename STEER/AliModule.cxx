@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2001/05/16 14:57:22  alibrary
+New files for folders and Stack
+
 Revision 1.15  2001/03/20 06:36:28  alibrary
 100 parameters now allowed for geant shapes
 
@@ -179,7 +182,7 @@ void AliModule::Disable()
   // Loop through geometry to disable all
   // nodes for this Module
   while((node = (TNode*)next())) {
-    node->SetVisibility(0);
+    node->SetVisibility(-1);
   }   
 }
 
@@ -206,7 +209,7 @@ void AliModule::Enable()
   // Loop through geometry to enable all
   // nodes for this Module
   while((node = (TNode*)next())) {
-    node->SetVisibility(1);
+    node->SetVisibility(3);
   }   
 }
 
