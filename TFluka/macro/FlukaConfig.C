@@ -54,24 +54,12 @@ void Config()
   
   // libraries required by fluka21
 
-  if (!gSystem->Getenv("WITH_ROOT")) {
-     cout << "=== RUNNING TFluka with FLUGG ===\n";
-     char * gvmc = gSystem->ExpandPathName("$(G4VMC)/examples/macro/g4libs.C");
-     gROOT->LoadMacro(gvmc);
-     g4libs();
-
-     cout << "\t* Loading Flugg..." << endl;  
-     gSystem->Load("libFlugg");    
-  } else {
-     cout << "=== RUNNING TFluka with TGeo ===\n";
-     gSystem->Load("libGeom");
-  }     
-
+  gSystem->Load("libGeom");
   cout << "\t* Loading TFluka..." << endl;  
   gSystem->Load("libTFluka");    
     
   cout << "\t* Instantiating TFluka..." << endl;
-  new  TFluka("C++ Interface to Fluka", 3/*verbositylevel*/);
+  new  TFluka("C++ Interface to Fluka", 0/*verbositylevel*/);
   
   AliRunLoader* rl=0x0;
                                                                                 
@@ -99,6 +87,7 @@ void Config()
   TFluka *fluka = (TFluka *) gMC;
   fluka->SetCoreInputFileName("corealice.inp");
   fluka->SetInputFileName("alice.inp");
+  fluka->SetGeneratePemf(kFALSE);
   //
   //
   //
@@ -109,11 +98,11 @@ void Config()
   gMC->SetProcess("COMP",1);
   gMC->SetProcess("PHOT",1);
   gMC->SetProcess("PFIS",0);
-  gMC->SetProcess("DRAY",0);
+  gMC->SetProcess("DRAY",1);
   gMC->SetProcess("ANNI",1);
   gMC->SetProcess("BREM",1);
   gMC->SetProcess("MUNU",1);
-  gMC->SetProcess("CKOV",0); // 1
+  gMC->SetProcess("CKOV",1); // 1
   gMC->SetProcess("HADR",1);
   gMC->SetProcess("LOSS",2);
   gMC->SetProcess("MULS",1);
@@ -142,18 +131,18 @@ void Config()
   if (gSystem->Getenv("CONFIG_NPARTICLES"))
       int     nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
   else
-      int     nParticles = 10;
+      int     nParticles = 1000;
   
   cout << "\t* Creating and configuring generator for " << nParticles 
        << " particles..." << endl;
   
   AliGenHIJINGpara *gener = new AliGenHIJINGpara(nParticles);
   
-  gener->SetMomentumRange(0, 999);
+  gener->SetMomentumRange(2, 999);
   gener->SetPhiRange(0, 360);
   // Set pseudorapidity range from -8 to 8.
-  Float_t thmin = EtaToTheta( 0.1);   // theta min. <---> eta max
-  Float_t thmax = EtaToTheta(-0.1);  // theta max. <---> eta min 
+  Float_t thmin = EtaToTheta( 3.);   // theta min. <---> eta max
+  Float_t thmax = EtaToTheta(-3.);  // theta max. <---> eta min 
   gener->SetThetaRange(thmin,thmax);
   gener->SetOrigin(0, 0, 0);  //vertex position
   gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
