@@ -35,8 +35,6 @@
 
 // --- Standard library ---
 
-#include <stdio.h>
-
 // --- AliRoot header files ---
 #include "AliPHOSFastRecParticle.h"
 #include "AliPHOSGeometry.h"
