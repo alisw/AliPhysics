@@ -111,11 +111,13 @@ AliL3ITStrack::AliL3ITStrack(AliESDHLTtrack& t, Double_t zvertex) throw (const C
   fP4=1./radius;
 
   //and covariance matrix
-  fC00=0.4*0.4;
-  fC11=0.4*0.4;
-  fC22=0.006*0.006;
-  fC33=0.006*0.006;
-  fC44=(0.005+0.025*t.GetPt())*(0.005+0.025*t.GetPt())*fP4*fP4;
+  fC22=0.005*0.005;
+  fC33=0.005*0.005;
+  fC00=fC22*82.97*82.97;
+  fC11=fC33*82.97*82.97;
+  //  fC44=(0.005+0.025*t.GetPt())*(0.005+0.025*t.GetPt())*fP4*fP4;
+  //  fC44=(0.01+0.01*t.GetPt())*(0.01+0.01*t.GetPt())*fP4*fP4;
+  fC44=0.01*0.01*fP4*fP4;
 
   fC10=0;
   fC20=0;   fC21=0;
