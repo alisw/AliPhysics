@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2001/03/26 09:10:23  coppedis
+Corrected bug in constructor (fIshunt has to be =1)
+
 Revision 1.18  2001/03/20 08:21:55  coppedis
 ZDC needs PIPE, ABSO, DIPO and SHIL
 
@@ -222,10 +225,10 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
     }
  
 //    if(fDebug == 1){ 
-      printf("\n  Primary Hits --------------------------------------------------------\n");
-      fHits->Print("");
-      printf("\n  Event Hits --------------------------------------------------------\n");
-      fStHits->Print("");
+//      printf("\n  Primary Hits --------------------------------------------------------\n");
+//      fHits->Print("");
+//      printf("\n  Event Hits --------------------------------------------------------\n");
+//      fStHits->Print("");
 //    }
 
     delete newquad;
