@@ -92,7 +92,7 @@ public:
                              {fVx=vx; fVy=vy; fVz=vz; fVt=t;}
   void           SetProductionVertex(const TLorentzVector& v)
                              {SetProductionVertex(v.X(),v.Y(),v.Z(),v.T());}
-  const Char_t*  GetName() const;
+  const Char_t*  GetName() const; 
   void           Print() const;
 
   static void    SetDebug(Int_t dbg=1){fgDebug=dbg;}
