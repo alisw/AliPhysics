@@ -67,11 +67,11 @@ class AliGenHijing : public AliGenMC
 	{bmin = fMinImpactParam; bmax = fMaxImpactParam;}
     virtual Int_t   GetJetQuenching()                    {return fQuench;}
     virtual Int_t   GetShadowing()                       {return fShadowing;}
-    virtual Int_t   GetTrigger(Int_t flag=kNoTrigger)    {return fTrigger;}
-    virtual Int_t   GetFlavor(Int_t flag=0)              {return fFlavor;}
-    virtual Int_t   GetRadiation(Int_t flag=3)           {return fRadiation;}    
-    virtual Int_t   GetSpectators(Int_t spects=1)        {return fSpectators;}
-    virtual Float_t GetPtJet(Float_t ptmin)              {return fPtMinJet;}
+    virtual Int_t   GetTrigger()                         {return fTrigger;}
+    virtual Int_t   GetFlavor()                          {return fFlavor;}
+    virtual Int_t   GetRadiation()                       {return fRadiation;}    
+    virtual Int_t   GetSpectators()                      {return fSpectators;}
+    virtual Float_t GetPtJet()                           {return fPtMinJet;}
     virtual void    GetJetEtaRange(Float_t& etamin, Float_t& etamax)
 	{etamin = fEtaMinJet; etamax = fEtaMaxJet;}
     virtual void    GetJetPhiRange(Float_t& phimin, Float_t& phimax)
@@ -90,6 +90,8 @@ class AliGenHijing : public AliGenMC
  protected:
     Bool_t SelectFlavor(Int_t pid);
     void   MakeHeader();
+ private:
+    void Copy(AliGenHijing &rhs) const;
 
  protected:
     TString     fFrame;         // Reference frame 

@@ -85,7 +85,8 @@ AliGenHijing::AliGenHijing(Int_t npart)
 
 }
 
-AliGenHijing::AliGenHijing(const AliGenHijing & Hijing)
+AliGenHijing::AliGenHijing(const AliGenHijing & hijing):
+    AliGenMC(hijing)
 {
 // copy constructor
 }
@@ -580,11 +581,14 @@ Bool_t AliGenHijing::CheckTrigger()
 }
 
 
-
+void AliGenHijing::Copy(AliGenHijing &) const
+{
+  Fatal("Copy","Not implemented!\n");
+}
 
 AliGenHijing& AliGenHijing::operator=(const  AliGenHijing& rhs)
 {
-// Assignment operator
-    return *this;
+    rhs.Copy(*this); 
+    return (*this);
 }
 
