@@ -7,6 +7,7 @@
 
 /aliDet/switchOn ALL
 /aliDet/switchOn ITS1
+/aliDet/switchOn RICH1
 
 # switch off modules with errors
 /aliDet/switchOff EMCAL
