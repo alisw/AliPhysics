@@ -14,14 +14,11 @@ void runtracker(int minslice,int maxslice,char* path=0,char *rootfile=0,int neve
 
   char path_to_use[1024];
   if(!path) 
-    strcpy(path_to_use,"/usr/local/anders/data/hg_42105_s1-3/");
-  //strcpy(path_to_use,"/prog/alice/data/Rawdata/6_patch/hg_1000_s1-3/");
-  //strcpy(path_to_use,"/prog/alice/data/Rawdata/6_patch/1track_s1/");
-  //strcpy(path_to_use,"/prog/alice/data/Rawdata/6_patch/pp/event_0/");
-  //strcpy(path_to_use,"/prog/alice/data/Rawdata/1_patch/pp/pileups/event_1/");
+    //strcpy(path_to_use,"/usr/local/anders/data/hg_42105_s1-3/");
+    strcpy(path_to_use,"/tmp/data/new/hijing/bfact1/1000/rawdata/");
   else strcpy(path_to_use,path);
-
-  //AliL3Transform::Init(path_to_use);  
+  
+  AliL3Transform::Init(path_to_use);  
 
   Int_t phi_segments,eta_segments,trackletlength,tracklength;
   Int_t rowscopetracklet,rowscopetrack;
