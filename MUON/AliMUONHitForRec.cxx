@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/10/02 21:28:09  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.3  2000/06/25 13:06:39  hristov
 Inline functions moved from *.cxx to *.h files instead of forward declarations
 
@@ -59,7 +62,7 @@ AliMUONHitForRec::AliMUONHitForRec(AliMUONHit* Ghit)
   fNonBendingCoor = Ghit->X();
   fZ = Ghit->Z();
   // fTrack = Ghit->fTrack; ?????????
-  fChamberNumber = Ghit->fChamber - 1;
+  fChamberNumber = Ghit->Chamber() - 1;
   // other fields will be updated in
   // AliMUONEventReconstructor::NewHitForRecFromGEANT,
   // except the following ones
