@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/10/09 14:06:18  morsch
+Some type cast problems of type  (TMath::Sign((Float_t)1.,x)) corrected (P.H.)
+
 Revision 1.1  2000/10/06 09:00:47  morsch
 Segmentation class for chambers built out of slats.
 
@@ -66,7 +69,7 @@ void AliMUONSegmentationSlatN::GlobalToLocal(
 //
 // Perform local to global transformation for pad coordinates
 //
-    Int_t iytemp = TMath::Abs(iy); 
+    Int_t iytemp = iy; 
     Int_t index  = 0;
     
     iylocal = iytemp;
@@ -85,7 +88,6 @@ void AliMUONSegmentationSlatN::GlobalToLocal(
     }
     ixlocal=ix;
     islat=index;
-// Done !
 }
 
 void AliMUONSegmentationSlatN::LocalToGlobal(
@@ -106,8 +108,7 @@ void AliMUONSegmentationSlatN::LocalToGlobal(
     }
 //
 // Perform symmetry transformation
-    ix=ixlocal*fSym[0];
-    iy=iy*fSym[1];
+    ix=ixlocal*fSym;
 }
 
 
@@ -130,8 +131,6 @@ GetPadI(Float_t x, Float_t y, Float_t z, Int_t &ix, Int_t &iy)
     }
 // Determine sign depending on quadrant
     ix=ix*Int_t(TMath::Sign((Float_t)1.,x));
-    iy=iy*Int_t(TMath::Sign((Float_t)1.,y));    
-
 }
 
 AliMUONSegmentationSlatModule* AliMUONSegmentationSlatN::

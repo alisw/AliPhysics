@@ -104,6 +104,7 @@ public AliSegmentation {
     virtual void SetShift(Float_t shift) {fShift = shift;}
     virtual void SetNPCBperSector(Int_t *npcb);
     virtual void SetSlatXPositions(Float_t *xpos);
+    virtual void SetSlatYPosition(Float_t ypos) {fYPosOrigin = ypos;}    
     virtual AliMUONSegmentationSlatModule* Slat(Int_t index) const;
     
 // Not used
@@ -129,8 +130,8 @@ public AliSegmentation {
 	 Int_t islat, Float_t xlocal, Float_t ylocal, Float_t &x, Float_t  &y, Float_t &z);
     virtual void LocalToGlobal(
 	 Int_t islat, Int_t ixlocal, Int_t iylocal, Int_t &ix, Int_t &iy);
-    virtual void SetSymmetry(Int_t   ix,   Int_t iy);
-    virtual void SetSymmetry(Float_t  x, Float_t  y);
+    virtual void SetSymmetry(Int_t   ix);
+    virtual void SetSymmetry(Float_t  x);
    // Factory method for associated slat module class  
     virtual AliMUONSegmentationSlatModule* CreateSlatModule();
     
@@ -143,16 +144,17 @@ public AliSegmentation {
     //
     Float_t    fWireD;                            // Wire Pitch
     Int_t      fNSlats;                           // Number of slats
-    Int_t      fPcb[10][4];                       // PcbSegmentation
-    Float_t    fXPosition[10];                    // x-position of slats
-    Float_t    fYPosition[10];                    // y-position of slats
-    Float_t    fSlatX[10];                        // Slat x-dimension
+    Int_t      fPcb[15][4];                       // PcbSegmentation
+    Float_t    fXPosition[15];                    // x-position of slats
+    Float_t    fYPosOrigin;                       // y-Position of lowest slat
+    Float_t    fYPosition[15];                    // y-position of slats
+    Float_t    fSlatX[15];                        // Slat x-dimension
     Float_t    fSlatY;                            // Slat y-dimension
     Float_t    fDpx;                              // Pad size x
     Float_t    fDpy;                              // Pad size y
     Int_t      fNpx;                              // maximum number of pads in x
     Int_t      fNpy;                              // maximum number of pads in y
-    Int_t      fSym[2];                           // signs for symmetry trafo
+    Int_t      fSym;                              // signs for symmetry trafo
     Float_t    fShift;                            // Half overlap of pad planes
     Float_t    fDz;                               // Half distance between slat planes
     

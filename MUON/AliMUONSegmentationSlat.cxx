@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.3  2000/10/18 11:42:06  morsch
+- AliMUONRawCluster contains z-position.
+- Some clean-up of useless print statements during initialisations.
+
 Revision 1.2  2000/10/09 14:06:18  morsch
 Some type cast problems of type  (TMath::Sign((Float_t)1.,x)) corrected (P.H.)
 
@@ -102,26 +106,23 @@ void AliMUONSegmentationSlat::GlobalToLocal(
 //                                                 positive side is shifted up
 // by half the overlap
     zlocal = z-fChamber->Z();
-    Float_t ys = y-TMath::Sign(fShift,zlocal);
-
 //  Set the signs for the symmetry transformation and transform to first quadrant
-    SetSymmetry(x,ys);
-    Float_t yabs=TMath::Abs(ys);
+    SetSymmetry(x);
     Float_t xabs=TMath::Abs(x);
 
-    Int_t ifirst = (zlocal*ys < Float_t(0))? 0:1;
+    Int_t ifirst = (zlocal < Float_t(0))? 0:1;
 //
 // Find slat number                      
     for (i=ifirst; i<fNSlats; i+=2) {
 	index=i;
-	if ((yabs >= fYPosition[i]) && (yabs < fYPosition[i]+fSlatY)) break;
+	if ((y >= fYPosition[i]) && (y < fYPosition[i]+fSlatY)) break;
     }
     
 //
 // Transform to local coordinate system
 
     
-    ylocal = yabs-fYPosition[index];
+    ylocal = y   -fYPosition[index];
     xlocal = xabs-fXPosition[index];
     islat  = index;
     if (i >= fNSlats) {islat = -1; x=-1; y = -1;}
@@ -133,8 +134,8 @@ void AliMUONSegmentationSlat::GlobalToLocal(
 //
 // Perform global to local transformation for pad coordinates
 //
-    Int_t iytemp = TMath::Abs(iy);
-    Int_t index  = 0;
+    Int_t iytemp = iy;
+    Int_t index  =  0;
     
     iylocal = iytemp;
 
@@ -151,8 +152,6 @@ void AliMUONSegmentationSlat::GlobalToLocal(
 
     ixlocal=TMath::Abs(ix);
     islat=index;
-    
-// Done !
 }
 
 void AliMUONSegmentationSlat::
@@ -166,17 +165,11 @@ LocalToGlobal(Int_t islat, Float_t  xlocal, Float_t  ylocal, Float_t  &x, Float_
 // lower plane (y<0)  odd slat number is shifted down
 //
 
-    x = (xlocal+fXPosition[islat])*fSym[0];
-    if ((TMath::Even(islat) && fSym[1]>0) || (TMath::Odd(islat)&&fSym[1]<0)) {
-	y=(ylocal+fYPosition[islat])*fSym[1]-fShift;
-	z=-fDz;
-    } else {
-	y=(ylocal+fYPosition[islat])*fSym[1]+fShift;
-	z=fDz;
-    }
+    x = (xlocal+fXPosition[islat])*fSym;
+    y=(ylocal+fYPosition[islat]);
 
+    z = (TMath::Even(islat)) ? -fDz : fDz ; 
     z+=fChamber->Z();
-
 }
 
 
@@ -192,24 +185,21 @@ void AliMUONSegmentationSlat::LocalToGlobal(
 // Find slat number (index) and iylocal  
     for (i=0; i<islat; i++) iy+=Slat(islat)->Npy();
 
-    ix=ixlocal*fSym[0];
-    iy=iy*fSym[1];
+    ix=ixlocal*fSym;
+    iy=iy;
 }
 
 
-void AliMUONSegmentationSlat::SetSymmetry(Int_t   ix,   Int_t iy)
+void AliMUONSegmentationSlat::SetSymmetry(Int_t   ix)
 {
 // Set set signs for symmetry transformation
-    fSym[0]=TMath::Sign(1,ix);
-    fSym[1]=TMath::Sign(1,iy);
-    
+    fSym=TMath::Sign(1,ix);
 }
 
-void AliMUONSegmentationSlat::SetSymmetry(Float_t  x, Float_t  y)
+void AliMUONSegmentationSlat::SetSymmetry(Float_t  x)
 {
 // Set set signs for symmetry transformation
-    fSym[0]=Int_t (TMath::Sign((Float_t)1.,x));
-    fSym[1]=Int_t (TMath::Sign((Float_t)1.,y));
+    fSym=Int_t (TMath::Sign((Float_t)1.,x));
 }
 
 void AliMUONSegmentationSlat::
@@ -229,9 +219,8 @@ GetPadI(Float_t x, Float_t y, Float_t z, Int_t &ix, Int_t &iy)
     for (i=0; i<islat; i++) iy+=Slat(islat)->Npy();
 
     ix=ix*Int_t(TMath::Sign((Float_t)1.,x));    
-// Transform y 
-    iy=iy*Int_t(TMath::Sign((Float_t)1.,y));   
 }
+
 
 void AliMUONSegmentationSlat::
 GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z)
@@ -247,18 +236,12 @@ GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z)
     x+=fXPosition[islat];
     y+=fYPosition[islat];    
 
-// Symmetry transformation of quadrants    
+// Symmetry transformation of half planes
     x=x*TMath::Sign(1,ix);
-    y=y*TMath::Sign(1,iy);    
 
-// Shift of slat planes
-    if ((TMath::Even(islat)&&iy>0) || (TMath::Odd(islat)&&iy<0)) {
-	y-=fShift;
-	z=-fDz+fChamber->Z();
-    } else {
-	y+=fShift;
-	z=fDz+fChamber->Z();
-    }
+// z-position
+    z = (TMath::Even(islat)) ? -fDz : fDz ; 
+    z += fChamber->Z();
 }
 
 Int_t AliMUONSegmentationSlat::ISector()
@@ -288,7 +271,7 @@ void AliMUONSegmentationSlat::SetPad(Int_t ix, Int_t iy)
     // outside the tracking program
     Int_t islat, ixlocal, iylocal;
 
-    SetSymmetry(ix,iy);
+    SetSymmetry(ix);
     
     GlobalToLocal(ix,iy,islat,ixlocal,iylocal);
     fSlatIndex=islat;
@@ -365,7 +348,7 @@ Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])
 
     Int_t i, xListLocal[10], yListLocal[10], iXlocal, iYlocal, islat;
     
-    SetSymmetry(iX,iY);
+    SetSymmetry(iX);
 
     GlobalToLocal(iX, iY, islat, iXlocal, iYlocal);
  
@@ -447,8 +430,7 @@ void AliMUONSegmentationSlat::Init(Int_t chamber)
     fDz=1.76;
 // Slat height    
     fSlatY=40.;
-    for (i=0; i<10; i++) fSlatX[i]=0.;
-    
+    for (i=0; i<15; i++) fSlatX[i]=0.;
     
 // Initialize array of slats 
     fSlats  = new TObjArray(fNSlats);
@@ -473,8 +455,7 @@ void AliMUONSegmentationSlat::Init(Int_t chamber)
 // Initialize slat module
 	slat->Init(chamber);
 // y-position of slat module relative to the first (closest to the beam)
-	fYPosition[islat]=islat*(fSlatY-2.*fShift);
-	if (TMath::Odd(islat)) fYPosition[islat] -= 2*fShift;
+	fYPosition[islat]= fYPosOrigin+islat*(fSlatY-2.*fShift);
 //
 	fNpy+=slat->Npy();
 	if (slat->Npx() > fNpx) fNpx=slat->Npx();
