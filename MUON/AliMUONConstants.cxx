@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/03/16 15:32:06  morsch
+Corrections of overlap with beam shield and dipole (A. de Falco)
+
 Revision 1.7  2001/03/14 17:22:15  pcrochet
 Geometry of the trigger chambers : a vertical gap of has been introduced around x=0 according fig.3.27 of the TDR (P.Dupieux)
 
@@ -46,7 +49,7 @@ Add class AliMUONConstants with MUON specific constants using static memeber dat
 
 ClassImp(AliMUONConstants)
 
-Int_t   AliMUONConstants::fgNCh = 14;
+const Int_t   AliMUONConstants::fgNCh = 14;
 Int_t   AliMUONConstants::fgNTrackingCh = 10;
 Int_t   AliMUONConstants::fgNTriggerCh = 4;
 Int_t   AliMUONConstants::fgNTriggerCircuit = 234;

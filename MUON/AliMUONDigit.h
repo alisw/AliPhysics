@@ -27,7 +27,8 @@ class AliMUONDigit : public TObject {
     virtual Int_t    TrackCharge(Int_t i) const {return fTcharges[i];}    
     virtual void     AddSignal(Int_t q)   {fSignal += q;}
     virtual void     AddPhysicsSignal(Int_t q)   {fPhysics += q;}	    
- private:
+    virtual void     Print(Option_t *option="") const;
+  private:
     Int_t     fPadX;          // Pad number along x
     Int_t     fPadY;          // Pad number along y
     Int_t     fCathode;       // Cathode number

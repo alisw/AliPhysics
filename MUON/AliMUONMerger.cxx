@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2002/02/22 12:14:21  morsch
+Validate pad hit before digitization.
+
 Revision 1.7  2001/11/22 11:15:41  jchudoba
 Proper deletion of arrays (thanks to Rene Brun)
 
@@ -233,10 +236,12 @@ void AliMUONMerger::Digitise()
 
 	TTree *treeH  = gAlice->TreeH();
 	Int_t ntracks = (Int_t) treeH->GetEntries();
+	treeH->SetBranchStatus("*",0); // switch off all branches
+        treeH->SetBranchStatus("MUON*",1); // switch on only MUON
 
 	for (fTrack = 0; fTrack < ntracks; fTrack++) {
 	    gAlice->ResetHits();
-	    treeH->GetEvent(fTrack);
+	    treeH->GetEntry(fTrack,0);
 //
 //   Loop over hits
 	    for(AliMUONHit* mHit = (AliMUONHit*)pMUON->FirstHit(-1); 

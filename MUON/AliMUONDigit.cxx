@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/10/31 16:40:07  jchudoba
+change preprocessor constant to C++ constant
+
 Revision 1.4  2001/10/18 14:44:09  jchudoba
 Define constant MAXTRACKS for maximum number of tracks associated with 1 digit
 
@@ -30,6 +33,8 @@ Was before in DataStructures.cxx
 */
 
 #include "AliMUONDigit.h"
+
+#include <iostream.h>
 
 ClassImp(AliMUONDigit)
 //_____________________________________________________________________________
@@ -69,3 +74,14 @@ AliMUONDigit::~AliMUONDigit()
 {
     // Destructor 
 }
+
+////////////////////////////////////////////////////////////////////////
+void AliMUONDigit::Print(Option_t *option) const 
+{
+  // print
+  cout<<"fPadX, fPadY, fCathode, fSignal, fPhysics, fHit: \n";
+  cout<<"   "<<fPadX<<" "<<fPadY<<" "<<fCathode<<" "
+      <<fSignal<<" "<<fPhysics<<" "<<fHit<<endl;
+}
+
+////////////////////////////////////////////////////////////////////////

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2002/02/13 09:03:24  jchudoba
+Remove some deletes from dtor, those objects are deleted earlier in Exec() method (where they are created)
+
 Revision 1.7  2001/11/22 11:15:41  jchudoba
 Proper deletion of arrays (thanks to Rene Brun)
 
@@ -271,6 +274,7 @@ void AliMUONDigitizer::Exec(Option_t* option)
 	    fMask = fManager->GetMask(inputFile);
 	    fDigits[0] = ipx;
 	    fDigits[1] = ipy;
+	    if (!(fHitMap[fNch]->ValidateHit(fDigits[0], fDigits[1]))) continue;
 	    fDigits[2] = icat;
 	    fDigits[3] = iqpad;
 	    if (inputFile == 0) {

@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.17  2001/09/03 14:54:55  gosset
+Corrections for suppressing "segmentation violation" errors
+when using buttons "Chamber +", "Chamber -", "Cathode <>"
+
 Revision 1.16  2001/08/31 08:18:43  jchudoba
 Changes needed to run with Root 3.01
 
@@ -925,6 +929,10 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
         mdig    = (AliMUONDigit*)muonDigits->UncheckedAt(digit);
 	if (mdig->Cathode() != cathode-1) continue;
 
+// debug hit numbers
+//	printf("  Chamber, cathode, digit, hit: %3d, %3d, %3d, %3d \n",
+//	       chamber,cathode,digit,mdig->Hit());
+
         //
         // First get all needed parameters
         //
@@ -1085,7 +1093,7 @@ void AliMUONDisplay::LoadHits(Int_t chamber)
 	    fPhits->AddAt(points,nhold+hit);
             points->SetMarkerColor(kRed);
             points->SetMarkerStyle(5);
-            points->SetMarkerSize(1.);
+            points->SetMarkerSize(2.); // JCH change
             points->SetParticle(mHit->Track());
             points->SetHitIndex(hit);
             points->SetTrackIndex(track);

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.29  2001/06/21 14:54:37  morsch
+Put volumes of station 3 into DIPO if present. (A. de Falco)
+
 Revision 1.28  2001/05/16 14:57:17  alibrary
 New files for folders and Stack
 
@@ -164,10 +167,9 @@ Log messages included.
 ClassImp(AliMUONv1)
  
 //___________________________________________
-AliMUONv1::AliMUONv1() : AliMUON()
+AliMUONv1::AliMUONv1()
 {
 // Constructor
-    fChambers = 0;
 }
  
 //___________________________________________
@@ -175,6 +177,7 @@ AliMUONv1::AliMUONv1(const char *name, const char *title)
        : AliMUON(name,title)
 {
 // Constructor
+//  this->SetDebug(2);
     AliMUONFactory::Build(this, title);
 }
 
