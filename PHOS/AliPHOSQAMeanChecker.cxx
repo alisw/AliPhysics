@@ -89,5 +89,9 @@ TString AliPHOSQAMeanChecker::CheckingOperation()
 {
   // print the name 
   
-  cout << "Checker : " << GetName() << " : " << GetTitle() << " : Mean = " <<  fMean << " Rms = " << fRms << endl ;  
+  TString status = "inactive" ; 
+  if ( IsActive() ) 
+    status = "active" ; 
+  cout << "Checker : " << GetName() << " : " << GetTitle() << " : Mean = " <<  fMean << " Rms = " << fRms 
+       << " : Status = " << status << endl ;  
 }
