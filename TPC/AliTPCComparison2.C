@@ -93,12 +93,6 @@ Int_t AliTPCComparison2(Int_t firstev=0, Int_t eventn=1) {
     cout<<"================================================"<<endl;
     cout<<"Processing event "<<event<<endl;
     cout<<"================================================"<<endl;
-    if(kOLD){
-      cf->cd();
-      tracker = new AliTPCtracker(digp,event);
-      tracker->LoadInnerSectors();
-      tracker->LoadOuterSectors();
-    }
     
     char   tname[100];
     if (eventn==-1) {
@@ -120,7 +114,7 @@ Int_t AliTPCComparison2(Int_t firstev=0, Int_t eventn=1) {
       iotrack=new AliTPCtrack;
       tbranch->SetAddress(&iotrack);
       tracktree->GetEvent(i);
-      if(kOLD)tracker->CookLabel(iotrack,0.1);
+      //      if(kOLD)tracker->CookLabel(iotrack,0.1);
       tarray.AddLast(iotrack);
     }   
     eventptr[event+1] = nentr;  //store end of the event
