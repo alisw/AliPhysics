@@ -377,7 +377,7 @@ void AliStats::WriteToDB(AliRawDB *rawdb)
    ds->cd();
 
    // Write stats also in the bookkeeping RunDB
-   AliRunDB *rundb = new AliRunDB;
+   AliRunDB *rundb = new AliRunDB(kTRUE);
    rundb->Update(this);
    rundb->UpdateRDBMS(this);
    rundb->UpdateAliEn(this);
@@ -1034,9 +1034,13 @@ void AliTagNullDB::Close()
 
 
 //______________________________________________________________________________
-AliRunDB::AliRunDB()
+AliRunDB::AliRunDB(Bool_t noLocalDB)
 {
    // Open run database, and get or create tree.
+
+   fRunDB = 0;
+
+   if (noLocalDB) return;
 
    // Get hostname
    char hostname[64], filename[64];
@@ -1064,6 +1068,8 @@ void AliRunDB::Update(AliStats *stats)
 {
    // Add stats object to database.
 
+   if (!stats || !fRunDB) return;
+
    TDirectory *ds = gDirectory;
    fRunDB->cd();
 
@@ -1086,6 +1092,8 @@ void AliRunDB::Update(AliStats *stats)
 void AliRunDB::UpdateRDBMS(AliStats *stats)
 {
    // Add stats object to central MySQL DB.
+
+   if (!stats) return;
 
    char sql[4096];
    char bt[25], et[25];
@@ -1127,6 +1135,8 @@ void AliRunDB::UpdateAliEn(AliStats *stats)
 {
    // Record file in AliEn catalog.
 
+   if (!stats) return;
+
    TGrid *g = TGrid::Connect(kAlienHost, "");
 
    TString lfn = kAlienDir;
@@ -1146,7 +1156,7 @@ void AliRunDB::Close()
 {
    // Close run database.
 
-   fRunDB->Close();
+   if (fRunDB) fRunDB->Close();
    delete fRunDB;
 }
 

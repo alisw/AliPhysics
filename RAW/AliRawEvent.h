@@ -401,7 +401,7 @@ private:
    TFile  *fRunDB;     // run database
 
 public:
-   AliRunDB();
+   AliRunDB(Bool_t noLocalDB = kFALSE);
    ~AliRunDB() { Close(); }
 
    void Update(AliStats *stats);
