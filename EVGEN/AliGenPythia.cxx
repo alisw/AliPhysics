@@ -48,10 +48,10 @@ void AliGenPythia::Init()
 //
 //  Forward Paramters to the AliPythia object
     fPythia->DefineParticles();
-    fPythia->ForceDecay(fForceDecay);
     fPythia->SetCKIN(3,fPtHardMin);
     fPythia->SetCKIN(4,fPtHardMax);    
     fPythia->ProcInit(fProcess,fEnergyCMS,fStrucFunc);
+    fPythia->ForceDecay(fForceDecay);
     fPythia->LuList(0);
     fPythia->PyStat(2);
 //  Parent and Children Selection
@@ -87,6 +87,8 @@ void AliGenPythia::Init()
     case jpsi:
 	fParentSelect[0]=443;
 	break;
+    case mb:
+	break;
     }
 
     switch (fForceDecay) 
@@ -101,6 +103,8 @@ void AliGenPythia::Init()
     case dimuon:
     case b_jpsi_dimuon:
     case b_psip_dimuon:
+    case pitomu:
+    case katomu:
 	fChildSelect[0]=13;
 	break;
     }
@@ -110,15 +114,18 @@ void AliGenPythia::Generate()
 {
     AliMC* pMC = AliMC::GetMC();
 
-    Float_t polar[3] = {0,0,0};
-    Float_t origin[3]= {0,0,0};
-    Float_t origin0[3]= {0,0,0};
-    Float_t p[3], random[6];
+    Float_t polar[3] =   {0,0,0};
+    Float_t origin[3]=   {0,0,0};
+    Float_t origin_p[3]= {0,0,0};
+    Float_t origin0[3]=  {0,0,0};
+    Float_t p[3], p_p[4], random[6];
+//  converts from mm/c to s
+    const Float_t kconv=0.001/2.999792458e8;
     
     
 //
-    printf("Generate event");
     Int_t nt=0;
+    Int_t nt_p=0;
     Int_t jev=0;
     Int_t j;
     
@@ -137,8 +144,6 @@ void AliGenPythia::Generate()
 	    fPythia->SetPARP(151+j, fOsigma[j]*10.);
 	}
     }
-    
-
     while(1)
     {
 	fPythia->PyEvnt();
@@ -148,63 +153,106 @@ void AliGenPythia::Generate()
 	printf("\n **************************************************%d\n",np);
 	Int_t nc=0;
 	if (np == 0 ) continue;
-	for (Int_t i = 0; i<np; i++) {
-	    TMCParticle *  iparticle = (TMCParticle *) particles->At(i);
-	    Int_t kf = iparticle->GetKF();
-	    fChildWeight=(fPythia->GetBraPart(kf))*fParentWeight;	  
+	if (fProcess != mb) {
+	    for (Int_t i = 0; i<np; i++) {
+		TMCParticle *  iparticle = (TMCParticle *) particles->At(i);
+		Int_t kf = iparticle->GetKF();
+		fChildWeight=(fPythia->GetBraPart(kf))*fParentWeight;	  
 //
 // Parent
-	    if (ParentSelected(TMath::Abs(kf))) {
-		
-		if (KinematicSelection(iparticle)) {
-		    nc++;
+		if (ParentSelected(TMath::Abs(kf))) {
+		    if (KinematicSelection(iparticle)) {
+			if (nc==0) {
+//
+// Store information concerning the hard scattering process
+//
+			    Float_t mass_p = fPythia->GetPARI(13);
+			    Float_t   pt_p = fPythia->GetPARI(17);
+			    Float_t    y_p = fPythia->GetPARI(37);
+			    Float_t  xmt_p = sqrt(pt_p*pt_p+mass_p*mass_p);
+			    Float_t     ty = Float_t(TMath::TanH(y_p));
+			    p_p[0] = pt_p;
+			    p_p[1] = 0;
+			    p_p[2] = xmt_p*ty/sqrt(1.-ty*ty);
+			    p_p[3] = mass_p;
+			    gAlice->SetTrack(0,-1,-1,
+					     p_p,origin_p,polar,
+					     0,"Hard Scat.",nt_p,fParentWeight);
+			    gAlice->KeepTrack(nt_p);
+			}
+			nc++;
 //
 // store parent track information
-		    p[0]=iparticle->GetPx();
-		    p[1]=iparticle->GetPy();
-		    p[2]=iparticle->GetPz();
-		    origin[0]=origin0[0]+iparticle->GetVx()/10;
-		    origin[1]=origin0[1]+iparticle->GetVy()/10;
-		    origin[2]=origin0[2]+iparticle->GetVz()/10;
+			p[0]=iparticle->GetPx();
+			p[1]=iparticle->GetPy();
+			p[2]=iparticle->GetPz();
+			origin[0]=origin0[0]+iparticle->GetVx()/10;
+			origin[1]=origin0[1]+iparticle->GetVy()/10;
+			origin[2]=origin0[2]+iparticle->GetVz()/10;
 
-		    Int_t ifch=iparticle->GetFirstChild();
-		    Int_t ilch=iparticle->GetLastChild();	
-		    if (ifch !=0 && ilch !=0) {
-			gAlice->SetTrack(0,-1,fPythia->GetGeantCode(kf),
-					 p,origin,polar,
-					 0,"Primary",nt,fParentWeight);
-			Int_t iparent = nt;
+			Int_t ifch=iparticle->GetFirstChild();
+			Int_t ilch=iparticle->GetLastChild();	
+			if (ifch !=0 && ilch !=0) {
+			    gAlice->SetTrack(0,nt_p,fPythia->GetGeantCode(kf),
+					     p,origin,polar,
+					     0,"Primary",nt,fParentWeight);
+			    gAlice->KeepTrack(nt);
+			    Int_t iparent = nt;
 //
 // Children	    
 
-			for (Int_t j=ifch; j<=ilch; j++)
-			{
-			    TMCParticle *  ichild = 
-				(TMCParticle *) particles->At(j-1);
-			    Int_t kf = ichild->GetKF();
+			    for (Int_t j=ifch; j<=ilch; j++)
+			    {
+				TMCParticle *  ichild = 
+				    (TMCParticle *) particles->At(j-1);
+				Int_t kf = ichild->GetKF();
 //
 // 
-			    if (ChildSelected(TMath::Abs(kf))) {
-				Int_t kg=fPythia->GetGeantCode(kf);
-				origin[0]=ichild->GetVx();
-				origin[1]=ichild->GetVy();
-				origin[2]=ichild->GetVz();		
-				p[0]=ichild->GetPx();
-				p[1]=ichild->GetPy();
-				p[2]=ichild->GetPz();
-				Float_t tof=ichild->GetTime();
-				gAlice->SetTrack(1, iparent, kg,
-						 p,origin,polar,
-						 tof,"Decay",nt,fChildWeight);
-				gAlice->KeepTrack(nt);
-			    } // select child
-			} // child loop
-		    }
-		} // kinematic selection
-	    } // select particle 
-	} // particles
+				if (ChildSelected(TMath::Abs(kf))) {
+				    Int_t kg=fPythia->GetGeantCode(kf);
+				    origin[0]=ichild->GetVx();
+				    origin[1]=ichild->GetVy();
+				    origin[2]=ichild->GetVz();		
+				    p[0]=ichild->GetPx();
+				    p[1]=ichild->GetPy();
+				    p[2]=ichild->GetPz();
+				    Float_t tof=kconv*ichild->GetTime();
+				    gAlice->SetTrack(fTrackIt, iparent, kg,
+						     p,origin,polar,
+						     tof,"Decay",nt,fChildWeight);
+				    gAlice->KeepTrack(nt);
+				} // select child
+			    } // child loop
+			}
+		    } // kinematic selection
+		} // select particle
+	    } // particle loop
+	} else {
+	    for (Int_t i = 0; i<np; i++) {
+		TMCParticle *  iparticle = (TMCParticle *) particles->At(i);
+		Int_t kf = iparticle->GetKF();
+		Int_t ks = iparticle->GetKS();
+		Int_t gc = fPythia->GetGeantCode(kf);
+		if (ks==1 && gc!=0 && KinematicSelection(iparticle)) {
+			nc++;
+//
+// store track information
+			p[0]=iparticle->GetPx();
+			p[1]=iparticle->GetPy();
+			p[2]=iparticle->GetPz();
+			origin[0]=origin0[0]+iparticle->GetVx()/10;
+			origin[1]=origin0[1]+iparticle->GetVy()/10;
+			origin[2]=origin0[2]+iparticle->GetVz()/10;
+			Float_t tof=kconv*iparticle->GetTime();
+			gAlice->SetTrack(fTrackIt,-1,gc,p,origin,polar,
+					 tof,"Primary",nt);
+			gAlice->KeepTrack(nt);
+		} // select particle
+	    } // particle loop 
+	    printf("\n I've put %i particles on the stack \n",nc);
+	} // mb ?
 	if (nc > 0) {
-	    jev++;
+	    jev+=nc;
 	    if (jev >= fNpart) {
 		fKineBias=Float_t(fNpart)/Float_t(fTrials);
 		printf("\n Trials: %i\n",fTrials);
@@ -262,7 +310,7 @@ Bool_t AliGenPythia::KinematicSelection(TMCParticle *particle)
     
 //
 // theta cut
-    Float_t  theta = Float_t(TMath::ATan2(Double_t(pt),Double_t(p)));
+    Float_t  theta = Float_t(TMath::ATan2(Double_t(pt),Double_t(pz)));
     if (theta > fThetaMax || theta < fThetaMin) 
     {
 //	printf("\n failed theta cut %f %f %f \n",theta,fThetaMin,fThetaMax);
@@ -299,6 +347,10 @@ void AliGenPythia::AdjustWeights()
 	Part->SetWgt(Part->GetWgt()*fKineBias);
     }
 }
+
+
+
+
 
 
 
