@@ -28,6 +28,13 @@
 // - track momentum and position in the last TPC padrow 
 // - track length as given by the geometrical propagation
 // - reconstructed mass from time of flight and time of flight itself
+// - fMatchingStatus
+//             -2 backpropagation goes out of the z acceptance of the TOF
+//             -1 failed backpropagation on TOF inner radius
+//              0 for fake tracks
+//              1 for tracks matched with no signal on TOF (failed DigitFinder)
+//              3 for tracks matched with the actual digit
+//              4 for tracks matched with a wrong (not its own) TOF digit
 ////////////////////////////////////////////////////////////////////////
 
 #include "AliTOFTrackV2.h"
@@ -59,11 +66,18 @@ AliTOFTrackV2::AliTOFTrackV2()
   fLength=-1;
   fTof=-1;
   fMassTOF=-1;
+  // vertex variables from reconstruction
+  fXRecVtx=-1;
+  fYRecVtx=-1;
+  fZRecVtx=-1;
+  fPxRecVtx=-1;
+  fPyRecVtx=-1;
+  fPzRecVtx=-1;
+  fRecTrackLength=-1;
 }
 
 //_____________________________________________________________________________
-AliTOFTrackV2::AliTOFTrackV2(Int_t trackLabel, Int_t matchingStatus, Float_t tpcMom, Float_t dEdX, 
-                             Float_t* tpcXYZ, Float_t* tpcPtPz, Float_t* /*trdXYZ*/, Float_t* /*trdPxPyPz*/)
+AliTOFTrackV2::AliTOFTrackV2(Int_t trackLabel, Int_t matchingStatus, Float_t tpcMom, Float_t dEdX, Float_t* tpcXYZ, Float_t* tpcPtPz, Float_t* trdXYZ, Float_t* trdPxPyPz)
 {
   //
   // par ctor
@@ -92,6 +106,15 @@ AliTOFTrackV2::AliTOFTrackV2(Int_t trackLabel, Int_t matchingStatus, Float_t tpc
   fLength=-1;
   fTof=-1;
   fMassTOF=-1;
+
+  // vertex variables from reconstruction
+  fXRecVtx=-1;
+  fYRecVtx=-1;
+  fZRecVtx=-1;
+  fPxRecVtx=-1;
+  fPyRecVtx=-1;
+  fPzRecVtx=-1;
+  fRecTrackLength=-1;
 }
 
 //_____________________________________________________________________________

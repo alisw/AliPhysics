@@ -899,7 +899,7 @@ void AliTOF::Raw2Digits(Int_t evNumber)
 	   if (nStrip<=fNStripC+2*fNStripB+fNStripA) nPlate = 4;
 	   if (nStrip<=fNStripC+fNStripB+fNStripA)   nPlate = 3;
 	   if (nStrip<=fNStripC+fNStripB)            nPlate = 2;
-	   if (nStrip<=fNStripC)                     nPlate=1;
+	   if (nStrip<=fNStripC)                     nPlate = 1;
 	   vol[1] = nPlate;
 	   switch (nPlate){
 	   case 1: break;

@@ -166,7 +166,8 @@ void AliTOFDigitizer::CreateDigits()
 
   for (Int_t k = 0; k < ndig; k++) {
     
-    Int_t    vol[5];       // location for a digit
+    Int_t  vol[5];  // location for a digit
+    for (Int_t i=0; i<5; i++) vol[i] = -1; // AdC
     
     // Get the information for this digit
     AliTOFSDigit *tofsdigit = (AliTOFSDigit *) fSDigitsArray->UncheckedAt(k);
@@ -175,11 +176,11 @@ void AliTOFDigitizer::CreateDigits()
     // for current sdigit
     
     // TOF sdigit volumes (always the same for all slots)
-    Int_t sector    = tofsdigit->GetSector(); // range [1-18]
-    Int_t plate     = tofsdigit->GetPlate();  // range [1- 5]
-    Int_t strip     = tofsdigit->GetStrip();  // range [1-20]
-    Int_t padz      = tofsdigit->GetPadz();   // range [1- 2]
-    Int_t padx      = tofsdigit->GetPadx();   // range [1-48]
+    Int_t sector    = tofsdigit->GetSector(); // range [0-17]
+    Int_t plate     = tofsdigit->GetPlate();  // range [0- 4]
+    Int_t strip     = tofsdigit->GetStrip();  // range [0-19]
+    Int_t padz      = tofsdigit->GetPadz();   // range [0- 1]
+    Int_t padx      = tofsdigit->GetPadx();   // range [0-47]
     
     vol[0] = sector;
     vol[1] = plate;
@@ -189,7 +190,8 @@ void AliTOFDigitizer::CreateDigits()
     
     //--------------------- QA section ----------------------
     // in the while, I perform QA
-    Bool_t isSDigitBad = (sector<1 || sector>18 || plate<1 || plate >5 || padz<1 || padz>2 || padx<1 || padx>48);
+    //Bool_t isSDigitBad = (sector<1 || sector>18 || plate<1 || plate >5 || padz<1 || padz>2 || padx<1 || padx>48);
+    Bool_t isSDigitBad = (sector<0 || sector>17 || plate<0 || plate >4 || padz<0 || padz>1 || padx<0 || padx>47); // AdC
     
     if (isSDigitBad) {
       cout << "<AliTOFSDigits2Digits>  strange sdigit found" << endl;
@@ -298,8 +300,9 @@ void AliTOFDigitizer::ReadSDigit(Int_t inputFile )
     for (Int_t k=0; k<ndig; k++) {
       AliTOFSDigit *tofSdigit= (AliTOFSDigit*) sdigitsDummyContainer->UncheckedAt(k);
       
-      Int_t    vol[5];       // location for a sdigit
-      
+      Int_t  vol[5]; // location for a sdigit
+      for (Int_t i=0; i<5; i++) vol[i] = -1; // AdC
+
       // check the sdigit volume
       vol[0] = tofSdigit->GetSector();
       vol[1] = tofSdigit->GetPlate();

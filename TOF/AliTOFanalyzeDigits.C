@@ -10,14 +10,14 @@ Int_t AliTOFanalyzeDigits(Int_t ndump=15, Int_t iEvNum=0)
   Int_t rc = 0;
   
   // adc and tdc
-  TH1F *htdc  = new TH1F("htdc","TDC [bin]",500,0.,15000.);
-  TH1F *hadc   = new TH1F("hadc","ADC [bin]",100,0., 3000.);
+  TH1F *htdc     = new TH1F("htdc","TDC [bin]",500,0.,15000.);
+  TH1F *hadc     = new TH1F("hadc","ADC [bin]",100,0., 3000.);
   // TOF digit volumes
-  TH1F *hsector  = new TH1F("hsector","Sector",20,0.,20.);
-  TH1F *hplate   = new TH1F("hplate","Plate ", 6,0., 6.);
-  TH1F *hstrip   = new TH1F("hstrip","Strip ",25,0.,25.);
-  TH1F *hpadz    = new TH1F("hpadz","Pad along z ",3,0.,3.);
-  TH1F *hpadx    = new TH1F("hpadx","Pad along x",50,0.,50.);
+  TH1F *hsector  = new TH1F("hsector","Sector",18,0.,18.);
+  TH1F *hplate   = new TH1F("hplate","Plate ", 5,0., 5.);
+  TH1F *hstrip   = new TH1F("hstrip","Strip ",20,0.,20.);
+  TH1F *hpadz    = new TH1F("hpadz","Pad along z ",2,0.,2.);
+  TH1F *hpadx    = new TH1F("hpadx","Pad along x",48,0.,48.);
   // ADC-TDC correlation
   TH2F *h2tdcVSadc = new TH2F("h2tdcVSadc","TDC [bin] VS ADC [bin]",100,0.,3000.,500,0.,15000.);
 
@@ -110,13 +110,13 @@ Int_t AliTOFanalyzeDigits(Int_t ndump=15, Int_t iEvNum=0)
 	  htdc->Fill(tdc);
 	  hadc->Fill(adc);
 	  // TOF digit volumes
-	  Int_t sector = tofdigit->GetSector(); // range [1-18]
-	  Int_t plate  = tofdigit->GetPlate();  // range [1- 5]
-	  Int_t strip  = tofdigit->GetStrip();  // range [1-20]
-	  Int_t padz   = tofdigit->GetPadz();   // range [1- 2]
-	  Int_t padx   = tofdigit->GetPadx();   // range [1-48]
+	  Int_t sector = tofdigit->GetSector(); // range [0-17]
+	  Int_t plate  = tofdigit->GetPlate();  // range [0- 4]
+	  Int_t strip  = tofdigit->GetStrip();  // range [0-19]
+	  Int_t padz   = tofdigit->GetPadz();   // range [0- 1]
+	  Int_t padx   = tofdigit->GetPadx();   // range [0-47]
 	  // it is QA, then I perform QA!
-	  Bool_t isDigitBad = (sector<1 || sector>18 || plate<1 || plate >5 || padz<1 || padz>2 || padx<1 || padx>48);
+	  Bool_t isDigitBad = (sector<0 || sector>17 || plate<0 || plate >4 || padz<0 || padz>1 || padx<0 || padx>47);
 	  
 	  if (isDigitBad)
 	    {

@@ -23,22 +23,24 @@ Int_t AliTOFanalyzeHits(Int_t nevents = 1, Bool_t drawing = kFALSE)
   TH1F *htofmomp = new TH1F("htofmomp","Momentum at TOF (primaries)",100,0.,10.);
   TH1F *htofmoms = new TH1F("htofmoms","Momentum at TOF (secondaries)",100,0.,10.);
   // TOF hit volumes
-  TH1F *hsector  = new TH1F("hsector","Sector",20,0.,20.);
-  TH1F *hplate   = new TH1F("hplate","Plate ", 6,0., 6.);
-  TH1F *hstrip   = new TH1F("hstrip","Strip ",25,0.,25.);
-  TH1F *hpadz    = new TH1F("hpadz","Pad along z ",3,0.,3.);
-  TH1F *hpadx    = new TH1F("hpadx","Pad along x",50,0.,50.);
+  TH1F *hsector  = new TH1F("hsector","Sector",18,0.,18.);
+  TH1F *hplate   = new TH1F("hplate","Plate ", 5,0., 5.);
+  TH1F *hstrip   = new TH1F("hstrip","Strip ",20,0.,20.);
+  TH1F *hpadz    = new TH1F("hpadz","Pad along z ",2,0.,2.);
+  TH1F *hpadx    = new TH1F("hpadx","Pad along x",48,0.,48.);
   // track length when striking the TOF (used by AliTOFT0)
   TH1F *htrackLenp= new TH1F("htrackLenp","Track Length on TOF for Primaries",800,0.,800.);
 
   // Histograms added to control the right TOF element numbering:
   // it should be increasing with the azimuthal and polar angles
 
-  TH2F *hmoduleVStheta = new TH2F("hmoduleVStheta", "hmoduleVStheta", 180,0.,180.,6,0,6);
-  TH2F *hsectorVSphi   = new TH2F("hsectorVSphi", "hsectorVSphi", 360,0.,360.,19,0,19);
-  TH2F *hstripVStheta   = new TH2F("hstripVStheta", "hstripVStheta", 180,0.,180.,25,0,25);
-  TH2F *hpadzVStheta   = new TH2F("hpadzVStheta", "hpadzVStheta", 180,0.,180.,3,0,3);
-  TH2F *hpadxVSphi     = new TH2F("hpadxVSphi", "hpadxVSphi", 360,0.,360.,49,0,49);
+  TH2F *hmoduleVStheta     = new TH2F("hmoduleVStheta", "hmoduleVStheta", 180,0.,180.,5,0,5);
+  TH2F *hsectorVSphi       = new TH2F("hsectorVSphi", "hsectorVSphi", 360,0.,360.,18,0,18);
+  TH2F *hstripVStheta      = new TH2F("hstripVStheta", "hstripVStheta", 180,0.,180.,20,0,20);
+  //TH2F *hpadzVStheta       = new TH2F("hpadzVStheta", "hpadzVStheta", 180,0.,180.,2,0,2);
+  TH2F *hpadxVSphi         = new TH2F("hpadxVSphi", "hpadxVSphi", 360,0.,360.,48,0,48);
+  TH2F *hpadz2stripVStheta = new TH2F("hpadz2stripVStheta", "hpadz2stripVStheta", 180,0.,180.,40,0,40);
+  //TH2F *hdzVSpadz2strip    = new TH2F("hdzVSpadz2strip", "hdzVSpadz2strip",40,0,40,70,-3.5,3.5);
 
   // Dynamically link some shared libs
   if (gClassTable->GetID("AliRun") < 0) {
@@ -152,19 +154,43 @@ Int_t AliTOFanalyzeHits(Int_t nevents = 1, Bool_t drawing = kFALSE)
         Int_t padz   = hit->GetPadz();   // range [1- 2]
         Int_t padx   = hit->GetPadx();   // range [1-48]
         // it is QA, then I perform QA!
-        Bool_t isHitBad = (sector<1 || sector>18 || plate<1 || plate >5 || padz<1 || padz>2 || padx<1 || padx>48);
 
-        if (isHitBad) {
-          cout << "<AliTOFanalyzeHits>  strange hit found" << endl;
+	
+        Bool_t isHitBad = (sector<0 || sector>17 || 
+			   plate<0 || plate>4 || 
+			   padz<0 || padz>1 || 
+			   padx<0 || padx>47 ||
+
+			   ((strip<0 || strip>14) && plate == 2) ||
+			   ((strip<0 || strip>18) && (plate == 1 || plate == 3)) ||
+			   ((strip<0 || strip>19) && (plate == 0 || plate == 4)));
+	
+	if (isHitBad) {
+          cout << "<AliTOFanalyzeHits>  strange hit found \n";
+	  cout << "sector = " << sector <<
+	    " plate = " << plate <<
+	    " strip = " << strip <<
+	    " padx = " << padx <<
+	    " padz = " << padz << endl;
 	  rc = 5;
 	  return rc;
         }
-
+	
         hmoduleVStheta->Fill(thetaAngle,plate);
 	hstripVStheta->Fill(thetaAngle,strip);
         hsectorVSphi->Fill(phiAngle,sector);
+        //hpadzVStheta->Fill(thetaAngle,padx);
         hpadxVSphi->Fill(phiAngle,padx);
-        hpadzVStheta->Fill(thetaAngle,padz);
+
+	Float_t dummy2 = 2*strip + padz;
+	hpadz2stripVStheta->Fill(thetaAngle,dummy2);
+
+	/*
+	  Float_t dummy3;
+	  if (hit->GetDz()<=0) dummy3 = hit->GetDz()-1.75;
+	  else dummy3 = hit->GetDz()+1.75;	
+	  hdzVSpadz2strip->Fill(dummy2,dummy3);
+	*/
 
         // filling hit volume histos
         hsector->Fill(sector);
@@ -222,6 +248,8 @@ Int_t AliTOFanalyzeHits(Int_t nevents = 1, Bool_t drawing = kFALSE)
     cout << nmuon     << " primary muons reached the TOF detector"     << endl;
 
   }
+
+  cout << "hpadx->GetEntries() = " << hpadx->GetEntries() << endl;
 
   rl->UnloadHeader();
   rl->UnloadgAlice();
@@ -281,8 +309,10 @@ Int_t AliTOFanalyzeHits(Int_t nevents = 1, Bool_t drawing = kFALSE)
   hmoduleVStheta->Write();
   hsectorVSphi->Write();
   hstripVStheta->Write();
-  hpadzVStheta->Write();
+  //hpadzVStheta->Write();
   hpadxVSphi->Write();
+  hpadz2stripVStheta->Write();
+  //hdzVSpadz2strip->Write();
 
   fout->Close(); 
 

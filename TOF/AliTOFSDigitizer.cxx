@@ -68,8 +68,8 @@ ClassImp(AliTOFSDigitizer)
   fEvent1=0;
   fEvent2=0;
   ftail    = 0;
-  fSelectedSector=0;
-  fSelectedPlate =0;
+  fSelectedSector=-1; //0; // AdC
+  fSelectedPlate =-1; //0; // AdC
 }
            
 //____________________________________________________________________________ 
@@ -78,8 +78,8 @@ ClassImp(AliTOFSDigitizer)
   fEvent1=evNumber1;
   fEvent2=fEvent1+nEvents;
   ftail    = 0;
-  fSelectedSector=0; // by default we sdigitize all sectors
-  fSelectedPlate =0; // by default we sdigitize all plates in all sectors
+  fSelectedSector=-1; //0; // AdC // by default we sdigitize all sectors
+  fSelectedPlate =-1; //0; // AdC // by default we sdigitize all plates in all sectors
 
   fHeadersFile = HeaderFile ; // input filename (with hits)
   TFile * file = (TFile*) gROOT->GetFile(fHeadersFile.Data() ) ;
@@ -222,7 +222,8 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
     fEvent2= (Int_t) gAlice->TreeE()->GetEntries();
   }
 
-  Bool_t thereIsNotASelection=(fSelectedSector==0) && (fSelectedPlate==0);
+  //Bool_t thereIsNotASelection=(fSelectedSector==0) && (fSelectedPlate==0); // AdC
+  Bool_t thereIsNotASelection=(fSelectedSector==-1) && (fSelectedPlate==-1);
 
   for (Int_t ievent = fEvent1; ievent < fEvent2; ievent++) {
     cout << "------------------- "<< GetName() << " -------------" << endl ;
@@ -276,12 +277,12 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
       // cleaning all hits of the same track in the same pad volume
       // it is a rare event, however it happens
 
-      Int_t previousTrack =0;
-      Int_t previousSector=0;
-      Int_t previousPlate =0;
-      Int_t previousStrip =0;
-      Int_t previousPadX  =0;
-      Int_t previousPadZ  =0;
+      Int_t previousTrack =-1; //0; // AdC
+      Int_t previousSector=-1; //0; // AdC
+      Int_t previousPlate =-1; //0; // AdC
+      Int_t previousStrip =-1; //0; // AdC
+      Int_t previousPadX  =-1; //0; // AdC
+      Int_t previousPadZ  =-1; //0; // AdC
 
       for (Int_t hit = 0; hit < nhits; hit++)
       {
@@ -345,8 +346,10 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
 	      nHitsFromPrim++;
 	    } // counts hits due to primary particles
 	    
-	    Float_t xStrip=AliTOFConstants::fgkXPad*(vol[3]-0.5-0.5*AliTOFConstants::fgkNpadX)+Xpad;
-	    Float_t zStrip=AliTOFConstants::fgkZPad*(vol[4]-0.5-0.5*AliTOFConstants::fgkNpadZ)+Zpad;
+	    //Float_t xStrip=AliTOFConstants::fgkXPad*(vol[3]-0.5-0.5*AliTOFConstants::fgkNpadX)+Xpad;
+	    //Float_t zStrip=AliTOFConstants::fgkZPad*(vol[4]-0.5-0.5*AliTOFConstants::fgkNpadZ)+Zpad;
+	    Float_t xStrip=AliTOFConstants::fgkXPad*(vol[3]+0.5-0.5*AliTOFConstants::fgkNpadX)+Xpad; // AdC
+	    Float_t zStrip=AliTOFConstants::fgkZPad*(vol[4]+0.5-0.5*AliTOFConstants::fgkNpadZ)+Zpad; // AdC
 
 	    //cout << "geantTime " << geantTime << " [ns]" << endl;
 	    Int_t nActivatedPads = 0, nFiredPads = 0;
@@ -370,8 +373,8 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
 		  
 		  // recalculate the volume only for neighbouring pads
 		  if(indexOfPad){
-		    (nPlace[indexOfPad]<=AliTOFConstants::fgkNpadX) ? vol[4] = 1 : vol[4] = 2;
-		    (nPlace[indexOfPad]<=AliTOFConstants::fgkNpadX) ? vol[3] = nPlace[indexOfPad] : vol[3] = nPlace[indexOfPad] - AliTOFConstants::fgkNpadX;
+		    (nPlace[indexOfPad]<=AliTOFConstants::fgkNpadX) ? vol[4] = 0/*1*/ : vol[4] = 1/*2*/; // AdC
+		    (nPlace[indexOfPad]<=AliTOFConstants::fgkNpadX) ? vol[3] = nPlace[indexOfPad] - 1 : vol[3] = nPlace[indexOfPad] - AliTOFConstants::fgkNpadX - 1; // AdC
 		  }
 		  
 		  // check if two sdigit are on the same pad; in that case we sum
@@ -469,11 +472,14 @@ void AliTOFSDigitizer::Print(Option_t* /*opt*/)const
 //__________________________________________________________________
 void AliTOFSDigitizer::SelectSectorAndPlate(Int_t sector, Int_t plate)
 {
-  Bool_t isaWrongSelection=(sector < 1) || (sector > AliTOFConstants::fgkNSectors) || (plate < 1) || (plate > AliTOFConstants::fgkNPlates);
+  //Bool_t isaWrongSelection=(sector < 1) || (sector > AliTOFConstants::fgkNSectors) || (plate < 1) || (plate > AliTOFConstants::fgkNPlates);
+  Bool_t isaWrongSelection=(sector < 0) || (sector >= AliTOFConstants::fgkNSectors) || (plate < 0) || (plate >= AliTOFConstants::fgkNPlates); // AdC
   if(isaWrongSelection){
     cout << "You have selected an invalid value for sector or plate " << endl;
-    cout << "The correct range for sector is [1,"<< AliTOFConstants::fgkNSectors <<"]" << endl;
-    cout << "The correct range for plate  is [1,"<< AliTOFConstants::fgkNPlates  <<"]" << endl;
+    //cout << "The correct range for sector is [1,"<< AliTOFConstants::fgkNSectors <<"]" << endl;
+    //cout << "The correct range for plate  is [1,"<< AliTOFConstants::fgkNPlates  <<"]" << endl;
+    cout << "The correct range for sector is [0,"<< AliTOFConstants::fgkNSectors-1 <<"]\n"; // AdC
+    cout << "The correct range for plate  is [0,"<< AliTOFConstants::fgkNPlates-1  <<"]\n"; // AdC
     cout << "By default we continue sdigitizing all hits in all plates of all sectors" << endl;
   } else {
     fSelectedSector=sector;

@@ -42,8 +42,8 @@ void AliTOFhits2sdigits(Int_t firstEvent=0,Int_t nEvents=1)
 
   // e.g. Activate this line if you want to sdigitize only hits from plate 3
   // in sector 15
-  // pay attention that sector must be in the range [1,18]
-  //                and plate  must be in the range [1,5]
+  // pay attention that sector must be in the range [0,17]
+  //                and plate  must be in the range [0,4]
   // by default we sdigitize hits of all plates in all sectors
   // sdigitizer->SelectSectorAndPlate(15,3);
 

@@ -16,30 +16,30 @@
 /* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
-//
+//                                                                           //
 //  This class contains the functions for version 2 of the Time Of Flight    //
 //  detector.                                                                //
-//
-//  VERSION WITH 5 MODULES AND TILTED STRIPS 
-//  
-//  HOLES FOR PHOS AND RICH DETECTOR
-//
-//   Authors:
-//
-//   Alessio Seganti
-//   Domenico Vicinanza
-//
-//   University of Salerno - Italy
-//
-//   Fabrizio Pierella
-//   University of Bologna - Italy
-//
-//
-//Begin_Html
-/*
-<img src="picts/AliTOFv2Class.gif">
-*/
-//End_Html
+//                                                                           //
+//  VERSION WITH 5 MODULES AND TILTED STRIPS                                 //
+//                                                                           //
+//  HOLES FOR PHOS AND RICH DETECTOR                                         //
+//                                                                           //
+//   Authors:                                                                //
+//                                                                           //
+//   Alessio Seganti                                                         //
+//   Domenico Vicinanza                                                      //
+//                                                                           //
+//   University of Salerno - Italy                                           //
+//                                                                           //
+//   Fabrizio Pierella                                                       //
+//   University of Bologna - Italy                                           //
+//                                                                           //
+//                                                                           //
+//Begin_Html                                                                 //
+/*                                                                           //
+<img src="picts/AliTOFv2Class.gif">                                          //
+*/                                                                           //
+//End_Html                                                                   //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -57,6 +57,7 @@
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliTOFv2.h"
+#include "AliTOFConstants.h" // AdC
  
 ClassImp(AliTOFv2)
  
@@ -446,23 +447,26 @@ void AliTOFv2::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   Float_t gap  = fGapA+0.5; //cm  updated distance between the strip axis
   Float_t zpos = 0;
   Float_t ang  = 0;
-  Int_t i=1,j=1;
+  Int_t j=1; // AdC
   nrot  = 0;
   zcoor = 0;
   ycoor = -14.5 + kspace ; //2 cm over front plate
   
   AliMatrix (idrotm[0],  90.,  0.,90.,90.,0., 90.);   
-  gMC->Gspos("FSTR",j,"FLTA",0.,ycoor, 0.,idrotm[0],"ONLY");
+
+  Int_t centerLoc= (Int_t)(fNStripA/2.) + 1; // AdC
+
+  //gMC->Gspos("FSTR",j,"FLTA",0.,ycoor, 0.,idrotm[0],"ONLY");
   
   if(fDebug) {
-    printf("%s: %f,  St. %2i, Pl.3 ",ClassName(),ang*kRaddeg,i); 
+    printf("%s: %f,  St. %2i, Pl.3 ",ClassName(),ang*kRaddeg,j); // AdC
     printf("%s: y = %f,  z = %f, zpos = %f \n",ClassName(),ycoor,zcoor,zpos);
   }
   
   zcoor -= zSenStrip;
-  j++;
+  //j++; // AdC
   Int_t upDown = -1; // upDown=-1 -> Upper strip
-  // upDown=+1 -> Lower strip
+                     // upDown=+1 -> Lower strip
   do{
     ang = atan(zcoor/radius);
     ang *= kRaddeg;
@@ -471,15 +475,17 @@ void AliTOFv2::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
     ang /= kRaddeg;
     ycoor = -14.5+ kspace; //2 cm over front plate
     ycoor += (1-(upDown+1)/2)*gap;
-    gMC->Gspos("FSTR",j  ,"FLTA",0.,ycoor, zcoor,idrotm[nrot],  "ONLY");
-    gMC->Gspos("FSTR",j+1,"FLTA",0.,ycoor,-zcoor,idrotm[nrot+1],"ONLY");
+    //gMC->Gspos("FSTR",j  ,"FLTA",0.,ycoor, zcoor,idrotm[nrot],  "ONLY");
+    //gMC->Gspos("FSTR",j+1,"FLTA",0.,ycoor,-zcoor,idrotm[nrot+1],"ONLY");
+    gMC->Gspos("FSTR",centerLoc-j,"FLTA",0.,ycoor, zcoor,idrotm[nrot],  "ONLY"); // AdC
+    gMC->Gspos("FSTR",centerLoc+j,"FLTA",0.,ycoor,-zcoor,idrotm[nrot+1],"ONLY"); // AdC
     
     if(fDebug>=1) {
-      printf("%s: %f,  St. %2i, Pl.3 ",ClassName(),ang*kRaddeg,i);
+      printf("%s: %f,  St. %2i, Pl.3 ",ClassName(),ang*kRaddeg,j); // AdC
       printf("%s: y = %f,  z = %f, zpos = %f \n",ClassName(),ycoor,zcoor,zpos);
     }
     
-    j += 2;
+    j++; //j += 2; // AdC
     upDown*= -1; // Alternate strips 
     zcoor = zcoor-(zSenStrip/2)/TMath::Cos(ang)-
       upDown*gap*TMath::Tan(ang)-
@@ -503,11 +509,12 @@ void AliTOFv2::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   
   ycoor = -14.5+ kspace; //2 cm over front plate
   ycoor += (1-(upDown+1)/2)*gap;
-  gMC->Gspos("FSTR",j  ,"FLTA",0.,ycoor, zcoor,idrotm[nrot],  "ONLY");
-  gMC->Gspos("FSTR",j+1,"FLTA",0.,ycoor,-zcoor,idrotm[nrot+1],"ONLY");
-  
+  //gMC->Gspos("FSTR",j  ,"FLTA",0.,ycoor, zcoor,idrotm[nrot],  "ONLY");
+  //gMC->Gspos("FSTR",j+1,"FLTA",0.,ycoor,-zcoor,idrotm[nrot+1],"ONLY");
+  gMC->Gspos("FSTR",centerLoc-j,"FLTA",0.,ycoor, zcoor,idrotm[nrot],  "ONLY"); // AdC
+  gMC->Gspos("FSTR",centerLoc+j,"FLTA",0.,ycoor,-zcoor,idrotm[nrot+1],"ONLY"); // AdC  
   if(fDebug>=1) {   
-    printf("%s: %f,  St. %2i, Pl.3 ",ClassName(),ang*kRaddeg,i);  
+    printf("%s: %f,  St. %2i, Pl.3 ",ClassName(),ang*kRaddeg,j); // AdC
     printf("%s: y = %f,  z = %f, zpos = %f \n",ClassName(),ycoor,zcoor,zpos);  
   }   
   
@@ -516,7 +523,7 @@ void AliTOFv2::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   // Plate  B
   
   nrot = 0;
-  i=1;
+  Int_t i=1; // AdC
   upDown = 1;
   Float_t deadRegion = 1.0;//cm
   
@@ -1102,19 +1109,30 @@ void AliTOFv2::StepManager()
 
     z = pos[2];
 
-    plate = 0;   
-    if (TMath::Abs(z) <=  fZlenA*0.5)  plate = 3;
+    plate = 0;
+    if (TMath::Abs(z) <=  fZlenA*0.5)  plate = 2; //3; // AdC
     if (z < (fZlenA*0.5+fZlenB) && 
-        z >  fZlenA*0.5)               plate = 4;
+        z >  fZlenA*0.5)               plate = 1; //4; // AdC
     if (z >-(fZlenA*0.5+fZlenB) &&
-        z < -fZlenA*0.5)               plate = 2;
-    if (z > (fZlenA*0.5+fZlenB))       plate = 5;
-    if (z <-(fZlenA*0.5+fZlenB))       plate = 1;
+        z < -fZlenA*0.5)               plate = 3; //2; // AdC
+    if (z > (fZlenA*0.5+fZlenB))       plate = 0; //5;
+    if (z <-(fZlenA*0.5+fZlenB))       plate = 4; //1; // AdC
+
+    if (plate==0) strip=AliTOFConstants::fgkNStripC-strip; // AdC
+    else if (plate==1) strip=AliTOFConstants::fgkNStripB-strip; // AdC
+    else strip--; // AdC
+
+    if (z<=0.) padx=AliTOFConstants::fgkNpadX-padx; // AdC
+    else padx--; // AdC
+
+    if (plate==3 || plate==4) padz=AliTOFConstants::fgkNpadZ-padz; // AdC
+    else padz--; // AdC
 
     phi = pos.Phi();
-    phid = phi*kRaddeg+180.;
+    if (phi>=0.) phid = phi*kRaddeg; //+180.; // AdC
+    else phid = phi*kRaddeg + 360.; //+180.; // AdC
     sector = Int_t (phid/20.);
-    sector++;
+    //sector++; // AdC
 
     for(i=0;i<3;++i) {
       hits[i]   = pos[i];

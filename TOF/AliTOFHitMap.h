@@ -50,7 +50,7 @@ class AliTOFHitMap : public TObject
     Int_t fNplate;                        // Number of plates
     Int_t fNstrip;                        // Maximum number of strips
     Int_t fNpx;                           // Number of pads in x
-    Int_t fNpy;                           // Number of pads in y
+    Int_t fNpz;                           // Number of pads in z
 
     TClonesArray *fSDigits;               // Pointer to sdigits
     Int_t fMaxIndex;                      // maximum index in hit map
