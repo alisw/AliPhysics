@@ -69,12 +69,7 @@ void AliSensitiveDetector::UserProcessHits(const G4Track* track,
     gAlice->AddEnergyDeposit(
       fID, step->GetTotalEnergyDeposit()/TG3Units::Energy());
 
-  // parent ID -> shunt
-  G4int parentID = track->GetParentID();
-  Int_t shunt = 0;
-  if (parentID==0) shunt = 1;
-  fModule->SetIshunt(shunt);
-
+  // let AliModule process the step
   fModule->StepManager();
 }
 
