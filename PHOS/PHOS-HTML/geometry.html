@@ -1,0 +1,212 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"
+               "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.51 [en] (X11; I; Linux 2.2.5-15 i686) [Netscape]">
+   <title>PHOS Geometry in AliRoot</title>
+<link REL="stylesheet" href="http://www-subatech.in2p3.fr/~photons/gps_alice.css" type="text/css">
+</head>
+<body>
+
+<h1 class="page-header">
+Geometry & Materials
+</h1>
+
+
+This document result from the effort lead by the Photon Group at SUBATECH
+to organize within the PHOS collaboration the software needed for the performance
+and physics simulation of PHOS and for the reconstruction of the raw data
+(presently simulated one's and real data in the future). The PHOS software
+so far distributed with the AliRoot
+V3.02 package is still rather shaky, lacks documentation and organisation.
+It was therefore necessary to establish a few rules to achieve a coherent
+software package usable by any interested user.
+<h1>
+Rules</h1>
+
+<ol>
+<li>
+<a href="http://www-subatech.in2p3.fr/~photons/subatech/">SUBATECH</a>
+represented by <a href="mailto:schutz@in2p3.fr">Yves Schutz</a> is the
+librarian of the PHOS contribution to AliRoot</li>
+
+<li>
+Any modification to the existing software or any new piece of software
+must be approved by the librarian who is in charge of the updates</li>
+
+<li>
+Developpers must used CVS to download the official software from the CERN
+repository</li>
+
+<li>
+Developpers must comply with the AliRoot coding convention</li>
+
+<li>
+FORTRAN is a strictly prohibited language</li>
+
+<li>
+Any new piece of code must be documented along the line: what is the purpose,
+how is it done, how to use it</li>
+</ol>
+<br><br>
+The PHOS package is organized along two directions which we will try to
+keep as independent as possible. The simulation is the first one, the reconstruction
+the second one.
+<h1>
+Simulation</h1>
+The simulation is done in two steps, one which describes the detector geometry
+and material and one which does the particle tracking and stores the hits
+and digits in a TTree itself written on a disk file. These two steps are
+steered through a macro file launched at the AliRoot prompt.
+<h2>
+Geometry</h2>
+
+<h4>
+Definition</h4>
+PHOS consists of two distinct parts. The calorimeter, named EMCA, consists
+of the PbW04 crystals within their housing. The crystals are assembled
+in <i>fNModules</i> modules of <i>fNPhi </i>rows along the x-axis direction
+and <i>fNZ</i> modules along the z-axis direction. Since the total number
+of crystals and their layout within ALICE is presently (11/11/1999) not
+final it was decided to fully parametrize the geometry. A change in any
+of the three previously defined parameters will provide automatically a
+new layout of the modules.
+<br>The second part of PHOS is the charged particle identifier. Since until
+end of 2000 no decision will be taken on the final design of this element
+two or more versions can be considered. Today (11/11/1999) only one version
+is implemented and is named PPSD for PHOS Pre-Shower Detector. It consists
+of a first layer of <i>fNumberOfModulesPhi</i> x <i>fNumberOfModulesZ </i>gas
+detectors per PHOS module, each detectors being subdivided into <i>fNumberOfPadsPhi</i>
+x <i>fNumberOfPadsZ </i>gas cells, a Lead converter and a second layer
+of gas detectors identical to the first layer. This second part is positionned
+on top of the EMCA module.
+<br><br>
+    <center>
+      <img SRC="PHOSGeantTree.gif" ALT="Geant Tree for PHOS" >
+      <br><br>
+      <b> Figure 1.: </b> <i> GEANT Tree which describes the PHOS geometry </i>
+    </center>
+
+<h4>
+Implementation</h4>
+<p>
+    <center>
+      <img SRC="aliphossimulation.gif" ALT="Geom/Simul class diagram" >
+      <br><br>
+      <b> Figure 2.: </b> <i> Class diagram for the geometry/simulation package </i>
+    </center>
+<p>
+<i><u>AliPHOS</u> : </i>This is the base class. It derives from <i>AliDetector.
+</i>It's only purpose so far (11/11/1999) is to describe the materials
+(&agrave; la <i>AliMC</i>) needed for the EMCA and PPSD construction.
+<p>
+<i><u>AliPHOSv4</u></i>: It derives from <i>AliPHOS</i>.
+<br>
+<ul>
+<li>
+It sets up the geometry for the Root display (<i>AliPHOSv4::BuildGeometry()</i>)
+and for the GEANT tracking (<i>AliPHOSv4::CreateGeometry()</i>).</li>
+
+<li>
+It watches the tracks passing through the active media of EMCA and PPSD
+(<i>AliPHOSv4::StepManager()</i>).</li>
+
+<li>
+It stores the hits (<i>AliPHOSv4::AddHit()</i>), using the <i>AliPHOSHit</i>
+class.</li>
+
+<li>
+It stores the digits (<i>AliPHOSv4::FinishEvent()</i>), using the <i>AliPHOSDigit</i>
+class.</li>
+</ul>
+<p>
+<i><u>AliPHOSGeometry</u></i>: It derives from <i>TObject</i> to make it
+persistent. It is a singleton, i.e., a pointer to the unique instance of
+this class is obtained by:
+<center><PRE class="code">AliPHOSGeometry * Geom = AliPHOSGeometry::GetInstance()</PRE></center>
+
+<ul>
+<li>
+It sets the various parameters for the geometry description and provides
+the method to access all the parameters. To avoid cumbersome macros at
+run time these parameters can only be changed manually in the source code.</li>
+
+<li>
+It provides the method to convert the absolute detector Id (crystal in
+EMCA or pad in PPSD) into a relative Id : PHOS module number, PPSD module
+number, row, column (<i>AliPHOSGeometry::AbsToRelNumbering()</i>) and the
+reverse operation (<i>AliPHOSGeometry::RelToAbsNumbering()</i>).</li>
+
+<li>
+It provides the method to convert an absolute Id into a three-vector giving
+the position of the detector in ALICE (<i>AliPHOSGeometry::RelPosInAlice()</i>)</li>
+</ul>
+<p>
+<i><u>AliPHOSHit</u></i>: It derives from <i>AliHit</i>. It stores the
+hits as the pair (absolute Id, deposited energy) in the hit TTree when
+ordered by the step manager of <i>AliPHOSv4</i>
+<p>
+<i><u>AliPHOSDigit</u></i> : It derives from <i>AliDigit</i>. It stores
+the digits as the pair (absolute Id, energy) in the&nbsp; digit TTree when
+ordered by the finish event&nbsp; of <i>AliPHOSv4</i>
+<h4>
+Usage</h4>
+<p>
+<PRE class="code">
+Int_t iPHOS=1;
+if(iPHOS) {
+AliPHOS * phos = new AliPHOSv4("PHOS", char * name) ;
+}
+</PRE>
+<br>where name can take the following values:
+<ul>
+<li>
+<i>GPS2</i>: will create EMCA plus PPSD
+<br><br>
+    <center>
+	  <table>
+	    <tr>
+	      <td align=center valign=baseline>
+		<img SRC="AlicebyGeant.gif" ALT="Geant display of PHOS" width="447" height="429" >
+	      </td>
+	      <td align=center valign=baseline>
+		<img SRC="AlicebyRoot.gif" ALT="Root display of Alice" width="447" height="429" >
+	      </td>
+	    <tr>
+	      <td align=left valign=top>
+		<b> Figure 3.: </b> <i> GEANT display of ALICE </i>
+	      </td>
+	      <td align=left valign=top>
+		<b> Figure 4.: </b> <i> Root display of ALICE  </i>
+	      </td>
+	    </tr>	  
+	  </table>
+	</center> <br><br>
+</li>
+
+<li>
+more to come from Protvino (EMCA plus other CPV type)</li>
+</ul>
+
+<br>EMCA consists of 5 modules of 64x64 modules each, positionned at
+azimuthal angles -40, -20, 0, +20, +40 (see figures). PPSD consists per
+EMCA module of 2 layers of 4x4 gas detectors each, each detector having
+24x24 gas cells. 
+
+<hr>
+<address class="left">
+      &copy; <a href="mailto:schutz@in2p3.fr">>Groupe Photons Subatech (Yves SCHUTZ)</a>
+      <a href="http://www-subatech.in2p3.fr/~photons/subatech/en_index.shtml">[Go
+	to the GPS Home Page]</a>
+</address>
+<!-- Created: Wed Nov 17 12:16:58 CET 1999 -->
+<!-- hhmts start -->
+Last modified: Tue Nov 23 09:49:02 CET 1999
+<!-- hhmts end -->
+<div align=right><a href="http://validator.w3.org/check/referer"><img SRC="vh40.gif" ALT="Valid HTML 4.0!" BORDER=0 height=31 width=88></a><a href="http://jigsaw.w3.org/css-validator"><img SRC="vcss.gif" ALT="Valid CSS!" BORDER=0 height=31 width=88></a></div>
+
+
+</body>
+</html>
+

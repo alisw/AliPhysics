@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"
+               "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <meta name="GENERATOR" content="Mozilla/4.51 [en] (X11; I; Linux 2.2.5-15 i686) [Netscape]">
+    <title>PHOS FAST SIMULATION Proposal</title>
+    <!-- Changed by: Yves Schutz,  7-Dec-1999 -->
+    <link REL="stylesheet" href="http://www-subatech.in2p3.fr/~photons/gps_alice.css" type="text/css">
+    <script language="JavaScript">   
+      <!--
+      
+      function open1() 
+      { 
+      x = window.open('alirecpointclassdiagram.html', 'AliRecPoint', 'status=yes,width=680,height=750');
+      }     
+      function open2() 
+      { 
+      x = window.open('alirecpointclass.html', 'AliRecPoint', 'status=yes,width=430,height=650');
+      }
+      function open3() 
+      { 
+      x = window.open('AliRecPoint.h', 'AliRecPointh', 'status=yes');
+      }
+      function open4() 
+      { 
+      x = window.open('AliRecPoint.cxx', 'AliRecPointcxx', 'status=yes');
+      }
+      function open5() 
+      { 
+      x = window.open('AliGeometry.h', 'AliGeometryh', 'status=yes');
+      }
+      function open6() 
+      { 
+      x = window.open('AliPHOSGeometry.h', 'AliPHOSGeometryh', 'status=yes');
+      }
+       function open7() 
+      { 
+      x = window.open('AluPHOSGeometry.cxx', 'AliPHOSGeometrycxx', 'status=yes');
+      }
+     //-->
+    </script>
+  </head>
+  <body>
+    
+    
+    <h1>
+      Proposal for the AliRecPoint Base Class 
+    </h1>
+    At the Offline meeting held during December 1999, it was decided
+    that a AliRecpoint base class should be designed. 
+    First let's  suggest the following class diagram:
+    <br><br>
+    <h4>
+      <ol>
+      <li>
+	<A href="#1" onClick="open1()"> AliRecpoint class in AliRoot</A>   
+      </li>
+      <li>
+	<A href="#2" onClick="open2()"> Details of the AliRecpoint class</A>  
+      </li>
+    </ol>
+  </h4>
+      <br><br>
+      And now here is the suggested implementation.
+    <br><br>
+    <h4>
+    <ol>
+      <li>
+<!--	<A href="#3" onClick="open3()">AliRecPoint.h</A> -->	
+     	<A href="AliRecPoint.h">AliRecPoint.h</A>
+      </li>
+      <li>
+<!--	<A href="#4" onClick="open4()">AliRecPoint.cxx</A> -->
+     	<A href="AliRecPoint.cxx">AliRecPoint.cxx</A>
+      </li>
+      <li>
+<!--	<A href="#5" onClick="open5()">AliGeometry.h</A> -->
+ 	<A href="AliGeometry.h">AliGeometry.h</A>	
+      </li>
+    </ol>
+  </h4>  
+    <br><br> 
+    ... and an example on how PHOS uses AliGeometry
+    <br><br>
+    <h4>
+    <ol>
+      <li>
+<!--	<A href="#6" onClick="open6()">AliPHOSGeometry.h</A> -->
+ 	<A href="AliPHOSGeometry.h">AliPHOSGeometry.h</A>
+      </li>
+      <li>
+<!--	<A href="#7" onClick="open7()">AliPHOSGeometry.cxx</A> -->
+ 	<A href="AliPHOSGeometry.cxx">AliPHOSGeometry.cxx</A>
+     </li>
+    </ol>
+    </h4>
+    <br><br>
+    But I need a new AliDigit looking like this : <A href="AliDigitNew.h">AliDigitNew.h</A>
+    <hr>
+    <address class="left">
+      &copy; <a href="mailto:schutz@in2p3.fr">Groupe Photons Subatech</a> <a href="http://www-subatech.in2p3.fr/~photons/subatech/en_index.shtml">[Go
+	to the GPS Home Page]</a></address>
+    
+    <address class="right"> 
+      <!-- Created: Tue Oct 26 19:52:56 CEST 1999 -->
+      <!-- hhmts start -->
+Last modified: Thu Dec  9 23:30:14 CET 1999
+<!-- hhmts end --></address>
+    
+    <div align=right><a href="http://validator.w3.org/check/referer"><img SRC="vh40.gif" ALT="Valid HTML 4.0!" BORDER=0 height=31 width=88></a><a href="http://jigsaw.w3.org/css-validator"><img SRC="vcss.gif" ALT="Valid CSS!" BORDER=0 height=31 width=88></a></div>
+    
+  </body>
+</html>
