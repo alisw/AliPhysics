@@ -142,10 +142,10 @@ void RICHpadtestC (Int_t evNumber1=0,Int_t evNumber2=0)
 	   for (Int_t hit=0;hit<nhits;hit++) {
               mHit = (AliRICHHit*) Hits->UncheckedAt(hit);
               Int_t nch  = mHit->fChamber;              // chamber number
-              Float_t x  = mHit->fX;                    // x-pos of hit
-              Float_t y  = mHit->fZ;                    // y-pos
-	      Float_t z  = mHit->fY;
-	      Int_t index = mHit->fTrack;
+              Float_t x  = mHit->X();                    // x-pos of hit
+              Float_t y  = mHit->Z();                    // y-pos
+	      Float_t z  = mHit->Y();
+	      Int_t index = mHit->Track();
 	      Int_t particle = mHit->fParticle;    
 	      Float_t R;
 
