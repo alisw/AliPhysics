@@ -5,6 +5,9 @@
 //_____________________________________________________________
 // AliL3TPCBeamTestMemHandler
 //
+// Class for converting the test beam data of May 2004 
+// to the HLT file format using R. Bramms tables.
+//
 // Author: C. Loizides <loizides@ikf.uni-frankfurt.de>
 // -- Copyright &copy ALICE HLT Group
 </pre>
@@ -26,7 +29,8 @@ using namespace std;
 ClassImp(AliL3TPCBeamTestMemHandler)
 
 AliL3TPCBeamTestMemHandler::AliL3TPCBeamTestMemHandler(Char_t *fPathToMappingFile) : AliL3MemHandler()
-{ //constructor
+{ 
+  //constructor
   fMinTimeBin=1;
   fNumOfChannels=7807+1; //must be big enough to contain all channels (per patch)
 
@@ -67,7 +71,8 @@ AliL3TPCBeamTestMemHandler::AliL3TPCBeamTestMemHandler(Char_t *fPathToMappingFil
 }
 
 AliL3TPCBeamTestMemHandler::~AliL3TPCBeamTestMemHandler()
-{ //destructor
+{ 
+  //destructor
   for(Int_t i = 0; i < 5504 ; i++) { 
 	if(fMapping[i] != fMappingEmptyRow && fMapping[i]) delete[] fMapping[i];
   }
@@ -76,12 +81,13 @@ AliL3TPCBeamTestMemHandler::~AliL3TPCBeamTestMemHandler()
 }
 
 AliL3DigitRowData* AliL3TPCBeamTestMemHandler::RawData2Memory(UInt_t &nrow,Int_t /*event*/)
-{ //convert the raw data
+{ 
+  //convert the raw data
   AliL3DigitRowData *data = 0;
   nrow=0;
 
   Int_t nrowsdummy=AliL3Transform::GetNRows(fPatch);
-  fRows = new RowStructure[nrowsdummy];
+  fRows = new AliRowStructure[nrowsdummy];
   for(Int_t i=0;i<nrowsdummy;i++){
    fRows[i].fRow=-1;
    fRows[i].fNDigits=0;
@@ -228,7 +234,8 @@ AliL3DigitRowData* AliL3TPCBeamTestMemHandler::RawData2Memory(UInt_t &nrow,Int_t
 }
 
 Bool_t AliL3TPCBeamTestMemHandler::RawData2CompBinary(Int_t event)
-{ //raw data to memory
+{ 
+  //raw data to memory
   Bool_t out = kTRUE;
   UInt_t ndigits=0;
   AliL3DigitRowData *digits=0;

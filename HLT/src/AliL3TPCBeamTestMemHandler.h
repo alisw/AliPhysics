@@ -3,6 +3,16 @@
 #ifndef ALIL3TPCBEAMTESTMEMHANDLER_H
 #define ALIL3TPCBEAMTESTMEMHANDLER_H
 
+//_____________________________________________________________
+// AliL3TPCBeamTestMemHandler
+//
+// Class for converting the test beam data of May 2004 
+// to the HLT file format using R. Bramms tables.
+//
+// Author: C. Loizides <loizides@ikf.uni-frankfurt.de>
+// -- Copyright &copy ALICE HLT Group
+
+
 #include "AliL3MemHandler.h"
 
 class AliL3TPCBeamTestMemHandler : public AliL3MemHandler{
@@ -19,21 +29,17 @@ class AliL3TPCBeamTestMemHandler : public AliL3MemHandler{
     fMinTimeBin=i;
   }
 
-  Int_t MappingGetPadRow(Int_t channel) {
+  Int_t MappingGetPadRow(Int_t channel) const {
     Int_t retval;
-    if(channel < fNumOfChannels)
-      retval = fMapping[channel][2]-fRowMin;
-    else
-      retval = -1;
+    if(channel < fNumOfChannels) retval = fMapping[channel][2]-fRowMin;
+    else retval = -1;
     return retval;
   }
 
-  Int_t MappingGetPad(Int_t channel) {
+  Int_t MappingGetPad(Int_t channel) const {
     Int_t retval;
-    if(channel < fNumOfChannels)
-      retval = fMapping[channel][3];
-    else
-      retval = -1;
+    if(channel < fNumOfChannels) retval = fMapping[channel][3];
+    else retval = -1;
     return retval;
   }
 
@@ -42,21 +48,21 @@ class AliL3TPCBeamTestMemHandler : public AliL3MemHandler{
 
  private:
 
-struct RowStructure{
-  Int_t fRow;       //row
-  Int_t fNDigits;   //digits
-  Int_t *fPadPos;   // pad position
-};
+  struct AliRowStructure {
+    Int_t fRow;       //row
+    Int_t fNDigits;   //digits
+    Int_t *fPadPos;   // pad position
+  };
   
- Short_t **fMapping;//!          // mapping of channels to pads
- Short_t *fMappingEmptyRow;//!   // helper field
- Int_t fNumOfChannels;           // number of channels
+  Short_t **fMapping;//!          // mapping of channels to pads
+  Short_t *fMappingEmptyRow;//!   // helper field
+  Int_t fNumOfChannels;           // number of channels
 
- Short_t *fInputPtr;//!         // input pointer from shared memory
- Int_t fInputSize;//!           // size of input data
- RowStructure *fRows;//!        // rows
- Int_t fNTimeBins;              // number of timebins
- Int_t fMinTimeBin;             // min timebin (not zero because of altro)
+  Short_t *fInputPtr;//!         // input pointer from shared memory
+  Int_t fInputSize;//!           // size of input data
+  AliRowStructure *fRows;//!     // rows
+  Int_t fNTimeBins;              // number of timebins
+  Int_t fMinTimeBin;             // min timebin (not zero because of altro)
 
   ClassDef(AliL3TPCBeamTestMemHandler,1)   //RawData Filehandler class
 };
