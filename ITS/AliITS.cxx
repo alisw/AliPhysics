@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.70  2002/05/10 22:28:30  nilsen
+Changes by Massimo Masera to allow the TTree of clusters to be written to a
+file otherthan the one with digits in it.
+
 Revision 1.69  2002/05/05 21:06:55  nilsen
 Added GetSimulationMoel, and fixed up SetDefaultSimulation to do the
 proper initilization when a simulation has already been defined.
@@ -1519,7 +1523,18 @@ void AliITS::MakeTreeC(Option_t *option){
   TFile *fileRecPoints = gAlice->GetTreeRFile();
   if(fileRecPoints)fileRecPoints->cd();
     const char *optC = strstr(option,"C");
-    if (optC && !fTreeC) fTreeC = new TTree("TC","Clusters in ITS");
+    char hname[30];
+    Int_t cureve = gAlice->GetEvNumber();
+    sprintf(hname,"TreeC%d",cureve);
+    if(fTreeC){
+      const char *curname = fTreeC->GetName();
+      char *exists = strstr(hname,curname);
+      if(!exists){
+        delete fTreeC; 
+        fTreeC=0;
+      }
+    }
+    if (optC && !fTreeC) fTreeC = new TTree(hname,"Clusters in ITS");
     else return;
 
     Int_t buffersize = 4000;
@@ -1529,12 +1544,14 @@ void AliITS::MakeTreeC(Option_t *option){
     char clclass[40];
 
     // one branch for Clusters per type of detector
-    Int_t i;
+    Int_t i;   
     for (i=0; i<kNTYPES ;i++) {
         AliITSDetType *iDetType=DetType(i); 
         iDetType->GetClassNames(digclass,clclass);
 	// clusters
-        fCtype->AddAt(new TClonesArray(clclass,1000),i);
+        if(!ClustersAddress(i)){
+          fCtype->AddAt(new TClonesArray(clclass,1000),i);
+        }
         if (kNTYPES==3) sprintf(branchname,"%sClusters%s",GetName(),det[i]);
 	else  sprintf(branchname,"%sClusters%d",GetName(),i+1);
 	if (fCtype   && fTreeC) {

@@ -15,6 +15,10 @@
  
 /*
 $Log$
+Revision 1.4  2002/05/10 22:31:30  nilsen
+Changes by Massimo Masera to allow Recpoints and Clusters to be written
+to separate files.
+
 Revision 1.3  2002/02/06 13:52:27  barbera
 gAlice deletion corrected (from M. Masera)
 
@@ -229,19 +233,19 @@ void AliITSreconstruction::Exec(const Option_t *opt){
     TDirectory *curr = gDirectory;
     if(fFile2)fFile2->cd();
     for(evnt=0;evnt<fEnt;evnt++){
-	nparticles = gAlice->GetEvent(evnt);
-	gAlice->SetEvent(evnt);
-	if(!gAlice->TreeR()){
-      if(fFile2){
-        gAlice->MakeTree("R",fFile2);
+      nparticles = gAlice->GetEvent(evnt);
+      gAlice->SetEvent(evnt);
+      if(!gAlice->TreeR()){
+        if(fFile2){
+          gAlice->MakeTree("R",fFile2);
+        }
+        else {
+          gAlice->MakeTree("R");
+        }
       }
-      else {
-        gAlice->MakeTree("R");
-      }
-    }
-	fITS->MakeBranch("R");
-	fITS->DigitsToRecPoints(evnt,0,lopt);
-    cout << "end of recpoints finding *********************\n";
+      fITS->MakeBranch("R");
+      fITS->MakeTreeC();
+      fITS->DigitsToRecPoints(evnt,0,lopt);
     } // end for evnt
     curr->cd();
 }
