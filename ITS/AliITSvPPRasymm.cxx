@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.50  2001/10/18 12:25:07  barbera
+Detailed geometry in BuildGeometry() commented out (450 MB needed to compile the file). Six cylinders put back but improved by comparison with the ITS coarse geometry
+
 Revision 1.49  2001/10/18 03:09:21  barbera
 The method BuildGeometry() has been completely rewritten. Now display.C can display the detailed ITS geometry instead of the old six dummy cylunders.
 
@@ -704,12 +707,12 @@ void AliITSvPPRasymm::BuildGeometry(){
   // --- Define SDD volumes ------------------------------------------
   
   TPCON *it34 = new TPCON("IT34","IT34","void",0.,360.,6); 
-  it34->DefineSection(1,-34.6,23.49,28.); 
-  it34->DefineSection(2,-23.65,23.49,28.); 
-  it34->DefineSection(3,-23.65,14.59,28.); 
-  it34->DefineSection(4,23.65,14.59,28.); 
-  it34->DefineSection(5,23.65,23.49,28.); 
-  it34->DefineSection(6,34.6,23.49,28.);   
+  it34->DefineSection(0,-34.6,23.49,28.); 
+  it34->DefineSection(1,-23.65,23.49,28.); 
+  it34->DefineSection(2,-23.65,14.59,28.); 
+  it34->DefineSection(3,23.65,14.59,28.); 
+  it34->DefineSection(4,23.65,23.49,28.); 
+  it34->DefineSection(5,34.6,23.49,28.);   
   
   I302dits[0] = 3.6250;
   I302dits[1] = 0.0150;
@@ -754,12 +757,12 @@ void AliITSvPPRasymm::BuildGeometry(){
   
 
   TPCON *it56 = new TPCON("IT56","IT56","void",0.,360.,6); 
-  it56->DefineSection(1,-57.45,43.6,48.); 
-  it56->DefineSection(2,-49.15,43.6,48.); 
-  it56->DefineSection(3,-49.15,36.9,48.); 
-  it56->DefineSection(4,50.55,36.9,48.); 
-  it56->DefineSection(5,50.55,43.6,48.); 
-  it56->DefineSection(6,57.45,43.6,48.);    
+  it56->DefineSection(0,-57.45,43.6,48.); 
+  it56->DefineSection(1,-49.15,43.6,48.); 
+  it56->DefineSection(2,-49.15,36.9,48.); 
+  it56->DefineSection(3,50.55,36.9,48.); 
+  it56->DefineSection(4,50.55,43.6,48.); 
+  it56->DefineSection(5,57.45,43.6,48.);    
 
   dits[0] = 3.75;
   dits[1] = 0.045;
