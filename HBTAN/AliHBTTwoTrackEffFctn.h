@@ -23,7 +23,7 @@ class AliHBTTwoTrackEffFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelFunc
     virtual ~AliHBTTwoTrackEffFctn(){}
     TH1* GetResult();
   protected:
-    Double_t GetValue(AliHBTPair* pair) const {return pair->GetDeltaP();}
+    Double_t GetValue(AliHBTPair* pair) const {return pair->GetDeltaPvector();}
   private:
     ClassDef(AliHBTTwoTrackEffFctn,2)
  };
