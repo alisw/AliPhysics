@@ -172,7 +172,7 @@ AliITSv11GeomCable(name) {
   };
   fPhiMin = 0;
   fPhiMax = 360;
-};
+}
 
 //________________________________________________________________________
 AliITSv11GeomCableRound::AliITSv11GeomCableRound(const AliITSv11GeomCableRound &s) :
@@ -212,9 +212,13 @@ Int_t AliITSv11GeomCableRound::GetPoint( Int_t iCheckPt, Double_t *coord)
   const {
   // Get check point #iCheckPt
   TVectorD *coordVector =(TVectorD *)fPointArray.UncheckedAt(2*iCheckPt);
+#if ROOT_VERSION_CODE < ROOT_VERSION(4,0,0)
+  CopyFrom(coord, coordVector->GetElements());
+#else
   CopyFrom(coord, coordVector->GetMatrixArray());
+#endif 
   return kTRUE;
-};
+}
 
 //________________________________________________________________________
 Int_t AliITSv11GeomCableRound::GetVect( Int_t iCheckPt, Double_t *coord)
@@ -224,9 +228,14 @@ Int_t AliITSv11GeomCableRound::GetVect( Int_t iCheckPt, Double_t *coord)
   //
 
   TVectorD *coordVector =(TVectorD *)fPointArray.UncheckedAt(2*iCheckPt+1);
+#if ROOT_VERSION_CODE < ROOT_VERSION(4,0,0)
+  CopyFrom(coord, coordVector->GetElements());
+#else
   CopyFrom(coord, coordVector->GetMatrixArray());
+#endif 
   return kTRUE;
-};
+}
+
 //________________________________________________________________________
 void AliITSv11GeomCableRound::AddCheckPoint( TGeoVolume *vol, Int_t iCheckPt,
 					       Double_t *coord, Double_t *orthVect)
@@ -251,7 +260,7 @@ void AliITSv11GeomCableRound::AddCheckPoint( TGeoVolume *vol, Int_t iCheckPt,
     fPointArray.AddAt(point, iCheckPt*2  );
     fPointArray.AddAt(vect,  iCheckPt*2+1);
   };
-};
+}
 
 //________________________________________________________________________
 void AliITSv11GeomCableRound::PrintCheckPoints() const {
@@ -262,12 +271,14 @@ void AliITSv11GeomCableRound::PrintCheckPoints() const {
     TVectorD *coordVector = (TVectorD *)fPointArray.UncheckedAt(i*2);
     //TVectorD *vectVector = (TVectorD *)fPointArray.UncheckedAt(i*2+1);
     Double_t coord[3];
+#if ROOT_VERSION_CODE < ROOT_VERSION(4,0,0)
+    CopyFrom(coord, coordVector->GetElements());
+#else
     CopyFrom(coord, coordVector->GetMatrixArray());
-
+#endif 
     printf("   ( %.2f, %.2f, %.2f )\n", coord[0], coord[1], coord[2]);
   };
-
-};
+}
 
 
 //________________________________________________________________________
@@ -412,7 +423,7 @@ Int_t AliITSv11GeomCableRound::CreateAndInsertCableSegment(Int_t p2)
 //   p2Vol->AddNode(vSphere, p2*3  , tr2);
 
   return kTRUE;
-};
+}
 
 
 //________________________________________________________________________
@@ -577,7 +588,7 @@ Int_t AliITSv11GeomCableRound::CreateAndInsertTorusSegment(Int_t p2, Double_t ro
   };
 
   return kTRUE;
-};
+}
 
 //________________________________________________________________________
 TGeoVolume *AliITSv11GeomCableRound::CreateSegment( Double_t *coord1,
@@ -632,7 +643,7 @@ TGeoVolume *AliITSv11GeomCableRound::CreateSegment( Double_t *coord1,
 
   vCableSeg->SetVisibility(kFALSE);
   return vCableSeg;
-};
+}
 
 
 //________________________________________________________________________
@@ -668,7 +679,7 @@ TGeoVolume *AliITSv11GeomCableRound::CreateTorus( Double_t &phi,
 
   vCableSeg->SetVisibility(kFALSE);
   return vCableSeg;
-};
+}
 
 
 //________________________________________________________________________
@@ -681,7 +692,7 @@ void AliITSv11GeomCableRound::SetNLayers(Int_t nLayers) {
       fLayMedia[i] = 0;
     };
   };
-};
+}
 
 //________________________________________________________________________
 Int_t AliITSv11GeomCableRound::SetLayer(Int_t nLayer, Double_t thick,
@@ -710,4 +721,4 @@ Int_t AliITSv11GeomCableRound::SetLayer(Int_t nLayer, Double_t thick,
   fLayColor[nLayer] = color;
 
   return kTRUE;
-};
+}

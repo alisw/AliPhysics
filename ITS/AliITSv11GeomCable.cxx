@@ -45,7 +45,7 @@ AliITSv11GeomCable::AliITSv11GeomCable(const char* name) {
   fInitialNode = 0;
   fPointArray.SetOwner(); 
   SetName(name);
-};
+}
 
 
 //________________________________________________________________________
@@ -77,7 +77,7 @@ AliITSv11GeomCable& AliITSv11GeomCable::operator=(const AliITSv11GeomCable &s) {
 AliITSv11GeomCable::~AliITSv11GeomCable() {
   fPointArray.Clear();
   fVolumeArray.Clear();
-};
+}
 
 //________________________________________________________________________
 void AliITSv11GeomCable::AddCheckPoint( TGeoVolume *vol, Int_t iCheckPt,
@@ -97,7 +97,7 @@ void AliITSv11GeomCable::AddCheckPoint( TGeoVolume *vol, Int_t iCheckPt,
     TVectorD *point = new TVectorD(3,coord);
     fPointArray.AddAt(point, iCheckPt);
   };
-};
+}
 
 //________________________________________________________________________
 void AliITSv11GeomCable::ResetPoints() {
@@ -106,7 +106,7 @@ void AliITSv11GeomCable::ResetPoints() {
   //
   fPointArray.Delete();
   fVolumeArray.Clear();
-};
+}
 
 
 //________________________________________________________________________
@@ -116,9 +116,13 @@ const {
   // Get the check point #iCheckPt
   //
   TVectorD *coordVector =(TVectorD *)fPointArray.UncheckedAt(iCheckPt);
+#if ROOT_VERSION_CODE < ROOT_VERSION(4,0,0)
+  CopyFrom(coord, coordVector->GetElements());
+#else
   CopyFrom(coord, coordVector->GetMatrixArray());
+#endif
   return kTRUE;
-};
+}
 
 //________________________________________________________________________
 Int_t AliITSv11GeomCable::GetVect( Int_t iCheckPt,  Double_t *coord)
@@ -128,9 +132,13 @@ const {
   //
 
   TVectorD *coordVector =(TVectorD *)fPointArray.UncheckedAt(iCheckPt);
+#if ROOT_VERSION_CODE < ROOT_VERSION(4,0,0)
+  CopyFrom(coord, coordVector->GetElements());
+#else
   CopyFrom(coord, coordVector->GetMatrixArray());
+#endif
   return kTRUE;
-};
+}
 
 //________________________________________________________________________
 TGeoVolume *AliITSv11GeomCable::GetVolume( Int_t iCheckPt ) const {
@@ -142,7 +150,7 @@ TGeoVolume *AliITSv11GeomCable::GetVolume( Int_t iCheckPt ) const {
     return 0;
   else
     return (TGeoVolume *) fVolumeArray.UncheckedAt(iCheckPt);
-};
+}
 
 //________________________________________________________________________
 void AliITSv11GeomCable::SetInitialNode(TGeoVolume *vol) {
@@ -153,14 +161,14 @@ void AliITSv11GeomCable::SetInitialNode(TGeoVolume *vol) {
   if (fInitialNode) delete fInitialNode;
   fInitialNode = new TGeoNodeMatrix(vol,0);
   fInitialNode->SetName("nodeInConstruction");
-};
+}
 
 //________________________________________________________________________
 void AliITSv11GeomCable::ResetInitialNode() {
   // Reset the initial node if it is set.
   if (fInitialNode) delete fInitialNode;
   fInitialNode = 0;
-};
+}
 
 //________________________________________________________________________
 bool AliITSv11GeomCable::CheckDaughter(TGeoNode* node, Int_t i)
@@ -186,7 +194,7 @@ bool AliITSv11GeomCable::CheckDaughter(TGeoNode* node, Int_t i)
     fNodeInd[i] = -1;
   };
   return kFALSE;
-};
+}
 
 //________________________________________________________________________
 Int_t AliITSv11GeomCable::
@@ -242,7 +250,7 @@ GetCheckPoint( Int_t iCheckPt, Int_t iOccur, Int_t motherLevel,
     CopyFrom(localCoord, coord);
   };
   return kTRUE;
-};
+}
 
 //________________________________________________________________________
 Int_t AliITSv11GeomCable::GetCheckVect( Int_t iCheckPt, Int_t iOccur,
@@ -295,7 +303,7 @@ Int_t AliITSv11GeomCable::GetCheckVect( Int_t iCheckPt, Int_t iOccur,
     CopyFrom(localCoord, coord);
   };
   return kTRUE;
-};
+}
 
 
 //________________________________________________________________________
@@ -348,5 +356,5 @@ Int_t AliITSv11GeomCable::GetCheckVect( const Double_t *localCoord,
     CopyFrom(tempCoord, coord);
   };
   return kTRUE;
-};
+}
 
