@@ -1,81 +1,50 @@
-############################### TPC Makefile ##################################
+#
+# Makefile for ROOT (no aliroot) version of HLT code.
+#
+# Author: Anders Vestbo                       
+#
 
-# Include machine specific definitions
+CXX         = g++
+LD          = g++
+CXXFLAGS    = -O2 -Wall -fPIC
+LDFLAGS     = -O2
+SOFLAGS     = -shared
 
-include $(ALICE_ROOT)/conf/GeneralDef
-include $(ALICE_ROOT)/conf/MachineDef.$(ALICE_TARGET)
+TOPDIR = $(HOME)/level3code
+OBJDIR = tgt_Linux
 
-PACKAGE = AliL3Hough
+SRCS	= AliL3HoughTransformer.cxx AliL3Hough.cxx AliL3HoughTrack.cxx\
+	  AliL3HoughMaxFinder.cxx AliL3HoughEval.cxx AliL3HoughMerger.cxx \
+	  AliL3Histogram.cxx AliL3Histogram1D.cxx \
+	  AliL3HoughIntMerger.cxx AliL3HoughGlobalMerger.cxx 
 
-# C++ sources
+DICT = AliL3HoughCint.cxx
+DICTH = AliL3HoughCint.h
+DICTO = $(OBJDIR)/AliL3HoughCint.o
+
+HDRS = $(SRCS:.cxx=.h) AliL3HoughLinkDef.h
+
+OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(DICTO)
+
+LEVELSO = $(LEVEL3)/lib_$(USERNAME)/libAliL3Hough.so
+
+all : $(OBJDIR) $(LEVELSO)
+
+$(LEVELSO) : $(OBJS)
+	$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@
+
+$(DICT) : $(HDRS)
+	@echo "Generating dictionary..."
+	@rootcint -f $(DICT) -c -I$(ROOTSYS) -I$(TOPDIR)/src $(HDRS)
 
 
-SRCS	       = AliL3HoughTransformer.cxx AliL3Hough.cxx AliL3HoughTrack.cxx\
-		 AliL3HoughMaxFinder.cxx AliL3HoughEval.cxx AliL3HoughMerger.cxx \
-		 AliL3Histogram.cxx AliL3Histogram1D.cxx GetGoodParticles.cxx AliL3ClusterFinder.cxx \
-		 AliL3HoughIntMerger.cxx AliL3HoughGlobalMerger.cxx AliL3HoughDisplay.cxx
+$(OBJDIR)/%.o : %.cxx 
+	$(CXX) $(CXXFLAGS) -c -I$(ROOTSYS)/include -I$(TOPDIR)/src -I$(TOPDIR)/hough -o $@ $<
 
+$(OBJDIR) : 
+	test ! -e $(OBJDIR) && mkdir -p $(OBJDIR)
 
-# C++ Headers
-
-HDRS          = $(SRCS:.cxx=.h) AliL3Defs.h GetGoodParticles.h AliL3HoughLinkDef.h
-# Library dictionary
-
-DICT          = AliL3HoughCint.cxx
-DICTH         = $(DICT:.cxx=.h)
-DICTO         = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(DICT))
-
-# FORTRAN Objectrs
-
-FOBJS         = $(FSRCS:.f=.o)
-
-# C Objects
-
-COBJS         = $(CSRCS:.c=.o)
-
-# C++ Objects
-
-OBJS          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
-
-# C++ compilation flags
-
-CXXFLAGS      = $(CXXOPTS) -g -Wall -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TPC \
-		-I$(ALICE_ROOT)/CONTAINERS -I$(HOME)/level3code/src 	
-
-#CXXFLAGS      = $(CXXOPTS) -g -Wall -I$(ROOTSYS)/include -I. -I $(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/include/ -DCOMPILING
- 
-# FORTRAN compilation flags
-
-FFLAGS      = $(FOPT)
- 
-##### TARGETS #####
- 
-# Target
-
-SLIBRARY	= $(LEVEL3)/lib_$(USERNAME)/libAliL3Hough.$(SL)
-
-default:	$(SLIBRARY)
-
-$(LEVEL3)/lib_$(USERNAME)/libAliL3Hough.$(SL):  $(OBJS)
-
-$(DICT):		$(HDRS)
-
-depend:			$(SRCS)
-
-TOCLEAN			= $(OBJS) *Cint.h *Cint.cxx
-
-############################### General Macros ################################
-
-include $(ALICE_ROOT)/conf/GeneralMacros
-
-############################ Dependencies #####################################
-
-include tgt_$(ALICE_TARGET)/Make-depend 
-
-###########
-so:
-	rm -fr $(LEVEL3)/lib_$(USERNAME)/libAliL3Hough.so
-clean:
-	rm -fr tgt_Linux/*.o
-	rm -fr $(LEVEL3)/lib_$(USERNAME)/libAliL3Hough.so
-	rm -fr $(DICT) $(DICTH) $(DICTO)
+clean :
+	rm -f $(OBJDIR)/*.o
+	rm -f $(LEVEL3)/lib_$(USERNAME)/libAliL3Hough.so
+	rm $(DICT) $(DICTH) 
