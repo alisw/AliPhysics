@@ -109,13 +109,13 @@ public:
      void SetSampledEdx(Float_t q, Int_t i) {
         Double_t c=GetC(), e=GetEta(), t=GetTgl(), x=GetX();
         q *= TMath::Sqrt((1-(c*x-e)*(c*x-e))/(1+t*t));
-        fdEdx[i]=q;
+        fdEdxSample[i]=q;
      }
      void UseClusters(AliTPCClustersArray *ca, Int_t n=0);
      void CookdEdx(Double_t low=0.05, Double_t up=0.70);
 
    private:
-     Float_t fdEdx[200]; //array of dE/dx samples 
+     Float_t fdEdxSample[200]; //array of dE/dx samples 
    };
 
 private:

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/11/02 07:27:16  kowal2
+code corrections
+
 Revision 1.2  2000/06/30 12:07:50  kowal2
 Updated from the TPC-PreRelease branch
 
@@ -491,15 +494,16 @@ void AliTPCtracker::AliTPCseed::CookdEdx(Double_t low, Double_t up) {
   do {
     swap=0;
     for (i=0; i<fN-1; i++) {
-      if (fdEdx[i]<=fdEdx[i+1]) continue;
-      Float_t tmp=fdEdx[i]; fdEdx[i]=fdEdx[i+1]; fdEdx[i+1]=tmp;
+      if (fdEdxSample[i]<=fdEdxSample[i+1]) continue;
+      Float_t tmp=fdEdxSample[i];
+      fdEdxSample[i]=fdEdxSample[i+1]; fdEdxSample[i+1]=tmp;
       swap++;
     }
   } while (swap);
 
   Int_t nl=Int_t(low*fN), nu=Int_t(up*fN);
   Float_t dedx=0;
-  for (i=nl; i<=nu; i++) dedx += fdEdx[i];
+  for (i=nl; i<=nu; i++) dedx += fdEdxSample[i];
   dedx /= (nu-nl+1);
   SetdEdx(dedx);
 }
