@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.33  2001/02/10 22:26:39  mariana
+Move the initialization of the containers for raw clusters in MakeTreeC()
+
 Revision 1.32  2001/02/08 23:55:31  nilsen
 Removed fMajor/MinorVersion variables in favor of variables in derived classes.
 Set arrays char *det[3] = {"SPD","SDD","SSD"} as const.
@@ -696,7 +699,6 @@ void AliITS::MakeTreeC(Option_t *option)
      for (i=0; i<kNTYPES ;i++) {
        AliITSDetType *iDetType=DetType(i); 
        iDetType->GetClassNames(digclass,clclass);
-       //printf("i, digclass, recclass %d %s %s\n",i,digclass,clclass); 
        // clusters
        (*fCtype)[i] = new TClonesArray(clclass,10000); 
         if (kNTYPES==3) sprintf(branchname,"%sClusters%s",GetName(),det[i]);
@@ -776,11 +778,9 @@ void AliITS::MakeBranch(Option_t* option, char *file)
    for (i=0; i<kNTYPES ;i++) {
        AliITSDetType *iDetType=DetType(i); 
        iDetType->GetClassNames(digclass,clclass);
-       //printf("i, digclass, recclass %d %s %s\n",i,digclass,clclass); 
        // digits
-       (*fDtype)[i] = new TClonesArray(digclass,10000); 
-       // clusters
-       //(*fCtype)[i] = new TClonesArray(clclass,10000); 
+       if(!((*fDtype)[i])) (*fDtype)[i] = new TClonesArray(digclass,10000);
+       else ResetDigits(i);
    }
 
    for (i=0; i<kNTYPES ;i++) {
@@ -788,7 +788,7 @@ void AliITS::MakeBranch(Option_t* option, char *file)
       else  sprintf(branchname,"%sDigits%d",GetName(),i+1);      
       if (fDtype && gAlice->TreeD()) {
         gAlice->MakeBranchInTree(gAlice->TreeD(), 
-                                 branchname, &((*fDtype)[i]), buffersize, file) ;
+                         branchname, &((*fDtype)[i]), buffersize, file);
 	    cout << "Making Branch " << branchname;
 	    cout << " for digits of type "<< i+1 << endl;
       }	
