@@ -6,10 +6,12 @@
   #include <iostream.h>
   #include "AliTPCParam.h"
   #include "AliTPCtracker.h"
+  #include "AliTPCpidESD.h"
   #include "AliRun.h"
   #include "AliMagF.h"
   #include "AliRunLoader.h"
   #include "AliTPCLoader.h"
+  #include "AliESDpid.h"
   #include "AliESD.h"
 
   #include "TFile.h"
@@ -69,6 +71,10 @@ Int_t AliTPCFindTracks(Int_t nev=5) {
    TStopwatch timer;
    Int_t rc=0;
    AliTPCtracker tracker(dig);
+   //An instance of the TPC PID maker
+   Double_t parTPC[]={45.0,0.08,10.}; // normalization constants,
+                                      // see AliTPCpidESD class
+   AliTPCpidESD tpcPID(parTPC);
    for (Int_t i=0;i<nev;i++){
      printf("Processing event %d\n",i);
      AliESD *event=new AliESD(); 
@@ -82,9 +88,11 @@ Int_t AliTPCFindTracks(Int_t nev=5) {
 
      tracker.LoadClusters(in);
      rc=tracker.Clusters2Tracks(event);
+     tpcPID.MakePID(event);                 // Preliminary PID
+     AliESDpid::MakePID(event);             // for the ITS tracker
      tracker.UnloadClusters();
 
-    if (rc==0) {
+     if (rc==0) {
         Char_t ename[100]; 
         sprintf(ename,"%d",i);
         ef->cd();
