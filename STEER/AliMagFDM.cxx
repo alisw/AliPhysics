@@ -335,7 +335,7 @@ if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2]
 
 //_______________________________________________________________________
 Int_t AliMagFDM::FZ(Double_t temp, const Float_t *Ar, 
-                    const Float_t delu, Int_t ik, const Int_t nk) const
+                    Float_t delu, Int_t ik, Int_t nk) const
 {
   //
   // Quest of a point position at x,y,z (Cartensian) and R,Phi,z (Polar) axises
