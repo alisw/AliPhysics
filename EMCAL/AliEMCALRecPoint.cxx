@@ -46,9 +46,12 @@ AliEMCALRecPoint::AliEMCALRecPoint()
   // ctor
   fMaxTrack = 0 ;
   fMulDigit   = 0 ;  
+  fMaxParent = 0;
+  fMulParent = 0;
   fAmp   = 0. ;   
   fCoreEnergy = 0 ; 
   fEnergyList = 0 ;
+  fParentsList = 0;
   fTime = 0. ;
   fLocPos.SetX(0.)  ;      //Local position should be evaluated
   fCoreRadius = 10;        //HG Check this
@@ -59,10 +62,13 @@ AliEMCALRecPoint::AliEMCALRecPoint(const char * opt) : AliRecPoint(opt)
 {
   // ctor
   fMaxTrack = 200 ;
-  fMulDigit   = 0 ;  
+  fMaxParent = 200;
+  fMulDigit   = 0 ; 
+  fMulParent = 0; 
   fAmp   = 0. ;   
   fCoreEnergy = 0 ; 
   fEnergyList = 0 ;
+  fParentsList = new Int_t[fMaxParent];
   fTime = -1. ;
   fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
   fCoreRadius = 10;        //HG Check this
@@ -73,6 +79,8 @@ AliEMCALRecPoint::~AliEMCALRecPoint()
   // dtor
   if ( fEnergyList )
     delete[] fEnergyList ; 
+   if ( fParentsList)
+    delete[] fParentsList;
 }
 
 //____________________________________________________________________________
@@ -290,7 +298,8 @@ void AliEMCALRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits)
   EvalCoreEnergy(logWeight, digits);
   EvalTime(digits) ;
 
-  //EvalPrimaries(digits) ;
+  EvalPrimaries(digits) ;
+  EvalParents(digits);
 }
 
 //____________________________________________________________________________
@@ -523,6 +532,56 @@ void  AliEMCALRecPoint::EvalPrimaries(TClonesArray * digits)
   fTracksList = new Int_t[fMulTrack] ;
   for(index = 0; index < fMulTrack; index++)
    fTracksList[index] = tempo[index] ;
+ 
+  delete tempo ;
+
+}
+
+//______________________________________________________________________________
+void  AliEMCALRecPoint::EvalParents(TClonesArray * digits)
+{
+  // Constructs the list of parent particles (tracks) which have contributed to this RecPoint
+ 
+  AliEMCALDigit * digit ;
+  Int_t * tempo    = new Int_t[fMaxParent] ;
+
+  Int_t index ;  
+  for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
+    digit = dynamic_cast<AliEMCALDigit *>(digits->At( fDigitsList[index] )) ; 
+    Int_t nparents = digit->GetNiparent() ;
+    Int_t * newparentarray = new Int_t[nparents] ;
+    Int_t ii ; 
+    for ( ii = 0 ; ii < nparents ; ii++)
+      newparentarray[ii] = digit->GetIparent(ii+1) ; 
+
+    Int_t jndex ;
+    for ( jndex = 0 ; jndex < nparents ; jndex++ ) { // all primaries in digit
+      if ( fMulParent > fMaxParent ) {
+	fMulTrack = - 1 ;
+	Error("GetNiparent", "increase fMaxParent")  ;
+	break ;
+      }
+      Int_t newparent = newparentarray[jndex] ;
+      Int_t kndex ;
+      Bool_t already = kFALSE ;
+      for ( kndex = 0 ; kndex < fMulTrack ; kndex++ ) { //check if not already stored
+	if ( newparent == tempo[kndex] ){
+	  already = kTRUE ;
+	  break ;
+	}
+      } // end of check
+      if ( !already) { // store it
+	tempo[fMulParent] = newparent ; 
+	fMulParent++ ;
+      } // store it
+    } // all parents in digit
+    delete newparentarray ; 
+  } // all digits
+
+  
+  fParentsList = new Int_t[fMulParent] ;
+  for(index = 0; index < fMulParent; index++)
+   fParentsList[index] = tempo[index] ;
  
   delete tempo ;
 

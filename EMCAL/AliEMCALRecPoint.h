@@ -40,12 +40,15 @@ class AliEMCALRecPoint : public AliRecPoint {
   virtual void    EvalAll(Float_t logWeight, TClonesArray * digits);
   virtual void    EvalLocalPosition(Float_t logWeight, TClonesArray * digits) ;
   virtual void    EvalPrimaries(TClonesArray * digits) ;
+  virtual void    EvalParents(TClonesArray * digits) ;
 
   // virtual void    GetGlobalPosition(TVector3 & gpos, TMatrix & /*gmat*/) const; // return global position in ALICE
   virtual void    GetGlobalPosition(TVector3 & gpos) const; // return global position (x, y, z) in ALICE
   virtual void    GetLocalPosition(TVector3 & lpos) const; // return local position (eta, phi, r) in EMCAL
   virtual Int_t * GetPrimaries(Int_t & number) const {number = fMulTrack ; 
                                                       return fTracksList ; }
+    virtual Int_t * GetParents(Int_t & number) const {number = fMulParent ; 
+                                                      return fParentsList ; }
   Float_t         GetCoreEnergy()const {return fCoreEnergy ;}
   virtual Float_t GetDispersion()const {return fDispersion ;}
   virtual void    GetElipsAxis(Float_t * lambda)const {lambda[0] = fLambda[0]; lambda[1] = fLambda[1];};
@@ -89,8 +92,11 @@ protected:
 	  Float_t *fEnergyList ;      //[fMulDigit] energy of digits
 	  Float_t fTime ;             // Time of the digit with maximal energy deposition
 	  Float_t fCoreRadius;        // The radius in which the core energy is evaluated
+          Int_t fMulParent;           // Multiplicity of the parents
+          Int_t fMaxParent;           // Maximum number of parents allowed
+          Int_t * fParentsList;       // [fMaxParent] list of the parents of the digits
 
-  ClassDef(AliEMCALRecPoint,5) // RecPoint for EMCAL (Base Class)
+  ClassDef(AliEMCALRecPoint,6) // RecPoint for EMCAL (Base Class)
  
 };
 
