@@ -113,7 +113,7 @@ void AliFMDReconstructor::Reconstruct(AliRunLoader* runLoader) const
  
   plFMD->LoadRecPoints("RECREATE");
   TClonesArray* reconParticles = new TClonesArray("AliFMDReconstParticles"); 
-  TClonesArray* digits = new TClonesArray("AliFMDDigit");
+  TClonesArray* digits = new TClonesArray("AliFMDdigit");
  
   Int_t retval=0;     
   Int_t nevents=Int_t (runLoader->TreeE()->GetEntries()); 
