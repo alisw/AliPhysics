@@ -163,6 +163,7 @@ void AliL3ConfMapper::SetPointers()
   Float_t etaSlice = (fEtaMax-fEtaMin)/fNumEtaSegment;
   
   Int_t volumeIndex;
+  Int_t local_counter=0;
   for(Int_t j=0; j<fClustersUnused; j++)
     {
       
@@ -195,7 +196,8 @@ void AliL3ConfMapper::SetPointers()
 	  fEtaHitsOutOfRange++;
 	  continue;
 	}
-                  
+      local_counter++;
+            
       //set volume pointers
       volumeIndex = localrow*fNumPhiEtaSegmentPlusOne+thisHit->phiIndex*fNumEtaSegmentPlusOne+thisHit->etaIndex;
       if(fVolume[volumeIndex].first == NULL)
@@ -213,6 +215,11 @@ void AliL3ConfMapper::SetPointers()
       fRow[localrow].last = (void *)thisHit;
       
     }
+  
+  if(fClustersUnused>0 && local_counter==0)
+    LOG(AliL3Log::kError,"AliL3ConfMapper::SetPointers","Parameters")
+      <<AliL3Log::kDec<<"No points passed to track finder, hits out of range: "
+      <<fEtaHitsOutOfRange+fPhiHitsOutOfRange<<ENDLOG;
   
 }
 
