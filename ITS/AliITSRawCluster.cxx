@@ -153,7 +153,7 @@ void AliITSRawClusterSPD::Add(AliITSRawClusterSPD* clJ) {
   
   if(this->fZStop < clJ->ZStop()) this->fZStop = clJ->ZStop();  
   
-  this->fZ = (this->fZ + clJ->Z())/2.;
+  this->fZ = this->fZ + clJ->Z();
   this->fX = (this->fX + clJ->X())/2.;
   this->fQ = this->fQ + clJ->Q();
   

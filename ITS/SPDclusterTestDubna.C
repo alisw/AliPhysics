@@ -183,7 +183,24 @@ void SPDclusterTestDubna (Int_t evNumber1=0,Int_t evNumber2=0)
      printf("Found %d entries in the tree (must be one per module per event!)\n",nent);
      Int_t lay, lad, det;
      AliITSgeom *geom = ITS->GetITSgeom();
-   
+
+   AliITSDetType *iDetType=ITS->DetType(0);
+   AliITSsegmentationSPD *seg0=(AliITSsegmentationSPD*)iDetType->GetSegmentationModel();
+   printf("SPD dimensions %f %f %f \n",seg0->Dx(),seg0->Dz(),seg0->Dy());
+   printf("SPD npixels %d %d \n",seg0->Npz(),seg0->Npx());
+   printf("SPD pitches %d %d \n",seg0->Dpz(0),seg0->Dpx(0));
+   Float_t SPDlength = seg0->Dz();	
+   Float_t SPDwidth = seg0->Dx();	
+   Float_t SPDthickness = seg0->Dy();
+   Float_t xpitch = seg0->Dpx(0);
+   if(SPDlength > 80000) SPDthickness = 150;
+   Float_t ylim;
+   if(SPDthickness < 200) {
+     ylim = SPDthickness/2 - 4;
+   }else{
+     ylim = SPDthickness/2 - 10;
+   }
+
      for (Int_t idettype=0;idettype<3;idettype++) {
 
        TClonesArray *ITSclusters  = ITS->ClustersAddress(idettype);
@@ -218,18 +235,26 @@ void SPDclusterTestDubna (Int_t evNumber1=0,Int_t evNumber2=0)
 
 		Int_t clustersizex = itsclu->NclX();
 		Int_t clustersizez = itsclu->NclZ();
-		//       Int_t xstart = itsclu->XStart();
-		//       Int_t xstop = itsclu->XStop();
 		Int_t xstart = itsclu->XStartf();
 		Int_t xstop = itsclu->XStopf();
-		Float_t fxstart = xstart*50;
-		Float_t fxstop = (xstop+1)*50;
+		Float_t fxstart = xstart*xpitch;
+		Float_t fxstop = (xstop+1)*xpitch;
 		Float_t zstart = itsclu->ZStart();
 		Float_t zstop = itsclu->ZStop();
 		Int_t zend = itsclu->Zend();
 		Int_t ntrover = itsclu->NTracks();
-		Float_t clusterx = itsclu->X();
+                Float_t clusterx = 0;
 		Float_t clusterz = itsclu->Z();
+
+		Int_t tr0, tr1, tr2;
+		itsclu->GetTracks(tr0,tr1,tr2);
+
+		for(Int_t ii=0;ii<clustersizex;ii++) {
+		  clusterx += (xstart+0.5+ii)*xpitch;
+		}
+		clusterx /= clustersizex;
+		clusterz /= clustersizez;   
+
 		Float_t clusterQ = itsclu->Q();
 
 		if(lay == 1) occup1 += clusterQ;                
@@ -248,11 +273,8 @@ void SPDclusterTestDubna (Int_t evNumber1=0,Int_t evNumber2=0)
 		Float_t dxprimlast = 10.e+6;
 		Float_t dzprimlast = 10.e+6;
 
-        	Float_t SPDlength = 83600;	
-        	Float_t SPDwidth = 12800;	
-                Float_t xhit0 = 1e+5;
-                Float_t zhit0 = 1e+5;
-		
+                Float_t xhit0 = 1e+6;
+                Float_t zhit0 = 1e+6;
        for (Int_t hit=0;hit<nhits;hit++) {
 
 		  // Find coordinate differences between the hit and cluster positions
@@ -267,9 +289,16 @@ void SPDclusterTestDubna (Int_t evNumber1=0,Int_t evNumber2=0)
 		  Int_t track = itsHit->GetTrack();
 		  Int_t dray = 0;
 		  Int_t hitstat = itsHit->GetTrackStatus();
-
 		  Float_t zhit = 10000*itsHit->GetZL();
 		  Float_t xhit = 10000*itsHit->GetXL();
+		  Float_t yhit = 10000*itsHit->GetYL();
+        Int_t parent = itsHit->GetParticle()->GetFirstMother();
+        Int_t partcode = itsHit->GetParticle()->GetPdgCode();
+
+        Int_t hitprim = 0;
+
+        if(parent < 0) hitprim = hitprim + 1; // hitprim=1 for the primery
+	// particles
 
         Float_t pxsimL = itsHit->GetPXL();  // the momenta at GEANT points
         Float_t pysimL = itsHit->GetPYL();
@@ -296,41 +325,49 @@ void SPDclusterTestDubna (Int_t evNumber1=0,Int_t evNumber2=0)
 
 		  zhit += SPDlength/2;
 		  xhit += SPDwidth/2;
-		  Float_t yhit = 10000*itsHit->GetYL();
 
-		  if(hitlayer == 1 && hitstat == 66 && yhit > 71) {
-		    xhit0 = xhit;
-		    zhit0 = zhit;
-		  }
-		  if(hitlayer == 2 && hitstat == 66 && yhit < -71) {
+
+
+		  if(hitlayer == 1 && hitstat == 66 && yhit > ylim) {
+		    //if(hitstat == 66 && hitprim ==1) {
 		    xhit0 = xhit;
 		    zhit0 = zhit;
 		  }
 
+		  
+		  if(hitlayer == 2 && hitstat == 66 && yhit < -ylim) {
+		    xhit0 = xhit;
+		    zhit0 = zhit;
+		  }		 
+		  	  
 		  if(hitstat != 68) continue; // Take only the hit if the last
 		  // track point went out from
 		  // the detector.
 
-		  if(xhit0 > 9e+4 || zhit0 > 9e+4) continue;
+		  if(xhit0 > 1e+5 || zhit0 > 1e+5) continue;
 
 		  Float_t xmed = (xhit + xhit0)/2;
 		  Float_t zmed = (zhit + zhit0)/2;
 
 		  Float_t xdif = xmed - clusterx;
 		  Float_t zdif = zmed - clusterz;
+		  xhit0 = 1e+6;
+		  zhit0 = 1e+6;
 
+        // Consider the hits inside of cluster region only   b.b.
 
-        // Consider the hits inside of cluster region only
+		  if((xmed >= fxstart && xmed <= fxstop) && (zmed >= zstart && zmed <= zstop)) {
 
-  if((xmed >= fxstart && xmed <= fxstop) && (zmed >= zstart && zmed <= zstop)) {
+	  // Consider the hits only with the track number equaled to one
+	  // of the cluster
+		    //if((track == tr0) || (track == tr1) || (track == tr2)) {      
+
         icl = 1;
 
                 //        part = (TParticle *)particles.UncheckedAt(track);
                 //        Int_t partcode = part->GetPdgCode();
                 //              Int_t primery = gAlice->GetPrimary(track);
 
-        Int_t parent = itsHit->GetParticle()->GetFirstMother();
-        Int_t partcode = itsHit->GetParticle()->GetPdgCode();
 
 //  partcode (pdgCode): 11 - e-, 13 - mu-, 22 - gamma, 111 - pi0, 211 - pi+
 //                      310 - K0s, 321 - K+, 2112 - n, 2212 - p, 3122 - lambda
@@ -352,9 +389,10 @@ void SPDclusterTestDubna (Int_t evNumber1=0,Int_t evNumber2=0)
 	Float_t theta = itsHit->GetParticle()->Theta(); // Theta angle at the
 	                                           // vertex
 	//Float_t eta = itsHit->GetParticle()->Eta(); // Pseudo rapidity at the
-	                                           // vertex
+       	                                           // vertex
+	Float_t y;
 	if((energy-pz) > 0) {
-	  Float_t y = 0.5*TMath::Log((energy+pz)/(energy-pz));
+	  y = 0.5*TMath::Log((energy+pz)/(energy-pz));
 	}else{
 	  cout<<" Warning: energy < pz ="<<energy<<","<<pz<<endl;
 	  y = 10;
@@ -368,7 +406,7 @@ void SPDclusterTestDubna (Int_t evNumber1=0,Int_t evNumber2=0)
         Float_t pzsim = itsHit->GetPZG();
 	Float_t psim = TMath::Sqrt(pxsim*pxsim+pysim*pysim+pzsim*pzsim);
 
-        Int_t hitprim = 0;
+        //Int_t hitprim = 0;
 
         if(partcode == 11 && pmod < 6) dray = 1; // delta ray is e-
                                                  // at p < 6 MeV/c
@@ -379,7 +417,7 @@ void SPDclusterTestDubna (Int_t evNumber1=0,Int_t evNumber2=0)
                                                  // detector and returned
                                                  // again
 
-        if(parent < 0) hitprim = hitprim + 1; // hitprim=1 for the primery
+        //if(parent < 0) hitprim = hitprim + 1; // hitprim=1 for the primery
                                               // particles
 
         if(hitprim > 0) noverprim = noverprim + 1;
@@ -443,14 +481,12 @@ void SPDclusterTestDubna (Int_t evNumber1=0,Int_t evNumber2=0)
       } // primery particles
 
      } // end of cluster region
+
    } // end of hit loop
 
       if(icl == 1) {
 
         // fill ntuple1
-
-        //      ntuple1->Fill(clusterlayer,clustersizex,clustersizez,noverlaps,\
-noverprim,dx,dz);
 
         if(noverlaps == 0) noverlaps = 1; // cluster contains one or more
                                           // delta rays only

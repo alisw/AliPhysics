@@ -46,7 +46,7 @@ AliITSClusterFinderSPDdubna::AliITSClusterFinderSPDdubna
     fSegmentation=seg;
     fDigits=digits;
     fClusters=recp;
-    fNclusters= 0;
+    fNclusters=0;
     fMap=new AliITSMapA1(fSegmentation,fDigits);
     SetDx();
     SetDz();
@@ -74,8 +74,8 @@ AliITSClusterFinderSPDdubna::~AliITSClusterFinderSPDdubna()
   // destructor
   if (fMap) delete fMap;
 
-
 }
+
 //_____________________________________________________________________________
 
 void AliITSClusterFinderSPDdubna::Find1DClusters()
@@ -199,7 +199,6 @@ void  AliITSClusterFinderSPDdubna::GroupClusters()
   // get number of clusters for this module
   Int_t nofClusters = fClusters->GetEntriesFast();
   nofClusters -= fNclusters;
-
   AliITSRawClusterSPD *clusterI;
   AliITSRawClusterSPD *clusterJ;
   
@@ -238,6 +237,7 @@ void  AliITSClusterFinderSPDdubna::GroupClusters()
     label[i] = 1;
   } // I clusters
   fClusters->Compress();
+
 
   /*
     Int_t totalNofClusters = fClusters->GetEntriesFast();
@@ -361,18 +361,30 @@ void AliITSClusterFinderSPDdubna::GetRecPoints()
 
   Float_t spdLength = fSegmentation->Dz();
   Float_t spdWidth = fSegmentation->Dx();
-
+  Int_t dummy = 0;
+  Float_t xpitch = fSegmentation->Dpx(dummy);
   Int_t i;
   Int_t track0, track1, track2;
 
   for(i=0; i<nofClusters; i++) { 
 
     AliITSRawClusterSPD *clusterI = (AliITSRawClusterSPD*) fClusters->At(i);
+    Int_t clustersizex = clusterI->NclX();
+    Int_t clustersizez = clusterI->NclZ();
+    Int_t xstart = clusterI->XStartf();
+    Float_t clusterx = 0;
+    Float_t clusterz = clusterI->Z();
+
+    for(Int_t ii=0; ii<clustersizex; ii++) {
+      clusterx += (xstart+0.5+ii)*xpitch;
+    }
+      clusterx /= clustersizex;
+      clusterz /= clustersizez;   
     clusterI->GetTracks(track0, track1, track2); 
     AliITSRecPoint rnew;
 
-    rnew.SetX((clusterI->X() - spdWidth/2)*kconv);
-    rnew.SetZ((clusterI->Z() - spdLength/2)*kconv);
+    rnew.SetX((clusterx - spdWidth/2)*kconv);
+    rnew.SetZ((clusterz - spdLength/2)*kconv);
     rnew.SetQ(1.);
     rnew.SetdEdX(0.);
     rnew.SetSigmaX2(kRMSx*kRMSx);
@@ -391,6 +403,7 @@ void AliITSClusterFinderSPDdubna::GetRecPoints()
 void AliITSClusterFinderSPDdubna::FindRawClusters(Int_t mod)
 {
   // find raw clusters
+  cout<<"SPDdubna: module ="<<mod<<endl;
   Find1DClusters();
   GroupClusters();
   TracksInCluster();

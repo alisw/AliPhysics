@@ -115,9 +115,10 @@ void AliITSsimulationSPDdubna::DigitiseModule(AliITSmodule *mod, Int_t module, I
 
     Float_t spdLength = fSegmentation->Dz();
     Float_t spdWidth = fSegmentation->Dx();
-
+    Float_t spdThickness = fSegmentation->Dy();
     Float_t difCoef, dum;       
     fResponse->DiffCoeff(difCoef,dum); 
+    if(spdThickness > 290) difCoef = 0.00613;  
 
     Float_t zPix0 = 1e+6;
     Float_t xPix0 = 1e+6;
@@ -130,7 +131,7 @@ void AliITSsimulationSPDdubna::DigitiseModule(AliITSmodule *mod, Int_t module, I
     Int_t nhits = fHits->GetEntriesFast();
     if (!nhits) return;
 
-    //cout<<"len,wid,dy,nx,nz,pitchx,pitchz ="<<spdLength<<","<<spdWidth<<","<<fSegmentation->Dy()<<","<<fNPixelsX<<","<<fNPixelsZ<<","<<xPitch<<","<<zPitch<<endl;
+    cout<<"len,wid,thickness,nx,nz,pitchx,pitchz,difcoef ="<<spdLength<<","<<spdWidth<<","<<spdThickness<<","<<fNPixelsX<<","<<fNPixelsZ<<","<<xPitch<<","<<zPitch<<","<<difCoef<<endl;
   //  Array of pointers to the label-signal list
 
     Int_t maxNDigits = fNPixelsX*fNPixelsZ + fNPixelsX ;; 
@@ -143,21 +144,26 @@ void AliITSsimulationSPDdubna::DigitiseModule(AliITSmodule *mod, Int_t module, I
     static Bool_t first;
     Int_t lasttrack=-2;
     Int_t hit, iZi, jz, jx;
-    //cout<<"SPD: module,nhits ="<<module<<","<<nhits<<endl;
-    Int_t idhit=-1;
+    Int_t idhit=-1; //!
+    cout<<"SPDdubna: module,nhits ="<<module<<","<<nhits<<endl;
     for (hit=0;hit<nhits;hit++) {
         AliITShit *iHit = (AliITShit*) fHits->At(hit);
-	Int_t layer = iHit->GetLayer();
-        Float_t yPix0 = -73; 
-        if(layer == 1) yPix0 = -77; 
+	//Int_t layer = iHit->GetLayer();
+        Float_t yPix0 = -spdThickness/2; 
 
+	// work with the idtrack=entry number in the TreeH
+	//Int_t idhit,idtrack; //!
+	//mod->GetHitTrackAndHitIndex(hit,idtrack,idhit);  //!    
+	//Int_t idtrack=mod->GetHitTrackIndex(hit);  
+        // or store straight away the particle position in the array
+	// of particles : 
 	if(iHit->StatusEntering()) idhit=hit;
         Int_t itrack = iHit->GetTrack();
         Int_t dray = 0;
    
 	if (lasttrack != itrack || hit==(nhits-1)) first = kTRUE; 
 
-	//        Int_t parent = iHit->GetParticle()->GetFirstMother();
+	//Int_t parent = iHit->GetParticle()->GetFirstMother();
         Int_t partcode = iHit->GetParticle()->GetPdgCode();
 
 //  partcode (pdgCode): 11 - e-, 13 - mu-, 22 - gamma, 111 - pi0, 211 - pi+
@@ -188,28 +194,23 @@ void AliITSsimulationSPDdubna::DigitiseModule(AliITSmodule *mod, Int_t module, I
 
 	// Get track status
 	Int_t status = iHit->GetTrackStatus();      
-	//cout<<"hit,status,y ="<<hit<<","<<status<<","<<yPix<<endl;      
 
 	// Check boundaries
 	if(zPix  > spdLength/2) {
-	  //cout<<"!!!1 z outside ="<<zPix<<endl;
+	  //cout<<"!!! SPD: z outside ="<<zPix<<endl;
          zPix = spdLength/2 - 10;
-	 //cout<<"!!!2 z outside ="<<zPix<<endl;
 	}
 	if(zPix  < 0 && zPix < -spdLength/2) {
-	  //cout<<"!!!1 z outside ="<<zPix<<endl;
+	  //cout<<"!!! SPD: z outside ="<<zPix<<endl;
          zPix = -spdLength/2 + 10;
-	 //cout<<"!!!2 z outside ="<<zPix<<endl;
 	}
 	if(xPix  > spdWidth/2) {
-	  //cout<<"!!!1 x outside ="<<xPix<<endl;
+	  //cout<<"!!! SPD: x outside ="<<xPix<<endl;
          xPix = spdWidth/2 - 10;
-	 //cout<<"!!!2 x outside ="<<xPix<<endl;
 	}
 	if(xPix  < 0 && xPix < -spdWidth/2) {
-	  //cout<<"!!!1 x outside ="<<xPix<<endl;
+	  //cout<<"!!! SPD: x outside ="<<xPix<<endl;
          xPix = -spdWidth/2 + 10;
-	 //cout<<"!!!2 x outside ="<<xPix<<endl;
 	}
 	Int_t trdown = 0;
 
@@ -259,7 +260,7 @@ void AliITSsimulationSPDdubna::DigitiseModule(AliITSmodule *mod, Int_t module, I
 	// number of the steps along the track:
 	Int_t nsteps = ndZ;
 	if(ndX > ndZ) nsteps = ndX;
-	if(nsteps < 6) nsteps = 6;  // minimum number of the steps 
+	if(nsteps < 20) nsteps = 20;  // minimum number of the steps 
 
 	if (projDif < 5 ) {
 	   drPath = (yPix-yPix0)*1.e-4;  
@@ -523,7 +524,7 @@ void AliITSsimulationSPDdubna::ChargeToSignal(Float_t **pList)
 
   AliITS *aliITS = (AliITS*)gAlice->GetModule("ITS");
   
-
+ 
   Float_t threshold = (float)fResponse->MinVal();
 
   Int_t digits[3], tracks[3], hits[3],gi,j1;
@@ -591,8 +592,8 @@ void AliITSsimulationSPDdubna::CreateHistograms()
       printf("SPD - create histograms\n");
 
       fHis=new TObjArray(fNPixelsZ);
+      TString spdName("spd_");
       for (Int_t i=0;i<fNPixelsZ;i++) {
-	TString spdName("spd_");
 	   Char_t pixelz[4];
 	   sprintf(pixelz,"%d",i+1);
 	   spdName.Append(pixelz);
