@@ -19,7 +19,7 @@
 #pragma link C++ class AliL3HoughGlobalMerger;
 #pragma link C++ class AliL3HoughDisplay;
 #pragma link C++ class AliL3HoughClusterTransformer;
-#pragma link C++ class AliL3HistogramAdaptive;
+//#pragma link C++ class AliL3HistogramAdaptive;
 
 #endif
 
