@@ -105,7 +105,13 @@ AliMUONTrack::~AliMUONTrack()
   //__________________________________________________________________________
 AliMUONTrack::AliMUONTrack (const AliMUONTrack& MUONTrack):TObject(MUONTrack)
 {
-// Dummy copy constructor
+  fEventReconstructor =  MUONTrack.fEventReconstructor;
+  fTrackHitsPtr =  MUONTrack.fTrackHitsPtr;
+  fTrackParamAtVertex = MUONTrack.fTrackParamAtVertex;
+  fNTrackHits =  MUONTrack.fNTrackHits;
+  fFitMCS     =  MUONTrack.fFitMCS;
+  fFitNParam  =  MUONTrack.fFitNParam;
+  fFitFMin    =  MUONTrack.fFitFMin;
 }
 
   //__________________________________________________________________________

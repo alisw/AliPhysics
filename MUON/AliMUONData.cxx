@@ -318,7 +318,7 @@ void AliMUONData::MakeBranch(Option_t* option)
       Info("MakeBranch","Branch %s is already in tree.",GetName());
       return ;
     }
-    branch = TreeH()->Branch(branchname,&fHits,kBufferSize,fSplitLevel);
+    branch = TreeH()->Branch(branchname,&fHits,kBufferSize);
     Info("MakeBranch","Making Branch %s for hits \n",branchname);
   }  
   
@@ -377,7 +377,7 @@ void AliMUONData::MakeBranch(Option_t* option)
 	Info("MakeBranch","Branch %s is already in tree.",GetName());
 	return;
       }
-      branch = TreeR()->Branch(branchname, &((*fRawClusters)[i]),kBufferSize,fSplitLevel);
+      branch = TreeR()->Branch(branchname, &((*fRawClusters)[i]),kBufferSize);
       Info("MakeBranch","Making Branch %s for rawcluster in detection plane %d\n",branchname,i+1);
     }
   }
@@ -390,7 +390,7 @@ void AliMUONData::MakeBranch(Option_t* option)
     branch = 0x0;
     
     if (fGlobalTrigger == 0x0) {
-      fGlobalTrigger = new TClonesArray("AliMUONGlobalTrigger",fSplitLevel); 
+      fGlobalTrigger = new TClonesArray("AliMUONGlobalTrigger"); 
       fNglobaltrigger = 0;
     }
     branch = TreeR()->GetBranch(branchname);
@@ -398,7 +398,7 @@ void AliMUONData::MakeBranch(Option_t* option)
       Info("MakeBranch","Branch %s is already in tree.",GetName());
       return ;
     }
-    branch = TreeR()->Branch(branchname, &fGlobalTrigger, kBufferSize,fSplitLevel);
+    branch = TreeR()->Branch(branchname, &fGlobalTrigger, kBufferSize);
     Info("MakeBranch", "Making Branch %s for Global Trigger\n",branchname);
     
     //
@@ -416,7 +416,7 @@ void AliMUONData::MakeBranch(Option_t* option)
       Info("MakeBranch","Branch %s is already in tree.",GetName());
       return;
     }
-    branch = TreeR()->Branch(branchname, &fLocalTrigger, kBufferSize,fSplitLevel);
+    branch = TreeR()->Branch(branchname, &fLocalTrigger, kBufferSize);
     Info("MakeBranch", "Making Branch %s for Global Trigger\n",branchname);  
   }
   
