@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2002/06/19 16:02:22  hristov
+Division by zero corrected
+
 Revision 1.15  2002/03/15 17:32:14  nilsen
 Reintroduced SDigitization, and Digitization from SDigits, along with
 functions InitSimulationModule, and FinishSDigitizModule.
@@ -396,8 +399,10 @@ void AliITSsimulationSPD::ChargeSharing(Float_t x1l,Float_t z1l,Float_t x2l,
     npixel = 0;
     xa     = x1l;
     za     = z1l;
-    dx     = x1l-x2l;
-    dz     = z1l-z2l;
+//    dx     = x1l-x2l;
+//    dz     = z1l-z2l;
+    dx     = x2l-x1l;
+    dz     = z2l-z1l;
     dtot   = TMath::Sqrt((dx*dx)+(dz*dz));   
     if (dtot==0.0) dtot = 0.01;
     dirx   = (Int_t) TMath::Sign((Float_t)1,dx);
