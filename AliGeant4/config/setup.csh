@@ -130,6 +130,7 @@ endif
 # Alice Geant4 install directory
 #
 setenv AG4_INSTALL $ALICE_ROOT/AliGeant4
+setenv G3G4_NOREFLECTION 1
 
 # Set variables depending on other variables
 # if opacs is selected then select also visualize
