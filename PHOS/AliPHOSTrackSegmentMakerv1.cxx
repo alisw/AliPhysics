@@ -36,6 +36,7 @@
 #include "AliPHOSTrackSegmentMakerv1.h"
 #include "AliPHOSIndexToObject.h"
 #include "AliPHOSTrackSegment.h"
+#include "AliPHOSCpvRecPoint.h"
 #include "AliPHOSLink.h"
 #include "AliPHOSv0.h"
 #include "AliRun.h"
@@ -61,9 +62,6 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
  AliPHOSTrackSegmentMakerv1::~AliPHOSTrackSegmentMakerv1()
 { 
   // dtor
-
-  delete gMinuit ; 
-  gMinuit = 0 ;
 }
 
 //____________________________________________________________________________
@@ -72,6 +70,7 @@ Bool_t  AliPHOSTrackSegmentMakerv1::FindFit(AliPHOSEmcRecPoint * emcRP, int * ma
 { 
   // Calls TMinuit to fit the energy distribution of a cluster with several maxima 
 
+  gMinuit->mncler();                     // Reset Minuit list of paramters
   gMinuit->SetPrintLevel(-1) ;           // No Printout
   gMinuit->SetFCN(UnfoldingChiSquare) ;  // To set the address of the minimization function 
   gMinuit->SetObjectFit(emcRP) ;         // To tranfer pointer to UnfoldingChiSquare
@@ -496,10 +495,12 @@ void  AliPHOSTrackSegmentMakerv1::UnfoldAll(DigitsList * dl, AliPHOSRecPoint::Re
 
   if(emcIn->GetEntries() > 0){
 
-    if(((AliPHOSRecPoint *)emcIn->At(0))->IsEmc())
+    if(((AliPHOSRecPoint *)emcIn->At(0))->IsEmc()){
       nModulesToUnfold = fGeom->GetNModules() ; 
-    else
+    }
+    else{
       nModulesToUnfold = fGeom->GetNCPVModules() ;
+    }
     
     for(index = 0 ; index < nEmcUnfolded; index++){
       
@@ -523,17 +524,13 @@ void  AliPHOSTrackSegmentMakerv1::UnfoldAll(DigitsList * dl, AliPHOSRecPoint::Re
       delete[] maxAt ; 
       delete[] maxAtEnergy ; 
     } //Unfolding finished
-    
+   
     emcIn->Sort() ;
     
     // to set index to new and correct index of old RecPoints
-    for( index = 0 ; index < emcIn->GetEntries() ; index++){
-      
+    for( index = 0 ; index < emcIn->GetEntries() ; index++)
       ((AliPHOSEmcRecPoint *) emcIn->At(index))->SetIndexInList(index) ;   
-      
-    }
     
-    emcIn->Sort() ;
   }
 
 }
@@ -574,7 +571,6 @@ void  AliPHOSTrackSegmentMakerv1::UnfoldClusters(DigitsList * dl,
   Int_t iDigit ;
   
   AliPHOSDigit * digit ;
-  AliPHOSEmcRecPoint * emcRP ;  
   Int_t * emcDigits = iniEmc->GetDigitsList() ;
   Float_t * emcEnergies = iniEmc->GetEnergiesList() ;
 
@@ -610,22 +606,45 @@ void  AliPHOSTrackSegmentMakerv1::UnfoldClusters(DigitsList * dl,
 
     if(iRecPoint >= emcIn->GetSize())
       emcIn->Expand(2*iRecPoint) ;
-    (*emcIn)[iRecPoint] = new AliPHOSEmcRecPoint( iniEmc->GetLogWeightCut(), iniEmc->GetLocMaxCut() ) ;
-    
-    emcRP = (AliPHOSEmcRecPoint *) emcIn->At(iRecPoint);
-    iRecPoint++ ;
 
-    for(iDigit = 0 ; iDigit < nDigits ; iDigit ++){
-      digit = fPlease->GimeDigit( emcDigits[iDigit] ) ; 
-      fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
-      fGeom->RelPosInModule(relid, xDigit, zDigit) ;
-      distance = (xDigit - xpar) * (xDigit - xpar) + (zDigit - zpar) * (zDigit - zpar)  ;
-      distance =  TMath::Sqrt(distance) ;
-      ratio = epar * AliPHOSTrackSegmentMakerv1::ShowerShape(distance) / efit[iDigit] ; 
-      eDigit = emcEnergies[iDigit] * ratio ;
-      emcRP->AddDigit( *digit, eDigit ) ;
+    if(iniEmc->IsEmc()){
+      (*emcIn)[iRecPoint] = new AliPHOSEmcRecPoint( iniEmc->GetLogWeightCut(), iniEmc->GetLocMaxCut() ) ;
+
+      AliPHOSEmcRecPoint * emcRP ;  
+      emcRP = (AliPHOSEmcRecPoint *) emcIn->At(iRecPoint);
+      iRecPoint++ ;
+      
+      for(iDigit = 0 ; iDigit < nDigits ; iDigit ++){
+	digit = fPlease->GimeDigit( emcDigits[iDigit] ) ; 
+	fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
+	fGeom->RelPosInModule(relid, xDigit, zDigit) ;
+	distance = (xDigit - xpar) * (xDigit - xpar) + (zDigit - zpar) * (zDigit - zpar)  ;
+	distance =  TMath::Sqrt(distance) ;
+	ratio = epar * AliPHOSTrackSegmentMakerv1::ShowerShape(distance) / efit[iDigit] ; 
+	eDigit = emcEnergies[iDigit] * ratio ;
+	emcRP->AddDigit( *digit, eDigit ) ;
+      }	
     }
+    else{
+      (*emcIn)[iRecPoint] = new AliPHOSCpvRecPoint( iniEmc->GetLogWeightCut(), iniEmc->GetLocMaxCut() ) ;
+     
+      AliPHOSCpvRecPoint * cpvRP ;  
+      cpvRP = (AliPHOSCpvRecPoint *) emcIn->At(iRecPoint);
 
+      iRecPoint++ ;
+      
+      for(iDigit = 0 ; iDigit < nDigits ; iDigit ++){
+	digit = fPlease->GimeDigit( emcDigits[iDigit] ) ; 
+	fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
+	fGeom->RelPosInModule(relid, xDigit, zDigit) ;
+	distance = (xDigit - xpar) * (xDigit - xpar) + (zDigit - zpar) * (zDigit - zpar)  ;
+	distance =  TMath::Sqrt(distance) ;
+	ratio = epar * AliPHOSTrackSegmentMakerv1::ShowerShape(distance) / efit[iDigit] ; 
+	eDigit = emcEnergies[iDigit] * ratio ;
+	cpvRP->AddDigit( *digit, eDigit ) ;
+      }
+    }
+    
   }
   
   delete[] fitparameters ; 
