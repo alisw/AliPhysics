@@ -7,6 +7,7 @@
 // Author: Ivana Hrivnacova, IPN Orsay
 
 #include <TGeoMatrix.h>
+#include <TString.h>
 #include <TObjArray.h>
 
 #include "AliMUONGeometryEnvelope.h"
@@ -16,14 +17,18 @@ ClassImp(AliMUONGeometryEnvelope)
 
 //______________________________________________________________________________
 AliMUONGeometryEnvelope::AliMUONGeometryEnvelope(const TString& name, 
-                                                 Bool_t isVirtual)
+                                                 Bool_t isVirtual,
+						 const char* only)
  : TNamed(name, name),
    fIsVirtual(isVirtual),
+   fIsMANY(false),
    fCopyNo(0),
    fTransformation(0),
    fConstituents(0)
 {
 // Standard constructor
+
+  if (TString(only) == TString("MANY")) fIsMANY = true;
 
   // Create the envelope transformation
   fTransformation = new TGeoCombiTrans("");
@@ -33,14 +38,18 @@ AliMUONGeometryEnvelope::AliMUONGeometryEnvelope(const TString& name,
 
 //______________________________________________________________________________
 AliMUONGeometryEnvelope::AliMUONGeometryEnvelope(const TString& name, 
-                                                 Int_t copyNo)
+                                                 Int_t copyNo, 
+						 const char* only)
  : TNamed(name, name),
    fIsVirtual(false),
+   fIsMANY(false),
    fCopyNo(copyNo),
    fTransformation(0),
    fConstituents(0)
 {
 // Standard constructor
+
+  if (TString(only) == TString("MANY")) fIsMANY = true;
 
   // Create the envelope transformation
   fTransformation = new TGeoCombiTrans("");

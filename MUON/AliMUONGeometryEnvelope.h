@@ -19,8 +19,10 @@ class TObjArray;
 class AliMUONGeometryEnvelope : public TNamed
 {
   public:
-    AliMUONGeometryEnvelope(const TString& name, Bool_t isVirtual);
-    AliMUONGeometryEnvelope(const TString& name, Int_t copyNo);
+    AliMUONGeometryEnvelope(const TString& name, Bool_t isVirtual, 
+                            const char* only); 
+    AliMUONGeometryEnvelope(const TString& name, Int_t copyNo,
+                            const char* only); 
     AliMUONGeometryEnvelope();
     AliMUONGeometryEnvelope(const AliMUONGeometryEnvelope& rhs);
     virtual ~AliMUONGeometryEnvelope();
@@ -51,6 +53,7 @@ class AliMUONGeometryEnvelope : public TNamed
 
     // get methods
     Bool_t                 IsVirtual() const;  
+    Bool_t                 IsMANY() const;  
     Int_t                  GetCopyNo() const;  
     const TGeoCombiTrans*  GetTransformation() const;
     const TObjArray*       GetConstituents() const;
@@ -58,6 +61,8 @@ class AliMUONGeometryEnvelope : public TNamed
   private:
     Bool_t           fIsVirtual;     // true if envelope is not represented
                                      // by a real volume
+    Bool_t           fIsMANY;        // true if envelope is placed with
+                                     // MANY option
     Int_t            fCopyNo;        // copy number 
                                      // (only non virtual envelope can have 
 				     //  more than one copy)
@@ -73,6 +78,9 @@ class AliMUONGeometryEnvelope : public TNamed
 
 inline Bool_t AliMUONGeometryEnvelope::IsVirtual() const
 { return fIsVirtual; }  
+
+inline Bool_t AliMUONGeometryEnvelope::IsMANY() const
+{ return fIsMANY; }  
 
 inline Int_t AliMUONGeometryEnvelope::GetCopyNo() const
 { return fCopyNo; }  

@@ -174,6 +174,8 @@ void AliMUONv1::CreateGeometry()
       // Get envelope
       AliMUONGeometryEnvelope* env = (AliMUONGeometryEnvelope*)kEnvelopes->At(k);
       const TGeoCombiTrans* kEnvTrans = env->GetTransformation();
+      const char* only = "ONLY";
+      if (env->IsMANY()) only = "MANY";
 
       if (env->IsVirtual() && env->GetConstituents()->GetEntriesFast() == 0 ) {
         // virtual envelope + nof constituents = 0 
@@ -202,7 +204,7 @@ void AliMUONv1::CreateGeometry()
 	    (*geometry->GetTransformation()) * 
 	    (*kEnvTrans);
         PlaceVolume(env->GetName(), geometry->GetMotherVolume(),
-	            env->GetCopyNo(), total, 0, 0);
+	            env->GetCopyNo(), total, 0, 0, only);
       }
 
       if (env->IsVirtual() && env->GetConstituents()->GetEntriesFast() > 0 ) {
@@ -224,7 +226,7 @@ void AliMUONv1::CreateGeometry()
 
           PlaceVolume(constituent->GetName(), geometry->GetMotherVolume(),
 	              constituent->GetCopyNo(), total,
-                      constituent->GetNpar(), constituent->GetParam());
+                      constituent->GetNpar(), constituent->GetParam(), only);
         }
       }
     } 
@@ -386,7 +388,7 @@ void AliMUONv1::CreateMaterials()
 //______________________________________________________________________________
 void AliMUONv1::PlaceVolume(const TString& name, const TString& mName, 
                             Int_t copyNo, const TGeoHMatrix& matrix, 
-			    Int_t npar, Double_t* param) const
+			    Int_t npar, Double_t* param, const char* only) const
 {
 // Place the volume specified by name with the given transformation matrix
 // ---
@@ -445,10 +447,10 @@ void AliMUONv1::PlaceVolume(const TString& name, const TString& mName,
   }	
 	
   // Place the volume in ALIC
-  if (npar == 0) 
-    gMC->Gspos(name, copyNo, mName, xyz[0], xyz[1], xyz[2] , krot, "ONLY");
+  if (npar == 0)
+    gMC->Gspos(name, copyNo, mName, xyz[0], xyz[1], xyz[2] , krot, only);
   else 
-    gMC->Gsposp(name, copyNo, mName, xyz[0], xyz[1], xyz[2] , krot, "ONLY",
+    gMC->Gsposp(name, copyNo, mName, xyz[0], xyz[1], xyz[2] , krot, only,
                 param, npar);
 
 } 

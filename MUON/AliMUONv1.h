@@ -59,7 +59,8 @@ protected:
 private:
    // method
    void PlaceVolume(const TString& name, const TString& mName, Int_t copyNo, 
-             const TGeoHMatrix& matrix, Int_t npar, Double_t* param) const;
+             const TGeoHMatrix& matrix, Int_t npar, Double_t* param,
+	     const char* only) const;
 
    ClassDef(AliMUONv1,1)  // MUON Detector class Version 1
 

@@ -36,23 +36,29 @@ class AliMUONChamberGeometry : public TObject
           // adding virtual envelopes 	
           // (not placed in MC geometry, only logical assembly of volumes,
 	  //  cannot have more copies)	
-    void  AddEnvelope(const TString& name, Bool_t isVirtual); 
     void  AddEnvelope(const TString& name, Bool_t isVirtual, 
-                      const TGeoTranslation& translation); 
+                      const char* only="ONLY"); 
     void  AddEnvelope(const TString& name, Bool_t isVirtual, 
                       const TGeoTranslation& translation, 
-		      const TGeoRotation& rotation);
+		      const char* only="ONLY"); 
+    void  AddEnvelope(const TString& name, Bool_t isVirtual, 
+                      const TGeoTranslation& translation, 
+		      const TGeoRotation& rotation,
+		      const char* only="ONLY");
 		      
           // adding non-virtual envelopes 	
           // (placed in MC geometry with transformation composed
 	  //  of transformation of chamber and their transformation, 
 	  //  can have more copies )	
-    void  AddEnvelope(const TString& name, Int_t copyNo); 
     void  AddEnvelope(const TString& name, Int_t copyNo, 
-                      const TGeoTranslation& translation); 
+                      const char* only="ONLY"); 
+    void  AddEnvelope(const TString& name, Int_t copyNo, 
+                      const TGeoTranslation& translation,
+		      const char* only="ONLY"); 
     void  AddEnvelope(const TString& name, Int_t copyNo, 
                       const TGeoTranslation& translation, 
-		      const TGeoRotation& rotation);
+		      const TGeoRotation& rotation,
+		      const char* only="ONLY");
 
           // adding constituents to virtual envelopes 	
           // (placed in MC geometry with transformation composed

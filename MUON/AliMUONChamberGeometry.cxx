@@ -113,7 +113,8 @@ AliMUONChamberGeometry::FindEnvelope(const TString& name) const
 //
 
 //______________________________________________________________________________
-void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Bool_t isVirtual) 
+void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Bool_t isVirtual,
+                                          const char* only) 
 {
 // Adds the volume with the specified name and transformation
 // to the list of envelopes.
@@ -126,14 +127,15 @@ void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Bool_t isVirtual)
   }  
 
   AliMUONGeometryEnvelope* envelope 
-    = new AliMUONGeometryEnvelope(name, isVirtual);
+    = new AliMUONGeometryEnvelope(name, isVirtual, only);
 
   fEnvelopes->Add(envelope);
 }
 
 //______________________________________________________________________________
 void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Bool_t isVirtual,
-                                          const TGeoTranslation& translation)
+                                          const TGeoTranslation& translation,
+					  const char* only)
 {
 // Adds the volume with the specified name and transformation
 // to the list of envelopes.
@@ -147,7 +149,7 @@ void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Bool_t isVirtual,
   }  
 
   AliMUONGeometryEnvelope* envelope 
-    = new AliMUONGeometryEnvelope(name, isVirtual);
+    = new AliMUONGeometryEnvelope(name, isVirtual, only);
   envelope->SetTranslation(translation);
 
   fEnvelopes->Add(envelope);
@@ -156,7 +158,8 @@ void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Bool_t isVirtual,
 //______________________________________________________________________________
 void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Bool_t isVirtual, 
                                           const TGeoTranslation& translation,
-		                          const TGeoRotation& rotation)
+		                          const TGeoRotation& rotation,
+					  const char* only)
 {
 // Adds the volume with the specified name and transformation
 // to the list of envelopes.
@@ -173,7 +176,7 @@ void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Bool_t isVirtual,
            // would be nice to be so simple 
 
   AliMUONGeometryEnvelope* envelope 
-    = new AliMUONGeometryEnvelope(name, isVirtual);
+    = new AliMUONGeometryEnvelope(name, isVirtual, only);
   envelope->SetRotation(rotation);
   envelope->SetTranslation(translation);
 
@@ -181,7 +184,8 @@ void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Bool_t isVirtual,
 }
 
 //______________________________________________________________________________
-void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Int_t copyNo) 
+void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Int_t copyNo,
+                                          const char* only) 
 {
 // Adds the volume with the specified name and transformation
 // to the list of envelopes.
@@ -194,14 +198,15 @@ void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Int_t copyNo)
    }  
 
   AliMUONGeometryEnvelope* envelope 
-    = new AliMUONGeometryEnvelope(name, copyNo);
+    = new AliMUONGeometryEnvelope(name, copyNo, only);
 
   fEnvelopes->Add(envelope);
 }
 
 //______________________________________________________________________________
 void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Int_t copyNo,
-                                          const TGeoTranslation& translation)
+                                          const TGeoTranslation& translation,
+					  const char* only)
 {
 // Adds the volume with the specified name and transformation
 // to the list of envelopes.
@@ -215,7 +220,7 @@ void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Int_t copyNo,
   }  
 
   AliMUONGeometryEnvelope* envelope 
-    = new AliMUONGeometryEnvelope(name, copyNo);
+    = new AliMUONGeometryEnvelope(name, copyNo, only);
   envelope->SetTranslation(translation);
 
   fEnvelopes->Add(envelope);
@@ -224,7 +229,8 @@ void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Int_t copyNo,
 //______________________________________________________________________________
 void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Int_t copyNo, 
                                           const TGeoTranslation& translation,
-		                          const TGeoRotation& rotation)
+		                          const TGeoRotation& rotation,
+					  const char* only)
 {
 // Adds the volume with the specified name and transformation
 // to the list of envelopes.
@@ -241,7 +247,7 @@ void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Int_t copyNo,
            // would be nice to be so simple 
 
   AliMUONGeometryEnvelope* envelope 
-    = new AliMUONGeometryEnvelope(name, copyNo);
+    = new AliMUONGeometryEnvelope(name, copyNo, only);
   envelope->SetRotation(rotation);
   envelope->SetTranslation(translation);
 

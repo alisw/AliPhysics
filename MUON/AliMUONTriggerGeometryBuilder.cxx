@@ -131,7 +131,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    gMC->Gsvolu(volFlange,"TUBE",idAlu1,tpar,3);     // Al
             // changed by ivana
 	    //gMC->Gspos(volFlange,1,"ALIC",0.,0.,zpos,0,"MANY");
-	    iChamber->GetGeometry()->AddEnvelope(volFlange, false);
+	    iChamber->GetGeometry()->AddEnvelope(volFlange, false, "MANY");
 	    
 // scaling factor
 	    Float_t zRatio = zpos / zpos1;
