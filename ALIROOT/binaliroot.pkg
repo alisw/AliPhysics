@@ -3,7 +3,7 @@ CSRCS:=fpu.c
 
 ELIBSDIR:=
 
-ELIBS:= MUONmapping MUON TPCbase TPCsim TPCrec TPCfast \
+ELIBS:= MUONrec MUONsim MUONbase MUONmapping TPCbase TPCsim TPCrec TPCfast \
 	ITS PMDbase PMDsim PMDrec TRDbase TRDsim TRDrec TRDfast \
 	FMDbase FMDsim FMDrec TOF PHOS CRT RICH \
         ZDCbase ZDC ZDCsim ZDCrec VZERObase VZEROsim VZEROrec EMCAL \
@@ -12,7 +12,6 @@ ELIBS:= MUONmapping MUON TPCbase TPCsim TPCrec TPCfast \
         hijing TMEVSIM mevsim THbtp HBTP THerwig herwig TEPEMGEN EPEMGEN \
         TPHIC FASTSIM microcern RAW AliL3Src AliL3Comp AliL3Misc AliL3Hough
 # g2c_sh
-
 
 # The two variables below are used for the creation of profile target.
 # ARLIBS stands for ARchive LIBrarieS and for each module one wants to profile
@@ -50,7 +49,9 @@ ARLIBS:= \
    PMD/tgt_$(ALICE_TARGET)/G__PMDsim.o $(LIBPATH)/libPMDsim.a \
    PMD/tgt_$(ALICE_TARGET)/G__PMDrec.o $(LIBPATH)/libPMDrec.a \
    MUON/tgt_$(ALICE_TARGET)/G__MUONmapping.o $(LIBPATH)/libMUONmapping.a \
-   MUON/tgt_$(ALICE_TARGET)/G__MUON.o $(LIBPATH)/libMUON.a \
+   MUON/tgt_$(ALICE_TARGET)/G__MUONbase.o $(LIBPATH)/libMUONbase.a \
+   MUON/tgt_$(ALICE_TARGET)/G__MUONsim.o $(LIBPATH)/libMUONsim.a \
+   MUON/tgt_$(ALICE_TARGET)/G__MUONrec.o $(LIBPATH)/libMUONrec.a \
    PHOS/tgt_$(ALICE_TARGET)/G__PHOS.o $(LIBPATH)/libPHOS.a \
    ITS/tgt_$(ALICE_TARGET)/G__ITS.o $(LIBPATH)/libITS.a \
    STRUCT/tgt_$(ALICE_TARGET)/G__STRUCT.o $(LIBPATH)/libSTRUCT.a \
