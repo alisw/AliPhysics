@@ -1,5 +1,9 @@
 How to open session:
 	use static method  AliRunLoader::Open("galice.root","AlicE","update")
+How to get total number of events in galice.root:
+	use AliRun::GetEventsPerRun()        
+How to avoid using gAlice:
+	detector->GetLoader()->GetRunLoader()->GetAliRun() returns gAlice global pointer.
 How to retrieve pointer to alice run loader:
         use pRICH->GetLoader()->GetRunLoader() (all detector classes inherit from AliDetector which has GetLoader())
 	use method AliRun::GetRunLoader for gAlice (deprecated)
@@ -35,7 +39,7 @@ How to retrieve sdigits?
 	Sdigits stored in tree S with the branch of TClonesArray, all sdigits in a single TClonesArray
 	So the tree has only one entry.
 	One needs to say:
-	pRich->GetLoader()->LoadSDigits(); this one open file, get the tree and invoke AliRICH::SetTreeAddress()    
+	-pRich->GetLoader()->LoadSDigits(); this one open file, get the tree and invoke AliRICH::SetTreeAddress()    
 How to retrieve digits? 
 	Digits stored in tree D with the 7 branches of TClonesArray, one per chamber, all digits of a given chamber in a single TClonesArray
 	So the tree has only one entry.
@@ -46,10 +50,7 @@ How to retrieve digits?
           pRich->GetLoader()->TreeD()->GetEntry(0) 
 	-Finally pRich->Digits(chamber_number) returns the pointer to TClonesArray of AliRICHdigit          
 What are the debug methods avail:
-	AliModule::GetDebug() now depricated, use AliDebug printout instead
-	AliModule::SetDebug()
-	AliRun::GetDebug()
-	AliRun::SetDebug()
+        AliLog::SetGlobalDebugLevel(AliLog::kDebug)
 How to get info for a given particle number:
 	Header and Kinematics trees must be loaded, then possible to retrieve pointer to Stack of particles
 	Int_t AliRunLoader::LoadHeader(); Int_t AliRunLoader::LoadKinematics()
@@ -58,9 +59,7 @@ How to get info for a given particle number:
 	TParticle::Print()
 How to deal with AliRunDigitizer:
 	AliRunDigitizer::Exec() just call AliRunDigitizer::Digitize()	
-How to avoid using gAlice:
-	Rich()->GetLoader()->GetRunLoader()->GetAliRun() returns gAlice global pointer.
-What are hte meanings of different VMC flags:         
+What are the meanings of different VMC flags:         
 	gMC->IsTrackAlive()
 	gMC->IsTrackStop()
 	gMC->IsTrackDisappeared()
@@ -75,5 +74,16 @@ How is sdigit produced from hit:
 How to get pad number for a local position:
 	use static TVector AliRICHParam::Loc2Pad(TVector2 position);
 Why list of chambers belongs to AliRICHParam:
+
+How to check if a given stack particle is primary:
+	Stack is TClonesArray of TParticle. TParticle::GetMother(0) returns -1 if it's primary (no mother)         
+How to loop over all possible object:         
+  for(Int_t iEventN=0;iEventN < GetLoader()->GetRunLoader()->GetAliRun()->GetEventsPerRun();iEventN++){//events loop
+    for(Int_t iEntryN=0;iEntryN < GetLoader()->TreeH()->GetEntries();iEntryN++){//TreeH loop
+      GetLoader()->TreeH()->GetEntry(iEntryN);//get current entry (prim)  
+      for(Int_t iHitN=0;iHitN<Hits()->GetEntries();iHitN++){//hits loop
+        AliVHMPIDHit *pHit=(AliVHMPIDHit*)Hits()->At(iHitN);//get current hit 
         
-        
+      }//hits loop
+    }//TreeH loop
+  }//events loop
