@@ -20,9 +20,8 @@ class AliITSNeuralTracker : public TObject {
 public:
 
 	         AliITSNeuralTracker();
-				AliITSNeuralTracker(AliITSNeuralTracker &t) {
-				Fatal("AliITSNeuralTracker", "No copy constructor
-				allowed!");exit(0);}
+				AliITSNeuralTracker(AliITSNeuralTracker &t) : TObject((TObject&)t)
+				{ Fatal("AliITSNeuralTracker", "No copy constructor allowed!");exit(0);}
 	virtual ~AliITSNeuralTracker();
 
 	// ******************************************************************************
