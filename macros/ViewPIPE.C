@@ -1,4 +1,4 @@
-//void ViewPIPE()
+void ViewPIPE()
 {
    gMC->Gsatt("QQMO","seen",1);
    gMC->Gsatt("QDT1","seen",1);

@@ -1,8 +1,9 @@
-//void DrawDIPO()
+void DrawDIPO()
 {
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
-   gROOT->Macro("ViewDIPO.C");
+   gROOT->LoadMacro("ViewDIPO.C");
+   gInterpreter->ProcessLine("ViewDIPO()");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);

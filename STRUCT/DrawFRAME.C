@@ -1,8 +1,9 @@
-//void DrawFRAME()
+void DrawFRAME()
 {
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
-   gROOT->Macro("ViewFRAME.C");
+   gROOT->LoadMacro("ViewFRAME.C");
+   gInterpreter->ProcessLine("ViewFRAME()");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 5);

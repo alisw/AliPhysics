@@ -1,8 +1,9 @@
-//void DrawFMD()
+void DrawFMD()
 {
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
-   gROOT->Macro("ViewFMD.C");
+   gROOT->LoadMacro("ViewFMD.C");
+   gInterpreter->ProcessLine("ViewFMD()");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);

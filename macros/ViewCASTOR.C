@@ -1,4 +1,4 @@
-//void ViewCASTOR()
+void ViewCASTOR()
 {
    gMC->Gsatt("OCTA","seen",0);
    gMC->Gsatt("EM  ","seen",0);

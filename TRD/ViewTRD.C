@@ -1,4 +1,4 @@
-//void ViewTRD()
+void ViewTRD()
 {
 
   gMC->Gsatt("B032","SEEN", 0);

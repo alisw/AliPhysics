@@ -1,4 +1,4 @@
-//void ViewRICH()
+void ViewRICH()
 {
    gMC->Gsatt("RICH","seen",0);
    gMC->Gsatt("SRIC","seen",0);

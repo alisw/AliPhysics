@@ -1,8 +1,9 @@
-//void DrawTPC()
+void DrawTPC()
 {
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
-   gROOT->Macro("ViewTPC.C");
+   gROOT->LoadMacro("ViewTPC.C");
+   gInterpreter->ProcessLine("ViewTPC()");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);

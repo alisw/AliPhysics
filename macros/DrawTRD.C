@@ -1,8 +1,9 @@
-//void DrawTRD()
+void DrawTRD()
 {
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
-   gROOT->Macro("ViewTRD.C");
+   gROOT->LoadMacro("ViewTRD.C");
+   gInterpreter->ProcessLine("ViewTRD()");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);

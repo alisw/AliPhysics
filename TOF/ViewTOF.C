@@ -1,4 +1,4 @@
-//void ViewTOF()
+void ViewTOF()
 {
    AliDetector *TOF  = gAlice->GetDetector("TOF");
    gMC->Gsatt("*","seen",0);

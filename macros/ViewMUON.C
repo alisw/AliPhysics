@@ -1,4 +1,4 @@
-//void ViewMUON()
+void ViewMUON()
 {
    gMC->Gsatt("CH1A","seen",1);
    gMC->Gsatt("CH1G","seen",0);

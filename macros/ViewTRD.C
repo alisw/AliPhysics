@@ -1,4 +1,4 @@
-//void ViewUTD()
+void ViewUTD()
 {
    gMC->Gsatt("TRD ","seen",0);
 

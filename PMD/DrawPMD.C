@@ -1,8 +1,9 @@
-//void DrawPMD()
+void DrawPMD()
 {
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
-   gROOT->Macro("ViewPMD.C");
+   gROOT->LoadMacro("ViewPMD.C");
+   gInterpreter->ProcessLine("ViewPMD()");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);

@@ -1,8 +1,9 @@
-//void DrawPHOS()
+void DrawPHOS()
 {
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
-   gROOT->Macro("ViewPHOS.C");
+   gROOT->LoadMacro("ViewPHOS.C");
+   gInterpreter->ProcessLine("ViewPHOS()");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);

@@ -1,4 +1,4 @@
-//void ViewFMD()
+void ViewFMD()
 {
    gMC->Gsatt("IWR3","seen",1);
    gMC->Gsatt("FWR3","seen",1);

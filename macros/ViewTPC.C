@@ -1,4 +1,4 @@
-//void ViewTPC()
+void ViewTPC()
 {
   gMC->Gsatt("TPC","SEEN",0);
   gMC->Gsatt("TPEC","SEEN",0);

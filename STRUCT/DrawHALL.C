@@ -1,8 +1,9 @@
-//void DrawHALL()
+void DrawHALL()
 {
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
-   gROOT->Macro("ViewHALL.C");
+   gROOT->LoadMacro("ViewHALL.C");
+   gInterpreter->ProcessLine("ViewHALL()");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);

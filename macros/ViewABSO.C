@@ -1,4 +1,4 @@
-//void ViewABSO()
+void ViewABSO()
 {
    gMC->Gsatt("ABSM","seen",1);
    gMC->Gsatt("ANOS","seen",1);

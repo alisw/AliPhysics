@@ -1,4 +1,4 @@
-//void ViewMAG()
+void ViewMAG()
 {
    gMC->Gsatt("L3MO","seen",0);
    gMC->Gsatt("L3CO","seen",1);

@@ -1,4 +1,4 @@
-//void ViewDIPO()
+void ViewDIPO()
 {
    gMC->Gsatt("DDIP","seen",0);
    gMC->Gsatt("DC1 ","seen",1);

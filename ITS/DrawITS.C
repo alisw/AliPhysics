@@ -1,8 +1,9 @@
-//void DrawITS()
+void DrawITS()
 {
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
-   gROOT->Macro("ViewITS.C");
+   gROOT->LoadMacro("ViewITS.C");
+   gInterpreter->ProcessLine("ViewITS()");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);

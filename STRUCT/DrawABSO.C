@@ -1,8 +1,9 @@
-//void DrawABSO()
+void DrawABSO()
 {
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
-   gROOT->Macro("ViewABSO.C");
+   gROOT->LoadMacro("ViewABSO.C");
+   gInterpreter->ProcessLine("ViewABSO()");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);

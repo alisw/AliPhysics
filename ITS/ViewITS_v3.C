@@ -1,4 +1,4 @@
-//void ViewITS_v3()
+void ViewITS_v3()
 {
    gMC->Gsatt("ITSV","seen",0);
    gMC->Gsatt("IT12","seen",0);

@@ -1,8 +1,9 @@
-//void DrawTOF0()
+void DrawTOF0()
 {
    geant3->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
-   gROOT->Macro("ViewTOF0.C");
+   gROOT->LoadMacro("ViewTOF0.C");
+   gInterpreter->ProcessLine("ViewTOF0()");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);

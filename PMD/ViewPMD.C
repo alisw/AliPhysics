@@ -1,4 +1,4 @@
-//void ViewPMD()
+void ViewPMD()
 {
    gMC->Gsatt("DP21","seen",0);
    gMC->Gsatt("DP22","seen",0);

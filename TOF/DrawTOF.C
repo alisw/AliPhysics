@@ -1,8 +1,9 @@
-//void DrawTOF()
+void DrawTOF()
 {
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);   
-   gROOT->Macro("ViewTOF4.C");
+   gROOT->LoadMacro("ViewTOF4.C");
+   gInterpreter->ProcessLine("ViewTOF4()");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);

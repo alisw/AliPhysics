@@ -1,4 +1,4 @@
-//void ViewPHOS()
+void ViewPHOS()
 {
   // Set drawing attributes for PHOS version #2
 

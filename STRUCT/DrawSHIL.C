@@ -1,8 +1,9 @@
-//void DrawSHIL()
+void DrawSHIL()
 {
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
-   gROOT->Macro("ViewSHIL.C");
+   gROOT->LoadMacro("ViewSHIL.C");
+   gInterpreter->ProcessLine("ViewSHIL()");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);

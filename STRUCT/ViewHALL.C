@@ -1,4 +1,4 @@
-//void ViewHALL()
+void ViewHALL()
 {
    gMC->Gsatt("HUFL","seen",1);
    gMC->Gsatt("HUWA","seen",1);

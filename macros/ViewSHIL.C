@@ -1,4 +1,4 @@
-//void ViewSHIL()
+void ViewSHIL()
 {
    gMC->Gsatt("YMOT","seen",1);
    gMC->Gsatt("YMS1","seen",1);

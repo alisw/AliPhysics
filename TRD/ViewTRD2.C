@@ -1,4 +1,4 @@
-//void ViewTRD()
+void ViewTRD()
 {
 
    geant3->Gsatt("TRD ","seen",0);

@@ -1,8 +1,9 @@
-//void DrawMUON()
+void DrawMUON()
 {
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
-   gROOT->Macro("ViewMUON.C");
+   gROOT->LoadMacro("ViewMUON.C");
+   gInterpreter->ProcessLine("ViewMUON()");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);

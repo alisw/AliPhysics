@@ -1,4 +1,4 @@
-//void ViewTOF()
+void ViewTOF()
 {
    gMC->Gsatt("FBAR","seen",0);
    gMC->Gsatt("FTOF","seen",0);

@@ -4,9 +4,11 @@ void DrawTRD()
    gMC->Gsatt("alic", "seen", 0);
    AliTRD *TRD = gAlice->GetModule("TRD");
    if (TRD->Hole())
-     gROOT->Macro("ViewTRDhole.C");
+     gROOT->LoadMacro("ViewTRDhole.C");
+   gInterpreter->ProcessLine("ViewTRDhole()");
    else
-     gROOT->Macro("ViewTRDfull.C");
+     gROOT->LoadMacro("ViewTRDfull.C");
+   gInterpreter->ProcessLine("ViewTRDfull()");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);

@@ -1,8 +1,9 @@
-//void DrawSTART()
+void DrawSTART()
 {
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
-   gROOT->Macro("ViewSTART.C");
+   gROOT->LoadMacro("ViewSTART.C");
+   gInterpreter->ProcessLine("ViewSTART()");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);

@@ -1,4 +1,4 @@
-//void ViewFRAME()
+void ViewFRAME()
 {
 /*
    gMC->Gsatt("BFMO","seen",0);

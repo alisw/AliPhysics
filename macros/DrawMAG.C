@@ -1,8 +1,9 @@
-//void DrawMAG()
+void DrawMAG()
 {
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
-   gROOT->Macro("ViewMAG.C");
+   gROOT->LoadMacro("ViewMAG.C");
+   gInterpreter->ProcessLine("ViewMAG()");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);

@@ -1,8 +1,9 @@
-//void DrawPIPE()
+void DrawPIPE()
 {
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
-   gROOT->Macro("ViewPIPE.C");
+   gROOT->LoadMacro("ViewPIPE.C");
+   gInterpreter->ProcessLine("ViewPIPE()");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);

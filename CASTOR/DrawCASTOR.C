@@ -1,8 +1,9 @@
-//void DrawCASTOR()
+void DrawCASTOR()
 {
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
-   gROOT->Macro("ViewCASTOR.C");
+   gROOT->LoadMacro("ViewCASTOR.C");
+   gInterpreter->ProcessLine("ViewCASTOR()");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);

@@ -1,8 +1,9 @@
-//void DrawRICH()
+void DrawRICH()
 {
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
-   gROOT->Macro("ViewRICH.C");
+   gROOT->LoadMacro("ViewRICH.C");
+   gInterpreter->ProcessLine("ViewRICH()");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);
