@@ -55,6 +55,7 @@ class AliHBTAnalysis: public TObject
      Bool_t IsNonIdentAnalysis();
      void   Init();
      void   ResetFunctions();
+     void   SetDisplayInfo(Int_t howoften){fDisplayMixingInfo = howoften;}//defines every each line info about mixing is displayed
    protected:
      
      Bool_t RunCoherencyCheck();
