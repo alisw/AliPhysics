@@ -32,7 +32,7 @@
 void MUONGenerateGeometryData(Bool_t transforms = true, Bool_t svmaps = true)
 {
   // Initialize
-  gAlice->Init("./Config_MUON_test.C");
+  gAlice->Init("./Config.C");
   cout << "Init done " << endl;
 
   // Get MUON detector

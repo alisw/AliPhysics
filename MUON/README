@@ -155,8 +155,7 @@ gener->SetYRange(-4.0,-2.4);
 gener->SetMuonPtCut(1.);
 gener->SetMuonThetaCut(171.,178.);
 gener->SetMuonMultiplicity(2);
-gener->SetNumberOfCollisions(1950.);   
-gener->SetNumberOfParticipants(400.);     
+gener->SetImpactParameterRange(0.,5.); // 10% most centra PbPb collisions
 gener->SetVertexSmear(kPerTrack);  
 gener->SetOrigin(0,0,0);        // Vertex position
 gener->SetSigma(0,0,0.0);       // Sigma in (X,Y,Z) (cm) on IP position
