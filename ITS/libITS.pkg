@@ -99,6 +99,7 @@ SRCS = 	AliITS.cxx \
 		AliITSReconstructor.cxx \
 		AliITSRawStream.cxx \
 		AliITSRawStreamSDDv2.cxx \
+		AliITSRawStreamSDDv3.cxx \
 		AliITSRawStreamSSD.cxx \
 		AliITSRawStreamSDD.cxx \
 		AliITSRawStreamSPD.cxx \

@@ -26,7 +26,6 @@
 
 ClassImp(AliITSRawStreamSDD)
 
-
 const Int_t AliITSRawStreamSDD::fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL] = {
   {240,241,242,246,247,248,252,253,254,258,259,260,264,265,266,270,271,272,276,277,278,-1},
   {243,244,245,249,250,251,255,256,257,261,262,263,267,268,269,273,274,275,279,280,281,-1},
@@ -39,18 +38,59 @@ const Int_t AliITSRawStreamSDD::fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL] = {
   {412,413,414,415,420,421,422,423,428,429,430,431,436,437,438,439,444,445,446,447,452,453},
   {416,417,418,419,424,425,426,427,432,433,434,435,440,441,442,443,448,449,450,451,456,457},
   {454,455,460,461,462,463,468,469,470,471,476,477,478,479,484,485,486,487,492,493,494,495},
-  {458,459,464,465,466,467,472,473,474,475,480,481,482,483,488,489,490,491,496,497,498,499}
-};
-
+  {458,459,464,465,466,467,472,473,474,475,480,481,482,483,488,489,490,491,496,497,498,499}};
+  
+const UInt_t AliITSRawStreamSDD::fgkCodeLength[8] =  {8, 18, 2, 3, 4, 5, 6, 7};
 
 AliITSRawStreamSDD::AliITSRawStreamSDD(AliRawReader* rawReader) :
   AliITSRawStream(rawReader)
 {
 // create an object to read ITS SDD raw digits
-
+  
+  fData = 0;
+  fSkip = 0;
+  fEventId = 0;
+  fCarlosId = 0;
+  fChannel = 0;
+  fJitter  = 0;
+  for(Int_t i=0;i<2;i++){
+    fChannelData[i]=0;
+    fLastBit[i]=0;
+    fChannelCode[i]=0;
+    fReadCode[i]=kFALSE;
+    fReadBits[i]=0;
+    fTimeBin[i]=0;
+    fAnode[i]=0;
+    fLowThreshold[i]=0;
+  }
   fRawReader->Select(2);
+
 }
 
+UInt_t AliITSRawStreamSDD::ReadBits()
+{
+// read bits from the given channel
+
+  UInt_t result = (fChannelData[fChannel] & ((1<<fReadBits[fChannel]) - 1));
+  fChannelData[fChannel] >>= fReadBits[fChannel]; 
+  fLastBit[fChannel] -= fReadBits[fChannel];
+  return result;
+}
+
+Int_t AliITSRawStreamSDD::DecompAmbra(Int_t value) const
+{
+// AMBRA decompression
+
+  if ((value & 0x80) == 0) {
+    return value & 0x7f;
+  } else if ((value & 0x40) == 0) {
+    return 0x081 + ((value & 0x3f) << 1);
+  } else if ((value & 0x20) == 0) {
+    return 0x104 + ((value & 0x1f) << 3);
+  } else {
+    return 0x208 + ((value & 0x1f) << 4);
+  }
+}
 
 Bool_t AliITSRawStreamSDD::Next()
 {
@@ -68,3 +108,4 @@ Bool_t AliITSRawStreamSDD::Next()
 
   return kTRUE;
 }
+

@@ -1,5 +1,5 @@
-#ifndef ALIITSRAWSTREAMSDDV2_H
-#define ALIITSRAWSTREAMSDDV2_H
+#ifndef ALIITSRAWSTREAMSDDV3_H
+#define ALIITSRAWSTREAMSDDV3_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -16,17 +16,17 @@
 class AliRawReader;
 
 
-class AliITSRawStreamSDDv2: public AliITSRawStreamSDD {
+class AliITSRawStreamSDDv3: public AliITSRawStreamSDD {
   public :
-    AliITSRawStreamSDDv2(AliRawReader* rawReader);
-    virtual ~AliITSRawStreamSDDv2() {};
+    AliITSRawStreamSDDv3(AliRawReader* rawReader);
+    virtual ~AliITSRawStreamSDDv3() {};
 
     virtual Bool_t   Next();
-
+    virtual Int_t    GetJitter();
   private :
- 
 
-    ClassDef(AliITSRawStreamSDDv2, 1) // class for reading ITS SDD raw digits
+
+    ClassDef(AliITSRawStreamSDDv3, 1) // class for reading ITS SDD raw digits
 };
 
 #endif
