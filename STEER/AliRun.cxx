@@ -89,7 +89,6 @@ AliRun::AliRun():
   fPDGDB(0),  //Particle factory object
   fConfigFunction("\0"),
   fRandom(0),
-  fBaseFileName(),
   fRunLoader(0x0)
 {
   //
@@ -118,7 +117,6 @@ AliRun::AliRun(const AliRun& arun):
   fPDGDB(0),  //Particle factory object
   fConfigFunction("\0"),
   fRandom(0),
-  fBaseFileName(),
   fRunLoader(0x0)
 {
   //
@@ -146,7 +144,6 @@ AliRun::AliRun(const char *name, const char *title):
   fPDGDB(TDatabasePDG::Instance()),        //Particle factory object!
   fConfigFunction("Config();"),
   fRandom(new TRandom3()),
-  fBaseFileName(),
   fRunLoader(0x0)
 {
   //
@@ -966,3 +963,18 @@ void AliRun::SetDebug(Int_t level)
   AliWarning("Don't use this method any more, use AliLog instead");
   AliLog::SetClassDebugLevel("AliRun", level);
 }
+
+
+// added by Alberto Colla
+//_____________________________________________________________________________
+/*inline*/ Bool_t AliRun::IsFileAccessible(const char* fnam, EAccessMode mode)
+{ return !gSystem->AccessPathName(fnam,mode);}
+
+//______________________________________________________
+/*inline*/ Bool_t AliRun::IsFileAccessible(Char_t* name,EAccessMode mode)
+{
+  TString str = name; gSystem->ExpandPathName(str);
+  return !gSystem->AccessPathName(str.Data(),mode);
+}
+
+

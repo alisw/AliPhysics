@@ -12,6 +12,7 @@
 //
 
 #include <TError.h>
+#include <TSystem.h>
 
 class TGeometry;
 class TParticle;
@@ -103,6 +104,14 @@ public:
    virtual  void  ResetHits();
    virtual  AliGenerator* Generator() const;
 
+
+
+// Added by Alberto Colla
+
+   Bool_t         IsFileAccessible(Char_t* name, EAccessMode mode = kFileExists);
+   static   Bool_t   IsFileAccessible(const char* fnam, EAccessMode mode = kFileExists);
+// Added by Alberto Colla
+
    //
    // End of MC Application
 
@@ -158,5 +167,5 @@ private:
 };
  
 R__EXTERN  AliRun *gAlice;
- 
+  
 #endif

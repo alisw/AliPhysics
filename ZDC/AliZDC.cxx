@@ -29,7 +29,6 @@
 #include <TGeometry.h>
 #include <TNode.h>
 #include <TTree.h>
-#include <TFile.h>
 #include <TSystem.h>
 
 // --- AliRoot header files
@@ -479,7 +478,7 @@ void AliZDC::WriteCalibData(Int_t option)
   //
   const int kCompressLevel = 9;
   const char defname[] = "$(ALICE)/AliRoot/data/AliZDCCalib.root";
-  char* fnam = gAlice->GetZDCCalibFName();
+  char* fnam = GetZDCCalibFName();
   if (!fnam || fnam[0]=='\0') {
     fnam = gSystem->ExpandPathName(defname);
     Warning("WriteCalibData","No File Name is provided, using default %s",fnam);
@@ -501,7 +500,7 @@ void AliZDC::WriteCalibData(Int_t option)
 void AliZDC::LoadCalibData()
 {
   //
-  char* fnam = gAlice->GetZDCCalibFName();
+  char* fnam = GetZDCCalibFName();
   if (!fnam || fnam[0]=='\0') return; 
   if (!gAlice->IsFileAccessible(fnam)) {
     Error("LoadCalibData","ZDC Calibration Data file is not accessible, %s",fnam);
