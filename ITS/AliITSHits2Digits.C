@@ -94,6 +94,11 @@ Int_t AliITSHits2Digits()
   ITS->SetSimulationModel(2,sim2);
 
   cerr<<"Digitizing ITS...\n";
+
+   if(!gAlice->TreeD()) gAlice->MakeTree("D");
+   printf("TreeD %p\n",gAlice->TreeD());
+   //make branch
+   ITS->MakeBranch("D");
   
   TStopwatch timer;
   timer.Start();

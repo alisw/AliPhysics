@@ -23,6 +23,7 @@ Int_t AliITSFindClusters() {
    Int_t ver = ITS->IsVersion(); 
    cerr<<"ITS version "<<ver<<" has been found !\n";
 
+   ITS->MakeTreeC();
 // Set the models for cluster finding
    AliITSgeom *geom = ITS->GetITSgeom();
 
@@ -66,8 +67,8 @@ Int_t AliITSFindClusters() {
    AliITSDetType *iDetType=ITS->DetType(2);
    AliITSsegmentationSSD *seg2=(AliITSsegmentationSSD*)iDetType->GetSegmentationModel();
    TClonesArray *dig2  = ITS->DigitsAddress(2);
-   TClonesArray *recp2  = ITS->ClustersAddress(2);
-   AliITSClusterFinderSSD *rec2=new AliITSClusterFinderSSD(seg2,dig2,recp2);
+   //TClonesArray *recp2  = ITS->ClustersAddress(2);
+   AliITSClusterFinderSSD *rec2=new AliITSClusterFinderSSD(seg2,dig2);
    ITS->SetReconstructionModel(2,rec2);
    // test
    printf("SSD dimensions %f %f \n",seg2->Dx(),seg2->Dz());
@@ -75,6 +76,9 @@ Int_t AliITSFindClusters() {
 
 
 
+   if(!gAlice->TreeR()) gAlice->MakeTree("R");
+   //make branch
+   ITS->MakeBranch("R");
 
    TStopwatch timer;
 
