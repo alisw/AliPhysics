@@ -1644,7 +1644,7 @@ void AliMUONv1::StepManager()
   }
   if (idvol == -1) return;
 
-   printf(">>>> This Chamber %d\n",iChamber);
+  //   printf(">>>> This Chamber %d\n",iChamber);
 
   // record hits when track enters ...
   if( gMC->IsTrackEntering()) gMC->SetMaxStep(fStepMaxInActiveGas);  

@@ -59,6 +59,9 @@ class AliMUONData : public TNamed {
     void           GetRawClusters() {fLoader->TreeR()->GetEvent(0);}
     void           GetTrigger() {fLoader->TreeR()->GetEvent(0);}
 
+    Bool_t        IsRawClusterBranchesInTree();
+    Bool_t        IsTriggerBranchesInTree();
+
     virtual AliLoader* GetLoader() {return fLoader;}
     virtual void       SetLoader(AliLoader * loader) {fLoader=loader;}    
     
@@ -99,12 +102,12 @@ class AliMUONData : public TNamed {
     // pointer to array of reconstructed tracks
     TClonesArray*   fRecTracks; 
 
-    Int_t           fNhits;
-    Int_t*          fNdigits;
-    Int_t*          fNrawclusters;
-    Int_t           fNglobaltrigger;
-    Int_t           fNlocaltrigger;
-    Int_t           fNrectracks; 
+    Int_t           fNhits; //!
+    Int_t*          fNdigits;//!
+    Int_t*          fNrawclusters;//!
+    Int_t           fNglobaltrigger;//!
+    Int_t           fNlocaltrigger;//!
+    Int_t           fNrectracks; //!
 
     ClassDef(AliMUONData,1)
  };

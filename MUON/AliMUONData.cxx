@@ -146,6 +146,38 @@ void AliMUONData::AddRecTrack(const AliMUONTrack& track)
   new(lrectracks[fNrectracks++]) AliMUONTrack(track);
 }
 //____________________________________________________________________________
+Bool_t   AliMUONData::IsRawClusterBranchesInTree()
+{
+  if (TreeR()==0x0) {
+    Error("TreeR","No treeR in memory");
+    return kFALSE;
+  }
+  else {
+     char branchname[30];
+     sprintf(branchname,"%sRawClusters1",GetName());
+     TBranch * branch = 0x0;
+     branch = TreeR()->GetBranch(branchname);
+     if (branch)  return kTRUE;
+     else return kFALSE;    
+  }
+}
+//____________________________________________________________________________
+Bool_t   AliMUONData::IsTriggerBranchesInTree()
+{
+ if (TreeR()==0x0) {
+    Error("TreeR","No treeR in memory");
+    return kFALSE;
+  }
+  else {
+     char branchname[30];
+     sprintf(branchname,"%sLocalTrigger",GetName());
+     TBranch * branch = 0x0;
+     branch = TreeR()->GetBranch(branchname);
+     if (branch)  return kTRUE;
+     else return kFALSE;    
+  }
+}
+//____________________________________________________________________________
 void AliMUONData::Fill(Option_t* option)
 {
   // Method to fill the trees
@@ -169,25 +201,34 @@ void AliMUONData::Fill(Option_t* option)
   if ( TreeD() && cD) {
     TreeD()->Fill();
   }
+
   //
   // filling rawclusters
-  if ( TreeR()  && cRC) {
-    TreeR()->Fill();
-    //  for (int i=0; i<AliMUONConstants::NTrackingCh(); i++) {
-//        sprintf(branchname,"%sRawClusters%d",GetName(),i+1);
-//        branch = TreeR()->GetBranch(branchname);
-//        branch->Fill();
-//      }
+  if ( TreeR()  && cRC ) {
+    if ( IsTriggerBranchesInTree() ) {
+      // Branch per branch filling
+      for (int i=0; i<AliMUONConstants::NTrackingCh(); i++) {
+	sprintf(branchname,"%sRawClusters%d",GetName(),i+1);
+	branch = TreeR()->GetBranch(branchname);
+	branch->Fill();
+      }
+    }
+    else  TreeR()->Fill();
   }
+  
  //
   // filling trigger 
   if ( TreeR()  && cGLT) {
-    sprintf(branchname,"%sLocalTrigger",GetName());
-    branch = TreeR()->GetBranch(branchname); 
-    branch->Fill();
-    sprintf(branchname,"%sGlobalTrigger",GetName());
-    branch = TreeR()->GetBranch(branchname);
-    branch->Fill();
+    if (IsTriggerBranchesInTree()) {
+      // Branch per branch filling
+      sprintf(branchname,"%sLocalTrigger",GetName());
+      branch = TreeR()->GetBranch(branchname); 
+      branch->Fill();
+      sprintf(branchname,"%sGlobalTrigger",GetName());
+      branch = TreeR()->GetBranch(branchname);
+      branch->Fill();
+    }
+    else  TreeR()->Fill();
   }
   //
   // filling tracks
