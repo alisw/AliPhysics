@@ -544,10 +544,14 @@ Double_t AliL3Transform::GetMaxY(Int_t slicerow)
      return fPadPitchWidthUp*fNPads[slicerow]/2;
 }
 
-void AliL3Transform::Global2Local(Float_t *xyz,Int_t sector)
+void AliL3Transform::Global2Local(Float_t *xyz,Int_t sector,Bool_t isSlice)
 {
+  
   Int_t slice;
-  Sector2Slice(slice, sector);  
+  if(!isSlice)
+    Sector2Slice(slice, sector);  
+  else
+    slice = sector;
   Float_t cs = fCos[slice];
   Float_t sn = fSin[slice];
   Float_t x1 = xyz[0]*cs + xyz[1]*sn;

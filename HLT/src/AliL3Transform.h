@@ -54,7 +54,7 @@ class AliL3Transform {
 
   void Raw2Local(Float_t *xyz,Int_t sector,Int_t row,Float_t pad,Float_t time);
   void Local2Global(Float_t *xyz,Int_t sector,Int_t row);
-  void Global2Local(Float_t *xyz,Int_t sector);
+  void Global2Local(Float_t *xyz,Int_t sector,Bool_t isSlice=kFALSE);
   void Raw2Global(Float_t *xyz,Int_t sector,Int_t row,Float_t pad,Float_t time);
   void Local2Raw(Float_t *xyz,Int_t sector,Int_t row);
   void Global2Raw(Float_t *xyz,Int_t sector,Int_t row);
