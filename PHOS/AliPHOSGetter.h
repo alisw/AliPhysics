@@ -186,6 +186,7 @@ class AliPHOSGetter : public TObject {
 
   TString Version() const  { return PhosLoader()->GetTitle() ; } 
   AliPHOSLoader * PhosLoader() const { return  fgPhosLoader ; }
+  void Reset() {fgPhosLoader = 0; fgObjGetter = 0; }
   
 private:
   
