@@ -53,6 +53,12 @@ public:
     Float_t Zmax()  {return fZend;}
     Float_t DelZ()  {return fZdel;}
     Float_t DeliZ() {return fZdeli;}
+    void    SetLimits(Float_t xmin, Float_t xmax, Float_t ymin, Float_t ymax,
+		      Float_t zmin, Float_t zmax)
+	{
+	    fXbeg = xmin; fXend = xmax; fYbeg = ymin; fYend = ymax;
+	    fZbeg = zmin; fZend = zmax;
+	}
  private:
     void    ReadField();
  protected:
