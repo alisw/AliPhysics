@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  1999/11/02 17:14:51  fca
+Correct ansi scoping not accepted by HP compilers
+
 Revision 1.12  1999/11/02 16:35:56  fca
 New version of TRD introduced
 
@@ -418,7 +421,7 @@ void AliTRDv1::Digits2Clusters()
   // slowClusterCreate.C macro.
   //
   
-  Int_t row
+  Int_t row;
 
   printf("AliTRDv1::Digits2Clusters -- Start creating clusters\n");
 
