@@ -206,6 +206,7 @@ AliPHOSGetter * AliPHOSGetter::GetInstance(const char* headerFile,
   // Posts a few item to the white board (folders)
   // fgObjGetter->CreateWhiteBoard() ;
   
+  fFile->cd() ; 
   return fgObjGetter ; 
   
 }
