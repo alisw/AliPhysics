@@ -22,6 +22,7 @@
 // author  : Yves Schutz (CERN/SUBATECH)
 // February 2004
 //_________________________________________________________________________
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TFile.h"
 #include "TMath.h"
 #include "AliPHOSGetter.h"
@@ -33,6 +34,7 @@
 #include "AliEMCALRecParticle.h"
 #include "AliPHOSRecParticle.h"
 #include "AliKalmanTrack.h"
+#endif
 
 void Ana() 
 {
