@@ -6,8 +6,11 @@
 #include "AliL3StandardIncludes.h"
 #include <TClonesArray.h>
 #include <TSystem.h>
-#include <AliTPC.h>
 
+#ifdef use_newio
+#include <AliRunLoader.h>
+#include <AliTPC.h>
+#endif
 #include <AliTPCParamSR.h>
 #include <AliTPCDigitsArray.h>
 #include <AliTPCClustersArray.h>
@@ -18,11 +21,11 @@
 #include "AliL3Logging.h"
 #include "AliL3Transform.h"
 #include "AliL3MemHandler.h"
-#include "AliL3FileHandler.h"
 #include "AliL3DigitData.h"
 #include "AliL3TrackSegmentData.h"
 #include "AliL3SpacePointData.h"
 #include "AliL3TrackArray.h"
+#include "AliL3FileHandler.h"
 
 #if GCCVERSION == 3
 using namespace std;
@@ -74,7 +77,6 @@ AliL3FileHandler::AliL3FileHandler()
   fInAli = 0;
   fParam = 0;
   fMC =0;
-  fLastIndex=0;
   fDigits=0;
   fDigitsTree=0;
   for(Int_t i=0;i<AliL3Transform::GetNSlice();i++){
@@ -101,9 +103,11 @@ void AliL3FileHandler::FreeDigitsTree()
       return;
     }
   fDigits=0;
+#ifndef use_newio
   fDigitsTree->Delete();
+#endif
   fDigitsTree=0;
-  fLastIndex=0;
+
   for(Int_t i=0;i<AliL3Transform::GetNSlice();i++){
     for(Int_t j=0;j<AliL3Transform::GetNRows();j++)
       fIndex[i][j]=-1;
@@ -146,6 +150,7 @@ void AliL3FileHandler::CloseMCOutput()
 
 Bool_t AliL3FileHandler::SetAliInput()
 {
+#ifdef use_newio
   fInAli->CdGAFile();
   fParam = AliTPC::LoadTPCParam(gFile);
   if(!fParam){
@@ -160,26 +165,49 @@ Bool_t AliL3FileHandler::SetAliInput()
       <<"No AliTPCParam "<<AliL3Transform::GetParamName()<<" in File "<<gFile->GetName()<<ENDLOG;
     return kFALSE;
   }
+#else
+  if(!fInAli->IsOpen()){
+    LOG(AliL3Log::kError,"AliL3FileHandler::SetAliInput","File Open")
+      <<"Ali File "<<fInAli->GetName()<<" does not exist"<<ENDLOG;
+    return kFALSE;
+  }
+  fParam = (AliTPCParam*)fInAli->Get(AliL3Transform::GetParamName());
+  if(!fParam){
+    LOG(AliL3Log::kWarning,"AliL3FileHandler::SetAliInput","File")
+      <<"No TPC parameters found in \""<<fInAli->GetName()
+      <<"\", creating standard parameters "
+      <<"which might not be what you want!"<<ENDLOG;
+    fParam = new AliTPCParamSR;
+  }
+  if(!fParam){ 
+    LOG(AliL3Log::kError,"AliL3FileHandler::SetAliInput","File Open")
+      <<"No AliTPCParam "<<AliL3Transform::GetParamName()<<" in File "<<fInAli->GetName()<<ENDLOG;
+    return kFALSE;
+  }
+#endif
+
   return kTRUE;
 }
 
 Bool_t AliL3FileHandler::SetAliInput(Char_t *name)
 {
   //Open the AliROOT file with name.
-  
+#ifdef use_newio
   fInAli= AliRunLoader::Open(name);
+#else
+  fInAli= new TFile(name,"READ");
+#endif
   if(!fInAli){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::SetAliInput","File Open")
-    <<"Pointer to AliRunLoader = 0x0 "<<ENDLOG;
+    <<"Pointer to fInAli = 0x0 "<<ENDLOG;
     return kFALSE;
   }
   return SetAliInput();
 }
 
+#ifdef use_newio
 Bool_t AliL3FileHandler::SetAliInput(AliRunLoader *runLoader)
 {
-  //Specify already opened AliROOT file to use as an input.
-  
   fInAli=runLoader;
   if(!fInAli){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::SetAliInput","File Open")
@@ -188,6 +216,28 @@ Bool_t AliL3FileHandler::SetAliInput(AliRunLoader *runLoader)
   }
   return SetAliInput();
 }
+#endif
+
+#ifdef use_newio
+Bool_t AliL3FileHandler::SetAliInput(TFile *file)
+{
+  LOG(AliL3Log::kFatal,"AliL3FileHandler::SetAliInput","File Open")
+    <<"This function is not supported for NEWIO, check ALIHLT_USENEWIO settings in Makefile.conf"<<ENDLOG;
+  return kFALSE;
+}
+#else
+Bool_t AliL3FileHandler::SetAliInput(TFile *file)
+{
+  //Specify already opened AliROOT file to use as an input.
+  fInAli=file;
+  if(!fInAli){
+    LOG(AliL3Log::kWarning,"AliL3FileHandler::SetAliInput","File Open")
+    <<"Pointer to fInAli = 0x0 "<<ENDLOG;
+    return kFALSE;
+  }
+  return SetAliInput();
+}
+#endif
 
 void AliL3FileHandler::CloseAliInput()
 {
@@ -196,6 +246,9 @@ void AliL3FileHandler::CloseAliInput()
       <<"Nothing to Close"<<ENDLOG;
     return;
   }
+#ifndef use_newio
+  if(fInAli->IsOpen()) fInAli->Close();
+#endif
   delete fInAli;
   fInAli = 0;
 }
@@ -207,25 +260,31 @@ Bool_t AliL3FileHandler::IsDigit(Int_t event)
   
   if(!fInAli){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::IsDigit","File")
-    <<"Pointer to AliRunLoader = 0x0 "<<ENDLOG;
-    return kTRUE;  //maybe you are using binary input which is Digits!!  
+    <<"Pointer to fInAli = 0x0 "<<ENDLOG;
+    return kTRUE;  //maybe you are using binary input which is Digits!!
   }
+#ifdef use_newio
   AliLoader* tpcLoader = fInAli->GetLoader("TPCLoader");
   if(!tpcLoader){
-    LOG(AliL3Log::kWarning,"AliL3FileHandler::IsDigit","File")
+    LOG(AliL3Log::kWarning,"AliL3FileHandlerNewIO::IsDigit","File")
     <<"Pointer to AliLoader for TPC = 0x0 "<<ENDLOG;
     return kFALSE;
   }
   fInAli->GetEvent(event);
   tpcLoader->LoadDigits();
   TTree *t=tpcLoader->TreeD();
+#else
+  Char_t name[1024];
+  sprintf(name,"TreeD_%s_%d",AliL3Transform::GetParamName(),event);
+  TTree *t=(TTree*)fInAli->Get(name);
+#endif
   if(t){
-    LOG(AliL3Log::kInformational,"AliL3FileHandler::IsDigit","File Type")
+    LOG(AliL3Log::kInformational,"AliL3FileHandlerNewIO::IsDigit","File Type")
     <<"Found Digit Tree -> Use Fast Cluster Finder"<<ENDLOG;
     return kTRUE;
   }
   else{
-    LOG(AliL3Log::kInformational,"AliL3FileHandler::IsDigit","File Type")
+    LOG(AliL3Log::kInformational,"AliL3FileHandlerNewIO::IsDigit","File Type")
     <<"No Digit Tree -> Use Cluster Tree"<<ENDLOG;
     return kFALSE;
   }
@@ -287,17 +346,19 @@ Bool_t AliL3FileHandler::CreateIndex()
 	<<sector<<" "<<row<<ENDLOG;
       return kFALSE;
     }
-    //cout << lslice << " " << lrow << " " << sector << " " << row << endl;
     if(fIndex[lslice][lrow]==-1) fIndex[lslice][lrow]=n;
   }
-
-  //for(Int_t i=0;i<AliL3Transform::GetNSlice();i++) cout << i << " " << fIndex[i][0] << endl;
 
   LOG(AliL3Log::kInformational,"AliL3FileHandler::CreateIndex","Index")
     <<"Index successfully created."<<ENDLOG;
 
+  //for(Int_t i=0;i<AliL3Transform::GetNSlice();i++){
+  //  for(Int_t j=0;j<AliL3Transform::GetNRows();j++)
+  //    cout << fIndex[i][j] << " ";
+  //cout << endl;}
+
   fIndexCreated=kTRUE;
-  return fIndexCreated;
+  return kTRUE;
 }
 
 AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event)
@@ -310,13 +371,21 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
   
   if(!fInAli){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::AliDigits2Memory","File")
-    <<"No Input avalible: no object AliRunLoader"<<ENDLOG;
+    <<"No Input avalible: Pointer to fInAli == NULL"<<ENDLOG;
     return 0; 
   }
-  
+
+#ifndef use_newio
+  if(!fInAli->IsOpen()){
+    LOG(AliL3Log::kWarning,"AliL3FileHandler::AliDigits2Memory","File")
+    <<"No Input avalible: TFile not opened"<<ENDLOG;
+    return 0;
+  }
+#endif
+
   if(!fDigitsTree)
     if(!GetDigitsTree(event)) return 0;
-  
+
   UShort_t dig;
   Int_t time,pad,sector,row;
   Int_t lslice,lrow;
@@ -336,7 +405,8 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
 
     if(lrow!=r){
       LOG(AliL3Log::kError,"AliL3FileHandler::AliDigits2Memory","Row")
-	<<AliL3Log::kDec<<"Rows dont match "<<lrow<<" "<<r<<ENDLOG;
+	<<AliL3Log::kDec<<"Rows in slice " << fSlice << " dont match "<<lrow<<" "<<r<<ENDLOG;
+      continue;
     }
 
     ndigits[lrow] = 0;
@@ -381,7 +451,8 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
     AliL3Transform::Sector2Slice(lslice,lrow,sector,row);
     if(lrow!=r){
       LOG(AliL3Log::kError,"AliL3FileHandler::AliDigits2Memory","Row")
-	<<AliL3Log::kDec<<"Rows dont match "<<lrow<<" "<<r<<ENDLOG;
+	<<AliL3Log::kDec<<"Rows on slice " << fSlice << " dont match "<<lrow<<" "<<r<<ENDLOG;
+      continue;
     }
     tempPt->fRow = lrow;
     tempPt->fNDigit = ndigits[lrow];
@@ -439,9 +510,16 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
   
   if(!fInAli){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::AliAltroDigits2Memory","File")
-    <<"No Input avalible: no object AliRunLoader"<<ENDLOG;
+    <<"No Input avalible: Pointer to TFile == NULL"<<ENDLOG;
     return 0; 
   }
+#ifndef use_newio
+  if(!fInAli->IsOpen()){
+    LOG(AliL3Log::kWarning,"AliL3FileHandler::AliAltroDigits2Memory","File")
+    <<"No Input avalible: TFile not opened"<<ENDLOG;
+    return 0;
+  }
+#endif
   if(eventmerge == kTRUE && event >= 1024)
     {
       LOG(AliL3Log::kError,"AliL3FileHandler::AliAltroDigits2Memory","TrackIDs")
@@ -449,9 +527,21 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
       return 0;
     }
   
-  if(!fDigitsTree)
+#ifdef use_newio 
+  /* Dont understand why we have to do 
+     reload the tree, 
+     but otherwise code crashes */
+  fDigits=0;
+  fDigitsTree=0;
+  if(!GetDigitsTree(event)) return 0;
+#else
+  if(!fDigitsTree){
     if(!GetDigitsTree(event)) return 0;
-  
+  }
+#endif
+
+
+
   UShort_t dig;
   Int_t time,pad,sector,row;
   Int_t nrows=0;
@@ -461,18 +551,20 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
   Int_t lslice,lrow;
   Int_t zerosupval=AliL3Transform::GetZeroSup();
   Float_t xyz[3];
-  
+
   for(Int_t r=fRowMin;r<=fRowMax;r++){
     Int_t n=fIndex[fSlice][r];
+
     if(n==-1) continue; //no data on that row
     
     fDigitsTree->GetEvent(n);
     fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
     AliL3Transform::Sector2Slice(lslice,lrow,sector,row);
-
-    if(lrow!=r){
+    //cout << lslice << " " << fSlice << " " << lrow << " " << r << " " << sector << " " << row << endl;
+    if((lslice!=fSlice)||(lrow!=r)){
       LOG(AliL3Log::kError,"AliL3FileHandler::AliAltroDigits2Memory","Row")
-	<<AliL3Log::kDec<<"Rows dont match "<<lrow<<" "<<r<<ENDLOG;
+	<<AliL3Log::kDec<<"Rows on slice " << fSlice << " dont match "<<lrow<<" "<<r<<ENDLOG;
+      continue;
     }
 
     ndigits[lrow] = 0;
@@ -607,7 +699,8 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
 
     if(lrow!=r){
       LOG(AliL3Log::kError,"AliL3FileHandler::AliAltroDigits2Memory","Row")
-	<<AliL3Log::kDec<<"Rows dont match "<<lrow<<" "<<r<<ENDLOG;
+	<<AliL3Log::kDec<<"Rows on slice " << fSlice << " dont match "<<lrow<<" "<<r<<ENDLOG;
+      continue;
     }
 
     tempPt->fRow = lrow;
@@ -754,7 +847,7 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
 Bool_t AliL3FileHandler::GetDigitsTree(Int_t event)
 {
   //Connects to the TPC digit tree in the AliROOT file.
-  
+#ifdef use_newio
   AliLoader* tpcLoader = fInAli->GetLoader("TPCLoader");
   if(!tpcLoader){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::GetDigitsTree","File")
@@ -764,6 +857,12 @@ Bool_t AliL3FileHandler::GetDigitsTree(Int_t event)
   fInAli->GetEvent(event);
   tpcLoader->LoadDigits();
   fDigitsTree = tpcLoader->TreeD();
+#else  
+  fInAli->cd();
+  Char_t dname[100];
+  sprintf(dname,"TreeD_%s_%d",AliL3Transform::GetParamName(),event);
+  fDigitsTree = (TTree*)fInAli->Get(dname);
+#endif
   if(!fDigitsTree) 
     {
       LOG(AliL3Log::kError,"AliL3FileHandler::GetDigitsTree","Digits Tree")
@@ -772,7 +871,8 @@ Bool_t AliL3FileHandler::GetDigitsTree(Int_t event)
     }
   fDigitsTree->GetBranch("Segment")->SetAddress(&fDigits);
 
-  return CreateIndex();
+  if(!fIndexCreated) return CreateIndex();
+  else return kTRUE;
 }
 
 void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_digitsfile)
@@ -787,15 +887,18 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
 
   if(!fInAli)
     {
-      printf("AliL3FileHandler::AliDigits2RootFile : No rootfile\n");
+      LOG(AliL3Log::kError,"AliL3FileHandler::AliDigits2RootFile","File")
+	<<"No rootfile "<<ENDLOG;
       return;
     }
   if(!fParam)
     {
-      printf("AliL3FileHandler::AliDigits2RootFile : No parameter object. Run on rootfile\n");
+      LOG(AliL3Log::kError,"AliL3FileHandler::AliDigits2RootFile","File")
+	<<"No parameter object. Run on rootfile "<<ENDLOG;
       return;
     }
-  
+
+#ifdef use_newio
   //Get the original digitstree:
   AliLoader* tpcLoader = fInAli->GetLoader("TPCLoader");
   if(!tpcLoader){
@@ -813,7 +916,8 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
   Bool_t ok = old_array->ConnectTree(t);
   if(!ok)
     {
-      printf("AliL3FileHandler::AliDigits2RootFile : No digits tree object\n");
+      LOG(AliL3Log::kError,"AliL3FileHandler::AliDigits2RootFile","File")
+	<< "No digits tree object" << ENDLOG;
       return;
     }
 
@@ -825,6 +929,68 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
   arr->SetClass("AliSimDigits");
   arr->Setup(fParam);
   arr->MakeTree(tpcLoader->TreeD());
+#else
+  
+  //Get the original digitstree:
+  Char_t dname[100];
+  sprintf(dname,"TreeD_%s_0",AliL3Transform::GetParamName());
+
+  fInAli->cd();
+  AliTPCDigitsArray *old_array = new AliTPCDigitsArray();
+  old_array->Setup(fParam);
+  old_array->SetClass("AliSimDigits");
+
+  Bool_t ok = old_array->ConnectTree(dname);
+  if(!ok)
+    {
+      LOG(AliL3Log::kError,"AliL3FileHandler::AliDigits2RootFile","File")
+	<<"No digits tree object." <<ENDLOG;
+      return;
+    }
+
+  Bool_t create=kFALSE;
+  TFile *digFile;
+  
+  if(gSystem->AccessPathName(new_digitsfile))
+    {
+      LOG(AliL3Log::kInformational,"AliL3FileHandler::AliDigits2RootFile","File")
+	<<"Creating new file "<<new_digitsfile<<ENDLOG;
+      create = kTRUE;
+      digFile = TFile::Open(new_digitsfile,"RECREATE");
+      fParam->Write(fParam->GetTitle());
+    }
+  else
+    {
+      create = kFALSE;
+      digFile = TFile::Open(new_digitsfile,"UPDATE");
+      
+    }
+  if(!digFile->IsOpen())
+    {
+      LOG(AliL3Log::kError,"AliL3FileHandler::AliDigits2RootFile","Rootfile")
+	<<"Error opening rootfile "<<new_digitsfile<<ENDLOG;
+      return;
+    }
+  
+  digFile->cd();
+    
+  //setup a new one, or connect it to the existing one:
+  AliTPCDigitsArray *arr = new AliTPCDigitsArray(); 
+  arr->SetClass("AliSimDigits");
+  arr->Setup(fParam);
+  if(create)
+    arr->MakeTree();
+  else
+    {
+      Bool_t ok = arr->ConnectTree(dname);
+      if(!ok)
+	{
+	  LOG(AliL3Log::kError,"AliL3FileHandler::AliDigits2RootFile","Rootfile")
+	    <<"No digits tree object in existing file"<<ENDLOG;
+	  return;
+	}
+    }
+#endif
 
   Int_t digcounter=0,trackID[3];
 
@@ -832,7 +998,8 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
     {
       
       if((Int_t)rowPt->fRow != i) 
-	cerr<<"AliL3FileHandler::AliDigits2RootFile : Mismatching row numbering!!!"<<endl;
+	LOG(AliL3Log::kWarning,"AliL3FileHandler::AliDigits2RootFile","Data")
+	  <<"Mismatching row numbering "<<(Int_t)rowPt->fRow<<" "<<i<<ENDLOG;
             
       Int_t sector,row;
       AliL3Transform::Slice2Sector(fSlice,i,sector,row);
@@ -845,8 +1012,9 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
       dig->ExpandTrackBuffer();
       
       if(!old_dig)
-      	printf("AliL3FileHandler::AliDigits2RootFile : No padrow %d %d\n",sector,row);
-      
+	LOG(AliL3Log::kWarning,"AliL3FileHandler::AliDigits2RootFile","Data")
+	  <<"No padrow " << sector << " " << row <<ENDLOG;
+
       AliL3DigitData *digPt = rowPt->fDigitData;
       digcounter=0;
       for(UInt_t j=0; j<rowPt->fNDigit; j++)
@@ -857,7 +1025,8 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
 	  
 	  if(charge == 0) //Only write the digits that has not been removed
 	    {
-	      cerr<<"AliL3FileHandler::AliDigits2RootFile : Zero charge!!! "<<endl;
+	      LOG(AliL3Log::kWarning,"AliL3FileHandler::AliDigits2RootFile","Data")
+		<<"Zero charge" <<ENDLOG;
 	      continue;
 	    }
 
@@ -887,15 +1056,22 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
       arr->ClearRow(sector,row);  
       old_array->ClearRow(sector,row);
     }
+
   char treeName[100];
   sprintf(treeName,"TreeD_%s_0",fParam->GetTitle());
-
+  
+#ifdef use_newio
   arr->GetTree()->SetName(treeName);
   arr->GetTree()->AutoSave();
   tpcLoader->WriteDigits("OVERWRITE");
+#else
+  digFile->cd();
+  arr->GetTree()->SetName(treeName);
+  arr->GetTree()->AutoSave();
+  digFile->Close();
+#endif
   delete arr;
   delete old_array;
-  
 }
 
 ///////////////////////////////////////// Point IO  
@@ -913,11 +1089,19 @@ AliL3SpacePointData * AliL3FileHandler::AliPoints2Memory(UInt_t & npoint,Int_t e
   npoint=0;
   if(!fInAli){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::AliPoints2Memory","File")
-    <<"No Input avalible: no object AliRunLoader"<<ENDLOG;
+    <<"No Input avalible: no object fInAli"<<ENDLOG;
     return 0;
   }
+#ifndef use_newio
+  if(!fInAli->IsOpen()){
+    LOG(AliL3Log::kWarning,"AliL3FileHandler::AliPoints2Memory","File")
+    <<"No Input avalible: TFile not opend"<<ENDLOG;
+    return 0;
+  }
+#endif
 
   TDirectory *savedir = gDirectory;
+#ifdef use_newio
   AliLoader* tpcLoader = fInAli->GetLoader("TPCLoader");
   if(!tpcLoader){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::AliPoints2Memory","File")
@@ -931,6 +1115,17 @@ AliL3SpacePointData * AliL3FileHandler::AliPoints2Memory(UInt_t & npoint,Int_t e
   carray.Setup(fParam);
   carray.SetClusterType("AliTPCcluster");
   Bool_t clusterok = carray.ConnectTree(tpcLoader->TreeR());
+#else
+  fInAli->cd();
+  
+  Char_t cname[100];
+  sprintf(cname,"TreeC_TPC_%d",eventn);
+  AliTPCClustersArray carray;
+  carray.Setup(fParam);
+  carray.SetClusterType("AliTPCcluster");
+  Bool_t clusterok = carray.ConnectTree(cname);
+#endif
+
   if(!clusterok) return 0;
 
   AliTPCClustersRow ** clusterrow = 

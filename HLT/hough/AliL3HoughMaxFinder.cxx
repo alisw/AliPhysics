@@ -37,6 +37,8 @@ AliL3HoughMaxFinder::AliL3HoughMaxFinder()
   fYPeaks=0;
   fNPeaks=0;
   fNMax=0;
+  fGradX=1;
+  fGradY=1;
 #ifndef no_root
   fNtuppel = 0;
 #endif
@@ -54,6 +56,8 @@ AliL3HoughMaxFinder::AliL3HoughMaxFinder(Char_t *histotype,Int_t nmax,AliL3Histo
   if(hist)
     fCurrentHisto = hist;
   
+  fGradX=1;
+  fGradY=1;
   fNMax=nmax;
   fXPeaks = new Float_t[fNMax];
   fYPeaks = new Float_t[fNMax];
@@ -124,6 +128,9 @@ void AliL3HoughMaxFinder::FindAbsMaxima()
     }
   AliL3Histogram *hist = fCurrentHisto;
   
+  if(hist->GetNEntries() == 0)
+    return;
+  
   Int_t xmin = hist->GetFirstXbin();
   Int_t xmax = hist->GetLastXbin();
   Int_t ymin = hist->GetFirstYbin();
@@ -147,18 +154,21 @@ void AliL3HoughMaxFinder::FindAbsMaxima()
 	}
     }
   
+  if(max_value == 0)
+    return;
+  
   if(fNPeaks > fNMax)
     {
       cerr<<"AliL3HoughMaxFinder::FindAbsMaxima : Array out of range : "<<fNPeaks<<endl;
       return;
     }
   
-      
   Double_t max_x = hist->GetBinCenterX(max_xbin);
   Double_t max_y = hist->GetBinCenterY(max_ybin);
   fXPeaks[fNPeaks] = max_x;
   fYPeaks[fNPeaks] = max_y;
   fWeight[fNPeaks] = (Int_t)max_value;
+
   fNPeaks++;
 #ifndef no_root
   if(fNtuppel)
@@ -177,6 +187,10 @@ void AliL3HoughMaxFinder::FindBigMaxima()
 {
   
   AliL3Histogram *hist = fCurrentHisto;
+  
+  if(hist->GetNEntries() == 0)
+    return;
+  
   Int_t xmin = hist->GetFirstXbin();
   Int_t xmax = hist->GetLastXbin();
   Int_t ymin = hist->GetFirstYbin();
@@ -226,11 +240,14 @@ void AliL3HoughMaxFinder::FindBigMaxima()
     }
 }
 
-void AliL3HoughMaxFinder::FindMaxima(Double_t grad_x,Double_t grad_y)
+void AliL3HoughMaxFinder::FindMaxima(Int_t threshold)
 {
   //Locate all the maxima in input histogram.
   //Maxima is defined as bins with more entries than the
   //immediately neighbouring bins. 
+  
+  if(fCurrentHisto->GetNEntries() == 0)
+    return;
   
   Int_t xmin = fCurrentHisto->GetFirstXbin();
   Int_t xmax = fCurrentHisto->GetLastXbin();
@@ -274,7 +291,7 @@ void AliL3HoughMaxFinder::FindMaxima(Double_t grad_x,Double_t grad_y)
 	      Float_t max_x = fCurrentHisto->GetBinCenterX(xbin);
 	      Float_t max_y = fCurrentHisto->GetBinCenterY(ybin);
 	      
-	      if((Int_t)value[4] <= fThreshold) continue;//central bin below threshold
+	      if((Int_t)value[4] <= threshold) continue;//central bin below threshold
 	      if(fNPeaks >= fNMax)
 		{
 		  cout<<"AliL3HoughMaxFinder::FindMaxima : Array out of range "<<fNPeaks<<endl;
@@ -282,9 +299,12 @@ void AliL3HoughMaxFinder::FindMaxima(Double_t grad_x,Double_t grad_y)
 		}
 	      
 	      //Check the gradient:
-	      //if(value[1]/value[4] > grad_y || value[7]/value[4] > grad_y)
-	      //continue;
-	      
+	      if(value[3]/value[4] > fGradX && value[5]/value[4] > fGradX)
+		continue;
+
+	      if(value[1]/value[4] > fGradY && value[7]/value[4] > fGradY)
+		continue;
+
 	      fXPeaks[fNPeaks] = max_x;
 	      fYPeaks[fNPeaks] = max_y;
 	      fWeight[fNPeaks] = (Int_t)value[4];
@@ -322,296 +342,283 @@ void AliL3HoughMaxFinder::FindMaxima(Double_t grad_x,Double_t grad_y)
   
 }
 
-AliL3TrackArray *AliL3HoughMaxFinder::LookForPeaks(AliL3Histogram *hist,Int_t nbins)
+struct Window 
 {
-  
-  AliL3TrackArray *tracks = new AliL3TrackArray("AliL3HoughTrack");
-  AliL3HoughTrack *track;
-  Int_t xmin = hist->GetFirstXbin();
-  Int_t xmax = hist->GetLastXbin();
-  Int_t ymin = hist->GetFirstYbin();
-  Int_t ymax = hist->GetLastYbin();
-  
-  Int_t weight_loc;
-  for(Int_t xbin=xmin+nbins; xbin <= xmax - nbins; xbin++)
-    {
-      for(Int_t ybin=ymin+nbins; ybin <= ymax - nbins; ybin++)
-	{
-	  weight_loc=0;
-	  for(Int_t xbin_loc = xbin-nbins; xbin_loc <= xbin+nbins; xbin_loc++)
-	    {
-	      for(Int_t ybin_loc = ybin-nbins; ybin_loc <= ybin+nbins; ybin_loc++)
-		{
-		  Int_t bin_loc = hist->GetBin(xbin_loc,ybin_loc);
-		  weight_loc += (Int_t)hist->GetBinContent(bin_loc);
-		}
-	    }
-	  
-	  if(weight_loc > 0)
-	    {
-	      track = (AliL3HoughTrack*)tracks->NextTrack();
-	      track->SetTrackParameters(hist->GetBinCenterX(xbin),hist->GetBinCenterY(ybin),weight_loc);
-	    }
-	  
-	}
-    }
-  tracks->QSort();
-  
-  AliL3HoughTrack *track1,*track2;
+  Int_t start;
+  Int_t sum;
+};
 
-  for(Int_t i=1; i<tracks->GetNTracks(); i++)
-    {
-      track1 = (AliL3HoughTrack*)tracks->GetCheckedTrack(i);
-      if(!track1) continue;
-      Int_t xbin1 = hist->FindXbin(track1->GetKappa());
-      Int_t ybin1 = hist->FindXbin(track1->GetPhi0());
-      for(Int_t j=0; j < i; j++)
-	{
-	  track2 = (AliL3HoughTrack*)tracks->GetCheckedTrack(j);
-	  if(!track2) continue;
-	  Int_t xbin2 = hist->FindXbin(track2->GetKappa());
-	  Int_t ybin2 = hist->FindYbin(track2->GetPhi0());
-	  if(abs(xbin1-xbin2) < 10 && abs(ybin1-ybin2) < 10)
-	    {
-	      tracks->Remove(i);
-	      break;
-	    }
-	}
-
-    }
-  tracks->Compress();
-  return tracks;
-}
-
-AliL3HoughTrack *AliL3HoughMaxFinder::CalculatePeakInWindow(Int_t *maxbin,Int_t t0,Int_t t1,Double_t t2,Int_t t3)
+void AliL3HoughMaxFinder::FindAdaptedPeaks(Int_t kappawindow)
 {
-  //Try to expand the area around the maxbin +- t0
-
-  if(!fCurrentHisto)
-    {
-      printf("AliL3HoughMaxFinder::LocatePeak : No histogram\n");
-      return 0;
-    }
+  //Peak finder which looks for peaks with a certain shape.
+  //The first step involves a pre-peak finder, which looks for peaks
+  //in windows (size controlled by kappawindow) summing over each psi-bin.
+  //These pre-preaks are then matched between neighbouring kappa-bins to
+  //look for real 2D peaks exhbiting the typical cross-shape in the Hough circle transform.
+  //The maximum bin within this region is marked as the peak itself, and
+  //a few checks is performed to avoid the clear fake peaks (asymmetry check etc.)
+  
+  
   AliL3Histogram *hist = fCurrentHisto;
+  
+  if(!hist)
+    {
+      cerr<<"AliL3HoughMaxFinder : No histogram!"<<endl;
+      return;
+    }
+  
+  if(hist->GetNEntries() == 0)
+    return;
+  
   Int_t xmin = hist->GetFirstXbin();
   Int_t xmax = hist->GetLastXbin();
   Int_t ymin = hist->GetFirstYbin();
   Int_t ymax = hist->GetLastYbin();
-
-  Int_t xlow = maxbin[0]-t0;
-  if(xlow < xmin)
-    xlow = xmin;
-  Int_t xup = maxbin[0]+t0;
-  if(xup > xmax)
-    xup = xmax;
-  Int_t ylow = maxbin[1]-t0;
-  if(ylow < ymin)
-    ylow = ymin;
-  Int_t yup = maxbin[1]+t0;
-  if(yup > ymax)
-    yup = ymax;
   
-  Int_t nbinsx = hist->GetNbinsX()+1;
+  //Start by looking for pre-peaks:
   
-  Int_t *m = new Int_t[nbinsx];
-  Int_t *m_low = new Int_t[nbinsx];
-  Int_t *m_up = new Int_t[nbinsx];
+  Window **local_maxima = new Window*[hist->GetNbinsY()];
   
- recompute:
-
-  Int_t max_x=0,sum=0,max_xbin=0,bin;
-  
-  for(Int_t xbin=xlow; xbin<=xup; xbin++)
+  Short_t *nmaxs = new Short_t[hist->GetNbinsY()];
+  Int_t n,last_sum,sum;
+  Bool_t sum_was_rising;
+  for(Int_t ybin=ymin; ybin<=ymax; ybin++)
     {
-      for(Int_t ybin=ylow; ybin <= yup; ybin++)
+      local_maxima[ybin-ymin] = new Window[hist->GetNbinsX()];
+      nmaxs[ybin-ymin] = 0;
+      sum_was_rising=0;
+      last_sum=0;
+      n=0;
+      for(Int_t xbin=xmin; xbin<=xmax-kappawindow; xbin++)
 	{
-	  sum = 0;
-	  for(Int_t y=ybin; y <= ybin+t1; y++)
-	    {
-	      if(y>yup) break; //reached the upper limit in y.
-	      //Inside window
-	      bin = hist->GetBin(xbin,y);
-	      sum += (Int_t)hist->GetBinContent(bin);
-	      
-	    }
-	  if(sum > m[xbin]) //Max value locally in this xbin
-	    {
-	      m[xbin]=sum;
-	      m_low[xbin]=ybin;
-	      m_up[xbin]=ybin + t1;
-	    }
+	  sum=0;
+	  for(Int_t lbin=xbin; lbin<xbin+kappawindow; lbin++)
+	    sum += hist->GetBinContent(hist->GetBin(lbin,ybin));
 	  
+	  if(sum < last_sum)
+	    {
+	      if(sum > fThreshold)
+		if(sum_was_rising)//Previous sum was a local maxima
+		  {
+		    local_maxima[ybin-ymin][nmaxs[ybin-ymin]].start = xbin-1;
+		    local_maxima[ybin-ymin][nmaxs[ybin-ymin]].sum = last_sum;
+		    nmaxs[ybin-ymin]++;
+		  }
+	      
+	      sum_was_rising=0;
+	    }
+	  else if(sum > 0) 
+	    sum_was_rising=1;
+	  last_sum=sum;
 	}
-      
-      if(m[xbin] > max_x) //Max value globally in x-direction
+    }
+  
+  Float_t cut_ratio=0.5;
+  Int_t match=0;
+  Int_t *starts = new Int_t[hist->GetNbinsY()+1];
+  Int_t *maxs = new Int_t[hist->GetNbinsY()+1];
+  
+  for(Int_t ybin=ymax; ybin >= ymin+1; ybin--)
+    {
+      for(Int_t i=0; i<nmaxs[ybin-ymin]; i++)
 	{
-	  max_xbin = xbin;
-	  max_x = m[xbin];//sum;
+	  Int_t lw = local_maxima[ybin-ymin][i].sum;
+
+	  if(lw<0)
+	    continue; //already used
+
+	  Int_t maxvalue=0,maxybin=0,maxxbin=0,maxwindow=0;
+	  for(Int_t k=local_maxima[ybin-ymin][i].start; k<local_maxima[ybin-ymin][i].start + kappawindow; k++)
+	    if(hist->GetBinContent(hist->GetBin(k,ybin)) > maxvalue)
+	      {
+		maxvalue = hist->GetBinContent(hist->GetBin(k,ybin));
+		maxybin = ybin;
+		maxxbin = k;
+	      }
+	  
+	  //start expanding in the psi-direction:
+
+	  Int_t lb = local_maxima[ybin-ymin][i].start;
+	  //Int_t ystart=ybin;
+	  starts[ybin] = local_maxima[ybin-ymin][i].start;
+	  maxs[ybin] = maxxbin;
+	  Int_t yl=ybin-1,nybins=1;
+	  
+	  //cout<<"Starting search at ybin "<<ybin<<" start "<<lb<<" with sum "<<local_maxima[ybin-ymin][i].sum<<endl;
+	  while(yl >= ymin)
+	    {
+	      Bool_t found=0;
+	      for(Int_t j=0; j<nmaxs[yl-ymin]; j++)
+		{
+		  if( local_maxima[yl-ymin][j].start - lb < 0) continue;
+		  if( local_maxima[yl-ymin][j].start < lb + kappawindow + match &&
+		      local_maxima[yl-ymin][j].start >= lb && local_maxima[yl-ymin][j].sum > 0)
+		    {
+		      
+		      //cout<<"match at ybin "<<yl<<" yvalue "<<hist->GetBinCenterY(yl)<<" start "<<local_maxima[yl-ymin][j].start<<" sum "<<local_maxima[yl-ymin][j].sum<<endl;
+		      
+		      Int_t lmaxvalue=0,lmaxxbin=0;
+		      for(Int_t k=local_maxima[yl-ymin][j].start; k<local_maxima[yl-ymin][j].start + kappawindow; k++)
+			{
+			  if(hist->GetBinContent(hist->GetBin(k,yl)) > maxvalue)
+			    {
+			      maxvalue = hist->GetBinContent(hist->GetBin(k,yl));
+			      maxxbin = k;
+			      maxybin = yl;
+			      maxwindow = j;
+			    }
+			  if(hist->GetBinContent(hist->GetBin(k,yl)) > lmaxvalue)//local maxima value
+			    {
+			      lmaxvalue=hist->GetBinContent(hist->GetBin(k,yl));
+			      lmaxxbin=k;
+			    }
+			}
+		      nybins++;
+		      starts[yl] = local_maxima[yl-ymin][j].start;
+		      maxs[yl] = lmaxxbin;
+		      local_maxima[yl-ymin][j].sum=-1; //Mark as used
+		      found=1;
+		      lb = local_maxima[yl-ymin][j].start;
+		      break;//Since we found a match in this bin, we dont have to search it anymore, goto next bin.
+		    }
+		}
+	      if(!found || yl == ymin)//no more local maximas to be matched, so write the final peak and break the expansion:
+		{
+		  if(nybins > 4)
+		    {
+		      //cout<<"ystart "<<ystart<<" and nybins "<<nybins<<endl;
+
+		      Bool_t truepeak=kTRUE;
+		      
+		      //cout<<"Maxima found at xbin "<<maxxbin<<" ybin "<<maxybin<<" value "<<maxvalue<<endl;
+		      //cout<<"Starting to sum at xbin "<<starts[maxybin-ymin]<<endl;
+		      
+		      
+		      //Look in a window on both sides to probe the asymmetry
+		      Float_t right=0,left=0;
+		      for(Int_t w=maxxbin+1; w<=maxxbin+3; w++)
+			{
+			  for(Int_t r=maxybin+1; r<=maxybin+3; r++)
+			    {
+			      right += (Float_t)hist->GetBinContent(hist->GetBin(w,r));
+			    }
+			}
+		      
+		      for(Int_t w=maxxbin-1; w>=maxxbin-3; w--)
+			{
+			  for(Int_t r=maxybin+1; r<=maxybin+3; r++)
+			    {
+			      left += (Float_t)hist->GetBinContent(hist->GetBin(w,r));
+			    }
+			}
+		      
+		      //cout<<"ratio "<<right/left<<endl;
+		      
+		      Float_t upper_ratio=1,lower_ratio=1;
+		      if(left)
+			upper_ratio = right/left;
+		      
+		      right=left=0;
+		      for(Int_t w=maxxbin+1; w<=maxxbin+3; w++)
+			{
+			  for(Int_t r=maxybin-1; r>=maxybin-3; r--)
+			    {
+			      right += (Float_t)hist->GetBinContent(hist->GetBin(w,r));
+			    }
+			}
+		      
+		      for(Int_t w=maxxbin-1; w>=maxxbin-3; w--)
+			{
+			  for(Int_t r=maxybin-1; r>=maxybin-3; r--)
+			    {
+			      left += (Float_t)hist->GetBinContent(hist->GetBin(w,r));
+			    }
+			}
+		      
+		      //cout<<"ratio "<<left/right<<endl;
+		      
+		      if(right)
+			lower_ratio = left/right;
+		      
+		      if(upper_ratio > cut_ratio || lower_ratio > cut_ratio)
+ 			truepeak=kFALSE;
+		      
+		      if(truepeak)
+			{
+			  
+			  fXPeaks[fNPeaks] = hist->GetBinCenterX(maxxbin);
+			  fYPeaks[fNPeaks] = hist->GetBinCenterY(maxybin);
+			  fWeight[fNPeaks] = maxvalue;
+			  fNPeaks++;
+			  
+			  /*
+			  //Calculate the peak using weigthed means:
+			  Float_t sum=0;
+			  fYPeaks[fNPeaks]=0;
+			  for(Int_t k=maxybin-1; k<=maxybin+1; k++)
+			    {
+			      Float_t lsum = 0;
+			      for(Int_t l=starts[k]; l<starts[k]+kappawindow; l++)
+				{
+				  lsum += (Float_t)hist->GetBinContent(hist->GetBin(l,k));
+				  sum += (Float_t)hist->GetBinContent(hist->GetBin(l,k));
+				}
+			      fYPeaks[fNPeaks] += lsum*hist->GetBinCenterY(k);
+			    }
+			  fYPeaks[fNPeaks] /= sum;
+			  Int_t ybin1,ybin2;
+			  if(fYPeaks[fNPeaks] < hist->GetBinCenterY(hist->FindYbin(fYPeaks[fNPeaks])))
+			    {
+			      ybin1 = hist->FindYbin(fYPeaks[fNPeaks])-1;
+			      ybin2 = ybin1+1;
+			    }
+			  else
+			    {
+			      ybin1 = hist->FindYbin(fYPeaks[fNPeaks]);
+			      ybin2 = ybin1+1;
+			    }
+
+			  Float_t kappa1=0,kappa2=0;
+			  sum=0;
+			  for(Int_t k=starts[ybin1]; k<starts[ybin1] + kappawindow; k++)
+			    {
+			      kappa1 += hist->GetBinCenterX(k)*hist->GetBinContent(hist->GetBin(k,ybin1));
+			      sum += (Float_t)hist->GetBinContent(hist->GetBin(k,ybin1));
+			    }
+			  kappa1 /= sum;
+			  sum=0;
+			  for(Int_t k=starts[ybin2]; k<starts[ybin2] + kappawindow; k++)
+			    {
+			      kappa2 += hist->GetBinCenterX(k)*hist->GetBinContent(hist->GetBin(k,ybin2));
+			      sum += (Float_t)hist->GetBinContent(hist->GetBin(k,ybin2));
+			    }
+			  kappa2 /= sum;
+			  
+			  fXPeaks[fNPeaks] = ( kappa1*( hist->GetBinCenterY(ybin2) - fYPeaks[fNPeaks] ) + 
+					       kappa2*( fYPeaks[fNPeaks] - hist->GetBinCenterY(ybin1) ) )  / 
+ 			    (hist->GetBinCenterY(ybin2) - hist->GetBinCenterY(ybin1));
+
+			  fNPeaks++;
+			  */
+			}
+		    }
+		  break;
+		}
+	      else
+		yl--;//Search continues...
+	    }
 	}
     }
-  //printf("max_xbin %d max_x %d m_low %d m_up %d\n",max_xbin,max_x,m_low[max_xbin],m_up[max_xbin]);
-  //printf("ylow %f yup %f\n",hist->GetBinCenterY(m_low[max_xbin]),hist->GetBinCenterY(m_up[max_xbin]));
 
-  //Determine a width in the x-direction
-  Int_t x_low=0,x_up=0;
-  for(Int_t xbin=max_xbin-1; xbin >= xmin; xbin--)
-    {
-      if(m[xbin] < max_x*t2)
-	{
-	  x_low = xbin+1;
-	  break;
-	}
-    }
-  for(Int_t xbin = max_xbin+1; xbin <=xmax; xbin++)
-    {
-      if(m[xbin] < max_x*t2)
-	{
-	  x_up = xbin-1;
-	  break;
-	}
-    }
-  printf("x_low %d x_up %d\n",x_low,x_up);
+  for(Int_t i=0; i<hist->GetNbinsY(); i++)
+    delete local_maxima[i];
 
-  Double_t top=0,butt=0,value,x_peak;
-  if(x_up - x_low + 1 > t3)
-    {
-      t1 -= 1;
-      printf("\nxrange out if limit x_up %d x_low %d\n\n",x_low,x_up);
-      if(t1 > 1)
-	goto recompute;
-      else
-	{
-	  x_peak = hist->GetBinCenterX(max_xbin);
-	  goto moveon;
-	}
-    }
-  
-  //printf("xlow %f xup %f\n",hist->GetBinCenterX(x_low),hist->GetBinCenterX(x_up));
-  //printf("Spread in x %d\n",x_up-x_low +1);
-
-  //Now, calculate the center of mass in x-direction
-  for(Int_t xbin=x_low; xbin <= x_up; xbin++)
-    {
-      value = hist->GetBinCenterX(xbin);
-      top += value*m[xbin];
-      butt += m[xbin];
-    }
-  x_peak = top/butt;
-  
- moveon:
-  
-  //Find the peak in y direction:
-  Int_t x_l = hist->FindXbin(x_peak);
-  if(hist->GetBinCenterX(x_l) > x_peak)
-    x_l--;
-
-  Int_t x_u = x_l + 1;
-  
-  if(hist->GetBinCenterX(x_l) > x_peak || hist->GetBinCenterX(x_u) <= x_peak)
-    printf("\nAliL3HoughMaxFinder::FindPeak : Wrong xrange %f %f %f\n\n",hist->GetBinCenterX(x_l),x_peak,hist->GetBinCenterX(x_u));
-    
-    //printf("\nxlow %f xup %f\n",hist->GetBinCenterX(x_l),hist->GetBinCenterX(x_u));
-
-  value=top=butt=0;
-  
-  //printf("ylow %f yup %f\n",hist->GetBinCenterY(m_low[x_l]),hist->GetBinCenterY(m_up[x_l]));
-  //printf("ylow %f yup %f\n",hist->GetBinCenterY(m_low[x_u]),hist->GetBinCenterY(m_up[x_u]));
-  
-  for(Int_t ybin=m_low[x_l]; ybin <= m_up[x_l]; ybin++)
-    {
-      value = hist->GetBinCenterY(ybin);
-      bin = hist->GetBin(x_l,ybin);
-      top += value*hist->GetBinContent(bin);
-      butt += hist->GetBinContent(bin);
-    }
-  Double_t y_peak_low = top/butt;
-  
-  //printf("y_peak_low %f\n",y_peak_low);
-
-  value=top=butt=0;
-  for(Int_t ybin=m_low[x_u]; ybin <= m_up[x_u]; ybin++)
-    {
-      value = hist->GetBinCenterY(ybin);
-      bin = hist->GetBin(x_u,ybin);
-      top += value*hist->GetBinContent(bin);
-      butt += hist->GetBinContent(bin);
-    }
-  Double_t y_peak_up = top/butt;
-  
-  //printf("y_peak_up %f\n",y_peak_up);
-
-  Double_t x_value_up = hist->GetBinCenterX(x_u);
-  Double_t x_value_low = hist->GetBinCenterX(x_l);
-
-  Double_t y_peak = (y_peak_low*(x_value_up - x_peak) + y_peak_up*(x_peak - x_value_low))/(x_value_up - x_value_low);
-
-
-  //Find the weight:
-  bin = hist->FindBin(x_peak,y_peak);
-  Int_t weight = (Int_t)hist->GetBinContent(bin);
-
-  AliL3HoughTrack *track = new AliL3HoughTrack();
-  track->SetTrackParameters(x_peak,y_peak,weight);
-  
-  //Reset area around peak
-  for(Int_t xbin=x_low; xbin<=x_up; xbin++)
-    {
-      for(Int_t ybin=m_low[xbin]; ybin<=m_up[xbin]; ybin++)
-	{
-	  bin = hist->GetBin(xbin,ybin);
-	  hist->SetBinContent(bin,0);
-	}
-    }
-  
-  delete [] m;
-  delete [] m_low;
-  delete [] m_up;
-  
-  return track;
-
-  
+  delete [] local_maxima;
+  delete [] nmaxs;
+  delete [] starts;
+  delete [] maxs;
 }
 
-AliL3HoughTrack *AliL3HoughMaxFinder::FindPeakLine(Double_t rho,Double_t theta)
-{
-  //Peak finder based on a second line transformation on kappa-phi space, 
-  //to use as a baseline.
-
-  if(!fCurrentHisto)
-    {
-      printf("AliL3HoughTransformer::FindPeakLine : No input histogram\n");
-      return 0;
-    }
-  
-  //get the line parameters:
-  Double_t a = -1./tan(theta);
-  Double_t b = rho/sin(theta);
-  
-  printf("rho %f theta %f\n",rho,theta);
-  //now, start looking along the line.
-  Int_t xmin = fCurrentHisto->GetFirstXbin();
-  Int_t xmax = fCurrentHisto->GetLastXbin();
-    
-  Int_t max_weight=0;
-  Double_t max_bin[2];
-  for(Int_t xbin=xmin; xbin<=xmax; xbin++)
-    {
-      Double_t x = fCurrentHisto->GetBinCenterX(xbin);
-      Double_t y = a*x + b;
-      Int_t bin = fCurrentHisto->FindBin(x,y);
-      //printf("x %f y %f weight %d\n",x,y,fCurrentHisto->GetBinContent(bin));
-      if(fCurrentHisto->GetBinContent(bin) > max_weight)
-	{
-	  max_weight = (Int_t)fCurrentHisto->GetBinContent(bin);
-	  max_bin[0] = x;
-	  max_bin[1] = y;
-	}
-    }
-  
-  AliL3HoughTrack *track = new AliL3HoughTrack();
-  track->SetTrackParameters(max_bin[0],max_bin[1],max_weight);
-  return track;
-}
 
 void AliL3HoughMaxFinder::FindPeak1(Int_t y_window,Int_t x_bin_sides)
 {
@@ -627,7 +634,9 @@ void AliL3HoughMaxFinder::FindPeak1(Int_t y_window,Int_t x_bin_sides)
       printf("AliL3HoughMaxFinder::FindPeak1 : No input histogram\n");
       return;
     }  
-
+  if(fCurrentHisto->GetNEntries()==0)
+    return;
+  
   //Int_t y_window=2;
   //Int_t x_bin_sides=1;
   
@@ -700,8 +709,8 @@ void AliL3HoughMaxFinder::FindPeak1(Int_t y_window,Int_t x_bin_sides)
 	  butt += fCurrentHisto->GetBinContent(bin);
 	}
       
-      //if(butt < fThreshold)
-      //	continue;
+      if(butt < fThreshold)
+      	continue;
       
       fXPeaks[fNPeaks] = fCurrentHisto->GetBinCenterX(windowPt[i]->xbin);
       fYPeaks[fNPeaks] = top/butt;
@@ -838,6 +847,8 @@ void AliL3HoughMaxFinder::FindPeak(Int_t t1,Double_t t2,Int_t t3)
       return;
     }
   AliL3Histogram *hist = fCurrentHisto;
+  if(hist->GetNEntries()==0)
+    return;
 
   Int_t xmin = hist->GetFirstXbin();
   Int_t xmax = hist->GetLastXbin();

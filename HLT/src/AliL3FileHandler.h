@@ -9,9 +9,12 @@ class TClonesArray;
 
 #include <AliSimDigits.h>
 #include <AliTPCParam.h>
+#ifdef use_newio
 #include <AliRunLoader.h>
+#endif
 
 #include <TObject.h>
+#include <TFile.h>
 #include <TTree.h>
 
 class AliL3SpacePointData;
@@ -20,11 +23,16 @@ class AliL3TrackSegmentData;
 class AliL3TrackArray;
 
 class AliL3FileHandler:public AliL3MemHandler{
- private:
+
+ protected:
+#ifdef use_newio
   AliRunLoader *fInAli;
+#else
+  TFile *fInAli;
+#endif
   AliTPCParam *fParam;
-  Bool_t SetAliInput();
-  Int_t fLastIndex;
+  virtual Bool_t SetAliInput();
+  //  Int_t fLastIndex;
   AliSimDigits *fDigits;
   TTree *fDigitsTree;
   FILE *fMC;//!
@@ -38,11 +46,15 @@ class AliL3FileHandler:public AliL3MemHandler{
 
  public:
   AliL3FileHandler();
-  virtual ~AliL3FileHandler();
+  ~AliL3FileHandler();
 
   void FreeDigitsTree();
   Bool_t SetAliInput(Char_t *name);
+  Bool_t SetAliInput(TFile *file);
+#ifdef use_newio
   Bool_t SetAliInput(AliRunLoader *runLoader);
+#else
+#endif
   void CloseAliInput(); 
   Bool_t IsDigit(Int_t event);
   
@@ -53,7 +65,8 @@ class AliL3FileHandler:public AliL3MemHandler{
   //Digit IO
   Bool_t AliDigits2Binary(Int_t event=0,Bool_t altro=kFALSE);
   AliL3DigitRowData *AliDigits2Memory(UInt_t & nrow,Int_t event=0); //Allocates Memory
-  AliL3DigitRowData *AliAltroDigits2Memory(UInt_t & nrow,Int_t event=0,Bool_t eventmerge=kFALSE); //Allocates Memory
+  AliL3DigitRowData *AliAltroDigits2Memory(UInt_t & nrow,Int_t event=0,Bool_t eventmerge=kFALSE); 
+  //Allocates Memory
   Bool_t AliDigits2CompBinary(Int_t event=0,Bool_t altro=kFALSE);  
   void AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_digitsfile);
 

@@ -76,8 +76,8 @@ Int_t AliL3HistogramAdaptive::InitKappaBins()
   while(pt < fMaxPt)
     {
       local_pt = pt;
-      delta_pt = fPtres*local_pt;
-      pt += delta_pt;
+      delta_pt = fPtres*local_pt*local_pt;
+      pt += 2*delta_pt;
       bin++;
     }
   fKappaBins = new Double_t[bin+1];
@@ -87,8 +87,8 @@ Int_t AliL3HistogramAdaptive::InitKappaBins()
   while(pt < fMaxPt)
     {
       local_pt = pt;
-      delta_pt = fPtres*local_pt;
-      pt += delta_pt;
+      delta_pt = fPtres*local_pt*local_pt;
+      pt += 2*delta_pt;                      //*2 because pt +- 1/2*deltapt is one bin
       bin++;
       fKappaBins[bin] = AliL3Transform::GetBFact()*AliL3Transform::GetBField()/pt;
     }
@@ -111,7 +111,7 @@ Int_t AliL3HistogramAdaptive::FindBin(Double_t x,Double_t y)
   Int_t xbin = FindXbin(x);
   Int_t ybin = FindYbin(y);
   
-  if(xbin < 0) 
+  if(!xbin || !ybin) 
     return -1;
   return GetBin(xbin,ybin);
 }
@@ -120,7 +120,7 @@ Int_t AliL3HistogramAdaptive::FindXbin(Double_t x)
 {
 
   if(x < fXmin || x > fXmax || fabs(x) < fKappaBins[(fNxbins/2-1)])
-    return -1;
+    return 0;
   
   //Remember that kappa value is decreasing with bin number!
   //Also, the bin numbering starts at 1 and ends at fNxbins,

@@ -37,7 +37,7 @@ AliL3ClusterFitter::AliL3ClusterFitter()
 {
   plane=0;
   fNmaxOverlaps = 3;
-  fChiSqMax=12;
+  fChiSqMax[0]=fChiSqMax[1]=12;
   fRowMin=-1;
   fRowMax=-1;
   fFitted=0;
@@ -51,6 +51,7 @@ AliL3ClusterFitter::AliL3ClusterFitter()
   fClusters=0;
   fNMaxClusters=0;
   fNClusters=0;
+  fEvent=0;
 }
 
 AliL3ClusterFitter::AliL3ClusterFitter(Char_t *path)
@@ -58,7 +59,7 @@ AliL3ClusterFitter::AliL3ClusterFitter(Char_t *path)
   strcpy(fPath,path);
   plane=0;
   fNmaxOverlaps = 3;
-  fChiSqMax=12;
+  fChiSqMax[0]=fChiSqMax[1]=12;
   fRowMin=-1;
   fRowMax=-1;
   fFitted=0;
@@ -72,6 +73,7 @@ AliL3ClusterFitter::AliL3ClusterFitter(Char_t *path)
   fNMaxClusters=100000;
   fClusters=0;
   fNClusters=0;
+  fEvent=0;
 }
 
 AliL3ClusterFitter::~AliL3ClusterFitter()
@@ -151,7 +153,7 @@ void AliL3ClusterFitter::Init(Int_t slice,Int_t patch)
 {
   fSlice=slice;
   fPatch=patch;
-
+  
   fRowMin=AliL3Transform::GetFirstRow(patch);
   fRowMax=AliL3Transform::GetLastRow(patch);
   
@@ -169,17 +171,64 @@ void AliL3ClusterFitter::Init(Int_t slice,Int_t patch)
 
 }
 
-
-void AliL3ClusterFitter::LoadSeeds(Int_t *rowrange,Bool_t offline)
+void AliL3ClusterFitter::LoadLocalSegments()
 {
+  Char_t filename[1024];
+  sprintf(filename,"%s/hough/tracks_ho_%d_%d_%d.raw",fPath,fEvent,fSlice,fPatch);
+  AliL3MemHandler mem;
+  mem.SetBinaryInput(filename);
+  mem.Binary2TrackArray(fTracks);
+  mem.CloseBinaryInput();
+  
+  for(Int_t i=0; i<fTracks->GetNTracks(); i++)
+    {
+      AliL3ModelTrack *track = (AliL3ModelTrack*)fTracks->GetCheckedTrack(i);
+      if(!track) continue;
+
+      track->CalculateHelix();
+      
+      track->Init(fSlice,fPatch);
+
+      for(Int_t j=fRowMin; j<=fRowMax; j++)
+	{
+	  //Calculate the crossing point between track and padrow
+	  
+	  Float_t xyz_cross[3];
+	  if(!track->GetCrossingPoint(j,xyz_cross))
+	    continue;
+	  
+	  Int_t sector,row;
+	  AliL3Transform::Slice2Sector(fSlice,j,sector,row);
+	  AliL3Transform::Local2Raw(xyz_cross,sector,row);
+	  
+	  if(xyz_cross[1] < 0 || xyz_cross[1] >= AliL3Transform::GetNPads(j) ||
+	     xyz_cross[2] < 0 || xyz_cross[2] >= AliL3Transform::GetNTimeBins()) //track goes out of range
+	    continue;
+	  
+	  track->SetPadHit(j,xyz_cross[1]);
+	  track->SetTimeHit(j,xyz_cross[2]);
+
+	  Float_t crossingangle = track->GetCrossingAngle(j);
+	  track->SetCrossingAngleLUT(j,crossingangle);
+	  track->CalculateClusterWidths(j);
+	  track->GetClusterModel(j)->fSlice = fSlice;
+	  
+	}
+    }
+}
+
+void AliL3ClusterFitter::LoadSeeds(Int_t *rowrange,Bool_t offline,Int_t eventnr)
+{
+  //Function assumes _global_ tracks written to a single file.
   
   cout<<"Loading the seeds"<<endl;
   Char_t fname[1024];
+  fEvent = eventnr;
   
   if(offline)
-    sprintf(fname,"%s/offline/tracks_%d.raw",fPath,0);
+    sprintf(fname,"%s/offline/tracks_%d.raw",fPath,fEvent);
   else
-    sprintf(fname,"%s/hough/tracks_%d.raw",fPath,0);
+    sprintf(fname,"%s/hough/tracks_%d.raw",fPath,fEvent);
   
   cout<<"AliL3ClusterFitter::LoadSeeds : Loading input tracks from "<<fname<<endl;
   
@@ -203,13 +252,12 @@ void AliL3ClusterFitter::LoadSeeds(Int_t *rowrange,Bool_t offline)
 
       if(!offline)
 	{
-	  /*
-	  if(track->GetNHits() < 10 || track->GetPt() < 0.08) 
+	  if(i==0) cerr<<"AliL3ClusterFitter::LoadSeeds : Cutting on pt of 4GeV!!"<<endl;
+	  if(track->GetPt() > 4.) 
 	    {
 	      fSeeds->Remove(i);
 	      continue;
 	    }
-	  */
 	}
       clustercount += track->GetNHits();
       track->CalculateHelix();
@@ -231,7 +279,7 @@ void AliL3ClusterFitter::LoadSeeds(Int_t *rowrange,Bool_t offline)
 	  AliL3Transform::Local2GlobalAngle(&angle,slice);
 	  if(!track->CalculateReferencePoint(angle,AliL3Transform::Row2X(j)))
 	    {
-	      cerr<<"No crossing in slice "<<slice<<" padrow "<<j<<endl;
+	      //cerr<<"No crossing in slice "<<slice<<" padrow "<<j<<endl;
 	      continue;
 	      //track->Print();
 	      //exit(5);
@@ -321,14 +369,10 @@ void AliL3ClusterFitter::LoadSeeds(Int_t *rowrange,Bool_t offline)
 	  track->GetClusterModel(j)->fSlice = slice;
 	  
 	}
-      memset(track->GetHitNumbers(),0,159*sizeof(UInt_t));
+      memset(track->GetHitNumbers(),0,159*sizeof(UInt_t));//Reset the hitnumbers
       track->SetNHits(0);
     }
   fSeeds->Compress();
-  
-  AliL3Compress *c = new AliL3Compress(-1,-1,fPath);
-  c->WriteFile(fSeeds,"tracks_before.raw");
-  delete c;
   
   cout<<"Loaded "<<fSeeds->GetNTracks()<<" seeds and "<<clustercount<<" clusters"<<endl;
 }
@@ -380,8 +424,6 @@ void AliL3ClusterFitter::FindClusters()
 	  pad = digPt[j].fPad;
 	  time = digPt[j].fTime;
 	  charge = digPt[j].fCharge;
-	  if(charge > 1024)
-	    charge -= 1024;
 	  fRow[(AliL3Transform::GetNTimeBins()+1)*pad+time].fCharge = charge;
 	  fRow[(AliL3Transform::GetNTimeBins()+1)*pad+time].fUsed = kFALSE;
 	  //cout<<"Row "<<i<<" pad "<<pad<<" time "<<time<<" charge "<<charge<<endl;
@@ -421,7 +463,6 @@ void AliL3ClusterFitter::FindClusters()
 		fFailed++;
 	    }
 	}
-      //FillZeros(rowPt);
       AliL3MemHandler::UpdateRowPointer(rowPt);
     }
   
@@ -469,14 +510,17 @@ Bool_t AliL3ClusterFitter::CheckCluster(Int_t trackindex)
   //Check if any other track contributes to this cluster:
   //This is done by checking if the tracks are overlapping within
   //the range defined by the track parameters
+  
   for(Int_t t=trackindex+1; t<fProcessTracks->GetNTracks(); t++)
     {
       AliL3ModelTrack *tr = (AliL3ModelTrack*)fProcessTracks->GetCheckedTrack(t);
       if(!tr) continue;
       if(fSeeding)
 	if(tr->GetClusterModel(row)->fSlice != fSlice) continue;
-      Int_t xyw = (Int_t)ceil(sqrt(tr->GetParSigmaY2(row))) + 1;
-      Int_t zw = (Int_t)ceil(sqrt(tr->GetParSigmaZ2(row))) + 1;
+
+      Int_t xyw = (Int_t)ceil(sqrt(tr->GetParSigmaY2(row))*GetYWidthFactor()); 
+      Int_t zw = (Int_t)ceil(sqrt(tr->GetParSigmaZ2(row))*GetZWidthFactor()); 
+      
       if( 
 	 (tr->GetPadHit(row) - xyw > padr[0] && tr->GetPadHit(row) - xyw < padr[1] &&
 	  tr->GetTimeHit(row) - zw > timer[0] && tr->GetTimeHit(row) - zw < timer[1]) ||
@@ -508,17 +552,29 @@ Bool_t AliL3ClusterFitter::SetFitRange(AliL3ModelTrack *track,Int_t *padrange,In
   Int_t nt = AliL3Transform::GetNTimeBins()+1;
   
   Int_t nsearchbins=0;
-  if(row < 63)
+  if(row < AliL3Transform::GetNRowLow())
     nsearchbins=25;
+  else if(row < AliL3Transform::GetNRowLow() + AliL3Transform::GetNRowUp1())
+    nsearchbins=49;
   else
     nsearchbins=49;
+  
+  /*
   Int_t padloop[49] = {0,0,0,-1,1,-1,1,-1,1,0,0,-1,1,-1,1 ,2,-2,2,-2,2,-2,2,-2,2,-2
 		       ,0,1,2,3,3,3,3,3,3,3
 		       ,2,1,0,-1,-2,-3
 		       ,-3,-3,-3,-3,-3,-3,-1,-1};
   Int_t timeloop[49] = {0,1,-1,0,0,1,1,-1,-1,2,-2,2,2,-2,-2 ,0,0,1,1,-1,-1,2,2,-2,-2
-			,-3,-3,-3,-3,-2,-1,0,1,2,3
+                        ,-3,-3,-3,-3,-2,-1,0,1,2,3
 			,3,3,3,3,3,3,2,1,0,-1,-2,-3,-3,-3};
+  */
+  
+  Int_t padloop[49] = {0,0,0,-1,1,-1,1,-1,1,0,0,-1,1,-1,1 ,2,-2,2,-2,2,-2,2,-2,2,-2
+		       ,-3,3,-3,3,-3,3,-3,3,-3,3
+		       ,0,0,-1,-1,1,1,-2,-2,2,2,-3,-3,3,3};
+  Int_t timeloop[49] = {0,1,-1,0,0,1,1,-1,-1,2,-2,2,2,-2,-2 ,0,0,1,1,-1,-1,2,2,-2,-2
+			,0,0,-1,-1,1,1,-2,-2,2,2
+			,-3,3,-3,3,-3,3,-3,3,-3,3,-3,3,-3,3};
   
   Int_t padhit = (Int_t)rint(track->GetPadHit(row));
   Int_t timehit = (Int_t)rint(track->GetTimeHit(row));
@@ -535,19 +591,15 @@ Bool_t AliL3ClusterFitter::SetFitRange(AliL3ModelTrack *track,Int_t *padrange,In
 	}
     }
 
-  /*
-  if(IsMaximum(padhit,timehit))
-    {
-      padmax = padhit;
-      timemax = timehit;
-    }
-  */
+
   //Define the cluster region of this hit:
   //The region we look for, is centered at the local maxima
   //and expanded around using the parametrized cluster width
   //according to track parameters.
-  Int_t xyw = (Int_t)ceil(sqrt(track->GetParSigmaY2(row)))+1; 
-  Int_t zw = (Int_t)ceil(sqrt(track->GetParSigmaZ2(row)))+1;  
+  
+  Int_t xyw = (Int_t)ceil(sqrt(track->GetParSigmaY2(row))*GetYWidthFactor());
+  Int_t zw = (Int_t)ceil(sqrt(track->GetParSigmaZ2(row))*GetZWidthFactor());
+  
   if(padmax>=0 && timemax>=0)
     {
       if(fDebug)
@@ -596,17 +648,17 @@ Bool_t AliL3ClusterFitter::IsMaximum(Int_t pad,Int_t time)
   Int_t charge = fRow[nt*pad+time].fCharge;
   if(charge == 1023 || charge==0) return kFALSE;
   
-  fRow[nt*pad+time].fUsed = kTRUE;
-  return kTRUE;
+  //fRow[nt*pad+time].fUsed = kTRUE;
+  //return kTRUE;
 
-  //if(charge < fRow[nt*(pad-1)+(time-1)].fCharge) return kFALSE;
+  if(charge < fRow[nt*(pad-1)+(time-1)].fCharge) return kFALSE;
   if(charge < fRow[nt*(pad)+(time-1)].fCharge) return kFALSE;
-  //if(charge < fRow[nt*(pad+1)+(time-1)].fCharge) return kFALSE;
+  if(charge < fRow[nt*(pad+1)+(time-1)].fCharge) return kFALSE;
   if(charge < fRow[nt*(pad-1)+(time)].fCharge) return kFALSE;
   if(charge < fRow[nt*(pad+1)+(time)].fCharge) return kFALSE;
-  //if(charge < fRow[nt*(pad-1)+(time+1)].fCharge) return kFALSE;
+  if(charge < fRow[nt*(pad-1)+(time+1)].fCharge) return kFALSE;
   if(charge < fRow[nt*(pad)+(time+1)].fCharge) return kFALSE;
-  //if(charge < fRow[nt*(pad+1)+(time+1)].fCharge) return kFALSE;
+  if(charge < fRow[nt*(pad+1)+(time+1)].fCharge) return kFALSE;
   fRow[nt*pad+time].fUsed = kTRUE;
   return kTRUE;
 }
@@ -683,8 +735,8 @@ void AliL3ClusterFitter::FitClusters(AliL3ModelTrack *track,Int_t *padrange,Int_
       
       //Use the local maxima as the input to the fitting routine.
       //The local maxima is temporary stored in the cluster model:
-      Int_t hitpad = (Int_t)rint(tr->GetClusterModel(fCurrentPadRow)->fDPad);  //rint(tr->GetPadHit(fCurrentPadRow));
-      Int_t hittime = (Int_t)rint(tr->GetClusterModel(fCurrentPadRow)->fDTime); //rint(tr->GetTimeHit(fCurrentPadRow));
+      Int_t hitpad = (Int_t)rint(tr->GetClusterModel(fCurrentPadRow)->fDPad);  
+      Int_t hittime = (Int_t)rint(tr->GetClusterModel(fCurrentPadRow)->fDTime);
       Int_t charge = fRow[(AliL3Transform::GetNTimeBins()+1)*hitpad + hittime].fCharge;
       
       if(fDebug)
@@ -831,6 +883,10 @@ void AliL3ClusterFitter::FitClusters(AliL3ModelTrack *track,Int_t *padrange,Int_
   if(fDebug)
     cout<<"Chisq "<<chisq_f<<endl;
   
+  Bool_t overlapping=kFALSE;
+  if(track->GetNOverlaps(fCurrentPadRow) > 0)//There is a overlap
+    overlapping=kTRUE;
+  
   k=-1;
   n_overlaps=0;
   while(k < track->GetNOverlaps(fCurrentPadRow))
@@ -846,7 +902,7 @@ void AliL3ClusterFitter::FitClusters(AliL3ModelTrack *track,Int_t *padrange,Int_
 	{
 	  if(tr->IsSet(fCurrentPadRow)) continue;//This cluster has been set before
 	  
-	  if(chisq_f < fChiSqMax)//cluster fit is good enough
+	  if(chisq_f < fChiSqMax[(Int_t)overlapping])//cluster fit is good enough
 	    {
 	      tot_charge = (Int_t)(a[n_overlaps*NUM_PARS+1] * a[n_overlaps*NUM_PARS+3] * a[n_overlaps*NUM_PARS+5]);
 	      Float_t fpad = a[n_overlaps*NUM_PARS+2];
@@ -907,8 +963,14 @@ void AliL3ClusterFitter::SetClusterfitFalse(AliL3ModelTrack *track)
       i++;
       if(!tr) continue;
       
+      //Set the digit data to unused, so it can be fitted to another bastard:
+      Int_t hitpad = (Int_t)rint(tr->GetClusterModel(fCurrentPadRow)->fDPad);  
+      Int_t hittime = (Int_t)rint(tr->GetClusterModel(fCurrentPadRow)->fDTime);
+      fRow[(AliL3Transform::GetNTimeBins()+1)*hitpad + hittime].fUsed = kFALSE;
+      
       tr->SetCluster(fCurrentPadRow,0,0,0,0,0,0);
     }
+
 }
 
 
@@ -968,13 +1030,14 @@ void AliL3ClusterFitter::AddClusters()
 	  Int_t sector,row;
 	  AliL3Transform::Slice2Sector(fSlice,i,sector,row);
 	  
-	  AliL3Transform::Raw2Global(xyz,sector,row,pad,time);
+	  AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
 	  
 	  if(fNClusters >= fNMaxClusters)
 	    {
 	      cerr<<"AliL3ClusterFitter::AddClusters : Too many clusters "<<fNClusters<<endl;
 	      exit(5);
 	    }
+	  
 	  fClusters[fNClusters].fX = xyz[0];
 	  fClusters[fNClusters].fY = xyz[1];
 	  fClusters[fNClusters].fZ = xyz[2];
@@ -996,7 +1059,7 @@ void AliL3ClusterFitter::AddClusters()
 	    pat=0;
 	  fClusters[fNClusters].fID = fNClusters + ((fSlice&0x7f)<<25)+((pat&0x7)<<22);
 	  
-	  if(nhits >= 159)
+	  if(nhits >= AliL3Transform::GetNRows())
 	    {
 	      cerr<<"AliL3ClusterFitter::AddClusters : Cluster counter of out range "<<nhits<<endl;
 	      exit(5);
@@ -1026,50 +1089,58 @@ void AliL3ClusterFitter::AddClusters()
       
       //Copy back the number of assigned clusters
       tr->SetNHits(nhits);
+      
     }
 }
 
-void AliL3ClusterFitter::WriteTracks()
+void AliL3ClusterFitter::WriteTracks(Int_t min_hits)
 {
   if(!fSeeds)
     return;
   
-  AliL3Compress *c = new AliL3Compress(-1,-1,fPath);
-  c->WriteFile(fSeeds,"tracks_after.raw");
-  delete c;
+  AliL3TrackArray *fakes = new AliL3TrackArray();
   
   Int_t clustercount=0;
   for(Int_t i=0; i<fSeeds->GetNTracks(); i++)
     {
       AliL3ModelTrack *tr = (AliL3ModelTrack*)fSeeds->GetCheckedTrack(i);
       if(!tr) continue;
-      if(tr->GetNHits()==0)
-	fSeeds->Remove(i);
+      if(tr->GetNHits() < min_hits)
+	{
+	  fakes->AddLast(tr);
+	  fSeeds->Remove(i);
+	}
       clustercount += tr->GetNHits();
-      /*
-	if(tr->GetPt() > 1 && tr->GetNPresentClusters() < 150) 
-	tr->Print();
-      */
     }
+  
   cout<<"Writing "<<clustercount<<" clusters"<<endl;
   fSeeds->Compress();
   AliL3MemHandler mem;
   Char_t filename[1024];
-  sprintf(filename,"%s/fitter/tracks_0.raw",fPath);
+  sprintf(filename,"%s/fitter/tracks_%d.raw",fPath,fEvent);
   mem.SetBinaryOutput(filename);
   mem.TrackArray2Binary(fSeeds);
   mem.CloseBinaryOutput();
   
+  //Write the fake tracks to its own file
+  mem.Free();
+  sprintf(filename,"%s/fitter/tracks_fakes_%d.raw",fPath,fEvent);
+  mem.SetBinaryOutput(filename);
+  mem.TrackArray2Binary(fakes);
+  mem.CloseBinaryOutput();
+  delete fakes;
 }
 
-void AliL3ClusterFitter::WriteClusters()
+void AliL3ClusterFitter::WriteClusters(Bool_t global)
 {
   AliL3MemHandler mem;
   if(fDebug)
     cout<<"Write "<<fNClusters<<" clusters to file"<<endl;
   Char_t filename[1024];
-  sprintf(filename,"%s/fitter/points_0_%d_%d.raw",fPath,fSlice,fPatch);
+  sprintf(filename,"%s/fitter/points_%d_%d_%d.raw",fPath,fEvent,fSlice,fPatch);
   mem.SetBinaryOutput(filename);
+  if(global == kTRUE)
+    mem.Transform(fNClusters,fClusters,fSlice);
   mem.Memory2Binary(fNClusters,fClusters);
   mem.CloseBinaryOutput();
   mem.Free();
@@ -1078,3 +1149,4 @@ void AliL3ClusterFitter::WriteClusters()
   fClusters=0;
   fNClusters=0;
 }
+

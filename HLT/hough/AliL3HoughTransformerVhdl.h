@@ -28,9 +28,9 @@ class AliL3HoughTransformerVhdl : public AliL3HoughTransformerLUT
   AliL3HoughTransformerVhdl(Int_t slice,Int_t patch,Int_t n_eta_segments,Int_t n_its=0);
   virtual ~AliL3HoughTransformerVhdl();
 
-  void CreateHistograms(Int_t nxbin,Double_t ptmin,Int_t nybin,Double_t phimin,Double_t phimax);
-  void CreateHistograms(Int_t nxbin,Double_t xmin,Double_t xmax,
-			Int_t nybin,Double_t ymin,Double_t ymax);
+  void CreateHistograms(Int_t nxbin,Float_t ptmin,Int_t nybin,Float_t phimin,Float_t phimax);
+  void CreateHistograms(Int_t nxbin,Float_t xmin,Float_t xmax,
+			Int_t nybin,Float_t ymin,Float_t ymax);
 
   void TransformCircle();
   void TransformCircleC(Int_t *rowrange,Int_t every) {return;}

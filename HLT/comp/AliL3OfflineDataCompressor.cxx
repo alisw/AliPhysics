@@ -5,22 +5,17 @@
 
 #include "AliL3StandardIncludes.h"
 
-#include "AliL3Transform.h"
-#include "AliL3ModelTrack.h"
-#include "AliL3Compress.h"
-#include "AliL3TrackArray.h"
-
-#include <AliKalmanTrack.h>
-#include <AliTPCtracker.h>
-#include <AliTPCtrackerMI.h>
-#include <AliTPCcluster.h>
-#include <AliTPCclusterMI.h>
 #include <AliTPCParamSR.h>
 #include <AliTPCClustersArray.h>
 #include <AliTPCcluster.h>
 #include <AliTPCClustersRow.h>
 #include <AliTPC.h>
 #include <AliTPCv2.h>
+#include <AliTPCcluster.h>
+#include <AliTPCtracker.h>
+#include <AliTPCclusterMI.h>
+#include <AliTPCtrackerMI.h>
+#include <AliKalmanTrack.h>
 #include <AliRun.h>
 
 #include <TTree.h>
@@ -30,6 +25,10 @@
 #include <TSystem.h>
 #include <TH2F.h>
 
+#include "AliL3Transform.h"
+#include "AliL3ModelTrack.h"
+#include "AliL3Compress.h"
+#include "AliL3TrackArray.h"
 
 #include "AliL3OfflineDataCompressor.h"
 
@@ -90,14 +89,16 @@ void AliL3OfflineDataCompressor::LoadData(Int_t event,Bool_t sp)
   else
     fTracker = new AliTPCtrackerMI(param);
   fTracker->SetEventNumber(event);
-  //Problems:
-  //fTracker->LoadClusters();
-  
+#ifdef asvversion
+  fTracker->LoadClusters();
+#endif  
   if(fMarian==kTRUE)
     {
       AliTPCtrackerMI *mitracker = (AliTPCtrackerMI*)fTracker;
+#ifdef asvversion
       mitracker->LoadInnerSectors();
       mitracker->LoadOuterSectors();
+#endif
     }
   
   const Int_t MAX=20000;
@@ -291,6 +292,7 @@ void AliL3OfflineDataCompressor::LoadData(Int_t event,Bool_t sp)
 	    outtrack->SetCluster(padrow,xyz[1],xyz[2],clustercharge,0,0,3);
 	  totcounter++;
 	  outtrack->GetClusterModel(padrow)->fSlice = slice;
+	  fNusedClusters++;
 	}
     }
   
@@ -320,7 +322,14 @@ void AliL3OfflineDataCompressor::WriteRemaining(Bool_t select)
       cerr<<"AliL3OfflineDataCompressor::WriteRemaining : You have to modify this function when not running singlepatch"<<endl;
       return;
     }
-
+  
+  ofstream idfile;
+  if(fWriteIdsToFile)
+    {
+      sprintf(filename,"%s/comp/remains_ids.txt",fPath);
+      idfile.open(filename);
+    }
+  
   cout<<"Writing remaining clusters "<<endl;
   Int_t nrows = AliL3Transform::GetNRows(),sector,row,sec;
   AliTPCtracker *tracker = (AliTPCtracker*)fTracker;
@@ -347,14 +356,19 @@ void AliL3OfflineDataCompressor::WriteRemaining(Bool_t select)
 		sec -= 18;
 	    }
 	  //cout<<"Getting clusters in sector "<<sec<<" row "<<row<<endl;
-	  // Problems:
-	  Int_t ncl = 0;//tracker->GetNClusters(sec,row);
+	  Int_t ncl = 0;
+#ifdef asvversion
+	  tracker->GetNClusters(sec,row);
+#endif
 	  	  
 	  Int_t counter=0;
 	  Int_t j;
 	  for(j=0; j<ncl; j++)
 	    {
-	      AliTPCcluster *cluster;// = (AliTPCcluster*)tracker->GetCluster(sec,row,j);
+	      AliTPCcluster *cluster = 0;
+#ifdef asvversion
+	      cluster=(AliTPCcluster*)tracker->GetCluster(sec,row,j);
+#endif
 	      if(cluster->GetZ() < 0 && slice < 18) continue;
 	      if(cluster->GetZ() > 0 && slice > 17) continue;
 	      if(cluster->IsUsed())
@@ -372,13 +386,18 @@ void AliL3OfflineDataCompressor::WriteRemaining(Bool_t select)
 	  Int_t local_counter=0;
 	  for(j=0; j<ncl; j++)
 	    {
-	      //Problems:
-	      AliTPCcluster *cluster;// = (AliTPCcluster*)tracker->GetCluster(sec,row,j);
+	      AliTPCcluster *cluster = 0;
+#ifdef asvversion
+	      cluster=(AliTPCcluster*)tracker->GetCluster(sec,row,j);
+#endif
 	      if(cluster->GetZ() < 0 && slice < 18) continue;
 	      if(cluster->GetZ() > 0 && slice > 17) continue;
 	      if(cluster->IsUsed())
 		continue;
-
+	      
+	      if(fWriteIdsToFile)
+		idfile << cluster->GetLabel(0)<<' ';
+	      
 	      if(local_counter > counter)
 		{
 		  cerr<<"AliL3OfflineDataCompressor::WriterRemaining : array out of range "<<local_counter<<" "<<counter<<endl;
@@ -393,12 +412,18 @@ void AliL3OfflineDataCompressor::WriteRemaining(Bool_t select)
 	      tempPt->fClusters[local_counter].fSigmaY2 = cluster->GetSigmaY2();
 	      tempPt->fClusters[local_counter].fSigmaZ2 = cluster->GetSigmaZ2();
 	      local_counter++;
+	      fNunusedClusters++;
 	    }
 	  
 	  fwrite(tempPt,size,1,outfile);
 	  delete [] data;
 	}
       fclose(outfile);
+    }
+  if(fWriteIdsToFile)
+    {
+      idfile << endl;
+      idfile.close();
     }
 }
 
@@ -427,11 +452,13 @@ void AliL3OfflineDataCompressor::SelectRemainingClusters()
 	      if(sec >= 18)
 		sec -= 18;
 	    }
-	  //Problems:
-	  Int_t ncl = 0;//tracker->GetNClusters(sec,row);
+	  Int_t ncl = 0;
+#ifdef asvversion
+	  ncl=tracker->GetNClusters(sec,row);
+#endif
 	  for(Int_t j=0; j<ncl; j++)
 	    {
-	      AliTPCcluster *cluster;// = (AliTPCcluster*)tracker->GetCluster(sec,row,j);
+	      AliTPCcluster *cluster = 0; //todo consti (AliTPCcluster*)tracker->GetCluster(sec,row,j);
 	      if(cluster->GetZ() < 0 && slice < 18) continue;
 	      if(cluster->GetZ() > 0 && slice > 17) continue;
 	      if(cluster->IsUsed())

@@ -93,6 +93,9 @@ void AliL3Histogram::Reset()
 void AliL3Histogram::Fill(Double_t x,Double_t y,Int_t weight)
 {
   Int_t bin = FindBin(x,y);
+  if(bin < 0)
+    return;
+  
   AddBinContent(bin,weight);
 }
 
@@ -100,6 +103,8 @@ Int_t AliL3Histogram::FindBin(Double_t x,Double_t y)
 {
   Int_t xbin = FindXbin(x);
   Int_t ybin = FindYbin(y);
+  if(!xbin || !ybin)
+    return -1;
   
   return GetBin(xbin,ybin);
 }

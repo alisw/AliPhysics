@@ -29,6 +29,7 @@
 #include "AliL3Transform.h"
 #include "AliL3TrackArray.h"
 #include "AliL3HoughTrack.h"
+#include "AliL3DDLDataFileHandler.h"
 
 #if GCCVERSION == 3
 using namespace std;
@@ -69,6 +70,7 @@ AliL3Hough::AliL3Hough()
   fEval             = 0;
   fPeakFinder       = 0;
   fTracks           = 0;
+  fGlobalTracks     = 0;
   fMerger           = 0;
   fInterMerger      = 0;
   fGlobalMerger     = 0;
@@ -78,14 +80,15 @@ AliL3Hough::AliL3Hough()
   fNPatches         = 0;
   fVersion          = 0;
   fCurrentSlice     = 0;
-  
+  fEvent            = 0;
+
   SetTransformerParams();
   SetThreshold();
   SetNSaveIterations();
   SetPeakThreshold();
 }
 
-AliL3Hough::AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit8,Int_t tv)
+AliL3Hough::AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit8,Int_t tv,Char_t *infile)
 {
   //Default ctor.
 
@@ -97,6 +100,10 @@ AliL3Hough::AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bi
   fWriteDigits   = kFALSE;
   fUse8bits      = bit8;
   fVersion       = tv;
+  if(!fBinary)
+    fInputFile = infile;
+  else
+    fInputFile = 0;
 }
 
 AliL3Hough::~AliL3Hough()
@@ -114,6 +121,8 @@ AliL3Hough::~AliL3Hough()
     delete fGlobalMerger;
   if(fBenchmark)
     delete fBenchmark;
+  if(fGlobalTracks)
+    delete fGlobalTracks;
 }
 
 void AliL3Hough::CleanUp()
@@ -135,7 +144,7 @@ void AliL3Hough::CleanUp()
   
 }
 
-void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit8,Int_t tv)
+void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit8,Int_t tv,Char_t *infile)
 {
   fBinary = binary;
   strcpy(fPath,path);
@@ -143,6 +152,10 @@ void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit
   fWriteDigits  = kFALSE;
   fUse8bits     = bit8;
   fVersion      = tv;
+  if(!fBinary)
+    fInputFile = infile;
+  else
+    fInputFile = 0;
 
   Init(); //do the rest
 }
@@ -152,7 +165,6 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
   fDoIterative   = doit; 
   fAddHistograms = addhists;
 
-  AliL3Transform::Init(fPath,!fBinary);
   fNPatches = AliL3Transform::GetNPatches();
   
   fHoughTransformer = new AliL3HoughBaseTransformer*[fNPatches];
@@ -160,7 +172,9 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
 
   fTracks = new AliL3TrackArray*[fNPatches];
   fEval = new AliL3HoughEval*[fNPatches];
-
+  
+  fGlobalTracks = new AliL3TrackArray("AliL3HoughTrack");
+  
   for(Int_t i=0; i<fNPatches; i++)
     {
       switch (fVersion){ //choose Transformer
@@ -177,9 +191,11 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
 	fHoughTransformer[i] = new AliL3HoughTransformer(0,i,fNEtaSegments,kFALSE,kFALSE);
       }
 
-      fHoughTransformer[i]->CreateHistograms(fNBinX,fLowPt,fNBinY,-fPhi,fPhi);
-      fHoughTransformer[i]->SetLowerThreshold(fThreshold);
- 
+      fHoughTransformer[i]->CreateHistograms(fNBinX[i],fLowPt[i],fNBinY[i],-fPhi[i],fPhi[i]);
+      //fHoughTransformer[i]->CreateHistograms(fLowPt[i],fUpperPt[i],fPtRes[i],fNBinY[i],fPhi[i]);
+      fHoughTransformer[i]->SetLowerThreshold(fThreshold[i]);
+      fHoughTransformer[i]->SetUpperThreshold(100);
+
       LOG(AliL3Log::kInformational,"AliL3Hough::Init","Version")
 	<<"Initializing Hough transformer version "<<fVersion<<ENDLOG;
       
@@ -190,13 +206,20 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
       else
 #ifdef use_aliroot
       	{
-	  fMemHandler[i] = new AliL3FileHandler();
-	  if(!fBinary)
-	    {
+	  if(!fInputFile) {
+	    /* In case of reading digits file */
+	    fMemHandler[i] = new AliL3FileHandler();
+	    if(!fBinary) {
 	      Char_t filename[1024];
 	      sprintf(filename,"%s/digitfile.root",fPath);
-	      fMemHandler[i]->SetAliInput(filename);
+              fMemHandler[i]->SetAliInput(filename);
 	    }
+	  }
+	  else {
+	    /* In case of reading rawdata from ROOT file */
+	    fMemHandler[i] = new AliL3DDLDataFileHandler();
+	    fMemHandler[i]->SetReaderInput(fInputFile);
+	  }
 	}
 #else
       fMemHandler[i] = new AliL3MemHandler();
@@ -208,7 +231,103 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
   fInterMerger = new AliL3HoughIntMerger();
   fGlobalMerger = 0;
   fBenchmark = new AliL3Benchmark();
+}
 
+void AliL3Hough::SetTransformerParams(Float_t ptres,Float_t ptmin,Float_t ptmax,Int_t ny,Int_t patch)
+{
+
+  Int_t mrow;
+  Float_t psi=0;
+  if(patch==-1)
+    mrow = 80;
+  else
+    mrow = AliL3Transform::GetLastRow(patch);
+  if(ptmin)
+    {
+      Double_t lineradius = sqrt(pow(AliL3Transform::Row2X(mrow),2) + pow(AliL3Transform::GetMaxY(mrow),2));
+      Double_t kappa = -1*AliL3Transform::GetBField()*AliL3Transform::GetBFact()/ptmin;
+      psi = AliL3Transform::Deg2Rad(10) - asin(lineradius*kappa/2);
+      cout<<"Calculated psi range "<<psi<<" in patch "<<patch<<endl;
+    }
+
+  if(patch==-1)
+    {
+      Int_t i=0;
+      while(i < 6)
+	{
+	  fPtRes[i] = ptres;
+	  fLowPt[i] = ptmin;
+	  fUpperPt[i] = ptmax;
+	  fNBinY[i] = ny;
+	  fPhi[i] = psi;
+	  fNBinX[i]=0;
+	  i++;
+	}
+      return;
+    }
+
+  fPtRes[patch] = ptres;
+  fLowPt[patch] = ptmin;
+  fUpperPt[patch] = ptmax;
+  fNBinY[patch] = ny;
+  fPhi[patch] = psi;
+}
+
+void AliL3Hough::SetTransformerParams(Int_t nx,Int_t ny,Float_t ptmin,Int_t patch)
+{
+
+  Int_t mrow=80;
+  Double_t lineradius = sqrt(pow(AliL3Transform::Row2X(mrow),2) + pow(AliL3Transform::GetMaxY(mrow),2));
+  Double_t kappa = -1*AliL3Transform::GetBField()*AliL3Transform::GetBFact()/ptmin;
+  Double_t psi = AliL3Transform::Deg2Rad(10) - asin(lineradius*kappa/2);
+  cout<<"Calculated psi range "<<psi<<" in patch "<<patch<<endl;
+  
+  Int_t i=0;
+  while(i < 6)
+    {
+      fLowPt[i] = ptmin;
+      fNBinY[i] = ny;
+      fNBinX[i] = nx;
+      fPhi[i] = psi;
+      i++;
+    }
+}
+
+void AliL3Hough::SetTransformerParams(Int_t nx,Int_t ny,Float_t lpt,Float_t phi)
+{
+  Int_t i=0;
+  while(i < 6)
+    {
+      fLowPt[i] = lpt;
+      fNBinY[i] = ny;
+      fNBinX[i] = nx;
+      fPhi[i] = phi;
+      i++;
+    }
+}
+
+void AliL3Hough::SetThreshold(Int_t t3,Int_t patch)
+{
+  if(patch==-1)
+    {
+      Int_t i=0;
+      while(i < 6)
+	fThreshold[i++]=t3;
+      return;
+    }
+  fThreshold[patch]=t3;
+}
+
+void AliL3Hough::SetPeakThreshold(Int_t threshold,Int_t patch)
+{
+  if(patch==-1)
+    {
+      Int_t i=0;
+      while(i < 6)
+	fPeakThreshold[i++]=threshold;
+      return;
+    }
+  fPeakThreshold[patch]=threshold;
 }
 
 void AliL3Hough::DoBench(Char_t *name)
@@ -237,6 +356,7 @@ void AliL3Hough::ReadData(Int_t slice,Int_t eventnr)
 {
   //Read data from files, binary or root.
   
+  fEvent=eventnr;
   fCurrentSlice = slice;
   for(Int_t i=0; i<fNPatches; i++)
     {
@@ -248,9 +368,9 @@ void AliL3Hough::ReadData(Int_t slice,Int_t eventnr)
       if(fBinary)//take input data from binary files
 	{
 	  if(fUse8bits)
-	    sprintf(name,"%sdigits_c8_%d_%d.raw",fPath,slice,i);
+	    sprintf(name,"%s/binaries/digits_c8_%d_%d_%d.raw",fPath,eventnr,slice,i);
 	  else
-	    sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,i);
+	    sprintf(name,"%s/binaries/digits_%d_%d_%d.raw",fPath,eventnr,slice,i);
 
 	  fMemHandler[i]->SetBinaryInput(name);
 	  digits = (AliL3DigitRowData *)fMemHandler[i]->CompBinary2Memory(ndigits);
@@ -260,7 +380,6 @@ void AliL3Hough::ReadData(Int_t slice,Int_t eventnr)
 	{
 #ifdef use_aliroot
 	  digits=(AliL3DigitRowData *)fMemHandler[i]->AliAltroDigits2Memory(ndigits,eventnr);
-	  fMemHandler[i]->FreeDigitsTree();
 #else
 	  cerr<<"You cannot read from rootfile now"<<endl;
 #endif
@@ -433,6 +552,26 @@ void AliL3Hough::AddAllHistograms()
     <<"Adding histograms in "<<cpuTime*1000<<" ms"<<ENDLOG;
 }
 
+void AliL3Hough::AddTracks()
+{
+  if(!fTracks[0])
+    {
+      cerr<<"AliL3Hough::AddTracks : No tracks"<<endl;
+      return;
+    }
+  AliL3TrackArray *tracks = fTracks[0];
+  for(Int_t i=0; i<tracks->GetNTracks(); i++)
+    {
+      AliL3Track *track = tracks->GetCheckedTrack(i);
+      if(!track) continue;
+      if(track->GetNHits()!=1) cerr<<"NHITS "<<track->GetNHits()<<endl;
+      UInt_t *ids = track->GetHitNumbers();
+      ids[0] = (fCurrentSlice&0x7f)<<25;
+    }
+  
+  fGlobalTracks->AddTracks(fTracks[0],0,fCurrentSlice);
+}
+
 void AliL3Hough::FindTrackCandidates()
 {
   //Look for peaks in histograms, and find the track candidates
@@ -457,12 +596,14 @@ void AliL3Hough::FindTrackCandidates()
 	  if(hist->GetNEntries()==0) continue;
 	  fPeakFinder->Reset();
 	  fPeakFinder->SetHistogram(hist);
-	  //fPeakFinder->FindPeak1(2,1);
-	  fPeakFinder->FindMaxima(0,0); //Simple maxima finder
+	  
 	  //fPeakFinder->FindAbsMaxima();
+	  fPeakFinder->SetThreshold(fPeakThreshold[i]);
+	  fPeakFinder->FindAdaptedPeaks(6);
+	  //fPeakFinder->FindMaxima(fPeakThreshold[i]); //Simple maxima finder
+	  
 	  for(Int_t k=0; k<fPeakFinder->GetEntries(); k++)
 	    {
-	      if(fPeakFinder->GetWeight(k) == 0 || fPeakFinder->GetWeight(k) < fPeakThreshold) continue;
 	      AliL3HoughTrack *track = (AliL3HoughTrack*)fTracks[i]->NextTrack();
 	      track->SetTrackParameters(fPeakFinder->GetXPeak(k),fPeakFinder->GetYPeak(k),fPeakFinder->GetWeight(k));
 	      track->SetEtaIndex(j);
@@ -470,6 +611,7 @@ void AliL3Hough::FindTrackCandidates()
 	      track->SetRowRange(AliL3Transform::GetFirstRow(0),AliL3Transform::GetLastRow(5));
 	    }
 	}
+      cout<<"Found "<<fTracks[i]->GetNTracks()<<" tracks in patch "<<i<<endl;
       fTracks[i]->QSort();
     }
   fBenchmark->Stop("Find Maxima");
@@ -628,6 +770,20 @@ void AliL3Hough::MergeEtaSlices()
   tracks->Compress();
 }
 
+void AliL3Hough::WriteTracks(Char_t *path)
+{
+  //cout<<"AliL3Hough::WriteTracks : Sorting the tracsk"<<endl;
+  //fGlobalTracks->QSort();
+  
+  Char_t filename[1024];
+  sprintf(filename,"%s/tracks_%d.raw",path,fEvent);
+  AliL3MemHandler mem;
+  mem.SetBinaryOutput(filename);
+  mem.TrackArray2Binary(fGlobalTracks);
+  mem.CloseBinaryOutput();
+  fGlobalTracks->Reset();
+}
+
 void AliL3Hough::WriteTracks(Int_t slice,Char_t *path)
 {
   
@@ -635,7 +791,7 @@ void AliL3Hough::WriteTracks(Int_t slice,Char_t *path)
   Char_t fname[100];
   if(fAddHistograms)
     {
-      sprintf(fname,"%s/tracks_ho_%d.raw",path,slice);
+      sprintf(fname,"%s/tracks_ho_%d_%d.raw",path,fEvent,slice);
       mem.SetBinaryOutput(fname);
       mem.TrackArray2Binary(fTracks[0]);
       mem.CloseBinaryOutput();
@@ -644,7 +800,7 @@ void AliL3Hough::WriteTracks(Int_t slice,Char_t *path)
     {
       for(Int_t i=0; i<fNPatches; i++)
 	{
-	  sprintf(fname,"%s/tracks_ho_%d_%d.raw",path,slice,i);
+	  sprintf(fname,"%s/tracks_ho_%d_%d_%d.raw",path,fEvent,slice,i);
 	  mem.SetBinaryOutput(fname);
 	  mem.TrackArray2Binary(fTracks[i]);
 	  mem.CloseBinaryOutput();
@@ -674,6 +830,5 @@ Double_t AliL3Hough::GetCpuTime()
  struct timeval tv;
  gettimeofday( &tv, NULL );
  return tv.tv_sec+(((Double_t)tv.tv_usec)/1000000.);
- //return (Double_t)(clock()) / CLOCKS_PER_SEC;
 }
 

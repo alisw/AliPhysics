@@ -39,8 +39,9 @@ class AliL3HoughBaseTransformer {
   
   void SetInputData(UInt_t ndigits,AliL3DigitRowData *ptr) {fDigitRowData = ptr;}
   
-  virtual void CreateHistograms(Int_t nxbin,Double_t ptmin,Int_t nybin,Double_t phimin,Double_t phimax) = 0;
-  virtual void CreateHistograms(Int_t nxbin,Double_t xmin,Double_t xmax,Int_t nybin,Double_t ymin,Double_t ymax) = 0;
+  virtual void CreateHistograms(Float_t ptmin,Float_t ptmax,Float_t pres,Int_t nybin,Float_t psi) {return;}
+  virtual void CreateHistograms(Int_t nxbin,Float_t ptmin,Int_t nybin,Float_t phimin,Float_t phimax) = 0;
+  virtual void CreateHistograms(Int_t nxbin,Float_t xmin,Float_t xmax,Int_t nybin,Float_t ymin,Float_t ymax) = 0;
   virtual void Reset() = 0;
   virtual void TransformCircle() = 0;
   virtual void TransformCircleC(Int_t *row_range,Int_t every=1) = 0;

@@ -42,13 +42,16 @@ AliL3HoughTransformer::AliL3HoughTransformer(Int_t slice,Int_t patch,Int_t n_eta
   fDoMC = kFALSE;
   fEtaOverlap = DoEtaOverlap;
   fDoMC=kFALSE;
+  /*
   if(DoMC==kTRUE)
     {
       if(patch==0)
-	fDoMC = kTRUE;
+	
+fDoMC = kTRUE;
       else
 	fDoMC = kFALSE;
     }
+  */
 #ifdef do_mc
   fTrackID = 0;
 #endif
@@ -82,8 +85,37 @@ void AliL3HoughTransformer::DeleteHistograms()
   delete [] fParamSpace;
 }
 
-void AliL3HoughTransformer::CreateHistograms(Int_t nxbin,Double_t pt_min,
-					     Int_t nybin,Double_t phimin,Double_t phimax)
+void AliL3HoughTransformer::CreateHistograms(Float_t ptmin,Float_t ptmax,Float_t ptres,
+					     Int_t nybin,Float_t psi)
+{
+  //Create histograms.
+  //_Only_ to be used in case of the adaptive histograms!
+  //phimax is given in radians!!
+  
+  if(ptmin > ptmax)
+    {
+      cerr<<"AliL3HoughTransformer.:CreateHistograms: Error in ptrange "<<ptmin<<" "<<ptmax<<endl;
+      return;
+    }
+  if(psi < 0)
+    {
+      cerr<<"AliL3HoughTransformer::CreateHistograms: Wrong psi-angle "<<psi<<endl;
+      return;
+    }
+  
+  fParamSpace = new AliL3Histogram*[GetNEtaSegments()];
+  Char_t histname[256];
+  Int_t i;
+  for(i=0; i<GetNEtaSegments(); i++)
+    {
+      sprintf(histname,"paramspace_%d",i);
+      fParamSpace[i] = new AliL3HistogramAdaptive(histname,ptmin,ptmax,ptres,nybin,-psi,psi);
+    }
+  
+}
+
+void AliL3HoughTransformer::CreateHistograms(Int_t nxbin,Float_t pt_min,
+					     Int_t nybin,Float_t phimin,Float_t phimax)
 {
   //Create the histograms (parameter space).
   //These are 2D histograms, span by kappa (curvature of track) and phi0 (emission angle with x-axis).
@@ -91,16 +123,17 @@ void AliL3HoughTransformer::CreateHistograms(Int_t nxbin,Double_t pt_min,
   //nxbin = #bins in kappa
   //nybin = #bins in phi0
   //pt_min = mimium Pt of track (corresponding to maximum kappa)
-  //phi_min = mimimum phi0 (degrees)
-  //phi_max = maximum phi0 (degrees)
+  //phi_min = mimimum phi0 
+  //phi_max = maximum phi0 
     
   Double_t x = AliL3Transform::GetBFact()*AliL3Transform::GetBField()/pt_min;
-  Double_t torad = AliL3Transform::Pi()/180;
-  CreateHistograms(nxbin,-1.*x,x,nybin,phimin*torad,phimax*torad);
+  //Double_t torad = AliL3Transform::Pi()/180;
+  
+  CreateHistograms(nxbin,-1.*x,x,nybin,phimin/**torad*/,phimax/**torad*/);
 }
 
-void AliL3HoughTransformer::CreateHistograms(Int_t nxbin,Double_t xmin,Double_t xmax,
-					     Int_t nybin,Double_t ymin,Double_t ymax)
+void AliL3HoughTransformer::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t xmax,
+					     Int_t nybin,Float_t ymin,Float_t ymax)
 {
   
   fParamSpace = new AliL3Histogram*[GetNEtaSegments()];
@@ -109,7 +142,7 @@ void AliL3HoughTransformer::CreateHistograms(Int_t nxbin,Double_t xmin,Double_t 
   for(Int_t i=0; i<GetNEtaSegments(); i++)
     {
       sprintf(histname,"paramspace_%d",i);
-      //fParamSpace[i] = new AliL3HistogramAdaptive(histname,0.1,1.5,0.05,nybin,ymin,ymax);
+      //fParamSpace[i] = new AliL3HistogramAdaptive(histname,0.5,1.5,0.05,nybin,ymin,ymax);
       fParamSpace[i] = new AliL3Histogram(histname,"",nxbin,xmin,xmax,nybin,ymin,ymax);
     }
   
@@ -139,6 +172,7 @@ void AliL3HoughTransformer::Reset()
   
   for(Int_t i=0; i<GetNEtaSegments(); i++)
     fParamSpace[i]->Reset();
+  
 #ifdef do_mc
   if(fDoMC)
     {
@@ -240,8 +274,11 @@ void AliL3HoughTransformer::TransformCircle()
 	  UShort_t charge = digPt[j].fCharge;
 	  UChar_t pad = digPt[j].fPad;
 	  UShort_t time = digPt[j].fTime;
-	  if((Int_t)charge <= GetLowerThreshold() || (Int_t)charge > GetUpperThreshold())
+	  if((Int_t)charge <= GetLowerThreshold())
 	    continue;
+	  
+	  if((Int_t)charge > GetUpperThreshold())
+	    charge = GetUpperThreshold();
 	  
 	  Int_t sector,row;
 	  Float_t xyz[3];
@@ -271,11 +308,13 @@ void AliL3HoughTransformer::TransformCircle()
 	  Float_t R = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]); 
 	  Float_t phi = AliL3Transform::GetPhi(xyz);
 	  
+	  
 	  //Fill the histogram along the phirange
 	  for(Int_t b=hist->GetFirstYbin(); b<=hist->GetLastYbin(); b++)
 	    {
 	      Float_t phi0 = hist->GetBinCenterY(b);
 	      Float_t kappa = 2*sin(phi - phi0)/R;
+	      //hist->Fill(kappa,phi0,(int)rint(log((Float_t)charge)));
 	      hist->Fill(kappa,phi0,charge);
 	      //hist->Fill(kappa,phi0,1);
 #ifdef do_mc

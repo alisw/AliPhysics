@@ -7,13 +7,16 @@
    where the data files should be located. In case of reading from a rootfile, you have to
    make a symbolic link "digitfile.root", which points to the rootfile containing AliROOT 
    digits tree and a symbolic link "alirunfile.root" pointing to a file containing
-   the ALIROOT geometry (TPC param). RUN with ALIROOT (not ROOT) if using root files.
+   the ALIROOT geometry (TPC param). For NEWIO, make sure that the 
+   file TPC.Digits.root is in the path!
+
+   RUN with ALIROOT (not ROOT) if using root files.
 */
 
 void runtracker(Int_t minslice=0,Int_t maxslice=35,Char_t* path="./",Int_t nevent=1,Char_t *opath="./")
 {
   //Set your configuration here:
-  AliLevel3::EFileType filetype=AliLevel3::kRaw; //Assume input is RLE binary files, or rootfile.
+  AliLevel3::EFileType filetype=AliLevel3::kRoot; //Input is RLE binary files or rootfile.
   Bool_t pileup=kFALSE; //Assume input is pileup event = non RLE binary files.
   Int_t npatches = 1;   //Options; 1, 2 and 6.
   Char_t trackparams[] = "SetTrackingParameters_4000bf04.C"; //Set this to correspond 
@@ -21,6 +24,7 @@ void runtracker(Int_t minslice=0,Int_t maxslice=35,Char_t* path="./",Int_t neven
   
   //for aliroot the path should point to a file 
   //containing the tpc geometry called alirunfile.root
+  //Bool_t isinit=AliL3Transform::Init(path,!binary);
   Bool_t isinit=AliL3Transform::Init(path,(filetype!=AliLevel3::kBinary));
   if(!isinit){
     cerr << "Could not create transform settings, please check log for error messages!" << endl;
@@ -35,10 +39,10 @@ void runtracker(Int_t minslice=0,Int_t maxslice=35,Char_t* path="./",Int_t neven
 	{
 	  Char_t fname[1024];
 	  if(filetype==AliLevel3::kRaw)
-	    sprintf(fname,"%s/raw.root",path);
+           sprintf(fname,"%s/raw.root",path);
 	  else
-	    sprintf(fname,"%s/galice.root",path);
-	  a = new AliLevel3(fname);
+           sprintf(fname,"%s/digitfile.root",path);
+          a = new AliLevel3(fname);
 	}
       
       a->Init(path,filetype,npatches);

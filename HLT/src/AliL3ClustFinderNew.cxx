@@ -143,6 +143,7 @@ void AliL3ClustFinderNew::ProcessDigits()
   for(Int_t i=fFirstRow; i<=fLastRow; i++)
     {
       fCurrentRow = i;
+      //if(tempPt->fRow!=fCurrentRow) continue;
       ProcessRow(tempPt);
       Byte_t *tmp = (Byte_t*)tempPt;
       Int_t size = sizeof(AliL3DigitRowData) + tempPt->fNDigit*sizeof(AliL3DigitData);

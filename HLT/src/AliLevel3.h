@@ -5,6 +5,7 @@
 
 #ifndef no_root
 #include <TObject.h>
+#include <TFile.h>
 #endif
 
 #include "AliL3DigitData.h"
@@ -19,10 +20,18 @@ class AliL3Vertex;
 class AliL3VertexFinder;
 class AliL3TrackMerger;
 class AliL3GlobalMerger;
+#ifndef no_root
+class TDirectory;
+#endif
 class AliL3ClustFinderNew;
 class AliL3Merger;
 class AliL3InterMerger;
+
+//#ifdef use_aliroot
+class AliL3FileHandler;
+//#else
 class AliL3MemHandler;
+//#endif
 class AliL3Benchmark;
 
 #ifdef no_root
@@ -41,7 +50,11 @@ class AliLevel3 : public TObject {
   AliL3GlobalMerger *fGlobalMerger; //!
   AliL3InterMerger *fInterMerger; //!
   AliL3ClustFinderNew *fClusterFinder; //! 
+  //#ifdef use_aliroot
+  //AliL3FileHandler *fFileHandler; //!
+  ///#else
   AliL3MemHandler *fFileHandler; //!
+  //#endif
   AliL3Benchmark *fBenchmark;//!
 
   Int_t fEvent;
@@ -53,6 +66,8 @@ class AliLevel3 : public TObject {
   FILE *fInputFile;
 #else
   Char_t *fInputFile;//!
+  TDirectory *savedir;
+  //TFile *fInputFile;
 #endif
 
   Char_t fPath[256];
@@ -82,10 +97,11 @@ class AliLevel3 : public TObject {
  public:
   AliLevel3 ();
   AliLevel3(Char_t *infile);
+  //AliLevel3(TFile *in);
   virtual ~AliLevel3();
-  
-  enum EFileType {kBinary, kRoot, kRaw};
+  enum EFileType {kBinary, kBinary8, kRoot, kRaw};
   void Init(Char_t *path,EFileType filetype=kBinary,Int_t npatches=6);
+  //void Init(Char_t *path,Bool_t binary=kTRUE,Int_t npatches=6);
   void SetMergerParameters(Double_t maxy=1.2,Double_t maxz=1.6,Double_t maxkappa=0.003,
 			   Double_t maxpsi=0.02,Double_t maxtgl=0.03);
   void SetTrackerParam(Int_t phi_segments=50,Int_t eta_segments=100,

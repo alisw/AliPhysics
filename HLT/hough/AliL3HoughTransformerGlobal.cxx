@@ -73,15 +73,15 @@ AliL3HoughTransformerGlobal::~AliL3HoughTransformerGlobal()
   
 }
 
-void AliL3HoughTransformerGlobal::CreateHistograms(Int_t nxbin,Int_t nybin)
+void AliL3HoughTransformerGlobal::CreateHistograms(Float_t ptmin,Int_t nxbin,Int_t nybin)
 {
   if(fPsi==0)
     {
       cerr<<"AliL3HoughTransformerGlobal::CreateHistograms : Call DefineRegion first"<<endl;
       exit(5);
     }
-  Float_t psi = fPsi*180./AliL3Transform::Pi();
-  AliL3HoughTransformer::CreateHistograms(nxbin,fPtMin,nybin,-psi,psi);
+  AliL3HoughTransformer::CreateHistograms(nxbin,fPtMin,nybin,-fPsi,fPsi);
+  //AliL3HoughTransformer::CreateHistograms(fPtMin,ptmax,ptres,nybin,fPsi);
 }
 
 void AliL3HoughTransformerGlobal::TransformCircleC()
@@ -114,12 +114,12 @@ void AliL3HoughTransformerGlobal::TransformCircleC()
 	  for(UInt_t j=0; j<rowPt->fNDigit; j++)
 	    {
 	      Int_t pad = digits[j].fPad;
-	      
+
 	      if(i==1 && pad < fPadMin[padrow])
 		continue;
 	      if(i==fNActiveSlice*2+1 && pad>fPadMax[padrow])
 		continue;
-	      
+
 	      Int_t time = digits[j].fTime;
 	      Int_t charge = digits[j].fCharge;
 	      
@@ -146,8 +146,8 @@ void AliL3HoughTransformerGlobal::TransformCircleC()
 		  kappa = 2*sin(clusters[l].fPhi-psi)/clusters[l].fRadius;
 		  if(fabs(kappa) < 1e-33)
   		    continue;
-		  
-		  hist->Fill(kappa,psi,(int)rint(log((Float_t)charge)));
+		  //hist->Fill(kappa,psi,(int)rint(log((Float_t)charge)));
+		  hist->Fill(kappa,psi,charge);
 		}
 	    }
 	  AliL3MemHandler::UpdateRowPointer(rowPt);
@@ -215,7 +215,8 @@ void AliL3HoughTransformerGlobal::TransformCircle()
 		  if(fabs(kappa) < 1e-33)
 		    continue;
 		  
-		  hist->Fill(kappa,psi,(int)rint(log((Float_t)charge)));
+		  hist->Fill(kappa,psi,charge);
+		  //hist->Fill(kappa,psi,(int)rint(log((Float_t)charge)));
 		}
 	    }
 	  AliL3MemHandler::UpdateRowPointer(rowPt);
@@ -359,6 +360,8 @@ Float_t AliL3HoughTransformerGlobal::CalculateBorder(Float_t *xyz,Int_t charge)
   if(charge > 0)
     fPsi=psi;
   
+  cout<<"Calculated psi-angle "<<fPsi<<endl;
+  
   AliL3Track track;
   track.SetFirstPoint(0,0,0);
   track.SetPt(fPtMin);
@@ -467,7 +470,8 @@ void AliL3HoughTransformerGlobal::LoadActiveSlices(Bool_t binary)
 	}
       else
 	{
-	  fMemHandler[i]->SetAliInput("/data1/AliRoot/1track0.4_digits.root");
+	  sprintf(filename,"%s/digitfile.root",fPath);
+	  fMemHandler[i]->SetAliInput(filename);
 	  fMemHandler[i]->AliAltroDigits2Memory(dummy,fEvent);
 	  fMemHandler[i++]->CloseAliInput();
 	}

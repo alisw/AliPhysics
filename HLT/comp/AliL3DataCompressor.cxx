@@ -76,6 +76,8 @@ AliL3DataCompressor::AliL3DataCompressor()
   fWriteClusterShape=kFALSE;
   fOutputFile=0;
   fCompRatioFile=0;
+  fNusedClusters=0;
+  fNunusedClusters=0;
   memset(fClusters,0,36*6*sizeof(AliL3SpacePointData*));
 }
 
@@ -88,6 +90,8 @@ AliL3DataCompressor::AliL3DataCompressor(Char_t *path,Bool_t keep,Bool_t writesh
   fWriteClusterShape = writeshape;
   fEvent=0;
   fOutputFile=0;
+  fNusedClusters=0;
+  fNunusedClusters=0;
   memset(fClusters,0,36*6*sizeof(AliL3SpacePointData*));
 #ifdef use_root
   Char_t name[1024];
@@ -339,6 +343,7 @@ void AliL3DataCompressor::FillData(Int_t min_hits,Bool_t expand)
 	  //IMPORTANT: Set the slice in which cluster is, you need it in AliL3ModelTrack::FillTrack!
 	  outtrack->GetClusterModel(padrow)->fSlice=slice;
 	  points[pos].fCharge = 0;//Mark this cluster as used.
+	  fNusedClusters++;
 	}
       if(!expand)
 	outtrack->SetNClusters(AliL3Transform::GetNRows(-1));
@@ -569,9 +574,10 @@ void AliL3DataCompressor::WriteRemaining(Bool_t select)
 	      tempPt->fClusters[localcounter].fSigmaY2 = points[j].fSigmaY2;
 	      tempPt->fClusters[localcounter].fSigmaZ2 = points[j].fSigmaZ2;
 	      localcounter++;
+	      fNunusedClusters++;
 	    }
+	  
 	  //Write the last row:
-	  //cout<<"Writing row "<<(int)tempPt->fPadRow<<" with "<<(int)tempPt->fNClusters<<" clusters"<<endl;
 	  fwrite(tempPt,size,1,outfile);
 	  if(data)
 	    delete [] data;
@@ -642,6 +648,10 @@ void AliL3DataCompressor::CompressAndExpand()
   comp->ExpandFile();
   comp->PrintCompRatio(fCompRatioFile);
   delete comp;
+  
+  //Write the ratio between used and unused clusters to comp file:
+  ofstream &out = *fCompRatioFile;
+  out<<fNusedClusters<<' '<<fNunusedClusters<<endl;
 }
 
 

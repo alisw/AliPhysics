@@ -9,7 +9,6 @@
 #include <TParticle.h>
 #include <TTree.h>
 #include <TClonesArray.h>
-#include <TNtupleD.h>
 
 #include <AliRun.h>
 #include <AliSimDigits.h>
@@ -19,6 +18,7 @@
 #include <AliTPCClustersRow.h>
 #include <AliTPCParam.h>
 #include <AliComplexCluster.h>
+#include <AliStack.h>
 
 #if GCCVERSION == 3
 #include <fstream>
@@ -60,9 +60,26 @@ AliL3Evaluate::AliL3Evaluate()
   fMinSlice=0;
   fMaxSlice=0;
   fGoodTracks=0;
+  fNtupleRes=0;
+  fDigitsTree=0;
+  fPtRes=0;
+  fNGoodTracksPt=0;
+  fNFoundTracksPt=0;
+  fNFakeTracksPt=0;
+  fTrackEffPt=0;
+  fFakeTrackEffPt=0;
+  fNGoodTracksEta=0;
+  fNFoundTracksEta=0;
+  fNFakeTracksEta=0;
+  fTrackEffEta=0;
+  fFakeTrackEffEta=0;
+  fMcIndex=0;
+  fMcId=0;
+  fNtuppel=0;
+  fStandardComparison=kTRUE;
 }
 
-AliL3Evaluate::AliL3Evaluate(Char_t *datapath,Int_t min_clusters,Int_t minhits,Double_t minpt,Int_t *slice)
+AliL3Evaluate::AliL3Evaluate(Char_t *datapath,Int_t min_clusters,Int_t minhits,Double_t minpt,Double_t maxpt,Int_t *slice)
 {
 
   if(slice)
@@ -82,9 +99,27 @@ AliL3Evaluate::AliL3Evaluate(Char_t *datapath,Int_t min_clusters,Int_t minhits,D
   fMinPointsOnTrack = min_clusters;
   fMinHitsFromParticle = minhits;
   fMinGoodPt = minpt;
+  fMaxGoodPt = maxpt;
   memset(fClusters,0,36*6*sizeof(AliL3SpacePointData*));
   fTracks=0;
   fGoodTracks=0;
+  fNtupleRes=0;
+  fDigitsTree=0;
+  fPtRes=0;
+  fNGoodTracksPt=0;
+  fNFoundTracksPt=0;
+  fNFakeTracksPt=0;
+  fTrackEffPt=0;
+  fFakeTrackEffPt=0;
+  fNGoodTracksEta=0;
+  fNFoundTracksEta=0;
+  fNFakeTracksEta=0;
+  fTrackEffEta=0;
+  fFakeTrackEffEta=0;
+  fMcIndex=0;
+  fMcId=0;
+  fNtuppel=0;
+  fStandardComparison=kTRUE;
 }
 
 void AliL3Evaluate::LoadData(Int_t event,Bool_t sp)
@@ -124,7 +159,7 @@ void AliL3Evaluate::LoadData(Int_t event,Bool_t sp)
 	    break;
 	}
     }
-  
+   
   sprintf(fname,"%s/tracks_%d.raw",fPath,event);
   AliL3FileHandler *tfile = new AliL3FileHandler();
   if(!tfile->SetBinaryInput(fname)){
@@ -138,6 +173,7 @@ void AliL3Evaluate::LoadData(Int_t event,Bool_t sp)
   tfile->Binary2TrackArray(fTracks);
   tfile->CloseBinaryInput();
   delete tfile;
+  fTracks->QSort();
 }
 
 
@@ -160,6 +196,7 @@ AliL3Evaluate::~AliL3Evaluate()
   if(fMcIndex) delete [] fMcIndex;
   if(fMcId)    delete [] fMcId;
   if(fNtuppel) delete fNtuppel;
+  if(fNtupleRes) delete fNtupleRes;
 }
 
   
@@ -370,20 +407,36 @@ void AliL3Evaluate::GetGoodParticles(Char_t *path,Int_t event,Int_t *padrowrange
   fGoodGen=0;
   fGoodTracks = new GoodTrack[MaxTracks];
   
-  while (in>>fGoodTracks[fGoodGen].label>>fGoodTracks[fGoodGen].code>>
-	 fGoodTracks[fGoodGen].px>>fGoodTracks[fGoodGen].py>>fGoodTracks[fGoodGen].pz>>
-	 fGoodTracks[fGoodGen].x>>fGoodTracks[fGoodGen].y >>fGoodTracks[fGoodGen].z>>fGoodTracks[fGoodGen].nhits>>fGoodTracks[fGoodGen].sector) 
-
-    {
-      fGoodGen++;
-      if (fGoodGen==MaxTracks) 
-	{
-	  cerr<<"AliL3Evaluate::GetGoodParticles : Too many good tracks !\n";
-	  break;
-	}
-    }  
+  if(fStandardComparison){
+    while (in>>fGoodTracks[fGoodGen].label>>fGoodTracks[fGoodGen].code>>
+	   fGoodTracks[fGoodGen].px>>fGoodTracks[fGoodGen].py>>fGoodTracks[fGoodGen].pz>>
+	   fGoodTracks[fGoodGen].x>>fGoodTracks[fGoodGen].y>>fGoodTracks[fGoodGen].z)
+      {
+        fGoodTracks[fGoodGen].nhits=-1;
+        fGoodTracks[fGoodGen].sector=-1; 
+	fGoodGen++;
+	if (fGoodGen==MaxTracks) 
+	  {
+	    cerr<<"AliL3Evaluate::GetGoodParticles : Too many good tracks !\n";
+	    break;
+	  }
+      }
+  } else {
+    while (in>>fGoodTracks[fGoodGen].label>>fGoodTracks[fGoodGen].code>>
+	   fGoodTracks[fGoodGen].px>>fGoodTracks[fGoodGen].py>>fGoodTracks[fGoodGen].pz>>
+	   fGoodTracks[fGoodGen].x>>fGoodTracks[fGoodGen].y >>fGoodTracks[fGoodGen].z>>fGoodTracks[fGoodGen].nhits>>fGoodTracks[fGoodGen].sector) 
+      {
+	fGoodGen++;
+	if (fGoodGen==MaxTracks) 
+	  {
+	    cerr<<"AliL3Evaluate::GetGoodParticles : Too many good tracks !\n";
+	    break;
+	  }
+      }
+  }
 }
 
+//has to be modified for fakes.
 
 void AliL3Evaluate::FillEffHistos()
 {  
@@ -396,11 +449,17 @@ void AliL3Evaluate::FillEffHistos()
   for(Int_t i=0; i<fGoodGen; i++)
     {
       //cout<<"Checking particle "<<i<<endl;
-      if(fGoodTracks[i].nhits < fMinHitsFromParticle) continue;
+      if(!fStandardComparison) 
+	if(fGoodTracks[i].nhits < fMinHitsFromParticle) continue;
       Float_t ptg = TMath::Sqrt(fGoodTracks[i].px*fGoodTracks[i].px + fGoodTracks[i].py*fGoodTracks[i].py);
-      if(ptg < fMinGoodPt) continue;
+      if(ptg < fMinGoodPt || ptg > fMaxGoodPt) continue;
       Float_t pzg=fGoodTracks[i].pz;
       Float_t dipangle=TMath::ATan2(pzg,ptg)*180./TMath::Pi();
+      
+      //If we are only considering tracks on one side of the TPC:
+      if(fMaxSlice <= 17)
+	if(dipangle < 0)
+	  continue;
 
       fNGoodTracksPt->Fill(ptg);
       fNGoodTracksEta->Fill(dipangle);
@@ -436,7 +495,7 @@ void AliL3Evaluate::FillEffHistos()
 	  
 	}
       //if(!found)
-      //	cout<<"Track "<<fGoodTracks[i].label<<" was not found"<<endl;
+      //cout<<"Track "<<fGoodTracks[i].label<<" was not found"<<endl;
     }
 }
 
@@ -447,7 +506,10 @@ void AliL3Evaluate::FillEffHistosNAIVE()
   cout<<endl<<"Note: Doing NAIVE evaluation "<<endl;
   for(Int_t i=0; i<fGoodGen; i++)
     {
+      if(!fStandardComparison) 
+	if(fGoodTracks[i].nhits < fMinHitsFromParticle) continue;
       Double_t ptg=TMath::Sqrt(fGoodTracks[i].px*fGoodTracks[i].px + fGoodTracks[i].py*fGoodTracks[i].py);
+      if(ptg < fMinGoodPt || ptg > fMaxGoodPt) continue;
       Double_t pzg=fGoodTracks[i].pz;
       Float_t dipangle=TMath::ATan2(pzg,ptg)*180./TMath::Pi();
       //printf("filling particle with pt %f and dipangle %f\n",ptg,dipangle);
@@ -462,7 +524,7 @@ void AliL3Evaluate::FillEffHistosNAIVE()
       if(!track) continue;
       Int_t nHits = track->GetNumberOfPoints();
       if(nHits < fMinPointsOnTrack) break;
-      if(track->GetPt()<fMinGoodPt) continue;
+      if(track->GetPt()<fMinGoodPt || track->GetPt() > fMaxGoodPt) continue;
       if(fabs(track->GetPseudoRapidity())>0.9) continue;
 
       fNFoundTracksPt->Fill(track->GetPt()); fNFoundTracksEta->Fill(track->GetPseudoRapidity());
@@ -543,33 +605,27 @@ void AliL3Evaluate::Write2File(Char_t *outputfile)
 
 }
 
-TNtupleD *AliL3Evaluate::CalculateResiduals(Char_t *datapath)
+TNtuple *AliL3Evaluate::GetNtuple()
+{
+  if(!fNtupleRes)
+    {
+      fNtupleRes = new TNtuple("ntuppel","Residuals","residual_trans:residual_long:zHit:pt:dipangle:beta:padrow:nHits");
+      fNtupleRes->SetDirectory(0);//Bug in older version of root.
+    }
+  return fNtupleRes;
+}
+
+void AliL3Evaluate::CalculateResiduals()
 {
 
-  TNtupleD *ntuppel=new TNtupleD("ntuppel","Residuals","residual_trans:residual_long:zHit:pt:dipangle:beta:padrow:nHits");
-  ntuppel->SetDirectory(0);
-  if(fTracks)
-    delete fTracks;
-  
-  AliL3FileHandler *tfile = new AliL3FileHandler();
-  char fname[256];
-  sprintf(fname,"%s/tracks_0.raw",datapath);
-  if(!tfile->SetBinaryInput(fname)){
-    LOG(AliL3Log::kError,"AliL3Evaluation::Setup","File Open")
-      <<"Inputfile "<<fname<<" does not exist"<<ENDLOG; 
-    return 0;
-  }
-  fTracks = new AliL3TrackArray();
-  tfile->Binary2TrackArray(fTracks);
-  tfile->CloseBinaryInput();
-  delete tfile;
+  TNtuple *ntuppel = GetNtuple();
   
   for(Int_t i=0; i<fTracks->GetNTracks(); i++)
     {
       
       AliL3Track *track = (AliL3Track*)fTracks->GetCheckedTrack(i);
       if(!track) continue;
-      if(track->GetNHits() < fMinPointsOnTrack) continue;
+      if(track->GetNHits() < fMinPointsOnTrack) break;
       
       track->CalculateHelix();
       UInt_t *hitnum = track->GetHitNumbers();
@@ -583,8 +639,8 @@ TNtupleD *AliL3Evaluate::CalculateResiduals(Char_t *datapath)
 	  Int_t slice = (id>>25) & 0x7f;
 	  Int_t patch = (id>>22) & 0x7;
 	  UInt_t pos = id&0x3fffff;	      
-	  
-	  //if(slice!=1) continue;
+
+	  //if(slice<18) continue;
 	  
 	  AliL3SpacePointData *points = fClusters[slice][patch];
 	  
@@ -609,7 +665,13 @@ TNtupleD *AliL3Evaluate::CalculateResiduals(Char_t *datapath)
 	  
 	  Float_t angle = 0;
 	  AliL3Transform::Local2GlobalAngle(&angle,slice);
-	  track->CalculateReferencePoint(angle,AliL3Transform::Row2X(padrow));
+	  if(!track->CalculateReferencePoint(angle,AliL3Transform::Row2X(padrow)))
+	    {
+	      LOG(AliL3Log::kError,"AliL3Evaluate::CalculateResiduals","Crossing point")
+		<<"Track does not crossing padrow "<<padrow<<" in slice "<<slice<<ENDLOG;
+	      continue;
+	    }
+	  
 	  Float_t xyz_cross[3] = {track->GetPointX(),track->GetPointY(),track->GetPointZ()};
 	  AliL3Transform::Global2Local(xyz_cross,slice,kTRUE);
 	  
@@ -617,16 +679,11 @@ TNtupleD *AliL3Evaluate::CalculateResiduals(Char_t *datapath)
 	  
 	  Double_t yres = xyz_cross[1] - xyz[1];
 	  Double_t zres = xyz_cross[2] - xyz[2];
-	  
 	  Double_t dipangle = atan(track->GetTgl());
 	  ntuppel->Fill(yres,zres,xyz_cross[2],track->GetPt(),dipangle,beta,padrow,track->GetNumberOfPoints());
 	  
 	}
     }
-  if(fTracks)
-    delete fTracks;
-  
-  return ntuppel;
 }
 
 enum tagprimary {kPrimaryCharged = 0x4000};
@@ -671,6 +728,8 @@ void AliL3Evaluate::EvaluatePoints(Char_t *rootfile,Char_t *exactfile,Char_t *to
       return;
     }
   
+  AliStack *astack=gAlice->Stack();
+
   AliTPCClustersArray *arr=0;
   for(Int_t event=0; event<nevent; event++)
     {
@@ -723,18 +782,29 @@ void AliL3Evaluate::EvaluatePoints(Char_t *rootfile,Char_t *exactfile,Char_t *to
 	  for(Int_t m=0; m<num_of_offline; m++)
 	    {
 	      AliComplexCluster *cluster = (AliComplexCluster *)clusters->UncheckedAt(m);
+#ifdef use_newio
+	      Int_t mcId = cluster->GetTrack(0);
+#else
 	      Int_t mcId = cluster->fTracks[0];
-	      
+#endif	      
 	      if(mcId <0) continue;
-	      
+	
+#ifdef use_newio      
+	      if(cluster->GetY() < 1 || cluster->GetY() > AliL3Transform::GetNPads(padrow) - 2 ||
+		 cluster->GetX() < 1 || cluster->GetX() > AliL3Transform::GetNTimeBins() - 2)
+		continue;
+#else
 	      if(cluster->fY < 1 || cluster->fY > AliL3Transform::GetNPads(padrow) - 2 ||
 		 cluster->fX < 1 || cluster->fX > AliL3Transform::GetNTimeBins() - 2)
 		continue;
-	      
+#endif	      
 	      Float_t xyz_ex[3];
 	      
+#ifdef use_newio
+	      AliL3Transform::Raw2Local(xyz_ex,cursec,currow,cluster->GetY(),cluster->GetX());
+#else	      
 	      AliL3Transform::Raw2Local(xyz_ex,cursec,currow,cluster->fY,cluster->fX);
-	      
+#endif	      
 	      //In function AliTPC::Hits2ExactClusters the time offset is not included,
 	      //so we have to substract it again here.
 	      if(slice<18)
@@ -746,7 +816,7 @@ void AliL3Evaluate::EvaluatePoints(Char_t *rootfile,Char_t *exactfile,Char_t *to
 	      if(param->GetPadRowRadii(cursec,currow)<230./250.*fabs(xyz_ex[2]))
 		continue;
 	      
-	      TParticle *part = gAlice->Particle(mcId);
+	      TParticle *part = astack->Particle(mcId);
 	      crosscount++;
 	      
 	      if(part->Pt() < fMinGoodPt) continue;
@@ -816,6 +886,8 @@ void AliL3Evaluate::GetCFeff(Char_t *path,Char_t *outfile,Int_t nevent,Bool_t sp
   sprintf(filename,"%s/alirunfile.root",path);
   TFile *rfile = TFile::Open(filename);
   gAlice = (AliRun*)rfile->Get("gAlice");
+
+  AliStack *astack=gAlice->Stack();
   
   AliTPCParam *param = (AliTPCParam*)rfile->Get(AliL3Transform::GetParamName());
       
@@ -829,7 +901,7 @@ void AliL3Evaluate::GetCFeff(Char_t *path,Char_t *outfile,Int_t nevent,Bool_t sp
       LoadData(event,sp);
       rfile->cd();
       gAlice->GetEvent(event);
-      Int_t np = gAlice->GetNtrack();
+      Int_t np = astack->GetNtrack();
       cout<<"Processing event "<<event<<" with "<<np<<" particles "<<endl;
       dfile->cd();
       sprintf(filename,"TreeD_75x40_100x60_150x60_%d",event);
@@ -874,7 +946,7 @@ void AliL3Evaluate::GetCFeff(Char_t *path,Char_t *outfile,Int_t nevent,Bool_t sp
 	  } while (digits->Next());
 	  for (Int_t j=0; j<np; j++) 
 	    {
-	      TParticle *part = gAlice->Particle(j);
+	      TParticle *part = astack->Particle(j);
 	      if(part->Pt() < fMinGoodPt) continue;
 	      if(part->GetFirstMother() >= 0) continue;
 	      if (count[j]>1) //at least two digits at this padrow 
@@ -950,13 +1022,14 @@ Int_t AliL3Evaluate::FindPrimaries(Int_t nparticles)
   Double_t decacut = 3.;
   Double_t timecut = 0.;
   Int_t nprch1=0;
-  TParticle * part = gAlice->Particle(0);
+  AliStack *astack=gAlice->Stack();
+  TParticle * part = astack->Particle(0);
   Double_t xori = part->Vx();
   Double_t yori = part->Vy();
   Double_t zori = part->Vz();
   for(Int_t iprim = 0; iprim<nparticles; iprim++){   //loop on  tracks
     
-    part = gAlice->Particle(iprim);
+    part = astack->Particle(iprim);
     char *xxx=strstr(part->GetName(),"XXX");
     if(xxx)continue;
     
@@ -981,7 +1054,7 @@ Int_t AliL3Evaluate::FindPrimaries(Int_t nparticles)
     }
     if(ndau>0){
       for(Int_t j=fidau;j<=lasdau;j++){
-        TParticle *dau=gAlice->Particle(j);
+        TParticle *dau=astack->Particle(j);
         Double_t distd=TMath::Sqrt((dau->Vx()-xori)*(dau->Vx()-xori)+(dau->Vy()-yori)*(dau->Vy()-yori)+(dau->Vz()-zori)*(dau->Vz()-zori));
         if(distd<decacut)prmch=kFALSE;  // eliminate if the decay is near the vertex
       }

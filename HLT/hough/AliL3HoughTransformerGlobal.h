@@ -44,7 +44,7 @@ class AliL3HoughTransformerGlobal : public AliL3HoughTransformer {
   AliL3HoughTransformerGlobal(Char_t *path,Int_t event=0); 
   virtual ~AliL3HoughTransformerGlobal();
   
-  void CreateHistograms(Int_t nxbin,Int_t nybin);
+  void CreateHistograms(Float_t ptmin,Int_t nxbin,Int_t nybin);
   void VerifyTracks(AliL3TrackArray *tracks,Int_t &index);
   void TransformCircle();
   void TransformCircleC();

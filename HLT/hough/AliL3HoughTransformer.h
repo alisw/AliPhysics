@@ -26,9 +26,10 @@ class AliL3HoughTransformer : public AliL3HoughBaseTransformer {
   AliL3HoughTransformer(Int_t slice,Int_t patch,Int_t n_eta_segments,Bool_t DoEtaOverlap=kFALSE,Bool_t DoMC=kFALSE);
   virtual ~AliL3HoughTransformer();
   
-  void CreateHistograms(Int_t nxbin,Double_t ptmin,Int_t nybin,Double_t phimin,Double_t phimax);
-  void CreateHistograms(Int_t nxbin,Double_t xmin,Double_t xmax,
-			Int_t nybin,Double_t ymin,Double_t ymax);
+  void CreateHistograms(Float_t ptmin,Float_t ptmax,Float_t ptres,Int_t nybin,Float_t psi);
+  void CreateHistograms(Int_t nxbin,Float_t ptmin,Int_t nybin,Float_t phimin,Float_t phimax);
+  void CreateHistograms(Int_t nxbin,Float_t xmin,Float_t xmax,
+			Int_t nybin,Float_t ymin,Float_t ymax);
   void Reset();
   void TransformCircle();
   void TransformCircleC(Int_t *row_range,Int_t every=1);

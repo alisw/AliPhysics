@@ -1,107 +1,54 @@
-// $Id$
+//$Id$
 
 /**
-   Shows how to use the hough code. Stores tracks parameters
-   in files.
+   Run this macro for Hough track candidate finder
+   (see steering class AliL3Hough).
+   In argument path, you have to provide the path to 
+   the directory where the data files should be located. 
+   In case of reading from a rootfile, you have to
+   make a symbolic link "digitfile.root", which points 
+   to the rootfile containing AliROOT digits tree 
+   and a symbolic link "alirunfile.root" pointing to a file 
+   containing the ALIROOT geometry (TPC param).
+   For NEWIO, make sure that the file TPC.Digits.root is in the path!
+ 
+   Also provide the neccessary parameters in SetHoughParameters.C.
+
+   RUN with ALIROOT (not ROOT) if using root files.
+
 */
 
-void runhough(Int_t slice,Char_t *path,Int_t n_eta_segments,Int_t vseg=-1)
+void runhough(Char_t *path,Char_t *outpath,int s1=0,int s2=35,int nevent=1)
 {
-  Bool_t binary = kFALSE;
-  Bool_t bit8 = kFALSE;
+
+  Bool_t isinit=AliL3Transform::Init(path,kTRUE);
+  if(!isinit){
+    cerr << "Could not create transform settings, please check log for error messages!" << endl;
+    return;
+  }
   
   hough = new AliL3Hough();
 
-  hough->Init(path,binary,n_eta_segments,bit8);
-  hough->SetTransformerParams(64,64,0.1,30);
-  hough->GetMaxFinder()->SetThreshold(14000);
-  
-  hough->ReadData(slice);
-  hough->Transform();
-  hough->AddAllHistograms();
-  hough->FindTrackCandidates();
-  
-  //hough->Evaluate();
-  tracks = (AliL3TrackArray*)hough->GetTracks(0);
-  
-  for(int i=0; i<tracks->GetNTracks(); i++)
+  char macroname[1024];
+  sprintf(macroname,"SetHoughParameters.C",path);
+  gROOT->LoadMacro(macroname);
+  SetHoughParameters(hough,path);
+
+  for(int ev=0; ev<nevent; ev++)
     {
-      track = (AliL3HoughTrack*)tracks->GetCheckedTrack(i);
-      if(!track) continue;
-      //cout<<"pt "<<track->GetPt()<<" psi "<<track->GetPsi()<<" eta "<<track->GetEta()<<" etaindex "<<track->GetEtaIndex()<<" weight "<<track->GetWeight()<<" nhits "<<track->GetNHits()<<endl;
-      if(vseg==-1) vseg=track->GetEtaIndex();
-    }
-  
-  cout<<"Found in slice " << slice << " total "<<tracks->GetNTracks()<<" tracks"<<endl;
-
-  hough->WriteTracks(slice);
-  display(hough,vseg);
-  
-}
-
-void display(AliL3Hough *hough,Int_t eta_index)
-{
-  //Display the data/tracks in eta_index
-  
-  hough->InitEvaluate();
-  digitd = new AliL3Histogram("Digits display","",250,0,250,250,-125,125);
-  trackd = new AliL3Histogram("Found tracks display","",250,0,250,250,-125,125);
-  for(int i=0; i<6; i++)
-    hough->GetEval(i)->DisplayEtaSlice(eta_index,digitd);
-  
-  tracks = (AliL3TrackArray*)hough->GetTracks(0);
-  float xyz[3];
-  for(int i=0; i<tracks->GetNTracks(); i++)
-    {
-      AliL3HoughTrack *track = (AliL3HoughTrack*)tracks->GetCheckedTrack(i);
-      if(!track) continue;
-      if(track->GetEtaIndex() != eta_index) continue;
-
-      for(int j=0; j<176; j++)
+      for(int slice=s1; slice<=s2; slice++)
 	{
-	  track->GetCrossingPoint(j,xyz);
-	  trackd->Fill(xyz[0],xyz[1],1);
+	  cout<<"Processing slice "<<slice<<endl;
+	  hough->ReadData(slice,ev);
+	  hough->Transform();
+	  hough->AddAllHistograms();
+	  hough->FindTrackCandidates();
+	  hough->AddTracks();
 	}
+      hough->WriteTracks(outpath);
     }
   
-  //Draw the parameter space
-  c1 = new TCanvas("c1","",2);
-  hough->GetTransformer(0)->GetHistogram(eta_index)->Draw("box");
-  
-  //Draw the tracks
-  c2 = new TCanvas("c2","",2);
-  digitd->Draw();
-  trackd->Draw("same");
-  ((TH1F*)trackd->GetRootHisto())->SetMarkerColor(2);
-}
-
-struct GoodTrack
-{
-  Int_t event;
-  Int_t label;
-  Double_t eta;
-  Int_t code;
-  Double_t px,py,pz;
-  Double_t pt;
-  Int_t nhits;
-};
-
-void geteff(char *fname)
-{
-  GoodTrack gt[15000];
-  int counter=0;
-  ifstream in(fname);
-  if(!in)
-    {
-      cerr<<"Could not open "<<fname<<endl;
-      return;
-    }
-  while(in>>gt[counter].event>>gt[counter].label>>gt[counter].code
-	>>gt[counter].px>>gt[counter].py>>gt[counter].pz>>gt[counter].pt>>gt[counter].eta>>gt[counter].nhits)
-    counter++;
-  
-  char filename[100];
-  file = new AliL3MemHandler();
-  
+  delete hough;
   
 }
+

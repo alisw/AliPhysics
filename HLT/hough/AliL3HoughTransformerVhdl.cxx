@@ -54,13 +54,13 @@ AliL3HoughTransformerVhdl::~AliL3HoughTransformerVhdl()
 
 }
 
-void AliL3HoughTransformerVhdl::CreateHistograms(Int_t nxbin,Double_t pt_min,Int_t nybin,Double_t phimin,Double_t phimax)
+void AliL3HoughTransformerVhdl::CreateHistograms(Int_t nxbin,Float_t pt_min,Int_t nybin,Float_t phimin,Float_t phimax)
 {
   AliL3HoughTransformerLUT::CreateHistograms(nxbin,pt_min,nybin,phimin,phimax);
 }
 
-void AliL3HoughTransformerVhdl::CreateHistograms(Int_t nxbin,Double_t xmin,Double_t xmax,
-					         Int_t nybin,Double_t ymin,Double_t ymax)
+void AliL3HoughTransformerVhdl::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t xmax,
+					         Int_t nybin,Float_t ymin,Float_t ymax)
 {
   AliL3HoughTransformerLUT::CreateHistograms(nxbin,xmin,xmax,nybin,ymin,ymax);
 

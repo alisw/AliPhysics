@@ -44,6 +44,7 @@ class AliL3KalmanTrack : public AliL3Track {
   Float_t fC40, fC41, fC42, fC43, fC44; // parameters
 
   Float_t fChisq; 
+  Float_t fMaxChi2;
 
   Float_t fX;
 
@@ -53,13 +54,14 @@ class AliL3KalmanTrack : public AliL3Track {
 
   AliL3KalmanTrack();
   virtual ~AliL3KalmanTrack();
-  void Init();
+  Int_t Init(AliL3Track *track, AliL3SpacePointData *points, UInt_t pos);
   Int_t MakeTrackSeed(AliL3SpacePointData *points1, UInt_t pos1, AliL3SpacePointData *points2, UInt_t pos2, AliL3SpacePointData *points3, UInt_t pos3);
   Int_t Propagate(AliL3SpacePointData *points, UInt_t pos);
   Int_t UpdateTrack(AliL3SpacePointData *points, UInt_t pos);
   Int_t UpdateTrackII(AliL3SpacePointData *points, UInt_t pos);
   void AddTrack();
-  Float_t GetStateVector(Float_t xx[5]) const {
+  //  Float_t GetStateVector(Float_t xx[5]) const {
+  void GetStateVector(Float_t xx[5]) const {
     xx[0] = fP0;
     xx[1] = fP1;
     xx[2] = fP2;
@@ -111,7 +113,8 @@ class AliL3KalmanTrack : public AliL3Track {
   void SetC13(Float_t f) {fC43 = f;} 
   void SetC14(Float_t f) {fC44 = f;}
 
-  Float_t GetCovariance(Float_t cc[15]) const {
+  //  Float_t GetCovariance(Float_t cc[15]) const {
+  void GetCovariance(Float_t cc[15]) const {
     cc[0 ]=fC00;
     cc[1 ]=fC10;  cc[2 ]=fC11;
     cc[3 ]=fC20;  cc[4 ]=fC21;  cc[5 ]=fC22;
@@ -128,7 +131,8 @@ class AliL3KalmanTrack : public AliL3Track {
   fC33 = f[9]; fC40 = f[10]; fC41 = f[11]; fC42 = f[12]; fC43 = f[13]; 
   fC44 = f[14];}
   void SetChisq(Float_t f) {fChisq = f;}
-
+  void SetMaxChi2(Float_t f) {fMaxChi2 = f;}
+  Float_t GetChisqIncrement(AliL3SpacePointData *points, UInt_t pos);
   Float_t f2(Float_t x1,Float_t y1, Float_t x2,Float_t y2, Float_t x3,Float_t y3);
   Float_t f3(Float_t x1,Float_t y1, Float_t x2,Float_t y2, Float_t z1,Float_t z2);
   Float_t f4(Float_t x1,Float_t y1, Float_t x2,Float_t y2, Float_t x3,Float_t y3);
@@ -136,8 +140,6 @@ class AliL3KalmanTrack : public AliL3Track {
 
   Int_t GetNHits() const {return fNHits;}
   void SetNHits(Int_t f) {fNHits = f;}
- 
-
 };
 
 #endif

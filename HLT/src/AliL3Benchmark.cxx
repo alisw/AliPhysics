@@ -140,7 +140,7 @@ void AliL3Benchmark::Stop(const char *name)
    }
 }
 
-void AliL3Benchmark::Analyze(const char* name){
+void AliL3Benchmark::Analyze(const Char_t* name){
   Float_t *x = new Float_t[fNbench]; 
   Float_t *y = new Float_t[fNbench];
   Float_t *eyl = new Float_t[fNbench]; 
@@ -160,7 +160,7 @@ void AliL3Benchmark::Analyze(const char* name){
 #else
     fprintf(f,"%2d. %s: ",i+1,fNames[i].Data());
 #endif
-    fprintf(f,"%4.0f -%4.0f +%4.0f ms\n",av*1000,eyl[i],eyh[i]);
+    fprintf(f,"total %4.0f patch %4.0f -%4.0f +%4.0f ms\n",fSum[i],av*1000,eyl[i],eyh[i]);
   }
   fclose(f);
   sprintf(filename,"%s.tmp",name);

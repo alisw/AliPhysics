@@ -86,8 +86,8 @@ void AliL3HoughClusterTransformer::DeleteHistograms()
     }
 }
 
-void AliL3HoughClusterTransformer::CreateHistograms(Int_t nxbin,Double_t pt_min,
-					     Int_t nybin,Double_t phimin,Double_t phimax)
+void AliL3HoughClusterTransformer::CreateHistograms(Int_t nxbin,Float_t pt_min,
+					     Int_t nybin,Float_t phimin,Float_t phimax)
 {
   //Create the histograms (parameter space).
   //These are 2D histograms, span by kappa (curvature of track) and phi0 (emission angle with x-axis).
@@ -103,8 +103,8 @@ void AliL3HoughClusterTransformer::CreateHistograms(Int_t nxbin,Double_t pt_min,
   CreateHistograms(nxbin,-1.*x,x,nybin,phimin*torad,phimax*torad);
 }
 
-void AliL3HoughClusterTransformer::CreateHistograms(Int_t nxbin,Double_t xmin,Double_t xmax,
-						    Int_t nybin,Double_t ymin,Double_t ymax)
+void AliL3HoughClusterTransformer::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t xmax,
+						    Int_t nybin,Float_t ymin,Float_t ymax)
 {
   Char_t histname[256];
   

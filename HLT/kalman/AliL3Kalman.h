@@ -31,6 +31,7 @@ class AliL3Kalman {
   Char_t fWriteOutPath[256];
   Bool_t fWriteOut;
   Int_t fEvent;
+  Bool_t fMakeSeed;
 
  public:
 
@@ -39,10 +40,12 @@ class AliL3Kalman {
   void Init();
   void LoadTracks(Int_t event, Bool_t sp);
   void ProcessTracks();
+  Int_t InitKalmanTrack(AliL3KalmanTrack *kalmantrack, AliL3Track *track);
   Int_t MakeSeed(AliL3KalmanTrack *kalmantrack, AliL3Track *track);
   Int_t Propagate(AliL3KalmanTrack *kalmantrack, AliL3Track *track);
   Int_t Update(AliL3SpacePointData *points, UInt_t pos, AliL3KalmanTrack *kalmantrack);
   void WriteFiles(Char_t *path="data"){fWriteOut = kTRUE; sprintf(fWriteOutPath,"%s",path);}
+  void DoMakeSeed(){fMakeSeed = kTRUE;}
   Double_t GetCpuTime();
   AliL3TrackArray *GetTracks() {return fKalmanTracks;}
 };

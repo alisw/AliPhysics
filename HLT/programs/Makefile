@@ -31,7 +31,12 @@ endif
 
 ifeq ($(ALIHLT_USEPACKAGE),ALIROOT)
 DEFSTR = -Duse_aliroot -Duse_root
+ifeq ($(USENEWIO),1)
+DEFSTR += -Duse_newio
 ALICELIBS = -L$(ALICE_ROOT)/lib/tgt_Linux -lTPC -lITS -lCONTAINERS -lSTEER -lRAW -lVMC -lGeom
+else
+ALICELIBS = -L$(ALICE_ROOT)/lib/tgt_Linux -lTPC -lITS -lCONTAINERS -lSTEER -lMC
+endif
 INCLUDES += -I$(ROOTSYS)/include -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/CONTAINERS -I$(ALICE_ROOT)/STEER
 RLIBS = $(ROOTLIBS) -lMinuit -lEG
 LIBS += $(ALICELIBS) $(RLIBS)

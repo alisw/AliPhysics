@@ -1,7 +1,7 @@
 // @(#) $Id$
 
-#ifndef ALIL3_HOUGH
-#define ALIL3_HOUGH
+#ifndef ALIL3HOUGH
+#define ALIL3HOUGH
 
 #include "AliL3RootTypes.h"
 
@@ -20,7 +20,9 @@ class AliL3Benchmark;
 class AliL3Hough {
   
  private:
-  Char_t fPath[256];
+  Char_t *fInputFile;//!
+
+  Char_t fPath[1024];
   Bool_t fBinary;
   Bool_t fAddHistograms;
   Bool_t fDoIterative;
@@ -30,14 +32,17 @@ class AliL3Hough {
   Int_t fNPatches;
   Int_t fVersion; //which HoughTransformer to use
   Int_t fCurrentSlice;
-  Int_t fPeakThreshold;
-  
-  Float_t fLowPt;
-  Float_t fPhi;
-  Int_t fNBinX;
-  Int_t fNBinY;
-  Int_t fThreshold;
-  Int_t fNSaveIterations; //for HoughtransformerVhld
+  Int_t fEvent;
+
+  Int_t fPeakThreshold[6];
+  Float_t fLowPt[6];
+  Float_t fUpperPt[6];
+  Float_t fPtRes[6];
+  Float_t fPhi[6];
+  Int_t fNBinX[6];
+  Int_t fNBinY[6];
+  Int_t fThreshold[6];
+  Int_t fNSaveIterations; //for HoughtransformerVhdl
 
   AliL3MemHandler **fMemHandler; //!
   AliL3HoughBaseTransformer **fHoughTransformer; //!
@@ -56,10 +61,10 @@ class AliL3Hough {
  public:
   
   AliL3Hough(); 
-  AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments=100,Bool_t bit8=kFALSE,Int_t tv=0);
+  AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments=100,Bool_t bit8=kFALSE,Int_t tv=0,Char_t *infile=0);
   virtual ~AliL3Hough();
   
-  void Init(Char_t *path,Bool_t binary,Int_t n_eta_segments=100,Bool_t bit8=kFALSE,Int_t tv=0);
+  void Init(Char_t *path,Bool_t binary,Int_t n_eta_segments=100,Bool_t bit8=kFALSE,Int_t tv=0,Char_t *infile=0);
   void Init(Bool_t doit=kFALSE, Bool_t addhists=kFALSE);
 
   void Process(Int_t minslice,Int_t maxslice);
@@ -76,19 +81,25 @@ class AliL3Hough {
   Int_t Evaluate(Int_t road_width=1,Int_t nrowstomiss=1);
   void EvaluatePatch(Int_t i,Int_t road_width,Int_t nrowstomiss);
   void WriteTracks(Int_t slice,Char_t *path="./");
+  void WriteTracks(Char_t *path);
   void WriteDigits(Char_t *outfile="output_digits.root");
   void InitEvaluate();
   void DoBench(Char_t *filename);
+  void AddTracks();
   
   //Setters
   void SetNEtaSegments(Int_t i) {fNEtaSegments = i;}
   void SetAddHistograms() {fAddHistograms = kTRUE;}
   void DoIterative() {fDoIterative = kTRUE;}
   void SetWriteDigits() {fWriteDigits = kTRUE;}
-  void SetTransformerParams(Int_t nx=64, Int_t ny=64,Float_t lpt=0.1,Float_t phi=30) {fNBinX=nx;fNBinY=ny;fLowPt=lpt;fPhi=phi;}
-  void SetThreshold(Int_t t=3) {fThreshold=t;}
+  void SetTransformerParams(Float_t ptres=0,Float_t ptmin=0,Float_t ptmax=0,Int_t ny=0,Int_t patch=-1);
+  //{fPtRes=ptres;fNBinY=ny;fLowPt=ptmin;fUpperPt=ptmax;fPhi=psi;}
+  void SetTransformerParams(Int_t nx,Int_t ny,Float_t lpt,Int_t patch);
+  void SetTransformerParams(Int_t nx,Int_t ny,Float_t lpt,Float_t phi);
+  //{fNBinX=nx;fNBinY=ny;fLowPt=lpt;fPhi=phi;}
+  void SetThreshold(Int_t t=3,Int_t patch=-1);
   void SetNSaveIterations(Int_t t=10) {fNSaveIterations=t;}
-  void SetPeakThreshold(Int_t i=0) {fPeakThreshold=i;}
+  void SetPeakThreshold(Int_t threshold=0,Int_t patch=-1);
   
   //Getters
   AliL3HoughBaseTransformer *GetTransformer(Int_t i) {if(!fHoughTransformer[i]) return 0; return fHoughTransformer[i];}

@@ -26,6 +26,9 @@ endif
 ifeq ($(ALIHLT_USEPACKAGE),ALIROOT)
 INCLUDES += -I$(ROOTSYS)/include -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/CONTAINERS -I$(ALICE_ROOT)/STEER
 DEFSTR = -Duse_aliroot -Duse_root
+ifeq ($(USENEWIO),1)
+DEFSTR += -Duse_newio
+endif
 OBJDIR = lib
 ROOTSTR := $(shell $(ROOTSYS)/bin/root -n -b -q  | grep Version | cut -b 17-25 | cut -d" " -f1)
 DEFSTR += -DROOTVERSION=\"$(ROOTSTR)\" 
@@ -51,13 +54,11 @@ INCLUDES += -I/prog/alice/level3/kip/MLUC/include
 endif
 endif
 
-
 DEFSTR += $(EXTRADEF)
 
 DICT  = $(MODNAME)Cint-$(ALIHLT_USEPACKAGE).cxx
 DICTH = $(MODNAME)Cint-$(ALIHLT_USEPACKAGE).h
 DICTO = $(OBJDIR)/$(MODNAME)Cint-$(ALIHLT_USEPACKAGE).o
-
 
 ifndef OBJS
 ifeq ($(OBJDIR),lib_alone)
@@ -101,6 +102,7 @@ print:
 	@echo "ALIHLT_TOPDIR     = $(ALIHLT_TOPDIR)"
 	@echo "ALIHLT_MLUCDIR    = $(ALIHLT_MLUCDIR)"
 	@echo "ALIHLT_USEPACKAGE = $(ALIHLT_USEPACKAGE)"
+	@echo "ALIHLT_USENEWIO   = $(ALIHLT_USENEWIO)"
 	@echo "ALIHLT_NOLOGGING  = $(ALIHLT_NOLOGGING)"
 	@echo "ALIHLT_DOMC       = $(ALIHLT_DOMC)"
 	@echo "ALIHLT_ALIDETECT  = $(ALIHLT_ALIDETECT)"

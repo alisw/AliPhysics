@@ -37,7 +37,6 @@ class TTree;
 class AliSimDigits;
 class TObjArray;
 class TParticle;
-class TNtupleD;
 
 class AliL3Evaluate {
 
@@ -64,7 +63,8 @@ class AliL3Evaluate {
   Int_t fGoodFound;
   Int_t fGoodGen;
   Double_t fMinGoodPt;
-
+  Double_t fMaxGoodPt;
+  
   //Histograms
   TNtuple *fNtuppel;
   TH1F *fPtRes;
@@ -78,11 +78,12 @@ class AliL3Evaluate {
   TH1F *fNFakeTracksEta;
   TH1F *fTrackEffEta;
   TH1F *fFakeTrackEffEta;
-  
+  TNtuple *fNtupleRes;
+  Bool_t fStandardComparison;
   
  public:
   AliL3Evaluate();
-  AliL3Evaluate(Char_t *path,Int_t min_clusters,Int_t minhits,Double_t minpt=0.1,Int_t *slice=0);
+  AliL3Evaluate(Char_t *path,Int_t min_clusters,Int_t minhits,Double_t minpt=0.1,Double_t maxpt=4.,Int_t *slice=0);
   virtual ~AliL3Evaluate();
   
   void LoadData(Int_t event=-1,Bool_t sp=kFALSE);
@@ -96,14 +97,15 @@ class AliL3Evaluate {
   void GetFastClusterIDs(Char_t *path);
   void GetCFeff(Char_t *path,Char_t *outfile,Int_t nevent=0,Bool_t sp=kFALSE);
   Int_t GetMCTrackLabel(AliL3Track *track);
-  TNtupleD *CalculateResiduals(Char_t *datapath);
+  void CalculateResiduals();
   void EvaluatePoints(Char_t *rootfile,Char_t *exactfile,Char_t *tofile,Int_t nevent=1,Bool_t offline=kFALSE,Bool_t sp=kFALSE);
   Float_t GetCrossingAngle(TParticle *part,Int_t slice,Int_t padrow,Float_t *xyz);
   Int_t FindPrimaries(Int_t nparticles);
   void SetMinPoints(Int_t f) {fMinPointsOnTrack = f;}
   void SetMinGoodPt(Double_t f) {fMinGoodPt = f;}
   void SetMaxFalseClusters(Float_t f) {fMaxFalseClusters = f;}
-
+  void SetStandardComparison(Bool_t b) {fStandardComparison = b;}  
+  TNtuple *GetNtuple();
   Int_t GetNGoodTracks() {return fGoodGen;}
   Int_t GetNFoundTracks() {return fGoodFound;}
   TH1F *GetTrackEffPt() {return fTrackEffPt;}

@@ -64,10 +64,13 @@ class AliL3DataCompressor {
  protected:
   Char_t fPath[1024];            //!
   Int_t fEvent;
+  Int_t fNusedClusters;
+  Int_t fNunusedClusters;
   
   Bool_t fWriteClusterShape;
   Bool_t fKeepRemaining;
   Bool_t fSinglePatch;
+  Bool_t fWriteIdsToFile;
   
  public:
   AliL3DataCompressor();
@@ -84,6 +87,9 @@ class AliL3DataCompressor {
   void SetBitNumbers(Int_t pad,Int_t time,Int_t charge,Int_t shape);
   void SetTransverseResolutions(Float_t res1,Float_t res2,Float_t res3,Float_t width=0.005);
   void SetLongitudinalResolutions(Float_t res1,Float_t res2,Float_t res3,Float_t width=0.005);
+  
+  Int_t GetNusedClusters() {return fNusedClusters;}
+  Int_t GetNunusedClusters() {return fNunusedClusters;}
   
   static const Int_t GetNPadBits() {return fNumPadBits;}
   static const Int_t GetNTimeBits() {return fNumTimeBits;}

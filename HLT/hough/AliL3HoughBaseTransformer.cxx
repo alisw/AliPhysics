@@ -33,7 +33,7 @@ AliL3HoughBaseTransformer::AliL3HoughBaseTransformer()
   fEtaMin = 0;
   fEtaMax = 0;
   fLowerThreshold = 0;
-  fUpperThreshold = 0;
+  fUpperThreshold = 1023;
 }
 
 AliL3HoughBaseTransformer::AliL3HoughBaseTransformer(Int_t slice,Int_t patch,Int_t n_eta_segments)
@@ -45,8 +45,8 @@ AliL3HoughBaseTransformer::AliL3HoughBaseTransformer(Int_t slice,Int_t patch,Int
   fNEtaSegments =0;
   fEtaMin = 0;
   fEtaMax = 0;
-  fLowerThreshold = 0;
-  fUpperThreshold = 0;
+  fLowerThreshold = 3;
+  fUpperThreshold = 1023;
 
   Init(slice,patch,n_eta_segments);
 }
@@ -62,6 +62,4 @@ void AliL3HoughBaseTransformer::Init(Int_t slice,Int_t patch,Int_t n_eta_segment
   fNEtaSegments = n_eta_segments;
   fEtaMin = 0;
   fEtaMax = fSlice < 18 ? 1. : -1.;
-  fLowerThreshold = 3;
-  fUpperThreshold = 1023;
 }

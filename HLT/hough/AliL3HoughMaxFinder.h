@@ -25,6 +25,8 @@ class AliL3HoughMaxFinder {
   Int_t fThreshold;
   AliL3Histogram *fCurrentHisto;  //!
   
+  Float_t fGradX;
+  Float_t fGradY;
   Float_t *fXPeaks; //!
   Float_t *fYPeaks; //!
   Int_t *fWeight;   //!
@@ -49,18 +51,16 @@ class AliL3HoughMaxFinder {
   //Simple maxima finders:
   void FindAbsMaxima();
   void FindBigMaxima();
-  void FindMaxima(Double_t grad_x,Double_t grad_y);
-  
+  void FindMaxima(Int_t threshold=0);
+  void FindAdaptedPeaks(Int_t nkappawindow);
   //More sophisticated peak finders:
-  AliL3TrackArray *LookForPeaks(AliL3Histogram *hist,Int_t nbins);
   void FindPeak(Int_t t1,Double_t t2,Int_t t3);
-  AliL3HoughTrack *FindPeakLine(Double_t rho,Double_t theta);
-  AliL3HoughTrack *CalculatePeakInWindow(Int_t *maxbin,Int_t t0,Int_t t1,Double_t t2,Int_t t3);
   void FindPeak1(Int_t y_window=2,Int_t x_bin_sides=1);
   void SortPeaks(struct AxisWindow **a,Int_t first,Int_t last);
   Int_t PeakCompare(struct AxisWindow *a,struct AxisWindow *b);
   
   //Setters:
+  void SetGradient(Float_t x,Float_t y) {fGradX=x; fGradY=y;}
   void SetThreshold(Int_t f) {fThreshold = f;}
   void SetHistogram(AliL3Histogram *hist) {fCurrentHisto = hist;}
   
