@@ -39,7 +39,7 @@ class AliHBTCrab: public AliHBTWeights
      static AliHBTCrab* Instance();
      void Set();
 
-     Double_t GetWeight(const AliHBTPair* partpair);
+     Double_t GetWeight(AliHBTPair* partpair);
      void Init(Int_t pid1,Int_t pid2); //put the initial values in fortran commons fsiini, led_bldata
      
    private:

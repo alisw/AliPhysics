@@ -1,10 +1,28 @@
 /* $Id$ */
 
+//_________________________________________________________________
+///////////////////////////////////////////////////////////////////////
+//
+// class AliHBTLLWeights
+//
 // This class introduces the weight's calculation 
 // according to the Lednicky's algorithm.
 // The detailed description of the algorithm can be found 
 // in comments to fortran code:
 // fsiw.f, fsiini.f  
+//
+// Source simulation: Particle position/distance randomization
+// This class has functionality of randomizing particle positions / pair distances
+// so obtained correlation function follows a given shape, 
+// depending on a value of fRandomPosition member
+// By default this feature is switched off: fRandomPosition == AliHBTLLWeights::kNone
+// It can be: kGaussianQInv - so 1D Qinv correlation function has a Gaussian shape 
+//                            (and also Qlong and Qside, but not Qout)
+//            kGaussianOSL - so 3D Qout-Qside-Qlong correlation function has a Gaussian shape
+//
+// Ludmila Malinina, Piotr Krzysztof Skowronski
+//
+///////////////////////////////////////////////////////////////////////
 
 #ifndef ALIHBTLLWEIGHTS_H
 #define ALIHBTLLWEIGHTS_H
@@ -12,6 +30,7 @@
 #include "AliHBTWeights.h"
 
 class AliHBTPair;
+class AliVAODParticle;
 class AliHBTLLWeights: public AliHBTWeights
  {
    public:
@@ -21,7 +40,7 @@ class AliHBTLLWeights: public AliHBTWeights
      
      void Set();
      
-     Double_t GetWeight(const AliHBTPair* partpair); //get weight calculated by Lednicky's algorithm
+     Double_t GetWeight(AliHBTPair* partpair); //get weight calculated by Lednicky's algorithm
 
      void Init(); //put the initial values in fortran commons fsiini, led_bldata
      void SetTest(Bool_t rtest = kTRUE);//Sets fTest member
@@ -32,11 +51,14 @@ class AliHBTLLWeights: public AliHBTWeights
      void SetColWithResidNuclSwitch(Bool_t crn = kTRUE);//I3C: Coulomb interaction with residual nucleus ON (OFF)  
      void SetLambda(Double_t la){fOneMinusLambda=1.-la;}  //lambda=haoticity
      void SetApproxModel(Int_t ap);//sets  Model of Approximation (NS in Fortran code)
-     void SetRandomPosition(Bool_t rp = kTRUE); //ON=kTRUE(OFF=kFALSE)
-     void SetR1dw(Double_t R);   //spherical source model radii                                                                           		                                                                                                        
      void SetParticlesTypes(Int_t pid1, Int_t pid2); //set AliRoot particles types   
      void SetNucleusCharge(Double_t ch); // not used now  (see comments in fortran code)
      void SetNucleusMass(Double_t mass); // (see comments in fortran code)
+     
+     enum ERandomizationWay {kNone = 0, kGaussianQInv, kGaussianOSL};
+
+     void SetRandomPosition(ERandomizationWay rw = kNone); //Choose if, and if yes, how to randomize distance between particles
+     void SetR1dw(Double_t R);   //spherical source model radii                                                                           		                                                                                                        
      
    protected:
      
@@ -50,7 +72,7 @@ class AliHBTLLWeights: public AliHBTWeights
      Double_t fNuclMass;   //mass of nucleus
      Double_t fNuclCharge; //charge of nucleus
      
-     Bool_t   fRandomPosition;//flag indicating if positions of particles shuold be randomized according to parameters below
+     ERandomizationWay   fRandomPosition;//flag indicating if positions of particles shuold be randomized according to parameters below
      Double_t fRadius;        //radius used for randomizing particle vertex position
      
      Double_t fOneMinusLambda; //1 - intercept parameter
@@ -71,7 +93,13 @@ class AliHBTLLWeights: public AliHBTWeights
      AliHBTLLWeights(const AliHBTLLWeights &/*source*/);
      AliHBTLLWeights & operator=(const AliHBTLLWeights& /*source*/);
      
-     ClassDef(AliHBTLLWeights,1)
+     Int_t SetMomentaInLCMS(AliVAODParticle* part1, AliVAODParticle* part2);
+     void  RandomPairDistances();
+     
+          
+     void Rotate(Double_t x, Double_t y, Double_t sphi, Double_t cphi, Double_t& xr, Double_t& yr);
+     void Boost (Double_t z, Double_t t, Double_t beta, Double_t gamma, Double_t& zt, Double_t& yt);
+     ClassDef(AliHBTLLWeights,2)
  };
 
 #endif

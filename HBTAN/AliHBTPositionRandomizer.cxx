@@ -310,7 +310,7 @@ void AliHBTRndmGaussBall::Randomize(Double_t& x,Double_t& y,Double_t&z,Double_t&
   
   if (fTsigma == 0.0)
    {
-     t = 0.0;
+     t = fTmean;
      return;
    }
   

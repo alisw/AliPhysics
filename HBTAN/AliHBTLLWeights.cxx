@@ -90,7 +90,7 @@
 //   W=1/.1973D0    ! from fm to 1/GeV
 //   PI=4*DATAN(1.D0)
 //   PI2=2*PI
-//   SPI=DSQRT(PI)
+//   SPI=TMath::Sqrt(PI)
 //   DR=180.D0/PI   ! from radian to degree
 //    _______________________________________________________
 //  !! |Important note: all real quantities are assumed REAL*8 | !!
@@ -144,6 +144,7 @@
 # define led_bldata led_bldata_
 # define fsiini fsiini_
 # define ltran12 ltran12_
+# define boosttoprf boosttoprf_
 # define fsiw fsiw_
 # define setpdist setpdist_
 # define type_of_call
@@ -151,6 +152,7 @@
 # define led_bldata LED_BLDATA
 # define fsiini FSIINI
 # define ltran12 LTRAN12
+# define boosttoprf BOOSTTOPRF
 # define fsiw FSIW
 # define setpdist SETPDIST
 # define type_of_call _stdcall
@@ -159,6 +161,7 @@
 extern "C" void type_of_call led_bldata(); 
 extern "C" void type_of_call fsiini();
 extern "C" void type_of_call ltran12();
+extern "C" void type_of_call boosttoprf();
 extern "C" void type_of_call fsiw();
 extern "C" void type_of_call setpdist(Double_t& r);
 /**************************************************************/
@@ -186,7 +189,7 @@ AliHBTLLWeights::AliHBTLLWeights():
  fColWithResidNuclSwitch(kFALSE),
  fNuclMass(0.0),
  fNuclCharge(0.0),
- fRandomPosition(kFALSE),
+ fRandomPosition(kNone),
  fRadius(0.0),
  fOneMinusLambda(0.0),
  fPID1(0),
@@ -208,7 +211,7 @@ AliHBTLLWeights::AliHBTLLWeights(const AliHBTLLWeights &/*source*/):
  fColWithResidNuclSwitch(kFALSE),
  fNuclMass(0.0),
  fNuclCharge(0.0),
- fRandomPosition(kFALSE),
+ fRandomPosition(kNone),
  fRadius(0.0),
  fOneMinusLambda(0.0),
  fPID1(0),
@@ -259,7 +262,7 @@ void AliHBTLLWeights::Set()
 }
 /************************************************************/
 
-Double_t AliHBTLLWeights::GetWeight(const AliHBTPair* partpair)
+Double_t AliHBTLLWeights::GetWeight(AliHBTPair* partpair)
 {
 // calculates weight for a pair
   static const Double_t kcmtofm = 1.e13;
@@ -298,43 +301,74 @@ Double_t AliHBTLLWeights::GetWeight(const AliHBTPair* partpair)
      if( gRandom->Rndm() < fOneMinusLambda ) return 1.0;
    }
     
-  FSI_MOM.P1X = part1->Px();
-  FSI_MOM.P1Y = part1->Py();
-  FSI_MOM.P1Z = part1->Pz();
-      
-  FSI_MOM.P2X = part2->Px();
-  FSI_MOM.P2Y = part2->Py();
-  FSI_MOM.P2Z = part2->Pz();
-
-  FSI_COOR.X1 = part1->Vx()*kcmtoOneOverGeV;
-  FSI_COOR.Y1 = part1->Vy()*kcmtoOneOverGeV;
-  FSI_COOR.Z1 = part1->Vz()*kcmtoOneOverGeV;
-  FSI_COOR.T1 = part1->T();
-
-  FSI_COOR.X2 = part2->Vx()*kcmtoOneOverGeV;
-  FSI_COOR.Y2 = part2->Vy()*kcmtoOneOverGeV;
-  FSI_COOR.Z2 = part2->Vz()*kcmtoOneOverGeV;
-  FSI_COOR.T2 = part2->T();
-  
-  ltran12();
 
   //this must  be after ltran12 because it would overwrite what we set below
-  if (fRandomPosition)
+  switch (fRandomPosition)
    {
-     Double_t rxcm = fSigma*gRandom->Gaus();
-     Double_t rycm = fSigma*gRandom->Gaus();
-     Double_t rzcm = fSigma*gRandom->Gaus();
+    case kGaussianQInv:
+     {
+       // Set Momenta in the common block
+       FSI_MOM.P1X = part1->Px();
+       FSI_MOM.P1Y = part1->Py();
+       FSI_MOM.P1Z = part1->Pz();
 
-     FSI_PRF.X=rxcm*fgkWcons;
-     FSI_PRF.Y=rycm*fgkWcons;
-     FSI_PRF.Z=rzcm*fgkWcons;
-     FSI_PRF.T=0.;
+       FSI_MOM.P2X = part2->Px();
+       FSI_MOM.P2Y = part2->Py();
+       FSI_MOM.P2Z = part2->Pz();
+      
+       //boost it to PRF
+       ltran12();
+       boosttoprf();
+       
+       //Set particle positions now so they are Gaussian in PRF
+       RandomPairDistances();
+       
+       FSI_PRF.RPS= FSI_COOR.X2*FSI_COOR.X2 + FSI_COOR.Y2*FSI_COOR.Y2 +FSI_COOR.Z2*FSI_COOR.Z2;
+       FSI_PRF.RP=TMath::Sqrt(FSI_PRF.RPS);
+       
+       break;
+      } 
+    case kGaussianOSL:
+      { 
+       //boost pair to LCMS and set such a momenta in the common block
+       Int_t retv = SetMomentaInLCMS(part1,part2);
+       if (retv) return 1;
+       //random particle positions/distance so they are Gaussian in LCMS
+       RandomPairDistances();
+       
+       //Boost to PRF
+       ltran12();
+       boosttoprf();
+    
+       break;
+      }
+    case kNone:
+    default:
+       //set momenta and paricle positions as they are
+       FSI_MOM.P1X = part1->Px();
+       FSI_MOM.P1Y = part1->Py();
+       FSI_MOM.P1Z = part1->Pz();
 
-     Double_t rps=rxcm*rxcm+rycm*rycm+rzcm*rzcm;
-     Double_t rp=TMath::Sqrt(rps);
-     setpdist(rp);
+       FSI_MOM.P2X = part2->Px();
+       FSI_MOM.P2Y = part2->Py();
+       FSI_MOM.P2Z = part2->Pz();
+
+       FSI_COOR.X1 = part1->Vx()*kcmtoOneOverGeV;
+       FSI_COOR.Y1 = part1->Vy()*kcmtoOneOverGeV;
+       FSI_COOR.Z1 = part1->Vz()*kcmtoOneOverGeV;
+       FSI_COOR.T1 = part1->T()*kcmtoOneOverGeV;
+
+       FSI_COOR.X2 = part2->Vx()*kcmtoOneOverGeV;
+       FSI_COOR.Y2 = part2->Vy()*kcmtoOneOverGeV;
+       FSI_COOR.Z2 = part2->Vz()*kcmtoOneOverGeV;
+       FSI_COOR.T2 = part2->T()*kcmtoOneOverGeV;
+
+       ltran12();
+       boosttoprf();
+       
+       break;
    }
-               
+
   fsiw();
   return LEDWEIGHT.WEIN;
 }
@@ -639,13 +673,13 @@ void AliHBTLLWeights::SetApproxModel(Int_t ap)
 }
 /************************************************************/
      
-void AliHBTLLWeights::SetRandomPosition(Bool_t rp)
+void AliHBTLLWeights::SetRandomPosition(ERandomizationWay rw)
 { 
- //ON=kTRUE(OFF=kFALSE)
- //ON -- calculation of the Gauss source radii 
- //if the generator don't allows the source generation (for example MeVSim)
- //if ON the following parameters are requested:
- fRandomPosition = rp;
+// rw can be: kGaussianQInv - so 1D Qinv correlation function has a Gaussian shape 
+//                            (and also Qlong and Qside, but not Qout)
+//            kGaussianOSL - so 3D Qout-Qside-Qlong correlation function has a Gaussian shape
+//            kNone  - no randomization performed (DEFAULT)
+ fRandomPosition = rw;
 }
 /************************************************************/
 
@@ -675,4 +709,121 @@ void AliHBTLLWeights::SetNucleusMass(Double_t mass)
 {
   // (see comments in fortran code)
   fNuclMass=mass;
+}
+/************************************************************/
+
+Int_t AliHBTLLWeights::SetMomentaInLCMS(AliVAODParticle* part1, AliVAODParticle* part2)
+{
+//sets paricle momenta in the common block in LCMS frame
+//---> Particle energies ---------
+
+  Double_t p1x = part1->Px();
+  Double_t p1y = part1->Py();
+  Double_t p1z = part1->Pz();
+      
+  Double_t p2x = part2->Px();
+  Double_t p2y = part2->Py();
+  Double_t p2z = part2->Pz();
+
+  Double_t am1 = part1->Mass();
+  Double_t am2 = part2->Mass();
+  
+  Double_t p1s=p1x*p1x+p1y*p1y+p1z*p1z;
+  Double_t p2s=p2x*p2x+p2y*p2y+p2z*p2z;
+  Double_t e1=TMath::Sqrt(am1*am1+p1s);
+  Double_t e2=TMath::Sqrt(am2*am2+p2s);
+//---> pair parameters -----------
+  Double_t e12=e1+e2;       // energy
+  Double_t p12x=p1x+p2x;    // px
+  Double_t p12y=p1y+p2y;    // py
+  Double_t p12z=p1z+p2z;    // pz
+  Double_t p12s=p12x*p12x+p12y*p12y+p12z*p12z;
+  Double_t p12 =TMath::Sqrt(p12s);// momentum
+  Double_t v12 =p12/e12;    // velocity
+
+  Double_t cth =p12z/p12;   // cos(theta)
+//  Double_t sth =TMath::Sqrt(1. - cth*cth); //sin
+  Double_t v12z=v12*cth;    // longit. v
+  Double_t gamz=1./TMath::Sqrt(1.-v12z*v12z);
+//--      v12t=v12*sth    // transv. v in cms (not needed)
+
+
+  Double_t p12ts=p12x*p12x+p12y*p12y;
+  Double_t p12t=TMath::Sqrt(p12ts); //pt
+//===> azimuthal rotation (pt||x) ============
+   if(p12t != 0.0) 
+    {
+     Double_t cphi=p12x/p12t;  // cos(phi)
+     Double_t sphi=p12y/p12t;  // sin(phi)
+     Rotate(p1x,p1y,sphi,cphi,p1x,p1y);       
+     Rotate(p2x,p2y,sphi,cphi,p2x,p2y);
+//     Rotate(x1,y1,sphi,cphi,x1,y1);
+//     Rotate(x2,y2,sphi,cphi,x2,y2);
+     }    
+   else // rotation impossible 
+    {
+      return 1;
+    }
+
+//===> co-moving ref. frame       ============
+   
+   Double_t nothing;
+   Boost(p1z,e1,v12z,gamz,p1z,nothing);
+   Boost(p2z,e2,v12z,gamz,p2z,nothing);
+
+//   p1s=p1x*p1x+p1y*p1y+p1z*p1z;
+//   p2s=p2x*p2x+p2y*p2y+p2z*p2z;
+//   e1=TMath::Sqrt(am1*am1+p1s);
+//   e2=TMath::Sqrt(am2*am2+p2s);
+//   Boost(z1,t1,v12z,gamz,z1,t1);
+//   Boost(z2,t2,v12z,gamz,z2,t2);
+
+
+     FSI_MOM.P1X = p1x;
+     FSI_MOM.P1Y = p1y;
+     FSI_MOM.P1Z = p1z;
+
+     FSI_MOM.P2X = p2x;
+     FSI_MOM.P2Y = p2y;
+     FSI_MOM.P2Z = p2z;
+     
+//     Info("Simulate"," %f %f %f ",p1x + p2x, p1y + p2y, p1z + p2z);
+     return 0;
+}
+
+/**********************************************************/  
+
+void AliHBTLLWeights::RandomPairDistances()
+{
+ //randomizes pair distances
+  Double_t rxcm = fSigma*gRandom->Gaus();
+  Double_t rycm = fSigma*gRandom->Gaus();
+  Double_t rzcm = fSigma*gRandom->Gaus();
+
+
+  FSI_COOR.X1 = 0;
+  FSI_COOR.Y1 = 0;
+  FSI_COOR.Z1 = 0;
+  FSI_COOR.T1 = 0;
+
+  FSI_COOR.X2 = rxcm*fgkWcons;
+  FSI_COOR.Y2 = rycm*fgkWcons;
+  FSI_COOR.Z2 = rzcm*fgkWcons;
+  FSI_COOR.T2 = 0;
+
+}
+
+
+void AliHBTLLWeights::Rotate(Double_t x, Double_t y, Double_t sphi, Double_t cphi, Double_t& xr, Double_t& yr)
+{
+//rotates 
+ yr=y*cphi-x*sphi;
+ xr=x*cphi+y*sphi;
+}
+
+void AliHBTLLWeights::Boost(Double_t z, Double_t t, Double_t beta, Double_t gamma, Double_t& zt, Double_t& yt)
+{
+//boosts
+  zt=gamma*(z-beta*t);
+  yt=gamma*(t-beta*z);
 }

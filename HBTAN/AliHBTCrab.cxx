@@ -113,7 +113,7 @@ Bool_t AliHBTCrab::SetConfig(const AliHBTPair* pair)
 }
 //===================================================================
 
-Double_t AliHBTCrab::GetWeight(const AliHBTPair* partpair)
+Double_t AliHBTCrab::GetWeight(AliHBTPair* partpair)
 {
 //returns the weight
   Double_t qred, r, qdotr, mom;
