@@ -3,8 +3,6 @@
 
 #include <TObject.h>
 
-
-
 class AliHBTParticleCut;
 class AliHBTCut;
 class AliHBTPairCut;
@@ -25,12 +23,12 @@ class AliHBTAnalysis: public TObject
  {
    public:
      AliHBTAnalysis();
-
+     AliHBTAnalysis(const AliHBTAnalysis& in);
+     const AliHBTAnalysis& operator=(const AliHBTAnalysis& right);
      virtual ~AliHBTAnalysis();
 
      virtual void Process(Option_t* option = "TracksAndParticles");
      
-
      void SetGlobalPairCut(AliHBTPairCut* cut);
      
      void AddTrackFunction(AliHBTOnePairFctn* f);
@@ -48,7 +46,8 @@ class AliHBTAnalysis: public TObject
      void WriteFunctions();
      
      void SetBufferSize(Int_t buffsize){fBufferSize=buffsize;}
-     
+     void SetOwner(Bool_t owner=kTRUE){fIsOwner=owner;}
+     Bool_t IsOwner() const {return fIsOwner;}
      Bool_t IsNonIdentAnalysis();
    protected:
      
@@ -57,8 +56,7 @@ class AliHBTAnalysis: public TObject
      void FilterOut(AliHBTEvent* outpart1, AliHBTEvent* outpart2, AliHBTEvent* inpart,
                     AliHBTEvent* outtrack1, AliHBTEvent* outtrack2, AliHBTEvent* intrack);
      void FilterOut(AliHBTEvent* out1, AliHBTEvent* out2, AliHBTEvent* in);
-     
-     AliHBTReader* fReader;//!
+     void DeleteFunctions();
      
      virtual void ProcessTracks();
      virtual void ProcessParticles();
@@ -67,38 +65,41 @@ class AliHBTAnalysis: public TObject
      virtual void ProcessTracksAndParticlesNonIdentAnal();
      virtual void ProcessParticlesNonIdentAnal();
      virtual void ProcessTracksNonIdentAnal();
+
+     AliHBTReader* fReader;//! Pointer to reader
      
+     UInt_t fNTrackFunctions; //! Number of Tracks functions 
+     UInt_t fNParticleFunctions; //! Number of particles functions
+     UInt_t fNParticleAndTrackFunctions; //! Number of resolution functions
+		
+     UInt_t fNTrackMonitorFunctions; //! Number of Track Monitor functions 
+     UInt_t fNParticleMonitorFunctions; //! Number of Particles Monitor functions 
+     UInt_t fNParticleAndTrackMonitorFunctions; //! Number of Resolution Monitor functions 
+
      AliHBTOnePairFctn**  fTrackFunctions; //!array of pointers to functions that analyze rekonstructed tracks
      AliHBTOnePairFctn**  fParticleFunctions; //!array of pointers to functions that analyze generated particles
      AliHBTTwoPairFctn**  fParticleAndTrackFunctions; //!array of pointers to functions that analyze both 
                                         //reconstructed tracks and generated particles
 		//i.e. - resolution analyzers
+     AliHBTMonOneParticleFctn**  fParticleMonitorFunctions; //! array of pointers to monitoring functions
+     AliHBTMonOneParticleFctn**  fTrackMonitorFunctions; //! which are used for single particle analysis,
+     AliHBTMonTwoParticleFctn**  fParticleAndTrackMonitorFunctions;  //! cut monitoring, etc.
 
-     AliHBTMonOneParticleFctn**  fParticleMonitorFunctions; // array of pointers to monitoring functions
-     AliHBTMonOneParticleFctn**  fTrackMonitorFunctions; // which are used for single particle analysis,
-     AliHBTMonTwoParticleFctn**  fParticleAndTrackMonitorFunctions;  // cut monitoring, etc.
-
-     UInt_t fNTrackFunctions; //!
-     UInt_t fNParticleFunctions; //!
-     UInt_t fNParticleAndTrackFunctions; //!
-		
-     UInt_t fNParticleMonitorFunctions; //! 
-     UInt_t fNTrackMonitorFunctions; //! 
-     UInt_t fNParticleAndTrackMonitorFunctions; //! 
 
      /**********************************************/
      /* Control parameters  */
-
-      AliHBTPairCut *fPairCut;//!
-      
-      Int_t fBufferSize; //defines the size of buffer for mixed events; -1==MIX All
      /**********************************************/
-     
-     
+
+     AliHBTPairCut *fPairCut;//! Pair cut applied for all mixed particles
+      
+     Int_t  fBufferSize; //!defines the size of buffer for mixed events; -1==MIX All
+     Int_t  fDisplayMixingInfo;//!defines every which particle mixing info is displayed
+     Bool_t fIsOwner;//!defines of all functions are supposed to be deleted while by the way of analysis defaulr false
+
    private:
-     static const Int_t fgkHbtAnalyzeAll;//!
      static const UInt_t fgkFctnArraySize;//!
-/*********************************************/   
+     static const UInt_t fgkDefaultMixingInfo;//!
+     static const Int_t  fgkDefaultBufferSize;//!
    public:
      ClassDef(AliHBTAnalysis,0)
  };
