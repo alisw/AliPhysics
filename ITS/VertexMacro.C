@@ -44,6 +44,7 @@ void VertexMacro(Int_t evNumber1=0,Int_t evNumber2=0) {
      timer.Start();
 
      AliITSVertex *V = new AliITSVertex();
+	  V->Exec();
 
      timer.Stop();
      timer.Print();

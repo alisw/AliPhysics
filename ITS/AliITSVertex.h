@@ -17,7 +17,7 @@ class AliITSVertex : public TObject  {
  
         AliITSVertex();
         virtual ~AliITSVertex();
-	void Exec();
+		  void Exec();
         Double_t PhiFunc(Float_t p[]);
 
 //      This class determines 3D vertex position, resolution and signal 

@@ -122,9 +122,9 @@ void AliITSVertex::Exec(){
    
    if(hITSz1->GetMean()<0) Vzero[2] = -Vzero[2];
    
-   cout << "\nXvzero: " << Vzero[0] << " cm" << "";
+   /*cout << "\nXvzero: " << Vzero[0] << " cm" << "";
    cout << "\nYvzero: " << Vzero[1] << " cm" << "";
-   cout << "\nZvzero: " << Vzero[2] << " cm" << "\n";
+   cout << "\nZvzero: " << Vzero[2] << " cm" << "\n";*/
 
    delete hITSz1;
 
@@ -228,7 +228,7 @@ void AliITSVertex::Exec(){
 
 //------------------ Correlation between rec points ----------------------
     
-   cout << "\nNo. of Points on the two pixel layers: "<<np1<<" "<<np2<<endl; 
+   //cout << "\nNo. of Points on the two pixel layers: "<<np1<<" "<<np2<<endl; 
 
    for(j=0; j<(np2)-1; j++) {
          for(k=0; k<(np1)-1; k++) { 
@@ -259,13 +259,13 @@ void AliITSVertex::Exec(){
       }
    }
    
-   cout << "f1 " <<f1 <<endl;
+   /*cout << "f1 " <<f1 <<endl;
    cout << "f2 " <<f2 <<endl;
    cout << "GetMaximumBin " <<hITSZv->GetMaximumBin() <<endl;
    cout << "nbin " <<nbin <<endl;
    cout << "max " << hITSZv->GetBinContent(BinMax)<<endl;
    cout << "sigma " <<sigma <<endl;
-   cout << "Fondo " <<   MediaFondo<< endl;
+   cout << "Fondo " <<   MediaFondo<< endl;*/
    
    TF1 *fz = new TF1 ("fz","([0]*exp(-0.5*((x-[1])/[2])*((x-[1])/[2])))+[3]",a,b);  
    
