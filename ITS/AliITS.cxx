@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.63  2001/10/24 21:16:34  nilsen
+Removed some dead code and improved comments/documntation.
+
 Revision 1.62  2001/10/21 19:23:21  nilsen
 Added function to allow to limit which detectors to digitize and reconstruct.
 The default is All. This change makes no changes to any root file.
@@ -300,7 +303,7 @@ AliITS::AliITS() : AliDetector() {
     fEuclidOut  = 0;
     fITSgeom    = 0;
     fITSmodules = 0;
-    SetDetectors(); // default to "All". This variable not written out.
+    SetDetectors(); // default to fOpt="All". This variable not written out.
 
     fIdN        = 0;
     fIdName     = 0;
@@ -352,7 +355,7 @@ AliITS::AliITS(const char *name, const char *title):AliDetector(name,title){
     fEuclidOut  = 0;
     fITSgeom    = 0;
     fITSmodules = 0;
-    SetDetectors(); // default to "All". This variable not written out.
+    SetDetectors(); // default to fOpt="All". This variable not written out.
 
     fIdN        = 0;
     fIdName     = 0;

@@ -10,6 +10,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include <TObjArray.h> // used in inline function GetModule.
+#include <TBranch.h>   // used in inline function SetHitsAddressBranch
 
 #include "AliDetector.h"
 
@@ -67,6 +68,8 @@ class AliITS : public AliDetector {
     virtual void SetDefaultClusterFinders();
     virtual void MakeBranch(Option_t *opt=" ", const char *file=0);
     virtual void SetTreeAddress();
+    // For a give branch from the treeH sets the TClonesArray address.
+    virtual void SetHitsAddressBranch(TBranch *b){b->SetAddress(fHits);}
     // Return pointer to DetType #id
     AliITSDetType *DetType(Int_t id);
     //Int_t           NDetTypes() {return fNDetTypes;}

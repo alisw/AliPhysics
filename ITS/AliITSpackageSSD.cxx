@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/07/12 05:32:20  fca
+Correcting several syntax problem with static members
+
 */
 
 #include <iostream.h>
@@ -37,10 +40,10 @@ ClassImp(AliITSpackageSSD)
 AliITSpackageSSD::AliITSpackageSSD()
 {
   fNclustersN=0;
-  fClusterNIndexes = new TArrayI(300); 
+  fClusterNIndexes = 0; 
 		
   fNclustersP=0;
-  fClusterPIndexes = new TArrayI(300);
+  fClusterPIndexes = 0;
   if (debug) cout<<"Default Ctor was used\n>>>>>>>>>>>>>><<<<<<<<<<<<<";
 }
 

@@ -17,9 +17,9 @@ class TMatrix;
 class AliITSRad : public TObject { 
 
 public:
-
+    ALIITSRAD(); // Default constructor.
   AliITSRad(Int_t iimax, Int_t jjmax);         // class constructor
-  ~AliITSRad();                                // class destructor
+  virtual ~AliITSRad();                        // class destructor
   
   Int_t Getimax() {return imax;}               // return the first dimension of the matrices
   Int_t Getjmax() {return jmax;}               // return the second dimension of the matrices

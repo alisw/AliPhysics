@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.13  2001/10/12 22:07:20  nilsen
+A patch for C++ io manipulation functions so that they will work both
+with GNU gcc 2.96 and GNU gcc 3.01 compilers. Needs to be tested with
+other platforms.
+
 Revision 1.12  2001/08/24 21:06:37  nilsen
 Added more documentation, fixed up some coding violations, and some
 forward declorations.
@@ -125,9 +130,9 @@ void AliITSgeomSSD::ResetSSD(const Float_t *box,Float_t ap,Float_t an,
 AliITSgeomSSD::~AliITSgeomSSD(){
     // Destructor.
 
-    delete fLowEdgeP; fLowEdgeP = 0;
-    delete fLowEdgeN; fLowEdgeN = 0;
-    delete fShapeSSD; fShapeSSD = 0;
+    if(fLowEdgeP) delete [] fLowEdgeP; fLowEdgeP = 0;
+    if(fLowEdgeN) delete [] fLowEdgeN; fLowEdgeN = 0;
+    if(fShapeSSD) delete  fShapeSSD; fShapeSSD = 0;
     fNp = 0;
     fNn = 0;
     fAngleP = 0.0;
@@ -284,6 +289,11 @@ istream &operator>>(istream &is,AliITSgeomSSD &r){
 //======================================================================
 /*
 $Log$
+Revision 1.13  2001/10/12 22:07:20  nilsen
+A patch for C++ io manipulation functions so that they will work both
+with GNU gcc 2.96 and GNU gcc 3.01 compilers. Needs to be tested with
+other platforms.
+
 Revision 1.12  2001/08/24 21:06:37  nilsen
 Added more documentation, fixed up some coding violations, and some
 forward declorations.
@@ -359,6 +369,11 @@ istream &operator>>(istream &is,AliITSgeomSSD175 &r){
 //======================================================================
 /*
 $Log$
+Revision 1.13  2001/10/12 22:07:20  nilsen
+A patch for C++ io manipulation functions so that they will work both
+with GNU gcc 2.96 and GNU gcc 3.01 compilers. Needs to be tested with
+other platforms.
+
 Revision 1.12  2001/08/24 21:06:37  nilsen
 Added more documentation, fixed up some coding violations, and some
 forward declorations.
@@ -443,6 +458,11 @@ istream &operator>>(istream &is,AliITSgeomSSD275and75 &r){
 //======================================================================
 /*
 $Log$
+Revision 1.13  2001/10/12 22:07:20  nilsen
+A patch for C++ io manipulation functions so that they will work both
+with GNU gcc 2.96 and GNU gcc 3.01 compilers. Needs to be tested with
+other platforms.
+
 Revision 1.12  2001/08/24 21:06:37  nilsen
 Added more documentation, fixed up some coding violations, and some
 forward declorations.

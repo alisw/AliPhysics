@@ -8,7 +8,18 @@
 
 
 ClassImp(AliITSRad)
+//______________________________________________________________________
+AliITSRad::AliITSRad() {
+    // Default constructor
 
+
+  fmrad1 = 0;
+  fmrad2 = 0;
+  fmrad3 = 0;
+  fmrad4 = 0;
+  fmrad5 = 0;
+  fmrad6 = 0;
+}
 AliITSRad::AliITSRad(Int_t iimax, Int_t jjmax) {
 
   imax=iimax;

@@ -17,7 +17,7 @@ AliITSclusterSSD::AliITSclusterSSD()
 	fNTracks      = -1;
 	fLeftNeighbour  = kFALSE;
 	fRightNeighbour = kFALSE;
-	fCrossedClusterIndexes = new TArrayI(300);
+	fCrossedClusterIndexes = 0;
 	fConsumed=kFALSE;
 
 }

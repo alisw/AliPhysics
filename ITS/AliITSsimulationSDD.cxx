@@ -303,12 +303,6 @@ AliITSsimulationSDD::~AliITSsimulationSDD() {
     delete fStream;
     delete fElectronics;
 
-    fD.Set(0);
-    fT1.Set(0);
-    fT2.Set(0);
-    fTol.Set(0);
-    fNoise.Set(0);
-    fBaseline.Set(0);
     fITS = 0;
 
     if (fHis) {

@@ -37,9 +37,24 @@ ClassImp(AliITSVertex)
 //////////////////////////////////////////////////////////////////////
 
 
-//______________________________________________________________________________
+//______________________________________________________________________
+AliITSVertex::AliITSVertex() {
+    // Default Constructor
 
-AliITSVertex::AliITSVertex() {   
+    fPosition   = 0;
+    fResolution = 0;
+    fSNR        = 0;
+}
+//______________________________________________________________________
+AliITSVertex::~AliITSVertex() {
+    // Default Constructor
+
+    if(fPosition){ delete [] fPosition; fPostion   = 0;}
+    if(fResolution){ delete []fResoultion; fResolution = 0;}
+    if(fSNR){ delete [] fSNR;fSNR        = 0;}
+}
+//______________________________________________________________________
+void AliITSVertex::Exec(){
 
    fPosition = new Double_t[3];
    fResolution = new Double_t[3];
@@ -422,27 +437,15 @@ AliITSVertex::AliITSVertex() {
    delete hITSYv;
    
 }
-
-
-//______________________________________________________________________________
-
-AliITSVertex::~AliITSVertex() { 
-   delete [] fPosition;
-   delete [] fResolution;
-   delete [] fSNR;
-}
-
-//______________________________________________________________________________
-
+//______________________________________________________________________
 Double_t AliITSVertex::PhiFunc(Float_t p[]) {
-         Double_t phi=0;
-         if(p[1]>0 && p[0]>0) phi=(TMath::ATan((Double_t)(p[1]/p[0]))*57.29578);
-         if(p[1]>0 && p[0]<0) phi=(TMath::ATan((Double_t)(p[1]/p[0]))*57.29578)+180;
-         if(p[1]<0 && p[0]<0) phi=(TMath::ATan((Double_t)(p[1]/p[0]))*57.29578)+180;
-         if(p[1]<0 && p[0]>0) phi=(TMath::ATan((Double_t)(p[1]/p[0]))*57.29578)+360;
-         return phi;
+    Double_t phi=0;
+
+    if(p[1]>0 && p[0]>0) phi=(TMath::ATan((Double_t)(p[1]/p[0]))*57.29578);
+    if(p[1]>0 && p[0]<0) phi=(TMath::ATan((Double_t)(p[1]/p[0]))*57.29578)+180;
+    if(p[1]<0 && p[0]<0) phi=(TMath::ATan((Double_t)(p[1]/p[0]))*57.29578)+180;
+    if(p[1]<0 && p[0]>0) phi=(TMath::ATan((Double_t)(p[1]/p[0]))*57.29578)+360;
+    return phi;
 }
 
-//______________________________________________________________________________
-
-
+//______________________________________________________________________
