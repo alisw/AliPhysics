@@ -506,8 +506,29 @@ void AliTRD::CreateMaterials()
   Float_t zpg[3] = {  6.0   ,  1.0    ,  8.0    };
   Float_t wpg[3] = {  5.0   ,  8.0    ,  2.0    };
   Float_t dpg    = 1.18; 
+  
+  // For epoxy (C18H19O3)
+  Float_t aEpoxy[3] = { 15.9994 ,  1.00794 , 12.0107 }; 
+  Float_t zEpoxy[3] = {  8.0    ,  1.0     ,  6.0    }; 
+  Float_t wEpoxy[3] = {  3.0    , 19.0     , 18.0    }; 
+  Float_t dEpoxy    = 1.8 ; 
+
+  // For air  
+  Float_t aAir[4]   = { 12.0      , 14.0      , 16.0      , 36.0     };
+  Float_t zAir[4]   = {  6.0      ,  7.0      ,  8.0      , 18.0     };
+  Float_t wAir[4]   = {  0.000124 ,  0.755267 ,  0.231781 ,  0.012827};
+  Float_t dAir      = 1.20479E-3;
+
+  // For G10
+  Float_t aG10[4]   = {  1.0         , 12.011       , 15.9994      , 28.086       };
+  Float_t zG10[4]   = {  1.0         ,  6.0         ,  8.0         , 14.0         };
+  Float_t wG10[4]   = {  0.148648649 ,  0.104054054 ,  0.483499056 ,  0.241666667 };
+  Float_t dG10      = 1.7;
 
   // For Xe/CO2-gas-mixture 
+  Float_t aXeCO2[3] = { 39.948, 12.0107, 15.9994 };
+  Float_t zXeCO2[3] = { 18.0,    6.0,     8.0    };
+  Float_t wXeCO2[3] = {  0.85,   0.0375,  0.1125 };
   // Xe-content of the Xe/CO2-mixture (85% / 15%) 
   Float_t fxc    = .85;
   // Xe-content of the Xe/Isobutane-mixture (97% / 3%) 
@@ -531,35 +552,39 @@ void AliTRD::CreateMaterials()
   //////////////////////////////////////////////////////////////////////////
 
   AliMaterial( 1, "Al"   ,  26.98, 13.0, 2.7     ,     8.9 ,    37.2);
-  AliMaterial( 2, "Air"  ,  14.61,  7.3, 0.001205, 30420.0 , 67500.0);
+  //AliMaterial( 2, "Air"  ,  14.61,  7.3, 0.001205, 30420.0 , 67500.0);
   AliMaterial( 4, "Xe"   , 131.29, 54.0, dxe     ,  1447.59,     0.0);
   AliMaterial( 5, "Cu"   ,  63.54, 29.0, 8.96    ,     1.43,    14.8);
   AliMaterial( 6, "C"    ,  12.01,  6.0, 2.265   ,    18.8 ,    74.4);
-  AliMaterial(12, "G10"  ,  20.00, 10.0, 1.7     ,    19.4 ,   999.0);
+  //AliMaterial(12, "G10"  ,  20.00, 10.0, 1.7     ,    19.4 ,   999.0);
   AliMaterial(15, "Sn"   , 118.71, 50.0, 7.31    ,     1.21,    14.8);
   AliMaterial(16, "Si"   ,  28.09, 14.0, 2.33    ,     9.36,    37.2);
-  AliMaterial(17, "Epoxy",  17.75,  8.9, 1.8     ,    21.82,   999.0);
+  //AliMaterial(17, "Epoxy",  17.75,  8.9, 1.8     ,    21.82,   999.0);
 
   // Mixtures 
-  AliMixture(3, "Polyethilene",   ape, zpe, dpe, -2, wpe);
-  AliMixture(7, "Mylar",          amy, zmy, dmy, -3, wmy);
-  AliMixture(8, "CO2",            aco, zco, dco, -2, wco);
-  AliMixture(9, "Isobutane",      ais, zis, dis, -2, wis);
-  AliMixture(13,"Water",          awa, zwa, dwa, -2, wwa);
-  AliMixture(14,"Plexiglas",      apg, zpg, dpg, -3, wpg);
+  AliMixture(2, "Air"         ,  aAir,  zAir,  dAir,  4,   wAir);
+  AliMixture(3, "Polyethilene",   ape,   zpe,   dpe, -2,    wpe);
+  AliMixture(7, "Mylar",          amy,   zmy,   dmy, -3,    wmy);
+  AliMixture(8, "CO2",            aco,   zco,   dco, -2,    wco);
+  AliMixture(9, "Isobutane",      ais,   zis,   dis, -2,    wis);
+  AliMixture(12,"G10",           aG10,  zG10,  dG10,  4,   wG10);
+  AliMixture(13,"Water",          awa,   zwa,   dwa, -2,    wwa);
+  AliMixture(14,"Plexiglas",      apg,   zpg,   dpg, -3,    wpg);
+  AliMixture(17,"Epoxy",       aEpoxy,zEpoxy,dEpoxy, -3, wEpoxy);
 
   // Gas mixtures
   Char_t namate[21]="";
   // Xe/CO2-mixture
   // Get properties of Xe 
-  gMC->Gfmate((*fIdmate)[4], namate, agm[0], zgm[0], d, radl, absl, buf, nbuf);
+  //gMC->Gfmate((*fIdmate)[4], namate, agm[0], zgm[0], d, radl, absl, buf, nbuf);
   // Get properties of CO2 
-  gMC->Gfmate((*fIdmate)[8], namate, agm[1], zgm[1], d, radl, absl, buf, nbuf);
+  //gMC->Gfmate((*fIdmate)[8], namate, agm[1], zgm[1], d, radl, absl, buf, nbuf);
   // Create gas mixture 
   wgm[0] = fxc;
   wgm[1] = 1. - fxc;
   dgm1   = wgm[0] * dxe + wgm[1] * dco;
-  AliMixture(10, "Gas mixture 1", agm, zgm, dgm1,  2, wgm);
+  AliMixture(10, "Gas mixture 1", aXeCO2, zXeCO2, dgm1,  3, wXeCO2);
+
   // Xe/Isobutane-mixture
   // Get properties of Xe 
   gMC->Gfmate((*fIdmate)[4], namate, agm[0], zgm[0], d, radl, absl, buf, nbuf);
