@@ -509,7 +509,7 @@ void AliPHOSGeometry::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
 }
 
 //____________________________________________________________________________
-void AliPHOSGeometry:: SetPHOSAngles() 
+void AliPHOSGeometry::SetPHOSAngles() 
 { 
   Double_t const kRADDEG = 180.0 / kPI ;
   Float_t pphi =  TMath::ATan( fOuterBoxSize[0]  / ( 2.0 * fIPtoOuterCoverDistance ) ) ;
@@ -518,7 +518,7 @@ void AliPHOSGeometry:: SetPHOSAngles()
   for( Int_t i = 1; i <= fNModules ; i++ ) {
     Float_t angle = pphi * 2 * ( i - fNModules / 2.0 - 0.5 ) ;
     fPHOSAngle[i-1] = -  angle ;
- } 
+  } 
 }
 
 //____________________________________________________________________________
