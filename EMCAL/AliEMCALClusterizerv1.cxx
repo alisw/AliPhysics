@@ -161,7 +161,7 @@ void AliEMCALClusterizerv1::Exec(Option_t * option)
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALClusterizer");
     printf("Exec took %f seconds for Clusterizing %f seconds per event", 
-	 gBenchmark->GetCpuTime("EMCALClusterizer"), gBenchmark->GetCpuTime("EMCALClusterizer")/nevents ) ;
+	 gBenchmark->GetCpuTime("EMCALClusterizer"), gBenchmark->GetCpuTime("EMCALClusterizer")/nEvents ) ;
   }
 }
 
