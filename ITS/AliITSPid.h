@@ -66,7 +66,7 @@ public:
 	TF1*    fggka;
 	TF1*    fggpr;
 public:
-  ClassDef(AliITSPid,1) // Class for ITS PID
+  ClassDef(AliITSPid,2) // Class for ITS PID
 };
 
 #endif	
