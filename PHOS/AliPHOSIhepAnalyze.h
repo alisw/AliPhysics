@@ -24,7 +24,9 @@ class AliPHOSIhepAnalyze : public TObject {
 
   AliPHOSIhepAnalyze() ;              // ctor
   AliPHOSIhepAnalyze(Text_t * name) ; // ctor
-  virtual ~AliPHOSIhepAnalyze(void) ; // dtor 
+  virtual ~AliPHOSIhepAnalyze() {
+    // dtor
+  } 
    
   void AnalyzeCPV1(Int_t Nevents); // resolutions, mult and cluster lengths for CPV
   void AnalyzeEMC1(Int_t Nevents); // resolutions, mult and cluster lengths for EMC
