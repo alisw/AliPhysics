@@ -86,7 +86,6 @@
 #include "AliGenEventHeader.h"
 #include "AliESDpid.h"
 #include "AliMagF.h"
-#include "../TPC/AliTPCReconstructor.h"
 
 ClassImp(AliReconstruction)
 
@@ -231,7 +230,7 @@ Bool_t AliReconstruction::Run()
       reconstructor = (AliReconstructor*) pluginHandler->ExecPlugin(0);
     }
     // if there is no reconstructor class for the detector use the dummy one
-    if (!reconstructor) {
+    if (!reconstructor && gAlice->GetDetector(detName)) {
       Info("Run", "using dummy reconstructor for %s", detName.Data());
       reconstructor = new AliDummyReconstructor(gAlice->GetDetector(detName));
     }
