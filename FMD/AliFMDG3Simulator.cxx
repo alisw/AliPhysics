@@ -64,6 +64,7 @@
 //    in the corners should be cut away at run time (but currently
 //    isn't). 
 //
+#include <math.h>
 #include "AliFMDG3Simulator.h"	// ALIFMDG3SIMULATOR_H
 #include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
 #include "AliFMDDetector.h"	// ALIFMDDETECTOR_H
