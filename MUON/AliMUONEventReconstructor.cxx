@@ -991,17 +991,26 @@ void AliMUONEventReconstructor::MakeTracks(void)
 void AliMUONEventReconstructor::ValidateTracksWithTrigger(void)
 {
   AliMUONTrack *track;
+  static Bool_t isTriggerTrackInMem = 1;
+
   TClonesArray *recTriggerTracks = fMUONData->RecTriggerTracks();
-  if (recTriggerTracks == 0x0) {
+
+  // protection if using triggertrack and track macro instead of reconstruct macro
+  if (recTriggerTracks == 0x0) 
+    isTriggerTrackInMem = 0;
+
+  if (!isTriggerTrackInMem) {
+    fMUONData->ResetRecTriggerTracks();
     fMUONData->SetTreeAddress("RL");
     fMUONData->GetRecTriggerTracks();
     recTriggerTracks = fMUONData->RecTriggerTracks();
   } 
+
   track = (AliMUONTrack*) fRecTracksPtr->First();
   while (track) {
     track->MatchTriggerTrack(recTriggerTracks);
     track = (AliMUONTrack*) fRecTracksPtr->After(track);
-  } 
+  }
 }
 
   //__________________________________________________________________________
