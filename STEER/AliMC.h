@@ -67,7 +67,7 @@ public:
    //PH
    virtual  void  AddHit(Int_t id, Int_t track, Int_t *vol, Float_t *hits) const;
    virtual  void  AddDigit(Int_t id, Int_t *tracks, Int_t *digits) const;
-   virtual  void  AddHitList(TCollection *hitList) {fHitLists->Add(hitList);}
+   virtual  void  AddHitList(TCollection *hitList) {if (hitList) fHitLists->Add(hitList);}
    Int_t          GetCurrentTrackNumber() const;
    virtual  void  DumpPart (Int_t i) const;
    virtual  void  DumpPStack () const;
