@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:17  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:49  cernlib
 * Geant
 *
@@ -133,6 +136,7 @@ C.    ------------------------------------------------------------------
                ELSE
                   IPAR = 1
                ENDIF
+           
                IF (PARM(IPAR).LT.0.0) ORIG = -PAR(IPAR)
                IF (STEP.LE.0.0) THEN
                   STEP = (PAR(IPAR) - ORIG) / NDIV
@@ -169,6 +173,7 @@ C.    ------------------------------------------------------------------
                   PMIN = PAR(1)
                   DP   = PAR(2)
                   PMAX = PMIN + DP
+                  ORIG = PMIN
                ENDIF
                IF (DP.LT.0.0) DP = DP + 360.0
                IF (ORIG.LT.PMIN) ORIG = ORIG + 360.0
@@ -240,3 +245,8 @@ C.    ------------------------------------------------------------------
  1004 FORMAT (' GGDSPE : Error ISHM,IAXIS,NDIV,NZ,STEP=',4I5,G12.4)
 *                                                             END GGDSPE
   999 END
+
+
+
+
+
