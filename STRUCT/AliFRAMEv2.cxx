@@ -849,67 +849,41 @@ void AliFRAMEv2::CreateGeometry()
       gMC->Gspos("B056", 2*jmod+1, module[jmod],  61.9607, 0.0, 27.2, 0           , "ONLY");
       gMC->Gspos("B056", 2*jmod+2, module[jmod], -61.9607, 0.0, 27.2, idrotm[2085], "ONLY");
   }
+
+  //
+  // TRD mother volumes
+  //
+  ptrd1[0] = 49.8065;
+  ptrd1[1] = 62.8535;
+  ptrd1[2] = 375.5;
+  ptrd1[3] = 37.;
+
+  gMC->Gsvolu("BTR1", "TRD1", kAir, ptrd1, 4);
+  gMC->Gsvolu("BTR2", "TRD1", kAir, ptrd1, 4);
+  gMC->Gsvolu("BTR3", "TRD1", kAir, ptrd1, 4);  
+
+      
+  gMC->Gspos("BTR1", 1, "B071", 0., 0., -10.8, 0, "ONLY");
+  gMC->Gspos("BTR2", 1, "B074", 0., 0., -10.8, 0, "ONLY");
+  gMC->Gspos("BTR3", 1, "B075", 0., 0., -10.8, 0, "ONLY");
+
+
 //
-// Mother volumes for TRD and TOF 
-// 
-  if (!fHoles) {
-      printf("\n FRAME Version without Holes !");
-      ptrd1[0] = 49.8065;
-      ptrd1[1] = 62.8535;
-      ptrd1[2] = 375.5;
-      ptrd1[3] = 37.;
-      gMC->Gsvolu("BTR1", "TRD1", kAir, ptrd1, 4);
-      gMC->Gsvolu("BTR2", "TRD1", kAir, ptrd1, 4);
-      gMC->Gsvolu("BTR3", "TRD1", kAir, ptrd1, 4);  
+// TOF  mother volumes
+//
+  ptrd1[0] = 63.2061;
+  ptrd1[1] = 68.3192;
+  ptrd1[2] = 375.5;
+  ptrd1[3] = 14.5;
+  gMC->Gsvolu("BTO1", "TRD1", kAir, ptrd1, 4);
+  gMC->Gsvolu("BTO2", "TRD1", kAir, ptrd1, 4);
+  gMC->Gsvolu("BTO3", "TRD1", kAir, ptrd1, 4);  
       
-      ptrd1[0] = 63.2061;
-      ptrd1[1] = 68.3192;
-      ptrd1[2] = 375.5;
-      ptrd1[3] = 14.5;
-      gMC->Gsvolu("BTO1", "TRD1", kAir, ptrd1, 4);
-      gMC->Gsvolu("BTO2", "TRD1", kAir, ptrd1, 4);
-      gMC->Gsvolu("BTO3", "TRD1", kAir, ptrd1, 4);  
-      
-      gMC->Gspos("BTR1", 1, "B071", 0., 0., -10.8, 0, "ONLY");
-      gMC->Gspos("BTR2", 1, "B074", 0., 0., -10.8, 0, "ONLY");
-      gMC->Gspos("BTR3", 1, "B075", 0., 0., -10.8, 0, "ONLY");
-      
-      gMC->Gspos("BTO1", 1, "B071", 0., 0.,  42.69, 0, "ONLY");
-      gMC->Gspos("BTO2", 1, "B074", 0., 0.,  42.69, 0, "ONLY");
-      gMC->Gspos("BTO3", 1, "B075", 0., 0.,  42.69, 0, "ONLY");
-  } else {
-      printf("\n FRAME Version with Holes !");
-      ptrd1[0] = 49.8065;
-      ptrd1[1] = 62.8535;
-      ptrd1[2] = 375.5;
-      ptrd1[3] = 37;
-      gMC->Gsvolu("BTR1", "TRD1", kAir, ptrd1, 4);
-      ptrd1[2] = 156.75;
-      gMC->Gsvolu("BTR2", "TRD1", kAir, ptrd1, 4);
-      ptrd1[2] =  79.75;
-      gMC->Gsvolu("BTR3", "TRD1", kAir, ptrd1, 4);  
+     
+  gMC->Gspos("BTO1", 1, "B071", 0., 0.,  42.69, 0, "ONLY");
+  gMC->Gspos("BTO2", 1, "B074", 0., 0.,  42.69, 0, "ONLY");
+  gMC->Gspos("BTO3", 1, "B075", 0., 0.,  42.69, 0, "ONLY");
 
-      ptrd1[0] = 63.2061;
-      ptrd1[1] = 68.3192;
-      ptrd1[2] = 375.5;
-      ptrd1[3] = 14.5;
-      gMC->Gsvolu("BTO1", "TRD1", kAir, ptrd1, 4);
-      gMC->Gsvolu("BTO2", "TRD1", kAir, ptrd1, 4);
-      gMC->Gsvolu("BTO3", "TRD1", kAir, ptrd1, 4);  
-      
-
-      gMC->Gspos("BTR1", 1, "B071", 0.,    0.00, -10.8,            0, "ONLY");
-      gMC->Gspos("BTR2", 1, "B074", 0., -218.75, -10.8, idrotm[2070], "ONLY");
-      gMC->Gspos("BTR2", 2, "B074", 0.,  218.75, -10.8,            0, "ONLY");
-      gMC->Gspos("BTR3", 1, "B075", 0., -295.75, -10.8, idrotm[2070], "ONLY");
-      gMC->Gspos("BTR3", 2, "B075", 0.,  295.75, -10.8,            0, "ONLY");
-
-      gMC->Gspos("BTO1", 1, "B071", 0.,    0.00, 42.69,            0, "ONLY");
-      gMC->Gspos("BTO2", 1, "B074", 0.,    0.00, 42.69,            0, "ONLY");
-      gMC->Gspos("BTO3", 1, "B075", 0.,    0.00, 42.69,            0, "ONLY");
-
-  }
-  
 //
 //    Geometry of Rails starts here
 //
