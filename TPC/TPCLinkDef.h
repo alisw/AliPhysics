@@ -67,6 +67,7 @@
 #pragma link C++ class  AliTPCTrackerPoint+;
 #pragma link C++ class  AliTPCClusterPoint+;
 #pragma link C++ class  AliTPCTrackPoint+;
+#pragma link C++ class  AliTPCTrackPoint2+;
 #pragma link C++ class  AliTPCTrackPointRef+;
 
 #pragma link C++ class  AliTPCclustererMI+;
@@ -79,10 +80,10 @@
 
 #pragma link C++ class  AliTPCBuffer+;
 #pragma link C++ class  AliTPCDDLRawData+;
-#pragma link C++ class  AliTPCKalmanSegment+;
 
 #pragma link C++ class  AliTPCpidESD+;
 #pragma link C++ class  AliTPCtrackPid+;
+#pragma link C++ class  AliHelix+;
 
 
 

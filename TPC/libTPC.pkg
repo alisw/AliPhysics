@@ -15,7 +15,7 @@ SRCS:=  AliTPCLoader.cxx\
 	AliTPCclustererMI.cxx AliTPCclusterMI.cxx  AliTPCtrackerMI.cxx \
 	AliTPCpolyTrack.cxx \
 	AliTPCBuffer.cxx AliTPCDDLRawData.cxx \
-	AliTPCtrackPid.cxx AliTPCpidESD.cxx
+	AliTPCtrackPid.cxx AliTPCpidESD.cxx AliHelix.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
