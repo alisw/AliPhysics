@@ -73,14 +73,14 @@ OBJS          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # C++ compilation flags
 
-CXXFLAGS      = $(CXXOPTS) -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include/
- 
+CXXFLAGS      = $(CXXOPTS) -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/CONTAINERS
+
 # FORTRAN compilation flags
 
 FFLAGS      = $(FOPT) -I$(ALICE_ROOT)/GEANT321
 
 ##### TARGETS #####
- 
+
 # Target
 
 SLIBRARY	= $(LIBDIR)/libITS.$(SL)
@@ -93,7 +93,7 @@ $(LIBDIR)/libITS.$(SL):		$(OBJS)
 
 $(DICT):			$(HDRS)
 
-DEPINC += -I$(ALICE_ROOT)/GEANT321
+DEPINC += -I$(ALICE_ROOT)/GEANT321 -I$(ALICE_ROOT)/TPC
 
 depend:				$(SRCS) $(FSRCS)
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.52  2001/05/30 06:04:58  hristov
+Changes made to be consitant with changes in TPC tracking classes (B.Nilsen)
+
 Revision 1.51  2001/05/16 14:57:15  alibrary
 New files for folders and Stack
 
@@ -248,9 +251,9 @@ the AliITS class.
 #include "AliITSiotrack.h"
 #include "AliITStracking.h"
 #include "AliITSRad.h"   
-#include "../TPC/AliTPC.h"
-#include "../TPC/AliTPCParam.h"
-#include "../TPC/AliTPCtracker.h"
+#include "AliTPC.h"
+#include "AliTPCParam.h"
+#include "AliTPCtracker.h"
 
 ClassImp(AliITS)
  
