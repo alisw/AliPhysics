@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.22  2001/05/14 09:53:32  coppedis
+Adding functions ZMin and ZMax
+
 Revision 1.21  2001/04/20 10:05:02  coppedis
 Minor changes
 
@@ -102,7 +105,7 @@ AliZDC::AliZDC()
 
   fNhits = 0;
 
-  fNStHits = 0;
+//  fNStHits = 0;
 
 //  fNPrimaryHits = 0;
   fNoShower   = 0;
@@ -124,8 +127,8 @@ AliZDC::AliZDC(const char *name, const char *title)
   fHits   = new TClonesArray("AliZDCHit",1000);
   gAlice->AddHitList(fHits);
   
-  fStHits = new TClonesArray("AliZDCHit",1000);
-  fNStHits = 0;
+//  fStHits = new TClonesArray("AliZDCHit",1000);
+//  fNStHits = 0;
 
 //  fNPrimaryHits = 0;
   fNoShower   = 0;
@@ -161,10 +164,11 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   
   static Float_t primKinEn, xImpact, yImpact, sFlag;
 
-  AliZDCHit *newquad, *curprimquad, *curevquad;  
+  AliZDCHit *newquad, *curprimquad;
+//  AliZDCHit *curevquad;  
   newquad = new AliZDCHit(fIshunt, track, vol, hits);
 
-  TClonesArray &lsthits = *fStHits;
+//  TClonesArray &lsthits = *fStHits;
   TClonesArray &lhits = *fHits;
   
   if(fNhits==0){
@@ -189,17 +193,18 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
       newquad->fSFlag 	= sFlag;
    }
  
-  Int_t i,j,kStHit = 1;
-  for(i=0; i<fNStHits; i++){
-    // If hits are equal (same track, same volume), sum them.
-     curevquad = (AliZDCHit*) lsthits[i];
-     kStHit = 1;
-     if(*curevquad == *newquad){
-	*curevquad = *curevquad+*newquad;
-	kStHit = 0;
-     } 
-     if(kStHit == 0) break;
-  }
+  Int_t j;
+//  Int_t i,kStHit = 1;
+//  for(i=0; i<fNStHits; i++){
+//    // If hits are equal (same track, same volume), sum them.
+//     curevquad = (AliZDCHit*) lsthits[i];
+//     kStHit = 1;
+//     if(*curevquad == *newquad){
+//	*curevquad = *curevquad+*newquad;
+//	kStHit = 0;
+//     } 
+//     if(kStHit == 0) break;
+//  }
 
   for(j=0; j<fNhits; j++){
     // If hits are equal (same track, same volume), sum them.
@@ -215,16 +220,16 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
     new(lhits[fNhits]) AliZDCHit(newquad);
     fNhits++;
     
-    if(kStHit){
-      new(lsthits[fNStHits]) AliZDCHit(newquad);
-      fNStHits++;
-    }
+//    if(kStHit){
+//      new(lsthits[fNStHits]) AliZDCHit(newquad);
+//      fNStHits++;
+//    }
 
     if(fDebug == 1){ 
       printf("\n  Primary Hits --------------------------------------------------------\n");
       fHits->Print("");
-      printf("\n  Event Hits --------------------------------------------------------\n");
-      fStHits->Print("");
+//      printf("\n  Event Hits --------------------------------------------------------\n");
+//      fStHits->Print("");
     }
 
     delete newquad;

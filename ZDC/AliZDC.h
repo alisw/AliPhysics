@@ -36,8 +36,8 @@ public:
 protected:
   // TClonesArray of stored hits -> not reset et finish event
   // 	 (for digitization at the end of the event)
-  TClonesArray *fStHits;
-  Int_t fNStHits;
+//  TClonesArray *fStHits;
+//  Int_t fNStHits;
   
 //  Int_t   fNPrimaryHits;	// Number of primary particles
 
