@@ -124,7 +124,7 @@ protected:
 
 private: 
   AliTPCPRF2D(const AliTPCPRF2D &prf);
-  AliTPCPRF2D &operator = (const AliTPCPRF2D &prf) {return *this;}
+  AliTPCPRF2D &operator = (const AliTPCPRF2D &/*prf*/) {return *this;}
   
   ClassDef(AliTPCPRF2D,1) 
 };   

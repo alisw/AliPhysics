@@ -256,9 +256,9 @@ class AliHBTMonTwoParticleFctn2D: public AliHBTMonTwoParticleFctn
 class AliHBTMonTwoParticleFctn3D: public AliHBTMonTwoParticleFctn
 {
  public:
-  AliHBTMonTwoParticleFctn3D(Int_t nXbins = 200, Double_t maxXval = 1.5, Double_t minXval = 0.0, 
-                       Int_t nYbins = 200, Double_t maxYval = .15, Double_t minYval =-0.15, 
-                       Int_t nZbins = 200, Double_t maxZval = .15, Double_t minZval =-0.15){}
+  AliHBTMonTwoParticleFctn3D(Int_t /*nXbins = 200*/, Double_t /*maxXval = 1.5*/, Double_t /*minXval = 0.0*/, 
+			     Int_t /*nYbins = 200*/, Double_t /*maxYval = .15*/, Double_t /*minYval =-0.15*/, 
+			     Int_t /*nZbins = 200*/, Double_t /*maxZval = .15*/, Double_t /*minZval =-0.15*/){}
   AliHBTMonTwoParticleFctn3D(const AliHBTMonTwoParticleFctn3D& in):
                AliHBTMonTwoParticleFctn(in),fResult(0x0){MayNotUse("Cpy Ctor");}
   virtual ~AliHBTMonTwoParticleFctn3D(){}

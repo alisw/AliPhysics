@@ -307,7 +307,7 @@ private:
    void PrepareForBackProlongation(TObjArray * arr, Float_t fac) const;
    void PrepareForProlongation(TObjArray * arr, Float_t fac) const;
 
-   void SetSampledEdx(AliTPCseed *t, Float_t q, Int_t i) {;}
+   void SetSampledEdx(AliTPCseed */*t*/, Float_t /*q*/, Int_t /*i*/) {;}
    Int_t UpdateTrack(AliTPCseed *t, Int_t accept); //update trackinfo
 
 

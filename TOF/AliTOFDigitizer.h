@@ -32,7 +32,7 @@ class AliTOFDigitizer : public AliDigitizer {
   
  private:
   void CollectSDigit(AliTOFSDigit * sdigit) ;
-  Int_t PutNoise(Int_t charge){return 0;}; // not yet implemented
+  Int_t PutNoise(Int_t /*charge*/){return 0;}; // not yet implemented
                                            // due to the low noise expected level
   TClonesArray *fDigits;             //! array with digits
   TClonesArray *fSDigitsArray      ; //! List of summable digits; used as a container for all sdigits to be merged

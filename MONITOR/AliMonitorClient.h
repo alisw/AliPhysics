@@ -198,7 +198,7 @@ private:
       AliMonitorDialog(dlg), fString(dlg.fString) {
       Fatal("AliMonitorStringDlg", "copy constructor not implemented");
     }
-    AliMonitorStringDlg& operator = (const AliMonitorStringDlg& dlg) {
+    AliMonitorStringDlg& operator = (const AliMonitorStringDlg& /*dlg*/) {
       Fatal("operator =", "assignment operator not implemented");
       return *this;
     }
@@ -224,7 +224,7 @@ private:
       AliMonitorDialog(dlg), fNumber(dlg.fNumber) {
       Fatal("AliMonitorNumberDlg", "copy constructor not implemented");
     }
-    AliMonitorNumberDlg& operator = (const AliMonitorNumberDlg& dlg) {
+    AliMonitorNumberDlg& operator = (const AliMonitorNumberDlg& /*dlg*/) {
       Fatal("operator =", "assignment operator not implemented");
       return *this;
     }
