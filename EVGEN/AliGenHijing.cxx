@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.24  2001/07/20 09:34:56  morsch
+Count the number of spectator neutrons and protons and add information
+to the event header. (Chiara Oppedisano)
+
 Revision 1.23  2001/07/13 17:30:22  morsch
 Derive from AliGenMC.
 
@@ -279,10 +283,9 @@ void AliGenHijing::Generate()
 // Put particle on the stack ... 
 //		printf("\n set track mother: %d %d %d %d %d %d ",i,imo, kf, nt+1, selected, hasSelectedDaughters);
 	    
-	    gAlice->SetTrack(0,imo,kf,p,origin,polar,
-			     tof,kPPrimary,nt);
+	    SetTrack(0,imo,kf,p,origin,polar, tof,kPPrimary,nt);
 // ... and keep it there
-	    gAlice->KeepTrack(nt);
+	    KeepTrack(nt);
 //
 	    *(newPos+i)=nt;
         } // selected
@@ -333,9 +336,9 @@ void AliGenHijing::Generate()
 		imo = (mother->GetPdgCode() != 92) ? imo=*(newPos+imo) : -1;
 	    }   
 // Put particle on the stack
-	    gAlice->SetTrack(fTrackIt,imo,kf,p,origin,polar,
+	    SetTrack(fTrackIt,imo,kf,p,origin,polar,
 			     tof,kPNoProcess,nt);
-	    gAlice->KeepTrack(nt);
+	    KeepTrack(nt);
 	    *(newPos+i)=nt;
         } // selected
       } // particle loop final state
@@ -354,7 +357,7 @@ void AliGenHijing::Generate()
   } // event loop
   MakeHeader();
   
-  gAlice->SetHighWaterMark(nt);
+  SetHighWaterMark(nt);
 }
 
 void AliGenHijing::KeepFullEvent()

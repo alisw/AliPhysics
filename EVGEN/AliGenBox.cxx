@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/12/21 16:24:06  morsch
+Coding convention clean-up
+
 Revision 1.4  2000/11/30 07:12:49  alibrary
 Introducing new Rndm and QA classes
 
@@ -132,7 +135,7 @@ void AliGenBox::Generate()
 		    TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 	    }
 	}
-	gAlice->SetTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
+	SetTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
     }
 }
 

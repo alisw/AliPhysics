@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2001/06/14 12:15:27  morsch
+Bugs corrected. SetSide() method added.
+
 Revision 1.1  2001/01/23 15:04:33  morsch
 Generator to read beam halo file from Protvino group.
 
@@ -156,13 +159,11 @@ void AliGenHaloProtvino::Generate()
 	  p[2]       = -p[2];
       }
       
-      gAlice->SetTrack(0,-1,kProton,pP,originP,polar,0,kPNoProcess,ntP);
-      gAlice->KeepTrack(ntP);
-      
-      
+      SetTrack(0,-1,kProton,pP,originP,polar,0,kPNoProcess,ntP);
+      KeepTrack(ntP);
       fParentWeight=wgt*GassPressureWeight(zPrimary);
-      gAlice->SetTrack(fTrackIt,ntP,ipart,p,origin,polar,0,kPNoProcess,nt,fParentWeight);
-      gAlice->SetHighWaterMark(nt);
+      SetTrack(fTrackIt,ntP,ipart,p,origin,polar,0,kPNoProcess,nt,fParentWeight);
+      SetHighWaterMark(nt);
       
       //
       // Assume particles come from two directions with same probability
@@ -170,7 +171,7 @@ void AliGenHaloProtvino::Generate()
       origin[2]=-origin[2];
       p[2]=-p[2];
       fParentWeight=wgt*GassPressureWeight(-zPrimary);
-      gAlice->SetTrack(fTrackIt,ntP,ipart,p,origin,polar,0,kPNoProcess,nt,fParentWeight);
+      SetTrack(fTrackIt,ntP,ipart,p,origin,polar,0,kPNoProcess,nt,fParentWeight);
       origin[2]=-origin[2];
       p[2]=-p[2];
       origin[2]=-origin[2];

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2000/12/21 16:24:06  morsch
+Coding convention clean-up
+
 Revision 1.9  2000/11/30 07:12:50  alibrary
 Introducing new Rndm and QA classes
 
@@ -139,12 +142,12 @@ void AliGenHalo::Generate()
       p[1]=p0*ty;
       p[2]=p0*tz;
       fParentWeight=wgt;
-      gAlice->SetTrack(fTrackIt,-1,ipart,p,origin,polar,0,kPNoProcess,nt,fParentWeight);
-//      gAlice->SetTrack(fTrackIt,-1,ipart,p,origin,polar,0,"Halo+",nt,fParentWeight);
+      SetTrack(fTrackIt,-1,ipart,p,origin,polar,0,kPNoProcess,nt,fParentWeight);
+//    SetTrack(fTrackIt,-1,ipart,p,origin,polar,0,"Halo+",nt,fParentWeight);
       origin[2]=-origin[2];
       p[2]=-p[2];
-      gAlice->SetTrack(fTrackIt,-1,ipart,p,origin,polar,0,kPNoProcess,nt,fParentWeight);
-//      gAlice->SetTrack(fTrackIt,-1,ipart,p,origin,polar,0,"Halo-",nt,fParentWeight);
+      SetTrack(fTrackIt,-1,ipart,p,origin,polar,0,kPNoProcess,nt,fParentWeight);
+//    SetTrack(fTrackIt,-1,ipart,p,origin,polar,0,"Halo-",nt,fParentWeight);
       origin[2]=-origin[2];
       p[2]=-p[2];
   }

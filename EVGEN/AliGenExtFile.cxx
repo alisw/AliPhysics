@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.15  2001/01/23 13:29:37  morsch
+Add method SetParticleCode and enum type Code_t to handle both PDG (new ntuples)
+and GEANT3 codes (old ntuples) in input file.
+
 Revision 1.14  2000/12/21 16:24:06  morsch
 Coding convention clean-up
 
@@ -213,7 +217,7 @@ void AliGenExtFile::Generate()
 		      TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 	      }
 	  }
-	  gAlice->SetTrack(fTrackIt,-1,fIdpart,p,origin,polar,0,kPPrimary,nt);
+	  SetTrack(fTrackIt,-1,fIdpart,p,origin,polar,0,kPPrimary,nt);
       }
       fNcurrent++;
       nb = (Int_t)h2->GetEvent(fNcurrent); 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/07/20 11:03:58  morsch
+Issue warning message if used outside allowed eta range (-8 to 8).
+
 Revision 1.7  2001/07/17 12:41:01  morsch
 - Calculation of fraction of event corresponding to selected pt-range corrected
 (R. Turrisi)
@@ -329,7 +332,7 @@ void AliGenHIJINGpara::Generate()
 			TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 		}
 	    }
-	    gAlice->SetTrack(fTrackIt,-1,part,p,origin,polar,0,kPPrimary,nt,fParentWeight);
+	    SetTrack(fTrackIt,-1,part,p,origin,polar,0,kPPrimary,nt,fParentWeight);
 	    break;
 	}
     }

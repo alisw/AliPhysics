@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/02/24 11:41:59  morsch
+SetGun allows specify completely the particle kinematics and position in one go. (FCA)
+
 Revision 1.4  2000/12/21 16:24:06  morsch
 Coding convention clean-up
 
@@ -95,7 +98,7 @@ void AliGenFixed::Generate()
   Int_t i, nt;
   //
   for(i=0;i<fNpart;i++) 
-    gAlice->SetTrack(fTrackIt,-1,fIpart,fP,fOrigin.GetArray(),polar,0,kPPrimary,nt);
+    SetTrack(fTrackIt,-1,fIpart,fP,fOrigin.GetArray(),polar,0,kPPrimary,nt);
   
 }
   

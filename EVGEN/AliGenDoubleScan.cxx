@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/12/21 16:24:06  morsch
+Coding convention clean-up
+
 Revision 1.5  2000/12/06 15:11:38  morsch
 Correct double declared data members.
 
@@ -108,7 +111,7 @@ void AliGenDoubleScan::Generate()
 	      p[0] = pmom*TMath::Cos(phi)*TMath::Sin(theta);
 	      p[1] = pmom*TMath::Sin(phi)*TMath::Sin(theta);
 	      p[2] = pmom*TMath::Cos(theta);
-	      gAlice->SetTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
+	      SetTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
 //
 // Generate 2nd particle at distance fDistance from  the first
 //
@@ -124,7 +127,7 @@ void AliGenDoubleScan::Generate()
 	      p[0] = pmom*TMath::Cos(phi)*TMath::Sin(theta);
 	      p[1] = pmom*TMath::Sin(phi)*TMath::Sin(theta);
 	      p[2] = pmom*TMath::Cos(theta);
-	      gAlice->SetTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
+	      SetTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
 	  }
       }
   }

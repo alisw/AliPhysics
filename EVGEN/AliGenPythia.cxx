@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.38  2001/07/13 10:58:54  morsch
+- Some coded moved to AliGenMC
+- Improved handling of secondary vertices.
+
 Revision 1.37  2001/06/28 11:17:28  morsch
 SetEventListRange setter added. Events in specified range are listed for
 debugging. (Yuri Kharlov)
@@ -394,10 +398,10 @@ void AliGenPythia::Generate()
 		    Int_t ipa = iparticle->GetFirstMother()-1;
 		    Int_t iparent = (ipa > -1) ? pParent[ipa] : -1;
 //		    printf("\n SetTrack %d %d %d %d", i, iparent, kf, trackIt[i]);
-		    gAlice->SetTrack(fTrackIt*trackIt[i] ,
+		    SetTrack(fTrackIt*trackIt[i] ,
 				     iparent, kf, p, origin, polar, tof, kPPrimary, nt, 1.);
 		    pParent[i] = nt;
-		    gAlice->KeepTrack(nt); 
+		    KeepTrack(nt); 
 		} //  SetTrack loop
 	    }
   	} else {
@@ -413,7 +417,7 @@ void AliGenPythia::Generate()
 	    }
 	}
     } // event loop
-    gAlice->SetHighWaterMark(nt);
+    SetHighWaterMark(nt);
 //  adjust weight due to kinematic selection
     AdjustWeights();
 //  get cross-section
@@ -461,9 +465,9 @@ Int_t  AliGenPythia::GenerateMB()
 	    origin[1]=origin0[1]+iparticle->Vy()/10.;
 	    origin[2]=origin0[2]+iparticle->Vz()/10.;
 	    Float_t tof=kconv*iparticle->T();
-	    gAlice->SetTrack(fTrackIt*trackIt, iparent, kf, p, origin, polar,
+	    SetTrack(fTrackIt*trackIt, iparent, kf, p, origin, polar,
 			     tof, kPPrimary, nt);
-	    gAlice->KeepTrack(nt);
+	    KeepTrack(nt);
 	    pParent[i] = nt;
 	} // select particle
     } // particle loop 

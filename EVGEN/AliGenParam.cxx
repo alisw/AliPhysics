@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.31  2001/07/13 10:58:54  morsch
+- Some coded moved to AliGenMC
+- Improved handling of secondary vertices.
+
 Revision 1.30  2001/06/15 07:55:04  morsch
 Put only first generation decay products on the stack.
 
@@ -448,9 +452,9 @@ void AliGenParam::Generate()
 		  ipa++;
 //
 // Parent
-		  gAlice->SetTrack(0, -1, iPart, p, origin0, polar, 0, kPPrimary, nt, wgtp);
+		  SetTrack(0, -1, iPart, p, origin0, polar, 0, kPPrimary, nt, wgtp);
 		  pParent[0] = nt;
-		  gAlice->KeepTrack(nt); 
+		  KeepTrack(nt); 
 //
 // Decay Products
 //		  
@@ -473,11 +477,11 @@ void AliGenParam::Generate()
 			      iparent = -1;
 			  }
 			  printf("\n SetTrack %d %d %d %d", i, kf, iparent, trackIt[i]);
-			  gAlice->SetTrack(fTrackIt*trackIt[i], iparent, kf,
+			  SetTrack(fTrackIt*trackIt[i], iparent, kf,
 					   pc, och, polar,
 					   0, kPDecay, nt, wgtch);
 			  pParent[i] = nt;
-			  gAlice->KeepTrack(nt); 
+			  KeepTrack(nt); 
 		      }
 		  }
 	      }  // Decays by Lujet
@@ -496,7 +500,7 @@ void AliGenParam::Generate()
 	  break;
     } // while
   } // event loop
-  gAlice->SetHighWaterMark(nt);
+  SetHighWaterMark(nt);
 }
 
 AliGenParam& AliGenParam::operator=(const  AliGenParam& rhs)

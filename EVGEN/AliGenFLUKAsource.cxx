@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2001/03/21 11:28:20  morsch
+Use enum constants for particle selection.
+
 Revision 1.13  2000/12/21 16:24:06  morsch
 Coding convention clean-up
 
@@ -276,7 +279,7 @@ void AliGenFLUKAsource::Generate()
 	if (part==1 && iwgt>100) iwgt=100;
 	Int_t nstack=0;
 	for (j=0; j<iwgt; j++) {
-	    gAlice->SetTrack(fTrackIt,-1,part,p,origin,polar,fAge,kPPrimary,nt);
+	    SetTrack(fTrackIt,-1,part,p,origin,polar,fAge,kPPrimary,nt);
 	    Rndm(random,2);
 	    phi=2*random[1]*TMath::Pi();
 	    Float_t pn1=p[0]*TMath::Sin(phi) - p[1]*TMath::Cos(phi);

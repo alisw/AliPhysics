@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/12/06 15:11:38  morsch
+Correct double declared data members.
+
 Revision 1.7  2000/11/30 07:12:50  alibrary
 Introducing new Rndm and QA classes
 
@@ -140,7 +143,7 @@ void AliGenScan::Generate()
 	      p[0] = pmom*TMath::Cos(phi)*TMath::Sin(theta);
 	      p[1] = pmom*TMath::Sin(phi)*TMath::Sin(theta);
 	      p[2] = pmom*TMath::Cos(theta);
-	      gAlice->SetTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
+	      SetTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
 	  }
       }
   }
