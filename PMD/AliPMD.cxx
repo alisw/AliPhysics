@@ -138,8 +138,10 @@ void AliPMD::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   //
   TClonesArray &lhits = *fHits;
   AliPMDhit *newcell, *curcell;
-//    printf("PMD++ Adding energy %f, prim %d, vol %d %d %d %d\n",
-//  	 hits[3],gAlice->GetPrimary(track-1),vol[0],vol[1],vol[2],vol[3]);
+  //  printf("PMD++ Adding energy %f, prim %d, vol %d %d %d %d %d %d %d %d\n",
+  // hits[3],gAlice->GetPrimary(track-1),vol[0],vol[1],vol[2],vol[3],
+  // vol[4],vol[5],vol[6],vol[7]);
+
   newcell = new AliPMDhit(fIshunt, track, vol, hits);
   Int_t i;
   for (i=0; i<fNhits; i++) {
@@ -340,7 +342,7 @@ AliPMDhit::AliPMDhit(Int_t shunt,Int_t track, Int_t *vol, Float_t *hits):
   // Add a PMD hit
   //
   Int_t i;
-  for (i=0;i<5;i++) fVolume[i] = vol[i];
+  for (i=0;i<8;i++) fVolume[i] = vol[i];
   fX=hits[0];
   fY=hits[1];
   fZ=hits[2];

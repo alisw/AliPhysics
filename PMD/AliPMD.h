@@ -73,7 +73,7 @@ public:
   inline int operator == (AliPMDhit &cell) {
     Int_t i;
     if(fTrack!=cell.GetTrack()) return 0;
-    for (i=0; i<4; i++) if(fVolume[i]!=cell.GetVolume(i)) return 0;
+    for (i=0; i<8; i++) if(fVolume[i]!=cell.GetVolume(i)) return 0;
     return 1;
   }
   inline virtual AliPMDhit& operator + (AliPMDhit &cell) {
