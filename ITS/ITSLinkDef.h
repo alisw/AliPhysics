@@ -26,27 +26,7 @@
 #pragma link C++ class  AliITSvSPD02+;
 #pragma link C++ class  AliITSv11+;
 //
-#pragma link C++ class  AliITSBaseGeometry+;
-#pragma link C++ class  AliITSBaseVolParams+;
-#pragma link C++ class  AliITSBoxData+;
-#pragma link C++ class  AliITSTrapezoid1Data+;
-#pragma link C++ class  AliITSTrapezoid2Data+;
-#pragma link C++ class  AliITSTrapezoidData+;
-#pragma link C++ class  AliITSTrapezoidTwistedData+;
-#pragma link C++ class  AliITSTubeData+;
-#pragma link C++ class  AliITSTubeSegData+;
-#pragma link C++ class  AliITSTubeCutData+;
-#pragma link C++ class  AliITSTubeEllipticalData+;
-#pragma link C++ class  AliITSTubeHyperbolicData+;
-#pragma link C++ class  AliITSConeData+;
-#pragma link C++ class  AliITSConeSegData+;
-#pragma link C++ class  AliITSPConeData+;
-#pragma link C++ class  AliITSSphereData+;
-#pragma link C++ class  AliITSParallelpipedData+;
-#pragma link C++ class  AliITSPGonData+;
-#pragma link C++ class  AliITSGeometryITSV+;
-#pragma link C++ class  AliITSGeometrySSDCone+;
-#pragma link C++ class  AliITSGeometrySDDCone+;
+#pragma link C++ class  AliITSMixture+;
 //
 #pragma link C++ class  AliITShit+;
 #pragma link C++ class  AliITSdigit+;
@@ -187,4 +167,13 @@
 #pragma link C++ class AliITSRawStreamSPD+;
 #pragma link C++ class AliITSRawStreamSDD+;
 #pragma link C++ class AliITSRawStreamSSD+;
+//
+//#pragma link C++ class AliACORDEFunction+;
+//#pragma link C++ class AliACORDEMaterial+;
+//#pragma link C++ class AliACORDEMuonEloss+;
+//#pragma link C++ class BetheBloch+;
+//#pragma link C++ class Bremstrahlung+;
+//#pragma link C++ class DirectElectronPairProduction+;
+//#pragma link C++ class NuclearInteractions+;
+//
 #endif
