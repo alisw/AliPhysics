@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.34  2003/12/18 04:25:03  bnandi
+overlap with beam pipe fixed and Gsposp changed to Gspos
+
 Revision 1.33  2003/11/03 14:33:26  hristov
 Correct initialization of static data members
 
@@ -700,8 +703,8 @@ void AliPMDv1::CreateMaterials()
   //
   //  cout << " Inside create materials " << endl;
   // --- The Argon- CO2 mixture --- 
-  Float_t ag[2] = { 39.95 };
-  Float_t zg[2] = { 18. };
+  Float_t ag[2] = { 39.95, 44.01 };
+  Float_t zg[2] = { 18., 22. };
   Float_t wg[2] = { 0.7,0.3 };
   Float_t dar   = 0.001782;   // --- Ar density in g/cm3 --- 
   // --- CO2 --- 
@@ -748,7 +751,7 @@ void AliPMDv1::CreateMaterials()
  
   // 	define gas-mixtures 
   
-  char namate[21];
+  char namate[21]="";
   gMC->Gfmate((*fIdmate)[3], namate, a, z, d, radl, absl, buf, nbuf);
   ag[1] = a;
   zg[1] = z;
