@@ -32,3 +32,4 @@
 #include "AliObjMatrix.h"
 #include "AliAttrib.h"
 #include "AliAttribObj.h"
+#include "AliHelix.h"

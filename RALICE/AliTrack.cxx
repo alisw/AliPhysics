@@ -110,6 +110,7 @@ void AliTrack::Init()
  fHypotheses=0;
  fBegin=0;
  fEnd=0;
+ fRef=0;
  fImpactXY=0;
  fImpactXZ=0;
  fImpactYZ=0;
@@ -156,6 +157,11 @@ AliTrack::~AliTrack()
   delete fEnd;
   fEnd=0;
  }
+ if (fRef)
+ {
+  delete fRef;
+  fRef=0;
+ }
  if (fImpactXY)
  {
   delete fImpactXY;
@@ -187,6 +193,7 @@ AliTrack::AliTrack(const AliTrack& t) : TNamed(t),Ali4Vector(t)
  fProb=t.fProb;
  if (t.fBegin) fBegin=new AliPositionObj(*(t.fBegin));
  if (t.fEnd) fEnd=new AliPositionObj(*(t.fEnd));
+ if (t.fRef) fRef=new AliPositionObj(*(t.fRef));
  if (t.fImpactXY) fImpactXY=new AliPositionObj(*(t.fImpactXY));
  if (t.fImpactXZ) fImpactXZ=new AliPositionObj(*(t.fImpactXZ));
  if (t.fImpactYZ) fImpactYZ=new AliPositionObj(*(t.fImpactYZ));
@@ -270,6 +277,11 @@ void AliTrack::Reset()
  {
   delete fEnd;
   fEnd=0;
+ }
+ if (fRef)
+ {
+  delete fRef;
+  fRef=0;
  }
  if (fImpactXY)
  {
@@ -377,6 +389,7 @@ void AliTrack::ListAll(TString f)
  Data(f); // Information of the current track
  if (fBegin) { cout << " Begin-point :"; fBegin->Data(f); }
  if (fEnd)   { cout << " End-point   :"; fEnd->Data(f); }
+ if (fRef)   { cout << " Ref-point   :"; fRef->Data(f); }
 
  Int_t nhyp=GetNhypotheses();
  if (nhyp)
@@ -849,6 +862,33 @@ AliPosition* AliTrack::GetEndPoint()
 {
 // Provide the position of the track end-point.
  return fEnd;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTrack::SetReferencePoint(AliPosition& p)
+{
+// Store the position of the track reference-point.
+// The reference-point is the point on the track in which the 
+// 3-momentum vector components have been defined.
+// This reference point is the preferable point to start track extrapolations
+// etc... which are sensitive to the components of the 3-momentum vector.
+ if (!fRef)
+ {
+  fRef=new AliPositionObj(p);
+ }
+ else
+ {
+  fRef->Load(p);
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+AliPosition* AliTrack::GetReferencePoint()
+{
+// Provide the position of the track reference-point.
+// The reference-point is the point on the track in which the 
+// 3-momentum vector components have been defined.
+// This reference point is the preferable point to start track extrapolations
+// etc... which are sensitive to the components of the 3-momentum vector.
+ return fRef;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliTrack::SetMass()

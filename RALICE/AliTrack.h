@@ -50,6 +50,8 @@ class AliTrack : public TNamed,public Ali4Vector
   AliPosition* GetBeginPoint();           // Provide the track begin-point
   void SetEndPoint(AliPosition& p);       // Set the track end-point
   AliPosition* GetEndPoint();             // Provide the track end-point
+  void SetReferencePoint(AliPosition& p); // Set the track reference-point for the 3-momentum vector
+  AliPosition* GetReferencePoint();       // Provide the track reference-point for the 3-momentum vector
   void AddTrackHypothesis(AliTrack& t);   // Add track hypothesis
   void AddTrackHypothesis(Double_t prob,Double_t m,Double_t dm=0); // Add track hypothesis with mass data
   Int_t GetNhypotheses() const;           // Provide number of track hypotheses
@@ -88,6 +90,7 @@ class AliTrack : public TNamed,public Ali4Vector
   TObjArray* fHypotheses;    // The array of track hypotheses
   AliPositionObj* fBegin;    // The begin-point of the track 
   AliPositionObj* fEnd;      // The end-point of the track 
+  AliPositionObj* fRef;      // The reference-point of the track for the 3-momentum vector
   AliPositionObj* fImpactXY; // The (extrapolated) impact-point in the plane z=0
   AliPositionObj* fImpactXZ; // The (extrapolated) impact-point in the plane y=0
   AliPositionObj* fImpactYZ; // The (extrapolated) impact-point in the plane x=0
@@ -102,6 +105,6 @@ class AliTrack : public TNamed,public Ali4Vector
  private:
   void Dumps(AliTrack* t,Int_t n,TString f); // Recursively print all decay levels
  
- ClassDef(AliTrack,11) // Handling of the attributes of a reconstructed particle track.
+ ClassDef(AliTrack,12) // Handling of the attributes of a reconstructed particle track.
 };
 #endif

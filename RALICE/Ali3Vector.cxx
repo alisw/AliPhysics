@@ -849,3 +849,33 @@ Ali3Vector Ali3Vector::GetPrimed(TRotMatrix* m) const
  return v;
 }
 ///////////////////////////////////////////////////////////////////////////
+Ali3Vector Ali3Vector::GetUnprimed(TRotMatrix* m) const
+{
+// Provide original vector components (and errors) from the rotated ones.
+// The orientation of the rotated frame is described by the TRotMatrix
+// input argument.
+// So, this is the inverse of the GetPrimed() memberfunction.
+// This memberfunction makes use of the fact that the inverse of a certain
+// TRotMatrix is given by its transposed matrix.
+ Ali3Vector v=*this;
+ if (!m) return v;
+
+ Double_t* mat=m->GetMatrix();
+
+ Double_t a[3],aprim[3];
+
+ GetVector(aprim,"car");
+ a[0]=aprim[0]*mat[0]+aprim[1]*mat[3]+aprim[2]*mat[6];
+ a[1]=aprim[0]*mat[1]+aprim[1]*mat[4]+aprim[2]*mat[7];
+ a[2]=aprim[0]*mat[2]+aprim[1]*mat[5]+aprim[2]*mat[8];
+ v.SetVector(a,"car");
+
+ GetErrors(aprim,"car");
+ a[0]=sqrt(pow(aprim[0]*mat[0],2)+pow(aprim[1]*mat[3],2)+pow(aprim[2]*mat[6],2));
+ a[1]=sqrt(pow(aprim[0]*mat[1],2)+pow(aprim[1]*mat[4],2)+pow(aprim[2]*mat[7],2));
+ a[2]=sqrt(pow(aprim[0]*mat[2],2)+pow(aprim[1]*mat[5],2)+pow(aprim[2]*mat[8],2));
+ v.SetErrors(a,"car");
+
+ return v;
+}
+///////////////////////////////////////////////////////////////////////////

@@ -504,3 +504,6 @@
 19-apr-2004 NvE Memberfunction GetPrimed introduced for Ali3Vector.
 04-may-2004 NvE Various memberfunctions declared "const" to satisfy the strict Alice coding rules
                 and also to allow better compiler optimisation.
+12-may-2004 NvE Track reference-point introduced in AliTrack.
+02-jun-2004 NvE Memberfunction GetUnprimed introduced for Ali3Vector.
+17-jun-2004 NvE New class AliHelix introduced and "macgcclib" added to create ralice libs on MAC.
