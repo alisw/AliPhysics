@@ -702,6 +702,7 @@ void AliITSClusterFinderSDD::ResolveClustersE(){
 	} // end if 
 	Int_t xdim = tstop-tstart+3;
 	Int_t zdim = astop-astart+3;
+        if(xdim > 50 || zdim > 30) { cout << "Warning: xdim: " << xdim << ", zdim: " << zdim << endl; continue; }
 	Float_t *sp = new Float_t[ xdim*zdim+1 ];
 	memset( sp, 0, sizeof(Float_t)*(xdim*zdim+1) );
 	// make a local map from cluster region
@@ -795,7 +796,8 @@ void AliITSClusterFinderSDD::ResolveClustersE(){
 	    fClusters->RemoveAt( j );
 	    delete [] par;
 	} else cout <<" --- Peak not found!!!!  minpeak=" << fMinPeak<< 
-		   " cluster peak=" << clusterJ->PeakAmpl() << endl << endl;
+		   " cluster peak=" << clusterJ->PeakAmpl() << 
+		   " npeak=" << npeak << endl << endl;
 	delete [] sp;
     } // cluster loop
     fClusters->Compress();
