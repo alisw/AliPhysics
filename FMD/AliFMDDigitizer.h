@@ -11,8 +11,8 @@
 #ifndef ALIRUNDIGITIZER_H
 # include <AliRunDigitizer.h>
 #endif
-#ifndef ALIFMDMAP_H
-# include <AliFMDMap.h>
+#ifndef ALIFMDEdepMAP_H
+# include <AliFMDEdepMap.h>
 #endif
 #ifndef __UTILITY__
 # include <utility>
@@ -27,7 +27,6 @@ class AliFMD;
 class AliLoader;
 class AliRunLoader;
 
-typedef AliFMDMap<std::pair<Float_t, UShort_t> > AliFMDEdepMap;
 
 //====================================================================
 class AliFMDBaseDigitizer : public AliDigitizer 
@@ -55,11 +54,11 @@ protected:
   virtual void     SumContributions(AliFMD* fmd);
   virtual void     DigitizeHits(AliFMD* fmd) const;
   virtual void     ConvertToCount(Float_t   edep, 
+				  Float_t   last,
 				  Float_t   siThickness, 
 				  Float_t   siDensity, 
 				  TArrayI&  counts) const;
   virtual UShort_t MakePedestal() const { return 0; }
-  virtual Float_t  ShapeIntegral(Float_t u, Float_t v) const;
   virtual void     AddNoise(TArrayI&) const {}
   virtual void     AddDigit(AliFMD*  /* fmd      */,
 			    UShort_t /* detector */, 
@@ -78,12 +77,6 @@ protected:
   UShort_t      fSampleRate;       // Times the ALTRO samples pre-amp.
   Float_t       fShapingTime;      // Shaping profile parameter
   
-  enum { 
-    kMaxDetectors = 3, 
-    kMaxRings     = 2, 
-    kMaxSectors   = 20, 
-    kMaxStrips    = 512
-  };
   ClassDef(AliFMDBaseDigitizer,0) // Base class for FMD digitizers
 };
 

@@ -76,45 +76,41 @@
 //         we'd like have the option, and so it should be reflected in
 //         the code.
 //
-// The shaping function of the VA1_ALICE is given by 
+//
+// The shaping function of the VA1_ALICE is generally given by 
 //
 //      f(x) = A(1 - exp(-Bx))
 //
-// Where A is a normalization constant, tuned so that the integral 
+// where A is the total charge collected in the pre-amp., and B is a
+// paramter that depends on the shaping time of the VA1_ALICE circut.
+// 
+// When simulating the shaping function of the VA1_ALICe
+// pre-amp. chip, we have to take into account, that the shaping
+// function depends on the previous value of read from the pre-amp. 
 //
-//      /1
-//      |           A(-1 + B + exp(-B))
-//      | f(x) dx = ------------------- = 1
-//      |                    B
-//      / 0
+// That results in the following algorithm:
 //
-// and B is the a parameter defined by the shaping time (fShapingTime).  
+//    last = 0;
+//    FOR charge IN pre-amp. charge train DO 
+//      IF last < charge THEN 
+//        f(t) = (charge - last) * (1 - exp(-B * t)) + last
+//      ELSE
+//        f(t) = (last - charge) * exp(-B * t) + charge)
+//      ENDIF
+//      FOR i IN # samples DO 
+//        adc_i = f(i / (# samples))
+//      DONE
+//      last = charge
+//   DONE
 //
-// Solving the above equation, for A gives
+// Here, 
 //
-//                 B
-//      A = ----------------
-//          -1 + B + exp(-B)
+//   pre-amp. charge train 
+//       is a series of 128 charges read from the VA1_ALICE chip
 //
-// So, if we define the function g: [0,1] -> [0:1] by 
-//
-//               / v
-//               |              Bu + exp(-Bu) - Bv - exp(-Bv) 
-//      g(u,v) = | f(x) dx = -A -----------------------------
-//               |                            B
-//               / u
-//
-// we can evaluate the ALTRO sample of the VA1_ALICE pre-amp between
-// any two times (u, v), by 
-//       
-//
-//                                B	    Bu + exp(-Bu) - Bv - exp(-Bv)
-//      C = Q g(u,v) = - Q ---------------- -----------------------------
-//		           -1 + B + exp(-B)              B	            
-//
-//               Bu + exp(-Bu) - Bv - exp(-Bv) 
-//        = -  Q -----------------------------
-//                    -1 + B + exp(-B)
+//   # samples
+//       is the number of times the ALTRO ADC samples each of the 128
+//       charges from the pre-amp. 
 //
 // Where Q is the total charge collected by the VA1_ALICE
 // pre-amplifier.   Q is then given by 
@@ -161,42 +157,52 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef ROOT_TTree
-# include <TTree.h>
-#endif
-#ifndef ROOT_TRandom
-# include <TRandom.h>
-#endif
-#ifndef ALILOG_H
-# include "AliLog.h"
-#endif
-#ifndef ALIFMDDIGITIZER_H
-# include "AliFMDDigitizer.h"
-#endif
-#ifndef ALIFMD_H
-# include "AliFMD.h"
-#endif
-#ifndef ALIFMDHIT_H
-# include "AliFMDHit.h"
-#endif
-#ifndef ALIFMDDIGIT_H
-# include "AliFMDDigit.h"
-#endif
-#ifndef ALIFMDDIGIT_H
-# include "AliFMDSDigit.h"
-#endif
-#ifndef ALIRUNDIGITIZER_H
-# include "AliRunDigitizer.h"
-#endif
-#ifndef ALIRUN_H
-# include "AliRun.h"
-#endif
-#ifndef ALILOADER_H
-# include "AliLoader.h"
-#endif
-#ifndef ALIRUNLOADER_H
-# include "AliRunLoader.h"
-#endif
+//      /1
+//      |           A(-1 + B + exp(-B))
+//      | f(x) dx = ------------------- = 1
+//      |                    B
+//      / 0
+//
+// and B is the a parameter defined by the shaping time (fShapingTime).  
+//
+// Solving the above equation, for A gives
+//
+//                 B
+//      A = ----------------
+//          -1 + B + exp(-B)
+//
+// So, if we define the function g: [0,1] -> [0:1] by 
+//
+//               / v
+//               |              Bu + exp(-Bu) - Bv - exp(-Bv) 
+//      g(u,v) = | f(x) dx = -A -----------------------------
+//               |                            B
+//               / u
+//
+// we can evaluate the ALTRO sample of the VA1_ALICE pre-amp between
+// any two times (u, v), by 
+//       
+//
+//                                B	    Bu + exp(-Bu) - Bv - exp(-Bv)
+//      C = Q g(u,v) = - Q ---------------- -----------------------------
+//		           -1 + B + exp(-B)              B	            
+//
+//               Bu + exp(-Bu) - Bv - exp(-Bv) 
+//        = -  Q -----------------------------
+//                    -1 + B + exp(-B)
+//
+
+#include "TTree.h"		// ROOT_TTree
+#include "TRandom.h"		// ROOT_TRandom
+#include "AliLog.h"		// ALILOG_H
+#include "AliFMDDigitizer.h"	// ALIFMDDIGITIZER_H
+#include "AliFMD.h"		// ALIFMD_H
+#include "AliFMDHit.h"		// ALIFMDHIT_H
+#include "AliFMDDigit.h"	// ALIFMDDIGIT_H
+#include "AliRunDigitizer.h"	// ALIRUNDIGITIZER_H
+#include "AliRun.h"		// ALIRUN_H
+#include "AliLoader.h"		// ALILOADER_H
+#include "AliRunLoader.h"	// ALIRUNLOADER_H
     
 //____________________________________________________________________
 ClassImp(AliFMDEdepMap);
@@ -215,7 +221,10 @@ AliFMDBaseDigitizer::AliFMDBaseDigitizer()
 AliFMDBaseDigitizer::AliFMDBaseDigitizer(AliRunDigitizer* manager) 
   : AliDigitizer(manager, "AliFMDBaseDigitizer", "FMD Digitizer base class"), 
     fRunLoader(0),
-    fEdep(kMaxDetectors, kMaxRings, kMaxSectors, kMaxStrips)
+    fEdep(AliFMDMap::kMaxDetectors, 
+	  AliFMDMap::kMaxRings, 
+	  AliFMDMap::kMaxSectors, 
+	  AliFMDMap::kMaxStrips)
 {
   // Normal CTOR
   AliDebug(1," processed");
@@ -230,7 +239,10 @@ AliFMDBaseDigitizer::AliFMDBaseDigitizer(const Char_t* name,
 					 const Char_t* title) 
   : AliDigitizer(name, title),
     fRunLoader(0),
-    fEdep(kMaxDetectors, kMaxRings, kMaxSectors, kMaxStrips)
+    fEdep(AliFMDMap::kMaxDetectors, 
+	  AliFMDMap::kMaxRings, 
+	  AliFMDMap::kMaxSectors, 
+	  AliFMDMap::kMaxStrips)
 {
   // Normal CTOR
   AliDebug(1," processed");
@@ -309,12 +321,12 @@ AliFMDBaseDigitizer::SumContributions(AliFMD* fmd)
       UShort_t sector   = fmdHit->Sector();
       UShort_t strip    = fmdHit->Strip();
       Float_t  edep     = fmdHit->Edep();
-      if (fEdep(detector, ring, sector, strip).first != 0)
+      if (fEdep(detector, ring, sector, strip).fEdep != 0)
 	AliDebug(1, Form("Double hit in %d%c(%d,%d)", 
 			 detector, ring, sector, strip));
       
-      fEdep(detector, ring, sector, strip).first  += edep;
-      fEdep(detector, ring, sector, strip).second += 1;
+      fEdep(detector, ring, sector, strip).fEdep  += edep;
+      fEdep(detector, ring, sector, strip).fN     += 1;
       // Add this to the energy deposited for this strip
     }  // hit loop
   } // track loop
@@ -354,11 +366,18 @@ AliFMDBaseDigitizer::DigitizeHits(AliFMD* fmd) const
 	// Get number of strips 
 	UShort_t nStrips = r->GetNStrips();
 	// Loop over the stips 
+	Float_t last = 0;
 	for (UShort_t strip = 0; strip < nStrips; strip++) {
+	  // Reset the counter array to the invalid value -1 
 	  counts.Reset(-1);
-	  Float_t edep = fEdep(detector, r->GetId(), sector, strip).first;
-	  ConvertToCount(edep, r->GetSiThickness(), fmd->GetSiDensity(), 
+	  // Reset the last `ADC' value when we've get to the end of a
+	  // VA1_ALICE channel. 
+	  if (strip % 128 == 0) last = 0;
+	  
+	  Float_t edep = fEdep(detector, r->GetId(), sector, strip).fEdep;
+	  ConvertToCount(edep, last, r->GetSiThickness(), fmd->GetSiDensity(), 
 			 counts);
+	  last = edep;
 	  AddDigit(fmd, detector, r->GetId(), sector, strip, 
 		   edep, UShort_t(counts[0]), 
 		   Short_t(counts[1]), Short_t(counts[2]));
@@ -367,8 +386,8 @@ AliFMDBaseDigitizer::DigitizeHits(AliFMD* fmd) const
 	  // number of particles when reconstructed, using a naiive
 	  // approach.  It's here only as a quality check - nothing
 	  // else. 
-	  CheckDigit(fEdep(detector, r->GetId(), sector, strip).first,
-		     fEdep(detector, r->GetId(), sector, strip).second,
+	  CheckDigit(fEdep(detector, r->GetId(), sector, strip).fEdep,
+		     fEdep(detector, r->GetId(), sector, strip).fN,
 		     counts);
 #endif
 	} // Strip
@@ -378,79 +397,69 @@ AliFMDBaseDigitizer::DigitizeHits(AliFMD* fmd) const
 }
 
 //____________________________________________________________________
-Float_t
-AliFMDBaseDigitizer::ShapeIntegral(Float_t u, Float_t v) const
-{
-  // Calculates the integral 
-  // 
-  //      / v
-  //      |               Bu + exp(-Bu) - Bv - exp(-Bv) 
-  //      | f(x) dx = - A -----------------------------
-  //      |                             B
-  //      / u
-  // 
-  // of the shaping function of the VA1_ALICE between times u and v
-  //
-  //      f(x) = A(1 - exp(-Bx))
-  //
-  // where A is a normalization constant, tuned so that the integral 
-  //
-  //      /1
-  //      |                              B	    
-  //      | f(x) dx = 1   =>  A = ----------------
-  //      |           	          -1 + B + exp(-B)
-  //      / 0
-  //
-  // and B is the a parameter defined by the shaping time (fShapingTime).  
-  // 
-  // That is, the function return the value 
-  // 
-  //        Bu + exp(-Bu) - Bv - exp(-Bv) 
-  //      - -----------------------------
-  //               -1 + B + exp(-B)
-  // 
-  // u,v should lie in the interval [0,1], and u < v
-  if (u == 0 && v == 1) return 1;
-  Float_t B = fShapingTime;
-  
-  // Calculate the integral 
-  Float_t res = - ((B * u + TMath::Exp(-B * u) - B * v - TMath::Exp(-B * v)) /
-		 (-1 + B + TMath::Exp(-B)));
-  return res;
-}
-
-//____________________________________________________________________
 void
 AliFMDBaseDigitizer::ConvertToCount(Float_t   edep, 
+				    Float_t   last,
 				    Float_t   siThickness, 
 				    Float_t   siDensity, 
 				    TArrayI&  counts) const
 {
-  // Put noise and make ADC signal
-  // This is calculated as the product 
+  // Convert the total energy deposited to a (set of) ADC count(s). 
   // 
-  //   DeltaEmip * SiThickness * SiDensity / Number 
-  //
-  // Where 
-  //  
-  //   DeltaEmip     is the energy loss of a MIP 
-  //   SiThickness   is the thickness of the silicon 
-  //   SiDensity     is the Silicon density 
-  //   Number        is # of e^- per MIP
-  //
-  // Note: Need to check this is correct. 
+  // This is done by 
   // 
-  const Float_t mipI = 1.664 * siThickness * siDensity;
-  // const Float_t mipI = 1.664 * 0.04 * 2.33 / 22400; // = 6.923e-6;
-  
+  //               Energy_Deposited      ALTRO_Channel_Size
+  //    ADC = -------------------------- ------------------- + pedestal
+  //          Energy_Deposition_Of_1_MIP VA1_ALICE_MIP_Range
+  //
+  //               Energy_Deposited             fAltroChannelSize
+  //        = --------------------------------- ----------------- + pedestal 
+  //          1.664 * Si_Thickness * Si_Density   fVA1MipRange	 
+  //          
+  // 
+  //        = Energy_Deposited * ConversionFactor + pedestal
+  // 
+  // However, this is modified by the response function of the
+  // VA1_ALICE pre-amp. chip in case we are doing oversampling of the
+  // VA1_ALICE output. 
+  // 
+  // In that case, we get N=fSampleRate values of the ADC, and the
+  // `EnergyDeposited' is a function of which sample where are
+  // calculating the ADC for 
+  // 
+  //     ADC_i = f(EnergyDeposited, i/N, Last) * ConversionFactor + pedestal 
+  // 
+  // where Last is the Energy deposited in the previous strip. 
+  // 
+  // Here, f is the shaping function of the VA1_ALICE.   This is given
+  // by 
+  //                       
+  //                    |   (E - l) * (1 - exp(-B * t) + l   if E > l
+  //       f(E, t, l) = <
+  //                    |   (l - E) * exp(-B * t) + E        otherwise
+  //                       
+  // 
+  //                  = E + (l - E) * ext(-B * t)
+  // 
+  const Float_t mipEnergy = 1.664 * siThickness * siDensity;
+  const Float_t convf     = (1 / mipEnergy * Float_t(fAltroChannelSize) 
+			     / fVA1MipRange);
+  UShort_t ped            = MakePedestal();
+
+  // In case we don't oversample, just return the end value. 
+  if (fSampleRate == 1) {
+    counts[0] = UShort_t(TMath::Min(edep * convf + ped, 
+				    Float_t(fAltroChannelSize)));
+    return;
+  }
+
   // Create a pedestal 
-  UShort_t ped = MakePedestal();
-  
-  Float_t convf = 1 / mipI * Float_t(fAltroChannelSize) / fVA1MipRange;
-  Int_t n = fSampleRate;
+  Int_t   n = fSampleRate;
+  Float_t B = fShapingTime;
   for (Ssiz_t i = 0; i < n;  i++) {
-    Float_t w = ShapeIntegral(Float_t(i)/n, Float_t(i+1)/n);
-    counts[i] = UShort_t(TMath::Min(w * edep * convf + ped, 
+    Float_t t = Float_t(i) / n;
+    Float_t s = edep + (last - edep) * TMath::Exp(-B * t);
+    counts[i] = UShort_t(TMath::Min(s * convf + ped, 
 				    Float_t(fAltroChannelSize))); 
   }
 }

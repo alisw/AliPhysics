@@ -15,7 +15,7 @@
 
 /* $Id$ */
 
-//////////////////////////////////////////////////////////////////////////////
+//____________________________________________________________________
 //                                                                          
 // Forward Multiplicity Detector based on Silicon wafers. This class
 // contains the base procedures for the Forward Multiplicity detector
@@ -96,74 +96,29 @@
 // Many modifications by Christian Holm Christensen <cholm@nbi.dk>
 //
 
-#ifndef ROOT_TClonesArray
-#include <TClonesArray.h>
-#endif
-#ifndef ROOT_TGeomtry
-# include <TGeometry.h>
-#endif
-#ifndef ROOT_TNode
-# include <TNode.h>
-#endif
-#ifndef ROOT_TTUBE
-# include <TTUBE.h>
-#endif
-#ifndef ROOT_TTree
-# include <TTree.h>
-#endif
-#ifndef ROOT_TVirtualMC
-# include <TVirtualMC.h>
-#endif
-#ifndef ROOT_TBrowser
-# include <TBrowser.h>
-#endif
-#ifndef ROOT_TMath
-# include <TMath.h>
-#endif
+#include "TClonesArray.h"	// ROOT_TClonesArray
+#include "TGeometry.h"		// ROOT_TGeomtry
+#include "TNode.h"		// ROOT_TNode
+#include "TTUBE.h"		// ROOT_TTUBE
+#include "TTree.h"		// ROOT_TTree
+#include "TVirtualMC.h"		// ROOT_TVirtualMC
+#include "TBrowser.h"		// ROOT_TBrowser
+#include "TMath.h"		// ROOT_TMath
 
-#ifndef ALIRUNDIGITIZER_H
-# include "AliRunDigitizer.h"
-#endif
-#ifndef ALILOADER_H
-# include "AliLoader.h"
-#endif
-#ifndef ALIRUN_H
-# include "AliRun.h"
-#endif
-#ifndef ALIMC_H
-# include "AliMC.h"
-#endif
-#ifndef ALILOG_H
-# include "AliLog.h"
-#endif
-#ifndef ALIMAGF_H
-# include "AliMagF.h"
-#endif
-#ifndef ALIFMD_H
-# include "AliFMD.h"
-#endif
-#ifndef ALIFMDDIGIG_H
-# include "AliFMDDigit.h"
-#endif
-#ifndef ALIFMDHIT_H
-# include "AliFMDHit.h"
-#endif
-#ifndef ALIFMDDIGITIZER_H
-# include "AliFMDDigitizer.h"
-#endif
-#ifndef ALIFMD1_H
-# include "AliFMD1.h"
-#endif
-#ifndef ALIFMD2_H
-# include "AliFMD2.h"
-#endif
-#ifndef ALIFMD3_H
-# include "AliFMD3.h"
-#endif
-#ifndef ALIALTROBUFFER_H
-# include "AliAltroBuffer.h"
-#endif
-#include <Riostream.h>
+#include "AliRunDigitizer.h"	// ALIRUNDIGITIZER_H
+#include "AliLoader.h"		// ALILOADER_H
+#include "AliRun.h"		// ALIRUN_H
+#include "AliMC.h"		// ALIMC_H
+#include "AliLog.h"		// ALILOG_H
+#include "AliMagF.h"		// ALIMAGF_H
+#include "AliFMD.h"		// ALIFMD_H
+#include "AliFMDDigit.h"	// ALIFMDDIGIG_H
+#include "AliFMDHit.h"		// ALIFMDHIT_H
+#include "AliFMDDigitizer.h"	// ALIFMDDIGITIZER_H
+#include "AliFMD1.h"		// ALIFMD1_H
+#include "AliFMD2.h"		// ALIFMD2_H
+#include "AliFMD3.h"		// ALIFMD3_H
+#include "AliFMDRawWriter.h"	// ALIFMDRAWWRITER_H
 
 //____________________________________________________________________
 ClassImp(AliFMD);
@@ -1011,6 +966,12 @@ AliFMD::Digits2Raw()
 {
   // Turn digits into raw data. 
   // 
+  // This uses the class AliFMDRawWriter to do the job.   Please refer
+  // to that class for more information. 
+  AliFMDRawWriter writer(this);
+  writer.Exec();
+  
+#if 0
   // Digits are read from the Digit branch, and processed to make
   // three DDL files, one for each of the sub-detectors FMD1, FMD2,
   // and FMD3. 
@@ -1220,6 +1181,7 @@ AliFMD::Digits2Raw()
     }
   }
   fLoader->UnloadDigits();
+#endif
 }
 
 //==================================================================

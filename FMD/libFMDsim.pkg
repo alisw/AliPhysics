@@ -12,8 +12,11 @@ SRCS		=  AliFMD.cxx 			\
 		   AliFMDRing.cxx 		\
 		   AliFMDPolygon.cxx 		\
 		   AliFMDHit.cxx 		\
-		   AliFMDDigitizer.cxx
-HDRS		=  $(SRCS:.cxx=.h) AliFMDMap.h
+		   AliFMDDigitizer.cxx		\
+		   AliFMDMap.cxx		\
+		   AliFMDEdepMap.cxx		\
+		   AliFMDRawWriter.cxx
+HDRS		=  $(SRCS:.cxx=.h) 
 DHDR		:= FMDsimLinkDef.h
 EINCLUDE 	:= $(ALICE)/RAW
 

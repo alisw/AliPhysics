@@ -26,52 +26,20 @@
 //
 // Latest changes by Christian Holm Christensen
 //
-#ifndef ALIFMDRING_H
-# include "AliFMDRing.h"
-#endif
-#ifndef ALILOG_H
-# include "AliLog.h"
-#endif
-#ifndef ROOT_TMath
-# include <TMath.h>
-#endif
-#ifndef ROOT_TH2
-# include <TH2.h>
-#endif
-#ifndef ROOT_TVirtualMC
-# include <TVirtualMC.h>
-#endif
-#ifndef ROOT_TVector2
-# include <TVector2.h>
-#endif
-#ifndef ROOT_TBrowser
-# include <TBrowser.h>
-#endif
-#ifndef ROOT_TString
-# include <TString.h>
-#endif
-#ifndef ROOT_TArc
-# include <TArc.h>
-#endif
-#ifndef ROOT_TObjArray
-# include <TObjArray.h>
-#endif
-#ifndef ROOT_TXTRU
-# include <TXTRU.h>
-#endif
-#ifndef ROOT_TNode
-# include <TNode.h>
-#endif
-#ifndef ROOT_TRotMatrix
-# include <TRotMatrix.h>
-#endif
-#ifndef ROOT_TList
-# include <TList.h>
-#endif
-#ifndef __IOSTREAM__
-# include <iostream>
-#endif
-#include <math.h>
+#include "AliFMDRing.h"		// ALIFMDRING_H
+#include "AliLog.h"		// ALILOG_H
+#include "TMath.h"		// ROOT_TMath
+#include "TH2.h"		// ROOT_TH2
+#include "TVirtualMC.h"		// ROOT_TVirtualMC
+#include "TVector2.h"		// ROOT_TVector2
+#include "TBrowser.h"		// ROOT_TBrowser
+#include "TString.h"		// ROOT_TString
+#include "TArc.h"		// ROOT_TArc
+#include "TObjArray.h"		// ROOT_TObjArray
+#include "TXTRU.h"		// ROOT_TXTRU
+#include "TNode.h"		// ROOT_TNode
+#include "TRotMatrix.h"		// ROOT_TRotMatrix
+#include "TList.h"		// ROOT_TList
 
 const Char_t* AliFMDRing::fgkRingFormat         = "FRG%c";
 const Char_t* AliFMDRing::fgkVirtualFormat      = "FV%c%c";

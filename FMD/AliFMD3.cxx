@@ -21,28 +21,14 @@
 //
 // This implements the geometry for FMD3
 //
-#ifndef ROOT_TVirtualMC
-# include <TVirtualMC.h>
-#endif
-#ifndef ROOT_TCONS
-# include <TCONS.h>
-#endif
-#ifndef ROOT_TNode
-# include <TNode.h>
-#endif
-#ifndef ROOT_TList
-# include <TList.h>
-#endif
-#ifndef ALIFMD3_H
-# include "AliFMD3.h"
-#endif 
-#ifndef ALILOG_H
-# include "AliLog.h"
-#endif
-#ifndef ALIFMDRING_H
-# include "AliFMDRing.h"
-#endif 
-#include <Riostream.h>
+#include "TVirtualMC.h"		// ROOT_TVirtualMC
+#include "TCONS.h"		// ROOT_TCONS
+#include "TNode.h"		// ROOT_TNode
+#include "TList.h"		// ROOT_TList
+#include "AliFMD3.h"		// ALIFMD3_H 
+#include "AliLog.h"		// ALILOG_H
+#include "AliFMDRing.h"		// ALIFMDRING_H 
+#include <Riostream.h>		// ROOT_Riostream
 
 //____________________________________________________________________
 ClassImp(AliFMD3);
@@ -165,7 +151,7 @@ AliFMD3::SimpleGeometry(TList* nodes,
 		   / (fOuterZ - fInnerZ));
   Double_t bo   = 0;
   if (ao2 > ao1) {
-    cout << "Wafer determinds the size" << endl;
+    // std::cout << "Wafer determinds the size" << std::endl;
     ao  = ao2;
     bo  = fInner->GetHighR() - ao * fInnerZ;
   }

@@ -22,30 +22,14 @@
 // Latest changes by Christian Holm Christensen
 //
 //////////////////////////////////////////////////////////////////////////////
-#ifndef ALIFMDPOLYGON_H
-# include "AliFMDPolygon.h"
-#endif
-#ifndef ALILOG_H
-# include "AliLog.h"
-#endif
-#ifndef ROOT_TString
-# include <TString.h>
-#endif
-#ifndef ROOT_TVector2
-# include <TVector2.h>
-#endif
-#ifndef ROOT_TCanvas
-# include <TCanvas.h>
-#endif
-#ifndef ROOT_TText
-# include <TText.h>
-#endif
-#ifndef ROOT_TGraph
-# include <TGraph.h>
-#endif
-#ifndef ROOT_TError
-# include <TError.h>
-#endif
+#include "AliFMDPolygon.h"	// ALIFMDPOLYGON_H
+#include "AliLog.h"		// ALILOG_H
+#include "TString.h"		// ROOT_TString
+#include "TVector2.h"		// ROOT_TVector2
+#include "TCanvas.h"		// ROOT_TCanvas
+#include "TText.h"		// ROOT_TText
+#include "TGraph.h"		// ROOT_TGraph
+#include "TError.h"		// ROOT_TError
 
 //____________________________________________________________________
 ClassImp(AliFMDPolygon);

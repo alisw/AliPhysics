@@ -43,19 +43,21 @@
 //
 //____________________________________________________________________
 
-#include "AliFMD.h"
-#include "AliFMDDigit.h"
-#include "AliFMDParticles.h"
-#include "AliFMDReconstructor.h"
-#include "AliAltroBuffer.h"
-#include "AliLog.h"
-#include "AliRun.h"
-#include "AliRunLoader.h"
-#include "AliLoader.h"
-#include "AliHeader.h"
-#include "AliGenEventHeader.h"
-#include "AliFMDRawStream.h"
-#include "AliRawReader.h"
+#include "AliFMD.h"				// ALIFMD_H
+#include "AliFMDDigit.h"			// ALIFMDDIGIT_H
+#include "AliFMDParticles.h"			// ALIFMDPARTICLES_H
+#include "AliFMDReconstructor.h"		// ALIFMDRECONSTRUCTOR_H
+#include "AliAltroBuffer.h"			// ALIALTROBUFFER_H
+#include "AliLog.h"				// ALILOG_H
+#include "AliRun.h"				// ALIRUN_H
+#include "AliRunLoader.h"			// ALIRUNLOADER_H
+#include "AliLoader.h"				// ALILOADER_H
+#include "AliHeader.h"				// ALIHEADER_H
+#include "AliGenEventHeader.h"			// ALIGENEVENTHEADER_H
+#include "AliFMDRawStream.h"			// ALIFMDRAWSTREAM_H
+#include "AliFMDRawReader.h"			// ALIFMDRAWREADER_H
+#include "AliRawReader.h"			// ALIRAWREADER_H
+#include "AliFMDReconstructionAlgorithm.h"	// ALIFMDRECONSTRUCTIONALGORITHM_H
 
 //____________________________________________________________________
 ClassImp(AliFMDReconstructor);
@@ -63,12 +65,12 @@ ClassImp(AliFMDReconstructor);
 //____________________________________________________________________
 AliFMDReconstructor::AliFMDReconstructor() 
   : AliReconstructor(),
-    fAdcs(kMaxDetectors, kMaxRings, kMaxSectors, kMaxStrips),
     fDeltaEta(0), 
     fDeltaPhi(0), 
     fThreshold(0),
     fPedestal(0), 
-    fPedestalWidth(0)
+    fPedestalWidth(0),
+    fPedestalFactor(0)
 {
   // Make a new FMD reconstructor object - default CTOR.
   SetDeltaEta();
@@ -86,18 +88,18 @@ AliFMDReconstructor::AliFMDReconstructor()
 //____________________________________________________________________
 AliFMDReconstructor::AliFMDReconstructor(const AliFMDReconstructor& other) 
   : AliReconstructor(),
-    fAdcs(kMaxDetectors, kMaxRings, kMaxSectors, kMaxStrips),
     fDeltaEta(0), 
     fDeltaPhi(0), 
     fThreshold(0),
     fPedestal(0), 
-    fPedestalWidth(0)
+    fPedestalWidth(0),
+    fPedestalFactor(0)
 {
   // Make a new FMD reconstructor object - default CTOR.
   SetDeltaEta(other.fDeltaEta);
   SetDeltaPhi(other.fDeltaPhi);
   SetThreshold(other.fThreshold);
-  SetPedestal(other.fPedestal, other.fPedestalWidth);
+  SetPedestal(other.fPedestal, other.fPedestalWidth, other.fPedestalFactor);
 
   // fParticles = new TClonesArray("AliFMDParticles", 1000);
   fFMDLoader = other.fFMDLoader;
@@ -126,11 +128,12 @@ AliFMDReconstructor::operator=(const AliFMDReconstructor& other)
   
 //____________________________________________________________________
 void 
-AliFMDReconstructor::SetPedestal(Float_t mean, Float_t width) 
+AliFMDReconstructor::SetPedestal(Float_t mean, Float_t width, Float_t factor) 
 {
   // Set the pedestal, and pedestal width 
-  fPedestal      = mean;
-  fPedestalWidth = width;
+  fPedestal       = mean;
+  fPedestalWidth  = width;
+  fPedestalFactor = factor;
 }
 
 //____________________________________________________________________
@@ -172,18 +175,17 @@ AliFMDReconstructor::Reconstruct(AliRunLoader* runLoader,
 
   if (!fRunLoader->TreeE())     fRunLoader->LoadHeader();
 
-  TClonesArray* digits = fFMD->Digits();
   if (rawReader) {
     Int_t event = 0;
     while (rawReader->NextEvent()) {
-      ProcessEvent(event, rawReader, digits);
+      ProcessEvent(event, rawReader);
       event++;
     }
   }
   else {
     Int_t nEvents= Int_t(fRunLoader->TreeE()->GetEntries()); 
     for(Int_t event = 0; event < nEvents; event++) 
-      ProcessEvent(event, 0, digits);
+      ProcessEvent(event, 0);
   }
 
 
@@ -214,22 +216,21 @@ AliFMDReconstructor::Reconstruct(AliRunLoader* runLoader) const
 //____________________________________________________________________
 void 
 AliFMDReconstructor::ProcessEvent(Int_t event, 
-				  AliRawReader* reader, 
-				  TClonesArray* digits) const
+				  AliRawReader* reader) const
 {
   // Process one event read from either a clones array or from a a raw
   // data reader. 
   fRunLoader->GetEvent(event) ;
   //event z-vertex for correction eta-rad dependence      
   AliHeader *header            = fRunLoader->GetHeader();
-  if (!header) 
-    Warning("ProcessEvent", "no AliHeader found!");
+  if (!header) Warning("ProcessEvent", "no AliHeader found!");
   AliGenEventHeader* genHeader = (header ? header->GenEventHeader() : 0);
 
   // Get the Z--coordinate from the event header 
   TArrayF o(3); 
   if (genHeader) genHeader->PrimaryVertex(o);
-  Float_t zVertex = o.At(2);
+  else           Warning("ProcessEvent", "No GenEventHeader Found");
+  fCurrentVertex = o.At(2);
 
   // If the recontruction tree isn't loaded, load it
   if(fFMDLoader->TreeR()==0) fFMDLoader->MakeTree("R");
@@ -244,7 +245,6 @@ AliFMDReconstructor::ProcessEvent(Int_t event,
       Error("Exec","Error occured while loading digits. Exiting.");
       return;
     }
-    
   }
   // Get the digits tree 
   TTree* digitTree = fFMDLoader->TreeD();
@@ -260,6 +260,7 @@ AliFMDReconstructor::ProcessEvent(Int_t event,
   }
   // Get the FMD branch holding the digits. 
   TBranch *digitBranch = digitTree->GetBranch("FMD");
+  TClonesArray* digits = fFMD->Digits();
   if (!digitBranch) {
     if (!reader) {
       Error("Exec", "No digit branch for the FMD found");
@@ -269,15 +270,30 @@ AliFMDReconstructor::ProcessEvent(Int_t event,
   }
   if (!reader) digitBranch->SetAddress(&digits);
 
-  fEmptyStrips = 0;
-  fTotalStrips = 0;
-  Bool_t ok = kFALSE;
-  if      (reader) ok = ReadAdcs(reader);
-  else if (digits) ok = ReadAdcs(digits);
-  if (!ok) return;
+  if  (reader) {
+    AliFMDRawReader rawRead(fFMD, reader);
+    // rawRead->SetSampleRate(fSampleRate);
+    rawRead.Exec();
+  }
+  else {
+    // Read the ADC values from a clones array. 
+    AliDebug(10, "Reading ADCs from Digits array");
+    // read Digits, and reconstruct the particles
+    if (!fFMDLoader->TreeD()->GetEvent(0)) return;
+  }
   
-  ReconstructFromCache(zVertex);
+  TIter next(&fAlgorithms);
+  AliFMDReconstructionAlgorithm* algorithm = 0;
+  while ((algorithm = static_cast<AliFMDReconstructionAlgorithm*>(next()))) 
+    algorithm->PreEvent();
 
+  ProcessDigits(digits);
+
+  next.Reset();
+  algorithm = 0;
+  while ((algorithm = static_cast<AliFMDReconstructionAlgorithm*>(next()))) 
+    algorithm->PostEvent();
+  
   if (reader) {
     digitTree->Fill();
     fFMDLoader->WriteDigits("OVERWRITE");
@@ -289,165 +305,6 @@ AliFMDReconstructor::ProcessEvent(Int_t event,
 }
 
 //____________________________________________________________________
-Bool_t
-AliFMDReconstructor::ReadAdcs(TClonesArray* digits) const
-{
-  // Read the ADC values from a clones array. 
-  AliDebug(10, "Reading ADCs from Digits array");
-  // read Digits, and reconstruct the particles
-  if (!fFMDLoader->TreeD()->GetEvent(0)) return kFALSE;
-
-  // Reads the digits from the array, and fills up the cache (fAdcs) 
-  fAdcs.Clear();
-  Int_t nDigits = digits->GetEntries();
-  for (Int_t digit = 0; digit < nDigits; digit++) {
-    AliFMDDigit* fmdDigit = 
-      static_cast<AliFMDDigit*>(digits->UncheckedAt(digit));    
-    
-    ProcessDigit(fmdDigit);
-  } //digit loop
-  return kTRUE;
-}
-
-//____________________________________________________________________
-Bool_t
-AliFMDReconstructor::ReadAdcs(AliRawReader* reader) const
-{
-  // Read the ADC values from a raw data reader. 
-  AliDebug(10, "Reading ADCs from RawReader");
-  // Reads the digits from a RAW data 
-  fAdcs.Clear();
-  // reader->Reset();
-
-  if (!reader->ReadHeader()) {
-    Error("ReadAdcs", "Couldn't read header");
-    return kFALSE;
-  }
-
-  // Use AliAltroRawStream to read the ALTRO format.  No need to
-  // reinvent the wheel :-) 
-  AliFMDRawStream input(reader);
-  // Select FMD DDL's 
-  reader->Select(AliFMD::kBaseDDL >> 8);
-  
-  Int_t    oldDDL      = -1;
-  Int_t    count       = 0;
-  UShort_t detector    = 1; // Must be one here
-  UShort_t oldDetector = 0;
-  // Loop over data in file 
-  Bool_t   next       = kTRUE;
-
-  // local Cache 
-  TArrayI counts(10);
-  counts.Reset(-1);
-  Int_t offset = 0;
-  
-  while (next) {
-    next = input.Next();
-
-
-    count++; 
-    Int_t ddl = reader->GetDDLID();
-    if (ddl != oldDDL 
-	|| input.IsNewStrip()
-	|| !next) {
-      // Make a new digit, if we have some data! 
-      if (counts[0] >= 0) {
-	// Got a new strip. 
-	AliDebug(10, Form("Add a new strip: FMD%d%c[%2d,%3d] "
-			  "(current: FMD%d%c[%2d,%3d])", 
-			  oldDetector, input.PrevRing(), 
-			  input.PrevSector() , input.PrevStrip(),
-			  detector , input.Ring(), input.Sector(), 
-			  input.Strip()));
-	fFMD->AddDigit(oldDetector, 
-		       input.PrevRing(), 
-		       input.PrevSector(), 
-		       input.PrevStrip(), 
-		       counts[0], counts[1], counts[2]);
-	AliFMDDigit* digit = 
-	  static_cast<AliFMDDigit*>(fFMD->Digits()->
-				    UncheckedAt(fFMD->GetNdigits()-1));
-	ProcessDigit(digit);
-      }
-	
-      if (!next) { 
-	AliDebug(10, Form("Read %d channels for FMD%d", 
-			  count + 1, detector));
-	break;
-      }
-    
-    
-      // If we got a new DDL, it means we have a new detector. 
-      if (ddl != oldDDL) {
-	if (detector != 0) 
-	  AliDebug(10, Form("Read %d channels for FMD%d", 
-			    count + 1, detector));
-	// Reset counts, and update the DDL cache 
-	count       = 0;
-	oldDDL      = ddl;
-	// Check that we're processing a FMD detector 
-	Int_t detId = reader->GetDetectorID();
-	if (detId != (AliFMD::kBaseDDL >> 8)) {
-	  Error("ReadAdcs", "Detector ID %d != %d",
-		detId, (AliFMD::kBaseDDL >> 8));
-	  break;
-	}
-	// Figure out what detector we're deling with 
-	oldDetector = detector;
-	switch (ddl) {
-	case 0: detector = 1; break;
-	case 1: detector = 2; break;
-	case 2: detector = 3; break;
-	default:
-	  Error("ReadAdcs", "Unknown DDL 0x%x for FMD", ddl);
-	  return kFALSE;
-	}
-	AliDebug(10, Form("Reading ADCs for 0x%x  - That is FMD%d",
-			  reader->GetEquipmentId(), detector));
-      }
-      counts.Reset(-1);
-      offset = 0;
-    }
-    
-    counts[offset] = input.Count();
-    offset++;
-    
-    AliDebug(10, Form("ADC of FMD%d%c[%2d,%3d] += %d",
-		      detector, input.Ring(), input.Sector(), 
-		      input.Strip(), input.Count()));
-    oldDetector = detector;
-  }
-  return kTRUE;
-}
-
-//____________________________________________________________________
-void
-AliFMDReconstructor::ProcessDigit(AliFMDDigit* digit) const
-{
-  // Process a digit.  Derived classes can overload this member
-  // function to do stuff to the digit.  However, it should write the
-  // ADC count to the internal cache 
-  //
-  //    fAdcs(detector - 1, ring, sector, strip) = counts;
-  //
-  // In this implementation, we count the number of strips below
-  // threshold.   This we do to later choose what kind of
-  // reconstruction algorithm we'd like to use. 
-  // 
-  UShort_t detector = digit->Detector();
-  Char_t   ring     = digit->Ring();
-  UShort_t sector   = digit->Sector();
-  UShort_t strip    = digit->Strip();    
-  
-  UShort_t counts  = SubtractPedestal(digit);
-  
-  fAdcs(detector - 1, ring, sector, strip) = counts;
-  if (counts < fThreshold) fEmptyStrips++;
-  fTotalStrips++;
-}
-
-//____________________________________________________________________
 UShort_t
 AliFMDReconstructor::SubtractPedestal(AliFMDDigit* digit) const
 {
@@ -456,22 +313,73 @@ AliFMDReconstructor::SubtractPedestal(AliFMDDigit* digit) const
   // load this to subtract a pedestal that was given in a database or
   // something like that. 
 
-  Int_t counts = 
-    TMath::Max(Int_t(digit->Count1() - fPedestal - 3 * fPedestalWidth), 0);
-  if (digit->Count2() >= 0) 
-    counts += 
-      TMath::Max(Int_t(digit->Count2() - fPedestal - 3 * fPedestalWidth), 0);
-  if (digit->Count3() >= 0) 
-    counts += 
-      TMath::Max(Int_t(digit->Count3() - fPedestal - 3 * fPedestalWidth), 0);
-      
-  if (counts < 0) counts = 0;
+  Int_t counts = 0;
+  Float_t ped = fPedestal * fPedestalFactor * fPedestalWidth;
+  if (digit->Count3() >= 0)      counts = digit->Count3();
+  else if (digit->Count2() >= 0) counts = digit->Count2();
+  else                           counts = digit->Count2();
+  counts = TMath::Max(Int_t(counts - ped), 0);
   return  UShort_t(counts);
 }
 
 //____________________________________________________________________
 void
-AliFMDReconstructor::ReconstructFromCache(Float_t zVertex) const
+AliFMDReconstructor::ProcessDigits(TClonesArray* digits) const
+{
+  Int_t nDigits = digits->GetEntries();
+  for (Int_t i = 0; i < nDigits; i++) {
+    AliFMDDigit* digit = static_cast<AliFMDDigit*>(digits->At(i));
+    AliFMDSubDetector* subDetector = 0;
+    switch (digit->Detector()) {
+    case 1: subDetector = fFMD->GetFMD1(); break;
+    case 2: subDetector = fFMD->GetFMD2(); break;
+    case 3: subDetector = fFMD->GetFMD3(); break;
+    }
+    if (!subDetector) { 
+      Warning("ProcessDigits", "Unknown detector: FMD%d" , digit->Detector());
+      continue;
+    }
+    
+    AliFMDRing* ring  = 0;
+    Float_t     ringZ = 0;
+    switch(digit->Ring()) {
+    case 'i':
+    case 'I':  
+      ring  = subDetector->GetInner(); 
+      ringZ = subDetector->GetInnerZ();
+      break;
+    case 'o':
+    case 'O':  
+      ring  = subDetector->GetOuter(); 
+      ringZ = subDetector->GetOuterZ();
+      break;
+    }
+    if (!ring) {
+      Warning("ProcessDigits", "Unknown ring: FMD%d%c", digit->Detector(), 
+	      digit->Ring());
+      break;
+    }
+    
+    Float_t  realZ    = fCurrentVertex + ringZ;
+    Float_t  stripR   = ((ring->GetHighR() - ring->GetLowR()) / ring->GetNStrips() 
+			 * (digit->Strip() + .5) + ring->GetLowR());
+    Float_t  theta    = TMath::ATan2(stripR, realZ);
+    Float_t  phi      = (2 * TMath::Pi() / ring->GetNSectors() 
+			 * (digit->Sector() + .5));
+    Float_t  eta      = -TMath::Log(TMath::Tan(theta / 2));
+    UShort_t counts   = SubtractPedestal(digit);
+    
+    TIter next(&fAlgorithms);
+    AliFMDReconstructionAlgorithm* algorithm = 0;
+    while ((algorithm = static_cast<AliFMDReconstructionAlgorithm*>(next()))) 
+      algorithm->ProcessDigit(digit, eta, phi, counts);
+  }
+}
+
+      
+//____________________________________________________________________
+void
+AliFMDReconstructor::ReconstructFromCache() const
 {
   // Based on the information in the cache, do the reconstruction. 
   Int_t nRecon = 0;
@@ -497,7 +405,7 @@ AliFMDReconstructor::ReconstructFromCache(Float_t zVertex) const
       
       // Calculate low/high theta and eta 
       // FIXME: Is this right? 
-      Float_t realZ    = zVertex + rZ;
+      Float_t realZ    = fCurrentVertex + rZ;
       Float_t thetaOut = TMath::ATan2(r->GetHighR(), realZ);
       Float_t thetaIn  = TMath::ATan2(r->GetLowR(), realZ);
       Float_t etaOut   = - TMath::Log(TMath::Tan(thetaOut / 2));
@@ -552,9 +460,9 @@ AliFMDReconstructor::ReconstructFromCache(Float_t zVertex) const
 	  // Count number of empty strips
 	  Int_t   emptyStrips = 0;
 	  for (Int_t sector = minSector; sector < maxSector; sector++) 
-	    for (Int_t strip = minStrip; strip < maxStrip; strip++) 
-	      if (fAdcs(sub->GetId() - 1, r->GetId(), sector, strip) 
-		  < fThreshold) emptyStrips++;
+	    for (Int_t strip = minStrip; strip < maxStrip; strip++) emptyStrips++;
+	  // if (fAdcs(sub->GetId() - 1, r->GetId(), sector, strip) 
+	  //     < fThreshold) emptyStrips++;
 	  
 	  // The total number of strips 
 	  Float_t nTotal = (maxSector - minSector) * (maxStrip - minStrip);

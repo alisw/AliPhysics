@@ -27,27 +27,12 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef ALIFMDSUBDETECTOR_H
-# include "AliFMDSubDetector.h"
-#endif
-#ifndef ALIFMDRING_H
-# include <AliFMDRing.h>
-#endif
-#ifndef ALILOG_H
-# include "AliLog.h"
-#endif
-#ifndef ROOT_TVirtualMC
-# include <TVirtualMC.h>
-#endif
-#ifndef ROOT_TList
-# include <TList.h>
-#endif
-#ifndef ROOT_TString
-# include <TString.h>
-#endif
-#ifndef __IOSTREAM__
-# include <iostream>
-#endif
+#include "AliFMDSubDetector.h"	// ALIFMDSUBDETECTOR_H
+#include "AliFMDRing.h"		// ALIFMDRING_H
+#include "AliLog.h"		// ALILOG_H
+#include "TVirtualMC.h"		// ROOT_TVirtualMC
+#include "TList.h"		// ROOT_TList
+#include "TString.h"		// ROOT_TString
 
 ClassImp(AliFMDSubDetector);
 

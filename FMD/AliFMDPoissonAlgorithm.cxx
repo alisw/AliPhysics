@@ -16,42 +16,57 @@
 /* $Id$ */
 
 //____________________________________________________________________
-//                                                                          
-// Buffer to read RAW ALTRO FMD format from a AliRawReader 
 // 
+// Base class for FMD poisson algorithms. 
 //
-#include "AliFMDRawStream.h"		// ALIFMDRAWSTREAM_H
-#include "AliRawReader.h"		// ALIRAWREADER_H
+// Derived classes will implement various ways of reconstructing the
+// charge particle multiplicity in the FMD.  
+// 
+#include "AliFMDPoissonAlgorithm.h"	// ALIFMDPOISSONALGORITHM_H
+#include "AliFMDDigit.h"		// ALIFMDDIGIT_H
 
 //____________________________________________________________________
-ClassImp(AliFMDRawStream);
+ClassImp(AliFMDPoissonAlgorithm);
 
 //____________________________________________________________________
-AliFMDRawStream::AliFMDRawStream(AliRawReader* reader, UShort_t sampleRate) 
-  : AliAltroRawStream(reader), 
-    fSampleRate(sampleRate),
-    fPrevTime(-1), 
-    fExplicitSampleRate(kFALSE)
+AliFMDPoissonAlgorithm::AliFMDPoissonAlgorithm()
+  : AliFMDReconstructionAlgorithm("Poisson", "Poisson")
+{}
+
+
+//____________________________________________________________________
+void
+AliFMDPoissonAlgorithm::Reset() 
 {
-  if (fSampleRate > 0) fExplicitSampleRate = kTRUE;
+  // Reset internal data 
+  fTotal = 0;
+  fEmpty.Reset(kFALSE);
 }
 
-//_____________________________________________________________________________
-Bool_t 
-AliFMDRawStream::Next()
+//____________________________________________________________________
+void
+AliFMDPoissonAlgorithm::ProcessDigit(AliFMDDigit* digit, 
+				     Float_t eta, Float_t phi, 
+				     UShort_t count)
 {
-  // read the next raw digit
-  // returns kFALSE if there is no digit left
-  fPrevTime = fTime;
-  if (AliAltroRawStream::Next()) {
-    if (!fExplicitSampleRate && fPrevPad != fPad) 
-      fSampleRate = fTimeBunch / 128;
-    return kTRUE;
-  }
-  return kFALSE;
+  // Process one digit. 
+  // 
+  // Parameters: 
+  //    
+  //   digit		Digit to process 
+  //   ipZ		Z--coordinate of the primary interaction
+  //                    vertex of this event 
+  //
+  if (!digit) return;
+  fTotal++;
+  if (charge < threshold) fEmpty(digit->Detector() - 1, 
+				 digit->Ring(), 
+				 digit->Setctor(), 
+				 digit->Strip()) = kTRUE;
 }
 
-//_____________________________________________________________________________
-//
+
+//____________________________________________________________________
+// 
 // EOF
 //

@@ -12,9 +12,11 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class  std::pair<Float_t,UShort_t>;
-#pragma link C++ class  AliFMDMap<std::pair<Float_t,UShort_t> >;
-#pragma link C++ typedef  AliFMDEdepMap;
+// #pragma link C++ class  std::pair<Float_t,UShort_t>;
+// #pragma link C++ class  AliFMDMap<std::pair<Float_t,UShort_t> >;
+// #pragma link C++ typedef  AliFMDEdepMap;
+#pragma link C++ class  AliFMDMap+;
+#pragma link C++ class  AliFMDEdepMap+;
 #pragma link C++ class  AliFMDHit+;
 #pragma link C++ class  AliFMD+;
 #pragma link C++ class  AliFMDv0+;
@@ -28,6 +30,7 @@
 #pragma link C++ class  AliFMDBaseDigitizer+;
 #pragma link C++ class  AliFMDDigitizer+;
 #pragma link C++ class  AliFMDSDigitizer+;
+#pragma link C++ class  AliFMDRawWriter+;
 
 #else
 # error Not for compilation 

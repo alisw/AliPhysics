@@ -21,18 +21,10 @@
 //
 // This implements the geometry for FMD1 
 //
-#ifndef ALIFMD1_H
-# include "AliFMD1.h"
-#endif 
-#ifndef ALIFMDRING_H
-# include "AliFMDRing.h"
-#endif 
-#ifndef ROOT_TVirtualMC
-# include <TVirtualMC.h>
-#endif
-#ifndef ALILOG_H
-# include "AliLog.h"
-#endif
+#include "AliFMD1.h"		// ALIFMD1_H 
+#include "AliFMDRing.h"		// ALIFMDRING_H 
+#include "TVirtualMC.h"		// ROOT_TVirtualMC
+#include "AliLog.h"		// ALILOG_H
 
 
 //____________________________________________________________________

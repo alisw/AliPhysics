@@ -59,10 +59,8 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#ifndef ALIFMDDIGIT_H
-# include "AliFMDDigit.h"
-#endif
-# include <Riostream.h>
+#include "AliFMDDigit.h"	// ALIFMDDIGIT_H
+#include "Riostream.h"		// ROOT_Riostream
 
 //====================================================================
 ClassImp(AliFMDBaseDigit);
@@ -102,9 +100,9 @@ AliFMDBaseDigit::Print(Option_t* /* option*/) const
 {
   // Print digit to standard out 
   cout << ClassName() << ": FMD" << fDetector << fRing << "[" 
-	    << setw(3) << fSector << ","
-	    << setw(3) << fStrip << "]" 
-	    << endl;
+       << setw(3) << fSector << ","
+       << setw(3) << fStrip << "]" 
+       << endl;
 }
 
 //====================================================================

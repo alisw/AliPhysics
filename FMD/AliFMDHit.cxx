@@ -15,20 +15,15 @@
 
 /* $Id$ */
 
-//////////////////////////////////////////////////////////////////////////////
+//____________________________________________________________________
 //
 //  Hits in the FMD 
 //
 // Latest changes by Christian Holm Christensen
 //
-//////////////////////////////////////////////////////////////////////////////
-#ifndef ALIFMDHIT_H
-# include "AliFMDHit.h"
-#endif
-#ifndef ALILOG_H
-# include "AliLog.h"
-#endif
-# include <Riostream.h>
+#include "AliFMDHit.h"		// ALIFMDHIT_H
+#include "AliLog.h"		// ALILOG_H
+#include "Riostream.h"		// ROOT_Riostream
 
 //____________________________________________________________________
 ClassImp(AliFMDHit);

@@ -32,9 +32,12 @@
 #ifndef ALIRECONSTRUCTOR_H
 # include <AliReconstructor.h>
 #endif
-#ifndef ALIFMDMAP_H
-# include <AliFMDMap.h>
+#ifndef ROOT_TObjArray
+# include <TObjArray.h>
 #endif
+// #ifndef ALIFMDUSHORTMAP_H
+// # include <AliFMDUShortMap.h>
+// #endif
 
 //____________________________________________________________________
 class TClonesArray;
@@ -43,7 +46,8 @@ class AliLoader;
 class AliRunLoader;
 class AliFMDDigit;
 class AliRawReader;
-typedef AliFMDMap<UShort_t> AliFMDAdcMap;
+
+// typedef AliFMDUShortMap AliFMDAdcMap;
 
 
 //____________________________________________________________________
@@ -58,7 +62,7 @@ public:
   void         SetDeltaEta(Float_t deta=.1)  { fDeltaEta = deta;  }
   void         SetDeltaPhi(Float_t dphi=360) { fDeltaPhi = dphi;  } 
   void         SetThreshold(UShort_t t=6)    { fThreshold = t; }
-  void         SetPedestal(Float_t mean=10, Float_t width=1);
+  void         SetPedestal(Float_t mean=10, Float_t width=1, Float_t f=3);
      
   virtual void Reconstruct(AliRunLoader* runLoader) const;
   virtual void Reconstruct(AliRunLoader* runLoader,  
@@ -67,27 +71,26 @@ public:
   
 protected:
   virtual void     ProcessEvent(Int_t event, 
-				AliRawReader* rawReader, 
-				TClonesArray* digits) const;
-  virtual Bool_t   ReadAdcs(TClonesArray* digits) const;
-  virtual Bool_t   ReadAdcs(AliRawReader* rawReader) const;
-  virtual void     ProcessDigit(AliFMDDigit* digit) const;
+				AliRawReader* rawReader) const;
+  virtual void     ProcessDigits(TClonesArray* digits) const;
   virtual UShort_t SubtractPedestal(AliFMDDigit* digit) const;
-  virtual void     ReconstructFromCache(Float_t zVertex) const;
+  virtual void     ReconstructFromCache() const;
 
-  mutable AliFMDAdcMap  fAdcs;       // Cached ADC values
   mutable AliRunLoader* fRunLoader;  // Run loader 
   mutable AliLoader*    fFMDLoader;  // FMD specific loader 
   mutable TClonesArray* fParticles;  // Array of particles 
   mutable AliFMD*       fFMD;        // Pointer to FMD manager 
   
+  TObjArray	        fAlgorithms;    // Array of algorithms
   Float_t               fDeltaEta;      // Bin size in eta
   Float_t               fDeltaPhi;      // Bin size in phi
   UShort_t              fThreshold;     // Threshold for Poisson recon.
   Float_t               fPedestal;      // Pedestal to subtract
   Float_t               fPedestalWidth; // Width of pedestal
+  Float_t               fPedestalFactor;// Number of pedestal widths 
   mutable Int_t         fEmptyStrips;   // Number of empty strips
   mutable Int_t         fTotalStrips;   // Total number of strips 
+  mutable Float_t       fCurrentVertex; // Z-coordinate of primary vertex
   
   enum { 
     kMaxDetectors = 3,                  // Maximum number of sub-det.

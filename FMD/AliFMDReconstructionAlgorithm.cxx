@@ -16,42 +16,27 @@
 /* $Id$ */
 
 //____________________________________________________________________
-//                                                                          
-// Buffer to read RAW ALTRO FMD format from a AliRawReader 
 // 
+// Base class for FMD reconstruction algorithms. 
 //
-#include "AliFMDRawStream.h"		// ALIFMDRAWSTREAM_H
-#include "AliRawReader.h"		// ALIRAWREADER_H
+// Derived classes will implement various ways of reconstructing the
+// charge particle multiplicity in the FMD.  
+// 
+#include "AliFMDReconstructionAlgorithm.h"	// ALIFMDRECONSTRUCTIONALGORITHM_H
+#include "AliFMDDigit.h"			// ALIFMDDIGIT_H
 
 //____________________________________________________________________
-ClassImp(AliFMDRawStream);
+ClassImp(AliFMDReconstructionAlgorithm);
 
 //____________________________________________________________________
-AliFMDRawStream::AliFMDRawStream(AliRawReader* reader, UShort_t sampleRate) 
-  : AliAltroRawStream(reader), 
-    fSampleRate(sampleRate),
-    fPrevTime(-1), 
-    fExplicitSampleRate(kFALSE)
-{
-  if (fSampleRate > 0) fExplicitSampleRate = kTRUE;
-}
+AliFMDReconstructionAlgorithm::AliFMDReconstructionAlgorithm(const char* name, 
+							     const char* title)
+  : TNamed(name, title)
+{}
 
-//_____________________________________________________________________________
-Bool_t 
-AliFMDRawStream::Next()
-{
-  // read the next raw digit
-  // returns kFALSE if there is no digit left
-  fPrevTime = fTime;
-  if (AliAltroRawStream::Next()) {
-    if (!fExplicitSampleRate && fPrevPad != fPad) 
-      fSampleRate = fTimeBunch / 128;
-    return kTRUE;
-  }
-  return kFALSE;
-}
 
-//_____________________________________________________________________________
-//
+
+//____________________________________________________________________
+// 
 // EOF
 //

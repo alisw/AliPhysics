@@ -58,9 +58,7 @@
 // various components. 
 //
 
-#ifndef ALIFMDV0_H
-# include "AliFMDv0.h"
-#endif
+#include "AliFMDv0.h"		// ALIFMDV0_H
 
 //____________________________________________________________________
 ClassImp(AliFMDv0);

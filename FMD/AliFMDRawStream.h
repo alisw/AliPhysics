@@ -23,28 +23,30 @@
 class AliFMDRawStream : public AliAltroRawStream 
 {
 public:
-  AliFMDRawStream(AliRawReader* reader);
+  AliFMDRawStream(AliRawReader* reader, UShort_t sampleRate=0);
 
   Short_t Sector()      const { return fRow; }
   Char_t  Ring()        const { return (fSector == 0 ? 'I' : 'O'); }
   Short_t Strip()       const { return fPad + fTime / fSampleRate; }
+  Short_t Sample()      const { return fTime % fSampleRate; }
   Short_t PrevSector()  const { return fPrevRow; }
   Char_t  PrevRing()    const { return (fPrevSector == 0 ? 'I' : 'O'); }
   Short_t PrevStrip()   const { return fPrevPad + fPrevTime/fSampleRate; }
-
+    
   Bool_t  IsNewRing()   const { return (fSector != fPrevSector); }
   Bool_t  IsNewSector() const { return (fRow != fPrevRow) || IsNewRing(); }
   Bool_t  IsNewStrip()  const { return(Strip() != PrevStrip())||IsNewSector();}
     
-  Short_t Count()      const { return fSignal; }
-  Short_t SampleRate() const { return fSampleRate; }
+  Short_t Count()       const { return fSignal; }
+  Short_t SampleRate()  const { return fSampleRate; }
   
   virtual Bool_t   Next();
   
 private:
-  UShort_t fSampleRate; // # of ALTRO samples per VA1_ALICE clock
-  Int_t    fPrevTime;   // Last time bin
-
+  UShort_t fSampleRate;         // # of ALTRO samples per VA1_ALICE clock
+  Int_t    fPrevTime;           // Last time bin
+  Bool_t   fExplicitSampleRate; // True if the sample rate was set externally
+  
   ClassDef(AliFMDRawStream, 0) // Read raw FMD Altro data 
 };
 
