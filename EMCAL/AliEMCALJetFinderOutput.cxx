@@ -38,6 +38,8 @@ ClassImp(AliEMCALJetFinderOutput)
 
 //________________________________________________________________________
 AliEMCALJetFinderOutput::AliEMCALJetFinderOutput(){ 
+	// Default constructor
+	
 	fNMaxJets=10;
 	fNMaxParticles=2000;
 	fNMaxPartons=4;
@@ -52,7 +54,7 @@ if (fDebug>0) Info("AliEMCALJetFinderOutput","Beginning Constructor");
 } //________________________________________________________________________
 void AliEMCALJetFinderOutput::InitArrays()
 {
-	
+	// Initialise arrays - legacy from TClones days
 if (fDebug>1) Info("AliEMCALJetFinderOutput","Beginning InitArrays");
 
 }
@@ -60,12 +62,15 @@ if (fDebug>1) Info("AliEMCALJetFinderOutput","Beginning InitArrays");
 //_______________________________________________________________________
 AliEMCALJetFinderOutput::~AliEMCALJetFinderOutput()
 {
+	// Default destrucotr
 if (fDebug>0) Info("~AliEMCALJetFinderOutput","Beginning Destructor");
 }
 
 //_______________________________________________________________________
 void AliEMCALJetFinderOutput::Reset(AliEMCALJetFinderResetType_t resettype)
 {
+// Reset stored data
+	
 if (fDebug>1) Info("Reset","Beginning Reset");
 if (!fInitialised) InitArrays();
  if (	resettype == kResetAll ||
@@ -87,6 +92,8 @@ if (!fInitialised) InitArrays();
 //________________________________________________________________________
 void AliEMCALJetFinderOutput::AddJet(AliEMCALJet* jet)
 {
+// Add a jet to the array
+	
 if (fDebug>1) Info("AddJet","Beginning AddJet");
 if (!fInitialised) InitArrays();
 
@@ -105,6 +112,8 @@ if (!fInitialised) InitArrays();
 //_______________________________________________________________________
 void AliEMCALJetFinderOutput::AddParton(AliEMCALParton* parton)
 {
+//Add a parton to the array
+	
 if (fDebug>1) Info("AddParton","Beginning AddParton");
 if (!fInitialised) InitArrays();
 
@@ -121,6 +130,8 @@ if (!fInitialised) InitArrays();
 //_______________________________________________________________________
 void AliEMCALJetFinderOutput::AddParticle(TParticle* particle)
 {
+//Add a particle tot he array
+	
 if (fDebug>1) Info("AddParticle","Beginning AddParticle");
 if (!fInitialised) InitArrays();
 
@@ -136,6 +147,7 @@ if (!fInitialised) InitArrays();
 //______________________________________________________________________
 AliEMCALJet* AliEMCALJetFinderOutput::GetJet(Int_t jetID)
 {
+	// return a jet
 if (fDebug>1) Info("GetJet","Beginning GetJet");
 	
   if (jetID >= fNJets) return 0;
@@ -146,6 +158,7 @@ if (fDebug>1) Info("GetJet","Beginning GetJet");
 //______________________________________________________________________
 AliEMCALParton* AliEMCALJetFinderOutput::GetParton(Int_t partonID)
 {
+	//return a parton
 if (fDebug>1) Info("GetParton","Beginning GetParton");
 
   if (partonID >= fNPartons) return 0;
@@ -155,6 +168,8 @@ if (fDebug>1) Info("GetParton","Beginning GetParton");
 //______________________________________________________________________
 TParticle* AliEMCALJetFinderOutput::GetParticle(Int_t particleID)
 {
+//return a particle
+	
 if (fDebug>1) Info("GetParticle","Beginning GetParticle");
 
   if (particleID >= fNParticles) return 0;

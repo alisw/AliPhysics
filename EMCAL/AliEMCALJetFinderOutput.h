@@ -32,19 +32,19 @@ class AliEMCALJetFinderOutput : public TObject
 		void AddParticle(TParticle *particle);
 		void SetDebug(Int_t debug){fDebug = debug;}
 		AliEMCALJet* GetJet(Int_t jetID);
-		Int_t GetNJets(){return fNJets;}
+		const Int_t GetNJets(){return fNJets;}
 		AliEMCALParton* GetParton(Int_t partonID);
-		Int_t GetNPartons(){return fNPartons;}
+		const Int_t GetNPartons(){return fNPartons;}
 		TParticle* GetParticle(Int_t particleID);
-		Int_t GetNParticles(){return fNParticles;}
+		const Int_t GetNParticles(){return fNParticles;}
 
 	private:
 		void InitArrays();
-		AliEMCALJet	fJetsArray[10];     	// 
-		AliEMCALParton	fPartonsArray[4];  	// 
+		AliEMCALJet	fJetsArray[10];     	// [10] Array of jet objects
+		AliEMCALParton	fPartonsArray[4];  	// [4] Array of parton objects
 		Int_t		fNPartons;		// Number of Partons actually stored
 		Int_t		fNJets; 		// Number of jets actually stored
-		TParticle   fParticlesArray[2000];	//
+		TParticle   fParticlesArray[2000];	// [2000] Array of particles
 		Int_t		fNParticles;		// Number of particles actually stored
                 Int_t           fNMaxJets;      	// Maximum number of jets 
                 Int_t           fNMaxParticles; 	// Maximum number of primary particles
@@ -52,6 +52,6 @@ class AliEMCALJetFinderOutput : public TObject
                 Int_t           fDebug;			// Debug level
 		Bool_t 		fInitialised;		// stores whether or not the arrays have been initialised
 		
-	ClassDef(AliEMCALJetFinderOutput,2)
+	ClassDef(AliEMCALJetFinderOutput,3)
 };
 #endif
