@@ -26,7 +26,8 @@ public:
   virtual ~AliTOFSDigitizer() ; // dtor
 
   virtual void  Exec(Option_t *verboseOption, Option_t *allEvents="noAll"); 
-  void SetSDigitsFile(char * file ) ;
+  void SetSDigitsFile(char * file ) {;}
+  
   void InitParameters();
   virtual void PrintParameters() const ;
   virtual void  SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t geantTime, Int_t& nActivatedPads, Int_t& nFiredPads, Bool_t* isFired, Int_t* nPlace, Float_t* qInduced, Float_t* tofTime, Float_t& averageTime);
