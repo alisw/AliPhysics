@@ -576,8 +576,8 @@ Int_t AliPHOSGetter::ReadTreeS()
   
   // gets TreeS from the root file (PHOS.SDigits.root)
   if ( !IsLoaded("S") ) {
-    PhosLoader()->LoadSDigits("UPDATE") ;
-    PhosLoader()->LoadSDigitizer("UPDATE") ;
+    PhosLoader()->LoadSDigits("READ") ;
+    PhosLoader()->LoadSDigitizer("READ") ;
     SetLoaded("S") ; 
   }
 
