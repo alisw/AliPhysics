@@ -24,12 +24,39 @@
 //_____________________________________________________________
 // AliL3FileHandler
 //
-// The L3 Binary File handler 
+// The HLT ROOT <-> binary files handling class
 //
+// This class provides the interface between AliROOT files,
+// and HLT binary files. It should be used for converting 
+// TPC data stored in AliROOT format (outputfile from a simulation),
+// into the data format currently used by in the HLT framework. 
+// This enables the possibility to always use the same data format, 
+// whether you are using a binary file as an input, or a AliROOT file.
+//
+// For example on how to create binary files from a AliROOT simulation,
+// see example macro exa/Binary.C.
+//
+// For reading a AliROOT file into HLT format in memory, do the following:
+//
+// AliL3FileHandler file;
+// file.SetAliInput("galice.root");
+// AliL3DigitRowData *dataPt = (AliL3DigitRowData*)file.AliDigits2Memory(nrows,eventnr);
+// 
+// All the data are then stored in memory and accessible via the pointer dataPt.
+// Accesing the data is then identical to the example 1) showed in AliL3MemHandler class.
+//
+// For converting the data back, and writing it to a new AliROOT file do:
+//
+// AliL3FileHandler file;
+// file.SetAliInput("galice.root");
+// file.Init(slice,patch,NumberOfRowsInPatch);
+// file.AliDigits2RootFile(dataPt,"new_galice.root");
+// file.CloseAliInput();
 
 ClassImp(AliL3FileHandler)
 
-AliL3FileHandler::AliL3FileHandler(){
+AliL3FileHandler::AliL3FileHandler()
+{
   //Default constructor
   fInAli = 0;
   fParam = 0;
@@ -39,7 +66,8 @@ AliL3FileHandler::AliL3FileHandler(){
   fDigitsTree=0;
 }
 
-AliL3FileHandler::~AliL3FileHandler(){
+AliL3FileHandler::~AliL3FileHandler()
+{
   //Destructor
   if(fMC) CloseMCOutput();
   if(fDigitsTree) delete fDigitsTree;
@@ -47,52 +75,59 @@ AliL3FileHandler::~AliL3FileHandler(){
   
 }
 
-Bool_t AliL3FileHandler::SetMCOutput(char *name){
+Bool_t AliL3FileHandler::SetMCOutput(char *name)
+{
   fMC = fopen(name,"w");
   if(!fMC){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::SetMCOutput","File Open")
-    <<"Pointer to File = 0x0 "<<ENDLOG;
+      <<"Pointer to File = 0x0 "<<ENDLOG;
     return kFALSE;
   }
   return kTRUE;
 }
 
-Bool_t AliL3FileHandler::SetMCOutput(FILE *file){
+Bool_t AliL3FileHandler::SetMCOutput(FILE *file)
+{
   fMC = file;
   if(!fMC){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::SetMCOutput","File Open")
-    <<"Pointer to File = 0x0 "<<ENDLOG;
+      <<"Pointer to File = 0x0 "<<ENDLOG;
     return kFALSE;
   }
   return kTRUE;
 }
 
-void AliL3FileHandler::CloseMCOutput(){
+void AliL3FileHandler::CloseMCOutput()
+{
   if(!fMC){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::CloseMCOutPut","File Close")
-    <<"Nothing to Close"<<ENDLOG;
+      <<"Nothing to Close"<<ENDLOG;
     return;
   }
   fclose(fMC);
   fMC =0;
 }
 
-Bool_t AliL3FileHandler::SetAliInput(){
+Bool_t AliL3FileHandler::SetAliInput()
+{
   if(!fInAli->IsOpen()){
     LOG(AliL3Log::kError,"AliL3FileHandler::SetAliInput","File Open")
-    <<"Ali File "<<fInAli->GetName()<<" does not exist"<<ENDLOG;
+      <<"Ali File "<<fInAli->GetName()<<" does not exist"<<ENDLOG;
     return kFALSE;
   }
   fParam = (AliTPCParam*)fInAli->Get("75x40_100x60");
   if(!fParam){ 
     LOG(AliL3Log::kError,"AliL3FileHandler::SetAliInput","File Open")
-    <<"No AliTPCParam 75x40_100x60 in File "<<fInAli->GetName()<<ENDLOG;
-     return kFALSE;
+      <<"No AliTPCParam 75x40_100x60 in File "<<fInAli->GetName()<<ENDLOG;
+    return kFALSE;
   }
   return kTRUE;
 }
 
-Bool_t AliL3FileHandler::SetAliInput(char *name){
+Bool_t AliL3FileHandler::SetAliInput(char *name)
+{
+  //Open the AliROOT file with name.
+  
   fInAli= new TFile(name,"READ");
   if(!fInAli){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::SetAliInput","File Open")
@@ -102,7 +137,10 @@ Bool_t AliL3FileHandler::SetAliInput(char *name){
   return SetAliInput();
 }
 
-Bool_t AliL3FileHandler::SetAliInput(TFile *file){
+Bool_t AliL3FileHandler::SetAliInput(TFile *file)
+{
+  //Specify already opened AliROOT file to use as an input.
+  
   fInAli=file;
   if(!fInAli){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::SetAliInput","File Open")
@@ -112,19 +150,24 @@ Bool_t AliL3FileHandler::SetAliInput(TFile *file){
   return SetAliInput();
 }
 
-void AliL3FileHandler::CloseAliInput(){
+void AliL3FileHandler::CloseAliInput()
+{
   if(!fInAli){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::CloseAliInput","File Close")
-    <<"Nothing to Close"<<ENDLOG;
-     return;
+      <<"Nothing to Close"<<ENDLOG;
+    return;
   }
   if(fInAli->IsOpen()) fInAli->Close();
   delete fInAli;
   fInAli = 0;
-    
+  
 }
 
-Bool_t AliL3FileHandler::IsDigit(){
+Bool_t AliL3FileHandler::IsDigit()
+{
+  //Check if there is a TPC digit tree in the current file.
+  //Return kTRUE if tree was found, and kFALSE if not found.
+  
   if(!fInAli){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::IsDigit","File")
     <<"Pointer to TFile = 0x0 "<<ENDLOG;
@@ -144,7 +187,9 @@ Bool_t AliL3FileHandler::IsDigit(){
 }
 
 ///////////////////////////////////////// Digit IO  
-Bool_t AliL3FileHandler::AliDigits2Binary(Int_t event){
+Bool_t AliL3FileHandler::AliDigits2Binary(Int_t event)
+{
+  
   Bool_t out = kTRUE;
   UInt_t nrow;
   AliL3DigitRowData* data = AliDigits2Memory(nrow,event);
@@ -154,7 +199,11 @@ Bool_t AliL3FileHandler::AliDigits2Binary(Int_t event){
 }
 
 
-Bool_t AliL3FileHandler::AliDigits2CompBinary(Int_t event){
+Bool_t AliL3FileHandler::AliDigits2CompBinary(Int_t event)
+{
+  //Convert AliROOT TPC data, into HLT data format.
+  //event specifies the event you want in the aliroot file.
+  
   Bool_t out = kTRUE;
   UInt_t ndigits=0;
   AliL3DigitRowData* digits = AliDigits2Memory(ndigits,event);
@@ -164,7 +213,11 @@ Bool_t AliL3FileHandler::AliDigits2CompBinary(Int_t event){
 }
 
 
-AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event){
+AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event)
+{
+  //Read data from AliROOT file into memory, and store it in the HLT data format.
+  //Returns a pointer to the data.
+
   AliL3DigitRowData *data = 0;
   nrow=0;
   if(!fInAli){
@@ -301,6 +354,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
 
 Bool_t AliL3FileHandler::GetDigitsTree(Int_t event)
 {
+  //Connects to the TPC digit tree in the AliROOT file.
   
   fInAli->cd();
   Char_t dname[100];
@@ -318,8 +372,14 @@ Bool_t AliL3FileHandler::GetDigitsTree(Int_t event)
 
 void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_digitsfile)
 {
-  //Write digits to a new alirootfile.
-
+  //Write the data stored in rowPt, into a new AliROOT file.
+  //The data is stored in the AliROOT format 
+  //This is specially a nice thing if you have modified data, and wants to run it  
+  //through the offline reconstruction chain.
+  //The arguments is a pointer to the data, and the name of the new AliROOT file.
+  //Remember to pass the original AliROOT file (the one that contains the original
+  //simulated data) to this object, in order to retrieve the MC id's of the digits.
+  
   if(!fInAli)
     {
       printf("AliL3FileHandler::AliDigits2RootFile : No rootfile\n");

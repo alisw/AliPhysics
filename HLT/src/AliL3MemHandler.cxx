@@ -26,13 +26,11 @@
 //
 // The HLT Binary File handler 
 //
-//
-//  This class does all the memory I/O handling on raw binary files.
-//  For the moment the compressed binary files are run-length encoded, using
-//  10 bit digits.
+//  This class does all the memory I/O handling of HLT binary files.
 //  
 //  Examples:
-//  
+//  ---------
+//
 //  1) Reading a binary file:
 //  
 //  AliL3MemHandler file;
@@ -69,6 +67,12 @@
 //  newfile.SetBinaryOutput(newfilename);
 //  newfile.Memory2CompBinary((UInt_t)NumberOfRowsInPatch,(AliL3DigitRowData*)data);
 //  newfile.CloseBinaryOutput();
+//
+//
+// Compressed file format:
+// -----------------------
+//
+// The data is RLE encoded and currently using _10_ bit range for the ADC-values.
 </pre> */  
   
 ClassImp(AliL3MemHandler)
