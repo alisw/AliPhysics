@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2001/09/27 10:39:20  vicinanz
+SDigitizer and Merger added
+
 Revision 1.22  2001/09/20 15:54:22  vicinanz
 Updated Strip Structure (Double Stack)
 
@@ -1044,7 +1047,8 @@ void AliTOFv3::StepManager()
  
     gMC->Gmtod(xm,xpad,1);
     gMC->Gmtod(pm,ppad,2);
-
+    if(ppad[1]>1.) ppad[1]=1.;
+    if(ppad[1]<-1.) ppad[1]=-1.;
     incidenceAngle = TMath::ACos(ppad[1])*kRaddeg;
 
     z = pos[2];
