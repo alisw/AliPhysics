@@ -18,10 +18,18 @@ enum PprRad_t
     kGluonRadiation, kNoGluonRadiation
 };
 
+enum PprMag_t
+{
+    k2kG, k4kG, k5kG
+};
+
+
 // This part for configuration    
 static PprRun_t run = test50;
 static PprGeo_t geo = kHoles;
 static PprRad_t rad = kGluonRadiation;
+static PprMag_t mag = k4kG;
+
 // Comment line 
 static TString  comment;
 
@@ -106,7 +114,16 @@ void Config()
     gener->SetVertexSmear(kPerEvent); 
     gener->SetTrackingFlag(1);
     gener->Init();
-
+    
+    if (mag == k2kG) {
+	comment = comment.Append(" | L3 field 0.2 T");
+    } else if (mag == k4kG) {
+	comment = comment.Append(" | L3 field 0.4 T");
+    } else if (mag == k5kG) {
+	comment = comment.Append(" | L3 field 0.5 T");
+    }
+    
+    
     if (rad == kGluonRadiation)
     {
 	comment = comment.Append(" | Gluon Radiation On");
@@ -127,7 +144,7 @@ void Config()
     
     
 // Field (L3 0.4 T)
-    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
+    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., mag);
     rootfile->cd();
     gAlice->SetField(field);    
     
@@ -151,6 +168,7 @@ void Config()
     Int_t   iTRD    = 1;
     Int_t   iZDC    = 1;
     Int_t   iEMCAL  = 1;
+    Int_t   iVZERO  = 1;
     Int_t   iCRT    = 0;
 
     //=================== Alice BODY parameters =============================
@@ -404,6 +422,12 @@ void Config()
     {
         //=================== CRT parameters ============================
         AliCRT *CRT = new AliCRTv0("CRT", "normal ACORDE");
+    }
+
+     if (iVZERO)
+    {
+        //=================== CRT parameters ============================
+        AliVZERO *VZERO = new AliVZEROv2("VZERO", "normal VZERO");
     }
  
              
