@@ -840,9 +840,9 @@ void AliModule::Digits2Raw()
 
   Warning("Digits2Raw", "Dummy version called for %s", GetName());
 
-  const Int_t kNDetectors = 16;
-  const char* kDetectors[kNDetectors] = {"TPC", "ITSSPD", "ITSSDD", "ITSSSD", "TRD", "TOF", "PHOS", "RICH", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "START", "VZERO", "CRT"};
-  const Int_t kDetectorDDLs[kNDetectors] = {216, 20, 12, 16, 18, 72, 20, 5, 22, 20, 1, 1, 6, 1, 1};
+  const Int_t kNDetectors = 17;
+  const char* kDetectors[kNDetectors] = {"TPC", "ITSSPD", "ITSSDD", "ITSSSD", "TRD", "TOF", "PHOS", "RICH", "EMCAL", "MUON", "MUTR", "ZDC", "PMD", "START", "VZERO", "CRT", "FMD"};
+  const Int_t kDetectorDDLs[kNDetectors] = {216, 20, 12, 16, 18, 72, 20, 20, 22, 20, 2, 1, 6, 1, 1, 1, 1};
   Int_t nDDLs = 1;
   Int_t ddlOffset = 0;
   for (Int_t i = 0; i < kNDetectors; i++) {

@@ -651,19 +651,22 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName)
 // convert raw data DDL files to a DATE file with the program "dateStream"
 
   // DATE setup
-  const Int_t kNDetectors = 16;
+  const Int_t kNDetectors = 17;
   const char* kDetectors[kNDetectors] = {"TPC", "ITSSPD", "ITSSDD", "ITSSSD", 
                                          "TRD", "TOF", "PHOS", "RICH", 
-                                         "EMCAL", "MUON", "FMD", "ZDC", 
-                                         "PMD", "START", "VZERO", "CRT"};
+                                         "EMCAL", "MUON", "MUTR", "ZDC", 
+                                         "PMD", "START", "VZERO", "CRT",
+                                         "FMD"};
   const Int_t kDetectorDDLs[kNDetectors]   = {216, 20, 12, 16, 
-                                              18, 72, 20, 5, 
-                                              22, 20, 1, 1, 
-                                              6, 1, 1, 1};
+                                              18, 72, 20, 20, 
+                                              22, 20, 2, 1, 
+                                              6, 1, 1, 1,
+                                              1};
   const Float_t kDetectorLDCs[kNDetectors] = {46, 2, 2, 1, 
                                               4, 2, 1, 2, 
-                                              1, 2, 0.5, 0.5,
-                                              1, 0.5, 0.5, 1};
+                                              1, 2, 1, 1,
+                                              1, 0.5, 0.5, 1,
+                                              1};
 
   char* path = gSystem->Which(gSystem->Getenv("PATH"), "dateStream");
   if (!path) {
