@@ -50,7 +50,8 @@ public:
   virtual Int_t GetMaximumDigitMultiplicity() const { return  fMaxDigit; } 
   virtual Int_t GetMaximumTrackMultiplicity() const { return  fMaxTrack; } 
   virtual Int_t GetTracksMultiplicity(void) const { return fMulTrack ; }
-  virtual void  Print(Option_t * opt = "void") = 0 ; 
+  //PH  virtual void  Print(Option_t * opt = "void") = 0 ; 
+  virtual void  Print(Option_t * opt = "void") {;} 
   AliRecPoint & operator= (const AliRecPoint &recp);
   void          SetIndexInList(Int_t val) { fIndexInList = val ; } 
 
