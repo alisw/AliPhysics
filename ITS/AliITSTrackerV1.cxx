@@ -892,7 +892,7 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
 ////////////////////////////////////////////////////////////////////////////
 ////   nuova definizione idetot e toucLad e toucDet si puo' trasformare in un metodo
       Float_t pigre=TMath::Pi();
-      Float_t rangephi, rangez;
+      Float_t rangephi=0.0, rangez=0.0;
 		if(layerfin==1 || layerfin ==2){
 		rangephi=30.*fepsphi*TMath::Sqrt(sigmaphil[layerfin-1]+(*trackITS).GetSigmaphi());
 		rangez = 30.*fepsz*TMath::Sqrt(sigmazl[layerfin-1]+(*trackITS).GetSigmaZ());
