@@ -19,12 +19,14 @@ Binary(char* in,int first, int last,char *path=".",Bool_t sp=kFALSE){
   //l.UnSet(AliL3Logger::kDebug);
   //l.UnSet(AliL3Logger::kAll);
   //l.Set(AliL3Logger::kInformational);
-  l.UseStdout();
+  l.UseStderr();
   //l.UseStream();
+
+  //read init file
+  AliL3Transform::Init(path);
 
   AliL3FileHandler *fFileHandler = new AliL3FileHandler(); 
   fFileHandler->SetAliInput(in);
-  AliL3Transform::Init(path,kTRUE);
 
   for(int slice=first; slice<=last; slice++){
     for(int patch=0;patch<npatch;patch++){
@@ -47,13 +49,15 @@ void singlepatch(char* in,int first=0, int last=0,char *path=".",int event=0)
   //l.UnSet(AliL3Logger::kDebug);
   //l.UnSet(AliL3Logger::kAll);
   //l.Set(AliL3Logger::kInformational);
-  l.UseStdout();
+  l.UseStderr();
   //l.UseStream();
   
+  //read init file
+  AliL3Transform::Init(path);
+
   char name[256];
   AliL3FileHandler *fFileHandler = new AliL3FileHandler(); 
   fFileHandler->SetAliInput(in);
-  AliL3Transform::Init(path);
 
   Int_t srow[2] = {0,175};
   int patch=0;
@@ -72,5 +76,6 @@ void singlepatch(char* in,int first=0, int last=0,char *path=".",int event=0)
   
 }
 
-
-
+void MakeInitFile(Char_t *f,Char_t *path="./"){
+  AliL3Transform::MakeInitFile(f,path);
+}
