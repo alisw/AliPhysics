@@ -507,8 +507,8 @@ void AliTRDv1::StepManager()
 
       // The sector number (0 - 17)
       // The numbering goes clockwise and starts at y = 0
-      // Changed for new coordinate system
-      Float_t phi = kRaddeg*TMath::ATan2(-pos[0],pos[1]);
+      // Not fully consistent to new corrdinate schema!!!
+      Float_t phi = kRaddeg*TMath::ATan2(pos[0],pos[1]);
       if (phi < 90.) 
         phi = phi + 270.;
       else
