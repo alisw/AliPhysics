@@ -635,13 +635,13 @@ void AliITSsimulationSPDbari::SetFluctuations(Float_t **pList) {
   //End_Html
   
   
-  TRandom *random = new TRandom(); 
+  TRandom random; 
   Double_t signal;
 
   Int_t iz,ix;
   for(iz=1;iz<=fNPixelsZ;iz++){
     for(ix=1;ix<=fNPixelsX;ix++){
-      signal = fSigma*random->Gaus(); 
+      signal = fSigma*random.Gaus(); 
       fMapA2->SetHit(iz,ix,signal);
 
       // insert in the label-signal list the pixels fired only by noise
@@ -666,13 +666,12 @@ void AliITSsimulationSPDbari::CreateHistograms() {
 
       Int_t i;
       for(i=0;i<fNPixelsZ;i++) {
-	   TString *spdname = new TString("spd_");
+	   TString spdname("spd_");
 	   Char_t candnum[4];
 	   sprintf(candnum,"%d",i+1);
-	   spdname->Append(candnum);
-	   (*fHis)[i] = new TH1F(spdname->Data(),"SPD maps",
+	   spdname.Append(candnum);
+	   (*fHis)[i] = new TH1F(spdname.Data(),"SPD maps",
                               fNPixelsX,0.,(Float_t) fNPixelsX);
-	   delete spdname;
       }
 
 }
