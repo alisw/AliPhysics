@@ -461,7 +461,7 @@ Bool_t AliHBTReaderTPC::CheckTrack(AliTPCtrack* t) const
   if ( (chisqpercl < fNChi2PerClustMin) || (chisqpercl > fNChi2PerClustMax) ) return kTRUE;
   
   Double_t cc[15];
-  t->GetCovariance(cc);
+  t->GetExternalCovariance(cc);
 
   if ( (cc[0]  < fC00Min) || (cc[0]  > fC00Max) ) return kTRUE;
   if ( (cc[2]  < fC11Min) || (cc[2]  > fC11Max) ) return kTRUE;
