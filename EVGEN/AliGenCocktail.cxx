@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2002/02/08 16:50:50  morsch
+Add name and title in constructor.
+
 Revision 1.13  2001/10/21 18:35:56  hristov
 Several pointers were set to zero in the default constructors to avoid memory management problems
 
@@ -134,13 +137,17 @@ AddGenerator(AliGenerator *Generator, char* Name, Float_t RateExp)
 //
 // Generate event 
     TIter next(fEntries);
-    AliGenCocktailEntry *entry;
-    AliGenCocktailEntry *e1;
-    AliGenCocktailEntry *e2;
+    AliGenCocktailEntry *entry = 0;
+    AliGenCocktailEntry *preventry = 0;
+    AliGenerator* gen = 0;
+    
+//    AliGenCocktailEntry *e1;
+//    AliGenCocktailEntry *e2;
     TObjArray *partArray = gAlice->Particles();
     //
     // Loop over generators and generate events
     Int_t igen=0;
+    
     while((entry = (AliGenCocktailEntry*)next())) {
 	igen++;
 	if (igen ==1) {
@@ -148,10 +155,26 @@ AddGenerator(AliGenerator *Generator, char* Name, Float_t RateExp)
 	} else {
 	    entry->SetFirst((partArray->GetEntriesFast())+1);
 	}
+//
+//      Handle case in which current generator needs collision geometry from previous generator
+//
+	gen = entry->Generator();
+	if (gen->NeedsCollisionGeometry())
+	{
+	    if (preventry && preventry->Generator()->ProvidesCollisionGeometry())
+	    {
+		gen->SetCollisionGeometry(preventry->Generator()->CollisionGeometry());
+	    } else {
+		Fatal("Generate()", "No Collision Geometry Provided");
+	    }
+	}
+	
 	entry->Generator()->Generate();
 	entry->SetLast(partArray->GetEntriesFast());
+	preventry = entry;
     }  
     next.Reset();
+/*
     while((entry = (AliGenCocktailEntry*)next())) {
 	entry->PrintInfo();
     }
@@ -169,6 +192,7 @@ AddGenerator(AliGenerator *Generator, char* Name, Float_t RateExp)
 	e1->PrintInfo();
 	e2->PrintInfo();
     }
+*/
 }
 
 AliGenCocktailEntry *  AliGenCocktail::FirstGenerator()
