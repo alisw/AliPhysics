@@ -1,7 +1,7 @@
-void MUONcombi (Int_t evNumber=0) 
+void MUONcombi (Int_t evNumber=0)
 {
     const Float_t runWeight = 4.e8;
-    
+
 // Dynamically link some shared libs
    if (gClassTable->GetID("AliRun") < 0) {
       gROOT->LoadMacro("loadlibs.C");
@@ -11,8 +11,6 @@ void MUONcombi (Int_t evNumber=0)
       gAlice = 0;
    }
 
-   
-//
 // Connect the Root Galice file containing Geometry, Kine and Hits
    TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
    if (!file) file = new TFile("galice.root");
@@ -23,9 +21,6 @@ void MUONcombi (Int_t evNumber=0)
       if (gAlice) printf("AliRun object found on file\n");
       if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
    }
-   TClonesArray *PartArray = gAlice->Particles();
-   TParticle *Part;
-   
 
 // Import the Kine and Hits Trees for the event evNumber in the file
    Int_t nparticles = gAlice->GetEvent(evNumber);
@@ -42,7 +37,7 @@ void MUONcombi (Int_t evNumber=0)
 
    TH1F *pt     = new TH1F("pt","pT-single"
 			   ,50,0.,10.);
-   TH1F *hCont[10];
+   TH1F *hCont[30];
    
 //
 //  Generator Loop
@@ -88,7 +83,7 @@ void MUONcombi (Int_t evNumber=0)
 //       printf("\n Particle %d Parent %d first child %d last child %d",
 //	      i,parent, chfirst, chlast);
 //       printf("\n Particle pt, eta: %f , %f ", ptm, eta);
-       i++;       
+       i++;
    }
 //
 // Di-Muon Loop
@@ -192,6 +187,7 @@ void MUONcombi (Int_t evNumber=0)
 
 
 }
+
 
 
 
