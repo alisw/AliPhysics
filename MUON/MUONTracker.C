@@ -47,6 +47,7 @@ void MUONTracker (Text_t *FileName = "galice.root", Int_t FirstEvent = 0, Int_t 
     printf(">>> Error : Error Opening %s file \n",FileName);
     return;
   }
+
   // Loading AliRun master
   RunLoader->LoadgAlice();
   gAlice = RunLoader->GetAliRun();
@@ -55,14 +56,24 @@ void MUONTracker (Text_t *FileName = "galice.root", Int_t FirstEvent = 0, Int_t 
   // Loading MUON subsystem
   AliMUON * MUON = (AliMUON *) gAlice->GetDetector("MUON");
   AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
-  //  MUONLoader->LoadHits("READ");
-  MUONLoader->LoadRecPoints("READ");
-  MUONLoader->LoadTracks("UPDATE");
   AliMUONData * muondata = MUON->GetMUONData();
-  muondata->SetLoader(MUONLoader);
-  
+
   Int_t nevents;
   nevents = RunLoader->GetNumberOfEvents();
+ 
+  MUONLoader->LoadRecPoints("READ");
+  MUONLoader->LoadTracks("UPDATE");
+
+
+  // Testing if Tracking has already been done
+  RunLoader->GetEvent(0);
+  if (MUONLoader->TreeT()) {
+    if (muondata->IsTrackBranchesInTree()) {
+      MUONLoader->UnloadTracks();
+      MUONLoader->LoadTracks("RECREATE");
+      printf("Recreating Tracks files\n");
+    }
+  }
   
   AliMUONEventReconstructor *Reco = new AliMUONEventReconstructor();
 
@@ -77,25 +88,13 @@ void MUONTracker (Text_t *FileName = "galice.root", Int_t FirstEvent = 0, Int_t 
 //  Reco->Dump();
   //   gObjectTable->Print();
 
-  MUONLoader->LoadRecPoints("READ");
-
   if  (LastEvent>nevents) LastEvent=nevents;
   // Loop over events
   for (Int_t event = FirstEvent; event < LastEvent; event++) {
-      //MUONLoader->LoadHits("READ");
       cout << "Event: " << event << endl;
       RunLoader->GetEvent(event);   
-// Test if trigger track has already been done before
-      if (MUONLoader->TreeT() == 0x0) {	
-	  MUONLoader->MakeTracksContainer();
-      }      else {
-	  if (muondata->IsTrackBranchesInTree()){ // Test if track has already been done before
-	      if (event==FirstEvent) MUONLoader->UnloadTracks();
-	      MUONLoader->MakeTracksContainer();  // Redoing Tracking
-	      Info("TrackContainer","Recreating TrackContainer and deleting previous ones");
-	  }
-      }
-
+      if (MUONLoader->TreeT() == 0x0) MUONLoader->MakeTracksContainer();
+      
       muondata->MakeBranch("RT");
       muondata->SetTreeAddress("RT");
       Reco->EventReconstruct();
@@ -108,12 +107,12 @@ void MUONTracker (Text_t *FileName = "galice.root", Int_t FirstEvent = 0, Int_t 
 	  muondata->AddRecTrack(*track);
 	  //printf(">>> TEST TEST event %d Number of hits in the track %d is %d \n",event,i,track->GetNTrackHits());
       }
-    
-    muondata->Fill("RT");
-    MUONLoader->WriteTracks("OVERWRITE");  
-    muondata->ResetRecTracks();
-    muondata->ResetRawClusters();
+      
+      muondata->Fill("RT");
+      MUONLoader->WriteTracks("OVERWRITE");  
+      muondata->ResetRecTracks();
+      muondata->ResetRawClusters();
   } // Event loop
-    MUONLoader->UnloadRecPoints();
-    MUONLoader->UnloadTracks();
+  MUONLoader->UnloadRecPoints();
+  MUONLoader->UnloadTracks();
 }

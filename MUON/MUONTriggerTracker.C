@@ -44,6 +44,7 @@ void MUONTriggerTracker (Text_t *FileName = "galice.root", Int_t FirstEvent = 0,
     printf(">>> Error : Error Opening %s file \n",FileName);
     return;
   }
+  
   // Loading AliRun master
   RunLoader->LoadgAlice();
   gAlice = RunLoader->GetAliRun();
@@ -52,60 +53,56 @@ void MUONTriggerTracker (Text_t *FileName = "galice.root", Int_t FirstEvent = 0,
   // Loading MUON subsystem
   AliMUON * MUON = (AliMUON *) gAlice->GetDetector("MUON");
   AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
-  //  MUONLoader->LoadHits("READ");
-  MUONLoader->LoadRecPoints("READ");
-  MUONLoader->LoadTracks("UPDATE"); 
   AliMUONData * muondata = MUON->GetMUONData();
-  muondata->SetLoader(MUONLoader);
   
   Int_t nevents;
   nevents = RunLoader->GetNumberOfEvents();
-  
+
+  MUONLoader->LoadRecPoints("READ");
+  MUONLoader->LoadTracks("UPDATE"); 
+
+  // Testing if Trigger Tracking has already been done
+  RunLoader->GetEvent(0);
+  if (MUONLoader->TreeT()) {
+      if (muondata->IsTriggerTrackBranchesInTree()) {
+      MUONLoader->UnloadTracks();
+      MUONLoader->LoadTracks("RECREATE");
+      printf("Recreating Tracks files\n");
+    }
+  }
+
   AliMUONEventReconstructor *Reco = new AliMUONEventReconstructor();
   
   Reco->SetPrintLevel(0);
-  cout << "AliMUONEventReconstructor: actual parameters" << endl;
-//  Reco->Dump();
+  cout << "AliMUONEventReconstructor: actual parameters" << endl;  
+  //  Reco->Dump();
   //   gObjectTable->Print();
-  
-  MUONLoader->LoadRecPoints("READ");
   
   if  (LastEvent>nevents) LastEvent=nevents;
   // Loop over events
   for (Int_t event = FirstEvent; event < LastEvent; event++) {
-      //MUONLoader->LoadHits("READ");
-    cout << "Event: " << event << endl;
-    RunLoader->GetEvent(event);
-    
-// Test if track has already been done before
-    if (MUONLoader->TreeT() == 0x0) {	
-	MUONLoader->MakeTracksContainer();      
-    } else {
-	  if (muondata->IsTriggerTrackBranchesInTree()){ // Test if trigger track has already been done before
-	      if (event==FirstEvent) MUONLoader->UnloadTracks();
-	      MUONLoader->MakeTracksContainer();  // Redoing trigger tracks
-	      Info("TrackContainer","Recreating TrackContainer and deleting previous ones");
-	  }
-      }
-
-    muondata->MakeBranch("RL");
-    muondata->SetTreeAddress("RL");
-    Reco->EventReconstructTrigger();
-    // Dump current event
-    // Reco->EventDumpTrigger();
-
-     // Duplicating rectriggertrack data in muondata for output
-     for(Int_t i=0; i<Reco->GetNRecTriggerTracks(); i++) {
-	 AliMUONTriggerTrack * triggertrack = (AliMUONTriggerTrack*) Reco->GetRecTriggerTracksPtr()->At(i);
-	 muondata->AddRecTriggerTrack(*triggertrack);
+      cout << "Event: " << event << endl;
+      RunLoader->GetEvent(event);
+      if (MUONLoader->TreeT() == 0x0) MUONLoader->MakeTracksContainer();      
+      
+      muondata->MakeBranch("RL");
+      muondata->SetTreeAddress("RL");
+      Reco->EventReconstructTrigger();
+      // Dump current event
+      // Reco->EventDumpTrigger();
+      
+      // Duplicating rectriggertrack data in muondata for output
+      for(Int_t i=0; i<Reco->GetNRecTriggerTracks(); i++) {
+	  AliMUONTriggerTrack * triggertrack = (AliMUONTriggerTrack*) Reco->GetRecTriggerTracksPtr()->At(i);
+	  muondata->AddRecTriggerTrack(*triggertrack);
 //	 printf(">>> TEST TEST event %d Number of hits in the track %d is %d \n",event,i,track->GetNTrackHits());
-     }
-
-     muondata->Fill("RL");
-    MUONLoader->WriteTracks("OVERWRITE");  
-    muondata->ResetRecTriggerTracks();
-    muondata->ResetTrigger();
+      }
+      
+      muondata->Fill("RL");
+      MUONLoader->WriteTracks("OVERWRITE");  
+      muondata->ResetRecTriggerTracks();
+      muondata->ResetTrigger();
   } // Event loop
-    MUONLoader->UnloadRecPoints();
-    MUONLoader->UnloadTracks();
+  MUONLoader->UnloadRecPoints();
+  MUONLoader->UnloadTracks();
 }

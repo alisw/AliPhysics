@@ -38,16 +38,15 @@ void MUONtrigger (char* filename="galice.root",
     return;
   }
 
-  // Loading AliRun master
+// Loading AliRun master
   RunLoader->UnloadgAlice();
   RunLoader->LoadgAlice();
   gAlice = RunLoader->GetAliRun();
 
-  // Loading MUON subsystem
+// Loading MUON subsystem
   AliMUON * MUON = (AliMUON *) gAlice->GetDetector("MUON");
   AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
   AliMUONData * muondata = MUON->GetMUONData();
-  muondata->SetLoader(MUONLoader);
 
   Int_t ievent, nevents;
   nevents = RunLoader->GetNumberOfEvents();
@@ -55,31 +54,31 @@ void MUONtrigger (char* filename="galice.root",
   MUONLoader->LoadDigits("READ");
   MUONLoader->LoadRecPoints("UPDATE");
 
-
-
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Testing if trigger has already been done
+  RunLoader->GetEvent(0);
+  if (MUONLoader->TreeR()) {
+      if (muondata->IsTriggerBranchesInTree()) {
+	  MUONLoader->UnloadRecPoints();
+	  MUONLoader->LoadRecPoints("RECREATE");
+	  printf("Recreating RecPoints files\n");
+      }
+  }
+  
+//   Loop over events
   if (evNumber2>nevents) evNumber2=nevents;
-   for (Int_t ievent=evNumber1; ievent<evNumber2; ievent++) { // event loop
-       printf("event %d\n",ievent);
-       RunLoader->GetEvent(ievent);       
-       // Test if rawcluster has already been done before
-       if (MUONLoader->TreeR() == 0x0) 
-	 MUONLoader->MakeRecPointsContainer();
-       else {
-	 if (muondata->IsTriggerBranchesInTree()){ // Test if rawcluster has already been done before
-	   if (ievent==evNumber1) MUONLoader->UnloadRecPoints();
-	   MUONLoader->MakeRecPointsContainer();  // Redoing clusterisation
-	   Info("RecPointsContainer","Recreating RecPointsContainer and deleting previous ones");
-	 }
-       }
-       muondata->MakeBranch("GLT");
-       muondata->SetTreeAddress("D,GLT");
-       MUON->Trigger(ievent); 
-       muondata->ResetDigits();
-       muondata->ResetTrigger();
-   } // event loop 
-   MUONLoader->UnloadDigits();
-   MUONLoader->UnloadRecPoints();
+  for (Int_t ievent=evNumber1; ievent<evNumber2; ievent++) { // event loop
+      printf("event %d\n",ievent);
+      RunLoader->GetEvent(ievent);       
+      if (MUONLoader->TreeR() == 0x0)  MUONLoader->MakeRecPointsContainer();
+      
+      muondata->MakeBranch("GLT");
+      muondata->SetTreeAddress("D,GLT");
+      MUON->Trigger(ievent); 
+      muondata->ResetDigits();
+      muondata->ResetTrigger();
+  } 
+  MUONLoader->UnloadDigits();
+  MUONLoader->UnloadRecPoints();
 }
 
 
