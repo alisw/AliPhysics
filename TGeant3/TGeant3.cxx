@@ -1620,7 +1620,8 @@ void  TGeant3::Gfpart(Int_t ipart, char *name, Int_t &itrtyp,
   //
   Float_t *ubuf=0; 
   Int_t   nbuf; 
-  gfpart(ipart, PASSCHARD(name), itrtyp, amass, charge, tlife, ubuf, nbuf
+  Int_t igpart = IdFromPDG(ipart);
+  gfpart(igpart, PASSCHARD(name), itrtyp, amass, charge, tlife, ubuf, nbuf
 	 PASSCHARL(name)); 
 } 
  
