@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/01/13 11:23:59  morsch
+Last layer of Pb outer angle corrected
+
 Revision 1.1  2000/01/12 15:39:30  morsch
 Standar version of ABSO
 
@@ -118,13 +121,13 @@ void AliABSOv0::CreateGeometry()
 
   par[18] = par[3]+(abs_l-d_rear-abs_d);
   par[19] = (abs_l-d_rear) * TMath::Tan(acc_min);
-  par[20] = par[14] + (par[15] - par[12]) * TMath::Tan(acc_max);
+  par[20] = par[14] + (par[18] - par[12]) * TMath::Tan(acc_max);
 
   par[21] = -par[3];
   par[22] =  abs_l* TMath::Tan(acc_min);
   par[23] = par[20] + (par[21] - par[18]) * TMath::Tan(acc_max);
   gMC->Gsvolu("ABSS", "PCON", idtmed[1612], par, 24);
-  for (Int_t i=4; i<24; i+=3) par[i]  = 0;
+  for (Int_t i=4; i<18; i+=3) par[i]  = 0;
   gMC->Gsvolu("ABSM", "PCON", idtmed[1655], par, 24);
   gMC->Gspos("ABSS", 1, "ABSM", 0., 0., 0., 0, "ONLY");
 
@@ -190,7 +193,7 @@ void AliABSOv0::CreateGeometry()
   pcpar[6]  = pcpar[3]+(z_2deg-abs_d);
   pcpar[7]  = r_abs;
   pcpar[8]  = z_2deg * TMath::Tan(acc_max);
-  pcpar[9]  = -par[3];
+  pcpar[9]  = -pcpar[3];
   pcpar[10] = abs_l * TMath::Tan(acc_min);
   pcpar[11] = abs_l * TMath::Tan(acc_max);
   gMC->Gsvolu("AITR", "PCON", idtmed[1612], pcpar, 12);
@@ -200,7 +203,7 @@ void AliABSOv0::CreateGeometry()
   cpar[0] = 2.5;
   cpar[1] = zr * TMath::Tan(theta_r);
   cpar[2] = zr * TMath::Tan(acc_max);
-  cpar[3] = cpar[1] + TMath::Tan(acc_min) * 5;
+  cpar[3] = cpar[1] + TMath::Tan(theta_r) * 5;
   cpar[4] = cpar[2] + TMath::Tan(acc_max) * 5;
   gMC->Gsvolu("ARPB", "CONE", idtmed[1632], cpar, 5);
   dz=(abs_l-abs_d)/2.-cpar[0];
@@ -228,8 +231,8 @@ void AliABSOv0::CreateGeometry()
   cpar[0] = d_rear/2.;
   cpar[1] = zr * TMath::Tan(acc_min);
   cpar[2] = zr * TMath::Tan(theta_r);
-  cpar[3] = cpar[1] + TMath::Tan(acc_min) * 35;
-  cpar[4] = cpar[2] + TMath::Tan(theta_r) * 35;
+  cpar[3] = cpar[1] + TMath::Tan(acc_min) * d_rear;
+  cpar[4] = cpar[2] + TMath::Tan(theta_r) * d_rear;
   gMC->Gsvolu("ARW0", "CONE", idtmed[1611], cpar, 5);
   dz=(abs_l-abs_d)/2.-cpar[0];
   gMC->Gspos("ARW0", 1, "AITR", 0., 0., dz, 0, "ONLY");
