@@ -237,9 +237,6 @@ void AliL3TrackArray::FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr,Int_t 
     AliL3Transform::Local2Global(last,slice);
     track->SetLastPoint(last[0],last[1],last[2]);
     track->SetHits( trs->fNPoints, trs->fPointIDs );
-    UChar_t *tmpP = (UChar_t*)trs;
-    tmpP += sizeof(AliL3TrackSegmentData)+trs->fNPoints*sizeof(UInt_t);
-    trs = (AliL3TrackSegmentData*)tmpP;
 #ifdef ROWHOUGHPARAMS
     if(GetTrackType()=='h') {
       ((AliL3HoughTrack *)track)->SetWeight(trs->fWeight);
@@ -250,6 +247,9 @@ void AliL3TrackArray::FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr,Int_t 
     track->SetSector(slice);
     track->SetPID(trs->fPID);
 #endif
+    UChar_t *tmpP = (UChar_t*)trs;
+    tmpP += sizeof(AliL3TrackSegmentData)+trs->fNPoints*sizeof(UInt_t);
+    trs = (AliL3TrackSegmentData*)tmpP;
   }
 }
 
