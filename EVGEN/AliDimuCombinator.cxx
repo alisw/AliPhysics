@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/03/08 13:30:43  morsch
+Make it work with particle stack of V3.05.
+
 Revision 1.8  2000/12/21 16:24:06  morsch
 Coding convention clean-up
 
@@ -376,7 +379,11 @@ Float_t AliDimuCombinator::Weight(TParticle* part1, TParticle* part2)
     Float_t wgt = (part1->GetWeight())*(part2->GetWeight());
     
     if (Correlated(part1, part2)) {
-	return wgt/(Parent(part1)->GetWeight())*fRate1;
+	if ( part1->GetFirstMother() == part2->GetFirstMother()) {
+	    return part1->GetWeight()*fRate1;
+	} else {
+	    return wgt/(Parent(part1)->GetWeight())*fRate1;
+	}
     } else {
 	return wgt*fRate1*fRate2;
     }
@@ -393,7 +400,15 @@ Bool_t  AliDimuCombinator::Correlated(TParticle* part1, TParticle* part2)
 {
 // Check if muons are correlated
 //
-    if (Origin(part1) == Origin(part2)) {
+    if ((Origin(part1) >= 0) && Origin(part1) == Origin(part2)) {
+/*
+	printf("\n origin %d %d ", 
+	       Type(Particle(Origin(part1))),
+	       Type(Particle(Origin(part2))));
+	printf("\n parent %d %d \n \n ", 
+	       Type(Parent(part1)),
+	       Type(Parent(part2)));
+*/	
 	return kTRUE;
     } else {
 	return kFALSE;
