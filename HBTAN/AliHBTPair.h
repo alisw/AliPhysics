@@ -24,23 +24,23 @@ class AliHBTPair: public TObject
    void Changed();
    //Center Mass System - Longitudinally Comoving
    
-   Double_t GetInvMass(); //returns invariant mass of the pair
-    
-  
-   Double_t GetQInv(); //returns Q invariant
-   Double_t GetQSideCMSLC(); //returns Q Side CMS longitudionally co-moving
-   Double_t GetQOutCMSLC(); //returns Q out CMS longitudionally co-moving
-   Double_t GetQLongCMSLC(); //returns Q Long CMS longitudionally co-moving
+   virtual Double_t GetInvMass(); //returns invariant mass of the pair
+   virtual Double_t GetMt();
+   virtual Double_t GetQInv(); //returns Q invariant
+   virtual Double_t GetQSideCMSLC(); //returns Q Side CMS longitudionally co-moving
+   virtual Double_t GetQOutCMSLC(); //returns Q out CMS longitudionally co-moving
+   virtual Double_t GetQLongCMSLC(); //returns Q Long CMS longitudionally co-moving
    
    
-   Double_t GetKt();  //returns K transverse
-   Double_t GetKStar();
+   virtual Double_t GetKt();  //returns K transverse
+   virtual Double_t GetKStar();
    
-   Double_t GetDeltaP(); //return difference of momenta
-   Double_t GetDeltaPx();
-   Double_t GetDeltaPy();
-   Double_t GetDeltaPz();
+   virtual Double_t GetDeltaP(); //return difference of momenta
+   virtual Double_t GetDeltaPx();
+   virtual Double_t GetDeltaPy();
+   virtual Double_t GetDeltaPz();
    
+   virtual Double_t GetGammaToCMSLC();
  protected:
    AliHBTParticle* fPart1;  //pointer to first particle
    AliHBTParticle* fPart2;  //pointer to second particle
@@ -75,11 +75,14 @@ class AliHBTPair: public TObject
    Bool_t   fKStarNotCalc;
    
    Double_t fPInv;  //invariant momentum
+   
    Double_t fQSide; //Q Side
    Double_t fOut;//Q Out
    Double_t fQLong;//Q Long
 
-   
+   Double_t fMt;//Transverse coordinate of Inv. Mass
+   Bool_t   fMtNotCalc;//flag indicating if Mt is calculated
+      
    Double_t fInvMassSqr;//squre of invariant mass
    Bool_t   fMassSqrNotCalc; //
    void     CalculateInvMassSqr();
@@ -102,7 +105,8 @@ class AliHBTPair: public TObject
    Bool_t   fDiffsNotCalc;
    void     CalculateDiffs();
    
-   
+   Double_t fGammaCMSLC;
+   Bool_t   fGammaCMSLCNotCalc;   
    /***************************************************/
    void CalculateBase();
    Bool_t fChanged;
@@ -137,12 +141,14 @@ void AliHBTPair::Changed()
  fMassSqrNotCalc    = kTRUE;
  fInvMassNotCalc    = kTRUE;
  fQInvNotCalc       = kTRUE;
+ fMtNotCalc         = kTRUE;
  fQSideCMSLCNotCalc = kTRUE;
  fQOutCMSLCNotCalc  = kTRUE;
  fQLongCMSLCNotCalc = kTRUE;
  fKtNotCalc         = kTRUE;
  fKStarNotCalc      = kTRUE;
  fQInvLNotCalc      = kTRUE;
+ fGammaCMSLCNotCalc = kTRUE;
 }
 /****************************************************************/
 inline 
