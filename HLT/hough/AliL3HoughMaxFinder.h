@@ -52,7 +52,7 @@ class AliL3HoughMaxFinder {
   
   //More sophisticated peak finders:
   AliL3TrackArray *LookForPeaks(AliL3Histogram *hist,Int_t nbins);
-  void FindPeak(Int_t t1,Double_t t2,Int_t t3,Float_t &kappa,Float_t &phi0);
+  void FindPeak(Int_t t1,Double_t t2,Int_t t3);
   AliL3HoughTrack *FindPeakLine(Double_t rho,Double_t theta);
   AliL3HoughTrack *CalculatePeakInWindow(Int_t *maxbin,Int_t t0,Int_t t1,Double_t t2,Int_t t3);
   void FindPeak1(Int_t y_window=2,Int_t x_bin_sides=1);

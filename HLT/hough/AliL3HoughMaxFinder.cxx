@@ -155,7 +155,6 @@ void AliL3HoughMaxFinder::FindAbsMaxima()
   fYPeaks[fNPeaks] = max_y;
   fWeight[fNPeaks] = (Int_t)max_value;
   fNPeaks++;
-  
 #ifndef no_root
   if(fNtuppel)
     {
@@ -820,7 +819,7 @@ Int_t AliL3HoughMaxFinder::PeakCompare(struct AxisWindow *a,struct AxisWindow *b
 
 }
 
-void AliL3HoughMaxFinder::FindPeak(Int_t t1,Double_t t2,Int_t t3,Float_t &kappa,Float_t &phi0)
+void AliL3HoughMaxFinder::FindPeak(Int_t t1,Double_t t2,Int_t t3)
 {
   //Attempt of a more sophisticated peak finder.
   //Finds the best peak in the histogram, and returns the corresponding
@@ -986,8 +985,10 @@ void AliL3HoughMaxFinder::FindPeak(Int_t t1,Double_t t2,Int_t t3,Float_t &kappa,
 
   //AliL3HoughTrack *track = new AliL3HoughTrack();
   //track->SetTrackParameters(x_peak,y_peak,weight);
-  kappa = x_peak;
-  phi0 = y_peak;
+  fXPeaks[fNPeaks]=x_peak;
+  fYPeaks[fNPeaks]=y_peak;
+  fWeight[fNPeaks]=(Int_t)hist->GetBinContent(bin);
+  fNPeaks++;
   
   delete [] m;
   delete [] m_low;
