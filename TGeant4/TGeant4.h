@@ -16,6 +16,8 @@ class TG4VisManager;
 class TG4RunManager;
 class TG4Messenger;
 
+class AliDecayer;
+
 class TGeant4: public AliMC
 {
   public:
@@ -98,6 +100,10 @@ class TGeant4: public AliMC
     virtual void SetCut(const char* cutName, Float_t cutValue);
     virtual void SetProcess(const char* flagName, Int_t flagValue);
     virtual Float_t Xsec(char* reac, Float_t energy, Int_t part, Int_t mate);
+    virtual void SetExternalDecayer(AliDecayer* decayer); //NEW
+
+    // get methods
+    virtual AliDecayer* Decayer() const; //NEW
  
         // particle table usage         
     virtual Int_t IdFromPDG(Int_t pdgID) const;
