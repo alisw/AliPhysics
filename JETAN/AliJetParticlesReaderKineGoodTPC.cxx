@@ -127,7 +127,11 @@ Int_t AliJetParticlesReaderKineGoodTPC::OpenFile(Int_t n)
 
   TString filename = dirname +"/"+ fFileName;
   fInput=new ifstream(filename);
+#if defined(__HP_aCC) || defined(__DECCXX)
+  if ( fInput->rdbuf()->is_open() == 0)
+#else
   if ( fInput->is_open() == 0)
+#endif
     {
       Error("OpenNextFile","Can't open session from file %s",filename.Data());
       return kFALSE;
