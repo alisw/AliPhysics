@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2002/07/16 11:33:26  morsch
+First commit.
+
 */
 
 
@@ -39,6 +42,7 @@ AliGenHerwig::AliGenHerwig()
 }
 
 AliGenHerwig::AliGenHerwig(Int_t npart)
+    :AliGenMC(npart)
 {
     SetBeamMomenta();
     SetTarget();
@@ -144,7 +148,7 @@ void AliGenHerwig::Generate()
   Float_t polar[3] =   {0,0,0};
   Float_t origin[3]=   {0,0,0};
   Float_t origin0[3]=  {0,0,0};
-  Float_t p[3], random[6];
+  Float_t p[4], random[6];
   
   static TClonesArray *particles;
   //  converts from mm/c to s
@@ -166,57 +170,68 @@ void AliGenHerwig::Generate()
 	TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
     }
   }
-
+  
   while(1)
     {
-      fHerwig->GenerateEvent();
-      fTrials++;
-      fHerwig->ImportParticles(particles,"All");
-      Int_t np = particles->GetEntriesFast()-1;
-      if (np == 0 ) continue;
-
-      Int_t nc=0;
-
-      Int_t * newPos = new Int_t[np];
-      for (Int_t i = 0; i<np; i++) *(newPos+i)=i;
-      
-      for (Int_t i = 0; i<np; i++) {
-	TParticle *  iparticle       = (TParticle *) particles->At(i);
-	imo = iparticle->GetFirstMother();
-	kf        = iparticle->GetPdgCode();
-	ks        = iparticle->GetStatusCode();
-	if (ks == 1 && kf != 0 && KinematicSelection(iparticle,0)) {
-	  nc++;
-	  p[0]=iparticle->Px();
-	  p[1]=iparticle->Py();
-	  p[2]=iparticle->Pz();
-	  origin[0]=origin0[0]+iparticle->Vx()/10;
-	  origin[1]=origin0[1]+iparticle->Vy()/10;
-	  origin[2]=origin0[2]+iparticle->Vz()/10;
-	  Float_t tof=kconv*iparticle->T();
-	  SetTrack(fTrackIt,-1,kf,p,origin,polar,tof,kPPrimary,nt);
-	  KeepTrack(nt);
-	  newPos[i]=nt;
-	} // end of if: selection of particle
-      } // end of for: particle loop
-      if (newPos) delete[] newPos;
-      printf("\n I've put %i particles on the stack \n",nc);
-      //      MakeHeader();
-
-      if (nc > 0) {
-	jev+=nc;
-	if (jev >= fNpart || fNpart == -1) {
-	  fKineBias=Float_t(fNpart)/Float_t(fTrials);
-	  printf("\n Trials: %i %i %i\n",fTrials, fNpart, jev);
-	  break;
+	fHerwig->GenerateEvent();
+	fTrials++;
+	fHerwig->ImportParticles(particles,"All");
+	Int_t np = particles->GetEntriesFast()-1;
+	if (np == 0 ) continue;
+	
+	Int_t nc=0;
+	
+	Int_t * newPos = new Int_t[np];
+	for (Int_t i = 0; i<np; i++) *(newPos+i)=-1;
+	
+	for (Int_t i = 0; i<np; i++) {
+	    TParticle *  iparticle       = (TParticle *) particles->At(i);
+	    imo = iparticle->GetFirstMother();
+	    kf        = iparticle->GetPdgCode();
+	    ks        = iparticle->GetStatusCode();
+	    if (ks != 3 && 
+		KinematicSelection(iparticle,0)) 
+	    {
+		nc++;
+		p[0]=iparticle->Px();
+		p[1]=iparticle->Py();
+		p[2]=iparticle->Pz();
+		p[3]=iparticle->Energy();
+		origin[0]=origin0[0]+iparticle->Vx()/10;
+		origin[1]=origin0[1]+iparticle->Vy()/10;
+		origin[2]=origin0[2]+iparticle->Vz()/10;
+		Float_t tof = kconv*iparticle->T();
+		Int_t   iparent = (imo > -1) ? newPos[imo] : -1;
+		Int_t   trackIt = (ks == 1) && fTrackIt;
+		gAlice->SetTrack(trackIt, iparent, kf,
+				 p[0], p[1], p[2], p[3],
+				 origin[0], origin[1], origin[2], 
+				 tof,
+				 polar[0], polar[1], polar[2],
+				 kPPrimary, nt, 1., ks);
+		KeepTrack(nt);
+		newPos[i]=nt;
+	    } // end of if: selection of particle
+	} // end of for: particle loop
+	if (newPos) delete[] newPos;
+	printf("\n I've put %i particles on the stack \n",nc);
+	//      MakeHeader();
+	printf("nc: %d %d\n", nc, fNpart);
+	
+	if (nc > 0) {
+	    jev+=nc;
+	    if (jev >= fNpart || fNpart == -1) {
+		fKineBias=Float_t(fNpart)/Float_t(fTrials);
+		printf("\n Trials: %i %i %i\n",fTrials, fNpart, jev);
+		break;
+	    }
 	}
-      }
     }
-    SetHighWaterMark(nt);
+  SetHighWaterMark(nt);
 //  adjust weight due to kinematic selection
-    AdjustWeights();
+  AdjustWeights();
 //  get cross-section
-    fXsection=fHerwig->GetAVWGT();
+  fXsection=fHerwig->GetAVWGT();
 }
 
 void AliGenHerwig::AdjustWeights()
@@ -298,6 +313,7 @@ void AliGenHerwig::FinishRun()
 {
   fHerwig->Hwefin();
 }
+
 
 AliGenHerwig& AliGenHerwig::operator=(const  AliGenHerwig& rhs)
 {
