@@ -11,6 +11,7 @@
 // Author: andreas.morsch@cern.ch
 
 #include <TObject.h>
+#include <TF2.h>
 class TF1;
 class TF2;
 
@@ -22,7 +23,7 @@ class AliFastGlauber : public TObject {
 	{fWSr0 = r0; fWSd = d; fWSw = w; fWSn = n;}
     void SetMaxImpact(Float_t bmax = 20.) {fgBMax = bmax;};
     void SetHardCrossSection(Float_t xs = 6.6) {fSigmaHard = xs;}
-    
+
     static Double_t WSb            (Double_t *xx, Double_t *par);
     static Double_t WSbz           (Double_t *xx, Double_t *par);
     static Double_t WSz            (Double_t *xx, Double_t *par);
@@ -61,6 +62,27 @@ class AliFastGlauber : public TObject {
     void GetRandom(Float_t& b, Float_t& p, Float_t& mult);
     void GetRandom(Int_t& bin, Bool_t& hard);
     Float_t GetRandomImpactParameter(Float_t bmin, Float_t bmax);
+
+
+    void SetLengthDefinition(Int_t def=1) { fEllDef=def; }
+    void SetCentralityClass(Double_t xsecFrLow=0.0,Double_t xsecFrUp=0.1);    
+    void StoreAlmonds();
+    void GetRandomBHard(Double_t& b);
+    void GetRandomXY(Double_t& x,Double_t& y);
+    void GetRandomPhi(Double_t& phi);
+    Double_t CalculateLength(Double_t b=0.,Double_t x0=0.,Double_t y0=0.,
+			     Double_t phi0=0.);
+    void GetLength(Double_t& ell,Double_t b=-1.);
+    void GetLengthsBackToBack(Double_t& ell1,Double_t& ell2,Double_t b=-1.);
+    void GetLengthsForPythia(Int_t n,Double_t* phi,Double_t* ell,
+			     Double_t b=-1.);
+    void PlotBDistr(Int_t n=1000);
+    void PlotLengthDistr(Int_t n=1000,Bool_t save=kFALSE,
+			 Char_t *fname="length.root");
+    void PlotLengthB2BDistr(Int_t n=1000,Bool_t save=kFALSE,
+			    Char_t *fname="lengthB2B.root");
+    void PlotAlmonds();
+
  protected:
     static TF1*    fgWSb;            // Wood-Saxon Function (b)
     static TF2*    fgWSbz;           // Wood-Saxon Function (b, z)
@@ -76,6 +98,8 @@ class AliFastGlauber : public TObject {
     static TF1*    fgWSbinary;       // dSigma/db binary
     static TF1*    fgWSN;            // dN/db binary
     static TF1*    fgWEnergyDensity; // Energy density as a function of impact parameter
+    TF2  fWAlmondFixedB[40]; // Interaction Almonds read from file
+    TF2*    fWAlmondCurrent; // Interaction Almond used for length
     
     Float_t fWSr0;           // Wood-Saxon Parameter r0
     Float_t fWSd;            // Wood-Saxon Parameter d
@@ -84,6 +108,8 @@ class AliFastGlauber : public TObject {
     Float_t fSigmaHard;      // Hard Cross Section
     static Float_t fgBMax;   // Maximum Impact Parameter
     
+    Int_t fEllDef;           // definition of length (see CalculateLength())
+
     ClassDef(AliFastGlauber,1) // Event geometry simulation in the Glauber Model
 };
 

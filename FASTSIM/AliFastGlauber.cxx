@@ -28,7 +28,9 @@
 // from AliRoot
 #include "AliFastGlauber.h"
 // from root
+#include <TStyle.h>
 #include <TH1F.h>
+#include <TH2F.h>
 #include <TF1.h>
 #include <TF2.h>
 #include <TCanvas.h>
@@ -43,6 +45,7 @@ TF1*    AliFastGlauber::fgWSz            = NULL;
 TF1*    AliFastGlauber::fgWSta           = NULL;    
 TF2*    AliFastGlauber::fgWStarfi        = NULL; 
 TF2*    AliFastGlauber::fgWAlmond        = NULL; 
+//TF2*    AliFastGlauber::fWAlmondCurrent = NULL; 
 TF1*    AliFastGlauber::fgWStaa          = NULL;   
 TF1*    AliFastGlauber::fgWSgeo          = NULL;   
 TF1*    AliFastGlauber::fgWSbinary       = NULL;   
@@ -61,11 +64,18 @@ AliFastGlauber::AliFastGlauber()
     SetWoodSaxonParameters(6.624, 0.549, 0.00, 7.69e-4);
     SetHardCrossSection();
     SetMaxImpact();
+    SetLengthDefinition();
 }
 
 void AliFastGlauber::Init(Int_t mode)
 {
 // Initialisation
+//    mode = 0; all functions are calculated 
+//    mode = 1; overlap function is read from file (for Pb-Pb only)
+//    mode = 2; interaction almond functions are read from file 
+//              (for Pb-Pb only); USE THIS FOR PATH LENGTH CALC.!
+//
+
 //
 //  Wood-Saxon
 //
@@ -105,7 +115,18 @@ void AliFastGlauber::Init(Int_t mode)
     fgWAlmond = new TF2("WAlmond", WAlmond, -fgBMax, fgBMax, -fgBMax, fgBMax, 1);
     fgWAlmond->SetParameter(0, 0.);     
     fgWAlmond->SetNpx(200);     
-    fgWAlmond->SetNpy(200);    
+    fgWAlmond->SetNpy(200);  
+  
+    if(mode==2) {
+      printf(" Reading interaction almonds from file\n");
+      Char_t almondName[100];
+      TFile* ff = new TFile("$(ALICE_ROOT)/FASTSIM/data/glauberPbPb.root");
+      for(Int_t k=0; k<40; k++) {
+	sprintf(almondName,"WAlmondFixedB%d",k);
+	fWAlmondCurrent = (TF2*)ff->Get(almondName);
+	new(&fWAlmondFixedB[k]) TF2(*fWAlmondCurrent);
+      }
+    }
 //
 //  Path Length as a function of Phi
 //    
@@ -202,7 +223,7 @@ void AliFastGlauber::DrawGeo()
 void AliFastGlauber::DrawBinary()
 {
 //
-//  Draw Wood-Saxon Nuclear Density Function
+//  Draw Binary Cross-Section
 //
     TCanvas *c4 = new TCanvas("c4","Binary Cross-Section",400,10,600,700);
     c4->cd();
@@ -745,4 +766,339 @@ Double_t AliFastGlauber::Binaries(Double_t b)
     //
     
     return fgWSN->Eval(b)/fgWSN->Eval(0.001);
+}
+
+//=================== Added by A. Dainese 11/02/04 ===========================
+void AliFastGlauber::SetCentralityClass(Double_t xsecFrLow,Double_t xsecFrUp)
+{
+  //
+  // Set limits of centrality class as fractions of the geomtrical 
+  // cross section  
+  //
+  if(xsecFrLow>1. || xsecFrUp>1. || xsecFrLow>xsecFrUp) {
+    printf(" Please set 0 <= xsecFrLow <= xsecFrUp <= 1\n");
+    return;
+  }
+
+  Double_t bLow=0.,bUp=0.;
+  Double_t xsecFr=0.;
+
+  while(xsecFr<xsecFrLow) {
+    xsecFr = fgWSgeo->Integral(0.,bLow)/fgWSgeo->Integral(0.,100.);
+    bLow += 0.1;
+  }
+  bUp = bLow;
+  while(xsecFr<xsecFrUp) {
+    xsecFr = fgWSgeo->Integral(0.,bUp)/fgWSgeo->Integral(0.,100.);
+    bUp += 0.1;
+  }
+
+  printf(" Centrality class: %4.2f-%4.2f; %4.1f < b < %4.1f fm\n",
+	 xsecFrLow,xsecFrUp,bLow,bUp);
+
+  fgWSbinary->SetRange(bLow,bUp);
+
+  return;
+}
+
+void AliFastGlauber::GetRandomBHard(Double_t& b)
+{
+  //
+  // Get random impact parameter according to distribution of 
+  // hard (binary) cross-section, in the range defined by the centrality class
+  //
+  b = fgWSbinary->GetRandom();
+  Int_t bin = 2*(Int_t)b;
+  if( (b-(Int_t)b) > 0.5) bin++;
+  fWAlmondCurrent = &fWAlmondFixedB[bin]; 
+  return;
+}
+
+void AliFastGlauber::GetRandomXY(Double_t& x,Double_t& y)
+{
+  //
+  // Get random position of parton production point according to 
+  // product of thickness functions
+  //
+  fWAlmondCurrent->GetRandom2(x,y);
+  return;
+}
+
+void AliFastGlauber::GetRandomPhi(Double_t& phi) 
+{
+  //
+  // Get random parton azimuthal propagation direction
+  //
+  phi = 2.*TMath::Pi()*gRandom->Rndm();
+  return;
+}
+
+Double_t AliFastGlauber::CalculateLength(Double_t b,
+					 Double_t x0,Double_t y0,Double_t phi0)
+{
+  // 
+  // Calculate path length for a parton with production point (x0,y0)
+  // and propagation direction (ux=cos(phi0),uy=sin(phi0)) 
+  // in a collision with impact parameter b
+  //
+
+  // number of steps in l
+  const Int_t    kNp  = 100;
+  const Double_t kDl  = fgBMax/Double_t(kNp);
+
+  Double_t l,integral,integral1,integral2,r0,xx,yy,phi,r1,r2,ell;
+  Double_t rhocoll,rhocollHalfMax;
+  Int_t i,nps;
+
+  if(fEllDef==1) {
+    //
+    // Definition 1:
+    // 
+    // ell = 2 * \int_0^\infty dl*l*\rho_coll(x0+l*ux,y0+l*uy) /
+    //           \int_0^\infty dl*\rho_coll(x0+l*ux,y0+l*uy)
+    //
+    
+
+    l  = 0.;
+    integral1 = 0.;
+    integral2 = 0.;
+    
+    // Initial radius
+    r0  = TMath::Sqrt(x0 * x0 + y0 * y0);
+    nps = Int_t ((fgBMax - r0)/kDl) - 1;
+    
+    // Radial steps
+    for (i = 0; i < nps; i++) {
+      
+      // Transform into target frame
+      xx   = x0 + l * TMath::Cos(phi0) + b / 2.;
+      yy   = y0 + l * TMath::Sin(phi0);
+      phi  = TMath::ATan2(yy, xx);
+      r1   = TMath::Sqrt(xx * xx + yy * yy);
+      // Radius in projectile frame
+      r2   = TMath::Sqrt(r1 * r1 + b * b - 2. * r1 * b * TMath::Cos(phi)); 
+      rhocoll = fgWSta->Eval(r1) * fgWSta->Eval(r2);
+      
+      integral1 += rhocoll * l * kDl;
+      integral2 += rhocoll * kDl;
+      l  += kDl;
+    } // steps
+    
+    ell = (2. * integral1 / integral2);
+    return ell;
+    
+  } else if(fEllDef==2) {
+    //
+    // Definition 2:
+    // 
+    // ell = \int_0^\infty dl*
+    //       \Theta(\rho_coll(x0+l*ux,y0+l*uy)-0.5*\rho_coll(0,0))
+    //
+
+    l  = 0.;
+    integral = 0.;
+    
+    // Initial radius
+    r0  = TMath::Sqrt(x0 * x0 + y0 * y0);
+    nps = Int_t ((fgBMax - r0)/kDl) - 1;
+
+    rhocollHalfMax = 0.5*fWAlmondCurrent->Eval(0.,0.);
+
+    // Radial steps
+    for (i = 0; i < nps; i++) {
+      
+      // Transform into target frame
+      xx   = x0 + l * TMath::Cos(phi0) + b / 2.;
+      yy   = y0 + l * TMath::Sin(phi0);
+      phi  = TMath::ATan2(yy, xx);
+      r1   = TMath::Sqrt(xx * xx + yy * yy);
+      // Radius in projectile frame
+      r2   = TMath::Sqrt(r1 * r1 + b * b - 2. * r1 * b * TMath::Cos(phi)); 
+      rhocoll = fgWSta->Eval(r1) * fgWSta->Eval(r2);
+      
+      if(rhocoll>rhocollHalfMax) integral += kDl;
+
+      l  += kDl;
+    } // steps
+    
+    ell = integral;
+    return ell;
+
+  } else {
+    printf(" Wrong length definition setting!\n");
+    return -1.;
+  }
+}
+
+void AliFastGlauber::GetLength(Double_t& ell,Double_t b)
+{
+  //
+  // Return length from random b, x0, y0, phi0 
+  //
+  Double_t x0,y0,phi0;
+  if(b<0.) GetRandomBHard(b);
+  GetRandomXY(x0,y0);
+  GetRandomPhi(phi0);
+
+  ell = CalculateLength(b,x0,y0,phi0);
+
+  return;
+}
+
+void AliFastGlauber::GetLengthsBackToBack(Double_t& ell1,Double_t& ell2,
+					  Double_t b)
+{
+  //
+  // Return 2 lengths back to back from random b, x0, y0, phi0 
+  //
+  Double_t x0,y0,phi0;
+  if(b<0.) GetRandomBHard(b);
+  GetRandomXY(x0,y0);
+  GetRandomPhi(phi0);
+  Double_t phi0plusPi = phi0+TMath::Pi();
+
+  ell1 = CalculateLength(b,x0,y0,phi0);
+  ell2 = CalculateLength(b,x0,y0,phi0plusPi);
+
+  return;
+}
+
+void AliFastGlauber::GetLengthsForPythia(Int_t n,Double_t* phi,Double_t* ell,
+					 Double_t b)
+{
+  //
+  // Returns lenghts for n partons with azimuthal angles phi[n] 
+  // from random b, x0, y0
+  //
+  Double_t x0,y0;
+  if(b<0.) GetRandomBHard(b);
+  GetRandomXY(x0,y0);
+
+  for(Int_t i=0; i<n; i++) ell[i] = CalculateLength(b,x0,y0,phi[i]);
+
+  return;
+}
+
+void AliFastGlauber::PlotBDistr(Int_t n)
+{
+  // 
+  // Plot distribution of n impact parameters
+  //
+  Double_t b;
+  TH1F *hB = new TH1F("hB","dN/db",100,0,fgBMax); 
+  hB->SetXTitle("b [fm]");
+  hB->SetYTitle("dN/db [a.u.]");
+  hB->SetFillColor(3);
+
+  for(Int_t i=0; i<n; i++) {
+    GetRandomBHard(b);
+    hB->Fill(b);
+  }
+
+  TCanvas *cB = new TCanvas("cB","Impact parameter distribution",0,0,500,500);
+  cB->cd();
+  hB->Draw();
+
+  return;
+}
+
+void AliFastGlauber::PlotLengthDistr(Int_t n,Bool_t save,Char_t *fname)
+{
+  //
+  // Plot length distribution
+  //
+  Double_t ell;
+  TH1F *hEll = new TH1F("hEll","Length distribution",16,-0.5,15.5); 
+  hEll->SetXTitle("Transverse path length, L [fm]");
+  hEll->SetYTitle("Probability");
+  hEll->SetFillColor(2);
+
+  for(Int_t i=0; i<n; i++) {
+    GetLength(ell);
+    hEll->Fill(ell);
+  }
+  hEll->Scale(1/(Double_t)n);
+
+  TCanvas *cL = new TCanvas("cL","Length distribution",0,0,500,500);
+  cL->cd();
+  hEll->Draw();
+
+  if(save) {
+    TFile *f = new TFile(fname,"recreate");
+    hEll->Write();
+    f->Close();
+  }
+  return;
+}
+
+void AliFastGlauber::PlotLengthB2BDistr(Int_t n,Bool_t save,Char_t *fname)
+{
+  //
+  // Plot lengths back-to-back distributions
+  //
+  Double_t ell1,ell2;
+  TH2F *hElls = new TH2F("hElls","Lengths back-to-back",100,0,15,100,0,15); 
+  hElls->SetXTitle("Transverse path length, L [fm]");
+  hElls->SetYTitle("Transverse path length, L [fm]");
+
+  for(Int_t i=0; i<n; i++) {
+    GetLengthsBackToBack(ell1,ell2);
+    hElls->Fill(ell1,ell2);
+  }
+  hElls->Scale(1/(Double_t)n);
+
+
+  TCanvas *cLs = new TCanvas("cLs","Length back-to-back distribution",0,0,500,500);
+  gStyle->SetPalette(1,0);
+  cLs->cd();
+  hElls->Draw("col,Z");
+
+  if(save) {
+    TFile *f = new TFile(fname,"recreate");
+    hElls->Write();
+    f->Close();
+  }
+  return;
+}
+
+void AliFastGlauber::StoreAlmonds()
+{
+  //
+  // Store in glauberPbPb.root 40 almonds for b = (0.25+k*0.5) fm (k=0->39)
+  //
+
+  Char_t almondName[100];
+  TFile* ff = new TFile("$(ALICE_ROOT)/FASTSIM/data/glauberPbPb.root","update");
+  for(Int_t k=0; k<40; k++) {
+    sprintf(almondName,"WAlmondFixedB%d",k);
+    Double_t b = 0.25+k*0.5;
+    printf(" b = %f\n",b);
+    fgWAlmond->SetParameter(0,b);
+
+    fgWAlmond->Write(almondName);
+  }
+  ff->Close();
+
+  return;
+}
+
+void AliFastGlauber::PlotAlmonds()
+{
+  //
+  // Plot almonds for some impact parameters
+  //
+
+  TCanvas *c = new TCanvas("c","Almonds",0,0,500,500);
+  gStyle->SetPalette(1,0);
+  c->Divide(2,2);
+  c->cd(1);
+  fWAlmondFixedB[0].Draw("cont1");
+  c->cd(2);
+  fWAlmondFixedB[10].Draw("cont1");
+  c->cd(3);
+  fWAlmondFixedB[20].Draw("cont1");
+  c->cd(4);
+  fWAlmondFixedB[30].Draw("cont1");
+
+  return;
 }
