@@ -20,7 +20,8 @@
 //                          V-Zero   Detector                            //
 //  This class contains the base procedures for the VZERO  detector      //
 //  All comments should be sent to Brigitte CHEYNIS :                    //
-//                                 b.cheynis@ipnl.in2p3.fr               //                                                     //                                                                           //
+//                                 b.cheynis@ipnl.in2p3.fr               //
+//                                                                       //
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
@@ -48,17 +49,17 @@ AliVZERO::AliVZERO(const char *name, const char *title)
   // Standard constructor for VZERO Detector
   //
   
-  fIshunt       =  1 ; // All hits are associated with primary particles  
+  fIshunt       =  1;  // All hits are associated with primary particles  
    
-  fHits         =  new TClonesArray("AliVZEROhit",400) ; 
-  fDigits       =  new TClonesArray("AliVZEROdigit",400) ; 
-  
-  fNhits        =    0;
-  fNdigits      =    0; 
-  fNCerenkovs   =    0; 
-  fMulti        =    0;
+  fHits         =  new TClonesArray("AliVZEROhit", 400);
+  fDigits       =  new TClonesArray("AliVZEROdigit",400); 
+   
+  gAlice->AddHitList(fHits);
+
+//  fDigits       =  new TClonesArray("AliVZEROdigit",400) ; 
+
   fThickness    =  3.1;   // total thickness of the V0R box
-  fThickness1   =  2.5;   // thickness of the thickest quartz cell
+  fThickness1   =  1.0;   // thickness of the thickest cell (2.5 in version 0)
   
   fMaxStepQua   =  0.05; 
   fMaxStepAlu   =  0.01; 
@@ -67,7 +68,16 @@ AliVZERO::AliVZERO(const char *name, const char *title)
   fMaxDestepAlu =  -1.0;
   
   SetMarkerColor(kRed);
- }
+}
+
+//_____________________________________________________________________________
+AliVZERO::~AliVZERO()
+{
+    if (fHits) {
+        fHits->Delete();
+        delete fHits;
+    }
+}
 
 //_____________________________________________________________________________
 void AliVZERO::BuildGeometry()
@@ -91,6 +101,9 @@ void AliVZERO::CreateMaterials()
   // Build simple ROOT TNode geometry for event display
   //
 }
+
+
+
 //_____________________________________________________________________________
 Int_t AliVZERO::DistanceToPrimitive(Int_t px, Int_t py)
 {
@@ -109,6 +122,7 @@ void AliVZERO::Init()
   // Initialise the VZERO after it has been built
   //
 }
+
 
 //-------------------------------------------------------------------------
 

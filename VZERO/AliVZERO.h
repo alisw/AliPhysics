@@ -13,9 +13,7 @@
 #include "TNamed.h"
 #include "TTree.h"
 
-class TDirectory;
-R__EXTERN TDirectory *  gDirectory;
- 
+class AliVZEROhit; 
  
 class AliVZERO : public AliDetector {
  
@@ -23,14 +21,17 @@ public:
 
   AliVZERO() {}
   AliVZERO(const char *name, const char *title);
-  virtual       ~AliVZERO() {}
-  virtual void   AddDigit( Int_t* tracks, Int_t* digits) = 0;
+  virtual       ~AliVZERO();
+//  virtual void   AddHit(Int_t track , Int_t *vol, Float_t *hits)=0; 
+//  virtual void   AddDigits(Int_t* tracks, Int_t* digits)=0;
   virtual void   BuildGeometry();
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
   virtual Int_t  DistanceToPrimitive(Int_t px, Int_t py);
   virtual Int_t  IsVersion() const = 0;
   virtual void   Init();
+  virtual void   MakeBranch(Option_t *option) =0;
+//  virtual void   MakeBranch(Option_t *option);
   virtual void   DrawModule() {};
   virtual void   StepManager() {};
   virtual inline  void   SetThickness(Float_t thick)  {fThickness = thick;};
@@ -40,10 +41,6 @@ public:
   virtual void   SetMaxStepAlu(Float_t p1);
   virtual void   SetMaxDestepQua(Float_t p1);
   virtual void   SetMaxDestepAlu(Float_t p1);
-
-   Int_t         fNCerenkovs;    //  Number of cerenkovs (detected on photocathode)
-   Int_t         fNGCerenkovs;   //  Number of cerenkovs (generated)
-   Int_t         fMulti; // Multiplicity of charged particles
 
    Float_t      fThickness;
    Float_t      fThickness1;

@@ -1,13 +1,12 @@
 SRCS= \
 AliVZERO.cxx \
 AliVZEROv0.cxx \
+AliVZEROv2.cxx \
 AliVZEROhit.cxx \
 AliVZEROdigit.cxx
 
-HDRS= \
-AliVZERO.h \
-AliVZEROv0.h \
-AliVZEROhit.h \
-AliVZEROdigit.h
+HDRS= $(SRCS:.cxx=.h)
 
-DSRC=VZEROLinkDef.h
+DHDR=VZEROLinkDef.h
+
+EINCLUDE:= TGeant3 STRUCT STEER

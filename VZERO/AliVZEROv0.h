@@ -18,34 +18,22 @@ public:
   AliVZEROv0();
   AliVZEROv0(const char *name, const char *title);
   virtual       ~AliVZEROv0() {}
-  virtual void   AddHit(Int_t, Int_t*, Float_t*);
-  virtual void   AddDigit(Int_t*, Int_t*);
-  virtual void   FinishEvent();
+  virtual void   AddHit(Int_t  , Int_t *, Float_t *); 
+  virtual void   AddDigits(Int_t* , Int_t* );
   virtual void   CreateGeometry();
   virtual void   BuildGeometry();
   virtual void   CreateMaterials();
   virtual void   DrawModule();
   virtual void   Init();
-  virtual Int_t  IsVersion() const {return 7;}
+  virtual void   MakeBranch(Option_t *option);
+  virtual Int_t  IsVersion() const {return 0;}
   virtual void   StepManager();
-  virtual void   MakeBranch(Option_t* option);
-  virtual void   BookingHistograms();
-  virtual void   SavingHistograms();
-  virtual void   FinishRun();
  
 public:
    Int_t         fIdSens1;      // Sensitive volume  in VZERO
-   Int_t         digits[3];  
+   Int_t         digits[1];  
    Int_t         tracks[5];   
-   Int_t         fNdead; 
    
-private:
-    TFile*       fRootFile; 
-    TH1F *       fhMultiplicity;   // Histo of charged particle multiplicity
-    TH1F *       fhGEANTcode;      // Histo of particle GEANT code
-    TH1F *       fhCerenkov;       // Histo of Cerenkov photons  	
-    TH1F *       fhToF;            // Histo of charged particles ToF 
-     
   ClassDef(AliVZEROv0,1)  //Class for VZERO version 0
 };
 

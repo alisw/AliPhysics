@@ -6,9 +6,10 @@
 #pragma link off all classes;
 #pragma link off all functions;
  
-#pragma link C++ class  AliVZERO;
-#pragma link C++ class  AliVZEROv0;
-#pragma link C++ class  AliVZEROhit;
-#pragma link C++ class  AliVZEROdigit;
+#pragma link C++ class  AliVZERO+;
+#pragma link C++ class  AliVZEROv0+;
+#pragma link C++ class  AliVZEROv2+;
+#pragma link C++ class  AliVZEROhit+;
+#pragma link C++ class  AliVZEROdigit+;
 
 #endif

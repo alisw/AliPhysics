@@ -26,25 +26,25 @@ AliVZEROhit::AliVZEROhit(Int_t shunt, Int_t track, Int_t* vol, Float_t* hits):
   // Add a VZERO hit
   //
   
-  fVolume          = vol[2];
-  fCopy            = vol[3];
+  fVolume          = vol[0];
+  fCopy            = vol[1];
   fX      	   = hits[0];
   fY               = hits[1];
   fZ               = hits[2];
-  fXloc            = hits[3];
-  fYloc            = hits[4];
-  fZloc            = hits[5];
-  fEdep            = hits[6];
-  fEtot            = hits[7];
-  fTrackPiD        = hits[8];
-  fParticle        = hits[9];
-  fTof             = hits[10];
-  fIsTrackEntering = hits[11];
-  fIsTrackExiting  = hits[12];
-  fCharge          = hits[13];
-  fIsCerenkov      = hits[14];
-  fMulti           = hits[15];
-  fTheta           = hits[16];
-  fPhi             = hits[17];
-  fNGCerenkovs     = hits[18];
+  fTrackPiD        = hits[3];
+  fTof             = hits[4];
+  fCharge          = hits[5];
+  fTheta           = hits[6];
+  fPhi             = hits[7];
+  fRingNumber      = hits[8];
+  
+  fPt              = hits[9];
+  fPmom            = hits[10];
+  fPx              = hits[11];
+  fPy              = hits[12];
+  fPz              = hits[13];
+  
+  fEloss           = hits[14];
+  fTleng           = hits[15];
+  
 }

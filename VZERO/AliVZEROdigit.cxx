@@ -30,8 +30,7 @@ AliVZEROdigit::AliVZEROdigit(Int_t* tracks, Int_t *digits):
   
   fTrack      = tracks[0];
   fEvent      = digits[0];
-  fMulti      = digits[1];
-  fNCerenkovs = digits[2];
+
   
 }
 

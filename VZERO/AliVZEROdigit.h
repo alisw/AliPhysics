@@ -13,9 +13,8 @@ class AliVZEROdigit: public AliDigit  {
 
  public:
     Int_t fEvent;         // Event number
-    Int_t fMulti;         // Multiplicity of charged particles
     Int_t fTrack;
-    Int_t fNCerenkovs;
+
  
  public:
     AliVZEROdigit() {}

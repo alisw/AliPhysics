@@ -9,7 +9,7 @@ PACKAGE = VZERO
 
 # C++ sources
 
-SRCS          = AliVZERO.cxx AliVZEROv0.cxx AliVZEROhit.cxx AliVZEROdigit.cxx
+SRCS          = AliVZERO.cxx AliVZEROv0.cxx AliVZEROv2.cxx AliVZEROhit.cxx AliVZEROdigit.cxx
 
 # C++ Headers
 
