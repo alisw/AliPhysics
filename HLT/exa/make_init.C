@@ -3,10 +3,10 @@
 /**
    Macro to get the default parameters from AliTPCParam. 
    Output is written to a file, which can be inserted directly into 
-   AliL3Transform.cxx as the default parameters to be set at top
+   AliL3Transform.cxx as the default parameters to be set at top.
 */
 
-void Make_Init(char *tofile="Init.cxx")
+void make_init(char *tofile="Init.cxx")
 {
   AliTPCParamSR *param = new AliTPCParamSR();
   param->SetDefault();
