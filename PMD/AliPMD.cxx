@@ -55,6 +55,10 @@
 #include "AliMC.h"
 #include "AliPMDDigitizer.h"
 #include "AliPMDhit.h"
+#include "AliPMDClusterFinder.h"
+#include "AliPMDtracker.h"
+#include "AliESDPmdTrack.h"
+#include "AliESD.h"
   
 ClassImp(AliPMD)
  
@@ -364,9 +368,47 @@ void AliPMD::Hits2Digits()
 
 }
 //____________________________________________________________________________
+void  AliPMD::Reconstruct() const
+{ 
+// create reconstructed points
+  
+  AliRunLoader* runLoader = fLoader->GetRunLoader(); 
+  AliPMDClusterFinder *pmdClus = new AliPMDClusterFinder();
+  pmdClus->OpengAliceFile(fLoader->GetRunLoader()->GetFileName().Data(),"DR");
+  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++)
+    {
+      pmdClus->Digits2RecPoints(iEvent);
+    }
 
+  fLoader->UnloadRecPoints();
+  fLoader->UnloadDigits();
+
+  delete pmdClus;
+
+}
+// ---------------------------------------------------------------------------
+void  AliPMD::FillESD(AliESD* esd) const
+{
+
+  AliRunLoader* runLoader = fLoader->GetRunLoader();
+  fLoader->LoadRecPoints("READ");
+  Int_t ievent = runLoader->GetEventNumber();
+  runLoader->GetEvent(ievent);
+  AliLoader *pmdloader = runLoader->GetLoader("PMDLoader");
+  TTree *treeR = pmdloader->TreeR();
+  AliPMDtracker *pmdtracker = new AliPMDtracker();
+  pmdtracker->LoadClusters(treeR);
+  pmdtracker->Clusters2Tracks(esd);
+  delete pmdtracker; 
+
+  fLoader->UnloadRecPoints();
+}
+
+// ---------------------------------------------------------------------------
 AliDigitizer* AliPMD::CreateDigitizer(AliRunDigitizer* manager)
 { 
   return new AliPMDDigitizer(manager);
 }
+// ---------------------------------------------------------------------------
+
 

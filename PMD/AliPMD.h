@@ -17,6 +17,9 @@ class TFile;
 class AliPMDRecPoint;
 class AliPMDLoader;
 class AliPMDhit;
+class AliPMDtracker;
+class AliESDPmdTrack;
+class AliESD;
 
 class AliPMD : public AliDetector {
 
@@ -46,8 +49,11 @@ public:
   virtual void  Hits2SDigits();
   virtual void  SDigits2Digits();
   virtual void  Hits2Digits();
+  virtual void  Reconstruct() const;
+  virtual void  FillESD(AliESD* esd) const;
 
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager);
+
   
  protected:
   Float_t fPar[4];           // pmdin, pmdout, thgas, thcell
@@ -61,6 +67,6 @@ public:
   TClonesArray* fRecPoints;   //! List of reconstructed hits
   Int_t         fNRecPoints;  // Number of reconstructed hits
   
-  ClassDef(AliPMD,4)  // Base Class for Photon Multiplicity Detector
+  ClassDef(AliPMD,5)  // Base Class for Photon Multiplicity Detector
 };
 #endif
