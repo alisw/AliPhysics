@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2001/05/16 14:57:22  alibrary
+New files for folders and Stack
+
 Revision 1.15  2001/05/02 11:50:18  morsch
 New layout of the non-absorber side provided by Y. Viyogi. Not the final design
 but the prsent most realistic.
@@ -64,6 +67,8 @@ Introduction of the Copyright and cvs Log
 #include "AliMagF.h"
 #include "AliMC.h"
 #include "TSystem.h"
+
+#include <iostream.h>
  
 ClassImp(AliPIPEv0)
  
@@ -101,7 +106,7 @@ void AliPIPEv0::CreateGeometry()
   
 
     Int_t *idtmed = fIdtmed->GetArray();
-    Float_t ppcon[48], ptube[3], pbox[3];
+    Float_t ppcon[84], ptube[3], pbox[3];
     Int_t i=0;
     
     enum {kC=6, kAlu=9, kInox=19, kGetter=20, kBe=5, kVac=16, kAir=15, kAlBe=21};
@@ -121,6 +126,11 @@ void AliPIPEv0::CreateGeometry()
     AliMatrix(idrotm[2012],90.,180., 90., 90.,180.,  0.);
     AliMatrix(idrotm[2013],90.,  0., 90., 90.,180.,  0.);
 
+//  distance between bellows
+    const Float_t dzbb =  8.0;
+//  size of bellow
+    const Float_t dzb  = 11.4;
+
     
 //
 // The peam pipe up to the Front Absorber
@@ -130,69 +140,109 @@ void AliPIPEv0::CreateGeometry()
     const Float_t dbe2 = 15.;
     ppcon[0]  =    0;
     ppcon[1]  =  360;
-    ppcon[2]  =   15;
+    ppcon[2]  =   25;
 //  1: 
     ppcon[3]  = - 90;
     ppcon[4]  =    0;
     ppcon[5]  =    5.8;
 //  2
-    ppcon[6]  = - 81.0;
+    ppcon[6]  = - 81.6;
     ppcon[7]  =    0.;
     ppcon[8]  =    5.8;
 //  3
-    ppcon[9]  = - 81.;
+    ppcon[9]  = - 81.6;
     ppcon[10]  =    0.;
     ppcon[11] =    4.22;
-//  4
-    ppcon[12] = - 28.00-dbe2;
+//  4 
+    ppcon[12] = - 81.6 + dzb; 
     ppcon[13] =    0;
     ppcon[14] =    4.22;
-//  5
-    ppcon[15] = - 28.00-dbe2;
+//  5 
+    ppcon[15] = - 81.6 + dzb; 
     ppcon[16] =    0;
     ppcon[17] =    3.2;
-//  6
-    ppcon[18] =    0;
+//  6 
+    ppcon[18] = - 81.6 + dzb + dzbb; 
     ppcon[19] =    0;
     ppcon[20] =    3.2;
 //  7
-    ppcon[21] =    28.+dbe1;
+    ppcon[21] = - 81.6 + dzb + dzbb; 
     ppcon[22] =    0;
-    ppcon[23] =    3.2;
+    ppcon[23] =    4.22;
 //  8
-    ppcon[24] =   28.+dbe1;
+    ppcon[24] = - 28.00-dbe2;
     ppcon[25] =    0;
     ppcon[26] =    4.22;
 //  9
-    ppcon[27] =  250;
+    ppcon[27] = - 28.00-dbe2;
     ppcon[28] =    0;
-    ppcon[29] =   4.22;
-// 10
-    ppcon[30] =  250;
+    ppcon[29] =    3.2;
+//  10
+    ppcon[30] =    0;
     ppcon[31] =    0;
-    ppcon[32] =    5;
-// 11
-    ppcon[33] =  365;
+    ppcon[32] =    3.2;
+//  11
+    ppcon[33] =    28.+dbe1;
     ppcon[34] =    0;
-    ppcon[35] =    5;
-// 12
-    ppcon[36] =  365;
+    ppcon[35] =    3.2;
+//  12
+    ppcon[36] =   28.+dbe1;
     ppcon[37] =    0;
-    ppcon[38] =   56;
-// 13
-    ppcon[39] =  405;
+    ppcon[38] =    4.22;
+//  13 
+    ppcon[39] =   28.+dbe1+5.5;
     ppcon[40] =    0;
-    ppcon[41] =   56;
-// 14
-    ppcon[42] =  405;
+    ppcon[41] =    4.22;
+//  14
+    ppcon[42] =   28.+dbe1+5.5;
     ppcon[43] =    0;
-    ppcon[44] =   5;
-// 15
-    ppcon[45] =  800;
+    ppcon[44] =    3.2;
+//  15 
+    ppcon[45] =   250.;
     ppcon[46] =    0;
-    ppcon[47] =    5;
+    ppcon[47] =    3.2;
+//  16
+    ppcon[48] =  250;
+    ppcon[49] =    0;
+    ppcon[50] =    5;
+//  17
+    ppcon[51] =   250.+4.4*2;
+    ppcon[52] =    0.;
+    ppcon[53] =    5.;
+//  18
+    ppcon[54] =   250.+4.4*2;
+    ppcon[55] =    0.;
+    ppcon[56] =    3.2;
+//  19
+    ppcon[57] =   350.4;
+    ppcon[58] =    0;
+    ppcon[59] =    3.2;
+//  20
+    ppcon[60] =   350.4;
+    ppcon[61] =    0;
+    ppcon[62] =    5.;
+//  21
+    ppcon[63] =   380.;
+    ppcon[64] =    0;
+    ppcon[65] =    5.;
+//  22
+    ppcon[66] =  380.;
+    ppcon[67] =    0.;
+    ppcon[68] =   56.;
+//  23
+    ppcon[69] =  420.;
+    ppcon[70] =    0.;
+    ppcon[71] =   56.;
+//  24
+    ppcon[72] =  420.;
+    ppcon[73] =    0.;
+    ppcon[74] =   5.;
+//  25
+    ppcon[75] =  800.;
+    ppcon[76] =    0.;
+    ppcon[77] =    5.;
     
-    gMC->Gsvolu("QBPM", "PCON", idtmed[kAir], ppcon, 48);
+    gMC->Gsvolu("QBPM", "PCON", idtmed[kAir], ppcon, 78);
 
 //
 // The Vacuum 
@@ -205,20 +255,16 @@ void AliPIPEv0::CreateGeometry()
 //
 // volume definitions of various sections
 //
-//  distance between bellows
-    const Float_t dzbb =  8.0;
-//  size of bellow
-    const Float_t dzb  = 11.4;
 
     //half-lengths of various beam pipe sections
-    Float_t hlenQbbe=43.3;
-    Float_t hlenQbt1=5.5/2.;
-    Float_t hlenQbab=286.6/2.;
-    Float_t hlenQb10=286.6/2.;
-    Float_t hlenQb29=4.4/2.;
-    Float_t hlenQbe0=(2.* dzb + dzbb)/2.;
-    Float_t hlenQb26=20./2.;
-    Float_t hlenQb28=400.6/2.;
+    Float_t hlenQbbe = 43.3;
+    Float_t hlenQbt1 = 5.5/2.;
+    Float_t hlenQbab = (286.6+15.)/2.;
+    Float_t hlenQb10 = (286.6+15.)/2.;
+    Float_t hlenQb29 = 4.4/2.;
+    Float_t hlenQbe0 = (2.* dzb + dzbb)/2.;
+    Float_t hlenQb26 = 20./2.;
+    Float_t hlenQb28 = (400.6-15.)/2.;
 
 // Be Pipe in central Alice : length 43.3 * 2
     ptube[0] =  2.90;
@@ -304,6 +350,7 @@ void AliPIPEv0::CreateGeometry()
 // Support rollers: non absorber side
 //
 //  Mother volume
+    
     ptube[0] = 3.2;
     ptube[1] = 4.8;
     ptube[2] = 3.0;
@@ -329,7 +376,7 @@ void AliPIPEv0::CreateGeometry()
     ptube[2] = hlenQb29;
     
     gMC->Gsvolu("QB29","TUBE", idtmed[kInox], ptube, 3);
-
+    
 //
 // Inox beam pipe: final section on non-absorber side
 
@@ -395,12 +442,42 @@ void AliPIPEv0::CreateGeometry()
 //
 // Bellows
 //
+//
 // Mother Volume
+
+    Float_t pconQBE0[21];
+    pconQBE0[0]= 0;
+    pconQBE0[1]= 360;
+    pconQBE0[2]= 6;
+
+    pconQBE0[3]= -(2.*dzb+dzbb)/2.;
+    pconQBE0[4]= 0;
+    pconQBE0[5]= 4.22;
+    
+    pconQBE0[6]= -(2.*dzb+dzbb)/2.+dzb;
+    pconQBE0[7]= 0;
+    pconQBE0[8]= 4.22;
+    
+    pconQBE0[9]= -(2.*dzb+dzbb)/2.+dzb;
+    pconQBE0[10]= 0;
+    pconQBE0[11]= 3.2;
+    
+    pconQBE0[12]= -(2.*dzb+dzbb)/2.+dzb+dzbb;
+    pconQBE0[13]= 0;
+    pconQBE0[14]= 3.2;
+    
+    pconQBE0[15]= -(2.*dzb+dzbb)/2.+dzb+dzbb;
+    pconQBE0[16]= 0;
+    pconQBE0[17]= 4.22;
+    
+    pconQBE0[18]= -(2.*dzb+dzbb)/2.+dzb+dzbb+dzb;
+    pconQBE0[19]= 0;
+    pconQBE0[20]= 4.22;
+
+    gMC->Gsvolu("QBE0", "PCON", idtmed[kAir], pconQBE0, 21);
+
     ptube[0] =  2.90;
     ptube[1] =  3.75;
-    ptube[2] = (2.*dzb+dzbb)/2.;
-    gMC->Gsvolu("QBE0","TUBE", idtmed[kAir], ptube, 3);
-
     ptube[2] = dzb/2.;
 
     gMC->Gsvolu("QBEM","TUBE", idtmed[kAir], ptube, 3);
@@ -514,23 +591,30 @@ void AliPIPEv0::CreateGeometry()
 
     // inox flange at the start of bellow
     // zstart=335.4, zend=339.8, length=4.4
+    cout<<" zpos 1 "<<zpos<<" hlenQbab "<<hlenQbab<<
+      " hlenQb29 "<< hlenQb29<<endl;
     zpos = zpos + hlenQbab + hlenQb29;
+     cout<<" zstart 1 "<<zpos-hlenQb29<<" zend 2 "<<zpos+hlenQb29<<endl;
     gMC->Gspos("QB29", 1, "QBPM", 0.0, 0.0, zpos, 0, "ONLY");
 
     // bellow section
     // zstart=339.8, zend=370.6, length=30.9
+    //    zpos = zpos + hlenQb29 + hlenQbe0;
     zpos = zpos + hlenQb29 + hlenQbe0;
-    gMC->Gspos("QBE0", 2 ,"QBPM", 0.0, 0.0, zpos, 0, "ONLY");
+     cout<<" zstart "<<zpos-hlenQbe0<<" zend "<<zpos-hlenQbe0<<endl;
+   gMC->Gspos("QBE0", 2 ,"QBPM", 0.0, 0.0, zpos, 0, "ONLY");
 
     // inox flange at the end of bellow and start of thick inox for pump
     // zstart=370.6, zend=375.0, length=4.4
     zpos = zpos + hlenQbe0 + hlenQb29;
-    gMC->Gspos("QB29", 2, "QBPM", 0.0, 0.0, zpos, 0, "ONLY");
+     cout<<" zstart 1 "<<zpos-hlenQb29<<" zend 2 "<<zpos+hlenQb29<<endl;
+     gMC->Gspos("QB29", 2, "QBPM", 0.0, 0.0, zpos, 0, "ONLY");
 
     // 2.5mm thick inox section to hang the pump
     // zstart=375.0, zend=395.0, length=20.0
     zpos = zpos + hlenQb29 + hlenQb26;
-    gMC->Gspos("QB26", 1, "QBPM", 0.0, 0.0, zpos, 0, "ONLY");
+     cout<<" zstart 1 "<<zpos-hlenQb29<<" zend 2 "<<zpos+hlenQb29<<endl;
+     gMC->Gspos("QB26", 1, "QBPM", 0.0, 0.0, zpos, 0, "ONLY");
 
     //inox flange at the end of pump section to join to next pipe
     // zstart=395.0, zend=399.4, length=4.4
@@ -733,7 +817,6 @@ void AliPIPEv0::CreateGeometry()
 // Connecting tube ->
     ptube[0] =  0.0;
     ptube[1] =  5.4;
-    //ptube[2] = 13.7;
     ptube[2] = 14.6;
     gMC->Gsvolu("QI34","TUBE", idtmed[kInox], ptube, 3);
     
@@ -751,15 +834,14 @@ void AliPIPEv0::CreateGeometry()
     ptube[2] =  2.15;
     gMC->Gsvolu("QI35","TUBE", idtmed[kInox], ptube, 3);
 // <-
-    Float_t zPump = 385.;
-    
+    Float_t zPump = 400.;
     gMC->Gspos("QI32", 1, "QBPM", 0.0, -44.25, zPump, 0, "ONLY");
     gMC->Gspos("QI33", 1, "QBPM", 0.0, -35.00, zPump,idrotm[2002], "ONLY");
     gMC->Gspos("QI34", 1, "QBPM", 0.0, -17.90, zPump,idrotm[2002], "ONLY");
     gMC->Gspos("QI35", 1, "QBPM", 0.0, -24.35, zPump,idrotm[2002], "ONLY");
 
-    gMC->Gsatt("QBPM", "SEEN", 0);
-    gMC->Gsatt("QBEM", "SEEN", 0);
+    gMC->Gsatt("QBPM", "SEEN", 1);
+    gMC->Gsatt("QBEM", "SEEN", 1);
 }
 
 
