@@ -3427,10 +3427,10 @@ CCC   Compute Coulomb Correction factor for options 1, 2 and 3:
             if(sign .lt. 0) factor = c2_coul_unlike(max_c2_coul - 1)
          else
             if(sign .gt. 0) then
-               Call LAGRNG(q,q_coul,factor,c2_coul_like,
+               Call LAGRNG1(q,q_coul,factor,c2_coul_like,
      1                     max_c2_coul,1,5,max_c2_coul,1)
             else if(sign .lt. 0) then
-               Call LAGRNG(q,q_coul,factor,c2_coul_unlike,
+               Call LAGRNG1(q,q_coul,factor,c2_coul_unlike,
      1                     max_c2_coul,1,5,max_c2_coul,1)
             end if
          end if
@@ -3442,7 +3442,7 @@ CCC   Compute Coulomb Correction factor for options 1, 2 and 3:
 C---------------------------------------------------------------------
 
 
-      SUBROUTINE LAGRNG (X,ARG,Y,VAL,NDIM,NFS,NPTS,MAXARG,MAXFS)
+      SUBROUTINE LAGRNG1 (X,ARG,Y,VAL,NDIM,NFS,NPTS,MAXARG,MAXFS)
         IMPLICIT REAL*4(A-H,O-Z)
 C
 C     LAGRANGE INTERPOLATION,UNEQUALLY SPACED POINTS
