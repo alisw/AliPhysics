@@ -390,6 +390,100 @@ typedef struct {
   Int_t   namec1[MAXME1]; 
 } Gctpol_t; 
 
+/************************************************************************
+ *                                                                      *
+ *      Commons for GEANE                                               *
+ *                                                                      *
+ ************************************************************************/
+
+//------------ERTRIO
+//    INTEGER          MXPRED
+//    PARAMETER (MXPRED = 10)
+//    DOUBLE PRECISION ERDTRP
+//    REAL             ERRIN, ERROUT, ERTRSP, ERXIN, ERXOUT, ERPIN,
+//   +                 ERPOUT
+//    INTEGER          NEPRED, INLIST, ILPRED, IEPRED
+//    COMMON /ERTRIO/  ERDTRP(5,5,MXPRED), ERRIN(15), ERROUT(15,MXPRED),
+//   +                 ERTRSP(5,5,MXPRED), ERXIN( 3), ERXOUT( 3,MXPRED),
+//   +                 ERPIN(3), ERPOUT(3,MXPRED), NEPRED,INLIST,ILPRED,
+//   +                 IEPRED(MXPRED)
+//
+
+#define MXPRED 10
+typedef struct {
+  Double_t erdtrp[MXPRED*5*5];
+  Float_t  errin[5];
+  Float_t  errout[MXPRED*15];
+  Float_t  ertrsp[MXPRED*5*5];
+  Float_t  erxin[3];
+  Float_t  erxout[MXPRED*3];
+  Float_t  erpin[3];
+  Float_t  erpout[MXPRED*3];
+  Int_t    nepred;
+  Int_t    inlist;
+  Int_t    ilpred;
+  Int_t    iepred;
+} Ertrio_t;
+
+//-----------EROTPS
+//    CHARACTER*8     CHOPTI
+//    LOGICAL         LEEXAC, LELENG, LEONLY, LEPLAN, LEPOIN, LEVOLU
+//    REAL            ERPLI, ERPLO, ERLENG
+//    INTEGER         NAMEER, NUMVER, IOVLER
+//    COMMON /EROPTS/ ERPLI(3,2), ERPLO(3,4,MXPRED), ERLENG(MXPRED),
+//   +                NAMEER(MXPRED), NUMVER(MXPRED), IOVLER(MXPRED),
+//   +                LEEXAC, LELENG, LEONLY, LEPLAN, LEPOIN, LEVOLU
+//    COMMON /EROPTC/CHOPTI
+
+typedef struct {
+  Float_t   erpli[3*2];
+  Float_t   erplo[MXPRED*3*4];
+  Float_t   erleng[MXPRED];
+  Int_t     nameer[MXPRED];
+  Int_t     numver[MXPRED];
+  Int_t     iovler[MXPRED];
+  Bool_t    leexac;
+  Bool_t    leleng;
+  Bool_t    leonly;
+  Bool_t    leplan;
+  Bool_t    lepoin;
+  Bool_t    levolu;
+} Eropts_t;
+
+typedef struct {
+  char chopti[8];
+} Eroptc_t;
+
+//-------ERWORK
+//    DOUBLE PRECISION EI, EF, ASDSC
+//    COMMON /ERWORK/ EI(15), EF(15), ASDSC(5,5),
+//   +                   XI(3), PPI(3), HI(9),
+//   +                   XF(3), PF(3),  HF(9),
+//   +                   CHTR, DEDX2, BACKTR, CUTEK, TLGCM2, TLRAD
+
+typedef struct {
+  Double_t  ei[15];
+  Double_t  ef[15];
+  Double_t  asdsc[5*5];
+  Float_t   xi[3];
+  Float_t   ppi[3];
+  Float_t   hi[9];
+  Float_t   xf[3];
+  Float_t   pf[3];
+  Float_t   hf[9];
+  Float_t   chtr;
+  Float_t   dedx2;
+  Float_t   backtr;
+  Float_t   cutek;
+  Float_t   tlgcm2;
+  Float_t   tlrad;
+} Erwork_t;
+
+/************************************************************************
+ *                                                                      *
+ *      Commons for GEANE                                               *
+ *                                                                      *
+ ************************************************************************/
 
 class TGeant3 : public AliMC { 
 
@@ -420,6 +514,13 @@ private:
   Gckin2_t *fGckin2; 
   Gckin3_t *fGckin3; 
   Gctrak_t *fGctrak; 
+
+
+  // commons for GEANE
+  Ertrio_t *fErtrio;
+  Eropts_t *fEropts;
+  Eroptc_t *fEroptc;
+  Erwork_t *fErwork;
 
   enum {kMaxParticles = 100};
 
@@ -526,6 +627,15 @@ public:
   virtual Int_t* Iq() const {return fZiq;}
   virtual Int_t* Lq() const {return fZlq;}
   virtual Float_t* Q() const {return fZq;}
+
+
+  // Access to GEANE commons
+
+  virtual Ertrio_t* Ertrio() const {return fErtrio;}
+  virtual Eropts_t* Eropts() const {return fEropts;}
+  virtual Eroptc_t* Eroptc() const {return fEroptc;}
+  virtual Erwork_t* Erwork() const {return fErwork;}
+
 
 
       // functions from GBASE 
@@ -678,6 +788,13 @@ public:
    virtual  void  Vname(const char *name, char *vname);
 
    virtual  void  InitLego();
+
+  // Routines from GEANE
+
+    virtual void Ertrgo();
+    virtual void Ertrak(const Float_t *const x1, const Float_t *const p1, 
+			const Float_t *x2, const Float_t *p2,
+			Int_t ipa,  Option_t *chopt);
         
    ClassDef(TGeant3,1)  //C++ interface to Geant basic routines 
 }; 

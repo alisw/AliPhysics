@@ -240,6 +240,12 @@ void TGeant3::SetTRIG(Int_t)  {}
 void TGeant3::SetUserDecay(Int_t) {}
 void TGeant3::Vname(const char *, char *) {}
 void TGeant3::InitLego() {}
+void TGeant3::Ertrgo() {}
+void TGeant3::Ertrak(const Float_t *const , const Float_t *const , 
+		     const Float_t *, const Float_t *,
+		     Int_t ,  Option_t *) {}
+
+        
 
 
 #include "AliCallf77.h"

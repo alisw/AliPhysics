@@ -104,6 +104,9 @@
 # define gckmat  gckmat_
 # define geditv  geditv_
 # define mzdrop  mzdrop_
+
+# define ertrak  ertrak_
+# define ertrgo  ertrgo_
  
 # define setbomb setbomb_
 # define setclip setclip_
@@ -197,6 +200,9 @@
 # define geditv  GEDITV
 # define mzdrop  MZDROP 
 
+# define ertrak  ERTRAK
+# define ertrgo  ERTRGO
+ 
 # define setbomb SETBOMB
 # define setclip SETCLIP
 # define gcomad  GCOMAD
@@ -409,6 +415,12 @@ extern "C"
   void type_of_call setclip(DEFCHARD, Float_t &,Float_t &,Float_t &,Float_t &,
 			    Float_t &, Float_t & DEFCHARL); 
   void type_of_call gcomad(DEFCHARD, Int_t*& DEFCHARL); 
+
+  void type_of_call ertrak(const Float_t *const x1, const Float_t *const p1,
+			   const Float_t *x2, const Float_t *p2,
+			   const Int_t &ipa, DEFCHARD DEFCHARL);
+
+  void type_of_call ertrgo();
 }
 
 //
@@ -3313,6 +3325,20 @@ void TGeant3::Vname(const char *name, char *vname)
   vname[4] = 0;      
 }
  
+//______________________________________________________________________________
+void TGeant3::Ertrgo()
+{
+  ertrgo();
+}
+
+//______________________________________________________________________________
+void TGeant3::Ertrak(const Float_t *const x1, const Float_t *const p1, 
+			const Float_t *x2, const Float_t *p2,
+			Int_t ipa,  Option_t *chopt)
+{
+  ertrak(x1,p1,x2,p2,ipa,PASSCHARD(chopt) PASSCHARL(chopt));
+}
+        
 //_____________________________________________________________________________
 void TGeant3::WriteEuclid(const char* filnam, const char* topvol,
 			  Int_t number, Int_t nlevel)
