@@ -53,9 +53,8 @@ AliSTARTDigitizer::AliSTARTDigitizer(AliRunDigitizer* manager)
   //	cout<<"AliSTARTDigitizer::AliSTARTDigitizer"<<endl;
 // ctor which should be used
 //  fDebug =0;
-  if (GetDebug()>2)
-    cerr<<"AliSTARTDigitizer::AliSTARTDigitizer"
-        <<"(AliRunDigitizer* manager) was processed"<<endl;
+  if (GetDebug())
+    Info("(AliRunDigitizer* manager)" ,"processed");
 
   ftimeRightTDC = new TArrayI(12); 
   ftimeLeftTDC = new TArrayI(12); 
