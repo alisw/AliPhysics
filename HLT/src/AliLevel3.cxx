@@ -115,7 +115,7 @@ void AliLevel3::Init(){
   fUseBinary =kFALSE;
   SetPath("");
   fFindVertex =kTRUE;
-  if(1){
+  if(0){
     fNPatch = 1;   //number of patches change row in process
     fRow[0][0] = 0;     // first row
     fRow[0][1] = 175;   // last row
@@ -139,6 +139,21 @@ void AliLevel3::Init(){
     fRow[3][1] = 141;
     fRow[4][0] = 142;
     fRow[4][1] = 175;   // last row
+  }
+  if(1){
+    fNPatch = 6;   //number of patches change row in process
+    fRow[0][0] = 0;     // first row
+    fRow[0][1] = 31;
+    fRow[1][0] = 32;
+    fRow[1][1] = 63;
+    fRow[2][0] = 64;
+    fRow[2][1] = 91;
+    fRow[3][0] = 92;
+    fRow[3][1] = 119;
+    fRow[4][0] = 120;
+    fRow[4][1] = 143;   
+    fRow[5][0] = 144;
+    fRow[5][1] = 175;   // last row 
   }
   fVertexFinder = new AliL3VertexFinder();
   fVertex = new AliL3Vertex();
@@ -252,7 +267,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
             fFileHandler->CloseBinaryInput(); 
           }
 
-          if(0){     //Binary to Memory with Benchmark 
+          if(1){     //Binary to Memory with Benchmark 
             fFileHandler->Free();
             sprintf(name,"%sdigits_%d_%d.raw",fPath,slice,patch);
             memory->SetBinaryInput(name);
@@ -268,7 +283,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
             memory->Free();
           }
   
-          if(1){     //Binary to Memory with Random
+          if(0){     //Binary to Memory with Random
             fFileHandler->Free();
             fFileHandler->ResetRandom();
             fFileHandler->SetRandomCluster(100);
