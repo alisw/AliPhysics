@@ -6,9 +6,6 @@
 /*$Id $*/
 
 #include <TObject.h>
-#include <TArrayF.h>
-#include <TArrayI.h>
-
 
 class AliMUONConstants : public TObject {
  public:
