@@ -20,6 +20,9 @@
 /*
  
 $Log$
+Revision 1.4  2003/09/19 13:16:20  mhorner
+Added additional jet energy info
+
 
 Revision 1.3  2003/09/04 12:49:56  mhorner
 Changed hadron correction and added saving EMCAL and track contributions
@@ -206,7 +209,7 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
 		  phi += deltaPhi;
 		  //Get new tower id for cell that track would curve into
                   Int_t towerID2;
-                  if(phi<(1.0/3.0)*TMath::Pi() || phi>TMath::Pi())
+                  if(phi>(TMath::Pi()/180.0)*geom->GetArm1PhiMax() || phi<(TMath::Pi()/180.0)*geom->GetArm1PhiMin())
                     {
                       towerID2 = -1;
                     }
