@@ -869,8 +869,7 @@ Int_t TG4GeometryManager::VolId(const Text_t* volName) const
   G4String text = "TG4GeometryManager::VolId: Sensitive detector ";
   text = text + g4VolName;
   text = text + " is not defined.\n"; 
-  text = text + "    Set /alDet/setAllSensitive true in PreInit.";
-  TG4Globals::Exception(text);
+  TG4Globals::Warning(text);
   return 0;
 }
 
@@ -904,8 +903,7 @@ const char* TG4GeometryManager::VolName(Int_t id) const
 
   G4String text = "TG4GeometryManager::VolName:\n";
   text = text + "    Sensitive detector with given id is not defined. \n";
-  text = text + "    Set /alDet/setAllSensitive true in PreInit.";
-  TG4Globals::Exception(text);
+  TG4Globals::Warning(text);
   return "";	       	         
 }
 
