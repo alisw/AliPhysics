@@ -348,11 +348,12 @@ COMMON_BLOCK_DEF(Himain1Common,HIMAIN1);
 
 
 /*========================================================*/
-/* COMMON/HIMAIN2/KATT(130000,4),PATT(130000,4)           */
+/* COMMON/HIMAIN2/KATT(200000,4),PATT(200000,4),VATT(200000,4)*/
 /*--------------------------------------------------------*/
 typedef struct {
    Int_t    katt[4][200000];
    Float_t  patt[4][200000];
+   Float_t  vatt[4][200000];
 } Himain2Common;
 
 #define HIMAIN2 COMMON_BLOCK(HIMAIN2,himain2)
