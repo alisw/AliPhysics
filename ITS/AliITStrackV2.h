@@ -54,9 +54,6 @@ public:
   void UpdateESDtrack(ULong_t flags);
   void SetConstrainedESDtrack(Double_t chi2);
   
-  void *operator new(size_t /* s */,void *p) { return p; }
-  void *operator new(size_t s) { return ::operator new(s); }
-  
   Int_t GetDetectorIndex() const {return GetLabel();}
   Double_t GetX()    const {return fX;}
   Double_t GetAlpha()const {return fAlpha;}
