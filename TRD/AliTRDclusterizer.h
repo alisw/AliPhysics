@@ -42,7 +42,9 @@ class AliTRDclusterizer : public TNamed {
  protected:
 
   TFile           *fInputFile;     //! AliROOT input file
+  Bool_t           fInputFileCreated;     //! flag set if input file was created
   TFile           *fOutputFile;    //! AliROOT output file
+  Bool_t           fOutputFileCreated;     //! flag set if output file was created
   TTree           *fClusterTree;   //! Tree with the cluster
   AliTRD          *fTRD;           //! The TRD object
   AliTRDparameter *fPar;           //  TRD digitization parameter object

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2003/02/04 17:26:00  cblume
+Include a reset of the digits arrays in order to process several events
+
 Revision 1.20  2002/10/22 15:53:08  alibrary
 Introducing Riostream.h
 
@@ -140,6 +143,7 @@ AliTRDdigitsManager::AliTRDdigitsManager():TObject()
   fSDigits = 0;
 
   fFile    = NULL;
+  fFileCreated = kFALSE;
   fTree    = NULL;
   fDigits  = NULL;
   for (Int_t iDict = 0; iDict < kNDict; iDict++) {
@@ -166,7 +170,7 @@ AliTRDdigitsManager::~AliTRDdigitsManager()
   // AliTRDdigitsManager destructor
   //
 
-  if (fFile) {
+  if (fFile && fFileCreated) {
     fFile->Close();
     delete fFile;
     fFile = NULL;
@@ -278,6 +282,7 @@ Bool_t AliTRDdigitsManager::Open(const Char_t *file)
       printf("Open the AliROOT-file %s.\n",file);
     }
     fFile = new TFile(file,"UPDATE");
+    fFileCreated = kTRUE;
     if (!fFile) return kFALSE;
   }
   else {

@@ -67,6 +67,7 @@ class AliTRDdigitsManager : public TObject {
   Int_t               fEvent;              //  Event number
 
   TFile              *fFile;               //! File containing the TRD digits tree
+  Bool_t              fFileCreated;        //! Flag set if file was created by the digits manager
   TTree              *fTree;               //! Tree for the digits arrays
 
   AliTRDsegmentArray *fDigits;             //! Digits data array

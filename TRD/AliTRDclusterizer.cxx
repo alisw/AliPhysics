@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2003/02/10 11:09:26  cblume
+Further modifications in OpenOutput and WriteCluster
+
 Revision 1.16  2003/02/07 09:45:24  cblume
 Modification in OpenOutput() for many events in single file
 
@@ -124,7 +127,9 @@ AliTRDclusterizer::AliTRDclusterizer():TNamed()
   //
 
   fInputFile   = NULL;
+  fInputFileCreated   = kFALSE;
   fOutputFile  = NULL;
+  fOutputFileCreated  = kFALSE;
   fClusterTree = NULL;
   fTRD         = 0;
   fEvent       = 0;
@@ -168,18 +173,14 @@ AliTRDclusterizer::~AliTRDclusterizer()
   // AliTRDclusterizer destructor
   //
 
-  if (fInputFile) {
+  if (fInputFile && fInputFileCreated) {
     fInputFile->Close();
     delete fInputFile;
   }
 
-  if (fOutputFile) {
+  if (fOutputFile && fOutputFileCreated) {
     fOutputFile->Close();
     delete fOutputFile;
-  }
-
-  if (fClusterTree) {
-    delete fClusterTree;
   }
 
 }
@@ -263,6 +264,7 @@ Bool_t AliTRDclusterizer::OpenOutput(const Char_t *name)
       printf("AliTRDclusterizer::OpenOutput -- ");
       printf("Open the output file %s.\n",name);
       fOutputFile = new TFile(name,"RECREATE");
+      fOutputFileCreated = kTRUE;
     }
   }
 
@@ -294,6 +296,7 @@ Bool_t AliTRDclusterizer::OpenInput(const Char_t *name, Int_t nEvent)
     printf("AliTRDclusterizer::OpenInput -- ");
     printf("Open the ALIROOT-file %s.\n",name);
     fInputFile = new TFile(name,"UPDATE");
+    fInputFileCreated = kTRUE;
   }
   else {
     printf("AliTRDclusterizer::OpenInput -- ");
@@ -301,7 +304,7 @@ Bool_t AliTRDclusterizer::OpenInput(const Char_t *name, Int_t nEvent)
   }
 
   // Get AliRun object from file
-  gAlice = (AliRun *) fInputFile->Get("gAlice");
+  if (!(gAlice)) gAlice = (AliRun *) fInputFile->Get("gAlice");
   if (!(gAlice)) {
     printf("AliTRDclusterizer::OpenInput -- ");
     printf("Could not find AliRun object.\n");
