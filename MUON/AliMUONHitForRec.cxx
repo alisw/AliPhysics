@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:48  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.4  2000/06/12 10:11:10  morsch
 Dummy copy constructor and assignment operator added
 
@@ -109,92 +112,6 @@ AliMUONHitForRec & AliMUONHitForRec::operator=(const AliMUONHitForRec& MUONHitFo
 // Dummy assignment operator
     return *this;
 }
-// Inline functions for Get and Set
-inline Double_t AliMUONHitForRec::GetBendingCoor(void) {
-  // Get fBendingCoor
-  return fBendingCoor;}
-inline void AliMUONHitForRec::SetBendingCoor(Double_t BendingCoor) {
-  // Set fBendingCoor
-  fBendingCoor = BendingCoor;}
-inline Double_t AliMUONHitForRec::GetNonBendingCoor(void) {
-  // Get fNonBendingCoor
-  return fNonBendingCoor;}
-inline void AliMUONHitForRec::SetNonBendingCoor(Double_t NonBendingCoor) {
-  // Set fNonBendingCoor
-  fNonBendingCoor = NonBendingCoor;}
-inline Double_t AliMUONHitForRec::GetZ(void) {
-  // Get fZ
-  return fZ;}
-inline void AliMUONHitForRec::SetZ(Double_t Z) {
-  // Set fZ
-  fZ = Z;}
-inline Double_t AliMUONHitForRec::GetBendingReso2(void) {
-  // Get fBendingReso2
-  return fBendingReso2;}
-inline void AliMUONHitForRec::SetBendingReso2(Double_t BendingReso2) {
-  // Set fBendingReso2
-  fBendingReso2 = BendingReso2;}
-inline Double_t AliMUONHitForRec::GetNonBendingReso2(void) {
-  // Get fNonBendingReso2
-  return fNonBendingReso2;}
-inline void AliMUONHitForRec::SetNonBendingReso2(Double_t NonBendingReso2) {
-  // Set fNonBendingReso2
-  fNonBendingReso2 = NonBendingReso2;}
-inline Int_t AliMUONHitForRec::GetChamberNumber(void) {
-  // Get fChamberNumber
-  return fChamberNumber;}
-inline void AliMUONHitForRec::SetChamberNumber(Int_t ChamberNumber) {
-  // Set fChamberNumber
-  fChamberNumber = ChamberNumber;}
-inline Int_t AliMUONHitForRec::GetHitNumber(void) {
-  // Get fHitNumber
-  return fHitNumber;}
-inline void AliMUONHitForRec::SetHitNumber(Int_t HitNumber) {
-  // Set fHitNumber
-  fHitNumber = HitNumber;}
-inline Int_t AliMUONHitForRec::GetTHTrack(void) {
-  // Get fTHTrack
-  return fTHTrack;}
-inline void AliMUONHitForRec::SetTHTrack(Int_t THTrack) {
-  // Set fTHTrack
-  fTHTrack = THTrack;}
-inline Int_t AliMUONHitForRec::GetGeantSignal(void) {
-  // Get fGeantSignal
-  return fGeantSignal;}
-inline void AliMUONHitForRec::SetGeantSignal(Int_t GeantSignal) {
-  // Set fGeantSignal
-  fGeantSignal = GeantSignal;}
-inline Int_t AliMUONHitForRec::GetIndexOfFirstSegment(void) {
-  // Get fIndexOfFirstSegment
-  return fIndexOfFirstSegment;}
-inline void AliMUONHitForRec::SetIndexOfFirstSegment(Int_t IndexOfFirstSegment) {
-  // Set fIndexOfFirstSegment
-  fIndexOfFirstSegment = IndexOfFirstSegment;}
-inline Int_t AliMUONHitForRec::GetNSegments(void) {
-  // Get fNSegments
-  return fNSegments;}
-inline void AliMUONHitForRec::SetNSegments(Int_t NSegments) {
-  // Set fNSegments
-  fNSegments = NSegments;}
-inline AliMUONTrackHit* AliMUONHitForRec::GetFirstTrackHitPtr(void) {
-  // Get fFirstTrackHitPtr
-  return fFirstTrackHitPtr;}
-inline void AliMUONHitForRec::SetFirstTrackHitPtr(AliMUONTrackHit* FirstTrackHitPtr) {
-  // Set fFirstTrackHitPtr
-  fFirstTrackHitPtr = FirstTrackHitPtr;}
-inline AliMUONTrackHit* AliMUONHitForRec::GetLastTrackHitPtr(void) {
-  // Get fLastTrackHitPtr
-  return fLastTrackHitPtr;}
-inline void AliMUONHitForRec::SetLastTrackHitPtr(AliMUONTrackHit* LastTrackHitPtr) {
-  // Set fLastTrackHitPtr
-  fLastTrackHitPtr = LastTrackHitPtr;}
-inline Int_t AliMUONHitForRec::GetNTrackHits(void) {
-  // Get fNTrackHits
-  return fNTrackHits;}
-inline void AliMUONHitForRec::SetNTrackHits(Int_t NTrackHits) {
-  // Set fNTrackHits
-  fNTrackHits = NTrackHits;}
-
   //__________________________________________________________________________
 Int_t AliMUONHitForRec::Compare(TObject* Hit)
 {

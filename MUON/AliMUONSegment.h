@@ -22,15 +22,34 @@ class AliMUONSegment : public TObject {
   AliMUONSegment& operator=(const AliMUONSegment& AliMUONSegment); // assignment operator
   AliMUONSegment(AliMUONHitForRec* Hit1, AliMUONHitForRec* Hit2); // Constructor from two HitForRec's
 
-  AliMUONHitForRec* GetHitForRec1(void);
-  AliMUONHitForRec* GetHitForRec2(void);
-  Double_t GetBendingCoorReso2(void);
-  void SetBendingCoorReso2(Double_t BendingCoorReso2);
-  Double_t GetNonBendingCoorReso2(void);
-  void SetNonBendingCoorReso2(Double_t NonBendingCoorReso2);
-  Double_t GetBendingImpact(void);
-  Bool_t GetInTrack(void);
-  void SetInTrack(Bool_t InTrack);
+  // Inline functions for Get and Set
+  inline AliMUONHitForRec* GetHitForRec1(void) {
+    // Get fHitForRecPtr1
+    return fHitForRecPtr1;}
+  inline AliMUONHitForRec* GetHitForRec2(void) {
+    // Get fHitForRecPtr2
+    return fHitForRecPtr2;}
+  inline Double_t GetBendingCoorReso2(void) {
+    // Get fBendingCoorReso2
+    return fBendingCoorReso2;}
+  inline void SetBendingCoorReso2(Double_t BendingCoorReso2) {
+    // Set fBendingCoorReso2
+    fBendingCoorReso2 = BendingCoorReso2;}
+  inline Double_t GetNonBendingCoorReso2(void) {
+    // Get fNonBendingCoorReso2
+    return fNonBendingCoorReso2;}
+  inline void SetNonBendingCoorReso2(Double_t NonBendingCoorReso2) {
+    // Set fNonBendingCoorReso2
+    fNonBendingCoorReso2 = NonBendingCoorReso2;}
+  inline Double_t GetBendingImpact(void) {
+    // Get fBendingImpact
+    return fBendingImpact;}
+  inline Bool_t GetInTrack(void) {
+    // Get fInTrack
+    return fInTrack;}
+  inline void SetInTrack(Bool_t InTrack) {
+    // Set fInTrack
+    fInTrack = InTrack;}
 
   AliMUONSegment* CreateSegmentFromLinearExtrapToStation (Int_t Station, Double_t MCSfactor);
   Double_t NormalizedChi2WithSegment(AliMUONSegment* Segment, Double_t Sigma2Cut);

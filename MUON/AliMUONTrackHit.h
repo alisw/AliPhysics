@@ -22,9 +22,16 @@ class AliMUONTrackHit : public TObject {
   AliMUONTrackHit& operator=(const AliMUONTrackHit& AliMUONTrackHit); // assignment operator
   AliMUONTrackHit(AliMUONHitForRec* Hit); // Constructor from one HitForRec
 
-  AliMUONHitForRec* GetHitForRecPtr(void);
-  AliMUONTrackParam* GetTrackParam(void);
-  void SetTrackParam(AliMUONTrackParam* TrackParam);
+  // Inline functions for Get and Set
+  inline AliMUONHitForRec* GetHitForRecPtr(void) {
+    // Get fHitForRecPtr
+    return fHitForRecPtr;}
+  inline AliMUONTrackParam* GetTrackParam(void) {
+    // Get pointer to fTrackParam
+    return &(fTrackParam);}
+  inline void SetTrackParam(AliMUONTrackParam* TrackParam) {
+    // Set fTrackParam
+    fTrackParam = *TrackParam;}
 
   // What is necessary for sorting TClonesArray's; sufficient too ????
   Bool_t IsSortable () const {

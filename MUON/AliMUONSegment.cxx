@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:48  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.4  2000/06/12 10:10:21  morsch
 Dummy copy constructor and assignment operator added
 
@@ -92,35 +95,6 @@ AliMUONSegment & AliMUONSegment::operator=(const AliMUONSegment& MUONSegment)
 // Dummy assignment operator
     return *this;
 }
-
-// Inline functions for Get and Set
-inline AliMUONHitForRec* AliMUONSegment::GetHitForRec1(void) {
-  // Get fHitForRecPtr1
-  return fHitForRecPtr1;}
-inline AliMUONHitForRec* AliMUONSegment::GetHitForRec2(void) {
-  // Get fHitForRecPtr2
-  return fHitForRecPtr2;}
-inline Double_t AliMUONSegment::GetBendingCoorReso2(void) {
-  // Get fBendingCoorReso2
-  return fBendingCoorReso2;}
-inline void AliMUONSegment::SetBendingCoorReso2(Double_t BendingCoorReso2) {
-  // Set fBendingCoorReso2
-  fBendingCoorReso2 = BendingCoorReso2;}
-inline Double_t AliMUONSegment::GetNonBendingCoorReso2(void) {
-  // Get fNonBendingCoorReso2
-  return fNonBendingCoorReso2;}
-inline void AliMUONSegment::SetNonBendingCoorReso2(Double_t NonBendingCoorReso2) {
-  // Set fNonBendingCoorReso2
-  fNonBendingCoorReso2 = NonBendingCoorReso2;}
-inline Double_t AliMUONSegment::GetBendingImpact(void) {
-  // Get fBendingImpact
-  return fBendingImpact;}
-inline Bool_t AliMUONSegment::GetInTrack(void) {
-  // Get fInTrack
-  return fInTrack;}
-inline void AliMUONSegment::SetInTrack(Bool_t InTrack) {
-  // Set fInTrack
-  fInTrack = InTrack;}
 
   //__________________________________________________________________________
 Int_t AliMUONSegment::Compare(TObject* Segment)

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:49  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.3  2000/06/12 10:11:45  morsch
 Dummy copy constructor and assignment operator added
 
@@ -68,16 +71,6 @@ AliMUONTrackHit & AliMUONTrackHit::operator=(const AliMUONTrackHit& MUONTrackHit
     return *this;
 }
 
-// Inline functions for Get and Set
-inline AliMUONHitForRec* AliMUONTrackHit::GetHitForRecPtr(void) {
-  // Get fHitForRecPtr
-  return fHitForRecPtr;}
-inline AliMUONTrackParam* AliMUONTrackHit::GetTrackParam(void) {
-  // Get pointer to fTrackParam
-  return &(fTrackParam);}
-inline void AliMUONTrackHit::SetTrackParam(AliMUONTrackParam* TrackParam) {
-  // Set fTrackParam
-  fTrackParam = *TrackParam;}
 
   //__________________________________________________________________________
 Int_t AliMUONTrackHit::Compare(TObject* TrackHit)
