@@ -135,7 +135,8 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
         Int_t lay,lad,det;
         geom->GetModuleId(index,lay,lad,det);
         aliITS->ResetRecPoints();
-        gAlice->TreeR()->GetEvent(index+1); //first entry in TreeR is empty
+        //gAlice->TreeR()->GetEvent(index+1); //first entry in TreeR is empty
+        gAlice->TreeR()->GetEvent(index); //first entry in TreeR is empty
 
         Int_t npoints=rpoints->GetEntries();
         Int_t *indlist=new Int_t[npoints+1];

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.34  2001/02/11 15:51:39  mariana
+Set protection in MakeBranch
+
 Revision 1.33  2001/02/10 22:26:39  mariana
 Move the initialization of the containers for raw clusters in MakeTreeC()
 
@@ -801,7 +804,7 @@ void AliITS::MakeBranch(Option_t* option, char *file)
   //
     sprintf(branchname,"%sRecPoints",GetName());
  
-    fRecPoints=new TClonesArray("AliITSRecPoint",10000);
+    if(!fRecPoints) fRecPoints=new TClonesArray("AliITSRecPoint",10000);
 
     if (fRecPoints && gAlice->TreeR()) {
       gAlice->MakeBranchInTree(gAlice->TreeR(), 
@@ -842,10 +845,8 @@ void AliITS::SetTreeAddress()
  
   if (treeR) {
     sprintf(branchname,"%sRecPoints",GetName());
-    if (fRecPoints) {
       branch = treeR->GetBranch(branchname);
       if (branch) branch->SetAddress(&fRecPoints);
-    }
   }
   
 
@@ -1165,7 +1166,7 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt)
    // initialised for all versions - for the moment it is only for v5 !
    // 7 is the SDD beam test version  
    Int_t ver = this->IsVersion(); 
-   if(ver!=5 && ver!=7) return; 
+   if(ver!=5) return; 
 
    char *all = strstr(opt,"All");
    char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),strstr(opt,"SSD")};
@@ -1440,7 +1441,8 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
   for (mod=0; mod<nent; mod++) {
     vettid[mod]=0;
     this->ResetRecPoints();
-    gAlice->TreeR()->GetEvent(mod+1); //first entry in TreeR is empty
+    //gAlice->TreeR()->GetEvent(mod+1); //first entry in TreeR is empty
+    gAlice->TreeR()->GetEvent(mod); //first entry in TreeR is empty
     numbpoints = recPoints->GetEntries();
     totalpoints+=numbpoints;
     np[mod] = numbpoints;
