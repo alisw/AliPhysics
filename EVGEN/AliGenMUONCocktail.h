@@ -4,8 +4,18 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
-
+//
 // Classe to create the MUON coktail for physics in the Alice muon spectrometer
+// The followoing muons sources are included in this cocktail: 
+//     jpsi, upsilon, non-correlated open and beauty, and muons from pion and kaons.
+// The free parameeters are :
+//      pp reaction cross-section
+//      production cross-sections in pp collisions and 
+//      branching ratios in the muon channel
+// Hard probes are supposed to scale with Ncoll and hadronic production with (0.8Ncoll+0.2*Npart)
+// There is a primordial trigger wiche requires :
+//      a minimum muon multiplicity above a pT cut in a theta acceptance cone
+//
 // Gines Martinez, jan 2004, Nantes  martinez@in2p3.fr
 
 #include "AliGenCocktail.h"
@@ -21,12 +31,12 @@ class AliGenMUONCocktail : public AliGenCocktail
     virtual ~AliGenMUONCocktail();
     virtual void Init();
     virtual void Generate();
-    Int_t   GetMuonMultiplicity() {return fMuonMultiplicity;}
-    Int_t   GetNSucceded()  {return fNSucceded;}
-    Int_t   GetNGenerated() {return fNGenerated;}
-    Float_t GetNumberOfCollisions()   {return fNumberOfCollisions;}
-    Float_t GetNumberOfParticipants() {return fNumberOfParticipants;}
-    Float_t GetMuonPtCut()  { return fMuonPtCut;}
+    Int_t   GetMuonMultiplicity()  const {return fMuonMultiplicity;}
+    Int_t   GetNSucceded()         const {return fNSucceded;}
+    Int_t   GetNGenerated()        const {return fNGenerated;}
+    Float_t GetNumberOfCollisions()const {return fNumberOfCollisions;} 
+    Float_t GetNumberOfParticipants() const {return fNumberOfParticipants;}
+    Float_t GetMuonPtCut()         const { return fMuonPtCut;}
 
     void    SetMuonMultiplicity(Int_t MuonMultiplicity) { fMuonMultiplicity= MuonMultiplicity;}
     void    SetNumberOfCollisions(Float_t NumberOfCollisions) { fNumberOfCollisions= NumberOfCollisions;}
