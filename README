@@ -1,7 +1,7 @@
 AliRoot
 -------
 
-########################### Release version ###############################
+########################### Release version 3.01 ##############################
 
 Last update Tue Jun 15 08:10:40 1999 - Federico Carminati
 
@@ -36,12 +36,26 @@ PATH			= $PATH\:$ALICE_ROOT/bin
 At this point you should logout, login again and check that the symbols are
 set correctly
 
+EITHER
+======
+
 - Get the file /afs/cern.ch/alice/offline/dist/AliOffline3.01.tar.gz
 
 - Unpack it with
 
 $ cd $ALICE
 $ gtar xvfz AliOffline3.01.tar.gz
+
+OR
+==
+
+- Get the files
+
+      /afs/cern.ch/alice/offline/dist/AliRoot3.01.tar.gz (AliRoot code)
+      /afs/cern.ch/alice/offline/dist/AliLibs3.01.tar.gz (minicern code)
+
+THEN PROCEED WITH
+=================
 
 - install the CERN library part
 
