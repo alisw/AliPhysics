@@ -731,12 +731,13 @@ FindDetectorIndex(Double_t phi, Double_t z) const {
   if      (dphi <  0) dphi += 2*TMath::Pi();
   else if (dphi >= 2*TMath::Pi()) dphi -= 2*TMath::Pi();
   Int_t np=Int_t(dphi*fNladders*0.5/TMath::Pi()+0.5);
+  if (np>=fNladders) np-=fNladders;
+  if (np<0)          np+=fNladders;
 
   Double_t dz=fZOffset-z;
   Int_t nz=Int_t(dz*(fNdetectors-1)*0.5/fZOffset+0.5);
-
-  if (np>=fNladders) np-=fNladders;
-  if (np<0)          np+=fNladders;
+  if (nz>=fNdetectors) return -1;
+  if (nz<0)            return -1;
 
 #ifdef DEBUG
 cout<<np<<' '<<nz<<endl;
