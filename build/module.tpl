@@ -185,8 +185,7 @@ endif
 	  $(MUTE)TMPDIR=/tmp/@MODULE@$$$$.`date +%M%S` ; \
 	  export TMPDIR; mkdir $$TMPDIR ; cd $$TMPDIR ; \
 	  find $(CURDIR)/@MODULE@/tgt_$(ALICE_TARGET) -name '*.o' -exec ln -s {} . \; ;\
-	  rm -f $(CURDIR)/$@ ;\
-	  TMPLIB=$(notdir $(@PACKAGE@LIB)); export TMPLIB;\
+	  \rm -f $(CURDIR)/$@ ;\
 	  $(SHLD) $(@PACKAGE@SOFLAGS) -o $(CURDIR)/$@ $(notdir $(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(SHLIB);\
 	  chmod a-w $(CURDIR)/$@ ;\
 	  cd $(ALICE_ROOT) ; \rm -rf $$TMPDIR
@@ -214,9 +213,9 @@ endif
 	  $(MUTE)TMPDIR=/tmp/@MODULE@$$$$.`date +%M%S` ; \
 	  export TMPDIR; mkdir $$TMPDIR ; cd $$TMPDIR ; \
 	  find $(CURDIR)/@MODULE@/tgt_$(ALICE_TARGET) -name '*.o' -exec ln -s {} . \; ;\
-      rm -f $(CURDIR)/$@ ;\
-	  $(ALLD) $(ALFLAGS) $(CURDIR)/$@ $(notdir $(@PACKAGE@O)) $(notdir @PACKAGE@DO) $(ALLIB);\
-      cd $(CURDIR) ; rm -rf $$TMPDIR
+      \rm -f $(CURDIR)/$@ ;\
+	  $(ALLD) $(ALFLAGS) $(CURDIR)/$@ $(notdir $(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(ALLIB);\
+      cd $(CURDIR) ; \rm -rf $$TMPDIR
 	  $(MUTE)chmod a-w $@
 
 
@@ -235,6 +234,7 @@ ifndef ALIQUIET
 	 @echo "***** Creating $@ *****";	
 endif
 	 @(if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi;)
+	 @\rm -f $(patsubst %.cxx,%.d, $@)
 	 $(MUTE)rootcint -f $@ -c $(@PACKAGE@DEFINE) $(CINTFLAGS) $(@PACKAGE@INC) $(@PACKAGE@CINTHDRS) $(@PACKAGE@DH) 
 
 $(@PACKAGE@DO): $(@PACKAGE@DS)
