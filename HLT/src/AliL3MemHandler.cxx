@@ -19,8 +19,8 @@
 #include "AliL3SpacePointData.h"
 #include "AliL3TrackArray.h"
 
-
-//_____________________________________________________________
+/** \class AliL3MemHandler
+// _____________________________________________________________
 // AliL3MemHandler
 //
 // The L3 Binary File handler 
@@ -68,6 +68,7 @@
 //  newfile.SetBinaryOutput(newfilename);
 //  newfile.Memory2CompBinary((UInt_t)NumberOfRowsInPatch,(AliL3DigitRowData*)data);
 //  newfile.CloseBinaryOutput();
+*/
 
 ClassImp(AliL3MemHandler)
   
