@@ -710,11 +710,8 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName)
         if (!file) continue;
         fseek(file, 0, SEEK_END);
         unsigned long size = ftell(file);
-        fseek(file, 0, SEEK_SET);
-        if (!size) {
-          fclose(file);
-          continue;
-        }
+	fclose(file);
+        if (!size) continue;
 
         if (ldcID != prevLDC) {
           fprintf(pipe, " LDC Id %d\n", ldcID);
