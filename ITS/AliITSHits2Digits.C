@@ -49,25 +49,22 @@ Int_t AliITSHits2Digits()
   Float_t baseline = 10.;
   Float_t noise = 1.75;
 
+  // SDD compression param: 2 fDecrease, 2fTmin, 2fTmax or disable, 2 fTolerance
   AliITSDetType *iDetType=ITS->DetType(1);
   AliITSresponseSDD *res1 = (AliITSresponseSDD*)iDetType->GetResponseModel();
   if (!res1) {
     res1=new AliITSresponseSDD();
     ITS->SetResponseModel(1,res1);
   }
+   res1->SetMagicValue(900.);
 
-  // SDD compression param: 2 fDecrease, 2fTmin, 2fTmax or disable, 2 fTolerance
-  //Float_t fCutAmp = baseline + 2.*noise;
+   Float_t maxadc = res1->MaxAdc();    
+   Float_t topValue = res1->MagicValue();
+   Float_t norm = maxadc/topValue;
 
-  Float_t maxadc = res1->MaxAdc();    
-  Float_t topValue = res1->MagicValue();
-  Float_t norm = maxadc/topValue;
-
-  Float_t fCutAmp = baseline + 2.*noise;
-  fCutAmp *= norm;  
-  
-  Int_t cp[8]={0,0,fCutAmp,fCutAmp,0,0,0,0};
-
+   Float_t fCutAmp = baseline + 2.*noise;
+   fCutAmp *= norm;
+   Int_t cp[8]={0,0,fCutAmp,fCutAmp,0,0,0,0}; //1D
 
   //res1->SetZeroSupp("2D");
   res1->SetZeroSupp("1D");
@@ -76,7 +73,7 @@ Int_t AliITSHits2Digits()
   res1->SetCompressParam(cp);
   res1->SetMinVal(4);
   res1->SetDiffCoeff(3.6,40.);
-  res1->SetMagicValue(96.95);
+  //res1->SetMagicValue(96.95);
 
   AliITSsegmentationSDD *seg1=(AliITSsegmentationSDD*)iDetType->GetSegmentationModel();
   if (!seg1) {
