@@ -43,6 +43,6 @@ TH1* AliHBTLLWeightQInvFctn::GetResult()
                                                                                
 { 
 //returns ratio of numerator and denominator                                    
- TH1* res = GetRatio(Scale());                                                  
+ return GetRatio(Scale());                                                  
 }                    
                                                               
