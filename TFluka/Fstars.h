@@ -87,7 +87,9 @@ typedef struct {
    Double_t wdecct[nallwp+7];
    Double_t weisec[nallwp+19];
    Double_t wlwnsc[4];
+   Double_t wophsc[4];
    Double_t edi[11];
+   Double_t woptph;
    Double_t wneulw;
    Double_t westop;
    Double_t wstars;
@@ -98,9 +100,11 @@ typedef struct {
    Int_t    numdec;
    Int_t    ntstar;
    Int_t    neulow;
+   Int_t    numoph;
    Int_t    mumdec;
    Int_t    mtstar;
    Int_t    meulow;
+   Int_t    mumoph;
 } starsCommon;
 #define STARS COMMON_BLOCK(STARS,stars)
 COMMON_BLOCK_DEF(starsCommon,STARS);

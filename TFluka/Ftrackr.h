@@ -122,6 +122,7 @@ typedef struct {
    Int_t    llouse;
    Int_t    ispusr[mkbmx2];
    Int_t    lfsssc;
+   Int_t    lpkill;
 } trackrCommon;
 #define TRACKR COMMON_BLOCK(TRACKR,trackr)
 COMMON_BLOCK_DEF(trackrCommon,TRACKR);

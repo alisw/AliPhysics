@@ -19,37 +19,45 @@ extern "C" {
 //*                                                                      *
 //*----------------------------------------------------------------------*
 //*
-const Int_t idmemf = mestck;
 
 typedef struct {
-   Double_t e[idmemf]; // total energy in MeV
-   Double_t x[idmemf]; // particle x-coordinate
-   Double_t y[idmemf]; // particle y-coordinate
-   Double_t z[idmemf]; // particle z-coordinate
-   Double_t u[idmemf]; // x direction cosine
-   Double_t v[idmemf]; // y direction cosine
-   Double_t w[idmemf]; // z direction cosine
-   Double_t dnear[idmemf]; // equivalent to GEANT "safety"
-   Double_t upol[idmemf]; // polarisation in x direction
-   Double_t vpol[idmemf]; // polarisation in y direction
-   Double_t wpol[idmemf]; // polarisation in z direction
-   Double_t usnrml[idmemf];
-   Double_t vsnrml[idmemf];
-   Double_t wsnrml[idmemf];
-   Double_t wt[idmemf]; // weight
-   Double_t agemf[idmemf]; // age
-   Double_t espark[idmemf][mkbmx1];
-   Int_t    iespak[idmemf][mkbmx2];
-   Int_t    iq[idmemf]; // charge
-   Int_t    ir[idmemf]; // region
-   Int_t    irlatt[idmemf]; // lattice cell
-   Int_t    nhpemf[idmemf];
-   Int_t    lloemf[idmemf]; // generation number
-   Int_t    louemf[idmemf];
-   Int_t    np; // number of particles in stack
+   Double_t etemf[mestck]; // total energy in MeV
+   Double_t pmemf[mestck];
+   Double_t x[mestck]; // particle x-coordinate
+   Double_t y[mestck]; // particle y-coordinate
+   Double_t z[mestck]; // particle z-coordinate
+   Double_t u[mestck]; // x direction cosine
+   Double_t v[mestck]; // y direction cosine
+   Double_t w[mestck]; // z direction cosine
+   Double_t dnear[mestck]; // equivalent to GEANT "safety"
+   Double_t upol[mestck]; // polarisation in x direction
+   Double_t vpol[mestck]; // polarisation in y direction
+   Double_t wpol[mestck]; // polarisation in z direction
+   Double_t usnrml[mestck];
+   Double_t vsnrml[mestck];
+   Double_t wsnrml[mestck];
+   Double_t wtemf[mestck]; // weight
+   Double_t agemf[mestck]; // age
+   Double_t espark[mestck][mkbmx1];
+   Int_t    iespak[mestck][mkbmx2];
+   Int_t    ichemf[mestck]; // charge
+   Int_t    iremf[mestck];  // region
+   Int_t    irlatt[mestck]; // lattice cell
+   Int_t    nhpemf[mestck];
+   Int_t    lloemf[mestck]; // generation number
+   Int_t    louemf[mestck];
+   Int_t    npemf;  // number of particles in stack
    Int_t    npstrt; // EMF stack index before the interaction (since
                     // the projectile disappears it is also the starting
                     // index of secondaries)
+//*d === obsolete variable names === *
+//*d     parameter ( idmemf = mestck )
+//*d     dimension e (idmemf), wt (idmemf), iq (idmemf), ir (idmemf)
+//*d     equivalence ( e   (1), etemf  (1) )
+//*d     equivalence ( wt  (1), wtemf  (1) )
+//*d     equivalence ( ir  (1), iremf  (1) )
+//*d     equivalence ( iq  (1), ichemf (1) )
+//*d     equivalence ( np, npemf )
 } emfstkCommon;
 #define EMFSTK COMMON_BLOCK(EMFSTK,emfstk)
 COMMON_BLOCK_DEF(emfstkCommon,EMFSTK);
