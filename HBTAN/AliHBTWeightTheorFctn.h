@@ -21,7 +21,7 @@
 
 class AliHBTWeights;
 
-class AliHBTWeightTheorQInvFctn: public AliHBTOnePairFctn1D
+class AliHBTWeightTheorQInvFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelFunction
 {
 
   public:
@@ -36,8 +36,9 @@ class AliHBTWeightTheorQInvFctn: public AliHBTOnePairFctn1D
 
   ClassDef(AliHBTWeightTheorQInvFctn,1)
 };
+/*************************************************************/
 
-class AliHBTWeightTheorQOutFctn: public AliHBTOnePairFctn1D
+class AliHBTWeightTheorQOutFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelFunction
 {
 
   public:
@@ -52,8 +53,9 @@ class AliHBTWeightTheorQOutFctn: public AliHBTOnePairFctn1D
 
   ClassDef(AliHBTWeightTheorQOutFctn,1)
 };
+/*************************************************************/
 
-class AliHBTWeightTheorQSideFctn: public AliHBTOnePairFctn1D
+class AliHBTWeightTheorQSideFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelFunction
 {
 
   public:
@@ -68,8 +70,9 @@ class AliHBTWeightTheorQSideFctn: public AliHBTOnePairFctn1D
 
   ClassDef(AliHBTWeightTheorQSideFctn,1)
 };
+/*************************************************************/
 
-class AliHBTWeightTheorQLongFctn: public AliHBTOnePairFctn1D
+class AliHBTWeightTheorQLongFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelFunction
 {
 
   public:
@@ -84,8 +87,9 @@ class AliHBTWeightTheorQLongFctn: public AliHBTOnePairFctn1D
 
   ClassDef(AliHBTWeightTheorQLongFctn,1)
 };
+/*************************************************************/
 
-class AliHBTWeightTheorOSLFctn: public AliHBTOnePairFctn3D
+class AliHBTWeightTheorOSLFctn: public AliHBTOnePairFctn3D, public AliHBTCorrelFunction
 {
 
   public:

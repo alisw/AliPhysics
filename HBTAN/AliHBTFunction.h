@@ -76,6 +76,24 @@ inline AliHBTPair* AliHBTFunction::CheckPair(AliHBTPair* pair)
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/
+class AliHBTCorrelFunction
+{
+  public:
+    AliHBTCorrelFunction():fRatio(0x0){}
+    AliHBTCorrelFunction(const AliHBTCorrelFunction& in):fRatio((in.fRatio)?(TH1*)in.fRatio->Clone():0x0){}
+    virtual ~AliHBTCorrelFunction(){delete fRatio;}
+    
+    AliHBTCorrelFunction& operator=(const AliHBTCorrelFunction& in);
+   
+  protected:
+    TH1* fRatio;//!pointer to the ratio(result)
+    
+  ClassDef(AliHBTCorrelFunction,1)
+};
+
+/******************************************************************/
+/******************************************************************/
+/******************************************************************/
 
 //____________________
 ///////////////////////////////////////////////////////

@@ -15,7 +15,7 @@
 #include "AliHBTPair.h"
 #include "AliHBTFunction.h"
 
-class AliHBTTwoTrackEffFctn: public AliHBTOnePairFctn1D
+class AliHBTTwoTrackEffFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelFunction
  {
   public:
     AliHBTTwoTrackEffFctn();
@@ -25,10 +25,10 @@ class AliHBTTwoTrackEffFctn: public AliHBTOnePairFctn1D
   protected:
     Double_t GetValue(AliHBTPair* pair){return pair->GetDeltaP();}
   private:
-    ClassDef(AliHBTTwoTrackEffFctn,1)
+    ClassDef(AliHBTTwoTrackEffFctn,2)
  };
 
-class AliHBTTwoTrackEffFctn3D: public AliHBTOnePairFctn3D
+class AliHBTTwoTrackEffFctn3D: public AliHBTOnePairFctn3D, public AliHBTCorrelFunction
  {
   public:
     AliHBTTwoTrackEffFctn3D();
@@ -38,8 +38,8 @@ class AliHBTTwoTrackEffFctn3D: public AliHBTOnePairFctn3D
     void ProcessDiffEventParticles(AliHBTPair* /*pair*/){}
 
   protected:
-    void GetValues(AliHBTPair* pair,Double_t& x, Double_t& y,Double_t& z);
+    void GetValues(AliHBTPair*,Double_t&, Double_t&,Double_t&);
   private:
-    ClassDef(AliHBTTwoTrackEffFctn3D,1)
+    ClassDef(AliHBTTwoTrackEffFctn3D,2)
  };
 #endif

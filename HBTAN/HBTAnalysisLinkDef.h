@@ -13,6 +13,8 @@
 #pragma link C++ class AliHBTFunction+;
 #pragma link C++ class AliHBTMonitorFunction+;
 
+#pragma link C++ class AliHBTCorrelFunction+;
+
 #pragma link C++ class AliHBTFunction1D+;
 #pragma link C++ class AliHBTFunction2D+;
 #pragma link C++ class AliHBTFunction3D+;

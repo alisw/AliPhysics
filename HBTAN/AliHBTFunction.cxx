@@ -210,6 +210,28 @@ void AliHBTFunction::InitFunction()
   GetDenominator()->SetDirectory(0x0);
   Info("InitFunction","Done");
 }
+/******************************************************************/
+/******************************************************************/
+/******************************************************************/
+ClassImp(AliHBTCorrelFunction)
+//____________________________________________
+//////////////////////////////////////////////
+//
+// class AliHBTCorrelFunction
+// 
+// Base class for correlation fuctions, that is which returns ratio.
+// Stores pointer the created ratio histogram and deletes it when function is deleted
+// created in order to evoid memory leak 
+//
+////////////////////////////////////////////////////////
+AliHBTCorrelFunction& AliHBTCorrelFunction::operator=(const AliHBTCorrelFunction& in)
+{
+ //assigment operator
+  if (&in == this) return *this;
+  delete fRatio;
+  fRatio=(in.fRatio)?(TH1*)in.fRatio->Clone():0x0;
+  return *this;
+}
 
 /******************************************************************/
 /******************************************************************/

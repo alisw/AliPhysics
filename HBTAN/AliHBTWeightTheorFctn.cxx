@@ -36,7 +36,8 @@ AliHBTWeightTheorQInvFctn::AliHBTWeightTheorQInvFctn(Int_t nbins, Double_t maxXv
  fWriteNumAndDen = kTRUE;//change default behaviour
  Rename("wqinvtheorcf","Q_{inv} Weight Theoretical Correlation Function");
 }
-/****************************************************************/
+/**************************************************************/
+
 void  AliHBTWeightTheorQInvFctn::ProcessSameEventParticles(AliHBTPair* partpair)
 {
   //Processes Particles and tracks Same different event
@@ -45,12 +46,14 @@ void  AliHBTWeightTheorQInvFctn::ProcessSameEventParticles(AliHBTPair* partpair)
   Double_t weight = partpair->GetWeight();
   if(TMath::Abs(weight)<=10.) fNumerator->Fill(partpair->GetQInv(),weight);
 } 
-
 /**************************************************************/
+
 TH1* AliHBTWeightTheorQInvFctn::GetResult() 
 {
-  //returns ratio of numerator and denominator
-  return GetRatio(Scale());
+ //returns the scaled ratio
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ return fRatio;
 }                    
                                                               
 /*************************************************************/
@@ -68,6 +71,7 @@ AliHBTWeightTheorQOutFctn::AliHBTWeightTheorQOutFctn(Int_t nbins, Double_t maxXv
  Rename("wqouttheorcf","Q_{out} Weight Theoretical Correlation Function");
 }
 /****************************************************************/
+
 void  AliHBTWeightTheorQOutFctn::ProcessSameEventParticles(AliHBTPair* partpair)
 {
   //Processes Particles and tracks Same different even
@@ -80,8 +84,10 @@ void  AliHBTWeightTheorQOutFctn::ProcessSameEventParticles(AliHBTPair* partpair)
 /**************************************************************/
 TH1* AliHBTWeightTheorQOutFctn::GetResult() 
 {
-  //returns ratio of numerator and denominator
-  return GetRatio(Scale());
+ //returns the scaled ratio
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ return fRatio;
 }                    
 
 /*************************************************************/
@@ -99,6 +105,7 @@ AliHBTWeightTheorQSideFctn::AliHBTWeightTheorQSideFctn(Int_t nbins, Double_t max
  Rename("wqsidetheorcf","Q_{side} Weight Theoretical Correlation Function");
 }
 /****************************************************************/
+
 void  AliHBTWeightTheorQSideFctn::ProcessSameEventParticles(AliHBTPair* partpair)
 {
   //Processes Particles and tracks Same different even
@@ -107,12 +114,14 @@ void  AliHBTWeightTheorQSideFctn::ProcessSameEventParticles(AliHBTPair* partpair
   Double_t weight = partpair->GetWeight();
   if(TMath::Abs(weight)<=10.) fNumerator->Fill(partpair->GetQSideCMSLC(),weight);
 } 
-
 /**************************************************************/
+
 TH1* AliHBTWeightTheorQSideFctn::GetResult() 
 {
-  //returns ratio of numerator and denominator
-  return GetRatio(Scale());
+ //returns the scaled ratio
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ return fRatio;
 }                    
 
 /*************************************************************/
@@ -130,6 +139,7 @@ AliHBTWeightTheorQLongFctn::AliHBTWeightTheorQLongFctn(Int_t nbins, Double_t max
  Rename("wqlongtheorcf","Q_{long} Weight Theoretical Correlation Function");
 }
 /****************************************************************/
+
 void  AliHBTWeightTheorQLongFctn::ProcessSameEventParticles(AliHBTPair* partpair)
 {
   //Processes Particles and tracks Same different even
@@ -138,12 +148,14 @@ void  AliHBTWeightTheorQLongFctn::ProcessSameEventParticles(AliHBTPair* partpair
   Double_t weight = partpair->GetWeight();
   if(TMath::Abs(weight)<=10.) fNumerator->Fill(partpair->GetQLongCMSLC(),weight);
 } 
-
 /**************************************************************/
+
 TH1* AliHBTWeightTheorQLongFctn::GetResult() 
 {
-  //returns ratio of numerator and denominator
-  return GetRatio(Scale());
+ //returns the scaled ratio
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ return fRatio;
 }                    
 
 /*************************************************************/
@@ -177,6 +189,8 @@ void AliHBTWeightTheorOSLFctn::ProcessSameEventParticles(AliHBTPair* partpair)
 
 TH1* AliHBTWeightTheorOSLFctn::GetResult()
 {
-  //returns ratio of numerator and denominator
-  return GetRatio(Scale());
+ //returns the scaled ratio
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ return fRatio;
 }                    

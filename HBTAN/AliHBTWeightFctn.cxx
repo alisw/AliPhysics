@@ -63,7 +63,10 @@ void  AliHBTWeightQInvFctn::ProcessDiffEventParticles(AliHBTPair* trackpair, Ali
 TH1* AliHBTWeightQInvFctn::GetResult()
 { 
 //returns ratio of numerator and denominator                                    
- return GetRatio(Scale());                                                  
+ //returns the scaled ratio
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ return fRatio;
 }                    
                                                               
 /**************************************************************************************/
@@ -116,8 +119,10 @@ void AliHBTWeightQOutFctn::ProcessDiffEventParticles(AliHBTPair* trackpair, AliH
 
 TH1* AliHBTWeightQOutFctn::GetResult() 
 { 
-//returns ratio of numerator and denominator                                    
- return GetRatio(Scale());                                                  
+ //returns the scaled ratio
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ return fRatio;
 }                    
                                                               
 /*************************************************************************************/ 
@@ -167,8 +172,10 @@ void AliHBTWeightQLongFctn::ProcessDiffEventParticles(AliHBTPair* trackpair, Ali
 /**************************************************************/
 TH1* AliHBTWeightQLongFctn::GetResult()
 { 
-//returns ratio of numerator and denominator                                    
- return GetRatio(Scale());                                                  
+ //returns the scaled ratio
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ return fRatio;
 }                    
                                                               
 /*************************************************************************************/ 
@@ -221,8 +228,10 @@ void  AliHBTWeightQSideFctn::ProcessDiffEventParticles(AliHBTPair* trackpair, Al
 
 TH1* AliHBTWeightQSideFctn::GetResult() 
 { 
-//returns ratio of numerator and denominator                                    
- return GetRatio(Scale());                                                  
+ //returns the scaled ratio
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ return fRatio;
 }                    
                                                               
 /*************************************************************************************/ 
@@ -274,8 +283,10 @@ void  AliHBTWeightTwoKStarFctn::ProcessDiffEventParticles(AliHBTPair* trackpair,
 TH1* AliHBTWeightTwoKStarFctn::GetResult() 
                                                                                
 { 
-//returns ratio of numerator and denominator                                    
- return GetRatio(Scale());                                                  
+ //returns the scaled ratio
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ return fRatio;
 }                    
                                                               
 /*************************************************************************************/ 
@@ -329,8 +340,10 @@ void AliHBTWeightQOutQSideFctn::ProcessDiffEventParticles(AliHBTPair* trackpair,
 
 TH1* AliHBTWeightQOutQSideFctn::GetResult()
 {
-  //returns result
-  return GetRatio(Scale());
+ //returns the scaled ratio
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ return fRatio;
 }
 
 /*************************************************************************************/ 
@@ -384,8 +397,10 @@ void AliHBTWeightQOutQLongFctn::ProcessDiffEventParticles(AliHBTPair* trackpair,
 
 TH1* AliHBTWeightQOutQLongFctn::GetResult()
 {
-  //returns result
-  return GetRatio(Scale());
+ //returns the scaled ratio
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ return fRatio;
 }
 
 /*************************************************************************************/ 
@@ -439,6 +454,8 @@ void AliHBTWeightQSideQLongFctn::ProcessDiffEventParticles(AliHBTPair* trackpair
 
 TH1* AliHBTWeightQSideQLongFctn::GetResult()
 {
-  //returns result
-  return GetRatio(Scale());
+ //returns the scaled ratio
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ return fRatio;
 }
