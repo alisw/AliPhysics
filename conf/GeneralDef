@@ -21,9 +21,9 @@ tgt_$(ALICE_TARGET)/%Cint.o : %Cint.cxx
 	@echo $*Cint.cxx
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 ifeq ($(CXXVERBOSE),)
-	@$(CXX) $(filter-out -O%, $(CXXFLAGS)) -c $*Cint.cxx -o tgt_$(ALICE_TARGET)/$*Cint.o
+	@$(CXX) $(filter-out -prof_gen, $(filter-out -O%, $(CXXFLAGS))) -O0 -c $*Cint.cxx -o tgt_$(ALICE_TARGET)/$*Cint.o
 else
-	$(CXX) $(filter-out -O%, $(CXXFLAGS)) -c $*Cint.cxx -o tgt_$(ALICE_TARGET)/$*Cint.o
+	$(CXX) $(filter-out -prof_gen, $(filter-out -O%, $(CXXFLAGS))) -O0 -c $*Cint.cxx -o tgt_$(ALICE_TARGET)/$*Cint.o
 endif
 
 tgt_$(ALICE_TARGET)/%.o : %.cxx
