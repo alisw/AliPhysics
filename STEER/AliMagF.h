@@ -67,7 +67,7 @@ static const Float_t kXCEN2D2=9.7     ,kYCEN2D2=0.;*/
 // ************************ LHC optics v6.4 *****************************
 static const Float_t kG1=20.443;
 static const Float_t kFDIP=-37.85;
-static const Float_t kFCORN2=-9.14; // Still not updated
+static const Float_t kFCORN2=-9.6979; 
 //
 // ZBEG       Beginning of the inner triplet
 // D1BEG      Beginning of separator dipole 1
