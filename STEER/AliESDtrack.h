@@ -64,12 +64,14 @@ public:
   Float_t GetITSsignal() const {return fITSsignal;}
   Float_t GetITSchi2() const {return fITSchi2;}
   Int_t GetITSclusters(UInt_t *idx) const;
+  Int_t GetITSLabel() const {return fITSLabel;}
 
   void SetTPCpid(const Double_t *p);
   void GetTPCpid(Double_t *p) const;
   Float_t GetTPCsignal() const {return fTPCsignal;}
   Float_t GetTPCchi2() const {return fTPCchi2;}
   Int_t GetTPCclusters(Int_t *idx) const;
+  Int_t GetTPCLabel() const {return fTPCLabel;}
   const TBits& GetTPCClusterMap(){return fTPCClusterMap;}
   
   void SetTRDpid(const Double_t *p);
@@ -79,6 +81,8 @@ public:
   Int_t GetTRDclusters(UInt_t *idx) const;
   void    SetTRDpid(Int_t iSpecies, Float_t p);
   Float_t GetTRDpid(Int_t iSpecies) const;
+  Int_t GetTRDLabel() const {return fTRDLabel;}
+
 
   void SetTOFsignal(Double_t tof) {fTOFsignal=tof;}
   Float_t GetTOFsignal() const {return fTOFsignal;}
@@ -87,7 +91,7 @@ public:
   void    GetTOFpid(Double_t *p) const;
   UInt_t  GetTOFcluster() const {return fTOFindex;}
   void  SetTOFcluster(UInt_t index) {fTOFindex=index;}
-  
+  Bool_t IsOn(Int_t mask){ return (fFlags&mask)>0;}
   enum {
     kITSin=0x0001,kITSout=0x0002,kITSrefit=0x0004,kITSpid=0x0008,
     kTPCin=0x0010,kTPCout=0x0020,kTPCrefit=0x0040,kTPCpid=0x0080,
@@ -131,6 +135,7 @@ protected:
   UInt_t  fITSindex[6];    //! indices of the assigned ITS clusters
   Float_t fITSsignal;      // detector's PID signal
   Float_t fITSr[kSPECIES]; // "detector response probabilities" (for the PID)
+  Int_t   fITSLabel;       // label according TPC
 
   // TPC related track information
   Float_t fTPCchi2;        // chi2 in the TPC
@@ -139,13 +144,14 @@ protected:
   TBits   fTPCClusterMap;  // Map of clusters, one bit per padrow; 1 if has a cluster on given padrow
   Float_t fTPCsignal;      // detector's PID signal
   Float_t fTPCr[kSPECIES]; // "detector response probabilities" (for the PID)
-
+  Int_t   fTPCLabel;       // label according TPC
   // TRD related track information
   Float_t fTRDchi2;        // chi2 in the TRD
   Int_t   fTRDncls;        // number of clusters assigned in the TRD
   UInt_t  fTRDindex[90];   //! indices of the assigned TRD clusters
   Float_t fTRDsignal;      // detector's PID signal
   Float_t fTRDr[kSPECIES]; // "detector response probabilities" (for the PID)
+  Int_t   fTRDLabel;       // label according TRD
 
   // TOF related track information
   Float_t fTOFchi2;        // chi2 in the TOF

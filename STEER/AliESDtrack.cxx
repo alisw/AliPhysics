@@ -74,6 +74,10 @@ fTOFsignal(-1)
   for (i=0; i<6; i++)  { fITSindex[i]=0; }
   for (i=0; i<180; i++){ fTPCindex[i]=0; }
   for (i=0; i<90; i++) { fTRDindex[i]=0; }
+  fTPCLabel = 0;
+  fTRDLabel = 0;
+  fITSLabel = 0;
+
 }
 
 //_______________________________________________________________________
@@ -118,9 +122,11 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
     fITSchi2=t->GetChi2();
     for (Int_t i=0;i<fITSncls;i++) fITSindex[i]=t->GetClusterIndex(i);
     fITSsignal=t->GetPIDsignal();
+    fITSLabel = t->GetLabel();
     break;
     
   case kTPCin: case kTPCrefit:
+    fTPCLabel = t->GetLabel();
     fIalpha=fRalpha;
     fIx=fRx;
     {
@@ -136,7 +142,8 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
      {//prevrow must be declared in separate namespace, otherwise compiler cries:
       //"jump to case label crosses initialization of `Int_t prevrow'"
        Int_t prevrow = -1;
-       for (Int_t i=0;i<fTPCncls;i++) 
+       //       for (Int_t i=0;i<fTPCncls;i++) 
+       for (Int_t i=0;i<160;i++) 
         {
           fTPCindex[i]=t->GetClusterIndex(i);
 
@@ -199,6 +206,8 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
       }
     }
   case kTRDin: case kTRDrefit:
+    fTRDLabel = t->GetLabel();
+
     fTRDncls=t->GetNumberOfClusters();
     fTRDchi2=t->GetChi2();
     for (Int_t i=0;i<fTRDncls;i++) fTRDindex[i]=t->GetClusterIndex(i);
