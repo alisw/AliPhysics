@@ -62,7 +62,7 @@
 
 ClassImp(AliCalorimeter) // Class implementation to enable ROOT I/O
  
-AliCalorimeter::AliCalorimeter() : TNamed()
+AliCalorimeter::AliCalorimeter() : AliDevice()
 {
 // Default constructor, all parameters set to 0.
 // Create a calorimeter module matrix with fixed row and column size.
@@ -80,8 +80,6 @@ AliCalorimeter::AliCalorimeter() : TNamed()
  fVetos=0;
  fAttributes=0;
  fPositions=0;
- SetName("Unspecified");
- SetTitle("Unspecified");
 }
 ///////////////////////////////////////////////////////////////////////////
 AliCalorimeter::~AliCalorimeter()
@@ -124,7 +122,7 @@ AliCalorimeter::~AliCalorimeter()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliCalorimeter::AliCalorimeter(Int_t nrow,Int_t ncol) : TNamed()
+AliCalorimeter::AliCalorimeter(Int_t nrow,Int_t ncol) : AliDevice()
 {
 // Create a calorimeter module matrix with fixed row and column size.
 // The modules at the edges are automatically marked as "edge modules".
@@ -162,12 +160,9 @@ AliCalorimeter::AliCalorimeter(Int_t nrow,Int_t ncol) : TNamed()
  fHclusters=0;
 
  fVetos=0;
-
- SetName("Unspecified");
- SetTitle("Unspecified");
 }
 ///////////////////////////////////////////////////////////////////////////
-AliCalorimeter::AliCalorimeter(const AliCalorimeter& c) : TNamed(c)
+AliCalorimeter::AliCalorimeter(const AliCalorimeter& c) : AliDevice(c)
 {
 // Copy constructor
  fClusters=0;
@@ -308,6 +303,7 @@ void AliCalorimeter::SetSignal(Int_t row,Int_t col,Float_t sig)
  }
 
  m->SetSignal(sig);
+ AddHit(m);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliCalorimeter::AddSignal(Int_t row, Int_t col, Float_t sig)
@@ -392,6 +388,7 @@ void AliCalorimeter::AddSignal(AliCalmodule* mod)
    }
   }
   fMatrix->EnterObject(row,col,m);
+  AddHit(m);
  }
  else
  {
@@ -414,7 +411,11 @@ void AliCalorimeter::Reset(Int_t row,Int_t col)
  }
  
  AliCalmodule* m=GetModule(row,col);
- if (m) fMatrix->RemoveObject(row,col);
+ if (m)
+ {
+  RemoveHit(m);
+  fMatrix->RemoveObject(row,col);
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliCalorimeter::Reset(Int_t mode)
@@ -487,6 +488,8 @@ void AliCalorimeter::Reset(Int_t mode)
    fHclusters=0;
   }
  }
+
+ AliDevice::Reset(mode);
 }
 ///////////////////////////////////////////////////////////////////////////
 Float_t AliCalorimeter::GetSignal(Int_t row,Int_t col,Int_t mode) const
@@ -1659,7 +1662,7 @@ AliSignal* AliCalorimeter::GetVetoSignal(Int_t i) const
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliCalorimeter::SetSwapMode(Int_t swap)
+void AliCalorimeter::SetMatrixSwapMode(Int_t swap)
 {
 // Set the swap mode for the module and position matrices.
 // At invokation of this memberfunction the default argument is swap=1.
@@ -1670,11 +1673,11 @@ void AliCalorimeter::SetSwapMode(Int_t swap)
  }
  else
  {
-  cout << " *AliCalorimeter::SetSwapMode* Invalid argument : swap = " << swap << endl; 
+  cout << " *AliCalorimeter::SetMatrixSwapMode* Invalid argument : swap = " << swap << endl; 
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCalorimeter::GetSwapMode() const
+Int_t AliCalorimeter::GetMatrixSwapMode() const
 {
 // Provide the swap mode for the module and position matrices.
 // For further details see the documentation of AliObjMatrix.

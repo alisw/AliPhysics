@@ -515,3 +515,10 @@
 29-jun-2004 NvE New class AliDevice introduced.
                 New memberfunctions and datamembers introduced in AliEvent to support investigation
                 and ordering of hits of various (classes of) devices.
+01-jul-2004 NvE AliCalorimeter derived from AliDevice to extend functionality (e.g. allow definition
+                of sets of calorimeters and investigate all the hits of a certain set via the
+                AliEvent structure). To prevent matrix swapping restrictions, the memberfuctions
+                SetSwapMode and GetSwapMode of AliCalorimeter have been renamed to SetMatrixSwapMode
+                and GetMatrixSwapMode, respectively. 
+                Examples in the AliEvent.cxx documentation updated accordingly. 
+                Backward links reset for non-owned hits in AliDevice destructor.

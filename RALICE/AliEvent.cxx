@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliEvent.cxx,v 1.21 2004/05/04 15:33:04 nick Exp $
+// $Id: AliEvent.cxx,v 1.22 2004/06/29 11:29:37 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
@@ -90,12 +90,14 @@
 //
 // Fill the event structure with the basic objects
 // 
-//        AliCalorimeter emcal; // Note : AliCalorimeter is NOT derived from AliDevice
+//        AliCalorimeter emcal1;
+//        AliCalorimeter emcal2;
 //         ...
-//         ... // code to fill the calorimeter data
+//         ... // code to fill the emcal1 and emcal2 calorimeter data
 //         ...
 //
-//        evt.AddDevice(emcal);
+//        evt.AddDevice(emcal1);
+//        evt.AddDevice(emcal2);
 //
 //        // Assume AliTOF has been derived from AliDevice
 //        AliTOF tof1;
@@ -126,11 +128,22 @@
 // Order and investigate all the hits of all the TOF devices
 //
 //        TObjArray* hits=evt.GetHits("AliTOF");
-//        TObjArray ordered=evt.SortHits(hits);
-//        Int_t nhits=ordered.GetEntries();
+//        TObjArray orderedtofs=evt.SortHits(hits);
+//        Int_t nhits=orderedtofs.GetEntries();
 //        for (Int_t i=0; i<nhits; i++)
 //        {
-//         AliSignal* sx=(AliSignal*)ordered.At(i);
+//         AliSignal* sx=(AliSignal*)orderedtofs.At(i);
+//         if (sx) sx->Data();
+//        }
+//
+// Order and investigate all the hits of all the calorimeter devices
+//
+//        TObjArray* hits=evt.GetHits("AliCalorimeter");
+//        TObjArray orderedcals=evt.SortHits(hits);
+//        Int_t nhits=orderedcals.GetEntries();
+//        for (Int_t i=0; i<nhits; i++)
+//        {
+//         AliSignal* sx=(AliSignal*)orderedcals.At(i);
 //         if (sx) sx->Data();
 //        }
 //
@@ -229,7 +242,7 @@
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
-//- Modified: NvE $Date: 2004/05/04 15:33:04 $ UU-SAP Utrecht
+//- Modified: NvE $Date: 2004/06/29 11:29:37 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliEvent.h"

@@ -17,7 +17,9 @@ class AliDevice : public AliSignal
   void SetHitCopy(Int_t j);                          // (De)activate creation of private copies of hits
   Int_t GetHitCopy() const;                          // Provide HitCopy flag value      
   void AddHit(AliSignal& s);                         // Register an AliSignal object as a hit to this module
+  void AddHit(AliSignal* s) { if (s) AddHit(*s); }
   void RemoveHit(AliSignal& s);                      // Remove AliSignal object as hit from this module
+  void RemoveHit(AliSignal* s) { if (s) RemoveHit(*s); }
   void RemoveHits();                                 // Remove all AliSignals as hits from this module
   Int_t GetNhits() const;                            // Provide number of registered hits
   AliSignal* GetHit(Int_t j) const;                  // Access to the AliSignal registered as hit number j
@@ -32,6 +34,6 @@ class AliDevice : public AliSignal
   Int_t fHitCopy;   // Flag to denote making private copies of added hits
   TObjArray* fHits; // Array to hold the associated hits
 
- ClassDef(AliDevice,1) // Signal (Hit) handling of a generic device.
+ ClassDef(AliDevice,2) // Signal (Hit) handling of a generic device.
 };
 #endif

@@ -12,14 +12,14 @@
 #include "TH2.h"
 #include "TString.h"
 
+#include "AliDevice.h"
 #include "AliObjMatrix.h"
 #include "AliCalmodule.h"
 #include "AliCalcluster.h"
-#include "AliSignal.h"
 #include "AliPositionObj.h"
 #include "AliAttribObj.h"
  
-class AliCalorimeter : public TNamed
+class AliCalorimeter : public AliDevice
 {
  public:
   AliCalorimeter();                                      // Default constructor
@@ -29,12 +29,15 @@ class AliCalorimeter : public TNamed
   virtual TObject* Clone(const char* name="") const;     // Make a deep copy and provide pointer of the copy
   Int_t GetNrows() const;                                // Return number of rows of the matrix
   Int_t GetNcolumns() const;                             // Return number of columns of the matrix
+  using AliDevice::SetSignal;
   void SetSignal(Int_t row,Int_t col,Float_t s);         // Set signal for a certain module
+  using AliDevice::AddSignal;
   void AddSignal(Int_t row,Int_t col,Float_t s);         // Add signal to a certain module
   void AddSignal(AliCalmodule* m);                       // Add module signal to current calorimeter
   void Reset(Int_t row,Int_t col);                       // Reset signal for a certain module
-  void Reset(Int_t mode=0);                              // Reset the complete calorimeter
-  Float_t GetSignal(Int_t row,Int_t col,Int_t mode=0) const; // Provide signal of a certain module
+  virtual void Reset(Int_t mode=0);                      // Reset the complete calorimeter
+  virtual Float_t GetSignal(Int_t row,Int_t col=0) const { return GetSignal(row,col,0); }
+  Float_t GetSignal(Int_t row,Int_t col,Int_t mode) const; // Provide signal of a certain module
   Int_t GetNsignals() const;                             // Return number of modules with a signal
   void Group(Int_t n=1,Int_t mode=1);                    // Group modules into clusters (n rings)
   Int_t GetNclusters() const;                            // Return number of clusters
@@ -42,20 +45,34 @@ class AliCalorimeter : public TNamed
   AliCalcluster* GetCluster(Int_t j) const;              // Access to cluster number j
   AliCalmodule* GetModule(Int_t j) const;                // Access to 'fired' module number j
   AliCalmodule* GetModule(Int_t row,Int_t col) const;    // Access to module at (row,col)
+  using AliDevice::SetEdgeOn;
   void SetEdgeOn(Int_t row,Int_t col);                   // Indicate module as 'edge module'
+  using AliDevice::SetEdgeOff;
   void SetEdgeOff(Int_t row,Int_t col);                  // Indicate module as 'non-edge module'
+  using AliDevice::GetEdgeValue;
   Int_t GetEdgeValue(Int_t row,Int_t col) const;         // Provide the edge flag of a module
+  using AliDevice::SetDead;
   void SetDead(Int_t row,Int_t col);                     // Indicate module as 'dead module'
+  using AliDevice::SetAlive;
   void SetAlive(Int_t row,Int_t col);                    // Indicate module as 'active module'
+  using AliDevice::GetDeadValue;
   Int_t GetDeadValue(Int_t row,Int_t col) const;         // Provide the dead flag of a module
+  using AliDevice::SetGain;
   void SetGain(Int_t row,Int_t col,Float_t g);           // Set the gain value for a module
+  using AliDevice::SetOffset;
   void SetOffset(Int_t row,Int_t col,Float_t o);         // Set the offset value for a module
+  using AliDevice::GetGain;
   Float_t GetGain(Int_t row,Int_t col) const;            // Provide the gain value of a module
+  using AliDevice::GetGainFlag;
   Int_t GetGainFlag(Int_t row,Int_t col) const;          // Provide the gain flag value of a module
+  using AliDevice::GetOffset;
   Float_t GetOffset(Int_t row,Int_t col) const;          // Provide the offset value of a module
+  using AliDevice::GetOffsetFlag;
   Int_t GetOffsetFlag(Int_t row,Int_t col) const;        // Provide the offset flag value of a module
+  using AliDevice::SetPosition;
   void SetPosition(Int_t row,Int_t col,Float_t* r,TString f); // Set module position
   void SetPosition(Int_t row,Int_t col,Ali3Vector& r);   // Set module position
+  using AliDevice::GetPosition;
   void GetPosition(Int_t row,Int_t col,Float_t* r,TString f) const; // Return module position
   AliPosition* GetPosition(Int_t row,Int_t col) const;   // Access to module position
   TH2F* DrawModules(Float_t thresh=0.,Int_t mode=0);     // Lego plot of module (corr.) signals above threshold
@@ -64,8 +81,8 @@ class AliCalorimeter : public TNamed
   void AddVetoSignal(AliSignal* s) { AddVetoSignal(*s); }
   AliSignal* GetVetoSignal(Int_t j) const;               // Access to veto signal number j
   Int_t GetNvetos() const;                               // Provide the number of veto signals
-  void SetSwapMode(Int_t swap=1);                        // Set the swapmode for the storage of the matrices
-  Int_t GetSwapMode() const;                             // Provide the swapmode for the storage of the matrices
+  void SetMatrixSwapMode(Int_t swap=1);                  // Set the swapmode for the storage of the matrices
+  Int_t GetMatrixSwapMode() const;                       // Provide the swapmode for the storage of the matrices
  
  protected:
   Int_t fNrows;                              // The number of rows
@@ -83,6 +100,6 @@ class AliCalorimeter : public TNamed
   TObjArray* fAttributes;                    //! Matrix with module attributes (e.g. gain, offset etc...)
   AliObjMatrix* fPositions;                  //! The matrix of module position pointers
  
- ClassDef(AliCalorimeter,8) // Description of a modular calorimeter system.
+ ClassDef(AliCalorimeter,9) // Description of a modular calorimeter system.
 };
 #endif

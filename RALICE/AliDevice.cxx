@@ -92,6 +92,18 @@ AliDevice::AliDevice() : AliSignal()
 AliDevice::~AliDevice()
 {
 // Default destructor.
+
+ // Remove backward links to this device from the hits
+ // which were not owned by it.
+ if (!fHitCopy)
+ {
+  for (Int_t ih=1; ih<=GetNhits(); ih++)
+  {
+   AliSignal* sx=GetHit(ih);
+   if (sx) sx->ResetLinks(this);
+  }
+ }
+
  if (fHits)
  {
   delete fHits;
@@ -114,8 +126,7 @@ AliDevice::AliDevice(const AliDevice& dev) : AliSignal(dev)
    if (fHitCopy)
    {
     fHits->Add(sx->Clone());
-    Int_t nhits=GetNhits();
-    AliSignal* s=GetHit(nhits);
+    AliSignal* s=(AliSignal*)fHits->Last();
     s->ResetLinks((AliDevice*)&dev);
     s->AddLink(this);
    }
