@@ -1349,14 +1349,13 @@ TTree * AliPHOSGetter::TreeK(TString filename)
     filename = fHeaderFile ; 
 
   TFile * file = 0 ; 
-  // file = static_cast<TFile*>(gROOT->GetFile(filename.Data() ) ) ;
-  if (!file) {  // file not open yet
-    //   file->Close() ; 
-    file = TFile::Open(filename.Data(), "read") ; 
+  file = static_cast<TFile*>(gROOT->GetFile(filename.Data() ) ) ;
+  if (file && (filename != fHeaderFile) ) {  // file already open 
+    file->Close() ; 
     delete fAlice ; 
-    fAlice = static_cast<AliRun *>(file->Get("gAlice")) ; 
-  }
-
+  }    
+  file = TFile::Open(filename.Data(), "read") ; 
+  fAlice = static_cast<AliRun *>(file->Get("gAlice")) ; 
   TString treeName("TreeK") ; 
   treeName += EventNumber()  ; 
   TTree * tree = static_cast<TTree *>(file->Get(treeName.Data())) ;
@@ -1511,7 +1510,7 @@ Int_t AliPHOSGetter::ReadTreeD()
     else if (Clusterizer())  // Clusterizer found in header file
       searchFileName = Clusterizer()->GetDigitsFileName() ; 
     
-    if (treeD = TreeD(searchFileName)) { //found TreeD in the file which contains the hits
+    if ( (treeD = TreeD(searchFileName)) ) { //found TreeD in the file which contains the hits
       if (fDebug) 
 	cout << "INFO: AliPHOSGetter::ReadTreeD -> TreeD found in " << searchFileName.Data() << endl ; 
       
@@ -1586,7 +1585,7 @@ Int_t AliPHOSGetter::ReadTreeH()
     else if (Clusterizer())  // Clusterizer found in header file
       searchFileName = Clusterizer()->GetHitsFileName() ; 
       
-    if (treeH = TreeH(searchFileName)) { //found TreeH in the file which contains the hits
+    if ( (treeH = TreeH(searchFileName)) ) { //found TreeH in the file which contains the hits
       if (fDebug) 
 	cout << "INFO: AliPHOSGetter::ReadTreeH -> TreeH found in " << searchFileName.Data() << endl ; 
       
@@ -1881,7 +1880,7 @@ Int_t AliPHOSGetter::ReadTreeS(Int_t event)
       else if (Clusterizer())  // Clusterizer found in header file
 	searchFileName = Clusterizer()->GetSDigitsFileName() ; 
       
-      if (treeS = TreeS(searchFileName)) { //found TreeS in the file which contains the hits
+      if ( (treeS = TreeS(searchFileName)) ) { //found TreeS in the file which contains the hits
 	if (fDebug) 
 	  cout << "INFO: AliPHOSGetter::ReadTreeS -> TreeS found in " << searchFileName.Data() << endl ; 
 	
