@@ -82,7 +82,7 @@ public:
                                                          // calculates the angular coverage in theta and phi of a 
                                                          // single crystal in a EMC module
 
-  void ImpactOnEmc(const Double_t theta, const Double_t phi, Int_t & ModuleNumber, Double_t & x, Double_t & z) ; 
+  void ImpactOnEmc(const Double_t theta, const Double_t phi, Int_t & ModuleNumber, Double_t & z, Double_t & x) ; 
                                                          // calculates the impact coordinates of a neutral particle  
                                                          // emitted in direction theta and phi in ALICE
  
