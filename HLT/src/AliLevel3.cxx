@@ -232,8 +232,8 @@ void AliLevel3::ProcessEvent(Int_t first,Int_t last,Int_t event){
   }
   fBenchmark->Start("Global Merger");
   //fGlobalMerger->AddAllTracks();
-  fGlobalMerger->Merge();
-  //fGlobalMerger->SlowMerge();
+  //fGlobalMerger->Merge();
+  fGlobalMerger->SlowMerge();
   fBenchmark->Stop("Global Merger");
 
   if(fWriteOut) WriteResults(); 
@@ -256,7 +256,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
   fTrackMerger->Reset();
   fTrackMerger->SetRows(fRow[0]);
   for(Int_t patch=fNPatch-1;patch>=0;patch--){
-    fFileHandler->Init(slice,patch,fRow[patch]);
+    fFileHandler->Init(slice,patch);
     UInt_t npoints=0;
     AliL3SpacePointData *points =0;
     UInt_t ndigits=0;
@@ -485,9 +485,9 @@ void AliLevel3::ProcessSlice(Int_t slice){
     memory->Free();
   }
   fBenchmark->Start("Patch Merger");
-//  fTrackMerger->SlowMerge();
+  fTrackMerger->SlowMerge();
   //fTrackMerger->AddAllTracks();
-  fTrackMerger->Merge();
+  //fTrackMerger->Merge();
   fBenchmark->Stop("Patch Merger");
   /*
   //write merged tracks
