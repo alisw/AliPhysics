@@ -78,7 +78,7 @@ public:
     Int_t      fXn;       // Number of mesh points in x
     Int_t      fYn;       // Number of mesh points in y
     Int_t      fZn;       // Number of mesh points in z
-    TVector*   fB;        // Field map
+    TVector*   fB;        //!Field map
     
     ClassDef(AliFieldMap,1)  //Class for Field Map
 };
