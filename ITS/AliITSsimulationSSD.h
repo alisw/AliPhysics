@@ -5,10 +5,13 @@
 /* $Id$ */
 
 #include "AliITSsimulation.h"
+#include "AliITSsegmentationSSD.h" // function used in inline functions
 
 class AliITSMapA2;
+class AliITSpList;
 class AliITSdcsSSD;
 class AliITSsegmentationSSD;
+class AliITSresponseSSD;
 
 class AliITSsimulationSSD: public AliITSsimulation {
 
@@ -21,19 +24,18 @@ class AliITSsimulationSSD: public AliITSsimulation {
     AliITSsimulationSSD(AliITSsegmentation *seg,AliITSresponse *resp);
     //Destructor
     virtual ~AliITSsimulationSSD();
+    // Initilize variables for this simulation
+    void Init(AliITSsegmentationSSD *seg,AliITSresponseSSD *resp);
     //Digitizes all of the hits in a module
-    void DigitiseModule(AliITSmodule *mod,Int_t imod,Int_t dummy);
+    void DigitiseModule(AliITSmodule *mod,Int_t dummy0,Int_t dummy1);
+    // Computes the Summable Digits
+    void SDigitiseModule(AliITSmodule *mod,Int_t module,Int_t dummy);
+    // Computes the Charge on each Strip/ Analog/summable digits
+    void HitsToAnalogDigits(AliITSmodule *mod,AliITSpList *pList);
     //Computes the signal from one hit
     void HitToDigit(Int_t module,Double_t x0,Double_t y0,Double_t z0, 
 		    Double_t x,Double_t y,Double_t z,Double_t de,
 		    Int_t *indexRange,Bool_t first);
-    // returns the number of steps needed to proplerly distribute the charge
-    // in a step
-    Int_t NumOfSteps(Double_t x,Double_t y,Double_t z,
-		     Double_t  &dex,Double_t &dey,Double_t &dez);
-    void GetList(Int_t track,Float_t **pList,Int_t *IndexRange);
-    // sets thresholds and fills digits
-    void ChargeToSignal(Float_t **pList);
     //returns a pointer to the SSD segmentation.
     AliITSsegmentationSSD *GetSegmentation() {
 	return (AliITSsegmentationSSD*) fSegmentation;}
@@ -56,20 +58,39 @@ class AliITSsimulationSSD: public AliITSsimulation {
     // Standard ascii class read function
     void Read(istream *is);
 
- protected:
+ private:
+    // returns the number of steps needed to proplerly distribute the charge
+    // in a step
+    Int_t NumOfSteps(Double_t x,Double_t y,Double_t z,
+		     Double_t  &dex,Double_t &dey,Double_t &dez);
+    // Keepts track and orders tracks for a give strip.
+    void GetList(Int_t trk,Int_t ht,Int_t mod,AliITSpList *pLt,Int_t *indxRng);
+    // sets thresholds and fills digits
+    void ChargeToSignal(AliITSpList *pList);
+    // Writes Summable Digits to a root file for later use.
+    void WriteSDigits(AliITSpList *pList);
+    // ReadSDigits and create Digits
+    void SDigitToDigit(Int_t module,AliITSpList *pList);
+    // Fills fMapA2 from pList AliITSpList
+    void FillMapFrompList(AliITSpList *pList);
     // Diffuses the charge onto neighboring strips.
     void    IntegrateGaussian(Int_t k,Double_t par,Double_t av,Double_t sigma, 
 			      Double_t inf, Double_t sup,
 			      Int_t *indexRange, Bool_t first);
-    void    ApplyNoise(); // Applies noise to strips randomly
-    void    ApplyCoupling(); // Applies posible signal coupling between strips
+     // Applies noise to strips randomly
+    void    ApplyNoise(AliITSpList *pList,Int_t mod);
+     // Applies posible signal coupling between strips
+    void    ApplyCoupling(AliITSpList *pList,Int_t mod);
+    // Computes the integral of a gaussian using Error Function
     Float_t F(Float_t av, Float_t x, Float_t s);
+    // returns, from the segmentation, the number of stips
+    Int_t GetNStrips() {return GetSegmentation()->Npx();}
+    // returns, from the segmentation, the strip pitch
+    Float_t GetStripPitch() {return GetSegmentation()->Dpx(0);}
 
     // Data members
  protected:
     AliITSdcsSSD *fDCS;   // Class containing detector controle paramters
-    Int_t        fNstrips;//! number of strips, gotten from segmentation
-    Float_t      fPitch;  //! strip pitch spacing gotten from segmentation
 
  private:
     AliITSMapA2 *fMapA2;      //! Map of ionization, used localy only

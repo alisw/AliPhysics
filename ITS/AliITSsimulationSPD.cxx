@@ -1,3 +1,21 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/*
+$Log$
+*/
 #include <iostream.h>
 #include <TRandom.h>
 #include <TH1.h>
@@ -5,16 +23,18 @@
 #include <TString.h>
 #include <TParticle.h>
 
-
 #include "AliRun.h"
 #include "AliITS.h"
 #include "AliITShit.h"
 #include "AliITSdigit.h"
 #include "AliITSmodule.h"
 #include "AliITSMapA2.h"
+#include "AliITSpList.h"
 #include "AliITSsimulationSPD.h"
 #include "AliITSsegmentation.h"
 #include "AliITSresponse.h"
+#include "AliITSsegmentationSPD.h"
+#include "AliITSresponseSPD.h"
 
 
 ClassImp(AliITSsimulationSPD)
@@ -26,699 +46,596 @@ ClassImp(AliITSsimulationSPD)
 //
 // AliITSsimulationSPD is the simulation of SPDs
 //
-//________________________________________________________________________
-
+//______________________________________________________________________
 AliITSsimulationSPD::AliITSsimulationSPD(){
-  // constructor
-  fResponse     = 0;
-  fSegmentation = 0;
-  fHis          = 0;
-  fThresh       = 0.;
-  fSigma        = 0.;
-  fCouplCol     = 0.;
-  fCouplRow     = 0.;
+    // Default constructor
+
+    fResponse     = 0;
+    fSegmentation = 0;
+    fHis          = 0;
+    fMapA2        = 0;
+/*
+    fThresh       = 0.;
+    fSigma        = 0.;
+    fCouplCol     = 0.;
+    fCouplRow     = 0.; */
 }
-//_____________________________________________________________________________
+//______________________________________________________________________
+AliITSsimulationSPD::AliITSsimulationSPD(AliITSsegmentation *seg,
+					 AliITSresponse *resp) {
+    // Standard constructor
 
-AliITSsimulationSPD::AliITSsimulationSPD(AliITSsegmentation *seg, AliITSresponse *resp) {
-  // constructor
-      fResponse = resp;
-      fSegmentation = seg;
-
-      fResponse->Thresholds(fThresh,fSigma);
-      fResponse->GetNoiseParam(fCouplCol,fCouplRow);
-      
-      fMapA2 = new AliITSMapA2(fSegmentation);
-   
-      // 
-      fNPixelsZ=fSegmentation->Npz();
-      fNPixelsX=fSegmentation->Npx();
-      fHis=0;
+    fResponse     = 0;
+    fSegmentation = 0;
+    fHis          = 0;
+    fMapA2        = 0;
+/*
+    fThresh       = 0.;
+    fSigma        = 0.;
+    fCouplCol     = 0.;
+    fCouplRow     = 0.*/
+    Init((AliITSsegmentationSPD*)seg,(AliITSresponseSPD*)resp);
 }
+//______________________________________________________________________
+void AliITSsimulationSPD::Init(AliITSsegmentationSPD *seg,
+			       AliITSresponseSPD *resp) {
+    // Initilizes the variables of AliITSsimulation SPD.
 
-//_____________________________________________________________________________
-
+    fHis = 0;
+    fResponse     = resp;
+    fSegmentation = seg;
+    fMapA2 = new AliITSMapA2(fSegmentation);
+/*
+    fResponse->Thresholds(fThresh,fSigma);
+    fResponse->GetNoiseParam(fCouplCol,fCouplRow);
+    fNPixelsZ = fSegmentation->Npz();
+    fNPixelsX = fSegmentation->Npx();
+*/
+}
+//______________________________________________________________________
 AliITSsimulationSPD::~AliITSsimulationSPD() { 
-  // destructor
+    // destructor
 
-  delete fMapA2;
+    delete fMapA2;
 
-  if (fHis) {
-     fHis->Delete(); 
-     delete fHis;     
-  }                
+    if (fHis) {
+	fHis->Delete(); 
+	delete fHis;     
+    } // end if
 }
-
-//__________________________________________________________________________
+//______________________________________________________________________
 AliITSsimulationSPD::AliITSsimulationSPD(const AliITSsimulationSPD &source){
-  //     Copy Constructor 
-  if(&source == this) return;
-  this->fMapA2 = source.fMapA2;
-  this->fThresh = source.fThresh;
-  this->fSigma = source.fSigma;
-  this->fCouplCol = source.fCouplCol;
-  this->fCouplRow = source.fCouplRow;
-  this->fNPixelsX = source.fNPixelsX;
-  this->fNPixelsZ = source.fNPixelsZ;
-  this->fHis = source.fHis;
-  return;
+    // Copy Constructor
+
+    if(&source == this) return;
+
+    this->fMapA2    = source.fMapA2;
+    this->fHis      = source.fHis;
+/*
+    this->fThresh   = source.fThresh;
+    this->fSigma    = source.fSigma;
+    this->fCouplCol = source.fCouplCol;
+    this->fCouplRow = source.fCouplRow;
+    this->fNPixelsX = source.fNPixelsX;
+    this->fNPixelsZ = source.fNPixelsZ;
+*/
+    return;
 }
+//______________________________________________________________________
+AliITSsimulationSPD& AliITSsimulationSPD::operator=(const AliITSsimulationSPD 
+						    &source) {
+    //    Assignment operator
 
-//_________________________________________________________________________
-AliITSsimulationSPD& 
-  AliITSsimulationSPD::operator=(const AliITSsimulationSPD &source) {
-  //    Assignment operator
-  if(&source == this) return *this;
-  this->fMapA2 = source.fMapA2;
-  this->fThresh = source.fThresh;
-  this->fSigma = source.fSigma;
-  this->fCouplCol = source.fCouplCol;
-  this->fCouplRow = source.fCouplRow;
-  this->fNPixelsX = source.fNPixelsX;
-  this->fNPixelsZ = source.fNPixelsZ;
-  this->fHis = source.fHis;
-  return *this;
-  }
-//_____________________________________________________________________________
+    if(&source == this) return *this;
 
-void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module,
-                                             Int_t dummy) {
-  // digitize module
-
-
-  TObjArray *fHits = mod->GetHits();
-  Int_t nhits = fHits->GetEntriesFast();
-  if (!nhits) return;
-
-
-  //printf("Module %d (%d hits) \n",module+1,nhits);
-
-
-  Int_t  number=10000;
-  Int_t    *frowpixel = new Int_t[number];
-  Int_t    *fcolpixel = new Int_t[number];
-  Double_t *fenepixel = new Double_t[number];
-
-  // Array of pointers to store the track index of the digits
-  // leave +1, otherwise pList crashes when col=256, row=192 
-    Int_t maxNdigits = fNPixelsX*fNPixelsZ+fNPixelsX+1;
-  Float_t  **pList = new Float_t* [maxNdigits];
-  memset(pList,0,sizeof(Float_t*)*maxNdigits);
-
-
-  // noise setting
-  SetFluctuations(pList);
-
-
-
-  // loop over hits in the module
-  Int_t hitpos;
-  for (hitpos=0;hitpos<nhits;hitpos++) {  
-     HitToDigit(mod,hitpos,module,frowpixel,fcolpixel,fenepixel,pList);
-  }// end loop over digits
-
-  CreateDigit(nhits,module,pList);
-
-  // clean memory
-  delete[] frowpixel;
-  delete[] fcolpixel;
-  delete[] fenepixel;
-  fMapA2->ClearMap();
-  delete [] pList;
-
+    this->fMapA2    = source.fMapA2;
+    this->fHis      = source.fHis;
+/*
+    this->fThresh   = source.fThresh;
+    this->fSigma    = source.fSigma;
+    this->fCouplCol = source.fCouplCol;
+    this->fCouplRow = source.fCouplRow;
+    this->fNPixelsX = source.fNPixelsX;
+    this->fNPixelsZ = source.fNPixelsZ;
+*/
+    return *this;
 }
-//_____________________________________________________________________________
+//______________________________________________________________________
+void AliITSsimulationSPD::SDigitiseModule(AliITSmodule *mod, Int_t dummy0,
+                                             Int_t dummy1) {
+    // Sum digitize module
+    if (!(mod->GetNhits())) return; // if module has no hits then no Sdigits.
+    Int_t    number     = 10000;
+    Int_t    *frowpixel = new Int_t[number];
+    Int_t    *fcolpixel = new Int_t[number];
+    Double_t *fenepixel = new Double_t[number];
 
-void AliITSsimulationSPD::UpdateMap( Int_t row, Int_t col, Double_t ene) {
-//
-// updates the Map of signal, adding the energy  (ene) released by the current track
-//
-      Double_t signal; 
-      signal = fMapA2->GetSignal(row,col);
-      signal += ene;
-      fMapA2->SetHit(row,col,signal);
-                                         
- }
-//_____________________________________________________________________________  
-void AliITSsimulationSPD::HitToDigit(AliITSmodule *mod, Int_t hitpos, Int_t module, 
-                                        Int_t *frowpixel, Int_t *fcolpixel,
-					Double_t *fenepixel, Float_t **pList) {
-//
-//  Steering function to determine the digits associated to a given hit (hitpos)
-//  The digits are created by charge sharing (ChargeSharing) and by
-//  capacitive coupling (SetCoupling). At all the created digits is associated
-//  the track number of the hit (ntrack)
-//
+    // Array of pointers to store the track index of the digits
+    // leave +1, otherwise pList crashes when col=256, row=192
+    AliITSpList *pList = new AliITSpList(GetNPixelsZ()+1,GetNPixelsX()+1);
 
+    HitsToAnalogDigits(mod,frowpixel,fcolpixel,fenepixel,pList);
 
-   static Float_t x1l,y1l,z1l;
-   Float_t x2l,y2l,z2l,etot;
-   Int_t layer,r1,r2,c1,c2,row,col,npixel = 0;
-   Int_t ntrack,idhit;
-   Double_t ene;
-   const Float_t kconv = 10000.;     // cm -> microns
-   const Float_t kconv1= 0.277e9;     // GeV -> electrons equivalent  
+    WriteSDigits(pList);
 
-   TObjArray *fHits = mod->GetHits();
-   AliITShit *hit = (AliITShit*) fHits->At(hitpos);
-   layer = hit->GetLayer();
-   etot=kconv1*hit->GetIonization();
-   ntrack=hit->GetTrack();
-   idhit=mod->GetHitHitIndex(hitpos);     
+    // clean memory
+    delete[] frowpixel;
+    delete[] fcolpixel;
+    delete[] fenepixel;
+    fMapA2->ClearMap();
+    delete pList;
+}
+//______________________________________________________________________
+void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t dummy0,
+                                             Int_t dummy1) {
+    // digitize module. Also need to digitize modules with only noise.
 
+    Int_t    number     = 10000;
+    Int_t    *frowpixel = new Int_t[number];
+    Int_t    *fcolpixel = new Int_t[number];
+    Double_t *fenepixel = new Double_t[number];
+    Int_t    module     = mod->GetIndex();
+
+    // Array of pointers to store the track index of the digits
+    // leave +1, otherwise pList crashes when col=256, row=192 
+    AliITSpList *pList = new AliITSpList(GetNPixelsZ()+1,GetNPixelsX()+1);
+
+    // noise setting
+    SetFluctuations(pList,module);
+
+    HitsToAnalogDigits(mod,frowpixel,fcolpixel,fenepixel,pList);
+
+    // apply mask to SPD module
+    SetMask();
+
+    CreateDigit(module,pList);
+
+    // clean memory
+    delete[] frowpixel;
+    delete[] fcolpixel;
+    delete[] fenepixel;
+    fMapA2->ClearMap();
+    delete pList;
+}
+//______________________________________________________________________
+void AliITSsimulationSPD::SDigitsToDigits(Int_t module,AliITSpList *pList) {
+    // sum digits to Digits.
+
+    FillMapFrompList(pList);
+
+    // noise setting
+    SetFluctuations(pList,module);
+
+    // apply mask to SPD module
+    SetMask();
+
+    CreateDigit(module,pList);
+}
+//______________________________________________________________________
+void AliITSsimulationSPD::UpdateMapSignal(Int_t row,Int_t col,Int_t trk,
+					  Int_t hit,Int_t mod,Double_t ene,
+					  AliITSpList *pList) {
+    // updates the Map of signal, adding the energy  (ene) released by
+    // the current track
+
+    fMapA2->AddSignal(row,col,ene);
+    pList->AddSignal(row,col,trk,hit,mod,ene);
+}
+//______________________________________________________________________
+void AliITSsimulationSPD::UpdateMapNoise(Int_t row,Int_t col,Int_t mod,
+					 Double_t ene,AliITSpList *pList) {
+    // updates the Map of noise, adding the energy  (ene) give my noise
+
+    fMapA2->AddSignal(row,col,ene);
+    pList->AddNoise(row,col,mod,ene);
+}
+//______________________________________________________________________
+void AliITSsimulationSPD::HitsToAnalogDigits(AliITSmodule *mod,
+					     Int_t *frowpixel,Int_t *fcolpixel,
+					     Double_t *fenepixel,
+					     AliITSpList *pList) {
+    // Loops over all hits to produce Analog/floting point digits. This
+    // is also the first task in producing standard digits.
     
-    /*
-    printf("\n layer,etot,ntrack,status %d %f %d %d\n",layer,etot,ntrack,hit->GetTrackStatus()); //debug
-    Int_t idtrack; //debug
-    mod->GetHitTrackAndHitIndex(hitpos,idtrack,idhit);     
-    printf("idtrack,idhit %d %d\n",idtrack,idhit); //debug
-    printf("(Dx, Dz)=(%f, %f)\n",fSegmentation->Dx(),fSegmentation->Dz()); //debug
-    */
-    
-   
-
-        if (hit->GetTrackStatus()==66) {
-	      hit->GetPositionL(x1l,y1l,z1l);
-          // positions shifted and converted in microns 
-          x1l = x1l*kconv + fSegmentation->Dx()/2.;
-          z1l = z1l*kconv + fSegmentation->Dz()/2.;
-          //printf("(x1l, z2l)=(%f, %f)\n",x1l,z1l); //debug
-        }
-        else {
-	      hit->GetPositionL(x2l,y2l,z2l);	      
-          // positions  shifted and converted in microns
-          x2l = x2l*kconv + fSegmentation->Dx()/2.;
-          z2l = z2l*kconv + fSegmentation->Dz()/2.;
-          //printf("(x2l, z2l)=(%f, %f)\n",x2l,z2l); //debug
-
-
-
-          // to account for the effective sensitive area
-          // introduced in geometry 
-          if (z1l<0 || z1l>fSegmentation->Dz()) return;
-          if (z2l<0 || z2l>fSegmentation->Dz()) return;
-          if (x1l<0 || x1l>fSegmentation->Dx()) return;
-          if (x2l<0 || x2l>fSegmentation->Dx()) return;
-
-          //Get the col and row number starting from 1
-          // the x direction is not inverted for the second layer!!!
-	      fSegmentation->GetPadIxz(x1l, z1l, c1, r1); 
-	      fSegmentation->GetPadIxz(x2l, z2l, c2, r2);
-
-          //printf("(c1, r1)=(%d, %d) (c2, r2)=(%d, %d)\n",c1,r1,c2,r2); //debug
-
-          // to account for unexpected equal entrance and 
-          // exit coordinates
-          if (x1l==x2l) x2l=x2l+x2l*0.000001;
-          if (z1l==z2l) z2l=z2l+z2l*0.000001;
-
-
-	      if ((r1==r2) && (c1==c2)) 
-	      {
-             // no charge sharing
-	         npixel = 1;		 
-		     frowpixel[npixel-1] = r1;
-		     fcolpixel[npixel-1] = c1;
-  		     fenepixel[npixel-1] = etot;
-          }
-	      else {
-             // charge sharing
-	         ChargeSharing(x1l,z1l,x2l,z2l,c1,r1,c2,r2,etot,
-		         	       npixel,frowpixel,fcolpixel,fenepixel);
-
-          }
-                  
-
-      	  for (Int_t npix=0;npix<npixel;npix++)
-	      {
-		   row = frowpixel[npix];
-		   col = fcolpixel[npix];
-		   ene = fenepixel[npix];
-		   UpdateMap(row,col,ene);                   
-		   GetList(ntrack,idhit,pList,row,col); 
-		   // Starting capacitive coupling effect
-		   SetCoupling(row,col,ntrack,idhit,pList); 
-	      }
-	    x1l=x2l;
-	    y1l=y2l;
-	    z1l=z2l;	     	     
-        }
+    // loop over hits in the module
+    Int_t hitpos,nhits = mod->GetNhits();
+    for (hitpos=0;hitpos<nhits;hitpos++) {
+	HitToDigit(mod,hitpos,frowpixel,fcolpixel,fenepixel,pList);
+    }// end loop over digits
 }
+//______________________________________________________________________
+void AliITSsimulationSPD::HitToDigit(AliITSmodule *mod,Int_t hitpos,
+				     Int_t *frowpixel,Int_t *fcolpixel,
+				     Double_t *fenepixel,AliITSpList *pList) {
+    //  Steering function to determine the digits associated to a given
+    // hit (hitpos)
+    // The digits are created by charge sharing (ChargeSharing) and by
+    // capacitive coupling (SetCoupling). At all the created digits is
+    // associated the track number of the hit (ntrack)
+    Double_t x1l=0.0,y1l=0.0,z1l=0.0,x2l=0.0,y2l=0.0,z2l=0.0;
+    Int_t r1,r2,c1,c2,row,col,npixel = 0;
+    Int_t ntrack;
+    Double_t ene=0.0,etot=0.0;
+    const Float_t kconv = 10000.;     // cm -> microns
+    const Float_t kconv1= 0.277e9;    // GeV -> electrons equivalent
 
-//_________________________________________________________________________
+    if(!(mod->LineSegmentL(hitpos,x1l,x2l,y1l,y2l,z1l,z2l,etot,ntrack)))return;
 
+    x2l += x1l; y2l += y1l; z2l += z1l; // Convert to ending coordinate.
+    // positions shifted and converted in microns
+    x1l   = x1l*kconv + fSegmentation->Dx()/2.;
+    z1l   = z1l*kconv + fSegmentation->Dz()/2.;
+    // positions  shifted and converted in microns
+    x2l   = x2l*kconv + fSegmentation->Dx()/2.;
+    z2l   = z2l*kconv + fSegmentation->Dz()/2.;
+    etot *= kconv1; // convert from GeV to electrons equivalent.
+    Int_t module = mod->GetIndex();
+
+    // to account for the effective sensitive area
+    // introduced in geometry 
+    if (z1l<0 || z1l>fSegmentation->Dz()) return;
+    if (z2l<0 || z2l>fSegmentation->Dz()) return;
+    if (x1l<0 || x1l>fSegmentation->Dx()) return;
+    if (x2l<0 || x2l>fSegmentation->Dx()) return;
+
+    //Get the col and row number starting from 1
+    // the x direction is not inverted for the second layer!!!
+    fSegmentation->GetPadIxz(x1l, z1l, c1, r1); 
+    fSegmentation->GetPadIxz(x2l, z2l, c2, r2);
+
+    // to account for unexpected equal entrance and 
+    // exit coordinates
+    if (x1l==x2l) x2l=x2l+x2l*0.000001;
+    if (z1l==z2l) z2l=z2l+z2l*0.000001;
+
+    if ((r1==r2) && (c1==c2)){
+	// no charge sharing
+	npixel = 1;		 
+	frowpixel[npixel-1] = r1;
+	fcolpixel[npixel-1] = c1;
+	fenepixel[npixel-1] = etot;
+    } else {
+	// charge sharing
+	ChargeSharing(x1l,z1l,x2l,z2l,c1,r1,c2,r2,etot,
+		      npixel,frowpixel,fcolpixel,fenepixel);
+    } // end if r1==r2 && c1==c2.
+
+    for (Int_t npix=0;npix<npixel;npix++){
+	row = frowpixel[npix];
+	col = fcolpixel[npix];
+	ene = fenepixel[npix];
+	UpdateMapSignal(row,col,ntrack,hitpos,module,ene,pList); 
+	// Starting capacitive coupling effect
+	SetCoupling(row,col,ntrack,hitpos,module,pList); 
+    } // end for npix
+}
+//______________________________________________________________________
 void AliITSsimulationSPD::ChargeSharing(Float_t x1l,Float_t z1l,Float_t x2l,
-                    Float_t z2l,Int_t c1,Int_t r1,Int_t c2,
-				    Int_t r2,Float_t etot,
-				    Int_t &npixel,Int_t *frowpixel,
-				    Int_t *fcolpixel,Double_t *fenepixel){
-  //
-  //  Take into account the geometrical charge sharing when the track
-  //  crosses more than one pixel.
-  //
-  //Begin_Html
-  /*
-  <img src="picts/ITS/barimodel_2.gif">
-  </pre>
-  <br clear=left>
-  <font size=+2 color=red>
-  <a href="mailto:Rocco.Caliandro@ba.infn.it"></a>.
-  </font>
-  <pre>
-  */
-  //End_Html
+					Float_t z2l,Int_t c1,Int_t r1,Int_t c2,
+					Int_t r2,Float_t etot,
+					Int_t &npixel,Int_t *frowpixel,
+					Int_t *fcolpixel,Double_t *fenepixel){
+    //  Take into account the geometrical charge sharing when the track
+    //  crosses more than one pixel.
+    //
+    //Begin_Html
+    /*
+      <img src="picts/ITS/barimodel_2.gif">
+      </pre>
+      <br clear=left>
+      <font size=+2 color=red>
+      <a href="mailto:Rocco.Caliandro@ba.infn.it"></a>.
+      </font>
+      <pre>
+    */
+    //End_Html
+    Float_t xa,za,xb,zb,dx,dz,dtot,dm,refr,refm,refc;
+    Float_t refn=0.;
+    Float_t arefm, arefr, arefn, arefc, azb, az2l, axb, ax2l;
+    Int_t   dirx,dirz,rb,cb;
+    Int_t flag,flagrow,flagcol;
+    Double_t epar;
 
+    npixel = 0;
+    xa     = x1l;
+    za     = z1l;
+    dx     = TMath::Abs(x1l-x2l);
+    dz     = TMath::Abs(z1l-z2l);
+    dtot   = TMath::Sqrt((dx*dx)+(dz*dz));   
+    dm     = (x2l - x1l) / (z2l - z1l);
+    dirx   = (Int_t) ((x2l - x1l) / dx);
+    dirz   = (Int_t) ((z2l - z1l) / dz);
 
-   Float_t xa,za,xb,zb,dx,dz,dtot,dm,refr,refm,refc;
-   Float_t refn=0.;
-   Float_t arefm, arefr, arefn, arefc, azb, az2l, axb, ax2l;
-   Int_t   dirx,dirz,rb,cb;
+    // calculate the x coordinate of  the pixel in the next column    
+    // and the z coordinate of  the pixel in the next row
+    Float_t xpos, zpos;
 
+    fSegmentation->GetPadCxz(c1, r1-1, xpos, zpos); 
 
-   Int_t flag,flagrow,flagcol;
-  
-   Double_t epar;
+    Float_t xsize = fSegmentation->Dpx(0);
+    Float_t zsize = fSegmentation->Dpz(r1-1);
+    
+    if (dirx == 1) refr = xpos+xsize/2.;
+    else refr = xpos-xsize/2.;
 
+    if (dirz == 1) refn = zpos+zsize/2.;
+    else refn = zpos-zsize/2.;
 
-   npixel = 0;
-   xa = x1l;
-   za = z1l;
-   dx = TMath::Abs(x1l-x2l);
-   dz = TMath::Abs(z1l-z2l);
-   dtot = TMath::Sqrt((dx*dx)+(dz*dz));   
-   dm = (x2l - x1l) / (z2l - z1l);
-
-   dirx = (Int_t) ((x2l - x1l) / dx);
-   dirz = (Int_t) ((z2l - z1l) / dz);
+    flag = 0;
+    flagrow = 0;
+    flagcol = 0;
+    do{
+	// calculate the x coordinate of the intersection with the pixel
+	// in the next cell in row  direction
+	refm = (refn - z1l)*dm + x1l;
    
-   
-   // calculate the x coordinate of  the pixel in the next column    
-   // and the z coordinate of  the pixel in the next row    
+	// calculate the z coordinate of the intersection with the pixel
+	// in the next cell in column direction
+	refc = (refr - x1l)/dm + z1l;
 
-   Float_t xpos, zpos;
+	arefm = refm * dirx;
+	arefr = refr * dirx;
+	arefn = refn * dirz;
+	arefc = refc * dirz;
 
-   fSegmentation->GetPadCxz(c1, r1-1, xpos, zpos); 
-
-   Float_t xsize = fSegmentation->Dpx(0);
-   Float_t zsize = fSegmentation->Dpz(r1-1);
-
-   if (dirx == 1) refr = xpos+xsize/2.;
-             else refr = xpos-xsize/2.;
-
-   if (dirz == 1) refn = zpos+zsize/2.;
-             else refn = zpos-zsize/2.;
-
-   
-   flag = 0;
-   flagrow = 0;
-   flagcol = 0;
-   do
-   {
-       
-      // calculate the x coordinate of the intersection with the pixel
-      // in the next cell in row  direction
-
-      refm = (refn - z1l)*dm + x1l;
-   
-      // calculate the z coordinate of the intersection with the pixel
-      // in the next cell in column direction 
-
-      refc = (refr - x1l)/dm + z1l;
-      
-      
-      arefm = refm * dirx;
-      arefr = refr * dirx;
-      arefn = refn * dirz;
-      arefc = refc * dirz;
-            
-
-      if ((arefm < arefr) && (arefn < arefc)){
-        	 
-         // the track goes in the pixel in the next cell in row direction
-	     xb = refm;
-	     zb = refn;
-	     cb = c1;
-	     rb = r1 + dirz;
-	     azb = zb * dirz;
-         az2l = z2l * dirz;
-	     if (rb == r2) flagrow=1;
-	     if (azb > az2l) {
+	if ((arefm < arefr) && (arefn < arefc)){
+	    // the track goes in the pixel in the next cell in row direction
+	    xb = refm;
+	    zb = refn;
+	    cb = c1;
+	    rb = r1 + dirz;
+	    azb = zb * dirz;
+	    az2l = z2l * dirz;
+	    if (rb == r2) flagrow=1;
+	    if (azb > az2l) {
 	        zb = z2l;
 	        xb = x2l;
-	     }     
-
-         // shift to the pixel in the next cell in row direction
-         Float_t zsizeNext = fSegmentation->Dpz(rb-1);
-         //to account for cell at the borders of the detector
-         if(zsizeNext==0) zsizeNext = zsize;
-
-	     refn += zsizeNext*dirz;
-
-      }
-      else {
-         
-         // the track goes in the pixel in the next cell in column direction
-	     xb = refr;
-	     zb = refc;
-	     cb = c1 + dirx;
-	     rb = r1;
-	     axb = xb * dirx;
-         ax2l = x2l * dirx;
-         if (cb == c2) flagcol=1;
-	     if (axb > ax2l) {
+	    } // end if
+	    // shift to the pixel in the next cell in row direction
+	    Float_t zsizeNext = fSegmentation->Dpz(rb-1);
+	    //to account for cell at the borders of the detector
+	    if(zsizeNext==0) zsizeNext = zsize;
+	    refn += zsizeNext*dirz;
+	}else {
+	    // the track goes in the pixel in the next cell in column direction
+	    xb = refr;
+	    zb = refc;
+	    cb = c1 + dirx;
+	    rb = r1;
+	    axb = xb * dirx;
+	    ax2l = x2l * dirx;
+	    if (cb == c2) flagcol=1;
+	    if (axb > ax2l) {
 	        zb = z2l;
 	        xb = x2l;
-	     }
+	    } // end ifaxb > ax2l
 
-         // shift to the pixel in the next cell in column direction
-         Float_t xsizeNext = fSegmentation->Dpx(cb-1);
-         //to account for cell at the borders of the detector
-         if(xsizeNext==0) xsizeNext = xsize;
+	    // shift to the pixel in the next cell in column direction
+	    Float_t xsizeNext = fSegmentation->Dpx(cb-1);
+	    //to account for cell at the borders of the detector
+	    if(xsizeNext==0) xsizeNext = xsize;
+	    refr += xsizeNext*dirx;
+	} // end if (arefm < arefr) && (arefn < arefc)
 
-	     refr += xsizeNext*dirx;
-        
-      }
-      
-      //calculate the energy lost in the crossed pixel      
-      epar = TMath::Sqrt((xb-xa)*(xb-xa)+(zb-za)*(zb-za)); 
-      epar = etot*(epar/dtot);
+	//calculate the energy lost in the crossed pixel      
+	epar = TMath::Sqrt((xb-xa)*(xb-xa)+(zb-za)*(zb-za)); 
+	epar = etot*(epar/dtot);
 
-      //store row, column and energy lost in the crossed pixel
-      frowpixel[npixel] = r1;
-      fcolpixel[npixel] = c1;
-      fenepixel[npixel] = epar;
-      npixel++;
+	//store row, column and energy lost in the crossed pixel
+	frowpixel[npixel] = r1;
+	fcolpixel[npixel] = c1;
+	fenepixel[npixel] = epar;
+	npixel++;
  
-      // the exit point of the track is reached
-      if (epar == 0) flag = 1;
-      if ((r1 == r2) && (c1 == c2)) flag = 1;
-      if (flag!=1) {
-        r1 = rb;
-        c1 = cb;
-        xa = xb;
-        za = zb;
-      }
-   
-   } while (flag==0);
-
+	// the exit point of the track is reached
+	if (epar == 0) flag = 1;
+	if ((r1 == r2) && (c1 == c2)) flag = 1;
+	if (flag!=1) {
+	    r1 = rb;
+	    c1 = cb;
+	    xa = xb;
+	    za = zb;
+	} // end if flag!=1
+    } while (flag==0);
 }
-//___________________________________________________________________________
+//______________________________________________________________________
 void AliITSsimulationSPD::SetCoupling(Int_t row, Int_t col, Int_t ntrack,
-                                          Int_t idhit, Float_t **pList) {
-   //
-   //  Take into account the coupling between adiacent pixels.
-   //  The parameters probcol and probrow are the fractions of the
-   //  signal in one pixel shared in the two adjacent pixels along
-   //  the column and row direction, respectively.
-   //
-   //Begin_Html
-   /*
-   <img src="picts/ITS/barimodel_3.gif">
-   </pre>
-   <br clear=left>
-   <font size=+2 color=red>
-   <a href="mailto:Rocco.Caliandro@ba.infn.it"></a>.
-   </font>
-   <pre>
-   */
-   //End_Html
+				      Int_t idhit,Int_t module,
+				      AliITSpList *pList) {
+    //  Take into account the coupling between adiacent pixels.
+    //  The parameters probcol and probrow are the fractions of the
+    //  signal in one pixel shared in the two adjacent pixels along
+    //  the column and row direction, respectively.
+    //
+    //Begin_Html
+    /*
+      <img src="picts/ITS/barimodel_3.gif">
+      </pre>
+      <br clear=left>
+      <font size=+2 color=red>
+      <a href="mailto:Rocco.Caliandro@ba.infn.it"></a>.
+      </font>
+      <pre>
+    */
+    //End_Html
+    Int_t j1,j2,flag=0;
+    Double_t pulse1,pulse2;
+    Float_t couplR=0.0,couplC=0.0;
 
-
-   Int_t j1,j2,flag=0;
-   Double_t pulse1,pulse2;
-                              
-
-   j1 = row;
-   j2 = col;
-  
-   pulse1 = fMapA2->GetSignal(row,col);
-   pulse2 = pulse1;
-
-   for (Int_t isign=-1;isign<=1;isign+=2)
-   {
-
-// loop in row direction
-      
-      do
-      {
-         j1 += isign;
-         pulse1 *= fCouplRow;                  
-      
-         if ((j1 < 0) || (j1 > fNPixelsZ-1) || (pulse1 < fThresh))
-         { 
-	       pulse1 = fMapA2->GetSignal(row,col);
-	       j1 = row;
-	       flag = 1;
-         }
-          else{                
-		   UpdateMap(j1,col,pulse1);                   
-		   GetList(ntrack,idhit,pList,j1,col); 
-           flag = 0;
-	     }
-	 
-      } while(flag == 0);          
-      
-      
-// loop in column direction
-      
-      do
-      {
-         j2 += isign;
-         pulse2 *= fCouplCol;                  
-      
-         if ((j2 < 0) || (j2 > (fNPixelsX-1)) || (pulse2 < fThresh))
-         {                
-	       pulse2 = fMapA2->GetSignal(row,col);
-	       j2 = col;
-	       flag = 1;
-         }
-          else{                
-		   UpdateMap(row,j2,pulse2);                   
-		   GetList(ntrack,idhit,pList,row,j2); 
-           flag = 0;
-	     }
-	 
-      } while(flag == 0);          
-   
-   }
-
+    GetCouplings(couplR,couplC);
+    j1 = row;
+    j2 = col;
+    pulse1 = fMapA2->GetSignal(row,col);
+    pulse2 = pulse1;
+    for (Int_t isign=-1;isign<=1;isign+=2){// loop in row direction
+	do{
+	    j1 += isign;
+	    pulse1 *= couplR;
+	    if ((j1<0) || (j1>GetNPixelsZ()-1) || (pulse1<GetThreshold())){
+		pulse1 = fMapA2->GetSignal(row,col);
+		j1 = row;
+		flag = 1;
+	    }else{
+		UpdateMapSignal(j1,col,ntrack,idhit,module,pulse1,pList);
+		flag = 0;
+	    } // end if
+	} while(flag == 0);
+	// loop in column direction
+      do{
+	  j2 += isign;
+	  pulse2 *= couplC;
+	  if ((j2<0) || (j2>(GetNPixelsX()-1)) || (pulse2<GetThreshold())){
+	      pulse2 = fMapA2->GetSignal(row,col);
+	      j2 = col;
+	      flag = 1;
+	  }else{
+	      UpdateMapSignal(row,j2,ntrack,idhit,module,pulse2,pList);
+	      flag = 0;
+	  } // end if
+      } while(flag == 0);
+    } // for isign
 }
-//___________________________________________________________________________
-void AliITSsimulationSPD::CreateDigit(Int_t nhits, Int_t module, Float_t
-**pList) {                                   
-  //
-  // The pixels are fired if the energy deposited inside them is above
-  // the threshold parameter ethr. Fired pixed are interpreted as digits
-  // and stored in the file digitfilename.
-  //
+//______________________________________________________________________
+void AliITSsimulationSPD::CreateDigit(Int_t module,AliITSpList *pList) {
+    // The pixels are fired if the energy deposited inside them is above
+    // the threshold parameter ethr. Fired pixed are interpreted as digits
+    // and stored in the file digitfilename. One also needs to write out
+    // cases when there is only noise (nhits==0).
 
-   AliITS *aliITS  = (AliITS*)gAlice->GetModule("ITS");   
- 
-   
-   Int_t digits[3];
-   Int_t tracks[3];
-   Int_t hits[3];
-   Float_t charges[3]; 
-   Int_t gi,j1;
-   
-   if (nhits > 0) {
-    
-     for (Int_t r=1;r<=fNPixelsZ;r++) {
-        for (Int_t c=1;c<=fNPixelsX;c++) {
-   
-           // check if the deposited energy in a pixel is above the threshold 
-           Float_t signal = (Float_t) fMapA2->GetSignal(r,c);
-	   gi =r*fNPixelsX+c; // global index
-           if ( signal > fThresh) {
-	          digits[0] = r-1;  // digits starts from 0
-		  digits[1] = c-1;  // digits starts from 0
-		  //digits[2] = 1;  
-		  digits[2] =  (Int_t) signal;  // the signal is stored in electrons
-	          for(j1=0;j1<3;j1++){
-		    tracks[j1] = (Int_t)(*(pList[gi]+j1));
-		    hits[j1] = (Int_t)(*(pList[gi]+j1+6));
+    static AliITS *aliITS  = (AliITS*)gAlice->GetModule("ITS");
+
+    Int_t digits[3];
+    Int_t tracks[3];
+    Int_t hits[3];
+    Float_t charges[3]; 
+    Int_t j1;
+
+    for (Int_t r=1;r<=GetNPixelsZ();r++) {
+	for (Int_t c=1;c<=GetNPixelsX();c++) {
+	    // check if the deposited energy in a pixel is above the
+	    // threshold 
+	    Float_t signal = (Float_t) fMapA2->GetSignal(r,c);
+	    if ( signal > GetThreshold()) {
+		digits[0] = r-1;  // digits starts from 0
+		digits[1] = c-1;  // digits starts from 0
+		//digits[2] = 1;  
+		digits[2] =  (Int_t) signal;  // the signal is stored in
+                                              //  electrons
+		for(j1=0;j1<3;j1++){
+		    tracks[j1] = pList->GetTrack(r,c,j1);
+		    hits[j1]   = pList->GetHit(r,c,j1);
 		    charges[j1] = 0;
-		  }
-              /* debug
-              printf("digits %d %d %d\n",digits[0],digits[1],digits[2]); //debug
-              printf("tracks %d %d %d\n",tracks[0],tracks[1],tracks[2]); //debug
-              printf("hits %d %d %d\n",hits[0],hits[1],hits[2]); //debug
-              */
-              Float_t phys = 0;        
-	      aliITS->AddSimDigit(0,phys,digits,tracks,hits,charges);
-	   }//endif of threshold condition
-	   if(pList[gi]) delete [] pList[gi];
-        }
-     }// enddo on pixels
-    }
-    
+		} // end for j1
+		Float_t phys = 0;        
+		aliITS->AddSimDigit(0,phys,digits,tracks,hits,charges);
+	    } // end if of threshold condition
+	} // for c
+    }// end do on pixels
 }
-//_____________________________________________________________________________
+//______________________________________________________________________
+void AliITSsimulationSPD::SetFluctuations(AliITSpList *pList,Int_t module) {
+    //  Set the electronic noise and threshold non-uniformities to all the
+    //  pixels in a detector.
+    //  The parameter fSigma is the squared sum of the sigma due to noise
+    //  and the sigma of the threshold distribution among pixels.
+    //
+    //Begin_Html
+    /*
+      <img src="picts/ITS/barimodel_1.gif">
+      </pre>
+      <br clear=left>
+      <font size=+2 color=red>
+      <a href="mailto:Rocco.Caliandro@ba.infn.it"></a>.
+      </font>
+      <pre>
+    */
+    //End_Html
+    Float_t  thr=0.0,sigm=0.0;
+    Double_t signal,sigma;
+    Int_t iz,ix;
 
-void AliITSsimulationSPD::GetList(Int_t label,Int_t idhit, Float_t **pList,
-                                      Int_t row, Int_t col) {
-  // loop over nonzero digits
-
-  Int_t ix = col;
-  Int_t iz = row;
-  Int_t globalIndex;
-  Float_t signal;
-  Float_t highest,middle,lowest;
-
-          
-  signal=fMapA2->GetSignal(iz,ix);
-
-
-  globalIndex = iz*fNPixelsX+ix; // globalIndex starts from 1
-
-
-  if(!pList[globalIndex])
-  {
-     // 
-     // Create new list (9 elements - 3 signals and 3 tracks + 3 hits)
-     //
-
-     pList[globalIndex] = new Float_t [9];
-
-
-     // set list to -3 
-     *(pList[globalIndex]) = -3.;
-     *(pList[globalIndex]+1) = -3.;
-     *(pList[globalIndex]+2) = -3.;
-     *(pList[globalIndex]+3) =  0.;
-     *(pList[globalIndex]+4) =  0.;
-     *(pList[globalIndex]+5) =  0.;
-     *(pList[globalIndex]+6) = -1.;
-     *(pList[globalIndex]+7) = -1.;
-     *(pList[globalIndex]+8) = -1.;
-
-     *pList[globalIndex] = (float)label;
-     *(pList[globalIndex]+3) = signal;
-     *(pList[globalIndex]+6) = (float)idhit;
-  }
-  else{
-
-
-	  // check the signal magnitude
-      highest = *(pList[globalIndex]+3);
-      middle  = *(pList[globalIndex]+4);
-      lowest  = *(pList[globalIndex]+5);
-
-
-      signal -= (highest+middle+lowest);
-
-
-	  //
-	  //  compare the new signal with already existing list
-	  //
-      if(signal<lowest) return; // neglect this track
-
-      if (signal>highest)
-      {
-         *(pList[globalIndex]+8) = *(pList[globalIndex]+7);
-         *(pList[globalIndex]+7) = *(pList[globalIndex]+6);
-         *(pList[globalIndex]+6) = idhit;
-         *(pList[globalIndex]+5) = middle;
-         *(pList[globalIndex]+4) = highest;
-         *(pList[globalIndex]+3) = signal;
-         *(pList[globalIndex]+2) = *(pList[globalIndex]+1);
-         *(pList[globalIndex]+1) = *pList[globalIndex];
-         *(pList[globalIndex]) = label;
-	  }
-        else if (signal>middle)
-      {
-         *(pList[globalIndex]+8) = *(pList[globalIndex]+7);
-         *(pList[globalIndex]+7) = idhit;
-         *(pList[globalIndex]+5) = middle;
-         *(pList[globalIndex]+4) = signal;
-         *(pList[globalIndex]+2) = *(pList[globalIndex]+1);
-         *(pList[globalIndex]+1) = label;
-	  }
-        else
-      {
-         *(pList[globalIndex]+8) = idhit;
-         *(pList[globalIndex]+5) = signal;
-         *(pList[globalIndex]+2) = label;
-	  }
-  }    
-}
-//_________________________________________________________________________ 
-void AliITSsimulationSPD::SetFluctuations(Float_t **pList) {
-  //
-  //  Set the electronic noise and threshold non-uniformities to all the
-  //  pixels in a detector.
-  //  The parameter fSigma is the squared sum of the sigma due to noise
-  //  and the sigma of the threshold distribution among pixels.
-  //
-  //Begin_Html
-  /*
-  <img src="picts/ITS/barimodel_1.gif">
-  </pre>
-  <br clear=left>
-  <font size=+2 color=red>
-  <a href="mailto:Rocco.Caliandro@ba.infn.it"></a>.
-  </font>
-  <pre>
-  */
-  //End_Html
-  
-  
-  Double_t signal;
-
-  Int_t iz,ix;
-  for(iz=1;iz<=fNPixelsZ;iz++){
-    for(ix=1;ix<=fNPixelsX;ix++){
-      signal = fSigma*gRandom->Gaus(); 
-      fMapA2->SetHit(iz,ix,signal);
-
-      // insert in the label-signal-hit list the pixels fired only by noise
-      if ( signal > fThresh) {
-        Int_t globalIndex = iz*fNPixelsX+ix; 
-        pList[globalIndex] = new Float_t [9];
-        *(pList[globalIndex]) = -2.;
-        *(pList[globalIndex]+1) = -2.;
-        *(pList[globalIndex]+2) = -2.;
-        *(pList[globalIndex]+3) =  signal;
-        *(pList[globalIndex]+4) =  0.;
-        *(pList[globalIndex]+5) =  0.;
-        *(pList[globalIndex]+6) =  -1.;
-        *(pList[globalIndex]+7) =  -1.;
-        *(pList[globalIndex]+8) =  -1.;
-      }
+    GetThresholds(thr,sigm);
+    sigma = (Double_t) sigm;
+    for(iz=1;iz<=GetNPixelsZ();iz++){
+	for(ix=1;ix<=GetNPixelsX();ix++){
+	    signal = sigma*gRandom->Gaus(); 
+	    fMapA2->SetHit(iz,ix,signal);
+	    // insert in the label-signal-hit list the pixels fired
+	    // only by noise
+	    pList->AddNoise(iz,ix,module,signal);
+	} // end of loop on pixels
     } // end of loop on pixels
-  } // end of loop on pixels
-  
- }
-//____________________________________________
-
-void AliITSsimulationSPD::CreateHistograms() {
-  // CreateHistograms
-
-      Int_t i;
-      fHis=new TObjArray(fNPixelsZ);
-      for(i=0;i<fNPixelsZ;i++) {
-	   TString spdname("spd_");
-	   Char_t candnum[4];
-	   sprintf(candnum,"%d",i+1);
-	   spdname.Append(candnum);
-       //PH	   (*fHis)[i] = new TH1F(spdname.Data(),"SPD maps",
-       //PH                              fNPixelsX,0.,(Float_t) fNPixelsX);
-	   fHis->AddAt(new TH1F(spdname.Data(),"SPD maps",
-                              fNPixelsX,0.,(Float_t) fNPixelsX), i);
-      }
-
 }
+//______________________________________________________________________
+void AliITSsimulationSPD::SetMask() {
+    //  Apply a mask to the SPD module. 1% of the pixel channels are
+    //  masked. When the database will be ready, the masked pixels
+    //  should be read from it.
+    Double_t signal;
+    Int_t iz,ix,im;
+    Float_t totMask;
+    Float_t perc = ((AliITSresponseSPD*)fResponse)->GetFractionDead();
+    // in this way we get the same set of random numbers for all runs.
+    // This is a cluge for now.
+    static TRandom *rnd = new TRandom();
 
-//____________________________________________
-
-void AliITSsimulationSPD::ResetHistograms() {
-    //
-    // Reset histograms for this detector
-    //
+    totMask= perc*GetNPixelsZ()*GetNPixelsX();
+    for(im=1;im<totMask;im++){
+	do{
+	    ix=(Int_t)(rnd->Rndm()*(GetNPixelsX()-1.) + 1.);
+	} while(ix<=0 || ix>GetNPixelsX());
+	do{
+	    iz=(Int_t)(rnd->Rndm()*(GetNPixelsZ()-1.) + 1.);
+	} while(iz<=0 || iz>GetNPixelsZ());
+	signal = -1.;
+	fMapA2->SetHit(iz,ix,signal);
+    } // end loop on masked pixels
+}
+//______________________________________________________________________
+void AliITSsimulationSPD::CreateHistograms() {
+    // Create Histograms
     Int_t i;
-    for(i=0;i<fNPixelsZ;i++ ) {
-      //PH	if ((*fHis)[i])    ((TH1F*)(*fHis)[i])->Reset();
- 	if (fHis->At(i))    ((TH1F*)fHis->At(i))->Reset();
-    }
 
+    fHis=new TObjArray(GetNPixelsZ());
+    for(i=0;i<GetNPixelsZ();i++) {
+	TString spdname("spd_");
+	Char_t candnum[4];
+	sprintf(candnum,"%d",i+1);
+	spdname.Append(candnum);
+	(*fHis)[i] = new TH1F(spdname.Data(),"SPD maps",
+			      GetNPixelsX(),0.,(Float_t) GetNPixelsX());
+    } // end for i
+}
+//______________________________________________________________________
+void AliITSsimulationSPD::ResetHistograms() {
+    // Reset histograms for this detector
+    Int_t i;
+
+    for(i=0;i<GetNPixelsZ();i++ ) {
+	if ((*fHis)[i])    ((TH1F*)(*fHis)[i])->Reset();
+    } // end for i
+}
+//______________________________________________________________________
+void AliITSsimulationSPD::WriteSDigits(AliITSpList *pList){
+    // Fills the Summable digits Tree
+    Int_t i,ni,j,nj;
+    static AliITS *aliITS = (AliITS*)gAlice->GetModule("ITS");
+
+    pList->GetMaxMapIndex(ni,nj);
+    for(i=0;i<ni;i++)for(j=0;j<nj;j++){
+	if(pList->GetSignalOnly(i,j)>0.0){
+	    aliITS->AddSumDigit(*(pList->GetpListItem(i,j)));
+//	    cout << "pListSPD: " << *(pList->GetpListItem(i,j)) << endl;
+	} // end if
+    } // end for i,j
+    return;
+}
+//______________________________________________________________________
+void AliITSsimulationSPD::FillMapFrompList(AliITSpList *pList){
+    // Fills fMap2A from the pList of Summable digits
+    Int_t k,ix;
+
+    for(k=0;k<GetNPixelsZ();k++)for(ix=0;ix<GetNPixelsX();ix++) 
+        fMapA2->AddSignal(k,ix,pList->GetSignal(k,ix));
+    return;
 }

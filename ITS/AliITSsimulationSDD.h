@@ -15,12 +15,15 @@ class TVector;
 class TArrayI;
 class TArrayF;
 class AliITS;
+class AliITSpList;
 class AliITSMap;
 class AliITSMapA1;
 class AliITSMapA2;
 class AliITSetfSDD;
+class AliITSsegmentationSDD;
 class AliITSInStream;
 class AliITSresponse;
+class AliITSresponseSDD;
 
 class AliITSsimulationSDD : public AliITSsimulation {
 
@@ -33,6 +36,8 @@ class AliITSsimulationSDD : public AliITSsimulation {
     virtual ~AliITSsimulationSDD(); // Destructor
     // = opporator
     AliITSsimulationSDD& operator=(AliITSsimulationSDD &source);
+    // Initilize variables for this simulation
+    void Init(AliITSsegmentationSDD *seg,AliITSresponseSDD *resp);
 
     // get the address of the array mapping the signal or pointers to arrays
     virtual AliITSMap*  HitMap(Int_t i);
@@ -77,8 +82,19 @@ class AliITSsimulationSDD : public AliITSsimulation {
 
     // add baseline, noise, electronics and ADC saturation effects
     void ChargeToSignal();
+    // Summable Digitses a SDD module
+    void SDigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev);
+    // Writes summable digits
+    void WriteSDigits(AliITSpList *pList);
+    // Introduces electronics effects and does zero-suppresion if required
+    void FinishDigits(TObjArray *alist);
+    // Take the summable digits and create digits.
+    void SDigitsToDigits(AliITSpList *pList);
     // Digitses a SDD module
     void DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev);
+    // Spread charge in a SDD module
+    void HitsToAnalogDigits(AliITSmodule *mod,TObjArray *alist,
+			    TClonesArray *padr,AliITSpList *pList);
     // Sorts tracks for the 3 most highly contributed one to be added to digit.
     void SortTracks(Int_t *tracks,Float_t *charges,Int_t *hits,Int_t ntracks);
     // collects and returns the fired SDD cells (uses AliITSMapA2...).

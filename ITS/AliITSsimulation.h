@@ -36,7 +36,10 @@ class AliITSsimulation : public TObject {
     AliITSsimulation(const AliITSsimulation &source);
     // Assignment opporator. See detector specific implementation.
     virtual AliITSsimulation& operator=(const AliITSsimulation &source);
-    // digitize module using the "slow" detector simulator.
+    // digitize module using the "slow" detector simulator creating
+    // summable digits.
+    virtual void SDigitiseModule(AliITSmodule *mod,Int_t module,Int_t event){;}
+    // digitize module using the "slow" detector simulator creating digits.
     virtual void DigitiseModule(AliITSmodule *mod,Int_t module,Int_t event) {;}
     // digitizes module using the "fast" detector simulator.
     virtual void CreateFastRecPoints(AliITSmodule *mod,Int_t module,
@@ -44,8 +47,8 @@ class AliITSsimulation : public TObject {
 
 protected:
 
-  AliITSresponse      *fResponse;       // response
-  AliITSsegmentation  *fSegmentation;   // segmentation
+  AliITSresponse      *fResponse;       //! response
+  AliITSsegmentation  *fSegmentation;   //! segmentation
 
   ClassDef(AliITSsimulation,1)  // Simulation base class 
     
