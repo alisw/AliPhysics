@@ -305,7 +305,7 @@ Int_t AliReaderAOD::OpenFile(Int_t n)
     return 3;
   }
 
- Info("ReadNext","File Is Opened, Getting the TREE");
+ Info("ReadNext","File %s Is Opened, Getting the TREE",filename.Data());
  
  fTree = dynamic_cast<TTree*>(fFile->Get(fgkTreeName));
  if (fTree == 0x0)
@@ -414,7 +414,6 @@ Int_t AliReaderAOD::WriteAOD(AliReader* reader, const char* outfilename, const c
          {//else just pointer to event from input reader is passed
            recbuffer = event;
          } 
-	recbuffer->GetParticle(0)->Print();
       }
 
      if (reader->ReadsSim())
@@ -429,7 +428,6 @@ Int_t AliReaderAOD::WriteAOD(AliReader* reader, const char* outfilename, const c
          {//else just pointer to event from input reader is passed
            simbuffer = event;
          } 
-	simbuffer->GetParticle(0)->Print();
       }
      tree->Fill();
    }
