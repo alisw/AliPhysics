@@ -613,7 +613,7 @@ Int_t AliL3RawDataFileHandler::ReadRawPedestalsInput()
   return fNChannels;
 }
 
-AliL3DigitRowData * AliL3RawDataFileHandler::RawData2Memory(UInt_t &nrow,Int_t event)
+  AliL3DigitRowData * AliL3RawDataFileHandler::RawData2Memory(UInt_t &nrow,Int_t /*event*/)
 {                                           //event is not used
   AliL3DigitRowData *data = 0;
   nrow=0;
@@ -631,7 +631,7 @@ AliL3DigitRowData * AliL3RawDataFileHandler::RawData2Memory(UInt_t &nrow,Int_t e
   //Read the data
   //  Short_t charges[fNChannels][fNTimeBins];
   Short_t ** charges = new Short_t*[fNChannels];
-  for (Int_t iii=0; iii<fNChannels; iii++)
+  for (UInt_t iii=0; iii<fNChannels; iii++)
     charges[iii] = new Short_t[fNTimeBins];
   for(UInt_t channel = 0; channel < fNChannels; channel++){
     for(Int_t timebin = 0 ; timebin < fNTimeBins ; timebin++){
@@ -757,7 +757,7 @@ AliL3DigitRowData * AliL3RawDataFileHandler::RawData2Memory(UInt_t &nrow,Int_t e
     <<AliL3Log::kDec<<"Found Inconsistency "<<ndigitcount<<" != "<<ndigitcounttest2<<ENDLOG;
 
   delete [] ndigits;
-  for (Int_t iii=0; iii<fNChannels; iii++)
+  for (UInt_t iii=0; iii<fNChannels; iii++)
     delete [] charges[iii];
   delete [] charges;
 

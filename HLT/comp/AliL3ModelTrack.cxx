@@ -72,7 +72,7 @@ void AliL3ModelTrack::DeleteArrays()
   fArraysCreated=kFALSE;
 }
 
-void AliL3ModelTrack::Init(Int_t slice,Int_t patch)
+void AliL3ModelTrack::Init(Int_t /*slice*/,Int_t patch)
 {
   if(fArraysCreated)
     {               

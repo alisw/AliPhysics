@@ -35,7 +35,7 @@ AliL3Histogram1D::AliL3Histogram1D()
   
 }
   
-AliL3Histogram1D::AliL3Histogram1D(Char_t *name,Char_t *id,Int_t nxbin,Double_t xmin,Double_t xmax)
+AliL3Histogram1D::AliL3Histogram1D(Char_t *name,Char_t */*id*/,Int_t nxbin,Double_t xmin,Double_t xmax)
 
 {
   

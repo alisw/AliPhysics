@@ -61,7 +61,7 @@ AliL3HoughBaseTransformer::~AliL3HoughBaseTransformer()
 {
 }
 
-void AliL3HoughBaseTransformer::Init(Int_t slice,Int_t patch,Int_t n_eta_segments,Int_t n_seqs)
+void AliL3HoughBaseTransformer::Init(Int_t slice,Int_t patch,Int_t n_eta_segments,Int_t /*n_seqs*/)
 {
   fSlice = slice;
   fPatch = patch;

@@ -639,7 +639,7 @@ struct Pre2DPeak
   Int_t value;
 };
 
-void AliL3HoughMaxFinder::FindAdaptedRowPeaks(Int_t kappawindow,Int_t xsize,Int_t ysize)
+void AliL3HoughMaxFinder::FindAdaptedRowPeaks(Int_t kappawindow,Int_t /*xsize*/,Int_t ysize)
 {
   
   AliL3Histogram *hist = fCurrentHisto;

@@ -137,7 +137,7 @@ void AliL3HoughTransformerLUT::DeleteHistograms()
   }
 }
 
-void AliL3HoughTransformerLUT::Init(Int_t slice,Int_t patch,Int_t n_eta_segments,Int_t n_seqs) 
+void AliL3HoughTransformerLUT::Init(Int_t slice,Int_t patch,Int_t n_eta_segments,Int_t /*n_seqs*/) 
 {
   AliL3HoughBaseTransformer::Init(slice,patch,n_eta_segments);
 

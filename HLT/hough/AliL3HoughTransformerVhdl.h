@@ -33,7 +33,7 @@ class AliL3HoughTransformerVhdl : public AliL3HoughTransformerLUT
 			Int_t nybin,Float_t ymin,Float_t ymax);
 
   void TransformCircle();
-  void TransformCircleC(Int_t *rowrange,Int_t every) {return;}
+  void TransformCircleC(Int_t */*rowrange*/,Int_t /*every*/) {return;}
   
   void Init(Int_t slice=0,Int_t patch=0,Int_t n_eta_segments=100,Int_t n_its=-1);
   void Print();

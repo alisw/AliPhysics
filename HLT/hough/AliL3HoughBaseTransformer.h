@@ -47,7 +47,7 @@ class AliL3HoughBaseTransformer {
   void SetInputData(UInt_t ndigits,AliL3DigitRowData *ptr) {fDigitRowData = ptr;}
   
   //this is for adaptave histograms
-  virtual void CreateHistograms(Float_t ptmin,Float_t ptmax,Float_t pres,Int_t nybin,Float_t psi)
+  virtual void CreateHistograms(Float_t /*ptmin*/,Float_t /*ptmax*/,Float_t /*pres*/,Int_t /*nybin*/,Float_t /*psi*/)
     {STDCERR<<"Adaptive histograms are not supported  for this Transformer!"<<STDENDL;}
 
   virtual void CreateHistograms(Int_t nxbin,Float_t ptmin,Int_t nybin,Float_t phimin,Float_t phimax) = 0;
@@ -56,13 +56,13 @@ class AliL3HoughBaseTransformer {
   virtual void Reset() = 0;
   virtual void TransformCircle()
     {STDCERR<<"TransformCircle is not defined for this transformer!"<<STDENDL;}
-  virtual void TransformCircle(Int_t *row_range,Int_t every)
+  virtual void TransformCircle(Int_t */*row_range*/,Int_t /*every*/)
     {STDCERR<<"TransformCircle is not defined for this transformer!"<<STDENDL;}
-  virtual void TransformCircleC(Int_t *row_range,Int_t every)
+  virtual void TransformCircleC(Int_t */*row_range*/,Int_t /*every*/)
     {STDCERR<<"TransformCircleC is not defined for this transformer!"<<STDENDL;}
-  virtual void TransformLine(Int_t *rowrange=0,Float_t *phirange=0)
+  virtual void TransformLine(Int_t */*rowrange*/=0,Float_t */*phirange*/=0)
     {STDCERR<<"TransformLine is not defined for this Transformer!"<<STDENDL;}
-  virtual void TransformLineC(Int_t *rowrange,Float_t *phirange)
+  virtual void TransformLineC(Int_t */*rowrange*/,Float_t */*phirange*/)
       {STDCERR<<"TransformLineC is not defined for this Transformer!"<<STDENDL;}
 
   //Getters
@@ -78,12 +78,12 @@ class AliL3HoughBaseTransformer {
   AliL3DigitRowData *GetDataPointer() {return fDigitRowData;}
  
   virtual Int_t GetEtaIndex(Double_t eta) = 0;
-  virtual void GetEtaIndexes(Double_t eta,Int_t *indexes)
+  virtual void GetEtaIndexes(Double_t /*eta*/,Int_t */*indexes*/)
     {STDCERR<<"GetEtaIndexes not implemented for this Transformer class"<<STDENDL;}
   virtual AliL3Histogram *GetHistogram(Int_t eta_index) = 0;
   virtual Double_t GetEta(Int_t eta_index,Int_t slice) = 0;
 
-  virtual Int_t GetTrackID(Int_t eta_index,Double_t kappa,Double_t psi){
+  virtual Int_t GetTrackID(Int_t /*eta_index*/,Double_t /*kappa*/,Double_t /*psi*/){
     STDCERR<<"GetTrackID not implemented for this Transformer class"<<STDENDL; 
     return -1;
   }

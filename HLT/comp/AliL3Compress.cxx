@@ -557,7 +557,7 @@ void AliL3Compress::CompressRemaining(AliL3SpacePointData *clusters[36][6],UInt_
   delete [] npoints;
 }
 
-void AliL3Compress::ExpandRemaining(TempCluster **clusters,Int_t *ncl,const Int_t maxpoints)
+void AliL3Compress::ExpandRemaining(TempCluster **clusters,Int_t *ncl,const Int_t /*maxpoints*/)
 {
   //Expand the remaining clusters stored using function CompressRemaining
   

@@ -77,7 +77,7 @@ void AliL3HoughTransformerVhdl::CreateHistograms(Int_t nxbin,Float_t xmin,Float_
   //cout << fEpsilon << " - " << (xmax-xmin)/nxbin << endl;
 }
 
-void AliL3HoughTransformerVhdl::Init(Int_t slice,Int_t patch,Int_t n_eta_segments,Int_t n_its)
+void AliL3HoughTransformerVhdl::Init(Int_t slice,Int_t patch,Int_t n_eta_segments,Int_t /*n_its*/)
 {
   AliL3HoughTransformerLUT::Init(slice,patch,n_eta_segments);
 }

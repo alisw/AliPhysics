@@ -191,7 +191,7 @@ void AliL3HoughTrack::SetTrackParameters(Double_t kappa,Double_t eangle,Int_t we
   fIsHelix = true;
 }
 
-void AliL3HoughTrack::SetLineParameters(Double_t psi,Double_t D,Int_t weight,Int_t *rowrange,Int_t ref_row)
+void AliL3HoughTrack::SetLineParameters(Double_t psi,Double_t D,Int_t weight,Int_t *rowrange,Int_t /*ref_row*/)
 {
   //Initialize a track piece, not yet a track
   //Used in case of straight line transformation

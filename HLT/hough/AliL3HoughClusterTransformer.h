@@ -36,7 +36,7 @@ class AliL3HoughClusterTransformer : public AliL3HoughBaseTransformer {
   void Reset();
   void TransformCircle();
   void TransformCircleC(Int_t *row_range,Int_t every);
-  void TransformLine(Int_t *rowrange=0,Float_t *phirange=0){};
+  void TransformLine(Int_t */*rowrange*/=0,Float_t */*phirange*/=0){};
   
   Int_t GetEtaIndex(Double_t eta);
   AliL3Histogram *GetHistogram(Int_t eta_index);

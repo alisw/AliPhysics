@@ -263,7 +263,7 @@ void AliL3HoughClusterTransformer::TransformCircle()
     }
 }
 
-void AliL3HoughClusterTransformer::TransformCircleC(Int_t *row_range,Int_t every)
+void AliL3HoughClusterTransformer::TransformCircleC(Int_t */*row_range*/,Int_t /*every*/)
 {
   //Circle transform, using combinations of every 2 points lying
   //on different padrows and within the same etaslice.

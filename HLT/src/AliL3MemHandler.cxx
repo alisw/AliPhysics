@@ -125,7 +125,7 @@ void AliL3MemHandler::ResetROI()
     }
 }
 
-void AliL3MemHandler::SetROI(Float_t *eta,Int_t *slice)
+void AliL3MemHandler::SetROI(Float_t *eta,Int_t */*slice*/)
 {
   // Init the Look-up table for the Region of Interest mode.
   //   Here you can specify a certain etaregion, - all data
@@ -519,7 +519,7 @@ Bool_t AliL3MemHandler::Binary2Memory(UInt_t & nrow,AliL3DigitRowData *data)
 }
 
 void AliL3MemHandler::AddData(AliL3DigitData *data,UInt_t & ndata,
-			      UInt_t row,UShort_t pad,UShort_t time,UShort_t charge)
+			      UInt_t /*row*/,UShort_t pad,UShort_t time,UShort_t charge)
 {
   data[ndata].fPad = pad;
   data[ndata].fTime = time;

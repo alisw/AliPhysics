@@ -73,7 +73,7 @@ AliL3HoughTransformerGlobal::~AliL3HoughTransformerGlobal()
   
 }
 
-void AliL3HoughTransformerGlobal::CreateHistograms(Float_t ptmin,Int_t nxbin,Int_t nybin)
+void AliL3HoughTransformerGlobal::CreateHistograms(Float_t /*ptmin*/,Int_t nxbin,Int_t nybin)
 {
   if(fPsi==0)
     {
@@ -278,7 +278,7 @@ void AliL3HoughTransformerGlobal::Rotate(Float_t *xyz,Int_t rel_slice)
 }
 
 
-void AliL3HoughTransformerGlobal::DefineRegion(Float_t minpt,Float_t linephi,Int_t seedpadrow)
+void AliL3HoughTransformerGlobal::DefineRegion(Float_t minpt,Float_t /*linephi*/,Int_t seedpadrow)
 {
   //Setup the region to be included in the transform
   //This function should be called only once, since it is the same for all slices.

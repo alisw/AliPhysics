@@ -49,7 +49,7 @@ AliL3HoughTransformerRow::AliL3HoughTransformerRow()
   fLUTbackwardZ2=0;
 }
 
-AliL3HoughTransformerRow::AliL3HoughTransformerRow(Int_t slice,Int_t patch,Int_t n_eta_segments,Bool_t DoMC,Float_t zvertex) : AliL3HoughBaseTransformer(slice,patch,n_eta_segments,zvertex)
+AliL3HoughTransformerRow::AliL3HoughTransformerRow(Int_t slice,Int_t patch,Int_t n_eta_segments,Bool_t /*DoMC*/,Float_t zvertex) : AliL3HoughBaseTransformer(slice,patch,n_eta_segments,zvertex)
 {
   //Normal constructor
   fParamSpace = 0;
@@ -303,7 +303,7 @@ inline AliL3Histogram *AliL3HoughTransformerRow::GetHistogram(Int_t eta_index)
   return fParamSpace[eta_index];
 }
 
-Double_t AliL3HoughTransformerRow::GetEta(Int_t eta_index,Int_t slice)
+Double_t AliL3HoughTransformerRow::GetEta(Int_t eta_index,Int_t /*slice*/)
 {
   Double_t eta_slice = (GetEtaMax()-GetEtaMin())/GetNEtaSegments();
   Double_t eta=0;
@@ -385,7 +385,7 @@ void AliL3HoughTransformerRow::TransformCircle()
 
       Float_t x = AliL3Transform::Row2X((Int_t)i);
       Float_t x2 = x*x;
-      Float_t y,r2;
+      Float_t y=0,r2=0;
 
       Int_t lrow = (i-AliL3Transform::GetFirstRow(ipatch))*npads_in_patch;
 

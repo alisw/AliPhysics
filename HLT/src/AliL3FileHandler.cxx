@@ -286,7 +286,7 @@ Bool_t AliL3FileHandler::SetAliInput(AliRunLoader *runLoader)
 #endif
 
 #ifdef use_newio
-Bool_t AliL3FileHandler::SetAliInput(TFile *file)
+Bool_t AliL3FileHandler::SetAliInput(TFile */*file*/)
 {
   LOG(AliL3Log::kFatal,"AliL3FileHandler::SetAliInput","File Open")
     <<"This function is not supported for NEWIO, check ALIHLT_USENEWIO settings in Makefile.conf"<<ENDLOG;

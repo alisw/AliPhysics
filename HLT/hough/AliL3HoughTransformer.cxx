@@ -39,7 +39,7 @@ AliL3HoughTransformer::AliL3HoughTransformer()
 #endif
 }
 
-AliL3HoughTransformer::AliL3HoughTransformer(Int_t slice,Int_t patch,Int_t n_eta_segments,Bool_t DoEtaOverlap,Bool_t DoMC) : AliL3HoughBaseTransformer(slice,patch,n_eta_segments)
+AliL3HoughTransformer::AliL3HoughTransformer(Int_t slice,Int_t patch,Int_t n_eta_segments,Bool_t DoEtaOverlap,Bool_t /*DoMC*/) : AliL3HoughBaseTransformer(slice,patch,n_eta_segments)
 {
   //Normal constructor
   fParamSpace = 0;
@@ -213,7 +213,7 @@ inline AliL3Histogram *AliL3HoughTransformer::GetHistogram(Int_t eta_index)
   return fParamSpace[eta_index];
 }
 
-Double_t AliL3HoughTransformer::GetEta(Int_t eta_index,Int_t slice)
+Double_t AliL3HoughTransformer::GetEta(Int_t eta_index,Int_t /*slice*/)
 {
   Double_t eta_slice = (GetEtaMax()-GetEtaMin())/GetNEtaSegments();
   Double_t eta=0;

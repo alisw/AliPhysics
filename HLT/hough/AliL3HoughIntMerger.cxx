@@ -70,7 +70,7 @@ Bool_t AliL3HoughIntMerger::IsTrack(AliL3Track *innertrack,AliL3Track *outertrac
   return kTRUE;//Tracks could be merged
 }
 
-AliL3Track *AliL3HoughIntMerger::MultiMerge(AliL3TrackArray *mergedtrack,AliL3Track **tracks, Int_t ntrack)
+AliL3Track *AliL3HoughIntMerger::MultiMerge(AliL3TrackArray *mergedtrack,AliL3Track **tracks, Int_t /*ntrack*/)
 {
   //Called by the track merger
 

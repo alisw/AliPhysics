@@ -22,7 +22,7 @@ class AliL3OfflineDataCompressor : public AliL3DataCompressor {
   virtual ~AliL3OfflineDataCompressor();
   
   void LoadData(Int_t event,Bool_t sp=kTRUE);
-  void FillData(Int_t minhits,Bool_t expand) {return;};
+  void FillData(Int_t /*minhits*/,Bool_t /*expand*/) {return;};
   void WriteRemaining(Bool_t select);
 
   ClassDef(AliL3OfflineDataCompressor,1) 

@@ -50,7 +50,7 @@ AliL3Histogram::AliL3Histogram()
 #endif
 }
 
-AliL3Histogram::AliL3Histogram(Char_t *name,Char_t *id,
+AliL3Histogram::AliL3Histogram(Char_t *name,Char_t */*id*/,
 			       Int_t nxbin,Double_t xmin,Double_t xmax,
 			       Int_t nybin,Double_t ymin,Double_t ymax) 
 {
@@ -248,7 +248,7 @@ void AliL3Histogram::AddBinContent(Int_t bin,Int_t weight)
   fContent[bin] += weight;
 }
 
-void AliL3Histogram::Add(AliL3Histogram *h1,Double_t weight)
+void AliL3Histogram::Add(AliL3Histogram *h1,Double_t /*weight*/)
 {
   //Adding two histograms. Should be identical.
   

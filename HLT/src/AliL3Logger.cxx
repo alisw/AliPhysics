@@ -84,12 +84,12 @@ Int_t AliL3Logger::kFatal = AliL3Log::kFatal;
 
 AliL3Logger::AliL3Logger(){;}
 AliL3Logger::~AliL3Logger(){;}
-void AliL3Logger::Set(Int_t l){;}
-void AliL3Logger::UnSet(Int_t l){;}
+void AliL3Logger::Set(Int_t /*l*/){;}
+void AliL3Logger::UnSet(Int_t /*l*/){;}
 void AliL3Logger::UseDevNull(){;}
 void AliL3Logger::UseStdout(){;}
 void AliL3Logger::UseStderr(){;}
-void AliL3Logger::UseStream(Char_t *name){;}
+void AliL3Logger::UseStream(Char_t */*name*/){;}
 void AliL3Logger::NotUseDevNull(){;}
 void AliL3Logger::NotUseStdout(){;}
 void AliL3Logger::NotUseStderr(){;}

@@ -984,7 +984,7 @@ void AliL3Evaluate::GetCFeff(Char_t *path,Char_t *outfile,Int_t nevent,Bool_t sp
 #endif
 }
 
-Float_t AliL3Evaluate::GetCrossingAngle(TParticle *part,Int_t slice,Int_t padrow,Float_t *xyz)
+Float_t AliL3Evaluate::GetCrossingAngle(TParticle *part,Int_t slice,Int_t /*padrow*/,Float_t *xyz)
 {
   //Calculate the padrow crossing angle of the particle
   

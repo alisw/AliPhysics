@@ -319,7 +319,7 @@ void AliL3HoughEval::DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist)
 }
 
 #ifdef use_root
-void AliL3HoughEval::CompareMC(AliL3TrackArray *tracks,Char_t *trackfile,Int_t threshold)
+void AliL3HoughEval::CompareMC(AliL3TrackArray */*tracks*/,Char_t */*trackfile*/,Int_t /*threshold*/)
 {
   /*  
   struct GoodTrack goodtracks[15000];

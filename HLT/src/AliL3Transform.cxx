@@ -1449,7 +1449,7 @@ Double_t AliL3Transform::Row2X(Int_t slicerow){
   return fX[slicerow];
 }
 
-Double_t AliL3Transform::GetZFast(Int_t slice, Int_t time, Float_t vertex)
+Double_t AliL3Transform::GetZFast(Int_t slice, Int_t time, Float_t /*vertex*/)
 {
   Double_t ret=0;
   if(slice < 18)
