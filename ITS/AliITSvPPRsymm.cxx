@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2001/05/09 01:02:22  nilsen
+Finished fixing SetDefaults for the segmentation of SPD, SDD, and SSD.
+
 Revision 1.19  2001/05/03 08:40:15  barbera
 Volume ITSD slightly modified to be consistent with v5. Some improvement in the printouts. The last commit did not complete successfully.
 
@@ -4877,7 +4880,7 @@ void AliITSvPPRsymm::SetDefaults(){
     seg0->SetDetSize(s0->GetDx()*2.*kconv, // base this on AliITSgeomSPD
 		     s0->GetDz()*2.*kconv, // for now.
 		     s0->GetDy()*2.*kconv); // x,z,y full width in microns.
-    seg0->SetNPads(160,256);// Number of Bins in x and z
+    seg0->SetNPads(256,160);// Number of Bins in x and z
     for(i=000;i<256;i++) bx[i] =  50.0; // in x all are 50 microns.
     for(i=000;i<160;i++) bz[i] = 425.0; // most are 425 microns except below
     for(i=160;i<280;i++) bz[i] =   0.0; // Outside of detector.
@@ -4885,6 +4888,7 @@ void AliITSvPPRsymm::SetDefaults(){
     bz[ 63] = bz[ 64] = 625.0; // first chip boundry
     bz[ 95] = bz[ 96] = 625.0; // first chip boundry
     bz[127] = bz[128] = 625.0; // first chip boundry
+    bz[160] = 425.0; // Set so that there is no zero pixel size for fNz.
     seg0->SetBinSize(bx,bz); // Based on AliITSgeomSPD for now.
     SetSegmentationModel(0,seg0);
     // set digit and raw cluster classes to be used
@@ -4898,7 +4902,8 @@ void AliITSvPPRsymm::SetDefaults(){
     // SDD
     iDetType=DetType(1);
     s1 = (AliITSgeomSDD*) fITSgeom->GetShape(kSDD);// Get shape info. Do it this way for now.
-    AliITSresponse *resp1=new AliITSresponseSDD();
+    AliITSresponseSDD *resp1=new AliITSresponseSDD();
+    resp1->SetDriftSpeed(5.665); // set drift speed to 5.665 microns/ns.
     SetResponseModel(1,resp1);
     AliITSsegmentationSDD *seg1=new AliITSsegmentationSDD(fITSgeom,resp1);
     seg1->SetDetSize(s1->GetDx()*kconv, // base this on AliITSgeomSDD
