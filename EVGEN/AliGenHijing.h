@@ -133,7 +133,7 @@ class AliGenHijing : public AliGenMC
     // check if stable
     Bool_t Stable(TParticle*  particle);
     
-    ClassDef(AliGenHijing,2) // AliGenerator interface to Hijing
+    ClassDef(AliGenHijing,3) // AliGenerator interface to Hijing
 };
 #endif
 
