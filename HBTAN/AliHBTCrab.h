@@ -1,10 +1,18 @@
 /* $Id$ */
 
+//__________________________________________________________________________
+////////////////////////////////////////////////////////////////////////////
+//
+// class AliHBTCrab
+//
 // This class introduces the weight's calculation
 // according to the Lednicky's algorithm.
 // The detailed description of the algorithm can be found
 // in comments to fortran code:
 // fsiw.f, fsiini.f
+//
+// Piotr.Skowronski@cern.ch
+////////////////////////////////////////////////////////////////////////////
 
 #ifndef ALIHBTCrab_H
 #define ALIHBTCrab_H
@@ -15,10 +23,10 @@
  #include <complex.h>
 #else
  class Complex;
- typedef Complex double_complex;
+ typedef Complex doublecomplex;
 #endif
  
-#include <math.h>
+//#include <math.h>
  
 class AliHBTPair;
 
@@ -36,7 +44,7 @@ class AliHBTCrab: public AliHBTWeights
    private:
      AliHBTCrab();
      AliHBTCrab(const AliHBTCrab &/*source*/);
-     AliHBTCrab & operator=(const AliHBTCrab& /*source*/);
+     const AliHBTCrab & operator=(const AliHBTCrab& /*source*/);
 
      void GetComQuantities(const AliHBTPair* pair, double *qred,double *r,double *qdotr,double *mom, int *test);
      double  CorrCalc(double trueqred,double trueqdotr,double truer);
@@ -63,7 +71,7 @@ class AliHBTCrab: public AliHBTWeights
 #ifdef __DECCXX
      static const complex fgkCI;//complex (1,0)
 #else
-     static const double_complex fgkCI;//complex (1,0)
+     static const doublecomplex fgkCI;//complex (1,0)
 #endif
      static const Double_t fgkROOT2;//! some const
      static const Double_t fgkWcons; //constant for fm->GeV conversion 1/0.1973
@@ -71,10 +79,10 @@ class AliHBTCrab: public AliHBTWeights
 #ifdef __DECCXX
      complex CGamma(complex c);
 #else
-     double_complex CGamma(double_complex c);
+     doublecomplex CGamma(doublecomplex c);
 #endif
      
-     static AliHBTCrab* fgCrab;
+     static AliHBTCrab* fgCrab; //pointer to instance of this class - singleton
      ClassDef(AliHBTCrab,1)
  };
  

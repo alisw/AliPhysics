@@ -12,12 +12,9 @@
 #include "AliHBTPair.h"
 
 #include <TMath.h>
-#include <TPDGCode.h>
 
 #include "volya_complex.h"
 
-//#include <complex>
-//using namespace std;
 AliHBTCrab* AliHBTCrab::fgCrab = 0x0;
 
 const Double_t AliHBTCrab::fgkWcons = 1./0.1973;
@@ -25,7 +22,7 @@ const Double_t AliHBTCrab::fgkROOT2=1.41421356237309504880;
 #ifdef __DECCXX
 const complex AliHBTCrab::fgkCI(0.0,1.0);
 #else
-const double_complex AliHBTCrab::fgkCI(0.0,1.0);
+const doublecomplex AliHBTCrab::fgkCI(0.0,1.0);
 #endif
 
 /************************************************************/
@@ -65,8 +62,25 @@ fMaxMomentum(100.0)
   //ctor
 }
 //===================================================================
+
+AliHBTCrab::AliHBTCrab(const AliHBTCrab &/*source*/):
+AliHBTWeights(),
+fBreitWigner(kFALSE),
+fReducedMom(kTRUE),
+fMaxMomentum(100.0)
+{
+  //ctor
+}
+//===================================================================
+const AliHBTCrab & AliHBTCrab::operator=(const AliHBTCrab& /*source*/)
+{
+//cpy constructor
+ return *AliHBTCrab::Instance();
+}
+
 void AliHBTCrab::Init(Int_t pid1,Int_t pid2)
 {
+//Initialization method
   fMass1 = TDatabasePDG::Instance()->GetParticle(pid1)->Mass();
   fMass2 = TDatabasePDG::Instance()->GetParticle(pid2)->Mass();
   fInteractionWsym = 1.0;
@@ -78,6 +92,7 @@ void AliHBTCrab::Init(Int_t pid1,Int_t pid2)
   fPid1 = pid1;   
   fPid2 = pid2;
 }
+//===================================================================
 
 Bool_t AliHBTCrab::SetConfig(const AliHBTPair* pair)
 {
@@ -114,7 +129,7 @@ Double_t AliHBTCrab::GetWeight(const AliHBTPair* partpair)
 
 void AliHBTCrab::GetComQuantities(const AliHBTPair* pair, 
        double *qred,double *r,double *qdotr,double *mom, int *test)
- {
+{
 //************************************
 //  ALICE //
 
@@ -263,13 +278,13 @@ double  AliHBTCrab::CorrCalc(double trueqred,double trueqdotr,double truer)
 //  double xx,xxprime,xxjj,p1,zk;
 //  int jj,kk,ipart,ipartcount,ispin;
   int kk;
-  double wsym_leftover,wanti_leftover,wnosym_leftover;
+  double wsymleftover,wantileftover,wnosymleftover;
   double qred,qdotr,r;
 //  const double rmass=fMass1*fMass2/(fMass1+fMass2);
 #ifdef __DECCXX
   complex cphi1,cphi2,cphis,cphia;
 #else
-  double_complex cphi1,cphi2,cphis,cphia;
+  doublecomplex cphi1,cphi2,cphis,cphia;
 #endif
 
   arg=trueqdotr/197.323-2.0*TMath::Pi()*TMath::Floor(trueqdotr/(197.323*2.0*TMath::Pi()));
@@ -306,13 +321,13 @@ double  AliHBTCrab::CorrCalc(double trueqred,double trueqdotr,double truer)
   /* If there are corrections for strong interactions, add the
      change for each partial wave.  If npartial = 0 then there
      are no strong int. corrections. */
-  wsym_leftover=fInteractionWsym;
-  wanti_leftover=fInteractionWanti;
-  wnosym_leftover=fInteractionWnosym;
+  wsymleftover=fInteractionWsym;
+  wantileftover=fInteractionWanti;
+  wnosymleftover=fInteractionWnosym;
 
-  corr0=corr0+real(wsym_leftover*cphis*conj(cphis)
-		   +wanti_leftover*cphia*conj(cphia)
-		   +wnosym_leftover*cphi1*conj(cphi1));
+  corr0=corr0+real(wsymleftover*cphis*conj(cphis)
+		   +wantileftover*cphia*conj(cphia)
+		   +wnosymleftover*cphi1*conj(cphi1));
 OUTSIDE_INTERACTION_RANGE:
 
 #ifdef BREIT_WIGNER
@@ -324,17 +339,21 @@ OUTSIDE_INTERACTION_RANGE:
 
 #ifdef __DECCXX
 complex AliHBTCrab::CGamma(complex c){
-#else
-double_complex AliHBTCrab::CGamma(double_complex c){
-#endif
-  /* This calc.s gamma functions which are in the form gamma(n+i*y)
-     where n is an int and y is real. */
+/* This calc.s gamma functions which are in the form gamma(n+i*y)
+   where n is an int and y is real. */
 // This code is written by Scott Pratt
 // taken from http://www.nscl.msu.edu/~pratt/freecodes/crab/home.html
+#else
+doublecomplex AliHBTCrab::CGamma(doublecomplex c){
+/* This calc.s gamma functions which are in the form gamma(n+i*y)
+   where n is an int and y is real. */
+// This code is written by Scott Pratt
+// taken from http://www.nscl.msu.edu/~pratt/freecodes/crab/home.html
+#endif
 #ifdef __DECCXX
   complex cg,cphase;
 #else
-  double_complex cg,cphase;
+  doublecomplex cg,cphase;
 #endif
   int mm,j;
   double x,y,phase,delp,cgmag;
