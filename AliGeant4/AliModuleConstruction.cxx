@@ -139,7 +139,7 @@ void AliModuleConstruction::Configure()
   // get AliModule created in Config.C macro
   fAliModule = gAlice->GetModule(GetDetName());
   if (!fAliModule) {
-    G4String text = "AliSingleModuleConstruction::Configure:\n";
+    G4String text = "AliModuleConstruction::Configure:\n";
     text = text + "    AliModule " + GetDetName();
     text = text + " has not been found in gAlice.";
     AliGlobals::Exception(text);
