@@ -195,7 +195,8 @@ void AliITSv11::CreateGeometry(){
     itsv->DefineSection(0,-100.0*kcm,0.01*kcm,50.0*kcm);
     itsv->DefineSection(1,+100.0*kcm,0.01*kcm,50.0*kcm);
     TGeoVolume *ITSV = new TGeoVolume("ITSV",itsv,0);
-    mgr->AddVolume(ITSV);
+    //mgr->AddVolume(ITSV);
+    ITSV->SetVisibility(kFALSE);
     ALIC->AddNode(ITSV,1,0);
     //
     SSDCone(ITSV);
@@ -442,7 +443,7 @@ void AliITSv11::SSDCone(TGeoVolume *Moth){
     rx[5] = RmaxFromZpCone(rx,z,Tc,z[5]);
     rn[6] = RholeMax;
     rx[6] = rn[6];
-    z[6]  = ZFromRmaxpCone(z,rx,Tc,rx[6]);
+    z[6]  = ZFromRmaxpCone(rx,z,Tc,rx[6]);
     TGeoPcon *A = new TGeoPcon("ITS SSD Suport cone Carbon Fiber "
 				   "Surface outer left",phi,dphi,7);
     for(i=0;i<A->GetNz();i++){
@@ -503,10 +504,10 @@ void AliITSv11::SSDCone(TGeoVolume *Moth){
     // In volume SCB, th Inserto Stesalite 4411w material volume, there
     // are a number of Stainless steel screw and pin studs which will be
     // filled with screws/studs.
-    rn[0] = 0.0,rx[0] = 6.0,z[0] = 0.5*10.0; // mm
+    rn[0] = 0.0*kmm,rx[0] = 6.0*kmm,z[0] = 0.5*10.0*kmm; // mm
     TGeoTube *D = new TGeoTube("ITS Screw+stud used to mount things to "
 				   "the SSD support cone",rn[0],rx[0],z[0]);
-    rn[0] = 0.0;rx[0] = 6.0;z[0] = 0.5*12.0; // mm
+    rn[0] = 0.0*kmm;rx[0] = 6.0*kmm;z[0] = 0.5*12.0*kmm; // mm
     TGeoTube *E = new TGeoTube("ITS pin used to mount things to the "
 				   "SSD support cone",rn[0],rx[0],z[0]);
     //
@@ -820,19 +821,19 @@ void AliITSv11::SSDCone(TGeoVolume *Moth){
     } // end for i
     // air infront of bolt (stasolit Volume K) -- Tube
     z[0]  = 0.5*(Thickness-ThScrewHeadHole);
-    rn[0] = 0.0;
+    rn[0] = 0.0*kmm;
     rx[0] = 0.5*DscrewHead;
     TGeoTube *R = new TGeoTube("ITS Air in front of bolt (in stasolit)",
 				   rn[0],rx[0],z[0]);
     // air infront of bolt (carbon fiber volume I) -- Tube
     z[0]  = 0.5*Thickness;
-    rn[0] = 0.0;
+    rn[0] = 0.0*kmm;
     rx[0] = R->GetRmax();
     TGeoTube *S = new TGeoTube("ITS Air in front of Stainless Steal "
 				   "Screw end, N6",rn[0],rx[0],z[0]);
     // SDD support plate, SSD side.
     //Poly-cone Volume T.
-    dphi  = 180.0*WsddSupportPlate/(RsddSupportPlate*TMath::Pi());
+    dphi  = TMath::RadToDeg()*TMath::ATan2(0.5*WsddSupportPlate,RsddSupportPlate);
     phi   = Phi0SDDsupports-0.5*dphi;
     z[0]  = K->GetZ(2);
     rn[0] = I->GetRmin(4);
@@ -891,55 +892,76 @@ void AliITSv11::SSDCone(TGeoVolume *Moth){
     TGeoVolume *Av,*Bv,*Cv,*Dv,*Ev,*Fv,*Gv,*Hv,*Iv,*Jv,*Kv,*Lv,*Mv,*Nv,
 	       *Ov,*Pv,*Qv,*Rv,*Sv,*Tv,*Uv;
     Av = new TGeoVolume("ITSssdConeA",A,SSDcf);
-    mgr->AddVolume(Av);
+    //mgr->AddVolume(Av);
+    Av->SetVisibility(kTRUE);
     Av->SetLineColor(1);
     Av->SetLineWidth(1);
     Bv = new TGeoVolume("ITSssdConeB",B,SSDfs);
-    mgr->AddVolume(Bv);
+    //mgr->AddVolume(Bv);
+    Bv->SetVisibility(kTRUE);
     Cv = new TGeoVolume("ITSssdConeC",C,SSDfo);
-    mgr->AddVolume(Cv);
+    Cv->SetVisibility(kTRUE);
+    //mgr->AddVolume(Cv);
     Dv = new TGeoVolume("ITSssdConeD",D,SSDss);
-    mgr->AddVolume(Dv);
+    Dv->SetVisibility(kTRUE);
+    //mgr->AddVolume(Dv);
     Ev = new TGeoVolume("ITSssdConeE",E,SSDss);
-    mgr->AddVolume(Ev);
+    Ev->SetVisibility(kTRUE);
+    //mgr->AddVolume(Ev);
     Fv = new TGeoVolume("ITSssdConeF",F,SSDfo);
-    mgr->AddVolume(Fv);
+    Fv->SetVisibility(kTRUE);
+    //mgr->AddVolume(Fv);
     Gv = new TGeoVolume("ITSssdConeG",G,SSDcf);
-    mgr->AddVolume(Gv);
+    Gv->SetVisibility(kTRUE);
+    //mgr->AddVolume(Gv);
     Gv->SetLineColor(2);
     Gv->SetLineWidth(2);
     Hv = new TGeoVolume("ITSssdConeH",H,SSDfo);
-    mgr->AddVolume(Hv);
+    Hv->SetVisibility(kTRUE);
+    //mgr->AddVolume(Hv);
     Iv = new TGeoVolume("ITSssdConeI",I,SSDcf);
-    mgr->AddVolume(Iv);
+    Iv->SetVisibility(kTRUE);
+    //mgr->AddVolume(Iv);
     Iv->SetLineColor(3);
     Iv->SetLineWidth(3);
     Jv = new TGeoVolume("ITSssdConeJ",J,SSDfo);
-    mgr->AddVolume(Jv);
+    Jv->SetVisibility(kTRUE);
+    //mgr->AddVolume(Jv);
     Kv = new TGeoVolume("ITSssdConeK",K,SSDfs);
-    mgr->AddVolume(Kv);
+    Kv->SetVisibility(kTRUE);
+    //mgr->AddVolume(Kv);
     Lv = new TGeoVolume("ITSssdConeL",L,SSDfo);
-    mgr->AddVolume(Lv);
+    Lv->SetVisibility(kTRUE);
+    //mgr->AddVolume(Lv);
     Mv = new TGeoVolume("ITSssdConeM",M,SSDfs);
-    mgr->AddVolume(Mv);
+    Mv->SetVisibility(kTRUE);
+    //mgr->AddVolume(Mv);
     Nv = new TGeoVolume("ITSssdConeN",N,SSDfs);
-    mgr->AddVolume(Nv);
+    Nv->SetVisibility(kTRUE);
+    //mgr->AddVolume(Nv);
     Ov = new TGeoVolume("ITSssdConeO",O,SSDcf);
-    mgr->AddVolume(Ov);
-    Iv->SetLineColor(4);
-    Iv->SetLineWidth(4);
+    Ov->SetVisibility(kTRUE);
+    //mgr->AddVolume(Ov);
+    Ov->SetLineColor(4);
+    Ov->SetLineWidth(4);
     Pv = new TGeoVolume("ITSssdConeP",P,SSDfs);
-    mgr->AddVolume(Pv);
+    Pv->SetVisibility(kTRUE);
+    //mgr->AddVolume(Pv);
     Qv = new TGeoVolume("ITSssdConeQ",Q,SSDss);
-    mgr->AddVolume(Qv);
+    Qv->SetVisibility(kTRUE);
+    //mgr->AddVolume(Qv);
     Rv = new TGeoVolume("ITSssdConeR",R,SSDair);
-    mgr->AddVolume(Rv);
+    Rv->SetVisibility(kTRUE);
+    //mgr->AddVolume(Rv);
     Sv = new TGeoVolume("ITSssdConeS",S,SSDair);
-    mgr->AddVolume(Sv);
+    Sv->SetVisibility(kTRUE);
+    //mgr->AddVolume(Sv);
     Tv = new TGeoVolume("ITSssdConeT",T,SSDal);
-    mgr->AddVolume(Tv);
+    Tv->SetVisibility(kTRUE);
+    //mgr->AddVolume(Tv);
     Uv = new TGeoVolume("ITSssdConeU",U,SSDal);
-    mgr->AddVolume(Uv);
+    Uv->SetVisibility(kTRUE);
+    //mgr->AddVolume(Uv);
     //
     TGeoTranslation *tran = new TGeoTranslation("ITSssdConeTrans",0.0,0.0,-Z0);
     TGeoRotation *rot180  = new TGeoRotation("ITSssdConeRot180",0.0,180.0,0.0);

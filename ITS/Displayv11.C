@@ -35,7 +35,7 @@ void Displayv11(const char* filename=""){
     //
     mgr2->CloseGeometry();
     //
-    //mgr2->SetVisOption(0);
+    mgr2->SetVisOption(0);
     //
     TView *view = gPad->GetView();
     if(view){
