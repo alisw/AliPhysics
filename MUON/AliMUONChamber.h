@@ -91,7 +91,7 @@ public TObject
 // Set width of charge distribution function  
   virtual void   SetChargeSpread(Float_t p1, Float_t p2) {fResponse->SetChargeSpread(p1,p2);}
 // Set maximum ADC count value
-  virtual void   SetMaxAdc(Float_t p1)                   {fResponse->SetMaxAdc(p1);}
+  virtual void   SetMaxAdc(Int_t p1)                   {fResponse->SetMaxAdc(p1);}
 // Set Pad size
   virtual void   SetPadSize(Int_t isec, Float_t p1, Float_t p2) {
       ((AliMUONSegmentation*) (*fSegmentation)[isec-1])->SetPadSize(p1,p2);
