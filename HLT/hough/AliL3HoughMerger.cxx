@@ -30,9 +30,10 @@ AliL3HoughMerger::AliL3HoughMerger()
 }
 
 
-AliL3HoughMerger::AliL3HoughMerger(Int_t nsubsectors) : AliL3Merger(nsubsectors,"AliL3HoughTrack")
+AliL3HoughMerger::AliL3HoughMerger(Int_t nsubsectors) 
 {
   //Constructor
+  InitMerger(nsubsectors,"AliL3HoughTrack");
   Is2Global(kFALSE);
   SetParameters(0.001,0.1,0.05);
 }

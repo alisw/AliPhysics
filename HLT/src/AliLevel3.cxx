@@ -128,7 +128,6 @@ void AliLevel3::Init(Char_t *path,Bool_t binary,Int_t npatches)
   fNoCF=kFALSE;
   fUseBinary = binary;
   SetPath(path);
-  fGlobalMerger = 0;
   
   fDoRoi = kFALSE;
   fDoNonVertex = kFALSE;
@@ -179,6 +178,8 @@ void AliLevel3::Init(Char_t *path,Bool_t binary,Int_t npatches)
   fTracker = new AliL3ConfMapper();
   fTrackMerger = new AliL3TrackMerger(fNPatch);
   fInterMerger = new AliL3InterMerger();
+  fGlobalMerger = new AliL3GlobalMerger();
+  SetMergerParameters();//Set default merger parameters
 #ifdef use_aliroot
   fFileHandler = new AliL3FileHandler();
   fFileHandler->SetAliInput(fInputFile);
@@ -209,6 +210,7 @@ AliLevel3::~AliLevel3(){
   if(fTrackMerger) delete fTrackMerger;
   if(fInterMerger) delete fInterMerger;
   if(fFileHandler) delete fFileHandler;
+  if(fGlobalMerger) delete fGlobalMerger;
 }
 
 void AliLevel3::SetClusterFinderParam(Float_t fXYError, Float_t fZError, Bool_t deconv)
@@ -237,9 +239,12 @@ void AliLevel3::SetTrackerParam(Int_t phi_segments, Int_t eta_segments,
     fTracker->MainVertexSettings(trackletlength,tracklength,rowscopetracklet,rowscopetrack,maxphi,maxeta);
   else
     fTracker->NonVertexSettings(trackletlength,tracklength,rowscopetracklet,rowscopetrack);
-  
-  fTracker->SetParamDone(true);
   fTracker->InitVolumes();
+}
+
+void AliLevel3::SetMergerParameters(Double_t maxy,Double_t maxz,Double_t maxkappa,Double_t maxpsi,Double_t maxtgl)
+{
+  fGlobalMerger->SetParameter(maxy,maxz,maxkappa,maxpsi,maxtgl);
 }
 
 void AliLevel3::ProcessEvent(Int_t first,Int_t last,Int_t event){
@@ -247,7 +252,8 @@ void AliLevel3::ProcessEvent(Int_t first,Int_t last,Int_t event){
   //Slices numbering in TPC goes from 0-35, which means that one slice
   //corresponds to inner+outer sector.E.g. slice 2 corresponds to
   //inner=2 + outer=38.
-  fGlobalMerger= new AliL3GlobalMerger(first,last);  
+
+  fGlobalMerger->Setup(first,last);
   fEvent=event;
   for(Int_t i=first; i<=last; i++){
     ProcessSlice(i);
@@ -260,15 +266,13 @@ void AliLevel3::ProcessEvent(Int_t first,Int_t last,Int_t event){
   }
   fBenchmark->Start("Global track merger");
   //fGlobalMerger->AddAllTracks();
-  fGlobalMerger->SetParameter(1.2,1.6,0.003,0.02,0.03);
   fGlobalMerger->Merge();
-  //fGlobalMerger->SlowMerge();
+  //fGlobalMerger->SlowMerge(fWriteOutPath);
   fBenchmark->Stop("Global track merger");
   
   FitGlobalTracks();
   
   if(fWriteOut) WriteResults(); 
-  delete fGlobalMerger; fGlobalMerger = 0;
   fFileHandler->FreeDigitsTree();
 }
 
@@ -581,7 +585,7 @@ void AliLevel3::FitGlobalTracks()
       AliL3Track *tr = tracks->GetCheckedTrack(i);
       if(!tr) continue;
       fitter->FitHelix(tr);
-      tr->UpdateToFirstPoint();
+      fitter->UpdateTrack(tr);
     }
   fBenchmark->Stop("Global track fitter");
   delete fitter;

@@ -100,8 +100,10 @@ class AliLevel3 : public TObject {
   AliLevel3(TFile *in);
 #endif
   virtual ~AliLevel3();
-  
+
   void Init(Char_t *path,Bool_t binary=kTRUE,Int_t npatches=6);
+  void SetMergerParameters(Double_t maxy=1.2,Double_t maxz=1.6,Double_t maxkappa=0.003,
+			   Double_t maxpsi=0.02,Double_t maxtgl=0.03);
   void SetTrackerParam(Int_t phi_segments=50,Int_t eta_segments=100,
 		       Int_t trackletlength=3,Int_t tracklength=5,
 		       Int_t rowscopetracklet=2,Int_t rowscopetrack=3,

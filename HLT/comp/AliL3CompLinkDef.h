@@ -12,5 +12,9 @@
 #pragma link C++ class AliL3ClusterFitter; 
 #pragma link C++ class AliL3DataCompressor; 
 
+#ifdef use_aliroot
+#pragma link C++ class AliL3OfflineDataCompressor; 
+#endif
+
 #endif
 

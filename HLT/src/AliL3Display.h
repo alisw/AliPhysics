@@ -24,7 +24,7 @@ class AliL3Display : public TObject {
   
  public:
   AliL3Display();
-  AliL3Display(Int_t *slice, Char_t *gfile="$(LEVEL3)/GEO/alice.geom");
+  AliL3Display(Int_t *slice, Char_t *gfile="$(ALIHLT_BASEDIR)/geo/alice.geom");
   virtual ~AliL3Display();
 
   void Setup(Char_t *trackfile,Char_t *path,Int_t event=-1,Bool_t sp=kFALSE);

@@ -18,14 +18,10 @@
 
 #ifdef use_aliroot
 #include "AliL3FileHandler.h"
-
-#include <AliKalmanTrack.h>
-#include <AliTPCtracker.h>
 #include <AliTPCcluster.h>
 #include <AliTPCParamSR.h>
 #include <AliTPCDigitsArray.h>
 #include <AliTPCClustersArray.h>
-#include <AliTPCcluster.h>
 #include <AliTPCClustersRow.h>
 #include <AliSimDigits.h>
 #include <AliTPC.h>
@@ -61,8 +57,12 @@ Int_t AliL3DataCompressor::fNumTimeBits = 12;
 Int_t AliL3DataCompressor::fNumPadBits = 12;
 Int_t AliL3DataCompressor::fNumChargeBits = 14;
 Int_t AliL3DataCompressor::fNumShapeBits = 14;
-Float_t AliL3DataCompressor::fXYResidualStep = 0.03;
-Float_t AliL3DataCompressor::fZResidualStep = 0.05;
+Float_t AliL3DataCompressor::fXYResidualStep1 = 0.03;
+Float_t AliL3DataCompressor::fXYResidualStep2 = 0.03;
+Float_t AliL3DataCompressor::fXYResidualStep3 = 0.03;
+Float_t AliL3DataCompressor::fZResidualStep1 = 0.05;
+Float_t AliL3DataCompressor::fZResidualStep2 = 0.05;
+Float_t AliL3DataCompressor::fZResidualStep3 = 0.05;
 Float_t AliL3DataCompressor::fXYWidthStep = 0.005;
 Float_t AliL3DataCompressor::fZWidthStep = 0.005;
 Int_t AliL3DataCompressor::fClusterCharge = 100;
@@ -126,13 +126,50 @@ void AliL3DataCompressor::SetBitNumbers(Int_t pad,Int_t time,Int_t charge,Int_t 
   fNumShapeBits = shape;
 }
 
-void AliL3DataCompressor::SetResolutions(Float_t xyresidual,Float_t zresidual,Int_t clustercharge,Float_t xywidth,Float_t zwidth)
+void AliL3DataCompressor::SetTransverseResolutions(Float_t res1,Float_t res2,Float_t res3,Float_t width)
 {
-  fXYResidualStep = xyresidual;
-  fZResidualStep = zresidual;
-  fXYWidthStep = xywidth;
-  fZWidthStep = zwidth;
-  fClusterCharge = clustercharge;
+  fXYResidualStep1 = res1;
+  fXYResidualStep2 = res2;
+  fXYResidualStep3 = res3;
+  fXYWidthStep = width;
+}
+
+void AliL3DataCompressor::SetLongitudinalResolutions(Float_t res1,Float_t res2,Float_t res3,Float_t width)
+{
+  fZResidualStep1 = res1;
+  fZResidualStep2 = res2;
+  fZResidualStep3 = res3;
+  fZWidthStep = width;
+}
+
+const Float_t AliL3DataCompressor::GetXYResidualStep(Int_t row) 
+{
+  if(row < AliL3Transform::GetNRowLow())
+    return fXYResidualStep1;
+  else if(row < AliL3Transform::GetNRowLow() + AliL3Transform::GetNRowUp1())
+    return fXYResidualStep2;
+  else if(row < AliL3Transform::GetNRowLow() + AliL3Transform::GetNRowUp1() + AliL3Transform::GetNRowUp2())
+    return fXYResidualStep3;
+  else
+    {
+      cerr<<"AliL3DataCompressor::GetXYResidualStep : Wrong row number "<<row<<endl;
+      return -1;
+    }
+}
+
+const Float_t AliL3DataCompressor::GetZResidualStep(Int_t row) 
+{
+  if(row < AliL3Transform::GetNRowLow())
+    return fZResidualStep1;
+  else if(row < AliL3Transform::GetNRowLow() + AliL3Transform::GetNRowUp1())
+    return fZResidualStep2;
+  else if(row < AliL3Transform::GetNRowLow() + AliL3Transform::GetNRowUp1() + AliL3Transform::GetNRowUp2())
+    return fZResidualStep3;
+  else
+    {
+      cerr<<"AliL3DataCompressor::GetXYResidualStep : Wrong row number "<<row<<endl;
+      return -1;
+    }
 }
 
 void AliL3DataCompressor::OpenOutputFile()
@@ -271,8 +308,9 @@ void AliL3DataCompressor::FillData(Int_t min_hits,Bool_t expand)
 	  if(!intrack->CalculateReferencePoint(angle,AliL3Transform::Row2X(padrow)))
 	    {
 	      cerr<<"AliL3DataCompressor::FillData : Error in crossing point calc on slice "<<slice<<" row "<<padrow<<endl;
-	      outtrack->Print(kFALSE);
-	      exit(5);
+	      break;
+	      //outtrack->Print(kFALSE);
+	      //exit(5);
 	    }
 	  
 	  Float_t xyz_cross[3] = {intrack->GetPointX(),intrack->GetPointY(),intrack->GetPointZ()};
@@ -380,11 +418,11 @@ void AliL3DataCompressor::ExpandTrackData(AliL3TrackArray *tracks)
 	      AliL3Transform::Global2Local(xyz,last_slice,kTRUE);
 	      
 	      //Check for overflow:
-	      Int_t temp = (Int_t)rint((xyz_cross[1]-xyz[1])/GetXYResidualStep());
+	      Int_t temp = (Int_t)rint((xyz_cross[1]-xyz[1])/GetXYResidualStep(padrow));
 	      if( abs(temp) > 1<<(GetNPadBits()-1))
 		continue;
 	      
-	      temp = (Int_t)rint((xyz_cross[2]-xyz[2])/GetZResidualStep());
+	      temp = (Int_t)rint((xyz_cross[2]-xyz[2])/GetZResidualStep(padrow));
 	      if( abs(temp) > 1<<(GetNTimeBits()-1))
 		continue;
 	      
@@ -546,7 +584,17 @@ void AliL3DataCompressor::WriteRemaining(Bool_t select)
 void AliL3DataCompressor::SelectRemainingClusters()
 {
   //Select which remaining clusters to write in addition to the compressed data.
-
+  //In particular one can here make sure that "important" clusters are not missed:
+  //The offline track finder perform seed finding in the outer padrows;
+  //the first seeding is using pair of points on outermost padrow and 
+  //0.125*nrows more rows towards the vertex. The second seeding uses pair
+  //of points on the outermost padrow-0.5*0.125*nrows and 0.125*nrows + 0.5*0.125*nrows
+  //more rows towards the vertex. In order to evaluate the seeds, the track offline
+  //track finder checks whether a certain amount of possible clusters (padrows) is 
+  //attached to the track, and then the kalman filtering starts.
+  //To ensure a minimal loss off efficiency, all clusters in this region should be
+  //intact.....
+  
   cout<<"Cleaning up clusters"<<endl;
   Int_t nrows = AliL3Transform::GetNRows();
   Int_t gap=(Int_t)(0.125*nrows), shift=(Int_t)(0.5*gap);
@@ -565,12 +613,13 @@ void AliL3DataCompressor::SelectRemainingClusters()
 	  AliL3Transform::Slice2Sector(slice,padrow,sector,row);
 	  AliL3Transform::Global2Raw(xyz,sector,row);
 	  
-	  if(padrow >= nrows-1-gap-shift) continue;
+	  if(padrow >= nrows-1-gap-shift) continue;//save all the clusters in this region
+	  
 	  //if(padrow >= nrows-1-shift) continue;
 
 	  //Save the clusters at the borders:
-	  if(xyz[1] < 3 || xyz[1] >= AliL3Transform::GetNPads(padrow)-4)
-	    continue;
+	  //if(xyz[1] < 3 || xyz[1] >= AliL3Transform::GetNPads(padrow)-4)
+	  // continue;
 
 	  //Save clusters on padrows used for offline seeding:
 	  if(padrow == nrows - 1 || padrow == nrows - 1 - gap ||                 //First seeding
@@ -596,7 +645,7 @@ void AliL3DataCompressor::CompressAndExpand()
 }
 
 
-void AliL3DataCompressor::RestoreData()
+void AliL3DataCompressor::RestoreData(Bool_t remaining_only)
 {
   //Restore the uncompressed data together with the remaining clusters,
   //and write to a final cluster file which serves as an input to the
@@ -618,7 +667,8 @@ void AliL3DataCompressor::RestoreData()
       clusters[i] = new TempCluster[maxpoints];
     }
   
-  ReadUncompressedData(clusters,ncl,maxpoints);
+  if(!remaining_only)
+    ReadUncompressedData(clusters,ncl,maxpoints);
   
   if(fKeepRemaining)
     ReadRemaining(clusters,ncl,maxpoints);
@@ -941,193 +991,3 @@ Int_t AliL3DataCompressor::Compare(TempCluster *a,TempCluster *b)
   return 1;
 }
 
-void AliL3DataCompressor::LoadOfflineData(Int_t event)
-{
-  //Take offline reconstructed tracks as an input.
-  //In this case, no remaining clusters are written.
-  
-#ifndef use_aliroot
-   LOG(AliL3Log::kError,"AliL3DataCompressor::LoadOfflineData","Version")
-     <<"You have to compile with use_aliroot flag in order to use this function"<<ENDLOG;
-#else
-
-  char filename[1024];
-  
-  AliKalmanTrack::SetConvConst(1000/0.299792458/AliL3Transform::GetSolenoidField());
-  sprintf(filename,"%s/offline/AliTPCclusters.root",fPath);
-
-  TFile *in = TFile::Open(filename);
-  AliTPCParam *param=(AliTPCParam*)in->Get("75x40_100x60_150x60");
-  
-  AliTPCtracker *tracker = new AliTPCtracker(param);
-  tracker->SetEventNumber(event);
-  tracker->LoadClusters();
-  
-  const Int_t MAX=20000;
-  Int_t nentr=0,i=0; TObjArray tarray(MAX);
-  sprintf(filename,"%s/offline/AliTPCtracks.root",fPath);
-  TFile *tf=TFile::Open(filename);
-  
-  char tname[100]; sprintf(tname,"TreeT_TPC_%d",event);
-  TTree *tracktree=(TTree*)tf->Get(tname);
-  
-  TBranch *tbranch=tracktree->GetBranch("tracks");
-  nentr=(Int_t)tracktree->GetEntries();
-  AliTPCtrack *iotrack=0;
-
-  for (i=0; i<nentr; i++) {
-    iotrack=new AliTPCtrack;
-    tbranch->SetAddress(&iotrack);
-    tracktree->GetEvent(i);
-    tarray.AddLast(iotrack);
-  }   
-  delete tracktree; 
-  tf->Close();
-  
-  AliL3TrackArray *comptracks = new AliL3TrackArray("AliL3ModelTrack");
-  cout<<"Loaded "<<nentr<<" offline tracks"<<endl;
-  Int_t slice,padrow;
-  Int_t totcounter=0;
-  for(i=0; i<nentr; i++)
-    {
-      
-      AliTPCtrack *track=(AliTPCtrack*)tarray.UncheckedAt(i);
-      Int_t nhits = track->GetNumberOfClusters();
-      Int_t idx = track->GetClusterIndex(nhits-1);
-      Int_t sec=(idx&0xff000000)>>24, row=(idx&0x00ff0000)>>16;
-      
-      if(sec >= 18)
-	sec += 18;
-      
-      AliL3Transform::Sector2Slice(slice,padrow,sec,row);
-      Double_t par[5],xk=AliL3Transform::Row2X(padrow);
-      track->PropagateTo(xk);
-      track->GetExternalParameters(xk,par);
-      Double_t psi = TMath::ASin(par[2]) + track->GetAlpha();
-      if (psi<-TMath::Pi()) psi+=2*TMath::Pi();
-      if (psi>=TMath::Pi()) psi-=2*TMath::Pi();
-      Float_t pt_1=TMath::Abs(par[4]);
-      Int_t charge = 1;
-      if(par[4] > 0)
-	charge=-1;
-
-      Float_t first[3];
-      AliCluster *fcl = tracker->GetCluster(idx);
-      first[0] = xk;
-      first[1] = fcl->GetY();
-      first[2] = fcl->GetZ();
-
-      AliL3Transform::Local2Global(first,slice);
-      
-      AliL3ModelTrack *outtrack = (AliL3ModelTrack*)comptracks->NextTrack();
-      outtrack->SetNHits(nhits);
-      outtrack->SetFirstPoint(first[0],first[1],first[2]);
-      outtrack->SetPt(1/pt_1);
-      outtrack->SetPsi(psi);
-      outtrack->SetTgl(par[3]);
-      outtrack->SetCharge(charge);
-      outtrack->CalculateHelix();
-      outtrack->Init(0,-1);
-
-      //for(int j=0; j<nhits; j++)
-      for(int j=nhits-1; j>=0; j--)
-	{
-	  Int_t index = track->GetClusterIndex(j);
-	  
-	  Float_t xyz[3];
-	  Int_t clustercharge =0;
-	  
-	  AliTPCcluster *cluster = (AliTPCcluster*)tracker->GetCluster(index);
-	  xyz[1] = cluster->GetY();
-	  xyz[2] = cluster->GetZ();
-	  clustercharge = (Int_t)cluster->GetQ();
-	  
-	  cluster->SetQ(-clustercharge);//Set as used
-	  
-	  sec=(index&0xff000000)>>24; row=(index&0x00ff0000)>>16;
-	  
-	  //This we do because the sector numbering of course are different internally
-	  //in the fucked up AliTPCtracker class. 
-	  if(sec >= 18)
-	    sec += 18;
- 	  
-	  if(xyz[2] < 0)
-	    sec += 18;
-
-	  //cout<<"sector "<<sec<<" row "<<row<<endl;
-	  if(!AliL3Transform::Sector2Slice(slice,padrow,sec,row))
-	    exit(5);
-	  xyz[0] = AliL3Transform::Row2X(padrow);
-	  
-	  //cout<<"Hit in slice "<<slice<<" padrow "<<padrow<<" y "<<cluster->GetY()<<" z "<<cluster->GetZ()<<endl;
-	  AliL3Transform::Local2Raw(xyz,sec,row);
-	  //cout<<"slice "<<slice<<" padrow "<<padrow<<" pad "<<xyz[1]<<" time "<<xyz[2]<<endl;
-	  
-	  if(xyz[1] < -1 || xyz[1] > AliL3Transform::GetNPads(padrow) ||
-	     xyz[2] < -1 || xyz[2] > AliL3Transform::GetNTimeBins())
-	    {
-	      cerr<<"AliL3DataCompressor::FillOfflineData : Wrong time "<<xyz[2]<<" in slice "
-		  <<slice<<" padrow "<<padrow<<endl;
-	      cout<<"sector "<<sec<<" row "<<row<<endl;
-	      //cout<<"Hit in slice "<<slice<<" padrow "<<padrow<<" y "<<cluster->GetY()<<" z "<<cluster->GetZ()<<endl;
-	      cout<<"Track hit "<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<endl;
-	      exit(5);
-	    }
-	  
-	  Float_t angle = 0;
-	  AliL3Transform::Local2GlobalAngle(&angle,slice);
-	  if(!outtrack->CalculateReferencePoint(angle,AliL3Transform::Row2X(padrow)))
-	    {
-	      cerr<<"AliL3DataCompressor::FillOfflineData : Error in crossing point calc on slice "
-		  <<slice<<" row "<<padrow<<endl;
-	      exit(5);
-	    }
-	  Float_t xyz_cross[3] = {outtrack->GetPointX(),outtrack->GetPointY(),outtrack->GetPointZ()};
-	  AliL3Transform::Global2Raw(xyz_cross,sec,row);
-	  /*
-	    if(fabs(xyz_cross[1] - xyz[1]) > 10 ||
-	    fabs(xyz_cross[2] - xyz[2]) > 10)
-	    {
-	    cout<<"AliL3DataCompressor::FillOfflineData : Wrong crossing slice "<<slice<<" padrow "
-	    <<padrow<<" pad "<<xyz[1]<<" padhit "<<xyz_cross[1]<<" time "<<xyz[2]<<" timehit "<<xyz_cross[2]<<endl;
-	    outtrack->Print();
-	    exit(5);
-	    }
-	  */
-	  //cout<<" crossing "<<xyz_cross[0]<<" "<<xyz_cross[1]<<" "<<xyz_cross[2]<<endl;
-	  outtrack->SetPadHit(padrow,xyz_cross[1]);
-	  outtrack->SetTimeHit(padrow,xyz_cross[2]);
-	  
-	  if(fWriteClusterShape)
-	    {
-	      Float_t angle = outtrack->GetCrossingAngle(padrow,slice);
-	      outtrack->SetCrossingAngleLUT(padrow,angle);
-	      outtrack->CalculateClusterWidths(padrow,kTRUE);
-	      Int_t patch = AliL3Transform::GetPatch(padrow);
-	      Float_t sigmaY2 = cluster->GetSigmaY2() / pow(AliL3Transform::GetPadPitchWidth(patch),2);
-	      Float_t sigmaZ2 = cluster->GetSigmaZ2() / pow(AliL3Transform::GetZWidth(),2);
-	      outtrack->SetCluster(padrow,xyz[1],xyz[2],clustercharge,sigmaY2,sigmaZ2,3);
-	    }
-	  else
-	    outtrack->SetCluster(padrow,xyz[1],xyz[2],clustercharge,0,0,3);
-	  totcounter++;
-	  outtrack->GetClusterModel(padrow)->fSlice = slice;
-	}
-      /*
-      int label = track->GetLabel();
-      if(label == 10019 || label==6281 || label== 5326 || label==3054 || label==1366 || label==1005)
-	outtrack->Print();
-      */
-    }
-  
-  tracker->UnloadClusters();
-  
-  cout<<"AliL3DataCompressor::FillOfflineData : Wrote "<<totcounter<<" clusters"<<endl;
-  //Write tracks to file
-  AliL3Compress *comp = new AliL3Compress(-1,-1,fPath,fWriteClusterShape,fEvent);
-  comp->WriteFile(comptracks);
-  delete comp;
-  delete comptracks;
-  delete tracker;
-#endif
-}

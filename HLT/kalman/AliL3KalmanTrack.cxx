@@ -1,6 +1,7 @@
 #include "TMath.h"
 #include "AliL3KalmanTrack.h"
 #include "AliL3SpacePointData.h"
+#include "AliL3Logging.h"
 ClassImp(AliL3KalmanTrack)
 
 // Class for kalman tracks
@@ -32,12 +33,7 @@ void AliL3KalmanTrack::Init()
 
 Int_t AliL3KalmanTrack::MakeTrackSeed(AliL3SpacePointData *points1, UInt_t pos1, AliL3SpacePointData *points2, UInt_t pos2, AliL3SpacePointData *points3, UInt_t pos3)
 {
-  // Make track seed based on three outermost clusters of the track
-  // NB! The offline tracking uses two hits as seed, where a third hit
-  // is calculated?? Check. Offline don't have found tracks to begin with. 
-  // For HLT purpose it is maybe best to use first hits on found tracks.
-  // It depends on if we want to be able to discover previously not found
-  // tracks, timeconsuming.??
+  // Make track seed based on three clusters 
   fX = points1[pos1].fX;
 
   fP0 = points1[pos1].fY; 
@@ -49,19 +45,13 @@ Int_t AliL3KalmanTrack::MakeTrackSeed(AliL3SpacePointData *points1, UInt_t pos1,
   //Float_t alpha = TMath::ATan((fX2-fX)/(fY2-fP0));
   //Float_t X2 = XX2*TMath::Cos(alpha) + YY2*TMath::Sin(alpha); 
 
-  /*Float_t X3 = points3[pos3].fX;
+  Float_t X3 = points3[pos3].fX;
   Float_t Y3 = points3[pos3].fY;
-  Float_t Z3 = points3[pos3].fZ;*/
-  Float_t X3 = 0;
-  Float_t Y3 = 0;
-  Float_t Z3 = 0;
+  Float_t Z3 = points3[pos3].fZ;
 
-  /*printf("x1=%f , x2=%f , x3=%f\n
-y1=%f , y2=%f , y3=%f\n
-z1=%f , z2=%f , z3=%f\n",fX,X2,X3,fP0,Y2,Y3,fP1,Y3,Z3);*/
+  Float_t ZZ = fP1 - ((fP1 - Z3)/(fX-X3))*(fX-X2);
+  if (TMath::Abs(ZZ - Z2) > 10) return 0; //What's this?? (fP1 - Z3)/(fX-X3)*(fX-X2) is an angle
 
-  Float_t ZZ = fP1 - (fP1 - Z3)/(fX-X3)*(fX-X2);
-  if (TMath::Abs(ZZ - Z2) > 5) return 0; //What's this??
   // It may make no difference. Check on a big event??.
   if ((X2-fX)*(0-Y2)-(0-X2)*(Y2-fP0) == 0) return 0; //Straight seed
 
@@ -106,25 +96,21 @@ z1=%f , z2=%f , z3=%f\n",fX,X2,X3,fP0,Y2,Y3,fP1,Y3,Z3);*/
   fC43 = f30*sy1*f40+f32*sy2*f42; 
   fC44 = f40*sy1*f40+f42*sy2*f42+f43*sy3*f43;
   
-  /*printf("---------------------MAKE SEED------------\n");
-    printf("Make seed, %f, %f, %f, %f, %f\n",fP0,fP1,fP2,fP3,fP4);*/
-
   return 1;
 }
 
 Int_t AliL3KalmanTrack::Propagate(AliL3SpacePointData *points, UInt_t pos)
 {
   // Propagetes track to the plane of the next found cluster
-  //printf("line 118\n");
+
   Float_t Xold = fX; // X position for previous space point
   Float_t Xnew = points[pos].fX; // X position of current space point
   Float_t dx = Xnew - Xold;
   Float_t Yold = fP0; // Y position of old point
   Float_t Zold = fP1; // Z position of old point
-  //printf("%f %f %f\n",fP4,fP2,Xnew);
 
   if (TMath::Abs(fP4*Xnew - fP2) >= 0.9) // What's this??
-    { // In AliTPCtrack Xnew is xk?? a reference plane.
+    {
       return 0;
     }
 
@@ -139,15 +125,13 @@ Int_t AliL3KalmanTrack::Propagate(AliL3SpacePointData *points, UInt_t pos)
   // Prediction of the y- and z- coordinate in the next plane
   fP0 += dx*(Cold+Cnew)/(Rold+Rnew);
   fP1 += dx*(Cold+Cnew)/(Cold*Rnew + Cnew*Rold)*fP3; 
-  //printf("line 142\n");
 
   // f = F - 1 //What is this??
   // Must be the f-matrix for the prediction, as in eq 1 in ALICE Kalman paper
   Float_t RR = Rold + Rnew;
   Float_t CC = Cold + Cnew;
   Float_t XX = Xold + Xnew;
-  //printf("Line 149\n");
-  //printf("%f, %f, %f\n",RR,CC,XX);
+
   Float_t f02 = -dx*(2*RR + CC*(Cold/Rold + Cnew/Rnew))/(RR*RR);
   Float_t f04 = dx*(RR*XX + CC*(Cold*Xold/Rold + Cnew*Xnew/Rnew))/(RR*RR);
   Float_t CR = Cold*Rnew + Cnew*Rold;
@@ -166,18 +150,14 @@ Int_t AliL3KalmanTrack::Propagate(AliL3SpacePointData *points, UInt_t pos)
   Float_t b31=f12*fC32 + f14*fC43 + f13*fC33;
   Float_t b40=f02*fC42 + f04*fC44;
   Float_t b41=f12*fC42 + f14*fC44 + f13*fC43;
-  //printf("LIne 169\n");
-  //printf("%f %f %f\n",fC22,fC43,fC32);
 
   //a = f*b = f*C*ft
   Float_t a00 = f02*b20 + f04*b40;
   Float_t a01 = f02*b21 + f04*b41;
   Float_t a11 = f12*b21 + f14*b41+f13*b31;
-  //printf("%f\n",f04*b40);
 
   //F*C*Ft = C + (a + b + bt) /This is the covariance matrix, the samll t 
   // means transform. Then F must be df/dx 
-  //printf("line 180\n");
   fC00 += a00 + 2*b00;
   fC10 += a01 + b01 + b10;
   fC20 += b20;
@@ -187,9 +167,7 @@ Int_t AliL3KalmanTrack::Propagate(AliL3SpacePointData *points, UInt_t pos)
   fC21 += b21;
   fC31 += b31;
   fC41 += b41;
-  //printf("Propagate: %f %f %f\n",fC00,fC10,fC11);
 
-  //printf("line 192\n");
   // Multiple scattering (from AliTPCtrack::PropagateTo)
   Float_t d = TMath::Sqrt((Xold-Xnew)*(Xold-Xnew)+(Yold-fP0)*(Yold-fP0)+(Zold-fP1)*(Zold-fP1));
   Float_t Pt = (1e-9*TMath::Abs(fP4)/fP4 + fP4 * (1000/0.299792458/4));
@@ -197,8 +175,6 @@ Int_t AliL3KalmanTrack::Propagate(AliL3SpacePointData *points, UInt_t pos)
     return 0;
   }
   if (TMath::Abs(Pt) < 0.01) return 0;
-  // If Pt gets too small beta2 is 1 and that gives seg. violation in
-  // the calculation of dE.
 
   Float_t p2 = (1+fP3*fP3)/(Pt*Pt);
   Float_t beta2 = p2/(p2 +0.14*0.14);
@@ -209,7 +185,6 @@ Int_t AliL3KalmanTrack::Propagate(AliL3SpacePointData *points, UInt_t pos)
   Float_t xz=fP4*ez;
   Float_t zz1=ez*ez+1;
   Float_t xy=fP2+ey;
-  //printf("Line 209\n");
 
   fC22 += (2*ey*ez*ez*fP2+1-ey*ey+ez*ez+fP2*fP2*ez*ez)*theta2;
   fC32 += ez*zz1*xy*theta2;
@@ -218,20 +193,16 @@ Int_t AliL3KalmanTrack::Propagate(AliL3SpacePointData *points, UInt_t pos)
   fC43 += xz*zz1*theta2;
   fC44 += xz*xz*theta2;
   if (TMath::Abs(beta2) >= 1) printf("%f %f\n",beta2,Pt);
-  //printf("Line 218\n");
+
   // Energy loss
   Float_t dE = 0.153e-3/beta2*(log(5940*beta2/(1-beta2))-beta2)*d*0.9e-3;
   if (Xold < Xnew) dE = -dE;
   CC = fP4;
-  //printf("Propagate: %f, %f\n",dE,Pt);
   fP4 *= (1 - TMath::Sqrt(p2+0.14*0.14)/p2*dE);
   fP2 += Xnew*(fP4-CC);
-  //printf("Propagate, %f %f %f %f\n",dE,CC,fP4,fP2);
-  //   // Maybe calculate multilpe scattering and dE also
-  //printf("line 228\n");
+
   // Update the track parameters with the measured values of the new point
   UpdateTrack(points, pos);
-  //printf("Line 231\n");
 
   return 1;
 }
@@ -255,7 +226,6 @@ Int_t AliL3KalmanTrack::UpdateTrack(AliL3SpacePointData *points, UInt_t pos)
   sigmaY2 = sigmaZ2/det;
   sigmaZ2 = tmp/det;
   sigmaYZ = -sigmaYZ/det;
-  //printf("%f %f %f\n",fC00,fC11,fC10);
 
   // What's this?? Must be the Kalman gain matrix
   Float_t k00 = fC00*sigmaY2 + fC10*sigmaYZ;
@@ -268,7 +238,6 @@ Int_t AliL3KalmanTrack::UpdateTrack(AliL3SpacePointData *points, UInt_t pos)
   Float_t k31 = fC30*sigmaYZ + fC31*sigmaZ2;
   Float_t k40 = fC40*sigmaY2 + fC41*sigmaYZ;
   Float_t k41 = fC40*sigmaYZ + fC41*sigmaZ2;
-  //printf("%f, %f\n",k11,sigmaZ2);
 
   // Deviation between the predicted and measured values of y and z 
   Float_t dy = points[pos].fY-fP0;
@@ -287,7 +256,6 @@ Int_t AliL3KalmanTrack::UpdateTrack(AliL3SpacePointData *points, UInt_t pos)
   fP2 = eta;
   fP3 += k30*dy + k31*dz;
   fP4 = cur;
-  //printf("Update %f %f %f %f %f\n",fP0,fP1,fP2,fP3,fP4);
 
   Float_t c10 = fC10;
   Float_t c20 = fC20;
@@ -311,16 +279,16 @@ Int_t AliL3KalmanTrack::UpdateTrack(AliL3SpacePointData *points, UInt_t pos)
   fC40 -= k00*c40 + k01*c41;
   fC41 -= k10*c40 + k11*c41;
   fC42 -= k20*c40 + k21*c41;
-  fC43 -= k40*c30 + k41*c31; // Like this in AliTPCtrack::Update. WHY??
+  fC43 -= k40*c30 + k41*c31;
   fC44 -= k40*c40 + k41*c41;
-  //printf("Update: %f %f %f\n",fC00,fC10,fC11);
 
   sigmaY2 = sigmaY2*det;
   sigmaZ2 = sigmaZ2*det;
   sigmaYZ = sigmaYZ*det;
+
   // Calculate increase of chisquare
   fChisq = GetChisq() + (dy*sigmaY2*dy + 2*sigmaYZ*dy*dz + dz*sigmaZ2*dz) / (sigmaY2*sigmaZ2 - sigmaYZ*sigmaYZ);
-  //printf("%f\n",fChisq);
+  // Must at some point make an cut on chisq. Here?
 
   return 1;
 } 
@@ -369,4 +337,33 @@ Float_t AliL3KalmanTrack::f4(Float_t x1,Float_t y1,
   Double_t xr=TMath::Abs(d/(d*x1-a)), yr=d/(d*y1-b);
 
   return -xr*yr/sqrt(xr*xr+yr*yr);
+}
+
+void AliL3KalmanTrack::Set(AliL3KalmanTrack *track)
+{
+
+  AliL3KalmanTrack *tpt = (AliL3KalmanTrack*)track;
+  SetX0(tpt->GetX0());
+  SetX1(tpt->GetX1());
+  SetX2(tpt->GetX2());
+  SetX3(tpt->GetX3());
+  SetX4(tpt->GetX4());
+
+  SetC0(tpt->GetC0());
+  SetC1(tpt->GetC1());
+  SetC2(tpt->GetC2());
+  SetC3(tpt->GetC3());
+  SetC4(tpt->GetC4());
+  SetC5(tpt->GetC5());
+  SetC6(tpt->GetC6());
+  SetC7(tpt->GetC7());
+  SetC8(tpt->GetC8());
+  SetC9(tpt->GetC9());
+  SetC10(tpt->GetC10());
+  SetC11(tpt->GetC11());
+  SetC12(tpt->GetC12());
+  SetC13(tpt->GetC13());
+  SetC14(tpt->GetC14());
+
+  SetNHits(tpt->GetNHits());
 }

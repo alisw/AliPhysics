@@ -10,6 +10,7 @@
 class AliL3SpacePointData;
 class AliL3TrackArray;
 class AliL3Benchmark;
+class AliL3TrackSegmentData;
 
 class AliL3Kalman {
 
@@ -29,6 +30,7 @@ class AliL3Kalman {
   Int_t fRow[6][2];
   Char_t fWriteOutPath[256];
   Bool_t fWriteOut;
+  Int_t fEvent;
 
  public:
 
@@ -37,16 +39,12 @@ class AliL3Kalman {
   void Init();
   void LoadTracks(Int_t event, Bool_t sp);
   void ProcessTracks();
-  //Int_t MakeSeed(AliL3SpacePointData *points, UInt_t pos, AliL3KalmanTrack *kalmantrack);
   Int_t MakeSeed(AliL3KalmanTrack *kalmantrack, AliL3Track *track);
-  //Int_t Propagate(AliL3SpacePointData *points, UInt_t pos, AliL3KalmanTrack *kalmantrack);
   Int_t Propagate(AliL3KalmanTrack *kalmantrack, AliL3Track *track);
   Int_t Update(AliL3SpacePointData *points, UInt_t pos, AliL3KalmanTrack *kalmantrack);
-  //Int_t Update(AliL3SpacePointData *points, UInt_t pos, UInt_t slice, UInt_t patch, AliL3KalmanTrack *kalmantrack);
-  void WriteKalmanTrack(AliL3KalmanTrack *kalmantrack);
-  void Dispay();
-  void WriteFiles(Char_t *path="./"){fWriteOut = kTRUE; sprintf(fWriteOutPath,"%s",path);}
+  void WriteFiles(Char_t *path="data"){fWriteOut = kTRUE; sprintf(fWriteOutPath,"%s",path);}
   Double_t GetCpuTime();
+  AliL3TrackArray *GetTracks() {return fKalmanTracks;}
 };
 
 #endif

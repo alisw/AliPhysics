@@ -18,11 +18,11 @@ class AliL3GlobalMerger : public AliL3Merger{
   
  public:
   AliL3GlobalMerger();
-  AliL3GlobalMerger(Int_t first,Int_t last);
   virtual ~AliL3GlobalMerger();
-
+  
+  void Setup(Int_t first,Int_t last);
   void InitSlice(Int_t slice);
-  void SlowMerge();
+  void SlowMerge(Char_t *path="./");
   void Merge();  //Loop over tracks from different sectors
 
   ClassDef(AliL3GlobalMerger,1) //Slice merger

@@ -34,21 +34,20 @@ class AliL3DataCompressor {
 #else
   FILE *fOutputFile;
 #endif
-  Char_t fPath[1024];            //!
   
   UInt_t fNcl[36][6];
-  Bool_t fKeepRemaining;
-  Bool_t fWriteClusterShape;
-  Int_t fEvent;
-  Bool_t fSinglePatch;
   
   static Int_t fNumPadBits;
   static Int_t fNumTimeBits;
   static Int_t fNumChargeBits;
   static Int_t fNumShapeBits;
   
-  static Float_t fXYResidualStep;
-  static Float_t fZResidualStep;
+  static Float_t fXYResidualStep1;
+  static Float_t fXYResidualStep2;
+  static Float_t fXYResidualStep3;
+  static Float_t fZResidualStep1;
+  static Float_t fZResidualStep2;
+  static Float_t fZResidualStep3;
   static Float_t fXYWidthStep;
   static Float_t fZWidthStep;
   static Int_t fClusterCharge;
@@ -61,32 +60,41 @@ class AliL3DataCompressor {
   Int_t Compare(TempCluster *a,TempCluster *b);
   void OpenOutputFile();
   void CloseOutputFile();
-
+  
+ protected:
+  Char_t fPath[1024];            //!
+  Int_t fEvent;
+  
+  Bool_t fWriteClusterShape;
+  Bool_t fKeepRemaining;
+  Bool_t fSinglePatch;
+  
  public:
   AliL3DataCompressor();
   AliL3DataCompressor(Char_t *path,Bool_t keep,Bool_t writeshape);
   virtual ~AliL3DataCompressor();
   
-  void LoadData(Int_t event,Bool_t sp=kTRUE);
-  void FillData(Int_t minhits,Bool_t expand);
-  void LoadOfflineData(Int_t event);
+  virtual void LoadData(Int_t event,Bool_t sp=kTRUE);
+  virtual void FillData(Int_t minhits,Bool_t expand);
+  virtual void WriteRemaining(Bool_t select);
   void CompressAndExpand();
-  void WriteRemaining(Bool_t select);
-  void RestoreData();
+  void RestoreData(Bool_t remaining_only=kFALSE);
   void DoBench(Char_t *fname="benchmark");
   
   void SetBitNumbers(Int_t pad,Int_t time,Int_t charge,Int_t shape);
-  void SetResolutions(Float_t xyresidual,Float_t zresidual,Int_t clustercharge,Float_t xywidth=0.005,Float_t zwidth=0.005);
+  void SetTransverseResolutions(Float_t res1,Float_t res2,Float_t res3,Float_t width=0.005);
+  void SetLongitudinalResolutions(Float_t res1,Float_t res2,Float_t res3,Float_t width=0.005);
   
   static const Int_t GetNPadBits() {return fNumPadBits;}
   static const Int_t GetNTimeBits() {return fNumTimeBits;}
   static const Int_t GetNChargeBits() {return fNumChargeBits;}
   static const Int_t GetNShapeBits() {return fNumShapeBits;}
-  static const Float_t GetXYResidualStep() {return fXYResidualStep;}
-  static const Float_t GetZResidualStep() {return fZResidualStep;}
   static const Float_t GetXYWidthStep() {return fXYWidthStep;}
   static const Float_t GetZWidthStep() {return fZWidthStep;}
   static const Int_t GetClusterCharge() {return fClusterCharge;}
+  static const Float_t GetXYResidualStep(Int_t row);
+  static const Float_t GetZResidualStep(Int_t row);
+
 
   ClassDef(AliL3DataCompressor,1) 
 

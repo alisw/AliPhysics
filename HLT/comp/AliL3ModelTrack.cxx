@@ -61,7 +61,6 @@ AliL3ModelTrack::~AliL3ModelTrack()
 	delete [] fOverlap[i];
       delete [] fOverlap;
     }
-
 }
 
 void AliL3ModelTrack::Init(Int_t slice,Int_t patch)
@@ -154,8 +153,8 @@ void AliL3ModelTrack::SetCluster(Int_t row,Float_t fpad,Float_t ftime,Float_t ch
   else
     {
       cl->fPresent|=0x1;//set first bit to true
-      cl->fDTime = (ftime - GetTimeHit(row))/(AliL3DataCompressor::GetZResidualStep()/AliL3Transform::GetZWidth());   
-      cl->fDPad = (fpad - GetPadHit(row))/(AliL3DataCompressor::GetXYResidualStep()/AliL3Transform::GetPadPitchWidth(patch));
+      cl->fDTime = (ftime - GetTimeHit(row))/(AliL3DataCompressor::GetZResidualStep(row)/AliL3Transform::GetZWidth());   
+      cl->fDPad = (fpad - GetPadHit(row))/(AliL3DataCompressor::GetXYResidualStep(row)/AliL3Transform::GetPadPitchWidth(patch));
       cl->fDCharge = charge;// - AliL3DataCompressor::GetClusterCharge();
       //cl->fSlice = fSlice;
       if(sigmaY2==0 && sigmaZ2==0)
@@ -242,8 +241,8 @@ void AliL3ModelTrack::FillModel()
   fTrackModel->fFirstPointZ = GetFirstPointZ();
   fTrackModel->fTgl = GetTgl();
   fTrackModel->fPsi = GetPsi();
-  fTrackModel->fLength = (Short_t)GetLength();
-  fTrackModel->fNClusters = fNClusters;
+  //fTrackModel->fLength = (Short_t)GetLength();
+  //fTrackModel->fNClusters = fNClusters;
 }
 
 void AliL3ModelTrack::FillTrack()
@@ -260,8 +259,8 @@ void AliL3ModelTrack::FillTrack()
   SetFirstPoint(fTrackModel->fFirstPointX,fTrackModel->fFirstPointY,fTrackModel->fFirstPointZ);
   SetTgl(fTrackModel->fTgl);
   SetPsi(fTrackModel->fPsi);
-  SetLength(fTrackModel->fLength);
-  fNClusters = fTrackModel->fNClusters;
+  //SetLength(fTrackModel->fLength);
+  fNClusters = AliL3Transform::GetNRows(fPatch);//fTrackModel->fNClusters;
   SetPt((AliL3Transform::GetBFact()*AliL3Transform::GetBField())/fabs(GetKappa()));
     
   CalculateHelix();
@@ -386,7 +385,7 @@ Bool_t AliL3ModelTrack::GetPad(Int_t row,Float_t &pad)
 
   AliL3ClusterModel *cl = GetClusterModel(row);
   Int_t patch = AliL3Transform::GetPatch(row);
-  pad = cl->fDPad*(AliL3DataCompressor::GetXYResidualStep()/AliL3Transform::GetPadPitchWidth(patch)) + GetPadHit(row);
+  pad = cl->fDPad*(AliL3DataCompressor::GetXYResidualStep(row)/AliL3Transform::GetPadPitchWidth(patch)) + GetPadHit(row);
   
   return IsPresent(row);
 }
@@ -394,7 +393,7 @@ Bool_t AliL3ModelTrack::GetPad(Int_t row,Float_t &pad)
 Bool_t AliL3ModelTrack::GetTime(Int_t row,Float_t &time)
 {
   AliL3ClusterModel *cl = GetClusterModel(row);
-  time = cl->fDTime*(AliL3DataCompressor::GetZResidualStep()/AliL3Transform::GetZWidth()) + GetTimeHit(row);
+  time = cl->fDTime*(AliL3DataCompressor::GetZResidualStep(row)/AliL3Transform::GetZWidth()) + GetTimeHit(row);
   
   return IsPresent(row);
 }

@@ -55,11 +55,13 @@ AliL3Display::AliL3Display(Int_t *slice,Char_t *gfile)
 {
   //Ctor. Specify which slices you want to look at.
 
-  TFile *file = new TFile(gfile);
-  if(!file) printf("NO FILE\n");
-  if(!file->IsOpen())
-    LOG(AliL3Log::kError,"AliL3Display::AliL3Display","File Open")
-      <<"Geometry file " << gfile << " does not exist"<<ENDLOG;
+  TFile *file = TFile::Open(gfile);
+  if(!file)
+    {
+      LOG(AliL3Log::kError,"AliL3Display::AliL3Display","File Open")
+	<<"Geometry file " << gfile << " does not exist!"<<ENDLOG;
+      return;
+    }
   
   fGeom = (TGeometry*)file->Get("AliceGeom");
   fMinSlice = slice[0];

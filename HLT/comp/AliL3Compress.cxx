@@ -98,10 +98,11 @@ Bool_t AliL3Compress::WriteFile(AliL3TrackArray *tracks,Char_t *filename)
       
       track->FillModel();
       model = track->GetModel();
-      if(model->fNClusters==0) continue;
+      //if(model->fNClusters==0) continue;
       clusters = track->GetClusters();
       if(fwrite(model,sizeof(AliL3TrackModel),1,file)!=1) break;
-      if(fwrite(clusters,model->fNClusters*sizeof(AliL3ClusterModel),1,file)!=1) break;
+      //if(fwrite(clusters,model->fNClusters*sizeof(AliL3ClusterModel),1,file)!=1) break;
+      if(fwrite(clusters,AliL3Transform::GetNRows(fPatch)*sizeof(AliL3ClusterModel),1,file)!=1) break;
       count++;
       
     }
@@ -157,7 +158,8 @@ Bool_t AliL3Compress::ReadFile(Char_t which,Char_t *filename)
       AliL3TrackModel *model = track->GetModel();
       AliL3ClusterModel *clusters = track->GetClusters();
       if(fread(model,sizeof(AliL3TrackModel),1,file)!=1) break;
-      if(fread(clusters,model->fNClusters*sizeof(AliL3ClusterModel),1,file)!=1) break;
+      //if(fread(clusters,model->fNClusters*sizeof(AliL3ClusterModel),1,file)!=1) break;
+      if(fread(clusters,AliL3Transform::GetNRows(fPatch)*sizeof(AliL3ClusterModel),1,file)!=1) break;
       track->FillTrack();
     }
 
@@ -211,7 +213,7 @@ Bool_t AliL3Compress::CompressFile()
       fwrite(&track,sizeof(AliL3TrackModel),1,output->file);
       
       Int_t origslice=-1,slice,clustercount=0;
-      for(Int_t i=0; i<track.fNClusters; i++)
+      for(Int_t i=0; i<AliL3Transform::GetNRows(fPatch); i++)
 	{
 	  if(fread(&cluster,sizeof(AliL3ClusterModel),1,input)!=1) break;
 	  
@@ -365,7 +367,7 @@ Bool_t AliL3Compress::ExpandFile()
 
       memset(clusters,0,AliL3Transform::GetNRows(fPatch)*sizeof(AliL3ClusterModel));
       Int_t origslice=-1,clustercount=0;
-      for(Int_t i=0; i<trackmodel.fNClusters; i++)
+      for(Int_t i=0; i<AliL3Transform::GetNRows(fPatch); i++)
 	{
 	  Int_t temp,sign;
 	  
@@ -434,8 +436,8 @@ Bool_t AliL3Compress::ExpandFile()
 	  clustercount++;
 	}
       count++;
-      fwrite(clusters,(trackmodel.fNClusters)*sizeof(AliL3ClusterModel),1,output);
-      
+      //fwrite(clusters,(trackmodel.fNClusters)*sizeof(AliL3ClusterModel),1,output);
+      fwrite(clusters,AliL3Transform::GetNRows(fPatch)*sizeof(AliL3ClusterModel),1,output);
     }
   
   delete [] clusters;
@@ -477,8 +479,8 @@ void AliL3Compress::PrintCompRatio(ofstream *outfile)
   
   if(digit_size==0)
     {
-      cerr<<"AliL3Compress::PrintCompRatio : Zero digit size "<<endl;
-      exit(5);
+      cerr<<"AliL3Compress::PrintCompRatio : Zero digit size, not able to obtain comp. ratios!"<<endl;
+      return;
     }
   
   Float_t compratio = (Float_t)(compress_size + remain_size)/(Float_t)digit_size;

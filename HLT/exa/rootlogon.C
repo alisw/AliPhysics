@@ -5,7 +5,14 @@
 
   gSystem->Load("$(ROOTSYS)/lib/libPhysics");
   gSystem->Load("$(ROOTSYS)/lib/libEG");
-  gSystem->Load("$(ROOTSYS)/lib/libMC");
+
+  Int_t saveErrIgLevel=gErrorIgnoreLevel;
+  gErrorIgnoreLevel=kFatal; //dont report errors
+  if(gSystem->Load("$(ROOTSYS)/lib/libMC")==-1){
+    gSystem->Load("$(ROOTSYS)/lib/libGeom");
+    gSystem->Load("$(ROOTSYS)/lib/libVMC");
+  }
+  gErrorIgnoreLevel=saveErrIgLevel;
 
   if(1)
     {
@@ -37,25 +44,28 @@
         gSystem->Load("$(ALIHLT_BASEDIR)/lib_$(USER)/libAliL3Comp");
       }
       cout<<"HLT libraries loaded"<<endl;
+
+      if(strcmp("false",getenv("ALIHLT_NOLOGGING"))==0){
+	AliL3Logger gLogger;
+	gLogger.UseStream();
+      }
+
+      if(getenv("ALIHLT_TRANSFORMFILE")){
+	cout << "Loading config \"" << getenv("ALIHLT_TRANSFORMFILE") << "\": " << flush;
+	if(AliL3Transform::Init(getenv("ALIHLT_TRANSFORMFILE")))
+	  cout << "Ok!" << endl;
+	else cout << "Failed!" << endl;
+      }
+
+      Int_t saveErrIgLevel=gErrorIgnoreLevel;
+      gErrorIgnoreLevel=kFatal; //dont report errors
+      gSystem->Load("MakePileup_C.so");
+      gSystem->Load("Read_C.so");
+      gErrorIgnoreLevel=saveErrIgLevel;
+
+      if(strcmp("true",getenv("ALIHLT_DOMC"))==0) gSystem->SetIncludePath(" -Ddo_mc");
+      gSystem->SetIncludePath(" -I$ALIHLT_TOPDIR/hough -I$ALIHLT_TOPDIR/src -I$ALIHLT_TOPDIR/comp -I$ALIHLT_TOPDIR/misc -I$ALICE_ROOT/include/ -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER ");
     }
-
-  //gSystem->Load("MakePileup_C.so");
-  //gSystem->Load("Read_C.so");
-
-  if(strcmp("true",getenv("ALIHLT_DOMC"))==0) gSystem->SetIncludePath(" -Ddo_mc");
-  gSystem->SetIncludePath(" -I$ALIHLT_TOPDIR/hough -I$ALIHLT_TOPDIR/src -I$ALIHLT_TOPDIR/comp -I$ALIHLT_TOPDIR/misc -I$ALICE_ROOT/include/ -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER ");
- 
-  if(strcmp("false",getenv("ALIHLT_NOLOGGING"))==0){
-    AliL3Logger gLogger;
-    gLogger.UseStream();
-  }
-
-/*
-  if(getenv("ALIHLT_TRANSFORMFILE")){
-    cout << "Try to load config from \"" << getenv("ALIHLT_TRANSFORMFILE") << "\" path" << endl;
-    AliL3Transform::Init(getenv("ALIHLT_TRANSFORMFILE"));
-  }
-*/
 
   gStyle->SetStatColor(10);
   gStyle->SetStatBorderSize(1);

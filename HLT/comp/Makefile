@@ -25,6 +25,7 @@ OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(ADD_C_OBJS) $(DICTO)
 endif
 
 ifeq ($(ALIHLT_USEPACKAGE),ALIROOT)
+SRCS += AliL3OfflineDataCompressor.cxx
 HDRS = $(SRCS:.cxx=.h) $(MODNAME)LinkDef.h
 OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(ADD_C_OBJS) $(DICTO)
 endif

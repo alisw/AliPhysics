@@ -13,7 +13,7 @@
 
 DEFSTR = -Dno_root
 OBJDIR = lib_alone
-INCLUDES = -I$(ALIHLT_TOPDIR)/hough -I$(ALIHLT_TOPDIR)/src -I$(ALIHLT_TOPDIR)/comp -I$(ALIHLT_TOPDIR)/misc -I$(ALIHLT_TOPDIR)/trigger
+INCLUDES = -I$(ALIHLT_TOPDIR)/hough -I$(ALIHLT_TOPDIR)/src -I$(ALIHLT_TOPDIR)/comp -I$(ALIHLT_TOPDIR)/misc -I$(ALIHLT_TOPDIR)/trigger -I$(ALIHLT_TOPDIR)/kalman
 
 ifeq ($(ALIHLT_USEPACKAGE),ROOT) 
 INCLUDES += -I$(ROOTSYS)/include 

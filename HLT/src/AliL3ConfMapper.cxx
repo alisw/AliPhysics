@@ -39,8 +39,9 @@ AliL3ConfMapper::AliL3ConfMapper()
   fVolume = NULL;
   fRow = NULL;
   fBench = (Bool_t)true;
-  fParamSet = (Bool_t)false;
   fVertexConstraint = (Bool_t)true;
+  fParamSet[0]=0;
+  fParamSet[1]=0;
 }
 
 
@@ -246,7 +247,7 @@ void AliL3ConfMapper::MainVertexTracking_a()
 {
   //Tracking with vertex constraint.
 
-  if(!fParamSet)
+  if(!fParamSet[(Int_t)kTRUE])
     {
       LOG(AliL3Log::kError,"AliL3ConfMapper::MainVertexTracking","Parameters")<<AliL3Log::kDec<<
 	"Tracking parameters not set!"<<ENDLOG;
@@ -269,7 +270,7 @@ void AliL3ConfMapper::MainVertexTracking_b()
 {
   //Tracking with vertex constraint.
 
-  if(!fParamSet)
+  if(!fParamSet[(Int_t)kTRUE])
     {
       LOG(AliL3Log::kError,"AliL3ConfMapper::MainVertexTracking","Parameters")<<AliL3Log::kDec<<
 	"Tracking parameters not set!"<<ENDLOG;
@@ -290,7 +291,7 @@ void AliL3ConfMapper::MainVertexTracking()
 {
   //Tracking with vertex constraint.
 
-  if(!fParamSet)
+  if(!fParamSet[(Int_t)kTRUE])
     {
       LOG(AliL3Log::kError,"AliL3ConfMapper::MainVertexTracking","Parameters")<<AliL3Log::kDec<<
 	"Tracking parameters not set!"<<ENDLOG;
@@ -319,7 +320,14 @@ void AliL3ConfMapper::NonVertexTracking()
   //in order to do tracking on the remaining clusters.
   //The conformal mapping is now done with respect to the first cluster
   //assosciated with this track.
-
+  
+  if(!fParamSet[(Int_t)kFALSE])
+    {
+      LOG(AliL3Log::kError,"AliL3ConfMapper::NonVertexTracking","Parameters")<<AliL3Log::kDec<<
+	"Tracking parameters not set!"<<ENDLOG;
+      return;
+    }
+  
   SetVertexConstraint(false);
   ClusterLoop();
   LOG(AliL3Log::kInformational,"AliL3ConfMapper::NonVertexTracking","ntracks")<<AliL3Log::kDec<<
@@ -343,6 +351,7 @@ void AliL3ConfMapper::MainVertexSettings(Int_t trackletlength, Int_t tracklength
   SetMinPoints(tracklength,(Bool_t)true);
   fMaxPhi=maxphi;
   fMaxEta=maxeta;
+  SetParamDone(kTRUE);
 }
 
 void AliL3ConfMapper::NonVertexSettings(Int_t trackletlength, Int_t tracklength,
@@ -352,6 +361,7 @@ void AliL3ConfMapper::NonVertexSettings(Int_t trackletlength, Int_t tracklength,
   SetRowScopeTracklet(rowscopetracklet, (Bool_t)false);
   SetRowScopeTrack(rowscopetrack, (Bool_t)false);
   SetMinPoints(tracklength,(Bool_t)false);
+  SetParamDone(kFALSE);
 }
 
 void AliL3ConfMapper::SetTrackCuts(Double_t hitChi2Cut, Double_t goodHitChi2, Double_t trackChi2Cut,Int_t maxdist,Bool_t vertexconstraint)
@@ -594,8 +604,8 @@ AliL3ConfMapPoint *AliL3ConfMapper::GetNextNeighbor(AliL3ConfMapPoint *start_hit
     }
 
   //make a smart loop
-  Int_t loop_eta[9] = {0,0,0,-1,-1,-1,1,1,1};
-  Int_t loop_phi[9] = {0,-1,1,0,-1,1,0,-1,1};
+  Int_t loop_eta[25] = {0,0,0,-1,-1,-1,1,1,1, 0,0,-1,-1,1,1,-2,-2,-2,-2,-2,2,2,2,2,2};
+  Int_t loop_phi[25] = {0,-1,1,0,-1,1,0,-1,1, -2,2,-2,2,-2,2,-2,-1,0,1,2,-2,-1,0,1,2};
   
   if(min_row < fRowMin)
     min_row = fRowMin;
@@ -612,12 +622,15 @@ AliL3ConfMapPoint *AliL3ConfMapper::GetNextNeighbor(AliL3ConfMapPoint *start_hit
 	    {
 	      sub_phi_segm = start_hit->phiIndex + loop_phi[i];
 	      
-	      if(sub_phi_segm<0)
+	      if(sub_phi_segm < 0 || sub_phi_segm >= fNumPhiSegment)
+		continue;
+	      /*
+		if(sub_phi_segm<0)
 		sub_phi_segm += fNumPhiSegment;
-	      
-	      else if(sub_phi_segm >=fNumPhiSegment)
+		
+		else if(sub_phi_segm >=fNumPhiSegment)
 		sub_phi_segm -= fNumPhiSegment;
-	      
+	      */
 	      //loop over sub eta segments
 	      
 	      sub_eta_segm = start_hit->etaIndex + loop_eta[i];

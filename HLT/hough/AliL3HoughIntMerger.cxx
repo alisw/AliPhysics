@@ -22,9 +22,10 @@ using namespace std;
 
 ClassImp(AliL3HoughIntMerger)
 
-AliL3HoughIntMerger::AliL3HoughIntMerger() : AliL3Merger(1,"AliL3HoughTrack")
+AliL3HoughIntMerger::AliL3HoughIntMerger()
 {
   //Default constructor
+  InitMerger(1,"AliL3HoughTrack");
   fRowMax = fRowMin = 0;
   SetParameters(0.001,0.05,10);
   Is2Global(kFALSE);

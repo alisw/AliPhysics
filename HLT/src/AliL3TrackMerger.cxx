@@ -34,14 +34,17 @@ AliL3TrackMerger::AliL3TrackMerger(){
 }
 
 
-AliL3TrackMerger::AliL3TrackMerger(Int_t nsubsectors):AliL3Merger(nsubsectors){
+AliL3TrackMerger::AliL3TrackMerger(Int_t nsubsectors) : AliL3Merger()
+{
   //Constructor.
+  InitMerger(nsubsectors);
   fNSubSector = nsubsectors;
   Is2Global(kFALSE);
   fSlow = kFALSE;
   SetParameter();
   fRowMin = new Int_t[nsubsectors];
   fRowMax = new Int_t[nsubsectors];
+  
 }
 
 AliL3TrackMerger::~AliL3TrackMerger(){

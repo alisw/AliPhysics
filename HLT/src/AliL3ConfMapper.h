@@ -30,7 +30,7 @@ class AliL3ConfMapper {
 
   //  AliTPCParam *fParam;   
   AliL3Vertex *fVertex; //!
-  Bool_t fParamSet;
+  Bool_t fParamSet[2];
   Bool_t fVertexFinder;  //Include vertexfinding or not (latter case vertex=(0,0,0))
 
   AliL3ConfMapPoint *fHit;  //!
@@ -99,7 +99,9 @@ class AliL3ConfMapper {
 
   void SetPointers();
   Double_t CpuTime();
-
+  void SetParamDone(Bool_t vertex_constraint) {fParamSet[(Int_t)vertex_constraint] = kTRUE;}
+  
+  
  public:
 
   AliL3ConfMapper();
@@ -138,7 +140,6 @@ class AliL3ConfMapper {
   void SetTrackCuts(Double_t hitChi2Cut, Double_t goodHitChi2, Double_t trackChi2Cut, Int_t maxdist,Bool_t vertexconstraint); 
   void SetTrackletCuts(Double_t maxangle,Double_t goodDist,Bool_t vertex_constraint);   //Set cut of tracklet for the given vertex_constraint
   void SetNSegments(Int_t f,Int_t g) {fNumPhiSegment=f,fNumEtaSegment=g;} //Set number of subvolumes (#segments in (phi,eta)
-  void SetParamDone(Bool_t f) {fParamSet = (Bool_t)f;}
   void SetMaxDca(Double_t f) {fMaxDca = f;}
 
   ClassDef(AliL3ConfMapper,1) //Base class for conformal mapping tracking

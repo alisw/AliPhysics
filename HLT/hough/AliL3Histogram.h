@@ -11,11 +11,13 @@
 
 class AliL3Histogram {
   
- protected:
+ private:
+  Double_t fBinwidthX;
+  Double_t fBinwidthY;
   
+ protected:
   Int_t *fContent; //!
   Char_t fName[100];
-  //Char_t fID[100]; //not used 
   Int_t fNxbins;
   Int_t fNybins;
   Int_t fNcells;
@@ -30,8 +32,6 @@ class AliL3Histogram {
   Double_t fYmin;
   Double_t fXmax;
   Double_t fYmax;
-  Double_t fBinwidthX;
-  Double_t fBinwidthY;
 
 #ifdef use_root
   TH2F *fRootHisto;

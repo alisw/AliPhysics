@@ -122,19 +122,10 @@ Int_t AliL3Histogram::FindYbin(Double_t y)
 
 Int_t AliL3Histogram::GetBin(Int_t xbin,Int_t ybin)
 {
-  if(xbin < 0 || xbin > GetLastXbin())
-    {
-      LOG(AliL3Log::kError,"AliL3Histogram::GetBin","array")<<AliL3Log::kDec<<
-	"xbin out of range "<<xbin<<ENDLOG;
-      return 0;
-    }
-
-  if(ybin < 0 || ybin > GetLastYbin())
-    {
-      LOG(AliL3Log::kError,"AliL3Histogram::Getbin","array")<<AliL3Log::kDec<<
-	"ybin out of range "<<xbin<<ENDLOG;
-      return 0;
-    }
+  if(xbin < fFirstXbin || xbin > fLastXbin)
+    return 0;
+  if(ybin < fFirstYbin || ybin > fLastYbin)
+    return 0;
     
   return xbin + ybin*(fNxbins+2);
 }
@@ -231,12 +222,24 @@ void AliL3Histogram::Add(AliL3Histogram *h1,Double_t weight)
 
 Double_t AliL3Histogram::GetBinCenterX(Int_t xbin)
 {
+  if(xbin < fFirstXbin || xbin > fLastXbin)
+    {
+      LOG(AliL3Log::kError,"AliL3Histogram::GetBinCenterX","xbin")
+	<<"Bin-value out of range "<<xbin<<ENDLOG;
+      return -1;
+    }
   //  return fXmin + (xbin-1) * fBinwidthX + 0.5*fBinwidthX;
   return fXmin + (xbin-0.5) * fBinwidthX;
 }
 
 Double_t AliL3Histogram::GetBinCenterY(Int_t ybin)
 {
+  if(ybin < fFirstYbin || ybin > fLastYbin)
+    {
+      LOG(AliL3Log::kError,"AliL3Histogram::GetBinCenterY","ybin")
+	<<"Bin-value out of range "<<ybin<<ENDLOG;
+      return -1;
+    }
   //  return fYmin + (ybin-1) * fBinwidthY + 0.5*fBinwidthY;
   return fYmin + (ybin-0.5) * fBinwidthY;
 }

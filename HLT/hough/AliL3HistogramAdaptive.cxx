@@ -16,13 +16,16 @@ using namespace std;
 //_____________________________________________________________
 // AliL3HistogramAdaptive
 //
-// 2D histogram class
+// 2D histogram class adapted for kappa and psi as used in the Circle Hough Transform.
+// The bins in kappa is not linear, but has a width which is specified by argument
+// ptres in the constructor. This gives the relative pt resolution which should
+// be kept throughout the kappa range. 
 
 ClassImp(AliL3HistogramAdaptive)
 
 AliL3HistogramAdaptive::AliL3HistogramAdaptive() : AliL3Histogram()
 {
-  
+  fKappaBins=0;
 }
 
   
@@ -37,10 +40,9 @@ AliL3HistogramAdaptive::AliL3HistogramAdaptive(Char_t *name,Double_t minpt,Doubl
 
   fMinPt = minpt;
   fMaxPt = maxpt;
-  fNxbins = InitPtBins();
-  //cout<<"Setting "<<fNxbins<<" bins on x"<<endl;
-  
+  fNxbins = InitKappaBins();
   fNybins = nybins;
+  
   fYmin = ymin;
   fYmax = ymax;
   fFirstXbin=1;
@@ -48,7 +50,7 @@ AliL3HistogramAdaptive::AliL3HistogramAdaptive(Char_t *name,Double_t minpt,Doubl
   fLastXbin = fNxbins;
   fLastYbin = fNybins;
   fNcells = (fNxbins+2)*(fNybins+2);
-  
+
   fThreshold=0;
   fContent = new Int_t[fNcells];
   Reset();
@@ -56,25 +58,40 @@ AliL3HistogramAdaptive::AliL3HistogramAdaptive(Char_t *name,Double_t minpt,Doubl
 
 AliL3HistogramAdaptive::~AliL3HistogramAdaptive()
 {
-  
+  if(fKappaBins)
+    delete [] fKappaBins;
 }
 
-Int_t AliL3HistogramAdaptive::InitPtBins()
+Int_t AliL3HistogramAdaptive::InitKappaBins()
 {
+  //Here a LUT for the kappa values created. This has to be done since
+  //the binwidth in kappa is not constant, but change according to the
+  //set relative resolution in pt.
+  //Since the kappa values are symmetric about origo, the size of the
+  //LUT is half of the total number of bins in kappa direction.
   
   Double_t pt = fMinPt,delta_pt,local_pt;
   Int_t bin=0;
-
+  
   while(pt < fMaxPt)
     {
       local_pt = pt;
-            
       delta_pt = fPtres*local_pt;
       pt += delta_pt;
       bin++;
-      //cout<<"Setting "<<bin<<" at step "<<local_pt<<" "<<pt<<" interval "<<delta_pt<<endl;
     }
-
+  fKappaBins = new Double_t[bin+1];
+  pt=fMinPt;
+  bin=0;
+  fKappaBins[bin] = AliL3Transform::GetBFact()*AliL3Transform::GetBField()/fMinPt; 
+  while(pt < fMaxPt)
+    {
+      local_pt = pt;
+      delta_pt = fPtres*local_pt;
+      pt += delta_pt;
+      bin++;
+      fKappaBins[bin] = AliL3Transform::GetBFact()*AliL3Transform::GetBField()/pt;
+    }
   return (bin+1)*2; //Both negative and positive kappa.
 }
 
@@ -101,37 +118,26 @@ Int_t AliL3HistogramAdaptive::FindBin(Double_t x,Double_t y)
 
 Int_t AliL3HistogramAdaptive::FindXbin(Double_t x)
 {
+
+  if(x < fXmin || x > fXmax || fabs(x) < fKappaBins[(fNxbins/2-1)])
+    return -1;
   
-  Double_t ptfind = fabs(AliL3Transform::GetBFact()*AliL3Transform::GetBField()/x);
-  if(ptfind < fMinPt || ptfind > fMaxPt) return -1;
-  //cout<<"Looking for pt "<<ptfind<<endl;
-  Double_t pt = fMinPt;
-  Double_t delta_pt,local_pt;
+  //Remember that kappa value is decreasing with bin number!
+  //Also, the bin numbering starts at 1 and ends at fNxbins,
+  //so the corresponding elements in the LUT is bin - 1.
+
   Int_t bin=0;
-  while(pt < fMaxPt)
+  while(bin < fNxbins/2)
     {
-      local_pt = pt;
-      delta_pt = fPtres*local_pt;
-      pt += delta_pt;
-      
-      if(ptfind >= local_pt && ptfind < pt)
-	{
-	  //	  cout<<"Found in range "<<local_pt<<" "<<pt<<endl;
-	  break;
-	}
+      if(fabs(x) <= fKappaBins[bin] && fabs(x) > fKappaBins[bin+1])
+	break;
       bin++;
     }
-  if(bin >= fNxbins/2)
-    cerr<<"AliL3HistogramAdaptive::FindXbin : Bin out of range : "<<bin<<endl;
-  
-  //cout<<"Found xbin "<<bin<<" and x is "<<x<<endl;
   if(x < 0)
-    {
-      //        cout<<"returning xbin "<<bin<<endl;
-      return bin;
-    }
-  else
-    return fNxbins - 1 - bin;
+    return bin + 1;
+  else 
+    return fNxbins - bin;
+  
 }
 
 Int_t AliL3HistogramAdaptive::FindYbin(Double_t y)
@@ -140,46 +146,50 @@ Int_t AliL3HistogramAdaptive::FindYbin(Double_t y)
     return 0;
   
   return 1 + (Int_t)(fNybins*(y-fYmin)/(fYmax-fYmin));
-
 }
 
 Double_t AliL3HistogramAdaptive::GetBinCenterX(Int_t xbin)
 {
-  //cout<<"Looking for bin "<<xbin<<endl;
-  if(xbin < 0 || xbin > fNxbins)
+  if(xbin < fFirstXbin || xbin > fLastXbin)
     {
-      cerr<<"AliL3HistogramAdaptive::GetBinCenterX : Xbin out of range "<<xbin<<endl;
+      LOG(AliL3Log::kWarning,"AliL3HistogramAdaptive::GetBinCenterX","Bin-value")
+	<<"XBinvalue out of range "<<xbin<<ENDLOG;
       return 0;
     }
-  Double_t pt = fMinPt;
-  Double_t delta_pt=0,local_pt=0;
-  Int_t bin=0;
-  while(pt < fMaxPt)
-    {
-      local_pt = pt;
-      delta_pt = fPtres*local_pt;
-      pt += delta_pt;
-      if(xbin == bin || xbin == fNxbins - 1 - bin)
-	break;
-      bin++;
-    }
-  //cout<<"get center at ptinterval "<<local_pt<<" "<<pt;
   
-  Double_t kappa = AliL3Transform::GetBFact()*AliL3Transform::GetBField()/(local_pt + 0.5*delta_pt);
-  //cout<<" found pt "<<local_pt+delta_pt*0.5<<" kappa "<<kappa<<" xbin "<<xbin<<" fNxbins/2-1 "<<fNxbins/2-1<<endl;
-  if(xbin == bin)
+  //The bin numbers go from 1 to fNxbins, so the corresponding
+  //element in the LUT is xbin - 1. This is the reason why we 
+  //substract a 1 here:
+  
+  Int_t bin = xbin;
+  bin -= 1;
+  if(bin >= fNxbins/2)
+    bin = fNxbins - 1 - bin;
+  
+  //Remember again that the kappa-values are _decreasing_ with bin number.
+  
+  Double_t binwidth = fKappaBins[bin] - fKappaBins[bin+1];
+  Double_t kappa = fKappaBins[bin] - 0.5*binwidth;
+  if(xbin < fNxbins/2)
     return -1.*kappa;
   else
     return kappa;
+
 }
 
 Double_t AliL3HistogramAdaptive::GetBinCenterY(Int_t ybin)
 {
-  
+  if(ybin < fFirstYbin || ybin > fLastYbin)
+    {
+      LOG(AliL3Log::kError,"AliL3HistogramAdaptive::GetBinCenterY","ybin")
+	<<"Bin-value out of range "<<ybin<<ENDLOG;
+      return -1;
+    }
   Double_t binwidth = (fYmax - fYmin) / fNybins;
-  return fYmin + (ybin-1) * binwidth + 0.5*binwidth;
-  
+  return fYmin + (ybin-0.5) * binwidth;
+
 }
+
 
 void AliL3HistogramAdaptive::Draw(Char_t *option)
 {
@@ -189,10 +199,10 @@ void AliL3HistogramAdaptive::Draw(Char_t *option)
   
   Double_t kappa,psi;
   Int_t content,bin;
-  for(Int_t i=0; i<fNxbins; i++)
+  for(Int_t i=fFirstXbin; i<=fLastXbin; i++)
     {
       kappa = GetBinCenterX(i);
-      for(Int_t j=0; j<fNybins; j++)
+      for(Int_t j=fFirstYbin; j<=fLastYbin; j++)
 	{
 	  psi = GetBinCenterY(j);
 	  bin = GetBin(i,j);

@@ -25,12 +25,20 @@
 
 ClassImp(AliL3Fitter)
 
-AliL3Fitter::AliL3Fitter(AliL3Vertex *vertex)
+
+AliL3Fitter::AliL3Fitter()
+{
+  fTrack=0;
+  fVertex=0;
+  memset(fClusters,0,36*6*sizeof(AliL3SpacePointData*));
+}
+
+AliL3Fitter::AliL3Fitter(AliL3Vertex *vertex,Bool_t vertexconstraint)
 {
   //constructor
   fTrack=0;
   fVertex = vertex;
-  fVertexConstraint=kTRUE;
+  fVertexConstraint=vertexconstraint;
   memset(fClusters,0,36*6*sizeof(AliL3SpacePointData*));
 }
 
@@ -77,6 +85,70 @@ void AliL3Fitter::LoadClusters(Char_t *path,Int_t event,Bool_t sp)
 	    break;
 	}
     }
+}
+
+void AliL3Fitter::SortTrackClusters(AliL3Track *track)
+{
+  //Sort the internal cluster list in each track with respect to row numbering.
+  //This may be necessary when no conventional track follower has been
+  //applied, in which the cluster list has been maintained in a more
+  //arbitrary fashion.
+
+  Int_t nhits = track->GetNHits();
+  Int_t *ids = (Int_t*)track->GetHitNumbers();
+  Int_t *origids = new Int_t[nhits];
+  Int_t *mk = new Int_t[nhits];
+  Int_t k;
+
+  for(k=0; k<nhits; k++) {origids[k] = ids[k]; mk[k] = -1;}
+  
+  Int_t slice,patch,id,padrow,maxrow,maxk;
+  UInt_t pos;
+  for(Int_t j=0; j<nhits; j++)
+    {
+      maxrow=-1;
+      maxk=200;
+      for(k=0; k<nhits; k++)
+	{
+	  id=ids[k];
+	  if(id < 0) continue;
+	  slice = (id>>25) & 0x7f;
+	  patch = (id>>22) & 0x7;
+	  pos = id&0x3fffff;	      
+	  AliL3SpacePointData *points = fClusters[slice][patch];
+	  padrow = points[pos].fPadRow;
+	  if(padrow > maxrow)
+	    {
+	      maxrow = padrow;
+	      maxk=k;
+	    }
+	}
+      mk[j]=maxk;
+      ids[maxk]=-1;
+    }
+    
+  for(k=0; k<nhits; k++)
+    ids[k] = origids[mk[k]];
+  delete [] origids;
+  delete [] mk;
+}
+
+void AliL3Fitter::UpdateTrack(AliL3Track *track)
+{
+  //Update the track parameters to the first point on the track.
+  //This function should be called after the track fit has been
+  //done, in order to calculate the track parameters at the 
+  //first point on the track. 
+  
+  UInt_t *ids = track->GetHitNumbers();
+  Int_t nhits = track->GetNHits();
+  UInt_t id=ids[nhits-1];
+  Int_t slice = (id>>25) & 0x7f;
+  Int_t patch = (id>>22) & 0x7;
+  UInt_t pos = id&0x3fffff;	      
+  AliL3SpacePointData *points = fClusters[slice][patch];
+  track->SetFirstPoint(points[pos].fX,points[pos].fY,track->GetZ0());
+  track->UpdateToFirstPoint();
 }
 
 Int_t AliL3Fitter::FitHelix(AliL3Track *track)
@@ -497,9 +569,8 @@ Int_t AliL3Fitter::FitLine ( )
       AliL3SpacePointData *pointsl = fClusters[slice][patch];
       dx = pointsf[posf].fX - pointsl[posl].fX;
       dy = pointsf[posf].fY - pointsl[posl].fY;
-      
     }
-  
+
   Double_t localPsi = 0.5F * sqrt ( dx*dx + dy*dy ) / radius ;
   Double_t total_s ;
   
@@ -533,6 +604,8 @@ Int_t AliL3Fitter::FitLine ( )
 	  dx = points[pos].fX -lastpoints[lastpos].fX;
 	  dy = points[pos].fY -lastpoints[lastpos].fY;
 	  dpsi = 0.5 * (Double_t)sqrt ( dx*dx + dy*dy ) / radius ;
+	  if(fabs(dpsi) > 1)
+	    return 1;
 	  fTrack->SetPsierr(dpsi);
 	  s = fS[i-1] - 2.0 * radius * (Double_t)asin ( dpsi ) ;
 	  fS[i]=s;

@@ -16,6 +16,9 @@
 #include "AliL3TrackArray.h"
 #include "AliL3Track.h"
 #include "AliL3KalmanTrack.h"
+#include "AliL3TrackSegmentData.h"
+#include "AliL3InterMerger.h"
+#include "AliL3TrackMerger.h"
 
 #include "TNtuple.h"
 
@@ -25,9 +28,10 @@
 
 ClassImp(AliL3Kalman)
 
-AliL3Kalman::AliL3Kalman(Char_t *datapath, Int_t *slice, Int_t min_clusters = 0)
-{
+AliL3Kalman::AliL3Kalman(Char_t *datapath, Int_t *slice, Int_t min_clusters = 0){
   // Constructor
+
+  Int_t fEvent = 0;
 
   if (slice)
     {
@@ -49,7 +53,7 @@ AliL3Kalman::AliL3Kalman(Char_t *datapath, Int_t *slice, Int_t min_clusters = 0)
   // later on. ?? Maybe better also to put it in an Init-function
   fRow[0][0] = 0;
   fRow[0][1] = AliL3Transform::GetLastRow(-1);
-
+  fWriteOut = kTRUE;
   fBenchmark = 0;
 }  
 
@@ -66,15 +70,14 @@ void AliL3Kalman::Init()
 
 void AliL3Kalman::LoadTracks(Int_t event, Bool_t sp)
 {
-  // Load tracks from conformal tracker
+  // Load space points and tracks from conformal tracker
   // Must also be possible to take seeds (and clusters) from Hough-transform??
-
-  // Load spacepoints into clusterfile
 
   Double_t initTime,cpuTime;
   initTime = GetCpuTime();
   fBenchmark->Start("Load tracks");
 
+  // Load space points
   Char_t fname[1024];
   AliL3FileHandler *clusterfile[36][6];
   for(Int_t s=fMinSlice; s<=fMaxSlice; s++)
@@ -124,7 +127,7 @@ void AliL3Kalman::LoadTracks(Int_t event, Bool_t sp)
   tfile->Binary2TrackArray(fTracks);
   tfile->CloseBinaryInput();
   delete tfile;
-  cout << "Number of loaded tracks " << fTracks->GetNTracks() << endl;
+  //cout << "Number of loaded tracks " << fTracks->GetNTracks() << endl;
   fBenchmark->Stop("Load tracks");
   cpuTime = GetCpuTime() - initTime;
   LOG(AliL3Log::kInformational,"AliL3Kalman::LoadTracks()","Timing")
@@ -134,26 +137,31 @@ void AliL3Kalman::LoadTracks(Int_t event, Bool_t sp)
 
 void AliL3Kalman::ProcessTracks()
 {
+  // Run the Kalman filter algorithm on the loaded tracks. 
+  // If the track is OK, the loaded track is saved in file kalmantracks_0.raw
+  // The kalman filter variables (that is the state vector, covariance matrix 
+  // and chi2) is written to root-file kalmantracks.root. 
 
   Double_t initTime,cpuTime;
   initTime = GetCpuTime();
 
   fBenchmark->Start("Process tracks");
 
-  Int_t fEvent = 0;
   fTracks->QSort();
 
   fKalmanTracks = new AliL3TrackArray();
 
   // Make a ntuple to store state vector, covariance matrix and chisquare
+  // Will eventually not need a TTree??
   TNtuple *kalmanTree = new TNtuple("kalmanTree","kalmantracks","x0:x1:x2:x3:x4:c0:c1:c2:c3:c4:c5:c6:c7:c8:c9:c10:c11:c12:c13:c14:chisq");
   Float_t meas[21];
-
+  
   // Go through the tracks from conformal or hough tracker
   for (Int_t iTrack = 0; iTrack < fTracks->GetNTracks(); iTrack++)
     {
       AliL3KalmanTrack *kalmantrack = new AliL3KalmanTrack();
       kalmantrack->Init();
+
       AliL3Track *track = (AliL3Track*)fTracks->GetCheckedTrack(iTrack);
       if (!track) continue;
       if (track->GetNumberOfPoints() < fMinPointsOnTrack) continue;    
@@ -198,23 +206,11 @@ void AliL3Kalman::ProcessTracks()
 	meas[18] = c[13];
 	meas[19] = c[14];
 	meas[20] = chisq;
-	//cout << "Chisq = " << chisq << endl;
-	/*cout << "track " << iTrack << endl; 
-	cout << "x = " << meas[0] << ", " << meas[1] << ", " << meas[2] 
-	     << ", " << meas[3] << ", " << meas[4] << ", " << endl;
-	cout << "c = " << endl 
-	     << meas[5] << endl
-	     << meas[6] << " " << meas[7] << endl
-	     << meas[8] << " " << meas[9] << " " << meas[10] << endl 
-	     << meas[11] << " " << meas[12] << " " << meas[13] 
-	     << " " << meas[14] << endl
-	     << meas[15] << " " << meas[16] << " " << meas[17] << " " 
-	     << meas[18] << " " << meas[19] << endl;
-	     cout << "chisq = " << meas[20] << endl;*/ 
-	//cout << endl;
+
 	// Add the track to the trackarray	
-	fKalmanTracks->AddLast(kalmantrack);
-	
+	AliL3Track *outtrack = (AliL3Track*)fKalmanTracks->NextTrack();
+	outtrack->Set(track);
+
 	// Fill the ntuple with the state vector, covariance matrix and
 	// chisquare
 	kalmanTree->Fill(meas);
@@ -222,14 +218,15 @@ void AliL3Kalman::ProcessTracks()
 
       delete track;
       delete kalmantrack;
+
     }
 
+  //WriteKalmanTracks();
   fBenchmark->Stop("Process tracks");
   cpuTime = GetCpuTime() - initTime;
   LOG(AliL3Log::kInformational,"AliL3Kalman::ProcessTracks()","Timing")
     <<"Process tracks in "<<cpuTime*1000<<" ms"<<ENDLOG;
-
-  // Write tracks to binary file
+  
   if (fWriteOut)
     {
       Char_t tname[80];
@@ -240,117 +237,78 @@ void AliL3Kalman::ProcessTracks()
       mem->CloseBinaryOutput();
       delete mem;
     }
-  
-  TFile *out = new TFile("out.root","recreate");      
+
+  // This will be removed??
+  TFile *out = new TFile("kalmantracks.root","recreate");      
   kalmanTree->Write();
   out->Close();
 
   delete kalmanTree;
+  
 }
 
 Int_t AliL3Kalman::MakeSeed(AliL3KalmanTrack *kalmantrack, AliL3Track *track)
 {  
-  // Makes a rough state vector and covariance matrix based on the first
-  // space point in the outmost row
+  // Makes a rough state vector and covariance matrix based on three
+  // space points of the loaded track 
  
-  /*Double_t initTime,cpuTime;
-  initTime = GetCpuTime();
-
-  fBenchmark->Start("Make seed");*/
-
   UInt_t *hitnum = track->GetHitNumbers();
   UInt_t id1, id2, id3;
 
-  // Should do something to make sure that points1 2 and 3 are really not empty
   id1 = hitnum[0];
   Int_t slice1 = (id1>>25) & 0x7f;
   Int_t patch1 = (id1>>22) & 0x7;	
   UInt_t pos1 = id1&0x3fffff;
   AliL3SpacePointData *points1 = fClusters[slice1][patch1];
   
-  id2 = hitnum[1];
+  id2 = hitnum[Int_t(track->GetNHits()/2)];
   Int_t slice2 = (id2>>25) & 0x7f;
   Int_t patch2 = (id2>>22) & 0x7;	
   UInt_t pos2 = id2&0x3fffff;
   AliL3SpacePointData *points2 = fClusters[slice2][patch2];
-  if (!points2) return 0;
 
-  id3 = hitnum[2];
+  id3 = hitnum[track->GetNHits()-1];
   Int_t slice3 = (id3>>25) & 0x7f;
   Int_t patch3 = (id3>>22) & 0x7;	
   UInt_t pos3 = id3&0x3fffff;
   AliL3SpacePointData *points3 = fClusters[slice3][patch3];
 
-  /*fBenchmark->Stop("Make seed");
-  cpuTime = GetCpuTime() - initTime;
-  LOG(AliL3Log::kInformational,"AliL3Kalman::MakeSeed()","Timing")
-  <<"Make seeds in "<<cpuTime*1000<<" ms"<<ENDLOG;*/
-
-  return   kalmantrack->MakeTrackSeed(points1,pos1,points2,pos2,points3,pos3);
+  return kalmantrack->MakeTrackSeed(points1,pos1,points2,pos2,points3,pos3);
 
 }
 
 Int_t AliL3Kalman::Propagate(AliL3KalmanTrack *kalmantrack, AliL3Track *track)
 {
-  // This function should propagte the track to the next layer thera's a 
-  // cluster.
-  // Must do the following steps,
-  // 1. Go to next spacepoint
-  // 2. Must find the layer position (old and new), predict new state vector,
-  //    and covariance matrix (See AliTPCtrack::PropagateTo
-  // 3. Call Update function
-  /*Double_t initTime,cpuTime;
-  initTime = GetCpuTime();
-  fBenchmark->Start("Propagate");*/
+  // This function propagtes the kalmantrack to the next cluster of the loaded 
+  // track 
 
   Int_t num_of_clusters = track->GetNumberOfPoints();
   
   UInt_t *hitnum = track->GetHitNumbers();
   UInt_t id;
+  UInt_t badpoint = 0;
 
   for (Int_t icl = 1; icl < num_of_clusters; icl++)
     {
+
       id = hitnum[icl];
       Int_t slice = (id>>25) & 0x7f;
       Int_t patch = (id>>22) & 0x7;	
       UInt_t pos = id&0x3fffff;
       AliL3SpacePointData *points = fClusters[slice][patch];
       if (!points) continue;
-      if (kalmantrack->Propagate(points,pos) == 0) return 0;
+      // Go to next cluster, but don't update track!!??
+      // But if there are several clusters that are no good: return 0;
+      if (kalmantrack->Propagate(points,pos) == 0) 
+	{
+	  badpoint++;
+	  continue;
+	}
+      //if (kalmantrack->Propagate(points,pos) == 0) return 0;
     }
 
-  /*fBenchmark->Stop("Propagate");
-  cpuTime = GetCpuTime() - initTime;
-  LOG(AliL3Log::kInformational,"AliL3Kalman::Propagate()","Timing")
-    <<"Propagate in "<<cpuTime*1000<<" ms"<<ENDLOG;*/
-
-  return 1;
-}
-
-void AliL3Kalman::WriteKalmanTrack(AliL3KalmanTrack *kalman)
-{
-  /*  AliL3MemHandler *memory = new AliL3MemHandler();
-  memory->SetBinaryOutput(filename);
-  if(opt=='a'||opt=='i'){  //add intracks
-    for(Int_t i=0;i<merger->GetNIn();i++){
-      AliL3TrackArray *tr=merger->GetInTracks(i);
-      memory->TrackArray2Binary(tr);
-    }
-  }
-
-  if(opt=='o'||opt=='a'){
-    AliL3TrackArray *tr=merger->GetOutTracks();
-    memory->TrackArray2Binary(tr);
-  }
-
-  memory->CloseBinaryOutput();
-
-  return 1;*/
-}
-
-void Display()
-{
-  
+  if (badpoint >= UInt_t(num_of_clusters/2)) return 0;
+  else return 1;
 }
 
 Double_t AliL3Kalman::GetCpuTime()

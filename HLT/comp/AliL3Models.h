@@ -45,8 +45,6 @@ struct AliL3TrackModel {
   Float_t fFirstPointZ;
   Float_t fTgl;
   Float_t fPsi;
-  Short_t fLength;
-  Short_t fNClusters;
 };
 typedef struct AliL3TrackModel AliL3TrackModel;
 

@@ -47,6 +47,8 @@ class AliL3KalmanTrack : public AliL3Track {
 
   Float_t fX;
 
+  Int_t fNHits;
+
  public:
 
   AliL3KalmanTrack();
@@ -64,6 +66,51 @@ class AliL3KalmanTrack : public AliL3Track {
     xx[3] = fP3;
     xx[4] = fP4;
   }
+
+  Float_t GetX0() {return fP0;}
+  Float_t GetX1() {return fP1;}
+  Float_t GetX2() {return fP2;}
+  Float_t GetX3() {return fP3;}
+  Float_t GetX4() {return fP4;}
+
+  Float_t GetC0() {return fC00;}
+  Float_t GetC1() {return fC10;}
+  Float_t GetC2() {return fC11;}
+  Float_t GetC3() {return fC20;}
+  Float_t GetC4() {return fC21;}
+  Float_t GetC5() {return fC22;}
+  Float_t GetC6() {return fC30;}
+  Float_t GetC7() {return fC31;}
+  Float_t GetC8() {return fC32;}
+  Float_t GetC9() {return fC33;}
+  Float_t GetC10() {return fC40;}
+  Float_t GetC11() {return fC41;}
+  Float_t GetC12() {return fC42;}
+  Float_t GetC13() {return fC43;}
+  Float_t GetC14() {return fC44;}
+
+  void SetX0(Float_t f) {fP0 = f;}
+  void SetX1(Float_t f) {fP1 = f;}
+  void SetX2(Float_t f) {fP2 = f;}
+  void SetX3(Float_t f) {fP3 = f;}
+  void SetX4(Float_t f) {fP4 = f;}
+
+  void SetC0(Float_t f) {fC00 = f;}
+  void SetC1(Float_t f) {fC10 = f;}
+  void SetC2(Float_t f) {fC11 = f;}
+  void SetC3(Float_t f) {fC20 = f;}
+  void SetC4(Float_t f) {fC21 = f;}
+  void SetC5(Float_t f) {fC22 = f;}
+  void SetC6(Float_t f) {fC30 = f;}
+  void SetC7(Float_t f) {fC31 = f;}
+  void SetC8(Float_t f) {fC32 = f;}
+  void SetC9(Float_t f) {fC33 = f;}
+  void SetC10(Float_t f) {fC40 = f;}
+  void SetC11(Float_t f) {fC41 = f;}
+  void SetC12(Float_t f) {fC42 = f;}
+  void SetC13(Float_t f) {fC43 = f;} 
+  void SetC14(Float_t f) {fC44 = f;}
+
   Float_t GetCovariance(Float_t cc[15]) const {
     cc[0 ]=fC00;
     cc[1 ]=fC10;  cc[2 ]=fC11;
@@ -82,9 +129,15 @@ class AliL3KalmanTrack : public AliL3Track {
   fC44 = f[14];}
   void SetChisq(Float_t f) {fChisq = f;}
 
-   Float_t f2(Float_t x1,Float_t y1, Float_t x2,Float_t y2, Float_t x3,Float_t y3);
-   Float_t f3(Float_t x1,Float_t y1, Float_t x2,Float_t y2, Float_t z1,Float_t z2);
-   Float_t f4(Float_t x1,Float_t y1, Float_t x2,Float_t y2, Float_t x3,Float_t y3);
+  Float_t f2(Float_t x1,Float_t y1, Float_t x2,Float_t y2, Float_t x3,Float_t y3);
+  Float_t f3(Float_t x1,Float_t y1, Float_t x2,Float_t y2, Float_t z1,Float_t z2);
+  Float_t f4(Float_t x1,Float_t y1, Float_t x2,Float_t y2, Float_t x3,Float_t y3);
+  void Set(AliL3KalmanTrack *track);
+
+  Int_t GetNHits() const {return fNHits;}
+  void SetNHits(Int_t f) {fNHits = f;}
+ 
+
 };
 
 #endif

@@ -24,8 +24,10 @@
 
 ClassImp(AliL3InterMerger)
 
-AliL3InterMerger::AliL3InterMerger():AliL3Merger(1){
+AliL3InterMerger::AliL3InterMerger()
+{
   //Default constructor
+  InitMerger(1);
   Is2Global(kFALSE);
 //  SetParameter(2,2,.3,.3,.3);
   SetParameter(1,0.5,0.0005,0.05,0.1);

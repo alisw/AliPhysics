@@ -32,10 +32,10 @@ class AliL3Merger {
   AliL3Vertex *fVertex;//!
   Bool_t f2Global;
   Bool_t Is2Global(Bool_t is){f2Global=is;return f2Global;}
-
+  void InitMerger(Int_t ntrackarrays,Char_t *tracktype="AliL3Track");
+  
  public:
   AliL3Merger();
-  AliL3Merger(Int_t ntrackarrays,Char_t *tracktype="AliL3Track");
   virtual ~AliL3Merger();
 
   Int_t GetNIn(){return fNIn;}
