@@ -13,7 +13,7 @@
 class AliITSvSDD03 : public AliITS{
  public:
     AliITSvSDD03(); // default constructor
-    AliITSvSDD03(const char *title); // standard constructor
+    AliITSvSDD03(const char *title,Int_t year); // standard constructor
     AliITSvSDD03(const AliITSvSDD03 &source); // Copy constructor
     AliITSvSDD03& operator=(const AliITSvSDD03 &source); // = operator
     virtual ~AliITSvSDD03(); // destructor
@@ -66,6 +66,7 @@ class AliITSvSDD03 : public AliITS{
     Float_t  fChip1;          // thickness of chip in SDD layer 1
     Float_t  fChip2;          // thickness of chip in SDD layer 2 
     Int_t fIDMother;          //! ITS Mother Volume id.
+    Int_t fYear;              //
 
     ClassDef(AliITSvSDD03,1) // Hits manager and geometry for SDD testbeam
 };

@@ -92,7 +92,7 @@ AliITSvSDD03::AliITSvSDD03() {
     for(i=0;i<60;i++) fEuclidGeomDet[i] = '\0';
 }
 //______________________________________________________________________
-AliITSvSDD03::AliITSvSDD03(const char *title) : AliITS("ITS", title){
+AliITSvSDD03::AliITSvSDD03(const char *title,Int_t year) : AliITS("ITS", title){
     ////////////////////////////////////////////////////////////////////////
     //    Standard constructor for the ITS SDD testbeam 2002 version 1.
     // Inputs:
@@ -115,6 +115,7 @@ AliITSvSDD03::AliITSvSDD03(const char *title) : AliITS("ITS", title){
     fEuclidOut    = kFALSE; // Don't write Euclide file
     fGeomDetOut   = kFALSE; // Don't write .det file
     fGeomDetIn    = kFALSE; // Don't Read .det file
+    fYear         = year;
     SetThicknessDet1();
     SetThicknessDet2();
     SetThicknessChip1();
@@ -523,10 +524,11 @@ void AliITSvSDD03::InitAliITSgeom(){
     //    none.
     // Return:
     //    none.
+
     if(strcmp(gMC->GetName(),"TGeant3")) {
-	Error("InitAliITSgeom",
-		"Wrong Monte Carlo. InitAliITSgeom uses TGeant3 calls");
-	return;
+        Error("InitAliITSgeom",
+              "Wrong Monte Carlo. InitAliITSgeom uses TGeant3 calls");
+        return;
     } // end if
     cout << "Reading Geometry transformation directly from Geant 3." << endl;
     const Int_t np=384;
@@ -545,17 +547,17 @@ void AliITSvSDD03::InitAliITSgeom(){
     Char_t names[ltypess][ndeep][4];
     Int_t itsGeomTreeCopys[ltypess][ndeep];
     Char_t *namesA[ltypess][ndeep] = {
-     {"ALIC","ITSV","ITEL","ITIA","IMB0","IMBS"}, // lay=5
-     {"ALIC","ITSV","IDET","IDAI","ITS0","ITST"}};// Test SDD
+        {"ALIC","ITSV","ITEL","ITAI","IMB0","IMBS"}, // lay=5
+        {"ALIC","ITSV","IDET","IDAI","ITS0","ITST"}};// Test SDD
     Int_t itsGeomTreeCopysA[ltypess][ndeep]= {{1,1,10,1,1,1},// lay=5
-					      {1,1,1,1,1,1}};//lay=3 TestSDD
+                                              {1,1,1,1,1,1}};//lay=3 TestSDD
     for(i=0;i<ltypess;i++)for(j=0;j<ndeep;j++){
-	for(k=0;k<4;k++) names[i][j][k] = namesA[i][j][k];
-	itsGeomTreeCopys[i][j] = itsGeomTreeCopysA[i][j];
+        for(k=0;k<4;k++) names[i][j][k] = namesA[i][j][k];
+        itsGeomTreeCopys[i][j] = itsGeomTreeCopysA[i][j];
     } // end for i,j
     for(i=0;i<np;i++){// Fill in anode and cathode strip locations (lower edge)
-	p[i] = 0.5*pitch*(Float_t)np + pitch*(Float_t)i;
-	n[i] = pitch*(Float_t)np - p[i];
+        p[i] = 0.5*pitch*(Float_t)np + pitch*(Float_t)i;
+        n[i] = pitch*(Float_t)np - p[i];
     } // end for i
     // Sorry, but this is not very pritty code. It should be replaced
     // at some point with a version that can search through the geometry
@@ -571,27 +573,34 @@ void AliITSvSDD03::InitAliITSgeom(){
     ndet[0]=1;ndet[1]=1;ndet[2]=1;ndet[3]=1;ndet[4]=1;
     fITSgeom = new AliITSgeom(0,nlayers,nlad,ndet,mod);
     for(typ=1;typ<=ltypess;typ++){
-	for(j=0;j<ndeep;j++) lnam[j] = itsGeomTreeNames[typ-1][j];
-	for(j=0;j<ndeep;j++) lnum[j] = itsGeomTreeCopys[typ-1][j];
-	lad = 1;
-	det = 1;
-	for(cpy=1;cpy<=itsGeomTreeCopys[typ-1][2];cpy++){
-	    lnum[2] = cpy;
-	    lay = cpy;
-	    if(cpy>2 && typ==1) lay = cpy +1;
-	    if(typ==2) lay = 3;
-	    mod = lay-1;
-	    ig->GetGeometry(ndeep,lnam,lnum,t,r,idshape,npar,natt,par,att,
-			    imat,imed);
-	    if(!(fITSgeom->IsShapeDefined((Int_t)kSDD)))if(typ==1){
-		fITSgeom->CreatMatrix(mod,lay,lad,det,kSDD,t,r);
-		fITSgeom->ReSetShape(kSDD,new AliITSgeomSDD256(npar,par));
-	    }else{
-		fITSgeom->CreatMatrix(mod,lay,lad,det,kSSD,t,r);
-		fITSgeom->ReSetShape(kSSD,new AliITSgeomSSD(box,0.0,0.0,
-							    np+1,p,np+1,n));
-	    } // end if
-	} // end for cpy
+        for(j=0;j<ndeep;j++) lnam[j] = itsGeomTreeNames[typ-1][j];
+        for(j=0;j<ndeep;j++) lnum[j] = itsGeomTreeCopys[typ-1][j];
+        lad = 1;
+        det = 1;
+        for(cpy=1;cpy<=itsGeomTreeCopys[typ-1][2];cpy++){
+            lnum[2] = cpy;
+            lay = cpy;
+            if(cpy>2 && typ==1) lay = cpy +1;
+            if(typ==2) lay = 3;
+            mod = lay-1;
+            ig->GetGeometry(ndeep,lnam,lnum,t,r,idshape,npar,natt,par,att,
+                            imat,imed);
+            switch (typ){
+            case 1:
+                if(!(fITSgeom->IsShapeDefined((Int_t)kSDD))){
+                    fITSgeom->CreatMatrix(mod,lay,lad,det,kSDD,t,r);
+                    fITSgeom->ReSetShape(kSDD,new AliITSgeomSDD256(npar,par));
+                } // end if
+                break;
+            case 2:
+                if(!(fITSgeom->IsShapeDefined((Int_t)kSSD))){
+                    fITSgeom->CreatMatrix(mod,lay,lad,det,kSSD,t,r);
+                    fITSgeom->ReSetShape(kSSD,new AliITSgeomSSD(box,0.0,0.0,
+                                                              np+1,p,np+1,n));
+                } // end if
+                break;
+            } // end switch
+        } // end for cpy
     } // end for typ
     return;
 }
