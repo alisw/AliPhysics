@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2001/01/15 13:13:53  barbera
+Some comments added
+
 Revision 1.13  2000/12/10 16:00:45  barbera
 Added last definition of special media like end-ladder boxes and cones
 
@@ -450,7 +453,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   pcits[2] = 8.5+0.1;
   pcits[3] = 28.;
   pcits[4] = 28.+0.1;  
-  gMC->Gsvolu("ICO1", "CONE", idtmed[274], pcits, 5);    
+  gMC->Gsvolu("ICO1", "CONE", idtmed[238], pcits, 5);    
   AliMatrix(idrotm[200], 90., 0., 90., 90., 180., 0.);
   gMC->Gspos("ICO1", 1, "ITSD", 0., 0., 42.5+pcits[0], 0, "ONLY");
   gMC->Gspos("ICO1", 2, "ITSD", 0., 0., -(42.5+pcits[0]), idrotm[200], "ONLY");
@@ -470,7 +473,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   pcits[2] = 28.+0.1;
   pcits[3] = 47.;
   pcits[4] = 47.+0.1;
-  gMC->Gsvolu("ICO2", "CONE", idtmed[266], pcits, 5);    
+  gMC->Gsvolu("ICO2", "CONE", idtmed[264], pcits, 5);    
   gMC->Gspos("ICO2", 1, "ITSD", 0., 0., 59.+pcits[0], 0, "ONLY");
   
   // SERVICES
