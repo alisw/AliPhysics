@@ -74,7 +74,7 @@ void AliL3CompressAC::BuildModel(BIT_FILE *output)
   ReadFile('m');
   
   UInt_t nmax=10000,qres;
-  UInt_t temp[nmax];
+  UInt_t * temp = new UInt_t[nmax];
   memset(&temp[0],0,nmax*sizeof(UInt_t));
 
   AliL3TrackArray *tracks = GetTracks();
@@ -137,6 +137,7 @@ void AliL3CompressAC::BuildModel(BIT_FILE *output)
   fwrite(fCount,sizeof(UChar_t),fMax+1,output->file);
   
   FillTotals();
+  delete [] temp;
 }
 
 void AliL3CompressAC::RebuildModel(BIT_FILE *input)
@@ -631,7 +632,7 @@ Bool_t AliL3CompressAC::ExpandFile()
 
       if(count != clustercount[i])
 	{
-	  cerr<<"AliL3CompressAC::ExpandFile : Mismatching clustercount "<<index<<" "<<clustercount[i]<<endl;
+	  cerr<<"AliL3CompressAC::ExpandFile : Mismatching clustercount "<<count<<" "<<clustercount[i]<<endl;
 	  exit(5);
 	}
     }
