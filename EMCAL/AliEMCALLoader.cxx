@@ -90,7 +90,8 @@ AliEMCALLoader::~AliEMCALLoader()
   Clean(fgkECARecPointsName);
   Clean(fgkTracksName);
   Clean(fgkRecParticlesName);
-  // set to 0x0 the objgetter in AliGetter ... weird isn it !
+  CleanFolders() ; 
+ // set to 0x0 the objgetter in AliGetter ... weird isn it !
   AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
   if (gime) 
     gime->Reset() ;
@@ -439,6 +440,7 @@ Int_t AliEMCALLoader::ReadHits()
 	      index++ ; 
 	    }
 	}
+      tempo->Delete() ; 
       delete tempo;
     }
   else 
@@ -784,7 +786,8 @@ void AliEMCALLoader::CleanHits()
   AliLoader::CleanHits();
   //Clear an array 
   TClonesArray* hits = Hits();
-  if (hits) hits->Clear();
+  if (hits) 
+    hits->Clear();
 }
 
 //____________________________________________________________________________ 

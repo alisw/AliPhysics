@@ -108,6 +108,21 @@ AliPHOSGetter::~AliPHOSGetter()
   fBTE = 0 ; 
   fPrimaries->Delete() ; 
   delete fPrimaries ; 
+  fgObjGetter = 0; 
+}
+
+//____________________________________________________________________________ 
+void AliPHOSGetter::Reset()
+{
+  // resets things in case the getter is called consecutively with different files
+  // the PHOS Loader is already deleted by the Run Loader
+
+  if (fPrimaries) { 
+    fPrimaries->Delete() ; 
+    delete fPrimaries ;
+  } 
+  fgPhosLoader = 0; 
+  fgObjGetter = 0; 
 }
 
 //____________________________________________________________________________ 

@@ -184,7 +184,7 @@ class AliEMCALGetter : public TObject {
 
   TString Version() const  { return EmcalLoader()->GetTitle() ; } 
   AliEMCALLoader * EmcalLoader() const { return  fgEmcalLoader ; }
-  void Reset() {fgEmcalLoader = 0; fgObjGetter = 0; }
+  void Reset() ;  
 
 private:
   

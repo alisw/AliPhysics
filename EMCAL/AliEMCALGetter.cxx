@@ -105,6 +105,21 @@ AliEMCALGetter::~AliEMCALGetter()
   // fBTE = 0 ; 
   fPrimaries->Delete() ; 
   delete fPrimaries ; 
+  fgObjGetter = 0; 
+}
+
+//____________________________________________________________________________ 
+void AliEMCALGetter::Reset()
+{
+  // resets things in case the getter is called consecutively with different files
+  // the EMCAL Loader is already deleted by the Run Loader
+
+  if (fPrimaries) { 
+    fPrimaries->Delete() ; 
+    delete fPrimaries ;
+  } 
+  fgEmcalLoader = 0; 
+  fgObjGetter = 0; 
 }
 
 //____________________________________________________________________________ 

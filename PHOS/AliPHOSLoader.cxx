@@ -92,6 +92,7 @@ AliPHOSLoader::~AliPHOSLoader()
   Clean(fgkCpvRecPointsName);
   Clean(fgkTracksName);
   Clean(fgkRecParticlesName);
+  CleanFolders() ;
   // set to 0x0 the objgetter in AliGetter ... weird isn it !
   AliPHOSGetter * gime = AliPHOSGetter::Instance((AliLoader::GetRunLoader()->GetFileName()).Data()) ; 
   if (gime) 
