@@ -7,7 +7,7 @@
 
 ////////////////////////////////////////////////////////////////////////
 //
-//  Pure Virtual Base Class for Detector specific Merging/Digitization   
+//  Abstract Base Class for Detector specific Merging/Digitization   
 //                  
 //  Author: Jiri Chudoba (CERN)
 //
