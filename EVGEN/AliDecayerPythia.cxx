@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2003/01/31 15:56:42  morsch
+Forcing of decay channels independent of order in decay table.
+
 Revision 1.15  2002/10/14 14:55:35  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -78,7 +81,7 @@ Realisation of AliDecayer using Pythia6
 
 #include "AliDecayerPythia.h"
 #include "AliPythia.h"
-#include "AliPDG.h"
+#include <TPDGCode.h>
 #include <TLorentzVector.h>
 #include <TClonesArray.h>
 
@@ -151,7 +154,7 @@ void AliDecayerPythia::Decay(Int_t idpart, TLorentzVector* p)
     
     Lu1Ent(0, idpart, energy, theta, phi);
     fPythia->GetPrimaries();
-//    fPythia->Pylist(1);
+    fPythia->Pylist(1);
     
 }
 
@@ -472,6 +475,8 @@ void AliDecayerPythia::ReadDecayTable()
 {
 //
 // Read the decay table
+    printf("Reading Deacy table\n \n ");
+    
     Int_t lun = 15;
     opendecaytable(lun);
     fPythia->Pyupda(2,lun);
