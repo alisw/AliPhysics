@@ -394,7 +394,7 @@ void AliITSClusterFinderSPD::GetRecPoints()
   nofClusters -= fNclusters;
   const Float_t kconv = 1.0e-4;
   const Float_t kRMSx = 12.0*kconv; // microns -> cm ITS TDR Table 1.3
-  const Float_t kRMSz = 70.0*kconv; // microns -> cm ITS TDR Table 1.3
+  const Float_t kRMSz = 120.0*kconv; // resolution for 425 micron pixel
 
   Float_t spdLength = fSegmentation->Dz();
   Float_t spdWidth = fSegmentation->Dx();

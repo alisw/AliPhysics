@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1.2.6  2000/10/29 18:29:51  barbera
+Z resolution of pixel changed according with the default lenght of 425 microns
+
 Revision 1.1.2.5  2000/10/02 16:03:20  barbera
 Forward declarations added
 
@@ -41,7 +44,7 @@ AliITSsimulationFastPoints::AliITSsimulationFastPoints()
   fSigmaRPhi[0] = fSigmaRPhi[1] = 12e-4;
   fSigmaRPhi[2] = fSigmaRPhi[3] = 38e-4;
   fSigmaRPhi[4] = fSigmaRPhi[5] = 20e-4;
-  fSigmaZ[0] = fSigmaZ[1] = 70e-4;
+  fSigmaZ[0] = fSigmaZ[1] = 120e-4;        // resolution for 425 micron pixels
   fSigmaZ[2] = fSigmaZ[3] = 28e-4;
   fSigmaZ[4] = fSigmaZ[5] = 830e-4;
   fSigmaDe[0] = fSigmaDe[1] = 0.72e-6;
