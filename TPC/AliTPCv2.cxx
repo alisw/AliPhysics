@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.30  2000/11/14 10:48:57  kowal2
+Correct material used for TSA4. Thanks to J. Barbosa.
+
 Revision 1.29  2000/11/06 17:24:10  kowal2
 Corrected bug in the outer containment vessel and
 the outer field cage geometry.
@@ -115,6 +118,7 @@ Introduction of the Copyright and cvs Log
 #include "AliTPCParam.h"
 #include "AliTPCParamSR.h"
 #include "AliTPCTrackHits.h"
+#include "TLorentzVector.h"
 
 
 ClassImp(AliTPCv2)
