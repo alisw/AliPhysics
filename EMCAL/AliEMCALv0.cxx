@@ -178,6 +178,8 @@ void AliEMCALv0::CreateGeometry(){
 
     Float_t etamin,etamax;
 
+    Float_t *dum=0;
+
 
 
     if(!(fGeom->IsInitialized())){
@@ -340,9 +342,9 @@ void AliEMCALv0::CreateGeometry(){
 
     // The polystyrene layers will be defined when placed 
 
-    gMC->Gsvolu("XPST", "PGON", idtmed[1601], 0, 0);
+    gMC->Gsvolu("XPST", "PGON", idtmed[1601], dum, 0);
 
-    gMC->Gsvolu("XPBX", "PGON", idtmed[1600], 0, 0);//  as will the lead layers
+    gMC->Gsvolu("XPBX", "PGON", idtmed[1600], dum, 0);//  as will the lead layers
 
     //  Dividind eta polystyrene divisions into phi segments.
 
