@@ -8,27 +8,6 @@
 
 class AliL3ModelTrack : public AliL3Track {
 
- private:
-  
-  Short_t fClusterCharge; //Average cluster charge
-  AliL3ClusterModel *fClusters; //!
-  AliL3TrackModel *fTrackModel; //!
-  Short_t fNClusters;
-  Int_t fMaxOverlaps;
-  Int_t *fNoverlaps; //!
-  Int_t **fOverlap; //!
-  Float_t *fParSigmaY2;    //!
-  Float_t *fParSigmaZ2;    //!
-  Float_t *fCrossingAngle; //!
-  Int_t fPatch;
-  Bool_t fArraysCreated;
-
-  //Crossing points with padrows
-  Float_t *fPad;  //!
-  Float_t *fTime;  //!
-  
-  void DeleteArrays();
-  
  public:
   AliL3ModelTrack();
   virtual ~AliL3ModelTrack();
@@ -73,9 +52,30 @@ class AliL3ModelTrack : public AliL3Track {
   Bool_t GetTimeResidual(Int_t row,Float_t &res);
   Bool_t GetSigmaYResidual(Int_t row,Float_t &res);
   Bool_t GetSigmaZResidual(Int_t row,Float_t &res);
-  Int_t GetNClusters() {return fNClusters;}
+  Int_t GetNClusters() const {return fNClusters;}
   void GetClusterLabel(Int_t row,Int_t *trackID);
     
+ private:
+  
+  Short_t fClusterCharge; //Average cluster charge
+  AliL3ClusterModel *fClusters; //! Clusters
+  AliL3TrackModel *fTrackModel; //! Track model
+  Short_t fNClusters; // Number of clusters
+  Int_t fMaxOverlaps; // Max overlaps (?)
+  Int_t *fNoverlaps; //! Number of overlaps
+  Int_t **fOverlap; //! Table of overlaps(?)
+  Float_t *fParSigmaY2;    //! Parameter SigmaY2 (?)
+  Float_t *fParSigmaZ2;    //! Parameter SigmaZ2 (?)
+  Float_t *fCrossingAngle; //! Crossing angle
+  Int_t fPatch; // Current patch
+  Bool_t fArraysCreated; // Flag if arrays were created
+
+  //Crossing points with padrows
+  Float_t *fPad;  //! Current pad
+  Float_t *fTime;  //! Current time
+  
+  void DeleteArrays();
+  
   ClassDef(AliL3ModelTrack,1)
 
 };

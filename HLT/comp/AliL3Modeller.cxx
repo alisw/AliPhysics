@@ -2,6 +2,16 @@
 
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
+//_____________________________________________________________
+// AliL3Modeller
+//
+// Class for modeling TPC data.
+// 
+// This performs the cluster finding, based on track parameters.
+// Basically it propagates the tracks to all padrows, and looks 
+// for a corresponding cluster. For the moment only cog is calculated,
+// and no deconvolution is done. 
+
 
 #include "AliL3StandardIncludes.h"
 
@@ -22,20 +32,11 @@
 using namespace std;
 #endif
 
-//_____________________________________________________________
-// AliL3Modeller
-//
-// Class for modeling TPC data.
-// 
-// This performs the cluster finding, based on track parameters.
-// Basically it propagates the tracks to all padrows, and looks 
-// for a corresponding cluster. For the moment only cog is calculated,
-// and no deconvolution is done. 
-
 ClassImp(AliL3Modeller)
 
 AliL3Modeller::AliL3Modeller()
 {
+  // default constructor
   fMemHandler=0;
   fTracks=0;
   fRow=0;
@@ -50,6 +51,7 @@ AliL3Modeller::AliL3Modeller()
 
 AliL3Modeller::~AliL3Modeller()
 {
+  // destructor
   if(fMemHandler)
     delete fMemHandler;
   if(fTracks)
@@ -60,6 +62,7 @@ AliL3Modeller::~AliL3Modeller()
 
 void AliL3Modeller::Init(Int_t slice,Int_t patch,Char_t *trackdata,Char_t *path,Bool_t houghtracks,Bool_t binary)
 {
+  // Initialization
   fSlice = slice;
   fPatch = patch;
   fHoughTracks=houghtracks;
@@ -152,6 +155,7 @@ void AliL3Modeller::Init(Int_t slice,Int_t patch,Char_t *trackdata,Char_t *path,
 
 void AliL3Modeller::FindClusters()
 {
+  // Finds clusters
   if(fDebug)
     cout<<"AliL3Modeller::FindClusters : Processing slice "<<fSlice<<" patch "<<fPatch<<endl;
   if(!fTracks)
@@ -226,7 +230,7 @@ void AliL3Modeller::FindClusters()
 	  for(pad=minpad; pad<=maxpad; pad++)
 	    {
 	      Int_t ntimes=0;
-	      for(time=region[pad].mintime; time<=region[pad].maxtime; time++)
+	      for(time=region[pad].fMintime; time<=region[pad].fMaxtime; time++)
 		{
 		  charge = fRow[(AliL3Transform::GetNTimeBins()+1)*pad+time].fCharge;
 		  if(!charge) continue;
@@ -369,8 +373,8 @@ void AliL3Modeller::LocateCluster(AliL3ModelTrack *track,ClusterRegion *region,I
 	  //cout<<"Incrementing pad "<<endl;
 	  npads++;
 	  
-	  region[pad].mintime=tmin;
-	  region[pad].maxtime=tmax;
+	  region[pad].fMintime=tmin;
+	  region[pad].fMaxtime=tmax;
 	  
 	  /*
 	  if(tmin < timemin)
@@ -422,6 +426,7 @@ void AliL3Modeller::LocateCluster(AliL3ModelTrack *track,ClusterRegion *region,I
 
 void AliL3Modeller::FillCluster(AliL3ModelTrack *track,Cluster *cluster,Int_t row,Int_t npads)
 {
+  // Fill clusters
   if(cluster->fCharge==0)
     {
       track->SetCluster(row,0,0,0,0,0,0);
@@ -561,6 +566,7 @@ void AliL3Modeller::RemoveBadTracks()
 
 void AliL3Modeller::CalculateCrossingPoints()
 {
+  // calculates crossing points
   if(fDebug)
     cout<<"Calculating crossing points on "<<fTracks->GetNTracks()<<" tracks"<<endl;
   if(!fTracks)
@@ -670,7 +676,7 @@ void AliL3Modeller::CheckForOverlaps(Float_t dangle,Int_t *rowrange)
 
 void AliL3Modeller::CalcClusterWidth(Cluster *cl,Float_t &sigmaY2,Float_t &sigmaZ2)
 {
-  
+  // calculates cluster's width
   Float_t padw,timew;
   
   padw = AliL3Transform::GetPadPitchWidth(fPatch);
@@ -712,6 +718,7 @@ void AliL3Modeller::CalcClusterWidth(Cluster *cl,Float_t &sigmaY2,Float_t &sigma
 
 void AliL3Modeller::GetTrackID(Int_t pad,Int_t time,Int_t *trackID)
 {
+  // Gets track ID
 #ifdef do_mc
   AliL3DigitRowData *rowPt = (AliL3DigitRowData*)fRowData;
   

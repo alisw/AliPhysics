@@ -2,6 +2,15 @@
 
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
+/** /class AliL3ClusterFitter
+//<pre>
+//_____________________________________________________________
+//
+//  AliL3ClusterFitter
+//
+</pre>
+*/
+
 
 #include "AliL3StandardIncludes.h"
 
@@ -18,15 +27,6 @@
 using namespace std;
 #endif
 
-/** /class AliL3ClusterFitter
-//<pre>
-//_____________________________________________________________
-//
-//  AliL3ClusterFitter
-//
-</pre>
-*/
-
 ClassImp(AliL3ClusterFitter)
 
 Int_t AliL3ClusterFitter::fgBadFitError=0;
@@ -36,6 +36,7 @@ Int_t AliL3ClusterFitter::fgFitRangeError=0;
 
 AliL3ClusterFitter::AliL3ClusterFitter()
 {
+  // default constructor
   plane=0;
   fNmaxOverlaps = 3;
   fChiSqMax[0]=fChiSqMax[1]=fChiSqMax[2]=12;
@@ -57,6 +58,7 @@ AliL3ClusterFitter::AliL3ClusterFitter()
 
 AliL3ClusterFitter::AliL3ClusterFitter(Char_t *path)
 {
+  // constructor
   strcpy(fPath,path);
   plane=0;
   fNmaxOverlaps = 3;
@@ -79,6 +81,7 @@ AliL3ClusterFitter::AliL3ClusterFitter(Char_t *path)
 
 AliL3ClusterFitter::~AliL3ClusterFitter()
 {
+  // destructor
   if(fSeeds)
     delete fSeeds;
   if(fClusters)
@@ -152,6 +155,7 @@ void AliL3ClusterFitter::Init(Int_t slice,Int_t patch,Int_t *rowrange,AliL3Track
 
 void AliL3ClusterFitter::Init(Int_t slice,Int_t patch)
 {
+  // Initialization
   fSlice=slice;
   fPatch=patch;
   
@@ -174,6 +178,7 @@ void AliL3ClusterFitter::Init(Int_t slice,Int_t patch)
 
 void AliL3ClusterFitter::LoadLocalSegments()
 {
+  // loads local segments
   Char_t filename[1024];
   sprintf(filename,"%s/hough/tracks_ho_%d_%d_%d.raw",fPath,fEvent,fSlice,fPatch);
   AliL3MemHandler mem;
@@ -389,6 +394,7 @@ void AliL3ClusterFitter::LoadSeeds(Int_t *rowrange,Bool_t offline,Int_t eventnr,
 
 void AliL3ClusterFitter::FindClusters()
 {
+  // finds clusters
   if(!fTracks)
     {
       cerr<<"AliL3ClusterFitter::Process : No tracks"<<endl;
@@ -568,6 +574,7 @@ Bool_t AliL3ClusterFitter::CheckCluster(Int_t trackindex)
 
 Bool_t AliL3ClusterFitter::SetFitRange(AliL3ModelTrack *track,Int_t *padrange,Int_t *timerange)
 {
+  // sets the fit range
   Int_t row = fCurrentPadRow;
   Int_t nt = AliL3Transform::GetNTimeBins()+1;
   
@@ -686,6 +693,7 @@ Bool_t AliL3ClusterFitter::SetFitRange(AliL3ModelTrack *track,Int_t *padrange,In
 
 Bool_t AliL3ClusterFitter::IsMaximum(Int_t pad,Int_t time)
 {
+  // checks the maximum
   if(pad<0 || pad >= AliL3Transform::GetNPads(fCurrentPadRow) ||
      time<0 || time >= AliL3Transform::GetNTimeBins())
     return kFALSE;
@@ -712,6 +720,7 @@ Bool_t AliL3ClusterFitter::IsMaximum(Int_t pad,Int_t time)
 
 void AliL3ClusterFitter::CalculateWeightedMean(AliL3ModelTrack *track,Int_t *padrange,Int_t *timerange)
 {
+  // calculates weighted mean
   Float_t sum=0;
   Int_t npads=0;
   Float_t pad=0,time=0;
@@ -1077,6 +1086,7 @@ void AliL3ClusterFitter::SetClusterfitFalse(AliL3ModelTrack *track)
 
 void AliL3ClusterFitter::AddClusters()
 {
+  // adds clusters
   if(!fClusters)
     {
       fClusters = new AliL3SpacePointData[fNMaxClusters];
@@ -1196,6 +1206,7 @@ void AliL3ClusterFitter::AddClusters()
 
 void AliL3ClusterFitter::WriteTracks(Int_t minHits)
 {
+  // writes tracks
   if(!fSeeds)
     return;
   
@@ -1234,6 +1245,7 @@ void AliL3ClusterFitter::WriteTracks(Int_t minHits)
 
 void AliL3ClusterFitter::WriteClusters(Bool_t global)
 {
+  // writes clusters
   AliL3MemHandler mem;
   if(fDebug)
     cout<<"Write "<<fNClusters<<" clusters to file"<<endl;

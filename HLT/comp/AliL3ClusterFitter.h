@@ -31,32 +31,34 @@ class AliL3ClusterFitter : public AliL3Modeller {
   void SetInnerWidthFactor(Float_t y,Float_t z) {fYInnerWidthFactor=y; fZInnerWidthFactor=z;}
   void SetOuterWidthFactor(Float_t y,Float_t z) {fYOuterWidthFactor=y; fZOuterWidthFactor=z;}
   
-  Float_t GetYWidthFactor() {return fCurrentPadRow < AliL3Transform::GetLastRow(1) ? fYInnerWidthFactor : fYOuterWidthFactor;}
-  Float_t GetZWidthFactor() {return fCurrentPadRow < AliL3Transform::GetLastRow(1) ? fZInnerWidthFactor : fZOuterWidthFactor;}
+  Float_t GetYWidthFactor() const
+    {return fCurrentPadRow < AliL3Transform::GetLastRow(1) ? fYInnerWidthFactor : fYOuterWidthFactor;}
+  Float_t GetZWidthFactor() const 
+    {return fCurrentPadRow < AliL3Transform::GetLastRow(1) ? fZInnerWidthFactor : fZOuterWidthFactor;}
   AliL3TrackArray *GetSeeds() {return fSeeds;}
   
  private:
-  Int_t fNmaxOverlaps;
-  Int_t fRowMin;
-  Int_t fRowMax;
-  Float_t fChiSqMax[3];
-  Float_t fYInnerWidthFactor;
-  Float_t fZInnerWidthFactor;
-  Float_t fYOuterWidthFactor;
-  Float_t fZOuterWidthFactor;
-  Int_t fFitted;
-  Int_t fFailed;
-  static Int_t fgBadFitError;
-  static Int_t fgFitError;
-  static Int_t fgResultError;
-  static Int_t fgFitRangeError;
-  Bool_t fSeeding;
-  Int_t fNMaxClusters;
-  Int_t fNClusters;
-  Int_t fEvent;
-  AliL3TrackArray *fSeeds; //!
-  AliL3TrackArray *fProcessTracks; //!
-  AliL3SpacePointData *fClusters; //!
+  Int_t fNmaxOverlaps; // Max number of overlaps
+  Int_t fRowMin; // Minimal row number (?)
+  Int_t fRowMax; // Maximal row number (?)
+  Float_t fChiSqMax[3]; // Maximal chi2 (?)
+  Float_t fYInnerWidthFactor; // Inner width factor in Y
+  Float_t fZInnerWidthFactor; // Inner width factor in Z
+  Float_t fYOuterWidthFactor; // Outer width factor in Y
+  Float_t fZOuterWidthFactor; // Outer width factor in Z
+  Int_t fFitted; // Code for fitted (?)
+  Int_t fFailed; // Code for failed
+  static Int_t fgBadFitError; // Bad fit error
+  static Int_t fgFitError; // Fit Error
+  static Int_t fgResultError; // Result error
+  static Int_t fgFitRangeError; // Fit range error
+  Bool_t fSeeding; // Seeding (?)
+  Int_t fNMaxClusters; // Max number of clusters
+  Int_t fNClusters; // umver of clusters
+  Int_t fEvent; // Current event
+  AliL3TrackArray *fSeeds; //! Array of seed
+  AliL3TrackArray *fProcessTracks; //! Array of processed tracks
+  AliL3SpacePointData *fClusters; //! Array of clusters
   
   void FitClusters(AliL3ModelTrack *track,Int_t *padrange,Int_t *timerange);
   Bool_t CheckCluster(Int_t trackindex);

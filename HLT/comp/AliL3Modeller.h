@@ -12,62 +12,24 @@ class AliL3DigitRowData;
 class AliL3ModelTrack;
 
 struct Cluster {
-  UInt_t fCharge;
-  UInt_t fPad;
-  UInt_t fTime;
-  UInt_t fSigmaY2;
-  UInt_t fSigmaZ2;
+  UInt_t fCharge; // Charge
+  UInt_t fPad; // Pad
+  UInt_t fTime; // Time
+  UInt_t fSigmaY2; // SigmaY2
+  UInt_t fSigmaZ2; // SigmaZ2
 };
 
 struct Digit {
-  Short_t fCharge;
-  Bool_t fUsed;
+  Short_t fCharge; // Charge
+  Bool_t fUsed; // Flag if used
 };
 
 struct ClusterRegion {
-  Int_t mintime;
-  Int_t maxtime;
+  Int_t fMintime; // Min time
+  Int_t fMaxtime; // Max time
 };
 
 class AliL3Modeller {
-  
- private:
-  Bool_t fHoughTracks;
-  Bool_t CheckCluster(Int_t hitpad,Int_t hittime);
-  Float_t fPadOverlap;
-  Float_t fTimeOverlap;
-  Int_t fTrackThreshold; //minimum weigth track need in order to be included.(=Nhits/weight)
-  AliL3MemHandler *fMemHandler; //!
-
-  void CalcClusterWidth(Cluster *cl,Float_t &sigmaY2,Float_t &sigmaZ2);
-  
- protected:
-  
-  AliL3TrackArray *fTracks; //!
-  AliL3DigitRowData *fRowData;//!
-  Digit *fRow; //!
-  Char_t fPath[1024];
-
-  Bool_t fDebug;
-  Int_t fNClusters;
-  Int_t fMaxClusters;
-  Int_t fCurrentPadRow;
-  Int_t fMaxPads;
-  Int_t fMaxTimebins;
-  Int_t fPadSearch;
-  Int_t fTimeSearch;
-  Int_t fInnerPadSearch;
-  Int_t fInnerTimeSearch;
-  Int_t fOuterPadSearch;
-  Int_t fOuterTimeSearch;
-  
-  Int_t fSlice;
-  Int_t fPatch;
-  
-  void FillCluster(AliL3ModelTrack *track,Cluster *cluster,Int_t row,Int_t npads);
-  void FillZeros(AliL3DigitRowData *digPt,Bool_t reversesign=kFALSE);
-  void LocateCluster(AliL3ModelTrack *track,ClusterRegion *region,Int_t &padmin,Int_t &padmax);
-  void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
   
  public:
   
@@ -95,6 +57,44 @@ class AliL3Modeller {
   
   AliL3TrackArray *GetTracks() {return fTracks;}
     
+ protected:
+  
+  AliL3TrackArray *fTracks; //! Array of tracks
+  AliL3DigitRowData *fRowData;//! Row data
+  Digit *fRow; //! Current row
+  Char_t fPath[1024]; // Path to the files
+
+  Bool_t fDebug; // Flag to switch on/off the debugging
+  Int_t fNClusters; // Number of clusters
+  Int_t fMaxClusters; // Max clusters (?)
+  Int_t fCurrentPadRow; // Current pad row
+  Int_t fMaxPads; // Max pads (?)
+  Int_t fMaxTimebins; // Max time bins (?)
+  Int_t fPadSearch; // Pad search (?)
+  Int_t fTimeSearch; // Time search (?)
+  Int_t fInnerPadSearch; // Inner pad search (?)
+  Int_t fInnerTimeSearch; // Inner time search (?)
+  Int_t fOuterPadSearch; // Outer Pad search (?)
+  Int_t fOuterTimeSearch; // Outer time search (?)
+  
+  Int_t fSlice; // Slice
+  Int_t fPatch; // Patch
+  
+  void FillCluster(AliL3ModelTrack *track,Cluster *cluster,Int_t row,Int_t npads);
+  void FillZeros(AliL3DigitRowData *digPt,Bool_t reversesign=kFALSE);
+  void LocateCluster(AliL3ModelTrack *track,ClusterRegion *region,Int_t &padmin,Int_t &padmax);
+  void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
+  
+ private:
+  Bool_t fHoughTracks; // Flag to switch on/off Hough tracks
+  Bool_t CheckCluster(Int_t hitpad,Int_t hittime);
+  Float_t fPadOverlap; // Pad overlap (?)
+  Float_t fTimeOverlap; // Time overlap (?)
+  Int_t fTrackThreshold; //minimum weigth track need in order to be included.(=Nhits/weight)
+  AliL3MemHandler *fMemHandler; //! Pointer to the memory handler
+
+  void CalcClusterWidth(Cluster *cl,Float_t &sigmaY2,Float_t &sigmaZ2);
+  
   ClassDef(AliL3Modeller,1) //Modeller class
     
 };

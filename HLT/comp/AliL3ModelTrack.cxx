@@ -2,6 +2,11 @@
 
 // Author: Anders Vestbo <mailto:vestbo$fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
+//_____________________________________________________________
+// AliL3ModelTrack
+//
+// 
+
 
 #include "AliL3StandardIncludes.h"
 
@@ -16,15 +21,11 @@
 using namespace std;
 #endif
 
-//_____________________________________________________________
-// AliL3ModelTrack
-//
-// 
-
 ClassImp(AliL3ModelTrack)
 
 AliL3ModelTrack::AliL3ModelTrack() 
 {
+  // default constructor
   fNClusters = 0;
   fClusters = 0;
   fOverlap = 0;
@@ -42,11 +43,13 @@ AliL3ModelTrack::AliL3ModelTrack()
 
 AliL3ModelTrack::~AliL3ModelTrack()
 {
+  // destructor
   DeleteArrays();
 }
 
 void AliL3ModelTrack::DeleteArrays()
 {
+  // deletes all arrays
   if(fClusters)
     delete [] fClusters;
   if(fPad)
@@ -74,6 +77,7 @@ void AliL3ModelTrack::DeleteArrays()
 
 void AliL3ModelTrack::Init(Int_t /*slice*/,Int_t patch)
 {
+  // Initialization
   if(fArraysCreated)
     {               
       DeleteArrays();
@@ -189,6 +193,7 @@ void AliL3ModelTrack::SetCluster(Int_t row,Float_t fpad,Float_t ftime,Float_t ch
 
 void AliL3ModelTrack::Set(AliL3Track *tpt)
 {
+  // Sets track and does initialization
   AliL3ModelTrack *tr = (AliL3ModelTrack*)tpt;
   SetRowRange(tr->GetFirstRow(),tr->GetLastRow());
   SetPhi0(tr->GetPhi0());
@@ -347,6 +352,7 @@ void AliL3ModelTrack::FillTrack()
 
 void AliL3ModelTrack::SetPadHit(Int_t row,Float_t pad)
 {
+  // sets pad hit
   Int_t index = row-AliL3Transform::GetFirstRow(fPatch);
   if(index < 0 || index > AliL3Transform::GetNRows(fPatch))
     {
@@ -358,6 +364,7 @@ void AliL3ModelTrack::SetPadHit(Int_t row,Float_t pad)
 
 void AliL3ModelTrack::SetTimeHit(Int_t row,Float_t time)
 {
+  // sets time hit
   Int_t index = row-AliL3Transform::GetFirstRow(fPatch);
   if(index < 0 || index > AliL3Transform::GetNRows(fPatch))
     {
@@ -369,6 +376,7 @@ void AliL3ModelTrack::SetTimeHit(Int_t row,Float_t time)
 
 void AliL3ModelTrack::SetCrossingAngleLUT(Int_t row,Float_t angle)
 {
+  // sets LUT for crossing angle
   Int_t index = row-AliL3Transform::GetFirstRow(fPatch);
   if(index < 0 || index > AliL3Transform::GetNRows(fPatch))
     {
@@ -380,7 +388,7 @@ void AliL3ModelTrack::SetCrossingAngleLUT(Int_t row,Float_t angle)
 
 void AliL3ModelTrack::SetOverlap(Int_t row,Int_t id)
 {
-
+  // sets overlap
   Int_t index = row-AliL3Transform::GetFirstRow(fPatch);
   if(index < 0 || index > AliL3Transform::GetNRows(fPatch))
     {
@@ -399,18 +407,21 @@ Bool_t AliL3ModelTrack::IsPresent(Int_t row)
 
 Bool_t AliL3ModelTrack::IsSet(Int_t row)
 {
+  // checks if row was set
   AliL3ClusterModel *cl = GetClusterModel(row);
   return (Bool_t)(cl->fPresent & 0x2);
 }
 
 Int_t AliL3ModelTrack::GetNPads(Int_t row)
 {
+  // gets number of pads
   AliL3ClusterModel *cl = GetClusterModel(row);
   return cl->fNPads;
 }
 
 Bool_t AliL3ModelTrack::GetPad(Int_t row,Float_t &pad)
 {
+  // gets pad
   //(fpad - GetPadHit(row))/(AliL3DataCompressorHelper::GetXYResidualStep(row)/AliL3Transform::GetPadPitchWidth(patch));
   AliL3ClusterModel *cl = GetClusterModel(row);
   Int_t patch = AliL3Transform::GetPatch(row);
@@ -420,6 +431,7 @@ Bool_t AliL3ModelTrack::GetPad(Int_t row,Float_t &pad)
 
 Bool_t AliL3ModelTrack::GetTime(Int_t row,Float_t &time)
 {
+  // gets time
   AliL3ClusterModel *cl = GetClusterModel(row);
   time = cl->fDTime*(AliL3DataCompressorHelper::GetZResidualStep(row)/AliL3Transform::GetZWidth()) + GetTimeHit(row);
   return IsPresent(row);
@@ -427,6 +439,7 @@ Bool_t AliL3ModelTrack::GetTime(Int_t row,Float_t &time)
 
 Bool_t AliL3ModelTrack::GetClusterCharge(Int_t row,Int_t &charge)
 {
+  // gets cluster's charge
   AliL3ClusterModel *cl = GetClusterModel(row);
   charge = (Int_t)cl->fDCharge;// + AliL3DataCompressorHelperHelper::GetClusterCharge();
   return IsPresent(row);
@@ -434,6 +447,7 @@ Bool_t AliL3ModelTrack::GetClusterCharge(Int_t row,Int_t &charge)
 
 Bool_t AliL3ModelTrack::GetSigmaY2(Int_t row,Float_t &sigma2)
 {
+  // gets SigmaY2
   //cl->fDSigmaY = (sqrt(sigmaY2) - sqrt(GetParSigmaY2(row)))/(AliL3DataCompressorHelper::GetXYWidthStep()/AliL3Transform::GetPadPitchWidth(patch));
   AliL3ClusterModel *cl = GetClusterModel(row);
   Int_t patch = AliL3Transform::GetPatch(row);
@@ -444,6 +458,7 @@ Bool_t AliL3ModelTrack::GetSigmaY2(Int_t row,Float_t &sigma2)
 
 Bool_t AliL3ModelTrack::GetSigmaZ2(Int_t row,Float_t &sigma2)
 {
+  // gets SigmaZ2
   //cl->fDSigmaZ = (sqrt(sigmaZ2) - sqrt(GetParSigmaZ2(row)))/(AliL3DataCompressorHelper::GetZWidthStep()/AliL3Transform::GetZWidth());
   AliL3ClusterModel *cl = GetClusterModel(row);
   Float_t sigma = cl->fDSigmaZ*(AliL3DataCompressorHelper::GetZWidthStep()/AliL3Transform::GetZWidth()) + sqrt(GetParSigmaZ2(row));
@@ -453,6 +468,7 @@ Bool_t AliL3ModelTrack::GetSigmaZ2(Int_t row,Float_t &sigma2)
 
 Bool_t AliL3ModelTrack::GetPadResidual(Int_t row,Float_t &res)
 {
+  // gets pad residual
   AliL3ClusterModel *cl = GetClusterModel(row);
   Int_t patch = AliL3Transform::GetPatch(row);
   res = cl->fDPad*(AliL3DataCompressorHelper::GetXYResidualStep(row)/AliL3Transform::GetPadPitchWidth(patch));
@@ -461,6 +477,7 @@ Bool_t AliL3ModelTrack::GetPadResidual(Int_t row,Float_t &res)
 
 Bool_t AliL3ModelTrack::GetTimeResidual(Int_t row,Float_t &res)
 {
+  // gets time residual
   AliL3ClusterModel *cl = GetClusterModel(row);
   res = cl->fDTime*(AliL3DataCompressorHelper::GetZResidualStep(row)/AliL3Transform::GetZWidth());
   return IsPresent(row);
@@ -468,6 +485,7 @@ Bool_t AliL3ModelTrack::GetTimeResidual(Int_t row,Float_t &res)
 
 Bool_t AliL3ModelTrack::GetSigmaYResidual(Int_t row,Float_t &res)
 {
+  // gets SigmaY residual (?)
   AliL3ClusterModel *cl = GetClusterModel(row);
   Int_t patch = AliL3Transform::GetPatch(row);
   res = cl->fDSigmaY*(AliL3DataCompressorHelper::GetXYWidthStep()/AliL3Transform::GetPadPitchWidth(patch));
@@ -476,6 +494,7 @@ Bool_t AliL3ModelTrack::GetSigmaYResidual(Int_t row,Float_t &res)
 
 Bool_t AliL3ModelTrack::GetSigmaZResidual(Int_t row,Float_t &res)
 {
+  // gets SigmaZ resigual (?)
   AliL3ClusterModel *cl = GetClusterModel(row);
   res = cl->fDSigmaZ*(AliL3DataCompressorHelper::GetZWidthStep()/AliL3Transform::GetZWidth());
   return IsPresent(row);
@@ -483,12 +502,14 @@ Bool_t AliL3ModelTrack::GetSigmaZResidual(Int_t row,Float_t &res)
 
 Int_t AliL3ModelTrack::GetSlice(Int_t row)
 {
+  // Gets slice
   AliL3ClusterModel *cl = GetClusterModel(row);
   return cl->fSlice;
 }
 
 Float_t AliL3ModelTrack::GetPadHit(Int_t row)
 {
+  // Gets pad hit
   Int_t index = row-AliL3Transform::GetFirstRow(fPatch);
   if(index < 0 || index > AliL3Transform::GetNRows(fPatch))
     {
@@ -500,6 +521,7 @@ Float_t AliL3ModelTrack::GetPadHit(Int_t row)
 
 Float_t AliL3ModelTrack::GetTimeHit(Int_t row)
 {
+  // Gets time hit
   Int_t index = row-AliL3Transform::GetFirstRow(fPatch);
   if(index < 0 || index > AliL3Transform::GetNRows(fPatch))
     {
@@ -511,6 +533,7 @@ Float_t AliL3ModelTrack::GetTimeHit(Int_t row)
 
 Float_t AliL3ModelTrack::GetCrossingAngleLUT(Int_t row)
 {
+  // gets LUT for crossing angle
   Int_t index = row-AliL3Transform::GetFirstRow(fPatch);
   if(index < 0 || index > AliL3Transform::GetNRows(fPatch))
     {
@@ -522,6 +545,7 @@ Float_t AliL3ModelTrack::GetCrossingAngleLUT(Int_t row)
 
 Float_t AliL3ModelTrack::GetParSigmaY2(Int_t row)
 {
+  // gets par SigmaY2 (?)
   Int_t index = row-AliL3Transform::GetFirstRow(fPatch);
   if(index < 0 || index > AliL3Transform::GetNRows(fPatch))
     {
@@ -533,6 +557,7 @@ Float_t AliL3ModelTrack::GetParSigmaY2(Int_t row)
 
 Float_t AliL3ModelTrack::GetParSigmaZ2(Int_t row)
 {
+  // gets par SigmaZ2 (?)
   Int_t index = row-AliL3Transform::GetFirstRow(fPatch);
   if(index < 0 || index > AliL3Transform::GetNRows(fPatch))
     {
@@ -544,6 +569,7 @@ Float_t AliL3ModelTrack::GetParSigmaZ2(Int_t row)
 
 Int_t AliL3ModelTrack::GetNOverlaps(Int_t row)
 {
+  // gets number of overlaps
   Int_t index = row - AliL3Transform::GetFirstRow(fPatch);
   if(index < 0 || index > AliL3Transform::GetNRows(fPatch))
     {
@@ -555,6 +581,7 @@ Int_t AliL3ModelTrack::GetNOverlaps(Int_t row)
 
 Int_t *AliL3ModelTrack::GetOverlaps(Int_t row)
 {
+  // gets overlaps
   Int_t index = row - AliL3Transform::GetFirstRow(fPatch);
   if(index < 0 || index > AliL3Transform::GetNRows(fPatch))
     {
@@ -566,6 +593,7 @@ Int_t *AliL3ModelTrack::GetOverlaps(Int_t row)
 
 AliL3ClusterModel *AliL3ModelTrack::GetClusterModel(Int_t row)
 {
+  // gets cluster model
   if(!fClusters) return 0; 
   Int_t index = row-AliL3Transform::GetFirstRow(fPatch);
   if(index < 0 || index > AliL3Transform::GetNRows(fPatch))
@@ -623,6 +651,7 @@ void AliL3ModelTrack::Print(Bool_t everything)
 
 void AliL3ModelTrack::SetClusterLabel(Int_t row,Int_t *trackID)
 {
+  // sets cluster label
 #ifdef do_mc
   AliL3ClusterModel *cl = GetClusterModel(row);
   cl->fTrackID[0] = trackID[0];
@@ -634,6 +663,7 @@ void AliL3ModelTrack::SetClusterLabel(Int_t row,Int_t *trackID)
 
 void AliL3ModelTrack::GetClusterLabel(Int_t row,Int_t *trackID)
 {
+  // gets cluster label
 #ifdef do_mc
   AliL3ClusterModel *cl = GetClusterModel(row);
   trackID[0] = cl->fTrackID[0];

@@ -2,6 +2,13 @@
 
 // Author: Anders Vestbo <mailto:vestbo$fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
+//_____________________________________________________________
+//
+//  AliL3CompressAC
+//
+// Compression class which performs Arithmetic Coding of the quantized residuals.
+// The implemented algorithm is inspired by the examples in The Data Compression Book 
+// by Nelson & Gailly.
 
 #if __GNUC__ == 3
 using namespace std;
@@ -17,18 +24,11 @@ using namespace std;
 #include "AliL3CompressAC.h"
 
 
-//_____________________________________________________________
-//
-//  AliL3CompressAC
-//
-// Compression class which performs Arithmetic Coding of the quantized residuals.
-// The implemented algorithm is inspired by the examples in The Data Compression Book 
-// by Nelson & Gailly.
-
 ClassImp(AliL3CompressAC)
 
 AliL3CompressAC::AliL3CompressAC()
 {
+  // default constructor
   fCount=0;
   fTotals=0;
   fMax=0;
@@ -42,6 +42,7 @@ AliL3CompressAC::AliL3CompressAC()
 AliL3CompressAC::AliL3CompressAC(Int_t slice,Int_t patch,Char_t *path,Bool_t writeshape,Int_t event) :
   AliL3Compress(slice,patch,path,writeshape,event)
 {
+  // constructor
   fCount=0;
   fTotals=0;
   fMax=0;
@@ -54,11 +55,13 @@ AliL3CompressAC::AliL3CompressAC(Int_t slice,Int_t patch,Char_t *path,Bool_t wri
 
 AliL3CompressAC::~AliL3CompressAC()
 {
+  // destructor
   ClearArrays();
 }
 
 void AliL3CompressAC::ClearArrays()
 {
+  // cleans all arrays
   fMax=0;
   if(fCount)
     delete [] fCount;
@@ -105,16 +108,16 @@ void AliL3CompressAC::BuildModel(BIT_FILE *output)
   fCount = new UChar_t[fMax+1];
   
   //Find the highest counts in order to do scaling:
-  UInt_t i,max_count=0;
+  UInt_t i,maxCount=0;
   for(i=0; i<=fMax; i++)
     {
-      if(temp[i] > max_count)
-	max_count=temp[i];
+      if(temp[i] > maxCount)
+	maxCount=temp[i];
     }
 
   //Perform the scaling
   UInt_t scale,total=1;
-  scale = max_count / 256 + 1;
+  scale = maxCount / 256 + 1;
   for(i=0; i<=fMax; i++)
     {
       fCount[i] = (UChar_t)(temp[i]/scale);
@@ -168,8 +171,9 @@ void AliL3CompressAC::FillTotals()
   fTotals[fMax+2] = fTotals[fMax+1]+1;//Used for the scale
 }
 
-void AliL3CompressAC::PrintTotals()
+void AliL3CompressAC::PrintTotals() const
 {
+  // prints totals
   cout<<"Totals:"<<endl;
   for(UInt_t i=0; i<=fMax; i++)
     {
@@ -179,6 +183,7 @@ void AliL3CompressAC::PrintTotals()
 
 void AliL3CompressAC::InitEncoder()
 {
+  // inits the encoder
   fLow = 0;
   fHigh = 0xffff;
   fUnderflowBits=0;
@@ -186,6 +191,7 @@ void AliL3CompressAC::InitEncoder()
 
 void AliL3CompressAC::InitDecoder(BIT_FILE *input)
 {
+  // inits the decoder
   fCode=0;
   for(Int_t i=0; i<16; i++)
     {
@@ -198,6 +204,7 @@ void AliL3CompressAC::InitDecoder(BIT_FILE *input)
 
 void AliL3CompressAC::ConvertIntToSymbol(Int_t value)
 {
+  // converst integer to symbol
   UInt_t range = fHigh - fLow + 1;
   fHigh = fLow + (UShort_t)((range*fTotals[value+1])/fTotals[fMax+2] - 1);
   fLow = fLow + (UShort_t)((range*fTotals[value])/fTotals[fMax+2]);
@@ -205,6 +212,7 @@ void AliL3CompressAC::ConvertIntToSymbol(Int_t value)
 
 UInt_t AliL3CompressAC::ConvertSymbolToInt()
 {
+  // converts symbol to integer
   UInt_t range = (UInt_t)(fHigh-fLow) + 1;
   UShort_t count = (UShort_t)((((UInt_t)(fCode-fLow)+1)*fTotals[fMax+2] - 1)/range);
   UInt_t j=fMax+1;
@@ -216,6 +224,7 @@ UInt_t AliL3CompressAC::ConvertSymbolToInt()
 
 void AliL3CompressAC::EncodeSymbol(BIT_FILE *output)
 {
+  // encodes symbol
   while(1)
     {
       if( (fHigh & 0x8000) == (fLow & 0x8000) )
@@ -243,6 +252,7 @@ void AliL3CompressAC::EncodeSymbol(BIT_FILE *output)
 
 void AliL3CompressAC::RemoveSymbolFromStream(BIT_FILE *input,Int_t j)
 {
+  // remves symbol fro stream
   UInt_t range = (UInt_t)(fHigh-fLow)+1;
   fHigh = fLow + (UShort_t)((range*fTotals[j+1])/fTotals[fMax+2]-1);
   fLow = fLow + (UShort_t)((range*fTotals[j])/fTotals[fMax+2]);
@@ -279,6 +289,7 @@ void AliL3CompressAC::FlushEncoder(BIT_FILE *output)
 
 Bool_t AliL3CompressAC::CompressFile()
 {
+  // comresses file
   Char_t fname[100];
   if(fEvent<0)
     sprintf(fname,"%s/comp/tracks_ac_%d_%d.raw",fPath,fSlice,fPatch);
@@ -485,6 +496,7 @@ Bool_t AliL3CompressAC::CompressFile()
 
 Bool_t AliL3CompressAC::ExpandFile()
 {
+  // expands file
   Char_t fname[100];
   if(fEvent<0)
     sprintf(fname,"%s/comp/tracks_ac_%d_%d.raw",fPath,fSlice,fPatch);
@@ -664,9 +676,10 @@ Bool_t AliL3CompressAC::ExpandFile()
 
 void AliL3CompressAC::PrintCompRatio(ofstream *outfile)
 {
+  // pristc compression ratio
   AliL3MemHandler *mem = new AliL3MemHandler();
   Char_t fname[1024];
-  UInt_t remain_size=0,digit_size=0;
+  UInt_t remainSize=0,digitSize=0;
   for(Int_t i=0; i<36; i++)
     {
       if(fEvent<0)
@@ -674,12 +687,12 @@ void AliL3CompressAC::PrintCompRatio(ofstream *outfile)
       else
 	sprintf(fname,"%s/comp/remains_%d_%d_%d.raw",fPath,fEvent,i,-1);
       mem->SetBinaryInput(fname);
-      remain_size += mem->GetFileSize();
+      remainSize += mem->GetFileSize();
       mem->CloseBinaryInput();
 
       sprintf(fname,"%s/binaries/digits_c8_%d_%d_%d.raw",fPath,fEvent,i,-1);
       mem->SetBinaryInput(fname);
-      digit_size += mem->GetFileSize();
+      digitSize += mem->GetFileSize();
       mem->CloseBinaryInput();
     }
   
@@ -690,30 +703,30 @@ void AliL3CompressAC::PrintCompRatio(ofstream *outfile)
     sprintf(fname,"%s/comp/tracks_ac_%d_%d_%d.raw",fPath,fEvent,fSlice,fPatch);
 
   mem->SetBinaryInput(fname);
-  UInt_t compress_size = mem->GetFileSize();
+  UInt_t compressSize = mem->GetFileSize();
   mem->CloseBinaryInput();
   
-  if(digit_size==0)
+  if(digitSize==0)
     {
       cerr<<"AliL3Compress::PrintCompRatio : Zero digit size, not able to obtain comp. ratios!"<<endl;
       return;
     }
   
-  Float_t compratio = (Float_t)(compress_size + remain_size)/(Float_t)digit_size;
+  Float_t compratio = (Float_t)(compressSize + remainSize)/(Float_t)digitSize;
   Float_t entropy[3];
-  Int_t track_size = GetEntropy(entropy[0],entropy[1],entropy[2])*sizeof(AliL3TrackModel);
+  Int_t trackSize = GetEntropy(entropy[0],entropy[1],entropy[2])*sizeof(AliL3TrackModel);
   if(outfile)
     {
       ofstream &out = *outfile;
-      out<<compress_size<<' '<<remain_size<<' '<<digit_size<<' '<<track_size<<' '<<entropy[0]<<' '<<entropy[1]<<endl;
+      out<<compressSize<<' '<<remainSize<<' '<<digitSize<<' '<<trackSize<<' '<<entropy[0]<<' '<<entropy[1]<<endl;
     }
   
   cout<<"=========================================="<<endl;
-  cout<<"Original digits size : "<<digit_size/1000<<" kByte ( 100 % )"<<endl;
-  cout<<"Compressed file size : "<<compress_size/1000<<" kByte ( "<<(Float_t)compress_size*100/(Float_t)digit_size<<" % )"<<endl;
-  cout<<"Remaining file size  : "<<remain_size/1000<<" kByte ( "<<(Float_t)remain_size*100/(Float_t)digit_size<<" % )"<<endl;
-  cout<<"Relative track size  : "<<track_size/1000<<" kByte ( "<<(Float_t)track_size*100/(Float_t)compress_size<<" % )"<<endl;
-  cout<<"Relative cluster size: "<<(compress_size-track_size)/1000<<" kByte ( "<<(Float_t)(compress_size-track_size)*100/(Float_t)compress_size<<" % )"<<endl;
+  cout<<"Original digits size : "<<digitSize/1000<<" kByte ( 100 % )"<<endl;
+  cout<<"Compressed file size : "<<compressSize/1000<<" kByte ( "<<(Float_t)compressSize*100/(Float_t)digitSize<<" % )"<<endl;
+  cout<<"Remaining file size  : "<<remainSize/1000<<" kByte ( "<<(Float_t)remainSize*100/(Float_t)digitSize<<" % )"<<endl;
+  cout<<"Relative track size  : "<<trackSize/1000<<" kByte ( "<<(Float_t)trackSize*100/(Float_t)compressSize<<" % )"<<endl;
+  cout<<"Relative cluster size: "<<(compressSize-trackSize)/1000<<" kByte ( "<<(Float_t)(compressSize-trackSize)*100/(Float_t)compressSize<<" % )"<<endl;
   cout<<"---------------------- "<<endl;
   cout<<"Compression ratio    : "<<compratio*100<<" %"<<endl;
   cout<<"=========================================="<<endl;
