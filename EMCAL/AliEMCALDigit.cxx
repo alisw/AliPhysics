@@ -48,7 +48,7 @@ ClassImp(AliEMCALDigit)
 
   fIndexInList = -1 ; 
   fNprimary    = 0 ;  
-  fNMaxPrimary = 5 ; 
+  fNMaxPrimary = 20 ; 
   fNiparent     = 0 ;
   fNMaxiparent = fNMaxPrimary*10;
   fPrimary = new Int_t[fNMaxPrimary] ;
@@ -60,7 +60,7 @@ AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEn
 {  
   // ctor with all data 
 
-  fNMaxPrimary = 5 ; 
+  fNMaxPrimary = 20 ; 
   fNMaxiparent = fNMaxPrimary*10;
   fPrimary = new Int_t[fNMaxPrimary] ;
   fIparent = new Int_t[fNMaxiparent] ; 
@@ -70,11 +70,10 @@ AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEn
   fIndexInList = index ; 
   if( primary != -1){
     fNprimary    = 1 ; 
-    fPrimary[0]  = primary ;
+    fPrimary[0]  = primary ;  
     fNiparent   = 1 ;
     fIparent[0] = iparent ;    
-
-  }
+}
   else{  //If the contribution of this primary smaller than fDigitThreshold (AliEMCALv1)
     fNprimary    = 0 ; 
     fPrimary[0]  = -1 ;
@@ -226,23 +225,28 @@ AliEMCALDigit& AliEMCALDigit::operator+(AliEMCALDigit const & digit)
   fAmp += digit.fAmp ;
   if(fTime > digit.fTime)
     fTime = digit.fTime ;
-  
+
   Int_t max1 = fNprimary ; 
   Int_t max2 = fNiparent ;  
   Int_t index ; 
-  for (index = 0 ; index < digit.fNprimary ; index++){
+  for (index = 0 ; index < digit.fNprimary  ; index++){
     Bool_t deja = kTRUE ;
     Int_t old ;
     for ( old = 0 ; (old < max1) && deja; old++) { //already have this primary?
-      if(fPrimary[old] == (digit.fPrimary)[index])
+      if(fPrimary[old] == digit.fPrimary[index])
 	deja = kFALSE;
     }
     if(deja){
-      fPrimary[fNprimary] = (digit.fPrimary)[index] ; 
+      if(max1<fNMaxPrimary){ fPrimary[max1] = digit.fPrimary[index] ; 
       fNprimary++ ;
-      if(fNprimary>fNMaxPrimary) {
-	cout << "AliEMCALDigit >> Increase NMaxPrimary "<< endl ;
-	return *this ;
+      max1++;}
+      if(fNprimary==fNMaxPrimary) {
+      Int_t printindex ;
+      for (printindex = 0 ; printindex < max1 ; printindex++)
+	cout << "printindex = " << printindex << "  primary = " << fPrimary[printindex];
+      cout <<endl;
+      cout << "AliEMCALDigit >> Increase NMaxPrimary "<< endl ;
+//	return *this ;
       }
     }
   }
@@ -251,13 +255,18 @@ AliEMCALDigit& AliEMCALDigit::operator+(AliEMCALDigit const & digit)
     Bool_t dejavu = kTRUE ;
     Int_t old ;
     for ( old = 0 ; (old < max2) && dejavu; old++) { //already have this primary?
-      if(fIparent[old] == (digit.fIparent)[index])
+      if(fIparent[old] == digit.fIparent[index])
 	dejavu = kFALSE;
     }
     if(dejavu){
-      fIparent[fNiparent] = (digit.fIparent)[index] ; 
+     if(max2<fNMaxiparent){ fIparent[max2] = digit.fIparent[index] ; 
       fNiparent++ ;
-      if(fNiparent>fNMaxiparent) {
+      max2++;}
+      if(fNiparent==fNMaxiparent) {
+	Int_t printindex ;
+	for (printindex = 0 ; printindex < max1 ; printindex++)
+	  cout << "printindex = " << printindex << "  primary = " << fPrimary[printindex];
+	cout <<endl;
 	cout << "AliEMCALDigit >> Increase NMaxiparent "<< endl ;
 	return *this ;
       }
