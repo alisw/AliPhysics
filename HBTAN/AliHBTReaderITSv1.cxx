@@ -107,6 +107,7 @@ Int_t AliHBTReaderITSv1::GetNumberOfTrackEvents()
 
 Int_t AliHBTReaderITSv1::Read(AliHBTRun* particles, AliHBTRun *tracks)
 {
+ cout<<"AliHBTReaderITSv1::Read()"<<endl;
  Int_t Nevents = 0;
  AliITSIOTrack *iotrack=new AliITSIOTrack;
  Int_t currentdir = 0;
@@ -224,7 +225,7 @@ Int_t AliHBTReaderITSv1::Read(AliHBTRun* particles, AliHBTRun *tracks)
     file->Close(); 
     delete file;
     file = 0;
-    
+    currentdir++;
    }while(currentdir < Ndirs);//end of loop over directories specified in fDirs Obj Array
 
 
