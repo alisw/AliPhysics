@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.46  2001/05/10 00:05:28  nilsen
+Allowed for HitsToDigits function to work with versions 5, 7, 8, and 9. This
+should probably be cleaned up to only check to make sure that fITSgeom has
+been properly defined.
+
 Revision 1.45  2001/05/01 22:35:48  nilsen
 Remove/commented a number of cout<< statements. and made change needed by
 SSD code.
@@ -1201,7 +1206,8 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt)
    // initialised for all versions - for the moment it is only for v5 !
    // 7 is the SDD beam test version  
    Int_t ver = this->IsVersion(); 
-   if(ver!=5) return; 
+   if(ver!=5 && ver!=6 && ver!=8 && ver!=9) return;
+   //if(ver!=5) return; 
 
    const char *all = strstr(opt,"All");
    const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),strstr(opt,"SSD")};
@@ -1286,7 +1292,8 @@ Option_t *option,Option_t *opt,Text_t *filename)
    // the condition below will disappear when the geom class will be
    // initialised for all versions - for the moment it is only for v5 !  
    Int_t ver = this->IsVersion(); 
-   if(ver!=5) return; 
+   if(ver!=5 && ver!=6 && ver!=8 && ver!=9) return;
+   //if(ver!=5) return; 
 
    const char *all = strstr(opt,"All");
    const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),strstr(opt,"SSD")};
