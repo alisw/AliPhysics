@@ -13,32 +13,65 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include "TClonesArray.h"
+
 #include "AliITSsimulation.h"
+#include "AliITSpList.h"
 
 ClassImp(AliITSsimulation)	
 
-AliITSsimulation::AliITSsimulation() 
-{
-  // constructor
-    fSegmentation=0;
-    fResponse=0;
+AliITSsimulation::AliITSsimulation(){
+    // constructor
+    fSegmentation = 0;
+    fResponse     = 0;
+    fpList        = 0;
 }
-
+//__________________________________________________________________________
+AliITSsimulation::~AliITSsimulation(){
+    // destructor
+    fSegmentation = 0; // local copies of pointer, do not delete
+    fResponse     = 0; // local copies of pointer, do not delete
+    delete fpList;
+}
 //__________________________________________________________________________
 AliITSsimulation::AliITSsimulation(const AliITSsimulation &source){
-  //     Copy Constructor 
-  if(&source == this) return;
-  this->fResponse = source.fResponse;
-  this->fSegmentation = source.fSegmentation;
-  return;
+    //     Copy Constructor 
+ 
+    if(&source == this) return;
+    this->fResponse     = source.fResponse;
+    this->fSegmentation = source.fSegmentation;
+    this->fModule       = source.fModule;
+    this->fEvent        = source.fEvent;
+    this->fpList        = source.fpList;
+    return;
 }
 
 //_________________________________________________________________________
-AliITSsimulation& 
-  AliITSsimulation::operator=(const AliITSsimulation &source) {
-  //    Assignment operator
-  if(&source == this) return *this;
-  this->fResponse = source.fResponse; 
-  this->fSegmentation = source.fSegmentation;
-  return *this;
+AliITSsimulation&  AliITSsimulation::operator=(const AliITSsimulation &source){
+    //    Assignment operator
+
+    if(&source == this) return *this;
+    this->fResponse     = source.fResponse; 
+    this->fSegmentation = source.fSegmentation;
+    this->fModule       = source.fModule;
+    this->fEvent        = source.fEvent;
+    this->fpList        = source.fpList;
+    return *this;
+}
+//______________________________________________________________________
+void AliITSsimulation::AddSDigitsToModule(TClonesArray *pItemA,Int_t mask ){
+    // Add Summable digits to module maps.
+    Int_t nItems = pItemA->GetEntries();
+ 
+    // cout << "Adding "<< nItems <<" SDigits to module " << fModule << endl;
+    for( Int_t i=0; i<nItems; i++ ) {
+        AliITSpListItem * pItem = (AliITSpListItem *)(pItemA->At( i ));
+        if( pItem->GetModule() != fModule ) {
+            Error( "AddSDigitsToModule","Error reading, SDigits module %d "
+		   "!= current module %d: exit",
+		   pItem->GetModule(), fModule );
+            return;
+        } // end if
+        fpList->AddItemTo( mask, pItem );
+    } // end for i
 }

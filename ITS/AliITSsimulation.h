@@ -22,6 +22,8 @@ class AliITSresponse;
 class AliITSsegmentation;
 class AliITSmodule;
 class TRandom;
+class AliITSpList;
+class TClonesArray;
 
 // This is the base class for ITS detector signal simulations. Data members
 // include are a pointer to the detectors specific response and segmentation
@@ -31,24 +33,40 @@ class AliITSsimulation : public TObject {
 
  public:
     AliITSsimulation(); // Default constructor
-    virtual ~AliITSsimulation() {}// destructor
+    virtual ~AliITSsimulation(); // destructor
     // copy constructor. See detector specific implementation.
     AliITSsimulation(const AliITSsimulation &source);
     // Assignment opporator. See detector specific implementation.
     virtual AliITSsimulation& operator=(const AliITSsimulation &source);
+
+    // *****************  Hits -> SDigits ******************
     // digitize module using the "slow" detector simulator creating
     // summable digits.
     virtual void SDigitiseModule(AliITSmodule *mod,Int_t module,Int_t event){;}
+
+    // ***************** sum of SDigits -> Digits **********
+    // Reset module arrays (maps), etc
+    virtual void InitSimulationModule( Int_t module, Int_t event ){;}
+    // add (sum) a new list of summable digits to module, 
+    // add an offset (mask) to the track numbers
+    virtual void AddSDigitsToModule( TClonesArray *pItemArray, Int_t mask );
+    // digitize module using the "slow" detector simulator from
+    // the sum of summable digits.
+    virtual void FinishSDigitiseModule(){;}
+
+    // **************** Hits -> Digits *********************
     // digitize module using the "slow" detector simulator creating digits.
     virtual void DigitiseModule(AliITSmodule *mod,Int_t module,Int_t event) {;}
     // digitizes module using the "fast" detector simulator.
     virtual void CreateFastRecPoints(AliITSmodule *mod,Int_t module,
 				     TRandom *rndm) {}
 
-protected:
-
-  AliITSresponse      *fResponse;       //! response
-  AliITSsegmentation  *fSegmentation;   //! segmentation
+ protected:
+    AliITSresponse      *fResponse;       //! response
+    AliITSsegmentation  *fSegmentation;   //! segmentation 
+    AliITSpList         *fpList;          //!
+    Int_t                fModule;         //!
+    Int_t                fEvent;          //!
 
   ClassDef(AliITSsimulation,1)  // Simulation base class 
     
