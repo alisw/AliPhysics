@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.15  2000/04/26 10:14:24  morsch
+Particles array has one entry more than pythia particle list. Upper bound of
+particle loop changed to np-1 (R. Guernane, AM)
+
 Revision 1.14  2000/04/05 08:36:13  morsch
 Check status code of particles in Pythia event
 to avoid double counting as partonic state and final state particle.
@@ -45,6 +49,7 @@ Introduction of the Copyright and cvs Log
 AliGenPythia::AliGenPythia()
                  :AliGenerator()
 {
+// Constructor
 }
 
 AliGenPythia::AliGenPythia(Int_t npart)
@@ -67,10 +72,12 @@ AliGenPythia::AliGenPythia(Int_t npart)
 
 AliGenPythia::~AliGenPythia()
 {
+// Destructor
 }
 
 void AliGenPythia::Init()
 {
+// Initialisation
     SetMC(new AliPythia());
     fPythia=(AliPythia*) fgMCEvGen;
 //
@@ -145,12 +152,13 @@ void AliGenPythia::Init()
 
 void AliGenPythia::Generate()
 {
+// Generate one event
 
     Float_t polar[3] =   {0,0,0};
     Float_t origin[3]=   {0,0,0};
-    Float_t origin_p[3]= {0,0,0};
+    Float_t originP[3]= {0,0,0};
     Float_t origin0[3]=  {0,0,0};
-    Float_t p[3], p_p[4], random[6];
+    Float_t p[3], pP[4], random[6];
     static TClonesArray *particles;
 //  converts from mm/c to s
     const Float_t kconv=0.001/2.999792458e8;
@@ -158,7 +166,7 @@ void AliGenPythia::Generate()
     
 //
     Int_t nt=0;
-    Int_t nt_p=0;
+    Int_t ntP=0;
     Int_t jev=0;
     Int_t j, kf;
 
@@ -205,19 +213,19 @@ void AliGenPythia::Generate()
 //
 // Store information concerning the hard scattering process
 //
-			    Float_t mass_p = fPythia->GetPARI(13);
-			    Float_t   pt_p = fPythia->GetPARI(17);
-			    Float_t    y_p = fPythia->GetPARI(37);
-			    Float_t  xmt_p = sqrt(pt_p*pt_p+mass_p*mass_p);
-			    Float_t     ty = Float_t(TMath::TanH(y_p));
-			    p_p[0] = pt_p;
-			    p_p[1] = 0;
-			    p_p[2] = xmt_p*ty/sqrt(1.-ty*ty);
-			    p_p[3] = mass_p;
+			    Float_t massP  = fPythia->GetPARI(13);
+			    Float_t   ptP  = fPythia->GetPARI(17);
+			    Float_t    yP  = fPythia->GetPARI(37);
+			    Float_t  xmtP  = sqrt(ptP*ptP+massP*massP);
+			    Float_t    ty  = Float_t(TMath::TanH(yP));
+			    pP[0] = ptP;
+			    pP[1] = 0;
+			    pP[2] = xmtP*ty/sqrt(1.-ty*ty);
+			    pP[3] = massP;
 			    gAlice->SetTrack(0,-1,-1,
-					     p_p,origin_p,polar,
-					     0,"Hard Scat.",nt_p,fParentWeight);
-			    gAlice->KeepTrack(nt_p);
+					     pP,originP,polar,
+					     0,"Hard Scat.",ntP,fParentWeight);
+			    gAlice->KeepTrack(ntP);
 			}
 			nc++;
 //
@@ -232,7 +240,7 @@ void AliGenPythia::Generate()
 			Int_t ifch=iparticle->GetFirstDaughter();
 			Int_t ilch=iparticle->GetLastDaughter();	
 			if (ifch !=0 && ilch !=0) {
-			    gAlice->SetTrack(0,nt_p,kf,
+			    gAlice->SetTrack(0,ntP,kf,
 					     p,origin,polar,
 					     0,"Primary",nt,fParentWeight);
 			    gAlice->KeepTrack(nt);
@@ -291,7 +299,7 @@ void AliGenPythia::Generate()
 	} // mb ?
 	if (nc > 0) {
 	    jev+=nc;
-	    if (jev >= fNpart) {
+	    if (jev >= fNpart || fNpart == -1) {
 		fKineBias=Float_t(fNpart)/Float_t(fTrials);
 		printf("\n Trials: %i %i %i\n",fTrials, fNpart, jev);
 		break;
@@ -306,6 +314,7 @@ void AliGenPythia::Generate()
 
 Bool_t AliGenPythia::ParentSelected(Int_t ip)
 {
+// True if particle is in list of parent particles to be selected
     for (Int_t i=0; i<5; i++)
     {
 	if (fParentSelect[i]==ip) return kTRUE;
@@ -315,6 +324,7 @@ Bool_t AliGenPythia::ParentSelected(Int_t ip)
 
 Bool_t AliGenPythia::ChildSelected(Int_t ip)
 {
+// True if particle is in list of decay products to be selected
     for (Int_t i=0; i<5; i++)
     {
 	if (fChildSelect[i]==ip) return kTRUE;
@@ -324,6 +334,7 @@ Bool_t AliGenPythia::ChildSelected(Int_t ip)
 
 Bool_t AliGenPythia::KinematicSelection(TParticle *particle)
 {
+// Perform kinematic selection
     Float_t px=particle->Px();
     Float_t py=particle->Py();
     Float_t pz=particle->Pz();
@@ -377,12 +388,14 @@ Bool_t AliGenPythia::KinematicSelection(TParticle *particle)
 }
 void AliGenPythia::AdjustWeights()
 {
-    TClonesArray *PartArray = gAlice->Particles();
-    TParticle *Part;
+// Adjust the weights after generation of all events
+//
+    TClonesArray *partArray = gAlice->Particles();
+    TParticle *part;
     Int_t ntrack=gAlice->GetNtrack();
     for (Int_t i=0; i<ntrack; i++) {
-	Part= (TParticle*) PartArray->UncheckedAt(i);
-	Part->SetWeight(Part->GetWeight()*fKineBias);
+	part= (TParticle*) partArray->UncheckedAt(i);
+	part->SetWeight(part->GetWeight()*fKineBias);
     }
 }
 
