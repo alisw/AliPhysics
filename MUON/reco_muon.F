@@ -2279,10 +2279,10 @@
                PXZV = SQRT( PYV(ITR)**2+PZV(ITR)**2)
                PXZR = SQRT( PXR(ITR)**2+PZR(ITR)**2) 
                PRINT *,' PXZ GEANT= ', PXZV,' PXZ RECONS= ',PXZR
-               FIV=ATAN2(PYV(ITR),PZV(ITR))
-               ALAMV=ATAN2(PXV(ITR),PXZV)
-               FIR=ATAN2(PXR(ITR),PZR(ITR))
-               ALAMR=ATAN2(PYR(ITR),PXZR)
+               FIV=ATAN2(DBLE(PYV(ITR)),DBLE(PZV(ITR)))
+               ALAMV=ATAN2(DBLE(PXV(ITR)),DBLE(PXZV))
+               FIR=ATAN2(DBLE(PXR(ITR)),DBLE(PZR(ITR)))
+               ALAMR=ATAN2(DBLE(PYR(ITR)),DBLE(PXZR))
 **               PRINT *,' PHI GEANT= ',FIV,' PXZ RECONS= ',FIR
 **               PRINT *,' ALAM GEANT= ',ALAMV,' ALAM RECONS= ',ALAMR
             ENDDO
@@ -2809,7 +2809,7 @@
        PX = -ABS(PXZ)*SIN(PHI)
        PZ = -ABS(PXZ)*COS(PHI)
        PXY = SQRT(PX**2 + PY**2)
-       FI=ATAN2(PY,PX)
+       FI=ATAN2(DBLE(PY),DBLE(PX))
        SINFI = SIN(FI)
        COSFI = COS(FI)
        TTHET = PZ/PXY
@@ -3704,6 +3704,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.5  2000/06/15 07:58:49  morsch
+* Code from MUON-dev joined
+*
 * Revision 1.4.4.2  2000/04/26 15:48:37  morsch
 * Some routines from obsolete algo.F are needed by reco_muon.F and have been
 * copied there.
@@ -5378,6 +5381,9 @@ C
 * $Id$
 *
 * $Log$
+* Revision 1.5  2000/06/15 07:58:49  morsch
+* Code from MUON-dev joined
+*
 * Revision 1.4.4.2  2000/04/26 15:48:37  morsch
 * Some routines from obsolete algo.F are needed by reco_muon.F and have been
 * copied there.
@@ -5495,6 +5501,9 @@ C
 * $Id$
 *
 * $Log$
+* Revision 1.5  2000/06/15 07:58:49  morsch
+* Code from MUON-dev joined
+*
 * Revision 1.4.4.2  2000/04/26 15:48:37  morsch
 * Some routines from obsolete algo.F are needed by reco_muon.F and have been
 * copied there.
