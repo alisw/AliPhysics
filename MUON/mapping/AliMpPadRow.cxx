@@ -3,7 +3,7 @@
 // Category: sector
 //
 // Class AliMpPadRow
-// -----------------
+// ------------------
 // Class describing a pad row composed of the pad row segments.
 //
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
@@ -11,14 +11,25 @@
 #include <TError.h>
 
 #include "AliMpPadRow.h"
-#include "AliMpPadRowSegment.h"
+#include "AliMpPadRowLSegment.h"
+#include "AliMpPadRowRSegment.h"
 
 ClassImp(AliMpPadRow)
 
 //_____________________________________________________________________________
+AliMpPadRow::AliMpPadRow(AliMpXDirection direction) 
+  : TObject(),
+    fDirection(direction), 
+    fID(0)
+{
+//
+}
+
+//_____________________________________________________________________________
 AliMpPadRow::AliMpPadRow() 
   : TObject(),
-    fID(0) 
+    fDirection(kLeft), 
+    fID(0)
 {
 //
 }
@@ -32,36 +43,66 @@ AliMpPadRow::~AliMpPadRow() {
 }
 
 //
+// private methods
+//
+
+//_____________________________________________________________________________
+Double_t AliMpPadRow::CurrentBorderX() const
+{
+// Returns the left/right x border 
+// (depending on the direction which the row segments are filled in).
+// ---
+
+  if (GetNofPadRowSegments() == 0)
+      return fOffsetX;
+  else 
+    if (fDirection == kLeft)
+      return GetPadRowSegment(GetNofPadRowSegments()-1)->LeftBorderX();
+    else  
+      return GetPadRowSegment(GetNofPadRowSegments()-1)->RightBorderX();
+}
+
+//
 // public methods
 //
 
 //_____________________________________________________________________________
-void AliMpPadRow::AddPadRowSegment(AliMpPadRowSegment* padRowSegment)
+AliMpVPadRowSegment* 
+AliMpPadRow::AddPadRowSegment(AliMpMotif* motif, Int_t motifPositionId,
+                              Int_t nofPads)
 {
-// Adds row segment.
+// Adds pad row segment.
 // ---
 
+  AliMpVPadRowSegment* padRowSegment = 0;
+
+  if (fDirection == kLeft) {
+    padRowSegment 
+      = new AliMpPadRowLSegment(this, motif, motifPositionId, nofPads);
+  }    
+  else  {
+    padRowSegment 
+      = new AliMpPadRowRSegment(this, motif, motifPositionId, nofPads);
+  }     
+
   // Set pad row segment offset
-  if (GetNofPadRowSegments() == 0)
-    padRowSegment
-      ->SetOffsetX(fOffsetX);
-  else 
-    padRowSegment
-      ->SetOffsetX(GetPadRowSegment(GetNofPadRowSegments()-1)->LeftBorderX());
+  padRowSegment->SetOffsetX(CurrentBorderX());
 
   // Adds the pad row segment
   fSegments.push_back(padRowSegment);
+  
+  return padRowSegment;
 }  
   
 //_____________________________________________________________________________
-AliMpPadRowSegment* AliMpPadRow::FindPadRowSegment(Double_t x) const
+AliMpVPadRowSegment* AliMpPadRow::FindPadRowSegment(Double_t x) const
 {
 // Finds the row segment for the specified x position;
 // returns 0 if no row segment is found.
 // ---
 
   for (Int_t i=0; i<GetNofPadRowSegments(); i++) {
-    AliMpPadRowSegment* rs = GetPadRowSegment(i);
+    AliMpVPadRowSegment* rs = GetPadRowSegment(i);
     if (x >= rs->LeftBorderX() && x <= rs->RightBorderX())
       return rs;
   }
@@ -112,7 +153,7 @@ Int_t AliMpPadRow::GetNofPadRowSegments() const
 }  
 
 //_____________________________________________________________________________
-AliMpPadRowSegment* AliMpPadRow::GetPadRowSegment(Int_t i) const 
+AliMpVPadRowSegment* AliMpPadRow::GetPadRowSegment(Int_t i) const 
 {
   if (i<0 || i>=GetNofPadRowSegments()) {
     Warning("GetRowSegment", "Index outside range");
