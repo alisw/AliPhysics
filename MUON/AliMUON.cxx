@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.35  2000/10/24 19:46:21  morsch
+BuildGeometry updated for slats in station 3-4.
+
 Revision 1.34  2000/10/18 11:42:06  morsch
 - AliMUONRawCluster contains z-position.
 - Some clean-up of useless print statements during initialisations.
@@ -531,7 +534,7 @@ void AliMUON::BuildGeometry()
 
 		char nameSlat[9];
 		
-		Float_t xpos=4.;
+		Float_t xpos=2.;
 		Float_t ypos1=-0.75+20.;
 		Float_t ypos2= 0.75-20.;
 		if (i!=2) {
@@ -552,8 +555,10 @@ void AliMUON::BuildGeometry()
 		    sprintf(nameSlat,"SLAT%d",100*id+j);
 		    new TBRIK(nameSlat,"Slat Module","void",20.*npcb[j],20.,0.25);
 		    node->cd();
-		    xpos=20.*npcb[j]+4;
-		    if (j==0) xpos+=30;
+		    xpos=20.*npcb[j]+2;
+
+		    if (j==0 && i!=2) xpos+=37.5;
+		    if (j==0 && i==2) xpos+=40;
 
 		    color =  TMath::Even(j) ? kColorMUON2 : kColorMUON3;
 		    
