@@ -1,6 +1,7 @@
 void loadlibs () 
 {
-  gSystem->Load("libMC");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
 
   // libraries required by EVGEN
   // (commented libraries are already loaded in prevoius sequence)
