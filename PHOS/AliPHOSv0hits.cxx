@@ -35,7 +35,7 @@
 
 // --- AliRoot header files ---
 
-#include "AliPHOSv0_hits.h"
+#include "AliPHOSv0hits.h"
 #include "AliPHOSHit.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSReconstructioner.h"
