@@ -324,7 +324,7 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
 #ifdef do_mc
       Int_t trackID[3];
       GetTrackID((Int_t)rint(fpad),(Int_t)rint(ftime),trackID);
-      cout<<"padrow "<<fCurrentRow<<" pad "<<(Int_t)rint(fpad)<<" time "<<(Int_t)rint(ftime)<<" Trackid "<<trackID[0]<<endl;
+      //cout<<"padrow "<<fCurrentRow<<" pad "<<(Int_t)rint(fpad)<<" time "<<(Int_t)rint(ftime)<<" Trackid "<<trackID[0]<<endl;
       fSpacePointData[counter].fTrackID[0] = trackID[0];
       fSpacePointData[counter].fTrackID[1] = trackID[1];
       fSpacePointData[counter].fTrackID[2] = trackID[2];
