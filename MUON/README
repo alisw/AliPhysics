@@ -24,26 +24,26 @@ root [0] gAlice->SetConfigFunction("Config( \"/home/martinez/aliroot/work_NewIO/
 To process the digitalization of hits the AliRunDigitizer 
 framework is used:
 
-root [0] AliRunDigitizer   * manager = new AliRunDigitizer(1,1);
-root [1] manager->SetInputStream(0,"galice.root");
-root [2] AliMUONDigitizerv1* dMUON   = new AliMUONDigitizerv1(manager);
-root [3] manager->AddDigitizer(dMUON);
-root [4] manager->Exec("deb");
+AliRunDigitizer   * manager = new AliRunDigitizer(1,1);
+manager->SetInputStream(0,"galice.root");
+AliMUONDigitizerv1* dMUON   = new AliMUONDigitizerv1(manager);
+manager->AddDigitizer(dMUON);
+manager->Exec("deb");
 
 ============================================================
  How to run MUON RecPoint clusterization
 ============================================================
 aliroot -b << EOF
-root [0].L $ALICE_ROOT/MUON/MUONrawclusters.C
-root [1] MUONrawclusters("galice.root",0,2); 
+.L $ALICE_ROOT/MUON/MUONrawclusters.C
+MUONrawclusters("galice.root",0,10); 
 
 First event and last event are given by hand, but this will change.
 
 ============================================================
  How to run MUON Trigger
 ============================================================
-root [0].L $ALICE_ROOT/MUON/MUONtrigger.C
-root [1] MUONtrigger("galice.root",0,9); 
+.L $ALICE_ROOT/MUON/MUONtrigger.C
+MUONtrigger("galice.root",0,9); 
 >> IMPORTANT NOTE: in the present version, one can only have either
 >> rawclusters or trigger information written in MUON.RecPoints.root
 >> but not both of them i.e. running MUONtrigger after MUONrawclusters
@@ -55,10 +55,10 @@ First event and last event are given by hand, but this will change.
  How to run MUON Tracking reconstruction
 ============================================================
 
-root [0] .includepath $ALICE_ROOT/STEER
-root [1] .includepath $ALICE_ROOT/MUON
-root [2] .L $ALICE_ROOT/MUON/MUONrecoNtuple.C++
-root [3] MUONrecoNtuple(0,1,0,"galice.root")    
+.includepath $ALICE_ROOT/STEER
+.includepath $ALICE_ROOT/MUON
+.L $ALICE_ROOT/MUON/MUONrecoNtuple.C++
+MUONrecoNtuple(0,10,0,"galice.root")    
 
 First event and last event are given by hand, but this will change.
 
@@ -69,21 +69,22 @@ To check the content of a root data file, the MUONCheck
 provides a ascii output on screen.
 
 To compile MUONCheck.C
-root [0] .includepath $ALICE_ROOT/STEER
-root [1] .includepath $ALICE_ROOT/MUON
-root [2] .L $ALICE_ROOT/MUON/MUONCheck.C++
+.includepath $ALICE_ROOT/STEER
+.includepath $ALICE_ROOT/MUON
+.L $ALICE_ROOT/MUON/MUONCheck.C++
+
 
 To print hits : (default file is galice.root if not MUONhits("toto.root""); )
-root [3] MUONhits()  
+MUONhits()  
 
 To print digits : (default file is galice.root)
-root [4] MUONdigits()  
+MUONdigits()  
 
 To print rawcluster : (default file is galice.root)
-root [5] MUONrecpoints()
+MUONrecpoints()
 
 To print trigger : (default file is galice.root)
-root [5] MUONTestTrigger()
+MUONTestTrigger()
 
 ===========================================================
  Still working ..............
