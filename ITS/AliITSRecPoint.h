@@ -18,26 +18,24 @@ class AliITSRecPoint : public TObject {
     fTracks[0]=fTracks[1]=fTracks[2]=-3; 
     fX=fZ=fQ=fdEdX=0.;
     fSigmaX2=fSigmaZ2=0.;
-    fProbability=0;
    }
 
   virtual ~AliITSRecPoint() {}; // distructor
   Bool_t IsSortable() const {return kTRUE;} // allows for sorting
-  Int_t * GetTracks() {return fTracks;} // returns pointer to tracks
+  Int_t   GetLabel(Int_t i) {return fTracks[i];} // get track label
   Float_t GetX(){return fX;} // gets fX
   Float_t GetZ(){return fZ;} // gets fZ
   Float_t GetQ(){return fQ;} // gets fQ
   Float_t GetdEdX(){return fdEdX;} // gets fdEdX
   Float_t GetSigmaX2(){return fSigmaX2;} // gets fSigmaX2
   Float_t GetSigmaZ2(){return fSigmaZ2;} // gets fSigmaZ2
-  Float_t GetProbability(){return fProbability;} // gets fProbability
+  void SetLabel(Int_t i, Int_t lab){fTracks[i]=lab;} // sets track label
   void SetX(Float_t x){fX=x;} // sets fX
   void SetZ(Float_t z){fZ=z;} // sets fZ
   void SetQ(Float_t q){fQ=q;} // sets fQ
   void SetdEdX(Float_t dedx){fdEdX=dedx;} // sets fdEdX
   void SetSigmaX2(Float_t sx2){fSigmaX2=sx2;} // sets fSigmaX2
   void SetSigmaZ2(Float_t sz2){fSigmaZ2=sz2;} // sets fSigmaZ2
-  void SetProbability(Float_t p){fProbability = p;} // sets fProbability
   void  Use() {
     //if fQ<0 cluster is already associated with a track
     fQ=-fQ;
@@ -56,10 +54,6 @@ class AliITSRecPoint : public TObject {
     Float_t   fdEdX;      //dE/dX inside this cluster
     Float_t   fSigmaX2;   //Sigma X square of cluster
     Float_t   fSigmaZ2;   //Sigma Z square of cluster
-
-    Float_t   fProbability; // only temporary solution! - it will be out  
-                            // The probability 
-                            // that this is a "real" point in SSD 
 
   ClassDef(AliITSRecPoint,1)  // AliITSRecPoint class
 };
