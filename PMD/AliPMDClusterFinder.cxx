@@ -83,8 +83,6 @@ void AliPMDClusterFinder::OpengAliceFile(Char_t *file, Option_t *option)
   
   fRunLoader->LoadgAlice();
   fRunLoader->LoadHeader();
-  fRunLoader->LoadKinematics();
-
   gAlice = fRunLoader->GetAliRun();
   
   if (gAlice)
@@ -119,7 +117,6 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
   // algorithm on CPV plane and PREshower plane
   //
   Int_t    det = 0,smn = 0;
-  Int_t    cellno;
   Int_t    xpos,ypos;
   Float_t  adc;
   Int_t    isup;
@@ -167,12 +164,11 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 	  
 	  det    = pmddigit->GetDetector();
 	  smn    = pmddigit->GetSMNumber();
-	  cellno = pmddigit->GetCellNumber();
+	  xpos   = pmddigit->GetRow();
+	  ypos   = pmddigit->GetColumn();
 	  adc    = pmddigit->GetADC();
 	  //Int_t trno   = pmddigit->GetTrackNumber();
 
-	  xpos = cellno/fCol;
-	  ypos = cellno - xpos*fCol;
 	  fCellADC[xpos][ypos] = (Double_t) adc;
 	}
 
@@ -238,9 +234,9 @@ void AliPMDClusterFinder::ResetCellADC()
 {
   // Reset the individual cell ADC value to zero
   //
-  for(Int_t irow = 0; irow < fRow; irow++)
+  for(Int_t irow = 0; irow < fgkRow; irow++)
     {
-      for(Int_t icol = 0; icol < fCol; icol++)
+      for(Int_t icol = 0; icol < fgkCol; icol++)
 	{
 	  fCellADC[irow][icol] = 0.;
 	}

@@ -63,9 +63,9 @@ class AliPMDClusterFinder
   Int_t   fDebug;           // Debugging switch (0:NO, 1:YES)
   Float_t fEcut;            // Energy/ADC cut per cell
 
-  static const Int_t fRow = 48; // Total number of rows in one unitmodule
-  static const Int_t fCol = 96; // Total number of cols in one unitmodule
-  Double_t fCellADC[fRow][fCol]; // Array containing individual cell ADC
+  static const Int_t fgkRow = 48; // Total number of rows in one unitmodule
+  static const Int_t fgkCol = 96; // Total number of cols in one unitmodule
+  Double_t fCellADC[fgkRow][fgkCol]; // Array containing individual cell ADC
 
   ClassDef(AliPMDClusterFinder,2) // To run PMD clustering
 };

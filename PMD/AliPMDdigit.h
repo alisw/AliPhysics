@@ -18,7 +18,7 @@ class AliPMDdigit : public TObject
  public:
   AliPMDdigit();
   AliPMDdigit(Int_t trnumber, Int_t det, Int_t smnumber,
-	      Int_t cellnumber, Float_t adc);
+	      Int_t irow, Int_t icol, Float_t adc);
   AliPMDdigit(AliPMDdigit *pmddigit) {*this = *pmddigit;}
   AliPMDdigit (const AliPMDdigit &pmddigit);  // copy constructor
   AliPMDdigit &operator=(const AliPMDdigit &pmddigit); // assignment op
@@ -28,17 +28,19 @@ class AliPMDdigit : public TObject
   Int_t   GetTrackNumber() const;
   Int_t   GetDetector() const;
   Int_t   GetSMNumber() const;
-  Int_t   GetCellNumber() const;
+  Int_t   GetRow() const;
+  Int_t   GetColumn() const;
   Float_t GetADC() const;
 
  protected:
   Int_t   fTrNumber;    // Parent Track number
   Int_t   fDet;         // Detecor Number (0:PRE, 1:CPV)
   Int_t   fSMNumber;    // Serial Module Number
-  Int_t   fCellNumber;  // Cell Number (row(0-47)*96 + col(0-95))
+  Int_t   fRow;         // Cell Row Number (0-47)
+  Int_t   fColumn;      // Cell Column Number (0-95)
   Float_t fADC;         // Energy deposition(ADC) in a hexagonal cell
   
-  ClassDef(AliPMDdigit,2) // Digits object for Detector set:PMD
+  ClassDef(AliPMDdigit,3) // Digits object for Detector set:PMD
 };
 
 #endif

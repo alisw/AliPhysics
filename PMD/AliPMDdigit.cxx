@@ -32,18 +32,20 @@ AliPMDdigit::AliPMDdigit()
   fTrNumber   = 0;
   fDet        = 0;
   fSMNumber   = 0;
-  fCellNumber = 0;
+  fRow        = 0;
+  fColumn     = 0;
   fADC        = 0.;
 }
 
 AliPMDdigit::AliPMDdigit(Int_t trnumber, Int_t det, Int_t smnumber, 
-			 Int_t cellnumber, Float_t adc)
+			 Int_t irow, Int_t icol, Float_t adc)
 {
   // Constructor
   fTrNumber   = trnumber;
   fDet        = det;
   fSMNumber   = smnumber;
-  fCellNumber = cellnumber;
+  fRow        = irow;
+  fColumn     = icol;
   fADC        = adc;
 }
 AliPMDdigit::AliPMDdigit(const AliPMDdigit& pmddigit):TObject(pmddigit) {
@@ -52,7 +54,8 @@ AliPMDdigit::AliPMDdigit(const AliPMDdigit& pmddigit):TObject(pmddigit) {
   this->fTrNumber   = pmddigit.fTrNumber;
   this->fDet        = pmddigit.fDet;
   this->fSMNumber   = pmddigit.fSMNumber;
-  this->fCellNumber = pmddigit.fCellNumber;
+  this->fRow        = pmddigit.fRow;
+  this->fColumn     = pmddigit.fColumn;
   this->fADC        = pmddigit.fADC;
   return;
 }
@@ -62,7 +65,8 @@ AliPMDdigit & AliPMDdigit::operator=(const AliPMDdigit& pmddigit) {
   this->fTrNumber   = pmddigit.fTrNumber;
   this->fDet        = pmddigit.fDet;
   this->fSMNumber   = pmddigit.fSMNumber;
-  this->fCellNumber = pmddigit.fCellNumber;
+  this->fRow        = pmddigit.fRow;
+  this->fColumn     = pmddigit.fColumn;
   this->fADC        = pmddigit.fADC;
   return *this;
 }
@@ -82,9 +86,13 @@ Int_t AliPMDdigit::GetSMNumber() const
 {
   return fSMNumber;
 }
-Int_t AliPMDdigit::GetCellNumber() const
+Int_t AliPMDdigit::GetRow() const
 {
-  return fCellNumber;
+  return fRow;
+}
+Int_t AliPMDdigit::GetColumn() const
+{
+  return fColumn;
 }
 Float_t AliPMDdigit::GetADC() const
 {
