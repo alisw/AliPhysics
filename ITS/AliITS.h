@@ -149,7 +149,7 @@ class AliITS : public AliDetector {
  protected:
 
     AliITSgeom *fITSgeom;      // Pointer to ITS geometry
-    TObjArray  *fITSmodules;   // Pointer to ITS modules
+    TObjArray  *fITSmodules;   //! Pointer to ITS modules
     Bool_t      fEuclidOut;    // Flag to write geometry in euclid format
     Int_t       fIdN;          // the number of layers
     Int_t      *fIdSens;       //[fIdN] layer identifier

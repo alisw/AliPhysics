@@ -153,8 +153,8 @@ class AliITSmodule:public TObject{
     TArrayI      *fTrackIndex; // track index
     TArrayI      *fHitIndex; // hit index
 
-    ClassDef(AliITSmodule,1) // Copy the hits into a more useful order
-
+    ClassDef(AliITSmodule,0) // Copy the hits into a more useful order
+	// Version set to zero so that we do not write out this class.
 };
 
 #endif
