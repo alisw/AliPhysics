@@ -112,6 +112,15 @@ AliLevel3::AliLevel3(TFile *in)
 
 void AliLevel3::Init(Char_t *path,Bool_t binary,Int_t npatches)
 {
+#ifdef ASVVERSION
+  if(npatches != 1 && binary == kFALSE)
+    {
+      LOG(AliL3Log::kWarning,"AliLevel3::Init","NPatches")
+	<<"You can only read data slice by slice (1 patch) when reading from a rootfile and using the patched (ASV) AliTPC version."<<ENDLOG;
+      npatches = 1;
+    }
+#endif
+
   if(!binary && !fInputFile)
     {
       LOG(AliL3Log::kError,"AliLevel3::Init","Files")
