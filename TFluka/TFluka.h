@@ -125,6 +125,7 @@ class TFluka : public TVirtualMC {
   virtual void       SetCut(const char* cutName, Double_t cutValue, Int_t imed);
   virtual TObjArray* GetListOfUserConfigs() {return fUserConfig;}
   virtual Double_t   Xsec(char*, Double_t, Int_t, Int_t);
+
   
   // Particle table usage         
   virtual Int_t    IdFromPDG(Int_t id) const;
@@ -239,12 +240,6 @@ class TFluka : public TVirtualMC {
   virtual void Gspart(Int_t, const char*, Int_t, Double_t, Double_t, Double_t)
       {printf("WARNING: Gspart not yet implemented !\n");}
 
-
-  //
-  // FLUKA Scoring specific methods
-  // ------------------------------
-  //
-  virtual void SetUserScoring(const char* option, Int_t npar, Float_t* what);
   //
   // Particle Properties
   // -------------------
@@ -268,6 +263,14 @@ class TFluka : public TVirtualMC {
   virtual void ProcessEvent();
   virtual Bool_t ProcessRun(Int_t nevent);
 
+
+  //
+  // FLUKA Scoring specific methods
+  // ------------------------------
+  //
+  virtual void SetUserScoring(const char* option, Int_t npr,char* outfile, Float_t* what);
+  virtual void SetUserScoring(const char* option, Int_t npr,char* outfile, Float_t* what,
+			      const char* det1, const char* det2, const char* det3);
   //
   // New Getter and Setters
   // ------------------------------------------------

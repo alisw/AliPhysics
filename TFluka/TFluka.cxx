@@ -873,15 +873,24 @@ Bool_t TFluka::SetCut(const char* cutName, Double_t cutValue)
     return kTRUE;
 }
 
-void TFluka::SetUserScoring(const char* option, Int_t npar, Float_t what[12])
+
+void TFluka::SetUserScoring(const char* option, Int_t npr, char* outfile, Float_t* what)
 {
 //
-// Ads a user scoring option to th list
+// Adds a user scoring option to the list
 //
-    TFlukaScoringOption* opt = new TFlukaScoringOption(option, "User Scoring", npar, what);
+    TFlukaScoringOption* opt = new TFlukaScoringOption(option, "User Scoring", npr,outfile,what);
     fUserScore->Add(opt);
 }
-
+//______________________________________________________________________________
+void TFluka::SetUserScoring(const char* option, Int_t npr, char* outfile, Float_t* what, const char* det1, const char* det2, const char* det3)
+{
+//
+// Adds a user scoring option to the list
+//
+    TFlukaScoringOption* opt = new TFlukaScoringOption(option, "User Scoring", npr, outfile, what, det1, det2, det3);
+    fUserScore->Add(opt);
+}
 
 //______________________________________________________________________________ 
 Double_t TFluka::Xsec(char*, Double_t, Int_t, Int_t)
@@ -950,18 +959,57 @@ void TFluka::InitPhysics()
     
  fin:
 
-    // Pass information to configuration objects
+    
+// Pass information to configuration objects
     
     Float_t fLastMaterial = fGeom->GetLastMaterialIndex();
     TFlukaConfigOption::SetStaticInfo(pFlukaVmcInp, 3, fLastMaterial, fGeom);
     
     TIter next(fUserConfig);
     TFlukaConfigOption* proc;
-    while((proc = (TFlukaConfigOption*)next())) proc->WriteFlukaInputCards();
+    while((proc = dynamic_cast<TFlukaConfigOption*> (next()))) proc->WriteFlukaInputCards();
+//
+// Process Fluka specific scoring options
+//
+    TFlukaScoringOption::SetStaticInfo(pFlukaVmcInp, fGeom);
+    Float_t loginp        = 49.0;
+    Int_t inp             = 0;
+    Int_t nscore          = fUserScore->GetEntries();
+    
+    TFlukaScoringOption *mopo = 0x0;
+    TFlukaScoringOption *mopi = 0x0;
 
+    for (Int_t isc = 0; isc < nscore; isc++) 
+    {
+	mopo = dynamic_cast<TFlukaScoringOption*> (fUserScore->At(isc));
+	char*    fileName = mopo->GetFileName();
+	Int_t    size     = strlen(fileName);
+	Float_t  lun      = -1.;
+//
+// Check if new output file has to be opened
+	for (Int_t isci = 0; isci < isc; isci++) {
+	    mopi = dynamic_cast<TFlukaScoringOption*> (fUserScore->At(isc));
+	    if(strncmp(mopi->GetFileName(), fileName, size)==0) {
+		// 
+		// No, the file already exists
+		lun = mopi->GetLun();
+		mopo->SetLun(lun);
+		break;
+	    }
+	} // inner loop
+
+	if (lun == -1.) {
+	    // Open new output file
+	    inp++;
+	    mopo->SetLun(loginp + inp);
+	    mopo->WriteOpenFlukaFile();
+	}
+	mopo->WriteFlukaInputCards();
+    }
+    
 // Add START and STOP card
-  fprintf(pFlukaVmcInp,"START     %10.1f\n",fEventsPerRun);
-  fprintf(pFlukaVmcInp,"STOP      \n");
+    fprintf(pFlukaVmcInp,"START     %10.1f\n",fEventsPerRun);
+    fprintf(pFlukaVmcInp,"STOP      \n");
    
   
 // Close files
