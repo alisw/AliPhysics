@@ -28,8 +28,9 @@ class AliITSresponse : public TObject {
     // Configuration methods
     //
 
-    // Set GeVcharge value
-    virtual void SetGeVToCharge(Double_t gc=2.778E+8){fGeVcharge = gc;}
+    // Set GeVcharge value (Default value is based on about 20,000 e- by a 
+    // mip (1.163E-4GeV) in 300 microns)
+    virtual void SetGeVToCharge(Double_t gc=1.719E+8){fGeVcharge = gc;}
     // Returns the value fGeVcharge
     virtual Double_t GetGeVToCharge() const {return fGeVcharge;}
     // Converts deposited energy to number of electrons liberated
