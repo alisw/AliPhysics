@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.37  2000/10/02 21:28:16  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.36  2000/09/14 07:08:41  fca
 Introducing glvolu in the interface
 
@@ -966,7 +969,14 @@ void TGeant3::DefineParticles()
 
   pdgDB->AddParticle("Sigma(b)*-","Sigma(b)*-",
 		     5.8100, kFALSE, -1., -1.,"Baryon", -5224);
- 
+
+
+  pdgDB->AddParticle("Xi(b)0","Xi(b)0",
+		     5.8400, kFALSE, -1., +0.,"Baryon", 5232);
+
+  pdgDB->AddParticle("Xi(b)0 bar","Xi(b)0 bar",
+		     5.8100, kFALSE, -1., -0.,"Baryon", -5232);
+
 //
 //
   pdgDB->AddParticle("Deuteron","Deuteron",2*kAu2Gev+8.071e-3,kTRUE,
