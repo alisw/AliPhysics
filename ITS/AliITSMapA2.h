@@ -25,7 +25,7 @@ public:
   virtual  void  SetHit(Int_t iz, Int_t ix, Int_t signal){}
     // Flag a hit as used
     // Set threshold for the signal
-  virtual  void  SetThreshold(Int_t thresh) {fMapThreshold=(double)thresh;}
+  virtual  void  SetThreshold(Int_t thresh) {fMapThresholdD=(double)thresh;}
   virtual  void  FlagHit(Int_t iz, Int_t ix);    
   virtual  void  DeleteHit(Int_t iz, Int_t ix);
     // Get index in the map
@@ -46,8 +46,8 @@ private:
   void  FillHist();
   void  ResetHist();
 
-  Double_t *fHitMap;         //! [fMaxIndex]
-  Double_t fMapThreshold;    // threshold for signal
+  Double_t *fHitMapD;         //! [fMaxIndex]
+  Double_t fMapThresholdD;    // threshold for signal
   Int_t    fScaleSizeX;      // scale factor on x
   Int_t    fScaleSizeZ;      // scale factor on z
 
