@@ -150,7 +150,7 @@ libclean:  FORCE
 allclean: libclean clean
 
 # IRST coding rule check
-CHECK_DIRS = $(ALIROOT_DIRS) ALIROOT
+CHECK_DIRS = $(ALIROOT_DIRS) ALIROOT TGeant4 AliGeant4
 check:     
 		@for i in $(CHECK_DIRS) ; do \
                     echo "Checking $$i" ; \
