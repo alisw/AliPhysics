@@ -2,7 +2,7 @@
 
 $(SLIBRARY):
 		@echo "Generating $@"
-		@[ -d $(dir $@) ] || mkdir $(dir $@)
+		@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 		@rm -f $@
                 ifeq ($(PLATFORM),aix)
 		   @cd tgt_$(ALICE_TARGET) ;\
@@ -16,7 +16,7 @@ $(SLIBRARY):
 
 $(ALIBRARY):	
 		@echo "Generating $@"
-		@[ -d $(dir $@) ] || mkdir $(dir $@)
+		@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 		@rm -f $@
 		@ar rv $@ $^
  
