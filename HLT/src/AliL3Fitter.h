@@ -12,7 +12,6 @@ class AliL3Fitter {
  private:
   AliL3Track *fTrack; //!
   AliL3Vertex *fVertex; //!
-  Double_t BFACT;
   Bool_t fVertexConstraint;
   AliL3SpacePointData *fClusters[36][6]; //!
   UInt_t fNcl[36][6];

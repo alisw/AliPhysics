@@ -3,6 +3,7 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
 
+#include "AliL3StandardIncludes.h"
 #include <math.h>
 
 #include "AliL3Logging.h"
@@ -11,7 +12,7 @@
 #include "AliL3Track.h"
 #include "AliL3SpacePointData.h"
 #include "AliL3MemHandler.h"
-
+#include "AliL3Transform.h"
 //_____________________________________________________________
 // AliL3Fitter
 //
@@ -24,7 +25,6 @@ AliL3Fitter::AliL3Fitter(AliL3Vertex *vertex)
   //constructor
   fTrack=0;
   fVertex = vertex;
-  BFACT = 0.0029980;
   fVertexConstraint=kTRUE;
 }
 
@@ -397,17 +397,17 @@ Int_t AliL3Fitter::FitCircle()
       x0   =  points[pos].fX;
       y0   =  points[pos].fY;
       phi0 =  atan2(points[pos].fY,points[pos].fX);
-      if ( phi0 < 0 ) phi0 += 2*Pi;
+      if ( phi0 < 0 ) phi0 += 2*AliL3Transform::Pi();
       r0   =  sqrt ( points[pos].fX * points[pos].fX + points[pos].fY*points[pos].fY);
       fTrack->SetPhi0(phi0);
       fTrack->SetR0(r0);
     }
   //
   psi  = (Double_t)atan2(bcent-y0,acent-x0) ;
-  psi  = psi + q * 0.5F * Pi ;
-  if ( psi < 0 ) psi = psi + 2*Pi;
+  psi  = psi + q * 0.5F * AliL3Transform::Pi() ;
+  if ( psi < 0 ) psi = psi + 2*AliL3Transform::Pi();
   
-  pt   = (Double_t)(BFACT * BField * radius ) ;
+  pt   = (Double_t)(AliL3Transform::GetBFact() * AliL3Transform::GetBField() * radius ) ;
   fTrack->SetPsi(psi);
   fTrack->SetPt(pt);
   fTrack->SetFirstPoint(x0,y0,0);
@@ -437,7 +437,7 @@ Int_t AliL3Fitter::FitLine ( )
   //find sum , sums ,sumz, sumss 
   // 
   Double_t dx, dy ;
-  Double_t radius = (Double_t)(fTrack->GetPt() / ( BFACT * BField ) ) ;
+  Double_t radius = (Double_t)(fTrack->GetPt() / ( AliL3Transform::GetBFact() * AliL3Transform::GetBField() ) ) ;
 
   //TObjArray *hits = fTrack->GetHits();
   //Int_t num_of_hits = fTrack->GetNumberOfPoints();
@@ -481,7 +481,7 @@ Int_t AliL3Fitter::FitLine ( )
     } 
   else 
     { 
-      total_s = 2.0 * radius * Pi ;
+      total_s = 2.0 * radius * AliL3Transform::Pi() ;
     } 
   
   Double_t dpsi,s;
