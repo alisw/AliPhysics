@@ -322,7 +322,6 @@ Int_t AliITSDDLRawData::RawDataSPD(TBranch* branch){
     UInt_t currentFilePosition=outfile.tellp();
     outfile.seekp(dataHeaderPosition);
     header.fSize=currentFilePosition-dataHeaderPosition;
-    header.SetAttribute(0);  // valid data
     outfile.write((char*)(&header),sizeof(header));
     outfile.close();
   }//end for
@@ -435,12 +434,13 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch){
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void AliITSDDLRawData::WriteChipHeader(Int_t ChipAddr,Int_t EventCnt,UInt_t &BaseWord){
+void AliITSDDLRawData::WriteChipHeader(Int_t ChipAddr,Int_t /*EventCnt*/,UInt_t &BaseWord){
   //This method writes a chip header 
   //cout<<"Chip: "<<ChipAddr<<" Half Stave module:"<<EventCnt<<endl;
   BaseWord=0;
   AliBitPacking::PackWord(ChipAddr,BaseWord,0,3);
-  AliBitPacking::PackWord(EventCnt,BaseWord,4,10);
+//  AliBitPacking::PackWord(EventCnt,BaseWord,4,10);
+  AliBitPacking::PackWord(0,BaseWord,4,10);
   AliBitPacking::PackWord(0x7,BaseWord,11,13);
   AliBitPacking::PackWord(0x1,BaseWord,14,15);
   return;
@@ -465,9 +465,9 @@ void  AliITSDDLRawData::WriteChipTrailer(UInt_t *buf,Int_t ChipHitCount,UInt_t &
   //This method writes a chip trailer
   //pixel fill word
   if((ChipHitCount%2)!=0){
-    AliBitPacking::PackWord(0xFEDC,BaseWord,0,15);
+    AliBitPacking::PackWord(0xC000,BaseWord,0,15);
   }
-  AliBitPacking::PackWord(ChipHitCount,BaseWord,16,28);
+  AliBitPacking::PackWord(ChipHitCount,BaseWord,16,29);
   AliBitPacking::PackWord(0x0,BaseWord,30,31);
   fIndex++;
   buf[fIndex]=BaseWord;
@@ -479,7 +479,7 @@ void  AliITSDDLRawData::WriteChipTrailer(UInt_t *buf,Int_t ChipHitCount,UInt_t &
 
 void  AliITSDDLRawData::ReadChipTrailer(Int_t &ChipHitCount,UInt_t BaseWord){
   //This method reads a chip trailer
-  UInt_t temp=AliBitPacking::UnpackWord(BaseWord,16,28);
+  UInt_t temp=AliBitPacking::UnpackWord(BaseWord,16,29);
   ChipHitCount=(Int_t)temp;
   return;
 }//end ReadChipTrailer
