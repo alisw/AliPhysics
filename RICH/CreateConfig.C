@@ -20,7 +20,7 @@ public:
   void    CreateConfigFile();
 protected:
   TGMainFrame  *fMain;//main window poiter
-  TGComboBox   *fRichVersionCombo;  TGButton *fRichTopChkBtn,*fRichDeclusterChkBtn;//RICH
+  TGComboBox   *fRichVersionCombo;  TGButton *fRichTopChkBtn,*fRichDeclusterChkBtn,*fRichSagChkBtn,*fRichRadioSrcChkBtn;//RICH
   TGButton     *fMagFldChkBtn;                               //MAG
   TGComboBox   *fGenTypeCombo,*fGenPartIdCombo,*fGenMomCombo,*fGenChamberCombo; TGNumberEntry *fGenNprimEntry;//GEN
   Int_t         fDetectors; TGButtonGroup *fDetButGrp;       //DETECTORS
@@ -46,6 +46,8 @@ KirConfig::KirConfig(const char *sFileName)
   fRichVersionCombo->Select(1);  fRichVersionCombo->Resize(160,20);
   pRichGrpFrm->AddFrame(fRichTopChkBtn=new TGCheckButton(pRichGrpFrm,"Rotate to Top?"));
   pRichGrpFrm->AddFrame(fRichDeclusterChkBtn=new TGCheckButton(pRichGrpFrm,"Declustering")); fRichDeclusterChkBtn->SetState(kButtonDown);
+  pRichGrpFrm->AddFrame(fRichSagChkBtn=new TGCheckButton(pRichGrpFrm,"Wire sagita?"));       fRichSagChkBtn->SetState(kButtonDown);
+  pRichGrpFrm->AddFrame(fRichRadioSrcChkBtn=new TGCheckButton(pRichGrpFrm,"Radioactive source"));
 //Generator  
   pVerFrame->AddFrame(pGenGrpFrm=new TGGroupFrame(pHorFrame,"Generator"));
   pGenGrpFrm->AddFrame(fGenTypeCombo=new TGComboBox(pGenGrpFrm,100));
@@ -78,7 +80,7 @@ KirConfig::KirConfig(const char *sFileName)
   for(int i=1;i<=7;i++) fGenChamberCombo->AddEntry(Form("Chamber %i",i),i);
   fGenChamberCombo->Select(4); fGenChamberCombo->Resize(160,20);
   
-  pGenGrpFrm->AddFrame(pGenNprimFrm=new TGGroupFrame(pGenGrpFrm,"Number of primiries"));//number of primiries in case of HIJING
+  pGenGrpFrm->AddFrame(pGenNprimFrm=new TGGroupFrame(pGenGrpFrm,"Number of primaries"));//number of primiries in case of HIJING
   pGenNprimFrm->AddFrame(fGenNprimEntry=new TGNumberEntry(pGenNprimFrm,500));
   
 // Magnetic Field
@@ -192,6 +194,8 @@ void KirConfig::CreateConfigFile()
   if(fRichVersionCombo->GetSelected() != -1){  
     if(fRichTopChkBtn->GetState()==kButtonDown)       fprintf(fp,"  AliRICHParam::AngleRot(0);\n");
     if(fRichDeclusterChkBtn->GetState()!=kButtonDown) fprintf(fp,"  AliRICHParam::SetDeclustering(kFALSE);\n");
+    if(fRichSagChkBtn->GetState()!=kButtonDown)       fprintf(fp,"  AliRICHParam::SetWireSag(kFALSE);\n");
+    if(fRichRadioSrcChkBtn->GetState()==kButtonDown)  fprintf(fp,"  AliRICHParam::SetRadioSrc(kTRUE);\n");
     switch(fRichVersionCombo->GetSelected()){//RICH
       case 0:   fprintf(fp,"  pRICH=new AliRICHv0(\"RICH\",\"RICH version 0\");\n"); break;   
       case 1:   fprintf(fp,"  pRICH=new AliRICHv1(\"RICH\",\"RICH version 1\");\n"); break;   
