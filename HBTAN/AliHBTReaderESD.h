@@ -1,7 +1,5 @@
 #ifndef ALIHBTREADERESD_H
 #define ALIHBTREADERESD_H
-
-#include "AliHBTReader.h"
 //___________________________________________________________________________
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -14,9 +12,11 @@
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 
+#include "AliHBTReader.h"
 #include <TString.h>
 class TFile;
 class AliRunLoader;
+class AliESD;
 
 class AliHBTReaderESD: public AliHBTReader
 {
@@ -51,6 +51,7 @@ class AliHBTReaderESD: public AliHBTReader
     enum ESpecies {kESDElectron = 0, kESDMuon, kESDPion, kESDKaon, kESDProton, kNSpecies};
     static Int_t  GetSpeciesPdgCode(ESpecies spec);//skowron
     
+    Int_t         ReadESD(AliESD* esd);
   protected:
     Int_t         ReadNext();
     TFile*        OpenFile(Int_t evno);//opens files to be read for given event

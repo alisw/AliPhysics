@@ -129,24 +129,10 @@ Int_t AliHBTReaderESD::ReadNext()
 {
 //reads next event from fFile
   //fRunLoader is for reading Kine
-  //****** Tentative particle type "concentrations"
-  static const Double_t concentr[5]={0.05, 0., 0.85, 0.10, 0.05};
-  
-  Double_t pidtable[kNSpecies];//array used for reading pid probabilities from ESD track
-  Double_t w[kNSpecies];
-  Double_t mom[3];//momentum
-  Double_t pos[3];//position
   
   if (AliHBTParticle::GetDebug())
     Info("ReadNext","Entered");
     
-  TDatabasePDG* pdgdb = TDatabasePDG::Instance();
-  if (pdgdb == 0x0)
-   {
-     Error("Next","Can not get PDG Database Instance.");
-     return 1;
-   }
-  
   if (fParticlesEvent == 0x0)  fParticlesEvent = new AliHBTEvent();
   if (fTracksEvent == 0x0)  fTracksEvent = new AliHBTEvent();
   
@@ -166,8 +152,8 @@ Int_t AliHBTReaderESD::ReadNext()
          }
        fCurrentEvent = 0;
        fKeyIterator = new TIter(fFile->GetListOfKeys());  
-       fFile->Dump();
-       fFile->GetListOfKeys()->Print();
+//       fFile->Dump();
+//       fFile->GetListOfKeys()->Print();
       } 
      TKey* key = (TKey*)fKeyIterator->Next();
      if (key == 0x0)
@@ -223,188 +209,8 @@ Int_t AliHBTReaderESD::ReadNext()
         fRunLoader = 0x0;
         continue;
       }
-
-
-     Float_t mf = esd->GetMagneticField(); 
      
-     if ( (mf == 0.0) && (fNTrackPoints > 0) )
-      {
-         Error("ReadNext","Magnetic Field is 0 and Track Points Demended. Skipping to next event.");
-         fCurrentEvent++;
-         continue;
-      }
-     
-     AliStack* stack = 0x0;
-     if (fReadParticles && fRunLoader)
-      {
-        fRunLoader->GetEvent(fCurrentEvent);
-        stack = fRunLoader->Stack();
-      }
-     Info("ReadNext","Reading Event %d",fCurrentEvent);
-  
-     Int_t ntr = esd->GetNumberOfTracks();
-     Info("ReadNext","Found %d tracks.",ntr);
-     for (Int_t i = 0;i<ntr; i++)
-      {
-        AliESDtrack *esdtrack = esd->GetTrack(i);
-        if (esdtrack == 0x0)
-         {
-           Error("Next","Can not get track %d", i);
-           continue;
-         }
-        
-        //if (esdtrack->HasVertexParameters() == kFALSE) 
-        if ((esdtrack->GetStatus() & AliESDtrack::kITSrefit) == kFALSE)
-         {
-           if (AliHBTParticle::GetDebug() > 2) 
-             Info("ReadNext","Particle skipped: Data at vertex not available.");
-           continue;
-         }
-         
-        if ((esdtrack->GetStatus()&AliESDtrack::kESDpid) == kFALSE) 
-         {
-           if (AliHBTParticle::GetDebug() > 2) 
-             Info("ReadNext","Particle skipped: PID BIT is not set.");
-           continue;
-         }
-       
-        esdtrack->GetESDpid(pidtable);
-        //esdtrack->GetVertexPxPyPz(mom[0],mom[1],mom[2]); 
-        esdtrack->GetPxPyPz(mom);
-        //esdtrack->GetVertexXYZ(pos[0],pos[1],pos[2]);
-        esdtrack->GetXYZ(pos);
-        
-        Double_t extx;
-        Double_t extp[5];
-        esdtrack->GetExternalParameters(extx,extp);
-        
-        Int_t charge = (extp[4] > 0)?-1:1;//if curvature=-charg/Pt is positive charge is negative
-        
-        //Particle from kinematics
-        AliHBTParticle* particle = 0;
-        Bool_t keeppart = kFALSE;
-        if ( fReadParticles && stack  )
-         {
-           if (esdtrack->GetLabel() < 0) continue;//this is fake -  we are not able to match any track 
-           TParticle *p = stack->Particle(esdtrack->GetLabel());
-           if (p==0x0) 
-            {
-              Error("ReadNext","Can not find track with such label.");
-              continue;
-            }
-//           if(p->GetPdgCode()<0) charge = -1;
-           particle = new AliHBTParticle(*p,i);
-           
-         }
-         
-        //Here we apply Bayes' formula
-        Double_t rc=0.;
-        for (Int_t s=0; s<AliESDtrack::kSPECIES; s++) rc+=concentr[s]*pidtable[s];
-        if (rc==0.0) 
-         {
-           if (AliHBTParticle::GetDebug() > 2) 
-             Info("ReadNext","Particle rejected since total bayessian PID probab. is zero.");
-           continue;
-         }
-
-        for (Int_t s=0; s<AliESDtrack::kSPECIES; s++) w[s]=concentr[s]*pidtable[s]/rc;
-
-        if (AliHBTParticle::GetDebug() > 4)
-         { 
-           Info("ReadNext","###########################################################################");
-           Info("ReadNext","Momentum: %f %f %f",mom[0],mom[1],mom[2]);
-           Info("ReadNext","Position: %f %f %f",pos[0],pos[1],pos[2]);
-           TString msg("Pid list got from track:");
-           for (Int_t s = 0;s<kNSpecies;s++)
-            {
-              msg+="\n    ";
-              msg+=s;
-              msg+="(";
-              msg+=charge*GetSpeciesPdgCode((ESpecies)s);
-              msg+="): ";
-              msg+=w[s];
-              msg+=" (";
-              msg+=pidtable[s];
-              msg+=")";
-            }
-           Info("ReadNext","%s",msg.Data());
-         }//if (AliHBTParticle::GetDebug()>4)
-         
-         AliHBTTrackPoints* tpts = 0x0;
-         if (fNTrackPoints > 0) 
-          {
-            tpts = new AliHBTTrackPoints(fNTrackPoints,esdtrack,mf,fdR);
-          }
-
-         AliHBTClusterMap* cmap = 0x0; 
-         if (  fClusterMap ) 
-          {
-            cmap = new AliHBTClusterMap(esdtrack);
-          }
-
-        for (Int_t s = 0; s<kNSpecies; s++)
-         {
-           Float_t pp = w[s];
-           if (pp == 0.0) continue;
-
-           Int_t pdgcode = charge*GetSpeciesPdgCode((ESpecies)s);
-           if(Pass(pdgcode)) continue; //check if we are intersted with particles of this type 
-
-           Double_t mass = pdgdb->GetParticle(pdgcode)->Mass();
-           Double_t tEtot = TMath::Sqrt( mom[0]*mom[0] + mom[1]*mom[1] + mom[2]*mom[2] + mass*mass);//total energy of the track
-
-           AliHBTParticle* track = new AliHBTParticle(pdgcode, w[s],i, 
-                                                      mom[0], mom[1], mom[2], tEtot,
-                                                      pos[0], pos[1], pos[2], 0.);
-           //copy probabilitis of other species (if not zero)
-           for (Int_t k = 0; k<kNSpecies; k++)
-            {
-              if (k == s) continue;
-              if (w[k] == 0.0) continue;
-              track->SetPIDprobability(charge*GetSpeciesPdgCode( (ESpecies)k ),w[k]);
-            }
-            
-           if(Pass(track))//check if meets all criteria of any of our cuts
-                          //if it does not delete it and take next good track
-            { 
-              delete track;
-              continue;
-            }
-            
-           //Single Particle cuts on cluster map and track points rather do not have sense
-           if (tpts)
-            {
-              track->SetTrackPoints(tpts); 
-            }
-            
-           if (cmap) 
-            { 
-              track->SetClusterMap(cmap);
-            }
-           
-           fTracksEvent->AddParticle(track);
-           if (particle) fParticlesEvent->AddParticle(particle);
-           keeppart = kTRUE;
-               
-           if (AliHBTParticle::GetDebug() > 4 )
-            {
-              Info("ReadNext","\n\nAdding Particle with incarnation %d",pdgcode);
-              track->Print();
-            }
-         }//for (Int_t s = 0; s<kNSpecies; s++)
-         
-        if (keeppart == kFALSE) 
-         {
-           delete particle;//particle was not stored in event
-           delete tpts;
-           delete cmap;
-         }
-        
-      }//for (Int_t i = 0;i<ntr; i++)  -- loop over tracks
-     
-     Info("ReadNext","Read %d tracks and %d particles from event %d (event %d in dir %d).",
-            fTracksEvent->GetNumberOfParticles(), fParticlesEvent->GetNumberOfParticles(),
-            fNEventsRead,fCurrentEvent,fCurrentDir);
+     ReadESD(esd);
       
      fCurrentEvent++;
      fNEventsRead++;
@@ -415,6 +221,256 @@ Int_t AliHBTReaderESD::ReadNext()
   return 1; //no more directories to read
 }
 /**********************************************************/
+
+Int_t AliHBTReaderESD::ReadESD(AliESD* esd)
+{
+  //****** Tentative particle type "concentrations"
+  static const Double_t concentr[5]={0.05, 0., 0.85, 0.10, 0.05};
+  
+  Double_t pidtable[kNSpecies];//array used for reading pid probabilities from ESD track
+  Double_t w[kNSpecies];
+  Double_t mom[3];//momentum
+  Double_t pos[3];//position
+  Double_t vertexpos[3];//vertex position
+  //Reads one ESD
+  if (esd == 0x0)
+   {
+     Error("ReadESD","ESD is NULL");
+     return 1;
+   }
+
+  TDatabasePDG* pdgdb = TDatabasePDG::Instance();
+  if (pdgdb == 0x0)
+   {
+     Error("ReadESD","Can not get PDG Database Instance.");
+     return 1;
+   }
+   
+  Float_t mf = esd->GetMagneticField(); 
+
+  if ( (mf == 0.0) && (fNTrackPoints > 0) )
+   {
+      Error("ReadESD","Magnetic Field is 0 and Track Points Demended. Skipping to next event.");
+      return 1;
+   }
+
+  AliStack* stack = 0x0;
+  if (fReadParticles && fRunLoader)
+   {
+     fRunLoader->GetEvent(fCurrentEvent);
+     stack = fRunLoader->Stack();
+   }
+
+  const AliESDVertex* vertex = esd->GetVertex();
+  if (vertex == 0x0)
+   {
+     Info("ReadESD","ESD returned NULL pointer to vertex - assuming (0.0,0.0,0.0)");
+     vertexpos[0] = 0.0;
+     vertexpos[1] = 0.0;
+     vertexpos[2] = 0.0;
+   }
+  else
+   {
+     vertex->GetXYZ(vertexpos);
+   }
+   
+  if (AliHBTParticle::GetDebug() > 0)
+   {
+     Info("ReadESD","Primary Vertex is (%f,%f,%f)",vertexpos[0],vertexpos[1],vertexpos[2]);
+   }
+   
+  Info("ReadESD","Reading Event %d",fCurrentEvent);
+
+  Int_t ntr = esd->GetNumberOfTracks();
+  Info("ReadESD","Found %d tracks.",ntr);
+  for (Int_t i = 0;i<ntr; i++)
+   {
+     AliESDtrack *esdtrack = esd->GetTrack(i);
+     if (esdtrack == 0x0)
+      {
+        Error("Next","Can not get track %d", i);
+        continue;
+      }
+
+     //if (esdtrack->HasVertexParameters() == kFALSE) 
+     if ((esdtrack->GetStatus() & AliESDtrack::kITSrefit) == kFALSE)
+      {
+        if (AliHBTParticle::GetDebug() > 2) 
+          Info("ReadNext","Particle skipped: Data at vertex not available.");
+        continue;
+      }
+
+     if ((esdtrack->GetStatus() & AliESDtrack::kESDpid) == kFALSE) 
+      {
+        if (AliHBTParticle::GetDebug() > 2) 
+          Info("ReadNext","Particle skipped: PID BIT is not set.");
+        continue;
+      }
+
+
+     Double_t extx;
+     Double_t extp[5];
+     esdtrack->GetConstrainedExternalParameters(extx,extp);
+     if (extp[4] == 0.0)
+      {
+        if (AliHBTParticle::GetDebug() > 2) 
+          Info("ReadNext","Track has 0 contrianed curvature -> Probobly parameters never updated. Skipping.");
+        continue;
+      } 
+     esdtrack->GetESDpid(pidtable);
+     //esdtrack->GetVertexPxPyPz(mom[0],mom[1],mom[2]); 
+     esdtrack->GetConstrainedPxPyPz(mom);
+     //esdtrack->GetVertexXYZ(pos[0],pos[1],pos[2]);
+     esdtrack->GetConstrainedXYZ(pos);
+     pos[0] -= vertexpos[0];//we are interested only in relative position to Primary vertex at this point
+     pos[1] -= vertexpos[1];
+     pos[2] -= vertexpos[2];
+
+     Int_t charge = (extp[4] > 0)?-1:1;//if curvature=-charg/Pt is positive charge is negative
+
+     //Particle from kinematics
+     AliHBTParticle* particle = 0;
+     Bool_t keeppart = kFALSE;
+     if ( fReadParticles && stack  )
+      {
+        if (esdtrack->GetLabel() < 0) continue;//this is fake -  we are not able to match any track 
+        TParticle *p = stack->Particle(esdtrack->GetLabel());
+        if (p==0x0) 
+         {
+           Error("ReadNext","Can not find track with such label.");
+           continue;
+         }
+//           if(p->GetPdgCode()<0) charge = -1;
+        particle = new AliHBTParticle(*p,i);
+
+      }
+
+     //Here we apply Bayes' formula
+     Double_t rc=0.;
+     for (Int_t s=0; s<AliESDtrack::kSPECIES; s++) rc+=concentr[s]*pidtable[s];
+     if (rc==0.0) 
+      {
+        if (AliHBTParticle::GetDebug() > 2) 
+          Info("ReadNext","Particle rejected since total bayessian PID probab. is zero.");
+        continue;
+      }
+
+     for (Int_t s=0; s<AliESDtrack::kSPECIES; s++) w[s]=concentr[s]*pidtable[s]/rc;
+
+     if (AliHBTParticle::GetDebug() > 4)
+      { 
+        Info("ReadNext","###########################################################################");
+        Info("ReadNext","Momentum: %f %f %f",mom[0],mom[1],mom[2]);
+        Info("ReadNext","Position: %f %f %f",pos[0],pos[1],pos[2]);
+        TString msg("Pid list got from track:");
+        for (Int_t s = 0;s<kNSpecies;s++)
+         {
+           msg+="\n    ";
+           msg+=s;
+           msg+="(";
+           msg+=charge*GetSpeciesPdgCode((ESpecies)s);
+           msg+="): ";
+           msg+=w[s];
+           msg+=" (";
+           msg+=pidtable[s];
+           msg+=")";
+         }
+        Info("ReadNext","%s",msg.Data());
+      }//if (AliHBTParticle::GetDebug()>4)
+
+      AliHBTTrackPoints* tpts = 0x0;
+      if (fNTrackPoints > 0) 
+       {
+         tpts = new AliHBTTrackPoints(fNTrackPoints,esdtrack,mf,fdR);
+       }
+
+      AliHBTClusterMap* cmap = 0x0; 
+      if (  fClusterMap ) 
+       {
+         cmap = new AliHBTClusterMap(esdtrack);
+       }
+
+     for (Int_t s = 0; s<kNSpecies; s++)
+      {
+        Int_t pdgcode = charge*GetSpeciesPdgCode((ESpecies)s);
+        Float_t pp = w[s];
+        if (pp == 0.0) 
+         {
+           if ( AliHBTParticle::GetDebug() > 5 )
+             Info("ReadNext","Probability of being PID %d is zero. Continuing.",pdgcode);
+           continue;
+         }
+
+        if(Pass(pdgcode)) 
+         {
+           if ( AliHBTParticle::GetDebug() > 5 )
+             Info("ReadNext","PID (%d) did not pass the cut.",pdgcode);
+           continue; //check if we are intersted with particles of this type 
+         }
+
+        Double_t mass = pdgdb->GetParticle(pdgcode)->Mass();
+        Double_t tEtot = TMath::Sqrt( mom[0]*mom[0] + mom[1]*mom[1] + mom[2]*mom[2] + mass*mass);//total energy of the track
+
+        AliHBTParticle* track = new AliHBTParticle(pdgcode, w[s],i, 
+                                                   mom[0], mom[1], mom[2], tEtot,
+                                                   pos[0], pos[1], pos[2], 0.);
+        //copy probabilitis of other species (if not zero)
+        for (Int_t k = 0; k<kNSpecies; k++)
+         {
+           if (k == s) continue;
+           if (w[k] == 0.0) continue;
+           track->SetPIDprobability(charge*GetSpeciesPdgCode( (ESpecies)k ),w[k]);
+         }
+
+        if(Pass(track))//check if meets all criteria of any of our cuts
+                       //if it does not delete it and take next good track
+         { 
+           if ( AliHBTParticle::GetDebug() > 4 )
+             Info("ReadNext","Track did not pass the cut");
+           delete track;
+           continue;
+         }
+
+        //Single Particle cuts on cluster map and track points rather do not have sense
+        if (tpts)
+         {
+           track->SetTrackPoints(tpts); 
+         }
+
+        if (cmap) 
+         { 
+           track->SetClusterMap(cmap);
+         }
+
+        fTracksEvent->AddParticle(track);
+        if (particle) fParticlesEvent->AddParticle(particle);
+        keeppart = kTRUE;
+
+        if (AliHBTParticle::GetDebug() > 4 )
+         {
+           Info("ReadNext","\n\nAdding Particle with incarnation %d",pdgcode);
+           track->Print();
+         }
+      }//for (Int_t s = 0; s<kNSpecies; s++)
+
+     if (keeppart == kFALSE) 
+      {
+        delete particle;//particle was not stored in event
+        delete tpts;
+        delete cmap;
+      }
+
+   }//for (Int_t i = 0;i<ntr; i++)  -- loop over tracks
+
+  Info("ReadNext","Read %d tracks and %d particles from event %d (event %d in dir %d).",
+         fTracksEvent->GetNumberOfParticles(), fParticlesEvent->GetNumberOfParticles(),
+         fNEventsRead,fCurrentEvent,fCurrentDir);
+
+  return 0;
+}
+
+/**********************************************************/
+
 void AliHBTReaderESD::Rewind()
 {
   //rewinds reading 
