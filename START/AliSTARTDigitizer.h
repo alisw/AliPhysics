@@ -10,7 +10,6 @@
 #include <AliRunDigitizer.h>
 class AliSTART;
 class AliSTARThit;
-class AliSTARThitPhoton;
 class AliSTARTdigit;
 
 class AliSTARTDigitizer : public AliDigitizer {
@@ -21,15 +20,11 @@ class AliSTARTDigitizer : public AliDigitizer {
   virtual ~AliSTARTDigitizer();
   virtual Bool_t Init();
   TClonesArray *Hits() const {return fHits;}
-  TClonesArray *Photons() const {return fPhotons;}
-  TArrayI *timeRightTDC() {return ftimeRightTDC;} //for slow simulation
-  TArrayI *timeLeftTDC() {return ftimeLeftTDC;}
-  TArrayI *RightADC() {return fRightADC;} //for slow simulation
-  TArrayI *LeftADC() {return fLeftADC;}
+  TArrayI *timeTDC() {return ftimeTDC;}
+  TArrayI * ADC() {return fADC;} //for slow simulation
   // Do the main work
   void Exec (Option_t* /*option=0*/) ;
-  Bool_t RegisterPhotoE(/*AliSTARThitPhoton *hit*/);//!!!
-  Bool_t GetDebug() const {return fManager->GetDebug();}
+  Bool_t RegisterPhotoE(Float_t e);
   enum {kBgTag = -1};
 
 private:
@@ -38,10 +33,8 @@ private:
   TClonesArray *fPhotons   ; //Number of Cherenkov photons		      
   TClonesArray *fHits      ; // List of hits
   AliSTARTdigit *fdigits   ; // digits
-  TArrayI *ftimeRightTDC    ; //array of TDC signal from right sida
-  TArrayI *ftimeLeftTDC     ; ////array of TDC signal from left side
-  TArrayI *fRightADC    ;   //array of ADC signal from right sida 
-  TArrayI *fLeftADC     ;//array of ADC signal from left sida
+  TArrayI *ftimeTDC    ; //array of TDC signal from right side
+  TArrayI *fADC     ;//array of ADC signal from left sida
   
     ClassDef(AliSTARTDigitizer,0)
 };    

@@ -21,12 +21,12 @@
 #include <TRandom.h>
 #include <TArrayI.h>
 #include <TError.h>
+#include <TH1F.h>
 
-
+#include "AliLog.h"
 #include "AliSTARTDigitizer.h"
 #include "AliSTART.h"
 #include "AliSTARThit.h"
-#include "AliSTARThitPhoton.h"
 #include "AliSTARTdigit.h"
 #include "AliRunDigitizer.h"
 #include <AliDetector.h>
@@ -52,32 +52,28 @@ AliSTARTDigitizer::AliSTARTDigitizer(AliRunDigitizer* manager)
 {
   //	cout<<"AliSTARTDigitizer::AliSTARTDigitizer"<<endl;
 // ctor which should be used
-//  fDebug =0;
-  if (GetDebug())
-    Info("(AliRunDigitizer* manager)" ,"processed");
 
-  ftimeRightTDC = new TArrayI(12); 
-  ftimeLeftTDC = new TArrayI(12); 
-  fRightADC = new TArrayI(12); 
-  fLeftADC = new TArrayI(12); 
+  AliDebug(1,"processed");
+
+  ftimeTDC = new TArrayI(24); 
+  fADC = new TArrayI(24); 
 }
 
 //------------------------------------------------------------------------
 AliSTARTDigitizer::~AliSTARTDigitizer()
 {
 // Destructor
-  if(GetDebug()) Info("dtor","START"); 
-  delete ftimeRightTDC;
-  delete ftimeLeftTDC;
-  delete fRightADC;
-  delete fLeftADC;
+
+  AliDebug(1,"START"); 
+  delete ftimeTDC;
+  delete fADC;
 }
 
  //------------------------------------------------------------------------
 Bool_t AliSTARTDigitizer::Init()
 {
 // Initialization
-// cout<<"AliSTARTDigitizer::Init"<<endl;
+  AliDebug(1," Init");
  return kTRUE;
 }
  
@@ -103,28 +99,24 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
   outRL = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
   pOutStartLoader = outRL->GetLoader("STARTLoader");
 
-#ifdef DEBUG
-  cout<<"AliSTARTDigitizer::>Hits2Digits start...\n";
-#endif
+  AliDebug(1,"start...");
+
   //
   // From hits to digits
   //
   Int_t hit, nhits;
   Float_t meanTime;
-  Int_t countEr[13],countEl[13];
-  Int_t volume,pmt,tr,tl,sumRight;
-  Int_t  bestRightADC,bestLeftADC;
-  Float_t besttimeleftGaus, besttimerightGaus;
-  Float_t timeright[13]={13*0};
-  Float_t timeleft[13]={13*0};
-  Float_t channelWidth=2.5; //ps
-  Int_t channelWidthADC=1; //ps
-  //  Int_t thresholdAmpl=10;
-
+  Int_t countE[24];
+  Int_t volume,pmt,tr,sumRight;
+  Int_t  bestRightTDC,bestLeftTDC;
+  Float_t time[24]={24*0};
+  Float_t besttime[24]={24*0};
+  Float_t timeGaus[37]={24*0};
+  Float_t channelWidth=25.; //ps
   
   AliSTARThit  *startHit;
   TBranch *brHits=0;
-  TBranch *brHitPhoton=0;
+
   pOutStartLoader->LoadDigits("UPDATE");//probably it is necessary to load them before
   fdigits= new AliSTARTdigit();
   pOutStartLoader->GetDigitsDataLoader()->GetBaseLoader(0)->Post(fdigits);
@@ -132,20 +124,18 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
   Int_t nFiles=fManager->GetNinputs();
   for (Int_t inputFile=0; inputFile<nFiles;  inputFile++) {
     if (inputFile < nFiles-1) {
-      Warning("Exec", "ignoring input stream %d", inputFile);
+      AliWarning(Form("ignoring input stream %d", inputFile));
       continue;
+
     }
 
     Float_t besttimeright=9999.;
     Float_t besttimeleft=9999.;
-    Int_t iTimeDiff=0;
-    Int_t iTimeAv=0;
-    Float_t timeDiff,timeAv; 
+    Float_t timeDiff;
     sumRight=0;
-    for (Int_t i0=0; i0<13; i0++)
+    for (Int_t i0=0; i0<24; i0++)
       {
-	timeright[i0]=0; timeleft[i0]=0;
-	countEr[i0]=0;   countEl[i0]=0;
+	time[i0]=9999;  besttime[i0]=9999;	countE[i0]=0;
       }
 
     inRL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
@@ -157,127 +147,122 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 
     TTree *th = pInStartLoader->TreeH();
     brHits = th->GetBranch("START");
-    brHitPhoton = th->GetBranch("STARThitPhoton");
     if (brHits) {
-      fSTART->SetHitsAddressBranch(brHits,brHitPhoton);
+      fSTART->SetHitsAddressBranch(brHits);
     }else{
-      cerr<<"EXEC Branch START hit not found"<<endl;
+       AliError("Branch START hit not found");
       exit(111);
     } 
     Int_t ntracks    = (Int_t) th->GetEntries();
-#ifdef DEBUG
-   Info("Digitizer",ntracks);
-#endif
-     if (ntracks<=0) return;
+
+    if (ntracks<=0) return;
     // Start loop on tracks in the hits containers
     for (Int_t track=0; track<ntracks;track++) {
       brHits->GetEntry(track);
       nhits = fHits->GetEntriesFast();
-      for (hit=0;hit<nhits;hit++) {
-	startHit   = (AliSTARThit*) fHits->UncheckedAt(hit);
-	if (!startHit) {
-	  ::Error("Exec","The unchecked hit doesn't exist");
-	  break;
-	}
-	pmt=startHit->Pmt();
-	volume = startHit->Volume();
-	if(volume==1){
-	  timeright[pmt] = startHit->Time();
-	  if(timeright[pmt]<besttimeright)
-	    {
-	      besttimeright=timeright[pmt];
-	  } //timeright
-	}//time for right shoulder
-	if(volume==2){            
-	  timeleft[pmt] = startHit->Time();
-	  if(timeleft[pmt]<besttimeleft)
-	    {
-	      besttimeleft=timeleft[pmt];
-	    
-	  } //timeleftbest
-	}//time for left shoulder
-      } //hit loop
-    } //track loop
-  
-    // z position
-
-    //folding with experimental time distribution
-    
-    Float_t koef=69.7/350.;
-    besttimeright=koef*besttimeright;
-    besttimeleftGaus=gRandom->Gaus(besttimeleft,0.05);
-    bestLeftADC=Int_t (besttimeleftGaus*1000/channelWidth);
-    besttimerightGaus=gRandom->Gaus(besttimeright,0.05);
-    bestRightADC=Int_t (besttimerightGaus*1000/channelWidth);
-    timeDiff=besttimerightGaus-besttimeleftGaus;
-#ifdef DEBUG
-    cout<<" timediff in ns "<<timeDiff<<" z= "<<timeDiff*30<<endl;
-#endif
-    meanTime=(besttimerightGaus+besttimeleftGaus)/2.;
-    if ( TMath::Abs(timeDiff)<TMath::Abs(0.3) ) 
-      {
-	Float_t t1=1000.*besttimeleftGaus;
-	Float_t t2=1000.*besttimerightGaus;
-	t1=t1/channelWidth;   //time in ps to channelWidth
-	t2=t2/channelWidth;   //time in ps to channelWidth
-	timeAv=(t1+t2)/2.;// time  channel numbres
-	
-	// Time to TDC signal
-	// 256 channels for timediff, range 1ns
-	iTimeAv=(Int_t)timeAv; 
-	timeDiff= 512+1000*timeDiff/channelWidth; // time  channel numbres 
-	iTimeDiff=(Int_t)timeDiff;
-	//       fill digits
-	fdigits->SetTimeBestLeft(bestLeftADC);
-	fdigits->SetTimeBestRight(bestRightADC);
-	fdigits->SetMeanTime(iTimeAv);
-	fdigits->SetTimeDiff(iTimeDiff);
-	for (Int_t i=0; i<12; i++)
-	  {
-	    //  fill TDC
-	    timeright[i+1]=gRandom->Gaus(timeright[i+1],0.05);
-	    timeleft[i+1]=gRandom->Gaus(timeleft[i+1],0.05);
-	    tr= Int_t (timeright[i+1]*1000/channelWidth); 
-	    if(tr<200) tr=0;
-	    tl= Int_t (timeleft[i+1]*1000/channelWidth); 
-	    if(tl<1000) tl=0;
-	    
-	    ftimeRightTDC->AddAt(tr,i);
-	    ftimeLeftTDC->AddAt(tl,i);
-	    //fill ADC
-	    Int_t al=( Int_t ) countEl[i+1]/ channelWidthADC;
-	    Int_t ar=( Int_t ) countEr[i+1]/ channelWidthADC;
-	    fRightADC->AddAt(ar,i);
-	    fLeftADC ->AddAt(al,i);
-	    sumRight+=countEr[i+1];
+       for (hit=0;hit<nhits;hit++) 
+	{
+	  startHit   = (AliSTARThit*) fHits->UncheckedAt(hit);
+	  if (!startHit) {
+ 	    AliError("The unchecked hit doesn't exist");
+	    break;
 	  }
-	fdigits->SetTimeRight(*ftimeRightTDC);
-	fdigits->SetTimeLeft(*ftimeLeftTDC);
-	fdigits->SetADCRight(*fRightADC);
-	fdigits->SetADCLeft(*fLeftADC);
-	fdigits->SetSumADCRight(sumRight);
+	  pmt=startHit->Pmt();
+	  Int_t numpmt=pmt-1;
+	  Float_t e=startHit->Etot();
+	  volume = startHit->Volume();
+	  if(RegisterPhotoE(e)) countE[numpmt]++;
+	  besttime[numpmt] = startHit->Time();
+	  if(besttime[numpmt]<time[numpmt])
+	    {
+	      time[numpmt]=besttime[numpmt];
+	    }
+	  
+	} //hits loop
+    } //track loop
+    
+    //best time right&left   
+    for (Int_t ipmt=0; ipmt<12; ipmt++)
+      {
+	timeGaus[ipmt]=gRandom->Gaus(time[ipmt],0.025);
+	if(timeGaus[ipmt]<besttimeleft) besttimeleft=timeGaus[ipmt]; //timeleft
       }
-    else
-      {timeAv=999999; timeDiff=99999;}
+    for ( Int_t ipmt=12; ipmt<24; ipmt++)
+      {
+   	timeGaus[ipmt]=gRandom->Gaus(time[ipmt],0.025);
+	if(timeGaus[ipmt]<besttimeright)  besttimeright=timeGaus[ipmt]; //timeright
+      }// besttime
+	
+    //folding with experimental time distribution
+      Float_t c = 29.9792; // mm/ns
+    Float_t koef=(350.-69.7)/c;
+    Float_t  besttimeleftR= besttimeleft;
+    besttimeleft=koef+besttimeleft;
+    bestLeftTDC=Int_t (besttimeleftR*1000/channelWidth);
+    bestRightTDC=Int_t (besttimeright*1000/channelWidth);
+    timeDiff=(c*(besttimeright-besttimeleftR)-(350.-69.7))/(2*c);
+    meanTime=(besttimeright+besttimeleftR)/2.;
+    Float_t ds=(c*(besttimeright-besttimeleftR)-(350.-69.7))/2;
+    AliDebug(2,Form(" timediff in ns %f  z= %f real point%f",timeDiff,timeDiff*c,ds));
 
+ 
+    // Time to TDC signal
+    Int_t iTimeAv=Int_t (meanTime*1000/channelWidth); 
+    // time  channel numbres 
+    //       fill digits
+    fdigits->SetTimeBestLeft(bestLeftTDC);
+    fdigits->SetTimeBestRight(bestRightTDC);
+    fdigits->SetMeanTime(iTimeAv);
+    
+    //ADC features
+  
+    for (Int_t i=0; i<24; i++)
+      {
+
+	//  fill TDC
+	tr= Int_t (timeGaus[i]*1000/channelWidth); 
+	if(timeGaus[i]>100) tr=0;
+	ftimeTDC->AddAt(tr,i);
+	
+	//fill ADC
+       	Int_t al= countE[i]; //1024 - channel width shoul be change
+ 	fADC->AddAt(al,i);
+      } //pmt loop
+
+    fdigits->SetTime(*ftimeTDC);
+    fdigits->SetADC(*fADC);
+     
     pInStartLoader->UnloadHits();
+    
   } //input streams loop
-
+     
   pOutStartLoader->WriteDigits("OVERWRITE");
   pOutStartLoader->UnloadDigits();
 }
 
 
 //------------------------------------------------------------------------
-Bool_t AliSTARTDigitizer::RegisterPhotoE(/*AliSTARThitPhoton *hit*/)
+Bool_t AliSTARTDigitizer::RegisterPhotoE(Float_t e)
 {
-    Double_t    pP = 0.2;    
-    Double_t    p;
-    
-    p = gRandom->Rndm();
-    if (p > pP)
-      return kFALSE;
-    
-    return kTRUE;
+
+  
+  //  Float_t hc=197.326960*1.e6; //mev*nm
+  Float_t hc=1.973*1.e-6; //gev*nm
+  Float_t lambda=hc/e;
+  Char_t filename[80];
+  TH1F *hEff;
+  Char_t *dirname=getenv("ALICE_ROOT");
+  sprintf(filename,"%s/START/PMTefficiency.root",dirname);
+  TFile *file= new TFile(filename);
+  file->cd();
+  hEff =  (TH1F*)file->Get("hEff");
+  Int_t bin=  hEff->GetXaxis()->FindBin(lambda);
+  Float_t eff=hEff->GetBinContent(bin);
+  file->Close();
+  Double_t  p = gRandom->Rndm();
+  if (p > eff)
+    return kFALSE;
+  
+  return kTRUE;
 }
 //----------------------------------------------------------------------------

@@ -15,7 +15,8 @@ class AliSTARTv0 : public AliSTART {
  
 public:
 
-  enum constants {kAir=1, kSc=2, kVac=3, kCer=4, kGlass=6, kSteel=8, kRibber=9, kBrass=11, kLucite=12, kC=13, kPP=14, kAl=15};
+
+  enum constants {kAir=1, kSc=2, kVac=3, kCer=4, kGlass=6, kSteel=8, kRibber=9, kBrass=11, kLucite=12, kC=13, kPP=14, kAl=15, kOpGlass=16, kOpAir=17};
 
   AliSTARTv0() {};
   AliSTARTv0(const char *name, const char *title);

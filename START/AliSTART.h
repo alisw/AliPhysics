@@ -26,7 +26,6 @@ public:
    AliSTART(const char *name, const char *title);
    virtual       ~AliSTART();
    virtual void   AddHit(Int_t track, Int_t *vol, Float_t *hits);
-   virtual void   AddHitPhoton(Int_t track, Int_t *vol, Float_t *hits);
    virtual void   AddDigit(Int_t *tracks, Int_t *digits);
    virtual void   BuildGeometry();
    virtual void   CreateGeometry(){}
@@ -35,24 +34,19 @@ public:
    virtual void   DrawDetector(){}
    virtual Int_t  IsVersion()const {return 0;}
    virtual void   Init();
-   virtual void SetHitsAddressBranch(TBranch *b1,TBranch *b2)
-     {b1->SetAddress(&fHits); b2=0;}
+   virtual void SetHitsAddressBranch(TBranch *b1)
+     {b1->SetAddress(&fHits);}
    virtual void   MakeBranch(Option_t *opt=" ");
    virtual void   StepManager(){}
    virtual void   ResetHits();
    virtual void   SetTreeAddress();
    virtual AliLoader* MakeLoader(const char* topfoldername);
-  
-  TClonesArray   *Photons() {return fPhotons;}
-
    virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
+   void  Digits2Raw ();
 
 protected:
    Int_t fIdSens;    // Sensetive Cherenkov radiator
-   Int_t	fNPhotons;   // Number of photons plan to photokatod
-
-   TClonesArray     *fPhotons;   //! List of photons
-
+ 
 private:
   ClassDef(AliSTART,3)  //Base class for the T0 aka START detector
 };
