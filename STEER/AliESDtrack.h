@@ -161,7 +161,7 @@ protected:
 
   // HMPID related track information
 
-  ClassDef(AliESDtrack,1)  //ESDtrack 
+  ClassDef(AliESDtrack,2)  //ESDtrack 
 };
 
 #endif 
