@@ -130,6 +130,6 @@ protected:
   TList        *fNodes;       //List of geometry nodes
   Int_t         fDebug;       //Debug flag
   Bool_t        fEnable;      //StepManager enabling flag
-  ClassDef(AliModule,1)  //Base class for ALICE Modules
+  ClassDef(AliModule,2)  //Base class for ALICE Modules
 };
 #endif
