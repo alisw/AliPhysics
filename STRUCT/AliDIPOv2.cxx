@@ -13,47 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.18  2001/06/21 14:16:43  morsch
-Use absolute coordinates for mother volume PCON.
-
-Revision 1.17  2001/06/21 11:59:25  morsch
-Some more details in compensator geometry.
-
-Revision 1.16  2001/06/20 16:07:08  morsch
-Compensator dipole MBWMD (MCB@SPS) added.
-
-Revision 1.15  2001/03/16 15:34:37  morsch
-Mothervolume defined MANY because overlap with station 3 mothervolume not avoidable (A. de Falco)
-
-Revision 1.14  2000/12/21 16:37:23  morsch
-Use Al for coil and cable material. The materials used before cause the dipole to
-have hydrogene on the outer surface leading to unrealistic gamma rates due to
-n-capture.
-
-Revision 1.13  2000/10/02 21:28:15  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.12  2000/06/20 10:53:01  morsch
-Volume placed outside mother volume (DDIP) corrected (Galina Chabratova)
-
-Revision 1.11  2000/06/11 12:33:46  morsch
-Coding rule violations corrected
-
-Revision 1.10  2000/06/09 19:32:56  morsch
-New detailed and corrected version from Galina Chabratova
-
-Revision 1.9  2000/04/27 09:29:53  fca
-Reverting to version 1.6.2
-
-Revision 1.6.2.1  1999/12/03 16:38:51  fca
-Correct overlap in magnet
-
-Revision 1.6  1999/09/29 09:24:30  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -801,7 +761,7 @@ void AliDIPOv2::CreateCompensatorDipole()
 }
 
 //_____________________________________________________________________________
-void AliDIPOv2::DrawModule()
+void AliDIPOv2::DrawModule() const
 {
   //
   // Draw a shaded view of the muon absorber

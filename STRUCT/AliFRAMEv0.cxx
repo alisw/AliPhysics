@@ -13,35 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.15  2000/12/21 16:41:06  morsch
-Coding convention clean-up (RS3)
+/* $Id$ */
 
-Revision 1.14  2000/10/02 21:28:15  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.13  2000/06/11 12:34:49  morsch
-Coding rule violations corrected
-
-Revision 1.12  2000/02/23 16:25:24  fca
-AliVMC and AliGeant3 classes introduced
-ReadEuclid moved from AliRun to AliModule
-
-Revision 1.11  1999/11/01 20:42:42  fca
-FRAME version 1 is now the symmetric one.
-
-Revision 1.10  1999/10/06 20:56:55  fca
-Introducing new frame 1099
-
-Revision 1.9  1999/09/29 09:24:30  fca
-Introduction of the Copyright and cvs Log
-
-*/
-
-////////////////////////////////////////////////
-//  space frame class                            /
-////////////////////////////////////////////////
+//-------------------------------------------------------------------------
+//  Space frame class
+//  Reads the geometry from an Euclid file
+//  Author: A.Morsch
+//-------------------------------------------------------------------------
 
 #include "AliFRAMEv0.h"
 #include "AliRun.h"

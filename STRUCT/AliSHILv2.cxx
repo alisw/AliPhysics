@@ -13,34 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.8  2002/11/21 16:28:39  alibrary
-Removing AliMCProcess and AliMC
+/* $Id$ */
 
-Revision 1.7  2002/11/12 17:06:13  morsch
-Update on recess between stations 4 and 5.
-
-Revision 1.6  2002/10/29 09:53:40  morsch
-Constants start with k. Warnings corrected.
-
-Revision 1.5  2002/10/14 14:57:39  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.3.2.2  2002/10/11 08:04:28  hristov
-Updating VirtualMC to v3-09-02
-
-Revision 1.4  2002/09/02 15:32:15  morsch
-Gsbool calls to resolve MANY added (I. Hrivnacova)
-
-Revision 1.3  2002/07/25 10:00:08  morsch
-par4 size increased.
-
-Revision 1.2  2002/07/15 08:16:35  morsch
-New shield geometry.
-
-*/
-
+//-------------------------------------------------------------------------
+// MUON shielding class
+// Default version
+// Author: A.Morsch
+//-------------------------------------------------------------------------
 
 #include "AliSHILv2.h"
 #include "AliRun.h"
@@ -622,15 +601,21 @@ void AliSHILv2::CreateGeometry()
 // begin Fluka
 //
   Float_t rf1[10], rf2[10];
-  rf1[0]=0.; rf2[0]=0.;
+  rf1[0]=0.;
   rf1[1] = cpar0[1];
+  rf1[2]=rf1[1]+0.15;
+  rf1[3]=rf1[2]+0.5;
+  rf1[4]=rf1[3]+0.1;
+  rf1[5]=par1[4];
+  rf1[6]=0.; //PH This has to be checked...
+
+  rf2[0]=0.;
   rf2[1] = cpar0[3];
-
-
-  rf1[2]=rf1[1]+0.15; rf1[3]=rf1[2]+0.5; rf1[4]=rf1[3]+0.1;
-  rf1[5]=par1[4]; 
-  rf2[2]=rf2[1]+0.15; rf2[3]=rf2[2]+0.5; rf2[4]=rf2[3]+0.1; 
+  rf2[2]=rf2[1]+0.15;
+  rf2[3]=rf2[2]+0.5;
+  rf2[4]=rf2[3]+0.1; 
   rf2[5]=par1[7];
+  rf2[6]=0.; //PH This has to be checked
   
   char* materialsA[7] 
       = {"VACUUM", "STEEL", "PIPEINSU", "STEEL", "AIR", "AIR"};

@@ -13,55 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.13  2002/11/21 16:28:39  alibrary
-Removing AliMCProcess and AliMC
+/* $Id$ */
 
-Revision 1.12  2002/10/14 14:57:39  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.9.6.2  2002/07/24 10:08:27  alibrary
-Updating VirtualMC
-
-Revision 1.11  2002/06/13 09:54:40  morsch
-Some additional outer cross-bars removed.
-
-Revision 1.10  2002/05/28 08:13:51  morsch
-Cross-bars in front of RICH at 60+/- 30deg. removed.
-
-Revision 1.9  2001/12/05 12:10:26  morsch
-Rails for spaceframe included.
-
-Revision 1.8  2001/10/18 14:11:35  morsch
-Some changes/bug corrections for SetHole(1) option.
-
-Revision 1.7  2001/10/16 14:50:59  morsch
-... or better use modified IsVersion() method.
-
-Revision 1.6  2001/10/16 14:33:04  morsch
-Hole() method needed by TRD to find out wheter frame has holes.
-
-Revision 1.5  2001/08/28 15:54:29  morsch
-Web frame and inner rings pointing.
-
-Revision 1.4  2001/06/22 14:11:17  morsch
-Back to official z-positions of rings.
-
-Revision 1.3  2001/06/22 12:02:20  morsch
-Ring locations matching TRD module positions.
-
-Revision 1.2  2001/05/25 07:59:54  morsch
-Initialization print-out in debug mode only.
-
-Revision 1.1  2001/05/11 13:18:05  morsch
-C++ version of spaceframe with specs according to Jan Bielski Feb. 2001
-
-*/
-
-////////////////////////////////////////////////
-//  space frame class                            /
-///////////////////////////////////////////////
+//------------------------------------------------------------------------
+//  AliFRAMEv2.cxx
+//  symmetric space frame with possibility for holes
+//  Author: A.Morsch
+//------------------------------------------------------------------------
 
 #include "AliFRAMEv2.h"
 #include "AliMagF.h"
@@ -1029,7 +987,7 @@ void AliFRAMEv2::CreateGeometry()
 //___________________________________________
 void AliFRAMEv2::CreateMaterials()
 {
-
+  // Creates the materials
   Float_t epsil, stemax, tmaxfd, deemax, stmin;
   
   epsil  = 1.e-4;     // Tracking precision, 
@@ -1069,6 +1027,7 @@ void AliFRAMEv2::Init()
 
 Int_t AliFRAMEv2::IsVersion() const 
 {
+  // Returns the version of the FRAME (1 if no holes, 0 otherwise) 
     Int_t version = 0;
     if (fHoles == 0) version = 1;
     return version;

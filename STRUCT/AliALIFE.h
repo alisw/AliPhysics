@@ -12,6 +12,10 @@ class AliALIFE : public  TObject {
  public:
     AliALIFE(const char *name1, const char *name2);
     AliALIFE();    
+    AliALIFE(const AliALIFE &rh) {
+      // copy ctor requested by coding convention but not needed
+      Fatal("Copy constructor","not implemented");
+    }
     virtual ~AliALIFE() {}
     void Cylinder(Float_t rmin, Float_t rmax,
 		  Float_t zmin, Float_t zmax,
@@ -62,6 +66,10 @@ class AliALIFE : public  TObject {
  private:
     void BodyHeader();
     void VolumeHeader();
+    AliALIFE & operator = (const AliALIFE &) {
+      // assignement operator requested by coding convention but not needed
+      return *this;
+    }
     
 
    ClassDef(AliALIFE,1)

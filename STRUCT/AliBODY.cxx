@@ -13,30 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.11  2002/10/14 14:57:39  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.8.12.1  2002/07/24 10:08:27  alibrary
-Updating VirtualMC
-
-Revision 1.10  2002/07/10 10:16:15  morsch
-Bigger volume for CRT.
-
-Revision 1.9  2002/06/20 15:33:13  morsch
-Larger BOX in case CRT is present.
-
-Revision 1.8  2000/10/02 21:28:15  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.7  2000/06/11 12:32:51  morsch
-Coding rule violations corrected
-
-Revision 1.6  1999/09/29 09:24:30  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -171,7 +148,7 @@ void AliBODY::CreateMaterials()
 }
  
 //_____________________________________________________________________________
-void AliBODY::DrawModule()
+void AliBODY::DrawModule() const
 {
   //
   // Draw a view of the Alice outside box

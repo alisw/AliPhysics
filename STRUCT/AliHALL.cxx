@@ -13,48 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.17  2002/10/14 14:57:39  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.14.6.2  2002/06/14 10:29:54  hristov
-Merged with v3-08-03
-
-Revision 1.16  2002/06/12 08:28:28  morsch
-HBMT positioning commented out.
-
-Revision 1.15  2002/05/28 08:47:38  morsch
-Reduces size of pillars to avoid overlap with DIPO.
-
-Revision 1.14  2001/11/16 12:38:26  morsch
-Reverse z-ordering in HMBS. (I. Hrivnacova)
-
-Revision 1.13  2001/06/21 12:26:52  morsch
-Simple concrete shielding around compensator dipole.
-
-Revision 1.12  2001/06/20 16:08:56  morsch
-Remove some shielding to accomodate compensator magnet.
-
-Revision 1.11  2001/05/16 14:57:22  alibrary
-New files for folders and Stack
-
-Revision 1.10  2000/10/02 21:28:15  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.9  2000/06/13 14:55:26  morsch
-Unused variables removed
-
-Revision 1.8  2000/06/11 12:35:41  morsch
-Coding rule violations corrected
-
-Revision 1.7  2000/01/12 15:33:28  morsch
-Muon filter removed
-
-Revision 1.6  1999/09/29 09:24:30  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -419,7 +378,7 @@ void AliHALL::Init()
 }
 
 //_____________________________________________________________________________
-void AliHALL::DrawModule()
+void AliHALL::DrawModule() const
 {
   //
   // Draw a shaded view of Experimental Hall

@@ -20,7 +20,7 @@ public:
   virtual void  CreateGeometry();
   virtual void  CreateMaterials();
   virtual Int_t IsVersion() const {return 1;}
-  virtual void  DrawModule();
+  virtual void  DrawModule() const;
   
   ClassDef(AliDIPOv1,1)  //Class for the Magnetic Dipole version 1
 };

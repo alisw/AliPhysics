@@ -13,60 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.15  2002/10/29 09:53:40  morsch
-Constants start with k. Warnings corrected.
-
-Revision 1.14  2002/10/21 09:09:33  alibrary
-Removing unused variables
-
-Revision 1.13  2002/10/14 14:57:34  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.11.6.1  2002/07/24 10:08:27  alibrary
-Updating VirtualMC
-
-Revision 1.12  2002/07/15 07:56:41  morsch
-Steel rear and  Al ring.
-
-Revision 1.11  2001/11/29 14:16:51  morsch
-- truncated inner W-cone
-- new support structure
-
-Revision 1.10  2001/10/25 08:50:57  morsch
-New beamshield geometry with increased tolerances and insulation thickness.
-
-Revision 1.9  2001/05/16 14:57:22  alibrary
-New files for folders and Stack
-
-Revision 1.8  2001/01/12 13:16:09  morsch
-Store absorber composition information in fMLayers and fZLayers
-Rear 25 cm Fe + 35 cm Cu
-
-Revision 1.7  2000/10/02 21:28:15  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.6  2000/06/15 09:40:31  morsch
-Obsolete typedef keyword removed
-
-Revision 1.5  2000/06/12 19:39:01  morsch
-New structure of beam pipe and heating jacket.
-
-Revision 1.4  2000/04/03 08:13:40  fca
-Introduce extra scope for non ANSI compliant C++ compilers
-
-Revision 1.3  2000/01/18 17:49:56  morsch
-Serious overlap of ABSM with shield corrected
-Small error in ARPB parameters corrected
-
-Revision 1.2  2000/01/13 11:23:59  morsch
-Last layer of Pb outer angle corrected
-
-Revision 1.1  2000/01/12 15:39:30  morsch
-Standard version of ABSO
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //

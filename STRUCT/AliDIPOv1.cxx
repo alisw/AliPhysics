@@ -13,18 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.8  2000/10/02 21:28:15  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.7  2000/06/11 12:33:34  morsch
-Coding rule violations corrected
-
-Revision 1.6  1999/09/29 09:24:30  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -174,7 +163,7 @@ void AliDIPOv1::CreateGeometry()
 }
 
 //_____________________________________________________________________________
-void AliDIPOv1::DrawModule()
+void AliDIPOv1::DrawModule() const
 {
   //
   // Draw a shaded view of the muon absorber

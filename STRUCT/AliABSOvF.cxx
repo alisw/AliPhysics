@@ -13,13 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.3  2001/01/12 13:14:49  morsch
-Store absorber composition information in fMLayers and fZLayers
-Rear: 25 cm Fe + 4*5cm Pb + 3*5cm PolyCH2
-
-*/
+/* $Id$ */
 
 //                                                                           //
 //                                                                           //

@@ -13,22 +13,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.8  2000/10/02 21:28:15  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.7  2000/06/11 12:37:25  morsch
-Coding rule violations corrected
-
-Revision 1.6  1999/09/29 09:24:30  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  Beam pipe class                                                          //
+//  Beam pipe class. Test version                                            //
 //                                                                           //
 //Begin_Html
 /*
@@ -250,7 +239,7 @@ void AliPIPEv1::CreateGeometry()
 }
 
 //_____________________________________________________________________________
-void AliPIPEv1::DrawModule()
+void AliPIPEv1::DrawModule() const
 {
   //
   // Draw a shaded view of the Beam Pipe

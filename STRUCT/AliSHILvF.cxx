@@ -13,64 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.19  2002/10/29 17:20:38  hristov
-Corrections for subscript out of range (Alpha)
+/* $Id$ */
 
-Revision 1.18  2002/10/29 09:53:40  morsch
-Constants start with k. Warnings corrected.
-
-Revision 1.17  2002/10/14 14:57:39  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.12.6.2  2002/07/24 10:08:27  alibrary
-Updating VirtualMC
-
-Revision 1.16  2002/07/08 15:13:24  morsch
-Position of bellow.
-
-Revision 1.15  2002/05/30 11:58:34  morsch
-More robust geometry for bellows: use divisions and neg. parameters.
-
-Revision 1.14  2002/05/29 11:23:46  morsch
-Numerical overlap for 2nd bellow corrected.
-
-Revision 1.13  2002/05/02 12:50:06  morsch
-For G4: gMC->VolId(...) replaced by gAlice->GetModule(...).
-
-Revision 1.12  2002/01/21 11:31:21  morsch
-ALIFE output only on demand.
-
-Revision 1.11  2001/11/17 01:29:21  morsch
-Obsolete and wrong volume YXO5 removed.
-
-Revision 1.10  2001/11/16 08:57:42  morsch
-Volume YP32 obsolete.
-
-Revision 1.9  2001/11/12 10:19:30  morsch
-Correction of uninitialized array element problem.
-
-Revision 1.8  2001/10/25 08:50:57  morsch
-New beamshield geometry with increased tolerances and insulation thickness.
-
-Revision 1.6  2001/04/23 23:12:41  morsch
-Overlap in closing cone corrected (thanks to Ivana Hrivnacova)
-
-Revision 1.5  2001/03/16 16:26:05  morsch
-Put vacuum in beam-pipe not air.
-
-Revision 1.4  2001/01/31 11:55:27  hristov
-Loop variables declared once (required by HP)
-
-Revision 1.3  2001/01/30 12:28:27  morsch
-Recess station 1 changed do make space for chambers.
-
-Revision 1.2  2000/12/04 16:30:02  morsch
-Update to geometry defined for the Muon Spectrometer Addendum to the TDR.
-
-*/
-
+//-------------------------------------------------------------------------
+// MUON shielding class
+// Version producing Fluka output
+// Author: A.Morsch
+//-------------------------------------------------------------------------
 
 #include "AliSHILvF.h"
 #include "AliRun.h"

@@ -13,33 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.13  2002/11/06 15:20:32  hristov
-Corrected logics (I.Hrivnacova)
-
-Revision 1.12  2002/11/01 10:59:49  hristov
-Correcting geometry (corresponds to version 1.9)
-
-Revision 1.11  2002/10/17 16:33:07  hristov
-Corrected check of the MC type
-
-Revision 1.10  2002/10/17 16:14:05  hristov
-MAG geometry with resolved MANY (I.Hrivnacova)
-
-Revision 1.9  2001/05/16 14:57:22  alibrary
-New files for folders and Stack
-
-Revision 1.8  2000/10/02 21:28:15  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.7  2000/06/11 12:35:56  morsch
-Coding rule violations corrected
-
-Revision 1.6  1999/09/29 09:24:30  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //

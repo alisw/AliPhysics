@@ -25,7 +25,7 @@ class AliPIPEv0 : public AliPIPE {
   virtual void   SetPipeMaterial(Int_t mat = kBe) {fPipeMaterial = mat;}
   virtual Int_t  IsVersion() const {return 0;}
  protected:
-  Int_t   fPipeMaterial;
+  Int_t   fPipeMaterial; // Pipe material (Al, Be, or Inox)
   
   ClassDef(AliPIPEv0,2)  //Class for PIPE version 0
 };

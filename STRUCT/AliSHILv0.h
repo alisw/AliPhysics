@@ -24,7 +24,7 @@ public:
   virtual void  SetPbCone(Bool_t flag=kTRUE) {fPbCone=flag;}
 	  
  protected:
-  Bool_t fPbCone;
+  Bool_t fPbCone; // flag for the Pb cone
   
   ClassDef(AliSHILv0,1)  // Muon Shield Class (Open Geometry)
       

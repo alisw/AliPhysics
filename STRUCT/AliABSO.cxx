@@ -13,24 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.10  2000/10/02 21:28:15  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.9  2000/06/11 12:32:12  morsch
-Coding rule violations corrected
-
-Revision 1.8  2000/02/23 13:46:04  morsch
-Detailed composition of insulation material.
-
-Revision 1.7  2000/01/12 15:36:28  morsch
-Base class only
-
-Revision 1.6  1999/09/29 09:24:29  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -316,7 +299,7 @@ void AliABSO::Init()
   printf("\n");
 }
  
-Int_t  AliABSO::GetMatId(Int_t imat) 
+Int_t  AliABSO::GetMatId(Int_t imat) const 
 {
 // Get geant material number
     Int_t kmat=(*fIdmate)[imat]; 
