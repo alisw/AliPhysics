@@ -27,20 +27,21 @@
 
 ClassImp(AliFastGlauber)
 
-TF1*    AliFastGlauber::fWSb          = NULL;     
-TF2*    AliFastGlauber::fWSbz         = NULL;    
-TF1*    AliFastGlauber::fWSz          = NULL;     
-TF1*    AliFastGlauber::fWSta         = NULL;    
-TF2*    AliFastGlauber::fWStarfi      = NULL; 
-TF2*    AliFastGlauber::fWAlmond      = NULL; 
-TF1*    AliFastGlauber::fWStaa        = NULL;   
-TF1*    AliFastGlauber::fWSgeo        = NULL;   
-TF1*    AliFastGlauber::fWSbinary     = NULL;   
-TF1*    AliFastGlauber::fWSN          = NULL;   
-TF1*    AliFastGlauber::fWPathLength0 = NULL;   
-TF1*    AliFastGlauber::fWPathLength  = NULL;
-TF1*    AliFastGlauber::fWIntRadius   = NULL;   
-Float_t AliFastGlauber::fbMax         = 0.;
+TF1*    AliFastGlauber::fWSb            = NULL;     
+TF2*    AliFastGlauber::fWSbz           = NULL;    
+TF1*    AliFastGlauber::fWSz            = NULL;     
+TF1*    AliFastGlauber::fWSta           = NULL;    
+TF2*    AliFastGlauber::fWStarfi        = NULL; 
+TF2*    AliFastGlauber::fWAlmond        = NULL; 
+TF1*    AliFastGlauber::fWStaa          = NULL;   
+TF1*    AliFastGlauber::fWSgeo          = NULL;   
+TF1*    AliFastGlauber::fWSbinary       = NULL;   
+TF1*    AliFastGlauber::fWSN            = NULL;   
+TF1*    AliFastGlauber::fWPathLength0   = NULL;   
+TF1*    AliFastGlauber::fWPathLength    = NULL;
+TF1*    AliFastGlauber::fWEnergyDensity = NULL;   
+TF1*    AliFastGlauber::fWIntRadius     = NULL;   
+Float_t AliFastGlauber::fbMax           = 0.;
 
 AliFastGlauber::AliFastGlauber()
 {
@@ -107,7 +108,9 @@ void AliFastGlauber::Init(Int_t mode)
     fWPathLength->SetParameter(1, 1000.);    
 
     fWIntRadius = new TF1("WIntRadius", WIntRadius, 0., fbMax, 1);
-    fWIntRadius->SetParameter(0, 0.);     
+    fWIntRadius->SetParameter(0, 0.);    
+
+
 //
 //  Overlap
 //
@@ -118,6 +121,10 @@ void AliFastGlauber::Init(Int_t mode)
 	TFile* f = new TFile("$(ALICE_ROOT)/FASTSIM/data/glauberPbPb.root");
 	fWStaa = (TF1*) f->Get("WStaa");
     }
+    
+//
+    fWEnergyDensity = new TF1("WEnergyDensity", WEnergyDensity, 0., 2. * fWSr0, 1);
+    fWEnergyDensity->SetParameter(0, fWSr0 + 1.);
     
 //
 //  Geometrical Cross-Section
@@ -211,7 +218,7 @@ void AliFastGlauber::DrawKernel(Double_t b)
 void AliFastGlauber::DrawAlmond(Double_t b)
 {
 //
-//  Draw Kernel
+//  Draw Interaction Almond
 //
     TCanvas *c7 = new TCanvas("c7","Almond",400,10,600,700);
     c7->cd();
@@ -222,7 +229,7 @@ void AliFastGlauber::DrawAlmond(Double_t b)
 void AliFastGlauber::DrawPathLength0(Double_t b)
 {
 //
-//  Draw Kernel
+//  Draw Path Length
 //
     TCanvas *c8 = new TCanvas("c8","Path Length",400,10,600,700);
     c8->cd();
@@ -235,7 +242,7 @@ void AliFastGlauber::DrawPathLength0(Double_t b)
 void AliFastGlauber::DrawPathLength(Double_t b , Int_t ni)
 {
 //
-//  Draw Kernel
+//  Draw Path Length
 //
     TCanvas *c9 = new TCanvas("c9","Path Length",400,10,600,700);
     c9->cd();
@@ -251,13 +258,24 @@ void AliFastGlauber::DrawPathLength(Double_t b , Int_t ni)
 void AliFastGlauber::DrawIntRadius(Double_t b)
 {
 //
-//  Draw Kernel
+//  Draw Interaction Radius
 //
     TCanvas *c10 = new TCanvas("c10","Interaction Radius",400,10,600,700);
     c10->cd();
     fWIntRadius->SetParameter(0, b);
     fWIntRadius->SetMinimum(0.);
     fWIntRadius->Draw();
+}
+
+void AliFastGlauber::DrawEnergyDensity()
+{
+//
+//  Draw energy density
+//
+    TCanvas *c11 = new TCanvas("c11","Energy Density",400, 10, 600, 700);
+    c11->cd();
+    fWEnergyDensity->SetMinimum(0.);
+    fWEnergyDensity->Draw();
 }
 
 Double_t AliFastGlauber::WSb(Double_t* x, Double_t* par)
@@ -273,6 +291,7 @@ Double_t AliFastGlauber::WSb(Double_t* x, Double_t* par)
     Double_t n   = par[3];
     
     Double_t y  = n * (1.+w*(xx/r0)*(xx/r0))/(1.+TMath::Exp((xx-r0)/d));
+
     return y;
 }
 
@@ -290,6 +309,7 @@ Double_t AliFastGlauber::WSbz(Double_t* x, Double_t* par)
     Double_t n   = par[3];
     Double_t xx  = TMath::Sqrt(bb*bb+zz*zz);
     Double_t y  = n * (1.+w*(xx/r0)*(xx/r0))/(1.+TMath::Exp((xx-r0)/d));
+
     return y;
 }
 
@@ -307,7 +327,7 @@ Double_t AliFastGlauber::WSz(Double_t* x, Double_t* par)
     Double_t n   = par[3];
     Double_t xx  = TMath::Sqrt(bb*bb+zz*zz);
     Double_t y  = n * (1.+w*(xx/r0)*(xx/r0))/(1.+TMath::Exp((xx-r0)/d));
-//    if (y < 1.e-6) y = 0;
+
     return y;
 }
 
@@ -549,6 +569,20 @@ Double_t AliFastGlauber::WSN(Double_t* x, Double_t* /*par*/)
     Double_t b     = x[0];
     Double_t y     = fWSbinary->Eval(b)/fWSgeo->Eval(b);
     return y;
+}
+
+Double_t AliFastGlauber::WEnergyDensity(Double_t* x, Double_t* par)
+{
+//
+//  Initial energy density as a function of the impact parameter
+//
+    Double_t b     = x[0];
+    Double_t rA    = par[0];
+    
+    Double_t saa   = (TMath::Pi() - 2. * TMath::ASin(b/ 2./ rA)) * rA * rA - b * TMath::Sqrt(rA * rA - b * b/ 4.);
+    Double_t taa   = fWStaa->Eval(b);
+    
+    return (taa/saa);
 }
 
 void AliFastGlauber::SimulateTrigger(Int_t n)
