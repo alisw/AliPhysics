@@ -9,7 +9,7 @@
   #include "TStopwatch.h"
 #endif
 
-Int_t AliTPCFindClusters() {
+Int_t AliTPCFindClusters(Int_t n) {
    TFile *out=TFile::Open("AliTPCclusters.root","new");
    if (!out->IsOpen()) {cerr<<"Delete old AliTPCclusters.root !\n"; return 1;}
    TFile *in=TFile::Open("rfio:galice.root");
@@ -21,8 +21,6 @@ Int_t AliTPCFindClusters() {
    }
 
    TDirectory *cwd = gDirectory;
-
-   gAlice->GetEvent(0);
 
    AliTPC *TPC = (AliTPC*)gAlice->GetDetector("TPC"); 
    Int_t ver = TPC->IsVersion(); 
@@ -38,15 +36,25 @@ Int_t AliTPCFindClusters() {
       cerr<<"Making clusters...\n";
       {
        AliTPCv1 &tpc=*((AliTPCv1*)TPC);
-       tpc.SetParam(dig); timer.Start(); cwd->cd(); tpc.Hits2Clusters(out); 
+       tpc.SetParam(dig); timer.Start(); cwd->cd(); 
+       for(Int_t i=0;i<n;i++){
+         printf("Processing event %d\n",i);
+         gAlice->GetEvent(i);
+         tpc.Hits2Clusters(out,i);
+       } 
       }
       break;
    case 2:
       cerr<<"Looking for clusters...\n";
       {
-       delete gAlice; gAlice=0;
+	// delete gAlice; gAlice=0;
        AliTPCv2 tpc; 
-       tpc.SetParam(dig); timer.Start(); cwd->cd(); tpc.Digits2Clusters(out); 
+       tpc.SetParam(dig); timer.Start(); cwd->cd();  
+       for (Int_t i=0;i<n;i++){
+	 printf("Processing event %d\n",i);
+         tpc.Digits2Clusters(out,i);
+	 //	 AliTPCclusterer::Digits2Clusters(dig, out, i);
+       }
       }
       break;
    default:

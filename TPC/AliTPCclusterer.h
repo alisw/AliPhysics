@@ -20,7 +20,7 @@ class AliTPCcluster;
 
 class AliTPCclusterer {
 public:
-   static void Digits2Clusters(const AliTPCParam *par, TFile *of);
+   static void Digits2Clusters(const AliTPCParam *par, TFile *of, Int_t eventn=1);
 
 private:
    class AliBin {

@@ -1,7 +1,7 @@
-Int_t AliTPCDisplayClusters() {
+Int_t AliTPCDisplayClusters(Int_t eventn) {
    cerr<<"Displaying clusters...\n";
 
-   TFile *file=TFile::Open("rfio:galice.root");
+   TFile *file=TFile::Open("galice.root");
    if (!file->IsOpen()) {cerr<<"Can't open galice.root !\n"; return 1;}
 
    TFile *cf=TFile::Open("AliTPCclusters.root");
@@ -21,7 +21,10 @@ Int_t AliTPCDisplayClusters() {
    AliTPCClustersArray *ca=new AliTPCClustersArray;
    ca->Setup(dig);
    ca->SetClusterType("AliTPCcluster");
-   ca->ConnectTree("Segment Tree");
+   char  cname[100];
+   sprintf(cname,"TreeC_TPC_%d",eventn);
+
+   ca->ConnectTree(cname);
    Int_t nrows=Int_t(ca->GetTree()->GetEntries());
    for (Int_t n=0; n<nrows; n++) {
        AliSegmentID *s=ca->LoadEntry(n);

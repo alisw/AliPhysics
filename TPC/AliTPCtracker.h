@@ -22,7 +22,8 @@ class AliTPCParam;
 class AliTPCtracker : public AliTracker {
 public:
    AliTPCtracker():AliTracker(),fkNIS(0),fkNOS(0) {}
-   AliTPCtracker(const AliTPCParam *par);
+   AliTPCtracker(const AliTPCParam *par, Int_t eventn);
+  AliTPCtracker(const AliTPCParam *par);
   ~AliTPCtracker();
 
    Int_t ReadSeeds(const TFile *in);
@@ -93,8 +94,7 @@ public:
      Double_t fAlpha;                    //opening angle
      Double_t fAlphaShift;               //shift angle;
      Double_t fPadPitchWidth;            //pad pitch width
-     Double_t fPadPitchLength;           //pad pitch length
-
+     Double_t fPadPitchLength;           //pad pitch length    
    private:
      AliTPCSector(const AliTPCSector &s);           //dummy copy contructor
      AliTPCSector& operator=(const AliTPCSector &s);//dummy assignment operator
@@ -136,6 +136,7 @@ private:
    Int_t fN;               //number of loaded sectors
    AliTPCSector *fSectors; //pointer to loaded sectors;
 
+  Int_t fEventN;                      //event number
    AliTPCClustersArray fClustersArray; //array of TPC clusters
    TObjArray *fSeeds;                  //array of track seeds 
 };

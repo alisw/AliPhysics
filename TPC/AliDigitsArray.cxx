@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/10/05 16:03:07  kowal2
+Forward declarations. Destructor made virtual.
+
 Revision 1.2  2000/04/17 09:37:33  kowal2
 removed obsolete AliTPCDigitsDisplay.C
 
@@ -54,7 +57,7 @@ AliDigitsArray::AliDigitsArray()
 
 AliDigitsArray::~AliDigitsArray()
 {
-  if (fParam != 0) delete fParam;
+  // if (fParam != 0) delete fParam;
 }  
 
 Bool_t AliDigitsArray::Setup(AliDetectorParam *param)

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2001/04/17 08:06:27  hristov
+Possibility to define the magnetic field in the reconstruction (Yu.Belikov)
+
 Revision 1.3  2000/10/05 16:14:01  kowal2
 Forward declarations.
 
@@ -96,7 +99,7 @@ AliTPCcluster &c) {
 }
 
 //_____________________________________________________________________________
-void AliTPCclusterer::Digits2Clusters(const AliTPCParam *par, TFile *of)
+void AliTPCclusterer::Digits2Clusters(const AliTPCParam *par, TFile *of, Int_t eventn)
 {
   //-----------------------------------------------------------------
   // This is a simple cluster finder.
@@ -110,7 +113,21 @@ void AliTPCclusterer::Digits2Clusters(const AliTPCParam *par, TFile *of)
 
   const Int_t kMAXZ=par->GetMaxTBin()+2;
 
-  TTree *t = (TTree *)gDirectory->Get("TreeD_75x40_100x60");
+  char  dname[100];
+  char   cname[100];
+  if (eventn==-1) {
+
+    // for backward compatibility
+    
+    sprintf(dname,"TreeD_75x40_100x60");
+    sprintf(cname,"TreeC_TPC");
+  }
+  else {
+    sprintf(dname,"TreeD_75x40_100x60_%d",eventn);
+    sprintf(cname,"TreeC_TPC_%d",eventn);
+  }
+  TTree *t = (TTree *)gDirectory->Get(dname);
+
   AliSimDigits digarr, *dummy=&digarr;
   t->GetBranch("Segment")->SetAddress(&dummy);
   Stat_t nentries = t->GetEntries();
@@ -122,6 +139,8 @@ void AliTPCclusterer::Digits2Clusters(const AliTPCParam *par, TFile *of)
   carray.Setup(par);
   carray.SetClusterType("AliTPCcluster");
   carray.MakeTree();
+
+
 
   Int_t nclusters=0;
 
@@ -255,7 +274,7 @@ void AliTPCclusterer::Digits2Clusters(const AliTPCParam *par, TFile *of)
 
   cerr<<"Number of found clusters : "<<nclusters<<"                        \n";
 
-  carray.GetTree()->Write();
+  carray.GetTree()->Write(cname);
   savedir->cd();
 }
 

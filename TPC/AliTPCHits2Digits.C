@@ -1,4 +1,4 @@
-Int_t AliTPCHits2Digits()
+Int_t AliTPCHits2Digits(Int_t nevent=1)
 {
 
   // new version by J.Belikov
@@ -23,68 +23,26 @@ Int_t AliTPCHits2Digits()
     return 2;
   }
 
-  gAlice->GetEvent(0);
+
+
+  // gAlice->GetEvent(0);
   AliTPC *TPC = (AliTPC*)gAlice->GetDetector("TPC");      
 
-//Set response functions
+  TStopwatch timer;
+  timer.Start();
 
-  AliTPCParamSR *param=(AliTPCParamSR*)gDirectory->Get("75x40_100x60");
-  AliTPCPRF2D    * prfinner   = new AliTPCPRF2D;
-  AliTPCPRF2D    * prfouter   = new AliTPCPRF2D;
-  AliTPCRF1D     * rf    = new AliTPCRF1D(kTRUE);
-  rf->SetGauss(param->GetZSigma(),param->GetZWidth(),1.);
-  rf->SetOffset(3*param->GetZSigma());
-  rf->Update();
+  for(Int_t eventn =0;eventn<nevent;eventn++){
+    printf("Processing event %d",eventn);
+    gAlice->GetEvent(eventn);
 
-  TDirectory *savedir=gDirectory;
-  TFile *f=TFile::Open("$ALICE_ROOT/TPC/AliTPCprf2d.root");
-  if (!f->IsOpen()) { 
-     cerr<<"Can't open $ALICE_ROOT/TPC/AliTPCprf2d.root !\n"
-     return 3;
+    TPC->Hits2Digits(eventn);
   }
-  prfinner->Read("prf_07504_Gati_056068_d02");
-  prfouter->Read("prf_10006_Gati_047051_d03");
-  f->Close();
-  savedir->cd();
-
-  param->SetInnerPRF(prfinner);
-  param->SetOuterPRF(prfouter); 
-  param->SetTimeRF(rf);
-  TPC->SetParam(param);
-   
-  cerr<<"Digitizing TPC...\n";
-
-  //setup TPCDigitsArray 
-  AliTPCDigitsArray *arr = new AliTPCDigitsArray; 
-  arr->SetClass("AliSimDigits");
-  arr->Setup(param);
-  TPC->SetParam(param);
-  arr->MakeTree();
-
-  TPC->SetDigitsArray(arr);
-  TPC->Hits2Digits();
-  /*  TPC->Hits2DigitsSector(1);             
-  TPC->Hits2DigitsSector(2);             
-  TPC->Hits2DigitsSector(3);             
-  TPC->Hits2DigitsSector(1+18);             
-  TPC->Hits2DigitsSector(2+18);             
-  TPC->Hits2DigitsSector(3+18);             
-
-  TPC->Hits2DigitsSector(36+1);             
-  TPC->Hits2DigitsSector(36+2);             
-  TPC->Hits2DigitsSector(36+3);             
-  TPC->Hits2DigitsSector(36+1+18);             
-  TPC->Hits2DigitsSector(36+2+18);             
-  TPC->Hits2DigitsSector(36+3+18); */
-            
-  //write results
-
-  char treeName[100];
-  sprintf(treeName,"TreeD_%s",param->GetTitle());
-  TPC->GetDigitsArray()->GetTree()->Write(treeName);
 
   delete gAlice; gAlice=0;
   file->Close(); delete file;
+  timer.Stop();
+  timer.Print();
+
   return 0;
 };
 

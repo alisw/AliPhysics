@@ -53,5 +53,9 @@
 #pragma link C++ class AliHitInfo+;
 
 
+#pragma link C++ class AliTPCclusterer-;
+
+
+
 #endif
 
