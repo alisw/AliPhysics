@@ -68,7 +68,7 @@
 #include "AliTPCPRF2D.h"
 #include "AliTPCParamSR.h"
 #include "AliTPCRF1D.h"
-#include "AliTPCTrackHits.h"
+//#include "AliTPCTrackHits.h"
 #include "AliTPCTrackHitsV2.h"
 #include "AliTrackReference.h"
 #include "AliMC.h"
@@ -92,7 +92,7 @@ AliTPC::AliTPC()
   fDigitsArray = 0;
   fDefaults = 0;
   fTrackHits = 0; 
-  fTrackHitsOld = 0;   
+  //  fTrackHitsOld = 0;   
 #if ROOT_VERSION_CODE >= ROOT_VERSION(4,0,1)
   fHitType = 4; // ROOT containers
 #else
@@ -124,10 +124,10 @@ AliTPC::AliTPC(const char *name, const char *title)
   fTrackHits->SetStepPrecision(0.003);  
   fTrackHits->SetMaxDistance(100);
 
-  fTrackHitsOld = new AliTPCTrackHits;  //MI - 13.09.2000
-  fTrackHitsOld->SetHitPrecision(0.002);
-  fTrackHitsOld->SetStepPrecision(0.003);  
-  fTrackHitsOld->SetMaxDistance(100); 
+  //fTrackHitsOld = new AliTPCTrackHits;  //MI - 13.09.2000
+  //fTrackHitsOld->SetHitPrecision(0.002);
+  //fTrackHitsOld->SetStepPrecision(0.003);  
+  //fTrackHitsOld->SetMaxDistance(100); 
 
   fNoiseTable =0;
 
@@ -178,7 +178,7 @@ AliTPC::~AliTPC()
   delete fDigits;
   delete fTPCParam;
   delete fTrackHits; //MI 15.09.2000
-  delete fTrackHitsOld; //MI 10.12.2001
+  //  delete fTrackHitsOld; //MI 10.12.2001
   if (fNoiseTable) delete [] fNoiseTable;
 
 }
@@ -789,14 +789,14 @@ void    AliTPC::SetActiveSectors(Int_t flag)
     }
     
     //
-    if (fTrackHitsOld && fHitType&2) {
-      TBranch * br = TreeH()->GetBranch("fTrackHitsInfo");
-      br->GetEvent(track);
-      AliObjectArray * ar = fTrackHitsOld->fTrackHitsInfo;
-      for (UInt_t j=0;j<ar->GetSize();j++){
-	fActiveSectors[((AliTrackHitsInfo*)ar->At(j))->fVolumeID] =kTRUE;
-      } 
-    }    
+//     if (fTrackHitsOld && fHitType&2) {
+//       TBranch * br = TreeH()->GetBranch("fTrackHitsInfo");
+//       br->GetEvent(track);
+//       AliObjectArray * ar = fTrackHitsOld->fTrackHitsInfo;
+//       for (UInt_t j=0;j<ar->GetSize();j++){
+// 	fActiveSectors[((AliTrackHitsInfo*)ar->At(j))->fVolumeID] =kTRUE;
+//       } 
+//     }    
   }
 }  
 
@@ -2050,12 +2050,12 @@ void AliTPC::MakeBranch2(Option_t *option,const char */*file*/)
     TreeH()->Branch(branchname,"AliTPCTrackHitsV2",&fTrackHits,fBufferSize,99);
   }
 
-  if (fTrackHitsOld   && TreeH() && cH && fHitType&2) {    
-    AliDebug(1,"Making branch for Type 2 Hits");
-    AliObjectBranch * branch = new AliObjectBranch(branchname,"AliTPCTrackHits",&fTrackHitsOld, 
-                                                   TreeH(),fBufferSize,99);
-    TreeH()->GetListOfBranches()->Add(branch);
-  }	
+//   if (fTrackHitsOld   && TreeH() && cH && fHitType&2) {    
+//     AliDebug(1,"Making branch for Type 2 Hits");
+//     AliObjectBranch * branch = new AliObjectBranch(branchname,"AliTPCTrackHits",&fTrackHitsOld, 
+//                                                    TreeH(),fBufferSize,99);
+//     TreeH()->GetListOfBranches()->Add(branch);
+//   }	
 }
 
 void AliTPC::SetTreeAddress()
@@ -2091,15 +2091,15 @@ void AliTPC::SetTreeAddress2()
       AliDebug(1,"fHitType&4 Failed (can not find branch)");
     
   }
-  if ((treeH)&&(fHitType&2)) {
-    branch = treeH->GetBranch(branchname);
-    if (branch) {
-      branch->SetAddress(&fTrackHitsOld);
-      AliDebug(1,"fHitType&2 Setting");
-    }
-    else
-      AliDebug(1,"fHitType&2 Failed (can not find branch)");
-  }
+ //  if ((treeH)&&(fHitType&2)) {
+//     branch = treeH->GetBranch(branchname);
+//     if (branch) {
+//       branch->SetAddress(&fTrackHitsOld);
+//       AliDebug(1,"fHitType&2 Setting");
+//     }
+//     else
+//       AliDebug(1,"fHitType&2 Failed (can not find branch)");
+//   }
   //set address to TREETR
   
   TTree *treeTR = TreeTR();
@@ -2113,7 +2113,7 @@ void AliTPC::SetTreeAddress2()
 void AliTPC::FinishPrimary()
 {
   if (fTrackHits &&fHitType&4)      fTrackHits->FlushHitStack();  
-  if (fTrackHitsOld && fHitType&2)  fTrackHitsOld->FlushHitStack();  
+  //  if (fTrackHitsOld && fHitType&2)  fTrackHitsOld->FlushHitStack();  
 }
 
 
@@ -2133,9 +2133,9 @@ void AliTPC::AddHit2(Int_t track, Int_t *vol, Float_t *hits)
   if (fTrackHits && fHitType&4) 
     fTrackHits->AddHitKartez(vol[0],rtrack, hits[0],
                              hits[1],hits[2],(Int_t)hits[3]);
-  if (fTrackHitsOld &&fHitType&2 ) 
-    fTrackHitsOld->AddHitKartez(vol[0],rtrack, hits[0],
-                                hits[1],hits[2],(Int_t)hits[3]);
+ //  if (fTrackHitsOld &&fHitType&2 ) 
+//     fTrackHitsOld->AddHitKartez(vol[0],rtrack, hits[0],
+//                                 hits[1],hits[2],(Int_t)hits[3]);
   
 }
 
@@ -2150,7 +2150,7 @@ void AliTPC::ResetHits2()
   //
   //reset hits
   if (fTrackHits && fHitType&4) fTrackHits->Clear();
-  if (fTrackHitsOld && fHitType&2) fTrackHitsOld->Clear();
+  // if (fTrackHitsOld && fHitType&2) fTrackHitsOld->Clear();
 
 }   
 
@@ -2187,10 +2187,10 @@ AliHit* AliTPC::FirstHit2(Int_t track)
     fTrackHits->First();
     return fTrackHits->GetHit();
   }
-  if (fTrackHitsOld && fHitType&2) {
-    fTrackHitsOld->First();
-    return fTrackHitsOld->GetHit();
-  }
+ //  if (fTrackHitsOld && fHitType&2) {
+//     fTrackHitsOld->First();
+//     return fTrackHitsOld->GetHit();
+//   }
 
   else return 0;
 }
@@ -2201,10 +2201,10 @@ AliHit* AliTPC::NextHit2()
   //Return the next hit for the current track
 
 
-  if (fTrackHitsOld && fHitType&2) {
-    fTrackHitsOld->Next();
-    return fTrackHitsOld->GetHit();
-  }
+//   if (fTrackHitsOld && fHitType&2) {
+//     fTrackHitsOld->Next();
+//     return fTrackHitsOld->GetHit();
+//   }
   if (fTrackHits) {
     fTrackHits->Next();
     return fTrackHits->GetHit();
@@ -2230,14 +2230,15 @@ void AliTPC::RemapTrackHitIDs(Int_t *map)
   //
   if (!fTrackHits) return;
   
-  if (fTrackHitsOld && fHitType&2){
-    AliObjectArray * arr = fTrackHitsOld->fTrackHitsInfo;
-    for (UInt_t i=0;i<arr->GetSize();i++){
-      AliTrackHitsInfo * info = (AliTrackHitsInfo *)(arr->At(i));
-      info->fTrackID = map[info->fTrackID];
-    }
-  }
-  if (fTrackHitsOld && fHitType&4){
+//   if (fTrackHitsOld && fHitType&2){
+//     AliObjectArray * arr = fTrackHitsOld->fTrackHitsInfo;
+//     for (UInt_t i=0;i<arr->GetSize();i++){
+//       AliTrackHitsInfo * info = (AliTrackHitsInfo *)(arr->At(i));
+//       info->fTrackID = map[info->fTrackID];
+//     }
+//   }
+//  if (fTrackHitsOld && fHitType&4){
+  if (fTrackHits && fHitType&4){
     TClonesArray * arr = fTrackHits->GetArray();;
     for (Int_t i=0;i<arr->GetEntriesFast();i++){
       AliTrackHitsParamV2 * info = (AliTrackHitsParamV2 *)(arr->At(i));
@@ -2253,14 +2254,14 @@ Bool_t   AliTPC::TrackInVolume(Int_t id,Int_t track)
   //return true if current track is in volume
   //
   //  return kTRUE;
-  if (fTrackHitsOld && fHitType&2) {
-    TBranch * br = TreeH()->GetBranch("fTrackHitsInfo");
-    br->GetEvent(track);
-    AliObjectArray * ar = fTrackHitsOld->fTrackHitsInfo;
-    for (UInt_t j=0;j<ar->GetSize();j++){
-      if (  ((AliTrackHitsInfo*)ar->At(j))->fVolumeID==id) return kTRUE;
-    } 
-  }
+ //  if (fTrackHitsOld && fHitType&2) {
+//     TBranch * br = TreeH()->GetBranch("fTrackHitsInfo");
+//     br->GetEvent(track);
+//     AliObjectArray * ar = fTrackHitsOld->fTrackHitsInfo;
+//     for (UInt_t j=0;j<ar->GetSize();j++){
+//       if (  ((AliTrackHitsInfo*)ar->At(j))->fVolumeID==id) return kTRUE;
+//     } 
+//   }
 
   if (fTrackHits && fHitType&4) {
     TBranch * br1 = TreeH()->GetBranch("fVolumes");
@@ -2294,11 +2295,12 @@ void AliTPC::LoadPoints2(Int_t)
   //
   // Store x, y, z of all hits in memory
   //
-  if (fTrackHits == 0 && fTrackHitsOld==0) return;
+  //  if (fTrackHits == 0 && fTrackHitsOld==0) return;
+  if (fTrackHits == 0 ) return;
   //
   Int_t nhits =0;
   if (fHitType&4) nhits = fTrackHits->GetEntriesFast();
-  if (fHitType&2) nhits = fTrackHitsOld->GetEntriesFast();
+  //  if (fHitType&2) nhits = fTrackHitsOld->GetEntriesFast();
   
   if (nhits == 0) return;
   Int_t tracks = gAlice->GetMCApp()->GetNtrack();

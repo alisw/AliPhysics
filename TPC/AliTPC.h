@@ -121,7 +121,7 @@ protected:
   AliTPCDigitsArray * fDigitsArray;              //!detector digit object  
   AliTPCParam *fTPCParam;           // pointer to TPC parameters 
   AliTPCTrackHitsV2 *fTrackHits;      //!hits for given track M.I.
-  AliTPCTrackHits *fTrackHitsOld;      //!hits for given track M.I. MIold -
+  //  AliTPCTrackHits *fTrackHitsOld;      //!hits for given track M.I. MIold -
 
   Int_t  fHitType; // if fNewHit = 1 old data structure if 2 new hits  if 4  old MI stucture
   //  3 both types 
@@ -153,7 +153,7 @@ protected:
   Int_t      fCurrentNoise; //!index of the noise in  the noise table 
   Bool_t*    fActiveSectors; //!bool indicating which sectors are active
 
-  ClassDef(AliTPC,10)  // Time Projection Chamber class
+  ClassDef(AliTPC,11)  // Time Projection Chamber class
 };
 
 
