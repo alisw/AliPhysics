@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.28  2001/10/08 11:55:25  morsch
+Store 4-momenta of trigegred jets in event header.
+Possibility to switch of initial and final state radiation.
+
 Revision 1.27  2001/10/08 07:13:14  morsch
 Add setter for minimum transverse momentum of triggered jet.
 
@@ -157,6 +161,7 @@ AliGenHijing::AliGenHijing(Int_t npart)
     fDnDb       =  0;
     fPtMinJet   = -2.5; 	
     fRadiation  =  1;
+    fEventVertex.Set(3);
 //
 // Set random number generator   
     sRandom = fRandom;
@@ -228,11 +233,16 @@ void AliGenHijing::Generate()
   fTrials = 0;
   for (j = 0;j < 3; j++) origin0[j] = fOrigin[j];
   if(fVertexSmear == kPerEvent) {
-	Rndm(random,6);
-	for (j=0; j < 3; j++) {
-	    origin0[j] += fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
-		TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
-	}
+      Float_t dv[3];
+      dv[2] = 1.e10;
+      while(TMath::Abs(dv[2]) > fCutVertexZ*fOsigma[2]) {
+	  Rndm(random,6);
+	  for (j=0; j < 3; j++) {
+	      dv[j] = fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
+		  TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
+	  }
+      }
+      for (j=0; j < 3; j++) origin0[j] += dv[j];
   } else if (fVertexSmear == kPerTrack) {
 //	    fHijing->SetMSTP(151,0);
       for (j = 0; j < 3; j++) {
@@ -257,14 +267,21 @@ void AliGenHijing::Generate()
       Int_t * newPos = new Int_t[np];
 
       for (i = 0; i < np; i++) *(newPos+i) = i;
+//      Get event vertex
+//
+      TParticle *  iparticle = (TParticle *) particles->At(0);
+      fEventVertex[0] = origin0[0];
+      fEventVertex[1] = origin0[1];	
+      fEventVertex[2] = origin0[2];
+      
 //
 //      First write parent particles
 //
 
       for (i = 0; i < np; i++) {
-	  TParticle *  iparticle       = (TParticle *) particles->At(i);
+	  iparticle       = (TParticle *) particles->At(i);
 // Is this a parent particle ?
-        if (Stable(iparticle)) continue;
+	  if (Stable(iparticle)) continue;
 //
         Bool_t  hasMother            =  (iparticle->GetFirstMother()   >=0);
         Bool_t  selected             =  kTRUE;
@@ -515,6 +532,9 @@ void AliGenHijing::MakeHeader()
 						       fHijing->GetN11());
     ((AliGenHijingEventHeader*) header)->SetSpectators(fSpecn, fSpecp);
 
+// 4-momentum vectors of the triggered jets.
+//
+// Before final state gluon radiation.
     TLorentzVector* jet1 = new TLorentzVector(fHijing->GetHINT1(21), 
 					      fHijing->GetHINT1(22),
 					      fHijing->GetHINT1(23),
@@ -524,8 +544,19 @@ void AliGenHijing::MakeHeader()
 					      fHijing->GetHINT1(32),
 					      fHijing->GetHINT1(33),
 					      fHijing->GetHINT1(34));
+// After final state gluon radiation.
+    TLorentzVector* jet3 = new TLorentzVector(fHijing->GetHINT1(26), 
+					      fHijing->GetHINT1(27),
+					      fHijing->GetHINT1(28),
+					      fHijing->GetHINT1(29));
 
-    ((AliGenHijingEventHeader*) header)->SetJets(jet1, jet2);
+    TLorentzVector* jet4 = new TLorentzVector(fHijing->GetHINT1(36), 
+					      fHijing->GetHINT1(37),
+					      fHijing->GetHINT1(38),
+					      fHijing->GetHINT1(39));
+    ((AliGenHijingEventHeader*) header)->SetJets(jet1, jet2, jet3, jet4);
+// Event Vertex
+    header->SetPrimaryVertex(fEventVertex);
     gAlice->SetGenEventHeader(header);    
 }
 
