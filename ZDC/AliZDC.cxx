@@ -66,6 +66,8 @@ AliZDC::AliZDC()
 
   fDigits     = 0;
   fNdigits    = 0;
+  
+  fCalibData  = 0;
 
 }
  
@@ -92,6 +94,8 @@ AliZDC::AliZDC(const char *name, const char *title)
   fDigits     = 0;
   fNdigits    = 0;
   
+  fCalibData  = 0;
+
   gZDC=this;
 
 }
@@ -104,6 +108,8 @@ AliZDC::~AliZDC()
 
   fIshunt   = 0;
   gZDC=0;
+
+  delete fCalibData;
 
 }
 //_____________________________________________________________________________
