@@ -27,12 +27,10 @@
 
 // --- Standard library ---
 
-#include <assert.h>
 
 // --- AliRoot header files ---
 
 #include "AliPHOSRecParticle.h"
-#include "TPad.h"
 
 ClassImp(AliPHOSRecParticle)
 

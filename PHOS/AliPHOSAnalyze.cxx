@@ -61,44 +61,35 @@
 //*-- Author: Dmitri Peressounko (SUBATECH & RRC Kurchatov Institute)
 //////////////////////////////////////////////////////////////////////////////
 
+
 // --- ROOT system ---
 
 #include "TFile.h"
 #include "TH1.h"
-#include "TPad.h"
 #include "TH2.h"
 #include "TH2.h"
 #include "TParticle.h"
 #include "TClonesArray.h"
 #include "TTree.h"
 #include "TMath.h"
-#include "TCanvas.h" 
-#include "TStyle.h" 
 
 // --- Standard library ---
 
-#include <iostream.h>
 #include <iomanip.h>
-#include <stdio.h>
 
 // --- AliRoot header files ---
 
 #include "AliRun.h"
 #include "AliPHOSv1.h"
 #include "AliPHOSAnalyze.h"
-#include "AliPHOSClusterizerv1.h"
-#include "AliPHOSTrackSegmentMakerv1.h"
-#include "AliPHOSPIDv1.h"
-#include "AliPHOSReconstructioner.h"
 #include "AliPHOSDigit.h"
-#include "AliPHOSDigitizer.h"
 #include "AliPHOSSDigitizer.h"
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSRecParticle.h"
 #include "AliPHOSIndexToObject.h"
-#include "AliPHOSHit.h"
 #include "AliPHOSCpvRecPoint.h"
 #include "AliPHOSPpsdRecPoint.h"
+
 
 ClassImp(AliPHOSAnalyze)
 
@@ -201,7 +192,7 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * branchName,c
 	fGeom->AbsToRelNumbering(sdigit->GetId(), relid) ;
 	Float_t x,z ;
 	fGeom->RelPosInModule(relid,x,z) ;
-	Float_t e = fObjGetter->GimeSDigitizer()->Calibrate(sdigit->GetAmp()) ;
+  	Float_t e = fObjGetter->GimeSDigitizer()->Calibrate(sdigit->GetAmp()) ;
 	if(relid[0]==Nmod){
 	  if(relid[1]==0)  //EMC
 	    sdigitOccupancy->Fill(x,z,e) ;

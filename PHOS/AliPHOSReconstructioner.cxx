@@ -387,7 +387,8 @@ void AliPHOSReconstructioner::Exec(Option_t *option)
 //____________________________________________________________________________
 AliPHOSReconstructioner::~AliPHOSReconstructioner()
 {
-  // dtor  
+  // Delete data members if any
+
   if(fSDigitizer)
     delete fSDigitizer ;
   
@@ -404,7 +405,8 @@ AliPHOSReconstructioner::~AliPHOSReconstructioner()
     delete fPID ;
 } 
 //____________________________________________________________________________
-void AliPHOSReconstructioner::SetBranchTitle(const char* branch, const char * title){
+void AliPHOSReconstructioner::SetBranchTitle(const char* branch, const char * title)
+{
   //Diverge correcpoinding branch to the file "title"
 
   if(strcmp(branch,"SDigits") == 0){ 
@@ -521,9 +523,10 @@ void AliPHOSReconstructioner::StartFrom(char * module,char* title)
   delete moduleName;
 }
 //____________________________________________________________________________
-void AliPHOSReconstructioner::Print(Option_t * option)const 
-{
-  // Print the parameters of the reconstructioner  
+
+void AliPHOSReconstructioner::Print(Option_t * option)const {
+  // Print reconstructioner data  
+
   cout << "-----------------AliPHOSReconstructioner---------------" << endl ;
   cout << " Reconstruction of the header file " <<fHeaderFileName.Data() << endl ;
   cout << " with the following modules: " << endl ;

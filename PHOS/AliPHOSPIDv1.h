@@ -67,30 +67,28 @@ public:
 
  private:
 
-  TString                fHeaderFileName ;
-  TString                fTSTitle;
-  TString                fRecPointsTitle ;
-  TString                fRecparticlesTitle ;
+  TString                fHeaderFileName ;    // file name with event header
+  TString                fTSTitle;            // branch name with track segments
+  TString                fRecPointsTitle ;    // branch name with rec points
+  TString                fRecparticlesTitle ; // branch name with rec particles
 
-  TString                fIDOptions ;
+  TString                fIDOptions ;         // PID option
 
-  Int_t                  fNEvent ;
-  TObjArray            * fEmcRecPoints ;  // ! initial EMC RecPoints
-  TObjArray            * fCpvRecPoints ;  // ! initial CPV RecPoints
-  TClonesArray         * fTrackSegments;  // ! initial list of TrackSegments
-  TClonesArray         * fRecParticles ;  // ! output
+  Int_t                  fNEvent ;            // current event number
+  TObjArray            * fEmcRecPoints ;      // ! initial EMC RecPoints
+  TObjArray            * fCpvRecPoints ;      // ! initial CPV RecPoints
+  TClonesArray         * fTrackSegments;      // ! initial list of TrackSegments
+  TClonesArray         * fRecParticles ;      // ! output
 
-  AliPHOSClusterizer   * fClusterizer ;    // !
-  AliPHOSTrackSegmentMaker * fTSMaker ;    // !
+  AliPHOSClusterizer   * fClusterizer ;       // !
+  AliPHOSTrackSegmentMaker * fTSMaker ;       // !
 
-  AliPHOSGeometry      * fGeom ;           // !pointer to PHOS geometry  
-  TFormula             * fFormula ;        // formula to define cut on the shouer elips axis
-  Float_t                fDispersion ;     // dispersion cut
-  Float_t                fCpvEmcDistance ; 
+  AliPHOSGeometry      * fGeom ;              // !pointer to PHOS geometry  
+  TFormula             * fFormula ;           // formula to define cut on the shouer elips axis
+  Float_t                fDispersion ;        // dispersion cut
+  Float_t                fCpvEmcDistance ;    // Max EMC-CPV distance
 
-  Bool_t                 fIsInitialized ;
-
-
+  Bool_t                 fIsInitialized ;     // kTRUE is inifialized
 
 
   ClassDef( AliPHOSPIDv1,1)  // Particle identifier implementation version 1

@@ -37,12 +37,12 @@ public:
 
   void Copy(TObject & obj) ;  
 
-  Int_t   GetIndexInList() const {    return fIndexInList ;   } 
-  Int_t   GetEmcIndex()const {  return fEmcRecPoint ;   }
-  Int_t   GetPpsdIndex()const{  return fPpsdLowRecPoint;}
-  Int_t   GetCpvIndex()const {  return fPpsdUpRecPoint; }
+  Int_t   GetIndexInList() const {  return fIndexInList ;   } 
+  Int_t   GetEmcIndex()    const {  return fEmcRecPoint ;   }
+  Int_t   GetPpsdIndex()   const {  return fPpsdLowRecPoint;}
+  Int_t   GetCpvIndex()    const {  return fPpsdUpRecPoint; }
 
-  virtual void  Print(Option_t * option) ;
+  virtual void  Print(Option_t * option) const;
   void    SetIndexInList(Int_t val){ fIndexInList = val ;     } 
   void    SetCpvRecPoint(AliPHOSRecPoint * PpsdUpRecPoint ); //sets PPSD up Rec Point
 

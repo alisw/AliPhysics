@@ -60,13 +60,12 @@ class AliPHOSRecPoint : public AliRecPoint {
     return kTRUE ; 
   }  
   virtual void    Paint(Option_t * option="");
-  virtual void    Print(Option_t * opt = "void") {
+  virtual void    Print(Option_t * opt = "void") const {
     // Print prototype
   } 
 
   AliPHOSRecPoint & operator = (const AliPHOSRecPoint & )  {
-    // assignement operator requested by coding convention
-    // but not needed
+    // assignement operator requested by coding convention but not needed
     assert(0==1) ;
     return *this ; 
   }

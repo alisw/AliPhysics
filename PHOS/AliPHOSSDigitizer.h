@@ -7,7 +7,9 @@
 
 //_________________________________________________________________________
 //  Task Class for making SDigits in PHOS      
-//                  
+// A Summable Digits is the sum of all hits originating 
+// from one primary in one active cell
+//*--
 //*-- Author: Dmitri Peressounko(SUBATECH & KI)
 
 
@@ -53,7 +55,7 @@ private:
   Float_t fPrimThreshold ;  // To store primari if Elos > threshold
   TString fSDigitsTitle ;   // title of SDigits branch
   TString fHeadersFile ;    //input file
-  Bool_t         fIsInitialized ; 
+  Bool_t         fIsInitialized ; // kTRUE if SDigitizer is initialized
   TClonesArray * fSDigits ; //! list of SDigits
   TClonesArray * fHits ;    //!
 

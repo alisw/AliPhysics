@@ -48,8 +48,6 @@ public:
   virtual void SetTrackSegmentsBranch(const char * title) = 0 ;
   virtual void WriteTrackSegments() = 0 ;
   
- protected:
-
   ClassDef( AliPHOSTrackSegmentMaker,1)    // Algorithm class to make PHOS track segments (Base Class)
 
 };

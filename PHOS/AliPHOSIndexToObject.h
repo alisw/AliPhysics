@@ -76,7 +76,7 @@ class AliPHOSIndexToObject : public TObject {
   Int_t                 GimeNDigits() 
                           {if(fDigits) return fDigits->GetEntriesFast(); 
 			  return 0 ;} 
-  TParticle *           GimePrimary(Int_t index) ;
+  TParticle *           GimePrimary(Int_t index) const ;
   Int_t                 GimeNPrimaries()const { return fNPrimaries; }
   AliPHOSRecParticle *  GimeRecParticle(Int_t index) 
                           { if(fRecParticles) return (AliPHOSRecParticle*)fRecParticles->At(index); 

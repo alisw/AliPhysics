@@ -41,9 +41,9 @@ public:
   void   EvalLocalPosition(Float_t logWeight,TClonesArray * digits ) ;  
   void   EvalClusterLengths(TClonesArray * digits) ;
 
-  virtual void ExecuteEvent(Int_t event, Int_t px, Int_t py) ; 
+  virtual void ExecuteEvent(Int_t event, Int_t px, Int_t py) const ; 
 
-  void   GetClusterLengths(Int_t &lengX, Int_t &lengZ){lengX = fLengX ;lengZ = fLengZ ;}
+  void   GetClusterLengths(Int_t &lengX, Int_t &lengZ) const {lengX = fLengX ;lengZ = fLengZ ;}
   Bool_t IsEmc(void) const {return kFALSE ;   }              // tells that this is not a EMC
   Bool_t IsCPV(void) const {return (fPHOSMod <= ((AliPHOSGeometry*) fGeom)->GetNCPVModules()) ; }     
                                                                   // true if the recpoint is in CPV

@@ -13,7 +13,6 @@
 
 // --- ROOT system ---
 
-#include <stdlib.h>
 #include "TTask.h"
 class AliPHOSDigitizer ;
 class AliPHOSClusterizer ;
@@ -41,11 +40,11 @@ public:
 
   virtual void Exec(Option_t * option) ;
 
-  AliPHOSDigitizer         * GetDigitizer()  { return fDigitizer   ; }
-  AliPHOSClusterizer       * GetClusterizer(){ return fClusterizer ; }
-  AliPHOSPID               * GetPID()        { return fPID;          }
-  AliPHOSTrackSegmentMaker * GetTSMaker()    { return fTSMaker ;     }
-  AliPHOSSDigitizer        * GetSDigitizer() { return fSDigitizer  ; }
+  AliPHOSDigitizer         * GetDigitizer()  const { return fDigitizer   ; }
+  AliPHOSClusterizer       * GetClusterizer()const { return fClusterizer ; }
+  AliPHOSPID               * GetPID()        const { return fPID;          }
+  AliPHOSTrackSegmentMaker * GetTSMaker()    const { return fTSMaker ;     }
+  AliPHOSSDigitizer        * GetSDigitizer() const { return fSDigitizer  ; }
 
   void Print(Option_t * option)const ;
   
@@ -76,13 +75,13 @@ private:
   TString  fSDigitsBranch ;     // -"-      SDigits       -"-
 
 
-  AliPHOSDigitizer         * fDigitizer ;
-  AliPHOSClusterizer       * fClusterizer ;
-  AliPHOSPID               * fPID ;
-  AliPHOSTrackSegmentMaker * fTSMaker ;
-  AliPHOSSDigitizer        * fSDigitizer ;
+  AliPHOSDigitizer         * fDigitizer ;   // Pointer to AliPHOSDigitizer
+  AliPHOSClusterizer       * fClusterizer ; // Pointer to AliPHOSClusterizer
+  AliPHOSPID               * fPID ;         // Pointer to AliPHOSPID
+  AliPHOSTrackSegmentMaker * fTSMaker ;     // Pointer to AliPHOSTrackSegmentMaker
+  AliPHOSSDigitizer        * fSDigitizer ;  // Pointer to AliPHOSSDigitizer
 
-  Bool_t   fIsInitialized ;
+  Bool_t   fIsInitialized ; // kTRUE if reconstructioner is initialized
  
   ClassDef(AliPHOSReconstructioner,1)  // Reconstruction algorithm class (Base Class)
 

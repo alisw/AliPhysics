@@ -17,22 +17,16 @@
 // Algorithm Base class to construct PHOS track segments
 // Associates EMC and PPSD clusters
 // Unfolds the EMC cluster   
-//                  
+//*-- 
 //*-- Author: Dmitri Peressounko (RRC Ki & SUBATECH)
 
 
 // --- ROOT system ---
 
-#include "TFile.h"
-#include "TROOT.h"
-
 // --- Standard library ---
 
 // --- AliRoot header files ---
-#include "AliRun.h"
 #include "AliPHOSTrackSegmentMaker.h"
-#include "AliPHOS.h"
-#include "AliPHOSGeometry.h"
 
 ClassImp( AliPHOSTrackSegmentMaker) 
 

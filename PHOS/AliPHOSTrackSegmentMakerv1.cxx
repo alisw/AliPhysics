@@ -61,7 +61,7 @@
 #include "AliPHOSCpvRecPoint.h"
 #include "AliPHOSPpsdRecPoint.h"
 #include "AliPHOSLink.h"
-#include "AliPHOSv0.h"
+#include "AliPHOS.h"
 #include "AliRun.h"
 
 ClassImp( AliPHOSTrackSegmentMakerv1) 
@@ -210,7 +210,7 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule()
     
 }
 //____________________________________________________________________________
-Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * emcClu,AliPHOSRecPoint * cpvClu, Bool_t &toofar)
+Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * emcClu,AliPHOSRecPoint * cpvClu, Bool_t &toofar)const
 {
   // Calculates the distance between the EMC RecPoint and the PPSD RecPoint
   // Clusters are sorted in "rows" and "columns" of width 1 cm
@@ -246,7 +246,7 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
 }
 
 //____________________________________________________________________________
-void  AliPHOSTrackSegmentMakerv1::MakeLinks()
+void  AliPHOSTrackSegmentMakerv1::MakeLinks()const
 { 
   // Finds distances (links) between all EMC and PPSD clusters, 
   // which are not further apart from each other than fR0 
@@ -436,9 +436,10 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t * option)
 
 }
 //____________________________________________________________________________
-void AliPHOSTrackSegmentMakerv1::Print(Option_t * option)const 
+void AliPHOSTrackSegmentMakerv1::Print(Option_t * option)const
 {
-  // Prints the parameters of track segment maker
+  //  Print TrackSegmentMaker parameters
+
   if(fIsInitialized){
     cout <<  "======== AliPHOSTrackSegmentMakerv1 ========" << endl ;
     cout <<  "Making Track segments "<< endl ;
@@ -621,8 +622,10 @@ void AliPHOSTrackSegmentMakerv1::WriteTrackSegments()
     cwd->cd();
   } 
   
+
   tsBranch->Fill() ;  
   tsMakerBranch->Fill() ;
+//    gAlice->TreeR()->Fill() ;    // YK 28.05.01  
   gAlice->TreeR()->Write(0,kOverwrite) ;  
   
 }

@@ -7,6 +7,10 @@
 
 //_________________________________________________________________________
 //  Implementation version 1 of the clusterization algorithm                     
+//  Performs clusterization (collects neighbouring active cells) and 
+//  unfolding of the clusters with several local maxima.  
+//  results are stored in TreeR#, branches PHOSEmcRP (EMC recPoints),
+//  PHOSCpvRP (CPV RecPoints) and AliPHOSClusterizer
 //
 //*-- Author: Yves Schutz (SUBATECH)
 
@@ -33,8 +37,8 @@ public:
   
   Int_t           AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)const ; 
                                // Checks if digits are in neighbour cells 
-  virtual void    GetNumberOfClustersFound(int * numb ){  numb[0] = fNumberOfEmcClusters ; 
-                                                          numb[1] = fNumberOfCpvClusters ; }
+  virtual void    GetNumberOfClustersFound(int * numb )const{  numb[0] = fNumberOfEmcClusters ; 
+                                                               numb[1] = fNumberOfCpvClusters ; }
 
   virtual Float_t GetEmcClusteringThreshold()const{ return fEmcClusteringThreshold;}
   virtual Float_t GetEmcLocalMaxCut()const        { return fEmcLocMaxCut;} 
@@ -71,7 +75,7 @@ public:
 private:
   virtual Float_t Calibrate(Int_t amp)const {  return (amp-fPedestal)/fSlope ;}  // Tranforms Amp to energy 
   Bool_t  FindFit(AliPHOSEmcRecPoint * emcRP, int * MaxAt, Float_t * maxAtEnergy, 
-		  Int_t NPar, Float_t * FitParametres) ; //Used in UnfoldClusters, calls TMinuit
+		  Int_t NPar, Float_t * FitParametres) const; //Used in UnfoldClusters, calls TMinuit
   void Init() ;
 
   virtual Bool_t IsInEmc (AliPHOSDigit * digit)const ;     // Tells if id digit is in EMC
@@ -95,7 +99,7 @@ private:
   Int_t   fEvent ;                   // Number of event currently processed 
   Bool_t  fToUnfold ;                // To perform unfolding 
 
-  Bool_t  fIsInitialized ;
+  Bool_t  fIsInitialized ;           // kTRUE if clisterizer is initialized
 
   AliPHOSGeometry * fGeom ;          // !pointer to PHOS geometry
 

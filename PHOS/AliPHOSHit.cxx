@@ -18,7 +18,7 @@
 //_________________________________________________________________________
 //  Hits class for PHOS     
 //  A hit in PHOS is the sum of all hits in a single crystal
-//               
+//*--
 //*-- Author: Maxime Volkov (RRC KI) & Yves Schutz (SUBATECH)
 
 // --- ROOT system ---

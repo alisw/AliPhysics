@@ -31,7 +31,7 @@ public:
   }
   virtual ~AliPHOSv1(void) ;
 
-  virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits) ; 
+  virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits); 
  virtual Int_t  IsVersion(void) const {
     // Gives the version number 
     return 1 ; 

@@ -51,7 +51,7 @@ class AliPHOSv0 : public AliPHOS {
   virtual Float_t ZMin() const;                    // overall dimension of the module (min)
   virtual Float_t ZMax() const;                    // overall dimension of the module (max)
 
-  virtual AliPHOSGeometry * GetGeometry() {
+  virtual AliPHOSGeometry * GetGeometry() const {
     // gets the pointer to the AliPHOSGeometry unique instance  
     return fGeom ; 
   }  

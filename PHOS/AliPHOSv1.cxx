@@ -62,7 +62,6 @@ AliPHOSv1::AliPHOSv1():
 AliPHOSv0()
 {
   // ctor
- 
 }
 
 //____________________________________________________________________________
@@ -349,8 +348,6 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumbe
   Float_t pZ    =-p.Pz();
   Float_t pNorm = p.Py();
   Float_t eloss = kdEdx;
-
-//    cout << "CPVDigitize: YVK : "<<hitX<<" "<<hitZ<<" | "<<pX<<" "<<pZ<<" "<<pNorm<<endl;
 
   Float_t dZY   = pZ/pNorm * fGeom->GetCPVGasThickness();
   Float_t dXY   = pX/pNorm * fGeom->GetCPVGasThickness();

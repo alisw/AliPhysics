@@ -43,7 +43,7 @@ public:
   virtual void   Exec(Option_t * option) ;
           void   FillOneModule() ;       // Finds range in which RecPoints belonging current PHOS module are
 
-          void   MakeLinks() ;           //Evaluates distances(links) between EMC and PPSD
+          void   MakeLinks() const;      //Evaluates distances(links) between EMC and PPSD
           void   MakePairs() ;           //Finds pairs(triplets) with smallest link
   virtual void   Print(Option_t * option) const ;
   virtual Bool_t ReadRecPoints() ;
@@ -53,14 +53,13 @@ public:
   virtual void   WriteTrackSegments() ;
 
   AliPHOSTrackSegmentMakerv1 & operator = (const AliPHOSTrackSegmentMakerv1 & )  {
-    // assignement operator requested by coding convention
-    // but not needed
+    // assignement operator requested by coding convention but not needed
     abort() ;
     return *this ; 
   }
 
 private:
-  Float_t GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * EmcClu , AliPHOSRecPoint * Ppsd , Bool_t & TooFar ) ; // see R0
+  Float_t GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * EmcClu , AliPHOSRecPoint * Ppsd , Bool_t & TooFar )const ; // see R0
   void    Init() ;
   void    PrintTrackSegments(Option_t *option) ;
 
@@ -78,7 +77,7 @@ private:
   TClonesArray * fTrackSegments;     // ! list of final track segments
 
 
-  Bool_t  fIsInitialized ; //
+  Bool_t  fIsInitialized ; // kTRUE if track segment maker is initialized
 
   Float_t fR0 ;        // Maximum distance between a EMC RecPoint and a PPSD RecPoint   
 

@@ -15,6 +15,9 @@
 
 /* 
    $Log$
+   Revision 1.1  2000/11/03 16:27:47  schutz
+   CPV base geometry class to correct previous name-convetion rule violation
+
 */
 
 //_________________________________________________________________________
@@ -25,8 +28,6 @@
 // --- ROOT system ---
 
 // --- Standard library ---
-
-#include <iostream.h>
 
 // --- AliRoot header files ---
 

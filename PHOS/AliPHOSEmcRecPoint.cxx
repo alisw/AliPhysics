@@ -18,7 +18,7 @@
 //_________________________________________________________________________
 //  RecPoint implementation for PHOS-EMC 
 //  An EmcRecPoint is a cluster of digits   
-//           
+//*--
 //*-- Author: Dmitri Peressounko (RRC KI & SUBATECH)
 
 
@@ -174,7 +174,7 @@ Int_t AliPHOSEmcRecPoint::Compare(const TObject * obj) const
 }
 
 //______________________________________________________________________________
-void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
+void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py) const
 {
 //   Commented by Dmitri Peressounko: there is no possibility to ensure, 
 //   that AliPHOSIndexToObject keeps the correct information.
@@ -418,7 +418,8 @@ void  AliPHOSEmcRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
 //____________________________________________________________________________
 void AliPHOSEmcRecPoint::EvalAll(Float_t logWeight, TClonesArray * digits )
 {
-  // calculates the various parameters characterizing the RecPoint 
+  // Evaluates all shower parameters
+
   AliPHOSRecPoint::EvalAll(logWeight,digits) ;
   EvalLocalPosition(logWeight, digits) ;
   EvalElipsAxis(logWeight, digits) ;

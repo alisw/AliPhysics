@@ -24,7 +24,6 @@ class TH2F ;
 
 class AliPHOSv1 ;
 class AliPHOSGeometry ;
-class AliPHOSPID ;
 class AliPHOSIndexToObject ;
 
 class AliPHOSAnalyze : public TObject {
@@ -54,13 +53,13 @@ public:
   void SetEnergyCorrection(const Float_t ecor){fCorrection = ecor ;} 
 
   AliPHOSAnalyze & operator = (const AliPHOSAnalyze & rvalue)  {
-    // assignement operator requested by coding convention
-    // but not needed
+    // assignement operator requested by coding convention but not needed
     abort() ;
     return *this ; 
   }
  
- private:
+private:
+
   Float_t CorrectedEnergy(const Float_t ReconstEnergy)const
     {return ReconstEnergy * fCorrection;} 
   //Converts reconstructed energy (energy of the EMCRecPoint) to the energy of primary
@@ -68,10 +67,10 @@ public:
   //(see Energy Resolution function). However, if one change parameters of reconstruction 
   //or geometry, one have to recalculate coefficient!
 
- private:
+private:
 
-  Float_t fCorrection ;                 //! Conversion coefficient between True and Reconstructed energies
-  Int_t fEvt ;                        //! the evt number being processed 
+  Float_t fCorrection ;               //! Conversion coefficient between True and Reconstructed energies
+  Int_t   fEvt ;                      //! the evt number being processed 
   AliPHOSGeometry * fGeom ;           //! the PHOS Geometry object
   AliPHOSIndexToObject * fObjGetter ; //! provides methods to retrieve objects from their index in a list
   AliPHOSv1 * fPHOS ;                 //! the PHOS object from the root file 

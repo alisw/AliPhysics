@@ -13,9 +13,6 @@
 
 // --- ROOT system ---
 
-#include "TParticle.h"
-#include "TVector3.h"
-
 // --- Standard library ---
 
 // --- AliRoot header files ---
@@ -24,13 +21,13 @@
 
 class AliPHOSRecParticle : public AliPHOSFastRecParticle {
 
-public:
+ public:
   
   AliPHOSRecParticle() {  }
   AliPHOSRecParticle(const AliPHOSRecParticle & rp) ;  // ctor
   virtual ~AliPHOSRecParticle(){  }
 
-  Int_t  GetPHOSTSIndex(){    return fPHOSTrackSegment ;  }
+  Int_t  GetPHOSTSIndex()const {    return fPHOSTrackSegment ;  }
   void   SetTraskSegment(Int_t index){fPHOSTrackSegment = index; }
 
   typedef TClonesArray RecParticlesList ; 

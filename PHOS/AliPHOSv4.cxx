@@ -219,7 +219,7 @@ void AliPHOSv4::Init(void)
 }
 
 //___________________________________________________________________________
-Float_t AliPHOSv4::GetBigBox(Int_t index)
+Float_t AliPHOSv4::GetBigBox(Int_t index) const
 {
   // Get the X, Y or Z dimension of the box describing a PHOS module
   

@@ -49,8 +49,8 @@ public:
   void           AddRecParticle(const AliPHOSFastRecParticle & rp) ; // adds primary particle to the RecParticles list
   virtual void   BuildGeometry(void) ;                               // creates the geometry for the ROOT display
   virtual void   CreateGeometry(void) ;                              // creates the geometry for GEANT
-  Float_t        GetBigBox(Int_t index) ;                             
-  virtual AliPHOSGeometry * GetGeometry() {
+  Float_t        GetBigBox(Int_t index) const;                             
+  virtual AliPHOSGeometry * GetGeometry() const {
     // gets the pointer to the AliPHOSGeometry unique instance  
     return fGeom ; 
   }  
@@ -67,7 +67,7 @@ public:
   void MakeRecParticle(const Int_t modid, const TVector3 pos, AliPHOSFastRecParticle & rp) ;  // makes a reconstructes particle from primary
   Int_t   MakeType(AliPHOSFastRecParticle & rp) ;                    // gets the detected type of particle
   // gets TClonesArray of reconstructed particles
-  TClonesArray * FastRecParticles() { return fFastRecParticles ; } 
+  TClonesArray * FastRecParticles() const { return fFastRecParticles ; } 
   virtual void ResetPoints() ; 
   void         ResetFastRecParticles() ; 
   void         SetBigBox(Int_t index, Float_t value) ;                             
@@ -80,8 +80,7 @@ public:
   }
 
   AliPHOSv4 & operator = (const AliPHOSv4 & )  {
-    // assignement operator requested by coding convention
-    // but not needed
+    // assignement operator requested by coding convention but not needed
     assert(0==1) ;
     return *this ; 
   }

@@ -7,6 +7,9 @@
 
 //_________________________________________________________________________
 //  Task Class for making SDigits in PHOS      
+// Class performs digitization of Summable digits (in the PHOS case this is just
+// sum of contributions of all primary particles into given cell). 
+// In addition it performs mixing of summable digits from different events.
 //                  
 //*-- Author: Dmitri Peressounko(SUBATECH & KI)
 
@@ -26,6 +29,7 @@ class AliPHOSDigitizer: public TTask {
 public:
   AliPHOSDigitizer() ;          // ctor
   AliPHOSDigitizer(const char *headerFile,const char * sDigitsBranchTitle = 0) ; 
+  AliPHOSDigitizer(const AliPHOSDigitizer & dtizer) {( (AliPHOSDigitizer &)dtizer ).Copy(*this) ;} // cpy ctor
   virtual ~AliPHOSDigitizer() ;       
 
   void    Digitize(Option_t *option);            // Make Digits from SDigits stored in fSDigits
@@ -41,8 +45,8 @@ public:
   Float_t GetSlope()        const { return fSlope; }
   char *  GetDigitsBranch ()const { return (char*)fDigitsTitle.Data() ;}
   char *  GetSDigitsBranch()const { return (char*)((TObjString*)fSDigitsTitles->At(0))->GetString().Data() ;}
-  TClonesArray * GetHeadersFiles(){ return fHeaderFiles ;}
-  TArrayI*    GetCurrentEvents()  { return fIevent ;}
+  TClonesArray * GetHeadersFiles() const { return fHeaderFiles ;}
+  TArrayI      * GetCurrentEvents()const { return fIevent ;}
 
   void    MixWith(char* HeaderFile, char* SDigitsTitle =0) ; // Add another one file to mix
   virtual void    Print(Option_t* option)const ;
@@ -57,6 +61,12 @@ public:
 
   void    SetDigitsBranch (const char* file) ;
   void    SetSDigitsBranch(const char* file) ;
+
+  AliPHOSDigitizer & operator = (const AliPHOSDigitizer & rvalue)  {
+    // assignement operator requested by coding convention but not needed
+    abort() ;
+    return *this ; 
+  }
 
 private:
   Bool_t  Combinator() ;                         // makes all desirable combination sig+Bg
@@ -73,7 +83,7 @@ private:
   TClonesArray * fDigits ;          // ! Final list of digits
   AliPHOSSDigitizer * fSDigitizer ; // ! SDigitizer to extarct some sdigitizing parameters
   Int_t   fNinputs ;                // Number of input files
-  Bool_t  fInitialized ;            // 
+  Bool_t  fInitialized ;            // kTRUE if AliPHOSDigitizer is initialized
   TArrayI * fIevent ;               // events to read at the next ReadSDigits() call
   TArrayI * fIeventMax ;            // Maximal number of events in each input file
 
