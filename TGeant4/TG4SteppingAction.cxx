@@ -50,6 +50,7 @@ void TG4SteppingAction::UserSteppingAction(const G4Step* step)
   // makes boundary step of zero length)
 
   if (step->GetPostStepPoint()->GetStepStatus() == fGeomBoundary &&
+      step->GetTrack()->GetTrackStatus() == fAlive &&
       step->GetTrack()->GetNextVolume() != 0) {
 
     G4VSensitiveDetector* sd
