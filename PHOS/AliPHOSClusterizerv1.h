@@ -35,7 +35,7 @@ public:
   AliPHOSClusterizerv1(const char * headerFile, const char * name = "Default");
   virtual ~AliPHOSClusterizerv1()  ;
   
-  Int_t           AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)const ; 
+  virtual Int_t   AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)const ; 
                                // Checks if digits are in neighbour cells 
 
   virtual Float_t Calibrate(Int_t amp, Int_t absId)const ;  // Tranforms Amp to energy 
@@ -74,6 +74,13 @@ public:
                                             // Chi^2 of the fit. Should be static to be passes to MINUIT
   virtual const char * Version() const { return "clu-v1" ; }  
 
+protected:
+
+  void           WriteRecPoints(Int_t event) ;
+  virtual void   MakeClusters( ) ;            
+  virtual Bool_t IsInEmc (AliPHOSDigit * digit)const ;     // Tells if id digit is in EMC
+  virtual Bool_t IsInCpv (AliPHOSDigit * digit)const ;     // Tells if id digit is in CPV
+
   
 private:
 
@@ -83,14 +90,9 @@ private:
 		  Int_t NPar, Float_t * FitParametres) const; //Used in UnfoldClusters, calls TMinuit
   void Init() ;
 
-  virtual Bool_t IsInEmc (AliPHOSDigit * digit)const ;     // Tells if id digit is in EMC
-  virtual Bool_t IsInCpv (AliPHOSDigit * digit)const ;     // Tells if id digit is in CPV
-
-  virtual void   MakeClusters( ) ;            
   virtual void   MakeUnfolding() ;
   void           UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,Int_t Nmax, 
 		       int * maxAt,Float_t * maxAtEnergy ) ; //Unfolds cluster using TMinuit package
-  void           WriteRecPoints(Int_t event) ;
   void           PrintRecPoints(Option_t * option) ;
 
 private:
