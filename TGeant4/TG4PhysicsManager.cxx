@@ -11,18 +11,22 @@
 #include "TG4PhysicsConstructorHadron.h"
 #include "TG4PhysicsConstructorSpecialCuts.h"
 #include "TG4PhysicsConstructorSpecialControls.h"
+#include "TG4GeometryServices.h"
 #include "TG4G3Cut.h"
 #include "TG4G3Control.h"
+#include "TG4Limits.h"
 #include "AliDecayer.h"
 
 #include <G4ParticleDefinition.hh>
 #include <G4VProcess.hh>
 #include <G4VModularPhysicsList.hh>
+#include <G3MedTable.hh>
 
 #include <TDatabasePDG.h>
 
 TG4PhysicsManager* TG4PhysicsManager::fgInstance = 0;
 
+//_____________________________________________________________________________
 TG4PhysicsManager::TG4PhysicsManager(G4VModularPhysicsList* physicsList)
   : fPhysicsList(physicsList),
     fDecayer(0),
@@ -51,6 +55,7 @@ TG4PhysicsManager::TG4PhysicsManager(G4VModularPhysicsList* physicsList)
   FillProcessMap();
 }
 
+//_____________________________________________________________________________
 TG4PhysicsManager::TG4PhysicsManager(){
 //
   delete fDecayer;
@@ -58,18 +63,21 @@ TG4PhysicsManager::TG4PhysicsManager(){
   delete fG3PhysicsManager;
 }
 
+//_____________________________________________________________________________
 TG4PhysicsManager::TG4PhysicsManager(const TG4PhysicsManager& right) {
 // 
   TG4Globals::Exception(
     "Attempt to copy TG4PhysicsManager singleton.");
 }
 
+//_____________________________________________________________________________
 TG4PhysicsManager::~TG4PhysicsManager() {
 //
 }
 
 // operators
 
+//_____________________________________________________________________________
 TG4PhysicsManager& 
 TG4PhysicsManager::operator=(const TG4PhysicsManager& right)
 {
@@ -84,6 +92,7 @@ TG4PhysicsManager::operator=(const TG4PhysicsManager& right)
           
 // private methods
 
+//_____________________________________________________________________________
 void TG4PhysicsManager::FillProcessMap()
 {
 // Fills fProcessMap.
@@ -203,9 +212,83 @@ void TG4PhysicsManager::FillProcessMap()
   fProcessMap.Add("SynchrotronRadiation", kPSynchrotron);
 }  
 
+//_____________________________________________________________________________
+void TG4PhysicsManager::GstparCut(G4int itmed, TG4G3Cut par, G4double parval)
+{
+// Sets special tracking medium parameter. 
+// It is applied to all logical volumes that use the specified 
+// tracking medium.
+// ---
+
+  // get medium from table
+  G3MedTableEntry* medium = G3Med.get(itmed);
+  if (!medium) {
+    G4String text = "TG4PhysicsManager::GstparCut: \n";
+    text = text + "    Medium not found."; 
+    G4Exception(text);
+  }  
+
+  // get/create user limits
+  G4UserLimits* limits = medium->GetLimits();
+  TG4Limits* tg4Limits;
+  if (limits) {
+    tg4Limits = dynamic_cast<TG4Limits*> (limits);
+    if (!tg4Limits)
+      G4Exception("TG4PhysicsManager::GstparCut: Wrong limits type.");
+  }    
+  else {
+    tg4Limits = new TG4Limits();
+    medium->SetLimits(tg4Limits);
+
+    // add verbose 
+    G4cout << "TG4PhysicsManager::GstparCut: new TG4Limits() for medium " 
+           << itmed << " has been created." << G4endl;  
+  }	   
+  // set parameter
+  tg4Limits->SetG3Cut(par, parval*GeV);
+}
+
+
+//_____________________________________________________________________________
+void TG4PhysicsManager::GstparControl(G4int itmed, TG4G3Control par, 
+                                      G4double parval)
+{
+// Sets special tracking medium parameter. 
+// It is applied to all logical volumes that use the specified 
+// tracking medium.
+// ---
+
+  // get medium from table
+  G3MedTableEntry* medium = G3Med.get(itmed);
+  if (!medium) {
+    G4String text = "TG4PhysicsManager::GstparControl: \n";
+    text = text + "    Medium not found."; 
+    G4Exception(text);
+  }  
+
+  // get/create user limits
+  G4UserLimits* limits = medium->GetLimits();
+  TG4Limits* tg4Limits;
+  if (limits) {
+    tg4Limits = dynamic_cast<TG4Limits*> (limits);
+    if (!tg4Limits)
+      G4Exception("TG4PhysicsManager::GstparControl: Wrong limits type.");
+  }    
+  else {     
+    tg4Limits = new TG4Limits();
+    medium->SetLimits(tg4Limits);
+
+    // add verbose 
+    G4cout << "TG4PhysicsManager::GstparControl: new TG4Limits() for medium" 
+           << itmed << " has been created." << G4endl;  
+  }
+  // set parameter
+  tg4Limits->SetG3Control(par, parval);
+}
 
 // public methods
 
+//_____________________________________________________________________________
 void TG4PhysicsManager::BuildPhysics()
 {
 // Empty function - not needed in G4.
@@ -216,6 +299,57 @@ void TG4PhysicsManager::BuildPhysics()
     "TG4PhysicsManager::BuildPhysics: is empty function in G4 MC.");
 }    
 
+//_____________________________________________________________________________
+void  TG4PhysicsManager::Gstpar(Int_t itmed, const char *param, 
+           Float_t parval) 
+{ 
+// Passes the tracking medium parameter to TG4Limits.
+// The tracking medium parameter is set only in case
+// its value is different from the "global" physics setup.
+// (If: CheckCut/ControlWithG3Defaults is used checking
+//  is performed with respect to G3 default values.)
+// When any cut/control parameter is set in limits
+// the physics manager is locked and the physics setup
+// cannot be changed.
+// Applying this TG4Limits to particles and physical
+// processes is still in development.
+//
+//  Geant3 desription:
+//  ==================
+//  To change the value of cut  or mechanism "CHPAR"
+//  to a new value PARVAL  for tracking medium ITMED
+//  The  data   structure  JTMED   contains  the   standard  tracking
+//  parameters (CUTS and flags to control the physics processes)  which
+//  are used  by default  for all  tracking media.   It is  possible to
+//  redefine individually  with GSTPAR  any of  these parameters  for a
+//  given tracking medium. 
+//  ITMED     tracking medium number 
+//  CHPAR     is a character string (variable name) 
+//  PARVAL    must be given as a floating point.
+// ---
+
+  G4String name = TG4GeometryServices::Instance()->CutName(param); 
+  TG4G3Cut cut;
+  if (fG3PhysicsManager->CheckCutWithTheVector(name, parval, cut)) {
+      GstparCut(itmed, cut, parval);
+      fG3PhysicsManager->Lock();
+  }  
+  else {
+    TG4G3Control control;
+    if (fG3PhysicsManager->CheckControlWithTheVector(name, parval, control)) {
+      GstparControl(itmed, control, parval);
+      fG3PhysicsManager->Lock();
+    } 
+    else if (cut==kNoG3Cuts && control==kNoG3Controls) { 
+      G4String text = "TG4PhysicsManager::Gstpar:";
+      text = text + name;
+      text = text + " parameter is not yet implemented.";
+      TG4Globals::Warning(text);
+    }	
+  }   
+} 
+ 
+//_____________________________________________________________________________
 void TG4PhysicsManager::CreatePhysicsConstructors()
 {
 // Creates the selected physics constructors
@@ -244,6 +378,7 @@ void TG4PhysicsManager::CreatePhysicsConstructors()
 	 // in the G4VModularPhysicsList destructor
 }    
 
+//_____________________________________________________________________________
 void TG4PhysicsManager::SetCut(const char* cutName, Float_t cutValue)
 {
 // Sets the specified cut.
@@ -261,6 +396,7 @@ void TG4PhysicsManager::SetCut(const char* cutName, Float_t cutValue)
   }  
 }  
   
+//_____________________________________________________________________________
 void TG4PhysicsManager::SetProcess(const char* controlName, Int_t controlValue)
 {
 // Sets the specified process control.
@@ -278,6 +414,7 @@ void TG4PhysicsManager::SetProcess(const char* controlName, Int_t controlValue)
   }  
 }  
 
+//_____________________________________________________________________________
 Float_t TG4PhysicsManager::Xsec(char* ch, Float_t p1, Int_t i1, Int_t i2)
 {
 // Not yet implemented -> gives exception.
@@ -289,6 +426,7 @@ Float_t TG4PhysicsManager::Xsec(char* ch, Float_t p1, Int_t i1, Int_t i2)
   return 0.;
 }    
   
+//_____________________________________________________________________________
 Int_t TG4PhysicsManager::IdFromPDG(Int_t pdgID) const
 {
 // G4 does not use the integer particle identifiers
@@ -298,6 +436,7 @@ Int_t TG4PhysicsManager::IdFromPDG(Int_t pdgID) const
   return pdgID;
 }  
 
+//_____________________________________________________________________________
 Int_t TG4PhysicsManager::PDGFromId(Int_t mcID) const
 {
 // G4 does not use integer particle identifiers
@@ -307,6 +446,7 @@ Int_t TG4PhysicsManager::PDGFromId(Int_t mcID) const
   return mcID;
 }  
 
+//_____________________________________________________________________________
 void  TG4PhysicsManager::DefineParticles()
 {
   // ======
@@ -358,7 +498,7 @@ void  TG4PhysicsManager::DefineParticles()
   fParticlesManager->MapParticles();
 }    
 
-
+//_____________________________________________________________________________
 void TG4PhysicsManager::SetProcessActivation()
 {
 // (In)Activates built processes according
@@ -377,6 +517,7 @@ void TG4PhysicsManager::SetProcessActivation()
 }       
 
 
+//_____________________________________________________________________________
 AliMCProcess TG4PhysicsManager::GetMCProcess(const G4VProcess* process)
 {
 // Returns the AliMCProcess code of the specified G4 process.
