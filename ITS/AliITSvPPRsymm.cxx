@@ -4054,8 +4054,8 @@ void AliITSvPPRsymm::CreateGeometry(){
   
   // --- Place volumes of cylinders between SPD and SDD and SDD and SSD 
   
-  gMC->Gspos("ICY1",1,"ITSD",0.0,0.0,0.,0,"ONLY");    
-  gMC->Gspos("ICY2",1,"ITSD",0.0,0.0,0.,0,"ONLY");    
+  gMC->Gspos("ICY1",1,"IS02",0.0,0.0,0.,0,"ONLY");    
+  gMC->Gspos("ICY2",1,"IS01",0.0,0.0,0.,0,"ONLY");    
   
 
   // --- Place volumes of SDD cone ---------------------------------- 
@@ -4462,14 +4462,14 @@ void AliITSvPPRsymm::CreateGeometry(){
   dgh[1] = 3.;         
   dgh[2] = 5.;  // 5. comes from the fact that the volume has to be 567.6/2 cm^3       
   gMC->Gsvolu("ISR1", "TUBE", idtmed[284], dgh, 3);   
-  gMC->Gspos("ISR1", 1, "ALIC", 54.9, 11., 79.5, 0, "ONLY");   
-  gMC->Gspos("ISR1", 2, "ALIC", 54.9, -11., 79.5, 0, "ONLY");   
-  gMC->Gspos("ISR1", 3, "ALIC", -54.9, 11., 79.5, 0, "ONLY"); 
-  gMC->Gspos("ISR1", 4, "ALIC", -54.9, -11., 79.5, 0, "ONLY");  
-  gMC->Gspos("ISR1", 5, "ALIC", 54.9, 11., -79.5, 0, "ONLY");   
-  gMC->Gspos("ISR1", 6, "ALIC", 54.9, -11., -79.5, 0, "ONLY");   
-  gMC->Gspos("ISR1", 7, "ALIC", -54.9, 11., -79.5, 0, "ONLY"); 
-  gMC->Gspos("ISR1", 8, "ALIC", -54.9, -11., -79.5, 0, "ONLY");         
+  gMC->Gspos("ISR1", 1, "ITSV", 53.4292, 10.7053, 79.75, 0, "ONLY");    
+  gMC->Gspos("ISR1", 2, "ITSV", 53.4292, -10.7053, 79.75, 0, "ONLY");   
+  gMC->Gspos("ISR1", 3, "ITSV", -53.4292, 10.7053, 79.75, 0, "ONLY"); 
+  gMC->Gspos("ISR1", 4, "ITSV", -53.4292, -10.7053, 79.75, 0, "ONLY");  
+  gMC->Gspos("ISR1", 5, "ITSV", 53.4292, 10.7053, -79.75, 0, "ONLY");   
+  gMC->Gspos("ISR1", 6, "ITSV", 53.4292, -10.7053, -79.75, 0, "ONLY");   
+  gMC->Gspos("ISR1", 7, "ITSV", -53.4292, 10.7053, -79.75, 0, "ONLY"); 
+  gMC->Gspos("ISR1", 8, "ITSV", -53.4292, -10.7053, -79.75, 0, "ONLY");        
   
   // --- DEFINE SUPPORTS FOR RAILS ATTACHED TO THE ABSORBER
 
