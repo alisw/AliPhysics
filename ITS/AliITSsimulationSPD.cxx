@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2002/08/21 22:11:13  nilsen
+Debug output now settable via a DEBUG flag.
+
 Revision 1.17  2002/07/16 17:00:17  barbera
 Fixes added to make the slow simulation running with the current HEAD (from M. Masera)
 
@@ -396,7 +399,8 @@ void AliITSsimulationSPD::ChargeSharing(Float_t x1l,Float_t z1l,Float_t x2l,
       <pre>
     */
     //End_Html
-    Float_t xa,za,xb,zb,dx,dz,dtot,dm,refr,refm,refc;
+    //Float_t dm;
+    Float_t xa,za,xb,zb,dx,dz,dtot,refr,refm,refc;
     Float_t refn=0.;
     Float_t arefm, arefr, arefn, arefc, azb, az2l, axb, ax2l;
     Int_t   dirx,dirz,rb,cb;
@@ -579,10 +583,11 @@ void AliITSsimulationSPD::CreateDigit(Int_t module,AliITSpList *pList) {
 
     static AliITS *aliITS  = (AliITS*)gAlice->GetModule("ITS");
 
-    Int_t digits[3];
-    Int_t tracks[3];
-    Int_t hits[3];
-    Float_t charges[3]; 
+    Int_t size = AliITSdigitSPD::GetNTracks();
+    Int_t digits[size];
+    Int_t tracks[size];
+    Int_t hits[size];
+    Float_t charges[size]; 
     Int_t j1;
 
     for (Int_t r=1;r<=GetNPixelsZ();r++) {
@@ -596,9 +601,14 @@ void AliITSsimulationSPD::CreateDigit(Int_t module,AliITSpList *pList) {
 		//digits[2] = 1;  
 		digits[2] =  (Int_t) signal;  // the signal is stored in
                                               //  electrons
-		for(j1=0;j1<3;j1++){
-		    tracks[j1] = pList->GetTrack(r,c,j1);
-		    hits[j1]   = pList->GetHit(r,c,j1);
+		for(j1=0;j1<size;j1++){
+		    if(j1<pList->GetNEnteries()){
+			tracks[j1] = pList->GetTrack(r,c,j1);
+			hits[j1]   = pList->GetHit(r,c,j1);
+		    }else{
+			tracks[j1] = -3;
+			hits[j1]   = -1;
+		    } // end if
 		    charges[j1] = 0;
 		} // end for j1
 		Float_t phys = 0;

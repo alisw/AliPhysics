@@ -32,6 +32,7 @@
 #include "AliITSdcsSSD.h"
 #include "AliITS.h"
 #include "AliITShit.h"
+#include "AliITSdigit.h"
 #include "AliRun.h"
 #include "AliITSgeom.h"
 #include "AliITSsimulationSSD.h"
@@ -505,7 +506,8 @@ void AliITSsimulationSSD::ChargeToSignal(AliITSpList *pList) {
   // charge to signal
   static AliITS *aliITS = (AliITS*)gAlice->GetModule("ITS");
   Float_t threshold = 0.;
-  Int_t   digits[3], tracks[3],hits[3],j1;
+  Int_t size = AliITSdigitSSD::GetNTracks();
+  Int_t   digits[size], tracks[size],hits[size],j1;
   Float_t charges[3] = {0.0,0.0,0.0};
   Float_t signal;
   Float_t noise[2] = {0.,0.};
@@ -528,9 +530,13 @@ void AliITSsimulationSSD::ChargeToSignal(AliITSpList *pList) {
 	    digits[0] = k;
 	    digits[1] = ix;
 	    digits[2] = (Int_t) signal;
-	    for(j1=0;j1<3;j1++){ // only three in digit.
+	    for(j1=0;j1<size;j1++)if(j1<pList->GetNEnteries()){
+		// only three in digit.
 		tracks[j1]  = pList->GetTrack(k,ix,j1);
 		hits[j1]    = pList->GetHit(k,ix,j1);
+	    }else{
+		tracks[j1]  = -3;
+		hits[j1]    = -1;
 	    } // end for j1
 	    // finally add digit
 	    aliITS->AddSimDigit(2,0,digits,tracks,hits,charges);

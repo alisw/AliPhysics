@@ -101,18 +101,24 @@ void AliITSClusterFinderSPD::FindRawClusters(Int_t module){
     Int_t ndigits = fDigits->GetEntriesFast();  
     if (!ndigits) return;
 
-    AliITSdigit *dig;
-    AliITSdigitSPD *dig1;
-    Int_t ndig;
+    AliITSdigitSPD *dig;
+    Int_t ndig,i;
     for(ndig=0; ndig<ndigits; ndig++) {
-	dig= (AliITSdigit*)fDigits->UncheckedAt(ndig);
+	dig= (AliITSdigitSPD*)fDigits->UncheckedAt(ndig);
 	digx[digitcount] = dig->fCoord2+1;  //starts at 1
 	digz[digitcount] = dig->fCoord1+1;  //starts at 1
-	dig1= (AliITSdigitSPD*)fDigits->UncheckedAt(ndig);
-	digtr1[digitcount] = dig1->fTracks[0];
-	digtr2[digitcount] = dig1->fTracks[1];
-	digtr3[digitcount] = dig1->fTracks[2];
-	digtr4[digitcount] = dig1->fSignal;
+	digtr1[digitcount] = dig->fTracks[0];
+	digtr2[digitcount] = -3;
+	digtr3[digitcount] = -3;
+	i=1;
+	while(digtr1[digitcount]==dig->fTracks[i] && i<dig->GetNTracks()) i++;
+	if(i<dig->GetNTracks()){
+	    digtr2[digitcount] = dig->fTracks[i];
+	    while(digtr1[digitcount]==dig->fTracks[i] && 
+		  i<dig->GetNTracks()) i++;
+	    if(i<dig->GetNTracks()) digtr3[digitcount] = dig->fTracks[i];
+	} // end if
+	digtr4[digitcount] = dig->fSignal;
 	digitcount++;
     } // end for ndig
     ClusterFinder(digitcount,digx,digz,digtr1,digtr2,digtr3,digtr4,

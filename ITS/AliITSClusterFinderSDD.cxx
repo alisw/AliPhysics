@@ -15,6 +15,10 @@
 /*
   $Id$
   $Log$
+  Revision 1.25  2002/05/10 22:29:40  nilsen
+  Change my Massimo Masera in the default constructor to bring things into
+  compliance.
+
   Revision 1.24  2002/04/24 22:02:31  nilsen
   New SDigits and Digits routines, and related changes,  (including new
   noise values).
@@ -1217,7 +1221,7 @@ void AliITSClusterFinderSDD::GetRecPoints(){
     const Float_t kconv = 1.0e-4; 
     const Float_t kRMSx = 38.0*kconv; // microns->cm ITS TDR Table 1.3
     const Float_t kRMSz = 28.0*kconv; // microns->cm ITS TDR Table 1.3
-    Int_t i;
+    Int_t i,j;
     Int_t ix, iz, idx=-1;
     AliITSdigitSDD *dig=0;
     Int_t ndigits=fDigits->GetEntriesFast();
@@ -1244,9 +1248,20 @@ void AliITSClusterFinderSDD::GetRecPoints(){
         rnew.SetdEdX(kconvGeV*clusterI->Q());
         rnew.SetSigmaX2(kRMSx*kRMSx);
         rnew.SetSigmaZ2(kRMSz*kRMSz);
-        if(dig) rnew.fTracks[0]=dig->fTracks[0];
-        if(dig) rnew.fTracks[1]=dig->fTracks[1];
-        if(dig) rnew.fTracks[2]=dig->fTracks[2];
+        if(dig){
+	    rnew.fTracks[0] = dig->fTracks[0];
+	    rnew.fTracks[1] = -3;
+	    rnew.fTracks[2] = -3;
+	    j=1;
+	    while(rnew.fTracks[0]==dig->fTracks[j] &&
+		  j<dig->GetNTracks()) j++;
+	    if(j<dig->GetNTracks()){
+		rnew.fTracks[1] = dig->fTracks[j];
+		while(rnew.fTracks[1]==dig->fTracks[j] && 
+		      j<dig->GetNTracks()) j++;
+		if(j<dig->GetNTracks()) rnew.fTracks[2] = dig->fTracks[j];
+	    } // end if
+	} // end if
         //printf("SDD: i %d track1 track2 track3 %d %d %d x y %f %f\n",
         //         i,rnew.fTracks[0],rnew.fTracks[1],rnew.fTracks[2],c
         //         lusterI->X(),clusterI->Z());
