@@ -78,13 +78,21 @@ Bool_t AliHBTPairCut::Pass(AliHBTPair* pair)
    {  
      return kTRUE;
    }
- 
+// cout<<"passed "<<pair->Particle1()->GetPdgCode()<<"  "<<pair->Particle2()->GetPdgCode()<<endl;
+ return PassPairProp(pair);
+}
+/**********************************************************/
+
+Bool_t AliHBTPairCut::PassPairProp(AliHBTPair* pair)
+{
+//methods which checks if given pair meets all criteria of the cut
+//if it meets returns FALSE
+//if NOT   returns    TRUE
  //examine all base pair cuts
  for (Int_t i = 0;i<fNCuts;i++)
    {
     if ( (fCuts[i]->Pass(pair)) ) return kTRUE; //if one of the cuts reject, then reject
    }
-   
 // cout<<"passed "<<pair->Particle1()->GetPdgCode()<<"  "<<pair->Particle2()->GetPdgCode()<<endl;
  return kFALSE;
 }

@@ -2,7 +2,7 @@
 //Class implemnts cut on the pair of particles
 //
 //more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
-
+ 
 #ifndef ALIHBTPAIRCUT_H
 #define ALIHBTPAIRCUT_H
 
@@ -29,8 +29,10 @@ class AliHBTPairCut: public TObject
     AliHBTPairCut(const AliHBTPairCut&);
     
     virtual ~AliHBTPairCut();
-    virtual Bool_t Pass(AliHBTPair*);
-    
+    virtual Bool_t Pass(AliHBTPair* pair);
+    virtual Bool_t PassPairProp(AliHBTPair* pair);
+     
+    virtual Bool_t IsEmpty() {return kFALSE;}
     void SetFirstPartCut(AliHBTParticleCut*);  //sets the cut on the first particle
     void SetSecondPartCut(AliHBTParticleCut*); //sets the cut on the first particle
     
@@ -44,8 +46,8 @@ class AliHBTPairCut: public TObject
     void SetQSideCMSLRange(Double_t min, Double_t max);
     void SetQLongCMSLRange(Double_t min, Double_t max);
     
-    const AliHBTParticleCut* GetFirstPartCut() const {return fFirstPartCut;}
-    const AliHBTParticleCut* GetSecondPartCut() const {return fSecondPartCut;}
+    AliHBTParticleCut* GetFirstPartCut() const {return fFirstPartCut;}
+    AliHBTParticleCut* GetSecondPartCut() const {return fSecondPartCut;}
     
   protected:
     AliHBTParticleCut*      fFirstPartCut;
@@ -76,6 +78,7 @@ class AliHBTEmptyPairCut:  public AliHBTPairCut
     virtual ~AliHBTEmptyPairCut(){};
     
     Bool_t Pass(AliHBTPair*) {return kFALSE;} //accpept everything
+    Bool_t IsEmpty() {return kTRUE;}
 
     ClassDef(AliHBTEmptyPairCut,1)
  
