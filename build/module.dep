@@ -8,6 +8,7 @@ EVGEN/module.mk:	EVGEN/libEVGEN.pkg
 FMD/module.mk:		FMD/libFMD.pkg
 GEANT321/module.mk:	GEANT321/libgeant321.pkg
 HIJING/module.mk:	HIJING/libhijing.pkg HIJING/libdummyhijing.pkg
+HERWIG/module.mk:	HERWIG/libherwig.pkg 
 ITS/module.mk:		ITS/libITS.pkg
 MEVSIM/module.mk:	MEVSIM/libmevsim.pkg MEVSIM/libdummymevsim.pkg
 MINICERN/module.mk:	MINICERN/libminicern.pkg
