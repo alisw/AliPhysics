@@ -35,7 +35,7 @@ void hough_merge(char *rootfile,Bool_t MC=false)
       a->GetPixels(rootfile,raw);
       a->Transform2Circle(hist,87);
       
-      b = new AliL3HoughMaxFinder("KappaPsi");
+      b = new AliL3HoughMaxFinder("KappaPhi");
       AliL3TrackArray *tracks = b->FindMaxima(hist);
       c->SetTransformer(a);
       c->LookInsideRoad(tracks);

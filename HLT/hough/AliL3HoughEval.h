@@ -23,7 +23,8 @@ class AliL3HoughEval : public TObject {
   AliL3HoughEval(); 
   AliL3HoughEval(AliL3HoughTransformer *transformer);
   virtual ~AliL3HoughEval();
-  
+
+  TClonesArray *GetParticles(Char_t *rootfile);
   void LookInsideRoad(AliL3TrackArray *tracks,TH2F *hist=0,TH2F *fake=0);
   void DisplaySlice(TH2F *hist);
   void CompareMC(Char_t *rootfile,AliL3TrackArray *merged_tracks,Float_t *eta);

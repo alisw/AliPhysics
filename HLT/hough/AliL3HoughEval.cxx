@@ -54,7 +54,7 @@ void AliL3HoughEval::LookInsideRoad(AliL3TrackArray *tracks,TH2F *hist,TH2F *fak
   Int_t patch = fHoughTransformer->fPatch;
   Int_t slice = fHoughTransformer->fSlice;
   Int_t num_of_pads_to_look = 1;
-  Int_t rows_to_miss = 2;
+  Int_t rows_to_miss = 1;
 
   for(Int_t i=0; i<tracks->GetNTracks(); i++)
     {
@@ -142,11 +142,8 @@ void AliL3HoughEval::DisplaySlice(TH2F *hist)
   
 }
 
-
-void AliL3HoughEval::CompareMC(Char_t *rootfile,AliL3TrackArray *merged_tracks,Float_t *eta)
+TClonesArray *AliL3HoughEval::GetParticles(Char_t *rootfile)
 {
-  
-  Int_t slice = fSlice;
   
   TFile *file = new TFile(rootfile);
   file->cd();
@@ -155,6 +152,19 @@ void AliL3HoughEval::CompareMC(Char_t *rootfile,AliL3TrackArray *merged_tracks,F
   gAlice->GetEvent(0);
   
   TClonesArray *particles=gAlice->Particles();
+  return particles;
+
+  file->Close();
+  delete file;
+}
+
+
+void AliL3HoughEval::CompareMC(Char_t *rootfile,AliL3TrackArray *merged_tracks,Float_t *eta)
+{
+  
+  Int_t slice = fSlice;
+  
+  TClonesArray *particles = GetParticles(rootfile);
   Int_t n=particles->GetEntriesFast();
   Float_t torad=TMath::Pi()/180;
   Float_t phi_min = slice*20 - 10;
@@ -198,8 +208,5 @@ void AliL3HoughEval::CompareMC(Char_t *rootfile,AliL3TrackArray *merged_tracks,F
     Double_t dphi0 = fabs(phi_part-sel_track->GetPhi0());
     //printf("Found match, min_dist %f dPt %f dPhi0 %f\n",min_dist,dpt,dphi0);
   }
-  file->Close();
-  delete file;
-
-  
+    
 }

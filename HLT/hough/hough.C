@@ -41,15 +41,7 @@ void hough(char *rootfile,int patch,Bool_t MC=false)
   //b->SetThreshold(10000);
   //AliL3TrackArray *tracks = b->FindMaxima(hist);
   
-  Double_t peak[2];
-  b->FindPeak(hist,peak);
-  printf("Found peak %f %f\n",peak[0],peak[1]);
-  peaks->Fill(peak[0],peak[1],1);
-  peaks->SetMarkerStyle(3);
-  peaks->SetMarkerColor(3);
-  hist->Draw("box");
-  peaks->Draw("same");
-  return;
+  AliL3TrackArray *tracks = b->FindPeak(hist,2,0.95,2);
 
   AliL3HoughEval *c = new AliL3HoughEval(a);
   printf("number of peaks before %d\n",tracks->GetNTracks());
