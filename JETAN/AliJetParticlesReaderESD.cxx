@@ -142,8 +142,8 @@ Int_t AliJetParticlesReaderESD::ReadESD(AliESD* esd)
      ULong_t cmptest=(kesdtrack->GetStatus() & fPassFlag);
      if (cmptest!=fPassFlag)
       {
-	//cout << i << " "; PrintESDtrack(kesdtrack); cout << endl;
 	Info("ReadNext","Particle %d skipped: %u.",i,kesdtrack->GetStatus());
+	cout << i << " "; PrintESDtrack(kesdtrack); cout << endl;
         continue;
       }
 
@@ -154,8 +154,10 @@ Int_t AliJetParticlesReaderESD::ReadESD(AliESD* esd)
        kesdtrack->GetConstrainedPxPyPz(mom);
        kesdtrack->GetConstrainedXYZ(xyz);
      } else {
-       kesdtrack->GetPxPyPz(mom);
-       kesdtrack->GetXYZ(xyz);
+       if(!kesdtrack->GetPxPyPzAt(0,mom)) continue;
+       xyz[0]=0;xyz[1]=0;xyz[2]=0;
+       //kesdtrack->GetPxPyPz(mom);
+       //kesdtrack->GetXYZ(xyz);
      }
      const Float_t kmass=kesdtrack->GetMass();
      const Float_t kp2=mom[0]*mom[0]+mom[1]*mom[1]+mom[2]*mom[2];
