@@ -14,6 +14,9 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
    if (gClassTable->GetID("AliRun") < 0) {
       gROOT->LoadMacro("loadlibs.C");
       loadlibs();
+   } else {
+      delete gAlice;
+      gAlice=0;
    }
 
 // Connect the Root Galice file containing Geometry, Kine and Hits
