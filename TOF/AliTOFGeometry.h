@@ -74,40 +74,43 @@ class AliTOFGeometry{
 
   private:
 
-  static const Int_t fgkNStripA    = 15; // number of strips in A type module 
-  static const Int_t fgkNStripB    = 19; // number of strips in B type module 
-  static const Int_t fgkNStripC    = 20; // number of strips in C type module 
-  static const Int_t fgkNpadX      = 48; // Number of pads along X 
-  static const Int_t fgkNpadZ      = 2;  // Number of pads along Z
-  static const Int_t fgkNSectors   = 18; // Number of Sectors
-  static const Int_t fgkNPlates    = 5;  // Number of Plates
-  static const Int_t fgkMaxNstrip  = 20; // Max. number of strips
-  static const Int_t fgkMaxTOFTree  = 5;    // numer of geom. levels: 
-  static const Int_t fgkTimeDiff   = 25000;// Min signal separation (ps)
+  enum {
+    fgkNStripA    = 15, // number of strips in A type module 
+    fgkNStripB    = 19, // number of strips in B type module 
+    fgkNStripC    = 20, // number of strips in C type module 
+    fgkNpadX      = 48, // Number of pads along X 
+    fgkNpadZ      = 2,  // Number of pads along Z
+    fgkNSectors   = 18, // Number of Sectors
+    fgkNPlates    = 5,  // Number of Plates
+    fgkMaxNstrip  = 20, // Max. number of strips
+    fgkMaxTOFTree = 5   // numer of geom. levels: 
+  };
 
-  static const Float_t fgkRmin     = 370.; // Inner radius of the TOF (cm)
-  static const Float_t fgkRmax     = 399;  // Outer radius of the TOF (cm)
-  static const Float_t fgkZlenA    = 106.0;// length (cm) of the A module
-  static const Float_t fgkZlenB    = 141.0;// length (cm) of the B module
-  static const Float_t fgkZlenC    = 177.5;// length (cm) of the C module
-  static const Float_t fgkXPad     = 2.5;  // Pad size in the x direction (cm)
-  static const Float_t fgkZPad     = 3.5;  // Pad size in the z direction (cm)
-  static const Float_t fgkMaxhZtof = 371.5;// Max half z-size of TOF (cm)
+  static const Int_t fgkTimeDiff;  // Min signal separation (ps)
 
-
-  static const Float_t fgkSigmaForTail1= 2.;//Sig1 for simulation of TDC tails 
-  static const Float_t fgkSigmaForTail2= 0.5;//Sig2 for simulation of TDC tails
-  static const Float_t fgkSpeedOfLight = 0.299792458;// c (10^9 m/s)
-  static const Float_t fgkPionMass     = 0.13957;// pion mass (Gev/c^2)
-  static const Float_t fgkKaonMass     = 0.49368;// kaon mass (Gev/c^2)
-  static const Float_t fgkProtonMass   = 0.93827;// proton mass (Gev/c^2)
-  static const Float_t fgkElectronMass = 0.00051;// electron mass (Gev/c^2)
-  static const Float_t fgkMuonMass     = 0.10566;// muon mass (Gev/c^2)
+  static const Float_t fgkRmin;    // Inner radius of the TOF (cm)
+  static const Float_t fgkRmax;    // Outer radius of the TOF (cm)
+  static const Float_t fgkZlenA;   // length (cm) of the A module
+  static const Float_t fgkZlenB;   // length (cm) of the B module
+  static const Float_t fgkZlenC;   // length (cm) of the C module
+  static const Float_t fgkXPad;    // Pad size in the x direction (cm)
+  static const Float_t fgkZPad;    // Pad size in the z direction (cm)
+  static const Float_t fgkMaxhZtof;// Max half z-size of TOF (cm)
 
 
-  static const Float_t fgkDprecMin = 0.0000075;//num.prec.tolerance on Thmin 
-  static const Float_t fgkDprecMax = 0.0000100;//num.prec.tolerance on Thma 
-  static const Float_t fgkDprecCen = 0.0000005;//num.prec.tolerance on <Theta> 
+  static const Float_t fgkSigmaForTail1;//Sig1 for simulation of TDC tails 
+  static const Float_t fgkSigmaForTail2;//Sig2 for simulation of TDC tails
+  static const Float_t fgkSpeedOfLight;// c (10^9 m/s)
+  static const Float_t fgkPionMass;// pion mass (Gev/c^2)
+  static const Float_t fgkKaonMass;// kaon mass (Gev/c^2)
+  static const Float_t fgkProtonMass;// proton mass (Gev/c^2)
+  static const Float_t fgkElectronMass;// electron mass (Gev/c^2)
+  static const Float_t fgkMuonMass;// muon mass (Gev/c^2)
+
+
+  static const Float_t fgkDprecMin;//num.prec.tolerance on Thmin 
+  static const Float_t fgkDprecMax;//num.prec.tolerance on Thma 
+  static const Float_t fgkDprecCen;//num.prec.tolerance on <Theta> 
  
   Float_t fAngles[fgkNPlates][fgkMaxNstrip]; //Strip Tilt Angles
   Float_t fHeights[fgkNPlates][fgkMaxNstrip];//Strip heights

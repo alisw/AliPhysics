@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2003/12/29 15:18:03  decaro
+TOF geometry updating (addition of AliTOFGeometry)
+
 Revision 0.01  2003/12/04 S.Arcelli
 Revision 0.02  2003/12/10 S.Arcelli:
         Implement Global methods GetPos & GetDetID 
@@ -34,6 +37,32 @@ Revision 0.03  2003/12/14 S.Arcelli
 #include "AliTOFGeometry.h"
 
 ClassImp(AliTOFGeometry)
+
+static const Int_t fgkTimeDiff   = 25000;// Min signal separation (ps)
+
+static const Float_t fgkRmin     = 370.; // Inner radius of the TOF (cm)
+static const Float_t fgkRmax     = 399;  // Outer radius of the TOF (cm)
+static const Float_t fgkZlenA    = 106.0;// length (cm) of the A module
+static const Float_t fgkZlenB    = 141.0;// length (cm) of the B module
+static const Float_t fgkZlenC    = 177.5;// length (cm) of the C module
+static const Float_t fgkXPad     = 2.5;  // Pad size in the x direction (cm)
+static const Float_t fgkZPad     = 3.5;  // Pad size in the z direction (cm)
+static const Float_t fgkMaxhZtof = 371.5;// Max half z-size of TOF (cm)
+
+
+static const Float_t fgkSigmaForTail1= 2.;//Sig1 for simulation of TDC tails 
+static const Float_t fgkSigmaForTail2= 0.5;//Sig2 for simulation of TDC tails
+static const Float_t fgkSpeedOfLight = 0.299792458;// c (10^9 m/s)
+static const Float_t fgkPionMass     = 0.13957;// pion mass (Gev/c^2)
+static const Float_t fgkKaonMass     = 0.49368;// kaon mass (Gev/c^2)
+static const Float_t fgkProtonMass   = 0.93827;// proton mass (Gev/c^2)
+static const Float_t fgkElectronMass = 0.00051;// electron mass (Gev/c^2)
+static const Float_t fgkMuonMass     = 0.10566;// muon mass (Gev/c^2)
+
+
+static const Float_t fgkDprecMin = 0.0000075;//num.prec.tolerance on Thmin 
+static const Float_t fgkDprecMax = 0.0000100;//num.prec.tolerance on Thma 
+static const Float_t fgkDprecCen = 0.0000005;//num.prec.tolerance on <Theta> 
 
 //_____________________________________________________________________________
 AliTOFGeometry::AliTOFGeometry()
