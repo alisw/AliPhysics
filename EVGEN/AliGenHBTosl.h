@@ -119,7 +119,7 @@ class AliGenHBTosl: public AliGenerator
   TList*   fStackBuffer;//List with stacks
   Int_t    fBufferSize;//defines number of events used for background mixing
   Int_t    fNBinsToScale;//defines how many bins are used to calculate scaling factor
-  Bool_t   fDebug;//debug flag
+  Int_t   fDebug;//debug flag
   Bool_t   fSignalShapeCreated;//flag indicating that generating histograms are ready
   
   Int_t    fMaxIterations;  //maximal nuber of iterations on startup
