@@ -1,5 +1,5 @@
-#ifndef TFLUKA
-#define TFLUKA
+#ifndef TFLUKA_H
+#define TFLUKA_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -264,12 +264,12 @@ class TFluka : public TVirtualMC {
   // ------------------------------------------------
   //
   // - Core input file name
-  TString GetCoreInputFileName() const {return sCoreInputFileName;}
-  void SetCoreInputFileName(const char* n) {sCoreInputFileName = n;}
+  TString GetCoreInputFileName() const {return fCoreInputFileName;}
+  void SetCoreInputFileName(const char* n) {fCoreInputFileName = n;}
 
   // - Input file name
-  TString GetInputFileName() const {return sInputFileName;}
-  void SetInputFileName(const char* n) {sInputFileName = n;}
+  TString GetInputFileName() const {return fInputFileName;}
+  void SetInputFileName(const char* n) {fInputFileName = n;}
 
   // - SetProcess and SetCut
   Int_t GetProcessNb() const {return fNbOfProc;}
@@ -301,8 +301,8 @@ class TFluka : public TVirtualMC {
   Int_t GetMreg() const {return fCurrentFlukaRegion;}
   void SetMreg(Int_t l);
 
-  Int_t GetNewreg() const {return iNewreg;}
-  void SetNewreg(Int_t l) {iNewreg = l;}
+  Int_t GetNewreg() const {return fNewReg;}
+  void SetNewreg(Int_t l) {fNewReg = l;}
 
   Double_t GetRull() const {return fRull;}
   void SetRull(Double_t r) {fRull = r;}
@@ -329,21 +329,21 @@ class TFluka : public TVirtualMC {
   void SetTrackIsInside()  {fTrackIsExiting  = kFALSE; fTrackIsEntering = kFALSE;}
   void SetTrackIsNew(Bool_t flag=kTRUE) {fTrackIsNew = flag;}
   Int_t GetMaterialIndex(Int_t idmat) {return fMaterials[idmat];}
-  
+
+      
  private:
   TFluka(const TFluka &mc): TVirtualMC(mc) {;}
   TFluka & operator=(const TFluka &) {return (*this);}
 
- protected:
   
   Int_t   fVerbosityLevel; //Verbosity level (0 lowest - 3 highest)
 
-  TString sInputFileName;     //Name of the real input file (e.g. alice.inp)
-  TString sCoreInputFileName; //Name of the input file (e.g. corealice.inp)
+  TString fInputFileName;     //Name of the real input file (e.g. alice.inp)
+  TString fCoreInputFileName; //Name of the input file (e.g. corealice.inp)
 
   Int_t    fCaller; //Parameter to indicate who is the caller of the Fluka Draw
   Int_t    fIcode;  //Fluka Draw procedures formal parameter 
-  Int_t    iNewreg; //Fluka Draw procedures formal parameter
+  Int_t    fNewReg; //Fluka Draw procedures formal parameter
   Double_t fRull;   //Fluka Draw procedures formal parameter
   Double_t fXsco;   //Fluka Draw procedures formal parameter
   Double_t fYsco;   //Fluka Draw procedures formal parameter
@@ -354,20 +354,21 @@ class TFluka : public TVirtualMC {
   Bool_t   fFieldFlag;        // Flag for magnetic field
   Int_t    fDummyBoundary;    // Flag for crossing dummy boundaries
   //variables for SetProcess and SetCut
-  Int_t    fNbOfProc;
-  Int_t    fProcessValue[10000];
-  Int_t    fProcessMaterial[10000];
-  Char_t   fProcessFlag[10000][5];
-  Int_t    fNbOfCut;
-  Double_t fCutValue[10000];
-  Char_t   fCutFlag[10000][7];
-  Int_t    fCutMaterial[10000];
+  Int_t    fNbOfProc;                // Current number of processes 
+  Int_t    fProcessValue[10000];     // User values assigned to processes
+  Int_t    fProcessMaterial[10000];  // Materials assigned to user settings
+  Char_t   fProcessFlag[10000][5];   // User flags assigned to processes
+  Int_t    fNbOfCut;                 // Current number of cuts
+  Double_t fCutValue[10000];         // User values assigned to cuts
+  Char_t   fCutFlag[10000][7];       // User flags assigned to cuts
+  Int_t    fCutMaterial[10000];      // Materials assigned to cuts
 
   //Geometry through TGeo
   Int_t*               fMaterials;         //!Array of indices
   Int_t                fNVolumes;           //!Current number of volumes
   Int_t                fCurrentFlukaRegion; //Index of fluka region at each step
   TFlukaMCGeometry    *fGeom;               // TGeo-FLUKA interface
+
 
   ClassDef(TFluka,1)  //C++ interface to Fluka montecarlo
 };

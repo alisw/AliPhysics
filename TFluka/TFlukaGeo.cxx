@@ -15,6 +15,20 @@
 
 /* $Id$ */
 
+//
+// Realisation of the TVirtualMC interface for the FLUKA code
+// (See official web side http://www.fluka.org/).
+//
+// This implementation makes use of the TGeo geometry modeller.
+// User configuration is via automatic generation of FLUKA input cards.
+//
+// Authors:
+// A. Fasso
+// E. Futo
+// A. Gheata
+// A. Morsch
+//
+
 #include <Riostream.h>
 
 //#include "AliModule.h"
@@ -79,7 +93,7 @@ ClassImp(TFluka)
 TFluka::TFluka()
   :TVirtualMC(),
    fVerbosityLevel(0),
-   sInputFileName("")
+   fInputFileName("")
 { 
   //
   // Default constructor
@@ -96,7 +110,7 @@ TFluka::TFluka()
 TFluka::TFluka(const char *title, Int_t verbosity, Bool_t isRootGeometrySupported)
   :TVirtualMC("TFluka",title, isRootGeometrySupported),
    fVerbosityLevel(verbosity),
-   sInputFileName(""),
+   fInputFileName(""),
    fTrackIsEntering(0),
    fTrackIsExiting(0),
    fTrackIsNew(0)
@@ -127,7 +141,9 @@ TFluka::~TFluka() {
 // TFluka control methods
 //______________________________________________________________________________ 
 void TFluka::Init() {
-
+//
+//  Geometry initialisation
+//
     if (fVerbosityLevel >=3) cout << "==> TFluka::Init() called." << endl;
     
     if (!gGeoManager) new TGeoManager("geom", "FLUKA geometry");
@@ -161,9 +177,14 @@ void TFluka::FinishGeometry() {
 
 //______________________________________________________________________________ 
 void TFluka::BuildPhysics() {
+//
+//  Prepare FLUKA input files and call FLUKA physics initialisation
+//
+    
     if (fVerbosityLevel >=3)
 	cout << "==> TFluka::BuildPhysics() called." << endl;
-    InitPhysics(); // prepare input file with the current physics settings
+// Prepare input file with the current physics settings
+    InitPhysics(); 
     cout << "\t* InitPhysics() - Prepare input file was called" << endl; 
     
     if (fVerbosityLevel >=2)
@@ -172,8 +193,8 @@ void TFluka::BuildPhysics() {
     GLOBAL.lfdrtr = true;
     
     if (fVerbosityLevel >=2)
-	cout << "\t* Opening file " << sInputFileName << endl;
-    const char* fname = sInputFileName;
+	cout << "\t* Opening file " << fInputFileName << endl;
+    const char* fname = fInputFileName;
     fluka_openinp(lunin, PASSCHARA(fname));
     
     if (fVerbosityLevel >=2)
@@ -181,7 +202,7 @@ void TFluka::BuildPhysics() {
     flukam(1);
     
     if (fVerbosityLevel >=2)
-	cout << "\t* Closing file " << sInputFileName << endl;
+	cout << "\t* Closing file " << fInputFileName << endl;
     fluka_closeinp(lunin);
     
     FinishGeometry();
@@ -196,6 +217,9 @@ void TFluka::BuildPhysics() {
 
 //______________________________________________________________________________ 
 void TFluka::ProcessEvent() {
+//
+// Process one event
+//
   if (fVerbosityLevel >=3)
     cout << "==> TFluka::ProcessEvent() called." << endl;
   fApplication->GeneratePrimaries();
@@ -211,6 +235,10 @@ Bool_t TFluka::ProcessRun(Int_t nevent) {
 #else
 void   TFluka::ProcessRun(Int_t nevent) {
 #endif
+//
+// Run steering
+//
+
   if (fVerbosityLevel >=3)
     cout << "==> TFluka::ProcessRun(" << nevent << ") called." 
 	 << endl;
@@ -226,7 +254,10 @@ void   TFluka::ProcessRun(Int_t nevent) {
   if (fVerbosityLevel >=3)
     cout << "<== TFluka::ProcessRun(" << nevent << ") called." 
 	 << endl;
+
+  #if ROOT_VERSION_CODE >= 262150
   return kTRUE;
+  #endif
 }
 
 //_____________________________________________________________________________
@@ -545,6 +576,8 @@ Int_t TFluka::PDGFromId(Int_t id) const
 
 void TFluka::SetProcess(const char* flagName, Int_t flagValue, Int_t imat)
 {
+//  Set process user flag for material imat
+//
     strcpy(&fProcessFlag[fNbOfProc][0],flagName);
     fProcessValue[fNbOfProc] = flagValue;
     fProcessMaterial[fNbOfProc] = imat;
@@ -554,6 +587,9 @@ void TFluka::SetProcess(const char* flagName, Int_t flagValue, Int_t imat)
 //______________________________________________________________________________ 
 void TFluka::SetProcess(const char* flagName, Int_t flagValue)
 {
+//  Set process user flag 
+//
+
   Int_t i;
   if (fNbOfProc < 100) {
     for (i=0; i<fNbOfProc; i++) {
@@ -575,6 +611,8 @@ void TFluka::SetProcess(const char* flagName, Int_t flagValue)
 //______________________________________________________________________________ 
 void TFluka::SetCut(const char* cutName, Double_t cutValue, Int_t imed)
 {
+// Set user cut value for material imed
+//
     strcpy(&fCutFlag[fNbOfCut][0],cutName);
     fCutValue[fNbOfCut]  = cutValue;
     fCutMaterial[fNbOfCut] = imed;
@@ -584,6 +622,8 @@ void TFluka::SetCut(const char* cutName, Double_t cutValue, Int_t imed)
 //______________________________________________________________________________ 
 void TFluka::SetCut(const char* cutName, Double_t cutValue)
 {
+// Set user cut value 
+//
   Int_t i;
   if (fNbOfCut < 100) {
     for (i=0; i<fNbOfCut; i++) {
@@ -610,6 +650,9 @@ Double_t TFluka::Xsec(char*, Double_t, Int_t, Int_t)
 //______________________________________________________________________________ 
 void TFluka::InitPhysics()
 {
+//
+// Physics initialisation with preparation of FLUKA input cards
+//
    printf("=>InitPhysics\n");
   Int_t i, j, k;
   Double_t fCut;
@@ -2019,6 +2062,8 @@ Bool_t   TFluka::IsTrackEntering() const
 //______________________________________________________________________________ 
 Bool_t   TFluka::IsTrackExiting() const
 {
+// True if track is exiting volume
+//
   Int_t caller = GetCaller();
   if (caller == 12)  // bxdraw exiting
     return 1;
@@ -2097,10 +2142,11 @@ Bool_t   TFluka::IsTrackAlive() const
 
 //______________________________________________________________________________ 
 Int_t TFluka::NSecondaries() const
+
+{
 // Number of secondary particles generated in the current step
 // FINUC.np = number of secondaries except light and heavy ions
 // FHEAVY.npheav = number of secondaries for light and heavy secondary ions
-{
   Int_t caller = GetCaller();
   if (caller == 6)  // valid only after usdraw
     return FINUC.np + FHEAVY.npheav;
@@ -2112,6 +2158,9 @@ Int_t TFluka::NSecondaries() const
 void TFluka::GetSecondary(Int_t isec, Int_t& particleId,
 		TLorentzVector& position, TLorentzVector& momentum)
 {
+// Copy particles from secondary stack to vmc stack
+//
+
   Int_t caller = GetCaller();
   if (caller == 6) {  // valid only after usdraw
     if (isec >= 0 && isec < FINUC.np) {
@@ -2149,9 +2198,10 @@ void TFluka::GetSecondary(Int_t isec, Int_t& particleId,
 
 //______________________________________________________________________________ 
 TMCProcess TFluka::ProdProcess(Int_t) const
+
+{
 // Name of the process that has produced the secondary particles
 // in the current step
-{
     const TMCProcess kIpNoProc = kPNoProcess;
     const TMCProcess kIpPDecay = kPDecay;
     const TMCProcess kIpPPair = kPPair;
