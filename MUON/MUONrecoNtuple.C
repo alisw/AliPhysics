@@ -141,16 +141,24 @@ void AliMUONEventRecNtupleFill(AliMUONEventReconstructor *Reco, Int_t FillWrite 
     recTrackNt->fChi2 = track->GetFitFMin();
     // number of hits
     recTrackNt->fNHits = track->GetNTrackHits();
+    printf("test> Px %f Py %f Pz %f \n", recTrackNt->fPxRec,  recTrackNt->fPyRec,  recTrackNt->fPzRec);
     // track parameters at vertex of best compatible generated track:
     // in fact muon with the right charge
- //     for (int iPart = 0; iPart < gAlice->Particles()->GetEntriesFast(); iPart++) {
-//        TParticle *particle = (TParticle*) gAlice->Particles()->UncheckedAt(iPart);
-//        if ((particle->GetPdgCode() * recTrackNt->fCharge) == -13) {
-//  	recTrackNt->fPxGen = particle->Px();
-//  	recTrackNt->fPyGen = particle->Py();
-//  	recTrackNt->fPzGen = particle->Pz();
-//        }  // commented by Gines
-    //    }
+    TTree* mtreeK=gAlice->TreeK();
+    TBranch *brparticle = mtreeK->GetBranch("Particles");
+    Int_t nPart = brparticle->GetEntries();
+    TParticle *particle = new TParticle();
+    mtreeK->SetBranchAddress("Particles",&particle);
+    for (Int_t iPart = 0; iPart < nPart; iPart++) {
+       brparticle->GetEntry(iPart);
+       //cout << "Code Particle: " << particle->GetPdgCode() << "\n";
+       if ((particle->GetPdgCode() * recTrackNt->fCharge) == -13) {
+ 	recTrackNt->fPxGen = particle->Px();
+ 	recTrackNt->fPyGen = particle->Py();
+	recTrackNt->fPzGen = particle->Pz();
+	printf("Gen: Px %f Py %f Pz %f \n", recTrackNt->fPxGen, recTrackNt->fPyGen, recTrackNt->fPzGen);
+       }  
+   }
   } // for (trackIndex = 0;...
 
   printf(">>> Filling Ntuple of reconstructed tracks\n");
@@ -184,7 +192,8 @@ void MUONrecoNtuple (Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t RecGeantHi
   // Loading AliRun master
   RunLoader->LoadgAlice();
   gAlice = RunLoader->GetAliRun();
-
+  RunLoader->LoadKinematics("READ");
+  
   // Loading MUON subsystem
   AliMUON * MUON = (AliMUON *) gAlice->GetDetector("MUON");
   AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
@@ -204,8 +213,8 @@ void MUONrecoNtuple (Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t RecGeantHi
   // The right place for changing AliMUONEventReconstructor parameters
   // with respect to the default ones
 //   Reco->SetMaxSigma2Distance(100.0);
-  Reco->SetPrintLevel(20);
-//   Reco->SetPrintLevel(1);
+//  Reco->SetPrintLevel(20);
+   Reco->SetPrintLevel(1);
 //   Reco->SetBendingResolution(0.0);
 //   Reco->SetNonBendingResolution(0.0);
   cout << "AliMUONEventReconstructor: actual parameters" << endl;
