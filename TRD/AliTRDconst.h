@@ -17,10 +17,12 @@ const Float_t kRmax    = 368.0;
 const Float_t kZmax1   = 378.35;  // z-dimensions of the TRD
 const Float_t kZmax2   = 302.0;
 
-const Float_t kSheight =  74.0;   // Height of the TRD-volume in spaceframe
-const Float_t kSwidth1 = 103.674; // Lower width of the TRD-volume in spaceframe
-const Float_t kSwidth2 = 129.768; // Upper width of the TRD-volume in spaceframe
-const Float_t kSlength = 751.0;   // Length of the TRD-volume in spaceframe
+const Float_t kSheight =  74.0;   // Height of the TRD-volume in spaceframe (BTR1-3)
+const Float_t kSwidth1 =  99.613; // Lower width of the TRD-volume in spaceframe (BTR1-3)
+const Float_t kSwidth2 = 125.707; // Upper width of the TRD-volume in spaceframe (BTR1-3)
+const Float_t kSlenTR1 = 751.0;   // Length of the TRD-volume in spaceframe (BTR1)
+const Float_t kSlenTR2 = 313.5;   // Length of the TRD-volume in spaceframe (BTR2)
+const Float_t kSlenTR3 = 159.5;   // Length of the TRD-volume in spaceframe (BTR3)
 
 const Float_t kCheight =  11.0;   // Height of the chambers
 const Float_t kCspace  =   1.6;   // Vertical spacing of the chambers

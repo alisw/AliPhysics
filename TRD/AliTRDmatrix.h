@@ -56,7 +56,7 @@ public:
   virtual Int_t        GetChamber() { return fChamber; };
   virtual Int_t        GetPlane()   { return fPlane;   };
 
-  ClassDef(AliTRDmatrix,1)
+  ClassDef(AliTRDmatrix,1)       // The TRD detector matrix for one readout chamber
 
 };
 

@@ -2,7 +2,11 @@
 {
    gMC->Gsatt("*", "seen", -1);
    gMC->Gsatt("alic", "seen", 0);
-   gROOT->Macro("ViewTRD.C");
+   AliTRD *TRD = gAlice->GetModule("TRD");
+   if (TRD->Hole())
+     gROOT->Macro("ViewTRDhole.C");
+   else
+     gROOT->Macro("ViewTRDfull.C");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");
    gMC->Gsatt("*", "fill", 7);

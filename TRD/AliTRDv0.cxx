@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  1999/11/01 20:41:51  fca
+Added protections against using the wrong version of FRAME
+
 Revision 1.10  1999/09/29 09:24:35  fca
 Introduction of the Copyright and cvs Log
 
@@ -22,18 +25,16 @@ Introduction of the Copyright and cvs Log
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  Transition Radiation Detector version 0 -- coarse simulation             //
+//  Transition Radiation Detector version 0 -- fast simulator                //
 //                                                                           //
 //Begin_Html
 /*
-<img src="picts/AliTRDv0Class.gif">
+<img src="picts/AliTRDfullClass.gif">
 */
 //End_Html
 //                                                                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
-
-#include <stdlib.h>
 
 #include <TMath.h>
 #include <TRandom.h>
@@ -57,13 +58,12 @@ AliTRDv0::AliTRDv0(const char *name, const char *title)
   fIdSens     = 0;
   fHitsOn     = 0;
 
-  fIdSpace1   = 0;
-  fIdSpace2   = 0;
-  fIdSpace3   = 0;
-
   fIdChamber1 = 0;
   fIdChamber2 = 0;
   fIdChamber3 = 0;
+
+  fRphiSigma  = 0;
+  fRphiDist   = 0;
 
 }
  
@@ -74,10 +74,6 @@ void AliTRDv0::CreateGeometry()
   // Create the GEANT geometry for the Transition Radiation Detector - Version 0
   // This version covers the full azimuth. 
   //
-  // Author:  Christoph Blume (C.Blume@gsi.de) 20/07/99 
-  //
-
-  Float_t xpos, ypos, zpos;
 
   // Check that FRAME is there otherwise we have no place where to put the TRD
   AliModule* FRAME = gAlice->GetModule("FRAME");
@@ -85,14 +81,6 @@ void AliTRDv0::CreateGeometry()
 
   // Define the chambers
   AliTRD::CreateGeometry();
-
-  // Position the the TRD-sectors in all TRD-volumes in the spaceframe
-  xpos     = 0.;
-  ypos     = 0.;
-  zpos     = 0.;
-  gMC->Gspos("TRD ",1,"BTR1",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("TRD ",2,"BTR2",xpos,ypos,zpos,0,"ONLY");
-  gMC->Gspos("TRD ",3,"BTR3",xpos,ypos,zpos,0,"ONLY");
 
 }
 
@@ -108,6 +96,192 @@ void AliTRDv0::CreateMaterials()
 }
 
 //_____________________________________________________________________________
+void AliTRDv0::Hits2Clusters()
+{
+  // A simple cluster generator. It takes the hits from the
+  // fast simulator (one hit per plane) and transforms them
+  // into cluster, by applying position smearing and merging
+  // of nearby cluster. The searing is done uniformly in z-direction
+  // over the length of a readout pad. In rphi-direction a Gaussian
+  // smearing is applied with a sigma given by fRphiSigma.
+  // Clusters are considered as overlapping when they are closer in
+  // rphi-direction than the value defined in fRphiDist.
+  // Use the macro fastClusterCreate.C to create the cluster.
+
+  printf("AliTRDv0::Hits2Clusters -- Start creating cluster\n");
+
+  Int_t nBytes = 0;
+
+  AliTRDhit *TRDhit;
+  
+  // Get the pointer to the hit tree
+  TTree *HitTree     = gAlice->TreeH();
+  // Get the pointer to the reconstruction tree
+  TTree *ClusterTree = gAlice->TreeD();
+
+  TObjArray *Chamber = new TObjArray();
+
+  // Get the number of entries in the hit tree
+  // (Number of primary particles creating a hit somewhere)
+  Int_t nTrack = (Int_t) HitTree->GetEntries();
+
+  // Loop through all the chambers
+  for (Int_t icham = 0; icham < kNcham; icham++) {
+    for (Int_t iplan = 0; iplan < kNplan; iplan++) {
+      for (Int_t isect = 0; isect < kNsect; isect++) {
+
+        // Loop through all entries in the tree
+        for (Int_t iTrack = 0; iTrack < nTrack; iTrack++) {
+
+          gAlice->ResetHits();
+          nBytes += HitTree->GetEvent(iTrack);
+
+          // Get the number of hits in the TRD created by this particle
+          Int_t nHit = fHits->GetEntriesFast();
+
+          // Loop through the TRD hits  
+          for (Int_t iHit = 0; iHit < nHit; iHit++) {
+
+            if (!(TRDhit = (AliTRDhit *) fHits->UncheckedAt(iHit))) 
+              continue;
+
+            Float_t x       = TRDhit->fX;
+            Float_t y       = TRDhit->fY;
+            Float_t z       = TRDhit->fZ;
+            Int_t   track   = TRDhit->fTrack;
+            Int_t   plane   = TRDhit->fPlane;
+            Int_t   sector  = TRDhit->fSector;
+            Int_t   chamber = TRDhit->fChamber;        
+
+            if ((sector  != isect+1) ||
+                (plane   != iplan+1) ||
+                (chamber != icham+1)) 
+              continue;
+
+            // Rotate the sectors on top of each other
+            Float_t phi  = 2.0 * kPI /  (Float_t) kNsect 
+                               * ((Float_t) sector - 0.5);
+            Float_t xRot = -x * TMath::Cos(phi) + y * TMath::Sin(phi);
+            Float_t yRot =  x * TMath::Sin(phi) + y * TMath::Cos(phi);
+            Float_t zRot =  z;
+
+            // Add this cluster to the temporary cluster-array for this chamber
+            Int_t   tracks[3];
+            tracks[0] = track;
+            Int_t   clusters[5];
+            clusters[0] = sector;
+            clusters[1] = chamber;
+            clusters[2] = plane;
+            clusters[3] = 0;
+            clusters[4] = 0;
+            Float_t position[3];
+            position[0] = zRot;
+            position[1] = yRot;
+            position[2] = xRot;
+	    AliTRDcluster *Cluster = new AliTRDcluster(tracks,clusters,position);
+            Chamber->Add(Cluster);
+
+	  }
+
+	}
+  
+        // Loop through the temporary cluster-array
+        for (Int_t iClus1 = 0; iClus1 < Chamber->GetEntries(); iClus1++) {
+
+          AliTRDcluster *Cluster1 = (AliTRDcluster *) Chamber->UncheckedAt(iClus1);
+          Float_t x1 = Cluster1->fX;
+          Float_t y1 = Cluster1->fY;
+          Float_t z1 = Cluster1->fZ;
+
+          if (!(z1)) continue;             // Skip marked cluster  
+
+          const Int_t nSave = 2;
+          Int_t idxSave[nSave];
+          Int_t iSave = 0;
+
+          Int_t tracks[3];
+          tracks[0] = Cluster1->fTracks[0];
+
+          // Check the other cluster to see, whether there are close ones
+          for (Int_t iClus2 = iClus1 + 1; iClus2 < Chamber->GetEntries(); iClus2++) {
+            AliTRDcluster *Cluster2 = (AliTRDcluster *) Chamber->UncheckedAt(iClus2);
+            Float_t x2 = Cluster2->fX;
+            Float_t y2 = Cluster2->fY;
+            if ((TMath::Abs(x1 - x2) < fRowPadSize) ||
+                (TMath::Abs(y1 - y2) <   fRphiDist)) {
+              if (iSave == nSave) { 
+                printf("AliTRDv0::Hits2Clusters -- Boundary error: iSave = %d, nSave = %d\n"
+                      ,iSave,nSave);
+	      }
+              else {                
+                idxSave[iSave]  = iClus2;
+                tracks[iSave+1] = Cluster2->fTracks[0];
+	      }
+              iSave++;
+	    }
+	  }
+     
+          // Merge close cluster
+          Float_t yMerge = y1;
+          Float_t xMerge = x1;
+          if (iSave) {
+            for (Int_t iMerge = 0; iMerge < iSave; iMerge++) {
+              AliTRDcluster *Cluster2 = (AliTRDcluster *) Chamber->UncheckedAt(idxSave[iMerge]);
+              xMerge += Cluster2->fX;
+              yMerge += Cluster2->fY;
+              Cluster2->fZ = 0;            // Mark merged cluster
+	    }
+            xMerge /= (iSave + 1);
+            yMerge /= (iSave + 1);
+          }
+
+          // The position smearing in z-direction (uniform over pad width)
+          Int_t row = (Int_t) ((xMerge - fRow0[iplan][icham][isect]) / fRowPadSize);
+          Float_t xSmear = (row + gRandom->Rndm()) * fRowPadSize 
+                         + fRow0[iplan][icham][isect];
+
+          // The position smearing in rphi-direction (Gaussian)
+          Float_t ySmear = 0;
+          do
+            ySmear = gRandom->Gaus(yMerge,fRphiSigma);
+          while ((ySmear < fCol0[iplan])                               ||
+                 (ySmear > fCol0[iplan] + fColMax[iplan] * fColPadSize));
+
+          // Time direction stays unchanged
+          Float_t zSmear = z1;
+
+          Int_t   clusters[5];
+          clusters[0] = Cluster1->fSector;
+          clusters[1] = Cluster1->fChamber;
+          clusters[2] = Cluster1->fPlane;
+          clusters[3] = 0;
+          clusters[4] = 0;
+          Float_t position[3];
+          // Rotate the sectors back into their real position
+          Float_t phi = 2*kPI / kNsect * ((Float_t) Cluster1->fSector - 0.5);
+          position[0] = -zSmear * TMath::Cos(phi) + ySmear * TMath::Sin(phi);
+          position[1] =  zSmear * TMath::Sin(phi) + ySmear * TMath::Cos(phi);
+          position[2] =  xSmear;
+
+          // Add the smeared cluster to the output array 
+          AddCluster(tracks,clusters,position);
+
+	}
+
+        // Clear the temporary cluster-array and delete the cluster
+        Chamber->Delete();
+
+      }
+    }
+  }
+
+  printf("AliTRDv0::Hits2Clusters -- Found %d cluster\n",fClusters->GetEntries());
+  printf("AliTRDv0::Hits2Clusters -- Fill the cluster tree\n");
+  ClusterTree->Fill();
+
+}
+
+//_____________________________________________________________________________
 void AliTRDv0::Init() 
 {
   //
@@ -116,44 +290,25 @@ void AliTRDv0::Init()
 
   AliTRD::Init();
 
-  printf("**************************************"
-	 "  TRD  "
-	 "**************************************\n");
-  printf("\n     Version 0 of TRD initialing, "
-	 "symmetric TRD\n\n");
-
-  //
-  // Check that FRAME is there otherwise we have no place where to
-  // put TRD
-  AliModule* FRAME=gAlice->GetModule("FRAME");
-  if(!FRAME) {
-    Error("Ctor","TRD needs FRAME to be present\n");
-    exit(1);
-  } else 
-    if(FRAME->IsVersion()!=1) {
-      Error("Ctor","FRAME version 1 needed with this version of TRD\n");
-      exit(1);
-    }
-
-  for (Int_t i = 0; i < 80; i++) printf("*");
-  printf("\n");
-  
   // Identifier of the sensitive volume (amplification region)
   fIdSens     = gMC->VolId("UL06");
-
-  // Identifier of the TRD-spaceframe volumina
-  fIdSpace1   = gMC->VolId("B028");
-  fIdSpace2   = gMC->VolId("B029");
-  fIdSpace3   = gMC->VolId("B030");
 
   // Identifier of the TRD-driftchambers
   fIdChamber1 = gMC->VolId("UCIO");
   fIdChamber2 = gMC->VolId("UCIM");
   fIdChamber3 = gMC->VolId("UCII");
 
-  printf("**************************************"
-	 "  TRD  "
-	 "**************************************\n");
+  // Parameter for Hits2Cluster
+
+  // Position resolution in rphi-direction
+  fRphiSigma  = 0.02;
+  // Minimum distance of non-overlapping cluster
+  fRphiDist   = 1.0;
+
+  printf("          Fast simulator\n");
+  for (Int_t i = 0; i < 80; i++) printf("*");
+  printf("\n");
+  
 }
 
 //_____________________________________________________________________________
@@ -167,12 +322,7 @@ void AliTRDv0::StepManager()
 
   Int_t   vol[3]; 
   Int_t   iIdSens, icSens; 
-  Int_t   iIdSpace, icSpace;
   Int_t   iIdChamber, icChamber;
-
-  Int_t   secMap1[10] = {  3,  7,  8,  9, 10, 11,  2,  1, 18, 17 };
-  Int_t   secMap2[ 5] = { 16, 15, 14, 13, 12 };
-  Int_t   secMap3[ 3] = {  5,  6,  4 };
 
   Float_t hits[4];
 
@@ -195,16 +345,9 @@ void AliTRDv0::StepManager()
       // No charge created
       hits[3] = 0;
 
-      iIdSpace   = gMC->CurrentVolOffID(4,icSpace  );
-      iIdChamber = gMC->CurrentVolOffID(1,icChamber);
-
       // The sector number
-      if      (iIdSpace == fIdSpace1) 
-        vol[0] = secMap1[icSpace-1];
-      else if (iIdSpace == fIdSpace2) 
-        vol[0] = secMap2[icSpace-1];
-      else if (iIdSpace == fIdSpace3) 
-        vol[0] = secMap3[icSpace-1];
+      Float_t phi = hits[1] != 0 ? TMath::Atan2(hits[0],hits[1]) : (hits[0] > 0 ? 180. : 0.);
+      vol[0] = ((Int_t) (phi / 20)) + 1;
 
       // The chamber number 
       //   1: outer left
@@ -212,6 +355,7 @@ void AliTRDv0::StepManager()
       //   3: inner
       //   4: middle right
       //   5: outer right
+      iIdChamber = gMC->CurrentVolOffID(1,icChamber);
       if      (iIdChamber == fIdChamber1)
         vol[1] = (hits[2] < 0 ? 1 : 5);
       else if (iIdChamber == fIdChamber2)       

@@ -29,7 +29,7 @@ public:
   virtual Float_t GetSignal()                    { return fSignal;     };
   virtual Int_t   GetTrack(Int_t i)              { return fTrack[i];   };
 
-  ClassDef(AliTRDpixel,1)
+  ClassDef(AliTRDpixel,1)                  // Information for one detector pixel   
 
 };
 
