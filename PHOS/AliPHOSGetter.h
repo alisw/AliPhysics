@@ -83,7 +83,7 @@ class AliPHOSGetter : public TObject {
   Bool_t PostQA   (void) const ;
   
 
-  void   Event(const Int_t event, const char * opt = "HSDRQP") ;    
+  void   Event(const Int_t event, const char * opt = "HSDRP") ;    
   void   Track(Int_t itrack) ;
 
   //Method to be used when digitizing under AliRunDigitizer, who opens all files etc.
