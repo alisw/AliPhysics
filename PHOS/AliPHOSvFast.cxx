@@ -59,16 +59,16 @@ AliPHOSvFast::AliPHOSvFast(const char *name, const char *title):
 
   // gets an instance of the geometry parameters class  
    
-  fGeom =  AliPHOSGeometry::GetInstance(title, "") ; 
+  fGeom = AliPHOSGeometry::GetInstance(title, "") ; 
 
-  if (fGeom->IsInitialized() ) 
-    cout << "AliPHOSvFast : PHOS geometry intialized for " << fGeom->GetName() << endl ;
+  if (GetGeometry()->IsInitialized() ) 
+    cout << "AliPHOSvFast : PHOS geometry intialized for " << GetGeometry()->GetName() << endl ;
   else
     cout << "AliPHOSvFast : PHOS geometry initialization failed !" << endl ;   
   
-  SetBigBox(0, fGeom->GetOuterBoxSize(0) ) ;
-  SetBigBox(1, fGeom->GetOuterBoxSize(1) + fGeom->GetCPVBoxSize(1) ) ; 
-  SetBigBox(2, fGeom->GetOuterBoxSize(0) ); 
+  SetBigBox(0, GetGeometry()->GetOuterBoxSize(0) ) ;
+  SetBigBox(1, GetGeometry()->GetOuterBoxSize(1) + GetGeometry()->GetCPVBoxSize(1) ) ; 
+  SetBigBox(2, GetGeometry()->GetOuterBoxSize(0) ); 
 
   fNRecParticles = 0 ; 
   fFastRecParticles = new AliPHOSFastRecParticle::FastRecParticlesList("AliPHOSFastRecParticle", 100) ;
@@ -136,17 +136,17 @@ void AliPHOSvFast::BuildGeometry()
   
   // position PHOS into ALICE
 
-  Float_t r = fGeom->GetIPtoCrystalSurface() + GetBigBox(1) / 2.0 ;
+  Float_t r = GetGeometry()->GetIPtoCrystalSurface() + GetBigBox(1) / 2.0 ;
   Int_t number = 988 ; 
-  Float_t pphi =  TMath::ATan( GetBigBox(0)  / ( 2.0 * fGeom->GetIPtoCrystalSurface() ) ) ;
+  Float_t pphi =  TMath::ATan( GetBigBox(0)  / ( 2.0 * GetGeometry()->GetIPtoCrystalSurface() ) ) ;
   pphi *= kRADDEG ;
   TNode * top = gAlice->GetGeometry()->GetNode("alice") ;
  
   char * nodename = new char[20] ;  
   char * rotname  = new char[20] ; 
 
-  for( Int_t i = 1; i <= fGeom->GetNModules(); i++ ) { 
-   Float_t angle = pphi * 2 * ( i - fGeom->GetNModules() / 2.0 - 0.5 ) ;
+  for( Int_t i = 1; i <= GetGeometry()->GetNModules(); i++ ) { 
+   Float_t angle = pphi * 2 * ( i - GetGeometry()->GetNModules() / 2.0 - 0.5 ) ;
    sprintf(rotname, "%s%d", "rot", number++) ;
    new TRotMatrix(rotname, rotname, 90, angle, 90, 90 + angle, 0, 0);
    top->cd();
@@ -190,12 +190,12 @@ void AliPHOSvFast::CreateGeometry()
   Int_t idrotm[99] ;
   Double_t const kRADDEG = 180.0 / kPI ;
   
-  for( Int_t i = 1; i <= fGeom->GetNModules(); i++ ) {
+  for( Int_t i = 1; i <= GetGeometry()->GetNModules(); i++ ) {
     
-    Float_t angle = fGeom->GetPHOSAngle(i) ;
+    Float_t angle = GetGeometry()->GetPHOSAngle(i) ;
     AliMatrix(idrotm[i-1], 90.0, angle, 90.0, 90.0+angle, 0.0, 0.0) ;
  
-    Float_t r = fGeom->GetIPtoCrystalSurface() + GetBigBox(1) / 2.0 ;
+    Float_t r = GetGeometry()->GetIPtoCrystalSurface() + GetBigBox(1) / 2.0 ;
 
     Float_t xP1 = r * TMath::Sin( angle / kRADDEG ) ;
     Float_t yP1 = -r * TMath::Cos( angle / kRADDEG ) ;
@@ -317,7 +317,7 @@ void AliPHOSvFast::MakeRecParticle(const Int_t modid, const TVector3 pos, AliPHO
   // get the angle of incidence 
   
   Double_t incidencetheta = 90. * TMath::Pi() /180 - rp.Theta() ; 
-  Double_t incidencephi   = ( 270 + fGeom->GetPHOSAngle(modid) ) * TMath::Pi() / 180. - rp.Phi() ;   
+  Double_t incidencephi   = ( 270 + GetGeometry()->GetPHOSAngle(modid) ) * TMath::Pi() / 180. - rp.Phi() ;   
 
   // get the detected direction
   

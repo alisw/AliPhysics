@@ -72,9 +72,9 @@ AliPHOSv1(name,title)
   fCPVImpacts  = new TList();
   fPPSDImpacts = new TList();
 
-  Int_t nPHOSModules = fGeom->GetNModules();
-  Int_t nCPVModules  = fGeom->GetNCPVModules();
-  Int_t nPPSDModules = fGeom->GetNPPSDModules();
+  Int_t nPHOSModules = GetGeometry()->GetNModules();
+  Int_t nCPVModules  = GetGeometry()->GetNCPVModules();
+  Int_t nPPSDModules = GetGeometry()->GetNPPSDModules();
 
   Int_t iPHOSModule;
   TClonesArray * impacts;
@@ -183,20 +183,20 @@ void AliPHOSvImpacts::ResetHits()
   AliDetector::ResetHits();
 
   Int_t i;
-  for (i=0; i<fGeom->GetNModules(); i++) {
+  for (i=0; i<GetGeometry()->GetNModules(); i++) {
     ((TClonesArray*)fEMCImpacts->At(i)) -> Clear();
     fNEMCImpacts[i] = 0 ;
   }
 
-  if ( strcmp(fGeom->GetName(),"IHEP") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0 ) {
-    for (i=0; i<fGeom->GetNCPVModules(); i++) {
+  if ( strcmp(GetGeometry()->GetName(),"IHEP") == 0 || strcmp(GetGeometry()->GetName(),"MIXT") == 0 ) {
+    for (i=0; i<GetGeometry()->GetNCPVModules(); i++) {
       ((TClonesArray*)fCPVImpacts->At(i)) -> Clear();
       fNCPVImpacts[i] = 0 ;
     }
   }
 
-  if ( strcmp(fGeom->GetName(),"GPS2") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0 ) {
-    for (i=0; i<fGeom->GetNPPSDModules(); i++) {
+  if ( strcmp(GetGeometry()->GetName(),"GPS2") == 0 || strcmp(GetGeometry()->GetName(),"MIXT") == 0 ) {
+    for (i=0; i<GetGeometry()->GetNPPSDModules(); i++) {
       ((TClonesArray*)fPPSDImpacts->At(i)) -> Clear();
       fNPPSDImpacts[i] = 0 ;
     }
@@ -219,7 +219,7 @@ void AliPHOSvImpacts::StepManager(void)
 
   Int_t tracknumber =  gAlice->CurrentTrack() ; 
   Int_t primary     =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
-  TString name      =  fGeom->GetName() ; 
+  TString name      =  GetGeometry()->GetName() ; 
 
   // Add impact to EMC
 
@@ -239,13 +239,13 @@ void AliPHOSvImpacts::StepManager(void)
     gMC -> Gmtod (pm,   pd,   2);    // transform 3-momentum from master to daughter system
 
     // Select tracks coming to the crystal from up or down sides
-    if (pd[1]<0 && xyzd[1] >  fGeom->GetCrystalSize(1)/2-0.001 ||
-	pd[1]>0 && xyzd[1] < -fGeom->GetCrystalSize(1)/2+0.001) {
+    if (pd[1]<0 && xyzd[1] >  GetGeometry()->GetCrystalSize(1)/2-0.001 ||
+	pd[1]>0 && xyzd[1] < -GetGeometry()->GetCrystalSize(1)/2+0.001) {
       Int_t pid = gMC->TrackPid();
       Int_t module;
       gMC->CurrentVolOffID(10,module);
       if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(10),"PHO1") == 0 )
-	module += fGeom->GetNModules() - fGeom->GetNPPSDModules();
+	module += GetGeometry()->GetNModules() - GetGeometry()->GetNPPSDModules();
       module--;
       AddImpact("EMC ",fIshunt, primary,tracknumber, module, pid, pmom, xyzm);
     }
@@ -292,8 +292,8 @@ void AliPHOSvImpacts::StepManager(void)
     gMC -> Gmtod (pm,   pd,   2);    // transform 3-momentum from master to daughter system
 
     // Select tracks coming to the crystal from up or down sides
-    if (pd[1]<0 && xyzd[1] >  (fGeom->GetConversionGap() +  fGeom->GetAvalancheGap())/2-0.001 ||
-	pd[1]>0 && xyzd[1] < -(fGeom->GetConversionGap() +  fGeom->GetAvalancheGap())/2+0.001) {
+    if (pd[1]<0 && xyzd[1] >  (GetGeometry()->GetConversionGap() +  GetGeometry()->GetAvalancheGap())/2-0.001 ||
+	pd[1]>0 && xyzd[1] < -(GetGeometry()->GetConversionGap() +  GetGeometry()->GetAvalancheGap())/2+0.001) {
       Int_t pid = gMC->TrackPid();
       Int_t module;
       gMC->CurrentVolOffID(5,module);

@@ -30,6 +30,8 @@
 
 #include "TVector3.h"
 #include "TRotation.h" 
+#include "TFolder.h" 
+#include "TROOT.h" 
 
 // --- Standard library ---
 
@@ -101,6 +103,14 @@ void AliPHOSGeometry::Init(void)
 
     this->SetPHOSAngles() ; 
     fRotMatrixArray = new TObjArray(fNModules) ; 
+
+    // post the geometry into the appropriate folder
+    //  get the alice folder
+    TFolder * alice = (TFolder*)gROOT->GetListOfBrowsables()->FindObject("YSAlice") ;
+    //  the folder that contains the alarms for PHOS   
+    TFolder * folder = (TFolder*)alice->FindObject("folders/Geometry/PHOS");   
+    folder->SetOwner() ;
+    folder->Add(this) ; 
   }
   else {
     fgInit = kFALSE ; 

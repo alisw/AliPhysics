@@ -15,6 +15,7 @@
 
 class TString ; 
 class TTask ;
+class TFolder ;
 
 // --- AliRoot header files ---
 
@@ -41,8 +42,8 @@ class AliPHOS : public AliDetector {
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) = 0 ;   
   virtual void   CreateMaterials() ;                     
   void CreatePHOSFolders();
-  virtual  AliPHOSGeometry * GetGeometry() const = 0 ;
-  Int_t   IsVersion(void) const { return -1 ; } 
+  virtual  AliPHOSGeometry * GetGeometry() const ;
+  virtual Int_t   IsVersion(void) const = 0 ;  
   AliPHOSQAChecker * QAChecker() {return fQATask;}  
   virtual void    SetTreeAddress();                
   virtual TString Version() {return TString(" ") ; } 
@@ -56,9 +57,11 @@ class AliPHOS : public AliDetector {
  
 protected:
   
-  AliPHOSQAChecker * fQATask ; // PHOS checkers container
-  TTask * fSDTask ; // PHOS (S)Digitizer container
-  TTask * fReTask ; // PHOS Reconstructioner container
+  TFolder * fFGeom ;        //! Folder that holds the Geometry definition
+  AliPHOSGeometry * fGeom ; // Geometry definition
+  AliPHOSQAChecker * fQATask ; //! PHOS checkers container
+  TTask * fSDTask ; //! PHOS (S)Digitizer container
+  TTask * fReTask ; //! PHOS Reconstructioner container
 
   ClassDef(AliPHOS,2) // Photon Spectrometer Detector (base class)
 

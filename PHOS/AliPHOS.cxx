@@ -52,12 +52,14 @@ AliPHOS:: AliPHOS() : AliDetector()
   fName="PHOS";
   CreatePHOSFolders();
 }
+
 //____________________________________________________________________________
-AliPHOS:: AliPHOS(const char* name, const char* title): AliDetector(name, title) 
+AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name, title) 
 {
   // Create folder and task hierarchy
   CreatePHOSFolders();
 }
+
 //____________________________________________________________________________
 void AliPHOS::CreatePHOSFolders()
 {
@@ -75,6 +77,9 @@ void AliPHOS::CreatePHOSFolders()
   TFolder * aliceF  = alice->AddFolder("folders", "Alice memory Folder") ; 
   //  make it the owner of the objects that it contains
   aliceF->SetOwner() ;
+  // geometry folder 
+  TFolder * geomF = aliceF->AddFolder("Geometry", "Geometry objects") ; 
+  // alarms folder
   TFolder * alarmsF = aliceF->AddFolder("QAAlarms", "Alarms raised by QA check") ; 
   //  make it the owner of the objects that it contains
   alarmsF->SetOwner() ;
@@ -93,22 +98,24 @@ void AliPHOS::CreatePHOSFolders()
 
   char * tempo = new char[80] ; 
 
-  // creates the PHOSQA and adds it to alice main QA task
+  // creates the PHOSQA (QAChecker knows how to add itself in the tasks list)
   sprintf(tempo, "%sCheckers container",GetName() ) ; 
-  fQATask = new AliPHOSQAChecker(GetName(), tempo); 
-  aliceQA->Add(fQATask) ; 
+  fQATask = new AliPHOSQAChecker(GetName(), tempo);  
 
   // creates the PHOS(S)Digitizer and adds it to alice main (S)Digitizer task 
   sprintf(tempo, "%sDigitizers container",GetName() ) ; 
-  fSDTask = new AliPHOSQAChecker(GetName(), tempo);   
+  fSDTask = new TTask(GetName(), tempo);   
   aliceDi->Add(fSDTask) ; 
+
   // creates the PHOS reconstructioner and adds it to alice main Reconstructioner task 
   sprintf(tempo, "%sReconstructioner container",GetName() ) ; 
-  fReTask = new AliPHOSQAChecker(GetName(), tempo); 
+  fReTask = new TTask(GetName(), tempo); 
   aliceRe->Add(fReTask) ; 
 
   delete tempo ;  
 
+  // creates the PHOS geometry  folder
+  geomF->AddFolder("PHOS", "Geometry for PHOS") ; 
   // creates the PHOSQA alarm folder
   alarmsF->AddFolder("PHOS", "QA alarms from PHOS") ; 
 }
@@ -387,6 +394,22 @@ void AliPHOS::CreateMaterials()
   gMC->Gstpar(idtmed[715], "STRA",2.) ;
 
 }
+//____________________________________________________________________________
+AliPHOSGeometry * AliPHOS::GetGeometry() const 
+{  
+  // gets the pointer to the AliPHOSGeometry unique instance from the folder
+  
+  AliPHOSGeometry * rv ; 
+  
+  TFolder * alice = (TFolder*)gROOT->GetListOfBrowsables()->FindObject("YSAlice") ;
+  TString path("folders/Geometry/PHOS/") ; 
+  path += GetTitle() ; 
+  rv = (AliPHOSGeometry*)alice->FindObject(path) ; 
+  if ( !rv )
+    rv = fGeom ; 
+  return rv ; 
+}
+
 //____________________________________________________________________________
 void AliPHOS::SetTreeAddress()
 { 

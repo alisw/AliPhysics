@@ -121,7 +121,7 @@ void AliPHOSv3::StepManager(void)
   
   Int_t tracknumber =  gAlice->CurrentTrack() ; 
   Int_t primary     =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
-  TString name      =  fGeom->GetName() ; 
+  TString name      =  GetGeometry()->GetName() ; 
   Float_t        lostenergy ;
   //Double_t       lostenergy ;
   Float_t        global[3] ;
@@ -141,17 +141,17 @@ void AliPHOSv3::StepManager(void)
       if ( xyze[3] != 0) { // there is deposited energy 
        	gMC->CurrentVolOffID(5, relid[0]) ;  // get the PHOS Module number
 	if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(5),"PHO1") == 0 ){
-	  relid[0] += fGeom->GetNModules() - fGeom->GetNPPSDModules();
+	  relid[0] += GetGeometry()->GetNModules() - GetGeometry()->GetNPPSDModules();
 	}
        	gMC->CurrentVolOffID(3, relid[1]) ;  // get the Micromegas Module number 
-      // 1-> fGeom->GetNumberOfModulesPhi() * fGeom->GetNumberOfModulesZ() upper
-      //   > fGeom->GetNumberOfModulesPhi() * fGeom->GetNumberOfModulesZ() lower
+      // 1-> GetGeometry()->GetNumberOfModulesPhi() * GetGeometry()->GetNumberOfModulesZ() upper
+      //   > GetGeometry()->GetNumberOfModulesPhi() * GetGeometry()->GetNumberOfModulesZ() lower
        	gMC->CurrentVolOffID(1, relid[2]) ;  // get the row number of the cell
         gMC->CurrentVolID(relid[3]) ;        // get the column number 
 
 	// get the absolute Id number
 
-       	fGeom->RelToAbsNumbering(relid, absid) ; 
+       	GetGeometry()->RelToAbsNumbering(relid, absid) ; 
 
 	// add current hit to the hit list      
 	  AddHit(fIshunt, primary, tracknumber, absid, xyze);
@@ -239,7 +239,7 @@ void AliPHOSv3::StepManager(void)
 	relid[3] = cpvDigit->GetYpad() ;                          // row    number of a pad
 	
 	// get the absolute Id number
-	fGeom->RelToAbsNumbering(relid, absid) ; 
+	GetGeometry()->RelToAbsNumbering(relid, absid) ; 
 
 	// add current digit to the temporary hit list
 	xyze[0] = 0. ;
@@ -277,7 +277,7 @@ if(gMC->CurrentVolID(copy)==gMC->VolId("PXTL")){// We are inside a PBWO4 crystal
       gMC->CurrentVolOffID(10, relid[0]) ; // get the PHOS module number ;
 
       if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(10),"PHO1") == 0 )
-	relid[0] += fGeom->GetNModules() - fGeom->GetNPPSDModules();      
+	relid[0] += GetGeometry()->GetNModules() - GetGeometry()->GetNPPSDModules();      
 
       relid[1] = 0   ;                    // means PBW04
    gMC->CurrentVolOffID(4, relid[2]) ; // get the row number inside the module
@@ -285,7 +285,7 @@ if(gMC->CurrentVolID(copy)==gMC->VolId("PXTL")){// We are inside a PBWO4 crystal
       
       // get the absolute Id number
 
-      fGeom->RelToAbsNumbering(relid, absid) ; 
+      GetGeometry()->RelToAbsNumbering(relid, absid) ; 
 
       gMC->Gmtod(global, local, 1) ;
 
@@ -296,14 +296,14 @@ if(gMC->CurrentVolID(copy)==gMC->VolId("PXTL")){// We are inside a PBWO4 crystal
 
  //calculate the number of electrons produced in the PIN due to this energy
 
- //nElectrons = apdgain * lostenergy * lightyield * fIntrinsicPINEfficiency *exp(-fLightYieldAttenuation * (local[1]+fGeom->GetCrystalSize(1)/2.0 ) ) ;
+ //nElectrons = apdgain * lostenergy * lightyield * fIntrinsicPINEfficiency *exp(-fLightYieldAttenuation * (local[1]+GetGeometry()->GetCrystalSize(1)/2.0 ) ) ;
 
-  xyze[3] = (fRecalibrationFactor/100.) * apdgain * lostenergy * lightyield * fIntrinsicPINEfficiency *exp(-fLightYieldAttenuation * (local[1]+fGeom->GetCrystalSize(1)/2.0 ) ) ;
+  xyze[3] = (fRecalibrationFactor/100.) * apdgain * lostenergy * lightyield * fIntrinsicPINEfficiency *exp(-fLightYieldAttenuation * (local[1]+GetGeometry()->GetCrystalSize(1)/2.0 ) ) ;
     
    //cout<<"xyze[3]:    "<<xyze[3]<<   endl;
    //cout<<"lostenergy: "<<lostenergy<<endl; 
 
- //nElectrons = lostenergy * lightyield * fIntrinsicPINEfficiency *exp(-fLightYieldAttenuation * (local[1]+fGeom->GetCrystalSize(1)/2.0 ) ) ;
+ //nElectrons = lostenergy * lightyield * fIntrinsicPINEfficiency *exp(-fLightYieldAttenuation * (local[1]+GetGeometry()->GetCrystalSize(1)/2.0 ) ) ;
 
         //xyze[3] = nElectrons * fRecalibrationFactor/10000. ;
 
@@ -336,7 +336,7 @@ if(gMC->CurrentVolID(copy)==gMC->VolId("PXTL")){// We are inside a PBWO4 crystal
 	// get the absolute Id number
 	
 	Int_t absid ; 
-	fGeom->RelToAbsNumbering(relid,absid) ;
+	GetGeometry()->RelToAbsNumbering(relid,absid) ;
 	gMC->Gmtod(global, local, 1) ;
 
 // calculating number of electrons in the PIN diode asociated to this hit

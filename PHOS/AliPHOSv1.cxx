@@ -96,7 +96,7 @@ AliPHOSv1::AliPHOSv1(const char *name, const char *title):
 
   fIshunt     =  1 ; // All hits are associated with primary particles
 
-  Int_t nb   = fGeom->GetNModules() ; 
+  Int_t nb   = GetGeometry()->GetNModules() ; 
   
   // create checkables 
   fQAHitsMul   = new AliPHOSQAIntCheckable("HitsM") ; 
@@ -111,14 +111,6 @@ AliPHOSv1::AliPHOSv1(const char *name, const char *title):
     sprintf(tempo, "TotEnB%d", i+1) ; 
     new( (*fQATotEnerB)[i] ) AliPHOSQAFloatCheckable(tempo) ;
   }
-
-  // create checkers 
-  // the container (QAChecker()) owns and deletes this local checker (see Hara-Kiri)
-  // the local checker can be accessed by 
-  // AliPHOSQAChecker * phos = 
-  //  (AliPHOSQAChecker*)(gROOT->GetListOfBrowsables()->FindObject("YSALICE")->FindObject("tasks/QA/PHOS"))
-  // AliPHOSQAMeanChecker * ch = (AliPHOSQAMeanChecker*)(phos->FindObject("QAHitsMul"))
-  // or directly from the root/Tasks folder 
 
   AliPHOSQAMeanChecker * hmc  = new AliPHOSQAMeanChecker("HitsMul", 100. ,25.) ; 
   AliPHOSQAMeanChecker * emc  = new AliPHOSQAMeanChecker("TotEner", 10. ,5.) ; 
@@ -157,6 +149,7 @@ void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, 
   AliPHOSHit *newHit ;
   AliPHOSHit *curHit ;
   Bool_t deja = kFALSE ;
+  AliPHOSGeometry * geom = GetGeometry() ; 
 
   newHit = new AliPHOSHit(shunt, primary, tracknumber, Id, hits) ;
 
@@ -172,8 +165,8 @@ void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, 
   if ( !deja ) {
     new((*fHits)[fNhits]) AliPHOSHit(*newHit) ;
     // get the block Id number
-    Int_t * relid = new Int_t[fGeom->GetNModules()] ; 
-    fGeom->AbsToRelNumbering(Id, relid) ;
+    Int_t * relid = new Int_t[geom->GetNModules()] ; 
+    geom->AbsToRelNumbering(Id, relid) ;
     // and fill the relevant QA checkable (only if in PbW04)
     if ( relid[1] == 0 ) {
       fQAHitsMul->Update(1) ; 
@@ -213,7 +206,7 @@ void AliPHOSv1::FinishEvent()
   
   Int_t i ; 
   if ( fQAHitsMulB && fQATotEnerB ) {
-    for (i = 0 ; i <  fGeom->GetNModules() ; i++) {
+    for (i = 0 ; i < GetGeometry()->GetNModules() ; i++) {
       AliPHOSQAIntCheckable * ci = (AliPHOSQAIntCheckable*)(*fQAHitsMulB)[i] ;  
       AliPHOSQAFloatCheckable* cf = (AliPHOSQAFloatCheckable*)(*fQATotEnerB)[i] ; 
       if ( ci->HasChanged() ) { 
@@ -250,7 +243,7 @@ void AliPHOSv1::StepManager(void)
 
   Int_t tracknumber =  gAlice->CurrentTrack() ; 
   Int_t primary     =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
-  TString name      =  fGeom->GetName() ; 
+  TString name      =  GetGeometry()->GetName() ; 
 
 
   if ( name == "GPS2" || name == "MIXT" ) {            // ======> CPV is a GPS' PPSD
@@ -266,17 +259,17 @@ void AliPHOSv1::StepManager(void)
       if ( xyze[3] != 0 ) { // there is deposited energy 
        	gMC->CurrentVolOffID(5, relid[0]) ;  // get the PHOS Module number
 	if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(5),"PHO1") == 0 ){
-	  relid[0] += fGeom->GetNModules() - fGeom->GetNPPSDModules();
+	  relid[0] += GetGeometry()->GetNModules() - GetGeometry()->GetNPPSDModules();
 	}
        	gMC->CurrentVolOffID(3, relid[1]) ;  // get the Micromegas Module number 
-      // 1-> fGeom->GetNumberOfModulesPhi() * fGeom->GetNumberOfModulesZ() upper
-      //   > fGeom->GetNumberOfModulesPhi() * fGeom->GetNumberOfModulesZ() lower
+      // 1-> GetGeometry()->GetNumberOfModulesPhi() * GetGeometry()->GetNumberOfModulesZ() upper
+      //   > GetGeometry()->GetNumberOfModulesPhi() * GetGeometry()->GetNumberOfModulesZ() lower
        	gMC->CurrentVolOffID(1, relid[2]) ;  // get the row number of the cell
         gMC->CurrentVolID(relid[3]) ;        // get the column number 
 
 	// get the absolute Id number
 
-       	fGeom->RelToAbsNumbering(relid, absid) ; 
+       	GetGeometry()->RelToAbsNumbering(relid, absid) ; 
 
 	// add current hit to the hit list      
 	  AddHit(fIshunt, primary, tracknumber, absid, xyze);
@@ -364,7 +357,7 @@ void AliPHOSv1::StepManager(void)
 	relid[3] = cpvDigit->GetYpad() ;                          // row    number of a pad
 	
 	// get the absolute Id number
-	fGeom->RelToAbsNumbering(relid, absid) ; 
+	GetGeometry()->RelToAbsNumbering(relid, absid) ; 
 
 	// add current digit to the temporary hit list
 	xyze[0] = 0. ;
@@ -402,14 +395,14 @@ void AliPHOSv1::StepManager(void)
       ((AliPHOSQAFloatCheckable*)(*fQATotEnerB)[relid[0]-1])->Update( xyze[3] ) ; // energy in this block  
 
       if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(10),"PHO1") == 0 )
-	relid[0] += fGeom->GetNModules() - fGeom->GetNPPSDModules();      
+	relid[0] += GetGeometry()->GetNModules() - GetGeometry()->GetNPPSDModules();      
 
       relid[1] = 0   ;                    // means PBW04
       gMC->CurrentVolOffID(4, relid[2]) ; // get the row number inside the module
       gMC->CurrentVolOffID(3, relid[3]) ; // get the cell number inside the module
       
       // get the absolute Id number
-      fGeom->RelToAbsNumbering(relid, absid) ; 
+      GetGeometry()->RelToAbsNumbering(relid, absid) ; 
 
       // add current hit to the hit list
 	AddHit(fIshunt, primary,tracknumber, absid, xyze);
@@ -432,7 +425,7 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumbe
   // 2 October 2000
   // ------------------------------------------------------------------------
 
-  const Float_t kCelWr  = fGeom->GetPadSizePhi()/2;  // Distance between wires (2 wires above 1 pad)
+  const Float_t kCelWr  = GetGeometry()->GetPadSizePhi()/2;  // Distance between wires (2 wires above 1 pad)
   const Float_t kDetR   = 0.1;     // Relative energy fluctuation in track for 100 e-
   const Float_t kdEdx   = 4.0;     // Average energy loss in CPV;
   const Int_t   kNgamz  = 5;       // Ionization size in Z
@@ -455,13 +448,13 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumbe
 
 //    cout << "CPVDigitize: YVK : "<<hitX<<" "<<hitZ<<" | "<<pX<<" "<<pZ<<" "<<pNorm<<endl;
 
-  Float_t dZY   = pZ/pNorm * fGeom->GetCPVGasThickness();
-  Float_t dXY   = pX/pNorm * fGeom->GetCPVGasThickness();
+  Float_t dZY   = pZ/pNorm * GetGeometry()->GetCPVGasThickness();
+  Float_t dXY   = pX/pNorm * GetGeometry()->GetCPVGasThickness();
   gRandom->Rannor(rnor1,rnor2);
   eloss *= (1 + kDetR*rnor1) *
-           TMath::Sqrt((1 + ( pow(dZY,2) + pow(dXY,2) ) / pow(fGeom->GetCPVGasThickness(),2)));
-  Float_t zhit1 = hitZ + fGeom->GetCPVActiveSize(1)/2 - dZY/2;
-  Float_t xhit1 = hitX + fGeom->GetCPVActiveSize(0)/2 - dXY/2;
+           TMath::Sqrt((1 + ( pow(dZY,2) + pow(dXY,2) ) / pow(GetGeometry()->GetCPVGasThickness(),2)));
+  Float_t zhit1 = hitZ + GetGeometry()->GetCPVActiveSize(1)/2 - dZY/2;
+  Float_t xhit1 = hitX + GetGeometry()->GetCPVActiveSize(0)/2 - dXY/2;
   Float_t zhit2 = zhit1 + dZY;
   Float_t xhit2 = xhit1 + dXY;
 
@@ -521,8 +514,8 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumbe
 
   // Finite size of ionization region
 
-  Int_t nCellZ  = fGeom->GetNumberOfCPVPadsZ();
-  Int_t nCellX  = fGeom->GetNumberOfCPVPadsPhi();
+  Int_t nCellZ  = GetGeometry()->GetNumberOfCPVPadsZ();
+  Int_t nCellX  = GetGeometry()->GetNumberOfCPVPadsPhi();
   Int_t nz3     = (kNgamz+1)/2;
   Int_t nx3     = (kNgamx+1)/2;
   cpvDigits->Expand(nIter*kNgamx*kNgamz);
@@ -533,8 +526,8 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumbe
     Float_t zhit = zxe[0][iter];
     Float_t xhit = zxe[1][iter];
     Float_t qhit = zxe[2][iter];
-    Float_t zcell = zhit / fGeom->GetPadSizeZ();
-    Float_t xcell = xhit / fGeom->GetPadSizePhi();
+    Float_t zcell = zhit / GetGeometry()->GetPadSizeZ();
+    Float_t xcell = xhit / GetGeometry()->GetPadSizePhi();
     if ( zcell<=0      || xcell<=0 ||
 	 zcell>=nCellZ || xcell>=nCellX) return;
     Int_t izcell = (Int_t) zcell;
@@ -571,10 +564,10 @@ Float_t AliPHOSv1::CPVPadResponseFunction(Float_t qhit, Float_t zhit, Float_t xh
   // 3 October 2000
   // ------------------------------------------------------------------------
 
-  Double_t dz = fGeom->GetPadSizeZ()   / 2;
-  Double_t dx = fGeom->GetPadSizePhi() / 2;
-  Double_t z  = zhit * fGeom->GetPadSizeZ();
-  Double_t x  = xhit * fGeom->GetPadSizePhi();
+  Double_t dz = GetGeometry()->GetPadSizeZ()   / 2;
+  Double_t dx = GetGeometry()->GetPadSizePhi() / 2;
+  Double_t z  = zhit * GetGeometry()->GetPadSizeZ();
+  Double_t x  = xhit * GetGeometry()->GetPadSizePhi();
   Double_t amplitude = qhit *
     (CPVCumulPadResponse(z+dz,x+dx) - CPVCumulPadResponse(z+dz,x-dx) -
      CPVCumulPadResponse(z-dz,x+dx) + CPVCumulPadResponse(z-dz,x-dx));

@@ -13,6 +13,7 @@
 // --- ROOT system ---
 
 class TFile;
+class TFolder;
 
 // --- AliRoot header files ---
 #include "AliPHOS.h"
@@ -21,10 +22,7 @@ class AliPHOSv0 : public AliPHOS {
 
  public:
 
-  AliPHOSv0() {
-    //ctor
-    fGeom=0;
-  }
+  AliPHOSv0() {}
   AliPHOSv0(const char *name, const char *title="") ;
   AliPHOSv0(const AliPHOSv0 & phos) {
     // cpy ctor: no implementation yet
@@ -51,11 +49,7 @@ class AliPHOSv0 : public AliPHOS {
   virtual Float_t ZMin() const;                    // overall dimension of the module (min)
   virtual Float_t ZMax() const;                    // overall dimension of the module (max)
 
-  virtual AliPHOSGeometry * GetGeometry() const {
-    // gets the pointer to the AliPHOSGeometry unique instance  
-    return fGeom ; 
-  }  
-  virtual void   Init(void) ;                                       // does nothing
+  virtual void   Init(void) ;                      // does nothing
   virtual Int_t  IsVersion(void) const { 
     // Gives the version number 
     return 0 ; 
@@ -73,8 +67,7 @@ class AliPHOSv0 : public AliPHOS {
   
  protected:
   
-  AliPHOSGeometry * fGeom ;                       // Geometry definition
-  
+
   ClassDef(AliPHOSv0,1)  // Implementation of PHOS manager class for layout EMC+PPSD
     
     };

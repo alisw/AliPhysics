@@ -124,10 +124,10 @@ AliPHOSv1::AliPHOSv1(AliPHOSReconstructioner * Reconstructioner, const char *nam
   fIshunt     =  1 ; // All hits are associated with primary particles
  
   // gets an instance of the geometry parameters class  
-  fGeom =  AliPHOSGeometry::GetInstance(title, "") ; 
+  AliPHOSGeometry::GetInstance(title, "") ; 
 
-  if (fGeom->IsInitialized() ) 
-    cout << "AliPHOS" << Version() << " : PHOS geometry intialized for " << fGeom->GetName() << endl ;
+  if (GetGeometry()->IsInitialized() ) 
+    cout << "AliPHOS" << Version() << " : PHOS geometry intialized for " << GetGeometry()->GetName() << endl ;
   else
     cout << "AliPHOS" << Version() << " : PHOS geometry initialization failed !" << endl ;   
 
@@ -296,7 +296,7 @@ void AliPHOSv1::SDigits2Digits()
   Int_t idCurSDigit = ((AliPHOSDigit *)fSDigits->At(0))->GetId() ;
 
   Int_t absID ;
-  for(absID = 1; absID < fGeom->GetNModules()*fGeom->GetNPhi()*fGeom->GetNZ(); absID++){
+  for(absID = 1; absID < GetGeometry()->GetNModules()*GetGeometry()->GetNPhi()*GetGeometry()->GetNZ(); absID++){
     Float_t noise = gRandom->Gaus(0., fPinElectronicNoise) ; 
     if(absID < idCurSDigit ){ 
       if(noise >fDigitThreshold ){
@@ -331,8 +331,8 @@ void AliPHOSv1::SDigits2Digits()
     Float_t ene = Calibrate(digit->GetAmp()) ;
     
     Int_t relid[4] ; 
-    fGeom->AbsToRelNumbering(digit->GetId(), relid) ; 
-    if ( relid[0] > fGeom->GetNCPVModules() ){ //ppsd
+    GetGeometry()->AbsToRelNumbering(digit->GetId(), relid) ; 
+    if ( relid[0] > GetGeometry()->GetNCPVModules() ){ //ppsd
       if ( ( (relid[1] > 0) && (ene > fPpsdEnergyThreshold)) ||    //PPSD digit
 	   ( (relid[1] < 0) && (ene > fCpvEnergyThreshold ) ) )	   //CPV digit 
 	new((*fDigits)[fNdigits]) AliPHOSDigit( *digit ) ;
@@ -514,7 +514,7 @@ void AliPHOSv1::StepManager(void)
 
   Int_t tracknumber =  gAlice->CurrentTrack() ; 
   Int_t primary     =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
-  TString name      =  fGeom->GetName() ; 
+  TString name      =  GetGeometry()->GetName() ; 
   Int_t trackpid    =  0  ; 
 
   if( gMC->IsTrackEntering() ){ // create hit with position and momentum of new particle, 
@@ -559,17 +559,17 @@ void AliPHOSv1::StepManager(void)
       if ( (xyze[3] != 0) || entered ) { // there is deposited energy or new particle entering  PPSD
        	gMC->CurrentVolOffID(5, relid[0]) ;  // get the PHOS Module number
 	if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(5),"PHO1") == 0 ){
-	  relid[0] += fGeom->GetNModules() - fGeom->GetNPPSDModules();
+	  relid[0] += GetGeometry()->GetNModules() - GetGeometry()->GetNPPSDModules();
 	}
        	gMC->CurrentVolOffID(3, relid[1]) ;  // get the Micromegas Module number 
-      // 1-> fGeom->GetNumberOfModulesPhi() * fGeom->GetNumberOfModulesZ() upper
-      //   > fGeom->GetNumberOfModulesPhi() * fGeom->GetNumberOfModulesZ() lower
+      // 1-> GetGeometry()->GetNumberOfModulesPhi() * GetGeometry()->GetNumberOfModulesZ() upper
+      //   > GetGeometry()->GetNumberOfModulesPhi() * GetGeometry()->GetNumberOfModulesZ() lower
        	gMC->CurrentVolOffID(1, relid[2]) ;  // get the row number of the cell
         gMC->CurrentVolID(relid[3]) ;        // get the column number 
 
 	// get the absolute Id number
 
-       	fGeom->RelToAbsNumbering(relid, absid) ; 
+       	GetGeometry()->RelToAbsNumbering(relid, absid) ; 
 
 	// add current hit to the hit list      
 	  AddHit(fIshunt, primary, tracknumber, absid, xyze, trackpid, pmom, xyd);
@@ -635,7 +635,7 @@ void AliPHOSv1::StepManager(void)
 	relid[3] = cpvDigit->GetYpad() ;                          // row    number of a pad
 	
 	// get the absolute Id number
-	fGeom->RelToAbsNumbering(relid, absid) ; 
+	GetGeometry()->RelToAbsNumbering(relid, absid) ; 
 
 	// add current digit to the temporary hit list
 	xyze[0] = 0. ;
@@ -669,14 +669,14 @@ void AliPHOSv1::StepManager(void)
       gMC->CurrentVolOffID(10, relid[0]) ; // get the PHOS module number ;
 
       if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(10),"PHO1") == 0 )
-	relid[0] += fGeom->GetNModules() - fGeom->GetNPPSDModules();      
+	relid[0] += GetGeometry()->GetNModules() - GetGeometry()->GetNPPSDModules();      
 
       relid[1] = 0   ;                    // means PBW04
       gMC->CurrentVolOffID(4, relid[2]) ; // get the row number inside the module
       gMC->CurrentVolOffID(3, relid[3]) ; // get the cell number inside the module
       
       // get the absolute Id number
-      fGeom->RelToAbsNumbering(relid, absid) ; 
+      GetGeometry()->RelToAbsNumbering(relid, absid) ; 
 
       // add current hit to the hit list
 	AddHit(fIshunt, primary,tracknumber, absid, xyze, trackpid,pmom, xyd);
@@ -701,7 +701,7 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumbe
   // 2 October 2000
   // ------------------------------------------------------------------------
 
-  const Float_t kCelWr  = fGeom->GetPadSizePhi()/2;  // Distance between wires (2 wires above 1 pad)
+  const Float_t kCelWr  = GetGeometry()->GetPadSizePhi()/2;  // Distance between wires (2 wires above 1 pad)
   const Float_t kDetR   = 0.1;     // Relative energy fluctuation in track for 100 e-
   const Float_t kdEdx   = 4.0;     // Average energy loss in CPV;
   const Int_t   kNgamz  = 5;       // Ionization size in Z
@@ -724,13 +724,13 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumbe
 
 //    cout << "CPVDigitize: YVK : "<<hitX<<" "<<hitZ<<" | "<<pX<<" "<<pZ<<" "<<pNorm<<endl;
 
-  Float_t dZY   = pZ/pNorm * fGeom->GetCPVGasThickness();
-  Float_t dXY   = pX/pNorm * fGeom->GetCPVGasThickness();
+  Float_t dZY   = pZ/pNorm * GetGeometry()->GetCPVGasThickness();
+  Float_t dXY   = pX/pNorm * GetGeometry()->GetCPVGasThickness();
   gRandom->Rannor(rnor1,rnor2);
   eloss *= (1 + kDetR*rnor1) *
-           TMath::Sqrt((1 + ( pow(dZY,2) + pow(dXY,2) ) / pow(fGeom->GetCPVGasThickness(),2)));
-  Float_t zhit1 = hitZ + fGeom->GetCPVActiveSize(1)/2 - dZY/2;
-  Float_t xhit1 = hitX + fGeom->GetCPVActiveSize(0)/2 - dXY/2;
+           TMath::Sqrt((1 + ( pow(dZY,2) + pow(dXY,2) ) / pow(GetGeometry()->GetCPVGasThickness(),2)));
+  Float_t zhit1 = hitZ + GetGeometry()->GetCPVActiveSize(1)/2 - dZY/2;
+  Float_t xhit1 = hitX + GetGeometry()->GetCPVActiveSize(0)/2 - dXY/2;
   Float_t zhit2 = zhit1 + dZY;
   Float_t xhit2 = xhit1 + dXY;
 
@@ -790,8 +790,8 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumbe
 
   // Finite size of ionization region
 
-  Int_t nCellZ  = fGeom->GetNumberOfCPVPadsZ();
-  Int_t nCellX  = fGeom->GetNumberOfCPVPadsPhi();
+  Int_t nCellZ  = GetGeometry()->GetNumberOfCPVPadsZ();
+  Int_t nCellX  = GetGeometry()->GetNumberOfCPVPadsPhi();
   Int_t nz3     = (kNgamz+1)/2;
   Int_t nx3     = (kNgamx+1)/2;
   cpvDigits->Expand(nIter*kNgamx*kNgamz);
@@ -802,8 +802,8 @@ void AliPHOSv1::CPVDigitize (TLorentzVector p, Float_t *zxhit, Int_t moduleNumbe
     Float_t zhit = zxe[0][iter];
     Float_t xhit = zxe[1][iter];
     Float_t qhit = zxe[2][iter];
-    Float_t zcell = zhit / fGeom->GetPadSizeZ();
-    Float_t xcell = xhit / fGeom->GetPadSizePhi();
+    Float_t zcell = zhit / GetGeometry()->GetPadSizeZ();
+    Float_t xcell = xhit / GetGeometry()->GetPadSizePhi();
     if ( zcell<=0      || xcell<=0 ||
 	 zcell>=nCellZ || xcell>=nCellX) return;
     Int_t izcell = (Int_t) zcell;
@@ -840,10 +840,10 @@ Float_t AliPHOSv1::CPVPadResponseFunction(Float_t qhit, Float_t zhit, Float_t xh
   // 3 October 2000
   // ------------------------------------------------------------------------
 
-  Double_t dz = fGeom->GetPadSizeZ()   / 2;
-  Double_t dx = fGeom->GetPadSizePhi() / 2;
-  Double_t z  = zhit * fGeom->GetPadSizeZ();
-  Double_t x  = xhit * fGeom->GetPadSizePhi();
+  Double_t dz = GetGeometry()->GetPadSizeZ()   / 2;
+  Double_t dx = GetGeometry()->GetPadSizePhi() / 2;
+  Double_t z  = zhit * GetGeometry()->GetPadSizeZ();
+  Double_t x  = xhit * GetGeometry()->GetPadSizePhi();
   Double_t amplitude = qhit *
     (CPVCumulPadResponse(z+dz,x+dx) - CPVCumulPadResponse(z+dz,x-dx) -
      CPVCumulPadResponse(z-dz,x+dx) + CPVCumulPadResponse(z-dz,x-dx));

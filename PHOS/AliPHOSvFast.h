@@ -41,7 +41,6 @@ public:
   virtual void   BuildGeometry(void) ;                               // creates the geometry for the ROOT display
   virtual void   CreateGeometry(void) ;                              // creates the geometry for GEANT
   Float_t        GetBigBox(Int_t index) ;                             
-  virtual AliPHOSGeometry * GetGeometry() { return fGeom ; }  
   virtual void   Init(void) ;                                        // does nothing
   Int_t   IsVersion(void) const { return -1 ; }
   void    MakeBranch(Option_t* opt, const char *file=0) ;
@@ -72,7 +71,6 @@ private:
   Float_t fBigBoxY ;                         // main box containing all PHOS (EMC+PPSD)
   Float_t fBigBoxZ ;                         // main box containing all PHOS (EMC+PPSD)
   TClonesArray * fFastRecParticles ;         // list of particles modified by the response function 
-  AliPHOSGeometry * fGeom ;                  // geometry definition
   Int_t fNRecParticles ;                     // number of detected particles
   TRandom fRan ;                             // random number generator
   Double_t fResPara1 ;                       // parameter for the energy resolution dependence  
