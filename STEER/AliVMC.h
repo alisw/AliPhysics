@@ -30,7 +30,7 @@ private:
 public:
   AliVMC(const char *name, const char *title);
   AliVMC() {}
-  ~AliVMC() {if(gMC) delete gMC; fgVMC=gVMC=0;}
+  virtual ~AliVMC() {if(gMC) delete gMC; fgVMC=gVMC=0;}
   //Generic access functions
   static AliVMC* GetVMC() {return fgVMC;}
   //Generic Alice MonteCarlo Functions
