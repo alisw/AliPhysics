@@ -22,7 +22,7 @@
 ClassImp(AliITSsegmentationSPD)
 
 
-Float_t AliITSsegmentationSPD::ColFromZ300(Float_t z) {
+Float_t ColFromZ300(Float_t z) {
 // Get column number for each z-coordinate taking into account the 
 // extra pixels in z direction assuming 300 micron sized pixels.
      Float_t col = 0.0;
@@ -31,7 +31,7 @@ Float_t AliITSsegmentationSPD::ColFromZ300(Float_t z) {
      return col;
 }
 //_____________________________________________________________________________
-Float_t AliITSsegmentationSPD::ZFromCol300(Int_t col) {
+Float_t ZFromCol300(Int_t col) {
 // same comments as above
 // Get z-coordinate for each colunm number
   Float_t pitchz = 300.0;
@@ -40,34 +40,17 @@ Float_t AliITSsegmentationSPD::ZFromCol300(Int_t col) {
   return z;
 }
 //_____________________________________________________________________________
-Float_t AliITSsegmentationSPD::ZpitchFromCol300(Int_t col) {
+Float_t ZpitchFromCol300(Int_t col) {
   // returns Z pixel pitch for 300 micron pixels.
   return 300.0;
 }
 //_____________________________________________________________________________
-Float_t AliITSsegmentationSPD::ColFromZ(Float_t z) {
-    // hard-wired - keep it like this till we can parametrise 
-    // and get rid of AliITSgeomSPD425
-    // Get column number for each z-coordinate taking into account the 
-    // extra pixels in z direction 
-    Int_t i;
-    Float_t s,col;
+Float_t ColFromZ(Float_t z) {
+// hard-wired - keep it like this till we can parametrise 
+// and get rid of AliITSgeomSPD425
+// Get column number for each z-coordinate taking into account the 
+// extra pixels in z direction 
 
-    if(z<0||z>fDz){
-	Error("ColFromZ","z=%f outside of range 0.0<=z<fDz=%f",z,fDz);
-	return 0.0; // error
-    } // end if outsize of detector
-    s = 0.0;
-    i = -1;
-    while(z>s){
-	i++;
-	s += fCellSizeZ[i];
-    } // end while
-    s -= fCellSizeZ[i];
-    col = (Float_t) i + (z-s)/fCellSizeZ[i];
-    return col;
-
-/*
   Float_t col = 0;
   Float_t pitchz = 425;
   if( z < 13175) {
@@ -98,26 +81,14 @@ Float_t AliITSsegmentationSPD::ColFromZ(Float_t z) {
   } else if( z < 83600) {  
     col = 161 + (z - 70425)/pitchz;
   }   
-  return TMath::Abs(col);*/
+  return TMath::Abs(col);
 }
 
 //_____________________________________________________________________________
-Float_t AliITSsegmentationSPD::ZFromCol(Int_t col) {
-    // same comments as above
-    // Get z-coordinate for each colunm number
-    Int_t i;
-    Float_t z;
+Float_t ZFromCol(Int_t col) {
+// same comments as above
+// Get z-coordinate for each colunm number
 
-    if(col<0||col>=fNpz){
-	Error("ZFromCol","col=%d outside of range 0<=col<fNpZ=%d",col,fNpz);
-	return 0.0; // error
-    } // end if outsize of detector
-    z = 0.0;
-    for(i=0;i<col;i++) z += fCellSizeZ[i];
-    z += 0.5*fCellSizeZ[col];
-    return z;
-
-/* 
   Float_t pitchz = 425;
   Float_t z = 0;
   if( col >=0 && col <= 30 ) {  
@@ -149,13 +120,13 @@ Float_t AliITSsegmentationSPD::ZFromCol(Int_t col) {
     z = 70425 + (col -161 + 0.5)*pitchz;    
   }
 
-  return z;*/
+  return z;
 }
 //______________________________________________________________________
-Float_t AliITSsegmentationSPD::ZpitchFromCol(Int_t col) {
-    // Get pitch size in z direction for each colunm
+Float_t ZpitchFromCol(Int_t col) {
+// Get pitch size in z direction for each colunm
 
-   Float_t pitchz = 425;
+    Float_t pitchz = 425;
     if(col < 0){
 	pitchz = 0.0;
     } else if(col >=  31 && col <=  32) {
@@ -168,7 +139,7 @@ Float_t AliITSsegmentationSPD::ZpitchFromCol(Int_t col) {
 	pitchz = 625;
     } else if(col >= 159 && col <= 160) {
 	pitchz = 625;
-    } else if(col>=192){
+    } else if(col>192){
 	pitchz = 0.0;
     }
     return pitchz;
@@ -286,15 +257,13 @@ void AliITSsegmentationSPD::SetDetSize(Float_t p1, Float_t p2, Float_t p3){
 }
 //------------------------------
 Float_t AliITSsegmentationSPD::Dpx(Int_t i){
-    //returs x pixel pitch for a give pixel
-    if(i<0||i>=256) return 0.0;
-    return fCellSizeX[i];
+   //returs x pixel pitch for a give pixel
+   return fCellSizeX[i];
 }
 //------------------------------
 Float_t AliITSsegmentationSPD::Dpz(Int_t i){
-    // returns z pixel pitch for a give pixel
-    if(i<0||i>=280) return 0.0;
-    return fCellSizeZ[i];
+  // returns z pixel pitch for a give pixel
+   return ZpitchFromCol(i);
 }
 //------------------------------
 void AliITSsegmentationSPD::GetPadIxz(Float_t x,Float_t z,Int_t &ix,Int_t &iz){

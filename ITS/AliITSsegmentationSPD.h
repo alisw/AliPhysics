@@ -76,13 +76,6 @@ public AliITSsegmentation {
     virtual void Neighbours
        (Int_t iX,Int_t iZ,Int_t* Nlist,Int_t Xlist[10],Int_t Zlist[10]);
 
- private:
-    Float_t ColFromZ300(Float_t z);
-    Float_t ZFromCol300(Int_t col);
-    Float_t ZpitchFromCol300(Int_t col);
-    Float_t ColFromZ(Float_t z);
-    Float_t ZFromCol(Int_t col);
-    Float_t ZpitchFromCol(Int_t col);
     
   protected:
 
