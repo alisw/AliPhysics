@@ -40,13 +40,12 @@ class AliHBTReaderTPC: public AliHBTReader
     
     Int_t OpenFiles(TFile*&,TFile*&,TFile*&,Int_t);//opens files to be read for given event
     void CloseFiles(TFile*&,TFile*&,TFile*&);//close files
-    TString& GetDirName(Int_t);
+
     
     
     AliHBTRun* fParticles; //!simulated particles
     AliHBTRun* fTracks; //!reconstructed tracks (particles)
     
-    TObjArray* fDirs;
 
     TString fTrackFileName;//name of the file with tracks
     TString fClusterFileName;//name of the file with clusters
