@@ -343,12 +343,12 @@ check-@MODULE@: $(@PACKAGE@CHECKS)
 # IRST coding rule check
 @MODULE@/check/$(SUBDIR)/%.viol : @MODULE@/check/$(SUBDIR)/%.i
 	@cd @MODULE@ ; [ -r @MODULE@ ] || ln -s ../@MODULE@ @MODULE@
-	-@echo $@ ; $(CODE_CHECK) $< ./@MODULE@/$(@PACKAGE@SDIR) > $@
+	$(MUTE)echo $@ ; $(CODE_CHECK) $< ./@MODULE@/$(@PACKAGE@SDIR) > $@
 
 # IRST coding rule check
 @MODULE@/check/%.viol : @MODULE@/check/%.i
 	@cd @MODULE@ ; [ -r @MODULE@ ] || ln -s ../@MODULE@ @MODULE@
-	-@echo $@ ; $(CODE_CHECK) $< ./@MODULE@ > $@
+	$(MUTE)echo $@ ; $(CODE_CHECK) $< ./@MODULE@ > $@
 
 @PACKAGE@PREPROC       = $(patsubst %.viol,%.i,$(@PACKAGE@CHECKS))
 
