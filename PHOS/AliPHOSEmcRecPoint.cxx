@@ -487,6 +487,7 @@ void AliPHOSEmcRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * dig
   fLocPos.SetY(0.) ;
   fLocPos.SetZ(z - depthz)  ;
 
+  fLocPosM = 0 ;
 }
 
 //____________________________________________________________________________
@@ -595,8 +596,13 @@ void AliPHOSEmcRecPoint::Print(Option_t * option)
     cout  << fEnergyList[iDigit] << "  ";
   cout << endl ;
   
+  cout << " Primaries  " ;
+  for(iDigit = 0;iDigit < fMulTrack; iDigit++)
+    cout << fTracksList[iDigit] << " " << endl ;
+	
   cout << "       Multiplicity    = " << fMulDigit  << endl ;
   cout << "       Cluster Energy  = " << fAmp << endl ;
+  cout << "       Number of primaries " << fMulTrack << endl ;
   cout << "       Stored at position " << GetIndexInList() << endl ; 
  
 }
