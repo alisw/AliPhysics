@@ -271,8 +271,6 @@ void AliSTARTv0::DrawDetector()
 // Draw a shaded view of the Forward multiplicity detector version 0
 //
 
-AliMC* gMC = AliMC::GetMC();
-
 //Set ALIC mother transparent
 gMC->Gsatt("ALIC","SEEN",0);
 //
@@ -294,13 +292,13 @@ gMC->Gdopt("hide","off");
 //-------------------------------------------------------------------
 void AliSTARTv0::Init()
 {
-// Initialises version 0 of the Forward Multiplicity Detector
-//
-AliMC* gMC=AliMC::GetMC();
-//Int_t *idtmed  = gAlice->Idtmed();
-AliSTART::Init();
-fIdSens1=gMC->VolId("PTOP");
-printf("*** START version 0 initialized ***\n");
+  // Initialises version 0 of the Forward Multiplicity Detector
+  //
+  
+  //Int_t *idtmed  = gAlice->Idtmed();
+  AliSTART::Init();
+  fIdSens1=gMC->VolId("PTOP");
+  printf("*** START version 0 initialized ***\n");
  
 }
 
@@ -315,7 +313,7 @@ void AliSTARTv0::StepManager()
   static Float_t hits[7];
   static Float_t edep;
   static Int_t vol[2];
- TLorentzVector pos;
+  TLorentzVector pos;
 
   TClonesArray &lhits = *fHits;
   //AliMC* gMC=AliMC::GetMC();
