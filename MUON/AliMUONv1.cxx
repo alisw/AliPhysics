@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/10/06 09:06:31  morsch
+Include Slat chambers (stations 3-5) into geometry (A. de Falco)
+
 Revision 1.7  2000/10/02 21:28:09  fca
 Removal of useless dependecies via forward declarations
 
@@ -475,230 +478,232 @@ void AliMUONv1::CreateGeometry()
      const Int_t nPCB3[nSlats3] = {4,4,3,2}; // n PCB per slat
 
       // sensitive area: 40*40 cm**2
-     const Float_t SensLength = 40.; 
-     const Float_t SensHeight = 40.; 
-     const Float_t SensWidth  = 0.5; // according to TDR fig 2.120 
-     const Int_t SensMaterial = idGas;
+     const Float_t sensLength = 40.; 
+     const Float_t sensHeight = 40.; 
+     const Float_t sensWidth  = 0.5; // according to TDR fig 2.120 
+     const Int_t sensMaterial = idGas;
      const Float_t yOverlap   = 1.5; 
 
      // PCB dimensions in cm; width: 30 mum copper   
-     const Float_t PCBLength  = SensLength; 
-     const Float_t PCBHeight  = 60.; 
-     const Float_t PCBWidth   = 0.003;   
-     const Int_t PCBMaterial  = idCopper;
+     const Float_t pcbLength  = sensLength; 
+     const Float_t pcbHeight  = 60.; 
+     const Float_t pcbWidth   = 0.003;   
+     const Int_t pcbMaterial  = idCopper;
 
      // Insulating material: 200 mum glass fiber glued to pcb  
-     const Float_t InsuLength = PCBLength; 
-     const Float_t InsuHeight = PCBHeight; 
-     const Float_t InsuWidth  = 0.020;   
-     const Int_t InsuMaterial = idGlass;
+     const Float_t insuLength = pcbLength; 
+     const Float_t insuHeight = pcbHeight; 
+     const Float_t insuWidth  = 0.020;   
+     const Int_t insuMaterial = idGlass;
 
      // Carbon fiber panels: 200mum carbon/epoxy skin   
-     const Float_t PanelLength = SensLength; 
-     const Float_t PanelHeight = SensHeight; 
-     const Float_t PanelWidth  = 0.020;      
-     const Int_t PanelMaterial = idCarbon;
+     const Float_t panelLength = sensLength; 
+     const Float_t panelHeight = sensHeight; 
+     const Float_t panelWidth  = 0.020;      
+     const Int_t panelMaterial = idCarbon;
 
      // rohacell between the two carbon panels   
-     const Float_t RohaLength = SensLength; 
-     const Float_t RohaHeight = SensHeight; 
-     const Float_t RohaWidth  = 0.5;
-     const Int_t RohaMaterial = idRoha;
+     const Float_t rohaLength = sensLength; 
+     const Float_t rohaHeight = sensHeight; 
+     const Float_t rohaWidth  = 0.5;
+     const Int_t rohaMaterial = idRoha;
 
      // Frame around the slat: 2 sticks along length,2 along height  
      // H: the horizontal ones 
-     const Float_t HFrameLength = PCBLength; 
-     const Float_t HFrameHeight = 1.5; 
-     const Float_t HFrameWidth  = SensWidth; 
-     const Int_t HFrameMaterial = idGlass;
+     const Float_t hFrameLength = pcbLength; 
+     const Float_t hFrameHeight = 1.5; 
+     const Float_t hFrameWidth  = sensWidth; 
+     const Int_t hFrameMaterial = idGlass;
 
      // V: the vertical ones 
-     const Float_t VFrameLength = 4.0; 
-     const Float_t VFrameHeight = SensHeight + HFrameHeight; 
-     const Float_t VFrameWidth  = SensWidth;
-     const Int_t VFrameMaterial = idGlass;
+     const Float_t vFrameLength = 4.0; 
+     const Float_t vFrameHeight = sensHeight + hFrameHeight; 
+     const Float_t vFrameWidth  = sensWidth;
+     const Int_t vFrameMaterial = idGlass;
 
      // B: the horizontal border filled with rohacell 
-     const Float_t BFrameLength = HFrameLength; 
-     const Float_t BFrameHeight = (PCBHeight - SensHeight)/2. - HFrameHeight; 
-     const Float_t BFrameWidth  = HFrameWidth;
-     const Int_t BFrameMaterial = idRoha;
+     const Float_t bFrameLength = hFrameLength; 
+     const Float_t bFrameHeight = (pcbHeight - sensHeight)/2. - hFrameHeight; 
+     const Float_t bFrameWidth  = hFrameWidth;
+     const Int_t bFrameMaterial = idRoha;
 
      // NULOC: 30 mum copper + 200 mum vetronite (same radiation length as 14mum copper)
-     const Float_t NulocLength = 2.5; 
-     const Float_t NulocHeight = 7.5; 
-     const Float_t NulocWidth  = 0.0030 + 0.0014; // equivalent copper width of vetronite; 
-     const Int_t   NulocMaterial = idCopper;
+     const Float_t nulocLength = 2.5; 
+     const Float_t nulocHeight = 7.5; 
+     const Float_t nulocWidth  = 0.0030 + 0.0014; // equivalent copper width of vetronite; 
+     const Int_t   nulocMaterial = idCopper;
 
      // Gassiplex package 
-     const Float_t GassiLength   = 1.0; 
-     const Float_t GassiHeight   = 1.0; 
-     const Float_t GassiWidth    = 0.15; // check it !!!
-     const Int_t   GassiMaterial = idGlass; 
+     const Float_t gassiLength   = 1.0; 
+     const Float_t gassiHeight   = 1.0; 
+     const Float_t gassiWidth    = 0.15; // check it !!!
+     const Int_t   gassiMaterial = idGlass; 
 
      // slat dimensions: slat is a MOTHER volume!!! made of air
-     Float_t SlatLength[nSlats3]; 
-     const Float_t SlatHeight = PCBHeight; 
-     const Float_t SlatWidth = SensWidth + 2.*(PCBWidth + InsuWidth + 
-					       2.* PanelWidth + RohaWidth);
-     const Int_t SlatMaterial = idAir;
-     const Float_t dSlatLength = VFrameLength; // border on left and right 
+     Float_t slatLength[nSlats3]; 
+     const Float_t slatHeight = pcbHeight; 
+     const Float_t slatWidth = sensWidth + 2.*(pcbWidth + insuWidth + 
+					       2.* panelWidth + rohaWidth);
+     const Int_t slatMaterial = idAir;
+     const Float_t dSlatLength = vFrameLength; // border on left and right 
 
      // create and position the slat (mother) volumes 
      Float_t spar[3];  
-     char VolNam5[5];
-     char VolNam6[5];
+     char volNam5[5];
+     char volNam6[5];
      Float_t xSlat[nSlats3];
      Float_t ySlat[nSlats3];
-
-     for (Int_t i = 0; i<nSlats3; i++){
-       SlatLength[i] = PCBLength * nPCB3[i] + 2. * dSlatLength; 
-       xSlat[i] = SlatLength[i]/2.; 
-       ySlat[i] = SensHeight * (i+0.5) - yOverlap * i; 
-       spar[0] = SlatLength[i]/2.; 
-       spar[1] = SlatHeight/2.;
-       spar[2] = SlatWidth/2.; 
+     Int_t i, j;
+     for (i = 0; i<nSlats3; i++){
+       slatLength[i] = pcbLength * nPCB3[i] + 2. * dSlatLength; 
+       xSlat[i] = slatLength[i]/2.; 
+       ySlat[i] = sensHeight * (i+0.5) - yOverlap * i; 
+       spar[0] = slatLength[i]/2.; 
+       spar[1] = slatHeight/2.;
+       spar[2] = slatWidth/2.; 
        // zSlat to be checked (odd downstream or upstream?)
-       Float_t zSlat = (i%2 ==0)? -SlatWidth/2. : SlatWidth/2.; 
-       sprintf(VolNam5,"S05%d",i);
-       gMC->Gsvolu(VolNam5,"BOX",SlatMaterial,spar,3);
-       gMC->Gspos(VolNam5, i*4+1,"C05M", xSlat[i], ySlat[i], zSlat, 0, "ONLY");
-       gMC->Gspos(VolNam5, i*4+2,"C05M",-xSlat[i], ySlat[i], zSlat, 0, "ONLY");
-       gMC->Gspos(VolNam5, i*4+3,"C05M", xSlat[i],-ySlat[i],-zSlat, 0, "ONLY");
-       gMC->Gspos(VolNam5, i*4+4,"C05M",-xSlat[i],-ySlat[i],-zSlat, 0, "ONLY");
-       sprintf(VolNam6,"S06%d",i);
-       gMC->Gsvolu(VolNam6,"BOX",SlatMaterial,spar,3);
-       gMC->Gspos(VolNam6, i*4+1,"C06M", xSlat[i], ySlat[i], zSlat, 0, "ONLY");
-       gMC->Gspos(VolNam6, i*4+2,"C06M",-xSlat[i], ySlat[i], zSlat, 0, "ONLY");
-       gMC->Gspos(VolNam6, i*4+3,"C06M", xSlat[i],-ySlat[i],-zSlat, 0, "ONLY");
-       gMC->Gspos(VolNam6, i*4+4,"C06M",-xSlat[i],-ySlat[i],-zSlat, 0, "ONLY");
+       Float_t zSlat = (i%2 ==0)? -slatWidth/2. : slatWidth/2.; 
+       sprintf(volNam5,"S05%d",i);
+       gMC->Gsvolu(volNam5,"BOX",slatMaterial,spar,3);
+       gMC->Gspos(volNam5, i*4+1,"C05M", xSlat[i], ySlat[i], zSlat, 0, "ONLY");
+       gMC->Gspos(volNam5, i*4+2,"C05M",-xSlat[i], ySlat[i], zSlat, 0, "ONLY");
+       gMC->Gspos(volNam5, i*4+3,"C05M", xSlat[i],-ySlat[i],-zSlat, 0, "ONLY");
+       gMC->Gspos(volNam5, i*4+4,"C05M",-xSlat[i],-ySlat[i],-zSlat, 0, "ONLY");
+       sprintf(volNam6,"S06%d",i);
+       gMC->Gsvolu(volNam6,"BOX",slatMaterial,spar,3);
+       gMC->Gspos(volNam6, i*4+1,"C06M", xSlat[i], ySlat[i], zSlat, 0, "ONLY");
+       gMC->Gspos(volNam6, i*4+2,"C06M",-xSlat[i], ySlat[i], zSlat, 0, "ONLY");
+       gMC->Gspos(volNam6, i*4+3,"C06M", xSlat[i],-ySlat[i],-zSlat, 0, "ONLY");
+       gMC->Gspos(volNam6, i*4+4,"C06M",-xSlat[i],-ySlat[i],-zSlat, 0, "ONLY");
      }
 
      // create the sensitive volumes (subdivided as the PCBs),
-     Float_t SensPar[3] = { SensLength/2., SensHeight/2., SensWidth/2. }; 
-     gMC->Gsvolu("S05G","BOX",SensMaterial,SensPar,3);
-     gMC->Gsvolu("S06G","BOX",SensMaterial,SensPar,3);
+     Float_t sensPar[3] = { sensLength/2., sensHeight/2., sensWidth/2. }; 
+     gMC->Gsvolu("S05G","BOX",sensMaterial,sensPar,3);
+     gMC->Gsvolu("S06G","BOX",sensMaterial,sensPar,3);
 
      // create the PCB volume 
-     Float_t PCBpar[3] = { PCBLength/2., PCBHeight/2., PCBWidth/2. }; 
-     gMC->Gsvolu("S05P","BOX",PCBMaterial,PCBpar,3);
-     gMC->Gsvolu("S06P","BOX",PCBMaterial,PCBpar,3);
+     Float_t pcbpar[3] = { pcbLength/2., pcbHeight/2., pcbWidth/2. }; 
+     gMC->Gsvolu("S05P","BOX",pcbMaterial,pcbpar,3);
+     gMC->Gsvolu("S06P","BOX",pcbMaterial,pcbpar,3);
  
      // create the insulating material volume 
-     Float_t Insupar[3] = { InsuLength/2., InsuHeight/2., InsuWidth/2. }; 
-     gMC->Gsvolu("S05I","BOX",InsuMaterial,Insupar,3);
-     gMC->Gsvolu("S06I","BOX",InsuMaterial,Insupar,3);
+     Float_t insupar[3] = { insuLength/2., insuHeight/2., insuWidth/2. }; 
+     gMC->Gsvolu("S05I","BOX",insuMaterial,insupar,3);
+     gMC->Gsvolu("S06I","BOX",insuMaterial,insupar,3);
 
      // create the panel volume 
-     Float_t Panelpar[3] = { PanelLength/2., PanelHeight/2., PanelWidth/2. }; 
-     gMC->Gsvolu("S05C","BOX",PanelMaterial,Panelpar,3);
-     gMC->Gsvolu("S06C","BOX",PanelMaterial,Panelpar,3);
+     Float_t panelpar[3] = { panelLength/2., panelHeight/2., panelWidth/2. }; 
+     gMC->Gsvolu("S05C","BOX",panelMaterial,panelpar,3);
+     gMC->Gsvolu("S06C","BOX",panelMaterial,panelpar,3);
 
      // create the rohacell volume 
-     Float_t Rohapar[3] = { RohaLength/2., RohaHeight/2., RohaWidth/2. }; 
-     gMC->Gsvolu("S05R","BOX",RohaMaterial,Rohapar,3);
-     gMC->Gsvolu("S06R","BOX",RohaMaterial,Rohapar,3);
+     Float_t rohapar[3] = { rohaLength/2., rohaHeight/2., rohaWidth/2. }; 
+     gMC->Gsvolu("S05R","BOX",rohaMaterial,rohapar,3);
+     gMC->Gsvolu("S06R","BOX",rohaMaterial,rohapar,3);
 
      // create the vertical frame volume 
-     Float_t VFramepar[3]={VFrameLength/2., VFrameHeight/2., VFrameWidth/2.}; 
-     gMC->Gsvolu("S05V","BOX",VFrameMaterial,VFramepar,3);
-     gMC->Gsvolu("S06V","BOX",VFrameMaterial,VFramepar,3);
+     Float_t vFramepar[3]={vFrameLength/2., vFrameHeight/2., vFrameWidth/2.}; 
+     gMC->Gsvolu("S05V","BOX",vFrameMaterial,vFramepar,3);
+     gMC->Gsvolu("S06V","BOX",vFrameMaterial,vFramepar,3);
 
      // create the horizontal frame volume 
-     Float_t HFramepar[3]={HFrameLength/2., HFrameHeight/2., HFrameWidth/2.}; 
-     gMC->Gsvolu("S05H","BOX",HFrameMaterial,HFramepar,3);
-     gMC->Gsvolu("S06H","BOX",HFrameMaterial,HFramepar,3);
+     Float_t hFramepar[3]={hFrameLength/2., hFrameHeight/2., hFrameWidth/2.}; 
+     gMC->Gsvolu("S05H","BOX",hFrameMaterial,hFramepar,3);
+     gMC->Gsvolu("S06H","BOX",hFrameMaterial,hFramepar,3);
 
      // create the horizontal border volume 
-     Float_t BFramepar[3]={BFrameLength/2., BFrameHeight/2., BFrameWidth/2.}; 
-     gMC->Gsvolu("S05B","BOX",BFrameMaterial,BFramepar,3);
-     gMC->Gsvolu("S06B","BOX",BFrameMaterial,BFramepar,3);
+     Float_t bFramepar[3]={bFrameLength/2., bFrameHeight/2., bFrameWidth/2.}; 
+     gMC->Gsvolu("S05B","BOX",bFrameMaterial,bFramepar,3);
+     gMC->Gsvolu("S06B","BOX",bFrameMaterial,bFramepar,3);
 
      Int_t index=0; 
-     for (Int_t i = 0; i<nSlats3; i++){
-       sprintf(VolNam5,"S05%d",i);
-       sprintf(VolNam6,"S06%d",i);
-       Float_t xvframe  = (SlatLength[i] - VFrameLength)/2.;
-       gMC->Gspos("S05V",2*i-1,VolNam5, xvframe, 0., 0. , 0, "ONLY");
-       gMC->Gspos("S05V",2*i  ,VolNam5,-xvframe, 0., 0. , 0, "ONLY");
-       gMC->Gspos("S06V",2*i-1,VolNam6, xvframe, 0., 0. , 0, "ONLY");
-       gMC->Gspos("S06V",2*i  ,VolNam6,-xvframe, 0., 0. , 0, "ONLY");
-       for (Int_t j=0; j<nPCB3[i]; j++){
+     for (i = 0; i<nSlats3; i++){
+       sprintf(volNam5,"S05%d",i);
+       sprintf(volNam6,"S06%d",i);
+       Float_t xvFrame  = (slatLength[i] - vFrameLength)/2.;
+       gMC->Gspos("S05V",2*i-1,volNam5, xvFrame, 0., 0. , 0, "ONLY");
+       gMC->Gspos("S05V",2*i  ,volNam5,-xvFrame, 0., 0. , 0, "ONLY");
+       gMC->Gspos("S06V",2*i-1,volNam6, xvFrame, 0., 0. , 0, "ONLY");
+       gMC->Gspos("S06V",2*i  ,volNam6,-xvFrame, 0., 0. , 0, "ONLY");
+       for (j=0; j<nPCB3[i]; j++){
 	 index++;
-	 Float_t xx = SensLength * (-nPCB3[i]/2.+j+.5); 
+	 Float_t xx = sensLength * (-nPCB3[i]/2.+j+.5); 
 	 Float_t yy = 0.;
 	 Float_t zSens = 0.;  
-	 gMC->Gspos("S05G",index,VolNam5, xx, yy, zSens , 0, "ONLY");
-	 gMC->Gspos("S06G",index,VolNam6, xx, yy, zSens , 0, "ONLY");
-	 Float_t zPCB = (SensWidth+PCBWidth)/2.; 
-	 gMC->Gspos("S05P",2*index-1,VolNam5, xx, yy, zPCB , 0, "ONLY");
-	 gMC->Gspos("S05P",2*index  ,VolNam5, xx, yy,-zPCB , 0, "ONLY");
-	 gMC->Gspos("S06P",2*index-1,VolNam6, xx, yy, zPCB , 0, "ONLY");
-	 gMC->Gspos("S06P",2*index  ,VolNam6, xx, yy,-zPCB , 0, "ONLY");
-	 Float_t zInsu = (InsuWidth+PCBWidth)/2. + zPCB; 
-	 gMC->Gspos("S05I",2*index-1,VolNam5, xx, yy, zInsu , 0, "ONLY");
-	 gMC->Gspos("S05I",2*index  ,VolNam5, xx, yy,-zInsu , 0, "ONLY");
-	 gMC->Gspos("S06I",2*index-1,VolNam6, xx, yy, zInsu , 0, "ONLY");
-	 gMC->Gspos("S06I",2*index  ,VolNam6, xx, yy,-zInsu , 0, "ONLY");
-	 Float_t zPanel1 = (InsuWidth+PanelWidth)/2. + zInsu; 
-	 gMC->Gspos("S05C",4*index-3,VolNam5, xx, yy, zPanel1 , 0, "ONLY");
-	 gMC->Gspos("S05C",4*index-2,VolNam5, xx, yy,-zPanel1 , 0, "ONLY");
-	 gMC->Gspos("S06C",4*index-3,VolNam6, xx, yy, zPanel1 , 0, "ONLY");
-	 gMC->Gspos("S06C",4*index-2,VolNam6, xx, yy,-zPanel1 , 0, "ONLY");
-	 Float_t zRoha = (RohaWidth+PanelWidth)/2. + zPanel1; 
-	 gMC->Gspos("S05R",2*index-1,VolNam5, xx, yy, zRoha , 0, "ONLY");
-	 gMC->Gspos("S05R",2*index  ,VolNam5, xx, yy,-zRoha , 0, "ONLY");
-	 gMC->Gspos("S06R",2*index-1,VolNam6, xx, yy, zRoha , 0, "ONLY");
-	 gMC->Gspos("S06R",2*index  ,VolNam6, xx, yy,-zRoha , 0, "ONLY");
-	 Float_t zPanel2 = (RohaWidth+PanelWidth)/2. + zRoha; 
-	 gMC->Gspos("S05C",4*index-1,VolNam5, xx, yy, zPanel2 , 0, "ONLY");
-	 gMC->Gspos("S05C",4*index  ,VolNam5, xx, yy,-zPanel2 , 0, "ONLY");
-	 gMC->Gspos("S06C",4*index-1,VolNam6, xx, yy, zPanel2 , 0, "ONLY");
-	 gMC->Gspos("S06C",4*index  ,VolNam6, xx, yy,-zPanel2 , 0, "ONLY");
-	 Float_t yframe = (SensHeight + HFrameHeight)/2.;
-	 gMC->Gspos("S05H",2*index-1,VolNam5, xx, yframe, 0. , 0, "ONLY");
-	 gMC->Gspos("S05H",2*index  ,VolNam5, xx,-yframe, 0. , 0, "ONLY");
-	 gMC->Gspos("S06H",2*index-1,VolNam6, xx, yframe, 0. , 0, "ONLY");
-	 gMC->Gspos("S06H",2*index  ,VolNam6, xx,-yframe, 0. , 0, "ONLY");
-	 Float_t yborder = (BFrameHeight + HFrameHeight)/2. + yframe;
-	 gMC->Gspos("S05B",2*index-1,VolNam5, xx, yborder, 0. , 0, "ONLY");
-	 gMC->Gspos("S05B",2*index  ,VolNam5, xx,-yborder, 0. , 0, "ONLY");
-	 gMC->Gspos("S06B",2*index-1,VolNam6, xx, yborder, 0. , 0, "ONLY");
-	 gMC->Gspos("S06B",2*index  ,VolNam6, xx,-yborder, 0. , 0, "ONLY");
+	 gMC->Gspos("S05G",index,volNam5, xx, yy, zSens , 0, "ONLY");
+	 gMC->Gspos("S06G",index,volNam6, xx, yy, zSens , 0, "ONLY");
+	 Float_t zPCB = (sensWidth+pcbWidth)/2.; 
+	 gMC->Gspos("S05P",2*index-1,volNam5, xx, yy, zPCB , 0, "ONLY");
+	 gMC->Gspos("S05P",2*index  ,volNam5, xx, yy,-zPCB , 0, "ONLY");
+	 gMC->Gspos("S06P",2*index-1,volNam6, xx, yy, zPCB , 0, "ONLY");
+	 gMC->Gspos("S06P",2*index  ,volNam6, xx, yy,-zPCB , 0, "ONLY");
+	 Float_t zInsu = (insuWidth+pcbWidth)/2. + zPCB; 
+	 gMC->Gspos("S05I",2*index-1,volNam5, xx, yy, zInsu , 0, "ONLY");
+	 gMC->Gspos("S05I",2*index  ,volNam5, xx, yy,-zInsu , 0, "ONLY");
+	 gMC->Gspos("S06I",2*index-1,volNam6, xx, yy, zInsu , 0, "ONLY");
+	 gMC->Gspos("S06I",2*index  ,volNam6, xx, yy,-zInsu , 0, "ONLY");
+	 Float_t zPanel1 = (insuWidth+panelWidth)/2. + zInsu; 
+	 gMC->Gspos("S05C",4*index-3,volNam5, xx, yy, zPanel1 , 0, "ONLY");
+	 gMC->Gspos("S05C",4*index-2,volNam5, xx, yy,-zPanel1 , 0, "ONLY");
+	 gMC->Gspos("S06C",4*index-3,volNam6, xx, yy, zPanel1 , 0, "ONLY");
+	 gMC->Gspos("S06C",4*index-2,volNam6, xx, yy,-zPanel1 , 0, "ONLY");
+	 Float_t zRoha = (rohaWidth+panelWidth)/2. + zPanel1; 
+	 gMC->Gspos("S05R",2*index-1,volNam5, xx, yy, zRoha , 0, "ONLY");
+	 gMC->Gspos("S05R",2*index  ,volNam5, xx, yy,-zRoha , 0, "ONLY");
+	 gMC->Gspos("S06R",2*index-1,volNam6, xx, yy, zRoha , 0, "ONLY");
+	 gMC->Gspos("S06R",2*index  ,volNam6, xx, yy,-zRoha , 0, "ONLY");
+	 Float_t zPanel2 = (rohaWidth+panelWidth)/2. + zRoha; 
+	 gMC->Gspos("S05C",4*index-1,volNam5, xx, yy, zPanel2 , 0, "ONLY");
+	 gMC->Gspos("S05C",4*index  ,volNam5, xx, yy,-zPanel2 , 0, "ONLY");
+	 gMC->Gspos("S06C",4*index-1,volNam6, xx, yy, zPanel2 , 0, "ONLY");
+	 gMC->Gspos("S06C",4*index  ,volNam6, xx, yy,-zPanel2 , 0, "ONLY");
+	 Float_t yframe = (sensHeight + hFrameHeight)/2.;
+	 gMC->Gspos("S05H",2*index-1,volNam5, xx, yframe, 0. , 0, "ONLY");
+	 gMC->Gspos("S05H",2*index  ,volNam5, xx,-yframe, 0. , 0, "ONLY");
+	 gMC->Gspos("S06H",2*index-1,volNam6, xx, yframe, 0. , 0, "ONLY");
+	 gMC->Gspos("S06H",2*index  ,volNam6, xx,-yframe, 0. , 0, "ONLY");
+	 Float_t yborder = (bFrameHeight + hFrameHeight)/2. + yframe;
+	 gMC->Gspos("S05B",2*index-1,volNam5, xx, yborder, 0. , 0, "ONLY");
+	 gMC->Gspos("S05B",2*index  ,volNam5, xx,-yborder, 0. , 0, "ONLY");
+	 gMC->Gspos("S06B",2*index-1,volNam6, xx, yborder, 0. , 0, "ONLY");
+	 gMC->Gspos("S06B",2*index  ,volNam6, xx,-yborder, 0. , 0, "ONLY");
        } 
      }
 
      // create the NULOC volume and position it in the horizontal frame
-     Float_t nulocpar[3]={NulocLength/2., NulocHeight/2., NulocWidth/2.}; 
-     gMC->Gsvolu("S05N","BOX",NulocMaterial,nulocpar,3);
-     gMC->Gsvolu("S06N","BOX",NulocMaterial,nulocpar,3);
+     Float_t nulocpar[3]={nulocLength/2., nulocHeight/2., nulocWidth/2.}; 
+     gMC->Gsvolu("S05N","BOX",nulocMaterial,nulocpar,3);
+     gMC->Gsvolu("S06N","BOX",nulocMaterial,nulocpar,3);
 
-     Float_t xxmax = (BFrameLength - NulocLength)/2.; 
-     index = 0; 
-     for (Float_t xx = -xxmax; xx<=xxmax; xx+=3*NulocLength) { 
+     Float_t xxmax = (bFrameLength - nulocLength)/2.; 
+     index = 0;
+     Float_t xx;
+
+     for (xx = -xxmax; xx<=xxmax; xx+=3*nulocLength) { 
        index++; 
-       gMC->Gspos("S05N",2*index-1,"S05B", xx, 0.,-BFrameWidth/4., 0, "ONLY");
-       gMC->Gspos("S05N",2*index  ,"S05B", xx, 0., BFrameWidth/4., 0, "ONLY");
-       gMC->Gspos("S06N",2*index-1,"S06B", xx, 0.,-BFrameWidth/4., 0, "ONLY");
-       gMC->Gspos("S06N",2*index  ,"S06B", xx, 0., BFrameWidth/4., 0, "ONLY");
+       gMC->Gspos("S05N",2*index-1,"S05B", xx, 0.,-bFrameWidth/4., 0, "ONLY");
+       gMC->Gspos("S05N",2*index  ,"S05B", xx, 0., bFrameWidth/4., 0, "ONLY");
+       gMC->Gspos("S06N",2*index-1,"S06B", xx, 0.,-bFrameWidth/4., 0, "ONLY");
+       gMC->Gspos("S06N",2*index  ,"S06B", xx, 0., bFrameWidth/4., 0, "ONLY");
      }
 
      // create the gassiplex volume 
-     Float_t gassipar[3]={GassiLength/2., GassiHeight/2., GassiWidth/2.}; 
-     gMC->Gsvolu("S05E","BOX",GassiMaterial,gassipar,3);
-     gMC->Gsvolu("S06E","BOX",GassiMaterial,gassipar,3);
+     Float_t gassipar[3]={gassiLength/2., gassiHeight/2., gassiWidth/2.}; 
+     gMC->Gsvolu("S05E","BOX",gassiMaterial,gassipar,3);
+     gMC->Gsvolu("S06E","BOX",gassiMaterial,gassipar,3);
 
 
      // position 4 gassiplex in the nuloc
 
-     gMC->Gspos("S05E",1,"S05N", 0., -3 * NulocHeight/8., 0. , 0, "ONLY");
-     gMC->Gspos("S05E",2,"S05N", 0.,    - NulocHeight/8., 0. , 0, "ONLY");
-     gMC->Gspos("S05E",3,"S05N", 0.,      NulocHeight/8., 0. , 0, "ONLY");
-     gMC->Gspos("S05E",4,"S05N", 0.,  3 * NulocHeight/8., 0. , 0, "ONLY");
-     gMC->Gspos("S06E",1,"S06N", 0., -3 * NulocHeight/8., 0. , 0, "ONLY");
-     gMC->Gspos("S06E",2,"S06N", 0.,    - NulocHeight/8., 0. , 0, "ONLY");
-     gMC->Gspos("S06E",3,"S06N", 0.,      NulocHeight/8., 0. , 0, "ONLY");
-     gMC->Gspos("S06E",4,"S06N", 0.,  3 * NulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S05E",1,"S05N", 0., -3 * nulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S05E",2,"S05N", 0.,    - nulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S05E",3,"S05N", 0.,      nulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S05E",4,"S05N", 0.,  3 * nulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S06E",1,"S06N", 0., -3 * nulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S06E",2,"S06N", 0.,    - nulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S06E",3,"S06N", 0.,      nulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S06E",4,"S06N", 0.,  3 * nulocHeight/8., 0. , 0, "ONLY");
 
 
 //********************************************************************
@@ -730,167 +735,167 @@ void AliMUONv1::CreateGeometry()
      const Int_t nPCB4[nSlats4] = {7,7,6,6,5,4,2}; // n PCB per slat
 
      // slat dimensions: slat is a MOTHER volume!!! made of air
-     Float_t SlatLength4[nSlats4];     
+     Float_t slatLength4[nSlats4];     
 
      // create and position the slat (mother) volumes 
 
-     char VolNam7[5];
-     char VolNam8[5];
+     char volNam7[5];
+     char volNam8[5];
      Float_t xSlat4;
      Float_t ySlat41, ySlat42;
 
 
-     for (Int_t i = 0; i<nSlats4; i++){
-	 SlatLength4[i] = PCBLength * nPCB4[i] + 2. * dSlatLength; 
-	 xSlat4 = SlatLength4[i]/2.; 
+     for (i = 0; i<nSlats4; i++){
+	 slatLength4[i] = pcbLength * nPCB4[i] + 2. * dSlatLength; 
+	 xSlat4 = slatLength4[i]/2.; 
 	 if (i==0) xSlat4 += 30.;
 	 
-	 ySlat41 =  SensHeight * (i+0.5) - yOverlap *i - yOverlap/2.;
-	 ySlat42 = -SensHeight * (i+0.5) + yOverlap *i + yOverlap/2.;
+	 ySlat41 =  sensHeight * (i+0.5) - yOverlap *i - yOverlap/2.;
+	 ySlat42 = -sensHeight * (i+0.5) + yOverlap *i + yOverlap/2.;
 	 
-	 spar[0] = SlatLength4[i]/2.; 
-	 spar[1] = SlatHeight/2.;
-	 spar[2] = SlatWidth/2.; 
+	 spar[0] = slatLength4[i]/2.; 
+	 spar[1] = slatHeight/2.;
+	 spar[2] = slatWidth/2.; 
 	 // zSlat to be checked (odd downstream or upstream?)
-	 Float_t zSlat = (i%2 ==0)? SlatWidth/2. : -SlatWidth/2.; 
-	 sprintf(VolNam7,"S07%d",i);
-	 gMC->Gsvolu(VolNam7,"BOX",SlatMaterial,spar,3);
-	 gMC->Gspos(VolNam7, i*4+1,"C07M", xSlat4, ySlat41, -zSlat, 0, "ONLY");
-	 gMC->Gspos(VolNam7, i*4+2,"C07M",-xSlat4, ySlat41, -zSlat, 0, "ONLY");
-	 gMC->Gspos(VolNam7, i*4+3,"C07M", xSlat4, ySlat42,  zSlat, 0, "ONLY");
-	 gMC->Gspos(VolNam7, i*4+4,"C07M",-xSlat4, ySlat42,  zSlat, 0, "ONLY");
-	 sprintf(VolNam8,"S08%d",i);
-	 gMC->Gsvolu(VolNam8,"BOX",SlatMaterial,spar,3);
-	 gMC->Gspos(VolNam8, i*4+1,"C08M", xSlat4, ySlat41, -zSlat, 0, "ONLY");
-	 gMC->Gspos(VolNam8, i*4+2,"C08M",-xSlat4, ySlat41, -zSlat, 0, "ONLY");
-	 gMC->Gspos(VolNam8, i*4+3,"C08M", xSlat4, ySlat42,  zSlat, 0, "ONLY");
-	 gMC->Gspos(VolNam8, i*4+4,"C08M",-xSlat4, ySlat42,  zSlat, 0, "ONLY");
+	 Float_t zSlat = (i%2 ==0)? slatWidth/2. : -slatWidth/2.; 
+	 sprintf(volNam7,"S07%d",i);
+	 gMC->Gsvolu(volNam7,"BOX",slatMaterial,spar,3);
+	 gMC->Gspos(volNam7, i*4+1,"C07M", xSlat4, ySlat41, -zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam7, i*4+2,"C07M",-xSlat4, ySlat41, -zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam7, i*4+3,"C07M", xSlat4, ySlat42,  zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam7, i*4+4,"C07M",-xSlat4, ySlat42,  zSlat, 0, "ONLY");
+	 sprintf(volNam8,"S08%d",i);
+	 gMC->Gsvolu(volNam8,"BOX",slatMaterial,spar,3);
+	 gMC->Gspos(volNam8, i*4+1,"C08M", xSlat4, ySlat41, -zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam8, i*4+2,"C08M",-xSlat4, ySlat41, -zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam8, i*4+3,"C08M", xSlat4, ySlat42,  zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam8, i*4+4,"C08M",-xSlat4, ySlat42,  zSlat, 0, "ONLY");
      }
 
      // create the sensitive volumes (subdivided as the PCBs),
  
-     gMC->Gsvolu("S07G","BOX",SensMaterial,SensPar,3);
-     gMC->Gsvolu("S08G","BOX",SensMaterial,SensPar,3);
+     gMC->Gsvolu("S07G","BOX",sensMaterial,sensPar,3);
+     gMC->Gsvolu("S08G","BOX",sensMaterial,sensPar,3);
 
      // create the PCB volume 
 
-     gMC->Gsvolu("S07P","BOX",PCBMaterial,PCBpar,3);
-     gMC->Gsvolu("S08P","BOX",PCBMaterial,PCBpar,3);
+     gMC->Gsvolu("S07P","BOX",pcbMaterial,pcbpar,3);
+     gMC->Gsvolu("S08P","BOX",pcbMaterial,pcbpar,3);
  
      // create the insulating material volume 
 
-     gMC->Gsvolu("S07I","BOX",InsuMaterial,Insupar,3);
-     gMC->Gsvolu("S08I","BOX",InsuMaterial,Insupar,3);
+     gMC->Gsvolu("S07I","BOX",insuMaterial,insupar,3);
+     gMC->Gsvolu("S08I","BOX",insuMaterial,insupar,3);
 
      // create the panel volume 
 
-     gMC->Gsvolu("S07C","BOX",PanelMaterial,Panelpar,3);
-     gMC->Gsvolu("S08C","BOX",PanelMaterial,Panelpar,3);
+     gMC->Gsvolu("S07C","BOX",panelMaterial,panelpar,3);
+     gMC->Gsvolu("S08C","BOX",panelMaterial,panelpar,3);
 
      // create the rohacell volume 
  
-     gMC->Gsvolu("S07R","BOX",RohaMaterial,Rohapar,3);
-     gMC->Gsvolu("S08R","BOX",RohaMaterial,Rohapar,3);
+     gMC->Gsvolu("S07R","BOX",rohaMaterial,rohapar,3);
+     gMC->Gsvolu("S08R","BOX",rohaMaterial,rohapar,3);
 
      // create the vertical frame volume 
 
-     gMC->Gsvolu("S07V","BOX",VFrameMaterial,VFramepar,3);
-     gMC->Gsvolu("S08V","BOX",VFrameMaterial,VFramepar,3);
+     gMC->Gsvolu("S07V","BOX",vFrameMaterial,vFramepar,3);
+     gMC->Gsvolu("S08V","BOX",vFrameMaterial,vFramepar,3);
 
      // create the horizontal frame volume 
 
-     gMC->Gsvolu("S07H","BOX",HFrameMaterial,HFramepar,3);
-     gMC->Gsvolu("S08H","BOX",HFrameMaterial,HFramepar,3);
+     gMC->Gsvolu("S07H","BOX",hFrameMaterial,hFramepar,3);
+     gMC->Gsvolu("S08H","BOX",hFrameMaterial,hFramepar,3);
 
      // create the horizontal border volume 
 
-     gMC->Gsvolu("S07B","BOX",BFrameMaterial,BFramepar,3);
-     gMC->Gsvolu("S08B","BOX",BFrameMaterial,BFramepar,3);
+     gMC->Gsvolu("S07B","BOX",bFrameMaterial,bFramepar,3);
+     gMC->Gsvolu("S08B","BOX",bFrameMaterial,bFramepar,3);
  
-     for (Int_t i = 0; i<nSlats4; i++){
-       sprintf(VolNam7,"S07%d",i);
-       sprintf(VolNam8,"S08%d",i);
-       Float_t xvframe  = (SlatLength4[i] - VFrameLength)/2.;
-       gMC->Gspos("S07V",2*i-1,VolNam7, xvframe, 0., 0. , 0, "ONLY");
-       gMC->Gspos("S07V",2*i  ,VolNam7,-xvframe, 0., 0. , 0, "ONLY");
-       gMC->Gspos("S08V",2*i-1,VolNam8, xvframe, 0., 0. , 0, "ONLY");
-       gMC->Gspos("S08V",2*i  ,VolNam8,-xvframe, 0., 0. , 0, "ONLY");
-       for (Int_t j=0; j<nPCB4[i]; j++){
+     for (i = 0; i<nSlats4; i++){
+       sprintf(volNam7,"S07%d",i);
+       sprintf(volNam8,"S08%d",i);
+       Float_t xvFrame  = (slatLength4[i] - vFrameLength)/2.;
+       gMC->Gspos("S07V",2*i-1,volNam7, xvFrame, 0., 0. , 0, "ONLY");
+       gMC->Gspos("S07V",2*i  ,volNam7,-xvFrame, 0., 0. , 0, "ONLY");
+       gMC->Gspos("S08V",2*i-1,volNam8, xvFrame, 0., 0. , 0, "ONLY");
+       gMC->Gspos("S08V",2*i  ,volNam8,-xvFrame, 0., 0. , 0, "ONLY");
+       for (j=0; j<nPCB4[i]; j++){
 	 index++;
-	 Float_t xx = SensLength * (-nPCB4[i]/2.+j+.5); 
+	 Float_t xx = sensLength * (-nPCB4[i]/2.+j+.5); 
 	 Float_t yy = 0.;
 	 Float_t zSens = 0.;  
-	 gMC->Gspos("S07G",index,VolNam7, xx, yy, zSens , 0, "ONLY");
-	 gMC->Gspos("S08G",index,VolNam8, xx, yy, zSens , 0, "ONLY");
-	 Float_t zPCB = (SensWidth+PCBWidth)/2.; 
-	 gMC->Gspos("S07P",2*index-1,VolNam7, xx, yy, zPCB , 0, "ONLY");
-	 gMC->Gspos("S07P",2*index  ,VolNam7, xx, yy,-zPCB , 0, "ONLY");
-	 gMC->Gspos("S08P",2*index-1,VolNam8, xx, yy, zPCB , 0, "ONLY");
-	 gMC->Gspos("S08P",2*index  ,VolNam8, xx, yy,-zPCB , 0, "ONLY");
-	 Float_t zInsu = (InsuWidth+PCBWidth)/2. + zPCB; 
-	 gMC->Gspos("S07I",2*index-1,VolNam7, xx, yy, zInsu , 0, "ONLY");
-	 gMC->Gspos("S07I",2*index  ,VolNam7, xx, yy,-zInsu , 0, "ONLY");
-	 gMC->Gspos("S08I",2*index-1,VolNam8, xx, yy, zInsu , 0, "ONLY");
-	 gMC->Gspos("S08I",2*index  ,VolNam8, xx, yy,-zInsu , 0, "ONLY");
-	 Float_t zPanel1 = (InsuWidth+PanelWidth)/2. + zInsu; 
-	 gMC->Gspos("S07C",4*index-3,VolNam7, xx, yy, zPanel1 , 0, "ONLY");
-	 gMC->Gspos("S07C",4*index-2,VolNam7, xx, yy,-zPanel1 , 0, "ONLY");
-	 gMC->Gspos("S08C",4*index-3,VolNam8, xx, yy, zPanel1 , 0, "ONLY");
-	 gMC->Gspos("S08C",4*index-2,VolNam8, xx, yy,-zPanel1 , 0, "ONLY");
-	 Float_t zRoha = (RohaWidth+PanelWidth)/2. + zPanel1; 
-	 gMC->Gspos("S07R",2*index-1,VolNam7, xx, yy, zRoha , 0, "ONLY");
-	 gMC->Gspos("S07R",2*index  ,VolNam7, xx, yy,-zRoha , 0, "ONLY");
-	 gMC->Gspos("S08R",2*index-1,VolNam8, xx, yy, zRoha , 0, "ONLY");
-	 gMC->Gspos("S08R",2*index  ,VolNam8, xx, yy,-zRoha , 0, "ONLY");
-	 Float_t zPanel2 = (RohaWidth+PanelWidth)/2. + zRoha; 
-	 gMC->Gspos("S07C",4*index-1,VolNam7, xx, yy, zPanel2 , 0, "ONLY");
-	 gMC->Gspos("S07C",4*index  ,VolNam7, xx, yy,-zPanel2 , 0, "ONLY");
-	 gMC->Gspos("S08C",4*index-1,VolNam8, xx, yy, zPanel2 , 0, "ONLY");
-	 gMC->Gspos("S08C",4*index  ,VolNam8, xx, yy,-zPanel2 , 0, "ONLY");
-	 Float_t yframe = (SensHeight + HFrameHeight)/2.;
-	 gMC->Gspos("S07H",2*index-1,VolNam7, xx, yframe, 0. , 0, "ONLY");
-	 gMC->Gspos("S07H",2*index  ,VolNam7, xx,-yframe, 0. , 0, "ONLY");
-	 gMC->Gspos("S08H",2*index-1,VolNam8, xx, yframe, 0. , 0, "ONLY");
-	 gMC->Gspos("S08H",2*index  ,VolNam8, xx,-yframe, 0. , 0, "ONLY");
-	 Float_t yborder = (BFrameHeight + HFrameHeight)/2. + yframe;
-	 gMC->Gspos("S07B",2*index-1,VolNam7, xx, yborder, 0. , 0, "ONLY");
-	 gMC->Gspos("S07B",2*index  ,VolNam7, xx,-yborder, 0. , 0, "ONLY");
-	 gMC->Gspos("S08B",2*index-1,VolNam8, xx, yborder, 0. , 0, "ONLY");
-	 gMC->Gspos("S08B",2*index  ,VolNam8, xx,-yborder, 0. , 0, "ONLY");
+	 gMC->Gspos("S07G",index,volNam7, xx, yy, zSens , 0, "ONLY");
+	 gMC->Gspos("S08G",index,volNam8, xx, yy, zSens , 0, "ONLY");
+	 Float_t zPCB = (sensWidth+pcbWidth)/2.; 
+	 gMC->Gspos("S07P",2*index-1,volNam7, xx, yy, zPCB , 0, "ONLY");
+	 gMC->Gspos("S07P",2*index  ,volNam7, xx, yy,-zPCB , 0, "ONLY");
+	 gMC->Gspos("S08P",2*index-1,volNam8, xx, yy, zPCB , 0, "ONLY");
+	 gMC->Gspos("S08P",2*index  ,volNam8, xx, yy,-zPCB , 0, "ONLY");
+	 Float_t zInsu = (insuWidth+pcbWidth)/2. + zPCB; 
+	 gMC->Gspos("S07I",2*index-1,volNam7, xx, yy, zInsu , 0, "ONLY");
+	 gMC->Gspos("S07I",2*index  ,volNam7, xx, yy,-zInsu , 0, "ONLY");
+	 gMC->Gspos("S08I",2*index-1,volNam8, xx, yy, zInsu , 0, "ONLY");
+	 gMC->Gspos("S08I",2*index  ,volNam8, xx, yy,-zInsu , 0, "ONLY");
+	 Float_t zPanel1 = (insuWidth+panelWidth)/2. + zInsu; 
+	 gMC->Gspos("S07C",4*index-3,volNam7, xx, yy, zPanel1 , 0, "ONLY");
+	 gMC->Gspos("S07C",4*index-2,volNam7, xx, yy,-zPanel1 , 0, "ONLY");
+	 gMC->Gspos("S08C",4*index-3,volNam8, xx, yy, zPanel1 , 0, "ONLY");
+	 gMC->Gspos("S08C",4*index-2,volNam8, xx, yy,-zPanel1 , 0, "ONLY");
+	 Float_t zRoha = (rohaWidth+panelWidth)/2. + zPanel1; 
+	 gMC->Gspos("S07R",2*index-1,volNam7, xx, yy, zRoha , 0, "ONLY");
+	 gMC->Gspos("S07R",2*index  ,volNam7, xx, yy,-zRoha , 0, "ONLY");
+	 gMC->Gspos("S08R",2*index-1,volNam8, xx, yy, zRoha , 0, "ONLY");
+	 gMC->Gspos("S08R",2*index  ,volNam8, xx, yy,-zRoha , 0, "ONLY");
+	 Float_t zPanel2 = (rohaWidth+panelWidth)/2. + zRoha; 
+	 gMC->Gspos("S07C",4*index-1,volNam7, xx, yy, zPanel2 , 0, "ONLY");
+	 gMC->Gspos("S07C",4*index  ,volNam7, xx, yy,-zPanel2 , 0, "ONLY");
+	 gMC->Gspos("S08C",4*index-1,volNam8, xx, yy, zPanel2 , 0, "ONLY");
+	 gMC->Gspos("S08C",4*index  ,volNam8, xx, yy,-zPanel2 , 0, "ONLY");
+	 Float_t yframe = (sensHeight + hFrameHeight)/2.;
+	 gMC->Gspos("S07H",2*index-1,volNam7, xx, yframe, 0. , 0, "ONLY");
+	 gMC->Gspos("S07H",2*index  ,volNam7, xx,-yframe, 0. , 0, "ONLY");
+	 gMC->Gspos("S08H",2*index-1,volNam8, xx, yframe, 0. , 0, "ONLY");
+	 gMC->Gspos("S08H",2*index  ,volNam8, xx,-yframe, 0. , 0, "ONLY");
+	 Float_t yborder = (bFrameHeight + hFrameHeight)/2. + yframe;
+	 gMC->Gspos("S07B",2*index-1,volNam7, xx, yborder, 0. , 0, "ONLY");
+	 gMC->Gspos("S07B",2*index  ,volNam7, xx,-yborder, 0. , 0, "ONLY");
+	 gMC->Gspos("S08B",2*index-1,volNam8, xx, yborder, 0. , 0, "ONLY");
+	 gMC->Gspos("S08B",2*index  ,volNam8, xx,-yborder, 0. , 0, "ONLY");
        } 
      }
 
      // create the NULOC volume and position it in the horizontal frame
  
-     gMC->Gsvolu("S07N","BOX",NulocMaterial,nulocpar,3);
-     gMC->Gsvolu("S08N","BOX",NulocMaterial,nulocpar,3);
+     gMC->Gsvolu("S07N","BOX",nulocMaterial,nulocpar,3);
+     gMC->Gsvolu("S08N","BOX",nulocMaterial,nulocpar,3);
 
 
      index = 0; 
-     for (Float_t xx = -xxmax; xx<=xxmax; xx+=3*NulocLength) { 
+     for (xx = -xxmax; xx<=xxmax; xx+=3*nulocLength) { 
        index++; 
-       gMC->Gspos("S07N",2*index-1,"S07B", xx, 0.,-BFrameWidth/4., 0, "ONLY");
-       gMC->Gspos("S07N",2*index  ,"S07B", xx, 0., BFrameWidth/4., 0, "ONLY");
-       gMC->Gspos("S08N",2*index-1,"S08B", xx, 0.,-BFrameWidth/4., 0, "ONLY");
-       gMC->Gspos("S08N",2*index  ,"S08B", xx, 0., BFrameWidth/4., 0, "ONLY");
+       gMC->Gspos("S07N",2*index-1,"S07B", xx, 0.,-bFrameWidth/4., 0, "ONLY");
+       gMC->Gspos("S07N",2*index  ,"S07B", xx, 0., bFrameWidth/4., 0, "ONLY");
+       gMC->Gspos("S08N",2*index-1,"S08B", xx, 0.,-bFrameWidth/4., 0, "ONLY");
+       gMC->Gspos("S08N",2*index  ,"S08B", xx, 0., bFrameWidth/4., 0, "ONLY");
      }
 
      // create the gassiplex volume 
 
-     gMC->Gsvolu("S07E","BOX",GassiMaterial,gassipar,3);
-     gMC->Gsvolu("S08E","BOX",GassiMaterial,gassipar,3);
+     gMC->Gsvolu("S07E","BOX",gassiMaterial,gassipar,3);
+     gMC->Gsvolu("S08E","BOX",gassiMaterial,gassipar,3);
 
 
      // position 4 gassiplex in the nuloc
 
-     gMC->Gspos("S07E",1,"S07N", 0., -3 * NulocHeight/8., 0. , 0, "ONLY");
-     gMC->Gspos("S07E",2,"S07N", 0.,    - NulocHeight/8., 0. , 0, "ONLY");
-     gMC->Gspos("S07E",3,"S07N", 0.,      NulocHeight/8., 0. , 0, "ONLY");
-     gMC->Gspos("S07E",4,"S07N", 0.,  3 * NulocHeight/8., 0. , 0, "ONLY");
-     gMC->Gspos("S08E",1,"S08N", 0., -3 * NulocHeight/8., 0. , 0, "ONLY");
-     gMC->Gspos("S08E",2,"S08N", 0.,    - NulocHeight/8., 0. , 0, "ONLY");
-     gMC->Gspos("S08E",3,"S08N", 0.,      NulocHeight/8., 0. , 0, "ONLY");
-     gMC->Gspos("S08E",4,"S08N", 0.,  3 * NulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S07E",1,"S07N", 0., -3 * nulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S07E",2,"S07N", 0.,    - nulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S07E",3,"S07N", 0.,      nulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S07E",4,"S07N", 0.,  3 * nulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S08E",1,"S08N", 0., -3 * nulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S08E",2,"S08N", 0.,    - nulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S08E",3,"S08N", 0.,      nulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S08E",4,"S08N", 0.,  3 * nulocHeight/8., 0. , 0, "ONLY");
 
 
 
@@ -923,167 +928,167 @@ void AliMUONv1::CreateGeometry()
      const Int_t nPCB5[nSlats5] = {6,6,6,5,5,4,3}; // n PCB per slat
 
      // slat dimensions: slat is a MOTHER volume!!! made of air
-     Float_t SlatLength5[nSlats5]; 
-//const Float_t SlatHeight = PCBHeight; 
-//   const Float_t SlatWidth = SensWidth + 2.*(PCBWidth + InsuWidth + 
-// 2.* PanelWidth + RohaWidth);
-//   const Int_t SlatMaterial = idAir;
-//   const Float_t dSlatLength = VFrameLength; // border on left and right 
+     Float_t slatLength5[nSlats5]; 
+//const Float_t slatHeight = pcbHeight; 
+//   const Float_t slatWidth = sensWidth + 2.*(pcbWidth + insuWidth + 
+// 2.* panelWidth + rohaWidth);
+//   const Int_t slatMaterial = idAir;
+//   const Float_t dSlatLength = vFrameLength; // border on left and right 
 
      // create and position the slat (mother) volumes 
 //   Float_t spar[3];
-     char VolNam9[5];
-     char VolNam10[5];
+     char volNam9[5];
+     char volNam10[5];
      Float_t xSlat5[nSlats5];
      Float_t ySlat5[nSlats5];
 
-     for (Int_t i = 0; i<nSlats5; i++){
-       SlatLength5[i] = PCBLength * nPCB5[i] + 2. * dSlatLength; 
-       xSlat5[i] = SlatLength5[i]/2.; 
-       ySlat5[i] = SensHeight * (i+0.5) - yOverlap * i; 
-       spar[0] = SlatLength5[i]/2.; 
-       spar[1] = SlatHeight/2.;
-       spar[2] = SlatWidth/2.; 
+     for (i = 0; i<nSlats5; i++){
+       slatLength5[i] = pcbLength * nPCB5[i] + 2. * dSlatLength; 
+       xSlat5[i] = slatLength5[i]/2.; 
+       ySlat5[i] = sensHeight * (i+0.5) - yOverlap * i; 
+       spar[0] = slatLength5[i]/2.; 
+       spar[1] = slatHeight/2.;
+       spar[2] = slatWidth/2.; 
        // zSlat to be checked (odd downstream or upstream?)
-       Float_t zSlat = (i%2 ==0)? -SlatWidth/2. : SlatWidth/2.; 
-       sprintf(VolNam9,"S09%d",i);
-       gMC->Gsvolu(VolNam9,"BOX",SlatMaterial,spar,3);
-       gMC->Gspos(VolNam9, i*4+1,"C09M", xSlat5[i], ySlat5[i], zSlat, 0, "ONLY");
-       gMC->Gspos(VolNam9, i*4+2,"C09M",-xSlat5[i], ySlat5[i], zSlat, 0, "ONLY");
-       gMC->Gspos(VolNam9, i*4+3,"C09M", xSlat5[i],-ySlat5[i],-zSlat, 0, "ONLY");
-       gMC->Gspos(VolNam9, i*4+4,"C09M",-xSlat5[i],-ySlat5[i],-zSlat, 0, "ONLY");
-       sprintf(VolNam10,"S10%d",i);
-       gMC->Gsvolu(VolNam10,"BOX",SlatMaterial,spar,3);
-       gMC->Gspos(VolNam10, i*4+1,"C10M", xSlat5[i], ySlat5[i], zSlat, 0, "ONLY");
-       gMC->Gspos(VolNam10, i*4+2,"C10M",-xSlat5[i], ySlat5[i], zSlat, 0, "ONLY");
-       gMC->Gspos(VolNam10, i*4+3,"C10M", xSlat5[i],-ySlat5[i],-zSlat, 0, "ONLY");
-       gMC->Gspos(VolNam10, i*4+4,"C10M",-xSlat5[i],-ySlat5[i],-zSlat, 0, "ONLY");
+       Float_t zSlat = (i%2 ==0)? -slatWidth/2. : slatWidth/2.; 
+       sprintf(volNam9,"S09%d",i);
+       gMC->Gsvolu(volNam9,"BOX",slatMaterial,spar,3);
+       gMC->Gspos(volNam9, i*4+1,"C09M", xSlat5[i], ySlat5[i], zSlat, 0, "ONLY");
+       gMC->Gspos(volNam9, i*4+2,"C09M",-xSlat5[i], ySlat5[i], zSlat, 0, "ONLY");
+       gMC->Gspos(volNam9, i*4+3,"C09M", xSlat5[i],-ySlat5[i],-zSlat, 0, "ONLY");
+       gMC->Gspos(volNam9, i*4+4,"C09M",-xSlat5[i],-ySlat5[i],-zSlat, 0, "ONLY");
+       sprintf(volNam10,"S10%d",i);
+       gMC->Gsvolu(volNam10,"BOX",slatMaterial,spar,3);
+       gMC->Gspos(volNam10, i*4+1,"C10M", xSlat5[i], ySlat5[i], zSlat, 0, "ONLY");
+       gMC->Gspos(volNam10, i*4+2,"C10M",-xSlat5[i], ySlat5[i], zSlat, 0, "ONLY");
+       gMC->Gspos(volNam10, i*4+3,"C10M", xSlat5[i],-ySlat5[i],-zSlat, 0, "ONLY");
+       gMC->Gspos(volNam10, i*4+4,"C10M",-xSlat5[i],-ySlat5[i],-zSlat, 0, "ONLY");
      }
 
      // create the sensitive volumes (subdivided as the PCBs),
       
-     gMC->Gsvolu("S09G","BOX",SensMaterial,SensPar,3);
-     gMC->Gsvolu("S10G","BOX",SensMaterial,SensPar,3);
+     gMC->Gsvolu("S09G","BOX",sensMaterial,sensPar,3);
+     gMC->Gsvolu("S10G","BOX",sensMaterial,sensPar,3);
 
      // create the PCB volume 
       
-     gMC->Gsvolu("S09P","BOX",PCBMaterial,PCBpar,3);
-     gMC->Gsvolu("S10P","BOX",PCBMaterial,PCBpar,3);
+     gMC->Gsvolu("S09P","BOX",pcbMaterial,pcbpar,3);
+     gMC->Gsvolu("S10P","BOX",pcbMaterial,pcbpar,3);
  
      // create the insulating material volume 
      
-     gMC->Gsvolu("S09I","BOX",InsuMaterial,Insupar,3);
-     gMC->Gsvolu("S10I","BOX",InsuMaterial,Insupar,3);
+     gMC->Gsvolu("S09I","BOX",insuMaterial,insupar,3);
+     gMC->Gsvolu("S10I","BOX",insuMaterial,insupar,3);
 
      // create the panel volume 
   
-     gMC->Gsvolu("S09C","BOX",PanelMaterial,Panelpar,3);
-     gMC->Gsvolu("S10C","BOX",PanelMaterial,Panelpar,3);
+     gMC->Gsvolu("S09C","BOX",panelMaterial,panelpar,3);
+     gMC->Gsvolu("S10C","BOX",panelMaterial,panelpar,3);
 
      // create the rohacell volume 
       
-     gMC->Gsvolu("S09R","BOX",RohaMaterial,Rohapar,3);
-     gMC->Gsvolu("S10R","BOX",RohaMaterial,Rohapar,3);
+     gMC->Gsvolu("S09R","BOX",rohaMaterial,rohapar,3);
+     gMC->Gsvolu("S10R","BOX",rohaMaterial,rohapar,3);
 
      // create the vertical frame volume 
    
-     gMC->Gsvolu("S09V","BOX",VFrameMaterial,VFramepar,3);
-     gMC->Gsvolu("S10V","BOX",VFrameMaterial,VFramepar,3);
+     gMC->Gsvolu("S09V","BOX",vFrameMaterial,vFramepar,3);
+     gMC->Gsvolu("S10V","BOX",vFrameMaterial,vFramepar,3);
 
      // create the horizontal frame volume 
   
-     gMC->Gsvolu("S09H","BOX",HFrameMaterial,HFramepar,3);
-     gMC->Gsvolu("S10H","BOX",HFrameMaterial,HFramepar,3);
+     gMC->Gsvolu("S09H","BOX",hFrameMaterial,hFramepar,3);
+     gMC->Gsvolu("S10H","BOX",hFrameMaterial,hFramepar,3);
 
      // create the horizontal border volume 
 
-     gMC->Gsvolu("S09B","BOX",BFrameMaterial,BFramepar,3);
-     gMC->Gsvolu("S10B","BOX",BFrameMaterial,BFramepar,3);
+     gMC->Gsvolu("S09B","BOX",bFrameMaterial,bFramepar,3);
+     gMC->Gsvolu("S10B","BOX",bFrameMaterial,bFramepar,3);
 
      
-     for (Int_t i = 0; i<nSlats5; i++){
-       sprintf(VolNam9,"S09%d",i);
-       sprintf(VolNam10,"S10%d",i);
-       Float_t xvframe  = (SlatLength5[i] - VFrameLength)/2.;
-       gMC->Gspos("S09V",2*i-1,VolNam9, xvframe, 0., 0. , 0, "ONLY");
-       gMC->Gspos("S09V",2*i  ,VolNam9,-xvframe, 0., 0. , 0, "ONLY");
-       gMC->Gspos("S10V",2*i-1,VolNam10, xvframe, 0., 0. , 0, "ONLY");
-       gMC->Gspos("S10V",2*i  ,VolNam10,-xvframe, 0., 0. , 0, "ONLY");
-       for (Int_t j=0; j<nPCB5[i]; j++){
+     for (i = 0; i<nSlats5; i++){
+       sprintf(volNam9,"S09%d",i);
+       sprintf(volNam10,"S10%d",i);
+       Float_t xvFrame  = (slatLength5[i] - vFrameLength)/2.;
+       gMC->Gspos("S09V",2*i-1,volNam9, xvFrame, 0., 0. , 0, "ONLY");
+       gMC->Gspos("S09V",2*i  ,volNam9,-xvFrame, 0., 0. , 0, "ONLY");
+       gMC->Gspos("S10V",2*i-1,volNam10, xvFrame, 0., 0. , 0, "ONLY");
+       gMC->Gspos("S10V",2*i  ,volNam10,-xvFrame, 0., 0. , 0, "ONLY");
+       for (j=0; j<nPCB5[i]; j++){
 	 index++;
-	 Float_t xx = SensLength * (-nPCB5[i]/2.+j+.5); 
+	 Float_t xx = sensLength * (-nPCB5[i]/2.+j+.5); 
 	 Float_t yy = 0.;
 	 Float_t zSens = 0.;  
-	 gMC->Gspos("S09G",index,VolNam9, xx, yy, zSens , 0, "ONLY");
-	 gMC->Gspos("S10G",index,VolNam10, xx, yy, zSens , 0, "ONLY");
-	 Float_t zPCB = (SensWidth+PCBWidth)/2.; 
-	 gMC->Gspos("S09P",2*index-1,VolNam9, xx, yy, zPCB , 0, "ONLY");
-	 gMC->Gspos("S09P",2*index  ,VolNam9, xx, yy,-zPCB , 0, "ONLY");
-	 gMC->Gspos("S10P",2*index-1,VolNam10, xx, yy, zPCB , 0, "ONLY");
-	 gMC->Gspos("S10P",2*index  ,VolNam10, xx, yy,-zPCB , 0, "ONLY");
-	 Float_t zInsu = (InsuWidth+PCBWidth)/2. + zPCB; 
-	 gMC->Gspos("S09I",2*index-1,VolNam9, xx, yy, zInsu , 0, "ONLY");
-	 gMC->Gspos("S09I",2*index  ,VolNam9, xx, yy,-zInsu , 0, "ONLY");
-	 gMC->Gspos("S10I",2*index-1,VolNam10, xx, yy, zInsu , 0, "ONLY");
-	 gMC->Gspos("S10I",2*index  ,VolNam10, xx, yy,-zInsu , 0, "ONLY");
-	 Float_t zPanel1 = (InsuWidth+PanelWidth)/2. + zInsu; 
-	 gMC->Gspos("S09C",4*index-3,VolNam9, xx, yy, zPanel1 , 0, "ONLY");
-	 gMC->Gspos("S09C",4*index-2,VolNam9, xx, yy,-zPanel1 , 0, "ONLY");
-	 gMC->Gspos("S10C",4*index-3,VolNam10, xx, yy, zPanel1 , 0, "ONLY");
-	 gMC->Gspos("S10C",4*index-2,VolNam10, xx, yy,-zPanel1 , 0, "ONLY");
-	 Float_t zRoha = (RohaWidth+PanelWidth)/2. + zPanel1; 
-	 gMC->Gspos("S09R",2*index-1,VolNam9, xx, yy, zRoha , 0, "ONLY");
-	 gMC->Gspos("S09R",2*index  ,VolNam9, xx, yy,-zRoha , 0, "ONLY");
-	 gMC->Gspos("S10R",2*index-1,VolNam10, xx, yy, zRoha , 0, "ONLY");
-	 gMC->Gspos("S10R",2*index  ,VolNam10, xx, yy,-zRoha , 0, "ONLY");
-	 Float_t zPanel2 = (RohaWidth+PanelWidth)/2. + zRoha; 
-	 gMC->Gspos("S09C",4*index-1,VolNam9, xx, yy, zPanel2 , 0, "ONLY");
-	 gMC->Gspos("S09C",4*index  ,VolNam9, xx, yy,-zPanel2 , 0, "ONLY");
-	 gMC->Gspos("S10C",4*index-1,VolNam10, xx, yy, zPanel2 , 0, "ONLY");
-	 gMC->Gspos("S10C",4*index  ,VolNam10, xx, yy,-zPanel2 , 0, "ONLY");
-	 Float_t yframe = (SensHeight + HFrameHeight)/2.;
-	 gMC->Gspos("S09H",2*index-1,VolNam9, xx, yframe, 0. , 0, "ONLY");
-	 gMC->Gspos("S09H",2*index  ,VolNam9, xx,-yframe, 0. , 0, "ONLY");
-	 gMC->Gspos("S10H",2*index-1,VolNam10, xx, yframe, 0. , 0, "ONLY");
-	 gMC->Gspos("S10H",2*index  ,VolNam10, xx,-yframe, 0. , 0, "ONLY");
-	 Float_t yborder = (BFrameHeight + HFrameHeight)/2. + yframe;
-	 gMC->Gspos("S09B",2*index-1,VolNam9, xx, yborder, 0. , 0, "ONLY");
-	 gMC->Gspos("S09B",2*index  ,VolNam9, xx,-yborder, 0. , 0, "ONLY");
-	 gMC->Gspos("S10B",2*index-1,VolNam10, xx, yborder, 0. , 0, "ONLY");
-	 gMC->Gspos("S10B",2*index  ,VolNam10, xx,-yborder, 0. , 0, "ONLY");
+	 gMC->Gspos("S09G",index,volNam9, xx, yy, zSens , 0, "ONLY");
+	 gMC->Gspos("S10G",index,volNam10, xx, yy, zSens , 0, "ONLY");
+	 Float_t zPCB = (sensWidth+pcbWidth)/2.; 
+	 gMC->Gspos("S09P",2*index-1,volNam9, xx, yy, zPCB , 0, "ONLY");
+	 gMC->Gspos("S09P",2*index  ,volNam9, xx, yy,-zPCB , 0, "ONLY");
+	 gMC->Gspos("S10P",2*index-1,volNam10, xx, yy, zPCB , 0, "ONLY");
+	 gMC->Gspos("S10P",2*index  ,volNam10, xx, yy,-zPCB , 0, "ONLY");
+	 Float_t zInsu = (insuWidth+pcbWidth)/2. + zPCB; 
+	 gMC->Gspos("S09I",2*index-1,volNam9, xx, yy, zInsu , 0, "ONLY");
+	 gMC->Gspos("S09I",2*index  ,volNam9, xx, yy,-zInsu , 0, "ONLY");
+	 gMC->Gspos("S10I",2*index-1,volNam10, xx, yy, zInsu , 0, "ONLY");
+	 gMC->Gspos("S10I",2*index  ,volNam10, xx, yy,-zInsu , 0, "ONLY");
+	 Float_t zPanel1 = (insuWidth+panelWidth)/2. + zInsu; 
+	 gMC->Gspos("S09C",4*index-3,volNam9, xx, yy, zPanel1 , 0, "ONLY");
+	 gMC->Gspos("S09C",4*index-2,volNam9, xx, yy,-zPanel1 , 0, "ONLY");
+	 gMC->Gspos("S10C",4*index-3,volNam10, xx, yy, zPanel1 , 0, "ONLY");
+	 gMC->Gspos("S10C",4*index-2,volNam10, xx, yy,-zPanel1 , 0, "ONLY");
+	 Float_t zRoha = (rohaWidth+panelWidth)/2. + zPanel1; 
+	 gMC->Gspos("S09R",2*index-1,volNam9, xx, yy, zRoha , 0, "ONLY");
+	 gMC->Gspos("S09R",2*index  ,volNam9, xx, yy,-zRoha , 0, "ONLY");
+	 gMC->Gspos("S10R",2*index-1,volNam10, xx, yy, zRoha , 0, "ONLY");
+	 gMC->Gspos("S10R",2*index  ,volNam10, xx, yy,-zRoha , 0, "ONLY");
+	 Float_t zPanel2 = (rohaWidth+panelWidth)/2. + zRoha; 
+	 gMC->Gspos("S09C",4*index-1,volNam9, xx, yy, zPanel2 , 0, "ONLY");
+	 gMC->Gspos("S09C",4*index  ,volNam9, xx, yy,-zPanel2 , 0, "ONLY");
+	 gMC->Gspos("S10C",4*index-1,volNam10, xx, yy, zPanel2 , 0, "ONLY");
+	 gMC->Gspos("S10C",4*index  ,volNam10, xx, yy,-zPanel2 , 0, "ONLY");
+	 Float_t yframe = (sensHeight + hFrameHeight)/2.;
+	 gMC->Gspos("S09H",2*index-1,volNam9, xx, yframe, 0. , 0, "ONLY");
+	 gMC->Gspos("S09H",2*index  ,volNam9, xx,-yframe, 0. , 0, "ONLY");
+	 gMC->Gspos("S10H",2*index-1,volNam10, xx, yframe, 0. , 0, "ONLY");
+	 gMC->Gspos("S10H",2*index  ,volNam10, xx,-yframe, 0. , 0, "ONLY");
+	 Float_t yborder = (bFrameHeight + hFrameHeight)/2. + yframe;
+	 gMC->Gspos("S09B",2*index-1,volNam9, xx, yborder, 0. , 0, "ONLY");
+	 gMC->Gspos("S09B",2*index  ,volNam9, xx,-yborder, 0. , 0, "ONLY");
+	 gMC->Gspos("S10B",2*index-1,volNam10, xx, yborder, 0. , 0, "ONLY");
+	 gMC->Gspos("S10B",2*index  ,volNam10, xx,-yborder, 0. , 0, "ONLY");
        } 
      }
 
      // create the NULOC volume and position it in the horizontal frame
      
-     gMC->Gsvolu("S09N","BOX",NulocMaterial,nulocpar,3);
-     gMC->Gsvolu("S10N","BOX",NulocMaterial,nulocpar,3);
+     gMC->Gsvolu("S09N","BOX",nulocMaterial,nulocpar,3);
+     gMC->Gsvolu("S10N","BOX",nulocMaterial,nulocpar,3);
  
      index = 0; 
-     for (Float_t xx = -xxmax; xx<=xxmax; xx+=3*NulocLength) { 
+     for (xx = -xxmax; xx<=xxmax; xx+=3*nulocLength) { 
        index++; 
-       gMC->Gspos("S09N",2*index-1,"S09B", xx, 0.,-BFrameWidth/4., 0, "ONLY");
-       gMC->Gspos("S09N",2*index  ,"S09B", xx, 0., BFrameWidth/4., 0, "ONLY");
-       gMC->Gspos("S10N",2*index-1,"S10B", xx, 0.,-BFrameWidth/4., 0, "ONLY");
-       gMC->Gspos("S10N",2*index  ,"S10B", xx, 0., BFrameWidth/4., 0, "ONLY");
+       gMC->Gspos("S09N",2*index-1,"S09B", xx, 0.,-bFrameWidth/4., 0, "ONLY");
+       gMC->Gspos("S09N",2*index  ,"S09B", xx, 0., bFrameWidth/4., 0, "ONLY");
+       gMC->Gspos("S10N",2*index-1,"S10B", xx, 0.,-bFrameWidth/4., 0, "ONLY");
+       gMC->Gspos("S10N",2*index  ,"S10B", xx, 0., bFrameWidth/4., 0, "ONLY");
      }
 
      // create the gassiplex volume 
      
-     gMC->Gsvolu("S09E","BOX",GassiMaterial,gassipar,3);
-     gMC->Gsvolu("S10E","BOX",GassiMaterial,gassipar,3);
+     gMC->Gsvolu("S09E","BOX",gassiMaterial,gassipar,3);
+     gMC->Gsvolu("S10E","BOX",gassiMaterial,gassipar,3);
 
 
      // position 4 gassiplex in the nuloc
 
-     gMC->Gspos("S09E",1,"S09N", 0., -3 * NulocHeight/8., 0. , 0, "ONLY");
-     gMC->Gspos("S09E",2,"S09N", 0.,    - NulocHeight/8., 0. , 0, "ONLY");
-     gMC->Gspos("S09E",3,"S09N", 0.,      NulocHeight/8., 0. , 0, "ONLY");
-     gMC->Gspos("S09E",4,"S09N", 0.,  3 * NulocHeight/8., 0. , 0, "ONLY");
-     gMC->Gspos("S10E",1,"S10N", 0., -3 * NulocHeight/8., 0. , 0, "ONLY");
-     gMC->Gspos("S10E",2,"S10N", 0.,    - NulocHeight/8., 0. , 0, "ONLY");
-     gMC->Gspos("S10E",3,"S10N", 0.,      NulocHeight/8., 0. , 0, "ONLY");
-     gMC->Gspos("S10E",4,"S10N", 0.,  3 * NulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S09E",1,"S09N", 0., -3 * nulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S09E",2,"S09N", 0.,    - nulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S09E",3,"S09N", 0.,      nulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S09E",4,"S09N", 0.,  3 * nulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S10E",1,"S10N", 0., -3 * nulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S10E",2,"S10N", 0.,    - nulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S10E",3,"S10N", 0.,      nulocHeight/8., 0. , 0, "ONLY");
+     gMC->Gspos("S10E",4,"S10N", 0.,  3 * nulocHeight/8., 0. , 0, "ONLY");
 
 
 ///////////////////////////////////////
