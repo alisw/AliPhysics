@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/30 12:07:49  kowal2
+Updated from the TPC-PreRelease branch
+
 Revision 1.2.4.2  2000/06/14 16:45:13  kowal2
 Improved algorithms. Compiler warnings removed.
 
@@ -43,9 +46,8 @@ Clusters handling in a new data structure
 #include "TError.h"
 #include "TClass.h"
 #include  <TROOT.h>
-#include "AliCluster.h"
+#include "AliComplexCluster.h"
 #include "AliClusters.h"
-#include "TClonesArray.h"
 #include "TMarker.h"
 
 
@@ -147,7 +149,7 @@ TObject * AliClusters::InsertCluster( const TObject * c)
   }
   if(!fClusters) fClusters=new TClonesArray(fClass->GetName(),1000);
   TClonesArray &lclusters = *fClusters;
-  return new(lclusters[fNclusters++]) AliCluster(*((AliCluster*)c));
+  return new(lclusters[fNclusters++]) AliComplexCluster(*((AliComplexCluster*)c));
 }
 
 //_____________________________________________________________________________
@@ -156,14 +158,14 @@ Int_t AliClusters::Find(Double_t y) const
   //
   // return index of cluster nearest to given y position
   //
-  AliCluster* cl;
-  cl=(AliCluster*)fClusters->UncheckedAt(0);
+  AliComplexCluster* cl;
+  cl=(AliComplexCluster*)fClusters->UncheckedAt(0);
   if (y <= cl->fY) return 0;  
-  cl=(AliCluster*)fClusters->UncheckedAt(fNclusters-1);
+  cl=(AliComplexCluster*)fClusters->UncheckedAt(fNclusters-1);
   if (y > cl->fY) return fNclusters; 
   Int_t b=0, e=fNclusters-1, m=(b+e)/2;
   for (; b<e; m=(b+e)/2) {
-    cl = (AliCluster*)fClusters->UncheckedAt(m);
+    cl = (AliComplexCluster*)fClusters->UncheckedAt(m);
     if (y > cl->fY) b=m+1;
     else e=m; 
   }
@@ -181,7 +183,7 @@ void AliClusters::DrawClusters(Float_t shiftx, Float_t shifty,
   //draw marker for each of cluster
   Int_t ncl=fClusters->GetEntriesFast();
   for (Int_t i=0;i<ncl;i++){
-    AliCluster *cl = (AliCluster*)fClusters->UncheckedAt(i);
+    AliComplexCluster *cl = (AliComplexCluster*)fClusters->UncheckedAt(i);
     TMarker * marker = new TMarker;
     marker->SetX(cl->fX+shiftx);
     marker->SetY(cl->fY+shifty);

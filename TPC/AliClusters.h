@@ -11,7 +11,8 @@
 
 
 #include "AliSegmentID.h"
-class TClonesArray;
+#include <TClonesArray.h>
+
 class TObjArray;
 
 
@@ -31,7 +32,7 @@ protected:
   TClonesArray * fClusters;  
   Int_t  fNclusters;  
   TClass * fClass; //!type of cluster class 
-  ClassDef(AliClusters,1) 
+  ClassDef(AliClusters,1) // Cluster manager
 };
 
 
