@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  1999/09/29 09:24:23  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 #include "AliMUONSegResV0.h"
@@ -176,7 +179,7 @@ IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& y1, Float_t& y2)
 }
 
 void AliMUONsegmentationV0::
-Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[7], Int_t Ylist[7])
+Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])
 {
   /*
     *Nlist=4;Xlist[0]=Xlist[1]=iX;Xlist[2]=iX-1;Xlist[3]=iX+1;
