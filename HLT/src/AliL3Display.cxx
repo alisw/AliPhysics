@@ -37,7 +37,7 @@ using namespace std;
 //_____________________________________________________________
 // AliL3Display
 //
-// Simple display class for the Level3 tracker.
+// Simple display class for the HLT tracks.
 
 ClassImp(AliL3Display)
 
