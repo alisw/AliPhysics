@@ -170,6 +170,9 @@ void AliZDCv2::CreateBeamLine()
   Int_t *idtmed = fIdtmed->GetArray();
   
   // -- Mother of the ZDCs (Vacuum PCON)
+  Int_t irotM;
+  gMC->Matrix(irotM,90.,0.,90.,90.,180.,0.); 	
+
   zd1 = 2092.;
   
   conpar[0] = 0.;
@@ -182,7 +185,7 @@ void AliZDCv2::CreateBeamLine()
   conpar[7] = 0.;
   conpar[8] = 55.;
   gMC->Gsvolu("ZDC ", "PCON", idtmed[11], conpar, 9);
-  gMC->Gspos("ZDC ", 1, "ALIC", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("ZDC ", 1, "ALIC", 0., 0., 0., irotM, "ONLY");
 
   // -- FIRST SECTION OF THE BEAM PIPE (from compensator dipole to 
   //    	the beginning of D1) 
@@ -420,25 +423,14 @@ void AliZDCv2::CreateBeamLine()
 
   Float_t angle = 0.143*kDegrad;
   
-  AliMatrix(im1, 90.-0.143, 0., 90., 90., 0.143, 180.);
+  AliMatrix(im1, 90.+0.143, 0., 90., 90., 0.143, 180.);
   gMC->Gspos("QT17", 1, "ZDC ", TMath::Sin(angle) * 680.8/ 2. - 9.4, 
              0., -tubpar[2]-zd1, im1, "ONLY");
 	     
-  AliMatrix(im2, 90.+0.143, 0., 90., 90., 0.143, 0.);
+  AliMatrix(im2, 90.-0.143, 0., 90., 90., 0.143, 0.);
   gMC->Gspos("QT18", 1, "ZDC ", 9.7 - TMath::Sin(angle) * 680.8 / 2., 
              0., -tubpar[2]-zd1, im2, "ONLY");
-	       
-  // -- BEAM PIPE ON THE OTHER SIDE OF I.P. TILL THE EM ZDC 
-  // -- 25 Mar 2003 -> This seem to be no longer needed
-  /*
-  Float_t zb = -800.;	 	// End of QBPM (from AliPIPEv0.cxx)
-  tubpar[0] = 8.0/2.;
-  tubpar[1] = 8.2/2.;
-  tubpar[2] = (1050+zb)/2.;	// From the end of QBPM to z=1050.
-  gMC->Gsvolu("QT19", "TUBE", idtmed[7], tubpar, 3);
-  gMC->Gspos("QT19", 1, "ALIC", 0., 0., zb - tubpar[2], 0, "ONLY");
-  */
-  
+	         
   // --  END OF BEAM PIPE VOLUME DEFINITION.  
   // ----------------------------------------------------------------
    
@@ -682,16 +674,15 @@ void AliZDCv2::CreateZDC()
   gMC->Gsvolu("ZEM ", "PARA", idtmed[10], fDimZEM, 6);
 
   Int_t irot1, irot2;
-  
-  gMC->Matrix(irot1,180.,0.,90.,90.,90.,0.); 		       // Rotation matrix 1  
+  gMC->Matrix(irot1,0.,0.,90.,90.,-90.,0.); 		       // Rotation matrix 1  
   gMC->Matrix(irot2,180.,0.,90.,fDimZEM[3]+90.,90.,fDimZEM[3]);// Rotation matrix 2
-//  printf("irot1 = %d, irot2 = %d \n", irot1, irot2);
+  //printf("irot1 = %d, irot2 = %d \n", irot1, irot2);
   
-  gMC->Gsvolu("ZEMF", "TUBE", idtmed[3], fFibZEM, 3); // Active material
+  gMC->Gsvolu("ZEMF", "TUBE", idtmed[3], fFibZEM, 3); 	// Active material
 
-  gMC->Gsdvn("ZETR", "ZEM ", fDivZEM[2], 1); 	     // Tranches 
+  gMC->Gsdvn("ZETR", "ZEM ", fDivZEM[2], 1); 	     	// Tranches 
   
-  DimPb[0] = fDimZEMPb;			// Lead slices 
+  DimPb[0] = fDimZEMPb;					// Lead slices 
   DimPb[1] = fDimZEM[2];
   DimPb[2] = fDimZEM[1];
   DimPb[3] = 90.-fDimZEM[3];
@@ -699,7 +690,7 @@ void AliZDCv2::CreateZDC()
   DimPb[5] = 0.;
   gMC->Gsvolu("ZEL0", "PARA", idtmed[5], DimPb, 6);
   gMC->Gsvolu("ZEL1", "PARA", idtmed[5], DimPb, 6);
-//  gMC->Gsvolu("ZEL2", "PARA", idtmed[5], DimPb, 6);
+  //gMC->Gsvolu("ZEL2", "PARA", idtmed[5], DimPb, 6);
   
   // --- Position the lead slices in the tranche 
   Float_t zTran = fDimZEM[0]/fDivZEM[2]; 
