@@ -1,3 +1,5 @@
+//$Id$
+
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy Uli 
 
@@ -147,27 +149,27 @@ Bool_t AliL3FileHandler::IsDigit(){
 }
 
 ///////////////////////////////////////// Digit IO  
-Bool_t AliL3FileHandler::AliDigits2Binary(){
+Bool_t AliL3FileHandler::AliDigits2Binary(Int_t event){
   Bool_t out = kTRUE;
   UInt_t nrow;
-  AliL3DigitRowData* data = AliDigits2Memory(nrow);
+  AliL3DigitRowData* data = AliDigits2Memory(nrow,event);
   out = Memory2Binary(nrow,data);
   Free();
   return out;
 }
 
 
-Bool_t AliL3FileHandler::AliDigits2CompBinary(){
+Bool_t AliL3FileHandler::AliDigits2CompBinary(Int_t event){
   Bool_t out = kTRUE;
   UInt_t ndigits=0;
-  AliL3DigitRowData* digits = AliDigits2Memory(ndigits);
+  AliL3DigitRowData* digits = AliDigits2Memory(ndigits,event);
   out = Memory2CompBinary(ndigits,digits);
   Free();
   return out;
 }
 
 
-AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow){
+AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event){
   AliL3DigitRowData *data = 0;
   nrow=0;
   if(!fInAli){
@@ -181,9 +183,13 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow){
     return 0;
   }
 
+  
   TDirectory *savedir = gDirectory;
   fInAli->cd();
-  TTree *t=(TTree*)fInAli->Get("TreeD_75x40_100x60_0");
+  //TTree *t=(TTree*)fInAli->Get("TreeD_75x40_100x60_0");
+  Char_t dname[100];
+  sprintf(dname,"TreeD_75x40_100x60_%d",event);
+  TTree *t=(TTree*)fInAli->Get(dname);
   if(!t){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::AliDigits2Binary","AliRoot")
     <<"No Digit Tree inside!"<<ENDLOG;
@@ -286,7 +292,9 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow){
       tmp += size;
       tempPt = (AliL3DigitRowData*)tmp;
     }
-  savedir->cd(); 
+  t->Delete();
+  savedir->cd();
+    
   return data;
 }
 

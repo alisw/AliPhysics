@@ -40,9 +40,9 @@ class AliL3FileHandler:public AliL3MemHandler{
   void CloseMCOutput();
 
   //Digit IO
-  Bool_t AliDigits2Binary();
-  AliL3DigitRowData *AliDigits2Memory(UInt_t & nrow); //Allocates Memory
-  Bool_t AliDigits2CompBinary();  
+  Bool_t AliDigits2Binary(Int_t event=0);
+  AliL3DigitRowData *AliDigits2Memory(UInt_t & nrow,Int_t event=0); //Allocates Memory
+  Bool_t AliDigits2CompBinary(Int_t event=0);  
   void AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_digitsfile);
 
   //Point IO
