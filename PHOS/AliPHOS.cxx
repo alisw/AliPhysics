@@ -483,12 +483,15 @@ void AliPHOS::Digits2Raw()
       else 
 	energy = digit->GetAmp() * digitizer->GetCPVchannel() + digitizer->GetCPVpedestal() ;
         
-      RawSampledResponse(digit->GetTimeR(), energy, adcValuesHigh, adcValuesLow) ; 
+      Bool_t lowgain = RawSampledResponse(digit->GetTimeR(), energy, adcValuesHigh, adcValuesLow) ; 
       
-      buffer->WriteChannel(relId[3], relId[2], module, 
-			   GetRawFormatTimeBins(), adcValuesHigh, kThreshold);
-      buffer->WriteChannel(relId[3], relId[2], module + fLowGainOffset, 
+     if (lowgain) 
+	buffer->WriteChannel(relId[3], relId[2], module + fLowGainOffset, 
 			   GetRawFormatTimeBins(), adcValuesLow, kThreshold);
+      else 
+	buffer->WriteChannel(relId[3], relId[2], module, 
+			     GetRawFormatTimeBins(), adcValuesHigh, kThreshold);
+      
     }
   }
   
