@@ -8,12 +8,10 @@ void Hits2SDigits(){
     cout << "SPLIT" << endl;
    else
     cout << "NO SPLIT" << endl ;
-  TFile * f = new TFile("mgalice.root","UPDATE");
+  TFile * f = new TFile("galice.root","UPDATE");
   gAlice = (AliRun*) f->Get("gAlice") ;
-  cout<<"gAlice="<<gAlice<<endl;
   AliFMD* FMD  = (AliFMD *)gAlice->GetDetector("FMD") ;
-  cout<<" FMD "<<FMD<<endl;
   gAlice->GetEvent(0);
-  gAlice->Hits2SDigits() ;
+  gAlice->Hits2SDigits("FMD") ;
   gAlice->TreeS()->Write(0,TObject::kOverwrite) ;
   }

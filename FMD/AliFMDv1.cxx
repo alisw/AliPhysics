@@ -35,6 +35,7 @@
 #include <TLorentzVector.h>
 #include <TDirectory.h>
 #include "AliFMDv1.h"
+#include "AliFMDv0.h"
 #include "AliRun.h"
 #include "AliMC.h"
 #include <iostream.h>
@@ -55,6 +56,10 @@ AliFMDv1::AliFMDv1(const char *name, const char *title):
   // Standart constructor for Forward Multiplicity Detector version 0
   //
   fIdSens1=0;
+  fIdSens2=0;
+  fIdSens3=0;
+  fIdSens4=0;
+  fIdSens5=0;
 //  setBufferSize(128000);
 }
 //-------------------------------------------------------------------------
@@ -84,40 +89,45 @@ void AliFMDv1::CreateGeometry()
    */
   //
 
+  
   Int_t *idtmed = fIdtmed->GetArray();
    
   Int_t ifmd;
   Int_t idrotm[999];
   Float_t zfmd,par[3];
-  char name[5];
+  char name[5], nameSi[5], nameSector[5], nameRing[5];
 
   Float_t rin[6], rout[6],zpos;
-  Float_t etain[6]= {3.3, 2.0, 3.3, 2.0, 4.5, 5.5};
-  Float_t etaout[6]={2.0, 1.6, 2.0, 1.6, 3.3, 4.5};
+
+  Float_t etain[5]= {3.58, 1.94, 3.58, 1.94, 5.28};
+  Float_t etaout[6]={2.03, 1.51, 2.03, 1.51, 3.71};
   //  Float_t z[6]={64., 85., -64., -85., -270., -630};
-  Float_t z[6]={64., 85., -64., -85., -240., -630};
-  Float_t zDet=0.04;
-  Float_t zElectronic=0.75;
+  Float_t z[6]={62.8, 75.2, -62.8, -75.2, -345.};
+  Float_t zDet=0.03;
+  Float_t zElectronic=0.1;
   Float_t zSupport=1.;
-  Float_t zFMD=3.;
+
+  Float_t zFMD=1.;
 //-------------------------------------------------------------------
  //  FMD 
  //------------------------------------------------------------------
 
   AliMatrix(idrotm[901], 90, 0, 90, 90, 180, 0);
 
-  gMC->Gsvolu("GFSI","TUBE", idtmed[1], par, 0);
+  //  gMC->Gsvolu("GSI","TUBE", idtmed[1], par, 0);
   gMC->Gsvolu("GEL ","TUBE", idtmed[4], par, 0);
   gMC->Gsvolu("GSUP","TUBE", idtmed[2], par, 0);
 
   for (ifmd =0; ifmd < 5; ifmd++){
 
-    sprintf(name,"FMD%d",ifmd);
-    if (fDebug)
-      printf("%s: %s",ClassName(),name);
+    sprintf(name,"FMD%d",ifmd+1);
+    sprintf(nameSi,"GSI%d",ifmd+1);
+    sprintf(nameSector,"GSC%d",ifmd+1);
+    sprintf(nameRing,"GRN%d",ifmd+1);
+    printf(name,nameSi);
     
     zfmd=TMath::Abs(z[ifmd]);
-    if (fDebug) printf("zfmd %f z[ifmd] %f",zfmd,z[ifmd]);
+    printf("zfmd %f z[ifmd] %f",zfmd,z[ifmd]);
     AliFMD::Eta2Radius(etain[ifmd],zfmd,&rin[ifmd]);
     AliFMD::Eta2Radius(etaout[ifmd],zfmd,&rout[ifmd]);
     
@@ -125,8 +135,10 @@ void AliFMDv1::CreateGeometry()
     par[1]=rout[ifmd];
     par[2]=zFMD/2;
     gMC->Gsvolu(name,"TUBE", idtmed[3], par, 3);
+    //    par[2]=zDet/2;
+    gMC->Gsvolu(nameSi,"TUBE", idtmed[1], par, 0);
     
-    if (fDebug) printf ("rin %f rout %f ZFMD %f\n",par[0],par[1],z[ifmd]);
+    printf ("rin %f rout %f ZFMD %f\n",par[0],par[1],z[ifmd]);
     if (z[ifmd] < 0){  
       gMC->Gspos(name,1,"ALIC",0,0,z[ifmd],0, "ONLY");}
     else { 
@@ -134,8 +146,25 @@ void AliFMDv1::CreateGeometry()
   //Silicon detector
     par[2]=zDet/2;
     zpos=zFMD/2 -par[2];
-    gMC->Gsposp("GFSI",ifmd+1,name,0,0,zpos,0, "ONLY",par,3);
-     
+    gMC->Gsposp(nameSi,ifmd+1,name,0,0,zpos,0, "ONLY",par,3);
+    cout<<" Si "<<nameSi<<" ifmd "<<ifmd<<" rin "<<par[0]<<" rout "<<par[1]<<
+      " zDet "<<par[2]<<endl;
+    //Granularity
+    cout<<"fSectorsSi1 "<<fSectorsSi1<<
+      " fRingsSi1 "<<fRingsSi1<<
+      " fSectorsSi2 "<<fSectorsSi2<<
+      " fRingsSi2 "<<fRingsSi2<<endl;
+   if(ifmd==1||ifmd==3)
+      { 
+	gMC->Gsdvn(nameSector, nameSi , fSectorsSi2, 2);
+	gMC->Gsdvn(nameRing, nameSector, fRingsSi2, 1);
+      }
+    else
+      {
+	gMC->Gsdvn(nameSector, nameSi , fSectorsSi1, 2);
+	gMC->Gsdvn(nameRing, nameSector , fRingsSi1, 1);
+      }
+
     //Plastic slice for electronics
     par[2]=zElectronic/2;
     zpos=zpos-zDet/2-par[2];
@@ -146,25 +175,13 @@ void AliFMDv1::CreateGeometry()
    par[0]=rout[ifmd]-2;
    par[2]=zSupport/2;
    zpos=zpos-zElectronic/2-par[2];
-   gMC->Gsposp("GSUP",ifmd+1,name,0,0,zpos,0, "ONLY",par,3);
+   //   gMC->Gsposp("GSUP",ifmd+1,name,0,0,zpos,0, "ONLY",par,3);
    
 
   }  
-   
-   //Silicon
-
-
-  gMC->Gsdvn("GSEC", "GFSI", 16, 2);
-  gMC->Gsdvn("GRIN", "GSEC", 128, 1); 
-   /*
-      for (Int_t i=0; i<16; i++){
-      sprintf(ring,"GR%d",i);
-      printf(ring);
-      gMC->Gsdvn(ring, "GSEC", 128, 1);
-    }
-      */
 
 }    
+
 //------------------------------------------------------------------------
 void AliFMDv1::CreateMaterials()
 {
@@ -207,7 +224,6 @@ AliMC* pMC = AliMC::GetMC();
 pMC->Gsatt("ALIC","SEEN",0);
 //
 //Set volumes visible
-gMC->Gsatt("FMD0","SEEN",1);
 gMC->Gsatt("FMD1","SEEN",1);
 gMC->Gsatt("FMD2","SEEN",1);
 gMC->Gsatt("FMD3","SEEN",1);
@@ -229,10 +245,14 @@ void AliFMDv1::Init()
 {
 // Initialises version 0 of the Forward Multiplicity Detector
 //
-  AliMC* gMC=AliMC::GetMC();
-  AliFMD::Init();
-  fIdSens1=gMC->VolId("GRIN");
-  if (fDebug) printf("*** FMD version 1 initialized ***\n");
+AliMC* gMC=AliMC::GetMC();
+AliFMD::Init();
+fIdSens1=gMC->VolId("GRN1");
+fIdSens2=gMC->VolId("GRN2");
+fIdSens3=gMC->VolId("GRN3");
+fIdSens4=gMC->VolId("GRN4");
+fIdSens5=gMC->VolId("GRN5");
+printf("*** FMD version 1 initialized ***\n");
 }
 
 //-------------------------------------------------------------------
@@ -259,19 +279,19 @@ void AliFMDv1::StepManager()
 
   //  printf(" in StepManeger \n");
   id=gMC->CurrentVolID(copy);
+  //((TGeant3*)gMC)->Gpcxyz();
   
 // Check the sensetive volume
-   if(id==fIdSens1)
+   if(id==fIdSens1||id==fIdSens2||id==fIdSens3||id==fIdSens4||id==fIdSens5)
      {
        if(gMC->IsTrackEntering())
 	 {
-	   //	   ((TGeant3*)gMC)->Gpcxyz();
 	   vol[2]=copy;
 	   gMC->CurrentVolOffID(1,copy1);
 	   vol[1]=copy1;
 	   gMC->CurrentVolOffID(2,copy2);
 	   vol[0]=copy2;
-	   //	   printf("vol0 %d vol1 %d vol2 %d\n",vol[0],vol[1],vol[2]); 
+	   //  printf("vol0 %d vol1 %d vol2 %d\n",vol[0],vol[1],vol[2]); 
 	   gMC->TrackPosition(pos);
 	   hits[0]=pos[0];
 	   hits[1]=pos[1];
@@ -287,10 +307,11 @@ void AliFMDv1::StepManager()
 	   hits[7]=partId;
 	   hits[8]=1e9*gMC->TrackTime();
 	   de=0.;
-	   //	   for(i=0; i<9; i++) printf(" hits %f \n",hits[i]);
 	 }
        if(gMC->IsTrackInside()){
 	   de=de+1000.*gMC->Edep();
+	   //	   cout<<" de "<<de<<endl;
+	   // cout<<" step "<<gMC->TrackStep()<<endl;
        }
        
        if(gMC->IsTrackExiting()
@@ -298,7 +319,10 @@ void AliFMDv1::StepManager()
 	  gMC->IsTrackStop())
 	 {
 	     hits[6]=de+1000.*gMC->Edep();
-    new(lhits[fNhits++]) AliFMDhit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+	     //     cout<<" idSens "<<id<<endl;
+	     //cout<<" hits "<<hits[6]<<endl;
+	     //     for(Int_t i=0; i<9; i++) printf(" i %d hits %f \n",i,hits[i]);
+      new(lhits[fNhits++]) AliFMDhit(fIshunt,gAlice->CurrentTrack(),vol,hits);
 	 } // IsTrackExiting()
      }
   }

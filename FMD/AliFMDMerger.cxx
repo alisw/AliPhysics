@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/05/29 12:01:06  hristov
+Last minute changes and new code for event mixing and reconstruction (A.Maevskaia)
+
 Revision 1.3  2001/03/05 23:57:44  morsch
 Writing of digit tree moved to macro.
 
@@ -70,6 +73,24 @@ AliFMDMerger::~AliFMDMerger()
 }
 
 
+//---------------------------------------------------------------------
+void AliFMDMerger::SetRingsSi1(Int_t ringsSi1)
+{
+  fRingsSi1=ringsSi1;
+}
+void AliFMDMerger::SetSectorsSi1(Int_t sectorsSi1)
+{
+  fSectorsSi1=sectorsSi1;
+}
+void AliFMDMerger::SetRingsSi2(Int_t ringsSi2)
+{
+  fRingsSi2=ringsSi2;
+}
+void AliFMDMerger::SetSectorsSi2(Int_t sectorsSi2)
+{
+  fSectorsSi2=sectorsSi2;
+}
+//---------------------------------------------------------------------
 
 //------------------------------------------------------------------------
 void AliFMDMerger::Init()
@@ -101,14 +122,19 @@ void AliFMDMerger::Digitise()
 
 
 #ifdef DEBUG
-  cout<<"ALiFMD::>SDigits2Digits start...\n";
+  cout<<"ALiFMDMerger::>SDigits2Digits start...\n";
 #endif
 
   AliFMD * FMD = (AliFMD *) gAlice->GetDetector("FMD") ;
 
-  Int_t chargeSum[10][20][150];
+  Int_t chargeSum[10][30][150];
   Int_t digit[5];
   Int_t ivol, iSector, iRing;
+
+  Int_t NumberOfRings[5]=
+  {fRingsSi1,fRingsSi2,fRingsSi1,fRingsSi2,fRingsSi1};
+  Int_t NumberOfSectors[5]=
+  {fSectorsSi1,fSectorsSi2,fSectorsSi1,fSectorsSi2,fSectorsSi1};
 
   TFile *f1 =0;
   TTree *TK = gAlice->TreeK();
@@ -127,11 +153,11 @@ void AliFMDMerger::Digitise()
     fBgrFile->cd();
     // gAlice->TreeS()->Reset();
     gAlice = (AliRun*)fBgrFile->Get("gAlice");
-    Int_t chargeBgr[10][20][150];
+    Int_t chargeBgr[10][30][150];
     ReadDigit( chargeBgr,fEvNrBgr);
     for ( ivol=1; ivol<=5; ivol++)
-      for ( iSector=1; iSector<=16; iSector++)
-	for (  iRing=1; iRing<=128; iRing++)
+      for ( iSector=1; iSector<=NumberOfSectors[ivol-1]; iSector++)
+	for (  iRing=1; iRing<=NumberOfRings[ivol-1]; iRing++)
 	  chargeSum[ivol][iSector][iRing]=
 	    chargeBgr[ivol][iSector][iRing]+
 	    chargeSum[ivol][iSector][iRing];
@@ -141,8 +167,8 @@ void AliFMDMerger::Digitise()
 
   // Put noise and make ADC signal
   for ( ivol=1; ivol<=5; ivol++){
-    for ( iSector=1; iSector<=16; iSector++){
-      for ( iRing=1; iRing<=128; iRing++){
+    for ( iSector=1; iSector<=NumberOfSectors[ivol-1]; iSector++){
+      for ( iRing=1; iRing<=NumberOfRings[ivol-1]; iRing++){
 	digit[0]=ivol;
 	digit[1]=iSector;
 	digit[2]=iRing;
@@ -179,12 +205,12 @@ void AliFMDMerger::Digitise()
 
 //---------------------------------------------------------------------
 
-void AliFMDMerger::ReadDigit(Int_t chargeSum[][20][150], Int_t iEvNum)
+void AliFMDMerger::ReadDigit(Int_t chargeSum[][30][150], Int_t iEvNum)
 {
   AliFMDdigit *fmddigit;
   
   for (Int_t i=0; i<10; i++)
-    for(Int_t j=0; j<20; j++)
+    for(Int_t j=0; j<30; j++)
       for(Int_t ij=0; ij<150; ij++)
 	chargeSum[i][j][ij]=0;
 

@@ -9,9 +9,9 @@ void FMDMerger (Int_t evNumber1=0, Int_t evNumber2=0, Int_t ibg=0, Int_t bgr=10)
 
 // Connect the Root Galice file containing Geometry, Kine and Hits
 
-   TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("mgalice.root");
+   TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("pipe.root");
    if (file) file->Close(); 
-   file = new TFile("mgalice.root","UPDATE");
+   file = new TFile("galice.root","UPDATE");
    cout<<" Just starting... file "<<file<<endl;
 
 // Get AliRun object from file or create it if not on file
@@ -22,18 +22,25 @@ void FMDMerger (Int_t evNumber1=0, Int_t evNumber2=0, Int_t ibg=0, Int_t bgr=10)
        if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
    }
    AliFMD *FMD  = (AliFMD*) gAlice->GetModule("FMD");
-  cout<<" FMDMerger:: FMD "<<FMD<<" gAlice "<<gAlice<<endl;
 
    if (FMD) {
 // creation
        AliFMDMerger* merger = new AliFMDMerger();
+       cout<<" merger "<<merger<<endl;
+       /*
+       // granularity
+	merger->SetRingsSi1(128);
+        merger->SetRingsSi2(64);
+        merger->SetSectorsSi1(20);
+        merger->SetSectorsSi2(24);
+       */
 // configuration
        if (ibg) {
 	 merger->SetMode(ibg);
 	 merger->SetBackgroundFileName("bg.root");
+	 cout<<" background"<<endl;
       }
        // pass
-       //  merger->SetSignalFileName("mgalice.root");
        FMD->SetMerger(merger);
    }
 // Action !

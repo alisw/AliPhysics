@@ -23,9 +23,15 @@ public:
   virtual void   StepManager();
   
 protected:
-   Int_t fIdSens1; // Sensetive volume  in FMD
- 
-  ClassDef(AliFMDv0,1)  //Class for FMD version 0
+  Int_t fIdSens1; // Sensetive volume  in FMD
+  Int_t fIdSens2; // Sensetive volume  in FMD
+  Int_t fIdSens3; // Sensetive volume  in FMD
+  Int_t fIdSens4; // Sensetive volume  in FMD
+  Int_t fIdSens5; // Sensetive volume  in FMD
+   
+
+   
+  ClassDef(AliFMDv0,2)  //Class for FMD version 0
 };
 
 #endif

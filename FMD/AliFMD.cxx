@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  //////////////////////////////////////////////////////////////////////////////
-//                                                                           //
+//                                                                            //
 //  Forward Multiplicity Detector based on Silicon plates                    //
 //  This class contains the base procedures for the Forward Multiplicity     //
 //  detector                                                                 //
@@ -56,6 +56,7 @@
 #include "AliFMDhit.h"
 #include "AliFMDdigit.h"
 #include "AliFMDReconstruction.h"
+#include "AliFMDReconstParticles.h"
 #include <stdlib.h>
 
 
@@ -87,10 +88,15 @@ AliDetector (name, title)
   // Digits for each Si disk
   fDigits = new TClonesArray ("AliFMDdigit", 1000);
   fSDigits = new TClonesArray ("AliFMDdigit", 1000);
+  fReconParticles=new TClonesArray("AliFMDReconstParticles",1000); 
   gAlice->AddHitList (fHits);
 
   fIshunt = 0;
   fIdSens1 = 0;
+  fIdSens2 = 0;
+  fIdSens3 = 0;
+  fIdSens4 = 0;
+  fIdSens5 = 0;
 
   SetMarkerColor (kRed);
 }
@@ -140,13 +146,20 @@ void AliFMD::AddDigit (Int_t * digits)
 {
   // add a real digit - as coming from data
 
-  // printf("AddDigit\n");
 
   TClonesArray & ldigits = *fDigits;
   new (ldigits[fNdigits++]) AliFMDdigit (digits);
 
 }
+//_____________________________________________________________________________
+void AliFMD::AddSDigit (Int_t * digits)
+{
+  // add a real digit - as coming from data
 
+  TClonesArray & ldigits = *fSDigits;
+  new (ldigits[fNdigits++]) AliFMDdigit (digits);
+
+}
 //_____________________________________________________________________________
 void AliFMD::BuildGeometry ()
 {
@@ -154,51 +167,43 @@ void AliFMD::BuildGeometry ()
   // Build simple ROOT TNode geometry for event display
   //
   TNode *node, *top;
-  const int kColorFMD = 7;
+  const int kColorFMD = 5;
   //
   top = gAlice->GetGeometry ()->GetNode ("alice");
 
   // FMD define the different volumes
   new TRotMatrix ("rot901", "rot901", 90, 0, 90, 90, 180, 0);
 
-  new TTUBE ("S_FMD0", "FMD  volume 0", "void", 4.73, 17.7, 1.5);
+  new TTUBE ("S_FMD0", "FMD  volume 0", "void", 3.5, 16.8, 1.5);
   top->cd ();
-  node = new TNode ("FMD0", "FMD0", "S_FMD0", 0, 0, 64, "");
+  node = new TNode ("FMD0", "FMD0", "S_FMD0", 0, 0, 62.8, "");
   node->SetLineColor (kColorFMD);
   fNodes->Add (node);
 
-  new TTUBE ("S_FMD1", "FMD  volume 1", "void", 23.4, 36., 1.5);
+  new TTUBE ("S_FMD1", "FMD  volume 1", "void", 22., 34.9, 1.5);
   top->cd ();
-  node = new TNode ("FMD1", "FMD1", "S_FMD1", 0, 0, 85, "");
+  node = new TNode ("FMD1", "FMD1", "S_FMD1", 0, 0, 75.1, "");
   node->SetLineColor (kColorFMD);
   fNodes->Add (node);
 
-  new TTUBE ("S_FMD2", "FMD  volume 2", "void", 4.73, 17.7, 1.5);
+  new TTUBE ("S_FMD2", "FMD  volume 2", "void", 3.5, 16.8, 1.5);
   top->cd ();
-  node = new TNode ("FMD2", "FMD2", "S_FMD2", 0, 0, -64, "");
+  node = new TNode ("FMD2", "FMD2", "S_FMD2", 0, 0, -62.8, "");
   node->SetLineColor (kColorFMD);
   fNodes->Add (node);
 
-  new TTUBE ("S_FMD3", "FMD  volume 3", "void", 23.4, 36., 1.5);
+  new TTUBE ("S_FMD3", "FMD  volume 3", "void", 22., 34.9, 1.5);
   top->cd ();
-  node = new TNode ("FMD3", "FMD3", "S_FMD3", 0, 0, -85, "");
+  node = new TNode ("FMD3", "FMD3", "S_FMD3", 0, 0, -75.1, "");
   node->SetLineColor (kColorFMD);
   fNodes->Add (node);
 
-  new TTUBE ("S_FMD4", "FMD  volume 4", "void", 5, 15, 0.015);
+  new TTUBE ("S_FMD4", "FMD  volume 4", "void", 3.5, 16.8, 1.5);
   top->cd ();
   //  node = new TNode("FMD4","FMD4","S_FMD4",0,0,-270,"");
-  node = new TNode ("FMD4", "FMD4", "S_FMD4", 0, 0, -270, "");
+  node = new TNode ("FMD4", "FMD4", "S_FMD4", 0, 0, -345, "");
   node->SetLineColor (kColorFMD);
   fNodes->Add (node);
-
-  /* 
-     new TTUBE("S_FMD5","FMD  volume 5","void",5,14,0.015);
-     top->cd();
-     node = new TNode("FMD5","FMD5","S_FMD5",0,0,-630,"");
-     node->SetLineColor(kColorFMD);
-     fNodes->Add(node);
-   */
 }
 
 //_____________________________________________________________________________
@@ -223,7 +228,7 @@ void AliFMD::ResetDigits ()
 {
   //
   // Reset number of digits and the digits array for this detector
-  AliDetector::ResetHits ();
+  AliDetector::ResetDigits ();
   //
 }
 
@@ -252,13 +257,12 @@ void  AliFMD::Init ()
     }
   //
   //
-  if (IsVersion () != 0)
-    fIdSens1 = pMC->VolId ("GRIN");	//Si sensetive volume
-  else
-    fIdSens1 = pMC->VolId ("GFSI");	//Si sensetive volume
+    fIdSens1 = pMC->VolId ("GRN1");	//Si sensetive volume
+    fIdSens2 = pMC->VolId ("GRN2");	//Si sensetive volume
+    fIdSens3 = pMC->VolId ("GRN3");	//Si sensetive volume
+    fIdSens4 = pMC->VolId ("GRN4");	//Si sensetive volume
 
 }
-
 //---------------------------------------------------------------------
 void AliFMD::MakeBranch (Option_t * option, const char *file)
 {
@@ -314,7 +318,7 @@ void AliFMD::SetTreeAddress ()
 
     }
   if (fSDigits)
-    fSDigits->Clear ();
+    //  fSDigits->Clear ();
 
   if (gAlice->TreeS () && fSDigits)
     {
@@ -323,28 +327,45 @@ void AliFMD::SetTreeAddress ()
 	branch->SetAddress (&fSDigits);
     }
 
-  if(fReconParticles)
-    fReconParticles->Clear();
-  if (gAlice->TreeR()) 
+  if (gAlice->TreeR() && fReconParticles) 
     {
       branch = gAlice->TreeR()->GetBranch("FMD"); 
       if (branch) branch->SetAddress(&fReconParticles) ;
-    } 
-
+    }   
 }
 
+//---------------------------------------------------------------------
+void AliFMD::SetRingsSi1(Int_t ringsSi1)
+{
+  fRingsSi1=ringsSi1;
+}
+void AliFMD::SetSectorsSi1(Int_t sectorsSi1)
+{
+  fSectorsSi1=sectorsSi1;
+}
+void AliFMD::SetRingsSi2(Int_t ringsSi2)
+{
+  fRingsSi2=ringsSi2;
+}
+void AliFMD::SetSectorsSi2(Int_t sectorsSi2)
+{
+  fSectorsSi2=sectorsSi2;
+}
 //---------------------------------------------------------------------
 
 void AliFMD::SDigits2Digits() 
 {
   cout<<"AliFMD::SDigits2Digits"<<endl; 
     if (fMerger) {
-      cout<<"AliFMD::SDigits2Digits fMerger"<<fMerger<<endl;
+      fMerger ->SetRingsSi1(fRingsSi1);
+      fMerger->SetRingsSi2(fRingsSi2);
+      fMerger ->SetSectorsSi1(fSectorsSi1);
+      fMerger ->SetSectorsSi2(fSectorsSi2);
       fMerger->Init();
       cout<<"AliFMD::SDigits2Digits Init"<<endl; 
-  
       fMerger->Digitise();
-    }
+      cout<<"AliFMD::SDigits2Digits Digitise() "<<endl; 
+     }
 
 }
 //---------------------------------------------------------------------
@@ -382,117 +403,36 @@ AliFMD::Eta2Radius (Float_t eta, Float_t zDisk, Float_t * radius)
 void AliFMD::Hits2SDigits ()
 {
 
-  AliFMD *FMD = (AliFMD *) gAlice->GetDetector ("FMD");
-
-  if (fNevents == 0)
-    fNevents = (Int_t) gAlice->TreeE ()->GetEntries ();
-
-  for (Int_t ievent = 0; ievent < fNevents; ievent++)
-    {
-      gAlice->GetEvent (ievent);
-      if (gAlice->TreeH () == 0)
-	return;
-      if (gAlice->TreeS () == 0)
-	gAlice->MakeTree ("S");
-
+  //#ifdef DEBUG
+  cout<<"ALiFMD::Hits2SDigits> start...\n";
+  //#endif
+  
+  char * fileSDigits = 0 ;
+  char * fileHeader = 0;
+  AliFMDSDigitizer * sd = new AliFMDSDigitizer(fileHeader,fileSDigits) ;
+  sd->SetRingsSi1(fRingsSi1);
+  sd->SetRingsSi2(fRingsSi2);
+  sd->SetSectorsSi1(fSectorsSi1);
+  sd->SetSectorsSi2(fSectorsSi2);
 
 
-      Int_t nSdigits = 0;
-      
-            //Make branches
-      char branchname[20];
-       sprintf (branchname, "%s", FMD->GetName ());
-      //Make branch for digits
-      FMD->MakeBranch ("S");
-          
-    
-       //Now made SDigits from hits, for PHOS it is the same
-      Int_t volume, sector, ring, charge;
-      Float_t e;
-      Float_t de[10][20][150];
-      Int_t ivol, isec, iring;
-      Int_t hit, nbytes;
-      TParticle *particle;
-      AliFMDhit *fmdHit;
-      TClonesArray *FMDhits = FMD->Hits ();
+  sd->Exec("") ;
+  sd->Print("");
 
-      // Event ------------------------- LOOP  
-
-      for (ivol = 1; ivol <= 5; ivol++)
-	for (isec = 1; isec <= 16; isec++)
-	  for (iring = 1; iring <= 128; iring++)
-	    de[ivol][isec][iring] = 0;
-
-      if (FMD)
-	{
-	  FMDhits = FMD->Hits ();
-	  TTree *TH = gAlice->TreeH ();
-	  Stat_t ntracks = TH->GetEntries ();
-	  for (Int_t track = 0; track < ntracks; track++)
-	    {
-	      gAlice->ResetHits ();
-	      nbytes += TH->GetEvent (track);
-	      particle = gAlice->Particle (track);
-	      Int_t nhits = FMDhits->GetEntriesFast ();
-
-	      for (hit = 0; hit < nhits; hit++)
-		{
-		  fmdHit = (AliFMDhit *) FMDhits->UncheckedAt (hit);
-
-		  volume = fmdHit->Volume ();
-		  sector = fmdHit->NumberOfSector ();
-		  ring = fmdHit->NumberOfRing ();
-		  e = fmdHit->Edep ();
-		  de[volume][sector][ring] = de[volume][sector][ring] + e;
-		}		//hit loop
-	    }			//track loop
-	}			//if FMD
-
-
-      Int_t digit[5];
-      Float_t I = 1.664 * 0.04 * 2.33 / 22400;	// = 0.69e-6;
-      for (ivol = 1; ivol <= 5; ivol++)
-	{
-	  for (isec = 1; isec <= 16; isec++)
-	    {
-	      for (iring = 1; iring <= 128; iring++)
-		{
-		      digit[0] = ivol;
-		      digit[1] = isec;
-		      digit[2] = iring;
-		      charge = Int_t (de[ivol][isec][iring] / I);
-		      digit[3] = charge;
-		      //		      if (charge!=0) cout<<" charge "<<charge<<endl;
-		      //dinamic diapason from MIP(0.155MeV) to 30MIP(4.65MeV)
-		      //1024 ADC channels 
-		      Float_t channelWidth = (22400 * 30) / 1024;
-		      digit[4] = Int_t (digit[3] / channelWidth);
-
-		      new ((*fSDigits)[nSdigits++]) AliFMDdigit (digit);
-
-		}		// iring loop
-	    }			//sector loop
-	}			// volume loop
-      
-      gAlice->TreeS ()->Fill ();
-      gAlice->TreeS ()->Print ();
-
-    }				//event loop
-
+  delete sd ;
+  
 }
 //-----------------------------------------------------------------------
 
 void AliFMD::Digits2Reco()
 {
-#ifdef DEBUG
-  cout<<"ALiFMD::Digits2Reco> start...";
-#endif
   char * fileReconParticles=0;
   char * fileHeader=0;
   AliFMDReconstruction * reconstruction =
     new AliFMDReconstruction(fileHeader,fileReconParticles) ;
-  fReconParticles=new TClonesArray("AliFMDReconstParticles",1000);
-  reconstruction->Exec(fReconParticles,"");
+  //  fReconParticles=new TClonesArray("AliFMDReconstParticles",1000);
+  reconstruction->Exec("");
   delete  reconstruction;
 }
+
 

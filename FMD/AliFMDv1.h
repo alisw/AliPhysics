@@ -19,7 +19,7 @@ public:
   virtual void   CreateMaterials();
   virtual void   DrawDetector();
   virtual void   Init();
-  virtual Int_t  IsVersion() const {return 0;}
+  virtual Int_t  IsVersion() const {return 1;}
   virtual void   StepManager();
   //  virtual void Hit2Digits(Int_t bgrEvent, Option_t *opt1=" ",
   // 	Option_t *opt2=" ",Text_t *name=" "); // hit to digit for v1 :test  
@@ -30,6 +30,10 @@ public:
 
 protected:
    Int_t fIdSens1; // Sensetive volume  in FMD
+   Int_t fIdSens2; // Sensetive volume  in FMD
+   Int_t fIdSens3; // Sensetive volume  in FMD
+   Int_t fIdSens4; // Sensetive volume  in FMD
+   Int_t fIdSens5; // Sensetive volume  in FMD
    
 // Background event for event mixing
   

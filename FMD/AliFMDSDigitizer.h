@@ -36,14 +36,30 @@ public:
   Stat_t GetNEvents(){return fNevents;}
   void SetSDigitsFile(char * file ) ;
   virtual void Print(Option_t* option) const ;
+  TClonesArray *SDigits() const {return fSDigits;}
+  TClonesArray *Hits() const {return fHits;}
+  // Granularity
+   virtual void SetRingsSi1(Int_t ringsSi1);
+   virtual void SetSectorsSi1(Int_t sectorsSi1);
+   virtual void SetRingsSi2(Int_t ringsSi2);
+   virtual void SetSectorsSi2(Int_t sectorsSi2);
+
 
 private:
   Int_t   fNevents ;        // Number of events to digitize
   TString fSDigitsFile ;    //output file 
+  TClonesArray *fSDigits      ; // List of summable digits
+  TClonesArray *fHits      ; // List of summable digits
   TString fHeadersFile ;    //input file
+ protected:
+  //Granularity
+   Int_t fRingsSi1;       // Number of rings
+   Int_t fSectorsSi1;    // Number of sectors
+   Int_t fRingsSi2;       // Number of rings
+  Int_t fSectorsSi2;    // Number of sectors
 
 
-  ClassDef(AliFMDSDigitizer,2)  // description 
+  ClassDef(AliFMDSDigitizer,1)  // description 
 
 };
 

@@ -24,9 +24,8 @@ class AliFMDMerger {
   void Digitise() ;
   Int_t PutNoise(Int_t charge){return (Int_t)(gRandom->Gaus(charge,500));}
   TClonesArray *SDigits() const {return fSDigits;}
-  // TClonesArray *Digits() const {return fDigits;}
  
-  void ReadDigit(Int_t a[][20][150], Int_t);
+  void ReadDigit(Int_t a[][30][150], Int_t);
   
   // Setters -> Later Communication with gAlice 
   void SetSignalEventNumber(Int_t i)     {fEvNrSig = i;}
@@ -34,16 +33,26 @@ class AliFMDMerger {
   void SetBackgroundFileName(char* file) {fFnBgr = file;}        
   void SetSignalFileName(char* file)     {fFnSig = file;}        
   void SetMode(MergeMode_t mode) {fMerge = mode;}
+
+  // Granularity
+  virtual void SetRingsSi1(Int_t ringsSi1);
+  virtual void SetSectorsSi1(Int_t sectorsSi1);
+  virtual void SetRingsSi2(Int_t ringsSi2);
+  virtual void SetSectorsSi2(Int_t sectorsSi2);
 	
     enum {kBgTag = -1};
       
  private:    
     // Open the bgr file
     TFile *InitBgr();
-    
+  //Granularity
+  Int_t fRingsSi1;       // Number of rings
+  Int_t fSectorsSi1;    // Number of sectors
+  Int_t fRingsSi2;       // Number of rings
+  Int_t fSectorsSi2;    // Number of sectors
+   
  private:
-     TClonesArray *fDigits;               // ! array with digits
-    // Int_t fDigits;
+    TClonesArray *fDigits;               // ! array with digits
     TClonesArray *fSDigits      ; // List of summable digits
     Int_t fEvNrSig;                 // signal     event number
     Int_t fEvNrBgr;                 // background event number    
