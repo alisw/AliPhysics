@@ -33,6 +33,8 @@ geant3->SetRAYL(1);
 geant3->SetAUTO(1); //Select automatic STMIN etc... calc. (AUTO 1) or manual (AUTO 0)
 geant3->SetABAN(0); //Restore 3.16 behaviour for abandoned tracks
 geant3->SetOPTI(2); //Select optimisation level for GEANT geometry searches (0,1,2)
+geant3->SetERAN(5.e-7);
+
 Float_t cut    = 1.e-3; // 1MeV cut by default
 Float_t tofmax = 1.e10;
 //             GAM ELEC NHAD CHAD MUON EBREM MUHAB EDEL MUDEL MUPA TOFMAX
