@@ -292,8 +292,8 @@ void AliPHOSv1::StepManager(void)
     
     Float_t        xyd[3]={0,0,0}   ;   //local posiiton of the entering
     xyd[0]  = xyzd[0];
-    xyd[1]  =-xyzd[2];
-    xyd[2]  =-xyzd[1];
+    xyd[1]  =-xyzd[1];
+    xyd[2]  =-xyzd[2];
     
     // Current momentum of the hit's track in the local ref. system
     TLorentzVector pmom     ;        //momentum of the particle initiated hit
@@ -304,8 +304,8 @@ void AliPHOSv1::StepManager(void)
     
     gMC -> Gmtod (pm, pd, 2);        // transform 3-momentum from master to daughter system
     pmom[0] = pd[0];
-    pmom[1] =-pd[2];
-    pmom[2] =-pd[1];
+    pmom[1] =-pd[1];
+    pmom[2] =-pd[2];
 
     // Digitize the current CPV hit:
     
