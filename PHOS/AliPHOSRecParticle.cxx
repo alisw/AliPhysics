@@ -36,8 +36,8 @@
   AliPHOSRecParticle::AliPHOSRecParticle(): fPHOSTrackSegment(0)  ,  fDebug( kFALSE )
 {
   // ctor
-  const Int_t nSPECIES = AliESDtrack::kSPECIES;
-  for(Int_t i = 0; i<nSPECIES+4 ; i++)
+  const Int_t nSPECIES = AliESDtrack::kSPECIESN;
+  for(Int_t i = 0; i<nSPECIES ; i++)
     fPID[i]=0.;
 }
 
@@ -72,8 +72,8 @@
   fPolarTheta  = rp.fPolarTheta;
   fPolarPhi    = rp.fPolarPhi;
   fParticlePDG = rp.fParticlePDG; 
-  const Int_t nSPECIES = AliESDtrack::kSPECIES;
-  for(Int_t i = 0; i<nSPECIES+4 ; i++)
+  const Int_t nSPECIES = AliESDtrack::kSPECIESN;
+  for(Int_t i = 0; i<nSPECIES ; i++)
     fPID[i]=rp.fPID[i];
 }
 
@@ -132,7 +132,6 @@ const Double_t * AliPHOSRecParticle::GetPID()
   // 8       K0L
 
  
-  const Int_t nSPECIES = AliESDtrack::kSPECIES;
   if (IsElectron()     ) fPID[0] = 1.0;
   if (IsChargedHadron()) {
     fPID[1] = 0.25;
@@ -153,10 +152,11 @@ const Double_t * AliPHOSRecParticle::GetPID()
     fPID[4] = 1.00;
   }
 
-  if (IsPhoton() || IsHardPhoton()) fPID[nSPECIES]  =1.0;
-  if (IsHardPi0())                  fPID[nSPECIES+1]=1.0;
-  if (IsFastNeutralHadron())        fPID[nSPECIES+2]=1.0;
-  if (IsSlowNeutralHadron())        fPID[nSPECIES+3]=1.0;
+  if (IsPhoton() || IsHardPhoton()) fPID[5] = 1.0;
+  if (IsHardPi0())                  fPID[6] = 1.0;
+  if (IsFastNeutralHadron())        fPID[7] = 1.0;
+  if (IsSlowNeutralHadron())        fPID[8] = 1.0;
 
+  if (IsElecCon()) fPID[9] = 1.0;
   return fPID;
 }

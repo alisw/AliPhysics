@@ -49,7 +49,7 @@ class AliPHOSRecParticle : public AliPHOSFastRecParticle {
   Int_t fPHOSTrackSegment ; // pointer to the associated track segment in PHOS  
   Bool_t fDebug ; // to steer debug output
   TVector3 fPos ; // position in the global alice coordinate system 
-  Double_t fPID[AliESDtrack::kSPECIES+4] ; // PID probability densities
+  Double_t fPID[AliESDtrack::kSPECIESN] ; // PID probability densities
 
   ClassDef(AliPHOSRecParticle,3)  // Reconstructed Particle
 };
