@@ -12,11 +12,10 @@
 //               
 //*-- Author: Sahal Yacoob (LBL /UCT) 
 // Based on AliPHOSHit
-#include <TLorentzVector.h>
+
 // --- AliRoot header files ---
 #include "AliHit.h"
 
-//class ostream;
 
 class AliEMCALHit : public AliHit {
     

@@ -25,22 +25,13 @@
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
-#include "TGeometry.h"
-#include "TDirectory.h"
-#include "TFile.h"
-#include "TTree.h" 
 
 // --- Standard library ---
-#include <Riostream.h>
-#include <stdlib.h>   
+
 
 // --- AliRoot header files ---
 #include "AliRun.h" 
 #include "AliEMCALClusterizer.h"
-#include "AliHeader.h" 
-#include "AliEMCALGetter.h"
-#include "AliEMCALSDigitizer.h"
-#include "AliEMCALDigitizer.h"
 
 ClassImp(AliEMCALClusterizer)
 

@@ -43,7 +43,7 @@ class  AliEMCALPIDv1 : public AliEMCALPID {
   virtual void Print(Option_t * option) const ;
  
   //To turn on or off the Pi0 analysis
-  const Bool_t GetPi0Analysis(){return fPi0Analysis;}
+  Bool_t GetPi0Analysis() const {return fPi0Analysis;}
   void  SetPi0Analysis(Bool_t turnonoff){ fPi0Analysis = turnonoff; }
  
   virtual const char * Version() const { return "pid-v1" ; }  

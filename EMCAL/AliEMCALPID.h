@@ -15,7 +15,6 @@
 
 #include "TTask.h" 
 #include "AliConfig.h"
-
 class TFormula ;
 class TClonesArray ;
 

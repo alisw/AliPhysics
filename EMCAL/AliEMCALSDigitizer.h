@@ -35,11 +35,11 @@ public:
   Int_t         Digitize(Float_t Energy)const { return (Int_t ) ( fA + Energy*fB); }
   virtual void  Exec(Option_t *option); 
   Int_t         GetSDigitsInRun() const {return fSDigitsInRun ;}  
-  virtual void  Print(Option_t*) const ;
+  virtual void  Print() const ;
   void          SetEventFolderName(TString name) { fEventFolderName = name ; }
 
   Bool_t operator == (const AliEMCALSDigitizer & sd) const ;
-  AliEMCALSDigitizer & operator = (const AliEMCALSDigitizer & /*sd*/) {return *this ;}
+  const AliEMCALSDigitizer & operator = (const AliEMCALSDigitizer & /*sd*/) {return *this ;}
 
 
 private:

@@ -41,7 +41,7 @@ class AliEMCALRecParticle : public AliEMCALFastRecParticle {
  private:
 
   Int_t fEMCALTrackSegment ; // pointer to the associated track segment in EMCAL  
-  Bool_t fDebug ; 
+  Bool_t fDebug ; // to steer debug output 
 
   ClassDef(AliEMCALRecParticle,2)  // Reconstructed Particle
 };

@@ -32,7 +32,7 @@ public:
     {if(fB) return fTime + (threshold - fA)/fB ;
     else return 1. ;} //return very big time
 
-  Float_t GetTime(void){return fTime ;}
+  Float_t GetTime(void) const {return fTime ;}
 
   void operator+=(AliEMCALTick const &rValue) ;
 

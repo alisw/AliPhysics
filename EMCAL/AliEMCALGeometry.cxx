@@ -32,15 +32,15 @@
 // --- ROOT system ---
 
 // --- Standard library ---
-#include <stdlib.h> 
+//#include <stdlib.h> 
 
 // --- AliRoot header files ---
-#include <TError.h>
+//#include <TError.h>
 #include <TMath.h>
 #include <TVector3.h>
 
 // -- ALICE Headers.
-#include "AliConst.h"
+//#include "AliConst.h"
 
 // --- EMCAL headers
 #include "AliEMCALGeometry.h"

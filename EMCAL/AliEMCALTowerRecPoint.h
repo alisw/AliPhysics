@@ -13,15 +13,11 @@
 //*-- Author: Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
-
-#include "TArrayI.h"
 class TVector3 ;  
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
-#include "AliEMCALDigit.h"
 #include "AliEMCALRecPoint.h"
 
 class AliEMCALTowerRecPoint : public AliEMCALRecPoint  {
@@ -31,9 +27,7 @@ public:
   AliEMCALTowerRecPoint() ;
   AliEMCALTowerRecPoint(const char * opt) ;
   AliEMCALTowerRecPoint(const AliEMCALTowerRecPoint & rp):AliEMCALRecPoint(rp) {
-    // cpy ctor requested by Coding Convention 
-    // but not yet needed
-    assert(0==1) ; 
+    Fatal("cpy ctor", "not implemented") ; 
   } 
  
   virtual ~AliEMCALTowerRecPoint() ;  
@@ -65,8 +59,7 @@ public:
   const TVector3 XYZInAlice(Float_t r = 9999., Float_t theta = 9999., Float_t phi = 9999.) const ;  
 
   AliEMCALTowerRecPoint & operator = (const AliEMCALTowerRecPoint & /*rvalue*/)  {
-    // assignement operator requested by coding convention but not needed
-    assert(0==1) ;
+    Fatal("operator =", "not implemented") ;
     return *this ; 
   }
 

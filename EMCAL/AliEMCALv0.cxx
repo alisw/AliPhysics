@@ -30,26 +30,21 @@
 
 // --- ROOT system ---
 
-#include "TPGON.h"
+//#include "TPGON.h"
 #include "TTUBS.h"
 #include "TNode.h"
-#include "TRandom.h"
 #include "TGeometry.h"
 #include "TVirtualMC.h"
+#include "TArrayI.h"
 
 // --- Standard library ---
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <Rstrstream.h>
-#include <Riostream.h>
+//#include <stdio.h>
 
 // --- AliRoot header files ---
 
 #include "AliEMCALv0.h"
 #include "AliEMCALGeometry.h"
-#include "AliConst.h"
 #include "AliRun.h"
 
 ClassImp(AliEMCALv0)

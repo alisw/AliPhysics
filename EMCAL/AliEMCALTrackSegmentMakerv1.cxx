@@ -32,11 +32,7 @@
 //
 
 // --- ROOT system ---
-#include "TROOT.h"
-#include "TFile.h"
-#include "TFolder.h"
 #include "TTree.h"
-#include "TSystem.h"
 #include "TBenchmark.h"
 
 // --- Standard library ---
@@ -44,11 +40,9 @@
 // --- AliRoot header files ---
 
 #include "AliEMCALTrackSegmentMakerv1.h"
-#include "AliEMCALClusterizerv1.h"
 #include "AliEMCALTrackSegment.h"
 #include "AliEMCALLink.h"
 #include "AliEMCALGetter.h"
-#include "AliEMCAL.h"
 
 ClassImp( AliEMCALTrackSegmentMakerv1) 
 

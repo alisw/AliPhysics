@@ -18,7 +18,6 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
-#include "AliConfig.h"
 
 class AliEMCALClusterizer : public TTask {
 

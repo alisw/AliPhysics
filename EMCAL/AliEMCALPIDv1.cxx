@@ -21,28 +21,17 @@
 //*-- Author: Yves Schutz (SUBATECH) 
 //
 // --- ROOT system ---
-#include "TROOT.h"
+//#include "TROOT.h"
 #include "TTree.h"
-#include "TFile.h"
-#include "TF2.h"
-#include "TCanvas.h"
-#include "TFolder.h"
-#include "TSystem.h"
 #include "TBenchmark.h"
 #include "TSystem.h"
   
   // --- Standard library ---
   
   // --- AliRoot header files ---
-  
-#include "AliGenerator.h"
-#include "AliEMCAL.h"
 #include "AliEMCALPIDv1.h"
-#include "AliEMCALClusterizerv1.h"
 #include "AliEMCALTrackSegment.h"
-#include "AliEMCALTrackSegmentMakerv1.h"
 #include "AliEMCALRecParticle.h"
-#include "AliEMCALGeometry.h"
 #include "AliEMCALGetter.h"
   
   ClassImp( AliEMCALPIDv1) 
@@ -106,7 +95,7 @@ void AliEMCALPIDv1::Init()
 //____________________________________________________________________________
 void AliEMCALPIDv1::InitParameters()
 {
-
+  // Initialize the parameters
   fRecParticlesInRun = 0 ; 
   fNEvent            = 0 ;            
   fRecParticlesInRun = 0 ;
@@ -209,13 +198,13 @@ void  AliEMCALPIDv1::MakeRecParticles(){
       // Looking PCA. Define and calculate the data (X),
       // introduce in the function X2P that gives the components (P).  
 
-      Float_t  Spher = 0. ;
-      Float_t  Emaxdtotal = 0. ; 
+      Float_t  spher = 0. ;
+      Float_t  emaxdtotal = 0. ; 
       
       if((lambda[0]+lambda[1])!=0) 
-	Spher=fabs(lambda[0]-lambda[1])/(lambda[0]+lambda[1]); 
+	spher=fabs(lambda[0]-lambda[1])/(lambda[0]+lambda[1]); 
       
-      Emaxdtotal=eca->GetMaximalEnergy()/eca->GetEnergy(); 
+      emaxdtotal=eca->GetMaximalEnergy()/eca->GetEnergy(); 
     }
     
     //    Float_t time = ecal->GetTime() ;
@@ -285,6 +274,7 @@ void AliEMCALPIDv1::PrintRecParticles(Option_t * option)
 //____________________________________________________________________________
 void AliEMCALPIDv1::Unload() 
 {
+  // Unloads RecPoints, TrackSegments and RecParticles from the folder 
   AliEMCALGetter * gime = AliEMCALGetter::Instance() ;  
   gime->EmcalLoader()->UnloadRecPoints() ;
   gime->EmcalLoader()->UnloadTracks() ;
@@ -294,7 +284,7 @@ void AliEMCALPIDv1::Unload()
 //____________________________________________________________________________
 void  AliEMCALPIDv1::WriteRecParticles()
 {
- 
+  // Write RecParticles array to file
   AliEMCALGetter *gime = AliEMCALGetter::Instance() ; 
 
   TClonesArray * recParticles = gime->RecParticles() ; 

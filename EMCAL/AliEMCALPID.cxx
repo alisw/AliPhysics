@@ -27,11 +27,7 @@
 
 
 // --- ROOT system ---
-#include "TGeometry.h"
-#include "TDirectory.h"
-#include "TFile.h"
-#include "TTree.h"
- 
+
 // --- Standard library ---
 
 // --- AliRoot header files ---

@@ -35,6 +35,7 @@ ClassImp(AliEMCALTick)
 //____________________________________________________________________________ 
   AliEMCALTick::AliEMCALTick():TObject() 
 {
+  //ctor
   fTime = 0;
   fA = 0;
   fB = 0 ;
@@ -43,12 +44,15 @@ ClassImp(AliEMCALTick)
 //____________________________________________________________________________ 
 AliEMCALTick::AliEMCALTick(Float_t time, Float_t a, Float_t slope):TObject()
 {
+  //ctor
   fTime = time;
   fA = a;
   fB = slope ;  
 }
 //____________________________________________________________________________ 
-Int_t AliEMCALTick::Compare(const TObject * obj) const {
+Int_t AliEMCALTick::Compare(const TObject * obj) const 
+{
+  // compares time values
   if(obj->InheritsFrom("AliEMCALTick")){
     AliEMCALTick * tick = (AliEMCALTick *) obj ;
     if(fTime < tick->fTime)

@@ -14,7 +14,6 @@
 // --- ROOT system ---
 
 #include "TParticle.h"
-#include "TVector3.h"
 
 // --- Standard library ---
 

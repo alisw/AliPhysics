@@ -38,7 +38,7 @@ class AliEMCAL ;
 // #include "AliEMCALRecPoint.h"
 // #include "AliEMCALRecPoint.h"
 // #include "AliEMCALTrackSegment.h"
-// #include "AliEMCALRecParticle.h"
+#include "AliEMCALRecParticle.h"
 class AliEMCALGeometry ;
 #include "AliEMCALDigitizer.h"
 #include "AliEMCALSDigitizer.h" 

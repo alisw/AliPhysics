@@ -28,20 +28,16 @@
 // --- ROOT system ---
 class TFile;
 #include <TFolder.h> 
-#include <TROOT.h>
 #include <TTree.h>
 #include <TVirtualMC.h> 
 
 // --- Standard library ---
-#include <Rstrstream.h>
 
 // --- AliRoot header files ---
 #include "AliMagF.h"
 #include "AliEMCAL.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALLoader.h"
-//#include "AliEMCALQAChecker.h" 
-#include "AliRun.h"
 
 ClassImp(AliEMCAL)
 //____________________________________________________________________________
@@ -183,7 +179,7 @@ AliEMCALGeometry * AliEMCAL::GetGeometry() const
 //____________________________________________________________________________
 void AliEMCAL::SetTreeAddress()
 { 
-
+  // Linking Hits in Tree to Hits array
   TBranch *branch;
   char branchname[20];
   sprintf(branchname,"%s",GetName());
@@ -194,7 +190,8 @@ void AliEMCAL::SetTreeAddress()
     branch = treeH->GetBranch(branchname);
     if (branch) 
       { 
-	if (fHits == 0x0) fHits= new TClonesArray("AliEMCALHit",1000);
+	if (fHits == 0x0) 
+	  fHits= new TClonesArray("AliEMCALHit",1000);
 	//Info("SetTreeAddress","<%s> Setting Hits Address",GetName());
 	branch->SetAddress(&fHits);
       }

@@ -23,21 +23,12 @@
 // Based on AliPHOSHit
 
 // --- Standard library ---
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <Rstrstream.h>
 #include <Riostream.h>
 
 // --- ROOT system ---
-#include <TLorentzVector.h>
 
 // --- AliRoot header files ---
 #include "AliEMCALHit.h"
-#include "AliRun.h"
-#include "AliConst.h"
-#include "AliEMCALGeometry.h"
-#include "AliEMCALGetter.h"
 
 ClassImp(AliEMCALHit)
 
@@ -53,10 +44,10 @@ AliEMCALHit::AliEMCALHit(){
     fX       = 0.0;
     fY       = 0.0;
     fZ       = 0.0;
-    fPx       = 0.0;
-    fPy       = 0.0;
-    fPz       = 0.0;
-    fPe       = 0.0;
+    fPx      = 0.0;
+    fPy      = 0.0;
+    fPz      = 0.0;
+    fPe      = 0.0;
     fIparent = 0;
     fIenergy = 0.0;
 }

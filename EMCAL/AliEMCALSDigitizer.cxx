@@ -49,14 +49,12 @@
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
-#include "TFile.h"
-#include "TROOT.h"
 #include "TBenchmark.h"
 
 // --- Standard library ---
+#include "stdlib.h"
 
 // --- AliRoot header files ---
-#include "AliRun.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALGetter.h"
 #include "AliEMCALHit.h"
@@ -132,6 +130,7 @@ void AliEMCALSDigitizer::Init(){
 //____________________________________________________________________________ 
 void AliEMCALSDigitizer::InitParameters()
 {
+  // Initializes parameters
   fA                      = 0;
   fB                      = 10000000.;
 
@@ -157,7 +156,7 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
   // Collects all hits in the section (PRE/ECAL/HCAL) of the same tower into digit
   
   if (strstr(option, "print") ) {
-    Print("") ; 
+    Print() ; 
     return ; 
   }
   
@@ -257,7 +256,7 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
     fSDigitsInRun += nSdigits ;  
     sdigits->Expand(nSdigits) ;
 
-    Int_t NPrimarymax = -1 ; 
+    Int_t nPrimarymax = -1 ; 
     Int_t i ;
     for (i = 0 ; i < sdigits->GetEntriesFast() ; i++) { 
       AliEMCALDigit * sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(i)) ;
@@ -265,8 +264,8 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
     }
     
     for (i = 0 ; i < sdigits->GetEntriesFast() ; i++) {   
-      if (((dynamic_cast<AliEMCALDigit *>(sdigits->At(i)))->GetNprimary()) > NPrimarymax)
-	NPrimarymax = ((dynamic_cast<AliEMCALDigit *>(sdigits->At(i)))->GetNprimary()) ;
+      if (((dynamic_cast<AliEMCALDigit *>(sdigits->At(i)))->GetNprimary()) > nPrimarymax)
+	nPrimarymax = ((dynamic_cast<AliEMCALDigit *>(sdigits->At(i)))->GetNprimary()) ;
     }
     
     // Now write SDigits    
@@ -301,7 +300,7 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
 
 
 //__________________________________________________________________
-void AliEMCALSDigitizer::Print(Option_t*)const
+void AliEMCALSDigitizer::Print()const
 { 
   // Prints parameters of SDigitizer
   Info("Print", "\n------------------- %s -------------", GetName() ) ; 
@@ -331,8 +330,10 @@ Bool_t AliEMCALSDigitizer::operator==( AliEMCALSDigitizer const &sd )const
 }
 
 //__________________________________________________________________
-void AliEMCALSDigitizer::PrintSDigits(Option_t * option){
+void AliEMCALSDigitizer::PrintSDigits(Option_t * option)
+{
   //Prints list of digits produced at the current pass of AliEMCALDigitizer
+  
   
   AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
   const TClonesArray * sdigits = gime->SDigits() ; 
@@ -369,6 +370,7 @@ void AliEMCALSDigitizer::PrintSDigits(Option_t * option){
 //____________________________________________________________________________ 
 void AliEMCALSDigitizer::Unload() const
 {
+  // Unload Hits and SDigits from the folder
   AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
   AliEMCALLoader * loader = gime->EmcalLoader() ; 
   loader->UnloadHits() ; 

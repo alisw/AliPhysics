@@ -14,12 +14,13 @@
 // --- ROOT system ---
 
 #include "TObject.h"
+class TClonesArray ; 
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
-#include "AliEMCALTowerRecPoint.h"
+#include "AliEMCALTowerRecPoint.h" 
+class AliEMCALRecPoint ; 
 
 class AliEMCALTrackSegment : public TObject  {
 

@@ -10,8 +10,6 @@
 //                  
 //*-- Author: Yves Schutz (SUBATECH)
 
-#include <stdlib.h>
-
 // --- ROOT system ---
 
 class TString ;
@@ -21,10 +19,7 @@ class TFolder ;
 // --- AliRoot header files ---
 
 #include "AliDetector.h"
-//class AliDetector;
 class AliEMCALGeometry ; 
-//class AliEMCALQAChecker ;
-
 class AliEMCAL : public AliDetector {
 
  public:
@@ -38,10 +33,7 @@ class AliEMCAL : public AliDetector {
   }
   virtual ~AliEMCAL() ; 
   virtual void   AddHit(Int_t, Int_t*, Float_t *) {
-    // do not use this definition but the one below
-    Fatal("AddHit(Int_t, Int_t*, Float_t *", 
-	  "not to be used: use AddHit( Int_t shunt, Int_t primary, Int_t track,Int_t id, Float_t *hits )") ;  
-
+    Fatal("AddHit(Int_t, Int_t*, Float_t *", "not to be used: use AddHit( Int_t shunt, Int_t primary, Int_t track,Int_t id, Float_t *hits )") ;  
   }
   virtual void  CreateMaterials() ;   
   virtual void  FinishRun() {WriteQA();}                  
@@ -53,11 +45,7 @@ class AliEMCAL : public AliDetector {
   virtual const TString Version() const {return TString(" ") ; }  
   virtual void WriteQA() ; 
   AliEMCAL & operator = (const AliEMCAL & /*rvalue*/)  {
-    // assignement operator requested by coding convention
-    // but not needed
-    Fatal("operator =", "not implemented") ;  
-    return *this ; 
-  }
+    Fatal("operator =", "not implemented") ;  return *this ; }
  
   virtual AliLoader* MakeLoader(const char* topfoldername);
   

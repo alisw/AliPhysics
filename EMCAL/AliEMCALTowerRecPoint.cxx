@@ -23,18 +23,15 @@
 
 
 // --- ROOT system ---
-#include "TH2.h"
 #include "TMath.h" 
-#include "TCanvas.h" 
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 
- #include "AliGenerator.h"
+#include "AliGenerator.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTowerRecPoint.h"
-#include "AliRun.h"
 #include "AliEMCALGetter.h"
 
 ClassImp(AliEMCALTowerRecPoint)

@@ -5,15 +5,9 @@
 //_________________________________________________________________________
 //  Base Class for EMCAL Reconstructed Points  
 //  A recpoint being equivalent to a cluster in encal terminology                 
-//*-- Author: Gines Martinez (SUBATECH)
-
-#include <assert.h>
+//*-- Author: Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
-
-#include "TMarker.h"
-#include "TGraph.h"
-#include "TPaveText.h"
 
 // --- Standard library ---
 
@@ -30,19 +24,12 @@ class AliEMCALRecPoint : public AliRecPoint {
 
   AliEMCALRecPoint() ;                   // ctor         
   AliEMCALRecPoint(const char * opt) ;   // ctor 
-  AliEMCALRecPoint(const AliEMCALRecPoint & rp):AliRecPoint(rp) {
-    // cpy ctor requested by Coding Convention 
-    // but not yet needed
-    assert(0==1) ; 
-  } 
+  AliEMCALRecPoint(const AliEMCALRecPoint & rp):AliRecPoint(rp) { Fatal("cpy ctor", "not implemented") ; } 
   
   virtual ~AliEMCALRecPoint(){
     // dtor
   }
-  virtual  void   AddDigit(AliDigitNew &){
-    // do not use this definition but the one below
-    assert(0==1) ; 
-  }
+  virtual  void   AddDigit(AliDigitNew &){ Fatal("AddDigit", "use AddDigit(AliEMCALDigit & digit, Float_t Energy )") ; }
   virtual  void   AddDigit(AliEMCALDigit & digit, Float_t Energy) = 0 ; 
   virtual Int_t   Compare(const TObject * obj) const = 0 ;   
   virtual Int_t   DistancetoPrimitive(Int_t px, Int_t py);
@@ -75,8 +62,7 @@ class AliEMCALRecPoint : public AliRecPoint {
   void SetHCA() { fHCASection = kTRUE ; } 
   void SetPRE()  { fPRESection  = kTRUE ; } 
   AliEMCALRecPoint & operator = (const AliEMCALRecPoint & )  {
-    // assignement operator requested by coding convention but not needed
-    assert(0==1) ;
+    Fatal("operator =", "not implemented") ;
     return *this ; 
   }
 

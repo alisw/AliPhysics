@@ -31,30 +31,15 @@
 //  2. Timing signal is collected and added to hit
 
 // --- ROOT system ---
-#include "TPGON.h"
-#include "TTUBS.h"
-#include "TNode.h"
-#include "TRandom.h"
-#include "TTree.h"
-#include "TGeometry.h"
 #include "TParticle.h"
 #include "TVirtualMC.h"
 
 // --- Standard library ---
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <Rstrstream.h>
-#include <Riostream.h>
-#include <math.h>
-
 // --- AliRoot header files ---
-
 #include "AliEMCALv1.h"
 #include "AliEMCALHit.h"
 #include "AliEMCALGeometry.h"
-#include "AliConst.h"
 #include "AliRun.h"
 #include "AliMC.h"
 

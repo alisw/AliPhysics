@@ -25,26 +25,25 @@ class TParticle ;
 class TTask ;
 
 // --- Standard library ---
-#include <stdlib.h>
-#include <Riostream.h>
 
 // --- AliRoot header files ---
 
 #include "AliRun.h"
-#include "AliLoader.h"
 #include "AliRunLoader.h"
-#include "AliEMCAL.h" 
-#include "AliEMCALHit.h" 
 #include "AliEMCALDigit.h"
-#include "AliEMCALTowerRecPoint.h"
+#include "AliEMCALRecPoint.h"
+#include "AliEMCALTowerRecPoint.h" 
 #include "AliEMCALTrackSegment.h"
-#include "AliEMCALRecParticle.h"
-class AliEMCALGeometry ;
-#include "AliEMCALDigitizer.h"
-#include "AliEMCALSDigitizer.h"
 #include "AliEMCALClusterizer.h"
-#include "AliEMCALTrackSegmentMaker.h"
+#include "AliEMCALTrackSegmentMaker.h" 
 #include "AliEMCALPID.h"
+class AliLoader ;
+class AliEMCAL ; 
+class AliEMCALHit ;
+class AliEMCALRecParticle ; 
+class AliEMCALGeometry ;
+class AliEMCALDigitizer ; 
+class AliEMCALSDigitizer ; 
 class AliEMCALCalibrationDB ;
 
 
@@ -61,7 +60,7 @@ class AliEMCALLoader : public AliLoader {
   virtual ~AliEMCALLoader() ; 
 
   // assignement operator requested by coding convention, but not needed
-  AliEMCALLoader & operator = (const AliEMCALLoader & ) {return *this;}
+  const AliEMCALLoader & operator = (const AliEMCALLoader & ) {return *this;}
 
   Int_t   GetEvent();//extends the method on EMCAL RecPart posting
   Int_t   SetEvent();//extends the method on EMCAL RecPart posting
@@ -190,6 +189,21 @@ class AliEMCALLoader : public AliLoader {
   AliEMCALCalibrationDB * CalibrationDB(){return  fcdb; }
   //void ReadCalibrationDB(const char * name, const char * filename);
   
+
+  static TString HitsName() { return fgkHitsName ; }   //Name for TClonesArray with hits from one event
+  static TString SDigitsName() { return fgkSDigitsName ;} //Name for TClonesArray 
+  static TString DigitsName() { return fgkDigitsName ;} //Name for TClonesArray 
+  static TString PreRecPointsName() { return fgkPRERecPointsName ;} //Name for TClonesArray 
+  static TString ECARecPointsName() { return fgkECARecPointsName ;} //Name for TClonesArray 
+  static TString HCARecPointsName() { return fgkHCARecPointsName ;} //Name for TClonesArray 
+  static TString TracksName() { return fgkTracksName ;} //Name for TClonesArray 
+  static TString RecParticlesName() { return fgkRecParticlesName ;} //Name for TClonesArray
+  static TString PRERecPointsBranchName() { return fgkPRERecPointsBranchName ;} //Name for branch
+  static TString ECARecPointsBranchName() { return fgkECARecPointsBranchName ;} //Name for branch
+  static TString HCARecPointsBranchName() { return fgkHCARecPointsBranchName ;} //Name for branch
+  static TString TrackSegmentsBranchName() { return fgkTrackSegmentsBranchName ;} //Name for branch
+  static TString RecParticlesBranchName() { return fgkRecParticlesBranchName ;} //Name for branch
+
 protected:
   TString fBranchTitle;            //Title of the branch
   Bool_t  fRecParticlesLoaded;     //Flag signing if Reconstructed Particles are loaded
@@ -207,9 +221,6 @@ private:
   Int_t ReadRecParticles();
   
   void  ReadTreeQA() ;
-  Int_t  fDebug ;             // Debug level
- 
- public:
 
   static const TString fgkHitsName;//Name for TClonesArray with hits from one event
   static const TString fgkSDigitsName;//Name for TClonesArray 
@@ -225,6 +236,9 @@ private:
   static const TString fgkHCARecPointsBranchName;//Name for branch
   static const TString fgkTrackSegmentsBranchName;//Name for branch
   static const TString fgkRecParticlesBranchName;//Name for branch
+  Int_t  fDebug ;             // Debug level
+ 
+
   
   ClassDef(AliEMCALLoader,3)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
 

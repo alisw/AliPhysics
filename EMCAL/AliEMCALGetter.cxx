@@ -54,6 +54,7 @@
 // #include "AliRun.h"
 // #include "AliConfig.h"
 #include "AliEMCALGetter.h"
+#include "AliEMCAL.h"
 #include "AliRunLoader.h"
 #include "AliStack.h"  
 #include "AliEMCALLoader.h"

@@ -23,15 +23,11 @@
 
 
 // --- ROOT system ---
-#include "TGeometry.h"
-#include "TFile.h"
-#include "TTree.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 #include "AliEMCALTrackSegmentMaker.h"
-#include "AliHeader.h" 
 
 ClassImp( AliEMCALTrackSegmentMaker) 
 

@@ -12,10 +12,10 @@
 //*-- Author: Sahal Yacoob (LBL / UCT)
 //*--   and : Yves Schutz (Subatech)
 
-#include <assert.h> 
+  //#include <assert.h> 
 
 // --- ROOT system ---
-  class TString ;
+class TString ;
 class TObjArray ;
 class TVector3 ;
 class TParticle ; 
@@ -32,7 +32,7 @@ public:
   };
   AliEMCALGeometry(const AliEMCALGeometry& geom):AliGeometry(geom) {
     // cpy ctor requested by Coding Convention but not yet needed
-    assert(0==1);
+    Fatal("Cpy ctor", "Not implemented");
   };
   virtual ~AliEMCALGeometry(void) ; 
   static AliEMCALGeometry * GetInstance(const Text_t* name,

@@ -78,6 +78,7 @@ const Int_t AliEMCALRecParticle::GetNPrimaries() const
 //____________________________________________________________________________
 const Int_t AliEMCALRecParticle::GetNPrimariesToRecParticles() const  
 { 
+  // Returns the number of primaries at the origine of a RecParticle
   Int_t rv = 0 ;
   AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
   Int_t ecaRPindex = dynamic_cast<AliEMCALTrackSegment*>(gime->TrackSegments()->At(GetEMCALTSIndex()))->GetECAIndex();
@@ -88,6 +89,7 @@ const Int_t AliEMCALRecParticle::GetNPrimariesToRecParticles() const
 //____________________________________________________________________________
 const TParticle * AliEMCALRecParticle::GetPrimary(Int_t index) const  
 {
+  // Getts the list of primary particles at the origine of the RecParticle
   if ( index > GetNPrimariesToRecParticles() ) { 
     if (fDebug) 
       Warning("GetPrimary", "AliEMCALRecParticle::GetPrimary -> %d is larger that the number of primaries %d", 

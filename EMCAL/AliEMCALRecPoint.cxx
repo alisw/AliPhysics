@@ -18,10 +18,12 @@
 //  Why should I put meaningless comments
 //  just to satisfy
 //  the code checker                
-//*-- Author: Gines Martinez (SUBATECH)
+//*-- Author: Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
 #include "TPad.h"
+#include "TGraph.h"
+#include "TPaveText.h"
 #include "TClonesArray.h"
 
 // --- Standard library ---
