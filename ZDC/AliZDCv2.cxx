@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2001/06/12 13:45:11  coppedis
+TDI in correct position and minor correction
+
 Revision 1.1  2001/05/14 09:57:39  coppedis
 A different geometry for the ZDCs
 
@@ -323,11 +326,16 @@ void AliZDCv2::CreateBeamLine()
   gMC->Gsvolu("QTD2", "BOX ", idtmed[6], boxpar, 3);
   gMC->Gspos("QTD2", 1, "ZDC ", 5.6+boxpar[0], 0., tubpar[2] + zd1 + 56.3, 0, "ONLY");
   
-  tubspar[0] = 6.2;
-  tubspar[1] = 6.4;
+//  tubspar[0] = 6.2;	// R = 6.2 cm----------------------------------------
+//  tubspar[1] = 6.4;
+//  tubspar[2] = 400./2.;
+//  tubspar[3] = 180.-62.5;
+//  tubspar[4] = 180.+62.5;
+  tubspar[0] = 10.5;	// R = 10.5 cm------------------------------------------
+  tubspar[1] = 10.7;
   tubspar[2] = 400./2.;
-  tubspar[3] = 180.-62.5;
-  tubspar[4] = 180.+62.5;
+  tubspar[3] = 180.-75.5;
+  tubspar[4] = 180.+75.5;
   gMC->Gsvolu("QTD3", "TUBS", idtmed[6], tubspar, 5);
   gMC->Gspos("QTD3", 1, "ZDC ", -3., 0., tubpar[2] + zd1 + 56.3, 0, "ONLY");
 
