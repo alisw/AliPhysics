@@ -17,7 +17,7 @@ CXXFLAGS      = $(CXXOPTS)
 CFLAGS	      = -fPIC -pipe -mcpu=ev5 -D__osf__ -D__alpha
 
 # rootcint flags
-CINTFLAGS     = $(filter-out -O2 -g -nostdnew -rtti,$(CXXFLAGS))
+CINTFLAGS     = 
 
 # rmkdepend flags for building dependencies of FORTRAN files
 DEPENDFFLAGS = $(filter-out -warn noinformational,$(FFLAGS))

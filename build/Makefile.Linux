@@ -15,7 +15,7 @@ CXXFLAGS      = $(CXXOPTS)
 CFLAGS	      = -Wall -fPIC -pipe
 
 # rootcint flags
-CINTFLAGS     = #$(CXXFLAGS)
+CINTFLAGS     = 
 
 # CERNLIB defines
 
