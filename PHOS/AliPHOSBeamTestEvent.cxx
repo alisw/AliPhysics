@@ -16,8 +16,10 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-// Short description  
-//
+// Class for PHOS Beam Test event header. 
+// Contains all information 
+//  about triggers, etc.    
+// 
 //*-- Author : Maxim Volkov (RRC KI) & Dmitri Peressounko (RRC KI & SUBATECH) 
 //////////////////////////////////////////////////////////////////////////////
 

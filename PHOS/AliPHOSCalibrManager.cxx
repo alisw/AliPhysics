@@ -28,7 +28,7 @@
 #include "TFile.h"
 
 // --- Standard library ---
-#include <fstream>
+#include <fstream> 
 
 // --- AliRoot header files ---
 #include "AliPHOSConTableDB.h"
@@ -41,6 +41,7 @@ AliPHOSCalibrManager * AliPHOSCalibrManager::fgCaMa = 0 ;
 //____________________________________________________________________________ 
 AliPHOSCalibrManager::AliPHOSCalibrManager():TNamed() 
 {
+  // default ctor: nott to be used
   fctdb = 0 ;
   fFileName="" ;
   Fatal("Default constructor","Should not use") ;
@@ -54,6 +55,7 @@ AliPHOSCalibrManager::AliPHOSCalibrManager(const char* filename ):
 //____________________________________________________________________________ 
   AliPHOSCalibrManager::~AliPHOSCalibrManager()
 {
+  //dtor
   TFile * f = gROOT->GetFile(fFileName) ;
   if(f && f->IsOpen())
     f->Close() ;
@@ -64,11 +66,14 @@ AliPHOSCalibrManager::AliPHOSCalibrManager(const char* filename ):
 //____________________________________________________________________________ 
 AliPHOSCalibrManager * AliPHOSCalibrManager::GetInstance(void)
 { 
+  // gets the instance of the unique object
  return fgCaMa ;
 }
 //____________________________________________________________________________ 
 AliPHOSCalibrManager * AliPHOSCalibrManager::GetInstance(const char* filename )
 {
+  // gets the instance of the unique object
+
   if(!fgCaMa)
     fgCaMa = new AliPHOSCalibrManager(filename) ;
   else{
@@ -81,7 +86,8 @@ AliPHOSCalibrManager * AliPHOSCalibrManager::GetInstance(const char* filename )
   return fgCaMa ;	 
 }
 //____________________________________________________________________________
-void AliPHOSCalibrManager::ReadFromASCII(AliPHOSCalibrationData &data,const char * filename){
+void AliPHOSCalibrManager::ReadFromASCII(AliPHOSCalibrationData &data,const char * filename)
+{
   //reads calibration parameters from ascii file
 
   if(!fctdb){
@@ -97,7 +103,8 @@ void AliPHOSCalibrManager::ReadFromASCII(AliPHOSCalibrationData &data,const char
   file.close();   
 }
 //____________________________________________________________________________
-void AliPHOSCalibrManager::ReadFromRoot(AliPHOSCalibrationData & data,Int_t run){
+void AliPHOSCalibrManager::ReadFromRoot(AliPHOSCalibrationData & data,Int_t run)
+{
   //reads calibration parameters from root file
 
   //construct name
@@ -134,7 +141,9 @@ void AliPHOSCalibrManager::ReadFromRoot(AliPHOSCalibrationData & data,Int_t run)
   Error("ReadFromRoot","Can not find key %s for run %d in file %s \n",searchname.Data(),run,fFileName.Data()) ;
 }
 //____________________________________________________________________________
-void AliPHOSCalibrManager::WriteData(AliPHOSCalibrationData * data){
+void AliPHOSCalibrManager::WriteData(AliPHOSCalibrationData * data)
+{
+  //Writes data
   TFile * file = gROOT->GetFile(fFileName) ;
   if(!file || !file->IsOpen()){
     file = TFile::Open(fFileName,"UPDATE") ;
@@ -159,7 +168,7 @@ void AliPHOSCalibrManager::WriteData(AliPHOSCalibrationData * data){
 //____________________________________________________________________________
 AliPHOSCalibrManager& AliPHOSCalibrManager::operator=(AliPHOSCalibrManager const & cdb)
 {
-  //
+  //overloads = operator
   fFileName = cdb.fFileName;
   return *this ;
 }

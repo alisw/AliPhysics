@@ -12,9 +12,8 @@
 
 // --- ROOT system ---
 #include "TNamed.h"
-#include "TArrayF.h" 
 #include "TString.h" 
-
+class TArrayF ; 
 // --- Standard library ---
 
 // --- AliRoot header files ---

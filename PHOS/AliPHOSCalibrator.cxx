@@ -46,9 +46,7 @@
 
 // --- ROOT system ---
 #include "TROOT.h"
-#include "TH1F.h"
 #include "TF1.h"
-#include "TMinuit.h"
 #include "TObjString.h"
 // --- Standard library ---
 
@@ -79,7 +77,8 @@ ClassImp(AliPHOSCalibrator)
 //____________________________________________________________________________ 
 AliPHOSCalibrator::AliPHOSCalibrator(const char* file, const char* title,Bool_t toSplit):
   TTask("AliPHOSCalibrator",title) 
-{ //Constructor which should normally be used.
+{ 
+  //Constructor which should normally be used.
   //file: path/galice.root  - header file
   //title: branch name of PHOS reconstruction (e.g. "Default")
   //toSplit: wether we work in Split mode?
@@ -113,6 +112,7 @@ AliPHOSCalibrator::AliPHOSCalibrator(const char* file, const char* title,Bool_t 
 //____________________________________________________________________________ 
   AliPHOSCalibrator::~AliPHOSCalibrator()
 {
+  // dtor
   if(fPedHistos)
     delete fPedHistos ;
   if(fGainHistos)
@@ -127,7 +127,8 @@ AliPHOSCalibrator::AliPHOSCalibrator(const char* file, const char* title,Bool_t 
     delete fRunList ;
 }
 //____________________________________________________________________________ 
-void AliPHOSCalibrator::AddRun(const char * filename){
+void AliPHOSCalibrator::AddRun(const char * filename)
+{
   //Adds one more run to list of runs, which will be scanned in ScanXXX methods
   
   TObjString * fn = new TObjString(filename) ;
@@ -153,6 +154,7 @@ void AliPHOSCalibrator::AddRun(const char * filename){
 //____________________________________________________________________________ 
 void AliPHOSCalibrator::Exec(Option_t * option)
 {
+  // reads parameters and does the calibration
   ScanPedestals(option);
   CalculatePedestals();             
   WritePedestals();
@@ -161,7 +163,9 @@ void AliPHOSCalibrator::Exec(Option_t * option)
   WriteGains() ;
 }
 //____________________________________________________________________________ 
-void AliPHOSCalibrator::Init(void){
+void AliPHOSCalibrator::Init(void)
+{
+  // intializes everything
 
   //check if ConTableDB already read 
   if(!fctdb){     
@@ -182,7 +186,8 @@ void AliPHOSCalibrator::Init(void){
   fhGainsWid    = new TH1F("hGainsWid","Gains width",fNch,0.,fNch) ; 
 }
 //____________________________________________________________________________ 
-void AliPHOSCalibrator::SetConTableDB(const char * file,const char * name){
+void AliPHOSCalibrator::SetConTableDB(const char * file,const char * name)
+{
   //Reads Connection Table database with name "name" from file "file" 
 
   if(file==0 || name == 0){
@@ -209,7 +214,8 @@ void AliPHOSCalibrator::SetConTableDB(const char * file,const char * name){
   
 }
 //____________________________________________________________________________ 
-void AliPHOSCalibrator::PlotPedestal(Int_t chanel){
+void AliPHOSCalibrator::PlotPedestal(Int_t chanel)
+{
   //Plot histogram for a given channel, filled in Scan method
   if(fPedHistos && fPedHistos->GetEntriesFast()){
     static_cast<TH1F*>(fPedHistos->At(chanel))->Draw() ;
@@ -219,11 +225,14 @@ void AliPHOSCalibrator::PlotPedestal(Int_t chanel){
   } 
 }
 //____________________________________________________________________________ 
-void AliPHOSCalibrator::PlotPedestals(void){
+void AliPHOSCalibrator::PlotPedestals(void)
+{
+  // draws pedestals distribution
   fhPedestals->Draw() ;
 }
 //____________________________________________________________________________ 
-void AliPHOSCalibrator::PlotGain(Int_t chanel){
+void AliPHOSCalibrator::PlotGain(Int_t chanel)
+{
   //Plot histogram for a given channel, filled in Scan method
   if(fGainHistos && fGainHistos->GetEntriesFast()){
     static_cast<TH1F*>(fGainHistos->At(chanel))->Draw() ;
@@ -233,11 +242,14 @@ void AliPHOSCalibrator::PlotGain(Int_t chanel){
   } 
 }
 //____________________________________________________________________________ 
-void AliPHOSCalibrator::PlotGains(void){
+void AliPHOSCalibrator::PlotGains(void)
+{
+  // draws gains distribution
   fhGains->Draw() ;
 }
 //____________________________________________________________________________ 
-void AliPHOSCalibrator::ScanPedestals(Option_t * option ){
+void AliPHOSCalibrator::ScanPedestals(Option_t * option )
+{
   //scan all files in list fRunList and fill pedestal hisgrams
   //option: "clear" - clear pedestal histograms filled up to now
   //        "deb" - plot file name currently processed
@@ -292,7 +304,8 @@ void AliPHOSCalibrator::ScanPedestals(Option_t * option ){
    
 }
 //____________________________________________________________________________ 
-void AliPHOSCalibrator::CalculatePedestals(){
+void AliPHOSCalibrator::CalculatePedestals()
+{
   //Fit histograms, filled in ScanPedestals method with Gaussian
   //find mean and width, check deviation from mean for each channel.
 
@@ -344,7 +357,8 @@ void AliPHOSCalibrator::CalculatePedestals(){
     
 }
 //____________________________________________________________________________ 
-void AliPHOSCalibrator::ScanGains(Option_t * option){
+void AliPHOSCalibrator::ScanGains(Option_t * option)
+{
   //Scan all runs, listed in fRunList and fill histograms for all channels
   //options: "clear" - clean histograms, filled up to now
   //         "deb" - print current file name
@@ -406,9 +420,9 @@ void AliPHOSCalibrator::ScanGains(Option_t * option){
 	Int_t ich = fctdb->AbsId2Raw(digit->GetId());
 	if(ich>=0){
 	  Float_t pedestal = fhPedestals->GetBinContent(ich) ;
-	  const Float_t showerInCrystall = 0.9 ;
+	  const Float_t kshowerInCrystall = 0.9 ;
 	  Float_t beamEnergy = gime->BeamEnergy() ;
-	  Float_t gain = beamEnergy*showerInCrystall/
+	  Float_t gain = beamEnergy*kshowerInCrystall/
 		         (digit->GetAmp() - pedestal) ;
 	  static_cast<TH1F*>(fGainHistos->At(ich))->Fill(gain) ;
 	} 
@@ -419,7 +433,9 @@ void AliPHOSCalibrator::ScanGains(Option_t * option){
   }
 }   
 //____________________________________________________________________________ 
-void AliPHOSCalibrator::CalculateGains(void){
+void AliPHOSCalibrator::CalculateGains(void)
+{
+  //calculates gain
 
   if(!fGainHistos || !fGainHistos->GetEntriesFast()){
     Error("CalculateGains","You should run ScanGains first!") ; 
@@ -472,7 +488,8 @@ void AliPHOSCalibrator::CalculateGains(void){
 
 //_____________________________________________________________________________
 void AliPHOSCalibrator::WritePedestals(const char * version,
-		                         Int_t begin,Int_t end){
+		                         Int_t begin,Int_t end)
+{
   //Write calculated data to file using AliPHOSCalibrManager
   //version and validitirange (begin-end) will be used to identify data 
 
@@ -521,7 +538,8 @@ void AliPHOSCalibrator::WritePedestals(const char * version,
 //_____________________________________________________________________________
 void AliPHOSCalibrator::ReadPedestals(const char * version,
 		                         Int_t range)
-{ //Read data from file using AliPHOSCalibrManager 
+{ 
+  //Read data from file using AliPHOSCalibrManager 
   //version and range will be used to choose proper data
 
   AliPHOSCalibrationData ped("Pedestals",version);
@@ -547,7 +565,8 @@ void AliPHOSCalibrator::ReadPedestals(const char * version,
 //_____________________________________________________________________________
 void AliPHOSCalibrator::ReadGains(const char * version,
 		                         Int_t range)
-{ //Read data from file using AliPHOSCalibrManager 
+{ 
+  //Read data from file using AliPHOSCalibrManager 
   //version and range will be used to choose proper data
 
   AliPHOSCalibrationData gains("Gains",version);
@@ -573,7 +592,8 @@ void AliPHOSCalibrator::ReadGains(const char * version,
 //_____________________________________________________________________________
 void AliPHOSCalibrator::WriteGains(const char * version,
 				     Int_t begin,Int_t end)
-{ //Write gains through AliPHOSCalibrManager
+{ 
+  //Write gains through AliPHOSCalibrManager
   //version and validity range(begin-end) are used to identify data
 
   if(!fctdb){
@@ -615,7 +635,9 @@ void AliPHOSCalibrator::WriteGains(const char * version,
   cmngr->WriteData(&gains) ;
 }	
 //_____________________________________________________________________________
-void AliPHOSCalibrator::Print(const Option_t * option)const {
+void AliPHOSCalibrator::Print(const Option_t * option)const 
+{
+  // prints everything
   printf("--------------AliPHOSCalibrator-----------------\n") ;
   printf("Files to handle:\n") ;
   TIter next(fRunList) ;

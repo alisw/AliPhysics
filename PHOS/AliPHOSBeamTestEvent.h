@@ -25,14 +25,14 @@ public:
 
   virtual ~AliPHOSBeamTestEvent() ; // dtor
 
-  Float_t   GetBeamEnergy(void){return fBeamEnergy ;}
-  UInt_t *  GetUserVector(void){return fUserVector ;}
-  UInt_t *  GetHeader(void){return fHeader ;}
-  UShort_t  GetPattern(void){return fPattern ;}
-  UShort_t *GetScanning(void){return fScanning ;}
-  UShort_t *GetCharge(void){return fCharge ;}
-  UInt_t *  GetScaler(void){return fScaler ;}
-  UShort_t *GetTDC(void) {return fTDC2228 ;}
+  Float_t   GetBeamEnergy(void) const {return fBeamEnergy ;}
+  UInt_t *  GetUserVector(void)       {return fUserVector ;}
+  UInt_t *  GetHeader(void)           {return fHeader ;}
+  UShort_t  GetPattern(void) const    {return fPattern ;}
+  UShort_t *GetScanning(void)         {return fScanning ;}
+  UShort_t *GetCharge(void)           {return fCharge ;}
+  UInt_t *  GetScaler(void)           {return fScaler ;}
+  UShort_t *GetTDC(void)              {return fTDC2228 ;}
 
   void SetBeamEnergy(Float_t energy ){fBeamEnergy = energy ;}
   void SetUserVector(UInt_t * uv){

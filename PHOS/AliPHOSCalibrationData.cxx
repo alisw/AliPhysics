@@ -15,7 +15,9 @@
 
 
 //_________________________________________________________________________
-// Calibration data and their quality  
+// Calibration data 
+// and their 
+// quality  
 //
 //*-- Author : D.Peressounko
 //////////////////////////////////////////////////////////////////////////////
@@ -32,7 +34,9 @@ ClassImp(AliPHOSCalibrationData)
 
 
 //____________________________________________________________________________ 
-  AliPHOSCalibrationData::AliPHOSCalibrationData():TObject() {
+  AliPHOSCalibrationData::AliPHOSCalibrationData():TObject() 
+{
+  // default ctor : does nothing
   fBegin=0;
   fEnd=0;
   fData = 0 ;
@@ -42,14 +46,18 @@ ClassImp(AliPHOSCalibrationData)
 }
 
 //____________________________________________________________________________ 
-  AliPHOSCalibrationData::AliPHOSCalibrationData(const char * category, const char * version, Int_t nchannels){
+  AliPHOSCalibrationData::AliPHOSCalibrationData(const char * category, const char * version, Int_t nchannels)
+{
+  // ctor: sets up the calibration IO
   fData      = new TArrayF(nchannels) ;
   fDataCheck = new TArrayF(nchannels) ;
   fCategory=category; 
   fVersion=version ; 
 }
 //____________________________________________________________________________ 
-AliPHOSCalibrationData::AliPHOSCalibrationData(const AliPHOSCalibrationData & cd){
+AliPHOSCalibrationData::AliPHOSCalibrationData(const AliPHOSCalibrationData & cd)
+{
+  //copy ctor
   fData = new TArrayF(*cd.fData) ;
   fDataCheck = new TArrayF(*cd.fDataCheck) ;
   fCategory=cd.fCategory; 
@@ -58,6 +66,7 @@ AliPHOSCalibrationData::AliPHOSCalibrationData(const AliPHOSCalibrationData & cd
 //____________________________________________________________________________ 
   AliPHOSCalibrationData::~AliPHOSCalibrationData()
 {
+  // dtor: deletes the arrays
   if(fData){
     delete fData ;
     fData=0 ;
@@ -68,15 +77,21 @@ AliPHOSCalibrationData::AliPHOSCalibrationData(const AliPHOSCalibrationData & cd
   }
 }
 //____________________________________________________________________________ 
-Float_t AliPHOSCalibrationData::Data(Int_t channel)const {
+Float_t AliPHOSCalibrationData::Data(Int_t channel)const 
+{
+  // returns calibration data for a given channel   
   return fData->At(channel) ;
 }
 //____________________________________________________________________________ 
-Float_t AliPHOSCalibrationData::DataCheck(Int_t channel)const {
+Float_t AliPHOSCalibrationData::DataCheck(Int_t channel)const 
+{
+  // returns calibration data check for a given channel   
   return fDataCheck->At(channel) ;
 }
 //____________________________________________________________________________ 
-AliPHOSCalibrationData & AliPHOSCalibrationData::operator = (const AliPHOSCalibrationData & rvalue){
+AliPHOSCalibrationData & AliPHOSCalibrationData::operator = (const AliPHOSCalibrationData & rvalue)
+{ 
+  // overload of =
   if(fData)
     delete fData; 
   fData      = new TArrayF(*rvalue.fData) ;
