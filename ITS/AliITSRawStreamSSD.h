@@ -9,7 +9,7 @@
 
 class AliITSRawStreamSSD: public AliITSRawStream {
   public :
-    AliITSRawStreamSSD();
+    AliITSRawStreamSSD(AliRawReader* rawReader);
 
     virtual Bool_t   Next();
 
@@ -21,7 +21,6 @@ class AliITSRawStreamSSD: public AliITSRawStream {
     static const Int_t kDDLModuleMap[kDDLsNumber][kModulesPerDDL];
 
   private :
-    AliRawReader     fRawReader;    // object for reading the raw data file
     UInt_t           fData;         // data read for file
 
     ClassDef(AliITSRawStreamSSD, 0) // class for reading ITS SSD raw digits

@@ -207,11 +207,12 @@ const Int_t AliITSRawStreamSSD::kDDLModuleMap[kDDLsNumber][kModulesPerDDL] = {
 };
 
 
-AliITSRawStreamSSD::AliITSRawStreamSSD() : 
-  fRawReader("SSDslice", kTRUE)
+AliITSRawStreamSSD::AliITSRawStreamSSD(AliRawReader* rawReader) :
+  AliITSRawStream(rawReader)
 {
 // create an object to read ITS SSD raw digits
 
+  fRawReader->Select(3);
 }
 
 
@@ -221,10 +222,10 @@ Bool_t AliITSRawStreamSSD::Next()
 // returns kFALSE if there is no digit left
 
   fPrevModuleID = fModuleID;
-  if (!fRawReader.ReadNextInt(fData)) return kFALSE;
+  if (!fRawReader->ReadNextInt(fData)) return kFALSE;
   
   UInt_t relModuleID = (fData >> 21) & 0x000007FF;
-  fModuleID = kDDLModuleMap[fRawReader.GetDDLID()][relModuleID];
+  fModuleID = kDDLModuleMap[fRawReader->GetDDLID()][relModuleID];
   fCoord1 = (fData >> 20) & 0x00000001;
   fCoord2 = (fData >> 10) & 0x000003FF;
   fSignal = (fData & 0x000003FF) + 1;

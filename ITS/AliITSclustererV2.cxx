@@ -10,6 +10,7 @@
 
 #include "AliITSclustererV2.h"
 #include "AliITSclusterV2.h"
+#include "AliRawReader.h"
 #include "AliITSRawStreamSPD.h"
 #include "AliITSRawStreamSDD.h"
 #include "AliITSRawStreamSSD.h"
@@ -140,37 +141,47 @@ Int_t AliITSclustererV2::Digits2Clusters(TTree *dTree, TTree *cTree) {
   delete digitsSDD;
   delete digitsSSD;
 
+  //delete dTree;
+
   Info("Digits2Clusters","Number of found clusters : %d",ncl);
 
   return 0;
 }
 
-void AliITSclustererV2::Digits2Clusters(TFile *out) {
+void AliITSclustererV2::Digits2Clusters(AliRawReader* rawReader) {
   //------------------------------------------------------------
   // This function creates ITS clusters from raw data
   //------------------------------------------------------------
-  TDirectory *savedir=gDirectory;
-  if (!out->IsOpen()) {
-    Error("Digits2Clusters","Output file not open !");
+  AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
+  if (!runLoader) {
+    Error("Digits2Clusters", "no run loader found");
     return;
   }
-  out->cd();
+  AliLoader* itsLoader = runLoader->GetLoader("ITSLoader");
+  if (!itsLoader) {
+    Error("Digits2Clusters", "no loader for ITS found");
+    return;
+  }
+  if (!itsLoader->TreeR()) itsLoader->MakeTree("R");
+  TTree* cTree = itsLoader->TreeR();
 
-  Char_t name[100];
-  sprintf(name,"TreeC_ITS_%d",fEvent);
-  TTree cTree(name,"ITS clusters V2");
   TClonesArray *array=new TClonesArray("AliITSclusterV2",1000);
-  cTree.Branch("Clusters",&array);
+  cTree->Branch("Clusters",&array);
   delete array;
 
   TClonesArray** clusters = new TClonesArray*[fNModules]; 
   // one TClonesArray per module
 
-  AliITSRawStreamSPD inputSPD;
+  rawReader->Reset();
+  AliITSRawStreamSPD inputSPD(rawReader);
   FindClustersSPD(&inputSPD, clusters);
-  AliITSRawStreamSDD inputSDD;
+
+  rawReader->Reset();
+  AliITSRawStreamSDD inputSDD(rawReader);
   FindClustersSDD(&inputSDD, clusters);
-  AliITSRawStreamSSD inputSSD;
+
+  rawReader->Reset();
+  AliITSRawStreamSSD inputSSD(rawReader);
   FindClustersSSD(&inputSSD, clusters);
 
   // write all clusters to the tree
@@ -181,14 +192,12 @@ void AliITSclustererV2::Digits2Clusters(TFile *out) {
       Error("Digits2Clusters", "data for module %d missing!", iModule);
       array = new TClonesArray("AliITSclusterV2");
     }
-    cTree.SetBranchAddress("Clusters", &array);
-    cTree.Fill();
+    cTree->SetBranchAddress("Clusters", &array);
+    cTree->Fill();
     nClusters += array->GetEntriesFast();
     delete array;
   }
-  cTree.Write();
-
-  savedir->cd();
+  itsLoader->WriteRecPoints("OVERWRITE");
 
   Info("Digits2Clusters", "total number of found clusters in ITS: %d\n", 
        nClusters);

@@ -4,12 +4,11 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliITSRawStream.h"
-#include "AliRawReader.h"
 
 
 class AliITSRawStreamSPD: public AliITSRawStream {
   public :
-    AliITSRawStreamSPD();
+    AliITSRawStreamSPD(AliRawReader* rawReader);
 
     virtual Bool_t   Next();
 
@@ -17,7 +16,6 @@ class AliITSRawStreamSPD: public AliITSRawStream {
     inline Int_t     GetColumn() const {return fCoord2;};
 
   private :
-    AliRawReader     fRawReader;    // object for reading the raw data file
     UShort_t         fData;         // data read for file
     UInt_t           fOffset;       // offset for cell column
     UInt_t           fHitCount;     // counter of hits

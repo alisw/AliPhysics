@@ -17,6 +17,7 @@ class TClonesArray;
 
 class AliITSgeom;
 class AliITSclusterV2;
+class AliRawReader;
 class AliITSRawStream;
 
 class AliITSclustererV2 : public TObject {
@@ -26,7 +27,7 @@ public:
 
   void SetEvent(Int_t event) { fEvent=event; }
   Int_t Digits2Clusters(TTree *in, TTree *out);
-  void Digits2Clusters(TFile *out);
+  void Digits2Clusters(AliRawReader* rawReader);
   void FindClustersSPD(const TClonesArray *dig, TClonesArray *cls);
   void FindClustersSPD(AliITSRawStream* input, TClonesArray** clusters);
   void FindClustersSDD(const TClonesArray *dig, TClonesArray *cls);

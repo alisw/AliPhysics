@@ -25,9 +25,10 @@
 ClassImp(AliITSRawStream)
 
 
-AliITSRawStream::AliITSRawStream()
+AliITSRawStream::AliITSRawStream(AliRawReader* rawReader)
 {
 // create an object to read ITS raw digits
 
+  fRawReader = rawReader;
   fModuleID = fPrevModuleID = fCoord1 = fCoord2 = fSignal = -1;
 }

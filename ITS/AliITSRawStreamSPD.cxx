@@ -25,11 +25,12 @@
 ClassImp(AliITSRawStreamSPD)
 
 
-AliITSRawStreamSPD::AliITSRawStreamSPD() : 
-  fRawReader("SPDslice", kTRUE)
+AliITSRawStreamSPD::AliITSRawStreamSPD(AliRawReader* rawReader) :
+  AliITSRawStream(rawReader)
 {
 // create an object to read ITS SPD raw digits
 
+  fRawReader->Select(1);
 }
 
 
@@ -39,7 +40,7 @@ Bool_t AliITSRawStreamSPD::Next()
 // returns kFALSE if there is no digit left
 
   fPrevModuleID = fModuleID;
-  while (fRawReader.ReadNextShort(fData)) {
+  while (fRawReader->ReadNextShort(fData)) {
   
     if ((fData & 0xE000) == 0x6000) {           // header
       fHitCount = 0;

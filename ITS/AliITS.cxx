@@ -846,7 +846,7 @@ void AliITS::MakeBranchS(const char *fl){
     sprintf(branchname,"%s",GetName());
     
 
-    if(fSDigits && fLoader->TreeS()){
+    if(fLoader->TreeS()){
         if (fSDigits == 0x0)  fSDigits  = new TClonesArray("AliITSpListItem",1000);
         MakeBranchInTree(fLoader->TreeS(),branchname,&fSDigits,buffersize,fl);
     } // end if

@@ -42,11 +42,12 @@ const Int_t AliITSRawStreamSDD::kDDLModuleMap[kDDLsNumber][kModulesPerDDL] = {
   {458,459,464,465,466,467,472,473,474,475,480,481,482,483,488,489,490,491,496,497,498,499}};
 
 
-AliITSRawStreamSDD::AliITSRawStreamSDD() : 
-  fRawReader("SDDslice", kTRUE)
+AliITSRawStreamSDD::AliITSRawStreamSDD(AliRawReader* rawReader) :
+  AliITSRawStream(rawReader)
 {
 // create an object to read ITS SDD raw digits
 
+  fRawReader->Select(2);
 }
 
 
@@ -56,10 +57,10 @@ Bool_t AliITSRawStreamSDD::Next()
 // returns kFALSE if there is no digit left
 
   fPrevModuleID = fModuleID;
-  if (!fRawReader.ReadNextInt(fData)) return kFALSE;
+  if (!fRawReader->ReadNextInt(fData)) return kFALSE;
   
   UInt_t relModuleID = (fData >> 25) & 0x0000007F;
-  fModuleID = kDDLModuleMap[fRawReader.GetDDLID()][relModuleID];
+  fModuleID = kDDLModuleMap[fRawReader->GetDDLID()][relModuleID];
   fCoord1 = (fData >> 16) & 0x000001FF;
   fCoord2 = (fData >> 8) & 0x000000FF;
   fSignal = fData & 0x000000FF;

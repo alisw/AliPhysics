@@ -4,11 +4,12 @@
  * See cxx source for full Copyright notice                               */
 
 #include <TObject.h>
+#include "AliRawReader.h"
 
 
 class AliITSRawStream: public TObject {
   public :
-    AliITSRawStream();
+    AliITSRawStream(AliRawReader* rawReader);
 
     virtual Bool_t   Next() = 0;
 
@@ -20,6 +21,8 @@ class AliITSRawStream: public TObject {
     inline Int_t     GetSignal() const {return fSignal;};
 
   protected :
+    AliRawReader*    fRawReader;    // object for reading the raw data
+
     Int_t            fModuleID;     // index of current module
     Int_t            fPrevModuleID; // index of previous module
     Int_t            fCoord1;       // current 1st coordinate
