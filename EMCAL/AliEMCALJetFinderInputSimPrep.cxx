@@ -148,7 +148,6 @@ if (fDebug > 1) Info("FillHits","Beginning FillHits");
 //
 //   Loop over tracks
 //
-    Int_t nbytes = 0;
     Double_t etH = 0.0;
 
 /*    for (Int_t track=0; track<ntracks;track++) {
@@ -198,7 +197,7 @@ void AliEMCALJetFinderInputSimPrep::FillTracks()
     TParticle *mPart;
     Int_t npart = (gAlice->GetHeader())->GetNprimary();
     if (fDebug > 1) Info("FillTracks","Header says there are %i primaries",npart);
-    AliEMCALGetter *gime = AliEMCALGetter::Instance();
+    //AliEMCALGetter *gime = AliEMCALGetter::Instance();
     Float_t bfield,rEMCAL;		 
 /*	for (Int_t i =0; i<gime->NPrimaries(); i++)
 	{

@@ -38,8 +38,8 @@ ClassImp(AliEMCALJetFinderInput)
 AliEMCALJetFinderInput::AliEMCALJetFinderInput(): 
 fDigitsArray(0),
 fTracksArray(0),
-fParticlesArray(0),
-fPartonsArray(0)
+fPartonsArray(0),
+fParticlesArray(0)
 {
 // Default constructor
 // Defines all TClonesArrays  
