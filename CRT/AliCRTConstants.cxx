@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2002/06/16 17:08:19  hristov
+First version of CRT
+
 
 */
 
@@ -46,5 +49,6 @@ const Float_t AliCRTConstants::fgActiveAreaWidth  = 156.7;
 const Float_t AliCRTConstants::fgActiveAreaHeight = 2*fgSinglePaletteHeight + fgActiveAreaGap;
 const Float_t AliCRTConstants::fgMagnetWidth = 654.4;
 const Float_t AliCRTConstants::fgMagnetLenght = 1200.;
+const Float_t AliCRTConstants::fgDepth=4420.; // cm.
 
 ClassImp(AliCRTConstants)

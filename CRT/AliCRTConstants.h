@@ -43,12 +43,23 @@ class AliCRTConstants {
   // Magnet
   static const Float_t fgMagnetWidth; // 
   static const Float_t fgMagnetLenght; // 
+
+  // Surface
+  static const Float_t fgDepth;
   
   AliCRTConstants() {}
+  AliCRTConstants(const AliCRTConstants& ct) {}
+  AliCRTConstants& operator= (const AliCRTConstants& ct) {return *this;}
   virtual ~AliCRTConstants() {}
 
  private:
   ClassDef(AliCRTConstants, 0)   // CRT(ACORDE) global constants
+};
+
+enum ECRMode { 
+  kSingleMuons, 
+  kMuonBundle, 
+  kMuonFlux
 };
     
 #endif // ALICRTCONSTANTS_H
