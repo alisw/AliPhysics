@@ -762,6 +762,7 @@ public:
    virtual  void  Gckpar(Int_t ish, Int_t npar, Float_t *par);
    virtual  void  Gckmat(Int_t itmed, char *natmed);
    virtual  Int_t Glvolu(Int_t nlev, Int_t *lnam,Int_t *lnum);
+   virtual  void  Gsbool(const char* onlyVolName, const char* manyVolName) {}
     
       // functions from GDRAW 
    virtual  void  DefaultRange();
@@ -821,6 +822,7 @@ public:
    virtual  void  Vname(const char *name, char *vname);
 
    virtual  void  InitLego();
+   virtual  AliMCGeomType GetMCGeomType() const { return kGeant3; }
 
   // Routines from GEANE
 
