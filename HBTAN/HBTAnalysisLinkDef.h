@@ -11,6 +11,10 @@
 #pragma link C++ class AliHBTFunction+;
 #pragma link C++ class AliHBTMonitorFunction+;
 
+#pragma link C++ class AliHBTFunction1D+;
+#pragma link C++ class AliHBTFunction2D+;
+#pragma link C++ class AliHBTFunction3D+;
+
 #pragma link C++ class AliHBTOnePairFctn+;
 #pragma link C++ class AliHBTOnePairFctn1D+;
 #pragma link C++ class AliHBTOnePairFctn2D+;
@@ -138,4 +142,6 @@
 #pragma link C++ class AliHBTLLWeightQInvFctn+;
 #pragma link C++ class AliHBTLLWeightTheorQInvFctn+;
 #pragma link C++ class AliHBTLLWeightsPID+;
+//#pragma link C++ class AliHBTCorrectQ3DCorrelFctn+;
+//#pragma link C++ class AliHBTCorrectQInvCorrelFctn+;
 #endif
