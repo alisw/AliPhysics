@@ -1,20 +1,22 @@
-SRCS          =   \
-AliHBTAnalysis.cxx    AliHBTPair.cxx           AliHBTReaderPPprod.cxx \
-AliHBTReader.cxx      AliHBTReaderTPC.cxx \
-AliHBTCorrelFctn.cxx  AliHBTPairCut.cxx \
-AliHBTEvent.cxx       AliHBTParticle.cxx       AliHBTRun.cxx \
-AliHBTFunction.cxx    AliHBTMonitorFunction.cxx   AliHBTParticleCut.cxx  \
-AliHBTReaderITSv1.cxx AliHBTReaderITSv2.cxx    AliHBTReaderKineTree.cxx \
-AliHBTTwoTrackEffFctn.cxx       AliHBTReaderInternal.cxx\
-AliHBTQResolutionFctns.cxx      AliHBTQDistributionFctns.cxx    \
-AliHBTLLWeights.cxx             AliHBTLLWeightFctn.cxx\
-AliHBTMonDistributionFctns.cxx     AliHBTMonResolutionFctns.cxx \
-AliHBTLLWeightsPID.cxx AliHBTLLWeightTheorFctn.cxx \
+SRCS          =       AliHBTAnalysis.cxx  \
+AliHBTReader.cxx      AliHBTReaderKineTree.cxx \
+AliHBTReaderESD.cxx   AliHBTReaderInternal.cxx \
+AliHBTReaderTPC.cxx   AliHBTReaderPPprod.cxx \
+AliHBTReaderITSv1.cxx AliHBTReaderITSv2.cxx    \
+AliHBTParticle.cxx    AliHBTParticleCut.cxx \
+AliHBTPair.cxx        AliHBTPairCut.cxx \
+AliHBTEvent.cxx       AliHBTRun.cxx \
+AliHBTFunction.cxx    AliHBTCorrelFctn.cxx  \
+AliHBTMonitorFunction.cxx       AliHBTTwoTrackEffFctn.cxx \
+AliHBTQResolutionFctns.cxx      AliHBTQDistributionFctns.cxx \
+AliHBTMonDistributionFctns.cxx  AliHBTMonResolutionFctns.cxx \
+AliHBTLLWeights.cxx             AliHBTLLWeightFctn.cxx \
+AliHBTLLWeightsPID.cxx          AliHBTLLWeightTheorFctn.cxx \
 AliHBTPositionRandomizer.cxx
 
 FSRCS   = fsiini.F  fsiw.F  led_bldata.F  ltran12.F
 
-HDRS:= $(SRCS:.cxx=.h) 
+HDRS:= $(SRCS:.cxx=.h)
 
 DHDR= HBTAnalysisLinkDef.h
 

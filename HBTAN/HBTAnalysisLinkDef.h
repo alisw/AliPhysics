@@ -67,6 +67,7 @@
 #pragma link C++ class AliHBTOrCut+;
 
 #pragma link C++ class AliHBTReader+;
+#pragma link C++ class AliHBTReaderESD+;
 #pragma link C++ class AliHBTReaderTPC+;
 #pragma link C++ class AliHBTReaderITSv1+;
 #pragma link C++ class AliHBTReaderITSv2+;
