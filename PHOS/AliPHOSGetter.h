@@ -167,7 +167,10 @@ public:
   Int_t                 WriteRecParticles(Option_t* opt="") const { return PhosLoader()->WriteRecParticles(opt) ; }
   Int_t                 WritePID(Option_t* opt="") const {
     return  PhosLoader()->WritePID(opt) ; }
-  
+
+  //========== Raw ===========
+  Int_t ReadRaw(Int_t event) ; 
+
   void SetDebug(Int_t level) {fgDebug = level;} // Set debug level 
   void PostClusterizer(AliPHOSClusterizer * clu) 
     const{PhosLoader()->PostClusterizer(clu) ; }

@@ -44,7 +44,8 @@
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TParticle.h>
-
+#include <TH1D.h>
+#include <TF1.h>
 
 // --- Standard library ---
 
@@ -58,6 +59,8 @@
 #include "AliPHOSLoader.h"
 #include "AliRunLoader.h"
 #include "AliStack.h"  
+#include "AliPHOSRawStream.h"
+#include "AliRawReaderFile.h"
 
 ClassImp(AliPHOSGetter)
   
@@ -303,6 +306,9 @@ void AliPHOSGetter::Event(Int_t event, const char* opt)
 
   if( strstr(opt,"E") )
     ReadTreeE(event) ;
+
+  if( strstr(opt,"W") )
+    ReadRaw(event) ;
  
 
 //   if( strstr(opt,"Q") )
@@ -511,6 +517,90 @@ Bool_t AliPHOSGetter::OpenESDFile()
   if (!fESDFile->IsOpen())
     rv = kFALSE ; 
   return rv ; 
+}
+
+//____________________________________________________________________________ 
+Int_t AliPHOSGetter::ReadRaw(Int_t event)
+{
+  // reads the raw format data, converts it into digits format and store digits in Digits()
+  // container.
+
+  AliRawReaderFile rawReader(event) ; 
+  AliPHOSRawStream in(&rawReader);
+  
+  const Int_t kHighGainIdOffset = PHOSGeometry()->GetNModules()
+    * PHOSGeometry()->GetNPhi()
+    * PHOSGeometry()->GetNZ() 
+    * 2 ;
+
+  Bool_t first = kTRUE ;
+  
+  TH1D hLowGain("hLowGain", "Low Gain", 1000, 0., PHOS()->GetRawFormatTimeMax()) ; 
+  TH1D hHighGain("hHighGain", "High Gain", 1000, 0., PHOS()->GetRawFormatTimeMax()) ; 
+  
+  // fit half the gaussian decay rather than AliPHOS::RawResponseFunction because thiswould give a floating point
+  // exception during error calculation ... To solve... 
+  TF1 * gauss = new TF1("gauss", "gaus", 
+			 PHOS()->GetRawFormatTimePeak(), 
+			 PHOS()->GetRawFormatTimeMax() ) ;   
+
+  Int_t relId[4], id ;
+  Bool_t hgflag = kFALSE ; 
+ 
+  TClonesArray * digits = Digits() ;
+  digits->Clear() ; 
+  Int_t idigit = 0 ; 
+  
+  while ( in.Next() ) { // PHOS entries loop 
+        
+    if ( (in.IsNewRow() || in.IsNewColumn() || in.IsNewModule()) ) {
+      if (!first) {
+	hLowGain.Fit(gauss, "QRON") ; 
+	Int_t ampL =  static_cast<Int_t>(gauss->Eval(gauss->GetParameter(2)) + 0.5) ; 
+	Double_t timeL  = PHOS()->GetRawFormatTimePeak() - gauss->GetParameter(2) ;
+	if (timeL < 0 ) // happens with noise 
+	  timeL =  PHOS()->GetRawFormatTimePeak() ;  
+	if (hgflag) {
+	  hHighGain.Fit(gauss, "QRON") ; 
+	  Int_t ampH =  static_cast<Int_t>(gauss->Eval(gauss->GetParameter(2)) + 0.5) ; 
+	  Double_t timeH  = PHOS()->GetRawFormatTimePeak() - gauss->GetParameter(2) ; 
+	  if (timeH < 0 ) // happens with noise 
+	    timeH =  PHOS()->GetRawFormatTimePeak() ;  
+	  new((*digits)[idigit]) AliPHOSDigit( -1, id+kHighGainIdOffset, ampH, timeH) ;
+	  idigit++ ; 
+	}
+	else {
+	  new((*digits)[idigit]) AliPHOSDigit( -1, id, ampL, timeL) ;
+	  idigit++ ; 
+	}
+      }
+      first = kFALSE ; 
+      hLowGain.Reset() ; 
+      hHighGain.Reset() ; 
+      relId[0] = in.GetModule() ;
+      if ( relId[0] >= PHOS()->GetRawFormatHighGainOffset() ) { 
+	relId[0] -=  PHOS()->GetRawFormatHighGainOffset() ; 
+	hgflag = kTRUE ; 
+      } else 
+	  hgflag = kFALSE ; 
+      relId[1] = 0 ; 
+      relId[2] = in.GetRow() ; 
+      relId[3] = in.GetColumn() ; 
+      PHOSGeometry()->RelToAbsNumbering(relId, id) ;	
+    }
+    if (hgflag)
+      hHighGain.Fill(
+		     in.GetTime() * PHOS()->GetRawFormatTimeMax() / PHOS()->GetRawFormatTimeBins(), 
+		     in. GetSignal() * PHOS()->GetRawFormatHighGainFactor() ) ;
+    else 
+      hLowGain.Fill(
+		    in.GetTime() * PHOS()->GetRawFormatTimeMax() / PHOS()->GetRawFormatTimeBins(), 
+		    in. GetSignal() ) ;
+  } // PHOS entries loop
+  
+  delete gauss ; 
+  
+  return Digits()->GetEntriesFast() ; 
 }
 
 //____________________________________________________________________________ 

@@ -172,6 +172,8 @@ class AliEMCALGetter : public TObject {
   Int_t                 WritePID(Option_t* opt="") const {
     return  EmcalLoader()->WritePID(opt) ; }
 
+  //========== Raw ===========
+  Int_t ReadRaw(Int_t event) ; 
 
   void SetDebug(Int_t level) {fgDebug = level;} // Set debug level 
     void PostClusterizer(AliEMCALClusterizer * clu) 

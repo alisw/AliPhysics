@@ -43,7 +43,8 @@
 #include <TFile.h>
 #include <TROOT.h>
 #include <TSystem.h>
-
+#include <TH1D.h>
+#include <TF1.h>
 
 // --- Standard library ---
 
@@ -56,6 +57,8 @@
 #include "AliMC.h"
 #include "AliRunLoader.h"
 #include "AliStack.h"  
+#include "AliEMCALRawStream.h"
+#include "AliRawReaderFile.h"
 
 ClassImp(AliEMCALGetter)
   
@@ -272,7 +275,10 @@ void AliEMCALGetter::Event(Int_t event, const char* opt)
 
   if( strstr(opt,"P") )
     ReadTreeP() ;
- 
+
+  if( strstr(opt,"W") )
+    ReadRaw(event) ;
+  
 }
 
 
@@ -442,6 +448,85 @@ void AliEMCALGetter::ReadPrimaries()
 }
 
 //____________________________________________________________________________ 
+Int_t AliEMCALGetter::ReadRaw(Int_t event)
+{
+  // reads the raw format data, converts it into digits format and store digits in Digits()
+  // container.
+  
+  AliRawReaderFile rawReader(event) ; 
+  AliEMCALRawStream in(&rawReader);
+  
+  const Int_t kHighGainIdOffset = EMCALGeometry()->GetNTowers()
+    * EMCALGeometry()->GetNPhi()
+    * EMCALGeometry()->GetNZ() 
+    * 2 ;
+  
+  Bool_t first = kTRUE ;
+  
+  TH1D hLowGain("hLowGain", "Low Gain", 1000, 0., EMCAL()->GetRawFormatTimeMax()) ; 
+  TH1D hHighGain("hHighGain", "High Gain", 1000, 0., EMCAL()->GetRawFormatTimeMax()) ; 
+  
+  // fit half the gaussian decay rather than AliEMCAL::RawResponseFunction because thiswould give a floating point
+  // exception during error calculation ... To solve... 
+  TF1 * gauss = new TF1("gauss", "gaus", 
+			EMCAL()->GetRawFormatTimePeak(), 
+			EMCAL()->GetRawFormatTimeMax() ) ;   
+  
+  Int_t id = -1;
+  Bool_t hgflag = kFALSE ; 
+  
+  TClonesArray * digits = Digits() ;
+  digits->Clear() ; 
+  Int_t idigit = 0 ; 
+  
+  while ( in.Next() ) { // EMCAL entries loop 
+    
+    if ( in.IsNewId() ) {
+      if (!first) {
+	hLowGain.Fit(gauss, "QRON") ; 
+	Int_t ampL =  static_cast<Int_t>(gauss->Eval(gauss->GetParameter(2)) + 0.5) ; 
+	Double_t timeL  = EMCAL()->GetRawFormatTimePeak() - gauss->GetParameter(2) ;
+	if (timeL < 0 ) // happens with noise 
+	  timeL =  EMCAL()->GetRawFormatTimePeak() ;  
+	if (hgflag) {
+	  hHighGain.Fit(gauss, "QRON") ; 
+	  Int_t ampH =  static_cast<Int_t>(gauss->Eval(gauss->GetParameter(2)) + 0.5) ; 
+	  Double_t timeH  = EMCAL()->GetRawFormatTimePeak() - gauss->GetParameter(2) ; 
+	  if (timeH < 0 ) // happens with noise 
+	    timeH =  EMCAL()->GetRawFormatTimePeak() ;  
+	  new((*digits)[idigit]) AliEMCALDigit( -1, -1, id+kHighGainIdOffset, ampH, timeH) ;
+	  idigit++ ; 
+	}
+	else {
+	  new((*digits)[idigit]) AliEMCALDigit( -1, -1, id, ampL, timeL) ;
+	  idigit++ ; 
+	}
+      }
+      first = kFALSE ; 
+      hLowGain.Reset() ; 
+      hHighGain.Reset() ; 
+      id = in.GetId() ; 
+      if (id > 9999 ) { // fixme 
+	hgflag = kTRUE ; 
+      } else 
+	hgflag = kFALSE ; 
+    }
+    if (hgflag)
+      hHighGain.Fill(
+		     in.GetTime() * EMCAL()->GetRawFormatTimeMax() / EMCAL()->GetRawFormatTimeBins(), 
+		     in. GetSignal() * EMCAL()->GetRawFormatHighGainFactor() ) ;
+    else 
+      hLowGain.Fill(
+		    in.GetTime() * EMCAL()->GetRawFormatTimeMax() / EMCAL()->GetRawFormatTimeBins(), 
+		    in. GetSignal() ) ;
+  } // EMCAL entries loop
+  
+  delete gauss ; 
+  
+  return Digits()->GetEntriesFast() ; 
+}
+  
+  //____________________________________________________________________________ 
 Int_t AliEMCALGetter::ReadTreeD()
 {
   // Read the Digits
