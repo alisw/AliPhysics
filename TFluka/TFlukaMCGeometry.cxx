@@ -1339,32 +1339,19 @@ Int_t idnrwr(const Int_t & /*nreg*/, const Int_t & /*mlat*/)
 //_____________________________________________________________________________
 void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz, 
           Double_t *pV,  Int_t &oldReg , const Int_t &oldLttc, Double_t &propStep,
-          Int_t &nascFlag, Double_t &retStep, Int_t &newReg,
+          Int_t &/*nascFlag*/, Double_t &retStep, Int_t &newReg,
 	       Double_t &saf, Int_t &newLttc, Int_t &lttcFlag,
           Double_t *sLt, Int_t *jrLt)
 
 {
    // Initialize FLUKa point and direction;
    gNstep++;
-/*
-   if (kNstep>0) {
-      gMCGeom->SetDebugMode(kTRUE);
-      gFluka->SetVerbosityLevel(3);
-   }   
-   if (kNstep>6520) {
-      gMCGeom->SetDebugMode(kFALSE);
-      gFluka->SetVerbosityLevel(0);
-   }   
-   if ((kNstep%10)==0) printf("step %i\n", kNstep);
-*/
 
    if (gMCGeom->IsDebugging()) {
       printf("========== Inside G1WR\n");
       printf("   point/dir:(%14.9f, %14.9f, %14.9f, %g, %g, %g)\n", pSx,pSy,pSz,pV[0],pV[1],pV[2]);
       printf("   oldReg=%i  oldLttc=%i  pstep=%f\n",oldReg, oldLttc, propStep);
    }   
-   gGeoManager->SetCurrentPoint(pSx, pSy, pSz);
-   gGeoManager->SetCurrentDirection(pV);
    gMCGeom->SetCurrentRegion(oldReg, oldLttc);
    // Initialize default return values
    lttcFlag = 0;
@@ -1377,7 +1364,7 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    // check if dummy boundary flag is set
    Int_t curLttc, curReg;
    if (gFluka->IsDummyBoundary()) {
-      // printf("Dummy boundary intercepted. Point is: %f, %f, %f\n", pSx, pSy, pSz);
+//      printf("Dummy boundary intercepted. Point is: %f, %f, %f\n", pSx, pSy, pSz);
       Bool_t crossedDummy = (oldLttc == TFlukaMCGeometry::kLttcVirtual)?kTRUE:kFALSE;
       if (crossedDummy) {
       // FLUKA crossed the dummy boundary - update new region/history
@@ -1398,10 +1385,7 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    }   
       
    // Reset outside flag
-   if (gGeoManager->IsOutside()) {
-      gGeoManager->SetOutside(kFALSE);
-      gGeoManager->CdTop();
-   } 
+   gGeoManager->SetOutside(kFALSE);
    
    // Reset dummy boundary flag
    gFluka->SetDummyBoundary(0); 
@@ -1418,82 +1402,44 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    }  
    // Now the current TGeo state reflects the FLUKA state       
    if (gMCGeom->IsDebugging()) printf("   current path: %s\n", gGeoManager->GetPath());
-   Double_t extra = 1E-6;
-   Double_t tmpStep = propStep + extra;
-   gGeoManager->FindNextBoundary(-tmpStep);
+   Double_t extra = 1E-10;
+   gGeoManager->SetCurrentPoint(pSx+extra*pV[0], pSy+extra*pV[1], pSz+extra*pV[2]);
+   gGeoManager->SetCurrentDirection(pV);
+   gGeoManager->FindNextBoundary(-propStep);
    Double_t snext = gGeoManager->GetStep();
-   // !!!!!
-   if (snext<=0) {
-      // FLUKA is in the wrong region, notify it
-      if (gMCGeom->IsDebugging()) printf("ERROR: snext=%f\n", snext);
-//      newReg = -3;
-//      return;
-      snext = extra;
-   }   
+   snext += extra;
    saf = gGeoManager->GetSafeDistance();
-   Bool_t cross = kFALSE;
-   Bool_t onBound = kFALSE;
-   if (snext<tmpStep) {
-      // We have some boundary in the way
-      Double_t dd = snext-propStep;
-      if (dd < 0) {
-         cross = kTRUE;
-         dd = -dd;
-      }   
-      if (dd < 1E-8) onBound = kTRUE;
-   }
-   snext += 1.E-8;
-   if (gMCGeom->IsDebugging()) {
-      if (!cross) printf("   physical step approved: %f\n", propStep);
-      else printf("   boundary crossing at: %f\n", snext);
-      if (onBound) printf("   step on boundary limit ! NASC=%i\n", nascFlag);
+   saf -= extra;
+   if (saf<0) saf=0.0;
+   if (snext<0) {
+      snext=0.0;
+      saf = 0.0;
    }   
-   if (!cross) {
+   if (snext>propStep) {
    // Next boundary further than proposed step, which is approved
       retStep = propStep;
       sLt[lttcFlag] = propStep;
       return;
    }
    // The next boundary is closer. We try to cross it.
+   gGeoManager->SetCurrentPoint(pSx,pSy,pSz);
    Double_t *point = gGeoManager->GetCurrentPoint();
    Double_t *dir = gGeoManager->GetCurrentDirection();
    Double_t pt[3];
    memcpy(pt, point, 3*sizeof(Double_t));
    
    Int_t i;
-   for (i=0;i<3;i++) point[i] += snext*dir[i];
+   for (i=0;i<3;i++) point[i] += (snext+1E-6)*dir[i];
+   // locate next region
    gGeoManager->FindNode();
    newLttc = (gGeoManager->IsOutside())?(TFlukaMCGeometry::kLttcOutside):gGeoManager->GetCurrentNodeId()+1;
-   if (newLttc == oldLttc) {
-      // brute force ...
-      // Just try a fast extra small step
-      snext += 1E-6;
-      for (i=0;i<3;i++) point[i] = pt[i]+snext*dir[i];
-      gGeoManager->FindNode();
-      newLttc = (gGeoManager->IsOutside())?(TFlukaMCGeometry::kLttcOutside):gGeoManager->GetCurrentNodeId()+1;
-      if (newLttc == oldLttc) {
-         // check if state changes at the end of the proposed step
-         for (i=0;i<3;i++) point[i] = pt[i]+propStep*dir[i];
-         gGeoManager->FindNode();
-         newLttc = (gGeoManager->IsOutside())?(TFlukaMCGeometry::kLttcOutside):gGeoManager->GetCurrentNodeId()+1;
-         if (newLttc==oldLttc) {
-            // approve step
-            retStep = propStep;
-            sLt[lttcFlag] = propStep;
-            return;
-         }
-         // snext is underestimated - we will create a virtual one to overcome the error
-//         printf("some boundary in the way...\n");
-      }    
-   }
    gGeoManager->SetCurrentPoint(pt);
-//   newLttc = (gGeoManager->IsOutside())?(TFlukaMCGeometry::kLttcOutside):gGeoManager->GetCurrentNodeId()+1;
    newReg = (gGeoManager->IsOutside())?(gMCGeom->NofVolumes()+1):gGeoManager->GetCurrentVolume()->GetNumber();
    if (gMCGeom->IsDebugging()) printf("   newReg=%i newLttc=%i\n", newReg, newLttc);
 
    // We really crossed the boundary, but is it the same region ?
    gMCGeom->SetNextRegion(newReg, newLttc);
-   if (newReg == oldReg) {
+   if (newReg==oldReg && newLttc!=oldLttc) {
       // Virtual boundary between replicants
       if (gMCGeom->IsDebugging()) printf("   DUMMY boundary\n");
       newReg = 1;  // cheat FLUKA telling it it crossed the TOP region
@@ -1510,12 +1456,7 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    sLt[lttcFlag+1] = 0.;      
 
    if (newLttc!=oldLttc) {
-      if (gGeoManager->IsOutside()) {
-         gGeoManager->SetOutside(kFALSE);
-         gGeoManager->CdTop();
-      } 
-      gGeoManager->CdTop();
-      if (!gGeoManager->GetCurrentMatrix()->IsIdentity()) printf("ERROR  at step %i\n", gNstep);
+      if (gGeoManager->IsOutside()) gGeoManager->SetOutside(kFALSE);
       gGeoManager->CdNode(oldLttc-1);
    }   
    if (gMCGeom->IsDebugging()) {
