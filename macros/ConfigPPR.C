@@ -14,6 +14,8 @@
 #include "EVGEN/AliGenCocktail.h"
 #include "EVGEN/AliGenSlowNucleons.h"
 #include "EVGEN/AliSlowNucleonModelExp.h"
+#include "EVGEN/AliGenParam.h"
+#include "EVGEN/AliGenGSIlib.h"
 #include "PYTHIA6/AliGenPythia.h"
 #include "STEER/AliMagFMaps.h"
 #include "STRUCT/AliBODY.h"
@@ -48,7 +50,8 @@ enum PprRun_t
     kHijing_per1,  kHijing_per2, kHijing_per3, kHijing_per4,  kHijing_per5,
     kHijing_jj25,  kHijing_jj50, kHijing_jj75, kHijing_jj100, kHijing_jj200, 
     kHijing_gj25,  kHijing_gj50, kHijing_gj75, kHijing_gj100, kHijing_gj200,
-    kHijing_pA, kPythia6, kPythia6Jets, kD0PbPb5500
+    kHijing_pA, kPythia6, kPythia6Jets, kD0PbPb5500, kD_TRD, kB_TRD, kJpsi_TRD,
+    kU_TRD, kPyJJ, kPyGJ
 };
 
 enum PprGeo_t 
@@ -778,11 +781,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	comment = comment.Append("HIJING pA");
 
 	AliGenCocktail *gener  = new AliGenCocktail();
-//	gener->SetTrackingFlag(0);
-	gener->SetOrigin(0, 0, 0);    // vertex position
-	gener->SetSigma(0, 0, 5.3);   // Sigma in (X,Y,Z) (cm) on IP position
-	gener->SetCutVertexZ(1.);     // Truncate at 1 sigma
-	gener->SetVertexSmear(kPerEvent); 
+
 	AliGenHijing   *hijing = new AliGenHijing(-1);
 // centre of mass energy 
 	hijing->SetEnergyCMS(TMath::Sqrt(82./208.) * 14000.);
@@ -857,6 +856,85 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetPtHard(2.1,-1.0);
 	gener->SetEnergyCMS(5500.);
 	gener->SetNuclei(208,208);
+	gGener=gener;
+      }
+      break;
+    case kD_TRD:
+      {
+	comment = comment.Append(" D0 for TRD at 5.5 TeV");
+	AliGenPythia *gener = new AliGenPythia(1);
+	gener->SetCutOnChild(0);
+	gener->SetStrucFunc(kCTEQ4L);
+	gener->SetProcess(kPyCharm);
+	gener->SetPtHard(0.,-1);
+	gener->SetEnergyCMS(5500.);
+	gGener=gener;
+      }
+      break;
+    case kB_TRD:
+      {
+	comment = comment.Append(" B for TRD at 5.5 TeV");
+	AliGenPythia *gener = new AliGenPythia(1);
+	gener->SetCutOnChild(0);
+	gener->SetStrucFunc(kCTEQ4L);
+	gener->SetProcess(kPyBeauty);
+	gener->SetPtHard(0.,-1);
+	gener->SetEnergyCMS(5500.);
+	gGener=gener;
+      }
+      break;
+    case kJpsi_TRD:
+      {
+	comment = comment.Append(" J/psi for TRD at 5.5 TeV");
+	AliGenParam *gener = new AliGenParam(1,new AliGenGSIlib(),
+					     AliGenGSIlib::kJPsi,"MUON");
+	gener->SetMomentumRange(0,999);
+	gener->SetPtRange(0,30.);
+	gener->SetPhiRange(0., 360.);
+	gener->SetYRange(-0.9,+0.9);
+	gener->SetForceDecay(kDiElectron);
+	gGener=gener;
+      }
+      break;
+    case kU_TRD:
+      {
+	comment = comment.Append(" Upsilon for TRD at 5.5 TeV");
+	AliGenParam *gener = new AliGenParam(1,new AliGenGSIlib(),
+					     AliGenGSIlib::kUpsilon,"RITMAN");
+	gener->SetMomentumRange(0,999);
+	gener->SetPtRange(0,30.);
+	gener->SetPhiRange(0., 360.);
+	gener->SetYRange(-0.9,0.9);
+	gener->SetForceDecay(kDiElectron);
+	gGener=gener;
+      }
+      break;
+    case kPyJJ:
+      {
+	comment = comment.Append(" Jet-jet at 5.5 TeV");
+	AliGenPythia *gener = new AliGenPythia(-1);
+	gener->SetEnergyCMS(5500.);
+	gener->SetProcess(kPyJets);
+	Double_t ptHardMin=10.0, ptHardMax=-1.0;
+	gener->SetPtHard(ptHardMin,ptHardMax);
+	gener->SetYHard(-0.7,0.7);
+	gener->SetJetEtaRange(-0.2,0.2);
+	gener->SetEventListRange(0,1);
+	gGener=gener;
+      }
+      break;
+    case kPyGJ:
+      {
+	comment = comment.Append(" Gamma-jet at 5.5 TeV");
+	AliGenPythia *gener = new AliGenPythia(-1);
+	gener->SetEnergyCMS(5500.);
+	gener->SetProcess(kPyDirectGamma);
+	Double_t ptHardMin=10.0, ptHardMax=-1.0;
+	gener->SetPtHard(ptHardMin,ptHardMax);
+	gener->SetYHard(-1.0,1.0);
+	gener->SetGammaEtaRange(-0.13,0.13);
+	gener->SetGammaPhiRange(210.,330.);
+	gener->SetEventListRange(0,1);
 	gGener=gener;
       }
       break;
