@@ -2,12 +2,29 @@
 #define ALIHBTWeightQINVFCTN_H
 
 /* $Id$ */
-
+//_________________________________________________________________________
+//
+// class AliHBTWeightQInvFctn
+// class AliHBTWeightQOutFctn
+// class AliHBTWeightQSideFctn
+// class AliHBTWeightQLongFctn
+// 
+// This class allows to obtain Q_inv correlation function with weights
+// calculated by Lednicky's alghorithm.
+// Numerator is filled with weighted events. Weights are attributed to reconstructed tracks.
+// Weights are calculated with corresponding simulated particles momenta.
+// Denominator is filled with mixing unweighted reconstructed tracks.
+// One needs both pairs 
+// (simulated and recontructed), thus function is of class AliHBTTwoPairFctn1D.
+// Author: Ludmila Malinina, JINR (malinina@sunhe.jinr.ru)
+//
+////////////////////////////////////////////////////////////////////////////////
 
 #include "AliHBTFunction.h"
 
 
 class AliHBTWeights;
+
 class AliHBTWeightQInvFctn: public AliHBTTwoPairFctn1D
 {
  public:

@@ -2,19 +2,18 @@
 /* $Id$ */
 //_________________________________________________________________________
 //
-// class 
+// class AliHBTWeightQInvFctn
 //
-//This class allows to obtain Q_inv correlation function with weights
-//calculated by Lednicky's alghorithm.
-//Numerator is filled with weighted events. Weights are attributed to reconstructed tracks.
-//Weights are calculated with corresponding simulated particles momenta.
-//Denominator is filled with mixing unweighted reconstructed tracks.
-//One needs both pairs 
-//(simulated and recontructed), thus function is of class AliHBTTwoPairFctn1D.
-//Author: Ludmila Malinina, JINR (malinina@sunhe.jinr.ru)
-#include "AliHBTWeightsPID.h"
-
-//--for test--AliHBTWeightQInvFctn* yyy= new AliHBTWeightQInvFctn();
+// This class allows to obtain Q_inv correlation function with weights
+// calculated by Lednicky's alghorithm.
+// Numerator is filled with weighted events. Weights are attributed to reconstructed tracks.
+// Weights are calculated with corresponding simulated particles momenta.
+// Denominator is filled with mixing unweighted reconstructed tracks.
+// One needs both pairs 
+// (simulated and recontructed), thus function is of class AliHBTTwoPairFctn1D.
+// Author: Ludmila Malinina, JINR (malinina@sunhe.jinr.ru)
+//
+////////////////////////////////////////////////////////////////////////////////
 
 ClassImp( AliHBTWeightQInvFctn )
 
@@ -28,6 +27,7 @@ AliHBTWeightQInvFctn::AliHBTWeightQInvFctn(Int_t nbins, Double_t maxXval, Double
  Rename("wqinvcf","Q_{inv} Weight Correlation Function");
 }
 /****************************************************************/
+
 void  AliHBTWeightQInvFctn::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
   //process particles from same events (fills numerator)
@@ -59,6 +59,7 @@ void  AliHBTWeightQInvFctn::ProcessDiffEventParticles(AliHBTPair* trackpair, Ali
   }
 }
 /**************************************************************/
+
 TH1* AliHBTWeightQInvFctn::GetResult()
 { 
 //returns ratio of numerator and denominator                                    
@@ -80,6 +81,7 @@ AliHBTWeightQOutFctn::AliHBTWeightQOutFctn(Int_t nbins, Double_t maxXval, Double
  Rename("wqoutcf","Q_{out} Weight Correlation Function");
 }
 /****************************************************************/
+
 void AliHBTWeightQOutFctn::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
   //process particles from same events (fills numerator)  
@@ -111,8 +113,8 @@ void AliHBTWeightQOutFctn::ProcessDiffEventParticles(AliHBTPair* trackpair, AliH
   }
 }
 /**************************************************************/
+
 TH1* AliHBTWeightQOutFctn::GetResult() 
-                                                                               
 { 
 //returns ratio of numerator and denominator                                    
  return GetRatio(Scale());                                                  
@@ -131,9 +133,10 @@ AliHBTWeightQLongFctn::AliHBTWeightQLongFctn(Int_t nbins, Double_t maxXval, Doub
  Rename("wqlongcf","Q_{long} Weight Correlation Function");
 }
 /****************************************************************/
+
 void AliHBTWeightQLongFctn::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
-  //process particles from same events (fills numerator)
+ //process particles from same events (fills numerator)
   trackpair = CheckPair(trackpair);
   partpair  = CheckPair(partpair);
   if ( trackpair && partpair)     
@@ -162,8 +165,7 @@ void AliHBTWeightQLongFctn::ProcessDiffEventParticles(AliHBTPair* trackpair, Ali
   }
 }
 /**************************************************************/
-TH1* AliHBTWeightQLongFctn::GetResult() 
-                                                                               
+TH1* AliHBTWeightQLongFctn::GetResult()
 { 
 //returns ratio of numerator and denominator                                    
  return GetRatio(Scale());                                                  
@@ -184,6 +186,7 @@ AliHBTWeightQSideFctn::AliHBTWeightQSideFctn(Int_t nbins, Double_t maxXval, Doub
  Rename("wqsidecf","Q_{side} Weight Correlation Function");
 }
 /****************************************************************/
+
 void AliHBTWeightQSideFctn::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
   //process particles from same events (fills numerator)
@@ -215,8 +218,8 @@ void  AliHBTWeightQSideFctn::ProcessDiffEventParticles(AliHBTPair* trackpair, Al
   }
 }
 /**************************************************************/
+
 TH1* AliHBTWeightQSideFctn::GetResult() 
-                                                                               
 { 
 //returns ratio of numerator and denominator                                    
  return GetRatio(Scale());                                                  
@@ -236,6 +239,7 @@ AliHBTWeightTwoKStarFctn::AliHBTWeightTwoKStarFctn(Int_t nbins, Double_t maxXval
  Rename("wtwokstarcf","2*K^{*} Weight Correlation Function");
 }
 /****************************************************************/
+
 void AliHBTWeightTwoKStarFctn::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
   //process particles from same events (fills numerator)
@@ -290,6 +294,7 @@ AliHBTWeightQOutQSideFctn::AliHBTWeightQOutQSideFctn(Int_t nxbins, Double_t maxX
  Rename("wqoutqsidecf","Q_{out} Q_{side} Weight Correlation Function 2D");
 }    
 /*************************************************************************************/ 
+
 void AliHBTWeightQOutQSideFctn::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
   //process particles from same events (fills numerator)
@@ -321,6 +326,7 @@ void AliHBTWeightQOutQSideFctn::ProcessDiffEventParticles(AliHBTPair* trackpair,
   }
 }
 /**************************************************************/
+
 TH1* AliHBTWeightQOutQSideFctn::GetResult()
 {
   //returns result
@@ -343,6 +349,7 @@ AliHBTWeightQOutQLongFctn::AliHBTWeightQOutQLongFctn(Int_t nxbins, Double_t maxX
  Rename("wqoutqlongcf","Q_{out} Q_{long} Weight Correlation Function 2D");
 }    
 /*************************************************************************************/ 
+
 void AliHBTWeightQOutQLongFctn::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
   //process particles from same events (fills numerator)
@@ -397,6 +404,7 @@ AliHBTWeightQSideQLongFctn::AliHBTWeightQSideQLongFctn(Int_t nxbins, Double_t ma
  Rename("wqsideqlongcf","Q_{side} Q_{long} Weight Correlation Function 2D");
 }    
 /*************************************************************************************/ 
+
 void AliHBTWeightQSideQLongFctn::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
   //process particles from same events (fills numerator)
@@ -428,6 +436,7 @@ void AliHBTWeightQSideQLongFctn::ProcessDiffEventParticles(AliHBTPair* trackpair
   }
 }
 /**************************************************************/
+
 TH1* AliHBTWeightQSideQLongFctn::GetResult()
 {
   //returns result
