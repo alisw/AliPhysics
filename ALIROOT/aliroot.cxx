@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2002/01/09 17:05:03  morsch
+Increase memory allocated for ZEBRA.
+
 Revision 1.8  2001/10/04 15:32:36  hristov
 Instantiation of AliConfig removed
 
@@ -57,7 +60,6 @@ Introduction of the Copyright and cvs Log
 #include <TRint.h>
 #include <TFile.h>
 #include <AliRun.h>
-#include <AliConfig.h>
 
 #if defined __linux
 //On linux Fortran wants this, so we give to it!
