@@ -83,7 +83,8 @@ const Int_t AliPHOSRecParticle::GetNPrimariesToRecParticles() const
 
   Int_t rv = 0 ;
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  gime->EmcRecPoint(gime->TrackSegment(GetPHOSTSIndex())->GetEmcIndex())->GetPrimaries(rv) ; 
+  Int_t emcRPindex = ((AliPHOSTrackSegment*)gime->TrackSegments()->At(GetPHOSTSIndex()))->GetEmcIndex();
+  ((AliPHOSEmcRecPoint*)gime->EmcRecPoints()->At(emcRPindex))->GetPrimaries(rv) ; 
   return rv ; 
 }
 
@@ -97,13 +98,14 @@ const TParticle * AliPHOSRecParticle::GetPrimary(Int_t index) const
     return 0 ; 
   } else { 
     Int_t dummy ; 
-    AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-    Int_t primaryindex = gime->EmcRecPoint(gime->TrackSegment(GetPHOSTSIndex())->GetEmcIndex())->GetPrimaries(dummy)[index] ; 
-    if (primaryindex >= 10000000) { // it comes from backgroundfile 
-      if (fDebug) 
-	cout << "WARNING : AliPHOSRecParticle::GetPrimary -> not a signal primary" << endl ;
-      return 0 ; 
-    } else 
+    AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
+    Int_t emcRPindex = ((AliPHOSTrackSegment*)gime->TrackSegments()->At(GetPHOSTSIndex()))->GetEmcIndex();
+    Int_t primaryindex = ((AliPHOSEmcRecPoint*)gime->EmcRecPoints()->At(emcRPindex))->GetPrimaries(dummy)[index] ; 
+//     if (primaryindex >= 10000000) { // it comes from backgroundfile 
+//       if (fDebug) 
+// 	cout << "WARNING : AliPHOSRecParticle::GetPrimary -> not a signal primary" << endl ;
+//       return 0 ; 
+//     } else 
       return gime->Primary(primaryindex) ; 
   } 
   return 0 ; 
