@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2000/07/12 05:32:20  fca
+Correcting several syntax problem with static members
+
 Revision 1.17  2000/07/10 16:07:18  fca
 Release version of ITS code
 
@@ -87,10 +90,13 @@ the AliITS class.
  
 #include <TMath.h>
 #include <TRandom.h>
+#include <TBranch.h>
 #include <TVector.h>
 #include <TObjArray.h>
 #include <TROOT.h>
 #include <TObjectTable.h>
+#include <TFile.h>
+#include <TTree.h>
 
 
 
@@ -106,6 +112,12 @@ the AliITS class.
 #include "AliITSresponseSDD.h"
 #include "AliITSsegmentationSSD.h"
 #include "AliITSresponseSSD.h"
+#include "AliITShit.h"
+#include "AliITSgeom.h"
+#include "AliITSdigit.h"
+#include "AliITSmodule.h"
+#include "AliITSRecPoint.h"
+#include "AliITSRawCluster.h"
 
 const Int_t AliITS::fgkNTYPES=3;
 
@@ -121,6 +133,7 @@ AliITS::AliITS() : AliDetector() {
   // fITSpoints, fIdSens, and fIdName. The AliDetector default constructor
   // is also called.
   //
+
 
   fIshunt     = 0;
   fEuclidOut  = 0;
@@ -158,6 +171,7 @@ AliITS::AliITS(const char *name, const char *title):AliDetector(name,title){
   // the constructor of AliDetector class. See AliDetector class for a
   // description of these parameters and its constructor functions.
   //
+
 
   fHits       = new TClonesArray("AliITShit", 1560);
   gAlice->AddHitList(fHits);
@@ -215,25 +229,9 @@ AliITS& AliITS::operator=(AliITS &source){
 }
 //____________________________________________________________________________
 void AliITS::ClearModules(){
-
   //clear the modules TObjArray
-  Int_t i;
 
-  if(fITSmodules!=0) {
-	Int_t indSPD = fITSgeom->GetModuleIndex(2,fITSgeom->GetNladders(2),
-						fITSgeom->GetNdetectors(2));
-	Int_t indSDD = fITSgeom->GetModuleIndex(4,fITSgeom->GetNladders(4),
-						fITSgeom->GetNdetectors(4));
-      for(i=0;i<fITSmodules->GetEntriesFast();i++){
-            if(!fITSmodules->At(i)) continue;
-	    if(i<indSPD)
-	      delete (AliITSmodule *) fITSmodules->At(i);
-	    else if(i<indSDD)
-	      delete (AliITSmodule *) fITSmodules->At(i);
-	    else
-	      delete (AliITSmodule *) fITSmodules->At(i);
-      } // end for i
-  }// end if fITSmodules!=0
+  if(fITSmodules) fITSmodules->Delete();
 
 }
 //_____________________________________________________________________________
@@ -257,19 +255,16 @@ AliITS::~AliITS(){
   }// end if fITSmodules!=0
 
   //
-  Int_t i;
   if(fDtype) {
-    for (i=0;i<fgkNTYPES;i++) {
-      delete (*fDtype)[i];
-      fNdtype[i]=0;
-    }
+    fDtype->Delete();
+    delete fDtype;
   }
-
-  for (i=0;i<fgkNTYPES;i++) {
-      delete (*fCtype)[i];
-      fNctype[i]=0;
+  delete [] fNdtype;
+  if (fCtype) {
+    fCtype->Delete();
+    delete fCtype;
   }
-
+  delete [] fNctype;
   //
 
   if (fDetTypes) {
@@ -278,6 +273,8 @@ AliITS::~AliITS(){
   }
 
   if (fTreeC) delete fTreeC;
+
+  if (fITSgeom) delete fITSgeom;
 
 }
 
@@ -435,7 +432,7 @@ void AliITS::AddRecPoint(const AliITSRecPoint &r)
 void AliITS::ResetDigits()
 {
     //
-    // Reset number of digits and the digits array for thE ITS detector
+    // Reset number of digits and the digits array for the ITS detector
     //
 
     if (!fDtype) return;
@@ -491,8 +488,8 @@ void AliITS::ResetRecPoints()
     //
     // Reset number of rec points and the rec points array 
     //
-    fNRecPoints = 0;
     if (fRecPoints) fRecPoints->Clear();
+    fNRecPoints = 0;
 
 }
 
@@ -541,6 +538,7 @@ void AliITS::SetDefaults()
 {
   // sets the default segmentation, response, digit and raw cluster classes
 
+  printf("SetDefaults\n");
 
   AliITSDetType *iDetType;
 
@@ -561,8 +559,11 @@ void AliITS::SetDefaults()
   AliITSresponseSDD *resp1=new AliITSresponseSDD();
   AliITSsegmentationSDD *seg1=new AliITSsegmentationSDD(fITSgeom,resp1);
   iDetType=DetType(1); 
+  printf("SetDefaults: iDetType %p\n",iDetType);
   if (!iDetType->GetSegmentationModel()) SetSegmentationModel(1,seg1); 
+  printf("SetDefaults: segm %p\n",iDetType->GetSegmentationModel());
   if (!iDetType->GetResponseModel()) SetResponseModel(1,resp1); 
+  printf("SetDefaults: resp %p\n",iDetType->GetResponseModel());
   const char *kData1=resp1->DataType();
   const char *kopt=resp1->ZeroSuppOption();
   if ((!strstr(kopt,"2D")) && (!strstr(kopt,"1D")) || strstr(kData1,"real") ) {
@@ -605,8 +606,11 @@ void AliITS::MakeTreeC(Option_t *option)
 {
   // create a separate tree to store the clusters
 
+  printf("MakeTreeC \n");
+
      char *optC = strstr(option,"C");
      if (optC && !fTreeC) fTreeC = new TTree("TC","Clusters in ITS");
+     else return;
 
      Int_t buffersize = 4000;
      char branchname[30];
@@ -629,6 +633,8 @@ void AliITS::MakeTreeC(Option_t *option)
 //_____________________________________________________________________________
 void AliITS::GetTreeC(Int_t event)
 {
+
+  printf("GetTreeC \n");
 
   // get the clusters tree for this event and set the branch address
     char treeName[20];
@@ -762,12 +768,11 @@ void AliITS::InitModules(Int_t size,Int_t &nmodules){
   //initialize the modules array
 
   if(fITSmodules){ 
-    //this->ClearModules();
+      fITSmodules->Delete();
       delete fITSmodules;
   }
 
     Int_t nl,indexMAX,index;
-    Int_t indSPD,indSDD;
 
     if(size<=0){ // default to using data stored in AliITSgeom
 	if(fITSgeom==0) {
@@ -779,20 +784,15 @@ void AliITS::InitModules(Int_t size,Int_t &nmodules){
 					    fITSgeom->GetNdetectors(nl))+1;
 	nmodules = indexMAX;
 	fITSmodules = new TObjArray(indexMAX);
-	indSPD = fITSgeom->GetModuleIndex(2,fITSgeom->GetNladders(2),
-					    fITSgeom->GetNdetectors(2));
-	indSDD = fITSgeom->GetModuleIndex(4,fITSgeom->GetNladders(4),
-					    fITSgeom->GetNdetectors(4));
 	for(index=0;index<indexMAX;index++){
-	    if(index<=indSPD)
 		fITSmodules->AddAt( new AliITSmodule(index),index);
-	    else if(index<=indSDD)
-		fITSmodules->AddAt( new AliITSmodule(index),index);
-	    else
-	        fITSmodules->AddAt( new AliITSmodule(index),index);
 	} // end for index
     }else{
 	fITSmodules = new TObjArray(size);
+	for(index=0;index<size;index++) {
+	    fITSmodules->AddAt( new AliITSmodule(index),index);
+	}
+
         nmodules = size;
     } // end i size<=0
 }
@@ -802,6 +802,7 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,Option_t *option,
 
   // fill the modules with the sorted by module hits; add hits from background
   // if option=Add
+
 
     static TTree *trH1;                 //Tree with background hits
     static TClonesArray *fHits2;        //List of hits for one track only
@@ -863,21 +864,17 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,Option_t *option,
 	gAlice->ResetHits();
 	iTH->GetEvent(t);
 	Int_t nhits = itsHits->GetEntriesFast();
+	//printf("nhits %d\n",nhits);
         if (!nhits) continue;
 	for(h=0; h<nhits; h++){
 	    itsHit = (AliITShit *)itsHits->UncheckedAt(h);
 	    itsHit->GetDetectorID(lay,lad,det);
-	    index = fITSgeom->GetModuleIndex(lay,lad,det);
+	    // temporarily index=det-1 !!!
+	    if(fITSgeom) index = fITSgeom->GetModuleIndex(lay,lad,det);
+	    else index=det-1;
+	    //
 	    mod = this->GetModule(index);
-	    if(lay == 1 || lay == 2)
-		mod->AddHit((AliITShit *) itsHit,t,h);
-	    else if(lay == 3 || lay == 4)
-		    mod->AddHit((AliITShit *) itsHit,t,h);
-	    else if(lay == 5 || lay ==6)
-		mod->AddHit((AliITShit *)itsHit,t,h);
-	    else
-		mod->AddHit(itsHit,t,h);
-
+	    mod->AddHit(itsHit,t,h);
 	} // end loop over hits 
     } // end loop over tracks
 
@@ -899,19 +896,12 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,Option_t *option,
 
 		    itsHit=(AliITShit*) (*fHits2)[i];
 		    itsHit->GetDetectorID(lay,lad,det);
-		    index = fITSgeom->GetModuleIndex(lay,lad,det);
+		    // temporarily index=det-1 !!!
+		    if(fITSgeom) index = fITSgeom->GetModuleIndex(lay,lad,det);
+		    else index=det-1;
+		    //
 		    mod = this->GetModule(index);
-
-		    if(lay == 1 || lay == 2)
-		       mod->AddHit((AliITShit *) itsHit,track,i);
-		    else if(lay == 3 || lay == 4)
-		            mod->AddHit((AliITShit *) itsHit,track,i);
-		    else if(lay == 5 || lay ==6)
-		            mod->AddHit((AliITShit *)itsHit,track,i);
-		    else
-		       mod->AddHit(itsHit,track,i);
-
-
+		    mod->AddHit(itsHit,track,i);
 	       }  // end loop over hits
 	    } // end loop over tracks
 
@@ -919,7 +909,7 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,Option_t *option,
             TFile *fileAli=0;
 	    
 	    if (fAli) fileAli =fAli->GetCurrentFile();
-	    file->cd();
+	    fileAli->cd();
 
     } // end if add
 
@@ -934,6 +924,12 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size, Option_t *optio
     // keep galice.root for signal and name differently the file for 
     // background when add! otherwise the track info for signal will be lost !
   
+   // the condition below will disappear when the geom class will be
+   // initialised for all versions - for the moment it is only for v5 !
+   // 7 is the SDD beam test version  
+   Int_t ver = this->IsVersion(); 
+   if(ver!=5 && ver!=7) return; 
+
    char *all = strstr(opt,"All");
    char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),strstr(opt,"SSD")};
 
@@ -941,16 +937,16 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size, Option_t *optio
    InitModules(size,nmodules); 
    FillModules(evNumber,bgrev,nmodules,option,filename);
 
-   TBranch *branch;
+   //TBranch *branch;
    AliITSsimulation* sim;
-
-   TObjArray *branches=gAlice->TreeD()->GetListOfBranches();
+   //TObjArray *branches=gAlice->TreeD()->GetListOfBranches();
    AliITSgeom *geom = GetITSgeom();
 
    Int_t id,module;
+   Int_t first,last;
    for (id=0;id<fgkNTYPES;id++) {
         if (!all && !det[id]) continue;
-	branch = (TBranch*)branches->UncheckedAt(id);
+	//branch = (TBranch*)branches->UncheckedAt(id);
 	AliITSDetType *iDetType=DetType(id); 
 	sim = (AliITSsimulation*)iDetType->GetSimulationModel();
 	if (!sim) {
@@ -958,8 +954,10 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size, Option_t *optio
            exit(1);
 	   // or SetDefaultSimulation();
 	}
-	Int_t first = geom->GetStartDet(id);
-	Int_t last = geom->GetLastDet(id);
+	if(geom) {
+	  first = geom->GetStartDet(id);
+	  last = geom->GetLastDet(id);
+	} else first=last=0;
 	printf("det type %d first, last %d %d \n",id,first,last);
 	for(module=first;module<=last;module++) {
 	    AliITSmodule *mod = (AliITSmodule *)fITSmodules->At(module);
@@ -992,6 +990,12 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt)
 {
   // cluster finding and reconstruction of space points
   
+   // the condition below will disappear when the geom class will be
+   // initialised for all versions - for the moment it is only for v5 !
+   // 7 is the SDD beam test version  
+   Int_t ver = this->IsVersion(); 
+   if(ver!=5 && ver!=7) return; 
+
    char *all = strstr(opt,"All");
    char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),strstr(opt,"SSD")};
 
@@ -1000,18 +1004,19 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt)
        MakeTreeC("C");
        first=kFALSE;
    }
-   TTree *iTC=TreeC();
  
-   TBranch *branch;
+   TTree *iTC=TreeC();
+
+   //TBranch *branch;
    AliITSClusterFinder* rec;
 
-   TObjArray *branches=gAlice->TreeR()->GetListOfBranches();
+   //TObjArray *branches=gAlice->TreeR()->GetListOfBranches();
    AliITSgeom *geom = GetITSgeom();
 
    Int_t id,module;
    for (id=0;id<fgkNTYPES;id++) {
         if (!all && !det[id]) continue;
-	branch = (TBranch*)branches->UncheckedAt(id);
+	//branch = (TBranch*)branches->UncheckedAt(id);
 	AliITSDetType *iDetType=DetType(id); 
 	rec = (AliITSClusterFinder*)iDetType->GetReconstructionModel();
 	if (!rec) {
@@ -1021,8 +1026,12 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt)
 	}
         TClonesArray *itsDigits  = this->DigitsAddress(id);
 
-	Int_t first = geom->GetStartDet(id);
-	Int_t last = geom->GetLastDet(id);
+        Int_t first,last;
+	if(geom) {
+	  first = geom->GetStartDet(id);
+	  last = geom->GetLastDet(id);
+	} else first=last=0;
+	//printf("first last %d %d\n",first,last);
 	for(module=first;module<=last;module++) {
               this->ResetDigits();
               if (all) gAlice->TreeD()->GetEvent(lastentry+module);
@@ -1063,6 +1072,12 @@ Option_t *option,Option_t *opt,Text_t *filename)
     // keep galice.root for signal and name differently the file for 
     // background when add! otherwise the track info for signal will be lost !
   
+
+   // the condition below will disappear when the geom class will be
+   // initialised for all versions - for the moment it is only for v5 !  
+   Int_t ver = this->IsVersion(); 
+   if(ver!=5) return; 
+
    char *all = strstr(opt,"All");
    char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),strstr(opt,"SSD")};
 
