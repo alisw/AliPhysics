@@ -28,14 +28,14 @@ public:
   AliTPCBuffer& operator=(const AliTPCBuffer &source); // ass. op.
   void    WriteRowBinary(Int_t eth,AliSimDigits *digrow,Int_t minPad,Int_t maxPad,Int_t flag,Int_t sec,Int_t SubSec,Int_t row);
   //  void    WriteRow(Int_t eth,AliSimDigits *digrow,Int_t minPad,Int_t maxPad,Int_t flag,Int_t sec,Int_t SubSec,Int_t row);
-  ULong_t GetDigNumber()const{return fNumberOfDigits;}
+  UInt_t  GetDigNumber()const{return fNumberOfDigits;}
   void    SetVerbose(Int_t val){fVerbose=val;}
 private:
   Int_t fVerbose; //Verbosity level: 0-silent, 1:cout msg, 2: txt files for checking
   fstream f;      //The IO file name
   //TFile *fout;
   //TTree *tree;
-  ULong_t fNumberOfDigits; //Number of TPC digits
+  UInt_t  fNumberOfDigits; //Number of TPC digits
   ClassDef(AliTPCBuffer,1)
 };
 

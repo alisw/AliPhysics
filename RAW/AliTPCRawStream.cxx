@@ -72,7 +72,7 @@ Bool_t AliTPCRawStream::Next()
       } while (fRawReader->GetDataSize() == 0);
 
       if (fRawReader->IsCompressed()) {  // compressed data
-	ULong_t size = 0;
+	UInt_t size = 0;
 	fCompression.Decompress(fgRootNode, kNumTables, 
 				(char*) data, fRawReader->GetDataSize(),
 				fData, size);

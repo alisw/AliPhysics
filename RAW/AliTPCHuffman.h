@@ -58,7 +58,7 @@ class AliTPCHTable: public TObject{
   //strored temporary in fCode array
   Int_t      BuildHTable();
   //This method returns the number of words stored in the fSym array
-  ULong_t    GetWordsNumber()const{return fNum;}
+  UInt_t    GetWordsNumber()const{return fNum;}
   //This method increase by one the frequency of each value that is present
   //in the specified file
   Int_t      GetFrequencies(const char* fname);
@@ -75,7 +75,7 @@ class AliTPCHTable: public TObject{
  private:
   //This method executes the pre-order visit of an Huffman tree and calculates the 
   //codeword for each leaf
-  Bool_t     SpanTree(AliTPCHNode*start, ULong_t code, UChar_t len);
+  Bool_t     SpanTree(AliTPCHNode*start, UInt_t code, UChar_t len);
   void       ResetHNodes();  //Reset the array fHNodes but not delete the removed objects
   void       ClearTable();   //Reset the table
   Int_t       fSize;         //size of the arrays fCodelen and fCode
@@ -85,7 +85,7 @@ class AliTPCHTable: public TObject{
   Short_t    *fSym;          //![fSize] array of input symbols
   TObjArray  *fHNodes;       // array of nodes
   Int_t       fNnodes;       // number of nodes
-  ULong_t     fNum;          // number of words
+  UInt_t      fNum;          // number of words
   Int_t       fVerbose;      // if fVerbose== 0 no output messages; fVerbose!=0 output messages are printed out 
   ClassDef(AliTPCHTable,1)   //Huffman Table object for set:TPC
 };

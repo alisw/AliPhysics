@@ -47,7 +47,7 @@ public:
   //this method is used to read the trailer when the file is read forward
   Int_t ReadTrailerBackward(Int_t &WordsNumber,Int_t &PadNumber,Int_t &RowNumber,Int_t &SecNumber);
   //this method is used to read the trailer when the file is read backward
-  void  WriteMiniHeader(ULong_t Size,Int_t SecNumber,Int_t SubSector,Int_t Detector,Int_t Flag );
+  void  WriteMiniHeader(UInt_t Size,Int_t SecNumber,Int_t SubSector,Int_t Detector,Int_t Flag );
   //this method is used to write the Mini header
   void  SetVerbose(Int_t val){fVerbose=val;}
   //this method is used to set the verbose level 
@@ -57,11 +57,11 @@ public:
   //this method is used to fill the buffer with 2AA hexadecimal value and save it into the output file
   Int_t GetFillWordsNum()const{return fEndingFillWords;}
 private:
-  void  PackWord(ULong_t &BaseWord, ULong_t Word, Int_t StartBit, Int_t StopBit);
+  void  PackWord(UInt_t &BaseWord, UInt_t Word, Int_t StartBit, Int_t StopBit);
   //this method is used to pack bits into a word of 32 bits
-  void  UnpackWord(ULong_t PackedWord, Int_t StartBit, Int_t StopBit, ULong_t &Word);
+  void  UnpackWord(UInt_t PackedWord, Int_t StartBit, Int_t StopBit, UInt_t &Word);
   //this method is used to read a precise number of bits from a word of 32 bits
-  ULong_t fBuffer[5];   //Buffer dimension is 32*5=160 bits and it contains 16 values
+  UInt_t fBuffer[5];    //Buffer dimension is 32*5=160 bits and it contains 16 values
                         //A value is never splitted in two Buffer
 
 
@@ -76,9 +76,9 @@ private:
   fstream* f;           //logical name of the I/O file
   Bool_t fCreated;      //true if f was created by the buffer
   Int_t fMaskBackward;  //bit mask for backward reading of a file
-  ULong_t fFilePosition;//'pointer' to the actual position in the file
-  ULong_t fFileEnd;     //position of the last element of the file (File dimension)
-  ULong_t fMiniHeaderPos;//Mini header position
+  UInt_t fFilePosition;//'pointer' to the actual position in the file
+  UInt_t fFileEnd;     //position of the last element of the file (File dimension)
+  UInt_t fMiniHeaderPos;//Mini header position
   Int_t  fEndingFillWords;//Few words at the end of the stream
   ClassDef(AliTPCBuffer160,1)
 };

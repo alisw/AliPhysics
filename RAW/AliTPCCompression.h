@@ -30,13 +30,13 @@ class AliTPCCompression:public TObject{
   Int_t  DecompressDataOptTables(Int_t NumTables,const char* fname,char* fDest="SourceDecompressed.dat");
   //This method is used to decompress a file compressed using the CompressDataOptTable method
   //It expects a set of table used for compressing the file in the same directory of the compressed file
-  Int_t  Decompress(AliTPCHNode *RootNode[],const Int_t NumTables,char* PointBuffer,ULong_t BufferSize,UShort_t out[],ULong_t &dim);
+  Int_t  Decompress(AliTPCHNode *RootNode[],const Int_t NumTables,char* PointBuffer,UInt_t BufferSize,UShort_t out[],UInt_t &dim);
   //This method is used to decompress data stored in a char* buffer
   Int_t  FillTables(const char* fSource,AliTPCHTable* table[],const Int_t NumTables);
   //This method is used to compute the frequencies of the symbols in the source file
   Int_t  CreateTables(const char* fSource,const Int_t NumTables);
   //This method is used to create and store the tables 
-  Int_t  CreateTableFormula(Double_t beta,ULong_t  M,Int_t dim,Int_t Type);
+  Int_t  CreateTableFormula(Double_t beta,UInt_t  M,Int_t dim,Int_t Type);
   //This method is used to create and store the Bunch length or Time Gap Table using a formula
   void   SetVerbose(Int_t val){fVerbose=val;}
   //This method is used to set up the verbose level
@@ -68,31 +68,31 @@ class AliTPCCompression:public TObject{
   void    NextTable(Int_t Val,Int_t &NextTableType,Int_t &BunchLen,Int_t &Count)const;
   //This method is used to deduce which is the next table that as to be used to interpret the next value
   //reading the Altro format
-  void    StoreValue(ULong_t val,UChar_t len);
+  void    StoreValue(UInt_t val,UChar_t len);
   //This method is used to store a value in the compressed file 
-  ULong_t Mirror(ULong_t val,UChar_t len)const;
+  UInt_t  Mirror(UInt_t val,UChar_t len)const;
   //This method is used to get the specular value of a given value
   //for instance the specular value of 12345 is 54321
   void    Flush();
   //This method is used to complete and store the buffer in the output file when it isn't completely full 
-  ULong_t ReadWord(Int_t NumberOfBit);
+  UInt_t  ReadWord(Int_t NumberOfBit);
   //this method is used to read a specified number of bits from the compressed file
-  ULong_t ReadWordBuffer(Int_t NumberOfBit);
+  UInt_t  ReadWordBuffer(Int_t NumberOfBit);
   //this method is used to read a specified number of bits from the compressed memory buffer
   void    ReadTrailer(Int_t &WordsNumber,Int_t &PadNumber,Int_t &RowNumber,Int_t &SecNumberr,Bool_t Memory);
   //This method is used to read the trailer 
-  ULong_t GetDecodedWord(AliTPCHNode* root,Bool_t Memory);
+  UInt_t GetDecodedWord(AliTPCHNode* root,Bool_t Memory);
   //This method is used to get a decoded word from the compressed file
 
   fstream f;                  // f is the logical name for the compressed and uncompressed file
   ofstream fStat;             // Logical name for the Statistics file
-  ULong_t fBuffer;            // buffer 
+  UInt_t  fBuffer;            // buffer 
   Int_t   fDimBuffer;         // buffer dimension (32 bit)
   Int_t   fFreeBitsBuffer;    // number of free bits inside the buffer
   Int_t   fReadBits;          // number of bit read
-  ULong_t fPos;               // current file position
+  UInt_t  fPos;               // current file position
   Int_t   fVerbose;           // verbose level (0 silent, !=0 output messages)
-  ULong_t fFillWords;         // Number of hexadecimally words (2AA pattern) inside a pad data block 
+  UInt_t  fFillWords;         // Number of hexadecimally words (2AA pattern) inside a pad data block 
   char*   fPointBuffer;       //pointer to the compressed raw data
   ClassDef(AliTPCCompression,1)
 };

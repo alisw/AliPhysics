@@ -32,7 +32,9 @@
 ClassImp(AliTPCDDLRawData)
 ////////////////////////////////////////////////////////////////////////////////////////
 
-AliTPCDDLRawData::AliTPCDDLRawData(const AliTPCDDLRawData &source){
+AliTPCDDLRawData::AliTPCDDLRawData(const AliTPCDDLRawData &source):
+  TObject(source)
+{
   // Copy Constructor
   fVerbose=source.fVerbose;
   return;
@@ -79,7 +81,7 @@ void AliTPCDDLRawData::RawData(Int_t LDCsNumber,Int_t EventNumber){
   cout<<"   Creating "<<filename<<endl;
   AliTPCBuffer160 *buffer=new AliTPCBuffer160(filename,1);
 
-  ULong_t count=0;
+  UInt_t count=0;
   Int_t pSecNumber=-1;  //Previous Sector number
   Int_t pRowNumber=-1;  //Previous Row number  
   Int_t pPadNumber=-1;  //Previous Pad number
@@ -88,7 +90,7 @@ void AliTPCDDLRawData::RawData(Int_t LDCsNumber,Int_t EventNumber){
   Int_t bunchLength=0;
   Int_t countDDL=0;
   Int_t nwords=0;
-  ULong_t numPackets=0;
+  UInt_t numPackets=0;
   while (f.read((char*)(&data),sizeof(data))){
     count++;
     if (pPadNumber==-1){
@@ -177,7 +179,7 @@ Int_t AliTPCDDLRawData::RawDataCompDecompress(Int_t LDCsNumber,Int_t EventNumber
   char filename[20];
   char dest[20];
   fstream f;
-  ULong_t size=0;
+  UInt_t size=0;
   //Int_t MagicWord,DDLNumber,SecNumber,SubSector,Detector;
   Int_t flag=0;
   for(Int_t i=1;i<=LDCsNumber;i++){
@@ -206,12 +208,12 @@ Int_t AliTPCDDLRawData::RawDataCompDecompress(Int_t LDCsNumber,Int_t EventNumber
     //loop over the DDL block 
     //Each block contains a Mini Header followed by raw data (ALTRO FORMAT)
     //The number of block is ceil(216/LDCsNumber)
-    ULong_t miniHeader[3];
+    UInt_t miniHeader[3];
     //here the Mini Header is read
-    while( (f.read((char*)(miniHeader),sizeof(ULong_t)*3)) ){
+    while( (f.read((char*)(miniHeader),sizeof(UInt_t)*3)) ){
       size=miniHeader[0];
       // cout<<"Data size:"<<size<<endl;
-      //Int_t dim=sizeof(ULong_t)+sizeof(Int_t)*5;
+      //Int_t dim=sizeof(UInt_t)+sizeof(Int_t)*5;
       //cout<<" Sec "<<SecNumber<<" SubSector "<<SubSector<<" size "<<size<<endl;
       //open the temporay File
       ofstream fo;
@@ -222,7 +224,7 @@ Int_t AliTPCDDLRawData::RawDataCompDecompress(Int_t LDCsNumber,Int_t EventNumber
       fo.open(temp);
 #endif
       Int_t car=0;
-      for(ULong_t j=0;j<size;j++){
+      for(UInt_t j=0;j<size;j++){
 	f.read((char*)(&car),1);
 	fo.write((char*)(&car),1);
       }//end for
@@ -253,13 +255,13 @@ Int_t AliTPCDDLRawData::RawDataCompDecompress(Int_t LDCsNumber,Int_t EventNumber
 	flag=1;
       else
 	flag=0;
-      ULong_t aux=0x0;
+      UInt_t aux=0x0;
       flag<<=8;
       aux|=flag;
       miniHeader[2]=miniHeader[2]|aux;
-      fdest.write((char*)(miniHeader),sizeof(ULong_t)*3);
+      fdest.write((char*)(miniHeader),sizeof(UInt_t)*3);
       //The compressem temp file is copied into the output file fdest
-      for(ULong_t j=0;j<size;j++){
+      for(UInt_t j=0;j<size;j++){
 	fi.read((char*)(&car),1);
 	fdest.write((char*)(&car),1);
       }//end for
@@ -301,14 +303,14 @@ void AliTPCDDLRawData::RawDataAltro()const{
   cout<<"   Creating "<<filename<<endl;
   AliTPCBuffer160 *buffer=new AliTPCBuffer160(filename,1);
 
-  ULong_t count=0;
+  UInt_t count=0;
   Int_t pSecNumber=-1;  //Previous Sector number
   Int_t pRowNumber=-1;  //Previous Row number  
   Int_t pPadNumber=-1;  //Previous Pad number
   Int_t pTimeBin=-1;    //Previous Time-Bin
   Int_t bunchLength=0;
   Int_t nwords=0;
-  ULong_t numPackets=0;
+  UInt_t numPackets=0;
   while (f.read((char*)(&data),sizeof(data))){
     count++;
     if (pPadNumber==-1){
@@ -378,7 +380,7 @@ void AliTPCDDLRawData::RawDataAltroDecode(Int_t LDCsNumber,Int_t EventNumber,Int
 #else
   fdest.open(dest);
 #endif
-  ULong_t size=0;
+  UInt_t size=0;
   //Int_t MagicWord,DDLNumber,SecNumber,SubSector,Detector,flag=0;
   for(Int_t i=1;i<=LDCsNumber;i++){
     if(!Comp){
@@ -396,13 +398,13 @@ void AliTPCDDLRawData::RawDataAltroDecode(Int_t LDCsNumber,Int_t EventNumber,Int
     //loop over the DDL block 
     //Each block contains a Mini Header followed by raw data (ALTRO FORMAT)
     //The number of block is ceil(216/LDCsNumber)
-    ULong_t miniHeader[3];
+    UInt_t miniHeader[3];
     //here the Mini Header is read
     //cout<<filename<<endl;
-    while( (f.read((char*)(miniHeader),sizeof(ULong_t)*3)) ){
+    while( (f.read((char*)(miniHeader),sizeof(UInt_t)*3)) ){
       Int_t car=0;
       size=miniHeader[0];
-      for(ULong_t j=0;j<size;j++){
+      for(UInt_t j=0;j<size;j++){
 	f.read((char*)(&car),1);
 	fdest.write((char*)(&car),1);
       }//end for

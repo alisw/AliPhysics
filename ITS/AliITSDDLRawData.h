@@ -28,28 +28,28 @@ class AliITSDDLRawData:public TObject{
   void SetVerbose(Int_t Verbose){fVerbose=Verbose;}
   // To set the verbose level
  private: 
-  void  GetDigitsSPD(TClonesArray *ITSdigits, Int_t mod,Int_t ddl,ULong_t *buf);
+  void  GetDigitsSPD(TClonesArray *ITSdigits, Int_t mod,Int_t ddl,UInt_t *buf);
   //This method formats and stores in buf all the digits of a SPD module
-  void  GetDigitsSDD(TClonesArray *ITSdigits, Int_t mod,Int_t modR,Int_t ddl,ULong_t *buf);
+  void  GetDigitsSDD(TClonesArray *ITSdigits, Int_t mod,Int_t modR,Int_t ddl,UInt_t *buf);
   //This method formats and stores in buf all the digits of a SDD module
-  void  GetDigitsSSD(TClonesArray *ITSdigits, Int_t mod,Int_t modR,Int_t ddl,ULong_t *buf);
+  void  GetDigitsSSD(TClonesArray *ITSdigits, Int_t mod,Int_t modR,Int_t ddl,UInt_t *buf);
   //This method formats and stores in buf all the digits of a SSD module
-  void  PackWord(ULong_t &BaseWord, ULong_t Word, Int_t StartBit, Int_t StopBit);
+  void  PackWord(UInt_t &BaseWord, UInt_t Word, Int_t StartBit, Int_t StopBit);
   //This method stores the value of the variable Word of StopBit-StartBit+1 bits 
   //in BaseWord, starting from the bit StartBit
-  void  UnpackWord(ULong_t PackedWord, Int_t StartBit, Int_t StopBit, ULong_t &Word);
+  void  UnpackWord(UInt_t PackedWord, Int_t StartBit, Int_t StopBit, UInt_t &Word);
   //This method extracts a group of adjacent bits, specified by StartBit and StopBit, 
   //from the word PackedWord. The resulting word is saved in the Word variable
-  void  WriteChipHeader(Int_t ChipAddr,Int_t EventCnt,ULong_t &BaseWord);
-  void  WriteChipTrailer(ULong_t *buf,Int_t ChipHitCount,ULong_t &BaseWord);
-  void  WriteHit(ULong_t *buf,Int_t RowAddr,Int_t HitAddr,ULong_t &BaseWord);
+  void  WriteChipHeader(Int_t ChipAddr,Int_t EventCnt,UInt_t &BaseWord);
+  void  WriteChipTrailer(UInt_t *buf,Int_t ChipHitCount,UInt_t &BaseWord);
+  void  WriteHit(UInt_t *buf,Int_t RowAddr,Int_t HitAddr,UInt_t &BaseWord);
   //The three previous  methods are used to store the data according to the 
   //Silicon pixel detector data format
-  void  ReadChipHeader(Int_t &ChipAddr,Int_t &EventCnt,ULong_t BaseWord);
-  void  ReadChipTrailer(Int_t &ChipHitCount,ULong_t BaseWord);
+  void  ReadChipHeader(Int_t &ChipAddr,Int_t &EventCnt,UInt_t BaseWord);
+  void  ReadChipTrailer(Int_t &ChipHitCount,UInt_t BaseWord);
   //Methods used for reading and dubugging SPD data files
   Int_t fVerbose;            //Verbose level (0:no msg, 1:msg, 2:digits in txt files)
-  Long_t fIndex;             //number of 32 words to be stored into the output file
+  Int_t fIndex;             //number of 32 words to be stored into the output file
   Int_t fHalfStaveModule;     //first or second half of an Half Stave module
   ClassDef(AliITSDDLRawData,1)
 };

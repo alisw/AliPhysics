@@ -190,16 +190,16 @@ void AliTPCHTable::PrintTable()const{
     if (fCodeLen[i]){
       cout.width(6);cout<<fSym[i];
       cout.width(3);cout<<"|";
-      cout.width(6);cout<<hex<<(ULong_t)fCode[i]<<dec;
+      cout.width(6);cout<<hex<<(UInt_t)fCode[i]<<dec;
       cout.width(5);cout<<"|";
-      cout.width(6);cout<<(ULong_t)fCodeLen[i]<<endl;  
+      cout.width(6);cout<<(UInt_t)fCodeLen[i]<<endl;  
     }//end if
   }//end for
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-Bool_t AliTPCHTable::SpanTree(AliTPCHNode *start, ULong_t code, UChar_t len){
+Bool_t AliTPCHTable::SpanTree(AliTPCHNode *start, UInt_t code, UChar_t len){
   //Hoffman codes are generated spanning the Huffman tree
   //In an Huffman tree any internal node has always two children
   AliTPCHNode * visited;
@@ -236,7 +236,7 @@ void AliTPCHTable::ClearTable(){
 Int_t  AliTPCHTable::GetFrequencies(const char *fname){
   //It fills the "fCode" array with the frequencies of the symbols read from the file
   AliTPCBuffer160 buff(fname,0);
-  ULong_t numberOfWords=0;
+  UInt_t numberOfWords=0;
   Int_t val;
   while((val=buff.GetNext())!=-1){
     fCode[val]++;
@@ -308,7 +308,7 @@ void AliTPCHTable::CompleteTable(Int_t k){
   //According to the kind of table (0..4) it associates a dummy frequency (1) to 
   //every symbols whose real frequency is zero, in a given range 0..max
   Int_t max;
-  ULong_t val;
+  UInt_t val;
   switch(k){
   case 0:
     max=fSize;
