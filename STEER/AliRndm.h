@@ -22,7 +22,10 @@ public:
   virtual ~AliRndm() {fRandom=sRandom=0;}
   
   // Random number generator bit
-  virtual void SetRandom(TRandom *ran=0);
+  virtual void SetRandom(TRandom *ran=0)
+  {if(ran) fRandom=ran;
+  else fRandom=sRandom=gRandom;}
+
   virtual TRandom* GetRandom() const {return fRandom;}
   virtual void Rndm(Float_t* array, const Int_t size) const; 
 #ifdef CKNONE

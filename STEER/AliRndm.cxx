@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/11/30 07:12:48  alibrary
+Introducing new Rndm and QA classes
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -44,13 +47,6 @@ void AliRndm::Rndm(Float_t* array, const Int_t size) const
 #else
     do array[i]=fRandom->Rndm(); while(0>=array[i] || array[i]>=1);
 #endif
-}
-
-//_____________________________________________________________________________
-void AliRndm::SetRandom(TRandom *ran)
-{
-  if(ran) fRandom=ran;
-  else fRandom=sRandom=gRandom;
 }
 
 //_____________________________________________________________________________
