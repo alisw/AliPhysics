@@ -241,7 +241,7 @@ Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
      return 1;
    }
    
-  Float_t mf = esd->GetMagneticField(); 
+  Float_t mf = esd->GetMagneticField()/10.; //AliESD::GetMagnField returns mf in kG
 
   if ( (mf == 0.0) && ((fNTrackPoints > 0) || fITSTrackPoints) )
    {
@@ -251,8 +251,8 @@ Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
 
   if (fITSTrackPoints)
    {
-     Info("ReadESD","Magnetic Field is %f",mf/10.);
-     AliKalmanTrack::SetMagneticField(mf/10.);
+     Info("ReadESD","Magnetic Field is %f",mf);
+     AliKalmanTrack::SetMagneticField(mf);
    }
  
   AliStack* stack = 0x0;
@@ -402,14 +402,14 @@ Int_t AliReaderESD::ReadESDCentral(AliESD* esd)
       AliTrackPoints* tpts = 0x0;
       if (fNTrackPoints > 0) 
        {
-         tpts = new AliTrackPoints(fNTrackPoints,esdtrack,mf,fdR);
+         tpts = new AliTrackPoints(fNTrackPoints,esdtrack,mf*10.0,fdR);
 //         tpts->Move(-vertexpos[0],-vertexpos[1],-vertexpos[2]);
        }
 
       AliTrackPoints* itstpts = 0x0;
       if (fITSTrackPoints) 
        {
-         itstpts = new AliTrackPoints(AliTrackPoints::kITS,esdtrack);
+         itstpts = new AliTrackPoints(AliTrackPoints::kITS,esdtrack,mf*10.0);
 //         itstpts->Move(-vertexpos[0],-vertexpos[1],-vertexpos[2]);
        }
 
