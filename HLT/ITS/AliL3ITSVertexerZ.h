@@ -16,14 +16,17 @@
 #include "AliITSVertexerZ.h"
 
 class TString;
+class TTree;
+class AliITSgeom;
 
 //-------------------------------------------------------------------------
 class AliL3ITSVertexerZ : public AliITSVertexerZ {
 public:
-  AliL3ITSVertexerZ():AliITSVertexerZ() {;}
+  AliL3ITSVertexerZ();
   AliL3ITSVertexerZ(TString filename,Float_t x0=0., Float_t y0=0.);
 
   AliESDVertex* FindVertexForCurrentEvent(Int_t evnumb);
+  AliESDVertex* FindVertexForCurrentEvent(AliITSgeom *geom,TTree *tR);
 
   ClassDef(AliL3ITSVertexerZ,1)   //HLT ITS vertexer
 };

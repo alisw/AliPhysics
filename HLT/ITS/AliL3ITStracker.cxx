@@ -106,10 +106,11 @@ Int_t AliL3ITStracker::Clusters2Tracks(AliESD *event) {
   for (fPass=0; fPass<2; fPass++) {
      Int_t &constraint=fConstraint[fPass]; if (constraint<0) continue;
      for (Int_t i=0; i<nentr; i++) {
+       //       Info("Clusters2Tracks"," %d ",i);
        AliL3ITStrack *t=(AliL3ITStrack*)itsTracks.UncheckedAt(i);
        if (t==0) continue;              //this track has been already tracked
        Int_t tpcLabel=t->GetLabel(); //save the TPC track label
-
+       //       Info("Clusters2Tracks","Pt:%f",1/t->Get1Pt());
        ResetTrackToFollow(*t);
        ResetBestTrack();
 
@@ -123,8 +124,10 @@ Int_t AliL3ITStracker::Clusters2Tracks(AliESD *event) {
 	 ResetTrackToFollow(*t);
 	 if (!RefitAt(3.7, &fTrackToFollow, &fBestTrack)) continue;
 	 ResetBestTrack();
-	 }
+       }
        
+       if (!fBestTrack.PropagateTo(3.,0.0028,65.19)) continue;
+       if (!fBestTrack.PropagateToVertex()) continue;
        fBestTrack.SetLabel(tpcLabel);
        fBestTrack.CookdEdx();
        CookLabel(&fBestTrack,0.); //For comparison only

@@ -9,6 +9,7 @@
 #pragma link C++ class AliL3ITStrack; 
 #pragma link C++ class AliL3ITStracker; 
 #pragma link C++ class AliL3ITSVertexerZ;
+#pragma link C++ class AliL3ITSclusterer;
 #endif
 
 #endif

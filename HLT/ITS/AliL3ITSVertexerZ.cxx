@@ -21,6 +21,7 @@
 #include "AliITSLoader.h"
 #include <AliITSgeom.h>
 #include <AliITSRecPoint.h>
+#include <AliITSclusterV2.h>
 
 //-------------------------------------------------------------------------
 //                Implementation of the HLT ITS vertexer class
@@ -29,6 +30,27 @@
 //-------------------------------------------------------------------------
 
 ClassImp(AliL3ITSVertexerZ)
+
+AliL3ITSVertexerZ::AliL3ITSVertexerZ():AliITSVertexerZ(){
+  // Constructor in case that there is no runloader
+
+  SetDiffPhiMax();
+  fX0 = 0;
+  fY0 = 0;
+  SetFirstLayerModules();
+  SetSecondLayerModules();
+  fZFound = 0;
+  fZsig = 0.;
+  fITS = 0;
+  fZCombc = 0;
+  fZCombf = 0;
+  SetLowLimit();
+  SetHighLimit();
+  SetBinWidthCoarse();
+  SetBinWidthFine();
+  SetTolerance();
+  SetDebug();
+}
 
 AliL3ITSVertexerZ::AliL3ITSVertexerZ(TString filename,Float_t x0, Float_t y0):AliITSVertexerZ(filename,x0,y0)
 {
@@ -58,46 +80,38 @@ AliESDVertex* AliL3ITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
   AliITSgeom *geom = fITS->GetITSgeom();
 
   TTree *tR = itsLoader->TreeR();
-  TClonesArray *itsRec  = 0;
+
+  return FindVertexForCurrentEvent(geom,tR);
+}
+
+//______________________________________________________________________
+AliESDVertex* AliL3ITSVertexerZ::FindVertexForCurrentEvent(AliITSgeom *geom,TTree *tR){
+  // Defines the AliESDVertex for the current event
+
+  fCurrentVertex = 0;
+
   Float_t lc[3]; for(Int_t ii=0; ii<3; ii++) lc[ii]=0.;
   Float_t gc[3]; for(Int_t ii=0; ii<3; ii++) gc[ii]=0.;
   Float_t lc2[3]; for(Int_t ii=0; ii<3; ii++) lc2[ii]=0.;
   Float_t gc2[3]; for(Int_t ii=0; ii<3; ii++) gc2[ii]=0.;
 
-  itsRec = fITS->RecPoints();
-
-  //cout<<"Address of itsRec = "<<itsRec<<endl;
   TClonesArray dummy("AliITSclusterV2",10000), *clusters=&dummy;
   TBranch *branch;
-  if(fUseV2Clusters){
-    branch = tR->GetBranch("Clusters");
-    branch->SetAddress(&clusters);
-  }
-  else {
-    branch = tR->GetBranch("ITSRecPoints");
-  }
-
+  branch = tR->GetBranch("Clusters");
+  branch->SetAddress(&clusters);
 
   Int_t nrpL1 = 0;
   Int_t nrpL2 = 0;
   for(Int_t module= fFirstL1; module<=fLastL1;module++){
     if(module%4==0 || module%4==3)continue;
     //   cout<<"Procesing module "<<module<<" ";
-    branch->GetEvent(module);
+    tR->GetEvent(module);
     //    cout<<"Number of clusters "<<clusters->GetEntries()<<endl;
-    if(fUseV2Clusters){
-      Clusters2RecPoints(clusters,module,itsRec);
-    }
-    nrpL1+= itsRec->GetEntries();
-    fITS->ResetRecPoints();
+    nrpL1+= clusters->GetEntriesFast();
   }
   for(Int_t module= fFirstL2; module<=fLastL2;module++){
-    branch->GetEvent(module);
-    if(fUseV2Clusters){
-      Clusters2RecPoints(clusters,module,itsRec);
-    }
-    nrpL2+= itsRec->GetEntries();
-    fITS->ResetRecPoints();
+    tR->GetEvent(module);
+    nrpL2+= clusters->GetEntriesFast();
   }
   if(nrpL1 == 0 || nrpL2 == 0){
     ResetHistograms();
@@ -125,19 +139,20 @@ AliESDVertex* AliL3ITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
     phi2[i] = new Float_t [maxind2];
     r2[i] = new Float_t [maxind2];
   }
+  
+  Float_t yshift = 0;
+  Float_t zshift[4] = {-10.708000, -3.536000, 3.536000, 10.708000};
 
+  yshift = 0.248499;
   memset(ind1,0,nPhiBins*sizeof(Int_t));
   for(Int_t module= fFirstL1; module<=fLastL1;module++){
     if(module%4==0 || module%4==3)continue;
-    branch->GetEvent(module);
-    if(fUseV2Clusters){
-      Clusters2RecPoints(clusters,module,itsRec);
-    }
-    Int_t nrecp1 = itsRec->GetEntries();
+    tR->GetEvent(module);
+    Int_t nrecp1 = clusters->GetEntriesFast();
     for(Int_t j=0;j<nrecp1;j++){
-      AliITSRecPoint *recp = (AliITSRecPoint*)itsRec->At(j);
-      lc[0]=recp->GetX();
-      lc[2]=recp->GetZ();
+      AliITSclusterV2 *recp = (AliITSclusterV2*)clusters->UncheckedAt(j);
+      lc[0]=-recp->GetY()+yshift;
+      lc[2]=-recp->GetZ()+zshift[module%4];
       geom->LtoG(module,lc,gc);
       gc[0]-=fX0;
       gc[1]-=fY0;
@@ -147,6 +162,7 @@ AliESDVertex* AliL3ITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
       Float_t phi = TMath::ATan2(gc[1],gc[0]);
       if(phi<0)phi=2*TMath::Pi()+phi;
       Int_t bin = (Int_t)(phi/phiBinSize);
+      if(bin>=nPhiBins || bin<0) bin = 0;
       Int_t ind = ind1[bin];
       if(ind<maxind1) {
 	phi1[bin][ind] = phi;
@@ -155,19 +171,17 @@ AliESDVertex* AliL3ITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
 	ind1[bin]++;
       }
     }
-    fITS->ResetRecPoints();
+    clusters->Delete();
   }
+  yshift = 3.096207;
   memset(ind2,0,nPhiBins*sizeof(Int_t));
   for(Int_t module= fFirstL2; module<=fLastL2;module++){
-    branch->GetEvent(module);
-    if(fUseV2Clusters){
-      Clusters2RecPoints(clusters,module,itsRec);
-    }
-    Int_t nrecp2 = itsRec->GetEntries();
+    tR->GetEvent(module);
+    Int_t nrecp2 = clusters->GetEntriesFast();
     for(Int_t j=0;j<nrecp2;j++){
-      AliITSRecPoint *recp = (AliITSRecPoint*)itsRec->At(j);
-      lc[0]=recp->GetX();
-      lc[2]=recp->GetZ();
+      AliITSclusterV2 *recp = (AliITSclusterV2*)clusters->UncheckedAt(j);
+      lc[0]=recp->GetY()+yshift;
+      lc[2]=-recp->GetZ()+zshift[module%4];
       geom->LtoG(module,lc,gc);
       gc[0]-=fX0;
       gc[1]-=fY0;
@@ -177,7 +191,7 @@ AliESDVertex* AliL3ITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
       Float_t phi = TMath::ATan2(gc[1],gc[0]);
       if(phi<0)phi=2*TMath::Pi()+phi;
       Int_t bin = (Int_t)(phi/phiBinSize+0.5);
-      if(bin==nPhiBins) bin = 0;
+      if(bin>=nPhiBins || bin<0) bin = 0;
       Int_t ind = ind2[bin];
       if(ind<maxind2) {
 	phi2[bin][ind] = phi;
@@ -186,11 +200,10 @@ AliESDVertex* AliL3ITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
 	ind2[bin]++;
       }
     }
-    fITS->ResetRecPoints();
+    clusters->Delete();
   }
   Int_t nbinfine = static_cast<Int_t>((fHighLim-fLowLim)/fStepFine);
   Float_t lowz = fLowLim/fStepFine;
-  Float_t highz = fHighLim/fStepFine;
   Int_t *harray = new Int_t[nbinfine];
   memset(harray,0,nbinfine*sizeof(Int_t));
   for(Int_t ibin=0;ibin<nPhiBins;ibin++) {
@@ -209,8 +222,8 @@ AliESDVertex* AliL3ITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
 	  if(diff>TMath::Pi())diff=2.*TMath::Pi()-diff;
 	  if(diff<fDiffPhiMax){
 	    Float_t zr0=(pr2[j]*pzc1[i]-pr1[i]*pzc2[j])/(pr2[j]-pr1[i]);
-	    if(zr0>lowz && zr0<highz) {
-	      Int_t bin = (Int_t)(zr0-lowz);
+	    Int_t bin = (Int_t)(zr0-lowz);
+	    if(bin>=0 && bin<nbinfine){
 	      harray[bin]++;
 	    }
 	  }
