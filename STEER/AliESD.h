@@ -11,12 +11,13 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "TObject.h"
 #include "TObjArray.h"
 #include "TArrayI.h"
 #include "TArrayF.h"
 #include "TArrayD.h"
 
-class AliESDTrack
+class AliESDTrack : public TObject
 {
 public:
   AliESDTrack();
@@ -63,7 +64,7 @@ private:
 };
 
 
-class AliESDVertex
+class AliESDVertex : public TObject
 {
 public:
   AliESDVertex();
@@ -83,7 +84,7 @@ private:
   ClassDef(AliESDVertex,1)  //ESDVertex 
 };
 
-class AliESD 
+class AliESD : public TObject
 {
 public:
   AliESD();
