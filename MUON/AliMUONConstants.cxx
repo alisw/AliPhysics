@@ -40,7 +40,7 @@ Float_t  AliMUONConstants::fgSqrtKx3St12 = 0.7000;
 Float_t  AliMUONConstants::fgSqrtKy3St12 = 0.7550;
 
 Float_t  AliMUONConstants::fgChargeCorrelSlat = 0.11;
-Float_t  AliMUONConstants::fgChargeCorrelSt12 = 0.0; //???
+Float_t  AliMUONConstants::fgChargeCorrelSt12 = 1.0; //???
 
 Float_t  AliMUONConstants::fgPitchSlat = 0.25;
 Float_t  AliMUONConstants::fgPitchSt12 = 0.20; 
