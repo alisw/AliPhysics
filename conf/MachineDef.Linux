@@ -4,9 +4,9 @@
 PLATFORM      = linux
 
 # The compilers
-CXX           = echo $*.cxx ; g++ 
-F77	      = echo $*.F ; g77
-CC	      = echo $*.c ; gcc
+CXX           = g++ 
+F77	      = g77
+CC	      = gcc
 
 # Global optimisation
 OPT           = -O -g

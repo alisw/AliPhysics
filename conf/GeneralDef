@@ -17,7 +17,17 @@ $(ALICE_ROOT)/include/%.h : %.h
 	@[ -d $(dir $@) ] || mkdir $(dir $@)
 	@cp -p $? $(ALICE_ROOT)/include
  
+tgt_$(ALICE_TARGET)/%Cint.o : %Cint.cxx
+	@echo $*Cint.cxx
+	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
+ifeq ($(CXXVERBOSE),)
+	@$(CXX) $(filter-out -O%, $(CXXFLAGS)) -c $*Cint.cxx -o tgt_$(ALICE_TARGET)/$*Cint.o
+else
+	$(CXX) $(filter-out -O%, $(CXXFLAGS)) -c $*Cint.cxx -o tgt_$(ALICE_TARGET)/$*Cint.o
+endif
+
 tgt_$(ALICE_TARGET)/%.o : %.cxx
+	@echo $*.cxx
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 ifeq ($(CXXVERBOSE),)
 	@$(CXX) $(CXXFLAGS) -c $*.cxx -o tgt_$(ALICE_TARGET)/$*.o
@@ -35,14 +45,17 @@ check/%.viol : check/%.i
 	@$(CODE_CHECK) check/$*.i ./ > check/$*.viol
 
 tgt_$(ALICE_TARGET)/%.o : %.c
+	@echo %.c
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	@$(CC) $(CFLAGS) -c $*.c -o tgt_$(ALICE_TARGET)/$*.o
 
 tgt_$(ALICE_TARGET)/%.o : %.f
+	@echo %.f
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	@$(F77) $(FFLAGS) -c $*.f -o tgt_$(ALICE_TARGET)/$*.o
 
 tgt_$(ALICE_TARGET)/%.o : %.F
+	@echo %.F
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	@$(F77) $(FFLAGS) -c $*.F -o tgt_$(ALICE_TARGET)/$*.o
 

@@ -9,14 +9,6 @@ ifdef AG4_VISUALIZE
   CPPFLAGS  += -DALICE_VISUALIZE
 endif
 
-ifdef AG4_STACKING
-  CPPFLAGS  += -DALICE_STACKING
-endif
-
-ifdef AG4_NOPHYSICS
-  CPPFLAGS  += -DALICE_EMPTY_PHYSICS_LIST
-endif  
-
 #
 # C++ compilation flags
 #
@@ -55,6 +47,14 @@ ifeq ($(ALICE_TARGET),OSF1)
     G4USE_STD_NAMESPACE := yes
     CXXOPTS += -std strict_ansi
   endif
+
+endif  
+
+ifeq ($(ALICE_TARGET),SunOS)
+
+  # Excluded of +w option 
+  # in order to exclude warnings from G4 
+  CXXOPTS := $(filter-out +w,$(CXXOPTS))
 
 endif  
 

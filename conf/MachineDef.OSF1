@@ -4,8 +4,8 @@
 PLATFORM      = alpha
 
 # The compilers
-CXX           = echo $*.cxx ; cxx
-F77	      = echo $*.F ; f77
+CXX           = cxx
+F77	      = f77
 
 # Global optimisation
 OPT	      = -O2
