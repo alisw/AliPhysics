@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2003/01/28 16:42:43  hristov
+Bug fix in Transform0to1 (M.Ivanov)
+
 Revision 1.17  2002/10/23 07:17:33  alibrary
 Introducing Riostream.h
 
@@ -282,7 +285,7 @@ Float_t  AliTPCParam::GetOuterAngleShift() const
 } 
 
 
-Int_t AliTPCParam::GetIndex(Int_t sector, Int_t row)
+Int_t AliTPCParam::GetIndex(Int_t sector, Int_t row) const
 {
   //
   //give index of the given sector and pad row 

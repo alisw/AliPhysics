@@ -17,6 +17,8 @@
 #ifndef AliTPCBUFFER160_H
 #define AliTPCBUFFER160_H
 
+#include "Riostream.h"
+
 class AliTPCBuffer160:public TObject{
 public:
   AliTPCBuffer160(){}//default constructor

@@ -98,7 +98,7 @@ public:
   virtual void SetDefault();          //set defaut TPCparam 
   virtual Bool_t Update();            //recalculate and check geometric parameters 
   Bool_t GetStatus();         //get information about object consistency  
-  Int_t GetIndex(Int_t sector, Int_t row);  //give index of the given sector and pad row 
+  Int_t GetIndex(Int_t sector, Int_t row) const;  //give index of the given sector and pad row 
   Int_t GetNSegmentsTotal() const {return fNtRows;} 
   Double_t GetLowMaxY(Int_t irow) const {return irow*0.;}
   Double_t GetUpMaxY(Int_t irow) const {return irow*0;}
