@@ -399,8 +399,8 @@ Double_t AliHBTFunction1D::Scale(TH1D* num,TH1D* den)
    {
     if ( num->GetBinContent(i) > 0.0 )
      {
-       densum += fDenominator->GetBinContent(i);
-       numsum += fNumerator->GetBinContent(i);
+       densum += den->GetBinContent(i);
+       numsum += num->GetBinContent(i);
      }
    }
   
