@@ -145,7 +145,8 @@ Int_t AliHBTAnalysis::ProcessEvent(AliAOD* aodrec, AliAOD* aodsim)
      Error("ProcessEvent","Analysis option not specified");
      return 1;
    }
- 
+  if ( Pass(aodrec,aodsim) ) return 0;
+  
   return  (this->*fProcEvent)(aodrec,aodsim);
 }
 /*************************************************************************************/ 
