@@ -9,6 +9,7 @@
 #include <TObjArray.h>
 #include <TRotMatrix.h>
 
+#include "AliRICHTresholdMap.h"
 #include "AliRICHSegmentation.h"
 #include "AliRICHGeometry.h"
 #include "AliRICHResponse.h"
@@ -21,6 +22,9 @@ class AliRICHChamber : public TObject
 {
  public:
     
+  Int_t                fIndexMap[50];   //indeces of tresholds
+  AliRICHTresholdMap*  fTresh;          //map of tresholds
+
  public:
     AliRICHChamber();
     AliRICHChamber(const AliRICHChamber & Chamber);
@@ -49,6 +53,11 @@ class AliRICHChamber : public TObject
 //Transformation from Global to local coordinates, chamber-dependant
     void LocaltoGlobal(Float_t pos[3],Float_t Localpos[3]);
     void GlobaltoLocal(Float_t pos[3],Float_t localpos[3]); 
+
+//Generate pad dependent tresholds
+
+    void GenerateTresholds();
+
     
 //Setting chamber specific rotation matrices
     

@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.3  2000/06/12 15:17:58  jbarbosa
+  Cleaned up version.
+
   Revision 1.2  2000/05/18 13:45:57  jbarbosa
   Fixed feedback photon origin coordinates
 
@@ -39,11 +42,13 @@ AliRICHChamber::AliRICHChamber()
 // Chamber object constructor
 
     fSegmentation = 0;
-    fResponse= 0;
-    fGeometry= 0;
-    frMin=0.1;
-    frMax=140;
-    fnsec=1;
+    fResponse = 0;
+    fGeometry = 0;
+    fTresh = 0;
+    frMin = 0.1;
+    frMax = 140;
+    fnsec = 1;
+    fIndexMap[50] = 0;
 }
 
 AliRICHChamber::AliRICHChamber(const AliRICHChamber& Chamber)
@@ -203,3 +208,33 @@ AliRICHChamber& AliRICHChamber::operator=(const AliRICHChamber& rhs)
 }
 
 
+void AliRICHChamber::GenerateTresholds()
+{
+
+// Generates random treshold charges for all pads 
+
+  //printf("Pads : %dx%d\n",fSegmentation->Npx(),fSegmentation->Npy());
+
+  Int_t nx = fSegmentation->Npx();
+  Int_t ny = fSegmentation->Npy();
+
+  //Int_t size=nx*ny;
+
+  //printf("Size:%d\n",size);
+
+  fTresh = new AliRICHTresholdMap(fSegmentation);
+
+  //printf("Generating tresholds...\n");
+
+  for(Int_t i=-nx/2;i<nx/2;i++)
+    {
+      for(Int_t j=-ny/2;j<ny/2;j++)
+	{
+	  Int_t pedestal = (Int_t)(gRandom->Gaus(50, 10));
+	  //Int_t pedestal =0;
+	  fTresh->SetHit(i,j,pedestal);
+	  //printf("Pad %d %d has pedestal %d.\n",i,j,pedestal);
+	}
+    }
+      
+}
