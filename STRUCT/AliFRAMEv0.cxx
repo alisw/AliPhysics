@@ -24,7 +24,7 @@ AliFRAMEv0::AliFRAMEv0(const char *name, const char *title)
   : AliFRAME(name,title)
 {
   printf("Create FRAMEv0 object\n");  
-  fEuclidGeometry="$(ALICE_ROOT)/Euclid/frame0799.euc";
+  fEuclidGeometry="$(ALICE_ROOT)/Euclid/frame0799nobar.euc";
   fEuclidMaterial="$(ALICE_ROOT)/Euclid/frame.tme";
 }
 
