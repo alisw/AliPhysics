@@ -23,6 +23,13 @@
 //   PtCut (default 1)
 //      to keep only tracks with transverse momentum > PtCut
 
+// IMPORTANT NOTICE FOR USERS:
+// under "root" or "root.exe", execute the following commands:
+// 1. "gSystem->SetIncludePath("-I$ALICE_ROOT/MUON -I$ALICE_ROOT/STEER")" to get the right path at compilation time
+// 2. ".x loadlibs.C" to load the shared libraries
+// 3. ".L MUONrecoNtuple.C+"
+// 4. ".x MUONmassPlot.C()" with the right arguments according to the list above
+
 void MUONmassPlot(Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t ResType = 553, Float_t Nsig = 3., Float_t Chi2Cut = 100., Float_t PtCut = 1.)
 {
   cout << "MUONmassPlot" << endl;
@@ -48,6 +55,7 @@ void MUONmassPlot(Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t ResType = 553
     f = new TFile("MUONtrackReco.root");
   }
   TTree *MUONtrackReco = (TTree*)gDirectory->Get("MUONtrackReco");
+  MUONtrackReco->SetMakeClass(1);                                      
 
 //Declaration of leaves types
   Int_t           fEvent;
@@ -73,7 +81,8 @@ void MUONmassPlot(Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t ResType = 553
   MUONtrackReco->SetBranchAddress("fEvent",&fEvent);
   MUONtrackReco->SetBranchAddress("fUniqueID",&fUniqueID);
   MUONtrackReco->SetBranchAddress("fBits",&fBits);
-  MUONtrackReco->SetBranchAddress("Tracks_",&Tracks_);
+//   MUONtrackReco->SetBranchAddress("Tracks_",&Tracks_);
+  MUONtrackReco->SetBranchAddress("Tracks",&Tracks_);
   MUONtrackReco->SetBranchAddress("Tracks.fCharge",Tracks_fCharge);
   MUONtrackReco->SetBranchAddress("Tracks.fPxRec",Tracks_fPxRec);
   MUONtrackReco->SetBranchAddress("Tracks.fPyRec",Tracks_fPyRec);
