@@ -14,36 +14,33 @@
  **************************************************************************/
 /* $Id$ */
 //_________________________________________________________________________
-/*Basic Memory Leak utility.
-    
-    You can use this tiny class to *see* if your program is leaking.
-    Usage:
-    AliPHOSMemoryWatcher memwatcher;
-    some program loop on events here {
-      if ( nevents % x == 0 ) 
-      {
-      // take a sample every x events
-        memwatcher.watch(nevents);
-      }
-    }
-    TFile f("out.root","RECREATE");
-    memwatcher.write();
-    f.Close();
-    In the output root file you'll get 3 graphs representing
-    the evolAliPHOSon, as a function of the number of events, of :
-    - VSIZE is the virtual size (in KBytes) of your program, that is sort of
-    the total memory used
-    - RSSIZE is the resident size (in KBytes), that is, the part of your 
-    program which is really in physical memory.
-    - TIME is an estimate of time per event (really it's the time elasped
-    between two calls to watch method)
-    WARNING: this is far from a bulletproof memory report (it's basically 
-    using UNIX command ps -h -p [PID] -o vsize,rssize to do its job).
-    It has only been tested on Linux so far.
-    
-    But by fitting the VSIZE by a pol1 under ROOT, you'll see right away
-    by how much your program is leaking.
-*/             
+//Basic Memory Leak utility.    
+//     You can use this tiny class to *see* if your program is leaking.
+//     Usage:
+//     AliPHOSMemoryWatcher memwatcher;
+//     some program loop on events here {
+//       if ( nevents % x == 0 ) 
+//       {
+//       // take a sample every x events
+//         memwatcher.watch(nevents);
+//       }
+//     }
+//     TFile f("out.root","RECREATE");
+//     memwatcher.write();
+//     f.Close();
+//     In the output root file you'll get 3 graphs representing
+//     the evolAliPHOSon, as a function of the number of events, of :
+//     - VSIZE is the virtual size (in KBytes) of your program, that is sort of
+//     the total memory used
+//     - RSSIZE is the resident size (in KBytes), that is, the part of your 
+//     program which is really in physical memory.
+//     - TIME is an estimate of time per event (really it's the time elasped
+//     between two calls to watch method)
+//     WARNING: this is far from a bulletproof memory report (it's basically 
+//     using UNIX command ps -h -p [PID] -o vsize,rssize to do its job).
+//     It has only been tested on Linux so far.    
+//     But by fitting the VSIZE by a pol1 under ROOT, you'll see right away
+//     by how much your program is leaking.          
 //*-- Author: Laurent Aphecetche(SUBATECH)
 // --- std system ---
 class assert ; 
@@ -71,6 +68,21 @@ AliPHOSMemoryWatcher::AliPHOSMemoryWatcher(UInt_t maxsize)
   fSize=0;
   fDisabled=false;
   fTimer=0;
+}
+//_____________________________________________________________________________
+AliPHOSMemoryWatcher::AliPHOSMemoryWatcher(AliPHOSMemoryWatcher& mw)
+{
+  //copy ctor
+  fMAXSIZE = mw.fMAXSIZE ;
+  fPID = mw.fPID ; 
+  strcpy(fCmd, mw.fCmd) ; 
+  fX = new Int_t[fMAXSIZE];
+  fVSIZE = new Int_t[fMAXSIZE];
+  fRSSIZE = new Int_t[fMAXSIZE];
+  fTIME = new Double_t[fMAXSIZE];
+  fSize=0;
+  fDisabled=false;
+  fTimer=0;   
 }
 //_____________________________________________________________________________
 AliPHOSMemoryWatcher::~AliPHOSMemoryWatcher()
@@ -119,9 +131,9 @@ AliPHOSMemoryWatcher::GraphVSIZE(void)
 {
   // Fills the graph with the virtual memory sized used
   TGraph* g = 0;
-  if ( size() )
+  if ( Size() )
     {
-      g = new TGraph(size());
+      g = new TGraph(Size());
       Int_t i ; 
       for (i=0; i < g->GetN(); i++ ) {
         g->SetPoint(i,X(i),VSIZE(i));
@@ -135,9 +147,9 @@ AliPHOSMemoryWatcher::GraphRSSIZE(void)
 {
   // Fills the graph with the real memory sized used
   TGraph* g = 0;
-  if ( size() ) 
+  if ( Size() ) 
     {
-      g = new TGraph(size());
+      g = new TGraph(Size());
       Int_t i ; 
       for (i=0; i < g->GetN(); i++ ) {
         g->SetPoint(i,X(i),RSSIZE(i));
@@ -151,9 +163,9 @@ AliPHOSMemoryWatcher::GraphTIME(void)
 {
   // Fills the raph with the used CPU time
   TGraph* g = 0;
-  if ( size() ) 
+  if ( Size() ) 
     {
-      g = new TGraph(size());
+      g = new TGraph(Size());
       Int_t i ; 
       for (i=0; i < g->GetN(); i++ ) {
         g->SetPoint(i,X(i),TIME(i));
@@ -171,7 +183,7 @@ AliPHOSMemoryWatcher::Frame(void) const
   Double_t ymin=1;
   Double_t ymax=0;
   UInt_t i ; 
-  for (i=0; i < size() ; i++ ) {
+  for (i=0; i < Size() ; i++ ) {
     if ( X(i) < xmin ) xmin = X(i);
     if ( X(i) > xmax ) xmax = X(i);
     Double_t y = VSIZE(i)+RSSIZE(i);
@@ -188,6 +200,6 @@ AliPHOSMemoryWatcher::Write(void)
 {
   // Stores the graphs in a file 
   if ( GraphVSIZE() ) GraphVSIZE()->Write("VSIZE",TObject::kOverwrite);
-  if ( GraphRSSIZE() ) GraphRSSIZE()->Write("RSSIZE",TObject::kOverwrite);
+  if ( GraphRSSIZE() ) GraphRSSIZE() ->Write("RSSIZE",TObject::kOverwrite);
   if ( GraphTIME() ) GraphTIME()->Write("TIME",TObject::kOverwrite);
 }

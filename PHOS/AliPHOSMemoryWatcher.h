@@ -44,10 +44,11 @@ class AliPHOSMemoryWatcher : public TObject
 {
 public:
   AliPHOSMemoryWatcher(UInt_t maxsize=10000);
-  ~AliPHOSMemoryWatcher();
+  AliPHOSMemoryWatcher(AliPHOSMemoryWatcher& mw);
+  ~AliPHOSMemoryWatcher() ;
   void Watch(Int_t x);
   
-  UInt_t size(void) const { return fSize; }
+  UInt_t Size(void) const { return fSize; }
   Int_t X(Int_t n) const { return fX[n]; }
   Int_t VSIZE(Int_t n) const { return fVSIZE[n]; }
   Int_t RSSIZE(Int_t n) const { return fRSSIZE[n]; }
@@ -57,17 +58,18 @@ public:
   TGraph* GraphTIME(void);
   TH2* Frame(void) const ;
   void Write(void);
+  AliPHOSMemoryWatcher & operator = (const AliPHOSMemoryWatcher &) { return *this; } 
 private:
-  Int_t fPID;
-  char fCmd[1024];
-  UInt_t fMAXSIZE;
-  UInt_t fSize;
-  Int_t* fX;
-  Int_t* fVSIZE;
-  Int_t* fRSSIZE;
-  Double_t* fTIME;
-  TStopwatch* fTimer;
-  Bool_t fDisabled;
+  Int_t fPID;          // PID of the process to watch
+  char fCmd[1024];     // the command sent to the system to retrieve things ("ps .....")
+  UInt_t fMAXSIZE;     // maximum size of arrays where the informationis stored
+  UInt_t fSize;        // the requested size of information to be retrieved
+  Int_t* fX;           // array that contains the step numbers
+  Int_t* fVSIZE;       // array that contains the virtual memory at each step
+  Int_t* fRSSIZE;      // array that contains the real memory at each step
+  Double_t* fTIME;     // array that contains the CPU time at each step
+  TStopwatch* fTimer;  // the chronometer
+  Bool_t fDisabled;    // to switch on/off the monitoring
 
   ClassDef(AliPHOSMemoryWatcher,1) // General purpose memory watcher
 
