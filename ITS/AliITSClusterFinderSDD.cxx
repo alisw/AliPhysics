@@ -15,6 +15,9 @@
 /*
   $Id$
   $Log$
+  Revision 1.30  2003/03/03 16:34:35  masera
+  Corrections to comply with coding conventions
+
   Revision 1.29  2002/10/25 18:54:22  barbera
   Various improvements and updates from B.S.Nilsen and T. Virgili
 
@@ -1252,7 +1255,75 @@ void AliITSClusterFinderSDD::GetRecPoints(){
         if(idx>ndigits) Error("SDD: GetRecPoints","idx ndigits",idx,ndigits);
         // try peak neighbours - to be done 
         if(idx&&idx<= ndigits) dig =(AliITSdigitSDD*)fDigits->UncheckedAt(idx);
-        if(!dig) {
+	//// debug
+	//	cout<<"R.C. Anode = "<<clusterI->A()<<"; Time= "<<clusterI->T()<<endl;
+	fSegmentation->LocalToDet(clusterI->X(),clusterI->Z(),ix,iz);
+	//	cout<<"From R.C. coordinates- Anode: "<<iz<<" and time: "<<ix<<endl;
+	// end debug
+	Int_t trks[10];
+	Int_t notr=-1;
+	Int_t deger = 0;
+	if(!dig) {
+	  Warning("GetRecPoints","Cannot assign the track number\n");
+	}
+	else {
+	  fSegmentation->LocalToDet(clusterI->X(),clusterI->Z(),ix,iz);
+	  Int_t signal[30];
+	  for(Int_t kk=0;kk<9;kk++)trks[kk]=-2;
+	  AliITSdigitSDD * pdig = 0;
+	  for(Int_t itime=ix-1;itime<=ix+1;itime++){
+	    if(itime<0 || itime>=fSegmentation->Npx())continue;
+	    for(Int_t ianod=iz-1;ianod<=iz+1;ianod++){
+	      if(ianod<0 || ianod>=fSegmentation->Npz())continue;
+	      if(iz==(fSegmentation->Npz())/2 && ianod<iz)continue;
+	      if(iz==(fSegmentation->Npz())/2-1 && ianod>iz)continue;
+	      pdig = (AliITSdigitSDD*)fMap->GetHit(ianod,itime);
+	      if(pdig){
+		for(Int_t kk=0;kk<3;kk++){
+		  if(kk == 0 || (kk>0 && pdig->fTracks[kk]>=0)){
+		    notr++;
+		    trks[notr]=pdig->fTracks[kk];
+		    signal[notr]=pdig->fSignal;
+		  }
+		}
+	      }
+	    }
+	  } // for(itime....
+	  if((dig->fCoord1<(iz-1) || dig->fCoord1>(iz+1)) 
+	     && (dig->fCoord2<(ix-1) || dig->fCoord2>(ix+1)) 
+	     && dig->fTracks[0]>=-2){
+	    notr++;
+	    trks[notr]=dig->fTracks[0];
+	    signal[notr]=dig->fSignal;
+	  }
+	  for(Int_t ii=0; ii<notr;ii++){
+	    for(Int_t jj=ii+1; jj<=notr; jj++){
+	      if(trks[ii] == trks[jj]){
+		signal[ii]+=signal[jj];
+		signal[jj]=-100;
+		trks[jj]=-jj-100;
+		deger++;
+	      }
+	    }
+	  }
+	  Int_t ordtmp;
+	  for(Int_t ii=0; ii<notr;ii++){
+	    Int_t maxi = ii;
+	    for(Int_t jj=ii+1; jj<=notr; jj++){
+	      if(signal[jj]>signal[maxi])maxi=jj;
+	    }
+	    ordtmp = trks[ii];
+	    trks[ii]=trks[maxi];
+	    trks[maxi]=ordtmp;
+	    ordtmp = signal[ii];
+	    signal[ii]=signal[maxi];
+	    signal[maxi]=ordtmp;
+	  }
+	}
+	notr-=deger;
+	notr++;
+	/*
+	  if(!dig) {
             // try cog
             fSegmentation->GetPadIxz(clusterI->X(),clusterI->Z(),ix,iz);
             dig = (AliITSdigitSDD*)fMap->GetHit(iz-1,ix-1);
@@ -1261,15 +1332,25 @@ void AliITSClusterFinderSDD::GetRecPoints(){
             if (!dig) dig = (AliITSdigitSDD*)fMap->GetHit(iz-1,ix+1); 
             if (!dig) printf("SDD: cannot assign the track number!\n");
         } //  end if !dig
+	*/
         AliITSRecPoint rnew;
         rnew.SetX(clusterI->X());
         rnew.SetZ(clusterI->Z());
         rnew.SetQ(clusterI->Q());   // in KeV - should be ADC
+	//	cout<<"Cluster # "<<i<< " - X,Z,Q= "<<clusterI->X()<<" "<<clusterI->Z()<<" "<<clusterI->Q()<<"; Digit n= "<<idx<<endl;
         rnew.SetdEdX(kconvGeV*clusterI->Q());
         rnew.SetSigmaX2(kRMSx*kRMSx);
         rnew.SetSigmaZ2(kRMSz*kRMSz);
+	if(notr>3)notr=3;
+	if(notr>=0)for(j=0;j<notr;j++)rnew.fTracks[j]=trks[j];
+	/*     
         if(dig){
+	  for(j=0;j<dig->GetNTracks();j++){
+	    if(j>0 && j%4==0)cout<<endl;
+	  }
+	  cout<<endl;
 	    rnew.fTracks[0] = dig->fTracks[0];
+	    cout<<"  "<<dig->fTracks[0]<<" assigned to rp 0 "<<rnew.fTracks[0]<<endl;
 	    rnew.fTracks[1] = -3;
 	    rnew.fTracks[2] = -3;
 	    j=1;
@@ -1277,15 +1358,18 @@ void AliITSClusterFinderSDD::GetRecPoints(){
 		  j<dig->GetNTracks()) j++;
 	    if(j<dig->GetNTracks()){
 		rnew.fTracks[1] = dig->fTracks[j];
+		cout<<"  Digit "<<j<<" "<<dig->fTracks[j]<<" assigned to rp 1 "<<rnew.fTracks[1]<<endl;
 		while((rnew.fTracks[0]==dig->fTracks[j] || 
 		       rnew.fTracks[1]==dig->fTracks[j] )&& 
 		      j<dig->GetNTracks()) j++;
-		if(j<dig->GetNTracks()) rnew.fTracks[2] = dig->fTracks[j];
+		if(j<dig->GetNTracks()) {
+		  rnew.fTracks[2] = dig->fTracks[j];
+		  cout<<"  Digit "<<j<<" "<<dig->fTracks[j]<<" assigned to rp 2 "<<rnew.fTracks[2]<<endl;
+		}
 	    } // end if
 	} // end if
-        //printf("SDD: i %d track1 track2 track3 %d %d %d x y %f %f\n",
-        //         i,rnew.fTracks[0],rnew.fTracks[1],rnew.fTracks[2],c
-        //         lusterI->X(),clusterI->Z());
+	*/
+
         iTS->AddRecPoint(rnew);
     } // I clusters
 //    fMap->ClearMap();

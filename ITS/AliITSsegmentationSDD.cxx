@@ -215,8 +215,14 @@ void AliITSsegmentationSDD::LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz){
     iz = -1; // default values
     dx = -kconv*Dx(); // lower left edge in cm.
     dz = -0.5*kconv*Dz(); // lower left edge in cm.
-    if(x<dx || x>-dx) return; // outside of defined volume.
-    if(z<dz || z>-dz) return; // outside of defined volume.
+    if(x<dx || x>-dx) {
+      Warning("LocalToDet","input argument %f out of range (%f, %f)",x,dx,-dx);
+      return; // outside of defined volume.
+    }
+    if(z<dz || z>-dz) {
+      Warning("LocalToDet","input argument %f out of range (%f, %f)",z,dz,-dz);
+      return; // outside of defined volume.
+    }
     tb = fDriftSpeed*fTimeStep*kconv; // compute size of time bin.
     if(x>0) dx = -(dx + x)/tb; // distance from + side in time bin units
     else dx = (x - dx)/tb;     // distance from - side in time bin units
@@ -265,8 +271,14 @@ void AliITSsegmentationSDD::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z)
     if(iz>=Npz()/2) x = kconv*Dx(); // default value for +x side.
     else x = -kconv*Dx(); // default value for -x side.
     z = -0.5*kconv*Dz(); // default value.
-    if(ix<0 || ix>=Npx()) return; // outside of detector
-    if(iz<0 || iz>=Npz()) return; // outside of detctor
+    if(ix<0 || ix>=Npx()) {
+      Warning("DetToLocal","input argument %d out of range (0, %d)",ix,Npx());
+      return; // outside of detector
+    }
+    if(iz<0 || iz>=Npz()) {
+      Warning("DetToLocal","input argument %d out of range (0, %d)",iz,Npz());
+     return; // outside of detctor
+    }
     tb = fDriftSpeed*fTimeStep*kconv; // compute size of time bin.
     if(iz>=Npz()/2) tb *= -1.0; // for +x side decrement frmo Dx().
     for(i=0;i<ix;i++) x += tb; // sum up to cell ix-1
