@@ -190,8 +190,8 @@ void AliMUONClusterReconstructor::Digits2ClustersNew()
 
     AliMUONDigit* digit;
 
-    TArrayI id(100); // contains the different IdDE
-    id.Reset();
+    TArrayI id(200); // contains the different IdDE
+   
   
 // Loop on chambers and on cathode planes     
     TClonesArray* muonDigits;
@@ -200,6 +200,8 @@ void AliMUONClusterReconstructor::Digits2ClustersNew()
     Int_t flag = 0;
 
     for (Int_t ich = 0; ich < AliMUONConstants::NTrackingCh(); ich++) {
+ 
+      id.Reset();
       n1 = 0;
       n2 = 0;
       //cathode 0
@@ -216,8 +218,9 @@ void AliMUONClusterReconstructor::Digits2ClustersNew()
 	digit = (AliMUONDigit*) muonDigits->UncheckedAt(k);
 	new(lDigit[n1++]) AliMUONDigit(*digit);
 	idDE = digit->DetElemId();
-	if (idDE != idDE_prev)
+	if (idDE != idDE_prev) {
 	  id.AddAt(idDE,n2++);
+	}
 	idDE_prev = idDE;
       }
 
@@ -227,6 +230,8 @@ void AliMUONClusterReconstructor::Digits2ClustersNew()
       muonDigits =  fMUONData->Digits(ich);  
       ndig = muonDigits->GetEntriesFast();
 
+      Int_t idSize = n2;
+    
       for (k = 0; k < ndig; k++) {
 
 	digit = (AliMUONDigit*) muonDigits->UncheckedAt(k);
@@ -234,31 +239,35 @@ void AliMUONClusterReconstructor::Digits2ClustersNew()
 	idDE = digit->DetElemId();
 	flag = 0;
 
-	for (Int_t n = 0; n < id.GetSize(); n++) {
-	  if (id[n] == idDE) {
+	// looking for new idDE in cathode 1 (method to be checked CF)
+	for (Int_t n = 0; n < idSize; n++) {
+	  if (idDE == id[n]) {
 	    flag = 1;
 	    break;
 	  }
-	  if (flag) continue;
-	  id[id.GetSize()+1] = idDE;
 	}
+	if (flag) continue;
+	id.AddAt(idDE,n2++);
       }
 
-      // loop over id DE
-      for (idDE = 0; idDE < id.GetSize(); idDE++) {
+      idSize = n2;
 
+      // loop over id DE
+      for (idDE = 0; idDE < idSize; idDE++) {
 	TClonesArray &lhits1 = *dig1;
 	TClonesArray &lhits2 = *dig2;
 	n1 = n2 = 0;
+	//	printf("idDE %d\n", id[idDE]);
 
 	for (k = 0; k < digAll->GetEntriesFast(); k++) {
 	  digit = (AliMUONDigit*) digAll->UncheckedAt(k);
-	  if (id[idDE] == digit->DetElemId())
+	  //	  printf("digit idDE %d\n", digit->DetElemId());
+	  if (id[idDE] == digit->DetElemId()) {
 	    if (digit->Cathode() == 1)
 	      new(lhits1[n1++]) AliMUONDigit(*digit);
 	    else 
 	      new(lhits2[n2++]) AliMUONDigit(*digit);
-
+	  }
 	}
 
 	// cluster finder
@@ -274,9 +283,9 @@ void AliMUONClusterReconstructor::Digits2ClustersNew()
 	}
 	dig1->Delete();
 	dig2->Delete();
-	digAll->Delete();
 
-      }
+      } // idDE
+      digAll->Delete();
     } // for ich
     delete dig1;
     delete dig2;

@@ -172,7 +172,7 @@ Float_t AliMUONSt345SlatSegmentation::GetAnod(Float_t xhit) const
 void AliMUONSt345SlatSegmentation::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y) 
 {
   if (ix<1 || ix>Npx() || iy<1 || iy>Npy() ){
-    AliWarning(Form("ix or iy out of boundaries: Npx=%d and Npy=%d",Npx(),Npy()));
+    AliWarning(Form("ix %d or iy %d out of boundaries: Npx=%d and Npy=%d",ix, iy, Npx(), Npy()));
     x=-99999.; y=-99999.;
   }
   else { 
@@ -209,7 +209,7 @@ void AliMUONSt345SlatSegmentation::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_
       break;
     }
   }
-  if (isec == -1) AliWarning(Form("isector equal to %d  with x %f, y %f", isec, x, y));
+  if (isec == -1) AliWarning(Form("isector equal to %d  with xl %f, yl %f", isec, x, y));
   if (isec>0) {
     ix= Int_t((x-fCx[isec-1])/(*fDpxD)[isec])
       +fNpxS[isec-1]+1;
@@ -272,11 +272,11 @@ void AliMUONSt345SlatSegmentation::SetHit(Float_t x, Float_t y)
   fXhit = x;
   fYhit = y;
     
-  if (x < 0) fXhit = 0;
-  if (y < 0) fYhit = 0;
+ //  if (x < 0) fXhit = 0;
+//   if (y < 0) fYhit = 0;
     
-  if (x >= fCx[fNsec-1]) fXhit = fCx[fNsec-1];
-  if (y >= fDyPCB)       fYhit = fDyPCB;
+//   if (x >= fCx[fNsec-1]) fXhit = fCx[fNsec-1];
+//   if (y >= fDyPCB)       fYhit = fDyPCB;
     
 }
 //----------------------------------------------------------------------------
@@ -301,7 +301,7 @@ void AliMUONSt345SlatSegmentation::FirstPad(Float_t xhit, Float_t yhit, Float_t 
     Float_t x02=x0a  + dx;
     Float_t y01=yhit - dy;
     Float_t y02=yhit + dy;
-  //   if (x01 < 0) x01 = 0;
+//     if (x01 < 0) x01 = 0;
 //     if (y01 < 0) y01 = 0;
 
 //     if (x02 >= fCx[fNsec-1]) x02 = fCx[fNsec-1];
@@ -325,6 +325,8 @@ void AliMUONSt345SlatSegmentation::FirstPad(Float_t xhit, Float_t yhit, Float_t 
     
     if (fIxmax > fNpx) fIxmax=fNpx;
     if (fIymax > fNpyS[isec]) fIymax = fNpyS[isec];    
+    if (fIxmin < 1) fIxmin = 1;    // patch for the moment (Ch. Finck)
+    if (fIymin < 1) fIymin = 1;    
 
     fXmin=x01;
     fXmax=x02;    
@@ -374,10 +376,9 @@ void AliMUONSt345SlatSegmentation::NextPad()
     fSector=Sector(fIx,fIy);
 
   } else {
-    fIx=-1;
-    fIy=-1;
+    fIx=-999;
+    fIy=-999;
   }
-  //    printf("\n Next Pad %d %d %f %f %d %d %d %d %d ", 
 }
 //-------------------------------------------------------------------------
 Int_t AliMUONSt345SlatSegmentation::MorePads()
@@ -386,7 +387,7 @@ Int_t AliMUONSt345SlatSegmentation::MorePads()
   //
   // Are there more pads in the integration region
     
-  return  (fIx != -1  || fIy != -1);
+  return  (fIx != -999  || fIy != -999);
 }
 //--------------------------------------------------------------------------
 Int_t AliMUONSt345SlatSegmentation::Sector(Int_t ix, Int_t iy) 
@@ -401,8 +402,8 @@ Int_t AliMUONSt345SlatSegmentation::Sector(Int_t ix, Int_t iy)
       break;
     }
   }
-  if (isec == -1) printf("\n Sector: Attention isec ! %d %d %d %d \n",
-			 fId, ix, iy,fNpxS[3]);
+  if (isec == -1) AliWarning(Form("Sector = %d  with ix %d and iy %d, max padx %d",
+				  isec, ix, iy,fNpxS[3]));
 
   return isec;
 

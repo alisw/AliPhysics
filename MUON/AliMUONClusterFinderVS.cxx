@@ -44,7 +44,6 @@ AliMUONClusterFinderVS::AliMUONClusterFinderVS()
 {
 // Default constructor
     fInput=AliMUONClusterInput::Instance();
-    fSegmentationType = fInput->GetSegmentationType();
 //     cout <<  " TYPE" << fSegmentationType << endl;
     fHitMap[0] = 0;
     fHitMap[1] = 0;
@@ -1023,54 +1022,63 @@ void AliMUONClusterFinderVS::FindLocalMaxima(AliMUONRawCluster* /*c*/)
 //  number of next neighbours and arrays to store them 
     Int_t nn;
     Int_t x[10], y[10];
-// loop over cathodes
+    // loop over cathodes
     for (cath=0; cath<2; cath++) {
-// loop over cluster digits
-	for (i=0; i<fMul[cath]; i++) {
-// get neighbours for that digit and assume that it is local maximum
-	    if (fSegmentationType == 1) 	    
-	      fSeg[cath]->Neighbours(fIx[i][cath], fIy[i][cath], &nn, x, y);
-	    else 
-	      fSeg2[cath]->Neighbours(fInput->DetElemId(), fIx[i][cath], fIy[i][cath], &nn, x, y);
+      // loop over cluster digits
+      for (i=0; i<fMul[cath]; i++) {
+	// get neighbours for that digit and assume that it is local maximum
+	Int_t isec;
+	Float_t a0;
 
-	    isLocal[i][cath]=kTRUE;
-	    Int_t isec= fSeg[cath]->Sector(fIx[i][cath], fIy[i][cath]);
-	    Float_t a0 = fSeg[cath]->Dpx(isec)*fSeg[cath]->Dpy(isec);
-// loop over next neighbours, if at least one neighbour has higher charger assumption
-// digit is not local maximum 
-	    for (j=0; j<nn; j++) {
-		if (fHitMap[cath]->TestHit(x[j], y[j])==kEmpty) continue;
-		digt=(AliMUONDigit*) fHitMap[cath]->GetHit(x[j], y[j]);
-		Float_t a1;
-		if (fSegmentationType == 1) {
-		  isec=fSeg[cath]->Sector(x[j], y[j]);
-		  a1 = fSeg[cath]->Dpx(isec)*fSeg[cath]->Dpy(isec);
-		} else {
-		  isec=fSeg2[cath]->Sector(fInput->DetElemId(), x[j], y[j]);
-		  a1 = fSeg2[cath]->Dpx(fInput->DetElemId(),isec)*fSeg2[cath]->Dpy(fInput->DetElemId(), isec);
-		}
-		if (digt->Signal()/a1 > fQ[i][cath]/a0) {
+	if (fSegmentationType == 1) 	    
+	  fSeg[cath]->Neighbours(fIx[i][cath], fIy[i][cath], &nn, x, y);
+	else 
+	  fSeg2[cath]->Neighbours(fInput->DetElemId(), fIx[i][cath], fIy[i][cath], &nn, x, y);
+	  
+	isLocal[i][cath]=kTRUE;
+
+	if (fSegmentationType == 1) {
+	  isec = fSeg[cath]->Sector(fIx[i][cath], fIy[i][cath]);
+	  a0   = fSeg[cath]->Dpx(isec)*fSeg[cath]->Dpy(isec);
+	} else {
+	  isec = fSeg2[cath]->Sector(fInput->DetElemId(), fIx[i][cath], fIy[i][cath]);
+	  a0   = fSeg2[cath]->Dpx(fInput->DetElemId(), isec)*fSeg2[cath]->Dpy(fInput->DetElemId(), isec);
+	}
+	// loop over next neighbours, if at least one neighbour has higher charger assumption
+	// digit is not local maximum 
+	for (j=0; j<nn; j++) {
+	  if (fHitMap[cath]->TestHit(x[j], y[j])==kEmpty) continue;
+	  digt=(AliMUONDigit*) fHitMap[cath]->GetHit(x[j], y[j]);
+	  Float_t a1;
+	  if (fSegmentationType == 1) {
+	    isec=fSeg[cath]->Sector(x[j], y[j]);
+	    a1 = fSeg[cath]->Dpx(isec)*fSeg[cath]->Dpy(isec);
+	  } else {
+	    isec=fSeg2[cath]->Sector(fInput->DetElemId(), x[j], y[j]);
+	    a1 = fSeg2[cath]->Dpx(fInput->DetElemId(),isec)*fSeg2[cath]->Dpy(fInput->DetElemId(), isec);
+	  }
+	  if (digt->Signal()/a1 > fQ[i][cath]/a0) {
+	    isLocal[i][cath]=kFALSE;
+	    break;
+	    //
+	    // handle special case of neighbouring pads with equal signal
+	  } else if (digt->Signal() == fQ[i][cath]) {
+	    if (fNLocal[cath]>0) {
+	      for (Int_t k=0; k<fNLocal[cath]; k++) {
+		if (x[j]==fIx[fIndLocal[k][cath]][cath] 
+		    && y[j]==fIy[fIndLocal[k][cath]][cath])
+		  {
 		    isLocal[i][cath]=kFALSE;
-		    break;
-//
-// handle special case of neighbouring pads with equal signal
-		} else if (digt->Signal() == fQ[i][cath]) {
-		    if (fNLocal[cath]>0) {
-			for (Int_t k=0; k<fNLocal[cath]; k++) {
-			    if (x[j]==fIx[fIndLocal[k][cath]][cath] 
-				&& y[j]==fIy[fIndLocal[k][cath]][cath])
-			    {
-				isLocal[i][cath]=kFALSE;
-			    } 
-			} // loop over local maxima
-		    } // are there already local maxima
-		} // same charge ? 
-	    } // loop over next neighbours
-	    if (isLocal[i][cath]) {
-		fIndLocal[fNLocal[cath]][cath]=i;
-		fNLocal[cath]++;
-	    } 
-	} // loop over all digits
+		  } 
+	      } // loop over local maxima
+	    } // are there already local maxima
+	  } // same charge ? 
+	} // loop over next neighbours
+	if (isLocal[i][cath]) {
+	  fIndLocal[fNLocal[cath]][cath]=i;
+	  fNLocal[cath]++;
+	} 
+      } // loop over all digits
     } // loop over cathodes
 
     AliDebug(1,Form("\n Found %d %d %d %d local Maxima\n",
@@ -1604,6 +1612,8 @@ void AliMUONClusterFinderVS::FindRawClusters()
     ResetRawClusters();
 //  Return if no input datad available
     if (!fInput->NDigits(0) && !fInput->NDigits(1)) return;
+
+    fSegmentationType = fInput->GetSegmentationType();
 
     if (fSegmentationType == 1) {
       fSeg[0] = fInput->Segmentation(0);
