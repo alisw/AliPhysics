@@ -16,5 +16,6 @@
 #pragma link C++ class  AliCRThit+;
 #pragma link C++ class  AliGenCRT+;
 #pragma link C++ class  AliCRTv1+;
+#pragma link C++ class  AliCRTModule+;
 
 #endif
