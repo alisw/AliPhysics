@@ -21,7 +21,7 @@ class AliRICHhit : public AliHit
 public:
   inline   AliRICHhit();
   inline   AliRICHhit(Int_t fIshunt, Int_t track, Int_t *vol, Float_t *hits);
-  AliRICHhit(Int_t tid,TVector3 x3) :AliHit(0,tid) {fInX3=x3;}
+  inline   AliRICHhit(Int_t tid,TVector3 x3);
   inline   AliRICHhit(Int_t tid,TVector3 x3in,TVector3 x3out,Double_t eloss);
   virtual ~AliRICHhit()         {;}
 
@@ -72,6 +72,14 @@ AliRICHhit::AliRICHhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hit)
   fMomX=hit[14];fMomY=hit[15];fMomZ=hit[16];
   fCerenkovAngle=hit[18];
   fMomFreoX=hit[19];fMomFreoY=hit[20];fMomFreoZ=hit[21];
+}
+  //__________________________________________________________________________________________________
+AliRICHhit::AliRICHhit(Int_t tid,TVector3 x3) :AliHit(0,tid)
+{//default ctor  
+  fChamber=fPid=kBad;
+  fEloss=kBad;
+  fMomX=fMomY=fMomZ=fNPads=fCerenkovAngle=fMomFreoX=fMomFreoY=fMomFreoZ=kBad;
+  fInX3=x3;fOutX3.SetXYZ(0,0,0);
 }
 //__________________________________________________________________________________________________
 AliRICHhit::AliRICHhit(Int_t tid,TVector3 x3in,TVector3 x3out,Double_t eloss)
