@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2000/10/02 21:28:07  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.9  2000/05/10 21:56:07  fca
 Avoid clashes with ITS and add supports
 
@@ -820,8 +823,8 @@ void AliFMDv1::CreateMaterials()
   
   Float_t epsil, stmin, deemax, tmaxfd, stemax;
   
-  Int_t   ISXFLD = gAlice->Field()->Integ();
-  Float_t SXMGMX = gAlice->Field()->Max();
+  Int_t   isxfld = gAlice->Field()->Integ();
+  Float_t sxmgmx = gAlice->Field()->Max();
   
   //     Ring #1 
   
@@ -852,11 +855,11 @@ void AliFMDv1::CreateMaterials()
   deemax = -.3;  // Maximum fractional energy loss, DLS 
   stmin  = -.8;
   // ******************************************************** 
-  AliMedium(1, "FMD_R1_L3        ", 1, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(2, "FMD_R2_L3        ", 2, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(3, "FMD_R3_L3        ", 3, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(4, "FMD_BR_L3        ", 4, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(5, "FMD_CB_L3        ", 5, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(1, "FMD_R1_L3        ", 1, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(2, "FMD_R2_L3        ", 2, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(3, "FMD_R3_L3        ", 3, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(4, "FMD_BR_L3        ", 4, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(5, "FMD_CB_L3        ", 5, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 }
 
 

@@ -12,34 +12,22 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/*
-$Log$
-Revision 1.8  2000/10/02 21:28:07  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.7  2000/01/19 17:16:47  fca
-Introducing a list of lists of hits -- more hits allowed for detector now
-
-Revision 1.6  1999/09/29 09:24:14  fca
-Introduction of the Copyright and cvs Log
-
-*/
-
-///////////////////////////////////////////////////////////////////////////////
+ //////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  Forward Multiplicity Detector                                            //
+//  Forward Multiplicity Detector based on Silicon plates                    //
 //  This class contains the base procedures for the Forward Multiplicity     //
 //  detector                                                                 //
+//  Detector consists of 6 Si volumes covered pseudorapidity interval         //
+//  from 1.6 to 6.0.                                                         //
 //                                                                           //
 //Begin_Html
 /*
-<img src="picts/AliFMDClass.gif">
+<img src="gif/AliFMDClass.gif">
 </pre>
 <br clear=left>
 <font size=+2 color=red>
 <p>The responsible person for this module is
-<a href="mailto:Valeri.Kondratiev@cern.ch">Valeri Kondratiev</a>.
+<a href="mailto:Alla.Maevskaia@cern.ch">Alla Maevskaia</a>.
 </font>
 <pre>
 */
@@ -51,12 +39,12 @@ Introduction of the Copyright and cvs Log
 #include <TTUBE.h>
 #include <TNode.h>
 #include <TGeometry.h>
-#include <TLorentzVector.h>
-
-#include "AliMC.h"
+#include <TTree.h>
 #include "AliRun.h"
+#include "AliMC.h"
 #include "AliFMD.h"
- 
+#include "AliFMDhit.h"
+
 ClassImp(AliFMD)
  
 //_____________________________________________________________________________
@@ -78,80 +66,83 @@ AliFMD::AliFMD(const char *name, const char *title)
  
   //
   // Initialise Hit array
-  fHits   = new TClonesArray("AliFMDhit",  405);
-  gAlice->AddHitList(fHits);
+  fHits     = new TClonesArray("AliFMDhit", 1000);
   
   fIshunt     =  0;
+  fIdSens1    =  0;
+
+  SetMarkerColor(kRed);
 }
  
+
+AliFMD::~AliFMD()
+{
+  delete fHits;
+}
 //_____________________________________________________________________________
 void AliFMD::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 {
   //
-  // Add a FMD hit
+  // Add a hit to the list
   //
   TClonesArray &lhits = *fHits;
   new(lhits[fNhits++]) AliFMDhit(fIshunt,track,vol,hits);
 }
- 
 //_____________________________________________________________________________
 void AliFMD::BuildGeometry()
 {
   //
   // Build simple ROOT TNode geometry for event display
   //
-  TNode *Node, *Top;
+  TNode *node, *top;
   const int kColorFMD  = 7;
   //
-  Top=gAlice->GetGeometry()->GetNode("alice");
+  top=gAlice->GetGeometry()->GetNode("alice");
 
   // FMD define the different volumes
+  new TRotMatrix("rot901","rot901",  90, 0, 90, 90, 180, 0);
+
+  new TTUBE("S_FMD0","FMD  volume 0","void",4.73,17.7,1.5);
+  top->cd();
+  node = new TNode("FMD0","FMD0","S_FMD0",0,0,64,"");
+  node->SetLineColor(kColorFMD);
+  fNodes->Add(node);
+
+  new TTUBE("S_FMD1","FMD  volume 1","void",23.4,36.,1.5);
+  top->cd();
+  node = new TNode("FMD1","FMD1","S_FMD1",0,0,85,"");
+  node->SetLineColor(kColorFMD);
+  fNodes->Add(node);
   
-  new TTUBE("S_FMD1","FMD sensitive volume 1","void",4.5,10.5,3);
-  Top->cd();
-  Node = new TNode("FMD1","FMD1","S_FMD1",0,0,86.5,"");
-  Node->SetLineColor(kColorFMD);
-  fNodes->Add(Node);
+  new TTUBE("S_FMD2","FMD  volume 2","void",4.73,17.7,1.5);
+  top->cd();
+  node = new TNode("FMD2","FMD2","S_FMD2",0,0,-64,"");
+  node->SetLineColor(kColorFMD);
+  fNodes->Add(node);
+
+  new TTUBE("S_FMD3","FMD  volume 3","void",23.4,36.,1.5);
+  top->cd();
+  node = new TNode("FMD3","FMD3","S_FMD3",0,0,-85,"");
+  node->SetLineColor(kColorFMD);
+  fNodes->Add(node);
+
+  new TTUBE("S_FMD4","FMD  volume 4","void",5,15,0.015);
+  top->cd();
+  node = new TNode("FMD4","FMD4","S_FMD4",0,0,-270,"");
+  node->SetLineColor(kColorFMD);
+  fNodes->Add(node);
   
-  new TTUBE("S_FMD2","FMD sensitive volume 2","void",4.5,10.5,3);
-  Top->cd();
-  Node = new TNode("FMD2","FMD2","S_FMD2",0,0,-86.5,"");
-  Node->SetLineColor(kColorFMD);
-  fNodes->Add(Node);
   
-  new TTUBE("S_FMD3","FMD sensitive volume 3","void",8,14,3);
-  Top->cd();
-  Node = new TNode("FMD3","FMD3","S_FMD3",0,0,71.2,"");
-  Node->SetLineColor(kColorFMD);
-  fNodes->Add(Node);
-  
-  new TTUBE("S_FMD4","FMD sensitive volume 4","void",8,14,3);
-  Top->cd();
-  Node = new TNode("FMD4","FMD4","S_FMD4",0,0,-71.2,"");
-  fNodes->Add(Node);
-  Node->SetLineColor(kColorFMD);
-  
-  new TTUBE("S_FMD5","FMD sensitive volume 5","void",8,17.5,3);
-  Top->cd();
-  Node = new TNode("FMD5","FMD5","S_FMD5",0,0,44,"");
-  Node->SetLineColor(kColorFMD);
-  fNodes->Add(Node);
-  
-  new TTUBE("S_FMD6","FMD sensitive volume 6","void",8,17.5,3);
-  Top->cd();
-  Node = new TNode("FMD6","FMD6","S_FMD6",0,0,-44,"");
-  Node->SetLineColor(kColorFMD);
-  fNodes->Add(Node);
-  
-  new TTUBE("S_FMD7","FMD sensitive volume 7","void",4.2,13,3);
-  Top->cd();
-  Node = new TNode("FMD7","FMD7","S_FMD7",0,0,-231,"");
-  Node->SetLineColor(kColorFMD);
-  fNodes->Add(Node);
+  new TTUBE("S_FMD5","FMD  volume 5","void",5,14,0.015);
+  top->cd();
+  node = new TNode("FMD5","FMD5","S_FMD5",0,0,-630,"");
+  node->SetLineColor(kColorFMD);
+  fNodes->Add(node);
+
 }
  
 //_____________________________________________________________________________
-Int_t AliFMD::DistancetoPrimitive(Int_t , Int_t )
+Int_t AliFMD::DistanceToPrimitive(Int_t px, Int_t py)
 {
   //
   // Calculate the distance from the mouse to the FMD on the screen
@@ -161,30 +152,14 @@ Int_t AliFMD::DistancetoPrimitive(Int_t , Int_t )
 }
  
 //_____________________________________________________________________________
-void AliFMD::StepManager()
-{
-  //
-  // Called for each step in the FMD
-  //
-  
-  Float_t       hits[3];
-  Int_t         i,copy,vol[1];
-  TClonesArray &lhits = *fHits;
-  TLorentzVector p;
-  
-  gMC->CurrentVolID(copy);
-  vol[0] = copy;
-  gMC->TrackPosition(p);
-  for(i=0;i<3;++i) hits[i]=p[i];
-  new(lhits[fNhits++]) AliFMDhit(fIshunt,gAlice->CurrentTrack(),vol,hits);
-}
 
-//___________________________________________
+//-------------------------------------------------------------------------
 void AliFMD::Init()
 {
   //
   // Initialis the FMD after it has been built
   Int_t i;
+  AliMC* pMC = AliMC::GetMC();
   //
   printf("\n");
   for(i=0;i<35;i++) printf("*");
@@ -195,21 +170,41 @@ void AliFMD::Init()
   // Here the FMD initialisation code (if any!)
   for(i=0;i<80;i++) printf("*");
   printf("\n");
+ //
+ //
+  fIdSens1=pMC->VolId("GFSI"); //Si sensetive volume
+
 }
+//---------------------------------------------------------------------
+void AliFMD::MakeBranch(Option_t* option)
+{
+  // Create Tree branches for the FMD.
+  Int_t buffersize = 4000;
+  char branchname[10];
+  sprintf(branchname,"%s",GetName());
+
+  AliDetector::MakeBranch(option);
+
+  if (fDigits   && gAlice->TreeD()) {
+    gAlice->TreeD()->Branch(branchname,&fDigits, buffersize);
+    printf("Making Branch %s for digits\n",branchname);
+  }
+}
+ 
+//---------------------------------------------------------------------
+
+void AliFMD::Eta2Radius(Float_t eta, Float_t zDisk, Float_t *radius)
+{
+   Float_t expEta=TMath::Exp(-eta);
+   Float_t theta=TMath::ATan(expEta);
+   theta=2.*theta;
+   Float_t rad=zDisk*(TMath::Tan(theta));
+   *radius=rad;
+   
+   printf(" eta %f radius %f\n", eta, rad);
+}
+ 
 
  
-ClassImp(AliFMDhit)
- 
-//_____________________________________________________________________________
-AliFMDhit::AliFMDhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
-  AliHit(shunt, track)
-{
-  //
-  // Add a FMD hit
-  //
-  fVolume = vol[0];
-  fX=hits[0];
-  fY=hits[1];
-  fZ=hits[2];
-}
+    
  

@@ -1,5 +1,5 @@
-#ifndef FMDV1_H
-#define FMDV1_H
+#ifndef ALIFMDV1_H
+#define ALIFMDV1_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
