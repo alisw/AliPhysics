@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.22  2002/05/22 13:48:43  morsch
+Pdg code added to track list.
+
 Revision 1.21  2002/04/27 07:43:08  morsch
 Calculation of fDphi corrected (Renan Cabrera)
 
@@ -522,8 +525,8 @@ void AliEMCALJetFinder::BookLego()
 //  Don't add histos to the current directory
     if(fDebug) printf("\n AliEMCALJetFinder::BookLego() \n");
  
-    //    TH2::AddDirectory(0);
-    //    TH1::AddDirectory(0);
+    TH2::AddDirectory(0);
+    TH1::AddDirectory(0);
     gROOT->cd();
 //    
 //  Signal map
@@ -1334,13 +1337,13 @@ void AliEMCALJetFinder::InitFromBackground()
     if (fDebug) printf("\n AliEMCALJetFinder::InitFromBackground() ");
     
     if (fLego) {
-       fLego->Reset(); 
-       (*fLego) = (*fLego) + (*fLegoB); 
-       if(fDebug) 
-       printf("\n AliEMCALJetFinder::SaveBackgroundEvent() (fLego) %f = %f(fLegoB) \n", 
-       fLego->Integral(), fLegoB->Integral()); 
+	fLego->Reset(); 
+	(*fLego) = (*fLego) + (*fLegoB);
+	if(fDebug) 
+	    printf("\n AliEMCALJetFinder::SaveBackgroundEvent() (fLego) %f = %f(fLegoB) \n", 
+		   fLego->Integral(), fLegoB->Integral()); 
     } else {
-       printf(" => fLego undefined \n");
+	printf(" => fLego undefined \n");
     }
 }
 
