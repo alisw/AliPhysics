@@ -108,6 +108,15 @@ public:
   Float_t GetT0zVertex() const {return fT0zVertex;}
   void SetT0zVertex(Float_t z) {fT0zVertex=z;}
 
+  Float_t GetZDCNEnergy() const {return fZDCNEnergy;}
+  Float_t GetZDCPEnergy() const {return fZDCPEnergy;}
+  Float_t GetZDCEMEnergy() const {return fZDCEMEnergy;}
+  Int_t   GetZDCParticipants() const {return fZDCParticipants;}
+  void    SetZDC(Float_t nEnergy, Float_t pEnergy, Float_t emEnergy,
+                 Int_t participants) 
+   {fZDCNEnergy=nEnergy; fZDCPEnergy=pEnergy; fZDCEMEnergy=emEnergy;
+    fZDCParticipants=participants;}
+
   void  Print(Option_t *option="") const;
    
 protected:
@@ -118,6 +127,11 @@ protected:
   Long_t       fTrigger;         // Trigger Type
   Int_t        fRecoVersion;     // Version of reconstruction 
   Float_t      fMagneticField;   // Solenoid Magnetic Field in kG : for compatibility with AliMagF
+
+  Float_t      fZDCNEnergy;      // reconstructed energy in the neutron ZDC
+  Float_t      fZDCPEnergy;      // reconstructed energy in the proton ZDC
+  Float_t      fZDCEMEnergy;     // reconstructed energy in the electromagnetic ZDC
+  Int_t        fZDCParticipants; // number of participants estimated by the ZDC
 
   Float_t      fT0zVertex;       // vertex z position estimated by the START
   AliESDVertex fPrimaryVertex;   // Primary vertex estimated by the ITS
@@ -134,7 +148,7 @@ protected:
   Int_t        fFirstPHOSParticle; // First PHOS particle in the fTracks list 
   Int_t        fFirstEMCALParticle;// First EMCAL particle in the fTracks list 
  
-  ClassDef(AliESD,7)  //ESD class 
+  ClassDef(AliESD,8)  //ESD class 
 };
 #endif 
 
