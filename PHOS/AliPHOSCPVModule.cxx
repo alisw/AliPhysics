@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.1  2000/11/03 16:49:35  schutz
+  New class AliPHOSCPVModule
+
 */
 
 ////////////////////////////////////////////////
@@ -32,6 +35,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <iostream.h>
 
 // --- galice header files ---
 #include "AliRun.h"
@@ -46,14 +50,42 @@ ClassImp(AliPHOSCPVModule)
 
 //______________________________________________________________________________
 
-AliPHOSCPVModule::AliPHOSCPVModule(void) {
+AliPHOSCPVModule::AliPHOSCPVModule(void)
+{
   //
   // Allocate an array of hits
   //
 
-  if ( NULL==(fHits=new TClonesArray("AliPHOSCPVHit",100)) ) {
-    Error("CPV","Can not create array of hits");
+  if ( NULL==(fHits         =new TClonesArray("AliPHOSCPVHit",100)) ) {
+    Error("CPV","Can not create array of hits per track");
     exit(1);
+  }
+}
+
+//______________________________________________________________________________
+AliPHOSCPVModule::AliPHOSCPVModule(const AliPHOSCPVModule & module)
+{
+  // Copy constructor
+  module.Copy(*this);
+}
+
+//____________________________________________________________________________
+AliPHOSCPVModule & AliPHOSCPVModule::operator= (const AliPHOSCPVModule &module)
+{
+  module.Copy(*this);
+  return (*this);
+}
+
+//______________________________________________________________________________
+void AliPHOSCPVModule::Copy(AliPHOSCPVModule & module) const
+{
+  // Copy *this onto module
+  // It takes care about copying array of hits fHits
+
+  // Copy all first
+  if(this != &module) {
+    ((TObject*) this)->Copy((TObject&)module);
+    module.fHits          = fHits;
   }
 }
 
@@ -70,7 +102,7 @@ void AliPHOSCPVModule::Clear(Option_t *opt="")
 {
 // Clear hit information
 
-  fHits  -> Clear(opt);
+  fHits          -> Clear(opt);
 }
 
 //______________________________________________________________________________
