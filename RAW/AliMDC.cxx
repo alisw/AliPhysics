@@ -61,7 +61,9 @@
 
 #ifdef USE_HLT
 #include <AliL3StandardIncludes.h>
+#ifndef use_logging
 #include "AliL3Logging.h"
+#endif
 #include <AliL3Transform.h>
 #include "AliRawReaderRoot.h"
 #include <AliL3Hough.h>
