@@ -260,7 +260,7 @@ void AliITSv11::CreateGeometry(){
     vITS->SetVisibility(kFALSE);
     vALIC->AddNode(vITS,1,0);
     //
-    fSPDgeom->CarbonFiberSector(vITS);
+    fSPDgeom->CenteralSPD(vITS);
     fSDDgeom->SetGeomParameters(); // needed
     fSDDgeom->Layer3(vITS);
     fSDDgeom->Layer4(vITS);

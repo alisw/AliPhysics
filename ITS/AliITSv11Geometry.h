@@ -17,12 +17,29 @@ class TGeoTube;
 class TGeoTubeSeg;
 class TGeoConeSeg;
 class TGeoBBox;
+class TGeoMixture;
+class TArrayD;
+class TArrayI;
+class TObjArray;
 
 class AliITSv11Geometry : public TObject {
   public:
-    AliITSv11Geometry(){fDebug=kTRUE;};
+    AliITSv11Geometry(){fDebug=0;};
     AliITSv11Geometry(Int_t debug){fDebug=debug;};
     virtual ~AliITSv11Geometry(){};
+    //
+    virtual TGeoMixture *CreateMixtureByNumber(const char* name,Int_t nel,
+                                               const TArrayI *w,
+                                               const TObjArray *mix,
+                                               Double_t den);
+    virtual TGeoMixture *CreateMixtureByVolume(const char* name,Int_t nel,
+                                               const TArrayD *v,
+                                               const TObjArray *mix,
+                                               Double_t den);
+    virtual TGeoMixture *CreateMixtureByWeight(const char* name,Int_t nel,
+                                               const TArrayD *w,
+                                               const TObjArray *mix,
+                                               Double_t den);
     //
     // Sets the debug flag for debugging output
     void SetDebug(Int_t level=5){fDebug=level;}

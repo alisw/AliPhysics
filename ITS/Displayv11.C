@@ -234,7 +234,7 @@ void EngineeringSPDLayer(){
     //
     node = ALIC->FindNode("ITSV_1");
     ITS = node->GetVolume();
-    node = ITS->FindNode("ITSSPDSensitiveVirtualvolumeM0_1");
+    node = ITS->FindNode("ITSSPDTempSPDMotherVolume_1");
     SPDLay = node->GetVolume();
     //
     mgr2->SetNsegments(ISetits(1,-1));

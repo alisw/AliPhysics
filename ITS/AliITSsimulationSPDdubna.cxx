@@ -293,8 +293,8 @@ void AliITSsimulationSPDdubna::HitToSDigit(AliITSmodule *mod){
         if(!mod->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,idtrack)) continue;
         st = TMath::Sqrt(x1*x1+y1*y1+z1*z1);
         if(st>0.0){
-            st = (Double_t)((Int_t)(1.0E+04*st)); // number of microns
-            if(st<=0.0) st = 1.0;
+            st = (Double_t)((Int_t)(st/kmictocm)); // number of microns
+            if(st<=1.0) st = 1.0;
             dt = 1.0/st;
             for(t=0.0;t<1.0;t+=dt){ // Integrate over t
                 tp  = t+0.5*dt;

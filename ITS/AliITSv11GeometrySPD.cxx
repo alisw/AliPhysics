@@ -27,6 +27,7 @@
 #include <TMath.h>
 #include <TLatex.h>
 #include <TCanvas.h>
+#include <TView.h>
 #include <TPolyLine.h>
 // Root Geometry includes
 #include <TGeoManager.h>
@@ -39,9 +40,6 @@
 #include <TGeoXtru.h>
 #include <TGeoCompositeShape.h>
 #include <TGeoMatrix.h>
-//#include <TGeoRotation.h>
-//#include <TGeoCombiTrans.h>
-//#include <TGeoTranslation.h>
 #include "AliITSv11GeometrySPD.h"
 
 ClassImp(AliITSv11GeometrySPD)
@@ -49,7 +47,104 @@ ClassImp(AliITSv11GeometrySPD)
 #define SQ(A) (A)*(A)
 
 //______________________________________________________________________
-void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth){
+AliITSv11GeometrySPD::AliITSv11GeometrySPD() : 
+AliITSv11Geometry(),
+fSPDSensitiveVolumeName("ITSSPDDetectorSensitiveVolume"),
+fThickDetector(0.0),
+fThickChip(0.0){
+    // Default Constructor for the AliITSv11GeometrySPD
+    // Inputs:
+    //   none.
+    // Outputs:
+    //   none.
+    // Return:
+    //   One Default Constructed AliITSv11GeometrySPD class
+
+    fThickDetector = fkLadDetectorThick;
+    fThickChip     = fkLadChipHight;
+}
+//______________________________________________________________________
+AliITSv11GeometrySPD::AliITSv11GeometrySPD(Int_t debug) : 
+AliITSv11Geometry(debug),
+fSPDSensitiveVolumeName("ITSSPDDetectorSensitiveVolume"),
+fThickDetector(0.0),
+fThickChip(0.0),
+fkGrdFoilThick(0.05*fgkmm),
+fkGrdFoilWidthA(15.95*fgkmm),
+fkGrdFoilWidthC(4.4*fgkmm),
+fkGrdFoilLngA(139.89*fgkmm),
+fkGrdFoilLngB(11.55*fgkmm),
+fkGrdFoilLngC(82.0*fgkmm),
+fkGrdFoilNholesAB(5),
+fkGrdFoilHoleCenterAB(7.8*fgkmm),
+fkGrdFoilHoleLengthAB(12.0*fgkmm),
+fkGrdFoilHoleWidthAB(7.5*fgkmm),
+fkGrdFoilHoleSpacingAB(14.0*fgkmm),
+fkGrdFoilHoleStartA(1.36*fgkmm),
+fkGrdFoilHoleStartB(73.08*fgkmm),
+ // Ladder
+fkLadNChips(5),
+fkLadChipWidth(15950.0*fgkmicron),
+fkLadChipHight(150.0*fgkmicron),
+fkLadChipLength(13490.0*fgkmicron),
+fkLadGlue0Thick(0.100*fgkmm),
+fkLadBumpBondThick(30.0*fgkmicron),
+fkLadDetectorWidth(13700.0*fgkmicron),
+fkLadDetectorThick(200.0*fgkmicron),
+fkLadDetectorLength(70710.0*fgkmicron),
+fkLadSensDetWidth(12800.0*fgkmicron),
+fkLadSensDetThick(200.0*fgkmicron),
+fkLadSensDetLength(69490.0*fgkmicron),
+fkLadChipSpacing0(610.0*fgkmicron),
+fkLadChipSpacing1((fkLadDetectorLength-(2.*fkLadChipSpacing0+
+        ((Double_t)fkLadNChips)*fkLadChipLength))/((Double_t)(fkLadNChips-1)))
+{
+    // Default Constructor for the AliITSv11GeometrySPD
+    // Inputs:
+    //   none.
+    // Outputs:
+    //   none.
+    // Return:
+    //   One Default Constructed AliITSv11GeometrySPD class
+
+    fThickDetector = fkLadDetectorThick;
+    fThickChip     = fkLadChipHight;
+}
+//______________________________________________________________________
+TGeoVolume* AliITSv11GeometrySPD::CenteralSPD(TGeoVolume *moth){
+    // Define The Centeral part of the SPD detector.
+    // Inputs:
+    //   TGeoVolume* moth
+    // Outputs:
+    //  none.
+    // Return:
+    //  TGeoVolume * moth
+    Int_t i=2;
+    TGeoVolume *vHSGF,*vLad,*vMoth;
+    TGeoTube *tube;
+
+    tube = new TGeoTube("ITSSPD Temp SPD Mother voluem",0.0,7.0,17.0);
+    vMoth = new TGeoVolume("ITSSPDTempSPDMotherVolume",tube,0);
+
+    moth->AddNode(vMoth,1,0);
+    switch(i){
+    case 0:
+        CarbonFiberSector(vMoth);
+        break;
+    case 1:
+        vHSGF = CreateHalfStaveGroundFoil();
+        vMoth->AddNode(vHSGF,1,0);
+        break;
+    case 2:
+        vLad  = CreateSPDLadder();
+        vMoth->AddNode(vLad,1,0);
+        break;
+    } // end sithch
+
+    return moth;
+}
+//______________________________________________________________________
+TGeoVolume* AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth){
     // Define the detail SPD Carbon fiber support Sector geometry.
     // Based on the drawings ALICE-Pixel "Construzione Profilo Modulo"
     // March 25 2004 and ALICE-SUPPORTO "construzione Profilo Modulo"
@@ -57,11 +152,12 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth){
     // center of the arc is outside of the object.
     // February 16 2004.
     // Inputs:
-    //   none.
+    //   TGeoVolume* moth   The mother volume which this object is to be
+    //                      placed in
     // Outputs:
     //  none.
     // Return:
-    //  none.
+    //  TGeoVolume*
     TGeoManager *mgr = gGeoManager;
     TGeoMedium *medSPDcf  = 0; // SPD support cone Carbon Fiber materal number.
     //TGeoMedium *medSPDfs  = 0; // SPD support cone inserto stesalite 4411w.
@@ -225,7 +321,7 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth){
 
     if(moth==0){
         Error("CarbonFiberSector","moth=%p",moth);
-        return;
+        return moth;
     } // end if moth==0
     //SetDebug(3);
     for(i=0;i<ksecNRadii;i++){
@@ -356,8 +452,8 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth){
         } // end for k
         secAngleTurbo[i] = -TMath::RadToDeg()*TMath::ATan2(y1-y0,x1-x0);
         if(GetDebug(3)){ 
-           cout <<"i="<<i<<" angle="<<secAngleTurbo[i]<<" x0,y0{"
-                <<x0<<","<<y0<<"} x1y1={"<<x1<<","<<y1<<"}"<<endl;
+            Info("CarbonFiberSector","i=%d angle=%f x0,y0{%f,%f} "
+                 "x1y1={%f,%f,}",i,secAngleTurbo[i],x0,0,x1,y1);
         } // end if
     } // end for i
     sA0 = new TGeoXtru(2);
@@ -534,6 +630,7 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth){
         vB1->PrintNodes();
     } // end if GetDebug
     //
+    return moth;
 }
 //----------------------------------------------------------------------
 void AliITSv11GeometrySPD::SPDsectorShape(Int_t n,const Double_t *xc,
@@ -563,13 +660,10 @@ const Double_t *yc,const Double_t *r,const Double_t *ths,const Double_t *the,
 
     m = n*(npr+1);
     if(GetDebug(2)){
-        cout <<"    X    \t  Y  \t  R  \t  S  \t  E"<< m <<endl;
+        Info("SPDsectorShape","    X    \t  Y  \t  R  \t  S  \t  E%d", m);
         for(i=0;i<n;i++){
-            cout <<"{"<< xc[i] <<",";
-            cout << yc[i] <<",";
-            cout << r[i] <<",";
-            cout << ths[i] <<",";
-            cout << the[i] <<"},"<< endl;
+            Info("SPDsectorShape","{%f,%f,%f,%f,%f}",
+                 xc[i],yc[i],r[i],ths[i],the[i]);
         } // end for i
     } // end if GetDebug
     //
@@ -599,19 +693,261 @@ const Double_t *yc,const Double_t *r,const Double_t *ths,const Double_t *the,
     return;
 }
 //______________________________________________________________________
-void AliITSv11GeometrySPD::HalfStave(TGeoVolume *moth){
+TGeoVolume* AliITSv11GeometrySPD::CreateHalfStaveGroundFoil(){
     // Define the detail SPD Half Stave geometry.
     // Inputs:
     //   none.
     // Outputs:
     //  none.
     // Return:
-    //  none.
+    //  TGeoVolume* The volume containing the half stave grounding foil.
 
-    if(moth==0){
-        Error("HalfStave","moth=%p",moth);
-        return;
-    } // end if moth==0
+    TGeoManager *mgr = gGeoManager;
+    TGeoMedium *medSPDair = 0; // SPD Air
+    TGeoMedium *medSPDCu  = 0; // SPD Copper conductor
+    TGeoMedium *medSPDSiNs  = 0; // SPD Silicon non-sensitive material
+    TGeoMedium *medSPDSiSv  = 0; // SPD Silicon Sensitive material
+    TGeoMedium *medSPDStaveGlue = 0; // SPD Glue used on Half Staves
+
+    medSPDair       = mgr->GetMedium("ITSspdAir");
+    medSPDCu        = mgr->GetMedium("ITSspdCopper");
+    medSPDSiNs      = mgr->GetMedium("ITSspdSiliconNonSensitive");
+    medSPDSiSv      = mgr->GetMedium("ITSspdSiliconSensitive");
+    medSPDStaveGlue = mgr->GetMedium("ITSspdStaveGlue");
+    //
+    Double_t origin[3] = {0.0,0.0,0.0};
+    TGeoBBox *sA0,*sA1,*sA3,*sB2;
+    TGeoArb8 *sA2;
+    TGeoTubeSeg *sB1;
+
+    sA0 = new TGeoBBox("ITS SPD Half Stave Grounding Foil A0",
+                       0.5*fkGrdFoilWidthA,0.5*fkGrdFoilThick,0.5*(
+                fkGrdFoilLngA+fkGrdFoilLngB+fkGrdFoilLngC),origin);
+    origin[2] = 0.5*fkGrdFoilLngA;
+    sA1 = new TGeoBBox("ITS SPD Half Stave Gounding Foil Copper A1",
+            0.5*fkGrdFoilWidthA,0.5*fkGrdFoilThick,0.5*fkGrdFoilLngA,origin);
+    origin[0] = 0.5*(fkGrdFoilWidthA-fkGrdFoilWidthC);
+    origin[2] = -(fkGrdFoilLngA+fkGrdFoilLngB+0.5*fkGrdFoilLngC);
+    sA3 = new TGeoBBox("ITS SPD Half Stave Gounding Foil copper A3",
+            0.5*fkGrdFoilWidthC,0.5*fkGrdFoilThick,0.5*fkGrdFoilLngC,origin);
+    sA2 = new TGeoArb8("ITS SPD Half Stave Gounding Foil Copper A2",
+                       0.5*fkGrdFoilLngB);
+    sA2->SetVertex(0,-sA1->GetDX(),+sA1->GetDY());
+    sA2->SetVertex(1,+sA1->GetDX(),+sA1->GetDY());
+    sA2->SetVertex(2,+sA1->GetDX(),-sA1->GetDY());
+    sA2->SetVertex(3,-sA1->GetDX(),-sA1->GetDY());
+    sA2->SetVertex(4,origin[0]-sA3->GetDX(),+sA3->GetDY());
+    sA2->SetVertex(5,origin[0]+sA3->GetDX(),+sA3->GetDY());
+    sA2->SetVertex(6,origin[0]+sA3->GetDX(),-sA3->GetDY());
+    sA2->SetVertex(7,origin[0]-sA3->GetDX(),-sA3->GetDY());
+    sB1 = new TGeoTubeSeg("ITS SPD Half Stave Ground Foil Hole B1",
+                          0.0,0.5*fkGrdFoilHoleWidthAB,sA1->GetDY(),0.,180.);
+    sB2 = new TGeoBBox("ITS SPD Half Stave Ground Foil Hole B2",
+                       0.5*fkGrdFoilHoleWidthAB,sA1->GetDY(),
+                       0.5*(fkGrdFoilHoleLengthAB-fkGrdFoilHoleWidthAB),0);
+    //
+    TGeoVolume *vA0,*vA1,*vA2,*vA3,*vB1,*vB2;
+    vA0 = new TGeoVolume("ITSSPDHalfStaveGroundFoilA0",sA0,medSPDair);
+    vA0->SetVisibility(kTRUE);
+    vA0->SetLineColor(7); // light Blue
+    vA0->SetLineWidth(1);
+    vA0->SetFillColor(vA0->GetLineColor());
+    vA0->SetFillStyle(4090); // 90% transparent
+    vB1 = new TGeoVolume("ITSSPDHalfStaveGoundFoilHoleB1",sB1,medSPDair);
+    vB1->SetVisibility(kTRUE);
+    vB1->SetLineColor(7); // light Blue
+    vB1->SetLineWidth(1);
+    vB1->SetFillColor(vB1->GetLineColor());
+    vB1->SetFillStyle(4090); // 90% transparent
+    vB2 = new TGeoVolume("ITSSPDHalfStaveGoundFoilHoleB2",sB2,medSPDair);
+    vB2->SetVisibility(kTRUE);
+    vB2->SetLineColor(7); // light Blue
+    vB2->SetLineWidth(1);
+    vB2->SetFillColor(vB2->GetLineColor());
+    vB2->SetFillStyle(4090); // 90% transparent
+    vA1 = new TGeoVolume("ITSSPDHalfStaveGoundFoilCopperA1",sA1,medSPDCu);
+    vA1->SetVisibility(kTRUE);
+    vA1->SetLineColor(2); // red
+    vA1->SetLineWidth(1);
+    vA1->SetFillColor(vA1->GetLineColor());
+    vA1->SetFillStyle(4000); // 00% transparent
+    vA2 = new TGeoVolume("ITSSPDHalfStaveGoundFoilCopperA2",sA2,medSPDCu);
+    vA2->SetVisibility(kTRUE);
+    vA2->SetLineColor(2); // red
+    vA2->SetLineWidth(1);
+    vA2->SetFillColor(vA2->GetLineColor());
+    vA2->SetFillStyle(4000); // 00% transparent
+    vA3 = new TGeoVolume("ITSSPDHalfStaveGoundFoilCopperA3",sA3,medSPDCu);
+    vA3->SetVisibility(kTRUE);
+    vA3->SetLineColor(2); // red
+    vA3->SetLineWidth(1);
+    vA3->SetFillColor(vA3->GetLineColor());
+    vA3->SetFillStyle(4000); // 00% transparent
+    //
+    vA0->AddNode(vA1,1,0);
+    vA0->AddNode(vA2,1,new TGeoTranslation(0.0,0.0,
+                                           2.0*sA1->GetDZ()+sA2->GetDz()));
+    vA0->AddNode(vA3,1,0);
+    TGeoRotation left("",-90.0,0.0,0.0), right("",90.0,0.0,0.0);
+    Int_t i,ncopyB1=1,ncopyB2=1;
+    for(i=0;i<fkGrdFoilNholesAB;i++){
+        origin[0] = 0.0;
+        origin[1] = 0.0;
+        origin[2] = fkGrdFoilHoleStartA+((Double_t)i)*fkGrdFoilHoleSpacingAB;
+        vA1->AddNode(vB1,ncopyB1,0); // double check
+        vA1->AddNode(vB2,ncopyB2,new TGeoTranslation(0.0,0.0,
+                                        origin[2]+0.5*fkGrdFoilHoleLengthAB));
+        vA1->AddNode(vB1,ncopyB1,0); // double check
+    } // end for i
+    for(i=0;i<fkGrdFoilNholesAB;i++){
+        origin[0] = 0.0;
+        origin[1] = 0.0;
+        origin[2] = fkGrdFoilHoleStartB+((Double_t)i)*fkGrdFoilHoleSpacingAB;
+        new TGeoTranslation(0.0,0.0,origin[2]+sB1->GetRmax());
+        vA1->AddNode(vB1,ncopyB1,0); // double check
+        vA1->AddNode(vB2,ncopyB2,new TGeoTranslation(0.0,0.0,
+                                      origin[2]+0.5*fkGrdFoilHoleLengthAB));
+        new TGeoTranslation(0.0,0.0,origin[2]+sB1->GetRmax()+2.0*sB2->GetDZ());
+        vA1->AddNode(vB1,ncopyB1,0); // double check
+    } // end for i
+    return vA0;
+}
+//______________________________________________________________________
+TGeoVolume* AliITSv11GeometrySPD::CreateSPDLadder(){
+    // Define the detail SPD Half Stave geometry.
+    // Inputs:
+    //   none.
+    // Outputs:
+    //  none.
+    // Return:
+    //  TGeoVolume* of the volume containing the SPD Ladder.
+    TGeoMedium *medSPDair       = 0; // SPD Air
+    TGeoMedium *medSPDCu        = 0; // SPD Copper conductor
+    TGeoMedium *medSPDSiNs      = 0; // SPD Silicon non-sensitive material
+    TGeoMedium *medSPDSiSv      = 0; // SPD Silicon Sensitive material
+    TGeoMedium *medSPDStaveGlue = 0; // SPD Glue used on Half Staves
+    TGeoMedium *medSPDLadGlue   = 0; // SPD Glue used on Half Staves
+    TGeoMedium *medSPDBumpBonds = 0; // SPD Bump bond material
+    TGeoBBox *sM0,*sGlue0,*sChip,*sBB,*sDet,*sSenDet,*sGlue1;
+    Double_t x,y,z;
+
+    TGeoManager *mgr = gGeoManager;
+    medSPDair       = mgr->GetMedium("ITSspdAir");
+    medSPDCu        = mgr->GetMedium("ITSspdCopper");
+    medSPDSiNs      = mgr->GetMedium("ITSspdSiliconNonSensitive");
+    medSPDSiSv      = mgr->GetMedium("ITSspdSiliconSensitive");
+    medSPDStaveGlue = mgr->GetMedium("ITSspdStaveGlue");
+    medSPDLadGlue   = mgr->GetMedium("ITSspdLadderGlue");
+    medSPDBumpBonds = mgr->GetMedium("ITSspdBumpBond");
+    //
+    sChip   = new TGeoBBox("ITS SPD Chip",0.5*fkLadChipWidth,0.5*fThickChip,
+                           0.5*fkLadChipLength);
+    sGlue0  = new TGeoBBox("ITS SPD Ladder bottom Glue0",sChip->GetDX(),
+                           0.5*fkLadGlue0Thick,sChip->GetDZ());
+    sDet    = new TGeoBBox("ITS SPD Detector Det",0.5*fkLadDetectorWidth,
+                           0.5*fThickDetector,0.5*fkLadDetectorLength);
+    sBB     = new TGeoBBox("ITS SPD BumpBond BB",sDet->GetDX(),
+                           0.5*fkLadBumpBondThick,sChip->GetDZ());
+    sSenDet = new TGeoBBox(CreateSensitivevolumeName("_shape"),
+                  0.5*fkLadSensDetWidth,sDet->GetDY(),0.5*fkLadSensDetLength);
+    sGlue1  = new TGeoBBox("ITS SPD Ladder Top Glue1",
+                           sDet->GetDX(),0.5*fkLadGlue0Thick,sDet->GetDZ());
+    x = TMath::Max(sChip->GetDX(),sDet->GetDX());
+    y = sGlue0->GetDY()+sChip->GetDY()+sBB->GetDY()+sDet->GetDY()+
+        sGlue1->GetDY();
+    z = ((Double_t) fkLadNChips)*sChip->GetDZ()+2.*0.5*fkLadChipSpacing0 +
+        ((Double_t) fkLadNChips-1)*0.5*fkLadChipSpacing1;
+    z = TMath::Max(z,sDet->GetDZ());
+    sM0 = new TGeoBBox("ITS SPD Ladder M0",x,y,z);
+    if(GetDebug()){
+        sGlue0->InspectShape();
+        sChip->InspectShape();
+        sBB->InspectShape();
+        sDet->InspectShape();
+        sSenDet->InspectShape();
+        sGlue1->InspectShape();
+        sM0->InspectShape();
+    } // end if GetDebug
+    //
+    TGeoVolume *vM0,*vGlue0,*vChip,*vBB,*vDet,*vSenDet,*vGlue1;
+    vM0 = new TGeoVolume("ITSSPDLadderM0",sM0,medSPDair);
+    vM0->SetVisibility(kFALSE);
+    vM0->SetLineColor(8); // White
+    vM0->SetLineWidth(1);
+    vM0->SetFillColor(vM0->GetLineColor());
+    vM0->SetFillStyle(4000); // 100% transparent
+    vGlue0 = new TGeoVolume("ITSSPDLadderGlue0",sGlue0,medSPDLadGlue);
+    vGlue0->SetVisibility(kTRUE);
+    vGlue0->SetLineColor(5); // Yellow
+    vGlue0->SetLineWidth(1);
+    vGlue0->SetFillColor(vGlue0->GetLineColor());
+    vGlue0->SetFillStyle(4050); // 50% transparent
+    vGlue1 = new TGeoVolume("ITSSPDLadderGlue1",sGlue1,medSPDLadGlue);
+    vGlue1->SetVisibility(kTRUE);
+    vGlue1->SetLineColor(5); // Yellow
+    vGlue1->SetLineWidth(1);
+    vGlue1->SetFillColor(vGlue1->GetLineColor());
+    vGlue1->SetFillStyle(4050); // 50% transparent
+    vChip = new TGeoVolume("ITSSPDLadderChip",sChip,medSPDSiNs);
+    vChip->SetVisibility(kTRUE);
+    vChip->SetLineColor(4); // blue
+    vChip->SetLineWidth(1);
+    vChip->SetFillColor(vChip->GetLineColor());
+    vChip->SetFillStyle(4100); // 0% transparent
+    vBB = new TGeoVolume("ITSSPDLadderBumpBond",sBB,medSPDBumpBonds);
+    vBB->SetVisibility(kTRUE);
+    vBB->SetLineColor(1); // black
+    vBB->SetLineWidth(1);
+    vBB->SetFillColor(vBB->GetLineColor());
+    vBB->SetFillStyle(4100); // 0% transparent
+    vDet = new TGeoVolume("ITSSPDLadderDet",sDet,medSPDSiNs);
+    vDet->SetVisibility(kTRUE);
+    vDet->SetLineColor(4); // blue
+    vDet->SetLineWidth(1);
+    vDet->SetFillColor(vDet->GetLineColor());
+    vDet->SetFillStyle(4100); // 0% transparent
+    vSenDet =new TGeoVolume(GetSensitivevolumeName(),sSenDet,medSPDSiSv);
+    vSenDet->SetVisibility(kTRUE);
+    vSenDet->SetLineColor(4); // blue
+    vSenDet->SetLineWidth(1);
+    vSenDet->SetFillColor(vSenDet->GetLineColor());
+    vSenDet->SetFillStyle(4100); // 0% transparent
+    //
+    vDet->AddNode(vSenDet,1,0); // Put sensitive volume inside detector
+    TGeoTranslation *tran;
+    Int_t i,nCopyGlue0=1,nCopyChip=1,nCopyBB=1;
+    Double_t xb,yg0,yc,yb,yd,yg1;
+    x   = 0.0;
+    xb  = -sM0->GetDX() + sDet->GetDX();
+    yg0 = -sM0->GetDY()+sGlue0->GetDY();
+    yc  = yg0 + sGlue0->GetDY() + sChip->GetDY();
+    yb  = yc  + sChip->GetDY()  + sBB->GetDY();
+    yd  = yb  + sBB->GetDY()    + sDet->GetDY();
+    yg1 = yd  + sDet->GetDY()   + sGlue1->GetDY();
+    z   = -sM0->GetDZ() + fkLadChipSpacing0 + sChip->GetDZ();
+    for(i=0;i<fkLadNChips;i++){
+        tran = new TGeoTranslation(x,yg0,z);
+        vM0->AddNode(vGlue0,nCopyGlue0++,tran);
+        tran = new TGeoTranslation(x,yc,z);
+        vM0->AddNode(vChip,nCopyChip++,tran);
+        tran = new TGeoTranslation(xb,yb,z);
+        vM0->AddNode(vBB,nCopyBB++,tran);
+        z += fkLadChipSpacing1 + 2.0*sChip->GetDZ();
+    } // end for i
+    tran = new TGeoTranslation(xb,yd,0.0);
+    vM0->AddNode(vDet,1,tran);
+    tran = new TGeoTranslation(xb,yg1,0.0);
+    vM0->AddNode(vGlue1,1,tran);
+    if(GetDebug()){
+        vGlue0->PrintNodes();
+        vChip->PrintNodes();
+        vBB->PrintNodes();
+        vDet->PrintNodes();
+        vSenDet->PrintNodes();
+        vGlue1->PrintNodes();
+        vM0->PrintNodes();
+    } // end if GetDebug
+    return vM0;
 }
 //----------------------------------------------------------------------
 void AliITSv11GeometrySPD::CreateFigure0(const Char_t *filepath,
@@ -710,4 +1046,49 @@ void AliITSv11GeometrySPD::CreateFigure0(const Char_t *filepath,
     txt.DrawLatex(x+2.0,y,"#theta_{end}^{#circle}");
     txt.DrawLatex(x+2.5,y,"Section");
     //
+}
+//----------------------------------------------------------------------
+void AliITSv11GeometrySPD::CreateFigureLadder(const Char_t *filepath,
+                                         const Char_t *type){
+    // Creates Figure 0 for the documentation of this class. In this
+    // specific case, it creates the X,Y cross section of the SPD suport
+    // section, center and ends. The output is written to a standard
+    // file name to the path specificed.
+    // Inputs:
+    //   const Char_t *filepath  Path where the figure is to be drawn
+    //   const Char_t *type      The type of file, default is gif.
+    // Output:
+    //   none.
+    // Return:
+    //   none.
+    TGeoVolume *vLad;
+    TCanvas *canvas;
+    TLatex txt;
+    TGeoManager *mgr = gGeoManager;
+
+    if((vLad = mgr->GetVolume("ITSSPDLadderM0"))==0){
+        printf("file=%s type=%s\n",filepath,type);
+        vLad = CreateSPDLadder();
+    } // end if
+    //
+    canvas = new TCanvas("canvas","ITS SPD Ladder",900,450);
+    //canvas->Divide(2,1);
+    //canvas->cd(1);
+    //TVirtualPad *pad1 = canvas->GetPad(1);
+    //TView *view1 = pad1->GetView();
+    //if(view1){
+    //    view1->FrontView(pad1);
+    //}
+    vLad->Draw();
+    //pad1->Update();
+    //
+/*    canvas->cd(2);
+    TVirtualPad *pad2 = canvas->GetPad(2);
+    TView *view2 = pad2->GetView();
+    if(view2){
+        view2->TopView(pad2);
+    }
+    vLad->Draw();
+*/    //pad2->Update();
+    canvas->Update();
 }

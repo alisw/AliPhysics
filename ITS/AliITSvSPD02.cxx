@@ -738,7 +738,11 @@ void AliITSvSPD02::SetDefaults(){
     else iDetType->ClassNames("AliITSdigitSPD","AliITSRawClusterSPD");
 //    SetSimulationModel(kSPD,new AliITSsimulationSPDdubna(seg0,resp0));
 //    iDetType->ReconstructionModel(new AliITSClusterFinderSPD());
-
+    delete DetType(kSDD);
+    fDetTypes->AddAt(0,kSDD);
+    delete DetType(kSSD);
+    fDetTypes->AddAt(0,kSSD);
+/*
     SetResponseModel(kSDD,new AliITSresponseSDD());
     SetSegmentationModel(kSDD,new AliITSsegmentationSDD());
     DetType(kSDD)->ClassNames("AliITSdigitSDD","AliITSRawClusterSDD");
@@ -746,7 +750,7 @@ void AliITSvSPD02::SetDefaults(){
     SetResponseModel(kSSD,new AliITSresponseSSD());
     SetSegmentationModel(kSSD,new AliITSsegmentationSSD());
     DetType(kSSD)->ClassNames("AliITSdigitSSD","AliITSRawClusterSSD");
-
+*/
     if(kNTYPES>3){
 	Warning("SetDefaults",
 		"Only the four basic detector types are initialised!");

@@ -1,6 +1,6 @@
 SRCS = 	AliITS.cxx \
 		AliITSvSPD02.cxx \
-                AliITSvSDD03.cxx AliITSvSSD03.cxx \
+          AliITSvSDD03.cxx AliITSvSSD03.cxx \
 		AliITSvPPRcoarseasymm.cxx \
 		AliITSvPPRasymmFMD.cxx \
 		AliITShit.cxx \
@@ -94,18 +94,21 @@ SRCS = 	AliITS.cxx \
 		AliITSRawClusterSPD.cxx \
 		AliITSRawClusterSDD.cxx \
 		AliITSRawClusterSSD.cxx\
-                AliITSspdTestBeam.cxx \
+          AliITSspdTestBeam.cxx \
 		AliITSReconstructor.cxx \
 
-#		AliITSv11.cxx \
-#               AliITSv11Geometry.cxx \
-#               AliITSv11GeometrySupport.cxx \
-#               DisplayITSv11.cxx \
-#		AliITSBaseGeometry.cxx \
-# 		AliITSAlignmentTrack.cxx AliITSAlignmentModule.cxx \
-# 		AliACORDEFunctions.cxx \
-#		AliITSresponseSPDdubna.cxx \
-#		AliITSClusterFinderSPDdubna.cxx \
+#          AliITSv11.cxx \
+#          AliITSv11Geometry.cxx \
+#          AliITSv11GeometrySupport.cxx \
+#          AliITSv11GeometrySPD.cxx \
+#          AliITSv11GeometrySDD.cxx \
+
+#          DisplayITSv11.cxx \
+#		 AliITSBaseGeometry.cxx \
+# 		 AliITSAlignmentTrack.cxx AliITSAlignmentModule.cxx \
+# 		 AliACORDEFunctions.cxx \
+#		 AliITSresponseSPDdubna.cxx \
+#		 AliITSClusterFinderSPDdubna.cxx \
 
 HDRS:=  $(SRCS:.cxx=.h)
 
