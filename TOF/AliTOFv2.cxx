@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  1999/11/05 22:39:06  fca
+New hits structure
+
 Revision 1.13  1999/11/01 20:41:57  fca
 Added protections against using the wrong version of FRAME
 
@@ -85,6 +88,19 @@ AliTOFv2::AliTOFv2(const char *name, const char *title)
   //
   // Standard constructor
   //
+  //
+  // Check that FRAME is there otherwise we have no place where to
+  // put TOF
+  AliModule* FRAME=gAlice->GetModule("FRAME");
+  if(!FRAME) {
+    Error("Ctor","TOF needs FRAME to be present\n");
+    exit(1);
+  } else 
+    if(FRAME->IsVersion()!=1) {
+      Error("Ctor","FRAME version 1 needed with this version of TOF\n");
+      exit(1);
+    }
+
 }
  
 //_____________________________________________________________________________
@@ -493,19 +509,6 @@ void AliTOFv2::Init()
 	 "with openings for PHOS and RICH in symmetric frame\n\n");
 
   AliTOF::Init();
-
-  //
-  // Check that FRAME is there otherwise we have no place where to
-  // put TOF
-  AliModule* FRAME=gAlice->GetModule("FRAME");
-  if(!FRAME) {
-    Error("Ctor","TOF needs FRAME to be present\n");
-    exit(1);
-  } else 
-    if(FRAME->IsVersion()!=1) {
-      Error("Ctor","FRAME version 1 needed with this version of TOF\n");
-      exit(1);
-    }
 
   fIdFTO2=gMC->VolId("FTO2");
   fIdFTO3=gMC->VolId("FTO3");
