@@ -11,12 +11,13 @@
 //
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
-#ifndef M_FILES_H
-#define M_FILES_H
+#ifndef ALI_MP_FILES_H
+#define ALI_MP_FILES_H
 
 #include <TObject.h>
 #include <TString.h>
 
+#include "AliMpStationType.h"
 #include "AliMpPlaneType.h"
 
 class AliMpFiles : public TObject
@@ -31,15 +32,19 @@ class AliMpFiles : public TObject
     static AliMpFiles* Instance();
 
     // methods
-    TString SectorFilePath(AliMpPlaneType plane) const;
-    TString SectorSpecialFilePath(AliMpPlaneType plane) const;
-    TString MotifFilePath(AliMpPlaneType plane, 
+    TString SectorFilePath(AliMpStationType station, 
+                           AliMpPlaneType plane) const;
+    TString SectorSpecialFilePath(AliMpStationType station, 
+                           AliMpPlaneType plane) const;
+    TString SectorSpecialFilePath2(AliMpStationType station, 
+                           AliMpPlaneType plane) const;
+    TString MotifFilePath(AliMpStationType station, AliMpPlaneType plane, 
                           const TString& motifTypeID) const;
-    TString MotifSpecialFilePath(AliMpPlaneType plane, 
-                          const TString& motifID) const;
-    TString PadPosFilePath(AliMpPlaneType plane, 
-                          const TString& motifTypeID) const;
-    TString BergToGCFilePath() const;
+    TString MotifSpecialFilePath(AliMpStationType station, 
+                          AliMpPlaneType plane, const TString& motifID) const;
+    TString PadPosFilePath(AliMpStationType station, 
+                          AliMpPlaneType plane, const TString& motifTypeID) const;
+    TString BergToGCFilePath(AliMpStationType station) const;
 
     // set methods
     void SetTopPath(const TString& topPath);
@@ -52,20 +57,23 @@ class AliMpFiles : public TObject
     
   private: 
     // methods
-    TString PlaneDataDir(AliMpPlaneType plane) const; 
+    TString PlaneDataDir(AliMpStationType station, AliMpPlaneType plane) const; 
+    TString StationDataDir(AliMpStationType station) const; 
   
     // static data members  
-    static AliMpFiles*   fgInstance;      //this instance
-    static const TString fgkDefaultTop;   //top directory path (default)
-    static const TString fgkDataDir;      //data directory
-    static const TString fgkBendingDir;   //bending plane directory
-    static const TString fgkNonBendingDir;//non-bending plane directory
-    static const TString fgkSector;       //sector data file name
-    static const TString fgkSectorSpecial;//sector special data file name
-    static const TString fgkMotifPrefix;  //motif data file name
+    static AliMpFiles*   fgInstance;       //this instance
+    static const TString fgkDefaultTop;    //top directory path (default)
+    static const TString fgkDataDir;       //data directory
+    static const TString fgkStationDir;    //station directory
+    static const TString fgkBendingDir;    //bending plane directory
+    static const TString fgkNonBendingDir; //non-bending plane directory
+    static const TString fgkSector;        //sector data file name
+    static const TString fgkSectorSpecial; //sector special data file name
+    static const TString fgkSectorSpecial2;//sector special data file name
+    static const TString fgkMotifPrefix;   //motif data file name
     static const TString fgkMotifSpecialPrefix; //special motif data file name 
-    static const TString fgkPadPosPrefix; //pad position data file name
-    static const TString fgkDataExt;      //file extension
+    static const TString fgkPadPosPrefix;  //pad position data file name
+    static const TString fgkDataExt;       //file extension
     static const TString fgkBergToGCFileName; //name of the file with BergToGC mapping
     
     // data members
@@ -80,4 +88,4 @@ class AliMpFiles : public TObject
 inline void AliMpFiles::SetTopPath(const TString& topPath)
 { fTop = topPath; }
 
-#endif //M_FILES_H
+#endif //ALI_MP_FILES_H
