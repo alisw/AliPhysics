@@ -50,13 +50,13 @@ class AliHBTAnalysisStavinskyMixing: public AliHBTAnalysis
      // NEW AOD schema
      Int_t (AliHBTAnalysisStavinskyMixing::*fProcEvent)(AliAOD* aodrec, AliAOD* aodsim);//Pointer to the processing method
 
-     Int_t ProcessSim(AliAOD* /*aodrec*/, AliAOD* aodsim);
-     Int_t ProcessRec(AliAOD* aodrec, AliAOD* /*aodsim*/);
-     Int_t ProcessRecAndSim(AliAOD* aodrec, AliAOD* aodsim);
+     virtual Int_t ProcessSim(AliAOD* /*aodrec*/, AliAOD* aodsim);
+     virtual Int_t ProcessRec(AliAOD* aodrec, AliAOD* /*aodsim*/);
+     virtual Int_t ProcessRecAndSim(AliAOD* aodrec, AliAOD* aodsim);
      
-     Int_t ProcessRecAndSimNonId(AliAOD* aodrec, AliAOD* aodsim);
-     Int_t ProcessSimNonId(AliAOD* /*aodrec*/, AliAOD* aodsim);
-     Int_t ProcessRecNonId(AliAOD* aodrec, AliAOD* /*aodsim*/);
+     virtual Int_t ProcessRecAndSimNonId(AliAOD* aodrec, AliAOD* aodsim);
+     virtual Int_t ProcessSimNonId(AliAOD* /*aodrec*/, AliAOD* aodsim);
+     virtual Int_t ProcessRecNonId(AliAOD* aodrec, AliAOD* /*aodsim*/);
      
 
    private:
