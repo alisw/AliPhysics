@@ -1350,5 +1350,9 @@ void AliL3Hough::StartProcessInThread(Int_t minslice,Int_t maxslice)
 
 Int_t AliL3Hough::WaitForThreadFinish()
 {
+#if ROOT_VERSION_CODE < 262403
   return TThread::Join(fThread->GetId());
+#else
+  return fThread->Join(fThread->GetId());
+#endif
 }
