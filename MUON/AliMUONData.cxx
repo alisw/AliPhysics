@@ -38,45 +38,53 @@
 ClassImp(AliMUONData)
  
 //_____________________________________________________________________________
-AliMUONData::AliMUONData():TNamed()
+  AliMUONData::AliMUONData():
+    TNamed(),
+    fLoader(0x0),
+    fHits(0x0),
+    fDigits(0x0),
+    fSDigits(0x0),
+    fRawClusters(0x0),
+    fGlobalTrigger(0x0),
+    fLocalTrigger(0x0),
+    fRecTracks(0x0),
+    fRecTriggerTracks(0x0),
+    fNhits(0),
+    fNdigits(0x0),
+    fNSdigits(0x0),
+    fNrawclusters(0x0),
+    fNglobaltrigger(0),
+    fNlocaltrigger(0),
+    fNrectracks(0),
+    fNrectriggertracks(0),
+    fSplitLevel(0)
 {
   // Default constructor
-  fLoader        = 0x0;
-  fHits          = 0x0;    // One event in treeH per primary track
-  fDigits        = 0x0;    // One event in treeD per detection plane
-  fSDigits       = 0x0;    // One event in treeS per detection plane
-  fNdigits       = 0x0;
-  fNSdigits      = 0x0;
-  fRawClusters   = 0x0; //One event in TreeR/RawclusterBranch per tracking detection plane
-  fGlobalTrigger = 0x0; //! List of Global Trigger 1st event in TreeR/GlobalTriggerBranch
-  fLocalTrigger  = 0x0;  //! List of Local Trigger, 1st event in TreeR/LocalTriggerBranch
-  fRecTracks     = 0x0;       
-  fRecTriggerTracks     = 0x0;       
-  fSplitLevel    = 0;
-//default constructor
 }
 //_____________________________________________________________________________
 AliMUONData::AliMUONData(AliLoader * loader, const char* name, const char* title):
-  TNamed(name,title)
+  TNamed(name,title),
+    fLoader(loader),
+    fHits(0x0),
+    fDigits(0x0),
+    fSDigits(0x0),
+    fRawClusters(0x0),
+    fGlobalTrigger(0x0),
+    fLocalTrigger(0x0),
+    fRecTracks(0x0),
+    fRecTriggerTracks(0x0),
+    fNhits(0),
+    fNdigits(0x0),
+    fNSdigits(0x0),
+    fNrawclusters(0x0),
+    fNglobaltrigger(0),
+    fNlocaltrigger(0),
+    fNrectracks(0),
+    fNrectriggertracks(0),
+    fSplitLevel(0)
 {
   // Constructor for AliMUONData
-  fLoader        = loader;
-  fHits          = 0x0;    // One event in treeH per primary track
-  fDigits        = 0x0;    // One event in treeD per detection plane
-  fSDigits       = 0x0;    // One event in treeS per detection plane
-  fNdigits       = 0x0;
-  fNSdigits      = 0x0;
-  fRawClusters   = 0x0; //One event in TreeR/RawclusterBranch per tracking detection plane
-  fGlobalTrigger = 0x0; //! List of Global Trigger 1st event in TreeR/GlobalTriggerBranch
-  fLocalTrigger  = 0x0;  //! List of Local Trigger, 1st event in TreeR/LocalTriggerBranch
-  fRecTracks     = 0x0;    
-  fRecTriggerTracks     = 0x0;    
-  fNhits         = 0;
-  fNglobaltrigger =0;
-  fNlocaltrigger = 0;
-  fNrectracks    = 0;  
-  fNrectriggertracks    = 0;  
-  fSplitLevel    = 0;
+
 //   fHits          = new TClonesArray("AliMUONHit",1000);
 //   fNhits         = 0;
 //   fDigits        = new TObjArray(AliMUONConstants::NCh());
@@ -99,7 +107,6 @@ AliMUONData::AliMUONData(AliLoader * loader, const char* name, const char* title
 //   fNrectracks    = 0; // really needed or GetEntriesFast sufficient ????
 
 
-  //default constructor
 }
 //_____________________________________________________________________________
 AliMUONData::AliMUONData(const AliMUONData& rMUONData):TNamed(rMUONData)
@@ -493,7 +500,9 @@ void AliMUONData::MakeBranch(Option_t* option)
     if (fDigits  == 0x0) {
       fDigits  = new TObjArray(AliMUONConstants::NCh());
       for (Int_t iDetectionPlane=0; iDetectionPlane<AliMUONConstants::NCh() ;iDetectionPlane++) {
-	fDigits->AddAt(new TClonesArray("AliMUONDigit",10000),iDetectionPlane); 
+	TClonesArray * tca = new TClonesArray("AliMUONDigit",10000);
+	tca->SetOwner();
+	fDigits->AddAt(tca,iDetectionPlane); 
       }
     }
     if (fNdigits == 0x0) {
@@ -522,7 +531,9 @@ void AliMUONData::MakeBranch(Option_t* option)
     if (fSDigits  == 0x0) {
       fSDigits  = new TObjArray(AliMUONConstants::NCh());
       for (Int_t iDetectionPlane=0; iDetectionPlane<AliMUONConstants::NCh() ;iDetectionPlane++) {
-	fSDigits->AddAt(new TClonesArray("AliMUONDigit",10000),iDetectionPlane); 
+	TClonesArray * tca = new TClonesArray("AliMUONDigit",10000);
+	tca->SetOwner();
+	fSDigits->AddAt(tca,iDetectionPlane); 
       }
     }
     if (fNSdigits == 0x0) {
@@ -552,7 +563,9 @@ void AliMUONData::MakeBranch(Option_t* option)
     if (fRawClusters == 0x0) {
       fRawClusters = new TObjArray(AliMUONConstants::NTrackingCh());
       for (Int_t i=0; i<AliMUONConstants::NTrackingCh();i++) {
-	fRawClusters->AddAt(new TClonesArray("AliMUONRawCluster",1000),i); 
+	TClonesArray * tca = new TClonesArray("AliMUONRawCluster",1000);
+	tca->SetOwner();
+	fRawClusters->AddAt(tca,i); 
       }
     }
 
