@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2003/08/05 16:14:20  morsch
+Some problems with too big fluctuations corrected. (A. de Falco)
+
 Revision 1.2  2003/01/08 10:29:33  morsch
 Path to data file changed.
 
@@ -69,6 +72,14 @@ AliMUONFastTracking* AliMUONFastTracking::Instance()
 
 AliMUONFastTracking::AliMUONFastTracking() 
 {
+  for (Int_t i = 0; i<20;i++) {
+    for (Int_t j = 0; j<20; j++) {
+      for (Int_t k = 0; k<20; k++) {
+	fFitp[i][j][k] = 0x0;
+      }
+    }
+  }
+
     fClusterFinder = kOld; 
     fPrintLevel = 1;  
     // read binning; temporarily put by hand
@@ -253,6 +264,7 @@ void AliMUONFastTracking::GetIpIthetaIphi(Float_t p, Float_t theta, Float_t phi,
     ip           = Int_t (( p - fPmin ) / fDeltaP);
     itheta       = Int_t (( theta - fThetamin ) / fDeltaTheta);
     iphi         = Int_t (( phi - fPhimin ) / fDeltaPhi);
+    
     
     if (ip< 0) 	ip = 0;
     if (ip>= fNbinp) ip = fNbinp-1;
@@ -706,7 +718,7 @@ TF1* AliMUONFastTracking::GetFitP(Int_t ip,Int_t itheta,Int_t iphi) {
   if (!fFitp[ip][itheta][iphi]) { 
     fFitp[ip][itheta][iphi] = new TF1("fit1",FitP,-20.,20.,6);
     fFitp[ip][itheta][iphi]->SetNpx(500);    
-    fFitp[ip][itheta][iphi]->SetParameters(0,0,0,0,0,0);    
+    fFitp[ip][itheta][iphi]->SetParameters(0.,0.,0.,0.,0.,0.);    
   }
   return fFitp[ip][itheta][iphi]; 
 }
