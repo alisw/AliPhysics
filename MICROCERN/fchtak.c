@@ -10,6 +10,7 @@
       return the memory pointer
 */
 #include <stdio.h>
+#include <stdlib.h>
 #include "kerngen/fortchar.h"
 char *fchtak(ftext,lgtext)
 #if defined(CERNLIB_QMCRY)
@@ -20,14 +21,14 @@ char *fchtak(ftext,lgtext)
 #endif
       int  lgtext;
 {
-      char *malloc();
+  /*      char *malloc(); */
       char *ptalc, *ptuse;
       char *utext;
       int  nalc;
       int  ntx, jcol;
 
       nalc  = lgtext + 8;
-      ptalc = malloc (nalc);
+      ptalc = (char*)malloc (nalc);
       if (ptalc == NULL)     goto exit;
 #if defined(CERNLIB_QMCRY)
       utext = _fcdtocp(ftext);
