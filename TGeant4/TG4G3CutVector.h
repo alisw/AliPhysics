@@ -39,6 +39,7 @@ class TG4G3CutVector
     void SetDeltaRaysOn(G4bool value);
     
     // methods
+    G4String Format() const;
     void Print() const;
 
     // get methods

@@ -48,6 +48,7 @@ class TG4G3ControlVector
     G4bool Update(const TG4G3ControlVector& vector);
     
     // methods
+    G4String Format() const;
     void Print() const;
     
     // get methods
