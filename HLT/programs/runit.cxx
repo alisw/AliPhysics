@@ -2,6 +2,12 @@
 
 // Author: Constantin Loizides <loizides@ikf.physik.uni-frankfurt.de>
 
+/**
+ Example program how to run the "standalone" clusterfinder.
+
+ Important: give patch=-1 for one-patch slices.
+*/
+
 
 #include <stream.h>
 #include <libgen.h>
@@ -14,13 +20,7 @@
 #include "AliL3Logging.h"
 #include "AliL3Logger.h"
 
-#define MAXCLUSTER 15000
-
-/**
- Example program how to run the "standalone" clusterfinder.
-
- Important: give patch=-1 for one-patch slices.
-*/
+#define MAXCLUSTER 25000
 
 int main(int argc,char **argv)
 {
@@ -28,6 +28,7 @@ int main(int argc,char **argv)
   Int_t patch=0;
   Int_t fm=4;
   Int_t th=10;
+  Bool_t de=kFALSE;
 
   AliL3Logger l;
   l.Set(AliL3Logger::kAll);
@@ -36,7 +37,7 @@ int main(int argc,char **argv)
   //l.UseStream();
 
   if(argc<2){
-    cout<<"Usage: runit datafile [slice] [patch] [match] [threshold]"<<endl;
+    cout<<"Usage: runit datafile [slice] [patch] [match] [threshold] [deconv]"<<endl;
     return -1;
   }
   if (argc>2) {
@@ -51,11 +52,14 @@ int main(int argc,char **argv)
   if (argc>5) {
     th=atoi(argv[5]);
   }
+  if (argc>6) {
+    de=kTRUE;
+  }
 
   AliL3DigitRowData *digits = 0;
   unsigned int nrows=0;
   
-  //Storing all specific quantities, needed by the Cluster Finder.
+  //reading transformer init file
   Char_t fname[1024];
   strcpy(fname,argv[1]);
   AliL3Transform::Init(dirname(fname)); 
@@ -94,10 +98,8 @@ int main(int argc,char **argv)
   //cf.SetZError(0.3);
   cf.SetSTDOutput(kTRUE);
   cf.SetCalcErr(kTRUE);
+  cf.SetDeconv(de); //standard is false
 
-  //Switch off deconvolution:
-  cf.SetDeconv(kFALSE);
-  
   //Allocate memory to store found spacepoints 
   AliL3MemHandler fpoints;
   AliL3SpacePointData *points=(AliL3SpacePointData*)fpoints.Allocate(MAXCLUSTER*sizeof(AliL3SpacePointData));
