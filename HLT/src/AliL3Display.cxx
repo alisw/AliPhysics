@@ -39,7 +39,7 @@ AliL3Display::AliL3Display(Int_t *slice)
 {
   //Ctor. Specify which slices you want to look at.
 
-  TFile *file = new TFile("alice.geom");
+  TFile *file = new TFile("/prog/alice/data/GEO/alice.geom");
   if(!file) printf("NO FILE\n");
   if(file->IsOpen())
     LOG(AliL3Log::kError,"AliL3Display::AliL3Display","File Open")
