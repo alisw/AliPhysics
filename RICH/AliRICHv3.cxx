@@ -465,6 +465,8 @@ void AliRICHv3::CreateGeometry()
    
    gMC->Gspos("RICH",1,"ALIC",vector.X(),vector.Y(),vector.Z(),idrotm[1000], "ONLY");           
    Chamber(0).SetChamberTransform(vector.X(),vector.Y(),vector.Z(),pRotMatrix);
+  if(GetDebug()) Info("CreateGeometry 0","%8.3f %8.3f %8.3f %8.3f %8.3f %8.3f",rr[0],rr[1],rr[2],rr[3],rr[4],rr[5]);
+  if(GetDebug()) Info("CreateGeometry 0","x=%8.3f y=%8.3f z=%8.3f",vector.X(),vector.Y(),vector.Z());   
 // Chamber 1   
    pRotMatrix = new TRotMatrix("rot994","rot994", 0., 0., 0.,0.,0.,0.);
    r   = pRotMatrix->SetAngles(90., -dBeta, 90., 90.-dBeta,  0., 0.);
@@ -476,7 +478,8 @@ void AliRICHv3::CreateGeometry()
    
    gMC->Gspos("RICH",2,"ALIC",vector.X(),vector.Y(),vector.Z(),idrotm[1001], "ONLY");           
    Chamber(1).SetChamberTransform(vector.X(),vector.Y(),vector.Z(),pRotMatrix);
-
+  if(GetDebug()) Info("CreateGeometry 1","%8.3f %8.3f %8.3f %8.3f %8.3f %8.3f",rr[0],rr[1],rr[2],rr[3],rr[4],rr[5]);
+  if(GetDebug()) Info("CreateGeometry 1","x=%8.3f y=%8.3f z=%8.3f",vector.X(),vector.Y(),vector.Z());
 // Chamber 2   the top one with no Alpha-Beta rotation
    pRotMatrix = new TRotMatrix("rot995","rot995", 0., 0., 0.,0.,0.,0.);
    r   = pRotMatrix->SetAngles(90., 0., 90., 90.,  0., 0.);
@@ -487,6 +490,8 @@ void AliRICHv3::CreateGeometry()
    vector.RotateZ(-dRotAngleRad);
    gMC->Gspos("RICH",3,"ALIC",vector.X(),vector.Y(),vector.Z(),idrotm[1002], "ONLY");           
    Chamber(2).SetChamberTransform(vector.X(),vector.Y(),vector.Z(),pRotMatrix);
+  if(GetDebug()) Info("CreateGeometry 2","%8.3f %8.3f %8.3f %8.3f %8.3f %8.3f",rr[0],rr[1],rr[2],rr[3],rr[4],rr[5]);
+  if(GetDebug()) Info("CreateGeometry 2","x=%8.3f y=%8.3f z=%8.3f",vector.X(),vector.Y(),vector.Z());   
 // Chamber 3
    pRotMatrix = new TRotMatrix("rot996","rot996", 0., 0., 0.,0.,0.,0.);
    r   = pRotMatrix->SetAngles(90., dBeta, 90., 90.+dBeta,  0., 0.);
@@ -498,7 +503,8 @@ void AliRICHv3::CreateGeometry()
    
    gMC->Gspos("RICH",4,"ALIC",vector.X(),vector.Y(),vector.Z(),idrotm[1003], "ONLY");           
    Chamber(3).SetChamberTransform(vector.X(),vector.Y(),vector.Z(),pRotMatrix);
-
+  if(GetDebug()) Info("CreateGeometry 3","%8.3f %8.3f %8.3f %8.3f %8.3f %8.3f",rr[0],rr[1],rr[2],rr[3],rr[4],rr[5]);
+  if(GetDebug()) Info("CreateGeometry 3","x=%8.3f y=%8.3f z=%8.3f",vector.X(),vector.Y(),vector.Z());
 // Chamber 4   
    pRotMatrix = new TRotMatrix("rot997","rot997", 0., 0., 0.,0.,0.,0.);
    r   = pRotMatrix->SetAngles(90., 360.-dBeta, 108.2, 90.-dBeta,  18.2, 90.-dBeta);
@@ -510,6 +516,8 @@ void AliRICHv3::CreateGeometry()
    
    gMC->Gspos("RICH",5,"ALIC",vector.X(),vector.Y(),vector.Z(),idrotm[1004], "ONLY");
    Chamber(4).SetChamberTransform(vector.X(),vector.Y(),vector.Z(),pRotMatrix);
+  if(GetDebug()) Info("CreateGeometry 4","%8.3f %8.3f %8.3f %8.3f %8.3f %8.3f",rr[0],rr[1],rr[2],rr[3],rr[4],rr[5]);
+  if(GetDebug()) Info("CreateGeometry 4","x=%8.3f y=%8.3f z=%8.3f",vector.X(),vector.Y(),vector.Z());
 // Chamber 5   
    pRotMatrix = new TRotMatrix("rot998","rot998", 0., 0., 0.,0.,0.,0.);
    r   = pRotMatrix->SetAngles(90., 0., 90.+dAlpha, 90.,  dAlpha, 90.);
@@ -521,6 +529,8 @@ void AliRICHv3::CreateGeometry()
       
    gMC->Gspos("RICH",6,"ALIC",vector.X(),vector.Y(),vector.Z(),idrotm[1005], "ONLY");           
    Chamber(5).SetChamberTransform(vector.X(),vector.Y(),vector.Z(),pRotMatrix);
+  if(GetDebug()) Info("CreateGeometry 5","%8.3f %8.3f %8.3f %8.3f %8.3f %8.3f",rr[0],rr[1],rr[2],rr[3],rr[4],rr[5]);
+  if(GetDebug()) Info("CreateGeometry 5","x=%8.3f y=%8.3f z=%8.3f",vector.X(),vector.Y(),vector.Z());
 // Chamber 6          
    pRotMatrix = new TRotMatrix("rot999","rot999", 0., 0., 0.,0.,0.,0.);
    r   = pRotMatrix->SetAngles(90., dBeta, 108.2, 90.+dBeta,  18.2, 90.+dBeta);
@@ -532,21 +542,18 @@ void AliRICHv3::CreateGeometry()
       
    gMC->Gspos("RICH",7,"ALIC",vector.X(),vector.Y(),vector.Z(),idrotm[1006], "ONLY");
    Chamber(6).SetChamberTransform(vector.X(),vector.Y(),vector.Z(),pRotMatrix);
+  if(GetDebug()) Info("CreateGeometry 6","%8.3f %8.3f %8.3f %8.3f %8.3f %8.3f",rr[0],rr[1],rr[2],rr[3],rr[4],rr[5]);
+  if(GetDebug()) Info("CreateGeometry 6","x=%8.3f y=%8.3f z=%8.3f",vector.X(),vector.Y(),vector.Z());
       
 }//void AliRICHv3::CreateGeometry()
-
-
-
-
+//______________________________________________________________________________
 void AliRICHv3::Init()
 {
 // Makes nothing for a while   
    if(IsDebugStart()) cout<<ClassName()<<"::Init()>\n";
     
 }
-
-
-
+//______________________________________________________________________________
 void AliRICHv3::BuildGeometry()    
 {                                      
 // Provides geometry structure for event display (ROOT TNode tree)
@@ -750,8 +757,7 @@ void AliRICHv3::BuildGeometry()
     fNodes->Add(node); 
     
 }//AliRICHv3::BuildGeometry()
-
-
+//______________________________________________________________________________
 Double_t* AliRICHv3::RotateXY(const Double_t* r, Double_t a)
 {
     // Rotatation in xy-plane
@@ -775,4 +781,4 @@ Double_t* AliRICHv3::RotateXY(const Double_t* r, Double_t a)
 	    rr[k+1]  = TMath::ATan2(m[j+1], m[j]) * kRaddeg;
     }
     return rr;
-}
+}//Double_t* AliRICHv3::RotateXY(const Double_t* r, Double_t a)
