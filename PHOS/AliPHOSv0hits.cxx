@@ -82,15 +82,15 @@ AliPHOSv0hits::~AliPHOSv0hits()
 }
 
 //____________________________________________________________________________
-void AliPHOSv0hits::AddHit(Int_t primary, Int_t Id, Float_t * hits)
+void AliPHOSv0hits::AddHit(Int_t tracknumber, Int_t Id, Float_t * hits)
 {
   // Add a hit to the hit list.
   // In this version of AliPHOSv0, a PHOS hit is real geant 
   // hits in a single crystal or in a single PPSD gas cell
 
-  //  cout << "Primary particle is " << primary << endl;
-  //cout << "Vol Id is " << Id << endl;
-  //cout << "hits is " << hits[0] << "  " << hits[1] << "  " << hits[2] << "   " << hits[3] <<endl;
+  cout << "Tracknumber is " << tracknumber << endl;
+  cout << "Vol Id is " << Id << endl;
+  cout << "hits is " << hits[0] << "  " << hits[1] << "  " << hits[2] << "   " << hits[3] <<endl;
 
   //  cout << " Adding a hit number " << fNhits << endl ;
 
@@ -99,7 +99,7 @@ void AliPHOSv0hits::AddHit(Int_t primary, Int_t Id, Float_t * hits)
 
   //  fHits->Print("");
 
-  newHit = new AliPHOSHit(primary, Id, hits) ;
+  newHit = new AliPHOSHit(tracknumber, Id, hits) ;
 
   // We DO want to save in TreeH the raw hits 
   //  TClonesArray &lhits = *fHits;
@@ -188,5 +188,73 @@ void AliPHOSv0hits::FinishEvent()
     newdigit->SetIndexInList(i) ; 
   }
 
+}
+
+void AliPHOSv0hits::StepManager(void)
+{
+  // Accumulates hits as long as the track stays in a single crystal or PPSD gas Cell
+
+  Int_t          relid[4] ;      // (box, layer, row, column) indices
+  Float_t        xyze[4] ;       // position wrt MRS and energy deposited
+  TLorentzVector pos ;
+  Int_t copy ;
+
+  Int_t tracknumber =  gAlice->CurrentTrack() ; 
+
+  TString name = fGeom->GetName() ; 
+  if ( name == "GPS2" ) { // the CPV is a PPSD
+    if( gMC->CurrentVolID(copy) == gMC->VolId("GCEL") ) // We are inside a gas cell 
+    {
+      gMC->TrackPosition(pos) ;
+      xyze[0] = pos[0] ;
+      xyze[1] = pos[1] ;
+      xyze[2] = pos[2] ;
+      xyze[3] = gMC->Edep() ; 
+
+      if ( xyze[3] != 0 ) { // there is deposited energy 
+       	gMC->CurrentVolOffID(5, relid[0]) ;  // get the PHOS Module number
+       	gMC->CurrentVolOffID(3, relid[1]) ;  // get the Micromegas Module number 
+      // 1-> Geom->GetNumberOfModulesPhi() *  fGeom->GetNumberOfModulesZ() upper                         
+      //  >  fGeom->GetNumberOfModulesPhi()  *  fGeom->GetNumberOfModulesZ() lower
+       	gMC->CurrentVolOffID(1, relid[2]) ;  // get the row number of the cell
+        gMC->CurrentVolID(relid[3]) ;        // get the column number 
+
+	// get the absolute Id number
+
+	Int_t absid ; 
+       	fGeom->RelToAbsNumbering(relid, absid) ; 
+
+	// add current hit to the hit list      
+	AddHit(tracknumber, absid, xyze);
+
+      } // there is deposited energy 
+     } // We are inside the gas of the CPV  
+   } // GPS2 configuration
+  
+   if(gMC->CurrentVolID(copy) == gMC->VolId("PXTL") )  //  We are inside a PBWO crystal
+     {
+       gMC->TrackPosition(pos) ;
+       xyze[0] = pos[0] ;
+       xyze[1] = pos[1] ;
+       xyze[2] = pos[2] ;
+       xyze[3] = gMC->Edep() ;
+
+       if ( xyze[3] != 0 ) {
+          gMC->CurrentVolOffID(10, relid[0]) ; // get the PHOS module number ;
+          relid[1] = 0   ;                    // means PBW04
+          gMC->CurrentVolOffID(4, relid[2]) ; // get the row number inside the module
+          gMC->CurrentVolOffID(3, relid[3]) ; // get the cell number inside the module
+
+      // get the absolute Id number
+
+          Int_t absid ; 
+          fGeom->RelToAbsNumbering(relid, absid) ; 
+ 
+      // add current hit to the hit list
+
+          AddHit(tracknumber, absid, xyze);
+    
+       } // there is deposited energy
+    } // we are inside a PHOS Xtal
 }
 
