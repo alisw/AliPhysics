@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2000/07/10 20:57:39  hristov
+Update of TPC code and macros by M.Kowalski
+
 Revision 1.22  2000/06/30 12:07:50  kowal2
 Updated from the TPC-PreRelease branch
 
@@ -2104,14 +2107,16 @@ void AliTPCv2::StepManager()
       hits[3]=0.; // this hit has no energy loss
       new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
 
-      gMC->TrackPosition(p);
-      hits[0]=p[0];
-      hits[1]=p[1];
-      hits[2]=p[2];
-      hits[3]=0.; // this hit has no energy loss
-      new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+    }
 
-    } 
+     gMC->TrackPosition(p);
+     hits[0]=p[0];
+     hits[1]=p[1];
+     hits[2]=p[2];
+     hits[3]=0.; // this hit has no energy loss
+     new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+
+    
   }
   else return;
     
