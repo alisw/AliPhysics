@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2001/11/14 10:50:45  cblume
+Changes in digits IO. Add merging of summable digits
+
 Revision 1.13  2001/05/28 17:07:58  hristov
 Last minute changes; ExB correction in AliTRDclusterizerV1; taking into account of material in G10 TEC frames and material between TEC planes (C.Blume,S.Sedykh)
 
@@ -261,15 +264,14 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   // Half of ampl.region
   const Float_t kAmWidth = AliTRDgeometry::AmThick()/2.; 
 
-  AliTRDdigitizer *digitizer = (AliTRDdigitizer*) fInputFile->Get("digitizer");
-  printf("AliTRDclusterizerV1::MakeCluster -- ");
-  printf("Got digitizer\n");
+  AliTRDdigitizer *digitizer = (AliTRDdigitizer*) fInputFile->Get("TRDdigitizer");
   Float_t omegaTau = digitizer->GetOmegaTau();
-  printf("AliTRDclusterizerV1::MakeCluster -- ");
-  printf("OmegaTau = %f \n",omegaTau);
- 
-  printf("AliTRDclusterizerV1::MakeCluster -- ");
-  printf("Start creating clusters.\n");
+  if (fVerbose > 0) {
+    printf("AliTRDclusterizerV1::MakeCluster -- ");
+    printf("OmegaTau = %f \n",omegaTau);
+    printf("AliTRDclusterizerV1::MakeCluster -- ");
+    printf("Start creating clusters.\n");
+  } 
 
   AliTRDdataArrayI *digits;
   AliTRDdataArrayI *track0;
@@ -346,9 +348,11 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
         Int_t nClusters5pad  = 0;
         Int_t nClustersLarge = 0;
 
-        printf("AliTRDclusterizerV1::MakeCluster -- ");
-        printf("Analyzing chamber %d, plane %d, sector %d.\n"
-              ,icham,iplan,isect);
+        if (fVerbose > 0) {
+          printf("AliTRDclusterizerV1::MakeCluster -- ");
+          printf("Analyzing chamber %d, plane %d, sector %d.\n"
+                ,icham,iplan,isect);
+	}
 
         Int_t nRowMax     = geo->GetRowMax(iplan,icham,isect);
         Int_t nColMax     = geo->GetColMax(iplan);
@@ -556,7 +560,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                   clusterPads[1]         = clusterPads[1] - deltaY;
                 }
                                        
-                if (fVerbose) {
+                if (fVerbose > 1) {
                   printf("-----------------------------------------------------------\n");
                   printf("Create cluster no. %d\n",nClusters);
                   printf("Position: row = %f, col = %f, time = %f\n",clusterPads[0]
@@ -602,21 +606,25 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 	WriteClusters(idet);
 	fTRD->ResetRecPoints();
 
-        printf("AliTRDclusterizerV1::MakeCluster -- ");
-        printf("Found %d clusters in total.\n"
-              ,nClusters);
-        printf("                                    2pad:  %d\n",nClusters2pad);
-        printf("                                    3pad:  %d\n",nClusters3pad);
-        printf("                                    4pad:  %d\n",nClusters4pad);
-        printf("                                    5pad:  %d\n",nClusters5pad);
-        printf("                                    Large: %d\n",nClustersLarge);
+        if (fVerbose > 0) {
+          printf("AliTRDclusterizerV1::MakeCluster -- ");
+          printf("Found %d clusters in total.\n"
+                ,nClusters);
+          printf("                                    2pad:  %d\n",nClusters2pad);
+          printf("                                    3pad:  %d\n",nClusters3pad);
+          printf("                                    4pad:  %d\n",nClusters4pad);
+          printf("                                    5pad:  %d\n",nClusters5pad);
+          printf("                                    Large: %d\n",nClustersLarge);
+	}
 
       }    
     }      
   }        
 
-  printf("AliTRDclusterizerV1::MakeCluster -- ");
-  printf("Done.\n");
+  if (fVerbose > 0) {
+    printf("AliTRDclusterizerV1::MakeCluster -- ");
+    printf("Done.\n");
+  }
 
   return kTRUE;
 
