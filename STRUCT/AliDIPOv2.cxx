@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.14  2000/12/21 16:37:23  morsch
+Use Al for coil and cable material. The materials used before cause the dipole to
+have hydrogene on the outer surface leading to unrealistic gamma rates due to
+n-capture.
+
 Revision 1.13  2000/10/02 21:28:15  fca
 Removal of useless dependecies via forward declarations
 
@@ -627,7 +632,7 @@ void AliDIPOv2::CreateGeometry()
   gMC->Gspos("DY2 ", 2, "DDIP", -dx, 0.0,  dz, idrotm[1810], "ONLY");
 
   dz=975.;
-  gMC->Gspos("DDIP", 1, "ALIC", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("DDIP", 1, "ALIC", 0., 0., dz, 0, "MANY");
 
   gMC->Gsatt("DDIP", "SEEN", 0);
 //  gMC->Gsatt("DC21", "SEEN", 0);
