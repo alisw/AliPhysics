@@ -311,7 +311,7 @@ AliITSsimulationSDD::~AliITSsimulationSDD() {
 void AliITSsimulationSDD::DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
   // create maps to build the lists of tracks
   // for each digit
-    cout << "Module: " << md << endl;
+    //cout << "Module: " << md << endl;
     fModule=md;
     fEvent=ev;
 
