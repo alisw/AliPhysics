@@ -9,6 +9,8 @@
 #include "AliMC.h"
 #include "AliMCProcess.h"
 
+#include <TArrayI.h>
+
 class TG4VRunConfiguration;
 class TG4GeometryManager;
 class TG4PhysicsManager;
@@ -89,6 +91,7 @@ class TGeant4: public AliMC
     virtual Int_t VolId(const Text_t* volName) const;
     virtual const char* VolName(Int_t id) const;
     virtual Int_t NofVolumes() const;
+    virtual Int_t VolId2Mate(Int_t id) const;
 
     //
     // methods for physics management
@@ -169,7 +172,8 @@ class TGeant4: public AliMC
     virtual Int_t NSecondaries() const;
     virtual void  GetSecondary(Int_t isec, Int_t& particleId, 
                     TLorentzVector& position, TLorentzVector& momentum);
-    virtual AliMCProcess ProdProcess() const; 
+    virtual AliMCProcess ProdProcess(Int_t isec) const; 
+    virtual Int_t StepProcesses(TArrayI &proc) const;
 
 	// random number generator	    
     virtual void Rndm(Float_t* array, const Int_t size) const;    
