@@ -114,7 +114,11 @@ const {
   // Get the check point #iCheckPt
   //
   TVectorD *coordVector =(TVectorD *)fPointArray.UncheckedAt(iCheckPt);
+#if ROOT_VERSION_CODE < ROOT_VERSION(4,0,0)
+  CopyFrom(coord, coordVector->GetElements());
+#else
   CopyFrom(coord, coordVector->GetMatrixArray());
+#endif
   return kTRUE;
 };
 
@@ -126,7 +130,11 @@ const {
   //
 
   TVectorD *coordVector =(TVectorD *)fPointArray.UncheckedAt(iCheckPt);
+#if ROOT_VERSION_CODE < ROOT_VERSION(4,0,0)
+  CopyFrom(coord, coordVector->GetElements());
+#else
   CopyFrom(coord, coordVector->GetMatrixArray());
+#endif
   return kTRUE;
 };
 

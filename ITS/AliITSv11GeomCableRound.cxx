@@ -90,7 +90,11 @@ Int_t AliITSv11GeomCableRound::GetPoint( Int_t iCheckPt, Double_t *coord)
   const {
   // Get check point #iCheckPt
   TVectorD *coordVector =(TVectorD *)fPointArray.UncheckedAt(2*iCheckPt);
+#if ROOT_VERSION_CODE < ROOT_VERSION(4,0,0)
+  CopyFrom(coord, coordVector->GetElements());
+#else
   CopyFrom(coord, coordVector->GetMatrixArray());
+#endif
   return kTRUE;
 };
 
@@ -102,7 +106,11 @@ Int_t AliITSv11GeomCableRound::GetVect( Int_t iCheckPt, Double_t *coord)
   //
 
   TVectorD *coordVector =(TVectorD *)fPointArray.UncheckedAt(2*iCheckPt+1);
+#if ROOT_VERSION_CODE < ROOT_VERSION(4,0,0)
+  CopyFrom(coord, coordVector->GetElements());
+#else
   CopyFrom(coord, coordVector->GetMatrixArray());
+#endif
   return kTRUE;
 };
 //________________________________________________________________________
@@ -140,7 +148,11 @@ void AliITSv11GeomCableRound::PrintCheckPoints() const {
     TVectorD *coordVector = (TVectorD *)fPointArray.UncheckedAt(i*2);
     //TVectorD *vectVector = (TVectorD *)fPointArray.UncheckedAt(i*2+1);
     Double_t coord[3];
+#if ROOT_VERSION_CODE < ROOT_VERSION(4,0,0)
+    CopyFrom(coord, coordVector->GetElements());
+#else
     CopyFrom(coord, coordVector->GetMatrixArray());
+#endif
 
     printf("   ( %.2f, %.2f, %.2f )\n", coord[0], coord[1], coord[2]);
   };
