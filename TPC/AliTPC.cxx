@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  1999/10/08 06:26:53  fca
+Removed ClustersIndex - not used anymore
+
 Revision 1.14  1999/09/29 09:24:33  fca
 Introduction of the Copyright and cvs Log
 
@@ -1865,16 +1868,18 @@ void AliTPC::GetList(Float_t label,Int_t np,TMatrix *m,Int_t *IndexRange,
     for(Int_t ip=IndexRange[0];ip<IndexRange[1]+1;ip++){
 
 
+        // accept only the contribution larger than 500 electrons (1/2 s_noise)
+
+        if(signal(ip,it)<500.) continue; 
+
+
         Int_t GlobalIndex = it*np+ip; // GlobalIndex starts from 0!
         
         if(!pList[GlobalIndex]){
         
           // 
 	  // Create new list (6 elements - 3 signals and 3 labels),
-	  // but only if the signal is > 0. 
 	  //
-
-          if(signal(ip,it)>0.){
 
           pList[GlobalIndex] = new Float_t [6];
 
@@ -1889,7 +1894,7 @@ void AliTPC::GetList(Float_t label,Int_t np,TMatrix *m,Int_t *IndexRange,
 
 
           *pList[GlobalIndex] = label;
-          *(pList[GlobalIndex]+3) = signal(ip,it);}
+          *(pList[GlobalIndex]+3) = signal(ip,it);
         }
         else{
 
