@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/10/15 23:40:01  cblume
+Remove AliTRDconst
+
 Revision 1.2  2000/10/06 16:49:46  cblume
 Made Getters const
 
@@ -124,8 +127,10 @@ Double_t AliTRDtrackingSector::GetMaxY(Int_t l) const
 
 Int_t AliTRDtrackingSector::GetTimeBinNumber(Double_t x) const
 {
-  Float_t r_out = fGeom->GetTime0(AliTRDgeometry::Nplan()-1) 
-                + AliTRDgeometry::DrThick(); 
+  //Float_t r_out = fGeom->GetTime0(AliTRDgeometry::Nplan()-1) 
+  //              + AliTRDgeometry::DrThick(); 
+  // Changed to new time0 (CBL)
+  Float_t r_out = fGeom->GetTime0(AliTRDgeometry::Nplan()-1); 
   Float_t r_in = fGeom->GetTime0(0);
   //  cerr<<"GetTimeBinNumber: r_in,r_out = "<<r_in<<","<<r_out<<endl;
 
