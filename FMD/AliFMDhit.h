@@ -95,7 +95,7 @@ public:
   Float_t Py();
   Float_t Pz();
   Float_t Time();
-  ClassDef(AliFMDhit,2)  //Hits for detector FMD
+  ClassDef(AliFMDhit,1)  //Hits for detector FMD
 };
 inline Int_t AliFMDhit::Volume(){return fVolume;} 
 inline Int_t AliFMDhit::NumberOfSector(){return fNumberOfSector;} 

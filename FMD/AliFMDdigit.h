@@ -33,7 +33,7 @@ public:
   Int_t Charge();
   Int_t ADCsignal();
   
-  ClassDef(AliFMDdigit,2)     // Real data digit object for set:ITS
+  ClassDef(AliFMDdigit,1)     // Real data digit object for set:ITS
 };
 inline Int_t AliFMDdigit::Volume(){return fNumOfDet;}
 inline Int_t AliFMDdigit::NumberOfSector() {return fNumOfSector;} 

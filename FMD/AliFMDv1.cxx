@@ -92,9 +92,10 @@ void AliFMDv1::CreateGeometry()
   char name[5];
 
   Float_t rin[6], rout[6],zpos;
-  Float_t etain[6]= {3.3, 2.0, 3.3, 2.0, 4.7, 5.5};
-  Float_t etaout[6]={2.0, 1.6, 2.0, 1.6, 3.6, 4.5};
-  Float_t z[6]={64., 85., -64., -85., -270., -630};
+  Float_t etain[6]= {3.3, 2.0, 3.3, 2.0, 4.5, 5.5};
+  Float_t etaout[6]={2.0, 1.6, 2.0, 1.6, 3.3, 4.5};
+  //  Float_t z[6]={64., 85., -64., -85., -270., -630};
+  Float_t z[6]={64., 85., -64., -85., -240., -630};
   Float_t zDet=0.04;
   Float_t zElectronic=0.75;
   Float_t zSupport=1.;
@@ -109,14 +110,13 @@ void AliFMDv1::CreateGeometry()
   gMC->Gsvolu("GEL ","TUBE", idtmed[4], par, 0);
   gMC->Gsvolu("GSUP","TUBE", idtmed[2], par, 0);
 
-  for (ifmd =0; ifmd < 4; ifmd++){
+  for (ifmd =0; ifmd < 5; ifmd++){
 
     sprintf(name,"FMD%d",ifmd);
-    if(fDebug) 
-      printf("%s: %s",ClassName(),name);
+    printf(name);
     
     zfmd=TMath::Abs(z[ifmd]);
-    if(fDebug) printf("zfmd %f z[ifmd] %f",zfmd,z[ifmd]);
+    printf("zfmd %f z[ifmd] %f",zfmd,z[ifmd]);
     AliFMD::Eta2Radius(etain[ifmd],zfmd,&rin[ifmd]);
     AliFMD::Eta2Radius(etaout[ifmd],zfmd,&rout[ifmd]);
     
@@ -125,7 +125,7 @@ void AliFMDv1::CreateGeometry()
     par[2]=zFMD/2;
     gMC->Gsvolu(name,"TUBE", idtmed[3], par, 3);
     
-    if(fDebug) printf ("rin %f rout %f ZFMD %f\n",par[0],par[1],z[ifmd]);
+    printf ("rin %f rout %f ZFMD %f\n",par[0],par[1],z[ifmd]);
     if (z[ifmd] < 0){  
       gMC->Gspos(name,1,"ALIC",0,0,z[ifmd],0, "ONLY");}
     else { 
@@ -228,10 +228,10 @@ void AliFMDv1::Init()
 {
 // Initialises version 0 of the Forward Multiplicity Detector
 //
-  AliMC* gMC=AliMC::GetMC();
-  AliFMD::Init();
-  fIdSens1=gMC->VolId("GRIN");
-  if(fDebug) printf("%s: *** FMD version 1 initialized ***\n",ClassName());
+AliMC* gMC=AliMC::GetMC();
+AliFMD::Init();
+fIdSens1=gMC->VolId("GRIN");
+printf("*** FMD version 1 initialized ***\n");
 }
 
 //-------------------------------------------------------------------
@@ -270,10 +270,12 @@ void AliFMDv1::StepManager()
 	   vol[1]=copy1;
 	   gMC->CurrentVolOffID(2,copy2);
 	   vol[0]=copy2;
+	   //	   printf("vol0 %d vol1 %d vol2 %d\n",vol[0],vol[1],vol[2]); 
 	   gMC->TrackPosition(pos);
 	   hits[0]=pos[0];
 	   hits[1]=pos[1];
 	   hits[2]=pos[2];
+	   //	   printf(" Zpos %f \n",hits[2]);
 	   gMC->TrackMomentum(mom);
 	   hits[3]=mom[0];
 	   hits[4]=mom[1];
@@ -299,6 +301,17 @@ void AliFMDv1::StepManager()
 	 } // IsTrackExiting()
      }
   }
+//--------------------------------------------------------------------------
+
+void AliFMDv1::Response( Float_t Edep)
+{
+  Float_t I=1.664*0.04*2.33/22400; // = 0.69e-6;
+  Float_t chargeOnly=Edep/I;
+  //Add noise ~500electrons
+  Int_t charge=500;
+  if (Edep>0)
+     charge=Int_t(gRandom->Gaus(chargeOnly,500));	
+ }   
 
 
 

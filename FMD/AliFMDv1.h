@@ -8,7 +8,6 @@
 ////////////////////////////////////////////////
  
 #include "AliFMD.h"
-#include "AliFMDSDigitizer.h"
  
 class AliFMDv1 : public AliFMD {
   
@@ -22,16 +21,19 @@ public:
   virtual void   Init();
   virtual Int_t  IsVersion() const {return 0;}
   virtual void   StepManager();
+  //  virtual void Hit2Digits(Int_t bgrEvent, Option_t *opt1=" ",
+  // 	Option_t *opt2=" ",Text_t *name=" "); // hit to digit for v1 :test  
+ virtual void  Response( Float_t Edep);
+//private:
+ //Int_t fCharge; 
+
 
 protected:
    Int_t fIdSens1; // Sensetive volume  in FMD
    
 // Background event for event mixing
-   Text_t *fFileName;           // ! File with background hits
-   TTree *fTrH1;                // Hits Tree for background event
-   TClonesArray *fHits2;        // List of hits for one track only
   
-   ClassDef(AliFMDv1,2)  //Class for FMD version 0
+  ClassDef(AliFMDv1,2)  //Class for FMD version 0
 };
 
 #endif

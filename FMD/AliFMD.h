@@ -9,9 +9,11 @@
  
 #include "AliDetector.h"
 #include "TString.h"
+#include "AliFMDMerger.h" 
  
  class TFile;
  class TTree;
+ class AliFMDMerger;
  class AliFMD : public AliDetector {
  
 public:
@@ -34,13 +36,24 @@ public:
   virtual void   StepManager() {}
   void  Eta2Radius(Float_t, Float_t, Float_t*);
   void Hits2SDigits();//
+  void Digits2Reco(); 
    // Digitisation
   TClonesArray *SDigits() const {return fSDigits;}
 //  virtual void   SDigits2Digits();
-	
+  virtual void   SDigits2Digits();
+  virtual void   SetMerger(AliFMDMerger* merger);
+  virtual AliFMDMerger* Merger();
+  TClonesArray *ReconParticles() const {return fReconParticles;}   
+  Int_t   fNevents ;        // Number of events to digitize
+
  protected:
   Int_t fIdSens1;     //Si sensetive volume
+  AliFMDMerger *fMerger;   // ! pointer to merger
   TClonesArray *fSDigits      ; // List of summable digits
-  ClassDef(AliFMD,2)  //Class for the FMD detector
+  TClonesArray *fReconParticles;
+
+ ClassDef(AliFMD,3)  //Class for the FMD detector
 };
 #endif // AliFMD_H
+
+

@@ -9,8 +9,7 @@ PACKAGE = FMD
 
 # C++ sources
 
-SRCS          = AliFMD.cxx AliFMDv0.cxx AliFMDv1.cxx AliFMDhit.cxx\
-                AliFMDdigit.cxx AliFMDSDigitizer.cxx
+SRCS          = AliFMD.cxx AliFMDv0.cxx AliFMDv1.cxx AliFMDhit.cxx AliFMDdigit.cxx AliFMDMerger.cxx AliFMDReconstruction.cxx AliFMDReconstParticles.cxx
 
 # C++ Headers
 
@@ -50,6 +49,9 @@ SLIBRARY	= $(LIBDIR)/libFMD.$(SL)
 ALIBRARY	= $(LIBDIR)/libFMD.a
 
 default:	$(SLIBRARY)
+
+tst:		Hit2Digits.cxx 
+	g++ -g $(CXXFLAGS) $(SLIBRARY) Hit2Digits.cxx $(ROOTLIBS) -o tst
 
 $(LIBDIR)/libFMD.$(SL):		$(OBJS)
 
