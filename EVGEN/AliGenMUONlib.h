@@ -69,11 +69,13 @@ class AliGenMUONlib :
 //
 // Charm    
     static Double_t PtCharm( Double_t *px, Double_t *dummy );
+    static Double_t PtCharmCentral( Double_t *px, Double_t *dummy );
     static Double_t YCharm(Double_t *py, Double_t *dummy);
     static Int_t    IpCharm(TRandom *ran);
 //
 // Beauty
     static Double_t PtBeauty( Double_t *px, Double_t *dummy );
+    static Double_t PtBeautyCentral( Double_t *px, Double_t *dummy );
     static Double_t YBeauty(Double_t *py, Double_t *dummy);
     static Int_t    IpBeauty(TRandom *ran);
 //

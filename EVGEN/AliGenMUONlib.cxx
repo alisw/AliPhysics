@@ -621,12 +621,24 @@ Int_t AliGenMUONlib::IpEta(TRandom *)
 Double_t AliGenMUONlib::PtCharm( Double_t *px, Double_t */*dummy*/)
 {
 // Charm pT
-  const Double_t kpt0 = 4.08;
-  const Double_t kxn  = 9.40;
+  const Double_t kpt0 = 2.25;
+  const Double_t kxn  = 3.17;
 
   Double_t x=*px;
   //
-  Double_t pass1 = 1.+(x/kpt0);
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+
+Double_t AliGenMUONlib::PtCharmCentral( Double_t *px, Double_t */*dummy*/)
+{
+// Charm pT
+  const Double_t kpt0 = 2.12;
+  const Double_t kxn  = 2.78;
+
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn);
 }
 //                  y-distribution
@@ -668,8 +680,19 @@ Int_t AliGenMUONlib::IpCharm(TRandom *ran)
 Double_t AliGenMUONlib::PtBeauty( Double_t *px, Double_t */*dummy*/)
 {
 // Beauty pT
-  const Double_t kpt0 = 4.;
-  const Double_t kxn  = 3.6;
+  const Double_t kpt0 = 6.53;
+  const Double_t kxn  = 3.59;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+
+Double_t AliGenMUONlib::PtBeautyCentral( Double_t *px, Double_t */*dummy*/)
+{
+// Beauty pT
+  const Double_t kpt0 = 6.14;
+  const Double_t kxn  = 2.93;
   Double_t x=*px;
   //
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
@@ -747,10 +770,18 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	}
 	break;  
     case kCharm:
-	func=PtCharm;
+	if (sname == "central") {
+	    func=PtCharmCentral;
+	} else {
+	    func=PtCharm;
+	}
 	break;
     case kBeauty:
-	func=PtBeauty;
+	if (sname == "central") {
+	    func=PtBeautyCentral;
+	} else {
+	    func=PtBeauty;
+	}
 	break;
     case kPion:
 	func=PtPion;
