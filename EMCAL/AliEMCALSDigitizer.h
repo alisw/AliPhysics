@@ -51,6 +51,8 @@ private:
 private:
   Float_t fA ;              //Pedestal parameter
   Float_t fB ;              //Slope Digitizition parameters
+  Float_t fLayerRatio ;     //Factor that takes into account difference in light collection between 2 first layers and rest of layers
+
   Int_t   fNevents ;        // Number of events to digitize
   Float_t fPrimThreshold ;  // To store primary if Elos > threshold
   TString fSDigitsTitle ;   // title of SDigits branch

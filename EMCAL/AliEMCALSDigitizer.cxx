@@ -74,11 +74,12 @@ ClassImp(AliEMCALSDigitizer)
 {
   // ctor
   fA = 0;
-  fB = 10000000. ;
-  fPrimThreshold = 0.01 ;
+  fB = 0. ;
+  fPrimThreshold = 0. ;
   fNevents = 0 ;     
   fSDigits = 0 ;
   fHits = 0 ;
+  fLayerRatio = 0. ;
   fIsInitialized = kFALSE ;
 
 }
@@ -91,6 +92,7 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const char* headerFile, const char *sDigi
   fB = 10000000.;
   fPrimThreshold = 0.01 ;
   fNevents = 0 ; 
+  fLayerRatio = 5./6. ;
   Init();
 }
 
@@ -173,7 +175,6 @@ void AliEMCALSDigitizer::Exec(Option_t *option) {
   TString sdname(GetName()) ;
   sdname.Remove(sdname.Index(GetTitle())-1) ;
   AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ;  
-  const AliEMCALGeometry *geom = gime->EMCALGeometry();
   Int_t nevents = (Int_t) gAlice->TreeE()->GetEntries() ; 
   
   Int_t ievent ;
@@ -199,84 +200,95 @@ void AliEMCALSDigitizer::Exec(Option_t *option) {
 
  
       Int_t i;
-      for ( i = 0 ; i < fHits->GetEntries() ; i++ ) {
-	AliEMCALHit * hit = (AliEMCALHit*)fHits->At(i) ;
-        AliEMCALDigit  * curSDigit = 0  ;
-        AliEMCALDigit * sdigit ;
+      for ( i = 0 ; i < fHits->GetEntries() ; i++ ) { // loop over all hits (hit = deposited energy/layer/entering particle)
+	AliEMCALHit * hit = dynamic_cast<AliEMCALHit*>(fHits->At(i)) ;
+        AliEMCALDigit * curSDigit = 0 ;
+        AliEMCALDigit * sdigit = 0 ;
         Bool_t newsdigit = kTRUE; 
-	// Assign primary number only if contribution is significant
-        if( hit->GetEnergy() > fPrimThreshold)
+
+	// Assign primary number only if deposited energy is significant
+	  
+	Float_t preShowerFactor ;
+	if (hit->IsInPreShower() ) 
+	  preShowerFactor = fLayerRatio ; 
+	else 
+	  preShowerFactor = 1 ; 
+	
+	if( hit->GetEnergy() > fPrimThreshold)
 	  curSDigit =  new AliEMCALDigit( hit->GetPrimary(),
-					  hit->GetIparent(),Layer2TowerID(hit->GetId(),kFALSE), 
-					  Digitize( hit->GetEnergy() ) , 
+					  hit->GetIparent(),Layer2TowerID(hit->GetId(),hit->IsInPreShower()), 
+					  Digitize( hit->GetEnergy() * preShowerFactor ) , 
 					  hit->GetTime()) ;
         else
 	  curSDigit =  new AliEMCALDigit( -1               , 
 					  -1               ,
-					  Layer2TowerID(hit->GetId(),kFALSE), 
-					  Digitize( hit->GetEnergy() ) , 
-					  hit->GetTime() ) ;
-	//cout << "Hit ID = " <<hit->GetId() << endl ; 
-	//cout << "ID for detector = " << curSDigit->GetId() << endl ;  
-	//  cout << hit->GetEnergy() << " - hit energy   -   Digit Energy - " << curSDigit->GetAmp() << endl;
-	for(Int_t check= 0; check < nSdigits ; check++) {
+					  Layer2TowerID(hit->GetId(),hit->IsInPreShower()), 
+					  Digitize( hit->GetEnergy() * preShowerFactor ) , 
+					  hit->GetTime() ) ;	
+	Int_t check = 0 ;
+	for(check= 0; check < nSdigits ; check++) {
           sdigit = (AliEMCALDigit *)sdigits->At(check);
-          if( sdigit->GetId() == curSDigit->GetId())   
-            {// cout << "SDigit - Get Amp  " << sdigit->GetAmp() << endl ; 
-	      *sdigit = *sdigit + *curSDigit ;
-              newsdigit = kFALSE;
-	      //  cout << " and after addition " << sdigit->GetAmp() << endl ; 
-	    }
-	}
-	if (newsdigit) 
-	  { new((*sdigits)[nSdigits])  AliEMCALDigit(*curSDigit);
-	  nSdigits++ ;  
-	  //cout << "Detector nsdigits = " << nSdigits << endl ;
+          if( sdigit->GetId() == curSDigit->GetId()) { // Are we in the same tower or the same preshower ?              
+	      *sdigit = *sdigit + *curSDigit;
+   
+	      newsdigit = kFALSE;
 	  }
-        newsdigit = kTRUE;  
-	
-	
-        if( hit->GetEnergy() > fPrimThreshold)
-	  curSDigit =  new AliEMCALDigit( hit->GetPrimary(), 
-					  hit->GetIparent(),
-					  Layer2TowerID(hit->GetId(),kTRUE) , 
-					  Digitize( hit->GetEnergy() ), 
-					  hit->GetTime( ) ) ;
-        else
-	  curSDigit =  new AliEMCALDigit( -1               , 
-					  -1               ,
-					  Layer2TowerID(hit->GetId(),kTRUE), 
-					  Digitize( hit->GetEnergy() ), 
-					  hit->GetTime() ) ;
-	
-	if((hit->GetId()/geom->GetNPhi()) < (2*geom->GetNZ())) 
-	  { //cout << "ID for Preshower = " << curSDigit->GetId()  << endl ;
-	    for(Int_t check= 0; check < nSdigits; check++) {
-	      sdigit = (AliEMCALDigit *)sdigits->At(check);
-	      if( sdigit->GetId() == curSDigit->GetId())   
-		{ 
-		  *sdigit = *sdigit + *curSDigit ;
-		  newsdigit = kFALSE ;
-		}
-	    }
-	    if (newsdigit) 
-	      { new((*sdigits)[nSdigits])  AliEMCALDigit(*curSDigit);
-	      nSdigits++ ;  
-	      //cout << "Preshower nsdigits = " << nSdigits << endl ;
-	      }
-	    newsdigit=kTRUE;	
-	  } 
-      } 
+	}
+	if (newsdigit) { 
+	  new((*sdigits)[nSdigits])  AliEMCALDigit(*curSDigit);
+	  nSdigits++ ;  
+	}
+      }  // loop over all hits (hit = deposited energy/layer/entering particle)
       //    } // loop over tracks
+      
       sdigits->Sort() ;
       
       nSdigits = sdigits->GetEntriesFast() ;
       sdigits->Expand(nSdigits) ;
       
       //  Int_t i ;
-      for (i = 0 ; i < nSdigits ; i++) { 
-	AliEMCALDigit * digit = (AliEMCALDigit *) sdigits->At(i) ; 
-	digit->SetIndexInList(i) ;     
+     const AliEMCALGeometry * geom = gime->EMCALGeometry() ; 
+     
+     Int_t lastPreShowerIndex = nSdigits - 1 ; 
+     Int_t firstPreShowerIndex = -1 ; 
+     Int_t index ; 
+     AliEMCALDigit * sdigit = 0 ;
+     for ( index = 0; index < nSdigits ; index++) {
+       sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(index) ) ;
+       if (sdigit->IsInPreShower() ){ 
+	 firstPreShowerIndex = index ;
+	 break ;
+       }
+     }
+     
+    AliEMCALDigit * preshower ;
+    AliEMCALDigit * tower ;
+    Int_t lastIndex = lastPreShowerIndex +1 ; 
+
+
+    for (index = firstPreShowerIndex ; index <= lastPreShowerIndex; index++) {
+      preshower = dynamic_cast<AliEMCALDigit *>(sdigits->At(index) ); 
+      Bool_t towerFound = kFALSE ;
+      Int_t jndex ; 
+      for (jndex = 0; jndex < firstPreShowerIndex; jndex++) {
+	tower  = dynamic_cast<AliEMCALDigit *>(sdigits->At(jndex) ); 
+	if ( (preshower->GetId() - (geom->GetNZ() * geom->GetNPhi()) ) == tower->GetId() ) {
+	  *tower = *tower + *preshower ; // and add preshower to tower
+	  towerFound = kTRUE ;
+	}
+      }
+      if ( !towerFound ) { 
+
+	new((*sdigits)[lastIndex])  AliEMCALDigit(*preshower);
+	AliEMCALDigit * temp = dynamic_cast<AliEMCALDigit *>(sdigits->At(lastIndex)) ;
+	temp->SetId(temp->GetId() - (geom->GetNZ() * geom->GetNPhi()) ) ;
+	lastIndex++ ; 
+      }
+    }
+
+    sdigits->Sort() ;
+     for (i = 0 ; i < sdigits->GetEntriesFast() ; i++) { 
+	sdigit->SetIndexInList(i) ;     
       }
       
       if(gAlice->TreeS() == 0)
@@ -408,7 +420,7 @@ void AliEMCALSDigitizer::PrintSDigits(Option_t * option){
 
     //loop over digits
     AliEMCALDigit * digit;
-    cout << "SDigit Id " << " Amplitude " <<  " Time " << " Index "  <<  " Nprim " << " Primaries list " <<  endl;    
+    cout << "SDigit Id " << " Amplitude " <<  "     Time " << "     Index "  <<  " Nprim " << " Primaries list " <<  endl;    
     Int_t index ;
     for (index = 0 ; index < sdigits->GetEntries() ; index++) {
       digit = (AliEMCALDigit * )  sdigits->At(index) ;
