@@ -31,9 +31,9 @@ public:
 
 //ZDC part -------------------------------------------------------------------
 
-// ************************ LHC optics v6.4 *****************************
-static const Float_t kG1=20.443;
-static const Float_t kFDIP=-37.85;
+// ************************ LHC optics v6.5 *****************************
+static const Float_t kG1=20.757;
+static const Float_t kFDIP=-37.866;
 static const Float_t kFCORN2=-9.6979; 
 //
 // ZBEG       Beginning of the inner triplet

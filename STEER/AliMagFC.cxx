@@ -83,25 +83,25 @@ void AliMagFC::ZDCField(Float_t *x, Float_t *b) const
     else if(x[2] < kZ1BEG && x[2] > kZ1END){  
 	if(rad2<kZ1RA2){
 	    b[0] =  kG1*x[1];
-	    b[1] = -kG1*x[0];
+	    b[1] =  kG1*x[0];
 	}
     }
     else if(x[2] < kZ2BEG && x[2] > kZ2END){  
 	if(rad2<kZ2RA2){
 	    b[0] = -kG1*x[1];
-	    b[1] =  kG1*x[0];
+	    b[1] = -kG1*x[0];
 	}
     }
     else if(x[2] < kZ3BEG && x[2] > kZ3END){  
 	if(rad2<kZ3RA2){
 	    b[0] = -kG1*x[1];
-	    b[1] =  kG1*x[0];
+	    b[1] = -kG1*x[0];
 	}
     }
     else if(x[2] < kZ4BEG && x[2] > kZ4END){  
 	if(rad2<kZ4RA2){
 	    b[0] =  kG1*x[1];
-	    b[1] = -kG1*x[0];
+	    b[1] =  kG1*x[0];
 	}
     }
     else if(x[2] < kD1BEG && x[2] > kD1END){ 
