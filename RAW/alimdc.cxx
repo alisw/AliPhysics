@@ -175,7 +175,12 @@ int main(int argc, char **argv)
 #endif
 
    Int_t result = 0;
+
    result = mdcproc.Run();
-   printf( "Run exits, status:%d\n", result );
+
+   if (result == 0)
+      Info(argv[0], "normal termination of run");
+   else
+      Error(argv[0], "error termination of run, status: %d", result);
    return result;
 }

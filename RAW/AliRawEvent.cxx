@@ -478,7 +478,10 @@ Bool_t AliRawDB::Create()
 
 again:
    const char *fname = GetFileName();
-   if (!fname) return kFALSE;
+   if (!fname) {
+      Error("Create", "error getting raw DB file name");
+      return kFALSE;
+   }
 
    fRawDB = TFile::Open(fname, GetOpenOption(),
                         Form("ALICE MDC%d raw DB", kMDC), fCompress);
@@ -1143,14 +1146,14 @@ void AliRunDB::UpdateAliEn(AliStats *stats)
    lfn += "/";
    lfn += gSystem->BaseName(stats->GetFileName());
 
-   //printf("AliEn: AddFile(%s, %s, %d)\n", lfn.Data(), stats->GetFileName(),
-   //       (int)stats->GetFileSize());
-
-//   g->AddFile(lfn, stats->GetFileName(), (int)stats->GetFileSize());
    Int_t result = g->AddFile(lfn, stats->GetFileName(),
 			     (int)stats->GetFileSize());
-   ALIDEBUG(1)
-      Info("UpdateAliEn", "TGrid::AddFile returned %d\n", result);
+
+   if (result == -1) {
+      Error("UpdateAliEn", "error adding file to AliEn catalog");
+      printf("AliEn: AddFile(%s, %s, %d)\n", lfn.Data(), stats->GetFileName(),
+             (int)stats->GetFileSize());
+   }
 
    delete g;
 }
@@ -1317,7 +1320,6 @@ Int_t AliMDC::Run()
 #ifdef USE_EB
    Int_t eorFlag = 0;
    while (!(eorFlag = ebEor())) {
-//   while (!ebEor()) {
       struct iovec *ebvec;
       if ((ebvec = ebGetNextEvent()) == (void *)-1) {
          Error("Run", "error getting next event (%s)", ebGetLastError());
@@ -1532,11 +1534,14 @@ Int_t AliMDC::Run()
          printf("Written raw DB at a rate of %.1f MB/s\n",
                 rawdb->GetBytesWritten() / timer.RealTime() / 1000000.);
 
-         // Write stats object to raw db, run db and MySQL
+         // Write stats object to raw db, run db, MySQL and AliEn
          stats->WriteToDB(rawdb);
          delete stats;
 
-         if (!rawdb->NextFile()) return 1;
+         if (!rawdb->NextFile()) {
+            Error("Run", "error opening next raw data file");
+            return 1;
+         }
 
          printf("Filling raw DB %s\n", rawdb->GetDBName());
          stats = new AliStats(rawdb->GetDBName(), fCompress, fUseFilter);
@@ -1593,7 +1598,7 @@ Int_t AliMDC::Run()
 #ifdef USE_EB
    // Print eor flag
    if (eorFlag) {
-      printf("Event builder reported end of run: %d\n", eorFlag);
+      Info("Run", "event builder reported end of run (%d)", eorFlag);
    }
 #endif
 
