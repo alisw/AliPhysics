@@ -132,8 +132,6 @@ Int_t AliHBTReaderTPC::ReadNext()
  //
   Info("Read","");
   
-  Int_t ntracksread = 0;
- 
   TObjArray *tarray = new TObjArray(5000); //cotainer for tpc tracks
   tarray->SetOwner(); //set the ownership of the objects it contains
                       //when array is is deleted or cleared all objects 
