@@ -59,7 +59,7 @@ class AliLevel3 : public TObject {
   Bool_t fDoNonVertex;
   Bool_t fClusterDeconv;
   Int_t fEvent;
-  void Init();
+  void Init(Int_t npatches=6);
   void WriteSpacePoints(UInt_t npoints,AliL3SpacePointData *points,
                                              Int_t slice,Int_t patch);
   void WriteResults();

@@ -111,7 +111,7 @@ AliLevel3::AliLevel3(TFile *in, TFile *out){
   Init();
 }
 
-void AliLevel3::Init(){
+void AliLevel3::Init(Int_t npatches=6){
   fWriteOut = kFALSE;
   fGlobalMerger=0;
   fTransformer = new AliL3Transform();
@@ -124,20 +124,22 @@ void AliLevel3::Init(){
   SetPath("");
   fFindVertex =kFALSE;
   fEvent=0;
-  if(1){
-    fNPatch = 1;   //number of patches change row in process
+
+  switch(npatches){
+  case 1:
+    fNPatch = 1;        //number of patches change row in process
     fRow[0][0] = 0;     // first row
     fRow[0][1] = 175;   // last row
-  }
-  if(0){
-    fNPatch = 2;   //number of patches change row in process
+    break;
+  case 2:
+    fNPatch = 2;        //number of patches change row in process
     fRow[0][0] = 0;     // first row
     fRow[0][1] = 54;
     fRow[1][0] = 55;
     fRow[1][1] = 175;   // last row
-  }
-  if(0){
-    fNPatch = 5;   //number of patches change row in process
+    break;
+  case 5:
+    fNPatch = 5;        //number of patches change row in process
     fRow[0][0] = 0;     // first row
     fRow[0][1] = 45;
     fRow[1][0] = 46;
@@ -148,9 +150,9 @@ void AliLevel3::Init(){
     fRow[3][1] = 141;
     fRow[4][0] = 142;
     fRow[4][1] = 175;   // last row
-  }
-  if(0){
-    fNPatch = 6;   //number of patches change row in process
+    break;
+  default:
+    fNPatch = 6;        //number of patches change row in process
     fRow[0][0] = 0;     // first row
     fRow[0][1] = 31;
     fRow[1][0] = 32;
@@ -164,6 +166,7 @@ void AliLevel3::Init(){
     fRow[5][0] = 144;
     fRow[5][1] = 175;   // last row 
   }
+
   fVertexFinder = new AliL3VertexFinder();
   fVertex = new AliL3Vertex();
   fTracker = new AliL3ConfMapper();
