@@ -22,7 +22,7 @@
 #pragma link C++ class  AliGenMUONlib;
 #pragma link C++ class  AliGenFLUKAsource;
 #pragma link C++ class  AliGenHalo;
-#pragma link C++ class  DimuonCombinator;
+#pragma link C++ class  AliDimuCombinator;
 #endif
 
 

@@ -2,15 +2,15 @@
 //
 //
 //
-#include "DimuonCombinator.h" 
+#include "AliDimuCombinator.h" 
 #include "AliRun.h" 
 #include "TRandom.h" 
 //
-ClassImp(DimuonCombinator)
+ClassImp(AliDimuCombinator)
 //
 //                       Iterators
 // 
- GParticle* DimuonCombinator::FirstMuon()
+ GParticle* AliDimuCombinator::FirstMuon()
      {
 	 fimuon1=fimin1;
 	 fmuon1 = (GParticle*) fPartArray->UncheckedAt(fimuon1);
@@ -22,7 +22,7 @@ ClassImp(DimuonCombinator)
 	 return fmuon1;
      }
 	     
- GParticle* DimuonCombinator::FirstMuonSelected()
+ GParticle* AliDimuCombinator::FirstMuonSelected()
      {
 	 GParticle * muon=FirstMuon();
 	 while(muon!=0 && !Selected(muon)) {muon=NextMuon();}
@@ -30,7 +30,7 @@ ClassImp(DimuonCombinator)
      }
 	     
 
- GParticle* DimuonCombinator::NextMuon()
+ GParticle* AliDimuCombinator::NextMuon()
      {
 	 fimuon1++;
 	 if (fimuon1>=fNParticle) {fmuon1 = 0; return fmuon1;}
@@ -44,7 +44,7 @@ ClassImp(DimuonCombinator)
 	 return fmuon1;
      }
 
-GParticle* DimuonCombinator::NextMuonSelected()
+GParticle* AliDimuCombinator::NextMuonSelected()
      {
 	 GParticle * muon=NextMuon();
 	 while(muon !=0 && !Selected(muon)) {muon=NextMuon();}
@@ -52,7 +52,7 @@ GParticle* DimuonCombinator::NextMuonSelected()
      }
 
 
- void DimuonCombinator::FirstPartner()
+ void AliDimuCombinator::FirstPartner()
      {
 	 if (fimin1==fimin2) {
 	     fimuon2=fimuon1+1;
@@ -67,14 +67,14 @@ GParticle* DimuonCombinator::NextMuonSelected()
 	     fmuon2 = (GParticle*) fPartArray->UncheckedAt(fimuon2);
 	 }
      }
-void DimuonCombinator::FirstPartnerSelected()
+void AliDimuCombinator::FirstPartnerSelected()
 {
 	 FirstPartner();
 	 while(fmuon2 !=0 && !Selected(fmuon2)) {NextPartner();}
 }
 
 
- void DimuonCombinator::NextPartner()
+ void AliDimuCombinator::NextPartner()
      {
 	 fimuon2++;
 	 if (fimuon2>=fimax2) {fmuon2 = 0; return;}
@@ -90,26 +90,26 @@ void DimuonCombinator::FirstPartnerSelected()
 
      }
 
-void DimuonCombinator::NextPartnerSelected()
+void AliDimuCombinator::NextPartnerSelected()
 {
 	 NextPartner();
 	 while(fmuon2 !=0 && !Selected(fmuon2)) {NextPartner();}
 }
 
 
- GParticle*  DimuonCombinator::Partner()
+ GParticle*  AliDimuCombinator::Partner()
      {
 	 return fmuon2;
      }
 
-void DimuonCombinator::FirstMuonPair(GParticle* & muon1, GParticle* & muon2)
+void AliDimuCombinator::FirstMuonPair(GParticle* & muon1, GParticle* & muon2)
      {
 	 FirstMuon();
 	 FirstPartner();
 	 muon1=fmuon1;
 	 muon2=fmuon2;	 
      }
-void DimuonCombinator::NextMuonPair(GParticle* & muon1, GParticle* & muon2)
+void AliDimuCombinator::NextMuonPair(GParticle* & muon1, GParticle* & muon2)
      {
 	 NextPartner();
 	 if (!Partner()) {
@@ -119,14 +119,14 @@ void DimuonCombinator::NextMuonPair(GParticle* & muon1, GParticle* & muon2)
 	 muon1=fmuon1;
 	 muon2=fmuon2;	 
      }
-void DimuonCombinator::FirstMuonPairSelected(GParticle* & muon1, GParticle* & muon2)
+void AliDimuCombinator::FirstMuonPairSelected(GParticle* & muon1, GParticle* & muon2)
      {
 	 FirstMuonSelected();
 	 FirstPartnerSelected();
 	 muon1=fmuon1;
 	 muon2=fmuon2;	 
      }
-void DimuonCombinator::NextMuonPairSelected(GParticle* & muon1, GParticle* & muon2)
+void AliDimuCombinator::NextMuonPairSelected(GParticle* & muon1, GParticle* & muon2)
      {
 	 NextPartnerSelected();
 	 if (!Partner()) {
@@ -136,20 +136,20 @@ void DimuonCombinator::NextMuonPairSelected(GParticle* & muon1, GParticle* & muo
 	 muon1=fmuon1;
 	 muon2=fmuon2;	 
      }
-void DimuonCombinator::ResetRange()
+void AliDimuCombinator::ResetRange()
 {
     fimin1=fimin2=0;
     fimax1=fimax2=fNParticle;
 }
 
-void DimuonCombinator::SetFirstRange(Int_t from, Int_t to)
+void AliDimuCombinator::SetFirstRange(Int_t from, Int_t to)
 {
     fimin1=from;
     fimax1=to;
     if (fimax1 > fNParticle) fimax1=fNParticle;
 }
 
-void DimuonCombinator::SetSecondRange(Int_t from, Int_t to)
+void AliDimuCombinator::SetSecondRange(Int_t from, Int_t to)
 {
     fimin2=from;
     fimax2=to;
@@ -159,7 +159,7 @@ void DimuonCombinator::SetSecondRange(Int_t from, Int_t to)
 //                       Selection
 //
 
-Bool_t DimuonCombinator::Selected(GParticle* part)
+Bool_t AliDimuCombinator::Selected(GParticle* part)
 {
 // 
 //
@@ -174,14 +174,14 @@ Bool_t DimuonCombinator::Selected(GParticle* part)
     
 }
 
-Bool_t DimuonCombinator::Selected(GParticle* part1, GParticle* part2)
+Bool_t AliDimuCombinator::Selected(GParticle* part1, GParticle* part2)
 {
      return Selected(part1)*Selected(part2);
 }
 //
 //                       Kinematics
 //
-Float_t DimuonCombinator::Mass(GParticle* part1, GParticle* part2)
+Float_t AliDimuCombinator::Mass(GParticle* part1, GParticle* part2)
 {
     Float_t px,py,pz,e;
     px=part1->GetPx()+part2->GetPx();
@@ -196,7 +196,7 @@ Float_t DimuonCombinator::Mass(GParticle* part1, GParticle* part2)
     }
 }
 
-Float_t DimuonCombinator::PT(GParticle* part1, GParticle* part2)
+Float_t AliDimuCombinator::PT(GParticle* part1, GParticle* part2)
 {
     Float_t px,py;
     px=part1->GetPx()+part2->GetPx();
@@ -204,12 +204,12 @@ Float_t DimuonCombinator::PT(GParticle* part1, GParticle* part2)
     return TMath::Sqrt(px*px+py*py);
 }
 
-Float_t DimuonCombinator::Pz(GParticle* part1, GParticle* part2)
+Float_t AliDimuCombinator::Pz(GParticle* part1, GParticle* part2)
 {
     return part1->GetPz()+part2->GetPz();
 }
 
-Float_t DimuonCombinator::Y(GParticle* part1, GParticle* part2)
+Float_t AliDimuCombinator::Y(GParticle* part1, GParticle* part2)
 {
     Float_t pz,e;
     pz=part1->GetPz()+part2->GetPz();
@@ -218,14 +218,14 @@ Float_t DimuonCombinator::Y(GParticle* part1, GParticle* part2)
 }
 //                  Response
 //
-void DimuonCombinator::SmearGauss(Float_t width, Float_t & value)
+void AliDimuCombinator::SmearGauss(Float_t width, Float_t & value)
 {
     value+=gRandom->Gaus(0, width);
 }
 //              Weighting
 // 
 
-Float_t DimuonCombinator::Decay_Prob(GParticle* part)
+Float_t AliDimuCombinator::Decay_Prob(GParticle* part)
 {
     Float_t d, h, theta, CTau;
     GParticle* parent = Parent(part);
@@ -259,7 +259,7 @@ Float_t DimuonCombinator::Decay_Prob(GParticle* part)
     }
 }
 
-Float_t DimuonCombinator::Weight(GParticle* part1, GParticle* part2)
+Float_t AliDimuCombinator::Weight(GParticle* part1, GParticle* part2)
 {
     Float_t wgt=(part1->GetWgt())*(part2->GetWgt());
     
@@ -271,11 +271,11 @@ Float_t DimuonCombinator::Weight(GParticle* part1, GParticle* part2)
 } 
 
 
-Float_t DimuonCombinator::Weight(GParticle* part)
+Float_t AliDimuCombinator::Weight(GParticle* part)
 {
     return (part->GetWgt())*(Parent(part)->GetWgt())*fRate1;
 }
-Bool_t  DimuonCombinator::Correlated(GParticle* part1, GParticle* part2)
+Bool_t  AliDimuCombinator::Correlated(GParticle* part1, GParticle* part2)
 {
     if (Origin(part1) == Origin(part2)) {
 	return kTRUE;
@@ -283,12 +283,12 @@ Bool_t  DimuonCombinator::Correlated(GParticle* part1, GParticle* part2)
 	return kFALSE;
     }
 }
-GParticle* DimuonCombinator::Parent(GParticle* part)
+GParticle* AliDimuCombinator::Parent(GParticle* part)
 {
     return (GParticle*) (fPartArray->UncheckedAt(part->GetParent()));
 }
 
-Int_t DimuonCombinator::Origin(GParticle* part)
+Int_t AliDimuCombinator::Origin(GParticle* part)
 {
     Int_t iparent= part->GetParent();
     if (iparent < 0) return iparent;

@@ -56,7 +56,7 @@ AliGenFLUKAsource.o: /hdb2/offline/pro/include/AliGenerator.h
 AliGenFLUKAsource.o: /soft/root/include/TNamed.h /soft/root/include/TArrayF.h
 AliGenFLUKAsource.o: /soft/root/include/TGenerator.h /soft/root/include/TF1.h
 AliGenFLUKAsource.o: /soft/root/include/TTree.h AliGenMUONlib.h
-AliGenFLUKAsource.o: /soft/root/include/TROOT.h
+AliGenFLUKAsource.o: /soft/root/include/TROOT.h GenTypeDefs.h
 AliGenFLUKAsource.o: /hdb2/offline/pro/include/AliMC.h
 AliGenFLUKAsource.o: /hdb2/offline/pro/include/AliRun.h
 AliGenFLUKAsource.o: /soft/root/include/TBrowser.h /soft/root/include/TList.h
@@ -82,7 +82,7 @@ AliGenFLUKAsource.o: /usr/include/sys/types.h /usr/include/gnu/types.h
 AliGenFLUKAsource.o: /usr/include/time.h /usr/include/endian.h
 AliGenFLUKAsource.o: /usr/include/bytesex.h /usr/include/sys/select.h
 AliGenFLUKAsource.o: /usr/include/selectbits.h /usr/include/alloca.h
-AliGenMUONlib.o: AliGenMUONlib.h /soft/root/include/TROOT.h
+AliGenMUONlib.o: AliGenMUONlib.h /soft/root/include/TROOT.h GenTypeDefs.h
 AliGenMUONlib.o: /hdb2/offline/pro/include/AliRun.h
 AliGenMUONlib.o: /soft/root/include/TBrowser.h /soft/root/include/TList.h
 AliGenMUONlib.o: /soft/root/include/TStopwatch.h /soft/root/include/TTree.h
@@ -189,7 +189,8 @@ AliGenHalo.o: AliGenHalo.h /hdb2/offline/pro/include/AliGenerator.h
 AliGenHalo.o: /soft/root/include/TNamed.h /soft/root/include/TArrayF.h
 AliGenHalo.o: /soft/root/include/TGenerator.h /soft/root/include/TF1.h
 AliGenHalo.o: /soft/root/include/TTree.h AliGenMUONlib.h
-AliGenHalo.o: /soft/root/include/TROOT.h /hdb2/offline/pro/include/AliMC.h
+AliGenHalo.o: /soft/root/include/TROOT.h GenTypeDefs.h
+AliGenHalo.o: /hdb2/offline/pro/include/AliMC.h
 AliGenHalo.o: /hdb2/offline/pro/include/AliRun.h
 AliGenHalo.o: /soft/root/include/TBrowser.h /soft/root/include/TList.h
 AliGenHalo.o: /soft/root/include/TStopwatch.h /soft/root/include/TGeometry.h
@@ -209,3 +210,53 @@ AliGenHalo.o: /usr/include/sys/types.h /usr/include/gnu/types.h
 AliGenHalo.o: /usr/include/time.h /usr/include/endian.h
 AliGenHalo.o: /usr/include/bytesex.h /usr/include/sys/select.h
 AliGenHalo.o: /usr/include/selectbits.h /usr/include/alloca.h
+AliGenExtFile.o: AliGenExtFile.h /hdb2/offline/pro/include/AliGenerator.h
+AliGenExtFile.o: /soft/root/include/TNamed.h /soft/root/include/TArrayF.h
+AliGenExtFile.o: /soft/root/include/TGenerator.h /soft/root/include/TF1.h
+AliGenExtFile.o: /soft/root/include/TTree.h AliGenMUONlib.h
+AliGenExtFile.o: /soft/root/include/TROOT.h GenTypeDefs.h
+AliGenExtFile.o: /hdb2/offline/pro/include/AliMC.h
+AliGenExtFile.o: /hdb2/offline/pro/include/AliRun.h
+AliGenExtFile.o: /soft/root/include/TBrowser.h /soft/root/include/TList.h
+AliGenExtFile.o: /soft/root/include/TStopwatch.h
+AliGenExtFile.o: /soft/root/include/TGeometry.h
+AliGenExtFile.o: /hdb2/offline/pro/include/AliModule.h
+AliGenExtFile.o: /soft/root/include/TClonesArray.h
+AliGenExtFile.o: /soft/root/include/TAttLine.h
+AliGenExtFile.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+AliGenExtFile.o: /hdb2/offline/pro/include/AliHit.h
+AliGenExtFile.o: /soft/root/include/TObject.h
+AliGenExtFile.o: /hdb2/offline/pro/include/AliHeader.h
+AliGenExtFile.o: /hdb2/offline/pro/include/AliMagF.h
+AliGenExtFile.o: /soft/root/include/TVector.h
+AliGenExtFile.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h
+AliGenExtFile.o: /soft/root/include/TDirectory.h /soft/root/include/TFile.h
+AliGenExtFile.o: /usr/include/stdlib.h /usr/include/features.h
+AliGenExtFile.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
+AliGenExtFile.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliGenExtFile.o: /usr/include/sys/types.h /usr/include/gnu/types.h
+AliGenExtFile.o: /usr/include/time.h /usr/include/endian.h
+AliGenExtFile.o: /usr/include/bytesex.h /usr/include/sys/select.h
+AliGenExtFile.o: /usr/include/selectbits.h /usr/include/alloca.h
+AliGenScan.o: AliGenScan.h /hdb2/offline/pro/include/AliGenerator.h
+AliGenScan.o: /soft/root/include/TNamed.h /soft/root/include/TArrayF.h
+AliGenScan.o: /soft/root/include/TGenerator.h /soft/root/include/TF1.h
+AliGenScan.o: /soft/root/include/TTree.h /usr/include/stdlib.h
+AliGenScan.o: /usr/include/features.h /usr/include/sys/cdefs.h
+AliGenScan.o: /usr/include/gnu/stubs.h
+AliGenScan.o: /usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include/stddef.h
+AliGenScan.o: /usr/include/sys/types.h /usr/include/gnu/types.h
+AliGenScan.o: /usr/include/time.h /usr/include/endian.h
+AliGenScan.o: /usr/include/bytesex.h /usr/include/sys/select.h
+AliGenScan.o: /usr/include/selectbits.h /usr/include/alloca.h
+AliGenScan.o: /hdb2/offline/pro/include/AliRun.h /soft/root/include/TROOT.h
+AliGenScan.o: /soft/root/include/TBrowser.h /soft/root/include/TList.h
+AliGenScan.o: /soft/root/include/TStopwatch.h /soft/root/include/TGeometry.h
+AliGenScan.o: /hdb2/offline/pro/include/AliModule.h
+AliGenScan.o: /soft/root/include/TClonesArray.h /soft/root/include/TAttLine.h
+AliGenScan.o: /soft/root/include/TAttMarker.h /soft/root/include/TArrayI.h
+AliGenScan.o: /hdb2/offline/pro/include/AliHit.h /soft/root/include/TObject.h
+AliGenScan.o: /hdb2/offline/pro/include/AliHeader.h
+AliGenScan.o: /hdb2/offline/pro/include/AliMagF.h
+AliGenScan.o: /soft/root/include/TVector.h /hdb2/offline/pro/include/AliMC.h
+AliGenScan.o: /hdb2/offline/pro/include/AliLego.h /soft/root/include/TH2.h

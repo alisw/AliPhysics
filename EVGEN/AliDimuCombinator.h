@@ -1,5 +1,5 @@
-#ifndef _DimuonCombinator_H
-#define _DimuonCombinator_H
+#ifndef _AliDimuCombinator_H
+#define _AliDimuCombinator_H
 #include "GParticle.h"
 #include <TBrowser.h>
 #include <TList.h>
@@ -7,11 +7,11 @@
 #include <TROOT.h>
 
 
-class DimuonCombinator:
+class AliDimuCombinator:
     public TObject 
 {
 public:
-    DimuonCombinator(TClonesArray* Partarray){
+    AliDimuCombinator(TClonesArray* Partarray){
 	fPartArray=Partarray;
 	fNParticle=fPartArray->GetEntriesFast();
 	
@@ -92,7 +92,7 @@ private:
     Float_t fPtMin;
     Float_t fEtaMin;
     Float_t fEtaMax;
-    ClassDef(DimuonCombinator,1)
+  ClassDef(AliDimuCombinator,1) // Dimuon Combinator
 };
 #endif
 
