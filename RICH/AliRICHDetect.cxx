@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.16  2001/10/23 13:03:35  hristov
+  The access to several data members was changed from public to protected. The digitisation was adapted to the multi-event case (J.Chudoba)
+
   Revision 1.15  2001/10/21 18:31:23  hristov
   Several pointers were set to zero in the default constructors to avoid memory management problems
 
@@ -70,6 +73,8 @@
 #include "AliRICHDetect.h"
 #include "AliRICHHit.h"
 #include "AliRICHDigit.h"
+#include "AliRICHRawCluster.h"
+#include "AliRICHCerenkov.h"
 #include "AliRICHSegmentationV0.h"
 #include "AliRun.h"
 #include "TParticle.h"
@@ -79,6 +84,8 @@
 #include "TH3.h"
 #include "TH2.h"
 #include "TCanvas.h"
+#include <TStyle.h>
+
 
 #include "malloc.h"
 
@@ -101,13 +108,19 @@ AliRICHDetect::AliRICHDetect(const char *name, const char *title)
     : TObject()
 {
 
+  TStyle *mystyle=new TStyle("Plain","mystyle");
+  mystyle->SetPalette(1,0);
+  mystyle->cd();
+
 
   fc1= new TCanvas("c1","Reconstructed points",50,50,300,350);
   fc1->Divide(2,2);
-  fc2= new TCanvas("c2","Reconstructed points after SPOT",50,50,300,350);
+  fc2= new TCanvas("c2","Reconstructed points after SPOT",370,50,300,350);
   fc2->Divide(2,2); 
-  fc3= new TCanvas("c3","Used Digits",50,50,300,350);
-  //fc3->Divide(2,1); 
+  fc3= new TCanvas("c3","Used Digits",690,50,300,350);
+  fc4= new TCanvas("c4","Mesh activation data",50,430,600,350);
+  fc4->Divide(2,1);
+ 
 
 }
 
@@ -120,7 +133,7 @@ AliRICHDetect::~AliRICHDetect()
 }
 
 
-void AliRICHDetect::Detect(Int_t nev)
+void AliRICHDetect::Detect(Int_t nev, Int_t type)
 {  	
     
 //
@@ -128,9 +141,9 @@ void AliRICHDetect::Detect(Int_t nev)
 
 
   //printf("Detection started!\n");
-  Float_t omega,omega1,theta1,steptheta,stepphi,x,y,z,cx,cy,l,aux1,aux2,aux3,max,radius=0,meanradius=0;
+  Float_t omega,omega1,theta1,phi_relative,steptheta,stepphi,x,y,q=0,z,cx,cy,l,aux1,aux2,aux3,max,radius=0,meanradius=0;
   Int_t maxi,maxj,maxk;
-  //Float_t theta,phi,realomega,realtheta;
+  Float_t originalOmega, originalPhi, originalTheta;
   Float_t binomega, bintheta, binphi;
   Int_t intomega, inttheta, intphi;
   Int_t i,j,k;
@@ -155,41 +168,23 @@ void AliRICHDetect::Detect(Int_t nev)
  
   const Int_t kSpot=0;                                 //number of passes with spot algorithm
   
-  const Int_t kDimensionTheta=30;		       //Matrix dimension for angle Detection
-  const Int_t kDimensionPhi=45;
+  const Int_t kDimensionTheta=100;		       //Matrix dimension for angle Detection
+  const Int_t kDimensionPhi=100;
   const Int_t kDimensionOmega=100;
   
-  const Float_t SPOTp=1;		              //Percentage of spot action
-  const Float_t kMinOmega=20*kPi/180;
-  const Float_t kMaxOmega=70*kPi/180;		      //Maximum Cherenkov angle to identify
+  const Float_t SPOTp=.25;		              //Percentage of spot action
+  const Float_t kMinOmega=.4;
+  const Float_t kMaxOmega=.7;		      //Maximum Cherenkov angle to identify
   const Float_t kMinTheta=0;
-  const Float_t kMaxTheta=15*kPi/180;	
-  //const Float_t kMaxTheta=0.1;
+  const Float_t kMaxTheta=10*kPi/180;	
   const Float_t kMinPhi=0;
   const Float_t kMaxPhi=360*kPi/180;
 
- 
-  Float_t kCorr=0.61;                              //Correction factor, accounting for aberration, refractive index, etc.
-  //const Float_t kCorr=.9369;                        //from 0 incidence  
-  //const Float_t kCorr=1;
-
-  //TRandom* random=0;
-
   Float_t rechit[6];                                 //Reconstructed point data
-
-  
-
-  //printf("Creating matrices\n");
-  //Float_t point[kDimensionTheta][kDimensionPhi][kDimensionOmega];
-  //Float_t point1[kDimensionTheta][kDimensionPhi][kDimensionOmega];
-  //printf("Created matrices\n");
 
   Int_t ***point = i3tensor(0,kDimensionTheta,0,kDimensionPhi,0,kDimensionOmega);
   Int_t ***point1 = i3tensor(0,kDimensionTheta,0,kDimensionPhi,0,kDimensionOmega);
   
-  //Int_t **point  = new Int_t[kDimensionTheta][kDimensionPhi][kDimensionOmega];
-  //Int_t **point1 = new Int_t[kDimensionTheta][kDimensionPhi][kDimensionOmega];
-
   steptheta=(kMaxTheta-kMinTheta)/kDimensionTheta;
   stepphi=(kMaxPhi-kMinPhi)/kDimensionPhi;
 
@@ -202,6 +197,8 @@ void AliRICHDetect::Detect(Int_t nev)
   static TH2F *SpotOmegaTheta = new TH2F("OmegaTheta","Omega-Theta projection, spot",kDimensionTheta,0,kDimensionTheta,kDimensionOmega,0,kDimensionOmega);
   static TH2F *SpotOmegaPhi = new TH2F("OmegaPhi","Omega-Phi projection, spot",kDimensionPhi,0,kDimensionPhi,kDimensionOmega,0,kDimensionOmega);
   static TH2F *DigitsXY = new TH2F("DigitsXY","Pads used for reconstruction",150,-25,25,150,-25,25);
+  static TH1F *AngleAct = new TH1F("AngleAct","Activation per angle",100,.45,1);
+  static TH1F *Activation = new TH1F("Activation","Activation per ring",100,0,25);
   Points->SetXTitle("theta");
   Points->SetYTitle("phi");
   Points->SetZTitle("omega");
@@ -220,15 +217,19 @@ void AliRICHDetect::Detect(Int_t nev)
   SpotOmegaTheta->SetYTitle("omega");
   SpotOmegaPhi->SetXTitle("phi");
   SpotOmegaPhi->SetYTitle("omega");
+  AngleAct->SetFillColor(5);
+  AngleAct->SetXTitle("rad");
+  AngleAct->SetYTitle("activation");
+  Activation->SetFillColor(5);
+  Activation->SetXTitle("activation");
 
   Int_t ntracks = (Int_t)gAlice->TreeH()->GetEntries();
-  //Int_t ntrks = gAlice->GetNtrack();
-  
+   
   Float_t trackglob[3];
   Float_t trackloc[3];
 
   //printf("Area de uma elipse com teta 0 e Omega 45:%f",Area(0,45));
-    
+   
   Int_t track;
 	
   for (track=0; track<ntracks;track++) {
@@ -239,9 +240,7 @@ void AliRICHDetect::Detect(Int_t nev)
     Int_t nhits = pHits->GetEntriesFast();
     if (nhits == 0) continue;
     //Int_t nent=(Int_t)gAlice->TreeD()->GetEntries();
-    gAlice->TreeD()->GetEvent(0);
     AliRICHHit *mHit = 0;
-    AliRICHDigit *points = 0;
     //Int_t npoints=0;
     
     Int_t counter=0, counter1=0;
@@ -261,219 +260,272 @@ void AliRICHDetect::Detect(Int_t nev)
 	      }
 	  }
       }
-    mHit = (AliRICHHit*) pHits->UncheckedAt(0);
-    //printf("Aqui vou eu\n");
-    Int_t nch  = mHit->Chamber();
-    //printf("Aqui fui eu\n");
-    trackglob[0] = mHit->X();
-    trackglob[1] = mHit->Y();
-    trackglob[2] = mHit->Z();
 
-    printf("Chamber processed:%d\n",nch);
-
-    printf("Reconstructing particle at (global coordinates): %3.1f %3.1f %3.1f,\n",trackglob[0],trackglob[1],trackglob[2]);
-
-    iChamber = &(pRICH->Chamber(nch-1));
+    Int_t ncerenkovs = pRICH->Cerenkovs()->GetEntriesFast();
     
-    //printf("Nch:%d\n",nch);
-
-    iChamber->GlobaltoLocal(trackglob,trackloc);
     
-    printf("Reconstructing particle at (local coordinates) : %3.1f %3.1f %3.1f\n",trackloc[0],trackloc[1],trackloc[2]);
-
-
-    iChamber->LocaltoGlobal(trackloc,trackglob);
-       
-    //printf("Transformation 2: %3.1f %3.1f %3.1f\n",trackglob[0],trackglob[1],trackglob[2]);
+    originalOmega = 0;
+    counter = 0;
     
-    cx=trackloc[0];
-    cy=trackloc[2];
+    for (Int_t hit=0;hit<ncerenkovs;hit++) {
+      AliRICHCerenkov* cHit = (AliRICHCerenkov*) pRICH->Cerenkovs()->UncheckedAt(hit);
+      Float_t loss = cHit->fLoss;                 //did it hit the CsI?
+      Float_t production = cHit->fProduction;     //was it produced in freon?  
+      Float_t cherenkov = cHit->fCerenkovAngle;   //production cerenkov angle
+      if (loss == 4 && production == 1)
+	{
+	  counter +=1;
+	  originalOmega += cherenkov;
+	  //printf("%f\n",cherenkov);
+	}
+    }
+    
+    printf("Cerenkovs       : %d\n",counter);
+    
+    if(counter != 0)    //if there are cerenkovs
+      {
+	originalOmega = originalOmega/counter;
+	printf("Original omega: %f\n",originalOmega);
      
 
-    TClonesArray *pDigits = pRICH->DigitsAddress(nch-1);   
-    Int_t ndigits = pDigits->GetEntriesFast();
+
+	mHit = (AliRICHHit*) pHits->UncheckedAt(0);
+	Int_t nch  = mHit->Chamber();
+	originalTheta = mHit->Theta();
+	originalPhi = mHit->Phi();
+	trackglob[0] = mHit->X();
+	trackglob[1] = mHit->Y();
+	trackglob[2] = mHit->Z();
+	
+	printf("\n--------------------------------------\n");
+	printf("Chamber %d, track %d\n", nch, track);
+
+	
+	iChamber = &(pRICH->Chamber(nch-1));
     
-    //printf("Got %d digits\n",ndigits);
+	//printf("Nch:%d\n",nch);
 
-    counter=0;
-    printf("Starting calculations\n");
-    for(Float_t theta=0;theta<kMaxTheta;theta+=steptheta)
-      {		
-	//printf(".");
-	for(Float_t phi=0;phi<=kMaxPhi;phi+=stepphi)
+	iChamber->GlobaltoLocal(trackglob,trackloc);
+    
+	iChamber->LocaltoGlobal(trackloc,trackglob);
+       
+       
+	cx=trackloc[0];
+	cy=trackloc[2];
+     
+	AliRICHDigit *points = 0;
+	TClonesArray *pDigits = pRICH->DigitsAddress(nch-1);   
+	
+	AliRICHRawCluster *cluster =0;
+	TClonesArray *pClusters = pRICH->RawClustAddress(nch-1);
+
+	Int_t maxcycle=0;
+
+	//digitize from digits
+	
+	if(type==0)
+	  {
+	    gAlice->TreeD()->GetEvent(0);
+	    Int_t ndigits = pDigits->GetEntriesFast();
+	    maxcycle=ndigits;
+	    printf("Got %d digits\n",ndigits);
+	  }
+	
+	//digitize from clusters
+	
+	if(type==1)
+	  {
+	    Int_t nent=(Int_t)gAlice->TreeR()->GetEntries();
+	    gAlice->TreeR()->GetEvent(nent-1);
+	    Int_t nclusters = pClusters->GetEntriesFast();
+	    maxcycle=nclusters;
+	    printf("Got %d clusters\n",nclusters);
+	  }
+
+
+
+	
+	counter=0;
+	printf("Starting calculations\n");
+	printf("           Start                                                                                              Finish\n");
+	printf("Progress:     ");
+	for(Float_t theta=0;theta<kMaxTheta;theta+=steptheta)
 	  {		
-	    //printf("Phi:%3.1f\n", phi*180/kPi);
-	    counter1=0;
-	    for (Int_t dig=0;dig<ndigits;dig++)
-	      {	
-		points=(AliRICHDigit*) pDigits->UncheckedAt(dig);
-		segmentation->GetPadC(points->PadX(), points->PadY(),x, y, z);
-		x=x-cx;
-		y=y-cy;
-		radius=TMath::Sqrt(TMath::Power(x,2)+TMath::Power(y,2));
-
-		if(radius>4)
-		  {
-		    //if(theta==0 && phi==0)
-		      //{
-			//printf("Radius: %f, Max Radius: %f\n",radius,kCorr*kHeight*tan(theta+kMaxOmega)*3/4);
-			meanradius+=radius;
-			counter++;
-		      //}
+	    printf(".");
+	    for(Float_t phi=0;phi<=kMaxPhi;phi+=stepphi)
+	      {		
+		//printf("Phi:%3.1f\n", phi*180/kPi);
+		counter1=0;
+		for (Int_t cycle=0;cycle<maxcycle;cycle++)
+		  {	
 		    
-		    if (radius<2*kHeight*tan(theta+kMaxOmega)*3/4)
+		    if(type==0)
+		      {
+			points=(AliRICHDigit*) pDigits->UncheckedAt(cycle);
+			segmentation->GetPadC(points->PadX(), points->PadY(),x, y, z);
+		      }
+		    
+		    if(type==1)
+		      {
+			cluster=(AliRICHRawCluster*) pClusters->UncheckedAt(cycle);
+			x=cluster->fX;
+			y=cluster->fY;
+			q=cluster->fQ;
+		      }
+		    
+		    if(type ==0 || q > 100)
+		      
 		      {
 			
-			if(phi==0)
-			  {
-			    //printf("Radius: %f, Max Radius: %f\n",radius,2*kHeight*tan(theta+kMaxOmega)*3/4);
-			    //printf("Loaded digit %d with coordinates x:%f, y%f\n",dig,x,y);
-			    //printf("Using digit %d, for theta %f\n",dig,theta);
-			  }
+			x=x-cx;
+			y=y-cy;
+			radius=TMath::Sqrt(TMath::Power(x,2)+TMath::Power(y,2));
 			
-			counter1++;
-
-			l=kHeight/cos(theta);
+			//calculation of relative phi angle of digit
 			
-			//x=x*kCorr;
-			//y=y*kCorr;
-			/*if(SnellAngle(theta+omega)<999)
-			  {
-			    //printf("(Angle)/(Snell angle):%f\n",(theta+omega)/SnellAngle(theta+omega));
-			    x=x*(theta+omega)/SnellAngle(theta+omega);
-			    y=y*(theta+omega)/SnellAngle(theta+omega);
-			  }
-			else
-			  {
-			    x=0;
-			    y=0;
-			  }*/
-
-			//main calculation
-
-			DigitsXY->Fill(x,y,(float) 1);
-
-			theta1=SnellAngle(theta)*1.5;
-		
-			aux1=-y*sin(phi)+x*cos(phi);
-			aux2=y*cos(phi)+x*sin(phi);
-			aux3=( TMath::Power(aux1,2)+TMath::Power(cos(theta1)*aux2 ,2))/TMath::Power(sin(theta1)*aux2+l,2);
-			omega=atan(sqrt(aux3));
+			phi_relative = acos(y/radius);
+			phi_relative = TMath::Abs(phi_relative - phi);
 			
-			//omega is distorted, theta1 is distorted
-
-			if(InvSnellAngle(theta+omega)<999)
+			
+			if(radius>4)
 			  {
-			    omega1=InvSnellAngle(omega+theta1) - theta;
-			    //theta1=InvSnellAngle(omega+theta) - omega1;
-			    //omega1=kCorr*omega;
+			    meanradius+=radius;
+			    counter++;
 			    
-			    kCorr=InvSnellAngle(omega+theta)/(omega+theta);
-			    theta1=kCorr*theta/1.4;
-			    //if(phi==0)
-			      //printf("Omega:%f Theta:%f Omega1:%f Theta1:%f ISA(o+t):%f ISA(t):%f\n",omega*180/kPi,theta*180/kPi,omega1*180/kPi,theta1*180/kPi,InvSnellAngle(omega+theta)*180/kPi,InvSnellAngle(theta)*180/kPi);
-			  }
-			else
-			  {
-			    omega1=0;
-			    theta1=0;
-			  }
-			
-			//printf("Omega:%f\n",omega);
-
-
-			//if(SnellAngle(theta+omega)<999)
-			  //printf("(Angle)/(Snell angle):%f\n",(theta+omega)/SnellAngle(theta+omega));
-			if(theta==0 && phi==0)
-			  {
-			    //printf("Omega: %f Corrected Omega: %f\n",omega, omega/kCorr);
-			    //omega=omega/kCorr;
-			  }
-			
-			//cout<<"\ni="<<i<<" theta="<<Int_t(2*theta*dimension/kPi)<<" phi="<<Int_t(2*phi*dimension/kPi)<<" omega="<<Int_t(2*omega*dimension/kPi)<<endl<<endl;
-			//{Int_t lixo;cin>>lixo;}
-			if(omega1<kMaxOmega && omega1>kMinOmega)
-			  {
-			    //printf("Omega found:%f\n",omega);
-			    omega1=omega1-kMinOmega;
 			    
-			    //printf("Omega: %f Theta: %3.1f Phi:%3.1f\n",omega, theta*180/kPi, phi*180/kPi);
-
-			    bintheta=theta1*kDimensionTheta/kMaxTheta;
-			    binphi=phi*kDimensionPhi/kMaxPhi;
-			    binomega=omega1*kDimensionOmega/(kMaxOmega-kMinOmega);
-
-			    if(Int_t(bintheta+0.5)==Int_t(bintheta))
-			      inttheta=Int_t(bintheta);
-			    else
-			      inttheta=Int_t(bintheta+0.5);
-
-			    if(Int_t(binomega+0.5)==Int_t(binomega))
-			      intomega=Int_t(binomega);
-			    else
-			      intomega=Int_t(binomega+0.5);
-			    
-			    if(Int_t(binphi+0.5)==Int_t(binphi))
-			      intphi=Int_t(binphi);
-			    else
-			      intphi=Int_t(binphi+0.5);
-			 			 
-			    //printf("Point added at %d %d %d\n",inttheta,intphi,intomega);
-			    point[inttheta][intphi][intomega]+=1;
-			    //printf("Omega stored:%d\n",intomega);
-			    Points->Fill(inttheta,intphi,intomega,(float) 1);
-			    ThetaPhi->Fill(inttheta,intphi,(float) 1);
-			    OmegaTheta->Fill(inttheta,intomega,(float) 1);
-			    OmegaPhi->Fill(intphi,intomega,(float) 1);
-			    //printf("Filling at %d %d %d\n",Int_t(theta*kDimensionTheta/kMaxTheta),Int_t(phi*kDimensionPhi/kMaxPhi),Int_t(omega*kDimensionOmega/kMaxOmega));
+			    //if (radius < (2*kHeight*tan(theta+kMaxOmega)))
+			    if (radius < (2*kHeight*tan(kMaxOmega)))
+			      //if(Fiducial(x,y,theta,phi,kHeight,kMaxOmega,kMinOmega))
+			      {
+				
+				if(phi==0)
+				  {
+				//printf("Radius: %f, Max Radius: %f\n",radius,2*kHeight*tan(theta+kMaxOmega)*3/4);
+				//printf("Loaded digit %d with coordinates x:%f, y%f\n",dig,x,y);
+				//printf("Using digit %d, for theta %f\n",dig,theta);
+				  }
+				
+				counter1++;
+				
+				l=kHeight/cos(theta);
+				
+				//main calculation
+				
+				DigitsXY->Fill(x,y,(float) 1);
+				
+				theta1=SnellAngle(theta);
+				
+				aux1=-y*sin(phi)+x*cos(phi);
+				aux2=y*cos(phi)+x*sin(phi);
+				aux3=( TMath::Power(aux1,2)+TMath::Power(cos(theta1)*aux2 ,2))/TMath::Power(sin(theta1)*aux2+l,2);
+				omega=atan(sqrt(aux3));
+				
+				//omega is distorted, theta1 is distorted
+				
+				if(InvSnellAngle(omega+TMath::Abs(cos(phi_relative))*theta1)<999)
+				  {
+				    omega1=InvSnellAngle(omega+TMath::Abs(cos(phi_relative))*theta);
+				    theta1=InvSnellAngle(theta1);
+				    
+				  }
+				else
+				  {
+				    omega1=0;
+				    theta1=0;
+				  }
+				
+				if(omega1<kMaxOmega && omega1>kMinOmega)
+				  {
+				//printf("Omega found:%f\n",omega);
+				    omega1=omega1-kMinOmega;
+				    
+				//printf("Omega: %f Theta: %3.1f Phi:%3.1f\n",omega, theta*180/kPi, phi*180/kPi);
+				    
+				    bintheta=theta1*kDimensionTheta/kMaxTheta;
+				    binphi=phi*kDimensionPhi/kMaxPhi;
+				    binomega=omega1*kDimensionOmega/(kMaxOmega-kMinOmega);
+				    
+				    if(Int_t(bintheta+0.5)==Int_t(bintheta))
+				      inttheta=Int_t(bintheta);
+				    else
+				      inttheta=Int_t(bintheta+0.5);
+				    
+				    if(Int_t(binomega+0.5)==Int_t(binomega))
+				      intomega=Int_t(binomega);
+				    else
+				      intomega=Int_t(binomega+0.5);
+				    
+				    if(Int_t(binphi+0.5)==Int_t(binphi))
+				      intphi=Int_t(binphi);
+				    else
+				      intphi=Int_t(binphi+0.5);
+				    
+				//printf("Point added at %d %d %d\n",inttheta,intphi,intomega);
+				    
+				    if(type==0)
+				      point[inttheta][intphi][intomega]+=1;
+				    if(type==1)
+				      point[inttheta][intphi][intomega]+=(Int_t)(q);
+				    
+				//printf("Omega stored:%d\n",intomega);
+				    Points->Fill(inttheta,intphi,intomega,(float) 1);
+				    ThetaPhi->Fill(inttheta,intphi,(float) 1);
+				    OmegaTheta->Fill(inttheta,intomega,(float) 1);
+				    OmegaPhi->Fill(intphi,intomega,(float) 1);
+				//printf("Filling at %d %d %d\n",Int_t(theta*kDimensionTheta/kMaxTheta),Int_t(phi*kDimensionPhi/kMaxPhi),Int_t(omega*kDimensionOmega/kMaxOmega));
+				  }
+				//if(omega<kMaxOmega)point[Int_t(theta)][Int_t(phi)][Int_t(omega)]+=1;
+			      }
 			  }
-			//if(omega<kMaxOmega)point[Int_t(theta)][Int_t(phi)][Int_t(omega)]+=1;
 		      }
+		    
 		  }
+		//printf("Used %d digits for theta %3.1f\n",counter1, theta*180/kPi);
+	      }
+	    
+	  }
+
+	printf("\n");
+
+	meanradius=meanradius/counter;
+	//printf("Mean radius:%f, counter:%d\n",meanradius,counter);
+	rechit[5]=meanradius;
+	//printf("Used %d digits\n",counter1);
+	//printf("\n");
+
+	if(nev<2)
+	  {
+	    if(nev==0)
+	      {
+		fc1->cd(1);
+		Points->Draw("colz");
+		fc1->cd(2);
+		ThetaPhi->Draw("colz");
+		fc1->cd(3);
+		OmegaTheta->Draw("colz");
+		fc1->cd(4);
+		OmegaPhi->Draw("colz");
+		fc3->cd();
+		DigitsXY->Draw("colz");
+	      }
+	    else
+	      {
+		//fc1->cd(1);
+		//Points->Draw("same");
+		//fc1->cd(2);
+		//ThetaPhi->Draw("same");
+		//fc1->cd(3);
+		//OmegaTheta->Draw("same");
+		//fc1->cd(4);
+		//OmegaPhi->Draw("same");	
 	      }
 	  }
-	//printf("Used %d digits for theta %3.1f\n",counter1, theta*180/kPi);
-      }
-
-    meanradius=meanradius/counter;
-    printf("Mean radius:%f, counter:%d\n",meanradius,counter);
-    rechit[5]=meanradius;
-    printf("Used %d digits\n",counter1);
-    //printf("\n");
-
-    if(nev<20)
-      {
-	if(nev==0)
-	  {
-	    fc1->cd(1);
-	    Points->Draw();
-	    fc1->cd(2);
-	    ThetaPhi->Draw();
-	    fc1->cd(3);
-	    OmegaTheta->Draw();
-	    fc1->cd(4);
-	    OmegaPhi->Draw();
-	    fc3->cd();
-	    DigitsXY->Draw();
-	  }
-	else
-	  {
-	    //fc1->cd(1);
-	    //Points->Draw("same");
-	    //fc1->cd(2);
-	    //ThetaPhi->Draw("same");
-	    //fc1->cd(3);
-	    //OmegaTheta->Draw("same");
-	    //fc1->cd(4);
-	    //OmegaPhi->Draw("same");	
-	  }
-      }
 	
     
-    //SPOT execute twice
-    for(Int_t s=0;s<kSpot;s++)
-      {
-	printf("     Applying Spot algorithm, pass %d\n", s);
+	//SPOT execute twice
+	for(Int_t s=0;s<kSpot;s++)
+	  {
+	    printf("     Applying Spot algorithm, pass %d\n", s);
 	
 	//buffer copy
 	for(i=0;i<=kDimensionTheta;i++)
@@ -549,67 +601,86 @@ void AliRICHDetect::Detect(Int_t nev)
     
     //printf("Filled %d cells\n",counter1);
 
-    if(nev<20)
-      {
-	if(nev==0)
+	if(nev<2)
 	  {
-	    fc2->cd(1);
-	    SpotPoints->Draw();
-	    fc2->cd(2);
-	    SpotThetaPhi->Draw();
-	    fc2->cd(3);
-	    SpotOmegaTheta->Draw();
-	    fc2->cd(4);
-	    SpotOmegaPhi->Draw();
-	  }
-	else
-	  {
-	    //fc2->cd(1);
-	    //SpotPoints->Draw("same");
-	    //fc2->cd(2);
-	    //SpotThetaPhi->Draw("same");
-	    //fc2->cd(3);
-	    //SpotOmegaTheta->Draw("same");
-	    //fc2->cd(4);
-	    //SpotOmegaPhi->Draw("same");	
-	  }
-      }
-    
-    
-    //Identification is equivalent to maximum determination
-    max=0;maxi=0;maxj=0;maxk=0;
-    
-    printf("     Proceeding to identification");
-    
-    for(i=0;i<kDimensionTheta;i++)
-      for(j=0;j<kDimensionPhi;j++)
-	for(k=0;k<kDimensionOmega;k++)
-	    if(point[i][j][k]>max)
+	    if(nev==0)
 	      {
-		//cout<<"maxi="<<i*90/dimension<<" maxj="<<j*90/dimension<<" maxk="<<k*kMaxOmega/dimension*180/kPi<<" max="<<max<<endl;
+		fc2->cd(1);
+		SpotPoints->Draw("colz");
+		fc2->cd(2);
+		SpotThetaPhi->Draw("colz");
+		fc2->cd(3);
+		SpotOmegaTheta->Draw("colz");
+		fc2->cd(4);
+		SpotOmegaPhi->Draw("colz");
+	      }
+	    else
+	      {
+		//fc2->cd(1);
+		//SpotPoints->Draw("same");
+		//fc2->cd(2);
+		//SpotThetaPhi->Draw("same");
+		//fc2->cd(3);
+		//SpotOmegaTheta->Draw("same");
+		//fc2->cd(4);
+		//SpotOmegaPhi->Draw("same");	
+	      }
+	  }
+    
+    
+	//Identification is equivalent to maximum determination
+	max=0;maxi=0;maxj=0;maxk=0;
+	
+	printf("     Proceeding to identification");
+	
+	for(i=0;i<kDimensionTheta;i++)
+	  for(j=0;j<kDimensionPhi;j++)
+	    for(k=0;k<kDimensionOmega;k++)
+	      if(point[i][j][k]>max)
+		{
+		  //cout<<"maxi="<<i*90/dimension<<" maxj="<<j*90/dimension<<" maxk="<<k*kMaxOmega/dimension*180/kPi<<" max="<<max<<endl;
 		maxi=i;maxj=j;maxk=k;
 		max=point[i][j][k];
 		printf(".");
 		//printf("Max Omega %d, Max Theta %d, Max Phi %d (%d counts)\n",maxk,maxi,maxj,max);
+		}
+	printf("\n");
+    
+	Float_t FinalOmega = maxk*(kMaxOmega-kMinOmega)/kDimensionOmega; 
+	Float_t FinalTheta = maxi*kMaxTheta/kDimensionTheta;
+	Float_t FinalPhi = maxj*kMaxPhi/kDimensionPhi;
+
+	FinalOmega += kMinOmega;
+    
+	//printf("Detected angle for height %3.1f and for center %3.1f %3.1f:%f\n",h,cx,cy,maxk*kPi/(kDimensionTheta*4));
+	printf("     Indentified angles: cerenkov - %f, theta - %3.1f, phi - %3.1f (%f activation)\n", FinalOmega, FinalTheta*180/kPi, FinalPhi*180/kPi, max);
+	//printf("Detected angle for height %3.1f and for center %3.1f %3.1f:%f\n",kHeight,cx,cy,maxk);
+
+	AngleAct->Fill(FinalOmega, (float) max);
+	Activation->Fill(max, (float) 1);
+
+	if(nev==0)
+	      {
+		fc4->cd(1);
+		AngleAct->Draw();
+		fc4->cd(2);
+		Activation->Draw();
 	      }
-    printf("\n");
-    
-    Float_t FinalOmega = maxk*(kMaxOmega-kMinOmega)/kDimensionOmega; 
-    Float_t FinalTheta = maxi*kMaxTheta/kDimensionTheta;
-    Float_t FinalPhi = maxj*kMaxPhi/kDimensionPhi;
+	    else
+	      {
+		fc4->cd(1);
+		AngleAct->Draw("same");
+		fc4->cd(2);
+		Activation->Draw("same");
+	      }
+	  
 
-    FinalOmega += kMinOmega;
+	//fscanf(omegas,"%f",&realomega);
+	//fscanf(thetas,"%f",&realtheta);
+	//printf("Real Omega: %f",realomega);			
+	//cout<<"Detected:theta="<<maxi*90/kDimensionTheta<<"phi="<<maxj*90/kDimensionPhi<<"omega="<<maxk*kMaxOmega/kDimensionOmega*180/kPi<<" OmegaError="<<fabs(maxk*kMaxOmega/kDimensionOmega*180/kPi-realomega)<<" ThetaError="<<fabs(maxi*90/kDimensionTheta-realtheta)<<endl<<endl;		
     
-    //printf("Detected angle for height %3.1f and for center %3.1f %3.1f:%f\n",h,cx,cy,maxk*kPi/(kDimensionTheta*4));
-    printf("     Indentified angles: cerenkov - %f, theta - %3.1f, phi - %3.1f (%f activation)\n", FinalOmega, FinalTheta*180/kPi, FinalPhi*180/kPi, max);
-    //printf("Detected angle for height %3.1f and for center %3.1f %3.1f:%f\n",kHeight,cx,cy,maxk);
-
-    //fscanf(omegas,"%f",&realomega);
-    //fscanf(thetas,"%f",&realtheta);
-    //printf("Real Omega: %f",realomega);			
-    //cout<<"Detected:theta="<<maxi*90/kDimensionTheta<<"phi="<<maxj*90/kDimensionPhi<<"omega="<<maxk*kMaxOmega/kDimensionOmega*180/kPi<<" OmegaError="<<fabs(maxk*kMaxOmega/kDimensionOmega*180/kPi-realomega)<<" ThetaError="<<fabs(maxi*90/kDimensionTheta-realtheta)<<endl<<endl;		
-    
-    //fprintf(results,"Center Coordinates, cx=%6.2f cy=%6.2f, Real Omega=%6.2f, Detected Omega=%6.2f, Omega Error=%6.2f Theta Error=%6.2f\n",cx,cy,realomega,maxk*kMaxOmega/kDimensionOmega*180/kPi,fabs(maxk*kMaxOmega/kDimensionOmega*180/kPi-realomega),fabs(maxi*90/kDimensionTheta-realtheta));
+	//fprintf(results,"Center Coordinates, cx=%6.2f cy=%6.2f, Real Omega=%6.2f, Detected Omega=%6.2f, Omega Error=%6.2f Theta Error=%6.2f\n",cx,cy,realomega,maxk*kMaxOmega/kDimensionOmega*180/kPi,fabs(maxk*kMaxOmega/kDimensionOmega*180/kPi-realomega),fabs(maxi*90/kDimensionTheta-realtheta));
     
     /*for(j=0;j<np;j++)
       pointpp(maxj*90/kDimensionTheta,maxi*90/kDimensionPhi,maxk*kMaxOmega/kDimensionOmega*180/kPi,cx,cy);//Generates a point on the elipse*/		    
@@ -618,22 +689,47 @@ void AliRICHDetect::Detect(Int_t nev)
     //Start filling rec. hits
     
     rechit[0] = FinalTheta;
-    rechit[1] = 90*kPi/180 + FinalPhi;
+    rechit[1] = FinalPhi - 90*kPi/180;
     rechit[2] = FinalOmega;
     rechit[3] = cx;
     rechit[4] = cy;
 
     //CreatePoints(FinalTheta, 270*kPi/180 + FinalPhi, FinalOmega, kHeight);
        
-    //printf ("track %d, theta %f, phi %f, omega %f\n\n\n",track,rechit[0],rechit[1],rechit[2]);
+    printf ("track %d, theta %f, phi %f, omega %f\n\n\n",track,rechit[0],rechit[1]*180/kPi,rechit[2]);
     
     // fill rechits
-    pRICH->AddRecHit3D(nch-1,rechit);
+    pRICH->AddRecHit3D(nch-1,rechit,originalOmega, originalTheta, originalPhi);
     //printf("rechit %f %f %f %f %f\n",rechit[0],rechit[1],rechit[2],rechit[3],rechit[4]);
     //printf("Chamber:%d",nch);
-  }			
-  //printf("\n\n\n\n");
-  gAlice->TreeR()->Fill();
+      }
+
+    else   //if no cerenkovs
+      
+      {
+	
+	rechit[0] = 0;
+	rechit[1] = 0;
+	rechit[2] = 0;
+	rechit[3] = 0;
+	rechit[4] = 0;
+
+      }
+
+  }
+
+  if(type==1)  //reco from clusters
+    {
+      pRICH->ResetRawClusters();
+      //Int_t nent=(Int_t)gAlice->TreeR()->GetEntries();
+      //gAlice->TreeR()->GetEvent(track);
+      //printf("Going to branch %d\n",track);
+      //gAlice->GetEvent(nev);
+    }
+
+	
+    //printf("\n\n\n\n");
+    gAlice->TreeR()->Fill();
   TClonesArray *fRec;
   for (i=0;i<kNCH;i++) {
     fRec=pRICH->RecHitsAddress3D(i);
@@ -831,4 +927,48 @@ void AliRICHDetect::CreatePoints(Float_t theta, Float_t phi, Float_t omega, Floa
   
   fc3->cd(2);
   REllipse->Draw();
+}
+
+Int_t AliRICHDetect::Fiducial(Float_t rotx, Float_t roty, Float_t theta, Float_t phi, Float_t height, Float_t maxOmega, Float_t minOmega)
+{
+
+  Float_t x,y,y1,h,omega1,omega2;
+
+  Float_t a,b, offset;
+  Float_t a1,b1, offset1;
+
+  h = height;
+
+  //refraction calculation
+  
+  theta = SnellAngle(theta);
+  phi = phi - TMath::Pi();
+  omega1 = SnellAngle(maxOmega);
+  omega2 = SnellAngle(minOmega);
+
+  //maximum zone
+  a = h*(tan(omega1+theta)+tan(omega1-theta))/2;
+  b = h*tan(omega1);
+ 
+  offset = h*(tan(omega1+theta)-tan(omega1-theta))/2;
+  
+ 
+  //minimum zone
+  a1 = h*(tan(omega2+theta)+tan(omega2-theta))/2;
+  b1 = h*tan(omega2);
+ 
+  offset1 = h*(tan(omega2+theta)-tan(omega2-theta))/2;
+  
+
+  //rotation to phi=0
+  x = rotx*cos(phi)+roty*sin(phi);
+  y = -rotx*sin(phi)+roty*cos(phi) - offset;
+  y1 = -rotx*sin(phi)+roty*cos(phi) - offset1;
+
+  
+  if(x*x/a+y*y/b<1 && x*x/a1+y1*y1/b1>1)
+    return 1;
+  else
+    return 0;
+
 }

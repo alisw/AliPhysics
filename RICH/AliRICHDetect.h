@@ -21,10 +21,12 @@ class AliRICHDetect : public TObject {
   AliRICHDetect();
   AliRICHDetect(const char *name, const char *title);
   virtual       ~AliRICHDetect();
-  void   Detect(Int_t nev);
+  virtual void   Detect(Int_t nev, Int_t type);
   float Area(float theta,float OMEGA);
-  Int_t  ***i3tensor(long nrl, long nrh, long ncl, long nch, long ndl, long ndh);
-  void free_i3tensor(int ***t, long nrl, long nrh, long ncl, long nch,long ndl, long ndh);
+  Int_t Fiducial(Float_t x, Float_t y, Float_t theta, Float_t phi, Float_t height, Float_t maxOmega, Float_t minOmega);
+
+  virtual Int_t  ***i3tensor(long nrl, long nrh, long ncl, long nch, long ndl, long ndh);
+  virtual void free_i3tensor(int ***t, long nrl, long nrh, long ncl, long nch,long ndl, long ndh);
   Float_t SnellAngle(Float_t iangle);
   Float_t InvSnellAngle(Float_t rangle);
   void CreatePoints(Float_t theta, Float_t phi, Float_t omega, Float_t h);
@@ -34,6 +36,7 @@ class AliRICHDetect : public TObject {
   TCanvas *fc1;                   //Online reconstruction data
   TCanvas *fc2;                   //Online SPOT reconstruction data 
   TCanvas *fc3;                   //Online digits' coordinates data
+  TCanvas *fc4;                   //Online mesh activation data
 
   ClassDef(AliRICHDetect,1)  //Reconstruction module for :RICH version 0
 	};
