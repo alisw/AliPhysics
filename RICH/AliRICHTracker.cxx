@@ -133,12 +133,12 @@ void AliRICHTracker::RecWithStack(TNtupleD *hn)
     if(pParticle->GetPDG()->Charge()==0||TMath::Abs(Int_t(pParticle->GetPDG()->Charge()))!=3) continue; //to avoid photons from stack...
     hnvec[0]=pParticle->P();
     hnvec[1]=pParticle->GetPDG()->Charge();
-    hnvec[2]=pParticle->Theta();
-    hnvec[3]=pParticle->Phi();
     p0.SetMagThetaPhi(pParticle->P(),pParticle->Theta(),pParticle->Phi());
     x0.SetXYZ(pParticle->Vx(),pParticle->Vy(),pParticle->Vz());
     AliRICHHelix helix(x0,p0,TMath::Sign(1,(Int_t)pParticle->GetPDG()->Charge()),b);   
     Int_t iChamber=helix.RichIntersect(pRich->P());        
+    hnvec[2]=helix.Ploc().Theta();
+    hnvec[3]=helix.Ploc().Phi();
     AliDebug(1,Form("intersection with %i chamber found",iChamber));
     if(!iChamber) continue;// no intersection with RICH found
     hnvec[4]=helix.PosPc().X();

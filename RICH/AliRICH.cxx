@@ -933,16 +933,16 @@ void AliRICH::CheckPR()const
 //Pattern recognition with stack particles
   TFile *pFile = new TFile("$(HOME)/RPR.root","RECREATE","RICH Pattern Recognition");
   TNtupleD *hn = new TNtupleD("hn","ntuple","Pmod:Charge:TrackTheta:TrackPhi:TrackX:TrackY:MinX:MinY:ChargeMIP:ThetaCerenkov:NPhotons:MipIndex:Chamber:Particle");
-  printf("\n\n");
-  printf("Pattern Recognition done for event %5i",0);
+//  printf("\n\n");
+//  printf("Pattern Recognition done for event %5i",0);
   AliMagF * magf = gAlice->Field();
   AliTracker::SetFieldMap(magf);
   for(Int_t iEvtN=0;iEvtN<GetLoader()->GetRunLoader()->GetNumberOfEvents();iEvtN++) {
     GetLoader()->GetRunLoader()->GetEvent(iEvtN);
     AliRICHTracker *tr = new AliRICHTracker();
     tr->RecWithStack(hn);
-//    Info("CheckPR","Pattern Recognition done for event %i \b",iEvtN);
-    printf("\b\b\b\b\b%5i",iEvtN+1);
+    Info("CheckPR","Pattern Recognition done for event %i \b",iEvtN);
+//    printf("\b\b\b\b\b%5i",iEvtN+1);
   }
   printf("\n\n");
   pFile->Write();pFile->Close();
