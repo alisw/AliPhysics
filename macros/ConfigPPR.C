@@ -1255,14 +1255,13 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
       {
 	comment = comment.Append(" Muon Cocktail Cent1");
 	AliGenMUONCocktail * gener = new AliGenMUONCocktail();
-	gener->SetPtRange(1.0,100.);       // Transverse momentum range   
+	gener->SetPtRange(0.4,100.);       // Transverse momentum range   
 	gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
 	gener->SetYRange(-4.0,-2.4);
 	gener->SetMuonPtCut(0.8);
 	gener->SetMuonThetaCut(171.,178.);
 	gener->SetMuonMultiplicity(2);
-	gener->SetNumberOfCollisions(1626.);  //Centrality class Cent1 for PDC04
-	gener->SetNumberOfParticipants(359.4);//Centrality class Cent1 for PDC04
+	gener->SetImpactParameterRange(12.,16.);  //Centrality class Cent1 for PDC04
 	gGener=gener;
       }
       break;
@@ -1270,14 +1269,13 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
       {
 	comment = comment.Append(" Muon Cocktail Per1");
 	AliGenMUONCocktail * gener = new AliGenMUONCocktail();
-	gener->SetPtRange(1.0,100.);       // Transverse momentum range   
+	gener->SetPtRange(0.0,100.);       // Transverse momentum range   
 	gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
 	gener->SetYRange(-4.0,-2.4);
 	gener->SetMuonPtCut(0.8);
 	gener->SetMuonThetaCut(171.,178.);
 	gener->SetMuonMultiplicity(2);
-	gener->SetNumberOfCollisions(820.0);//Centrality class Per1 for PDC04
-	gener->SetNumberOfParticipants(229.3);//Centrality class Per1 for PDC04
+	gener->SetImpactParameterRange(5.,8.6);//Centrality class Per1 for PDC04
 	gGener=gener;
       }
       break;
@@ -1285,14 +1283,13 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
       {
 	comment = comment.Append(" Muon Cocktail Per4");
 	AliGenMUONCocktail * gener = new AliGenMUONCocktail();
-	gener->SetPtRange(1.0,100.);       // Transverse momentum range   
+	gener->SetPtRange(0.0,100.);       // Transverse momentum range   
 	gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
 	gener->SetYRange(-4.0,-2.4);
 	gener->SetMuonPtCut(0.8);
 	gener->SetMuonThetaCut(171.,178.);
 	gener->SetMuonMultiplicity(2);
-	gener->SetNumberOfCollisions(13.6);//Centrality class Per4 for PDC04
-	gener->SetNumberOfParticipants(13.3);//Centrality class Per4 for PDC04
+	gener->SetImpactParameterRange(13.2,15.0);//Centrality class Per4 for PDC04
 	gGener=gener;
       }
       break;
@@ -1300,14 +1297,13 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
       {
 	comment = comment.Append(" Muon Cocktail HighPt Cent1");
 	AliGenMUONCocktail * gener = new AliGenMUONCocktail();
-	gener->SetPtRange(1.0,100.);       // Transverse momentum range   
+	gener->SetPtRange(0.0,100.);       // Transverse momentum range   
 	gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
 	gener->SetYRange(-4.0,-2.4);
 	gener->SetMuonPtCut(2.5);
 	gener->SetMuonThetaCut(171.,178.);
 	gener->SetMuonMultiplicity(2);
-	gener->SetNumberOfCollisions(1626.);  //Centrality class Cent1 for PDC04
-	gener->SetNumberOfParticipants(359.4);//Centrality class Cent1 for PDC04
+	gener->SetImpactParameterRange(0.,5.);  //Centrality class Cent1 for PDC04
 	gGener=gener;
       }
       break;
@@ -1315,14 +1311,13 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
       {
 	comment = comment.Append(" Muon Cocktail HighPt Per1");
 	AliGenMUONCocktail * gener = new AliGenMUONCocktail();
-	gener->SetPtRange(1.0,100.);       // Transverse momentum range   
+	gener->SetPtRange(0.0,100.);       // Transverse momentum range   
 	gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
 	gener->SetYRange(-4.0,-2.4);
 	gener->SetMuonPtCut(2.5);
 	gener->SetMuonThetaCut(171.,178.);
 	gener->SetMuonMultiplicity(2);
-	gener->SetNumberOfCollisions(820.0);//Centrality class Per1 for PDC04
-	gener->SetNumberOfParticipants(229.3);//Centrality class Per1 for PDC04
+	gener->SetImpactParameterRange(5.,8.6);//Centrality class Per1 for PDC04
 	gGener=gener;
       }
       break;
@@ -1330,14 +1325,13 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
       {
 	comment = comment.Append(" Muon Cocktail HighPt Per4");
 	AliGenMUONCocktail * gener = new AliGenMUONCocktail();
-	gener->SetPtRange(1.0,100.);       // Transverse momentum range   
+	gener->SetPtRange(0.0,100.);       // Transverse momentum range   
 	gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
 	gener->SetYRange(-4.0,-2.4);
 	gener->SetMuonPtCut(2.5);
 	gener->SetMuonThetaCut(171.,178.);
 	gener->SetMuonMultiplicity(2);
-	gener->SetNumberOfCollisions(13.6);//Centrality class Per4 for PDC04
-	gener->SetNumberOfParticipants(13.3);//Centrality class Per4 for PDC04
+	gener->SetImpactParameterRange(13.2,15.0);//Centrality class Per4 for PDC04
 	gGener=gener;
       }
       break;
@@ -1345,14 +1339,13 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
       {
 	comment = comment.Append(" Muon Cocktail Single Cent1");
 	AliGenMUONCocktail * gener = new AliGenMUONCocktail();
-	gener->SetPtRange(1.0,100.);       // Transverse momentum range   
+	gener->SetPtRange(0.0,100.);       // Transverse momentum range   
 	gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
 	gener->SetYRange(-4.0,-2.4);
 	gener->SetMuonPtCut(0.8);
 	gener->SetMuonThetaCut(171.,178.);
 	gener->SetMuonMultiplicity(1);
-	gener->SetNumberOfCollisions(1626.);  //Centrality class Cent1 for PDC04
-	gener->SetNumberOfParticipants(359.4);//Centrality class Cent1 for PDC04
+	gener->SetImpactParameterRange(0.,5.);  //Centrality class Cent1 for PDC04
 	gGener=gener;
       }
       break;
@@ -1360,13 +1353,13 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
       {
 	comment = comment.Append(" Muon Cocktail Single Per1");
 	AliGenMUONCocktail * gener = new AliGenMUONCocktail();
-	gener->SetPtRange(1.0,100.);       // Transverse momentum range   
+	gener->SetPtRange(0.0,100.);       // Transverse momentum range   
 	gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
 	gener->SetYRange(-4.0,-2.4);
 	gener->SetMuonPtCut(0.8);
 	gener->SetMuonThetaCut(171.,178.);
 	gener->SetMuonMultiplicity(1);
-	gener->SetNumberOfCollisions(820.0);//Centrality class Per1 for PDC04
+	gener->SetImpactParameterRange(5.,8.6);//Centrality class Per1 for PDC04
 	gener->SetNumberOfParticipants(229.3);//Centrality class Per1 for PDC04
 	gGener=gener;
       }
@@ -1375,14 +1368,13 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
       {
 	comment = comment.Append(" Muon Cocktail Single Per4");
 	AliGenMUONCocktail * gener = new AliGenMUONCocktail();
-	gener->SetPtRange(1.0,100.);       // Transverse momentum range   
+	gener->SetPtRange(0.0,100.);       // Transverse momentum range   
 	gener->SetPhiRange(0.,360.);    // Azimuthal angle range  
 	gener->SetYRange(-4.0,-2.4);
 	gener->SetMuonPtCut(0.8);
 	gener->SetMuonThetaCut(171.,178.);
 	gener->SetMuonMultiplicity(1);
-	gener->SetNumberOfCollisions(13.6);//Centrality class Per4 for PDC04
-	gener->SetNumberOfParticipants(13.3);//Centrality class Per4 for PDC04
+	gener->SetImpactParameterRange(13.2,15.0);//Centrality class Per4 for PDC04
 	gGener=gener;
       }
       break;
