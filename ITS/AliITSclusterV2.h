@@ -22,10 +22,14 @@ public:
   }
   void Use() {fSigmaY2=-fSigmaY2;}
   void SetQ(Float_t q) {fQ=q;}
+  void SetDetectorIndex(Int_t i) { fIndex=i; }
 
   Int_t IsUsed() const {return (fSigmaY2<0) ? 1 : 0;}
   Float_t GetQ() const {return fQ;}
-  Int_t GetDetectorIndex() const { return fIndex; }
+  Int_t GetDetectorIndex() const { return 0x3FF&fIndex; }
+
+  Int_t GetPindex() const { return 0xFFF00000&fIndex; }  //SSD clusters only
+  Int_t GetNindex() const { return 0xFFC00&fIndex; }  //SSD clusters only
 
 private:
   Int_t    fIndex;    // detector index
