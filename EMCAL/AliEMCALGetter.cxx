@@ -42,17 +42,13 @@
 
 #include "TSystem.h"
 #include "TFile.h"
-// #include "TTree.h"
 #include "TROOT.h"
-// #include "TObjString.h"
-// #include "TFolder.h"
-// #include "TParticle.h"
+
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
-// #include "AliRun.h"
-// #include "AliConfig.h"
+
 #include "AliEMCALGetter.h"
 #include "AliEMCAL.h"
 #include "AliRunLoader.h"
@@ -114,6 +110,7 @@ AliEMCALGetter::~AliEMCALGetter()
 //____________________________________________________________________________ 
 AliEMCALClusterizer * AliEMCALGetter::Clusterizer()
 { 
+  // return pointer to Clusterizer Tree
   AliEMCALClusterizer * rv ; 
   rv =  dynamic_cast<AliEMCALClusterizer *>(EmcalLoader()->Reconstructioner()) ;
   if (!rv) {
@@ -125,7 +122,7 @@ AliEMCALClusterizer * AliEMCALGetter::Clusterizer()
 
 
 //____________________________________________________________________________ 
-TClonesArray * AliEMCALGetter::Digits() 
+TClonesArray * AliEMCALGetter::Digits() const  
 {
   // asks the Loader to return the Digits container 
 
@@ -142,6 +139,7 @@ TClonesArray * AliEMCALGetter::Digits()
 //____________________________________________________________________________ 
 AliEMCALDigitizer * AliEMCALGetter::Digitizer() 
 { 
+  // return pointer to Digitizer Tree
   AliEMCALDigitizer * rv ; 
   rv =  dynamic_cast<AliEMCALDigitizer *>(EmcalLoader()->Digitizer()) ;
   if (!rv) {
@@ -153,7 +151,7 @@ AliEMCALDigitizer * AliEMCALGetter::Digitizer()
 
 
 //____________________________________________________________________________ 
-TObjArray * AliEMCALGetter::PRERecPoints() 
+TObjArray * AliEMCALGetter::PRERecPoints() const 
 {
   // asks the Loader to return the EMC RecPoints container 
 
@@ -168,7 +166,7 @@ TObjArray * AliEMCALGetter::PRERecPoints()
 }
 
 //____________________________________________________________________________ 
-TObjArray * AliEMCALGetter::ECARecPoints() 
+TObjArray * AliEMCALGetter::ECARecPoints() const 
 {
   // asks the Loader to return the EMC RecPoints container 
 
@@ -183,7 +181,7 @@ TObjArray * AliEMCALGetter::ECARecPoints()
 }
 
 //____________________________________________________________________________ 
-TObjArray * AliEMCALGetter::HCARecPoints() 
+TObjArray * AliEMCALGetter::HCARecPoints() const 
 {
   // asks the Loader to return the EMC RecPoints container 
 
@@ -198,7 +196,7 @@ TObjArray * AliEMCALGetter::HCARecPoints()
 }
 
 //____________________________________________________________________________ 
-TClonesArray * AliEMCALGetter::TrackSegments() 
+TClonesArray * AliEMCALGetter::TrackSegments() const 
 {
   // asks the Loader to return the TrackSegments container 
 
@@ -215,6 +213,7 @@ TClonesArray * AliEMCALGetter::TrackSegments()
 //____________________________________________________________________________ 
 AliEMCALTrackSegmentMaker * AliEMCALGetter::TrackSegmentMaker() 
 { 
+  // return pointer to TrackSegmentMaker Tree
   AliEMCALTrackSegmentMaker * rv ; 
   rv =  dynamic_cast<AliEMCALTrackSegmentMaker *>(EmcalLoader()->TrackSegmentMaker()) ;
   if (!rv) {
@@ -225,7 +224,7 @@ AliEMCALTrackSegmentMaker * AliEMCALGetter::TrackSegmentMaker()
 }
 
 //____________________________________________________________________________ 
-TClonesArray * AliEMCALGetter::RecParticles() 
+TClonesArray * AliEMCALGetter::RecParticles() const  
 {
   // asks the Loader to return the TrackSegments container 
 
@@ -305,7 +304,7 @@ Int_t AliEMCALGetter::EventNumber() const
 }
 
 //____________________________________________________________________________ 
-  TClonesArray * AliEMCALGetter::Hits()  
+  TClonesArray * AliEMCALGetter::Hits() const   
 {
   // asks the loader to return  the Hits container 
   
@@ -406,6 +405,7 @@ AliEMCAL * AliEMCALGetter:: EMCAL() const
 //____________________________________________________________________________ 
 AliEMCALPID * AliEMCALGetter::PID() 
 { 
+  // return pointer to PID Tree
   AliEMCALPID * rv ; 
   rv =  dynamic_cast<AliEMCALPID *>(EmcalLoader()->PIDTask()) ;
   if (!rv) {
@@ -565,7 +565,7 @@ Int_t AliEMCALGetter::ReadTreeS()
 }
 
 //____________________________________________________________________________ 
-TClonesArray * AliEMCALGetter::SDigits() 
+TClonesArray * AliEMCALGetter::SDigits() const  
 {
   // asks the Loader to return the Digits container 
 
@@ -582,6 +582,7 @@ TClonesArray * AliEMCALGetter::SDigits()
 //____________________________________________________________________________ 
 AliEMCALSDigitizer * AliEMCALGetter::SDigitizer() 
 { 
+  // return pointer to SDigitizer Tree
   AliEMCALSDigitizer * rv ; 
   rv =  dynamic_cast<AliEMCALSDigitizer *>(EmcalLoader()->SDigitizer()) ;
   if (!rv) {
@@ -633,6 +634,7 @@ void AliEMCALGetter::Track(const Int_t itrack)
 //____________________________________________________________________________ 
 TTree * AliEMCALGetter::TreeD() const 
 {
+  // return pointer to Digits Tree
   TTree * rv = 0 ; 
   rv = EmcalLoader()->TreeD() ; 
   if ( !rv ) {
@@ -646,6 +648,7 @@ TTree * AliEMCALGetter::TreeD() const
 //____________________________________________________________________________ 
 TTree * AliEMCALGetter::TreeH() const 
 {
+  // return pointer to Hits Tree
   TTree * rv = 0 ; 
   rv = EmcalLoader()->TreeH() ; 
   if ( !rv ) {
@@ -659,6 +662,8 @@ TTree * AliEMCALGetter::TreeH() const
 //____________________________________________________________________________ 
 TTree * AliEMCALGetter::TreeR() const 
 {
+  // return pointer to RecPoints Tree
+
   TTree * rv = 0 ; 
   rv = EmcalLoader()->TreeR() ; 
   if ( !rv ) {
@@ -671,7 +676,8 @@ TTree * AliEMCALGetter::TreeR() const
 
 //____________________________________________________________________________ 
 TTree * AliEMCALGetter::TreeT() const 
-{
+{  
+  // return pointer to TrackSegments Tree
   TTree * rv = 0 ; 
   rv = EmcalLoader()->TreeT() ; 
   if ( !rv ) {
@@ -684,6 +690,7 @@ TTree * AliEMCALGetter::TreeT() const
 //____________________________________________________________________________ 
 TTree * AliEMCALGetter::TreeP() const 
 {
+  // return pointer to RecParticles Tree
   TTree * rv = 0 ; 
   rv = EmcalLoader()->TreeP() ; 
   if ( !rv ) {
@@ -697,6 +704,7 @@ TTree * AliEMCALGetter::TreeP() const
 //____________________________________________________________________________ 
 TTree * AliEMCALGetter::TreeS() const 
 {
+  // return pointer to SDigits Tree
   TTree * rv = 0 ; 
   rv = EmcalLoader()->TreeS() ; 
   if ( !rv ) {

@@ -18,13 +18,9 @@
 
 // --- ROOT system ---
 #include "TObject.h"  
-#include "TClonesArray.h" 
-// #include "TFolder.h"  
-// #include "TTree.h"
-// #include "TFile.h"
-// class TString ;
- class TParticle ;
-// class TTask ;
+#include "TClonesArray.h"
+class TParticle ;
+class TTree ; 
 
 // --- Standard library ---
 
@@ -32,24 +28,21 @@
 #include "AliConfig.h" 
 
 // #include "AliRun.h"
-class AliEMCAL ; 
 #include "AliEMCALHit.h"   
-// #include "AliEMCALDigit.h"
-// #include "AliEMCALRecPoint.h"
-// #include "AliEMCALRecPoint.h"
-// #include "AliEMCALTrackSegment.h"
 #include "AliEMCALRecParticle.h"
-class AliEMCALGeometry ;
 #include "AliEMCALDigitizer.h"
 #include "AliEMCALSDigitizer.h" 
-// class AliEMCALClusterizer ;
-// class AliEMCALTrackSegmentMaker ;
-// class AliEMCALPID ;
-// //class AliEMCALCalibrationDB ;
-// class AliEMCALConTableDB ;
+#include "AliEMCALLoader.h" 
+class AliEMCAL ; 
+class AliEMCALGeometry ; 
+class AliEMCALClusterizer ; 
+class AliEMCALRecPoint ; 
+class AliEMCALTowerRecPoint ; 
+class AliEMCALTrackSegmentMaker ;
+class AliEMCALTrackSegment ; 
+class AliEMCALPID ; 
 class AliEMCALBeamTestEvent ;
 
-#include "AliEMCALLoader.h" 
 
 class AliEMCALGetter : public TObject {
   
@@ -108,82 +101,82 @@ class AliEMCALGetter : public TObject {
   
 //   //=========== Hits =================
 //   TTree *               TreeH(TString filename="") ; 
-  TClonesArray *  Hits(void)  ; 
-  AliEMCALHit *    Hit(const Int_t index) { return dynamic_cast<AliEMCALHit*>(Hits()->At(index) );}
+  TClonesArray *  Hits(void) const  ; 
+  AliEMCALHit *    Hit(const Int_t index) const { return dynamic_cast<AliEMCALHit*>(Hits()->At(index) );}
   TTree *         TreeH() const ; 
   
   //=========== SDigits ==============
-  TClonesArray *      SDigits() ;  
-  AliEMCALDigit *      SDigit(const Int_t index) { return static_cast<AliEMCALDigit *>(SDigits()->At(index)) ;} 
+  TClonesArray *      SDigits() const ;  
+  AliEMCALDigit *      SDigit(const Int_t index) const { return static_cast<AliEMCALDigit *>(SDigits()->At(index)) ;} 
   TTree *             TreeS() const ; 
   AliEMCALSDigitizer * SDigitizer() ;  
 
-  TString             GetSDigitsFileName() { return EmcalLoader()->GetSDigitsFileName() ; }  
-  Int_t               LoadSDigits(Option_t* opt="") { return EmcalLoader()->LoadSDigits(opt) ; }
-  Int_t               LoadSDigitizer(Option_t* opt=""){ return  EmcalLoader()->LoadSDigitizer(opt) ; }
-  Int_t               WriteSDigits(Option_t* opt="") { return EmcalLoader()->WriteSDigits(opt) ; }
-  Int_t               WriteSDigitizer(Option_t* opt=""){
+  TString             GetSDigitsFileName() const { return EmcalLoader()->GetSDigitsFileName() ; }  
+  Int_t               LoadSDigits(Option_t* opt="") const { return EmcalLoader()->LoadSDigits(opt) ; }
+  Int_t               LoadSDigitizer(Option_t* opt="") const { return  EmcalLoader()->LoadSDigitizer(opt) ; }
+  Int_t               WriteSDigits(Option_t* opt="") const { return EmcalLoader()->WriteSDigits(opt) ; }
+  Int_t               WriteSDigitizer(Option_t* opt="") const {
     return  EmcalLoader()->WriteSDigitizer(opt) ; }
   
   //========== Digits ================
-  TClonesArray * Digits() ;
-  AliEMCALDigit * Digit(const Int_t index) { return static_cast<AliEMCALDigit *>(Digits()->At(index)) ;} 
+  TClonesArray * Digits() const ;
+  AliEMCALDigit * Digit(const Int_t index) const { return static_cast<AliEMCALDigit *>(Digits()->At(index)) ;} 
   TTree *        TreeD() const ; 
   AliEMCALDigitizer * Digitizer() ;
-  TString             GetDigitsFileName() { return EmcalLoader()->GetDigitsFileName() ; }  
-  Int_t               LoadDigits(Option_t* opt="") { return EmcalLoader()->LoadDigits(opt) ; }
-  Int_t               LoadDigitizer(Option_t* opt=""){
+  TString             GetDigitsFileName() const { return EmcalLoader()->GetDigitsFileName() ; }  
+  Int_t               LoadDigits(Option_t* opt="") const { return EmcalLoader()->LoadDigits(opt) ; }
+  Int_t               LoadDigitizer(Option_t* opt="") const {
     return  EmcalLoader()->LoadDigitizer(opt) ; }
-  Int_t               WriteDigits(Option_t* opt="") { return EmcalLoader()->WriteDigits(opt) ; }
-  Int_t               WriteDigitizer(Option_t* opt=""){
+  Int_t               WriteDigits(Option_t* opt="") const { return EmcalLoader()->WriteDigits(opt) ; }
+  Int_t               WriteDigitizer(Option_t* opt="") const {
     return  EmcalLoader()->WriteDigitizer(opt) ; }
   
   //========== RecPoints =============
-  TObjArray *             PRERecPoints() ;
-  AliEMCALRecPoint *      PRERecPoint(const Int_t index) { return static_cast<AliEMCALRecPoint *>(PRERecPoints()->At(index)) ;} 
-  TObjArray *             ECARecPoints() ;
-  AliEMCALTowerRecPoint * ECARecPoint(const Int_t index) { return static_cast<AliEMCALTowerRecPoint *>(ECARecPoints()->At(index)) ;} 
-  TObjArray *             HCARecPoints() ;
-  AliEMCALTowerRecPoint * HCARecPoint(const Int_t index) { return static_cast<AliEMCALTowerRecPoint *>(HCARecPoints()->At(index)) ;} 
+  TObjArray *             PRERecPoints() const ;
+  AliEMCALRecPoint *      PRERecPoint(const Int_t index) const { return static_cast<AliEMCALRecPoint *>(PRERecPoints()->At(index)) ;} 
+  TObjArray *             ECARecPoints() const ;
+  AliEMCALTowerRecPoint * ECARecPoint(const Int_t index) const { return static_cast<AliEMCALTowerRecPoint *>(ECARecPoints()->At(index)) ;} 
+  TObjArray *             HCARecPoints() const ;
+  AliEMCALTowerRecPoint * HCARecPoint(const Int_t index) const { return static_cast<AliEMCALTowerRecPoint *>(HCARecPoints()->At(index)) ;} 
   TTree *                 TreeR() const ;
   AliEMCALClusterizer *   Clusterizer()  ;
-  TString                 GetRecPointsFileName() { return EmcalLoader()->GetRecPointsFileName() ; } 
-  Int_t                   LoadRecPoints(Option_t* opt="") { return EmcalLoader()->LoadRecPoints(opt) ; }
-  Int_t                   LoadClusterizer(Option_t* opt=""){
+  TString                 GetRecPointsFileName() const { return EmcalLoader()->GetRecPointsFileName() ; } 
+  Int_t                   LoadRecPoints(Option_t* opt="") const { return EmcalLoader()->LoadRecPoints(opt) ; }
+  Int_t                   LoadClusterizer(Option_t* opt="") const {
     return  EmcalLoader()->LoadClusterizer(opt) ; }
-  Int_t                   WriteRecPoints(Option_t* opt="") { return EmcalLoader()->WriteRecPoints(opt) ; }
-  Int_t                   WriteClusterizer(Option_t* opt=""){
+  Int_t                   WriteRecPoints(Option_t* opt="") const { return EmcalLoader()->WriteRecPoints(opt) ; }
+  Int_t                   WriteClusterizer(Option_t* opt="") const {
     return  EmcalLoader()->WriteClusterizer(opt) ; }
 
   //========== TrackSegments   TClonesArray * TrackSegments(const char * name = 0) { 
-  TClonesArray *           TrackSegments() ;
-  AliEMCALTrackSegment *  TrackSegments(const Int_t index) { return static_cast<AliEMCALTrackSegment *>(TrackSegments()->At(index)) ;} 
+  TClonesArray *           TrackSegments() const ;
+  AliEMCALTrackSegment *  TrackSegments(const Int_t index) const { return static_cast<AliEMCALTrackSegment *>(TrackSegments()->At(index)) ;} 
   TTree *               TreeT() const ;
   AliEMCALTrackSegmentMaker * TrackSegmentMaker() ;
-  TString               GetTracksFileName() { return EmcalLoader()->GetTracksFileName() ; } 
-  Int_t                 LoadTracks(Option_t* opt="") { return EmcalLoader()->LoadTracks(opt) ; }
-  Int_t                 LoadTrackSegementMaker(Option_t* opt=""){
+  TString               GetTracksFileName() const { return EmcalLoader()->GetTracksFileName() ; } 
+  Int_t                 LoadTracks(Option_t* opt="") const { return EmcalLoader()->LoadTracks(opt) ; }
+  Int_t                 LoadTrackSegementMaker(Option_t* opt="") const {
     return  EmcalLoader()->LoadTrackSegmentMaker(opt) ; }
-  Int_t                 WriteTracks(Option_t* opt="") { return EmcalLoader()->WriteTracks(opt) ; }
-  Int_t                 WriteTrackSegmentMaker(Option_t* opt=""){
+  Int_t                 WriteTracks(Option_t* opt="") const { return EmcalLoader()->WriteTracks(opt) ; }
+  Int_t                 WriteTrackSegmentMaker(Option_t* opt="") const {
     return  EmcalLoader()->WriteTracker(opt) ; }
   //========== RecParticles ===========
 
-  TClonesArray *         RecParticles() ;
-  AliEMCALRecParticle *   RecPaticles(const Int_t index) { return static_cast<AliEMCALRecParticle *>(RecParticles()->At(index)) ;} 
+  TClonesArray *         RecParticles() const ;
+  AliEMCALRecParticle *   RecPaticles(const Int_t index) const { return static_cast<AliEMCALRecParticle *>(RecParticles()->At(index)) ;} 
   TTree *               TreeP() const ;
   AliEMCALPID * PID() ;
-  TString               GetRecParticlesFileName() { return EmcalLoader()->GetRecParticlesFileName() ; } 
-  Int_t                 LoadRecParticles(Option_t* opt="") { return EmcalLoader()->LoadRecParticles(opt) ; }
-  Int_t                 LoadPID(Option_t* opt=""){
+  TString               GetRecParticlesFileName() const { return EmcalLoader()->GetRecParticlesFileName() ; } 
+  Int_t                 LoadRecParticles(Option_t* opt="") const { return EmcalLoader()->LoadRecParticles(opt) ; }
+  Int_t                 LoadPID(Option_t* opt="") const {
     return  EmcalLoader()->LoadPID(opt) ; }
-  Int_t                 WriteRecParticles(Option_t* opt="") { return EmcalLoader()->WriteRecParticles(opt) ; }
-  Int_t                 WritePID(Option_t* opt=""){
+  Int_t                 WriteRecParticles(Option_t* opt="") const { return EmcalLoader()->WriteRecParticles(opt) ; }
+  Int_t                 WritePID(Option_t* opt="") const {
     return  EmcalLoader()->WritePID(opt) ; }
 
 
   void SetDebug(Int_t level) {fgDebug = level;} // Set debug level 
-  void PostClusterizer(AliEMCALClusterizer * clu) 
+    void PostClusterizer(AliEMCALClusterizer * clu) 
     const{EmcalLoader()->PostClusterizer(clu) ; }
   void PostPID(AliEMCALPID * pid) 
     const{EmcalLoader()->PostPID(pid) ; }
@@ -227,7 +220,7 @@ private:
 
 //  AliEMCALCalibrationDB * fcdb ;       //!
    
-  static AliEMCALLoader * fgEmcalLoader ;
+  static AliEMCALLoader * fgEmcalLoader ; // pointer to EMCAL Loader
   static AliEMCALGetter * fgObjGetter; // pointer to the unique instance of the singleton 
   
   enum EDataTypes{kHits,kSDigits,kDigits,kRecPoints,kTracks,kNDataTypes};
