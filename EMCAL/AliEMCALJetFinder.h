@@ -63,7 +63,7 @@ class AliEMCALJetFinder : public TTask {
     void SetParametersForBgSubtraction
     (Int_t mode=0, Float_t minMove=0.05, Float_t maxMove=0.15, Float_t precBg=0.035);
     //    virtual void Print(Option_t* option="") const;    // *MENU*
-
+    void  SetRandomBg(Bool_t flag) {fRandomBg = flag;}
     Bool_t GetWriteKey() {return fWrite;}
   //AliEMCALJet* GetJetT() {return fJetT[0];}
     AliEMCALJet* GetJetT(Int_t n = 0) {return fJetT[n];}
@@ -196,6 +196,7 @@ class AliEMCALJetFinder : public TTask {
     Int_t                          fEvent;           //! Processed event
     Float_t			   fEMCALWeight;
     Float_t			   fTrackWeight;
+    Bool_t                         fRandomBg;        //  Flag for Random Background 
     ClassDef(AliEMCALJetFinder,3)        // JetFinder for EMCAL
 }
 ;
