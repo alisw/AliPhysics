@@ -386,15 +386,16 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
 	}
     }
   Int_t digcounter=0;
+
   for(Int_t i=fRowMin; i<=fRowMax; i++)
     {
       
-      if(rowPt->fRow != i) printf("AliL3FileHandler::AliDigits2RootFile : Mismatching row numbering!!!\n");
+      if((Int_t)rowPt->fRow != i) printf("AliL3FileHandler::AliDigits2RootFile : Mismatching row numbering!!!\n");
             
       Int_t sector,row;
       fTransformer->Slice2Sector(fSlice,i,sector,row);
-      AliDigits * dig = arr->CreateRow(sector,row);
-      AliDigits *old_dig = old_array->LoadRow(sector,row);
+      AliSimDigits * dig = (AliSimDigits*)arr->CreateRow(sector,row);
+      AliSimDigits *old_dig = (AliSimDigits*)old_array->LoadRow(sector,row);
       if(!old_dig)
 	printf("AliL3FileHandler::AliDigits2RootFile : No padrow %d %d\n",sector,row);
       
@@ -402,18 +403,50 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
       digcounter=0;
       for(UInt_t j=0; j<rowPt->fNDigit; j++)
 	{
-	  UShort_t charge = digPt[j].fCharge;
-	  UChar_t pad = digPt[j].fPad;
-	  UShort_t time = digPt[j].fTime;
+	  Int_t charge = (Int_t)digPt[j].fCharge;
+	  Int_t pad = (Int_t)digPt[j].fPad;
+	  Int_t time = (Int_t)digPt[j].fTime;
 	  
 	  if(charge == 0) //Only write the digits that has not been removed
 	    continue;
-	  //dig->SetDigitFast(old_dig->GetDigit(time,pad),time,pad);
 	  digcounter++;
 	  dig->SetDigitFast(charge,time,pad);
-	  ((AliSimDigits*)dig)->SetTrackIDFast(((AliSimDigits*)old_dig)->GetTrackID((Int_t)time,(Int_t)pad,0),time,pad,0);
-	  ((AliSimDigits*)dig)->SetTrackIDFast(((AliSimDigits*)old_dig)->GetTrackID((Int_t)time,(Int_t)pad,1),time,pad,1);
-	  ((AliSimDigits*)dig)->SetTrackIDFast(((AliSimDigits*)old_dig)->GetTrackID((Int_t)time,(Int_t)pad,2),time,pad,2);
+	  
+	  Int_t trackID[3] = {old_dig->GetTrackID(time,pad,0),old_dig->GetTrackID(time,pad,1),old_dig->GetTrackID(time,pad,2)};
+	  Int_t s_pad = pad;
+	  Int_t s_time = time - 1;
+	  while(trackID[0] < 0)
+	    {
+	      if(s_time >= 0 && s_time < fTransformer->GetNTimeBins() && s_pad >= 0 && s_pad < fTransformer->GetNPads(i))
+		{
+		  if(old_dig->GetTrackID(s_time,s_pad,0) > 0)
+		    {
+		      trackID[0]=old_dig->GetTrackID(s_time,s_pad,0); 
+		      trackID[1]=old_dig->GetTrackID(s_time,s_pad,1); 
+		      trackID[2]=old_dig->GetTrackID(s_time,s_pad,2); 
+		    }
+		}
+	      if(s_pad == pad && s_time == time - 1)
+		s_time = time + 1;
+	      else if(s_pad == pad && s_time == time + 1)
+		{s_pad = pad - 1; s_time = time;}
+	      else if(s_pad == pad - 1 && s_time == time)
+		s_time = time - 1;
+	      else if(s_pad == pad - 1 && s_time == time - 1)
+		s_time = time + 1;
+	      else if(s_pad == pad - 1 && s_time == time + 1)
+		{s_pad = pad + 1; s_time = time;}
+	      else if(s_pad == pad + 1 && s_time == time)
+		s_time = time - 1;
+	      else if(s_pad == pad + 1 && s_time == time - 1)
+		s_time = time + 1;
+	      else 
+		break;
+	    }
+	  
+	  dig->SetTrackIDFast(trackID[0],time,pad,0);
+	  dig->SetTrackIDFast(trackID[1],time,pad,1);
+	  dig->SetTrackIDFast(trackID[2],time,pad,2);
 	  
 	}
       //cout<<"Wrote "<<digcounter<<" on row "<<i<<endl;
