@@ -11,9 +11,16 @@ PACKAGE = EMCAL
 
 SRCS          =  AliEMCAL.cxx  AliEMCALGeometry.cxx AliEMCALv0.cxx \
 	         AliEMCALv1.cxx AliEMCALHit.cxx AliEMCALDigit.cxx \
-	         AliEMCALSDigitizer.cxx AliEMCALDigitizer.cxx  \
+                 AliEMCALSDigitizer.cxx AliEMCALDigitizer.cxx \
+		 AliEMCALGetter.cxx \
+		 AliEMCALJetFinder.cxx AliEMCALJet.cxx AliEMCALFast.cxx \
 	         AliEMCALGetter.cxx AliEMCALTick.cxx 
 #                AliEMCALRecPoint.cxx AliEMCALEmcRecPoint.cxx AliEMCALClusterizer.cxx 
+
+
+# FORTRAN sources
+
+FSRCS	     = jet_finder_ua1.F
 
 # C++ Headers
 
@@ -29,9 +36,14 @@ DICTO         = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(DICT))
 
 OBJS          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
+# FORTRAN Objects
+FOBJS         = $(patsubst %.F,tgt_$(ALICE_TARGET)/%.o,$(FSRCS))
 # C++ compilation flags
 
 CXXFLAGS      = $(CXXOPTS) -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include/
+
+
+FFLAGS        = $(FOPT)
 
 ALSRCS  = $(SRCS) $(SHSRCS) $(RCSRCS) $(DUSRCS) dummies.c
 
@@ -47,9 +59,9 @@ $(LIBDIR)/libEMCAL.$(SL):			$(OBJS) $(FOBJS)
 
 $(DICT):					$(HDRS)
 
-depend:				$(SRCS) 
+depend:			 $(SRCS) 
 
-TOCLEAN		=	 $(OBJS) *Cint.cxx *Cint.h
+TOCLEAN		=	 $(OBJS) $(FOBJS) *Cint.cxx *Cint.h
 
 CHECKS        = $(patsubst %.cxx,check/%.viol,$(SRCS))
 
