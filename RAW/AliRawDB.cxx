@@ -30,6 +30,7 @@
 #include "event.h"
 #endif
 
+#include "AliESD.h"
 #include "AliRawEvent.h"
 #include "AliRawEventHeader.h"
 #include "AliStats.h"

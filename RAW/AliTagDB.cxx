@@ -26,8 +26,10 @@
 
 #include <TSystem.h>
 
-#include "AliRawDB.h"
+#include "AliESD.h"
 
+#include "AliRawDB.h"
+#include "AliRawEventHeader.h"
 #include "AliTagDB.h"
 
 
