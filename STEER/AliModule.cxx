@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.8  2000/02/23 16:25:22  fca
+AliVMC and AliGeant3 classes introduced
+ReadEuclid moved from AliRun to AliModule
+
 Revision 1.7  1999/09/29 09:24:29  fca
 Introduction of the Copyright and cvs Log
 
@@ -105,8 +109,10 @@ AliModule::~AliModule()
   fHistograms = 0;
   //
   // Delete ROOT geometry
-  fNodes->Clear();
-  delete fNodes;
+  if(fNodes) {
+    fNodes->Clear();
+    delete fNodes;
+  }
   //
   // Delete TArray objects
   delete fIdtmed;
