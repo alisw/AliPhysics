@@ -217,7 +217,7 @@ AliMUON::AliMUON(const char *name, const char *title)
 }
  
 //___________________________________________
-AliMUON::AliMUON(const AliMUON& rMUON)
+AliMUON::AliMUON(const AliMUON& rMUON):AliDetector(rMUON)
 {
 // Dummy copy constructor
     ;
@@ -1108,7 +1108,7 @@ AliMUONMerger*  AliMUON::Merger()
 
 
 
-AliMUON& AliMUON::operator = (const AliMUON& rhs)
+AliMUON& AliMUON::operator = (const AliMUON& /*rhs*/)
 {
 // copy operator
 // dummy version
