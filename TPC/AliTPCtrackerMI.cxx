@@ -367,7 +367,32 @@ void AliTPCtrackerMI::FillESD(TObjArray* arr)
 	iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);	
 	//iotrack.SetTPCindex(i);
 	fEvent->AddTrack(&iotrack);
-      }        
+	continue;
+      } 
+      if ( (pt->GetNumberOfClusters()>30) && (Float_t(pt->GetNumberOfClusters())/Float_t(pt->fNFoundable))>0.70) {
+	Int_t found,foundable,shared;
+	pt->GetClusterStatistic(0,60,found, foundable,shared,kFALSE);
+	if ( (found>20) && (pt->fNShared/float(pt->GetNumberOfClusters())<0.2)){
+	  AliESDtrack iotrack;
+	  iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);	
+	  //iotrack.SetTPCindex(i);
+	  fEvent->AddTrack(&iotrack);
+	  continue;
+	}
+      }       
+      
+      if ( (pt->GetNumberOfClusters()>20) && (Float_t(pt->GetNumberOfClusters())/Float_t(pt->fNFoundable))>0.8) {
+	Int_t found,foundable,shared;
+	pt->GetClusterStatistic(0,60,found, foundable,shared,kFALSE);
+	if (found<20) continue;
+	if (pt->fNShared/float(pt->GetNumberOfClusters())>0.2) continue;
+	//
+	AliESDtrack iotrack;
+	iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);	
+	//iotrack.SetTPCindex(i);
+	fEvent->AddTrack(&iotrack);
+	continue;
+      }   
     }
   }
 }
