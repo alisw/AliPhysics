@@ -28,6 +28,7 @@
 #include "AliConst.h"
 #include "AliGenBox.h"
 #include "AliRun.h"
+#include "AliGenEventHeader.h"
 
 ClassImp(AliGenBox)
 
@@ -102,6 +103,10 @@ void AliGenBox::Generate()
 	}
 	PushTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
     }
+
+    AliGenEventHeader* header = new AliGenEventHeader("BOX");
+    header->SetPrimaryVertex(fVertex);
+    gAlice->SetGenEventHeader(header); 
 }
 
 //_____________________________________________________________________________
