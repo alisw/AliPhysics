@@ -15,6 +15,12 @@
 
 /*
   $Log$
+  Revision 1.7  2000/05/18 10:31:36  jbarbosa
+  Fixed positioning of spacers inside freon.
+  Fixed positioning of proximity gap
+  inside methane.
+  Fixed cut on neutral particles in the StepManager.
+
   Revision 1.6  2000/04/28 11:51:58  morsch
    Dimensions of arrays hits and Ckov_data corrected.
 
@@ -918,8 +924,8 @@ void AliRICHv0::StepManager()
     static Int_t   idvol;
     static Int_t   vol[2];
     Int_t          ipart;
-    static Float_t hits[17];
-    static Float_t Ckov_data[17];
+    static Float_t hits[18];
+    static Float_t Ckov_data[18];
     TLorentzVector Position;
     TLorentzVector Momentum;
     Float_t        pos[3];
@@ -958,6 +964,7 @@ void AliRICHv0::StepManager()
     Ckov_data[3] = pos[2];                 // Z-position for hit
     //Ckov_data[11] = gAlice->CurrentTrack();
 
+    AliRICH *RICH = (AliRICH *) gAlice->GetDetector("RICH"); 
     
     /********************Store production parameters for Cerenkov photons************************/ 
 //is it a Cerenkov photon? 
@@ -1174,11 +1181,32 @@ void AliRICHv0::StepManager()
 			Ckov_data[8]= Ckov_data[8]+1;
 			Ckov_data[9]= (Float_t) fNPadHits;
 		    }
+
+		    TParticle *MIP = (TParticle*)(*gAlice->Particles())[Ckov_data[10]];
+		    TClonesArray *Hits = RICH->Hits();
+		    AliRICHHit *mipHit = (AliRICHHit*) (Hits->UncheckedAt(0));
+		    mom[0] = current->Px();
+		    mom[1] = current->Py();
+		    mom[2] = current->Pz();
+		    Float_t energyckov = current->Energy();
+		    Float_t energymip = MIP->Energy();
+		    Float_t Mip_px = mipHit->fMomX;
+		    Float_t Mip_py = mipHit->fMomY;
+		    Float_t Mip_pz = mipHit->fMomZ;
+		    		    
+		    Float_t r = mom[0]*mom[0] + mom[1]*mom[1] + mom[2]*mom[2];
+		    Float_t rt = TMath::Sqrt(r);
+		    Float_t Mip_r = Mip_px*Mip_px + Mip_py*Mip_py + Mip_pz*Mip_pz;	
+		    Float_t Mip_rt = TMath::Sqrt(Mip_r);
+		    Float_t coscerenkov = (mom[0]*Mip_px + mom[1]*Mip_py + mom[2]*Mip_pz)/(rt*Mip_rt);
+		    Float_t cherenkov = TMath::ACos(coscerenkov);
+		    Ckov_data[17]=cherenkov;
+
 		    //if (sector != -1)
-		      //{
-			AddHit(gAlice->CurrentTrack(),vol,Ckov_data);
-			AddCerenkov(gAlice->CurrentTrack(),vol,Ckov_data);
-		      //}
+		    //{
+		    AddHit(gAlice->CurrentTrack(),vol,Ckov_data);
+		    AddCerenkov(gAlice->CurrentTrack(),vol,Ckov_data);
+		    //}
 		}
 	    }
 	}
