@@ -254,7 +254,7 @@ Int_t  AliTPCHTable::GetFrequencies(const char *fname){
   return 0;
 }
 
-Int_t AliTPCHTable::SetValFrequency(const Int_t Val,Double_t Value){
+Int_t AliTPCHTable::SetValFrequency(Int_t Val,Double_t Value){
   //This method sets to "Value" the frequency of the symbol "Val"
   fCode[Val]=Value;
   fNum=1;
@@ -263,7 +263,7 @@ Int_t AliTPCHTable::SetValFrequency(const Int_t Val,Double_t Value){
 
 //////////////////////////////////////////////////////////////////////////////
 
-Int_t AliTPCHTable::SetFrequency(const Int_t Val){
+Int_t AliTPCHTable::SetFrequency(Int_t Val){
   //It increments by one the frequency of the symbol "Val" whose frequency is 
   //stored in the fCode array
   fCode[Val]++;

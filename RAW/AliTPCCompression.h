@@ -30,11 +30,11 @@ class AliTPCCompression:public TObject{
   Int_t  DecompressDataOptTables(Int_t NumTables,const char* fname,char* fDest="SourceDecompressed.dat");
   //This method is used to decompress a file compressed using the CompressDataOptTable method
   //It expects a set of table used for compressing the file in the same directory of the compressed file
-  Int_t  Decompress(AliTPCHNode *RootNode[],const Int_t NumTables,char* PointBuffer,UInt_t BufferSize,UShort_t out[],UInt_t &dim);
+  Int_t  Decompress(AliTPCHNode *RootNode[],Int_t NumTables,char* PointBuffer,UInt_t BufferSize,UShort_t out[],UInt_t &dim);
   //This method is used to decompress data stored in a char* buffer
-  Int_t  FillTables(const char* fSource,AliTPCHTable* table[],const Int_t NumTables);
+  Int_t  FillTables(const char* fSource,AliTPCHTable* table[],Int_t NumTables);
   //This method is used to compute the frequencies of the symbols in the source file
-  Int_t  CreateTables(const char* fSource,const Int_t NumTables);
+  Int_t  CreateTables(const char* fSource,Int_t NumTables);
   //This method is used to create and store the tables 
   Int_t  CreateTableFormula(Double_t beta,UInt_t  M,Int_t dim,Int_t Type);
   //This method is used to create and store the Bunch length or Time Gap Table using a formula
@@ -48,9 +48,9 @@ class AliTPCCompression:public TObject{
   //It's is useful for debugging
   Int_t  CreateTablesFromTxtFiles(Int_t NumTable);
   //This method creates a set of binary tables starting from a set of txt tables
-  Int_t  DestroyTables(AliTPCHNode *RootNode[],const Int_t NumTables);
+  Int_t  DestroyTables(AliTPCHNode *RootNode[],Int_t NumTables);
   //This methods is use to deallocate the memory used by Huffman trees
-  void    CreateTreesFromFile(AliTPCHNode *RootNode[],const Int_t NumTables);
+  void    CreateTreesFromFile(AliTPCHNode *RootNode[],Int_t NumTables);
   //This method is like the previous one but the tables are stored in binary files
   //It is used in the decompression phase (DecompressDataOptTables())
  private:

@@ -125,7 +125,7 @@ void AliTPCCompression::NextTable(Int_t Val,Int_t &NextTableType,Int_t &BunchLen
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Int_t AliTPCCompression::FillTables(const char* fSource,AliTPCHTable* table[],const Int_t /*NumTables*/){
+Int_t AliTPCCompression::FillTables(const char* fSource,AliTPCHTable* table[],Int_t /*NumTables*/){
   //This method is used to compute the frequencies of the symbols in the source file
   AliTPCBuffer160 buff(fSource,0);
   UInt_t countWords=0;
@@ -261,7 +261,7 @@ Int_t AliTPCCompression::StoreTables(AliTPCHTable* table[],const Int_t NumTable)
   return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////////////
-Int_t AliTPCCompression::CreateTableFormula(Double_t beta,UInt_t  M,Int_t dim,Int_t Type){
+Int_t AliTPCCompression::CreateTableFormula(Double_t beta,UInt_t M,Int_t dim,Int_t Type){
   // Type = 0 for Bunch length
   // Type = 1 for Time Gap
   UInt_t freq;
@@ -325,7 +325,7 @@ Int_t AliTPCCompression::CreateTableFormula(Double_t beta,UInt_t  M,Int_t dim,In
   return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////////////
-Int_t AliTPCCompression::CreateTables(const char* fSource,const Int_t NumTables){
+Int_t AliTPCCompression::CreateTables(const char* fSource,Int_t NumTables){
   //Tables manager
   /*
     Table index:
@@ -760,7 +760,7 @@ Int_t AliTPCCompression::CompressDataOptTables(Int_t NumTable,const char* fSourc
 /*                               DECOMPRESSION                                        */
 ////////////////////////////////////////////////////////////////////////////////////////
 
-void AliTPCCompression::CreateTreesFromFile(AliTPCHNode *RootNode[],const Int_t NumTables){
+void AliTPCCompression::CreateTreesFromFile(AliTPCHNode *RootNode[],Int_t NumTables){
   //For each table this method builds the associate Huffman tree starting from the codeword and 
   //the codelength of each symbol 
   if(fVerbose)
@@ -1022,7 +1022,7 @@ Int_t AliTPCCompression::DecompressDataOptTables(Int_t NumTables,const char* fna
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-Int_t AliTPCCompression::Decompress(AliTPCHNode *RootNode[],const Int_t /*NumTables*/,char* PointBuffer,UInt_t BufferSize,UShort_t out[],UInt_t &dim){
+Int_t AliTPCCompression::Decompress(AliTPCHNode *RootNode[],Int_t /*NumTables*/,char* PointBuffer,UInt_t BufferSize,UShort_t out[],UInt_t &dim){
   //This method decompress a file using separate Huffman tables
 
   fPointBuffer=PointBuffer+BufferSize-4;
@@ -1109,7 +1109,7 @@ Int_t AliTPCCompression::Decompress(AliTPCHNode *RootNode[],const Int_t /*NumTab
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-Int_t AliTPCCompression::DestroyTables(AliTPCHNode *RootNode[],const Int_t NumTables){
+Int_t AliTPCCompression::DestroyTables(AliTPCHNode *RootNode[],Int_t NumTables){
   //The trees are deleted
   for(Int_t j=0;j<NumTables;j++){
     DeleteHuffmanTree(RootNode[j]);

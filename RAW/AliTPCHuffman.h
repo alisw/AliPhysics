@@ -63,14 +63,14 @@ class AliTPCHTable: public TObject{
   //in the specified file
   Int_t      GetFrequencies(const char* fname);
   //This method increase by one the frequency of a given value
-  Int_t      SetFrequency(const Int_t Val);
+  Int_t      SetFrequency(Int_t Val);
   //This method stores the frequency of the symbol in a text file
   Int_t      StoreFrequencies(const char *fname)const;
   void       CompleteTable(Int_t k);
   Double_t   GetEntropy()const;
   void       SetVerbose(Int_t val){fVerbose=val;}
   //Method to set directly a frequency 
-  Int_t      SetValFrequency(const Int_t Val,Double_t Value);
+  Int_t      SetValFrequency(Int_t Val,Double_t Value);
   Int_t      NormalizeFrequencies();
  private:
   //This method executes the pre-order visit of an Huffman tree and calculates the 
