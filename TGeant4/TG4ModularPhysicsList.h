@@ -9,11 +9,13 @@
 // Only G4Decay is created directly in this modular
 // physics list.
 
-#ifndef TG4_PHYSICS_LIST_H
-#define TG4_PHYSICS_LIST_H
+#ifndef TG4_MODULAR_PHYSICS_LIST_H
+#define TG4_MODULAR_PHYSICS_LIST_H
 
 #include <G4VModularPhysicsList.hh>
 #include <globals.hh>
+
+class TG4ExtDecayer;
 
 class G4VProcess;
 
@@ -21,6 +23,8 @@ class TG4ModularPhysicsList: public G4VModularPhysicsList
 {
   public:
     TG4ModularPhysicsList();
+    // --> protected
+    // TG4ModularPhysicsList(const TG4ModularPhysicsList& right);
     virtual ~TG4ModularPhysicsList();
   
     // methods
@@ -29,6 +33,11 @@ class TG4ModularPhysicsList: public G4VModularPhysicsList
     void PrintAllProcesses() const;
     
   protected:
+    TG4ModularPhysicsList(const TG4ModularPhysicsList& right);
+
+    // operators
+    TG4ModularPhysicsList& operator=(const TG4ModularPhysicsList& right);
+
     // methods
     virtual void ConstructParticle();
     virtual void ConstructProcess();
@@ -43,6 +52,9 @@ class TG4ModularPhysicsList: public G4VModularPhysicsList
     
         // construct general processes
     void ConstructGeneral();	
+
+  private:
+    TG4ExtDecayer*  fExtDecayer;
 };
 
 #endif //TG4_MODULAR_PHYSICS_LIST_H
