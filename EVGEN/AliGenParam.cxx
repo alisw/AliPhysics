@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2000/09/08 15:39:01  morsch
+Handle the case fForceDecay=all during the generation, i.e. select all secondaries.
+
 Revision 1.20  2000/09/06 14:35:44  morsch
 Use AliDecayerPythia for particle decays.
 
@@ -228,9 +231,9 @@ void AliGenParam::Init()
     }
 //
 // particle decay related initialization
+    fDecayer->SetForceDecay(fForceDecay);
     fDecayer->Init();
-// semimuonic decays of charm and beauty
-    fDecayer->ForceDecay(fForceDecay);
+
 //
     switch (fForceDecay) 
     {
@@ -273,7 +276,7 @@ void AliGenParam::Generate()
 // setting fForceDecay = nodecay (SetForceDecay(nodecay)) 
 //
 
-
+    fDecayer->ForceDecay();
   Float_t polar[3]= {0,0,0};  // Polarisation of the parent particle (for GEANT tracking)
   Float_t origin0[3];         // Origin of the generated parent particle (for GEANT tracking)
   Float_t pt, pl, ptot;       // Transverse, logitudinal and total momenta of the parent particle

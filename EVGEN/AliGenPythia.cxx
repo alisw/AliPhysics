@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.20  2000/09/06 14:29:33  morsch
+Use AliPythia for event generation an AliDecayPythia for decays.
+Correct handling of "nodecay" option
+
 Revision 1.19  2000/07/11 18:24:56  fca
 Coding convention corrections + few minor bug fixes
 
@@ -105,9 +109,10 @@ void AliGenPythia::Init()
     //    gSystem->Exec("ln -s $ALICE_ROOT/data/Decay.table fort.1");
     //    fPythia->Pyupda(2,1);    
     //    gSystem->Exec("rm fort.1");
-    
+
+    fDecayer->SetForceDecay(fForceDecay);    
     fDecayer->Init();
-    fDecayer->ForceDecay(fForceDecay);
+
 
     fPythia->SetCKIN(3,fPtHardMin);
     fPythia->SetCKIN(4,fPtHardMax);    
@@ -181,7 +186,7 @@ void AliGenPythia::Init()
 void AliGenPythia::Generate()
 {
 // Generate one event
-  fDecayer->ForceDecay(fForceDecay);
+    fDecayer->ForceDecay();
 
     Float_t polar[3] =   {0,0,0};
     Float_t origin[3]=   {0,0,0};
