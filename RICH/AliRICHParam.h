@@ -10,18 +10,29 @@ public:
            AliRICHParam();  
   virtual ~AliRICHParam()                    {;}  
   
-  void    Recalc();//Recalculate dependent parameters after changes applied  
-  void    Segmentation(Int_t Nx, Int_t Ny)   {fNx=Nx;fNy=Ny;Recalc();}
-  Int_t   Nx()                          const{return fNx;}
-  Int_t   Ny()                          const{return fNy;}   
+  void    Recalc();                                           //Recalculates dependent parameters after changes applied  
+  Int_t   Sector(Float_t x,Float_t y)const;                       //Returns sector number for given point (x,y)
+  Int_t   L2P(Float_t x,Float_t y,Int_t &iPadX,Int_t &iPadY)const;//Which pad contains point (x,y), returns sector code 
+  inline  Int_t Wire(Float_t x)const;                             //Returns wire number for local point (x,y)
+  inline  void   SigGenInit(Float_t x,Float_t y);
+  inline  Bool_t SigGenCond(Float_t x,Float_t y);
+  Float_t Gain(Float_t y);                                 //Returns total charge induced by single photon
+  Float_t TotalCharge(Int_t iPID,Float_t eloss,Float_t y); //Returns total charge induced by particle lost eloss GeV
+  Float_t PadCharge(Int_t iPadX,Int_t iPadY);              //Returns charge for a given pad
+        
+  void    Segmentation(Int_t Nx,Int_t Ny)    {fNpadX=Nx;fNpadY=Ny;Recalc();}
+  Int_t   Nx()                          const{return fNpadX;}
+  Int_t   Ny()                          const{return fNpadY;}   
   void    DeadZone(Float_t a)                {       fDeadZone=a;Recalc();}
   Float_t DeadZone()                    const{return fDeadZone;}
-  void    PadSize(Float_t x,Float_t y)       {       fPadX=x;fPadY=y;Recalc();} 
-  Float_t PadX()                        const{return fPadX;}
-  Float_t PadY()                        const{return fPadY;}
-  Float_t PadPlaneWidth()               const{return fPadPlaneWidth;}
-  Float_t PadPlaneLength()              const{return fPadPlaneLength;}  
-
+  void    PadSize(Float_t x,Float_t y)       {       fPadSizeX=x;fPadSizeY=y;Recalc();} 
+  Float_t PadSizeX()                    const{return fPadSizeX;}
+  Float_t PadSizeY()                    const{return fPadSizeY;}
+  Float_t SectorSizeX()                 const{return fSectorSizeX;}
+  Float_t SectorSizeY()                 const{return fSectorSizeY;}  
+  Float_t PcSizeX()                     const{return fPcSizeX;}
+  Float_t PcSizeY()                     const{return fPcSizeY;}
+            
   void    Size(Float_t x,Float_t y,Float_t z){fSizeX=x;fSizeY=y;fSizeZ=z;}
   void    GeantSize(Float_t *pArr)      const{pArr[0]=fSizeX/2;pArr[1]=fSizeY/2;pArr[2]=fSizeZ/2;}  
   Float_t SizeX()                       const{return fSizeX;}
@@ -67,48 +78,45 @@ public:
   Float_t ChargeSlope()                      {return fChargeSlope;}
   void    MaxAdc(Float_t a)                  {       fMaxAdc=a;}
   Float_t MaxAdc()                      const{return fMaxAdc;}
-  void    Pitch(Float_t a)                   {       fPitch=a;};
+  void    Pitch(Float_t a)                   {       fPitch=a;}
   Float_t Pitch()                       const{return fPitch;}
   void    AlphaFeedback(Float_t a)           {       fAlphaFeedback=a;}
   Float_t AlphaFeedback()               const{return fAlphaFeedback;}
   void    EIonisation(Float_t a)             {       fEIonisation=a;}
   Float_t EIonisation()                 const{return fEIonisation;}                            
   void    SqrtKx3(Float_t a)                 {       fSqrtKx3=a;};
-  void    Kx2(Float_t a)                     {       fKx2=a;};
-  void    Kx4(Float_t a)                     {       fKx4=a;};
-  void    SqrtKy3(Float_t a)                 {       fSqrtKy3=a;};
-  void    Ky2(Float_t a)                     {       fKy2=a;};
-  void    Ky4(Float_t a)                     {       fKy4=a;};
-  void    WireSag(Int_t a)                   {       fWireSag=a;};
-  void    Voltage(Int_t a)                   {       fVoltage=a;};       
+  void    Kx2(Float_t a)                     {       fKx2=a;}
+  void    Kx4(Float_t a)                     {       fKx4=a;}
+  void    SqrtKy3(Float_t a)                 {       fSqrtKy3=a;}
+  void    Ky2(Float_t a)                     {       fKy2=a;}
+  void    Ky4(Float_t a)                     {       fKy4=a;}
+  void    WireSag(Int_t a)                   {       fWireSag=a;}
+  void    Voltage(Int_t a)                   {       fVoltage=a;}       
+  Float_t Voltage()                     const{return fVoltage;}       
 protected:
-  Int_t   fNx;                //number of pads along X
-  Int_t   fNy;                //number of pads along Y
-  Float_t fDeadZone;          //spacer between PC planes, cm     
-  Float_t fPadX;              //pad width, cm
-  Float_t fPadY;              //pad lenght, cm
-  Float_t fPadPlaneWidth;     //pad plane width, cm
-  Float_t fPadPlaneLength;    //pad plane length, cm
+  Int_t   fNpadX;  Int_t   fNpadY;                      //number of pads along X-Y in whole chamber (6 sectors)
+  Float_t fDeadZone;                              //space between PC sectors, cm     
+  Float_t fPadSizeX,fPadSizeY;                    //pad size, cm
+  Float_t fSectorSizeX,fSectorSizeY;              //photocathod sector size, cm
+  Float_t fWirePitch;                             //not yet known parameter ???
   
-  Float_t fSizeX;             //chamber length, cm
-  Float_t fSizeY;             //chamber thickness, cm
-  Float_t fSizeZ;             //chamber width, cm
-  Float_t fAngleRot;          //azimuthal rotation angle in X-Y plane, deg  
-  Float_t fAngleYZ;           //angle between RICH chambers in YZ plane, deg
-  Float_t fAngleXY;           //angle between RICH chambers in XY plane, deg
-  Float_t fOffset;            //chambers offset from IP, cm   
-  Float_t fGapThickness;            //gap thickness, cm
-  Float_t fProximityGapThickness;   //proximity gap thickness, cm
-  Float_t fQuartzLength;            //quartz length, cm
-  Float_t fQuartzWidth;             //quartz width, cm
-  Float_t fQuartzThickness;         //quartz thickness, cm
-  Float_t fOuterFreonLength;        //outer freon length, cm
-  Float_t fOuterFreonWidth;         //outer freon width, cm
-  Float_t fInnerFreonLength;        //inner freon length, cm
-  Float_t fInnerFreonWidth;         //inner freon width, cm
-  Float_t fFreonThickness;          //freon thickness
-  Float_t fRadiatorToPads;          //distance from radiator to pads, cm
-
+  Int_t   fCurrentPadX,fCurrentPadY;              //???
+  Int_t   fCurrentWire;                           //???
+    
+  Float_t fSizeX;  Float_t fSizeY; Float_t fSizeZ;                                //chamber outer size, cm
+  Float_t fAngleRot;                                                              //azimuthal rotation XY plane, deg  
+  Float_t fAngleYZ;                                                               //angle between chambers YZ plane, deg
+  Float_t fAngleXY;                                                               //angle between chambers XY plane, deg
+  Float_t fOffset;                                                                //chambers offset from IP, cm   
+  Float_t fGapThickness;                                                          //gap thickness, cm
+  Float_t fProximityGapThickness;                                                 //proximity gap thickness, cm
+  Float_t fQuartzLength;     Float_t fQuartzWidth;     Float_t fQuartzThickness;  //quartz window size, cm
+  Float_t fOuterFreonLength; Float_t fOuterFreonWidth;                            //freon box outer size, cm
+  Float_t fInnerFreonLength; Float_t fInnerFreonWidth;                            //freon box inner size, cm
+  Float_t fFreonThickness;                                                        //freon thickness
+  Float_t fRadiatorToPads;                                                        //distance from radiator to pads, cm
+  Float_t fPcSizeX,fPcSizeY;                                                      //photocathod active area size,cm
+  
   Float_t fChargeSlope;              //Slope of the charge distribution
   Float_t fChargeSpreadX;            //Width of the charge distribution in x
   Float_t fChargeSpreadY;            //Width of the charge distribution in y
@@ -128,5 +136,28 @@ protected:
 
   ClassDef(AliRICHParam,1)    //RICH main parameters
 };
-
+//__________________________________________________________________________________________________
+Int_t AliRICHParam::Wire(Float_t x)const
+{
+  Int_t iWire=(x>0)?Int_t(x/fWirePitch)+1:Int_t(x/fWirePitch)-1;
+  return iWire;
+}//Int_t AliRICHParam::Wire(Float_t x, Float_t y)
+//__________________________________________________________________________________________________
+void AliRICHParam::SigGenInit(Float_t x,Float_t y)
+{//Initialises pad and wire position during stepping
+  L2P(x,y,fCurrentPadX,fCurrentPadY);
+  fCurrentWire= (x>0) ? Int_t(x/fWirePitch)+1 : Int_t(x/fWirePitch)-1 ;
+}
+//__________________________________________________________________________________________________
+Bool_t AliRICHParam::SigGenCond(Float_t x,Float_t y)
+{//Signal will be generated if particle crosses pad boundary or boundary between two wires.
+  Int_t curPadX,curPadY;
+  L2P(x,y,curPadX,curPadY);
+  Int_t currentWire=(x>0) ? Int_t(x/fWirePitch)+1 : Int_t(x/fWirePitch)-1;
+  if((curPadX != fCurrentPadX) || (curPadY != fCurrentPadY) || (currentWire!=fCurrentWire)) 
+    return kTRUE;
+  else
+    return kFALSE;
+}
+//__________________________________________________________________________________________________
 #endif //AliRICHParam_h
