@@ -5,6 +5,15 @@
 
 
 struct AliMiniHeader {
+  AliMiniHeader() {
+    fMagicWord[0] = (kMagicWord >> 0) & 0xFF;
+    fMagicWord[1] = (kMagicWord >> 8) & 0xFF;
+    fMagicWord[2] = (kMagicWord >> 16) & 0xFF;
+    fVersion = 1;
+  }
+
+  enum {kMagicWord = 0x123456};
+
   UInt_t    fSize;              // size of the raw data in bytes
   UChar_t   fDetectorID;        // unique detector number
   UChar_t   fMagicWord[3];      // hexadecimal word 123456 (used to detect byte swapping)
