@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.61  2001/03/30 07:04:10  morsch
+Call fGenerator->FinishRun() for final print-outs, cross-section and weight calculations.
+
 Revision 1.60  2001/03/21 18:22:30  hristov
 fParticleFileMap fix (I.Hrivnacova)
 
@@ -881,7 +884,12 @@ Int_t AliRun::GetEvent(Int_t event)
   if (fTreeK) fTreeK->SetBranchAddress("Particles", &fParticleBuffer);
   else    Error("GetEvent","cannot find Kine Tree for event:%d\n",event);
   // Create the particle stack
-  if(!fParticles) fParticles = new TClonesArray("TParticle",1000);
+
+  if(fParticles)
+      fParticles->Clear();
+  else
+      fParticles = new TClonesArray("TParticle",1000);
+  
   // Build the pointer list
   if(fParticleMap) {
     fParticleMap->Clear();
