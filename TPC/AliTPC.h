@@ -116,6 +116,7 @@ public:
    virtual AliHit* FirstHit2(Int_t track);
    virtual AliHit* NextHit2();
    
+   Int_t GetHitType(){return fHitType;}
    virtual void LoadPoints(Int_t dummy);
    virtual void LoadPoints2(Int_t dummy);
    virtual void LoadPoints3(Int_t dumy);
@@ -149,13 +150,12 @@ private:
                          // index[1] sector number, 
                          // index[2] pad row number  
                          // index[3] pad row number for which signal is calculated
-  Int_t GetHitType(){return fHitType;}
   Int_t      fNoiseDepth;  //!noise table
   Float_t *  fNoiseTable;  //![fNoiseDepth] table with noise
   Int_t      fCurrentNoise; //!index of the noise in  the noise table 
   Bool_t*    fActiveSectors; //!bool indicating which sectors are active
 
-  ClassDef(AliTPC,7)  // Time Projection Chamber class
+  ClassDef(AliTPC,8)  // Time Projection Chamber class
 };
 
 
