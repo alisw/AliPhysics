@@ -51,6 +51,8 @@
 #pragma link C++ class  AliGenEventHeader+;
 #pragma link C++ class  AliDigitizer+;
 #pragma link C++ class  AliRunDigitizer+;
+#pragma link C++ class  AliStream+;
+#pragma link C++ class  AliMergeCombi+;
 
 #endif
 
