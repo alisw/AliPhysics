@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.43  2000/10/09 09:43:17  fca
+Special remapping of hits for TPC and TRD. End-of-primary action introduced
+
 Revision 1.42  2000/10/02 21:28:14  fca
 Removal of useless dependecies via forward declarations
 
@@ -1419,9 +1422,9 @@ void AliRun::RunMC(Int_t nevent, const char *setup)
 }
 
 //_____________________________________________________________________________
-void AliRun::RunLego(const char *setup,Int_t ntheta,Float_t themin,
-		     Float_t themax,Int_t nphi,Float_t phimin,Float_t phimax,
-		     Float_t rmin,Float_t rmax,Float_t zmax)
+void AliRun::RunLego(const char *setup, Int_t nc1, Float_t c1min,
+		     Float_t c1max,Int_t nc2,Float_t c2min,Float_t c2max,
+		     Float_t rmin,Float_t rmax,Float_t zmax, AliLegoGenerator* gener)
 {
   //
   // Generates lego plots of:
@@ -1463,30 +1466,39 @@ void AliRun::RunLego(const char *setup,Int_t ntheta,Float_t themin,
 
   // check if initialisation has been done
   if (!fInitDone) InitMC(setup);
-
   //Save current generator
   AliGenerator *gen=Generator();
 
+  // Set new generator
+  if (!gener) gener  = new AliLegoGenerator();
+  ResetGenerator(gener);
+  //
+  // Configure Generator
+  gener->SetRadiusRange(rmin, rmax);
+  gener->SetZMax(zmax);
+  gener->SetCoor1Range(nc1, c1min, c1max);
+  gener->SetCoor2Range(nc2, c2min, c2max);
+  
+  
   //Create Lego object  
-  fLego = new AliLego("lego",ntheta,themin,themax,nphi,phimin,phimax,rmin,rmax,zmax);
+  fLego = new AliLego("lego",gener);
 
   //Prepare MC for Lego Run
   gMC->InitLego();
   
   //Run Lego Object
-  gMC->ProcessRun(ntheta*nphi+1);
+
+  gMC->ProcessRun(nc1*nc2+1);
   
   // Create only the Root event Tree
   MakeTree("E");
   
   // End of this run, close files
   FinishRun();
-
+  // Restore current generator
+  ResetGenerator(gen);
   // Delete Lego Object
   delete fLego; fLego=0;
-
-  // Restore current generator
-  SetGenerator(gen);
 }
 
 //_____________________________________________________________________________

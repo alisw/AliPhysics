@@ -20,8 +20,10 @@ class AliMagF;
 class AliMC;
 class AliLego;
 class AliDisplay;
+class AliLegoGenerator;
 #include "AliHeader.h"
 #include "AliGenerator.h"
+#include "AliLegoGenerator.h"
 
 enum {kKeepBit=1, kDaughtersBit=2, kDoneBit=4};
 
@@ -94,7 +96,7 @@ public:
   {RunMC(nevent,setup);}
    virtual  void  RunLego(const char *setup="Config.C",Int_t ntheta=60,Float_t themin=2,Float_t themax=178,
 			  Int_t nphi=60,Float_t phimin=0,Float_t phimax=360,Float_t rmin=0,
-			  Float_t rmax=430,Float_t zmax=10000);
+			  Float_t rmax=430,Float_t zmax=10000, AliLegoGenerator* gener=NULL);
    virtual  Bool_t IsLegoRun() const {return (fLego!=0);}
    virtual  void  SetCurrentTrack(Int_t track);                           
    virtual  void  SetDebug(const Int_t level=1) {fDebug = level;}
