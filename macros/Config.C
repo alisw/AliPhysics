@@ -584,9 +584,7 @@ AliMUON *MUON  = new AliMUONv0("MUON","normal MUON");
 //=================== PHOS parameters ===========================
 
 if(iPHOS) {
-  AliPHOS *PHOS  = new AliPHOSv0("PHOS","normal PHOS");
-  AliPHOSGeometry *geom = new AliPHOSGeometry("default");
-  geom->Init();
+  AliPHOS *PHOS  = new AliPHOSv0("PHOS","GPS2");
 }
 
 

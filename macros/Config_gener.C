@@ -744,7 +744,7 @@ AliMUON *MUON  = new AliMUONv0("MUON","normal MUON");
 }
  
 if(iPHOS) {
-AliPHOS *PHOS  = new AliPHOSv0("PHOS","normal PHOS");
+  AliPHOS *PHOS  = new AliPHOSv0("PHOS","GPS2");
 }
 
 if(iPMD) {
