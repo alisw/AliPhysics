@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/10/16 14:45:37  barbera
+Mother volume ITSD modified to avoid some overlaps
+
 Revision 1.5  2000/10/16 13:49:15  barbera
 Services volumes slightly modified and material added following Pierluigi Barberis' information
 
@@ -220,15 +223,15 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
 ////////////////////////////////////////////////////////////////////////
   
   //INNER RADII OF THE SILICON LAYERS 
-  Float_t rl[6]    = { 3.95,7.,15.,24.,38.1,43.5765 };   
+  Float_t rl[6]    = { 3.8095,7.,15.,24.,38.1,43.5765 };   
   //THICKNESSES OF LAYERS (in % radiation length)
-  Float_t drl[6]   = { 1.03,1.03+0.36,0.34+0.94,0.95,0.34+0.91,0.87 };   
+  Float_t drl[6]   = { 1.03,1.03,0.94,0.95,0.91,0.87 };   
   //HALF LENGTHS OF LAYERS  
-  Float_t dzl[6]   = { 14.344,14.344,25.1,32.1,49.405,55.27 };
+  Float_t dzl[6]   = { 14.35,14.35,25.1,32.1,49.405,55.27 };
   //LENGTHS OF END-LADDER BOXES (ALL INCLUDED)
-  Float_t dzb[6]   = { 17.,17.,15.,17.,12.,11. };   // check !!  
+  Float_t dzb[6]   = { 12.4,12.4,17.6,17.6,12.,11. };   
   //THICKNESSES OF END-LADDER BOXES (ALL INCLUDED)
-  Float_t drb[6]   = { 1.5,1.5,5.,5.,3.,3. };   // check spd and ssd !! !!      
+  Float_t drb[6]   = { rl[1]-rl[0],0.2,5.,5.,3.,3. };    
 
  
   Float_t dits[3], rlim, zmax;
@@ -271,10 +274,10 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   dgh[15] = -77.2;
   dgh[16] = 44.9;
   dgh[17] = 56.1;
-  dgh[18] = -36.;
+  dgh[18] = -40.;
   dgh[19] = 3.29;
   dgh[20] = 56.1; 
-  dgh[21] = 36.;
+  dgh[21] = 40.;
   dgh[22] = 3.29;
   dgh[23] = 56.1;
   dgh[24] = 77.2;
@@ -310,10 +313,10 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   dgh[3] = -77.2;
   dgh[4] = 45.;
   dgh[5] = 56.;
-  dgh[6] = -36.;     
+  dgh[6] = -40.;     
   dgh[7] = 3.3;
   dgh[8] = 56.;
-  dgh[9] = 36.;
+  dgh[9] = 40.;
   dgh[10] = 3.3;
   dgh[11] = 56.;
   dgh[12] = 77.2;
@@ -401,21 +404,13 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
     gMC->Gsposp("IEL3", i+1+6, "ITSD", 0., 0.,-zpos, 0, "ONLY", dits, 3);
   }    
     
-  //    DEFINE END CONES FOR SPD
+  //    DEFINE THERMAL SCREEN FOR SPD
   
-  pcits[0] = 0.;
-  pcits[1] = 360.;
-  pcits[2] = 2.;
-  pcits[3] = 32.;
-  pcits[4] = (rl[0]+rl[1])/2.;
-  pcits[5] = (rl[0]+rl[1])/2.+2.;   // check thickness !!
-  pcits[6] = 39.4;
-  pcits[7] = 10.065;
-  pcits[8] = 10.065+2.;	  // check thickness !!
-  gMC->Gsvolu("ICO1", "PCON", idtmed[209], pcits, 9);    
-  AliMatrix(idrotm[200], 90., 0., 90., 90., 180., 0.);
-  gMC->Gspos("ICO1", 1, "ITSD", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("ICO1", 2, "ITSD", 0., 0., 0., idrotm[200], "ONLY");
+  pcits[0] = 8.3;
+  pcits[1] = 8.5;
+  pcits[2] = 42.5;
+  gMC->Gsvolu("ICY1", "TUBE", idtmed[274], pcits, 3);   
+  gMC->Gspos("ICY1", 1, "ITSD", 0., 0., 0., 0, "ONLY");
 
 
   //    DEFINE END CONES FOR SDD
@@ -423,15 +418,24 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   pcits[0] = 0.;
   pcits[1] = 360.;
   pcits[2] = 2.;
-  pcits[3] = 39.4;
-  pcits[4] = 10.065;
-  pcits[5] = 10.065+3.0;   // check thickness !!
-  pcits[6] = 57.4;
+  pcits[3] = 42.5;
+  pcits[4] = 8.5;
+  pcits[5] = 8.5+3.0;   
+  pcits[6] = 59.0;
   pcits[7] = 28.;
-  pcits[8] = 28.+3.0;	  // check thickness !!
-  gMC->Gsvolu("ICO2", "PCON", idtmed[238], pcits, 9);    
-  gMC->Gspos("ICO2", 1, "ITSD", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("ICO2", 2, "ITSD", 0., 0., 0., idrotm[200], "ONLY");
+  pcits[8] = 28.+3.0;	  
+  gMC->Gsvolu("ICO1", "PCON", idtmed[238], pcits, 9);    
+  gMC->Gspos("ICO1", 1, "ITSD", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("ICO1", 2, "ITSD", 0., 0., 0., idrotm[274], "ONLY");
+
+
+  //    DEFINE CYLINDER BETWEEN SDD AND SSD
+  
+  pcits[0] = (59.5-0.13/2.)/2.;
+  pcits[1] = (59.5+0.13/2.)/2.;
+  pcits[2] = 57.;
+  gMC->Gsvolu("ICY2", "TUBE", idtmed[274], pcits, 3);   
+  gMC->Gspos("ICY2", 1, "ITSD", 0., 0., 0., 0, "ONLY");
 
 
   //    DEFINE END CONES FOR SSD
@@ -439,15 +443,15 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   pcits[0] = 0.;
   pcits[1] = 360.;
   pcits[2] = 2.;
-  pcits[3] = 57.4;
+  pcits[3] = 59.;
   pcits[4] = 28.0;
   pcits[5] = 28.0+4.0;   // check thickness !!
   pcits[6] = 74.0;
   pcits[7] = 47.;
   pcits[8] = 47.+4.0;	  // check thickness !!
-  gMC->Gsvolu("ICO3", "PCON", idtmed[264], pcits, 9);    
-  gMC->Gspos("ICO3", 1, "ITSD", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("ICO3", 2, "ITSD", 0., 0., 0., idrotm[200], "ONLY");
+  gMC->Gsvolu("ICO2", "PCON", idtmed[264], pcits, 9);    
+  gMC->Gspos("ICO2", 1, "ITSD", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("ICO2", 2, "ITSD", 0., 0., 0., idrotm[274], "ONLY");
 
   
   // SERVICES
@@ -673,7 +677,7 @@ void AliITSvPPRcoarseasymm::CreateMaterials(){
   AliMaterial(6, "SPD Al$",     26.981539, 13., 2.6989, 8.9, 999);
   AliMixture( 7, "SPD Water $", awat, zwat, denswat, -2, wwat);
   AliMixture( 8, "SPD Freon$",  afre, zfre, densfre, -2, wfre);
-  AliMaterial(9, "SPD End ladder$",28.0855, 14., 2.33, 9.36, 999); // check !!!!
+  AliMaterial(9, "SPD End ladder$", 55.845, 26., 7.87/10., 1.76*10., 999); 
   AliMaterial(10, "SPD cone$",28.0855, 14., 2.33, 9.36, 999);       // check !!!!
   // ** 
   AliMedium(0, "SPD Si$",       0, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
