@@ -1,4 +1,3 @@
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // AliGenGeVSim is a class implementing GeVSim event generator.
@@ -190,11 +189,11 @@ void AliGenGeVSim::InitFormula() {
   // ptForm: pt -> x ,  mass -> [0] , temperature -> [1]
   // y Form: y -> x , sigmaY -> [0]
 
-  const char* ptForm  = " x * exp( -sqrt([0]*[0] + x*x) / [1] )";
-  const char* yForm   = " exp ( - x*x / (2 * [0]*[0] ) )";
+  const char* kPtForm  = " x * exp( -sqrt([0]*[0] + x*x) / [1] )";
+  const char* kYForm   = " exp ( - x*x / (2 * [0]*[0] ) )";
 
-  fPtFormula  = new TF1("gevsimPt", ptForm, 0, 3);
-  fYFormula   = new TF1("gevsimRapidity", yForm, -3, 3);
+  fPtFormula  = new TF1("gevsimPt", kPtForm, 0, 3);
+  fYFormula   = new TF1("gevsimRapidity", kYForm, -3, 3);
 
   fPtFormula->SetParNames("mass", "temperature");
   fPtFormula->SetParameters(1., 1.);
@@ -213,27 +212,27 @@ void AliGenGeVSim::InitFormula() {
   // mass -> [0] , temperature -> [1] , expansion velocity -> [2]
 
   
-  const char *formE = " ( sqrt([0]*[0] + x*x) * cosh(y) ) ";
-  const char *formG = " ( 1 / sqrt( 1 - [2]*[2] ) ) ";
-  const char *formYp = "( [2]*sqrt(([0]*[0]+x*x)*cosh(y)*cosh(y)-[0]*[0])/([1]*sqrt(1-[2]*[2]))) ";
+  const char *kFormE = " ( sqrt([0]*[0] + x*x) * cosh(y) ) ";
+  const char *kFormG = " ( 1 / sqrt( 1 - [2]*[2] ) ) ";
+  const char *kFormYp = "( [2]*sqrt(([0]*[0]+x*x)*cosh(y)*cosh(y)-[0]*[0])/([1]*sqrt(1-[2]*[2]))) ";
 
-  const char* formula[3] = {
+  const char* kFormula[3] = {
     " x * %s * exp( -%s / [1]) ", 
     " (x * %s) / ( exp( %s / [1]) - 1 ) ",
     " x*%s*exp(-%s*%s/[1])*((sinh(%s)/%s)+([1]/(%s*%s))*(sinh(%s)/%s-cosh(%s)))"
   };
 
-  const char* paramNames[3] = {"mass", "temperature", "expVel"};
+  const char* kParamNames[3] = {"mass", "temperature", "expVel"};
 
   char buffer[1024];
 
-  sprintf(buffer, formula[0], formE, formE);
+  sprintf(buffer, kFormula[0], kFormE, kFormE);
   fPtYFormula[0] = new TF2("gevsimPtY_2", buffer, 0, 3, -2, 2);
 
-  sprintf(buffer, formula[1], formE, formE);
+  sprintf(buffer, kFormula[1], kFormE, kFormE);
   fPtYFormula[1] = new TF2("gevsimPtY_3", buffer, 0, 3, -2, 2);
 
-  sprintf(buffer, formula[2], formE, formG, formE, formYp, formYp, formG, formE, formYp, formYp, formYp);
+  sprintf(buffer, kFormula[2], kFormE, kFormG, kFormE, kFormYp, kFormYp, kFormG, kFormE, kFormYp, kFormYp, kFormYp);
   fPtYFormula[2] = new TF2("gevsimPtY_4", buffer, 0, 3, -2, 2);
 
   fPtYFormula[3] = 0;
@@ -250,7 +249,7 @@ void AliGenGeVSim::InitFormula() {
     for (j=0; j<3; j++) {
 
       if ( i != 2 && j == 2 ) continue; // ExpVel
-      fPtYFormula[i]->SetParName(j, paramNames[j]);
+      fPtYFormula[i]->SetParName(j, kParamNames[j]);
       fPtYFormula[i]->SetParameter(j, 0.5);
     }
   }
@@ -260,8 +259,8 @@ void AliGenGeVSim::InitFormula() {
   // phi -> x
   // Psi -> [0] , Direct Flow -> [1] , Ellipticla Flow -> [2]
 
-  const char* phiForm = " 1 + 2*[1]*cos(x-[0]) + 2*[2]*cos(2*(x-[0])) ";
-  fPhiFormula = new TF1("gevsimPhi", phiForm, 0, 2*TMath::Pi());
+  const char* kPhiForm = " 1 + 2*[1]*cos(x-[0]) + 2*[2]*cos(2*(x-[0])) ";
+  fPhiFormula = new TF1("gevsimPhi", kPhiForm, 0, 2*TMath::Pi());
 
   fPhiFormula->SetParNames("psi", "directed", "elliptic");
   fPhiFormula->SetParameters(0., 0., 0.);
@@ -405,11 +404,11 @@ Float_t AliGenGeVSim::GetdNdYToTotal() {
   //
 
   Float_t integ, mag;
-  const Double_t maxPt = 3.0, maxY = 2.; 
+  const Double_t kMaxPt = 3.0, kMaxY = 2.; 
 
   if (fModel == 1) {
     
-    integ = fYFormula->Integral(-maxY, maxY);
+    integ = fYFormula->Integral(-kMaxY, kMaxY);
     mag = fYFormula->Eval(0);
     return integ/mag;
   }
@@ -418,8 +417,8 @@ Float_t AliGenGeVSim::GetdNdYToTotal() {
 
   if (fModel > 1 && fModel < 6) {
     
-    integ =  ((TF2*)fCurrentForm)->Integral(0,maxPt, -maxY, maxY);
-    mag = ((TF2*)fCurrentForm)->Integral(0, maxPt, -0.1, 0.1) / 0.2;
+    integ =  ((TF2*)fCurrentForm)->Integral(0,kMaxPt, -kMaxY, kMaxY);
+    mag = ((TF2*)fCurrentForm)->Integral(0, kMaxPt, -0.1, 0.1) / 0.2;
     return integ/mag;
   }
 
@@ -685,7 +684,7 @@ void AliGenGeVSim::Generate() {
   AliGeVSimParticle *partType;
 
   Int_t nType, nParticle, nParam;
-  const Int_t nParams = 6;
+  const Int_t kNParams = 6;
 
   // reaction plane determination and model
   DetermineReactionPlane();
@@ -707,7 +706,7 @@ void AliGenGeVSim::Generate() {
 
     // Evaluation of parameters - loop over parameters
 
-    for (nParam = 0; nParam < nParams; nParam++) {
+    for (nParam = 0; nParam < kNParams; nParam++) {
       
       paramScaler = FindScaler(nParam, pdg);
 

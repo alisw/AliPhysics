@@ -113,7 +113,6 @@ class AliGenGeVSim : public AliGenerator {
   
   /////////////////////////////////////////////////////////////////
 
- public:
 
   ClassDef(AliGenGeVSim, 2)
 
