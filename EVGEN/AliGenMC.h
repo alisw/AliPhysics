@@ -20,7 +20,7 @@ class AliGenMC : public AliGenerator
     AliGenMC(const AliGenMC &MC);
     virtual ~AliGenMC();
     void Init();
-    virtual void SetForceDecay(Decay_t decay = kDiMuon) {fForceDecay = decay;}
+    virtual void SetForceDecay(Decay_t decay = kAll) {fForceDecay = decay;}
     AliGenMC & operator=(const AliGenMC & rhs);
         virtual void SetCutOnChild(Int_t flag = 0) {fCutOnChild = flag;}
     virtual void SetChildMomentumRange(Float_t pmin = 0, Float_t pmax = 1.e10)
