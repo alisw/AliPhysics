@@ -169,7 +169,6 @@ void AliEMCAL::FillESD(AliESD* esd) const
     AliESDCaloTrack *ct = new AliESDCaloTrack((AliEMCALRecParticle*)recParticles->At(recpart));
     esd->AddCaloTrack(ct);
   }
-  Info("FillESD", "Added %d RecParticles to ESD", nOfRecParticles) ; 
 }       
 
 
@@ -179,8 +178,17 @@ void AliEMCAL::Hits2SDigits()
 // create summable digits
 
   AliEMCALSDigitizer* emcalDigitizer = 
-    new AliEMCALSDigitizer(fLoader->GetRunLoader()->GetFileName().Data());
-  emcalDigitizer->ExecuteTask();
+    new AliEMCALSDigitizer(fLoader->GetRunLoader()->GetFileName().Data()) ;
+  emcalDigitizer->SetEventRange(0, -1) ; // do all the events
+  emcalDigitizer->ExecuteTask() ;
+}
+
+//____________________________________________________________________________
+void AliEMCAL::Reconstruct() const 
+{ 
+  AliEMCALReconstructioner * rec = new AliEMCALReconstructioner((fLoader->GetRunLoader()->GetFileName()).Data()) ; 
+  rec->SetEventRange(0, -1) ; // do all the events  
+  rec->ExecuteTask() ; 
 }
 
 //____________________________________________________________________________
@@ -190,13 +198,6 @@ AliLoader* AliEMCAL::MakeLoader(const char* topfoldername)
 // --> to be discussed and made eventually coherent
  fLoader = new AliEMCALLoader(GetName(),topfoldername);
  return fLoader;
-}
-
-//____________________________________________________________________________
-void AliEMCAL::Reconstruct() const 
-{ 
-  AliEMCALReconstructioner rec((AliRunLoader::GetRunLoader()->GetFileName()).Data()) ; 
-  rec.ExecuteTask() ; 
 }
 
 //____________________________________________________________________________

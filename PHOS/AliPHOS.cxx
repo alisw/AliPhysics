@@ -386,7 +386,6 @@ void AliPHOS::FillESD(AliESD* esd) const
     AliESDCaloTrack *ct = new AliESDCaloTrack((AliPHOSRecParticle*)recParticles->At(recpart));
     esd->AddCaloTrack(ct);
   }
-  Info("FillESD", "Added %d RecParticles to ESD", nOfRecParticles) ; 
 }       
 
 //____________________________________________________________________________
@@ -395,8 +394,9 @@ void AliPHOS::Hits2SDigits()
 // create summable digits
 
   AliPHOSSDigitizer* phosDigitizer = 
-    new AliPHOSSDigitizer(fLoader->GetRunLoader()->GetFileName().Data());
-  phosDigitizer->ExecuteTask("all");
+    new AliPHOSSDigitizer(fLoader->GetRunLoader()->GetFileName().Data()) ;
+  phosDigitizer->SetEventRange(0, -1) ; // do all the events
+  phosDigitizer->ExecuteTask("all") ;
 }
 
 //____________________________________________________________________________
@@ -432,8 +432,9 @@ void AliPHOS::SetTreeAddress()
 //____________________________________________________________________________
 void AliPHOS::Reconstruct() const 
 { 
-  AliPHOSReconstructioner rec((fLoader->GetRunLoader()->GetFileName()).Data()) ; 
-  rec.ExecuteTask() ; 
+  AliPHOSReconstructioner * rec = new AliPHOSReconstructioner((fLoader->GetRunLoader()->GetFileName()).Data()) ; 
+  rec->SetEventRange(0, -1) ; // do all the events  
+  rec->ExecuteTask() ; 
 }
 
 //____________________________________________________________________________
