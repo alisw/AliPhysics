@@ -1353,21 +1353,26 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
       printf("========== Inside G1WR\n");
       printf("   point/dir:(%14.9f, %14.9f, %14.9f, %g, %g, %g)\n", pSx,pSy,pSz,pV[0],pV[1],pV[2]);
       printf("   oldReg=%i  oldLttc=%i  pstep=%f\n",oldReg, oldLttc, propStep);
+   }
+   Int_t olttc = oldLttc;
+   if (oldLttc<0) {
+      gGeoManager->FindNode(pSx,pSy,pSz);
+      olttc = gGeoManager->GetCurrentNodeId()+1;
    }   
-   gMCGeom->SetCurrentRegion(oldReg, oldLttc);
+   gMCGeom->SetCurrentRegion(oldReg, olttc);
    // Initialize default return values
    lttcFlag = 0;
-   jrLt[lttcFlag] = oldLttc;
+   jrLt[lttcFlag] = olttc;
    sLt[lttcFlag] = propStep;
    jrLt[lttcFlag+1] = -1;
    sLt[lttcFlag+1] = 0.;
    newReg = oldReg;
-   newLttc = oldLttc;
+   newLttc = olttc;
    // check if dummy boundary flag is set
    Int_t curLttc, curReg;
    if (gFluka->IsDummyBoundary()) {
 //      printf("Dummy boundary intercepted. Point is: %f, %f, %f\n", pSx, pSy, pSz);
-      Bool_t crossedDummy = (oldLttc == TFlukaMCGeometry::kLttcVirtual)?kTRUE:kFALSE;
+      Bool_t crossedDummy = (olttc == TFlukaMCGeometry::kLttcVirtual)?kTRUE:kFALSE;
       if (crossedDummy) {
       // FLUKA crossed the dummy boundary - update new region/history
          retStep = 0.;
@@ -1394,10 +1399,10 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
     
    curLttc = gGeoManager->GetCurrentNodeId()+1;
    curReg = gGeoManager->GetCurrentVolume()->GetNumber();
-   if (oldLttc != curLttc) {
+   if (olttc != curLttc) {
       // FLUKA crossed the boundary : we trust that the given point is really there,
       // so we just update TGeo state
-      gGeoManager->CdNode(oldLttc-1);
+      gGeoManager->CdNode(olttc-1);
       curLttc = gGeoManager->GetCurrentNodeId()+1;
       curReg  = gGeoManager->GetCurrentVolume()->GetNumber();
       if (gMCGeom->IsDebugging()) printf("   re-initialized point: curReg=%i  curLttc=%i\n", curReg, curLttc);
@@ -1416,7 +1421,8 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    if (snext<0) {
       snext=0.0;
       saf = 0.0;
-   }   
+   }  
+   saf = 0.0; // !!! TEMPORARY FOR TESTING MAGSPHF - TO BE REMOVED 
    if (snext>propStep) {
    // Next boundary further than proposed step, which is approved
       retStep = propStep;
@@ -1441,7 +1447,7 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
 
    // We really crossed the boundary, but is it the same region ?
    gMCGeom->SetNextRegion(newReg, newLttc);
-   if (newReg==oldReg && newLttc!=oldLttc) {
+   if (newReg==oldReg && newLttc!=olttc) {
       // Virtual boundary between replicants
       if (gMCGeom->IsDebugging()) printf("   DUMMY boundary\n");
       newReg = 1;  // cheat FLUKA telling it it crossed the TOP region
@@ -1457,9 +1463,9 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    jrLt[lttcFlag+1] = -1;
    sLt[lttcFlag+1] = 0.;      
 
-   if (newLttc!=oldLttc) {
+   if (newLttc!=olttc) {
       if (gGeoManager->IsOutside()) gGeoManager->SetOutside(kFALSE);
-      gGeoManager->CdNode(oldLttc-1);
+      gGeoManager->CdNode(olttc-1);
    }   
    if (gMCGeom->IsDebugging()) {
       printf("=> snext=%g safe=%g\n", snext, saf);
