@@ -134,8 +134,5 @@
 
 #pragma link C++ class AliHBTLLWeights+;
 #pragma link C++ class AliHBTLLWeightQInvFctn+;
-#pragma link C++ class AliHBTLLWeightTheorQInvFctn+;
-
-
 
 #endif
