@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2003/03/24 15:58:27  morsch
+FinishRun() implemented.
+
 Revision 1.16  2003/01/14 10:50:18  alibrary
 Cleanup of STEER coding conventions
 
@@ -183,8 +186,6 @@ AddGenerator(AliGenerator *Generator, char* Name, Float_t RateExp)
 	{
 	    if (preventry && preventry->Generator()->ProvidesCollisionGeometry())
 	    {
-		       (preventry->Generator()->CollisionGeometry())->NN());
-		
 		gen->SetCollisionGeometry(preventry->Generator()->CollisionGeometry());
 	    } else {
 		Fatal("Generate()", "No Collision Geometry Provided");
