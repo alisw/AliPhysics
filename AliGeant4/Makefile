@@ -79,10 +79,11 @@ clean: macroclean
 # and add Geant4 dependent ones
 ALILIBS := $(filter-out -lTGeant3,$(ALILIBS))
 ALILIBS := $(filter-out -lZDC,$(ALILIBS))
+ALILIBS := $(filter-out -lITS,$(ALILIBS))
 ALILIBS += -lAliGeant4 -lTGeant4
 
 LIBS = $(ALILIBS) $(CLIBS) $(GLIBS) -lEG -lEGPythia6 -lpythia6 -lpdf \
-	-lTHijing -lhijing $(G4LDLIBS)
+	-lTHijing -lhijing  -lTMevSim -lmevsim $(G4LDLIBS)
 
 TOCLEAN	      = $(OBJS) $(POBJ) *Cint.cxx *Cint.h
 
