@@ -88,7 +88,12 @@ extern "C" {
       lfirst = false;
       EPISOR.lussrc = true;
       /*|  *** User initialization ***/
+    } else {
+	    TVirtualMCApplication::Instance()->PostTrack();
+	    TVirtualMCApplication::Instance()->FinishPrimary();
     }
+
+    
     /*  |
      *  +-------------------------------------------------------------------*
      *  Push one source particle to the stack. Note that you could as well
@@ -101,10 +106,6 @@ extern "C" {
     // Get the stack produced from the generator
     TVirtualMCStack* cppstack = fluka->GetStack();
     //Get next particle
-    if (STACK.lstack != 1) {
-	TVirtualMCApplication::Instance()->PostTrack();
-	TVirtualMCApplication::Instance()->FinishPrimary();
-    }
     Int_t itrack = -1;
     TParticle* particle = cppstack->GetNextTrack(itrack);
 
@@ -258,6 +259,7 @@ extern "C" {
     geohsm ( STACK.nhspnt[STACK.lstack], igeohsm1, igeohsm2, LTCLCM.mlattc );
     STACK.nlattc[STACK.lstack] = LTCLCM.mlattc;
     soevsv();
+    TVirtualMCApplication::Instance()->BeginPrimary();
     TVirtualMCApplication::Instance()->PreTrack();
 #ifdef METHODDEBUG
     cout << "<== source(" << nomore << ")" << endl;
