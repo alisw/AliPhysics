@@ -1,28 +1,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
-/* $Id$ */
-
 // Implementation of the interface for THBTprocessor
 // Author: Piotr Krzysztof Skowronski <Piotr.Skowronski@cern.ch>
-
-// 09.10.2001 Piotr Skowronski
-// 
-// Theta - Eta cohernecy facilities added:
-//    AliGenerator::SetThetaRange method overriden
-//    Static methods added
-//    EtaToTheta
-//    ThetaToEta 
-//    DegreesToRadians
-//    RadiansToDegrees
-//
-// Class description comments put on proper place
-
-// 27.09.2001 Piotr Skowronski
-// removing of redefinition of defaults velues 
-// in method's implementation. 
-//  
-
 //////////////////////////////////////////////////////////////////////////////////
 //Wrapper class for "hbt processor" after burner
 //The origibal code is written in fortran by Lanny Ray
@@ -54,6 +33,27 @@
 //         B)  IT IS ABLE TO "ADD" CORRELATIONS ONLY UP TO TWO PARTICLE TYPES AT ONES
 //////////////////////////////////////////////////////////////////////////////////
 
+// 11.11.2001 Piotr Skowronski
+// Setting seed (date) in RNG in the constructor
+
+// 09.10.2001 Piotr Skowronski
+// 
+// Theta - Eta cohernecy facilities added:
+//    AliGenerator::SetThetaRange method overriden
+//    Static methods added
+//    EtaToTheta
+//    ThetaToEta 
+//    DegreesToRadians
+//    RadiansToDegrees
+//
+// Class description comments put on proper place
+
+// 27.09.2001 Piotr Skowronski
+// removing of redefinition of defaults velues 
+// in method's implementation. 
+//  
+// 
+
 #include "AliGenHBTprocessor.h"
 #include "TROOT.h"
 #include <iostream.h>
@@ -83,6 +83,7 @@ AliGenHBTprocessor::AliGenHBTprocessor() : AliGenerator(-1)
   SetName("AliGenHBTprocessor");
   SetTitle("AliGenHBTprocessor");
   
+  fRandom ->SetSeed(0);
   sRandom = fRandom;
   fHBTprocessor = new THBTprocessor();
 
@@ -1059,7 +1060,7 @@ extern "C" void type_of_call
    //check to be deleted 
    if (geantpid != (g->IdFromPDG( track->GetPdgCode() )))
     {
-      cout<<endl<<" AliGenHBTprocessor.cxx: alihbtp_puttrack: SOMETHING IS GOING BAD:\n   GEANTPIDS ARE NOT THE SAME"<<endl;
+      cerr<<endl<<" AliGenHBTprocessor.cxx: alihbtp_puttrack: SOMETHING IS GOING BAD:\n   GEANTPIDS ARE NOT THE SAME"<<endl;
     }
    
    if(gDebug>0)
