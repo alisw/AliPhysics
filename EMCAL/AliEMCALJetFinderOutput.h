@@ -32,11 +32,11 @@ class AliEMCALJetFinderOutput : public TObject
 		void AddParticle(TParticle *particle);
 		void SetDebug(Int_t debug){fDebug = debug;}
 		AliEMCALJet* GetJet(Int_t jetID);
-		const Int_t GetNJets(){return fNJets;}
+		Int_t GetNJets() const {return fNJets;}
 		AliEMCALParton* GetParton(Int_t partonID);
-		const Int_t GetNPartons(){return fNPartons;}
+		Int_t GetNPartons() const {return fNPartons;}
 		TParticle* GetParticle(Int_t particleID);
-		const Int_t GetNParticles(){return fNParticles;}
+		Int_t GetNParticles() const {return fNParticles;}
 
 	private:
 		void InitArrays();

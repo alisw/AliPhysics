@@ -32,13 +32,13 @@ class AliEMCALJetFinderInput : public TObject
 		void AddParton(AliEMCALParton *parton);
 		void AddParticle(TParticle *particle);
 		AliEMCALDigit* GetDigit(Int_t digitID);
-		const Int_t GetNDigits(){return fNDigits;}
+		Int_t GetNDigits() const {return fNDigits;}
 		TParticle* GetTrack(Int_t trackID);
-		const Int_t GetNTracks(){return fNTracks;}
+		Int_t GetNTracks() const {return fNTracks;}
 		AliEMCALParton* GetParton(Int_t partonID);
-		const Int_t GetNPartons(){return fNPartons;}
+		Int_t GetNPartons() const {return fNPartons;}
 		TParticle* GetParticle(Int_t particleID);
-		const Int_t GetNParticles(){return fNParticles;}
+		Int_t GetNParticles() const {return fNParticles;}
 
 	private:
 		void InitArrays();
