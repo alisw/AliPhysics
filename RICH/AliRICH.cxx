@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.35  2000/12/15 16:49:40  jbarbosa
+  Geometry and materials updates (wire supports, pcbs, backplane supports, frame).
+
   Revision 1.34  2000/11/10 18:12:12  jbarbosa
   Bug fix for AliRICHCerenkov (thanks to P. Hristov)
 
@@ -2499,7 +2502,6 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 		   mPad;
 		   mPad=(AliRICHPadHit*)pRICH->NextPad(fPadHits))
 		{
-		  Int_t cathode  = mPad->fCathode;    // cathode number
 		  Int_t ipx      = mPad->fPadX;       // pad number on X
 		  Int_t ipy      = mPad->fPadY;       // pad number on Y
 		  Int_t iqpad    = mPad->fQpad;       // charge per pad
@@ -2508,7 +2510,7 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 		  //printf("X:%d, Y:%d, Q:%d\n",ipx,ipy,iqpad);
 		  
 		  Float_t thex, they, thez;
-		  segmentation=iChamber->GetSegmentationModel(cathode);
+		  segmentation=iChamber->GetSegmentationModel(0);
 		  segmentation->GetPadC(ipx,ipy,thex,they,thez);
 		  new((*pAddress)[countadr++]) TVector(2);
 		  TVector &trinfo=*((TVector*) (*pAddress)[countadr-1]);
@@ -2598,13 +2600,12 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 		 mPad;
 		 mPad=(AliRICHPadHit*)pRICH->NextPad(fClusters2))
 	      {
-		Int_t cathode  = mPad->fCathode;    // cathode number
 		Int_t ipx      = mPad->fPadX;       // pad number on X
 		Int_t ipy      = mPad->fPadY;       // pad number on Y
 		Int_t iqpad    = mPad->fQpad;       // charge per pad
 		
 		Float_t thex, they, thez;
-		segmentation=iChamber->GetSegmentationModel(cathode);
+		segmentation=iChamber->GetSegmentationModel(0);
 		segmentation->GetPadC(ipx,ipy,thex,they,thez);
 		Float_t rpad=TMath::Sqrt(thex*thex+they*they);
 		if (rpad < rmin || iqpad ==0 || rpad > rmax) continue;
@@ -2785,8 +2786,8 @@ Int_t AliRICH::MakePadHits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol,
 //  Calls the charge disintegration method of the current chamber and adds
 //  the simulated cluster to the root treee 
 //
-    Int_t clhits[kNCH];
-    Float_t newclust[6][500];
+    Int_t clhits[5];
+    Float_t newclust[4][500];
     Int_t nnew;
     
 //
@@ -2800,20 +2801,16 @@ Int_t AliRICH::MakePadHits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol,
 //
 //  Add new clusters
     for (Int_t i=0; i<nnew; i++) {
-	if (Int_t(newclust[3][i]) > 0) {
+	if (Int_t(newclust[0][i]) > 0) {
 	    ic++;
-// Cathode plane
-	    clhits[1] = Int_t(newclust[5][i]);
 //  Cluster Charge
-	    clhits[2] = Int_t(newclust[0][i]);
+	    clhits[1] = Int_t(newclust[0][i]);
 //  Pad: ix
-	    clhits[3] = Int_t(newclust[1][i]);
+	    clhits[2] = Int_t(newclust[1][i]);
 //  Pad: iy 
-	    clhits[4] = Int_t(newclust[2][i]);
-//  Pad: charge
-	    clhits[5] = Int_t(newclust[3][i]);
+	    clhits[3] = Int_t(newclust[2][i]);
 //  Pad: chamber sector
-	    clhits[6] = Int_t(newclust[4][i]);
+	    clhits[4] = Int_t(newclust[3][i]);
 	    
 	    AddPadHit(clhits);
 	}

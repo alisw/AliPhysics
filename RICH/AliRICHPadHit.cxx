@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.1  2000/06/12 15:25:31  jbarbosa
+  Cleaned up version.
+
 */
 
 
@@ -28,11 +31,9 @@ AliRICHPadHit::AliRICHPadHit(Int_t *clhits)
 // Default constructor for AliRICHPadHits
 
   fHitNumber=clhits[0];
-  fCathode=clhits[1];
-  fQ=clhits[2];
-  fPadX=clhits[3];
-  fPadY=clhits[4];
-  fQpad=clhits[5];
-  fRSec=clhits[6];
+  fQpad=clhits[1];
+  fPadX=clhits[2];
+  fPadY=clhits[3];
+  fRSec=clhits[4];
 }
 

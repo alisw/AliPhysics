@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.7  2000/10/03 21:44:09  morsch
+  Use AliSegmentation and AliHit abstract base classes.
+
   Revision 1.6  2000/10/02 15:44:37  jbarbosa
   Fixed forward declarations.
 
@@ -138,7 +141,7 @@ void AliRICHChamber::GlobaltoLocal(Float_t pos[3],Float_t Localpos[3])
 
 
 void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
-				    Int_t& nnew,Float_t newclust[6][500],ResponseType res) 
+				    Int_t& nnew,Float_t newclust[5][500],ResponseType res) 
 {
 //    
 //  Generates pad hits (simulated cluster) 
@@ -199,12 +202,10 @@ void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
 		qcheck+=qp;
 		//
 		// --- store signal information
-		newclust[0][nnew]=qtot;
+		newclust[0][nnew]=qp*qtot;
 		newclust[1][nnew]=fSegmentation->Ix();
 		newclust[2][nnew]=fSegmentation->Iy();
-		newclust[3][nnew]=qp * qtot;
-		newclust[4][nnew]=fSegmentation->ISector();
-		newclust[5][nnew]=(Float_t) i;
+		newclust[3][nnew]=fSegmentation->ISector();
 		nnew++;	
 		//printf("Newcluster:%d\n",i);
 	    }
