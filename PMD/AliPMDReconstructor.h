@@ -7,12 +7,14 @@
 
 class AliPMDReconstructor: public AliReconstructor {
 public:
-  virtual void         Reconstruct(AliRunLoader* runLoader) const;
-  virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
+  virtual void Reconstruct(AliRunLoader* runLoader) const;
+  virtual void Reconstruct(AliRunLoader* runLoader,
+			   AliRawReader *rawReader) const;
+  virtual void FillESD(AliRunLoader* runLoader, AliESD* esd) const;
 
 private:
 
-  ClassDef(AliPMDReconstructor, 1)   // class for the PMD reconstruction
+  ClassDef(AliPMDReconstructor, 2)   // class for the PMD reconstruction
 };
 
 #endif

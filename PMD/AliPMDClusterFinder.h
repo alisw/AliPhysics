@@ -46,7 +46,9 @@ class AliPMDClusterFinder
   void ResetCellADC();
   void ResetRecpoint();
   void Load();
+  void LoadClusters();
   void UnLoad();
+  void UnLoadClusters();
 
  protected:
   AliRunLoader *fRunLoader; // Pointer to Run Loader
@@ -67,7 +69,7 @@ class AliPMDClusterFinder
   static const Int_t fgkCol = 96; // Total number of cols in one unitmodule
   Double_t fCellADC[fgkRow][fgkCol]; // Array containing individual cell ADC
 
-  ClassDef(AliPMDClusterFinder,5) // To run PMD clustering
+  ClassDef(AliPMDClusterFinder,6) // To run PMD clustering
 };
 #endif
 
