@@ -493,7 +493,7 @@ Float_t TG4StepManager::MaxStep() const
       G4String text = "User Limits are not defined for log volume ";
       text = text + curLogVolume->GetName();
       TG4Globals::Warning(text);
-      return DBL_MAX;
+      return FLT_MAX;
     }
     else
     { 
@@ -505,7 +505,7 @@ Float_t TG4StepManager::MaxStep() const
   } 
   else {   
     TG4Globals::Exception("TG4StepManager: Step is not defined.");
-    return DBL_MAX;
+    return FLT_MAX;
   }
 }
 
