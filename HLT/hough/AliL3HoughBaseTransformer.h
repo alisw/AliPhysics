@@ -62,14 +62,14 @@ class AliL3HoughBaseTransformer {
       {STDCERR<<"TransformLineC is not defined for this Transformer!"<<STDENDL;}
 
   //Getters
-  Int_t GetSlice() {return fSlice;}
-  Int_t GetPatch() {return fPatch;}
-  Int_t GetNEtaSegments() {return fNEtaSegments;}
-  Int_t GetLowerThreshold() {return fLowerThreshold;}
-  Int_t GetUpperThreshold() {return fUpperThreshold;}
-  Double_t GetEtaMin() {return fEtaMin;}
-  Double_t GetEtaMax() {return fEtaMax;}
-  Float_t GetZVertex() {return fZVertex;}
+  Int_t GetSlice() const {return fSlice;}
+  Int_t GetPatch() const {return fPatch;}
+  Int_t GetNEtaSegments() const {return fNEtaSegments;}
+  Int_t GetLowerThreshold() const {return fLowerThreshold;}
+  Int_t GetUpperThreshold() const {return fUpperThreshold;}
+  Double_t GetEtaMin() const {return fEtaMin;}
+  Double_t GetEtaMax() const {return fEtaMax;}
+  Float_t GetZVertex() const {return fZVertex;}
 
   AliL3DigitRowData *GetDataPointer() {return fDigitRowData;}
  
@@ -77,7 +77,7 @@ class AliL3HoughBaseTransformer {
   virtual void GetEtaIndexes(Double_t /*eta*/,Int_t */*indexes*/)
     {STDCERR<<"GetEtaIndexes not implemented for this Transformer class"<<STDENDL;}
   virtual AliL3Histogram *GetHistogram(Int_t eta_index) = 0;
-  virtual Double_t GetEta(Int_t eta_index,Int_t slice) = 0;
+  virtual Double_t GetEta(Int_t eta_index,Int_t slice) const = 0;
 
   virtual Int_t GetTrackID(Int_t /*eta_index*/,Double_t /*kappa*/,Double_t /*psi*/){
     STDCERR<<"GetTrackID not implemented for this Transformer class"<<STDENDL; 

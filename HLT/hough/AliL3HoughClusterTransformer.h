@@ -40,7 +40,7 @@ class AliL3HoughClusterTransformer : public AliL3HoughBaseTransformer {
   
   Int_t GetEtaIndex(Double_t eta);
   AliL3Histogram *GetHistogram(Int_t eta_index);
-  Double_t GetEta(Int_t eta_index,Int_t slice);
+  Double_t GetEta(Int_t eta_index,Int_t slice) const;
   Int_t GetTrackID(Int_t eta_index,Double_t kappa,Double_t psi);
 
   ClassDef(AliL3HoughClusterTransformer,1) //Normal Hough transformation class

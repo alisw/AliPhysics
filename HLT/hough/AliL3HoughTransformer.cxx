@@ -220,7 +220,7 @@ inline AliL3Histogram *AliL3HoughTransformer::GetHistogram(Int_t etaindex)
   return fParamSpace[etaindex];
 }
 
-Double_t AliL3HoughTransformer::GetEta(Int_t etaindex,Int_t /*slice*/)
+Double_t AliL3HoughTransformer::GetEta(Int_t etaindex,Int_t /*slice*/) const
 {
   // Return eta calculated in the middle of the eta slice
   Double_t etaslice = (GetEtaMax()-GetEtaMin())/GetNEtaSegments();

@@ -168,7 +168,7 @@ inline AliL3Histogram *AliL3HoughClusterTransformer::GetHistogram(Int_t eta_inde
   return fParamSpace[eta_index];
 }
 
-Double_t AliL3HoughClusterTransformer::GetEta(Int_t eta_index,Int_t slice)
+Double_t AliL3HoughClusterTransformer::GetEta(Int_t eta_index,Int_t slice) const
 {
   Double_t eta_slice = (GetEtaMax()-GetEtaMin())/GetNEtaSegments();
   Double_t eta=(Double_t)((eta_index+0.5)*eta_slice);
