@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.19  2002/11/04 08:59:20  morsch
+  Correct orientation of modules. (J. Barbosa)
+
   Revision 1.18  2002/10/29 14:24:19  morsch
   Minor corrections on the display (adc counts readable, ...).
   (J. Barbosa)
@@ -708,14 +711,14 @@ void AliRICHDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
    
    //add clusters to the pad
    DrawClusters();
-   //DrawHits();
+   DrawHits();
    //DrawCerenkovs();
    if (gAlice->TreeR())
      {
        //printf("Calling DrawCoG\n");
-       DrawCoG();
+	 DrawCoG();
        //printf("Calling DrawRecHits\n");
-       DrawRecHits();
+	 DrawRecHits();
      }
    /*for (Int_t i=0;i<7;i++)
      LoadRecHits(i,1);*/
@@ -1126,8 +1129,7 @@ void AliRICHDisplay::LoadHits(Int_t chamber)
 	    points->SetHitIndex(hit);
             points->SetTrackIndex(track);
             points->SetDigitIndex(-1);
-            points->SetPoint(hit,mHit->X(), mHit->Y(), mHit->Z());
-	    //printf("Y position: %f\n", mHit->Y());
+            points->SetPoint(0,mHit->X(), mHit->Y(), mHit->Z());
 	    npoints++;
 	}
     }
