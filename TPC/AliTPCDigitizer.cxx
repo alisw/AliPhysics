@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2002/10/23 07:17:33  alibrary
+Introducing Riostream.h
+
 Revision 1.7  2002/10/14 14:57:42  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -142,12 +145,9 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
 	  <<" input "<< i1<<endl;
       return;
     }
+    treear->GetBranch("Segment")->SetAddress(&digarr[i1]);
     if (treear->GetIndex()==0) 
       treear->BuildIndex("fSegmentID","fSegmentID");
-    if (!treear) {      
-      cerr<<" TPC -  not existing input = \n"<<i1<<" ";      
-    }
-    treear->GetBranch("Segment")->SetAddress(&digarr[i1]);
   }
   Stat_t nentries = fManager->GetInputTreeTPCS(0)->GetEntries();
   
