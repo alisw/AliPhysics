@@ -159,6 +159,7 @@ void AliRICH::Hits2SDigits()
     }//prims loop
     GetLoader()->TreeS()->Fill();
     GetLoader()->WriteSDigits("OVERWRITE");
+    ResetSDigits();
   }//events loop  
   GetLoader()->UnloadHits(); GetLoader()->GetRunLoader()->UnloadHeader(); GetLoader()->GetRunLoader()->UnloadKinematics();
   GetLoader()->UnloadSDigits();  
