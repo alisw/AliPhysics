@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.32  2001/03/13 13:07:34  kowal2
+Corrected bug in the TPC mother volume geometry.
+Thanks to A. Morsch
+
 Revision 1.31  2000/11/30 11:48:50  kowal2
 TLorentzVector.h adde to satisfy the latest changes by Federico
 
@@ -2188,7 +2192,10 @@ void AliTPCv2::StepManager()
     }
   else
     {
-      pp=kprim*BetheBloch(betaGamma);    
+
+      betaGamma = TMath::Max(betaGamma,7.e-3); // protection against too small bg
+      pp=kprim*BetheBloch(betaGamma); 
+   
       if(TMath::Abs(charge) > 1.) pp *= (charge*charge);
     }
   
