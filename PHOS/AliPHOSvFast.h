@@ -45,6 +45,8 @@ public:
   void MakeRecParticle(const Int_t modid, const TVector3 pos, AliPHOSFastRecParticle & rp) ;  // makes a reconstructes particle from primary
   Int_t   MakeType(AliPHOSFastRecParticle & rp) ;                    // gets the detected type of particle
   FastRecParticlesList * FastRecParticles() { return fFastRecParticles ; } // gets TClonesArray of reconstructed particles
+  virtual void ResetPoints() ; 
+  void         ResetFastRecParticles() ; 
   void         SetBigBox(Int_t index, Float_t value) ;                             
   Double_t     SigmaE(Double_t energy) ;    // calulates the energy resolution at a given Energy                           
   Double_t     SigmaP(Double_t energy, Int_t inc) ; // calulates the position resolution at a given Energy at a given incidence                           

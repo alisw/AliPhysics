@@ -88,8 +88,8 @@ AliPHOSvFast::~AliPHOSvFast()
 //____________________________________________________________________________
 void AliPHOSvFast::AddRecParticle(const AliPHOSFastRecParticle & rp)
 {  
-   new( (*fFastRecParticles)[fNRecParticles] ) AliPHOSFastRecParticle(rp) ;
-   fNRecParticles++ ; 
+  new( (*fFastRecParticles)[fNRecParticles] ) AliPHOSFastRecParticle(rp) ;
+  fNRecParticles++ ; 
 }
 
 //____________________________________________________________________________
@@ -220,8 +220,7 @@ void AliPHOSvFast::MakeBranch(Option_t* opt)
 {  
   //
   // Create a new branch in the current Root Tree
-  // The branch of fHits is automatically split
-  //
+ 
   AliDetector::MakeBranch(opt) ;
   
   char branchname[10];
@@ -298,7 +297,7 @@ Int_t AliPHOSvFast::MakeType(AliPHOSFastRecParticle & rp )
   Int_t charge = (Int_t)rp.GetPDG()->Charge() ;
   Int_t test ; 
   Float_t ran ; 
-  if ( charge == 0 && ( TMath::Abs(rp.GetPdgCode()) != 11 ) ) 
+  if ( charge != 0 && ( TMath::Abs(rp.GetPdgCode()) != 11 ) ) 
     test = - 1 ;
   else
     test = rp.GetPdgCode() ; 
@@ -342,7 +341,7 @@ Int_t AliPHOSvFast::MakeType(AliPHOSFastRecParticle & rp )
       rv = kCHARGEDHADRON ; 
     break; 
 
-  case -11:   // it's a electron
+  case -11:   // it's a positon
     ran = fRan.Rndm() ; 
     if ( ran <= 0.9996 )
       rv = kELECTRON ; 
@@ -362,6 +361,20 @@ Int_t AliPHOSvFast::MakeType(AliPHOSFastRecParticle & rp )
     
   
   return rv ;
+}
+
+//___________________________________________________________________________
+void AliPHOSvFast::ResetPoints()
+{
+  ResetFastRecParticles() ; 
+}
+
+//___________________________________________________________________________
+void AliPHOSvFast::ResetFastRecParticles()
+{
+  if (fFastRecParticles) 
+    fFastRecParticles->Clear() ;
+  fNRecParticles = 0 ; 
 }
 
 //___________________________________________________________________________
