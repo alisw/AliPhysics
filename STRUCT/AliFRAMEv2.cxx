@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/08/28 15:54:29  morsch
+Web frame and inner rings pointing.
+
 Revision 1.4  2001/06/22 14:11:17  morsch
 Back to official z-positions of rings.
 
@@ -857,7 +860,7 @@ void AliFRAMEv2::CreateGeometry()
 // Mother volumes for TRD and TOF 
 // 
   if (!fHoles) {
-      
+      printf("\n FRAME Version without Holes !");
       ptrd1[0] = 49.8065;
       ptrd1[1] = 62.8535;
       ptrd1[2] = 375.5;
@@ -882,6 +885,8 @@ void AliFRAMEv2::CreateGeometry()
       gMC->Gspos("BTO2", 1, "B074", 0., 0.,  42.69, 0, "ONLY");
       gMC->Gspos("BTO3", 1, "B075", 0., 0.,  42.69, 0, "ONLY");
   } else {
+      printf("\n FRAME Version with Holes !");
+      
       ptrd1[0] = 49.8065;
       ptrd1[1] = 62.8535;
       ptrd1[2] = 375.5;
