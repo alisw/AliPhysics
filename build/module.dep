@@ -6,6 +6,7 @@ CONTAINERS/module.mk:	CONTAINERS/libCONTAINERS.pkg
 EMCAL/module.mk:	 EMCAL/libEMCAL.pkg
 EVGEN/module.mk:	 EVGEN/libEVGEN.pkg
 FMD/module.mk:		 FMD/libFMD.pkg
+FASTSIM/module.mk:	 FASTSIM/libFASTSIM.pkg
 HIJING/module.mk:	 HIJING/libhijing.pkg HIJING/libdummyhijing.pkg
 ITS/module.mk:		 ITS/libITS.pkg
 MEVSIM/module.mk:	 MEVSIM/libmevsim.pkg MEVSIM/libdummymevsim.pkg
