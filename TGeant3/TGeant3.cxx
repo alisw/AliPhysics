@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.27  2000/06/21 17:40:15  fca
+Adding possibility to set ISTRA, PAI model
+
 Revision 1.26  2000/05/16 13:10:41  fca
 New method IsNewTrack and fix for a problem in Father-Daughter relations
 
@@ -858,8 +861,73 @@ void TGeant3::DefineParticles()
   const Double_t erggev = 1/1.6021773349e-3;
   const Double_t hshgev = hslash*erggev;
   const Double_t yearstosec = 3600*24*365.25;
+//
+// Bottom mesons
+// mass and life-time from PDG
+  pdgDB->AddParticle("B(s)*0","B(s)*0",
+		     5.4163, kTRUE, 0.047, +0.,"Meson",  533);
 
+  pdgDB->AddParticle("B(s)*0 bar","B(s)*0 bar",
+		     5.4163, kTRUE, 0.047, -0.,"Meson", -533);
 
+// Charmed baryons
+// 
+// value for mass used by Hijing
+  pdgDB->AddParticle("Sigma(c)*+","Sigma(c)*+",
+		     2.4536, kTRUE, -1., +1.,"Baryon",  4214);
+
+  pdgDB->AddParticle("Sigma(c)*-","Sigma(c)*-",
+		     2.4536, kTRUE, -1., -1.,"Baryon", -4214);
+// equivalent to 4312 ? Hijing uses m=2.55
+  pdgDB->AddParticle("Xsi(c)0","Xsi(c)0",
+		     2.4703, kTRUE, -1., +0.,"Baryon",  4132);
+
+  pdgDB->AddParticle("Xsi(c)0 bar","Xsi(c)0 bar",
+		     2.4703, kTRUE, -1., -0.,"Baryon", -4132);
+// equivalent to 4322 ? Hijing uses m=2.55
+  pdgDB->AddParticle("Xi(c)+","Xi(c)+",
+		     2.4656, kFALSE, -1., +1.,"Baryon",  4232);
+  
+  pdgDB->AddParticle("Xi(c)-","Xi(c)-",
+		     2.4656, kFALSE, -1., -1.,"Baryon", -4232);
+// mass values from Hijing
+
+  pdgDB->AddParticle("Xsi(c)*0","Xsi(c)*0",
+		     2.63, kTRUE, -1., +0.,"Baryon",  4314);
+
+  pdgDB->AddParticle("Xsi(c)*0 bar","Xsi(c)*0 bar",
+		     2.63, kTRUE, -1., -0.,"Baryon", -4314);
+
+  pdgDB->AddParticle("Xsi(c)*+","Xsi(c)*+",
+		     2.63, kTRUE, -1., +1.,"Baryon",  4324);
+
+  pdgDB->AddParticle("Xsi(c)*-","Xsi(c)*-",
+		     2.63, kTRUE, -1., -1.,"Baryon", -4324);
+
+// pdg mass value, Hijing uses m=2.73.
+  pdgDB->AddParticle("Omega(c)0","Omega(c)0",
+		     2.7040, kFALSE, hshgev/0.064e-12, +0.,"Baryon",  4332);
+  
+  pdgDB->AddParticle("Omega(c)0 bar","Omega(c)0 bar",
+		     2.7040, kFALSE, hshgev/0.064e-12, -0.,"Baryon", -4332);
+// mass value from Hijing
+  pdgDB->AddParticle("Omega(c)*0","Omega(c)*0",
+		     2.8000, kFALSE, -1., +0.,"Baryon",  4334);
+  
+  pdgDB->AddParticle("Omega(c)*0 bar","Omega(c)*0",
+		     2.8000, kFALSE, -1., -0.,"Baryon", -4334);
+
+// Bottom baryons
+//
+// mass value from Hijing
+  pdgDB->AddParticle("Sigma(b)*+","Sigma(b)*+",
+		     5.8100, kFALSE, -1., +1.,"Baryon", 5224);
+
+  pdgDB->AddParticle("Sigma(b)*-","Sigma(b)*-",
+		     5.8100, kFALSE, -1., -1.,"Baryon", -5224);
+ 
+//
+//
   pdgDB->AddParticle("Deuteron","Deuteron",2*autogev+8.071e-3,kTRUE,
 		     0,1,"Ion",kion+10020);
   fPDGCode[fNPDGCodes++]=kion+10020;   // 45 = Deuteron
@@ -1647,9 +1715,9 @@ void  TGeant3::Gpcxyz()
   //
   //    Print track and volume parameters at current point
   //
-  gpcxyz(); 
+    
+    gpcxyz(); 
 } 
- 
 //_____________________________________________________________________________
 void  TGeant3::Ggclos() 
 { 
