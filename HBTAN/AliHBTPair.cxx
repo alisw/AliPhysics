@@ -1,6 +1,5 @@
 #include "AliHBTPair.h"
 #include "AliHBTParticle.h"
-#include <Riostream.h>
 
 ClassImp(AliHBTPair)
 
@@ -19,6 +18,7 @@ AliHBTPair::AliHBTPair(Bool_t rev)
 /************************************************************************/
 Double_t AliHBTPair::GetInvMass()
 {
+//Returns qinv value for a pair
   if(fInvMassNotCalc)
    {
      CalculateInvMassSqr(); //method is inline so we not waste th time for jumping into method 
