@@ -645,8 +645,7 @@ void AliITS::InitModules(Int_t size,Int_t &nmodules){
             return;
         } // end if fITSgeom==0
         nl = fITSgeom->GetNlayers();
-        indexMAX = fITSgeom->GetModuleIndex(nl,fITSgeom->GetNladders(nl),
-                                            fITSgeom->GetNdetectors(nl))+1;
+        indexMAX = fITSgeom->GetIndexMax();
         nmodules = indexMAX;
         fITSmodules = new TObjArray(indexMAX);
         for(index=0;index<indexMAX;index++){

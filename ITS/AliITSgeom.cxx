@@ -608,6 +608,7 @@ Int_t AliITSgeom::GetModuleIndex(Int_t lay,Int_t lad,Int_t det){
     j = 0;
     for(k=0;k<lay-1;k++) j += fNdet[k]*fNlad[k];
     i = i+j;
+    if(i>=fNmodules) return -1;
     GetGeomMatrix(i)->GetIndex(id);
     if(id[0]==lay&&id[1]==lad&&id[2]==det) return i;
     // Array of modules fGm is not in expected order. Search for this index
