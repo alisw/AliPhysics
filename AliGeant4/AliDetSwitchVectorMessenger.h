@@ -31,7 +31,7 @@ class AliDetSwitchVectorMessenger: public G4UImessenger
 
     // methods
     virtual void SetNewValue(G4UIcommand* command, G4String newValues);
-    void SetCandidates();
+    void Update();
     
   protected:
     AliDetSwitchVectorMessenger();
@@ -42,6 +42,10 @@ class AliDetSwitchVectorMessenger: public G4UImessenger
     operator=(const AliDetSwitchVectorMessenger &right);
              
   private:
+    // methods
+    void SetGuidance();
+    void SetCandidates();
+
     AliDetSwitchVector*  fDetSwitchVector; //associated class
     
     // commands data members

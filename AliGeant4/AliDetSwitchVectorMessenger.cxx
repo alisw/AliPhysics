@@ -24,9 +24,7 @@ AliDetSwitchVectorMessenger::AliDetSwitchVectorMessenger(
   fSwitchOnCmd = new G4UIcmdWithAString("/aliDet/switchOn", this);
   fSwitchOnCmd->SetGuidance("Define the module to be built.");
   fSwitchOnCmd->SetGuidance("Available modules:");
-  G4String listAvailableDets = "NONE, ALL, ";  
-  listAvailableDets 
-    = listAvailableDets + fDetSwitchVector->GetAvailableDetsListWithCommas();
+  G4String listAvailableDets = "NONE, ALL";  
   fSwitchOnCmd->SetGuidance(listAvailableDets);
   fSwitchOnCmd->SetParameterName("module", false);
   fSwitchOnCmd->AvailableForStates(PreInit);;
@@ -34,9 +32,7 @@ AliDetSwitchVectorMessenger::AliDetSwitchVectorMessenger(
   fSwitchOffCmd = new G4UIcmdWithAString("/aliDet/switchOff", this);
   fSwitchOffCmd->SetGuidance("Define the module not to be built.");
   fSwitchOffCmd->SetGuidance("Available modules:");
-  G4String listDetsNames = "ALL, "; 
-  listDetsNames
-    = listDetsNames + fDetSwitchVector->GetDetNamesListWithCommas();
+  G4String listDetsNames = "ALL"; 
   fSwitchOffCmd->SetGuidance(listDetsNames);
   fSwitchOffCmd->SetParameterName("module", false);
   fSwitchOffCmd->AvailableForStates(PreInit);;
@@ -52,12 +48,6 @@ AliDetSwitchVectorMessenger::AliDetSwitchVectorMessenger(
   fListAvailableCmd->SetGuidance("List all available modules.");
   fListAvailableCmd
     ->AvailableForStates(PreInit, Init, Idle, GeomClosed, EventProc);
-
-  // set candidates list
-  SetCandidates();
-
-  // set default values to a detector
-  fDetSwitchVector->SwitchDetOn("NONE");
 }
 
 //_____________________________________________________________________________
@@ -98,6 +88,41 @@ AliDetSwitchVectorMessenger::operator=(const AliDetSwitchVectorMessenger& right)
   return *this;  
 }    
           
+// private methods
+
+//_____________________________________________________________________________
+void AliDetSwitchVectorMessenger::SetGuidance() 
+{
+// Updates guidance, candidates list.
+// ---
+
+  G4String listAvailableDets = "NONE, ALL, ";  
+  listAvailableDets 
+    = listAvailableDets + fDetSwitchVector->GetAvailableDetsListWithCommas();
+  fSwitchOnCmd->SetGuidance(listAvailableDets);
+
+  G4String listDetsNames = "ALL, "; 
+  listDetsNames
+    = listDetsNames + fDetSwitchVector->GetDetNamesListWithCommas();
+  fSwitchOffCmd->SetGuidance(listDetsNames);
+}
+
+//_____________________________________________________________________________
+void AliDetSwitchVectorMessenger::SetCandidates() 
+{
+// Builds candidates list.
+// ---
+
+  G4String candidatesList = "NONE ALL ";
+  candidatesList += fDetSwitchVector->GetDetNamesList();;
+  candidatesList += fDetSwitchVector->GetAvailableDetsList();
+  fSwitchOnCmd->SetCandidates(candidatesList);
+
+  candidatesList = "ALL ";
+  candidatesList += fDetSwitchVector->GetDetNamesList();;
+  fSwitchOffCmd->SetCandidates(candidatesList);
+}
+
 // public methods
   
 //_____________________________________________________________________________
@@ -122,17 +147,14 @@ void AliDetSwitchVectorMessenger::SetNewValue(G4UIcommand* command,
 }
 
 //_____________________________________________________________________________
-void AliDetSwitchVectorMessenger::SetCandidates() 
+void AliDetSwitchVectorMessenger::Update() 
 {
-// Builds candidates list.
+// Updates guidance, candidates list.
 // ---
 
-  G4String candidatesList = "NONE ALL ";
-  candidatesList += fDetSwitchVector->GetDetNamesList();;
-  candidatesList += fDetSwitchVector->GetAvailableDetsList();
-  fSwitchOnCmd->SetCandidates(candidatesList);
+  SetGuidance();
+  SetCandidates();
 
-  candidatesList = "ALL ";
-  candidatesList += fDetSwitchVector->GetDetNamesList();;
-  fSwitchOffCmd->SetCandidates(candidatesList);
+  // set default values to a detector
+  fDetSwitchVector->SwitchDetOn("NONE");
 }
