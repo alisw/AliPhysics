@@ -66,7 +66,8 @@ void AliMUONChamberTrigger::DisIntegration(Float_t /*eloss*/, Float_t tof,
     
     segmentation->GetPadI(xhit,yhit,0,ix,iy);
     segmentation->SetPad(ix,iy);
-	
+//    printf("  fnsec xhit yhit zhit ix iy %i %f %f %f %i %i \n",i,xhit,yhit,zhit,ix,iy);   	
+
 // treatment of GEANT hits w/o corresponding strip (due to the fact that
 // the 2 geometries are computed in a very slightly different way) 
     if (ix==0&&iy==0) {
@@ -156,6 +157,8 @@ void AliMUONChamberTrigger::DisIntegration(AliMUONHit* hit,
     Int_t ix,iy;
     segmentation->GetPadI(id,xhit,yhit,0,ix,iy);
     segmentation->SetPad(id,ix,iy);
+    if (xhit<0) ix = -ix;
+//    printf(" fId id fnsec xhit yhit zhit ix iy %i %i %i %f %f %f %i %i \n",fId,i,id,xhit,yhit,zhit,ix,iy);
 //     if (ix < 0 || ix > 10000) return;
 //     if (iy < 0 || iy > 10000) return;
 

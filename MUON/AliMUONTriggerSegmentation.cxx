@@ -227,7 +227,7 @@ void AliMUONTriggerSegmentation::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t
     x = x - fRpcHalfXsize;
     y = y - fRpcHalfYsize;
 
-//    printf(" in GetPadC iModule ixloc iyloc ix iy x y %i %i %i %i %i %f %f \n",iModule,ixLoc,iyLoc,ix,iy,x,y);
+//    printf(" in GetPadC iModule ixGlo iyGlo ix iy x y %i %i %i %i %i %f %f \n",iModule,ixGlo,iyGlo,ix,iy,x,y);
 }
 
 //_____________________________________________________________________________
@@ -241,7 +241,7 @@ void AliMUONTriggerSegmentation::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t 
     Int_t modNum=0;    
     for (Int_t iModule=0; iModule<fNsec; iModule++) { // modules
 	if ( x > fModuleXmin[iModule] && x < fModuleXmax[iModule] ) {
-	    ix = 10*fLineNumber + iModule;
+	    ix = 10*fLineNumber + iModule + 1;
 	    modNum = iModule;	    
 	}
     }
@@ -436,9 +436,11 @@ void AliMUONTriggerSegmentation::Init(Int_t detectionElementId,
     } // loop on modules
 
 // associate nStripMax
-    fNpx = (fBending) ? fNsec : nStripMax;
-    fNpy = (fBending) ? nStripMax : 1;
-    
+//    fNpx = (fBending) ? fNsec : nStripMax;
+//    fNpy = (fBending) ? nStripMax : 1;
+    fNpx = 124; // tot num of modules (like with old segmentation)
+    fNpy = 64; // max number of y strips within one module
+
 // calculate half size in x & y (to shift local coordinate ref. system)
   fRpcHalfXsize = 0;
   fRpcHalfYsize = 0;  
