@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2003/03/15 14:45:57  morsch
+Classes imported from EVGEN
+
 Revision 1.47  2003/01/14 10:50:18  alibrary
 Cleanup of STEER coding conventions
 
@@ -216,8 +219,6 @@ AliGenHijing::AliGenHijing(Int_t npart)
 
     SetEnergyCMS();
     SetImpactParameterRange();
-    SetTarget();
-    SetProjectile();
     SetBoostLHC();
     SetJetEtaRange();
     SetJetPhiRange();
@@ -376,7 +377,9 @@ void AliGenHijing::Generate()
       if (fTrigger != kNoTrigger) {
 	  if (!CheckTrigger()) continue;
       }
-      if (fLHC) Boost();
+      Double_t dy    = - 0.5 * TMath::Log(Double_t(fZProjectile) * Double_t(fATarget) / 
+					  (Double_t(fZTarget)    * Double_t(fAProjectile)));
+      if (fLHC) Boost(dy);
       
       
       Int_t np = fParticles->GetEntriesFast();
@@ -648,37 +651,6 @@ Bool_t AliGenHijing::Stable(TParticle*  particle)
     }
 }
 
-
-void AliGenHijing::Boost()
-{
-//
-// Boost cms into LHC lab frame
-//
-    Double_t dy    = - 0.5 * TMath::Log(Double_t(fZProjectile) * Double_t(fATarget) / 
-				      (Double_t(fZTarget)    * Double_t(fAProjectile)));
-    Double_t beta  = TMath::TanH(dy);
-    Double_t gamma = 1./TMath::Sqrt(1.-beta*beta);
-    Double_t gb    = gamma * beta;
-
-    printf("\n Boosting particles to lab frame %f %f %f", dy, beta, gamma);
-    
-    Int_t i;
-    Int_t np = fParticles->GetEntriesFast();
-    for (i = 0; i < np; i++) 
-    {
-	TParticle* iparticle = (TParticle*) fParticles->At(i);
-
-	Double_t e   = iparticle->Energy();
-	Double_t px  = iparticle->Px();
-	Double_t py  = iparticle->Py();
-	Double_t pz  = iparticle->Pz();
-
-	Double_t eb  = gamma * e -      gb * pz;
-	Double_t pzb =   -gb * e +   gamma * pz;
-
-	iparticle->SetMomentum(px, py, pzb, eb);
-    }
-}
 
 
 void AliGenHijing::MakeHeader()

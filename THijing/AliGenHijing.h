@@ -34,10 +34,7 @@ class AliGenHijing : public AliGenMC
     virtual void    SetEnergyCMS(Float_t energy=5500) {fEnergyCMS=energy;}
     virtual void    SetReferenceFrame(TString frame="CMS")
 	{fFrame=frame;}
-    virtual void    SetProjectile(TString proj="A", Int_t a=208, Int_t z=82)
-	{fProjectile = proj; fAProjectile = a; fZProjectile = z;}    
-    virtual void    SetTarget(TString tar="A", Int_t a=208, Int_t z=82)
-	{fTarget = tar; fATarget = a; fZTarget = z;}    
+
     virtual void    SetImpactParameterRange(Float_t bmin = 0, Float_t bmax = 15.)
 	{fMinImpactParam=bmin; fMaxImpactParam=bmax;}
     virtual void    KeepFullEvent();
@@ -85,7 +82,6 @@ class AliGenHijing : public AliGenMC
     virtual Bool_t ProvidesCollisionGeometry() const {return kTRUE;}
     virtual AliCollisionGeometry* CollisionGeometry() const {return fCollisionGeometry;}
     virtual void EvaluateCrossSections();
-    virtual void Boost();
     virtual TGraph* CrossSection()     {return fDsigmaDb;}
     virtual TGraph* BinaryCollisions() {return fDnDb;}
     virtual Bool_t  CheckTrigger();
@@ -97,12 +93,7 @@ class AliGenHijing : public AliGenMC
 
  protected:
     TString     fFrame;         // Reference frame 
-    TString     fProjectile;    // Projectile
-    TString     fTarget;        // Target
-    Int_t       fAProjectile;    // Projectile A
-    Int_t       fZProjectile;    // Projectile Z
-    Int_t       fATarget;        // Target A
-    Int_t       fZTarget;        // Target Z
+
     Float_t     fMinImpactParam; // minimum impact parameter
     Float_t     fMaxImpactParam; // maximum impact parameter	
     Int_t       fKeep;           // Flag to keep full event information
@@ -138,8 +129,7 @@ class AliGenHijing : public AliGenMC
     Int_t 	fSpecn;		 // Num. of spectator neutrons
     Int_t 	fSpecp;		 // Num. of spectator protons
     Int_t       fLHC;            // Assume LHC as lab frame
-    TClonesArray* fParticles;    // Particle List
-    
+
  private:
     // adjust the weight from kinematic cuts
     void   AdjustWeights();
