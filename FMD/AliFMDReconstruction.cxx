@@ -88,6 +88,8 @@ AliFMDReconstruction::AliFMDReconstruction(AliRunLoader* rl):TTask("AliFMDRecons
 
 AliFMDReconstruction::~AliFMDReconstruction()
 {
+  AliLoader* gime = fRunLoader->GetLoader("FMDLoader");
+  gime->CleanReconstructioner();
 }
 
 //____________________________________________________________________________

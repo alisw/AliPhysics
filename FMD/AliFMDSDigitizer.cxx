@@ -86,6 +86,8 @@ AliFMDSDigitizer::AliFMDSDigitizer(const char* HeaderFile,char *SdigitsFile ):TT
   AliFMDSDigitizer::~AliFMDSDigitizer()
 {
   // dtor
+  AliLoader* gime = fRunLoader->GetLoader("FMDLoader");
+  gime->CleanSDigitizer();
 }
 
 //---------------------------------------------------------------------
