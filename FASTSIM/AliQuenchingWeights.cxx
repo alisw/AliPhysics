@@ -1007,9 +1007,38 @@ Double_t AliQuenchingWeights::GetELossRandomKFast(Int_t ipart, Double_t I0, Doub
     return 0.0;
   }
 
-  //set first bin
   fHisto->SetBinContent(bin,continuous);
+#if 1 /* fast new version*/
+  const Int_t kbinmax=fHisto->FindBin(e/wc);
+  if(fMultSoft) {
+    for(Int_t bin=2; bin<=kbinmax; bin++) {
+      xxxx = fHisto->GetBinCenter(bin);
+      CalcMult(ipart,R,xxxx,continuous,discrete);
+      fHisto->SetBinContent(bin,continuous);
+    }
+  } else {
+    for(Int_t bin=2; bin<=kbinmax; bin++) {
+      xxxx = fHisto->GetBinCenter(bin);
+      CalcSingleHard(ipart,R,xxxx,continuous,discrete);
+      fHisto->SetBinContent(bin,continuous);
+    }
+  }
 
+  const Double_t kdelta=fHisto->Integral(1,kbinmax);
+
+  Double_t val=discrete*fgkBins/fgkMaxBin;
+  fHisto->Fill(0.,val);
+
+  if(fECMethod==kReweight)
+    fHisto->SetBinContent(kbinmax+1,0);
+  else
+    fHisto->SetBinContent(kbinmax+1,(1-discrete)*fgkBins/fgkMaxBin-kdelta);
+
+  for(Int_t bin=kbinmax+2; bin<=fgkBins; bin++) {
+    fHisto->SetBinContent(bin,0);
+  }
+
+#else
   if(fMultSoft) {
     for(Int_t bin=2; bin<=fgkBins; bin++) {
       xxxx = fHisto->GetBinCenter(bin);
@@ -1033,6 +1062,7 @@ Double_t AliQuenchingWeights::GetELossRandomKFast(Int_t ipart, Double_t I0, Doub
       fHisto->SetBinContent(bin,0);
     }
   }
+#endif
 
   Double_t ret=fHisto->GetRandom()*wc;
   if(ret>e) return e;
@@ -1168,6 +1198,7 @@ Int_t AliQuenchingWeights::SampleEnergyLoss(Int_t ipart, Double_t R)
       CalcSingleHard(ipart,R,xxxx,continuous,discrete);
     fHisto->SetBinContent(bin,continuous);
   }
+
   Double_t val=discrete/(1.-discrete)*fHisto->Integral(1,fgkBins);
   fHisto->Fill(0.,val);
   Double_t hint=fHisto->Integral(1,fgkBins);
