@@ -4,15 +4,17 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include <TObjArray.h>
-#include <TClonesArray.h>
-#include <TVector3.h>
 #include <Riostream.h>
-#include <AliDetector.h>
-#include <AliHit.h>
-#include <AliDigit.h>
+#include <TClonesArray.h>
+#include <TObjArray.h>
+#include <TVector.h>
+#include <TVector3.h>
+
 #include "AliRICHDigitizer.h"
 #include "AliRICHParam.h"
+#include <AliDetector.h>
+#include <AliDigit.h>
+#include <AliHit.h>
 
 //__________________AliRICHhit______________________________________________________________________
 class AliRICHhit : public AliHit

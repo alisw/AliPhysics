@@ -1,14 +1,14 @@
 #ifndef AliRICHParam_h
 #define AliRICHParam_h
 
-#include <TObject.h>
+#include <TError.h>
 #include <TMath.h>
+#include <TObjArray.h>
+#include <TObject.h>
+#include <TRandom.h>
+#include <TVector.h>
 #include <TVector2.h>
 #include <TVector3.h>
-#include <TRandom.h>
-#include <TError.h>
-#include <TObjArray.h>
-
 
 static const int kNCH=7;           //number of RICH chambers ???
 static const int kNchambers=7;     //number of RICH chambers 
