@@ -7,11 +7,13 @@
 //  Manager and hits classes for set:START     //
 ////////////////////////////////////////////////
  
-#include "AliDetector.h"
-#include "TTree.h"
+#include <AliDetector.h>
+#include <TTree.h>
+#include "AliSTARTvertex.h"
+
 class TDirectory;
 class TFile;
-
+class AliESD;
 R__EXTERN TDirectory *  gDirectory;
  
  
@@ -36,15 +38,16 @@ public:
    virtual void   Init();
    virtual void SetHitsAddressBranch(TBranch *b1,TBranch *b2)
      {b1->SetAddress(&fHits); b2=0;}
-   void Hit2digit(Int_t iEventNum);
-   void Hit2digit(){return;}
    virtual void   MakeBranch(Option_t *opt=" ");
    virtual void   StepManager(){}
    virtual void   ResetHits();
    virtual void   SetTreeAddress();
-   TClonesArray   *Photons() {return fPhotons;}
-   
+  
+  TClonesArray   *Photons() {return fPhotons;}
+
    virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
+   //  virtual void   Reconstruct()    const{ AliSTARTvertex reco; reco.Reconstruct();}
+    virtual void          FillESD(AliESD* pESD)  const{ AliSTARTvertex reco; reco.Reconstruct(pESD);}
 
 protected:
    Int_t fIdSens;    // Sensetive Cherenkov radiator

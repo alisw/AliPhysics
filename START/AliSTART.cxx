@@ -47,6 +47,7 @@
 #include <TRandom.h>
 #include <TTUBE.h>
 #include <TVirtualMC.h>
+#include <AliESD.h>
 
 #include "AliLoader.h"
 #include "AliRun.h"
@@ -90,7 +91,7 @@ AliSTART::AliSTART(const char *name, const char *title)
 
   fPhotons  = new TClonesArray("AliSTARThitPhoton", 10000);
   gAlice->GetMCApp()->AddHitList (fPhotons);
-  
+  if (GetDebug()>2) cout<<" Debug "<<endl;
   fIshunt     =  1;
   fIdSens   =  0;
   fNPhotons =  0;
@@ -255,15 +256,9 @@ void AliSTART::SetTreeAddress()
   
 }
 
-
-//_____________________________________________________________________________
-
-void AliSTART::Hit2digit(Int_t /*evnum*/) 
-{
-}
-
 //_____________________________________________________________________________
 AliDigitizer* AliSTART::CreateDigitizer(AliRunDigitizer* manager) const
 {
   return new AliSTARTDigitizer(manager);
 }
+

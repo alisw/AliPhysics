@@ -146,36 +146,40 @@ void AliSTARTv1::CreateGeometry()
     ppcon[22] =   4.9;
     ppcon[23] =   5.1;
 
-    
 /// 8
-    ppcon[24]  = ppcon[21];
+    ppcon[24]  = ppcon[21]+0.01;
     ppcon[25] =   3.15;
     ppcon[26] =   3.25;
     
-//  9
-    ppcon[27]  = ppcon[24]+4.5;
+/// 9
+    ppcon[27]  = ppcon[24];
     ppcon[28] =   3.15;
     ppcon[29] =   3.25;
-
+    
 //  10
-    ppcon[30] = ppcon[27];
+    ppcon[30]  = ppcon[27]+4.5;
     ppcon[31] =   3.15;
     ppcon[32] =   3.25;
 
 //  11
-    ppcon[33]  = ppcon[27];
+    ppcon[33] = ppcon[30];
     ppcon[34] =   3.15;
-    ppcon[35] =   7.6;
+    ppcon[35] =   3.25;
 
 //  12
-    ppcon[36]  = ppcon[33]+0.4;
+    ppcon[36]  = ppcon[33];
     ppcon[37] =   3.15;
     ppcon[38] =   7.6;
 
 //  13
-    ppcon[39]  = ppcon[36];
+    ppcon[39]  = ppcon[33]+0.4;
     ppcon[40] =   3.15;
     ppcon[41] =   7.6;
+
+//  14
+//    ppcon[39]  = ppcon[36];
+//    ppcon[40] =   3.15;
+//    ppcon[41] =   7.6;
 
     gMC->Gsvolu("0SUP", "PCON", idtmed[kAir], ppcon,42);
     z=-69.7;//-14.1/2;
@@ -550,7 +554,7 @@ void AliSTARTv1::DrawDetector()
   gMC->SetClipBox(".");
   gMC->SetClipBox("*",0,1000,-1000,1000,-1000,1000);
   gMC->DefaultRange();
-  gMC->Gdraw("alic",40,30,0,12,9.5,.7,0.7);
+  gMC->Gdraw("alic",90,0,0,-35,9.5,.6,0.6);
   gMC->Gdhead(1111,"T-Zero detector");
   gMC->Gdopt("hide","off");
 }

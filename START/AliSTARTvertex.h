@@ -4,7 +4,10 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
-#include "AliSTART.h"
+
+
+
+#include <AliESD.h>
 
 //___________________________________________
 class AliSTARTvertex   : public TObject {
@@ -12,12 +15,12 @@ class AliSTARTvertex   : public TObject {
 
 ////////////////////////////////////////////////////////////////////////
  private:
-  Int_t fZposition;        // Z position of vertex
-
+  Int_t fZposition;        // Z position of vertex (mm)
+ AliRunLoader* fRunLoader;
  public:
     AliSTARTvertex() {}
     AliSTARTvertex(Int_t *);
-    void Reconstruct();
+    void Reconstruct(AliESD *pESD);
     Int_t GetVertex();
     virtual ~AliSTARTvertex() {}
     void Set(Int_t);

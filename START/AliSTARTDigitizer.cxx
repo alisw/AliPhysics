@@ -16,13 +16,10 @@
 
 
 #include <TTree.h> 
-#include <TVector.h>
-#include <TObjArray.h>
 #include <TFile.h>
 #include <TDirectory.h>
 #include <TRandom.h>
 #include <TArrayI.h>
-#include <TH1.h>
 #include <TError.h>
 
 
@@ -32,14 +29,10 @@
 #include "AliSTARThitPhoton.h"
 #include "AliSTARTdigit.h"
 #include "AliRunDigitizer.h"
-#include "AliHeader.h"
-#include "AliGenEventHeader.h"
+#include <AliDetector.h>
 #include "AliRun.h"
-#include "AliPDG.h"
-#include "AliLoader.h"
-#include "AliRunLoader.h"
-#include "AliSTARTLoader.h"
-
+#include <AliLoader.h>
+#include <AliRunLoader.h>
 #include <stdlib.h>
 #include <Riostream.h>
 #include <Riostream.h>
@@ -60,18 +53,25 @@ AliSTARTDigitizer::AliSTARTDigitizer(AliRunDigitizer* manager)
   //	cout<<"AliSTARTDigitizer::AliSTARTDigitizer"<<endl;
 // ctor which should be used
 //  fDebug =0;
- // if (GetDebug()>2)
-  //  cerr<<"AliSTARTDigitizer::AliSTARTDigitizer"
-   //     <<"(AliRunDigitizer* manager) was processed"<<endl;
+  if (GetDebug()>2)
+    cerr<<"AliSTARTDigitizer::AliSTARTDigitizer"
+        <<"(AliRunDigitizer* manager) was processed"<<endl;
 
+  ftimeRightTDC = new TArrayI(12); 
+  ftimeLeftTDC = new TArrayI(12); 
+  fRightADC = new TArrayI(12); 
+  fLeftADC = new TArrayI(12); 
 }
 
 //------------------------------------------------------------------------
 AliSTARTDigitizer::~AliSTARTDigitizer()
 {
 // Destructor
-
-
+  if(GetDebug()) Info("dtor","START"); 
+  delete ftimeRightTDC;
+  delete ftimeLeftTDC;
+  delete fRightADC;
+  delete fLeftADC;
 }
 
  //------------------------------------------------------------------------
@@ -88,24 +88,32 @@ Bool_t AliSTARTDigitizer::Init()
 void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 {
 
+  /*
+    Produde digits from hits
+        digits is TObject and includes
+	We are writing array if left & right  TDC
+	left & right  ADC (will need for slow simulation)
+	TOF first particle left & right
+	mean time and time difference (vertex position)
+	
+  */
 
   AliRunLoader *inRL, *outRL;//in and out Run Loaders
-  AliLoader *ingime, *outgime;// in and out ITSLoaders
+  AliLoader *pInStartLoader, *pOutStartLoader;// in and out STARTLoaders
 
   outRL = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
-  outgime = outRL->GetLoader("STARTLoader");
+  pOutStartLoader = outRL->GetLoader("STARTLoader");
 
 #ifdef DEBUG
-  cout<<"AliSTARTDigitizer::>SDigits2Digits start...\n";
+  cout<<"AliSTARTDigitizer::>Hits2Digits start...\n";
 #endif
   //
   // From hits to digits
   //
   Int_t hit, nhits;
-  Int_t CountEr[13],CountEl[13];							//!!!
+  Float_t meanTime;
+  Int_t countEr[13],countEl[13];
   Int_t volume,pmt,tr,tl,sumRight;
-  Float_t timediff,timeav;
-  Float_t besttimeright,besttimeleft,meanTime;
   Int_t  bestRightADC,bestLeftADC;
   Float_t besttimeleftGaus, besttimerightGaus;
   Float_t timeright[13]={13*0};
@@ -114,20 +122,12 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
   Int_t channelWidthADC=1; //ps
   //  Int_t thresholdAmpl=10;
 
-  ftimeRightTDC = new TArrayI(12); 
-  ftimeLeftTDC = new TArrayI(12); 
-  fRightADC = new TArrayI(12); 
-  fLeftADC = new TArrayI(12); 
   
   inRL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
-  inRL->LoadgAlice();
   
-  //  fHits = new TClonesArray ("AliSTARThit", 1000);
-  fPhotons = new TClonesArray ("AliSTARThitPhoton", 10000);			//!!!
-  AliSTART *START  = (AliSTART*) gAlice->GetDetector("START");
+
+  AliSTART *fSTART  = (AliSTART*) inRL->GetAliRun()->GetDetector("START");
   AliSTARThit  *startHit;
-  //use if Cherenkov photons
-  //  AliSTARThitPhoton  *startHitPhoton;						//!!!
   TBranch *brHits=0;
   TBranch *brHitPhoton=0;
   fdigits= new AliSTARTdigit();
@@ -135,65 +135,42 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
   Int_t nFiles=fManager->GetNinputs();
   for (Int_t inputFile=0; inputFile<nFiles;  inputFile++) {
 
-    besttimeright=9999.;
-    besttimeleft=9999.;
-    Int_t timeDiff=0;
-    Int_t timeAv=0;
+    Float_t besttimeright=9999.;
+    Float_t besttimeleft=9999.;
+    Int_t iTimeDiff=0;
+    Int_t iTimeAv=0;
+    Float_t timeDiff,timeAv; 
     sumRight=0;
     for (Int_t i0=0; i0<13; i0++)
       {
 	timeright[i0]=0; timeleft[i0]=0;
-	CountEr[i0]=0;   CountEl[i0]=0;
+	countEr[i0]=0;   countEl[i0]=0;
       }
 
     inRL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
-    ingime = inRL->GetLoader("STARTLoader");
-    ingime->LoadHits("READ");//probably it is necessary to load them before
-    outgime->LoadDigits("UPDATE");//probably it is necessary to load them before
-    //use if Cherenkov photons
-    //  TClonesArray *STARThitsPhotons = START->Photons ();
-    TClonesArray *fHits = START->Hits ();
-    //    cout<<" Load  "<<AliSTARTLoader::LoadDigits()<<endl;
+    pInStartLoader = inRL->GetLoader("STARTLoader");
+    pInStartLoader->LoadHits("READ");//probably it is necessary to load them before
+    pOutStartLoader->LoadDigits("UPDATE");//probably it is necessary to load them before
+    TClonesArray *fHits = fSTART->Hits ();
 
-    TTree *th = ingime->TreeH();
+    TTree *th = pInStartLoader->TreeH();
     brHits = th->GetBranch("START");
     brHitPhoton = th->GetBranch("STARThitPhoton");
     if (brHits) {
-      START->SetHitsAddressBranch(brHits,brHitPhoton);
+      fSTART->SetHitsAddressBranch(brHits,brHitPhoton);
     }else{
       cerr<<"EXEC Branch START hit not found"<<endl;
       exit(111);
     } 
     Int_t ntracks    = (Int_t) th->GetEntries();
-    cout<<" ntracks "<<ntracks<<endl;
-    if (ntracks<=0) return;
-    // Start loop on tracks in the photon hits containers 
-    // for amplitude
-    /*
-    if(brHitPhoton) {
-      cout<<"brHitPhoton "<<endl; 
-      for (Int_t track=0; track<ntracks;track++) {
-	brHitPhoton -> GetEntry(track);;
-	nhits = STARThitsPhotons->GetEntriesFast();
-	for (hit=0;hit<nhits;hit++) {
-	  startHitPhoton   = (AliSTARThitPhoton*) 
-	   STARThitsPhotons ->UncheckedAt(hit);
-	  pmt=startHitPhoton->fPmt;
-	  volume = startHitPhoton->fArray;
-	  if(RegisterPhotoE(startHitPhoton)) 
-	    {
-	      if (volume == 1) CountEr[pmt]++;
-	      if (volume == 2) CountEl[pmt]++;
-	    }
-	} //hit photons
-      } //track photons
-    } // was photons
-    */
+#ifdef DEBUG
+   Info("Digitizer",ntracks);
+#endif
+     if (ntracks<=0) return;
     // Start loop on tracks in the hits containers
     for (Int_t track=0; track<ntracks;track++) {
       brHits->GetEntry(track);
       nhits = fHits->GetEntriesFast();
-      //  cout<<" brHits hits "<<nhits<<endl;
       for (hit=0;hit<nhits;hit++) {
 	startHit   = (AliSTARThit*) fHits->UncheckedAt(hit);
 	if (!startHit) {
@@ -205,17 +182,15 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 	if(volume==1){
 	  timeright[pmt] = startHit->Time();
 	  if(timeright[pmt]<besttimeright)
-	    //&&CountEr[pmt-1]>thresholdAmpl)
 	    {
-	    besttimeright=timeright[pmt];
+	      besttimeright=timeright[pmt];
 	  } //timeright
 	}//time for right shoulder
 	if(volume==2){            
 	  timeleft[pmt] = startHit->Time();
 	  if(timeleft[pmt]<besttimeleft)
-	    //&&CountEl[pmt-1]>thresholdAmpl) 
 	    {
-	    besttimeleft=timeleft[pmt];
+	      besttimeleft=timeleft[pmt];
 	    
 	  } //timeleftbest
 	}//time for left shoulder
@@ -223,45 +198,38 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
     } //track loop
   
     // z position
-    cout<<" right time  "<<besttimeright<<
-      " right distance "<<besttimeright*30<<endl;;
-    cout<<" left time  "<<besttimeleft<<
-      " left distance "<<besttimeleft*30<<endl;;
-  
 
     //folding with experimental time distribution
     
-    besttimeleftGaus=gRandom->Gaus(besttimeright,0.05);
-    cout<<" besttimeleftGaus "<<besttimeleftGaus<<endl;
-    bestLeftADC=Int_t (besttimeleftGaus*1000/channelWidth);
     Float_t koef=69.7/350.;
-    besttimeright=koef*besttimeleft;
-    besttimerightGaus=gRandom->Gaus(besttimeleft,0.05);
-    
+    besttimeright=koef*besttimeright;
+    besttimeleftGaus=gRandom->Gaus(besttimeleft,0.05);
+    bestLeftADC=Int_t (besttimeleftGaus*1000/channelWidth);
+    besttimerightGaus=gRandom->Gaus(besttimeright,0.05);
     bestRightADC=Int_t (besttimerightGaus*1000/channelWidth);
-    timediff=besttimerightGaus-besttimeleftGaus;
-    cout<<" timediff in ns "<<timediff<<" z= "<<timediff*30<<endl;
+    timeDiff=besttimerightGaus-besttimeleftGaus;
+#ifdef DEBUG
+    cout<<" timediff in ns "<<timeDiff<<" z= "<<timeDiff*30<<endl;
+#endif
     meanTime=(besttimerightGaus+besttimeleftGaus)/2.;
-    if ( TMath::Abs(timediff)<TMath::Abs(0.3) ) 
+    if ( TMath::Abs(timeDiff)<TMath::Abs(0.3) ) 
       {
 	Float_t t1=1000.*besttimeleftGaus;
 	Float_t t2=1000.*besttimerightGaus;
 	t1=t1/channelWidth;   //time in ps to channelWidth
 	t2=t2/channelWidth;   //time in ps to channelWidth
-	timeav=(t1+t2)/2.;
+	timeAv=(t1+t2)/2.;// time  channel numbres
 	
 	// Time to TDC signal
 	// 256 channels for timediff, range 1ns
-	
-	timediff=512+1000*timediff/channelWidth; // time in ps 
-	
-	timeAv = (Int_t)(timeav);   // time  channel numbres
-	timeDiff = (Int_t)(timediff); // time  channel numbres
+	iTimeAv=(Int_t)timeAv; 
+	timeDiff= 512+1000*timeDiff/channelWidth; // time  channel numbres 
+	iTimeDiff=(Int_t)timeDiff;
 	//       fill digits
 	fdigits->SetTimeBestLeft(bestLeftADC);
 	fdigits->SetTimeBestRight(bestRightADC);
-	fdigits->SetMeanTime(timeAv);
-	fdigits->SetTimeDiff(timeDiff);
+	fdigits->SetMeanTime(iTimeAv);
+	fdigits->SetTimeDiff(iTimeDiff);
 	for (Int_t i=0; i<12; i++)
 	  {
 	    //  fill TDC
@@ -275,17 +243,16 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 	    ftimeRightTDC->AddAt(tr,i);
 	    ftimeLeftTDC->AddAt(tl,i);
 	    //fill ADC
-	    Int_t al=( Int_t ) CountEl[i+1]/ channelWidthADC;
-	    Int_t ar=( Int_t ) CountEr[i+1]/ channelWidthADC;
+	    Int_t al=( Int_t ) countEl[i+1]/ channelWidthADC;
+	    Int_t ar=( Int_t ) countEr[i+1]/ channelWidthADC;
 	    fRightADC->AddAt(ar,i);
 	    fLeftADC ->AddAt(al,i);
-	    sumRight+=CountEr[i+1];
+	    sumRight+=countEr[i+1];
 	  }
 	fdigits->SetTimeRight(*ftimeRightTDC);
 	fdigits->SetTimeLeft(*ftimeLeftTDC);
 	fdigits->SetADCRight(*fRightADC);
 	fdigits->SetADCLeft(*fLeftADC);
-	// cout<<" before sum"<<endl;
 	fdigits->SetSumADCRight(sumRight);
       }
     else
@@ -293,26 +260,24 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 
 // trick to find out output dir:
 
-    Char_t nameDigits[20];
-    sprintf(nameDigits,"START_D_%d",fManager->GetOutputEventNr());
     TDirectory *wd = gDirectory;
-    outgime->GetDigitsDataLoader()->GetDirectory()->cd();
-    fdigits->Write(nameDigits);
+    pOutStartLoader->GetDigitsDataLoader()->GetDirectory()->cd();
+    fdigits->Write("START_D");
     wd->cd();
-
-    //    outgime->WriteDigits("OVERWRITE");
-  }
+    pInStartLoader->UnloadHits();
+    pOutStartLoader->UnloadDigits();
+  } //event loop
 }
 
 
 //------------------------------------------------------------------------
 Bool_t AliSTARTDigitizer::RegisterPhotoE(/*AliSTARThitPhoton *hit*/)
 {
-    Double_t    P = 0.2;    
+    Double_t    pP = 0.2;    
     Double_t    p;
     
     p = gRandom->Rndm();
-    if (p > P)
+    if (p > pP)
       return kFALSE;
     
     return kTRUE;

@@ -3,11 +3,11 @@
 /* Copyright(c) 1998-2000, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include "AliDigitizer.h"
-#include "AliLoader.h"
-#include "AliRunLoader.h"
+#include <AliDigitizer.h>
+#include <AliLoader.h>
+#include <AliRunLoader.h>
 
-class AliRunDigitizer;
+#include <AliRunDigitizer.h>
 class AliSTART;
 class AliSTARThit;
 class AliSTARThitPhoton;
@@ -22,25 +22,27 @@ class AliSTARTDigitizer : public AliDigitizer {
   virtual Bool_t Init();
   TClonesArray *Hits() const {return fHits;}
   TClonesArray *Photons() const {return fPhotons;}
-  //  TArrayI *timeRightADC() {return ftimeRightADC;}
-  // TArrayI *timeLeftADC() {return ftimeLeftADC;}
+  TArrayI *timeRightTDC() {return ftimeRightTDC;} //for slow simulation
+  TArrayI *timeLeftTDC() {return ftimeLeftTDC;}
+  TArrayI *RightADC() {return fRightADC;} //for slow simulation
+  TArrayI *LeftADC() {return fLeftADC;}
   // Do the main work
   void Exec (Option_t* /*option=0*/) ;
-  Bool_t RegisterPhotoE(/*AliSTARThitPhoton *hit*/);			//!!!
-
+  Bool_t RegisterPhotoE(/*AliSTARThitPhoton *hit*/);//!!!
+  Bool_t GetDebug() const {return fManager->GetDebug();}
   enum {kBgTag = -1};
 
 private:
 
-  AliSTART *START;
-  TClonesArray *fPhotons   ; 						//!!! 
-  TClonesArray *fHits      ; // List of summable digits
+  AliSTART *fSTART;
+  TClonesArray *fPhotons   ; //Number of Cherenkov photons		      
+  TClonesArray *fHits      ; // List of hits
   AliSTARTdigit *fdigits   ; // digits
-  TArrayI *ftimeRightTDC    ;
-  TArrayI *ftimeLeftTDC     ;
-  TArrayI *fRightADC    ;
-  TArrayI *fLeftADC     ;
-     
+  TArrayI *ftimeRightTDC    ; //array of TDC signal from right sida
+  TArrayI *ftimeLeftTDC     ; ////array of TDC signal from left side
+  TArrayI *fRightADC    ;   //array of ADC signal from right sida 
+  TArrayI *fLeftADC     ;//array of ADC signal from left sida
+  
     ClassDef(AliSTARTDigitizer,0)
 };    
 #endif
