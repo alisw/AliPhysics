@@ -100,6 +100,7 @@ class AliFastGlauber : public TObject {
     
     Double_t CrossSection(Double_t b1, Double_t b2)               const;
     Double_t HardCrossSection(Double_t b1, Double_t b2)           const;
+    Double_t NHard(Double_t b1, Double_t b2)                      const;
     Double_t FractionOfHardCrossSection(Double_t b1, Double_t b2) const;
     Double_t Binaries(Double_t b)                 const;
     Double_t GetNumberOfBinaries(Double_t b)      const;

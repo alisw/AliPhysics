@@ -977,6 +977,19 @@ Double_t AliFastGlauber::FractionOfHardCrossSection(Double_t b1, Double_t b2) co
   return fgWSbinary->Integral(b1, b2)/fgWSbinary->Integral(0., 100.);
 }
 
+Double_t AliFastGlauber::NHard(Double_t b1, Double_t b2) const
+{
+  //
+  //  Number of binary hard collisions 
+  //  as a function of b (nucl/ex/0302016 eq. 19)
+  //
+  const Double_t kshard=HardCrossSection(b1,b2);
+  const Double_t ksgeo=CrossSection(b1,b2); 
+  if(ksgeo>0)
+    return kshard/ksgeo;
+  else return -1; 
+}
+
 Double_t AliFastGlauber::Binaries(Double_t b) const
 {
   //
