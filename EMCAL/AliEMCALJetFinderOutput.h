@@ -13,7 +13,7 @@
 //		Mark Horner (LBL/UCT)
 //
 
-
+class TClonesArray;
 #include "TObject.h"
 #include "TParticle.h"
 #include "AliEMCALParton.h"
