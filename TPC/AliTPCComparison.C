@@ -11,7 +11,6 @@
 #ifndef __CINT__
   #include "alles.h"
   #include "AliTPCtracker.h"
-  #include <AliMagF.h>
 #endif
 
 struct GoodTrackTPC {
@@ -24,7 +23,7 @@ struct GoodTrackTPC {
 Int_t AliTPCComparison(Int_t event=0) {
 
    cerr<<"Doing comparison...\n";
-   AliKalmanTrack::SetConvConst(1000/0.299792458/gAlice->Field()->SolenoidField());
+
    const Int_t MAX=20000;
    Int_t good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const Int_t event);
 
@@ -353,8 +352,6 @@ Int_t good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const Int_t event) {
      break;
    case 2:
      {
-       TFile fff("galice.root");
-	 
       char dname[100]; sprintf(dname,"TreeD_75x40_100x60_150x60_%d",event);
       TTree *TD=(TTree*)gDirectory->Get(dname);
       AliSimDigits da, *digits=&da;
