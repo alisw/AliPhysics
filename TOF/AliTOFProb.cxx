@@ -171,9 +171,10 @@ void AliTOFProb::Exec(const Option_t *dummyOpt)
 
     Double_t p1=time;
     Double_t p2=timeResolution;
-    Float_t twopi=2*TMath::Pi();
-    Float_t sqrtwopi=TMath::Sqrt(twopi);
+    //Float_t twopi=2*TMath::Pi();
+    //Float_t sqrtwopi=TMath::Sqrt(twopi);
     //Double_t p0=1./(p2*sqrtwopi);
+    // choising a different normalization
     Double_t p0=1.;
     gauss->SetParameters(p0,p1,p2);
 

@@ -348,8 +348,8 @@ void AliTOFReconstructionerV2::Exec(Option_t* option)
 	Double_t zlrf= dummyrt->GetZ();  // P1
 
 	// smear according to sigmaY and sigmaZ
-	Double_t ylrfNew=gRandom->Gaus(ylrf,fScaleSigmaFactor*sigmaY);
-	Double_t zlrfNew=gRandom->Gaus(zlrf,fScaleSigmaFactor*sigmaZ);
+	//Double_t ylrfNew=gRandom->Gaus(ylrf,fScaleSigmaFactor*sigmaY);
+	//Double_t zlrfNew=gRandom->Gaus(zlrf,fScaleSigmaFactor*sigmaZ);
 
 	// set Y and Z accordingly
 	// setter to be added in the class AliTPCtrack

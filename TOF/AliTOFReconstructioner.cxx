@@ -1501,18 +1501,24 @@ Bool_t AliTOFReconstructioner::operator==( AliTOFReconstructioner const & tofrec
   // split the member variables in analogous categories
   
   // time resolution and edge effect parameters
-  Bool_t dummy0=(fTimeResolution==tofrec.fTimeResolution)&&(fpadefficiency==tofrec.fpadefficiency)&&(fEdgeEffect==tofrec.fEdgeEffect)&&(fEdgeTails==tofrec.fEdgeTails)&&(fHparameter==tofrec.fHparameter)&&(fH2parameter==tofrec.fH2parameter)&&(fKparameter==tofrec.fKparameter)&&(fK2parameter==tofrec.fK2parameter);
+  Bool_t dummy0=(fTimeResolution==tofrec.fTimeResolution)&&(fpadefficiency==tofrec.fpadefficiency)&&(fEdgeEffect==tofrec.fEdgeEffect)&&(fEdgeTails==tofrec.fEdgeTails)&&(fHparameter==tofrec.fHparameter)&&(fH2parameter==tofrec.fH2parameter)&&(fKparameter==t
+ofrec.fKparameter)&&(fK2parameter==tofrec.fK2parameter);
   
   // pad efficiency parameters
-  Bool_t dummy1=(fEffCenter==tofrec.fEffCenter)&&(fEffBoundary==tofrec.fEffBoundary)&&(fEff2Boundary==tofrec.fEff2Boundary)&&(fEff3Boundary==tofrec.fEff3Boundary)&&(fResCenter==tofrec.fResCenter)&&(fResBoundary==tofrec.fResBoundary)&&(fResSlope==tofrec.fResSlope);
+  Bool_t dummy1=(fEffCenter==tofrec.fEffCenter)&&(fEffBoundary==tofrec.fEffBoundary)&&(fEff2Boundary==tofrec.fEff2Boundary)&&(fEff3Boundary==tofrec.fEff3Boundary)&&(fResCenter==tofrec.fResCenter)&&(fResBoundary==tofrec.fResBoundary)&&(fResSlope==tofrec.fR
+esSlope);
 
   // time walk parameters
-  Bool_t dummy2=(fTimeWalkCenter==tofrec.fTimeWalkCenter)&&(fTimeWalkBoundary==tofrec.fTimeWalkBoundary)&&(fTimeWalkSlope==tofrec.fTimeWalkSlope)&&(fTimeDelayFlag==tofrec.fTimeDelayFlag)&&(fPulseHeightSlope==tofrec.fPulseHeightSlope)&&(fTimeDelaySlope==tofrec.fTimeDelaySlope);
+  Bool_t dummy2=(fTimeWalkCenter==tofrec.fTimeWalkCenter)&&(fTimeWalkBoundary==tofrec.fTimeWalkBoundary)&&(fTimeWalkSlope==tofrec.fTimeWalkSlope)&&(fTimeDelayFlag==tofrec.fTimeDelayFlag)&&(fPulseHeightSlope==tofrec.fPulseHeightSlope)&&(fTimeDelaySlope==to
+frec.fTimeDelaySlope);
 
   // ADC-TDC correlation parameters
-  Bool_t dummy3=(fMinimumCharge==tofrec.fMinimumCharge)&&(fChargeSmearing==tofrec.fChargeSmearing )&&(fLogChargeSmearing==tofrec.fLogChargeSmearing )&&(fTimeSmearing==tofrec.fTimeSmearing )&&(fAverageTimeFlag==tofrec.fAverageTimeFlag)&&(fChargeFactorForMatching==tofrec.fChargeFactorForMatching)&&(fMatchingStyle==tofrec.fMatchingStyle);
+  Bool_t dummy3=(fMinimumCharge==tofrec.fMinimumCharge)&&(fChargeSmearing==tofrec.fChargeSmearing )&&(fLogChargeSmearing==tofrec.fLogChargeSmearing )&&(fTimeSmearing==tofrec.fTimeSmearing )&&(fAverageTimeFlag==tofrec.fAverageTimeFlag)&&(fChargeFactorForMa
+tching==tofrec.fChargeFactorForMatching)&&(fMatchingStyle==tofrec.fMatchingStyle);
   
-  Bool_t dummy4=(fTrackingEfficiency==tofrec.fTrackingEfficiency)&&(fSigmavsp==tofrec.fSigmavsp)&&(fSigmaZ==tofrec.fSigmaZ)&&(fSigmarphi==tofrec.fSigmarphi)&&(fSigmap==tofrec.fSigmap)&&(fSigmaPhi==tofrec.fSigmaPhi)&&(fSigmaTheta==tofrec.fSigmaTheta)&&(fNoise==tofrec.fNoise)&&(fNoiseSlope==tofrec.fNoiseSlope)&&(fField==tofrec.fField)&&(fRadLenTPC==tofrec.fRadLenTPC)&&(fCorrectionTRD==tofrec.fCorrectionTRD)&&(fLastTPCRow==tofrec.fLastTPCRow)&&(fRadiusvtxBound==tofrec.fRadiusvtxBound)&&(fMaxTestTracks==tofrec.fMaxTestTracks)&&(fStep==tofrec.fStep)&&(fMaxPixels==tofrec.fMaxPixels)&&(fMaxAllTracks==tofrec.fMaxAllTracks)&&(fMaxTracks==tofrec.fMaxTracks)&&(fMaxTOFHits==tofrec.fMaxTOFHits)&&(fPBound==tofrec.fPBound);
+  Bool_t dummy4=(fTrackingEfficiency==tofrec.fTrackingEfficiency)&&(fSigmavsp==tofrec.fSigmavsp)&&(fSigmaZ==tofrec.fSigmaZ)&&(fSigmarphi==tofrec.fSigmarphi)&&(fSigmap==tofrec.fSigmap)&&(fSigmaPhi==tofrec.fSigmaPhi)&&(fSigmaTheta==tofrec.fSigmaTheta)&&(fNo
+ise==tofrec.fNoise)&&(fNoiseSlope==tofrec.fNoiseSlope)&&(fField==tofrec.fField)&&(fRadLenTPC==tofrec.fRadLenTPC)&&(fCorrectionTRD==tofrec.fCorrectionTRD)&&(fLastTPCRow==tofrec.fLastTPCRow)&&(fRadiusvtxBound==tofrec.fRadiusvtxBound)&&(fMaxTestTracks==tofre
+c.fMaxTestTracks)&&(fStep==tofrec.fStep)&&(fMaxPixels==tofrec.fMaxPixels)&&(fMaxAllTracks==tofrec.fMaxAllTracks)&&(fMaxTracks==tofrec.fMaxTracks)&&(fMaxTOFHits==tofrec.fMaxTOFHits)&&(fPBound==tofrec.fPBound);
 
   if( dummy0 && dummy1 && dummy2 && dummy3 && dummy4)
     return kTRUE ;
@@ -1552,7 +1558,8 @@ void AliTOFReconstructioner::InitArray(Int_t array[], Int_t nlocations)
 
 
 //____________________________________________________________________________
-void AliTOFReconstructioner::ReadTOFHits(Int_t ntracks, TTree* treehits, TClonesArray* tofhits, Int_t ***MapPixels, Int_t* kTOFhitFirst, AliTOFPad* pixelArray , Int_t* iTOFpixel, Float_t* toftime, AliTOFRecHit* hitArray, Int_t& isHitOnFiredPad, Int_t& ipixel)
+void AliTOFReconstructioner::ReadTOFHits(Int_t ntracks, TTree* treehits, TClonesArray* tofhits, Int_t ***MapPixels, Int_t* kTOFhitFirst, AliTOFPad* pixelArray , Int_t* iTOFpixel, Float_t* toftime, AliTOFRecHit* hitArray, Int_t& isHitOnFiredPad, Int_t& ipi
+xel)
 {
   //
   // Read TOF hits for the current event and fill arrays
@@ -2712,7 +2719,7 @@ void AliTOFReconstructioner::Matching(AliTOFTrack* trackArray, AliTOFRecHit* hit
 	  testZ[itest-1]=wZ;
 	  testWeight[itest-1]=weight;
 	} else {
-	  Int_t k;
+	  Int_t k=0;
 	  for(Int_t i=0;i<itest;i++) {
 	    k=0;
 	    if(testPixel[i]==wPixel) {
@@ -2944,11 +2951,14 @@ void AliTOFReconstructioner::Matching(AliTOFTrack* trackArray, AliTOFRecHit* hit
       if(iTOFpixel[ipart] && match!=3) {
 	particle = (TParticle*)gAlice->Particle(ipart);  //for V3.05
 
-	printf("          ipixel=%i (Sector=%i, Plate=%i, Strip=%i, Pixel=%i), fired by %i track\n",iTOFpixel[ipart],pixelArray[iTOFpixel[ipart]-1].GetSector(),pixelArray[iTOFpixel[ipart]-1].GetPlate(),pixelArray[iTOFpixel[ipart]-1].GetStrip(),pixelArray[iTOFpixel[ipart]-1].GetPixel(),pixelArray[iTOFpixel[ipart]-1].GetTrack());   
-	printf("     indexOfTestTrack=%i itest=%i weightTestTracksOutTof[4]=%f weightTestTracksOutTof[2]=%f weightTestTracksOutTof[1]=%f weightTestTracksOutTof[0]=%f\n",indexOfTestTrack,itest,weightTestTracksOutTof[3],weightTestTracksOutTof[2],weightTestTracksOutTof[1],weightTestTracksOutTof[0]);
+	printf("          ipixel=%i (Sector=%i, Plate=%i, Strip=%i, Pixel=%i), fired by %i track\n",iTOFpixel[ipart],pixelArray[iTOFpixel[ipart]-1].GetSector(),pixelArray[iTOFpixel[ipart]-1].GetPlate(),pixelArray[iTOFpixel[ipart]-1].GetStrip(),pixelArray[iTOFpix
+el[ipart]-1].GetPixel(),pixelArray[iTOFpixel[ipart]-1].GetTrack());   
+	printf("     indexOfTestTrack=%i itest=%i weightTestTracksOutTof[4]=%f weightTestTracksOutTof[2]=%f weightTestTracksOutTof[1]=%f weightTestTracksOutTof[0]=%f\n",indexOfTestTrack,itest,weightTestTracksOutTof[3],weightTestTracksOutTof[2],weightTestTracksOu
+tTof[1],weightTestTracksOutTof[0]);
 	if(itest) {
 
-	  printf("     take ipixel=%i (Sector=%i, Plate=%i, Strip=%i, Pixel=%i), (fired by %i track), match=%i\n",wPixel,pixelArray[wPixel-1].GetSector(),pixelArray[wPixel-1].GetPlate(),pixelArray[wPixel-1].GetStrip(),pixelArray[wPixel-1].GetPixel(),pixelArray[wPixel-1].GetTrack(),match);   
+	  printf("     take ipixel=%i (Sector=%i, Plate=%i, Strip=%i, Pixel=%i), (fired by %i track), match=%i\n",wPixel,pixelArray[wPixel-1].GetSector(),pixelArray[wPixel-1].GetPlate(),pixelArray[wPixel-1].GetStrip(),pixelArray[wPixel-1].GetPixel(),pixelArray[w
+Pixel-1].GetTrack(),match);   
 	}
       }
     }
