@@ -839,7 +839,7 @@ TNtuple *AliL3Evaluate::EvaluatePoints(Char_t *rootfile)
   arr->SetClusterType("AliComplexCluster");
   char treeName[500];
   sprintf(treeName,"TreeCExact_%s",param->GetTitle());
-  Bool_t clusterok = arr->ConnectTree(treeName);
+  Bool_t clusterok = arr->ConnectTree(treeName);//Segment Tree (for offline clusters)
   if(!clusterok) {printf("AliL3Evaluate::EvaluatePoints : Error in clusterloading\n"); return 0;}
   
   for(Int_t i=0; i<arr->GetTree()->GetEntries(); i++)
@@ -862,7 +862,7 @@ TNtuple *AliL3Evaluate::EvaluatePoints(Char_t *rootfile)
       Int_t index = fRowid[slice][padrow];
       if(!fDigitsTree->GetEvent(index))
 	printf("AliL3Evaluate::EvaluatePoints : ERROR IN DIGITSTREE\n");
-      printf("Checking padrow %d\n",padrow);
+      printf("Checking slice %d padrow %d with %d clusters\n",slice,padrow,num_of_offline);
       
       for(UInt_t c=0; c<fNcl[slice][0]; c++)
 	{
@@ -871,19 +871,26 @@ TNtuple *AliL3Evaluate::EvaluatePoints(Char_t *rootfile)
 	    {
 	      AliComplexCluster *cluster = (AliComplexCluster *)clusters->UncheckedAt(m);
 	      Int_t mcId = cluster->fTracks[0];
+	      //Int_t mcId = cluster->GetLabel(0);
+	      if(mcId <0) continue;
 	      TParticle *part = gAlice->Particle(mcId);
+	      
 	      Float_t xyz_cl[3] = {points[c].fX,points[c].fY,points[c].fZ};
+	      Float_t xyz_ex[3];
 	      fTransform->Global2Raw(xyz_cl,cursec,currow);
 	      if(fDigits->GetTrackID((Int_t)rint(xyz_cl[2]),(Int_t)rint(xyz_cl[1]),0)!=mcId &&
 		 fDigits->GetTrackID((Int_t)rint(xyz_cl[2]),(Int_t)rint(xyz_cl[1]),1)!=mcId &&
 		 fDigits->GetTrackID((Int_t)rint(xyz_cl[2]),(Int_t)rint(xyz_cl[1]),2)!=mcId)
 		continue;
+	      fTransform->Raw2Local(xyz_ex,cursec,currow,cluster->fY,cluster->fX);
+	      fTransform->Raw2Local(xyz_cl,cursec,currow,xyz_cl[1],xyz_cl[2]);
+	      Float_t resy = xyz_cl[1] - xyz_ex[1];//cluster->GetY()
+	      Float_t resz = xyz_cl[2] - xyz_ex[2];//cluster->GetZ()
 	      
-	      Float_t resy = xyz_cl[1]-cluster->fY;
-	      Float_t resz = xyz_cl[2]-cluster->fX;
-	      ntuppel->Fill(slice,padrow,resy,resz,cluster->fX,part->Pt());
+	      ntuppel->Fill(slice,padrow,resy,resz,xyz_ex[2],part->Pt());
 	    }
 	}      
+      arr->ClearRow(cursec,currow);
     }
 
   return ntuppel;
