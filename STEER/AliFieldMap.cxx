@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.1  2002/02/14 11:41:28  morsch
+Magnetic field map for ALICE for L3+muon spectrometer stored in 3 seperate
+root files.
+
 */
 
 //
@@ -34,6 +38,7 @@ AliFieldMap::AliFieldMap()
   // Standard constructor
   //
   fB = 0;
+  SetWriteEnable();
 }
 
 AliFieldMap::AliFieldMap(const char *name, const char *title)
@@ -44,6 +49,7 @@ AliFieldMap::AliFieldMap(const char *name, const char *title)
   //
   fB = 0;
   ReadField();
+  SetWriteEnable();
 }
 
 AliFieldMap::~AliFieldMap()
@@ -70,8 +76,8 @@ void AliFieldMap::ReadField()
   // Method to read the magnetic field map from file
   //
   FILE* magfile;
-  FILE* endf = fopen("end.table", "r");
-  FILE* out  = fopen("out", "w");
+//  FILE* endf = fopen("end.table", "r");
+//  FILE* out  = fopen("out", "w");
   
   Int_t   ix, iy, iz, ipx, ipy, ipz;
   Float_t bx, by, bz;
@@ -106,13 +112,14 @@ void AliFieldMap::ReadField()
 	      for (iz = 0; iz < fZn; iz++) {
 		  ipz=ipy+iz*3;
 
-		  if (iz == -1) 
-		      fscanf(endf,"%f %f %f", &bx,&by,&bz);
-		  else if (iz > -1)
+		  if (iz == -1) {
+//		      fscanf(endf,"%f %f %f", &bx,&by,&bz);
+		  } else if (iz > -1) {
 		      fscanf(magfile," %f %f %f", &bx, &by, &bz);
-		  else 
+		  } else {
 		      continue;
-
+		  }
+		  
 //		  fscanf(magfile,"%f %f %f %f %f %f %f ",
 //			 &x, &y, &z, &bx,&by,&bz, &b);
 //		  fprintf(out, "%15.8e %15.8e %15.8e \n", bx, by, bz);
@@ -219,4 +226,18 @@ AliFieldMap & AliFieldMap::operator =(const AliFieldMap &magf)
 {
   magf.Copy(*this);
   return *this;
+}
+
+void AliFieldMap::Streamer(TBuffer &R__b)
+{
+   // Stream an object of class AliFieldMap.
+   if (R__b.IsReading()) {
+      AliFieldMap::Class()->ReadBuffer(R__b, this);
+   } else {
+       if (!fWriteEnable) {
+	   delete fB;
+	   fB = 0;
+       }
+      AliFieldMap::Class()->WriteBuffer(R__b, this);
+   }
 }

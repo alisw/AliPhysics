@@ -10,6 +10,7 @@
 //
 #include <TNamed.h>
 #include <TVector.h>
+#include <TBuffer.h>
 
 class AliFieldMap : public TNamed
 {
@@ -59,28 +60,30 @@ public:
 	    fXbeg = xmin; fXend = xmax; fYbeg = ymin; fYend = ymax;
 	    fZbeg = zmin; fZend = zmax;
 	}
+    void SetWriteEnable(Int_t flag = 1) {fWriteEnable = flag;}
  private:
     void    ReadField();
  protected:
-
-    Float_t    fXbeg;     // Start of mesh in x
-    Float_t    fYbeg;     // Start of mesh in y
-    Float_t    fZbeg;     // Start of mesh in z
-    Float_t    fXend;     // End of mesh in x
-    Float_t    fYend;     // End of mesh in y
-    Float_t    fZend;     // End of mesh in z
-    Float_t    fXdel;     // Mesh step in x
-    Float_t    fYdel;     // Mesh step in y
-    Float_t    fZdel;     // Mesh step in z
-    Double_t   fXdeli;    // Inverse of Mesh step in x
-    Double_t   fYdeli;    // Inverse of Mesh step in y
-    Double_t   fZdeli;    // Inverse of Mesh step in z
-    Int_t      fXn;       // Number of mesh points in x
-    Int_t      fYn;       // Number of mesh points in y
-    Int_t      fZn;       // Number of mesh points in z
-    TVector*   fB;        //!Field map
     
-    ClassDef(AliFieldMap,2)  //Class for Field Map
+    Float_t    fXbeg;         // Start of mesh in x
+    Float_t    fYbeg;         // Start of mesh in y
+    Float_t    fZbeg;         // Start of mesh in z
+    Float_t    fXend;         // End of mesh in x
+    Float_t    fYend;         // End of mesh in y
+    Float_t    fZend;         // End of mesh in z
+    Float_t    fXdel;         // Mesh step in x
+    Float_t    fYdel;         // Mesh step in y
+    Float_t    fZdel;         // Mesh step in z
+    Double_t   fXdeli;        // Inverse of Mesh step in x
+    Double_t   fYdeli;        // Inverse of Mesh step in y
+    Double_t   fZdeli;        // Inverse of Mesh step in z
+    Int_t      fXn;           // Number of mesh points in x
+    Int_t      fYn;           // Number of mesh points in y
+    Int_t      fZn;           // Number of mesh points in z
+    Int_t      fWriteEnable;  // Enable flag for writing of field data.
+    TVector*   fB;            // Field map
+    
+    ClassDef(AliFieldMap,3)  //Class for Field Map
 };
 
 #endif
