@@ -26,7 +26,7 @@ class AliRICHPatRec : public TObject {
   AliRICHPatRec(const char *name, const char *title);
   virtual       ~AliRICHPatRec() {}
   void   PatRec();
-  Int_t   TrackParam(Int_t itr, Int_t &ich);
+  Int_t   TrackParam(Int_t itr, Int_t &ich, Float_t rectheta, Float_t recphi);
   //Old CERENK
   Float_t EstimationAtLimits(Float_t lim, Float_t radius, Float_t phiphot);  
   //Old REC_ETAPHOT
@@ -43,9 +43,9 @@ class AliRICHPatRec : public TObject {
   Int_t PhotonInBand();
   //Old RADII
   Float_t DistanceFromMip(Float_t nf,Float_t nq,
-				    Float_t Em,Float_t th, Float_t ph, Float_t pointsOnCathode[3]);
+				    Float_t Em,Float_t th, Float_t ph, Float_t pointsOnCathode[3], Float_t rectheta, Float_t recphi);
   //Old GIME_PHI
-  Float_t PhiPad();
+  Float_t PhiPad(Float_t rectheta, Float_t recphi);
   //Old THREECOORD
   //void CoordSphere(Float_t r, Float_t theta, Float_t phi, Float_t *x);
   //Old ANGT

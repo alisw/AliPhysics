@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.3  2000/11/01 15:37:44  jbarbosa
+  Removed verbose output.
+
   Revision 1.2  2000/06/30 16:31:51  dibari
   New drawing routine from Nico and Daniela.
 
@@ -73,7 +76,7 @@ AliRICHEllipse::AliRICHEllipse(Float_t cx, Float_t cy, Float_t omega, Float_t th
     fTheta = theta;
     fPhi = phi;
     fEmissPoint = emiss;
-    fh=11.25;
+    fh=9.25;
 }
 
 //________________________________________________________________________________
@@ -167,7 +170,7 @@ void AliRICHEllipse::CerenkovRingDrawing(Int_t chamber,Int_t track)
   iChamber = &(pRICH->Chamber(chamber));
 
   AliRICHPatRec *PatRec = new AliRICHPatRec;
-  PatRec->TrackParam(track,chamber);
+  PatRec->TrackParam(track,chamber,fTheta,fOmega);
 
   //printf("Just created PateRec\n");
 
@@ -217,7 +220,7 @@ void AliRICHEllipse::CerenkovRingDrawing(Int_t chamber,Int_t track)
        ///printf("Calling DistancefromMip %f %f \n",fEmissPoint,fOmega);
        
        //Float_t dummy = 
-	 PatRec->DistanceFromMip(nfreonave, nquartzave,fEmissPoint,fOmega, phpad, pointsOnCathode);
+	 PatRec->DistanceFromMip(nfreonave, nquartzave,fEmissPoint,fOmega, phpad, pointsOnCathode,fTheta,fPhi);
 
        //Float_t points[3];
 

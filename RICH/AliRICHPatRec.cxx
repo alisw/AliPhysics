@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.11  2001/03/14 18:21:24  jbarbosa
+  Corrected bug in digits loading.
+
   Revision 1.10  2001/02/27 15:21:06  jbarbosa
   Transition to SDigits.
 
@@ -116,7 +119,7 @@ void AliRICHPatRec::PatRec()
   //  ntracks = 1;
   for (itr=0; itr<ntracks; itr++) {
  
-    status = TrackParam(itr,ich);    
+    status = TrackParam(itr,ich,0,0);    
     if(status==1) continue;
     //printf(" theta %f phi %f track \n",fTrackTheta,fTrackPhi);
     //    ring->Fill(fTrackLoc[0],fTrackLoc[1],100.);
@@ -196,7 +199,7 @@ void AliRICHPatRec::PatRec()
 }     
 
 
-Int_t AliRICHPatRec::TrackParam(Int_t itr, Int_t &ich)
+Int_t AliRICHPatRec::TrackParam(Int_t itr, Int_t &ich, Float_t rectheta, Float_t recphi)
 {
   // Get Local coordinates of track impact  
 
@@ -228,8 +231,16 @@ Int_t AliRICHPatRec::TrackParam(Int_t itr, Int_t &ich)
     pY = mHit->fMomY;
     pZ = mHit->fMomZ;
     fTrackMom = sqrt(TMath::Power(pX,2)+TMath::Power(pY,2)+TMath::Power(pZ,2));
-    thetatr = (mHit->fTheta)*(Float_t)kDegrad;
-    phitr = mHit->fPhi*(Float_t)kDegrad;
+    if(recphi!=0 || rectheta!=0)
+      {
+	thetatr = rectheta;
+	phitr = recphi;
+      }
+    else
+      {
+	thetatr = mHit->fTheta*TMath::Pi()/180;
+	phitr = mHit->fPhi*TMath::Pi()/180;
+      }
     iloss = mHit->fLoss;
     part  = mHit->fParticle;
 
@@ -548,7 +559,7 @@ Int_t AliRICHPatRec::PhotonInBand()
   f1  = 46.411;
   f2  = 228.71;
 
-  phpad = PhiPad();  
+  phpad = PhiPad(fTrackTheta,fTrackPhi);  
 
   for (times=0; times<=1; times++) {
   
@@ -564,7 +575,7 @@ Int_t AliRICHPatRec::PhotonInBand()
 
     bandradius[times] = DistanceFromMip( nfreon[times], nquartz[times],
     				emissPointLength[times], 
-                                      thetacer[times], phpad, pointsOnCathode);
+                                      thetacer[times], phpad, pointsOnCathode,fTrackTheta,fTrackPhi);
     //printf(" ppp %f %f %f \n",pointsOnCathode);  
 }
 
@@ -579,7 +590,7 @@ Int_t AliRICHPatRec::PhotonInBand()
 
 Float_t AliRICHPatRec::DistanceFromMip(Float_t nfreon, Float_t nquartz, 
 		       Float_t emissPointLength, Float_t thetacer, 
-		       Float_t phpad, Float_t pointsOnCathode[3])
+		       Float_t phpad, Float_t pointsOnCathode[3], Float_t rectheta, Float_t recphi)
 { 
 
 // Find the distance to MIP impact
@@ -611,11 +622,11 @@ Float_t AliRICHPatRec::DistanceFromMip(Float_t nfreon, Float_t nquartz,
 
   Float_t ngas    = 1.;
 
-  magEmissPointLenght =  emissPointLength/cos(fTrackTheta);
+  magEmissPointLenght =  emissPointLength/cos(rectheta);
 
   vectEmissPointLength.SetMag(magEmissPointLenght);
-  vectEmissPointLength.SetTheta(fTrackTheta);
-  vectEmissPointLength.SetPhi(fTrackPhi);
+  vectEmissPointLength.SetTheta(rectheta);
+  vectEmissPointLength.SetPhi(recphi);
 
 
   radExitPhot2.SetTheta(thetacer);  
@@ -626,8 +637,8 @@ Float_t AliRICHPatRec::DistanceFromMip(Float_t nfreon, Float_t nquartz,
   TRotation r2;
   TRotation r;
 
-  r1. RotateY(fTrackTheta);
-  r2. RotateZ(fTrackPhi);
+  r1. RotateY(rectheta);
+  r2. RotateZ(recphi);
   
 
 
@@ -675,7 +686,7 @@ Float_t AliRICHPatRec::DistanceFromMip(Float_t nfreon, Float_t nquartz,
 
  }
 
-Float_t AliRICHPatRec::PhiPad()
+Float_t AliRICHPatRec::PhiPad(Float_t rectheta, Float_t recphi)
 {
 
 // ??
@@ -694,8 +705,8 @@ Float_t AliRICHPatRec::PhiPad()
   TRotation r2;
   TRotation r;
 
-  thetarot = - fTrackTheta;
-  phirot   = - fTrackPhi;
+  thetarot = - rectheta;
+  phirot   = - recphi;
   r1. RotateZ(phirot);
   r2. RotateY(thetarot);
 
