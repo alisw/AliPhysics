@@ -44,7 +44,7 @@ void AliRICHTracker::RecWithESD(AliESD *pESD)
     pTrack->GetXYZ(xb); 
     pTrack->GetPxPyPz(pb); 
     Int_t status=pTrack->GetStatus()&AliESDtrack::kTOFout;//get running track parameters
-    Int_t charge = (Int_t)TMath::Sign(1.,pTrack->GetSign()*b);
+    Int_t charge = (Int_t)(-TMath::Sign(1.,pTrack->GetSign()*b));
     AliDebug(1,Form("Track %i pmod=%f charge=%i stat=%i",iTrackN,pTrack->GetP(),charge,status));
     x0.SetXYZ(xb[0],xb[1],xb[2]); p0.SetXYZ(pb[0],pb[1],pb[2]);
     AliRICHHelix helix(x0,p0,charge,b);   
