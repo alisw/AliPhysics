@@ -18,6 +18,7 @@ public:
   virtual ~AliMagFDM(){} 
   virtual void Field(Float_t *x, Float_t *b);
   virtual void ReadField(); 
+  virtual void SetSolenoidField(Float_t field = 2.) {fSolenoid = field;}
   
   Int_t FZ(Double_t u, Float_t *Ar, Float_t du, Int_t ki, Int_t nu);
   Double_t Ba(Int_t kai, Double_t za1, Double_t za2, Double_t al1, Double_t al2, Double_t al3, Int_t ka, Int_t ma);
@@ -27,7 +28,7 @@ public:
 protected:
 
 //
-
+  Float_t    fSolenoid; // Solenoid Field Strength
   Int_t      fInd;   // Character number of validity Map region
 
   Float_t fZmin;  // Start of the cartesian  part  of MAP in z

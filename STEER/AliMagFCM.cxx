@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/05/16 14:57:22  alibrary
+New files for folders and Stack
+
 Revision 1.6  2000/12/18 10:44:01  morsch
 Possibility to set field map by passing pointer to objet of type AliMagF via
 SetField().
@@ -54,9 +57,11 @@ AliMagFCM::AliMagFCM(const char *name, const char *title, const Int_t integ,
   //
   fType = kConMesh;
   fMap  = 2;
-  
+  SetSolenoidField();
+
   if(fDebug>-1) printf("%s: Constant Mesh Field %s created: map= %d, factor= %f, file= %s\n",
 	 ClassName(),fName.Data(), fMap, factor,fTitle.Data());
+  
 }
 
 //________________________________________
@@ -83,7 +88,7 @@ void AliMagFCM::Field(Float_t *x, Float_t *b)
   
   b[0]=b[1]=b[2]=0;
   if(-700<x[2] && x[2]<fZbeg && x[0]*x[0]+(x[1]+30)*(x[1]+30) < 560*560) {
-    b[2]=2;
+    b[2]= fSolenoid;
   } else  {
     Bool_t infield=(fZbeg<=x[2] && x[2]<fZbeg+fZdel*(fZn-1)
 		    &&  ( fXbeg <= TMath::Abs(x[0]) && TMath::Abs(x[0]) < fXbeg+fXdel*(fXn-1) )

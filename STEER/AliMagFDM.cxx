@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/02/08 13:18:00  hristov
+Print removed (J.Gosset)
+
 Revision 1.10  2001/01/18 13:21:30  morsch
 Take pi from TMath.
 
@@ -73,6 +76,7 @@ AliMagFDM::AliMagFDM(const char *name, const char *title, const Int_t integ,
   //
   fType = kDipoMap;
   fMap  = 3;
+  SetSolenoidField();
   
  printf("Field Map for Muon Arm from IP till muon filter %s created: map= %d, integ= %d, factor= %f, file=%s\n",fName.Data(), fMap ,integ,factor,fTitle.Data());
  
@@ -127,7 +131,7 @@ void AliMagFDM::Field(Float_t *xfi, Float_t *b)
        || (kfZbg<x[2] && x[2]<=kfZL3 && (rr>rPmax*100 && rr< 560)) )
        {
         b[0]=b[1]=0;
-        b[2]=2;
+        b[2]=fSolenoid;
        }
 
   xL3[0]=x[0]/100;

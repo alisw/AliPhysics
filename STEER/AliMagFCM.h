@@ -20,6 +20,8 @@ public:
   virtual ~AliMagFCM() {delete fB;}
   virtual void Field(Float_t *x, Float_t *b);
   virtual void ReadField();
+  virtual void SetSolenoidField(Float_t field = 2.) {fSolenoid = field;}
+  
   void Copy(AliMagFCM &magf) const;
   virtual AliMagFCM & operator=(const AliMagFCM &magf);
 
@@ -35,19 +37,20 @@ public:
 
 protected:
 
-  Float_t    fXbeg;  // Start of mesh in x
-  Float_t    fYbeg;  // Start of mesh in y
-  Float_t    fZbeg;  // Start of mesh in z
-  Float_t    fXdel;  // Mesh step in x
-  Float_t    fYdel;  // Mesh step in y
-  Float_t    fZdel;  // Mesh step in z
-  Double_t   fXdeli; // Inverse of Mesh step in x
-  Double_t   fYdeli; // Inverse of Mesh step in y
-  Double_t   fZdeli; // Inverse of Mesh step in z
-  Int_t      fXn;    // Number of mesh points in x
-  Int_t      fYn;    // Number of mesh points in y
-  Int_t      fZn;    // Number of mesh points in z
-  TVector   *fB;     // Field map
+  Float_t    fXbeg;     // Start of mesh in x
+  Float_t    fYbeg;     // Start of mesh in y
+  Float_t    fZbeg;     // Start of mesh in z
+  Float_t    fXdel;     // Mesh step in x
+  Float_t    fYdel;     // Mesh step in y
+  Float_t    fZdel;     // Mesh step in z
+  Float_t    fSolenoid; // Solenoid Field Strength
+  Double_t   fXdeli;    // Inverse of Mesh step in x
+  Double_t   fYdeli;    // Inverse of Mesh step in y
+  Double_t   fZdeli;    // Inverse of Mesh step in z
+  Int_t      fXn;       // Number of mesh points in x
+  Int_t      fYn;       // Number of mesh points in y
+  Int_t      fZn;       // Number of mesh points in z
+  TVector   *fB;        // Field map
   
   ClassDef(AliMagFCM,1)  //Class for all Alice MagField with Constant Mesh
 };
