@@ -587,7 +587,7 @@ void AliITSvSDD03::InitAliITSgeom(){
     Int_t mod,typ,lay,lad,det,cpy,i,j,k;
     Char_t names[ltypess][ndeep][4];
     Int_t itsGeomTreeCopys[ltypess][ndeep];
-    Char_t *namesA[ltypess][ndeep] = {
+    const char *namesA[ltypess][ndeep] = {
         {"ALIC","ITSV","ITEL","ITAI","IMB0","IMBS"}, // lay=5
         {"ALIC","ITSV","IDET","IDAI","ITS0","ITST"}};// Test SDD
     Int_t itsGeomTreeCopysA[ltypess][ndeep]= {{1,1,10,1,1,1},// lay=5

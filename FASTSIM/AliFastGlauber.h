@@ -34,7 +34,7 @@ class AliFastGlauber : public TObject {
     void SetAuAuRhic();
     void SetPbPbLHC();
     void SetFileName(TString &fn){fName=fn;}
-    void SetFileName(Char_t *fn="$(ALICE_ROOT)/FASTSIM/data/glauberPbPb.root"){fName=fn;}
+    void SetFileName(const char *fn="$(ALICE_ROOT)/FASTSIM/data/glauberPbPb.root"){fName=fn;}
 
     static Double_t WSb            (Double_t *xx, Double_t *par);
     static Double_t WSbz           (Double_t *xx, Double_t *par);
@@ -135,9 +135,9 @@ class AliFastGlauber : public TObject {
 			     Double_t b=-1.);
     void PlotBDistr(Int_t n=1000);
     void PlotLengthDistr(Int_t n=1000,Bool_t save=kFALSE,
-			 Char_t *fname="length.root");
+			 const char *fname="length.root");
     void PlotLengthB2BDistr(Int_t n=1000,Bool_t save=kFALSE,
-			    Char_t *fname="lengthB2B.root");
+			    const char *fname="lengthB2B.root");
     void CalculateI0I1(Double_t& integral0,Double_t& integral1,
 		       Double_t b=0.,
 		       Double_t x0=0.,Double_t y0=0.,Double_t phi0=0.,
@@ -165,9 +165,9 @@ class AliFastGlauber : public TObject {
 			       Double_t&x, Double_t &y,
 			       Double_t ellCut=20.,Double_t b=-1.);
     void PlotI0I1Distr(Int_t n=1000,Double_t ellCut=20.,Bool_t save=kFALSE,
-		       Char_t *fname="i0i1.root");
+		       const char *fname="i0i1.root");
     void PlotI0I1B2BDistr(Int_t n=1000,Double_t ellCut=20.,Bool_t save=kFALSE,
-			  Char_t *fname="i0i1B2B.root");
+			  const char *fname="i0i1B2B.root");
     void PlotAlmonds() const;
  protected:
     void Reset();

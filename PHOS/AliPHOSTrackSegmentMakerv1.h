@@ -67,7 +67,7 @@ private:
 
   const TString BranchName() const ; 
   Float_t GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * EmcClu , AliPHOSCpvRecPoint * Cpv , Int_t & track ) const ; // see R0
-  TVector3 PropagateToPlane(Double_t *x, Double_t *p, char *det, Int_t module) const;
+  TVector3 PropagateToPlane(Double_t *x, Double_t *p, const char *det, Int_t module) const;
   void    Init() ;
   void    InitParameters() ;
   void    PrintTrackSegments(Option_t *option) ;

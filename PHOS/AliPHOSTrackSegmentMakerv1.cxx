@@ -215,7 +215,7 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
 
 //____________________________________________________________________________
 TVector3  AliPHOSTrackSegmentMakerv1::PropagateToPlane(Double_t *x, Double_t *p,
-						       char *det, Int_t moduleNumber) const
+						       const char *det, Int_t moduleNumber) const
 {
   // Propagate a straight-line track from the origin point x
   // along the direction p to the CPV or EMC module moduleNumber

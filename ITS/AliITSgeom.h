@@ -90,7 +90,7 @@ class AliITSgeom : public TObject {
     Int_t GetModuleType(Int_t index){
 	                   return GetGeomMatrix(index)->GetDetectorIndex();}
     // Returns the detector type as a string
-    Char_t * GetModuleTypeName(Int_t index){switch(GetModuleType(index)) {
+    const char * GetModuleTypeName(Int_t index){switch(GetModuleType(index)) {
     case kSPD: return "kSPD";case kSDD: return "kSDD";case kSSD: return "kSSD";
     case kSSDp: return"kSSDp";case kSDDp: return "kSDDp"; default: return "";}}
 //

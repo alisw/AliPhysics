@@ -57,7 +57,7 @@ ClassImp(AliRICHcluster)
 //__________________________________________________________________________________________________
 void AliRICHcluster::Print(Option_t*)const
 {
-  char *status=0;
+  const char *status=0;
   switch(fStatus){
     case      kRaw: status="raw"     ;break;
     case kResolved: status="resolved";break;

@@ -221,7 +221,7 @@ void AliVZERO::Hits2Digits(){
   // Converts hits to digits of the current event
   //
   // Inputs file name
-  Char_t *alifile = "galice.root";   
+  const char *alifile = "galice.root";   
 
   // Create the run digitizer 
   AliRunDigitizer* manager = new AliRunDigitizer(1, 1);

@@ -496,7 +496,7 @@ void AliPHOSGeometry::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
 
 //____________________________________________________________________________
 
-TVector3 AliPHOSGeometry::GetModuleCenter(char *det, Int_t module) const
+TVector3 AliPHOSGeometry::GetModuleCenter(const char *det, Int_t module) const
 {
   // Returns a position of the center of the CPV or EMC module
   Float_t rDet = 0.;

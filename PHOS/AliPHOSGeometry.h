@@ -119,7 +119,7 @@ public:
   Float_t GetCPVBoxSize(Int_t index)           const { return fGeometryCPV ->GetCPVBoxSize(index);        } 
   Float_t GetIPtoCPVDistance(void)             const { return  GetIPtoOuterCoverDistance() - 
 							       GetCPVBoxSize(1) - 1.0; }
-  TVector3 GetModuleCenter(char *det, Int_t module) const;
+  TVector3 GetModuleCenter(const char *det, Int_t module) const;
   TVector3 Global2Local(TVector3 globalPosition, Int_t module) const;
 
   // Return PHOS' support geometry parameters

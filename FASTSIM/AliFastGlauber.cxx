@@ -1408,7 +1408,7 @@ void AliFastGlauber::PlotBDistr(Int_t n)
   return;
 }
 
-void AliFastGlauber::PlotLengthDistr(Int_t n,Bool_t save,Char_t *fname)
+void AliFastGlauber::PlotLengthDistr(Int_t n,Bool_t save,const char *fname)
 {
   //
   // Plot length distribution
@@ -1435,7 +1435,7 @@ void AliFastGlauber::PlotLengthDistr(Int_t n,Bool_t save,Char_t *fname)
   return;
 }
 
-void AliFastGlauber::PlotLengthB2BDistr(Int_t n,Bool_t save,Char_t *fname)
+void AliFastGlauber::PlotLengthB2BDistr(Int_t n,Bool_t save,const char *fname)
 {
   //
   // Plot lengths back-to-back distributions
@@ -1643,7 +1643,7 @@ void AliFastGlauber::GetI0I1ForPythiaAndXY(Int_t n,Double_t* phi,
 }
 
 void AliFastGlauber::PlotI0I1Distr(Int_t n,Double_t ellCut,
-				   Bool_t save,Char_t *fname)
+				   Bool_t save,const char *fname)
 {
   //
   // Plot I0-I1 distribution
@@ -1725,7 +1725,7 @@ void AliFastGlauber::PlotI0I1Distr(Int_t n,Double_t ellCut,
 }
 
 void AliFastGlauber::PlotI0I1B2BDistr(Int_t n,Double_t ellCut,
-				      Bool_t save,Char_t *fname)
+				      Bool_t save,const char *fname)
 {
   //
   // Plot I0-I1 back-to-back distributions
