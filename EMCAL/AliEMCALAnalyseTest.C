@@ -1,4 +1,9 @@
-void AliEMCALAnalyseTest(){
+#include <iostream>
+
+#include "EMCAL/AliEMCALGetter.h"
+
+
+void Go(){
 
   cout << "AliEMCAL:> Single File default reconstruction analysing" << endl ;
   
@@ -9,8 +14,8 @@ void AliEMCALAnalyseTest(){
     cout << "        No TowerRecPoint  !!!!! " << endl ;
   }    
 
-  if((gime->PreShowerRecPoints()==0)||(gime->CpvRecPoints()->At(0)==0)){
-    cout << "        No CpvRecPoint  !!!!! " << endl ;
+  if((gime->PreShowerRecPoints()==0)||(gime->PreShowerRecPoints()->At(0)==0)){
+    cout << "        No PreShowerRecPoint  !!!!! " << endl ;
   } 
    
 //   if((gime->TrackSegments()==0)||(gime->TrackSegments()->At(0)==0)){
@@ -34,7 +39,7 @@ void AliEMCALAnalyseTest(){
   }    
   
   if((gime->PreShowerRecPoints()==0)||(gime->PreShowerRecPoints()->At(0)==0)){
-    cout << "No CpvRecPoint " << endl ;
+    cout << "No PreShowerRecPoint " << endl ;
   }   
   
 //   if((gime->TrackSegments()==0)||(gime->TrackSegments()->At(0)==0)){
