@@ -6,10 +6,11 @@ void Config(Int_t version)
   switch (version) {
     case 0: PHOS  = new AliPHOSv0("PHOS","GPS2");                break;
     case 1: PHOS  = new AliPHOSv1("PHOS","GPS2");                break;
-    case 2: PHOS  = new AliPHOSv2("PHOS","GPS2");                break;
-    case 3: PHOS  = new AliPHOSv3("PHOS","GPS2");                break;
-    case 4: PHOS  = new AliPHOSv4("PHOS","GPS2");                break;
-    case 5: PHOS  = new AliPHOSvFast("PHOS","GPS2");                break;
+    // following versions are not declared in LinkDef.h
+    //case 2: PHOS  = new AliPHOSv2("PHOS","GPS2");                break;
+    //case 3: PHOS  = new AliPHOSv3("PHOS","GPS2");                break;
+    //case 4: PHOS  = new AliPHOSv4("PHOS","GPS2");                break;
+    //case 5: PHOS  = new AliPHOSvFast("PHOS","GPS2");                break;
   }  
 
 //=================== PHOS parameters ===========================
