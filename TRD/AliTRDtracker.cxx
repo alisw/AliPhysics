@@ -599,6 +599,7 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
       }
     }
     else{
+      delete track;
       continue;
     }
 
@@ -691,12 +692,19 @@ Int_t AliTRDtracker::RefitInward(AliESD* event)
     AliTRDtrack* seed2 = new AliTRDtrack(*seed);
     if (seed2->GetX()<270){
       seed->UpdateTrackParams(seed2, AliESDtrack::kTRDbackup); // backup TPC track - only update
+      delete seed2;
       continue;
     }
 
     ULong_t status=seed->GetStatus();
-    if ( (status & AliESDtrack::kTRDout ) == 0 ) continue;
-    if ( (status & AliESDtrack::kTRDin) != 0 ) continue;
+    if ( (status & AliESDtrack::kTRDout ) == 0 ) {
+      delete seed2;
+      continue;
+    }
+    if ( (status & AliESDtrack::kTRDin) != 0 ) {
+      delete seed2;
+      continue;
+    }
     nseed++;    
     seed2->ResetCovariance(5.); 
     AliTRDtrack *pt = new AliTRDtrack(*seed2,seed2->GetAlpha());

@@ -30,6 +30,10 @@ class AliESDV0MI;
 class AliITStrackerMI : public AliTracker {
 public:
   AliITStrackerMI():AliTracker(){}
+  virtual ~AliITStrackerMI() {
+    delete[] fCoeficients;
+  }
+
   AliITStrackerMI(const AliITSgeom *geom);
   AliCluster *GetCluster(Int_t index) const;
   AliITSclusterV2 *GetClusterLayer(Int_t layn, Int_t ncl) const
