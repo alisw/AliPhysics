@@ -10,7 +10,6 @@ void loadlibs ()
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libEVGEN");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libFMD");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libMUON");
-  gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libPHOSdummy");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libPHOS");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libPMD");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libRICH");
