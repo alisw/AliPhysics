@@ -1,0 +1,7 @@
+SRCS= TEpEmGen.cxx
+
+HDRS= TEpEmGen.h
+
+DHDR:=TEPEMGENLinkDef.h
+
+EXPORT:=TEpEmGen.h
