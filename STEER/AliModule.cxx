@@ -159,6 +159,11 @@ AliModule::~AliModule()
     fNodes->Clear();
     delete fNodes;
   }
+  // Delete histograms
+  if(fHistograms) {
+    fHistograms->Clear();
+    delete fHistograms;
+  }
   //
   // Delete TArray objects
   delete fIdtmed;
