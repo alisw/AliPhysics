@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.44  2002/10/14 14:55:35  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.42.4.1  2002/08/28 15:06:50  alibrary
 Updating to v3-09-01
 
@@ -222,7 +225,7 @@ AliGenHijing::AliGenHijing(Int_t npart)
     fDsigmaDb   =  0;
     fDnDb       =  0;
     fPtMinJet   = -2.5; 	
-    fRadiation  =  1;
+    fRadiation  =  3;
     fEventVertex.Set(3);
 //
     SetSimpleJets();
@@ -310,8 +313,6 @@ void AliGenHijing::Init()
 //
     if (fEvaluate) EvaluateCrossSections();
 //
-//
-//  Initialize random generator
 }
 
 void AliGenHijing::Generate()
