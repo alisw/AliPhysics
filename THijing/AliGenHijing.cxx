@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2003/04/04 08:14:02  morsch
+Boost() moved to AliGenMC
+
 Revision 1.1  2003/03/15 14:45:57  morsch
 Classes imported from EVGEN
 
@@ -377,9 +380,7 @@ void AliGenHijing::Generate()
       if (fTrigger != kNoTrigger) {
 	  if (!CheckTrigger()) continue;
       }
-      Double_t dy    = - 0.5 * TMath::Log(Double_t(fZProjectile) * Double_t(fATarget) / 
-					  (Double_t(fZTarget)    * Double_t(fAProjectile)));
-      if (fLHC) Boost(dy);
+      if (fLHC) Boost();
       
       
       Int_t np = fParticles->GetEntriesFast();
