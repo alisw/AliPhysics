@@ -28,12 +28,15 @@ SRCS          := $(filter-out $(TARGET).cxx,$(SRCS))
 
 HDRS          =  $(wildcard *.icc) $(wildcard *.h)
 
-# Library dictionary
+# Library Root dictionary
 # only for selected classes
+# (temporarily excluded for OSF1 due to compilation errors)
 
+ifneq ($(ALICE_TARGET),OSF1)
 DICT          = AliGeant4Cint.cxx
 DICTH         = AliRunConfiguration.h AliGeant4LinkDef.h
 DICTO         = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(DICT))
+endif
 
 # C++ Objects
 
@@ -54,12 +57,13 @@ CXXFLAGS      = $(CXXOPTS) -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include \
 # Target
 
 SLIBRARY	= $(LIBDIR)/libAliGeant4.$(SL)
-ALIBRARY	= $(LIBDIR)/lib/libAliGeant4.a
+ALIBRARY	= $(LIBDIR)/libAliGeant4.a
 PROGRAM		= $(BINDIR)/$(TARGET)
 
 default:	$(SLIBRARY) $(PROGRAM)
 
 $(LIBDIR)/libAliGeant4.$(SL):		$(OBJS)
+$(LIBDIR)/libAliGeant4.a:		$(OBJS)
 
 $(BINDIR)/$(TARGET):			$(POBJ)
 
@@ -75,10 +79,10 @@ clean: macroclean
 # and add Geant4 dependent ones
 ALILIBS := $(filter-out -lTGeant3,$(ALILIBS))
 ALILIBS := $(filter-out -lZDC,$(ALILIBS))
-ALILIBS += -lTGeant4 -lAliGeant4
+ALILIBS += -lAliGeant4 -lTGeant4
 
 LIBS = $(ALILIBS) $(CLIBS) $(GLIBS) -lEG -lEGPythia -lpythia -lpdf \
-	-lTHijing -lhijing $(G4LDLIBS) 
+	-lTHijing -lhijing $(G4LDLIBS)
 
 TOCLEAN	      = $(OBJS) $(POBJ) *Cint.cxx *Cint.h
 
