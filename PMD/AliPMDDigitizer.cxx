@@ -106,9 +106,9 @@ void AliPMDDigitizer::OpengAliceFile(Char_t *file, Option_t *option)
   fRunLoader->LoadHeader();
   fRunLoader->LoadKinematics();
 
-  fAlice = fRunLoader->GetAliRun();
+  gAlice = fRunLoader->GetAliRun();
   
-  if (fAlice)
+  if (gAlice)
     {
       printf("<AliPMDdigitizer::Open> ");
       printf("AliRun object found on file.\n");
@@ -119,7 +119,7 @@ void AliPMDDigitizer::OpengAliceFile(Char_t *file, Option_t *option)
       printf("Could not find AliRun object.\n");
     }
 
-  fPMD  = (AliPMD*)fAlice->GetDetector("PMD");
+  fPMD  = (AliPMD*)gAlice->GetDetector("PMD");
   fPMDLoader = fRunLoader->GetLoader("PMDLoader");
   if (fPMDLoader == 0x0)
     {
@@ -175,7 +175,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
   Int_t nparticles = fRunLoader->GetHeader()->GetNtrack();
   printf("Number of Particles = %d \n", nparticles);
   fRunLoader->GetEvent(ievt);
-  fPArray = fAlice->GetMCApp()->Particles();
+  fPArray = gAlice->GetMCApp()->Particles();
   // ------------------------------------------------------- //
   // Pointer to specific detector hits.
   // Get pointers to Alice detectors and Hits containers
@@ -197,16 +197,15 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
   if (fPMD) fHits   = fPMD->Hits();
 
   // Start loop on tracks in the hits containers
-
   
   for (Int_t track=0; track<ntracks;track++) 
     {
-      fAlice->ResetHits();
+      gAlice->ResetHits();
       fTreeH->GetEvent(track);
-      
       if (fPMD) 
 	{
 	  npmd = fHits->GetEntriesFast();
+	  cout << " npmd = " << npmd << endl;
 	  for (int ipmd = 0; ipmd < npmd; ipmd++) 
 	    {
 	      fPMDHit = (AliPMDhit*) fHits->UncheckedAt(ipmd);
@@ -214,9 +213,11 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 
 	      //  get kinematics of the particles
 
-	      fParticle = fAlice->GetMCApp()->Particle(trackno);
+	      fParticle = gAlice->GetMCApp()->Particle(trackno);
 	      trackpid  = fParticle->GetPdgCode();
 
+	      cout << " trackno = " << trackno << " track = " << track << endl;
+	      //cout << " trackpid = " << trackpid << endl;
 	      Int_t igatr = -999;
 	      Int_t ichtr = -999;
 	      Int_t igapid = -999;
@@ -225,6 +226,9 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 	      Int_t idmo = -999;
 
 	      TParticle*  mparticle = fParticle;
+	      Int_t jjnu = mparticle->GetFirstMother();
+	      cout << " Coming to this step - step 0 jjnu = " << jjnu << endl;
+	      
 	      Int_t tracknoOld=0, trackpidOld=0, statusOld = 0;
 	      if (mparticle->GetFirstMother() == -1)
 		{
@@ -232,13 +236,12 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		  trackpidOld = trackpid;
 		  statusOld   = -1;
 		}
-
 	      Int_t igstatus = 0;
 	      while((imo = mparticle->GetFirstMother()) >= 0)
 		{
 		  igen++;
 
-		  mparticle =  fAlice->GetMCApp()->Particle(imo);
+		  mparticle =  gAlice->GetMCApp()->Particle(imo);
 		  idmo = mparticle->GetPdgCode();
 		  
 		  vx = mparticle->Vx();
@@ -279,7 +282,6 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		  mtrackno  = tracknoOld;
 		  mtrackpid = trackpidOld;
 		}
-	      
 	      xPos = fPMDHit->X();
 	      yPos = fPMDHit->Y();
 	      zPos = fPMDHit->Z();
@@ -414,12 +416,12 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   Int_t nparticles = fRunLoader->GetHeader()->GetNtrack();
   printf("Number of Particles = %d \n", nparticles);
   fRunLoader->GetEvent(ievt);
-  fPArray = fAlice->GetMCApp()->Particles();
+  fPArray = gAlice->GetMCApp()->Particles();
   // ------------------------------------------------------- //
   // Pointer to specific detector hits.
   // Get pointers to Alice detectors and Hits containers
 
-  fPMD  = (AliPMD*)fAlice->GetDetector("PMD");
+  fPMD  = (AliPMD*)gAlice->GetDetector("PMD");
   fPMDLoader = fRunLoader->GetLoader("PMDLoader");
 
   if (fPMDLoader == 0x0)
@@ -445,7 +447,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 
   for (Int_t track=0; track<ntracks;track++) 
     {
-      fAlice->ResetHits();
+      gAlice->ResetHits();
       fTreeH->GetEvent(track);
       
       if (fPMD) 
@@ -458,7 +460,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 	      
 	      //  get kinematics of the particles
 	      
-	      fParticle = fAlice->GetMCApp()->Particle(trackno);
+	      fParticle = gAlice->GetMCApp()->Particle(trackno);
 	      trackpid  = fParticle->GetPdgCode();
 
 	      Int_t igatr = -999;
@@ -482,7 +484,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 		{
 		  igen++;
 
-		  mparticle =  fAlice->GetMCApp()->Particle(imo);
+		  mparticle =  gAlice->GetMCApp()->Particle(imo);
 		  idmo = mparticle->GetPdgCode();
 		  
 		  vx = mparticle->Vx();

@@ -23,6 +23,7 @@
 //-----------------------------------------------------//
 
 #include <Riostream.h>
+#include <TMath.h>
 #include <TBRIK.h>
 #include <TNode.h>
 #include <TTree.h>
@@ -48,11 +49,12 @@
 
 
 ClassImp(AliPMDClusterFinder)
-//
-// Constructor
-//
+
 AliPMDClusterFinder::AliPMDClusterFinder()
 {
+//
+// Default Constructor
+//
   if (!fRecpoints) fRecpoints = new TClonesArray("AliPMDrecpoint1", 1000);  
   fNpoint = 0;
 
@@ -62,14 +64,15 @@ AliPMDClusterFinder::AliPMDClusterFinder()
 }
 AliPMDClusterFinder::~AliPMDClusterFinder()
 {
+  // Destructor
   delete fRecpoints;
 }
-//
-// Member functions
-//
+
 void AliPMDClusterFinder::OpengAliceFile(Char_t *file, Option_t *option)
 {
-
+  // Loads galice.root file and corresponding header, kinematics
+  // hits and sdigits or digits depending on the option
+  //
   fRunLoader = AliRunLoader::Open(file,AliConfig::fgkDefaultEventFolderName,
 				  "UPDATE");
   
@@ -94,9 +97,9 @@ void AliPMDClusterFinder::OpengAliceFile(Char_t *file, Option_t *option)
       printf("<AliPMDdigitizer::Open> ");
       printf("Could not find AliRun object.\n");
     }
-  PMD  = (AliPMD*)gAlice->GetDetector("PMD");
-  pmdloader = fRunLoader->GetLoader("PMDLoader");
-  if (pmdloader == 0x0)
+  fPMD  = (AliPMD*)gAlice->GetDetector("PMD");
+  fPMDLoader = fRunLoader->GetLoader("PMDLoader");
+  if (fPMDLoader == 0x0)
     {
       cerr<<"OpengAlice : Can not find PMD or PMDLoader\n";
     }
@@ -105,13 +108,16 @@ void AliPMDClusterFinder::OpengAliceFile(Char_t *file, Option_t *option)
 
   if (cDR)
     {
-      pmdloader->LoadDigits("READ");
-      pmdloader->LoadRecPoints("recreate");
+      fPMDLoader->LoadDigits("READ");
+      fPMDLoader->LoadRecPoints("recreate");
     }
 }
 
 void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 {
+  // Converts digits to recpoints after running clustering
+  // algorithm on CPV plane and PREshower plane
+  //
   Int_t    det = 0,smn = 0;
   Int_t    cellno;
   Int_t    xpos,ypos;
@@ -128,32 +134,32 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 
   fRunLoader->GetEvent(ievt);
   //cout << " ***** Beginning::Digits2RecPoints *****" << endl;
-  treeD = pmdloader->TreeD();
-  if (treeD == 0x0)
+  fTreeD = fPMDLoader->TreeD();
+  if (fTreeD == 0x0)
     {
       cout << " Can not get TreeD" << endl;
     }
   AliPMDdigit  *pmddigit;
-  TBranch *branch = treeD->GetBranch("PMDDigit");
+  TBranch *branch = fTreeD->GetBranch("PMDDigit");
   branch->SetAddress(&fDigits);
 
   ResetRecpoint();
-  treeR = pmdloader->TreeR();
-  if (treeR == 0x0)
+  fTreeR = fPMDLoader->TreeR();
+  if (fTreeR == 0x0)
     {
-      pmdloader->MakeTree("R");
-      treeR = pmdloader->TreeR();
+      fPMDLoader->MakeTree("R");
+      fTreeR = fPMDLoader->TreeR();
     }
 
   Int_t bufsize = 16000;
-  treeR->Branch("PMDRecpoint", &fRecpoints, bufsize); 
+  fTreeR->Branch("PMDRecpoint", &fRecpoints, bufsize); 
 
-  Int_t nmodules = (Int_t) treeD->GetEntries();
+  Int_t nmodules = (Int_t) fTreeD->GetEntries();
   
   for (Int_t imodule = 0; imodule < nmodules; imodule++)
     {
       ResetCellADC();
-      treeD->GetEntry(imodule); 
+      fTreeD->GetEntry(imodule); 
       Int_t nentries = fDigits->GetLast();
       for (Int_t ient = 0; ient < nentries+1; ient++)
 	{
@@ -193,14 +199,14 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 	}
       pmdcont->Clear();
       
-      treeR->Fill();
+      fTreeR->Fill();
       ResetRecpoint();
 
     } // modules
 
   ResetCellADC();
   
-  pmdloader->WriteRecPoints("OVERWRITE");
+  fPMDLoader->WriteRecPoints("OVERWRITE");
 
   //   delete the pointers
   delete pmdclust;
@@ -220,6 +226,8 @@ void AliPMDClusterFinder::SetDebug(Int_t idebug)
 
 void AliPMDClusterFinder::AddRecPoint(Float_t *clusdata)
 {
+  // Add Reconstructed points
+  //
   TClonesArray &lrecpoints = *fRecpoints;
   AliPMDrecpoint1 *newrecpoint;
   newrecpoint = new AliPMDrecpoint1(clusdata);
@@ -228,6 +236,8 @@ void AliPMDClusterFinder::AddRecPoint(Float_t *clusdata)
 }
 void AliPMDClusterFinder::ResetCellADC()
 {
+  // Reset the individual cell ADC value to zero
+  //
   for(Int_t irow = 0; irow < fRow; irow++)
     {
       for(Int_t icol = 0; icol < fCol; icol++)
@@ -239,11 +249,14 @@ void AliPMDClusterFinder::ResetCellADC()
 
 void AliPMDClusterFinder::ResetRecpoint()
 {
+  // Clear the list of reconstructed points
   fNpoint = 0;
   if (fRecpoints) fRecpoints->Clear();
 }
 void AliPMDClusterFinder::UnLoad(Option_t *option)
 {
+  // Unload all the *.root files
+  //
   const char *cR = strstr(option,"R");
 
   fRunLoader->UnloadgAlice();
@@ -252,6 +265,6 @@ void AliPMDClusterFinder::UnLoad(Option_t *option)
 
   if (cR)
     {
-      pmdloader->UnloadDigits();
+      fPMDLoader->UnloadDigits();
     }
 }

@@ -59,7 +59,7 @@ class AliPMDDigitizer
 
  protected:
   AliRunLoader *fRunLoader;  // Pointer to Run Loader
-  AliRun       *fAlice;      // Pointer to a Run
+  AliRun       *gAlice;      // Pointer to a Run
   AliPMDhit    *fPMDHit;     // Pointer to specific detector hits
   AliDetector  *fPMD;        // Get pointers to Alice detectors 
                              // and Hits containers 

@@ -1,5 +1,5 @@
-#ifndef PMDClusterFinder_H
-#define PMDClusterFinder_H
+#ifndef ALIPMDCLUSTERFINDER_H
+#define ALIPMDCLUSTERFINDER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 //-----------------------------------------------------//
@@ -11,16 +11,12 @@
 //                                                     //
 //-----------------------------------------------------//
 
-#include <Riostream.h>
-#include <stdlib.h>
-#include <math.h>
-#include <TMath.h>
-
 class TClonesArray;
 class TFile;
 class TObjArray;
 class TTree;
 class TNtuple;
+class TMath;
 
 class AliLoader;
 class AliRunLoader;
@@ -35,44 +31,44 @@ class AliPMDrecpoint1;
 
 class AliPMDClusterFinder
 {
- protected:
-  AliRunLoader *fRunLoader;
-  AliRun       *gAlice;
-  AliDetector  *PMD;      /* Get pointers to Alice detectors 
-			     and Hits containers */
-  AliLoader    *pmdloader;
-
-  TTree        *treeD;
-  TTree        *treeR;
-
-  TClonesArray *fDigits;
-  TClonesArray *fRecpoints;
-
-  Int_t fNpoint;
-  Int_t fDetNo;
-  Int_t fDebug;
-  Float_t fEcut;
-
-  static const Int_t fRow = 48;
-  static const Int_t fCol = 96;
-  Double_t fCellADC[fRow][fCol];
 
  public:
 
   AliPMDClusterFinder();
   virtual ~AliPMDClusterFinder();
 
-  void OpengAliceFile(char * /* galice.root */, Option_t * /* option */);
+  void OpengAliceFile(char * file, Option_t * option);
 
-  void Digits2RecPoints(Int_t /* ievt */);
-  void SetCellEdepCut(Float_t /* ecut */);
-  void SetDebug(Int_t /* idebug */);
-  void AddRecPoint(Float_t * /* clusdata */);
+  void Digits2RecPoints(Int_t ievt);
+  void SetCellEdepCut(Float_t ecut);
+  void SetDebug(Int_t idebug);
+  void AddRecPoint(Float_t * clusdata);
   void ResetCellADC();
   void ResetRecpoint();
-  void UnLoad(Option_t * /* option */);
+  void UnLoad(Option_t * option);
 
-  ClassDef(AliPMDClusterFinder,2)
+ protected:
+  AliRunLoader *fRunLoader; // Pointer to Run Loader
+  AliRun       *gAlice;     // Pointer to Run
+  AliDetector  *fPMD;       // Pointers to Alice detectors & Hits containers
+  AliLoader    *fPMDLoader; // Pointer to specific detector loader
+
+  TTree        *fTreeD;     // Digits tree
+  TTree        *fTreeR;     // Reconstructed points
+
+  TClonesArray *fDigits;    // List of digits
+  TClonesArray *fRecpoints; // List of reconstructed points
+
+  Int_t   fNpoint;          // 
+  Int_t   fDetNo;           // Detector Number (0:PRE, 1:CPV)
+  Int_t   fDebug;           // Debugging switch (0:NO, 1:YES)
+  Float_t fEcut;            // Energy/ADC cut per cell
+
+  static const Int_t fRow = 48; // Total number of rows in one unitmodule
+  static const Int_t fCol = 96; // Total number of cols in one unitmodule
+  Double_t fCellADC[fRow][fCol]; // Array containing individual cell ADC
+
+  ClassDef(AliPMDClusterFinder,2) // To run PMD clustering
 };
 #endif
 
