@@ -172,7 +172,7 @@ $(@PACKAGE@EXPORTDEST): $(EXPORTDIR)/%.h: @MODULE@/%.h
 ifndef ALIQUIET
 	  @echo "***** Copying file $^ to $@ *****"
 endif
-	  @[ -d $(dir $@) ] || mkdir $(dir $@)
+	  @[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	  @cp $^ $@	
 endif
 
