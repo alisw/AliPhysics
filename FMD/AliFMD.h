@@ -7,8 +7,12 @@
 //  Manager and hits classes for set:Si-FMD     //
 ////////////////////////////////////////////////
  
-#include "AliDetector.h"
-#include "TBranch.h"
+#include <AliDetector.h>
+#include <TBranch.h>
+#include <AliLoader.h>
+
+#include "AliFMDReconstruction.h"
+
 class TClonesArray;
  class AliFMD : public AliDetector {
  
@@ -34,10 +38,11 @@ public:
    
   void SetEventNumber(Int_t i)     {fEvNrSig = i;}
   void  Eta2Radius(Float_t, Float_t, Float_t*);
-   void Digits2Reco(); 
+  virtual void Reconstruct() const{ AliFMDReconstruction reco(GetLoader()->GetRunLoader()); reco.Exec();}
+
  
    // Digitisation
-   TClonesArray *ReconParticles() const {return fReconParticles;}   
+  TClonesArray *ReconParticles() const {return fReconParticles;}   
   virtual void SetHitsAddressBranch(TBranch *b){b->SetAddress(&fHits);}
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
 
@@ -48,7 +53,7 @@ public:
   Int_t fRingsSi2;       // Number of rings
   Int_t fSectorsSi2;    // Number of sectors
 
- Int_t   fNevents ;        // Number of events to digitize
+  Int_t   fNevents ;        // Number of events to digitize
   Int_t fEvNrSig;                 // signal     event number
 
 

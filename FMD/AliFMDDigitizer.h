@@ -3,9 +3,9 @@
 /* Copyright(c) 1998-2000, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include "AliDigitizer.h"
+#include <AliDigitizer.h>
+#include <AliRunDigitizer.h>
 
-class AliRunDigitizer;
 class TClonesArray;
 class AliFMDDigitizer : public AliDigitizer {
  public:
@@ -21,7 +21,7 @@ class AliFMDDigitizer : public AliDigitizer {
   Int_t PutNoise(Int_t charge) {return (Int_t)(gRandom->Gaus(charge,500));}
   TClonesArray *Digits() const {return fDigits;}
   TClonesArray *Hits() const {return fHits;}
- 
+   Bool_t GetDebug() const {return fManager->GetDebug();}
 
   
   enum {kBgTag = -1};

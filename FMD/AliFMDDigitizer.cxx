@@ -41,7 +41,6 @@
 #include "AliRunDigitizer.h"
 
 #include "AliRun.h"
-#include "AliPDG.h"
 #include "AliLoader.h"
 #include "AliRunLoader.h"
 
@@ -64,15 +63,16 @@ AliFMDDigitizer::AliFMDDigitizer(AliRunDigitizer* manager)
 {
   // ctor which should be used
   //  fDebug =0;
-  // if (GetDebug()>2)
-  //  cerr<<"AliFMDDigitizer::AliFMDDigitizer"
-  //     <<"(AliRunDigitizer* manager) was processed"<<endl;
+   if (GetDebug()>1)
+     Info("AliFMDDigitizer"," processed");
+
 }
 
 //------------------------------------------------------------------------
 AliFMDDigitizer::~AliFMDDigitizer()
 {
 // Destructor
+
 }
 
  //------------------------------------------------------------------------
@@ -98,13 +98,14 @@ void AliFMDDigitizer::Exec(Option_t * /*option*/)
   */
 
   AliRunLoader *inRL, *outRL;//in and out Run Loaders
-  AliLoader *ingime, *outgime;// in and out ITSLoaders
+  AliLoader *pInFMD, *pOutFMD;// in and out ITSLoaders
 
   outRL = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
-  outgime = outRL->GetLoader("FMDLoader");
+  pOutFMD = outRL->GetLoader("FMDLoader");
+
 
 #ifdef DEBUG
-  cout<<"AliFMDDigitizer::>SDigits2Digits start...\n";
+  Info("Hits2Digits Exec"," start...";
 #endif
 
 
@@ -118,10 +119,8 @@ void AliFMDDigitizer::Exec(Option_t * /*option*/)
     for(Int_t j=0; j<50; j++)
       for(Int_t ij=0; ij<520; ij++)
      de[i][j][ij]=0;
-  Int_t numberOfRings[5]=
-  {512,256,512,256,512};
-  Int_t numberOfSector[5]=
-  {20,40,20,40,20}; 
+  Int_t numberOfRings[5]= {512,256,512,256,512};
+  Int_t numberOfSector[5] =  {20,40,20,40,20}; 
   
   AliFMDhit *fmdHit=0;
   TTree *tH=0;
@@ -129,17 +128,17 @@ void AliFMDDigitizer::Exec(Option_t * /*option*/)
   TBranch *brD=0;
 
   inRL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
+
   if (inRL == 0x0)
     {
       Error("Exec","Can not find Run Loader for input stream 0");
       return;
     }
-  //  Info("Exec","inRL->GetAliRun() %#x",inRL->GetAliRun());
 
   if (!inRL->GetAliRun()) inRL->LoadgAlice();
 
   AliFMD * fFMD = (AliFMD *) inRL->GetAliRun()->GetDetector("FMD");
-  //  Info("Exec","inRL->GetAliRun(): %#x, FMD: %#x, InRL %#x.",inRL->GetAliRun(),fFMD,inRL);
+
   if (fFMD == 0x0)
    {
      Error("Exec","Can not get FMD from gAlice");
@@ -150,24 +149,27 @@ void AliFMDDigitizer::Exec(Option_t * /*option*/)
   Int_t nFiles=GetManager()->GetNinputs();
   for (Int_t inputFile=0; inputFile<nFiles;inputFile++) 
    {
-     //    cout<<" event "<<fManager->GetOutputEventNr()<<endl;
+
+#ifdef DEBUG
+  Info(" Digitizing event number ",fManager->GetOutputEventNr()) ;
+#endif
+ 
     if (fFMD)
      {
 
       inRL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
-      ingime = inRL->GetLoader("FMDLoader");
-      ingime->LoadHits("READ");//probably it is necessary to load them before
+      pInFMD = inRL->GetLoader("FMDLoader");
+      pInFMD->LoadHits("READ");
       
       
-      tH = ingime->TreeH();
+      tH = pInFMD->TreeH();
       if (tH == 0x0)
        {
-         ingime->LoadHits("read");
-         tH = ingime->TreeH();
+         pInFMD->LoadHits("read");
+         tH = pInFMD->TreeH();
        }
       brHits = tH->GetBranch("FMD");
       if (brHits) {
-  //      brHits->SetAddress(&fHits);
           fFMD->SetHitsAddressBranch(brHits);
       }else{
         Fatal("Exec","EXEC Branch FMD hit not found");
@@ -175,12 +177,12 @@ void AliFMDDigitizer::Exec(Option_t * /*option*/)
       TClonesArray *fFMDhits = fFMD->Hits ();
       
       Int_t ntracks    = (Int_t) tH->GetEntries();
-      //      cout<<"Number of tracks TreeH"<<ntracks<<endl;
+
       for (Int_t track = 0; track < ntracks; track++)
        {
          brHits->GetEntry(track);
          Int_t nhits = fFMDhits->GetEntries ();
-         // if(nhits>0) cout<<"nhits "<<nhits<<endl;
+
          for (hit = 0; hit < nhits; hit++)
            {
              fmdHit = (AliFMDhit *) fFMDhits->UncheckedAt(hit);
@@ -190,8 +192,7 @@ void AliFMDDigitizer::Exec(Option_t * /*option*/)
              ring = fmdHit->NumberOfRing ();
              e = fmdHit->Edep ();
              de[volume][sector][ring] += e;
-	     //   if (fManager->GetOutputEventNr()>1)
-                    //      cout<<" "<<volume<<" "<<sector<<" "<<ring<<endl;
+
            }          //hit loop
        }               //track loop
     }               
@@ -221,25 +222,24 @@ void AliFMDDigitizer::Exec(Option_t * /*option*/)
      } //iSector
    } //iRing
 
-   TTree* treeD = outgime->TreeD();
-   //   cout<<" treeD "<<treeD;
+   TTree* treeD = pOutFMD->TreeD();
+
    if (treeD == 0x0) {
-     outgime->MakeTree("D");
-     treeD = outgime->TreeD();
-     //     cout<<" After MakeTree "<<treeD<<endl;
+     pOutFMD->MakeTree("D");
+     treeD = pOutFMD->TreeD();
+
    }
-   //   cout<<" Before reset "<<treeD<<endl;
-   //   treeD->Clear();
+
    treeD->Reset();
    fFMD->MakeBranchInTreeD(treeD);
    brD = treeD->GetBranch("FMD");
-   //   cout<<" Make branch "<<brD<<endl;
+
 
    treeD->Fill();  //this operator does not work for events >1
-   //PH   treeD->Print();
-   outgime->WriteDigits("OVERWRITE");
-  
-   gAlice->ResetDigits();
+
+   pOutFMD->WriteDigits("OVERWRITE");
+   pOutFMD->UnloadHits();
+   inRL->GetAliRun() ->ResetDigits();
    }
 }
  

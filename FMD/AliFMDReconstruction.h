@@ -32,19 +32,13 @@ class AliFMDReconstruction: public TTask
   void SetNEvents(Int_t Nevents){fNevents = Nevents;}
   Stat_t GetNEvents()  {return fNevents;}
   TClonesArray *Digits() {return fDigits;}
-//   Int_t DeterminationByThresholds(Int_t a[10][50][800], 
-// 				  Int_t volume, Int_t Rmin, Int_t Rmax, 
-// 				  Int_t Smin, Int_t Smax);
-//   Int_t DeterminationByPoisson (Int_t PadADC[10][50][800], Int_t volume,
-// 				Int_t Rmin, Int_t Rmax, 
-// 				Int_t Smin, Int_t Smax);
   
  private:
   TClonesArray *fDigits;               // ! array with digits
   Int_t   fNevents ;                         // Number of events
-
+  
   AliRunLoader* fRunLoader;  //!Run Loader of that event
-
+  
   ClassDef(AliFMDReconstruction,2) 
 
 

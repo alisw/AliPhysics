@@ -316,16 +316,6 @@ AliFMD::Eta2Radius (Float_t eta, Float_t zDisk, Float_t * radius)
     printf ("%s: eta %f radius %f\n", ClassName (), eta, rad);
 }
 
-//---------------------------------------------------------------------
-
-
-void AliFMD::Digits2Reco()
-{
-  AliFMDReconstruction * reconstruction =  new AliFMDReconstruction(fLoader->GetRunLoader());
-  cout<<" AliFMD::Digits2Reco >> "<<reconstruction<<endl;
-  reconstruction->Exec();
-  delete  reconstruction;
-}
 //-----------------------------------------------------------------------
 
 void AliFMD::MakeBranchInTreeD(TTree *treeD, const char *file)
