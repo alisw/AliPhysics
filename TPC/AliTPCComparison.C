@@ -1,4 +1,5 @@
 //#include "alles.h"
+//#include "TParticle.h"
 struct GoodTrack {
   Int_t lab;
   Int_t code;
@@ -49,17 +50,15 @@ Int_t AliTPCComparison() {
    cf->Close();
 
 /////////////////////////////////////////////////////////////////////////
-   GoodTrack gt[20000];
+   GoodTrack gt[15000];
    Int_t ngood=0;
    ifstream in("good_tracks");
    if (in) {
       cerr<<"Reading good tracks...\n";
-      while (in>>gt[ngood].lab>>gt[ngood].code
-	       >>gt[ngood].px >>gt[ngood].py>>gt[ngood].pz
-	       >>gt[ngood].x  >>gt[ngood].y >>gt[ngood].z) {
+      while (in>>gt[ngood].lab>>gt[ngood].code>>gt[ngood].px>>gt[ngood].py>>gt[ngood].pz>>gt[ngood].x>>gt[ngood].y>>gt[ngood].z) {
          ngood++;
          cerr<<ngood<<'\r';
-         if (ngood==20000) {
+         if (ngood==15000) {
             cerr<<"Too many good tracks !\n";
             break;
          }
@@ -67,13 +66,11 @@ Int_t AliTPCComparison() {
       if (!in.eof()) cerr<<"Read error (good_tracks) !\n";
    } else {
       cerr<<"Marking good tracks (this will take a while)...\n";
-      ngood=good_tracks(gt,20000);
+      ngood=good_tracks(gt,15000);
       ofstream out("good_tracks");
       if (out) {
          for (Int_t ngd=0; ngd<ngood; ngd++)            
-	    out<<gt[ngd].lab<<' '<<gt[ngd].code<<' '
-	       <<gt[ngd].px <<' '<<gt[ngd].py<<' '<<gt[ngd].pz<<' '
-	       <<gt[ngd].x  <<' '<<gt[ngd].y <<' '<<gt[ngd].z <<endl;
+	    out<<gt[ngd].lab<<' '<<gt[ngd].code<<' '<<gt[ngd].px <<' '<<gt[ngd].py<<' '<<gt[ngd].pz<<' '<<gt[ngd].x  <<' '<<gt[ngd].y <<' '<<gt[ngd].z <<endl;
       } else cerr<<"Can not open file (good_tracks) !\n";
       out.close();
    }
@@ -306,8 +303,11 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
    Int_t gap=Int_t(0.125*nrows);
    Int_t good_number=Int_t(0.4*nrows);
 
-   TClonesArray *particles=gAlice->Particles(); 
-   Int_t np=particles->GetEntriesFast();
+   TObjArray *particles=gAlice->Particles(); //MI change 
+   
+   //
+   //   Int_t np=particles->GetEntriesFast();
+   Int_t np=gAlice->GetNtrack(); //FCA correction
    Int_t *good=new Int_t[np];
    for (Int_t ii=0; ii<np; ii++) good[ii]=0;
 
@@ -426,7 +426,9 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
       */
       if (hit1->fQ != 0.) continue;
       Int_t i=hit->Track();
-      TParticle *p = (TParticle*)particles->UncheckedAt(i);
+      //      TParticle *p = (TParticle*)particles->UncheckedAt(i);
+      TParticle *p = (TParticle*)gAlice->Particle(i);
+
       if (p->GetFirstMother()>=0) continue;  //secondary particle
       if (good[i] < 0x1000+0x800+2+good_number) continue;
       if (p->Pt()<0.100) continue;
@@ -447,7 +449,7 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
    }
    delete[] good;
 
-   delete gAlice; gAlice=0;
+   //delete gAlice; gAlice=0;
 
    file->Close();
    gBenchmark->Stop("AliTPCComparison");
