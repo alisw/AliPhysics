@@ -64,6 +64,20 @@ AliPHOSHit::AliPHOSHit(Int_t primary, Int_t id, Float_t *hits)
    fELOS       = hits[3] ;
    fPrimary    = primary ;
 }
+AliPHOSHit::AliPHOSHit(Int_t primary, Int_t Track, Int_t id, Float_t *hits)
+{
+  // ctor
+  
+   fId         = id ;
+   fTrack      = Track;
+   fX          = hits[0] ;
+   fY          = hits[1] ;
+   fZ          = hits[2] ;
+   fELOS       = hits[3] ;
+   fPrimary    = primary ;
+}
+
+
 
 //____________________________________________________________________________
 Bool_t AliPHOSHit::operator==(AliPHOSHit const &rValue) const
