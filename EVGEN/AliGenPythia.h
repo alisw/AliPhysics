@@ -36,9 +36,14 @@ class AliGenPythia : public AliGenMC
     virtual void    SetEnergyCMS(Float_t energy = 5500) {fEnergyCMS = energy;}
     // treat protons as inside nuclei
     virtual void    SetNuclei(Int_t a1, Int_t a2);
+    virtual void    SetJetEtaRange(Float_t etamin = -20., Float_t etamax = 20.)
+	{fEtaMinJet = etamin; fEtaMaxJet = etamax;}
+    virtual void    SetJetPhiRange(Float_t phimin = -180., Float_t phimax = 180.)
+	{fPhiMinJet = TMath::Pi()*phimin/180.; fPhiMaxJet = TMath::Pi()*phimax/180.;}
     // get cross section of process
     virtual Float_t GetXsection() {return fXsection;}      
     virtual void    FinishRun();
+    Bool_t CheckTrigger(TParticle* jet1, TParticle* jet2);
     
     // Assignment Operator
     AliGenPythia & operator=(const AliGenPythia & rhs);
@@ -64,6 +69,11 @@ class AliGenPythia : public AliGenMC
     AliDecayer  *fDecayer;        //!Pointer to the decayer instance
     Int_t       fDebugEventFirst; //!First event to debug
     Int_t       fDebugEventLast;  //!Last  event to debug
+    Float_t     fEtaMinJet;      // Minimum eta of triggered Jet
+    Float_t     fEtaMaxJet;      // Maximum eta of triggered Jet
+    Float_t     fPhiMinJet;      // At least one of triggered Jets must be in this
+    Float_t     fPhiMaxJet;      // phi range
+
  private:
     // adjust the weight from kinematic cuts
     void   AdjustWeights();

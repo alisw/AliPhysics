@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.45  2001/11/28 08:06:52  morsch
+Use fMaxLifeTime parameter.
+
 Revision 1.44  2001/11/27 13:13:07  morsch
 Maximum lifetime for long-lived particles to be put on the stack is parameter.
 It can be set via SetMaximumLifetime(..).
@@ -147,8 +150,10 @@ AliGenPythia::AliGenPythia()
 // Default Constructor
   fParticles = 0;
   fPythia    = 0;
-  fDecayer = new AliDecayerPythia();
+  fDecayer   = new AliDecayerPythia();
   SetEventListRange();
+  SetJetPhiRange();
+  SetJetEtaRange();
 }
 
 AliGenPythia::AliGenPythia(Int_t npart)
@@ -169,11 +174,13 @@ AliGenPythia::AliGenPythia(Int_t npart)
     fDecayer = new AliDecayerPythia();
     // Set random number generator 
     sRandom=fRandom;
-    SetEventListRange();
     fFlavorSelect   = 0;
     // Produced particles  
     fParticles = new TClonesArray("TParticle",1000);
     fEventVertex.Set(3);
+    SetEventListRange();
+    SetJetPhiRange();
+    SetJetEtaRange();
 }
 
 AliGenPythia::AliGenPythia(const AliGenPythia & Pythia)
@@ -468,7 +475,12 @@ Int_t  AliGenPythia::GenerateMB()
     Int_t np = fParticles->GetEntriesFast();
     Int_t* pParent = new Int_t[np];
     for (i=0; i< np-1; i++) pParent[i] = -1;
-
+    if (fProcess == kPyJets) {
+	TParticle* jet1 = (TParticle *) fParticles->At(6);
+	TParticle* jet2 = (TParticle *) fParticles->At(7);
+	if (!CheckTrigger(jet1, jet2)) return 0;
+    }
+    
     for (i = 0; i<np-1; i++) {
 	Int_t trackIt = 0;
 	TParticle *  iparticle = (TParticle *) fParticles->At(i);
@@ -545,6 +557,29 @@ void AliGenPythia::MakeHeader()
     gAlice->SetGenEventHeader(header);
 }
 	
+
+Bool_t AliGenPythia::CheckTrigger(TParticle* jet1, TParticle* jet2)
+{
+// Check the kinematic trigger condition
+//
+    Double_t eta1      = jet1->Eta();
+    Double_t eta2      = jet2->Eta();
+    Double_t phi1      = jet1->Phi();
+    Double_t phi2      = jet2->Phi();
+    Bool_t   triggered = kFALSE;
+    //Check eta range first...    
+    if ((eta1 < fEtaMaxJet && eta1 > fEtaMinJet) ||
+	(eta2 < fEtaMaxJet && eta2 > fEtaMinJet))
+    {
+	//Eta is okay, now check phi range
+        if ((phi1 < fPhiMaxJet && phi1 > fPhiMinJet) ||
+            (phi2 < fPhiMaxJet && phi2 > fPhiMinJet))
+        {
+	    triggered = kTRUE;
+        }
+    }
+    return triggered;
+}
 	  
 AliGenPythia& AliGenPythia::operator=(const  AliGenPythia& rhs)
 {
