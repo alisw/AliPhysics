@@ -104,49 +104,13 @@ Bool_t AliPMDRawStream::Next()
 
   Int_t  iddl  = fRawReader->GetDDLID();
   Int_t  ium;
+
   GetRowCol(iddl, fMCM, fChannel, ium, fRow, fColumn);
-
-  if (iddl < 4)
-    {
-      fModule = iddl*6 + ium;
-      fDetector = 0;
-      fSMN = iddl*6 + ium;
-    }
-  else if (iddl == 4)
-    {
-      if (ium < 6)
-	{
-	  fModule = 24 + ium;
-	  fSMN    = ium;
-	}
-      else if (ium >= 6)
-	{
-	  fModule = 30 + ium;
-	  fSMN    = 6 + ium;
-	}
-      fDetector = 1;
-    }
-  else if (iddl == 5)
-    {
-
-      if (ium < 6)
-	{
-	  fModule = 30 + ium;
-	  fSMN    = 6 + ium;
-	}
-      else if (ium >= 6)
-	{
-	  fModule = 36 + ium;
-	  fSMN    = 12 + ium;
-	}
-      fDetector = 1;
-    }
-
+  ConvertDDL2SMN(iddl, ium, fSMN, fModule, fDetector);
+  TransformH2S(fSMN, fRow, fColumn);
 
   return kTRUE;
 }
-
-
 //_____________________________________________________________________________
 void AliPMDRawStream::GetRowCol(Int_t ddlno, UInt_t mcmno, UInt_t chno,
 				Int_t &um, Int_t &row, Int_t &col) const
@@ -227,3 +191,104 @@ void AliPMDRawStream::GetRowCol(Int_t ddlno, UInt_t mcmno, UInt_t chno,
     }
 
 }
+//_____________________________________________________________________________
+void AliPMDRawStream::ConvertDDL2SMN(Int_t iddl, Int_t ium, Int_t &smn,
+				    Int_t &module, Int_t &detector) const
+{
+  // This converts the DDL number to Module Number which runs from 0-47
+  // Serial module number in one detector which runs from 0-23
+  // Also gives the detector number (0:PRE plane, 1:CPV plane)
+  if (iddl < 4)
+    {
+      module = iddl*6 + ium;
+      detector = 0;
+      smn = iddl*6 + ium;
+    }
+  else if (iddl == 4)
+    {
+      if (ium < 6)
+	{
+	  module = 24 + ium;
+	  smn    = ium;
+	}
+      else if (ium >= 6)
+	{
+	  module = 30 + ium;
+	  smn    = 6 + ium;
+	}
+      detector = 1;
+    }
+  else if (iddl == 5)
+    {
+      
+      if (ium < 6)
+	{
+	  module = 30 + ium;
+	  smn    = 6 + ium;
+	}
+      else if (ium >= 6)
+	{
+	  module = 36 + ium;
+	  smn    = 12 + ium;
+	}
+      detector = 1;
+    }
+}
+//_____________________________________________________________________________
+void AliPMDRawStream::TransformH2S(Int_t smn, Int_t &row, Int_t &col) const
+{
+  // Transform the Hardware (0,0) coordinate to Software (0,0) coordinate
+  // and also writes in the digit form
+  // i.e., For SuperModule 1 &2, instead of 96x48 it is 48x96
+  // For Supermodule 3 & 4, 48x96
+
+  Int_t irownew1 = 0;
+  Int_t icolnew1 = 0;
+  Int_t irownew  = 0;
+  Int_t icolnew  = 0;
+  // Transform all the (0,0) coordinates to the geant frame
+  if(smn < 6)
+    {
+      irownew1 = 95 - row;
+      icolnew1 = col;
+    }
+  else if(smn >= 6 && smn < 12)
+    {
+      irownew1 = row;
+      icolnew1 = 47 - col;
+    }
+  else if(smn >= 12 && smn < 18)
+    {
+      irownew1 = 47 - row;
+      icolnew1 = col;
+    }
+  else if(smn >= 18 && smn < 24)
+    {
+      irownew1 = row;
+      icolnew1 = 95 - col;
+    }
+  
+  // for smn < 12          : row = 96, column = 48
+  // for smn>= 12 and < 24 : row = 48, column = 96
+  // In order to make it uniform dimension, smn < 12 are inverted
+  // i.e., row becomes column and column becomes row
+  // for others it remains same
+  // This is further inverted back while calculating eta and phi
+  if(smn < 12)
+    {
+      // SupeModule 1 and 2 : Rows are inverted to columns and vice versa
+      // and at the time of calculating the eta,phi it is again reverted
+      // back
+      irownew = icolnew1;
+      icolnew = irownew1;
+    }
+  else if( smn >= 12 && smn < 24)
+    {
+      irownew = irownew1;
+      icolnew = icolnew1;
+    }
+
+  row = irownew;
+  col = icolnew;
+}
+//_____________________________________________________________________________

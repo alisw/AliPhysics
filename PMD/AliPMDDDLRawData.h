@@ -32,6 +32,7 @@ class AliPMDDDLRawData:public TObject
   void WritePMDRawData(TTree *treeD);
   void GetUMDigitsData(TTree *treeD, Int_t imodule, Int_t ium, Int_t ddlno,
 		       Int_t & totword, UInt_t *buffer);
+  void TransformS2H(Int_t smn, Int_t &irow, Int_t &icol);
   void GetMCMCh(Int_t ddlno, Int_t um, Int_t row, Int_t col,
 		UInt_t &mcmno, UInt_t &chno);
 
@@ -41,7 +42,7 @@ class AliPMDDDLRawData:public TObject
   TClonesArray *fDigits;    //! List of digits
   AliPMDdigit  *fPMDdigit;  //! Pointer to digits
 
-  ClassDef(AliPMDDDLRawData,2)    // To make RAW Data
+  ClassDef(AliPMDDDLRawData,3)    // To make RAW Data
 };
 #endif
 

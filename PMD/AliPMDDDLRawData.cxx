@@ -147,17 +147,11 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule, Int_t ium,
 				       Int_t ddlno, Int_t & totword,
 				       UInt_t *buffer)
 {
-
+  // Retrives digits data UnitModule by UnitModule
   UInt_t baseword;
-
   UInt_t mcmno, chno;
   UInt_t adc;
-  Int_t  irownew = 0;
-  Int_t  icolnew = 0;
-  Int_t  irownew1 = 0;
-  Int_t  icolnew1 = 0;
   Int_t  det, smn, irow, icol;
-
 
   treeD->GetEntry(imodule); 
   Int_t nentries = fDigits->GetLast();
@@ -173,43 +167,8 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule, Int_t ium,
       icol   = fPMDdigit->GetColumn();
       adc    = (UInt_t) fPMDdigit->GetADC();
 
-      //      cout << " imodule = " << imodule << " smn = " << smn << endl;
-
-      if(smn < 12)
-	{
-	  irownew1 = icol;
-	  icolnew1 = irow;
-	}
-      else if( smn >= 12 && smn < 24)
-	{
-	  irownew1 = irow;
-	  icolnew1 = icol;
-	}
-
-      if(smn < 6)
-	{
-	  irownew = 95 - irownew1;
-	  icolnew = icolnew1;
-	}
-      else if(smn >= 6 && smn < 12)
-	{
-	  irownew = irownew1;
-	  icolnew = 47 - icolnew1;
-	}
-      else if(smn >= 12 && smn < 18)
-	{
-	  irownew = 47 - irownew1;
-	  icolnew = icolnew1;
-	}
-      else if(smn >= 18 && smn < 24)
-	{
-	  irownew = irownew1;
-	  icolnew = 95 - icolnew1;
-	}
-      
-
-
-      GetMCMCh(ddlno, ium, irownew, icolnew, mcmno, chno);
+      TransformS2H(smn,irow,icol);
+      GetMCMCh(ddlno, ium, irow, icol, mcmno, chno);
 
       baseword = 0;
       AliBitPacking::PackWord(adc,baseword,0,11);
@@ -222,9 +181,63 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule, Int_t ium,
       
     }
 
-
 }
 //____________________________________________________________________________
+void AliPMDDDLRawData::TransformS2H(Int_t smn, Int_t &irow, Int_t &icol)
+{
+  // Does the Software to Hardware coordinate transformation
+  //
+  Int_t  irownew = 0;
+  Int_t  icolnew = 0;
+  Int_t  irownew1 = 0;
+  Int_t  icolnew1 = 0;
+
+  // First in digits we have all dimension 48x96
+  // Transform into the realistic one, i.e, For SM 1&2 96x48
+  // and for SM 3&4 48x96
+  // 
+  if(smn < 12)
+    {
+      irownew1 = icol;
+      icolnew1 = irow;
+    }
+  else if( smn >= 12 && smn < 24)
+    {
+      irownew1 = irow;
+      icolnew1 = icol;
+    }
+  // This is the transformation of Geant (0,0) to the Hardware (0,0)
+  // which is always at the top left corner. This may change in future.
+  // Then accordingly we have to transform it.
+  if(smn < 6)
+    {
+      irownew = 95 - irownew1;
+      icolnew = icolnew1;
+    }
+  else if(smn >= 6 && smn < 12)
+    {
+      irownew = irownew1;
+      icolnew = 47 - icolnew1;
+    }
+  else if(smn >= 12 && smn < 18)
+    {
+      irownew = 47 - irownew1;
+      icolnew = icolnew1;
+    }
+  else if(smn >= 18 && smn < 24)
+    {
+      irownew = irownew1;
+      icolnew = 95 - icolnew1;
+    }
+
+  irow = irownew;
+  icol = icolnew;
+
+}
+
+
+//____________________________________________________________________________
+
 void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t um,
 				Int_t row, Int_t col,
 				UInt_t &mcmno, UInt_t &chno)

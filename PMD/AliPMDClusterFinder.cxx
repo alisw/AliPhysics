@@ -211,11 +211,6 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 
   Int_t bufsize = 16000;
   fTreeR->Branch("PMDRecpoint", &fRecpoints, bufsize); 
-
-  Int_t irownew  = 0;
-  Int_t icolnew  = 0;
-  Int_t irownew1 = 0;
-  Int_t icolnew1 = 0;
   const Int_t kDet = 2;
   const Int_t kSMN = 24;
   const Int_t kRow = 48;
@@ -250,55 +245,13 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
       //   << " row = " << row << " col = " << col
       //   << " sig = " << sig << endl;
 
-      // Transform all the (0,0) coordinates to the geant frame
-      if(smn < 6)
-	{
-	  irownew1 = 95 - row;
-	  icolnew1 = col;
-	}
-      else if(smn >= 6 && smn < 12)
-	{
-	  irownew1 = row;
-	  icolnew1 = 47 - col;
-	}
-      else if(smn >= 12 && smn < 18)
-	{
-	  irownew1 = 47 - row;
-	  icolnew1 = col;
-	}
-      else if(smn >= 18 && smn < 24)
-	{
-	  irownew1 = row;
-	  icolnew1 = 95 - col;
-	}
-
-      // for smn < 12          : row = 96, column = 48
-      // for smn>= 12 and < 24 : row = 48, column = 96
-      // In order to make it uniform dimension, smn < 12 are inverted
-      // i.i., row becomes column and column becomes row
-      // for others it remains same
-      // This is further inverted back while calculating eta and phi
-      if(smn < 12)
-	{
-	  // SupeModule 1 and 2 : Rows are inverted to columns and vice versa
-	  // and at the time of calculating the eta,phi it is again reverted
-	  // back
-	  irownew = icolnew1;
-	  icolnew = irownew1;
-	}
-      else if( smn >= 12 && smn < 24)
-	{
-	  irownew = irownew1;
-	  icolnew = icolnew1;
-	}
-
       if (det == 0)
 	{
-	  preADC[smn][irownew][icolnew] = sig;
+	  preADC[smn][row][col] = sig;
 	}
       else if (det == 1)
 	{
-	  cpvADC[smn][irownew][icolnew] = sig;
+	  cpvADC[smn][row][col] = sig;
 	}
 
     } // while loop

@@ -43,6 +43,9 @@ class AliPMDRawStream: public TObject {
 
     void             GetRowCol(Int_t ddlno, UInt_t mcmno, UInt_t chno,
 			       Int_t &um, Int_t &row, Int_t &col) const;
+    void             ConvertDDL2SMN(Int_t iddl, Int_t ium, Int_t &smn,
+				   Int_t &module, Int_t &detector) const;
+    void             TransformH2S(Int_t smn, Int_t &row, Int_t &col) const;
 
     AliRawReader*    fRawReader;    // object for reading the raw data
 
@@ -56,7 +59,7 @@ class AliPMDRawStream: public TObject {
     Int_t            fDetector;     // PRE = 0, CPV = 1
     Int_t            fSMN;          // serial module number (0-23)
 
-    ClassDef(AliPMDRawStream, 0)    // class for reading PMD raw digits
+    ClassDef(AliPMDRawStream, 1)    // class for reading PMD raw digits
 };
 
 #endif
