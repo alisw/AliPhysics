@@ -835,6 +835,13 @@ Int_t AliBaseLoader::Post(TObject* data)
     Error("Post","Pointer to object is NULL");
     return 1;
   }
+
+ if ( fName.CompareTo(data->GetName()) != 0)
+   {
+     Fatal("Post(TObject*)","Object name is <<%s>> while <<%s>> expected",data->GetName(),GetName());
+     return -1;//pro forma
+   }
+   
  TObject* obj = Get();
  if (data == obj)
   {
@@ -1195,6 +1202,21 @@ AliTaskLoader& AliTaskLoader::operator=(const AliTaskLoader& /*source*/) {
   // Assignment operator
   Fatal("AliTaskLoader","Assignment operator not implemented");
   return *this;
+}
+/*****************************************************************************/ 
+void AliTaskLoader::Clean()
+{
+//removes tasl from parental task
+// DO NOT DELETE OBJECT contrary to BaseLoader
+//
+  if (GetDebug()) Info("Clean","%s %s",GetName(),GetDataLoader()->GetName());
+  TObject* obj = Get();
+  if(obj)
+   { 
+     if (GetDebug()) 
+       Info("Clean","cleaning %s.",GetName());
+     RemoveFromBoard(obj);
+   }
 }
 /*****************************************************************************/ 
 

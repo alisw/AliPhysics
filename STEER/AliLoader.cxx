@@ -665,81 +665,61 @@ void AliLoader::CleanFolders()
 void AliLoader::CleanSDigitizer()
 {
 //removes and deletes detector task from Run Task
-  TTask* task = AliRunLoader::GetRunSDigitizer();
-  if (task == 0x0)
-   {
-     Error("CleanSDigitizer","Can not get RunSDigitizer from folder. Can not clean");
-     return;
-   }
-
-  if (GetDebug()) Info("CleanSDigitizer","Attempting to delete S Digitizer");
-  delete task->GetListOfTasks()->Remove(SDigitizer()); //TTList::Remove does not delete object
+ if ( GetSDigitsDataLoader()->GetBaseTaskLoader() == 0x0 )
+  {
+    Warning("CleanSDigitizer","Task Loader for SDigits does not exist");
+    return;
+  }
+ GetSDigitsDataLoader()->GetBaseTaskLoader()->Clean();
 }
 /*****************************************************************************/ 
 
 void AliLoader::CleanDigitizer()
 {
 //removes and deletes detector task from Run Task
-  TTask* task = AliRunLoader::GetRunDigitizer();
-  if (task == 0x0)
-   {
-     Error("CleanDigitizer","Can not get RunDigitizer from folder. Can not clean");
-     return;
-   }
-
-  if (GetDebug()) 
-   Info("CleanDigitizer","Attempting to delete Digitizer %X",
-         task->GetListOfTasks()->Remove(Digitizer()));
-  delete task->GetListOfTasks()->Remove(Digitizer()); //TTList::Remove does not delete object
+ if ( GetDigitsDataLoader()->GetBaseTaskLoader() == 0x0 )
+  {
+    Warning("CleanDigitizer","Task Loader for Digits does not exist");
+    return;
+  }
+ GetDigitsDataLoader()->GetBaseTaskLoader()->Clean();
 }
 /*****************************************************************************/ 
 
 void AliLoader::CleanReconstructioner()
 {
 //removes and deletes detector Reconstructioner from Run Reconstructioner
-  TTask* task = AliRunLoader::GetRunReconstructioner();
-  if (task == 0x0)
-   {
-     Error("CleanReconstructioner","Can not get RunReconstructioner from folder. Can not clean");
-     return;
-   }
-
-  if (GetDebug()) 
-   Info("CleanReconstructioner","Attempting to delete Reconstructioner");
-  delete task->GetListOfTasks()->Remove(Reconstructioner()); //TTList::Remove does not delete object
+ if ( GetRecPointsDataLoader()->GetBaseTaskLoader() == 0x0 )
+  {
+    Warning("CleanSDigitizer","Task Loader for SDigits does not exist");
+    return;
+  }
+ GetRecPointsDataLoader()->GetBaseTaskLoader()->Clean();
 }
 /*****************************************************************************/ 
 
 void AliLoader::CleanTracker()
 {
-//removes and deletes detector tracker from Run Tracker
-  TTask* task = AliRunLoader::GetRunTracker();
-  if (task == 0x0)
-   {
-     Error("CleanTracker","Can not get RunTracker from folder. Can not clean");
-     return;
-   }
-
-  if (GetDebug()) 
-   Info("CleanTracker","Attempting to delete Tracker %X",
-         task->GetListOfTasks()->Remove(Tracker()));
-  delete task->GetListOfTasks()->Remove(Tracker()); //TTList::Remove does not delete object
+//removes and deletes detector task from Run Task
+ if ( GetTracksDataLoader()->GetBaseTaskLoader() == 0x0 )
+  {
+    Warning("CleanTracker","Task Loader for Tracks does not exist");
+    return;
+  }
+ GetTracksDataLoader()->GetBaseTaskLoader()->Clean();
 }
 /*****************************************************************************/ 
 
 void AliLoader::CleanPIDTask()
 {
 //removes and deletes detector Reconstructioner from Run Reconstructioner
-  TTask* task = AliRunLoader::GetRunPIDTask();
-  if (task == 0x0)
-   {
-     Error("CleanPIDTask","Can not get Run PID Task from folder. Can not clean");
-     return;
-   }
 
-  if (GetDebug()) 
-   Info("CleanPIDTask","Attempting to delete PID Task");
-  delete task->GetListOfTasks()->Remove(PIDTask()); //TTList::Remove does not delete object
+ if (  GetRecParticlesDataLoader()->GetBaseTaskLoader() == 0x0 )
+  {
+    Warning("CleanPIDTask","Task Loader for Reconstructed Particles does not exist");
+    return;
+  }
+  GetRecParticlesDataLoader()->GetBaseTaskLoader()->Clean();
 }
 /*****************************************************************************/ 
 

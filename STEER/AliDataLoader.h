@@ -252,6 +252,7 @@ class AliTaskLoader: public AliBaseLoader
     
     TObject*           Get() const; 
     virtual TTask*     Task() const {return dynamic_cast<TTask*>(Get());}
+    virtual void       Clean();
 
   protected:
     Int_t              AddToBoard(TObject* obj);
