@@ -59,7 +59,7 @@ AliLoader::AliLoader():
  fModuleFolder(0x0),
  fTasksFolder(0x0),
  fQAFolder(0x0)
- {
+{
 //default constructor
 
  }
@@ -110,7 +110,17 @@ AliLoader::AliLoader(const Char_t * detname,TFolder* eventfolder):
    //fileoption's don't need to initialized because default TString ctor does it correctly
 }
 /*****************************************************************************/ 
-AliLoader::AliLoader(const AliLoader& source):TNamed(source) {
+AliLoader::AliLoader(const AliLoader& source) : 
+  TNamed(source), 
+  fDataLoaders(source.fDataLoaders),
+  fDetectorName(source.fDetectorName),
+  fEventFolder(source.fEventFolder),
+  fDataFolder(source.fDataFolder),
+  fDetectorDataFolder(source.fDetectorDataFolder),
+  fModuleFolder(source.fModuleFolder),
+  fTasksFolder(source.fTasksFolder),
+  fQAFolder(source.fQAFolder)
+{
   // dummy copy constructor
   if(&source==this)return;
   

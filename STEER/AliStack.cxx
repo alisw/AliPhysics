@@ -47,6 +47,7 @@ AliStack::AliStack():
   fParticleMap(0),
   fParticleFileMap(0),
   fParticleBuffer(0),
+  fCurrentTrack(0),
   fTreeK(0),
   fNtrack(0),
   fNprimary(0),
@@ -67,6 +68,7 @@ AliStack::AliStack(Int_t size, const char* evfoldname):
   fParticleMap(new TObjArray(size)),
   fParticleFileMap(0),
   fParticleBuffer(0),
+  fCurrentTrack(0),
   fTreeK(0),
   fNtrack(0),
   fNprimary(0),
@@ -88,13 +90,15 @@ AliStack::AliStack(const AliStack& st):
   fParticleMap(0),
   fParticleFileMap(0),
   fParticleBuffer(0),
+  fCurrentTrack(0),
   fTreeK(0),
   fNtrack(0),
   fNprimary(0),
   fCurrent(-1),
   fCurrentPrimary(-1),
   fHgwmk(0),
-  fLoadPoint(0)
+  fLoadPoint(0),
+  fEventFolderName()
 {
   //
   // Copy constructor

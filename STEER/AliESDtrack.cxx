@@ -30,47 +30,54 @@ ClassImp(AliESDtrack)
 
 //_______________________________________________________________________
 AliESDtrack::AliESDtrack() : 
-fFlags(0),
-fLabel(0),
-fID(0),
-fTrackLength(0),
-fD(0),
-fZ(0),
-fStopVertex(0),
-fRalpha(0),
-fRx(0),
-fCalpha(0),
-fCx(0),
-fCchi2(1e10),
-fIalpha(0),
-fIx(0),
-fTalpha(0),
-fTx(0),
-fITSchi2(0),
-fITSncls(0),
-fITSsignal(0),
-fTPCchi2(0),
-fTPCncls(0),
-fTPCClusterMap(159),//number of padrows
-fTPCsignal(0),
-fTRDchi2(0),
-fTRDncls(0),
-fTRDncls0(0),
-fTRDsignal(0),
-fTRDQuality(0),
-fTOFchi2(0),
-fTOFindex(0),
-fTOFsignal(-1),
-fPHOSsignal(-1),
-fEMCALsignal(-1),
-fRICHchi2(1e10),
-fRICHncls(0),
-fRICHindex(0),
-fRICHsignal(-1),
-fRICHtheta(0),
-fRICHphi(0),
-fRICHdx(0),
-fRICHdy(0)
+  TObject(),
+  fFlags(0),
+  fLabel(0),
+  fID(0),
+  fTrackLength(0),
+  fD(0),
+  fZ(0),
+  fStopVertex(0),
+  fRalpha(0),
+  fRx(0),
+  fCalpha(0),
+  fCx(0),
+  fCchi2(1e10),
+  fIalpha(0),
+  fIx(0),
+  fTalpha(0),
+  fTx(0),
+  fITSchi2(0),
+  fITSncls(0),
+  fITSsignal(0),
+  fITSLabel(0),
+  fITSFakeRatio(0),
+  fITStrack(0),
+  fTPCchi2(0),
+  fTPCncls(0),
+  fTPCClusterMap(159),//number of padrows
+  fTPCsignal(0),
+  fTPCLabel(0),
+  fTRDchi2(0),
+  fTRDncls(0),
+  fTRDncls0(0),
+  fTRDsignal(0),
+  fTRDLabel(0),
+  fTRDQuality(0),
+  fTRDtrack(0),
+  fTOFchi2(0),
+  fTOFindex(0),
+  fTOFsignal(-1),
+  fPHOSsignal(-1),
+  fEMCALsignal(-1),
+  fRICHchi2(1e10),
+  fRICHncls(0),
+  fRICHindex(0),
+  fRICHsignal(-1),
+  fRICHtheta(0),
+  fRICHphi(0),
+  fRICHdx(0),
+  fRICHdy(0)
 {
   //
   // The default ESD constructor 
@@ -118,100 +125,102 @@ fRICHdy(0)
 }
 
 //_______________________________________________________________________
-
-AliESDtrack::AliESDtrack(const AliESDtrack& track):TObject(track){
+AliESDtrack::AliESDtrack(const AliESDtrack& track):
+  TObject(track),
+  fFlags(track.fFlags),
+  fLabel(track.fLabel),
+  fID(track.fID),
+  fTrackLength(track.fTrackLength),
+  fD(track.fD),
+  fZ(track.fZ),
+  fStopVertex(track.fStopVertex),
+  fRalpha(track.fRalpha),
+  fRx(track.fRx),
+  fCalpha(track.fCalpha),
+  fCx(track.fCx),
+  fCchi2(track.fCchi2),
+  fIalpha(track.fIalpha),
+  fIx(track.fIx),
+  fTalpha(track.fTalpha),
+  fTx(track.fTx),
+  fITSchi2(track.fITSchi2),
+  fITSncls(track.fITSncls),
+  fITSsignal(track.fITSsignal),
+  fITSLabel(track.fITSLabel),
+  fITSFakeRatio(track.fITSFakeRatio),
+  fITStrack(0),    //coping separatelly - in user code
+  fTPCchi2(track.fTPCchi2),
+  fTPCncls(track.fTPCncls),
+  fTPCClusterMap(track.fTPCClusterMap),
+  fTPCsignal(track.fTPCsignal),
+  fTPCLabel(track.fTPCLabel),
+  fTRDchi2(track.fTRDchi2),
+  fTRDncls(track.fTRDncls),
+  fTRDncls0(track.fTRDncls0),
+  fTRDsignal(track.fTRDsignal),
+  fTRDLabel(track.fTRDLabel),
+  fTRDQuality(track.fTRDQuality),
+  fTRDtrack(0),
+  fTOFchi2(track.fTOFchi2),
+  fTOFindex(track.fTOFindex),
+  fTOFsignal(track.fTOFsignal),
+  fPHOSsignal(track.fPHOSsignal),
+  fEMCALsignal(track.fEMCALsignal),
+  fRICHchi2(track.fRICHchi2),
+  fRICHncls(track.fRICHncls),
+  fRICHindex(track.fRICHindex),
+  fRICHsignal(track.fRICHsignal),
+  fRICHtheta(track.fRICHtheta),
+  fRICHphi(track.fRICHphi),
+  fRICHdx(track.fRICHdx),
+  fRICHdy(track.fRICHdy)
+{
   //
   //copy constructor
   //
-  fFlags = track.fFlags;
-  fLabel =track.fLabel;
-  fID = track.fID;
-  fTrackLength =track.fTrackLength;
-  fD=track.fD; fZ=track.fZ;
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTrackTime[i] =track.fTrackTime[i];
   for (Int_t i=0;i<AliPID::kSPECIES;i++)  fR[i] =track.fR[i];
-  fStopVertex =track.fStopVertex;
   //
-  fRalpha =track.fRalpha;
-  fRx =track.fRx;
   for (Int_t i=0;i<5;i++) fRp[i] =track.fRp[i];
   for (Int_t i=0;i<15;i++) fRc[i] =track.fRc[i];
   //
-  fCalpha =track.fCalpha;
-  fCx =track.fCx;
   for (Int_t i=0;i<5;i++) fCp[i] =track.fCp[i];
   for (Int_t i=0;i<15;i++)  fCc[i] =track.fCc[i];
-  fCchi2 =track.fCchi2;
   //
-  fIalpha =track.fIalpha;
-  fIx =track.fIx;
   for (Int_t i=0;i<5;i++) fIp[i] =track.fIp[i];
   for (Int_t i=0;i<15;i++)  fIc[i] =track.fIc[i];
   //
-  fTalpha =track.fTalpha;
-  fTx =track.fTx;
   for (Int_t i=0;i<5;i++) fTp[i] =track.fTp[i];
   for (Int_t i=0;i<15;i++)  fTc[i] =track.fTc[i];
   //
-  fITSchi2 =track.fITSchi2;
   for (Int_t i=0;i<12;i++) fITSchi2MIP[i] =track.fITSchi2MIP[i];
-  fITSncls =track.fITSncls;       
   for (Int_t i=0;i<6;i++) fITSindex[i]=track.fITSindex[i];    
-  fITSsignal =track.fITSsignal;     
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fITSr[i]=track.fITSr[i]; 
-  fITSLabel =track.fITSLabel;       
-  fITSFakeRatio =track.fITSFakeRatio;   
-  fITStrack =0;  //coping separatelly - in user code
   //
-  fTPCchi2 =track.fTPCchi2;       
-  fTPCncls =track.fTPCncls;       
   for (Int_t i=0;i<180;i++) fTPCindex[i]=track.fTPCindex[i];  
-  fTPCClusterMap=track.fTPCClusterMap;  
-  fTPCsignal=track.fTPCsignal;      
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTPCr[i]=track.fTPCr[i]; 
-  fTPCLabel=track.fTPCLabel;       
   for (Int_t i=0;i<4;i++) {fTPCPoints[i]=track.fTPCPoints[i];}
   for (Int_t i=0; i<3;i++)   { fKinkIndexes[i]=track.fKinkIndexes[i];}
   for (Int_t i=0; i<3;i++)   { fV0Indexes[i]=track.fV0Indexes[i];}
   //
-  fTRDchi2=track.fTRDchi2;        
-  fTRDncls=track.fTRDncls;       
-  fTRDncls0=track.fTRDncls0;       
   for (Int_t i=0;i<130;i++) fTRDindex[i]=track.fTRDindex[i];   
-  fTRDsignal=track.fTRDsignal;      
   for (Int_t i=0;i<kNPlane;i++) {
       fTRDsignals[i]=track.fTRDsignals[i]; 
       fTRDTimBin[i]=track.fTRDTimBin[i];
   }
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTRDr[i]=track.fTRDr[i]; 
-  fTRDLabel=track.fTRDLabel;       
-  fTRDtrack=0; 
-  fTRDQuality  = track.fTRDQuality;
   //
-  fTOFchi2=track.fTOFchi2;        
-  fTOFindex=track.fTOFindex;       
-  fTOFsignal=track.fTOFsignal;      
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTOFr[i]=track.fTOFr[i];
   for (Int_t i=0;i<3;i++) fTOFLabel[i]=track.fTOFLabel[i];
   for (Int_t i=0;i<10;i++) fTOFInfo[i]=track.fTOFInfo[i];
   //
   for (Int_t i=0;i<3;i++) fPHOSpos[i]=track.fPHOSpos[i]; 
-  fPHOSsignal=track.fPHOSsignal; 
   for (Int_t i=0;i<AliPID::kSPECIESN;i++) fPHOSr[i]=track.fPHOSr[i]; 
   //
   for (Int_t i=0;i<3;i++) fEMCALpos[i]=track.fEMCALpos[i]; 
-  fEMCALsignal=track.fEMCALsignal; 
   for (Int_t i=0;i<AliPID::kSPECIESN;i++) fEMCALr[i]=track.fEMCALr[i]; 
   //
-  fRICHchi2=track.fRICHchi2;     
-  fRICHncls=track.fRICHncls;     
-  fRICHindex=track.fRICHindex;     
-  fRICHsignal=track.fRICHsignal;     
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fRICHr[i]=track.fRICHr[i];
-  fRICHtheta=track.fRICHtheta;     
-  fRICHphi=track.fRICHphi;      
-  fRICHdx=track.fRICHdx;     
-  fRICHdy=track.fRICHdy;      
 }
 //_______________________________________________________________________
 AliESDtrack::~AliESDtrack(){ 

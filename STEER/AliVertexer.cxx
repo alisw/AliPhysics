@@ -28,17 +28,24 @@ ClassImp(AliVertexer)
 //////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________
-AliVertexer::AliVertexer() {
+AliVertexer::AliVertexer() :
+  fCurrentVertex(0),
+  fFirstEvent(0),
+  fLastEvent(0)
+{
+  //
   // Default Constructor
-
-    fCurrentVertex  = 0;
-    SetFirstEvent(0);
-    SetLastEvent(0);
+  //
 }
 
 
 //______________________________________________________________________
-AliVertexer::AliVertexer(const AliVertexer &vtxr) : TObject(vtxr) {
+AliVertexer::AliVertexer(const AliVertexer &vtxr) : 
+  TObject(vtxr),
+  fCurrentVertex(vtxr.fCurrentVertex),
+  fFirstEvent(vtxr.fFirstEvent),
+  fLastEvent(vtxr.fLastEvent)
+{
   // Copy constructor
   // Copies are not allowed. The method is protected to avoid misuse.
   AliFatal("Copy constructor not allowed");

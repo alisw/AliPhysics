@@ -45,23 +45,10 @@
 #include <TDatabasePDG.h>
 #include <TClass.h>
 
+#define M(PID) TDatabasePDG::Instance()->GetParticle(fgkParticleCode[(PID)])->Mass()
 
 ClassImp(AliPID)
 
-
-Float_t AliPID::fgkParticleMass[AliPID::kSPECIESN+1] = {
-  0.00051,    // electron
-  0.10566,    // muon
-  0.13957,    // pion
-  0.49360,    // kaon
-  0.93827,    // proton
-  0.00000,    // photon
-  0.13498,    // pi0
-  0.93957,    // neutron
-  0.49767,    // kaon0
-  0.00000,    // electron conversion
-  0.00000     // unknown
-};
 
 const char* AliPID::fgkParticleName[AliPID::kSPECIESN+1] = {
   "electron",
@@ -91,12 +78,27 @@ const Int_t AliPID::fgkParticleCode[AliPID::kSPECIESN+1] = {
   0
 };
 
+const Float_t AliPID::fgkParticleMass[AliPID::kSPECIESN+1] = {
+  M(kElectron),  // electron
+  M(kMuon), // muon
+  M(kPion),    // pion
+  M(kKaon),     // kaon
+  M(kProton),    // proton
+  M(kPhoton),     // photon
+  M(kPi0),       // pi0
+  M(kNeutron),   // neutron
+  M(kKaon0),        // kaon0
+  M(kEleCon),     // electron conversion
+  0.00000        // unknown
+};
 
 Double_t AliPID::fgPrior[kSPECIESN] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 
 //_______________________________________________________________________
-AliPID::AliPID()
+AliPID::AliPID() :
+  TObject(),
+  fCharged(0)
 {
 // set default values (= equal probabilities)
 
@@ -106,11 +108,13 @@ AliPID::AliPID()
 }
 
 //_______________________________________________________________________
-AliPID::AliPID(const Double_t* probDensity, Bool_t charged)
+AliPID::AliPID(const Double_t* probDensity, Bool_t charged) : 
+  TObject(),
+  fCharged(charged)
 {
-// set given probability densities
-
-  fCharged = charged;
+  //
+  // set given probability densities
+  //
   for (Int_t i = 0; i < kSPECIES; i++) {
     fProbDensity[i] = probDensity[i];
   }
@@ -120,11 +124,13 @@ AliPID::AliPID(const Double_t* probDensity, Bool_t charged)
 }
 
 //_______________________________________________________________________
-AliPID::AliPID(const Float_t* probDensity, Bool_t charged)
+AliPID::AliPID(const Float_t* probDensity, Bool_t charged) :
+  TObject(),
+  fCharged(charged)
 {
-// set given probability densities
-
-  fCharged = charged;
+  //
+  // set given probability densities
+  //
   for (Int_t i = 0; i < kSPECIES; i++) {
     fProbDensity[i] = probDensity[i];
   }
@@ -138,8 +144,9 @@ AliPID::AliPID(const AliPID& pid) :
   TObject(pid),
   fCharged(pid.fCharged)
 {
-// copy constructor
-
+  //
+  // copy constructor
+  //
   for (Int_t i = 0; i < kSPECIESN; i++) {
     fProbDensity[i] = pid.fProbDensity[i];
   }
@@ -287,18 +294,6 @@ void AliPID::SetPrior(EParticleType iType, Double_t prior)
     prior = 0;
   }
   fgPrior[iType] = prior;
-}
-
-
-//_____________________________________________________________________________
-void AliPID::Init()
-{
-// initialize the mass values from the PDG database
-
-  for (Int_t i = 0; i < kSPECIESN; i++) {
-    fgkParticleMass[i] =
-      TDatabasePDG::Instance()->GetParticle(fgkParticleCode[i])->Mass();
-  }
 }
 
 

@@ -62,38 +62,43 @@ class assert ;
 ClassImp(AliMemoryWatcher)
 
 //_____________________________________________________________________________
-AliMemoryWatcher::AliMemoryWatcher(UInt_t maxsize)
+AliMemoryWatcher::AliMemoryWatcher(UInt_t maxsize) :
+  TObject(),
+  fUseMallinfo(kTRUE),
+  fPID(gSystem->GetPid()),
+  fMAXSIZE(maxsize),
+  fSize(0),
+  fX(new Int_t[fMAXSIZE]),
+  fVSIZE(new Int_t[fMAXSIZE]),
+  fRSSIZE(new Int_t[fMAXSIZE]),
+  fTIME(new Double_t[fMAXSIZE]),
+  fTimer(0),
+  fDisabled(kFALSE)
 {
+  //
   //ctor
-  fMAXSIZE=maxsize;
-  fUseMallinfo = true;
-  fPID = gSystem->GetPid();
+  //
   sprintf(fCmd,"ps -h -p %d -o vsize,rssize",fPID);
-  fX = new Int_t[fMAXSIZE];
-  fVSIZE = new Int_t[fMAXSIZE];
-  fRSSIZE = new Int_t[fMAXSIZE];
-  fTIME = new Double_t[fMAXSIZE];
-  fSize=0;
-  fDisabled=false;
-  fTimer=0;
 }
+
 //_____________________________________________________________________________
 AliMemoryWatcher::AliMemoryWatcher(const AliMemoryWatcher& mw):
-  TObject(mw)
+  TObject(mw),
+  fUseMallinfo(mw.fUseMallinfo),
+  fPID(mw.fPID),
+  fMAXSIZE(mw.fMAXSIZE),
+  fSize(0),
+  fX(new Int_t[fMAXSIZE]),
+  fVSIZE(new Int_t[fMAXSIZE]),
+  fRSSIZE(new Int_t[fMAXSIZE]),
+  fTIME(new Double_t[fMAXSIZE]),
+  fTimer(0),
+  fDisabled(kFALSE)
 {
   //copy ctor
-  fMAXSIZE = mw.fMAXSIZE ;
-  fUseMallinfo = mw.fUseMallinfo;
-  fPID = mw.fPID ; 
   strcpy(fCmd, mw.fCmd) ; 
-  fX = new Int_t[fMAXSIZE];
-  fVSIZE = new Int_t[fMAXSIZE];
-  fRSSIZE = new Int_t[fMAXSIZE];
-  fTIME = new Double_t[fMAXSIZE];
-  fSize=0;
-  fDisabled=false;
-  fTimer=0;   
 }
+
 //_____________________________________________________________________________
 AliMemoryWatcher::~AliMemoryWatcher()
 {

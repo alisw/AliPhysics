@@ -161,7 +161,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
     fLoader[iDet] = NULL;
     fTracker[iDet] = NULL;
   }
-  AliPID::Init();
+  //  AliPID::Init();
 }
 
 //_____________________________________________________________________________

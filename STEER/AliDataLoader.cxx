@@ -87,7 +87,21 @@ AliDataLoader::AliDataLoader(const char* filename, const char* contname, const c
   
 }
 /*****************************************************************************/ 
-AliDataLoader::AliDataLoader(const AliDataLoader& source):TNamed(source) {
+AliDataLoader::AliDataLoader(const AliDataLoader& source) : 
+  TNamed(source),
+  fFileName(source.fFileName),
+  fFile(source.fFile),
+  fDirectory(source.fDirectory),
+  fFileOption(source.fFileOption),
+  fCompressionLevel(source.fCompressionLevel),
+  fNEventsPerFile(source.fNEventsPerFile),
+  fBaseLoaders(source.fBaseLoaders),
+  fHasTask(source.fHasTask),
+  fTaskName(source.fTaskName),
+  fParentalTask(source.fParentalTask),
+  fEventFolder(source.fEventFolder),
+  fFolder(source.fFolder)
+{
   // copy constructor
   AliFatal("Copy constructor not implemented");
 }
@@ -712,7 +726,13 @@ AliBaseLoader::AliBaseLoader(const TString& name,  AliDataLoader* dl, Bool_t sto
 }
 
 /*****************************************************************************/ 
-AliBaseLoader::AliBaseLoader(const AliBaseLoader& source):TNamed(source) {
+AliBaseLoader::AliBaseLoader(const AliBaseLoader& source) : 
+  TNamed(source),
+  fIsLoaded(source.fIsLoaded),
+  fStoreInTopOfFile(source.fStoreInTopOfFile),
+  fDoNotReload(source.fDoNotReload),
+  fDataLoader(source.fDataLoader)
+{
   // copy constructor
   AliFatal("Copy constructor not implemented");
 }
@@ -1168,7 +1188,9 @@ AliTaskLoader::AliTaskLoader(const TString& name, AliDataLoader* dl, TTask* pare
 
 /*****************************************************************************/ 
 AliTaskLoader::AliTaskLoader(const AliTaskLoader& source):
-  AliBaseLoader(source) {
+  AliBaseLoader(source),
+  fParentalTask(source.fParentalTask)
+{
   // copy constructor
   AliFatal("Copy constructor not implemented");
 }

@@ -15,7 +15,7 @@
 
 class AliESDMuonTrack : public TObject {
 public:
-  AliESDMuonTrack(){} //Constructor
+  AliESDMuonTrack(); //Constructor
   virtual ~AliESDMuonTrack(){} // Destructor
   AliESDMuonTrack(const AliESDMuonTrack& esdm);
   AliESDMuonTrack& operator=(const AliESDMuonTrack& esdm);

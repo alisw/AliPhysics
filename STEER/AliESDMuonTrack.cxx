@@ -31,24 +31,41 @@
 ClassImp(AliESDMuonTrack)
 
 //_____________________________________________________________________________
+AliESDMuonTrack::AliESDMuonTrack ():
+  TObject(),
+  fInverseBendingMomentum(0),
+  fThetaX(0),
+  fThetaY(0),
+  fZ(0),
+  fBendingCoor(0),
+  fNonBendingCoor(0),
+  fChi2(0),
+  fNHit(0),
+  fMatchTrigger(0),
+  fChi2MatchTrigger(0)
+{
+  // Default constructor
+}
+
+
+//_____________________________________________________________________________
 AliESDMuonTrack::AliESDMuonTrack (const AliESDMuonTrack& MUONTrack):
-  TObject(MUONTrack)
+  TObject(MUONTrack),
+  fInverseBendingMomentum(MUONTrack.fInverseBendingMomentum),
+  fThetaX(MUONTrack.fThetaX),
+  fThetaY(MUONTrack.fThetaY),
+  fZ(MUONTrack.fZ),
+  fBendingCoor(MUONTrack.fBendingCoor),
+  fNonBendingCoor(MUONTrack.fNonBendingCoor),
+  fChi2(MUONTrack.fChi2),
+  fNHit(MUONTrack.fNHit),
+  fMatchTrigger(MUONTrack.fMatchTrigger),
+  fChi2MatchTrigger(MUONTrack.fChi2MatchTrigger)
 {
   //
   // Copy constructor
   // Deep copy implemented
   //
-  fInverseBendingMomentum = MUONTrack.fInverseBendingMomentum; 
-  fThetaX                 = MUONTrack.fThetaX;           
-  fThetaY                 = MUONTrack.fThetaY ;           
-  fZ                      = MUONTrack.fZ;                
-  fBendingCoor            = MUONTrack.fBendingCoor;      
-  fNonBendingCoor         = MUONTrack.fNonBendingCoor;   
-  fChi2                   = MUONTrack.fChi2;             
-  fNHit                   = MUONTrack.fNHit ; 
-
-  fMatchTrigger           = MUONTrack.fMatchTrigger;  
-  fChi2MatchTrigger       = MUONTrack.fChi2MatchTrigger; 
 }
 
 //_____________________________________________________________________________

@@ -20,6 +20,10 @@ class TTreeDataElement: public TNamed {
   void   SetPointer(void* pointer) {fPointer=pointer;} 
   Char_t GetType() const {return fType;}
  protected:
+
+  TTreeDataElement(const TTreeDataElement & tde);
+  TTreeDataElement & operator=(const TTreeDataElement & tde);
+
   TString fName;    // name of the data element
   Char_t  fType;     // type of data element
   TDataType *fDType; //data type pointer 
@@ -59,6 +63,10 @@ public:
   TTreeStream  &operator<<(Char_t *name);
  protected:
   //
+
+  TTreeStream(const TTreeStream & ts);
+  TTreeStream & operator=(const TTreeStream & ts);
+
   TObjArray *fElements; //array of elements
   TObjArray *fBranches; //pointers to branches
   TTree *fTree;         //data storage
@@ -81,6 +89,10 @@ public:
   virtual   TTreeStream  &operator<<(Int_t id);
   virtual   TTreeStream  &operator<<(const char *name);
  private:
+
+  TTreeSRedirector(const TTreeSRedirector & tsr);
+  TTreeSRedirector & operator=(const TTreeSRedirector & tsr);
+
   TFile* fFile;        //file
   TObjArray *fDataLayouts;   //array of data layouts
   ClassDef(TTreeSRedirector,1) 

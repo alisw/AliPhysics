@@ -18,3 +18,18 @@
 
 #include "AliCollisionGeometry.h"
 ClassImp(AliCollisionGeometry)
+
+//______________________________________________________________________
+AliCollisionGeometry::AliCollisionGeometry() :
+  fNHardScatters(0),
+  fNProjectileParticipants(0),
+  fNTargetParticipants(0),
+  fNNColl(0),
+  fNNwColl(0),
+  fNwNColl(0),
+  fNwNwColl(0),
+  fSpecn(0),
+  fSpecp(0),
+  fImpactParameter(0)
+{
+}

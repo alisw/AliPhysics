@@ -27,8 +27,8 @@ public:
   AliTracker();
   AliTracker(const AliTracker &atr): TObject(atr)
     {Fatal("Copy ctor","Not Implemented!\n");}
-  AliTracker & operator=(const AliTracker &)
-    {Fatal("= op","Not Implemented\n");return *this;}
+  // AliTracker & operator=(const AliTracker &)
+  //  {Fatal("= op","Not Implemented\n");return *this;}
   virtual ~AliTracker(){}
   virtual Int_t Clusters2Tracks(AliESD *event)=0;
   virtual Int_t PropagateBack(AliESD *event)=0;
@@ -60,6 +60,9 @@ public:
   void  SetStoreBarrel(Int_t s) {fStoreBarrel = s;}
 
 private:
+
+  AliTracker & operator=(const AliTracker & atr);
+
   static const AliMagF *fgkFieldMap; //field map
   Int_t fEventN;//event number
 

@@ -61,8 +61,6 @@ class AliPID : public TObject {
 				 Bool_t charged = kTRUE);
   static void          SetPrior(EParticleType iType, Double_t prior);
 
-  static void          Init();
-
   AliPID&              operator *= (const AliPID& pid);
 
  private:
@@ -70,7 +68,7 @@ class AliPID : public TObject {
   Double_t             fProbDensity[kSPECIESN];    // probability densities
   static Double_t      fgPrior[kSPECIESN];         // a priori probabilities
 
-  static Float_t       fgkParticleMass[kSPECIESN+1]; // particle masses
+  static const Float_t fgkParticleMass[kSPECIESN+1]; // particle masses
   static const char*   fgkParticleName[kSPECIESN+1]; // particle names
   static const Int_t   fgkParticleCode[kSPECIESN+1]; // particle codes
 

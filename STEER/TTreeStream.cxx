@@ -122,22 +122,22 @@ void TTreeSRedirector::Test()
 }
 
 
-
-
-
-
-TTreeSRedirector::TTreeSRedirector(const char *fname){
+TTreeSRedirector::TTreeSRedirector(const char *fname) :
+  fFile(new TFile(fname,"recreate")),
+  fDataLayouts(0)
+{
   //
+  // Constructor
   //
-  fFile = new TFile(fname,"recreate");
   if (!fFile){
     fFile = new TFile(fname,"new");
   }
-  fDataLayouts =0;
 }
 
-TTreeSRedirector::~TTreeSRedirector(){
+TTreeSRedirector::~TTreeSRedirector()
+{
   //
+  // Destructor
   //
   Close();       //write the tree to the selected file
   fFile->Close();
@@ -216,39 +216,53 @@ void TTreeSRedirector::Close(){
 
 
 //-------------------------------------------------------------
-TTreeDataElement:: TTreeDataElement(Char_t type){
+TTreeDataElement:: TTreeDataElement(Char_t type) :
+  fName(),
+  fType(type),
+  fDType(0),
+  fClass(0),
+  fPointer(0)
+{
   //
   //
-  fType   = type;
-  fDType  = 0;
-  fClass  = 0;
-  fPointer= 0;
+  //
 }
-TTreeDataElement:: TTreeDataElement(TDataType* type){
+
+TTreeDataElement:: TTreeDataElement(TDataType* type) :
+  fName(),
+  fType(' '),
+  fDType(type),
+  fClass(0),
+  fPointer(0)
+{
   //
   //
-  fType   = 0;
-  fDType  = type;
-  fClass  = 0;
-  fPointer= 0;
+  //
 }
-TTreeDataElement:: TTreeDataElement(TClass* cl){
+
+TTreeDataElement:: TTreeDataElement(TClass* cl) :
+  fName(),
+  fType(' '),
+  fDType(0),
+  fClass(cl),
+  fPointer(0)
+{
   //
   //
-  fType   = 0;
-  fDType  = 0;
-  fClass  = cl;
-  fPointer= 0;
+  //
 }
 
 //-------------------------------------------------------------------
-TTreeStream::TTreeStream(const char *treename):TNamed(treename,treename){
-  fElements =0;
-  fTree =0;
-  fCurrentIndex =0;
-  fNextName="";
-  fNextNameCounter=0;
-  fTree = new TTree(treename, treename);
+TTreeStream::TTreeStream(const char *treename):
+  TNamed(treename,treename),
+  fElements(0),
+  fBranches(0),
+  fTree(new TTree(treename, treename)),
+  fCurrentIndex(0),
+  fNextName(),
+  fNextNameCounter(),
+  fStatus(0)
+{
 }
 
 TTreeStream::~TTreeStream()

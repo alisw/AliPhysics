@@ -23,6 +23,7 @@
 //    Origin: Christian Kuhn, IReS, Strasbourg, christian.kuhn@ires.in2p3.fr
 //-------------------------------------------------------------------------
 
+#include <TDatabasePDG.h>
 #include <TMath.h>
 
 #include "AliLog.h"
@@ -30,28 +31,18 @@
 
 ClassImp(AliESDcascade)
 
-AliESDcascade::AliESDcascade() : TObject() {
+AliESDcascade::AliESDcascade() : 
+  TObject(),
+  fPdgCode(kXiMinus),
+  fEffMass(TDatabasePDG::Instance()->GetParticle(kXiMinus)->Mass()),
+  fChi2(1.e+33),
+  fBachIdx(0)
+{
   //--------------------------------------------------------------------
   // Default constructor  (Xi-)
   //--------------------------------------------------------------------
-  fPdgCode=kXiMinus;
-  fEffMass=1.32131;
-  fChi2=1.e+33;
   fPos[0]=fPos[1]=fPos[2]=0.;
   fPosCov[0]=fPosCov[1]=fPosCov[2]=fPosCov[3]=fPosCov[4]=fPosCov[5]=0.;
-}
-
-inline Double_t det(Double_t a00, Double_t a01, Double_t a10, Double_t a11){
-  // determinant 2x2
-  return a00*a11 - a01*a10;
-}
-
-inline Double_t det (Double_t a00,Double_t a01,Double_t a02,
-                     Double_t a10,Double_t a11,Double_t a12,
-                     Double_t a20,Double_t a21,Double_t a22) {
-  // determinant 3x3
-  return 
-  a00*det(a11,a12,a21,a22)-a01*det(a10,a12,a20,a22)+a02*det(a10,a11,a20,a21);
 }
 
 Double_t AliESDcascade::ChangeMassHypothesis(Double_t &v0q, Int_t code) {

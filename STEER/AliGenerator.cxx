@@ -51,6 +51,8 @@ ClassImp(AliGenerator)
 
 //_______________________________________________________________________
 AliGenerator::AliGenerator():
+  TNamed(),
+  AliRndm(),
   fMCEvGen(0),
   fThetaMin(0),
   fThetaMax(0),
@@ -72,6 +74,7 @@ AliGenerator::AliGenerator():
   fVertexSource(kInternal),
   fCutVertexZ(0),
   fTrackIt(0),
+  fVertexGenerator(0),
   fOrigin(3),
   fOsigma(3),
   fVertex(3),
@@ -108,6 +111,8 @@ AliGenerator::AliGenerator():
 
 //_______________________________________________________________________
 AliGenerator::AliGenerator(Int_t npart):
+  TNamed(),
+  AliRndm(),
   fMCEvGen(0),
   fThetaMin(0),
   fThetaMax(0),
@@ -129,6 +134,7 @@ AliGenerator::AliGenerator(Int_t npart):
   fVertexSource(kInternal),
   fCutVertexZ(0),
   fTrackIt(0),
+  fVertexGenerator(0),
   fOrigin(3),
   fOsigma(3),
   fVertex(3),
@@ -190,11 +196,13 @@ AliGenerator::AliGenerator(const AliGenerator &gen):
   fVertexSource(kInternal),
   fCutVertexZ(0),
   fTrackIt(0),
+  fVertexGenerator(0),
   fOrigin(3),
   fOsigma(3),
   fVertex(3),
   fStack(0),
-  fContainer(0)
+  fContainer(0),
+  fCollisionGeometry(0)
 {
   //
   // Copy constructor

@@ -26,15 +26,18 @@
 
 ClassImp(AliKalmanTrack)
 
-Double_t AliKalmanTrack::fgConvConst;
+Double_t AliKalmanTrack::fgConvConst = 0;
 
 //_______________________________________________________________________
 AliKalmanTrack::AliKalmanTrack():
+  TObject(),
   fLab(-3141593),
   fFakeRatio(0),
   fChi2(0),
   fMass(AliPID::ParticleMass(AliPID::kPion)),
-  fN(0)
+  fN(0),
+  fStartTimeIntegral(kFALSE),
+  fIntegratedLength(0)
 {
   //
   // Default constructor
@@ -43,8 +46,6 @@ AliKalmanTrack::AliKalmanTrack():
       AliFatal("The magnetic field has not been set!");
     }
     
-    fStartTimeIntegral = kFALSE;
-    fIntegratedLength = 0;
     for(Int_t i=0; i<5; i++) fIntegratedTime[i] = 0;
 }
 
@@ -55,7 +56,9 @@ AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack &t):
   fFakeRatio(t.fFakeRatio),
   fChi2(t.fChi2),
   fMass(t.fMass),
-  fN(t.fN)
+  fN(t.fN),
+  fStartTimeIntegral(t.fStartTimeIntegral),
+  fIntegratedLength(t.fIntegratedLength)
 {
   //
   // Copy constructor
@@ -64,8 +67,6 @@ AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack &t):
     AliFatal("The magnetic field has not been set!");
   }
 
-  fStartTimeIntegral = t.fStartTimeIntegral;
-  fIntegratedLength = t.fIntegratedLength;
   
   for (Int_t i=0; i<5; i++) 
     fIntegratedTime[i] = t.fIntegratedTime[i];

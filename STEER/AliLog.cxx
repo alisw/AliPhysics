@@ -115,7 +115,19 @@ AliLog::~AliLog()
 
 //_____________________________________________________________________________
 AliLog::AliLog(const AliLog& log) :
-  TObject(log)
+  TObject(log),
+  fGlobalLogLevel(log.fGlobalLogLevel),
+  fModuleDebugLevels(log.fModuleDebugLevels),
+  fClassDebugLevels(log.fClassDebugLevels),
+  fPrintRepetitions(log.fPrintRepetitions),
+  fRepetitions(log.fRepetitions),
+  fLastType(log.fLastType),
+  fLastMessage(log.fLastMessage),
+  fLastModule(log.fLastModule),
+  fLastClassName(log.fLastClassName),
+  fLastFunction(log.fLastFunction),
+  fLastFile(log.fLastFile),
+  fLastLine(log.fLastLine)
 {
 // copy constructor
 

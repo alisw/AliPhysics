@@ -41,11 +41,14 @@ ClassImp(AliExternalTrackParam)
 
 
 //_____________________________________________________________________________
-AliExternalTrackParam::AliExternalTrackParam()
+AliExternalTrackParam::AliExternalTrackParam() :
+  AliTrackParam(),
+  fX(0),
+  fAlpha(0)
 {
-// default constructor
-
-  fX = fAlpha = 0.;
+  //
+  // default constructor
+  //
   for (Int_t i = 0; i < 5; i++) fParam[i] = 0;
   for (Int_t i = 0; i < 15; i++) fCovar[i] = 0;
 }
@@ -53,25 +56,28 @@ AliExternalTrackParam::AliExternalTrackParam()
 //_____________________________________________________________________________
 AliExternalTrackParam::AliExternalTrackParam(Double_t x, Double_t alpha, 
 					     const Double_t param[5], 
-					     const Double_t covar[15])
+					     const Double_t covar[15]) :
+  AliTrackParam(),
+  fX(x),
+  fAlpha(alpha)
 {
-// create external track parameters from given arguments
-
-  fX = x;
-  fAlpha = alpha;
+  //
+  // create external track parameters from given arguments
+  //
   for (Int_t i = 0; i < 5; i++) fParam[i] = param[i];
   for (Int_t i = 0; i < 15; i++) fCovar[i] = covar[i];
 }
 
-AliExternalTrackParam::AliExternalTrackParam(const AliKalmanTrack& track)
+//_____________________________________________________________________________
+AliExternalTrackParam::AliExternalTrackParam(const AliKalmanTrack& track) :
+  fX(0),
+  fAlpha(track.GetAlpha())
 {
   //
   //
   track.GetExternalParameters(fX,fParam);
   track.GetExternalCovariance(fCovar);
-  fAlpha = track.GetAlpha();
 }
-
 
 //_____________________________________________________________________________
 const Double_t* AliExternalTrackParam::GetParameter() const

@@ -26,28 +26,29 @@
 
 ClassImp(AliESDHLTtrack)
 
-AliESDHLTtrack::AliESDHLTtrack() : TObject()
+AliESDHLTtrack::AliESDHLTtrack() :
+  TObject(),
+  fNHits(0),
+  fMCid(0),
+  fWeight(0),
+  fFromMainVertex(kFALSE),
+  fSector(0),
+  fQ(0),
+  fTanl(0),
+  fPsi(0),
+  fPt(0),
+  fPterr(0),
+  fPsierr(0),
+  fTanlerr(0),
+  fBinX(0),
+  fBinY(0),
+  fSizeX(0),
+  fSizeY(0),
+  fPID(0)
 {
-  fNHits = 0;
-  fMCid = 0;
-  fWeight = 0;
-  fFromMainVertex = kFALSE;
   fRowRange[0] = fRowRange[1] = 0;
-  fSector = 0;
   fFirstPoint[0] = fFirstPoint[1] = fFirstPoint[2] = 0;
   fLastPoint[0] = fLastPoint[1] = fLastPoint[2] = 0;
-  fQ = 0;
-  fTanl = 0;
-  fPsi = 0;
-  fPt = 0;
-  fPterr = 0;
-  fPsierr = 0;
-  fTanlerr = 0;
-  fBinX = 0;
-  fBinY = 0;
-  fSizeX = 0;
-  fSizeY = 0;
-  fPID = 0;
 }
 
 Double_t AliESDHLTtrack::GetP() const

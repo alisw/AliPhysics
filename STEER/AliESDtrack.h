@@ -205,6 +205,9 @@ public:
     kTIME=0x80000000
   }; 
 protected:
+  
+  AliESDtrack & operator=(const AliESDtrack & );
+
   ULong_t   fFlags;        // Reconstruction status flags 
   Int_t     fLabel;        // Track label
   Int_t     fID;           // Unique ID of the track

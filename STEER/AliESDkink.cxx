@@ -28,15 +28,22 @@
 
 ClassImp(AliESDkink)
 
-AliESDkink::AliESDkink(){
+//____________________________________________________________________
+AliESDkink::AliESDkink() :
+  TObject(),
+  fID(0),
+  fParamDaughter(),
+  fParamMother(),
+  fDist1(-1),
+  fDist2(-1),
+  fRr(-1),
+  fShapeFactor(0),
+  fRow0(-1)
+{
   //
   //Dafault constructor
   //
-  fDist1  =-1;
-  fDist2  =-1;
-  fRr     =-1;
   for (Int_t i=0;i<12;i++) fStatus[i]=0;
-  fRow0   =-1;
   for (Int_t i=0;i<2;i++)
     for (Int_t j=0;j<2;j++){
       fTPCdensity[i][j]=-1;

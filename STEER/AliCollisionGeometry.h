@@ -10,7 +10,7 @@
 class AliCollisionGeometry
 {
 public:
-    AliCollisionGeometry() {;}
+    AliCollisionGeometry();
     virtual ~AliCollisionGeometry(){;}
     // Getters
     Float_t ImpactParameter()   {return fImpactParameter;}

@@ -52,6 +52,9 @@ AliMC::AliMC() :
   fSum2Energy(0),
   fTrRmax(1.e10),
   fTrZmax(1.e10),
+  fRDecayMax(1.e10),
+  fRDecayMin(0),
+  fDecayPdg(0),
   fImedia(0),
   fTransParName("\0"),
   fMCQA(0),
@@ -72,6 +75,9 @@ AliMC::AliMC(const char *name, const char *title) :
   fSum2Energy(0),
   fTrRmax(1.e10),
   fTrZmax(1.e10),
+  fRDecayMax(1.e10),
+  fRDecayMin(0),
+  fDecayPdg(0),
   fImedia(new TArrayI(1000)),
   fTransParName("\0"),
   fMCQA(0),
@@ -95,6 +101,9 @@ AliMC::AliMC(const AliMC &mc) :
   fSum2Energy(0),
   fTrRmax(1.e10),
   fTrZmax(1.e10),
+  fRDecayMax(1.e10),
+  fRDecayMin(0),
+  fDecayPdg(0),
   fImedia(0),
   fTransParName("\0"),
   fMCQA(0),
@@ -102,7 +111,7 @@ AliMC::AliMC(const AliMC &mc) :
   fTrackReferences(0)
 {
   //
-  // Copy constructor for AliRun
+  // Copy constructor for AliMC
   //
   mc.Copy(*this);
 }

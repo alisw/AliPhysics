@@ -15,7 +15,6 @@
 
 /* $Id$ */
 
-#include "TLorentzVector.h"
 #include "TVirtualMC.h"
 
 #include "AliRun.h"
@@ -58,7 +57,16 @@ ClassImp(AliTrackReference)
 
 //_______________________________________________________________________
 AliTrackReference::AliTrackReference(Int_t label) :
-  TObject()
+  TObject(),
+  fTrack(label),
+  fX(0),
+  fY(0),
+  fZ(0),
+  fPx(0),
+  fPy(0),
+  fPz(0),
+  fLength(gMC->TrackLength()),
+  fTime(gMC->TrackTime())
 {
   //
   // Create Reference object out of label and
@@ -71,19 +79,15 @@ AliTrackReference::AliTrackReference(Int_t label) :
   // GSI, Jan 31, 2003
   //
     
-  TLorentzVector vec;
+  Double_t vec[4];
   
-  fTrack = label;
-  fLength = gMC->TrackLength();
-  fTime = gMC->TrackTime();
-
-  gMC->TrackPosition(vec);
+  gMC->TrackPosition(vec[0],vec[1],vec[2]);
 
   fX = vec[0];
   fY = vec[1];
   fZ = vec[2];
   
-  gMC->TrackMomentum(vec);
+  gMC->TrackMomentum(vec[0],vec[1],vec[2],vec[3]);
   
   fPx = vec[0];
   fPy = vec[1];

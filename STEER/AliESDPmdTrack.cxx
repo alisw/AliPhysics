@@ -25,15 +25,30 @@
 
 ClassImp(AliESDPmdTrack)
 
-AliESDPmdTrack::AliESDPmdTrack (const AliESDPmdTrack& PMDTrack):TObject(PMDTrack)
+//--------------------------------------------------------------------------//
+AliESDPmdTrack::AliESDPmdTrack () :
+  TObject(),
+  fDet(0),
+  fTheta(0),
+  fPhi(0),
+  fCluADC(0),
+  fCluPID(0)
 {
-  // Constructor
-  fDet    = PMDTrack.fDet;
-  fTheta  = PMDTrack.fTheta;
-  fPhi    = PMDTrack.fPhi;
-  fCluADC = PMDTrack.fCluADC;
-  fCluPID = PMDTrack.fCluPID;
+  // Default Constructor
 }
+
+//--------------------------------------------------------------------------//
+AliESDPmdTrack::AliESDPmdTrack (const AliESDPmdTrack& PMDTrack) : 
+  TObject(PMDTrack),
+  fDet(PMDTrack.fDet),
+  fTheta(PMDTrack.fTheta),
+  fPhi(PMDTrack.fPhi),
+  fCluADC(PMDTrack.fCluADC),
+  fCluPID(PMDTrack.fCluPID)
+{
+  // Copy Constructor
+}
+
 //--------------------------------------------------------------------------//
 AliESDPmdTrack &AliESDPmdTrack::operator=(const AliESDPmdTrack& PMDTrack)
 {

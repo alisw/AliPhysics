@@ -28,16 +28,29 @@
 
 ClassImp(AliESDV0MI)
 
-AliESDV0MI::AliESDV0MI(){
+AliESDV0MI::AliESDV0MI() :
+  AliESDv0(),
+  fParamP(),
+  fParamM(),
+  fID(0),
+  fDist1(-1),
+  fDist2(-1),
+  fRr(-1),
+  fStatus(0),
+  fRow0(-1),
+  fDistNorm(0),
+  fDistSigma(0),
+  fChi2Before(0),
+  fNBefore(0),
+  fChi2After(0),
+  fNAfter(0),
+  fPointAngleFi(0),
+  fPointAngleTh(0),
+  fPointAngle(0)
+{
   //
   //Dafault constructor
   //
-  fID =0;
-  fDist1  =-1;
-  fDist2  =-1;
-  fRr     =-1;
-  fStatus = 0;
-  fRow0   =-1;  
 }
 
 void AliESDV0MI::SetP(const AliExternalTrackParam & paramp)  {

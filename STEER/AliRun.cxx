@@ -89,6 +89,7 @@ AliRun::AliRun():
   fPDGDB(0),  //Particle factory object
   fConfigFunction("\0"),
   fRandom(0),
+  fBaseFileName(),
   fRunLoader(0x0)
 {
   //
@@ -117,6 +118,7 @@ AliRun::AliRun(const AliRun& arun):
   fPDGDB(0),  //Particle factory object
   fConfigFunction("\0"),
   fRandom(0),
+  fBaseFileName(),
   fRunLoader(0x0)
 {
   //
@@ -144,6 +146,7 @@ AliRun::AliRun(const char *name, const char *title):
   fPDGDB(TDatabasePDG::Instance()),        //Particle factory object!
   fConfigFunction("Config();"),
   fRandom(new TRandom3()),
+  fBaseFileName(),
   fRunLoader(0x0)
 {
   //

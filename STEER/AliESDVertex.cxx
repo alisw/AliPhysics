@@ -33,15 +33,36 @@
 ClassImp(AliESDVertex)
 
 //--------------------------------------------------------------------------
-AliESDVertex::AliESDVertex() {
-//
-// Default Constructor, set everything to 0
-//
+AliESDVertex::AliESDVertex() :
+  TNamed(),
+  fCovXX(0.005*0.005),
+  fCovXY(0),
+  fCovYY(0.005*0.005),
+  fCovXZ(0),
+  fCovYZ(0),
+  fCovZZ(5.3*5.3),
+  fChi2(0),
+  fNContributors(0)
+{
+  //
+  // Default Constructor, set everything to 0
+  //
   SetToZero();
 }
+
 //--------------------------------------------------------------------------
 AliESDVertex::AliESDVertex(Double_t positionZ,Double_t sigmaZ,
-			   Int_t nContributors,const Char_t *vtxName) {
+			   Int_t nContributors,const Char_t *vtxName) :
+  TNamed(vtxName,""),
+  fCovXX(0.005*0.005),
+  fCovXY(0),
+  fCovYY(0.005*0.005),
+  fCovXZ(0),
+  fCovYZ(0),
+  fCovZZ(sigmaZ*sigmaZ),
+  fChi2(0),
+  fNContributors(nContributors)
+{
   //
   // Constructor for vertex Z from pixels
   //
@@ -49,61 +70,69 @@ AliESDVertex::AliESDVertex(Double_t positionZ,Double_t sigmaZ,
   SetToZero();
 
   fPosition[2]   = positionZ;
-  fCovZZ         = sigmaZ*sigmaZ;
-  fNContributors = nContributors;
-  SetName(vtxName);
 
 }
+
 //------------------------------------------------------------------------- 
 AliESDVertex::AliESDVertex(Double_t position[3],Double_t covmatrix[6],
-			   Double_t chi2,Int_t nContributors, const Char_t *vtxName) {
-//
-// Constructor for vertex in 3D from tracks
-//
+			   Double_t chi2,Int_t nContributors,
+			   const Char_t *vtxName) :
+  TNamed(vtxName,""),
+  fCovXX(covmatrix[0]),
+  fCovXY(covmatrix[1]),
+  fCovYY(covmatrix[2]),
+  fCovXZ(covmatrix[3]),
+  fCovYZ(covmatrix[4]),
+  fCovZZ(covmatrix[5]),
+  fChi2(chi2),
+  fNContributors(nContributors)
+{
+  //
+  // Constructor for vertex in 3D from tracks
+  //
 
   SetToZero();
-    fPosition[0]   = position[0];
-    fPosition[1]   = position[1];
-    fPosition[2]   = position[2];
-    fCovXX         = covmatrix[0];
-    fCovXY         = covmatrix[1];
-    fCovYY         = covmatrix[2];
-    fCovXZ         = covmatrix[3];
-    fCovYZ         = covmatrix[4];
-    fCovZZ         = covmatrix[5];
-
-
-    fChi2          = chi2;
-    fNContributors = nContributors;
-
-    SetName(vtxName);
+  fPosition[0]   = position[0];
+  fPosition[1]   = position[1];
+  fPosition[2]   = position[2];
 
 }
 //--------------------------------------------------------------------------
 AliESDVertex::AliESDVertex(Double_t position[3],Double_t sigma[3],
-			   const Char_t *vtxName) {
-//
-// Constructor for smearing of true position
-//
+			   const Char_t *vtxName) :
+  TNamed(vtxName,""),
+  fCovXX(sigma[0]*sigma[0]),
+  fCovXY(0),
+  fCovYY(sigma[1]*sigma[1]),
+  fCovXZ(0),
+  fCovYZ(0),
+  fCovZZ(sigma[2]*sigma[2]),
+  fChi2(0),
+  fNContributors(0)
+{
+  //
+  // Constructor for smearing of true position
+  //
 
   SetToZero();
-    fPosition[0]   = position[0];
-    fPosition[1]   = position[1];
-    fPosition[2]   = position[2];
-    fCovXX         = sigma[0]*sigma[0];
-    fCovXY         = 0;
-    fCovYY         = sigma[1]*sigma[1];
-    fCovXZ         = 0;
-    fCovYZ         = 0;
-    fCovZZ         = sigma[2]*sigma[2];
-
-
-    SetName(vtxName);
+  fPosition[0]   = position[0];
+  fPosition[1]   = position[1];
+  fPosition[2]   = position[2];
 
 }
 //--------------------------------------------------------------------------
 AliESDVertex::AliESDVertex(Double_t position[3],Double_t sigma[3],
-			   Double_t snr[3], const Char_t *vtxName) {
+			   Double_t snr[3], const Char_t *vtxName) :
+  TNamed(vtxName,""),
+  fCovXX(sigma[0]*sigma[0]),
+  fCovXY(0),
+  fCovYY(sigma[1]*sigma[1]),
+  fCovXZ(0),
+  fCovYZ(0),
+  fCovZZ(sigma[2]*sigma[2]),
+  fChi2(0),
+  fNContributors(0)
+{
   //
   // Constructor for Pb-Pb
   //
@@ -112,44 +141,28 @@ AliESDVertex::AliESDVertex(Double_t position[3],Double_t sigma[3],
   fPosition[0]   = position[0];
   fPosition[1]   = position[1];
   fPosition[2]   = position[2];
-  fCovXX         = sigma[0]*sigma[0];
-  fCovXY         = 0;
-  fCovYY         = sigma[1]*sigma[1];
-  fCovXZ         = 0;
-  fCovYZ         = 0;
-  fCovZZ         = sigma[2]*sigma[2];
 
   fSNR[0]        = snr[0];
   fSNR[1]        = snr[1];
   fSNR[2]        = snr[2];
 
-  SetName(vtxName);
-
 }
+
 //--------------------------------------------------------------------------
 void AliESDVertex::SetToZero() {
   //
-  // Set some data members to 0. Used by constructors
+  // Set the content of arrays to 0. Used by constructors
   //
   for(Int_t i=0; i<3; i++){
     fPosition[i] = 0.;
     fTruePos[i] = 0;
     fSNR[i] = 0.;
   }
-  fCovXX         = 0.005*0.005;
-  fCovXY         = 0;
-  fCovYY         = 0.005*0.005;
-  fCovXZ         = 0;
-  fCovYZ         = 0;
-  fCovZZ         = 5.3*5.3;
-
-  fChi2          = 0;
-  fNContributors = 0;
 }
 //--------------------------------------------------------------------------
 AliESDVertex::~AliESDVertex() {
 //  
-// Default Destructor
+// Destructor
 //
 
 }
