@@ -147,7 +147,7 @@ void AliZDCMerger::Fragmentation(Float_t fImpPar, Int_t fSpecn, Int_t fSpecp,
                                  Int_t &fFreeSpn, Int_t &fFreeSpp)
 {
     //printf("\n	Fragmentation -> fSpecn = %d, fSpecp = %d\n",fSpecn,fSpecp);
-    Int_t j, zz[100], nn[100], nAlpha, Ztot, Ntot;
+    Int_t j, zz[100], nn[100], nAlpha, ztot, ntot;
     AliZDCFragment *frag = new AliZDCFragment(fImpPar);
     for(j=0; j<=99; j++){
        zz[j] =0;
@@ -158,14 +158,14 @@ void AliZDCMerger::Fragmentation(Float_t fImpPar, Int_t fSpecn, Int_t fSpecp,
     frag->GenerateIMF(zz, nAlpha);
 
     // Attach neutrons
-    Ztot=0;
-    Ntot=0;
-    frag->AttachNeutrons(zz, nn, Ztot, Ntot);
-    fFreeSpn = fSpecn-Ntot-2*nAlpha;
-    fFreeSpp = fSpecp-Ztot-2*nAlpha;
+    ztot=0;
+    ntot=0;
+    frag->AttachNeutrons(zz, nn, ztot, ntot);
+    fFreeSpn = fSpecn-ntot-2*nAlpha;
+    fFreeSpp = fSpecp-ztot-2*nAlpha;
     if(fFreeSpn<0) fFreeSpn=0;
     if(fFreeSpp<0) fFreeSpp=0;
-    //printf("\n			2*nAlpha = %d, Ztot = %d, Ntot = %d\n",2*nAlpha, Ztot,    Ntot);
+    //printf("\n			2*nAlpha = %d, ztot = %d, ntot = %d\n",2*nAlpha, ztot,    ntot);
     printf("\n	Fragmentation -> FreeSpn = %d, FreeSpp = %d\n",fFreeSpn,fFreeSpp);
 }
 
@@ -179,8 +179,8 @@ void AliZDCMerger::Mixing()
     fBgrFile->cd();
 //    fBgrFile->ls();
     
-   AliZDC *ZDC = (AliZDC *)gAlice->GetModule("ZDC");
-//    if(ZDC) printf("\n	Ho trovato lo ZDC!\n");
+   AliZDC *zdc = (AliZDC *)gAlice->GetModule("ZDC");
+//    if(zdc) printf("\n	Ho trovato lo ZDC!\n");
 
 //    fNEvBgr = 0; // Let's suppose to have 1 full Hijing event per file
     // Hits tree
@@ -195,7 +195,7 @@ void AliZDCMerger::Mixing()
     // Branch address
     TBranch *branch;
     char branchname[20];
-    sprintf(branchname,"%s",ZDC->GetName());
+    sprintf(branchname,"%s",zdc->GetName());
     if(fTrHBgr && fHitsBgr){
 //      printf("\n	fTrHBgr!=0 && fHitsBgr!=0\n");
       branch = fTrHBgr->GetBranch(branchname);
@@ -207,8 +207,8 @@ void AliZDCMerger::Mixing()
     
     Int_t itrack, nhits, ihit, j, sector[2];
     AliZDCHit* zdcHit;
-    AliZDCMergedHit *MHit;
-    Float_t MHits[7];
+    AliZDCMergedHit *mHit;
+    Float_t mHits[7];
     TClonesArray &sdigits = *fMHits;	// SDigits TCArray
     fNMhits = 0;
 
@@ -222,18 +222,18 @@ void AliZDCMerger::Mixing()
 	  zdcHit = (AliZDCHit*) fHitsBgr->UncheckedAt(ihit);
 
 	    for(j=0; j<2; j++) sector[j] = zdcHit->GetVolume(j);
-	    MHits[0] = zdcHit->GetPrimKinEn();
-	    MHits[1] = zdcHit->GetXImpact();
-	    MHits[2] = zdcHit->GetYImpact();
-	    MHits[3] = zdcHit->GetSFlag();
-       	    MHits[4] = zdcHit->GetLightPMQ();
-	    MHits[5] = zdcHit->GetLightPMC();
-	    MHits[6] = zdcHit->GetEnergy();
-	    MHit = new AliZDCMergedHit(sector, MHits);
-//	    MHit->Print("");
-  	    new((*fMHits)[fNMhits]) AliZDCMergedHit(*MHit);
-	    new (sdigits[fNMhits])  AliZDCMergedHit(*MHit);
-	    delete MHit;
+	    mHits[0] = zdcHit->GetPrimKinEn();
+	    mHits[1] = zdcHit->GetXImpact();
+	    mHits[2] = zdcHit->GetYImpact();
+	    mHits[3] = zdcHit->GetSFlag();
+       	    mHits[4] = zdcHit->GetLightPMQ();
+	    mHits[5] = zdcHit->GetLightPMC();
+	    mHits[6] = zdcHit->GetEnergy();
+	    mHit = new AliZDCMergedHit(sector, mHits);
+//	    mHit->Print("");
+  	    new((*fMHits)[fNMhits]) AliZDCMergedHit(*mHit);
+	    new (sdigits[fNMhits])  AliZDCMergedHit(*mHit);
+	    delete mHit;
 	    fNMhits++;
 	  }//Hits loop
 	  
@@ -256,64 +256,64 @@ void AliZDCMerger::ExtractSignal(Int_t SpecType)
 
 // printf("\n	Entering in Extract Signal\n");
  
- Int_t NumEvents = 0;
+ Int_t numEvents = 0;
  if(SpecType == 1){		// --- Signal for spectator neutrons
    fFnSpecn = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/ZNsignalntu.root");
    fSpecnFile = TFile::Open(fFnSpecn,"R");
    fSpecnFile->cd();
    printf("\n	--- ExtractSignal x n: file %s opened\n", fFnSpecn);
-   NumEvents = fFreeSpn;
+   numEvents = fFreeSpn;
  }
  else if(SpecType == 2){	// --- Signal for spectator protons
    fFnSpecp = gSystem->ExpandPathName("$ALICE/$ALICE_LEVEL/ZDC/ZPsignalntu.root");
    fSpecpFile = TFile::Open(fFnSpecp,"R");
    fSpecpFile->cd();
    printf("\n	--- ExtractSignal x p: file %s opened\n", fFnSpecp);
-   NumEvents = fFreeSpp;
+   numEvents = fFreeSpp;
  }
- //printf("\n		# of free spectators = %d\n", NumEvents);
+ //printf("\n		# of free spectators = %d\n", numEvents);
  //printf("\n         fNMhits (before adding signal) = %d\n",fNMhits);
 
-  TNtuple *ZDCSignal = (TNtuple*) gDirectory->Get("ZDCSignal");
-  Int_t nentries = (Int_t) ZDCSignal->GetEntries();
+  TNtuple *zdcSignal = (TNtuple*) gDirectory->Get("ZDCSignal");
+  Int_t nentries = (Int_t) zdcSignal->GetEntries();
   //printf("\n   # entries = %d\n", nentries);
   
-  AliZDCMergedHit *MHit; 
-  Float_t *entry, HitsSpec[7];
-  Int_t pl, i, j, k, iev=0, rnd[125], Volume[2];
+  AliZDCMergedHit *mHit; 
+  Float_t *entry, hitsSpec[7];
+  Int_t pl, i, j, k, iev=0, rnd[125], volume[2];
   for(pl=0;pl<125;pl++){
      rnd[pl] = 0;
   }
-  for(pl=0;pl<NumEvents;pl++){
+  for(pl=0;pl<numEvents;pl++){
      rnd[pl] = (Int_t) (9999*gRandom->Rndm());
      if(rnd[pl] >= 9998) rnd[pl] = 9997;
      //printf("	rnd[%d] = %d\n",pl,rnd[pl]);     
   }
   // Sorting vector in ascending order with C function QSORT 
-  qsort((void*)rnd,NumEvents,sizeof(Int_t),comp);
-  //for(pl=0;pl<NumEvents;pl++){
+  qsort((void*)rnd,numEvents,sizeof(Int_t),comp);
+  //for(pl=0;pl<numEvents;pl++){
   ////printf("	rnd[%d] = %d\n",pl,rnd[pl]);     
   //}
   do{
      for(i=0; i<nentries; i++){  
-  	ZDCSignal->GetEvent(i);
-  	entry = ZDCSignal->GetArgs();
+  	zdcSignal->GetEvent(i);
+  	entry = zdcSignal->GetArgs();
   	if(entry[0] == rnd[iev]){
-          for(k=0; k<2; k++) Volume[k] = (Int_t) entry[k+1];
+          for(k=0; k<2; k++) volume[k] = (Int_t) entry[k+1];
           for(j=0; j<7; j++){
-             HitsSpec[j] = entry[j+3];
+             hitsSpec[j] = entry[j+3];
           }
           //printf("\n   i = %d, iev = %d, entry[0] = %f, rnd[%d] = %d ",i,iev,entry[0],iev,rnd[iev]);
-	  MHit = new AliZDCMergedHit(Volume, HitsSpec);
-	  new((*fMHits)[fNMhits++]) AliZDCMergedHit(*MHit);
-	  delete MHit;
+	  mHit = new AliZDCMergedHit(volume, hitsSpec);
+	  new((*fMHits)[fNMhits++]) AliZDCMergedHit(*mHit);
+	  delete mHit;
   	}
   	else if(entry[0] > rnd[iev]){
 	  iev++;
 	  continue;
 	}
      }
-  }while(iev<NumEvents);
+  }while(iev<numEvents);
   
   if(SpecType ==1){
     //printf("\n         fNMhits (after n signal) = %d\n",fNMhits);
@@ -329,112 +329,113 @@ void AliZDCMerger::ExtractSignal(Int_t SpecType)
 //____________________________________________________________________________
 void AliZDCMerger::Digitize(Int_t fNMhits, TClonesArray *fMHits)
 {
+// Digitization
 
   printf("\n	AliZDCMerger->Digitize()");
 
-  AliZDC *ZDC = (AliZDC *)gAlice->GetModule("ZDC");
-//  if(ZDC) printf("\n 	Ho trovato lo ZDC!\n");
+  AliZDC *zdc = (AliZDC *)gAlice->GetModule("ZDC");
+//  if(zdc) printf("\n 	Ho trovato lo ZDC!\n");
   Int_t lightQ, lightC, sector[2], digit;
-  Int_t PMCZN = 0, PMCZP = 0, PMQZN[4], PMQZP[4], PMZEM1 = 0, PMZEM2 = 0;
+  Int_t pmCZN = 0, pmCZP = 0, pmQZN[4], pmQZP[4], pmZEM1 = 0, pmZEM2 = 0;
   Int_t i;
   for(i=0; i<4; i++){
-     PMQZN[i] = 0;
-     PMQZP[i] = 0;
+     pmQZN[i] = 0;
+     pmQZP[i] = 0;
   }
   
-  AliZDCMergedHit *MHit;
+  AliZDCMergedHit *mHit;
   Int_t imhit;
   printf("	   fNMHits = %d\n", fNMhits);
   // Loop over SDigits
   for(imhit=0; imhit<fNMhits; imhit++){
      
-     MHit = (AliZDCMergedHit*) fMHits->UncheckedAt(imhit);
-     sector[0] = MHit->GetSector(0);
-     sector[1] = MHit->GetSector(1);
+     mHit = (AliZDCMergedHit*) fMHits->UncheckedAt(imhit);
+     sector[0] = mHit->GetSector(0);
+     sector[1] = mHit->GetSector(1);
    // tmp -> c'erano i quadranti cannati!
   if((sector[1]!=1) && (sector[1]!=2) && (sector[1]!=3) && (sector[1]!=4)){
      printf("\n  *** ERROR!!! sector[0] = %d, sector[1] = %d\n",
  	      sector[0], sector[1]);
        sector[1] = 0;
    }
-     lightQ    = Int_t(MHit->GetLightPMQ());
-     lightC    = Int_t(MHit->GetLightPMC());
+     lightQ    = Int_t(mHit->GetLightPMQ());
+     lightC    = Int_t(mHit->GetLightPMC());
 //     printf("    imhit = %d -> DET. = %d, quad = %d,PMQ = %d, PMC = %d\n", 
 //      imhit,sector[0], sector[1],lightQ, lightC);
      
      if(sector[0] == 1){   	   //ZN 
-       PMCZN = PMCZN + lightC;
-       PMQZN[sector[1]-1] = PMQZN[sector[1]-1] + lightQ;
+       pmCZN = pmCZN + lightC;
+       pmQZN[sector[1]-1] = pmQZN[sector[1]-1] + lightQ;
      }
      else if(sector[0] == 2){	   //ZP 
-       PMCZP = PMCZP + lightC;
-       PMQZP[sector[1]-1] = PMQZP[sector[1]-1] + lightQ;
+       pmCZP = pmCZP + lightC;
+       pmQZP[sector[1]-1] = pmQZP[sector[1]-1] + lightQ;
      }
      else if(sector[0] == 3){	   //ZEM 
-       if(sector[1] ==1) PMZEM1 = PMZEM1 + lightC;
-       else              PMZEM2 = PMZEM2 + lightQ;
+       if(sector[1] ==1) pmZEM1 = pmZEM1 + lightC;
+       else              pmZEM2 = pmZEM2 + lightQ;
      }
   } // SDigits loop
       
   // ### Digits creation ###############################################
   // Create digits for ZN
-  Int_t PedValue;
+  Int_t pedValue;
   sector[0] = 1; // Detector = ZN
   sector[1] = 0; // Common PM ADC
-  digit = Phe2ADCch(1, 0, PMCZN);
-  printf("\n\n	ZN ###	PMCZN = %d	ADCZN = %d",PMCZN, digit);
-  PedValue = AddPedestal();
-  digit += PedValue;
-//  printf("	PedValue = %d",PedValue);
-  ZDC->AddDigit(sector, digit);
+  digit = Phe2ADCch(1, 0, pmCZN);
+  printf("\n\n	ZN ###	pmCZN = %d	ADCZN = %d",pmCZN, digit);
+  pedValue = AddPedestal();
+  digit += pedValue;
+//  printf("	pedValue = %d",pedValue);
+  zdc->AddDigit(sector, digit);
   Int_t j;
   for(j=0; j<4; j++){
     sector[1] = j+1; // Towers PM ADCs
-    digit = Phe2ADCch(1, j+1, PMQZN[j]);
-    printf("\n		PMQZN[%d] = %d	phe	ADCZN[%d] = %d ADCch",j,PMQZN[j],j,digit);
-    PedValue = AddPedestal();
-    digit += PedValue;
-//    printf("	PedValue = %d",PedValue);
-    ZDC->AddDigit(sector, digit);
+    digit = Phe2ADCch(1, j+1, pmQZN[j]);
+    printf("\n		pmQZN[%d] = %d	phe	ADCZN[%d] = %d adcCh",j,pmQZN[j],j,digit);
+    pedValue = AddPedestal();
+    digit += pedValue;
+//    printf("	pedValue = %d",pedValue);
+    zdc->AddDigit(sector, digit);
   }
   printf("\n");
   
   // Create digits for ZP
   sector[0] = 2; // Detector = ZP
   sector[1] = 0; // Common PM ADC
-  digit = Phe2ADCch(2, 0, PMCZP);
-  printf("\n	ZP --- PMCZP = %d	phe	ADCZP = %d ADCch",PMCZP,digit);
-  PedValue = AddPedestal();
-  digit += PedValue;
-//  printf("	PedValue = %d",PedValue);
-  ZDC->AddDigit(sector, digit);
+  digit = Phe2ADCch(2, 0, pmCZP);
+  printf("\n	ZP --- pmCZP = %d	phe	ADCZP = %d adcCh",pmCZP,digit);
+  pedValue = AddPedestal();
+  digit += pedValue;
+//  printf("	pedValue = %d",pedValue);
+  zdc->AddDigit(sector, digit);
   for(j=0; j<4; j++){
     sector[1] = j+1; // Towers PM ADCs
-    digit = Phe2ADCch(2, j+1, PMQZP[j]);
-    printf("\n	       PMQZP[%d] = %d	phe	ADCZP[%d] = %d ADCch",j,PMQZP[j],j,digit);
-    PedValue = AddPedestal();
-    digit += PedValue;
-//    printf("	PedValue = %d",PedValue);
-    ZDC->AddDigit(sector, digit);
+    digit = Phe2ADCch(2, j+1, pmQZP[j]);
+    printf("\n	       pmQZP[%d] = %d	phe	ADCZP[%d] = %d adcCh",j,pmQZP[j],j,digit);
+    pedValue = AddPedestal();
+    digit += pedValue;
+//    printf("	pedValue = %d",pedValue);
+    zdc->AddDigit(sector, digit);
   }
   printf("\n");
   
   // Create digits for ZEM
   sector[0] = 3; 
   sector[1] = 1; // Detector = ZEM1
-  digit  = Phe2ADCch(3, 1, PMZEM1);
-  printf("\n	ZEM *** PMZEM1 = %d      phe     ADCZEM1 = %d ADCch",PMZEM1,digit);
-  PedValue = AddPedestal();
-  digit += PedValue;
-//  printf("  PedValue = %d\n",PedValue);
-  ZDC->AddDigit(sector, digit); 
+  digit  = Phe2ADCch(3, 1, pmZEM1);
+  printf("\n	ZEM *** pmZEM1 = %d      phe     ADCZEM1 = %d adcCh",pmZEM1,digit);
+  pedValue = AddPedestal();
+  digit += pedValue;
+//  printf("  pedValue = %d\n",pedValue);
+  zdc->AddDigit(sector, digit); 
   sector[1] = 2; // Detector = ZEM2
-  digit  = Phe2ADCch(3, 2, PMZEM2);
-  printf("\n	ZEM *** PMZEM2 = %d      phe     ADCZEM2 = %d ADCch\n",PMZEM2,digit);
-  PedValue = AddPedestal();
-  digit += PedValue;
-//  printf("  PedValue = %d\n",PedValue);
-  ZDC->AddDigit(sector, digit); 
+  digit  = Phe2ADCch(3, 2, pmZEM2);
+  printf("\n	ZEM *** pmZEM2 = %d      phe     ADCZEM2 = %d adcCh\n",pmZEM2,digit);
+  pedValue = AddPedestal();
+  digit += pedValue;
+//  printf("  pedValue = %d\n",pedValue);
+  zdc->AddDigit(sector, digit); 
 }
 
 //_____________________________________________________________________________
@@ -446,7 +447,7 @@ Int_t AliZDCMerger::Phe2ADCch(Int_t Det, Int_t Quad, Int_t Light)
 //    printf("\n  Phe2ADCch -> Detector = %d, Quadrant = %d, Light = %d\n", Det, Quad, Light);
   }
   
-  Int_t ADCch = 0;
+  Int_t adcCh = 0;
   
   Int_t j,i;
   for(i=0; i<3; i++){
@@ -454,11 +455,11 @@ Int_t AliZDCMerger::Phe2ADCch(Int_t Det, Int_t Quad, Int_t Light)
         fPMGain[i][j]   = 100000.;
      }
   }
-  fADCRes   = 0.00000064; // ADC Resolution: 250 fC/ADCch
+  fADCRes   = 0.00000064; // ADC Resolution: 250 fC/adcCh
   
-  ADCch = (Int_t) (Light*fPMGain[Det-1][Quad]*fADCRes);
+  adcCh = (Int_t) (Light*fPMGain[Det-1][Quad]*fADCRes);
      
-  return ADCch;
+  return adcCh;
 }
 
 //_____________________________________________________________________________
@@ -467,11 +468,11 @@ Int_t AliZDCMerger::AddPedestal()
   // --- Pedestal value -> extracted from a gaussian distribution
   // obtained from the beam test on the ZEM prototype (Aug. 2000)
   
-  Int_t PedValue;
-  Float_t PedMean  = 50.;
-  Float_t PedWidth = 5.;
+  Int_t pedValue;
+  Float_t pedMean  = 50.;
+  Float_t pedWidth = 5.;
   
-  PedValue    = (Int_t) gRandom->Gaus(PedMean,PedWidth);
+  pedValue    = (Int_t) gRandom->Gaus(pedMean,pedWidth);
   
-  return PedValue;
+  return pedValue;
 }
