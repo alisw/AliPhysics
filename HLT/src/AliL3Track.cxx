@@ -53,41 +53,19 @@ AliL3Track::AliL3Track()
 
 void AliL3Track::Set(AliL3Track *tpt){
   
-   SetRowRange(tpt->GetFirstRow(),tpt->GetLastRow());
-   SetPhi0(tpt->GetPhi0());
-   SetKappa(tpt->GetKappa());
-   SetNHits(tpt->GetNHits());
-
-   SetFirstPoint(tpt->GetFirstPointX(),tpt->GetFirstPointY(),tpt->GetFirstPointZ());
-
+  SetRowRange(tpt->GetFirstRow(),tpt->GetLastRow());
+  SetPhi0(tpt->GetPhi0());
+  SetKappa(tpt->GetKappa());
+  SetNHits(tpt->GetNHits());
+  SetFirstPoint(tpt->GetFirstPointX(),tpt->GetFirstPointY(),tpt->GetFirstPointZ());
   SetLastPoint(tpt->GetLastPointX(),tpt->GetLastPointY(),tpt->GetLastPointZ());
-    SetPt(tpt->GetPt());
-   SetPsi(tpt->GetPsi());
-     SetTgl(tpt->GetTgl());
-     SetCharge(tpt->GetCharge());
-      
-    SetHits(tpt->GetNHits(),(UInt_t *)tpt->GetHitNumbers());
+  SetPt(tpt->GetPt());
+  SetPsi(tpt->GetPsi());
+  SetTgl(tpt->GetTgl());
+  SetCharge(tpt->GetCharge());
+  SetHits(tpt->GetNHits(),(UInt_t *)tpt->GetHitNumbers());
 
-/*
-  fPhi0 = track->GetPhi0();
-  fKappa = track->GetKappa();
-  
-  fRowRange[0] = track->GetFirstRow();
-  fRowRange[1] = track->GetLastRow();
-  fQ = track->GetCharge();
-  fFirstPoint[0] = track->GetFirstPointX();
-  fFirstPoint[1] = track->GetFirstPointY();
-  fFirstPoint[2] = track->GetFirstPointZ();
-  fLastPoint[0] = track->GetLastPointX();
-  fLastPoint[1] = track->GetLastPointY();
-  fLastPoint[2] = track->GetLastPointZ();
-  fPt = track->GetPt();
-  fTanl = track->GetTgl();
-  fPsi = track->GetPsi();
-  fQ = track->GetCharge();
-  fNHits = track->GetNHits();
-  memcpy(fHitNumbers,track->GetHitNumbers(),fNHits*sizeof(UInt_t));
-*/
+
 }
 
 
