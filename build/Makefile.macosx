@@ -6,7 +6,7 @@ F77	      = g77
 CC	      = gcc
 
 # Global optimisation
-OPT           = -O -g
+OPT           = -O0 -g
 NOOPT         = -g
 
 CXXOPT        = $(OPT) 
@@ -59,7 +59,7 @@ GLIBS         = -L/usr/X11R6/lib -lX11
 #System libraries
 SYSLIBS = -ldl
 
-EXEFLAGS+= -Xlinker -bind_at_load -Xlinker -m #-lg2c
+EXEFLAGS+= -bind_at_load
 
 
 
