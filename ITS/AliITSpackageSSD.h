@@ -18,8 +18,8 @@ class AliITSpackageSSD : public TObject
  public:
   AliITSpackageSSD(); 
 
-  AliITSpackageSSD(Int_t len, TClonesArray *clustersP, TClonesArray *clustersP);  
-  AliITSpackageSSD(TClonesArray *clustersP, TClonesArray *clustersP);	
+  AliITSpackageSSD(Int_t len, TClonesArray *clustersP, TClonesArray *clustersN);  
+  AliITSpackageSSD(TClonesArray *clustersP, TClonesArray *clustersN);	
 
   ~AliITSpackageSSD();
   
