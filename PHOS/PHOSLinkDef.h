@@ -44,4 +44,10 @@
 #pragma link C++ class AliPHOSQAMeanChecker+;
 #pragma link C++ class AliPHOSQAAlarm+;
 #pragma link C++ class AliPHOSTick+;
+#pragma link C++ class AliPHOSIhepAnalyze+;
+#pragma link C++ class AliPHOSRecManager+;
+#pragma link C++ class AliPHOSRecCpvManager+;
+#pragma link C++ class AliPHOSRecEmcManager+;
+#pragma link C++ class AliPHOSClusterizerv2+;
+#pragma link C++ class AliPHOSEvalRecPoint+;
 #endif
