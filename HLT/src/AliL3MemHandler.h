@@ -129,6 +129,26 @@ class AliL3MemHandler{
   Byte_t *GetDataPointer(UInt_t &size) {size = fSize; return fPt;}
   void   Free();
   
+  //Getters:
+  Int_t GetRowMin(){return fRowMin;}
+  Int_t GetRowMax(){return fRowMax;}
+  Int_t GetSlice(){return fSlice;}
+  Int_t GetPatch(){return fPatch;}
+  
+  //virtual functions:
+  virtual Bool_t SetAliInput(char *name){return 0;}
+  virtual void CloseAliInput(){return;} 
+  virtual Bool_t IsDigit(){return 0;}
+  virtual Bool_t SetMCOutput(char *name){return 0;}
+  virtual Bool_t SetMCOutput(FILE *file){return 0;}
+  virtual void CloseMCOutput(){return;}
+  virtual Bool_t AliDigits2Binary(Int_t event=0){return 0;}
+  virtual AliL3DigitRowData *AliDigits2Memory(UInt_t & nrow,Int_t event=0){return 0;}
+  virtual Bool_t AliDigits2CompBinary(Int_t event=0){return 0;}  
+  virtual void AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_digitsfile){return;}
+  virtual Bool_t AliPoints2Binary(){return 0;}
+  virtual AliL3SpacePointData *AliPoints2Memory(UInt_t & npoint){return 0;}
+
   ClassDef(AliL3MemHandler,1) // Memory handler class
 };
 
@@ -151,5 +171,6 @@ inline Int_t AliL3MemHandler::CompareDigits(AliL3RandomDigitData *a,AliL3RandomD
   
   return 1;
 }
+
 
 #endif
