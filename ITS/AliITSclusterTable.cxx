@@ -107,7 +107,7 @@ void AliITSclusterTable::FillArray(TTree* clusterTree,Int_t evnumber){
 
   TArrayI** vect = new TArrayI*[fGeom->GetNlayers()];
   
-  Int_t firstmod[fGeom->GetNlayers()+1];
+  Int_t * firstmod = new Int_t[fGeom->GetNlayers()+1];
   firstmod[fGeom->GetNlayers()]=fGeom->GetIndexMax();  // upper limit
   for(Int_t nlayer=0;nlayer<fGeom->GetNlayers();nlayer++){
     firstmod[nlayer] = fGeom->GetModuleIndex(nlayer+1,1,1);
@@ -149,6 +149,7 @@ void AliITSclusterTable::FillArray(TTree* clusterTree,Int_t evnumber){
 
   for(Int_t n=0;n<fGeom->GetNlayers();n++)delete vect[n];
   delete vect;
+  delete [] firstmod;
 }
 
 //_________________________________________________________________
@@ -162,7 +163,8 @@ void AliITSclusterTable::FillArrayLabel(const Int_t numberofparticles,TTree* clu
   const Int_t knm =fGeom->GetNlayers();
   for(Int_t nlab=0;nlab<numberofparticles;nlab++){
     fLbl[nlab] = new TArrayI(knm);
-    Int_t nn[knm]; for(Int_t i=0;i<knm;i++)nn[i]=0;
+    Int_t * nn = new Int_t[knm]; 
+    for(Int_t i=0;i<knm;i++)nn[i]=0;
     for(Int_t nlayer=0;nlayer<knm;nlayer++){
       Int_t ncl = fTracker->GetNumberOfClustersLayer(nlayer);
       while(ncl--){
@@ -176,6 +178,7 @@ void AliITSclusterTable::FillArrayLabel(const Int_t numberofparticles,TTree* clu
       }     
       fLbl[nlab]->AddAt(nn[nlayer],nlayer);
     }
+    delete [] nn;
   }
 
   fTracker->UnloadClusters();

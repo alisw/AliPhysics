@@ -216,7 +216,7 @@ void AliITStrackerSA::FindTracks(TTree *clusterTree, TTree *out,Int_t evnumber,c
   else branch->SetAddress(&outrack);
 
   
-  Int_t firstmod[fGeom->GetNlayers()];
+  Int_t * firstmod = new Int_t[fGeom->GetNlayers()];
   for(Int_t i=0;i<fGeom->GetNlayers();i++){
     firstmod[i]=fGeom->GetModuleIndex(i+1,1,1);
   }
@@ -244,7 +244,7 @@ void AliITStrackerSA::FindTracks(TTree *clusterTree, TTree *out,Int_t evnumber,c
       fPoint2[0]=x;
       fPoint2[1]=y;
       
-      Int_t nn[fGeom->GetNlayers()];//counter for clusters on each layer
+      Int_t * nn = new Int_t[fGeom->GetNlayers()];//counter for clusters on each layer
       for(Int_t i=0;i<fGeom->GetNlayers();i++){	nn[i]=0;}
       nn[0] = SearchClusters(0,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],primaryVertex[1],primaryVertex[0],pflag,fTable);
       nn[1] = SearchClusters(1,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],primaryVertex[1],primaryVertex[0],pflag,fTable);
@@ -322,7 +322,7 @@ void AliITStrackerSA::FindTracks(TTree *clusterTree, TTree *out,Int_t evnumber,c
    
   if(!sixpoints){
     //   counter for clusters on each layer  
-    Int_t *nn = new Int_t[fGeom->GetNlayers()-1];      
+    Int_t * nn = new Int_t[fGeom->GetNlayers()-1];      
     for(Int_t nloop=0;nloop<fNloop;nloop++){
       AliITSlayer &layer2=fgLayers[1]; //loop on layer 2
       Int_t ncl2=layer2.GetNumberOfClusters();
@@ -392,9 +392,10 @@ void AliITStrackerSA::FindTracks(TTree *clusterTree, TTree *out,Int_t evnumber,c
 	delete trs;
       }//end loop on clusters of layer2
     }
-    delete []nn;
+    delete [] nn;
   }  //end opt="5/6"  
 
+  delete [] firstmod;
 
   UnloadClusters();
 }
@@ -435,7 +436,7 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
   TString choice(opt);
   Bool_t sixpoints= choice.Contains("6/6");
   
-  Int_t firstmod[fGeom->GetNlayers()];
+  Int_t * firstmod = new Int_t[fGeom->GetNlayers()];
   for(Int_t i=0;i<fGeom->GetNlayers();i++){
     firstmod[i]=fGeom->GetModuleIndex(i+1,1,1);
   }  
@@ -454,7 +455,7 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
   TArrayI clind4(20);
   TArrayI clind5(20);
 
-  Int_t nnn[fGeom->GetNlayers()];
+  Int_t * nnn = new Int_t[fGeom->GetNlayers()];
   for(Int_t i=0;i<fGeom->GetNlayers();i++)nnn[i]=0;
   
   for(Int_t ncl=0;ncl<nclusters;ncl++){
@@ -469,9 +470,10 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
     if(lay==4) { listlayer[4]->AddLast(cl); clind4[nnn[4]]=index;nnn[4]++;}
     if(lay==5) { listlayer[5]->AddLast(cl); clind5[nnn[5]]=index;nnn[5]++;}    
   }
+  delete [] nnn;
 
  
-  Int_t end[fGeom->GetNlayers()];
+  Int_t * end = new Int_t[fGeom->GetNlayers()];
   for(Int_t i=0;i<fGeom->GetNlayers();i++){
     if(listlayer[i]->GetEntries()==0) end[i]=1;
     else end[i]=listlayer[i]->GetEntries();
@@ -611,6 +613,8 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
     delete[] errs;    
   }//end loop layer 1
 
+  delete [] end;
+
   Int_t dim=listoftracks->GetEntries();
   if(dim==0){
     delete listoftracks;
@@ -624,7 +628,7 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
   AliITStrackV2* otrack =(AliITStrackV2*)FindTrackLowChiSquare(listoftracks,dim);
 
   if(otrack==0) return 0;
-  Int_t indexc[fGeom->GetNlayers()];
+  Int_t * indexc = new Int_t[fGeom->GetNlayers()];
   for(Int_t i=0;i<fGeom->GetNlayers();i++) indexc[i]=0;
   for(Int_t nind=0;nind<otrack->GetNumberOfClusters();nind++){
     indexc[nind] = otrack->GetClusterIndex(nind);
@@ -641,6 +645,7 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
     labl[1]=cl5->GetLabel(1);
     labl[2]=cl5->GetLabel(2);
   }
+  delete [] indexc;
   if(otrack->GetNumberOfClusters()==(fGeom->GetNlayers()-1)){
     labl[0]=-1;
     labl[1]=-1;
@@ -665,6 +670,7 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
     delete listlayer[i];
   }
   delete listlayer; 
+  delete [] firstmod;
   return otrack;
 
 }
@@ -689,7 +695,7 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
   //function used to to find the clusters associated to the track
   Int_t nc=0;
   AliITSlayer &lay = fgLayers[layer];
-  Int_t firstmod[fGeom->GetNlayers()];
+  Int_t * firstmod = new Int_t[fGeom->GetNlayers()];
   for(Int_t i=0;i<fGeom->GetNlayers();i++){
     firstmod[i]=fGeom->GetModuleIndex(i+1,1,1);
   }
@@ -772,6 +778,7 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
 
   }
   delete list;
+  delete [] firstmod;
   return nc;
 
 }
@@ -899,8 +906,8 @@ AliITStrackV2* AliITStrackerSA::FindTrackLowChiSquare(TObjArray* tracklist, Int_
     return trk;
   }
   if(dim==0) return 0;
-  Double_t chi2[dim];
-  Int_t index[dim];
+  Double_t * chi2 = new Double_t[dim];
+  Int_t * index = new Int_t[dim];
   for(Int_t i=0;i<dim;i++){
     AliITStrackV2* trk = (AliITStrackV2*)tracklist->At(i);
     chi2[i]=trk->GetChi2();
@@ -924,6 +931,8 @@ AliITStrackV2* AliITStrackerSA::FindTrackLowChiSquare(TObjArray* tracklist, Int_
   }
 
   AliITStrackV2* trk = (AliITStrackV2*)tracklist->At(index[dim-1]);
+  delete [] chi2;
+  delete [] index;
   return trk;
   
 }
