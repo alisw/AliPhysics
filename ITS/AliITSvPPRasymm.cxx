@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.42  2001/05/30 15:55:35  hristov
+Strings compared instead of pointers
+
 Revision 1.41  2001/05/30 14:04:31  hristov
 Dynamic cast replaced (F.Carminati)
 
@@ -165,7 +168,7 @@ New ITS detailed geometry to be used for the PPR
 #include "AliRun.h"
 #include "AliMagF.h"
 #include "AliConst.h"
-#include "../TGeant3/TGeant3.h"
+#include "AliGeant3.h"
 #include "AliITSGeant3Geometry.h"
 #include "AliITShit.h"
 #include "AliITS.h"
@@ -4767,7 +4770,7 @@ void AliITSvPPRasymm::InitAliITSgeom(){
 //     Based on the geometry tree defined in Geant 3.21, this
 // routine initilizes the Class AliITSgeom from the Geant 3.21 ITS geometry
 // sturture.
-    if(strcmp(gMC->GetName(),"TGeant3")) {
+    if(gMC->IsA()!=AliGeant3::Class()) {
 	Error("InitAliITSgeom",
 		"Wrong Monte Carlo. InitAliITSgeom uses TGeant3 calls");
 	return;
