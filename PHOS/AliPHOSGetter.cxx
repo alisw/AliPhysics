@@ -226,7 +226,7 @@ Bool_t AliPHOSGetter::PostPrimaries(void) const
 } 
 
 //____________________________________________________________________________ 
-void * AliPHOSGetter::PrimariesRef(void) const 
+TObject** AliPHOSGetter::PrimariesRef(void) const 
 {  //------- Primaries ----------------------
 
   
@@ -248,7 +248,7 @@ void * AliPHOSGetter::PrimariesRef(void) const
     return 0 ;
   }
   else
-    return static_cast<void *>(primariesFolder->GetListOfFolders()->GetObjectRef(p)) ;
+    return primariesFolder->GetListOfFolders()->GetObjectRef(p) ;
 }
 
 //____________________________________________________________________________ 
@@ -273,7 +273,7 @@ Bool_t AliPHOSGetter::PostHits(void) const
 } 
 
 //____________________________________________________________________________ 
-void * AliPHOSGetter::HitsRef(void) const 
+TObject** AliPHOSGetter::HitsRef(void) const 
 {  //------- Hits ----------------------
 
   
@@ -295,7 +295,7 @@ void * AliPHOSGetter::HitsRef(void) const
     return 0 ;
   }
   else
-    return static_cast<void *>(phosFolder->GetListOfFolders()->GetObjectRef(h)) ;
+    return phosFolder->GetListOfFolders()->GetObjectRef(h) ;
 }
 
 //____________________________________________________________________________ 
@@ -333,7 +333,7 @@ Bool_t AliPHOSGetter::PostSDigits(const char * name, const char * headerFile) co
   return kTRUE;
 } 
 //____________________________________________________________________________ 
-void * AliPHOSGetter::SDigitsRef(const char * name, const char * file) const 
+TObject** AliPHOSGetter::SDigitsRef(const char * name, const char * file) const 
 {  //------- SDigits ----------------------
   
   // the hierarchy is //Folders/RunMC/Event/Data/PHOS/SDigits/filename/SDigits
@@ -364,7 +364,7 @@ void * AliPHOSGetter::SDigitsRef(const char * name, const char * file) const
   if(!dis)
     return 0 ;
   else
-    return static_cast<void *>(phosSubFolder->GetListOfFolders()->GetObjectRef(dis)) ;
+    return phosSubFolder->GetListOfFolders()->GetObjectRef(dis) ;
 
 }
 
@@ -402,7 +402,7 @@ Bool_t AliPHOSGetter::PostSDigitizer(AliPHOSSDigitizer * sdigitizer) const
 }
 
 //____________________________________________________________________________ 
-void * AliPHOSGetter::SDigitizerRef(const char * name) const 
+TObject** AliPHOSGetter::SDigitizerRef(const char * name) const 
 {  
 
   TTask * sd  = dynamic_cast<TTask*>(fTasksFolder->FindObject("SDigitizer")) ; 
@@ -419,7 +419,7 @@ void * AliPHOSGetter::SDigitizerRef(const char * name) const
 
   TTask * task = dynamic_cast<TTask*>(phos->GetListOfTasks()->FindObject(name)) ; 
 
-  return static_cast<void *>(phos->GetListOfTasks()->GetObjectRef(task)) ;
+  return phos->GetListOfTasks()->GetObjectRef(task) ;
 
 }
 
@@ -487,7 +487,7 @@ Bool_t AliPHOSGetter::PostDigits(const char * name) const
 }
 
 //____________________________________________________________________________ 
-void * AliPHOSGetter::DigitsRef(const char * name) const 
+TObject** AliPHOSGetter::DigitsRef(const char * name) const 
 { //------- Digits ----------------------
   
   // the hierarchy is //Folders/Run/Event/Data/PHOS/Digits/name
@@ -507,7 +507,7 @@ void * AliPHOSGetter::DigitsRef(const char * name) const
   if(!d)
     return 0 ;
   else
-    return static_cast<void *>(phosFolder->GetListOfFolders()->GetObjectRef(d)) ;
+    return phosFolder->GetListOfFolders()->GetObjectRef(d) ;
 
 }
 
@@ -573,7 +573,7 @@ Bool_t AliPHOSGetter::PostDigitizer(const char * name) const
 }
 
 //____________________________________________________________________________ 
-void * AliPHOSGetter::DigitizerRef(const char * name) const 
+TObject** AliPHOSGetter::DigitizerRef(const char * name) const 
 {  
   TTask * sd  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Digitizer")) ; 
   if ( !sd ) {
@@ -589,7 +589,7 @@ void * AliPHOSGetter::DigitizerRef(const char * name) const
 
   TTask * task = dynamic_cast<TTask*>(phos->GetListOfTasks()->FindObject(name)) ; 
 
-  return static_cast<void *>(phos->GetListOfTasks()->GetObjectRef(task)) ;
+  return phos->GetListOfTasks()->GetObjectRef(task) ;
 
 }
  
@@ -647,7 +647,7 @@ Bool_t AliPHOSGetter::PostRecPoints(const char * name) const
 }
 
 //____________________________________________________________________________ 
-void * AliPHOSGetter::EmcRecPointsRef(const char * name) const 
+TObject** AliPHOSGetter::EmcRecPointsRef(const char * name) const 
 { // -------------- RecPoints -------------------------------------------
   
   // the hierarchy is //Folders/Run/Event/RecData/PHOS/EMCARecPoints/name
@@ -668,12 +668,12 @@ void * AliPHOSGetter::EmcRecPointsRef(const char * name) const
   if ( !erp )   {
     return 0 ;
   }
-  return static_cast<void *>(phosFolder->GetListOfFolders()->GetObjectRef(erp)) ;
+  return phosFolder->GetListOfFolders()->GetObjectRef(erp) ;
 
 } 
 
 //____________________________________________________________________________ 
-void * AliPHOSGetter::CpvRecPointsRef(const char * name) const 
+TObject** AliPHOSGetter::CpvRecPointsRef(const char * name) const 
 { // -------------- RecPoints -------------------------------------------
   
   // the hierarchy is //Folders/Run/Event/RecData/PHOS/CPVRecPoints/name
@@ -693,7 +693,7 @@ void * AliPHOSGetter::CpvRecPointsRef(const char * name) const
   if ( !crp )   {
     return 0 ;
   }
-  return static_cast<void *>(phosFolder->GetListOfFolders()->GetObjectRef(crp)) ;
+  return phosFolder->GetListOfFolders()->GetObjectRef(crp) ;
 
 } 
 
@@ -732,7 +732,7 @@ Bool_t AliPHOSGetter::PostClusterizer(AliPHOSClusterizer * clu) const
 } 
 
 //____________________________________________________________________________ 
-void * AliPHOSGetter::ClusterizerRef(const char * name) const 
+TObject** AliPHOSGetter::ClusterizerRef(const char * name) const 
 { // ------------------ AliPHOSClusterizer ------------------------
   
   TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
@@ -763,7 +763,7 @@ void * AliPHOSGetter::ClusterizerRef(const char * name) const
   }
 
   if(clu) 
-    return static_cast<void *>(l->GetObjectRef(clu)) ;
+    return l->GetObjectRef(clu) ;
   else
     return 0 ;
 }
@@ -835,7 +835,7 @@ Bool_t AliPHOSGetter::PostTrackSegments(const char * name) const
 } 
 
 //____________________________________________________________________________ 
-void * AliPHOSGetter::TrackSegmentsRef(const char * name) const 
+TObject** AliPHOSGetter::TrackSegmentsRef(const char * name) const 
 { // ---------------TrackSegments -----------------------------------
   
   // the hierarchy is //Folders/Run/Event/RecData/PHOS/TrackSegments/name
@@ -855,7 +855,7 @@ void * AliPHOSGetter::TrackSegmentsRef(const char * name) const
   if (!tss) {
     return 0 ;  
   }
-  return static_cast<void *>(phosFolder->GetListOfFolders()->GetObjectRef(tss)) ;
+  return phosFolder->GetListOfFolders()->GetObjectRef(tss) ;
 } 
 
 //____________________________________________________________________________ 
@@ -929,7 +929,7 @@ Bool_t AliPHOSGetter::PostTrackSegmentMaker(const char * name) const
 } 
 
 //____________________________________________________________________________ 
-void * AliPHOSGetter::TSMakerRef(const char * name) const 
+TObject** AliPHOSGetter::TSMakerRef(const char * name) const 
 { //------------Track Segment Maker ------------------------------
   
   TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
@@ -960,7 +960,7 @@ void * AliPHOSGetter::TSMakerRef(const char * name) const
   }
   
   if(tsm) 
-    return static_cast<void *>(l->GetObjectRef(tsm)) ;
+    return l->GetObjectRef(tsm) ;
   else
     return 0 ;
   
@@ -1001,7 +1001,7 @@ Bool_t AliPHOSGetter::PostRecParticles(const char * name) const
 } 
 
 //____________________________________________________________________________ 
-void * AliPHOSGetter::RecParticlesRef(const char * name) const 
+TObject** AliPHOSGetter::RecParticlesRef(const char * name) const 
 { // ---------------TrackSegments -----------------------------------
   
   // the hierarchy is //Folders/Run/Event/RecData/PHOS/TrackSegments/name
@@ -1021,7 +1021,7 @@ void * AliPHOSGetter::RecParticlesRef(const char * name) const
   if (!tss) {
     return 0 ;  
   }
-  return static_cast<void *>(phosFolder->GetListOfFolders()->GetObjectRef(tss)) ;
+  return phosFolder->GetListOfFolders()->GetObjectRef(tss) ;
 }
 
 //____________________________________________________________________________ 
@@ -1099,7 +1099,7 @@ Bool_t AliPHOSGetter::PostPID(const char * name) const
 } 
 
 //____________________________________________________________________________ 
-void * AliPHOSGetter::PIDRef(const char * name) const 
+TObject** AliPHOSGetter::PIDRef(const char * name) const 
 { //------------PID ------------------------------
 
   TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
@@ -1130,7 +1130,7 @@ void * AliPHOSGetter::PIDRef(const char * name) const
   }
   
   if(pid) 
-    return static_cast<void *>(l->GetObjectRef(pid)) ;
+    return l->GetObjectRef(pid) ;
   else
     return 0 ;
   
@@ -1155,7 +1155,7 @@ Bool_t AliPHOSGetter::PostQA(void) const
 }
 
 //____________________________________________________________________________ 
-void * AliPHOSGetter::AlarmsRef(void) const 
+TObject** AliPHOSGetter::AlarmsRef(void) const 
 {  //------- Alarms ----------------------
 
   
@@ -1171,7 +1171,7 @@ void * AliPHOSGetter::AlarmsRef(void) const
     return 0;
   }
    
-  return static_cast<void *>(fQAFolder->GetListOfFolders()->GetObjectRef(phosFolder)) ;
+  return fQAFolder->GetListOfFolders()->GetObjectRef(phosFolder) ;
 }
 
 //____________________________________________________________________________ 
@@ -1290,10 +1290,27 @@ void AliPHOSGetter::ReadTreeH()
   if(!Hits())
     PostHits() ;
 
-  hitsbranch->SetAddress(HitsRef()) ;
-
-  hitsbranch->GetEntry(0) ;
-
+  if (hitsbranch->GetEntries() > 1 ) {
+    TClonesArray * tempo =  new TClonesArray("AliPHOSHit",1000) ;
+    TClonesArray * hits = dynamic_cast<TClonesArray*>(*HitsRef()) ; 
+    hitsbranch->SetAddress(&tempo) ;
+    Int_t index = 0 ; 
+    Int_t i = 0 ;
+    for (i = 0 ; i < hitsbranch->GetEntries() ; i++) {
+      hitsbranch->GetEntry(i) ;
+      Int_t j = 0 ; 
+      for ( j = 0 ; j < tempo->GetEntries() ; j++) { 
+	const AliPHOSHit * hit = static_cast<const AliPHOSHit *>(tempo->At(j)) ; 
+	new((*hits)[index]) AliPHOSHit( *hit ) ;
+	index++ ; 
+      }
+    }
+    delete tempo ; 
+  }
+  else {
+    hitsbranch->SetAddress(HitsRef()) ;
+    hitsbranch->GetEntry(0) ;
+  }
 }
 
 //____________________________________________________________________________ 
@@ -1314,6 +1331,7 @@ void AliPHOSGetter::Track(Int_t itrack)
   }  
   if(!Hits())
     PostHits() ;
+
   hitsbranch->SetAddress(HitsRef()) ;
   hitsbranch->GetEntry(itrack) ;
 
@@ -1407,16 +1425,18 @@ void AliPHOSGetter::ReadTreeR()
   }   
   
   // Read and Post the RecPoints
-  if(!EmcRecPoints(fRecPointsTitle) )
+  if(!EmcRecPoints(fRecPointsTitle) ) 
     PostRecPoints(fRecPointsTitle) ;
+
   emcbranch->SetAddress(EmcRecPointsRef(fRecPointsTitle)) ;
   emcbranch->GetEntry(0) ;
 
-  cpvbranch->SetAddress(CpvRecPointsRef(fRecPointsTitle)) ;
+  cpvbranch->SetAddress(CpvRecPointsRef(fRecPointsTitle)) ; 
   cpvbranch->GetEntry(0) ;
   
   if(!Clusterizer(fRecPointsTitle) )
     PostClusterizer(fRecPointsTitle) ;
+
   clusterizerbranch->SetAddress(ClusterizerRef(fRecPointsTitle)) ;
   clusterizerbranch->GetEntry(0) ;
  
@@ -1449,12 +1469,14 @@ void AliPHOSGetter::ReadTreeR()
   // Read and Post the TrackSegments
   if(!TrackSegments(fTrackSegmentsTitle))
     PostTrackSegments(fTrackSegmentsTitle) ;
+
   tsbranch->SetAddress(TrackSegmentsRef(fTrackSegmentsTitle)) ;
   tsbranch->GetEntry(0) ;
   
   // Read and Post the TrackSegment Maker
   if(!TrackSegmentMaker(fTrackSegmentsTitle))
     PostTrackSegmentMaker(fTrackSegmentsTitle) ;
+ 
   tsmakerbranch->SetAddress(TSMakerRef(fTrackSegmentsTitle)) ;
   tsmakerbranch->GetEntry(0) ;
   
@@ -1487,12 +1509,14 @@ void AliPHOSGetter::ReadTreeR()
   // Read and Post the RecParticles
   if(!RecParticles(fRecParticlesTitle))
     PostRecParticles(fRecParticlesTitle) ;
+
   rpabranch->SetAddress(RecParticlesRef(fRecParticlesTitle)) ;
   rpabranch->GetEntry(0) ;
   
   // Read and Post the PID
   if(!PID(fRecParticlesTitle))
     PostPID(fRecParticlesTitle) ;
+
   pidbranch->SetAddress(PIDRef(fRecParticlesTitle)) ;
   pidbranch->GetEntry(0) ;
   
@@ -1564,6 +1588,7 @@ void AliPHOSGetter::ReadTreeS(Int_t event)
     
     if ( !folder->FindObject(fSDigitsTitle) )  
       PostSDigits(fSDigitsTitle,folder->GetName()) ;
+
     sdigitsBranch->SetAddress(SDigitsRef(fSDigitsTitle,folder->GetName())) ;
     sdigitsBranch->GetEntry(0) ;
     
@@ -1572,6 +1597,7 @@ void AliPHOSGetter::ReadTreeS(Int_t event)
     sdname+=folder->GetName() ;
     if(!SDigitizer(sdname) ) 
       PostSDigitizer(fSDigitsTitle,folder->GetName()) ;
+
     sdigitizerBranch->SetAddress(SDigitizerRef(sdname)) ;
     sdigitizerBranch->GetEntry(0) ;
     
@@ -1760,7 +1786,7 @@ void AliPHOSGetter::Event(const Int_t event, const char* opt)
     return ; 
   }
   gAlice->GetEvent(event) ; 
- 
+
   if(strstr(opt,"H") )
     ReadTreeH() ;
   

@@ -129,7 +129,7 @@ class AliPHOSGetter : public TObject {
   }
   
   // RecPoints
-  TObjArray * EmcRecPoints(const char * name = 0) { 
+  TObjArray * EmcRecPoints(const char * name = 0) {
     return static_cast<TObjArray*>(ReturnO("EmcRecPoints", name)) ; 
   }
   TObjArray * CpvRecPoints(const char * name = 0) { 
@@ -197,21 +197,21 @@ private:
   void ReadTreeQA() ;
   void ReadPrimaries() ;
 
-  void * PrimariesRef(void) const ;
-  void * HitsRef(void) const ;
-  void * SDigitsRef(const char * name, const char * file = 0 ) const;
-  void * DigitsRef (const char * name)   const ;
-  void * EmcRecPointsRef (const char * name) const ;
-  void * CpvRecPointsRef (const char * name) const ;
-  void * TrackSegmentsRef(const char * name)   const ;
-  void * RecParticlesRef (const char * name)   const ;
-  void * AlarmsRef (void)   const ;
+  TObject** PrimariesRef(void) const ;
+  TObject** HitsRef(void) const ;
+  TObject** SDigitsRef(const char * name, const char * file = 0 ) const;
+  TObject** DigitsRef (const char * name)   const ;
+  TObject** EmcRecPointsRef (const char * name) const ;
+  TObject** CpvRecPointsRef (const char * name) const ;
+  TObject** TrackSegmentsRef(const char * name)   const ;
+  TObject** RecParticlesRef (const char * name)   const ;
+  TObject** AlarmsRef (void)   const ;
 
-  void * SDigitizerRef (const char * name) const ; 
-  void * DigitizerRef  (const char * name) const ; 
-  void * ClusterizerRef(const char * name) const ; 
-  void * TSMakerRef    (const char * name) const ; 
-  void * PIDRef        (const char * name) const ; 
+  TObject** SDigitizerRef (const char * name) const ; 
+  TObject** DigitizerRef  (const char * name) const ; 
+  TObject** ClusterizerRef(const char * name) const ; 
+  TObject** TSMakerRef    (const char * name) const ; 
+  TObject** PIDRef        (const char * name) const ; 
 
  private:
 
