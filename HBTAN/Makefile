@@ -61,13 +61,13 @@ FFLAGS      = $(FOPT) -I$(ALICE_ROOT)/GEANT321
  
 # Target
 
-SLIBRARY	= $(LIBDIR)/libHBTAnalysis.$(SL)
-ALIBRARY	= $(LIBDIR)/libHBTAnalysis.a
+SLIBRARY	= $(LIBDIR)/libHBTAN.$(SL)
+ALIBRARY	= $(LIBDIR)/libHBTAN.a
 
 default:	$(SLIBRARY)
 
 
-$(LIBDIR)/libHBTAnalysis.$(SL):		$(OBJS)
+$(LIBDIR)/libHBTAN.$(SL):		$(OBJS)
 
 $(DICT):			$(HDRS)
 
