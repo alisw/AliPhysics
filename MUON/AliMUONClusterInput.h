@@ -43,7 +43,7 @@ class AliMUONClusterInput : public TObject {
     Float_t DiscrChargeCombiS2(Int_t i,Double_t *par, Int_t cath);
 // 
  protected:
-    AliMUONClusterInput(){;}
+    AliMUONClusterInput();
     AliMUONClusterInput(const AliMUONClusterInput& clusterInput){;}
     AliMUONClusterInput & operator = (const AliMUONClusterInput& rhs);
  private:

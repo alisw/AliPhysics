@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.42  2001/01/17 20:53:40  hristov
+Destructors corrected to avoid memory leaks
+
 Revision 1.41  2000/12/21 22:12:40  morsch
 Clean-up of coding rule violations,
 
@@ -252,6 +255,11 @@ AliMUON::AliMUON()
    fAccMin          = 0.;
    fAccMax          = 0.;   
    fAccCut          = kFALSE;
+   fChambers        = 0;
+   fHits2           = 0;
+   fPadHits2        = 0;
+   fFileName        = 0;
+   fTrH1            = 0;
 }
  
 //___________________________________________
@@ -263,6 +271,10 @@ AliMUON::AliMUON(const char *name, const char *title)
 <img src="gif/alimuon.gif">
 */
 //End_Html
+   fHits2           = 0;
+   fPadHits2        = 0;
+   fFileName        = 0;
+   fTrH1            = 0;
 
    fHits     = new TClonesArray("AliMUONHit",1000);
    gAlice->AddHitList(fHits);

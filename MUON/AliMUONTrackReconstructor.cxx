@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.4  2000/12/21 22:14:38  morsch
+Clean-up of coding rule violations.
+
 Revision 1.3  2000/10/02 21:28:09  fca
 Removal of useless dependecies via forward declarations
 
@@ -175,6 +178,7 @@ AliMUONTrackReconstructor::AliMUONTrackReconstructor()
    fSSigmaCut = 4.0;
    fSXPrec    = 0.01; 
    fSYPrec    = 0.144;
+   fFileName = 0;
 }
 
 //_____________________________________________________________________________

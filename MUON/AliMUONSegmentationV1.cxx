@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.7  2000/10/18 11:42:06  morsch
+- AliMUONRawCluster contains z-position.
+- Some clean-up of useless print statements during initialisations.
+
 Revision 1.6  2000/10/03 21:48:07  morsch
 Adopt to const declaration of some of the methods in AliSegmentation.
 
@@ -76,6 +80,7 @@ AliMUONSegmentationV1::AliMUONSegmentationV1()
     fDpx=0.0; // forces crash if not initialized by user
     fNZoneCut[0]=0;
     fSensOffset=0;
+    fCorr = 0;
 }
 
 

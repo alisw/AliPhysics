@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.16  2000/12/21 23:27:30  morsch
+Error in argument list of AddRawCluster corrected.
+
 Revision 1.15  2000/12/21 22:14:38  morsch
 Clean-up of coding rule violations.
 
@@ -133,6 +136,13 @@ ClassImp(AliMUONClusterFinderVS)
     fHitMap[0] = 0;
     fHitMap[1] = 0;
     fTrack[0]=fTrack[1]=-1;
+    fSeg[0]    = 0;
+    fSeg[1]    = 0;
+    for(Int_t i=0; i<100; i++) {
+      for (Int_t j=0; j<2; j++) {
+        fDig[i][j] = 0;
+      }
+    }
 }
 
 AliMUONClusterFinderVS::AliMUONClusterFinderVS(

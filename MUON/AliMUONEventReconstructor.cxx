@@ -15,6 +15,24 @@
 
 /*
 $Log$
+Revision 1.20  2001/01/08 11:01:02  gosset
+Modifications used for addendum to Dimuon TDR (JP Cussonneau):
+*. MaxBendingMomentum to make both a segment and a track (default 500)
+*. MaxChi2 per degree of freedom to make a track (default 100)
+*. MinBendingMomentum used also to make a track
+   and not only a segment (default 3)
+*. wider roads for track search in stations 1 to 3
+*. extrapolation to actual Z instead of Z(chamber) in FollowTracks
+*. in track fit:
+   - limits on parameters X and Y (+/-500)
+   - covariance matrices in double precision
+   - normalization of covariance matrices before inversion
+   - suppression of Minuit printouts
+*. correction against memory leak (delete extrapHit) in FollowTracks
+*. RMax to 10 degrees with Z(chamber) instead of fixed values;
+   RMin and Rmax cuts suppressed in NewHitForRecFromGEANT,
+   because useless with realistic geometry
+
 Revision 1.19  2000/11/20 11:24:10  gosset
 New package for reconstructed tracks (A. Gheata):
 * tree output in the file "tree_reco.root"
@@ -169,6 +187,12 @@ ClassImp(AliMUONEventReconstructor) // Class implementation in ROOT context
   //__________________________________________________________________________
 AliMUONEventReconstructor::AliMUONEventReconstructor(void)
 {
+  fBkgGeantFile = 0;
+  fBkgGeantTK = 0;
+  fBkgGeantParticles = 0;
+  fBkgGeantTH = 0;
+  fBkgGeantHits = 0;
+
   // Constructor for class AliMUONEventReconstructor
   SetReconstructionParametersToDefaults();
   // Memory allocation for the TClonesArray of hits for reconstruction

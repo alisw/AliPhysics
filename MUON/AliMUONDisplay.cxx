@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/10/06 09:09:01  morsch
+Pad colour according to z-position (slats).
+
 Revision 1.7  2000/10/02 21:28:09  fca
 Removal of useless dependecies via forward declarations
 
@@ -165,6 +168,7 @@ AliMUONDisplay::AliMUONDisplay()
     fCpoints = 0;
     fCanvas = 0;
     fNextCathode = kFALSE; 
+    fColPad = 0;
 }
 
 //_____________________________________________________________________________

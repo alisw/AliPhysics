@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/12/21 22:14:38  morsch
+Clean-up of coding rule violations.
+
 Revision 1.6  2000/10/06 09:04:50  morsch
 
 - Dummy z-arguments in GetPadI, SetHit, FirstPad replaced by real z-coordinate
@@ -67,6 +70,17 @@ ClassImp(AliMUONClusterInput)
 
 AliMUONClusterInput* AliMUONClusterInput::fgClusterInput = 0; 
 TMinuit* AliMUONClusterInput::fgMinuit = 0; 
+
+AliMUONClusterInput::AliMUONClusterInput(){
+  fgClusterInput = 0; 
+  fgMinuit = 0; 
+  fDigits[0]=0;
+  fDigits[1]=0;
+  fSegmentation[0]=0;
+  fSegmentation[1]=0;
+  fResponse=0;
+  fCluster=0;
+}
 
 AliMUONClusterInput* AliMUONClusterInput::Instance()
 {

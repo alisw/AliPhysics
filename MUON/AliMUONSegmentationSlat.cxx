@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/01/17 20:53:40  hristov
+Destructors corrected to avoid memory leaks
+
 Revision 1.8  2000/12/21 22:12:41  morsch
 Clean-up of coding rule violations,
 
@@ -63,7 +66,9 @@ AliMUONSegmentationSlat::AliMUONSegmentationSlat()
 {
 // Default constructor
     fSlats=0;            
-    fNDiv = new TArrayI(4);   
+    fNDiv = new TArrayI(4);
+    fChamber = 0;
+    fCurrentSlat = 0;
 }
 
 AliMUONSegmentationSlat::~AliMUONSegmentationSlat(){

@@ -17,7 +17,7 @@ class TF1;
 class AliMUONSegmentationV0 :
 public AliSegmentation {
  public:
-    AliMUONSegmentationV0(){}
+    AliMUONSegmentationV0(){fCorr=0;fChamber=0;}
     AliMUONSegmentationV0(const AliMUONSegmentationV0 & segmentation);
     
     virtual ~AliMUONSegmentationV0(){}

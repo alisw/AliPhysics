@@ -15,7 +15,7 @@ class AliMUONChamber;
 class AliMUONSegmentationTrigger :
 public AliMUONSegmentationV0 {
  public:
-    AliMUONSegmentationTrigger(){};
+    AliMUONSegmentationTrigger(){fChamber=0;}
     virtual ~AliMUONSegmentationTrigger(){}  
     virtual void Init(Int_t chamber);         // Initialization
     Int_t ModuleNumber(Int_t imodule);  // returns module number of ModuleId
