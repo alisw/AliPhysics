@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2001/09/25 11:28:48  morsch
+Possibility to store and retrieve primary vertex position added.
+
 Revision 1.1  2001/05/16 14:57:22  alibrary
 New files for folders and Stack
 
@@ -53,6 +56,7 @@ AliGenEventHeader::AliGenEventHeader(const char * name)
 // Constructor
     fNProduced      = -1;      
     fImpactParameter= -1.;
+    fVertex.Set(3);
 }
 
 void AliGenEventHeader::SetPrimaryVertex(const TArrayF &o)
