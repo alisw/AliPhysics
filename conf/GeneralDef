@@ -45,17 +45,17 @@ check/%.viol : check/%.i
 	@$(CODE_CHECK) check/$*.i ./ > check/$*.viol
 
 tgt_$(ALICE_TARGET)/%.o : %.c
-	@echo %.c
+	@echo $*.c
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	@$(CC) $(CFLAGS) -c $*.c -o tgt_$(ALICE_TARGET)/$*.o
 
 tgt_$(ALICE_TARGET)/%.o : %.f
-	@echo %.f
+	@echo $*.f
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	@$(F77) $(FFLAGS) -c $*.f -o tgt_$(ALICE_TARGET)/$*.o
 
 tgt_$(ALICE_TARGET)/%.o : %.F
-	@echo %.F
+	@echo $*.F
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	@$(F77) $(FFLAGS) -c $*.F -o tgt_$(ALICE_TARGET)/$*.o
 
