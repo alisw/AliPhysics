@@ -40,8 +40,15 @@ ClassImp(AliPHOSReconstructor)
   AliPHOSReconstructor::AliPHOSReconstructor() : fDebug(kFALSE) 
 {
   // ctor
+
 } 
 
+//____________________________________________________________________________
+  AliPHOSReconstructor::~AliPHOSReconstructor()
+{
+  // dtor
+
+} 
 
 //____________________________________________________________________________
 void AliPHOSReconstructor::Reconstruct(AliRunLoader* runLoader) const 
@@ -60,6 +67,8 @@ void AliPHOSReconstructor::Reconstruct(AliRunLoader* runLoader) const
     clu.ExecuteTask("deb all") ; 
   else 
     clu.ExecuteTask("") ;  
+
+  AliPHOSGetter::Instance()->PhosLoader()->CleanReconstructioner();
 }
 
 //____________________________________________________________________________
@@ -71,26 +80,27 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   TString headerFile(runLoader->GetFileName()) ; 
   TString branchName("Default") ;  
 
-  AliPHOSTrackSegmentMakerv1 tsMaker(headerFile, branchName);
-  AliPHOSPIDv1 pID(headerFile, branchName);
+  AliPHOSTrackSegmentMakerv1 tsm(headerFile, branchName);
+  AliPHOSPIDv1 pid(headerFile, branchName);
 
-  AliPHOSGetter *gime = AliPHOSGetter::Instance( (runLoader->GetFileName()).Data() ) ;
-  Int_t eventNumber = gime->EventNumber();
+  //  AliPHOSGetter *gime = AliPHOSGetter::Instance() ;
+  Int_t eventNumber = runLoader->GetEventNumber() ;
   // do current event; the loop over events is done by AliReconstruction::Run()
-  tsMaker.SetEventRange(eventNumber, eventNumber) ; 
-  pID.SetEventRange(eventNumber, eventNumber) ; 
+  Info("FillESD 1", "%d", eventNumber) ;
+  tsm.SetEventRange(eventNumber, eventNumber) ; 
+  pid.SetEventRange(eventNumber, eventNumber) ; 
   if ( Debug() ) {
-   tsMaker.ExecuteTask("deb all") ;
-   pID.ExecuteTask("deb all") ;
+   tsm.ExecuteTask("deb all") ;
+   pid.ExecuteTask("deb all") ;
   }
   else {
-    tsMaker.ExecuteTask("") ;
-    pID.ExecuteTask("") ;
+    tsm.ExecuteTask("") ;
+    pid.ExecuteTask("") ;
   }
   
   // Creates AliESDtrack from AliPHOSRecParticles 
-  gime->Event(eventNumber, "P") ; 
-  TClonesArray *recParticles = gime->RecParticles();
+  AliPHOSGetter::Instance()->Event(eventNumber, "P") ; 
+  TClonesArray *recParticles = AliPHOSGetter::Instance()->RecParticles();
   Int_t nOfRecParticles = recParticles->GetEntries();
   for (Int_t recpart = 0 ; recpart < nOfRecParticles ; recpart++) {
     AliPHOSRecParticle * rp = dynamic_cast<AliPHOSRecParticle*>(recParticles->At(recpart));

@@ -37,8 +37,7 @@ public:
     // requested by the Coding Convention
     Fatal("cpy ctor", "not implemented") ;
   }
-   
-  virtual ~AliPHOSReconstructor() {} ;
+  ~AliPHOSReconstructor() ; //dtor            
 
   Bool_t                     Debug() const { return fDebug ; }
   virtual void               FillESD(AliRunLoader* runLoader, AliESD* esd) const ;
