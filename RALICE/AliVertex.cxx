@@ -170,6 +170,7 @@ void AliVertex::Init()
  fJets=0;
  fJetTracks=0;
  fJetCopy=0;
+ fLines=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliVertex::AliVertex(Int_t n)
@@ -216,6 +217,11 @@ AliVertex::~AliVertex()
  {
   delete fJetTracks;
   fJetTracks=0;
+ }
+ if (fLines)
+ {
+  delete fLines;
+  fLines=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -355,6 +361,12 @@ void AliVertex::Reset()
  {
   delete fJetTracks;
   fJetTracks=0;
+ }
+ 
+ if (fLines)
+ {
+  delete fLines;
+  fLines=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -823,5 +835,109 @@ Int_t AliVertex::IsJetTrack(AliTrack* t)
   if (fJetTracks->FindObject(t)) jetflag=1;
  }
  return jetflag;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliVertex::Draw(Int_t secs,Int_t cons,Int_t jets)
+{
+// 3-Dimensional visualisation of an AliVertex with its attributes.
+// The displayed tracklength is proportional to the momentum of the track.
+//
+// Color conventions :
+// -------------------
+// positive track : red
+// neutral  track : green
+// negative track : blue
+// jet-track      : magenta (if explicit marking selected)
+//
+// secs = 1 --> Draw secondary vertices.
+//        0 --> Don't draw secondary vertices.
+//
+// cons = 1 --> Draw (auto generated) connecting tracks. 
+//        0 --> Don't draw (auto generated) connecting tracks.
+//                  
+// jets = 1 --> Mark tracks belonging to jets.
+//        0 --> Don't mark jet-tracks.
+//
+// Notes :
+// -------
+// Auto generated connecting tracks will be drawn as thin lines.
+// Tracks belonging to jets will be marked as somewhat thinner magenta lines.
+// This memberfunction is used recursively.
+//
+ Double_t vec[3]={0,0,0};
+ AliTrack* tx=0;
+ AliVertex* vx=0;
+ AliPosition r;
+ Ali3Vector p;
+ Int_t charge;
+
+ if (fLines) delete fLines;
+ fLines=new TObjArray();
+ fLines->SetOwner();
+
+ Int_t ntk=GetNtracks();
+ for (Int_t jtk=1; jtk<=ntk; jtk++)
+ {
+  tx=GetTrack(jtk);
+
+  if (!tx) continue;
+
+  charge=tx->GetCharge();
+
+  TPolyLine3D* line=new TPolyLine3D();
+  fLines->Add(line);
+
+  if (IsConnectTrack(tx))
+  {
+   if (cons==1)
+   {
+    r=tx->GetBeginPoint();
+    r.GetPosition(vec,"car");
+    line->SetNextPoint(vec[0],vec[1],vec[2]);
+    r=tx->GetEndPoint();
+    r.GetPosition(vec,"car");
+    line->SetNextPoint(vec[0],vec[1],vec[2]);
+    line->SetLineWidth(1);
+   }
+  }
+  else
+  {
+   r=tx->GetClosestPoint();
+   r.GetPosition(vec,"car");
+   line->SetNextPoint(vec[0],vec[1],vec[2]);
+   p=tx->Get3Momentum();
+   p=p+r;
+   p.GetVector(vec,"car");
+   line->SetNextPoint(vec[0],vec[1],vec[2]);
+   line->SetLineWidth(3);
+  }
+
+  if (charge>0) line->SetLineColor(kRed);   // Positive track
+  if (!charge)  line->SetLineColor(kGreen); // Neutral track
+  if (charge<0) line->SetLineColor(kBlue);  // Negative track
+ 
+  // Mark tracks belonging to jets
+  if (IsJetTrack(tx))
+  {
+   if (jets==1)
+   {
+    line->SetLineWidth(2);
+    line->SetLineColor(kMagenta);
+   }
+  }
+    
+  line->Draw();
+ }
+
+ // Go for secondary vertices if selected
+ if (secs==1)
+ {
+  Int_t nvtx=GetNvertices();
+  for (Int_t jvtx=1; jvtx<=nvtx; jvtx++)
+  {
+   vx=GetVertex(jvtx);
+   if (vx) vx->Draw(secs,cons,jets);
+  }
+ }
 }
 ///////////////////////////////////////////////////////////////////////////

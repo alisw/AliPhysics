@@ -10,6 +10,7 @@
  
 #include "TObject.h"
 #include "TObjArray.h"
+#include "TPolyLine3D.h"
  
 #include "AliJet.h"
 #include "AliPosition.h"
@@ -44,6 +45,7 @@ class AliVertex : public AliJet,public AliPosition
   Int_t GetJetCopy();                     // Provide JetCopy flag value      
   Int_t IsConnectTrack(AliTrack* t);      // Indicate if track is created by vertex connection
   Int_t IsJetTrack(AliTrack* t);          // Indicate if track is resulting from jet addition
+  void Draw(Int_t secs=1,Int_t cons=1,Int_t jets=0); // Draw the vertex in an event display
 
  protected:
   void Init();          // Initialisation of pointers etc... 
@@ -57,10 +59,11 @@ class AliVertex : public AliJet,public AliPosition
   TObjArray* fJets;     // Array to hold the pointers to the jets
   TObjArray* fJetTracks;// Array to hold the pointers to tracks introduced by jet addition
   Int_t fJetCopy;       // Flag to denote creation of private copies in fJets
+  TObjArray* fLines;    //! Array to (temporarily) store the 3D lines for the event display 
 
  private:
   void Dump(AliVertex* v,Int_t n,TString f); // Recursively print all sec. vertices
  
- ClassDef(AliVertex,1) // Creation and investigation of an AliVertex.
+ ClassDef(AliVertex,2) // Creation and investigation of an AliVertex.
 };
 #endif
