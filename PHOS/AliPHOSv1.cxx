@@ -288,7 +288,7 @@ void AliPHOSv1::FinishEvent()
     newdigit = (AliPHOSDigit *) fDigits->At(i) ; 
     newdigit->SetIndexInList(i) ; 
   }
-  
+ 
 }
 
 //___________________________________________________________________________
