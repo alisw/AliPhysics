@@ -57,6 +57,15 @@ class AliMUONTrackParam : public TObject
 
   void SetGeant3Parameters(Double_t *VGeant3, Double_t ForwardBackward);
   void GetFromGeant3Parameters(Double_t *VGeant3, Double_t Charge);
+  void ExtrapOneStepHelix(Double_t charge, Double_t step, 
+			  Double_t *vect, Double_t *vout);
+  void ExtrapOneStepHelix3(Double_t field, Double_t step, 
+			   Double_t *vect, Double_t *vout);
+
+  void ExtrapOneStepRungekutta(Double_t charge, Double_t step, 
+			       Double_t* vect, Double_t* vout);
+
+  void GetField(Double_t *Position, Double_t *Field);
 
   ClassDef(AliMUONTrackParam, 1) // Track parameters in ALICE dimuon spectrometer
     };

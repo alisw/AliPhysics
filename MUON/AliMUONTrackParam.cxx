@@ -26,8 +26,6 @@
 ///////////////////////////////////////////////////
 
 #include <Riostream.h>
-
-#include "AliCallf77.h" 
 #include "AliMUON.h"
 #include "AliMUONTrackParam.h" 
 #include "AliMUONChamber.h"
@@ -36,41 +34,6 @@
 #include "AliLog.h" 
 
 ClassImp(AliMUONTrackParam) // Class implementation in ROOT context
-
-  // A few calls in Fortran or from Fortran (extrap.F).
-  // Needed, instead of calls to Geant subroutines,
-  // because double precision is necessary for track fit converging with Minuit.
-  // The "extrap" functions should be translated into C++ ????
-#ifndef WIN32 
-# define extrap_onestep_helix extrap_onestep_helix_
-# define extrap_onestep_helix3 extrap_onestep_helix3_
-# define extrap_onestep_rungekutta extrap_onestep_rungekutta_
-# define gufld_double gufld_double_
-#else 
-# define extrap_onestep_helix EXTRAP_ONESTEP_HELIX
-# define extrap_onestep_helix3 EXTRAP_ONESTEP_HELIX3
-# define extrap_onestep_rungekutta EXTRAP_ONESTEP_RUNGEKUTTA
-# define gufld_double GUFLD_DOUBLE
-#endif 
-
-extern "C" {
-  void type_of_call extrap_onestep_helix
-  (Double_t &Charge, Double_t &StepLength, Double_t *VGeant3, Double_t *VGeant3New);
-
-  void type_of_call extrap_onestep_helix3
-  (Double_t &Field, Double_t &StepLength, Double_t *VGeant3, Double_t *VGeant3New);
-
-  void type_of_call extrap_onestep_rungekutta
-  (Double_t &Charge, Double_t &StepLength, Double_t *VGeant3, Double_t *VGeant3New);
-
-  void type_of_call gufld_double(Double_t *Position, Double_t *Field) {
-    // interface to "gAlice->Field()->Field" for arguments in double precision
-    Float_t x[3], b[3];
-    x[0] = Position[0]; x[1] = Position[1]; x[2] = Position[2];
-    gAlice->Field()->Field(x, b);
-    Field[0] = b[0]; Field[1] = b[1]; Field[2] = b[2];
-  }
-}
 
   //_________________________________________________________________________
 AliMUONTrackParam::AliMUONTrackParam()
@@ -144,8 +107,8 @@ void AliMUONTrackParam::ExtrapToZ(Double_t Z)
 	 (stepNumber < maxStepNumber)) {
     stepNumber++;
     // Option for switching between helix and Runge-Kutta ???? 
-    // extrap_onestep_rungekutta(chargeExtrap, stepLength, vGeant3, vGeant3New);
-    extrap_onestep_helix(chargeExtrap, stepLength, vGeant3, vGeant3New);
+    //ExtrapOneStepRungekutta(chargeExtrap, stepLength, vGeant3, vGeant3New);
+    ExtrapOneStepHelix(chargeExtrap, stepLength, vGeant3, vGeant3New);
     if ((-forwardBackward * (vGeant3New[2] - Z)) > 0.0) break; // one is beyond Z spectro. z<0
     // better use TArray ????
     for (iGeant3 = 0; iGeant3 < 7; iGeant3++)
@@ -575,3 +538,460 @@ Double_t AliMUONTrackParam::P()
   return p;
   
 }
+ //__________________________________________________________________________
+void AliMUONTrackParam::ExtrapOneStepHelix(Double_t charge, Double_t step, 
+					 Double_t *vect, Double_t *vout) 
+{
+//    ******************************************************************
+//    *                                                                *
+//    *  Performs the tracking of one step in a magnetic field         *
+//    *  The trajectory is assumed to be a helix in a constant field   *
+//    *  taken at the mid point of the step.                           *
+//    *  Parameters:                                                   *
+//    *   input                                                        *
+//    *     STEP =arc length of the step asked                         *
+//    *     VECT =input vector (position,direction cos and momentum)   *
+//    *     CHARGE=  electric charge of the particle                   *
+//    *   output                                                       *
+//    *     VOUT = same as VECT after completion of the step           *
+//    *                                                                *
+//    *    ==>Called by : <USER>, GUSWIM                               *
+//    *       Author    m.hansroul  *********                          *
+//    *       modified  s.egli, s.v.levonian                           *
+//    *       modified  v.perevoztchikov
+//    *                                                                *
+//    ******************************************************************
+//
+
+// modif: everything in double precision
+
+    Double_t xyz[3], h[4], hxp[3];
+    Double_t h2xy, hp, rho, tet;
+    Double_t sint, sintt, tsint, cos1t;
+    Double_t f1, f2, f3, f4, f5, f6;
+
+    const Int_t ix  = 0;
+    const Int_t iy  = 1;
+    const Int_t iz  = 2;
+    const Int_t ipx = 3;
+    const Int_t ipy = 4;
+    const Int_t ipz = 5;
+    const Int_t ipp = 6;
+
+    const Double_t ec = 2.9979251e-4;
+    //
+    //    ------------------------------------------------------------------
+    //
+    //       units are kgauss,centimeters,gev/c
+    //
+    vout[ipp] = vect[ipp];
+    if (TMath::Abs(charge) < 0.00001) {
+      for (Int_t i = 0; i < 3; i++) {
+	vout[i] = vect[i] + step * vect[i+3];
+	vout[i+3] = vect[i+3];
+      }
+      return;
+    }
+    xyz[0]    = vect[ix] + 0.5 * step * vect[ipx];
+    xyz[1]    = vect[iy] + 0.5 * step * vect[ipy];
+    xyz[2]    = vect[iz] + 0.5 * step * vect[ipz];
+
+    //cmodif: call gufld (xyz, h) changed into:
+    GetField (xyz, h);
+ 
+    h2xy = h[0]*h[0] + h[1]*h[1];
+    h[3] = h[2]*h[2]+ h2xy;
+    if (h[3] < 1.e-12) {
+      for (Int_t i = 0; i < 3; i++) {
+	vout[i] = vect[i] + step * vect[i+3];
+	vout[i+3] = vect[i+3];
+      }
+      return;
+    }
+    if (h2xy < 1.e-12*h[3]) {
+      ExtrapOneStepHelix3(charge*h[2], step, vect, vout);
+      return;
+    }
+    h[3] = TMath::Sqrt(h[3]);
+    h[0] /= h[3];
+    h[1] /= h[3];
+    h[2] /= h[3];
+    h[3] *= ec;
+
+    hxp[0] = h[1]*vect[ipz] - h[2]*vect[ipy];
+    hxp[1] = h[2]*vect[ipx] - h[0]*vect[ipz];
+    hxp[2] = h[0]*vect[ipy] - h[1]*vect[ipx];
+ 
+    hp = h[0]*vect[ipx] + h[1]*vect[ipy] + h[2]*vect[ipz];
+
+    rho = -charge*h[3]/vect[ipp];
+    tet = rho * step;
+
+    if (TMath::Abs(tet) > 0.15) {
+      sint = TMath::Sin(tet);
+      sintt = (sint/tet);
+      tsint = (tet-sint)/tet;
+      cos1t = 2.*(TMath::Sin(0.5*tet))*(TMath::Sin(0.5*tet))/tet;
+    } else {
+      tsint = tet*tet/36.;
+      sintt = (1. - tsint);
+      sint = tet*sintt;
+      cos1t = 0.5*tet;
+    }
+
+    f1 = step * sintt;
+    f2 = step * cos1t;
+    f3 = step * tsint * hp;
+    f4 = -tet*cos1t;
+    f5 = sint;
+    f6 = tet * cos1t * hp;
+ 
+    vout[ix] = vect[ix] + f1*vect[ipx] + f2*hxp[0] + f3*h[0];
+    vout[iy] = vect[iy] + f1*vect[ipy] + f2*hxp[1] + f3*h[1];
+    vout[iz] = vect[iz] + f1*vect[ipz] + f2*hxp[2] + f3*h[2];
+ 
+    vout[ipx] = vect[ipx] + f4*vect[ipx] + f5*hxp[0] + f6*h[0];
+    vout[ipy] = vect[ipy] + f4*vect[ipy] + f5*hxp[1] + f6*h[1];
+    vout[ipz] = vect[ipz] + f4*vect[ipz] + f5*hxp[2] + f6*h[2];
+ 
+    return;
+}
+
+ //__________________________________________________________________________
+void AliMUONTrackParam::ExtrapOneStepHelix3(Double_t field, Double_t step, 
+					       Double_t *vect, Double_t *vout)
+{
+// 
+//     ******************************************************************
+//     *                                                                *
+//     *       Tracking routine in a constant field oriented            *
+//     *       along axis 3                                             *
+//     *       Tracking is performed with a conventional                *
+//     *       helix step method                                        *
+//     *                                                                *
+//     *    ==>Called by : <USER>, GUSWIM                               *
+//     *       Authors    R.Brun, M.Hansroul  *********                 *
+//     *       Rewritten  V.Perevoztchikov
+//     *                                                                *
+//     ******************************************************************
+// 
+
+    Double_t hxp[3];
+    Double_t h4, hp, rho, tet;
+    Double_t sint, sintt, tsint, cos1t;
+    Double_t f1, f2, f3, f4, f5, f6;
+
+    const Int_t ix  = 0;
+    const Int_t iy  = 1;
+    const Int_t iz  = 2;
+    const Int_t ipx = 3;
+    const Int_t ipy = 4;
+    const Int_t ipz = 5;
+    const Int_t ipp = 6;
+
+    const Double_t ec = 2.9979251e-4;
+
+// 
+//     ------------------------------------------------------------------
+// 
+//       units are kgauss,centimeters,gev/c
+// 
+    vout[ipp] = vect[ipp];
+    h4 = field * ec;
+
+    hxp[0] = - vect[ipy];
+    hxp[1] = + vect[ipx];
+ 
+    hp = vect[ipz];
+
+    rho = -h4/vect[ipp];
+    tet = rho * step;
+    if (TMath::Abs(tet) > 0.15) {
+      sint = TMath::Sin(tet);
+      sintt = (sint/tet);
+      tsint = (tet-sint)/tet;
+      cos1t = 2.* TMath::Sin(0.5*tet) * TMath::Sin(0.5*tet)/tet;
+    } else {
+      tsint = tet*tet/36.;
+      sintt = (1. - tsint);
+      sint = tet*sintt;
+      cos1t = 0.5*tet;
+    }
+
+    f1 = step * sintt;
+    f2 = step * cos1t;
+    f3 = step * tsint * hp;
+    f4 = -tet*cos1t;
+    f5 = sint;
+    f6 = tet * cos1t * hp;
+ 
+    vout[ix] = vect[ix] + f1*vect[ipx] + f2*hxp[0];
+    vout[iy] = vect[iy] + f1*vect[ipy] + f2*hxp[1];
+    vout[iz] = vect[iz] + f1*vect[ipz] + f3;
+ 
+    vout[ipx] = vect[ipx] + f4*vect[ipx] + f5*hxp[0];
+    vout[ipy] = vect[ipy] + f4*vect[ipy] + f5*hxp[1];
+    vout[ipz] = vect[ipz] + f4*vect[ipz] + f6;
+
+    return;
+}
+ //__________________________________________________________________________
+void AliMUONTrackParam::ExtrapOneStepRungekutta(Double_t charge, Double_t step, 
+						     Double_t* vect, Double_t* vout)
+{
+// 
+//     ******************************************************************
+//     *                                                                *
+//     *  Runge-Kutta method for tracking a particle through a magnetic *
+//     *  field. Uses Nystroem algorithm (See Handbook Nat. Bur. of     *
+//     *  Standards, procedure 25.5.20)                                 *
+//     *                                                                *
+//     *  Input parameters                                              *
+//     *       CHARGE    Particle charge                                *
+//     *       STEP      Step size                                      *
+//     *       VECT      Initial co-ords,direction cosines,momentum     *
+//     *  Output parameters                                             *
+//     *       VOUT      Output co-ords,direction cosines,momentum      *
+//     *  User routine called                                           *
+//     *       CALL GUFLD(X,F)                                          *
+//     *                                                                *
+//     *    ==>Called by : <USER>, GUSWIM                               *
+//     *       Authors    R.Brun, M.Hansroul  *********                 *
+//     *                  V.Perevoztchikov (CUT STEP implementation)    *
+//     *                                                                *
+//     *                                                                *
+//     ******************************************************************
+// 
+
+    Double_t h2, h4, f[4];
+    Double_t xyzt[3], a, b, c, ph,ph2;
+    Double_t secxs[4],secys[4],seczs[4],hxp[3];
+    Double_t g1, g2, g3, g4, g5, g6, ang2, dxt, dyt, dzt;
+    Double_t est, at, bt, ct, cba;
+    Double_t f1, f2, f3, f4, rho, tet, hnorm, hp, rho1, sint, cost;
+    
+    Double_t x;
+    Double_t y;
+    Double_t z;
+    
+    Double_t xt;
+    Double_t yt;
+    Double_t zt;
+
+    Double_t maxit = 1992;
+    Double_t maxcut = 11;
+
+    const Double_t dlt   = 1e-4;
+    const Double_t dlt32 = dlt/32.;
+    const Double_t third = 1./3.;
+    const Double_t half  = 0.5;
+    const Double_t ec = 2.9979251e-4;
+
+    const Double_t pisqua = 9.86960440109;
+    const Int_t ix  = 0;
+    const Int_t iy  = 1;
+    const Int_t iz  = 2;
+    const Int_t ipx = 3;
+    const Int_t ipy = 4;
+    const Int_t ipz = 5;
+  
+    // *.
+    // *.    ------------------------------------------------------------------
+    // *.
+    // *             this constant is for units cm,gev/c and kgauss
+    // *
+    Int_t iter = 0;
+    Int_t ncut = 0;
+    for(Int_t j = 0; j < 7; j++)
+      vout[j] = vect[j];
+
+    Double_t  pinv   = ec * charge / vect[6];
+    Double_t tl = 0.;
+    Double_t h = step;
+    Double_t rest;
+
+ 
+    do {
+      rest  = step - tl;
+      if (TMath::Abs(h) > TMath::Abs(rest)) h = rest;
+      //cmodif: call gufld(vout,f) changed into:
+
+      GetField(vout,f);
+
+      // *
+      // *             start of integration
+      // *
+      x      = vout[0];
+      y      = vout[1];
+      z      = vout[2];
+      a      = vout[3];
+      b      = vout[4];
+      c      = vout[5];
+
+      h2     = half * h;
+      h4     = half * h2;
+      ph     = pinv * h;
+      ph2    = half * ph;
+      secxs[0] = (b * f[2] - c * f[1]) * ph2;
+      secys[0] = (c * f[0] - a * f[2]) * ph2;
+      seczs[0] = (a * f[1] - b * f[0]) * ph2;
+      ang2 = (secxs[0]*secxs[0] + secys[0]*secys[0] + seczs[0]*seczs[0]);
+      if (ang2 > pisqua) break;
+
+      dxt    = h2 * a + h4 * secxs[0];
+      dyt    = h2 * b + h4 * secys[0];
+      dzt    = h2 * c + h4 * seczs[0];
+      xt     = x + dxt;
+      yt     = y + dyt;
+      zt     = z + dzt;
+      // *
+      // *              second intermediate point
+      // *
+
+      est = TMath::Abs(dxt) + TMath::Abs(dyt) + TMath::Abs(dzt);
+      if (est > h) {
+	if (ncut++ > maxcut) break;
+	h *= half;
+	continue;
+      }
+ 
+      xyzt[0] = xt;
+      xyzt[1] = yt;
+      xyzt[2] = zt;
+
+      //cmodif: call gufld(xyzt,f) changed into:
+      GetField(xyzt,f);
+
+      at     = a + secxs[0];
+      bt     = b + secys[0];
+      ct     = c + seczs[0];
+
+      secxs[1] = (bt * f[2] - ct * f[1]) * ph2;
+      secys[1] = (ct * f[0] - at * f[2]) * ph2;
+      seczs[1] = (at * f[1] - bt * f[0]) * ph2;
+      at     = a + secxs[1];
+      bt     = b + secys[1];
+      ct     = c + seczs[1];
+      secxs[2] = (bt * f[2] - ct * f[1]) * ph2;
+      secys[2] = (ct * f[0] - at * f[2]) * ph2;
+      seczs[2] = (at * f[1] - bt * f[0]) * ph2;
+      dxt    = h * (a + secxs[2]);
+      dyt    = h * (b + secys[2]);
+      dzt    = h * (c + seczs[2]);
+      xt     = x + dxt;
+      yt     = y + dyt;
+      zt     = z + dzt;
+      at     = a + 2.*secxs[2];
+      bt     = b + 2.*secys[2];
+      ct     = c + 2.*seczs[2];
+
+      est = TMath::Abs(dxt)+TMath::Abs(dyt)+TMath::Abs(dzt);
+      if (est > 2.*TMath::Abs(h)) {
+	if (ncut++ > maxcut) break;
+	h *= half;
+	continue;
+      }
+ 
+      xyzt[0] = xt;
+      xyzt[1] = yt;
+      xyzt[2] = zt;
+
+      //cmodif: call gufld(xyzt,f) changed into:
+      GetField(xyzt,f);
+
+      z      = z + (c + (seczs[0] + seczs[1] + seczs[2]) * third) * h;
+      y      = y + (b + (secys[0] + secys[1] + secys[2]) * third) * h;
+      x      = x + (a + (secxs[0] + secxs[1] + secxs[2]) * third) * h;
+
+      secxs[3] = (bt*f[2] - ct*f[1])* ph2;
+      secys[3] = (ct*f[0] - at*f[2])* ph2;
+      seczs[3] = (at*f[1] - bt*f[0])* ph2;
+      a      = a+(secxs[0]+secxs[3]+2. * (secxs[1]+secxs[2])) * third;
+      b      = b+(secys[0]+secys[3]+2. * (secys[1]+secys[2])) * third;
+      c      = c+(seczs[0]+seczs[3]+2. * (seczs[1]+seczs[2])) * third;
+
+      est    = TMath::Abs(secxs[0]+secxs[3] - (secxs[1]+secxs[2]))
+	+ TMath::Abs(secys[0]+secys[3] - (secys[1]+secys[2]))
+	+ TMath::Abs(seczs[0]+seczs[3] - (seczs[1]+seczs[2]));
+
+      if (est > dlt && TMath::Abs(h) > 1.e-4) {
+	if (ncut++ > maxcut) break;
+	h *= half;
+	continue;
+      }
+
+      ncut = 0;
+      // *               if too many iterations, go to helix
+      if (iter++ > maxit) break;
+
+      tl += h;
+      if (est < dlt32) 
+	h *= 2.;
+      cba    = 1./ TMath::Sqrt(a*a + b*b + c*c);
+      vout[0] = x;
+      vout[1] = y;
+      vout[2] = z;
+      vout[3] = cba*a;
+      vout[4] = cba*b;
+      vout[5] = cba*c;
+      rest = step - tl;
+      if (step < 0.) rest = -rest;
+      if (rest < 1.e-5*TMath::Abs(step)) return;
+
+    } while(1);
+
+    // angle too big, use helix
+
+    f1  = f[0];
+    f2  = f[1];
+    f3  = f[2];
+    f4  = TMath::Sqrt(f1*f1+f2*f2+f3*f3);
+    rho = -f4*pinv;
+    tet = rho * step;
+ 
+    hnorm = 1./f4;
+    f1 = f1*hnorm;
+    f2 = f2*hnorm;
+    f3 = f3*hnorm;
+
+    hxp[0] = f2*vect[ipz] - f3*vect[ipy];
+    hxp[1] = f3*vect[ipx] - f1*vect[ipz];
+    hxp[2] = f1*vect[ipy] - f2*vect[ipx];
+ 
+    hp = f1*vect[ipx] + f2*vect[ipy] + f3*vect[ipz];
+
+    rho1 = 1./rho;
+    sint = TMath::Sin(tet);
+    cost = 2.*TMath::Sin(half*tet)*TMath::Sin(half*tet);
+
+    g1 = sint*rho1;
+    g2 = cost*rho1;
+    g3 = (tet-sint) * hp*rho1;
+    g4 = -cost;
+    g5 = sint;
+    g6 = cost * hp;
+ 
+    vout[ix] = vect[ix] + g1*vect[ipx] + g2*hxp[0] + g3*f1;
+    vout[iy] = vect[iy] + g1*vect[ipy] + g2*hxp[1] + g3*f2;
+    vout[iz] = vect[iz] + g1*vect[ipz] + g2*hxp[2] + g3*f3;
+ 
+    vout[ipx] = vect[ipx] + g4*vect[ipx] + g5*hxp[0] + g6*f1;
+    vout[ipy] = vect[ipy] + g4*vect[ipy] + g5*hxp[1] + g6*f2;
+    vout[ipz] = vect[ipz] + g4*vect[ipz] + g5*hxp[2] + g6*f3;
+
+    return;
+}
+//___________________________________________________________
+ void  AliMUONTrackParam::GetField(Double_t *Position, Double_t *Field) 
+{
+    // interface to "gAlice->Field()->Field" for arguments in double precision
+
+    Float_t x[3], b[3];
+
+    x[0] = Position[0]; x[1] = Position[1]; x[2] = Position[2];
+
+    gAlice->Field()->Field(x, b);
+    Field[0] = b[0]; Field[1] = b[1]; Field[2] = b[2];
+
+    return;
+  }
