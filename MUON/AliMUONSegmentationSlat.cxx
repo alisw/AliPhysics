@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2001/09/07 08:38:30  hristov
+Pointers initialised to 0 in the default constructors
+
 Revision 1.14  2001/08/30 09:52:12  hristov
 The operator[] is replaced by At() or AddAt() in case of TObjArray.
 
@@ -177,7 +180,7 @@ void AliMUONSegmentationSlat::GlobalToLocal(
 // Find slat number                      
     for (i=ifirst; i<fNSlats; i+=2) {
 	index=i;
-	if ((y >= fYPosition[i]) && (y < fYPosition[i]+fSlatY)) break;
+	if ((y >= fYPosition[i]) && (y <= fYPosition[i]+fSlatY)) break;
     }
     
 //
