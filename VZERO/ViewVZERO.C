@@ -11,7 +11,9 @@ void ViewVZERO()
      gMC->Gsatt("v0R2","seen",1);
      gMC->Gsatt("v0R3","seen",1);
      gMC->Gsatt("v0R4","seen",1); 
-
+     gMC->Gsatt("V0R5","seen",1); 
+     gMC->Gsatt("V0R6","seen",1);
+     
      gMC->Gsatt("v0LE","seen",0);
      
      gMC->Gsatt("v0L0","seen",0);
