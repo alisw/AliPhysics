@@ -104,25 +104,37 @@ void AliEMCALv0::CreateGeometry()
   //| |    Air Gap = GetGap2Active()                    | |
   //| |                                                 | |
   //|  -------------------------------------------------  |
-  //| |    XU0 : XPST (PreShower e = GetPreSintThick() )| |
+  //| |    XU0 : XPST (PreShower e = GetPRScintThick() )| |
   //|  -------------------------------------------------  |
-  //| |    XU0 : XPBX (PreShower e = GetPbRadThick() )  | |
+  //| |    XU0 : XPBX (PreShower e = GetPRPbRadThick() )| |
   //|  -------------------------------------------------  |
-  //| |    XU0 : XPST (PreShower e = GetPreSintThick() )| |
+  //| |    XU0 : XPST (PreShower e = GetPEScintThick() )| |
   //|  -------------------------------------------------  |
-  //| |    XU0 : XPBX (PreShower e = GetPbRadThick() )  | |
+  //| |    XU0 : XPBX (PreShower e = GetPRPbRadThick() )| |
   //|  -------------------------------------------------  |
-  //| |    XU1 : XPST (Tower e = GetFullSintThick() )   | |
+  //|    etc ..... GetNPRLayers() times                   |
   //|  -------------------------------------------------  |
-  //| |    XU1 : XPBX (Tower e = GetPbRadThick() )      | |
+  //| |    XU1 : XPST (ECAL e = GetECScintThick() )     | |
   //|  -------------------------------------------------  |
-  //| |    XU1 : XPST (Tower e = GetFullSintThick()     | |
+  //| |    XU1 : XPBX (ECAL e = GetECPbRadThick() )     | |
   //|  -------------------------------------------------  |
-  //| |    XU1 : XPBX (Tower e = GetPbRadThick() )      | |
+  //| |    XU1 : XPST (ECAL e = GetECScintThick()       | |
   //|  -------------------------------------------------  |
-  //|    etc .....                                        |
+  //| |    XU1 : XPBX (ECAL e = GetECPbRadThick() )     | |
   //|  -------------------------------------------------  |
-  //| |    XU10 : XPST (Tower e = GetFullSintThick() )  | |
+  //|    etc ..... GetNECLayers() times                   |
+  //|  -------------------------------------------------  |
+  //| |    XU1 : XPST (ECAL e = GetHCScintThick() )     | |
+  //|  -------------------------------------------------  |
+  //| |    XU1 : XPBX (ECAL e = GetHCPbRadThick() )     | |
+  //|  -------------------------------------------------  |
+  //| |    XU1 : XPST (ECAL e = GetHCScintThick()       | |
+  //|  -------------------------------------------------  |
+  //| |    XU1 : XPBX (ECAL e = GetHCPbRadThick() )     | |
+  //|  -------------------------------------------------  |
+  //|    etc ..... GetNHCLayers() times                   |
+  //|  -------------------------------------------------  |
+  //| |    XU10 : XPST (HCAL e = GetHCScintThick() )    | |
   //|-----------------------------------------------------|
  
     Float_t etamin,etamax;
@@ -190,11 +202,11 @@ void AliEMCALv0::CreateGeometry()
 	label += i ;
 	Float_t tseg ; 
 	if (i == 0 ) 
-	  tseg = 2 *(geom->GetPreSintThick()+geom->GetPbRadThick()); // thickness of 2 * scintillator+Pb in pre shower
+	  tseg = 2 *(geom->GetPRScintThick()+geom->GetPRPbRadThick()); // thickness of 2 * scintillator+Pb in pre shower
 	else if ( i <= geom->GetNECLayers()/2) 
-	  tseg = 2* (geom->GetFullSintThick()+geom->GetPbRadThick()); // thickness of 2 * scintillator+Pb in E Cal
+	  tseg = 2* (geom->GetECScintThick()+geom->GetECPbRadThick()); // thickness of 2 * scintillator+Pb in E Cal
 	else 
-	  tseg = 2* (geom->GetFullSintThick()+geom->GetCuRadThick()); // thickness of 2 * scintillator+Cu in H Cal 
+	  tseg = 2* (geom->GetHCScintThick()+geom->GetHCCuRadThick()); // thickness of 2 * scintillator+Cu in H Cal 
 	envelopA[5] = envelopA[6] ;                                   // rmin at z1
 	envelopA[4] = geom->ZFromEtaR(envelopA[5] + tseg,
 				      geom->GetArm1EtaMin());         // z coordinate 1
@@ -225,7 +237,10 @@ void AliEMCALv0::CreateGeometry()
 				  geom->GetArm1EtaMin());         // z coordinate 1
     envelopA[7] = geom->ZFromEtaR(envelopA[5],
 				  geom->GetArm1EtaMax());         // z coordinate 2
-    envelopA[6] = envelopA[5] + geom->GetFullSintThick() ;        // rmax at z1
+    if (geom->GetNHCLayers() == 0)                                // last scintillator is in ECAL
+      envelopA[6] = envelopA[5] + geom->GetECScintThick() ;       // rmax at z1
+    else                                                          // last scintillator is in HCAL
+      envelopA[6] = envelopA[5] + geom->GetECScintThick() ;       // rmax at z1
     envelopA[8] = envelopA[5] ;                                   // radii are the same.
     envelopA[9] = envelopA[6] ;                                   // radii are the same.
 
@@ -283,11 +298,11 @@ void AliEMCALv0::CreateGeometry()
 
       Float_t scthick ; // scintillator thickness 
       if ( i <  geom->GetNPRLayers() ) // its a preshower
-	scthick = geom->GetPreSintThick() ;
+	scthick = geom->GetPRScintThick() ;
       else if( i < geom->GetNPRLayers() + geom->GetNECLayers() ) // its an EMCAL section
-	scthick = geom->GetFullSintThick() ;
+	scthick = geom->GetECScintThick() ;
       else  // its an HCAL section
-	scthick = geom->GetFullSintThick() ;
+	scthick = geom->GetHCScintThick() ;
 
       envelopC[5] = envelopD[6] ;           //rmin
       envelopC[6] = envelopC[5] + scthick ; //rmax
@@ -317,15 +332,15 @@ void AliEMCALv0::CreateGeometry()
 	Float_t radthick ; // radiator thickness 
 	TString radname ;  // radiator name
 	if ( i <= 1 ) { // its a preshower
-	  radthick =  geom->GetPbRadThick();
+	  radthick =  geom->GetPRPbRadThick();
 	  radname  =  "XPBX" ; 
 	}
 	else if( i <= geom->GetNECLayers()) {// its an EMCAL section
-	  radthick = geom->GetPbRadThick();
+	  radthick = geom->GetECPbRadThick();
 	  radname  =  "XPBX" ; 
 	}
 	else {  // its an HCAL section
-	  radthick = geom->GetCuRadThick();
+	  radthick = geom->GetHCCuRadThick();
 	  radname  =  "XCUX" ; 
 	}
 
