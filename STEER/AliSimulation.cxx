@@ -30,7 +30,8 @@
 //                                                                           //
 //   sim.SetNumberOfEvents(n);                                               //
 //                                                                           //
-// The name of the configuration file can be specified by                    //
+// The name of the configuration file can be passed as argument to the       //
+// AliSimulation constructor or can be specified by                          //
 //                                                                           //
 //   sim.SetConfigFile("...");                                               //
 //                                                                           //
@@ -70,6 +71,10 @@
 // to merge more than two event streams. It is assumed that the sdigits      //
 // were already produced for the background events.                          //
 //                                                                           //
+// The methods RunSimulation, RunSDigitization, RunDigitization and          //
+// RunHitsDigitization can be used to run only parts of the full simulation  //
+// chain.                                                                    //
+//                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 
@@ -87,37 +92,51 @@ ClassImp(AliSimulation)
 
 
 //_____________________________________________________________________________
-AliSimulation::AliSimulation(const char* name, const char* title) :
-  TNamed(name, title)
+AliSimulation::AliSimulation(const char* configFileName,
+			     const char* name, const char* title) :
+  TNamed(name, title),
+
+  fRunGeneration(kTRUE),
+  fRunSimulation(kTRUE),
+  fMakeSDigits("ALL"),
+  fMakeDigits("ALL"),
+  fMakeDigitsFromHits(""),
+  fStopOnError(kFALSE),
+
+  fNEvents(1),
+  fConfigFileName(configFileName),
+  fGAliceFileName("galice.root"),
+  fBkgrdFileNames(NULL),
+  fRegionOfInterest(kTRUE)
 {
 // create simulation object with default parameters
 
-  Init();
 }
 
 //_____________________________________________________________________________
 AliSimulation::AliSimulation(const AliSimulation& sim) :
-  TNamed(sim)
+  TNamed(sim),
+
+  fRunGeneration(sim.fRunGeneration),
+  fRunSimulation(sim.fRunSimulation),
+  fMakeSDigits(sim.fMakeSDigits),
+  fMakeDigits(sim.fMakeDigits),
+  fMakeDigitsFromHits(sim.fMakeDigitsFromHits),
+  fStopOnError(sim.fStopOnError),
+
+  fNEvents(sim.fNEvents),
+  fConfigFileName(sim.fConfigFileName),
+  fGAliceFileName(sim.fGAliceFileName),
+  fBkgrdFileNames(NULL),
+  fRegionOfInterest(sim.fRegionOfInterest)
 {
 // copy constructor
 
-  fRunGeneration = sim.fRunGeneration;
-  fRunSimulation = sim.fRunSimulation;
-  fMakeSDigits = sim.fMakeSDigits;
-  fMakeDigits = sim.fMakeDigits;
-  fMakeDigitsFromHits = sim.fMakeDigitsFromHits;
-  fStopOnError = sim.fStopOnError;
-
-  fNEvents = sim.fNEvents;
-  fConfigFileName = sim.fConfigFileName;
-  fGAliceFileName = sim.fGAliceFileName;
   fBkgrdFileNames = new TObjArray;
   for (Int_t i = 0; i < sim.fBkgrdFileNames->GetEntriesFast(); i++) {
     if (!sim.fBkgrdFileNames->At(i)) continue;
     fBkgrdFileNames->Add(sim.fBkgrdFileNames->At(i)->Clone());
   }
-
-  fRunLoader = NULL;
 }
 
 //_____________________________________________________________________________
@@ -135,29 +154,10 @@ AliSimulation::~AliSimulation()
 {
 // clean up
 
-  fBkgrdFileNames->Delete();
-  delete fBkgrdFileNames;
-}
-
-//_____________________________________________________________________________
-void AliSimulation::Init()
-{
-// set default parameters
-
-  fRunGeneration = kTRUE;
-  fRunSimulation = kTRUE;
-  fMakeSDigits = "ALL";
-  fMakeDigits = "ALL";
-  fMakeDigitsFromHits = "";
-  fStopOnError = kFALSE;
-
-  fNEvents = 1;
-  fConfigFileName = "Config.C";
-  fGAliceFileName = "galice.root";
-  fBkgrdFileNames = new TObjArray;
-  fRegionOfInterest = kTRUE;
-
-  fRunLoader = NULL;
+  if (fBkgrdFileNames) {
+    fBkgrdFileNames->Delete();
+    delete fBkgrdFileNames;
+  }
 }
 
 
@@ -184,6 +184,7 @@ void AliSimulation::MergeWith(const char* fileName, Int_t nSignalPerBkgrd)
 
   TObjString* fileNameStr = new TObjString(fileName);
   fileNameStr->SetUniqueID(nSignalPerBkgrd);
+  if (!fBkgrdFileNames) fBkgrdFileNames = new TObjArray;
   fBkgrdFileNames->Add(fileNameStr);
 }
 
@@ -197,31 +198,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
 
   // generation and simulation -> hits
   if (fRunGeneration) {
-    if (!gAlice) {
-      Error("Run", "no gAlice object. Restart aliroot and try again.");
-      return kFALSE;
-    }
-    if (gAlice->Modules()->GetEntries() > 0) {
-      Error("Run", "gAlice was already run. Restart aliroot and try again.");
-      return kFALSE;
-    }
     if (!RunSimulation()) if (fStopOnError) return kFALSE;
-  }
-
-  // reopen the run loader
-  if (fRunLoader) delete fRunLoader;
-  fRunLoader = AliRunLoader::Open(fGAliceFileName.Data(),AliConfig::fgkDefaultEventFolderName,"UPDATE");
-  if (!fRunLoader) {
-    Error("Run", "no run loader found in file %s", 
-	  fGAliceFileName.Data());
-    return kFALSE;
-  }
-  fRunLoader->LoadgAlice();
-  gAlice = fRunLoader->GetAliRun();
-  if (!gAlice) {
-    Error("Run", "no gAlice object found in file %s", 
-	  fGAliceFileName.Data());
-    return kFALSE;
   }
 
   // hits -> summable digits
@@ -238,7 +215,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
 
   // hits -> digits
   if (!fMakeDigitsFromHits.IsNull()) {
-    if (fBkgrdFileNames->GetEntriesFast() > 0) {
+    if (fBkgrdFileNames && (fBkgrdFileNames->GetEntriesFast() > 0)) {
       Warning("Run", "Merging and direct creation of digits from hits " 
 	      "was selected for some detectors. "
 	      "No merging will be done for the following detectors: %s",
@@ -253,23 +230,33 @@ Bool_t AliSimulation::Run(Int_t nEvents)
 }
 
 //_____________________________________________________________________________
-Bool_t AliSimulation::RunSimulation()
+Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 {
 // run the generation and simulation
 
   TStopwatch stopwatch;
   stopwatch.Start();
 
+  if (!gAlice) {
+    Error("RunSimulation", "no gAlice object. Restart aliroot and try again.");
+    return kFALSE;
+  }
+  if (gAlice->Modules()->GetEntries() > 0) {
+    Error("RunSimulation", 
+	  "gAlice was already run. Restart aliroot and try again.");
+    return kFALSE;
+  }
+
   Info("RunSimulation", "initializing gAlice with config file %s",
        fConfigFileName.Data());
   gAlice->Init(fConfigFileName.Data());
-  fRunLoader = gAlice->GetRunLoader();
-  if (!fRunLoader) {
+  AliRunLoader* runLoader = gAlice->GetRunLoader();
+  if (!runLoader) {
     Error("RunSimulation", "gAlice has no run loader object. "
 	  "Check your config file: %s", fConfigFileName.Data());
     return kFALSE;
   }
-  fGAliceFileName = fRunLoader->GetFileName();
+  fGAliceFileName = runLoader->GetFileName();
 
   if (!fRunSimulation) {
     if (!gAlice->Generator()) {
@@ -281,7 +268,10 @@ Bool_t AliSimulation::RunSimulation()
   }
 
   Info("RunSimulation", "running gAlice");
-  gAlice->Run(fNEvents);
+  if (nEvents <= 0) nEvents = fNEvents;
+  gAlice->Run(nEvents);
+
+  delete runLoader;
 
   Info("RunSimulation", "execution time:");
   stopwatch.Print();
@@ -290,15 +280,18 @@ Bool_t AliSimulation::RunSimulation()
 }
 
 //_____________________________________________________________________________
-Bool_t AliSimulation::RunSDigitization(const TString& detectors)
+Bool_t AliSimulation::RunSDigitization(const char* detectors)
 {
 // run the digitization and produce summable digits
 
   TStopwatch stopwatch;
   stopwatch.Start();
 
+  AliRunLoader* runLoader = LoadRun();
+  if (!runLoader) return kFALSE;
+
   TString detStr = detectors;
-  TObjArray* detArray = gAlice->Detectors();
+  TObjArray* detArray = runLoader->GetAliRun()->Detectors();
   for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
     AliModule* det = (AliModule*) detArray->At(iDet);
     if (!det || !det->IsActive()) continue;
@@ -315,6 +308,8 @@ Bool_t AliSimulation::RunSDigitization(const TString& detectors)
     if (fStopOnError) return kFALSE;
   }
 
+  delete runLoader;
+
   Info("RunSDigitization", "execution time:");
   stopwatch.Print();
 
@@ -323,17 +318,24 @@ Bool_t AliSimulation::RunSDigitization(const TString& detectors)
 
 
 //_____________________________________________________________________________
-Bool_t AliSimulation::RunDigitization(const TString& detectors, 
-				      const TString& excludeDetectors)
+Bool_t AliSimulation::RunDigitization(const char* detectors, 
+				      const char* excludeDetectors)
 {
 // run the digitization and produce digits from sdigits
 
   TStopwatch stopwatch;
   stopwatch.Start();
 
-  Int_t nStreams = fBkgrdFileNames->GetEntriesFast() + 1;
+  while (AliRunLoader::GetRunLoader()) delete AliRunLoader::GetRunLoader();
+  if (gAlice) delete gAlice;
+  gAlice = NULL;
+
+  Int_t nStreams = 1;
   Int_t signalPerBkgrd = 1;
-  if (nStreams > 1) signalPerBkgrd = fBkgrdFileNames->At(0)->GetUniqueID();
+  if (fBkgrdFileNames) {
+    nStreams = fBkgrdFileNames->GetEntriesFast() + 1;
+    if (nStreams > 1) signalPerBkgrd = fBkgrdFileNames->At(0)->GetUniqueID();
+  }
   AliRunDigitizer* manager = new AliRunDigitizer(nStreams, signalPerBkgrd);
   manager->SetInputStream(0, fGAliceFileName.Data());
   for (Int_t iStream = 1; iStream < nStreams; iStream++) {
@@ -344,7 +346,10 @@ Bool_t AliSimulation::RunDigitization(const TString& detectors,
 
   TString detStr = detectors;
   TString detExcl = excludeDetectors;
-  TObjArray* detArray = gAlice->Detectors();
+  manager->GetInputStream(0)->ImportgAlice();
+  AliRunLoader* runLoader = 
+    AliRunLoader::GetRunLoader(manager->GetInputStream(0)->GetFolderName());
+  TObjArray* detArray = runLoader->GetAliRun()->Detectors();
   for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
     AliModule* det = (AliModule*) detArray->At(iDet);
     if (!det || !det->IsActive()) continue;
@@ -370,6 +375,7 @@ Bool_t AliSimulation::RunDigitization(const TString& detectors,
     Info("RunDigitization", "executing digitization");
     manager->Exec("");
   }
+
   delete manager;
 
   Info("RunDigitization", "execution time:");
@@ -379,15 +385,18 @@ Bool_t AliSimulation::RunDigitization(const TString& detectors,
 }
 
 //_____________________________________________________________________________
-Bool_t AliSimulation::RunHitsDigitization(const TString& detectors)
+Bool_t AliSimulation::RunHitsDigitization(const char* detectors)
 {
 // run the digitization and produce digits from hits
 
   TStopwatch stopwatch;
   stopwatch.Start();
 
+  AliRunLoader* runLoader = LoadRun();
+  if (!runLoader) return kFALSE;
+
   TString detStr = detectors;
-  TObjArray* detArray = gAlice->Detectors();
+  TObjArray* detArray = runLoader->GetAliRun()->Detectors();
   for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
     AliModule* det = (AliModule*) detArray->At(iDet);
     if (!det || !det->IsActive()) continue;
@@ -404,12 +413,38 @@ Bool_t AliSimulation::RunHitsDigitization(const TString& detectors)
     if (fStopOnError) return kFALSE;
   }
 
+  delete runLoader;
+
   Info("RunHitsDigitization", "execution time:");
   stopwatch.Print();
 
   return kTRUE;
 }
 
+
+//_____________________________________________________________________________
+AliRunLoader* AliSimulation::LoadRun() const
+{
+// delete existing run loaders, open a new one and load gAlice
+
+  while (AliRunLoader::GetRunLoader()) delete AliRunLoader::GetRunLoader();
+  AliRunLoader* runLoader = 
+    AliRunLoader::Open(fGAliceFileName.Data(), 
+		       AliConfig::fgkDefaultEventFolderName, "UPDATE");
+  if (!runLoader) {
+    Error("LoadRun", "no run loader found in file %s", 
+	  fGAliceFileName.Data());
+    return NULL;
+  }
+  runLoader->LoadgAlice();
+  gAlice = runLoader->GetAliRun();
+  if (!gAlice) {
+    Error("LoadRun", "no gAlice object found in file %s", 
+	  fGAliceFileName.Data());
+    return NULL;
+  }
+  return runLoader;
+}
 
 //_____________________________________________________________________________
 Bool_t AliSimulation::IsSelected(TString detName, TString& detectors) const
