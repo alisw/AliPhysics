@@ -377,7 +377,7 @@ Int_t AliTRDanalyzeDigits()
   Int_t countDigits = 0;
   Int_t iSec        = trd->GetSensSector();
   Int_t iCha        = trd->GetSensChamber();
-  Int_t timeMax     = geo->GetTimeTotal();
+  Int_t timeMax     = parameter->GetTimeTotal();
 
   TProfile *hAmpTimeEl = new TProfile("hAmpTimeEl","Amplitude of the digits (electrons)"
 				      ,timeMax,-0.5,((Double_t) timeMax)-0.5);
@@ -642,9 +642,9 @@ Int_t AliTRDanalyzeCluster()
       Int_t    plane    = geo->GetPlane(detector);
       Int_t    chamber  = geo->GetChamber(detector);
       Float_t  energy   = cluster->GetQ();
-      Int_t    track0   = cluster->GetTrackIndex(0);
-      Int_t    track1   = cluster->GetTrackIndex(1);
-      Int_t    track2   = cluster->GetTrackIndex(2);
+      Int_t    track0   = cluster->GetLabel(0);
+      Int_t    track1   = cluster->GetLabel(1);
+      Int_t    track2   = cluster->GetLabel(2);
       TParticle *particle = 0;
       if (track0 > -1) {
         particle = gAlice->Particle(track0);
