@@ -43,7 +43,10 @@ class AliMUONData : public TNamed {
     virtual ~AliMUONData();  
     virtual void   AddDigit(Int_t id, Int_t* tracks, Int_t* charges,
 			     Int_t* digits); 
+    virtual void   AddSDigit(Int_t id, Int_t* tracks, Int_t* charges,
+			     Int_t* digits); 
     virtual void   AddDigit(Int_t, const AliMUONDigit& ); // use copy constructor
+    virtual void   AddSDigit(Int_t, const AliMUONDigit& ); // use copy constructor
     virtual void   AddHit(Int_t fIshunt, Int_t track, Int_t iChamber, 
 			  Int_t idpart, Float_t X, Float_t Y, Float_t Z, 
 			  Float_t tof, Float_t momentum, Float_t theta, 
@@ -69,6 +72,7 @@ class AliMUONData : public TNamed {
 
     TClonesArray*  Hits() {return fHits;}
     TClonesArray*  Digits(Int_t DetectionPlane);
+    TClonesArray*  SDigits(Int_t DetectionPlane);
 //    TClonesArray*  LocalTrigger() {return fLocalTrigger;}
 //    TClonesArray*  GlobalTrigger() {return fGlobalTrigger;}
     TClonesArray*  LocalTrigger();
@@ -80,6 +84,7 @@ class AliMUONData : public TNamed {
     void           GetTrack(Int_t it) {fLoader->TreeH()->GetEvent(it);}
     Int_t          GetNtracks()       {return (Int_t) fLoader->TreeH()->GetEntries();}
     void           GetCathode(Int_t ic) {fLoader->TreeD()->GetEvent(ic);}
+    void           GetCathodeS(Int_t ic) {fLoader->TreeS()->GetEvent(ic);}
     void           GetRawClusters() {fLoader->TreeR()->GetEvent(0);}
     void           GetTrigger() {fLoader->TreeR()->GetEvent(0);}
     Int_t          GetSplitLevel() {return fSplitLevel;}
@@ -103,6 +108,7 @@ class AliMUONData : public TNamed {
 
     virtual void   ResetHits();
     virtual void   ResetDigits();
+    virtual void   ResetSDigits();
     virtual void   ResetTrigger();
     virtual void   ResetRawClusters();
     virtual void   ResetRecTracks();
@@ -110,6 +116,7 @@ class AliMUONData : public TNamed {
   
     TTree*         TreeH() {return fLoader->TreeH(); }
     TTree*         TreeD() {return fLoader->TreeD(); }
+    TTree*         TreeS() {return fLoader->TreeS(); }
     TTree*         TreeR() {return fLoader->TreeR(); }
     TTree*         TreeT() {return fLoader->TreeT(); }
     TTree*         TreeP() {return fLoader->TreeP(); }
@@ -123,6 +130,7 @@ class AliMUONData : public TNamed {
     AliLoader*  fLoader; //! Detector Loader pointer
     TClonesArray*   fHits;  // One event in treeH per primary track
     TObjArray*      fDigits; // One event in treeD and one branch per detection plane
+    TObjArray*      fSDigits; // One event in treeS and one branch per detection plane
     TObjArray*      fRawClusters; //One event in TreeR/Rawcluster and one branch per tracking detection plane
     TClonesArray*   fGlobalTrigger;  // List of Global Trigger One event in TreeR/GlobalTriggerBranch
     TClonesArray*   fLocalTrigger;  // List of Local Trigger, One event in TreeR/LocalTriggerBranch
@@ -131,6 +139,7 @@ class AliMUONData : public TNamed {
 
     Int_t           fNhits; //!  Number of Hits
     Int_t*          fNdigits;//! Number of Digits
+    Int_t*          fNSdigits;//! Number of Digits
     Int_t*          fNrawclusters;//! Number of Raw Clusters
     Int_t           fNglobaltrigger;//! Number of Global trigger
     Int_t           fNlocaltrigger;//! Number of Local trigger

@@ -77,6 +77,7 @@
 #include "AliMUONVGeometryBuilder.h"	
 #include "AliRun.h"	
 #include "AliMUONDigitizerv1.h"
+#include "AliMUONSDigitizerv1.h"
 
 
 // Defaults parameters for Z positions of chambers
@@ -239,8 +240,8 @@ Int_t AliMUON::DistancetoPrimitive(Int_t , Int_t )
 void  AliMUON::SetTreeAddress()
 {
   GetMUONData()->SetLoader(fLoader); 
-  //  GetMUONData()->MakeBranch("D,RC");
-  //  GetMUONData()->SetTreeAddress("H,D,RC");
+  //  GetMUONData()->MakeBranch("D,S,RC");
+  //  GetMUONData()->SetTreeAddress("H,D,S,RC");
   GetMUONData()->SetTreeAddress("H");
 
   if (fHits !=  GetMUONData()->Hits())  {
@@ -439,6 +440,13 @@ void AliMUON::SDigits2Digits()
     fLoader->TreeD()->Reset();
 }
 
+//_____________________________________________________________________
+void AliMUON::Hits2SDigits()
+{
+  // make SDigits from hits
+  AliMUONSDigitizerv1 SDigitizer = AliMUONSDigitizerv1();
+  SDigitizer.Exec(); // make SDigits for current event
+}
 //_______________________________________________________________________
 AliLoader* AliMUON::MakeLoader(const char* topfoldername)
 { 
