@@ -56,6 +56,7 @@ class AliMUONGeometryModule : public TObject
 
     // set methods
     void  SetMotherVolume(const TString& motherVolumeName);
+    void  SetVolume(const TString& volumeName);
     void  SetTranslation(const TGeoTranslation& translation);
     void  SetRotation(const TGeoRotation& rotation);
     
@@ -64,8 +65,10 @@ class AliMUONGeometryModule : public TObject
     void  SetAlign(Bool_t align);
  
     // get methods
+    Bool_t                 IsVirtual() const;  
     Int_t                  GetModuleId() const;
     TString                GetMotherVolume() const;
+    TString                GetVolume() const;
     const TGeoCombiTrans*  GetTransformation() const;    
     AliMUONGeometryDetElement* FindBySensitiveVolume(
                                          const TString& volumePath) const;
@@ -87,8 +90,11 @@ class AliMUONGeometryModule : public TObject
     Int_t  GetSVIndex(Int_t svVolId) const; 
   
     // data members
+    Bool_t           fIsVirtual;     // true if module is not represented
+                                     // by a real volume
     Int_t            fModuleId;      // the module Id
     TString          fMotherVolume;  // mother volume name
+    TString          fVolume;        // the volume name if not virtual
     Int_t            fNofSVs;        // number of sensitive volumes   
     TArrayI*         fSVVolumeIds;   // densitive volumes IDs  
     TGeoCombiTrans*  fTransformation;// the module transformation wrt to mother
@@ -107,11 +113,17 @@ inline void
 AliMUONGeometryModule::SetMotherVolume(const TString& motherVolumeName)
 { fMotherVolume = motherVolumeName; }
 
+inline Bool_t AliMUONGeometryModule::IsVirtual() const
+{ return fIsVirtual; }  
+
 inline Int_t  AliMUONGeometryModule::GetModuleId() const
 { return fModuleId; }
 
 inline TString  AliMUONGeometryModule::GetMotherVolume() const
 { return fMotherVolume; }
+
+inline TString  AliMUONGeometryModule::GetVolume() const
+{ return fVolume; }
 
 inline const TGeoCombiTrans* AliMUONGeometryModule::GetTransformation() const 
 { return fTransformation; }

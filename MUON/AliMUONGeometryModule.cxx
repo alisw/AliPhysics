@@ -44,8 +44,10 @@ ClassImp(AliMUONGeometryModule)
 //______________________________________________________________________________
 AliMUONGeometryModule::AliMUONGeometryModule(Int_t moduleId)
  : TObject(),
+   fIsVirtual(true),
    fModuleId(moduleId),
    fMotherVolume("ALIC"),
+   fVolume("NONE"),
    fNofSVs(0),
    fSVVolumeIds(0),
    fTransformation(0),
@@ -79,8 +81,10 @@ AliMUONGeometryModule::AliMUONGeometryModule(Int_t moduleId)
 //______________________________________________________________________________
 AliMUONGeometryModule::AliMUONGeometryModule()
  : TObject(),
+   fIsVirtual(true),
    fModuleId(0),
    fMotherVolume(),
+   fVolume(),
    fNofSVs(0),
    fSVVolumeIds(0),
    fTransformation(0),
@@ -213,6 +217,16 @@ void  AliMUONGeometryModule::Local2Global(Int_t detElemId,
    
    // Transform point
    detElement->Local2Global(xl, yl, zl, xg, yg, zg); 
+}
+
+//______________________________________________________________________________
+void AliMUONGeometryModule::SetVolume(const TString& volumeName)
+{ 
+// Sets the concrete volume associated with this module.
+// The module in not virtual in this case
+
+  fVolume = volumeName;
+  fIsVirtual = false;
 }
 
 //______________________________________________________________________________

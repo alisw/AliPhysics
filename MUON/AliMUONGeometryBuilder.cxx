@@ -107,10 +107,11 @@ void AliMUONGeometryBuilder::PlaceVolume(const TString& name, const TString& mNa
 // ---
 
   // Do not apply global transformation 
-  // if mother volume != ALIC
+  // if mother volume was already placed in 
+  // the new system of coordinates (that is MUON in negative Z)
   // (as it is applied on the mother volume)
   TGeoHMatrix transform(matrix);
-  if (mName != TString("ALIC"))
+  if (mName == TString("DDIP"))
     transform = fGlobalTransformation.Inverse() * transform;
      
   // Decompose transformation
@@ -242,11 +243,21 @@ void AliMUONGeometryBuilder::CreateGeometry()
       builder->SetTransformations();
     } 
 
-    // Place envelopes
+    // Place module volumes and envelopes
     //
     for (Int_t j=0; j<builder->NofGeometries(); j++) {
 
       AliMUONGeometryModule* geometry = builder->Geometry(j);
+      
+      // Place the module volume
+      if ( !geometry->IsVirtual() ) {
+          TGeoHMatrix total 
+	    = fGlobalTransformation * 
+	      (*geometry->GetTransformation());
+	      
+          PlaceVolume(geometry->GetVolume(), geometry->GetMotherVolume(),
+	              1, total, 0, 0, "ONLY");
+      }		      
   
       // Loop over envelopes
       const TObjArray* kEnvelopes = geometry->GetEnvelopeStore()->GetEnvelopes();
@@ -280,12 +291,20 @@ void AliMUONGeometryBuilder::CreateGeometry()
           //           Tglobal * Tch * Tenv
 
           // Compound chamber transformation with the envelope one
-          TGeoHMatrix total 
-	    = fGlobalTransformation * 
-	      (*geometry->GetTransformation()) * 
-	      (*kEnvTrans);
-          PlaceVolume(env->GetName(), geometry->GetMotherVolume(),
-	              env->GetCopyNo(), total, 0, 0, only);
+          if (geometry->IsVirtual()) {
+             TGeoHMatrix total 
+	       = fGlobalTransformation * 
+	         (*geometry->GetTransformation()) * 
+	         (*kEnvTrans);
+             PlaceVolume(env->GetName(), geometry->GetMotherVolume(),
+	                 env->GetCopyNo(), total, 0, 0, only);
+          }
+	  else {
+             TGeoHMatrix total 
+	       = (*kEnvTrans);
+             PlaceVolume(env->GetName(), geometry->GetVolume(),
+	                 env->GetCopyNo(), total, 0, 0, only);
+          }			 
         }
 
         if (env->IsVirtual() && env->GetConstituents()->GetEntriesFast() > 0 ) {
@@ -299,15 +318,26 @@ void AliMUONGeometryBuilder::CreateGeometry()
               = (AliMUONGeometryConstituent*)env->GetConstituents()->At(l);
  
             // Compound chamber transformation with the envelope one + the constituent one
-            TGeoHMatrix total 
-	      = fGlobalTransformation *
-	        (*geometry->GetTransformation()) * 
-	        (*kEnvTrans) * 
-	        (*constituent->GetTransformation());
+            if (geometry->IsVirtual()) {
+              TGeoHMatrix total 
+	        = fGlobalTransformation *
+	          (*geometry->GetTransformation()) * 
+	          (*kEnvTrans) * 
+	          (*constituent->GetTransformation());
 
-            PlaceVolume(constituent->GetName(), geometry->GetMotherVolume(),
-	                constituent->GetCopyNo(), total,
-                        constituent->GetNpar(), constituent->GetParam(), only);
+              PlaceVolume(constituent->GetName(), geometry->GetMotherVolume(),
+	                  constituent->GetCopyNo(), total,
+                          constituent->GetNpar(), constituent->GetParam(), only);
+            }
+	    else { 			  
+              TGeoHMatrix total 
+	        = (*kEnvTrans) * 
+	          (*constituent->GetTransformation());
+
+              PlaceVolume(constituent->GetName(), geometry->GetVolume(),
+	                  constituent->GetCopyNo(), total,
+                          constituent->GetNpar(), constituent->GetParam(), only);
+            }			  
           }
         }
       } // end of loop over envelopes
