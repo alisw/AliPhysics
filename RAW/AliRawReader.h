@@ -16,6 +16,9 @@ class AliRawReader: public TObject {
 
     void             Select(Int_t detectorID, 
 			    Int_t minDDLID = -1, Int_t maxDDLID = -1);
+    void             SelectEquipment(Int_t equipmentType, 
+				     Int_t minEquipmentId = -1, 
+				     Int_t maxEquipmentId = -1);
 
     virtual UInt_t   GetType() const = 0;
     virtual UInt_t   GetRunNumber() const = 0;
@@ -73,6 +76,9 @@ class AliRawReader: public TObject {
     Int_t            fSelectDetectorID;  // id of selected detector (<0 = no selection)
     Int_t            fSelectMinDDLID;    // minimal index of selected DDLs (<0 = no selection)
     Int_t            fSelectMaxDDLID;    // maximal index of selected DDLs (<0 = no selection)
+    Int_t            fSelectEquipmentType;  // type of selected equipment (<0 = no selection)
+    Int_t            fSelectMinEquipmentId; // minimal index of selected equipment (<0 = no selection)
+    Int_t            fSelectMaxEquipmentId; // maximal index of selected equipment (<0 = no selection)
 
     Int_t            fErrorCode;         // code of last error
 

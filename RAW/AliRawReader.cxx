@@ -47,6 +47,9 @@ AliRawReader::AliRawReader() :
   fSelectDetectorID(-1),
   fSelectMinDDLID(-1),
   fSelectMaxDDLID(-1),
+  fSelectEquipmentType(-1),
+  fSelectMinEquipmentId(-1),
+  fSelectMaxEquipmentId(-1),
   fErrorCode(0)
 {
 // default constructor: initialize data members
@@ -60,6 +63,9 @@ AliRawReader::AliRawReader(const AliRawReader& rawReader) :
   fSelectDetectorID(rawReader.fSelectDetectorID),
   fSelectMinDDLID(rawReader.fSelectMinDDLID),
   fSelectMaxDDLID(rawReader.fSelectMaxDDLID),
+  fSelectEquipmentType(rawReader.fSelectEquipmentType),
+  fSelectMinEquipmentId(rawReader.fSelectMinEquipmentId),
+  fSelectMaxEquipmentId(rawReader.fSelectMaxEquipmentId),
   fErrorCode(0)
 {
 // copy constructor
@@ -86,12 +92,24 @@ AliRawReader& AliRawReader::operator = (const AliRawReader& rawReader)
 void AliRawReader::Select(Int_t detectorID, Int_t minDDLID, Int_t maxDDLID)
 {
 // read only data of the detector with the given ID and in the given
-// range of DDLs (minDDLID <= DDLID < maxDDLID).
+// range of DDLs (minDDLID <= DDLID <= maxDDLID).
 // no selection is applied if a value < 0 is used.
 
   fSelectDetectorID = detectorID;
   fSelectMinDDLID = minDDLID;
   fSelectMaxDDLID = maxDDLID;
+}
+
+void AliRawReader::SelectEquipment(Int_t equipmentType, 
+				   Int_t minEquipmentId, Int_t maxEquipmentId)
+{
+// read only data of the equipment with the given type and in the given
+// range of IDs (minEquipmentId <= EquipmentId <= maxEquipmentId).
+// no selection is applied if a value < 0 is used.
+
+  fSelectEquipmentType = equipmentType;
+  fSelectMinEquipmentId = minEquipmentId;
+  fSelectMaxEquipmentId = maxEquipmentId;
 }
 
 Bool_t AliRawReader::IsSelected() const
@@ -103,9 +121,20 @@ Bool_t AliRawReader::IsSelected() const
     if (fMiniHeader->fDetectorID != fSelectDetectorID) return kFALSE;
     if ((fSelectMinDDLID >= 0) && (fMiniHeader->fDDLID < fSelectMinDDLID))
       return kFALSE;
-    if ((fSelectMaxDDLID >= 0) && (fMiniHeader->fDDLID >= fSelectMaxDDLID))
+    if ((fSelectMaxDDLID >= 0) && (fMiniHeader->fDDLID > fSelectMaxDDLID))
       return kFALSE;
   }
+
+  if (fSelectEquipmentType >= 0) {
+    if (GetEquipmentType() != fSelectEquipmentType) return kFALSE;
+    if ((fSelectMinEquipmentId >= 0) && 
+	(GetEquipmentId() < fSelectMinEquipmentId))
+      return kFALSE;
+    if ((fSelectMaxEquipmentId >= 0) && 
+	(GetEquipmentId() > fSelectMaxEquipmentId))
+      return kFALSE;
+  }
+
   return kTRUE;
 }
 
