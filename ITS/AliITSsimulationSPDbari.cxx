@@ -213,8 +213,19 @@ void AliITSsimulationSPDbari::HitToDigit(AliITSmodule *mod, Int_t hitpos, Int_t 
 	      fSegmentation->GetPadIxz(x1l, z1l, c1, r1); 
 	      fSegmentation->GetPadIxz(x2l, z2l, c2, r2);
 
+          // to account for unexpected equal entrance and 
+          // exit coordinates
+          if (x1l==x2l) x2l=x2l+x2l*0.000001;
+          if (z1l==z2l) z2l=z2l+z2l*0.000001;
 
+          // to account for tracks at the edge of the sensitive area
+          // of SPDs
+          if (x1l<0) return;
+          if (x2l<0) return;
+          if (z1l<0) return;
+          if (z2l<0) return;
 	      
+
 	      if ((r1==r2) && (c1==c2)) 
 	      {
              // no charge sharing
@@ -380,6 +391,8 @@ void AliITSsimulationSPDbari::ChargeSharing(Float_t x1l,Float_t z1l,Float_t x2l,
       epar = etot*(epar/dtot);
 
       //store row, column and energy lost in the crossed pixel
+
+
       frowpixel[npixel] = r1;
       fcolpixel[npixel] = c1;
       fenepixel[npixel] = epar;

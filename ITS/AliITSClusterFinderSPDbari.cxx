@@ -81,7 +81,6 @@ AliITSClusterFinderSPDbari&
 
 //_____________________________________________________________________________
 void AliITSClusterFinderSPDbari::FindRawClusters(){
-//void AliITSClusterFinderSPDbari::FindRawClusters(Int_t module){//to be changed
    
     // input of Cluster Finder  
     Int_t digitcount=0;
@@ -132,9 +131,8 @@ void AliITSClusterFinderSPDbari::FindRawClusters(){
               nclus,xcenterl,zcenterl,errxcenter,errzcenter,
               tr1clus, tr2clus, tr3clus);
  
-        Int_t module=0; //to be changed
         DigitToPoint(nclus,xcenterl,zcenterl,errxcenter,errzcenter,
-              tr1clus, tr2clus, tr3clus, module);
+              tr1clus, tr2clus, tr3clus);
 
 
   delete[] digx       ;
@@ -376,7 +374,7 @@ void AliITSClusterFinderSPDbari::ClusterFinder(Int_t ndigits,
 void AliITSClusterFinderSPDbari::DigitToPoint(Int_t nclus,
                    Float_t *xcenter,   Float_t *zcenter,
 		   Float_t *errxcenter,Float_t *errzcenter, 
-		   Int_t *tr1clus, Int_t *tr2clus, Int_t *tr3clus, Int_t module){
+		   Int_t *tr1clus, Int_t *tr2clus, Int_t *tr3clus){
  //
  // A point is associated to each cluster of SPD digits. The points
  // and their associated errors are stored in the file galiceSP.root.
@@ -384,34 +382,22 @@ void AliITSClusterFinderSPDbari::DigitToPoint(Int_t nclus,
  //
  
      Float_t l[3],xg,zg;
-//     Float_t g[3];	  
      const Float_t kconv = 1.0e-4; // micron -> cm
 
      // get rec points
      AliITS *iTS=(AliITS*)gAlice->GetModule("ITS");
 
-     //printf("print module %d\n", module); //deb
-        
      for (Int_t i=0; i<nclus; i++)
      {
         l[0] = kconv*xcenter[i];
         l[1] = kconv*fSegmentation->Dy()/2.;
         l[2] = kconv*zcenter[i];
-//        AliITSgeom *gm = (AliITSgeom*)fSegmentation->Geometry();   
 
-        /*
-        //--- to be changed
-        gm->LtoG(module,l,g);
-        //the coordinates of the points are given in the global reference frame
-        //and in cm
-        xg = g[0];
-        zg = g[2];
-        */
-        xg = l[0]; //to be changed
-        zg = l[2]; //to be changed
-       
-	Float_t sigma2x = (kconv*errxcenter[i]) * (kconv*errxcenter[i]);
-	Float_t sigma2z = (kconv*errzcenter[i]) * (kconv*errzcenter[i]);
+        xg = l[0]; 
+        zg = l[2]; 
+
+	    Float_t sigma2x = (kconv*errxcenter[i]) * (kconv*errxcenter[i]);
+	    Float_t sigma2z = (kconv*errzcenter[i]) * (kconv*errzcenter[i]);
         AliITSRecPoint rnew;
         rnew.SetX(xg);
         rnew.SetZ(zg);
