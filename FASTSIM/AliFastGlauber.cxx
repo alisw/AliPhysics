@@ -1596,6 +1596,25 @@ void AliFastGlauber::GetI0I1ForPythia(Int_t n,Double_t* phi,
   return;
 }
 
+void AliFastGlauber::GetI0I1ForPythiaAndXY(Int_t n,Double_t* phi,
+				      Double_t* integral0,Double_t* integral1,
+				      Double_t &x,Double_t& y,
+				      Double_t ellCut,Double_t b)
+{
+  //
+  // Returns I0 and I1 pairs for n partons with azimuthal angles phi[n] 
+  // from random b, x0, y0 and return x0,y0
+  //
+  Double_t x0,y0;
+  if(b<0.) GetRandomBHard(b);
+  GetRandomXY(x0,y0);
+  for(Int_t i=0; i<n; i++) 
+    CalculateI0I1(integral0[i],integral1[i],b,x0,y0,phi[i],ellCut);
+  x=x0;
+  y=y0;
+  return;
+}
+
 void AliFastGlauber::PlotI0I1Distr(Int_t n,Double_t ellCut,
 				   Bool_t save,Char_t *fname)
 {

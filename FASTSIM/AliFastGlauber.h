@@ -159,6 +159,10 @@ class AliFastGlauber : public TObject {
     void GetI0I1ForPythia(Int_t n,Double_t* phi,
 			  Double_t* integral0,Double_t* integral1,
 			  Double_t ellCut=20.,Double_t b=-1.);
+    void GetI0I1ForPythiaAndXY(Int_t n,Double_t* phi,
+			       Double_t* integral0,Double_t* integral1,
+			       Double_t&x, Double_t &y,
+			       Double_t ellCut=20.,Double_t b=-1.);
     void PlotI0I1Distr(Int_t n=1000,Double_t ellCut=20.,Bool_t save=kFALSE,
 		       Char_t *fname="i0i1.root");
     void PlotI0I1B2BDistr(Int_t n=1000,Double_t ellCut=20.,Bool_t save=kFALSE,
