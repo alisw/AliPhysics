@@ -13,6 +13,7 @@
 #include "AliGlobals.h"  
 #include "TG4StepManager.h"
 #include "TG4PhysicsManager.h"
+#include "TG4ParticlesManager.h"
 
 #include <G4Track.hh>
 #include <G4TrackVector.hh>
@@ -266,7 +267,9 @@ void AliTrackingAction::SaveTrack(const G4Track* track)
   //       << G4endl;
 
   // PDG code
-  G4int pdg = track->GetDefinition()->GetPDGEncoding();
+  G4int pdg 
+    = TG4ParticlesManager::Instance()
+      ->GetPDGEncodingFast(track->GetDefinition());
 
   // track kinematics  
   G4ThreeVector momentum = track->GetMomentum(); 
@@ -295,8 +298,7 @@ void AliTrackingAction::SaveTrack(const G4Track* track)
     mcProcess = kPPrimary;
   }
   else {  
-    TG4PhysicsManager* pPhysicsManager = TG4PhysicsManager::Instance();
-    mcProcess = pPhysicsManager->GetMCProcess(kpProcess);  
+    mcProcess = TG4PhysicsManager::Instance()->GetMCProcess(kpProcess);  
     // distinguish kPDeltaRay from kPEnergyLoss  
     if (mcProcess == kPEnergyLoss) mcProcess = kPDeltaRay;
   }  
