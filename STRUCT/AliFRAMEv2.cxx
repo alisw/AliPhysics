@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/05/11 13:18:05  morsch
+C++ version of spaceframe with specs according to Jan Bielski Feb. 2001
+
 */
 
 ////////////////////////////////////////////////
@@ -845,15 +848,15 @@ void AliFRAMEv2::Init()
   //
   // Initialise the module after the geometry has been defined
   //
-
-  printf("**************************************"
-	 " FRAME "
-	 "**************************************\n");
-  printf("\n     Version 1 of FRAME initialised, symmetric FRAME\n\n");
-  printf("**************************************"
-	 " FRAME "
-	 "**************************************\n");
-
+    if(fDebug) {
+	printf("%s: **************************************"
+	       " FRAME "
+	       "**************************************\n",ClassName());
+	printf("\n%s:      Version 2 of FRAME initialised, symmetric FRAME\n\n",ClassName());
+	printf("%s: **************************************"
+	       " FRAME "
+	       "**************************************\n",ClassName());
+    }
 }
 
 
