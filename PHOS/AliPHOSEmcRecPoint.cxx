@@ -460,10 +460,22 @@ void AliPHOSEmcRecPoint::EvalLocalPosition(void )
   Float_t para = 0.925 ; 
   Float_t parb = 6.52 ; 
 
-  Float_t radius = ((AliPHOSGeometry *) fGeom)->GetIPtoOuterCoverDistance() + 
-                   ((AliPHOSGeometry *) fGeom)->GetOuterBoxSize(1) ; 
-  Float_t incidencephi = TMath::ATan(x / radius) ; 
-  Float_t incidencetheta = TMath::ATan(z / radius) ;
+  Float_t xo,yo,zo ; //Coordinates of the origin
+  gAlice->Generator()->GetOrigin(xo,yo,zo) ;
+
+  Float_t phi = fGeom->GetPHOSAngle(relid[0]) ;
+
+  //Transform to the local ref.frame
+  Float_t xoL,yoL ;
+  xoL = xo*TMath::Cos(phi)-yo*TMath::Sin(phi) ;
+  yoL = xo*TMath::Sin(phi)+yo*TMath::Cos(phi) ;
+  
+  Float_t radius = TMath::Sqrt((xoL-x)*(xoL-x)+
+                               (fGeom->GetIPtoCrystalSurface()-yoL)*(fGeom->GetIPtoCrystalSurface()-yoL)+
+                               (zoL-z)*(zoL-z));
+ 
+  Float_t incidencephi = TMath::ATan((x-xoL ) / radius) ; 
+  Float_t incidencetheta = TMath::ATan((z-zo) / radius) ;
  
   Float_t depthx =  ( para * TMath::Log(fAmp) + parb ) * TMath::Sin(incidencephi) ; 
   Float_t depthz =  ( para * TMath::Log(fAmp) + parb ) * TMath::Sin(incidencetheta) ; 
