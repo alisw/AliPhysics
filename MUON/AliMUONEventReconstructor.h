@@ -25,7 +25,7 @@ class AliLoader;
 class AliMUONEventReconstructor : public TObject {
 
  public:
-  AliMUONEventReconstructor(AliLoader* ); // default Constructor
+  AliMUONEventReconstructor(AliLoader* loader); // default Constructor
   virtual ~AliMUONEventReconstructor(void); // Destructor
   AliMUONEventReconstructor (const AliMUONEventReconstructor& Reconstructor); // copy constructor
   AliMUONEventReconstructor& operator=(const AliMUONEventReconstructor& Reconstructor); // assignment operator
@@ -93,7 +93,7 @@ class AliMUONEventReconstructor : public TObject {
   void FillEvent();      // fill and write tree of reconstructed events
   void SetTrackMethod(Int_t TrackMethod) {fTrackMethod = TrackMethod;} //AZ
   Int_t GetTrackMethod(void) const {return fTrackMethod;} //AZ
-  Int_t fMuons; // AZ - number of muons within acceptance - just for tests
+  //Int_t fMuons; // AZ - number of muons within acceptance - just for tests
 
   AliMUONData*  GetMUONData() {return fMUONData;}
 
@@ -192,6 +192,8 @@ class AliMUONEventReconstructor : public TObject {
 
   // alice loader
   AliLoader* fLoader;
+
+  Int_t fMuons; // AZ - number of muons within acceptance - just for tests
 
   // Functions
   void ResetHitsForRec(void);
