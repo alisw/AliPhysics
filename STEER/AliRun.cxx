@@ -615,7 +615,7 @@ void AliRun::Announce() const
   printf("%6s","*");printf("%64s","*\n");
 
   printf("%6s","*");
-  printf("    You are running AliRoot version v3-09-06\n");
+  printf("    You are running AliRoot version v3-09-07\n");
 
   printf("%6s","*");
   printf("    The cvs tag for the current program is $Name$\n");
