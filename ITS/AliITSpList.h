@@ -61,7 +61,7 @@ class AliITSpListItem: public TObject {
     void Read(istream *is);
 
  private:
-    static const Int_t fkSize = 5; // Array sizes
+    static const Int_t fkSize = 10; // Array sizes
     Int_t    fmodule;         // module number
     Int_t    findex;          // Strip/row,col number linearlized.
     Int_t    fTrack[fkSize];  //[fkSize] track Number
@@ -70,11 +70,12 @@ class AliITSpListItem: public TObject {
     Double_t fTsignal;        // Total signal (no noise)
     Double_t fNoise;          // Total noise, coupling, ...
 
-    ClassDef(AliITSpListItem,1) // Item list of signals and track numbers
+    ClassDef(AliITSpListItem,2) // Item list of signals and track numbers
 };	
 // Input and output functions for standard C++ input/output.
 ostream & operator<<(ostream &os,AliITSpListItem &source);
 istream & operator>>(istream &is,AliITSpListItem &source);
+
 
 #endif
 
@@ -115,8 +116,8 @@ class AliITSpList: public AliITSMap {
     Int_t GetNEnteries(){return 5;}
     // for a give TObjArray index it returns the corresponding map index
     void  GetMapIndex(Int_t index,Int_t &i,Int_t &j){
-	if(i<0||i>=fNi || j<0||j>-fNj){i=-1;j=-1; return;}
 	i = index/fNj;j = index - fNj*i;
+	if(i<0||i>=fNi || j<0||j>=fNj){i=-1;j=-1; return;}
     }
     // Returns the signal+noise for a give map coordinate
     Double_t GetSignal(Int_t i,Int_t j){
@@ -159,6 +160,9 @@ class AliITSpList: public AliITSMap {
 	if(GetpListItem(i,j)==0) return 0;
 	return GetpListItem(i,j)->GetNsignals();
     }
+    // Adds the contents of pl to the list with track number off set given by
+    // fileIndex.
+    virtual void AddItemTo(Int_t fileIndex, AliITSpListItem *pl);
     // Adds a Signal value to the map. Creating and expanding arrays as needed.
     void AddSignal(Int_t i,Int_t j,Int_t trk,Int_t ht,Int_t mod,Double_t sig);
     // Adds a Noise value to the map. Creating and expanding arrays as needed.
