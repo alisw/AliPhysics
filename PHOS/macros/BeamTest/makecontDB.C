@@ -1,7 +1,7 @@
 void makecontDB(void){
   AliPHOSConTableDB * c = new AliPHOSConTableDB("Beamtest2002") ;
-  c->SetNRaws(8) ;
-  c->SetNCols(8) ;
+  c->SetNRaws(16) ;
+  c->SetNCols(16) ;
   c->BuildDB() ;
   TFile f("ConTableDB.root","recreate") ;
   f.cd() ;
