@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2000/11/01 14:53:21  cblume
+Merge with TRD-develop
+
 Revision 1.17.2.5  2000/10/15 23:40:01  cblume
 Remove AliTRDconst
 
@@ -76,7 +79,7 @@ Introduction of the Copyright and cvs Log
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  Transition Radiation Detector version 2 -- slow simulator                //
+//  Transition Radiation Detector version 1 -- slow simulator                //
 //                                                                           //
 //Begin_Html
 /*
@@ -86,6 +89,8 @@ Introduction of the Copyright and cvs Log
 //                                                                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+
+#include <stdlib.h> 
 
 #include <TMath.h>
 #include <TVector.h>
@@ -540,6 +545,86 @@ void AliTRDv1::StepManager()
   // Set the maximum step size to a very large number for all 
   // neutral particles and those outside the driftvolume
   gMC->SetMaxStep(kBig); 
+
+  // Create some special hits with amplitude 0 at the entrance and
+  // exit of each chamber that contain the momentum components of the particle
+  if (gMC->TrackCharge() &&
+     (gMC->IsTrackEntering() || gMC->IsTrackExiting())) {
+
+    // Inside a sensitive volume?
+    iIdSens = gMC->CurrentVolID(icSens);
+    if (iIdSens == fIdSens) { 
+
+      iIdSpace   = gMC->CurrentVolOffID(4,icSpace  );
+      iIdChamber = gMC->CurrentVolOffID(1,icChamber);
+
+      // The hit coordinates
+      gMC->TrackPosition(pos);
+
+      // The track momentum
+      gMC->TrackMomentum(mom);
+      hits[0] = mom[0];
+      hits[1] = mom[1];
+      hits[2] = mom[2];
+
+      // The sector number (0 - 17)
+      // The numbering goes clockwise and starts at y = 0
+      Float_t phi = kRaddeg*TMath::ATan2(pos[0],pos[1]);
+      if (phi < 90.) 
+        phi = phi + 270.;
+      else
+        phi = phi -  90.;
+      sec = ((Int_t) (phi / 20));
+
+      // The chamber number 
+      //   0: outer left
+      //   1: middle left
+      //   2: inner
+      //   3: middle right
+      //   4: outer right
+      if      (iIdChamber == fIdChamber1)
+        cha = (hits[2] < 0 ? 0 : 4);
+      else if (iIdChamber == fIdChamber2)       
+        cha = (hits[2] < 0 ? 1 : 3);
+      else if (iIdChamber == fIdChamber3)       
+        cha = 2;
+
+      // The plane number
+      // The numbering starts at the innermost plane
+      pla = icChamber - TMath::Nint((Float_t) (icChamber / 7)) * 6 - 1;
+
+      // Check on selected volumes
+      Int_t addthishit = 1;
+      if (fSensSelect) {
+        if ((fSensPlane   >= 0) && (pla != fSensPlane  )) addthishit = 0;
+        if ((fSensChamber >= 0) && (cha != fSensChamber)) addthishit = 0;
+        if (fSensSector  >= 0) {
+          Int_t sens1  = fSensSector;
+          Int_t sens2  = fSensSector + fSensSectorRange;
+                sens2 -= ((Int_t) (sens2 / AliTRDgeometry::Nsect())) 
+                       * AliTRDgeometry::Nsect();
+          if (sens1 < sens2) {
+            if ((sec < sens1) || (sec >= sens2)) addthishit = 0;
+	  }
+          else {
+            if ((sec < sens1) && (sec >= sens2)) addthishit = 0;
+	  }
+	}
+      }
+
+      // Add this hit
+      if (addthishit) {
+        det = fGeometry->GetDetector(pla,cha,sec);
+        new(lhits[fNhits++]) AliTRDhit(fIshunt
+                                      ,gAlice->CurrentTrack()
+                                      ,det
+                                      ,hits
+                                      ,0);
+      }
+
+    }
+
+  }
 
   // Use only charged tracks 
   if (( gMC->TrackCharge()       ) &&
