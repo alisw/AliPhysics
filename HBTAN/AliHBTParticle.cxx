@@ -1,7 +1,18 @@
-//Simplified TParticle class
 #include "AliHBTParticle.h"
+//___________________________________________________________
+/////////////////////////////////////////////////////////////
+//
+// class AliHBTParticle
+//
+// Ali HBT Particle: simplified class TParticle
+// Simplified in order to minimize the size of object
+//  - we want to keep a lot of such a objects in memory
+// Additionaly adjusted for HBT Analysies purposes
+//
+/////////////////////////////////////////////////////////////
 #include <TParticle.h>
 #include <TClass.h>
+#include "AliHBTTrackPoints.h"
 
 ClassImp(AliHBTParticle)
 
@@ -9,7 +20,8 @@ Int_t AliHBTParticle::fgDebug = 0;
 //______________________________________________________________________________
 AliHBTParticle::AliHBTParticle():  
  fPdgIdx(0), fIdxInEvent(0),fNPids(0),fPids(0x0),fPidProb(0x0),
- fCalcMass(0),fPx(0), fPy(0),fPz(0),fE(0), fVx(0), fVy(0),fVz(0),fVt(0)
+ fCalcMass(0),fPx(0), fPy(0),fPz(0),fE(0), fVx(0), fVy(0),fVz(0),fVt(0),
+ fTrackPoints(0x0)
 {//empty particle
 }
 //______________________________________________________________________________
@@ -20,7 +32,8 @@ AliHBTParticle::AliHBTParticle(Int_t pdg, Int_t idx,
   fPdgIdx(0), fIdxInEvent(idx),fNPids(0),fPids(0x0),fPidProb(0x0),
   fCalcMass(0), 
   fPx(px), fPy(py),fPz(pz),fE(etot), 
-  fVx(vx), fVy(vy),fVz(vz),fVt(time)
+  fVx(vx), fVy(vy),fVz(vz),fVt(time),
+  fTrackPoints(0x0)
 {
 //mormal constructor
   SetPdgCode(pdg);
@@ -40,7 +53,8 @@ AliHBTParticle::AliHBTParticle(Int_t pdg, Float_t prob, Int_t idx,
   fPdgIdx(0), fIdxInEvent(idx),fNPids(0),fPids(0x0),fPidProb(0x0),
   fCalcMass(0), 
   fPx(px), fPy(py),fPz(pz),fE(etot), 
-  fVx(vx), fVy(vy),fVz(vz),fVt(time)
+  fVx(vx), fVy(vy),fVz(vz),fVt(time),
+  fTrackPoints(0x0)
 {
 //mormal constructor
   SetPdgCode(pdg,prob);
@@ -67,6 +81,9 @@ AliHBTParticle::AliHBTParticle(const AliHBTParticle& in):
     fPids[i] =  in.fPids[i];
     fPidProb[i] = in.fPidProb[i];
   }
+  
+ fTrackPoints = (in.fTrackPoints)?(AliHBTTrackPoints*)fTrackPoints->Clone():0x0;
+  
 }
 
 //______________________________________________________________________________
@@ -75,7 +92,8 @@ AliHBTParticle::AliHBTParticle(const TParticle &p,Int_t idx):
    fNPids(0),fPids(0x0),fPidProb(0x0),
    fCalcMass(p.GetCalcMass()),
    fPx(p.Px()),fPy(p.Py()),fPz(p.Pz()),fE(p.Energy()), 
-   fVx(p.Vx()),fVy(p.Vy()),fVz(p.Vz()),fVt(p.T())
+   fVx(p.Vx()),fVy(p.Vy()),fVz(p.Vz()),fVt(p.T()),
+   fTrackPoints(0x0)
 {
  //all copied in the initialization
  SetPdgCode(p.GetPdgCode());
@@ -87,6 +105,7 @@ AliHBTParticle::~AliHBTParticle()
 //dtor  
   delete [] fPids;
   delete [] fPidProb;
+  delete fTrackPoints;
 }
 //______________________________________________________________________________
 
@@ -116,6 +135,9 @@ AliHBTParticle& AliHBTParticle::operator=(const AliHBTParticle& in)
   fVy = in.Vy();
   fVz = in.Vz();
   fVt = in.T();
+  
+  delete fTrackPoints;
+  fTrackPoints = (in.fTrackPoints)?(AliHBTTrackPoints*)fTrackPoints->Clone():0x0;
   
   return *this;
 }

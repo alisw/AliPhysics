@@ -46,8 +46,8 @@ class AliHBTReader: public TNamed
     void          SetBlend(Bool_t flag = kTRUE){fBlend=flag;}
     virtual Int_t GetNumberOfDirs() const {return (fDirs)?fDirs->GetEntries():0;}
     void          ReadEventsFromTo(Int_t first,Int_t last){fFirst = first; fLast = last;}
-    TH1I*         GetTrackCounter() const {return fTrackCounter;}
-    void          WriteTrackCounter() const;
+    virtual TH1I* GetTrackCounter() const {return fTrackCounter;}
+    virtual void  WriteTrackCounter() const;
   protected:
     
     TObjArray*    fCuts;//array with particle cuts
@@ -84,7 +84,7 @@ class AliHBTReader: public TNamed
   private:
   
   public:
-    ClassDef(AliHBTReader,3)//version 2 - TNamed as parental class
+    ClassDef(AliHBTReader,4)//version 2 - TNamed as parental class
                             //version 3 - Blending added
 };
 

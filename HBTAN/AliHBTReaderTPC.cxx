@@ -30,6 +30,7 @@
 #include "AliHBTEvent.h"
 #include "AliHBTParticle.h"
 #include "AliHBTParticleCut.h"
+#include "AliHBTTrackPoints.h"
 
 
 
@@ -41,19 +42,27 @@ AliHBTReaderTPC::AliHBTReaderTPC():
  fTPCLoader(0x0),
  fMagneticField(0.0),
  fUseMagFFromRun(kTRUE),
+ fNTrackPoints(0),
+ fdR(0.0),
  fNClustMin(0),
- fNClustMax(190),
+ fNClustMax(150),
  fNChi2PerClustMin(0.0),
  fNChi2PerClustMax(10e5),
+ fC00Min(0.0),
+ fC00Max(10e5),
+ fC11Min(0.0),
+ fC11Max(10e5),
+ fC22Min(0.0),
+ fC22Max(10e5),
+ fC33Min(0.0),
+ fC33Max(10e5),
  fC44Min(0.0),
  fC44Max(10e5)
 {
-  //constructor, 
-  //Defaults:
-  //  galicefilename = ""  - this means: Do not open gAlice file - 
-  //                         just leave the global pointer untouched
+  //constructor
   
 }
+/********************************************************************/
 
 AliHBTReaderTPC::AliHBTReaderTPC(const Char_t* galicefilename):
  fFileName(galicefilename),
@@ -61,20 +70,28 @@ AliHBTReaderTPC::AliHBTReaderTPC(const Char_t* galicefilename):
  fTPCLoader(0x0),
  fMagneticField(0.0),
  fUseMagFFromRun(kTRUE),
+ fNTrackPoints(0),
+ fdR(0.0),
  fNClustMin(0),
- fNClustMax(190),
+ fNClustMax(150),
  fNChi2PerClustMin(0.0),
  fNChi2PerClustMax(10e5),
+ fC00Min(0.0),
+ fC00Max(10e5),
+ fC11Min(0.0),
+ fC11Max(10e5),
+ fC22Min(0.0),
+ fC22Max(10e5),
+ fC33Min(0.0),
+ fC33Max(10e5),
  fC44Min(0.0),
  fC44Max(10e5)
 {
   //constructor, 
   //Defaults:
-  //  galicefilename = ""  - this means: Do not open gAlice file - 
-  //                         just leave the global pointer untouched
-  
 }
 /********************************************************************/
+
 AliHBTReaderTPC::AliHBTReaderTPC(TObjArray* dirs, const Char_t* galicefilename):
  AliHBTReader(dirs), 
  fFileName(galicefilename),
@@ -82,10 +99,20 @@ AliHBTReaderTPC::AliHBTReaderTPC(TObjArray* dirs, const Char_t* galicefilename):
  fTPCLoader(0x0),
  fMagneticField(0.0),
  fUseMagFFromRun(kTRUE),
+ fNTrackPoints(0),
+ fdR(0.0),
  fNClustMin(0),
- fNClustMax(190),
+ fNClustMax(150),
  fNChi2PerClustMin(0.0),
  fNChi2PerClustMax(10e5),
+ fC00Min(0.0),
+ fC00Max(10e5),
+ fC11Min(0.0),
+ fC11Max(10e5),
+ fC22Min(0.0),
+ fC22Max(10e5),
+ fC33Min(0.0),
+ fC33Max(10e5),
  fC44Min(0.0),
  fC44Max(10e5)
 {
@@ -252,6 +279,13 @@ Int_t AliHBTReaderTPC::ReadNext()
           delete part;
           continue;
         }
+        
+       if (fNTrackPoints > 0) 
+        {
+          AliHBTTrackPoints* tpts = new AliHBTTrackPoints(fNTrackPoints,iotrack,fdR);
+          track->SetTrackPoints(tpts);
+        }
+        
        fParticlesEvent->AddParticle(part);
        fTracksEvent->AddParticle(track);
       }
@@ -373,12 +407,18 @@ Bool_t AliHBTReaderTPC::CheckTrack(AliTPCtrack* t)
   //Performs check of the track
   if ( (t->GetNumberOfClusters() > fNClustMax) || (t->GetNumberOfClusters() < fNClustMin) ) return kTRUE;
 
-  Double_t cc[15];
-  t->GetCovariance(cc);
-  if ( (cc[9] < fC44Min) || (cc[9] > fC44Max) ) return kTRUE;
-  
   Float_t chisqpercl = t->GetChi2()/((Double_t)t->GetNumberOfClusters());
   if ( (chisqpercl < fNChi2PerClustMin) || (chisqpercl > fNChi2PerClustMax) ) return kTRUE;
+  
+  Double_t cc[15];
+  t->GetCovariance(cc);
+
+  if ( (cc[0]  < fC00Min) || (cc[0]  > fC00Max) ) return kTRUE;
+  if ( (cc[2]  < fC11Min) || (cc[2]  > fC11Max) ) return kTRUE;
+  if ( (cc[5]  < fC22Min) || (cc[5]  > fC22Max) ) return kTRUE;
+  if ( (cc[9]  < fC33Min) || (cc[9]  > fC33Max) ) return kTRUE;
+  if ( (cc[14] < fC44Min) || (cc[14] > fC44Max) ) return kTRUE;
+  
   
   return kFALSE;
   
@@ -398,6 +438,42 @@ void AliHBTReaderTPC::SetChi2PerCluserRange(Float_t min, Float_t max)
   //sets range of Chi2 per Cluster
   fNChi2PerClustMin = min;
   fNChi2PerClustMax = max;
+}
+/********************************************************************/
+
+void AliHBTReaderTPC::SetC00Range(Float_t min, Float_t max)
+{
+ //Sets range of C00 parameter of covariance matrix of the track
+ //it defines uncertainty of the momentum
+  fC00Min = min;
+  fC00Max = max;
+}
+/********************************************************************/
+
+void AliHBTReaderTPC::SetC11Range(Float_t min, Float_t max)
+{
+ //Sets range of C11 parameter of covariance matrix of the track
+ //it defines uncertainty of the momentum
+  fC11Min = min;
+  fC11Max = max;
+}
+/********************************************************************/
+
+void AliHBTReaderTPC::SetC22Range(Float_t min, Float_t max)
+{
+ //Sets range of C22 parameter of covariance matrix of the track
+ //it defines uncertainty of the momentum
+  fC22Min = min;
+  fC22Max = max;
+}
+/********************************************************************/
+
+void AliHBTReaderTPC::SetC33Range(Float_t min, Float_t max)
+{
+ //Sets range of C33 parameter of covariance matrix of the track
+ //it defines uncertainty of the momentum
+  fC33Min = min;
+  fC33Max = max;
 }
 /********************************************************************/
 

@@ -75,6 +75,8 @@
 #pragma link C++ class AliHBTReaderKineTree+;
 #pragma link C++ class AliHBTReaderInternal+;
 
+#pragma link C++ class AliHBTTrackPoints+;
+    
 #pragma link C++ class AliHBTQInvCorrelFctn+;
 #pragma link C++ class AliHBTTwoKStarCorrelFctn+;
 #pragma link C++ class AliHBTQOutCMSLCCorrelFctn+;

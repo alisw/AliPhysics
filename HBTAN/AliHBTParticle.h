@@ -20,7 +20,7 @@
 #include "AliConst.h"
 
 class TParticle;
-//class AliHBTTrackPoints;
+class AliHBTTrackPoints;
 
 class AliHBTParticle : public TObject
 {
@@ -112,7 +112,10 @@ public:
   
   const Char_t*  GetName() const; 
   void           Print() const;
-
+  
+  void           SetTrackPoints(AliHBTTrackPoints* tpts){fTrackPoints = tpts;}
+  AliHBTTrackPoints* GetTrackPoints() const {return fTrackPoints;}
+      
   static void    SetDebug(Int_t dbg=1){fgDebug=dbg;}
   static Int_t   GetDebug(){return fgDebug;}
   static Int_t   fgDebug; //debug printout level
@@ -139,7 +142,8 @@ private:
   Double_t       fVz;                   // z of production vertex
   Double_t       fVt;                   // t of production vertex
 
-  ClassDef(AliHBTParticle,2)  // TParticle vertex particle information
+  AliHBTTrackPoints* fTrackPoints;      // track positions along trajectory - used by anti-merging cut
+  ClassDef(AliHBTParticle,3)  // TParticle vertex particle information
 };
 
 #endif
