@@ -40,7 +40,7 @@ void TG4GeometryOutputManager::OpenFile(G4String filePath)
 
 void TG4GeometryOutputManager::CloseFile()
 { 
-// Closess output files.
+// Closes output files.
 // ---
 
   fOutFile.close(); 
