@@ -330,6 +330,14 @@ if [ $AG4_VISUALIZE ]; then
   fi
 
   #
+  # tcsh UI
+  #
+  if [ "$VERBOSE" = "YES" ]; then
+    echo "* tcsh UI..."
+  fi
+  export G4UI_USE_TCSH=1
+
+  #
   # Xm UI
   #
   if [ "$VERBOSE" = "YES" ]; then
