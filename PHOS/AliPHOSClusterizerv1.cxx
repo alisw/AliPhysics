@@ -212,7 +212,7 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl,
 	
 	// start a new PPSD cluster
 	if(fNumberOfPpsdClusters >= ppsdl->GetSize())
-	  ppsdl->Expand(2*fNumberOfPpsdClusters) ;
+	  ppsdl->Expand(2*fNumberOfPpsdClusters+1) ;
 	
 	(*ppsdl)[fNumberOfPpsdClusters] = new AliPHOSPpsdRecPoint() ;
 	clu =  (AliPHOSPpsdRecPoint *) ppsdl->At(fNumberOfPpsdClusters)  ;  
