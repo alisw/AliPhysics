@@ -140,7 +140,7 @@ void AliPHOSv4::BuildGeometry()
  
   const Int_t kColorPHOS = kRed ;
   
-  Double_t const kRADDEG = 180.0 / kPI ;
+  Double_t const kRADDEG = 180.0 / TMath::Pi() ;
   
   new TBRIK( "BigBox", "PHOS box", "void", GetBigBox(0)/2, 
 	     GetBigBox(1)/2, 
@@ -200,7 +200,7 @@ void AliPHOSv4::CreateGeometry()
   // --- Position  PHOS mdules in ALICE setup ---
   
   Int_t idrotm[99] ;
-  Double_t const kRADDEG = 180.0 / kPI ;
+  Double_t const kRADDEG = 180.0 / TMath::Pi() ;
   
   for( Int_t i = 1; i <= GetGeometry()->GetNModules(); i++ ) {
     

@@ -83,9 +83,9 @@ public:
   Double_t         Y     () const { if (fE  != fPz) return 0.5*TMath::Log((fE+fPz)/(fE-fPz));
                                     else return 1.e30;}
 
-  Double_t         Phi   () const { return kPI+TMath::ATan2(-fPy,-fPx); }
+  Double_t         Phi   () const { return TMath::Pi()+TMath::ATan2(-fPy,-fPx); }
 
-  Double_t         Theta () const { return (fPz==0)?kPI/2:TMath::ACos(fPz/P()); }
+  Double_t         Theta () const { return (fPz==0)?TMath::Pi()/2:TMath::ACos(fPz/P()); }
 
                                 // setters
 
