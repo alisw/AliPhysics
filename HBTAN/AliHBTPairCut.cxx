@@ -27,6 +27,10 @@ AliHBTPairCut::AliHBTPairCut():
   fSecondPartCut= new AliHBTEmptyParticleCut(); //empty cuts
     
   fCuts = new AliHbtBasePairCut*[fgkMaxCuts];
+  for (Int_t i = 0;i<fNCuts;i++)
+   {
+     fCuts[i] = 0x0;
+   }
 }
 /**********************************************************/
 
@@ -262,6 +266,7 @@ void AliHBTPairCut::SetITSSeparation(Int_t layer, Double_t drphi, Double_t dz)
       }
    }
   fCuts[fNCuts++] = new AliHBTITSSeparationCut(layer,drphi,dz);
+//  Info("SetITSSeparation","Added %d at address %#x",fNCuts-1,fCuts[fNCuts-1]);
 }
 /**********************************************************/
 

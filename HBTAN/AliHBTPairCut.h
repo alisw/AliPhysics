@@ -305,7 +305,7 @@ class AliHBTITSSeparationCut: public AliHbtBasePairCut
 {
 //Anti merging cut for the first layer of pixels
  public:
-  AliHBTITSSeparationCut(Int_t layer, Double_t deltarphi = 0.01, Double_t deltaz = 0.08):
+  AliHBTITSSeparationCut(Int_t layer = 0, Double_t deltarphi = 0.01, Double_t deltaz = 0.08):
     AliHbtBasePairCut(deltarphi,deltaz,kHbtPairCutPropPixelSepar),fLayer(layer){}
   virtual ~AliHBTITSSeparationCut(){}
   Bool_t   Pass(AliHBTPair* pair) const;

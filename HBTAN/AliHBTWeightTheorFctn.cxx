@@ -185,6 +185,21 @@ void AliHBTWeightTheorOSLFctn::ProcessSameEventParticles(AliHBTPair* partpair)
   Double_t out = TMath::Abs(partpair->GetQOutCMSLC());
   Double_t side = TMath::Abs(partpair->GetQSideCMSLC());
   Double_t lon = TMath::Abs(partpair->GetQLongCMSLC());
+
+/*  
+  if (out < 0.01)
+    if (side < 0.01)
+      if (lon < 0.01)
+       {
+         Info("TheorOSL Num","================================================================");
+         Info("TheorOSL Num","o:%f, s:%f, l:%f, w%f",out,side,lon,weight);
+         Info("TheorOSL Num","First");
+         partpair->Particle1()->Print();
+         Info("TheorOSL Num","Second");
+         partpair->Particle2()->Print();
+         fflush(0);
+       }
+*/ 
   fNumerator->Fill(out,side,lon,weight);
 }
 /*************************************************************/

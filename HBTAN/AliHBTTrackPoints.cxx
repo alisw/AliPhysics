@@ -45,9 +45,8 @@ AliHBTTrackPoints::AliHBTTrackPoints(AliHBTTrackPoints::ETypes type, AliESDtrack
   switch (type)
    {
      case kITS:
-       //Up to now we keep only point in pixels
        //Used only in non-id analysis
-       fN = 1;
+       fN = 6;
        fX = new Float_t[fN];
        fY = new Float_t[fN];
        fZ = new Float_t[fN];
@@ -278,13 +277,16 @@ void AliHBTTrackPoints::MakeITSPoints(AliESDtrack* track)
 // z=R*Pz/Pt
  AliITStrackV2 itstrack(*track,kTRUE);
  Double_t x,y,z;
- itstrack.GetGlobalXYZat(4.0,x,y,z);
- fX[0] = x;
- fY[0] = y;
- fZ[0] = z;
- 
-//  Info("MakeITSPoints","X %f Y %f Z %f R asked %f R obtained %f",
-//             fX[0],fY[0],fZ[0],4.0,TMath::Hypot(fX[0],fY[0]));
+ static const Double_t r[6] = {4.0, 7.0, 14.9, 23.8, 39.1, 43.6};
+ for (Int_t i = 0; i < 6; i++)
+  {
+    itstrack.GetGlobalXYZat(r[i],x,y,z);
+    fX[i] = x;
+    fY[i] = y;
+    fZ[i] = z;
+//    Info("MakeITSPoints","X %f Y %f Z %f R asked %f R obtained %f",
+//             fX[i],fY[i],fZ[i],r[i],TMath::Hypot(fX[i],fY[i]));
+  }   
  
 }
 
