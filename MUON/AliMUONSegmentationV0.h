@@ -90,7 +90,7 @@ dummy);
     // y-coordinate
     virtual Int_t  Iy() {return fIy;}
     // current sector
-    virtual Int_t  ISector() const {return 1;}
+    virtual Int_t  ISector() {return 1;}
     // calculate sector from pad coordinates
     virtual Int_t  Sector(Int_t ix, Int_t iy)  {return 1;}
     //
