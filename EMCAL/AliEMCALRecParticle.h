@@ -19,6 +19,7 @@
 
 #include "AliEMCALFastRecParticle.h"
 class TParticle ;
+#include  "TVector3.h"  
 
 class AliEMCALRecParticle : public AliEMCALFastRecParticle {
 
@@ -31,8 +32,10 @@ class AliEMCALRecParticle : public AliEMCALFastRecParticle {
   Int_t   GetEMCALRPIndex()const {    return fEMCALRecPoint ;  }
   virtual const Int_t GetNPrimariesToRecParticles() const ;
   virtual const Int_t GetNPrimaries() const ;
+  TVector3 GetPos() const { return fPos ; } 
   virtual const TParticle * GetPrimary(Int_t index) const ;
   void    SetDebug() { fDebug = kTRUE ; } 
+  void    SetPos(TVector3 pos) { fPos.SetXYZ( pos.X(), pos.Y(), pos.Z() ); } 
   void    UnsetDebug() { fDebug = kFALSE ; }
   void    SetRecPoint(Int_t index){fEMCALRecPoint = index; }
 
@@ -42,6 +45,7 @@ class AliEMCALRecParticle : public AliEMCALFastRecParticle {
 
   Int_t fEMCALRecPoint ; // pointer to the associated track segment in EMCAL  
   Bool_t fDebug ; // to steer debug output 
+  TVector3 fPos ; // position in the global alice coordinate system 
 
   ClassDef(AliEMCALRecParticle,2)  // Reconstructed Particle
 };

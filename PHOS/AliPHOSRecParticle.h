@@ -19,6 +19,7 @@
 
 #include "AliPHOSFastRecParticle.h"
 class TParticle ;
+#include  "TVector3.h"  
 
 class AliPHOSRecParticle : public AliPHOSFastRecParticle {
 
@@ -31,8 +32,10 @@ class AliPHOSRecParticle : public AliPHOSFastRecParticle {
   Int_t   GetPHOSTSIndex()const {    return fPHOSTrackSegment ;  }
   virtual const Int_t GetNPrimariesToRecParticles() const ;
   virtual const Int_t GetNPrimaries() const ;
+  TVector3 GetPos() const { return fPos ; } 
   virtual const TParticle * GetPrimary(Int_t index) const ;
   void    SetDebug() { fDebug = kTRUE ; } 
+  void    SetPos(TVector3 pos) { fPos.SetXYZ( pos.X(), pos.Y(), pos.Z() ); } 
   void    UnsetDebug() { fDebug = kFALSE ; }
   void    SetTrackSegment(Int_t index){fPHOSTrackSegment = index; }
 
@@ -41,7 +44,8 @@ class AliPHOSRecParticle : public AliPHOSFastRecParticle {
  private:
 
   Int_t fPHOSTrackSegment ; // pointer to the associated track segment in PHOS  
-  Bool_t fDebug ; // to steer debug output 
+  Bool_t fDebug ; // to steer debug output
+  TVector3 fPos ; // position in the global alice coordinate system 
 
   ClassDef(AliPHOSRecParticle,2)  // Reconstructed Particle
 };

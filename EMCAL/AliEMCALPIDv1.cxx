@@ -246,6 +246,14 @@ void  AliEMCALPIDv1::MakeRecParticles(){
     rp->SetFirstDaughter(-1);
     rp->SetLastDaughter(-1);
     rp->SetPolarisation(0,0,0);
+    //Set the position in global coordinate system from the RecPoint
+    //AliEMCALGeometry * geom = gime->EMCALGeometry() ; 
+    //AliEMCALTowerRecPoint  * erp = gime->ECARecPoint(rp->GetEMCALRPIndex()) ; 
+    TVector3 pos ; 
+    //geom->GetGlobal(erp, pos) ; !!!!!!!!!! to check 
+    rp->SetPos(pos);
+
+
     index++ ; 
   }
   

@@ -101,6 +101,7 @@
 #include "AliPHOS.h"
 #include "AliPHOSPIDv1.h"
 #include "AliPHOSClusterizerv1.h"
+#include "AliPHOSEmcRecPoint.h"
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSTrackSegmentMakerv1.h"
 #include "AliPHOSRecParticle.h"
@@ -651,6 +652,14 @@ void  AliPHOSPIDv1::MakeRecParticles()
     rp->SetFirstDaughter(-1);
     rp->SetLastDaughter(-1);
     rp->SetPolarisation(0,0,0);
+    //Set the position in global coordinate system from the RecPoint
+    AliPHOSGeometry * geom = gime->PHOSGeometry() ; 
+    AliPHOSTrackSegment * ts  = gime->TrackSegment(rp->GetPHOSTSIndex()) ; 
+    AliPHOSEmcRecPoint  * erp = gime->EmcRecPoint(ts->GetEmcIndex()) ; 
+    TVector3 pos ; 
+    geom->GetGlobal(erp, pos) ; 
+    rp->SetPos(pos);
+
     index++ ; 
   }
 }
