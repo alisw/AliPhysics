@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2002/03/01 10:19:06  hristov
+Additional protection (M.Ivanov)
+
 Revision 1.1  2002/01/21 17:14:21  kowal2
 New track hits using root containers.
 
@@ -344,6 +347,7 @@ void AliTPCTrackHitsV2::Clear()
 {
   //
   //clear object  
+  fSize = 0;
   if (fArray){
     for (Int_t i=0;i<fArray->GetEntriesFast();i++){
       AliTrackHitsParamV2 * par = (AliTrackHitsParamV2 *)fArray->UncheckedAt(i);
@@ -618,6 +622,12 @@ Bool_t AliTPCTrackHitsV2::First()
   //
   //set Current hit for the first hit
   //
+
+  if (fArray->GetSize()<=0) {
+    fCurrentHit->fStatus = kFALSE;
+    return kFALSE;
+  }
+
   AliTrackHitsParamV2 *param = (AliTrackHitsParamV2 *)fArray->At(0);
   if (!fHit) fHit = new AliTPChit;
   if (!(param) ) {
