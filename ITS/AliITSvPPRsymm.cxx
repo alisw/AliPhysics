@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.22  2001/05/16 08:17:49  hristov
+Bug fixed in the StepManager to account for the difference in the geometry tree for the ITS pixels. This fixes both the funny distribution of pixel coordinates and the missing hits/digits/points in many sectors of the ITS pixel barrel. Also included is a patch to properly get and use the detector dimensions through out the ITS code. (B.Nilsen)
+
 Revision 1.21  2001/05/10 00:12:59  nilsen
 Finished fixing up the default segmentation for the PPR geometry.
 
@@ -547,19 +550,19 @@ void AliITSvPPRsymm::CreateGeometry(){
      AliMatrix(idrotm[234],90.0,71.9991,90.0,161.9991,0.0,0.0);
      AliMatrix(idrotm[235],90.0,270.0,90.0,0.0,0.0,0.0);
      AliMatrix(idrotm[236],90.0,180.013702,90.0,270.013702,0.0,0.0);
-     AliMatrix(idrotm[237],90.0,0.0,90.0,90.0,180.0,0.0);
+     AliMatrix(idrotm[237],90.0,180.0,90.0,90.0,0.0,0.0);
      AliMatrix(idrotm[238],90.0,144.0,90.0,234.0,0.0,0.0);
      AliMatrix(idrotm[239],90.0,216.0,90.0,306.0,0.0,0.0);
      AliMatrix(idrotm[240],90.0,288.0,90.0,18.0,0.0,0.0);
      AliMatrix(idrotm[241],90.0,324.0,90.0,54.0,0.0,0.0);
      AliMatrix(idrotm[242],90.0,36.0,90.0,126.0,0.0,0.0);
      AliMatrix(idrotm[243],90.0,108.0,90.0,198.0,0.0,0.0);
-     AliMatrix(idrotm[244],90.0,0.0,90.0,270.0,180.0,0.0);
-     AliMatrix(idrotm[245],90.0,342.0,90.0,252.0,180.0,0.0);
-     AliMatrix(idrotm[246],90.0,130.0,90.0,40.0,180.0,0.0);
-     AliMatrix(idrotm[247],90.0,139.0,90.0,49.0,180.0,0.0);
-     AliMatrix(idrotm[248],90.0,148.0,90.0,58.0,180.0,0.0);
-     AliMatrix(idrotm[249],90.0,157.0,90.0,67.0,180.0,0.0);
+     AliMatrix(idrotm[244],90.0,180.0,90.0,270.0,0.0,0.0);
+     AliMatrix(idrotm[245],90.0,162.0,90.0,252.0,0.0,0.0);
+     AliMatrix(idrotm[246],90.0,310.0,90.0,40.0,0.0,0.0);
+     AliMatrix(idrotm[247],90.0,319.0,90.0,49.0,0.0,0.0);
+     AliMatrix(idrotm[248],90.0,328.0,90.0,58.0,0.0,0.0);
+     AliMatrix(idrotm[249],90.0,337.0,90.0,67.0,0.0,0.0);
      AliMatrix(idrotm[1003],90.0,73.5,90.0,163.5,0.0,0.0);
      AliMatrix(idrotm[1011],90.0,342.0,90.0,72.0,0.0,0.0);
      AliMatrix(idrotm[1039],90.0,72.0,90.0,162.0,0.0,0.0);
@@ -595,7 +598,7 @@ void AliITSvPPRsymm::CreateGeometry(){
     
   if (option == 2) {
 
-     AliMatrix(idrotm[201],90.0,0.0,90.0,90.0,180.0,0.0);
+     AliMatrix(idrotm[201],90.0,0.0,90.0,90.0,0.0,0.0);
      AliMatrix(idrotm[202],90.0,90.0,90.0,0.0,0.0,0.0);
      AliMatrix(idrotm[203],90.0,350.0,90.0,260.0,0.0,0.0);
      AliMatrix(idrotm[204],90.0,170.0,90.0,80.0,0.0,0.0);
@@ -632,12 +635,12 @@ void AliITSvPPRsymm::CreateGeometry(){
      AliMatrix(idrotm[235],90.0,270.0,90.0,0.0,0.0,0.0);
      AliMatrix(idrotm[236],90.0,180.013702,90.0,270.013702,0.0,0.0);
      AliMatrix(idrotm[237],90.0,90.0,90.0,180.0,0.0,0.0);
-     AliMatrix(idrotm[238],90.0,0.0,90.0,270.0,180.0,0.0);
-     AliMatrix(idrotm[239],90.0,342.0,90.0,252.0,180.0,0.0);
-     AliMatrix(idrotm[240],90.0,130.0,90.0,40.0,180.0,0.0);
-     AliMatrix(idrotm[241],90.0,139.0,90.0,49.0,180.0,0.0);
-     AliMatrix(idrotm[242],90.0,148.0,90.0,58.0,180.0,0.0);
-     AliMatrix(idrotm[243],90.0,157.0,90.0,67.0,180.0,0.0);
+     AliMatrix(idrotm[238],90.0,180.0,90.0,270.0,0.0,0.0);
+     AliMatrix(idrotm[239],90.0,162.0,90.0,252.0,0.0,0.0);
+     AliMatrix(idrotm[240],90.0,310.0,90.0,40.0,0.0,0.0);
+     AliMatrix(idrotm[241],90.0,319.0,90.0,49.0,0.0,0.0);
+     AliMatrix(idrotm[242],90.0,328.0,90.0,58.0,0.0,0.0);
+     AliMatrix(idrotm[243],90.0,337.0,90.0,67.0,0.0,0.0);
      AliMatrix(idrotm[244],90.0,216.0,90.0,306.0,0.0,0.0);
      AliMatrix(idrotm[245],90.0,36.0,90.0,126.0,0.0,0.0);
      AliMatrix(idrotm[246],90.0,108.0,90.0,198.0,0.0,0.0);
@@ -2987,15 +2990,15 @@ void AliITSvPPRsymm::CreateGeometry(){
      gMC->Gspos("I126",2,"I12A",-0.7799,7.2874,0.0,idrotm[217],"ONLY");
      gMC->Gspos("I125",2,"I12A",-0.6315,7.0883,0.0,idrotm[216],"ONLY");
      gMC->Gspos("I124",2,"I12A",-0.4965,6.8742,0.0,idrotm[215],"ONLY");
-     gMC->Gspos("I103",3,"I10A",-0.05,-di10a[1]+2.*di104[1]+di103[1],-3.536,idrotm[237],"ONLY");
-     gMC->Gspos("I103",4,"I10A",-0.05,-di10a[1]+2.*di104[1]+di103[1],-10.708,idrotm[237],"ONLY");
+     gMC->Gspos("I103",3,"I10A",-0.05,-di10a[1]+2.*di104[1]+di103[1],-3.536,0,"ONLY");
+     gMC->Gspos("I103",4,"I10A",-0.05,-di10a[1]+2.*di104[1]+di103[1],-10.708,0,"ONLY");
      gMC->Gspos("I103",1,"I10A",-0.05,-di10a[1]+2.*di104[1]+di103[1],10.708,0,"ONLY");
      gMC->Gspos("I103",2,"I10A",-0.05,-di10a[1]+2.*di104[1]+di103[1],3.536,0,"ONLY");
      gMC->Gspos("I105",1,"I10A",-0.05,0.01,-16.844,idrotm[237],"ONLY");
      gMC->Gspos("I105",2,"I10A",-0.05,0.01,16.844,0,"ONLY");
      gMC->Gspos("I104",1,"I10A",0.0,-di10a[1]+di104[1],0.0,0,"ONLY");
-     gMC->Gspos("I1D3",3,"I20A",-0.05,-di20a[1]+2.*di104[1]+di1d3[1],-3.536,idrotm[237],"ONLY");
-     gMC->Gspos("I1D3",4,"I20A",-0.05,-di20a[1]+2.*di104[1]+di1d3[1],-10.708,idrotm[237],"ONLY");
+     gMC->Gspos("I1D3",3,"I20A",-0.05,-di20a[1]+2.*di104[1]+di1d3[1],-3.536,0,"ONLY");
+     gMC->Gspos("I1D3",4,"I20A",-0.05,-di20a[1]+2.*di104[1]+di1d3[1],-10.708,0,"ONLY");
      gMC->Gspos("I1D3",1,"I20A",-0.05,-di20a[1]+2.*di104[1]+di1d3[1],10.708,0,"ONLY");
      gMC->Gspos("I1D3",2,"I20A",-0.05,-di20a[1]+2.*di104[1]+di1d3[1],3.536,0,"ONLY");
      gMC->Gspos("I105",3,"I20A",-0.05,0.01,-16.844,idrotm[237],"ONLY");
@@ -3159,8 +3162,8 @@ void AliITSvPPRsymm::CreateGeometry(){
      gMC->Gspos("I105",4,"I10B",-0.05,-0.01,16.844,0,"ONLY");
      gMC->Gspos("I107",2,"I10B",-0.0455,-di10b[1]+di107[1],3.536,0,"ONLY");
      gMC->Gspos("I107",1,"I10B",-0.0455,-di10b[1]+di107[1],10.708,0,"ONLY");
-     gMC->Gspos("I107",4,"I10B",-0.0455,-di10b[1]+di107[1],-10.708,idrotm[201],"ONLY");
-     gMC->Gspos("I107",3,"I10B",-0.0455,-di10b[1]+di107[1],-3.536,idrotm[201],"ONLY");
+     gMC->Gspos("I107",4,"I10B",-0.0455,-di10b[1]+di107[1],-10.708,0,"ONLY");
+     gMC->Gspos("I107",3,"I10B",-0.0455,-di10b[1]+di107[1],-3.536,0,"ONLY");
      gMC->Gspos("I109",1,"I10B",-0.138,0.015,-16.844,idrotm[201],"ONLY");
      gMC->Gspos("I109",2,"I10B",-0.138,0.015,16.844,0,"ONLY");
      gMC->Gspos("I108",1,"I10B",-0.138,-di10b[1]+2.*di107[1]+di108[1],0.0,0,"ONLY");
