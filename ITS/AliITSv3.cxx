@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  1999/10/06 19:56:50  fca
+Add destructor
+
 Revision 1.8  1999/10/05 08:05:09  fca
 Minor corrections for uninitialised variables.
 
@@ -66,7 +69,13 @@ AliITSv3::AliITSv3() {
     fId3Name[5] = "ITS6";
     fMinorVersionV3=1;
 }
- 
+//_____________________________________________________________________________
+AliITSv3::~AliITSv3() {
+    //
+    // Standard destructor for the ITS
+    //
+  delete [] fId3Name;
+}  
 //_____________________________________________________________________________
 AliITSv3::~AliITSv3() {
     //

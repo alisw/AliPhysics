@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  1999/10/06 10:15:19  fca
+Correct bug in allocation of layer name and add destructor
+
 Revision 1.12  1999/10/05 08:05:09  fca
 Minor corrections for uninitialised variables.
 
@@ -66,9 +69,7 @@ AliITSv5::~AliITSv5() {
     //
     // Standard destructor for the ITS
     //
-  for (Int_t i=0;i<fId5N;++i) delete [] fId5Name[i];
   delete [] fId5Name;
-  fId5Name = 0;
 }
 //_____________________________________________________________________________
 AliITSv5::AliITSv5(const char *name, const char *title) : AliITS(name, title){

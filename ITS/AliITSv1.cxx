@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  1999/10/06 19:56:50  fca
+Add destructor
+
 Revision 1.9  1999/10/05 08:05:09  fca
 Minor corrections for uninitialised variables.
 
@@ -64,7 +67,13 @@ AliITSv1::AliITSv1() {
     fId1Name[4] = "ITS5";
     fId1Name[5] = "ITS6";
 }
- 
+//_____________________________________________________________________________
+AliITSv1::~AliITSv1() {
+    //
+    // Standard destructor for the ITS
+    //
+  delete [] fId1Name;
+}  
 //_____________________________________________________________________________
 AliITSv1::AliITSv1(const char *name, const char *title) : AliITS(name, title){ 
     //
