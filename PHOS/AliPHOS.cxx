@@ -303,25 +303,25 @@ void AliPHOS::CreateMaterials()
 //____________________________________________________________________________
 void AliPHOS::SetTreeAddress()
 { 
-  TBranch *branch;
+  // TBranch *branch;
   AliDetector::SetTreeAddress();
 
-  //Branch address for TreeR: RecParticles
-  TTree *treeR = gAlice->TreeR();
-  if ( treeR && fRecParticles ) {
-    branch = treeR->GetBranch("PHOSRP");
-    if (branch) branch->SetAddress(&fRecParticles) ;
-  }
-   //Branch address for TreeR: TrackSegments
-  if ( treeR && fTrackSegments ) {
-    branch = treeR->GetBranch("PHOSTS");
-    if (branch) branch->SetAddress(&fTrackSegments) ;
-  }
-  //Branch address for TreeR: EmcRecPoint
- if ( treeR && fEmcRecPoints ) {
-    branch = treeR->GetBranch("PHOSEmcRP");
-    if (branch) branch->SetAddress(&fEmcRecPoints) ;
- }
+ //  //Branch address for TreeR: RecParticles
+//   TTree *treeR = gAlice->TreeR();
+//   if ( treeR && fRecParticles ) {
+//     branch = treeR->GetBranch("PHOSRP");
+//     if (branch) branch->SetAddress(&fRecParticles) ;
+//   }
+//    //Branch address for TreeR: TrackSegments
+//   if ( treeR && fTrackSegments ) {
+//     branch = treeR->GetBranch("PHOSTS");
+//     if (branch) branch->SetAddress(&fTrackSegments) ;
+//   }
+//   //Branch address for TreeR: EmcRecPoint
+//  if ( treeR && fEmcRecPoints ) {
+//     branch = treeR->GetBranch("PHOSEmcRP");
+//     if (branch) branch->SetAddress(&fEmcRecPoints) ;
+  // }
 }
 
 

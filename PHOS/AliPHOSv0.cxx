@@ -98,6 +98,12 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
     cout << "AliPHOSv0 : PHOS geometry intialized for " << fGeom->GetName() << endl ;
   else
    cout << "AliPHOSv0 : PHOS geometry initialization failed !" << endl ;   
+
+  // For reconstruction
+  // fEmcRecPoints    = new  TObjArray(1000);
+  //fPpsdRecPoints   = new  TObjArray(1000);
+  //fRecParticles    = new  TClonesArray("AliPHOSRecParticle", 1000) ;
+  //fTrackSegments   = new  TClonesArray("AliPHOSTrackSegment", 1000) ;
 }
 
 //____________________________________________________________________________
@@ -138,6 +144,8 @@ AliPHOSv0::AliPHOSv0(AliPHOSReconstructioner * Reconstructioner, const char *nam
   // Defining the PHOS Reconstructioner
  
  fReconstructioner = Reconstructioner ;
+
+
 }
 
 //____________________________________________________________________________
@@ -1282,10 +1290,7 @@ void AliPHOSv0::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
   fReconstructioner = Reconstructioner ;
   
   char branchname[10] ;
-
   
-
-
   // 1.
 
   //  gAlice->MakeTree("R") ; 
@@ -1298,7 +1303,7 @@ void AliPHOSv0::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
   }
 
   //  fEmcRecPoints= new AliPHOSRecPoint::RecPointsList("AliPHOSEmcRecPoint", 1000) ; if TClonesArray
-  fEmcRecPoints= new AliPHOSRecPoint::RecPointsList(100) ; 
+  fEmcRecPoints= new AliPHOSRecPoint::RecPointsList(1000) ; 
 
   if ( fEmcRecPoints && gAlice->TreeR() ) {
     sprintf(branchname,"%sEmcRP",GetName()) ;
@@ -1314,7 +1319,7 @@ void AliPHOSv0::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
   }
 
   //  fPpsdRecPoints = new AliPHOSRecPoint::RecPointsList("AliPHOSPpsdRecPoint", 1000) ; if TClonesArray
-  fPpsdRecPoints = new AliPHOSRecPoint::RecPointsList(100) ;
+  fPpsdRecPoints = new AliPHOSRecPoint::RecPointsList(1000) ;
 
   if ( fPpsdRecPoints && gAlice->TreeR() ) {
     sprintf(branchname,"%sPpsdRP",GetName()) ;
@@ -1405,15 +1410,15 @@ void AliPHOSv0::ResetReconstruction()
 //____________________________________________________________________________
 void AliPHOSv0::SetTreeAddress()
 { 
-  TBranch *branch;
+  //  TBranch *branch;
   AliPHOS::SetTreeAddress();
 
-  //Branch address for TreeR: RecPpsdRecPoint
-  TTree *treeR = gAlice->TreeR();
-  if ( treeR && fPpsdRecPoints ) {
-    branch = treeR->GetBranch("PHOSPpsdRP");
-    if (branch) branch->SetAddress(&fPpsdRecPoints) ;
-  }
+ //  //Branch address for TreeR: RecPpsdRecPoint
+//   TTree *treeR = gAlice->TreeR();
+//   if ( treeR && fPpsdRecPoints ) {
+//     branch = treeR->GetBranch("PHOSPpsdRP");
+//     if (branch) branch->SetAddress(&fPpsdRecPoints) ;
+  //  }
 }
 
 //____________________________________________________________________________
