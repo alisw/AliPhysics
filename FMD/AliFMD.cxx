@@ -114,11 +114,9 @@ void AliFMD::AddDigit( Int_t *digits)
 {
   // add a real digit - as coming from data
 
-  // printf("AddDigit\n");
 
    TClonesArray &ldigits = *fDigits;
-   // new((*fDigits)[fNdigits++]) AliFMDdigit(digits);
-  new(ldigits[fNdigits++]) AliFMDdigit(digits);
+   new(ldigits[fNdigits++]) AliFMDdigit(digits);
 
 }
 //_____________________________________________________________________________
@@ -218,7 +216,10 @@ void AliFMD::Init()
   printf("\n");
   //
   //
-  fIdSens1=pMC->VolId("GRIN"); //Si sensetive volume
+  if (IsVersion()!=0)
+    fIdSens1=pMC->VolId("GRIN"); //Si sensetive volume
+  else
+    fIdSens1=pMC->VolId("GFSI"); //Si sensetive volume
 
 }
 //---------------------------------------------------------------------
