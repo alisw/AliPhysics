@@ -71,7 +71,7 @@ $(DICT):				$(HDRS)
 
 depend:					$(SRCS)
 
-HEADERS       = AliPythia.h AliDecayer.h AliDecayerPythia.h
+HEADERS       = AliPythia.h AliDecayer.h AliDecayerPythia.h AliGenHijingEventHeader.h
 
 TOCLEAN		= $(OBJS) *Cint.cxx *Cint.h
 
