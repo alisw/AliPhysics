@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2000/04/17 09:37:33  kowal2
+removed obsolete AliTPCDigitsDisplay.C
+
 Revision 1.17.2.2  2000/04/10 08:15:12  kowal2
 
 New, experimental data structure from M. Ivanov
@@ -118,6 +121,7 @@ AliTPC::AliTPC(const char *name, const char *title)
   //
   // Initialise arrays of hits and digits 
   fHits     = new TClonesArray("AliTPChit",  176);
+  gAlice->AddHitList(fHits);
   //MI change  
   fDigitsArray = 0;
   fClustersArray= 0;

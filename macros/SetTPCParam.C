@@ -1,5 +1,7 @@
 AliTPCParam * SetTPCParam()
 {
+  TDirectory *dirsave=gDirectory;
+
   AliTPCParamSR  * param = new AliTPCParamSR;
   AliTPCPRF2D    * prfinner   = new AliTPCPRF2D;
   AliTPCPRF2D    * prfouter   = new AliTPCPRF2D;
@@ -40,7 +42,7 @@ AliTPCParam * SetTPCParam()
   rf->SetOffset(3*param.GetZSigma());
   rf->Update();
   //Set two dimensional pad response function
-  TFile f("AliTPCprf2d.root");
+  TFile f("$ALICE_ROOT/TPC/AliTPCprf2d.root");
   prfinner->Read("prf_07504_Gati_056068_d02");
   prfouter->Read("prf_10006_Gati_047051_d03");
   param->SetInnerPRF(prfinner); //param object is responsible for destroying objects
@@ -49,5 +51,6 @@ AliTPCParam * SetTPCParam()
   f.Close();
   
   //gTPCParam =param;
+  dirsave->cd();
   return param;
 };
