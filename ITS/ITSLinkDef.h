@@ -24,6 +24,17 @@
 #pragma link C++ class  AliITSvPPRsymm+;
 #pragma link C++ class  AliITSvPPRasymmFMD+;
 #pragma link C++ class  AliITSvSPD02+;
+#pragma link C++ class  AliITSv11+;
+//
+#pragma link C++ class  AliITSBaseGeometry+;
+#pragma link C++ class  AliITSBaseVolParams+;
+#pragma link C++ class  AliITSTubeData+;
+#pragma link C++ class  AliITSPConeData+;
+#pragma link C++ class  AliITSPGonData+;
+#pragma link C++ class  AliITSGeometryITSV+;
+#pragma link C++ class  AliITSGeometrySSDCone+;
+#pragma link C++ class  AliITSGeometrySDDCone+;
+//
 #pragma link C++ class  AliITShit+;
 #pragma link C++ class  AliITSdigit+;
 #pragma link C++ class  AliITSdigitSPD+;

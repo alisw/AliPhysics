@@ -12,7 +12,9 @@
 /////////////////////////////////////////////////////////////////////////
  
 #include "AliITS.h"
+class AliITSGeometryITSV;
 class AliITSGeometrySSDCone;
+//class AliITSGeometrySDDCone;
  
 class AliITSv11 : public AliITS {
 
@@ -21,12 +23,11 @@ class AliITSv11 : public AliITS {
     AliITSv11(const char *title);
     AliITSv11(const AliITSv11 &source); // copy constructor
     AliITSv11& operator=(const AliITSv11 &source); // assignment operator
-    virtual       ~AliITSv11() ;
+    virtual       ~AliITSv11();
     virtual void   BuildGeometry();
     virtual void   CreateGeometry();
     virtual void   CreateMaterials();
-    virtual Int_t  IsVersion() const {// returns the ITS version number 
-                                      return 11;} 
+    virtual Int_t  IsVersion() const {return 11;} // ITS version number
     virtual void   Init(); 
     virtual void   SetDefaults();
     virtual void   DrawModule();
@@ -34,16 +35,16 @@ class AliITSv11 : public AliITS {
     virtual void   SetWriteDet(Bool_t det=kTRUE){ // set .det write
 	                                         fGeomDetOut = det;}
     virtual void   SetWriteDet(const char *f){ // set write file
-	                             strncpy(fWrite,f,60);fGeomDetOut = kTRUE;}
+	                         strncpy(fWrite,f,60);fGeomDetOut = kTRUE;}
     virtual void   SetReadDet(Bool_t det=kTRUE){ //set .det read
 	                                        fGeomDetIn = det;}
     virtual void   SetReadDet(const char *f){ // set read file
-	                               strncpy(fRead,f,60);fGeomDetIn = kTRUE;}
+	                           strncpy(fRead,f,60);fGeomDetIn = kTRUE;}
     virtual void   SetEUCLID(Bool_t euclid=kTRUE){ // set write Euclid file
 	                                          fEuclidOut = euclid;}
     virtual void   SetEUCLIDFileName(const char *f){ // set write file
 	                     fEuclidGeometry=f;fEuclidOut = kTRUE;}
-    virtual void   SetMinorVersion(Int_t v=22){ // Choose between existing minor versions
+    virtual void   SetMinorVersion(Int_t v=00){ // Set minor version
 	fMinorVersion = v;}
     virtual void   SetThicknessDet1(Float_t v=200.){ 
 	 // Set detector thickness in layer 1
@@ -63,7 +64,7 @@ class AliITSv11 : public AliITS {
     virtual void   SetCoolingFluid(Int_t v=1){ 
 	 // Set flag for cooling fluid
 	 fFluid = v;}	 	 
-    virtual Bool_t GetEUCLID(){return fEuclidOut;}// returns value Euclid flag.
+    virtual Bool_t GetEUCLID(){return fEuclidOut;}// returns value Euclid flag
     virtual const char  *GetEULIIDFileName() const{ // return .euc file name
 	                               return fEuclidGeometry.Data();}
     virtual Bool_t GetWriteDet() { // returns value GeomDetOut flag.
@@ -71,9 +72,9 @@ class AliITSv11 : public AliITS {
     virtual Bool_t GetReadDet() { // returns value GeomDetIn flag.
 	                         return fGeomDetIn;}
     virtual char  *GetReadDetFileName(){ // return .det read file name
-	          if(fRead[0]!='\0') return fRead; else return fEuclidGeomDet;}
+	if(fRead[0]!='\0') return fRead; else return fEuclidGeomDet;}
     virtual char  *GetWriteDetFileName(){ // return .det write file name
-	        if(fWrite[0]!='\0') return fWrite; else return fEuclidGeomDet;}
+	if(fWrite[0]!='\0') return fWrite; else return fEuclidGeomDet;}
     virtual Int_t GetMajorVersion(){// return Major Version Number
 	return fMajorVersion;}
     virtual Int_t GetMinorVersion(){// return Major Version Number
@@ -113,12 +114,14 @@ class AliITSv11 : public AliITS {
     Float_t  fDet2;	      // thickness of detector in SPD layer 2
     Float_t  fChip1;	      // thickness of chip in SPD layer 1   
     Float_t  fChip2;	      // thickness of chip in SPD layer 2   
-    Int_t    fRails;          // flag to switch rails on (=1) and off (=0)
-    Int_t    fFluid;          // flag to switch between water(=1) and freon(=0)
-    AliITSGeometrySSDCone *fc;//! ITS SSD Cone geometry. ONLY THING DEFINED.
+    Int_t    fRails;          // switch rails on (=1) and off (=0)
+    Int_t    fFluid;          // switch between water(=1) and freon(=0)
+    //
+    AliITSGeometryITSV    *fITSV;  //! ITS Mother Volume.
+    AliITSGeometrySSDCone *fcS;    //! ITS SSD Cone geometry.
+//    AliITSGeometrySDDCone *fcD;    //! ITS SDD Cone geometry.
 
-    ClassDef(AliITSv11,1)  //Hits manager for set:ITS version 11 
-                                 // PPR detailed Geometry asymmetric
+    ClassDef(AliITSv11,1)  //Hits manager for set:ITS version 11
 };
  
 #endif

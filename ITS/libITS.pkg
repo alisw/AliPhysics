@@ -2,6 +2,8 @@ SRCS          = AliITS.cxx AliITSv1.cxx AliITSv5.cxx AliITSvSPD02.cxx \
 	        AliITSv5symm.cxx AliITSv5asymm.cxx \
       	    	AliITSvPPRcoarseasymm.cxx AliITSvPPRcoarsesymm.cxx\
       	 	AliITSvPPRasymm.cxx AliITSvPPRsymm.cxx AliITSvPPRasymmFMD.cxx\
+		AliITSv11.cxx AliITSBaseGeometry.cxx AliITSGeometryITSV.cxx \
+		AliITSGeometrySSDCone.cxx AliITSGeometrySDDCone.cxx \
       		AliITShit.cxx AliITSDetType.cxx \
 		AliITSgeom.cxx AliITSgeomMatrix.cxx \
 	        AliITSgeomSPD.cxx AliITSgeomSDD.cxx \
@@ -41,7 +43,8 @@ SRCS          = AliITS.cxx AliITSv1.cxx AliITSv5.cxx AliITSvSPD02.cxx \
 	        AliITSreconstruction.cxx \
 	        AliITSFindClustersV2.cxx \
 	        AliITSRiemannFit.cxx \
-		AliITSFDigitizer.cxx AliITSDDLRawData.cxx
+		AliITSFDigitizer.cxx \
+		AliITSDDLRawData.cxx
 #		AliITSAlignmentTrack.cxx AliITSAlignmentModule.cxx \
 
 HDRS:=  $(SRCS:.cxx=.h)
