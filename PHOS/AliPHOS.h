@@ -62,7 +62,6 @@ protected:
   
   AliPHOSQAChecker * fQATask ; //! PHOS checkers container
   TTree * fTreeQA ;            // the QA tree that contains the alarms
-  Bool_t fDebug ;              //! to control debugging  
   ClassDef(AliPHOS,2) // Photon Spectrometer Detector (base class)
 
 } ;

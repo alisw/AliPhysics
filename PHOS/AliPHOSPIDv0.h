@@ -59,7 +59,6 @@ public:
 
  private:
 
-  TString                fEventFolderName;    // file name with event header
   TString                fTrackSegmentsTitle; // branch name with track segments
   TString                fRecPointsTitle ;    // branch name with rec points
   TString                fRecParticlesTitle ; // branch name with rec particles

@@ -35,15 +35,12 @@ class TFile;
 
 // --- AliRoot header files ---
 #include "AliMagF.h"
-#include "AliESDtrack.h" 
-#include "AliESD.h"
 #include "AliPHOS.h"
-#include "AliPHOSGetter.h"
-#include "AliPHOSQAChecker.h"
+#include "AliPHOSLoader.h"
 #include "AliRun.h"
 #include "AliPHOSDigitizer.h"
 #include "AliPHOSSDigitizer.h"
-#include "AliPHOSReconstructor.h"
+
 ClassImp(AliPHOS)
 //____________________________________________________________________________
 AliPHOS:: AliPHOS() : AliDetector()
@@ -74,6 +71,7 @@ AliPHOS::~AliPHOS()
 //____________________________________________________________________________
 void AliPHOS::Copy(AliPHOS & phos)
 {
+  // copy method to be used byy the cpy ctor
   TObject::Copy(phos) ; 
   //  fQATask = AliPHOSQAChecker::Copy(*(phos.fQATask)) ; 
   phos.fTreeQA = fTreeQA->CloneTree() ; 

@@ -35,10 +35,8 @@ class TFile;
 
 // --- AliRoot header files ---
 #include "AliMagF.h"
-#include "AliESDCaloTrack.h" 
-#include "AliESD.h"
 #include "AliEMCAL.h"
-#include "AliEMCALGetter.h"
+#include "AliEMCALLoader.h"
 #include "AliRun.h"
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALDigitizer.h"

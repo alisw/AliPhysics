@@ -273,13 +273,12 @@ void AliPHOSClusterizerv1::GetCalibrationParameters()
   if ( !gime->Digitizer() ) 
     gime->LoadDigitizer();
   AliPHOSDigitizer * dig = gime->Digitizer(); 
-  
   fADCchanelEmc   = dig->GetEMCchannel() ;
   fADCpedestalEmc = dig->GetEMCpedestal();
   
   fADCchanelCpv   = dig->GetCPVchannel() ;
   fADCpedestalCpv = dig->GetCPVpedestal() ; 
-  
+
   //   fCalibrationDB = gime->CalibrationDB();
 }
 

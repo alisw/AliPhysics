@@ -57,14 +57,11 @@
 //            Completely redesined by Dmitri Peressounko, March 2001
 
 // --- ROOT system ---
-#include "TROOT.h"
 #include "TTree.h"
-#include "TFile.h"
 #include "TF2.h"
 #include "TFormula.h"
 #include "TCanvas.h"
-#include "TFolder.h"
-#include "TSystem.h"
+
 #include "TBenchmark.h"
 // --- Standard library ---
 
@@ -72,12 +69,9 @@
 
 #include "AliRun.h"
 #include "AliGenerator.h"
-#include "AliPHOS.h"
 #include "AliPHOSPIDv0.h"
 #include "AliPHOSEmcRecPoint.h"
-#include "AliPHOSClusterizerv1.h"
 #include "AliPHOSTrackSegment.h"
-#include "AliPHOSTrackSegmentMakerv1.h"
 #include "AliPHOSRecParticle.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSLoader.h"
@@ -243,7 +237,9 @@ void AliPHOSPIDv0::Init()
 }
 
 //____________________________________________________________________________
-void  AliPHOSPIDv0::MakeRecParticles(){
+void  AliPHOSPIDv0::MakeRecParticles()
+{
+  // Reconstructs the particles from the tracksegments
 
   TString taskName(GetName()) ; 
   taskName.Remove(taskName.Index(Version())-1) ;
@@ -379,6 +375,7 @@ void  AliPHOSPIDv0::SetShowerProfileCut(const char * formula)
 //____________________________________________________________________________
 void  AliPHOSPIDv0::WriteRecParticles()
 {
+  // Saves the reconstructed particles too a file
  
   AliRunLoader* runget = AliRunLoader::GetRunLoader(GetTitle());
   if(runget == 0x0) 
