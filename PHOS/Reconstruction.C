@@ -31,19 +31,24 @@
 #include "AliPHOSGetter.h"
 #include "AliEMCALGetter.h"
 
-void reco(TString opt="TRE", TString name="all") 
+void reco(TString opt="TRE", TString name="all", Bool_t debug="kFALSE") 
 {
   AliReconstruction rec ; 
-  if ( !opt.Contains("T") )
+  if ( !opt.Contains("T") ) {
     rec.SetRunTracking(kFALSE) ;
+    rec.SetRunVertexFinder(kFALSE) ; 
+  }
+
   if ( opt.Contains("R") ) 
     rec.SetRunLocalReconstruction(name.Data()) ; 
   else 
     rec.SetRunLocalReconstruction("") ;
+
   if ( !opt.Contains("E") )
     rec.SetFillESD("") ; 
   else 
     rec.SetFillESD(name.Data()) ; 
+
   rec.Run() ;
 
   if ( name.Contains("PHOS") ) {

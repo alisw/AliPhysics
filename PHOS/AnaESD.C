@@ -26,6 +26,8 @@
 #include "TFile.h"
 #include "TMath.h"
 #include "TH1D.h"
+#include "TROOT.h"
+#include "TBrowser.h"
 #include "AliPHOSGetter.h"
 #include "AliPHOSGeometry.h"
 #include "Riostream.h"
@@ -38,17 +40,20 @@
 #include "AliPHOSGridFile.h"
 #endif
 
-void Match(TParticle * pp, AliESDtrack * cp, Double_t * dist) ; 
-TH1D * heta = new TH1D("heta", "Eta correlation", 100, 0., 360.) ; 
-TH1D * hphi = new TH1D("hphi", "Phi correlation", 100, 0., 360.) ; 
-// Data Challenge identification
-const TString kYear("2004") ; 
-const TString kProd("02") ; 
-const TString kVers("V4.01.Rev.00") ; 
+Bool_t AnaESD(TString filename) ; 
+void   Match(AliESDtrack * ct, AliESDtrack * cp, Double_t * dist) ; 
 
+
+//__________________________________________________________________________
 Bool_t Ana(const TString type = "per5", const Int_t run = 1, const Int_t nOfEvt = 1) 
 { 
-  Double_t dist[3] ; 
+  // Analyzes data from the AliEn data catalog
+
+  // Data Challenge identification
+  const TString kYear("2004") ; 
+  const TString kProd("02") ; 
+  const TString kVers("V4.01.Rev.00") ; 
+
   // get the LFN file name in the Grid catalogue ; 
   AliPHOSGridFile lfn ; 
   if (!lfn.IsConnected()) 
@@ -69,98 +74,126 @@ Bool_t Ana(const TString type = "per5", const Int_t run = 1, const Int_t nOfEvt 
     }
 
     printf(">>>>>>>>>>>> Processing %s-%s/%s/%s : run # %d event # %d \n", 
-	   kYear.Data(), kProd.Data(), kVers.Data(), type.Data(), run, evt) ;  
-    AliPHOSGetter * gime = AliPHOSGetter::Instance(fileName) ; 
-    
-    Int_t nEvent = gime->MaxEvent() ;  
-    Int_t event ; 
-    AliESD * esd = 0 ;
-    for (event = 0 ; event < nEvent; event++) {
-      esd = gime->ESD(event) ; 
-      if (!esd) 
-	return kFALSE ; 
-      
-      //esd->Print();  
-      Int_t caloindex ;
-      // Calorimeter tracks 
-      AliESDCaloTrack * ct ; 
-      for (caloindex = 0 ; caloindex < esd->GetNumberOfCaloTracks() ; caloindex++) {
-	// get the calorimeter type of particles (PHOS or EMCAL)
-	ct = esd->GetCaloTrack(caloindex) ;
-	TParticle * part = ct->GetRecParticle() ; 
-	
-	AliESDtrack * cp ; 
-	Int_t cpindex ; 
-	for (cpindex = 0 ; cpindex < esd->GetNumberOfTracks() ; cpindex++) {
-	  // get the charged tracks from central tracking
-	  cp = esd->GetTrack(cpindex) ;
-	  Match(part, cp, dist) ; 
-	}
-	heta->Fill( dist[1] ) ; 
-	hphi->Fill( dist[2] ) ; 
-      }
-    }
-  }
-  heta->Draw() ; 
-  //hphi->Draw() ; 
+	   kYear.Data(), kProd.Data(), kVers.Data(), type.Data(), run, evt) ;
+    AnaESD(fileName) ;
+  } 
   return kTRUE ; 
 }
 
-void Match(TParticle * part, AliESDtrack * cp, Double_t * dist) 
+//__________________________________________________________________________
+Bool_t AnaESD(TString fileName) 
+{
+  // Analyze ESD from file fileName
+  // calo track histograms ;
+  
+  TFile * out = new TFile("out.root", "RECREATE") ; 
+  TH1D * hCaloEnergy = 0 ; 
+  TH1D * heta = 0 ;
+  TH1D * hphi = 0 ; 
+  Double_t dist[3] ; 
+
+  AliPHOSGetter * gime = AliPHOSGetter::Instance(fileName) ; 
+  
+  Int_t nEvent = gime->MaxEvent() ;  
+  Int_t event ; 
+  AliESD * esd = 0 ;
+  for (event = 0 ; event < nEvent; event++) {
+    cout << "AnaESD : Processing event # " << event << endl ; 
+    esd = gime->ESD(event) ; 
+    if (!esd) 
+      return kFALSE ; 
+    
+    //esd->Print();  
+    // Calorimeter tracks 
+    AliESDtrack * ct ; 
+    Int_t caloindex ; 
+    for (caloindex = 0 ; caloindex < esd->GetNumberOfTracks() ; caloindex++) {
+      // get the tracks and check if it is from PHOS 
+      ct = esd->GetTrack(caloindex) ;
+      if ( !ct->IsPHOS() ) 
+	continue ; 
+      Double_t energy = ct->GetPHOSsignal() ; 
+      if(!hCaloEnergy) {
+	out->cd() ; 
+	hCaloEnergy = new TH1D("CaloEnergy", "Energy in calorimeter", 1500, 0., 150.) ;
+      }
+      hCaloEnergy->Fill(energy) ;  
+      AliESDtrack * cp ; 
+      Int_t cpindex ; 
+      for (cpindex = 0 ; cpindex < esd->GetNumberOfTracks() ; cpindex++) {
+	// get the charged tracks from central tracking
+	cp = esd->GetTrack(cpindex) ;
+	if ( cp->IsPHOS() ) 
+	  continue ; 
+	Match(ct, cp, dist) ; 
+	if (!heta && !hphi) {
+	  heta = new TH1D("Correta", "neutral-charged correlation in eta" , 100, 0., 360.) ; 
+	  hphi = new TH1D("Corrphi", "neutral-charged correlation in phi" , 100, 0., 360.) ; 
+	}
+	heta->Fill(dist[1]) ; 
+	hphi->Fill(dist[2]) ;
+      }
+    }
+  }
+  TBrowser * bs = new TBrowser("Root Memory Bowser", gROOT->FindObjectAny("out.root") ) ;
+  bs->Show() ;
+  out->Write() ; 
+  return kTRUE ; 
+}
+
+//__________________________________________________________________________
+void Match(AliESDtrack * ct, AliESDtrack * cp, Double_t * dist) 
 {
   // Calculates the distance (x,z) between  the particle detected by PHOS and 
   // the charged particle reconstructed by the global tracking 
 
-   
-  AliPHOSRecParticle * pp  = dynamic_cast<AliPHOSRecParticle*>(part) ;  
-  AliEMCALRecParticle * ep = dynamic_cast<AliEMCALRecParticle*>(part) ;  
-   
-  Int_t phN ; 
-  Double_t phZ, phX ; 
+      
+ //  Int_t phN ; 
+//   Double_t phZ, phX ; 
   
-  if (pp) { // it is a PHOS particle 
-    Double_t cpTheta,  cpPhi ;  
-    Double_t phTheta,  phPhi ; 
-    cpTheta = cpPhi = phTheta = phPhi = 0. ; 
-   //    cout << "PHOS particle # " << " pos (" 
-    // 	 << pp->GetPos().X() << ", " << pp->GetPos().Y() << ", " << pp->GetPos().Z() << ")" << endl ;
+//   if (ct->IsPHOS()) { // it is a PHOS particle 
+//     Double_t cpTheta,  cpPhi ;  
+//     Double_t phTheta,  phPhi ; 
+//     cpTheta = cpPhi = phTheta = phPhi = 0. ; 
+//    //    cout << "PHOS particle # " << " pos (" 
+//     // 	 << pp->GetPos().X() << ", " << pp->GetPos().Y() << ", " << pp->GetPos().Z() << ")" << endl ;
     
-    AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
-    gime->PHOSGeometry()->ImpactOnEmc(*pp, phN, phZ, phX) ; 
-    Double_t xyzAtPHOS[3] ; 
-    cp->GetOuterXYZ(xyzAtPHOS) ; 
-    if ( (xyzAtPHOS[0] +  xyzAtPHOS[1] + xyzAtPHOS[2]) != 0.) { //it has reached PHOS
-      //the next check are only if we want high quality tracks 
-      //       ULong_t status = cp->GetStatus() ;  
-      //       if ((status & AliESDtrack::kTRDput)==0) 
-      // 	do not continue;
-      //       if ((status & AliESDtrack::kTRDStop)!=0) 
-      // 	do not continue;  
-      //       cout << "Charged particle # " << " pos (" 
-      // 	   << xyzAtPHOS[0] << ", " << xyzAtPHOS[1] << ", " << xyzAtPHOS[2] << ")" <<  endl ;     
-      TVector3 poscp(xyzAtPHOS[0], xyzAtPHOS[1], xyzAtPHOS[2]) ;
-      Int_t cpN ;
-      Double_t cpZ,cpX ; 
-      gime->PHOSGeometry()->ImpactOnEmc(poscp, cpN, cpZ, cpX) ; 
-      if (cpN) {// we are inside the PHOS acceptance 
-	// 	cout << "Charged Matching 1: " << cpN << " " << cpZ << " " << cpX << endl ; 
-	// 	cout << "Charged Matching 2: " << phN << " " << phZ << " " << phX << endl ; 
-	dist[0] = TMath::Sqrt( (cpZ-phZ)*(cpZ-phZ) + (cpX-phX)*(cpX-phX)) ;  
-      } 
-      phTheta = pp->Theta() ; 
-      phPhi   = pp->Phi() ;
-      TParticle tempo ; 
-      tempo.SetMomentum(xyzAtPHOS[0], xyzAtPHOS[1], xyzAtPHOS[2], 0.) ;  
-      cpTheta = tempo.Theta() ; 
-      cpPhi   = tempo.Phi() ;
-      //cout << phTheta << " " << phPhi << " " << endl 
-      //cout <<	 cpTheta << " " << cpPhi-phPhi << " " << endl ; 
-    }
-    dist[1] = (phTheta - cpTheta)*TMath::RadToDeg() ; 
-    dist[2] = (phPhi - cpPhi)*TMath::RadToDeg() ; 
-  }
+//     AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
+//     gime->PHOSGeometry()->ImpactOnEmc(*pp, phN, phZ, phX) ; 
+//     Double_t xyzAtPHOS[3] ; 
+//     cp->GetOuterXYZ(xyzAtPHOS) ; 
+//     if ( (xyzAtPHOS[0] +  xyzAtPHOS[1] + xyzAtPHOS[2]) != 0.) { //it has reached PHOS
+//       //the next check are only if we want high quality tracks 
+//       //       ULong_t status = cp->GetStatus() ;  
+//       //       if ((status & AliESDtrack::kTRDput)==0) 
+//       // 	do not continue;
+//       //       if ((status & AliESDtrack::kTRDStop)!=0) 
+//       // 	do not continue;  
+//       //       cout << "Charged particle # " << " pos (" 
+//       // 	   << xyzAtPHOS[0] << ", " << xyzAtPHOS[1] << ", " << xyzAtPHOS[2] << ")" <<  endl ;     
+//       TVector3 poscp(xyzAtPHOS[0], xyzAtPHOS[1], xyzAtPHOS[2]) ;
+//       Int_t cpN ;
+//       Double_t cpZ,cpX ; 
+//       gime->PHOSGeometry()->ImpactOnEmc(poscp, cpN, cpZ, cpX) ; 
+//       if (cpN) {// we are inside the PHOS acceptance 
+// 	// 	cout << "Charged Matching 1: " << cpN << " " << cpZ << " " << cpX << endl ; 
+// 	// 	cout << "Charged Matching 2: " << phN << " " << phZ << " " << phX << endl ; 
+// 	dist[0] = TMath::Sqrt( (cpZ-phZ)*(cpZ-phZ) + (cpX-phX)*(cpX-phX)) ;  
+//       } 
+//       phTheta = pp->Theta() ; 
+//       phPhi   = pp->Phi() ;
+//       TParticle tempo ; 
+//       tempo.SetMomentum(xyzAtPHOS[0], xyzAtPHOS[1], xyzAtPHOS[2], 0.) ;  
+//       cpTheta = tempo.Theta() ; 
+//       cpPhi   = tempo.Phi() ;
+//       //cout << phTheta << " " << phPhi << " " << endl 
+//       //cout <<	 cpTheta << " " << cpPhi-phPhi << " " << endl ; 
+//     }
+//     dist[1] = (phTheta - cpTheta)*TMath::RadToDeg() ; 
+//     dist[2] = (phPhi - cpPhi)*TMath::RadToDeg() ; 
+//   }
   
-  if (ep) {
-    //cout << "EMCAL particle # " << endl ; 
-  }
+//   if (ep) {
+//     //cout << "EMCAL particle # " << endl ; 
+//   }
 }
