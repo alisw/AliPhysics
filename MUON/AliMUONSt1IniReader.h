@@ -25,30 +25,35 @@
 #include <utility>
 #include <fstream>
 
-#include "AliMUONSt1Types.h"
+#ifndef __HP_aCC
+  using std::string;
+  using std::pair;
+  using std::vector;
+  using std::multimap;
+#endif  
 
 class AliMUONSt1IniReader
 {
   public:
-    enum TType {kUndef,kChapter,kValue};
+    enum IniType {kUndef, kChapter, kValue};
 
-    typedef pair<string,string> TValuePair;
-    typedef vector<TValuePair> TValueList;
-    typedef pair<string,TValueList> TChapter;
-    typedef multimap <string,TValueList> TChapterList;
+    typedef pair<string, string> ValuePair;
+    typedef vector<ValuePair>  ValueList;
+    typedef pair<string, ValueList> Chapter;
+    typedef multimap <string, ValueList> ChapterList;
 
   public:
     AliMUONSt1IniReader();
     AliMUONSt1IniReader(string fileName);
     virtual ~AliMUONSt1IniReader();
   
-    bool   ReadNextLine();
-    TType  GetCurrentType()  const  {return fCurrentType; }
-    string GetCurrentName()  const  {return fCurrentName; }
-    string GetCurrentValue() const  {return fCurrentValue;}
-    TChapter     MakeCurrentChapter();
-    TValueList   MakeCurrentValueList();
-    TChapterList MakeChapterList();
+    bool     ReadNextLine();
+    IniType  GetCurrentType()  const  {return fCurrentType; }
+    string   GetCurrentName()  const  {return fCurrentName; }
+    string   GetCurrentValue() const  {return fCurrentValue;}
+    Chapter     MakeCurrentChapter();
+    ValueList   MakeCurrentValueList();
+    ChapterList MakeChapterList();
     bool Eof() const {return fEndOfFile;}
     void Reset() ;
 
@@ -56,7 +61,7 @@ class AliMUONSt1IniReader
     string Trail(const string& s) const;
 
     ifstream fFile;        // the file to be read
-    TType    fCurrentType; // current type of line (either kChapter or kValue)
+    IniType  fCurrentType; // current type of line (either kChapter or kValue)
     string   fCurrentName; // name of chapter / name of parameter pair
     string   fCurrentValue;// value of the parameter pair if the type is kValue
     bool     fEndOfFile;   // true if the file is entirely read

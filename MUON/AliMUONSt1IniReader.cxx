@@ -133,17 +133,17 @@ bool AliMUONSt1IniReader::ReadNextLine()
 }
 
 //______________________________________________________________________
-AliMUONSt1IniReader::TValueList AliMUONSt1IniReader::MakeCurrentValueList()
+AliMUONSt1IniReader::ValueList AliMUONSt1IniReader::MakeCurrentValueList()
 {
 // Read the next lines in the file
 // until eof() or a new section is found. 
 // Return the list of (name,value) pairs read.
 // ---
 
-  TValueList ans;
+  ValueList ans;
   while (true){
     if (fCurrentType==kValue){
-      ans.push_back( TValuePair(fCurrentName,fCurrentValue));
+      ans.push_back( ValuePair(fCurrentName,fCurrentValue));
     } else break;
     ReadNextLine();
   }
@@ -151,34 +151,34 @@ AliMUONSt1IniReader::TValueList AliMUONSt1IniReader::MakeCurrentValueList()
 }
 
 //______________________________________________________________________
-AliMUONSt1IniReader::TChapter AliMUONSt1IniReader::MakeCurrentChapter()
+AliMUONSt1IniReader::Chapter AliMUONSt1IniReader::MakeCurrentChapter()
 {
 // Searches in the rest file for a new section
 // and return it's name and the list of (name,value) pairs in it
 // ---
 
   while ((!Eof()) && (fCurrentType != kChapter)) ReadNextLine();
-  if (Eof()) return TChapter();
+  if (Eof()) return Chapter();
   string name = fCurrentName;
   ReadNextLine();
-  return TChapter(name,MakeCurrentValueList());
+  return Chapter(name,MakeCurrentValueList());
 }
 
 //______________________________________________________________________
-AliMUONSt1IniReader::TChapterList AliMUONSt1IniReader::MakeChapterList()
+AliMUONSt1IniReader::ChapterList AliMUONSt1IniReader::MakeChapterList()
 {
 // Read the rest of the file and return all the chapter names and
 // (name,value) pair lists found after the current position
 // ---
 
-  TChapterList ans;
+  ChapterList ans;
   while (true) {
     if (fCurrentType==kChapter) {
       string s= fCurrentName;
       ReadNextLine();
-      //ans.insert(TChapter(s,MakeCurrentValueList()));
+      //ans.insert(Chapter(s,MakeCurrentValueList()));
                    // does not compile on SunOS
-      ans.insert(TChapterList::value_type(s,MakeCurrentValueList()));
+      ans.insert(ChapterList::value_type(s,MakeCurrentValueList()));
     } else ReadNextLine();
     if (fEndOfFile) break;
   }
