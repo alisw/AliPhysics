@@ -12,11 +12,11 @@
 #include "AliEMCALJet.h"
 
 class TClonesArray;
-class AliEMCALHadronCorrection;
-
 class TH2F;
 class TH1F;
 class TCanvas;
+class TList;
+class AliEMCALHadronCorrection;
 
 class AliEMCALJetFinder : public TTask {
  public:
@@ -73,16 +73,21 @@ class AliEMCALJetFinder : public TTask {
     virtual Float_t JetPhiW(Int_t);
     virtual Float_t JetEtaL(Int_t);  
     virtual Float_t JetEtaW(Int_t);
-    virtual TH2F* GetLego() {return fLego;}
+    TH2F*   GetLego()  {return fLego;}
+    TH2F*   GetLegoB() {return fLegoB;}
     TH2F*   GetLegoEMCAL() {return fhLegoEMCAL;}
     TH2F*   GethEff() {return fhEff;}
     TH1F*   GetCellEt() {return fhCellEt;}
     TH1F*   GetCellEMCALEt() {return fhCellEMCALEt;}
     TH1F*   GetTrackPt() {return fhTrackPt;}
     TH1F*   GetTrackPtBcut() {return fhTrackPtBcut;}
+    TList*  GetHistsList() {return fHistsList;}
+    Int_t   GetNChTpc() {return fNChTpc;}
     void    DrawLego(Char_t *opt="lego");         // *MENU*
     void    DrawLegoEMCAL(Char_t *opt="lego");    // *MENU*
     void    DrawLegos();                          // *MENU*
+    Bool_t  IsThisPartonsOrDiQuark(Int_t pdg);
+    TString &GetPythiaParticleName(Int_t kf);     
     // I/O
     virtual void SetOutputFileName(char* name) {fOutFileName = name;}
     virtual void FillFromHits(Int_t flag = 0);
@@ -117,8 +122,9 @@ class AliEMCALJetFinder : public TTask {
     TH1F*                          fhCellEMCALEt;    //! Et distr. for cells from fLegoEMCAL
     TH1F*                          fhTrackPt;        //! Pt distr. for charge particles
     TH1F*                          fhTrackPtBcut;    //! Pt distr. for charge particles + cut due to magnetic field
-    TH1F*                          fh;// ??
+    TH1F*                          fhChPartMultInTpc;//! Ch. part. multiplicity in TPC acceptance
     TCanvas*                       fC1;              //! first canvas for drawing
+    TList*                         fHistsList;       //! List of hists - 4-mar-2002
     AliEMCALJet*                   fJetT[10];        //! Jet temporary storage
     AliEMCALHadronCorrection*      fHadronCorrector; //! Pointer to hadronic correction
     Int_t                          fHCorrection;     //  Hadron correction flag
@@ -133,7 +139,7 @@ class AliEMCALJetFinder : public TTask {
     Bool_t                         fSmear;           //  Flag for momentum smearing
     Bool_t                         fEffic;           //  Flag for efficiency simulation
     Bool_t                         fK0N;             //  Flag for efficiency simulation
-    Int_t                          fNjets;           //! Number of Jets
+    Int_t                          fNjets;           //! Number of Jetsp
     Float_t                        fDeta;            //! eta cell size 
     Float_t                        fDphi;            //! phi cell size
     Int_t                          fNcell;           //! number of cells
@@ -147,14 +153,17 @@ class AliEMCALJetFinder : public TTask {
     Float_t                        fEtCell[30000];   //! Cell Energy
     Float_t                        fEtaCell[30000];  //! Cell eta
     Float_t                        fPhiCell[30000];  //! Cell phi
-    Int_t*                         fTrackList;       //! List of selected tracks
-    Int_t*                         fTrackListB;      //! List of selected tracks in Bg
     Int_t                          fNt;              //! number of tracks
+    Int_t                          fNChTpc;          //! number of ch.part in TPC
+
     Int_t                          fNtS;             //! number of tracks selected
+    Int_t*                         fTrackList;       //! List of selected tracks
     Float_t*                       fPtT;             //! Pt   of tracks 
     Float_t*                       fEtaT;            //! Eta  of tracks
     Float_t*                       fPhiT;            //! Phi  of tracks
+
     Int_t                          fNtB;             //! number of tracks in Bg
+    Int_t*                         fTrackListB;      //! List of selected tracks in Bg
     Float_t*                       fPtB;             //! Pt   of tracks in Bg
     Float_t*                       fEtaB;            //! Eta  of tracks in Bg
     Float_t*                       fPhiB;            //! Phi  of tracks in Bg
@@ -175,9 +184,3 @@ class AliEMCALJetFinder : public TTask {
 }
 ;
 #endif // ALIEMCALJetFinder_H
-
-
-
-
-
-
