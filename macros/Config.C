@@ -93,7 +93,6 @@ void Config()
     gAlice->SetField(-999, 2);  //Specify maximum magnetic field in Tesla (neg. ==> default field)
 
     Int_t   iABSO = 1;
-    Int_t   iCASTOR = 1;
     Int_t   iDIPO = 1;
     Int_t   iFMD = 1;
     Int_t   iFRAME = 1;
@@ -288,12 +287,6 @@ void Config()
         AliZDC *ZDC = new AliZDCv2("ZDC", "normal ZDC");
     }
 
-    if (iCASTOR)
-    {
-        //=================== CASTOR parameters ============================
-
-        AliCASTOR *CASTOR = new AliCASTORv1("CASTOR", "normal CASTOR");
-    }
 
     if (iTRD)
     {
