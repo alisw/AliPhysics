@@ -146,7 +146,7 @@ Double_t d2r = TMath::DegToRad();
 void DisplFast(){ AliRICHDisplFast *d = new AliRICHDisplFast();  d->Exec();}  
 
 
-void Digits2Recos()
+void C_R()
 {
   AliRICHRecon *detect = new AliRICHRecon("RICH patrec algorithm","Reconstruction");
     
@@ -175,7 +175,7 @@ void OLD_S_SD()
 
     for(Int_t iPrimN=0;iPrimN<rl->TreeH()->GetEntries();iPrimN++){//prims loop
       rl->TreeH()->GetEntry(iPrimN);
-      for(Int_t i=0;i<r->Specials()->GetEntries();i++){//specials loop          
+      for(Int_t i=0;i<r->Specials()->GetEntries();i++){//specials loop
         Int_t padx=1+ ((AliRICHSDigit*)r->Specials()->At(i))->PadX()+r->Param()->NpadsX()/2;
         Int_t pady=1+ ((AliRICHSDigit*)r->Specials()->At(i))->PadY()+r->Param()->NpadsY()/2;
         Double_t q=  ((AliRICHSDigit*)r->Specials()->At(i))->QPad();
@@ -264,8 +264,9 @@ void SD_D()
 //        else
 //          Info("","More then 3 sdigits for the given pad");
       }else{//new pad, add the pevious one
-        if(id!=kBad&&r->Param()->IsOverTh(chamber,x,y,q))
+        if(id!=kBad&&r->Param()->IsOverTh(chamber,x,y,q)) {
            r->AddDigit(chamber,x,y,q,combiPid,tid);
+         }
         combiPid=pSdig->CombiPid();chamber=pSdig->C();id=pSdig->Id();
         x=pSdig->X();y=pSdig->Y();
         q=pSdig->Q();
@@ -664,9 +665,10 @@ void menu()
   if(ReadAlice()){//it's from file, reconstruct
     pMenu->AddButton("hits->sdigits->digits->clusters","MainTrank()","Convert");
     
-    pMenu->AddButton("hits->sdigits",    "H_SD()",       "Perform first phase converstion");
-    pMenu->AddButton("sdigits->digits",  "SD_D()",       "Perform first phase converstion");
-    pMenu->AddButton("digits->clusters", "D_C()",        "Perform first phase converstion");
+    pMenu->AddButton("hits->sdigits",    "H_SD()",       "Perform first phase conversion");
+    pMenu->AddButton("sdigits->digits",  "SD_D()",       "Perform first phase conversion");
+    pMenu->AddButton("digits->clusters", "D_C()",        "Perform first phase conversion");
+    pMenu->AddButton("clusters->recos", "C_R()",         "Perform first phase conversion");
 
     pMenu->AddButton("Show","Show()","Shows the structure of events in files");
     pMenu->AddButton("OLD specials->sdigits",          "OLD_S_SD()",       "Perform first phase converstion");

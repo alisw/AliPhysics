@@ -33,7 +33,10 @@ ClassImp(AliRICHhit)
 //__________________________________________________________________________________________________
 void AliRICHhit::Print(Option_t*)const
 {
-  ::Info("hit","chamber=%2i, PID=%9i, TID=%6i, eloss=%8.3f eV",fChamber,fPid,fTrack,fEloss*1e9);
+  TVector3 glob(fX,fY,fZ);
+  AliRICH *pRich = (AliRICH*)gAlice->GetDetector("RICH");
+  TVector3 loc = pRich->C(fChamber)->Glob2Loc(glob);
+  ::Info("hit","chamber=%2i, PID=%9i, TID=%6i, eloss=%9.3f eV, XYz(%7.2f,%7.2f,%7.2f)",fChamber,fPid,fTrack,fEloss*1e9,loc.X(),loc.Y(),loc.Z());
 }
 //__________________________________________________________________________________________________
 ClassImp(AliRICHdigit)
@@ -50,6 +53,13 @@ void AliRICHcluster::Print(Option_t*)const
 {
   ::Info("cluster","CombiPid=%10i, c=%2i, size=%4i, dim=%5i, x=%7.3f, y=%7.3f, Q=%6i, st=%i",
            fCombiPid,fChamber,fSize,fDimXY,fX,fY,fQdc,fStatus);
+}
+//__________________________________________________________________________________________________
+ClassImp(AliRICHreco)
+//__________________________________________________________________________________________________
+void AliRICHreco::Print(Option_t*)const
+{
+  ::Info("reco","ThetaCherenkov=%9.6f, Nphotons=%4i, TID=%9i",fThetaCherenkov,fNphotons,fTid);
 }
 //__________________________________________________________________________________________________
 ClassImp(AliRICH)    
@@ -177,108 +187,9 @@ void AliRICH::CreateMaterials()
 {
     //
     // *** DEFINITION OF AVAILABLE RICH MATERIALS *** 
-    // ORIGIN    : NICK VAN EIJNDHOVEN 
-    // Modified by:  N. Colonna (INFN - BARI, Nicola.Colonna@ba.infn.it) 
-    //               R.A. Fini  (INFN - BARI, Rosanna.Fini@ba.infn.it) 
-    //               R.A. Loconsole (Bari University, loco@riscom.ba.infn.it) 
-    //
-    Int_t i;
-    
-    //Photons energy intervals
-    Float_t ppckov[26];
-    for (i=0;i<26;i++) 
-    {
-	ppckov[i] = (Float_t(i)*0.1+5.5)*1e-9;
-    }
-    
-    
-    //Refraction index for quarz
-    Float_t rIndexQuarz[26];
-    Float_t  e1= 10.666;
-    Float_t  e2= 18.125;
-    Float_t  f1= 46.411;
-    Float_t  f2= 228.71;
-    for (i=0;i<26;i++)
-    {
-	Float_t ene=ppckov[i]*1e9;
-	Float_t a=f1/(e1*e1 - ene*ene);
-	Float_t b=f2/(e2*e2 - ene*ene);
-	rIndexQuarz[i] = TMath::Sqrt(1. + a + b );
-    } 
-    
-    //Refraction index for opaque quarz, methane and grid
-    Float_t rIndexOpaqueQuarz[26];
-    Float_t rIndexMethane[26];
-    Float_t rIndexGrid[26];
-    for (i=0;i<26;i++)
-    {
-	rIndexOpaqueQuarz[i]=1;
-	rIndexMethane[i]=1.000444;
-	rIndexGrid[i]=1;
-    } 
-    
-    //Absorption index for freon
-    Float_t abscoFreon[26] = {179.0987, 179.0987, 179.0987, 179.0987, 179.0987,  179.0987, 179.0987, 179.0987, 
-	 		       179.0987, 142.9206, 56.64957, 25.58622, 13.95293, 12.03905, 10.42953, 8.804196, 
-			       7.069031, 4.461292, 2.028366, 1.293013, .577267,   .40746,  .334964, 0., 0., 0.};
-    
-
-    Float_t abscoQuarz [26] = {105.8, 65.52, 48.58, 42.85, 35.79, 31.262, 28.598, 27.527, 25.007, 22.815, 21.004,
-				19.266, 17.525, 15.878, 14.177, 11.719, 9.282, 6.62, 4.0925, 2.601, 1.149, .667, .3627,
-				.192, .1497, .10857};
-    
-    //Absorption index for methane
-    Float_t abscoMethane[26];
-    for (i=0;i<26;i++) 
-    {
-	abscoMethane[i]=AbsoCH4(ppckov[i]*1e9); 
-    }
-    
-    //Absorption index for opaque quarz, csi and grid, efficiency for all and grid
-    Float_t abscoOpaqueQuarz[26];
-    Float_t abscoCsI[26];
-    Float_t abscoGrid[26];
-    Float_t efficAll[26];
-    Float_t efficGrid[26];
-    for (i=0;i<26;i++)
-    { 
-	abscoOpaqueQuarz[i]=1e-5; 
-	abscoCsI[i]=1e-4; 
-	abscoGrid[i]=1e-4; 
-	efficAll[i]=1; 
-	efficGrid[i]=1;
-    } 
-    
-    //Efficiency for csi 
-    
-    Float_t efficCsI[26] = {0.000199999995, 0.000600000028, 0.000699999975, 0.00499999989, 0.00749999983, 0.010125,
-			     0.0242999997, 0.0405000001, 0.0688500032, 0.105299994, 0.121500008, 0.141749993, 0.157949999,
-			     0.162, 0.166050002, 0.167669997, 0.174299985, 0.176789999, 0.179279998, 0.182599992, 0.18592,
-			     0.187579989, 0.189239994, 0.190899998, 0.207499996, 0.215799987};
-	
-    
-
-    //FRESNEL LOSS CORRECTION FOR PERPENDICULAR INCIDENCE AND
-    //UNPOLARIZED PHOTONS
-
-    for (i=0;i<26;i++)
-    {
-	efficCsI[i] = efficCsI[i]/(1.-Fresnel(ppckov[i]*1e9,1.,0)); 
-    }
-	
-    /*******************************************End of rich_media.f***************************************/
-    
-  Float_t rIndexFreon[26];
-    
-    
-    // --- Photon energy (GeV) 
-    // --- Refraction indexes 
-    for (i = 0; i < 26; ++i) {
-      rIndexFreon[i] = ppckov[i] * .0172 * 1e9 + 1.177;
-      //rIndexFreon[i] = 1;
-    }
-            
-      
+  
+#include "Opticals.h"
+        
   Float_t a=0,z=0,den=0,radl=0,absl=0;
   Float_t tmaxfd=-10.0, deemax=-0.2, stemax=-0.1,epsil=0.001, stmin=-0.001; 
   Int_t   isxfld = gAlice->Field()->Integ();
@@ -294,7 +205,7 @@ void AliRICH::CreateMaterials()
   AliMedium(kCSI, "CSI$", 16, 1, isxfld, sxmgmx,tmaxfd, stemax, deemax, epsil, stmin);
   
   AliMaterial(11, "GRI",      a=63.54,z=29.0,den=8.96,    radl=1.43,   absl=0);    //anode grid (Cu) 
-  AliMedium(7, "GRIGLIA$", 11, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(7, "GRID$", 11, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   AliMaterial(50, "ALUM",     a=26.98,z=13.0,den=2.7,     radl=8.9,    absl=0);    //aluminium sheet (Al)
   AliMedium(10, "ALUMINUM$", 50, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
@@ -304,10 +215,10 @@ void AliRICH::CreateMaterials()
   
   Float_t  aQuartz[2]={28.09,16.0};  Float_t  zQuartz[2]={14.00, 8.0};  Float_t  wmatQuartz[2]={1,2};
   AliMixture (20, "QUA",aQuartz,zQuartz,den=2.64,-2, wmatQuartz);//Quarz (SiO2) - trasnparent 
-  AliMedium(3, "QUARZO$", 20, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(3, "QUARTZ$", 20, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   AliMixture (21, "QUAO",aQuartz, zQuartz, den=2.64, -2, wmatQuartz);//Quarz (SiO2) - opaque
-  AliMedium(8, "QUARZOO$", 21, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(8, "QUARTZO$", 21, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   Float_t  aFreon[2]={12,19};  Float_t  zFreon[2]={6,9};  Float_t wmatFreon[2]={6,14};
   AliMixture (30, "FRE",aFreon,zFreon,den=1.7,-2,wmatFreon);//Freon (C6F14) 
@@ -315,7 +226,7 @@ void AliRICH::CreateMaterials()
   
   Float_t aMethane[2]={12.01,1}; Float_t zMethane[2]={6,1}; Float_t wmatMethane[2]={1,4};
   AliMixture (40, "MET", aMethane, zMethane, den=7.17e-4,-2, wmatMethane);//methane (CH4)     
-  AliMedium(5, "METANO$", 40, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(5, "METHANE$", 40, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   AliMixture (41, "METG", aMethane, zMethane, den=7.17e-4, -2, wmatMethane);
   AliMedium(kGAP, "GAP$", 41, 1, isxfld, sxmgmx,tmaxfd, 0.1, -deemax, epsil, -stmin);
@@ -327,17 +238,18 @@ void AliRICH::CreateMaterials()
   AliMedium(11, "GLASS", 32, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
             
   Int_t *idtmed = fIdtmed->GetArray()-999;
-  gMC->SetCerenkov(idtmed[1000], 26, ppckov, abscoMethane,     efficAll,  rIndexMethane);
-  gMC->SetCerenkov(idtmed[1001], 26, ppckov, abscoMethane,     efficAll,  rIndexMethane);
-  gMC->SetCerenkov(idtmed[1002], 26, ppckov, abscoQuarz,       efficAll,  rIndexQuarz);
-  gMC->SetCerenkov(idtmed[1003], 26, ppckov, abscoFreon,       efficAll,  rIndexFreon);
-  gMC->SetCerenkov(idtmed[1004], 26, ppckov, abscoMethane,     efficAll,  rIndexMethane);
-  gMC->SetCerenkov(idtmed[1005], 26, ppckov, abscoCsI,         efficCsI,  rIndexMethane);
-  gMC->SetCerenkov(idtmed[1006], 26, ppckov, abscoGrid,        efficGrid, rIndexGrid);
-  gMC->SetCerenkov(idtmed[1007], 26, ppckov, abscoOpaqueQuarz, efficAll,  rIndexOpaqueQuarz);
-  gMC->SetCerenkov(idtmed[1008], 26, ppckov, abscoMethane,     efficAll,  rIndexMethane);
-  gMC->SetCerenkov(idtmed[1009], 26, ppckov, abscoGrid,        efficGrid, rIndexGrid);
-  gMC->SetCerenkov(idtmed[1010], 26, ppckov, abscoOpaqueQuarz, efficAll,  rIndexOpaqueQuarz);
+  gMC->SetCerenkov(idtmed[1000], kNbins, aPckov, aAbsCH4,    aQeAll, aIdxCH4);
+  gMC->SetCerenkov(idtmed[1001], kNbins, aPckov, aAbsCH4,    aQeAll, aIdxCH4);
+  gMC->SetCerenkov(idtmed[1002], kNbins, aPckov, aAbsSiO2,   aQeAll, aIdxSiO2);
+  gMC->SetCerenkov(idtmed[1003], kNbins, aPckov, aAbsC6F14,  aQeAll, aIdxC6F14);
+  gMC->SetCerenkov(idtmed[1004], kNbins, aPckov, aAbsCH4,    aQeAll, aIdxCH4);
+  gMC->SetCerenkov(idtmed[1005], kNbins, aPckov, aAbsCsI,    aQeCsI, aIdxCH4);
+  gMC->SetCerenkov(idtmed[1006], kNbins, aPckov, aAbsGrid,   aQeAll, aIdxGrid);
+  gMC->SetCerenkov(idtmed[1007], kNbins, aPckov, aAbsOpSiO2, aQeAll, aIdxOpSiO2);
+  gMC->SetCerenkov(idtmed[1008], kNbins, aPckov, aAbsCH4,    aQeAll, aIdxCH4);
+  gMC->SetCerenkov(idtmed[1009], kNbins, aPckov, aAbsGrid,   aQeAll, aIdxGrid);
+  gMC->SetCerenkov(idtmed[1010], kNbins, aPckov, aAbsOpSiO2, aQeAll, aIdxOpSiO2);
+    
 }//void AliRICH::CreateMaterials()
 //__________________________________________________________________________________________________
 Float_t AliRICH::Fresnel(Float_t ene,Float_t pdoti, Bool_t pola)const

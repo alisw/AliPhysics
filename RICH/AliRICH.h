@@ -21,9 +21,10 @@ class AliRICHhit : public AliHit
 public:
   inline   AliRICHhit();
   inline   AliRICHhit(Int_t fIshunt, Int_t track, Int_t *vol, Float_t *hits);
-  inline   AliRICHhit(Int_t tid,TVector3 x3,Double_t eloss);
+  AliRICHhit(Int_t tid,TVector3 x3) :AliHit(0,tid) {fInX3=x3;}
+  inline   AliRICHhit(Int_t tid,TVector3 x3in,TVector3 x3out,Double_t eloss);
   virtual ~AliRICHhit()         {;}
-    
+
   Int_t   C()                   const{return fChamber;}
   Int_t   Chamber()             const{return fChamber;}
   Int_t   Pid()                 const{return fPid;}    
@@ -42,9 +43,10 @@ protected:
   Int_t     fPid;                          //particle code
   Double_t  fEloss;                        //ionisation energy loss in gas
   Float_t   fMomX,fMomY,fMomZ;             //momentum at photochatode entry point
-  Float_t   fNPads;                        // Pads hit
-  Float_t   fCerenkovAngle;                // Dummy cerenkov angle
+  Float_t   fNPads;                        //Pads hit
+  Float_t   fCerenkovAngle;                //Dummy cerenkov angle
   Float_t   fMomFreoX,fMomFreoY,fMomFreoZ; //momentum at freon entry point
+  TVector3  fInX3,fOutX3;                  //3-vectors at the entrance and exit of the GAP
   ClassDef(AliRICHhit,2)                   //RICH hit class
 };//class AliRICHhit
 
@@ -55,6 +57,7 @@ AliRICHhit::AliRICHhit()
   fChamber=fPid=kBad;
   fEloss=kBad;
   fMomX=fMomY=fMomZ=fNPads=fCerenkovAngle=fMomFreoX=fMomFreoY=fMomFreoZ=kBad;
+  fInX3.SetXYZ(0,0,0);fOutX3.SetXYZ(0,0,0);
 }
 //__________________________________________________________________________________________________
 AliRICHhit::AliRICHhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hit)
@@ -69,10 +72,12 @@ AliRICHhit::AliRICHhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hit)
   fMomFreoX=hit[19];fMomFreoY=hit[20];fMomFreoZ=hit[21];
 }
 //__________________________________________________________________________________________________
-AliRICHhit::AliRICHhit(Int_t tid,TVector3 x3,Double_t eloss)
+AliRICHhit::AliRICHhit(Int_t tid,TVector3 x3in,TVector3 x3out,Double_t eloss)
            :AliHit(0,tid)
 {//ctor
-  fX=x3.X();fY=x3.Y();fZ=x3.Z();
+  fX=x3out.X();fY=x3out.Y();fZ=x3out.Z();
+  fInX3=x3in;
+  fOutX3=x3out;
   fEloss=eloss;
 }
 
@@ -228,7 +233,24 @@ void AliRICHcluster::CoG()
    fDimXY = 100*(xmax-xmin+1)+ymax-ymin+1;//find box containing cluster
    fStatus=kRaw;
 }//CoG()
+class AliRICHreco: public TObject
+{
+public:
+            AliRICHreco() {fTid=fNphotons=kBad; fThetaCherenkov=kBad;}
+            AliRICHreco(Int_t tid,Double_t thetaCherenkov,Int_t nPhotons) {fTid=tid;fThetaCherenkov=thetaCherenkov;fNphotons=nPhotons;}
 
+  virtual  ~AliRICHreco() {;}
+
+  void    Print(Option_t *option="")const;      //virtual print
+  
+protected:
+   Int_t fTid;                 // track Id reference
+   Int_t fNphotons;            // number of photons contributed to the recontruction
+   Double_t fThetaCherenkov;   // reconstructed Theta Cerenkov for a given charged track
+
+   ClassDef(AliRICHreco,1)  //RICH reco class
+
+};//class AliRICHreco
 //__________________AliRICH_________________________________________________________________________
 class AliRICHParam;
 class AliRICHChamber;
@@ -238,7 +260,7 @@ class AliRICH : public AliDetector
 {
 public:
             AliRICH();                                            
-            AliRICH(const char *name, const char *title);         
+            AliRICH(const char *name, const char *title);
             AliRICH(const AliRICH& RICH):AliDetector(RICH) {;}   
   virtual  ~AliRICH();                                            
           
@@ -251,20 +273,24 @@ public:
   inline  void    CreateSDigits();  
   inline  void    CreateDigits();  
   inline  void    CreateClusters();  
-  void AddHit(Int_t track, Int_t *vol, Float_t *hits)     {TClonesArray &tmp=*fHits; new(tmp[fNhits++])AliRICHhit(fIshunt,track,vol,hits);}//virtual
-  void AddHit(Int_t tid,TVector3 x3,Double_t eloss=0)     {TClonesArray &tmp=*fHits;new(tmp[fNhits++])AliRICHhit(tid,x3,eloss);} 
+  inline  void    CreateRecos();  
+  void AddHit(Int_t track, Int_t *vol, Float_t *hits)                 {TClonesArray &tmp=*fHits; new(tmp[fNhits++])AliRICHhit(fIshunt,track,vol,hits);}//virtual
+  void AddHit(Int_t tid,TVector3 x3)                                  {TClonesArray &tmp=*fHits;new(tmp[fNhits++])AliRICHhit(tid,x3);} 
+  void AddHit(Int_t tid,TVector3 x3in,TVector3 x3out,Double_t eloss)  {TClonesArray &tmp=*fHits;new(tmp[fNhits++])AliRICHhit(tid,x3in,x3out,eloss);} 
   inline void AddSDigit(int c,int x,int y,int q,int pid,int tid); 
   void AddDigit(int c,int x,int y,int q,int cpid,int *tid){TClonesArray &tmp=*((TClonesArray*)fDigitsNew->At(c-1));new(tmp[fNdigitsNew[c-1]++])AliRICHdigit(c,x,y,q,cpid,tid[0],tid[1],tid[2]);}  
   void AddCluster(AliRICHcluster &cl)                     {TClonesArray &tmp=*((TClonesArray*)fClusters->At(cl.C()-1));new(tmp[fNclusters[cl.C()-1]++])AliRICHcluster(cl);}
-  
+  void AddReco(Int_t tid,Double_t thetaCherenkov,Int_t nPhotons) {TClonesArray &tmp=*(TClonesArray*)fRecos;new(tmp[fNrecos++])AliRICHreco(tid,thetaCherenkov,nPhotons);}  
   void ResetHits()     {AliDetector::ResetHits();fNcerenkovs=0;if(fCerenkovs)fCerenkovs->Clear();fNspecials=0;if(fSpecials)fSpecials->Clear();}  //virtual  
   void ResetSDigits()  {fNsdigits=0;  if(fSdigits)  fSdigits ->Clear();}                                 
   void ResetDigits()   {if(fDigitsNew)for(int i=0;i<kNCH;i++){fDigitsNew->At(i)->Clear();fNdigitsNew[i]=0;}}
   void ResetClusters() {if(fClusters) for(int i=0;i<kNCH;i++){fClusters ->At(i)->Clear();fNclusters[i]=0;}}
+  void ResetRecos()    {if(fRecos) fRecos->Clear();fNrecos=0;}
                   //Hits provided by AliDetector
   TClonesArray*   SDigits()             const{return fSdigits;}
   TClonesArray*   Digits(Int_t iC)      const{if(fDigitsNew) return (TClonesArray *)fDigitsNew->At(iC-1);else return 0;}
   TClonesArray*   Clusters(Int_t iC)    const{if(fClusters)  return (TClonesArray *)fClusters->At(iC-1);else return 0;}
+  TClonesArray*   Recos()               const{return fRecos;}
           
   AliRICHChamber* C(Int_t iC)           const{return (AliRICHChamber*)fChambers->At(iC-1);}
   AliRICHParam*   Param()               const{return fpParam;}
@@ -307,6 +333,8 @@ protected:
   Int_t                 fNdigitsNew[kNCH];   //! Array of current numbers of digits
   TObjArray            *fClusters;           //! Each chamber holds it's one lists of clusters 
   Int_t                 fNclusters[kNCH];    //! Array of current numbers of raw clusters
+  TClonesArray         *fRecos;              //! pointer to the list of recos
+  Int_t                 fNrecos;             //! number of recos
 
   TClonesArray         *fCerenkovs;          //! ??? List of cerenkovs
   Int_t                 fNcerenkovs;         //! ??? Current number of cerenkovs
@@ -348,6 +376,13 @@ void AliRICH::CreateClusters()
   if(GetDebug())Info("CreateClusters","creating clusters containers.");
   fClusters = new TObjArray(kNCH);  
   for(Int_t i=0;i<kNCH;i++) {fClusters->AddAt(new TClonesArray("AliRICHcluster",10000), i); fNclusters[i]=0;}
+}
+//__________________________________________________________________________________________________
+void AliRICH::CreateRecos()
+{
+  if(fRecos) return;
+  if(GetDebug())Info("CreateRecos","creating recos containers.");
+  fRecos = new TClonesArray("AliRICHreco",1000);fNrecos=0;  
 }
 //__________________________________________________________________________________________________
 void AliRICH::AddSDigit(int c,int x,int y,int q,int pid,int tid) 

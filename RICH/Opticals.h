@@ -24,17 +24,8 @@ void Opticals()
     aIdxOpSiO2[i]  =1;
   } 
     
-  Float_t aAbsC6F14old[kNbins]={//previous values 26 in total added 0.0001 to the 30
-      179.0987, 179.0987, 179.0987, 179.0987, 179.0987, 179.0987, 179.0987, 179.0987, 179.0987, 142.9206, 
-       56.6496,  25.5862,  13.9529,  12.0391,  10.4295,   8.8042,   7.0690,   4.4611,   2.0284,   1.2930, 
-        0.5772,   0.4074,   0.3350,   0.0001,   0.0001,   0.0001    0.0001,   0.0001,   0.0001,   0.0001};
-  Float_t aAbsSiO2old[kNbins]={//previous values 26 in total added 0.0001 to the 30
-      105.8000,  65.5200,  48.5800,  42.8500,  35.7900,  31.2620,  28.5980,  27.5270,  25.0070,  22.8150, 
-       21.0040,  19.2660,  17.5250,  15.8780,  14.1770,  11.7190,   9.2820,   6.6200,   4.0930,   2.6010, 
-        1.1490,   0.6670,   0.3630,   0.1920,   0.1500,   0.1090,   0.0001,   0.0001,   0.0001,   0.0001};
-      
   Float_t aAbsC6F14[kNbins]={//New values from A.DiMauro 28.10.03 total 31
-    32701.4219, 17996.1141, 10039.7281, 1799.1230, 1799.1231, 1799.1231, 1241.4091, 179.0987, 179.0986, 179.0987
+    32701.4219, 17996.1141, 10039.7281, 1799.1230, 1799.1231, 1799.1231, 1241.4091, 179.0987, 179.0986, 179.0987,
       179.0987,   118.9800,    39.5058,   23.7244,   11.1283,    7.1573,    3.6249,   2.1236,   0.7362,   0.5348,
         0.3387,     0.3074,     0.3050,    0.0001,    0.0001,    0.0001,    0.0001,   0.0001,   0.0001,   0.0001};    
   Float_t aAbsSiO2[kNbins]={//New values from A.DiMauro 28.10.03 total 31
@@ -53,25 +44,34 @@ void Opticals()
       aAbsGrid[i]        =1e-4; 
     }
     
-  Float_t aQeCsIold[kNbins]={
-    0.0002, 0.0006, 0.0007, 0.0050, 0.0075, 0.0101, 0.0243, 0.0405, 0.0689, 0.1053, 
-    0.1215, 0.1417, 0.1579, 0.1620, 0.1661, 0.1677, 0.1743, 0.1768, 0.1793, 0.1826,
-    0.1859, 0.1876, 0.1892, 0.1909, 0.2075, 0.2158, 0.0001, 0.0001, 0.0001, 0.0001 };
-    
-  Float_t aQeCsI1[kNbins] = {0.0002, 0.0006, 0.0007, 0.0010, 0.0049, 0.0073, 0.0104, 0.0519, 0.0936, 0.1299,
-                             0.1560, 0.1768, 0.1872, 0.1976, 0.2142, 0.2288, 0.2434, 0.2599, 0.2673, 0.2808,
-                             0.2859, 0.2954, 0.3016, 0.3120, 0.3172, 0.3224, 0.3266, 0.3328, 0.3359, 0.3390};
+  Float_t aQeCsI[kNbins] = {//New values from A.DiMauro 28.10.03 total 31
+                            0.0002, 0.0006, 0.0007, 0.0010, 0.0049, 0.0073, 0.0104, 0.0519, 0.0936, 0.1299,
+                            0.1560, 0.1768, 0.1872, 0.1976, 0.2142, 0.2288, 0.2434, 0.2599, 0.2673, 0.2808,
+                            0.2859, 0.2954, 0.3016, 0.3120, 0.3172, 0.3224, 0.3266, 0.3328, 0.3359, 0.3390};
 //                             0.3431};
 
   
   Float_t aQeAll[kNbins];
   for(i=0;i<kNbins;i++){
-    aQeCsI1[i]/= (1.0-Fresnel(aPckov[i]*1e9,1.0,0)); //FRESNEL LOSS CORRECTION
+    aQeCsI[i]/= (1.0-Fresnel(aPckov[i]*1e9,1.0,0)); //FRESNEL LOSS CORRECTION
     aQeAll[i]=1; //QE for all other materials except for PC must be 1.
   }
        
                     
 #ifdef __CINT__
+
+  Float_t aAbsC6F14old[kNbins]={//previous values 26 in total added 0.0001 to the 30
+      179.0987, 179.0987, 179.0987, 179.0987, 179.0987, 179.0987, 179.0987, 179.0987, 179.0987, 142.9206, 
+       56.6496,  25.5862,  13.9529,  12.0391,  10.4295,   8.8042,   7.0690,   4.4611,   2.0284,   1.2930, 
+        0.5772,   0.4074,   0.3350,   0.0001,   0.0001,   0.0001,   0.0001,   0.0001,   0.0001,   0.0001};
+  Float_t aAbsSiO2old[kNbins]={//previous values 26 in total added 0.0001 to the 30
+      105.8000,  65.5200,  48.5800,  42.8500,  35.7900,  31.2620,  28.5980,  27.5270,  25.0070,  22.8150, 
+       21.0040,  19.2660,  17.5250,  15.8780,  14.1770,  11.7190,   9.2820,   6.6200,   4.0930,   2.6010, 
+        1.1490,   0.6670,   0.3630,   0.1920,   0.1500,   0.1090,   0.0001,   0.0001,   0.0001,   0.0001};
+  Float_t aQeCsIold[kNbins]={
+    0.0002, 0.0006, 0.0007, 0.0050, 0.0075, 0.0101, 0.0243, 0.0405, 0.0689, 0.1053, 
+    0.1215, 0.1417, 0.1579, 0.1620, 0.1661, 0.1677, 0.1743, 0.1768, 0.1793, 0.1826,
+    0.1859, 0.1876, 0.1892, 0.1909, 0.2075, 0.2158, 0.0001, 0.0001, 0.0001, 0.0001 };      
 
 //Now plot all the thigs  
 //Freon, Quartz, Opaque ,Methane,CsI,Grid   
@@ -114,7 +114,7 @@ void Opticals()
   pAbsCH4Gr->Draw("APL");
   
   pC->cd(4);
-  TGraph *pQeCsIG=new TGraph(kNbins,aPckov,aQeCsI1);
+  TGraph *pQeCsIG=new TGraph(kNbins,aPckov,aQeCsI);
   pQeCsIG->SetMarkerStyle(kCsIMarker); pQeCsIG->SetMarkerColor(kCsIColor);
   pQeCsIG->Draw("APL");
   pQeCsIG->GetXaxis()->SetTitle("energy, GeV");
@@ -129,7 +129,7 @@ void Opticals()
     aTrC6F14[i]=TMath::Exp(-AliRICHParam::FreonThickness() /(aAbsC6F14[i]+0.0001));
     aTrSiO2[i] =TMath::Exp(-AliRICHParam::QuartzThickness()/(aAbsSiO2[i] +0.0001));
     aTrCH4[i]  =TMath::Exp(-AliRICHParam::GapThickness()   /(aAbsCH4[i]  +0.0001));    
-    aTotTr[i]    =aTrC6F14[i]*aTrSiO2[i]*aTrCH4[i]*aQeCsI1[i];
+    aTotTr[i]    =aTrC6F14[i]*aTrSiO2[i]*aTrCH4[i]*aQeCsI[i];
   }
   TGraph *pTrC6F14G=new TGraph(kNbins,aPckov,aTrC6F14);pTrC6F14G->SetMarkerStyle(kC6F14M);pTrC6F14G->SetMarkerColor(kC6F14C);  
   TGraph *pTrSiO2G=new TGraph(kNbins,aPckov,aTrSiO2);pTrSiO2G->SetMarkerStyle(kSiO2M); pTrSiO2G->SetMarkerColor(kSiO2C);  
@@ -158,13 +158,13 @@ void Opticals()
   for(int i=1;i<=7;i++){
     pQeC->cd(i);  
     switch(i){
-      case 1: TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI1);pQeCsIGr->SetTitle("Module 1");break;
-      case 2: TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI2);pQeCsIGr->SetTitle("Module 2");break;
-      case 3: TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI3);pQeCsIGr->SetTitle("Module 3");break;
-      case 4: TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI4);pQeCsIGr->SetTitle("Module 4");break;
-      case 5: TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI5);pQeCsIGr->SetTitle("Module 5");break;
-      case 6: TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI6);pQeCsIGr->SetTitle("Module 6");break;
-      case 7: TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI7);pQeCsIGr->SetTitle("Module 7");break;
+      case 1: TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI);pQeCsIGr->SetTitle("Module 1");break;
+      case 2: TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI);pQeCsIGr->SetTitle("Module 2");break;
+      case 3: TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI);pQeCsIGr->SetTitle("Module 3");break;
+      case 4: TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI);pQeCsIGr->SetTitle("Module 4");break;
+      case 5: TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI);pQeCsIGr->SetTitle("Module 5");break;
+      case 6: TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI);pQeCsIGr->SetTitle("Module 6");break;
+      case 7: TGraph *pQeCsIGr=new TGraph(kNbins,aPckov,aQeCsI);pQeCsIGr->SetTitle("Module 7");break;
     }
     pQeCsIGr->SetMarkerStyle(kCsIMarker); pQeCsIGr->SetMarkerColor(kCsIColor);  
     pQeCsIGr->Draw("APL");

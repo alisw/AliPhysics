@@ -16,6 +16,8 @@ public :
  
        AliRICHDisplFast() {;}
       ~AliRICHDisplFast() {;}
+      
+  void DrawSectors(); //Draw sectors in plot 
   void Exec();//virtual
 protected:  
   ClassDef(AliRICHDisplFast,0)

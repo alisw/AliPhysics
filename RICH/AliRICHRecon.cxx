@@ -108,7 +108,7 @@ void AliRICHRecon::StartProcessEvent()
         clusY[ich][k] = pCluster->Y();
         clusQ[ich][k] = pCluster->Q();
         clusMul[ich][k] = pCluster->Size();
-        pCluster->Print();
+//        pCluster->Print();
       }
     }
         
@@ -120,7 +120,7 @@ void AliRICHRecon::StartProcessEvent()
       
       Rich()->GetLoader()->TreeH()->GetEntry(i);
 
-      Rich()->Hits()->Print();
+//      Rich()->Hits()->Print();
       Int_t iPrim = 0;
 
       AliRICHhit* pHit=0;
@@ -136,7 +136,7 @@ void AliRICHRecon::StartProcessEvent()
       
       if (!pHit) return;
       
-      pHit->Print();
+//      pHit->Print();
       
       TParticle *pParticle = gAlice->GetRunLoader()->Stack()->Particle(pHit->GetTrack());
       Float_t pmod     = pParticle->P();
@@ -144,7 +144,7 @@ void AliRICHRecon::StartProcessEvent()
       Float_t trackEta = pParticle->Eta();
       Int_t q          = (Int_t)TMath::Sign(1.,pParticle->GetPDG()->Charge());        
 
-      pParticle->Print();
+//      pParticle->Print();
       
       cout << " pmod " << pmod << " pt " << pt << " Eta " << trackEta << " charge " << q << endl;
       

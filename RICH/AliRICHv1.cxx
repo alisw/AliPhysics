@@ -35,18 +35,14 @@ void AliRICHv1::StepManager()
 
   Int_t          copy;
   static Int_t   iCurrentChamber;
-  TLorentzVector x4,p4;
+  static TLorentzVector x4,p4,mipInX4,mipOutX4;
   Float_t        pos[3],mom[4],localPos[3],localMom[4];
   Float_t        coscerenkov;
        
   TParticle *current = (TParticle*)(*gAlice->GetMCApp()->Particles())[gAlice->GetMCApp()->GetCurrentTrackNumber()];
-
-    
  
   Float_t cherenkovLoss=0;
     
-    
-
   if(gMC->TrackPid()==kCerenkov){//C
     Float_t ckovEnergy = current->Energy();
     if(ckovEnergy > 5.6e-09 && ckovEnergy < 7.8e-09 ){//C+E
@@ -99,12 +95,13 @@ void AliRICHv1::StepManager()
   static Float_t eloss;
   if(gMC->TrackCharge() && gMC->CurrentVolID(copy)==gMC->VolId("GAP ")){//MIP in GAP
     gMC->CurrentVolOffID(3,copy); iCurrentChamber=copy;
-    if(gMC->IsTrackEntering()||gMC->IsNewTrack())//MIP in GAP Entering
+    if(gMC->IsTrackEntering()||gMC->IsNewTrack()) {//MIP in GAP Entering
       eloss=0;                                                           
-    else if(gMC->IsTrackExiting()||gMC->IsTrackStop()||gMC->IsTrackDisappeared()){//MIP in GAP Exiting
+      gMC->TrackPosition(mipInX4);
+    }else if(gMC->IsTrackExiting()||gMC->IsTrackStop()||gMC->IsTrackDisappeared()){//MIP in GAP Exiting
       eloss+=gMC->Edep();//take into account last step dEdX
-      gMC->TrackPosition(x4);  
-      AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),x4.Vect(),eloss);//HIT for MIP for conditions: MIP in GAP Exiting
+      gMC->TrackPosition(mipOutX4);  
+      AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),mipInX4.Vect(),mipOutX4.Vect(),eloss);//HIT for MIP for conditions: MIP in GAP Exiting
       GenerateFeedbacks(iCurrentChamber,eloss);//MIP+GAP+Exit
     }else//MIP in GAP going inside
       eloss   += gMC->Edep();
