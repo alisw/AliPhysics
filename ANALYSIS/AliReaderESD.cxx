@@ -56,7 +56,7 @@ AliReaderESD::AliReaderESD(const Char_t* esdfilename, const Char_t* galfilename)
  fReadMuon(kFALSE),
  fReadPHOS(kFALSE),
  fNTPCClustMin(0),
- fNTPCClustMax(150),
+ fNTPCClustMax(1500),
  fTPCChi2PerClustMin(0.0),
  fTPCChi2PerClustMax(10e5),
  fChi2Min(0.0),
