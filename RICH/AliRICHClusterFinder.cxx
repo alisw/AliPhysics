@@ -22,6 +22,7 @@
 #include <AliLoader.h>
 #include <AliStack.h>
 #include <AliRun.h>
+#include "AliRICHParam.h"
 
 void RICHMinMathieson(Int_t &npar, Double_t *gin, Double_t &chi2, Double_t *par, Int_t iflag);
 
@@ -91,7 +92,7 @@ void AliRICHClusterFinder::FindClusters(Int_t iChamber)
     FindLocalMaxima();  //find number of local maxima and initial center of gravity
     AliDebug(1,"After FindLocalMaxima:");ToAliDebug(1,fRawCluster.Print());  
     
-    if(AliRICHParam::IsResolveClusters()&&fRawCluster.Size()>1&&fRawCluster.Size()<6){
+    if(AliRICHParam::IsResolveClusters()&&fNlocals<=10){
       FitCoG(); //serialization of resolved clusters will happen inside
     }else{//cluster size=1 or resolving is switched off
       WriteRawCluster();//simply output the formed raw cluster without deconvolution
@@ -109,7 +110,8 @@ void AliRICHClusterFinder::FindClusterContribs(AliRICHcluster *pCluster)
 //Finds cerenkov-feedback-mip mixture for a given cluster
   AliDebug(1,"Start.");ToAliDebug(1,pCluster->Print());
 
-//  R()->GetLoader()->GetRunLoader()->LoadHeader();
+//  R()->GetLoader()->GetRunLoader()->LoadHeader(); //...message from AliRunLoader...hopefully will disappear in future...
+  // sometimes no stack found if the above line is commented out!!
   AliStack *pStack = R()->GetLoader()->GetRunLoader()->Stack();
   if(!pStack)
   {AliInfo("No Stack found!!! No contrib to cluster found.");return;}
@@ -179,14 +181,17 @@ void AliRICHClusterFinder::FindLocalMaxima()
 {
 //find number of local maxima in the current raw cluster and then calculates initial center of gravity
   fNlocals=0;
+  AliDebug(1,Form("Cluster size of the Raw cluster ---> %i",fRawCluster.Size()));
   for(Int_t iDig1=0;iDig1<fRawCluster.Size();iDig1++) {
     Int_t iNotMax = 0;
     AliRICHdigit *pDig1 = (AliRICHdigit *)fRawCluster.Digits()->At(iDig1);
+    if(!pDig1) {fNlocals=0;return;}
     TVector pad1 = pDig1->Pad();
     Int_t padQ1 = (Int_t)(pDig1->Q()+0.1);
     Int_t padC1 = pDig1->ChFbMi();
     for(Int_t iDig2=0;iDig2<fRawCluster.Size();iDig2++) {
       AliRICHdigit *pDig2 = (AliRICHdigit *)fRawCluster.Digits()->At(iDig2);
+      if(!pDig2) {fNlocals=0;return;}
       TVector pad2 = pDig2->Pad();
       Int_t padQ2 = (Int_t)(pDig2->Q()+0.1);
       if(iDig1==iDig2) continue;
@@ -204,6 +209,7 @@ void AliRICHClusterFinder::FindLocalMaxima()
       fNlocals++;
     }
   }
+  AliDebug(1,Form("Number of local maxima found ---> %i",fNlocals));
   fRawCluster.CoG(fNlocals); //first initial approximation of the CoG...to start minimization.
 }//FindLocalMaxima()
 //__________________________________________________________________________________________________
@@ -223,7 +229,7 @@ void AliRICHClusterFinder::WriteResolvedCluster()
 //Add the current resolved cluster to the list of clusters
   AliDebug(1,"Start.");
   
-  FindClusterContribs(&fResolvedCluster);  
+  FindClusterContribs(&fResolvedCluster);
   R()->AddCluster(fResolvedCluster);
   
   ToAliDebug(1,fResolvedCluster.Print()); AliDebug(1,"Stop.");  
@@ -238,7 +244,10 @@ void AliRICHClusterFinder::FitCoG()
   Double_t arglist;
   Int_t ierflag = 0;
 
-  TMinuit *pMinuit = new TMinuit(3*fNlocals-1);
+  AliDebug(1,Form("MINUIT Started with %i parameters and %i local maxima",3*fNlocals-1,fNlocals));
+
+//  TMinuit *pMinuit = new TMinuit(3*fNlocals-1);
+  TMinuit *pMinuit = new TMinuit(100);
   pMinuit->mninit(5,10,7);
   
   arglist = -1;
@@ -257,19 +266,24 @@ void AliRICHClusterFinder::FitCoG()
   Double_t stepQ= 0.0001;
   
   for(Int_t i=0;i<fNlocals;i++) {
+    AliDebug(1,Form(" local minimum n. %i with Xstart %f and Ystart %f",i,fLocalX[i],fLocalY[i]));
     vstart   = fLocalX[i];
     lower    = vstart - 2*AliRICHParam::PadSizeX();
     upper    = vstart + 2*AliRICHParam::PadSizeX();
     pMinuit->mnparm(3*i  ,Form("xCoG  %i",i),vstart,stepX,lower,upper,ierflag);
+    AliDebug(1,Form("xCoG %i vstart %f lower %f upper %f ",i,vstart,lower,upper));
+
     vstart   = fLocalY[i];
     lower    = vstart - 2*AliRICHParam::PadSizeY();
     upper    = vstart + 2*AliRICHParam::PadSizeY();
     pMinuit->mnparm(3*i+1,Form("yCoG  %i",i),vstart,stepY,lower,upper,ierflag);
+    AliDebug(1,Form("yCoG %i vstart %f lower %f upper %f ",i,vstart,lower,upper));
     if(i==fNlocals-1) break;                    // last parameter is constrained
     vstart = fLocalQ[i]/fRawCluster.Q();
     lower  = 0;
     upper  = 1;
     pMinuit->mnparm(3*i+2,Form("qfrac %i",i),vstart,stepQ,lower,upper,ierflag);
+    AliDebug(1,Form("qfrac %i vstart %f lower %f upper %f ",i,vstart,lower,upper));
   }
   
   arglist = -1;
@@ -279,8 +293,8 @@ void AliRICHClusterFinder::FitCoG()
   arglist = -1;
   pMinuit->mnexcm("SIMPLEX",&arglist, 0, ierflag);
   pMinuit->mnexcm("MIGRAD",&arglist, 0, ierflag);
-  pMinuit->mnexcm("EXIT" ,&arglist, 0, ierflag);
-
+//  pMinuit->mnexcm("EXIT" ,&arglist, 0, ierflag);
+  
   Double_t xCoG[50],yCoG[50],qfracCoG[50];
   Double_t eps, b1, b2;
 
@@ -293,13 +307,17 @@ void AliRICHClusterFinder::FitCoG()
     qfraclast+=qfracCoG[i];
    }
   qfracCoG[fNlocals-1] = 1 - qfraclast;
+
   delete pMinuit;
 
   for(Int_t i=0;i<fNlocals;i++){//resolved positions loop
     fResolvedCluster.Fill(&fRawCluster,xCoG[i],yCoG[i],qfracCoG[i],fLocalC[i]);
     WriteResolvedCluster();
   }
+ 
+
   AliDebug(1,"Stop.");
+
 }//FitCoG()
 //__________________________________________________________________________________________________
 void RICHMinMathieson(Int_t &npar, Double_t *, Double_t &chi2, Double_t *par, Int_t )
