@@ -89,8 +89,8 @@ AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* version, Opti
 //____________________________________________________________________________ 
 AliEMCALGetter::~AliEMCALGetter()
 {
-  AliRunLoader * rl = AliRunLoader::GetRunLoader(fgEmcalLoader->GetTitle());
-  delete rl;
+  //PH  AliRunLoader * rl = AliRunLoader::GetRunLoader(fgEmcalLoader->GetTitle());
+  //PH  delete rl;
   fgEmcalLoader = 0 ;
   fgObjGetter = 0; 
   fVersion = "";
