@@ -28,6 +28,7 @@
 #include "AliMUON.h"
 #include "AliMagF.h"
 #include "AliRun.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONCommonGeometryBuilder)
  
@@ -54,7 +55,7 @@ AliMUONCommonGeometryBuilder::AliMUONCommonGeometryBuilder(
 {  
   // copy constructor (not implemented)
 
-  Fatal("AliMUONCommonGeometryBuilder", "Copy constructor not provided.");
+  AliFatal("Copy constructor not provided.");
 }
 
 //______________________________________________________________________________
@@ -72,7 +73,7 @@ AliMUONCommonGeometryBuilder::operator=(const AliMUONCommonGeometryBuilder& righ
   // check assignement to self
   if (this == &right) return *this;
 
-  Fatal("operator =", "Assignement operator not provided.");
+  AliFatal("Assignement operator not provided.");
     
   return *this;  
 }    

@@ -32,6 +32,7 @@
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliMC.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONv0)
  
@@ -142,7 +143,7 @@ void AliMUONv0::Init()
    // Initialize Tracking Chambers
    //
     char vName[8];
-    printf("\n\n\n Start Init for version 0 - CPC chamber type\n\n\n");
+    AliInfo("\n\n\n Start Init for version 0 - CPC chamber type\n\n\n");
     for (Int_t i=0; i<AliMUONConstants::NCh(); i++) {
 // Initialise chamber
 	((AliMUONChamber*) (*fChambers)[i])->Init();

@@ -192,22 +192,19 @@ void AliMUONv1::Init()
    //
    // Debug info
    //
-   if (GetDebug() >1) {
      // Print transformations and SV map
      for (i=0; i<AliMUONConstants::NCh(); i++) {
  
-       cout << "Chamber: " << i+1 << endl;
-       cout << "===================" << endl; 
+       AliDebug(2,Form("Chamber: %d \n" , i+1 ));
+       AliDebug(2,"===================\n"); 
      
        // To do - move PrintLocalTransforms to geometryModule
        //Chamber(i).GetGeometry()
        //	   ->GetDetElementStore()->PrintLocalTransforms();
  
-       Chamber(i).GetGeometry()
-	   ->GetSVMap()->Print("");
+       if (GetDebug() >1) Chamber(i).GetGeometry()->GetSVMap()->Print("");
      }
-     cout << endl;
-   } 
+     AliDebug(2,"\n"); 
 }
 
 //__________________________________________________________________
@@ -621,8 +618,8 @@ void   AliMUONv1::FinishRun()
   // Print the global positions of detection elements
   for (Int_t i=0; i<AliMUONConstants::NCh(); i++) {
 
-    cout << "Chamber: " << i+1 << endl;
-    cout << "===================" << endl; 
+    AliDebug(2,Form("Chamber: %d\n" , i+1 ));
+    AliDebug(2,"===================\n"); 
      
     AliMUONGeometrySVMap* svMap
       = Chamber(i).GetGeometry()->GetSVMap();
@@ -631,5 +628,5 @@ void   AliMUONv1::FinishRun()
     svMap->PrintPositions();
     svMap->ClearPositions();
   }
-  cout << endl;	   
+  AliDebug(2,"\n"); 
 }  

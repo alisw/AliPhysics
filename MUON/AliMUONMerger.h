@@ -5,6 +5,7 @@
 
 /* $Id$ */
 // Revision of includes 07/05/2004
+#include <TObject.h>
 
 class TClonesArray;
 class TTree;
@@ -14,7 +15,7 @@ class AliHitMap;
 
 typedef enum {kDigitize=0, kMerge = 1} MergeMode_t;
 
-class AliMUONMerger {
+class AliMUONMerger : public TObject{
  public:
     
     AliMUONMerger();

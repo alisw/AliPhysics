@@ -17,6 +17,7 @@
 
 #include "AliMUONChamberTrigger.h"
 #include "AliMUONResponseTrigger.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONChamberTrigger)
 
@@ -67,7 +68,7 @@ void AliMUONChamberTrigger::DisIntegration(Float_t /*eloss*/, Float_t tof,
 // treatment of GEANT hits w/o corresponding strip (due to the fact that
 // the 2 geometries are computed in a very slightly different way) 
     if (ix==0&&iy==0) {
-      printf("AliMUONChamberTrigger hit w/o strip %f %f \n",xhit,yhit);
+      AliInfo(Form("AliMUONChamberTrigger hit w/o strip %f %f \n",xhit,yhit));
     } else {          
       // --- store signal information for this strip
       newclust[0][nnew]=1.;                       // total charge

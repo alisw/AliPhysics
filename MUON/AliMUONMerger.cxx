@@ -20,7 +20,6 @@
 #include <TError.h>
 //#include <TTree.h> 
 //#include <TDirectory.h>
-#include "AliLog.h"
 
 #include "AliMUONMerger.h"
 #include "AliMUON.h"
@@ -32,11 +31,12 @@
 //#include "AliMUONHit.h"
 //#include "AliMUONHitMapA1.h"
 //#include "AliRun.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONMerger)
 
 //----------------------------------------------------------------------
-AliMUONMerger::AliMUONMerger()
+AliMUONMerger::AliMUONMerger(): TObject()
 {
 // Default constructor    
     fEvNrSig = 0;
@@ -55,11 +55,11 @@ AliMUONMerger::AliMUONMerger()
 }
 
 //----------------------------------------------------------------------
-AliMUONMerger::AliMUONMerger(const AliMUONMerger&)
+AliMUONMerger::AliMUONMerger(const AliMUONMerger&): TObject()
 {
 // Protected copy constructor
 
-  Fatal("copy constructor","Not implemented.");
+  AliFatal("Not implemented.");
 }
 
 //------------------------------------------------------------------------
@@ -81,7 +81,7 @@ AliMUONMerger&  AliMUONMerger::operator=(const AliMUONMerger& rhs)
 
   if (this == &rhs) return *this;
 
-  Fatal("operator=", "Not implemented.");
+  AliFatal("Not implemented.");
     
   return *this;  
 }    
@@ -159,7 +159,7 @@ TFile* AliMUONMerger::InitBgr()
 // Initialise background event
     TFile *file = new TFile(fFnBgr);
 // add error checking later
-    printf("\n AliMUONMerger has opened %s file with background event \n", fFnBgr);
+    AliInfo(Form("\n AliMUONMerger has opened %s file with background event \n", fFnBgr));
     fHitsBgr     = new TClonesArray("AliMUONHit",1000);
     fPadHitsBgr  = new TClonesArray("AliMUONPadHit",1000);
     return file;

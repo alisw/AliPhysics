@@ -166,7 +166,7 @@ void AliMUONproto::GetRawDigits(Int_t evnb, Int_t *lptr, Int_t ilen) {
                     digits[0] = group[nochnl][0][1] - 12;
                 digits[1] = group[nochnl][0][0];
                 if (digits[0] != seg->Ix(digits[0], digits[1]))
-                    printf("Pb pour ix=%d,iy=%d\n", digits[0], digits[1]);
+                    AliInfi(Form("Pb pour ix=%d,iy=%d\n", digits[0], digits[1]));
                 digits[2] = val;
                 digits[3] = 0;
                 digits[4] = 0;
@@ -286,7 +286,7 @@ void AliMUONproto::CreateMaterials()
 //___________________________________________
 void AliMUONproto::Init()
 {
-   printf("\n\n\n Start Init for Prototype ALICE2 - CPC chamber type\n\n\n");
+   AliInfo("\n\n\n Start Init for Prototype ALICE2 - CPC chamber type\n\n\n");
 
    // 
    // Initialize Tracking Chambers
@@ -298,7 +298,7 @@ void AliMUONproto::Init()
    // Set the chamber (sensitive region) GEANT identifier
    ((AliMUONChamber*)(*fChambers)[0])->SetGid(gMC->VolId("C01G"));
 
-   printf("\n\n\n Finished Init for Prototype ALICE2 - CPC chamber type\n\n\n");
+   AliInfo("\n\n\n Finished Init for Prototype ALICE2 - CPC chamber type\n\n\n");
 
 }
 
