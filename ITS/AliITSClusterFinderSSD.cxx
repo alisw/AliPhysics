@@ -147,7 +147,6 @@ void AliITSClusterFinderSSD::FindRawClusters(Int_t module)
   FindNeighbouringDigits(); //ad. 2
   //SeparateOverlappedClusters();  //ad. 3
   ClustersToPackages();  //ad. 4
-  AliITSRecPoint rnew;
   fMap->ClearMap();
 }
 
@@ -624,8 +623,8 @@ void AliITSClusterFinderSSD::ClustersToPackages()
     }
   }
 
-   delete oneSclP;
-   delete oneSclN;
+   delete [] oneSclP;
+   delete [] oneSclN;
 
 }
 
