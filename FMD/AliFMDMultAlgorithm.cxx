@@ -91,7 +91,10 @@ AliFMDMultAlgorithm::AliFMDMultAlgorithm(const char* name, const char* title)
 //____________________________________________________________________
 AliFMDMultAlgorithm::~AliFMDMultAlgorithm()
 {
-  if (fMult) delete fMult;
+  if (fMult) {
+    fMult->Delete();
+    delete fMult;
+  }
 }
 
 
