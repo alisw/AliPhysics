@@ -6,63 +6,81 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-//  Algorithm class for the reconstruction: clusterizer
-//                                          track segment maker
-//                                          particle identifier   
+//  Supervising class for reconstruction
 //*--
-//*-- Author: Gines Martinez & Yves Schutz (SUBATECH)
+//*-- Author: Gines Martinez & Yves Schutz (SUBATECH) 
+//*--         Dmitri Peressounko (SUBATECH & Kurchatov Institute)
 
 // --- ROOT system ---
 
-#include "TObject.h"
-#include "AliPHOSClusterizer.h"
-#include "AliPHOSTrackSegmentMaker.h"
-#include "AliPHOSPID.h"
-#include "TClonesArray.h" 
+#include "TTask.h"
+class AliPHOSDigitizer ;
+class AliPHOSClusterizer ;
+class AliPHOSTrackSegmentMaker ;
+class AliPHOSPID ;
+class AliPHOSSDigitizer ;
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 
-class AliPHOSReconstructioner : public TObject {
+class AliPHOSReconstructioner : public TTask {
 
 public:
 
-  AliPHOSReconstructioner(){} //ctor            
-  AliPHOSReconstructioner(AliPHOSClusterizer * Clusterizer, AliPHOSTrackSegmentMaker * Tracker, 
-			  AliPHOSPID * Identifier); //ctor         
-  AliPHOSReconstructioner(const AliPHOSReconstructioner & phos) {
-    // cpy ctor: no implementation yet
+  AliPHOSReconstructioner() ; //ctor            
+  AliPHOSReconstructioner(const char * headreFile) ;
+  AliPHOSReconstructioner(const AliPHOSReconstructioner & rec) {
+    // cpy ctor: 
     // requested by the Coding Convention
-    assert(0==1) ; 
+    abort() ; 
   }
    
-  ~AliPHOSReconstructioner(){} // dtor
+  virtual ~AliPHOSReconstructioner() ;
 
-  AliPHOSClusterizer * GetClusterizer() { return fClusterizer ; }
-  void Init(AliPHOSClusterizer * Clusterizer, AliPHOSTrackSegmentMaker * Tracker, 
-			  AliPHOSPID * Identifier) ;  
-  void Make(TClonesArray * DL, 
-	    AliPHOSRecPoint::RecPointsList * emccl, 
-	    AliPHOSRecPoint::RecPointsList * ppsdl, 
-	    AliPHOSTrackSegment::TrackSegmentsList * trsl, 
-	    AliPHOSRecParticle::RecParticlesList * rpl)    ; // does the job
+  virtual void Exec(Option_t * option) ;
 
-  void SetDebugReconstruction(Bool_t deb) { fDebugReconstruction = deb; }
+  AliPHOSDigitizer         * GetDigitizer()  { return fDigitizer   ; }
+  AliPHOSClusterizer       * GetClusterizer(){ return fClusterizer ; }
+  AliPHOSPID               * GetPID()        { return fPID;          }
+  AliPHOSTrackSegmentMaker * GetTSMaker()    { return fTSMaker ;     }
+  AliPHOSSDigitizer        * GetSDigitizer() { return fSDigitizer  ; }
+
+  void Print(Option_t * option)const ;
+  
+  void SetBranchTitle(const char* branch,const char * title) ;
+            // Sets files, to which branch will be written 
+
+  void StartFrom(Option_t * option = "AliPHOSSDigitizer") ;
+            // From wich step reconstruction begins
 
   AliPHOSReconstructioner & operator = (const AliPHOSReconstructioner & rvalue)  {
     // assignement operator requested by coding convention but not needed
-    assert(0==1) ;
+    abort() ;
     return *this ; 
   }
   
 
 private:
+  void Init() ;  
+
+private:
   
-  Bool_t               fDebugReconstruction;      // For debuging of the Reconstruction procedure
-  AliPHOSClusterizer * fClusterizer ;             // Method for clusterization 
-  AliPHOSTrackSegmentMaker * fTrackSegmentMaker ; // Method for track segments finding
-  AliPHOSPID * fPID ;                             // Method for identifying the type of particle
+  TString  fHeaderFileName ;    // File with headers and gAlice
+  TString  fDigitsBranch ;      // Title of digits branch
+  TString  fRecPointBranch ;    // -"-      RecPoints     -"-
+  TString  fTSBranch  ;         // -"-      TrackSegments -"-
+  TString  fRecPartBranch ;     // -"-      RecParticles  -"-
+  TString  fSDigitsBranch ;     // -"-      SDigits       -"-
+
+
+  AliPHOSDigitizer         * fDigitizer ;
+  AliPHOSClusterizer       * fClusterizer ;
+  AliPHOSPID               * fPID ;
+  AliPHOSTrackSegmentMaker * fTSMaker ;
+  AliPHOSSDigitizer        * fSDigitizer ;
+
+  Bool_t   fIsInitialized ;
  
   ClassDef(AliPHOSReconstructioner,1)  // Reconstruction algorithm class (Base Class)
 

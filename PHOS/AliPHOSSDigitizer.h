@@ -22,30 +22,40 @@ class AliPHOSSDigitizer: public TTask {
 
 public:
   AliPHOSSDigitizer() ;          // ctor
-  AliPHOSSDigitizer(char* HeaderFile,char *SdigitsFile = 0) ; 
-
+  AliPHOSSDigitizer(const char* HeaderFile,const char *SdigitsTitle = 0) ; 
   virtual ~AliPHOSSDigitizer() ; // dtor
-  Float_t  Calibrate(Int_t amp){return (amp - fA)/fB ; }
-  Int_t    Digitize(Float_t Energy){ return (Int_t ) ( fA + Energy*fB); }
 
-  Float_t GetPedestalParameter(){return fA;}
-  Float_t GetCalibrationParameter(){return fB;}
-  char *GetSDigitsFile()const{return (char*) fSDigitsFile.Data();}  
+  Float_t  Calibrate(Int_t amp)const {return (amp - fA)/fB ; }
+  Int_t    Digitize(Float_t Energy)const { return (Int_t ) ( fA + Energy*fB); }
+
   virtual void  Exec(Option_t *option); 
-  void SetNEvents(Int_t Nevents){fNevents = Nevents;}
-  void SetPedestalParameter(Float_t A){fA = A ;}
-  void SetSlopeParameter(Float_t B){fB = B ;}
-  void SetSDigitsFile(char * file ) ;
+  
+  Float_t  GetPedestalParameter()const {return fA;}
+  Float_t  GetCalibrationParameter()const{return fB;}
+  char *   GetSDigitsBranch()const{return (char*) fSDigitsTitle.Data();}  
+
   virtual void Print(Option_t* option) const ;
-  Bool_t operator == (const AliPHOSSDigitizer & sd) const ;
+
+  void     SetPedestalParameter(Float_t A){fA = A ;}
+  void     SetSlopeParameter(Float_t B){fB = B ;}
+  void     SetSDigitsBranch(const char * title ) ;
+
+  Bool_t   operator == (const AliPHOSSDigitizer & sd) const ;
+
+private:
+  void     Init() ;
+  void     PrintSDigits(Option_t * option) ;
 
 private:
   Float_t fA ;              //Pedestal parameter
   Float_t fB ;              //Slope Digitizition parameters
   Int_t   fNevents ;        // Number of events to digitize
   Float_t fPrimThreshold ;  // To store primari if Elos > threshold
-  TString fSDigitsFile ;    //output file 
+  TString fSDigitsTitle ;   // title of SDigits branch
   TString fHeadersFile ;    //input file
+  Bool_t         fIsInitialized ; 
+  TClonesArray * fSDigits ; //! list of SDigits
+  TClonesArray * fHits ;    //!
 
 
   ClassDef(AliPHOSSDigitizer,1)  // description 

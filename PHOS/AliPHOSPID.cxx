@@ -23,7 +23,7 @@
 //  the code checker                
                          
 //                  
-//*-- Author: Yves Schutz (SUBATECH)
+//*-- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko
 
 
 // --- ROOT system ---
@@ -31,7 +31,7 @@
  
 
 // --- Standard library ---
-
+#include <iostream.h>
 
 
 // --- AliRoot header files ---
@@ -41,12 +41,22 @@
 ClassImp(AliPHOSPID)
 
 //____________________________________________________________________________
-AliPHOSPID::AliPHOSPID()
+  AliPHOSPID::AliPHOSPID():TTask()
 {
   // ctor
-  fGeom = AliPHOSGeometry::GetInstance() ;
 
 }
+//____________________________________________________________________________
+AliPHOSPID::AliPHOSPID(const char* header,const char * branch ):TTask()
+{
+  // ctor
+  cout << "AliPHOSPID: This constructor should be overwritten! "<< endl ;
+  abort() ;
+
+}
+
+
+
 
 //____________________________________________________________________________
 AliPHOSPID::~AliPHOSPID()

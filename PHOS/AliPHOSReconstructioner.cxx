@@ -16,320 +16,478 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-//  Algorithm class for the reconstruction: clusterizer
-//                                          track segment maker
-//                                          particle identifier   
+//  Algorithm class for the reconstruction: 
+//                                          
+//                                          
 //*--
-//*-- Author: Gines Martinez & Yves Schutz (SUBATECH)
+//*-- Author: Gines Martinez & Yves Schutz (SUBATECH) 
+//*-- Complitely redisigned by Dmitri Peressounko (SUBATECH & RRC KI) March 2001
+/////////////////////////////////////////////////////////////////////////////////////
+//  Wrapping class for reconstruction
+//  use case: 
+//
+//  root [0] AliPHOSReconstructioner * r = new AliPHOSReconstructioner("galice.root")
+//              //  Set the header file
+//  root [1] r->ExecuteTask() 
+//
+//              // One can specify the title for each branch 
+//  root [2] r->SetBranchFileName("RecPoints","RecPoints1") ;
+//             // By default branches are stored in galice.root (in non-split mode)
+//             // or PHOS.SDigits.root, PHOS.Digits.root etc.
+//      
+//             // One can specify the starting point of the reconstruction
+//  root [3] r->StartFrom("AliPHOSClusterizer") 
+//             // means that SDigits and Digits will not be regenerated, only RecPoints, 
+//             // TS and RecParticles
+//
+//             // And finally one can call ExecuteTask() with the following options
+//  root [4] r->ExecuteTask("debug all timing")
+//             // deb     - prints the numbers of produced SDigits, Digits etc.
+//             // deb all - prints in addition list of made SDigits, digits etc.
+//             // timing  - prints benchmarking results
+
+
 
 
 // --- ROOT system ---
 
 #include "TClonesArray.h"
+#include "TROOT.h"
+#include "TTree.h"
 
 // --- Standard library ---
-
-#include <iomanip.h>
+#include <iostream.h>   
 
 // --- AliRoot header files ---
-
+#include "AliRun.h"
 #include "AliPHOSReconstructioner.h"
-#include "AliPHOSClusterizer.h"
+#include "AliPHOSClusterizerv1.h"
+#include "AliPHOSDigitizer.h"
+#include "AliPHOSSDigitizer.h"
+#include "AliPHOSTrackSegmentMakerv1.h"
+#include "AliPHOSPIDv1.h"
 #include "AliPHOSFastRecParticle.h"
 #include "AliPHOSCpvRecPoint.h"
 
 ClassImp(AliPHOSReconstructioner)
 
 //____________________________________________________________________________
-AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterizer, 
-						 AliPHOSTrackSegmentMaker * Tracker,
-						 AliPHOSPID * Pid)
+  AliPHOSReconstructioner::AliPHOSReconstructioner():TTask("AliPHOSReconstructioner","")
+{
+  // ctor
+  fDigitizer   = 0 ;
+  fClusterizer = 0 ;
+  fTSMaker     = 0 ;
+  fPID         = 0 ; 
+  fSDigitizer  = 0 ;
+
+  fIsInitialized = kFALSE ;
+
+} 
+
+//____________________________________________________________________________
+AliPHOSReconstructioner::AliPHOSReconstructioner(const char* headerFile):TTask("AliPHOSReconstructioner","")
 {
   // ctor
   
-  fClusterizer        = Clusterizer ;
-  fTrackSegmentMaker  = Tracker ;
-  fPID                = Pid ; 
-  fDebugReconstruction = kFALSE ;
+  fHeaderFileName = headerFile ;
+
+  fSDigitsBranch="" ; 
+  fSDigitizer  = new AliPHOSSDigitizer(fHeaderFileName.Data(),fSDigitsBranch.Data()) ; 
+  Add(fSDigitizer) ;
+
+  fDigitsBranch="" ; 
+  fDigitizer   = new AliPHOSDigitizer(fHeaderFileName.Data(),fDigitsBranch.Data()) ; 
+  Add(fDigitizer) ;
+
+
+  fRecPointBranch="" ; 
+  fClusterizer = new AliPHOSClusterizerv1(fHeaderFileName.Data(),fRecPointBranch.Data()) ; 
+  Add(fClusterizer) ;
+  
+
+  fTSBranch="" ; 
+  fTSMaker     = new AliPHOSTrackSegmentMakerv1(fHeaderFileName.Data(),fTSBranch.Data()) ;
+  Add(fTSMaker) ;
+  
+  
+  fRecPartBranch="" ; 
+  fPID         = new AliPHOSPIDv1(fHeaderFileName.Data(),fRecPartBranch.Data()) ;
+  Add(fPID) ;
+  
+  fIsInitialized = kTRUE ;
+  
 } 
-
-
 //____________________________________________________________________________
- void AliPHOSReconstructioner::Init(AliPHOSClusterizer * Clusterizer, 
-						 AliPHOSTrackSegmentMaker * Tracker,
-						 AliPHOSPID * Pid)
-{
-  // Initialisation
+void AliPHOSReconstructioner::Exec(Option_t *option){
+  //chesk, if the names of branches, which should be made conicide with already
+  //existing
+  if(!fIsInitialized)
+    Init() ;
 
-  fClusterizer        = Clusterizer ;
-  fTrackSegmentMaker  = Tracker ;
-  fPID                = Pid ; 
-  fDebugReconstruction = kFALSE ;
-} 
+  gAlice->GetEvent(0) ;
 
-//____________________________________________________________________________
- void AliPHOSReconstructioner::Make(DigitsList * dl, 
-				    AliPHOSRecPoint::RecPointsList * emccl, 
-				    AliPHOSRecPoint::RecPointsList * ppsdl, 
-				    AliPHOSTrackSegment::TrackSegmentsList * trsl, 
-				    AliPHOSRecParticle::RecParticlesList * rpl)
-{
-  // Launches the Reconstruction process in the sequence: Make the reconstructed poins (clusterize)
-  //                                                      Make the track segments 
-  //                                                      Make the reconstructed particles
-  Int_t index ;   
-  if  (fDebugReconstruction)
-    cout << "\n\nDebugReconstruction>>> " << "Start making reconstructed points (clusterizing!!)" << endl;
-  
-  fClusterizer->MakeClusters(dl, emccl, ppsdl);
+  if(fSDigitizer->IsActive()&& gAlice->TreeS()){ //Will produce SDigits
 
-  if  (fDebugReconstruction){
-    cout << "DebugReconstruction>>> " << "AliPHOSReconstructioner: Digit list entries is " << dl->GetEntries() << endl ;
-    cout << "AliPHOSReconstructioner: Emc  list entries is " << emccl->GetEntries() << endl ;
-    cout << "AliPHOSReconstructioner: Ppsd list entries is " << ppsdl->GetEntries() << endl ;
-  }
+    TBranch * sdigitsBranch = 0;
+    TBranch * sdigitizerBranch = 0;
 
-  // Digit Debuging
-  if  (fDebugReconstruction)     {
-    cout << ">>>>>>>>>>>>>>>>>>>>>> DebugReconstruction  <<<<<<<<<<<<<<<<<<<<<<<<<<"  << endl ;
-    cout << "DebugReconstruction>>> Digit list entries is " <<    dl->GetEntries() << endl ;
-    AliPHOSDigit * digit;
-    Bool_t calorimeter ;
-    Float_t factor;
-    cout << "DebugReconstruction>>>    Vol Id " << 
-      " Ene(MeV, KeV) "              <<                         
-      " Index "                      << 
-      " Nprim "                      << 
-      " Primaries list "             <<  endl;      
-    for (index = 0 ; index < dl->GetEntries() ; index++) {
-      digit = (AliPHOSDigit * )  dl->At(index) ;
-      calorimeter = fClusterizer->IsInEmc(digit);
-      if (calorimeter) factor =1000. ; else factor=1000000.;
-      cout << "DebugReconstruction>>>  " << 
-        setw(8)  <<  digit->GetId() << " "  <<
-	setw(3)  <<  (Int_t) calorimeter <<  
-	setw(10) <<  factor*fClusterizer->Calibrate(digit->GetAmp()) << "  "  <<                   
-	setw(6)  <<  digit->GetIndexInList() << "  "  << 
-	setw(5)  <<  digit->GetNprimary() <<"  ";
-      for (Int_t iprimary=0; iprimary<digit->GetNprimary(); iprimary++)
-	cout << setw(5)  <<  digit->GetPrimary(iprimary+1) << " ";
-      cout << endl;  	 
-    }
-    
-  }
+    TObjArray * branches = gAlice->TreeS()->GetListOfBranches() ;
+    Int_t ibranch;
+    Bool_t phosNotFound = kTRUE ;
+    Bool_t sdigitizerNotFound = kTRUE ;
 
-  // Making Clusters
-  if  (fDebugReconstruction)  cout << "DebugReconstruction>>> Start making reconstructed points (clusterizing)" << endl;
-
-  // mark the position of the RecPoints in the array
-  AliPHOSEmcRecPoint * emcrp ; 
-  for (index = 0 ; index < emccl->GetEntries() ; index++) {
-    emcrp = (AliPHOSEmcRecPoint * )emccl->At(index) ; 
-    emcrp->SetIndexInList(index) ; 
-  }
-  AliPHOSPpsdRecPoint * ppsdrp ; 
-  for (index = 0 ; index < ppsdl->GetEntries() ; index++) {
-    ppsdrp = (AliPHOSPpsdRecPoint * )ppsdl->At(index) ; 
-    ppsdrp->SetIndexInList(index) ; 
-  }
-  
-  if  (fDebugReconstruction) {
-    cout << "DebugReconstruction>>> Cluster emc list entries is " <<    emccl->GetEntries() << endl ;
-    AliPHOSEmcRecPoint * recpoint;
-    cout << "DebugReconstruction>>> Module "  << 
-      "Ene(MeV) "             <<                         
-      "Index "                << 
-      "Multi "                << 
-      "   X     "             << 
-      "   Y     "             << 
-      "   Z    "              << 
-      " Lambda 1   "          <<  
-      " Lambda 2   "          <<
-      "MaxEnergy(MeV) "       <<
-      "Nprim "                <<
-      " Primaries list "      <<  endl;      
-    for (index = 0 ; index < emccl->GetEntries() ; index++) {
-      recpoint = (AliPHOSEmcRecPoint * )emccl->At(index) ; 
-      TVector3  locpos;  recpoint->GetLocalPosition(locpos);
-      Float_t lambda[2]; recpoint->GetElipsAxis(lambda);
-      Int_t * primaries; 
-      Int_t nprimaries;
-      primaries = recpoint->GetPrimaries(nprimaries);
-      cout << "DebugReconstruction>>>  " << 
-	setw(2) <<recpoint->GetPHOSMod() << " "  << 
-	setw(9) << 1000.*recpoint->GetEnergy() <<       " "  <<                   
-	setw(6) <<  recpoint->GetIndexInList() << " "  << 
-	setw(5) <<  recpoint->GetMultiplicity() <<" "  << 
-	setw(8) <<  locpos.X() <<" "  << 
-	setw(8) <<  locpos.Y() <<" "  << 
-	setw(8) <<  locpos.Z() << " " <<
-	setw(10) << lambda[0] << "  " <<
-	setw(10) << lambda[1] << "  " <<
-	setw(9) << 1000*recpoint->GetMaximalEnergy() << "  " << 
-	setw(9) << nprimaries << "  ";
-      for (Int_t iprimary=0; iprimary<nprimaries; iprimary++)
-	cout << setw(4)  <<  primaries[iprimary] << " ";
-      cout << endl;  	 
-    }
-      
-    cout << "DebugReconstruction>>> Cluster ppsd list entries is " <<    ppsdl->GetEntries() << endl ;
-    AliPHOSPpsdRecPoint * ppsdrecpoint;
-    Text_t detector[4];
-    cout << "DebugReconstruction>>> Module "  << 
-      "Det     "             <<      
-      "Ene(KeV) "            <<                         
-      "Index "               << 
-      "Multi "               << 
-      "   X     "            << 
-      "   Y     "            << 
-      "   Z         "        << 
-      "Nprim "               <<
-      " Primaries list "     <<  endl;      
-    for (index = 0 ; index < ppsdl->GetEntries() ; index++) {
-      ppsdrecpoint = (AliPHOSPpsdRecPoint * ) ppsdl->At(index) ; 
-      TVector3  locpos; ppsdrecpoint->GetLocalPosition(locpos);
-      Int_t * primaries; 
-      Int_t nprimaries;
-      if (ppsdrecpoint->GetUp()) 
-	strcpy(detector, "CPV"); 
-      else 
-	strcpy(detector, "PC ");
-      primaries = ppsdrecpoint->GetPrimaries(nprimaries);
-      cout << "DebugReconstruction>>> " << 
-	setw(4) << ppsdrecpoint->GetPHOSMod() << "  "  << 
-	setw(4)  << detector << " "      <<
-	setw(9) << 1000000.*ppsdrecpoint->GetEnergy() <<       " "  <<             
-	setw(6) <<  ppsdrecpoint->GetIndexInList() << " "  << 
-	setw(5) <<  ppsdrecpoint->GetMultiplicity() <<" "  << 
-	setw(8) <<  locpos.X() <<" "  << 
-	setw(8) <<  locpos.Y() <<" "  << 
-	setw(8) <<  locpos.Z() << " " <<
-	setw(9) <<  nprimaries << "  ";
-      for (Int_t iprimary=0; iprimary<nprimaries; iprimary++)
-	cout << setw(4)  <<  primaries[iprimary] << " ";
-      cout << endl;  	 
-    }
-  }  
-  
-  
-  if  (fDebugReconstruction)  cout << "DebugReconstruction>>>> Start making track segments(unfolding+tracksegments)" << endl;
-  fTrackSegmentMaker->MakeTrackSegments(dl, emccl, ppsdl, trsl) ;   
-  
-  // mark the position of the TrackSegments in the array
-  AliPHOSTrackSegment * trs ; 
-  for (index = 0 ; index < trsl->GetEntries() ; index++) {
-    trs = (AliPHOSTrackSegment * )trsl->At(index) ; 
-    trs->SetIndexInList(index) ; 
-  }
-  if  (fDebugReconstruction){
-    cout << "DebugReconstruction>>> Track segment list entries is " <<    trsl->GetEntries() << endl ;
-    cout << "DebugReconstruction>>> Module "  << 
-      "Ene(KeV) "             <<                         
-      "Index "                << 
-      "   X      "            << 
-      "   Y      "            << 
-      "   Z       "           <<
-      " rX        "           << 
-      " rY        "           << 
-      " rZ      "             << 
-      "Nprim "                <<
-      " Primaries list "      <<  endl;      
-    
-    for (index = 0 ; index < trsl->GetEntries() ; index++) {
-      trs = (AliPHOSTrackSegment * )trsl->At(index) ; 
-      TVector3 locpos; trs->GetPosition(locpos);
-      Int_t * primaries; 
-      Int_t nprimaries;
-      primaries = trs->GetPrimariesEmc(nprimaries);
-      cout << "DebugReconstruction>>> " << 
-	setw(4) << trs->GetPHOSMod() << "  "  << 
-    	setw(9) << 1000.*trs->GetEnergy() <<       " "  <<             
-	setw(3) <<  trs->GetIndexInList() << " "  <<  
-	setw(9) <<  locpos.X() <<" "  << 
-	setw(9) <<  locpos.Y() <<" "  << 
-	setw(9) <<  locpos.Z() << " " <<
-	setw(10) <<  (trs->GetMomentumDirection()).X() << " " <<
-	setw(10) <<  (trs->GetMomentumDirection()).Y() << " " <<
-	setw(10) <<  (trs->GetMomentumDirection()).Z() << " " <<
-	setw(4) << nprimaries << "  ";
-      for (Int_t iprimary=0; iprimary<nprimaries; iprimary++)
-	cout << setw(4)  <<  primaries[iprimary] << " ";
-      cout << endl;  	 
-    }
-    
-  }
-  if  (fDebugReconstruction)  cout << "DebugReconstruction>>>> Start making reconstructed particles" << endl;
-  
-  if (fPID) {
-    fPID->MakeParticles(trsl, rpl) ; 
-  
-    // mark the position of the RecParticles in the array
-    AliPHOSRecParticle * rp ; 
-    for (index = 0 ; index < rpl->GetEntries() ; index++) {
-      rp = (AliPHOSRecParticle * )rpl->At(index) ; 
-      rp->SetIndexInList(index) ; 
-    }
-    //Debugger of RecParticles
-    if  (fDebugReconstruction){
-      cout << "DebugReconstruction>>>  Reconstructed particle list entries is " <<    rpl->GetEntries() << endl ;
-      cout << "DebugReconstruction>>> Module "  << 
-	"    PARTICLE     "   <<
-	"Ene(KeV) "           <<                         
-	"Index "              << 
-	"   X      "          << 
-	"   Y      "          << 
-	"   Z       "         <<
-	"Nprim "              <<
-	" Primaries list "    <<  endl;      
-      for (index = 0 ; index < rpl->GetEntries() ; index++) {
-	rp = (AliPHOSRecParticle * ) rpl->At(index) ;       
-	TVector3 locpos; (rp->GetPHOSTrackSegment())->GetPosition(locpos);
-	Int_t * primaries; 
-	Int_t nprimaries;
-	Text_t particle[11];
-	primaries = (rp->GetPHOSTrackSegment())->GetPrimariesEmc(nprimaries);
-	switch(rp->GetType()) {
-	case  AliPHOSFastRecParticle::kNEUTRALEM:
-	  strcpy( particle, "NEUTRAL_EM");
-	  break;
-	case  AliPHOSFastRecParticle::kNEUTRALHA:
-	  strcpy(particle, "NEUTRAL_HA");
-	  break;
-	case  AliPHOSFastRecParticle::kGAMMA:
-	  strcpy(particle, "GAMMA");
-	  break ;
-	case  AliPHOSFastRecParticle::kGAMMAHA: 
-	  strcpy(particle, "GAMMA_H");
-	  break ;
-	case  AliPHOSFastRecParticle::kABSURDEM:
-	  strcpy(particle, "ABSURD_EM") ;
-	  break ;
-	case  AliPHOSFastRecParticle::kABSURDHA:
-	  strcpy(particle, "ABSURD_HA") ;
-	  break ;	
-	case  AliPHOSFastRecParticle::kELECTRON:
-	  strcpy(particle, "ELECTRON") ;
-	  break ;
-	case  AliPHOSFastRecParticle::kCHARGEDHA:
-	  strcpy(particle, "CHARGED_HA") ;
-	  break ; 
-	}
-	
-	cout << "DebugReconstruction>>> " << 
-	  setw(4) << (rp->GetPHOSTrackSegment())->GetPHOSMod() << "  "  <<
-	  setw(15) << particle << "  " <<
-	  setw(9) << 1000.*(rp->GetPHOSTrackSegment())->GetEnergy() <<       " "  <<             
-	  setw(3) <<  rp->GetIndexInList() << " "  <<  
-	  setw(9) <<  locpos.X() <<" "  << 
-	  setw(9) <<  locpos.Y() <<" "  << 
-	  setw(9) <<  locpos.Z() << " " <<
-	  setw(4) << nprimaries << "  ";
-	for (Int_t iprimary=0; iprimary<nprimaries; iprimary++)
-	  cout << setw(4)  <<  primaries[iprimary] << " ";
-	cout << endl;  	 
+    for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){            
+      if(phosNotFound){
+	sdigitsBranch=(TBranch *) branches->At(ibranch) ;
+	if(( strcmp("PHOS",sdigitsBranch->GetName())==0 ) &&
+	   (fSDigitsBranch.CompareTo(sdigitsBranch->GetTitle())== 0 ))
+	  phosNotFound = kFALSE ;
+      }
+      if(sdigitizerNotFound){
+	sdigitizerBranch = (TBranch *) branches->At(ibranch) ;
+	if(( strcmp(sdigitizerBranch->GetName(),"AliPHOSSDigitizer") == 0) &&
+	   (fSDigitsBranch.CompareTo(sdigitizerBranch->GetTitle())== 0 ) )
+	  sdigitizerNotFound = kFALSE ;
       }
     }
     
+    if(!(sdigitizerNotFound && phosNotFound)){
+      cout << "AliPHOSReconstructioner error: "<< endl ;
+      cout << "       Branches ''PHOS'' or ''AliPHOSSDigitizer'' with title ``" << fSDigitsBranch.Data() << "''" << endl ;
+      cout << "       already exist in TreeS. ROOT does not allow updating/overwriting." << endl ;
+      cout << "       Specify another title for branches or use ''StartFrom()'' method" << endl ;
+      
+      //mark all tasks as inactive
+      TIter next(fTasks);
+      TTask *task;
+      while((task=(TTask*)next()))
+	task->SetActive(kFALSE) ;
+      
+      return ;
+    }
   }
+
+  if(fDigitizer->IsActive() && gAlice->TreeD()){ //Will produce Digits
+    TBranch * digitsBranch = 0;
+    TBranch * digitizerBranch = 0;
+    
+    TObjArray * branches = gAlice->TreeD()->GetListOfBranches() ;
+    Int_t ibranch;
+    Bool_t phosNotFound = kTRUE ;
+    Bool_t digitizerNotFound = kTRUE ;
+    
+    for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){            
+      if(phosNotFound){
+	digitsBranch=(TBranch *) branches->At(ibranch) ;
+	if(( strcmp("PHOS",digitsBranch->GetName())==0 ) &&
+	   (fDigitsBranch.CompareTo(digitsBranch->GetTitle())== 0 ))
+	  phosNotFound = kFALSE ;
+      }
+      if(digitizerNotFound){
+	digitizerBranch = (TBranch *) branches->At(ibranch) ;
+	if(( strcmp(digitizerBranch->GetName(),"AliPHOSDigitizer") == 0) &&
+	   (fDigitsBranch.CompareTo(digitizerBranch->GetTitle())== 0 ) )
+	  digitizerNotFound = kFALSE ;
+      }
+    }
+    
+    if(!(digitizerNotFound && phosNotFound)){
+      cout << "AliPHOSReconstructioner error: "<< endl ;
+      cout << "       Branches ''PHOS'' or ''AliPHOSDigitizer'' with title ``" << fDigitsBranch.Data() << "''" << endl ;
+      cout << "       already exist in TreeD. ROOT does not allow updating/overwriting." << endl ;
+      cout << "       Specify another title for branches or use ''StartFrom()'' method" << endl ;
+      
+      //mark all tasks as inactive
+      TIter next(fTasks);
+      TTask *task;
+      while((task=(TTask*)next()))
+	task->SetActive(kFALSE) ;
+      
+      return ;
+    }
+  }
+
+  if(fClusterizer->IsActive() && gAlice->TreeR()){ //Will produce RecPoints
+    TBranch * emcBranch = 0;
+    TBranch * cpvBranch = 0;
+    TBranch * clusterizerBranch = 0;
+    
+    TObjArray * branches = gAlice->TreeR()->GetListOfBranches() ;
+    Int_t ibranch;
+    Bool_t emcNotFound = kTRUE ;
+    Bool_t cpvNotFound = kTRUE ;  
+    Bool_t clusterizerNotFound = kTRUE ;
+    
+    for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){
+      
+      if(emcNotFound){
+	emcBranch=(TBranch *) branches->At(ibranch) ;
+	if(fRecPointBranch.CompareTo(emcBranch->GetTitle())==0 )
+	  if( strcmp(emcBranch->GetName(),"PHOSEmcRP") == 0) 
+	    emcNotFound = kFALSE ;
+      }
+      if(cpvNotFound){
+	cpvBranch=(TBranch *) branches->At(ibranch) ;
+	if(fRecPointBranch.CompareTo(cpvBranch->GetTitle())==0 )
+	  if( strcmp(cpvBranch->GetName(),"PHOSCpvRP") == 0) 
+	    cpvNotFound = kFALSE ;
+      }
+      if(clusterizerNotFound){
+	clusterizerBranch = (TBranch *) branches->At(ibranch) ;
+	if( fRecPointBranch.CompareTo(clusterizerBranch->GetTitle()) == 0)
+	  if( strcmp(clusterizerBranch->GetName(),"AliPHOSClusterizer") == 0) 
+	    clusterizerNotFound = kFALSE ;
+      }
+    }
+
+    if(!(clusterizerNotFound && emcNotFound && cpvNotFound)){
+      cout << "AliPHOSReconstructioner error: "<< endl ;
+      cout << "       Branches ''PHOSEmcRP'', ''PHOSCpvRP'' or ''AliPHOSClusterizer'' with title ``" 
+	   << fRecPointBranch.Data() << "''" << endl ;
+      cout << "       already exist in TreeR. ROOT does not allow updating/overwriting." << endl ;
+      cout << "       Specify another title for branches or use ''StartFrom()'' method" << endl ;
+      
+      //mark all tasks as inactive
+      TIter next(fTasks);
+      TTask *task;
+      while((task=(TTask*)next()))
+	task->SetActive(kFALSE) ;
+      return ;
+    }
+  }
+  
+  if(fTSMaker->IsActive() && gAlice->TreeR()){ //Produce TrackSegments
+
+    TBranch * tsMakerBranch = 0;
+    TBranch * tsBranch = 0;
+    
+    TObjArray * branches = gAlice->TreeR()->GetListOfBranches() ;
+    Int_t ibranch;
+    Bool_t tsMakerNotFound = kTRUE ;
+    Bool_t tsNotFound = kTRUE ;
+    
+    for(ibranch = 0;(ibranch <branches->GetEntries())&&(tsMakerNotFound||tsNotFound);ibranch++){
+      if(tsMakerNotFound){
+	tsMakerBranch=(TBranch *) branches->At(ibranch) ;
+	if( fTSBranch.CompareTo(tsMakerBranch->GetTitle())==0 )
+	  if( strcmp(tsMakerBranch->GetName(),"AliPHOSTrackSegmentMaker") == 0) 
+	    tsMakerNotFound = kFALSE ;
+      }
+      if(tsNotFound){
+	tsBranch=(TBranch *) branches->At(ibranch) ;
+	if( fTSBranch.CompareTo(tsBranch->GetTitle())==0 )
+	  if( strcmp(tsBranch->GetName(),"PHOSTS") == 0) 
+	    tsNotFound = kFALSE ;
+      }
+    }
+    
+    if(!(tsMakerNotFound &&tsNotFound) ){
+      cout << "AliPHOSReconstructioner error: "<< endl ;
+      cout << "       Branches ''PHOSTS'' or ''AliPHOSTrackSegmentMaker'' with title ``" 
+	   << fTSBranch.Data() << "''" << endl ;
+      cout << "       already exist in TreeR. ROOT does not allow updating/overwriting." << endl ;
+      cout << "       Specify another title for branches or use ''StartFrom()'' method" << endl ;
+      
+      //mark all tasks as inactive
+      TIter next(fTasks);
+      TTask *task;
+      while((task=(TTask*)next()))
+	task->SetActive(kFALSE) ;
+      return ;
+      
+    }
+    
+  }
+
+  if(fPID->IsActive() && gAlice->TreeR()){ //Produce RecParticles
+    TBranch * pidBranch = 0;
+    TBranch * rpBranch = 0;
+    
+    TObjArray * branches = gAlice->TreeR()->GetListOfBranches() ;
+    Int_t ibranch;
+    Bool_t pidNotFound = kTRUE ;
+    Bool_t rpNotFound = kTRUE ;
+    
+    for(ibranch = 0;(ibranch <branches->GetEntries()) && pidNotFound && rpNotFound ;ibranch++){
+      if(pidNotFound){
+	pidBranch=(TBranch *) branches->At(ibranch) ;
+	if( (strcmp(fRecPartBranch,pidBranch->GetTitle())==0 ) &&
+	    (strcmp(pidBranch->GetName(),"AliPHOSPID") == 0) )
+	  pidNotFound = kFALSE ;
+      }
+      if(rpNotFound){
+	rpBranch=(TBranch *) branches->At(ibranch) ;
+	if( (strcmp(fRecPartBranch,rpBranch->GetTitle())==0 ) &&
+	    (strcmp(rpBranch->GetName(),"PHOSRP") == 0) )
+	  rpNotFound = kFALSE ;
+      }
+    }
+    
+    if(!pidNotFound  || !rpNotFound ){
+      cout << "AliPHOSReconstructioner error: "<< endl ;
+      cout << "       Branches ''PHOSRP'' or ''AliPHOSPID'' with title ``" 
+	   << fRecPartBranch.Data() << "''" << endl ;
+      cout << "       already exist in TreeR. ROOT does not allow updating/overwriting." << endl ;
+      cout << "       Specify another title for branches." << endl ;
+      
+      //mark all tasks as inactive
+      TIter next(fTasks);
+      TTask *task;
+      while((task=(TTask*)next()))
+	task->SetActive(kFALSE) ;
+      return ;
+    }
+    
+  }
+}
+//____________________________________________________________________________
+ void AliPHOSReconstructioner::Init()
+{
+  //initiase Reconstructioner if necessary: we can not do this in default constructor
+
+  if(!fIsInitialized){
+    // Initialisation
+
+    fSDigitsBranch="" ; 
+    fSDigitizer  = new AliPHOSSDigitizer(fHeaderFileName.Data(),fSDigitsBranch.Data()) ; 
+    Add(fSDigitizer) ;
+
+    fDigitsBranch="" ; 
+    fDigitizer   = new AliPHOSDigitizer(fHeaderFileName.Data(),fDigitsBranch.Data()) ; 
+    Add(fDigitizer) ;
+
+    fRecPointBranch="" ; 
+    fClusterizer = new AliPHOSClusterizerv1(fHeaderFileName.Data(),fRecPointBranch.Data()) ; 
+    Add(fClusterizer) ;
+
+    fTSBranch="" ; 
+    fTSMaker     = new AliPHOSTrackSegmentMakerv1(fHeaderFileName.Data(),fTSBranch.Data()) ;
+    Add(fTSMaker) ;
+
+
+    fRecPartBranch="" ; 
+    fPID         = new AliPHOSPIDv1(fHeaderFileName.Data(),fRecPartBranch.Data()) ;
+    Add(fPID) ;
+    
+    fIsInitialized = kTRUE ;
+  }
+} 
+//____________________________________________________________________________
+AliPHOSReconstructioner::~AliPHOSReconstructioner()
+{
+  
+  if(fSDigitizer)
+    delete fSDigitizer ;
+  
+  if(fDigitizer)
+    delete fDigitizer ;
+  
+  if(fClusterizer)
+    delete fClusterizer ;
+  
+  if(fTSMaker)
+    delete fTSMaker ;
+  
+  if(fPID)
+    delete fPID ;
+} 
+//____________________________________________________________________________
+void AliPHOSReconstructioner::SetBranchTitle(const char* branch, const char * title){
+  //Diverge correcpoinding branch to the file "title"
+
+  if(strcmp(branch,"SDigits") == 0){ 
+    fSDigitizer->SetSDigitsBranch(title) ;
+    fDigitizer->SetSDigitsBranch(title) ;
+    fSDigitsBranch = title ;
+    return ;
+  }
+  
+  if(strcmp(branch,"Digits") == 0){ 
+    fDigitizer->SetDigitsBranch(title) ;
+    fClusterizer->SetDigitsBranch(title) ;
+    fDigitsBranch = title ;
+    return ;
+  }
+
+  if(strcmp(branch,"RecPoints") == 0){ 
+    fClusterizer->SetRecPointsBranch(title) ;
+    fTSMaker->SetRecPointsBranch(title) ;
+    fRecPointBranch = title ;
+    return ;
+  }
+
+  if(strcmp(branch,"TrackSegments") == 0){
+    fTSMaker->SetTrackSegmentsBranch(title) ;
+    fPID->SetTrackSegmentsBranch(title) ;
+    fTSBranch = title ;
+    return ;
+  }
+
+  if(strcmp(branch,"RecParticles") == 0){ 
+    fPID->SetRecParticlesBranch(title) ;
+    fRecPartBranch = title ;
+    return ;
+  }
+
+  cout << "There is no branch " << branch << "!"<< endl ;
+  cout << "Available branches `SDigits', `Digits', `RecPoints', `TrackSegments' and `RecParticles' " << endl ;
+  
+}
+//____________________________________________________________________________
+void AliPHOSReconstructioner::StartFrom(Option_t * module){
+  //in the next ExecuteTask() reconstruction starts from the module "module"
+
+  if(!fIsInitialized)
+    Init() ;  
+  TIter next(fTasks);
+  TTask *task;
+  Bool_t active = kFALSE ;
+  while((task=(TTask*)next())){ 
+    if (strcmp(module,task->GetName())==0)  
+      active = kTRUE;
+    task->SetActive(active) ;
+  }
+  if(!active){
+    cout << "There is no task " <<module<< endl ;
+    cout << "Available tasks are: " << endl ;
+    next.Reset() ;
+    while((task=(TTask*)next()))
+      cout<<"                    " << task->GetName() << endl ;
+  }
+}
+
+//____________________________________________________________________________
+void AliPHOSReconstructioner::Print(Option_t * option)const {
+  
+  cout << "-----------------AliPHOSReconstructioner---------------" << endl ;
+  cout << " Reconstruction of the header file " <<fHeaderFileName.Data() << endl ;
+  cout << " with the following modules: " << endl ;
+
+  if(fSDigitizer->IsActive()){
+    cout << "   (+)   " << fSDigitizer->GetName() << " to branch : " << fSDigitsBranch.Data() << endl ; 
+    cout << endl ;
+  }
+  if(fDigitizer->IsActive()){
+    cout << "   (+)   " << fDigitizer->GetName() << " to branch : " << fDigitsBranch.Data() << endl ;  
+    cout <<  endl ;
+  }
+  
+  if(fClusterizer->IsActive()){
+    cout << "   (+)   " <<fClusterizer->GetName() << " to branch : " <<fRecPointBranch.Data()  << endl ;  
+    cout <<  endl ;
+  }
+
+  if(fTSMaker->IsActive()){
+    cout << "   (+)   " << fTSMaker->GetName() << " to branch : " << fTSBranch.Data() << endl ;  
+    cout <<  endl ;
+  }
+
+
+  if(fPID->IsActive()){
+    cout << "   (+)   " << fPID->GetName() << " to branch : " <<fRecPartBranch.Data()  << endl ;  
+    cout <<  endl ;
+  }
+
 
 }

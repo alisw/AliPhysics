@@ -13,38 +13,47 @@
 
 // --- ROOT system ---
 
-#include "TObject.h" 
-#include "TClonesArray.h"
+#include "TTask.h" 
+class TFormula ;
+class TClonesArray ;
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 
-#include "AliPHOSTrackSegment.h"
-#include "AliPHOSRecParticle.h"
-#include "AliPHOSGeometry.h"
+class AliPHOSGeometry ;
+class AliPHOSClusterizer ;
+class AliPHOSTrackSegmentMaker ;
 
-
-
-class AliPHOSPID : public TObject {
+class AliPHOSPID : public TTask {
 
 public:
 
   AliPHOSPID() ;          // ctor            
+  AliPHOSPID(const char* headerFile,const char * tsBranch = 0) ;
   virtual ~AliPHOSPID() ; // dtor
 
-  virtual void MakeParticles(AliPHOSTrackSegment::TrackSegmentsList * trsl, 
-			     AliPHOSRecParticle::RecParticlesList * rpl) {} ; 
-  virtual void Print(const char *){} ; 
-  virtual void SetShowerProfileCuts(Float_t, Float_t, Float_t, Float_t) {} ; 
-  virtual void SetDispersionCutOff(Float_t ) {} ;   
-  virtual void SetRelativeDistanceCut(Float_t ) {};
+  virtual void Exec(Option_t * option) = 0 ;
+  virtual char * GetRecParticlesBranch()const = 0 ;
+  virtual char * GetTrackSegmentsBranch()const = 0 ;
+  virtual void Init()= 0 ;
 
- protected:
-  
-  AliPHOSGeometry      * fGeom ;           // pointer to PHOS geometry  
+  virtual void Print(Option_t * option) const = 0 ; 
+  virtual void PlotDispersionCuts()const = 0;
+  virtual Bool_t ReadTrackSegments()= 0 ;
 
+  virtual void SetIdentificationMethod(char * option = "CPV DISP" ) = 0 ;
 
+  virtual void SetShowerProfileCut(char *  formula) = 0  ; 
+  virtual void SetDispersionCut(Float_t cut) = 0  ;   
+  virtual void SetCpvtoEmcDistanceCut(Float_t cut ) = 0;
+
+  virtual void SetTrackSegmentsBranch(const char* title) = 0 ;
+  virtual void SetRecParticlesBranch (const char* title) = 0 ;
+
+  virtual void WriteRecParticles()= 0 ; 
+
+protected:
 
   ClassDef(AliPHOSPID,1)  // Particle Identifier algorithm (base class)
 
