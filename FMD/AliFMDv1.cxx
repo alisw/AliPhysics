@@ -99,6 +99,25 @@ void AliFMDv1::CreateGeometry()
    
   Int_t ifmd;
   Int_t idrotm[999];
+  /*<<<<<<< AliFMDv1.cxx
+  Float_t zFMD,par[3],ppcon[15];
+  Float_t z[5]={62.8, 75.2, -83.4, -75.2, -340.};
+  Float_t NylonTube[3]={0.2,0.6,0.45};
+  Float_t zPCB=0.12; Float_t zHoneyComb=0.5; 
+  Float_t zSi=0.03;
+ 
+  char nameFMD[5], nameSi[5], nameSector[5], nameRing[5];
+  Char_t nameHoney[5], nameHoneyIn[5], nameHoneyOut[5];
+  Char_t namePCB[5], nameCopper[5], nameChips[5], nameG10[5];
+  Char_t nameLPCB[5], nameLCopper[5], nameLChips[5], nameGL10[5];;
+  Float_t rin[5]={4.2,15.4,4.2,15.4,4.2};
+  Float_t rout[5]={17.4,28.4,17.4,28.4,17.4};
+  Float_t RinHoneyComb[5] ={ 5.15,16.4,  5.15,16.4,  5.15};
+  Float_t RoutHoneyComb[5]={20.63,34.92,22.3, 32.02,20.63};
+  Float_t zInside;
+  Float_t zCooper=0.01; Float_t zChips=0.01;
+  Float_t yNylonTube[5]={10,20,10,20,10};
+  =======*/
   Float_t zFMD,par[3],ppcon[15];
   Float_t z[5]={-62.8, -75.2, 83.4, 75.2, 340.};
   Float_t NylonTube[3]={0.2,0.6,0.45};
@@ -116,6 +135,7 @@ void AliFMDv1::CreateGeometry()
   Float_t zInside;
   Float_t zCooper=0.01; Float_t zChips=0.01;
   Float_t yNylonTube[5]={10,20,10,20,10};
+  //>>>>>>> 1.25
 
 
   AliMatrix(idrotm[901], 90, 0, 90, 90, 180, 0);
@@ -134,19 +154,19 @@ void AliFMDv1::CreateGeometry()
       ppcon[2]=4;
       
       ppcon[3]=-wideSupport;
-      ppcon[4]=rin[ifmd]+0.1;
+      ppcon[4]=rin[ifmd]-0.1;
       ppcon[5]=rout[ifmd]+0.1;
       
       ppcon[6]=ppcon[3]+2*zSi+2*zPCB+2*NylonTube[2];
-      ppcon[7]=rin[ifmd]+0.1;
+      ppcon[7]=rin[ifmd]-0.1;
       ppcon[8]=rout[ifmd]+0.1;
       
       ppcon[9]=ppcon[6];
-      ppcon[10]=RinHoneyComb[ifmd]+0.1;
+      ppcon[10]=RinHoneyComb[ifmd]-0.1;
       ppcon[11]=RoutHoneyComb[ifmd]+0.1;
 
       ppcon[12]=ppcon[9]+2*zHoneyComb+zPCB;
-      ppcon[13]=RinHoneyComb[ifmd]+0.1;
+      ppcon[13]=RinHoneyComb[ifmd]-0.1;
       ppcon[14]=RoutHoneyComb[ifmd]+0.1;
       gMC->Gsvolu(nameFMD,"PCON",idtmed[0],ppcon,15);
       if (z[ifmd] >0){  
@@ -248,11 +268,11 @@ void AliFMDv1::CreateGeometry()
            
      //Granularity
     fSectorsSi1=20;
-    fRingsSi1=256*2;
-    // fRingsSi1=3; // for drawing only
+    //    fRingsSi1=256*2;
+     fRingsSi1=3; // for drawing only
     fSectorsSi2=40;
-     fRingsSi2=128*2;
-     //  fRingsSi2=3; //for  drawing onl
+    //   fRingsSi2=128*2;
+       fRingsSi2=3; //for  drawing onl
     if(ifmd==1||ifmd==3)
       { 
         gMC->Gsdvn(nameSector, nameSi , fSectorsSi2, 2);
