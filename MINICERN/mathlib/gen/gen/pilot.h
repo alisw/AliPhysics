@@ -2,7 +2,7 @@
 *               define UNIX when LINUX defined
 
 
-#if defined(CERNLIB_LINUX)
+#if (defined(CERNLIB_LINUX)||(defined(CERNLIB_SUN))
 #ifndef CERNLIB_UNIX
 #define CERNLIB_UNIX
 #endif
