@@ -70,7 +70,6 @@
 #include "AliTOFhit.h"
 #include "AliTOFv1.h"
 #include "AliTOFv2.h"
-#include "AliTOFv2FHoles.h"
 #include "AliTOFv3.h"
 #include "AliTOFv4.h"
 #include "AliTOFv4T0.h"
