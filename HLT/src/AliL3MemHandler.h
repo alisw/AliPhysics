@@ -2,6 +2,7 @@
 #define ALIL3MEMHANDLER_H
 
 #include "AliL3RootTypes.h"
+#include "AliL3Transform.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "AliL3DigitData.h"
@@ -60,7 +61,7 @@ class AliL3MemHandler{
   virtual ~AliL3MemHandler();
   
   void Reset(){CloseBinaryInput();CloseBinaryOutput();Free();}  
-  void Init(Int_t s,Int_t p,const Int_t* row){fSlice=s;fPatch=p;fRowMin=row[0];fRowMax=row[1]; ResetROI();}
+  void Init(Int_t s,Int_t p){fSlice=s;fPatch=p;fRowMin=AliL3Transform::GetFirstRow(p);fRowMax=AliL3Transform::GetLastRow(p); ResetROI();}
 
   Bool_t SetBinaryInput(char *name);
   Bool_t SetBinaryInput(FILE *file);

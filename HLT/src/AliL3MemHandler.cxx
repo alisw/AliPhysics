@@ -86,7 +86,6 @@ AliL3MemHandler::AliL3MemHandler()
   fInBinary = 0;
   fOutBinary = 0;
   fNRandom = 0;
-  Int_t r[2]={0,0};
   Init(0,0);
   IsRandom = kFALSE;
   fDigits = 0;
@@ -94,8 +93,6 @@ AliL3MemHandler::AliL3MemHandler()
   fNGenerate = 0;
   fNUsed = 0;
   fNDigits = 0;
-  Int_t row[2] = {0,175};
-  Init(0,0);
   ResetROI();
 }
 
