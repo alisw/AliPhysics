@@ -491,9 +491,16 @@ void AliTOF::CreateMaterials()
   Float_t zsteel[4] = { 26.,24.,28.,14. };
   Float_t wsteel[4] = { .715,.18,.1,.005 };
 
-  //
   //AliMaterial(0, "Vacuum$", 1e-16, 1e-16, 1e-16, 1e16, 1e16);
-  AliMaterial( 1, "Air$",14.61,7.3,0.001205,30423.24,67500.);
+
+  // AIR
+  Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
+  Float_t zAir[4]={6.,7.,8.,18.};
+  Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
+  Float_t dAir = 1.20479E-3;
+
+  AliMixture( 1, "Air$", aAir, zAir, dAir, 4, wAir);
+
   AliMaterial( 2, "Cu $",  63.54, 29.0, 8.96, 1.43, 14.8);
   AliMaterial( 3, "C  $",  12.01,  6.0, 2.265,18.8, 74.4);
   AliMixture ( 4, "Polyethilene$", ape, zpe, dpe, npe, wpe);
