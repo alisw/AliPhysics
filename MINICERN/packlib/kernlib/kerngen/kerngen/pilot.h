@@ -39,7 +39,7 @@
 #include "kerngen/ksgi.h"
 #endif
 #if defined(CERNLIB_SUN)
-#include "ksun.h"
+#include "kerngen/ksun.h"
 #endif
 #if (defined(CERNLIB_VAXVMS))&&(!defined(CERNLIB_QMALPH))
 #include "kvax.h"
