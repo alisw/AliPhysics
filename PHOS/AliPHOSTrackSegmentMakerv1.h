@@ -20,7 +20,7 @@
 #include "AliPHOSTrackSegmentMaker.h"
 
 class AliPHOSEmcRecPoint ;
-class AliPHOSRecPoint ;
+class AliPHOSCpvRecPoint ;
 
 class  AliPHOSTrackSegmentMakerv1 : public AliPHOSTrackSegmentMaker {
 
@@ -63,7 +63,7 @@ public:
 private:
 
   const TString BranchName() const ; 
-  Float_t GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * EmcClu , AliPHOSRecPoint * Ppsd , Bool_t & TooFar ) const ; // see R0
+  Float_t GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * EmcClu , AliPHOSCpvRecPoint * Ppsd , Bool_t & TooFar ) const ; // see R0
   TVector3 PropagateToCPV(Double_t *x, Double_t *p, Int_t module) const;
   void    Init() ;
   void    InitParameters() ;

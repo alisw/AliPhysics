@@ -400,6 +400,7 @@ Float_t  AliPHOSPIDv1::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSCpvRecPoint *
   if(cpv){
     emc->GetLocalPosition(vecEmc) ;
     cpv->GetLocalPosition(vecCpv) ; 
+    
     if(emc->GetPHOSMod() == cpv->GetPHOSMod()){      
       // Correct to difference in CPV and EMC position due to different distance to center.
       // we assume, that particle moves from center

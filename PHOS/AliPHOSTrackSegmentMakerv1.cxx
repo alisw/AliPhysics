@@ -126,7 +126,7 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule()
 }
 
 //____________________________________________________________________________
-Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * emcClu,AliPHOSRecPoint * cpvClu, Bool_t &toofar) const
+Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * emcClu,AliPHOSCpvRecPoint * cpvClu, Bool_t &toofar) const
 {
   // Calculates the distance between the EMC RecPoint and the PPSD RecPoint
   // Clusters are sorted in "rows" and "columns" of width 1 cm
@@ -145,16 +145,10 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
   toofar = kTRUE ;
   if(emcClu->GetPHOSMod() == cpvClu->GetPHOSMod()){ 
 
-    Info("GetDistanceInPHOSPlane",
-	 "\n   EMC rp = (%f,%f,%f), \n   CPV rp = (%f,%f,%f) in module %d",
-	 vecEmc.X(),vecEmc.Y(),vecEmc.Z(),
-	 vecCpv.X(),vecCpv.Y(),vecCpv.Z(),
-	 cpvClu->GetPHOSMod());
     if (fESD != 0x0) {
       // Extrapolate the global track direction if any to CPV and find the closest track
       Int_t nTracks = fESD->GetNumberOfTracks();
       Int_t iClosestTrack = -1;
-      Double_t distance;
       Double_t minDistance = 1e6;
       Double_t pxyz[3], xyz[3];
       AliESDtrack *track;
@@ -193,6 +187,8 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
       // If no ESD exists, than simply find EMC-CPV distance
       distance = (vecCpv - vecEmc).Mag() ;
     }
+    Info("GetDistanceInPHOSPlane","cpv-emc distance is %f cm",
+	 distance);
     if(distance < fRcpv + 2*delta )
       toofar = kFALSE ;
   } 
@@ -214,8 +210,8 @@ TVector3  AliPHOSTrackSegmentMakerv1::PropagateToCPV(Double_t *x, Double_t *p,
   TVector3 vertex(x);
   TVector3 direction(p);
 
-  Info("PropagateToCPV","YVK: center of the module %d is (%f,%f,%f)",
-       moduleNumber,moduleCenter[0],moduleCenter[1],moduleCenter[2]);
+//   Info("PropagateToCPV","YVK: center of the module %d is (%f,%f,%f)",
+//        moduleNumber,moduleCenter[0],moduleCenter[1],moduleCenter[2]);
 
   Double_t time = (moduleCenter.Mag2() - vertex.Dot(moduleCenter)) /
     (direction.Dot(moduleCenter));
@@ -264,7 +260,7 @@ void  AliPHOSTrackSegmentMakerv1::MakeLinks()const
 
   fLinkUpArray->Clear() ;    
 
-  AliPHOSRecPoint * cpv ;
+  AliPHOSCpvRecPoint * cpv ;
   AliPHOSEmcRecPoint * emcclu ;
 
   Int_t iLinkUp  = 0 ;
@@ -277,7 +273,7 @@ void  AliPHOSTrackSegmentMakerv1::MakeLinks()const
     Int_t iCpv = 0 ;    
     for(iCpv = fCpvFirst; iCpv < fCpvLast;iCpv++ ) { 
       
-      cpv = dynamic_cast<AliPHOSRecPoint *>(cpvRecPoints->At(iCpv)) ;
+      cpv = dynamic_cast<AliPHOSCpvRecPoint *>(cpvRecPoints->At(iCpv)) ;
       Float_t r = GetDistanceInPHOSPlane(emcclu, cpv, toofar) ;
       
       if(toofar)
@@ -326,7 +322,7 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
   
   AliPHOSLink * linkUp ;
   
-  AliPHOSRecPoint * nullpointer = 0 ;
+  AliPHOSCpvRecPoint * nullpointer = 0 ;
   
   while ( (linkUp =  static_cast<AliPHOSLink *>(nextUp()) ) ){  
 
@@ -336,7 +332,7 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
        
        new ((* trackSegments)[fNTrackSegments]) 
          AliPHOSTrackSegment(dynamic_cast<AliPHOSEmcRecPoint *>(emcRecPoints->At(linkUp->GetEmc())) , 
-                           dynamic_cast<AliPHOSRecPoint *>(cpvRecPoints->At(linkUp->GetPpsd()))) ;
+			     dynamic_cast<AliPHOSCpvRecPoint *>(cpvRecPoints->At(linkUp->GetPpsd()))) ;
        (dynamic_cast<AliPHOSTrackSegment *>(trackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
        fNTrackSegments++ ;
        
