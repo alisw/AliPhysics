@@ -84,8 +84,21 @@ public:
   AliFMDhit() {}
   AliFMDhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
   virtual ~AliFMDhit() {}
-  
+  Int_t Volume();
+  Float_t Particle();
+  Float_t Edep();
+  Float_t Px();
+  Float_t Py();
+  Float_t Pz();
+  Float_t Time();
+
   ClassDef(AliFMDhit,1)  //Hits for detector FMD
 };
-
+inline Int_t AliFMDhit::Volume(){return fVolume;} 
+inline Float_t AliFMDhit::Particle(){return fParticle;} 
+inline Float_t AliFMDhit::Edep(){return fEdep;} 
+inline Float_t AliFMDhit::Px(){return fPx;} 
+inline Float_t AliFMDhit::Py(){return fPy;} 
+inline Float_t AliFMDhit::Pz(){return fPz;} 
+inline Float_t AliFMDhit::Time(){return fTime;} 
 #endif
