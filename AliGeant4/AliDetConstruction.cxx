@@ -40,7 +40,7 @@ AliDetConstruction::AliDetConstruction()
   AddDetSwitch(detSwitch); 
   detSwitch = new AliDetSwitch("CASTOR", 2, 1, 1);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("FMD",    2, 0, 0);
+  detSwitch = new AliDetSwitch("FMD",    2, 1, 0);
   AddDetSwitch(detSwitch); 
   detSwitch = new AliDetSwitch("ITS",    7, 5, 5);
   AddDetSwitch(detSwitch); 
