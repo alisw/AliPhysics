@@ -25,7 +25,7 @@ void Config()
   //
   // Set External decayer
   //AliDecayer* decayer = new AliDecayerPythia();
-  //decayer->SetForceDecay(all);
+  //decayer->SetForceDecay(kAll);
   //decayer->Init();
   //gMC->SetExternalDecayer(decayer);
 
@@ -68,7 +68,7 @@ void Config()
   // --- Specify event type to be tracked through the ALICE setup
   // --- All positions are in cm, angles in degrees, and P and E in GeV
   //AliGenHIJINGpara *gener = new AliGenHIJINGpara(84210);
-  AliGenHIJINGpara *gener = new AliGenHIJINGpara(100);
+  AliGenHIJINGpara *gener = new AliGenHIJINGpara(20000);
   gener->SetMomentumRange(0,999);
   gener->SetPhiRange(0,360);
   //  gener->SetThetaRange(0.28,179.72);
@@ -172,7 +172,7 @@ void Config()
   if(iPIPE) {
     //=================== PIPE parameters ============================
 
-    AliPIPE *PIPE  = new AliPIPEv0("PIPE","Beam Pipe");
+    AliPIPE *PIPE  = new AliPIPEvTemp("PIPE","Beam Pipe");
   }
 
 
@@ -180,16 +180,16 @@ void Config()
     //=================== ITS parameters ============================
     //
     // As the innermost detector in ALICE, the Inner Tracking System "impacts" on
-    // almost all other detectors. This involves the fact that the ITS geometry 
-    // still has several options to be followed in parallel in order to determine 
+    // almost all other detectors. This involves the fact that the ITS geometry
+    // still has several options to be followed in parallel in order to determine
     // the best set-up which minimizes the induced background. All the geometries
-    // available to date are described in the following. Read carefully the comments 
+    // available to date are described in the following. Read carefully the comments
     // and use the default version (the only one uncommented) unless you are making
     // comparisons and you know what you are doing. In this case just uncomment the
-    // ITS geometry you want to use and run Aliroot. 
+    // ITS geometry you want to use and run Aliroot.
     //
-    // Detailed geometries:
-    // ====================
+    // Detailed geometries:         
+
     //
     //
     //AliITS *ITS  = new AliITSv3("ITS","Old ITS detailed version as of the ALICE TP");
@@ -200,29 +200,57 @@ void Config()
     //
     AliITS *ITS  = new AliITSv5asymm("ITS","Updates ITS TDR detailed version with asymmetric services");
     //
+    //AliITSvPPRasymm *ITS  = new AliITSvPPRasymm("ITS","New ITS PPR detailed version with asymmetric services");
+    //ITS->SetMinorVersion(2);
+    //ITS->SetReadDet(kFALSE);
+    //ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");
+    //ITS->SetThicknessDet1(300.);   // detector thickness on layer 1 must be in the range [100,300]
+    //ITS->SetThicknessDet2(300.);   // detector thickness on layer 2 must be in the range [100,300]
+    //ITS->SetThicknessChip1(300.);  // chip thickness on layer 1 must be in the range [150,300]
+    //ITS->SetThicknessChip2(300.);  // chip thickness on layer 2 must be in the range [150,300]
+    //ITS->SetRails(1);              // 1 --> rails in ; 0 --> rails out
+    //ITS->SetCoolingFluid(1);       // 1 --> water ; 0 --> freon
     //
-    // Coarse geometries (warning: no hits are produced with these coarse geometries and they unuseful for reconstruction !):
-    // ======================================================================================================================
+    //AliITSvPPRsymm *ITS  = new AliITSvPPRsymm("ITS","New ITS PPR detailed version with symmetric services");
+    //ITS->SetMinorVersion(2);                                  
+    
+    //ITS->SetReadDet(kFALSE);
+    //ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRsymm2.det");
+    //ITS->SetThicknessDet1(300.);   // detector thickness on layer 1 must be in the range [100,300]
+    //ITS->SetThicknessDet2(300.);   // detector thickness on layer 2 must be in the range [100,300]
+    //ITS->SetThicknessChip1(300.);  // chip thickness on layer 1 must be in the range [150,300]
+    //ITS->SetThicknessChip2(300.);  // chip thickness on layer 2 must be in the range [150,300]
+    //ITS->SetRails(1);              // 1 --> rails in ; 0 --> rails out
+    //ITS->SetCoolingFluid(1);       // 1 --> water ; 0 --> freon
+    //
+    //
+    // Coarse geometries (warning: no hits are produced with these coarse geometries and they unuseful 
+    // for reconstruction !):
+    //                                                     
     //
     //
     //AliITS *ITS  = new AliITSv1("ITS","Old ITS coarse version as of the ALICE TP");
     //
-    //AliITS *ITS  = new AliITSvPPRcoarseasymm("ITS","New ITS coarse version with asymmetric services");
+    //AliITSvPPRcoarseasymm *ITS  = new AliITSvPPRcoarseasymm("ITS","New ITS coarse version with asymmetric services");
+    //ITS->SetRails(1);                // 1 --> rails in ; 0 --> rails out
+    //ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
     //
     //AliITS *ITS  = new AliITSvPPRcoarsesymm("ITS","New ITS coarse version with symmetric services");
+    //ITS->SetRails(1);                // 1 --> rails in ; 0 --> rails out
+    //ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
+    //                      
     //
     //
     // Geant3 <-> EUCLID conversion
     // ============================
     //
-    // SetEUCLID is a flag to output (=1) or not to output (=0) both geometry and 
-    // media to two ASCII files (called by default ITSgeometry.euc and 
-    // ITSgeometry.tme) in a format understandable to the CAD system EUCLID. 
+    // SetEUCLID is a flag to output (=1) or not to output (=0) both geometry and
+    // media to two ASCII files (called by default ITSgeometry.euc and
+    // ITSgeometry.tme) in a format understandable to the CAD system EUCLID.
     // The default (=0) means that you dont want to use this facility.
     //
-    ITS->SetEUCLID(0);
+    ITS->SetEUCLID(0);  
   }
-
 
 
   if(iTPC) {
@@ -260,13 +288,10 @@ void Config()
   if(iRICH) {
     //=================== RICH parameters ===========================
     AliRICH *RICH  = new AliRICHv1("RICH","normal RICH");    
-
   }
-
 
   if(iZDC) {
     //=================== ZDC parameters ============================
-
     AliZDC *ZDC  = new AliZDCv1("ZDC","normal ZDC");
   }
 
@@ -300,7 +325,7 @@ void Config()
 
   if(iMUON) {
     //=================== MUON parameters ===========================
-    AliMUON *MUON  = new AliMUONv0("MUON","normal MUON");
+    AliMUON *MUON  = new AliMUONv1("MUON","default");
   }
  
   //=================== PHOS parameters ===========================
