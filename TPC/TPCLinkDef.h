@@ -81,6 +81,7 @@
 #pragma link C++ class  AliTPCDDLRawData+;
 #pragma link C++ class  AliTPCHNode+;
 #pragma link C++ class  AliTPCHTable+;
+#pragma link C++ class  AliTPCKalmanSegment+;
 
 
 #endif
