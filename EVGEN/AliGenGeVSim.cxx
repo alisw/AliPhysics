@@ -83,6 +83,7 @@ AliGenGeVSim::AliGenGeVSim() : AliGenerator(-1) {
   //PH  InitFormula();
   for (Int_t i=0; i<4; i++)  
     fPtYFormula[i] = 0;
+  fPartTypes = 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
