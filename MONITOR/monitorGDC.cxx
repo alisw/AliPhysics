@@ -62,9 +62,9 @@ AliGDCInterruptHandler::AliGDCInterruptHandler() :
 
 
 //_____________________________________________________________________________
-int main(int /*argc*/, char** /*argv*/)
-{
 #ifdef DATE_SYS
+int main(int argc, char** argv)
+{
   // set ROOT in batch mode
   gROOT->SetBatch();   
 
@@ -201,9 +201,14 @@ int main(int /*argc*/, char** /*argv*/)
   gSystem->RemoveSignalHandler(handler);
   if (file) fclose(file);
 
-#else
-  ::Fatal("main", "this program was compiled without DATE");
-#endif
-
   return 0;
 }
+
+#else
+int main(int /*argc*/, char** /*argv*/)
+{
+  ::Fatal("main", "this program was compiled without DATE");
+
+  return 1;
+}
+#endif
