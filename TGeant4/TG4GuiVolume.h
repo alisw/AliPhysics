@@ -25,7 +25,7 @@ public:
 
 //---> Inlines :
 
-    virtual const char*   GetName() { return fkName;}
+    virtual const char*   GetName() const { return fkName;}
     virtual G4LogicalVolume* GetLogicalVolume() const;
     virtual void  SetItem(TGListTreeItem* item) {fItem = item;}
     virtual TGListTreeItem* GetItem() {return fItem;}
