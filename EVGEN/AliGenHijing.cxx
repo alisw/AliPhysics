@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/10/02 21:28:06  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.6  2000/09/11 13:23:37  morsch
 Write last seed to file (fortran lun 50) and reed back from same lun using calls to
 luget_hijing and luset_hijing.
@@ -312,8 +315,9 @@ void AliGenHijing::EvaluateCrossSections()
 	    xPart+=gb;
 	    xPartHard+=gbh;
 	}
+	if (xTot == 0.) continue;
 	
-	if ((xTot-oldvalue)/oldvalue<0.0001) break;
+	if ((xTot-oldvalue)/xTot<0.0001) break;
 	oldvalue=xTot;
 	printf("\n Total cross section (barn): %d %f %f \n",i, xb, xTot);
 	printf("\n Hard  cross section (barn): %d %f %f \n\n",i, xb, xTotHard);
