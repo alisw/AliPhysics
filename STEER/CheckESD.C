@@ -16,6 +16,7 @@
 #include "AliStack.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
+#include "AliPID.h"
 #else
 const Int_t kXiMinus = 3312;
 const Int_t kOmegaMinus = 3334;
@@ -184,15 +185,15 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
 				"#theta_{rec}-#theta_{sim} [mrad]", "N");
 
   // PID
-  Int_t partCode[AliESDtrack::kSPECIES] = 
+  Int_t partCode[AliPID::kSPECIES] = 
     {kElectron, kMuonMinus, kPiPlus, kKPlus, kProton};
-  const char* partName[AliESDtrack::kSPECIES+1] = 
+  const char* partName[AliPID::kSPECIES+1] = 
     {"electron", "muon", "pion", "kaon", "proton", "other"};
-  Double_t partFrac[AliESDtrack::kSPECIES] = 
+  Double_t partFrac[AliPID::kSPECIES] = 
     {0.01, 0.01, 0.85, 0.10, 0.05};
-  Int_t identified[AliESDtrack::kSPECIES+1][AliESDtrack::kSPECIES];
-  for (Int_t iGen = 0; iGen < AliESDtrack::kSPECIES+1; iGen++) {
-    for (Int_t iRec = 0; iRec < AliESDtrack::kSPECIES; iRec++) {
+  Int_t identified[AliPID::kSPECIES+1][AliPID::kSPECIES];
+  for (Int_t iGen = 0; iGen < AliPID::kSPECIES+1; iGen++) {
+    for (Int_t iRec = 0; iRec < AliPID::kSPECIES; iRec++) {
       identified[iGen][iRec] = 0;
     }
   }
@@ -334,14 +335,14 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
       // PID
       if ((track->GetStatus() & AliESDtrack::kESDpid) == 0) continue;
       Int_t iGen = 5;
-      for (Int_t i = 0; i < AliESDtrack::kSPECIES; i++) {
+      for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
 	if (TMath::Abs(particle->GetPdgCode()) == partCode[i]) iGen = i;
       }
-      Double_t probability[AliESDtrack::kSPECIES];
+      Double_t probability[AliPID::kSPECIES];
       track->GetESDpid(probability);
       Double_t pMax = 0;
       Int_t iRec = 0;
-      for (Int_t i = 0; i < AliESDtrack::kSPECIES; i++) {
+      for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
 	probability[i] *= partFrac[i];
 	if (probability[i] > pMax) {
 	  pMax = probability[i];
@@ -352,7 +353,7 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
       if (iGen == iRec) nIdentified++;
 
       // dE/dx and TOF
-      Double_t time[AliESDtrack::kSPECIES];
+      Double_t time[AliPID::kSPECIES];
       track->GetIntegratedTimes(time);
       if (iGen == iRec) {
 	hDEdxRight->Fill(pTrack.Mag(), track->GetTPCsignal());
@@ -514,13 +515,13 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
     }
 
     printf("%9s:", "gen\\rec");
-    for (Int_t iRec = 0; iRec < AliESDtrack::kSPECIES; iRec++) {
+    for (Int_t iRec = 0; iRec < AliPID::kSPECIES; iRec++) {
       printf("%9s", partName[iRec]);
     }
     printf("\n");
-    for (Int_t iGen = 0; iGen < AliESDtrack::kSPECIES+1; iGen++) {
+    for (Int_t iGen = 0; iGen < AliPID::kSPECIES+1; iGen++) {
       printf("%9s:", partName[iGen]);
-      for (Int_t iRec = 0; iRec < AliESDtrack::kSPECIES; iRec++) {
+      for (Int_t iRec = 0; iRec < AliPID::kSPECIES; iRec++) {
 	printf("%9d", identified[iGen][iRec]);
       }
       printf("\n");
