@@ -377,7 +377,7 @@ void AliModulesComposition::GenerateXMLGeometry() const
   // XML filename
   // according to last switched detector
   G4String detName;
-  G4int version;
+  G4int version = -1;
   for (G4int i=fDetSwitchVector.entries()-1; i>=0; i--) {
     version = fDetSwitchVector[i]->GetSwitchedVersion();
     if (version > -1) {
