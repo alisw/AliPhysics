@@ -9,13 +9,16 @@
 #pragma link C++ class AliHBTEvent+;
 #pragma link C++ class AliHBTRun+;
 #pragma link C++ class AliHBTFunction+;
+
 #pragma link C++ class AliHBTOnePairFctn+;
 #pragma link C++ class AliHBTTwoPairFctn+;
 #pragma link C++ class AliHBTOnePairFctn1D+;
 #pragma link C++ class AliHBTOnePairFctn2D+;
 #pragma link C++ class AliHBTOnePairFctn3D+;
 
+#pragma link C++ class AliHBTTwoPairFctn1D+;
 #pragma link C++ class AliHBTTwoPairFctn2D+;
+#pragma link C++ class AliHBTTwoPairFctn3D+;
 
 #pragma link C++ class AliHBTPair+;
 #pragma link C++ class AliHBTParticleCut-;
@@ -27,6 +30,10 @@
 #pragma link C++ class AliHbtBasePairCut+;
 #pragma link C++ class AliHBTQInvCut+;
 #pragma link C++ class AliHBTKtCut+;
+#pragma link C++ class AliHBTQSideCMSLCCut+;
+#pragma link C++ class AliHBTQOutCMSLCCut+;
+#pragma link C++ class AliHBTQLongCMSLCCut+;
+
 #pragma link C++ class AliHBTMomentumCut+;
 #pragma link C++ class AliHBTPtCut+;
 #pragma link C++ class AliHBTEnergyCut+;
@@ -67,6 +74,9 @@
 #pragma link C++ class AliHBTQOutResolVSQOutFctn+;
 #pragma link C++ class AliHBTQSideResolVSQSideFctn+;
 #pragma link C++ class AliHBTQLongResolVSQLongFctn+;
+
+#pragma link C++ class AliHBTTwoTrackEffFctn+;
+#pragma link C++ class AliHBTTwoTrackEffFctn3D+;
 
 //#pragma link C++ class Xqinv+;
 //#pragma link C++ class Xqout+;
