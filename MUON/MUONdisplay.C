@@ -1,14 +1,15 @@
 MUONdisplay (Int_t nevent=0) {
 // Dynamically link some shared libs
    if (gClassTable->GetID("AliRun") < 0) {
-       gSystem->Load("$ALITOP/cern.so/lib/libpdfDUMMY.so");
-       gSystem->Load("$ALITOP/cern.so/lib/libPythia.so");
-       gSystem->Load("$ROOTSYS/lib/libEG.so");       
-       gSystem->Load("$ROOTSYS/lib/libEGPythia.so");    
-       gSystem->Load("libGeant3Dummy.so");        //a dummy version of Geant3
-       gSystem->Load("PHOS/libPHOSdummy.so");     //the standard Alice classes 
-       gSystem->Load("libgalice.so");             //the standard Alice classes 
+      gROOT->LoadMacro("loadlibs.C");
+      loadlibs();
+      /*
+   } else {
+      delete gAlice;
+      gAlice = 0;
+      */
    }
+
 // Connect the Root Galice file containing Geometry, Kine and Hits
    TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
    if (!file) file = new TFile("galice.root");

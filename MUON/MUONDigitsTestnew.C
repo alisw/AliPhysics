@@ -1,3 +1,5 @@
+#include "iostream.h"
+
 void MUONdigitsTestnew (Int_t evNumber1=0,Int_t evNumber2=0) 
 {
 /////////////////////////////////////////////////////////////////////////
@@ -10,9 +12,8 @@ void MUONdigitsTestnew (Int_t evNumber1=0,Int_t evNumber2=0)
 // Dynamically link some shared libs
 
    if (gClassTable->GetID("AliRun") < 0) {
-      gSystem->Load("libGeant3Dummy.sl");        // a dummy version of Geant3
-      gSystem->Load("PHOS/libPHOSdummy.sl");     // the standard Alice classes 
-      gSystem->Load("libgalice.sl");             // the standard Alice classes 
+      gROOT->LoadMacro("loadlibs.C");
+      loadlibs();
    }
 
 // Connect the Root Galice file containing Geometry, Kine and Hits

@@ -206,7 +206,6 @@ AliMUONhit *AliMUONpoints::GetHit() const
   TClonesArray *MUONhits  = MUON->Hits();
   Int_t nhits = MUONhits->GetEntriesFast();
   if (fHitIndex < 0 || fHitIndex >= nhits) return 0;
-  printf("ftrackIndex, fHitIndex %d %d \n",fTrackIndex,fHitIndex);
   return (AliMUONhit*)MUONhits->UncheckedAt(fHitIndex);
 }
 
@@ -223,9 +222,7 @@ AliMUONdigit *AliMUONpoints::GetDigit() const
    
   AliMUON *MUON  = (AliMUON*)gAlice->GetModule("MUON");
   TClonesArray *MUONdigits  = MUON->DigitsAddress(chamber-1);
-  Int_t nent=(Int_t)gAlice->TreeD()->GetEntries();
-  gAlice->TreeD()->GetEvent(nent-2+cathode-1);
-  //gAlice->TreeD()->GetEvent(cathode);
+  gAlice->TreeD()->GetEvent(cathode);
   Int_t ndigits = MUONdigits->GetEntriesFast();
   if (fDigitIndex < 0 || fDigitIndex >= ndigits) return 0;
   return (AliMUONdigit*)MUONdigits->UncheckedAt(fDigitIndex);
@@ -287,8 +284,6 @@ static void FindCluster(AliMUONchamber *iChamber, AliMUONsegmentation *segmentat
 
   Int_t npx  = segmentation->Npx();
   Int_t npy  = segmentation->Npy();
-  printf("FindCluster - npx npy %d %d \n",npx,npy);
-
 
   // get pad coordinates and prepare the up and down steps   
   Int_t jup  =(j-npy > 0) ? j+1 : (j-npy-1)+npy;
@@ -301,8 +296,8 @@ static void FindCluster(AliMUONchamber *iChamber, AliMUONsegmentation *segmentat
   printf("FindCluster - i-npx j-npy isec0 %d %d %d \n",i-npx,j-npy,isec0);
   //  printf("FindCluster - x  y %f %f \n",x,y);
 
-  Float_t dpy  = segmentation->Dpy(isec0);
-  Float_t dpx  = segmentation->Dpx(isec0)/16;
+  Float_t dpy  = segmentation->Dpy();
+  Float_t dpx  = segmentation->Dpx()/16;
   Int_t ixx, iyy;
   Float_t absx=TMath::Abs(x);
   // iup
@@ -310,7 +305,7 @@ static void FindCluster(AliMUONchamber *iChamber, AliMUONsegmentation *segmentat
   printf(" iup: ixx iyy %d %d \n",ixx,iyy);
   Int_t jtest=TMath::Abs(iyy)-npy-1;
   if (j != jtest) {
-    //printf(" j != jtest - something's wrong %d %d \n",j,jtest);
+     printf(" j != jtest - something's wrong %d %d \n",j,jtest);
   }
   Int_t iup=(x >0) ? ixx+npx : -ixx+npx;
   // idown
@@ -377,9 +372,7 @@ void AliMUONpoints::GetCenterOfGravity()
   Float_t zpos=iChamber->ZPosition();
 
   TClonesArray *MUONdigits  = MUON->DigitsAddress(chamber-1);
-  Int_t nent=(Int_t)gAlice->TreeD()->GetEntries();
-  gAlice->TreeD()->GetEvent(nent-2+cathode-1);
-  //gAlice->TreeD()->GetEvent(cathode);
+  gAlice->TreeD()->GetEvent(cathode);
   Int_t ndigits = MUONdigits->GetEntriesFast();
   if (fDigitIndex < 0 || fDigitIndex >= ndigits) return;
 
@@ -405,7 +398,7 @@ void AliMUONpoints::GetCenterOfGravity()
    }
    c.fX /= c.fQ;
    c.fY /= c.fQ;
-   printf("GetCenterOfGravity - c.fX c.fY c.fQ c.npeaks %f %f %d %d \n",c.fX,c.fY,c.fQ,c.npeaks);
+   printf("GetCenterOfGravity - c.fX c.fY c.fQ c.npeaks%f %f %d %d \n",c.fX,c.fY,c.fQ,c.npeaks);
    /*
    c.fTracks[0]=(Int_t)(*(c.summit->fTrks))(0);
    c.fTracks[1]=(Int_t)(*(c.summit->fTrks))(1);
@@ -428,29 +421,20 @@ void AliMUONpoints::GetCenterOfGravity()
    /*
    pline=new TPolyLine3D(c.npoly);
    Int_t np=c.npoly;
-   TVector *xp=new TVector(c.npoly);
-   TVector *yp=new TVector(c.npoly);
-   TVector *zp=new TVector(c.npoly);
+   Float_t *x=new Float_t(c.npoly);
+   Float_t *y=new Float_t(c.npoly);
+   Float_t *z=new Float_t(c.npoly);
    for (int i=0;i<np;i++) {
-     (*xp)(i)=c.xpoly[i];
-     (*yp)(i)=c.ypoly[i];
-     (*zp)(i)=c.zpoly[i];
-     pline->SetPoint(i,(*xp)(i),(*yp)(i),(*zp)(i));
-     //printf("np, i, xp, yp, zp %d %d %f %f %f \n",np,i,(*xp)(i),(*yp)(i),(*zp)(i));
+     x[i]=c.xpoly[i];
+     y[i]=c.ypoly[i];
+     x[i]=c.zpoly[i];
+     pline->SetPoint(i,x[i],y[i],z[i]);
    }
    */
    pline=new TPolyLine3D(c.npoly,c.xpoly,c.ypoly,c.zpoly);
    pline->SetLineColor(kWhite);
    pline->Draw();
-   /*
-   delete xp;
-   delete yp;
-   delete zp;
-   */  
-   for (int k=0;k<c.npoly;k++) {
-     c.xpoly[k]=c.ypoly[k]=c.zpoly[k]=0;
-   }
-   c.npoly=0;
+  
 
    printf("GetCenterOfGravity -- ncls %d \n",ncls);
 

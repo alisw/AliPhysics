@@ -9,8 +9,12 @@ PACKAGE = MUON
 
 # C++ sources
 
-SRCS          = AliMUON.cxx AliMUONdisplay.cxx AliMUONpoints.cxx \
-                AliMUONsegmentv1.cxx AliMUONv0.cxx AliMUONv01.cxx
+SRCS          = AliMUONchamber.cxx AliMUONSegResV0.cxx AliMUONSegResV01.cxx \
+               AliMUONSegResV02.cxx AliMUONSegResV04.cxx AliMUONSegResV05.cxx\
+               AliMUONSegResV1.cxx AliMUON.cxx AliMUONv0.cxx \
+               AliMUONdisplay.cxx AliMUONpoints.cxx \
+               AliMUONClusterFinder.cxx  AliMUONClusterFinderv0.cxx \
+               AliMUONHitMap.cxx AliMUONTUBE.cxx
 
 # C++ Headers
 
@@ -24,7 +28,7 @@ DICTO         = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(DICT))
 
 # Fortran sources
 
-FSRCS	      = algo.F
+FSRCS	      = algo.F reco_muon.F
 
 # FORTRAN Objectrs
 

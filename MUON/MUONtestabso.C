@@ -9,15 +9,11 @@ void MUONtestabso (Int_t evNumber1=0,Int_t evNumber2=0)
 
 // Dynamically link some shared libs                    
 
-    if (gClassTable->GetID("AliRun") < 0) {
-	gSystem->Load("$ALITOP/cern.so/lib/libpdfDUMMY.so");
-	gSystem->Load("$ALITOP/cern.so/lib/libPythia.so");
-	gSystem->Load("$ROOTSYS/lib/libEG.so");       
-	gSystem->Load("$ROOTSYS/lib/libEGPythia.so");       
-	gSystem->Load("libGeant3Dummy.so");    //a dummy version of Geant3
-	gSystem->Load("PHOS/libPHOSdummy.so"); //the standard Alice classes 
-	gSystem->Load("libgalice.so");         // the standard Alice classes 
-    }
+   if (gClassTable->GetID("AliRun") < 0) {
+      gROOT->LoadMacro("loadlibs.C");
+      loadlibs();
+   }
+
 // Connect the Root Galice file containing Geometry, Kine and Hits
 
     TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
@@ -40,19 +36,23 @@ void MUONtestabso (Int_t evNumber1=0,Int_t evNumber2=0)
 	    gAlice = new AliRun("gAlice","Alice test program");
 	}
     }
+
+   printf ("I'm after gAlice \n");
     
 //  Create some histograms
 
 
    TH1F *zv = new TH1F("zv","z vertex"
-			   ,100,468.,503.);
+			   ,100,450..,506.);
    TH1F *xv = new TH1F("xv","x vertex"
-			   ,100,0.,50.);
+			   ,140,-70.,70.);
    TH1F *yv  = new TH1F("yv","y vertex"
-			   ,100,0.,50.);
+			   ,140,-70.,70.);
 
-   TH1F *ip  = new TH1F("ip","ipart"
-			   ,100,0.,50.);
+   TH1F *ip  = new TH1F("ip","geant part"
+			   ,50,0.,10.);
+   TH2F *rzv  = new TH2F("rzv","R-z vert"
+			   ,100,500.,506.,50,0.,50.);
 
    AliMUONchamber*  iChamber;
 //
@@ -95,16 +95,21 @@ void MUONtestabso (Int_t evNumber1=0,Int_t evNumber2=0)
 		TClonesArray *fPartArray = gAlice->Particles();
 		TParticle *Part;
 		Int_t ftrack = mHit->fTrack;
-		Int_t id = ((TParticle*) fPartArray->UncheckedAt(ftrack))->GetPdgCode();
-		  ip->Fill((float)ipart,(float) 1);
+		Part = (TParticle*) fPartArray->UncheckedAt(ftrack);
+		//Int_t id = ((TParticle*) fPartArray->UncheckedAt(ftrack))->GetPdgCode();
+		  ip->Fill((float)ipart);
 
-		if (ipart != 3) continue;
-		  Float_t xv = Part->Vx();      //  vertex  
-		  Float_t yv = Part->Vy();      //  vertex
-		  Float_t zv  = Part->Vz();      // z vertex 
-		  xv->Fill(xv,(float) 1);
-		  yv->Fill(yv,(float) 1);
-		  zv->Fill(zv,(float) 1);
+		if (ipart > 3) continue;
+
+		  Float_t xvert = Part->Vx();      //  vertex  
+		  Float_t yvert = Part->Vy();      //  vertex
+		  Float_t zvert  = Part->Vz();      // z vertex 
+		  xv->Fill(xvert);
+		  yv->Fill(yvert);
+		  zv->Fill(zvert);
+		  Float_t rvert=TMath::Sqrt(xvert*xvert+yvert*yvert);
+                  rzv->Fill(zvert,rvert);
+
 	       }
 
 	   }
@@ -113,7 +118,7 @@ void MUONtestabso (Int_t evNumber1=0,Int_t evNumber2=0)
 
    
 //Create a canvas, set the view range, show histograms
-   TCanvas *c1 = new TCanvas("c1","Charge and Residuals",400,10,600,700);
+   TCanvas *c1 = new TCanvas("c1","Vetices from electrons and positrons",400,10,600,700);
    pad11 = new TPad("pad11"," ",0.01,0.51,0.49,0.99);
    pad12 = new TPad("pad12"," ",0.51,0.51,0.99,0.99);
    pad13 = new TPad("pad13"," ",0.01,0.01,0.49,0.49);
@@ -146,5 +151,9 @@ void MUONtestabso (Int_t evNumber1=0,Int_t evNumber2=0)
    zv->SetFillColor(42);
    zv->SetXTitle("zvert");
    zv->Draw();
-   
+
+   TCanvas *c2 = new TCanvas("c2","R-Z vertex distribution",400,10,600,700);
+   rzv->SetXTitle("zvert");
+   rzv->SetYTitle("rvert");
+   rzv->Draw();
 }

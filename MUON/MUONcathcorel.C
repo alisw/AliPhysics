@@ -1,6 +1,6 @@
 #include "iostream.h"
 
-void MUONdigit (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal  =25) 
+void MUONcathcorel (Int_t evNumber1=0,Int_t evNumber2=9) 
 {
 /////////////////////////////////////////////////////////////////////////
 //   This macro is a small example of a ROOT macro
@@ -39,35 +39,16 @@ void MUONdigit (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal  =25)
 //
 // Event Loop
 //
-   Int_t nbgr_ev=0;
-   
    for (int nev=0; nev<= evNumber2; nev++) {
        Int_t nparticles = gAlice->GetEvent(nev);
        cout << "nev         " <<nev<<endl;
        cout << "nparticles  " <<nparticles<<endl;
        if (nev < evNumber1) continue;
        if (nparticles <= 0) return;
-
-       Int_t nbgr_ev=Int_t(nev/nsignal);
-//       printf("nbgr_ev %d\n",nbgr_ev);
-       //if (MUON) MUON->Digitise(nev,nbgr_ev,"Add"," ","galice_bgr.root");
-       if (MUON) MUON->Digitise(nev,nbgr_ev,"rien"," ","galice_bgr.root");  
-//       char hname[30];
-//       sprintf(hname,"TreeD%d",nev);
-//       file->ls();
+       MUON->CathodeCorrelation(nev);
    } // event loop 
    file->Close();
 }
-
-
-
-
-
-
-
-
-
-
 
 
 

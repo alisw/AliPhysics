@@ -5,6 +5,7 @@
 #include <TTUBE.h>
 #include <TNode.h> 
 #include <TRandom.h> 
+#include <TLorentzVector.h> 
 
 #include "AliMUONv0.h"
 #include "AliRun.h"
@@ -31,13 +32,14 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
 {
 //
 //  z-Positions of Chambers
-    const Float_t zch[7]={511., 686., 971., 1245., 1445., 1610, 1710.};
+//    const Float_t zch[7]={515., 690., 962.85, 1249., 1449., 1610, 1710.};
+    const Float_t zch[7]={515., 690., 975., 1249., 1449., 1610, 1710.};
 //
 //  inner diameter
-    const Float_t dmi[7]={ 35.,  47.,  67.,   86.,  100., 96., 101.96};
+    const Float_t dmi[7]={ 35.,  47.,  66.,   80.,  80., 96., 101.96};
 //
 //  outer diameter
-    const Float_t dma[7]={183., 245., 346.,  442.,  513., 824., 874.};
+    const Float_t dma[7]={183., 245., 316.6,  520.,  520., 824., 874.};
 //
     Int_t k;
 
@@ -56,8 +58,8 @@ AliMUONv0::AliMUONv0(const char *name, const char *title)
 	    chamber->SetZPOS(zch[i]);
 //
 	    chamber->InitGeo(zch[i]);
-	    chamber->frMin=dmi[i]/2.;
-	    chamber->frMax=dma[i]/2.;
+	    chamber->SetRInner(dmi[i]/2);
+	    chamber->SetROuter(dma[i]/2);
 //
 	} // Chamber j in 
     }     // Station i
@@ -76,23 +78,30 @@ void AliMUONv0::Trigger(Float_t (*x)[4], Float_t (*y)[4], Int_t& iflag)
 //___________________________________________
 void AliMUONv0::CreateGeometry()
 {
-    Int_t *idtmed = fIdtmed->GetArray()-1099;
+  Int_t *idtmed = fIdtmed->GetArray()-1099;
 //
 //   Note: all chambers have the same structure, which could be 
 //   easily parameterised. This was intentionally not done in order
 //   to give a starting point for the implementation of the actual 
 //   design of each station. 
-//
+
 //   Distance between Stations
-     const Float_t dstation = 8.;
 //
      Float_t bpar[3];
      Float_t tpar[3];
-     Float_t tspar[5], pgpar[10];
+     Float_t pgpar[10];
      Float_t zpos1, zpos2, zfpos;
-     Float_t dframep=3.;
+     Float_t dframep=3.; // Value for station 3 should be 6 ...
+     Float_t dframep1=3.;
+     Bool_t frames=true;
+     
+     
      Float_t dframez=0.9;
-     Float_t dr, rMin;
+     Float_t dr;
+     Float_t dstation[5]={8., 8., 24.3, 8., 8.};
+     //     Float_t dstation[5]={20., 20., 24.3, 20., 20.};
+     //     Float_t dstation[5]={20., 100., 100., 100., 100.};
+
 //
 //   Rotation matrices in the x-y plane  
      Int_t idrotm[1199];
@@ -109,24 +118,34 @@ void AliMUONv0::CreateGeometry()
 
 //
 //   pointer to the current chamber
+//   pointer to the current chamber
+     Int_t idAlu1=idtmed[1103];
+     Int_t idAlu2=idtmed[1104];
+//     Int_t idAlu1=idtmed[1100];
+//     Int_t idAlu2=idtmed[1100];
+     Int_t idAir=idtmed[1100];
+     Int_t idGas=idtmed[1105];
+     
+
      AliMUONchamber *iChamber;
 //********************************************************************
 //                            Station 1                             **
 //********************************************************************
 //  CONCENTRIC
      iChamber=(AliMUONchamber*) (*fChambers)[0];
-     zpos1=iChamber->ZPosition()-dstation/2; 
-     zpos2=zpos1+dstation; 
+     zpos1=iChamber->ZPosition()-dstation[0]/2; 
+     zpos2=zpos1+dstation[0]; 
      zfpos=-(iChamber->fdGas+dframez)/2;
      
 //
 //   Mother volume
-     tpar[0] = iChamber->frMin-dframep; 
-     tpar[1] = (iChamber->frMax+dframep)/TMath::Cos(phi);
-     tpar[2] = dstation/2;
+     tpar[0] = iChamber->RInner()-dframep1; 
+     tpar[1] = (iChamber->ROuter()+dframep1)/TMath::Cos(phi);
+     //tpar[2] = dstation[0]/2;
+     tpar[2] = dstation[0]/4;
 
-     gMC->Gsvolu("C01M", "TUBE", idtmed[1100], tpar, 3);
-     gMC->Gsvolu("C02M", "TUBE", idtmed[1100], tpar, 3);
+     gMC->Gsvolu("C01M", "TUBE", idAir, tpar, 3);
+     gMC->Gsvolu("C02M", "TUBE", idAir, tpar, 3);
      gMC->Gspos("C01M", 1, "ALIC", 0., 0., zpos1 , 0, "ONLY");
      gMC->Gspos("C02M", 1, "ALIC", 0., 0., zpos2 , 0, "ONLY");
 // Aluminium frames
@@ -136,24 +155,24 @@ void AliMUONv0::CreateGeometry()
      pgpar[2] = 12.;
      pgpar[3] =   2;
      pgpar[4] = -dframez/2;
-     pgpar[5] = iChamber->frMax;
-     pgpar[6] = pgpar[5]+dframep;
+     pgpar[5] = iChamber->ROuter();
+     pgpar[6] = pgpar[5]+dframep1;
      pgpar[7] = +dframez/2;
      pgpar[8] = pgpar[5];
      pgpar[9] = pgpar[6];
-     gMC->Gsvolu("C01O", "PGON", idtmed[1103], pgpar, 10);
-     gMC->Gsvolu("C02O", "PGON", idtmed[1103], pgpar, 10);
+     gMC->Gsvolu("C01O", "PGON", idAlu1, pgpar, 10);
+     gMC->Gsvolu("C02O", "PGON", idAlu1, pgpar, 10);
      gMC->Gspos("C01O",1,"C01M", 0.,0.,-zfpos,  0,"ONLY");
      gMC->Gspos("C01O",2,"C01M", 0.,0.,+zfpos,  0,"ONLY");
      gMC->Gspos("C02O",1,"C02M", 0.,0.,-zfpos,  0,"ONLY");
      gMC->Gspos("C02O",2,"C02M", 0.,0.,+zfpos,  0,"ONLY");
 //
 // Inner frame
-     tpar[0]= iChamber->frMin-dframep;
-     tpar[1]= iChamber->frMin;
+     tpar[0]= iChamber->RInner()-dframep1;
+     tpar[1]= iChamber->RInner();
      tpar[2]= dframez/2;
-     gMC->Gsvolu("C01I", "TUBE", idtmed[1103], tpar, 3);
-     gMC->Gsvolu("C02I", "TUBE", idtmed[1103], tpar, 3);
+     gMC->Gsvolu("C01I", "TUBE", idAlu1, tpar, 3);
+     gMC->Gsvolu("C02I", "TUBE", idAlu1, tpar, 3);
 
      gMC->Gspos("C01I",1,"C01M", 0.,0.,-zfpos,  0,"ONLY");
      gMC->Gspos("C01I",2,"C01M", 0.,0.,+zfpos,  0,"ONLY");
@@ -161,107 +180,114 @@ void AliMUONv0::CreateGeometry()
      gMC->Gspos("C02I",2,"C02M", 0.,0.,+zfpos,  0,"ONLY");
 //
 // Frame Crosses
-     bpar[0] = (iChamber->frMax - iChamber->frMin)/2;
-     bpar[1] = dframep/2;
+     if (frames) {
+
+     bpar[0] = (iChamber->ROuter() - iChamber->RInner())/2;
+     bpar[1] = dframep1/2;
      bpar[2] = dframez/2;
-     gMC->Gsvolu("C01B", "BOX", idtmed[1103], bpar, 3);
-     gMC->Gsvolu("C02B", "BOX", idtmed[1103], bpar, 3);
+     gMC->Gsvolu("C01B", "BOX", idAlu1, bpar, 3);
+     gMC->Gsvolu("C02B", "BOX", idAlu1, bpar, 3);
 
-     gMC->Gspos("C01B",1,"C01M", +iChamber->frMin+bpar[0] , 0,-zfpos, 
+     gMC->Gspos("C01B",1,"C01M", +iChamber->RInner()+bpar[0] , 0,-zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C01B",2,"C01M", -iChamber->frMin-bpar[0] , 0,-zfpos, 
+     gMC->Gspos("C01B",2,"C01M", -iChamber->RInner()-bpar[0] , 0,-zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C01B",3,"C01M", 0, +iChamber->frMin+bpar[0] ,-zfpos, 
+     gMC->Gspos("C01B",3,"C01M", 0, +iChamber->RInner()+bpar[0] ,-zfpos, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C01B",4,"C01M", 0, -iChamber->frMin-bpar[0] ,-zfpos, 
+     gMC->Gspos("C01B",4,"C01M", 0, -iChamber->RInner()-bpar[0] ,-zfpos, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C01B",5,"C01M", +iChamber->frMin+bpar[0] , 0,+zfpos, 
+     gMC->Gspos("C01B",5,"C01M", +iChamber->RInner()+bpar[0] , 0,+zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C01B",6,"C01M", -iChamber->frMin-bpar[0] , 0,+zfpos, 
+     gMC->Gspos("C01B",6,"C01M", -iChamber->RInner()-bpar[0] , 0,+zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C01B",7,"C01M", 0, +iChamber->frMin+bpar[0] ,+zfpos, 
+     gMC->Gspos("C01B",7,"C01M", 0, +iChamber->RInner()+bpar[0] ,+zfpos, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C01B",8,"C01M", 0, -iChamber->frMin-bpar[0] ,+zfpos, 
-idrotm[1101],"ONLY");
-
-     gMC->Gspos("C02B",1,"C02M", +iChamber->frMin+bpar[0] , 0,-zfpos, 
-idrotm[1100],"ONLY");
-     gMC->Gspos("C02B",2,"C02M", -iChamber->frMin-bpar[0] , 0,-zfpos, 
-idrotm[1100],"ONLY");
-     gMC->Gspos("C02B",3,"C02M", 0, +iChamber->frMin+bpar[0] ,-zfpos, 
-idrotm[1101],"ONLY");
-     gMC->Gspos("C02B",4,"C02M", 0, -iChamber->frMin-bpar[0] ,-zfpos, 
-idrotm[1101],"ONLY");
-     gMC->Gspos("C02B",5,"C02M", +iChamber->frMin+bpar[0] , 0,+zfpos, 
-idrotm[1100],"ONLY");
-     gMC->Gspos("C02B",6,"C02M", -iChamber->frMin-bpar[0] , 0,+zfpos, 
-idrotm[1100],"ONLY");
-     gMC->Gspos("C02B",7,"C02M", 0, +iChamber->frMin+bpar[0] ,+zfpos, 
-idrotm[1101],"ONLY");
-     gMC->Gspos("C02B",8,"C02M", 0, -iChamber->frMin-bpar[0] ,+zfpos, 
+     gMC->Gspos("C01B",8,"C01M", 0, -iChamber->RInner()-bpar[0] ,+zfpos, 
 idrotm[1101],"ONLY");
 
+     gMC->Gspos("C02B",1,"C02M", +iChamber->RInner()+bpar[0] , 0,-zfpos, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C02B",2,"C02M", -iChamber->RInner()-bpar[0] , 0,-zfpos, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C02B",3,"C02M", 0, +iChamber->RInner()+bpar[0] ,-zfpos, 
+idrotm[1101],"ONLY");
+     gMC->Gspos("C02B",4,"C02M", 0, -iChamber->RInner()-bpar[0] ,-zfpos, 
+idrotm[1101],"ONLY");
+     gMC->Gspos("C02B",5,"C02M", +iChamber->RInner()+bpar[0] , 0,+zfpos, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C02B",6,"C02M", -iChamber->RInner()-bpar[0] , 0,+zfpos, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C02B",7,"C02M", 0, +iChamber->RInner()+bpar[0] ,+zfpos, 
+idrotm[1101],"ONLY");
+     gMC->Gspos("C02B",8,"C02M", 0, -iChamber->RInner()-bpar[0] ,+zfpos, 
+idrotm[1101],"ONLY");
+     }
 //
 //   Chamber Material represented by Alu sheet
-     tpar[0]= iChamber->frMin+dframep*2;
-     tpar[1]= iChamber->frMax-dframep*2;
+     tpar[0]= iChamber->RInner();
+     tpar[1]= iChamber->ROuter();
      tpar[2] = (iChamber->fdGas+iChamber->fdAlu)/2;
-     gMC->Gsvolu("C01A", "TUBE", idtmed[1103], tpar, 3);
-     gMC->Gsvolu("C02A", "TUBE", idtmed[1103], tpar, 3);
+     gMC->Gsvolu("C01A", "TUBE",  idAlu2, tpar, 3);
+     gMC->Gsvolu("C02A", "TUBE",idAlu2, tpar, 3);
      gMC->Gspos("C01A", 1, "C01M", 0., 0., 0.,  0, "ONLY");
      gMC->Gspos("C02A", 1, "C02M", 0., 0., 0.,  0, "ONLY");
 //     
 //   Sensitive volumes
      // tpar[2] = iChamber->fdGas;
      tpar[2] = iChamber->fdGas/2;
-     gMC->Gsvolu("C01G", "TUBE", idtmed[1105], tpar, 3);
-     gMC->Gsvolu("C02G", "TUBE", idtmed[1105], tpar, 3);
+     gMC->Gsvolu("C01G", "TUBE", idtmed[1108], tpar, 3);
+     gMC->Gsvolu("C02G", "TUBE", idtmed[1108], tpar, 3);
      gMC->Gspos("C01G", 1, "C01A", 0., 0., 0.,  0, "ONLY");
      gMC->Gspos("C02G", 1, "C02A", 0., 0., 0.,  0, "ONLY");
 //
 // Frame Crosses to be placed inside gas 
-     dr = (iChamber->frMax - iChamber->frMin);
-     bpar[0] = TMath::Sqrt(dr*dr-dframep*dframep/4)/2;
-     bpar[1] = dframep/2;
+     if (frames) {
+
+     dr = (iChamber->ROuter() - iChamber->RInner());
+     bpar[0] = TMath::Sqrt(dr*dr-dframep1*dframep1/4)/2;
+     bpar[1] = dframep1/2;
      bpar[2] = iChamber->fdGas/2;
-     gMC->Gsvolu("C01F", "BOX", idtmed[1103], bpar, 3);
-     gMC->Gsvolu("C02F", "BOX", idtmed[1103], bpar, 3);
+     gMC->Gsvolu("C01F", "BOX", idAlu1, bpar, 3);
+     gMC->Gsvolu("C02F", "BOX", idAlu1, bpar, 3);
 
-     gMC->Gspos("C01F",1,"C01G", +iChamber->frMin+bpar[0] , 0, 0, 
+     gMC->Gspos("C01F",1,"C01G", +iChamber->RInner()+bpar[0] , 0, 0, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C01F",2,"C01G", -iChamber->frMin-bpar[0] , 0, 0, 
+     gMC->Gspos("C01F",2,"C01G", -iChamber->RInner()-bpar[0] , 0, 0, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C01F",3,"C01G", 0, +iChamber->frMin+bpar[0] , 0, 
+     gMC->Gspos("C01F",3,"C01G", 0, +iChamber->RInner()+bpar[0] , 0, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C01F",4,"C01G", 0, -iChamber->frMin-bpar[0] , 0, 
+     gMC->Gspos("C01F",4,"C01G", 0, -iChamber->RInner()-bpar[0] , 0, 
 idrotm[1101],"ONLY");
 
-     gMC->Gspos("C02F",1,"C02G", +iChamber->frMin+bpar[0] , 0, 0, 
+     gMC->Gspos("C02F",1,"C02G", +iChamber->RInner()+bpar[0] , 0, 0, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C02F",2,"C02G", -iChamber->frMin-bpar[0] , 0, 0, 
+     gMC->Gspos("C02F",2,"C02G", -iChamber->RInner()-bpar[0] , 0, 0, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C02F",3,"C02G", 0, +iChamber->frMin+bpar[0] , 0, 
+     gMC->Gspos("C02F",3,"C02G", 0, +iChamber->RInner()+bpar[0] , 0, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C02F",4,"C02G", 0, -iChamber->frMin-bpar[0] , 0, 
-idrotm[1101],"ONLY");
+     gMC->Gspos("C02F",4,"C02G", 0, -iChamber->RInner()-bpar[0] , 0, 
+		idrotm[1101],"ONLY");
+     }
+     
 //
 //
 //********************************************************************
 //                            Station 2                             **
 //********************************************************************
      iChamber=(AliMUONchamber*) (*fChambers)[2];
-     zpos1=iChamber->ZPosition()-dstation/2; 
-     zpos2=zpos1+dstation; 
+     zpos1=iChamber->ZPosition()-dstation[1]/2; 
+     zpos2=zpos1+dstation[1]; 
      zfpos=-(iChamber->fdGas+dframez)/2;
      
 //
 //   Mother volume
-     tpar[0] = iChamber->frMin-dframep; 
-     tpar[1] = (iChamber->frMax+dframep)/TMath::Cos(phi);
-     tpar[2] = dstation/2;
+     tpar[0] = iChamber->RInner()-dframep; 
+     tpar[1] = (iChamber->ROuter()+dframep)/TMath::Cos(phi);
+     //tpar[2] = dstation[1]/2;
+     tpar[2] = dstation[1]/4;
 
-     gMC->Gsvolu("C03M", "TUBE", idtmed[1100], tpar, 3);
-     gMC->Gsvolu("C04M", "TUBE", idtmed[1100], tpar, 3);
+     gMC->Gsvolu("C03M", "TUBE", idAir, tpar, 3);
+     gMC->Gsvolu("C04M", "TUBE", idAir, tpar, 3);
      gMC->Gspos("C03M", 1, "ALIC", 0., 0., zpos1 , 0, "ONLY");
      gMC->Gspos("C04M", 1, "ALIC", 0., 0., zpos2 , 0, "ONLY");
 // Aluminium frames
@@ -271,24 +297,24 @@ idrotm[1101],"ONLY");
      pgpar[2] = 12.;
      pgpar[3] =   2;
      pgpar[4] = -dframez/2;
-     pgpar[5] = iChamber->frMax;
+     pgpar[5] = iChamber->ROuter();
      pgpar[6] = pgpar[5]+dframep;
      pgpar[7] = +dframez/2;
      pgpar[8] = pgpar[5];
      pgpar[9] = pgpar[6];
-     gMC->Gsvolu("C03O", "PGON", idtmed[1103], pgpar, 10);
-     gMC->Gsvolu("C04O", "PGON", idtmed[1103], pgpar, 10);
+     gMC->Gsvolu("C03O", "PGON", idAlu1, pgpar, 10);
+     gMC->Gsvolu("C04O", "PGON", idAlu1, pgpar, 10);
      gMC->Gspos("C03O",1,"C03M", 0.,0.,-zfpos,  0,"ONLY");
      gMC->Gspos("C03O",2,"C03M", 0.,0.,+zfpos,  0,"ONLY");
      gMC->Gspos("C04O",1,"C04M", 0.,0.,-zfpos,  0,"ONLY");
      gMC->Gspos("C04O",2,"C04M", 0.,0.,+zfpos,  0,"ONLY");
 //
 // Inner frame
-     tpar[0]= iChamber->frMin-dframep;
-     tpar[1]= iChamber->frMin;
+     tpar[0]= iChamber->RInner()-dframep;
+     tpar[1]= iChamber->RInner();
      tpar[2]= dframez/2;
-     gMC->Gsvolu("C03I", "TUBE", idtmed[1103], tpar, 3);
-     gMC->Gsvolu("C04I", "TUBE", idtmed[1103], tpar, 3);
+     gMC->Gsvolu("C03I", "TUBE", idAlu1, tpar, 3);
+     gMC->Gsvolu("C04I", "TUBE", idAlu1, tpar, 3);
 
      gMC->Gspos("C03I",1,"C03M", 0.,0.,-zfpos,  0,"ONLY");
      gMC->Gspos("C03I",2,"C03M", 0.,0.,+zfpos,  0,"ONLY");
@@ -296,90 +322,97 @@ idrotm[1101],"ONLY");
      gMC->Gspos("C04I",2,"C04M", 0.,0.,+zfpos,  0,"ONLY");
 //
 // Frame Crosses
-     bpar[0] = (iChamber->frMax - iChamber->frMin)/2;
+     if (frames) {
+
+     bpar[0] = (iChamber->ROuter() - iChamber->RInner())/2;
      bpar[1] = dframep/2;
      bpar[2] = dframez/2;
-     gMC->Gsvolu("C03B", "BOX", idtmed[1103], bpar, 3);
-     gMC->Gsvolu("C04B", "BOX", idtmed[1103], bpar, 3);
+     gMC->Gsvolu("C03B", "BOX", idAlu1, bpar, 3);
+     gMC->Gsvolu("C04B", "BOX", idAlu1, bpar, 3);
 
-     gMC->Gspos("C03B",1,"C03M", +iChamber->frMin+bpar[0] , 0,-zfpos, 
+     gMC->Gspos("C03B",1,"C03M", +iChamber->RInner()+bpar[0] , 0,-zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C03B",2,"C03M", -iChamber->frMin-bpar[0] , 0,-zfpos, 
+     gMC->Gspos("C03B",2,"C03M", -iChamber->RInner()-bpar[0] , 0,-zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C03B",3,"C03M", 0, +iChamber->frMin+bpar[0] ,-zfpos, 
+     gMC->Gspos("C03B",3,"C03M", 0, +iChamber->RInner()+bpar[0] ,-zfpos, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C03B",4,"C03M", 0, -iChamber->frMin-bpar[0] ,-zfpos, 
+     gMC->Gspos("C03B",4,"C03M", 0, -iChamber->RInner()-bpar[0] ,-zfpos, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C03B",5,"C03M", +iChamber->frMin+bpar[0] , 0,+zfpos, 
+     gMC->Gspos("C03B",5,"C03M", +iChamber->RInner()+bpar[0] , 0,+zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C03B",6,"C03M", -iChamber->frMin-bpar[0] , 0,+zfpos, 
+     gMC->Gspos("C03B",6,"C03M", -iChamber->RInner()-bpar[0] , 0,+zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C03B",7,"C03M", 0, +iChamber->frMin+bpar[0] ,+zfpos, 
+     gMC->Gspos("C03B",7,"C03M", 0, +iChamber->RInner()+bpar[0] ,+zfpos, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C03B",8,"C03M", 0, -iChamber->frMin-bpar[0] ,+zfpos, 
-idrotm[1101],"ONLY");
-
-     gMC->Gspos("C04B",1,"C04M", +iChamber->frMin+bpar[0] , 0,-zfpos, 
-idrotm[1100],"ONLY");
-     gMC->Gspos("C04B",2,"C04M", -iChamber->frMin-bpar[0] , 0,-zfpos, 
-idrotm[1100],"ONLY");
-     gMC->Gspos("C04B",3,"C04M", 0, +iChamber->frMin+bpar[0] ,-zfpos, 
-idrotm[1101],"ONLY");
-     gMC->Gspos("C04B",4,"C04M", 0, -iChamber->frMin-bpar[0] ,-zfpos, 
-idrotm[1101],"ONLY");
-     gMC->Gspos("C04B",5,"C04M", +iChamber->frMin+bpar[0] , 0,+zfpos, 
-idrotm[1100],"ONLY");
-     gMC->Gspos("C04B",6,"C04M", -iChamber->frMin-bpar[0] , 0,+zfpos, 
-idrotm[1100],"ONLY");
-     gMC->Gspos("C04B",7,"C04M", 0, +iChamber->frMin+bpar[0] ,+zfpos, 
-idrotm[1101],"ONLY");
-     gMC->Gspos("C04B",8,"C04M", 0, -iChamber->frMin-bpar[0] ,+zfpos, 
+     gMC->Gspos("C03B",8,"C03M", 0, -iChamber->RInner()-bpar[0] ,+zfpos, 
 idrotm[1101],"ONLY");
 
+     gMC->Gspos("C04B",1,"C04M", +iChamber->RInner()+bpar[0] , 0,-zfpos, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C04B",2,"C04M", -iChamber->RInner()-bpar[0] , 0,-zfpos, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C04B",3,"C04M", 0, +iChamber->RInner()+bpar[0] ,-zfpos, 
+idrotm[1101],"ONLY");
+     gMC->Gspos("C04B",4,"C04M", 0, -iChamber->RInner()-bpar[0] ,-zfpos, 
+idrotm[1101],"ONLY");
+     gMC->Gspos("C04B",5,"C04M", +iChamber->RInner()+bpar[0] , 0,+zfpos, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C04B",6,"C04M", -iChamber->RInner()-bpar[0] , 0,+zfpos, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C04B",7,"C04M", 0, +iChamber->RInner()+bpar[0] ,+zfpos, 
+idrotm[1101],"ONLY");
+     gMC->Gspos("C04B",8,"C04M", 0, -iChamber->RInner()-bpar[0] ,+zfpos, 
+idrotm[1101],"ONLY");
+     }
 //
 //   Chamber Material represented by Alu sheet
-     tpar[0]= iChamber->frMin+dframep*2;
-     tpar[1]= iChamber->frMax-dframep*2;
+     tpar[0]= iChamber->RInner();
+     tpar[1]= iChamber->ROuter();
      tpar[2] = (iChamber->fdGas+iChamber->fdAlu)/2;
-     gMC->Gsvolu("C03A", "TUBE", idtmed[1103], tpar, 3);
-     gMC->Gsvolu("C04A", "TUBE", idtmed[1103], tpar, 3);
+     gMC->Gsvolu("C03A", "TUBE", idAlu2, tpar, 3);
+     gMC->Gsvolu("C04A", "TUBE", idAlu2, tpar, 3);
      gMC->Gspos("C03A", 1, "C03M", 0., 0., 0.,  0, "ONLY");
      gMC->Gspos("C04A", 1, "C04M", 0., 0., 0.,  0, "ONLY");
 //     
 //   Sensitive volumes
      // tpar[2] = iChamber->fdGas;
      tpar[2] = iChamber->fdGas/2;
-     gMC->Gsvolu("C03G", "TUBE", idtmed[1105], tpar, 3);
-     gMC->Gsvolu("C04G", "TUBE", idtmed[1105], tpar, 3);
+     gMC->Gsvolu("C03G", "TUBE", idGas, tpar, 3);
+     gMC->Gsvolu("C04G", "TUBE", idGas, tpar, 3);
      gMC->Gspos("C03G", 1, "C03A", 0., 0., 0.,  0, "ONLY");
      gMC->Gspos("C04G", 1, "C04A", 0., 0., 0.,  0, "ONLY");
+
+     if (frames) {
 //
 // Frame Crosses to be placed inside gas 
-     dr = (iChamber->frMax - iChamber->frMin);
+     dr = (iChamber->ROuter() - iChamber->RInner());
      bpar[0] = TMath::Sqrt(dr*dr-dframep*dframep/4)/2;
      bpar[1] = dframep/2;
      bpar[2] = iChamber->fdGas/2;
-     gMC->Gsvolu("C03F", "BOX", idtmed[1103], bpar, 3);
-     gMC->Gsvolu("C04F", "BOX", idtmed[1103], bpar, 3);
+     gMC->Gsvolu("C03F", "BOX", idAlu1, bpar, 3);
+     gMC->Gsvolu("C04F", "BOX", idAlu1, bpar, 3);
 
-     gMC->Gspos("C03F",1,"C03G", +iChamber->frMin+bpar[0] , 0, 0, 
+     gMC->Gspos("C03F",1,"C03G", +iChamber->RInner()+bpar[0] , 0, 0, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C03F",2,"C03G", -iChamber->frMin-bpar[0] , 0, 0, 
+     gMC->Gspos("C03F",2,"C03G", -iChamber->RInner()-bpar[0] , 0, 0, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C03F",3,"C03G", 0, +iChamber->frMin+bpar[0] , 0, 
+     gMC->Gspos("C03F",3,"C03G", 0, +iChamber->RInner()+bpar[0] , 0, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C03F",4,"C03G", 0, -iChamber->frMin-bpar[0] , 0, 
-idrotm[1101],"ONLY");
-
-     gMC->Gspos("C04F",1,"C04G", +iChamber->frMin+bpar[0] , 0, 0, 
-idrotm[1100],"ONLY");
-     gMC->Gspos("C04F",2,"C04G", -iChamber->frMin-bpar[0] , 0, 0, 
-idrotm[1100],"ONLY");
-     gMC->Gspos("C04F",3,"C04G", 0, +iChamber->frMin+bpar[0] , 0, 
-idrotm[1101],"ONLY");
-     gMC->Gspos("C04F",4,"C04G", 0, -iChamber->frMin-bpar[0] , 0, 
+     gMC->Gspos("C03F",4,"C03G", 0, -iChamber->RInner()-bpar[0] , 0, 
 idrotm[1101],"ONLY");
 
+     gMC->Gspos("C04F",1,"C04G", +iChamber->RInner()+bpar[0] , 0, 0, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C04F",2,"C04G", -iChamber->RInner()-bpar[0] , 0, 0, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C04F",3,"C04G", 0, +iChamber->RInner()+bpar[0] , 0, 
+idrotm[1101],"ONLY");
+     gMC->Gspos("C04F",4,"C04G", 0, -iChamber->RInner()-bpar[0] , 0, 
+		idrotm[1101],"ONLY");
+     }
+     
+
+#ifdef FUTURE
 //********************************************************************
 //                            Station 3                             **
 //********************************************************************
@@ -387,27 +420,28 @@ idrotm[1101],"ONLY");
      iChamber=(AliMUONchamber*) (*fChambers)[4];
      zpos1=iChamber->ZPosition(); // 975-13.75
      zpos2=zpos1 // +dstation;
-                    +27.5;
+                    +24.3;
 //
 //   Mother volume
-     tpar[0] = iChamber->frMin; 
-     tpar[1]= TMath::Sqrt(iChamber->frMax*iChamber->frMax + dframep*dframep) ;
+     tpar[0] = iChamber->RInner()-dframep; 
+     tpar[1]= TMath::Sqrt((iChamber->ROuter()+dframep)*(iChamber->ROuter()+dframep) + dframep*dframep) ;
+     
      tpar[2] = // 3.; 
             5.325*2;
-     gMC->Gsvolu("C05M", "TUBE", idtmed[1100], tpar, 3);
-     gMC->Gsvolu("C06M", "TUBE", idtmed[1100], tpar, 3);
+     gMC->Gsvolu("C05M", "TUBE", idAir, tpar, 3);
+     gMC->Gsvolu("C06M", "TUBE", idAir, tpar, 3);
      gMC->Gspos("C05M", 1, "ALIC", 0., 0., zpos1 , 0, "ONLY");
      gMC->Gspos("C06M", 1, "ALIC", 0., 0., zpos2 , 0, "ONLY");
 //
 //   Mother volume for one quadrant
-     tspar[0]= iChamber->frMin;
-     tspar[1]= TMath::Sqrt(iChamber->frMax*iChamber->frMax + dframep*dframep) ;
+     tspar[0]= tpar[0];
+     tspar[1]= tpar[1];
      tspar[2]= // dframez; 
                  5.325;
-     tspar[3] = 0.-TMath::ATan2(dframep,iChamber->frMin)*180/kPI;
-     tspar[4] = 90.+TMath::ATan2(dframep,iChamber->frMin)*180/kPI;
-     gMC->Gsvolu("C05Q", "TUBS", idtmed[1100], tspar, 5);
-     gMC->Gsvolu("C06Q", "TUBS", idtmed[1100], tspar, 5);
+     tspar[3] = 0.-TMath::ATan2(dframep/2.,iChamber->RInner()-dframep)*180/kPI;
+     tspar[4] = 90.+TMath::ATan2(dframep/2,iChamber->RInner()-dframep)*180/kPI;
+     gMC->Gsvolu("C05Q", "TUBS", idAir, tspar, 5);
+     gMC->Gsvolu("C06Q", "TUBS", idAir, tspar, 5);
 //   Position the four quadrants
      gMC->Gspos("C05Q",1,"C05M", 0., 0., 5.325, idrotm[1100], "ONLY");
      gMC->Gspos("C05Q",2,"C05M", 0., 0.,-5.325, idrotm[1101], "ONLY");
@@ -420,43 +454,43 @@ idrotm[1101],"ONLY");
      gMC->Gspos("C06Q",4,"C06M", 0., 0.,-5.325, idrotm[1103], "ONLY");
 // Aluminium frames
 // Outer frame
-     tspar[0]= iChamber->frMax-dframep*2;
-     tspar[1]= iChamber->frMax;
+     tspar[0]= iChamber->ROuter();
+     tspar[1]= iChamber->ROuter()+dframep;
      tspar[3] = 0.;
      tspar[4] = 90.;
-     gMC->Gsvolu("C05O", "TUBS", idtmed[1100], tspar, 5);
-     gMC->Gsvolu("C06O", "TUBS", idtmed[1100], tspar, 5);
+     gMC->Gsvolu("C05O", "TUBS", idAir, tspar, 5);
+     gMC->Gsvolu("C06O", "TUBS", idAir, tspar, 5);
      gMC->Gspos("C05O",1,"C05Q", 0.,0.,0.,  0,"ONLY");
      gMC->Gspos("C06O",1,"C06Q", 0.,0.,0.,  0,"ONLY");
 //
 // Inner frame
-     tspar[0]= iChamber->frMin;
-     tspar[1]= iChamber->frMin+dframep*2;
-     gMC->Gsvolu("C05I", "TUBS", idtmed[1100], tspar, 5);
-     gMC->Gsvolu("C06I", "TUBS", idtmed[1100], tspar, 5);
+     tspar[0]= iChamber->RInner()-dframep;
+     tspar[1]= iChamber->RInner();
+     gMC->Gsvolu("C05I", "TUBS", idAir, tspar, 5);
+     gMC->Gsvolu("C06I", "TUBS", idAir, tspar, 5);
      gMC->Gspos("C05I",1,"C05Q", 0.,0.,0.,  0,"ONLY");
      gMC->Gspos("C06I",1,"C06Q", 0.,0.,0.,  0,"ONLY");
 //
 // Boundary half frame
-     bpar[0] = (iChamber->frMax - iChamber->frMin)/2;
-     bpar[1] = dframep/2;
+     bpar[0] = (iChamber->ROuter() +dframep*2 - iChamber->RInner())/2;
+     bpar[1] = dframep/4;
      bpar[2] = 5.325;
-     gMC->Gsvolu("C05B", "BOX", idtmed[1103], bpar, 3);
-     gMC->Gsvolu("C06B", "BOX", idtmed[1103], bpar, 3);
+     gMC->Gsvolu("C05B", "BOX", idAlu1, bpar, 3);
+     gMC->Gsvolu("C06B", "BOX", idAlu1, bpar, 3);
 //place 2 boudaries
-     gMC->Gspos("C05B",1,"C05Q", iChamber->frMin+bpar[0] ,-bpar[1],0.,  idrotm[1100],"ONLY");
-     gMC->Gspos("C05B",2,"C05Q", -bpar[1],iChamber->frMin+bpar[0] ,0.,  idrotm[1101],"ONLY");
-     gMC->Gspos("C06B",1,"C06Q", iChamber->frMin+bpar[0] ,-bpar[1],0.,  idrotm[1100],"ONLY");
-     gMC->Gspos("C06B",2,"C06Q", -bpar[1],iChamber->frMin+bpar[0] ,0.,  idrotm[1101],"ONLY");
+     gMC->Gspos("C05B",1,"C05Q", iChamber->RInner()+bpar[0] ,-bpar[1],0.,  idrotm[1100],"ONLY");
+     gMC->Gspos("C05B",2,"C05Q", -bpar[1],iChamber->RInner()+bpar[0] ,0.,  idrotm[1101],"ONLY");
+     gMC->Gspos("C06B",1,"C06Q", iChamber->RInner()+bpar[0] ,-bpar[1],0.,  idrotm[1100],"ONLY");
+     gMC->Gspos("C06B",2,"C06Q", -bpar[1],iChamber->RInner()+bpar[0] ,0.,  idrotm[1101],"ONLY");
 //
 // Boundary second half frame (should not overlapp with sensitive surface, nor frames)
-//          Effective inner radius due to circle effect
-     rMin =  TMath::Sqrt(
-        (iChamber->frMin+2*dframep)*(iChamber->frMin+2*dframep) - dframep*dframep );
-     bpar[0] = (iChamber->frMax - 2*dframep - rMin ) /2;
+//          Effective outer radius due to circle effect
+     rMax =  TMath::Sqrt(
+	 iChamber->ROuter()*iChamber->ROuter() - dframep*dframep );
+     bpar[0] = (rMax - iChamber->RInner() ) /2;
      bpar[2] = (5.325- (0.055 + 0.325)) / 2;
-     gMC->Gsvolu("C05H", "BOX", idtmed[1103], bpar, 3);
-     gMC->Gsvolu("C06H", "BOX", idtmed[1103], bpar, 3);
+     gMC->Gsvolu("C05H", "BOX", idAlu1, bpar, 3);
+     gMC->Gsvolu("C06H", "BOX", idAlu1, bpar, 3);
 //place 2 boudaries
      gMC->Gspos("C05H",1,"C05Q", rMin+bpar[0],bpar[1],  0.055+0.325+bpar[2] , idrotm[1100],"ONLY");
      gMC->Gspos("C05H",2,"C05Q", rMin+bpar[0],bpar[1],-(0.055+0.325+bpar[2]), idrotm[1100],"ONLY");
@@ -469,48 +503,196 @@ idrotm[1101],"ONLY");
 //
 //   Chamber Material represented by Alu sheet
      //     tspar[2] = (iChamber->fdAlu)+(iChamber->fdGas);
-     tspar[0]= iChamber->frMin+dframep*2;
-     tspar[1]= iChamber->frMax-dframep*2;
+     tspar[0]= iChamber->RInner();
+     tspar[1]= iChamber->ROuter();
      tspar[2] = 0.055 + 0.325;
-     gMC->Gsvolu("C05A", "TUBS", idtmed[1103], tspar, 5);
-     gMC->Gsvolu("C06A", "TUBS", idtmed[1103], tspar, 5);
+     gMC->Gsvolu("C05A", "TUBS", idAlu2, tspar, 5);
+     gMC->Gsvolu("C06A", "TUBS", idAlu2, tspar, 5);
      gMC->Gspos("C05A", 1, "C05Q", 0., 0., 0.,  0, "ONLY");
      gMC->Gspos("C06A", 1, "C06Q", 0., 0., 0.,  0, "ONLY");
 //     
 //   Sensitive volumes
      // tpar[2] = iChamber->fdGas;
      tspar[2] = 0.325;
-     gMC->Gsvolu("C05G", "TUBS", idtmed[1105], tspar, 5);
-     gMC->Gsvolu("C06G", "TUBS", idtmed[1105], tspar, 5);
+    gMC->Gsvolu("C05G", "TUBS", idGas, tspar, 5);
+     gMC->Gsvolu("C06G", "TUBS", idGas, tspar, 5);
      gMC->Gspos("C05G", 1, "C05A", 0., 0., 0.,  0, "ONLY");
      gMC->Gspos("C06G", 1, "C06A", 0., 0., 0.,  0, "ONLY");
 //
 //   Overwrite sensitive volume with ALU
 // Overwrite Gaz volume
      bpar[2] = 0.325;
-     gMC->Gsvolu("C05Z", "BOX", idtmed[1103], bpar, 3);
-     gMC->Gsvolu("C06Z", "BOX", idtmed[1103], bpar, 3);
+     gMC->Gsvolu("C05Z", "BOX", idAlu1, bpar, 3);
+     gMC->Gsvolu("C06Z", "BOX", idAlu1, bpar, 3);
      gMC->Gspos("C05Z",1,"C05G", rMin+bpar[0] ,bpar[1],0.,  idrotm[1100],"ONLY");
      gMC->Gspos("C05Z",2,"C05G", bpar[1], rMin+bpar[0] ,0., idrotm[1101],"ONLY");
      gMC->Gspos("C06Z",1,"C06G", rMin+bpar[0] ,bpar[1],0.,  idrotm[1100],"ONLY");
      gMC->Gspos("C06Z",2,"C06G", bpar[1], rMin+bpar[0] ,0., idrotm[1101],"ONLY");
+#else
+//********************************************************************
+//                            Station 3                             **
+//********************************************************************
+     iChamber=(AliMUONchamber*) (*fChambers)[4];
+     zpos1=iChamber->ZPosition()-dstation[2]/2; 
+     zpos2=zpos1+dstation[2]; 
+     zfpos= // -(iChamber->fdGas+dframez)/2;
+	 - ( 0.65 + 5.)/2;
+//
+//   Mother volume
+     tpar[0] = iChamber->RInner()-dframep; 
+     tpar[1] = (iChamber->ROuter()+dframep)/TMath::Cos(phi);
+     tpar[2] = // dstation[3]/2;
+               dstation[2]/4;
+     gMC->Gsvolu("C05M", "TUBE", idAir, tpar, 3);
+     gMC->Gsvolu("C06M", "TUBE", idAir, tpar, 3);
+     gMC->Gspos("C05M", 1, "ALIC", 0., 0., zpos1 , 0, "ONLY");
+     gMC->Gspos("C06M", 1, "ALIC", 0., 0., zpos2 , 0, "ONLY");
+// Aluminium frames
+// Outer frames
+     pgpar[0] = 360/12/2;
+     pgpar[1] = 360.;
+     pgpar[2] = 12.;
+     pgpar[3] =   2;
+     pgpar[4] = // -dframez/2;
+	 - 5./2;
+     pgpar[5] = iChamber->ROuter();
+     pgpar[6] = pgpar[5]+dframep;
+     pgpar[7] = // +dframez/2;
+              5./2;
+     pgpar[8] = pgpar[5];
+     pgpar[9] = pgpar[6];
+     gMC->Gsvolu("C05O", "PGON", idAlu1, pgpar, 10);
+     gMC->Gsvolu("C06O", "PGON", idAlu1, pgpar, 10);
+     gMC->Gspos("C05O",1,"C05M", 0.,0.,-zfpos,  0,"ONLY");
+     gMC->Gspos("C05O",2,"C05M", 0.,0.,+zfpos,  0,"ONLY");
+     gMC->Gspos("C06O",1,"C06M", 0.,0.,-zfpos,  0,"ONLY");
+     gMC->Gspos("C06O",2,"C06M", 0.,0.,+zfpos,  0,"ONLY");
+//
+// Inner frame
+     tpar[0]= iChamber->RInner()-dframep;
+     tpar[1]= iChamber->RInner();
+     tpar[2]= // dframez/2;
+	 5./2;
+     gMC->Gsvolu("C05I", "TUBE", idAlu1, tpar, 3);
+     gMC->Gsvolu("C06I", "TUBE", idAlu1, tpar, 3);
+
+     gMC->Gspos("C05I",1,"C05M", 0.,0.,-zfpos,  0,"ONLY");
+     gMC->Gspos("C05I",2,"C05M", 0.,0.,+zfpos,  0,"ONLY");
+     gMC->Gspos("C06I",1,"C06M", 0.,0.,-zfpos,  0,"ONLY");
+     gMC->Gspos("C06I",2,"C06M", 0.,0.,+zfpos,  0,"ONLY");
+//
+// Frame Crosses
+     if (frames) {
+     bpar[0] = (iChamber->ROuter() - iChamber->RInner())/2;
+     bpar[1] = dframep/2;
+     bpar[2] = // dframez/2;
+	 5./2;
+     gMC->Gsvolu("C05B", "BOX", idAlu1, bpar, 3);
+     gMC->Gsvolu("C06B", "BOX", idAlu1, bpar, 3);
+
+     gMC->Gspos("C05B",1,"C05M", +iChamber->RInner()+bpar[0] , 0,-zfpos, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C05B",2,"C05M", -iChamber->RInner()-bpar[0] , 0,-zfpos, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C05B",3,"C05M", 0, +iChamber->RInner()+bpar[0] ,-zfpos, 
+idrotm[1101],"ONLY");
+     gMC->Gspos("C05B",4,"C05M", 0, -iChamber->RInner()-bpar[0] ,-zfpos, 
+idrotm[1101],"ONLY");
+     gMC->Gspos("C05B",5,"C05M", +iChamber->RInner()+bpar[0] , 0,+zfpos, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C05B",6,"C05M", -iChamber->RInner()-bpar[0] , 0,+zfpos, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C05B",7,"C05M", 0, +iChamber->RInner()+bpar[0] ,+zfpos, 
+idrotm[1101],"ONLY");
+     gMC->Gspos("C05B",8,"C05M", 0, -iChamber->RInner()-bpar[0] ,+zfpos, 
+idrotm[1101],"ONLY");
+
+     gMC->Gspos("C06B",1,"C06M", +iChamber->RInner()+bpar[0] , 0,-zfpos, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C06B",2,"C06M", -iChamber->RInner()-bpar[0] , 0,-zfpos, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C06B",3,"C06M", 0, +iChamber->RInner()+bpar[0] ,-zfpos, 
+idrotm[1101],"ONLY");
+     gMC->Gspos("C06B",4,"C06M", 0, -iChamber->RInner()-bpar[0] ,-zfpos, 
+idrotm[1101],"ONLY");
+     gMC->Gspos("C06B",5,"C06M", +iChamber->RInner()+bpar[0] , 0,+zfpos, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C06B",6,"C06M", -iChamber->RInner()-bpar[0] , 0,+zfpos, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C06B",7,"C06M", 0, +iChamber->RInner()+bpar[0] ,+zfpos, 
+idrotm[1101],"ONLY");
+     gMC->Gspos("C06B",8,"C06M", 0, -iChamber->RInner()-bpar[0] ,+zfpos, 
+		idrotm[1101],"ONLY");
+     }
+     
+
+//
+//   Chamber Material represented by Alu sheet
+     tpar[0]= iChamber->RInner();
+     tpar[1]= iChamber->ROuter();
+     tpar[2] = // (iChamber->fdGas+iChamber->fdAlu)/2;
+	 0.65 + 0.055;
+     gMC->Gsvolu("C05A", "TUBE", idAlu2, tpar, 3);
+     gMC->Gsvolu("C06A", "TUBE", idAlu2, tpar, 3);
+     gMC->Gspos("C05A", 1, "C05M", 0., 0., 0.,  0, "ONLY");
+     gMC->Gspos("C06A", 1, "C06M", 0., 0., 0.,  0, "ONLY");
+//     
+//   Sensitive volumes
+     tpar[2] = // iChamber->fdGas/2;
+               0.65/2;
+     gMC->Gsvolu("C05G", "TUBE", idGas, tpar, 3);
+     gMC->Gsvolu("C06G", "TUBE", idGas, tpar, 3);
+     gMC->Gspos("C05G", 1, "C05A", 0., 0., 0.,  0, "ONLY");
+     gMC->Gspos("C06G", 1, "C06A", 0., 0., 0.,  0, "ONLY");
+//
+// Frame Crosses to be placed inside gas 
+     if (frames) {
+     dr = (iChamber->ROuter() - iChamber->RInner());
+     bpar[0] = TMath::Sqrt(dr*dr-dframep*dframep/4)/2;
+     bpar[1] = dframep/2;
+     bpar[2] = // iChamber->fdGas/2;
+               0.65/2;
+     gMC->Gsvolu("C05F", "BOX", idAlu1, bpar, 3);
+     gMC->Gsvolu("C06F", "BOX", idAlu1, bpar, 3);
+
+     gMC->Gspos("C05F",1,"C05G", +iChamber->RInner()+bpar[0] , 0, 0, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C05F",2,"C05G", -iChamber->RInner()-bpar[0] , 0, 0, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C05F",3,"C05G", 0, +iChamber->RInner()+bpar[0] , 0, 
+idrotm[1101],"ONLY");
+     gMC->Gspos("C05F",4,"C05G", 0, -iChamber->RInner()-bpar[0] , 0, 
+idrotm[1101],"ONLY");
+
+     gMC->Gspos("C06F",1,"C06G", +iChamber->RInner()+bpar[0] , 0, 0, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C06F",2,"C06G", -iChamber->RInner()-bpar[0] , 0, 0, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C06F",3,"C06G", 0, +iChamber->RInner()+bpar[0] , 0, 
+idrotm[1101],"ONLY");
+     gMC->Gspos("C06F",4,"C06G", 0, -iChamber->RInner()-bpar[0] , 0, 
+		idrotm[1101],"ONLY");
+}
+
+#endif
 
 //********************************************************************
 //                            Station 4                             **
 //********************************************************************
      iChamber=(AliMUONchamber*) (*fChambers)[6];
-     zpos1=iChamber->ZPosition()-dstation/2; 
-     zpos2=zpos1+dstation; 
+     zpos1=iChamber->ZPosition()-dstation[3]/2; 
+     zpos2=zpos1+dstation[3]; 
      zfpos=-(iChamber->fdGas+dframez)/2;
      
 //
 //   Mother volume
-     tpar[0] = iChamber->frMin-dframep; 
-     tpar[1] = (iChamber->frMax+dframep)/TMath::Cos(phi);
-     tpar[2] = dstation/2;
+     tpar[0] = iChamber->RInner()-dframep; 
+     tpar[1] = (iChamber->ROuter()+dframep)/TMath::Cos(phi);
+     //tpar[2] = dstation[3]/2;
+     tpar[2] = dstation[3]/4;
 
-     gMC->Gsvolu("C07M", "TUBE", idtmed[1100], tpar, 3);
-     gMC->Gsvolu("C08M", "TUBE", idtmed[1100], tpar, 3);
+     gMC->Gsvolu("C07M", "TUBE", idAir, tpar, 3);
+     gMC->Gsvolu("C08M", "TUBE", idAir, tpar, 3);
      gMC->Gspos("C07M", 1, "ALIC", 0., 0., zpos1 , 0, "ONLY");
      gMC->Gspos("C08M", 1, "ALIC", 0., 0., zpos2 , 0, "ONLY");
 // Aluminium frames
@@ -520,24 +702,24 @@ idrotm[1101],"ONLY");
      pgpar[2] = 12.;
      pgpar[3] =   2;
      pgpar[4] = -dframez/2;
-     pgpar[5] = iChamber->frMax;
+     pgpar[5] = iChamber->ROuter();
      pgpar[6] = pgpar[5]+dframep;
      pgpar[7] = +dframez/2;
      pgpar[8] = pgpar[5];
      pgpar[9] = pgpar[6];
-     gMC->Gsvolu("C07O", "PGON", idtmed[1103], pgpar, 10);
-     gMC->Gsvolu("C08O", "PGON", idtmed[1103], pgpar, 10);
+     gMC->Gsvolu("C07O", "PGON", idAlu1, pgpar, 10);
+     gMC->Gsvolu("C08O", "PGON", idAlu1, pgpar, 10);
      gMC->Gspos("C07O",1,"C07M", 0.,0.,-zfpos,  0,"ONLY");
      gMC->Gspos("C07O",2,"C07M", 0.,0.,+zfpos,  0,"ONLY");
      gMC->Gspos("C08O",1,"C08M", 0.,0.,-zfpos,  0,"ONLY");
      gMC->Gspos("C08O",2,"C08M", 0.,0.,+zfpos,  0,"ONLY");
 //
 // Inner frame
-     tpar[0]= iChamber->frMin-dframep;
-     tpar[1]= iChamber->frMin;
+     tpar[0]= iChamber->RInner()-dframep;
+     tpar[1]= iChamber->RInner();
      tpar[2]= dframez/2;
-     gMC->Gsvolu("C07I", "TUBE", idtmed[1103], tpar, 3);
-     gMC->Gsvolu("C08I", "TUBE", idtmed[1103], tpar, 3);
+     gMC->Gsvolu("C07I", "TUBE", idAlu1, tpar, 3);
+     gMC->Gsvolu("C08I", "TUBE", idAlu1, tpar, 3);
 
      gMC->Gspos("C07I",1,"C07M", 0.,0.,-zfpos,  0,"ONLY");
      gMC->Gspos("C07I",2,"C07M", 0.,0.,+zfpos,  0,"ONLY");
@@ -545,106 +727,111 @@ idrotm[1101],"ONLY");
      gMC->Gspos("C08I",2,"C08M", 0.,0.,+zfpos,  0,"ONLY");
 //
 // Frame Crosses
-     bpar[0] = (iChamber->frMax - iChamber->frMin)/2;
+     if (frames) {
+     bpar[0] = (iChamber->ROuter() - iChamber->RInner())/2;
      bpar[1] = dframep/2;
      bpar[2] = dframez/2;
-     gMC->Gsvolu("C07B", "BOX", idtmed[1103], bpar, 3);
-     gMC->Gsvolu("C08B", "BOX", idtmed[1103], bpar, 3);
+     gMC->Gsvolu("C07B", "BOX", idAlu1, bpar, 3);
+     gMC->Gsvolu("C08B", "BOX", idAlu1, bpar, 3);
 
-     gMC->Gspos("C07B",1,"C07M", +iChamber->frMin+bpar[0] , 0,-zfpos, 
+     gMC->Gspos("C07B",1,"C07M", +iChamber->RInner()+bpar[0] , 0,-zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C07B",2,"C07M", -iChamber->frMin-bpar[0] , 0,-zfpos, 
+     gMC->Gspos("C07B",2,"C07M", -iChamber->RInner()-bpar[0] , 0,-zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C07B",3,"C07M", 0, +iChamber->frMin+bpar[0] ,-zfpos, 
+     gMC->Gspos("C07B",3,"C07M", 0, +iChamber->RInner()+bpar[0] ,-zfpos, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C07B",4,"C07M", 0, -iChamber->frMin-bpar[0] ,-zfpos, 
+     gMC->Gspos("C07B",4,"C07M", 0, -iChamber->RInner()-bpar[0] ,-zfpos, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C07B",5,"C07M", +iChamber->frMin+bpar[0] , 0,+zfpos, 
+     gMC->Gspos("C07B",5,"C07M", +iChamber->RInner()+bpar[0] , 0,+zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C07B",6,"C07M", -iChamber->frMin-bpar[0] , 0,+zfpos, 
+     gMC->Gspos("C07B",6,"C07M", -iChamber->RInner()-bpar[0] , 0,+zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C07B",7,"C07M", 0, +iChamber->frMin+bpar[0] ,+zfpos, 
+     gMC->Gspos("C07B",7,"C07M", 0, +iChamber->RInner()+bpar[0] ,+zfpos, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C07B",8,"C07M", 0, -iChamber->frMin-bpar[0] ,+zfpos, 
+     gMC->Gspos("C07B",8,"C07M", 0, -iChamber->RInner()-bpar[0] ,+zfpos, 
 idrotm[1101],"ONLY");
 
-     gMC->Gspos("C08B",1,"C08M", +iChamber->frMin+bpar[0] , 0,-zfpos, 
+     gMC->Gspos("C08B",1,"C08M", +iChamber->RInner()+bpar[0] , 0,-zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C08B",2,"C08M", -iChamber->frMin-bpar[0] , 0,-zfpos, 
+     gMC->Gspos("C08B",2,"C08M", -iChamber->RInner()-bpar[0] , 0,-zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C08B",3,"C08M", 0, +iChamber->frMin+bpar[0] ,-zfpos, 
+     gMC->Gspos("C08B",3,"C08M", 0, +iChamber->RInner()+bpar[0] ,-zfpos, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C08B",4,"C08M", 0, -iChamber->frMin-bpar[0] ,-zfpos, 
+     gMC->Gspos("C08B",4,"C08M", 0, -iChamber->RInner()-bpar[0] ,-zfpos, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C08B",5,"C08M", +iChamber->frMin+bpar[0] , 0,+zfpos, 
+     gMC->Gspos("C08B",5,"C08M", +iChamber->RInner()+bpar[0] , 0,+zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C08B",6,"C08M", -iChamber->frMin-bpar[0] , 0,+zfpos, 
+     gMC->Gspos("C08B",6,"C08M", -iChamber->RInner()-bpar[0] , 0,+zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C08B",7,"C08M", 0, +iChamber->frMin+bpar[0] ,+zfpos, 
+     gMC->Gspos("C08B",7,"C08M", 0, +iChamber->RInner()+bpar[0] ,+zfpos, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C08B",8,"C08M", 0, -iChamber->frMin-bpar[0] ,+zfpos, 
-idrotm[1101],"ONLY");
+     gMC->Gspos("C08B",8,"C08M", 0, -iChamber->RInner()-bpar[0] ,+zfpos, 
+		idrotm[1101],"ONLY");
+     }
+
 
 //
 //   Chamber Material represented by Alu sheet
-     tpar[0]= iChamber->frMin+dframep*2;
-     tpar[1]= iChamber->frMax-dframep*2;
+     tpar[0]= iChamber->RInner();
+     tpar[1]= iChamber->ROuter();
      tpar[2] = (iChamber->fdGas+iChamber->fdAlu)/2;
-     gMC->Gsvolu("C07A", "TUBE", idtmed[1103], tpar, 3);
-     gMC->Gsvolu("C08A", "TUBE", idtmed[1103], tpar, 3);
+     gMC->Gsvolu("C07A", "TUBE", idAlu2, tpar, 3);
+     gMC->Gsvolu("C08A", "TUBE", idAlu2, tpar, 3);
      gMC->Gspos("C07A", 1, "C07M", 0., 0., 0.,  0, "ONLY");
      gMC->Gspos("C08A", 1, "C08M", 0., 0., 0.,  0, "ONLY");
 //     
 //   Sensitive volumes
      // tpar[2] = iChamber->fdGas;
      tpar[2] = iChamber->fdGas/2;
-     gMC->Gsvolu("C07G", "TUBE", idtmed[1105], tpar, 3);
-     gMC->Gsvolu("C08G", "TUBE", idtmed[1105], tpar, 3);
+     gMC->Gsvolu("C07G", "TUBE", idGas, tpar, 3);
+     gMC->Gsvolu("C08G", "TUBE", idGas, tpar, 3);
      gMC->Gspos("C07G", 1, "C07A", 0., 0., 0.,  0, "ONLY");
      gMC->Gspos("C08G", 1, "C08A", 0., 0., 0.,  0, "ONLY");
 //
 // Frame Crosses to be placed inside gas 
-     dr = (iChamber->frMax - iChamber->frMin);
+     if (frames) {
+     dr = (iChamber->ROuter() - iChamber->RInner());
      bpar[0] = TMath::Sqrt(dr*dr-dframep*dframep/4)/2;
      bpar[1] = dframep/2;
      bpar[2] = iChamber->fdGas/2;
-     gMC->Gsvolu("C07F", "BOX", idtmed[1103], bpar, 3);
-     gMC->Gsvolu("C08F", "BOX", idtmed[1103], bpar, 3);
+     gMC->Gsvolu("C07F", "BOX", idAlu1, bpar, 3);
+     gMC->Gsvolu("C08F", "BOX", idAlu1, bpar, 3);
 
-     gMC->Gspos("C07F",1,"C07G", +iChamber->frMin+bpar[0] , 0, 0, 
+     gMC->Gspos("C07F",1,"C07G", +iChamber->RInner()+bpar[0] , 0, 0, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C07F",2,"C07G", -iChamber->frMin-bpar[0] , 0, 0, 
+     gMC->Gspos("C07F",2,"C07G", -iChamber->RInner()-bpar[0] , 0, 0, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C07F",3,"C07G", 0, +iChamber->frMin+bpar[0] , 0, 
+     gMC->Gspos("C07F",3,"C07G", 0, +iChamber->RInner()+bpar[0] , 0, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C07F",4,"C07G", 0, -iChamber->frMin-bpar[0] , 0, 
-idrotm[1101],"ONLY");
-
-     gMC->Gspos("C08F",1,"C08G", +iChamber->frMin+bpar[0] , 0, 0, 
-idrotm[1100],"ONLY");
-     gMC->Gspos("C08F",2,"C08G", -iChamber->frMin-bpar[0] , 0, 0, 
-idrotm[1100],"ONLY");
-     gMC->Gspos("C08F",3,"C08G", 0, +iChamber->frMin+bpar[0] , 0, 
-idrotm[1101],"ONLY");
-     gMC->Gspos("C08F",4,"C08G", 0, -iChamber->frMin-bpar[0] , 0, 
+     gMC->Gspos("C07F",4,"C07G", 0, -iChamber->RInner()-bpar[0] , 0, 
 idrotm[1101],"ONLY");
 
+     gMC->Gspos("C08F",1,"C08G", +iChamber->RInner()+bpar[0] , 0, 0, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C08F",2,"C08G", -iChamber->RInner()-bpar[0] , 0, 0, 
+idrotm[1100],"ONLY");
+     gMC->Gspos("C08F",3,"C08G", 0, +iChamber->RInner()+bpar[0] , 0, 
+idrotm[1101],"ONLY");
+     gMC->Gspos("C08F",4,"C08G", 0, -iChamber->RInner()-bpar[0] , 0, 
+idrotm[1101],"ONLY");
+     }
 //********************************************************************
 //                            Station 5                             **
 //********************************************************************
      iChamber=(AliMUONchamber*) (*fChambers)[8];
-     zpos1=iChamber->ZPosition()-dstation/2; 
-     zpos2=zpos1+dstation; 
+     zpos1=iChamber->ZPosition()-dstation[4]/2; 
+     zpos2=zpos1+dstation[4]; 
      zfpos=-(iChamber->fdGas+dframez)/2;
      
 //
 //   Mother volume
-     tpar[0] = iChamber->frMin-dframep; 
-     tpar[1] = (iChamber->frMax+dframep)/TMath::Cos(phi);
-     tpar[2] = dstation/2;
+     tpar[0] = iChamber->RInner()-dframep; 
+     tpar[1] = (iChamber->ROuter()+dframep)/TMath::Cos(phi);
+     //tpar[2] = dstation[4]/2;
+     tpar[2] = dstation[4]/4;
 
-     gMC->Gsvolu("C09M", "TUBE", idtmed[1100], tpar, 3);
-     gMC->Gsvolu("C10M", "TUBE", idtmed[1100], tpar, 3);
+     gMC->Gsvolu("C09M", "TUBE", idAir, tpar, 3);
+     gMC->Gsvolu("C10M", "TUBE", idAir, tpar, 3);
      gMC->Gspos("C09M", 1, "ALIC", 0., 0., zpos1 , 0, "ONLY");
      gMC->Gspos("C10M", 1, "ALIC", 0., 0., zpos2 , 0, "ONLY");
 // Aluminium frames
@@ -654,114 +841,121 @@ idrotm[1101],"ONLY");
      pgpar[2] = 12.;
      pgpar[3] =   2;
      pgpar[4] = -dframez/2;
-     pgpar[5] = iChamber->frMax;
+     pgpar[5] = iChamber->ROuter();
      pgpar[6] = pgpar[5]+dframep;
      pgpar[7] = +dframez/2;
      pgpar[8] = pgpar[5];
      pgpar[9] = pgpar[6];
-     gMC->Gsvolu("C09O", "PGON", idtmed[1103], pgpar, 10);
-     gMC->Gsvolu("C10O", "PGON", idtmed[1103], pgpar, 10);
+     gMC->Gsvolu("C09O", "PGON", idAlu1, pgpar, 10);
+     gMC->Gsvolu("C10O", "PGON", idAlu1, pgpar, 10);
      gMC->Gspos("C09O",1,"C09M", 0.,0.,-zfpos,  0,"ONLY");
      gMC->Gspos("C09O",2,"C09M", 0.,0.,+zfpos,  0,"ONLY");
      gMC->Gspos("C10O",1,"C10M", 0.,0.,-zfpos,  0,"ONLY");
      gMC->Gspos("C10O",2,"C10M", 0.,0.,+zfpos,  0,"ONLY");
 //
 // Inner frame
-     tpar[0]= iChamber->frMin-dframep;
-     tpar[1]= iChamber->frMin;
+     tpar[0]= iChamber->RInner()-dframep;
+     tpar[1]= iChamber->RInner();
      tpar[2]= dframez/2;
-     gMC->Gsvolu("C09I", "TUBE", idtmed[1103], tpar, 3);
-     gMC->Gsvolu("C10I", "TUBE", idtmed[1103], tpar, 3);
+     gMC->Gsvolu("C09I", "TUBE", idAlu1, tpar, 3);
+     gMC->Gsvolu("C10I", "TUBE", idAlu1, tpar, 3);
 
      gMC->Gspos("C09I",1,"C09M", 0.,0.,-zfpos,  0,"ONLY");
      gMC->Gspos("C09I",2,"C09M", 0.,0.,+zfpos,  0,"ONLY");
      gMC->Gspos("C10I",1,"C10M", 0.,0.,-zfpos,  0,"ONLY");
      gMC->Gspos("C10I",2,"C10M", 0.,0.,+zfpos,  0,"ONLY");
+
+     if (frames) {
 //
 // Frame Crosses
-     bpar[0] = (iChamber->frMax - iChamber->frMin)/2;
+       
+     bpar[0] = (iChamber->ROuter() - iChamber->RInner())/2;
      bpar[1] = dframep/2;
      bpar[2] = dframez/2;
-     gMC->Gsvolu("C09B", "BOX", idtmed[1103], bpar, 3);
-     gMC->Gsvolu("C10B", "BOX", idtmed[1103], bpar, 3);
+     gMC->Gsvolu("C09B", "BOX", idAlu1, bpar, 3);
+     gMC->Gsvolu("C10B", "BOX", idAlu1, bpar, 3);
 
-     gMC->Gspos("C09B",1,"C09M", +iChamber->frMin+bpar[0] , 0,-zfpos, 
+     gMC->Gspos("C09B",1,"C09M", +iChamber->RInner()+bpar[0] , 0,-zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C09B",2,"C09M", -iChamber->frMin-bpar[0] , 0,-zfpos, 
+     gMC->Gspos("C09B",2,"C09M", -iChamber->RInner()-bpar[0] , 0,-zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C09B",3,"C09M", 0, +iChamber->frMin+bpar[0] ,-zfpos, 
+     gMC->Gspos("C09B",3,"C09M", 0, +iChamber->RInner()+bpar[0] ,-zfpos, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C09B",4,"C09M", 0, -iChamber->frMin-bpar[0] ,-zfpos, 
+     gMC->Gspos("C09B",4,"C09M", 0, -iChamber->RInner()-bpar[0] ,-zfpos, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C09B",5,"C09M", +iChamber->frMin+bpar[0] , 0,+zfpos, 
+     gMC->Gspos("C09B",5,"C09M", +iChamber->RInner()+bpar[0] , 0,+zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C09B",6,"C09M", -iChamber->frMin-bpar[0] , 0,+zfpos, 
+     gMC->Gspos("C09B",6,"C09M", -iChamber->RInner()-bpar[0] , 0,+zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C09B",7,"C09M", 0, +iChamber->frMin+bpar[0] ,+zfpos, 
+     gMC->Gspos("C09B",7,"C09M", 0, +iChamber->RInner()+bpar[0] ,+zfpos, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C09B",8,"C09M", 0, -iChamber->frMin-bpar[0] ,+zfpos, 
+     gMC->Gspos("C09B",8,"C09M", 0, -iChamber->RInner()-bpar[0] ,+zfpos, 
 idrotm[1101],"ONLY");
 
-     gMC->Gspos("C10B",1,"C10M", +iChamber->frMin+bpar[0] , 0,-zfpos, 
+     gMC->Gspos("C10B",1,"C10M", +iChamber->RInner()+bpar[0] , 0,-zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C10B",2,"C10M", -iChamber->frMin-bpar[0] , 0,-zfpos, 
+     gMC->Gspos("C10B",2,"C10M", -iChamber->RInner()-bpar[0] , 0,-zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C10B",3,"C10M", 0, +iChamber->frMin+bpar[0] ,-zfpos, 
+     gMC->Gspos("C10B",3,"C10M", 0, +iChamber->RInner()+bpar[0] ,-zfpos, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C10B",4,"C10M", 0, -iChamber->frMin-bpar[0] ,-zfpos, 
+     gMC->Gspos("C10B",4,"C10M", 0, -iChamber->RInner()-bpar[0] ,-zfpos, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C10B",5,"C10M", +iChamber->frMin+bpar[0] , 0,+zfpos, 
+     gMC->Gspos("C10B",5,"C10M", +iChamber->RInner()+bpar[0] , 0,+zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C10B",6,"C10M", -iChamber->frMin-bpar[0] , 0,+zfpos, 
+     gMC->Gspos("C10B",6,"C10M", -iChamber->RInner()-bpar[0] , 0,+zfpos, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C10B",7,"C10M", 0, +iChamber->frMin+bpar[0] ,+zfpos, 
+     gMC->Gspos("C10B",7,"C10M", 0, +iChamber->RInner()+bpar[0] ,+zfpos, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C10B",8,"C10M", 0, -iChamber->frMin-bpar[0] ,+zfpos, 
-idrotm[1101],"ONLY");
+     gMC->Gspos("C10B",8,"C10M", 0, -iChamber->RInner()-bpar[0] ,+zfpos, 
+		idrotm[1101],"ONLY");
+     }
+
 
 //
 //   Chamber Material represented by Alu sheet
-     tpar[0]= iChamber->frMin+dframep*2;
-     tpar[1]= iChamber->frMax-dframep*2;
+     tpar[0]= iChamber->RInner();
+     tpar[1]= iChamber->ROuter();
      tpar[2] = (iChamber->fdGas+iChamber->fdAlu)/2;
-     gMC->Gsvolu("C09A", "TUBE", idtmed[1103], tpar, 3);
-     gMC->Gsvolu("C10A", "TUBE", idtmed[1103], tpar, 3);
+     gMC->Gsvolu("C09A", "TUBE", idAlu2, tpar, 3);
+     gMC->Gsvolu("C10A", "TUBE", idAlu2, tpar, 3);
      gMC->Gspos("C09A", 1, "C09M", 0., 0., 0.,  0, "ONLY");
      gMC->Gspos("C10A", 1, "C10M", 0., 0., 0.,  0, "ONLY");
 //     
 //   Sensitive volumes
      // tpar[2] = iChamber->fdGas;
      tpar[2] = iChamber->fdGas/2;
-     gMC->Gsvolu("C09G", "TUBE", idtmed[1105], tpar, 3);
-     gMC->Gsvolu("C10G", "TUBE", idtmed[1105], tpar, 3);
+     gMC->Gsvolu("C09G", "TUBE", idGas, tpar, 3);
+     gMC->Gsvolu("C10G", "TUBE", idGas, tpar, 3);
      gMC->Gspos("C09G", 1, "C09A", 0., 0., 0.,  0, "ONLY");
      gMC->Gspos("C10G", 1, "C10A", 0., 0., 0.,  0, "ONLY");
 //
 // Frame Crosses to be placed inside gas 
-     dr = (iChamber->frMax - iChamber->frMin);
+     if (frames) {
+     dr = (iChamber->ROuter() - iChamber->RInner());
      bpar[0] = TMath::Sqrt(dr*dr-dframep*dframep/4)/2;
      bpar[1] = dframep/2;
      bpar[2] = iChamber->fdGas/2;
-     gMC->Gsvolu("C09F", "BOX", idtmed[1103], bpar, 3);
-     gMC->Gsvolu("C10F", "BOX", idtmed[1103], bpar, 3);
+     gMC->Gsvolu("C09F", "BOX", idAlu1, bpar, 3);
+     gMC->Gsvolu("C10F", "BOX", idAlu1, bpar, 3);
 
-     gMC->Gspos("C09F",1,"C09G", +iChamber->frMin+bpar[0] , 0, 0, 
+     gMC->Gspos("C09F",1,"C09G", +iChamber->RInner()+bpar[0] , 0, 0, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C09F",2,"C09G", -iChamber->frMin-bpar[0] , 0, 0, 
+     gMC->Gspos("C09F",2,"C09G", -iChamber->RInner()-bpar[0] , 0, 0, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C09F",3,"C09G", 0, +iChamber->frMin+bpar[0] , 0, 
+     gMC->Gspos("C09F",3,"C09G", 0, +iChamber->RInner()+bpar[0] , 0, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C09F",4,"C09G", 0, -iChamber->frMin-bpar[0] , 0, 
+     gMC->Gspos("C09F",4,"C09G", 0, -iChamber->RInner()-bpar[0] , 0, 
 idrotm[1101],"ONLY");
 
-     gMC->Gspos("C10F",1,"C10G", +iChamber->frMin+bpar[0] , 0, 0, 
+     gMC->Gspos("C10F",1,"C10G", +iChamber->RInner()+bpar[0] , 0, 0, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C10F",2,"C10G", -iChamber->frMin-bpar[0] , 0, 0, 
+     gMC->Gspos("C10F",2,"C10G", -iChamber->RInner()-bpar[0] , 0, 0, 
 idrotm[1100],"ONLY");
-     gMC->Gspos("C10F",3,"C10G", 0, +iChamber->frMin+bpar[0] , 0, 
+     gMC->Gspos("C10F",3,"C10G", 0, +iChamber->RInner()+bpar[0] , 0, 
 idrotm[1101],"ONLY");
-     gMC->Gspos("C10F",4,"C10G", 0, -iChamber->frMin-bpar[0] , 0, 
+     gMC->Gspos("C10F",4,"C10G", 0, -iChamber->RInner()-bpar[0] , 0, 
 idrotm[1101],"ONLY");
+     }
 
 ///////////////////////////////////////
 // GEOMETRY FOR THE TRIGGER CHAMBERS //
@@ -787,18 +981,18 @@ idrotm[1101],"ONLY");
      zpos2=zpos1+DTPLANES;
 
 // Mother volume definition     
-     tpar[0] = iChamber->frMin; 
-     tpar[1] = iChamber->frMax;
+     tpar[0] = iChamber->RInner(); 
+     tpar[1] = iChamber->ROuter();
      tpar[2] = 0.4;    
-     gMC->Gsvolu("CM11", "TUBE", idtmed[1100], tpar, 3);
-     gMC->Gsvolu("CM12", "TUBE", idtmed[1100], tpar, 3);
+     gMC->Gsvolu("CM11", "TUBE", idAir, tpar, 3);
+     gMC->Gsvolu("CM12", "TUBE", idAir, tpar, 3);
      
 // Definition of the flange between the beam shielding and the RPC 
      tpar[0]= R_MIN1;
      tpar[1]= R_MAX1;
      tpar[2]= 0.4;
    
-     gMC->Gsvolu("CF1A", "TUBE", idtmed[1103], tpar, 3);     //Al
+    gMC->Gsvolu("CF1A", "TUBE", idAlu1, tpar, 3);     //Al
      gMC->Gspos("CF1A", 1, "CM11", 0., 0., 0., 0, "MANY");
      gMC->Gspos("CF1A", 2, "CM12", 0., 0., 0., 0, "MANY");
 
@@ -808,7 +1002,7 @@ idrotm[1101],"ONLY");
      tpar[1]= 0.;
      tpar[2]= 0.;
           
-     gMC->Gsvolu("CC1A", "BOX ", idtmed[1103], tpar, 0);     //Al      
+     gMC->Gsvolu("CC1A", "BOX ", idAlu1, tpar, 0);     //Al    
      gMC->Gsvolu("CB1A", "BOX ", idtmed[1107], tpar, 0);     //Bakelite 
      gMC->Gsvolu("CG1A", "BOX ", idtmed[1106], tpar, 0);     //Gas streamer
 
@@ -896,7 +1090,7 @@ idrotm[1101],"ONLY");
      tpar[1]= 0.;
      tpar[2]= 0.;
           
-     gMC->Gsvolu("CC2A", "BOX ", idtmed[1103], tpar, 0);     //Al      
+     gMC->Gsvolu("CC2A", "BOX ", idAlu1, tpar, 0);     //Al    
      gMC->Gsvolu("CB2A", "BOX ", idtmed[1107], tpar, 0);     //Bakelite 
      gMC->Gsvolu("CG2A", "BOX ", idtmed[1106], tpar, 0);     //Gas streamer
 
@@ -987,18 +1181,18 @@ idrotm[1101],"ONLY");
      const Float_t R_MAX3=R_MAX1*zpos3/zpos1;
 
 // Mother volume definition     
-     tpar[0] = iChamber->frMin; 
-     tpar[1] = iChamber->frMax;
+     tpar[0] = iChamber->RInner(); 
+     tpar[1] = iChamber->ROuter();
      tpar[2] = 0.4;    
-     gMC->Gsvolu("CM21", "TUBE", idtmed[1100], tpar, 3);
-     gMC->Gsvolu("CM22", "TUBE", idtmed[1100], tpar, 3);
+     gMC->Gsvolu("CM21", "TUBE", idAir, tpar, 3);
+     gMC->Gsvolu("CM22", "TUBE", idAir, tpar, 3);
      
 // Definition of the flange between the beam shielding and the RPC 
      tpar[0]= R_MIN3;
      tpar[1]= R_MAX3;
      tpar[2]= 0.4;
    
-     gMC->Gsvolu("CF2A", "TUBE", idtmed[1103], tpar, 3);     //Al
+    gMC->Gsvolu("CF2A", "TUBE", idAlu1, tpar, 3);     //Al
      gMC->Gspos("CF2A", 1, "CM21", 0., 0., 0., 0, "MANY");
      gMC->Gspos("CF2A", 2, "CM22", 0., 0., 0., 0, "MANY");
 
@@ -1008,7 +1202,7 @@ idrotm[1101],"ONLY");
      tpar[1]= 0.;
      tpar[2]= 0.;
           
-     gMC->Gsvolu("CC3A", "BOX ", idtmed[1103], tpar, 0);     //Al      
+     gMC->Gsvolu("CC3A", "BOX ", idAlu1, tpar, 0);     //Al  
      gMC->Gsvolu("CB3A", "BOX ", idtmed[1107], tpar, 0);     //Bakelite 
      gMC->Gsvolu("CG3A", "BOX ", idtmed[1106], tpar, 0);     //Gas streamer
 
@@ -1096,7 +1290,7 @@ idrotm[1101],"ONLY");
      tpar[1]= 0.;
      tpar[2]= 0.;
           
-     gMC->Gsvolu("CC4A", "BOX ", idtmed[1103], tpar, 0);     //Al      
+     gMC->Gsvolu("CC4A", "BOX ", idAlu1, tpar, 0);     //Al      
      gMC->Gsvolu("CB4A", "BOX ", idtmed[1107], tpar, 0);     //Bakelite 
      gMC->Gsvolu("CG4A", "BOX ", idtmed[1106], tpar, 0);     //Gas streamer
 
@@ -1170,6 +1364,7 @@ idrotm[1101],"ONLY");
      gMC->Gsposp("CC4A", 22, "CM22",-X_MC4D,-Y_MC4D,Z_MC4D, 0, "ONLY", tpar, 3);
      
      gMC->Gspos("CM22", 1, "ALIC", 0., 0., zpos4, 0, "ONLY");
+
 }
 
  
@@ -1222,6 +1417,7 @@ void AliMUONv0::CreateMaterials()
     //
     // --- Define the various materials for GEANT --- 
     AliMaterial(9, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
+    AliMaterial(10, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
     AliMaterial(15, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500);
     AliMixture(19, "Bakelite$", abak, zbak, dbak, -3, wbak);
     AliMixture(20, "ArC4H10 GAS$", ag, zg, dg, 3, wg);
@@ -1243,6 +1439,8 @@ void AliMUONv0::CreateMaterials()
 
     AliMedium(4, "ALU_CH_US          ", 9, 0, ISXFLD, SXMGMX, tmaxfd, fMaxStepAlu, 
 	    fMaxDestepAlu, epsil, stmin);
+    AliMedium(5, "ALU_CH_US          ", 10, 0, ISXFLD, SXMGMX, tmaxfd, fMaxStepAlu, 
+	    fMaxDestepAlu, epsil, stmin);
     //
     //    Ar-isoC4H10 gas 
 
@@ -1254,6 +1452,9 @@ void AliMUONv0::CreateMaterials()
     AliMedium(7, "GAS_CH_TRIGGER    ", 21, 1, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
 
     AliMedium(8, "BAKE_CH_TRIGGER   ", 19, 0, ISXFLD, SXMGMX, tmaxfd, fMaxStepAlu, 
+	    fMaxDestepAlu, epsil, stmin);
+
+    AliMedium(9, "ARG_CO2   ", 22, 1, ISXFLD, SXMGMX, tmaxfd, fMaxStepGas, 
 	    fMaxDestepAlu, epsil, stmin);
 
 }
@@ -1270,8 +1471,10 @@ void AliMUONv0::Init()
    for (Int_t i=0; i<NCH; i++) {
        ( (AliMUONchamber*) (*fChambers)[i])->Init();
    }
+   
    //
    // Set the chamber (sensitive region) GEANT identifier
+   AliMC* gMC = AliMC::GetMC(); 
    ((AliMUONchamber*)(*fChambers)[0])->SetGid(gMC->VolId("C01G"));
    ((AliMUONchamber*)(*fChambers)[1])->SetGid(gMC->VolId("C02G"));
    ((AliMUONchamber*)(*fChambers)[2])->SetGid(gMC->VolId("C03G"));
@@ -1297,12 +1500,17 @@ void AliMUONv0::StepManager()
   static Int_t   idvol;
   static Int_t   vol[2];
   Int_t          ipart;
-  static Float_t hits[10];
+  TLorentzVector pos;
+  TLorentzVector mom;
+  Float_t        theta,phi;
   Float_t        destep, step;
-  static Float_t eloss, xhit, yhit, tlength;
-  const  Float_t big=1.e10;
-  TLorentzVector pos, mom;
   
+  static Float_t eloss, eloss2, xhit, yhit, tlength;
+  const  Float_t big=1.e10;
+  
+  //  modifs perso
+  static Float_t hits[14];
+
   TClonesArray &lhits = *fHits;
 
   //
@@ -1330,6 +1538,9 @@ void AliMUONv0::StepManager()
   gMC->TrackMomentum(mom);
 
   ipart  = gMC->TrackPid();
+  //Int_t ipart1 = gMC->IdFromPDG(ipart);
+  //printf("ich, ipart %d %d \n",vol[0],ipart1);
+
   //
   // momentum loss and steplength in last step
   destep = gMC->Edep();
@@ -1339,21 +1550,37 @@ void AliMUONv0::StepManager()
   // record hits when track enters ...
   if( gMC->IsTrackEntering()) {
       gMC->SetMaxStep(fMaxStepGas);
-      //      Double_t tc = mom[0]*mom[0]+mom[1]*mom[1];
-      //Double_t rt = TMath::Sqrt(tc);
-      //theta   = Float_t(TMath::ATan2(rt,Double_t(mom[2])))*kRaddeg;
-      //phi     = Float_t(TMath::ATan2(Double_t(mom[1]),Double_t(mom[0])))*kRaddeg;
+      Double_t tc = mom[0]*mom[0]+mom[1]*mom[1];
+      Double_t rt = TMath::Sqrt(tc);
+      Double_t pmom = TMath::Sqrt(tc+mom[2]*mom[2]);
+      Double_t tx=mom[0]/pmom;
+      Double_t ty=mom[1]/pmom;
+      Double_t tz=mom[2]/pmom;
+      Double_t s=((AliMUONchamber*)(*fChambers)[idvol])
+	  ->GetResponseModel()
+	  ->Pitch()/tz;
+      theta   = Float_t(TMath::ATan2(rt,Double_t(mom[2])))*kRaddeg;
+      phi     = Float_t(TMath::ATan2(Double_t(mom[1]),Double_t(mom[0])))*kRaddeg;
       hits[0] = Float_t(ipart);         // Geant3 particle type
-      hits[1] = pos[0];                 // X-position for hit
-      hits[2] = pos[1];                 // Y-position for hit
-      hits[3] = pos[2];                 // Z-position for hit
-      hits[4] = mom.Theta()*kRaddeg;    // theta angle of incidence
-      hits[5] = mom.Phi()*kRaddeg;      // phi angle of incidence 
+      hits[1] = pos[0]+s*tx;                 // X-position for hit
+      hits[2] = pos[1]+s*ty;                 // Y-position for hit
+      hits[3] = pos[2]+s*tz;                 // Z-position for hit
+      hits[4] = theta;                  // theta angle of incidence
+      hits[5] = phi;                    // phi angle of incidence 
       hits[8] = (Float_t) fNclusters;   // first padhit
       hits[9] = -1;                     // last pad hit
+
+      // modifs perso
+      hits[10] = mom[3]; // hit momentum P
+      hits[11] = mom[0]; // Px/P
+      hits[12] = mom[1]; // Py/P
+      hits[13] = mom[2]; // Pz/P
+      // fin modifs perso
+
       // phi angle of incidence
       tlength = 0;
       eloss   = 0;
+      eloss2  = 0;
       xhit    = pos[0];
       yhit    = pos[1];      
       // Only if not trigger chamber
@@ -1367,6 +1594,7 @@ void AliMUONv0::StepManager()
 	  //printf("In the Trigger Chamber #%d\n",idvol-9);
       }
   }
+  eloss2+=destep;
   
   // 
   // Calculate the charge induced on a pad (disintegration) in case 
@@ -1379,11 +1607,12 @@ void AliMUONv0::StepManager()
       
       // Only if not trigger chamber
       if(idvol<10) {
-	  if (eloss > 0) MakePadHits(xhit,yhit,eloss,idvol);
+	  if (eloss > 0) 
+	      MakePadHits(0.5*(xhit+pos[0]),0.5*(yhit+pos[1]),eloss,idvol);
       }
 	  
       hits[6]=tlength;
-      hits[7]=eloss;
+      hits[7]=eloss2;
       if (fNclusters > (Int_t)hits[8]) {
 	  hits[8]= hits[8]+1;
 	  hits[9]= (Float_t) fNclusters;
@@ -1403,7 +1632,8 @@ void AliMUONv0::StepManager()
       ((AliMUONchamber*) (*fChambers)[idvol])
 	  ->SigGenInit(pos[0], pos[1], pos[2]);
 //      printf("\n-> MakePadHits, reason special %d",ipart);
-      if (eloss > 0) MakePadHits(xhit,yhit,eloss,idvol);
+      if (eloss > 0)
+	  MakePadHits(0.5*(xhit+pos[0]),0.5*(yhit+pos[1]),eloss,idvol);
       xhit     = pos[0];
       yhit     = pos[1]; 
       eloss    = destep;
@@ -1415,334 +1645,3 @@ void AliMUONv0::StepManager()
       tlength += step ;
   }
 }
-
-//___________________________________________
-void AliMUON::MakePadHits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol)
-{
-//
-//  Calls the charge disintegration method of the current chamber and adds
-//  the simulated cluster to the root treee 
-//
-    Int_t clhits[7];
-    Float_t newclust[6][500];
-    Int_t nnew;
-    
-    
-//
-//  Integrated pulse height on chamber
-
-    
-    clhits[0]=fNhits+1;
-//
-//
-    ((AliMUONchamber*) (*fChambers)[idvol])->DisIntegration(eloss, xhit, yhit, nnew, newclust);
-//    printf("\n Add new clusters %d %f", nnew, eloss*1.e9);
-    Int_t ic=0;
-    
-//
-//  Add new clusters
-    for (Int_t i=0; i<nnew; i++) {
-	if (Int_t(newclust[3][i]) > 0) {
-	    ic++;
-// Cathode plane
-	    clhits[1] = Int_t(newclust[5][i]);
-//  Cluster Charge
-	    clhits[2] = Int_t(newclust[0][i]);
-//  Pad: ix
-	    clhits[3] = Int_t(newclust[1][i]);
-//  Pad: iy 
-	    clhits[4] = Int_t(newclust[2][i]);
-//  Pad: charge
-	    clhits[5] = Int_t(newclust[3][i]);
-//  Pad: chamber sector
-	    clhits[6] = Int_t(newclust[4][i]);
-	    
-	    AddCluster(clhits);
-	}
-    }
-//    printf("\n %d new clusters added", ic);
-}
-
-ClassImp(AliMUONchamber)	
-    AliMUONchamber::AliMUONchamber() 
-{
-    fSegmentation = new TObjArray(2);
-    fResponse=0;
-    fnsec=1;
-}
-
-void AliMUONchamber::Init()
-{
-    
-    ((AliMUONsegmentation *) (*fSegmentation)[0])->Init(this);
-    if (fnsec==2) {
-	((AliMUONsegmentation *) (*fSegmentation)[1])->Init(this);
-    }
-    
-}
-
-void AliMUONchamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
-				    Int_t& nnew,Float_t newclust[6][500]) 
-{
-//    
-//  Generates pad hits (simulated cluster) 
-//  using the segmentation and the response model 
-    Float_t dx, dy;
-    //
-    // Width of the integration area
-    //
-    dx=fResponse->Nsigma()*fResponse->ChwX();
-    dy=fResponse->Nsigma()*fResponse->ChwY();
-    //
-    // Get pulse height from energy loss
-    Float_t qtot = fResponse->IntPH(eloss);
-    //
-    // Loop Over Pads
-    
-    Float_t qcheck=0, qp;
-    nnew=0;
-    for (Int_t i=1; i<=fnsec; i++) {
-	qcheck=0;
-	AliMUONsegmentation * segmentation=(AliMUONsegmentation *) (*fSegmentation)[i-1];
-	for (segmentation->FirstPad(xhit, yhit, dx, dy); 
-	     segmentation->MorePads(); 
-	     segmentation->NextPad()) 
-	{
-	    qp=fResponse->IntXY(segmentation);
-	    qp=TMath::Abs(qp);
-	    
-//
-//
-	    if (qp > 1.e-4) {
-		qcheck+=qp;
-	    //
-	    // --- store signal information
-		newclust[0][nnew]=qtot;
-		newclust[1][nnew]=segmentation->Ix();
-		newclust[2][nnew]=segmentation->Iy();
-		newclust[3][nnew]=qp * qtot;
-		newclust[4][nnew]=segmentation->ISector();
-		newclust[5][nnew]=(Float_t) i;
-//		printf("\n pad hit %d %d %f %f ",nnew,i,newclust[1][nnew],newclust[2][nnew]);
-		nnew++;
-
-		
-	    }
-	} // Pad loop
-//	printf("\n check sum is %f %f %f %f %d",qcheck,qtot,xhit,yhit,fGid);
-    } // Cathode plane loop
-}
-
-
-ClassImp(AliMUONsegmentation)
-ClassImp(AliMUONresponse)	
-//___________________________________________
-ClassImp(AliMUONsegmentationV0)
-    void AliMUONsegmentationV0::Init(AliMUONchamber* Chamber)
-{
-    fNpx=(Int_t) (Chamber->frMax/fDpx+1);
-    fNpy=(Int_t) (Chamber->frMax/fDpy+1);
-}
-
-
-Float_t AliMUONsegmentationV0::GetAnod(Float_t xhit)
-{
-    Float_t wire= (xhit<0)? Int_t(xhit/fWireD)+0.5:Int_t(xhit/fWireD)-0.5;
-    return fWireD*wire;
-}
-
-void AliMUONsegmentationV0::SetPADSIZ(Float_t p1, Float_t p2)
-{
-    fDpx=p1;
-    fDpy=p2;
-}
-void AliMUONsegmentationV0::
-    GetPadIxy(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
-{
-//  returns pad coordinates (ix,iy) for given real coordinates (x,y)
-//
-    ix = (x>0)? Int_t(x/fDpx)+1 : Int_t(x/fDpx)-1;
-    iy = (y>0)? Int_t(y/fDpy)+1 : Int_t(y/fDpy)-1;
-    if (iy >  fNpy) iy= fNpy;
-    if (iy < -fNpy) iy=-fNpy;
-    if (ix >  fNpx) ix= fNpx;
-    if (ix < -fNpx) ix=-fNpx;
-}
-void AliMUONsegmentationV0::
-GetPadCxy(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
-{
-//  returns real coordinates (x,y) for given pad coordinates (ix,iy)
-//
-    x = (ix>0) ? Float_t(ix*fDpx)-fDpx/2. : Float_t(ix*fDpx)+fDpx/2.;
-    y = (iy>0) ? Float_t(iy*fDpy)-fDpy/2. : Float_t(iy*fDpy)+fDpy/2.;
-}
-
-void AliMUONsegmentationV0::
-FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
-{
-    //
-    // Find the wire position (center of charge distribution)
-    Float_t x0a=GetAnod(xhit);
-    //
-    // and take fNsigma*sigma around this center
-    Float_t x01=x0a  - dx;
-    Float_t x02=x0a  + dx;
-    Float_t y01=yhit - dy;
-    Float_t y02=yhit + dy;
-    //
-    // find the pads over which the charge distributes
-    GetPadIxy(x01,y01,fixmin,fiymin);
-    GetPadIxy(x02,y02,fixmax,fiymax);    
-//    printf("\n %f %f %d %d",x02,y02,fixmax,fiymax);
-//    printf("\n FirstPad called %f %f ", fDpx, fDpy);
-//    printf("\n Hit Position %f %f",xhit,yhit);
-//    printf("\n Integration limits: %i %i %i %i",fixmin,fixmax,fiymin,fiymax);
-//    printf("\n Integration limits: %f %f %f %f \n",x01,x02,y01,y02);
-    // 
-    // Set current pad to lower left corner
-    fix=fixmin;
-    fiy=fiymin;
-    GetPadCxy(fix,fiy,fx,fy);
-}
-
-void AliMUONsegmentationV0::NextPad()
-{
-  // 
-  // Step to next pad in integration region
-    if (fix != fixmax) {
-	fix++;
-    } else if (fiy != fiymax) {
-	fix=fixmin;
-	fiy++;
-    } else {
-	printf("\n Error: Stepping outside integration region\n ");
-    }
-    GetPadCxy(fix,fiy,fx,fy);
-}
-
-Int_t AliMUONsegmentationV0::MorePads()
-//
-// Are there more pads in the integration region
-{
-    if (fix == fixmax && fiy == fiymax) {
-	return 0;
-    } else {
-	return 1;
-	
-    }
-}
-
-void AliMUONsegmentationV0::SigGenInit(Float_t x,Float_t y,Float_t)
-{
-//
-//  Initialises pad and wire position during stepping
-    fxt =x;
-    fyt =y;
-    GetPadIxy(x,y,fixt,fiyt);
-    fiwt=Int_t(x/fWireD)+1;
-}
-
-Int_t AliMUONsegmentationV0::SigGenCond(Float_t x,Float_t y,Float_t)
-{
-//
-//  Signal will be generated if particle crosses pad boundary or
-//  boundary between two wires. 
-    Int_t ixt, iyt;
-    GetPadIxy(x,y,ixt,iyt);
-    Int_t iwt=Int_t(x/fWireD)+1;
-    
-    if ((ixt != fixt) || (iyt !=fiyt) || (iwt != fiwt)) {
-	return 1;
-    } else {
-	return 0;
-    }
-}
-void AliMUONsegmentationV0::
-IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& y1, Float_t& y2)
-{
-    x1=fxt-fx-fDpx/2.;
-    x2=x1+fDpx;
-    y1=fyt-fy-fDpy/2.;
-    y2=y1+fDpy;    
-}
-
-void AliMUONsegmentationV0::
-Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[7], Int_t Ylist[7])
-{
-    *Nlist=4;Xlist[0]=Xlist[1]=iX;Xlist[2]=iX-1;Xlist[3]=iX+1;
-    Ylist[0]=iY-1;Ylist[1]=iY+1;Ylist[2]=Ylist[3]=iY;
-}
-
-void AliMUONsegmentationV0::
-FitXY(AliMUONRecCluster* ,TClonesArray* )
-    // Default : Centre of gravity method
-{
-    ;
-}
-
-
-//___________________________________________
-ClassImp(AliMUONresponseV0)	
-Float_t AliMUONresponseV0::IntPH(Float_t eloss)
-{
-  // Get number of electrons and return charge
-     
-  Int_t nel;
-  nel= Int_t(eloss*1.e9/26.);
-  Float_t charge=0;
-  if (nel == 0) nel=1;
-  for (Int_t i=1;i<=nel;i++) {
-    charge -= fChslope*TMath::Log(gRandom->Rndm());    
-  }
-  return charge;
-}
-// -------------------------------------------
-Float_t AliMUONresponseV0::IntXY(AliMUONsegmentation * segmentation)
-{
-
-    const Float_t invpitch = 1/fPitch;
-//
-//  Integration limits defined by segmentation model
-//  
-    Float_t xi1, xi2, yi1, yi2;
-    segmentation->IntegrationLimits(xi1,xi2,yi1,yi2);
-    xi1=xi1*invpitch;
-    xi2=xi2*invpitch;
-    yi1=yi1*invpitch;
-    yi2=yi2*invpitch;
-//
-// The Mathieson function 
-    Double_t ux1=fSqrtKx3*TMath::TanH(fKx2*xi1);
-    Double_t ux2=fSqrtKx3*TMath::TanH(fKx2*xi2);
-
-    Double_t uy1=fSqrtKy3*TMath::TanH(fKy2*yi1);
-    Double_t uy2=fSqrtKy3*TMath::TanH(fKy2*yi2);
-
-    
-    return Float_t(4.*fKx4*(TMath::ATan(ux2)-TMath::ATan(ux1))*
-		      fKy4*(TMath::ATan(uy2)-TMath::ATan(uy1)));
-}
-
-// -------------------------------------------
-ClassImp(AliMUONgeometry)	
-    void AliMUONgeometry::InitGeo(Float_t)
-{
-      fdGas= 0.5;
-      fdAlu= 2.5/100*8.9;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

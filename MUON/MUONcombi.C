@@ -10,7 +10,7 @@ void MUONcombi (Int_t evNumber=0)
 //     Root > anal(2);    //process third event
 //Begin_Html
 /*
-<img src="picts/anal.gif">
+<img src="gif/anal.gif">
 */
 //End_Html
 /////////////////////////////////////////////////////////////////////////
