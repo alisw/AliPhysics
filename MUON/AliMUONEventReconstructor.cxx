@@ -45,6 +45,7 @@
 //#include "AliMUONTriggerConstants.h"
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONRawCluster.h"
+#include "AliMUONGlobalTrigger.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONRecoEvent.h"
 #include "AliMUONSegment.h"
@@ -972,10 +973,13 @@ void AliMUONEventReconstructor::MakeTriggerTracks(void)
     
     Int_t nTRentries;
     TClonesArray *localTrigger;
+    TClonesArray *globalTrigger;
     AliMUONLocalTrigger *locTrg;
+    AliMUONGlobalTrigger *gloTrg;
     AliMUONTriggerCircuit *circuit;
     AliMUONTriggerTrack *recTriggerTrack;
-    
+    Long_t gloTrigPat;
+
     TString evfoldname = AliConfig::fgkDefaultEventFolderName;//to be interfaced properly
     AliRunLoader* rl = AliRunLoader::GetRunLoader(evfoldname);
     if (rl == 0x0)
@@ -1011,7 +1015,32 @@ void AliMUONEventReconstructor::MakeTriggerTracks(void)
 
     pMUON->GetMUONData()->SetTreeAddress("GLT");
     pMUON->GetMUONData()->GetTrigger();
-    
+
+// global trigger
+    gloTrigPat = 0;
+    globalTrigger = pMUON->GetMUONData()->GlobalTrigger(); 
+    gloTrg = (AliMUONGlobalTrigger*)globalTrigger->UncheckedAt(0);	
+    if (gloTrg->SinglePlusLpt())  gloTrigPat|= 0x1;
+    if (gloTrg->SinglePlusHpt())  gloTrigPat|= 0x2;
+    if (gloTrg->SinglePlusApt())  gloTrigPat|= 0x4;
+ 
+    if (gloTrg->SingleMinusLpt()) gloTrigPat|= 0x8;
+    if (gloTrg->SingleMinusHpt()) gloTrigPat|= 0x10;
+    if (gloTrg->SingleMinusApt()) gloTrigPat|= 0x20;
+ 
+    if (gloTrg->SingleUndefLpt()) gloTrigPat|= 0x40;
+    if (gloTrg->SingleUndefHpt()) gloTrigPat|= 0x80;
+    if (gloTrg->SingleUndefApt()) gloTrigPat|= 0x100;
+ 
+    if (gloTrg->PairUnlikeLpt())  gloTrigPat|= 0x200;
+    if (gloTrg->PairUnlikeHpt())  gloTrigPat|= 0x400;
+    if (gloTrg->PairUnlikeApt())  gloTrigPat|= 0x800;
+
+    if (gloTrg->PairLikeLpt())    gloTrigPat|= 0x1000;
+    if (gloTrg->PairLikeHpt())    gloTrigPat|= 0x2000;
+    if (gloTrg->PairLikeApt())    gloTrigPat|= 0x4000;
+
+// local trigger
     localTrigger = pMUON->GetMUONData()->LocalTrigger();    
     Int_t nlocals = (Int_t) (localTrigger->GetEntries());
     Float_t z11 = ( &(pMUON->Chamber(10)) )->Z();
@@ -1027,7 +1056,8 @@ void AliMUONEventReconstructor::MakeTriggerTracks(void)
 	Float_t thetay = TMath::ATan2( (y21-y11) , (z21-z11) );
 
 	recTriggerTrack = new ((*fRecTriggerTracksPtr)[fNRecTriggerTracks])
-	    AliMUONTriggerTrack(x11,y11,thetax,thetay,this);
+	    AliMUONTriggerTrack(x11,y11,thetax,thetay,gloTrigPat,this);
+// since static statement does not work, set gloTrigPat for each track
 	fNRecTriggerTracks++;
     } // end of loop on Local Trigger
     return;    

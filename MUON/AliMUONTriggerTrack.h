@@ -19,12 +19,16 @@ class AliMUONTriggerTrack : public TObject {
     virtual ~AliMUONTriggerTrack(); // Destructor
     AliMUONTriggerTrack (const AliMUONTriggerTrack& AliMUONTriggerTrack); // copy constructor
     AliMUONTriggerTrack& operator=(const AliMUONTriggerTrack& AliMUONTriggerTrack); // assignment operator
-    AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t thetax, Float_t thetay, AliMUONEventReconstructor* EventReconstructor); // Constructor
+    AliMUONTriggerTrack(Float_t, Float_t, Float_t, Float_t, Long_t, 
+			AliMUONEventReconstructor* ); // Constructor
     Float_t GetX11() const {return fx11;}
     Float_t GetY11() const {return fy11;}
     Float_t GetThetax() const {return fthetax;}
     Float_t GetThetay() const {return fthetay;}    
-        
+
+    void SetGTPattern(const Long_t pat) {fGTPattern = pat;}    
+    Long_t GetGTPattern() const {return fGTPattern;}    
+    
 protected:
   private:
   AliMUONEventReconstructor* fEventReconstructor; //!   Pointer to EventReconstructor
@@ -32,8 +36,10 @@ protected:
   Float_t fy11;    // y position of fired X strip in MC11
   Float_t fthetax; // track theta angle in X   
   Float_t fthetay; // track theta angle in Y
-  
-  ClassDef(AliMUONTriggerTrack, 2) // Reconstructed trigger track in ALICE dimuon spectrometer
+  Long_t fGTPattern; // Global trigger pattern  (do not work with static statement) 
+
+  ClassDef(AliMUONTriggerTrack, 3) // Reconstructed trigger track in ALICE dimuon spectrometer
     };
 	
 #endif
+

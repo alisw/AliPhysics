@@ -37,6 +37,7 @@
 #include "AliMUONEventReconstructor.h" 
 #include "AliMUONTriggerTrack.h"
 
+
 //__________________________________________________________________________
 AliMUONTriggerTrack::AliMUONTriggerTrack()
 {
@@ -45,15 +46,18 @@ AliMUONTriggerTrack::AliMUONTriggerTrack()
     fy11 = 0.;
     fthetax = 0.;
     fthetay = 0.;
+    fGTPattern = 0;
 }
 //__________________________________________________________________________
-AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t thetax, Float_t thetay, AliMUONEventReconstructor* EventReconstructor)
+AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t thetax, Float_t thetay, Long_t GTPattern,  AliMUONEventReconstructor* EventReconstructor)
 {
     fEventReconstructor = EventReconstructor; // link back to EventReconstructor
     fx11 = x11;
     fy11 = y11;
     fthetax = thetax;
     fthetay = thetay;
+    fGTPattern = GTPattern;
+
 }
 
 //__________________________________________________________________________
@@ -72,6 +76,7 @@ AliMUONTriggerTrack::AliMUONTriggerTrack (const AliMUONTriggerTrack& MUONTrigger
   fy11 = MUONTriggerTrack.fy11;
   fthetax = MUONTriggerTrack.fthetax;
   fthetay = MUONTriggerTrack.fthetay;
+  fGTPattern = MUONTriggerTrack.fGTPattern;
 }
       
 //__________________________________________________________________________
@@ -86,7 +91,7 @@ MUONTriggerTrack)
     fy11 = MUONTriggerTrack.fy11;
     fthetax = MUONTriggerTrack.fthetax;
     fthetay = MUONTriggerTrack.fthetay;
+    fGTPattern = MUONTriggerTrack.fGTPattern;
+
     return *this;
 }
-
-
