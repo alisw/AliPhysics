@@ -836,6 +836,7 @@ void AliMUONv1::CreateGeometry()
      imax = 1; 
      Float_t rmin = 33.; 
      Float_t z1 = spar[2], z2=2*spar[2]*1.01; 
+     if (gAlice->GetModule("DIPO")) {z1*=-1.;}
      for (Int_t idiv=0;idiv<ndiv; idiv++){ 
        ydiv+= dydiv;
        Float_t xdiv = 0.; 
