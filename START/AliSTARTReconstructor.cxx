@@ -28,7 +28,7 @@
 
 ClassImp(AliSTARTReconstructor)
 
-  void AliSTARTReconstructor::Reconstruct(/*AliRunLoader* runLoader*/) 
+void AliSTARTReconstructor::Reconstruct(AliRunLoader* /*runLoader*/) const 
 {
 // nothing to be done
 }
@@ -38,7 +38,7 @@ void AliSTARTReconstructor::FillESD(AliRunLoader* rl, AliESD *pESD) const
   /***************************************************
   Resonstruct digits to vertex position
   ****************************************************/
-  
+
   Float_t c = 0.3;  //speed of light mm/ps
   Int_t channelWigth=25; //ps
   if (!rl) {

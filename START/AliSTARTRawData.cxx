@@ -32,7 +32,6 @@
 #include <AliRunLoader.h>
  
 #include "AliRawDataHeader.h"
-#include "AliRawData.h"
 
 ClassImp(AliSTARTRawData)
 

@@ -14,5 +14,6 @@
 #pragma link C++ class  AliSTARThit+;
 #pragma link C++ class  AliSTARThitPhoton+;
 #pragma link C++ class  AliSTARTDigitizer+;
+#pragma link C++ class  AliSTARTRawData+;
 
 #endif
