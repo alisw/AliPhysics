@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2003/01/20 23:32:49  nilsen
+New ITS geometry. Only a Skeleton for now.
+
 $Id$
 */
 
@@ -83,21 +86,21 @@ ClassImp(AliITSv11)
 
 //______________________________________________________________________
 AliITSv11::AliITSv11() : AliITS() {
-////////////////////////////////////////////////////////////////////////
-//    Standard default constructor for the ITS version 11.
-////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    //    Standard default constructor for the ITS version 11.
+    ////////////////////////////////////////////////////////////////////////
 }
 //______________________________________________________________________
 AliITSv11::AliITSv11(const char *title) : AliITS("ITS", title){
-////////////////////////////////////////////////////////////////////////
-//    Standard constructor for the ITS version 11.
-////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    //    Standard constructor for the ITS version 11.
+    ////////////////////////////////////////////////////////////////////////
 }
 //______________________________________________________________________
 AliITSv11::~AliITSv11() {
-////////////////////////////////////////////////////////////////////////
-//    Standard destructor for the ITS version 11.
-////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    //    Standard destructor for the ITS version 11.
+    ////////////////////////////////////////////////////////////////////////
 }
 //______________________________________________________________________
 void AliITSv11::Box(const char gnam[3],const TString &dis,
@@ -900,6 +903,42 @@ void AliITSv11::Matrix(Int_t irot,Double_t thet1,Double_t phi1,
     } // end if
 }
 //______________________________________________________________________
+void AliITSv11::Matrix(Int_t irot,Int_t axis,Double_t thet){
+    // Defines a Geant rotation matrix. checks to see if it is the unit
+    // matrix. If so, then no additonal matrix is defined. Stores rotation 
+    // matrix irot in the data structure JROTM. If the matrix is not 
+    // orthonormal, it will be corrected by setting y' perpendicular to x' 
+    // and z' = x' X y'. A warning message is printed in this case.
+    // Inputs:
+    //   Int_t irot         Intex specifing which rotation matrix.
+    //   Int_t axis         Axis about which rotation is to be done.
+    //   Double_t thet      Angle to rotate by [degrees].
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
+
+    if(thet==0.0){
+	fidrot[irot] = 0; // Unit matrix
+    }else{
+	switch (irot) {
+	case 0: //Rotate about x-axis, x-axis does not change.
+	    AliMatrix(fidrot[irot],90.0,0.0,90.0+thet,90.0,thet,90.0);
+	    break;
+	case 1: //Rotate about y-axis, y-axis does not change.
+	    AliMatrix(fidrot[irot],-90.0-thet,0.0,90.0,90.0,thet,90.0);
+	    break;
+	case 2: //Rotate about z-axis, z-axis does not change.
+	    AliMatrix(fidrot[irot],90.0,thet,90.0,-thet-90.0,0.0,0.0);
+	    break;
+	default:
+	    Error("Matrix","axis must be either 0, 1, or 2. for matrix=%d",
+		  irot);
+	    break;
+	} // end switch
+    } // end if
+}
+//______________________________________________________________________
 void AliITSv11::Matrix(Int_t irot,Double_t rot[3][3]){
     // Defines a Geant rotation matrix. checks to see if it is the unit
     // matrix. If so, then no additonal matrix is defined. Stores rotation 
@@ -942,43 +981,249 @@ void AliITSv11::Matrix(Int_t irot,Double_t rot[3][3]){
     } // end if
 }
 //______________________________________________________________________
-void AliITSv11::Matrix(Int_t irot,Int_t axis,Double_t thet){
-    // Defines a Geant rotation matrix. checks to see if it is the unit
-    // matrix. If so, then no additonal matrix is defined. Stores rotation 
-    // matrix irot in the data structure JROTM. If the matrix is not 
-    // orthonormal, it will be corrected by setting y' perpendicular to x' 
-    // and z' = x' X y'. A warning message is printed in this case.
+Float_t AliITSv11::GetA(Int_t z){
+    // Returns the isotopicaly averaged atomic number.
     // Inputs:
-    //   Int_t irot         Intex specifing which rotation matrix.
-    //   Int_t axis         Axis about which rotation is to be done.
-    //   Double_t thet      Angle to rotate by [degrees].
+    //    Int_t z  Elemental number
     // Outputs:
     //    none.
     // Return:
-    //    none.
+    //    The atomic mass number.
+    const Float_t A[]={ 1.00794 ,  4.0026902,  6.941   ,  9.012182 , 10.811   ,
+                       12.01007 , 14.00674  , 15.9994  , 18.9984032, 20.1797  ,
+                       22.98970 , 24.3050   , 26.981538, 28.0855   , 30.973761,
+                       32.066   , 35.4527   , 39.948   , 39.0983   , 40.078   ,
+                       44.95591 , 47.867    , 50.9415  , 51.9961   , 54.938049,
+                       55.845   , 58.933200 , 58.6934  , 63.546    , 65.39    ,
+                       69.723   , 72.61     , 74.92160 , 78.96     , 79.904   ,
+                       83.80    , 85.4678   , 87.62    , 88.9085   , 91.224   ,
+                       92.90638 , 95.94     , 97.907215, 101.07    ,102.90550 ,
+                      106.42    ,107.8682   ,112.411   ,114.818    ,118.710   ,
+                      121.760   ,127.60     ,126.90447 ,131.29     ,132.90545 ,
+                      137.327   ,138.9055   ,140.116   ,140.90765  ,144.24    ,
+                      144.912746,150.36     ,151.964   ,157.25     ,158.92534 ,
+                      162.50     ,164.93032 ,167.26    ,168.93421  ,173.04    ,
+                      174.967    ,178.49    ,180.9479 ,183.84      ,186.207   ,
+                      190.23     ,192.217   ,195.078  ,196.96655   ,200.59    ,
+                      204.3833   ,207.2     ,208.98038,208.982415  ,209.987131,
+                      222.017570 ,223.019731,226.025402,227.027747 ,232.0381  ,
+                      231.03588  238.0289};
 
-    if(thet==0.0){
-	fidrot[irot] = 0; // Unit matrix
-    }else{
-	switch (irot) {
-	case 0: //Rotate about x-axis, x-axis does not change.
-	    AliMatrix(fidrot[irot],90.0,0.0,90.0+thet,90.0,thet,90.0);
-	    break;
-	case 1: //Rotate about y-axis, y-axis does not change.
-	    AliMatrix(fidrot[irot],-90.0-thet,0.0,90.0,90.0,thet,90.0);
-	    break;
-	case 2: //Rotate about z-axis, z-axis does not change.
-	    AliMatrix(fidrot[irot],90.0,thet,90.0,-thet-90.0,0.0,0.0);
-	    break;
-	default:
-	    Error("Matrix","axis must be either 0, 1, or 2. for matrix=%d",
-		  irot);
-	    break;
+    if(z<1||z>92){
+	Error("GetA","z must be 0<z<93. z=%d",z);
+	return 0.0;
     } // end if
+    return A[z-1];
+}
+//______________________________________________________________________
+Float_t AliITSv11::GetStandardMaxStepSize(Int_t istd){
+    // Returns one of a set of standard Maximum Step Size values.
+    // Inputs:
+    //   Int_t istd  Index to indecate which standard.
+    // Outputs:
+    //    none.
+    // Return:
+    //    The appropreate standard Maximum Step Size value [cm].
+    Float_t t[]={1.0, // default
+	         0.0075, // Silicon detectors...
+		 1.0, // Air in central detectors region
+		 1.0  // Material in non-centeral region
+    };
+    return t[istd];
+}
+//______________________________________________________________________
+Float_t AliITSv11::GetStandardThetaMax(Int_t istd){
+    // Returns one of a set of standard Theata Max values.
+    // Inputs:
+    //   Int_t istd  Index to indecate which standard.
+    // Outputs:
+    //    none.
+    // Return:
+    //    The appropreate standard Theta max value [degrees].
+    Float_t t[]={0.1, // default
+	         0.1, // Silicon detectors...
+		 0.1, // Air in central detectors region
+		 1.0  // Material in non-centeral region
+    };
+    return t[istd];
+}
+//______________________________________________________________________
+Float_t AliITSv11::GetStandardEfraction(Int_t istd){
+    // Returns one of a set of standard E fraction values.
+    // Inputs:
+    //   Int_t istd  Index to indecate which standard.
+    // Outputs:
+    //    none.
+    // Return:
+    //    The appropreate standard E fraction value [#].
+    Float_t t[]={0.1, // default
+	         0.1, // Silicon detectors...
+		 0.1, // Air in central detectors region
+		 1.0  // Material in non-centeral region
+    };
+    return t[istd];
+}
+//______________________________________________________________________
+void AliITSv11::Element(Int_t imat,const char* name,Int_t z,Double_t dens,
+			Int_t istd){
+    // Defines a Geant single element material and sets its Geant medium
+    // proporties. The average atomic A is assumed to be given by their
+    // natural abundances. Things like the radiation length are calculated
+    // for you.
+    // Inputs:
+    //    Int_t imat       Material number.
+    //    const char* name Material name. No need to add a $ at the end.
+    //    Int_t z          The elemental number.
+    //    Double_t dens    The density of the material [g/cm^3].
+    //    Int_t istd       Defines which standard set of transport parameters
+    //                     which should be used.
+    // Output:
+    //     none.
+    // Return:
+    //     none.
+    Float_t rad,Z,A=GetA(z),tmax,stemax,deemax,epsilon;
+    char *name2;
+    Int_t len;
+
+    len = strlng(name)+1;
+    name2 = new char[len];
+    strncpy(name2,name,len-1);
+    name2[len-1] = '\0';
+    name2[len-2] = '$';
+    Z = (Float_t)z;
+    rad = GetRadLength(z)/dens;
+    AliMaterial(imat,name2,A,Z,dens,rad,0.0,0,0);
+    tmax    = GetStandardTheataMax(istd);    // degree
+    stemax  = GetStandardMaxStepSize(istd);  // cm
+    deemax  = GetStandardEfraction(istd);     // #
+    epsilon = GetStandardEpsilon(istd);
+    AliMedium(imat,name2,imat,0,gAlice->Field()->Integ(),
+	      gAlice->Field()->Max(),tmax,stemax,deemax,epsilon,0.0);
+    delete[] name2;
+}
+//______________________________________________________________________
+void AliITSv11::SSDCone(Double_t zShift){
+    // Defines the volumes and materials for the ITS SSD Support cone.
+    // Based on drawings ALR-0767 and ALR-0767/3. Units are in mm.
+    // Inputs: 
+    //   Double_t zShift  The z shift to be applied to the final volume.
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+    Double_t *za,*rmina,*rmaxa,phi0=0.0,dphi=360.0;
+    Int_t i,n,nz,nrad=0;
+    Double_t Cthick=1.5; //mm, Carbon finber thickness
+    Double_t r=15.0; // mm, Radius of curvature.
+    Double_t tc=51.0; // angle of SSD cone [degrees].
+    Double_t t; // some general angle [degrees].
+    Int_t SSDcf=; // SSD support cone Carbon Fiber materal number.
+
+    SetScalemm();
+    // Lets start with the upper left outer carbon fiber surface.
+    nz = 6;
+    za    = new Double_t[nz];
+    rmina = new Double_t[nz];
+    rmaxa = new Double_t[nz];
+
+    za[0] = 0.0;
+    rmaxa[0] = 985./2.;
+    rmina[0] = rmaxa[0] - Cthick;
+    za[1] = 13.5 - 5.0; // The original size of 13.5 (ALR-0767) is milled down
+    rmaxa[1] = rmaxa[0]; // by 5mm to give a well defined reference surface 
+    rmina[1] = rmina[0]; // (ALR-0767/3).
+    // The curved section is given by the following fomula
+    // rmax = r*Sind(90.-t)+rmaxa[0]-r for 0<=t<=tc.
+    // rmin = (r-Cthick)*Sind(90.-t)+rmina[0]-(r-Cthick) for 0<=t<=tc.
+    // z = r*Cosd(90.-t)+za[1] for 0<=t<=tc.
+    za[2] = (r-Cthick)*Cosd(90.-tc)+za[1];
+    rmina[2] = (r-Cthick)*Sind(90.0-tc)+rmaxa[0]-(r-Cthick);
+    t = 90.0 - ACosd((za[2]-za[1])/r); // angle for rmax
+    rmaxa[2] = r*Sind(90.-t)+rmaxa[0]-r;
+    rmaxa[3] = r*Sind(90.0-tc)+rmaxa[0]-r;
+    za[3] =r*Cosd(90.-tc)+za[1];
+    // angled section. surface is given by the following equations
+    // R = -Tand(tc)*Z + rmaxa[3] or rmina[2]
+    rmina[3] = -Tand(tc)*za[3] + rmina[2];
+    // Point of whole. Whole surface has fixed radius = 890.0/2 mm
+    rmina[4] = 890.0/2.+Cthick ; // Inner whole surface radius (ALR-0767)
+    za[4] = (rmina[4] - rmina[2])/(-Tand(tc));
+    rmaxa[4] = -Tand(tc)*za[4]+rmaxa[3];
+    //
+    rmaxa[5] = rmina[4];
+    rmina[5] = rmina[4];
+    za[5] = (rmaxa[5] - rmaxa[3])/(-Tand(tc));
+    PolyCone("SCAA","SSD Suport cone Carbon Fiber Surface outer left",
+	     phi0,dphi,nz,*z,*rmin,*rmax,SSDcf);
+    Za[0] = 1.; Wa[0] = ; // Hydrogen Content
+    Za[1] = 6.; Wa[0] = ; // Carbon Content
+    MixtureByWeight(SSDcf,"Carbon Fiber for SSD support cone",Z,W,dens,3);
+    // Now for the Filler in the mounting regions Upper left first
+    zb[0]    = za[0];
+    rmaxb[0] = rmina[0];
+    rminb[0] = 945./2.-Cthick;
+    //
+    rmaxb[1] = rmina[1];
+
+    delete[] za;delete[] rmina;delete[] rmaxa;
+    // Set back to cm default scale before exiting.
+    SetScalecm();
+    return;
 }
 //______________________________________________________________________
 void AliITSv11::CreateGeometry(){
-////////////////////////////////////////////////////////////////////////
-//    This routine defines and Creates the geometry for version 9 of the ITS.
-////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    // This routine defines and Creates the geometry for version 11 of the ITS.
+    ////////////////////////////////////////////////////////////////////////
 }
+//______________________________________________________________________
+void AliITSv11::CreateMaterials(){
+////////////////////////////////////////////////////////////////////////
+  //
+  // Create ITS materials
+  //     This function defines the default materials used in the Geant
+  // Monte Carlo simulations for the geometries AliITSv1, AliITSv3,
+  // AliITSv11.
+  // In general it is automatically replaced by
+  // the CreatMaterials routine defined in AliITSv?. Should the function
+  // CreateMaterials not exist for the geometry version you are using this
+  // one is used. See the definition found in AliITSv5 or the other routine
+  // for a complete definition.
+  //
+}
+//______________________________________________________________________
+void AliITSv11::InitAliITSgeom(){
+    //     Based on the geometry tree defined in Geant 3.21, this
+    // routine initilizes the Class AliITSgeom from the Geant 3.21 ITS geometry
+    // sturture.
+}
+
+//______________________________________________________________________
+void AliITSv11::Init(){
+    ////////////////////////////////////////////////////////////////////////
+    //     Initialise the ITS after it has been created.
+    ////////////////////////////////////////////////////////////////////////
+}
+//______________________________________________________________________
+void AliITSv11::SetDefaults(){
+    // sets the default segmentation, response, digit and raw cluster classes
+}
+//______________________________________________________________________
+void AliITSv11::DrawModule(){
+    ////////////////////////////////////////////////////////////////////////
+    //     Draw a shaded view of the FMD version 11.
+    ////////////////////////////////////////////////////////////////////////
+}
+//______________________________________________________________________
+void AliITSv11::StepManager(){
+    ////////////////////////////////////////////////////////////////////////
+    //    Called for every step in the ITS, then calles the AliITShit class
+    // creator with the information to be recoreded about that hit.
+    //     The value of the macro ALIITSPRINTGEOM if set to 1 will allow the
+    // printing of information to a file which can be used to create a .det
+    // file read in by the routine CreateGeometry(). If set to 0 or any other
+    // value except 1, the default behavior, then no such file is created nor
+    // it the extra variables and the like used in the printing allocated.
+    ////////////////////////////////////////////////////////////////////////
+}
+ 

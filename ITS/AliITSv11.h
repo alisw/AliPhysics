@@ -193,6 +193,28 @@ class AliITSv11 : public AliITS {
     // Rotation matrix about z axis
     void ZMatrix(Int_t irot,Double_t thet){
 	Matrix(irot,2,thet);}
+    // Define Element material and medium
+    void Element(Int_t imat,const char *name,Int_t z,Double_t dens,Int_t istd);
+    // Returns standard radiation lenghts of elements.
+    Float_t GetRadLength(Int_t z);
+    // Returns natrual abundance atomic mass numbers for a given element
+    Float_t GetA(Int_t z);
+    // Returns ITS standard Theata Max transport cut values
+    Float_t GetStandardThetaMax(Int_t istd);
+    // Returns ITS standard Theata Max transport cut values
+    Float_t GetStandardMaxStepSize(Int_t istd);
+    // Returns ITS standard Theata Max transport cut values
+    Float_t GetStandardEfraction(Int_t istd);
+    // Returns ITS standard Theata Max transport cut values
+    Float_t GetStandardEpsilon(Int_t istd);
+    // Degree Versions of TMath functions (as needed)
+    Double_t Sind(Double_t t){return TMath::Sin(TMath::Pi()*t/180.);}
+    Double_t Cosd(Double_t t){return TMath::Cos(TMath::Pi()*t/180.);}
+    Double_t Tand(Double_t t){return TMath::Tan(TMath::Pi()*t/180.);}
+    Double_t ASind(Double_t t){return 180.0*TMath::ASin(t)/TMath::Pi();}
+    Double_t ACosd(Double_t t){return 180.0*TMath::ACos(t)/TMath::Pi();}
+    Double_t ATand(Double_t t){return 180.0*TMath::ATan(t)/TMath::Pi();}
+    Double_t ATand2(Double_t y,Double_t x){return 180.0*TMath::ATan2(y,x)/TMath::Pi();}
 
     // TString fEuclidGeomtery,fEuclidMaterial defined in AliModule.
     Bool_t fEuclidOut;        // Flag to write geometry in euclid format
