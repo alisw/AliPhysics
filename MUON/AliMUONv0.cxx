@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2001/07/17 09:51:38  morsch
+Place station 3 inside Dipole.
+
 Revision 1.18  2001/04/06 11:24:43  morsch
 Dependency on implementations of AliSegmentation and AliMUONResponse moved to AliMUONFactory class.
 Static method Build() builds the MUON system out of chambers, segmentation and response.
@@ -150,7 +153,11 @@ void AliMUONv0::CreateGeometry()
 	 }
 	 gMC->Gspos(gas, 1, alu,  0., 0., 0., 0, "ONLY");
 	 if (ch == 4 || ch ==5) {
-	     gMC->Gspos(alu, 1, "DDIP", 0., 0., zpos, 0, "ONLY");
+	     if (gMC->VolId("DDIP")) {
+		 gMC->Gspos(alu, 1, "DDIP", 0., 0., zpos, 0, "ONLY");
+	     } else {
+		 gMC->Gspos(alu, 1, "ALIC", 0., 0., zpos, 0, "ONLY");
+	     }
 	 } else {
 	     gMC->Gspos(alu, 1, "ALIC", 0., 0., zpos, 0, "ONLY");
 	 }
@@ -161,8 +168,8 @@ void AliMUONv0::CreateGeometry()
 void AliMUONv0::CreateMaterials()
 {
 // Creates materials for coarse geometry
-    AliMaterial(15, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500);
-    AliMaterial(9, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
+    AliMaterial(15, "AIR$      ", 14.61,  7.3, .001205, 30423.24, 67500);
+    AliMaterial( 9, "ALUMINIUM$", 26.98, 13. , 2.7, 8.9, 37.2);
 
     Float_t epsil  = .001; // Tracking precision, 
     Float_t stemax = -1.;  // Maximum displacement for multiple scat 
@@ -175,7 +182,7 @@ void AliMUONv0::CreateMaterials()
     //
     //    Air 
     AliMedium(1, "AIR_CH_US         ", 15, 1, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-    AliMedium(4, "ALU_CH_US          ", 9, 0, isxfld, sxmgmx, tmaxfd, fMaxStepAlu, 
+    AliMedium(4, "ALU_CH_US         ",  9, 0, isxfld, sxmgmx, tmaxfd, fMaxStepAlu, 
 	    fMaxDestepAlu, epsil, stmin);
 
 }
@@ -241,6 +248,8 @@ void AliMUONv0::StepManager()
   // record hits when track enters ...
   if( !(gMC->TrackCharge()) ) return; 
   if( gMC->IsTrackEntering()) {
+//      printf("\n Particle entering %f %f %f", pos[0], pos[1], pos[2] );
+      
       Double_t tc = mom[0]*mom[0]+mom[1]*mom[1];
       Double_t rt = TMath::Sqrt(tc);
       theta   = Float_t(TMath::ATan2(rt,Double_t(mom[2])))*kRaddeg;
@@ -262,6 +271,7 @@ void AliMUONv0::StepManager()
 	  AliMUONHit(fIshunt,gAlice->CurrentTrack(),vol,hits);
 
   }
+//  if( gMC->IsTrackExiting()) gMC->StopTrack(); 
 }
 
 
