@@ -1735,7 +1735,7 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr, Int_t np, TMatrix *m1, TMatr
      PadNumber=CentralPad;
    }
    else if (absy < range){
-     PadNumber=(Int_t) ((absy-0.5*fTPCParam->GetPadPitchWidth())/fTPCParam->GetPadPitchWidth());
+     PadNumber=(Int_t) ((absy-0.5*fTPCParam->GetPadPitchWidth())/fTPCParam->GetPadPitchWidth()+1.);
      PadNumber=(Int_t) (TMath::Sign((Float_t)PadNumber, y)+CentralPad);
    }
    else continue; // electron out of pad-range , lost at the sector edge
@@ -2133,7 +2133,7 @@ void AliTPC::GetCrossTalk (Int_t iFlag,TObjArray *p,Int_t ntracks,Int_t *npads,
        PadNumber=CentralPad;
      }
      else if (absy < range){
-       PadNumber=(Int_t) ((absy-0.5*fTPCParam->GetPadPitchWidth())/fTPCParam->GetPadPitchWidth());
+       PadNumber=(Int_t) ((absy-0.5*fTPCParam->GetPadPitchWidth())/fTPCParam->GetPadPitchWidth() +1.);
        PadNumber=(Int_t) (TMath::Sign((Float_t)PadNumber, y)+CentralPad);
      }
      else continue; // electron out of sense wire range, lost at the sector edge

@@ -769,7 +769,7 @@ void AliTPCv3::StepManager()
   Float_t ptot=mom.Rho();
   Float_t beta_gamma = ptot/gMC->TrackMass();
   
-  if(gMC->TrackPid() <= 3 && ptot > 0.002)
+  if(gMC->IdFromPDG(gMC->TrackPid()) <= 3 && ptot > 0.002)
     { 
       pp = prim*1.58; // electrons above 20 MeV/c are on the plateau!
     }

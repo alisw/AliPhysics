@@ -777,7 +777,7 @@ void AliTPCv1::CreateGeometry()
   gMC->Gsord("TGAS", 6);
   gMC->Gsord("TPSG", 6);
   gMC->Gsord("TSGA", 3);
-  gMC->Gsord("TLGA", 2);
+  gMC->Gsord("TLGA", 4);
 
 } // end of function
 

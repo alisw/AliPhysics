@@ -363,7 +363,7 @@ void AliTPCv2::CreateGeometry()
 
     }    
 
-    gMC->Gsord("TLGA", 2);
+    gMC->Gsord("TLGA", 4);
 
   } // if strips selected
 
@@ -987,9 +987,13 @@ void AliTPCv2::StepManager()
   //
   // parameters used for the energy loss calculations
   //
-  const Float_t prim = 14.35; // number of primary collisions per 1 cm
-  const Float_t poti = 20.77e-9; // first ionization potential for Ne/CO2
-  const Float_t w_ion = 35.97e-9; // energy for the ion-electron pair creation 
+   const Float_t prim = 14.35; // number of primary collisions per 1 cm
+   const Float_t poti = 20.77e-9; // first ionization potential for Ne/CO2
+   const Float_t w_ion = 35.97e-9; // energy for the ion-electron pair creation 
+
+  //  const Float_t prim = 17.65;
+  //  const Float_t poti = 19.02e-9;
+  // const Float_t w_ion = 33.06e-9;
  
  
   const Float_t big = 1.e10;
@@ -1084,7 +1088,7 @@ void AliTPCv2::StepManager()
   Float_t ptot=mom.Rho();
   Float_t beta_gamma = ptot/gMC->TrackMass();
   
-  if(gMC->TrackPid() <= 3 && ptot > 0.002)
+  if(gMC->IdFromPDG(gMC->TrackPid()) <= 3 && ptot > 0.002)
     { 
       pp = prim*1.58; // electrons above 20 MeV/c are on the plateau!
     }
