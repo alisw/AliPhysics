@@ -35,7 +35,7 @@
 #  define ghelix ghelix_
 #  define grkuta grkuta_
 #  define gtrack gtrack_
-#  define gtreve gtreve_
+#  define gtreve_root gtreve_root_
 #  define glast  glast_
 
 #else
@@ -71,7 +71,7 @@
 #  define ghelix GHELIX
 #  define grkuta GRKUTA
 #  define gtrack GTRACK
-#  define gtreve GTREVE
+#  define gtreve_root GTREVE_ROOT
 #  define glast  GLAST
 
 #endif
@@ -86,7 +86,7 @@ extern "C" type_of_call void ghelx3(Float_t&, Float_t&, Float_t*, Float_t*);
 extern "C" type_of_call void ghelix(Float_t&, Float_t&, Float_t*, Float_t*);
 extern "C" type_of_call void grkuta(Float_t&, Float_t&, Float_t*, Float_t*);
 extern "C" type_of_call void gtrack();
-extern "C" type_of_call void gtreve();
+extern "C" type_of_call void gtreve_root();
 extern "C" type_of_call void glast();
 
 
@@ -440,7 +440,7 @@ void gutrev()
 //
 //    ------------------------------------------------------------------
 //
-  gtreve();
+  gtreve_root();
 }
 
 
