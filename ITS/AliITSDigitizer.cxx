@@ -15,6 +15,9 @@
  
 /*
 $Log$
+Revision 1.8  2003/03/03 17:00:30  masera
+Corrections to comply with coding conventions
+
 Revision 1.7  2002/10/25 18:54:22  barbera
 Various improvements and updates from B.S.Nilsen and T. Virgili
 
@@ -55,6 +58,7 @@ The SDigits are reading as TClonesArray of AliITSpListItem
 //  the digitization for ITS
 //
 //
+#include <stdlib.h>
 #include <Riostream.h>
 #include <TClonesArray.h> 
 #include <TTree.h>
