@@ -50,7 +50,7 @@ AliRICHTresholdMap::~AliRICHTresholdMap()
     if (fHitMap) delete[] fHitMap;
 }
 
-void AliRICHTresholdMap::Clear(const char *opt = "")
+void AliRICHTresholdMap::Clear(const char *opt)
 {
 
 // Clear contents of hit map
