@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2002/02/08 16:50:50  morsch
+Add name and title in constructor.
+
 Revision 1.7  2001/07/27 17:09:35  morsch
 Use local SetTrack, KeepTrack and SetHighWaterMark methods
 to delegate either to local stack or to stack owned by AliRun.
@@ -88,7 +91,7 @@ void AliGenDoubleScan::Generate()
     Float_t dx,dy,dz;
     
     //
-    if (fNy > 0) {
+    if (fNx > 0) {
 	dx=(fXCmax-fXCmin)/fNx;
     } else {
 	dx=1e10;
