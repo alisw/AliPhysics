@@ -141,7 +141,8 @@ Int_t AliHBTReaderESD::ReadNext()
            continue;
          }
         
-        if (esdtrack->HasVertexParameters() == kFALSE)
+        //if (esdtrack->HasVertexParameters() == kFALSE) 
+        if ((esdtrack->GetStatus() & AliESDtrack::kITSrefit) == kFALSE)
          {
            if (AliHBTParticle::fgDebug > 2) 
              Info("ReadNext","Particle skipped: Data at vertex not available.");
@@ -156,8 +157,10 @@ Int_t AliHBTReaderESD::ReadNext()
          }
        
         esdtrack->GetESDpid(pidtable);
-        esdtrack->GetVertexPxPyPz(mom[0],mom[1],mom[2]);
-        esdtrack->GetVertexXYZ(pos[0],pos[1],pos[2]);
+        //esdtrack->GetVertexPxPyPz(mom[0],mom[1],mom[2]); 
+        esdtrack->GetPxPyPz(mom);
+        //esdtrack->GetVertexXYZ(pos[0],pos[1],pos[2]);
+        esdtrack->GetXYZ(pos);
         
         Double_t extx;
         Double_t extp[5];
