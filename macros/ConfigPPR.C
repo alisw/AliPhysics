@@ -680,7 +680,7 @@ AliGenHijing* HijingStandard()
 // tell hijing to keep the full parent child chain
      gener->KeepFullEvent();
 // enable jet quenching
-     gener->SetJetQuenching(1);
+     gener->SetJetQuenching(4);
 // enable shadowing
      gener->SetShadowing(1);
 // neutral pion and heavy particle decays switched off
