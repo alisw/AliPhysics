@@ -40,6 +40,7 @@
 #pragma link C++ class  AliMevSimConfig+;
 #pragma link C++ class  AliMevSimParticle+;
 #pragma link C++ class  AliGenMevSim+;
+#pragma link C++ class  AliGenMC+;
 #endif
 
 
