@@ -179,6 +179,7 @@ void AliMUONDigitizerv2::Exec(Option_t* option)
     fDebug = 3;
   }
 
+  AliRun *aliRun;
   AliMUONChamber*   chamber;
   AliSegmentation*  c1Segmentation; //Cathode plane c1 of the chamber
   AliSegmentation*  c2Segmentation; //Cathode place c2 of the chamber
@@ -207,10 +208,10 @@ void AliMUONDigitizerv2::Exec(Option_t* option)
   if (GetDebug()>2) Info("Exec","Loaders ready");
 
   if (runloader->GetAliRun() == 0x0) runloader->LoadgAlice();
-  gAlice = runloader->GetAliRun();
+  aliRun = runloader->GetAliRun();
 
   // Getting Module MUON  
-  AliMUON *pMUON  = (AliMUON *) gAlice->GetDetector("MUON");
+  AliMUON *pMUON  = (AliMUON *) aliRun->GetDetector("MUON");
   if (!pMUON) {
     Error("Digitize","Module MUON not found in the input file");
     return;
@@ -228,7 +229,6 @@ void AliMUONDigitizerv2::Exec(Option_t* option)
 
   // Output runloader 
   runloaderOut  = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
-  runloaderOut->SetNumberOfEventsPerFile(runloader->GetNumberOfEvents());
   gimeOut = runloaderOut->GetLoader("MUONLoader");
   
 
