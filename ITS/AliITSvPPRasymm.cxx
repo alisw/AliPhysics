@@ -1637,7 +1637,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[18] = 57.4;
   dits[19] = 26.74;
   dits[20] = 28;
-  gMC->Gsvolu("I093", "PCON", idtmed[272], dits, 21);
+  gMC->Gsvolu("I093", "PCON", idtmed[272], dits, 21);  // SDD cone
 
   dits[0] = 0;
   dits[1] = 50;
@@ -1651,7 +1651,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[9] = 51.45;
   dits[10] = 18.75;
   dits[11] = 18.75;
-  gMC->Gsvolu("I099", "PCON", idtmed[204], dits, 12);
+  gMC->Gsvolu("I099", "PCON", idtmed[292], dits, 12); // SDD 3 end-ladder elect.
 
   dits[0] = 0;
   dits[1] = 25;
@@ -1665,7 +1665,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[9] = 59.1;
   dits[10] = 26.4;
   dits[11] = 26.4;
-  gMC->Gsvolu("I200", "PCON", idtmed[204], dits, 12);
+  gMC->Gsvolu("I200", "PCON", idtmed[292], dits, 12); // SDD 4 end-ladder elect.
 
   dits[0] = 10.065;
   dits[1] = 11;
@@ -1779,7 +1779,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[18] = -57;
   dits[19] = 28;
   dits[20] = 30.5;
-  gMC->Gsvolu("I212", "PCON", idtmed[272], dits, 21);
+  gMC->Gsvolu("I212", "PCON", idtmed[272], dits, 21);  // SSD cone
 
   //dits[0] = 29.82;
   //dits[1] = 30.5;
@@ -1839,8 +1839,8 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[15] = -63.5;
   dits[16] = 37;
   dits[17] = 42.1;
-  gMC->Gsvolu("I215", "PCON", idtmed[220], dits, 18);
-
+  gMC->Gsvolu("I215", "PCON", idtmed[294], dits, 18);  // SSD end-ladder elect.
+ 
   dits[0] = 0;
   dits[1] = 3.2;
   dits[2] = 9;
