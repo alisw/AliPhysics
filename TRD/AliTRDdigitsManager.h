@@ -32,14 +32,15 @@ class AliTRDdigitsManager : public TObject {
 
   virtual void                CreateArrays();
   virtual void                Copy(TObject &m);
-  virtual Bool_t              Open(const Char_t *name);
+  virtual Bool_t              Open(const Char_t *file);
   virtual Bool_t              MakeBranch(const Char_t *file = 0);
-  virtual Bool_t              ReadDigits();
+  virtual Bool_t              MakeBranch(TTree *tree, const Char_t *file = 0);
+  virtual Bool_t              ReadDigits(TTree *tree = 0);
   virtual Bool_t              WriteDigits();
 
   virtual void                SetRaw();
   virtual void                SetEvent(Int_t evt)          { fEvent   = evt; };
-  virtual void                SetVerbose(Int_t v = 1)      { fVerbose = v;   };
+  virtual void                SetDebug(Int_t v = 1)        { fDebug   = v;   };
   virtual void                SetSDigits(Int_t v = 1)      { fSDigits = v;   };
 
   virtual Bool_t              IsRaw() const                { return fIsRaw;         };
@@ -71,9 +72,9 @@ class AliTRDdigitsManager : public TObject {
 
   Bool_t              fIsRaw;              //  Flag indicating raw digits
   Bool_t              fSDigits;            //  Switch for the summable digits
-  Int_t               fVerbose;            //  Verbose flag
+  Int_t               fDebug;              //  Debug flag
 
-  ClassDef(AliTRDdigitsManager,3)          //  Manages the TRD digits
+  ClassDef(AliTRDdigitsManager,4)          //  Manages the TRD digits
 
 };
 

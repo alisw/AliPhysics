@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/05/07 08:08:05  cblume
+Update of TRD code
+
 Revision 1.8  2000/11/23 14:34:08  cblume
 Fixed bug in expansion routine of arrays (initialize buffers properly)
 
@@ -200,8 +203,8 @@ Int_t AliTRDdataArrayI::GetOverThreshold(Int_t threshold)
   Int_t over = 0;
 
   for (Bool_t cont = First(); cont == kTRUE; cont = Next()) {
-    if ((fCurrentIdx1 < 0) || (fCurrentIdx1 > fNdim1)) continue;
-    if ((fCurrentIdx2 < 0) || (fCurrentIdx2 > fNdim2)) continue;
+    if ((fCurrentIdx1 < 0) || (fCurrentIdx1 >= fNdim1)) continue;
+    if ((fCurrentIdx2 < 0) || (fCurrentIdx2 >= fNdim2)) continue;
     if (fElements->At(fCurrentIndex) > threshold) over++;
   }
 

@@ -29,8 +29,8 @@ class AliTRDdataArray : public AliTRDsegmentID {
   virtual void   Allocate(Int_t nrow, Int_t ncol,Int_t ntime);
   virtual void   Reset();
 
-  virtual Int_t  GetNRow() const               { return fNrow;       };
-  virtual Int_t  GetNCol() const               { return fNcol;       };
+  virtual Int_t  GetNrow() const               { return fNrow;       };
+  virtual Int_t  GetNcol() const               { return fNcol;       };
   virtual Int_t  GetNtime() const              { return fNtime;      };
           Int_t  GetIndex(Int_t row, Int_t col, Int_t time) const;
           Int_t  GetIndexUnchecked(Int_t row, Int_t col, Int_t time) const
