@@ -156,16 +156,21 @@ void AliL3GlobalMerger::SlowMerge(){
       if(min0>=0&&min1>=0){
         AliL3Track *track0=ttt0->GetTrack(min0);
         AliL3Track *track1=ttt1->GetTrack(min1);
-        track[0] = track0;
+	track[0] = track0;
         track[1] = track1;
         SortGlobalTracks(track,2);
-        MultiMerge(tout,track,2); 
+	track1->CalculateEdgePoint((angle+PI/9));
+	if(track1->IsPoint())//Check if the track will cross the boundary of yet another slice.
+	  MultiMerge(ttt1,track,2);
+	else
+	  MultiMerge(tout,track,2); 
         track0->CalculateReferencePoint(angle);
         track1->CalculateReferencePoint(angle);
 	PrintDiff(track0,track1);
         FillNtuple(ntuple,track0,track1);
         ttt0->Remove(min0);
         ttt1->Remove(min1);
+	
       }
       else merge = kFALSE;
     }
