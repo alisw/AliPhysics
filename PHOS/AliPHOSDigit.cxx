@@ -61,6 +61,8 @@ AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t DigEnergy, Int_t index
   fIndexInList = index ; 
   fPrimary1    = primary ;
   fNprimary    = 1 ; 
+  fPrimary2    = -1 ; 
+  fPrimary3    = -1 ;
 }
 
 //____________________________________________________________________________
