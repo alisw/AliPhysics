@@ -1056,6 +1056,7 @@ void AliPHOSv0::FinishEvent()
   for ( i = 0 ; i < fNTmpHits ; i++ ) {
     hit = (AliPHOSHit*)fTmpHits->At(i) ;
     newdigit = new AliPHOSDigit( hit->GetPrimary(), hit->GetId(), Digitize( hit->GetEnergy() ) ) ;
+    deja =kFALSE ;
     for ( j = 0 ; j < fNdigits ;  j++) { 
       curdigit = (AliPHOSDigit*) lDigits[j] ;
       if ( *curdigit == *newdigit) {
