@@ -262,7 +262,7 @@ void Config()
   if(iFMD) {
     //=================== FMD parameters ============================
 
-    AliFMD *FMD  = new AliFMDv1("FMD","normal FMD");
+    AliFMD *FMD  = new AliFMDv0("FMD","normal FMD");
   }
 
   if(iMUON) {
