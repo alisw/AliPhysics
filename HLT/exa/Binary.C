@@ -1,4 +1,4 @@
-binary(char* in,int first, int last,char *path=""){
+Binary(char* in,int first, int last,char *path=""){
   char name[256];
   AliL3FileHandler *fFileHandler = new AliL3FileHandler(); 
   fFileHandler->SetAliInput(in);
