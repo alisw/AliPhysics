@@ -102,7 +102,8 @@ void AliITSresponseSDD::SetDeadChannels(Int_t nmod, Int_t nchip, Int_t nchan) {
   
 //  cout << "modules" << endl;
   Int_t * mod = new Int_t [nmod];
-  for(Int_t i=0;i<nmod;i++) {
+  Int_t i; //loop variable
+  for(i=0;i<nmod;i++) {
     mod[i] = (Int_t) (1.+fModules*gran->Uniform());
     cout << i+1 << ": Dead module nr: " << mod[i] << endl;
     for(Int_t n=0; n<fChips; n++)
@@ -113,7 +114,7 @@ void AliITSresponseSDD::SetDeadChannels(Int_t nmod, Int_t nchip, Int_t nchan) {
 //  cout << "chips" << endl;
   Int_t * chip = new Int_t[nchip];
   Int_t * chip_mod = new Int_t[nchip];
-  Int_t i=0;
+  i=0;
   while(i<nchip) {
     Int_t module = (Int_t) (fModules*gran->Uniform() + 1.);
     if(module <=0 || module > fModules) cout << "Wrong module: " << module << endl;
@@ -135,15 +136,16 @@ void AliITSresponseSDD::SetDeadChannels(Int_t nmod, Int_t nchip, Int_t nchan) {
   Int_t * channel_mod = new Int_t[nchan];
   i=0;
   while(i<nchan) {
+    Int_t k; //loop variable
     Int_t module = (Int_t) (fModules*gran->Uniform() + 1.);
     if(module <=0 || module > fModules) cout << "Wrong module: " << module << endl;
     Int_t flag_mod = 0;
-    for(Int_t k=0;k<nmod;k++) if(module == mod[k]) flag_mod = 1;
+    for(k=0;k<nmod;k++) if(module == mod[k]) flag_mod = 1;
     if(flag_mod == 1) continue;
     Int_t chipp = (Int_t) (fChips*gran->Uniform() + 1.);
     if(chipp <=0 || chipp > fChips) cout << "Wrong chip: " << chipp << endl;
     Int_t flag_chip = 0;
-    for(Int_t k=0;k<nchip;k++) if(chipp == chip[k] && module == chip_mod[k]) flag_chip = 1;
+    for(k=0;k<nchip;k++) if(chipp == chip[k] && module == chip_mod[k]) flag_chip = 1;
     if(flag_chip == 1) continue;
     i++;
     channel[i-1] = (Int_t) (fChannels*gran->Uniform() + 1.); 
