@@ -1071,7 +1071,7 @@ Int_t AliTreeLoader::WriteData(Option_t* opt)
 
 void AliTreeLoader::MakeTree()
 {
-//this virtual method creates the tree for hits in the file
+//this virtual method creates the tree in the file
   if (Tree()) 
    {
     if (GetDebug()) 

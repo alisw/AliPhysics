@@ -85,9 +85,9 @@ class AliLoader: public TNamed
     TObject**      TrackerRef();
     TObject**      PIDTaskRef();
     
-    virtual void   MakeHitsContainer(){GetHitsDataLoader()->MakeTree();SetTAddrInDet();}
-    virtual void   MakeSDigitsContainer(){GetSDigitsDataLoader()->MakeTree();SetTAddrInDet();}
-    virtual void   MakeDigitsContainer(){GetDigitsDataLoader()->MakeTree();SetTAddrInDet();}
+    virtual void   MakeHitsContainer(){GetHitsDataLoader()->MakeTree();}
+    virtual void   MakeSDigitsContainer(){GetSDigitsDataLoader()->MakeTree();}
+    virtual void   MakeDigitsContainer(){GetDigitsDataLoader()->MakeTree();}
     virtual void   MakeRecPointsContainer(){GetRecPointsDataLoader()->MakeTree();}
     virtual void   MakeTracksContainer(){GetTracksDataLoader()->MakeTree();}
     virtual void   MakeRecParticlesContainer(){GetRecParticlesDataLoader()->MakeTree();}

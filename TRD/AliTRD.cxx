@@ -1253,7 +1253,7 @@ void AliTRD::SetTreeAddress2()
   //
   // Set the branch address for the trackHits tree
   //
-  cout<<"AliTRD::SetTreeAddress2()"<<endl;
+  if (GetDebug())  Info("SetTreeAddress2","");
 
   TBranch *branch;
   char branchname[20];
@@ -1266,13 +1266,13 @@ void AliTRD::SetTreeAddress2()
     if (branch) 
      {
        branch->SetAddress(&fTrackHits);
-       cout<<"Success"<<endl;
+       if (GetDebug())
+         Info("SetTreeAddress2","Success.");
      }
     else
      {
-       cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
-       cout<<"AliTRD::SetTreeAddress2() Can NOT get the branch "<<branchname<<endl;
-       cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
+       if (GetDebug())
+         Info("SetTreeAddress2","Can NOT get the branch %s",branchname);
      }
   }
 

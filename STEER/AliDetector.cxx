@@ -420,8 +420,8 @@ void AliDetector::SetTreeAddress()
        branch->SetAddress(&fHits);
      }
     else
-     {
-       Warning("SetTreeAddress","(%s) Failed for Hits. Can not find branch in tree.",GetName());
+     { //can be invoked before branch creation
+       if(GetDebug()) Warning("SetTreeAddress","(%s) Failed for Hits. Can not find branch in tree.",GetName());
      }
   }
   
@@ -460,12 +460,13 @@ AliLoader* AliDetector::MakeLoader(const char* topfoldername)
 //builds standard getter (AliLoader type)
 //if detector wants to use castomized getter, it must overload this method
 
- cout<<"AliDetector::MakeLoader: Creating standard getter for detector "<<GetName()
-     <<". top folder is "<<topfoldername<<endl;
+ if (GetDebug())
+   Info("MakeLoader",
+        "Creating standard getter for detector %s. Top folder is %s.",
+         GetName(),topfoldername);
      
  fLoader = new AliLoader(GetName(),topfoldername);
  return fLoader;
- 
 }
 
 //_______________________________________________________________________

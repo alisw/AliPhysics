@@ -760,12 +760,17 @@ void AliModule::SetTreeAddress()
      branch = treeTR->GetBranch(GetName());
     if (branch) 
      {
-       if(GetDebug()) Info("SetTreeAddress","(%s) Setting for TrackRefs",GetName());
+       if(GetDebug()) 
+         Info("SetTreeAddress","(%s) Setting for TrackRefs",GetName());
        branch->SetAddress(&fTrackReferences);
      }
     else
-     {
-       Warning("SetTreeAddress","(%s) Failed for Track References. Can not find branch in tree.",GetName());
+     { 
+     //can be called before MakeBranch and than does not make sense to issue the warning
+       if(GetDebug()) 
+         Warning("SetTreeAddress",
+                 "(%s) Failed for Track References. Can not find branch in tree.",
+                 GetName());
      }
   }
 }

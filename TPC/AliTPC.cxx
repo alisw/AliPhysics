@@ -1455,18 +1455,24 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
  for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) 
   if (IsSectorActive(isec)) 
    {
-    cout<<"Sector "<<isec<<"is active\n";
+    if (fDebug) Info("Hits2Digits","Sector %d is active.",isec);
     Hits2DigitsSector(isec);
    }
   else
    {
-    cout<<"Sector "<<isec<<"is NOT active\n";
+    if (fDebug) Info("Hits2Digits","Sector %d is NOT active.",isec);
    }
 
   fLoader->WriteDigits("OVERWRITE"); 
+  
+//this line prevents the crash in the similar one
+//on the beginning of this method
+//destructor attempts to reset the tree, which is deleted by the loader
+//need to be redesign
+ if(GetDigitsArray()) delete GetDigitsArray();
+ SetDigitsArray(0x0);
+  
 }
-
-
 
 //__________________________________________________________________
 void AliTPC::Hits2SDigits2(Int_t eventnumber)  
@@ -2484,18 +2490,21 @@ void AliTPC::SetTreeAddress2()
     if (branch) 
      {
        branch->SetAddress(&fTrackHits);
-       cout<<"AliTPC::SetTreeAddress2 fHitType&4 Setting"<<endl;       
+       if (GetDebug()) Info("SetTreeAddress2","fHitType&4 Setting");
      }
-    else cout<<"AliTPC::SetTreeAddress2 fHitType&4  Failed"<<endl;
+    else 
+    if (GetDebug()) Info("SetTreeAddress2","fHitType&4 Failed (can not find branch)");
+    
   }
   if ((treeH)&&(fHitType&2)) {
     branch = treeH->GetBranch(branchname);
     if (branch) 
      {
        branch->SetAddress(&fTrackHitsOld);
-       cout<<"AliTPC::SetTreeAddress2 fHitType&2 Setting"<<endl;       
+       if (GetDebug()) Info("SetTreeAddress2","fHitType&2 Setting");
      }
-    else cout<<"AliTPC::SetTreeAddress2 fHitType&2  Failed"<<endl;
+    else if (GetDebug()) 
+      Info("SetTreeAddress2","fHitType&2 Failed (can not find branch)");
   }
   //set address to TREETR
 
@@ -3026,19 +3035,8 @@ void AliTPC::Digits2Reco(Int_t firstevent,Int_t lastevent)
 
 AliLoader* AliTPC::MakeLoader(const char* topfoldername)
 {
- cout<<"AliTPC::MakeLoader ";
- 
+//Makes TPC loader
  fLoader = new AliTPCLoader(GetName(),topfoldername);
- 
- if (fLoader)
-  {
-   cout<<"Success"<<endl;
-  }
- else
-  {
-   cout<<"Failure"<<endl;
-  }
-
  return fLoader;
 }
 

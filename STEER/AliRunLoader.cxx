@@ -13,7 +13,7 @@
 //
 //logical place for putting the Loader specific to the given detector is detector itself
 // but, to load detector one need to load gAlice, and by the way all other detectors
-// with their geometrieces and so on. 
+// with their geometries and so on. 
 // So, if one need to open TPC clusters there is no principal need to read everything
 //
 // When RunLoader is read from the file it does not connect to the folder structure
@@ -96,7 +96,7 @@ AliRunLoader::AliRunLoader(const char* eventfoldername):
 
 AliRunLoader::~AliRunLoader()
 {
-
+//dtor
   UnloadHeader();
   UnloadgAlice();
   
@@ -120,6 +120,7 @@ AliRunLoader::~AliRunLoader()
 
 AliRunLoader::AliRunLoader(TFolder* topfolder):TNamed(fgkRunLoaderName,fgkRunLoaderName)
 {
+//ctor
  if(topfolder == 0x0)
   {
     Fatal("AliRunLoader(TFolder*)","Parameter is NULL");
@@ -243,8 +244,8 @@ Int_t AliRunLoader::GetEvent(Int_t evno)
 /**************************************************************************/
 Int_t AliRunLoader::SetEvent()
 {
- //if kinematocs was loaded Cleans folder data
- //change 
+//if kinematics was loaded Cleans folder data
+
   Int_t retval;
   
   retval = fKineDataLoader->SetEvent();
@@ -433,8 +434,8 @@ Int_t AliRunLoader::GetNumberOfEvents()
   }
  return (Int_t)TreeE()->GetEntries();
 }
-
 /**************************************************************************/
+
 void AliRunLoader::MakeHeader()
 {
  //Makes header and connects it to header tree (if it exists)
@@ -559,6 +560,7 @@ Int_t AliRunLoader::LoadgAlice()
 
 Int_t AliRunLoader::LoadHeader()
 {
+//loads treeE and reads header object for current event
  if (TreeE())
   {
      Warning("LoadHeader","Header is already loaded. Use ReloadHeader to force reload. Nothing done");
@@ -677,6 +679,7 @@ TTree* AliRunLoader::TreeE() const
 
 AliHeader* AliRunLoader::GetHeader() const
 {
+//returns pointer header object
  return fHeader;
 }
 /**************************************************************************/
@@ -708,6 +711,7 @@ AliRun* AliRunLoader::GetAliRun() const
 
 Int_t AliRunLoader::WriteGeometry(Option_t* opt)
 {
+//writes geometry to the file
   fGAFile->cd();
   TGeometry* geo = GetAliRun()->GetGeometry();
   if (geo == 0x0)
@@ -722,6 +726,7 @@ Int_t AliRunLoader::WriteGeometry(Option_t* opt)
 
 Int_t AliRunLoader::WriteHeader(Option_t* opt)
 {
+//writes treeE
   if (GetDebug()) Info("WriteHeader","  WRITING HEADER");
   
   TTree* tree = TreeE();
@@ -758,19 +763,22 @@ Int_t AliRunLoader::WriteHeader(Option_t* opt)
 
 Int_t AliRunLoader::WriteAliRun(Option_t* opt)
 {
+//writes AliRun object to the file
   fGAFile->cd();
-  if (gAlice) gAlice->Write();
+  if (GetAliRun()) GetAliRun()->Write();
   return 0;
 }
 /**************************************************************************/
 
 Int_t AliRunLoader::WriteKinematics(Option_t* opt)
 {
+//writes Kinematics
   return fKineDataLoader->GetBaseLoader(0)->WriteData(opt);
 }
 /**************************************************************************/
 Int_t AliRunLoader::WriteTrackRefs(Option_t* opt)
 {
+//writes Track References tree
   return fTrackRefsDataLoader->GetBaseLoader(0)->WriteData(opt);
 }
 /**************************************************************************/
@@ -797,6 +805,7 @@ Int_t AliRunLoader::WriteHits(Option_t* opt)
 
 Int_t AliRunLoader::WriteSDigits(Option_t* opt)
 {
+//Calls WriteSDigits for all loaders
   Int_t res;
   Int_t result = 0;
   TIter next(fLoaders);
@@ -816,6 +825,7 @@ Int_t AliRunLoader::WriteSDigits(Option_t* opt)
 
 Int_t AliRunLoader::WriteDigits(Option_t* opt)
 {
+//Calls WriteDigits for all loaders
   Int_t res;
   Int_t result = 0;
   TIter next(fLoaders);
@@ -835,6 +845,7 @@ Int_t AliRunLoader::WriteDigits(Option_t* opt)
 
 Int_t AliRunLoader::WriteRecPoints(Option_t* opt)
 {
+//Calls WriteRecPoints for all loaders
   Int_t res;
   Int_t result = 0;
   TIter next(fLoaders);
@@ -855,6 +866,7 @@ Int_t AliRunLoader::WriteRecPoints(Option_t* opt)
 
 Int_t AliRunLoader::WriteTracks(Option_t* opt)
 {
+//Calls WriteTracks for all loaders
   Int_t res;
   Int_t result = 0;
   TIter next(fLoaders);
@@ -875,6 +887,7 @@ Int_t AliRunLoader::WriteTracks(Option_t* opt)
 
 Int_t AliRunLoader::WriteRunLoader(Option_t* opt)
 {
+//Writes itself to the file
   CdGAFile();
   this->Write(0,TObject::kOverwrite);
   return 0;
@@ -882,7 +895,8 @@ Int_t AliRunLoader::WriteRunLoader(Option_t* opt)
 /**************************************************************************/
 
 Int_t AliRunLoader::SetEventFolderName(const TString& name)
-{  //sets top folder name for this run; of alread
+{  
+//sets top folder name for this run; of alread
   if (name.IsNull())
    {
      Error("SetTopFolderName","Name is empty");
@@ -980,6 +994,8 @@ void AliRunLoader::AddLoader(AliDetector* det)
 
 AliLoader* AliRunLoader::GetLoader(const char* detname) const
 {
+//returns loader for given detector
+//note that naming convention is TPCLoader not just TPC
   return (AliLoader*)fLoaders->FindObject(detname);
 }
 
@@ -987,6 +1003,7 @@ AliLoader* AliRunLoader::GetLoader(const char* detname) const
 
 AliLoader* AliRunLoader::GetLoader(AliDetector* det) const
 {
+//get loader for detector det
  if(det == 0x0) return 0x0;
  TString getname(det->GetName());
  getname+="Loader";
@@ -1035,6 +1052,7 @@ void AliRunLoader::RemoveEventFolder()
 
 void AliRunLoader::SetGAliceFile(TFile* gafile)
 {
+//sets pointer to galice.root file
  fGAFile = gafile;
 }
 
@@ -1192,7 +1210,8 @@ Int_t AliRunLoader::LoadTracks(Option_t* detectors,Option_t* opt)
 /**************************************************************************/
 
 AliRunLoader* AliRunLoader::GetRunLoader(const char* eventfoldername)
- {
+{
+//returns RunLoader from folder named eventfoldername
   TFolder* evfold= dynamic_cast<TFolder*>(AliConfig::Instance()->GetTopFolder()->FindObject(eventfoldername));
   if (evfold == 0x0)
    {
@@ -1201,7 +1220,7 @@ AliRunLoader* AliRunLoader::GetRunLoader(const char* eventfoldername)
   AliRunLoader* runget = dynamic_cast<AliRunLoader*>(evfold->FindObject(AliRunLoader::fgkRunLoaderName));
   return runget;
   
- }
+}
 /**************************************************************************/
 
 AliLoader* AliRunLoader::GetDetectorLoader(const char* detname)
@@ -1322,7 +1341,7 @@ void AliRunLoader::GetListOfDetectors(const char * namelist,TObjArray& pointerar
       tmp = sscanf(pdet,"%s",buff);//read the string from the input string pdet into buff
       if ( (buff[0] == 0) || (tmp == 0) ) break; //if not read
      
-      pdet = strstr(pdet,buff) + strlen(buff);;//move the input pointer about number of bytes (letters) read
+      pdet = strstr(pdet,buff) + strlen(buff);//move the input pointer about number of bytes (letters) read
       //I am aware that is a little complicated. I don't know the number of spaces between detector names
       //so I read the string, than I find where it starts (strstr) and move the pointer about length of a string
       //If there is a better way, please write me (Piotr.Skowronski@cern.ch)
@@ -1462,18 +1481,21 @@ void AliRunLoader::UnloadHeader()
 
 void AliRunLoader::UnloadKinematics()
 {
+//Unloads Kinematics
  fKineDataLoader->GetBaseLoader(0)->Unload();
 }
 /**************************************************************************/
 
 void AliRunLoader::UnloadTrackRefs()
 {
+//Unloads Track Refernces
  fTrackRefsDataLoader->GetBaseLoader(0)->Unload();
 }
 /**************************************************************************/
 
 void AliRunLoader::UnloadgAlice()
 {
+//Unloads gAlice
  if (gAlice == GetAliRun())
   {
    if (GetDebug()) Info("UnloadgAlice","Set gAlice = 0x0");
@@ -1496,7 +1518,7 @@ Int_t AliRunLoader::LoadTrackRefs(Option_t* option)
 {
 //Load track references from file (opens file and posts tree to folder)
 
- return fKineDataLoader->GetBaseLoader(0)->Load(option);
+ return fTrackRefsDataLoader->GetBaseLoader(0)->Load(option);
 }
 /**************************************************************************/
 
@@ -1520,12 +1542,14 @@ void  AliRunLoader::SetDirName(TString& dirname)
 
 Int_t AliRunLoader::GetFileOffset() const
 {
+//returns the file number that is added to the file name for current event
   return Int_t(fCurrentEvent/fNEventsPerFile);
 }
 
 /*****************************************************************************/ 
 const TString AliRunLoader::SetFileOffset(const TString& fname)
 {
+//adds the the number to the file name at proper place for current event
   Long_t offset = (Long_t)GetFileOffset();
   if (offset < 1) return fname;
   TString soffset;
