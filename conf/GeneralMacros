@@ -7,7 +7,7 @@ $(SLIBRARY):
 		   @$(SHLD) -o $@ $(LIBS) -p 0 $^
                 else
                    ifeq ($(PLATFORM),alpha)
-		      @$(SHLD) -o $@ $^ -lcxxstd -lcxx -lexc -lots -lc
+		      @$(SHLD) $(SOFLAGS) $(LDFLAGS) $^ $(SHLIB) -o $@ 
                    else
 		      @$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(SHLIB) -o $@
                    endif
