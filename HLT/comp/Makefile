@@ -52,13 +52,13 @@ DICTH = AliL3CompCint-$(USEPACKAGE).h
 DICTO = $(OBJDIR)/AliL3CompCint-$(USEPACKAGE).o
 
 ifeq ($(USEPACKAGE),ROOT)
-SRCS += AliL3Compress.cxx
+SRCS += AliL3Compress.cxx 
 HDRS = $(SRCS:.cxx=.h) bitio.h errhand.h AliL3CompLinkDef.h
 OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(OBJDIR)/bitio.o $(OBJDIR)/errhand.o $(DICTO)
 endif
 
 ifeq ($(USEPACKAGE),ALIROOT)
-SRCS += AliL3Compress.cxx
+SRCS += AliL3Compress.cxx AliL3DataCompressor.cxx 
 HDRS = $(SRCS:.cxx=.h) bitio.h errhand.h AliL3CompLinkDef.h
 OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(OBJDIR)/bitio.o $(OBJDIR)/errhand.o $(DICTO)
 endif
