@@ -166,7 +166,7 @@ void AliAODParticle::Clear(Option_t*)
 }
 //______________________________________________________________________________
 
-AliAODParticle& AliAODParticle::operator=(const AliVAODParticle& in)
+AliVAODParticle& AliAODParticle::operator=(const AliVAODParticle& in)
 {
 //operator=
 //  Info("operator=(const AliVAODParticle& in)","AliAODParticle");

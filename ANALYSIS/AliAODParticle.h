@@ -45,7 +45,7 @@ public:
   virtual ~AliAODParticle();
   
   AliAODParticle& operator=(const AliAODParticle& in); 
-  AliAODParticle& operator=(const AliVAODParticle& in); 
+  AliVAODParticle& operator=(const AliVAODParticle& in); 
   
   void           Clear(Option_t* /*option*/ ="");//Must be implemented in order to store this object in Clones Array
   
