@@ -163,7 +163,7 @@ Double_t AliHBTTrackPoints::AvarageDistance(const AliHBTTrackPoints& tr)
      return -1;
    }
    
-  Double_t sum;
+  Double_t sum = 0;
   for (Int_t i = 0; i<fN; i++)
    {
      if (GetDebug()>9)
