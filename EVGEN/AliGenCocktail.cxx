@@ -44,6 +44,8 @@ AddGenerator(AliGenerator *Generator, TString Name, Float_t RateExp)
 	SetOrigin(fOrigin[0], fOrigin[1], fOrigin[2]);
     Generator->
 	SetSigma(fOsigma[0], fOsigma[1], fOsigma[2]);
+    Generator->SetVertexSmear(fVertexSmear);
+    Generator->SetTrackingFlag(fTrackIt);    
 //
 //  Add generator to list   
     AliGenCocktailEntry *Entry = 
