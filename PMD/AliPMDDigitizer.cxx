@@ -1,6 +1,6 @@
 //-----------------------------------------------------//
 //                                                     //
-//  Source File : PMDDigitization.cxx, Version 00      //
+//  Source File : PMDDigitizer.cxx, Version 00         //
 //                                                     //
 //  Date   : September 20 2002                         //
 //                                                     //
@@ -44,11 +44,11 @@ AliPMDDigitizer::AliPMDDigitizer()
   if (!fDigits) fDigits = new TClonesArray("AliPMDdigit", 1000);  
   fNdigit = 0;
 
-  for (Int_t i = 0; i < fTotSM; i++)
+  for (Int_t i = 0; i < fTotUM; i++)
     {
-      for (Int_t j = 0; j < fNCell; j++)
+      for (Int_t j = 0; j < fRow; j++)
 	{
-	  for (Int_t k = 0; k < fNCell; k++)
+	  for (Int_t k = 0; k < fCol; k++)
 	    {
 	      fCPV[i][j][k] = 0.; 
 	      fPMD[i][j][k] = 0.; 
@@ -59,7 +59,6 @@ AliPMDDigitizer::AliPMDDigitizer()
   if (!fCell) fCell = new TObjArray();
 
   fZPos = 361.5; // in units of cm, This is the default position of PMD
-
 }
 AliPMDDigitizer::~AliPMDDigitizer()
 {
@@ -134,15 +133,13 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
   Int_t kGamma = 22;
   Int_t npmd;
   Int_t trackno;
-  Int_t cellnumber;
-  Int_t smnumber1;
   Int_t smnumber;
   Int_t trackpid;
   Int_t mtrackno;
   Int_t mtrackpid;
 
   Float_t xPos, yPos, zPos;
-  Int_t xpad, ypad;
+  Int_t xpad = -1, ypad = -1;
   Float_t edep;
   Float_t vx = -999.0, vy = -999.0, vz = -999.0;
 
@@ -197,12 +194,21 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 
 	      Int_t igatr = -999;
 	      Int_t ichtr = -999;
-
+	      Int_t igapid = -999;
 	      Int_t imo;
 	      Int_t igen = 0;
 	      Int_t id_mo = -999;
+
 	      TParticle*  mparticle = particle;
-	      
+	      Int_t trackno_old=0, trackpid_old=0, status_old = 0;
+	      if (mparticle->GetFirstMother() == -1)
+		{
+		  trackno_old  = trackno;
+		  trackpid_old = trackpid;
+		  status_old   = -1;
+		}
+
+	      Int_t igstatus = 0;
 	      while((imo = mparticle->GetFirstMother()) >= 0)
 		{
 		  igen++;
@@ -214,11 +220,20 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		  vz = mparticle->Vz();
 		
 		  //printf("==> Mother ID %5d %5d %5d Vertex: %13.3f %13.3f %13.3f\n", igen, imo, id_mo, vx, vy, vz);
-		  //fprintf(ftest1,"==> Mother ID %5d %5d %5d Vertex: %13.3f %13.3f %13.3f\n", igen, imo, id_mo, vx, vy, vz);
-		  
-		  if (id_mo == kGamma && vx == 0. && vy == 0. && vz == 0.)
+		  //fprintf(fpw1,"==> Mother ID %5d %5d %5d Vertex: %13.3f %13.3f %13.3f\n", igen, imo, id_mo, vx, vy, vz);
+		  if ((id_mo == kGamma || id_mo == -11 || id_mo == 11) && vx == 0. && vy == 0. && vz == 0.)
 		    {
 		      igatr = imo;
+		      igapid = id_mo;
+		      igstatus = 1;
+		    }
+		  if(igstatus == 0)
+		    {
+		      if (id_mo == kPi0 && vx == 0. && vy == 0. && vz == 0.)
+			{
+			  igatr = imo;
+			  igapid = id_mo;
+			}
 		    }
 		  ichtr = imo;
 		}
@@ -226,54 +241,67 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 	      if (id_mo == kPi0 && vx == 0. && vy == 0. && vz == 0.)
 		{
 		  mtrackno = igatr;
-		  mtrackpid = kGamma;
+		  mtrackpid = igapid;
 		}
 	      else
 		{
 		  mtrackno  = ichtr;
 		  mtrackpid = id_mo;
 		}
-
+	      if (status_old == -1)
+		{
+		  mtrackno  = trackno_old;
+		  mtrackpid = trackpid_old;
+		}
+	      
 	      xPos = pmdHit->X();
 	      yPos = pmdHit->Y();
 	      zPos = pmdHit->Z();
-	      cellnumber = pmdHit->fVolume[1];
-	      smnumber1  = pmdHit->fVolume[4];
 	      edep       = pmdHit->fEnergy;
+	      Int_t Vol1 = pmdHit->fVolume[1]; // Column
+	      Int_t Vol2 = pmdHit->fVolume[2]; // Row
+	      Int_t Vol3 = pmdHit->fVolume[3]; // UnitModule
+	      Int_t Vol6 = pmdHit->fVolume[6]; // SuperModule
+	      // -----------------------------------------//
+	      // For Super Module 1 & 2                   //
+	      //  nrow = 96, ncol = 48                    //
+	      // For Super Module 3 & 4                   //
+	      //  nrow = 48, ncol = 96                    //
+	      // -----------------------------------------//
 	      
-	      if (smnumber1 > 3 && smnumber1 <= 6)
+	      smnumber = (Vol6-1)*6 + Vol3;
+
+	      if (Vol6 == 1 || Vol6 == 2)
 		{
-		  Int_t ny = (cellnumber-1)/48 + 1;
-		  Int_t nx = cellnumber - (ny-1)*48;
-		  Int_t nx1 = nx + 24;
-		  Int_t ny1 = ny + 48;
-		  Int_t ncell1 = (ny1 - 1)* 72 + nx1;
-		  cellnumber = ncell1;
+		  xpad = Vol1;
+		  ypad = Vol2;
 		}
-	      smnumber = Convert2RealSMNumber(smnumber1);
-	      ypad = (cellnumber - 1)/fNCell + 1;
-	      xpad = cellnumber - (ypad-1)*fNCell;
+	      else if (Vol6 == 3 || Vol6 == 4)
+		{
+		  xpad = Vol2;
+		  ypad = Vol1;
+		}
 
 	      //cout << "-zpos = " << -zPos << endl;
 
-	      if (-zPos < fZPos)
+	      Float_t zposition = TMath::Abs(zPos);
+	      if (zposition < fZPos)
 		{
 		  // CPV
 		  fDetNo = 1;
 		}
-	      else if (-zPos > fZPos)
+	      else if (zposition > fZPos)
 		{
 		  // PMD
 		  fDetNo = 0;
 		}
-
+	      Int_t smn = smnumber - 1;
+	      Int_t ixx = xpad     - 1;
+	      Int_t iyy = ypad     - 1;
 	      if (fDetNo == 0)
 		{
-		  fPMD[smnumber-1][xpad-1][ypad-1] += edep;
-		  fPMDCounter[smnumber-1][xpad-1][ypad-1]++;
-		  Int_t smn = smnumber - 1;
-		  Int_t ixx = xpad     - 1;
-		  Int_t iyy = ypad     - 1;
+		  fPMD[smn][ixx][iyy] += edep;
+		  fPMDCounter[smn][ixx][iyy]++;
 
 		  pmdcell = new AliPMDcell(mtrackno,smn,ixx,iyy,edep);
 
@@ -281,33 +309,30 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		}
 	      else if(fDetNo == 1)
 		{
-		  fCPV[smnumber-1][xpad-1][ypad-1] += edep;
-		  fCPVTrackNo[smnumber-1][xpad-1][ypad-1] = mtrackno;
+		  fCPV[smn][ixx][iyy] += edep;
+		  fCPVTrackNo[smn][ixx][iyy] = mtrackno;
 		}
 	    }
 	}
     } // Track Loop ended
-  
-  
+
   TrackAssignment2Cell();
-  
   ResetCell();
 
   Float_t deltaE      = 0.;
   Int_t   detno       = 0;
-  Int_t   count_digit = 0;
   Int_t   trno        = -1;
   Int_t   cellno      = 0;
 
   for (Int_t idet = 0; idet < 2; idet++)
     {
-      for (Int_t ism = 0; ism < fTotSM; ism++)
+      for (Int_t ism = 0; ism < fTotUM; ism++)
 	{
-	  for (Int_t jrow = 0; jrow < fNCell; jrow++)
+	  for (Int_t jrow = 0; jrow < fRow; jrow++)
 	    {
-	      for (Int_t kcol = 0; kcol < fNCell; kcol++)
+	      for (Int_t kcol = 0; kcol < fCol; kcol++)
 		{
-		  cellno = jrow + kcol*fNCell;
+		  cellno = jrow*fCol + kcol;
 		  if (idet == 0)
 		    {
 		      deltaE = fPMD[ism][jrow][kcol];
@@ -322,7 +347,6 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		    }
 		  if (deltaE > 0.)
 		    {
-		      count_digit++;
 		      AddSDigit(trno,detno,ism,cellno,deltaE);
 		    }
 		}
@@ -332,7 +356,6 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 	}
     }
   pmdloader->WriteSDigits("OVERWRITE");
-
   ResetCellADC();
 
   //  cout << " -------- End of Hits2SDigit ----------- " << endl;
@@ -344,15 +367,13 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   Int_t kGamma = 22;
   Int_t npmd;
   Int_t trackno;
-  Int_t cellnumber;
-  Int_t smnumber1;
   Int_t smnumber;
   Int_t trackpid;
   Int_t mtrackno;
   Int_t mtrackpid;
 
   Float_t xPos, yPos, zPos;
-  Int_t xpad, ypad;
+  Int_t xpad = -1, ypad = -1;
   Float_t edep;
   Float_t vx = -999.0, vy = -999.0, vz = -999.0;
 
@@ -413,12 +434,21 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 
 	      Int_t igatr = -999;
 	      Int_t ichtr = -999;
-
+	      Int_t igapid = -999;
 	      Int_t imo;
 	      Int_t igen = 0;
 	      Int_t id_mo = -999;
+
 	      TParticle*  mparticle = particle;
-	      
+	      Int_t trackno_old=0, trackpid_old=0, status_old = 0;
+	      if (mparticle->GetFirstMother() == -1)
+		{
+		  trackno_old  = trackno;
+		  trackpid_old = trackpid;
+		  status_old   = -1;
+		}
+
+	      Int_t igstatus = 0;
 	      while((imo = mparticle->GetFirstMother()) >= 0)
 		{
 		  igen++;
@@ -430,11 +460,20 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 		  vz = mparticle->Vz();
 		
 		  //printf("==> Mother ID %5d %5d %5d Vertex: %13.3f %13.3f %13.3f\n", igen, imo, id_mo, vx, vy, vz);
-		  //fprintf(ftest1,"==> Mother ID %5d %5d %5d Vertex: %13.3f %13.3f %13.3f\n", igen, imo, id_mo, vx, vy, vz);
-		  
-		  if (id_mo == kGamma && vx == 0. && vy == 0. && vz == 0.)
+		  //fprintf(fpw1,"==> Mother ID %5d %5d %5d Vertex: %13.3f %13.3f %13.3f\n", igen, imo, id_mo, vx, vy, vz);
+		  if ((id_mo == kGamma || id_mo == -11 || id_mo == 11) && vx == 0. && vy == 0. && vz == 0.)
 		    {
 		      igatr = imo;
+		      igapid = id_mo;
+		      igstatus = 1;
+		    }
+		  if(igstatus == 0)
+		    {
+		      if (id_mo == kPi0 && vx == 0. && vy == 0. && vz == 0.)
+			{
+			  igatr = imo;
+			  igapid = id_mo;
+			}
 		    }
 		  ichtr = imo;
 		}
@@ -442,55 +481,79 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 	      if (id_mo == kPi0 && vx == 0. && vy == 0. && vz == 0.)
 		{
 		  mtrackno = igatr;
-		  mtrackpid = kGamma;
+		  mtrackpid = igapid;
 		}
 	      else
 		{
 		  mtrackno  = ichtr;
 		  mtrackpid = id_mo;
 		}
+	      if (status_old == -1)
+		{
+		  mtrackno  = trackno_old;
+		  mtrackpid = trackpid_old;
+		}
 	      
 	      xPos = pmdHit->X();
 	      yPos = pmdHit->Y();
 	      zPos = pmdHit->Z();
-	      cellnumber = pmdHit->fVolume[1];
-	      smnumber1  = pmdHit->fVolume[4];
 	      edep       = pmdHit->fEnergy;
+	      Int_t Vol1 = pmdHit->fVolume[1]; // Column
+	      Int_t Vol2 = pmdHit->fVolume[2]; // Row
+	      Int_t Vol3 = pmdHit->fVolume[3]; // UnitModule
+	      Int_t Vol6 = pmdHit->fVolume[6]; // SuperModule
+
+	      // -----------------------------------------//
+	      // For Super Module 1 & 2                   //
+	      //  nrow = 96, ncol = 48                    //
+	      // For Super Module 3 & 4                   //
+	      //  nrow = 48, ncol = 96                    //
+	      // -----------------------------------------//
 	      
-	      if (smnumber1 > 3 && smnumber1 <= 6)
+	      smnumber = (Vol6-1)*6 + Vol3;
+
+	      if (Vol6 == 1 || Vol6 == 2)
 		{
-		  Int_t ny = (cellnumber-1)/48 + 1;
-		  Int_t nx = cellnumber - (ny-1)*48;
-		  Int_t nx1 = nx + 24;
-		  Int_t ny1 = ny + 48;
-		  Int_t ncell1 = (ny1 - 1)* 72 + nx1;
-		  cellnumber = ncell1;
+		  xpad = Vol1;
+		  ypad = Vol2;
 		}
-	      
-	      smnumber = Convert2RealSMNumber(smnumber1);
-	      ypad = (cellnumber - 1)/fNCell + 1;
-	      xpad = cellnumber - (ypad-1)*fNCell;
+	      else if (Vol6 == 3 || Vol6 == 4)
+		{
+		  xpad = Vol2;
+		  ypad = Vol1;
+		}
 
 	      //cout << "-zpos = " << -zPos << endl;
-	      if (-zPos < fZPos)
+
+	      Float_t zposition = TMath::Abs(zPos);
+
+	      if (zposition < fZPos)
 		{
 		  // CPV
 		  fDetNo = 1;
 		}
-	      else if (-zPos > fZPos)
+	      else if (zposition > fZPos)
 		{
 		  // PMD
 		  fDetNo = 0;
 		}
-	      
-	      if(fDetNo == 1)
+
+	      Int_t smn = smnumber - 1;
+	      Int_t ixx = xpad     - 1;
+	      Int_t iyy = ypad     - 1;
+	      if (fDetNo == 0)
 		{
-		  fCPV[smnumber-1][xpad-1][ypad-1] += edep;
+		  fPMD[smn][ixx][iyy] += edep;
+		  fPMDCounter[smn][ixx][iyy]++;
+
+		  pmdcell = new AliPMDcell(mtrackno,smn,ixx,iyy,edep);
+
+		  fCell->Add(pmdcell);
 		}
-	      else if (fDetNo == 0)
+	      else if(fDetNo == 1)
 		{
-		  fPMD[smnumber-1][xpad-1][ypad-1] += edep;
-		  fPMDCounter[smnumber-1][xpad-1][ypad-1]++;
+		  fCPV[smn][ixx][iyy] += edep;
+		  fCPVTrackNo[smn][ixx][iyy] = mtrackno;
 		}
 	    }
 	}
@@ -501,32 +564,32 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 
   Float_t deltaE = 0.;
   Int_t detno = 0;
-  Int_t count_digit = 0;
   Int_t trno = 1;
   Int_t cellno;
 
   for (Int_t idet = 0; idet < 2; idet++)
     {
-      for (Int_t ism = 0; ism < fTotSM; ism++)
+      for (Int_t ism = 0; ism < fTotUM; ism++)
 	{
-	  for (Int_t jrow = 0; jrow < fNCell; jrow++)
+	  for (Int_t jrow = 0; jrow < fRow; jrow++)
 	    {
-	      for (Int_t kcol = 0; kcol < fNCell; kcol++)
+	      for (Int_t kcol = 0; kcol < fCol; kcol++)
 		{
-		  cellno = jrow + kcol*fNCell;
+		  cellno = jrow*fCol + kcol;
 		  if (idet == 0)
 		    {
 		      deltaE = fPMD[ism][jrow][kcol];
+		      trno   = fPMDTrackNo[ism][jrow][kcol];
 		      detno = 0;
 		    }
 		  else if (idet == 1)
 		    {
 		      deltaE = fCPV[ism][jrow][kcol];
+		      trno   = fCPVTrackNo[ism][jrow][kcol];
 		      detno = 1;
 		    }
 		  if (deltaE > 0.)
 		    {
-		      count_digit++;
 		      AddDigit(trno,detno,ism,cellno,deltaE);
 		    }
 		} // column loop
@@ -537,7 +600,6 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
     } // detector loop
 
   pmdloader->WriteDigits("OVERWRITE");
-
   ResetCellADC();
   
   //  cout << " -------- End of Hits2Digit ----------- " << endl;
@@ -584,7 +646,6 @@ void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
 	  edep   = pmdsdigit->GetCellEdep();
 
 	  MeV2ADC(edep,adc);
-
 	  AddDigit(trno,det,smn,cellno,adc);      
 	}
       treeD->Fill();
@@ -596,12 +657,12 @@ void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
 
 void AliPMDDigitizer::TrackAssignment2Cell()
 {
-  // To be checked again
   // 
   // This blocks assign the cell id when there is 
   // multiple tracks in a cell according to the
   // energy deposition
   //
+
 
   Int_t i, j, k;
 
@@ -611,28 +672,28 @@ void AliPMDDigitizer::TrackAssignment2Cell()
   Int_t   ****PMDTrack;
   Float_t ****PMDEdep;
 
-  PMDTrack = new Int_t ***[27];
-  PMDEdep  = new Float_t ***[27];
-  for (i=0; i<fTotSM; i++)
+  PMDTrack = new Int_t ***[fTotUM];
+  PMDEdep  = new Float_t ***[fTotUM];
+  for (i=0; i<fTotUM; i++)
     {
-      PMDTrack[i] = new Int_t **[72];
-      PMDEdep[i]  = new Float_t **[72];
+      PMDTrack[i] = new Int_t **[fRow];
+      PMDEdep[i]  = new Float_t **[fRow];
     }
 
-  for (i = 0; i < fTotSM; i++)
+  for (i = 0; i < fTotUM; i++)
     {
-      for (j = 0; j < fNCell; j++)
+      for (j = 0; j < fRow; j++)
 	{
-	  PMDTrack[i][j] = new Int_t *[72];
-	  PMDEdep[i][j]  = new Float_t *[72];
+	  PMDTrack[i][j] = new Int_t *[fCol];
+	  PMDEdep[i][j]  = new Float_t *[fCol];
 	}
     }
   
-  for (i = 0; i < fTotSM; i++)
+  for (i = 0; i < fTotUM; i++)
     {
-      for (j = 0; j < fNCell; j++)
+      for (j = 0; j < fRow; j++)
 	{
-	  for (k = 0; k < fNCell; k++)
+	  for (k = 0; k < fCol; k++)
 	    {
 	      Int_t nn = fPMDCounter[i][j][k];
 	      if(nn > 0)
@@ -666,11 +727,8 @@ void AliPMDDigitizer::TrackAssignment2Cell()
       ixp = pmdcell->GetX();
       iyp = pmdcell->GetY();
       edep = pmdcell->GetEdep();
-
       Int_t nn = fPMDCounter[ism][ixp][iyp];
-
       //      cout << " nn = " << nn << endl;
-      
       PMDTrack[ism][ixp][iyp][nn] = (Int_t) mtrackno;
       PMDEdep[ism][ixp][iyp][nn] = edep;
       fPMDCounter[ism][ixp][iyp]++;
@@ -680,11 +738,11 @@ void AliPMDDigitizer::TrackAssignment2Cell()
   Int_t im, ix, iy;
   Int_t nn;
   
-  for (im=0; im<27; im++)
+  for (im=0; im<fTotUM; im++)
     {
-      for (ix=0; ix<72; ix++)
+      for (ix=0; ix<fRow; ix++)
 	{
-	  for (iy=0; iy<72; iy++)
+	  for (iy=0; iy<fCol; iy++)
 	    {
 	      nn = fPMDCounter[im][ix][iy];
 	      if (nn > 1)
@@ -764,11 +822,11 @@ void AliPMDDigitizer::TrackAssignment2Cell()
   
   // Delete all the pointers
   
-  for (i = 0; i < fTotSM; i++)
+  for (i = 0; i < fTotUM; i++)
     {
-      for (j = 0; j < fNCell; j++)
+      for (j = 0; j < fRow; j++)
 	{
-	  for (k = 0; k < fNCell; k++)
+	  for (k = 0; k < fCol; k++)
 	    {
 	      delete [] PMDTrack[i][j][k];
 	      delete [] PMDEdep[i][j][k];
@@ -776,16 +834,16 @@ void AliPMDDigitizer::TrackAssignment2Cell()
 	}
     }
   
-  for (i = 0; i < fTotSM; i++)
+  for (i = 0; i < fTotUM; i++)
     {
-      for (j = 0; j < fNCell; j++)
+      for (j = 0; j < fRow; j++)
 	{
 	  delete [] PMDTrack[i][j];
 	  delete [] PMDEdep[i][j];
 	}
     }
   
-  for (i = 0; i < fTotSM; i++)
+  for (i = 0; i < fTotUM; i++)
     {
       delete [] PMDTrack[i];
       delete [] PMDEdep[i];
@@ -873,11 +931,11 @@ Float_t AliPMDDigitizer::GetZPosition() const
 void AliPMDDigitizer::ResetCell()
 {
   fCell->Clear();
-  for (Int_t i = 0; i < fTotSM; i++)
+  for (Int_t i = 0; i < fTotUM; i++)
     {
-      for (Int_t j = 0; j < fNCell; j++)
+      for (Int_t j = 0; j < fRow; j++)
 	{
-	  for (Int_t k = 0; k < fNCell; k++)
+	  for (Int_t k = 0; k < fCol; k++)
 	    {
 	      fPMDCounter[i][j][k] = 0; 
 	    }
@@ -897,11 +955,11 @@ void AliPMDDigitizer::ResetDigit()
 
 void AliPMDDigitizer::ResetCellADC()
 {
-  for (Int_t i = 0; i < fTotSM; i++)
+  for (Int_t i = 0; i < fTotUM; i++)
     {
-      for (Int_t j = 0; j < fNCell; j++)
+      for (Int_t j = 0; j < fRow; j++)
 	{
-	  for (Int_t k = 0; k < fNCell; k++)
+	  for (Int_t k = 0; k < fCol; k++)
 	    {
 	      fCPV[i][j][k] = 0.; 
 	      fPMD[i][j][k] = 0.; 

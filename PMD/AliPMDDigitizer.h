@@ -35,7 +35,6 @@ class AliPMDcell;
 class AliPMDsdigit;
 class AliPMDdigit;
 class AliPMDClustering;
-class AliPMDrecpoint;
 
 //using namespace std;
 
@@ -56,11 +55,9 @@ class AliPMDDigitizer
   TTree        *treeH;
   TTree        *treeS;
   TTree        *treeD;
-  TTree        *treeR;
 
   TClonesArray *fSDigits;
   TClonesArray *fDigits;
-  TClonesArray *fRecpoints;
 
   TObjArray    *fCell;
   AliPMDcell   *pmdcell;
@@ -71,13 +68,14 @@ class AliPMDDigitizer
   Int_t fDetNo;
   Float_t fZPos;
 
-  static const Int_t fTotSM = 27;
-  static const Int_t fNCell = 72;
-  Float_t fCPV[fTotSM][fNCell][fNCell];
-  Float_t fPMD[fTotSM][fNCell][fNCell];
-  Int_t   fPMDCounter[fTotSM][fNCell][fNCell];
-  Int_t   fPMDTrackNo[fTotSM][fNCell][fNCell];
-  Int_t   fCPVTrackNo[fTotSM][fNCell][fNCell];
+  static const Int_t fTotUM = 24;
+  static const Int_t fRow   = 48;
+  static const Int_t fCol   = 96;
+  Float_t fCPV[fTotUM][fRow][fCol];
+  Float_t fPMD[fTotUM][fRow][fCol];
+  Int_t   fPMDCounter[fTotUM][fRow][fCol];
+  Int_t   fPMDTrackNo[fTotUM][fRow][fCol];
+  Int_t   fCPVTrackNo[fTotUM][fRow][fCol];
 
  public:
 
@@ -104,7 +102,7 @@ class AliPMDDigitizer
   void ResetCellADC();
   void UnLoad(Option_t * /* option */);
 
-  ClassDef(AliPMDDigitizer,1)
+  ClassDef(AliPMDDigitizer,2)
 };
 #endif
 
