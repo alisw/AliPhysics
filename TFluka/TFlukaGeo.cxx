@@ -255,9 +255,10 @@ void   TFluka::ProcessRun(Int_t nevent) {
   for (Int_t ev = 0; ev < todo; ev++) {
       fApplication->BeginEvent();
       ProcessEvent();
+      fApplication->FinishEvent();
   }
 
-  fApplication->FinishEvent();
+
   if (fVerbosityLevel >=3)
     cout << "<== TFluka::ProcessRun(" << nevent << ") called." 
 	 << endl;
@@ -610,7 +611,7 @@ Int_t TFluka::PDGFromId(Int_t id) const
 #if ROOT_VERSION_CODE >= 262151
   	return kFALSE;
 #else 
-	return
+	return;
 #endif
       }
     }
