@@ -42,12 +42,13 @@ public:
    virtual void   StepManager(){}
    virtual void   ResetHits();
    virtual void   SetTreeAddress();
+   virtual AliLoader* MakeLoader(const char* topfoldername);
   
   TClonesArray   *Photons() {return fPhotons;}
 
    virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
    //  virtual void   Reconstruct()    const{ AliSTARTvertex reco; reco.Reconstruct();}
-    virtual void          FillESD(AliESD* pESD)  const{ AliSTARTvertex reco; reco.Reconstruct(pESD);}
+   virtual void          FillESD(AliESD* pESD)  const;
 
 protected:
    Int_t fIdSens;    // Sensetive Cherenkov radiator

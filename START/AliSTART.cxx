@@ -52,6 +52,7 @@
 #include "AliLoader.h"
 #include "AliRun.h"
 #include "AliSTART.h"
+#include "AliSTARTLoader.h"
 #include "AliSTARTdigit.h"
 #include "AliSTARThit.h"
 #include "AliSTARThitPhoton.h"
@@ -256,9 +257,24 @@ void AliSTART::SetTreeAddress()
   
 }
 
+//______________________________________________________________________
+AliLoader* AliSTART::MakeLoader(const char* topfoldername)
+{ 
+  Info("MakeLoader", "Creating AliSTARTLoader. Top folder is %s.", topfoldername);
+  fLoader = new AliSTARTLoader(GetName(), topfoldername);
+  return fLoader;
+}
+
 //_____________________________________________________________________________
 AliDigitizer* AliSTART::CreateDigitizer(AliRunDigitizer* manager) const
 {
   return new AliSTARTDigitizer(manager);
+}
+
+//_____________________________________________________________________________
+void AliSTART::FillESD(AliESD* pESD)  const
+{
+  AliSTARTvertex reco;
+  reco.Reconstruct(fLoader->GetRunLoader(), pESD);
 }
 

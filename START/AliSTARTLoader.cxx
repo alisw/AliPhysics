@@ -8,51 +8,32 @@
 // and evrtex position  (cm)                                                //
 /////////////////////////////////////////////////////////////////////////////
 #include "AliSTARTLoader.h"
-#include <AliRunLoader.h>
-#include "AliDataLoader.h"
-
-#include <TTree.h>
-#include <TFile.h>
-
-#include <stdlib.h>
-#include <Riostream.h>
-#include <Riostream.h>
+#include "AliConfig.h"
+#include "AliRunLoader.h"
 
 
 ClassImp(AliSTARTLoader)
 
 /*****************************************************************************/ 
-AliSTARTLoader::AliSTARTLoader(const Char_t *name,const Char_t *topfoldername):
-  AliLoader(name,topfoldername)
-
+void AliSTARTLoader::InitObjectLoaders()
 {
-//ctor   
-  cout<<" AliSTARTLoader "<<endl;
+// use an object instead of a tree for digits and rec points
 
+  // D I G I T S  
+  if (fDataLoaders->At(kDigits)) {
+    delete fDataLoaders->Remove(fDataLoaders->At(kDigits));
+  }
+  AliDataLoader* dl = new AliDataLoader(fDetectorName + ".Digits.root","START_D", "Digits","O");//we want to have object data not tree
+  AliTaskLoader* tl = new AliTaskLoader(fDetectorName + AliConfig::Instance()->GetDigitizerTaskName(),dl,AliRunLoader::GetRunDigitizer(),kTRUE);
+  dl->SetBaseTaskLoader(tl);
+  fDataLoaders->AddAt(dl,kDigits);
 
-   
+  // R E C O N S T R U C T E D   P O I N T S, here: V E R T E X
+  if (fDataLoaders->At(kRecPoints)) {
+    delete fDataLoaders->Remove(fDataLoaders->At(kRecPoints));
+  }
+  dl = new AliDataLoader(fDetectorName + ".RecPoints.root","START_V", "Reconstructed Points","O");//we want to have object data not tree
+  tl = new AliTaskLoader(fDetectorName + AliConfig::Instance()->GetReconstructionerTaskName(),dl,AliRunLoader::GetRunReconstructioner(),kTRUE);
+  dl->SetBaseTaskLoader(tl);
+  fDataLoaders->AddAt(dl,kRecPoints);  
 }
-/*****************************************************************************/ 
-
-AliSTARTLoader::AliSTARTLoader(const Char_t *name,TFolder *topfolder):
- AliLoader(name,topfolder)
-{
-//ctor   
-
-  cout<<"  My AliSTARTLoader!!!!! "<<endl;
-
-   
-}
-/*****************************************************************************/ 
-AliSTARTLoader::~AliSTARTLoader()
-{
- //destructor
-  UnloadDigits();
-  fDataLoaders->Remove(&fDigitsDataLoader);
-
-  UnloadRecPoints();
-  fDataLoaders->Remove(&fVertexDataLoader);
-
- 
-}
-

@@ -33,6 +33,7 @@ class AliSTARTdigit: public TObject  {
     virtual void SetADCLeft (TArrayI &o);
     virtual void GetADCRight (TArrayI &o);
     virtual void GetADCLeft (TArrayI &o);
+    virtual const char* GetName() const {return "START_D";}
   private: 
     //    Float_t fProcessKoef;  // for pp fProcessKoef=1 ; for Pb-Pb - 0.001
     Int_t fTimeAverage;     // Average time

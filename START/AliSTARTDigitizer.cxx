@@ -122,17 +122,19 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
   //  Int_t thresholdAmpl=10;
 
   
-  inRL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
-  
-
-  AliSTART *fSTART  = (AliSTART*) inRL->GetAliRun()->GetDetector("START");
   AliSTARThit  *startHit;
   TBranch *brHits=0;
   TBranch *brHitPhoton=0;
+  pOutStartLoader->LoadDigits("UPDATE");//probably it is necessary to load them before
   fdigits= new AliSTARTdigit();
+  pOutStartLoader->GetDigitsDataLoader()->GetBaseLoader(0)->Post(fdigits);
 
   Int_t nFiles=fManager->GetNinputs();
   for (Int_t inputFile=0; inputFile<nFiles;  inputFile++) {
+    if (inputFile < nFiles-1) {
+      Warning("Exec", "ignoring input stream %d", inputFile);
+      continue;
+    }
 
     Float_t besttimeright=9999.;
     Float_t besttimeleft=9999.;
@@ -147,9 +149,10 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
       }
 
     inRL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
+    if (!inRL->GetAliRun()) inRL->LoadgAlice();
+    AliSTART *fSTART  = (AliSTART*) inRL->GetAliRun()->GetDetector("START");
     pInStartLoader = inRL->GetLoader("STARTLoader");
     pInStartLoader->LoadHits("READ");//probably it is necessary to load them before
-    pOutStartLoader->LoadDigits("UPDATE");//probably it is necessary to load them before
     TClonesArray *fHits = fSTART->Hits ();
 
     TTree *th = pInStartLoader->TreeH();
@@ -257,15 +260,11 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
     else
       {timeAv=999999; timeDiff=99999;}
 
-// trick to find out output dir:
-
-    TDirectory *wd = gDirectory;
-    pOutStartLoader->GetDigitsDataLoader()->GetDirectory()->cd();
-    fdigits->Write("START_D");
-    wd->cd();
     pInStartLoader->UnloadHits();
-    pOutStartLoader->UnloadDigits();
-  } //event loop
+  } //input streams loop
+
+  pOutStartLoader->WriteDigits("OVERWRITE");
+  pOutStartLoader->UnloadDigits();
 }
 
 

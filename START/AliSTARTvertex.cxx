@@ -24,6 +24,7 @@
 #include <AliRun.h>
 #include <AliRunLoader.h>
 #include "AliSTART.h"
+#include "AliSTARTLoader.h"
 #include "AliSTARTdigit.h"
 #include "AliSTARThit.h"
 #include "AliSTARTvertex.h"
@@ -31,19 +32,7 @@
 
 ClassImp(AliSTARTvertex)
 
-AliSTARTvertex::AliSTARTvertex( Int_t * Zposit)
-{
-  //
-  //     The creator for the AliSTARTvertex class. This routine fills the
-  // AliSTARTvertex data members from the array vertex.
-  // The order of the elements in the vertex array are
-  //  fZposition = vertex[0],
-  //
- 
-  Zposit = &fZposition ;
-}
-
-void AliSTARTvertex::Reconstruct(AliESD *pESD) 
+void AliSTARTvertex::Reconstruct(AliRunLoader* rl, AliESD *pESD) 
 {
   /***************************************************
   Resonstruct digits to vertex position
@@ -52,56 +41,46 @@ void AliSTARTvertex::Reconstruct(AliESD *pESD)
   Int_t timediff;
   Float_t timePs;
   
-  
-  AliRunLoader* rl = AliRunLoader::Open("galice.root");
-    //,AliConfig::fgkDefaultEventFolderName,"read");
-  if (rl == 0x0)
-   {
-     cerr<<"Can not open session for file galice.root\n";
-     return;
-   }
-  
-#ifdef DEBUG
- Info("Reconstruct","START!!!");
-#endif
-  AliLoader* pStartLoader = rl->GetLoader("STARTLoader");
+  if (!rl) {
+    Error("Reconstruct", "No run loader");
+    return;
+  }
+
+  if (rl->GetDebug()>1) Info("Reconstruct","START!!!");
+
+  AliSTARTLoader* pStartLoader = (AliSTARTLoader*) rl->GetLoader("STARTLoader");
  
- // Event ------------------------- LOOP  
-   
+  pStartLoader->LoadDigits();
+  AliSTARTdigit* pDigits=pStartLoader->Digits();
+  if (!pDigits) {
+    Error("Reconstruct", "no digits found");
+    return;
+  }
 
-  Int_t iNevents=rl->GetNumberOfEvents();
-  
-  for (Int_t evNumber=0; evNumber<iNevents; evNumber++)
-    {
-    rl->GetEvent(evNumber);
-  pStartLoader ->LoadDigits("READ");
+  if (rl->GetDebug()>1) pDigits->Dump();
 
-#ifdef DEBUG
-  gDirectory->ls();
-#endif
-    AliSTARTdigit* pDigits=(AliSTARTdigit*)gDirectory->Get("START_D");
-
-#ifdef DEBUG
-    pDigits->Dump();
-#endif  
-     if(pDigits->GetTimeDiff()<TMath::Abs(1000))
-      {
-	timediff=pDigits->GetTimeDiff();     //time in number of channels
-	timePs=(512-timediff)*2.5;       // time in Ps channel_width =10ps
-	// Float_t c = 299792458/1.e9;  //speed of light cm/ps
-	Float_t c = 0.3;  //speed of light mm/ps
-	Float_t Zposit=timePs*c;// for 0 vertex
-#ifdef DEBUG
-	cout<<"timediff "<< timediff<<" timePs "<<timePs<<" Zposit "<<Zposit<<endl;
-#endif 
-	pESD->SetT0zVertex(Zposit);
-
-#ifdef DEBUG
-	cout<<" vertex in ESD "<< pESD->GetT0zVertex()<<endl;
-#endif
-      } // vertex in 3 sigma
-     
-    } //event loop
+  if(pDigits->GetTimeDiff()<TMath::Abs(1000)) {
+    timediff=pDigits->GetTimeDiff();     //time in number of channels
+    timePs=(512-timediff)*2.5;       // time in Ps channel_width =10ps
+    // Float_t c = 299792458/1.e9;  //speed of light cm/ps
+    Float_t c = 0.3;  //speed of light mm/ps
+    Float_t Zposit=timePs*c;// for 0 vertex
+    
+    if (rl->GetDebug()>1) {
+      cout << "timediff " << timediff
+	   <<" timePs " << timePs 
+	   <<" Zposit "<<Zposit<<endl;
+    }
+    
+    fZposition = Zposit;
+    pESD->SetT0zVertex(Zposit);
+    
+    if (rl->GetDebug()>1) {
+      cout<<" vertex in ESD "<< pESD->GetT0zVertex()<<endl;
+    }
+    
+  } // vertex in 3 sigma
+  pStartLoader->UnloadDigits();
  }
 
 

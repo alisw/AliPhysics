@@ -14,20 +14,18 @@ class AliSTARTvertex   : public TObject {
 
 
 ////////////////////////////////////////////////////////////////////////
- private:
-  Int_t fZposition;        // Z position of vertex (mm)
- AliRunLoader* fRunLoader;
  public:
-    AliSTARTvertex() {}
-    AliSTARTvertex(Int_t *);
-    void Reconstruct(AliESD *pESD);
-    Int_t GetVertex();
-    virtual ~AliSTARTvertex() {}
-    void Set(Int_t);
+  AliSTARTvertex():TObject(),fZposition(0) {}
+  virtual ~AliSTARTvertex() {}
+
+  void Reconstruct(AliRunLoader* runLoader, AliESD *pESD);
+
+  Float_t GetVertex() const {return fZposition;}
+  void SetVertex(Float_t zPosition) {fZposition=zPosition;}
+
+ private:
+    Float_t fZposition;        // Z position of vertex (mm)
 
     ClassDef(AliSTARTvertex,1)  //Reconstructive vertex (Header) object 
 };
-inline Int_t AliSTARTvertex::GetVertex(){return fZposition;}
-inline void AliSTARTvertex::Set(Int_t Z_position)
-  {fZposition=Z_position;}
 #endif
