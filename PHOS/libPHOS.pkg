@@ -27,12 +27,13 @@ SRCS          =    AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx \
                  AliPHOSCalibrator.cxx AliPHOSCalibrManager.cxx AliPHOSConTableDB.cxx \
 		 AliPHOSFastGlobalReconstruction.cxx AliPHOSGetter.cxx \
 	         AliPHOSGammaJet.cxx \
-		 AliPHOSGridFile.cxx	
+		 AliPHOSGridFile.cxx AliPHOSRawStream.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
 DHDR= PHOSLinkDef.h
 
+EINCLUDE:=RAW
 
 
 

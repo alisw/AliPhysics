@@ -52,6 +52,7 @@ class AliPHOS : public AliDetector {
   virtual TTree * TreeQA() const {return fTreeQA; } 
   virtual const TString Version() const {return TString(" ") ; } 
   virtual void WriteQA() ; 
+  virtual void Digits2Raw();
   AliPHOS & operator = (const AliPHOS & /*rvalue*/)  {
     Fatal("operator =", "not implemented") ; return *this ; }
 

@@ -40,6 +40,8 @@ class TFile;
 #include "AliRun.h"
 #include "AliPHOSDigitizer.h"
 #include "AliPHOSSDigitizer.h"
+#include "AliPHOSDigit.h"
+#include "AliAltroBuffer.h"
 
 ClassImp(AliPHOS)
 //____________________________________________________________________________
@@ -448,3 +450,116 @@ void AliPHOS::WriteQA()
 
   //fTreeQA->Fill() ; 
 }
+
+//____________________________________________________________________________
+void AliPHOS::Digits2Raw()
+{
+// convert digits of the current event to raw data
+
+  // get the digits
+  ((AliPHOSLoader*) fLoader)->LoadDigits();
+  TClonesArray* digits = ((AliPHOSLoader*) fLoader)->Digits();
+  if (!digits) {
+    Error("Digits2Raw", "no digits");
+    return;
+  }
+
+  // get the geometry
+  AliPHOSGeometry* geom = GetGeometry();
+  if (!geom) {
+    Error("Digits2Raw", "no geometry");
+    return;
+  }
+
+  // some digitization constants
+  const Int_t    kDDLOffset = 0x600;
+  const Double_t kTimeMax = 1.28E-5;
+  const Int_t    kTimeBins = 256;
+  const Double_t kTimePeak = 2.0E-6;
+  const Double_t kTimeRes = 1.5E-6;
+  const Int_t    kThreshold = 3;
+  const Int_t    kHighGainFactor = 40;
+  const Int_t    kHighGainOffset = 0x200;
+
+  AliAltroBuffer* buffer = NULL;
+  Int_t prevDDL = -1;
+  Int_t adcValuesLow[kTimeBins];
+  Int_t adcValuesHigh[kTimeBins];
+
+  // loop over digits (assume ordered digits)
+  for (Int_t iDigit = 0; iDigit < digits->GetEntries(); iDigit++) {
+    AliPHOSDigit* digit = (AliPHOSDigit*) digits->At(iDigit);
+    if (digit->GetAmp() < kThreshold) continue;
+    Int_t relId[4];
+    geom->AbsToRelNumbering(digit->GetId(), relId);
+    Int_t module = relId[0];
+    if (relId[1] != 0) continue;    // ignore digits from CPV
+    Int_t iDDL = 4 * (module - 1) + (4 * (relId[2] - 1)) / geom->GetNPhi();
+
+    // new DDL
+    if (iDDL != prevDDL) {
+      // write real header and close previous file
+      if (buffer) {
+	buffer->Flush();
+	buffer->WriteDataHeader(kFALSE, kFALSE);
+	delete buffer;
+      }
+
+      // open new file and write dummy header
+      char fileName[256];
+      sprintf(fileName, "PHOS_%d.ddl", iDDL + kDDLOffset); 
+      buffer = new AliAltroBuffer(fileName, 1);
+      buffer->WriteDataHeader(kTRUE, kFALSE);  //Dummy;
+
+      prevDDL = iDDL;
+    }
+
+    // out of time range signal (?)
+    if (digit->GetTime() > kTimeMax) {
+      buffer->FillBuffer(digit->GetAmp());
+      buffer->FillBuffer(kTimeBins);  // time bin
+      buffer->FillBuffer(3);          // bunch length
+      buffer->WriteTrailer(3, relId[3], relId[2], module);  // trailer
+      
+    // simulate linear rise and gaussian decay of signal
+    } else {
+      Bool_t highGain = kFALSE;
+
+      // fill time bin values
+      for (Int_t iTime = 0; iTime < kTimeBins; iTime++) {
+	Double_t time = iTime * kTimeMax/kTimeBins;
+	Int_t signal = 0;
+	if (time < digit->GetTime() + kTimePeak) {
+	  signal = Int_t(0.5 + digit->GetAmp() * 
+			 (time - digit->GetTime()) / kTimePeak);
+	} else {
+	  signal = Int_t(0.5 + digit->GetAmp() * 
+                 TMath::Gaus(time, digit->GetTime() + kTimePeak, kTimeRes));
+	}
+	if (signal < 0) signal = 0;
+	adcValuesLow[iTime] = signal;
+	if (signal > 0x3FF) adcValuesLow[iTime] = 0x3FF;
+	adcValuesHigh[iTime] = signal / kHighGainFactor;
+	if (adcValuesHigh[iTime] > 0) highGain = kTRUE;
+      }
+
+      // write low and eventually high gain channel
+      buffer->WriteChannel(relId[3], relId[2], module, 
+			   kTimeBins, adcValuesLow, kThreshold);
+      if (highGain) {
+	buffer->WriteChannel(relId[3], relId[2], module + kHighGainOffset, 
+			     kTimeBins, adcValuesHigh, 1);
+      }
+    }
+  }
+
+  // write real header and close last file
+  if (buffer) {
+    buffer->Flush();
+    buffer->WriteDataHeader(kFALSE, kFALSE);
+    delete buffer;
+  }
+
+  fLoader->UnloadDigits();
+}
+
