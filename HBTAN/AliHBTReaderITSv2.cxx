@@ -254,7 +254,7 @@ Int_t AliHBTReaderITSv2::Read(AliHBTRun* particles, AliHBTRun *tracks)
                                                   //if it does not delete it and take next good track
 
           
-          iotrack->Propagate(iotrack->GetAlpha(),3.,0.1/65.19*1.848,0.1*1.848);
+          iotrack->PropagateTo(3.,0.0028,65.19);
           iotrack->PropagateToVertex();
  
           iotrack->GetExternalParameters(xk,par);     //get properties of the track
