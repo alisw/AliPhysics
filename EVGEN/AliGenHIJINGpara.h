@@ -31,6 +31,7 @@ class AliGenHIJINGpara : public AliGenerator
  private:
   void DecayPi0(Float_t* orig, Float_t * p);
  protected:
+  Int_t   fNt;         // CurrentTrack;
   Float_t fCutVertexZ; // Vertex truncation
   Bool_t  fPi0Decays;  // Flag for pi0 decays
   TF1* fPtpi;          // Parametrised pt distribution for pi

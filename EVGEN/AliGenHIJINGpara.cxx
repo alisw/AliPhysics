@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2002/11/28 11:46:15  morsch
+Don't track pi0 if already decayed.
+
 Revision 1.15  2002/11/28 11:38:53  morsch
 Typo corrected.
 
@@ -217,11 +220,12 @@ AliGenHIJINGpara::AliGenHIJINGpara()
     //
     // Default constructor
     //
-    fPtpi    = 0;
-    fPtka    = 0;
-    fETApic  = 0;
-    fETAkac  = 0;
-    fDecayer = 0;
+    fPtpi    =  0;
+    fPtka    =  0;
+    fETApic  =  0;
+    fETAkac  =  0;
+    fDecayer =  0;
+    fNt      = -1;
     SetCutVertexZ();
     SetPtRange();
     SetPi0Decays();
@@ -236,11 +240,12 @@ AliGenHIJINGpara::AliGenHIJINGpara(Int_t npart)
   //
     fName="HIGINGpara";
     fTitle="HIJING Parametrisation Particle Generator";
-    fPtpi    = 0;
-    fPtka    = 0;
-    fETApic  = 0;
-    fETAkac  = 0;
-    fDecayer = 0;
+    fPtpi    =  0;
+    fPtka    =  0;
+    fETApic  =  0;
+    fETAkac  =  0;
+    fDecayer =  0;
+    fNt      = -1;
     SetCutVertexZ();
     SetPtRange();
     SetPi0Decays();
@@ -335,7 +340,7 @@ void AliGenHIJINGpara::Generate()
     Float_t pt, pl, ptot;
     Float_t phi, theta;
     Float_t p[3];
-    Int_t i, part, nt, j;
+    Int_t i, part, j;
     //
     TF1 *ptf;
     TF1 *etaf;
@@ -394,15 +399,20 @@ void AliGenHIJINGpara::Generate()
 	    if (part == kPi0 && fPi0Decays){
 //
 //          Decay pi0 if requested
-		SetTrack(0,-1,part,p,origin,polar,0,kPPrimary,nt,fParentWeight);
+		SetTrack(0,-1,part,p,origin,polar,0,kPPrimary,fNt,fParentWeight);
+		KeepTrack(fNt);
 		DecayPi0(origin, p);
 	    } else {
-		SetTrack(fTrackIt,-1,part,p,origin,polar,0,kPPrimary,nt,fParentWeight);
+		SetTrack(fTrackIt,-1,part,p,origin,polar,0,kPPrimary,fNt,fParentWeight);
+		KeepTrack(fNt);
 	    }
 
 	    break;
 	}
+	SetHighWaterMark(fNt);
     }
+//
+
 // Header
     AliGenEventHeader* header = new AliGenEventHeader("HIJINGparam");
 // Event Vertex
@@ -438,10 +448,9 @@ void AliGenHIJINGpara::DecayPi0(Float_t* orig, Float_t * p)
 //
 // Put decay particles on the stack
 //
-    Int_t nt = 0;
     Float_t polar[3] = {0., 0., 0.};
     Int_t np = fDecayer->ImportParticles(particles);
-    
+    Int_t nt;    
     for (Int_t i = 1; i < np; i++)
     {
 	TParticle* iParticle =  (TParticle *) particles->At(i);
@@ -449,6 +458,9 @@ void AliGenHIJINGpara::DecayPi0(Float_t* orig, Float_t * p)
 	p[1] = iParticle->Py();
 	p[2] = iParticle->Pz();
 	Int_t part = iParticle->GetPdgCode();
-	SetTrack(fTrackIt, 0, part, p, orig, polar, 0, kPDecay, nt, fParentWeight);
+
+	SetTrack(fTrackIt, fNt, part, p, orig, polar, 0, kPDecay, nt, fParentWeight);
+	KeepTrack(nt);
     }
+    fNt = nt;
 }
