@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  1999/11/08 07:12:31  fca
+Minor corrections thanks to I.Hrivnacova
+
 Revision 1.8  1999/09/29 09:24:25  fca
 Introduction of the Copyright and cvs Log
 
@@ -59,8 +62,6 @@ AliPHOSv2::~AliPHOSv2(void)
   //  fNH       = 0;
   fIshunt   = 0;
   
-  delete fHits;
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////

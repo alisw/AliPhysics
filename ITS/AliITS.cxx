@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  1999/09/29 09:24:19  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -81,14 +84,13 @@ the AliITS class.
 ClassImp(AliITS)
  
 //_____________________________________________________________________________
-AliITS::AliITS() : AliDetector(){
+AliITS::AliITS() {
   //
   // Default initialiser for ITS
   //     The default constructor of the AliITS class. In addition to
   // creating the AliITS class it zeros the variables fIshunt (a member
   // of AliDetector class), fEuclidOut, and fIdN, and zeros the pointers
-  // fITSpoints, fIdSens, and fIdName. The AliDetector default constructor
-  // is also called.
+  // fITSpoints, fIdSens, and fIdName.
   //
   fITSpoints  = 0;
   fIshunt     = 0;
@@ -96,6 +98,7 @@ AliITS::AliITS() : AliDetector(){
   fIdN        = 0;
   fIdName     = 0;
   fIdSens     = 0;
+  fITSmodules = 0;
 
 }
 //_____________________________________________________________________________
@@ -116,7 +119,7 @@ AliITS::AliITS(const char *name, const char *title):AliDetector(name,title){
   fHits       = new TClonesArray("AliITShit", 1560);
   fDigits     = new TClonesArray("AliITSdigit",1000);
   fITSpoints  = new TObjArray();
-//  fITSmodules = new AliITSmodules();
+  fITSmodules = 0; //new AliITSmodules();
 
   fIshunt     = 0;
   fEuclidOut  = 0;
