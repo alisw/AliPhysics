@@ -263,6 +263,9 @@ void AliSingleModuleConstruction::Construct()
 
     // construct G3 geometry
     fAliModule->CreateGeometry();
+        
+    if (fWriteGeometry) 
+      pGeometryManager->CloseOutFile();
   }  
   
   // construct G4 geometry
