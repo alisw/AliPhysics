@@ -128,6 +128,7 @@ void AliITSClusterFinderSDD::Find1DClusters()
     AliITS *iTS=(AliITS*)gAlice->GetModule("ITS");
 
    // retrieve the parameters 
+   Int_t i;
    Int_t fNofMaps = fSegmentation->Npz();
    Int_t fMaxNofSamples = fSegmentation->Npx();
    Int_t fNofAnodes = fNofMaps/2;
@@ -146,7 +147,11 @@ void AliITSClusterFinderSDD::Find1DClusters()
  
 
   Int_t nofFoundClusters = 0;
-  Float_t dfadc[fNofMaps][fMaxNofSamples];
+
+  Float_t **dfadc = new Float_t*[fNofMaps];
+  for(i=0;i<fNofMaps;i++) dfadc[i] = new Float_t[fMaxNofSamples];
+   
+  
   Float_t fadc, fadc1, fadc2;
   Int_t j,k,idx,l,m;
   for(j=0;j<2;j++) {
@@ -284,6 +289,10 @@ void AliITSClusterFinderSDD::Find1DClusters()
   //printf("SDD- Find1Dclust: fNclusters nofClusters %d %d \n",fNclusters, nofClusters);
 
   fMap->ClearMap();
+  
+  for(i=0;i<fNofMaps;i++) delete[] dfadc[i];
+  delete [] dfadc;
+  delete dfadc;  
 
   return;
 
@@ -306,7 +315,7 @@ void  AliITSClusterFinderSDD::GroupClusters()
   AliITSRawClusterSDD *clusterI;
   AliITSRawClusterSDD *clusterJ;
 
-  Int_t label[nofClusters];
+  Int_t *label = new Int_t [nofClusters];
   Int_t i,j;
   for(i=0; i<nofClusters; i++) label[i] = 0;
   for(i=0; i<nofClusters; i++) { 
@@ -329,6 +338,9 @@ void  AliITSClusterFinderSDD::GroupClusters()
     label[i] = 1;
   } // I clusters
   fClusters->Compress();
+  
+  delete [] label;
+  delete label;
   return;
 
 }
