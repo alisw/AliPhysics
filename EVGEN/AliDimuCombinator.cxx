@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  1999/09/29 09:24:08  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 //
@@ -23,6 +26,7 @@ $Log$
 //
 #include "AliDimuCombinator.h" 
 #include "AliRun.h" 
+#include "AliPDG.h" 
 #include "TRandom.h" 
 //
 ClassImp(AliDimuCombinator)
@@ -33,7 +37,7 @@ ClassImp(AliDimuCombinator)
      {
 	 fimuon1=fimin1;
 	 fmuon1 = (TParticle*) fPartArray->UncheckedAt(fimuon1);
-	 while(Type(fmuon1)!=5 && Type(fmuon1)!=6) {
+	 while(Type(fmuon1)!=kMuonPlus && Type(fmuon1)!=kMuonMinus) {
 	     fimuon1++;
 	     if (fimuon1 >= fimax1) {fmuon1=0; break;}
 	     fmuon1 = (TParticle*) fPartArray->UncheckedAt(fimuon1);
@@ -55,7 +59,7 @@ ClassImp(AliDimuCombinator)
 	 if (fimuon1>=fNParticle) {fmuon1 = 0; return fmuon1;}
 	 
 	 fmuon1 = (TParticle*) fPartArray->UncheckedAt(fimuon1);
-	 while(Type(fmuon1)!=5 && Type(fmuon1)!=6) {
+	 while(Type(fmuon1)!=kMuonPlus && Type(fmuon1)!=kMuonMinus) {
 	     fimuon1++;
 	     if (fimuon1>=fimax1) {fmuon1 = 0; break;}
 	     fmuon1 = (TParticle*) fPartArray->UncheckedAt(fimuon1);
@@ -80,7 +84,7 @@ TParticle* AliDimuCombinator::NextMuonSelected()
 	 }
 	 if (fimuon2 >= fimax2) {fmuon2=0; return;}
 	 fmuon2 = (TParticle*) fPartArray->UncheckedAt(fimuon2);
-	 while(Type(fmuon2)!=5 && Type(fmuon2)!=6) {
+	 while(Type(fmuon2)!=kMuonPlus && Type(fmuon2)!=kMuonMinus) {
 	     fimuon2++;
 	     if (fimuon2 >= fimax2) {fmuon2=0; break;}
 	     fmuon2 = (TParticle*) fPartArray->UncheckedAt(fimuon2);
@@ -101,7 +105,7 @@ void AliDimuCombinator::FirstPartnerSelected()
 	 
 	 fmuon2 = (TParticle*) fPartArray->UncheckedAt(fimuon2);
 
-	 while(Type(fmuon2)!=5 && Type(fmuon2)!=6) {
+	 while(Type(fmuon2)!=kMuonPlus && Type(fmuon2)!=kMuonMinus) {
 	     fimuon2++;
 	     if (fimuon2>=fimax2) {fmuon2 = 0; break;}
 	     fmuon2 = (TParticle*) fPartArray->UncheckedAt(fimuon2);
