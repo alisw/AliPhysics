@@ -41,6 +41,7 @@
 #include "AliTOFSDigit.h"
 #include "AliTOFConstants.h"
 #include "AliTOFhit.h"
+#include "AliTOFhitT0.h"
 #include "AliTOF.h"
 #include "AliTOFv1.h"
 #include "AliTOFv2.h"
@@ -178,6 +179,7 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
     TOF->RecreateSDigitsArray();
   }
 
+  Int_t version=TOF->IsVersion();
 
   if (fEdgeTails) ftail = new TF1("tail",TimeWithTail,-2,2,3);
 
@@ -223,10 +225,9 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
     
     //Now made SDigits from hits
 
-    Int_t    vol[5];       // location for a digit
-    Float_t  digit[2];     // TOF digit variables
+
     TParticle *particle;
-    AliTOFhit *tofHit;
+    //AliTOFhit *tofHit;
     TClonesArray *TOFhits = TOF->Hits();
 
     // create hit map
@@ -255,17 +256,43 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
 
       for (Int_t hit = 0; hit < nhits; hit++)
       {
-	tofHit = (AliTOFhit *) TOFhits->UncheckedAt(hit);
-	Int_t tracknum = tofHit->GetTrack();
-	vol[0] = tofHit->GetSector();
-	vol[1] = tofHit->GetPlate();
+	Int_t    vol[5];       // location for a digit
+	Float_t  digit[2];     // TOF digit variables
+	Int_t tracknum;
+	Float_t Xpad;
+	Float_t Zpad;
+	Float_t geantTime;
 
-	// selection case for sdigitizing only hits in a given plate of a given sector
-	if(thereIsNotASelection || (vol[0]==fSelectedSector && vol[1]==fSelectedPlate)){
-	  
+	// fp: really sorry for this, it is a temporary trick to have
+	// track length too
+	if(version!=6){
+	  AliTOFhit *tofHit = (AliTOFhit *) TOFhits->UncheckedAt(hit);
+	  tracknum = tofHit->GetTrack();
+	  vol[0] = tofHit->GetSector();
+	  vol[1] = tofHit->GetPlate();
 	  vol[2] = tofHit->GetStrip();
 	  vol[3] = tofHit->GetPadx();
 	  vol[4] = tofHit->GetPadz();
+	  Xpad = tofHit->GetDx();
+	  Zpad = tofHit->GetDz();
+	  geantTime = tofHit->GetTof(); // unit [s]
+	} else {
+	  AliTOFhitT0 *tofHit = (AliTOFhitT0 *) TOFhits->UncheckedAt(hit);
+	  tracknum = tofHit->GetTrack();
+	  vol[0] = tofHit->GetSector();
+	  vol[1] = tofHit->GetPlate();
+	  vol[2] = tofHit->GetStrip();
+	  vol[3] = tofHit->GetPadx();
+	  vol[4] = tofHit->GetPadz();
+	  Xpad = tofHit->GetDx();
+	  Zpad = tofHit->GetDz();
+	  geantTime = tofHit->GetTof(); // unit [s]
+	}
+
+	geantTime *= 1.e+09;  // conversion from [s] to [ns]
+	    
+	// selection case for sdigitizing only hits in a given plate of a given sector
+	if(thereIsNotASelection || (vol[0]==fSelectedSector && vol[1]==fSelectedPlate)){
 	  
 	  Bool_t dummy=((tracknum==previousTrack) && (vol[0]==previousSector) && (vol[1]==previousPlate) && (vol[2]==previousStrip));
 	  
@@ -289,13 +316,9 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
 	      nHitsFromPrim++;
 	    } // counts hits due to primary particles
 	    
-	    Float_t Xpad = tofHit->GetDx();
-	    Float_t Zpad = tofHit->GetDz();
 	    Float_t xStrip=AliTOFConstants::fgkXPad*(vol[3]-0.5-0.5*AliTOFConstants::fgkNpadX)+Xpad;
 	    Float_t zStrip=AliTOFConstants::fgkZPad*(vol[4]-0.5-0.5*AliTOFConstants::fgkNpadZ)+Zpad;
-	    Float_t geantTime = tofHit->GetTof(); // unit [s]
-	    geantTime *= 1.e+09;  // conversion from [s] to [ns]
-	    
+
 	    //cout << "geantTime " << geantTime << " [ns]" << endl;
 	    Int_t nActivatedPads = 0, nFiredPads = 0;
 	    Bool_t isFired[4] = {kFALSE, kFALSE, kFALSE, kFALSE};
