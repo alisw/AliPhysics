@@ -768,88 +768,79 @@ void AliPMDv0::CreateMaterials()
   // ORIGIN    : Y. P. VIYOGI 
   //
   
-  // --- The Argon- CO2 mixture --- 
-  Float_t ag[2] = { 39.95 };
-  Float_t zg[2] = { 18. };
-  Float_t wg[2] = { .8,.2 };
-  Float_t dar   = .001782;   // --- Ar density in g/cm3 --- 
-  // --- CO2 --- 
-  Float_t ac[2] = { 12.,16. };
-  Float_t zc[2] = { 6.,8. };
-  Float_t wc[2] = { 1.,2. };
-  Float_t dc    = .001977;
-  Float_t dco   = .002;  // --- CO2 density in g/cm3 ---
-  
-  Float_t absl, radl, a, d, z;
-  Float_t dg;
-  Float_t x0ar;
-  //Float_t x0xe=2.4;
-  //Float_t dxe=0.005858;
-  Float_t buf[1];
-  Int_t nbuf;
-  Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
-  Float_t zsteel[4] = { 26.,24.,28.,14. };
-  Float_t wsteel[4] = { .715,.18,.1,.005 };
-  // 
-  // Mylar
-  //
-  Float_t aMylar[3]={1.00794,12.0107,15.9994};
-  Float_t zMylar[3]={1.,6.,8.};
-  Float_t wMylar[3]={0.041959,0.625017,0.333025};
-  Float_t dMylar   = 1.4;
-  
+  //  cout << " Inside create materials " << endl;
 
   Int_t *idtmed = fIdtmed->GetArray()-599;
   Int_t isxfld = gAlice->Field()->Integ();
   Float_t sxmgmx = gAlice->Field()->Max();
   
   // --- Define the various materials for GEANT --- 
+
   AliMaterial(1, "Pb    $", 207.19, 82., 11.35, .56, 18.5);
-  x0ar = 19.55 / dar;
-  AliMaterial(2, "Argon$", 39.95, 18., dar, x0ar, 6.5e4);
-  AliMixture(3, "CO2  $", ac, zc, dc, -2, wc);
+  
+  // Argon
+
+  Float_t dAr   = 0.001782;   // --- Ar density in g/cm3 --- 
+  Float_t x0Ar = 19.55 / dAr;
+  AliMaterial(2, "Argon$", 39.95, 18., dAr, x0Ar, 6.5e4);
+
+  // --- CO2 --- 
+
+  Float_t aCO2[2] = { 12.,16. };
+  Float_t zCO2[2] = { 6.,8. };
+  Float_t wCO2[2] = { 1.,2. };
+  Float_t dCO2    = 0.001977;
+  AliMixture(3, "CO2  $", aCO2, zCO2, dCO2, -2, wCO2);
+
   AliMaterial(4, "Al   $", 26.98, 13., 2.7, 8.9, 18.5);
+
+  // ArCO2
+
+  Float_t aArCO2[3] = {39.948,12.0107,15.9994};
+  Float_t zArCO2[3] = {18.,6.,8.};
+  Float_t wArCO2[3] = {0.7,0.08,0.22};
+  Float_t dArCO2    = dAr * 0.7 + dCO2 * 0.3;
+  AliMixture(5, "ArCO2$", aArCO2, zArCO2, dArCO2, 3, wArCO2);
+
   AliMaterial(6, "Fe   $", 55.85, 26., 7.87, 1.76, 18.5);
-  AliMaterial(7, "W    $", 183.85, 74., 19.3, .35, 10.3);
-  AliMaterial(8, "G10  $", 20., 10., 1.7, 19.4, 999.);
-  AliMaterial(9, "SILIC$", 28.09, 14., 2.33, 9.36, 45.);
-  AliMaterial(10, "Be   $", 9.01, 4., 1.848, 35.3, 36.7);
+
+  // G10
+  
+  Float_t aG10[4]={1.,12.011,15.9994,28.086};
+  Float_t zG10[4]={1.,6.,8.,14.};
+  Float_t wG10[4]={0.148648649,0.104054054,0.483499056,0.241666667};
+  AliMixture(8,"G10",aG10,zG10,1.7,4,wG10);
+  
   AliMaterial(15, "Cu   $", 63.54, 29., 8.96, 1.43, 15.);
-  AliMaterial(16, "C    $", 12.01, 6., 2.265, 18.8, 49.9);
-  AliMaterial(17, "POLYCARBONATE    $", 20., 10., 1.2, 34.6, 999.);
-  AliMixture(19, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel); 
-  // AliMaterial(31, "Xenon$", 131.3, 54., dxe, x0xe, 6.5e4);
-  //  AliMaterial(96, "MYLAR$", 8.73, 4.55, 1.39, 28.7, 62.);
-  AliMixture(96, "MYLAR$", aMylar, zMylar, dMylar, 3, wMylar);
-  AliMaterial(97, "CONCR$", 20., 10., 2.5, 10.7, 40.);
-  AliMaterial(98, "Vacum$", 1e-9, 1e-9, 1e-9, 1e16, 1e16);
-  AliMaterial(99, "Air  $", 14.61, 7.3, .0012, 30420., 67500.);
- 
-  // 	define gas-mixtures 
-  
-  char namate[21]="";
-  gMC->Gfmate((*fIdmate)[3], namate, a, z, d, radl, absl, buf, nbuf);
-  ag[1] = a;
-  zg[1] = z;
-  dg = (dar * 4 + dco) / 5;
-  AliMixture(5, "ArCO2$", ag, zg, dg, 2, wg);
-  
+
+  // Steel
+  Float_t aSteel[4] = { 55.847,51.9961,58.6934,28.0855 };
+  Float_t zSteel[4] = { 26.,24.,28.,14. };
+  Float_t wSteel[4] = { .715,.18,.1,.005 };
+  Float_t dSteel    = 7.88;
+  AliMixture(19, "STAINLESS STEEL$", aSteel, zSteel, dSteel, 4, wSteel); 
+
+  //Air
+
+  Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
+  Float_t zAir[4]={6.,7.,8.,18.};
+  Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
+  Float_t dAir1 = 1.20479E-10;
+  Float_t dAir = 1.20479E-3;
+  AliMixture(98, "Vacum$", aAir,  zAir, dAir1, 4, wAir);
+  AliMixture(99, "Air  $", aAir,  zAir, dAir , 4, wAir);
+
   // Define tracking media 
-  AliMedium(1, "Pb conv.$", 1,  0, 0, isxfld, sxmgmx, 1., .1, .01, .1);
-  AliMedium(7, "W  conv.$", 7,  0, 0, isxfld, sxmgmx, 1., .1, .01, .1);
-  AliMedium(8, "G10plate$", 8,  0, 0, isxfld, sxmgmx, 1., .1, .01, .1);
-  AliMedium(4, "Al      $", 4,  0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
-  AliMedium(6, "Fe      $", 6,  0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
-  AliMedium(5, "ArCO2   $", 5,  1, 0, isxfld, sxmgmx, .1,  .1, .1,  .1);
-  AliMedium(9, "SILICON $", 9,  1, 0, isxfld, sxmgmx, .1,  .1, .1,  .1);
-  AliMedium(10, "Be      $", 10, 0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
-  AliMedium(98, "Vacuum  $", 98, 0, 0, isxfld, sxmgmx, 1., .1, .1,  10);
-  AliMedium(99, "Air gaps$", 99, 0, 0, isxfld, sxmgmx, 1., .1, .1,  .1);
-  AliMedium(15, "Cu      $", 15, 0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
-  AliMedium(16, "C       $", 16, 0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
-  AliMedium(17, "PLOYCARB$", 17, 0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
-  AliMedium(19, " S steel$", 19, 0, 0, isxfld, sxmgmx, 1., .1, .01, .1);
-  //  AliMedium(31, "Xenon   $", 31,  1, 0, isxfld, sxmgmx, .1,  .1, .1,  .1);
+  AliMedium(1,  "Pb conv.$", 1,  0, 0, isxfld, sxmgmx, 1., .1, .01, .1);
+  AliMedium(4,  "Al      $", 4,  0, 0, isxfld, sxmgmx, .1, .1, .01, .1);
+  AliMedium(5,  "ArCO2   $", 5,  1, 0, isxfld, sxmgmx, .1, .1, .10, .1);
+  AliMedium(6,  "Fe      $", 6,  0, 0, isxfld, sxmgmx, .1, .1, .01, .1);
+  AliMedium(8,  "G10plate$", 8,  0, 0, isxfld, sxmgmx, 1., .1, .01, .1);
+  AliMedium(15, "Cu      $", 15, 0, 0, isxfld, sxmgmx, .1, .1, .01, .1);
+  AliMedium(19, "S  steel$", 19, 0, 0, isxfld, sxmgmx, 1., .1, .01, .1);
+  AliMedium(98, "Vacuum  $", 98, 0, 0, isxfld, sxmgmx, 1., .1, .10, 10);
+  AliMedium(99, "Air gaps$", 99, 0, 0, isxfld, sxmgmx, 1., .1, .10, .1);
+
   
   // --- Generate explicitly delta rays in the iron, aluminium and lead --- 
   gMC->Gstpar(idtmed[600], "LOSS", 3.);
