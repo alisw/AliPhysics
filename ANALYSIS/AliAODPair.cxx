@@ -522,7 +522,13 @@ Double_t AliAODPair::GetR()
 //Returns distance between particles vertexes in thir CMS
 
   CalculateDiffs();
-  return TMath::Sqrt( fPxDiff*fPxDiff + fPyDiff*fPyDiff + fPzDiff*fPzDiff);
+  
+  Double_t  vxDiff = fPart1->Vx() - fPart2->Vx();
+  Double_t  vyDiff = fPart1->Vy() - fPart2->Vy();
+  Double_t  vzDiff = fPart1->Vz() - fPart2->Vz();
+  
+  Double_t r = TMath::Sqrt( vxDiff*vxDiff + vyDiff*vyDiff + vzDiff*vzDiff );
+  return r;
   
 }
 /************************************************************************/
