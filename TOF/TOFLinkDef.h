@@ -32,5 +32,8 @@
 #pragma link C++ class  AliTOFSDigit+;
 #pragma link C++ class  AliTOFHitMap+;
 #pragma link C++ class  AliTOFConstants+;
+#pragma link C++ class  AliTOFPad+;
+#pragma link C++ class  AliTOFTrack+;
+#pragma link C++ class  AliTOFRecHit+;
 
 #endif
