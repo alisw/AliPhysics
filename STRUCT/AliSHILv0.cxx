@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/01/12 15:44:03  morsch
+Standard version of SHIL
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -398,7 +401,7 @@ void AliSHILv0::CreateGeometry()
   dl=(zvac7-zvac4)/2.;
   
   par2[3]  = -dl;
-  par2[4]  = r2+(zvac5-zvac3) * TMath::Tan(theta_open2);
+  par2[4]  = r2+(zvac4-zvac3) * TMath::Tan(theta_open2);
   par2[5]  = R11;
   
   par2[6]  = -dl;
@@ -435,7 +438,7 @@ void AliSHILv0::CreateGeometry()
 //
 // Steel envelope
 //
-  tpar[0]=R11-dRSteel2;
+  tpar[0]=R11-dRSteel1;
   tpar[1]=R21;
   tpar[2]=2;
   gMC->Gsvolu("YS21", "TUBE", idtmed[1718], tpar, 3);
@@ -873,7 +876,7 @@ void AliSHILv0::CreateGeometry()
   cpar[1]=R11;
   cpar[2]=(zvac4-2.*cpar[0])*TMath::Tan(acc_min);
   cpar[3]=R11;
-  cpar[4]=zvac4*TMath::Tan(acc_min);
+  cpar[4]=R21;
   gMC->Gsvolu("YCS2", "CONE", idtmed[1720], cpar, 5);
   dz=zvac4-cpar[0];
   gMC->Gspos("YCS2", 1, "ALIC", 0., 0., dz, 0, "ONLY");
@@ -890,9 +893,9 @@ void AliSHILv0::CreateGeometry()
   
 
   cpar[0]=(zvac6-(zch2+dzch+1.))/2.;
-  cpar[1]=R11;
+  cpar[1]=R21;
   cpar[2]=(zvac6-2.*cpar[0])*TMath::Tan(acc_min);
-  cpar[3]=R11;
+  cpar[3]=R21;
   cpar[4]=zvac6*TMath::Tan(acc_min);
   gMC->Gsvolu("YCS4", "CONE", idtmed[1720], cpar, 5);
   dz=zvac6-cpar[0];
