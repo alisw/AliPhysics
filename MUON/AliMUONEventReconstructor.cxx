@@ -15,6 +15,18 @@
 
 /*
 $Log$
+Revision 1.8  2000/07/18 16:04:06  gosset
+AliMUONEventReconstructor package:
+* a few minor modifications and more comments
+* a few corrections
+  * right sign for Z of raw clusters
+  * right loop over chambers inside station
+  * symmetrized covariance matrix for measurements (TrackChi2MCS)
+  * right sign of charge in extrapolation (ExtrapToZ)
+  * right zEndAbsorber for Branson correction below 3 degrees
+* use of TVirtualFitter instead of TMinuit for AliMUONTrack::Fit
+* no parameter for AliMUONTrack::Fit() but more fit parameters in Track object
+
 Revision 1.7  2000/07/03 12:28:06  gosset
 Printout at the right place after extrapolation to vertex
 
@@ -138,6 +150,10 @@ AliMUONEventReconstructor::AliMUONEventReconstructor(void)
   // Is 10 the right size ????
   fRecTracksPtr = new TClonesArray("AliMUONTrack", 10);
   fNRecTracks = 0; // really needed or GetEntriesFast sufficient ????
+  // Memory allocation for the TClonesArray of hits on reconstructed tracks
+  // Is 100 the right size ????
+  fRecTrackHitsPtr = new TClonesArray("AliMUONTrack", 100);
+  fNRecTrackHits = 0; // really needed or GetEntriesFast sufficient ????
 
   // Initialize magnetic field
   // using Fortran subroutine INITFIELD in "reco_muon.F".
@@ -400,8 +416,19 @@ void AliMUONEventReconstructor::ResetSegments(void)
 void AliMUONEventReconstructor::ResetTracks(void)
 {
   // To reset the TClonesArray of reconstructed tracks
-  if (fRecTracksPtr) fRecTracksPtr->Clear();
+  if (fRecTracksPtr) fRecTracksPtr->Delete();
+  // Delete in order that the Track destructors are called,
+  // hence the space for the TClonesArray of pointers to TrackHit's is freed
   fNRecTracks = 0;
+  return;
+}
+
+  //__________________________________________________________________________
+void AliMUONEventReconstructor::ResetTrackHits(void)
+{
+  // To reset the TClonesArray of hits on reconstructed tracks
+  if (fRecTrackHitsPtr) fRecTrackHitsPtr->Clear();
+  fNRecTrackHits = 0;
   return;
 }
 
@@ -829,11 +856,15 @@ void AliMUONEventReconstructor::MakeTracks(void)
   // To make the tracks,
   // from the list of segments and points in all stations
   if (fPrintLevel >= 1) cout << "enter MakeTracks" << endl;
+  // The order may be important for the following Reset's
   ResetTracks();
+  ResetTrackHits();
   // Look for candidates from at least 3 aligned points in stations(1..) 4 and 5
   MakeTrackCandidates();
   // Follow tracks in stations(1..) 3, 2 and 1
   FollowTracks();
+  // Remove double tracks
+  RemoveDoubleTracks();
   return;
 }
 
@@ -1135,13 +1166,9 @@ void AliMUONEventReconstructor::FollowTracks(void)
 	  }
 	}
 	else {
-	  // Remove current track candidate and update fNRecTracks
-	  // To be checked: recursive delete of TrackHit's !!!!
-	  // For cleaner implementation: call track->Remove()
-	  // to be coded, with all cleanings,
-	  // including links between HitForRec's and TrackHit's !!!!
-	  fRecTracksPtr->Remove(track);
-	  fNRecTracks--;
+	  // Remove current track candidate
+	  // and corresponding TrackHit's, ...
+	  track->Remove();
 	  delete extrapSegment;
 	  break; // stop the search for this candidate:
 	  // exit from the loop over station
@@ -1184,6 +1211,50 @@ void AliMUONEventReconstructor::FollowTracks(void)
   } // while (track)
   // Compression of track array (necessary after Remove ????)
   fRecTracksPtr->Compress();
+  return;
+}
+
+  //__________________________________________________________________________
+void AliMUONEventReconstructor::RemoveDoubleTracks(void)
+{
+  // To remove double tracks.
+  // Tracks are considered identical
+  // if they have at least half of their hits in common.
+  // Among two identical tracks, one keeps the track with the larger number of hits
+  // or, if these numbers are equal, the track with the minimum Chi2.
+  AliMUONTrack *track1, *track2, *trackToRemove;
+  Bool_t identicalTracks;
+  Int_t hitsInCommon, nHits1, nHits2;
+  identicalTracks = kTRUE;
+  while (identicalTracks) {
+    identicalTracks = kFALSE;
+    // Loop over first track of the pair
+    track1 = (AliMUONTrack*) fRecTracksPtr->First();
+    while (track1 && (!identicalTracks)) {
+      nHits1 = track1->GetNTrackHits();
+      // Loop over second track of the pair
+      track2 = (AliMUONTrack*) fRecTracksPtr->After(track1);
+      while (track2 && (!identicalTracks)) {
+	nHits2 = track2->GetNTrackHits();
+	// number of hits in common between two tracks
+	hitsInCommon = track1->HitsInCommon(track2);
+	// check for identical tracks
+	if ((4 * hitsInCommon) >= (nHits1 + nHits2)) {
+	  identicalTracks = kTRUE;
+	  // decide which track to remove
+	  if (nHits1 > nHits2) trackToRemove = track2;
+	  else if (nHits1 < nHits2) trackToRemove = track1;
+	  else if ((track1->GetFitFMin()) < (track2->GetFitFMin()))
+	    trackToRemove = track2;
+	  else trackToRemove = track1;
+	  // remove it
+	  trackToRemove->Remove();
+	}
+	track2 = (AliMUONTrack*) fRecTracksPtr->After(track2);
+      } // track2
+      track1 = (AliMUONTrack*) fRecTracksPtr->After(track1);
+    } // track1
+  }
   return;
 }
 

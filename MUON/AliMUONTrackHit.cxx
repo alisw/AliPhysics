@@ -15,6 +15,18 @@
 
 /*
 $Log$
+Revision 1.4  2000/07/18 16:04:06  gosset
+AliMUONEventReconstructor package:
+* a few minor modifications and more comments
+* a few corrections
+  * right sign for Z of raw clusters
+  * right loop over chambers inside station
+  * symmetrized covariance matrix for measurements (TrackChi2MCS)
+  * right sign of charge in extrapolation (ExtrapToZ)
+  * right zEndAbsorber for Branson correction below 3 degrees
+* use of TVirtualFitter instead of TMinuit for AliMUONTrack::Fit
+* no parameter for AliMUONTrack::Fit() but more fit parameters in Track object
+
 Revision 1.3  2000/06/25 13:06:39  hristov
 Inline functions moved from *.cxx to *.h files instead of forward declarations
 
@@ -80,21 +92,23 @@ AliMUONTrackHit & AliMUONTrackHit::operator=(const AliMUONTrackHit& MUONTrackHit
 AliMUONTrackHit::~AliMUONTrackHit()
 {
   // Destructor
-//   AliMUONHitForRec * hit; // pointer to HitForRec
-//   // remove current TrackHit in HitForRec links
-//   if (this == hit->GetFirstTrackHitPtr())
-//     hit->SetFirstTrackHitPtr(fNextTrackHitWithSameHitForRec); // if first
-//   if (this == hit->GetLastTrackHitPtr())
-//     hit->SetLastTrackHitPtr(fPrevTrackHitWithSameHitForRec); // if last
-//   hit->SetNTrackHits(hit->GetNTrackHits() - 1); // decrement NTrackHits
-//   // update link to next TrackHit of previous TrackHit
-//   if (fPrevTrackHitWithSameHitForRec != NULL)
-//     fPrevTrackHitWithSameHitForRec->
-//       SetNextTrackHitWithSameHitForRec(fNextTrackHitWithSameHitForRec);
-//   // update link to previous TrackHit of next TrackHit
-//   if (fNextTrackHitWithSameHitForRec)
-//     fNextTrackHitWithSameHitForRec->
-//       SetPrevTrackHitWithSameHitForRec(fPrevTrackHitWithSameHitForRec);
+  // Update links between HitForRec's and TrackHit's
+  // connected to the current TrackHit being removed.
+  AliMUONHitForRec *hit = fHitForRecPtr; // pointer to HitForRec
+  // remove current TrackHit in HitForRec links
+  if (this == hit->GetFirstTrackHitPtr())
+    hit->SetFirstTrackHitPtr(fNextTrackHitWithSameHitForRec); // if first
+  if (this == hit->GetLastTrackHitPtr())
+    hit->SetLastTrackHitPtr(fPrevTrackHitWithSameHitForRec); // if last
+  hit->SetNTrackHits(hit->GetNTrackHits() - 1); // decrement NTrackHits of hit
+  // update link to next TrackHit of previous TrackHit
+  if (fPrevTrackHitWithSameHitForRec != NULL)
+    fPrevTrackHitWithSameHitForRec->
+      SetNextTrackHitWithSameHitForRec(fNextTrackHitWithSameHitForRec);
+  // update link to previous TrackHit of next TrackHit
+  if (fNextTrackHitWithSameHitForRec)
+    fNextTrackHitWithSameHitForRec->
+      SetPrevTrackHitWithSameHitForRec(fPrevTrackHitWithSameHitForRec);
   // to be checked thoroughly !!!!
   // with Root counter of AliMUONTrackHit objects,
   // with loop over all these links after the update

@@ -58,7 +58,17 @@ class AliMUONEventReconstructor : public TObject {
   void NextBkgGeantEvent(void); // next event in background file for GEANT hits
 
   // Hits for reconstruction
-  Int_t GetNHitsForRec() {return fNHitsForRec;} // Number
+  Int_t GetNHitsForRec(void) {return fNHitsForRec;} // Number
+
+  // Reconstructed tracks
+  Int_t GetNRecTracks() {return fNRecTracks;} // Number
+  void SetNRecTracks(Int_t NRecTracks) {fNRecTracks = NRecTracks;}
+  TClonesArray* GetRecTracksPtr(void) {return fRecTracksPtr;} // Array
+
+  // Hits on reconstructed tracks
+  Int_t GetNRecTrackHits() {return fNRecTrackHits;} // Number
+  void SetNRecTrackHits(Int_t NRecTrackHits) {fNRecTrackHits = NRecTrackHits;}
+  TClonesArray* GetRecTrackHitsPtr(void) {return fRecTrackHitsPtr;} // Array
 
   // Functions
   Double_t GetImpactParamFromBendingMomentum(Double_t BendingMomentum);
@@ -108,9 +118,13 @@ class AliMUONEventReconstructor : public TObject {
   TClonesArray *fSegmentsPtr[kMaxMuonTrackingStations]; // array of pointers to the segments for each station
   Int_t fNSegments[kMaxMuonTrackingStations]; // number of segments for each station
 
-  // Tracks
+  // Reconstructed tracks
   TClonesArray *fRecTracksPtr; // pointer to array of reconstructed tracks
   Int_t fNRecTracks; // number of reconstructed tracks
+
+  // Track hits on reconstructed tracks
+  TClonesArray *fRecTrackHitsPtr; // pointer to array of hits on reconstructed tracks
+  Int_t fNRecTrackHits; // number of hits on reconstructed tracks
 
   // Functions
   void ResetHitsForRec(void);
@@ -125,11 +139,13 @@ class AliMUONEventReconstructor : public TObject {
   void ResetSegments(void);
   void MakeSegmentsPerStation(Int_t Station);
   void MakeTracks(void);
+  void ResetTrackHits(void);
   void ResetTracks(void);
   Int_t MakeTrackCandidatesWithTwoSegments(AliMUONSegment *BegSegment);
   Int_t MakeTrackCandidatesWithOneSegmentAndOnePoint(AliMUONSegment *BegSegment);
   void MakeTrackCandidates(void);
   void FollowTracks(void);
+  void RemoveDoubleTracks(void);
 
   ClassDef(AliMUONEventReconstructor, 1) // MUON event reconstructor in ALICE
     };

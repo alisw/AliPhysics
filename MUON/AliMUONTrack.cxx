@@ -15,6 +15,18 @@
 
 /*
 $Log$
+Revision 1.5  2000/07/18 16:04:06  gosset
+AliMUONEventReconstructor package:
+* a few minor modifications and more comments
+* a few corrections
+  * right sign for Z of raw clusters
+  * right loop over chambers inside station
+  * symmetrized covariance matrix for measurements (TrackChi2MCS)
+  * right sign of charge in extrapolation (ExtrapToZ)
+  * right zEndAbsorber for Branson correction below 3 degrees
+* use of TVirtualFitter instead of TMinuit for AliMUONTrack::Fit
+* no parameter for AliMUONTrack::Fit() but more fit parameters in Track object
+
 Revision 1.4  2000/06/30 10:15:48  gosset
 Changes to EventReconstructor...:
 precision fit with multiple Coulomb scattering;
@@ -49,6 +61,7 @@ Addition of files for track reconstruction in C++
 #include <TClonesArray.h>
 #include <TMath.h>
 #include <TMatrix.h>
+#include <TObjArray.h>
 #include <TVirtualFitter.h>
 
 #include "AliMUONEventReconstructor.h" 
@@ -73,17 +86,18 @@ AliMUONTrack::AliMUONTrack(AliMUONSegment* BegSegment, AliMUONSegment* EndSegmen
 {
   // Constructor from two Segment's
   fEventReconstructor = EventReconstructor; // link back to EventReconstructor
-  // memory allocation for the TClonesArray of reconstructed TrackHit's
-  fTrackHitsPtr = new  TClonesArray("AliMUONTrackHit", 10);
+  // memory allocation for the TObjArray of pointers to reconstructed TrackHit's
+  fTrackHitsPtr = new TObjArray(10);
   fNTrackHits = 0;
   AddSegment(BegSegment); // add hits from BegSegment
   AddSegment(EndSegment); // add hits from EndSegment
   fTrackHitsPtr->Sort(); // sort TrackHits according to increasing Z
   SetTrackParamAtVertex(); // set track parameters at vertex
-  // set fit conditions
+  // set fit conditions...
   fFitMCS = 0;
   fFitNParam = 3;
   fFitStart = 1;
+  fFitFMin = -1.0;
   return;
 }
 
@@ -92,18 +106,29 @@ AliMUONTrack::AliMUONTrack(AliMUONSegment* Segment, AliMUONHitForRec* HitForRec,
 {
   // Constructor from one Segment and one HitForRec
   fEventReconstructor = EventReconstructor; // link back to EventReconstructor
-  // memory allocation for the TClonesArray of reconstructed TrackHit's
-  fTrackHitsPtr = new  TClonesArray("AliMUONTrackHit", 10);
+  // memory allocation for the TObjArray of pointers to reconstructed TrackHit's
+  fTrackHitsPtr = new TObjArray(10);
   fNTrackHits = 0;
   AddSegment(Segment); // add hits from Segment
   AddHitForRec(HitForRec); // add HitForRec
   fTrackHitsPtr->Sort(); // sort TrackHits according to increasing Z
   SetTrackParamAtVertex(); // set track parameters at vertex
-  // set fit conditions
+  // set fit conditions...
   fFitMCS = 0;
   fFitNParam = 3;
   fFitStart = 1;
+  fFitFMin = -1.0;
   return;
+}
+
+  //__________________________________________________________________________
+AliMUONTrack::~AliMUONTrack()
+{
+  // Destructor
+  if (fTrackHitsPtr) {
+    delete fTrackHitsPtr; // delete the TObjArray of pointers to TrackHit's
+    fTrackHitsPtr = NULL;
+  }
 }
 
   //__________________________________________________________________________
@@ -117,6 +142,39 @@ AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& MUONTrack)
 {
 // Dummy assignment operator
     return *this;
+}
+
+  //__________________________________________________________________________
+void AliMUONTrack::Remove()
+{
+  // Remove current track from array of tracks,
+  // and corresponding track hits from array of track hits.
+  // Compress the TClonesArray it belongs to.
+  AliMUONTrackHit *nextTrackHit;
+  AliMUONEventReconstructor *eventRec = this->fEventReconstructor;
+  TClonesArray *trackHitsPtr = eventRec->GetRecTrackHitsPtr();
+  // Loop over all track hits of track
+  AliMUONTrackHit *trackHit = (AliMUONTrackHit*) fTrackHitsPtr->First();
+  while (trackHit) {
+    nextTrackHit = (AliMUONTrackHit*) fTrackHitsPtr->After(trackHit);
+    // Remove TrackHit from event TClonesArray.
+    // Destructor is called,
+    // hence links between HitForRec's and TrackHit's are updated
+    trackHitsPtr->Remove(trackHit);
+    trackHit = nextTrackHit;
+  }
+  // Remove the track from event TClonesArray
+  // Destructor is called,
+  // hence space for TObjArray of pointers to TrackHit's is freed
+  eventRec->GetRecTracksPtr()->Remove(this);
+  // Number of tracks decreased by 1
+  eventRec->SetNRecTracks(eventRec->GetNRecTracks() - 1);
+  // Compress event TClonesArray of Track's:
+  // this is essential to retrieve the TClonesArray afterwards
+  eventRec->GetRecTracksPtr()->Compress();
+  // Compress event TClonesArray of TrackHit's:
+  // this is probably also essential to retrieve the TClonesArray afterwards
+  trackHitsPtr->Compress();
 }
 
   //__________________________________________________________________________
@@ -191,6 +249,30 @@ void AliMUONTrack::RecursiveDump(void)
 }
 
   //__________________________________________________________________________
+Int_t AliMUONTrack::HitsInCommon(AliMUONTrack* Track)
+{
+  // Returns the number of hits in common
+  // between the current track ("this")
+  // and the track pointed to by "Track".
+  Int_t hitsInCommon = 0;
+  AliMUONTrackHit *trackHit1, *trackHit2;
+  // Loop over hits of first track
+  trackHit1 = (AliMUONTrackHit*) this->GetTrackHitsPtr()->First();
+  while (trackHit1) {
+    // Loop over hits of second track
+    trackHit2 = (AliMUONTrackHit*) Track->GetTrackHitsPtr()->First();
+    while (trackHit2) {
+      // Increment "hitsInCommon" if both TrackHits point to the same HitForRec
+      if ( (trackHit1->GetHitForRecPtr()) ==
+	   (trackHit2->GetHitForRecPtr())    ) hitsInCommon++;
+      trackHit2 = (AliMUONTrackHit*) Track->GetTrackHitsPtr()->After(trackHit2);
+    } // trackHit2
+    trackHit1 = (AliMUONTrackHit*) this->GetTrackHitsPtr()->After(trackHit1);
+  } // trackHit1
+  return hitsInCommon;
+}
+
+  //__________________________________________________________________________
 void AliMUONTrack::Fit()
 {
   // Fit the current track ("this"),
@@ -261,12 +343,16 @@ void AliMUONTrack::Fit()
     trackParam->SetNonBendingCoor(x);
     trackParam->SetBendingCoor(y);
   }
+  // global result of the fit
+  Double_t fedm, errdef;
+  Int_t npari, nparx;
+  fgFitter->GetStats(fFitFMin, fedm, errdef, npari, nparx);
 }
 
   //__________________________________________________________________________
 void AliMUONTrack::AddSegment(AliMUONSegment* Segment)
 {
-  // Add Segment
+  // Add Segment to the track
   AddHitForRec(Segment->GetHitForRec1()); // 1st hit
   AddHitForRec(Segment->GetHitForRec2()); // 2nd hit
 }
@@ -274,8 +360,17 @@ void AliMUONTrack::AddSegment(AliMUONSegment* Segment)
   //__________________________________________________________________________
 void AliMUONTrack::AddHitForRec(AliMUONHitForRec* HitForRec)
 {
-  // Add HitForRec
-  new ((*fTrackHitsPtr)[fNTrackHits]) AliMUONTrackHit(HitForRec);
+  // Add HitForRec to the track:
+  // actual TrackHit into TClonesArray of TrackHit's for the event;
+  // pointer to actual TrackHit in TObjArray of pointers to TrackHit's for the track
+  TClonesArray *recTrackHitsPtr = this->fEventReconstructor->GetRecTrackHitsPtr();
+  Int_t eventTrackHits = this->fEventReconstructor->GetNRecTrackHits();
+  // event
+  AliMUONTrackHit* trackHit =
+    new ((*recTrackHitsPtr)[eventTrackHits]) AliMUONTrackHit(HitForRec);
+  this->fEventReconstructor->SetNRecTrackHits(eventTrackHits + 1);
+  // track
+  fTrackHitsPtr->Add(trackHit);
   fNTrackHits++;
 }
 
