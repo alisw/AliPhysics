@@ -11,11 +11,12 @@
 #pragma link C++ class AliEMCALHit+;
 #pragma link C++ class AliEMCALDigit+;
 #pragma link C++ class AliEMCALTick+;
-//#pragma link C++ class AliEMCALRecPoint+;
-//#pragma link C++ class AliEMCALEmcRecPoint+;
+#pragma link C++ class AliEMCALRecPoint+;
+#pragma link C++ class AliEMCALTowerRecPoint+;
 #pragma link C++ class AliEMCALSDigitizer+;
 #pragma link C++ class AliEMCALDigitizer+;
-//#pragma link C++ class AliEMCALClusterizer+;
+#pragma link C++ class AliEMCALClusterizer+;
+#pragma link C++ class AliEMCALClusterizerv1+;
 #pragma link C++ class AliEMCALGetter+;
 #pragma link C++ class AliEMCALJetFinder+;
 #pragma link C++ class AliEMCALJet+;
