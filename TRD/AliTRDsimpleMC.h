@@ -70,6 +70,7 @@ class AliTRDsimpleMC : public AliMC {
   virtual void          Gsposp(const char *name, Int_t nr, const char *mother,  
                                Float_t x, Float_t y, Float_t z, Int_t irot,
                                const char *konly, Float_t *upar, Int_t np)                { };
+  virtual void          Gsbool(const char* onlyVolName, const char* manyVolName) {}
 
   virtual void          SetCerenkov(Int_t itmed, Int_t npckov, Float_t *ppckov,
                                     Float_t *absco, Float_t *effic, Float_t *rindex)      { };
@@ -195,6 +196,7 @@ class AliTRDsimpleMC : public AliMC {
   virtual void          BuildPhysics()                                                    { };
   virtual void          ProcessEvent();
   virtual void          ProcessRun(Int_t nevent)                                          { };
+  virtual AliMCGeomType     GetMCGeomType() const { return kGeant3; }
 
   // External Decayer
   virtual void          SetExternalDecayer(AliDecayer* decayer)                           { };
