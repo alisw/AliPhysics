@@ -55,7 +55,6 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(Float_t W0, Float_t LocMaxCut)
   fW0        = W0 ;          
   fLocMaxCut = LocMaxCut ; 
   fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
-  
 }
 
 //____________________________________________________________________________
@@ -389,7 +388,6 @@ void AliPHOSEmcRecPoint::GetLocalPosition(TVector3 &LPos)
 
   Int_t iDigit;
 
-
   for(iDigit=0; iDigit<fMulDigit; iDigit++) {
     digit = (AliPHOSDigit *) ( please->GimeDigit(fDigitsList[iDigit]) );
 
@@ -401,11 +399,17 @@ void AliPHOSEmcRecPoint::GetLocalPosition(TVector3 &LPos)
     x    += xi * w ;
     z    += zi * w ;
     wtot += w ;
-
   }
 
-  x /= wtot ;
-  z /= wtot ;
+  if (wtot != 0) {
+    x /= wtot ;
+    z /= wtot ;
+  } else {
+    x = -1e6 ;
+    z = -1e6 ;
+    if (fMulDigit != 0) cout << "AliPHOSEMCRecPoint: too low log weight factor "
+			     << "to evaluate cluster's center\n";
+  }
   fLocPos.SetX(x)  ;
   fLocPos.SetY(0.) ;
   fLocPos.SetZ(z)  ;
