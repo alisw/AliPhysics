@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.36  2001/05/16 14:57:25  alibrary
+New files for folders and Stack
+
 Revision 1.35  2001/05/08 16:02:22  kowal2
 Updated material specifications
 
@@ -1213,11 +1216,35 @@ void AliTPC::Hits2Digits()
     printf("AliTPCParam MUST be created firstly\n");
     return;
   } 
+  
+  fDigitsSwitch=0;
 
  for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) Hits2DigitsSector(isec);
 
 }
 
+//__________________________________________________________________
+void AliTPC::Hits2SDigits()  
+{ 
+
+  //-----------------------------------------------------------
+  //   summable digits - 16 bit "ADC", no noise, no saturation
+  //-----------------------------------------------------------
+
+ //----------------------------------------------------
+ // Loop over all sectors
+ //----------------------------------------------------
+
+  if(fTPCParam == 0){
+    printf("AliTPCParam MUST be created firstly\n");
+    return;
+  } 
+  
+  fDigitsSwitch=1;
+
+ for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) Hits2DigitsSector(isec);
+
+}
 
 //_____________________________________________________________________________
 void AliTPC::Hits2DigitsSector(Int_t isec)
@@ -1363,12 +1390,21 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
 
       Int_t gi =it*nofPads+ip; // global index
 
-      q = gRandom->Gaus(q,fTPCParam->GetNoise()*fTPCParam->GetNoiseNormFac()); 
+      if(fDigitsSwitch == 0){
 
-      q = (Int_t)q;
+        q = gRandom->Gaus(q,fTPCParam->GetNoise()*fTPCParam->GetNoiseNormFac()); 
 
-      if(q <=zerosup) continue; // do not fill zeros
-      if(q > fTPCParam->GetADCSat()) q = fTPCParam->GetADCSat();  // saturation
+        q = (Int_t)q;
+
+        if(q <=zerosup) continue; // do not fill zeros
+        if(q > fTPCParam->GetADCSat()) q = fTPCParam->GetADCSat();  // saturation
+
+      }
+
+      else {
+       q *= 16.;
+       q = (Int_t)q;
+      }
 
       //
       //  "real" signal or electronic noise (list = -1)?

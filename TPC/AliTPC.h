@@ -37,6 +37,7 @@ protected:
   AliTPCTrackHits *fTrackHits;      //!hits for given track M.I.
   Int_t  fHitType; // if fNewHit = 1 old data structure if 2 new hits
   //  3 both types  
+  Int_t fDigitsSwitch; // digits type, 0->normal, 1->summable
 
   //MK changes
 
@@ -57,7 +58,7 @@ public:
   virtual void  Hits2Clusters(TFile *of);
   virtual void  Hits2ExactClustersSector(Int_t isec); // MI change calculate "exact" cluster position
   virtual void  SDigits2Digits();
-
+  virtual void  Hits2SDigits();
   virtual void  Hits2Digits();   //MI change
   virtual void  Hits2DigitsSector(Int_t isec);  //MI change
   virtual void  Init();
@@ -110,6 +111,7 @@ public:
    //fill clones array with intersection of current point with the
    //middle of the row
    void SetHitType(Int_t type){fHitType =type;} //set type of hit container
+   void SetDigitsSwitch(Int_t sw){fDigitsSwitch = sw;}
 
 
 private:
@@ -126,7 +128,7 @@ private:
                          // index[2] pad row number  
                          // index[3] pad row number for which signal is calculated
   
-  ClassDef(AliTPC,2)  // Time Projection Chamber class
+  ClassDef(AliTPC,3)  // Time Projection Chamber class
 };
 
 
