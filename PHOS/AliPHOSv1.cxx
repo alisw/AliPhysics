@@ -59,6 +59,7 @@ AliPHOSv1::AliPHOSv1(const char *name, const char *title):
   fIntrinsicPINEfficiency = 0.1875 ;
   fLightYieldAttenuation = 0.0045 ;
   fRecalibrationFactor = 6.2 / fLightYieldMean ;
+  fElectronsPerGeV = 36000.;
 }
 //____________________________________________________________________________
 AliPHOSv1::AliPHOSv1(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title):
@@ -68,6 +69,7 @@ AliPHOSv1::AliPHOSv1(AliPHOSReconstructioner * Reconstructioner, const char *nam
   fIntrinsicPINEfficiency = 0.1875 ;
   fLightYieldAttenuation = 0.0045 ;
   fRecalibrationFactor = 6.2 / fLightYieldMean ;
+  fElectronsPerGeV = 1/3.61 * 1.e+9 ; // Odd Harald work
 }
 
 //____________________________________________________________________________
@@ -136,6 +138,7 @@ void AliPHOSv1::StepManager(void)
        xyze[1] = pos[1] ;
        xyze[2] = pos[2] ;
        lostenergy = gMC->Edep() ; 
+       xyze[3] = gMC->Edep() ;
 
        global[0] = pos[0] ;
        global[1] = pos[1] ;
@@ -164,5 +167,36 @@ void AliPHOSv1::StepManager(void)
     
        } // there is deposited energy
     } // we are inside a PHOS Xtal
+
+   if(gMC->CurrentVolID(copy) == gMC->VolId("PPIN") ) // We are inside de PIN diode 
+     {
+       gMC->TrackPosition(pos) ;
+       xyze[0] = pos[0] ;
+       xyze[1] = pos[1] ;
+       xyze[2] = pos[2] ;
+       lostenergy = gMC->Edep() ;
+       xyze[3] = gMC->Edep() ;
+
+       if ( xyze[3] != 0 ) {
+          gMC->CurrentVolOffID(11, relid[0]) ; // get the PHOS module number ;
+          relid[1] = 0   ;                    // means PW04and PIN
+          gMC->CurrentVolOffID(5, relid[2]) ; // get the row number inside the module
+          gMC->CurrentVolOffID(4, relid[3]) ; // get the cell number inside the module
+
+      // get the absolute Id number
+
+          Int_t absid ; 
+          fGeom->RelToAbsNumbering(relid,absid) ;
+	  
+	  // calculating number of electrons in the PIN diode asociated to this hit
+	  nElectrons = lostenergy * fElectronsPerGeV ;
+	  xyze[3] = nElectrons * fRecalibrationFactor ;
+
+	  // add current hit to the hit list
+          AddHit(gAlice->CurrentTrack(), absid, xyze);
+	  //printf("PIN volume is  %d, %d, %d, %d \n",relid[0],relid[1],relid[2],relid[3]);
+	  //printf("Lost energy in the PIN is %f \n",lostenergy) ;
+       } // there is deposited energy
+    } // we are inside a PHOS XtalPHOS PIN diode
 }
 

@@ -50,6 +50,7 @@ private:
   Float_t fIntrinsicPINEfficiency ;    
   Float_t fLightYieldAttenuation ; 
   Float_t fRecalibrationFactor ;
+  Float_t fElectronsPerGeV ;   //Number of electrons per GeV created in the PIN by a ionizing particle
 
   ClassDef(AliPHOSv1,1)  // PHOS v1 main class , version subatech with light transportation, MIPS in PIN and electronic noise
 
