@@ -17,7 +17,7 @@ class AliSteppingActionMessenger;
 class AliSteppingAction : public TG4SteppingAction
 {
   enum { 
-    kCheckNofSteps = 100,
+    kCheckNofSteps = 100
   };
 
   public:
