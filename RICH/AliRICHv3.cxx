@@ -15,31 +15,18 @@
 
 #include "AliRICHv3.h"
 #include "AliRun.h"
-#include "AliSegmentation.h"
-#include "AliRICHSegmentationV0.h"
-#include "AliRICHHit.h"
-#include "AliRICHCerenkov.h"
-#include "AliRICHSDigit.h"
-#include "AliRICHDigit.h"
-#include "AliRICHTransientDigit.h"
-#include "AliRICHRawCluster.h"
-#include "AliRICHRecHit1D.h"
-#include "AliRICHRecHit3D.h"
-#include "AliRICHHitMapA1.h"
-#include "AliRICHClusterFinder.h"
-#include "AliRICHMerger.h"
-#include "AliRun.h"
 #include "AliMC.h"
 #include "AliMagF.h"
-#include "AliConst.h"
-#include "AliPDG.h"
-#include "AliPoints.h"
-#include "AliCallf77.h" 
 
 #include <iostream.h>
 #include <TNode.h>
 #include <TGeometry.h>
 #include <TBRIK.h>
+
+#include "AliRICHGeometry.h"
+#include "AliRICHSegmentationV1.h"
+#include "AliRICHResponseV0.h"
+
 
 
 ClassImp(AliRICHv3)
@@ -47,21 +34,27 @@ ClassImp(AliRICHv3)
 AliRICHv3::AliRICHv3(const char *pcName, const char *pcTitle)
       	  :AliRICH(pcName,pcTitle)
 {
-   if(fDebug) cout<<ClassName()<<"::named ctor>\n";
+   cout<<ClassName()<<"::named ctor>\n"; // no way to control it as ctor is called before call to SetDebugXXXX()
 
-   fCkovNumber=0;
-   fFreonProd=0;
-  
+   fCkovNumber=fFreonProd=fDebugLevel=0;
+   
+   AliRICHGeometry       *pRICHGeometry    =new AliRICHGeometry;
+   AliRICHSegmentationV1 *pRICHSegmentation=new AliRICHSegmentationV1;
+   AliRICHResponseV0     *pRICHResponse    =new AliRICHResponseV0;
+     
    fChambers = new TObjArray(kNCH);
    for (Int_t i=0; i<kNCH; i++){    
       fChambers->AddAt(new AliRICHChamber,i);
+      SetGeometryModel(i,pRICHGeometry);
+      SetSegmentationModel(i,pRICHSegmentation);
+      SetResponseModel(i,pRICHResponse);
       ((AliRICHChamber*)fChambers->At(i))->Init(i);    
    }
 }//AliRICHv3::ctor(const char *pcName, const char *pcTitle)
 
 void AliRICHv3::CreateMaterials()
 {
-   if(fDebug) cout<<ClassName()<<"::CreateMaterials()>\n";
+   if(IsDebugStart()) cout<<ClassName()<<"::CreateMaterials()>\n";
    
 //
 // Defines all RICH materials
