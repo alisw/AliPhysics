@@ -9,27 +9,34 @@
 // Author: Piotr Krzysztof Skowronski <Piotr.Skowronski@cern.ch>
 
 #include "AliGenerator.h"
-#include <TFile.h>
-#include <TTree.h>
 #include <AliPDG.h>
-#include "THBTprocessor.h"
+
+class THBTprocessor;
+class TClonesArray;
 
 enum {kHBTPMaxParticleTypes = 50};
 
-class AliGenHBTprocessor : public AliGenerator { 
+class AliGenHBTprocessor : public AliGenerator 
+{ 
+//Wrapper class for THBTProcessor 
+//which is an wrapper to Fortran 
+//program HBT processor written by Lanny Ray
+//
+//Piotr.Skowronski@cern.ch
 
   public:
     AliGenHBTprocessor();
+    AliGenHBTprocessor(const AliGenHBTprocessor& in);
     virtual ~AliGenHBTprocessor();
 
     virtual void Init();
     virtual void Generate();
     virtual void GetParticles(TClonesArray * particles);
-    Int_t        IdFromPDG(Int_t) const;
-    Int_t        PDGFromId(Int_t) const;
+    Int_t        IdFromPDG(Int_t pdg) const;
+    Int_t        PDGFromId(Int_t id) const;
 
-    Int_t   GetHbtPStatusCode(Int_t part) const; 
-    void    SetHbtPStatusCode(Int_t hbtstatcode, Int_t part);
+    Int_t        GetHbtPStatusCode(Int_t part) const; 
+    void         SetHbtPStatusCode(Int_t hbtstatcode, Int_t part);
 /************* S E T T E R S ******************/  
 
     virtual void SetTrackRejectionFactor(Float_t trf = 1.0);
@@ -39,7 +46,7 @@ class AliGenHBTprocessor : public AliGenerator {
     virtual void SetNPIDtypes(Int_t npidt = 2); //Number ofparticle types to be processed
     virtual void SetDeltap(Float_t deltp = 0.1); //maximum range for random momentum shifts in GeV/c;
                                                  //px,py,pz independent; Default = 0.1 GeV/c.
-    virtual void SetMaxIterations(Int_t maxiter = 50);
+    virtual void SetMaxIterations(Int_t maxiter = 50);//
     virtual void SetDelChi(Float_t dc = 0.1);
     virtual void SetIRand(Int_t irnd = 76564) ;
      
@@ -123,51 +130,50 @@ class AliGenHBTprocessor : public AliGenerator {
       Int_t fNPidTypes;             // # particle ID types to correlate
       Int_t fPid[2];                // Geant particle ID #s, max of 2 types
       Int_t fNevents ;              // # events in input event text file
-      Int_t fSwitch_1d;              // Include 1D correlations
-      Int_t fSwitch_3d;              // Include 3D correlations
-      Int_t fSwitch_type ;           // For like, unlike or both PID pairs
-      Int_t fSwitch_coherence;       // To include incoh/coher mixed source
-      Int_t fSwitch_coulomb;         // Coulomb correction selection options
-      Int_t fSwitch_fermi_bose;      // For fermions or bosons
+      Int_t fSwitch1d;              // Include 1D correlations
+      Int_t fSwitch3d;              // Include 3D correlations
+      Int_t fSwitchType ;           // For like, unlike or both PID pairs
+      Int_t fSwitchCoherence;       // To include incoh/coher mixed source
+      Int_t fSwitchCoulomb;         // Coulomb correction selection options
+      Int_t fSwitchFermiBose;      // For fermions or bosons
 
 //   Numbers of particles and pairs:
 
-      Int_t fN_part_1_trk;           // Total # PID #1 in 'trk', all flags
-      Int_t fN_part_2_trk;           // Total # PID #2 in 'trk', all flags
-      Int_t fN_part_tot_trk;         // Total # all part. in 'trk', all flgs
-      Int_t fN_part_used_1_trk;      // # PID#1, used (flag=0) in 'trk'
-      Int_t fN_part_used_2_trk;      // # PID#2, used (flag=0) in 'trk'
+      Int_t fNPart1Trk;           // Total # PID #1 in 'trk', all flags
+      Int_t fNPart2Trk;           // Total # PID #2 in 'trk', all flags
+      Int_t fNPartTotTrk;         // Total # all part. in 'trk', all flgs
+      Int_t fNPartUsed1Trk;      // # PID#1, used (flag=0) in 'trk'
+      Int_t fNPartUsed2Trk;      // # PID#2, used (flag=0) in 'trk'
 
-      Int_t fN_part_1_trk2;          // Total # PID #1 in 'trk2', all flags
-      Int_t fN_part_2_trk2;          // Total # PID #2 in 'trk2', all flags
-      Int_t fN_part_tot_trk2;        // Total # all part. in 'trk2', all flgs
-      Int_t fN_part_used_1_trk2;     // # PID#1, used (flag=0) in 'trk2'
-      Int_t fN_part_used_2_trk2;     // # PID#2, used (flag=0) in 'trk2'
+      Int_t fNPart1Trk2;          // Total # PID #1 in 'trk2', all flags
+      Int_t fNPart2Trk2;          // Total # PID #2 in 'trk2', all flags
+      Int_t fNPartTotTrk2;        // Total # all part. in 'trk2', all flgs
+      Int_t fNPartUsed1Trk2;     // # PID#1, used (flag=0) in 'trk2'
+      Int_t fNPartUsed2Trk2;     // # PID#2, used (flag=0) in 'trk2'
 
-      Int_t fN_part_used_1_ref;      // # PID#1, used (flag=0) in Reference
-      Int_t fN_part_used_2_ref;      // # PID#2, used (flag=0) in Reference
-      Int_t fN_part_used_1_inc;      // # PID#1, used (flag=0) in Inclusive 
-      Int_t fN_part_used_2_inc;      // # PID#2, used (flag=0) in Inclusive
+      Int_t fNPartUsed1Ref;      // # PID#1, used (flag=0) in Reference
+      Int_t fNPartUsed2Ref;      // # PID#2, used (flag=0) in Reference
+      Int_t fNPartUsed1Inc;      // # PID#1, used (flag=0) in Inclusive 
+      Int_t fNPartUsed2Inc;      // # PID#2, used (flag=0) in Inclusive
 
-      Int_t fNum_pairs_like;         // # like pairs used (flag=0) in fit 
-      Int_t fNum_pairs_unlike;       // # unlike pairs used (flag=0) in fit
-      Int_t fNum_pairs_like_ref;     // # like pairs used (flag=0) in Ref. 
-      Int_t fNum_pairs_unlike_ref;   // # unlike pairs used (flag=0) in Ref. 
-      Int_t fNum_pairs_like_inc;     // # like pairs used (flag=0) in Incl. 
-      Int_t fNum_pairs_unlike_inc;   // # unlike pairs used (flag=0) in Incl. 
+      Int_t fNumPairsLike;         // # like pairs used (flag=0) in fit 
+      Int_t fNumPairsUnlike;       // # unlike pairs used (flag=0) in fit
+      Int_t fNumPairsLikeRef;     // # like pairs used (flag=0) in Ref. 
+      Int_t fNumPairsUnlike_ref;   // # unlike pairs used (flag=0) in Ref. 
+      Int_t fNumPairsLikeInc;     // # like pairs used (flag=0) in Incl. 
+      Int_t fNumPairsUnlike_inc;   // # unlike pairs used (flag=0) in Incl. 
 
 //   Counters:
 
-      Int_t fEvent_line_counter;     // Input event text file line counter
+      Int_t fEventLineCounter;     // Input event text file line counter
       Int_t fMaxit;                  // Max # iterations in track adjustment
       Int_t fIrand;                  // Random # starting seed (Def=12345)      
-      Int_t fFile10_line_counter;    // Output, correlated event text file
 //                                    //    line counter
 
 //   Correlation Model Parameters:
 
       Float_t    fLambda;               // Chaoticity parameter
-      Float_t    fR_1d;                   // Spherical source radius (fm)
+      Float_t    fR1d;                   // Spherical source radius (fm)
       Float_t    fRside;                  // 3D Bertsch-Pratt source 'side' R (fm)
       Float_t    fRout;                   // 3D Bertsch-Pratt source 'out'  R (fm)
       Float_t    fRlong;                  // 3D Bertsch-Pratt source 'long' R (fm)
@@ -184,86 +190,62 @@ class AliGenHBTprocessor : public AliGenerator {
       Float_t    fDelchi;                 // Min% change in Chi-Sq to stop iterat.
 
 
-//   Chi-Square Values:
-
-      Float_t    fChisq_wt_like_1d;          // 1D, Like pairs
-      Float_t    fChisq_wt_unlike_1d;        // 1D, Unlike pairs
-      Float_t    fChisq_wt_like_3d_fine;     // 3D, Like pairs, Fine Mesh
-      Float_t    fChisq_wt_unlike_3d_fine;   // 3D, Unlike pairs, Fine Mesh
-      Float_t    fChisq_wt_like_3d_coarse;   // 3D, Like pairs, Coarse Mesh
-      Float_t    fChisq_wt_unlike_3d_coarse; // 3D, Unlike pairs, Coarse Mesh
-      Float_t    fChisq_wt_hist1_1;          // One-body, particle ID type #1
-      Float_t    fChisq_wt_hist1_2;          // One-body, particle ID type #2
-
 //   Particle Masses:
-
-      Float_t    fMass1, fMass2;           // Particle ID# 1 and 2 masses (GeV)
 
 
   /**********   M E S H  ****************/      
 
 
-      Int_t fN_pt_bins;                  // # one-body pt bins
-      Int_t fN_phi_bins;                 // # one-body phi bins
-      Int_t fN_eta_bins;                 // # one-body eta bins
+      Int_t fNPtBins;                  // # one-body pt bins
+      Int_t fNPhiBins;                 // # one-body phi bins
+      Int_t fNEtaBins;                 // # one-body eta bins
      
-      Int_t fN_1d_fine;                  // # bins for 1D, Fine Mesh
-      Int_t fN_1d_coarse;                // # bins for 1D, Coarse Mesh
-      Int_t fN_1d_total;                 // Total # bins for 1D
-      Int_t fN_3d_fine ;                 // # bins for 3D, Fine Mesh
-      Int_t fN_3d_coarse;                // # bins for 3D, Coarse Mesh
-      Int_t fN_3d_total;                 // Total # bins for 3D
-      Int_t fN_3d_fine_project;          // # 3D fine mesh bins to sum over for
+      Int_t fN1dFine;                  // # bins for 1D, Fine Mesh
+      Int_t fN1dCoarse;                // # bins for 1D, Coarse Mesh
+      Int_t fN1dTotal;                 // Total # bins for 1D
+      Int_t fN3dFine ;                 // # bins for 3D, Fine Mesh
+      Int_t fN3dCoarse;                // # bins for 3D, Coarse Mesh
+      Int_t fN3dTotal;                 // Total # bins for 3D
+      Int_t fN3dFineProject;          // # 3D fine mesh bins to sum over for
 
 //   Momentum Space Sectors for Track Sorting:
 
-      Int_t fN_px_bins;                  // # sector bins in px
-      Int_t fN_py_bins;                  // # sector bins in py
-      Int_t fN_pz_bins;                  // # sector bins in pz
-      Int_t fN_sectors;                  // Total # sectors in 3D momentum space
+      Int_t fNPxBins;                  // # sector bins in px
+      Int_t fNPyBins;                  // # sector bins in py
+      Int_t fNPzBins;                  // # sector bins in pz
+      Int_t fNSectors;                  // Total # sectors in 3D momentum space
 
-//   Temporary Momentum Space Sector information storage during trk adjust.
-
-      Int_t fOld_sec_ntrk;               // Old sector # tracks
-      Int_t fOld_sec_flag;               // Old sector flag value
-      Int_t fOld_sec_trkid[MAX_TRK_SAVE];         // Old sector track id array
-
-      Int_t fNew_sec_ntrk;               // New sector # tracks
-      Int_t fNew_sec_flag;               // New sector flag value
-      Int_t fNew_sec_trkid[MAX_TRK_SAVE];// New sector track id array
-      Int_t fNew_sec_save;               // New sector ID value
-      Int_t fNld_sec_save;               // Old sector ID value
      
-      Float_t    fPt_bin_size ;          // One-body pt bin size in (GeV/c)
+      Float_t    fPtBinSize ;          // One-body pt bin size in (GeV/c)
 
       
-      Float_t    fPhi_bin_size;          // One-body phi bin size in (degrees)
+      Float_t    fPhiBinSize;          // One-body phi bin size in (degrees)
       
-      Float_t    fEta_bin_size ;         // One-body eta bin size
-      Float_t    fEta_min;               // One-body eta min/max
-      Float_t    fEta_max;
+      Float_t    fEtaBinSize ;         // One-body eta bin size
+      Float_t    fEtaMin;               // One-body eta min/max
+      Float_t    fEtaMax;
 //   Two-Body Histograms and Correlation Mesh for 1D and 3D distributions:
 //                                       // projections onto single axis.
 
-      Float_t    fBinsize_1d_fine;       // Bin Size - 1D, Fine Mesh in (GeV/c)
-      Float_t    fBinsize_1d_coarse;     // Bin Size - 1D, Coarse Mesh in (GeV/c)
-      Float_t    fQmid_1d;               // q (GeV/c) at fine-coarse mesh boundary
-      Float_t    fQmax_1d;               // Max q (GeV/c) for 1D distributions
-      Float_t    fBinsize_3d_fine;       // Bin Size - 3D, Fine Mesh in (GeV/c)
-      Float_t    fBinsize_3d_coarse;     // Bin Size - 3D, Coarse Mesh in (GeV/c)
-      Float_t    fQmid_3d;               // q (GeV/c) at fine-coarse mesh boundary
-      Float_t    fQmax_3d;               // Max q (GeV/c) for 3D distributions
+      Float_t    fBinsize1dFine;       // Bin Size - 1D, Fine Mesh in (GeV/c)
+      Float_t    fBinsize1dCoarse;     // Bin Size - 1D, Coarse Mesh in (GeV/c)
+      Float_t    fQmid1d;               // q (GeV/c) at fine-coarse mesh boundary
+      Float_t    fQmax1d;               // Max q (GeV/c) for 1D distributions
+      Float_t    fBinsize3dFine;       // Bin Size - 3D, Fine Mesh in (GeV/c)
+      Float_t    fBinsize3dCoarse;     // Bin Size - 3D, Coarse Mesh in (GeV/c)
+      Float_t    fQmid3d;               // q (GeV/c) at fine-coarse mesh boundary
+      Float_t    fQmax3d;               // Max q (GeV/c) for 3D distributions
 
-      Float_t    fPx_min;                // Sector range in px in GeV/c
-      Float_t    fPx_max;                //--//--
+      Float_t    fPxMin;                // Sector range in px in GeV/c
+      Float_t    fPxMax;                //--//--
       Float_t    fDelpx;                 // Mom. space sector cell size - px(GeV/c)     
       
-      Float_t    fPy_min;                // Sector range in py in GeV/c 
-      Float_t    fPy_max;                // --//--
+      Float_t    fPyMin;                // Sector range in py in GeV/c 
+      Float_t    fPyMax;                // --//--
       Float_t    fDelpy;                 // Mom. space sector cell size - py(GeV/c)     
 
-      Float_t    fPz_min;                // Sector range in pz in GeV/c min
-      Float_t    fPz_max;                // Sector range in pz in GeV/c max
+      Float_t    fPzMin;                // Sector range in pz in GeV/c min
+      Float_t    fPzMax;                // Sector range in pz in GeV/c max
       Float_t    fDelpz;                 // Mom. space sector cell size - pz(GeV/c)
 
 

@@ -57,10 +57,12 @@
 #include "AliGenHBTprocessor.h"
 #include "TROOT.h"
 #include <iostream.h>
-
+#include <TFile.h>
+#include <TTree.h>
 #include "AliRun.h"
 #include "AliStack.h"
 #include "TParticle.h"
+#include "THBTprocessor.h"
 #include "AliGenCocktailAfterBurner.h"
 
 
@@ -71,13 +73,20 @@ ClassImp(AliGenHBTprocessor)
 
 AliGenCocktailAfterBurner*  GetGenerator();
 /*******************************************************************/
+AliGenHBTprocessor::AliGenHBTprocessor(const AliGenHBTprocessor& in)
+{
+//copy contructor
+ AliGenHBTprocessor::AliGenHBTprocessor();
+}
 
 AliGenHBTprocessor::AliGenHBTprocessor() : AliGenerator() 
 {
   //
   // Standard constructor
   // Sets default veues of all parameters
-  fHbtPStatCodes = 0;
+  fHbtPStatCodes = 0x0;
+  fHBTprocessor = 0x0;
+
   SetName("AliGenHBTprocessor");
   SetTitle("AliGenHBTprocessor");
   
@@ -172,7 +181,8 @@ void AliGenHBTprocessor::InitStatusCodes()
 /*******************************************************************/
 
 void AliGenHBTprocessor::CleanStatusCodes()
-{//Cleans up status codes
+{
+ //Cleans up status codes
   if (fHbtPStatCodes)
   {
     for (Int_t i =0; i<GetGenerator()->GetNumberOfEvents(); i++)
@@ -202,7 +212,7 @@ void AliGenHBTprocessor::Init()
          thbtp->SetPIDs(IdFromPDG(fPid[0]) ,0);
        thbtp->SetNPIDtypes(1);
        
-       if (fSwitch_type !=1)
+       if (fSwitchType !=1)
           Warning("AliGenHBTprocessor::Init","\nThere is only one particle type set,\n\
                    and Switch_Type differnt then 1,\n which does not make sense.\n\
                    Setting it to 1.\n");
@@ -213,14 +223,14 @@ void AliGenHBTprocessor::Init()
     {
        thbtp->SetPIDs(IdFromPDG(fPid[0]) ,IdFromPDG(fPid[1]));
        SetNPIDtypes(2);
-       thbtp->SetSwitchType(fSwitch_type); 
+       thbtp->SetSwitchType(fSwitchType); 
     }
    
    thbtp->SetMaxIterations(fMaxit);
    thbtp->SetDelChi(fDelchi);
    thbtp->SetIRand(fIrand);
    thbtp->SetLambda(fLambda);
-   thbtp->SetR1d(fR_1d);
+   thbtp->SetR1d(fR1d);
    thbtp->SetRSide(fRside);
    thbtp->SetROut(fRout);
    thbtp->SetRLong(fRlong);
@@ -228,33 +238,33 @@ void AliGenHBTprocessor::Init()
    thbtp->SetRParallel(fRparallel);
    thbtp->SetR0(fR0);
    thbtp->SetQ0(fQ0);
-   thbtp->SetSwitch1D(fSwitch_1d);
-   thbtp->SetSwitch3D(fSwitch_3d);
-   thbtp->SetSwitchType(fSwitch_type);
-   thbtp->SetSwitchCoherence(fSwitch_coherence);
-   thbtp->SetSwitchCoulomb(fSwitch_coulomb);
-   thbtp->SetSwitchFermiBose(fSwitch_fermi_bose);
+   thbtp->SetSwitch1D(fSwitch1d);
+   thbtp->SetSwitch3D(fSwitch3d);
+   thbtp->SetSwitchType(fSwitchType);
+   thbtp->SetSwitchCoherence(fSwitchCoherence);
+   thbtp->SetSwitchCoulomb(fSwitchCoulomb);
+   thbtp->SetSwitchFermiBose(fSwitchFermiBose);
    thbtp->SetPtRange(fPtMin,fPtMax);
-   thbtp->SetPxRange(fPx_min,fPx_max);
-   thbtp->SetPyRange(fPy_min,fPy_max);
-   thbtp->SetPzRange(fPz_min,fPz_max);
+   thbtp->SetPxRange(fPxMin,fPxMax);
+   thbtp->SetPyRange(fPyMin,fPyMax);
+   thbtp->SetPzRange(fPzMin,fPzMax);
    thbtp->SetPhiRange(fPhiMin*180./TMath::Pi(),fPhiMax*180./TMath::Pi());
-   thbtp->SetEtaRange(fEta_min,fEta_max);
-   thbtp->SetNPtBins(fN_pt_bins);
-   thbtp->SetNPhiBins(fN_phi_bins);
-   thbtp->SetNEtaBins(fN_eta_bins);
-   thbtp->SetNPxBins(fN_px_bins);
-   thbtp->SetNPyBins(fN_py_bins);
-   thbtp->SetNPzBins(fN_pz_bins);
-   thbtp->SetNBins1DFineMesh(fN_1d_fine);
-   thbtp->SetBinSize1DFineMesh(fBinsize_1d_fine);
-   thbtp->SetNBins1DCoarseMesh(fN_1d_coarse);
-   thbtp->SetBinSize1DCoarseMesh(fBinsize_1d_coarse);
-   thbtp->SetNBins3DFineMesh(fN_3d_fine);
-   thbtp->SetBinSize3DFineMesh(fBinsize_3d_fine);
-   thbtp->SetNBins3DCoarseMesh(fN_3d_coarse);
-   thbtp->SetBinSize3DCoarseMesh(fBinsize_3d_coarse);
-   thbtp->SetNBins3DFineProjectMesh(fN_3d_fine_project);
+   thbtp->SetEtaRange(fEtaMin,fEtaMax);
+   thbtp->SetNPtBins(fNPtBins);
+   thbtp->SetNPhiBins(fNPhiBins);
+   thbtp->SetNEtaBins(fNEtaBins);
+   thbtp->SetNPxBins(fNPxBins);
+   thbtp->SetNPyBins(fNPyBins);
+   thbtp->SetNPzBins(fNPzBins);
+   thbtp->SetNBins1DFineMesh(fN1dFine);
+   thbtp->SetBinSize1DFineMesh(fBinsize1dFine);
+   thbtp->SetNBins1DCoarseMesh(fN1dCoarse);
+   thbtp->SetBinSize1DCoarseMesh(fBinsize1dCoarse);
+   thbtp->SetNBins3DFineMesh(fN3dFine);
+   thbtp->SetBinSize3DFineMesh(fBinsize3dFine);
+   thbtp->SetNBins3DCoarseMesh(fN3dCoarse);
+   thbtp->SetBinSize3DCoarseMesh(fBinsize3dCoarse);
+   thbtp->SetNBins3DFineProjectMesh(fN3dFineProject);
        
  }
 /*******************************************************************/
@@ -309,16 +319,16 @@ Int_t AliGenHBTprocessor::GetHbtPStatusCode(Int_t part) const
 //returns the status code of the given particle in the active event
 //see SetActiveEvent in the bottom of AliGenHBTprocessor.cxx
 //and in AliCocktailAfterBurner
-  Int_t ActiveEvent = GetGenerator()->GetActiveEventNumber();
-  return fHbtPStatCodes[ActiveEvent][part];
+  Int_t activeEvent = GetGenerator()->GetActiveEventNumber();
+  return fHbtPStatCodes[activeEvent][part];
 }
 
 /*******************************************************************/
 void  AliGenHBTprocessor::SetHbtPStatusCode(Int_t hbtstatcode, Int_t part)
 {
  //Sets the given status code to given particle number (part) in the active event
-  Int_t ActiveEvent = GetGenerator()->GetActiveEventNumber();
-  fHbtPStatCodes[ActiveEvent][part] = hbtstatcode;
+  Int_t activeEvent = GetGenerator()->GetActiveEventNumber();
+  fHbtPStatCodes[activeEvent][part] = hbtstatcode;
 }
 
 /*******************************************************************/
@@ -445,7 +455,7 @@ void AliGenHBTprocessor::SetR1d(Float_t r)
   {
     //default 7.0
     //Sets Spherical source model radius (fm)
-    fR_1d = r;
+    fR1d = r;
     fHBTprocessor->SetR1d(r);
   }
 /*******************************************************************/
@@ -504,7 +514,7 @@ void AliGenHBTprocessor::SetQ0(Float_t q0)
   //Sets Q0                = NA35 Coulomb parameter for finite source size in (GeV/c)
   //                         if fSwitchCoulomb = 2
   //                       = Spherical Coulomb source radius in (fm) 
-  //                         if switch_coulomb = 3, used to interpolate the
+  //                         if switchCoulomb = 3, used to interpolate the
   //                         input Pratt/Cramer discrete Coulomb source
   //                         radii tables.
     fQ0 = q0;
@@ -515,25 +525,25 @@ void AliGenHBTprocessor::SetQ0(Float_t q0)
 void AliGenHBTprocessor::SetSwitch1D(Int_t s1d) 
   {
 //default s1d = 3
-// Sets fSwitch_1d   
+// Sets fSwitch1d   
 //                          = 0 to not compute the 1D two-body //orrelations.
 //                          = 1 to compute this using Q-invariant
 //                          = 2 to compute this using Q-total
 //                          = 3 to compute this using Q-3-ve//tor
 
-    fSwitch_1d = s1d;
+    fSwitch1d = s1d;
     fHBTprocessor->SetSwitch1D(s1d);
   }
 /*******************************************************************/
 void AliGenHBTprocessor::SetSwitch3D(Int_t s3d) 
   {
 //default s3d = 0
-// Sets fSwitch_3d
+// Sets fSwitch3d
 //                         = 0 to not compute the 3D two-body correlations.
 //                         = 1 to compute this using the side-out-long form
 //                         = 2 to compute this using the Yanno-Koonin-Pogoredskij form.   
      
-    fSwitch_3d = s3d;
+    fSwitch3d = s3d;
     fHBTprocessor->SetSwitch3D(s3d);
   }
 /*******************************************************************/
@@ -546,40 +556,40 @@ void AliGenHBTprocessor::SetSwitchType(Int_t st)
 //See SetPIDs and Init
 //If only one particle type is set, unly==1 makes sens
   
-    fSwitch_type = st;
+    fSwitchType = st;
     fHBTprocessor->SetSwitchType(st);
   }
 /*******************************************************************/
 void AliGenHBTprocessor::SetSwitchCoherence(Int_t sc)
   {
 // default  sc = 0
-//        switch_coherence  = 0 for purely incoherent source (but can have
+//        switchCoherence  = 0 for purely incoherent source (but can have
 //                              lambda < 1.0)
 //                          = 1 for mixed incoherent and coherent source
   
-    fSwitch_coherence = sc;
+    fSwitchCoherence = sc;
     fHBTprocessor->SetSwitchCoherence(sc);
   }
 /*******************************************************************/
 void AliGenHBTprocessor::SetSwitchCoulomb(Int_t scol) 
   {
 //default scol = 2
-//        switch_coulomb    = 0 no Coulomb correction
+//        switchCoulomb    = 0 no Coulomb correction
 //                          = 1 Point source Gamow correction only
 //                          = 2 NA35 finite source size correction
 //                          = 3 Pratt/Cramer finite source size correction;
 //                              interpolated from input tables.
-    fSwitch_coulomb =scol;
+    fSwitchCoulomb =scol;
     fHBTprocessor->SetSwitchCoulomb(scol);
   }
 /*******************************************************************/
 void AliGenHBTprocessor::SetSwitchFermiBose(Int_t sfb)
   {
 //default sfb = 1
-//        switch_fermi_bose =  1 Boson pairs
+//        switchFermiBose =  1 Boson pairs
 //                          = -1 Fermion pairs
 
-    fSwitch_fermi_bose = sfb;
+    fSwitchFermiBose = sfb;
     fHBTprocessor->SetSwitchFermiBose(sfb);
   }
 /*******************************************************************/
@@ -596,8 +606,8 @@ void AliGenHBTprocessor::SetPxRange(Float_t pxmin, Float_t pxmax)
  {
 //default pxmin = -1.0, pxmax = 1.0
 //Sets Px range 
-  fPx_min =pxmin;
-  fPx_max =pxmax;
+  fPxMin =pxmin;
+  fPxMax =pxmax;
   fHBTprocessor->SetPxRange(pxmin,pxmax);
  }
 /*******************************************************************/
@@ -605,8 +615,8 @@ void AliGenHBTprocessor::SetPyRange(Float_t pymin, Float_t pymax)
  {
 //default  pymin = -1.0, pymax = 1.0
 //Sets Py range 
-  fPy_min =pymin;
-  fPy_max =pymax;
+  fPyMin =pymin;
+  fPyMax =pymax;
    fHBTprocessor->SetPyRange(pymin,pymax);
  }
 /*******************************************************************/
@@ -614,8 +624,8 @@ void AliGenHBTprocessor::SetPzRange(Float_t pzmin, Float_t pzmax)
  {
 //default pzmin = -3.6, pzmax = 3.6
 //Sets Py range
-   fPz_min =pzmin;
-   fPz_max =pzmax; 
+   fPzMin =pzmin;
+   fPzMax =pzmax; 
    fHBTprocessor->SetPzRange(pzmin,pzmax);
  }
 void AliGenHBTprocessor::SetMomentumRange(Float_t pmin, Float_t pmax)
@@ -639,16 +649,16 @@ void AliGenHBTprocessor::SetEtaRange(Float_t etamin, Float_t etamax)
  {
 //default etamin = -1.5, etamax = 1.5
 //Sets \\Eta range   
-   fEta_min= etamin;
-   fEta_max =etamax;
+   fEtaMin= etamin;
+   fEtaMax =etamax;
    fHBTprocessor->SetEtaRange(etamin,etamax);
    
    //set the azimothal angle range in the AliGeneraor - 
    //to keep coherency between azimuthal angle and pseudorapidity
    //DO NOT CALL this->SetThetaRange, because it calls this method (where we are) 
    //which must cause INFINITE LOOP
-   AliGenerator::SetThetaRange(RadiansToDegrees(EtaToTheta(fEta_min)), 
-                               RadiansToDegrees(EtaToTheta(fEta_max)));
+   AliGenerator::SetThetaRange(RadiansToDegrees(EtaToTheta(fEtaMin)), 
+                               RadiansToDegrees(EtaToTheta(fEtaMax)));
    
  }
 /*******************************************************************/
@@ -670,7 +680,7 @@ void AliGenHBTprocessor::SetNPtBins(Int_t nptbin)
  {
   //default nptbin = 50
   //set number of Pt bins  
-   fN_pt_bins= nptbin; 
+   fNPtBins= nptbin; 
    fHBTprocessor->SetNPtBins(nptbin);
  }
 /*******************************************************************/
@@ -678,7 +688,7 @@ void AliGenHBTprocessor::SetNPhiBins(Int_t nphibin)
 { 
   //default nphibin = 50
   //set number of Phi bins
-  fN_phi_bins=nphibin;
+  fNPhiBins=nphibin;
   fHBTprocessor->SetNPhiBins(nphibin);
 }
 /*******************************************************************/
@@ -686,7 +696,7 @@ void AliGenHBTprocessor::SetNEtaBins(Int_t netabin)
 {
   //default netabin = 50
   //set number of Eta bins
-  fN_eta_bins = netabin;
+  fNEtaBins = netabin;
   fHBTprocessor->SetNEtaBins(netabin);
 }
 /*******************************************************************/
@@ -694,7 +704,7 @@ void AliGenHBTprocessor::SetNPxBins(Int_t npxbin)
 {
   //default  npxbin = 20
   //set number of Px bins
-  fN_px_bins = npxbin; 
+  fNPxBins = npxbin; 
   fHBTprocessor->SetNPxBins(npxbin);
 }
 /*******************************************************************/
@@ -702,7 +712,7 @@ void AliGenHBTprocessor::SetNPyBins(Int_t npybin)
 {
   //default  npybin = 20
   //set number of Py bins
-  fN_py_bins = npybin;
+  fNPyBins = npybin;
   fHBTprocessor->SetNPyBins(npybin);
 }
 /*******************************************************************/
@@ -710,7 +720,7 @@ void AliGenHBTprocessor::SetNPzBins(Int_t npzbin)
 {
   //default npzbin = 70
   //set number of Pz bins
-  fN_pz_bins = npzbin;
+  fNPzBins = npzbin;
   fHBTprocessor->SetNPzBins(npzbin);
 }
 /*******************************************************************/
@@ -718,7 +728,7 @@ void AliGenHBTprocessor::SetNBins1DFineMesh(Int_t n)
 {
 //default n = 10
 //Sets the number of bins in the 1D mesh
-   fN_1d_fine =n;
+   fN1dFine =n;
    fHBTprocessor->SetNBins1DFineMesh(n);
    
 }
@@ -727,7 +737,7 @@ void AliGenHBTprocessor::SetBinSize1DFineMesh(Float_t x)
 {
 //default x=0.01
 //Sets the bin size in the 1D mesh
-   fBinsize_1d_fine = x;
+   fBinsize1dFine = x;
    fHBTprocessor->SetBinSize1DFineMesh(x);
 }
 /*******************************************************************/
@@ -736,7 +746,7 @@ void AliGenHBTprocessor::SetNBins1DCoarseMesh(Int_t n)
 {
 //default n =2
 //Sets the number of bins in the coarse 1D mesh
-  fN_1d_coarse =n;
+  fN1dCoarse =n;
   fHBTprocessor->SetNBins1DCoarseMesh(n);
 }
 /*******************************************************************/
@@ -744,7 +754,7 @@ void AliGenHBTprocessor::SetBinSize1DCoarseMesh(Float_t x)
 {
 //default x=0.05
 //Sets the bin size in the coarse 1D mesh
-  fBinsize_1d_coarse =x;
+  fBinsize1dCoarse =x;
   fHBTprocessor->SetBinSize1DCoarseMesh(x);
 }
 /*******************************************************************/
@@ -753,7 +763,7 @@ void AliGenHBTprocessor::SetNBins3DFineMesh(Int_t n)
 {
 //default n = 8
 //Sets the number of bins in the 3D mesh
-  fN_3d_fine =n;
+  fN3dFine =n;
   fHBTprocessor->SetNBins3DFineMesh(n);
 }
 /*******************************************************************/
@@ -761,7 +771,7 @@ void AliGenHBTprocessor::SetBinSize3DFineMesh(Float_t x)
 {
 //default x=0.01
 //Sets the bin size in the 3D mesh
-  fBinsize_3d_fine =x;
+  fBinsize3dFine =x;
   fHBTprocessor->SetBinSize3DFineMesh(x);
 }
 /*******************************************************************/
@@ -771,7 +781,7 @@ void AliGenHBTprocessor::SetNBins3DCoarseMesh(Int_t n)
 //default n = 2
 //Sets the number of bins in the coarse 3D mesh
 
-  fN_3d_coarse = n;
+  fN3dCoarse = n;
   fHBTprocessor->SetNBins3DCoarseMesh(n);
 }
 /*******************************************************************/
@@ -779,7 +789,7 @@ void AliGenHBTprocessor::SetBinSize3DCoarseMesh(Float_t x)
 {
 //default x=0.08
 //Sets the bin size in the coarse 3D mesh
-  fBinsize_3d_coarse = x;
+  fBinsize3dCoarse = x;
   fHBTprocessor->SetBinSize3DCoarseMesh(x);
 }
 /*******************************************************************/
@@ -788,7 +798,7 @@ void AliGenHBTprocessor::SetNBins3DFineProjectMesh(Int_t n )
 {
 //default n =3
 //Sets the number of bins in the fine project mesh
-  fN_3d_fine_project = n;
+  fN3dFineProject = n;
   fHBTprocessor->SetNBins3DFineProjectMesh(n);
 }
 /*******************************************************************/
@@ -892,7 +902,7 @@ Double_t AliGenHBTprocessor::ThetaToEta(Double_t arg)
   # define alihbtp_initialize alihbtp_initialize_
   # define alihbtp_setactiveeventnumber alihbtp_setactiveeventnumber_
   # define alihbtp_setparameters alihbtp_setparameters_
-  # define type_of_call
+  # define type_ofCall
 
 #else
   # define hbtpran HBTPRAN
@@ -903,7 +913,7 @@ Double_t AliGenHBTprocessor::ThetaToEta(Double_t arg)
   # define alihbtp_initialize ALIHBTP_INITIALIZE
   # define alihbtp_setactiveeventnumber ALIHBTP_SETACTIVEEVENTNUMBER
   # define alihbtp_setparameters ALIHBTP_SETPARAMETERS
-  # define type_of_call  _stdcall
+  # define type_ofCall  _stdcall
 #endif    
 
 #include "AliGenCocktailAfterBurner.h"
@@ -940,16 +950,16 @@ AliGenCocktailAfterBurner*  GetGenerator()
    TClass* genclass = gen->IsA();//get TClass of the generator we got from galice 
    //use casting implemented in TClass
    //cast gen to cabclass
-   AliGenCocktailAfterBurner* CAB=(AliGenCocktailAfterBurner*)genclass->DynamicCast(cabclass,gen);
+   AliGenCocktailAfterBurner* cab=(AliGenCocktailAfterBurner*)genclass->DynamicCast(cabclass,gen);
                                                                         
-   if (CAB == 0x0)//if generator that we got is not AliGenCocktailAfterBurner or its descendant we get null
+   if (cab == 0x0)//if generator that we got is not AliGenCocktailAfterBurner or its descendant we get null
    {              //then quit with error
       gAlice->Fatal("AliGenHBTprocessor.cxx: GetGenerator()",
                     "\nThe main Generator is not a AliGenCocktailAfterBurner, exiting\n");
       return 0x0;
    }
    //   cout<<endl<<"Got generator"<<endl;
-   return CAB;
+   return cab;
    
  }
 /*******************************************************************/
@@ -981,19 +991,19 @@ AliGenHBTprocessor* GetAliGenHBTprocessor()
 }
 
 /*******************************************************************/
-extern "C" void type_of_call alihbtp_setparameters()
+extern "C" void type_ofCall alihbtp_setparameters()
  {
    //dummy
  }
 
-extern "C" void type_of_call  alihbtp_initialize()
+extern "C" void type_ofCall  alihbtp_initialize()
  {
    //dummy
  }
 
 /*******************************************************************/
 
-extern "C" void type_of_call alihbtp_getnumberevents(Int_t &nev)
+extern "C" void type_ofCall alihbtp_getnumberevents(Int_t &nev)
  {
   //passes number of events to the fortran 
    if(gDebug) cout<<"alihbtp_getnumberevents("<<nev<<") ....";
@@ -1012,7 +1022,7 @@ extern "C" void type_of_call alihbtp_getnumberevents(Int_t &nev)
 
 /*******************************************************************/
 
-extern "C" void type_of_call  alihbtp_setactiveeventnumber(Int_t & nev)
+extern "C" void type_ofCall  alihbtp_setactiveeventnumber(Int_t & nev)
  {
 //sets active event in generator (AliGenCocktailAfterBurner)
 
@@ -1027,7 +1037,7 @@ extern "C" void type_of_call  alihbtp_setactiveeventnumber(Int_t & nev)
  }
 /*******************************************************************/
  
-extern "C" void type_of_call  alihbtp_getnumbertracks(Int_t &ntracks)
+extern "C" void type_ofCall  alihbtp_getnumbertracks(Int_t &ntracks)
  {
 //passes number of particles in active event to the fortran  
    if(gDebug>5) cout<<"alihbtp_getnumbertracks("<<ntracks<<") ....";
@@ -1045,7 +1055,7 @@ extern "C" void type_of_call  alihbtp_getnumbertracks(Int_t &ntracks)
  
 /*******************************************************************/
  
-extern "C" void type_of_call  
+extern "C" void type_ofCall  
    alihbtp_puttrack(Int_t & n,Int_t& flag, Float_t& px, 
                     Float_t& py, Float_t& pz, Int_t& geantpid)
  {
@@ -1080,8 +1090,8 @@ extern "C" void type_of_call
    
    
    Float_t m = track->GetMass();
-   Float_t E = TMath::Sqrt(m*m+px*px+py*py+pz*pz);
-   track->SetMomentum(px,py,pz,E);
+   Float_t e = TMath::Sqrt(m*m+px*px+py*py+pz*pz);
+   track->SetMomentum(px,py,pz,e);
    
    g->SetHbtPStatusCode(flag,n-1);
    
@@ -1090,7 +1100,7 @@ extern "C" void type_of_call
 
 /*******************************************************************/
 
-extern "C" void type_of_call  
+extern "C" void type_ofCall  
   alihbtp_gettrack(Int_t & n,Int_t & flag, Float_t & px, 
                    Float_t & py, Float_t & pz, Int_t & geantpid)
   
@@ -1128,7 +1138,7 @@ extern "C" void type_of_call
  }
 
 /*******************************************************************/
-extern "C" Float_t type_of_call hbtpran(Int_t &)
+extern "C" Float_t type_ofCall hbtpran(Int_t &)
 {
 //interface to the random number generator
   return sRandom->Rndm();

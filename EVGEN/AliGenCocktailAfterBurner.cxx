@@ -45,7 +45,7 @@ AliGenCocktailAfterBurner::AliGenCocktailAfterBurner()
 {
 // Constructor
     if (gDebug > 0) 
-	cout<<"AliGenCocktailAfterBurner::AliGenCocktailAfterBurner()"<<endl;
+       cout<<"AliGenCocktailAfterBurner::AliGenCocktailAfterBurner()"<<endl;
     SetName("AliGenCocktailAfterBurner");
     SetTitle("AliGenCocktailAfterBurner");
     fInternalStacks =0;
@@ -60,6 +60,11 @@ AliGenCocktailAfterBurner::AliGenCocktailAfterBurner()
     fNBgEvents = 0;
 }
 /*********************************************************************/ 
+AliGenCocktailAfterBurner::AliGenCocktailAfterBurner(const AliGenCocktailAfterBurner& in)
+{
+ //cpy ctor
+}
+
 /*********************************************************************/ 
 
 AliGenCocktailAfterBurner::~AliGenCocktailAfterBurner()
@@ -262,7 +267,7 @@ AliGenCocktailAfterBurner& AliGenCocktailAfterBurner::operator=(const  AliGenCoc
 /*********************************************************************/
 /*********************************************************************/ 
 
-AliStack* AliGenCocktailAfterBurner::GetStack(Int_t n)
+AliStack* AliGenCocktailAfterBurner::GetStack(Int_t n) const
 {
 //Returns the pointer to the N'th stack (event)
   if( ( n<0 ) || ( n>=GetNumberOfEvents() ) )
@@ -302,13 +307,13 @@ void AliGenCocktailAfterBurner::SetTracks(Int_t stackno)
     TVector3 pol;
     
     TParticle * p;
-    Int_t N = instack->GetNtrack();
+    Int_t n = instack->GetNtrack();
     if (gDebug) 
     {
-      cout<<"AliGenCocktailAfterBurner::SetTracks("<<stackno<<"). Number of particles is: "<<N<<"\n";
+      cout<<"AliGenCocktailAfterBurner::SetTracks("<<stackno<<"). Number of particles is: "<<n<<"\n";
     }
     
-    for(Int_t i = 0; i < N; i++)
+    for(Int_t i = 0; i < n; i++)
     {
 	
       p = instack->Particle(i);
@@ -340,7 +345,7 @@ void AliGenCocktailAfterBurner::SetTracks(Int_t stackno)
 AliMCProcess AliGenCocktailAfterBurner::IntToMCProcess(Int_t no)
 {
  //Mothod used to convert uniqueID (integer) to AliMCProcess type
-    const AliMCProcess MCprocesses[kMaxMCProcess] = 
+    const AliMCProcess kMCprocesses[kMaxMCProcess] = 
     {
      kPNoProcess, kPMultipleScattering, kPEnergyLoss, kPMagneticFieldL, 
      kPDecay, kPPair, kPCompton, kPPhotoelectric, kPBrem, kPDeltaRay,
@@ -352,10 +357,9 @@ AliMCProcess AliGenCocktailAfterBurner::IntToMCProcess(Int_t no)
     
     for (Int_t i = 0;i<kMaxMCProcess;i++)
     {
-      if (MCprocesses[i] == no)
+      if (kMCprocesses[i] == no)
         {
-          //if (debug) cout<<"IntToMCProcess("<<no<<") returned AliMCProcess Named \""<<AliMCProcessName[MCprocesses[i]]<<"\""<<endl;
-          return MCprocesses[i];
+          return kMCprocesses[i];
         }
     } 
     return kPNoProcess;

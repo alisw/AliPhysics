@@ -7,9 +7,8 @@
 
 // Container class for AliGenerator through recursion.
 // (Container is itself an AliGenerator)
-// Author: andreas.morsch@cern.ch 
+// Author: piotr.skowronski@cern.ch 
 //
-#include "AliGenCocktailAfterBurner.h"
 #include "AliGenCocktail.h"
 #include "AliRun.h"
 
@@ -18,31 +17,34 @@ class AliStack;
 
 class AliGenCocktailAfterBurner : public  AliGenCocktail
 {
+//container class for other generators
+//extends AliGenCocktail functionality
+//with possiblity of adding after-burners
+
  public:
     AliGenCocktailAfterBurner();
-//    AliGenCocktailAfterBurner(const AliGenCocktailAfterBurner &cocktail){}
-     
+    AliGenCocktailAfterBurner(const AliGenCocktailAfterBurner& in);
     virtual ~AliGenCocktailAfterBurner();
-    virtual void Init();
-    virtual void Generate();
-    virtual void SetTracks(Int_t stackno);
-    //
-    // Add a new generator to the list
-    virtual void AddAfterBurner
-	(AliGenerator *Generator, char* Name, Float_t RateExp );
     AliGenCocktailAfterBurner & operator=(const AliGenCocktailAfterBurner & rhs);
     
-    AliStack* GetStack(Int_t n);
-    AliStack* GetActiveStack() {return fActiveStack;}
+    virtual void  Init();
+    virtual void  Generate();
+    virtual void  SetTracks(Int_t stackno);
+    //
+    // Add a new generator to the list
+    virtual void  AddAfterBurner
+	(AliGenerator *Generator, char* Name, Float_t RateExp );
     
-    AliGenerator* GetCurrentGenerator();
+    AliStack*     GetStack(Int_t n) const;
+    AliStack*     GetActiveStack() const{return fActiveStack;}
+    
+    AliGenerator* GetCurrentGenerator() const;
     virtual void  SetActiveEventNumber(Int_t actev);
-    Int_t GetActiveEventNumber() {return fActiveEvent;}
-    virtual Int_t GetNumberOfEvents() {return gAlice->GetEventsPerRun() + fNBgEvents;}
+    Int_t         GetActiveEventNumber() const {return fActiveEvent;}
+    virtual Int_t GetNumberOfEvents() const {return gAlice->GetEventsPerRun() + fNBgEvents;}
+    void          SetNBgEvents(Int_t nbg=0){fNBgEvents = nbg;}
 
     static AliMCProcess IntToMCProcess(Int_t no);
-    void SetNBgEvents(Int_t nbg=0){fNBgEvents = nbg;}
-
 
  protected:
     Int_t fNAfterBurners;       // Number of afterburners  
@@ -62,14 +64,17 @@ class AliGenCocktailAfterBurner : public  AliGenCocktail
                               //are addressed to this event
     
     AliGenerator *fCurrentGenerator;      // Current event generator 
-    Int_t fNBgEvents;
-    
+    Int_t fNBgEvents;                     //Nuber of backgrouns events 
+                                          //(events that are generated only temporarly)
+                                          //needed by some afterburners that works better with higher statistics 
+                                          //this generates such a artificial one
+ private:   
     ClassDef(AliGenCocktailAfterBurner,2) // Particle cocktail generator a la SHAKER
                                           //background events added
 };
 
 inline  AliGenerator*  
-    AliGenCocktailAfterBurner::GetCurrentGenerator()
+    AliGenCocktailAfterBurner::GetCurrentGenerator() const
 {
   return fCurrentGenerator;
 }
