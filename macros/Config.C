@@ -188,7 +188,7 @@ void Config()
     AliITSvPPRasymm *ITS  = new AliITSvPPRasymm("ITS","New ITS PPR detailed version with asymmetric services");
     ITS->SetMinorVersion(2);                                         // don't touch this parameter if you're not an ITS developer
     ITS->SetReadDet(kFALSE);                                         // don't touch this parameter if you're not an ITS developer
-    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
+    //    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
     ITS->SetThicknessDet1(300.);   // detector thickness on layer 1 must be in the range [100,300]
     ITS->SetThicknessDet2(300.);   // detector thickness on layer 2 must be in the range [100,300]
     ITS->SetThicknessChip1(300.);  // chip thickness on layer 1 must be in the range [150,300]
