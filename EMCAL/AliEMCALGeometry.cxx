@@ -74,7 +74,7 @@ void AliEMCALGeometry::Init(void){
     fECScintThick      = 0.5;  // cm, Thickness of the scintillator
     fNECLayers         = 25;   // number of scintillator layers
     
-    fSampling          = 11.8; 
+    fSampling          = 13.1;  // calculated with Birk's law implementation
  
     fAlFrontThick      = 3.5;  // cm, Thickness of front Al layer
     fGap2Active        = 1.0;  // cm, Gap between Al and 1st Scintillator
