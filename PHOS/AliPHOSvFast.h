@@ -40,12 +40,15 @@ public:
   Int_t   IsVersion(void) const { return -1 ; }
   void    MakeBranch(Option_t* opt) ;
   Double_t MakeEnergy(const Double_t energy) ;                       // makes the detected energy    
-  void MakeRecParticle(AliPHOSFastRecParticle & rp) ;                // makes a reconstructes particle from primary
-  Int_t   MakeType(const Text_t * name) ;                            // gets the detected type of particle
+  TVector3 MakePosition(const Double_t energy, const TVector3 pos, const Double_t th, const Double_t ph) ; 
+                                                                     // makes the detected position
+  void MakeRecParticle(const Int_t modid, const TVector3 pos, AliPHOSFastRecParticle & rp) ;  // makes a reconstructes particle from primary
+  Int_t   MakeType(AliPHOSFastRecParticle & rp) ;                    // gets the detected type of particle
   FastRecParticlesList * FastRecParticles() { return fFastRecParticles ; } // gets TClonesArray of reconstructed particles
-  void           SetBigBox(Int_t index, Float_t value) ;                             
-  Double_t       SigmaE(Double_t energy) ;    // calulates the energy resolution at a given Energy                           
-  virtual void   StepManager(void) ;          // does the tracking through PHOS and a preliminary digitalization
+  void         SetBigBox(Int_t index, Float_t value) ;                             
+  Double_t     SigmaE(Double_t energy) ;    // calulates the energy resolution at a given Energy                           
+  Double_t     SigmaP(Double_t energy, Int_t inc) ; // calulates the position resolution at a given Energy at a given incidence                           
+  virtual void StepManager(void) ;          // does the tracking through PHOS and a preliminary digitalization
   
 private:
   
@@ -56,10 +59,14 @@ private:
   AliPHOSGeometry * fGeom ;                  // geometry definition
   Int_t fNRecParticles ;                     // number of detected particles
   TRandom fRan ;                             // random number generator
-  Double_t fResPara1 ;                       // parameter for the energy resolution dependence ; 
-  Double_t fResPara2 ;                       // parameter for the energy resolution dependence ; 
-  Double_t fResPara3 ;                       // parameter for the energy resolution dependence ; 
-
+  Double_t fResPara1 ;                       // parameter for the energy resolution dependence  
+  Double_t fResPara2 ;                       // parameter for the energy resolution dependence  
+  Double_t fResPara3 ;                       // parameter for the energy resolution dependence 
+  Double_t fPosParaA0 ;                      // parameter for the position resolution
+  Double_t fPosParaA1 ;                      // parameter for the position resolution 
+  Double_t fPosParaB0 ;                      // parameter for the position resolution 
+  Double_t fPosParaB1 ;                      // parameter for the position resolution 
+  Double_t fPosParaB2 ;                      // parameter for the position resolution
 
   ClassDef(AliPHOSvFast,1)  // PHOS main class , version for fast simulation
 

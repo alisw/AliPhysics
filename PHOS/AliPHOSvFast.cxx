@@ -64,10 +64,15 @@ AliPHOSvFast::AliPHOSvFast(const char *name, const char *title):
   fNRecParticles = 0 ; 
   fFastRecParticles = new FastRecParticlesList("AliPHOSFastRecParticle", 100) ;
 
-  fResPara1 = 30.0 ; 
-  fResPara2 = 0.03 ; 
-  fResPara3 = 0.01 ; 
+  fResPara1 = 0.030 ;    // GeV
+  fResPara2 = 0.00003 ; 
+  fResPara3 = 0.00001 ; 
 
+  fPosParaA0 = 2.87 ;    // mm
+  fPosParaA1 = -0.0975 ;  
+  fPosParaB0 = 0.257 ;   
+  fPosParaB1 = 0.137 ; 
+  fPosParaB2 = 0.00619 ; 
 }
 
 //____________________________________________________________________________
@@ -165,7 +170,6 @@ void AliPHOSvFast::CreateGeometry()
 
     Float_t xP1 = r * TMath::Sin( angle / kRADDEG ) ;
     Float_t yP1 = -r * TMath::Cos( angle / kRADDEG ) ;
-
     gMC->Gspos("PHOS", i, "ALIC", xP1, yP1, 0.0, idrotm[i-1], "ONLY") ;
  
   } // for GetNModules
@@ -232,16 +236,33 @@ void AliPHOSvFast::MakeBranch(Option_t* opt)
 //____________________________________________________________________________
 Double_t AliPHOSvFast::MakeEnergy(const Double_t energy)
 {  
-  Double_t sigma  = SigmaE(energy*1000.) ; 
-  return  fRan.Gaus(energy*1000., sigma)/1000. ;   
+  Double_t sigma  = SigmaE(energy) ; 
+  return  fRan.Gaus(energy, sigma) ;   
 }
 
 //____________________________________________________________________________
-void AliPHOSvFast::MakeRecParticle(AliPHOSFastRecParticle & rp)
+TVector3 AliPHOSvFast::MakePosition(const Double_t energy, const TVector3 pos, const Double_t theta, const Double_t phi)
 {
+  TVector3 newpos ;
+  Double_t sigma = SigmaP( energy, theta*180./TMath::Pi() ) ;
+  Double_t x = fRan.Gaus( pos.X(), sigma ) ;
+  sigma = SigmaP( energy, phi*180./TMath::Pi() ) ;
+  Double_t z = fRan.Gaus( pos.Z(), sigma ) ;
+  Double_t y = pos.Y() ; 
+  
+  newpos.SetX(x) ; 
+  newpos.SetY(y) ; 
+  newpos.SetZ(z) ; 
+	      
+  return newpos ; 
+}
 
+//____________________________________________________________________________
+void AliPHOSvFast::MakeRecParticle(const Int_t modid, const TVector3 pos, AliPHOSFastRecParticle & rp)
+{
   // get the detected type of particle
-  Int_t type = MakeType( rp.GetName() ) ;
+ 
+  Int_t type = MakeType( rp ) ;
   rp.SetType(type) ;
 
   
@@ -251,14 +272,95 @@ void AliPHOSvFast::MakeRecParticle(AliPHOSFastRecParticle & rp)
   rp.Momentum(momentum) ; 
   Double_t kineticenergy = TMath::Sqrt( TMath::Power(momentum.E(), 2) - TMath::Power(rp.GetMass(), 2) ) ; 
   Double_t modifiedkineticenergy = MakeEnergy(kineticenergy ) ;
-  cout << modifiedkineticenergy << endl ; 
-  //  rp.SetMomentum(tempo) ; 
+  Double_t modifiedenergy = TMath::Sqrt( TMath::Power(modifiedkineticenergy, 2)  
+					 + TMath::Power( rp.GetMass(), 2) ) ;
+ 
+  // get the angle of incidence 
+  
+  Double_t incidencetheta = 90. * TMath::Pi() /180 - rp.Theta() ; 
+  Double_t incidencephi   = ( 270 + fGeom->GetPHOSAngle(modid) ) * TMath::Pi() / 180. - rp.Phi() ;   
+
+  // get the detected direction
+  
+  TVector3 modifiedposition = MakePosition(kineticenergy, pos, incidencetheta, incidencephi) ; 
+  modifiedposition *= modifiedkineticenergy / modifiedposition.Mag() ; 
+
+  // Set the modified 4-momentum of the reconstructed particle
+
+  rp.SetMomentum(modifiedposition.X(), modifiedposition.Y(), modifiedposition.Z(), modifiedenergy) ; 
+
  }
 
 //____________________________________________________________________________
-Int_t AliPHOSvFast::MakeType(const Text_t * name)
+Int_t AliPHOSvFast::MakeType(AliPHOSFastRecParticle & rp )
 {
   Int_t rv =  kUNDEFINED ;
+  Int_t charge = (Int_t)rp.GetPDG()->Charge() ;
+  Int_t test ; 
+  Float_t ran ; 
+  if ( charge == 0 && ( TMath::Abs(rp.GetPdgCode()) != 11 ) ) 
+    test = - 1 ;
+  else
+    test = rp.GetPdgCode() ; 
+
+  switch (test) { 
+
+  case 22:    // it's a photon
+    ran = fRan.Rndm() ; 
+    if ( ran <= 0.5 )  // 50 % 
+      rv = kGAMMA ; 
+    else {
+      ran = fRan.Rndm() ; 
+      if( ran <= 0.9498 )
+	rv = kNEUTRALEM ; 
+      else
+	rv = kNEUTRALHADRON ; 
+    }     
+    break ; 
+
+  case 2112:  // it's a neutron
+    ran = fRan.Rndm() ; 
+    if ( ran <= 0.9998 )
+      rv = kNEUTRALHADRON ; 
+    else 
+      rv = kNEUTRALEM ; 
+    break ; 
+
+  case -2112: // it's a anti-neutron
+    ran = fRan.Rndm() ; 
+    if ( ran <= 0.9984 )
+      rv = kNEUTRALHADRON ; 
+    else 
+      rv = kNEUTRALEM ; 
+    break ; 
+    
+  case 11:    // it's a electron
+    ran = fRan.Rndm() ; 
+    if ( ran <= 0.9996 )
+      rv = kELECTRON ; 
+    else 
+      rv = kCHARGEDHADRON ; 
+    break; 
+
+  case -11:   // it's a electron
+    ran = fRan.Rndm() ; 
+    if ( ran <= 0.9996 )
+      rv = kELECTRON ; 
+    else 
+      rv = kCHARGEDHADRON ; 
+    break; 
+
+  case -1:    // it's a charged
+    ran = fRan.Rndm() ; 
+    if ( ran <= 0.9996 )
+      rv = kCHARGEDHADRON ; 
+    else 
+      rv = kGAMMA ; 
+
+    break ; 
+  }
+    
+  
   return rv ;
 }
 
@@ -293,12 +395,25 @@ Double_t AliPHOSvFast::SigmaE(Double_t energy)
 }
 
 //____________________________________________________________________________
+Double_t AliPHOSvFast::SigmaP(Double_t energy, Int_t incidence)
+{
+ 
+  Double_t paraA = fPosParaA0 + fPosParaA1 * incidence ; 
+  Double_t paraB = fPosParaB0 + fPosParaB1 * incidence + fPosParaB2 * incidence * incidence ; 
+
+  return ( paraA / TMath::Sqrt(energy) + paraB ) * 0.1   ; // in cm  
+}
+
+//____________________________________________________________________________
 void AliPHOSvFast::StepManager(void)
 {
 
   Int_t primary =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
   TLorentzVector lv ; 
   gMC->TrackPosition(lv) ;
+  TVector3 pos = lv.Vect() ; 
+  Int_t modid  ; 
+  gMC->CurrentVolID(modid);
   
   // Makes a reconstructed particle from the primary particle
 
@@ -308,12 +423,15 @@ void AliPHOSvFast::StepManager(void)
   AliPHOSFastRecParticle rp(*part) ;
 
   // Adds the response of PHOS to the particle
-  MakeRecParticle(rp) ;
+
+  MakeRecParticle(modid, pos, rp) ;
   
   // add the primary particle to the FastRecParticles list
+  
   AddRecParticle(rp) ;
 
   // stop the track as soon PHOS is reached
+  
   gMC->StopTrack() ; 
 
 }
