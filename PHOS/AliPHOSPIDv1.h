@@ -79,7 +79,8 @@ private:
   virtual void  Init() ;
   virtual void  InitParameters() ;
   void          MakeRecParticles(void ) ;
-  // Relative Distance CPV-EMC
+  void          MakePID(void ) ;
+ // Relative Distance CPV-EMC
   Float_t GetDistance     (AliPHOSEmcRecPoint * emc, AliPHOSCpvRecPoint * cpv, Option_t * axis)const ; 
   Int_t   GetCPVBit       (AliPHOSEmcRecPoint * emc, AliPHOSCpvRecPoint * cpv, Int_t EffPur, Float_t e) const;
   Int_t   GetPrincipalBit (TString particle, const Double_t* P, Int_t EffPur, Float_t e)const ; //Principal cut

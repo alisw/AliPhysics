@@ -208,6 +208,7 @@ void  AliPHOSPIDv1::Exec(Option_t *option)
     if(gime->TrackSegments() && //Skip events, where no track segments made
        gime->TrackSegments()->GetEntriesFast()) {
       MakeRecParticles() ;
+      MakePID() ; 
       WriteRecParticles();
       if(strstr(option,"deb"))
 	PrintRecParticles(option) ;
@@ -529,6 +530,26 @@ TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSCpv
 }
 
 //____________________________________________________________________________
+void  AliPHOSPIDv1::MakePID()
+{
+  // construct the PID weight from a Bayesian Method
+
+  Int_t index ;
+  Float_t pid1, pid2, pid3, pid4, pid5, pid6 ; 
+  pid1 = pid2 = pid3 = pid4 = pid5 = pid6 = 0 ;
+  Int_t nparticles = AliPHOSGetter::Instance()->RecParticles()->GetEntriesFast() ;
+  for(index = 0 ; index < nparticles ; index ++) {
+    AliPHOSRecParticle * recpar = AliPHOSGetter::Instance()->RecParticle(index) ;  
+    if (recpar->IsPhoton() || recpar->IsHardPhoton())  pid1++ ; 
+    else if (recpar->IsPi0() || recpar->IsHardPi0())   pid2++ ; 
+    else if (recpar->IsElectron())                     pid3++ ; 
+    else if (recpar->IsChargedHadron())                pid4++ ; 
+    else if (recpar->IsNeutralHadron())                pid5++ ; 
+    else if (recpar->IsEleCon())                       pid6++ ;  
+  }
+}
+
+//____________________________________________________________________________
 void  AliPHOSPIDv1::MakeRecParticles()
 {
   // Makes a RecParticle out of a TrackSegment
@@ -609,7 +630,8 @@ void  AliPHOSPIDv1::MakeRecParticles()
       fPPi0[1]   =-100.0;
     }
     
-    Float_t time =emc->GetTime() ;
+    Float_t time = emc->GetTime() ;
+    rp->SetTof(time) ; 
     
     // Loop of Efficiency-Purity (the 3 points of purity or efficiency 
     // are taken into account to set the particle identification)
@@ -623,9 +645,9 @@ void  AliPHOSPIDv1::MakeRecParticles()
       
       // Looking the TOF. If TOF smaller than gate,  4th, 5th or 6th 
       // bit (depending on the efficiency-purity point )is set to 1             
-      if(time< (*fParameters)(2,effPur)) 
+      if(time< (*fParameters)(3,effPur)) 
 	rp->SetPIDBit(effPur+3) ;		    
-      
+  
       //Photon PCA
       //If we are inside the ellipse, 7th, 8th or 9th 
       // bit (depending on the efficiency-purity point )is set to 1 
@@ -666,7 +688,6 @@ void  AliPHOSPIDv1::MakeRecParticles()
     TVector3 pos ; 
     geom->GetGlobal(erp, pos) ; 
     rp->SetPos(pos);
-
     index++ ; 
   }
 }
@@ -779,7 +800,7 @@ void  AliPHOSPIDv1::SetParameters()
 	   &(*fParameters)(i,0), &(*fParameters)(i,1), 
 	   &(*fParameters)(i,2), &(*fParameters)(i,3));
     i++;
-    //printf("line %d: %s",i,string);
+    //Info("SetParameters", "line %d: %s",i,string);
   }
   fclose(fd);
 }
