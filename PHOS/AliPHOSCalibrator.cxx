@@ -54,6 +54,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliLog.h"
 #include "AliPHOSCalibrManager.h"
 #include "AliPHOSCalibrationData.h"
 #include "AliPHOSCalibrator.h"
@@ -144,7 +145,7 @@ void AliPHOSCalibrator::AddRun(const char * filename)
     TObjString * r ;
     while((r=(TObjString *)(next()))){
       if(fn->String().CompareTo(r->String())==0){
-	Error("Run already in list: ",filename) ;
+	AliError(Form("Run already in list: %s",filename)) ;
 	return ;
       }
     }
@@ -185,7 +186,7 @@ void AliPHOSCalibrator::SetConTableDB(const char * file,const char * name)
   //Reads Connection Table database with name "name" from file "file" 
 
   if(file==0 || name == 0){
-    Error("Please, specify file with database"," and its title") ;
+    AliError(Form("Please, specify file with database and its title")) ;
     return ;
   }
   if(fctdb && strcmp(fctdb->GetTitle(),name)==0) //already read
@@ -201,7 +202,7 @@ void AliPHOSCalibrator::SetConTableDB(const char * file,const char * name)
   if(!v)
     v = TFile::Open(fConTableDBFile) ;
   if(!v){
-    Error("Can not open file with Connection Table DB:",fConTableDBFile) ;
+    AliError(Form("Can not open file with Connection Table DB: %s",fConTableDBFile.Data())) ;
     return ;
   }  
   fctdb = new AliPHOSConTableDB(*(dynamic_cast<AliPHOSConTableDB *>(v->Get("AliPHOSConTableDB")))) ;
@@ -216,7 +217,7 @@ void AliPHOSCalibrator::PlotPedestal(Int_t chanel)
     static_cast<TH1F*>(fPedHistos->At(chanel))->Draw() ;
   }
   else{
-    printf("Histograms not created yet! \n") ;
+    AliInfo(Form("Histograms not created yet! \n")) ;
   } 
 }
 //____________________________________________________________________________ 
@@ -233,7 +234,7 @@ void AliPHOSCalibrator::PlotGain(Int_t chanel)
     static_cast<TH1F*>(fGainHistos->At(chanel))->Draw() ;
   }
   else{
-    printf("Histograms not created yet! \n") ;
+    AliInfo(Form("Histograms not created yet! \n")) ;
   } 
 }
 //____________________________________________________________________________ 
@@ -276,7 +277,7 @@ void AliPHOSCalibrator::ScanPedestals(Option_t * option )
   while((file = static_cast<TObjString *>(next()))){
     if(strstr(option,"deb"))
       printf("Processing file %s \n ",file->String().Data()) ;
-
+    
     //Now open data file
     AliPHOSRawReaderDate *rawReader = new AliPHOSRawReaderDate(file->String().Data()) ; 
     AliPHOSRawStream     *rawStream = new AliPHOSRawStream(rawReader) ;
@@ -304,7 +305,7 @@ void AliPHOSCalibrator::ScanPedestals(Option_t * option )
       }
     }
     if(strstr(option,"deb"))
-      printf("   found %d events \n ",nevents) ;
+      AliInfo(Form("   found %d events \n ",nevents)) ;
     delete rawStream ;
     delete rawReader ;
     delete digits ;
@@ -317,7 +318,7 @@ void AliPHOSCalibrator::CalculatePedestals()
   //find mean and width, check deviation from mean for each channel.
 
   if(!fPedHistos || !fPedHistos->At(0)){
-    Error("CalculatePedestals","You should run ScanPedestals first!") ;
+    AliError(Form("You should run ScanPedestals first!")) ;
     return ;
   }
 
@@ -357,7 +358,7 @@ void AliPHOSCalibrator::CalculatePedestals()
       out+= ped ;
       out+= "it is too far from mean " ;
       out+= meanPed ;
-      Error("PHOSCalibrator",out) ;
+      AliError(Form("PHOSCalibrator %s",out.Data())) ;
     }
   }
   delete p0 ;
@@ -377,7 +378,7 @@ void AliPHOSCalibrator::ScanGains(Option_t * option)
     fGainHistos->Delete() ;
   if(!fGainHistos){
     if(strstr(option,"deball"))
-      printf("creating array for %d channels \n",fNch) ;	    
+      AliInfo(Form("creating array for %d channels \n",fNch)) ;	    
     fGainHistos   = new TObjArray(fNch) ;
   }
 
@@ -440,8 +441,8 @@ void AliPHOSCalibrator::ScanGains(Option_t * option)
     delete rawReader ; 
     delete rawStream ;
     delete digits ;
-    if(strstr(option,"deb"))
-      printf("   found %d events \n",nevents) ;
+    if(strstr(option,"deb"))       
+      AliInfo(Form("   found %d events \n",nevents)) ;
   }
 }   
 //____________________________________________________________________________ 
@@ -450,7 +451,7 @@ void AliPHOSCalibrator::CalculateGains(void)
   //calculates gain
 
   if(!fGainHistos || !fGainHistos->GetEntriesFast()){
-    Error("CalculateGains","You should run ScanGains first!") ; 
+    AliError(Form("You should run ScanGains first!")) ; 
     return ;
   }
 
@@ -491,7 +492,7 @@ void AliPHOSCalibrator::CalculateGains(void)
       out+= gain ;
       out+= "it is too far from mean " ;
       out+= meanGain ;
-      Error("PHOSCalibrator",out) ;
+      AliError(Form("PHOSCalibrator %s",out.Data())) ;
     }
   }
   delete p0 ;
@@ -542,7 +543,7 @@ void AliPHOSCalibrator::WritePedestals(const char * version)
   //version and validitirange (begin-end) will be used to identify data 
 
   if(!fctdb){
-    Error("WritePedestals","\n           Please, supply Connection Table DB (use SetConTableDB()) \n" ) ;
+    AliError(Form("\n           Please, supply Connection Table DB (use SetConTableDB()) \n" )) ;
     return ;
   }
   //fill data	
@@ -578,7 +579,7 @@ void AliPHOSCalibrator::WritePedestals(const char * version)
   //check, may be Manager instance already configured?
   AliPHOSCalibrManager * cmngr = AliPHOSCalibrManager::GetInstance() ;
   if(!cmngr){
-    Warning("Write Pedestals","Using database file 'PHOSBTCalibration.root'") ;
+    AliWarning(Form("Using database file 'PHOSBTCalibration.root'")) ;
     cmngr = AliPHOSCalibrManager::GetInstance("PHOSBTCalibration.root") ;
   }
   cmngr->WriteData(ped) ;
@@ -592,7 +593,7 @@ void AliPHOSCalibrator::ReadPedestals(const char * version)
   AliPHOSCalibrationData ped("Pedestals",version);
   AliPHOSCalibrManager * cmngr = AliPHOSCalibrManager::GetInstance() ;
   if(!cmngr){
-   Warning("ReadPedestals","Using database file 'PHOSBTCalibration.root'") ;
+   AliWarning(Form("Using database file 'PHOSBTCalibration.root'")) ;
    cmngr = AliPHOSCalibrManager::GetInstance("PHOSBTCalibration.root") ;
   }
   cmngr->GetParameters(ped) ;
@@ -618,7 +619,7 @@ void AliPHOSCalibrator::ReadGains(const char * version)
   AliPHOSCalibrationData gains("Gains",version);
   AliPHOSCalibrManager * cmngr = AliPHOSCalibrManager::GetInstance() ;
   if(!cmngr){
-    Warning("ReadGainss","Using database file 'PHOSBTCalibration.root'") ;
+    AliWarning(Form("Using database file 'PHOSBTCalibration.root'")) ;
     cmngr = AliPHOSCalibrManager::GetInstance("PHOSBTCalibration.root") ;
   }
   cmngr->GetParameters(gains) ;
@@ -642,7 +643,7 @@ void AliPHOSCalibrator::WriteGains(const char * version)
   //version and validity range(begin-end) are used to identify data
 
   if(!fctdb){
-    Error("WriteGains","\n        Please, supply Connection Table DB (use SetConTableDB()) \n" ) ;
+    AliError(Form("\n        Please, supply Connection Table DB (use SetConTableDB()) \n" )) ;
     return ;
   }
 
@@ -674,7 +675,7 @@ void AliPHOSCalibrator::WriteGains(const char * version)
 //     gains.SetValidityRange(begin,end) ;
   AliPHOSCalibrManager * cmngr = AliPHOSCalibrManager::GetInstance() ;
   if(!cmngr){
-    Warning("WriteGains","Using database file 'PHOSBTCalibration.root'") ;
+    AliWarning(Form("Using database file 'PHOSBTCalibration.root'")) ;
     cmngr = AliPHOSCalibrManager::GetInstance("PHOSBTCalibration.root") ;
   }
   cmngr->WriteData(gains) ;
@@ -683,7 +684,7 @@ void AliPHOSCalibrator::WriteGains(const char * version)
 void AliPHOSCalibrator::Print()const 
 {
   // prints everything
-  printf("--------------AliPHOSCalibrator-----------------\n") ;
+  AliInfo(Form("--------------PHOS Calibrator-----------------\n")) ;
   printf("Files to handle:\n") ;
   TIter next(fRunList) ;
   TObjString * r ;

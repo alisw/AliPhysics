@@ -45,6 +45,7 @@
 #include <fstream> 
 
 // --- AliRoot header files ---
+#include "AliLog.h"  
 #include "AliPHOSConTableDB.h"
 #include "AliPHOSCalibrManager.h"
 #include "AliPHOSCalibrationData.h"
@@ -59,7 +60,7 @@ AliPHOSCalibrManager::AliPHOSCalibrManager():TNamed()
   fInputKind = 0 ;
   fFileName= "" ;
   fctdb = 0 ;
-  Fatal("Default constructor","Should not use") ;
+  AliFatal(Form("Should not be used")) ;
 }
 //____________________________________________________________________________ 
 AliPHOSCalibrManager::AliPHOSCalibrManager(const char* filename,const char * kind ):
@@ -124,7 +125,7 @@ void AliPHOSCalibrManager::ReadFromASCII(AliPHOSCalibrationData &data){
   // where module is an array of 8*8 crystals and RR and CC are module raw and column position 
 
   if(!fctdb){
-    Error("ReadCalibrationParameters", "Specify Connections Table Database first") ;
+    AliError(Form("Specify Connections Table Database first")) ;
     return ;
   }
   
@@ -182,9 +183,10 @@ void AliPHOSCalibrManager::ReadFromRoot(AliPHOSCalibrationData & data)
   if(!file || !file->IsOpen())
     file = TFile::Open(fFileName) ;
   if(!file->IsOpen()){
-    Error("ReadFromRoot","Can not open file %s\n",fFileName.Data() ) ;
+    AliError(Form("Can not open file %s\n",fFileName.Data() )) ;
     return ;
   }
+
   AliPHOSCalibrationData * tmp = dynamic_cast<AliPHOSCalibrationData*>(file->Get(searchname) ) ;
   if(!tmp)
     Error("ReadFromRoot","there is no data %s in file %s",fFileName.Data(),fFileName.Data()) ;
@@ -221,7 +223,7 @@ void AliPHOSCalibrManager::WriteData(AliPHOSCalibrationData &data)
   if(!file || !file->IsOpen()){
     file = TFile::Open(fFileName,"UPDATE") ;
     if(!file->IsOpen()){
-      Error("WriteData","Can not open file %s\n",fFileName.Data() ) ;
+      AliError(Form("Can not open file %s\n",fFileName.Data() )) ;
       return ;
      }
   }

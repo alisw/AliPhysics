@@ -26,6 +26,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliLog.h"  
 #include "AliPHOSCalibrManager.h"
 #include "AliPHOSCalibrationDB.h"
 ClassImp(AliPHOSCalibrationDB)
@@ -54,6 +55,7 @@ Float_t AliPHOSCalibrationDB::Calibrate(Int_t amp, Int_t absId)const
   else
     return 0.0000001 ; //Should not be zero - to avoid FPE
 }
+
 //____________________________________________________________________________
 void AliPHOSCalibrationDB::GetParameters(void){
   //In this method we read calibration parameters using AliPHOSCalibrManager
@@ -65,10 +67,11 @@ void AliPHOSCalibrationDB::GetParameters(void){
     return ;
   }
 
+
   man->GetParameters(fPedestals) ;
   man->GetParameters(fGains) ;
-  
 }
+
 //____________________________________________________________________________
 AliPHOSCalibrationDB& AliPHOSCalibrationDB::operator=(AliPHOSCalibrationDB const & cdb)
 {
