@@ -59,7 +59,7 @@ AliPHOSv1::AliPHOSv1(const char *name, const char *title):
   fIntrinsicPINEfficiency = 0.1875 ;
   fLightYieldAttenuation = 0.0045 ;
   fRecalibrationFactor = 6.2 / fLightYieldMean ;
-  fElectronsPerGeV = 36000.;
+  fElectronsPerGeV = 2.77e+8 ; 
 }
 //____________________________________________________________________________
 AliPHOSv1::AliPHOSv1(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title):
@@ -69,7 +69,7 @@ AliPHOSv1::AliPHOSv1(AliPHOSReconstructioner * Reconstructioner, const char *nam
   fIntrinsicPINEfficiency = 0.1875 ;
   fLightYieldAttenuation = 0.0045 ;
   fRecalibrationFactor = 6.2 / fLightYieldMean ;
-  fElectronsPerGeV = 1/3.61 * 1.e+9 ; // Odd Harald work
+  fElectronsPerGeV = 2.77e+8 ; // Odd Harald work
 }
 
 //____________________________________________________________________________
