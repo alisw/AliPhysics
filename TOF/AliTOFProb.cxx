@@ -139,12 +139,12 @@ void AliTOFProb::Exec(const Option_t *dummyOpt)
   fTask=1;
   fhfile->cd();
   // create the histo
-  TH3* h3D=new TH3F("h3D", "", 100, 0., 1., 100, 0., 1., 100, 0., 1.);
+  TH3* h3D=new TH3F("h3D", "", 120, -0.1, 1.1, 120, -0.1, 1.1, 120, -0.1, 1.1);
   TH3* h3Ddt=new TH3F("h3Ddt", "", 360, -120., 120., 360, -120., 120., 360, -120., 120.);
 
-  TH1* hpion  =new TH1F("hpion", "", 100, 0., 1.);
-  TH1* hkaon  =new TH1F("hkaon", "", 100, 0., 1.);
-  TH1* hproton=new TH1F("hproton", "", 100, 0., 1.);
+  TH1* hpion  =new TH1F("hpion", "", 120, -0.1, 1.1);
+  TH1* hkaon  =new TH1F("hkaon", "", 120, -0.1, 1.1);
+  TH1* hproton=new TH1F("hproton", "", 120, -0.1, 1.1);
 
   TH1* hdtpion  =new TH1F("hdtpion", "", 600, -120., 120.);
   TH1* hdtkaon  =new TH1F("hdtkaon", "", 600, -120., 120.);
