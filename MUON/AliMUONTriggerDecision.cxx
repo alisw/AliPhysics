@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.11  2002/12/20 09:05:31  pcrochet
+cout replaced by printf
+
 Revision 1.10  2002/10/23 07:24:56  alibrary
 Introducing Riostream.h
 
@@ -252,7 +255,7 @@ void AliMUONTriggerDecision::SetBit(){
       TClonesArray *muonDigits  = pMUON->DigitsAddress(chamber-1);
       if (muonDigits == 0) return;
       
-      gAlice->ResetDigits();
+//pc 27/05/03      gAlice->ResetDigits();
       Int_t nent = 0;
       
       if (gAlice->TreeD()) {
@@ -263,7 +266,7 @@ void AliMUONTriggerDecision::SetBit(){
       }
       
       Int_t ndigits = muonDigits->GetEntriesFast();
-      if (ndigits == 0) return;
+//pc 27/05/03      if (ndigits == 0) return;
       
       iChamber = &(pMUON->Chamber(chamber-1));
       segmentation=iChamber->SegmentationModel(cathode);
