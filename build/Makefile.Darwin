@@ -8,7 +8,7 @@ CC	      = gcc
 # Global optimisation
 OPT           = -O -g
 
-CXXOPTS       = $(OPT) -Wall -W -pipe -fsigned-char -fno-common -fweak-coalesced
+CXXOPTS       = $(OPT) -Wall -W -pipe -fsigned-char -fno-common -fweak-coalesced -fmessage-length=0
 COPT	      = $(OPT) -Wall -W -fno-common -fweak-coalesced
 FOPT	      = $(OPT) -fno-second-underscore -fweak-coalesced
 CXXFLAGS      = $(CXXOPTS) -I/sw/include
