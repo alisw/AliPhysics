@@ -37,7 +37,7 @@ endif
 
 ifeq ($(USEPACKAGE),ALIROOT)
 DEFSTR = -Duse_aliroot
-ALICELIBS = -L$(ALICE_ROOT)/lib -lCONTAINERS -lTPC -lSTEER
+ALICELIBS = -L$(ALICE_ROOT)/lib/tgt_Linux -lCONTAINERS -lTPC -lSTEER
 #ALICELIBS := $(shell aliroot-config --libs)
 INCLUDES = -I$(ROOTSYS)/include -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/CONTAINERS -I$(ALICE_ROOT)/STEER
 RLIBS = $(ROOTLIBS) -lMinuit -lEG
@@ -47,7 +47,8 @@ endif
 #DEFSTR += -Ddo_mc
 
 #Use logging classes
-#DEFSTR += -Duse_logging
+ifndef NOLOGGING
+DEFSTR += -Duse_logging
 
 ifdef MLUCDIR
 INCLUDES += -I$(MLUCDIR)/include
@@ -55,6 +56,7 @@ MLUCLIBS = -L$(MLUCDIR)/lib/linux-i386 -lMLUC
 else
 INCLUDES += -I/prog/alice/level3/kip/MLUC/include
 MLUCLIBS += -L/prog/alice/level3/kip/MLUC/lib/linux-i386 -lMLUC
+endif
 endif
 
 INCLUDES += -I$(TOPDIR)/hough -I$(TOPDIR)/src -I$(TOPDIR)/comp -I$(TOPDIR)/misc
@@ -74,7 +76,7 @@ runit : runit.o $(OBJS)
 	$(LD) runit.o $(LDFLAGS) $(OBJS) -o runit
 
 
-all : $(OBJDIR) $(PRGS)
+
 
 %.o : %.cxx 
 	$(CXX) $(CXXFLAGS) $(DEFSTR) -c $(INCLUDES) -o $@ $<
