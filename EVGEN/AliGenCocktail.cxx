@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/10/02 15:15:41  morsch
+Use default streamer for AliGenCocktail
+
 Revision 1.6  2000/09/07 17:04:31  morsch
 In Streamer: TIter() after R__b << fEntries (Dmitri Yurevitch Peressounko)
 
@@ -56,8 +59,11 @@ AddGenerator(AliGenerator *Generator, char* Name, Float_t RateExp)
 {
 //
 //  Forward parameters to the new generator
+    if(TestBit(kPtRange)) 
     Generator->SetPtRange(fPtMin,fPtMax);
+    if(TestBit(kMomentumRange))
     Generator->SetMomentumRange(fPMin,fPMax);
+
     Generator->SetYRange(fYMin,fYMax);
     Generator->
 	SetPhiRange(fPhiMin*180/TMath::Pi(),fPhiMax*180/TMath::Pi());
