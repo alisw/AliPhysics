@@ -141,6 +141,10 @@ class TG4GeometryManager : public TG4Verbose
         
     // static data members
     static TG4GeometryManager*  fgInstance;     //this instance
+    static const G4double       fgLimitDensity; //material density limit
+                                                //for setting max allowed step 
+    static const G4double       fgMaxStep;      //max allowed step in materials 
+                                                //with density < fLimitDensity
 
     // data members
     TG4GeometryOutputManager*   fOutputManager;   //output manager 
