@@ -99,7 +99,6 @@ Int_t AliESDcomparison(const Char_t *dir=".") {
       return 1;
    }
    rl->LoadKinematics();
-   AliStack *stack = rl->Stack();
 
    sprintf(fname,"%s/AliESDs.root",dir);
    TFile *ef=TFile::Open(fname);
@@ -116,6 +115,7 @@ Int_t AliESDcomparison(const Char_t *dir=".") {
    //******* The loop over events
    while ((key=(TKey*)next())!=0) {
      rl->GetEvent(n);
+     AliStack *stack = rl->Stack();
 
      cerr<<"Processing event number : "<<n++<<endl;
 
