@@ -35,7 +35,6 @@
 #include "AliRun.h"
 
 
-
 //___________________________________________
 ClassImp(AliMUONSegmentationV01)
 
@@ -51,6 +50,7 @@ AliMUONSegmentationV01::AliMUONSegmentationV01()
     fNDiv = 0;      
     fDpxD = 0;
     fCorrA = 0;
+    fSector = -1;
 }
 
 AliMUONSegmentationV01::AliMUONSegmentationV01(Int_t nsec) 
@@ -71,6 +71,7 @@ AliMUONSegmentationV01::AliMUONSegmentationV01(Int_t nsec)
     fCorrA->AddAt(0,1);
     fCorrA->AddAt(0,2);
     fOffsetY=0;
+    fSector = -1;
 } 
 
 AliMUONSegmentationV01::~AliMUONSegmentationV01() 
@@ -353,6 +354,11 @@ void AliMUONSegmentationV01::FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Fl
     fIx=fIxmin;
     fIy=fIymin;
     GetPadC(fIx,fIy,fX,fY);
+    
+    // added 
+    if (fSector == -1) {
+      fSector=Sector(fIx,fIy);
+    }
 }
 
 
