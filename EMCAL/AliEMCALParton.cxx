@@ -48,7 +48,7 @@ AliEMCALParton::AliEMCALParton(Float_t energy, Float_t phi, Float_t eta)
 
 void AliEMCALParton::SetTrackList(Int_t NTracks, Float_t* Energy,  Float_t* Eta, Float_t* Phi, Int_t* PDG)
 {
-
+// Set the stored tracklist
   fNTracks     = NTracks;
   for (Int_t i=0;i<NTracks;i++)
   {
@@ -61,6 +61,7 @@ void AliEMCALParton::SetTrackList(Int_t NTracks, Float_t* Energy,  Float_t* Eta,
 
 void AliEMCALParton::GetTrackList(Float_t* Energy,  Float_t* Eta, Float_t* Phi, Int_t* PDG)
 {
+// retrieves the stored tracklist	
   for (Int_t i=0;i<fNTracks;i++)
   {
     Energy[i] = fTrackEnergy[i] ;

@@ -16,13 +16,13 @@ public:
   void SetEnergy(Float_t val) {fEnergy = val;}
   void SetPhi(Float_t val)    {fPhi    = val;}
   void SetEta(Float_t val)    {fEta    = val;}
-  void SetTrackList(Int_t,Float_t*,Float_t*,Float_t*,Int_t*);
-  void GetTrackList(Float_t*,Float_t*,Float_t*,Int_t*);
+  void SetTrackList(Int_t num ,Float_t* ar1,Float_t* ar2,Float_t* ar3,Int_t* ar4);
+  void GetTrackList(Float_t* ar1,Float_t* ar2,Float_t* ar3,Int_t* ar4);
   
-  Int_t GetNTracks(){return fNTracks;}
-  Float_t Energy()  {return fEnergy;}
-  Float_t Phi()     {return fPhi;}
-  Float_t Eta()     {return fEta;}
+  Int_t GetNTracks() const {return fNTracks;}
+  Float_t Energy()  const {return fEnergy;}
+  Float_t Phi()    const {return fPhi;}
+  Float_t Eta()    const {return fEta;}
   
 protected:
   Float_t   fEnergy;   // Jet Energy
@@ -33,7 +33,7 @@ protected:
   Float_t  fTrackEta[1000];     // Jet Tracks Eta
   Float_t  fTrackPhi[1000];     // Jet Tracks Phi
   Int_t    fTrackPDG[1000];     // Jet Tracks PDG code
-  ClassDef(AliEMCALParton,4) // Jet for EMCAL
+  ClassDef(AliEMCALParton,5) // Jet for EMCAL
     
 } ;
 
