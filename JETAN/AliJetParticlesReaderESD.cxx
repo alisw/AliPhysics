@@ -29,7 +29,9 @@ ClassImp(AliJetParticlesReaderESD)
 AliJetParticlesReaderESD::AliJetParticlesReaderESD(const Char_t* esdfilename) :
   AliJetParticlesReader(),
   fESDFileName(esdfilename),
+  fESD(0),
   fFile(0),
+  fTree(0),
   fKeyIterator(0),
   fPassFlag(AliESDtrack::kTPCrefit)
 {
@@ -43,7 +45,9 @@ AliJetParticlesReaderESD::AliJetParticlesReaderESD(
                                       const Char_t* esdfilename) :
   AliJetParticlesReader(dirs),
   fESDFileName(esdfilename),
+  fESD(0),
   fFile(0),
+  fTree(0),
   fKeyIterator(0),
   fPassFlag(AliESDtrack::kTPCrefit)
 {
@@ -56,6 +60,8 @@ AliJetParticlesReaderESD::~AliJetParticlesReaderESD()
 {
   //desctructor
   if(fFile) delete fFile;
+  if(fESD) delete fESD;
+  if(fTree) delete fTree;
   if(fKeyIterator) delete fKeyIterator;
 }
 
@@ -76,47 +82,63 @@ Int_t AliJetParticlesReaderESD::ReadNext()
 	      continue;
 	    }
      
-	  fKeyIterator = new TIter(fFile->GetListOfKeys());  
 	  fCurrentEvent = 0;
-	  //fFile->Dump();
 	  //fFile->GetListOfKeys()->Print();
+	  
+	  if(fTree) delete fTree;
+	  fTree = dynamic_cast<TTree*>(fFile->Get("esdTree"));
+	  if(fTree)
+	    fTree->SetBranchAddress("ESD",&fESD);
+	  else
+	    fKeyIterator = new TIter(fFile->GetListOfKeys());  
 	} 
 
-      TKey* key = (TKey*)fKeyIterator->Next();
-      if (key == 0)
+      if(fTree)
 	{
-	  fCurrentDir++;
-	  delete fKeyIterator;
-	  fKeyIterator = 0;
-	  delete fFile; //we have to assume there are no more ESD objects in the fFile
-	  fFile = 0;
-	  continue;
+	  if(fCurrentEvent>=fTree->GetEntries())
+	    {
+	      fCurrentDir++;
+	      delete fTree;
+	      fTree = 0;
+	      delete fFile;
+	      fFile = 0;
+	      continue;
+	    }
+	  fTree->GetEvent(fCurrentEvent);
+	} 
+      else 
+	{ // "old" way via ESD objects stored in root file
+	  TKey* key = (TKey*)fKeyIterator->Next();
+	  if (key == 0)
+	    {
+	      fCurrentDir++;
+	      delete fKeyIterator;
+	      fKeyIterator = 0;
+	      delete fFile; //we have to assume there are no more ESD objects in the fFile
+	      fFile = 0;
+	      continue;
+	    }
+	  TString esdname = "ESD";
+	  esdname+=fCurrentEvent;
+	  if(fESD) delete fESD;
+	  fESD = dynamic_cast<AliESD*>(fFile->Get(esdname));
+	  if (fESD == 0)
+	    {
+	      Info("ReadNext","Can not find AliESD object named %s",esdname.Data());
+	      fCurrentDir++;
+	      delete fKeyIterator;
+	      fKeyIterator = 0;
+	      delete fFile;//we have to assume there is no more ESD objects in the fFile
+	      fFile = 0;
+	      continue;
+	    }
 	}
-
-      TString esdname = "ESD";
-      esdname+=fCurrentEvent;
-      AliESD* esd = dynamic_cast<AliESD*>(fFile->Get(esdname));
-      if (esd == 0)
-      {
-	//Info("ReadNext","This key is not an AliESD object %s",key->GetName());
-	Info("ReadNext","Can not find AliESD object named %s",esdname.Data());
-	
-	fCurrentDir++;
-	delete fKeyIterator;
-	fKeyIterator = 0;
-	delete fFile;//we have to assume there is no more ESD objects in the fFile
-	fFile = 0;
-	continue;
-      }
-     
-      ReadESD(esd);
-      
+      ReadESD(fESD);
       fCurrentEvent++;
       fNEventsRead++;
-      delete esd;
       return kTRUE;//success -> read one event
     }  while(fCurrentDir < GetNumberOfDirs());
-       //end of loop over directories specified in fDirs Obj Array  
+      //end of loop over directories specified in fDirs Obj Array  
   return kFALSE; //no more directories to read
 }
 
@@ -178,7 +200,7 @@ Int_t AliJetParticlesReaderESD::ReadESD(AliESD* esd)
 
      if ((kesdtrack->GetStatus() & fPassFlag) == kFALSE)
       {
-	Info("ReadNext","Particle skipped.");
+	Info("ReadNext","Particle skipped: %ud.",kesdtrack->GetStatus());
         continue;
       }
 

@@ -11,4 +11,5 @@
 #pragma link C++ class AliJetParticlesReader+;
 #pragma link C++ class AliJetParticlesReaderESD+;
 #pragma link C++ class AliJetParticlesReaderKine+;
+#pragma link C++ class AliJetParticlesReaderHLT+;
 #endif

@@ -4,13 +4,13 @@
 //___________________________________________________________________________
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
-// Multi file reader for ESD                                               //
+// File reader for ESD                                                     //
 //                                                                         //
 // This reader reads tracks from Event Summary Data                        //
-// do not read particles                                                   //
-// Piotr.Skowronski@cern.ch                                                //
+// taken from Piotr.Skowronski@cern.ch                                     //
 // more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html    //
 //                                                                         //
+// loizides@ikf.uni-frankfurt.de                                           //
 /////////////////////////////////////////////////////////////////////////////
 
 #include <TString.h>
@@ -18,6 +18,7 @@
 #include "AliJetParticlesReader.h"
 
 class TFile;
+class TTree;
 class AliESD;
 
 class AliJetParticlesReaderESD: public AliJetParticlesReader
@@ -27,33 +28,25 @@ class AliJetParticlesReaderESD: public AliJetParticlesReader
   AliJetParticlesReaderESD(TObjArray* dirs,const Char_t* esdfilename = "AliESDs.root");
 
   void SetCompareFlag(ULong_t f){fPassFlag=f;}
-  void SetCompareFlagTPC()
-    {fPassFlag=AliESDtrack::kTPCrefit & AliESDtrack::kTPCrefit;}
-
-#if 0
-    kITSin=0x0001,kITSout=0x0002,kITSrefit=0x0004,kITSpid=0x0008,
-    kTPCin=0x0010,kTPCout=0x0020,kTPCrefit=0x0040,kTPCpid=0x0080,
-    kTRDin=0x0100,kTRDout=0x0200,kTRDrefit=0x0400,kTRDpid=0x0800,
-    kTOFin=0x1000,kTOFout=0x2000,kTOFrefit=0x4000,kTOFpid=0x8000,
-    kPHOSpid=0x10000, kRICHpid=0x20000,
-    kTRDStop=0x20000000,
-    kESDpid=0x40000000,
-    kTIME=0x80000000
-#endif
+  void SetCompareFlagTPC() {fPassFlag=AliESDtrack::kTPCrefit;}
 
   virtual ~AliJetParticlesReaderESD();
 
-  //Int_t Next();
+  //Int_t Next(); //in base class
   void Rewind();
 
+  const AliESD* GetCurrentESD() const {return fESD;}
+
   protected:
-  Int_t    ReadESD(AliESD* esd); //read esd file/objects
-  Int_t    ReadNext();           //read the next event
-  TFile*   OpenFile(Int_t evno); //opens file to be read for given event
+  virtual Int_t ReadESD(AliESD* esd); //read esd file/objects
+  Int_t    ReadNext();                //read the next event
+  TFile*   OpenFile(Int_t evno);      //opens file to be read for given event
   Bool_t   IsAcceptedParticle(Float_t px, Float_t py, Float_t pz) const;
     
   TString fESDFileName; // name of the file with tracks
+  AliESD *fESD;         //! pointer to current esd object
   TFile*  fFile;        //! pointer to current ESD file
+  TTree*  fTree;        //! pointer to current tree with ESD objects
   TIter*  fKeyIterator; //! key iterator through file
   ULong_t fPassFlag;    //flag to compare esd flag with 
 

@@ -5,10 +5,15 @@
 
 //_________________________________________________________________________
 ///////////////////////////////////////////////////////////////////////////
-//
-// class AliJetReader
-//
-// loizides@ikf.uni-frankfurt.de
+//                                                                       //
+// class AliJetReader                                                    //
+// File reader for ESD                                                   //
+//                                                                       //
+// This reader reads tracks from Event Summary Data                      //
+// taken from Piotr.Skowronski@cern.ch                                   //
+// more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html  //
+//                                                                       //
+// loizides@ikf.uni-frankfurt.de                                         //
 ///////////////////////////////////////////////////////////////////////////
 
 #include <TNamed.h>
@@ -53,7 +58,8 @@ class AliJetParticlesReader: public TNamed
   protected:
 
   virtual Int_t ReadNext() = 0; //this methods reads next event and 
-                                 //put result in fParticles
+                                //put result in fParticles
+
   TString& GetDirName(Int_t entry);
 
   AliJetEventParticles* fEventParticles; //array with read particles

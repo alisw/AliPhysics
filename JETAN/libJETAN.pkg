@@ -2,7 +2,7 @@
 
 SRCS = AliJetParticle.cxx AliJet.cxx AliJetEvent.cxx AliJetEventParticles.cxx \
        AliJetParticlesReader.cxx AliJetParticlesReaderESD.cxx \
-       AliJetParticlesReaderKine.cxx 
+       AliJetParticlesReaderKine.cxx AliJetParticlesReaderHLT.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
