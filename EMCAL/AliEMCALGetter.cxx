@@ -712,7 +712,6 @@ Bool_t AliEMCALGetter::VersionExists(TString & opt) const
       Warning("VersionExists", "The file %s already exists", fileName.Data()) ;  
       rv = kTRUE ; 
     }
-    EmcalLoader()->SetDigitsFileName(fileName) ;
   }
 
   return rv ;

@@ -762,7 +762,6 @@ Bool_t AliPHOSGetter::VersionExists(TString & opt) const
       Warning("VersionExists", "The file %s already exists", fileName.Data()) ;  
       rv = kTRUE ; 
     }
-    PhosLoader()->SetDigitsFileName(fileName) ;
   }
 
   return rv ;
