@@ -46,7 +46,7 @@ public:
   void SetFermi(Int_t Fflag) {fFermiflag=Fflag;};
   void SetDiv(Float_t bmdiv, Float_t bmcra, Int_t iflcr) 
           {fBeamDiv=bmdiv; fBeamCrossAngle=bmcra; fBeamCrossPlane=iflcr;};
-  void SetDebug() {fDebugOpt = 1;};
+  void SetDebug(Int_t idebu) {fDebugOpt = idebu;};
   
   // Getters 
   Double_t GetFermi2p(Int_t key) {return fProbintp[key];}
@@ -67,7 +67,8 @@ protected:
   Double_t fProbintp[201];      // Protons momentum distribution due to Fermi 
   Double_t fProbintn[201];      // Neutrons momentum distribution due to Fermi 
   Double_t fPp[201];            // 
-  Int_t    fDebugOpt;		// Option for debugging 
+  Int_t    fDebugOpt;		// Option for debugging [0->No debug, 1->Screen
+  				//  prints, 2->ASCII data file]
   
    ClassDef(AliGenZDC,1)  	// Generator for AliZDC class
 };

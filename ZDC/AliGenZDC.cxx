@@ -149,10 +149,21 @@ void AliGenZDC::Generate()
   Float_t polar[3] = {0,0,0};
   gAlice->GetMCApp()->PushTrack(fTrackIt,-1,fIpart,fPTrack,fOrigin.GetArray(),polar,0,
   		   kPPrimary,nt);
+  // -----------------------------------------------------------------------
   if(fDebugOpt == 1){
     printf("\n\n		Track momentum:\n");
     printf("\n	 fPTrack = %f, %f, %f \n",fPTrack[0],fPTrack[1],fPTrack[2]);
   }
+  else if(fDebugOpt == 2){
+    FILE *file;
+    if((file = fopen("SpectMomentum.dat","a")) == NULL){
+      printf("Cannot open file  SpectMomentum.dat\n");
+      return;
+    }
+    fprintf(file," %f \t %f \t %f \n",fPTrack[0],fPTrack[1],fPTrack[2]);
+    fclose(file);
+  }
+    
 }
 
 //_____________________________________________________________________________
@@ -231,35 +242,32 @@ void AliGenZDC::BeamDivCross(Int_t icross, Float_t fBeamDiv, Float_t fBeamCrossA
   Double_t tetpart, fipart, tetdiv=0, fidiv=0, angleSum[2], tetsum, fisum;
   Double_t rvec;
 
-  Int_t sign=0;
-  if(pLab[2]>=0.)  sign=1;
-  else sign=-1;
   Double_t pmq = 0.;
   Int_t i;
   for(i=0; i<=2; i++) pmq = pmq+pLab[i]*pLab[i];
   Double_t pmod = TMath::Sqrt(pmq);
 
-  if(icross==0){
+  if(icross==0){      // ##### Beam divergence
     rvec = gRandom->Gaus(0.0,1.0);
     tetdiv = fBeamDiv * TMath::Abs(rvec);
     fidiv = (gRandom->Rndm())*k2PI;
   }
-  else if(icross==1){
+  else if(icross==1){ // ##### Crossing angle
     if(fBeamCrossPlane==0.){
       tetdiv = 0.;
       fidiv = 0.;
     }
-    else if(fBeamCrossPlane==1.){
+    else if(fBeamCrossPlane==1.){     // Horizontal crossing plane
       tetdiv = fBeamCrossAngle;
       fidiv = 0.;
     }
-    else if(fBeamCrossPlane==2.){
+    else if(fBeamCrossPlane==2.){     // Vertical crossing plane
       tetdiv = fBeamCrossAngle;
       fidiv = k2PI/4.;
     }
   }
 
-  tetpart = TMath::ATan(TMath::Sqrt(pLab[0]*pLab[0]+pLab[1]*pLab[1])/pLab[2]);
+  tetpart = TMath::ATan2(TMath::Sqrt(pLab[0]*pLab[0]+pLab[1]*pLab[1]),pLab[2]);
   if(pLab[1]!=0. || pLab[0]!=0.) fipart = TMath::ATan2(pLab[1],pLab[0]);
   else fipart = 0.;
   if(fipart<0.) {fipart = fipart+k2PI;}
@@ -274,10 +282,10 @@ void AliGenZDC::BeamDivCross(Int_t icross, Float_t fBeamDiv, Float_t fBeamCrossA
   fisum = fisum*kDegrad;
   pLab[0] = pmod*TMath::Sin(tetsum)*TMath::Cos(fisum);
   pLab[1] = pmod*TMath::Sin(tetsum)*TMath::Sin(fisum);
-  if(sign==1) pLab[2] = pmod*TMath::Cos(tetsum);
-  else pLab[2] = -pmod*TMath::Cos(tetsum);
+  pLab[2] = pmod*TMath::Cos(tetsum);
   if(fDebugOpt == 1){
-    printf("\n\n		Beam divergence and crossing angle\n");
+    if(icross==0) printf("\n\n		Beam divergence \n");
+    else  	  printf("\n\n		Beam crossing \n");
     for(i=0; i<=2; i++)printf(" 	pLab[%d] = %f\n",i,pLab[i]);
   }
 }
