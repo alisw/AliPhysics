@@ -39,7 +39,7 @@ OBJS          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 # C++ compilation flags
 
 CXXFLAGS      = $(CXXOPTS) -g -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TPC \
-		-I$(ALICE_ROOT)/CONTAINERS -I$(ALICE)/level3code/src 	
+		-I$(ALICE_ROOT)/CONTAINERS -I$(HOME)/level3code/src 	
 
 #CXXFLAGS      = $(CXXOPTS) -g -Wall -I$(ROOTSYS)/include -I. -I $(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/include/ -DCOMPILING
  
