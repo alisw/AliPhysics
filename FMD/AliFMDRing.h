@@ -7,6 +7,13 @@
  *
  * See cxx source for full Copyright notice                               
  */
+//__________________________________________________________________
+//
+// Parameters of the FMD rings. 
+// 
+// This class is responsible to make the (common) rings of the three
+// sub-detectors. 
+//
 #ifndef ALIFMDPOLYGON_H
 # include <AliFMDPolygon.h>
 #endif
@@ -26,7 +33,10 @@ class AliFMDRing : public TObject
 {
 public:
   AliFMDRing(Char_t id='\0', Bool_t detailed=kTRUE);
+  AliFMDRing(const AliFMDRing& other);
+  AliFMDRing& operator=(const AliFMDRing& other);
   virtual ~AliFMDRing();
+
   void   Init();
   bool   IsWithin(size_t moduleNo, double x, double y) const;
   void   SetupCoordinates();  
@@ -83,7 +93,7 @@ public:
 
 protected:
   Char_t   fId;			 // ID
-  Bool_t   fDetailed;
+  Bool_t   fDetailed;            // True if a detailed geometry is made
   Int_t    fActiveId;		 // Active volume 
   Int_t    fPrintboardBottomId;  // Print board bottom volume
   Int_t    fPrintboardTopId;     // Print board top volume
@@ -114,6 +124,13 @@ protected:
   TObjArray* fRotMatricies;      // Matricies used for event display
 
   AliFMDPolygon  fPolygon;		 // Polygon shape 
+
+  static const Char_t* fgkRingFormat;       // Format for Ring names 
+  static const Char_t* fgkVirtualFormat;    // Format for Virtual names
+  static const Char_t* fgkActiveFormat;     // Format for Active names 
+  static const Char_t* fgkSectorFormat;     // Format for Sector names 
+  static const Char_t* fgkStripFormat;      // Format for Strip names 
+  static const Char_t* fgkPrintboardFormat; // Format for Printboard names 
 
   ClassDef(AliFMDRing, 1) // FMD Ring volume parameters 
 };
