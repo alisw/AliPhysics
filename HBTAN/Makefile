@@ -20,7 +20,7 @@ SRCS          = AliHBTAnalysis.cxx AliHBTFunction.cxx \
                 AliHBTQResolutionFctns.cxx AliHBTReaderPPprod.cxx\
 		AliHBTReaderITSv1.cxx AliHBTReaderITSv2.cxx\
 		AliHBTReaderKineTree.cxx AliHBTReaderInternal.cxx\
-		AliHBTTwoTrackEffFctn.cxx \
+		AliHBTTwoTrackEffFctn.cxx\
 		AliHBTLLWeights.cxx AliHBTLLWeightFctn.cxx
 
 # Fortran sources
@@ -69,7 +69,7 @@ ALIBRARY	= $(LIBDIR)/libHBTAN.a
 default:	$(SLIBRARY)
 
 
-$(LIBDIR)/libHBTAN.$(SL):		$(OBJS)
+$(LIBDIR)/libHBTAN.$(SL): $(OBJS) $(FOBJS)
 
 $(DICT):			$(HDRS)
 
