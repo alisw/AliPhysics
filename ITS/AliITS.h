@@ -199,12 +199,12 @@ class AliITS : public AliDetector {
 
     TObjArray    *fCtype;      // List of clusters
     Int_t        *fNctype;     //[fNDetTypes] Num. of clust. per type of det.
-    TTree        *fTreeC;      // Tree for raw clusters
+    TTree        *fTreeC;      //! Tree for raw clusters
 
     TClonesArray *fRecPoints;  // List of reconstructed points
     Int_t         fNRecPoints; // Number of rec points
 
-    ClassDef(AliITS,1) // Base class for ITS
+    ClassDef(AliITS,2) // Base class for ITS
 };
 
 #endif

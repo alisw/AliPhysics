@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.69  2002/05/05 21:06:55  nilsen
+Added GetSimulationMoel, and fixed up SetDefaultSimulation to do the
+proper initilization when a simulation has already been defined.
+
 Revision 1.68  2002/05/02 18:51:53  nilsen
 AliITS.h
    Method MakeBranchR has now a second argument, with a default value:
@@ -1204,11 +1208,7 @@ void AliITS::SDigitsToDigits(Option_t *opt){
     } // end for module
 
     gAlice->TreeD()->GetEntries();
-    /*
-    char hname[30];
-    sprintf(hname,"TreeD%d",gAlice->GetEvNumber());
-    gAlice->TreeD()->Write(hname,TObject::kOverwrite);
-    */
+
     gAlice->TreeD()->AutoSave();
     // reset tree
     gAlice->TreeD()->Reset();
@@ -1312,11 +1312,6 @@ void AliITS::HitsToPreDigits(Int_t evNumber,Int_t bgrev,Int_t size,
     ClearModules();
 
     gAlice->TreeS()->GetEntries();
-    /*
-    char hname[30];
-    sprintf(hname,"TreeS%d",evNumber);
-    gAlice->TreeS()->Write(hname,TObject::kOverwrite);
-    */
     gAlice->TreeS()->AutoSave();
     // reset tree
     gAlice->TreeS()->Reset();
@@ -1380,11 +1375,6 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size,
     ClearModules();
 
     gAlice->TreeD()->GetEntries();
-    /*
-    char hname[30];
-    sprintf(hname,"TreeD%d",evNumber);
-    gAlice->TreeD()->Write(hname,TObject::kOverwrite);
-    */
     gAlice->TreeD()->AutoSave();
     // reset tree
     gAlice->TreeD()->Reset();
@@ -1525,7 +1515,9 @@ void AliITS::MakeTreeC(Option_t *option){
     //      none.
     // Return:
     //      none.
-
+  TDirectory *cwd = gDirectory;
+  TFile *fileRecPoints = gAlice->GetTreeRFile();
+  if(fileRecPoints)fileRecPoints->cd();
     const char *optC = strstr(option,"C");
     if (optC && !fTreeC) fTreeC = new TTree("TC","Clusters in ITS");
     else return;
@@ -1549,6 +1541,7 @@ void AliITS::MakeTreeC(Option_t *option){
 	    TreeC()->Branch(branchname,&((*fCtype)[i]), buffersize);
 	} // end if fCtype && fTreeC
     } // end for i
+    cwd->cd();
 }
 //______________________________________________________________________
 void AliITS::GetTreeC(Int_t event){
@@ -1569,7 +1562,13 @@ void AliITS::GetTreeC(Int_t event){
     } // end if fTreeC
 
     sprintf(treeName,"TreeC%d",event);
-    fTreeC = (TTree*)gDirectory->Get(treeName);
+    TFile *fileRecPoints = gAlice->GetTreeRFile();
+    if(!fileRecPoints){
+      fTreeC = (TTree*)gDirectory->Get(treeName);
+    }
+    else {
+      fTreeC = (TTree*)fileRecPoints->Get(treeName);
+    }
 
     TBranch *branch;
 
@@ -1765,11 +1764,7 @@ void AliITS::HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
     } // end for module
 
     ClearModules();
-    /*
-    char hname[30];
-    sprintf(hname,"TreeR%d",evNumber);
-    gAlice->TreeR()->Write(hname,TObject::kOverwrite);
-    */
+
     gAlice->TreeR()->AutoSave();
     // reset tree
     gAlice->TreeR()->Reset();
@@ -1844,17 +1839,11 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt){
 
     gAlice->TreeR()->GetEntries();
     treeC->GetEntries();
-    char hname[30];
-    /*
-    sprintf(hname,"TreeR%d",evNumber);
-    gAlice->TreeR()->Write(hname,TObject::kOverwrite);
-    */
     gAlice->TreeR()->AutoSave();
     // reset tree
     gAlice->TreeR()->Reset();
 
-    sprintf(hname,"TreeC%d",evNumber);
-    treeC->Write(hname,TObject::kOverwrite);
+    treeC->AutoSave();
     treeC->Reset();
 }
 //______________________________________________________________________
