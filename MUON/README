@@ -53,8 +53,7 @@ First event and last event are given by hand, but this will change.
 
 ============================================================
  How to run MUON Tracking reconstruction
-============================================================
-
+===========================================================
 .includepath $ALICE_ROOT/STEER
 .includepath $ALICE_ROOT/MUON
 .L $ALICE_ROOT/MUON/MUONrecoNtuple.C++

@@ -1,5 +1,19 @@
 #include "iostream.h"
 
+#include <TClassTable.h>
+#include <TClonesArray.h>
+#include <TFile.h>
+#include <TParticle.h>
+#include <TROOT.h>
+#include <TTree.h>
+
+#include "AliHeader.h"
+#include "AliRun.h"
+
+#include "AliMUON.h"
+
+#include "AliMUONClusterFinderVS.h"
+
 void MUONrawclusters (char* filename, Int_t evNumber1=0,Int_t evNumber2=0) 
 {
   //////////////////////////////////////
@@ -49,7 +63,8 @@ void MUONrawclusters (char* filename, Int_t evNumber1=0,Int_t evNumber2=0)
   nevents = RunLoader->GetNumberOfEvents();
 
   for (Int_t i=0; i<10; i++) {
-    RecModel = new AliMUONClusterFinderVS();
+    //RecModel = new AliMUONClusterFinderVS();
+    AliMUONClusterFinderVS *RecModel = new AliMUONClusterFinderVS();
     //	RecModel->SetTracks(16,17);    
     //	RecModel->SetTracks(266,267);    
     RecModel->SetGhostChi2Cut(10);
