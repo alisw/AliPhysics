@@ -31,6 +31,7 @@
 #pragma link C++ class  AliLego;
 #pragma link C++ class  AliLegoGenerator;
 #pragma link C++ class  AliLegoGeneratorXYZ;
+#pragma link C++ class  AliLegoGeneratorPhiZ;
 #pragma link C++ class  AliLegoGeneratorEta;
 #pragma link C++ class  AliDigitNew;
 #pragma link C++ class  AliGeometry;
@@ -41,6 +42,7 @@
 #pragma link C++ class  AliKalmanTrack-;
 #pragma link C++ class  AliRndm;
 #pragma link C++ class  AliMCQA;
+#pragma link C++ class  AliPDG;
 #endif
 
 

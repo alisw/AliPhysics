@@ -5,6 +5,12 @@
 
 /* $Id$ */
 
+// Class to encapsulate the ALICE updates to TDatabasePDG.h
+// Can be used by TGeant3 and TGeant4
+// It contains also the constants for the PDG particle IDs.
+
+#include "TObject.h"
+
 typedef enum {kRootino=0,kDown=1,kDownBar=-1,kUp=2,kUpBar=-2,kStrange=3,
 	  kStrangeBar=-3,kCharm=4,kCharmBar=-4,kBottom=5,
 	  kBottomBar=-5,kTop=6,kTopBar=-6,kGluon=21,kPythia92=92,
@@ -24,6 +30,13 @@ typedef enum {kRootino=0,kDown=1,kDownBar=-1,kUp=2,kUpBar=-2,kStrange=3,
 	  kSigmaPlus=3222,kSigmaBarMinus=-3222,kSigma0=3212,
 	  kSigma0Bar=-3212}
 PDG_t;	  
+
+class AliPDG : public TObject {
+public:
+    static void AddParticlesToPdgDataBase();
+ private:
+    ClassDef(AliPDG,1)  // PDG database related information
+};
 
 /*
    "a(2)(1320)-",     -215
