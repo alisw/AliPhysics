@@ -808,7 +808,8 @@ void AliPMDv0::CreateMaterials()
   
   Float_t aG10[4]={1.,12.011,15.9994,28.086};
   Float_t zG10[4]={1.,6.,8.,14.};
-  Float_t wG10[4]={0.148648649,0.104054054,0.483499056,0.241666667};
+  //PH  Float_t wG10[4]={0.148648649,0.104054054,0.483499056,0.241666667};
+  Float_t wG10[4]={0.15201,0.10641,0.49444,0.24714};
   AliMixture(8,"G10",aG10,zG10,1.7,4,wG10);
   
   AliMaterial(15, "Cu   $", 63.54, 29., 8.96, 1.43, 15.);
@@ -879,10 +880,10 @@ void AliPMDv0::CreateMaterials()
   gMC->Gstpar(idtmed[603], "CUTELE", 1e-4);
   gMC->Gstpar(idtmed[603], "CUTNEU", 1e-4);
   gMC->Gstpar(idtmed[603], "CUTHAD", 1e-4);
-  gMC->Gstpar(idtmed[609], "CUTGAM", 1e-4);
-  gMC->Gstpar(idtmed[609], "CUTELE", 1e-4);
-  gMC->Gstpar(idtmed[609], "CUTNEU", 1e-4);
-  gMC->Gstpar(idtmed[609], "CUTHAD", 1e-4);
+//   gMC->Gstpar(idtmed[609], "CUTGAM", 1e-4);
+//   gMC->Gstpar(idtmed[609], "CUTELE", 1e-4);
+//   gMC->Gstpar(idtmed[609], "CUTNEU", 1e-4);
+//   gMC->Gstpar(idtmed[609], "CUTHAD", 1e-4);
   
   // --- Prevent particles stopping in the gas due to energy cut-off --- 
   gMC->Gstpar(idtmed[604], "CUTGAM", 1e-5);

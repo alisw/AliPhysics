@@ -12,53 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
-$Log$
-Revision 1.36  2004/06/26 08:01:14  bnandi
-syntax correction for Mylar
+/* $Id$ */
 
-Revision 1.35  2004/01/07 10:49:49  hristov
-Initialization to avoid runtime problems (valgrind)
-
-Revision 1.34  2003/12/18 04:25:03  bnandi
-overlap with beam pipe fixed and Gsposp changed to Gspos
-
-Revision 1.33  2003/11/03 14:33:26  hristov
-Correct initialization of static data members
-
-Revision 1.32  2003/11/03 11:53:05  bnandi
-global variables are removed
-
-Revision 1.31  2003/10/31 12:25:36  bnandi
-variable names are changed according to ALICE convention
-
-Revision 1.30  2003/10/23 16:32:19  hristov
-MC-dependent part of AliRun extracted in AliMC (F.Carminati)
-
-Revision 1.29  2003/10/13 05:28:59  bnandi
-gaspmd[2] value changed 0.25->7.0 because of overlap
-
-Revision 1.28  2003/10/08 12:59:08  bnandi
-zpos is positive
-
-Revision 1.27  2003/10/08 12:56:58  bnandi
-gaspmd[2] value changed from 7.0 to 0.25
-
-Revision 1.26  2003/10/03 06:04:10  bnandi
-z_psa and z_psb bugs fixed
-
-Revision 1.25  2003/10/01 11:08:04  bnandi
-changes for NewIO
-
-Revision 1.24  2003/10/01 08:32:51  hristov
-CurrentTrack replaced by GetCurrentTrackNumber
-
-Revision 1.23  2003/10/01 05:07:51  bnandi
-New geometry in new Alice Coordinate system
-
-New rectangular geometry for ALICE PMD - Bedanga Mohanty and Y. P. Viyogi
-June 2003
-*/
 //
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -747,7 +702,8 @@ void AliPMDv1::CreateMaterials()
   
   Float_t aG10[4]={1.,12.011,15.9994,28.086};
   Float_t zG10[4]={1.,6.,8.,14.};
-  Float_t wG10[4]={0.148648649,0.104054054,0.483499056,0.241666667};
+  //PH  Float_t wG10[4]={0.148648649,0.104054054,0.483499056,0.241666667};
+  Float_t wG10[4]={0.15201,0.10641,0.49444,0.24714};
   AliMixture(8,"G10",aG10,zG10,1.7,4,wG10);
   
   AliMaterial(15, "Cu   $", 63.54, 29., 8.96, 1.43, 15.);
@@ -812,12 +768,10 @@ void AliPMDv1::CreateMaterials()
   gMC->Gstpar(idtmed[603], "CUTELE", 1e-4);
   gMC->Gstpar(idtmed[603], "CUTNEU", 1e-4);
   gMC->Gstpar(idtmed[603], "CUTHAD", 1e-4);
-
-  gMC->Gstpar(idtmed[609], "CUTGAM", 1e-4);
-  gMC->Gstpar(idtmed[609], "CUTELE", 1e-4);
-  gMC->Gstpar(idtmed[609], "CUTNEU", 1e-4);
-  gMC->Gstpar(idtmed[609], "CUTHAD", 1e-4);
-  
+//   gMC->Gstpar(idtmed[609], "CUTGAM", 1e-4);
+//   gMC->Gstpar(idtmed[609], "CUTELE", 1e-4);
+//   gMC->Gstpar(idtmed[609], "CUTNEU", 1e-4);
+//   gMC->Gstpar(idtmed[609], "CUTHAD", 1e-4);
   // --- Prevent particles stopping in the gas due to energy cut-off --- 
   gMC->Gstpar(idtmed[604], "CUTGAM", 1e-5);
   gMC->Gstpar(idtmed[604], "CUTELE", 1e-5);
