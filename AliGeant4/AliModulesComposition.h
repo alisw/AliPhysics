@@ -43,6 +43,8 @@ class AliModulesComposition : public G4VUserDetectorConstruction
     void SwitchDetOff(G4String moduleName);
     void PrintSwitchedDets() const;
     void PrintAvailableDets() const;
+    void PrintMaterials() const;
+    void GenerateXMLGeometry() const;
 
     // set methods
     void SetMagField(G4double fieldValue);
