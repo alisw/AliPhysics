@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.2  2000/02/15 09:43:54  fca
+Corrections
+- a bug in the streamer (wrong size of the arrays)
+- replace Read/WriteArray by Read/WriteFastArray (suggestion R.Brun)
+
 Revision 1.1  1999/12/17 09:01:14  fca
 Y.Schutz new classes for reconstruction
 
@@ -46,13 +51,14 @@ AliRecPoint::AliRecPoint()
   fAmp = 0.0 ; 
   
   fLocPos.SetXYZ(0., 0., 0.) ;
-  fLocPosM = new TMatrix(3,3) ;
-  fMaxDigit = 100 ; 
-  fMulDigit = 0 ; 
-  fDigitsList = new int[fMaxDigit]; ; 
-  fMaxTrack = 5 ; 
-  fMulTrack = 0 ; 
-  fTracksList = new int[fMaxTrack]; ; 
+  fLocPosM     = new TMatrix(3,3) ;
+  fMaxDigit    = 100 ; 
+  fMulDigit    = 0 ; 
+  fDigitsList  = new int[fMaxDigit]; ; 
+  fMaxTrack    = 5 ; 
+  fMulTrack    = 0 ; 
+  fTracksList  = new int[fMaxTrack]; ; 
+  fIndexInList = -1 ; // to be set when the point is already stored
 }
 
 //____________________________________________________________________________
@@ -87,7 +93,8 @@ void AliRecPoint::AddDigit(AliDigitNew & digit)
     fDigitsList = tempo ; 
   }
   
-  fDigitsList[fMulDigit++]=  (int) &digit  ; 
+  fDigitsList[fMulDigit] = digit.GetIndexInList()  ; 
+  fMulDigit++ ; 
   fAmp += digit.GetAmp() ; 
 }
 
@@ -143,12 +150,12 @@ void AliRecPoint::GetGlobalPosition(TVector3 & gpos, TMatrix & gmat)
 //______________________________________________________________________________
 void AliRecPoint::Streamer(TBuffer &R__b)
 {
-   // Stream an object of class AliRecPoint.
-
-   if (R__b.IsReading()) {
+  //  Stream an object of class AliRecPoint.
+ if (R__b.IsReading()) {
       Version_t R__v = R__b.ReadVersion(); if (R__v) { }
       TObject::Streamer(R__b);
       R__b >> fAmp;
+      R__b >> fIndexInList;
       R__b >> fMulDigit;
       fDigitsList = new Int_t[fMulDigit] ; 
       R__b.ReadFastArray(fDigitsList, fMulDigit);
@@ -162,6 +169,7 @@ void AliRecPoint::Streamer(TBuffer &R__b)
       R__b.WriteVersion(AliRecPoint::IsA());
       TObject::Streamer(R__b);
       R__b << fAmp;
+      R__b << fIndexInList;
       R__b << fMulDigit;
       R__b.WriteFastArray(fDigitsList, fMulDigit);
       R__b << fGeom;
@@ -171,3 +179,4 @@ void AliRecPoint::Streamer(TBuffer &R__b)
       R__b.WriteFastArray(fTracksList, fMulTrack);
    }
 }
+
