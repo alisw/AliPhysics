@@ -565,6 +565,10 @@ TNtuple *AliL3Evaluate::EvaluatePoints(Char_t *path)
   //The input file to this function, contains the exact clusters calculated
   //in AliTPC::Hits2ExactClusters.
   
+#ifndef do_mc
+  cerr<<"AliL3Evaluate::EvaluatePoints : Compile with do_mc flag!"<<endl;
+  return 0;
+#else
   cout<<"Evaluating points"<<endl;
   TNtuple *ntuppel = new TNtuple("ntuppel","residuals","slice:padrow:resy:resz:zHit:pt");
   ntuppel->SetDirectory(0);
@@ -656,6 +660,7 @@ TNtuple *AliL3Evaluate::EvaluatePoints(Char_t *path)
     }
 
   return ntuppel;
+#endif
 }
 
 void AliL3Evaluate::GetCFeff(Char_t *outfile)
