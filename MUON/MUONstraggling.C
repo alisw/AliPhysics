@@ -29,8 +29,6 @@ void MUONstraggling (Int_t evNumber1=0,Int_t evNumber2=0)
     } else {
 	printf("\n galice.root found in file list");
     }
-    file->ls();
-    
 // Get AliRun object from file or create it if not on file
     if (!gAlice) {
 	gAlice = (AliRun*)(file->Get("gAlice"));
@@ -82,10 +80,10 @@ void MUONstraggling (Int_t evNumber1=0,Int_t evNumber2=0)
 		   Float_t x     = mHit->X();        // x-pos of hit
 		   Float_t y     = mHit->Y();        // y-pos
 		   Float_t z     = mHit->Z();        // y-pos
-		   Float_t p=mHit->Momentum();
-		   Float_t px=mHit->Px();
-		   Float_t py=mHit->Py();
-		   Float_t pz=mHit->Pz();
+		   Float_t p  = mHit->Momentum();
+		   Float_t px = mHit->Px();
+		   Float_t py = mHit->Py();
+		   Float_t pz = mHit->Pz();
 		   
 		   if (nch != 1) continue;
 		   
@@ -95,91 +93,92 @@ void MUONstraggling (Int_t evNumber1=0,Int_t evNumber2=0)
 		   Part = gAlice->Particle(ftrack);
 		   Int_t ipart = Part->GetPdgCode();
 		   TParticle *Mother;
-		   Float_t px0=Part->Px();
-		   Float_t py0=Part->Py();		   
-		   Float_t pz0=Part->Pz();
+		   Float_t px0 = Part->Px();
+		   Float_t py0 = Part->Py();		   
+		   Float_t pz0 = Part->Pz();
+		   Float_t p0  = Part->P();
+		   
 		   Float_t e0=Part->Energy();
 		   
 		   if (ipart == kMuonPlus || ipart == kMuonMinus) {
 //
 // Branson Correction
 //
-		       Float_t zch=505.;
-		       Float_t r=TMath::Sqrt(x*x+y*y);
+		       Float_t zch = z;
+		       Float_t r   = TMath::Sqrt(x*x+y*y);
 		       Float_t zb;
 		       
 		       if (r<26.3611) {
-			   zb=466.;
+			   zb = 466.;
 		       } else {
-			   zb=441.;
+			   zb = 441.;
 		       }
+
+		       Float_t xb  = x-(zch-zb)*px/pz;
+		       Float_t yb  = y-(zch-zb)*py/pz;		       
+		       Float_t pzB = p * zb/TMath::Sqrt(zb*zb+yb*yb+xb*xb);
+		       Float_t pxB = pzB * xb/zb;
+		       Float_t pyB = pzB * yb/zb;
+		       Float_t theta 
+			   = TMath::ATan2(TMath::Sqrt(pxB*pxB+pyB*pyB), pzB) *
+			   180./TMath::Pi();
 		       
-		       Float_t xb=x-(zch-zb)*px/pz;
-		       Float_t yb=y-(zch-zb)*py/pz;		       
-		       Float_t tx=xb/zb;
-		       Float_t ty=yb/zb;
-		       pz=zb*p/TMath::Sqrt(zb*zb+xb*xb+yb*yb);
-		       px=pz*tx;
-		       py=pz*ty;
 		       
 //
 // Energy Correction
 //
 //
-		       Float_t corr=(p+CorrectP(p,mHit->fTheta))/p;
+		       
+		       Float_t corr=(p+CorrectP(p, theta))/p;
 		       pups[0]+=p*corr;
-		       pups[1]+=px*corr;
-		       pups[2]+=py*corr;
-		       pups[3]+=pz*corr;
+		       pups[1]+=pxB*corr;
+		       pups[2]+=pyB*corr;
+		       pups[3]+=pzB*corr;
  		   }
 	       } // hits 
 	   } // if MUON 
        } // tracks
-       Float_t mass=TMath::Sqrt(pups[0]*pups[0]-pups[1]*pups[1]-pups[2]*pups[2]-pups[3]*pups[3]);
+       Float_t mass =
+	   TMath::Sqrt(pups[0]*pups[0]
+		       -pups[1]*pups[1]-pups[2]*pups[2]-pups[3]*pups[3]);
        mass1->Fill(mass, 1.);
        mass2->Fill(mass, 1.);
        mass3->Fill(mass, 1.);	       
     } // event
 //Create a canvas, set the view range, show histograms
-   TCanvas *c1 = new TCanvas("c1","Vertices from electrons and positrons",400,10,600,700);
-   c1->Divide(2,2);
-   
-   c1->cd(1);
-   mass1->SetFillColor(42);
-   mass1->SetXTitle("Mass (GeV)");
-   mass1->Draw();
+   TCanvas *c1 = new TCanvas("c1","Mass Spectra",400,10,600,700);
 
-   c1->cd(2);
    mass2->SetFillColor(42);
    mass2->SetXTitle("Mass (GeV)");
    mass2->Draw();
-
-   c1->cd(3);
-   mass3->SetFillColor(42);
-   mass3->SetXTitle("Mass (GeV)");
-   mass3->Draw();
-
 }
 
 
 
 Float_t CorrectP(Float_t p, Float_t theta)
 {
+    Float_t c;
+    
     if (theta<3.) {
 //W
 	if (p<15) {
-	    return 2.737+0.0494*p-0.001123*p*p;
+	    c = 2.916+0.0156*p-0.00000866*p*p;
 	} else {
-	    return 3.0643+0.01346*p;
+	    c = 2.998+0.0137*p;
 	}
     } else {
-//Pb
+//Cu+Fe+Cc+C
 	if (p<15) {
-	    return 2.1380+0.0351*p-0.000853*p*p;
+	    c = 2.464+0.00877*p-0.0000106*p*p;
 	} else {
-	    return 2.407+0.00702*p;
+	    c = 2.496+0.00817*p;
 	}
     }
+//
+//  
+    c*=0.95;
+//
+    return c;
 }
 
 
