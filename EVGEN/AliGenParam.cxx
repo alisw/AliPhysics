@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  1999/11/03 17:43:20  fca
+New version from G.Martinez & A.Morsch
+
 Revision 1.11  1999/09/29 09:24:14  fca
 Introduction of the Copyright and cvs Log
 
@@ -80,12 +83,11 @@ AliGenParam::AliGenParam(Int_t npart, Param_t param,
 		         Int_t    (*IpPara) ())			 
     :AliGenerator(npart)
 {
-// Gines Martinez 1/10/99
+// Gines Martinez 1/10/99 
     fPtParaFunc = PtPara; 
     fYParaFunc  = YPara;  
     fIpParaFunc = IpPara;
-//
-  
+//  
     fPtPara = 0;
     fYPara  = 0;
     fParam  = param;
@@ -178,19 +180,23 @@ void AliGenParam::Init()
 //____________________________________________________________
 void AliGenParam::Generate()
 {
-// Generate 'npart' of heavy mesons (J/Psi, upsilon or phi) in the
-// the desired theta, phi and momentum windows; Gaussian smearing 
-// on the vertex is done if selected
+//
+// Generate 'npart' of light and heavy mesons (J/Psi, upsilon or phi, Pion,
+// Kaons, Etas, Omegas) and Baryons (proton, antiprotons, neutrons and 
+// antineutrons in the the desired theta, phi and momentum windows; 
+// Gaussian smearing on the vertex is done if selected. 
+// The decay of heavy mesons is done using lujet, and the childern particle are tracked by GEANT
+// However, light mesons are directly tracked by GEANT setting fForceDecay = nodecay (SetForceDecay(nodecay)) 
+//
 
+// printf("Generate !!!!!!!!!!!!!\n");
 
-  //printf("Generate !!!!!!!!!!!!!\n");
-
-  Float_t polar[3]= {0,0,0};
-  //
-  Float_t origin0[3];
-  Float_t pt, pl, ptot;
-  Float_t phi, theta;
-  Float_t p[3], pc[3], och[3], pch[10][3];
+  Float_t polar[3]= {0,0,0};  // Polarisation of the parent particle (for GEANT tracking)
+  Float_t origin0[3];         // Origin of the generated parent particle (for GEANT tracking)
+  Float_t pt, pl, ptot;       // Transverse, logitudinal and total momenta of the parent particle
+  Float_t phi, theta;         // Phi and theta spherical angles of the parent particle momentum
+  Float_t p[3], pc[3], 
+          och[3], pch[10][3]; // Momentum, polarisation and origin of the children particles from lujet
   Float_t ty, xmt;
   Int_t nt, i, j, kfch[10];
   Float_t  wgtp, wgtch;
@@ -200,6 +206,8 @@ void AliGenParam::Generate()
   if(!particles) particles=new TClonesArray("TParticle",1000);
   //
   Float_t random[6];
+ 
+// Calculating vertex position per event
   for (j=0;j<3;j++) origin0[j]=fOrigin[j];
   if(fVertexSmear==perEvent) {
       gMC->Rndm(random,6);
@@ -209,6 +217,7 @@ void AliGenParam::Generate()
       }
   }
   Int_t ipa=0;
+// Generating fNpart particles
   while (ipa<fNpart) {
     while(1) {
 //
@@ -252,9 +261,16 @@ void AliGenParam::Generate()
 		      TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 	      }
 	  }
+	  
+// Looking at fForceDecay : 
+//                          if fForceDecay != none Primary particle decays using 
+//                             AliPythia  and children are tracked by GEANT
 //
-// use lujet to decay particle
+//                          if fForceDecay == none Primary particle is tracked by GEANT 
+//                          (In the latest, make sure that GEANT actually does all the decays you want)	  
+//
 	  if (fForceDecay != nodecay) {
+// Using lujet to decay particle
 	      Float_t energy=TMath::Sqrt(ptot*ptot+am*am);
 	      fPythia->DecayParticle(Ipart,energy,theta,phi);
 	      //	  fPythia->LuList(1);
@@ -323,11 +339,14 @@ void AliGenParam::Generate()
 				       0,"Decay",nt,wgtch);
 		      gAlice->KeepTrack(nt); 
 		  }
-	      } else {
-		  gAlice->
-		      SetTrack(fTrackIt,-1,Ipart,p,origin0,polar,0,"Primary",nt,wgtp);
-	      } // Decays by Lujet
+	      }  // Decays by Lujet
 	  } // kinematic selection
+	  else  // nodecay option, so parent will be tracked by GEANT (pions, kaons, eta, omegas, baryons)
+	  {
+	    gAlice->
+		SetTrack(fTrackIt,-1,Ipart,p,origin0,polar,0,"Primary",nt,wgtp);
+            ipa++; 
+	  }
 	  break;
     } // while
   } // event loop
