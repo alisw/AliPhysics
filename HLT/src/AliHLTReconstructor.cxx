@@ -14,6 +14,7 @@
 #include <TArrayF.h>
 
 #include "AliL3StandardIncludes.h"
+#include "AliL3Logging.h"
 #include "AliLevel3.h"
 #include "AliL3Evaluate.h"
 #include "AliHLTReconstructor.h"
@@ -38,6 +39,10 @@ ClassImp(AliHLTReconstructor)
 
 void AliHLTReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
+  if(!runLoader) {
+    LOG(AliL3Log::kFatal,"AliHLTReconstructor::Reconstruct","RunLoader")
+      <<" Missing RunLoader! 0x0"<<ENDLOG;
+  }
   gSystem->Exec("rm -rf hlt");
   gSystem->MakeDirectory("hlt");
   gSystem->Exec("rm -rf hough");

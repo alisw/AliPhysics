@@ -110,9 +110,7 @@ AliLevel3::AliLevel3(AliRunLoader *rl)
   fFileHandler=0;
   fGlobalMerger=0;
   fInputFile=0;
-#ifdef use_newio
   fRunLoader = rl;
-#endif
 }
 #endif
 
@@ -127,7 +125,7 @@ void AliLevel3::Init(Char_t *path,EFileType filetype,Int_t npatches)
 #endif
 
   if((filetype!=kBinary) && (filetype!=kDate) 
-       && (!filetype!=kRunLoader)&& !fInputFile)
+       && (filetype!=kRunLoader)&& !fInputFile)
     {
       LOG(AliL3Log::kError,"AliLevel3::Init","Files")
 	<<"You have not supplied the input rootfile; use the appropriate ctor!"<<ENDLOG;
