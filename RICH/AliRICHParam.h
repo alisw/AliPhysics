@@ -35,7 +35,7 @@ public:
                   AliRICHParam():TObject(),fpChambers(0)  {CreateChambers();}
   virtual        ~AliRICHParam()                          {delete fpChambers;}
 //test methodes  
-         void     Print(const Option_t *opt="");                                         //print current parametrization
+         void     Print(Option_t *opt="") const;                                         //print current parametrization
          void     Test()                            {TestSeg();TestTrans();TestResp();}  //test all groups of methodes
          void     TestResp();                                                            //test the response group of methodes
          void     TestSeg();                                                             //test the segmentation group of methodes

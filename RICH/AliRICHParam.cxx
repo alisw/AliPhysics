@@ -36,7 +36,7 @@ Float_t  AliRICHParam::fgSigmaThMean          =1.132; //QDC
 Float_t  AliRICHParam::fgSigmaThSpread        =0.035; //     
 
 //__________________________________________________________________________________________________
-void AliRICHParam::Print(Option_t*)
+void AliRICHParam::Print(Option_t*) const
 {
   AliInfo(Form("Pads in chamber (%3i,%3i) in sector (%2i,%2i)",NpadsX(),NpadsY(),NpadsXsec(),NpadsYsec()));
   AliInfo(Form("Resolve clusters %i sagita %i Radio source %i Aerogel %i TestBeam %i",
