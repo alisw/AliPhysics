@@ -1671,9 +1671,7 @@ void AliMUONv1::StepManager()
 
    if( gMC->IsTrackEntering() ) {
      Float_t theta = fTrackMomentum.Theta();
-     Float_t phi   = fTrackMomentum.Phi();
-     Float_t theta_wires      =  TMath::Abs( TMath::ASin( TMath::Sin(theta) * TMath::Sin(phi) ) );
-     if ( (theta_wires*kRaddeg>=10) ) gMC->SetMaxStep(fStepMaxInActiveGas);
+     if ( (theta>=10) ) gMC->SetMaxStep(fStepMaxInActiveGas);
    }
 
 //  if (GetDebug()) {
