@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/03/21 18:22:30  hristov
+fParticleFileMap fix (I.Hrivnacova)
+
 Revision 1.4  2000/10/02 21:28:14  fca
 Removal of useless dependecies via forward declarations
 
@@ -83,7 +86,7 @@ void AliHeader::Print(const char* option)
   fRun,fEvent);
   
   // print  particle file map
-  char* oMap = strstr(option,"Map");
+  const char* oMap = strstr(option,"Map");
   if (oMap) {
     printf("\nParticle file map: \n");
     for (Int_t i=0; i<fNtrack; i++) 
