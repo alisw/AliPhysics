@@ -36,6 +36,7 @@
 // --- AliRoot header files ---
 
 #include "AliPHOSTrackSegmentMakerv1.h"
+#include "AliPHOSIndexToObject.h"
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSLink.h"
 #include "AliPHOSv0.h"
@@ -52,9 +53,8 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
   // ctor
 
   fR0 = 4. ;   
-  AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
   //clusters are sorted in "rows" and "columns" of width geom->GetCrystalSize(0),
-  fDelta = fR0 + geom->GetCrystalSize(0) ;
+  fDelta = fR0 + fGeom->GetCrystalSize(0) ;
   fMinuit = new TMinuit(100) ;
   fUnfoldFlag = kTRUE ; 
 }
@@ -72,8 +72,6 @@ Bool_t  AliPHOSTrackSegmentMakerv1::FindFit(AliPHOSEmcRecPoint * emcRP, int * ma
 				    Int_t nPar, Float_t * fitparameters)
 { 
   // Calls TMinuit to fit the energy distribution of a cluster with several maxima 
-
-  AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
 
   gMinuit->SetPrintLevel(-1) ;           // No Printout
   gMinuit->SetFCN(UnfoldingChiSquare) ;  // To set the address of the minimization function 
@@ -95,8 +93,8 @@ Bool_t  AliPHOSTrackSegmentMakerv1::FindFit(AliPHOSEmcRecPoint * emcRP, int * ma
     Int_t relid[4] ;
     Float_t x ;
     Float_t z ;
-    geom->AbsToRelNumbering(digit->GetId(), relid) ;
-    geom->RelPosInModule(relid, x, z) ;
+    fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
+    fGeom->RelPosInModule(relid, x, z) ;
 
     Float_t energy = maxAtEnergy[iDigit] ;
 
@@ -129,7 +127,9 @@ Bool_t  AliPHOSTrackSegmentMakerv1::FindFit(AliPHOSEmcRecPoint * emcRP, int * ma
   gMinuit->mnexcm("SET GRA", &p1, 1, ierflg) ;   // force TMinuit to use my gradient  
   gMinuit->SetMaxIterations(5);
   gMinuit->mnexcm("SET NOW", &p2 , 0, ierflg) ;  // No Warnings
+
   gMinuit->mnexcm("MIGRAD", &p0, 0, ierflg) ;    // minimize 
+
   if(ierflg == 4){  // Minimum not found   
     cout << "PHOS Unfolding>  Fit not converged, cluster abandoned "<< endl ;      
     return kFALSE ;
@@ -140,13 +140,13 @@ Bool_t  AliPHOSTrackSegmentMakerv1::FindFit(AliPHOSEmcRecPoint * emcRP, int * ma
     gMinuit->GetParameter(index, val, err) ;    // Returns value and error of parameter index
     fitparameters[index] = val ;
    }
+
   return kTRUE;
 
 }
 
 //____________________________________________________________________________
-void  AliPHOSTrackSegmentMakerv1::FillOneModule(DigitsList * dl, 
-						AliPHOSRecPoint::RecPointsList * emcIn, 
+void  AliPHOSTrackSegmentMakerv1::FillOneModule(AliPHOSRecPoint::RecPointsList * emcIn, 
 						TObjArray * emcOut, 
 						AliPHOSRecPoint::RecPointsList * ppsdIn, 
 						TObjArray * ppsdOutUp,
@@ -155,7 +155,7 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule(DigitsList * dl,
 						Int_t & emcStopedAt, 
 						Int_t & ppsdStopedAt)
 {
-  // Unfold clusters and fill xxxOut arrays with clusters from one PHOS module
+  // Fill xxxOut arrays with clusters from one PHOS module
  
   AliPHOSEmcRecPoint *  emcRecPoint  ; 
   AliPHOSPpsdRecPoint * ppsdRecPoint ;
@@ -163,28 +163,13 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule(DigitsList * dl,
   
   Int_t nEmcUnfolded = emcIn->GetEntries() ;
   for(index = emcStopedAt; index < nEmcUnfolded; index++){
+
     emcRecPoint = (AliPHOSEmcRecPoint *) emcIn->At(index) ;
-
+    
     if(emcRecPoint->GetPHOSMod() != phosmod )  
-       break ;
+      break ;
     
-    Int_t nMultipl = emcRecPoint->GetMultiplicity() ; 
-    Int_t * maxAt = new Int_t[nMultipl] ;
-    Float_t * maxAtEnergy = new Float_t[nMultipl] ;
-    Int_t nMax = emcRecPoint->GetNumberOfLocalMax(maxAt, maxAtEnergy) ;
-
-    if(nMax <= 1 )     // if cluster is very flat (no pronounced maximum) then nMax = 0 
-      emcOut->Add(emcRecPoint) ;
-    else if (fUnfoldFlag) {
-      UnfoldClusters(dl, emcIn, emcRecPoint, nMax, maxAt, maxAtEnergy, emcOut) ;
-      emcIn->Remove(emcRecPoint); 
-      emcIn->Compress() ;
-      nEmcUnfolded-- ;
-      index-- ;
-    }
-    
-    delete[] maxAt ; 
-    delete[] maxAtEnergy ; 
+    emcOut->Add(emcRecPoint) ;
   }
   emcStopedAt = index ;
 
@@ -218,11 +203,10 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
   if(emcclu->GetPHOSMod() == PpsdClu->GetPHOSMod()){ 
     if(vecPpsd.X() >= vecEmc.X() - fDelta ){ 
       if(vecPpsd.Z() >= vecEmc.Z() - fDelta ){
-	AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
 	// Correct to difference in CPV and EMC position due to different distance to center.
 	// we assume, that particle moves from center
-	Float_t dCPV = geom->GetIPtoOuterCoverDistance();
-	Float_t dEMC = geom->GetIPtoCrystalSurface() ;
+	Float_t dCPV = fGeom->GetIPtoOuterCoverDistance();
+	Float_t dEMC = fGeom->GetIPtoCrystalSurface() ;
 	dEMC         = dEMC / dCPV ;
         vecPpsd = dEMC * vecPpsd  - vecEmc ; 
         r = vecPpsd.Mag() ;
@@ -361,8 +345,7 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs(TObjArray * emcRecPoints,
       }
       
     }
-//     AliPHOSTrackSegment * subtr = new AliPHOSTrackSegment(emc, ppsdUp, ppsdLow ) ;
-//     trsl->Add(subtr) ;   
+
     new( (*trsl)[fNTrackSegments] ) AliPHOSTrackSegment(emc, ppsdUp, ppsdLow ) ;
     fNTrackSegments++ ;
     
@@ -380,7 +363,7 @@ void  AliPHOSTrackSegmentMakerv1::MakeTrackSegments(DigitsList * dl,
 						    AliPHOSTrackSegment::TrackSegmentsList * trsl)
 {
   // Makes the track segments out of the list of EMC and PPSD Recpoints and stores them in a list
-
+  
   Int_t phosmod      = 1 ;
   Int_t emcStopedAt  = 0 ; 
   Int_t ppsdStopedAt = 0 ; 
@@ -392,32 +375,34 @@ void  AliPHOSTrackSegmentMakerv1::MakeTrackSegments(DigitsList * dl,
   
   TClonesArray * linklowArray = new TClonesArray("AliPHOSLink", 100);
   TClonesArray * linkupArray  = new TClonesArray("AliPHOSLink", 100); 
-  
-  AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
-  
-  while(phosmod <= geom->GetNModules() ){
+
+  if(fUnfoldFlag){
+    UnfoldAll(dl, emcl) ; // Unfolds all EMC clusters
+  }
+
+  while(phosmod <= fGeom->GetNModules() ){
     
-    FillOneModule(dl, emcl, emcRecPoints, ppsdl, ppsdRecPointsUp, ppsdRecPointsLow, phosmod, emcStopedAt, ppsdStopedAt) ;
-
+    FillOneModule(emcl, emcRecPoints, ppsdl, ppsdRecPointsUp, ppsdRecPointsLow, phosmod, emcStopedAt, ppsdStopedAt) ;
+    
     MakeLinks(emcRecPoints, ppsdRecPointsUp, ppsdRecPointsLow, linklowArray, linkupArray) ; 
-
+    
     MakePairs(emcRecPoints, ppsdRecPointsUp, ppsdRecPointsLow, linklowArray, linkupArray, trsl) ;
- 
+    
     emcRecPoints->Clear() ;
- 
+    
     ppsdRecPointsUp->Clear() ;
-  
+    
     ppsdRecPointsLow->Clear() ;
-
+    
     linkupArray->Clear() ;
-   
+    
     linklowArray->Clear() ;
-   
+    
     phosmod++ ; 
   }
   delete emcRecPoints ; 
   emcRecPoints = 0 ; 
-
+  
   delete ppsdRecPointsUp ; 
   ppsdRecPointsUp = 0 ; 
 
@@ -444,20 +429,60 @@ Double_t  AliPHOSTrackSegmentMakerv1::ShowerShape(Double_t r)
 }
 
 //____________________________________________________________________________
+void  AliPHOSTrackSegmentMakerv1::UnfoldAll(DigitsList * dl, AliPHOSRecPoint::RecPointsList * emcIn) 
+{
+  // Performs unfolding of all EMC clusters, sorts them and resets indexes in RecPoints
+
+  AliPHOSEmcRecPoint *  emcRecPoint  ; 
+  Int_t index ;
+  Int_t nEmcUnfolded = emcIn->GetEntries() ;
+  
+  for(index = 0 ; index < nEmcUnfolded; index++){
+
+    emcRecPoint = (AliPHOSEmcRecPoint *) emcIn->At(index) ;
+    
+    Int_t nMultipl = emcRecPoint->GetMultiplicity() ; 
+    Int_t * maxAt = new Int_t[nMultipl] ;
+    Float_t * maxAtEnergy = new Float_t[nMultipl] ;
+    Int_t nMax = emcRecPoint->GetNumberOfLocalMax(maxAt, maxAtEnergy) ;
+    
+    if( nMax > 1 ) {     // if cluster is very flat (no pronounced maximum) then nMax = 0 
+      
+      UnfoldClusters(dl, emcIn, emcRecPoint, nMax, maxAt, maxAtEnergy) ;
+      emcIn->Remove(emcRecPoint); 
+      emcIn->Compress() ;
+      index-- ;
+      nEmcUnfolded-- ;
+    }
+    
+    delete[] maxAt ; 
+    delete[] maxAtEnergy ; 
+  } //Unfolding finished
+
+  emcIn->Sort() ;
+
+  // to set index to new and correct index of old RecPoints
+  for( index = 0 ; index < emcIn->GetEntriesFast() ; index++){
+    
+    ((AliPHOSEmcRecPoint *) emcIn->At(index))->SetIndexInList(index) ;   
+    
+  }
+
+}
+//____________________________________________________________________________
 void  AliPHOSTrackSegmentMakerv1::UnfoldClusters(DigitsList * dl, 
 						 AliPHOSRecPoint::RecPointsList * emcIn, 
 						 AliPHOSEmcRecPoint * iniEmc, 
 						 Int_t nMax, 
 						 int * maxAt, 
-						 Float_t * maxAtEnergy, 
-						 TObjArray * emcList)
+						 Float_t * maxAtEnergy)
 { 
   // Performs the unfolding of a cluster with nMax overlapping showers 
   // This is time consuming (use the (Un)SetUnfolFlag()  )
 
   Int_t nPar = 3 * nMax ;
   Float_t * fitparameters = new Float_t[nPar] ;
-  AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
+
 
   Bool_t rv = FindFit(iniEmc, maxAt, maxAtEnergy, nPar, fitparameters) ;
   if( !rv ) {
@@ -465,7 +490,8 @@ void  AliPHOSTrackSegmentMakerv1::UnfoldClusters(DigitsList * dl,
     delete[] fitparameters ; 
     return ;
   }
-  
+
+
   Float_t xDigit ;
   Float_t zDigit ;
   Int_t relid[4] ;
@@ -488,9 +514,9 @@ void  AliPHOSTrackSegmentMakerv1::UnfoldClusters(DigitsList * dl,
   Int_t iRecPoint = emcIn->GetEntries() ;
 
   for(iDigit = 0 ; iDigit < nDigits ; iDigit ++){
-    digit = (AliPHOSDigit *) emcDigits[iDigit];
-    geom->AbsToRelNumbering(digit->GetId(), relid) ;
-    geom->RelPosInModule(relid, xDigit, zDigit) ;
+    digit = fPlease->GimeDigit( emcDigits[iDigit] ) ;   
+    fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
+    fGeom->RelPosInModule(relid, xDigit, zDigit) ;
     efit[iDigit] = 0;
     iparam = 0 ;
     
@@ -508,26 +534,28 @@ void  AliPHOSTrackSegmentMakerv1::UnfoldClusters(DigitsList * dl,
   iparam = 0 ;
   Float_t eDigit ;
 
+
   while(iparam < nPar ){
     xpar = fitparameters[iparam] ;
     zpar = fitparameters[iparam+1] ;
     epar = fitparameters[iparam+2] ;
     iparam += 3 ;
-    new ((*emcIn)[iRecPoint]) AliPHOSEmcRecPoint( iniEmc->GetLogWeightCut(), iniEmc->GetLocMaxCut() ) ;
-    emcRP = (AliPHOSEmcRecPoint *) emcIn->At(iRecPoint++);
+
+   (*emcIn)[iRecPoint] = new AliPHOSEmcRecPoint( iniEmc->GetLogWeightCut(), iniEmc->GetLocMaxCut() ) ;
+
+    emcRP = (AliPHOSEmcRecPoint *) emcIn->At(iRecPoint);
+    iRecPoint++ ;
 
     for(iDigit = 0 ; iDigit < nDigits ; iDigit ++){
-      digit = (AliPHOSDigit *) emcDigits[iDigit];
-      geom->AbsToRelNumbering(digit->GetId(), relid) ;
-      geom->RelPosInModule(relid, xDigit, zDigit) ;
+      digit = fPlease->GimeDigit( emcDigits[iDigit] ) ; 
+      fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
+      fGeom->RelPosInModule(relid, xDigit, zDigit) ;
       distance = (xDigit - xpar) * (xDigit - xpar) + (zDigit - zpar) * (zDigit - zpar)  ;
       distance =  TMath::Sqrt(distance) ;
       ratio = epar * AliPHOSTrackSegmentMakerv1::ShowerShape(distance) / efit[iDigit] ; 
       eDigit = emcEnergies[iDigit] * ratio ;
       emcRP->AddDigit( *digit, eDigit ) ;
     }
-
-    emcList->Add(emcRP) ;
 
   }
   
@@ -541,12 +569,19 @@ void UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t
 {
   // Calculates th Chi square for the cluster unfolding minimization
   // Number of parameters, Gradient, Chi squared, parameters, what to do
+  
+  AliPHOSEmcRecPoint * emcRP = (AliPHOSEmcRecPoint *) gMinuit->GetObjectFit() ; // EmcRecPoint to fit
+
+  Int_t * emcDigits     = emcRP->GetDigitsList() ;
+
+  Int_t nOfDigits = emcRP->GetDigitsMultiplicity() ; 
+
+  Float_t * emcEnergies = emcRP->GetEnergiesList() ;
 
   AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
 
-  AliPHOSEmcRecPoint * emcRP = (AliPHOSEmcRecPoint *) gMinuit->GetObjectFit() ; // EmcRecPoint to fit
-  Int_t * emcDigits     = emcRP->GetDigitsList() ;
-  Float_t * emcEnergies = emcRP->GetEnergiesList() ;
+  AliPHOSIndexToObject * please = AliPHOSIndexToObject::GetInstance() ;
+
   fret = 0. ;     
   Int_t iparam ;
 
@@ -554,18 +589,23 @@ void UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t
     for(iparam = 0 ; iparam < nPar ; iparam++)    
       Grad[iparam] = 0 ; // Will evaluate gradient
   
-  Double_t efit ;  
-  
-  AliPHOSDigit * digit ;
-  Int_t iDigit = 0 ;
+  Double_t efit ;    
 
-  while ( (digit = (AliPHOSDigit *)emcDigits[iDigit] )){
+  AliPHOSDigit * digit ;
+  Int_t iDigit ;
+
+  for( iDigit = 0 ; iDigit < nOfDigits ; iDigit++) {
+
+    digit = please->GimeDigit( emcDigits[iDigit] ) ; 
+
     Int_t relid[4] ;
     Float_t xDigit ;
     Float_t zDigit ;
+
     geom->AbsToRelNumbering(digit->GetId(), relid) ;
+
     geom->RelPosInModule(relid, xDigit, zDigit) ;
-    
+
      if(iflag == 2){  // calculate gradient
        Int_t iParam = 0 ;
        efit = 0 ;
@@ -601,6 +641,7 @@ void UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t
      }
      efit = 0;
      iparam = 0 ;
+
      while(iparam < nPar ){
        Double_t xpar = x[iparam] ;
        Double_t zpar = x[iparam+1] ;
@@ -610,8 +651,9 @@ void UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t
        distance =  TMath::Sqrt(distance) ;
        efit += epar * AliPHOSTrackSegmentMakerv1::ShowerShape(distance) ;
      }
+
      fret += (efit-emcEnergies[iDigit])*(efit-emcEnergies[iDigit])/emcEnergies[iDigit] ; 
      // Here we assume, that sigma = sqrt(E)
-     iDigit++ ;
   }
+
 }

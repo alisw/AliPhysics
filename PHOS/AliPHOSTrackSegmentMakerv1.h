@@ -40,14 +40,14 @@ public:
   
   Bool_t  FindFit(AliPHOSEmcRecPoint * emcRP, int * MaxAt, Float_t * maxAtEnergy, 
 		  Int_t NPar, Float_t * FitParametres) ; //Used in UnfoldClusters, calls TMinuit
-  void    FillOneModule(DigitsList * Dl, AliPHOSRecPoint::RecPointsList * emcIn, 
+  void    FillOneModule(AliPHOSRecPoint::RecPointsList * emcIn, 
 			TObjArray * emcOut, 
 			AliPHOSRecPoint::RecPointsList * ppsdIn, 
 			TObjArray * ppsdOutUp, 
 			TObjArray * ppsdOutLow, 
 			Int_t &PHOSModule, 
 			Int_t & emcStopedAt, 
-			Int_t & ppsdStopedAt) ; // Unfolds clusters and fills temporary arrais   
+			Int_t & ppsdStopedAt) ; // Fills temporary arrais with clusters from one module  
   Float_t GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * EmcClu , AliPHOSPpsdRecPoint * Ppsd , Bool_t & TooFar ) ; // see R0
 
   void    MakeLinks(TObjArray * EmcRecPoints, TObjArray * PpsdRecPointsUp, TObjArray * PpsdRecPointsLow, 
@@ -65,13 +65,14 @@ public:
   virtual void SetMaxEmcPpsdDistance(Float_t r){ fR0 = r ;}
   virtual void    SetUnfoldFlag() { fUnfoldFlag = kTRUE ; } ; 
   static Double_t ShowerShape(Double_t r) ; // Shape of shower used in unfolding; class member function (not object member function)
+  void    UnfoldAll(DigitsList * Dl, AliPHOSRecPoint::RecPointsList * emcIn) ; 
+                                             // Unfolds and sorts all EMC clusters
   void  UnfoldClusters(DigitsList * DL, 
 		       AliPHOSRecPoint::RecPointsList * emcIn, 
 		       AliPHOSEmcRecPoint * iniEmc, 
 		       Int_t Nmax, 
 		       int * maxAt, 
-		       Float_t * maxAtEnergy, 
-		       TObjArray * emclist) ; //Unfolds overlaping clusters using TMinuit package
+		       Float_t * maxAtEnergy ) ; //Unfolds overlaping clusters using TMinuit package
   virtual void UnsetUnfoldFlag() { fUnfoldFlag = kFALSE ; } 
 
   AliPHOSTrackSegmentMakerv1 & operator = (const AliPHOSTrackSegmentMakerv1 & rvalue)  {
