@@ -71,7 +71,7 @@ G4bool TG4VSensitiveDetector::ProcessHits(G4Step* step, G4TouchableHistory*)
 // Calls StepManager of associated AliModule.
 // ---
 
-  // let AliModule process step
+  // let user sensitive detector process normal step
   fStepManager->SetStep(step, kNormalStep);
   UserProcessHits(step->GetTrack(), step);
 
@@ -84,6 +84,7 @@ G4bool TG4VSensitiveDetector::ProcessHitsOnBoundary(G4Step* step)
 // when crossing a geometrical boundary.
 // ---
 
+  // let user sensitive detector process boundary step
   fStepManager->SetStep(step, kBoundary);
   UserProcessHits(step->GetTrack(), step);
 
