@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  1999/11/09 07:38:48  fca
+Changes for compatibility with version 2.23 of ROOT
+
 Revision 1.5  1999/09/29 09:24:12  fca
 Introduction of the Copyright and cvs Log
 
@@ -140,10 +143,11 @@ void AliGenExtFile::Generate()
       Ntracks=i6;
   }
   for (i=0; i<Ntracks; i++) {
-
+      Idpart=gMC->PDGFromId(Idpart);
       Double_t amass = TDatabasePDG::Instance()->GetParticle(Idpart)->Mass();
       if(E<=amass) {
-	Warning("Generate","Particle %d no %d E = %f mass = %f\n",Idpart,i,E,amass);
+	Warning("Generate","Particle %d no %d E = %f mass = %f\n",
+		Idpart,i,E,amass);
 	prwn=0;
       } else {
 	prwn=sqrt((E+amass)*(E-amass));
