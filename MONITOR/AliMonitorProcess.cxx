@@ -228,10 +228,10 @@ Bool_t AliMonitorProcess::CheckForNewFile()
     // entry = host_date_time.root
     TString entryCopy(entry);
     char* p = const_cast<char*>(entryCopy.Data());
-    if (!strsep(&p, "_") || !p) continue;  // host name
-    char* dateStr = strsep(&p, "_");
+    if (!strtok(p, "_") || !p) continue;  // host name
+    char* dateStr = strtok(p, "_");
     if (!dateStr || !p) continue;
-    char* timeStr = strsep(&p, ".");
+    char* timeStr = strtok(p, ".");
     if (!timeStr || !p) continue;
     Long_t date = atoi(dateStr);
     Long_t time = atoi(timeStr);

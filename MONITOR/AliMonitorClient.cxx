@@ -1281,7 +1281,7 @@ Bool_t AliMonitorClient::LoadFavorites(Bool_t dialog)
   while (!feof(file)) {
     if (fgets(buffer, 255, file) == NULL) break;
     char* item = buffer;
-    char* folder = strsep(&item, "/");
+    char* folder = strtok(item, "/");
     if (item[strlen(item)-1] == '\n') item[strlen(item)-1] = 0;
     if (!folder || !item) continue;
 
@@ -1609,7 +1609,7 @@ void AliMonitorClient::LoadSettings()
   while (!feof(file)) {
     if (fgets(buffer, 255, file) == NULL) break;
     char* value = buffer;
-    char* token = strsep(&value, "=");
+    char* token = strtok(value, "=");
     if (!token || !value) continue;
     if (value[strlen(value)-1] == '\n') value[strlen(value)-1] = 0;
 
