@@ -1,0 +1,333 @@
+1. Introduction
+---------------
+
+Dear ITS (and ALICE) user,
+
+this is a short help on how to run the ITS simulation/reconstruction code 
+within the AliRoot framework. It is NOT intended as a comprehensive user's 
+guide and eventually it will be updated in the ITS Manual which is on its way 
+to be written. What follows requires that the you already know how to download, 
+install and compile the AliRoot package. This file explains how to set the 
+proper ITS geometry and how to tun the test macros contained under the 
+directory ITS in order to compare your own installation with the standard one 
+looking at some distributions/histograms. 
+Any difference between what is described here and what you really get when you 
+run the code on your computer must be reported to Roberto Barbera at 
+roberto.barbera@ct.infn.it. Please note that all the tests described here have 
+been done on a PC running Linux RedHat 6.1, gcc 2.95.2, and Root 3.00/06. 
+If you have different hardware/software configuration, please add it to all bug
+reports.
+
+
+2. Set the ITS geometry you want to use
+---------------------------------------
+
+In order to set one of the many ITS geometries available, you have to modify 
+the ITS part in the file Config.C under the directory macros (you have to modify
+the file ConfigPPR.C if you want to run full 'PPR' events). The default ITS 
+part of Config.C (or ConfigPPR.C) is reported here:
+
+  if(iITS) {
+
+//=================== ITS parameters ============================
+    //
+    // As the innermost detector in ALICE, the Inner Tracking System "impacts" on
+    // almost all other detectors. This involves the fact that the ITS geometry
+    // still has several options to be followed in parallel in order to determine
+    // the best set-up which minimizes the induced background. All the geometries
+    // available to date are described in the following. Read carefully the comments
+    // and use the default version (the only one uncommented) unless you are making
+    // comparisons and you know what you are doing. In this case just uncomment the
+    // ITS geometry you want to use and run Aliroot.
+    //
+    // Detailed geometries:         
+    //
+    //
+    //
+    //
+    //AliITS *ITS  = new AliITSv5symm("ITS","Updated ITS TDR detailed version with symmetric services");
+    //
+    AliITS *ITS  = new AliITSv5asymm("ITS","Updates ITS TDR detailed version with asymmetric services");
+    //
+    //AliITSvPPRasymm *ITS  = new AliITSvPPRasymm("ITS","New ITS PPR detailed version with asymmetric services");
+    //ITS->SetMinorVersion(2);
+    //ITS->SetReadDet(kFALSE);
+    //ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");
+    //ITS->SetThicknessDet1(300.);   // detector thickness on layer 1 must be in the range [100,300]
+    //ITS->SetThicknessDet2(300.);   // detector thickness on layer 2 must be in the range [100,300]
+    //ITS->SetThicknessChip1(300.);  // chip thickness on layer 1 must be in the range [150,300]
+    //ITS->SetThicknessChip2(300.);  // chip thickness on layer 2 must be in the range [150,300]
+    //ITS->SetRails(1);		   // 1 --> rails in ; 0 --> rails out
+    //ITS->SetCoolingFluid(1);	   // 1 --> water ; 0 --> freon
+    //
+    //AliITSvPPRsymm *ITS  = new AliITSvPPRsymm("ITS","New ITS PPR detailed version with symmetric services");
+    //ITS->SetMinorVersion(2);                                      
+    //ITS->SetReadDet(kFALSE);
+    //ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRsymm2.det");
+    //ITS->SetThicknessDet1(300.);   // detector thickness on layer 1 must be in the range [100,300]
+    //ITS->SetThicknessDet2(300.);   // detector thickness on layer 2 must be in the range [100,300]
+    //ITS->SetThicknessChip1(300.);  // chip thickness on layer 1 must be in the range [150,300]
+    //ITS->SetThicknessChip2(300.);  // chip thickness on layer 2 must be in the range [150,300]
+    //ITS->SetRails(1);              // 1 --> rails in ; 0 --> rails out
+    //ITS->SetCoolingFluid(1);       // 1 --> water ; 0 --> freon
+    //
+    //
+    // Coarse geometries (warning: no hits are produced with these coarse geometries and they unuseful 
+    // for reconstruction !):
+    //                                                     
+    //
+    //
+    //AliITSvPPRcoarseasymm *ITS  = new AliITSvPPRcoarseasymm("ITS","New ITS coarse version with asymmetric services");
+    //ITS->SetRails(1);                // 1 --> rails in ; 0 --> rails out
+    //ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
+    //
+    //AliITS *ITS  = new AliITSvPPRcoarsesymm("ITS","New ITS coarse version with symmetric services");
+    //ITS->SetRails(1);                // 1 --> rails in ; 0 --> rails out
+    //ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
+    //                      
+    //
+    //
+    // Geant3 <-> EUCLID conversion
+    // ============================
+    //
+    // SetEUCLID is a flag to output (=1) or not to output (=0) both geometry and
+    // media to two ASCII files (called by default ITSgeometry.euc and
+    // ITSgeometry.tme) in a format understandable to the CAD system EUCLID.
+    // The default (=0) means that you dont want to use this facility.
+    //
+    ITS->SetEUCLID(0);  
+  }
+  
+As you can see looking at the uncommented line, the present default is
+
+    AliITS *ITS  = new AliITSv5asymm("ITS","Updates ITS TDR detailed version with asymmetric services");
+    
+which is the TDR detailed geometry with asymmetric services. 
+If you want to run the TDR detailed version with symmetric services, the only 
+uncommented line must be:
+
+    AliITS *ITS  = new AliITSv5symm("ITS","Updated ITS TDR detailed version with symmetric services");
+
+If you want to run the new PPR coarse geometry with asymmetric services, the 
+only uncommented lines must be:
+
+    AliITSvPPRcoarseasymm *ITS  = new AliITSvPPRcoarseasymm("ITS","New ITS coarse version with asymmetric services");
+    ITS->SetRails(1);                // 1 --> rails in ; 0 --> rails out
+    ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
+
+If you want to run the new PPR coarse geometry with symmetric services, the 
+only uncommented lines must be:
+
+    AliITS *ITS  = new AliITSvPPRcoarsesymm("ITS","New ITS coarse version with symmetric services");
+    ITS->SetRails(1);                // 1 --> rails in ; 0 --> rails out
+    ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
+
+If you want to run the new PPR detailed geometry with asymmetric services, the 
+only uncommented lines must be:
+
+    AliITSvPPRasymm *ITS  = new AliITSvPPRasymm("ITS","New ITS PPR detailed version with asymmetric services");
+    ITS->SetMinorVersion(2);
+    ITS->SetReadDet(kFALSE);
+    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");
+    ITS->SetThicknessDet1(300.);   // detector thickness on layer 1 must be in the range [100,300]
+    ITS->SetThicknessDet2(300.);   // detector thickness on layer 2 must be in the range [100,300]
+    ITS->SetThicknessChip1(300.);  // chip thickness on layer 1 must be in the range [150,300]
+    ITS->SetThicknessChip2(300.);  // chip thickness on layer 2 must be in the range [150,300]
+    ITS->SetRails(1);		   // 1 --> rails in ; 0 --> rails out
+    ITS->SetCoolingFluid(1);	   // 1 --> water ; 0 --> freon
+
+If you want to run the new PPR detailed geometry with symmetric services, the 
+only uncommented lines must be:
+
+    AliITSvPPRsymm *ITS  = new AliITSvPPRsymm("ITS","New ITS PPR detailed version with symmetric services");
+    ITS->SetMinorVersion(2);                                      
+    ITS->SetReadDet(kFALSE);
+    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRsymm2.det");
+    ITS->SetThicknessDet1(300.);   // detector thickness on layer 1 must be in the range [100,300]
+    ITS->SetThicknessDet2(300.);   // detector thickness on layer 2 must be in the range [100,300]
+    ITS->SetThicknessChip1(300.);  // chip thickness on layer 1 must be in the range [150,300]
+    ITS->SetThicknessChip2(300.);  // chip thickness on layer 2 must be in the range [150,300]
+    ITS->SetRails(1);              // 1 --> rails in ; 0 --> rails out
+    ITS->SetCoolingFluid(1);       // 1 --> water ; 0 --> freon
+
+
+3. Simulation
+-------------  
+
+In order to run an event with a given ITS geometry put yourself in the directory
+macros and do the following:
+
+- interactive run: start aliroot and the type the command "gAlice->Run()". 
+  At the end of the run exit from aliroot with the command ".q".
+- batch run: type the shell command "aliroot -q -b grun.C >& fileout &" where 
+  fileout is a name at your choice of the file where you want to store output 
+  and error messages.
+
+In principle there is another way to run aliroot using the script alirun but
+this is not described here.
+Aliroot creates an output root file always called galice.root. If you want to
+run the ITS reconstruction code, copy/move this file in the directory ITS and
+read the following instructions.  
+  
+
+4. Cluster finding (fast)
+-------------------------
+
+Reconstructed points in the space can be calculated either smearing the Geant3 
+hits according with the various detector resolutions and applying the 
+thresholds for all detectors (fast reconstruction or, for short, "fast points"),
+or performing a cluster finding after the detector digitization (slow
+reconstruction or, for short, "slow points"). Fast point creation is described
+here while slow point one is described in sections 5 and 6.
+From now on, we assume that you are under the directory ITS. If it is the case
+you can do the following:
+
+- interactive run: start aliroot and the type the command 
+  ".x ITSHitsToFastPoints.C". At the end of the run exit from aliroot with the 
+  command ".q".
+- batch run: type the shell command 
+  "aliroot -q -b ITSHitsToFastPoints.C >& fileout &" where fileout is a name at 
+  your choice of the file where you want to store output and error messages. 
+  
+Fast points are written in the same galice.root file as you can see issuing the
+shell command "ls -l galice.root" before and after their creation and looking at
+the size of the root file. 
+By default, fast points are created for all kind of ITS subdetectors (SPD, SDD, 
+and SSD). This is done with the function call:
+
+  ITS->HitsToFastRecPoints(ev,bgr_ev,size," ","All"," ");  
+
+in the macro ITSHitsToFastPoints.C. If you want to create fast points only for
+one type of subdectors you have to substitute the string "All" in the above 
+function call with "SPD", "SDD", or "SSD". Normal users are, however, strongly
+encouraged to create the "fast points" for all subdetectors at once not touching
+the macro ITSHitsToFastPoints.C.
+Fast points are intended only for tests. Normal users are also strongly 
+encouraged to run the complete ITS reconstruction described in the next two 
+sections. 
+
+  
+5. Digitization
+---------------
+
+In order to run the ITS digitization, put yourself under ITS and do the
+following:
+
+- interactive run: start aliroot and the type the command 
+  ".x ITSHitsToDigits.C". At the end of the run exit from aliroot with the 
+  command ".q".
+- batch run: type the shell command 
+  "aliroot -q -b ITSHitsToDigits.C >& fileout &" where fileout is a name at 
+  your choice of the file where you want to store output and error messages. 
+  
+Digits are written in the same galice.root file as you can see issuing the
+shell command "ls -l galice.root" before and after their creation and looking at
+the size of the root file. 
+By default, digits are created for all kind of ITS subdetectors (SPD, SDD, 
+and SSD). This is done with the function call:
+
+  ITS->HitsToDigits(nev,nbgr_ev,size," ","All"," "); 
+
+in the macro ITSHitsToDigits.C. If you want to create digits only for
+one type of subdectors you have to substitute the string "All" in the above 
+function call with "SPD", "SDD", or "SSD". Normal users are, however, strongly
+encouraged to run the ITS digitization for all subdetectors at once not touching
+the macro ITSHitsToDigits.C.
+By default the so-called "Dubna simulation" of the pixel detectors is 
+performed. In order to run the "Bari simulation" of the pixel detectors (waiting
+for the merging of the two) you have to use the macro ITSHitsToDigitsBari.C.
+
+
+6. Cluster finding (slow)
+-------------------------
+
+In order to perform the cluster finding and create the "slow points", do the
+following:
+
+- interactive run: start aliroot and the type the command 
+  ".x ITSDigitsToClusters.C". At the end of the run exit from aliroot with the 
+  command ".q".
+- batch run: type the shell command 
+  "aliroot -q -b ITSDigitsToClusters.C >& fileout &" where fileout is a name at 
+  your choice of the file where you want to store output and error messages. 
+  
+Slow points are written in the same galice.root file as you can see issuing the
+shell command "ls -l galice.root" before and after their creation and looking at
+the size of the root file. 
+By default, slow points are created for all kind of ITS subdetectors (SPD, SDD, 
+and SSD). This is done with the function call:
+
+  ITS->DigitsToRecPoints(nev,last_entry,"All"); 
+
+in the macro ITSDigitsToClusters.C. If you want to create slow points only for
+one type of subdectors you have to substitute the string "All" in the above 
+function call with "SPD", "SDD", or "SSD". Normal users are, however, strongly
+encouraged to create the slow points for all subdetectors at once not touching
+the macro ITSDigitsToClusters.C.
+By default the so-called "Dubna reconstruction" of the pixel detectors is 
+performed. In order to run the "Bari reconstruction" of the pixel detectors 
+(waiting for the merging of the two) you have to use the macro 
+ITSDigitsToClustersBari.C.
+
+
+7. Useful test macros
+---------------------
+
+Once you have created digits and slow points, you can now run some useful test
+macros. They can also be used as useful starting point to understand how to read
+hits, digits and points back from the galice.root file. The macros are listed 
+below together with some help on their use. Some of the macros produce output
+graphics, so the suggestion is to run them interactively starting aliroot and
+then typing the command ".x macro.C" at the aliroot prompt.
+
+- SPDclusterTest.C: this macro opens the galice.root file, reads the
+reconstructed points and plots the SPD resolution both for layer 1 and 2, in Z
+and Rphi direction. Moreover, it creates the Root file SPD_his.root which 
+contains some useful histograms and nt-uples which can be read back with the 
+macro SPD_ntuple.C.
+
+- ITSreadClustTestSPD.C: this macros opens the galice.root, reads SPD digits and
+prints them on the screen.
+
+- ITSsddanalysis.C: this macro opens the galice.root file, performs some
+analysis of the drift detectors and creates the Root output file 
+SDD_histos_test.root. This output file can then be read by the macro 
+ITSsddtest.C which create some PostScript file containing reference histograms.
+
+- SSDrecpointTest.C: this macro opens the galice.root file, reads the
+reconstructed points and plots the SSD resolution both for layer 5 and 6, in Z
+and Rphi direction. Moreover, it creates the Root file SSD_his.root which 
+contains some useful histograms and nt-uples which can be read back with the 
+macro SSD_ntuple.C.
+
+- ITSreadRecPointsTest.C: this macro opens the galice.root file, reads the
+reconstructed points and prints them on the screen for all ITS modules. For each
+reconstructed point the following quantities are printed: the recpoint index in
+the module (0, 1, 2, ...), the X coordinate in the local reference system of the
+module, the Z coordinate in the local reference system of the module, three
+integers indicating the id numbers of the tracks contributing to that
+reconstructed point. Only positive numbers, of course, are real tracks. Negative
+numbers (-1 for SPD, -3 for SDD, and -2 for SSD) are just there to fill the 
+vector of track id's associated to a given reconstructed point.
+
+- ITSgeoplot.C: this macro opens the galice.root file, reads hits, digits and
+recpoint for SPD, SDD and SSD and plots them in the global reference system.
+
+- ITSReadPlotData.C: this macros opens the galice.root file and then prompts the
+user for an ITS module identified by layer, ladder and detector or by the unique
+ID. That module is then searched for hits, digits and 
+reconstructed points and they are plotted in the local reference frame of the
+module with different symbols.
+
+
+8. Occupancy
+------------
+
+ITS occupancy can be evaluated by the macro ITSOccupancy.C which opens the
+galice.root files, reads the number of digits for all subdetectors, and
+calculate the occupancy as the ratio of the "fired" digits over the total number
+of digits. Plots are also created showing the occupancy as a function of the Z
+coordinate along the beams' axis. In order to increase the speed of the 
+calculation the macro is compilable. See the comments in the code about how to 
+run it.
+
