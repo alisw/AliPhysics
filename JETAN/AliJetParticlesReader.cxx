@@ -89,11 +89,11 @@ TString& AliJetParticlesReader::GetDirName(Int_t entry)
     {
      retval = new TString(".");
      return *retval;
-   }
+    }
 
   if ((entry>fDirs->GetEntries()) || (entry<0))
-                 //if out of bounds return empty string
-                 //note that entry==0 is accepted even if array is empty (size=0)
+    //if out of bounds return empty string
+    //note that entry==0 is accepted even if array is empty (size=0)
     {
       Error("GetDirName","Entry out of bounds");
       retval = new TString();

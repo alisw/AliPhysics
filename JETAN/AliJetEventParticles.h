@@ -47,6 +47,26 @@ class AliJetEventParticles: public TObject
   Float_t GetVertexY()               const {return fVertexY;}  
   Float_t GetVertexZ()               const {return fVertexZ;}  
 
+  Int_t    Trials()         const {return fTrials;}
+  Int_t    NTriggerJets()   const {return fNJets;}
+  Int_t    NUQTriggerJets() const {return fNUQJets;}
+  void     TriggerJet(Int_t i, Float_t p[4]) const;
+  void     UQJet(Int_t i, Float_t p[4])      const;
+  void     TriggerJet(Int_t i, Float_t &p1, Float_t &p2, Float_t &p3, Float_t &E) const;
+  void     UQJet(Int_t i, Float_t &p1, Float_t &p2, Float_t &p3, Float_t &E)      const;
+  Double_t GetXJet() const {return fXJet;}
+  Double_t GetYJet() const {return fYJet;}    
+  void     GetZQuench(Double_t z[4]) const;
+  TString  getHeader() const {return fHeader;}
+
+  void     SetXYJet(Double_t x, Double_t y); 
+  void     SetZQuench(Double_t z[4]);
+  void     SetTrials(Int_t trials) {fTrials = trials;}
+  void     AddJet(Float_t px, Float_t py, Float_t pz, Float_t e);
+  void     AddUQJet(Float_t px, Float_t py, Float_t pz, Float_t e);
+  void     AddJet(Float_t p[4]);
+  void     AddUQJet(Float_t p[4]);
+
   void Print(Option_t *t="") const;
 
   protected:
@@ -54,10 +74,19 @@ class AliJetEventParticles: public TObject
   Int_t fNParticles;        //   number of particles read
   TClonesArray *fParticles; //-> particles in event
 
-  Float_t fVertexX; //vertex x
-  Float_t fVertexY; //vertex y
-  Float_t fVertexZ; //vertex z
+  Float_t fVertexX;         // vertex x
+  Float_t fVertexY;         // vertex y
+  Float_t fVertexZ;         // vertex z
 
-  ClassDef(AliJetEventParticles,1) //class AliJetEventParticles
+  Int_t    fTrials;         // Number of trials to fulfill trigger condition
+  Int_t    fNJets;          // Number of triggered jets
+  Int_t    fNUQJets;        // Number of unquenched
+  Double_t fXJet;           // Jet production point (x)
+  Double_t fYJet;           // Jet production point (y)
+  Float_t  fJets[4][10];    // Trigger jets
+  Float_t  fUQJets[4][10];  // Unquenched trigger jets
+  Double_t fZquench[4];     // Quenching fraction
+
+  ClassDef(AliJetEventParticles,2) //class AliJetEventParticles
 };
 #endif

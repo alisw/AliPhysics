@@ -21,6 +21,7 @@
 #include <TH1.h>
 #include <AliESD.h>
 #include <AliESDtrack.h>
+#include <AliKalmanTrack.h>
 #include <AliJetEventParticles.h>
 #include "AliJetParticlesReaderESD.h"
 
@@ -59,10 +60,10 @@ AliJetParticlesReaderESD::AliJetParticlesReaderESD(
 AliJetParticlesReaderESD::~AliJetParticlesReaderESD()
 {
   //desctructor
-  if(fFile) delete fFile;
   if(fESD) delete fESD;
   if(fTree) delete fTree;
   if(fKeyIterator) delete fKeyIterator;
+  if(fFile) delete fFile;
 }
 
 
@@ -77,7 +78,7 @@ Int_t AliJetParticlesReaderESD::ReadNext()
 	  fFile = OpenFile(fCurrentDir);
 	  if (fFile == 0)
 	    {
-	      Error("ReadNext","Cannot get fFile for dir no. %d",fCurrentDir);
+	      Error("ReadNext","Can't get fFile for dir no. %d",fCurrentDir);
 	      fCurrentDir++;
 	      continue;
 	    }
@@ -95,6 +96,8 @@ Int_t AliJetParticlesReaderESD::ReadNext()
 
       if(fTree)
 	{
+	  if(AliKalmanTrack::GetConvConst()<=0.)
+	    AliKalmanTrack::SetMagneticField(0.5);
 	  if(fCurrentEvent>=fTree->GetEntries())
 	    {
 	      fCurrentDir++;
@@ -124,7 +127,7 @@ Int_t AliJetParticlesReaderESD::ReadNext()
 	  fESD = dynamic_cast<AliESD*>(fFile->Get(esdname));
 	  if (fESD == 0)
 	    {
-	      Info("ReadNext","Can not find AliESD object named %s",esdname.Data());
+	      Info("ReadNext","Can't find AliESD object named %s",esdname.Data());
 	      fCurrentDir++;
 	      delete fKeyIterator;
 	      fKeyIterator = 0;
@@ -161,16 +164,28 @@ Int_t AliJetParticlesReaderESD::ReadESD(AliESD* esd)
   //   return kFALSE;
   // }
    
-  //Float_t mf = esd->GetMagneticField(); 
-  //if ( (mf == 0.0) && (fNTrackPoints > 0) )
-  //{
-  //   Error("ReadESD","Magnetic Field is 0 and Track Points demanded. Skipping to next event.");
-  //   return kFALSE;
-  //}
+  Float_t mf = esd->GetMagneticField(); 
+  if (mf <= 0.0)  
+  {
+     Error("ReadESD","Magnetic Field is 0. Skipping to next event.");
+     return kFALSE;
+  }
+  AliKalmanTrack::SetMagneticField(mf/10.);
 
   Info("ReadESD","Reading Event %d",fCurrentEvent);
   if((!fOwner) || (fEventParticles==0)) 
     fEventParticles = new AliJetEventParticles();
+
+  const Int_t kntr = esd->GetNumberOfTracks();
+  Info("ReadESD","Found %d tracks.",kntr);
+  fEventParticles->Reset(kntr);
+
+  TString headdesc="";
+  headdesc+="Run ";
+  headdesc+=esd->GetRunNumber();
+  headdesc+=": Ev ";
+  headdesc+=esd->GetEventNumber();
+  fEventParticles->SetHeader(headdesc);
 
   Double_t vertexpos[3];//vertex position
   const AliESDVertex* kvertex = esd->GetVertex();
@@ -187,14 +202,13 @@ Int_t AliJetParticlesReaderESD::ReadESD(AliESD* esd)
    }
   fEventParticles->SetVertex(vertexpos[0],vertexpos[1],vertexpos[2]);
 
-  const Int_t kntr = esd->GetNumberOfTracks();
-  Info("ReadESD","Found %d tracks.",kntr);
+  //loop over tracks
   for (Int_t i = 0;i<kntr; i++)
    {
      const AliESDtrack *kesdtrack = esd->GetTrack(i);
      if (kesdtrack == 0)
       {
-        Error("ReadESD","Can not get track %d", i);
+        Error("ReadESD","Can't get track %d", i);
         continue;
       }
 
@@ -248,7 +262,7 @@ TFile* AliJetParticlesReaderESD::OpenFile(Int_t n)
  const TString& dirname = GetDirName(n);
  if (dirname == "")
   {
-   Error("OpenFiles","Can not get directory name");
+   Error("OpenFiles","Can't get directory name");
    return 0;
   }
  TString filename = dirname +"/"+ fESDFileName;

@@ -35,7 +35,7 @@ class AliJetParticlesReader: public TNamed
   virtual Int_t Next(); //call this if you want the next event
   virtual void  Rewind() = 0;
 
-  void SetPtCut(Float_t ptmin=0, Float_t ptmax=1000)
+  void SetPtCut(Float_t ptmin=0, Float_t ptmax=100)
     {fPtMin=ptmin;fPtMax=ptmax;}
   void SetPhiCut(Float_t phi=2*TMath::Pi()){SetPhiCut(0,phi);}
   void SetPhiCut(Float_t phimin, Float_t phimax)
