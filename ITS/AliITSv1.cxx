@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.13.2.1  1999/11/25 06:52:21  fca
+Correct value of drca
+
+Revision 1.13  1999/10/27 11:16:26  fca
+Correction of problem in geometry
+
 Revision 1.12  1999/10/22 08:25:25  fca
 remove double definition of destructors
 
@@ -122,7 +128,7 @@ void AliITSv1::CreateGeometry()
   Float_t drcu[6]  = { 0.,0.,.0504,.0504,.0357,.0357 }; //COPPER THICKNESS
   Float_t drsi[6]  = { 0.,0.,.006,.006,.3571,.3571 };   //SILICON THICKNESS
 
-  Float_t drca = 0, dzfc;
+  Float_t drca, dzfc;
   Int_t i, nsec;
   Float_t rend, drca_tpc, dzco, zend, dits[3], rlim, drsu, zmax;
   Float_t zpos, dzco1, dzco2;
@@ -148,6 +154,7 @@ void AliITSv1::CreateGeometry()
   
   //     CABLE THICKNESS (CONICAL CABLES CONNECTING THE LAYERS) 
 
+  drca = 0.2;
   
   //     ITS CONE ANGLE 
   
