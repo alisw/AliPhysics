@@ -1,4 +1,4 @@
-void TestPrimaries(Int_t evNumber1=0, Int_t evNumber2=0) 
+void readPrimaries(Int_t evNumber1=0, Int_t evNumber2=0) 
 {
 // Dynamically link some shared libs                    
     if (gClassTable->GetID("AliRun") < 0) {
