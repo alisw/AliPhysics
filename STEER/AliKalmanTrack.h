@@ -113,12 +113,11 @@ protected:
   void SetMass(Double_t mass) {fMass=mass;}
   void SetNumberOfClusters(Int_t n) {fN=n;} 
 
- private:
   Int_t fLab;             // track label
   Double_t fChi2;         // total chi2 value for this track
   Double_t fMass;         // mass hypothesis
   Int_t fN;               // number of associated clusters
-
+ private:
   static Double_t fgConvConst; //conversion constant cm -> GeV/c
 
   // variables for time integration (S.Radomski@gsi.de)
