@@ -35,7 +35,7 @@ public:
 
   void SetupFirstPass(Int_t *flags, Double_t *cuts=0);
   void SetupSecondPass(Int_t *flags, Double_t *cuts=0);
-  //PH  Bool_t RefitAt(Double_t x, AliITStrackV2 *t, Int_t *index);
+  //PH  Bool_t RefitAt(Double_t xx, AliITStrackV2 *t, Int_t *index);
 
   void SetLastLayerToTrackTo(Int_t l=0) {fLastLayerToTrackTo=l;} 
   void SetLayersNotToSkip(Int_t *l);

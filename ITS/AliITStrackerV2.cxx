@@ -1020,7 +1020,7 @@ Int_t AliITStrackerV2::AliITSlayer::InRoad() const {
 }
 
 Bool_t 
-AliITStrackerV2::RefitAt(Double_t x,const AliITStrackV2 *s,AliITStrackV2 *ot) {
+AliITStrackerV2::RefitAt(Double_t xx,const AliITStrackV2 *s,AliITStrackV2 *ot) {
   //--------------------------------------------------------------------
   // This function refits a track at a given position
   //--------------------------------------------------------------------
@@ -1036,7 +1036,7 @@ AliITStrackerV2::RefitAt(Double_t x,const AliITStrackV2 *s,AliITStrackV2 *ot) {
   t->~AliITStrackV2(); new (t) AliITStrackV2(*s);
 
   Int_t from, to, step;
-  if (x > t->GetX()) {
+  if (xx > t->GetX()) {
       from=0; to=kMaxLayer;
       step=+1;
   } else {
@@ -1145,7 +1145,7 @@ AliITStrackerV2::RefitAt(Double_t x,const AliITStrackV2 *s,AliITStrackV2 *ot) {
 
   }
 
-  if (!t->PropagateTo(x,0.,0.)) return kFALSE;
+  if (!t->PropagateTo(xx,0.,0.)) return kFALSE;
   ot->~AliITStrackV2(); new (ot) AliITStrackV2(*t);
   return kTRUE;
 }
