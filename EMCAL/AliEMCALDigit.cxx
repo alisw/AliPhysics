@@ -36,6 +36,7 @@
 
 #include "AliEMCALDigit.h"
 #include "AliEMCALGeometry.h"
+#include "AliEMCALGetter.h"
 
 
 ClassImp(AliEMCALDigit)
@@ -47,9 +48,11 @@ ClassImp(AliEMCALDigit)
 
   fIndexInList = -1 ; 
   fNprimary    = 0 ;  
-  fNMaxPrimary = 21 ; 
+  fNMaxPrimary = 5 ; 
   fNiparent     = 0 ;
   fNMaxiparent = fNMaxPrimary*10;
+  fPrimary = new Int_t[fNMaxPrimary] ;
+  fIparent = new Int_t[fNMaxiparent] ; 
 }
 
 //____________________________________________________________________________
@@ -57,8 +60,10 @@ AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEn
 {  
   // ctor with all data 
 
-  fNMaxPrimary = 21 ; 
+  fNMaxPrimary = 5 ; 
   fNMaxiparent = fNMaxPrimary*10;
+  fPrimary = new Int_t[fNMaxPrimary] ;
+  fIparent = new Int_t[fNMaxiparent] ; 
   fAmp         = DigEnergy ;
   fTime        = time ;
   fId          = id ;
@@ -93,6 +98,8 @@ AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit)
 
   fNMaxPrimary = digit.fNMaxPrimary ;  
   fNMaxiparent = digit.fNMaxiparent ;
+  fPrimary = new Int_t[fNMaxPrimary] ;
+  fIparent = new Int_t[fNMaxiparent] ; 
   Int_t i ;
   for ( i = 0; i < fNMaxPrimary ; i++)
   fPrimary[i]  = digit.fPrimary[i] ;
@@ -111,7 +118,8 @@ AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit)
 AliEMCALDigit::~AliEMCALDigit() 
 {
   // Delete array of primiries if any
-  
+    delete [] fPrimary ;
+    delete [] fIparent ; 
 }
 
 //____________________________________________________________________________
@@ -179,6 +187,15 @@ Int_t AliEMCALDigit::GetIparent(Int_t index) const
   
 }
 
+//______________________________________________________________________
+const Bool_t AliEMCALDigit::IsInPreShower() const 
+{
+  Bool_t rv = kFALSE ;
+  const AliEMCALGeometry * geom = AliEMCALGetter::GetInstance()->EMCALGeometry() ;
+  if( GetId() > (geom->GetNZ() * geom->GetNPhi() )) 
+    rv = kTRUE; 
+  return rv; 
+} 
 
 //____________________________________________________________________________
 void AliEMCALDigit::ShiftPrimary(Int_t shift){

@@ -48,25 +48,25 @@ class AliEMCALDigit : public AliDigitNew {
   Int_t   GetIparent(Int_t index) const ;
   const Float_t GetPhi() const;
   Float_t GetTime(void) const {return fTime ;}
-
+  const Bool_t IsInPreShower() const ;
   Bool_t  IsSortable() const { 
     // says that AliEMCALDigits are sortable (needed for Sort method
     return kTRUE ; }
-  void    SetAmp(Int_t Amp) { 
+  void    SetAmp(Int_t amp) { 
     // sets the amplitude data member 
-    fAmp= Amp ; } 
-  void SetTime(Float_t Time) {fTime = Time ;}
+    fAmp= amp ; } 
+  void SetId(Int_t id) {fId = id ;}
+  void SetTime(Float_t time) {fTime = time ;}
   void ShiftPrimary(Int_t shift); // shift to semarate different TreeK in merging
  
- private:
-
+ private: 
   Int_t fNprimary ;     // Number of primaries
-  Int_t fNMaxPrimary ;  //! Max Number of primaries
-  Int_t fPrimary[5] ;   // Array of primaries       
+  Int_t fNMaxPrimary ;  // Max Number of primaries
+  Int_t *fPrimary ;     //[fNMaxPrimary]  Array of primaries       
     
   Int_t fNiparent ;     // Number of initial parents 
-  Int_t fNMaxiparent ;  //! Max Number of parents 
-  Int_t fIparent[50] ;  // Array of parents       
+  Int_t fNMaxiparent ;  // Max Number of parents 
+  Int_t *fIparent ;     //[fNMaxiparent] Array of parents       
   Float_t fTime ;       // Calculated time  
 
   ClassDef(AliEMCALDigit,1)   // Digit in EMCAL 
