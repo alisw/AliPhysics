@@ -58,6 +58,7 @@ void analHits (const char *filename="galice.root",Int_t evNumber=0, char *opt="L
     AliTRDhit    *trdHit;
     AliCASTORhit *castorHit;
     AliZDCHit    *zdcHit;
+    AliEMCALHit  *emcalHit;
 
 // Get pointers to ALL Alice detectors and Hits containers
     AliFMD    *FMD    = (AliFMD*)    gAlice->GetDetector("FMD");
@@ -73,6 +74,7 @@ void analHits (const char *filename="galice.root",Int_t evNumber=0, char *opt="L
     AliTRD    *TRD    = (AliTRD*)    gAlice->GetDetector("TRD");
     AliCASTOR *CASTOR = (AliCASTOR*) gAlice->GetDetector("CASTOR");
     AliZDC    *ZDC    = (AliZDC*)    gAlice->GetDetector("ZDC");
+    AliEMCAL  *EMCAL  = (AliEMCAL*)  gAlice->GetDetector("EMCAL");
 
 // Get pointer to the particles
 //    TClonesArray *Particles = gAlice->Particles();
@@ -91,6 +93,7 @@ void analHits (const char *filename="galice.root",Int_t evNumber=0, char *opt="L
     if(TRD)   TH1F *hTRD   = new TH1F("hTRD"   ,"Charge",100,0.,10.);
     if(CASTOR)TH1F *hCASTOR= new TH1F("hCASTOR","Hit Radius",100,0.,10.);
     if(ZDC)   TH1F *hZDC   = new TH1F("hZDC"   ,"Energy",100,0.,5.);
+    if(EMCAL) TH1F *hEMCAL = new TH1F("hEMCAL" ,"Energy",100,0.,2.);
 //    TH1F *hTPAR  = new TH1F("hTPAR" ,"?",6,1,7);  
     Int_t track,ntracks = gAlice->TreeH()->GetEntries();
 // Start loop on tracks in the hits containers
@@ -173,6 +176,12 @@ void analHits (const char *filename="galice.root",Int_t evNumber=0, char *opt="L
 	    hTPC->Fill((Float_t)(tpcHit->fQ));
 	  } // end for tpcHit
 	} // end if TPC
+	if(EMCAL) {
+	  for(emcalHit=(AliEMCALHit*)EMCAL->FirstHit(-1);emcalHit;
+	      emcalHit=(AliEMCALHit*)EMCAL->NextHit()) {
+	    hEMCAL->Fill((Float_t)(emcalHit->GetEnergy()));
+	  } // end for tpcHit
+	} // end if TPC
 
     } // end for track
 
@@ -238,6 +247,11 @@ void analHits (const char *filename="galice.root",Int_t evNumber=0, char *opt="L
 	hZDC->SetFillColor(42);
 	hZDC->Draw();
 	c0->SaveAs("analHitsZDC.ps");
+    } // end if ZDC
+    if(EMCAL){
+	hEMCAL->SetFillColor(42);
+	hEMCAL->Draw();
+	c0->SaveAs("analHitsEMCAL.ps");
     } // end if ZDC
 
 // Clean Up

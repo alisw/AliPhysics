@@ -123,6 +123,7 @@ void Config()
     Int_t   iTPC = 1;
     Int_t   iTRD = 1;
     Int_t   iZDC = 1;
+    Int_t   iEMCAL = 0;
 
     //=================== Alice BODY parameters =============================
     AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
@@ -355,6 +356,11 @@ void Config()
         PMD->SetGEO(0.0, 0.2, 4.);
         PMD->SetPadSize(0.8, 1.0, 1.0, 1.5);
 
+    }
+    if (iEMCAL!=0 && iRICH==0)
+    {
+        //=================== START parameters ============================
+        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCALArch1a");
     }
 
     if (iSTART)
