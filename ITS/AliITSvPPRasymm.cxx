@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.54  2002/03/28 16:17:03  nilsen
+Set new Geant Step size and related parameters for the ITS materials.
+
 Revision 1.53  2001/11/28 01:35:45  nilsen
 Using standard constructors instead of default constructors for Clusterfinder,
 Response, and FastSimulator.
@@ -29206,7 +29209,8 @@ void AliITSvPPRasymm::SetDefaults(){
     resp1->SetDriftSpeed(7.3); // set drift speed to 7.3 microns/ns.
     Float_t a,b;
     resp1->GetNoiseParam(a,b);
-    Int_t cp[8] = {0,0,(Int_t)(a+2.*b),(Int_t)(a+2.*b),0,0,0,0};
+    a = resp1->GetNoiseAfterElectronics();
+    Int_t cp[8] = {0,0,(Int_t)(2.*a+b+.5),(Int_t)(2.*a+b+.5),0,0,0,0};
     resp1->SetCompressParam(cp);
     SetResponseModel(kSDD,resp1);
     AliITSsegmentationSDD *seg1=new AliITSsegmentationSDD(fITSgeom,resp1);
