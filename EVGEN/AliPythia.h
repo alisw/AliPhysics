@@ -53,7 +53,7 @@ class AliPythia : public TPythia6, public AliRndm
     Float_t       fEcms;              // Centre of mass energy
     StrucFunc_t   fStrucFunc;         // Structure function
     Int_t         fDefMDCY[501];      //  ! Default decay switches per particle
-    Int_t         fDefMDME[2000];     //  ! Default decay switches per mode
+    Int_t         fDefMDME[2001];     //  ! Default decay switches per mode
     static AliPythia*    fgAliPythia; // Pointer to single instance
  private: 
     AliPythia();
