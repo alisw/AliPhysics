@@ -92,12 +92,12 @@ AliMUONTrackHit::~AliMUONTrackHit()
   //__________________________________________________________________________
 Int_t AliMUONTrackHit::Compare(const TObject* TrackHit) const
 {
-  // "Compare" function to sort with increasing Z.
-  // Returns -1 (0, +1) if Z of current TrackHit
+  // "Compare" function to sort with decreasing Z (spectro. muon Z <0).
+  // Returns 1 (0, -1) if Z of current TrackHit
   // is smaller than (equal to, larger than) Z of TrackHit
   if (fHitForRecPtr->GetZ() <
-      ((AliMUONTrackHit*)TrackHit)->fHitForRecPtr->GetZ()) return(-1);
+      ((AliMUONTrackHit*)TrackHit)->fHitForRecPtr->GetZ()) return(1);
   else if (fHitForRecPtr->GetZ() ==
 	   ((AliMUONTrackHit*)TrackHit)->fHitForRecPtr->GetZ()) return( 0);
-  else return(+1);
+  else return(-1);
 }

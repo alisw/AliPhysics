@@ -56,8 +56,8 @@ void MUONmassPlot(Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t ResType = 553
 
   if (gClassTable->GetID("AliRun") < 0) {
     gSystem->SetIncludePath("-I$ALICE_ROOT/MUON -I$ALICE_ROOT/STEER");
-    gROOT->LoadMacro("loadlibs.C");
-    loadlibs();
+//     gROOT->LoadMacro("loadlibs.C");
+//     loadlibs();
 // compile MUONrecoNtuple and load shared library 
     gSystem->CompileMacro("$(ALICE_ROOT)/macros/MUONrecoNtuple.C","kf");
   }
@@ -138,8 +138,8 @@ void MUONmassPlot(Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t ResType = 553
   }
 
   TH1F *hNumberOfTrack = new TH1F("hNumberOfTrack","nb of track /evt ",20,-0.5,19.5);
-  TH1F *hRapMuon = new TH1F("hRapMuon"," Muon Rapidity",50,2.,4.5);
-  TH1F *hRapResonance = new TH1F("hRapResonance"," Resonance Rapidity",50,2.,4.5);
+  TH1F *hRapMuon = new TH1F("hRapMuon"," Muon Rapidity",50,-4.5.,-2);
+  TH1F *hRapResonance = new TH1F("hRapResonance"," Resonance Rapidity",50,-4.5,-2);
   TH1F *hPtResonance = new TH1F("hPtResonance", "Resonance Pt (GeV/c)", 100, 0., 20.);
   Int_t EventInMass = 0;
   Float_t muonMass = 0.105658389;

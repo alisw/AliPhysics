@@ -79,7 +79,7 @@ void AliMUONTrackParam::ExtrapToZ(Double_t Z)
   // replace the current track parameters.
   if (this->fZ == Z) return; // nothing to be done if same Z
   Double_t forwardBackward; // +1 if forward, -1 if backward
-  if (Z > this->fZ) forwardBackward = 1.0;
+  if (Z < this->fZ) forwardBackward = 1.0; // spectro. z<0 
   else forwardBackward = -1.0;
   Double_t vGeant3[7], vGeant3New[7]; // 7 in parameter ????
   Int_t iGeant3, stepNumber;
@@ -94,13 +94,13 @@ void AliMUONTrackParam::ExtrapToZ(Double_t Z)
   Double_t stepLength = 6.0; // in parameter ????
   // Extrapolation loop
   stepNumber = 0;
-  while (((forwardBackward * (vGeant3[2] - Z)) <= 0.0) &&
+  while (((-forwardBackward * (vGeant3[2] - Z)) <= 0.0) &&  // spectro. z<0
 	 (stepNumber < maxStepNumber)) {
     stepNumber++;
     // Option for switching between helix and Runge-Kutta ???? 
     // extrap_onestep_rungekutta(chargeExtrap, stepLength, vGeant3, vGeant3New);
     extrap_onestep_helix(chargeExtrap, stepLength, vGeant3, vGeant3New);
-    if ((forwardBackward * (vGeant3New[2] - Z)) > 0.0) break; // one is beyond Z
+    if ((-forwardBackward * (vGeant3New[2] - Z)) > 0.0) break; // one is beyond Z spectro. z<0
     // better use TArray ????
     for (iGeant3 = 0; iGeant3 < 7; iGeant3++)
       {vGeant3[iGeant3] = vGeant3New[iGeant3];}
@@ -148,7 +148,7 @@ void AliMUONTrackParam::SetGeant3Parameters(Double_t *VGeant3, Double_t ForwardB
   VGeant3[6] =
     TMath::Sqrt(pYZ * pYZ +
 		pZ * pZ * this->fNonBendingSlope * this->fNonBendingSlope); // PTOT
-  VGeant3[5] = ForwardBackward * pZ / VGeant3[6]; // PZ/PTOT
+  VGeant3[5] = -ForwardBackward * pZ / VGeant3[6]; // PZ/PTOT spectro. z<0
   VGeant3[3] = this->fNonBendingSlope * VGeant3[5]; // PX/PTOT
   VGeant3[4] = this->fBendingSlope * VGeant3[5]; // PY/PTOT
 }
@@ -210,12 +210,13 @@ void AliMUONTrackParam::ExtrapToVertex()
   // in the current TrackParam.
   // Changes parameters according to Branson correction through the absorber 
   
-  Double_t zAbsorber = 503.0; // to be coherent with the Geant absorber geometry !!!!
+  Double_t zAbsorber = -503.0; // to be coherent with the Geant absorber geometry !!!!
+                               // spectro. (z<0) 
   // Extrapolates track parameters upstream to the "Z" end of the front absorber
   ExtrapToZ(zAbsorber); // !!!
-    // Makes Branson correction (multiple scattering + energy loss)
+  // Makes Branson correction (multiple scattering + energy loss)
   BransonCorrection();
-    // Makes a simple magnetic field correction through the absorber
+  // Makes a simple magnetic field correction through the absorber
   FieldCorrection(zAbsorber);
 }
 
@@ -346,17 +347,17 @@ void AliMUONTrackParam::BransonCorrection()
   if (first) {
     first = kFALSE;
   
-    zEndAbsorber = 503;
+    zEndAbsorber = -503;  // spectro (z<0)
     thetaLimit = 3.0 * (TMath::Pi()) / 180.;
-    rLimit = zEndAbsorber * TMath::Tan(thetaLimit);
-    zBP1 = 450; // values close to those calculated with EvalAbso.C
-    zBP2 = 480;
+    rLimit = TMath::Abs(zEndAbsorber) * TMath::Tan(thetaLimit);
+    zBP1 = -450; // values close to those calculated with EvalAbso.C
+    zBP2 = -480;
   }
 
   pYZ = TMath::Abs(1.0 / fInverseBendingMomentum);
   sign = 1;      
   if (fInverseBendingMomentum < 0) sign = -1;     
-  pZ = pYZ / (TMath::Sqrt(1.0 + fBendingSlope * fBendingSlope)); 
+  pZ = -pYZ / (TMath::Sqrt(1.0 + fBendingSlope * fBendingSlope)); // spectro (z<0)
   pX = pZ * fNonBendingSlope; 
   pY = pZ * fBendingSlope; 
   pTotal = TMath::Sqrt(pYZ *pYZ + pX * pX);
@@ -382,9 +383,10 @@ void AliMUONTrackParam::BransonCorrection()
   pY = pZ * yBP / zSmear;
   fBendingSlope = pY / pZ;
   fNonBendingSlope = pX / pZ;
+
   
   pT = TMath::Sqrt(pX * pX + pY * pY);      
-  theta = TMath::ATan2(pT, pZ); 
+  theta = TMath::ATan2(pT, TMath::Abs(pZ)); 
   pTotal = TotalMomentumEnergyLoss(thetaLimit, pTotal, theta);
 
   fInverseBendingMomentum = (sign / pTotal) *
@@ -445,12 +447,12 @@ void AliMUONTrackParam::FieldCorrection(Double_t Z)
   pYZ = TMath::Abs(1.0 / fInverseBendingMomentum);
   c = TMath::Sign(1.0,fInverseBendingMomentum); // particle charge 
  
-  pZ = pYZ / (TMath::Sqrt(1.0 + fBendingSlope * fBendingSlope)); 
+  pZ = -pYZ / (TMath::Sqrt(1.0 + fBendingSlope * fBendingSlope));  // spectro. (z<0)
   pX = pZ * fNonBendingSlope; 
   pY = pZ * fBendingSlope;
   pT = TMath::Sqrt(pX*pX+pY*pY);
 
-  if (pZ <= 0) return;
+  if (TMath::Abs(pZ) <= 0) return;
   x[2] = Z/2;
   x[0] = x[2]*fNonBendingSlope;  
   x[1] = x[2]*fBendingSlope;
@@ -461,8 +463,7 @@ void AliMUONTrackParam::FieldCorrection(Double_t Z)
  
   // Transverse momentum rotation
   // Parameterized with the study of DeltaPhi = phiReco - phiGen as a function of pZ.
-  Double_t phiShift = c*0.436*0.0003*bZ*Z/pZ;  
-  
+  Double_t phiShift = c*0.436*0.0003*bZ*Z/pZ; 
  // Rotate momentum around Z axis.
   pXNew = pX*TMath::Cos(phiShift) - pY*TMath::Sin(phiShift);
   pYNew = pX*TMath::Sin(phiShift) + pY*TMath::Cos(phiShift);

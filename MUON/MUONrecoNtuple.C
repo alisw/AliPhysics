@@ -148,7 +148,7 @@ void AliMUONEventRecNtupleFill(AliMUONEventReconstructor *Reco, Int_t FillWrite 
     bendingSlope = trackParam->GetBendingSlope();
     nonBendingSlope = trackParam->GetNonBendingSlope();
     pYZ = 1/TMath::Abs(trackParam->GetInverseBendingMomentum());
-    recTrackNt->fPzRec = pYZ / TMath::Sqrt(1.0 + bendingSlope * bendingSlope);
+    recTrackNt->fPzRec = - pYZ / TMath::Sqrt(1.0 + bendingSlope * bendingSlope); // spectro. (z<0)
     recTrackNt->fPxRec = recTrackNt->fPzRec * nonBendingSlope;
     recTrackNt->fPyRec = recTrackNt->fPzRec * bendingSlope;
     recTrackNt->fZRec = trackParam->GetZ();
@@ -235,7 +235,7 @@ void MUONrecoNtuple (Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t RecGeantHi
   // with respect to the default ones
 //   Reco->SetMaxSigma2Distance(100.0);
 //  Reco->SetPrintLevel(20);
-   Reco->SetPrintLevel(1);
+   Reco->SetPrintLevel(0);
 //   Reco->SetBendingResolution(0.0);
 //   Reco->SetNonBendingResolution(0.0);
   cout << "AliMUONEventReconstructor: actual parameters" << endl;

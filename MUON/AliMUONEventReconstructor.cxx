@@ -104,11 +104,12 @@ AliMUONEventReconstructor::AliMUONEventReconstructor(void)
   fRecTrackHitsPtr = new TClonesArray("AliMUONTrack", 100);
   fNRecTrackHits = 0; // really needed or GetEntriesFast sufficient ????
 
-  // Sign of fSimpleBValue according to sign of Bx value at (50,50,950).
+  // Sign of fSimpleBValue according to sign of Bx value at (50,50,-950).
   Float_t b[3], x[3];
-  x[0] = 50.; x[1] = 50.; x[2] = 950.;
+  x[0] = 50.; x[1] = 50.; x[2] = -950.;
   gAlice->Field()->Field(x, b);
   fSimpleBValue = TMath::Sign(fSimpleBValue,(Double_t) b[0]);
+  fSimpleBPosition = TMath::Sign(fSimpleBPosition,(Double_t) x[2]);
   // See how to get fSimple(BValue, BLength, BPosition)
   // automatically calculated from the actual magnetic field ????
 

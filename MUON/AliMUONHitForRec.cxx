@@ -110,12 +110,12 @@ Int_t AliMUONHitForRec::Compare(const TObject* Hit) const
   //__________________________________________________________________________
 Int_t AliMUONHitForRec::Compare(const TObject* Hit) const
 {
-  // "Compare" function to sort with increasing Z-coordinate.
-  // Returns -1 (0, +1) if Z-coordinate of current HitForRec
+  // "Compare" function to sort with decreasing Z-coordinate (spectro. MUON z<0).
+  // Returns 1 (0, -1) if Z-coordinate of current HitForRec
   // is smaller than (equal to, larger than) Z-coordinate of Hit
-  if (fZ <  ((AliMUONHitForRec*)Hit)->fZ) return(-1);
+  if (fZ <  ((AliMUONHitForRec*)Hit)->fZ) return(1);
   else if (fZ == ((AliMUONHitForRec*)Hit)->fZ) return( 0);
-  else return(+1);
+  else return(-1);
 }
 
   //__________________________________________________________________________
