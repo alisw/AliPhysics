@@ -36,10 +36,9 @@ class TTask ;
 #include "AliEMCALDigit.h" 
 #include "AliEMCALDigitizer.h" 
 #include "AliEMCALSDigitizer.h"
+#include "AliEMCALTowerRecPoint.h"
 class AliEMCALGeometry ;
-//class AliEMCALEmcRecPoint ;
-//class AliEMCALCpvRecPoint ;
-//class AliEMCALClusterizer ;
+class AliEMCALClusterizer ;
 //class AliEMCALTrackSegment ;
 //class AliEMCALTrackSegmentMaker ;
 //class AliEMCALRecParticle ;
@@ -65,13 +64,13 @@ class AliEMCALGetter : public TObject {
   Bool_t PostHits(void ) const ;  
   Bool_t PostSDigits(      const char * name,  const char * file = 0) const ;  
   Bool_t PostDigits(       const char * name ) const ;  
-  //Bool_t PostRecPoints(    const char * name ) const ;  
+  Bool_t PostRecPoints(    const char * name ) const ;  
   //Bool_t PostTrackSegments(const char * name) const ;  
   //Bool_t PostRecParticles( const char * name) const ;  
 
-  //Bool_t PostClusterizer( const char * name) const ;  
-  //Bool_t PostClusterizer(AliEMCALClusterizer * clu) const ;  
- Bool_t PostSDigitizer (AliEMCALSDigitizer * sdigitizer) const ;  
+  Bool_t PostClusterizer( const char * name) const ;  
+  Bool_t PostClusterizer(AliEMCALClusterizer * clu) const ;  
+  Bool_t PostSDigitizer (AliEMCALSDigitizer * sdigitizer) const ;  
   Bool_t PostSDigitizer ( const char * name, const char * file ) const ;  
   Bool_t PostDigitizer (AliEMCALDigitizer * digitizer) const ;  
   Bool_t PostDigitizer  ( const char * name) const ;  
@@ -82,7 +81,7 @@ class AliEMCALGetter : public TObject {
   //Bool_t PostQA   (void) const ;
   
 
-  void   Event(const Int_t event, const char * opt = "HSD") ;    
+  void   Event(const Int_t event, const char * opt = "HSDR") ;    
   void   Track(Int_t itrack) ;
 
   //Method to be used when digitizing under AliRunDigitizer, who opens all files etc.
@@ -95,7 +94,7 @@ class AliEMCALGetter : public TObject {
   static AliEMCALGetter *   GetInstance() ; 
 
   const AliEMCALv1 *         EMCAL()  ;  
-  const  AliEMCALGeometry * EMCALGeometry() ; 
+  AliEMCALGeometry * EMCALGeometry() ; 
    // Alarms
   //TFolder * Alarms() const { return (TFolder*)(ReturnO("Alarms", 0)) ; }
   //TObjArray *  Alarms(const char * name ) const { return (TObjArray*)(ReturnO("Alarms", name)) ; }
@@ -130,14 +129,18 @@ class AliEMCALGetter : public TObject {
     return (AliEMCALDigitizer*)(ReturnT("Digitizer", name)) ; 
   }
 
-  // RecPoints
-  //TObjArray * EmcRecPoints(const char * name = 0) const { 
-    //          return (TObjArray*)(ReturnO("EmcRecPoints", name)) ; }
-  //TObjArray * CpvRecPoints(const char * name = 0) const { 
-    //          return (TObjArray*)(ReturnO("CpvRecPoints", name)) ; }
+  //  RecPoints
+  TObjArray * TowerRecPoints(const char * name = 0) const { 
+    return (TObjArray*)(ReturnO("TowerRecPoints", name)) ; }
+  TObjArray * PreShowerRecPoints(const char * name = 0) const { 
+    return (TObjArray*)(ReturnO("PreShoRecPoints", name)) ; }
+  const AliEMCALTowerRecPoint *  TowerRecPoint(Int_t index) { 
+    return static_cast<const AliEMCALTowerRecPoint *>(TowerRecPoints()->At(index)) ;}
+  const AliEMCALTowerRecPoint *  PreShowerRecPoint(Int_t index) { 
+    return static_cast<const AliEMCALTowerRecPoint *>(PreShowerRecPoints()->At(index)) ;}
 
-  //AliEMCALClusterizer * Clusterizer (const char * name =0) const 
-    //          { return (AliEMCALClusterizer*)(ReturnT("Clusterizer", name)) ; }
+  AliEMCALClusterizer * Clusterizer (const char * name =0) const { 
+    return (AliEMCALClusterizer*)(ReturnT("Clusterizer", name)) ; }
 
   // TrackSegments
   //TClonesArray * TrackSegments(const char * name = 0) const 
@@ -174,7 +177,7 @@ class AliEMCALGetter : public TObject {
   void DefineBranchTitles(char* branch, char* branchTitle) ;
   void ReadTreeD() ;
   void ReadTreeH() ;
-  //void ReadTreeR() ;
+  void ReadTreeR() ;
   void ReadTreeS(Int_t event) ;
   //void ReadTreeQA() ;
   void ReadPrimaries() ;
@@ -182,15 +185,15 @@ class AliEMCALGetter : public TObject {
   TObject ** HitsRef(void) const ;
   TObject ** SDigitsRef(const char * name, const char * file = 0 ) const;
   TObject ** DigitsRef (const char * name)   const ;
-  //TObject ** EmcRecPointsRef (const char * name) const ;
-  //TObject ** CpvRecPointsRef (const char * name) const ;
+  TObject ** TowerRecPointsRef (const char * name) const ;
+  TObject ** PreShoRecPointsRef (const char * name) const ;
   //TObject ** TrackSegmentsRef(const char * name)   const ;
   //TObject ** RecParticlesRef (const char * name)   const ;
   //TObject ** AlarmsRef (void)   const ;
 
   TObject ** SDigitizerRef (const char * name) const ; 
   TObject ** DigitizerRef  (const char * name) const ; 
-  //TObject ** ClusterizerRef(const char * name) const ; 
+  TObject ** ClusterizerRef(const char * name) const ; 
   //TObject ** TSMakerRef    (const char * name) const ; 
   //TObject ** PIDRef        (const char * name) const ; 
 
@@ -199,7 +202,7 @@ class AliEMCALGetter : public TObject {
   TString        fHeaderFile ;        //! File in which gAlice lives
   TString        fBranchTitle ;       //!
   //TString        fTrackSegmentsTitle ;//! 
-  //TString        fRecPointsTitle ;    //!
+  TString        fRecPointsTitle ;    //!
   //TString        fRecParticlesTitle ; //!
   TString        fDigitsTitle ;       //!
   TString        fSDigitsTitle ;      //!
@@ -214,7 +217,7 @@ class AliEMCALGetter : public TObject {
   TFolder *      fHitsFolder ;        //!Folder that contains the Hits 
   TFolder *      fSDigitsFolder ;     //!Folder that contains the SDigits 
   TFolder *      fDigitsFolder ;      //!Folder that contains the Digits 
-  //TFolder *      fRecoFolder ;        //!Folder that contains the reconstructed objects (RecPoints, TrackSegments, RecParticles) 
+  TFolder *      fRecoFolder ;        //!Folder that contains the reconstructed objects (RecPoints, TrackSegments, RecParticles) 
   //TFolder *      fQAFolder ;          //!Folder that contains the QA objects  
   TFolder *      fTasksFolder ;       //!Folder that contains the Tasks (sdigitizer, digitizer, reconstructioner)
  

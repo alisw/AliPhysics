@@ -65,8 +65,8 @@
 #include "AliEMCALv1.h"
 #include "AliEMCALDigitizer.h"
 #include "AliEMCALSDigitizer.h"
-//#include "AliEMCALClusterizer.h"
-//#include "AliEMCALClusterizerv1.h"
+#include "AliEMCALClusterizer.h"
+#include "AliEMCALClusterizerv1.h"
 //#include "AliEMCALTrackSegmentMaker.h"
 //#include "AliEMCALTrackSegmentMakerv1.h"
 //#include "AliEMCALTrackSegment.h"
@@ -87,7 +87,7 @@ AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* branchTitle, 
   fBranchTitle        = branchTitle ;
   fSDigitsTitle       = branchTitle ; 
   fDigitsTitle        = branchTitle ; 
-  //fRecPointsTitle     = branchTitle ; 
+  fRecPointsTitle     = branchTitle ; 
   //fRecParticlesTitle  = branchTitle ; 
   //fTrackSegmentsTitle = branchTitle ; 
 
@@ -97,7 +97,7 @@ AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* branchTitle, 
   fHitsFolder    = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/RunMC/Event/Data/Hits")); 
   fSDigitsFolder = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/RunMC/Event/Data/SDigits")); 
   fDigitsFolder  = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Event/Data")); 
-  //fRecoFolder    = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Event/RecData")); 
+  fRecoFolder    = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Event/RecData")); 
   //fQAFolder      = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Conditions/QA")); 
   fTasksFolder   = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Tasks")) ; 
 
@@ -195,7 +195,7 @@ const AliEMCALv1 * AliEMCALGetter::EMCAL()
 }  
 
 //____________________________________________________________________________ 
-const AliEMCALGeometry * AliEMCALGetter::EMCALGeometry() 
+AliEMCALGeometry * AliEMCALGetter::EMCALGeometry() 
 {
   AliEMCALGeometry * rv = 0 ; 
   if (EMCAL() )
@@ -546,12 +546,11 @@ TObject ** AliEMCALGetter::DigitizerRef(const char * name) const
 }
  
 //____________________________________________________________________________ 
-/*
 Bool_t AliEMCALGetter::PostRecPoints(const char * name) const 
 { // -------------- RecPoints -------------------------------------------
   
-  // the hierarchy is //Folders/Run/Event/RecData/EMCAL/EMCARecPoints/name
-  // the hierarchy is //Folders/Run/Event/RecData/EMCAL/CPVRecPoints/name
+  // the hierarchy is //Folders/Run/Event/RecData/EMCAL/TowerRecPoints/name
+  // the hierarchy is //Folders/Run/Event/RecData/EMCAL/PreShoRecPoints/name
 
   TFolder * emcalFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL")) ; 
   
@@ -563,90 +562,90 @@ Bool_t AliEMCALGetter::PostRecPoints(const char * name) const
     emcalFolder = fRecoFolder->AddFolder("EMCAL", "Reconstructed data from EMCAL") ;  
   }    
   
-  // EMCA RecPoints 
-  TFolder * emcalRPoEMCAFolder  = dynamic_cast<TFolder*>(emcalFolder->FindObject("EMCARecPoints")) ;
-  if ( !emcalRPoEMCAFolder ) {
+  // Tower RecPoints 
+  TFolder * emcalRPoTowerFolder  = dynamic_cast<TFolder*>(emcalFolder->FindObject("TowerRecPoints")) ;
+  if ( !emcalRPoTowerFolder ) {
     if (fDebug) {
-      cout << "WARNING: AliEMCALGetter::Post RPo -> Folder //" << fRecoFolder << "/EMCAL/EMCARecPoints/ not found!" << endl;
-      cout << "INFO:    AliEMCALGetter::Post Rpo -> Adding Folder //" << fRecoFolder << "/EMCAL/EMCARecPoints not found!" << endl;
+      cout << "WARNING: AliEMCALGetter::Post RPo -> Folder //" << fRecoFolder << "/EMCAL/TowerRecPoints/ not found!" << endl;
+      cout << "INFO:    AliEMCALGetter::Post Rpo -> Adding Folder //" << fRecoFolder << "/EMCAL/TowerRecPoints not found!" << endl;
     }
-    emcalRPoEMCAFolder = emcalFolder->AddFolder("EMCARecPoints", "EMCA RecPoints from EMCAL") ;  
+    emcalRPoTowerFolder = emcalFolder->AddFolder("TowerRecPoints", "Tower RecPoints from EMCAL") ;  
   }    
   
   TObject * erp = emcalFolder->FindObject( name ) ;
   if ( !erp )   {
-    TObjArray * emcrp = new TObjArray(100) ;
-    emcrp->SetName(name) ;
-    emcalRPoEMCAFolder->Add(emcrp) ;  
+    TObjArray * towerrp = new TObjArray(100) ;
+    towerrp->SetName(name) ;
+    emcalRPoTowerFolder->Add(towerrp) ;  
   }
 
-  // CPV RecPoints 
-  TFolder * emcalRPoCPVFolder  = dynamic_cast<TFolder*>(emcalFolder->FindObject("CPVRecPoints")) ;
-  if ( !emcalRPoCPVFolder ) {
+  // Pre Shower RecPoints 
+  TFolder * emcalRPoPreShoFolder  = dynamic_cast<TFolder*>(emcalFolder->FindObject("PreShoRecPoints")) ;
+  if ( !emcalRPoPreShoFolder ) {
     if (fDebug) {
-      cout << "WARNING: AliEMCALGetter::Post RPo -> Folder //" << fRecoFolder << "/EMCAL/CPVRecPoints/ not found!" << endl;
-      cout << "INFO:    AliEMCALGetter::Post Rpo -> Adding Folder //" << fRecoFolder << "/EMCAL/CPVRecPoints/" << endl;
+      cout << "WARNING: AliEMCALGetter::Post RPo -> Folder //" << fRecoFolder << "/EMCAL/PreShoRecPoints/ not found!" << endl;
+      cout << "INFO:    AliEMCALGetter::Post Rpo -> Adding Folder //" << fRecoFolder << "/EMCAL/PreShoRecPoints/" << endl;
     }
-    emcalRPoCPVFolder = emcalFolder->AddFolder("CPVRecPoints", "CPV RecPoints from EMCAL") ;  
+    emcalRPoPreShoFolder = emcalFolder->AddFolder("PreShoRecPoints", "PreSho RecPoints from EMCAL") ;  
   }    
   
-  TObject * crp =  emcalRPoCPVFolder->FindObject( name ) ;
+  TObject * crp =  emcalRPoPreShoFolder->FindObject( name ) ;
   if ( !crp )   {
-    TObjArray * cpvrp = new TObjArray(100) ;
-    cpvrp->SetName(name) ;
-    emcalRPoCPVFolder->Add(cpvrp) ;  
+    TObjArray * preshorp = new TObjArray(100) ;
+    preshorp->SetName(name) ;
+    emcalRPoPreShoFolder->Add(preshorp) ;  
   }
   return kTRUE; 
 }
 
 //____________________________________________________________________________ 
-TObject ** AliEMCALGetter::EmcRecPointsRef(const char * name) const 
+TObject ** AliEMCALGetter::TowerRecPointsRef(const char * name) const 
 { // -------------- RecPoints -------------------------------------------
   
-  // the hierarchy is //Folders/Run/Event/RecData/EMCAL/EMCARecPoints/name
+  // the hierarchy is //Folders/Run/Event/RecData/EMCAL/TowerRecPoints/name
    
   if ( !fRecoFolder ) {
-    cerr << "ERROR: AliEMCALGetter::EmcRecPointsRef -> Folder //" << fRecoFolder << " not found!" << endl;
+    cerr << "ERROR: AliEMCALGetter::TowerRecPointsRef -> Folder //" << fRecoFolder << " not found!" << endl;
     return 0 ; 
   }    
 
-  TFolder * emcalFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL/EMCARecPoints")) ; 
-  if ( !emcalFolder ) {
-    cerr << "ERROR: AliEMCALGetter::EmcRecPointsRef -> Folder //" << fRecoFolder << "/EMCAL/EMCARecPoints/ not found!" << endl;
+  TFolder * towerFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL/TowerRecPoints")) ; 
+  if ( !towerFolder ) {
+    cerr << "ERROR: AliEMCALGetter::TowerRecPointsRef -> Folder //" << fRecoFolder << "/EMCAL/TowerRecPoints/ not found!" << endl;
     return 0;
   }    
 
 
-  TObject * erp = emcalFolder->FindObject(name ) ;
-  if ( !erp )   {
+  TObject * trp = towerFolder->FindObject(name ) ;
+  if ( !trp )   {
     return 0 ;
   }
-  return emcalFolder->GetListOfFolders()->GetObjectRef(erp) ;
+  return towerFolder->GetListOfFolders()->GetObjectRef(trp) ;
 
 } 
 
 //____________________________________________________________________________ 
-TObject ** AliEMCALGetter::CpvRecPointsRef(const char * name) const 
+TObject ** AliEMCALGetter::PreShoRecPointsRef(const char * name) const 
 { // -------------- RecPoints -------------------------------------------
   
-  // the hierarchy is //Folders/Run/Event/RecData/EMCAL/CPVRecPoints/name
+  // the hierarchy is //Folders/Run/Event/RecData/EMCAL/PreShoRecPoints/name
    
   if ( !fRecoFolder ) {
-    cerr << "ERROR: AliEMCALGetter::EmcRecPointsRef -> Folder //" << fRecoFolder << " not found!" << endl;
+    cerr << "ERROR: AliEMCALGetter::PreShoRecPointsRef -> Folder //" << fRecoFolder << " not found!" << endl;
     return 0 ; 
   }    
 
-  TFolder * emcalFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL/CPVRecPoints")) ; 
-  if ( !emcalFolder ) {
-    cerr << "ERROR: AliEMCALGetter::CpvRecPointsRef -> Folder //" << fRecoFolder << "/EMCAL/CPVRecPoints/" << endl;
+  TFolder * preshoFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("EMCAL/PreShoRecPoints")) ; 
+  if ( !preshoFolder ) {
+    cerr << "ERROR: AliEMCALGetter::PreShoRecPointsRef -> Folder //" << fRecoFolder << "/EMCAL/PreShoRecPoints/" << endl;
     return 0;
   }    
 
-  TObject * crp = emcalFolder->FindObject(name ) ;
-  if ( !crp )   {
+  TObject * prp = preshoFolder->FindObject(name ) ;
+  if ( !prp )   {
     return 0 ;
   }
-  return emcalFolder->GetListOfFolders()->GetObjectRef(crp) ;
+  return preshoFolder->GetListOfFolders()->GetObjectRef(prp) ;
 
 } 
 
@@ -754,7 +753,7 @@ Bool_t AliEMCALGetter::PostClusterizer(const char * name) const
 }
 
 //____________________________________________________________________________ 
-Bool_t AliEMCALGetter::PostTrackSegments(const char * name) const 
+/*Bool_t AliEMCALGetter::PostTrackSegments(const char * name) const 
 { // ---------------TrackSegments -----------------------------------
   
   // the hierarchy is //Folders/Run/Event/RecData/EMCAL/TrackSegments/name
@@ -1131,7 +1130,7 @@ TObject ** AliEMCALGetter::AlarmsRef(void) const
 const TParticle * AliEMCALGetter::Primary(Int_t index) const
 {
   // Return primary particle numbered by <index>
-
+  
   if(index < 0) 
     return 0 ;
   
@@ -1263,32 +1262,32 @@ void AliEMCALGetter::Track(Int_t itrack)
   hitsbranch->SetAddress(HitsRef()) ;
   hitsbranch->GetEntry(itrack) ;
 
-
+  
 }
 //____________________________________________________________________________ 
-/* void AliEMCALGetter::ReadTreeQA()
-{
+// void AliEMCALGetter::ReadTreeQA()
+//{
   // Read the digit tree gAlice->TreeQA()
   // so far only EMCAL knows about this Tree  
 
-  if(EMCAL()->TreeQA()== 0){
-    cerr <<   "ERROR: AliEMCALGetter::ReadTreeQA: can not read TreeQA " << endl ;
-    return ;
-  }
+//   if(EMCAL()->TreeQA()== 0){
+//     cerr <<   "ERROR: AliEMCALGetter::ReadTreeQA: can not read TreeQA " << endl ;
+//     return ;
+//   }
   
-  TBranch * qabranch = EMCAL()->TreeQA()->GetBranch("EMCAL") ; 
-  if (!qabranch) { 
-    if (fDebug)
-      cout << "WARNING: AliEMCALGetter::ReadTreeQA -> Cannot find QA Alarms for EMCAL" << endl ;
-    return ; 
-  }   
+//   TBranch * qabranch = EMCAL()->TreeQA()->GetBranch("EMCAL") ; 
+//   if (!qabranch) { 
+//     if (fDebug)
+//       cout << "WARNING: AliEMCALGetter::ReadTreeQA -> Cannot find QA Alarms for EMCAL" << endl ;
+//     return ; 
+//   }   
   
-  if(!Alarms())
-    PostQA() ; 
+//   if(!Alarms())
+//     PostQA() ; 
 
-  qabranch->SetAddress(AlarmsRef()) ;
+//   qabranch->SetAddress(AlarmsRef()) ;
 
-  qabranch->GetEntry(0) ;
+//   qabranch->GetEntry(0) ;
  
 //   PostQA("EMCAL") ; 
 //   TFolder * alarmsF = Alarms() ; 
@@ -1296,12 +1295,12 @@ void AliEMCALGetter::Track(Int_t itrack)
 //   qabranch->SetAddress(&alarmsF) ;
 //   qabranch->GetEntry(0) ;
   
-}
-
+//}
+  
 //____________________________________________________________________________ 
 void AliEMCALGetter::ReadTreeR()
 {
-  // Read the reconstrunction tree gAlice->TreeR()
+      // Read the reconstrunction tree gAlice->TreeR()
 
   if(gAlice->TreeR()== 0){
     cerr <<   "ERROR: AliEMCALGetter::ReadTreeR: can not read TreeR " << endl ;
@@ -1312,20 +1311,20 @@ void AliEMCALGetter::ReadTreeR()
   TObjArray * lob = static_cast<TObjArray*>(gAlice->TreeR()->GetListOfBranches()) ;
   TIter next(lob) ; 
   TBranch * branch = 0 ; 
-  TBranch * emcbranch = 0 ; 
-  TBranch * cpvbranch = 0 ; 
+  TBranch * towerbranch = 0 ; 
+  TBranch * preshobranch = 0 ; 
   TBranch * clusterizerbranch = 0 ; 
-  Bool_t emcalemcrpfound = kFALSE, emcalcpvrpfound = kFALSE, clusterizerfound = kFALSE ; 
+  Bool_t emcaltowerrpfound = kFALSE, emcalpreshorpfound = kFALSE, clusterizerfound = kFALSE ; 
   
-  while ( (branch = static_cast<TBranch*>(next())) && (!emcalemcrpfound || !emcalcpvrpfound || !clusterizerfound) ) 
+  while ( (branch = static_cast<TBranch*>(next())) && (!emcaltowerrpfound || !emcalpreshorpfound || !clusterizerfound) ) 
     if(strcmp(branch->GetTitle(), fRecPointsTitle)==0) {
-      if ( strcmp(branch->GetName(), "EMCALEmcRP")==0) {
-	emcbranch = branch ; 
-	emcalemcrpfound = kTRUE ;
+      if ( strcmp(branch->GetName(), "EMCALTowerRP")==0) {
+	towerbranch = branch ; 
+	emcaltowerrpfound = kTRUE ;
       }
-      else if ( strcmp(branch->GetName(), "EMCALCpvRP")==0) {
-	cpvbranch = branch ; 
-	emcalcpvrpfound = kTRUE ;
+      else if ( strcmp(branch->GetName(), "EMCALPreShoRP")==0) {
+	preshobranch = branch ; 
+	emcalpreshorpfound = kTRUE ;
       }
       else if(strcmp(branch->GetName(), "AliEMCALClusterizer")==0){
 	clusterizerbranch = branch ; 
@@ -1333,15 +1332,15 @@ void AliEMCALGetter::ReadTreeR()
       }
     }
 
-  if ( !emcalemcrpfound ) {
+  if ( !emcaltowerrpfound ) {
     if (fDebug)
-      cout << "WARNING: AliEMCALGetter::ReadTreeR -> Cannot find EmcRecPoints with title " 
+      cout << "WARNING: AliEMCALGetter::ReadTreeR -> Cannot find TowerRecPoints with title " 
 	   << fRecPointsTitle << endl ;
     return ; 
   }   
-  if ( !emcalcpvrpfound ) {
+  if ( !emcalpreshorpfound ) {
     if (fDebug)
-      cout << "WARNING: AliEMCALGetter::ReadTreeR -> Cannot find CpvRecPoints with title " 
+      cout << "WARNING: AliEMCALGetter::ReadTreeR -> Cannot find PreShoRecPoints with title " 
 	   << fRecPointsTitle << endl ;
     return ; 
   }   
@@ -1353,13 +1352,13 @@ void AliEMCALGetter::ReadTreeR()
   }   
   
   // Read and Post the RecPoints
-  if(!EmcRecPoints(fRecPointsTitle) )
+  if(!TowerRecPoints(fRecPointsTitle) )
     PostRecPoints(fRecPointsTitle) ;
-  emcbranch->SetAddress(EmcRecPointsRef(fRecPointsTitle)) ;
-  emcbranch->GetEntry(0) ;
+  towerbranch->SetAddress(TowerRecPointsRef(fRecPointsTitle)) ;
+  towerbranch->GetEntry(0) ;
 
-  cpvbranch->SetAddress(CpvRecPointsRef(fRecPointsTitle)) ;
-  cpvbranch->GetEntry(0) ;
+  preshobranch->SetAddress(PreShoRecPointsRef(fRecPointsTitle)) ;
+  preshobranch->GetEntry(0) ;
   
   if(!Clusterizer(fRecPointsTitle) )
     PostClusterizer(fRecPointsTitle) ;
@@ -1368,83 +1367,83 @@ void AliEMCALGetter::ReadTreeR()
  
   
   //------------------- TrackSegments ---------------------
-  next.Reset() ; 
-  TBranch * tsbranch = 0 ; 
-  TBranch * tsmakerbranch = 0 ; 
-  Bool_t emcaltsfound = kFALSE, tsmakerfound = kFALSE ; 
+//   next.Reset() ; 
+//   TBranch * tsbranch = 0 ; 
+//   TBranch * tsmakerbranch = 0 ; 
+//   Bool_t emcaltsfound = kFALSE, tsmakerfound = kFALSE ; 
     
-  while ( (branch = static_cast<TBranch*>(next())) && (!emcaltsfound || !tsmakerfound) ) 
-    if(strcmp(branch->GetTitle(), fTrackSegmentsTitle)==0)  {
-      if ( strcmp(branch->GetName(), "EMCALTS")==0){
-	tsbranch = branch ; 
-	emcaltsfound = kTRUE ;
-      }
-      else if(strcmp(branch->GetName(), "AliEMCALTrackSegmentMaker")==0) {
-	tsmakerbranch = branch ; 
-	tsmakerfound  = kTRUE ; 
-      }
-    }
+//   while ( (branch = static_cast<TBranch*>(next())) && (!emcaltsfound || !tsmakerfound) ) 
+//     if(strcmp(branch->GetTitle(), fTrackSegmentsTitle)==0)  {
+//       if ( strcmp(branch->GetName(), "EMCALTS")==0){
+// 	tsbranch = branch ; 
+// 	emcaltsfound = kTRUE ;
+//       }
+//       else if(strcmp(branch->GetName(), "AliEMCALTrackSegmentMaker")==0) {
+// 	tsmakerbranch = branch ; 
+// 	tsmakerfound  = kTRUE ; 
+//       }
+//     }
   
-  if ( !emcaltsfound || !tsmakerfound ) {
-    if (fDebug)
-      cout << "WARNING: AliEMCALGetter::ReadTreeR -> Cannot find TrackSegments and/or TrackSegmentMaker with name "
-	   << fTrackSegmentsTitle << endl ;
-    return ; 
-  } 
+//   if ( !emcaltsfound || !tsmakerfound ) {
+//     if (fDebug)
+//       cout << "WARNING: AliEMCALGetter::ReadTreeR -> Cannot find TrackSegments and/or TrackSegmentMaker with name "
+// 	   << fTrackSegmentsTitle << endl ;
+//     return ; 
+//   } 
   
-  // Read and Post the TrackSegments
-  if(!TrackSegments(fTrackSegmentsTitle))
-    PostTrackSegments(fTrackSegmentsTitle) ;
-  tsbranch->SetAddress(TrackSegmentsRef(fTrackSegmentsTitle)) ;
-  tsbranch->GetEntry(0) ;
+//   // Read and Post the TrackSegments
+//   if(!TrackSegments(fTrackSegmentsTitle))
+//     PostTrackSegments(fTrackSegmentsTitle) ;
+//   tsbranch->SetAddress(TrackSegmentsRef(fTrackSegmentsTitle)) ;
+//   tsbranch->GetEntry(0) ;
   
-  // Read and Post the TrackSegment Maker
-  if(!TrackSegmentMaker(fTrackSegmentsTitle))
-    PostTrackSegmentMaker(fTrackSegmentsTitle) ;
-  tsmakerbranch->SetAddress(TSMakerRef(fTrackSegmentsTitle)) ;
-  tsmakerbranch->GetEntry(0) ;
+//   // Read and Post the TrackSegment Maker
+//   if(!TrackSegmentMaker(fTrackSegmentsTitle))
+//     PostTrackSegmentMaker(fTrackSegmentsTitle) ;
+//   tsmakerbranch->SetAddress(TSMakerRef(fTrackSegmentsTitle)) ;
+//   tsmakerbranch->GetEntry(0) ;
   
   
-  //------------ RecParticles ----------------------------
-  next.Reset() ; 
-  TBranch * rpabranch = 0 ; 
-  TBranch * pidbranch = 0 ; 
-  Bool_t emcalrpafound = kFALSE, pidfound = kFALSE ; 
+//   //------------ RecParticles ----------------------------
+//   next.Reset() ; 
+//   TBranch * rpabranch = 0 ; 
+//   TBranch * pidbranch = 0 ; 
+//   Bool_t emcalrpafound = kFALSE, pidfound = kFALSE ; 
   
-  while ( (branch = static_cast<TBranch*>(next())) && (!emcalrpafound || !pidfound) ) 
-    if(strcmp(branch->GetTitle(), fRecParticlesTitle)==0) {   
-      if ( strcmp(branch->GetName(), "EMCALRP")==0) {   
-	rpabranch = branch ; 
-	emcalrpafound = kTRUE ;
-      }
-      else if (strcmp(branch->GetName(), "AliEMCALPID")==0) {
-	pidbranch = branch ; 
-	pidfound  = kTRUE ; 
-      }
-    }
+//   while ( (branch = static_cast<TBranch*>(next())) && (!emcalrpafound || !pidfound) ) 
+//     if(strcmp(branch->GetTitle(), fRecParticlesTitle)==0) {   
+//       if ( strcmp(branch->GetName(), "EMCALRP")==0) {   
+// 	rpabranch = branch ; 
+// 	emcalrpafound = kTRUE ;
+//       }
+//       else if (strcmp(branch->GetName(), "AliEMCALPID")==0) {
+// 	pidbranch = branch ; 
+// 	pidfound  = kTRUE ; 
+//       }
+//     }
   
-  if ( !emcalrpafound || !pidfound ) {
-    if (fDebug)
-      cout << "WARNING: AliEMCALGetter::ReadTreeR -> Cannot find RecParticles and/or PID with name " 
-	   << fRecParticlesTitle << endl ;
-    return ; 
-  } 
+//   if ( !emcalrpafound || !pidfound ) {
+//     if (fDebug)
+//       cout << "WARNING: AliEMCALGetter::ReadTreeR -> Cannot find RecParticles and/or PID with name " 
+// 	   << fRecParticlesTitle << endl ;
+//     return ; 
+//   } 
   
-  // Read and Post the RecParticles
-  if(!RecParticles(fRecParticlesTitle))
-    PostRecParticles(fRecParticlesTitle) ;
-  rpabranch->SetAddress(RecParticlesRef(fRecParticlesTitle)) ;
-  rpabranch->GetEntry(0) ;
+//   // Read and Post the RecParticles
+//   if(!RecParticles(fRecParticlesTitle))
+//     PostRecParticles(fRecParticlesTitle) ;
+//   rpabranch->SetAddress(RecParticlesRef(fRecParticlesTitle)) ;
+//   rpabranch->GetEntry(0) ;
   
-  // Read and Post the PID
-  if(!PID(fRecParticlesTitle))
-    PostPID(fRecParticlesTitle) ;
-  pidbranch->SetAddress(PIDRef(fRecParticlesTitle)) ;
-  pidbranch->GetEntry(0) ;
+//   // Read and Post the PID
+//   if(!PID(fRecParticlesTitle))
+//     PostPID(fRecParticlesTitle) ;
+//   pidbranch->SetAddress(PIDRef(fRecParticlesTitle)) ;
+//   pidbranch->GetEntry(0) ;
   
   
 }
-*/
+
 //____________________________________________________________________________ 
 void AliEMCALGetter::ReadTreeS(Int_t event)
 {
@@ -1685,8 +1684,8 @@ void AliEMCALGetter::Event(const Int_t event, const char* opt)
   if( strstr(opt,"D") )
     ReadTreeD() ;
 
- // if( strstr(opt,"R") )
-  //  ReadTreeR() ;
+  if( strstr(opt,"R") )
+    ReadTreeR() ;
 
  // if( strstr(opt,"Q") )
   //  ReadTreeQA() ;
@@ -1731,22 +1730,23 @@ TObject * AliEMCALGetter::ReturnO(TString what, TString name, TString file) cons
       emcalO  = dynamic_cast<TObject *>(folder->FindObject(name)) ; 
     } 
   }
-/*  else if ( what.CompareTo("EmcRecPoints") == 0 ) {
-    folder = dynamic_cast<TFolder *>(fRecoFolder->FindObject("EMCAL/EMCARecPoints")) ; 
+  else if ( what.CompareTo("TowerRecPoints") == 0 ) {
+    folder = dynamic_cast<TFolder *>(fRecoFolder->FindObject("EMCAL/TowerRecPoints")) ; 
     if (folder) { 
       if (name.IsNull())
 	name = fRecPointsTitle ; 
       emcalO  = dynamic_cast<TObject *>(folder->FindObject(name)) ; 
     } 
   }
-  else if ( what.CompareTo("CpvRecPoints") == 0 ) {
-    folder = dynamic_cast<TFolder *>(fRecoFolder->FindObject("EMCAL/CPVRecPoints")) ; 
+  else if ( what.CompareTo("PreShoRecPoints") == 0 ) {
+    folder = dynamic_cast<TFolder *>(fRecoFolder->FindObject("EMCAL/PreShoRecPoints")) ; 
     if (folder) { 
       if (name.IsNull())
 	name = fRecPointsTitle ; 
       emcalO  = dynamic_cast<TObject *>(folder->FindObject(name)) ; 
     }   
   }
+  /*
   else if ( what.CompareTo("TrackSegments") == 0 ) {
     folder = dynamic_cast<TFolder *>(fRecoFolder->FindObject("EMCAL/TrackSegments")) ; 
     if (folder) { 
@@ -1777,7 +1777,7 @@ TObject * AliEMCALGetter::ReturnO(TString what, TString name, TString file) cons
 */
   if (!emcalO) {
     if(fDebug)
-      cerr << "ERROR : AliEMCALGetter::ReturnO -> Object " << what << " not found in " << folder->GetName() << endl ; 
+      cerr << "WARNING : AliEMCALGetter::ReturnO -> Object " << what << " not found in " << folder->GetName() << endl ; 
     return 0 ;
   }
   return emcalO ;
@@ -1790,7 +1790,7 @@ const TTask * AliEMCALGetter::ReturnT(TString what, TString name) const
   // folders are named like //Folders/Tasks/what/EMCAL/name
 
   TString search(what) ; 
-/*  if ( what.CompareTo("Clusterizer") == 0 ) 
+  if ( what.CompareTo("Clusterizer") == 0 ) 
     search = "Reconstructioner" ; 
   else if ( what.CompareTo("TrackSegmentMaker") == 0 ) 
     search = "Reconstructioner" ; 
@@ -1798,7 +1798,7 @@ const TTask * AliEMCALGetter::ReturnT(TString what, TString name) const
     search = "Reconstructioner" ; 
   else if ( what.CompareTo("QATasks") == 0 ) 
     search = "QA" ; 
-*/
+  
   TTask * tasks = dynamic_cast<TTask*>(fTasksFolder->FindObject(search)) ; 
 
   if (!tasks) {
@@ -1820,25 +1820,25 @@ const TTask * AliEMCALGetter::ReturnT(TString what, TString name) const
   } else  if (what.CompareTo("Digitizer") == 0){ 
     if ( name.IsNull() )
       name =  fDigitsTitle ;
-  } /*else  if (what.CompareTo("Clusterizer") == 0){ 
+  } else  if (what.CompareTo("Clusterizer") == 0){ 
     if ( name.IsNull() )
       name =  fRecPointsTitle ;
     name.Append(":clu") ;
   }
-  else  if (what.CompareTo("TrackSegmentMaker") == 0){ 
-    if ( name.IsNull() )
-      name =  fTrackSegmentsTitle ;
-    name.Append(":tsm") ;
-  }
-  else  if (what.CompareTo("PID") == 0){ 
-    if ( name.IsNull() )
-      name =  fRecParticlesTitle ;
-    name.Append(":pid") ;
-  }
-  else  if (what.CompareTo("QATasks") == 0){ 
-    if ( name.IsNull() )
-      return emcalT ;
-  }*/
+ //  else  if (what.CompareTo("TrackSegmentMaker") == 0){ 
+//     if ( name.IsNull() )
+//       name =  fTrackSegmentsTitle ;
+//     name.Append(":tsm") ;
+//   }
+//   else  if (what.CompareTo("PID") == 0){ 
+//     if ( name.IsNull() )
+//       name =  fRecParticlesTitle ;
+//     name.Append(":pid") ;
+//   }
+//   else  if (what.CompareTo("QATasks") == 0){ 
+//     if ( name.IsNull() )
+//       return emcalT ;
+//   }
   
   TIter it(list) ;
   TTask * task = 0 ; 
