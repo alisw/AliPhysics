@@ -216,6 +216,11 @@ void AliL3ModelTrack::SetOverlap(Int_t row,Int_t id)
   fOverlap[index]=id;
 }
 
+Bool_t AliL3ModelTrack::IsPresent(Int_t row)
+{
+  AliL3ClusterModel *cl = GetClusterModel(row);
+  return (Bool_t)cl->fPresent;
+}
 
 Int_t AliL3ModelTrack::GetNPads(Int_t row)
 {

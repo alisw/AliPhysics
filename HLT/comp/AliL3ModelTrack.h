@@ -44,7 +44,8 @@ class AliL3ModelTrack : public AliL3Track {
   void SetZResolution(Float_t f) {fZResolution=f;}
   void SetLabel(Int_t i) {fLabel = i;}
   Int_t GetNPresentClusters();
-
+  Bool_t IsPresent(Int_t row);
+  
   AliL3ClusterModel *GetClusters() {return fClusters;}
   AliL3TrackModel *GetModel() {return fTrackModel;}
   AliL3ClusterModel *GetClusterModel(Int_t row);

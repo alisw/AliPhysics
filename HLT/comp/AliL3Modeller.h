@@ -36,6 +36,8 @@ class AliL3Modeller {
   
   Float_t fPadOverlap;
   Float_t fTimeOverlap;
+  Int_t fPadSearch;
+  Int_t fTimeSearch;
   Int_t fTrackThreshold; //minimum weigth track need in order to be included.(=Nhits/weight)
   
   Int_t fSlice;
@@ -60,7 +62,8 @@ class AliL3Modeller {
   void SetInputData(AliL3DigitRowData *digits) {fRowData = digits;}
   void SetTrackThreshold(Int_t i=0) {fTrackThreshold=i;}
   void SetOverlap(Int_t p=6,Int_t t=8) {fPadOverlap=p;fTimeOverlap=t;}
-  
+  void SetSearchRange(Int_t p=1,Int_t t=2) {fPadSearch=p;fTimeSearch=t;}
+
   AliL3TrackArray *GetTracks() {return fTracks;}
     
   ClassDef(AliL3Modeller,1) //Modeller class

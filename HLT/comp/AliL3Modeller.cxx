@@ -36,9 +36,9 @@ AliL3Modeller::AliL3Modeller()
   fMemHandler=0;
   fTracks=0;
   fTrackThreshold=0;
-  fPadOverlap=0;
   SetOverlap();
   SetTrackThreshold();
+  SetSearchRange();
 }
 
 
@@ -72,10 +72,6 @@ void AliL3Modeller::Init(Int_t slice,Int_t patch,Char_t *trackdata,Char_t *path,
   file->CloseBinaryInput();
   delete file;
   
-  if(houghtracks)
-    cout<<"AliL3Modeller is assuming local hough tracksegments!"<<endl;
-  else
-    cout<<"AliL3Modeller is assuming global tracks!"<<endl;
 
   if(!houghtracks)
     fTracks->QSort();
@@ -143,7 +139,7 @@ void AliL3Modeller::Init(Int_t slice,Int_t patch,Char_t *trackdata,Char_t *path,
 
 void AliL3Modeller::FindClusters()
 {
-  
+  cout<<"AliL3Modeller::FindClusters : Processing slice "<<fSlice<<" patch "<<fPatch<<endl;
   if(!fTracks)
     {
       cerr<<"AliL3Modeller::Process : No tracks"<<endl;
@@ -200,12 +196,22 @@ void AliL3Modeller::FindClusters()
 	  //cout<<"Checking track on row "<<i<<" with pad "<<hitpad<<" time "<<hittime<<endl;
 	  pad = hitpad;
 	  time = hittime;
+	  
+	  /*
+	    if(row[ntimes*pad + time].fCharge == 0 || 
+	    row[ntimes*pad + time].fUsed == kTRUE) //Bad track, or cluster has already been included.
+	    {
+	    track->SetCluster(i,0,0,0,0,0,0);
+	    continue;
+	    }
+	  */
 	  Int_t padsign=-1;
 	  Int_t timesign=-1;
 	  
 	  memset(&cluster,0,sizeof(Cluster));
-	  
+	  //cout<<"Processing padrow "<<i<<" with hittime "<<hittime<<" hitpad "<<hitpad<<" charge "<<row[ntimes*pad + time].fCharge<<" index "<<ntimes*pad + time<<endl;
 	  Int_t npads=0;
+	  Int_t last_mean = hittime;
 	  while(1)//Process this padrow
 	    {
 	      if(pad < 0 || pad >= AliL3Transform::GetNPads(i)) 
@@ -220,7 +226,9 @@ void AliL3Modeller::FindClusters()
 	      
 	      while(1) //Process sequence on this pad:
 		{
-		  if(time < 0) break;
+		  if(time < 0 || time >= AliL3Transform::GetNTimeBins()) 
+		    break;
+		
 		  index = ntimes*pad + time;
 		  if(index < 0 || index >= bounds)
 		    {
@@ -232,12 +240,14 @@ void AliL3Modeller::FindClusters()
 		  charge = row[index].fCharge;
 		  if(charge==0 && timesign==-1) //zero charge on this timebin, perform checks:
 		    {
-		      if(seq_charge==0 && abs(time-hittime) <= fTimeOverlap) //No charge found on this pad, look further.
+		      if(seq_charge==0 && abs(time-hittime) <= fTimeSearch) //No charge found on this pad, look further.
+			//if(seq_charge==0 && abs(time-last_mean) <= fTimeOverlap)
 			{
+			  //cout<<"Sequence is zero, time "<<time<<" hittime "<<hittime<<" pad "<<pad<<" charge "<<charge<<" index "<<index<<endl;
 			  time--;
 			  continue;
 			}
-		      else //Boundary reached, or we have found one end of the sequence,->start looking in the other time direction
+		      else 
 			{
 			  time = hittime+1;
 			  timesign=1;
@@ -246,7 +256,8 @@ void AliL3Modeller::FindClusters()
 		    }
 		  else if(charge==0 && timesign==1)//zero charge on this timebin, perform checks:
 		    {
-		      if(seq_charge==0 && abs(time-hittime) <= fTimeOverlap)//No charge found on this pad, look further
+		      if(seq_charge==0 && abs(time-hittime) <= fTimeSearch)//No charge found on this pad, look further
+			//if(seq_charge==0 && abs(time-last_mean) <=fTimeOverlap)
 			{
 			  time++;
 			  continue;
@@ -278,6 +289,9 @@ void AliL3Modeller::FindClusters()
 		  time += timesign;
 		}
 	      
+	      //Always compare with the current mean in time of the cluster under construction.
+	      if(cluster.fCharge)
+		last_mean = (Int_t)rint((Float_t)(cluster.fTime/cluster.fCharge));
 	      
 	      if(seq_charge)//There was something on this pad, so keep looking on the neighbouring pad
 		{
@@ -288,22 +302,25 @@ void AliL3Modeller::FindClusters()
 		{
 		  if(padsign==-1) 
 		    {
-		      if(cluster.fCharge==0 && abs(pad-hitpad) <= fPadOverlap && pad > 0)
+		      if(cluster.fCharge==0 && abs(pad-hitpad) <= fPadSearch && pad > 0)
 			{
-			  pad--; //In this case, we haven't found anything yet, 
-			}        //so we will try to expand our search within the natural boundaries.
-		      else
+			  //cout<<"Cluster is zero!"<<endl;
+			  pad--;     //In this case, we haven't found anything yet, 
+			  continue;  //so we will try to expand our search within the natural boundaries.
+			}        
+		      else 
 			{
-			  pad=hitpad+1; 
+			  pad=hitpad+1;
 			  padsign=1; 
+			  continue;
 			}
-		      continue;
 		    }
 		  
 		  else if(padsign==1)
 		    {
-		      if(cluster.fCharge==0 && abs(pad-hitpad) <= fPadOverlap && pad < AliL3Transform::GetNPads(i)-2)
+		      if(cluster.fCharge==0 && abs(pad-hitpad) <= fPadSearch && pad < AliL3Transform::GetNPads(i)-2)
 			{
+			  //cout<<"Cluster is zero "<<endl;
 			  pad++;     //In this case, we haven't found anything yet, 
 			  continue;  //so we will try to expand our search within the natural boundaries.
 			}
@@ -330,7 +347,7 @@ void AliL3Modeller::FindClusters()
       fMemHandler->UpdateRowPointer(rowPt);
     }
   delete [] row;
-  cout<<"done processing"<<endl;
+  //cout<<"done processing"<<endl;
   
   
   //Debug:
@@ -447,7 +464,7 @@ void AliL3Modeller::WriteRemaining()
 
 void AliL3Modeller::CalculateCrossingPoints()
 {
-  cout<<"Calculating crossing points on "<<fTracks->GetNTracks()<<" tracks"<<endl;
+  //cout<<"Calculating crossing points on "<<fTracks->GetNTracks()<<" tracks"<<endl;
   if(!fTracks)
     {
       cerr<<"AliL3Modeller::CalculateCrossingPoints(): No tracks"<<endl;
@@ -465,9 +482,9 @@ void AliL3Modeller::CalculateCrossingPoints()
 
 	  if(!track->GetCrossingPoint(i,hit)) 
 	    {
-	      cerr<<"AliL3Modeller::CalculateCrossingPoints : Track "<<j<<" does not intersect row "<<i<<" :"<<endl<<
-		"First point "<<track->GetFirstPointX()<<
-		" nhits "<<track->GetNHits()<<endl;//" tgl "<<track->GetTgl()<<" psi "<<track->GetPsi()<<" charge "<<track->GetCharge()<<endl;
+	      //cerr<<"AliL3Modeller::CalculateCrossingPoints : Track "<<j<<" does not intersect row "<<i<<" :"<<endl<<
+	      //" pt "<<track->GetPt()<<
+	      //" tgl "<<track->GetTgl()<<" psi "<<track->GetPsi()<<" charge "<<track->GetCharge()<<endl;
 		//"Center "<<track->GetCenterX()<<" "<<track->GetCenterY()<<endl<<endl<<
 		//"--------"<<endl;
 	      fTracks->Remove(j);
@@ -497,14 +514,14 @@ void AliL3Modeller::CalculateCrossingPoints()
 	}
     }
   fTracks->Compress();
-  cout<<"And there are "<<fTracks->GetNTracks()<<" tracks remaining"<<endl;
+  //cout<<"And there are "<<fTracks->GetNTracks()<<" tracks remaining"<<endl;
 }
 
 void AliL3Modeller::CheckForOverlaps()
 {
   //Flag the tracks that overlap
   
-  cout<<"Checking for overlaps...";
+  //cout<<"Checking for overlaps...";
   Int_t counter=0;
   for(Int_t i=0; i<fTracks->GetNTracks(); i++)
     {
@@ -532,7 +549,7 @@ void AliL3Modeller::CheckForOverlaps()
 	    }
 	}
     }
-  cout<<"found "<<counter<<" done"<<endl;
+  //cout<<"found "<<counter<<" done"<<endl;
 }
 
 
@@ -576,3 +593,4 @@ void AliL3Modeller::CalcClusterWidth(Cluster *cl,Float_t &sigmaY2,Float_t &sigma
     }
   */
 }
+

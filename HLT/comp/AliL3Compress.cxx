@@ -105,7 +105,7 @@ void AliL3Compress::WriteFile(AliL3TrackArray *tracks)
       count++;
       
     }
-  cout<<"Wrote "<<count<<" tracks "<<endl;
+  //cout<<"Wrote "<<count<<" tracks "<<endl;
   fclose(file);
 }
 
@@ -275,12 +275,14 @@ void AliL3Compress::CompressFile()
   
   fclose(input);
   CloseOutputBitFile(output);
-
-  cout<<endl<<"Saturations: "<<endl
-      <<"Pad "<<pado<<endl
-      <<"Time "<<timeo<<endl
-      <<"Charge "<<chargeo<<endl
-      <<"Shape "<<shapeo<<endl;
+  if(pado || timeo || chargeo || shapeo)
+    {
+      cout<<endl<<"Saturations: "<<endl
+	  <<"Pad "<<pado<<endl
+	  <<"Time "<<timeo<<endl
+	  <<"Charge "<<chargeo<<endl
+	  <<"Shape "<<shapeo<<endl;
+    }
 }
 
 void AliL3Compress::ExpandFile()
@@ -628,7 +630,7 @@ void AliL3Compress::CreateDigits(Int_t row,Int_t npads,Float_t pad,Float_t time,
   delete hist3;
 }
 
-void AliL3Compress::PrintCompRatio()
+void AliL3Compress::PrintCompRatio(FILE *outfile)
 {
   Char_t fname[100];
   sprintf(fname,"%s/comp/remains_%d_%d.raw",fPath,fSlice,fPatch);
@@ -672,12 +674,16 @@ void AliL3Compress::PrintCompRatio()
   UInt_t filesize2 = (UInt_t)ftell(file2);
   fclose(file2);
   
-  cout<<"----------------------"<<endl;
-  cout<<"Original file size   : "<<filesize2<<endl;
-  cout<<"Compressed file size : "<<filesize1<<endl;
-  cout<<"Remaining digits     : "<<digit_counter<<endl;
-  cout<<"Compression ratio    : "<<(Float_t)(filesize1 + (10*digit_counter)/8)/(Float_t)(filesize2)<<endl;
-  
+  if(outfile)
+    fprintf(outfile,"%f\n",(Float_t)(filesize1 + (10*digit_counter)/8)/(Float_t)(filesize2));
+  else
+    {
+      cout<<"----------------------"<<endl;
+      cout<<"Original file size   : "<<filesize2<<endl;
+      cout<<"Compressed file size : "<<filesize1<<endl;
+      cout<<"Remaining digits     : "<<digit_counter<<endl;
+      cout<<"Compression ratio    : "<<(Float_t)(filesize1 + (10*digit_counter)/8)/(Float_t)(filesize2)<<endl;
+    }
 }
 
 void AliL3Compress::QSort(AliL3RandomDigitData **a, Int_t first, Int_t last)
