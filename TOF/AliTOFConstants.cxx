@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2002/02/13 16:53:18  vicinanz
+Added AliTOFhitT0 class
+
 Revision 1.2  2001/11/22 11:30:30  hristov
 Correct log field
 
@@ -40,33 +43,35 @@ Updated version of TOF digitization, N^2 problem solved (J.Chudoba)
 
 #include "AliTOFConstants.h"
 
-const Int_t AliTOFConstants::fgkNStripA;
-const Int_t AliTOFConstants::fgkNStripB;
-const Int_t AliTOFConstants::fgkNStripC;
-const Int_t AliTOFConstants::fgkNpadX;
-const Int_t AliTOFConstants::fgkNpadZ;
-const Int_t AliTOFConstants::fgkPadXSector;
-const Int_t AliTOFConstants::fgkNSectors;
-const Int_t AliTOFConstants::fgkNPlates;
+const Int_t AliTOFConstants::fgkNStripA = 15;
+const Int_t AliTOFConstants::fgkNStripB = 19;
+const Int_t AliTOFConstants::fgkNStripC = 20;
+const Int_t AliTOFConstants::fgkNpadX   = 48;
+const Int_t AliTOFConstants::fgkNpadZ   =  2;
+const Int_t AliTOFConstants::fgkPadXSector =
+      (fgkNStripA + 2*fgkNStripB + 2*fgkNStripC)*fgkNpadX*fgkNpadZ;
+const Int_t AliTOFConstants::fgkNSectors   =  18;
+const Int_t AliTOFConstants::fgkNPlates    =  5;
 
-const Float_t AliTOFConstants::fgkrmin;
-const Float_t AliTOFConstants::fgkrmax;
-const Int_t AliTOFConstants::fgkmaxtoftree;
-const Int_t AliTOFConstants::fgkmaxNstrip;
-const Int_t AliTOFConstants::fgkPadXStrip;
-const Float_t AliTOFConstants::fgkzlenA;
-const Float_t AliTOFConstants::fgkzlenB;
-const Float_t AliTOFConstants::fgkzlenC;
-const Float_t AliTOFConstants::fgkXPad;
-const Float_t AliTOFConstants::fgkZPad;
-const Float_t AliTOFConstants::fgkMaxhZtof;
-const Float_t AliTOFConstants::fgkSigmaForTail1;
-const Float_t AliTOFConstants::fgkSigmaForTail2;
-const Int_t AliTOFConstants::fgkTimeDiff;
-const Float_t AliTOFConstants::fgkSpeedOfLight;
-const Float_t AliTOFConstants::fgkPionMass;
-const Float_t AliTOFConstants::fgkKaonMass;
-const Float_t AliTOFConstants::fgkProtonMass;
-const Float_t AliTOFConstants::fgkElectronMass;
-const Float_t AliTOFConstants::fgkMuonMass;
+const Float_t AliTOFConstants::fgkrmin     = 370.;
+const Float_t AliTOFConstants::fgkrmax     = 399.;
+const Int_t AliTOFConstants::fgkmaxtoftree = 5;
+const Int_t AliTOFConstants::fgkmaxNstrip  = 20;
+const Int_t AliTOFConstants::fgkPadXStrip  = fgkNpadX*fgkNpadZ;
+const Float_t AliTOFConstants::fgkzlenA    = 106.0;
+const Float_t AliTOFConstants::fgkzlenB    = 141.0;
+const Float_t AliTOFConstants::fgkzlenC    = 177.5;
+const Float_t AliTOFConstants::fgkXPad     = 2.5;
+const Float_t AliTOFConstants::fgkZPad     = 3.5;
+const Float_t AliTOFConstants::fgkMaxhZtof = 371.5;
+const Float_t AliTOFConstants::fgkSigmaForTail1= 2.;
+const Float_t AliTOFConstants::fgkSigmaForTail2=0.5;
+const Int_t AliTOFConstants::fgkTimeDiff   =  25000;
+const Float_t AliTOFConstants::fgkSpeedOfLight = 0.299792458;
+const Float_t AliTOFConstants::fgkPionMass     = 0.13957;
+const Float_t AliTOFConstants::fgkKaonMass     = 0.49368;
+const Float_t AliTOFConstants::fgkProtonMass   = 0.93827;
+const Float_t AliTOFConstants::fgkElectronMass = 0.00051;
+const Float_t AliTOFConstants::fgkMuonMass     = 0.10566;
 ClassImp(AliTOFConstants)
+
