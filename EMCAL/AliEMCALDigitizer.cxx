@@ -163,7 +163,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   Int_t ReadEvent = event ; 
   if (fManager) 
     ReadEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(0))->GetCurrentEventNumber() ; 
-  Info("Digitize", "Adding event %d from input stream 0", ReadEvent) ; 
+  Info("Digitize", "Adding event %d from input stream 0 %s %s", ReadEvent, GetTitle(), fEventFolderName.Data()) ; 
   gime->Event(ReadEvent, "S") ;
   TClonesArray * digits = gime->Digits() ; 
   digits->Clear() ;
@@ -194,7 +194,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     AliEMCALGetter * gime = AliEMCALGetter::Instance(fInputFileNames[i], tempo) ; 
     if (fManager) 
       ReadEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(i))->GetCurrentEventNumber() ; 
-    Info("Digitize", "Adding event %d from input stream %d", ReadEvent, i) ; 
+    Info("Digitize", "Adding event %d from input stream %d %s %s", ReadEvent, i, fInputFileNames[i].Data(), tempo.Data()) ; 
     gime->Event(ReadEvent,"S");
     sdigArray->AddAt(gime->SDigits(), i) ;
   }

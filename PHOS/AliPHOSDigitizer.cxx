@@ -164,7 +164,7 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   Int_t ReadEvent = event ; 
   if (fManager) 
     ReadEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(0))->GetCurrentEventNumber() ; 
-  Info("Digitize", "Adding event %d from input stream 0 %s", ReadEvent, fEventFolderName.Data()) ; 
+  Info("Digitize", "Adding event %d from input stream 0 %s %s", ReadEvent, GetTitle(), fEventFolderName.Data()) ; 
   gime->Event(ReadEvent, "S") ;
   TClonesArray * digits = gime->Digits() ; 
   digits->Clear() ;
@@ -186,7 +186,7 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   AliPHOSSDigitizer * sDigitizer = gime->SDigitizer(); 
 
   if ( !sDigitizer )
-    Fatal("Digitize", "SDigitizer with name %s %s not found", fEventFolderName.Data(), GetTitle() ) ; 
+    Fatal("Digitize", "SDigitizer with name %s %s not found", GetTitle(), fEventFolderName.Data() ) ; 
 
   //take all the inputs to add together and load the SDigits
   TObjArray * sdigArray = new TObjArray(fInput) ;
@@ -198,7 +198,7 @@ void AliPHOSDigitizer::Digitize(Int_t event)
     AliPHOSGetter * gime = AliPHOSGetter::Instance(fInputFileNames[i], tempo) ;
     if (fManager) 
       ReadEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(i))->GetCurrentEventNumber() ; 
-    Info("Digitize", "Adding event %d from input stream %d %s", ReadEvent, i, fInputFileNames[i].Data()) ; 
+    Info("Digitize", "Adding event %d from input stream %d %s %s", ReadEvent, i, fInputFileNames[i].Data(), tempo.Data()) ; 
     gime->Event(ReadEvent,"S");
     sdigArray->AddAt(gime->SDigits(), i) ;
   }
