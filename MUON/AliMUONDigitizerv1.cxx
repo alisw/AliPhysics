@@ -77,7 +77,25 @@ Bool_t AliMUONDigitizerv1::ExistTransientDigit(AliMUONTransientDigit * mTD)
 //------------------------------------------------------------------------
 Bool_t AliMUONDigitizerv1::Init()
 {
+
 // Initialization 
+  if (GetDebug()>2) Info("Init","AliMUONDigitizerv1::Init() starts");
+
+  //Loaders (We assume input0 to be the output too)
+  AliRunLoader * runloader;    // Input   loader
+  AliLoader    * gime; 
+ 
+  // Getting runloader
+  runloader    = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
+  if (runloader == 0x0) {
+    Error("Init","RunLoader is not in input file 0");
+    return kFALSE;  // RunDigitizer is not working.  
+  }
+  // Getting MUONloader
+  gime        = runloader->GetLoader("MUONLoader");
+  gime->LoadHits("READ");
+  gime->LoadDigits("RECREATE");
+ 
   return kTRUE;
 }
 

@@ -509,13 +509,15 @@ void AliMUONEventReconstructor::AddHitsForRecFromGEANT(TTree *TH)
     Int_t ihit, nhits=0;
       nhits = (Int_t) muondata->Hits()->GetEntriesFast();
       AliMUONHit* mHit=0x0;
+
       for(ihit=0; ihit<nhits; ihit++) {
 	mHit = static_cast<AliMUONHit*>(muondata->Hits()->At(ihit));
 	Int_t ipart = TMath::Abs ((Int_t) mHit->Particle()); //AZ
 	if (NewHitForRecFromGEANT(mHit,track, hit, 1) && ipart == 13
 	    //if (NewHitForRecFromGEANT(mHit,itrack-1, hit, 1) && ipart == 13 
-	    && itrack <= 2) chamBits |= BIT(mHit->Chamber()-1); //AZ - set bit
+	    && itrack <= 2 && !BIT(mHit->Chamber()-1)  ) chamBits |= BIT(mHit->Chamber()-1); //AZ - set bit
       }
+
     if (chamBits&3 && chamBits>>2&3 && chamBits>>4&3 && chamBits>>6&3 && 
         chamBits>>8&3 && ((chamBits>>6&3)==3 || (chamBits>>8&3)==3)) 
       fMuons += 1; //AZ

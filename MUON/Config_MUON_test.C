@@ -6,7 +6,7 @@ void Config(char directory[100]="", char option[6]="box")
 {
   //
   // Config file for MUON test
-  // Gines MARITNEZ, Subatech, mai 2003, august 2003
+  // Gines MARTINEZ, Subatech, mai 2003, august 2003
   // 
 
   //=====================================================================
@@ -87,8 +87,8 @@ void Config(char directory[100]="", char option[6]="box")
   if (!strcmp(option,"box")) {
     AliGenBox * gener = new AliGenBox(1);
     gener->SetMomentumRange(20.,20.1);
-    gener->SetPhiRange(45., 45.01);         
-    gener->SetThetaRange(4.000,4.001);
+    gener->SetPhiRange(-180, 180.01);         
+    gener->SetThetaRange(171.000,178.001);
     gener->SetPart(13);           // Muons
     gener->SetOrigin(0.,0., 0.);  //vertex position
     gener->SetSigma(0.0, 0.0, 0.0);         //Sigma in (X,Y,Z) (cm) on IP position
@@ -112,9 +112,8 @@ void Config(char directory[100]="", char option[6]="box")
     gener->SetMomentumRange(0,999);
     gener->SetPtRange(0,100.);
     gener->SetPhiRange(-180, 180);
-    gener->SetYRange(2.5,4);
     gener->SetCutOnChild(1);
-    gener->SetChildThetaRange(2.0,9);
+    gener->SetChildThetaRange(171.0,178.0);
     gener->SetOrigin(0,0,0);          //vertex position    gener->SetSigma(0,0,0);           //Sigma in (X,Y,Z) (cm) on IP position
     gener->SetForceDecay(kDiMuon);
     gener->SetTrackingFlag(1);
@@ -123,20 +122,17 @@ void Config(char directory[100]="", char option[6]="box")
      
   //============================================================= 
   // Field (L3 0.4 T)
-   AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k4kG);
-   gAlice->SetField(field);
-  //gAlice->SetField(2,1) ;  //(-999,2);
-
+  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k4kG);
+  gAlice->SetField(field);
 
   //=================== Alice BODY parameters =============================
   AliBODY *BODY = new AliBODY("BODY","Alice envelop");
 
 
   //=================== MUON Subsystem ===========================
-  AliMUONv1 *MUON  = new AliMUONv1("MUON","default");
-  
+   cout << ">>> Config_MUON_test.C: Creating AliMUONv1 ..."<<endl;
+   AliMUONv1 *MUON  = new AliMUONv1("MUON","default"); 
 }
-
 
 Float_t EtaToTheta(Float_t arg){
   return (180./TMath::Pi())*2.*atan(exp(-arg));

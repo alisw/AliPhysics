@@ -147,8 +147,9 @@ AliMUON::AliMUON(const char *name, const char *title)
       } // Chamber stCH (0, 1) in 
     }     // Station st (0...)
     
-    fMaxStepGas=0.01; 
-    fMaxStepAlu=0.1; 
+    // Negatives values are ignored by geant3 CONS200 in the calculation of the tracking parameters
+    fMaxStepGas=0.1; 
+    fMaxStepAlu=0.1;  
     fMaxDestepGas=-1;
     fMaxDestepAlu=-1;
     

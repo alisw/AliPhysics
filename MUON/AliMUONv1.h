@@ -10,8 +10,11 @@
 //  Manager and hits classes for set:MUON version 0    //
 /////////////////////////////////////////////////////////
  
+#include "TLorentzVector.h"
+
 #include "AliMUON.h"
-#include <TF1.h>
+
+class TF1;
 
 class AliMUONv1 : public AliMUON {
 public:
@@ -24,28 +27,29 @@ public:
    virtual Int_t  IsVersion() const {return 1;}
    virtual void   StepManager();
    void StepManagerOld();
-   void StepManagerNew();
-   void StepManagerTest();
-
-
-
    void SetStepManagerVersionOld(Bool_t Opt) 
      { fStepManagerVersionOld = Opt; }
-   void SetStepManagerVersionNew(Bool_t Opt) 
-     { fStepManagerVersionNew = Opt; }
-   void SetStepManagerVersionTest(Bool_t Opt) 
-     { fStepManagerVersionTest = Opt; }
    void SetStepMaxInActiveGas(Float_t StepMax)
      {fStepMaxInActiveGas = StepMax; }
 protected:
-   Int_t*  fStations; //! allow to externally set which station to create
+   Int_t*  fStations;              //! allow to externally set which station to create
    Bool_t  fStepManagerVersionOld; // Version of StepManager, Default is false
-   Bool_t  fStepManagerVersionNew; // Version of StepManager, Default is false
-   Bool_t  fStepManagerVersionTest; // Version of StepManager, Default is false
-   Float_t fStepMaxInActiveGas; // Step mas in active gas default 0.6cm
+   Float_t fStepMaxInActiveGas;    // Step max in active gas default 0.6cm
    virtual Int_t  GetChamberId(Int_t volId) const;
-   
 
+   // StepManager 
+   Float_t *  fStepSum; //!
+   Float_t *  fDestepSum; //!
+   // Momentum of the particle entering in the active gas of chamber
+   TLorentzVector fTrackMomentum;
+   // Position of the particle exiting the active gas of chamber
+   TLorentzVector fTrackPosition;
+   // Ratio of particle mean eloss with respect MIP's
+   TF1 * fElossRatio;
+   // Angle effect in tracking chambers at theta =10 degres as a function of ElossRatio (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis) (in micrometers)
+   TF1 * fAngleEffect10;
+   // Angle effect: Normalisation form theta=10 degres to theta between 0 and 10 (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis) 
+   TF1 * fAngleEffectNorma;
 private:
    ClassDef(AliMUONv1,1)  // MUON Detector class Version 1
 

@@ -1,7 +1,7 @@
 #ifndef ALIMUONDATA_H
 #define ALIMUONDATA_H
 //
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/*  Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
@@ -42,6 +42,11 @@ class AliMUONData : public TNamed {
 			  Int_t idpart, Float_t X, Float_t Y, Float_t Z, 
 			  Float_t tof, Float_t momentum, Float_t theta, 
 			  Float_t phi, Float_t length, Float_t destep);
+    virtual void   AddHit(Int_t fIshunt, Int_t track, Int_t iChamber, 
+			  Int_t idpart, Float_t X, Float_t Y, Float_t Z, 
+			  Float_t tof, Float_t momentum, Float_t theta, 
+			  Float_t phi, Float_t length, Float_t destep, 
+			  Float_t Xref,Float_t Yref,Float_t Zref);
     virtual void   AddGlobalTrigger(Int_t *singlePlus, Int_t *singleMinus,
 				    Int_t *singleUndef, Int_t *pairUnlike, 
 				    Int_t *pairLike);

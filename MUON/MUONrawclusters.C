@@ -91,6 +91,16 @@ void MUONrawclusters (char* filename="galice.root", Int_t evNumber1=0,Int_t evNu
 
   MUONLoader->LoadDigits("READ");
   MUONLoader->LoadRecPoints("UPDATE");
+
+  // Testing if RawClusterisation has already been done
+  RunLoader->GetEvent(0);
+  if (MUONLoader->TreeR()) {
+    if (muondata->IsRawClusterBranchesInTree()) {
+      MUONLoader->UnloadRecPoints();
+      MUONLoader->LoadRecPoints("RECREATE");
+      printf("Recreating RecPoints files\n");
+    }
+  }
 //
 //   Loop over events              
   //

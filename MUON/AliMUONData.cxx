@@ -150,6 +150,20 @@ void AliMUONData::AddHit(Int_t fIshunt, Int_t track, Int_t iChamber,
 				  phi, length, destep);
 }
 //____________________________________________________________________________
+void AliMUONData::AddHit(Int_t fIshunt, Int_t track, Int_t iChamber, 
+			 Int_t idpart, Float_t X, Float_t Y, Float_t Z, 
+			 Float_t tof, Float_t momentum, Float_t theta, 
+			 Float_t phi, Float_t length, Float_t destep,
+			 Float_t Xref,Float_t Yref,Float_t Zref)
+{
+  TClonesArray &lhits = *fHits;
+  new(lhits[fNhits++]) AliMUONHit(fIshunt, track, iChamber, 
+				  idpart, X, Y, Z, 
+				  tof, momentum, theta, 
+				  phi, length, destep,
+				  Xref,Yref,Zref);
+}
+//____________________________________________________________________________
 void AliMUONData::AddLocalTrigger(Int_t *localtr)
 {
   // add a MUON Local Trigger to the list

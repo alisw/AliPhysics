@@ -622,6 +622,7 @@ void AliMUONDisplay::DrawTitle(Option_t *option)
     Float_t dy   = ymax-ymin;
     
 
+    AliRunLoader * RunLoader = AliRunLoader::GetRunLoader("MUONFolder");
 
     if (strlen(option) == 0) {
 	TPaveText *title = new TPaveText(xmin +0.01*dx, ymax-0.09*dy, xmin +0.5*dx, ymax-0.01*dy);
@@ -632,7 +633,7 @@ void AliMUONDisplay::DrawTitle(Option_t *option)
 	title->Draw();
 	char ptitle[100];
 	sprintf(ptitle, "Alice event:%d Run:%d Chamber:%d Cathode:%d",
-		gAlice->GetHeader()->GetEvent(),
+		RunLoader->GetEventNumber(),
 		gAlice->GetHeader()->GetRun(),
 		fChamber,
 		fCathode);
@@ -1119,18 +1120,20 @@ void AliMUONDisplay::SetView(Float_t theta, Float_t phi, Float_t psi)
 //_____________________________________________________________________________
 void AliMUONDisplay::ShowNextEvent(Int_t delta)
 {
+
+  AliRunLoader * RunLoader = AliRunLoader::GetRunLoader("MUONFolder");
+    
 //  Display (current event_number + delta)
 //    delta =  1  shown next event
 //    delta = -1 show previous event
     if (delta) {
-	gAlice->Clear();
-	Int_t currentEvent = gAlice->GetHeader()->GetEvent();
-	Int_t newEvent     = currentEvent + delta;
-	gAlice->GetEvent(newEvent);
-	fEvent=newEvent;
-	if (!gAlice->TreeD()) return; 
+      //RunLoader->CleanDetectors();
+      //RunLoader->CleanKinematics();
+      Int_t currentEvent = RunLoader->GetEventNumber();
+      Int_t newEvent     = currentEvent + delta;
+      RunLoader->GetEvent(newEvent);
+      fEvent=newEvent;
     }
-    
     LoadDigits(fChamber, fCathode);
     fPad->cd(); 
     Draw();

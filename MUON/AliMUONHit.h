@@ -14,6 +14,10 @@ class AliMUONHit : public AliHit {
     AliMUONHit() {}
     AliMUONHit(Int_t fIshunt, Int_t track, Int_t *vol, Float_t *hits);
     AliMUONHit(Int_t fIshunt, Int_t track, Int_t iChamber, Int_t idpart, Float_t X, Float_t Y, Float_t Z, Float_t tof, Float_t momentum, Float_t theta, Float_t phi, Float_t length, Float_t destep);
+    AliMUONHit(Int_t fIshunt, Int_t track, Int_t iChamber, Int_t idpart, 
+               Float_t X, Float_t Y, Float_t Z, Float_t tof, Float_t momentum, 
+               Float_t theta, Float_t phi, Float_t length, Float_t destep,
+               Float_t Xref, Float_t Yref, Float_t Zref);
     virtual ~AliMUONHit() {}
     Int_t   Chamber()  {return fChamber;}
     Float_t Particle() {return fParticle;}    
@@ -32,6 +36,11 @@ class AliMUONHit : public AliHit {
     Float_t Cy()       {return fPy/fPTot;}
     Float_t Cz()       {return fPz/fPTot;}
 
+    Float_t Xref()     {return fXref;}
+    Float_t Yref()     {return fYref;}
+    Float_t Zref()     {return fZref;}
+
+
  private:
     Int_t     fChamber;       // Chamber number
     Float_t   fParticle;      // Geant3 particle type
@@ -43,10 +52,15 @@ class AliMUONHit : public AliHit {
     Int_t     fPHfirst;       // first padhit
     Int_t     fPHlast;        // last padhit
 
-    Float_t   fPTot;          // hit local momentum P
+    Float_t   fPTot;          // Local momentum P of the track when entering in the chamber
     Float_t   fPx;            // Px
     Float_t   fPy;            // Py
     Float_t   fPz;            // Pz
+    
+    Float_t   fXref;          // X position of hit in the center of the chamber (without angle effect)
+    Float_t   fYref;          // Y position of hit in the center of the chamber (without angle effect)
+    Float_t   fZref;          // Z position of hit in the center of the chamber (without angle effect)
+
     
     ClassDef(AliMUONHit,1)    //Hit object for MUON
 };

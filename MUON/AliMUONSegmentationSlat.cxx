@@ -137,15 +137,17 @@ void AliMUONSegmentationSlat::GlobalToLocal(
 //                                                 positive side is shifted up
 // by half the overlap
     zlocal = z-fChamber->Z();
-    zlocal = (x>0) ? zlocal-2.*fDz : zlocal+2.*fDz;
+
+//     zlocal = (x>0) ? zlocal-2.*fDz : zlocal+2.*fDz;
+    zlocal = (x>0) ? zlocal+2.*fDz : zlocal-2.*fDz;      //Change?
+
 //  Set the signs for the symmetry transformation and transform to first quadrant
     SetSymmetry(x);
     Float_t xabs=TMath::Abs(x);
 
-    Int_t ifirst = (zlocal < Float_t(0))? 0:1;
-//
+
 // Find slat number                      
-    for (i=ifirst; i<fNSlats; i+=2) {
+    for (i=0; i<fNSlats; i+=1) {       //Loop on all slats (longuer but more secure)
 	index=i;
 	if ((y >= fYPosition[i]-eps) && (y <= fYPosition[i]+fSlatY+eps)) break;
     }
@@ -203,7 +205,7 @@ LocalToGlobal(Int_t islat, Float_t  xlocal, Float_t  ylocal, Float_t  &x, Float_
     x = (xlocal+fXPosition[islat])*fSym;
     y=(ylocal+fYPosition[islat]);
 
-    z = (TMath::Even(islat)) ?     -fDz : fDz ; 
+    z = (TMath::Even(islat)) ?     fDz : -fDz ; //Change for new referential
     z = (x>0)                ? z+2.*fDz : z-2.*fDz ; 
 
     z+=fChamber->Z();
@@ -277,7 +279,7 @@ GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z)
     x=x*TMath::Sign(1,ix);
 
 // z-position
-    z = (TMath::Even(islat)) ?      -fDz : fDz ; 
+    z = (TMath::Even(islat)) ?      fDz : -fDz ; //Change for new referential
     z = (x>0)                ?  z+2.*fDz : z-2.*fDz ; 
     z += fChamber->Z();
 }
