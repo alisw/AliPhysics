@@ -1,4 +1,4 @@
-Int_t AliTPCDisplayDigits(int sec, int row, int lab=-1,
+Int_t AliTPCDisplayDigits(Int_t eventn, int sec, int row, int lab=-1,
                  int max_t_chan=500, float min_t=0., float max_t=500.,
                  int max_p_chan=150, float min_p=0., float max_p=150.)
 {
@@ -8,13 +8,18 @@ Int_t AliTPCDisplayDigits(int sec, int row, int lab=-1,
    TFile *f = TFile::Open("rfio:galice.root");
    if (!f->IsOpen()) {cerr<<"Can't open galice.root !\n"; return 1;}
 
+   
+   
    AliTPCParam *par=(AliTPCParam *)f->Get("75x40_100x60");
 
    char s[80];
    sprintf(s,"Sector %d   Row %d\n",sec,row);
    TH2F *h = new TH2F("h",s,max_t_chan,min_t,max_t,max_p_chan,min_p,max_p);
+   
+   char  name[100];
+   sprintf(name,"TreeD_75x40_100x60_%d",eventn);
 
-   TTree *t=(TTree*)f->Get("TreeD_75x40_100x60");
+   TTree *t=(TTree*)f->Get(name);
    AliSimDigits dummy, *digit=&dummy;
    t->GetBranch("Segment")->SetAddress(&digit);
    for (int i=0; i<t->GetEntries(); i++) {
