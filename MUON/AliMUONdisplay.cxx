@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  1999/11/09 07:38:51  fca
+Changes for compatibility with version 2.23 of ROOT
+
 Revision 1.8  1999/09/29 09:24:23  fca
 Introduction of the Copyright and cvs Log
 
@@ -162,7 +165,6 @@ AliMUONdisplay::AliMUONdisplay(Int_t size)
    if (ysize < 100) ysize = 750;
    Int_t xsize = Int_t(size*830./ysize);
    fCanvas = new TCanvas("Canvas", "MUON Clusters Display",14,47,xsize,ysize);
-   fCanvas->SetEditable(kFALSE);
    fCanvas->ToggleEventStatus();
    
    // Create main display pad
@@ -193,6 +195,7 @@ AliMUONdisplay::AliMUONdisplay(Int_t size)
    Float_t dxtr     = 0.15;
    Float_t dytr     = 0.45;
    fTrigPad = new TPad("trigger", "range and mode pad",0,0,dxtr,dytr);
+   fTrigPad->SetEditable(kFALSE);
    fTrigPad->Draw();
    fTrigPad->cd();
    fTrigPad->SetFillColor(22);
@@ -260,6 +263,7 @@ void AliMUONdisplay::DisplayButtons()
 
 
    fButtons = new TPad("buttons", "newpad",0,0.45,0.15,1);
+   fButtons->SetEditable(kFALSE);
    fButtons->Draw();
    fButtons->SetFillColor(38);
    fButtons->SetBorderSize(2);
