@@ -145,33 +145,7 @@ AliRun::AliRun(const char *name, const char *title)
   // Create default mag field
   SetField();
   //
-  fMC      = AliMC::GetMC();
-  //
-  //---------------Load detector names
-  
-  /*  fNdets=21;
-  strcpy(fDnames[0],"BODY");
-  strcpy(fDnames[1],"NULL");
-  strcpy(fDnames[2],"ITS");
-  strcpy(fDnames[3],"MAG");
-  strcpy(fDnames[4],"TPC");
-  strcpy(fDnames[5],"TOF");
-  strcpy(fDnames[6],"PMD");
-  strcpy(fDnames[7],"PHOS");
-  strcpy(fDnames[8],"ZDC");
-  strcpy(fDnames[9],"FMD");
-  strcpy(fDnames[10],"RICH");
-  strcpy(fDnames[11],"MUON");
-  strcpy(fDnames[12],"FRAME");
-  strcpy(fDnames[13],"TRD");
-  strcpy(fDnames[14],"NULL");
-  strcpy(fDnames[15],"CASTOR");
-  strcpy(fDnames[16],"ABSO");
-  strcpy(fDnames[17],"SHIL");
-  strcpy(fDnames[18],"DIPO");
-  strcpy(fDnames[19],"HALL");
-  strcpy(fDnames[20],"PIPE");
-  */
+  fMC      = gMC;
   //
   // Prepare the tracking medium lists
   fImedia = new TArrayI(1000);
@@ -535,8 +509,6 @@ void AliRun::EnergySummary()
   // Print summary of deposited energy
   //
 
-  AliMC* pMC = AliMC::GetMC();
-
   Int_t ndep=0;
   Float_t edtot=0;
   Float_t ed, ed2;
@@ -569,7 +541,7 @@ void AliRun::EnergySummary()
       for(i=0;i<(3<left?3:left);i++) {
 	j=kn*3+i;
         id=Int_t (sEventEnergy[j]+0.1);
-	printf(" %s %10.3f +- %10.3f%%;",pMC->VolName(id),sSummEnergy[j],sSum2Energy[j]);
+	printf(" %s %10.3f +- %10.3f%%;",gMC->VolName(id),sSummEnergy[j],sSum2Energy[j]);
       }
       printf("\n");
     }
@@ -582,7 +554,7 @@ void AliRun::EnergySummary()
       for(i=0;i<(5<left?5:left);i++) {
 	j=kn*5+i;
         id=Int_t (sEventEnergy[j]+0.1);
-	printf(" %s %10.3f%%;",pMC->VolName(id),100*sSummEnergy[j]/edtot);
+	printf(" %s %10.3f%%;",gMC->VolName(id),100*sSummEnergy[j]/edtot);
       }
       printf("\n");
     }
@@ -795,9 +767,7 @@ void AliRun::Init(const char *setup)
   gROOT->LoadMacro(setup);
   gInterpreter->ProcessLine("Config();");
 
-  AliMC* pMC = AliMC::GetMC();
-
-  pMC->DefineParticles();  //Create standard MC particles
+  gMC->DefineParticles();  //Create standard MC particles
 
   TObject *objfirst, *objlast;
 
@@ -830,18 +800,18 @@ void AliRun::Init(const char *setup)
    MediaTable(); //Build the special IMEDIA table
    
    //Close the geometry structure
-   pMC->Ggclos();
+   gMC->Ggclos();
    
    //Initialise geometry deposition table
-   sEventEnergy.Set(pMC->NofVolumes()+1);
-   sSummEnergy.Set(pMC->NofVolumes()+1);
-   sSum2Energy.Set(pMC->NofVolumes()+1);
+   sEventEnergy.Set(gMC->NofVolumes()+1);
+   sSummEnergy.Set(gMC->NofVolumes()+1);
+   sSum2Energy.Set(gMC->NofVolumes()+1);
    
    //Create the color table
-   pMC->SetColors();
+   gMC->SetColors();
    
    //Compute cross-sections
-   pMC->Gphysi();
+   gMC->Gphysi();
    
    //Write Geometry object to current file.
    fGeometry->Write();
@@ -923,7 +893,6 @@ void AliRun::SetTransPar(char* filename)
   //
 
 
-  AliMC* pMC = AliMC::GetMC();
   const Int_t ncuts=10;
   const Int_t nflags=11;
   const Int_t npars=ncuts+nflags;
@@ -1000,7 +969,7 @@ void AliRun::SetTransPar(char* filename)
 	  if(cut[kz]>=0) {
 	    printf(" *  %-6s set to %10.3E for tracking medium code %4d for %s\n",
 		   pars[kz],cut[kz],itmed,mod->GetName());
-	    pMC->Gstpar(ktmed,pars[kz],cut[kz]);
+	    gMC->Gstpar(ktmed,pars[kz],cut[kz]);
 	  }
 	}
 	// Set transport mechanisms
@@ -1008,7 +977,7 @@ void AliRun::SetTransPar(char* filename)
 	  if(flag[kz]>=0) {
 	    printf(" *  %-6s set to %10d for tracking medium code %4d for %s\n",
 		   pars[ncuts+kz],flag[kz],itmed,mod->GetName());
-	    pMC->Gstpar(ktmed,pars[ncuts+kz],Float_t(flag[kz]));
+	    gMC->Gstpar(ktmed,pars[ncuts+kz],Float_t(flag[kz]));
 	  }
 	}
       } else {
@@ -1226,8 +1195,6 @@ void AliRun::Run(Int_t nevent, const char *setup)
   // check if initialisation has been done
   if (!fInitDone) Init(setup);
   
-  AliMC* pMC = AliMC::GetMC();
-
   // Create the Root Tree with one branch per detector
   if(!fEvent) {
     gAlice->MakeTree("KHDER");
@@ -1237,9 +1204,9 @@ void AliRun::Run(Int_t nevent, const char *setup)
   for (i=0; i<todo; i++) {
   // Process one run (one run = one event)
      gAlice->Reset(fRun, fEvent);
-     pMC->Gtrigi();
-     pMC->Gtrigc();
-     pMC->Gtrig();
+     gMC->Gtrigi();
+     gMC->Gtrigc();
+     gMC->Gtrig();
      gAlice->FinishEvent();
      fEvent++;
   }
@@ -1397,8 +1364,6 @@ void AliRun::StepManager(Int_t id) const
   // Called at every step during transport
   //
 
-  AliMC* pMC = AliMC::GetMC();
-
   Int_t copy;
   //
   // --- If lego option, do it and leave 
@@ -1407,7 +1372,7 @@ void AliRun::StepManager(Int_t id) const
     return;
   }
   //Update energy deposition tables
-  sEventEnergy[pMC->CurrentVol(0,copy)]+=pMC->Edep();
+  sEventEnergy[gMC->CurrentVol(0,copy)]+=gMC->Edep();
   
   //Call the appropriate stepping routine;
   AliModule *det = (AliModule*)fModules->At(id);
@@ -1435,7 +1400,6 @@ void AliRun::ReadEuclid(const char* filnam, const AliModule *det, const char* to
   //     top volume is searched as only volume not positioned into another 
   //
 
-  AliMC* pMC = AliMC::GetMC();
   Int_t i, nvol, iret, itmed, irot, numed, npar, ndiv, iaxe;
   Int_t ndvmx, nr, flag;
   char key[5], card[77], natmed[21];
@@ -1475,7 +1439,7 @@ void AliRun::ReadEuclid(const char* filnam, const AliModule *det, const char* to
     while(i<20) natmed[i++]=' ';
     natmed[i]='\0';
     //
-    pMC->Gckmat(idtmed[itmed],natmed);
+    gMC->Gckmat(idtmed[itmed],natmed);
     //*
   } else if (!strcmp(key,"ROTM")) {
     sscanf(&card[4],"%d %f %f %f %f %f %f",&irot,&teta1,&phi1,&teta2,&phi2,&teta3,&phi3);
@@ -1487,26 +1451,26 @@ void AliRun::ReadEuclid(const char* filnam, const AliModule *det, const char* to
       for(i=0;i<npar;i++) fscanf(lun,"%f",&par[i]);
       fscanf(lun,"%*c");
     }
-    pMC->Gsvolu( name, shape, idtmed[numed], par, npar);
+    gMC->Gsvolu( name, shape, idtmed[numed], par, npar);
     //*     save the defined volumes
     strcpy(volst[++nvol],name);
     istop[nvol]=1;
     //*
   } else if (!strcmp(key,"DIVN")) {
     sscanf(&card[5],"'%[^']' '%[^']' %d %d", name, mother, &ndiv, &iaxe);
-    pMC->Gsdvn  ( name, mother, ndiv, iaxe );
+    gMC->Gsdvn  ( name, mother, ndiv, iaxe );
     //*
   } else if (!strcmp(key,"DVN2")) {
     sscanf(&card[5],"'%[^']' '%[^']' %d %d %f %d",name, mother, &ndiv, &iaxe, &orig, &numed);
-    pMC->Gsdvn2( name, mother, ndiv, iaxe, orig,idtmed[numed]);
+    gMC->Gsdvn2( name, mother, ndiv, iaxe, orig,idtmed[numed]);
     //*
   } else if (!strcmp(key,"DIVT")) {
     sscanf(&card[5],"'%[^']' '%[^']' %f %d %d %d", name, mother, &step, &iaxe, &numed, &ndvmx);
-    pMC->Gsdvt ( name, mother, step, iaxe, idtmed[numed], ndvmx);
+    gMC->Gsdvt ( name, mother, step, iaxe, idtmed[numed], ndvmx);
     //*
   } else if (!strcmp(key,"DVT2")) {
     sscanf(&card[5],"'%[^']' '%[^']' %f %d %f %d %d", name, mother, &step, &iaxe, &orig, &numed, &ndvmx);
-    pMC->Gsdvt2 ( name, mother, step, iaxe, orig, idtmed[numed], ndvmx );
+    gMC->Gsdvt2 ( name, mother, step, iaxe, orig, idtmed[numed], ndvmx );
     //*
   } else if (!strcmp(key,"POSI")) {
     sscanf(&card[5],"'%[^']' %d '%[^']' %f %f %f %d '%[^']'", name, &nr, mother, &xo, &yo, &zo, &irot, konly);
@@ -1515,7 +1479,7 @@ void AliRun::ReadEuclid(const char* filnam, const AliModule *det, const char* to
       if (!strcmp(volst[i],name)) istop[i]=0;
     }
     //*
-    pMC->Gspos  ( name, nr, mother, xo, yo, zo, idrot[irot], konly );
+    gMC->Gspos  ( name, nr, mother, xo, yo, zo, idrot[irot], konly );
     //*
   } else if (!strcmp(key,"POSP")) {
     sscanf(&card[5],"'%[^']' %d '%[^']' %f %f %f %d '%[^']' %d", name, &nr, mother, &xo, &yo, &zo, &irot, konly, &npar);
@@ -1528,7 +1492,7 @@ void AliRun::ReadEuclid(const char* filnam, const AliModule *det, const char* to
       if (!strcmp(volst[i],name)) istop[i]=0;
     }
     //*
-    pMC->Gsposp ( name, nr, mother, xo,yo,zo, idrot[irot], konly, par, npar);
+    gMC->Gsposp ( name, nr, mother, xo,yo,zo, idrot[irot], konly, par, npar);
   }
   //*
   if (strcmp(key,"END")) goto L10;

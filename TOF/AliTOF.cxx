@@ -350,8 +350,6 @@ void AliTOF::CreateGeometry()
   //End_Html
   //
 
-  AliMC* pMC = AliMC::GetMC();
-  
   const Double_t kPi=TMath::Pi();
   const Double_t kDegrad=kPi/180;
   const Double_t kRaddeg=180/kPi;
@@ -401,11 +399,11 @@ void AliTOF::CreateGeometry()
   par[0] = 370;
   par[1] = 390;
   par[2] = zl / 2.;
-  pMC->Gsvolu("FBAR", "TUBE", idtmed[500], par, 3);
+  gMC->Gsvolu("FBAR", "TUBE", idtmed[500], par, 3);
   //
   // --- Set module unseen ---
-  pMC->Gspos("FBAR", 1, "ALIC", 0., 0., 0., 0, "ONLY");
-  pMC->Gsatt("FBAR", "SEEN", 0);
+  gMC->Gspos("FBAR", 1, "ALIC", 0., 0., 0., 0, "ONLY");
+  gMC->Gsatt("FBAR", "SEEN", 0);
   //
   // Number of TOF-block 
   lmax = 19;
@@ -414,14 +412,14 @@ void AliTOF::CreateGeometry()
   par[0] = xtof / 2.;
   par[1] = ytof / 2.;
   par[2] = ztof0 / 2.;
-  pMC->Gsvolu("FTO1", "BOX ", idtmed[506], par, 3);
-  pMC->Gsatt("FTO1", "SEEN", -2);
+  gMC->Gsvolu("FTO1", "BOX ", idtmed[506], par, 3);
+  gMC->Gsatt("FTO1", "SEEN", -2);
   par[2] = ztof1 / 2.;
-  pMC->Gsvolu("FTO2", "BOX ", idtmed[506], par, 3);
-  pMC->Gsatt("FTO2", "SEEN", -2);
+  gMC->Gsvolu("FTO2", "BOX ", idtmed[506], par, 3);
+  gMC->Gsatt("FTO2", "SEEN", -2);
   par[2] = ztof2 / 2.;
-  pMC->Gsvolu("FTO3", "BOX ", idtmed[506], par, 3);
-  pMC->Gsatt("FTO3", "SEEN", -2);
+  gMC->Gsvolu("FTO3", "BOX ", idtmed[506], par, 3);
+  gMC->Gsatt("FTO3", "SEEN", -2);
   //
   // Subtraction of TOF module boundaries 
   xm = xtof - dx * 2.;
@@ -451,16 +449,16 @@ void AliTOF::CreateGeometry()
     lmax1 = i + lmax;
     AliMatrix(idrotm[i], 90., -fil1, 90., 90. - fil1, 0., 0.);
     if (fil1 >= fil_min  && fil1 <= fil_max) {
-      pMC->Gspos("FTO2", i, "FBAR", xcor2, ycor2, zcor2, idrotm[i], "ONLY");
-      pMC->Gspos("FTO2", lmax1, "FBAR", xcor2, ycor2, -zcor2, idrotm[i], "ONLY");
+      gMC->Gspos("FTO2", i, "FBAR", xcor2, ycor2, zcor2, idrotm[i], "ONLY");
+      gMC->Gspos("FTO2", lmax1, "FBAR", xcor2, ycor2, -zcor2, idrotm[i], "ONLY");
     } else if (fil1 <= fil_rich || fil1 >= 360. - fil_rich) {
       par[2] = ztof2 / 2.;
-      pMC->Gspos("FTO3", i, "FBAR", xcor2, ycor2, zcor3, idrotm[i], "ONLY");
-      pMC->Gspos("FTO3", lmax1, "FBAR", xcor2, ycor2, -zcor3, idrotm[i], "ONLY");
+      gMC->Gspos("FTO3", i, "FBAR", xcor2, ycor2, zcor3, idrotm[i], "ONLY");
+      gMC->Gspos("FTO3", lmax1, "FBAR", xcor2, ycor2, -zcor3, idrotm[i], "ONLY");
     } else {
       par[2] = ztof0 / 2.;
-      pMC->Gspos("FTO1", i, "FBAR", xcor2, ycor2, zcor1, idrotm[i], "ONLY");
-      pMC->Gspos("FTO1", lmax1, "FBAR", xcor2, ycor2, -zcor1, idrotm[i], "ONLY");
+      gMC->Gspos("FTO1", i, "FBAR", xcor2, ycor2, zcor1, idrotm[i], "ONLY");
+      gMC->Gspos("FTO1", lmax1, "FBAR", xcor2, ycor2, -zcor1, idrotm[i], "ONLY");
     }
   }
 }
@@ -473,30 +471,28 @@ void AliTOF::DrawModule()
   // for versions 2 and 3
   //
 
-  AliMC* pMC = AliMC::GetMC();
-  
   // Set everything unseen
-  pMC->Gsatt("*", "seen", -1);
+  gMC->Gsatt("*", "seen", -1);
   // 
   // Set ALIC mother transparent
-  pMC->Gsatt("ALIC","SEEN",0);
+  gMC->Gsatt("ALIC","SEEN",0);
   //
   // Set the volumes visible
-  pMC->Gsatt("FBAR","SEEN",0);
-  pMC->Gsatt("FTO1","SEEN",1);
-  pMC->Gsatt("FTO2","SEEN",1);
-  pMC->Gsatt("FTO3","SEEN",1);
+  gMC->Gsatt("FBAR","SEEN",0);
+  gMC->Gsatt("FTO1","SEEN",1);
+  gMC->Gsatt("FTO2","SEEN",1);
+  gMC->Gsatt("FTO3","SEEN",1);
   //
-  pMC->Gdopt("hide", "on");
-  pMC->Gdopt("shad", "on");
-  pMC->Gsatt("*", "fill", 7);
-  pMC->SetClipBox(".");
-  pMC->SetClipBox("*", 0, 1000, -1000, 1000, -1000, 1000);
-  pMC->DefaultRange();
-  pMC->Gdraw("alic", 40, 30, 0, 12, 9.5, .02, .02);
-  pMC->Gdhead(1111, "Time Of Flight");
-  pMC->Gdman(18, 4, "MAN");
-  pMC->Gdopt("hide","off");
+  gMC->Gdopt("hide", "on");
+  gMC->Gdopt("shad", "on");
+  gMC->Gsatt("*", "fill", 7);
+  gMC->SetClipBox(".");
+  gMC->SetClipBox("*", 0, 1000, -1000, 1000, -1000, 1000);
+  gMC->DefaultRange();
+  gMC->Gdraw("alic", 40, 30, 0, 12, 9.5, .02, .02);
+  gMC->Gdhead(1111, "Time Of Flight");
+  gMC->Gdman(18, 4, "MAN");
+  gMC->Gdopt("hide","off");
 }
 
 //_____________________________________________________________________________
@@ -581,7 +577,6 @@ void AliTOF::Init()
   // Initialise TOF detector after it has been built
   //
   Int_t i;
-  AliMC *pMC=AliMC::GetMC();
   //
   printf("\n");
   for(i=0;i<35;i++) printf("*");
@@ -590,7 +585,7 @@ void AliTOF::Init()
   printf("\n");
   //
   // Set id of TOF sensitive volume
-  fIdSens=pMC->VolId("FPG2");
+  fIdSens=gMC->VolId("FPG2");
   //
   for(i=0;i<80;i++) printf("*");
   printf("\n");

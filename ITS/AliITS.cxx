@@ -324,7 +324,6 @@ void AliITS::Init()
   // Initialise ITS after it has been built
   //
   Int_t i;
-  AliMC* pMC = AliMC::GetMC();
   //
   printf("\n");
   for(i=0;i<35;i++) printf("*");
@@ -333,12 +332,12 @@ void AliITS::Init()
   printf("\n");
   //
   //
-  fIdSens1=pMC->VolId("ITS1");
-  fIdSens2=pMC->VolId("ITS2");
-  fIdSens3=pMC->VolId("ITS3");
-  fIdSens4=pMC->VolId("ITS4");
-  fIdSens5=pMC->VolId("ITS5");
-  fIdSens6=pMC->VolId("ITS6");
+  fIdSens1=gMC->VolId("ITS1");
+  fIdSens2=gMC->VolId("ITS2");
+  fIdSens3=gMC->VolId("ITS3");
+  fIdSens4=gMC->VolId("ITS4");
+  fIdSens5=gMC->VolId("ITS5");
+  fIdSens6=gMC->VolId("ITS6");
   //
   for(i=0;i<80;i++) printf("*");
   printf("\n");

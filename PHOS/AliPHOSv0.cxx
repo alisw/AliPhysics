@@ -36,9 +36,7 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title)
 //___________________________________________
 void AliPHOSv0::Init()
 {
-  AliMC* pMC = AliMC::GetMC();
-  
-  fIdSens=pMC->VolId("PXTL");
+  fIdSens=gMC->VolId("PXTL");
 }
 
 //___________________________________________
@@ -47,8 +45,6 @@ void AliPHOSv0::CreateGeometry()
 // *** DEFINITION OF THE -0.25<y<0.25 TILTED GEOMETRY OF THE PHOS *** 
 // ORIGIN    : NICK VAN EIJNDHOVEN 
 
-  AliMC* pMC = AliMC::GetMC();
-  
     Float_t pphi;
     Float_t r, dptcb[3], dpair[3], dphos[3], dpucp[3], dpasp[3], dpcpv[3];
     Float_t dpxtl[3];
@@ -94,64 +90,64 @@ void AliPHOSv0::CreateGeometry()
     dphos[0] = FOC_X/2.;
     dphos[1] = FOC_Y/2.;
     dphos[2] = FOC_Z/2.;
-    pMC->Gsvolu("PHOS", "BOX ", idtmed[703], dphos, 3);
+    gMC->Gsvolu("PHOS", "BOX ", idtmed[703], dphos, 3);
 
 // --- Define air-filled box, place inside PHOS --- 
     dpair[0] = AIR_X/2.;
     dpair[1] = AIR_Y/2.;
     dpair[2] = AIR_Z/2.;
-    pMC->Gsvolu("PAIR", "BOX ", idtmed[798], dpair, 3);
-    pMC->Gspos("PAIR", 1, "PHOS", 0., 0., 0., 0, "ONLY");
+    gMC->Gsvolu("PAIR", "BOX ", idtmed[798], dpair, 3);
+    gMC->Gspos("PAIR", 1, "PHOS", 0., 0., 0., 0, "ONLY");
 
 // --- Define Upper Cooling Panel --- 
 // --- place it right behind upper foam plate --- 
     dpucp[0] = TCB_X/2.;
     dpucp[1] = UCP_Y/2.;
     dpucp[2] = TCB_Z/2.;
-    pMC->Gsvolu("PUCP", "BOX ", idtmed[701], dpucp, 3);
+    gMC->Gsvolu("PUCP", "BOX ", idtmed[701], dpucp, 3);
     yo = (AIR_Y-UCP_Y)/2.;
-    pMC->Gspos("PUCP", 1, "PAIR", 0., yo, 0., 0, "ONLY");
+    gMC->Gspos("PUCP", 1, "PAIR", 0., yo, 0., 0, "ONLY");
 
 // --- Define Crystal Block, fill with Tyvek, position inside PAIR --- 
     dptcb[0] = TCB_X/2.;
     dptcb[1] = TCB_Y/2.;
     dptcb[2] = TCB_Z/2.;
-    pMC->Gsvolu("PTCB", "BOX ", idtmed[702], dptcb, 3);
+    gMC->Gsvolu("PTCB", "BOX ", idtmed[702], dptcb, 3);
 // --- Divide PTCB in X and Z directions -- 
-    pMC->Gsdvn("PSEC", "PTCB", 11, 1);
-    pMC->Gsdvn("PMOD", "PSEC", 13, 3);
-    pMC->Gsdvn("PSTR", "PMOD", 8, 1);
-    pMC->Gsdvn("PCEL", "PSTR", 8, 3);
+    gMC->Gsdvn("PSEC", "PTCB", 11, 1);
+    gMC->Gsdvn("PMOD", "PSEC", 13, 3);
+    gMC->Gsdvn("PSTR", "PMOD", 8, 1);
+    gMC->Gsdvn("PCEL", "PSTR", 8, 3);
     yo = (FOC_Y-TCB_Y)/2. -(CBS_R-FOC_R);
-    pMC->Gspos("PTCB", 1, "PAIR", 0., yo, 0., 0, "ONLY");
+    gMC->Gspos("PTCB", 1, "PAIR", 0., yo, 0., 0, "ONLY");
 
 // --- Define PbWO4 crystal volume, place inside PCEL --- 
     dpxtl[0] = XTL_X/2.;
     dpxtl[1] = XTL_Y/2.;
     dpxtl[2] = XTL_Z/2.;
-    pMC->Gsvolu("PXTL", "BOX ", idtmed[699], dpxtl, 3);
+    gMC->Gsvolu("PXTL", "BOX ", idtmed[699], dpxtl, 3);
     yo = (TCB_Y-XTL_Y)/2. - PAP_THICK;
-    pMC->Gspos("PXTL", 1, "PCEL", 0., yo, 0., 0, "ONLY");
+    gMC->Gspos("PXTL", 1, "PCEL", 0., yo, 0., 0, "ONLY");
 
 // --- Define Al Support Plate, position it inside PAIR --- 
 // --- right beneath PTCB --- 
     dpasp[0] = AIR_X/2.;
     dpasp[1] = ASP_Y/2.;
     dpasp[2] = AIR_Z/2.;
-    pMC->Gsvolu("PASP", "BOX ", idtmed[701], dpasp, 3);
+    gMC->Gsvolu("PASP", "BOX ", idtmed[701], dpasp, 3);
     yo = (FOC_Y-ASP_Y)/2. - (CBS_R-FOC_R+TCB_Y);
-    pMC->Gspos("PASP", 1, "PAIR", 0., yo, 0., 0, "ONLY");
+    gMC->Gspos("PASP", 1, "PAIR", 0., yo, 0., 0, "ONLY");
 
 // --- Define CPV volume, DON'T PLACE IT YET --- 
     dpcpv[0] = TCB_X/2.;
     dpcpv[1] = CPV_Y/2.;
     dpcpv[2] = TCB_Z/2.;
-    pMC->Gsvolu("PCPV", "BOX ", idtmed[700], dpcpv, 3);
+    gMC->Gsvolu("PCPV", "BOX ", idtmed[700], dpcpv, 3);
 // --- Divide in X and Z direction (same way as PTCB) --- 
-    pMC->Gsdvn("PCSE", "PCPV", 11, 1);
-    pMC->Gsdvn("PCMO", "PCSE", 13, 3);
-    pMC->Gsdvn("PCST", "PCMO", 8, 1);
-    pMC->Gsdvn("PCCE", "PCST", 8, 3);
+    gMC->Gsdvn("PCSE", "PCPV", 11, 1);
+    gMC->Gsdvn("PCMO", "PCSE", 13, 3);
+    gMC->Gsdvn("PCST", "PCMO", 8, 1);
+    gMC->Gsdvn("PCCE", "PCST", 8, 3);
 
 // --- Position various PHOS units in ALICE setup --- 
 // --- PHOS itself first --- 
@@ -166,10 +162,10 @@ void AliPHOSv0::CreateGeometry()
     AliMatrix(idrotm[1], 90.,  -pphi, 90., 90-pphi,   0., 0.);
     AliMatrix(idrotm[2], 90.,   pphi, 90., 90+pphi,   0., 0.);
     AliMatrix(idrotm[3], 90., 3*pphi, 90., 90+3*pphi, 0., 0.);
-    pMC->Gspos("PHOS", 1, "ALIC", xp1, yp1, 0., idrotm[0], "ONLY");
-    pMC->Gspos("PHOS", 2, "ALIC", xp2, yp2, 0., idrotm[1], "ONLY");
-    pMC->Gspos("PHOS", 3, "ALIC",-xp2, yp2, 0., idrotm[2], "ONLY");
-    pMC->Gspos("PHOS", 4, "ALIC",-xp1, yp1, 0., idrotm[3], "ONLY");
+    gMC->Gspos("PHOS", 1, "ALIC", xp1, yp1, 0., idrotm[0], "ONLY");
+    gMC->Gspos("PHOS", 2, "ALIC", xp2, yp2, 0., idrotm[1], "ONLY");
+    gMC->Gspos("PHOS", 3, "ALIC",-xp2, yp2, 0., idrotm[2], "ONLY");
+    gMC->Gspos("PHOS", 4, "ALIC",-xp1, yp1, 0., idrotm[3], "ONLY");
 
 // --- Now position PCPV so that its plates are right on top of --- 
 // --- corresponding PHOS supermodules (previously called cradles) --- 
@@ -179,14 +175,14 @@ void AliPHOSv0::CreateGeometry()
     yp1  = -r * TMath::Cos(pphi * 3.);
     xp2  = -r * TMath::Sin(pphi);
     yp2  = -r * TMath::Cos(pphi);
-    pMC->Gspos("PCPV", 1, "ALIC", xp1, yp1, 0., idrotm[0], "ONLY");
-    pMC->Gspos("PCPV", 2, "ALIC", xp2, yp2, 0., idrotm[1], "ONLY");
-    pMC->Gspos("PCPV", 3, "ALIC",-xp2, yp2, 0., idrotm[2], "ONLY");
-    pMC->Gspos("PCPV", 4, "ALIC",-xp1, yp1, 0., idrotm[3], "ONLY");
+    gMC->Gspos("PCPV", 1, "ALIC", xp1, yp1, 0., idrotm[0], "ONLY");
+    gMC->Gspos("PCPV", 2, "ALIC", xp2, yp2, 0., idrotm[1], "ONLY");
+    gMC->Gspos("PCPV", 3, "ALIC",-xp2, yp2, 0., idrotm[2], "ONLY");
+    gMC->Gspos("PCPV", 4, "ALIC",-xp1, yp1, 0., idrotm[3], "ONLY");
 
 // --- Set modules seen without tree for drawings --- 
-    pMC->Gsatt("PMOD", "SEEN", -2);
-    pMC->Gsatt("PCMO", "SEEN", -2);
+    gMC->Gsatt("PMOD", "SEEN", -2);
+    gMC->Gsatt("PCMO", "SEEN", -2);
 }
  
 //___________________________________________
@@ -195,8 +191,6 @@ void AliPHOSv0::CreateMaterials()
 // *** DEFINITION OF AVAILABLE PHOS MATERIALS *** 
 // ORIGIN    : NICK VAN EIJNDHOVEN 
 
-  AliMC* pMC = AliMC::GetMC();
-  
     Int_t   ISXFLD = gAlice->Field()->Integ();
     Float_t SXMGMX = gAlice->Field()->Max();
     
@@ -239,30 +233,28 @@ void AliPHOSv0::CreateMaterials()
     AliMedium(99, "Air          $", 9, 0, ISXFLD, SXMGMX, 10., 1., .1, .1, 10.);
 
 // --- Generate explicitly delta rays in aluminium parts --- 
-    pMC->Gstpar(idtmed[701], "LOSS", 3.);
-    pMC->Gstpar(idtmed[701], "DRAY", 1.);
+    gMC->Gstpar(idtmed[701], "LOSS", 3.);
+    gMC->Gstpar(idtmed[701], "DRAY", 1.);
 }
 
 void AliPHOSv0::StepManager()
 {
 
-  AliMC* pMC = AliMC::GetMC();
-  
   TClonesArray &lhits = *fHits;
   Int_t copy, i;
   Int_t vol[5];
   Float_t hits[4];
-  if(pMC->CurrentVol(0,copy) == fIdSens) {
+  if(gMC->CurrentVol(0,copy) == fIdSens) {
     //
     //We are in the sensitive volume
     for(i=0;i<4;i++) {
-      pMC->CurrentVolOff(i+1,0,copy);
+      gMC->CurrentVolOff(i+1,0,copy);
       vol[4-i]=copy;
     }
-    pMC->CurrentVolOff(7,0,copy);
+    gMC->CurrentVolOff(7,0,copy);
     vol[0]=copy;
-    pMC->TrackPosition(hits);
-    hits[3]=pMC->Edep();
+    gMC->TrackPosition(hits);
+    hits[3]=gMC->Edep();
     new(lhits[fNhits++]) AliPHOShit(fIshunt,gAlice->CurrentTrack(),vol,hits);
   }
 }

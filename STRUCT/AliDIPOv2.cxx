@@ -60,8 +60,6 @@ void AliDIPOv2::CreateGeometry()
   */
   //End_Html
 
-  AliMC* pMC = AliMC::GetMC();
-  
   Float_t cpar[5], tpar[3], ypar[4];
   Float_t dz, dx, dy;
   Int_t idrotm[1899];
@@ -119,7 +117,7 @@ void AliDIPOv2::CreateGeometry()
   tpar[0] = 300.;
   tpar[1] = 415.;
   tpar[2] = 250.;
-  pMC->Gsvolu("DDIP", "BOX ", idtmed[1814], tpar, 3);
+  gMC->Gsvolu("DDIP", "BOX ", idtmed[1814], tpar, 3);
   
   //       COILS 
   
@@ -129,28 +127,28 @@ void AliDIPOv2::CreateGeometry()
   cpar[2] = 83.2/2.;
   cpar[3] = 120.;
   cpar[4] = 240.;
-  pMC->Gsvolu("DC1 ", "TUBS", idtmed[1813], cpar, 5);
+  gMC->Gsvolu("DC1 ", "TUBS", idtmed[1813], cpar, 5);
   cpar[3] = -60.;
   cpar[4] = 60.;
-  pMC->Gsvolu("DC2 ", "TUBS", idtmed[1813], cpar, 5);
+  gMC->Gsvolu("DC2 ", "TUBS", idtmed[1813], cpar, 5);
   // ... define regions for higher cuts 
   cpar[0] += 10.;
   cpar[1] += -10.;
   cpar[2] += -10.;
   cpar[3]  = 120.;
   cpar[4]  = 240.;
-  pMC->Gsvolu("DC3 ", "TUBS", idtmed[1833], cpar, 5);
-  pMC->Gspos("DC3 ", 1, "DC1 ", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("DC3 ", "TUBS", idtmed[1833], cpar, 5);
+  gMC->Gspos("DC3 ", 1, "DC1 ", 0., 0., 0., 0, "ONLY");
   cpar[3] = -60.;
   cpar[4] = 60.;
-  pMC->Gsvolu("DC4 ", "TUBS", idtmed[1833], cpar, 5);
-  pMC->Gspos("DC4 ", 1, "DC2 ", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("DC4 ", "TUBS", idtmed[1833], cpar, 5);
+  gMC->Gspos("DC4 ", 1, "DC2 ", 0., 0., 0., 0, "ONLY");
   // ... 
   dz = 83.2/2. - 250.;
-  pMC->Gspos("DC1 ", 1, "DDIP", 0., 0.,  dz, 0, "ONLY");
-  pMC->Gspos("DC1 ", 2, "DDIP", 0., 0., -dz, 0, "ONLY");
-  pMC->Gspos("DC2 ", 1, "DDIP", 0., 0.,  dz, 0, "ONLY");
-  pMC->Gspos("DC2 ", 2, "DDIP", 0., 0., -dz, 0, "ONLY");
+  gMC->Gspos("DC1 ", 1, "DDIP", 0., 0.,  dz, 0, "ONLY");
+  gMC->Gspos("DC1 ", 2, "DDIP", 0., 0., -dz, 0, "ONLY");
+  gMC->Gspos("DC2 ", 1, "DDIP", 0., 0.,  dz, 0, "ONLY");
+  gMC->Gspos("DC2 ", 2, "DDIP", 0., 0., -dz, 0, "ONLY");
   the1 = 180.;
   phi1 = 0.;
   the2 = 90.;
@@ -178,41 +176,41 @@ void AliDIPOv2::CreateGeometry()
   cpar[2] = 26.5;
   cpar[3] = 270.;
   cpar[4] = 360.;
-  pMC->Gsvolu("DC11", "TUBS", idtmed[1813], cpar, 5);
+  gMC->Gsvolu("DC11", "TUBS", idtmed[1813], cpar, 5);
   // ... higher cuts 
   cpar[0] += 10.;
   cpar[1] += -10.;
   cpar[2] += -10.;
-  pMC->Gsvolu("DC21", "TUBS", idtmed[1833], cpar, 5);
-  pMC->Gspos("DC21", 1, "DC11", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("DC21", "TUBS", idtmed[1833], cpar, 5);
+  gMC->Gspos("DC21", 1, "DC11", 0., 0., 0., 0, "ONLY");
   // ... 
   dx = TMath::Sin(30*kDegrad) * -236.5;
   dy = TMath::Cos(30*kDegrad) * -236.5;
   dz = cpar[1] + 10. - 250.;
-  pMC->Gspos("DC11", 1, "DDIP",  dx, dy,  dz, idrotm[1800], "ONLY");
-  pMC->Gspos("DC11", 2, "DDIP",  dx, dy, -dz, idrotm[1802], "ONLY");
-  pMC->Gspos("DC11", 3, "DDIP", -dx, dy,  dz, idrotm[1801], "ONLY");
-  pMC->Gspos("DC11", 4, "DDIP", -dx, dy, -dz, idrotm[1803], "ONLY");
+  gMC->Gspos("DC11", 1, "DDIP",  dx, dy,  dz, idrotm[1800], "ONLY");
+  gMC->Gspos("DC11", 2, "DDIP",  dx, dy, -dz, idrotm[1802], "ONLY");
+  gMC->Gspos("DC11", 3, "DDIP", -dx, dy,  dz, idrotm[1801], "ONLY");
+  gMC->Gspos("DC11", 4, "DDIP", -dx, dy, -dz, idrotm[1803], "ONLY");
   cpar[0] = 25.;
   cpar[1] = 25.+83.2;
   cpar[2] = 53./2.;
   cpar[3] = 0.;
   cpar[4] = 90.;
-  pMC->Gsvolu("DC12", "TUBS", idtmed[1813], cpar, 5);
+  gMC->Gsvolu("DC12", "TUBS", idtmed[1813], cpar, 5);
   // ... higher cuts 
   cpar[0] += 10.;
   cpar[1] += -10.;
   cpar[2] += -10.;
-  pMC->Gsvolu("DC22", "TUBS", idtmed[1833], cpar, 5);
-  pMC->Gspos("DC22", 1, "DC12", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("DC22", "TUBS", idtmed[1833], cpar, 5);
+  gMC->Gspos("DC22", 1, "DC12", 0., 0., 0., 0, "ONLY");
   // ... 
   dx = TMath::Sin(30*kDegrad) * -236.5;
   dy = TMath::Cos(30*kDegrad) * 236.5;
   dz = cpar[1] + 10. - 250.;
-  pMC->Gspos("DC12", 1, "DDIP",  dx, dy,  dz, idrotm[1801], "ONLY");
-  pMC->Gspos("DC12", 2, "DDIP",  dx, dy, -dz, idrotm[1803], "ONLY");
-  pMC->Gspos("DC12", 3, "DDIP", -dx, dy,  dz, idrotm[1800], "ONLY");
-  pMC->Gspos("DC12", 4, "DDIP", -dx, dy, -dz, idrotm[1802], "ONLY");
+  gMC->Gspos("DC12", 1, "DDIP",  dx, dy,  dz, idrotm[1801], "ONLY");
+  gMC->Gspos("DC12", 2, "DDIP",  dx, dy, -dz, idrotm[1803], "ONLY");
+  gMC->Gspos("DC12", 3, "DDIP", -dx, dy,  dz, idrotm[1800], "ONLY");
+  gMC->Gspos("DC12", 4, "DDIP", -dx, dy, -dz, idrotm[1802], "ONLY");
   the1 = 90.;
   phi1 = 60.;
   the2 = 90.;
@@ -230,20 +228,20 @@ void AliDIPOv2::CreateGeometry()
   tpar[0] = 53./2.;
   tpar[1] = 83.2/2.;
   tpar[2] = 283.6/2.;
-  pMC->Gsvolu("DL1 ", "BOX ", idtmed[1813], tpar, 3);
+  gMC->Gsvolu("DL1 ", "BOX ", idtmed[1813], tpar, 3);
   // ... higher cuts 
   tpar[0] -= 10.;
   tpar[1] -= 10.;
-  pMC->Gsvolu("DL2 ", "BOX ", idtmed[1833], tpar, 3);
-  pMC->Gspos("DL2 ", 1, "DL1 ", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("DL2 ", "BOX ", idtmed[1833], tpar, 3);
+  gMC->Gspos("DL2 ", 1, "DL1 ", 0., 0., 0., 0, "ONLY");
   // ... 
   dx = -60.5;
   dy = -238.;
   dz = 0.;
-  pMC->Gspos("DL1 ", 1, "DDIP", dx,  dy, dz, idrotm[1804], "ONLY");
-  pMC->Gspos("DL1 ", 2, "DDIP", dx, -dy, dz, idrotm[1805], "ONLY");
-  pMC->Gspos("DL1 ", 3, "DDIP",-dx,  dy, dz, idrotm[1805], "ONLY");
-  pMC->Gspos("DL1 ", 4, "DDIP",-dx, -dy, dz, idrotm[1804], "ONLY");
+  gMC->Gspos("DL1 ", 1, "DDIP", dx,  dy, dz, idrotm[1804], "ONLY");
+  gMC->Gspos("DL1 ", 2, "DDIP", dx, -dy, dz, idrotm[1805], "ONLY");
+  gMC->Gspos("DL1 ", 3, "DDIP",-dx,  dy, dz, idrotm[1805], "ONLY");
+  gMC->Gspos("DL1 ", 4, "DDIP",-dx, -dy, dz, idrotm[1804], "ONLY");
   
   //   YOKE 
   
@@ -251,17 +249,17 @@ void AliDIPOv2::CreateGeometry()
   ypar[2] = 5.;
   ypar[3] = 156.8;
   ypar[0] = ypar[1] - ypar[3] * 2. * TMath::Tan(acc_max * kDegrad);
-  pMC->Gsvolu("DY1 ", "TRD1", idtmed[1809], ypar, 4);
+  gMC->Gsvolu("DY1 ", "TRD1", idtmed[1809], ypar, 4);
   // iron - 
   dy = 283.5;
-  pMC->Gspos("DY1 ", 1, "DDIP", 0.,  dy, 0., 0, "ONLY");
-  pMC->Gspos("DY1 ", 2, "DDIP", 0., -dy, 0., 0, "ONLY");
+  gMC->Gspos("DY1 ", 1, "DDIP", 0.,  dy, 0., 0, "ONLY");
+  gMC->Gspos("DY1 ", 2, "DDIP", 0., -dy, 0., 0, "ONLY");
   ypar[2] = 60.;
-  pMC->Gsvolu("DY2 ", "TRD1", idtmed[1829], ypar, 4);
+  gMC->Gsvolu("DY2 ", "TRD1", idtmed[1829], ypar, 4);
   // iron - 
   dy = ypar[2] + 284.;
-  pMC->Gspos("DY2 ", 1, "DDIP", 0.,  dy, 0., 0, "ONLY");
-  pMC->Gspos("DY2 ", 2, "DDIP", 0., -dy, 0., 0, "ONLY");
+  gMC->Gspos("DY2 ", 1, "DDIP", 0.,  dy, 0., 0, "ONLY");
+  gMC->Gspos("DY2 ", 2, "DDIP", 0., -dy, 0., 0, "ONLY");
   the1 = 99.;
   phi1 = 0.;
   the2 = 90.;
@@ -276,45 +274,45 @@ void AliDIPOv2::CreateGeometry()
   tpar[0] = 60.;
   tpar[1] = 283.;
   tpar[2] = 156.8;
-  pMC->Gsvolu("DYL ", "BOX ", idtmed[1814], tpar, 3);
+  gMC->Gsvolu("DYL ", "BOX ", idtmed[1814], tpar, 3);
   tpar[0] = 5.;
   tpar[1] = 73.;
-  pMC->Gsvolu("DY3 ", "BOX ", idtmed[1809], tpar, 3);
+  gMC->Gsvolu("DY3 ", "BOX ", idtmed[1809], tpar, 3);
   dx = tpar[0] - 60.;
   dy = tpar[1] + 137.;
-  pMC->Gspos("DY3 ", 1, "DYL ", dx,  dy, 0., 0, "ONLY");
-  pMC->Gspos("DY3 ", 2, "DYL ", dx, -dy, 0., 0, "ONLY");
+  gMC->Gspos("DY3 ", 1, "DYL ", dx,  dy, 0., 0, "ONLY");
+  gMC->Gspos("DY3 ", 2, "DYL ", dx, -dy, 0., 0, "ONLY");
   tpar[0] = 55.;
-  pMC->Gsvolu("DY4 ", "BOX ", idtmed[1829], tpar, 3);
+  gMC->Gsvolu("DY4 ", "BOX ", idtmed[1829], tpar, 3);
   dx = dx + 5. + tpar[0];
-  pMC->Gspos("DY4 ", 1, "DYL ", dx,  dy, 0., 0, "ONLY");
-  pMC->Gspos("DY4 ", 2, "DYL ", dx, -dy, 0., 0, "ONLY");
+  gMC->Gspos("DY4 ", 1, "DYL ", dx,  dy, 0., 0, "ONLY");
+  gMC->Gspos("DY4 ", 2, "DYL ", dx, -dy, 0., 0, "ONLY");
   tpar[0] = 37.7;
   tpar[1] = 137.;
-  pMC->Gsvolu("DY5 ", "BOX ", idtmed[1829], tpar, 3);
+  gMC->Gsvolu("DY5 ", "BOX ", idtmed[1829], tpar, 3);
   dx = 60. - tpar[0];
-  pMC->Gspos("DY5 ", 1, "DYL ", dx, 0., 0., 0, "ONLY");
+  gMC->Gspos("DY5 ", 1, "DYL ", dx, 0., 0., 0, "ONLY");
   tpar[0] = 5.;
-  pMC->Gsvolu("DY6 ", "BOX ", idtmed[1809], tpar, 3);
+  gMC->Gsvolu("DY6 ", "BOX ", idtmed[1809], tpar, 3);
   dx = dx - 37.7 - tpar[0];
-  pMC->Gspos("DY6 ", 1, "DYL ", dx, 0., 0., 0, "ONLY");
+  gMC->Gspos("DY6 ", 1, "DYL ", dx, 0., 0., 0, "ONLY");
   tpar[0] = 17.3;
   tpar[1] = 5.;
-  pMC->Gsvolu("DY7 ", "BOX ", idtmed[1809], tpar, 3);
+  gMC->Gsvolu("DY7 ", "BOX ", idtmed[1809], tpar, 3);
   dx = tpar[0] - 60.;
   dy = tpar[1] + 127.;
-  pMC->Gspos("DY7 ", 1, "DYL ", dx,  dy, 0., 0, "ONLY");
-  pMC->Gspos("DY7 ", 2, "DYL ", dx, -dy, 0., 0, "ONLY");
+  gMC->Gspos("DY7 ", 1, "DYL ", dx,  dy, 0., 0, "ONLY");
+  gMC->Gspos("DY7 ", 2, "DYL ", dx, -dy, 0., 0, "ONLY");
   
   dx = ypar[0] + ypar[3] * TMath::Tan(acc_max * kDegrad) - 60.;
-  pMC->Gspos("DYL ", 1, "DDIP", dx, 0., 0., idrotm[1806], "ONLY");
-  pMC->Gspos("DYL ", 2, "DDIP",-dx, 0., 0., idrotm[1807], "ONLY");
-  pMC->Gspos("DDIP", 1, "ALIC", 0., 0., 725.+250., 0, "MANY");
-  pMC->Gsatt("DDIP", "SEEN", 0);
-  pMC->Gsatt("DC21", "SEEN", 0);
-  pMC->Gsatt("DC22", "SEEN", 0);
-  pMC->Gsatt("DC3 ", "SEEN", 0);
-  pMC->Gsatt("DC4 ", "SEEN", 0);
+  gMC->Gspos("DYL ", 1, "DDIP", dx, 0., 0., idrotm[1806], "ONLY");
+  gMC->Gspos("DYL ", 2, "DDIP",-dx, 0., 0., idrotm[1807], "ONLY");
+  gMC->Gspos("DDIP", 1, "ALIC", 0., 0., 725.+250., 0, "MANY");
+  gMC->Gsatt("DDIP", "SEEN", 0);
+  gMC->Gsatt("DC21", "SEEN", 0);
+  gMC->Gsatt("DC22", "SEEN", 0);
+  gMC->Gsatt("DC3 ", "SEEN", 0);
+  gMC->Gsatt("DC4 ", "SEEN", 0);
 }
 
 //_____________________________________________________________________________
@@ -324,44 +322,42 @@ void AliDIPOv2::DrawModule()
   // Draw a shaded view of the muon absorber
   //
 
-  AliMC* pMC = AliMC::GetMC();
-  
   // Set everything unseen
-  pMC->Gsatt("*", "seen", -1);
+  gMC->Gsatt("*", "seen", -1);
   // 
   // Set ALIC mother transparent
-  pMC->Gsatt("ALIC","SEEN",0);
+  gMC->Gsatt("ALIC","SEEN",0);
   //
   // Set the volumes visible
-  pMC->Gsatt("DDIP","seen",0);
-  pMC->Gsatt("DC1 ","seen",1);
-  pMC->Gsatt("DC2 ","seen",1);
-  pMC->Gsatt("DC3 ","seen",1);
-  pMC->Gsatt("DC4 ","seen",1);
-  pMC->Gsatt("DC11","seen",1);
-  pMC->Gsatt("DC21","seen",1);
-  pMC->Gsatt("DC12","seen",1);
-  pMC->Gsatt("DC22","seen",1);
-  pMC->Gsatt("DL1 ","seen",1);
-  pMC->Gsatt("DL2 ","seen",1);
-  pMC->Gsatt("DY1 ","seen",1);
-  pMC->Gsatt("DY2 ","seen",1);
-  pMC->Gsatt("DYL ","seen",1);
-  pMC->Gsatt("DY3 ","seen",1);
-  pMC->Gsatt("DY4 ","seen",1);
-  pMC->Gsatt("DY5 ","seen",1);
-  pMC->Gsatt("DY6 ","seen",1);
-  pMC->Gsatt("DY7 ","seen",1);
+  gMC->Gsatt("DDIP","seen",0);
+  gMC->Gsatt("DC1 ","seen",1);
+  gMC->Gsatt("DC2 ","seen",1);
+  gMC->Gsatt("DC3 ","seen",1);
+  gMC->Gsatt("DC4 ","seen",1);
+  gMC->Gsatt("DC11","seen",1);
+  gMC->Gsatt("DC21","seen",1);
+  gMC->Gsatt("DC12","seen",1);
+  gMC->Gsatt("DC22","seen",1);
+  gMC->Gsatt("DL1 ","seen",1);
+  gMC->Gsatt("DL2 ","seen",1);
+  gMC->Gsatt("DY1 ","seen",1);
+  gMC->Gsatt("DY2 ","seen",1);
+  gMC->Gsatt("DYL ","seen",1);
+  gMC->Gsatt("DY3 ","seen",1);
+  gMC->Gsatt("DY4 ","seen",1);
+  gMC->Gsatt("DY5 ","seen",1);
+  gMC->Gsatt("DY6 ","seen",1);
+  gMC->Gsatt("DY7 ","seen",1);
   //
-  pMC->Gdopt("hide", "on");
-  pMC->Gdopt("shad", "on");
-  pMC->Gsatt("*", "fill", 7);
-  pMC->SetClipBox(".");
-  pMC->SetClipBox(".");
-  pMC->DefaultRange();
-  pMC->Gdraw("alic", 30, 30, 0, 17, 13.5, .019, .019);
-  pMC->Gdhead(1111, "Magnetic Dipole Version 2");
-  pMC->Gdman(16, 4, "MAN");
+  gMC->Gdopt("hide", "on");
+  gMC->Gdopt("shad", "on");
+  gMC->Gsatt("*", "fill", 7);
+  gMC->SetClipBox(".");
+  gMC->SetClipBox(".");
+  gMC->DefaultRange();
+  gMC->Gdraw("alic", 30, 30, 0, 17, 13.5, .019, .019);
+  gMC->Gdhead(1111, "Magnetic Dipole Version 2");
+  gMC->Gdman(16, 4, "MAN");
 }
 
 //_____________________________________________________________________________

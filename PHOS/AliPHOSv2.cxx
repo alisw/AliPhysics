@@ -202,8 +202,6 @@ void AliPHOSv2::CreateMaterials()
 
   // DEFINITION OF AVAILABLE PHOS MATERIALS
   
-  AliMC* pMC=AliMC::GetMC();
-  
   Int_t   ISXFLD=gAlice->Field()->Integ();
   Float_t SXMGMX=gAlice->Field()->Max();
 
@@ -285,14 +283,14 @@ void AliPHOSv2::CreateMaterials()
 	    ISXFLD, SXMGMX, 10.0, 1.0, 0.1, 0.1, 10.0, 0, 0);
 
   // --- Set decent energy thresholds for gamma and electron tracking
-  pMC->Gstpar(idtmed[699],"CUTGAM",0.5E-4);
-  pMC->Gstpar(idtmed[699],"CUTELE",1.0E-4);
+  gMC->Gstpar(idtmed[699],"CUTGAM",0.5E-4);
+  gMC->Gstpar(idtmed[699],"CUTELE",1.0E-4);
   // --- Generate explicitly delta rays in the titan cover ---
-  pMC->Gstpar(idtmed[704],"LOSS",3.);
-  pMC->Gstpar(idtmed[704],"DRAY",1.);
+  gMC->Gstpar(idtmed[704],"LOSS",3.);
+  gMC->Gstpar(idtmed[704],"DRAY",1.);
   // --- and in aluminium parts ---
-  pMC->Gstpar(idtmed[701],"LOSS",3.);
-  pMC->Gstpar(idtmed[701],"DRAY",1.);
+  gMC->Gstpar(idtmed[701],"LOSS",3.);
+  gMC->Gstpar(idtmed[701],"DRAY",1.);
 
 }
 
@@ -300,8 +298,6 @@ void AliPHOSv2::CreateMaterials()
 
 void AliPHOSv2::CreateGeometry()
 {
-
-  AliMC* pMC = AliMC::GetMC();
 
   AliPHOSv2 *PHOS_tmp = (AliPHOSv2*)gAlice->GetModule("PHOS");
   if(PHOS_tmp==NULL){
@@ -417,146 +413,146 @@ void AliPHOSv2::CreateGeometry()
   DPHOS[0]=FTI_X/2.0;
   DPHOS[1]=FTI_Y/2.0;
   DPHOS[2]=FTI_Z/2.0;
-  pMC->Gsvolu("PHOS", "BOX ", IDTMED[706], DPHOS, 3);
+  gMC->Gsvolu("PHOS", "BOX ", IDTMED[706], DPHOS, 3);
 
   // --- Define Textolit Wall box, position inside PHOS ---
   DPTXW[0]=TXW_X/2.0;
   DPTXW[1]=TXW_Y/2.0;
   DPTXW[2]=TXW_Z/2.0;
-  pMC->Gsvolu("PTXW", "BOX ", IDTMED[707], DPTXW, 3);
+  gMC->Gsvolu("PTXW", "BOX ", IDTMED[707], DPTXW, 3);
   YO=(FTI_Y-TXW_Y)/2.0-FTIU_THICK;
-  pMC->Gspos("PTXW", 1, "PHOS", 0.0, YO, 0.0, 0, "ONLY");
+  gMC->Gspos("PTXW", 1, "PHOS", 0.0, YO, 0.0, 0, "ONLY");
 
   // --- Define Upper Polystyrene Foam Plate, place inside PTXW ---
   // --- immediately below Foam Thermo Insulation Upper plate ---
   DPUFP[0]=TXW_X/2.0;
   DPUFP[1]=UFP_Y/2.0;
   DPUFP[2]=TXW_Z/2.0;
-  pMC->Gsvolu("PUFP", "BOX ", IDTMED[703], DPUFP, 3);
+  gMC->Gsvolu("PUFP", "BOX ", IDTMED[703], DPUFP, 3);
   YO=(TXW_Y-UFP_Y)/2.0;
-  pMC->Gspos("PUFP", 1, "PTXW", 0.0, YO, 0.0, 0, "ONLY");
+  gMC->Gspos("PUFP", 1, "PTXW", 0.0, YO, 0.0, 0, "ONLY");
 
   // --- Define air-filled box, place inside PTXW ---
   DPAIR[0]=AIR_X/2.0;
   DPAIR[1]=AIR_Y/2.0;
   DPAIR[2]=AIR_Z/2.0;
-  pMC->Gsvolu("PAIR", "BOX ", IDTMED[798], DPAIR, 3);
+  gMC->Gsvolu("PAIR", "BOX ", IDTMED[798], DPAIR, 3);
   YO=(TXW_Y-AIR_Y)/2.0-UFP_Y;
-  pMC->Gspos("PAIR", 1, "PTXW", 0.0, YO, 0.0, 0, "ONLY");
+  gMC->Gspos("PAIR", 1, "PTXW", 0.0, YO, 0.0, 0, "ONLY");
 
   // --- Define Thermo insulating Crystal Box, position inside PAIR ---
   DPTCB[0]=GetNphi()*(XTL_X+2*TOTAL_GAP)/2.0+TCB_THICK;
   DPTCB[1]=(XTL_Y+SUP_Y+PAP_THICK+STE_THICK)/2.0+TCB_THICK/2.0;
   DPTCB[2]=GetNz()*(XTL_Z+2*TOTAL_GAP)/2.0+TCB_THICK;
-  pMC->Gsvolu("PTCB", "BOX ", IDTMED[706], DPTCB, 3);
+  gMC->Gsvolu("PTCB", "BOX ", IDTMED[706], DPTCB, 3);
   YO=AIR_Y/2.0-DPTCB[1]-
     (CBS_R-FTI_R-TCB_THICK-FTIU_THICK-UFP_Y);
-  pMC->Gspos("PTCB", 1, "PAIR", 0.0, YO, 0.0, 0, "ONLY");
+  gMC->Gspos("PTCB", 1, "PAIR", 0.0, YO, 0.0, 0, "ONLY");
 
   // --- Define Crystal BLock filled with air, position it inside PTCB ---
   DPCBL[0]=GetNphi()*(XTL_X+2*TOTAL_GAP)/2.0;
   DPCBL[1]=(XTL_Y+SUP_Y+PAP_THICK+STE_THICK)/2.0;
   DPCBL[2]=GetNz()*(XTL_Z+2*TOTAL_GAP)/2.0;
-  pMC->Gsvolu("PCBL", "BOX ", IDTMED[798], DPCBL, 3);
+  gMC->Gsvolu("PCBL", "BOX ", IDTMED[798], DPCBL, 3);
   
   // --- Divide PCBL in X (phi) and Z directions --
-  pMC->Gsdvn("PROW", "PCBL", Int_t (GetNphi()), 1);
-  pMC->Gsdvn("PCEL", "PROW", Int_t (GetNz()), 3);
+  gMC->Gsdvn("PROW", "PCBL", Int_t (GetNphi()), 1);
+  gMC->Gsdvn("PCEL", "PROW", Int_t (GetNz()), 3);
   YO=-TCB_THICK/2.0;
-  pMC->Gspos("PCBL", 1, "PTCB", 0.0, YO, 0.0, 0, "ONLY");
+  gMC->Gspos("PCBL", 1, "PTCB", 0.0, YO, 0.0, 0, "ONLY");
 
   // --- Define STeel (actually, it's titanium) Cover volume, place inside PCEL
   DPSTC[0]=(XTL_X+2*PAP_THICK)/2.0;
   DPSTC[1]=(XTL_Y+SUP_Y+PAP_THICK+STE_THICK)/2.0;
   DPSTC[2]=(XTL_Z+2*PAP_THICK+2*STE_THICK)/2.0;
-  pMC->Gsvolu("PSTC", "BOX ", IDTMED[704], DPSTC, 3);
-  pMC->Gspos("PSTC", 1, "PCEL", 0.0, 0.0, 0.0, 0, "ONLY");
+  gMC->Gsvolu("PSTC", "BOX ", IDTMED[704], DPSTC, 3);
+  gMC->Gspos("PSTC", 1, "PCEL", 0.0, 0.0, 0.0, 0, "ONLY");
 
   // --- Define Tyvek volume, place inside PSTC ---
   DPPAP[0]=XTL_X/2.0+PAP_THICK;
   DPPAP[1]=(XTL_Y+SUP_Y+PAP_THICK)/2.0;
   DPPAP[2]=XTL_Z/2.0+PAP_THICK;
-  pMC->Gsvolu("PPAP", "BOX ", IDTMED[702], DPPAP, 3);
+  gMC->Gsvolu("PPAP", "BOX ", IDTMED[702], DPPAP, 3);
   YO=(XTL_Y+SUP_Y+PAP_THICK)/2.0-(XTL_Y+SUP_Y+PAP_THICK+STE_THICK)/2.0;
-  pMC->Gspos("PPAP", 1, "PSTC", 0.0, YO, 0.0, 0, "ONLY");
+  gMC->Gspos("PPAP", 1, "PSTC", 0.0, YO, 0.0, 0, "ONLY");
 
   // --- Define PbWO4 crystal volume, place inside PPAP ---
   DPXTL[0]=XTL_X/2.0;
   DPXTL[1]=XTL_Y/2.0;
   DPXTL[2]=XTL_Z/2.0;
-  pMC->Gsvolu("PXTL", "BOX ", IDTMED[699], DPXTL, 3);
+  gMC->Gsvolu("PXTL", "BOX ", IDTMED[699], DPXTL, 3);
   YO=(XTL_Y+SUP_Y+PAP_THICK)/2.0-XTL_Y/2.0-PAP_THICK;
-  pMC->Gspos("PXTL", 1, "PPAP", 0.0, YO, 0.0, 0, "ONLY");
+  gMC->Gspos("PXTL", 1, "PPAP", 0.0, YO, 0.0, 0, "ONLY");
 
   // --- Define crystal support volume, place inside PPAP ---
   DPSUP[0]=XTL_X/2.0+PAP_THICK;
   DPSUP[1]=SUP_Y/2.0;
   DPSUP[2]=XTL_Z/2.0+PAP_THICK;
-  pMC->Gsvolu("PSUP", "BOX ", IDTMED[798], DPSUP, 3);
+  gMC->Gsvolu("PSUP", "BOX ", IDTMED[798], DPSUP, 3);
   YO=SUP_Y/2.0-(XTL_Y+SUP_Y+PAP_THICK)/2.0;
-  pMC->Gspos("PSUP", 1, "PPAP", 0.0, YO, 0.0, 0, "ONLY");
+  gMC->Gspos("PSUP", 1, "PPAP", 0.0, YO, 0.0, 0, "ONLY");
 
   // --- Define PIN-diode volume and position it inside crystal support ---
   // --- right behind PbWO4 crystal
   DPPIN[0]=PIN_X/2.0;
   DPPIN[1]=PIN_Y/2.0;
   DPPIN[2]=PIN_Z/2.0;
-  pMC->Gsvolu("PPIN", "BOX ", IDTMED[705], DPPIN, 3);
+  gMC->Gsvolu("PPIN", "BOX ", IDTMED[705], DPPIN, 3);
   YO=SUP_Y/2.0-PIN_Y/2.0;
-  pMC->Gspos("PPIN", 1, "PSUP", 0.0, YO, 0.0, 0, "ONLY");
+  gMC->Gspos("PPIN", 1, "PSUP", 0.0, YO, 0.0, 0, "ONLY");
 
   // --- Define Upper Cooling Panel, place it on top of PTCB ---
   DPUCP[0]=DPTCB[0];
   DPUCP[1]=UCP_Y/2.0;
   DPUCP[2]=DPTCB[2];
-  pMC->Gsvolu("PUCP", "BOX ", IDTMED[701], DPUCP,3);
+  gMC->Gsvolu("PUCP", "BOX ", IDTMED[701], DPUCP,3);
   YO=(AIR_Y-UCP_Y)/2.0-(CBS_R-FTI_R-TCB_THICK-FTIU_THICK-UFP_Y-UCP_Y);
-  pMC->Gspos("PUCP", 1, "PAIR", 0.0, YO, 0.0, 0, "ONLY");
+  gMC->Gspos("PUCP", 1, "PAIR", 0.0, YO, 0.0, 0, "ONLY");
 
   // --- Define Al Support Plate, position it inside PAIR ---
   // --- right beneath PTCB ---
   DPASP[0]=AIR_X/2.0;
   DPASP[1]=ASP_Y/2.0;
   DPASP[2]=AIR_Z/2.0;
-  pMC->Gsvolu("PASP", "BOX ", IDTMED[701], DPASP, 3);
+  gMC->Gsvolu("PASP", "BOX ", IDTMED[701], DPASP, 3);
   YO=(AIR_Y-ASP_Y)/2.0-(CBS_R-FTI_R-FTIU_THICK-UFP_Y+DPCBL[1]*2);
-  pMC->Gspos("PASP", 1, "PAIR", 0.0, YO, 0.0, 0, "ONLY");
+  gMC->Gspos("PASP", 1, "PAIR", 0.0, YO, 0.0, 0, "ONLY");
 
   // --- Define Thermo Insulating Plate, position it inside PAIR ---
   // --- right beneath PASP ---
   DPTIP[0]=AIR_X/2.0;
   DPTIP[1]=TIP_Y/2.0;
   DPTIP[2]=AIR_Z/2.0;
-  pMC->Gsvolu("PTIP", "BOX ", IDTMED[706], DPTIP, 3);
+  gMC->Gsvolu("PTIP", "BOX ", IDTMED[706], DPTIP, 3);
   YO=(AIR_Y-TIP_Y)/2.0-(CBS_R-FTI_R-FTIU_THICK-UFP_Y+DPCBL[1]*2+ASP_Y);
-  pMC->Gspos("PTIP", 1, "PAIR", 0.0, YO, 0.0, 0, "ONLY");
+  gMC->Gspos("PTIP", 1, "PAIR", 0.0, YO, 0.0, 0, "ONLY");
 
   // --- Define Textolit Plate, position it inside PAIR ---
   // --- right beneath PTIP ---
   DPTXP[0]=AIR_X/2.0;
   DPTXP[1]=TXP_Y/2.0;
   DPTXP[2]=AIR_Z/2.0;
-  pMC->Gsvolu("PTXP", "BOX ", IDTMED[707], DPTXP, 3);
+  gMC->Gsvolu("PTXP", "BOX ", IDTMED[707], DPTXP, 3);
   YO=(AIR_Y-TXP_Y)/2.0-
     (CBS_R-FTI_R-FTIU_THICK-UFP_Y+DPCBL[1]*2+ASP_Y+TIP_Y);
-  pMC->Gspos("PTXP", 1, "PAIR", 0.0, YO, 0.0, 0, "ONLY");
+  gMC->Gspos("PTXP", 1, "PAIR", 0.0, YO, 0.0, 0, "ONLY");
 
   // --- Define CPV volume, DON'T PLACE IT YET ---
   // --- Divide in X and Z direction (same way as PCBL) ---
   DPCPV[0]=DPCBL[0];
   DPCPV[1]=CPV_Y/2.0;
   DPCPV[2]=DPCBL[2];
-  //  pMC->Gsvolu("PCPV", "BOX ", IDTMED[700], DPCPV, 3);
-  pMC->Gsvolu("PCPV", "BOX ", IDTMED[798], DPCPV, 3);
-  pMC->Gsdvn("PCRO", "PCPV", Int_t (GetNphi()), 1);
-  pMC->Gsdvn("PCCE", "PCRO", Int_t (GetNz()), 3);
+  //  gMC->Gsvolu("PCPV", "BOX ", IDTMED[700], DPCPV, 3);
+  gMC->Gsvolu("PCPV", "BOX ", IDTMED[798], DPCPV, 3);
+  gMC->Gsdvn("PCRO", "PCPV", Int_t (GetNphi()), 1);
+  gMC->Gsdvn("PCCE", "PCRO", Int_t (GetNz()), 3);
 
   // Define CPV sensitive pad. It has the same size as PCCE.
   DPCPA[0]=DPCBL[0]/GetNphi();
   DPCPA[1]=CPV_Y/2.0;
   DPCPA[2]=DPCBL[2]/GetNz();
-  pMC->Gsvolu("PCPA", "BOX ", IDTMED[700], DPCPA, 3);
-  pMC->Gspos("PCPA", 1, "PCCE", 0.0, 0.0, 0.0, 0, "ONLY");
+  gMC->Gsvolu("PCPA", "BOX ", IDTMED[700], DPCPA, 3);
+  gMC->Gspos("PCPA", 1, "PCCE", 0.0, 0.0, 0.0, 0, "ONLY");
 
   // --- Position various PHOS units in ALICE setup ---
   // --- PHOS itself first ---
@@ -573,21 +569,21 @@ void AliPHOSv2::CreateGeometry()
     R=FTI_R+FTI_Y/2.0;
     XP1=R*TMath::Sin(angle/RADDEG);
     YP1=-R*TMath::Cos(angle/RADDEG);
-    pMC->Gspos("PHOS", i, "ALIC", XP1, YP1, 0.0, IDROTM[i-1], "ONLY");
+    gMC->Gspos("PHOS", i, "ALIC", XP1, YP1, 0.0, IDROTM[i-1], "ONLY");
 
     // --- Now position PCPV so that its plates are right on top of ---
     // --- corresponding PHOS modules (previously called cradles) ---
     R=FTI_R-CPV_Y/2.0;
     XP1=R*TMath::Sin(angle/RADDEG);
     YP1=-R*TMath::Cos(angle/RADDEG);
-    pMC->Gspos("PCPV", i, "ALIC", XP1, YP1, 0.0, IDROTM[i-1], "ONLY");
+    gMC->Gspos("PCPV", i, "ALIC", XP1, YP1, 0.0, IDROTM[i-1], "ONLY");
     GetModuleAngle(i-1)=angle-90.0;
 
   }
 
   // --- Set volumes seen without their descendants for drawing ---
-  pMC->Gsatt("PCEL", "SEEN", -2);
-  pMC->Gsatt("PCCE", "SEEN", -2);
+  gMC->Gsatt("PCEL", "SEEN", -2);
+  gMC->Gsatt("PCCE", "SEEN", -2);
 
 }
 
@@ -596,35 +592,34 @@ void AliPHOSv2::CreateGeometry()
 void AliPHOSv2::StepManager(void)
 {
 
-  AliMC *pMC=AliMC::GetMC();
   Int_t blrc[4]; // (box, layer, row, column) indices
   Float_t xyze[4]; // position wrt MRS and energy deposited
 
   Int_t *IDTMED=fIdtmed->GetArray()-699;
 
-  if(pMC->GetMedium()==IDTMED[700]){ // We are inside a CPV sensitive pad
+  if(gMC->GetMedium()==IDTMED[700]){ // We are inside a CPV sensitive pad
 
-    pMC->TrackPosition(xyze);
-    xyze[3]=pMC->Edep();
+    gMC->TrackPosition(xyze);
+    xyze[3]=gMC->Edep();
     
-    pMC->CurrentVolOff(3, (Text_t*)NULL, blrc[0]);
+    gMC->CurrentVolOff(3, (Text_t*)NULL, blrc[0]);
     blrc[1]=1; // CPV corresponds to layer 1
-    pMC->CurrentVolOff(2, (Text_t*)NULL, blrc[2]);
-    pMC->CurrentVolOff(1, (Text_t*)NULL, blrc[3]);
+    gMC->CurrentVolOff(2, (Text_t*)NULL, blrc[2]);
+    gMC->CurrentVolOff(1, (Text_t*)NULL, blrc[3]);
     
     AddHit(gAlice->CurrentTrack(), blrc, xyze);
 
   }
 
-  if(pMC->GetMedium()==IDTMED[699]){ // We are inside a PWO crystal
+  if(gMC->GetMedium()==IDTMED[699]){ // We are inside a PWO crystal
 
-    pMC->TrackPosition(xyze);
-    xyze[3]=pMC->Edep();
+    gMC->TrackPosition(xyze);
+    xyze[3]=gMC->Edep();
 
-    pMC->CurrentVolOff(9, (Text_t*)NULL, blrc[0]);
+    gMC->CurrentVolOff(9, (Text_t*)NULL, blrc[0]);
     blrc[1]=2; // PWO crystals correspond to layer 2
-    pMC->CurrentVolOff(4, (Text_t*)NULL, blrc[2]);
-    pMC->CurrentVolOff(3, (Text_t*)NULL, blrc[3]);
+    gMC->CurrentVolOff(4, (Text_t*)NULL, blrc[2]);
+    gMC->CurrentVolOff(3, (Text_t*)NULL, blrc[3]);
 
     AddHit(gAlice->CurrentTrack(), blrc, xyze);
 

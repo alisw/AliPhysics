@@ -546,8 +546,6 @@ void AliTPC::CreateMaterials()
   // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
   //-----------------------------------------------------------------
   
-  AliMC* pMC = AliMC::GetMC();
-
   Int_t ISXFLD=gAlice->Field()->Integ();
   Float_t SXMGMX=gAlice->Field()->Max();
   
@@ -603,7 +601,7 @@ void AliTPC::CreateMaterials()
   // --  Get A,Z etc. for CO2 
   
   char namate[21];
-  pMC->Gfmate((*fIdmate)[7], namate, a, z, d, radl, absl, buf, nbuf);
+  gMC->Gfmate((*fIdmate)[7], namate, a, z, d, radl, absl, buf, nbuf);
   ag[1] = a;
   zg[1] = z;
   dg = dne * .9 + dc * .1;

@@ -278,7 +278,6 @@ void AliPythia::ForceDecay(Decay_t decay)
 {
     if (fgInit) return;
     fgInit=1;
-    AliMC *pMC=AliMC::GetMC();
     
     Float_t mass;
     Float_t tlife;
@@ -333,42 +332,42 @@ void AliPythia::ForceDecay(Decay_t decay)
     kc=LuComp(41);	    
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
-    pMC->Gspart(113,"Phi",3,mass,0,tlife);
+    gMC->Gspart(113,"Phi",3,mass,0,tlife);
     fGPCode[kc][0]=113;
     fGPCode[kc][1]=113;
     // J/Psi  
     kc=LuComp(443);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
-    pMC->Gspart(114,"J/Psi",3,mass,0,tlife);
+    gMC->Gspart(114,"J/Psi",3,mass,0,tlife);
     fGPCode[kc][0]=114;
     fGPCode[kc][1]=114;
     // psi prime
     kc=LuComp(30443);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
-    pMC->Gspart(115,"Psi'",3,mass,0,tlife);
+    gMC->Gspart(115,"Psi'",3,mass,0,tlife);
     fGPCode[kc][0]=115;
     fGPCode[kc][1]=115;
     // upsilon(1s) 
     kc=LuComp(553); 	
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
-    pMC->Gspart(116,"Upsilon",3,mass,0,tlife);
+    gMC->Gspart(116,"Upsilon",3,mass,0,tlife);
     fGPCode[kc][0]=116;
     fGPCode[kc][1]=116;
     // upsilon(2s)	
     kc=LuComp(30553);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
-    pMC->Gspart(117,"Upsilon'",3,mass,0,tlife);
+    gMC->Gspart(117,"Upsilon'",3,mass,0,tlife);
     fGPCode[kc][0]=117;
     fGPCode[kc][1]=117;
     // upsilon(3s)	
     kc=LuComp(30553);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
-    pMC->Gspart(118,"Upsilon''",3,mass,0,tlife);
+    gMC->Gspart(118,"Upsilon''",3,mass,0,tlife);
     fGPCode[kc][0]=118;
     fGPCode[kc][1]=118;
 //
@@ -378,32 +377,32 @@ void AliPythia::ForceDecay(Decay_t decay)
     kc=LuComp(411);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
-    pMC->Gspart(119,"D^+",3,mass, 1,tlife);
-    pMC->Gspart(120,"D^-",3,mass,-1,tlife);
+    gMC->Gspart(119,"D^+",3,mass, 1,tlife);
+    gMC->Gspart(120,"D^-",3,mass,-1,tlife);
     fGPCode[kc][0]=119;
     fGPCode[kc][1]=120;
     // D^0
     kc=LuComp(421);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
-    pMC->Gspart(121,"D^0",3,mass,0,tlife);
-    pMC->Gspart(122,"D^0bar",3,mass,0,tlife);
+    gMC->Gspart(121,"D^0",3,mass,0,tlife);
+    gMC->Gspart(122,"D^0bar",3,mass,0,tlife);
     fGPCode[kc][0]=121;
     fGPCode[kc][1]=122;
     // D_s
     kc=LuComp(431);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
-    pMC->Gspart(123,"D_s^+",3,mass, 1,tlife);
-    pMC->Gspart(124,"D_s^-",3,mass,-1,tlife);
+    gMC->Gspart(123,"D_s^+",3,mass, 1,tlife);
+    gMC->Gspart(124,"D_s^-",3,mass,-1,tlife);
     fGPCode[kc][0]=123;
     fGPCode[kc][1]=124;
     // Lambda_c
     kc=LuComp(4122);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
-    pMC->Gspart(125,"Lambda_c+",3,mass, 1,tlife);
-    pMC->Gspart(126,"Lambda_c-",3,mass,-1,tlife);
+    gMC->Gspart(125,"Lambda_c+",3,mass, 1,tlife);
+    gMC->Gspart(126,"Lambda_c-",3,mass,-1,tlife);
     fGPCode[kc][0]=125;
     fGPCode[kc][1]=126;
     //
@@ -412,32 +411,32 @@ void AliPythia::ForceDecay(Decay_t decay)
     kc=LuComp(511);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
-    pMC->Gspart(127,"B^0",3,mass, 0,tlife);
-    pMC->Gspart(128,"B^0bar",3,mass, 0,tlife);
+    gMC->Gspart(127,"B^0",3,mass, 0,tlife);
+    gMC->Gspart(128,"B^0bar",3,mass, 0,tlife);
     fGPCode[kc][0]=127;
     fGPCode[kc][1]=128;
     // B^+-
     kc=LuComp(521);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
-    pMC->Gspart(129,"B^+",3,mass, 1,tlife);
-    pMC->Gspart(130,"B^-",3,mass,-1,tlife);
+    gMC->Gspart(129,"B^+",3,mass, 1,tlife);
+    gMC->Gspart(130,"B^-",3,mass,-1,tlife);
     fGPCode[kc][0]=129;
     fGPCode[kc][1]=130;
     // B_s
     kc=LuComp(531);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
-    pMC->Gspart(131,"B_s",3,mass, 0,tlife);
-    pMC->Gspart(132,"B_s^bar",3,mass,0,tlife);
+    gMC->Gspart(131,"B_s",3,mass, 0,tlife);
+    gMC->Gspart(132,"B_s^bar",3,mass,0,tlife);
     fGPCode[kc][0]=131;
     fGPCode[kc][1]=132;
     // Lambda_b
     kc=LuComp(5122);
     mass =GetPMAS(kc,1);
     tlife=GetPMAS(kc,4);
-    pMC->Gspart(133,"Lambda_b",3,mass, 0,tlife);
-    pMC->Gspart(134,"Lambda_b^bar",3,mass,0,tlife);
+    gMC->Gspart(133,"Lambda_b",3,mass, 0,tlife);
+    gMC->Gspart(134,"Lambda_b^bar",3,mass,0,tlife);
     fGPCode[kc][0]=133;
     fGPCode[kc][1]=134;
 //

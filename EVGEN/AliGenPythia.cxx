@@ -112,7 +112,6 @@ void AliGenPythia::Init()
 
 void AliGenPythia::Generate()
 {
-    AliMC* pMC = AliMC::GetMC();
 
     Float_t polar[3] =   {0,0,0};
     Float_t origin[3]=   {0,0,0};
@@ -132,7 +131,7 @@ void AliGenPythia::Generate()
     fTrials=0;
     for (j=0;j<3;j++) origin0[j]=fOrigin[j];
     if(fVertexSmear==perEvent) {
-	pMC->Rndm(random,6);
+	gMC->Rndm(random,6);
 	for (j=0;j<3;j++) {
 	    origin0[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 		TMath::Sqrt(-2*TMath::Log(random[2*j+1]));

@@ -46,9 +46,8 @@ Double_t AliGenMUONlib::YPion( Double_t *py, Double_t *)
 //
 Int_t AliGenMUONlib::IpPion()
 {
-    AliMC* pMC = AliMC::GetMC();
     Float_t random[1];
-    pMC->Rndm(random,1);
+    gMC->Rndm(random,1);
     if (random[0] < 0.5) {
 	return  211;
     } else {
@@ -104,9 +103,8 @@ Double_t AliGenMUONlib::YKaon( Double_t *py, Double_t *)
 //
 Int_t AliGenMUONlib::IpKaon()
 {
-    AliMC* pMC = AliMC::GetMC();
     Float_t random[1];
-    pMC->Rndm(random,1);
+    gMC->Rndm(random,1);
     if (random[0] < 0.5) {
 	return  321;
     } else {
@@ -236,11 +234,10 @@ Double_t AliGenMUONlib::YCharm( Double_t *px, Double_t *)
 
 Int_t AliGenMUONlib::IpCharm()
 {  
-    AliMC* pMC = AliMC::GetMC();
     Float_t random[2];
     Int_t ip;
 //    411,421,431,4122
-    pMC->Rndm(random,2);
+    gMC->Rndm(random,2);
     if (random[0] < 0.5) {
 	ip=411;
     } else if (random[0] < 0.75) {
@@ -280,10 +277,9 @@ Double_t AliGenMUONlib::YBeauty( Double_t *px, Double_t *)
 
 Int_t AliGenMUONlib::IpBeauty()
 {  
-    AliMC* pMC = AliMC::GetMC();
     Float_t random[2];
     Int_t ip;
-    pMC->Rndm(random,2);
+    gMC->Rndm(random,2);
     if (random[0] < 0.5) {
 	ip=511;
     } else if (random[0] < 0.75) {

@@ -154,7 +154,7 @@ void AliModule::AliMaterial(Int_t imat, const char* name, Float_t a,
   // nwbuf       number of user words
   //
   Int_t kmat;
-  AliMC::GetMC()->Material(kmat, name, a, z, dens, radl, absl, buf, nwbuf);
+  gMC->Material(kmat, name, a, z, dens, radl, absl, buf, nwbuf);
   (*fIdmate)[imat]=kmat;
 }
   
@@ -184,7 +184,7 @@ void AliModule::AliMixture(Int_t imat, const char *name, Float_t *a,
   // wmat        array of concentrations
   //
   Int_t kmat;
-  AliMC::GetMC()->Mixture(kmat, name, a, z, dens, nlmat, wmat);
+  gMC->Mixture(kmat, name, a, z, dens, nlmat, wmat);
   (*fIdmate)[imat]=kmat;
 } 
  
@@ -217,7 +217,7 @@ void AliModule::AliMedium(Int_t numed, const char *name, Int_t nmat,
   //        =  3       constant magnetic field along z
   //  
   Int_t kmed;
-  AliMC::GetMC()->Medium(kmed,name, (*fIdmate)[nmat], isvol, ifield, fieldm,
+  gMC->Medium(kmed,name, (*fIdmate)[nmat], isvol, ifield, fieldm,
 			 tmaxfd, stemax, deemax, epsil,	stmin, ubuf, nbuf); 
   (*fIdtmed)[numed]=kmed;
 } 
@@ -238,7 +238,7 @@ void AliModule::AliMatrix(Int_t &nmat, Float_t theta1, Float_t phi1,
   // theta3      polar angle for axis III
   // phi3        azimuthal angle for axis III
   //
-  AliMC::GetMC()->Matrix(nmat, theta1, phi1, theta2, phi2, theta3, phi3); 
+  gMC->Matrix(nmat, theta1, phi1, theta2, phi2, theta3, phi3); 
 } 
 
 //_____________________________________________________________________________

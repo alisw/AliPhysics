@@ -65,8 +65,6 @@ void AliMAG::CreateGeometry()
   */
   //End_Html
   
-  AliMC* pMC = AliMC::GetMC();
-  
   Int_t *idtmed = fIdtmed->GetArray()-299;
   
   Float_t dpar[13];
@@ -87,8 +85,8 @@ void AliMAG::CreateGeometry()
   par[7] = 600.;
   par[8] = 580.;
   par[9] = 790.;
-  pMC->Gsvolu("L3MO", "PGON", idtmed[334], par, 10);
-  pMC->Gspos("L3MO", 1, "ALIC", 0., -30., 0., 0, "ONLY");
+  gMC->Gsvolu("L3MO", "PGON", idtmed[334], par, 10);
+  gMC->Gspos("L3MO", 1, "ALIC", 0., -30., 0., 0, "ONLY");
   
   // Define coils 
   
@@ -96,15 +94,15 @@ void AliMAG::CreateGeometry()
   par[6] = 690.;
   par[8] = 585.;
   par[9] = 690.;
-  pMC->Gsvolu("L3CO", "PGON", idtmed[328], par, 10);
-  pMC->Gspos("L3CO", 1, "L3MO", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("L3CO", "PGON", idtmed[328], par, 10);
+  gMC->Gspos("L3CO", 1, "L3MO", 0., 0., 0., 0, "ONLY");
   
   par[5] = 580.;
   par[6] = 585.;
   par[8] = 580.;
   par[9] = 585.;
-  pMC->Gsvolu("L3C1", "PGON", idtmed[308], par, 10);
-  pMC->Gspos("L3C1", 1, "L3MO", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("L3C1", "PGON", idtmed[308], par, 10);
+  gMC->Gspos("L3C1", 1, "L3MO", 0., 0., 0., 0, "ONLY");
   
   // Define yoke 
   
@@ -112,8 +110,8 @@ void AliMAG::CreateGeometry()
   par[6] = 790.;
   par[8] = 690.;
   par[9] = 790.;
-  pMC->Gsvolu("L3YO", "PGON", idtmed[329], par, 10);
-  pMC->Gspos("L3YO", 1, "L3MO", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("L3YO", "PGON", idtmed[329], par, 10);
+  gMC->Gspos("L3YO", 1, "L3MO", 0., 0., 0., 0, "ONLY");
   
   // Define the return yoke of L3 (DOOR) 
   
@@ -123,7 +121,7 @@ void AliMAG::CreateGeometry()
   par[7] = 700.;
   par[8] = par[5];
   par[9] = par[6];
-  pMC->Gsvolu("L3DO", "PGON", idtmed[334], par, 10);
+  gMC->Gsvolu("L3DO", "PGON", idtmed[334], par, 10);
   
   par[4] = 610.;
   par[5] = 0.;
@@ -131,13 +129,13 @@ void AliMAG::CreateGeometry()
   par[7] = 700.;
   par[8] = par[5];
   par[9] = par[6];
-  pMC->Gsvolu("L3FR", "PGON", idtmed[329], par, 10);
+  gMC->Gsvolu("L3FR", "PGON", idtmed[329], par, 10);
   
   // INNER LAYER 
   
   par[4] = 600.;
   par[7] = 610.;
-  pMC->Gsvolu("L3IR", "PGON", idtmed[309], par, 10);
+  gMC->Gsvolu("L3IR", "PGON", idtmed[309], par, 10);
   
   //     DOOR OPENING 
   
@@ -154,28 +152,28 @@ void AliMAG::CreateGeometry()
   dpar[10] = 700.;
   dpar[11] = dpar[5];
   dpar[12] = dpar[6] + 50.;
-  pMC->Gsvolu("L3O1", "PGON", idtmed[314], dpar, 13);
+  gMC->Gsvolu("L3O1", "PGON", idtmed[314], dpar, 13);
   par[4] = 600.;
   par[5] = 0.;
   par[6] = 163.5;
   par[7] = 610.;
   par[8] = 0.;
   par[9] = 163.5;
-  pMC->Gsvolu("L3O2", "PGON", idtmed[314], par, 10);
+  gMC->Gsvolu("L3O2", "PGON", idtmed[314], par, 10);
   
   //     THE DOOR OPENING HAS TO BE PLACED WITH 'MANY' SINCE THE REGION 
   //     WILL CONTAIN A MUON CHAMBER, BEAM PIPE AND BEAM SHIELD 
   //     PLACED WITH 'ONLY'. 
   
-  pMC->Gspos("L3O1", 1, "L3FR", 0., 30., 0., 0, "MANY");
-  pMC->Gspos("L3O2", 1, "L3IR", 0., 30., 0., 0, "MANY");
+  gMC->Gspos("L3O1", 1, "L3FR", 0., 30., 0., 0, "MANY");
+  gMC->Gspos("L3O2", 1, "L3IR", 0., 30., 0., 0, "MANY");
   
-  pMC->Gspos("L3FR", 1, "L3DO", 0., 0., 0., 0, "MANY");
-  pMC->Gspos("L3IR", 1, "L3DO", 0., 0., 0., 0, "MANY");
+  gMC->Gspos("L3FR", 1, "L3DO", 0., 0., 0., 0, "MANY");
+  gMC->Gspos("L3IR", 1, "L3DO", 0., 0., 0., 0, "MANY");
   
-  pMC->Gspos("L3DO", 1, "ALIC", 0., -30., 0., 0, "MANY");
+  gMC->Gspos("L3DO", 1, "ALIC", 0., -30., 0., 0, "MANY");
   AliMatrix(idrotm[300], 90., 0., 90., 90., 180., 0.);
-  pMC->Gspos("L3DO", 2, "ALIC", 0., -30., 0., idrotm[300], "MANY");
+  gMC->Gspos("L3DO", 2, "ALIC", 0., -30., 0., idrotm[300], "MANY");
 }
 
 //_____________________________________________________________________________

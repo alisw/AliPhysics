@@ -49,8 +49,6 @@ void AliTPCv2::CreateGeometry()
   */
   //End_Html
 
-  AliMC* pMC = AliMC::GetMC();
-
   Int_t *idtmed = fIdtmed->GetArray()-399;
 
   AliTPCParam * fTPCParam = &(fDigParam->GetParam());
@@ -126,7 +124,7 @@ void AliTPCv2::CreateGeometry()
   dm[1] = 278.;
   dm[2] = 275.;
   
-  pMC->Gsvolu("TPC ", "TUBE", idtmed[407], dm, 3);
+  gMC->Gsvolu("TPC ", "TUBE", idtmed[407], dm, 3);
   // ------------------------------------------------------- 
   //     drift gas Ne/CO2 (90/10 volume) - nonsensitive 
   //     field cage thickness = 0.52% X0 
@@ -135,7 +133,7 @@ void AliTPCv2::CreateGeometry()
   dm[1] = 257.;
   dm[2] = 250.;
   
-  pMC->Gsvolu("TGAS", "TUBE", idtmed[402], dm, 3);
+  gMC->Gsvolu("TGAS", "TUBE", idtmed[402], dm, 3);
   // ------------------------------------------------------ 
   //     "side" gas volume (the same as drift gas), 
   //      here the readout chambers are positioned 
@@ -143,13 +141,13 @@ void AliTPCv2::CreateGeometry()
   dm[2] = 0.5*(275.-250.);
   z_side = dm[2];
 
-  pMC->Gsvolu("TPSG", "TUBE", idtmed[401], dm, 3);
+  gMC->Gsvolu("TPSG", "TUBE", idtmed[401], dm, 3);
   // ------------------------------------------------------ 
   //      HV midplane - 20 microns of mylar 
   // ----------------------------------------------------- 
   dm[2] = .001;
   
-  pMC->Gsvolu("TPHV", "TUBE", idtmed[405], dm, 3);
+  gMC->Gsvolu("TPHV", "TUBE", idtmed[405], dm, 3);
   
   // ==================================================== 
   //   lower and upper readout chambers 
@@ -188,18 +186,18 @@ void AliTPCv2::CreateGeometry()
   
   x0l = rssl + dm[3];
   
-  pMC->Gsvolu("TRCS", "TRD1", idtmed[399], dm, 4);
+  gMC->Gsvolu("TRCS", "TRD1", idtmed[399], dm, 4);
   // ----------------------------------------------------- 
   //     S-sectors --> "gas sectors" - sensitive 
   // ----------------------------------------------------- 
   dm[2] = (250.-0.001)/2.;
-  pMC->Gsvolu("TSGA", "TRD1", idtmed[403], dm, 4);
+  gMC->Gsvolu("TSGA", "TRD1", idtmed[403], dm, 4);
   // ------------------------------------------------------------- 
   //  Only for the debugging purpose and resolution calculation 
   //  Sensitive strips at the pad-row center 
   // ------------------------------------------------------------- 
   if (fSens >= 0) {
-    pMC->Gsvolu("TSST", "TRD1", idtmed[403], dm, 0);
+    gMC->Gsvolu("TSST", "TRD1", idtmed[403], dm, 0);
     dm[3] = .005;
   
     z0    = rssl + (rssu - rssl) * .5;
@@ -212,9 +210,9 @@ void AliTPCv2::CreateGeometry()
       
       zz    = -z0 + r1 +dm[3];
 
-      pMC->Gsposp("TSST", iss+1, "TSGA", 0, 0, zz, 0, "ONLY", dm, 4);
+      gMC->Gsposp("TSST", iss+1, "TSGA", 0, 0, zz, 0, "ONLY", dm, 4);
     }
-    pMC->Gsord("TSGA", 3);
+    gMC->Gsord("TSGA", 3);
   }
   // --------------------------------------------------- 
   //     L-sectors (upper sectors) 
@@ -226,18 +224,18 @@ void AliTPCv2::CreateGeometry()
   
   x0u = rlsl + dm[3];
   
-  pMC->Gsvolu("TRCL", "TRD1", idtmed[399], dm, 4);
+  gMC->Gsvolu("TRCL", "TRD1", idtmed[399], dm, 4);
   // ----------------------------------------------------- 
   //     L-sectors - "gas sectors" - sensitive! 
   // ----------------------------------------------------- 
   dm[2] = (250.-0.001)/2.;
-  pMC->Gsvolu("TLGA", "TRD1", idtmed[403], dm, 4);
+  gMC->Gsvolu("TLGA", "TRD1", idtmed[403], dm, 4);
   // ------------------------------------------------------------- 
   //  Only for the debugging purpose and resolution calculation 
   //  Sensitive strips at the pad-row center 
   // ------------------------------------------------------------- 
   if (fSens >= 0) {
-    pMC->Gsvolu("TLST", "TRD1", idtmed[403], dm, 0);
+    gMC->Gsvolu("TLST", "TRD1", idtmed[403], dm, 0);
     
     dm[3] = .005;
 
@@ -251,9 +249,9 @@ void AliTPCv2::CreateGeometry()
 
       zz  = -z0 + r1 +dm[3]; 
 
-      pMC->Gsposp("TLST", ils+1, "TLGA", 0, 0, zz, 0, "ONLY", dm, 4);
+      gMC->Gsposp("TLST", ils+1, "TLGA", 0, 0, zz, 0, "ONLY", dm, 4);
     }
-    pMC->Gsord("TLGA", 3);
+    gMC->Gsord("TLGA", 3);
   }
   // ****************************************************** 
   // ------------------------------------------------ 
@@ -288,22 +286,22 @@ void AliTPCv2::CreateGeometry()
 	// ----------------------------------------------------------- 
 	//       position ALL lower sectors 
 	// ----------------------------------------------------------- 
-	pMC->Gspos("TSGA", il, "TGAS", x, y, z, idrotm[idr], "ONLY");
-	pMC->Gspos("TSGA",il+12 , "TGAS", x, y, -z, idrotm[idr], "ONLY");
+	gMC->Gspos("TSGA", il, "TGAS", x, y, z, idrotm[idr], "ONLY");
+	gMC->Gspos("TSGA",il+12 , "TGAS", x, y, -z, idrotm[idr], "ONLY");
       } else {
 	// ----------------------------------------------------------- 
 	//       position selected lower sectors 
 	// ----------------------------------------------------------- 
 	for (isll = 1; isll <= 6; ++isll) {
 	  if (fSecLows[isll - 1] == il) {
-	    pMC->Gspos("TSGA", il, "TGAS", x, y, z, idrotm[idr], "ONLY");
+	    gMC->Gspos("TSGA", il, "TGAS", x, y, z, idrotm[idr], "ONLY");
 	  } else if (fSecLows[isll - 1] == il + 12) {
-	    pMC->Gspos("TSGA",il+12 , "TGAS", x, y, -z, idrotm[idr],"ONLY");
+	    gMC->Gspos("TSGA",il+12 , "TGAS", x, y, -z, idrotm[idr],"ONLY");
 	  }
 	}
       }
       
-      pMC->Gspos("TRCS", il, "TPSG", x, y, z1, idrotm[idr], "ONLY");
+      gMC->Gspos("TRCS", il, "TPSG", x, y, z1, idrotm[idr], "ONLY");
       
     }
     // ---------------------------------------------------- 
@@ -334,27 +332,27 @@ void AliTPCv2::CreateGeometry()
 	// ------------------------------------------------------------- 
 	//           position ALL upper sectors 
 	// ------------------------------------------------------------- 
-	pMC->Gspos("TLGA", iu, "TGAS", x, y, z, idrotm[idr], "ONLY");
-	pMC->Gspos("TLGA",iu+24 , "TGAS", x, y, -z, idrotm[idr], "ONLY");
+	gMC->Gspos("TLGA", iu, "TGAS", x, y, z, idrotm[idr], "ONLY");
+	gMC->Gspos("TLGA",iu+24 , "TGAS", x, y, -z, idrotm[idr], "ONLY");
       } else {
 	// ------------------------------------------------------------- 
 	//         position selected upper sectors 
 	// ------------------------------------------------------------- 
 	for (isll = 1; isll <= 12; ++isll) {
 	  if (fSecUps[isll - 1] == iu + 24) {
-	    pMC->Gspos("TLGA", iu, "TGAS", x, y, z, idrotm[idr], "ONLY");
+	    gMC->Gspos("TLGA", iu, "TGAS", x, y, z, idrotm[idr], "ONLY");
 	  } else if (fSecUps[isll - 1] == iu + 48) {
-	    pMC->Gspos("TLGA",iu+24 , "TGAS", x, y, -z, idrotm[idr],"ONLY");
+	    gMC->Gspos("TLGA",iu+24 , "TGAS", x, y, -z, idrotm[idr],"ONLY");
 	  }
 	}
       }
       
-      pMC->Gspos("TRCL", iu, "TPSG", x, y, z1, idrotm[idr], "ONLY");
+      gMC->Gspos("TRCL", iu, "TPSG", x, y, z1, idrotm[idr], "ONLY");
     }
     // -------------------------------------------------------- 
     //             Spoke wheel structures 
     // -------------------------------------------------------- 
-    pMC->Gsvolu("TSWS", "TUBE", idtmed[399], dm, 0);
+    gMC->Gsvolu("TSWS", "TUBE", idtmed[399], dm, 0);
     
     z0 = -z_side + 2.;
     
@@ -362,17 +360,17 @@ void AliTPCv2::CreateGeometry()
     dm[1] = 86.;
     dm[2] = 1.;
     
-    pMC->Gsposp("TSWS", 1, "TPSG", 0, 0, z0, 0, "ONLY", dm, 3);
+    gMC->Gsposp("TSWS", 1, "TPSG", 0, 0, z0, 0, "ONLY", dm, 3);
     
     dm[0] = 253.;
     dm[1] = 257.;
     
-    pMC->Gsposp("TSWS", 2, "TPSG", 0, 0, z0, 0, "ONLY", dm, 3);
+    gMC->Gsposp("TSWS", 2, "TPSG", 0, 0, z0, 0, "ONLY", dm, 3);
     
     dm[0] = 140.9;
     dm[1] = 141.9;
     
-    pMC->Gsposp("TSWS", 3, "TPSG", 0, 0, z0, 0, "ONLY", dm, 3);
+    gMC->Gsposp("TSWS", 3, "TPSG", 0, 0, z0, 0, "ONLY", dm, 3);
     
     // ------------------------------------------------------- 
     //    this volumes are to avoid overlaping 
@@ -382,13 +380,13 @@ void AliTPCv2::CreateGeometry()
     dm[0] = 76.;
     dm[1] = 76.+0.09776;
 
-    pMC->Gsposp("TSWS", 4, "TPC ", 0, 0, z0, 0, "ONLY", dm, 3);
-    pMC->Gsposp("TSWS", 5, "TPC ", 0, 0, -z0, 0, "ONLY", dm, 3);
+    gMC->Gsposp("TSWS", 4, "TPC ", 0, 0, z0, 0, "ONLY", dm, 3);
+    gMC->Gsposp("TSWS", 5, "TPC ", 0, 0, -z0, 0, "ONLY", dm, 3);
 
     z0 += 21.;
 
-    pMC->Gsposp("TSWS", 6, "TPC ", 0, 0, z0, 0, "ONLY", dm, 3);
-    pMC->Gsposp("TSWS", 7, "TPC ", 0, 0, -z0, 0, "ONLY", dm, 3);
+    gMC->Gsposp("TSWS", 6, "TPC ", 0, 0, z0, 0, "ONLY", dm, 3);
+    gMC->Gsposp("TSWS", 7, "TPC ", 0, 0, -z0, 0, "ONLY", dm, 3);
 
     dm[0] = 257.;
     dm[1] = 257.+0.09776;
@@ -396,8 +394,8 @@ void AliTPCv2::CreateGeometry()
 
     z0 = 263.5;
 
-    pMC->Gsposp("TSWS", 8, "TPC ", 0, 0, z0, 0, "ONLY", dm, 3);
-    pMC->Gsposp("TSWS", 9, "TPC ", 0, 0, -z0, 0, "ONLY", dm, 3);
+    gMC->Gsposp("TSWS", 8, "TPC ", 0, 0, z0, 0, "ONLY", dm, 3);
+    gMC->Gsposp("TSWS", 9, "TPC ", 0, 0, -z0, 0, "ONLY", dm, 3);
     // ========================================================== 
     //                  wheels 
     // ========================================================== 
@@ -407,18 +405,18 @@ void AliTPCv2::CreateGeometry()
     dm[0] = 257.+0.09776;
     dm[1] = 278.;
     dm[2] = 11.5;
-    pMC->Gsvolu("TPW1", "TUBE", idtmed[399], dm, 3);
+    gMC->Gsvolu("TPW1", "TUBE", idtmed[399], dm, 3);
     
     dm[0] = 259.;
     dm[1] = 278.;
     dm[2] = 9.5;
     
-    pMC->Gsvolu("TPW2", "TUBE", idtmed[498], dm, 3);
+    gMC->Gsvolu("TPW2", "TUBE", idtmed[498], dm, 3);
     
-    pMC->Gspos("TPW2", 1, "TPW1", 0, 0, 0, 0, "ONLY");
+    gMC->Gspos("TPW2", 1, "TPW1", 0, 0, 0, 0, "ONLY");
 
-    pMC->Gspos("TPW1", 1, "TPC ", 0, 0, z0, 0, "ONLY");
-    pMC->Gspos("TPW1", 2, "TPC ", 0, 0, -z0, 0, "ONLY");
+    gMC->Gspos("TPW1", 1, "TPC ", 0, 0, z0, 0, "ONLY");
+    gMC->Gspos("TPW1", 2, "TPC ", 0, 0, -z0, 0, "ONLY");
     // ----------------------------------------------------------- 
     //     Small wheel -> positioned in the TPSG 
     // ----------------------------------------------------------- 
@@ -426,19 +424,19 @@ void AliTPCv2::CreateGeometry()
     dm[1] = 82.;
     dm[2] = 11.5;
     
-    pMC->Gsvolu("TPW3", "TUBE", idtmed[399], dm, 3);
+    gMC->Gsvolu("TPW3", "TUBE", idtmed[399], dm, 3);
     
     dm[0] = 76.+0.09776;
     dm[1] = 80.;
     dm[2] = 9.5;
     
-    pMC->Gsvolu("TPW4", "TUBE", idtmed[401], dm, 3);
+    gMC->Gsvolu("TPW4", "TUBE", idtmed[401], dm, 3);
     
-    pMC->Gspos("TPW4", 1, "TPW3", 0, 0, 0, 0, "ONLY");
+    gMC->Gspos("TPW4", 1, "TPW3", 0, 0, 0, 0, "ONLY");
     
     z0 = 1.;
     
-    pMC->Gspos("TPW3", 1, "TPSG", 0, 0, z0, 0, "ONLY");
+    gMC->Gspos("TPW3", 1, "TPSG", 0, 0, z0, 0, "ONLY");
     // --------------------------------------------------------- 
     //       spokes, inner and outer, also the inner ring 
     // --------------------------------------------------------- 
@@ -448,14 +446,14 @@ void AliTPCv2::CreateGeometry()
     
     x1 = dm[0] + 82.;
     
-    pMC->Gsvolu("TSPI", "BOX ", idtmed[399], dm, 3);
+    gMC->Gsvolu("TSPI", "BOX ", idtmed[399], dm, 3);
     
     dm[1] = 2.;
     dm[2] = 1.;
     
-    pMC->Gsvolu("TSP1", "BOX ", idtmed[498], dm, 3);
+    gMC->Gsvolu("TSP1", "BOX ", idtmed[498], dm, 3);
     
-    pMC->Gspos("TSP1", 1, "TSPI", 0, 0, 0, 0, "ONLY");
+    gMC->Gspos("TSP1", 1, "TSPI", 0, 0, 0, 0, "ONLY");
     
     dm[0] = 0.5*(256.9-142.1);
     dm[1] = 3.;
@@ -463,32 +461,32 @@ void AliTPCv2::CreateGeometry()
     
     x2 = dm[0] + 142.;
     
-    pMC->Gsvolu("TSPO", "BOX ", idtmed[399], dm, 3);
+    gMC->Gsvolu("TSPO", "BOX ", idtmed[399], dm, 3);
     
     dm[1] = 2.;
     dm[2] = 1.;
     
-    pMC->Gsvolu("TSP2", "BOX ", idtmed[498], dm, 3);
+    gMC->Gsvolu("TSP2", "BOX ", idtmed[498], dm, 3);
 
-    pMC->Gspos("TSP2", 1, "TSPO", 0, 0, 0, 0, "ONLY");
+    gMC->Gspos("TSP2", 1, "TSPO", 0, 0, 0, 0, "ONLY");
     // -------------------------------------------------------- 
     dm[0] = 136.;
     dm[1] = 142.;
     dm[2] = 2.;
 
-    pMC->Gsvolu("TSWH", "TUBE", idtmed[399], dm, 3);
+    gMC->Gsvolu("TSWH", "TUBE", idtmed[399], dm, 3);
 
     dm[0] = 137.;
     dm[1] = 141.;
     dm[2] = 1.;
 
-    pMC->Gsvolu("TSW1", "TUBE", idtmed[498], dm, 3);
+    gMC->Gsvolu("TSW1", "TUBE", idtmed[498], dm, 3);
 
-    pMC->Gspos("TSW1", 1, "TSWH", 0, 0, 0, 0, "ONLY");
+    gMC->Gspos("TSW1", 1, "TSWH", 0, 0, 0, 0, "ONLY");
 
     z0 = z_side - .16168 - 2.;
     // -------------------------------------------------------- 
-    pMC->Gspos("TSWH", 1, "TPSG", 0, 0, z0, 0, "ONLY");
+    gMC->Gspos("TSWH", 1, "TPSG", 0, 0, z0, 0, "ONLY");
     // ------------------------------------------------------- 
     //     posiioning of the inner spokes 
     // ------------------------------------------------------- 
@@ -510,7 +508,7 @@ void AliTPCv2::CreateGeometry()
       idr = il + 36;
       
       AliMatrix(idrotm[idr], theta1, phi1, theta2, phi2, theta3, phi3);
-      pMC->Gspos("TSPI", il, "TPSG", x, y, z0, idrotm[idr], "ONLY");
+      gMC->Gspos("TSPI", il, "TPSG", x, y, z0, idrotm[idr], "ONLY");
       
     }
     
@@ -532,7 +530,7 @@ void AliTPCv2::CreateGeometry()
       idr = iu + 42;
       
       AliMatrix(idrotm[idr], theta1, phi1, theta2, phi2, theta3, phi3);
-      pMC->Gspos("TSPO", iu, "TPSG", x, y, z0, idrotm[idr], "ONLY");
+      gMC->Gspos("TSPO", iu, "TPSG", x, y, z0, idrotm[idr], "ONLY");
     }
     // -------------------------------------------------------- 
     //       endcap cover (C, 0.86% X0) 
@@ -541,11 +539,11 @@ void AliTPCv2::CreateGeometry()
     dm[1] = 257.;
     dm[2] = 0.16168*0.5;
     
-    pMC->Gsvolu("TCOV", "TUBE", idtmed[407], dm, 3);
+    gMC->Gsvolu("TCOV", "TUBE", idtmed[407], dm, 3);
     
     z0 = z_side - dm[2];
     
-    pMC->Gspos("TCOV", 1, "TPSG", 0, 0, z0, 0, "ONLY");
+    gMC->Gspos("TCOV", 1, "TPSG", 0, 0, z0, 0, "ONLY");
     // -------------------------------------------------------- 
     //         put the readout chambers into the TPC 
     // -------------------------------------------------------- 
@@ -560,8 +558,8 @@ void AliTPCv2::CreateGeometry()
     
     z0 = z_side + 250.;
     
-    pMC->Gspos("TPSG", 1, "TPC ", 0, 0, z0, 0, "ONLY");
-    pMC->Gspos("TPSG", 2, "TPC ", 0, 0, -z0, idrotm[55], "ONLY");
+    gMC->Gspos("TPSG", 1, "TPC ", 0, 0, z0, 0, "ONLY");
+    gMC->Gspos("TPSG", 2, "TPC ", 0, 0, -z0, idrotm[55], "ONLY");
     // --------------------------------------------------------- 
     //     outer gas insulation (CO2) 
     // --------------------------------------------------------- 
@@ -569,13 +567,13 @@ void AliTPCv2::CreateGeometry()
     dm[1] = 278.-0.25004;
     dm[2] = 275.-23.;
     
-    pMC->Gsvolu("TPOI", "TUBE", idtmed[406], dm, 3);
+    gMC->Gsvolu("TPOI", "TUBE", idtmed[406], dm, 3);
     
-    pMC->Gspos("TPHV", 1, "TGAS", 0, 0, 0, 0, "ONLY");
-    pMC->Gspos("TGAS", 1, "TPC ", 0, 0, 0, 0, "ONLY");
-    pMC->Gspos("TPOI", 1, "TPC ", 0, 0, 0, 0, "ONLY");
+    gMC->Gspos("TPHV", 1, "TGAS", 0, 0, 0, 0, "ONLY");
+    gMC->Gspos("TGAS", 1, "TPC ", 0, 0, 0, 0, "ONLY");
+    gMC->Gspos("TPOI", 1, "TPC ", 0, 0, 0, 0, "ONLY");
     
-    pMC->Gspos("TPC ", 1, "ALIC", 0, 0, 0, 0, "ONLY");
+    gMC->Gspos("TPC ", 1, "ALIC", 0, 0, 0, 0, "ONLY");
     // ====================================================== 
     //      all volumes below are positioned in ALIC 
     // ====================================================== 
@@ -588,15 +586,15 @@ void AliTPCv2::CreateGeometry()
     
     z0 = 253.;
     
-    pMC->Gsposp("TSWS", 10, "TPC ", 0, 0, z0, 0, "ONLY", dm, 3);
-    pMC->Gsposp("TSWS", 11, "TPC ", 0, 0, -z0, 0, "ONLY", dm, 3);
+    gMC->Gsposp("TSWS", 10, "TPC ", 0, 0, z0, 0, "ONLY", dm, 3);
+    gMC->Gsposp("TSWS", 11, "TPC ", 0, 0, -z0, 0, "ONLY", dm, 3);
 
     dm[0] = 70.;
     
     z0 += 21.;
     
-    pMC->Gsposp("TSWS", 12, "TPC ", 0, 0, z0, 0, "ONLY", dm, 3);
-    pMC->Gsposp("TSWS", 13, "TPC ", 0, 0, -z0, 0, "ONLY", dm, 3);
+    gMC->Gsposp("TSWS", 12, "TPC ", 0, 0, z0, 0, "ONLY", dm, 3);
+    gMC->Gsposp("TSWS", 13, "TPC ", 0, 0, -z0, 0, "ONLY", dm, 3);
     // ---------------------------------------------------- 
     //             Inner vessel (PCON) 
     //   This volume is to be positioned directly in ALIC 
@@ -621,7 +619,7 @@ void AliTPCv2::CreateGeometry()
     dm[13] = 75.;
     dm[14] = 76.;
 
-    pMC->Gsvolu("TPIV", "PCON", idtmed[407], dm, 15);
+    gMC->Gsvolu("TPIV", "PCON", idtmed[407], dm, 15);
     // -------------------------------------------------------- 
     //     fill the inner vessel with CO2, (HV kDegrader) 
     //     cone parts have different thickness 
@@ -657,16 +655,16 @@ void AliTPCv2::CreateGeometry()
     dm[19] = (185.5-0.2126)*tana+0.2126;
     dm[20] = 76-0.001;
     
-    pMC->Gsvolu("TPVD", "PCON", idtmed[406], dm, 21);
+    gMC->Gsvolu("TPVD", "PCON", idtmed[406], dm, 21);
     
-    pMC->Gspos("TPVD", 1, "TPIV", 0, 0, 0, 0, "ONLY");
+    gMC->Gspos("TPVD", 1, "TPIV", 0, 0, 0, 0, "ONLY");
     
-    pMC->Gspos("TPIV", 1, "ALIC", 0, 0, 0, 0, "ONLY");
+    gMC->Gspos("TPIV", 1, "ALIC", 0, 0, 0, 0, "ONLY");
     // --------------------------------------------------- 
     //               volumes ordering 
     // --------------------------------------------------- 
-    pMC->Gsord("TGAS", 6);
-    pMC->Gsord("TPSG", 6);
+    gMC->Gsord("TGAS", 6);
+    gMC->Gsord("TPSG", 6);
 }
  
 //_____________________________________________________________________________
@@ -676,41 +674,39 @@ void AliTPCv2::DrawDetector()
   // Draw a shaded view of the Time Projection Chamber version 1
   //
 
-  AliMC* pMC = AliMC::GetMC();
-
   // Set everything unseen
-  pMC->Gsatt("*", "seen", -1);
+  gMC->Gsatt("*", "seen", -1);
   // 
   // Set ALIC mother transparent
-  pMC->Gsatt("ALIC","SEEN",0);
+  gMC->Gsatt("ALIC","SEEN",0);
   //
   // Set the volumes visible
-  pMC->Gsatt("TPC","SEEN",0);
-  pMC->Gsatt("TGAS","SEEN",0);
-  pMC->Gsatt("TPSG","SEEN",0);
-  pMC->Gsatt("TPHV","SEEN",1);
-  pMC->Gsatt("TRCS","SEEN",1);
-  pMC->Gsatt("TRCL","SEEN",1);
-  pMC->Gsatt("TSWS","SEEN",1);
-  pMC->Gsatt("TPW1","SEEN",1);
-  pMC->Gsatt("TPW3","SEEN",1);
-  pMC->Gsatt("TSPI","SEEN",1);
-  pMC->Gsatt("TSPO","SEEN",1);
-  pMC->Gsatt("TSWH","SEEN",1);
-  pMC->Gsatt("TPOI","SEEN",1);
-  pMC->Gsatt("TPIV","SEEN",1);
-  pMC->Gsatt("TPVD","SEEN",1);
+  gMC->Gsatt("TPC","SEEN",0);
+  gMC->Gsatt("TGAS","SEEN",0);
+  gMC->Gsatt("TPSG","SEEN",0);
+  gMC->Gsatt("TPHV","SEEN",1);
+  gMC->Gsatt("TRCS","SEEN",1);
+  gMC->Gsatt("TRCL","SEEN",1);
+  gMC->Gsatt("TSWS","SEEN",1);
+  gMC->Gsatt("TPW1","SEEN",1);
+  gMC->Gsatt("TPW3","SEEN",1);
+  gMC->Gsatt("TSPI","SEEN",1);
+  gMC->Gsatt("TSPO","SEEN",1);
+  gMC->Gsatt("TSWH","SEEN",1);
+  gMC->Gsatt("TPOI","SEEN",1);
+  gMC->Gsatt("TPIV","SEEN",1);
+  gMC->Gsatt("TPVD","SEEN",1);
   //
-  pMC->Gdopt("hide", "on");
-  pMC->Gdopt("shad", "on");
-  pMC->Gsatt("*", "fill", 7);
-  pMC->SetClipBox(".");
-  pMC->SetClipBox("*", 0, 1000, -1000, 1000, -1000, 1000);
-  pMC->DefaultRange();
-  pMC->Gdraw("alic", 40, 30, 0, 12, 9.5, .025, .025);
-  pMC->Gdhead(1111, "Time Projection Chamber");
-  pMC->Gdman(18, 4, "MAN");
-  pMC->Gdopt("hide","off");
+  gMC->Gdopt("hide", "on");
+  gMC->Gdopt("shad", "on");
+  gMC->Gsatt("*", "fill", 7);
+  gMC->SetClipBox(".");
+  gMC->SetClipBox("*", 0, 1000, -1000, 1000, -1000, 1000);
+  gMC->DefaultRange();
+  gMC->Gdraw("alic", 40, 30, 0, 12, 9.5, .025, .025);
+  gMC->Gdhead(1111, "Time Projection Chamber");
+  gMC->Gdman(18, 4, "MAN");
+  gMC->Gdopt("hide","off");
 }
 
 //_____________________________________________________________________________
@@ -720,11 +716,9 @@ void AliTPCv2::CreateMaterials()
   // Define materials for version 2 of the Time Projection Chamber
   //
 
-  AliMC* pMC = AliMC::GetMC();
-
   //
   // Increase maximum number of steps
-  pMC->SetMaxNStep(30000);
+  gMC->SetMaxNStep(30000);
   //
   AliTPC::CreateMaterials();
 }
@@ -735,20 +729,19 @@ void AliTPCv2::Init()
   //
   // Initialises version 2 of the TPC after that it has been built
   //
-  AliMC* pMC=AliMC::GetMC();
   Int_t *idtmed = fIdtmed->GetArray()-399;
   AliTPC::Init();
-  fIdSens1=pMC->VolId("TLGA"); // L-sector
-  fIdSens2=pMC->VolId("TSGA"); // S-sector 
-  fIdSens3=pMC->VolId("TSST"); // strip - S-sector (not always used)
-  fIdSens4=pMC->VolId("TLST"); // strip - S-sector (not always used)
+  fIdSens1=gMC->VolId("TLGA"); // L-sector
+  fIdSens2=gMC->VolId("TSGA"); // S-sector 
+  fIdSens3=gMC->VolId("TSST"); // strip - S-sector (not always used)
+  fIdSens4=gMC->VolId("TLST"); // strip - S-sector (not always used)
 
-  pMC->SetMaxNStep(30000); // max. number of steps increased
+  gMC->SetMaxNStep(30000); // max. number of steps increased
 
-  pMC->Gstpar(idtmed[403],"LOSS",5);
+  gMC->Gstpar(idtmed[403],"LOSS",5);
 
   printf("*** TPC version 2 initialized ***\n");
-  printf("Maximum number of steps = %d\n",pMC->GetMaxNStep());
+  printf("Maximum number of steps = %d\n",gMC->GetMaxNStep());
 
   //
   
@@ -775,22 +768,21 @@ void AliTPCv2::StepManager()
   Float_t hits[4];
   Int_t vol[2];  
   TClonesArray &lhits = *fHits;
-  AliMC* pMC=AliMC::GetMC();
   
   vol[1]=0;
 
   //
 
-  pMC->SetMaxStep(big);
+  gMC->SetMaxStep(big);
   
-  if(!pMC->TrackAlive()) return; // particle has disappeared
+  if(!gMC->TrackAlive()) return; // particle has disappeared
   
-  Float_t charge = pMC->TrackCharge();
+  Float_t charge = gMC->TrackCharge();
   
   if(TMath::Abs(charge)<=0.) return; // take only charged particles
   
   
-  id=pMC->CurrentVol(0, copy);
+  id=gMC->CurrentVol(0, copy);
   
   // Check the sensitive volume
   
@@ -802,23 +794,23 @@ void AliTPCv2::StepManager()
     {
       vol[0] = copy; // S-sector number 
     }
-  else if(id == fIdSens3 && pMC->TrackEntering())
+  else if(id == fIdSens3 && gMC->TrackEntering())
     {
       vol[1] = copy;  // row number  
-      id = pMC->CurrentVolOff(1,0,copy);
+      id = gMC->CurrentVolOff(1,0,copy);
       vol[0] = copy; // sector number (S-sector)
       
-      pMC->TrackPosition(hits);
+      gMC->TrackPosition(hits);
       hits[3]=0.; // this hit has no energy loss
       new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
     }
-  else if(id == fIdSens4 && pMC->TrackEntering())
+  else if(id == fIdSens4 && gMC->TrackEntering())
     {
       vol[1] = copy; // row number 
-      id = pMC->CurrentVolOff(1,0,copy);
+      id = gMC->CurrentVolOff(1,0,copy);
       vol[0] = copy+24; // sector number (L-sector)
       
-      pMC->TrackPosition(hits);
+      gMC->TrackPosition(hits);
       hits[3]=0.; // this hit has no energy loss
       new(lhits[fNhits++]) AliTPChit(fIshunt,gAlice->CurrentTrack(),vol,hits);
     }
@@ -828,12 +820,12 @@ void AliTPCv2::StepManager()
   //  charged particle is in the sensitive volume
   //
   
-  if(pMC->TrackStep() > 0) {
+  if(gMC->TrackStep() > 0) {
     
-    Int_t nel = (Int_t)(((pMC->Edep())-poti)/w_ion) + 1;
+    Int_t nel = (Int_t)(((gMC->Edep())-poti)/w_ion) + 1;
     nel=TMath::Min(nel,300); // 300 electrons corresponds to 10 keV
     
-    pMC->TrackPosition(hits);
+    gMC->TrackPosition(hits);
     hits[3]=(Float_t)nel;
     
     // Add this hit
@@ -846,11 +838,11 @@ void AliTPCv2::StepManager()
   
   Float_t pp;
   Float_t vect[4];
-  pMC->TrackMomentum(vect);
+  gMC->TrackMomentum(vect);
   Float_t ptot = vect[3];
-  Float_t beta_gamma = ptot/(pMC->TrackMass());
+  Float_t beta_gamma = ptot/(gMC->TrackMass());
   
-  if(pMC->TrackPid() <= 3 && ptot > 0.002)
+  if(gMC->TrackPid() <= 3 && ptot > 0.002)
     { 
       pp = prim*1.58; // electrons above 20 MeV/c are on the plateau!
     }
@@ -861,11 +853,11 @@ void AliTPCv2::StepManager()
     }
   
   Float_t random[1];
-  pMC->Rndm(random,1); // good, old GRNDM from Geant3
+  gMC->Rndm(random,1); // good, old GRNDM from Geant3
   
   Double_t rnd = (Double_t)random[0];
   
-  pMC->SetMaxStep(-TMath::Log(rnd)/pp);
+  gMC->SetMaxStep(-TMath::Log(rnd)/pp);
   
 }
 

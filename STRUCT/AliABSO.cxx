@@ -62,8 +62,6 @@ void AliABSO::CreateGeometry()
   */
   //End_Html
 
-  AliMC* pMC = AliMC::GetMC();
-  
   Int_t *idtmed = fIdtmed->GetArray()-1599;
   
   Float_t d_pb, cpar[5], dpar[12], tpar[3], zpos,
@@ -135,7 +133,7 @@ void AliABSO::CreateGeometry()
   par[12] = abs_l;
   par[13] = 0.;
   par[14] = par[11] + (par[12] - par[9]) * TMath::Tan(acc_max * kDegrad);
-  pMC->Gsvolu("ABSM", "PCON", idtmed[1605], par, 15);
+  gMC->Gsvolu("ABSM", "PCON", idtmed[1605], par, 15);
   //
   // --- Now define all elements of the absorber 
   //
@@ -147,10 +145,10 @@ void AliABSO::CreateGeometry()
   cpar1[2] = abs_d * TMath::Tan(theta1 * kDegrad);
   cpar1[3] = z_nose * TMath::Tan(acc_max * kDegrad) + d_steel;
   cpar1[4] = z_nose * TMath::Tan(theta1 * kDegrad);
-  pMC->Gsvolu("ANOS", "CONE", idtmed[1611], cpar1, 5);
+  gMC->Gsvolu("ANOS", "CONE", idtmed[1611], cpar1, 5);
   //
   dz = cpar1[0] + abs_d;
-  pMC->Gspos("ANOS", 1, "ABSM", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("ANOS", 1, "ABSM", 0., 0., dz, 0, "ONLY");
   //
   //       IRON  SUPPORT STRUCTURE 
   //
@@ -159,9 +157,9 @@ void AliABSO::CreateGeometry()
   cpar2[2] = cpar2[1] + d_steel;
   cpar2[3] = abs_l * TMath::Tan(acc_max * kDegrad);
   cpar2[4] = cpar2[3] + d_steel;
-  pMC->Gsvolu("ASST", "CONE", idtmed[1658], cpar2, 5);
+  gMC->Gsvolu("ASST", "CONE", idtmed[1658], cpar2, 5);
   dz = cpar2[0] + abs_d;
-  pMC->Gspos("ASST", 1, "ABSM", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("ASST", 1, "ABSM", 0., 0., dz, 0, "ONLY");
   //
   //       PB FRONT SHIELD INNER SEGMENT, ALSO POLYETHYLENE WAS 
   //       CONSIDERED FOR THIS REGION 
@@ -171,9 +169,9 @@ void AliABSO::CreateGeometry()
   cpar3[2] = cpar1[3] + d_poly;
   cpar3[3] = z_cone * TMath::Tan(acc_max * kDegrad) + d_steel;
   cpar3[4] = cpar3[3] + d_poly;
-  pMC->Gsvolu("AWFS", "CONE", idtmed[1652], cpar3, 5);
+  gMC->Gsvolu("AWFS", "CONE", idtmed[1652], cpar3, 5);
   dz = cpar3[0] + z_nose;
-  pMC->Gspos("AWFS", 1, "ABSM", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("AWFS", 1, "ABSM", 0., 0., dz, 0, "ONLY");
   //
   //       PB OUTER SURFACE 
   //
@@ -189,9 +187,9 @@ void AliABSO::CreateGeometry()
   cpar5[9] = abs_l;
   cpar5[10] = abs_l * TMath::Tan(acc_max * kDegrad) + d_steel + d_poly;
   cpar5[11] = cpar5[10] + d_pb;
-  pMC->Gsvolu("APBS", "PCON", idtmed[1612], cpar5, 12);
+  gMC->Gsvolu("APBS", "PCON", idtmed[1612], cpar5, 12);
   dz = 0.;
-  pMC->Gspos("APBS", 1, "ABSM", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("APBS", 1, "ABSM", 0., 0., dz, 0, "ONLY");
   //
   //     POLYETHYLEN LAYER 
   //
@@ -200,9 +198,9 @@ void AliABSO::CreateGeometry()
   cpar4[2] = cpar4[1] + d_poly;
   cpar4[3] = abs_l * TMath::Tan(acc_max * kDegrad) + d_steel;
   cpar4[4] = cpar4[3] + d_poly;
-  pMC->Gsvolu("APOL", "CONE", idtmed[1657], cpar4, 5);
+  gMC->Gsvolu("APOL", "CONE", idtmed[1657], cpar4, 5);
   dz = cpar4[0] + z_cone;
-  pMC->Gspos("APOL", 1, "ABSM", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("APOL", 1, "ABSM", 0., 0., dz, 0, "ONLY");
   //
   //     LEAD INNER SHIELD (inner radius const up to z=abs_c) 
   //
@@ -212,9 +210,9 @@ void AliABSO::CreateGeometry()
   cpar8[2] = r_abs + epsilon;
   cpar8[3] = r_abs;
   cpar8[4] = abs_c * TMath::Tan(acc_min * kDegrad);
-  pMC->Gsvolu("AWI1", "CONE", idtmed[1652], cpar8, 5);
+  gMC->Gsvolu("AWI1", "CONE", idtmed[1652], cpar8, 5);
   dz = cpar8[0] + z_w;
-  pMC->Gspos("AWI1", 1, "ABSM", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("AWI1", 1, "ABSM", 0., 0., dz, 0, "ONLY");
   //
   //     TUNGSTEN OPENING CONE UP TO THE END 
   //
@@ -223,9 +221,9 @@ void AliABSO::CreateGeometry()
   cpar8[2] = abs_c * TMath::Tan(acc_min * kDegrad);
   cpar8[3] = cpar8[1] + cpar8[0] * 2. * TMath::Tan(theta_open * kDegrad);
   cpar8[4] = abs_l * TMath::Tan(acc_min * kDegrad);
-  pMC->Gsvolu("AWI2", "CONE", idtmed[1651], cpar8, 5);
+  gMC->Gsvolu("AWI2", "CONE", idtmed[1651], cpar8, 5);
   dz = cpar8[0] + abs_c;
-  pMC->Gspos("AWI2", 1, "ABSM", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("AWI2", 1, "ABSM", 0., 0., dz, 0, "ONLY");
   //
   //     CONCRETE CONE 
   //
@@ -234,9 +232,9 @@ void AliABSO::CreateGeometry()
   cpar7[2] = abs_cc * TMath::Tan(acc_max * kDegrad);
   cpar7[3] = (abs_l - d_rear) * TMath::Tan(acc_min * kDegrad);
   cpar7[4] = (abs_l - d_rear) * TMath::Tan(acc_max * kDegrad);
-  pMC->Gsvolu("ACON", "CONE", idtmed[1656], cpar7, 5);
+  gMC->Gsvolu("ACON", "CONE", idtmed[1656], cpar7, 5);
   dz = cpar7[0] + abs_cc;
-  pMC->Gspos("ACON", 1, "ABSM", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("ACON", 1, "ABSM", 0., 0., dz, 0, "ONLY");
   //
   //     REAR SHIELD 
   //
@@ -246,64 +244,64 @@ void AliABSO::CreateGeometry()
   cpar9[2] = zr * TMath::Tan(acc_max * kDegrad);
   cpar9[3] = cpar9[1] + TMath::Tan(theta_r * kDegrad) * 5.;
   cpar9[4] = cpar9[2] + TMath::Tan(acc_max * kDegrad) * 5.;
-  pMC->Gsvolu("ARE1", "CONE", idtmed[1652], cpar9, 5);
+  gMC->Gsvolu("ARE1", "CONE", idtmed[1652], cpar9, 5);
   dz  = cpar9[0] + zr;
   zr += 5.;
-  pMC->Gspos("ARE1", 1, "ABSM", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("ARE1", 1, "ABSM", 0., 0., dz, 0, "ONLY");
   //
   cpar9[1] = zr * TMath::Tan(theta_r * kDegrad);
   cpar9[2] = zr * TMath::Tan(acc_max * kDegrad);
   cpar9[3] = cpar9[1] + TMath::Tan(theta_r * kDegrad) * 5.;
   cpar9[4] = cpar9[2] + TMath::Tan(acc_max * kDegrad) * 5.;
-  pMC->Gsvolu("ARE2", "CONE", idtmed[1657], cpar9, 5);
+  gMC->Gsvolu("ARE2", "CONE", idtmed[1657], cpar9, 5);
   dz  = cpar9[0] + zr;
   zr += 5.;
-  pMC->Gspos("ARE2", 1, "ABSM", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("ARE2", 1, "ABSM", 0., 0., dz, 0, "ONLY");
   //
   cpar9[1] = zr * TMath::Tan(theta_r * kDegrad);
   cpar9[2] = zr * TMath::Tan(acc_max * kDegrad);
   cpar9[3] = cpar9[1] + TMath::Tan(theta_r * kDegrad) * 5.;
   cpar9[4] = cpar9[2] + TMath::Tan(acc_max * kDegrad) * 5.;
-  pMC->Gsvolu("ARE3", "CONE", idtmed[1652], cpar9, 5);
+  gMC->Gsvolu("ARE3", "CONE", idtmed[1652], cpar9, 5);
   dz  = cpar9[0] + zr;
   zr += 5.;
-  pMC->Gspos("ARE3", 1, "ABSM", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("ARE3", 1, "ABSM", 0., 0., dz, 0, "ONLY");
   //
   cpar9[1] = zr * TMath::Tan(theta_r * kDegrad);
   cpar9[2] = zr * TMath::Tan(acc_max * kDegrad);
   cpar9[3] = cpar9[1] + TMath::Tan(theta_r * kDegrad) * 5.;
   cpar9[4] = cpar9[2] + TMath::Tan(acc_max * kDegrad) * 5.;
-  pMC->Gsvolu("ARE4", "CONE", idtmed[1657], cpar9, 5);
+  gMC->Gsvolu("ARE4", "CONE", idtmed[1657], cpar9, 5);
   dz  = cpar9[0] + zr;
   zr += 5.;
-  pMC->Gspos("ARE4", 1, "ABSM", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("ARE4", 1, "ABSM", 0., 0., dz, 0, "ONLY");
   //
   cpar9[1] = zr * TMath::Tan(theta_r * kDegrad);
   cpar9[2] = zr * TMath::Tan(acc_max * kDegrad);
   cpar9[3] = cpar9[1] + TMath::Tan(theta_r * kDegrad) * 5.;
   cpar9[4] = cpar9[2] + TMath::Tan(acc_max * kDegrad) * 5.;
-  pMC->Gsvolu("ARE5", "CONE", idtmed[1652], cpar9, 5);
+  gMC->Gsvolu("ARE5", "CONE", idtmed[1652], cpar9, 5);
   dz  = cpar9[0] + zr;
   zr += 5.;
-  pMC->Gspos("ARE5", 1, "ABSM", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("ARE5", 1, "ABSM", 0., 0., dz, 0, "ONLY");
   //
   cpar9[1] = zr * TMath::Tan(theta_r * kDegrad);
   cpar9[2] = zr * TMath::Tan(acc_max * kDegrad);
   cpar9[3] = cpar9[1] + TMath::Tan(theta_r * kDegrad) * 5.;
   cpar9[4] = cpar9[2] + TMath::Tan(acc_max * kDegrad) * 5.;
-  pMC->Gsvolu("ARE6", "CONE", idtmed[1657], cpar9, 5);
+  gMC->Gsvolu("ARE6", "CONE", idtmed[1657], cpar9, 5);
   dz  = cpar9[0] + zr;
   zr += 5.;
-  pMC->Gspos("ARE6", 1, "ABSM", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("ARE6", 1, "ABSM", 0., 0., dz, 0, "ONLY");
   //
   cpar9[1] = zr * TMath::Tan(theta_r * kDegrad);
   cpar9[2] = zr * TMath::Tan(acc_max * kDegrad);
   cpar9[3] = cpar9[1] + TMath::Tan(theta_r * kDegrad) * 5.;
   cpar9[4] = cpar9[2] + TMath::Tan(acc_max * kDegrad) * 5.;
-  pMC->Gsvolu("ARE7", "CONE", idtmed[1612], cpar9, 5);
+  gMC->Gsvolu("ARE7", "CONE", idtmed[1612], cpar9, 5);
   dz  = cpar9[0] + zr;
   zr += 5.;
-  pMC->Gspos("ARE7", 1, "ABSM", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("ARE7", 1, "ABSM", 0., 0., dz, 0, "ONLY");
   //
   //     TUNGSTEN REAR SHIELD INNER PART 
   //
@@ -313,9 +311,9 @@ void AliABSO::CreateGeometry()
   cpar10[2] = zr * TMath::Tan(theta_r * kDegrad);
   cpar10[3] = cpar10[1] + d_rear * TMath::Tan(acc_min * kDegrad);
   cpar10[4] = cpar10[2] + d_rear * TMath::Tan(theta_r * kDegrad);
-  pMC->Gsvolu("ARIN", "CONE", idtmed[1611], cpar10, 5);
+  gMC->Gsvolu("ARIN", "CONE", idtmed[1611], cpar10, 5);
   dz = cpar10[0] + zr;
-  pMC->Gspos("ARIN", 1, "ABSM", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("ARIN", 1, "ABSM", 0., 0., dz, 0, "ONLY");
   //
   //     ELEMENTS OF THE BEAM PIPE TO BE POSITIONED INTO THE ABSORBER 
   //
@@ -324,17 +322,17 @@ void AliABSO::CreateGeometry()
   tpar[0] = 0.;
   tpar[1] = r_abs;
   tpar[2] = (abs_c - abs_d) / 2.;
-  pMC->Gsvolu("AATU", "TUBE", idtmed[1655], tpar, 3);
+  gMC->Gsvolu("AATU", "TUBE", idtmed[1655], tpar, 3);
   //
   tpar[1] = r_abs - .8;
   tpar[0] = tpar[1] - .2;
   tpar[2] = (abs_c - abs_d) / 2.;
-  pMC->Gsvolu("ATUB", "TUBE", idtmed[1649], tpar, 3);
+  gMC->Gsvolu("ATUB", "TUBE", idtmed[1649], tpar, 3);
   dz = 0.;
-  pMC->Gspos("ATUB", 1, "AATU", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("ATUB", 1, "AATU", 0., 0., dz, 0, "ONLY");
   //
   dz = (abs_c - abs_d) / 2. + abs_d;
-  pMC->Gspos("AATU", 1, "ABSM", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("AATU", 1, "ABSM", 0., 0., dz, 0, "ONLY");
   //
   //     MOTHER VOLUME 2. SEGMENT 
   //
@@ -343,21 +341,21 @@ void AliABSO::CreateGeometry()
   cpar[2] = r_abs;
   cpar[3] = 0.;
   cpar[4] = cpar[2] + cpar[0] * 2. * TMath::Tan(theta_open * kDegrad);
-  pMC->Gsvolu("AAT1", "CONE", idtmed[1655], cpar, 5);
+  gMC->Gsvolu("AAT1", "CONE", idtmed[1655], cpar, 5);
   //
   cpar[0]  = (abs_l - abs_c) / 2.;
   cpar[2] += -.8;
   cpar[1]  = cpar[2] - .2;
   cpar[4] += -.8;
   cpar[3]  = cpar[4] - .2;
-  pMC->Gsvolu("ATU1", "CONE", idtmed[1649], cpar, 5);
+  gMC->Gsvolu("ATU1", "CONE", idtmed[1649], cpar, 5);
   dz = 0.;
-  pMC->Gspos("ATU1", 1, "AAT1", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("ATU1", 1, "AAT1", 0., 0., dz, 0, "ONLY");
   //
   dz = (abs_l - abs_c) / 2. + abs_c;
-  pMC->Gspos("AAT1", 1, "ABSM", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("AAT1", 1, "ABSM", 0., 0., dz, 0, "ONLY");
   //
-  pMC->Gspos("ABSM", 1, "ALIC", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("ABSM", 1, "ALIC", 0., 0., 0., 0, "ONLY");
   //
   //       absorber support structure 
   //
@@ -375,18 +373,18 @@ void AliABSO::CreateGeometry()
   dpar[9] = 670.;
   dpar[10] = 159.;
   dpar[11] = 163.5;
-  pMC->Gsvolu("ASUP", "PCON", idtmed[1618], dpar, 12);
+  gMC->Gsvolu("ASUP", "PCON", idtmed[1618], dpar, 12);
   dz = 0.;
-  pMC->Gspos("ASUP", 1, "ALIC", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("ASUP", 1, "ALIC", 0., 0., dz, 0, "ONLY");
   //
   //     Flange at the entrance of the absorber 
   //
   tpar[0] = 3.;
   tpar[1] = 5.7;
   tpar[2] = 2.;
-  pMC->Gsvolu("AF63", "TUBE", idtmed[1618], tpar, 3);
+  gMC->Gsvolu("AF63", "TUBE", idtmed[1618], tpar, 3);
   zpos = abs_d + tpar[2];
-  pMC->Gspos("AF63", 1, "ABSM", 0., 0., zpos, 0, "ONLY");
+  gMC->Gspos("AF63", 1, "ABSM", 0., 0., zpos, 0, "ONLY");
 }
 
 //_____________________________________________________________________________
@@ -396,49 +394,47 @@ void AliABSO::DrawModule()
   // Draw a shaded view of the muon absorber
   //
 
-  AliMC* pMC = AliMC::GetMC();
-  
   // Set everything unseen
-  pMC->Gsatt("*", "seen", -1);
+  gMC->Gsatt("*", "seen", -1);
   // 
   // Set ALIC mother transparent
-  pMC->Gsatt("ALIC","SEEN",0);
+  gMC->Gsatt("ALIC","SEEN",0);
   //
   // Set the volumes visible
-  pMC->Gsatt("ABSM","seen",1);
-  pMC->Gsatt("ANOS","seen",1);
-  pMC->Gsatt("ASST","seen",1);
-  pMC->Gsatt("AWFS","seen",1);
-  pMC->Gsatt("APBS","seen",1);
-  pMC->Gsatt("APOL","seen",1);
-  pMC->Gsatt("AWI1","seen",1);
-  pMC->Gsatt("AWI2","seen",1);
-  pMC->Gsatt("ACON","seen",1);
-  pMC->Gsatt("ARE1","seen",1);
-  pMC->Gsatt("ARE2","seen",1);
-  pMC->Gsatt("ARE3","seen",1);
-  pMC->Gsatt("ARE4","seen",1);
-  pMC->Gsatt("ARE5","seen",1);
-  pMC->Gsatt("ARE6","seen",1);
-  pMC->Gsatt("ARE7","seen",1);
-  pMC->Gsatt("ARIN","seen",1);
-  pMC->Gsatt("AATU","seen",1);
-  pMC->Gsatt("ATUB","seen",1);
-  pMC->Gsatt("AAT1","seen",1);
-  pMC->Gsatt("ATU1","seen",1);
-  pMC->Gsatt("ASUP","seen",1);
-  pMC->Gsatt("AF63","seen",1);
+  gMC->Gsatt("ABSM","seen",1);
+  gMC->Gsatt("ANOS","seen",1);
+  gMC->Gsatt("ASST","seen",1);
+  gMC->Gsatt("AWFS","seen",1);
+  gMC->Gsatt("APBS","seen",1);
+  gMC->Gsatt("APOL","seen",1);
+  gMC->Gsatt("AWI1","seen",1);
+  gMC->Gsatt("AWI2","seen",1);
+  gMC->Gsatt("ACON","seen",1);
+  gMC->Gsatt("ARE1","seen",1);
+  gMC->Gsatt("ARE2","seen",1);
+  gMC->Gsatt("ARE3","seen",1);
+  gMC->Gsatt("ARE4","seen",1);
+  gMC->Gsatt("ARE5","seen",1);
+  gMC->Gsatt("ARE6","seen",1);
+  gMC->Gsatt("ARE7","seen",1);
+  gMC->Gsatt("ARIN","seen",1);
+  gMC->Gsatt("AATU","seen",1);
+  gMC->Gsatt("ATUB","seen",1);
+  gMC->Gsatt("AAT1","seen",1);
+  gMC->Gsatt("ATU1","seen",1);
+  gMC->Gsatt("ASUP","seen",1);
+  gMC->Gsatt("AF63","seen",1);
   //
-  pMC->Gdopt("hide", "on");
-  pMC->Gdopt("shad", "on");
-  pMC->Gsatt("*", "fill", 7);
-  pMC->SetClipBox(".");
-  pMC->SetClipBox("*", 0, 3000, -3000, 3000, -6000, 6000);
-  pMC->DefaultRange();
-  pMC->Gdraw("alic", 40, 30, 0, 21.5, 15, .04, .04);
-  pMC->Gdhead(1111, "Muon Absorber");
-  pMC->Gdman(16, 6, "MAN");
-  pMC->Gdopt("hide","off");
+  gMC->Gdopt("hide", "on");
+  gMC->Gdopt("shad", "on");
+  gMC->Gsatt("*", "fill", 7);
+  gMC->SetClipBox(".");
+  gMC->SetClipBox("*", 0, 3000, -3000, 3000, -6000, 6000);
+  gMC->DefaultRange();
+  gMC->Gdraw("alic", 40, 30, 0, 21.5, 15, .04, .04);
+  gMC->Gdhead(1111, "Muon Absorber");
+  gMC->Gdman(16, 6, "MAN");
+  gMC->Gdopt("hide","off");
 }
 
 //_____________________________________________________________________________

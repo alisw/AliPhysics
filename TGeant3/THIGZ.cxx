@@ -102,6 +102,7 @@
 
 static Int_t npid = 0;
 static char cpar[1200];
+static TGeant3 *geant3=(TGeant3*)gMC;
 
 THIGZ *higz = 0;
 
@@ -227,8 +228,7 @@ void THIGZ::Gsatt(const char *name, const char *att, Int_t val)
 //     see TGeant3::Gsatt for more details
 //
 
-   AliMC* pMC = AliMC::GetMC(); 
-   pMC->Gsatt(name,att,val);
+   gMC->Gsatt(name,att,val);
 }
 
 //___________________________________________ 
@@ -240,8 +240,7 @@ void THIGZ::Gdopt(const char *name,const char *value)
 //  To set/modify the drawing options.
 //     see TGeant3::Gdopt for more details
 //
-   AliMC* pMC = AliMC::GetMC(); 
-   pMC->Gdopt(name,value);
+   gMC->Gdopt(name,value);
 }
 
  
@@ -260,8 +259,7 @@ void THIGZ::Gdraw(const char *name,Float_t theta, Float_t phi, Float_t psi,Float
 //     see TGeant3::Gdraw for more details
 //
 
-   AliMC* pMC = AliMC::GetMC(); 
-   pMC->Gdraw(name,theta,phi,psi,u0,v0,ul,vl);
+   gMC->Gdraw(name,theta,phi,psi,u0,v0,ul,vl);
 }
 
  
@@ -279,7 +277,6 @@ void THIGZ::Gdrawc(const char *name,Int_t axis, Float_t cut,Float_t u0,Float_t v
 //     see TGeant3::Gdrawc for more details
 //
  
-   TGeant3 *geant3=(TGeant3*)AliMC::GetMC();
    geant3->Gdrawc(name,axis,cut,u0,v0,ul,vl);
 }
 
@@ -297,7 +294,6 @@ void THIGZ::Gdspec(const char *name)
 //     see TGeant3::Gdspec for more details
 //
 
-   TGeant3 *geant3=(TGeant3*)AliMC::GetMC();
    geant3->Gdspec(name);
 }
 
@@ -318,7 +314,6 @@ void THIGZ::Gdtree(const char *name,Int_t levmax, Int_t isel)
 //    - drawing tree of parent
 //
 
-   TGeant3 *geant3=(TGeant3*)AliMC::GetMC();
    geant3->Gdtree(name,levmax,isel);
 }
 
@@ -342,7 +337,6 @@ void THIGZ::SetBOMB(Float_t boom)
 //  complex detectors. The following commands will make explode the
 //  detector:
 
-   TGeant3 *geant3=(TGeant3*)AliMC::GetMC();
    geant3->SetBOMB(boom);
 }
 

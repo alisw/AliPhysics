@@ -194,7 +194,6 @@ void AliPHOS::CreateMaterials()
 // ORIGIN    : NICK VAN EIJNDHOVEN 
 
 
-  AliMC* pMC = AliMC::GetMC();
 
     Int_t   ISXFLD = gAlice->Field()->Integ();
     Float_t SXMGMX = gAlice->Field()->Max();
@@ -261,11 +260,11 @@ void AliPHOS::CreateMaterials()
     AliMedium(99, "Air          $",99, 0, ISXFLD, SXMGMX, 10., 1., .1, .1, 10);
 
 // --- Generate explicitly delta rays in the steel cover --- 
-    pMC->Gstpar(idtmed[704], "LOSS", 3.);
-    pMC->Gstpar(idtmed[704], "DRAY", 1.);
+    gMC->Gstpar(idtmed[704], "LOSS", 3.);
+    gMC->Gstpar(idtmed[704], "DRAY", 1.);
 // --- and in aluminium parts --- 
-    pMC->Gstpar(idtmed[701], "LOSS", 3.);
-    pMC->Gstpar(idtmed[701], "DRAY", 1.);
+    gMC->Gstpar(idtmed[701], "LOSS", 3.);
+    gMC->Gstpar(idtmed[701], "DRAY", 1.);
 }
  
 //______________________________________________________________________________

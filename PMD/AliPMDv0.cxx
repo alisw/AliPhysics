@@ -240,16 +240,14 @@ void AliPMDv0::CreateInside()
   
   // *** Define the  DPMD   Volume and fill with air *** 
 
-  AliMC* pMC = AliMC::GetMC();
-  
-  pMC->Gsvolu("DPMD", "BOX ", idtmed[698], sipmd, 3);
+  gMC->Gsvolu("DPMD", "BOX ", idtmed[698], sipmd, 3);
   
   // *** Define DIQU Volume and fill with air 
   siqad[0] = sipmd[0] / 2. - 1.;
   siqad[1] = sipmd[1] / 2. - 1.;
   siqad[2] = sipmd[2];
-  pMC->Gsvolu("DIQU","BOX ", idtmed[698], siqad, 3);
-  pMC->Gsatt("DIQU", "SEEN", 1);
+  gMC->Gsvolu("DIQU","BOX ", idtmed[698], siqad, 3);
+  gMC->Gsatt("DIQU", "SEEN", 1);
   
   
   // --- Place the modules in INSIDE PMD (DPMD) 
@@ -277,15 +275,15 @@ void AliPMDv0::CreateInside()
 	yd = ybox[j][i] - siqad[1];
 	if (pindex[j][i] == 1) {
 	  ++inum2;
-	  pMC->Gsposp("DM11", inum2, "DIQU", xd, yd, zd, 0, "ONLY", smod2, 3);
+	  gMC->Gsposp("DM11", inum2, "DIQU", xd, yd, zd, 0, "ONLY", smod2, 3);
 	}
 	if (pindex[j][i] == 2) {
 	  ++inum3;
-	  pMC->Gsposp("DM12", inum3, "DIQU", xd, yd, zd, 0, "ONLY", smod3, 3);
+	  gMC->Gsposp("DM12", inum3, "DIQU", xd, yd, zd, 0, "ONLY", smod3, 3);
 	}
 	if (pindex[j][i] == 3) {
 	  ++inum4;
-	  pMC->Gsposp("DM13", inum4, "DIQU", xd, yd, zd, 0, "ONLY", smod4, 3);
+	  gMC->Gsposp("DM13", inum4, "DIQU", xd, yd, zd, 0, "ONLY", smod4, 3);
 	}
       }
     }
@@ -299,14 +297,14 @@ void AliPMDv0::CreateInside()
     yiqa[3] = yiqa[2];
     i2      = numqu;
     for (k = 1; k <= i2; ++k) {
-      pMC->Gsposp("DIQU", k, "DPMD", xiqa[k-1], yiqa[k-1], zd, idrotm[k], "ONLY", siqad, 3);
+      gMC->Gsposp("DIQU", k, "DPMD", xiqa[k-1], yiqa[k-1], zd, idrotm[k], "ONLY", siqad, 3);
     }
     
     // --- Place the DPMD in ALICE with front edge 6.0m from vertex  --- 
     xp = 0.;
     yp = 0.;
     zp = zdist1;
-    pMC->Gspos("DPMD", 1, "ALIC", xp, yp, zp, 0, "ONLY");
+    gMC->Gspos("DPMD", 1, "ALIC", xp, yp, zp, 0, "ONLY");
     
 }
 
@@ -319,8 +317,6 @@ void AliPMDv0::CreatePads()
   // *** DIFFERENT PADS WITH SIZES 8 MM, 10 MM, 12 MM AND 15 MM SQUARE 
   // -- Author :     Y.P. VIYOGI, 04/06/1997. 
   // -- Modified:    P.V.K.S.Baba(JU), 13-12-97. 
-  
-  AliMC* pMC = AliMC::GetMC();
   
   Int_t npad2;
   Float_t /* scpv1[3], */ scpv2[3] /*, scpv3[3], scpv4[3] */;
@@ -381,10 +377,10 @@ void AliPMDv0::CreatePads()
   scpv2[1] = spsw2[1];
   scpv2[2] = spsw2[2];
 // The modules (DW11 and DV11 are filed with gas, G10 plate is ignored)
-  pMC->Gsvolu("DW11","BOX ", idtmed[604], spsw2, 3);
-  pMC->Gsatt("DW11", "SEEN", 1);
-  pMC->Gsvolu("DV11","BOX ", idtmed[604], spsw2, 3);
-  pMC->Gsatt("DV11", "SEEN", 1);
+  gMC->Gsvolu("DW11","BOX ", idtmed[604], spsw2, 3);
+  gMC->Gsatt("DW11", "SEEN", 1);
+  gMC->Gsvolu("DV11","BOX ", idtmed[604], spsw2, 3);
+  gMC->Gsatt("DV11", "SEEN", 1);
   
   // --- DEFINE MODULES, IRON, TUNGSTEN AND LEAD VOLUMES 
   
@@ -392,25 +388,25 @@ void AliPMDv0::CreatePads()
   spb[0] = spsw1[0];
   spb[1] = spsw1[1];
   spb[2] = .75;
-  pMC->Gsvolu("DPPB","BOX ", idtmed[600], spb, 3);
-  pMC->Gsatt("DPPB", "SEEN", 1);
+  gMC->Gsvolu("DPPB","BOX ", idtmed[600], spb, 3);
+  gMC->Gsatt("DPPB", "SEEN", 1);
   
   sw[0] = spsw1[0];
   sw[1] = spsw1[1];
   sw[2] = 0.9/2.;
-  pMC->Gsvolu("DPW ","BOX ", idtmed[600], sw, 3);
-  pMC->Gsatt("DPW ", "SEEN", 1);
+  gMC->Gsvolu("DPW ","BOX ", idtmed[600], sw, 3);
+  gMC->Gsatt("DPW ", "SEEN", 1);
   
   sfe[0] = spsw1[0];
   sfe[1] = spsw1[1];
   sfe[2] = 0.6/2.;
-  pMC->Gsvolu("DPFE","BOX ", idtmed[605], sfe, 3);
-  pMC->Gsatt("DPFE", "SEEN", 1);
+  gMC->Gsvolu("DPFE","BOX ", idtmed[605], sfe, 3);
+  gMC->Gsatt("DPFE", "SEEN", 1);
   
   smod2[0] = spsw2[0];
   smod2[1] = smod2[0];
   smod2[2] = spsw2[2] + sfe[2] + spb[2] + scpv2[2];
-  pMC->Gsvolu("DM11", "BOX ", idtmed[698], smod2, 3);
+  gMC->Gsvolu("DM11", "BOX ", idtmed[698], smod2, 3);
   
   // ---  place gas box (as CPV), iron support, lead converter and gas box 
   // ---  (preshower) in the module 
@@ -418,16 +414,16 @@ void AliPMDv0::CreatePads()
   yc = 0.;
   // --- First the CPV box 
   zc = -(spsw2[2] + sfe[2] + spb[2] + spsw2[2]) + spsw2[2];
-  pMC->Gspos("DV11", 1, "DM11", xc, yc, zc, 0, "ONLY");
+  gMC->Gspos("DV11", 1, "DM11", xc, yc, zc, 0, "ONLY");
   // --- Then iron support plate 
   zc = zc + sfe[2] + spsw2[2];
-  pMC->Gspos("DPFE", 1, "DM11", xc, yc, zc, 0, "ONLY");
+  gMC->Gspos("DPFE", 1, "DM11", xc, yc, zc, 0, "ONLY");
   // --- Then lead converter plate 
   zc = zc + sfe[2] + spb[2];
-  pMC->Gspos("DPPB", 1, "DM11", xc, yc, zc, 0, "ONLY");
+  gMC->Gspos("DPPB", 1, "DM11", xc, yc, zc, 0, "ONLY");
   // --- Lastly the preshower box 
   zc = zc + spb[2] + spsw2[2];
-  pMC->Gspos("DW11", 1, "DM11", xc, yc, zc, 0, "ONLY");
+  gMC->Gspos("DW11", 1, "DM11", xc, yc, zc, 0, "ONLY");
   
 }
  
@@ -438,32 +434,30 @@ void AliPMDv0::DrawModule()
   // Draw a shaded view of the Photon Multiplicity Detector
   //
 
-  AliMC* pMC = AliMC::GetMC();
-  
-  pMC->Gsatt("*", "seen", -1);
-  pMC->Gsatt("alic", "seen", 0);
+  gMC->Gsatt("*", "seen", -1);
+  gMC->Gsatt("alic", "seen", 0);
   //
   // Set the visibility of the components
   // 
-  pMC->Gsatt("DW11","seen",0);
-  pMC->Gsatt("DV11","seen",0);
-  pMC->Gsatt("DPPB","seen",1);
-  pMC->Gsatt("DPW ","seen",1); 
-  pMC->Gsatt("DPFE","seen",1);
-  pMC->Gsatt("DM11","seen",1);
-  pMC->Gsatt("DPMD","seen",0);
-  pMC->Gsatt("DIQU","seen",0);
+  gMC->Gsatt("DW11","seen",0);
+  gMC->Gsatt("DV11","seen",0);
+  gMC->Gsatt("DPPB","seen",1);
+  gMC->Gsatt("DPW ","seen",1); 
+  gMC->Gsatt("DPFE","seen",1);
+  gMC->Gsatt("DM11","seen",1);
+  gMC->Gsatt("DPMD","seen",0);
+  gMC->Gsatt("DIQU","seen",0);
   //
-  pMC->Gdopt("hide", "on");
-  pMC->Gdopt("shad", "on");
-  pMC->Gsatt("*", "fill", 7);
-  pMC->SetClipBox(".");
-  pMC->SetClipBox("*", 0, 3000, -3000, 3000, -6000, 6000);
-  pMC->DefaultRange();
-  pMC->Gdraw("alic", 40, 30, 0, 22, 15.5, .04, .04);
-  pMC->Gdhead(1111, "Photon Multiplicity Detector Version 1");
-  pMC->Gdman(17, 5, "MAN");
-  pMC->Gdopt("hide", "off");
+  gMC->Gdopt("hide", "on");
+  gMC->Gdopt("shad", "on");
+  gMC->Gsatt("*", "fill", 7);
+  gMC->SetClipBox(".");
+  gMC->SetClipBox("*", 0, 3000, -3000, 3000, -6000, 6000);
+  gMC->DefaultRange();
+  gMC->Gdraw("alic", 40, 30, 0, 22, 15.5, .04, .04);
+  gMC->Gdhead(1111, "Photon Multiplicity Detector Version 1");
+  gMC->Gdman(17, 5, "MAN");
+  gMC->Gdopt("hide", "off");
 }
 
 //_____________________________________________________________________________
@@ -474,8 +468,6 @@ void AliPMDv0::CreateMaterials()
   //
   // ORIGIN    : Y. P. VIYOGI 
   //
-  
-  AliMC* pMC = AliMC::GetMC();
   
   // --- The Argon- CO2 mixture --- 
   Float_t ag[2] = { 39.95 };
@@ -521,7 +513,7 @@ void AliPMDv0::CreateMaterials()
   // 	define gas-mixtures 
   
   char namate[21];
-  pMC->Gfmate((*fIdmate)[3], namate, a, z, d, radl, absl, buf, nbuf);
+  gMC->Gfmate((*fIdmate)[3], namate, a, z, d, radl, absl, buf, nbuf);
   ag[1] = a;
   zg[1] = z;
   dg = (dar * 4 + dco) / 5;
@@ -542,53 +534,53 @@ void AliPMDv0::CreateMaterials()
   AliMedium(16, "C       $", 16, 0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
   
   // --- Generate explicitly delta rays in the iron, aluminium and lead --- 
-  pMC->Gstpar(idtmed[600], "LOSS", 3.);
-  pMC->Gstpar(idtmed[600], "DRAY", 1.);
+  gMC->Gstpar(idtmed[600], "LOSS", 3.);
+  gMC->Gstpar(idtmed[600], "DRAY", 1.);
   
-  pMC->Gstpar(idtmed[603], "LOSS", 3.);
-  pMC->Gstpar(idtmed[603], "DRAY", 1.);
+  gMC->Gstpar(idtmed[603], "LOSS", 3.);
+  gMC->Gstpar(idtmed[603], "DRAY", 1.);
   
-  pMC->Gstpar(idtmed[604], "LOSS", 3.);
-  pMC->Gstpar(idtmed[604], "DRAY", 1.);
+  gMC->Gstpar(idtmed[604], "LOSS", 3.);
+  gMC->Gstpar(idtmed[604], "DRAY", 1.);
   
-  pMC->Gstpar(idtmed[605], "LOSS", 3.);
-  pMC->Gstpar(idtmed[605], "DRAY", 1.);
+  gMC->Gstpar(idtmed[605], "LOSS", 3.);
+  gMC->Gstpar(idtmed[605], "DRAY", 1.);
   
-  pMC->Gstpar(idtmed[606], "LOSS", 3.);
-  pMC->Gstpar(idtmed[606], "DRAY", 1.);
+  gMC->Gstpar(idtmed[606], "LOSS", 3.);
+  gMC->Gstpar(idtmed[606], "DRAY", 1.);
   
-  pMC->Gstpar(idtmed[607], "LOSS", 3.);
-  pMC->Gstpar(idtmed[607], "DRAY", 1.);
+  gMC->Gstpar(idtmed[607], "LOSS", 3.);
+  gMC->Gstpar(idtmed[607], "DRAY", 1.);
   
   // --- Energy cut-offs in the Pb and Al to gain time in tracking --- 
   // --- without affecting the hit patterns --- 
-  pMC->Gstpar(idtmed[600], "CUTGAM", 1e-4);
-  pMC->Gstpar(idtmed[600], "CUTELE", 1e-4);
-  pMC->Gstpar(idtmed[600], "CUTNEU", 1e-4);
-  pMC->Gstpar(idtmed[600], "CUTHAD", 1e-4);
-  pMC->Gstpar(idtmed[605], "CUTGAM", 1e-4);
-  pMC->Gstpar(idtmed[605], "CUTELE", 1e-4);
-  pMC->Gstpar(idtmed[605], "CUTNEU", 1e-4);
-  pMC->Gstpar(idtmed[605], "CUTHAD", 1e-4);
-  pMC->Gstpar(idtmed[606], "CUTGAM", 1e-4);
-  pMC->Gstpar(idtmed[606], "CUTELE", 1e-4);
-  pMC->Gstpar(idtmed[606], "CUTNEU", 1e-4);
-  pMC->Gstpar(idtmed[606], "CUTHAD", 1e-4);
-  pMC->Gstpar(idtmed[603], "CUTGAM", 1e-4);
-  pMC->Gstpar(idtmed[603], "CUTELE", 1e-4);
-  pMC->Gstpar(idtmed[603], "CUTNEU", 1e-4);
-  pMC->Gstpar(idtmed[603], "CUTHAD", 1e-4);
-  pMC->Gstpar(idtmed[609], "CUTGAM", 1e-4);
-  pMC->Gstpar(idtmed[609], "CUTELE", 1e-4);
-  pMC->Gstpar(idtmed[609], "CUTNEU", 1e-4);
-  pMC->Gstpar(idtmed[609], "CUTHAD", 1e-4);
+  gMC->Gstpar(idtmed[600], "CUTGAM", 1e-4);
+  gMC->Gstpar(idtmed[600], "CUTELE", 1e-4);
+  gMC->Gstpar(idtmed[600], "CUTNEU", 1e-4);
+  gMC->Gstpar(idtmed[600], "CUTHAD", 1e-4);
+  gMC->Gstpar(idtmed[605], "CUTGAM", 1e-4);
+  gMC->Gstpar(idtmed[605], "CUTELE", 1e-4);
+  gMC->Gstpar(idtmed[605], "CUTNEU", 1e-4);
+  gMC->Gstpar(idtmed[605], "CUTHAD", 1e-4);
+  gMC->Gstpar(idtmed[606], "CUTGAM", 1e-4);
+  gMC->Gstpar(idtmed[606], "CUTELE", 1e-4);
+  gMC->Gstpar(idtmed[606], "CUTNEU", 1e-4);
+  gMC->Gstpar(idtmed[606], "CUTHAD", 1e-4);
+  gMC->Gstpar(idtmed[603], "CUTGAM", 1e-4);
+  gMC->Gstpar(idtmed[603], "CUTELE", 1e-4);
+  gMC->Gstpar(idtmed[603], "CUTNEU", 1e-4);
+  gMC->Gstpar(idtmed[603], "CUTHAD", 1e-4);
+  gMC->Gstpar(idtmed[609], "CUTGAM", 1e-4);
+  gMC->Gstpar(idtmed[609], "CUTELE", 1e-4);
+  gMC->Gstpar(idtmed[609], "CUTNEU", 1e-4);
+  gMC->Gstpar(idtmed[609], "CUTHAD", 1e-4);
   
   // --- Prevent particles stopping in the gas due to energy cut-off --- 
-  pMC->Gstpar(idtmed[604], "CUTGAM", 1e-5);
-  pMC->Gstpar(idtmed[604], "CUTELE", 1e-5);
-  pMC->Gstpar(idtmed[604], "CUTNEU", 1e-5);
-  pMC->Gstpar(idtmed[604], "CUTHAD", 1e-5);
-  pMC->Gstpar(idtmed[604], "CUTMUO", 1e-5);
+  gMC->Gstpar(idtmed[604], "CUTGAM", 1e-5);
+  gMC->Gstpar(idtmed[604], "CUTELE", 1e-5);
+  gMC->Gstpar(idtmed[604], "CUTNEU", 1e-5);
+  gMC->Gstpar(idtmed[604], "CUTHAD", 1e-5);
+  gMC->Gstpar(idtmed[604], "CUTMUO", 1e-5);
 }
 
 //_____________________________________________________________________________
@@ -628,22 +620,21 @@ void AliPMDv0::StepManager()
   Int_t   vol[5];
   Text_t namep[5];
   
-  AliMC* pMC=AliMC::GetMC();
-  if(pMC->GetMedium() == fMedSens && (destep = pMC->Edep())) {
+  if(gMC->GetMedium() == fMedSens && (destep = gMC->Edep())) {
     
-    pMC->CurrentVol(namep, copy);
+    gMC->CurrentVol(namep, copy);
     vol[0]=copy;
-    pMC->CurrentVolOff(1,namep,copy);
+    gMC->CurrentVolOff(1,namep,copy);
     vol[1]=copy;
-    pMC->CurrentVolOff(2,namep,copy);
+    gMC->CurrentVolOff(2,namep,copy);
     vol[2]=copy;
     if(strncmp(namep,"DW11",4))vol[2]=1;
     if(strncmp(namep,"DV11",4))vol[2]=2;
-    pMC->CurrentVolOff(3,namep,copy);
+    gMC->CurrentVolOff(3,namep,copy);
     vol[3]=copy;
-    pMC->CurrentVolOff(4,namep,copy);
+    gMC->CurrentVolOff(4,namep,copy);
     vol[4]=copy;
-    pMC->Gdtom(center,hits,1);
+    gMC->Gdtom(center,hits,1);
     hits[3] = destep*1e9; //Number in eV
     AddHit(gAlice->CurrentTrack(), vol, hits);
   }

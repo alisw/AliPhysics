@@ -75,7 +75,6 @@ void AliBODY::CreateGeometry()
 
   Float_t DALIC[10];
   Int_t *idtmed = fIdtmed->GetArray()+1;
-  AliMC *pMC = AliMC::GetMC();
   //
   if(gAlice->GetModule("ZDC")) {
     //
@@ -92,7 +91,7 @@ void AliBODY::CreateGeometry()
     DALIC[7]=15000;
     DALIC[8]=0;
     DALIC[9]=2000;
-    pMC->Gsvolu("ALIC","PGON",idtmed[1],DALIC,10);
+    gMC->Gsvolu("ALIC","PGON",idtmed[1],DALIC,10);
   } else {
     //
     // If the ZDC is not present make just a BOX
@@ -100,7 +99,7 @@ void AliBODY::CreateGeometry()
     DALIC[0]=2000;
     DALIC[1]=2000;
     DALIC[2]=3000;
-    pMC->Gsvolu("ALIC","BOX ",idtmed[1],DALIC,3);
+    gMC->Gsvolu("ALIC","BOX ",idtmed[1],DALIC,3);
   }
 }
  
@@ -125,32 +124,30 @@ void AliBODY::DrawModule()
   //
   // Draw a view of the Alice outside box
   //
-  AliMC* pMC = AliMC::GetMC();
-  
   // Set everything unseen
-  pMC->Gsatt("*", "seen", -1);
+  gMC->Gsatt("*", "seen", -1);
   // 
   // Set ALIC mother visible
-  pMC->Gsatt("ALIC","SEEN",1);
+  gMC->Gsatt("ALIC","SEEN",1);
   //
   // Set the volumes visible
   //
-  pMC->Gdopt("hide","off");
+  gMC->Gdopt("hide","off");
   if(gAlice->GetModule("ZDC")) {
     //
     // ZDC is present
     //
-    pMC->DefaultRange();
-    pMC->Gdraw("alic", 40, 30, 0, 15, 10, .0014, .0014);
-    pMC->Gdhead(1111, "Aice Main body with Zero Degree Calorimeter");
+    gMC->DefaultRange();
+    gMC->Gdraw("alic", 40, 30, 0, 15, 10, .0014, .0014);
+    gMC->Gdhead(1111, "Aice Main body with Zero Degree Calorimeter");
   } else {
     //
     // ZDC is not present
     //
-    pMC->Gdraw("alic", 40, 30, 0, 10, 9, .0027, .0027);
-    pMC->Gdhead(1111, "Aice Main body");
+    gMC->Gdraw("alic", 40, 30, 0, 10, 9, .0027, .0027);
+    gMC->Gdhead(1111, "Aice Main body");
   }
-  pMC->Gdman(18, 4, "MAN");
+  gMC->Gdman(18, 4, "MAN");
 }
  
 

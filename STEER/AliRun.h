@@ -17,8 +17,6 @@
 
 enum {Keep_Bit=1, Daughters_Bit=2, Done_Bit=4};
 
-enum {kMaxModules = 25, kLenModuleName=7};
-
 class AliDisplay;
 
 class AliRun : public TNamed {
@@ -43,8 +41,6 @@ protected:
   TStopwatch    fTimer;        //Timer object
   AliMagF      *fField;        //Magnetic Field Map
   AliMC        *fMC;           //pointer to MonteCarlo object
-  //  char          fDnames[kMaxModules][kLenModuleName];
-                               //Array of detector names
   TArrayI      *fImedia;       //Array of correspondence between media and detectors
   Int_t         fNdets;        //Number of detectors
   Float_t       fTrRmax;       //Maximum radius for tracking

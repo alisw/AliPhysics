@@ -185,16 +185,15 @@ Float_t AliLego::PropagateCylinder(Float_t *x, Float_t *v, Float_t r, Float_t z)
 void AliLego::Run()
 {
    // loop on phi,theta bins
-   AliMC* pMC=AliMC::GetMC();
-   pMC->InitLego();
+   gMC->InitLego();
    Float_t thed, phid, eta;
    for (fPhiBin=1; fPhiBin<=fNphi; fPhiBin++) {
       printf("AliLego Generating rays in phi bin:%d\n",fPhiBin);
       for (fThetaBin=1; fThetaBin<=fNtheta; fThetaBin++) {
-         pMC->Gtrigi();
-         pMC->Gtrigc();
+         gMC->Gtrigi();
+         gMC->Gtrigc();
          GenerateKinematics();
-         pMC->Gtreve_root();
+         gMC->Gtreve_root();
 
          thed = fCurTheta*kRaddeg;
          phid = fCurPhi*kRaddeg;
@@ -219,24 +218,23 @@ void AliLego::StepManager()
 {
 // called from AliRun::Stepmanager from gustep.
 // Accumulate the 3 parameters step by step
-  AliMC* pMC = AliMC::GetMC();
   
    Float_t t, tt;
    Float_t a,z,dens,radl,absl;
    
-   Float_t step  = pMC->TrackStep();
+   Float_t step  = gMC->TrackStep();
        
    Float_t vect[3], pmom[4];
-   pMC->TrackPosition(vect);  
-   pMC->TrackMomentum(pmom);
-   pMC->CurrentMaterial(a,z,dens,radl,absl);
+   gMC->TrackPosition(vect);  
+   gMC->TrackMomentum(pmom);
+   gMC->CurrentMaterial(a,z,dens,radl,absl);
    
    if (z < 1) return;
    
 // --- See if we have to stop now
    if (TMath::Abs(vect[2]) > fZMax  || 
        vect[0]*vect[0] +vect[1]*vect[1] > fRadMax*fRadMax) {
-       pMC->StopEvent();
+       gMC->StopEvent();
    } else {
 
 // --- See how long we have to go

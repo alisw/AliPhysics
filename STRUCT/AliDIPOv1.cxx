@@ -60,8 +60,6 @@ void AliDIPOv1::CreateGeometry()
   */
   //End_Html
 
-  AliMC* pMC = AliMC::GetMC();
-  
   Float_t par[5];
   
   Int_t *idtmed = fIdtmed->GetArray()-1799;
@@ -115,7 +113,7 @@ void AliDIPOv1::CreateGeometry()
   par[0] = 0.;
   par[1] = 280.;
   par[2] = 250.;
-  pMC->Gsvolu("DDIP", "TUBE", idtmed[1801], par, 3);
+  gMC->Gsvolu("DDIP", "TUBE", idtmed[1801], par, 3);
   
   //       COIL 
   par[0] = 250.;
@@ -124,15 +122,15 @@ void AliDIPOv1::CreateGeometry()
   par[3] = 204.;
   par[4] = 244.;
   
-  pMC->Gsvolu("DIPC", "CONE", idtmed[1810], par, 5);
-  pMC->Gspos("DIPC", 1, "DDIP", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("DIPC", "CONE", idtmed[1810], par, 5);
+  gMC->Gspos("DIPC", 1, "DDIP", 0., 0., 0., 0, "ONLY");
   par[0] = 250.;
   par[1] = 115.;
   par[2] = 125.;
   par[3] = 194.;
   par[4] = 204.;
-  pMC->Gsvolu("DIIC", "CONE", idtmed[1807], par, 5);
-  pMC->Gspos("DIIC", 1, "DDIP", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("DIIC", "CONE", idtmed[1807], par, 5);
+  gMC->Gspos("DIIC", 1, "DDIP", 0., 0., 0., 0, "ONLY");
   
   //       YOKE 
   par[0] = 250.;
@@ -141,9 +139,9 @@ void AliDIPOv1::CreateGeometry()
   par[3] = 244.;
   par[4] = 274.;
   
-  pMC->Gsvolu("DIPY", "CONE", idtmed[1834], par, 5);
-  pMC->Gspos("DIPY", 1, "DDIP", 0., 0., 0., 0, "ONLY");
-  pMC->Gspos("DDIP", 1, "ALIC", 0., 0., 725.+250, 0, "ONLY");
+  gMC->Gsvolu("DIPY", "CONE", idtmed[1834], par, 5);
+  gMC->Gspos("DIPY", 1, "DDIP", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("DDIP", 1, "ALIC", 0., 0., 725.+250, 0, "ONLY");
 }
 
 //_____________________________________________________________________________
@@ -153,29 +151,27 @@ void AliDIPOv1::DrawModule()
   // Draw a shaded view of the muon absorber
   //
 
-  AliMC* pMC = AliMC::GetMC();
-  
   // Set everything unseen
-  pMC->Gsatt("*", "seen", -1);
+  gMC->Gsatt("*", "seen", -1);
   // 
   // Set ALIC mother transparent
-  pMC->Gsatt("ALIC","SEEN",0);
+  gMC->Gsatt("ALIC","SEEN",0);
   //
   // Set the volumes visible
-  pMC->Gsatt("DDIP","seen",1);
-  pMC->Gsatt("DIPC","seen",1);
-  pMC->Gsatt("DIIC","seen",1);
-  pMC->Gsatt("DIPY","seen",1);
+  gMC->Gsatt("DDIP","seen",1);
+  gMC->Gsatt("DIPC","seen",1);
+  gMC->Gsatt("DIIC","seen",1);
+  gMC->Gsatt("DIPY","seen",1);
   //
-  pMC->Gdopt("hide", "on");
-  pMC->Gdopt("shad", "on");
-  pMC->Gsatt("*", "fill", 7);
-  pMC->SetClipBox(".");
-  pMC->SetClipBox(".");
-  pMC->DefaultRange();
-  pMC->Gdraw("alic", 30, 30, 0, 17, 13.5, .019, .019);
-  pMC->Gdhead(1111, "Magnetic Dipole Version 1");
-  pMC->Gdman(16, 4, "MAN");
+  gMC->Gdopt("hide", "on");
+  gMC->Gdopt("shad", "on");
+  gMC->Gsatt("*", "fill", 7);
+  gMC->SetClipBox(".");
+  gMC->SetClipBox(".");
+  gMC->DefaultRange();
+  gMC->Gdraw("alic", 30, 30, 0, 17, 13.5, .019, .019);
+  gMC->Gdhead(1111, "Magnetic Dipole Version 1");
+  gMC->Gdman(16, 4, "MAN");
 }
 
 //_____________________________________________________________________________

@@ -87,8 +87,6 @@ void AliTRDv0::CreateGeometry()
 
   Int_t *idtmed =fIdtmed->GetArray()-1299;
   
-  AliMC* pMC = AliMC::GetMC();
-
   //////////////////////////////////////////////////////////////////////////  
   //     Definition of Volumes 
   //////////////////////////////////////////////////////////////////////////  
@@ -104,8 +102,8 @@ void AliTRDv0::CreateGeometry()
   par_mo[7] =  zmax1;
   par_mo[8] = rmin;
   par_mo[9] = rmax;
-  pMC->Gsvolu("TRD ", "PGON", idtmed[1301-1], par_mo, nparmo);
-  pMC->Gsdvn("UTRS", "TRD ", nsect, 2);
+  gMC->Gsvolu("TRD ", "PGON", idtmed[1301-1], par_mo, nparmo);
+  gMC->Gsdvn("UTRS", "TRD ", nsect, 2);
 
   // The minimal width of a sector in rphi-direction
   Float_t widmi = rmin * TMath::Tan(kPI/nsect);
@@ -119,7 +117,7 @@ void AliTRDv0::CreateGeometry()
   par_fr[1] = widma - alframe / 2.;
   par_fr[2] = zmax1;
   par_fr[3] = (rmax - rmin) / 2;
-  pMC->Gsvolu("UTRI", "TRD1", idtmed[1302-1], par_fr, nparfr); 
+  gMC->Gsvolu("UTRI", "TRD1", idtmed[1302-1], par_fr, nparfr); 
 
   // 
   // The outer chambers
@@ -141,7 +139,7 @@ void AliTRDv0::CreateGeometry()
   par_oc[8]  = widma - frame;
   par_oc[9]  = widma - frame;
   par_oc[10] = 0.;
-  pMC->Gsvolu("UTCO", "TRAP", idtmed[1307-1], par_oc, nparoc);
+  gMC->Gsvolu("UTCO", "TRAP", idtmed[1307-1], par_oc, nparoc);
 
   // The inner part (Air) 
   par_oc[3] -= ccframe;
@@ -150,10 +148,10 @@ void AliTRDv0::CreateGeometry()
   par_oc[7] -= ccframe;
   par_oc[8] -= ccframe;
   par_oc[9] -= ccframe;
-  pMC->Gsvolu("UTIO", "TRAP", idtmed[1302-1], par_oc, nparoc);
+  gMC->Gsvolu("UTIO", "TRAP", idtmed[1302-1], par_oc, nparoc);
 
   // Definition of the six modules within each chamber 
-  pMC->Gsdvn("UTMO", "UTIO", nmodul, 3);
+  gMC->Gsdvn("UTMO", "UTIO", nmodul, 3);
 
   // Definition of the layers of each chamber 
   par_oc[1]  =  theoc;
@@ -168,34 +166,34 @@ void AliTRDv0::CreateGeometry()
   par_oc[10] =  0.;
   // G10 layer (radiator layer)
   par_oc[0] = sethick / 2;
-  pMC->Gsvolu("UT0O", "TRAP", idtmed[1313-1], par_oc, nparoc);
+  gMC->Gsvolu("UT0O", "TRAP", idtmed[1313-1], par_oc, nparoc);
   // CO2 layer (radiator)
   par_oc[0] = rathick / 2;
-  pMC->Gsvolu("UT1O", "TRAP", idtmed[1312-1], par_oc, nparoc);
+  gMC->Gsvolu("UT1O", "TRAP", idtmed[1312-1], par_oc, nparoc);
   // PE layer (radiator)
   par_oc[0] = pethick / 2;
-  pMC->Gsvolu("UT2O", "TRAP", idtmed[1303-1], par_oc, nparoc);
+  gMC->Gsvolu("UT2O", "TRAP", idtmed[1303-1], par_oc, nparoc);
   // Mylar layer (entrance window + HV cathode) 
   par_oc[0] = mythick / 2;
-  pMC->Gsvolu("UT3O", "TRAP", idtmed[1308-1], par_oc, nparoc);
+  gMC->Gsvolu("UT3O", "TRAP", idtmed[1308-1], par_oc, nparoc);
   // Xe/Isobutane layer (gasvolume)
   par_oc[0] = xethick / 2;
-  pMC->Gsvolu("UT4O", "TRAP", idtmed[1309-1], par_oc, nparoc);
+  gMC->Gsvolu("UT4O", "TRAP", idtmed[1309-1], par_oc, nparoc);
   // Cu layer (pad plane)
   par_oc[0] = cuthick / 2;
-  pMC->Gsvolu("UT5O", "TRAP", idtmed[1305-1], par_oc, nparoc);
+  gMC->Gsvolu("UT5O", "TRAP", idtmed[1305-1], par_oc, nparoc);
   // G10 layer (support structure)
   par_oc[0] = suthick / 2;
-  pMC->Gsvolu("UT6O", "TRAP", idtmed[1313-1], par_oc, nparoc);
+  gMC->Gsvolu("UT6O", "TRAP", idtmed[1313-1], par_oc, nparoc);
   // Cu layer (FEE + signal lines)
   par_oc[0] = fethick / 2;
-  pMC->Gsvolu("UT7O", "TRAP", idtmed[1305-1], par_oc, nparoc);
+  gMC->Gsvolu("UT7O", "TRAP", idtmed[1305-1], par_oc, nparoc);
   // PE layer (cooling devices)
   par_oc[0] = cothick / 2;
-  pMC->Gsvolu("UT8O", "TRAP", idtmed[1303-1], par_oc, nparoc);
+  gMC->Gsvolu("UT8O", "TRAP", idtmed[1303-1], par_oc, nparoc);
   // Water layer (cooling)
   par_oc[0] = wathick / 2;
-  pMC->Gsvolu("UT9O", "TRAP", idtmed[1314-1], par_oc, nparoc);
+  gMC->Gsvolu("UT9O", "TRAP", idtmed[1314-1], par_oc, nparoc);
 
   //
   // The neighbouring chambers
@@ -206,16 +204,16 @@ void AliTRDv0::CreateGeometry()
   par_nc[1] = widma - frame;
   par_nc[2] = zlenn / 2;
   par_nc[3] = (rmax - rmin) / 2;
-  pMC->Gsvolu("UTCN", "TRD1", idtmed[1307-1], par_nc, nparnc);
+  gMC->Gsvolu("UTCN", "TRD1", idtmed[1307-1], par_nc, nparnc);
 
   // The inner part (Air) 
   par_nc[0] -= ccframe;
   par_nc[1] -= ccframe;
   par_nc[2] -= ccframe;
-  pMC->Gsvolu("UTIN", "TRD1", idtmed[1302-1], par_nc, nparnc);
+  gMC->Gsvolu("UTIN", "TRD1", idtmed[1302-1], par_nc, nparnc);
 
   // Definition of the six modules within each outer chamber 
-  pMC->Gsdvn("UTMN", "UTIN", nmodul, 3);
+  gMC->Gsdvn("UTMN", "UTIN", nmodul, 3);
 
   // Definition of the layers of each chamber 
   par_nc[0] = -1.;
@@ -223,34 +221,34 @@ void AliTRDv0::CreateGeometry()
   par_nc[2] = -1.;
   // G10 layer (radiator layer)
   par_nc[3] = sethick / 2;
-  pMC->Gsvolu("UT0N", "TRD1", idtmed[1313-1], par_nc, nparnc);
+  gMC->Gsvolu("UT0N", "TRD1", idtmed[1313-1], par_nc, nparnc);
   // CO2 layer (radiator)
   par_nc[3] = rathick / 2;
-  pMC->Gsvolu("UT1N", "TRD1", idtmed[1312-1], par_nc, nparnc);
+  gMC->Gsvolu("UT1N", "TRD1", idtmed[1312-1], par_nc, nparnc);
   // PE layer (radiator)
   par_nc[3] = pethick / 2;
-  pMC->Gsvolu("UT2N", "TRD1", idtmed[1303-1], par_nc, nparnc);
+  gMC->Gsvolu("UT2N", "TRD1", idtmed[1303-1], par_nc, nparnc);
   // Mylar layer (entrance window + HV cathode) 
   par_nc[3] = mythick / 2;
-  pMC->Gsvolu("UT3N", "TRD1", idtmed[1308-1], par_nc, nparnc);
+  gMC->Gsvolu("UT3N", "TRD1", idtmed[1308-1], par_nc, nparnc);
   // Xe/Isobutane layer (gasvolume)
   par_nc[3] = xethick / 2;
-  pMC->Gsvolu("UT4N", "TRD1", idtmed[1309-1], par_nc, nparnc);
+  gMC->Gsvolu("UT4N", "TRD1", idtmed[1309-1], par_nc, nparnc);
   // Cu layer (pad plane)
   par_nc[3] = cuthick / 2;
-  pMC->Gsvolu("UT5N", "TRD1", idtmed[1305-1], par_nc, nparnc);
+  gMC->Gsvolu("UT5N", "TRD1", idtmed[1305-1], par_nc, nparnc);
   // G10 layer (support structure)
   par_nc[3] = suthick / 2;
-  pMC->Gsvolu("UT6N", "TRD1", idtmed[1313-1], par_nc, nparnc);
+  gMC->Gsvolu("UT6N", "TRD1", idtmed[1313-1], par_nc, nparnc);
   // Cu layer (FEE + signal lines)
   par_nc[3] = fethick / 2;
-  pMC->Gsvolu("UT7N", "TRD1", idtmed[1305-1], par_nc, nparnc);
+  gMC->Gsvolu("UT7N", "TRD1", idtmed[1305-1], par_nc, nparnc);
   // PE layer (cooling devices)
   par_nc[3] = cothick / 2;
-  pMC->Gsvolu("UT8N", "TRD1", idtmed[1303-1], par_nc, nparnc);
+  gMC->Gsvolu("UT8N", "TRD1", idtmed[1303-1], par_nc, nparnc);
   // Water layer (cooling)
   par_nc[3] = wathick / 2;
-  pMC->Gsvolu("UT9N", "TRD1", idtmed[1314-1], par_nc, nparnc);
+  gMC->Gsvolu("UT9N", "TRD1", idtmed[1314-1], par_nc, nparnc);
 
   //
   // The inner chamber
@@ -261,16 +259,16 @@ void AliTRDv0::CreateGeometry()
   par_ic[1] = widma - frame;
   par_ic[2] = zleni / 2;
   par_ic[3] = (rmax - rmin) / 2;
-  pMC->Gsvolu("UTCI", "TRD1", idtmed[1307-1], par_ic, nparic);
+  gMC->Gsvolu("UTCI", "TRD1", idtmed[1307-1], par_ic, nparic);
 
   // The inner part (Air) 
   par_ic[0] -= ccframe;
   par_ic[1] -= ccframe;
   par_ic[2] -= ccframe;
-  pMC->Gsvolu("UTII", "TRD1", idtmed[1302-1], par_ic, nparic);
+  gMC->Gsvolu("UTII", "TRD1", idtmed[1302-1], par_ic, nparic);
 
   // Definition of the six modules within each outer chamber 
-  pMC->Gsdvn("UTMI", "UTII", nmodul, 3);
+  gMC->Gsdvn("UTMI", "UTII", nmodul, 3);
 
   // Definition of the layers of each inner chamber 
   par_ic[0] = -1.;
@@ -278,34 +276,34 @@ void AliTRDv0::CreateGeometry()
   par_ic[2] = -1.;
   // G10 layer (radiator layer)
   par_ic[3] = sethick / 2;
-  pMC->Gsvolu("UT0I", "TRD1", idtmed[1313-1], par_ic, nparic);
+  gMC->Gsvolu("UT0I", "TRD1", idtmed[1313-1], par_ic, nparic);
   // CO2 layer (radiator)
   par_ic[3] = rathick / 2;
-  pMC->Gsvolu("UT1I", "TRD1", idtmed[1312-1], par_ic, nparic);
+  gMC->Gsvolu("UT1I", "TRD1", idtmed[1312-1], par_ic, nparic);
   // PE layer (radiator)
   par_ic[3] = pethick / 2;
-  pMC->Gsvolu("UT2I", "TRD1", idtmed[1303-1], par_ic, nparic);
+  gMC->Gsvolu("UT2I", "TRD1", idtmed[1303-1], par_ic, nparic);
   // Mylar layer (entrance window + HV cathode) 
   par_ic[3] = mythick / 2;
-  pMC->Gsvolu("UT3I", "TRD1", idtmed[1308-1], par_ic, nparic);
+  gMC->Gsvolu("UT3I", "TRD1", idtmed[1308-1], par_ic, nparic);
   // Xe/Isobutane layer (gasvolume)
   par_ic[3] = xethick / 2;
-  pMC->Gsvolu("UT4I", "TRD1", idtmed[1309-1], par_ic, nparic);
+  gMC->Gsvolu("UT4I", "TRD1", idtmed[1309-1], par_ic, nparic);
   // Cu layer (pad plane)
   par_ic[3] = cuthick / 2;
-  pMC->Gsvolu("UT5I", "TRD1", idtmed[1305-1], par_ic, nparic);
+  gMC->Gsvolu("UT5I", "TRD1", idtmed[1305-1], par_ic, nparic);
   // G10 layer (support structure)
   par_ic[3] = suthick / 2;
-  pMC->Gsvolu("UT6I", "TRD1", idtmed[1313-1], par_ic, nparic);
+  gMC->Gsvolu("UT6I", "TRD1", idtmed[1313-1], par_ic, nparic);
   // Cu layer (FEE + signal lines)
   par_ic[3] = fethick / 2;
-  pMC->Gsvolu("UT7I", "TRD1", idtmed[1305-1], par_ic, nparic);
+  gMC->Gsvolu("UT7I", "TRD1", idtmed[1305-1], par_ic, nparic);
   // PE layer (cooling devices)
   par_ic[3] = cothick / 2;
-  pMC->Gsvolu("UT8I", "TRD1", idtmed[1303-1], par_ic, nparic);
+  gMC->Gsvolu("UT8I", "TRD1", idtmed[1303-1], par_ic, nparic);
   // Water layer (cooling)
   par_ic[3] = wathick / 2;
-  pMC->Gsvolu("UT9I", "TRD1", idtmed[1314-1], par_ic, nparic);
+  gMC->Gsvolu("UT9I", "TRD1", idtmed[1314-1], par_ic, nparic);
 
   //////////////////////////////////////////////////////////////////////////  
   //     Positioning of Volumes   
@@ -317,74 +315,74 @@ void AliTRDv0::CreateGeometry()
 
   // Position of the layers in a TRD module 
   f = TMath::Tan(theoc * kDegrad);
-  pMC->Gspos("UT9O", 1, "UTMO", 0., f*wazpos, wazpos, 0, "ONLY");
-  pMC->Gspos("UT8O", 1, "UTMO", 0., f*cozpos, cozpos, 0, "ONLY");
-  pMC->Gspos("UT7O", 1, "UTMO", 0., f*fezpos, fezpos, 0, "ONLY");
-  pMC->Gspos("UT6O", 1, "UTMO", 0., f*suzpos, suzpos, 0, "ONLY");
-  pMC->Gspos("UT5O", 1, "UTMO", 0., f*cuzpos, cuzpos, 0, "ONLY");
-  pMC->Gspos("UT4O", 1, "UTMO", 0., f*xezpos, xezpos, 0, "ONLY");
-  pMC->Gspos("UT3O", 1, "UTMO", 0., f*myzpos, myzpos, 0, "ONLY");
-  pMC->Gspos("UT1O", 1, "UTMO", 0., f*razpos, razpos, 0, "ONLY");
-  pMC->Gspos("UT0O", 1, "UTMO", 0., f*sezpos, sezpos, 0, "ONLY");
-  pMC->Gspos("UT2O", 1, "UT1O", 0., f*pezpos, pezpos, 0, "ONLY");
+  gMC->Gspos("UT9O", 1, "UTMO", 0., f*wazpos, wazpos, 0, "ONLY");
+  gMC->Gspos("UT8O", 1, "UTMO", 0., f*cozpos, cozpos, 0, "ONLY");
+  gMC->Gspos("UT7O", 1, "UTMO", 0., f*fezpos, fezpos, 0, "ONLY");
+  gMC->Gspos("UT6O", 1, "UTMO", 0., f*suzpos, suzpos, 0, "ONLY");
+  gMC->Gspos("UT5O", 1, "UTMO", 0., f*cuzpos, cuzpos, 0, "ONLY");
+  gMC->Gspos("UT4O", 1, "UTMO", 0., f*xezpos, xezpos, 0, "ONLY");
+  gMC->Gspos("UT3O", 1, "UTMO", 0., f*myzpos, myzpos, 0, "ONLY");
+  gMC->Gspos("UT1O", 1, "UTMO", 0., f*razpos, razpos, 0, "ONLY");
+  gMC->Gspos("UT0O", 1, "UTMO", 0., f*sezpos, sezpos, 0, "ONLY");
+  gMC->Gspos("UT2O", 1, "UT1O", 0., f*pezpos, pezpos, 0, "ONLY");
 
-  pMC->Gspos("UT9N", 1, "UTMN", 0.,       0., wazpos, 0, "ONLY");
-  pMC->Gspos("UT8N", 1, "UTMN", 0.,       0., cozpos, 0, "ONLY");
-  pMC->Gspos("UT7N", 1, "UTMN", 0.,       0., fezpos, 0, "ONLY");
-  pMC->Gspos("UT6N", 1, "UTMN", 0.,       0., suzpos, 0, "ONLY");
-  pMC->Gspos("UT5N", 1, "UTMN", 0.,       0., cuzpos, 0, "ONLY");
-  pMC->Gspos("UT4N", 1, "UTMN", 0.,       0., xezpos, 0, "ONLY");
-  pMC->Gspos("UT3N", 1, "UTMN", 0.,       0., myzpos, 0, "ONLY");
-  pMC->Gspos("UT1N", 1, "UTMN", 0.,       0., razpos, 0, "ONLY");
-  pMC->Gspos("UT0N", 1, "UTMN", 0.,       0., sezpos, 0, "ONLY");
-  pMC->Gspos("UT2N", 1, "UT1N", 0.,       0., pezpos, 0, "ONLY");
+  gMC->Gspos("UT9N", 1, "UTMN", 0.,       0., wazpos, 0, "ONLY");
+  gMC->Gspos("UT8N", 1, "UTMN", 0.,       0., cozpos, 0, "ONLY");
+  gMC->Gspos("UT7N", 1, "UTMN", 0.,       0., fezpos, 0, "ONLY");
+  gMC->Gspos("UT6N", 1, "UTMN", 0.,       0., suzpos, 0, "ONLY");
+  gMC->Gspos("UT5N", 1, "UTMN", 0.,       0., cuzpos, 0, "ONLY");
+  gMC->Gspos("UT4N", 1, "UTMN", 0.,       0., xezpos, 0, "ONLY");
+  gMC->Gspos("UT3N", 1, "UTMN", 0.,       0., myzpos, 0, "ONLY");
+  gMC->Gspos("UT1N", 1, "UTMN", 0.,       0., razpos, 0, "ONLY");
+  gMC->Gspos("UT0N", 1, "UTMN", 0.,       0., sezpos, 0, "ONLY");
+  gMC->Gspos("UT2N", 1, "UT1N", 0.,       0., pezpos, 0, "ONLY");
 
-  pMC->Gspos("UT9I", 1, "UTMI", 0.,       0., wazpos, 0, "ONLY");
-  pMC->Gspos("UT8I", 1, "UTMI", 0.,       0., cozpos, 0, "ONLY");
-  pMC->Gspos("UT7I", 1, "UTMI", 0.,       0., fezpos, 0, "ONLY");
-  pMC->Gspos("UT6I", 1, "UTMI", 0.,       0., suzpos, 0, "ONLY");
-  pMC->Gspos("UT5I", 1, "UTMI", 0.,       0., cuzpos, 0, "ONLY");
-  pMC->Gspos("UT4I", 1, "UTMI", 0.,       0., xezpos, 0, "ONLY");
-  pMC->Gspos("UT3I", 1, "UTMI", 0.,       0., myzpos, 0, "ONLY");
-  pMC->Gspos("UT1I", 1, "UTMI", 0.,       0., razpos, 0, "ONLY");
-  pMC->Gspos("UT0I", 1, "UTMI", 0.,       0., sezpos, 0, "ONLY");
-  pMC->Gspos("UT2I", 1, "UT1I", 0.,       0., pezpos, 0, "ONLY");
+  gMC->Gspos("UT9I", 1, "UTMI", 0.,       0., wazpos, 0, "ONLY");
+  gMC->Gspos("UT8I", 1, "UTMI", 0.,       0., cozpos, 0, "ONLY");
+  gMC->Gspos("UT7I", 1, "UTMI", 0.,       0., fezpos, 0, "ONLY");
+  gMC->Gspos("UT6I", 1, "UTMI", 0.,       0., suzpos, 0, "ONLY");
+  gMC->Gspos("UT5I", 1, "UTMI", 0.,       0., cuzpos, 0, "ONLY");
+  gMC->Gspos("UT4I", 1, "UTMI", 0.,       0., xezpos, 0, "ONLY");
+  gMC->Gspos("UT3I", 1, "UTMI", 0.,       0., myzpos, 0, "ONLY");
+  gMC->Gspos("UT1I", 1, "UTMI", 0.,       0., razpos, 0, "ONLY");
+  gMC->Gspos("UT0I", 1, "UTMI", 0.,       0., sezpos, 0, "ONLY");
+  gMC->Gspos("UT2I", 1, "UT1I", 0.,       0., pezpos, 0, "ONLY");
 
   // Position of the inner part of the chambers 
   xpos = 0.;
   ypos = 0.;
   zpos = 0.;
-  pMC->Gspos("UTII", 1, "UTCI", xpos, ypos, zpos, 0, "ONLY");
-  pMC->Gspos("UTIN", 1, "UTCN", xpos, ypos, zpos, 0, "ONLY");
-  pMC->Gspos("UTIO", 1, "UTCO", xpos, ypos, zpos, 0, "ONLY");
+  gMC->Gspos("UTII", 1, "UTCI", xpos, ypos, zpos, 0, "ONLY");
+  gMC->Gspos("UTIN", 1, "UTCN", xpos, ypos, zpos, 0, "ONLY");
+  gMC->Gspos("UTIO", 1, "UTCO", xpos, ypos, zpos, 0, "ONLY");
 
   // Position of the chambers in the support frame 
   xpos = 0.;
   ypos = ((zmax1 + zmax2) / 2 + zlenn + zleni / 2) / 2;
   zpos = 0.;
-  pMC->Gspos("UTCO", 1, "UTRI", xpos, ypos, zpos, idmat[1], "ONLY");
-  pMC->Gspos("UTCO", 2, "UTRI", xpos,-ypos, zpos,       0 , "ONLY");
+  gMC->Gspos("UTCO", 1, "UTRI", xpos, ypos, zpos, idmat[1], "ONLY");
+  gMC->Gspos("UTCO", 2, "UTRI", xpos,-ypos, zpos,       0 , "ONLY");
   xpos = 0.;
   ypos = (zlenn + zleni) / 2;
   zpos = 0.;
-  pMC->Gspos("UTCN", 1, "UTRI", xpos, ypos, zpos,       0 , "ONLY");
-  pMC->Gspos("UTCN", 2, "UTRI", xpos,-ypos, zpos,       0 , "ONLY");
+  gMC->Gspos("UTCN", 1, "UTRI", xpos, ypos, zpos,       0 , "ONLY");
+  gMC->Gspos("UTCN", 2, "UTRI", xpos,-ypos, zpos,       0 , "ONLY");
   xpos = 0.;
   ypos = 0.;
   zpos = 0.;
-  pMC->Gspos("UTCI", 1, "UTRI", xpos, ypos, zpos,       0 , "ONLY");
+  gMC->Gspos("UTCI", 1, "UTRI", xpos, ypos, zpos,       0 , "ONLY");
 
   // Position of the inner part of the detector frame
   xpos = (rmax + rmin) / 2;
   ypos = 0.;
   zpos = 0.;
-  pMC->Gspos("UTRI", 1, "UTRS", xpos, ypos, zpos, idmat[0], "ONLY");
+  gMC->Gspos("UTRI", 1, "UTRS", xpos, ypos, zpos, idmat[0], "ONLY");
 
   // Position of the TRD mother volume in the ALICE experiment 
   xpos = 0.;
   ypos = 0.;
   zpos = 0.;
-  pMC->Gspos("TRD ", 1, "ALIC", xpos, ypos, zpos,        0, "ONLY");
+  gMC->Gspos("TRD ", 1, "ALIC", xpos, ypos, zpos,        0, "ONLY");
 
 }
 
@@ -396,43 +394,41 @@ void AliTRDv0::DrawModule()
   // Draw a shaded view of the Transition Radiation Detector version 0
   //
 
-  AliMC* pMC = AliMC::GetMC();
-  
   // Set everything unseen
-  pMC->Gsatt("*", "seen", -1);
+  gMC->Gsatt("*", "seen", -1);
   // 
   // Set ALIC mother transparent
-  pMC->Gsatt("ALIC","SEEN",0);
+  gMC->Gsatt("ALIC","SEEN",0);
   //
   // Set the volumes visible
-  pMC->Gsatt("TRD" ,"SEEN",0);
-  pMC->Gsatt("UTRS","SEEN",0);
-  pMC->Gsatt("UTRI","SEEN",0);
-  pMC->Gsatt("UTCO","SEEN",0);
-  pMC->Gsatt("UTIO","SEEN",0);
-  pMC->Gsatt("UTMO","SEEN",0);
-  pMC->Gsatt("UTCN","SEEN",0);
-  pMC->Gsatt("UTIN","SEEN",0);
-  pMC->Gsatt("UTMN","SEEN",0);
-  pMC->Gsatt("UTCI","SEEN",0);
-  pMC->Gsatt("UTII","SEEN",0);
-  pMC->Gsatt("UTMI","SEEN",0);
-  pMC->Gsatt("UT1O","SEEN",1);
-  pMC->Gsatt("UT4O","SEEN",1);
-  pMC->Gsatt("UT1N","SEEN",1);
-  pMC->Gsatt("UT4N","SEEN",1);
-  pMC->Gsatt("UT1I","SEEN",1);
-  pMC->Gsatt("UT4I","SEEN",1);
+  gMC->Gsatt("TRD" ,"SEEN",0);
+  gMC->Gsatt("UTRS","SEEN",0);
+  gMC->Gsatt("UTRI","SEEN",0);
+  gMC->Gsatt("UTCO","SEEN",0);
+  gMC->Gsatt("UTIO","SEEN",0);
+  gMC->Gsatt("UTMO","SEEN",0);
+  gMC->Gsatt("UTCN","SEEN",0);
+  gMC->Gsatt("UTIN","SEEN",0);
+  gMC->Gsatt("UTMN","SEEN",0);
+  gMC->Gsatt("UTCI","SEEN",0);
+  gMC->Gsatt("UTII","SEEN",0);
+  gMC->Gsatt("UTMI","SEEN",0);
+  gMC->Gsatt("UT1O","SEEN",1);
+  gMC->Gsatt("UT4O","SEEN",1);
+  gMC->Gsatt("UT1N","SEEN",1);
+  gMC->Gsatt("UT4N","SEEN",1);
+  gMC->Gsatt("UT1I","SEEN",1);
+  gMC->Gsatt("UT4I","SEEN",1);
   //
-  pMC->Gdopt("hide", "on");
-  pMC->Gdopt("shad", "on");
-  pMC->Gsatt("*", "fill", 7);
-  pMC->SetClipBox(".");
-  pMC->SetClipBox("*", 0, 2000, -2000, 2000, -2000, 2000);
-  pMC->DefaultRange();
-  pMC->Gdraw("alic", 40, 30, 0, 12, 9.4, .021, .021);
-  pMC->Gdhead(1111, "Transition Radiation Detector Version 0");
-  pMC->Gdman(18, 4, "MAN");
+  gMC->Gdopt("hide", "on");
+  gMC->Gdopt("shad", "on");
+  gMC->Gsatt("*", "fill", 7);
+  gMC->SetClipBox(".");
+  gMC->SetClipBox("*", 0, 2000, -2000, 2000, -2000, 2000);
+  gMC->DefaultRange();
+  gMC->Gdraw("alic", 40, 30, 0, 12, 9.4, .021, .021);
+  gMC->Gdhead(1111, "Transition Radiation Detector Version 0");
+  gMC->Gdman(18, 4, "MAN");
 
 }
 
@@ -452,12 +448,11 @@ void AliTRDv0::Init()
   // Initialise Transition Radiation Detector after geometry is built
   //
   AliTRD::Init();
-  AliMC* pMC = AliMC::GetMC();
   //
   // Retrieve the numeric identifier of the sensitive volumes (gas volume)
-  fIdSens1 = pMC->VolId("UT4I");
-  fIdSens2 = pMC->VolId("UT4N");
-  fIdSens3 = pMC->VolId("UT4O");
+  fIdSens1 = gMC->VolId("UT4I");
+  fIdSens2 = gMC->VolId("UT4N");
+  fIdSens3 = gMC->VolId("UT4O");
 }
 
 //_____________________________________________________________________________
@@ -474,19 +469,17 @@ void AliTRDv0::StepManager()
 
   TClonesArray &lhits = *fHits;
 
-  AliMC* pMC = AliMC::GetMC();
-
   // Use only charged tracks and count them only once per volume
-  if (pMC->TrackCharge() && pMC->TrackExiting()) {
+  if (gMC->TrackCharge() && gMC->TrackExiting()) {
     
     // Check on sensitive volume
-    idSens = pMC->CurrentVol(0,icSens);
+    idSens = gMC->CurrentVol(0,icSens);
     if ((idSens == fIdSens1) || 
         (idSens == fIdSens2) ||
         (idSens == fIdSens3)) { 
       
       // The sector number
-      pMC->CurrentVolOff(5,0,icopy);
+      gMC->CurrentVolOff(5,0,icopy);
       vol[0] = icopy;
       
       // The chamber number 
@@ -495,7 +488,7 @@ void AliTRDv0::StepManager()
       //   3: inner
       //   4: neighbouring right
       //   5: outer right
-      pMC->CurrentVolOff(3,0,icopy);
+      gMC->CurrentVolOff(3,0,icopy);
       if      (idSens == fIdSens3)
         vol[1] = 4 * icopy - 3; 
       else if (idSens == fIdSens2)
@@ -504,7 +497,7 @@ void AliTRDv0::StepManager()
         vol[1] = 3;
       
       // The plane number
-      pMC->CurrentVolOff(1,0,icopy);
+      gMC->CurrentVolOff(1,0,icopy);
       vol[2] = icopy;
 
       if (fSensSelect) {
@@ -513,13 +506,13 @@ void AliTRDv0::StepManager()
         if ((fSensChamber) && (vol[1] != fSensChamber)) addthishit = 0;
         if ((fSensSector)  && (vol[0] != fSensSector )) addthishit = 0;
         if (addthishit) {
-          pMC->TrackPosition(hits);
+          gMC->TrackPosition(hits);
           hits[3] = 0;
           new(lhits[fNhits++]) AliTRDhit(fIshunt,gAlice->CurrentTrack(),vol,hits);
 	}
       }
       else {      
-        pMC->TrackPosition(hits);
+        gMC->TrackPosition(hits);
         hits[3] = 0;
         new(lhits[fNhits++]) AliTRDhit(fIshunt,gAlice->CurrentTrack(),vol,hits);
       }

@@ -240,16 +240,14 @@ void AliPMDv2::CreateInside()
   
   // *** Define the  DPMD   Volume and fill with air *** 
 
-  AliMC* pMC = AliMC::GetMC();
-  
-  pMC->Gsvolu("DPMD", "BOX ", idtmed[698], sipmd, 3);
+  gMC->Gsvolu("DPMD", "BOX ", idtmed[698], sipmd, 3);
   
   // *** Define DIQU Volume and fill with air 
   siqad[0] = sipmd[0] / 2. - 1.;
   siqad[1] = sipmd[1] / 2. - 1.;
   siqad[2] = sipmd[2];
-  pMC->Gsvolu("DIQU","BOX ", idtmed[698], siqad, 3);
-  pMC->Gsatt("DIQU", "SEEN", 1);
+  gMC->Gsvolu("DIQU","BOX ", idtmed[698], siqad, 3);
+  gMC->Gsatt("DIQU", "SEEN", 1);
   
   
   // --- Place the modules in INSIDE PMD (DPMD) 
@@ -277,15 +275,15 @@ void AliPMDv2::CreateInside()
 	yd = ybox[j][i] - siqad[1];
 	if (pindex[j][i] == 1) {
 	  ++inum2;
-	  pMC->Gsposp("DM11", inum2, "DIQU", xd, yd, zd, 0, "ONLY", smod2, 3);
+	  gMC->Gsposp("DM11", inum2, "DIQU", xd, yd, zd, 0, "ONLY", smod2, 3);
 	}
 	if (pindex[j][i] == 2) {
 	  ++inum3;
-	  pMC->Gsposp("DM12", inum3, "DIQU", xd, yd, zd, 0, "ONLY", smod3, 3);
+	  gMC->Gsposp("DM12", inum3, "DIQU", xd, yd, zd, 0, "ONLY", smod3, 3);
 	}
 	if (pindex[j][i] == 3) {
 	  ++inum4;
-	  pMC->Gsposp("DM13", inum4, "DIQU", xd, yd, zd, 0, "ONLY", smod4, 3);
+	  gMC->Gsposp("DM13", inum4, "DIQU", xd, yd, zd, 0, "ONLY", smod4, 3);
 	}
       }
     }
@@ -299,14 +297,14 @@ void AliPMDv2::CreateInside()
     yiqa[3] = yiqa[2];
     i2      = numqu;
     for (k = 1; k <= i2; ++k) {
-      pMC->Gsposp("DIQU", k, "DPMD", xiqa[k-1], yiqa[k-1], zd, idrotm[k], "ONLY", siqad, 3);
+      gMC->Gsposp("DIQU", k, "DPMD", xiqa[k-1], yiqa[k-1], zd, idrotm[k], "ONLY", siqad, 3);
     }
     
     // --- Place the DPMD in ALICE with front edge 6.0m from vertex  --- 
     xp = 0.;
     yp = 0.;
     zp = zdist1;
-    pMC->Gspos("DPMD", 1, "ALIC", xp, yp, zp, 0, "ONLY");
+    gMC->Gspos("DPMD", 1, "ALIC", xp, yp, zp, 0, "ONLY");
     
 }
 
@@ -319,8 +317,6 @@ void AliPMDv2::CreatePads()
   // *** DIFFERENT PADS WITH SIZES 8 MM, 10 MM, 12 MM AND 15 MM SQUARE 
   // -- Author :     Y.P. VIYOGI, 04/06/1997. 
   // -- Modified:    P.V.K.S.Baba(JU), 13-12-97. 
-  
-  AliMC* pMC = AliMC::GetMC();
   
   Int_t npad1, npad2, npad3, npad4;
   Float_t spad1[3], spad2[3], spad3[3], spad4[3];
@@ -424,18 +420,18 @@ void AliPMDv2::CreatePads()
   spad1[0] = (pad1 - thcell) / 2.;
   spad1[1] = spad1[0];
   spad1[2] = thgas / 2;
-  pMC->Gsvolu("DP21", "BOX ", idtmed[604], spad1, 3);
-  pMC->Gsatt("DP21", "SEEN", 1);
-  pMC->Gsvolu("DP22", "BOX ", idtmed[604], spad1, 3);
-  pMC->Gsatt("DP22", "SEEN", 1);
+  gMC->Gsvolu("DP21", "BOX ", idtmed[604], spad1, 3);
+  gMC->Gsatt("DP21", "SEEN", 1);
+  gMC->Gsvolu("DP22", "BOX ", idtmed[604], spad1, 3);
+  gMC->Gsatt("DP22", "SEEN", 1);
   
   sstr1[0] = npad1*pad1/2;
   sstr1[1] = pad1/2;
   sstr1[2] = thgas/2;
-  pMC->Gsvolu("DS21", "BOX ", idtmed[605], sstr1, 3);
-  pMC->Gsatt("DS21", "SEEN", 1);
-  pMC->Gsvolu("DS22", "BOX ", idtmed[605], sstr1, 3);
-  pMC->Gsatt("DS22", "SEEN", 1);
+  gMC->Gsvolu("DS21", "BOX ", idtmed[605], sstr1, 3);
+  gMC->Gsatt("DS21", "SEEN", 1);
+  gMC->Gsvolu("DS22", "BOX ", idtmed[605], sstr1, 3);
+  gMC->Gsatt("DS22", "SEEN", 1);
   
   spsw1[0] = sstr1[0] + edge;
   spsw1[1] = spsw1[0];
@@ -444,18 +440,18 @@ void AliPMDv2::CreatePads()
   scpv1[0] = spsw1[0];
   scpv1[1] = spsw1[1];
   scpv1[2] = spsw1[2];
-  pMC->Gsvolu("DW21", "BOX ", idtmed[607], spsw1, 3);
-  pMC->Gsatt("DW21", "SEEN", 1);
-  pMC->Gsvolu("DV21", "BOX ", idtmed[607], spsw1, 3);
-  pMC->Gsatt("DV21", "SEEN", 1);
+  gMC->Gsvolu("DW21", "BOX ", idtmed[607], spsw1, 3);
+  gMC->Gsatt("DW21", "SEEN", 1);
+  gMC->Gsvolu("DV21", "BOX ", idtmed[607], spsw1, 3);
+  gMC->Gsatt("DV21", "SEEN", 1);
   
   // --- place  pads in a strip 
   xa = (-npad1 + 1.) * pad1 / 2.;
   ya = 0.;
   za = 0.;
   for (i = 1; i <= npad1; ++i) {
-    pMC->Gsposp("DP21", i, "DS21", xa, ya, za, 0, "ONLY", spad1, 3);
-    pMC->Gsposp("DP22", i, "DS22", xa, ya, za, 0, "ONLY", spad1, 3);
+    gMC->Gsposp("DP21", i, "DS21", xa, ya, za, 0, "ONLY", spad1, 3);
+    gMC->Gsposp("DP22", i, "DS22", xa, ya, za, 0, "ONLY", spad1, 3);
     xa += pad1;
   }
   // --- place  strips in the PRESHOWER AND CPV boxes 
@@ -463,8 +459,8 @@ void AliPMDv2::CreatePads()
   yb = (-npad1 + 1.) * pad1 / 2.;
   zb = 0.;
   for (j = 1; j <= npad1; ++j) {
-    pMC->Gsposp("DS21", j, "DW21", xb, yb, zb, 0, "ONLY", sstr1, 3);
-    pMC->Gsposp("DS22", j, "DV21", xb, yb, zb, 0, "ONLY", sstr1, 3);
+    gMC->Gsposp("DS21", j, "DW21", xb, yb, zb, 0, "ONLY", sstr1, 3);
+    gMC->Gsposp("DS22", j, "DV21", xb, yb, zb, 0, "ONLY", sstr1, 3);
     yb += pad1;
   }
   
@@ -473,18 +469,18 @@ void AliPMDv2::CreatePads()
   spad2[0] = (pad2 - thcell) / 2.;
   spad2[1] = spad2[0];
   spad2[2] = thgas / 2;
-  pMC->Gsvolu("DP11", "BOX ", idtmed[604], spad2, 3);
-  pMC->Gsatt("DP11", "SEEN", 1);
-  pMC->Gsvolu("DP12", "BOX ", idtmed[604], spad2, 3);
-  pMC->Gsatt("DP12", "SEEN", 1);
+  gMC->Gsvolu("DP11", "BOX ", idtmed[604], spad2, 3);
+  gMC->Gsatt("DP11", "SEEN", 1);
+  gMC->Gsvolu("DP12", "BOX ", idtmed[604], spad2, 3);
+  gMC->Gsatt("DP12", "SEEN", 1);
   
   sstr2[0] = npad2 * pad2 / 2;
   sstr2[1] = pad2 / 2;
   sstr2[2] = thgas / 2;
-  pMC->Gsvolu("DS11", "BOX ", idtmed[605], sstr2, 3);
-  pMC->Gsatt("DS11", "SEEN", 1);
-  pMC->Gsvolu("DS12", "BOX ", idtmed[605], sstr2, 3);
-  pMC->Gsatt("DS12", "SEEN", 1);
+  gMC->Gsvolu("DS11", "BOX ", idtmed[605], sstr2, 3);
+  gMC->Gsatt("DS11", "SEEN", 1);
+  gMC->Gsvolu("DS12", "BOX ", idtmed[605], sstr2, 3);
+  gMC->Gsatt("DS12", "SEEN", 1);
   
   spsw2[0] = sstr2[0] + edge;
   spsw2[1] = spsw2[0];
@@ -493,18 +489,18 @@ void AliPMDv2::CreatePads()
   scpv2[0] = spsw2[0];
   scpv2[1] = spsw2[1];
   scpv2[2] = spsw2[2];
-  pMC->Gsvolu("DW11","BOX ", idtmed[607], spsw2, 3);
-  pMC->Gsatt("DW11", "SEEN", 1);
-  pMC->Gsvolu("DV11","BOX ", idtmed[607], spsw2, 3);
-  pMC->Gsatt("DV11", "SEEN", 1);
+  gMC->Gsvolu("DW11","BOX ", idtmed[607], spsw2, 3);
+  gMC->Gsatt("DW11", "SEEN", 1);
+  gMC->Gsvolu("DV11","BOX ", idtmed[607], spsw2, 3);
+  gMC->Gsatt("DV11", "SEEN", 1);
   
   // --- place  pads in a strip 
   xa = (-npad2 + 1.) * pad2 / 2.;
   ya = 0.;
   za = 0.;
   for (i = 1; i <= npad2; ++i) {
-    pMC->Gsposp("DP11", i, "DS11", xa, ya, za, 0, "ONLY", spad2, 3);
-    pMC->Gsposp("DP12", i, "DS12", xa, ya, za, 0, "ONLY", spad2, 3);
+    gMC->Gsposp("DP11", i, "DS11", xa, ya, za, 0, "ONLY", spad2, 3);
+    gMC->Gsposp("DP12", i, "DS12", xa, ya, za, 0, "ONLY", spad2, 3);
     xa += pad2;
   }
   // --- place  strips in the PRESHOWER AND CPV boxes 
@@ -512,8 +508,8 @@ void AliPMDv2::CreatePads()
   yb = (-npad2 + 1.) * pad2 / 2.;
   zb = 0.;
   for (j = 1; j <= npad2; ++j) {
-    pMC->Gsposp("DS11", j, "DW11", xb, yb, zb, 0, "ONLY", sstr2, 3);
-    pMC->Gsposp("DS12", j, "DV11", xb, yb, zb, 0, "ONLY", sstr2, 3);
+    gMC->Gsposp("DS11", j, "DW11", xb, yb, zb, 0, "ONLY", sstr2, 3);
+    gMC->Gsposp("DS12", j, "DV11", xb, yb, zb, 0, "ONLY", sstr2, 3);
     yb += pad2;
   }
   
@@ -522,18 +518,18 @@ void AliPMDv2::CreatePads()
   spad3[0] = (pad3 - thcell) / 2.;
   spad3[1] = spad3[0];
   spad3[2] = thgas / 2;
-  pMC->Gsvolu("DP13", "BOX ", idtmed[604], spad3, 3);
-  pMC->Gsatt("DP13", "SEEN", 1);
-  pMC->Gsvolu("DP14", "BOX ", idtmed[604], spad3, 3);
-  pMC->Gsatt("DP14", "SEEN", 1);
+  gMC->Gsvolu("DP13", "BOX ", idtmed[604], spad3, 3);
+  gMC->Gsatt("DP13", "SEEN", 1);
+  gMC->Gsvolu("DP14", "BOX ", idtmed[604], spad3, 3);
+  gMC->Gsatt("DP14", "SEEN", 1);
   
   sstr3[0] = npad3 * pad3 / 2;
   sstr3[1] = pad3 / 2;
   sstr3[2] = thgas / 2;
-  pMC->Gsvolu("DS13", "BOX ", idtmed[605], sstr3, 3);
-  pMC->Gsatt("DS13", "SEEN", 1);
-  pMC->Gsvolu("DS14", "BOX ", idtmed[605], sstr3, 3);
-  pMC->Gsatt("DS14", "SEEN", 1);
+  gMC->Gsvolu("DS13", "BOX ", idtmed[605], sstr3, 3);
+  gMC->Gsatt("DS13", "SEEN", 1);
+  gMC->Gsvolu("DS14", "BOX ", idtmed[605], sstr3, 3);
+  gMC->Gsatt("DS14", "SEEN", 1);
   
   spsw3[0] = sstr3[0] + edge;
   spsw3[1] = spsw3[0];
@@ -542,18 +538,18 @@ void AliPMDv2::CreatePads()
   scpv3[0] = spsw3[0];
   scpv3[1] = spsw3[1];
   scpv3[2] = spsw3[2];
-  pMC->Gsvolu("DW12","BOX ", idtmed[607], spsw3, 3);
-  pMC->Gsatt("DW12", "SEEN", 1);
-  pMC->Gsvolu("DV12","BOX ", idtmed[607], spsw3, 3);
-  pMC->Gsatt("DV12", "SEEN", 1);
+  gMC->Gsvolu("DW12","BOX ", idtmed[607], spsw3, 3);
+  gMC->Gsatt("DW12", "SEEN", 1);
+  gMC->Gsvolu("DV12","BOX ", idtmed[607], spsw3, 3);
+  gMC->Gsatt("DV12", "SEEN", 1);
   
   // --- place  pads in a strip 
   xa = (-npad3 + 1.) * pad3 / 2.;
   ya = 0.;
   za = 0.;
   for (i = 1; i <= npad3; ++i) {
-    pMC->Gsposp("DP13", i, "DS13", xa, ya, za, 0, "ONLY", spad3, 3);
-    pMC->Gsposp("DP14", i, "DS14", xa, ya, za, 0, "ONLY", spad3, 3);
+    gMC->Gsposp("DP13", i, "DS13", xa, ya, za, 0, "ONLY", spad3, 3);
+    gMC->Gsposp("DP14", i, "DS14", xa, ya, za, 0, "ONLY", spad3, 3);
     xa += pad3;
   }
   // --- place  strips in the PRESHOWER AND CPV boxes 
@@ -561,8 +557,8 @@ void AliPMDv2::CreatePads()
   yb = (-npad3 + 1.) * pad3 / 2.;
   zb = 0.;
   for (j = 1; j <= npad3; ++j) {
-    pMC->Gsposp("DS13", j, "DW12", xb, yb, zb, 0, "ONLY", sstr3, 3);
-    pMC->Gsposp("DS14", j, "DV12", xb, yb, zb, 0, "ONLY", sstr3, 3);
+    gMC->Gsposp("DS13", j, "DW12", xb, yb, zb, 0, "ONLY", sstr3, 3);
+    gMC->Gsposp("DS14", j, "DV12", xb, yb, zb, 0, "ONLY", sstr3, 3);
     yb += pad3;
   }
   
@@ -571,18 +567,18 @@ void AliPMDv2::CreatePads()
   spad4[0] = (pad4 - thcell) / 2.;
   spad4[1] = spad4[0];
   spad4[2] = thgas / 2;
-  pMC->Gsvolu("DP15","BOX ", idtmed[604], spad4, 3);
-  pMC->Gsatt("DP15", "SEEN", 1);
-  pMC->Gsvolu("DP16","BOX ", idtmed[604], spad4, 3);
-  pMC->Gsatt("DP16", "SEEN", 1);
+  gMC->Gsvolu("DP15","BOX ", idtmed[604], spad4, 3);
+  gMC->Gsatt("DP15", "SEEN", 1);
+  gMC->Gsvolu("DP16","BOX ", idtmed[604], spad4, 3);
+  gMC->Gsatt("DP16", "SEEN", 1);
   
   sstr4[0] = npad4 * pad4 / 2;
   sstr4[1] = pad4 / 2;
   sstr4[2] = thgas / 2;
-  pMC->Gsvolu("DS15","BOX ", idtmed[605], sstr4, 3);
-  pMC->Gsatt("DS15", "SEEN", 1);
-  pMC->Gsvolu("DS16","BOX ", idtmed[605], sstr4, 3);
-  pMC->Gsatt("DS16", "SEEN", 1);
+  gMC->Gsvolu("DS15","BOX ", idtmed[605], sstr4, 3);
+  gMC->Gsatt("DS15", "SEEN", 1);
+  gMC->Gsvolu("DS16","BOX ", idtmed[605], sstr4, 3);
+  gMC->Gsatt("DS16", "SEEN", 1);
   
   spsw4[0] = sstr4[0] + edge;
   spsw4[1] = spsw4[0];
@@ -591,18 +587,18 @@ void AliPMDv2::CreatePads()
   scpv4[0] = spsw4[0];
   scpv4[1] = spsw4[1];
   scpv4[2] = spsw4[2];
-  pMC->Gsvolu("DW13","BOX ", idtmed[607], spsw4, 3);
-  pMC->Gsatt("DW13", "SEEN", 1);
-  pMC->Gsvolu("DV13","BOX ", idtmed[607], spsw4, 3);
-  pMC->Gsatt("DV13", "SEEN", 1);
+  gMC->Gsvolu("DW13","BOX ", idtmed[607], spsw4, 3);
+  gMC->Gsatt("DW13", "SEEN", 1);
+  gMC->Gsvolu("DV13","BOX ", idtmed[607], spsw4, 3);
+  gMC->Gsatt("DV13", "SEEN", 1);
   
   // --- place  pads in a strip 
   xa = (-npad4 + 1.) * pad4 / 2.;
   ya = 0.;
   za = 0.;
   for (i = 1; i <= npad4; ++i) {
-    pMC->Gsposp("DP15", i, "DS15", xa, ya, za, 0, "ONLY", spad4, 3);
-    pMC->Gsposp("DP16", i, "DS16", xa, ya, za, 0, "ONLY", spad4, 3);
+    gMC->Gsposp("DP15", i, "DS15", xa, ya, za, 0, "ONLY", spad4, 3);
+    gMC->Gsposp("DP16", i, "DS16", xa, ya, za, 0, "ONLY", spad4, 3);
     xa += pad4;
   }
   // --- place  strips in the PRESHOWER AND CPV boxes 
@@ -610,8 +606,8 @@ void AliPMDv2::CreatePads()
   yb = (-npad4 + 1.) * pad4 / 2.;
   zb = 0.;
   for (j = 1; j <= npad4; ++j) {
-    pMC->Gsposp("DS15", j, "DW13", xb, yb, zb, 0, "ONLY", sstr4, 3);
-    pMC->Gsposp("DS16", j, "DV13", xb, yb, zb, 0, "ONLY", sstr4, 3);
+    gMC->Gsposp("DS15", j, "DW13", xb, yb, zb, 0, "ONLY", sstr4, 3);
+    gMC->Gsposp("DS16", j, "DV13", xb, yb, zb, 0, "ONLY", sstr4, 3);
     yb += pad4;
   }
   
@@ -622,41 +618,41 @@ void AliPMDv2::CreatePads()
   spb[0] = spsw1[0];
   spb[1] = spsw1[1];
   spb[2] = .75;
-  pMC->Gsvolu("DPPB","BOX ", idtmed[600], spb, 3);
-  pMC->Gsatt("DPPB", "SEEN", 1);
+  gMC->Gsvolu("DPPB","BOX ", idtmed[600], spb, 3);
+  gMC->Gsatt("DPPB", "SEEN", 1);
   
   sw[0] = spsw1[0];
   sw[1] = spsw1[1];
   sw[2] = 0.9/2.;
-  pMC->Gsvolu("DPW ","BOX ", idtmed[600], sw, 3);
-  pMC->Gsatt("DPW ", "SEEN", 1);
+  gMC->Gsvolu("DPW ","BOX ", idtmed[600], sw, 3);
+  gMC->Gsatt("DPW ", "SEEN", 1);
   
   sfe[0] = spsw1[0];
   sfe[1] = spsw1[1];
   sfe[2] = 0.6/2.;
-  pMC->Gsvolu("DPFE","BOX ", idtmed[605], sfe, 3);
-  pMC->Gsatt("DPFE", "SEEN", 1);
+  gMC->Gsvolu("DPFE","BOX ", idtmed[605], sfe, 3);
+  gMC->Gsatt("DPFE", "SEEN", 1);
   
   smod1[0] = spsw1[0];
   smod1[1] = smod1[0];
   // 	SMOD1(3)=SPSW1(3)+SFE(3)+SW (3)+SCPV1(3) 
   smod1[2] = spsw1[2] + sfe[2] + spb[2] + scpv1[2];
-  pMC->Gsvolu("DM21", "BOX ", idtmed[698], smod1, 3);
+  gMC->Gsvolu("DM21", "BOX ", idtmed[698], smod1, 3);
   
   smod2[0] = spsw2[0];
   smod2[1] = smod2[0];
   smod2[2] = spsw2[2] + sfe[2] + spb[2] + scpv2[2];
-  pMC->Gsvolu("DM11", "BOX ", idtmed[698], smod2, 3);
+  gMC->Gsvolu("DM11", "BOX ", idtmed[698], smod2, 3);
   
   smod3[0] = spsw3[0];
   smod3[1] = smod3[0];
   smod3[2] = spsw3[2] + sfe[2] + spb[2] + scpv3[2];
-  pMC->Gsvolu("DM12", "BOX ", idtmed[698], smod3, 3);
+  gMC->Gsvolu("DM12", "BOX ", idtmed[698], smod3, 3);
   
   smod4[0] = spsw4[0];
   smod4[1] = smod4[0];
   smod4[2] = spsw4[2] + sfe[2] + spb[2] + scpv4[2];
-  pMC->Gsvolu("DM13", "BOX ", idtmed[698], smod4, 3);
+  gMC->Gsvolu("DM13", "BOX ", idtmed[698], smod4, 3);
   
   // **** MODULE TYPE 1 : ALWAYS WITH TUNSGTEN CONVERTER 
   
@@ -668,16 +664,16 @@ void AliPMDv2::CreatePads()
   yc = 0.;
   // --- First the CPV box 
   zc = -(spsw1[2] + sfe[2] + spb[2] + spsw1[2]) + spsw1[2];
-  pMC->Gspos("DV21", 1, "DM21", xc, yc, zc, 0, "ONLY");
+  gMC->Gspos("DV21", 1, "DM21", xc, yc, zc, 0, "ONLY");
   // --- Then iron support plate 
   zc = zc + sfe[2] + spsw1[2];
-  pMC->Gspos("DPFE", 1, "DM21", xc, yc, zc, 0, "ONLY");
+  gMC->Gspos("DPFE", 1, "DM21", xc, yc, zc, 0, "ONLY");
   // --- Then  converter plate 
   zc = zc + sfe[2] + spb[2];
-  pMC->Gspos("DPPB", 1, "DM21", xc, yc, zc, 0, "ONLY");
+  gMC->Gspos("DPPB", 1, "DM21", xc, yc, zc, 0, "ONLY");
   // --- Lastly the preshower box 
   zc = zc + spb[2] + spsw1[2];
-  pMC->Gspos("DW21", 1, "DM21", xc, yc, zc, 0, "ONLY");
+  gMC->Gspos("DW21", 1, "DM21", xc, yc, zc, 0, "ONLY");
   
   // **** MODULE TYPE 2 
   
@@ -687,16 +683,16 @@ void AliPMDv2::CreatePads()
   yc = 0.;
   // --- First the CPV box 
   zc = -(spsw2[2] + sfe[2] + spb[2] + spsw2[2]) + spsw2[2];
-  pMC->Gspos("DV11", 1, "DM11", xc, yc, zc, 0, "ONLY");
+  gMC->Gspos("DV11", 1, "DM11", xc, yc, zc, 0, "ONLY");
   // --- Then iron support plate 
   zc = zc + sfe[2] + spsw2[2];
-  pMC->Gspos("DPFE", 1, "DM11", xc, yc, zc, 0, "ONLY");
+  gMC->Gspos("DPFE", 1, "DM11", xc, yc, zc, 0, "ONLY");
   // --- Then lead converter plate 
   zc = zc + sfe[2] + spb[2];
-  pMC->Gspos("DPPB", 1, "DM11", xc, yc, zc, 0, "ONLY");
+  gMC->Gspos("DPPB", 1, "DM11", xc, yc, zc, 0, "ONLY");
   // --- Lastly the preshower box 
   zc = zc + spb[2] + spsw2[2];
-  pMC->Gspos("DW11", 1, "DM11", xc, yc, zc, 0, "ONLY");
+  gMC->Gspos("DW11", 1, "DM11", xc, yc, zc, 0, "ONLY");
   
   
   // **** MODULE TYPE 3 
@@ -707,16 +703,16 @@ void AliPMDv2::CreatePads()
   yc = 0.;
   // --- First the CPV box 
   zc = -(spsw3[2] + sfe[2] + spb[2] + spsw3[2]) + spsw3[2];
-  pMC->Gspos("DV12", 1, "DM12", xc, yc, zc, 0, "ONLY");
+  gMC->Gspos("DV12", 1, "DM12", xc, yc, zc, 0, "ONLY");
   // --- Then iron support plate 
   zc = zc + sfe[2] + spsw3[2];
-  pMC->Gspos("DPFE", 1, "DM12", xc, yc, zc, 0, "ONLY");
+  gMC->Gspos("DPFE", 1, "DM12", xc, yc, zc, 0, "ONLY");
   // --- Then lead converter plate 
   zc = zc + sfe[2] + spb[2];
-  pMC->Gspos("DPPB", 1, "DM12", xc, yc, zc, 0, "ONLY");
+  gMC->Gspos("DPPB", 1, "DM12", xc, yc, zc, 0, "ONLY");
   // --- Lastly the preshower box 
   zc = zc + spb[2] + spsw3[2];
-  pMC->Gspos("DW12", 1, "DM12", xc, yc, zc, 0, "ONLY");
+  gMC->Gspos("DW12", 1, "DM12", xc, yc, zc, 0, "ONLY");
   
 
   // **** MODULE TYPE 4 
@@ -727,16 +723,16 @@ void AliPMDv2::CreatePads()
   yc = 0.;
   // --- First the CPV box 
   zc = -(spsw4[2] + sfe[2] + spb[2] + spsw4[2]) + spsw4[2];
-  pMC->Gspos("DV13", 1, "DM13", xc, yc, zc, 0, "ONLY");
+  gMC->Gspos("DV13", 1, "DM13", xc, yc, zc, 0, "ONLY");
   // --- Then iron support plate 
   zc = zc + sfe[2] + spsw4[2];
-  pMC->Gspos("DPFE", 1, "DM13", xc, yc, zc, 0, "ONLY");
+  gMC->Gspos("DPFE", 1, "DM13", xc, yc, zc, 0, "ONLY");
   // --- Then lead converter plate 
   zc = zc + sfe[2] + spb[2];
-  pMC->Gspos("DPPB", 1, "DM13", xc, yc, zc, 0, "ONLY");
+  gMC->Gspos("DPPB", 1, "DM13", xc, yc, zc, 0, "ONLY");
   // --- Lastly the preshower box 
   zc = zc + spb[2] + spsw4[2];
-  pMC->Gspos("DW13", 1, "DM13", xc, yc, zc, 0, "ONLY");
+  gMC->Gspos("DW13", 1, "DM13", xc, yc, zc, 0, "ONLY");
   
 }
  
@@ -747,57 +743,55 @@ void AliPMDv2::DrawModule()
   // Draw a shaded view of the Photon Multiplicity Detector
   //
 
-  AliMC* pMC = AliMC::GetMC();
-  
-  pMC->Gsatt("*", "seen", -1);
-  pMC->Gsatt("alic", "seen", 0);
+  gMC->Gsatt("*", "seen", -1);
+  gMC->Gsatt("alic", "seen", 0);
   //
   // Set the visibility of the components
   // 
-  pMC->Gsatt("DP21","seen",0);
-  pMC->Gsatt("DP22","seen",0);
-  pMC->Gsatt("DS21","seen",1);
-  pMC->Gsatt("DS22","seen",1);
-  pMC->Gsatt("DW21","seen",0);
-  pMC->Gsatt("DV21","seen",0);
-  pMC->Gsatt("DP11","seen",0);
-  pMC->Gsatt("DP12","seen",0);
-  pMC->Gsatt("DS11","seen",1);
-  pMC->Gsatt("DS12","seen",1);
-  pMC->Gsatt("DW11","seen",0);
-  pMC->Gsatt("DV11","seen",0);
-  pMC->Gsatt("DP13","seen",0);
-  pMC->Gsatt("DP14","seen",0);
-  pMC->Gsatt("DS13","seen",1);
-  pMC->Gsatt("DS14","seen",1);
-  pMC->Gsatt("DW12","seen",0); 
-  pMC->Gsatt("DV12","seen",0);
-  pMC->Gsatt("DP15","seen",0);
-  pMC->Gsatt("DP16","seen",0);
-  pMC->Gsatt("DS15","seen",1);
-  pMC->Gsatt("DS16","seen",1);
-  pMC->Gsatt("DW13","seen",0);
-  pMC->Gsatt("DV13","seen",0);
-  pMC->Gsatt("DPPB","seen",1);
-  pMC->Gsatt("DPW ","seen",1); 
-  pMC->Gsatt("DPFE","seen",1);
-  pMC->Gsatt("DM21","seen",1);
-  pMC->Gsatt("DM11","seen",1);
-  pMC->Gsatt("DM12","seen",1);
-  pMC->Gsatt("DM13","seen",1);
-  pMC->Gsatt("DPMD","seen",0);
-  pMC->Gsatt("DIQU","seen",0);
+  gMC->Gsatt("DP21","seen",0);
+  gMC->Gsatt("DP22","seen",0);
+  gMC->Gsatt("DS21","seen",1);
+  gMC->Gsatt("DS22","seen",1);
+  gMC->Gsatt("DW21","seen",0);
+  gMC->Gsatt("DV21","seen",0);
+  gMC->Gsatt("DP11","seen",0);
+  gMC->Gsatt("DP12","seen",0);
+  gMC->Gsatt("DS11","seen",1);
+  gMC->Gsatt("DS12","seen",1);
+  gMC->Gsatt("DW11","seen",0);
+  gMC->Gsatt("DV11","seen",0);
+  gMC->Gsatt("DP13","seen",0);
+  gMC->Gsatt("DP14","seen",0);
+  gMC->Gsatt("DS13","seen",1);
+  gMC->Gsatt("DS14","seen",1);
+  gMC->Gsatt("DW12","seen",0); 
+  gMC->Gsatt("DV12","seen",0);
+  gMC->Gsatt("DP15","seen",0);
+  gMC->Gsatt("DP16","seen",0);
+  gMC->Gsatt("DS15","seen",1);
+  gMC->Gsatt("DS16","seen",1);
+  gMC->Gsatt("DW13","seen",0);
+  gMC->Gsatt("DV13","seen",0);
+  gMC->Gsatt("DPPB","seen",1);
+  gMC->Gsatt("DPW ","seen",1); 
+  gMC->Gsatt("DPFE","seen",1);
+  gMC->Gsatt("DM21","seen",1);
+  gMC->Gsatt("DM11","seen",1);
+  gMC->Gsatt("DM12","seen",1);
+  gMC->Gsatt("DM13","seen",1);
+  gMC->Gsatt("DPMD","seen",0);
+  gMC->Gsatt("DIQU","seen",0);
   //
-  pMC->Gdopt("hide", "on");
-  pMC->Gdopt("shad", "on");
-  pMC->Gsatt("*", "fill", 7);
-  pMC->SetClipBox(".");
-  pMC->SetClipBox("*", 0, 3000, -3000, 3000, -6000, 6000);
-  pMC->DefaultRange();
-  pMC->Gdraw("alic", 40, 30, 0, 22, 15.5, .04, .04);
-  pMC->Gdhead(1111, "Photon Multiplicity Detector Version 1");
-  pMC->Gdman(17, 5, "MAN");
-  pMC->Gdopt("hide", "off");
+  gMC->Gdopt("hide", "on");
+  gMC->Gdopt("shad", "on");
+  gMC->Gsatt("*", "fill", 7);
+  gMC->SetClipBox(".");
+  gMC->SetClipBox("*", 0, 3000, -3000, 3000, -6000, 6000);
+  gMC->DefaultRange();
+  gMC->Gdraw("alic", 40, 30, 0, 22, 15.5, .04, .04);
+  gMC->Gdhead(1111, "Photon Multiplicity Detector Version 1");
+  gMC->Gdman(17, 5, "MAN");
+  gMC->Gdopt("hide", "off");
 }
 
 //_____________________________________________________________________________
@@ -808,8 +802,6 @@ void AliPMDv2::CreateMaterials()
   //
   // ORIGIN    : Y. P. VIYOGI 
   //
-  
-  AliMC* pMC = AliMC::GetMC();
   
   // --- The Argon- CO2 mixture --- 
   Float_t ag[2] = { 39.95 };
@@ -855,7 +847,7 @@ void AliPMDv2::CreateMaterials()
   // 	define gas-mixtures 
   
   char namate[21];
-  pMC->Gfmate((*fIdmate)[3], namate, a, z, d, radl, absl, buf, nbuf);
+  gMC->Gfmate((*fIdmate)[3], namate, a, z, d, radl, absl, buf, nbuf);
   ag[1] = a;
   zg[1] = z;
   dg = (dar * 4 + dco) / 5;
@@ -876,53 +868,53 @@ void AliPMDv2::CreateMaterials()
   AliMedium(16, "C       $", 16, 0, 0, isxfld, sxmgmx, .1,  .1, .01, .1);
   
   // --- Generate explicitly delta rays in the iron, aluminium and lead --- 
-  pMC->Gstpar(idtmed[600], "LOSS", 3.);
-  pMC->Gstpar(idtmed[600], "DRAY", 1.);
+  gMC->Gstpar(idtmed[600], "LOSS", 3.);
+  gMC->Gstpar(idtmed[600], "DRAY", 1.);
   
-  pMC->Gstpar(idtmed[603], "LOSS", 3.);
-  pMC->Gstpar(idtmed[603], "DRAY", 1.);
+  gMC->Gstpar(idtmed[603], "LOSS", 3.);
+  gMC->Gstpar(idtmed[603], "DRAY", 1.);
   
-  pMC->Gstpar(idtmed[604], "LOSS", 3.);
-  pMC->Gstpar(idtmed[604], "DRAY", 1.);
+  gMC->Gstpar(idtmed[604], "LOSS", 3.);
+  gMC->Gstpar(idtmed[604], "DRAY", 1.);
   
-  pMC->Gstpar(idtmed[605], "LOSS", 3.);
-  pMC->Gstpar(idtmed[605], "DRAY", 1.);
+  gMC->Gstpar(idtmed[605], "LOSS", 3.);
+  gMC->Gstpar(idtmed[605], "DRAY", 1.);
   
-  pMC->Gstpar(idtmed[606], "LOSS", 3.);
-  pMC->Gstpar(idtmed[606], "DRAY", 1.);
+  gMC->Gstpar(idtmed[606], "LOSS", 3.);
+  gMC->Gstpar(idtmed[606], "DRAY", 1.);
   
-  pMC->Gstpar(idtmed[607], "LOSS", 3.);
-  pMC->Gstpar(idtmed[607], "DRAY", 1.);
+  gMC->Gstpar(idtmed[607], "LOSS", 3.);
+  gMC->Gstpar(idtmed[607], "DRAY", 1.);
   
   // --- Energy cut-offs in the Pb and Al to gain time in tracking --- 
   // --- without affecting the hit patterns --- 
-  pMC->Gstpar(idtmed[600], "CUTGAM", 1e-4);
-  pMC->Gstpar(idtmed[600], "CUTELE", 1e-4);
-  pMC->Gstpar(idtmed[600], "CUTNEU", 1e-4);
-  pMC->Gstpar(idtmed[600], "CUTHAD", 1e-4);
-  pMC->Gstpar(idtmed[605], "CUTGAM", 1e-4);
-  pMC->Gstpar(idtmed[605], "CUTELE", 1e-4);
-  pMC->Gstpar(idtmed[605], "CUTNEU", 1e-4);
-  pMC->Gstpar(idtmed[605], "CUTHAD", 1e-4);
-  pMC->Gstpar(idtmed[606], "CUTGAM", 1e-4);
-  pMC->Gstpar(idtmed[606], "CUTELE", 1e-4);
-  pMC->Gstpar(idtmed[606], "CUTNEU", 1e-4);
-  pMC->Gstpar(idtmed[606], "CUTHAD", 1e-4);
-  pMC->Gstpar(idtmed[603], "CUTGAM", 1e-4);
-  pMC->Gstpar(idtmed[603], "CUTELE", 1e-4);
-  pMC->Gstpar(idtmed[603], "CUTNEU", 1e-4);
-  pMC->Gstpar(idtmed[603], "CUTHAD", 1e-4);
-  pMC->Gstpar(idtmed[609], "CUTGAM", 1e-4);
-  pMC->Gstpar(idtmed[609], "CUTELE", 1e-4);
-  pMC->Gstpar(idtmed[609], "CUTNEU", 1e-4);
-  pMC->Gstpar(idtmed[609], "CUTHAD", 1e-4);
+  gMC->Gstpar(idtmed[600], "CUTGAM", 1e-4);
+  gMC->Gstpar(idtmed[600], "CUTELE", 1e-4);
+  gMC->Gstpar(idtmed[600], "CUTNEU", 1e-4);
+  gMC->Gstpar(idtmed[600], "CUTHAD", 1e-4);
+  gMC->Gstpar(idtmed[605], "CUTGAM", 1e-4);
+  gMC->Gstpar(idtmed[605], "CUTELE", 1e-4);
+  gMC->Gstpar(idtmed[605], "CUTNEU", 1e-4);
+  gMC->Gstpar(idtmed[605], "CUTHAD", 1e-4);
+  gMC->Gstpar(idtmed[606], "CUTGAM", 1e-4);
+  gMC->Gstpar(idtmed[606], "CUTELE", 1e-4);
+  gMC->Gstpar(idtmed[606], "CUTNEU", 1e-4);
+  gMC->Gstpar(idtmed[606], "CUTHAD", 1e-4);
+  gMC->Gstpar(idtmed[603], "CUTGAM", 1e-4);
+  gMC->Gstpar(idtmed[603], "CUTELE", 1e-4);
+  gMC->Gstpar(idtmed[603], "CUTNEU", 1e-4);
+  gMC->Gstpar(idtmed[603], "CUTHAD", 1e-4);
+  gMC->Gstpar(idtmed[609], "CUTGAM", 1e-4);
+  gMC->Gstpar(idtmed[609], "CUTELE", 1e-4);
+  gMC->Gstpar(idtmed[609], "CUTNEU", 1e-4);
+  gMC->Gstpar(idtmed[609], "CUTHAD", 1e-4);
   
   // --- Prevent particles stopping in the gas due to energy cut-off --- 
-  pMC->Gstpar(idtmed[604], "CUTGAM", 1e-5);
-  pMC->Gstpar(idtmed[604], "CUTELE", 1e-5);
-  pMC->Gstpar(idtmed[604], "CUTNEU", 1e-5);
-  pMC->Gstpar(idtmed[604], "CUTHAD", 1e-5);
-  pMC->Gstpar(idtmed[604], "CUTMUO", 1e-5);
+  gMC->Gstpar(idtmed[604], "CUTGAM", 1e-5);
+  gMC->Gstpar(idtmed[604], "CUTELE", 1e-5);
+  gMC->Gstpar(idtmed[604], "CUTNEU", 1e-5);
+  gMC->Gstpar(idtmed[604], "CUTHAD", 1e-5);
+  gMC->Gstpar(idtmed[604], "CUTMUO", 1e-5);
 }
 
 //_____________________________________________________________________________
@@ -962,22 +954,21 @@ void AliPMDv2::StepManager()
   Int_t   vol[5];
   Text_t namep[5];
   
-  AliMC* pMC=AliMC::GetMC();
-  if(pMC->GetMedium() == fMedSens && (destep = pMC->Edep())) {
+  if(gMC->GetMedium() == fMedSens && (destep = gMC->Edep())) {
     
-    pMC->CurrentVol(namep, copy);
+    gMC->CurrentVol(namep, copy);
     vol[0]=copy;
-    pMC->CurrentVolOff(1,namep,copy);
+    gMC->CurrentVolOff(1,namep,copy);
     vol[1]=copy;
-    pMC->CurrentVolOff(2,namep,copy);
+    gMC->CurrentVolOff(2,namep,copy);
     vol[2]=copy;
     if(strncmp(namep,"DW11",4))vol[2]=1;
     if(strncmp(namep,"DV11",4))vol[2]=2;
-    pMC->CurrentVolOff(3,namep,copy);
+    gMC->CurrentVolOff(3,namep,copy);
     vol[3]=copy;
-    pMC->CurrentVolOff(4,namep,copy);
+    gMC->CurrentVolOff(4,namep,copy);
     vol[4]=copy;
-    pMC->Gdtom(center,hits,1);
+    gMC->Gdtom(center,hits,1);
     hits[3] = destep*1e9; //Number in eV
     AddHit(gAlice->CurrentTrack(), vol, hits);
   }

@@ -56,7 +56,6 @@ void AliITSv4::CreateGeometry()
   //
   // Create geometry for its version 4
   //
-  AliMC* pMC = AliMC::GetMC();
 #ifndef NEW
   Int_t ivers=4*10+fMinorVersion;
   its_geo4(ivers, fIdtmed->GetArray()-200;
@@ -4479,7 +4478,7 @@ L9123:
 // --- Outputs the geometry tree in the EUCLID/CAD format 
 
     if (fEuclidOut) {
-	pMC->WriteEuclid("ITSgeometry", "ITSV", 1, 5);
+	gMC->WriteEuclid("ITSgeometry", "ITSV", 1, 5);
     }
 }
  
@@ -4498,13 +4497,12 @@ void AliITSv4::Init()
   //
   // Initialise ITS after it has been created
   //
-  AliMC* pMC = AliMC::GetMC();
-  fIdSens1=pMC->VolId("ITS1");
-  fIdSens2=pMC->VolId("ITS2");
-  fIdSens3=pMC->VolId("ITS3");
-  fIdSens4=pMC->VolId("ITS4");
-  fIdSens5=pMC->VolId("ITS5");
-  fIdSens6=pMC->VolId("ITS6");
+  fIdSens1=gMC->VolId("ITS1");
+  fIdSens2=gMC->VolId("ITS2");
+  fIdSens3=gMC->VolId("ITS3");
+  fIdSens4=gMC->VolId("ITS4");
+  fIdSens5=gMC->VolId("ITS5");
+  fIdSens6=gMC->VolId("ITS6");
 } 
  
 //_____________________________________________________________________________
@@ -4519,53 +4517,52 @@ void AliITSv4::StepManager()
   Float_t       position[3];
   Float_t       momentum[4];
   TClonesArray &lhits = *fHits;
-  AliMC* pMC = AliMC::GetMC();
   //
-  if(pMC->TrackCharge() && pMC->Edep()) {
+  if(gMC->TrackCharge() && gMC->Edep()) {
     //
     // Only entering charged tracks
-    if((id=pMC->CurrentVol(0,copy))==fIdSens1) {  
+    if((id=gMC->CurrentVol(0,copy))==fIdSens1) {  
       vol[0]=1;
-      id=pMC->CurrentVolOff(1,0,copy);      
+      id=gMC->CurrentVolOff(1,0,copy);      
       vol[1]=copy;
-      id=pMC->CurrentVolOff(2,0,copy);
+      id=gMC->CurrentVolOff(2,0,copy);
       vol[2]=copy;                       
     } else if(id==fIdSens2) {
       vol[0]=2;
-      id=pMC->CurrentVolOff(1,0,copy);       
+      id=gMC->CurrentVolOff(1,0,copy);       
       vol[1]=copy;
-      id=pMC->CurrentVolOff(2,0,copy);
+      id=gMC->CurrentVolOff(2,0,copy);
       vol[2]=copy;                    
     } else if(id==fIdSens3) {
       vol[0]=3;
       vol[1]=copy;
-      id=pMC->CurrentVolOff(1,0,copy);
+      id=gMC->CurrentVolOff(1,0,copy);
       vol[2]=copy;             
     } else if(id==fIdSens4) {
       vol[0]=4;
       vol[1]=copy;
-      id=pMC->CurrentVolOff(1,0,copy);
+      id=gMC->CurrentVolOff(1,0,copy);
       vol[2]=copy;                  
     } else if(id==fIdSens5) {
       vol[0]=5;
       vol[1]=copy;
-      id=pMC->CurrentVolOff(1,0,copy);
+      id=gMC->CurrentVolOff(1,0,copy);
       vol[2]=copy;               
     } else if(id==fIdSens6) {
       vol[0]=6;
       vol[1]=copy;
-      id=pMC->CurrentVolOff(1,0,copy);
+      id=gMC->CurrentVolOff(1,0,copy);
       vol[2]=copy;                      
     } else return;
-    pMC->TrackPosition(position);
-    pMC->TrackMomentum(momentum);
+    gMC->TrackPosition(position);
+    gMC->TrackMomentum(momentum);
     hits[0]=position[0];
     hits[1]=position[1];
     hits[2]=position[2];          
     hits[3]=momentum[0]*momentum[3];
     hits[4]=momentum[1]*momentum[3];
     hits[5]=momentum[2]*momentum[3];        
-    hits[6]=pMC->Edep();
+    hits[6]=gMC->Edep();
     new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,hits);
   }      
 }

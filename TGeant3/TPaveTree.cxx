@@ -26,6 +26,9 @@
 #include "TPaveTree.h"
 #include "TGeant3.h"
 
+static TGeant3 *geant3=(TGeant3*)gMC;
+
+
 ClassImp(TPaveTree)
 
 //_____________________________________________________________________________
@@ -79,9 +82,7 @@ void TPaveTree::DrawSpec()
   //
   //  Draw specs of the volume in this TPaveTree
   //
-  AliMC* pMC = AliMC::GetMC();
-  
-  pMC->DrawOneSpec(GetLabel());
+  gMC->DrawOneSpec(GetLabel());
 }
 
 //_____________________________________________________________________________
@@ -90,7 +91,6 @@ void TPaveTree::DrawTree(Int_t levmax, Int_t isel)
   //
   //  Draw tree of the volume in this TPaveTree
   //
-  TGeant3 *geant3=(TGeant3*)AliMC::GetMC();
   geant3->Gdtree(GetLabel(),levmax,isel);
 }
 
@@ -100,7 +100,6 @@ void TPaveTree::DrawTreeParent(Int_t levmax, Int_t isel)
   //
   //  Draw parent tree of the volume in this TPaveTree
   //
-  TGeant3 *geant3=(TGeant3*)AliMC::GetMC();
   geant3->GdtreeParent(GetLabel(),levmax,isel);
 }
 
@@ -112,14 +111,13 @@ void TPaveTree::ExecuteEvent(Int_t event, Int_t px, Int_t py)
   // Invokes TPabeLabel::ExecuteEvent. In case of a double click
   // draw specs of volume corresponding to this TPaveTree
   //
-  AliMC* pMC = AliMC::GetMC();
   
   TPaveLabel::ExecuteEvent(event,px,py);
   
   if (event == kButton1Double) {
     //printf("TPaveTree::ExecuteEvent\n");
     gPad->SetCursor(kWatch);
-    pMC->DrawOneSpec(GetLabel());
+    gMC->DrawOneSpec(GetLabel());
   }
 }
 

@@ -59,7 +59,6 @@ void AliFMDv1::CreateGeometry()
   */
   //End_Html
 
-  AliMC* pMC = AliMC::GetMC();
   
   Float_t rout;
   Float_t z;
@@ -94,75 +93,75 @@ void AliFMDv1::CreateGeometry()
   par[0] = rin - .02;
   par[1] = rin;
   par[2] = 1.5;
-  pMC->Gsvolu("IWR3", "TUBE", idtmed[899], par, 3);
-  pMC->Gspos("IWR3", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
+  gMC->Gsvolu("IWR3", "TUBE", idtmed[899], par, 3);
+  gMC->Gspos("IWR3", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
   //     Front steel wall 
   par[0] = rin;
   par[1] = rout;
   par[2] = .01;
-  pMC->Gsvolu("FWR3", "TUBE", idtmed[899], par, 3);
-  pMC->Gspos("FWR3", 1, "ALIC", 0., 0., z + .01, 0, "ONLY");
+  gMC->Gsvolu("FWR3", "TUBE", idtmed[899], par, 3);
+  gMC->Gspos("FWR3", 1, "ALIC", 0., 0., z + .01, 0, "ONLY");
   //     Rear steel wall 
-  pMC->Gsvolu("RWR3", "TUBE", idtmed[899], par, 3);
-  pMC->Gspos("RWR3", 1, "ALIC", 0., 0., z + 2.99, 0, "ONLY");
+  gMC->Gsvolu("RWR3", "TUBE", idtmed[899], par, 3);
+  gMC->Gspos("RWR3", 1, "ALIC", 0., 0., z + 2.99, 0, "ONLY");
   //     MCP 
   par[0] = rin;
   par[1] = rout;
   par[2] = .07;
-  pMC->Gsvolu("MPR3", "TUBE", idtmed[900], par, 3);
-  pMC->Gspos("MPR3", 1, "ALIC", 0., 0., z + 1.57, 0, "ONLY");
+  gMC->Gsvolu("MPR3", "TUBE", idtmed[900], par, 3);
+  gMC->Gspos("MPR3", 1, "ALIC", 0., 0., z + 1.57, 0, "ONLY");
   //     Silicon plate 
   par[0] = rin;
   par[1] = rout;
   par[2] = .019;
-  pMC->Gsvolu("SPR3", "TUBE", idtmed[901], par, 3);
-  pMC->Gspos("SPR3", 1, "ALIC", 0., 0., z + 1.719, 0, "ONLY");
+  gMC->Gsvolu("SPR3", "TUBE", idtmed[901], par, 3);
+  gMC->Gspos("SPR3", 1, "ALIC", 0., 0., z + 1.719, 0, "ONLY");
   //     Summator plate 
   par[0] = rin;
   par[1] = rout;
   par[2] = .01;
-  pMC->Gsvolu("SMR3", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("SMR3", 1, "ALIC", 0., 0., z + 2.01, 0, "ONLY");
+  gMC->Gsvolu("SMR3", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("SMR3", 1, "ALIC", 0., 0., z + 2.01, 0, "ONLY");
   // *******Outer slice ******* 
   //     Ceramic plate 
   par[0] = rout;
   par[1] = rout + h1;
   par[2] = 1.25;
-  pMC->Gsvolu("CPR3", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("CPR3", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
+  gMC->Gsvolu("CPR3", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("CPR3", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
   //     Covar spring 
   par[0] = rout;
   par[1] = rout + h1;
   par[2] = t0 / 2.;
-  pMC->Gsvolu("C1R3", "TUBE", idtmed[903], par, 3);
-  pMC->Gspos("C1R3", 1, "ALIC", 0., 0., z + .25 - t0 / 2., 0, "ONLY");
-  pMC->Gsvolu("C2R3", "TUBE", idtmed[903], par, 3);
-  pMC->Gspos("C2R3", 1, "ALIC", 0., 0., z + 2.75 + t0 / 2., 0, "ONLY");
+  gMC->Gsvolu("C1R3", "TUBE", idtmed[903], par, 3);
+  gMC->Gspos("C1R3", 1, "ALIC", 0., 0., z + .25 - t0 / 2., 0, "ONLY");
+  gMC->Gsvolu("C2R3", "TUBE", idtmed[903], par, 3);
+  gMC->Gspos("C2R3", 1, "ALIC", 0., 0., z + 2.75 + t0 / 2., 0, "ONLY");
   //     Getter camera 
   par[0] = rout + h1;
   par[1] = rout + h1 + h2;
   par[2] = t1 / 2.;
-  pMC->Gsvolu("GKR3", "TUBE", idtmed[903], par, 3);
-  pMC->Gspos("GKR3", 1, "ALIC", 0., 0., z + .25 + t1 / 2., 0, "ONLY");
+  gMC->Gsvolu("GKR3", "TUBE", idtmed[903], par, 3);
+  gMC->Gspos("GKR3", 1, "ALIC", 0., 0., z + .25 + t1 / 2., 0, "ONLY");
   //     Ceramic slice 
   par[0] = rout + h1;
   par[1] = rout + h1 + h2;
   par[2] = t2 / 2.;
-  pMC->Gsvolu("SCR3", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("SCR3", 1, "ALIC", 0., 0., z + .25 + t1 + t2 / 2., 0, "ONLY");
+  gMC->Gsvolu("SCR3", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("SCR3", 1, "ALIC", 0., 0., z + .25 + t1 + t2 / 2., 0, "ONLY");
   // ******Electronic slice ******* 
   //     Silicon ring 
   par[0] = rout + h1 + h2;
   par[1] = rout + h1 + h2 + 5.;
   par[2] = .025;
-  pMC->Gsvolu("SER3", "TUBE", idtmed[901], par, 3);
-  pMC->Gspos("SER3", 1, "ALIC", 0., 0., z + 1.57 - .025, 0, "ONLY");
+  gMC->Gsvolu("SER3", "TUBE", idtmed[901], par, 3);
+  gMC->Gspos("SER3", 1, "ALIC", 0., 0., z + 1.57 - .025, 0, "ONLY");
   //     Ceramic ring 
   par[0] = rout + h1 + h2;
   par[1] = rout + h1 + h2 + 5.;
   par[2] = .025;
-  pMC->Gsvolu("CER3", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("CER3", 1, "ALIC", 0., 0., z + 1.58 + .025, 0, "ONLY");
+  gMC->Gsvolu("CER3", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("CER3", 1, "ALIC", 0., 0., z + 1.58 + .025, 0, "ONLY");
   // *********************************************************** 
   //     DEFINE LEFT DISK#3 OF FMD 
   // *********************************************************** 
@@ -184,75 +183,75 @@ void AliFMDv1::CreateGeometry()
   par[0] = rin - .02;
   par[1] = rin;
   par[2] = 1.5;
-  pMC->Gsvolu("IWL3", "TUBE", idtmed[899], par, 3);
-  pMC->Gspos("IWL3", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
+  gMC->Gsvolu("IWL3", "TUBE", idtmed[899], par, 3);
+  gMC->Gspos("IWL3", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
   //     Front steel wall 
   par[0] = rin;
   par[1] = rout;
   par[2] = .01;
-  pMC->Gsvolu("FWL3", "TUBE", idtmed[899], par, 3);
-  pMC->Gspos("FWL3", 1, "ALIC", 0., 0., z - .01, 0, "ONLY");
+  gMC->Gsvolu("FWL3", "TUBE", idtmed[899], par, 3);
+  gMC->Gspos("FWL3", 1, "ALIC", 0., 0., z - .01, 0, "ONLY");
   //     Rear steel wall 
-  pMC->Gsvolu("RWL3", "TUBE", idtmed[899], par, 3);
-  pMC->Gspos("RWL3", 1, "ALIC", 0., 0., z - 2.99, 0, "ONLY");
+  gMC->Gsvolu("RWL3", "TUBE", idtmed[899], par, 3);
+  gMC->Gspos("RWL3", 1, "ALIC", 0., 0., z - 2.99, 0, "ONLY");
   //     MCP 
   par[0] = rin;
   par[1] = rout;
   par[2] = .07;
-  pMC->Gsvolu("MPL3", "TUBE", idtmed[900], par, 3);
-  pMC->Gspos("MPL3", 1, "ALIC", 0., 0., z - 1.57, 0, "ONLY");
+  gMC->Gsvolu("MPL3", "TUBE", idtmed[900], par, 3);
+  gMC->Gspos("MPL3", 1, "ALIC", 0., 0., z - 1.57, 0, "ONLY");
   //     Silicon plate 
   par[0] = rin;
   par[1] = rout;
   par[2] = .019;
-  pMC->Gsvolu("SPL3", "TUBE", idtmed[901], par, 3);
-  pMC->Gspos("SPL3", 1, "ALIC", 0., 0., z - 1.719, 0, "ONLY");
+  gMC->Gsvolu("SPL3", "TUBE", idtmed[901], par, 3);
+  gMC->Gspos("SPL3", 1, "ALIC", 0., 0., z - 1.719, 0, "ONLY");
   //     Summator plate 
   par[0] = rin;
   par[1] = rout;
   par[2] = .01;
-  pMC->Gsvolu("SML3", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("SML3", 1, "ALIC", 0., 0., z - 2.01, 0, "ONLY");
+  gMC->Gsvolu("SML3", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("SML3", 1, "ALIC", 0., 0., z - 2.01, 0, "ONLY");
   // *******Outer slice ******* 
   //     Ceramic plate 
   par[0] = rout;
   par[1] = rout + h1;
   par[2] = 1.25;
-  pMC->Gsvolu("CPL3", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("CPL3", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
+  gMC->Gsvolu("CPL3", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("CPL3", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
   //     Covar spring 
   par[0] = rout;
   par[1] = rout + h1;
   par[2] = t0 / 2.;
-  pMC->Gsvolu("C1L3", "TUBE", idtmed[903], par, 3);
-  pMC->Gspos("C1L3", 1, "ALIC", 0., 0., z - .25 + t0 / 2., 0, "ONLY");
-  pMC->Gsvolu("C2L3", "TUBE", idtmed[903], par, 3);
-  pMC->Gspos("C2L3", 1, "ALIC", 0., 0., z - 2.75 - t0 / 2., 0, "ONLY");
+  gMC->Gsvolu("C1L3", "TUBE", idtmed[903], par, 3);
+  gMC->Gspos("C1L3", 1, "ALIC", 0., 0., z - .25 + t0 / 2., 0, "ONLY");
+  gMC->Gsvolu("C2L3", "TUBE", idtmed[903], par, 3);
+  gMC->Gspos("C2L3", 1, "ALIC", 0., 0., z - 2.75 - t0 / 2., 0, "ONLY");
   //     Getter camera 
   par[0] = rout + h1;
   par[1] = rout + h1 + h2;
   par[2] = t1 / 2.;
-  pMC->Gsvolu("GKL3", "TUBE", idtmed[903], par, 3);
-  pMC->Gspos("GKL3", 1, "ALIC", 0., 0., z - .25 - t1 / 2., 0, "ONLY");
+  gMC->Gsvolu("GKL3", "TUBE", idtmed[903], par, 3);
+  gMC->Gspos("GKL3", 1, "ALIC", 0., 0., z - .25 - t1 / 2., 0, "ONLY");
   //     Ceramic slice 
   par[0] = rout + h1;
   par[1] = rout + h1 + h2;
   par[2] = t2 / 2.;
-  pMC->Gsvolu("SCL3", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("SCL3", 1, "ALIC", 0., 0., z - .25 - t1 - t2 / 2., 0, "ONLY");
+  gMC->Gsvolu("SCL3", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("SCL3", 1, "ALIC", 0., 0., z - .25 - t1 - t2 / 2., 0, "ONLY");
   // ******Electronic slice ******* 
   //     Silicon ring 
   par[0] = rout + h1 + h2;
   par[1] = rout + h1 + h2 + 5.;
   par[2] = .025;
-  pMC->Gsvolu("SEL3", "TUBE", idtmed[901], par, 3);
-  pMC->Gspos("SEL3", 1, "ALIC", 0., 0., z - 1.57 + .025, 0, "ONLY");
+  gMC->Gsvolu("SEL3", "TUBE", idtmed[901], par, 3);
+  gMC->Gspos("SEL3", 1, "ALIC", 0., 0., z - 1.57 + .025, 0, "ONLY");
   //     Ceramic ring 
   par[0] = rout + h1 + h2;
   par[1] = rout + h1 + h2 + 5.;
   par[2] = .025;
-  pMC->Gsvolu("CEL3", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("CEL3", 1, "ALIC", 0., 0., z - 1.58 - .025, 0, "ONLY");
+  gMC->Gsvolu("CEL3", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("CEL3", 1, "ALIC", 0., 0., z - 1.58 - .025, 0, "ONLY");
   // ******************************************************** 
   //     DEFINE RIGHT DISK#2  OF FMD 
   // ******************************************************** 
@@ -274,75 +273,75 @@ void AliFMDv1::CreateGeometry()
   par[0] = rin - .02;
   par[1] = rin;
   par[2] = 1.5;
-  pMC->Gsvolu("IWR2", "TUBE", idtmed[899], par, 3);
-  pMC->Gspos("IWR2", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
+  gMC->Gsvolu("IWR2", "TUBE", idtmed[899], par, 3);
+  gMC->Gspos("IWR2", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
   //     Front steel wall 
   par[0] = rin;
   par[1] = rout;
   par[2] = .01;
-  pMC->Gsvolu("FWR2", "TUBE", idtmed[899], par, 3);
-  pMC->Gspos("FWR2", 1, "ALIC", 0., 0., z + .01, 0, "ONLY");
+  gMC->Gsvolu("FWR2", "TUBE", idtmed[899], par, 3);
+  gMC->Gspos("FWR2", 1, "ALIC", 0., 0., z + .01, 0, "ONLY");
   //     Rear steel wall 
-  pMC->Gsvolu("RWR2", "TUBE", idtmed[899], par, 3);
-  pMC->Gspos("RWR2", 1, "ALIC", 0., 0., z + 2.99, 0, "ONLY");
+  gMC->Gsvolu("RWR2", "TUBE", idtmed[899], par, 3);
+  gMC->Gspos("RWR2", 1, "ALIC", 0., 0., z + 2.99, 0, "ONLY");
   //     MCP 
   par[0] = rin;
   par[1] = rout;
   par[2] = .07;
-  pMC->Gsvolu("MPR2", "TUBE", idtmed[900], par, 3);
-  pMC->Gspos("MPR2", 1, "ALIC", 0., 0., z + 1.57, 0, "ONLY");
+  gMC->Gsvolu("MPR2", "TUBE", idtmed[900], par, 3);
+  gMC->Gspos("MPR2", 1, "ALIC", 0., 0., z + 1.57, 0, "ONLY");
   //     Silicon plate 
   par[0] = rin;
   par[1] = rout;
   par[2] = .019;
-  pMC->Gsvolu("SPR2", "TUBE", idtmed[901], par, 3);
-  pMC->Gspos("SPR2", 1, "ALIC", 0., 0., z + 1.719, 0, "ONLY");
+  gMC->Gsvolu("SPR2", "TUBE", idtmed[901], par, 3);
+  gMC->Gspos("SPR2", 1, "ALIC", 0., 0., z + 1.719, 0, "ONLY");
   //     Summator plate 
   par[0] = rin;
   par[1] = rout;
   par[2] = .01;
-  pMC->Gsvolu("SMR2", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("SMR2", 1, "ALIC", 0., 0., z + 2.01, 0, "ONLY");
+  gMC->Gsvolu("SMR2", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("SMR2", 1, "ALIC", 0., 0., z + 2.01, 0, "ONLY");
   // *******Outer slice ******* 
   //     Ceramic plate 
   par[0] = rout;
   par[1] = rout + h1;
   par[2] = 1.25;
-  pMC->Gsvolu("CPR2", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("CPR2", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
+  gMC->Gsvolu("CPR2", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("CPR2", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
   //     Covar spring 
   par[0] = rout;
   par[1] = rout + h1;
   par[2] = t0 / 2.;
-  pMC->Gsvolu("C1R2", "TUBE", idtmed[903], par, 3);
-  pMC->Gspos("C1R2", 1, "ALIC", 0., 0., z + .25 - t0 / 2., 0, "ONLY");
-  pMC->Gsvolu("C2R2", "TUBE", idtmed[903], par, 3);
-  pMC->Gspos("C2R2", 1, "ALIC", 0., 0., z + 2.75 + t0 / 2., 0, "ONLY");
+  gMC->Gsvolu("C1R2", "TUBE", idtmed[903], par, 3);
+  gMC->Gspos("C1R2", 1, "ALIC", 0., 0., z + .25 - t0 / 2., 0, "ONLY");
+  gMC->Gsvolu("C2R2", "TUBE", idtmed[903], par, 3);
+  gMC->Gspos("C2R2", 1, "ALIC", 0., 0., z + 2.75 + t0 / 2., 0, "ONLY");
   //     Getter camera 
   par[0] = rout + h1;
   par[1] = rout + h1 + h2;
   par[2] = t1 / 2.;
-  pMC->Gsvolu("GKR2", "TUBE", idtmed[903], par, 3);
-  pMC->Gspos("GKR2", 1, "ALIC", 0., 0., z + .25 + t1 / 2., 0, "ONLY");
+  gMC->Gsvolu("GKR2", "TUBE", idtmed[903], par, 3);
+  gMC->Gspos("GKR2", 1, "ALIC", 0., 0., z + .25 + t1 / 2., 0, "ONLY");
   //     Ceramic slice 
   par[0] = rout + h1;
   par[1] = rout + h1 + h2;
   par[2] = t2 / 2.;
-  pMC->Gsvolu("SCR2", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("SCR2", 1, "ALIC", 0., 0., z + .25 + t1 + t2 / 2., 0, "ONLY");
+  gMC->Gsvolu("SCR2", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("SCR2", 1, "ALIC", 0., 0., z + .25 + t1 + t2 / 2., 0, "ONLY");
   // ******Electronic slice ******* 
   //     Silicon ring 
   par[0] = rout + h1 + h2;
   par[1] = rout + h1 + h2 + 5.;
   par[2] = .025;
-  pMC->Gsvolu("SER2", "TUBE", idtmed[901], par, 3);
-  pMC->Gspos("SER2", 1, "ALIC", 0., 0., z + 1.57 - .025, 0, "ONLY");
+  gMC->Gsvolu("SER2", "TUBE", idtmed[901], par, 3);
+  gMC->Gspos("SER2", 1, "ALIC", 0., 0., z + 1.57 - .025, 0, "ONLY");
   //     Ceramic ring 
   par[0] = rout + h1 + h2;
   par[1] = rout + h1 + h2 + 5.;
   par[2] = .025;
-  pMC->Gsvolu("CER2", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("CER2", 1, "ALIC", 0., 0., z + 1.58 + .025, 0, "ONLY");
+  gMC->Gsvolu("CER2", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("CER2", 1, "ALIC", 0., 0., z + 1.58 + .025, 0, "ONLY");
   // *********************************************************** 
   //       DEFINE LEFT DISK#2 OF FMD 
   // *********************************************************** 
@@ -364,75 +363,75 @@ void AliFMDv1::CreateGeometry()
   par[0] = rin - .02;
   par[1] = rin;
   par[2] = 1.5;
-  pMC->Gsvolu("IWL2", "TUBE", idtmed[899], par, 3);
-  pMC->Gspos("IWL2", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
+  gMC->Gsvolu("IWL2", "TUBE", idtmed[899], par, 3);
+  gMC->Gspos("IWL2", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
   //     Front steel wall 
   par[0] = rin;
   par[1] = rout;
   par[2] = .01;
-  pMC->Gsvolu("FWL2", "TUBE", idtmed[899], par, 3);
-  pMC->Gspos("FWL2", 1, "ALIC", 0., 0., z - .01, 0, "ONLY");
+  gMC->Gsvolu("FWL2", "TUBE", idtmed[899], par, 3);
+  gMC->Gspos("FWL2", 1, "ALIC", 0., 0., z - .01, 0, "ONLY");
   //     Rear steel wall 
-  pMC->Gsvolu("RWL2", "TUBE", idtmed[899], par, 3);
-  pMC->Gspos("RWL2", 1, "ALIC", 0., 0., z - 2.99, 0, "ONLY");
+  gMC->Gsvolu("RWL2", "TUBE", idtmed[899], par, 3);
+  gMC->Gspos("RWL2", 1, "ALIC", 0., 0., z - 2.99, 0, "ONLY");
   //     MCP 
   par[0] = rin;
   par[1] = rout;
   par[2] = .07;
-  pMC->Gsvolu("MPL2", "TUBE", idtmed[900], par, 3);
-  pMC->Gspos("MPL2", 1, "ALIC", 0., 0., z - 1.57, 0, "ONLY");
+  gMC->Gsvolu("MPL2", "TUBE", idtmed[900], par, 3);
+  gMC->Gspos("MPL2", 1, "ALIC", 0., 0., z - 1.57, 0, "ONLY");
   //     Silicon plate 
   par[0] = rin;
   par[1] = rout;
   par[2] = .019;
-  pMC->Gsvolu("SPL2", "TUBE", idtmed[901], par, 3);
-  pMC->Gspos("SPL2", 1, "ALIC", 0., 0., z - 1.719, 0, "ONLY");
+  gMC->Gsvolu("SPL2", "TUBE", idtmed[901], par, 3);
+  gMC->Gspos("SPL2", 1, "ALIC", 0., 0., z - 1.719, 0, "ONLY");
   //     Summator plate 
   par[0] = rin;
   par[1] = rout;
   par[2] = .01;
-  pMC->Gsvolu("SML2", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("SML2", 1, "ALIC", 0., 0., z - 2.01, 0, "ONLY");
+  gMC->Gsvolu("SML2", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("SML2", 1, "ALIC", 0., 0., z - 2.01, 0, "ONLY");
   // *******Outer slice ******* 
   //     Ceramic plate 
   par[0] = rout;
   par[1] = rout + h1;
   par[2] = 1.25;
-  pMC->Gsvolu("CPL2", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("CPL2", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
+  gMC->Gsvolu("CPL2", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("CPL2", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
   //     Covar spring 
   par[0] = rout;
   par[1] = rout + h1;
   par[2] = t0 / 2.;
-  pMC->Gsvolu("C1L2", "TUBE", idtmed[903], par, 3);
-  pMC->Gspos("C1L2", 1, "ALIC", 0., 0., z - .25 + t0 / 2., 0, "ONLY");
-  pMC->Gsvolu("C2L2", "TUBE", idtmed[903], par, 3);
-  pMC->Gspos("C2L2", 1, "ALIC", 0., 0., z - 2.75 - t0 / 2., 0, "ONLY");
+  gMC->Gsvolu("C1L2", "TUBE", idtmed[903], par, 3);
+  gMC->Gspos("C1L2", 1, "ALIC", 0., 0., z - .25 + t0 / 2., 0, "ONLY");
+  gMC->Gsvolu("C2L2", "TUBE", idtmed[903], par, 3);
+  gMC->Gspos("C2L2", 1, "ALIC", 0., 0., z - 2.75 - t0 / 2., 0, "ONLY");
   //     Getter camera 
   par[0] = rout + h1;
   par[1] = rout + h1 + h2;
   par[2] = t1 / 2.;
-  pMC->Gsvolu("GKL2", "TUBE", idtmed[903], par, 3);
-  pMC->Gspos("GKL2", 1, "ALIC", 0., 0., z - .25 - t1 / 2., 0, "ONLY");
+  gMC->Gsvolu("GKL2", "TUBE", idtmed[903], par, 3);
+  gMC->Gspos("GKL2", 1, "ALIC", 0., 0., z - .25 - t1 / 2., 0, "ONLY");
   //     Ceramic slice 
   par[0] = rout + h1;
   par[1] = rout + h1 + h2;
   par[2] = t2 / 2.;
-  pMC->Gsvolu("SCL2", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("SCL2", 1, "ALIC", 0., 0., z - .25 - t1 - t2 / 2., 0, "ONLY");
+  gMC->Gsvolu("SCL2", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("SCL2", 1, "ALIC", 0., 0., z - .25 - t1 - t2 / 2., 0, "ONLY");
   // ******Electronic slice ******* 
   //     Silicon ring 
   par[0] = rout + h1 + h2;
   par[1] = rout + h1 + h2 + 5.;
   par[2] = .025;
-  pMC->Gsvolu("SEL2", "TUBE", idtmed[901], par, 3);
-  pMC->Gspos("SEL2", 1, "ALIC", 0., 0., z - 1.57 + .025, 0, "ONLY");
+  gMC->Gsvolu("SEL2", "TUBE", idtmed[901], par, 3);
+  gMC->Gspos("SEL2", 1, "ALIC", 0., 0., z - 1.57 + .025, 0, "ONLY");
   //     Ceramic ring 
   par[0] = rout + h1 + h2;
   par[1] = rout + h1 + h2 + 5.;
   par[2] = .025;
-  pMC->Gsvolu("CEL2", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("CEL2", 1, "ALIC", 0., 0., z - 1.58 - .025, 0, "ONLY");
+  gMC->Gsvolu("CEL2", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("CEL2", 1, "ALIC", 0., 0., z - 1.58 - .025, 0, "ONLY");
   // ******************************************************** 
   //     DEFINE RIGHT DISK#1  OF FMD 
   // ******************************************************** 
@@ -454,75 +453,75 @@ void AliFMDv1::CreateGeometry()
   par[0] = rin - .02;
   par[1] = rin;
   par[2] = 1.5;
-  pMC->Gsvolu("IWR1", "TUBE", idtmed[899], par, 3);
-  pMC->Gspos("IWR1", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
+  gMC->Gsvolu("IWR1", "TUBE", idtmed[899], par, 3);
+  gMC->Gspos("IWR1", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
   //     Front steel wall 
   par[0] = rin;
   par[1] = rout;
   par[2] = .01;
-  pMC->Gsvolu("FWR1", "TUBE", idtmed[899], par, 3);
-  pMC->Gspos("FWR1", 1, "ALIC", 0., 0., z + .01, 0, "ONLY");
+  gMC->Gsvolu("FWR1", "TUBE", idtmed[899], par, 3);
+  gMC->Gspos("FWR1", 1, "ALIC", 0., 0., z + .01, 0, "ONLY");
   //     Rear steel wall 
-  pMC->Gsvolu("RWR1", "TUBE", idtmed[899], par, 3);
-  pMC->Gspos("RWR1", 1, "ALIC", 0., 0., z + 2.99, 0, "ONLY");
+  gMC->Gsvolu("RWR1", "TUBE", idtmed[899], par, 3);
+  gMC->Gspos("RWR1", 1, "ALIC", 0., 0., z + 2.99, 0, "ONLY");
   //     MCP 
   par[0] = rin;
   par[1] = rout;
   par[2] = .07;
-  pMC->Gsvolu("MPR1", "TUBE", idtmed[900], par, 3);
-  pMC->Gspos("MPR1", 1, "ALIC", 0., 0., z + 1.57, 0, "ONLY");
+  gMC->Gsvolu("MPR1", "TUBE", idtmed[900], par, 3);
+  gMC->Gspos("MPR1", 1, "ALIC", 0., 0., z + 1.57, 0, "ONLY");
   //     Silicon plate 
   par[0] = rin;
   par[1] = rout;
   par[2] = .019;
-  pMC->Gsvolu("SPR1", "TUBE", idtmed[901], par, 3);
-  pMC->Gspos("SPR1", 1, "ALIC", 0., 0., z + 1.719, 0, "ONLY");
+  gMC->Gsvolu("SPR1", "TUBE", idtmed[901], par, 3);
+  gMC->Gspos("SPR1", 1, "ALIC", 0., 0., z + 1.719, 0, "ONLY");
   //     Summator plate 
   par[0] = rin;
   par[1] = rout;
   par[2] = .01;
-  pMC->Gsvolu("SMR1", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("SMR1", 1, "ALIC", 0., 0., z + 2.01, 0, "ONLY");
+  gMC->Gsvolu("SMR1", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("SMR1", 1, "ALIC", 0., 0., z + 2.01, 0, "ONLY");
   // *******Outer slice ******* 
   //     Ceramic plate 
   par[0] = rout;
   par[1] = rout + h1;
   par[2] = 1.25;
-  pMC->Gsvolu("CPR1", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("CPR1", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
+  gMC->Gsvolu("CPR1", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("CPR1", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
   //     Covar spring 
   par[0] = rout;
   par[1] = rout + h1;
   par[2] = t0 / 2.;
-  pMC->Gsvolu("C1R1", "TUBE", idtmed[903], par, 3);
-  pMC->Gspos("C1R1", 1, "ALIC", 0., 0., z + .25 - t0 / 2., 0, "ONLY");
-  pMC->Gsvolu("C2R1", "TUBE", idtmed[903], par, 3);
-  pMC->Gspos("C2R1", 1, "ALIC", 0., 0., z + 2.75 + t0 / 2., 0, "ONLY");
+  gMC->Gsvolu("C1R1", "TUBE", idtmed[903], par, 3);
+  gMC->Gspos("C1R1", 1, "ALIC", 0., 0., z + .25 - t0 / 2., 0, "ONLY");
+  gMC->Gsvolu("C2R1", "TUBE", idtmed[903], par, 3);
+  gMC->Gspos("C2R1", 1, "ALIC", 0., 0., z + 2.75 + t0 / 2., 0, "ONLY");
   //     Getter camera 
   par[0] = rout + h1;
   par[1] = rout + h1 + h2;
   par[2] = t1 / 2.;
-  pMC->Gsvolu("GKR1", "TUBE", idtmed[903], par, 3);
-  pMC->Gspos("GKR1", 1, "ALIC", 0., 0., z + .25 + t1 / 2., 0, "ONLY");
+  gMC->Gsvolu("GKR1", "TUBE", idtmed[903], par, 3);
+  gMC->Gspos("GKR1", 1, "ALIC", 0., 0., z + .25 + t1 / 2., 0, "ONLY");
   //     Ceramic slice 
   par[0] = rout + h1;
   par[1] = rout + h1 + h2;
   par[2] = t2 / 2.;
-  pMC->Gsvolu("SCR1", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("SCR1", 1, "ALIC", 0., 0., z + .25 + t1 + t2 / 2., 0, "ONLY");
+  gMC->Gsvolu("SCR1", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("SCR1", 1, "ALIC", 0., 0., z + .25 + t1 + t2 / 2., 0, "ONLY");
   // ******Electronic slice ******* 
   //     Silicon ring 
   par[0] = rout + h1 + h2;
   par[1] = rout + h1 + h2 + 5.;
   par[2] = .025;
-  pMC->Gsvolu("SER1", "TUBE", idtmed[901], par, 3);
-  pMC->Gspos("SER1", 1, "ALIC", 0., 0., z + 1.57 - .025, 0, "ONLY");
+  gMC->Gsvolu("SER1", "TUBE", idtmed[901], par, 3);
+  gMC->Gspos("SER1", 1, "ALIC", 0., 0., z + 1.57 - .025, 0, "ONLY");
   //     Ceramic ring 
   par[0] = rout + h1 + h2;
   par[1] = rout + h1 + h2 + 5.;
   par[2] = .025;
-  pMC->Gsvolu("CER1", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("CER1", 1, "ALIC", 0., 0., z + 1.58 + .025, 0, "ONLY");
+  gMC->Gsvolu("CER1", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("CER1", 1, "ALIC", 0., 0., z + 1.58 + .025, 0, "ONLY");
   // *********************************************************** 
   //     DEFINE LEFT DISK#1 OF FMD 
   // *********************************************************** 
@@ -544,75 +543,75 @@ void AliFMDv1::CreateGeometry()
   par[0] = rin - .02;
   par[1] = rin;
   par[2] = 1.5;
-  pMC->Gsvolu("IWL1", "TUBE", idtmed[899], par, 3);
-  pMC->Gspos("IWL1", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
+  gMC->Gsvolu("IWL1", "TUBE", idtmed[899], par, 3);
+  gMC->Gspos("IWL1", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
   //     Front steel wall 
   par[0] = rin;
   par[1] = rout;
   par[2] = .01;
-  pMC->Gsvolu("FWL1", "TUBE", idtmed[899], par, 3);
-  pMC->Gspos("FWL1", 1, "ALIC", 0., 0., z - .01, 0, "ONLY");
+  gMC->Gsvolu("FWL1", "TUBE", idtmed[899], par, 3);
+  gMC->Gspos("FWL1", 1, "ALIC", 0., 0., z - .01, 0, "ONLY");
   //     Rear steel wall 
-  pMC->Gsvolu("RWL1", "TUBE", idtmed[899], par, 3);
-  pMC->Gspos("RWL1", 1, "ALIC", 0., 0., z - 2.99, 0, "ONLY");
+  gMC->Gsvolu("RWL1", "TUBE", idtmed[899], par, 3);
+  gMC->Gspos("RWL1", 1, "ALIC", 0., 0., z - 2.99, 0, "ONLY");
   //     MCP 
   par[0] = rin;
   par[1] = rout;
   par[2] = .07;
-  pMC->Gsvolu("MPL1", "TUBE", idtmed[900], par, 3);
-  pMC->Gspos("MPL1", 1, "ALIC", 0., 0., z - 1.57, 0, "ONLY");
+  gMC->Gsvolu("MPL1", "TUBE", idtmed[900], par, 3);
+  gMC->Gspos("MPL1", 1, "ALIC", 0., 0., z - 1.57, 0, "ONLY");
   //     Silicon plate 
   par[0] = rin;
   par[1] = rout;
   par[2] = .019;
-  pMC->Gsvolu("SPL1", "TUBE", idtmed[901], par, 3);
-  pMC->Gspos("SPL1", 1, "ALIC", 0., 0., z - 1.719, 0, "ONLY");
+  gMC->Gsvolu("SPL1", "TUBE", idtmed[901], par, 3);
+  gMC->Gspos("SPL1", 1, "ALIC", 0., 0., z - 1.719, 0, "ONLY");
   //     Summator plate 
   par[0] = rin;
   par[1] = rout;
   par[2] = .01;
-  pMC->Gsvolu("SML1", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("SML1", 1, "ALIC", 0., 0., z - 2.01, 0, "ONLY");
+  gMC->Gsvolu("SML1", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("SML1", 1, "ALIC", 0., 0., z - 2.01, 0, "ONLY");
   // *******Outer slice ******* 
   //     Ceramic plate 
   par[0] = rout;
   par[1] = rout + h1;
   par[2] = 1.25;
-  pMC->Gsvolu("CPL1", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("CPL1", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
+  gMC->Gsvolu("CPL1", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("CPL1", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
   //     Covar spring 
   par[0] = rout;
   par[1] = rout + h1;
   par[2] = t0 / 2.;
-  pMC->Gsvolu("C1L1", "TUBE", idtmed[903], par, 3);
-  pMC->Gspos("C1L1", 1, "ALIC", 0., 0., z - .25 + t0 / 2., 0, "ONLY");
-  pMC->Gsvolu("C2L1", "TUBE", idtmed[903], par, 3);
-  pMC->Gspos("C2L1", 1, "ALIC", 0., 0., z - 2.75 - t0 / 2., 0, "ONLY");
+  gMC->Gsvolu("C1L1", "TUBE", idtmed[903], par, 3);
+  gMC->Gspos("C1L1", 1, "ALIC", 0., 0., z - .25 + t0 / 2., 0, "ONLY");
+  gMC->Gsvolu("C2L1", "TUBE", idtmed[903], par, 3);
+  gMC->Gspos("C2L1", 1, "ALIC", 0., 0., z - 2.75 - t0 / 2., 0, "ONLY");
   //     Getter camera 
   par[0] = rout + h1;
   par[1] = rout + h1 + h2;
   par[2] = t1 / 2.;
-  pMC->Gsvolu("GKL1", "TUBE", idtmed[903], par, 3);
-  pMC->Gspos("GKL1", 1, "ALIC", 0., 0., z - .25 - t1 / 2., 0, "ONLY");
+  gMC->Gsvolu("GKL1", "TUBE", idtmed[903], par, 3);
+  gMC->Gspos("GKL1", 1, "ALIC", 0., 0., z - .25 - t1 / 2., 0, "ONLY");
   //     Ceramic slice 
   par[0] = rout + h1;
   par[1] = rout + h1 + h2;
   par[2] = t2 / 2.;
-  pMC->Gsvolu("SCL1", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("SCL1", 1, "ALIC", 0., 0., z - .25 - t1 - t2 / 2., 0, "ONLY");
+  gMC->Gsvolu("SCL1", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("SCL1", 1, "ALIC", 0., 0., z - .25 - t1 - t2 / 2., 0, "ONLY");
   // ******Electronic slice ******* 
   //     Silicon ring 
   par[0] = rout + h1 + h2;
   par[1] = rout + h1 + h2 + 5.;
   par[2] = .025;
-  pMC->Gsvolu("SEL1", "TUBE", idtmed[901], par, 3);
-  pMC->Gspos("SEL1", 1, "ALIC", 0., 0., z - 1.57 + .025, 0, "ONLY");
+  gMC->Gsvolu("SEL1", "TUBE", idtmed[901], par, 3);
+  gMC->Gspos("SEL1", 1, "ALIC", 0., 0., z - 1.57 + .025, 0, "ONLY");
   //     Ceramic ring 
   par[0] = rout + h1 + h2;
   par[1] = rout + h1 + h2 + 5.;
   par[2] = .025;
-  pMC->Gsvolu("CEL1", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("CEL1", 1, "ALIC", 0., 0., z - 1.58 - .025, 0, "ONLY");
+  gMC->Gsvolu("CEL1", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("CEL1", 1, "ALIC", 0., 0., z - 1.58 - .025, 0, "ONLY");
   // *********************************************************** 
   //     DEFINE LEFT DISK#4 OF FMD 
   // *********************************************************** 
@@ -634,75 +633,75 @@ void AliFMDv1::CreateGeometry()
   par[0] = rin - .02;
   par[1] = rin;
   par[2] = 1.5;
-  pMC->Gsvolu("IWL4", "TUBE", idtmed[899], par, 3);
-  pMC->Gspos("IWL4", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
+  gMC->Gsvolu("IWL4", "TUBE", idtmed[899], par, 3);
+  gMC->Gspos("IWL4", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
   //     Front steel wall 
   par[0] = rin;
   par[1] = rout;
   par[2] = .01;
-  pMC->Gsvolu("FWL4", "TUBE", idtmed[899], par, 3);
-  pMC->Gspos("FWL4", 1, "ALIC", 0., 0., z - .01, 0, "ONLY");
+  gMC->Gsvolu("FWL4", "TUBE", idtmed[899], par, 3);
+  gMC->Gspos("FWL4", 1, "ALIC", 0., 0., z - .01, 0, "ONLY");
   //     Rear steel wall 
-  pMC->Gsvolu("RWL4", "TUBE", idtmed[899], par, 3);
-  pMC->Gspos("RWL4", 1, "ALIC", 0., 0., z - 2.99, 0, "ONLY");
+  gMC->Gsvolu("RWL4", "TUBE", idtmed[899], par, 3);
+  gMC->Gspos("RWL4", 1, "ALIC", 0., 0., z - 2.99, 0, "ONLY");
   //     MCP 
   par[0] = rin;
   par[1] = rout;
   par[2] = .07;
-  pMC->Gsvolu("MPL4", "TUBE", idtmed[900], par, 3);
-  pMC->Gspos("MPL4", 1, "ALIC", 0., 0., z - 1.57, 0, "ONLY");
+  gMC->Gsvolu("MPL4", "TUBE", idtmed[900], par, 3);
+  gMC->Gspos("MPL4", 1, "ALIC", 0., 0., z - 1.57, 0, "ONLY");
   //     Silicon plate 
   par[0] = rin;
   par[1] = rout;
   par[2] = .019;
-  pMC->Gsvolu("SPL4", "TUBE", idtmed[901], par, 3);
-  pMC->Gspos("SPL4", 1, "ALIC", 0., 0., z - 1.719, 0, "ONLY");
+  gMC->Gsvolu("SPL4", "TUBE", idtmed[901], par, 3);
+  gMC->Gspos("SPL4", 1, "ALIC", 0., 0., z - 1.719, 0, "ONLY");
   //     Summator plate 
   par[0] = rin;
   par[1] = rout;
   par[2] = .01;
-  pMC->Gsvolu("SML4", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("SML4", 1, "ALIC", 0., 0., z - 2.01, 0, "ONLY");
+  gMC->Gsvolu("SML4", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("SML4", 1, "ALIC", 0., 0., z - 2.01, 0, "ONLY");
   // *******Outer slice ******* 
   //     Ceramic plate 
   par[0] = rout;
   par[1] = rout + h1;
   par[2] = 1.25;
-  pMC->Gsvolu("CPL4", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("CPL4", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
+  gMC->Gsvolu("CPL4", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("CPL4", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
   //     Covar spring 
   par[0] = rout;
   par[1] = rout + h1;
   par[2] = t0 / 2.;
-  pMC->Gsvolu("C1L4", "TUBE", idtmed[903], par, 3);
-  pMC->Gspos("C1L4", 1, "ALIC", 0., 0., z - .25 + t0 / 2., 0, "ONLY");
-  pMC->Gsvolu("C2L4", "TUBE", idtmed[903], par, 3);
-  pMC->Gspos("C2L4", 1, "ALIC", 0., 0., z - 2.75 - t0 / 2., 0, "ONLY");
+  gMC->Gsvolu("C1L4", "TUBE", idtmed[903], par, 3);
+  gMC->Gspos("C1L4", 1, "ALIC", 0., 0., z - .25 + t0 / 2., 0, "ONLY");
+  gMC->Gsvolu("C2L4", "TUBE", idtmed[903], par, 3);
+  gMC->Gspos("C2L4", 1, "ALIC", 0., 0., z - 2.75 - t0 / 2., 0, "ONLY");
   //       Getter camera 
   par[0] = rout + h1;
   par[1] = rout + h1 + h2;
   par[2] = t1 / 2.;
-  pMC->Gsvolu("GKL4", "TUBE", idtmed[903], par, 3);
-  pMC->Gspos("GKL4", 1, "ALIC", 0., 0., z - .25 - t1 / 2., 0, "ONLY");
+  gMC->Gsvolu("GKL4", "TUBE", idtmed[903], par, 3);
+  gMC->Gspos("GKL4", 1, "ALIC", 0., 0., z - .25 - t1 / 2., 0, "ONLY");
   //     Ceramic slice 
   par[0] = rout + h1;
   par[1] = rout + h1 + h2;
   par[2] = t2 / 2.;
-  pMC->Gsvolu("SCL4", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("SCL4", 1, "ALIC", 0., 0., z - .25 - t1 - t2 / 2., 0, "ONLY");
+  gMC->Gsvolu("SCL4", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("SCL4", 1, "ALIC", 0., 0., z - .25 - t1 - t2 / 2., 0, "ONLY");
   // ******Electronic slice ******* 
   //     Silicon ring 
   par[0] = rout + h1 + h2;
   par[1] = rout + h1 + h2 + 5.;
   par[2] = .025;
-  pMC->Gsvolu("SEL4", "TUBE", idtmed[901], par, 3);
-  pMC->Gspos("SEL4", 1, "ALIC", 0., 0., z - 1.57 + .025, 0, "ONLY");
+  gMC->Gsvolu("SEL4", "TUBE", idtmed[901], par, 3);
+  gMC->Gspos("SEL4", 1, "ALIC", 0., 0., z - 1.57 + .025, 0, "ONLY");
   //     Ceramic ring 
   par[0] = rout + h1 + h2;
   par[1] = rout + h1 + h2 + 5.;
   par[2] = .025;
-  pMC->Gsvolu("CEL4", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("CEL4", 1, "ALIC", 0., 0., z - 1.58 - .025, 0, "ONLY");
+  gMC->Gsvolu("CEL4", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("CEL4", 1, "ALIC", 0., 0., z - 1.58 - .025, 0, "ONLY");
 }
  
 //_____________________________________________________________________________
@@ -712,116 +711,115 @@ void AliFMDv1::DrawModule()
   // Draw a shaded view of the FMD version 1
   //
 
-  AliMC* pMC = AliMC::GetMC();
   
   // Set everything unseen
-  pMC->Gsatt("*", "seen", -1);
+  gMC->Gsatt("*", "seen", -1);
   // 
   // Set ALIC mother transparent
-  pMC->Gsatt("ALIC","SEEN",0);
+  gMC->Gsatt("ALIC","SEEN",0);
   //
   // Set the volumes visible
-  pMC->Gsatt("IWR3","seen",1);
-  pMC->Gsatt("FWR3","seen",1);
-  pMC->Gsatt("RWR3","seen",1);
-  pMC->Gsatt("MPR3","seen",1);
-  pMC->Gsatt("SPR3","seen",1);
-  pMC->Gsatt("SMR3","seen",1);
-  pMC->Gsatt("CPR3","seen",1);
-  pMC->Gsatt("C1R3","seen",1);
-  pMC->Gsatt("C2R3","seen",1);
-  pMC->Gsatt("GKR3","seen",1);
-  pMC->Gsatt("SCR3","seen",1);
-  pMC->Gsatt("SER3","seen",1);
-  pMC->Gsatt("CER3","seen",1);
-  pMC->Gsatt("IWL3","seen",1);
-  pMC->Gsatt("FWL3","seen",1);
-  pMC->Gsatt("RWL3","seen",1);
-  pMC->Gsatt("MPL3","seen",1);
-  pMC->Gsatt("SPL3","seen",1);
-  pMC->Gsatt("SML3","seen",1);
-  pMC->Gsatt("CPL3","seen",1);
-  pMC->Gsatt("C1L3","seen",1);
-  pMC->Gsatt("C2L3","seen",1);
-  pMC->Gsatt("GKL3","seen",1);
-  pMC->Gsatt("SCL3","seen",1);
-  pMC->Gsatt("SEL3","seen",1);
-  pMC->Gsatt("CEL3","seen",1);
-  pMC->Gsatt("IWR2","seen",1);
-  pMC->Gsatt("FWR2","seen",1);
-  pMC->Gsatt("RWR2","seen",1);
-  pMC->Gsatt("MPR2","seen",1);
-  pMC->Gsatt("SPR2","seen",1);
-  pMC->Gsatt("SMR2","seen",1);
-  pMC->Gsatt("CPR2","seen",1);
-  pMC->Gsatt("C1R2","seen",1);
-  pMC->Gsatt("C2R2","seen",1);
-  pMC->Gsatt("GKR2","seen",1);
-  pMC->Gsatt("SCR2","seen",1);
-  pMC->Gsatt("SER2","seen",1);
-  pMC->Gsatt("CER2","seen",1);
-  pMC->Gsatt("IWL2","seen",1);
-  pMC->Gsatt("FWL2","seen",1);
-  pMC->Gsatt("RWL2","seen",1);
-  pMC->Gsatt("MPL2","seen",1);
-  pMC->Gsatt("SPL2","seen",1);
-  pMC->Gsatt("SML2","seen",1);
-  pMC->Gsatt("CPL2","seen",1);
-  pMC->Gsatt("C1L2","seen",1);
-  pMC->Gsatt("C2L2","seen",1);
-  pMC->Gsatt("GKL2","seen",1);
-  pMC->Gsatt("SCL2","seen",1);
-  pMC->Gsatt("SEL2","seen",1);
-  pMC->Gsatt("CEL2","seen",1);
-  pMC->Gsatt("IWR1","seen",1);
-  pMC->Gsatt("FWR1","seen",1);
-  pMC->Gsatt("RWR1","seen",1);
-  pMC->Gsatt("MPR1","seen",1);
-  pMC->Gsatt("SPR1","seen",1);
-  pMC->Gsatt("SMR1","seen",1);
-  pMC->Gsatt("CPR1","seen",1);
-  pMC->Gsatt("C1R1","seen",1);
-  pMC->Gsatt("C2R1","seen",1);
-  pMC->Gsatt("GKR1","seen",1);
-  pMC->Gsatt("SCR1","seen",1);
-  pMC->Gsatt("SER1","seen",1);
-  pMC->Gsatt("CER1","seen",1);
-  pMC->Gsatt("IWL1","seen",1);
-  pMC->Gsatt("FWL1","seen",1);
-  pMC->Gsatt("RWL1","seen",1);
-  pMC->Gsatt("MPL1","seen",1);
-  pMC->Gsatt("SPL1","seen",1);
-  pMC->Gsatt("SML1","seen",1);
-  pMC->Gsatt("CPL1","seen",1);
-  pMC->Gsatt("C1L1","seen",1);
-  pMC->Gsatt("C2L1","seen",1);
-  pMC->Gsatt("GKL1","seen",1);
-  pMC->Gsatt("SCL1","seen",1);
-  pMC->Gsatt("SEL1","seen",1);
-  pMC->Gsatt("CEL1","seen",1);
-  pMC->Gsatt("IWL4","seen",1);
-  pMC->Gsatt("FWL4","seen",1);
-  pMC->Gsatt("RWL4","seen",1);
-  pMC->Gsatt("MPL4","seen",1);
-  pMC->Gsatt("SPL4","seen",1);
-  pMC->Gsatt("SML4","seen",1);
-  pMC->Gsatt("CPL4","seen",1);
-  pMC->Gsatt("C1L4","seen",1);
-  pMC->Gsatt("C2L4","seen",1);
-  pMC->Gsatt("GKL4","seen",1);
-  pMC->Gsatt("SCL4","seen",1);
-  pMC->Gsatt("SEL4","seen",1);
-  pMC->Gsatt("CEL4","seen",1);
+  gMC->Gsatt("IWR3","seen",1);
+  gMC->Gsatt("FWR3","seen",1);
+  gMC->Gsatt("RWR3","seen",1);
+  gMC->Gsatt("MPR3","seen",1);
+  gMC->Gsatt("SPR3","seen",1);
+  gMC->Gsatt("SMR3","seen",1);
+  gMC->Gsatt("CPR3","seen",1);
+  gMC->Gsatt("C1R3","seen",1);
+  gMC->Gsatt("C2R3","seen",1);
+  gMC->Gsatt("GKR3","seen",1);
+  gMC->Gsatt("SCR3","seen",1);
+  gMC->Gsatt("SER3","seen",1);
+  gMC->Gsatt("CER3","seen",1);
+  gMC->Gsatt("IWL3","seen",1);
+  gMC->Gsatt("FWL3","seen",1);
+  gMC->Gsatt("RWL3","seen",1);
+  gMC->Gsatt("MPL3","seen",1);
+  gMC->Gsatt("SPL3","seen",1);
+  gMC->Gsatt("SML3","seen",1);
+  gMC->Gsatt("CPL3","seen",1);
+  gMC->Gsatt("C1L3","seen",1);
+  gMC->Gsatt("C2L3","seen",1);
+  gMC->Gsatt("GKL3","seen",1);
+  gMC->Gsatt("SCL3","seen",1);
+  gMC->Gsatt("SEL3","seen",1);
+  gMC->Gsatt("CEL3","seen",1);
+  gMC->Gsatt("IWR2","seen",1);
+  gMC->Gsatt("FWR2","seen",1);
+  gMC->Gsatt("RWR2","seen",1);
+  gMC->Gsatt("MPR2","seen",1);
+  gMC->Gsatt("SPR2","seen",1);
+  gMC->Gsatt("SMR2","seen",1);
+  gMC->Gsatt("CPR2","seen",1);
+  gMC->Gsatt("C1R2","seen",1);
+  gMC->Gsatt("C2R2","seen",1);
+  gMC->Gsatt("GKR2","seen",1);
+  gMC->Gsatt("SCR2","seen",1);
+  gMC->Gsatt("SER2","seen",1);
+  gMC->Gsatt("CER2","seen",1);
+  gMC->Gsatt("IWL2","seen",1);
+  gMC->Gsatt("FWL2","seen",1);
+  gMC->Gsatt("RWL2","seen",1);
+  gMC->Gsatt("MPL2","seen",1);
+  gMC->Gsatt("SPL2","seen",1);
+  gMC->Gsatt("SML2","seen",1);
+  gMC->Gsatt("CPL2","seen",1);
+  gMC->Gsatt("C1L2","seen",1);
+  gMC->Gsatt("C2L2","seen",1);
+  gMC->Gsatt("GKL2","seen",1);
+  gMC->Gsatt("SCL2","seen",1);
+  gMC->Gsatt("SEL2","seen",1);
+  gMC->Gsatt("CEL2","seen",1);
+  gMC->Gsatt("IWR1","seen",1);
+  gMC->Gsatt("FWR1","seen",1);
+  gMC->Gsatt("RWR1","seen",1);
+  gMC->Gsatt("MPR1","seen",1);
+  gMC->Gsatt("SPR1","seen",1);
+  gMC->Gsatt("SMR1","seen",1);
+  gMC->Gsatt("CPR1","seen",1);
+  gMC->Gsatt("C1R1","seen",1);
+  gMC->Gsatt("C2R1","seen",1);
+  gMC->Gsatt("GKR1","seen",1);
+  gMC->Gsatt("SCR1","seen",1);
+  gMC->Gsatt("SER1","seen",1);
+  gMC->Gsatt("CER1","seen",1);
+  gMC->Gsatt("IWL1","seen",1);
+  gMC->Gsatt("FWL1","seen",1);
+  gMC->Gsatt("RWL1","seen",1);
+  gMC->Gsatt("MPL1","seen",1);
+  gMC->Gsatt("SPL1","seen",1);
+  gMC->Gsatt("SML1","seen",1);
+  gMC->Gsatt("CPL1","seen",1);
+  gMC->Gsatt("C1L1","seen",1);
+  gMC->Gsatt("C2L1","seen",1);
+  gMC->Gsatt("GKL1","seen",1);
+  gMC->Gsatt("SCL1","seen",1);
+  gMC->Gsatt("SEL1","seen",1);
+  gMC->Gsatt("CEL1","seen",1);
+  gMC->Gsatt("IWL4","seen",1);
+  gMC->Gsatt("FWL4","seen",1);
+  gMC->Gsatt("RWL4","seen",1);
+  gMC->Gsatt("MPL4","seen",1);
+  gMC->Gsatt("SPL4","seen",1);
+  gMC->Gsatt("SML4","seen",1);
+  gMC->Gsatt("CPL4","seen",1);
+  gMC->Gsatt("C1L4","seen",1);
+  gMC->Gsatt("C2L4","seen",1);
+  gMC->Gsatt("GKL4","seen",1);
+  gMC->Gsatt("SCL4","seen",1);
+  gMC->Gsatt("SEL4","seen",1);
+  gMC->Gsatt("CEL4","seen",1);
   //
-  pMC->Gdopt("hide", "on");
-  pMC->Gdopt("shad", "on");
-  pMC->Gsatt("*", "fill", 7);
-  pMC->SetClipBox(".");
-  pMC->SetClipBox("*", 0, 1000, -1000, 1000, -1000, 1000);
-  pMC->DefaultRange();
-  pMC->Gdraw("alic", 40, 30, 0, 6, 9, .08, .08);
-  pMC->Gdhead(1111, "Forward Multiplicity Detector version 1");
-  pMC->Gdman(13, 9, "MAN");
+  gMC->Gdopt("hide", "on");
+  gMC->Gdopt("shad", "on");
+  gMC->Gsatt("*", "fill", 7);
+  gMC->SetClipBox(".");
+  gMC->SetClipBox("*", 0, 1000, -1000, 1000, -1000, 1000);
+  gMC->DefaultRange();
+  gMC->Gdraw("alic", 40, 30, 0, 6, 9, .08, .08);
+  gMC->Gdhead(1111, "Forward Multiplicity Detector version 1");
+  gMC->Gdman(13, 9, "MAN");
 }
 
 //_____________________________________________________________________________

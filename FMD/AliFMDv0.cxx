@@ -57,7 +57,6 @@ void AliFMDv0::CreateGeometry()
   */
   //End_Html
 
-  AliMC* pMC = AliMC::GetMC();
   
   Float_t rout, z;
   Float_t par[3], rin;
@@ -77,20 +76,20 @@ void AliFMDv0::CreateGeometry()
   par[0] = rin;
   par[1] = rout;
   par[2] = 1.5;
-  pMC->Gsvolu("R1R3", "TUBE", idtmed[900], par, 3);
-  pMC->Gspos("R1R3", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
+  gMC->Gsvolu("R1R3", "TUBE", idtmed[900], par, 3);
+  gMC->Gspos("R1R3", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
   //       Ring #2 
   par[0] = rout;
   par[1] = rout + .65;
   par[2] = 1.5;
-  pMC->Gsvolu("R2R3", "TUBE", idtmed[901], par, 3);
-  pMC->Gspos("R2R3", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
+  gMC->Gsvolu("R2R3", "TUBE", idtmed[901], par, 3);
+  gMC->Gspos("R2R3", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
   //       Ring #3 
   par[0] = rout + .65;
   par[1] = rout + 5.65;
   par[2] = .025;
-  pMC->Gsvolu("R3R3", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("R3R3", 1, "ALIC", 0., 0., z + 1.525, 0, "ONLY");
+  gMC->Gsvolu("R3R3", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("R3R3", 1, "ALIC", 0., 0., z + 1.525, 0, "ONLY");
   // *********************************************************** 
   //       DEFINE LEFT DISK#3 OF FMD 
   // *********************************************************** 
@@ -104,20 +103,20 @@ void AliFMDv0::CreateGeometry()
   par[0] = rin;
   par[1] = rout;
   par[2] = 1.5;
-  pMC->Gsvolu("R1L3", "TUBE", idtmed[900], par, 3);
-  pMC->Gspos("R1L3", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
+  gMC->Gsvolu("R1L3", "TUBE", idtmed[900], par, 3);
+  gMC->Gspos("R1L3", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
   //       Ring #2 
   par[0] = rout;
   par[1] = rout + .65;
   par[2] = 1.5;
-  pMC->Gsvolu("R2L3", "TUBE", idtmed[901], par, 3);
-  pMC->Gspos("R2L3", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
+  gMC->Gsvolu("R2L3", "TUBE", idtmed[901], par, 3);
+  gMC->Gspos("R2L3", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
   //       Ring #3 
   par[0] = rout + .65;
   par[1] = rout + 5.65;
   par[2] = .025;
-  pMC->Gsvolu("R3L3", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("R3L3", 1, "ALIC", 0., 0., z - 1.525, 0, "ONLY");
+  gMC->Gsvolu("R3L3", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("R3L3", 1, "ALIC", 0., 0., z - 1.525, 0, "ONLY");
   // ******************************************************** 
   //       DEFINE RIGHT DISK#2  OF FMD 
   // ******************************************************** 
@@ -131,20 +130,20 @@ void AliFMDv0::CreateGeometry()
   par[0] = rin;
   par[1] = rout;
   par[2] = 1.5;
-  pMC->Gsvolu("R1R2", "TUBE", idtmed[900], par, 3);
-  pMC->Gspos("R1R2", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
+  gMC->Gsvolu("R1R2", "TUBE", idtmed[900], par, 3);
+  gMC->Gspos("R1R2", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
   //       Ring #2 
   par[0] = rout;
   par[1] = rout + .65;
   par[2] = 1.5;
-  pMC->Gsvolu("R2R2", "TUBE", idtmed[901], par, 3);
-  pMC->Gspos("R2R2", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
+  gMC->Gsvolu("R2R2", "TUBE", idtmed[901], par, 3);
+  gMC->Gspos("R2R2", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
   //       Ring #3 
   par[0] = rout + .65;
   par[1] = rout + 5.65;
   par[2] = .025;
-  pMC->Gsvolu("R3R2", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("R3R2", 1, "ALIC", 0., 0., z + 1.525, 0, "ONLY");
+  gMC->Gsvolu("R3R2", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("R3R2", 1, "ALIC", 0., 0., z + 1.525, 0, "ONLY");
   // *********************************************************** 
   //       DEFINE LEFT DISK#2 OF FMD 
   // *********************************************************** 
@@ -158,20 +157,20 @@ void AliFMDv0::CreateGeometry()
   par[0] = rin;
   par[1] = rout;
   par[2] = 1.5;
-  pMC->Gsvolu("R1L2", "TUBE", idtmed[900], par, 3);
-  pMC->Gspos("R1L2", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
+  gMC->Gsvolu("R1L2", "TUBE", idtmed[900], par, 3);
+  gMC->Gspos("R1L2", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
   //       Ring #2 
   par[0] = rout;
   par[1] = rout + .65;
   par[2] = 1.5;
-  pMC->Gsvolu("R2L2", "TUBE", idtmed[901], par, 3);
-  pMC->Gspos("R2L2", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
+  gMC->Gsvolu("R2L2", "TUBE", idtmed[901], par, 3);
+  gMC->Gspos("R2L2", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
   //       Ring #3 
   par[0] = rout + .65;
   par[1] = rout + 5.65;
   par[2] = .025;
-  pMC->Gsvolu("R3L2", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("R3L2", 1, "ALIC", 0., 0., z - 1.525, 0, "ONLY");
+  gMC->Gsvolu("R3L2", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("R3L2", 1, "ALIC", 0., 0., z - 1.525, 0, "ONLY");
   // ******************************************************** 
   //       DEFINE RIGHT DISK#1  OF FMD 
   // ******************************************************** 
@@ -185,20 +184,20 @@ void AliFMDv0::CreateGeometry()
   par[0] = rin;
   par[1] = rout;
   par[2] = 1.5;
-  pMC->Gsvolu("R1R1", "TUBE", idtmed[900], par, 3);
-  pMC->Gspos("R1R1", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
+  gMC->Gsvolu("R1R1", "TUBE", idtmed[900], par, 3);
+  gMC->Gspos("R1R1", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
   //       Ring #2 
   par[0] = rout;
   par[1] = rout + .65;
   par[2] = 1.5;
-  pMC->Gsvolu("R2R1", "TUBE", idtmed[901], par, 3);
-  pMC->Gspos("R2R1", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
+  gMC->Gsvolu("R2R1", "TUBE", idtmed[901], par, 3);
+  gMC->Gspos("R2R1", 1, "ALIC", 0., 0., z + 1.5, 0, "ONLY");
   //       Ring #3 
   par[0] = rout + .65;
   par[1] = rout + 5.65;
   par[2] = .025;
-  pMC->Gsvolu("R3R1", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("R3R1", 1, "ALIC", 0., 0., z + 1.525, 0, "ONLY");
+  gMC->Gsvolu("R3R1", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("R3R1", 1, "ALIC", 0., 0., z + 1.525, 0, "ONLY");
   // *********************************************************** 
   //       DEFINE LEFT DISK#1 OF FMD 
   // *********************************************************** 
@@ -212,20 +211,20 @@ void AliFMDv0::CreateGeometry()
   par[0] = rin;
   par[1] = rout;
   par[2] = 1.5;
-  pMC->Gsvolu("R1L1", "TUBE", idtmed[900], par, 3);
-  pMC->Gspos("R1L1", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
+  gMC->Gsvolu("R1L1", "TUBE", idtmed[900], par, 3);
+  gMC->Gspos("R1L1", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
   //       Ring #2 
   par[0] = rout;
   par[1] = rout + .65;
   par[2] = 1.5;
-  pMC->Gsvolu("R2L1", "TUBE", idtmed[901], par, 3);
-  pMC->Gspos("R2L1", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
+  gMC->Gsvolu("R2L1", "TUBE", idtmed[901], par, 3);
+  gMC->Gspos("R2L1", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
   //       Ring #3 
   par[0] = rout + .65;
   par[1] = rout + 5.65;
   par[2] = .025;
-  pMC->Gsvolu("R3L1", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("R3L1", 1, "ALIC", 0., 0., z - 1.525, 0, "ONLY");
+  gMC->Gsvolu("R3L1", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("R3L1", 1, "ALIC", 0., 0., z - 1.525, 0, "ONLY");
   // *********************************************************** 
   //       DEFINE LEFT DISK#4 OF FMD 
   // *********************************************************** 
@@ -239,20 +238,20 @@ void AliFMDv0::CreateGeometry()
   par[0] = rin;
   par[1] = rout;
   par[2] = 1.5;
-  pMC->Gsvolu("R1L4", "TUBE", idtmed[900], par, 3);
-  pMC->Gspos("R1L4", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
+  gMC->Gsvolu("R1L4", "TUBE", idtmed[900], par, 3);
+  gMC->Gspos("R1L4", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
   //       Ring #2 
   par[0] = rout;
   par[1] = rout + .65;
   par[2] = 1.5;
-  pMC->Gsvolu("R2L4", "TUBE", idtmed[901], par, 3);
-  pMC->Gspos("R2L4", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
+  gMC->Gsvolu("R2L4", "TUBE", idtmed[901], par, 3);
+  gMC->Gspos("R2L4", 1, "ALIC", 0., 0., z - 1.5, 0, "ONLY");
   //       Ring #3 
   par[0] = rout + .65;
   par[1] = rout + 5.65;
   par[2] = .025;
-  pMC->Gsvolu("R3L4", "TUBE", idtmed[902], par, 3);
-  pMC->Gspos("R3L4", 1, "ALIC", 0., 0., z - 1.525, 0, "ONLY");
+  gMC->Gsvolu("R3L4", "TUBE", idtmed[902], par, 3);
+  gMC->Gspos("R3L4", 1, "ALIC", 0., 0., z - 1.525, 0, "ONLY");
 }
 
 //_____________________________________________________________________________
@@ -262,46 +261,44 @@ void AliFMDv0::DrawModule()
   // Draw a shaded view of the FMD version 0
   //
 
-  AliMC* pMC = AliMC::GetMC();
-  
   // Set everything unseen
-  pMC->Gsatt("*", "seen", -1);
+  gMC->Gsatt("*", "seen", -1);
   // 
   // Set ALIC mother transparent
-  pMC->Gsatt("ALIC","SEEN",0);
+  gMC->Gsatt("ALIC","SEEN",0);
   //
   // Set the volumes visible
-  pMC->Gsatt("R1R3","SEEN",1);
-  pMC->Gsatt("R2R3","SEEN",1);
-  pMC->Gsatt("R3R3","SEEN",1);
-  pMC->Gsatt("R1L3","SEEN",1);
-  pMC->Gsatt("R2L3","SEEN",1);
-  pMC->Gsatt("R3L3","SEEN",1);
-  pMC->Gsatt("R1R2","SEEN",1);
-  pMC->Gsatt("R2R2","SEEN",1);
-  pMC->Gsatt("R3R2","SEEN",1);
-  pMC->Gsatt("R1L2","SEEN",1);
-  pMC->Gsatt("R2L2","SEEN",1);
-  pMC->Gsatt("R3L2","SEEN",1);
-  pMC->Gsatt("R1R1","SEEN",1);
-  pMC->Gsatt("R2R1","SEEN",1);
-  pMC->Gsatt("R3R1","SEEN",1);
-  pMC->Gsatt("R1L1","SEEN",1);
-  pMC->Gsatt("R2L1","SEEN",1);
-  pMC->Gsatt("R3L1","SEEN",1);
-  pMC->Gsatt("R1L4","SEEN",1);
-  pMC->Gsatt("R2L4","SEEN",1);
-  pMC->Gsatt("R3L4","SEEN",1);
+  gMC->Gsatt("R1R3","SEEN",1);
+  gMC->Gsatt("R2R3","SEEN",1);
+  gMC->Gsatt("R3R3","SEEN",1);
+  gMC->Gsatt("R1L3","SEEN",1);
+  gMC->Gsatt("R2L3","SEEN",1);
+  gMC->Gsatt("R3L3","SEEN",1);
+  gMC->Gsatt("R1R2","SEEN",1);
+  gMC->Gsatt("R2R2","SEEN",1);
+  gMC->Gsatt("R3R2","SEEN",1);
+  gMC->Gsatt("R1L2","SEEN",1);
+  gMC->Gsatt("R2L2","SEEN",1);
+  gMC->Gsatt("R3L2","SEEN",1);
+  gMC->Gsatt("R1R1","SEEN",1);
+  gMC->Gsatt("R2R1","SEEN",1);
+  gMC->Gsatt("R3R1","SEEN",1);
+  gMC->Gsatt("R1L1","SEEN",1);
+  gMC->Gsatt("R2L1","SEEN",1);
+  gMC->Gsatt("R3L1","SEEN",1);
+  gMC->Gsatt("R1L4","SEEN",1);
+  gMC->Gsatt("R2L4","SEEN",1);
+  gMC->Gsatt("R3L4","SEEN",1);
   //
-  pMC->Gdopt("hide", "on");
-  pMC->Gdopt("shad", "on");
-  pMC->Gsatt("*", "fill", 7);
-  pMC->SetClipBox(".");
-  pMC->SetClipBox("*", 0, 1000, -1000, 1000, -1000, 1000);
-  pMC->DefaultRange();
-  pMC->Gdraw("alic", 40, 30, 0, 6, 9, .08, .08);
-  pMC->Gdhead(1111, "Forward Multiplicity Detector version 0");
-  pMC->Gdman(13, 9, "MAN");
+  gMC->Gdopt("hide", "on");
+  gMC->Gdopt("shad", "on");
+  gMC->Gsatt("*", "fill", 7);
+  gMC->SetClipBox(".");
+  gMC->SetClipBox("*", 0, 1000, -1000, 1000, -1000, 1000);
+  gMC->DefaultRange();
+  gMC->Gdraw("alic", 40, 30, 0, 6, 9, .08, .08);
+  gMC->Gdhead(1111, "Forward Multiplicity Detector version 0");
+  gMC->Gdman(13, 9, "MAN");
 }
 
 //_____________________________________________________________________________

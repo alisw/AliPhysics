@@ -200,7 +200,6 @@ void AliGenHIJINGpara::Generate()
   // Generate one trigger
   //
 
-  AliMC* pMC = AliMC::GetMC();
   
   const Float_t raKpic=0.14;
   const Float_t borne=1/(1+raKpic);
@@ -222,7 +221,7 @@ void AliGenHIJINGpara::Generate()
   //
   for (j=0;j<3;j++) origin[j]=fOrigin[j];
   if(fVertexSmear==perEvent) {
-    pMC->Rndm(random,6);
+    gMC->Rndm(random,6);
     for (j=0;j<3;j++) {
       origin[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 	TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
@@ -230,7 +229,7 @@ void AliGenHIJINGpara::Generate()
   }
   for(i=0;i<fNpart;i++) {
     while(1) {
-      pMC->Rndm(random,3);
+      gMC->Rndm(random,3);
       if(random[0]<borne) {
 	part=pions[Int_t (random[1]*3)];
 	ptf=fPtpi;
@@ -252,7 +251,7 @@ void AliGenHIJINGpara::Generate()
       p[1]=pt*TMath::Sin(phi);
       p[2]=pl;
       if(fVertexSmear==perTrack) {
-	pMC->Rndm(random,6);
+	gMC->Rndm(random,6);
 	for (j=0;j<3;j++) {
 	  origin[j]=fOrigin[j]+fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 	    TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
@@ -347,7 +346,6 @@ void AliGenBox::Generate()
   //
   // Generate one trigger
   //
-  AliMC* pMC = AliMC::GetMC();
   
   Float_t polar[3]= {0,0,0};
   //
@@ -360,14 +358,14 @@ void AliGenBox::Generate()
   //
   for (j=0;j<3;j++) origin[j]=fOrigin[j];
   if(fVertexSmear==perEvent) {
-    pMC->Rndm(random,6);
+    gMC->Rndm(random,6);
     for (j=0;j<3;j++) {
       origin[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 	TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
     }
   }
   for(i=0;i<fNpart;i++) {
-    pMC->Rndm(random,3);
+    gMC->Rndm(random,3);
     pmom=fPMin+random[0]*(fPMax-fPMin);
     theta=fThetaMin+random[1]*(fThetaMax-fThetaMin);
     phi=fPhiMin+random[2]*(fPhiMax-fPhiMin);
@@ -375,7 +373,7 @@ void AliGenBox::Generate()
     p[1] = pmom*TMath::Sin(phi)*TMath::Sin(theta);
     p[2] = pmom*TMath::Cos(theta);
     if(fVertexSmear==perTrack) {
-      pMC->Rndm(random,6);
+      gMC->Rndm(random,6);
       for (j=0;j<3;j++) {
 	origin[j]=fOrigin[j]+fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 	  TMath::Sqrt(-2*TMath::Log(random[2*j+1]));

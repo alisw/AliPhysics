@@ -44,7 +44,6 @@ void AliFRAMEv0::CreateGeometry()
 */
 //End_Html
 
-  AliMC* pMC=AliMC::GetMC();
   char *filetmp;
   const char *framename = "$(ALICE_ROOT)/Euclid/frame0399.euc";
   char topvol[5];
@@ -69,9 +68,9 @@ void AliFRAMEv0::CreateGeometry()
 // 
 //  AliMatrix(idrotm[2001],90.,0.,90.,90.,180.,0.);
   
-  pMC->Gspos("B010",1,"ALIC",0,0,0,0,"ONLY");
+  gMC->Gspos("B010",1,"ALIC",0,0,0,0,"ONLY");
 
-  pMC->Gsatt("B010", "SEEN", 0);
+  gMC->Gsatt("B010", "SEEN", 0);
 }
 
  

@@ -60,7 +60,6 @@ void AliGenScan::Generate()
   //
   // Generate one trigger
   //
-  AliMC* pMC = AliMC::GetMC();
   
   Float_t polar[3]= {0,0,0};
   //
@@ -93,7 +92,7 @@ void AliGenScan::Generate()
   for (Int_t ix=0; ix<fNx; ix++) {
       for (Int_t iy=0; iy<fNy; iy++) {
 	  for (Int_t iz=0; iz<fNz; iz++){
-	      pMC->Rndm(random,6);
+	      gMC->Rndm(random,6);
 	      origin[0]=fXmin+ix*dx+2*(random[0]-0.5)*fOsigma[0];
 	      origin[1]=fYmin+iy*dy+2*(random[1]-0.5)*fOsigma[1];
 	      origin[2]=fZmin+iz*dz+2*(random[2]-0.5)*fOsigma[2];	     

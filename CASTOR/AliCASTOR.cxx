@@ -154,7 +154,6 @@ void AliCASTORv1::CreateGeometry()
   //   28 March 1997   23 February 1998              Aris L. S. Angelis   * 
   // >--------------------------------------------------------------------<* 
   
-  AliMC* pMC = AliMC::GetMC();
   
   Float_t dhad[11], dcal[3], beta, doct[11], alfa1, alfa2, fact1, fact2,fact3;
   Float_t dclha[3], dcoha[3], dclem[3], dbxha[3], dcoem[3], dcalt[5], dcalv[5], dbxem[3];
@@ -348,8 +347,8 @@ void AliCASTORv1::CreateGeometry()
     }
     printf("   \n");
   }
-  pMC->Gsvolu("OCTA", "PGON", idtmed[fOdAbsorber - 1], doct, 10);
-  pMC->Gsdvn("OCT ", "OCTA", 8, 2);
+  gMC->Gsvolu("OCTA", "PGON", idtmed[fOdAbsorber - 1], doct, 10);
+  gMC->Gsdvn("OCT ", "OCTA", 8, 2);
   // absorber material. 
   // **> Construct the E-M section volume. 
   dem[0]  = doctem / 2.;      // DeltaZ'/2 
@@ -373,7 +372,7 @@ void AliCASTORv1::CreateGeometry()
     }
     printf("   \n");
   }
-  pMC->Gsvolu("EM  ", "TRAP", idtmed[fOdAbsorber - 1], dem, 11);
+  gMC->Gsvolu("EM  ", "TRAP", idtmed[fOdAbsorber - 1], dem, 11);
   // absorber material. 
   // **> Construct the Hadronic section volume. 
   // Fill with s 
@@ -398,14 +397,14 @@ void AliCASTORv1::CreateGeometry()
     }
     printf("   \n");
   }
-  pMC->Gsvolu("HAD ", "TRAP", idtmed[fOdAbsorber - 1], dhad, 11); // absorber material. 
+  gMC->Gsvolu("HAD ", "TRAP", idtmed[fOdAbsorber - 1], dhad, 11); // absorber material. 
   // **> Rotation matrix to rotate fibres verticaly to fit into holes. 
   // Fill with 
   AliMatrix(idrotm[0], 90., 0., 180., 0., 90., 90.);
   // **> Internal structure of the EM section starts here.  <--- 
   // **> Construct one sampling module 
-  pMC->Gsdvn("SLEM", "EM  ", fLayersEM, 3);
-  pMC->Gsatt("SLEM", "SEEN", 0);
+  gMC->Gsdvn("SLEM", "EM  ", fLayersEM, 3);
+  gMC->Gsatt("SLEM", "SEEN", 0);
   // **> Construct the (imaginary) rectangular box embedding the fibres 
   // **> Fill with air, make it invisible on the drawings. 
   dbxem[0] = xxmdhi / 2.;
@@ -418,19 +417,19 @@ void AliCASTORv1::CreateGeometry()
     }
     printf("   \n");
   }
-  pMC->Gsvolu("BXEM", "BOX ", idtmed[1501], dbxem, 3);
-  pMC->Gsatt("BXEM", "SEEN", 0);
+  gMC->Gsvolu("BXEM", "BOX ", idtmed[1501], dbxem, 3);
+  gMC->Gsatt("BXEM", "SEEN", 0);
   // **> Divide along Z to obtain one layer 
-  pMC->Gsdvn("RWEM", "BXEM", 2, 3);
-  pMC->Gsatt("RWEM", "SEEN", 0);
+  gMC->Gsdvn("RWEM", "BXEM", 2, 3);
+  gMC->Gsatt("RWEM", "SEEN", 0);
   // **> Divide along X' to accomodate the maximum number of individual 
   //**> fibres packed along X', make the divisions invisible on the drawings.
   nfx = Int_t(xxmdhi / .045);
   if (debugFlag > 0) {
     printf(" NfxEM = %d\n",nfx);
   }
-  pMC->Gsdvn("FXEM", "RWEM", nfx, 1);
-  pMC->Gsatt("FXEM", "SEEN", 0);
+  gMC->Gsdvn("FXEM", "RWEM", nfx, 1);
+  gMC->Gsatt("FXEM", "SEEN", 0);
   // **> Construct the fiber cladding 
   dclem[0] = 0.;
   dclem[1] = kDiamCladding/2;
@@ -442,8 +441,8 @@ void AliCASTORv1::CreateGeometry()
     }
     printf("   \n");
   }
-  pMC->Gsvolu("CLEM", "TUBE", idtmed[fOdCladding - 1], dclem,3);
-  pMC->Gsatt("CLEM", "SEEN", 0);
+  gMC->Gsvolu("CLEM", "TUBE", idtmed[fOdCladding - 1], dclem,3);
+  gMC->Gsatt("CLEM", "SEEN", 0);
   //**> Construct the cylindrical volume for a fibre core in the EM section.
   //**> Fill with selected fibre material, make it invisible on the drawings.
   dcoem[0] = 0.;
@@ -456,30 +455,30 @@ void AliCASTORv1::CreateGeometry()
     }
     printf("   \n");
   }
-  pMC->Gsvolu("COEM", "TUBE", idtmed[fOdFiber - 1], dcoem,3);
-  pMC->Gsatt("COEM", "SEEN", 0);
+  gMC->Gsvolu("COEM", "TUBE", idtmed[fOdFiber - 1], dcoem,3);
+  gMC->Gsatt("COEM", "SEEN", 0);
   // **> Position the volumes 
   // **> Put the air section inside one sampling module 
   // **> Use MANY to obtain clipping of protruding edges. 
   xp = 0.;
   zp = dlayem / 2. - 0.5*kFibersEM*kDiamCladding;
   yp = zp * TMath::Tan(thecen);
-  pMC->Gspos("BXEM", 1, "SLEM", xp, yp, zp, 0, "MANY");
+  gMC->Gspos("BXEM", 1, "SLEM", xp, yp, zp, 0, "MANY");
   // **> Place the core fibre in the clad 
   xp = 0.;
   yp = 0.;
   zp = 0.;
-  pMC->Gspos("COEM", 1, "CLEM", xp, yp, zp, 0, "MANY");
+  gMC->Gspos("COEM", 1, "CLEM", xp, yp, zp, 0, "MANY");
   // **> Put the fiber in its air box 
-  pMC->Gspos("CLEM", 1, "FXEM", xp, yp, zp, idrotm[0], "MANY");
+  gMC->Gspos("CLEM", 1, "FXEM", xp, yp, zp, idrotm[0], "MANY");
   // **> Internal structure of the Hadronic section starts here.  <--- 
-  pMC->Gsdvn("SLHA", "HAD ", fLayersHad, 3);
-  pMC->Gsatt("SLHA", "SEEN", 0);
+  gMC->Gsdvn("SLHA", "HAD ", fLayersHad, 3);
+  gMC->Gsatt("SLHA", "SEEN", 0);
   // **> Construct the air section where the fibers are 
   dhad[0] = 0.5*kFibersEM*kDiamCladding;
-  pMC->Gsvolu("AIHA", "TRAP", idtmed[1501], dhad, 11);
+  gMC->Gsvolu("AIHA", "TRAP", idtmed[1501], dhad, 11);
   // **> Divide along z in the appropriate number of layers 
-  pMC->Gsdvn("SAHA", "AIHA", 4, 3);
+  gMC->Gsdvn("SAHA", "AIHA", 4, 3);
   //**> Construct the (imaginary) rectangular box embedding one lauer of fibres
   // **> Fill with air, make it invisible on the drawings. 
   dbxha[0] = xxuthi / 2.;
@@ -492,19 +491,19 @@ void AliCASTORv1::CreateGeometry()
     }
     printf("   \n");
   }
-  pMC->Gsvolu("BXHA", "BOX ", idtmed[1501], dbxha, 3);
-  pMC->Gsatt("BXHA", "SEEN", 0);
+  gMC->Gsvolu("BXHA", "BOX ", idtmed[1501], dbxha, 3);
+  gMC->Gsatt("BXHA", "SEEN", 0);
   // **> Divide along Z to obtain one layer 
-  pMC->Gsdvn("RWHA", "BXHA", 4, 3);
-  pMC->Gsatt("RWHA", "SEEN", 0);
+  gMC->Gsdvn("RWHA", "BXHA", 4, 3);
+  gMC->Gsatt("RWHA", "SEEN", 0);
   // **> Divide along X' to accomodate the maximum number of individual 
   //**> fibres packed along X', make the divisions invisible on the drawings.
   nfx = Int_t(xxuthi / .045);
   if (debugFlag > 0) {
     printf(" NfxHad = %d\n",nfx);
   }
-  pMC->Gsdvn("FXHA", "RWHA", nfx, 1);
-  pMC->Gsatt("FXHA", "SEEN", 0);
+  gMC->Gsdvn("FXHA", "RWHA", nfx, 1);
+  gMC->Gsatt("FXHA", "SEEN", 0);
   // **> Construct one fiber cladding 
   dclha[0] = 0.;
   dclha[1] = 0.5*kDiamCladding;
@@ -516,8 +515,8 @@ void AliCASTORv1::CreateGeometry()
     }
     printf("   \n");
   }
-  pMC->Gsvolu("CLHA", "TUBE", idtmed[fOdCladding - 1], dclha,3);
-  pMC->Gsatt("CLHA", "SEEN", 0);
+  gMC->Gsvolu("CLHA", "TUBE", idtmed[fOdCladding - 1], dclha,3);
+  gMC->Gsatt("CLHA", "SEEN", 0);
   //**> Construct the cylindrical volume for a fibre core in the Had section.
   //**> Fill with selected fibre material, make it invisible on the drawings.
   dcoha[0] = 0.;
@@ -530,22 +529,22 @@ void AliCASTORv1::CreateGeometry()
     }
     printf("   \n");
   }
-  pMC->Gsvolu("COHA", "TUBE", idtmed[fOdFiber - 1], dcoha,3);
-  pMC->Gsatt("COHA", "SEEN", 0);
+  gMC->Gsvolu("COHA", "TUBE", idtmed[fOdFiber - 1], dcoha,3);
+  gMC->Gsatt("COHA", "SEEN", 0);
   // **> Position the volumes 
   // **> Put the air section inside one sampling module 
   // **> Use MANY to obtain clipping of protruding edges. 
   xp = 0.;
   zp = dlayha / 2. - 0.5*kFibersHad*kDiamCladding;
   yp = zp * TMath::Tan(thecen);
-  pMC->Gspos("BXHA", 1, "SLHA", xp, yp, zp, 0, "MANY");
+  gMC->Gspos("BXHA", 1, "SLHA", xp, yp, zp, 0, "MANY");
   // **> Place the core fibre in the clad 
   xp = 0.;
   yp = 0.;
   zp = 0.;
-  pMC->Gspos("COHA", 1, "CLHA", xp, yp, zp, 0, "MANY");
+  gMC->Gspos("COHA", 1, "CLHA", xp, yp, zp, 0, "MANY");
   // **> Place the fibre in its air box 
-  pMC->Gspos("CLHA", 1, "FXHA", xp, yp, zp, idrotm[0], "MANY");
+  gMC->Gspos("CLHA", 1, "FXHA", xp, yp, zp, idrotm[0], "MANY");
   // **> Rotation matrices for consecutive calorimeter octants 
   // **> filling the imaginary box. 
   AliMatrix(idrotm[1], 90., -90., 45., 0., 45., 180.);
@@ -555,11 +554,11 @@ void AliCASTORv1::CreateGeometry()
   zp = doct[7] - (faceut * TMath::Cos(beta) + doctha * fact3) * .5;
   yp = 0.;
   xp = rzlow + (rzhig - rzlow) * .5 * (zp - doct[4]) / doct[7];
-  pMC->Gspos("HAD ", 1, "OCT ", xp, yp, zp, idrotm[1], "ONLY");
+  gMC->Gspos("HAD ", 1, "OCT ", xp, yp, zp, idrotm[1], "ONLY");
   yp = 0.;
   zp = doct[7] - faceut * TMath::Cos(beta) * .5 - doctha * fact3 - doctem * fact3 * .5;
   xp = rzlow + (rzhig - rzlow) * .5 * (zp - doct[4]) / doct[7];
-  pMC->Gspos("EM  ", 1, "OCT ", xp, yp, zp, idrotm[1], "ONLY");
+  gMC->Gspos("EM  ", 1, "OCT ", xp, yp, zp, idrotm[1], "ONLY");
   // **> An imaginary box to hold the complete calorimeter. 
   dcal[0] = (faceut + zendha * fact2) * TMath::Sin(beta);
   dcal[1] = dcal[0];
@@ -571,7 +570,7 @@ void AliCASTORv1::CreateGeometry()
     }
     printf("   \n");
   }
-  pMC->Gsvolu("CAL ", "BOX ", idtmed[1501], dcal, 3);
+  gMC->Gsvolu("CAL ", "BOX ", idtmed[1501], dcal, 3);
   // Fill with air 
   rinbeg = TMath::Tan(alfa2) * kZbegem;
   rutbeg = TMath::Tan(alfa1) * kZbegem;
@@ -593,7 +592,7 @@ void AliCASTORv1::CreateGeometry()
   if (debugFlag > 0) {
     printf(" \n");
   }
-  pMC->Gspos("OCTA", 1, "CAL ", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("OCTA", 1, "CAL ", 0., 0., 0., 0, "ONLY");
   //**> Construct the narrow stainless steel conical beam tube traversing the
   // **> calorimeter and its vacuum filling:  WallThickness = 0.1 cm, 
   // **> Router = touching the inner side of the calorimeter, 
@@ -608,15 +607,15 @@ void AliCASTORv1::CreateGeometry()
   dcalv[1] = 0.;
   dcalv[4] = dcalt[3];
   dcalv[3] = 0.;
-  pMC->Gsvolu("CALT", "CONE", idtmed[1506], dcalt, 5);
+  gMC->Gsvolu("CALT", "CONE", idtmed[1506], dcalt, 5);
   // Fe (steel a 
-  pMC->Gsvolu("CALV", "CONE", idtmed[1500], dcalv, 5);
+  gMC->Gsvolu("CALV", "CONE", idtmed[1500], dcalv, 5);
   // Vacuum. 
-  pMC->Gsatt("CALV", "SEEN", 0);
+  gMC->Gsatt("CALV", "SEEN", 0);
   // **> Position at centre of calorimeter box. 
   zp = 0.;
-  pMC->Gspos("CALT", 1, "CAL ", 0., 0., zp, 0, "ONLY");
-  pMC->Gspos("CALV", 1, "CAL ", 0., 0., zp, 0, "ONLY");
+  gMC->Gspos("CALT", 1, "CAL ", 0., 0., zp, 0, "ONLY");
+  gMC->Gspos("CALV", 1, "CAL ", 0., 0., zp, 0, "ONLY");
   if (debugFlag > 0) {
     printf(" Dcalt,Zp,-/+ = ");
     for (i = 1; i <= 5; ++i) {
@@ -638,7 +637,7 @@ void AliCASTORv1::CreateGeometry()
   // -X theta and phi w.r.t. to box XYZ. 
   //  Y theta and phi w.r.t. to box XYZ. 
   // -Z theta and phi w.r.t. to box XYZ. 
-  pMC->Gspos("CAL ", 1, "ALIC", xp, yp, -zp, idrotm[2], "ONLY");
+  gMC->Gspos("CAL ", 1, "ALIC", xp, yp, -zp, idrotm[2], "ONLY");
   if (debugFlag > 0) {
     printf(" Dcal,Zp,-/+ = ");
     for (i = 1; i <= 3; ++i) {
@@ -655,32 +654,31 @@ void AliCASTORv1::DrawModule()
   // Draw a shaded view of CASTOR version 1
   //
 
-  AliMC* pMC = AliMC::GetMC();
   
-  pMC->Gsatt("*", "seen", -1);
-  pMC->Gsatt("alic", "seen", 0);
+  gMC->Gsatt("*", "seen", -1);
+  gMC->Gsatt("alic", "seen", 0);
   //
   // Set visibility of elements
-  pMC->Gsatt("OCTA","seen",0);
-  pMC->Gsatt("EM  ","seen",0);
-  pMC->Gsatt("HAD ","seen",0);
-  pMC->Gsatt("CAL ","seen",0);
-  pMC->Gsatt("CALT","seen",1);
-  pMC->Gsatt("OCT ","seen",0);
-  pMC->Gsatt("SLEM","seen",1);
-  pMC->Gsatt("SLHA","seen",1);
-  pMC->Gsatt("SAHA","seen",1);
+  gMC->Gsatt("OCTA","seen",0);
+  gMC->Gsatt("EM  ","seen",0);
+  gMC->Gsatt("HAD ","seen",0);
+  gMC->Gsatt("CAL ","seen",0);
+  gMC->Gsatt("CALT","seen",1);
+  gMC->Gsatt("OCT ","seen",0);
+  gMC->Gsatt("SLEM","seen",1);
+  gMC->Gsatt("SLHA","seen",1);
+  gMC->Gsatt("SAHA","seen",1);
   //
-  pMC->Gdopt("hide", "on");
-  pMC->Gdopt("shad", "on");
-  pMC->Gsatt("*", "fill", 7);
-  pMC->SetClipBox(".");
-  pMC->SetClipBox("*", 0, 20, -20, 20, -1900, -1700);
-  pMC->DefaultRange();
-  pMC->Gdraw("alic", 40, 30, 0, -191.5, -78, .19, .19);
-  pMC->Gdhead(1111, "CASTOR Version 1");
-  pMC->Gdman(15,-2, "MAN");
-  pMC->Gdopt("hide", "off");
+  gMC->Gdopt("hide", "on");
+  gMC->Gdopt("shad", "on");
+  gMC->Gsatt("*", "fill", 7);
+  gMC->SetClipBox(".");
+  gMC->SetClipBox("*", 0, 20, -20, 20, -1900, -1700);
+  gMC->DefaultRange();
+  gMC->Gdraw("alic", 40, 30, 0, -191.5, -78, .19, .19);
+  gMC->Gdhead(1111, "CASTOR Version 1");
+  gMC->Gdman(15,-2, "MAN");
+  gMC->Gdopt("hide", "off");
 }
 
 //_____________________________________________________________________________
@@ -691,7 +689,6 @@ void AliCASTORv1::CreateMaterials()
   //
   //   30 March 1997   27 November 1997              Aris L. S. Angelis   * 
   // >--------------------------------------------------------------------<* 
-  AliMC* pMC = AliMC::GetMC();
   Int_t   ISXFLD = gAlice->Field()->Integ();
   Float_t SXMGMX = gAlice->Field()->Max();
   
@@ -800,84 +797,84 @@ void AliCASTORv1::CreateMaterials()
   // **> Inside the absorber material, 
   for (kod = 1505; kod <= 1508; ++kod) {
     Int_t absorber = idtmed[kod - 1];
-    pMC->Gstpar(absorber, "CUTELE", cute);  // Allow beta >= 0.xx 
-    pMC->Gstpar(absorber, "CUTGAM", cutg);  // = 1.33 cutele. 
-    pMC->Gstpar(absorber, "CUTNEU", .01);   // Default. 
-    pMC->Gstpar(absorber, "CUTHAD", .01);   // Default. 
-    pMC->Gstpar(absorber, "CUTMUO", .01);   // Default. 
-    pMC->Gstpar(absorber, "BCUTE", cutg);   // = cutgam. 
-    pMC->Gstpar(absorber, "BCUTM", cutg);   // = cutgam. 
-    pMC->Gstpar(absorber, "DCUTE", cute);   // = cutele. 
-    pMC->Gstpar(absorber, "DCUTM", cute);   // = cutele. 
-    pMC->Gstpar(absorber, "PPCUTM", cutg);  // = 1.33 cutele. 
-    pMC->Gstpar(absorber, "DCAY", 1.);
-    pMC->Gstpar(absorber, "MULS", 1.);
-    pMC->Gstpar(absorber, "PFIS", 1.);
-    pMC->Gstpar(absorber, "MUNU", 1.);
-    pMC->Gstpar(absorber, "LOSS", 1.);
-    pMC->Gstpar(absorber, "PHOT", 1.);
-    pMC->Gstpar(absorber, "COMP", 1.);
-    pMC->Gstpar(absorber, "PAIR", 1.);
-    pMC->Gstpar(absorber, "BREM", 1.);
-    pMC->Gstpar(absorber, "RAYL", 1.);
-    pMC->Gstpar(absorber, "DRAY", 1.);
-    pMC->Gstpar(absorber, "ANNI", 1.);
-    pMC->Gstpar(absorber, "HADR", 1.);
-    pMC->Gstpar(absorber, "LABS", 1.);
+    gMC->Gstpar(absorber, "CUTELE", cute);  // Allow beta >= 0.xx 
+    gMC->Gstpar(absorber, "CUTGAM", cutg);  // = 1.33 cutele. 
+    gMC->Gstpar(absorber, "CUTNEU", .01);   // Default. 
+    gMC->Gstpar(absorber, "CUTHAD", .01);   // Default. 
+    gMC->Gstpar(absorber, "CUTMUO", .01);   // Default. 
+    gMC->Gstpar(absorber, "BCUTE", cutg);   // = cutgam. 
+    gMC->Gstpar(absorber, "BCUTM", cutg);   // = cutgam. 
+    gMC->Gstpar(absorber, "DCUTE", cute);   // = cutele. 
+    gMC->Gstpar(absorber, "DCUTM", cute);   // = cutele. 
+    gMC->Gstpar(absorber, "PPCUTM", cutg);  // = 1.33 cutele. 
+    gMC->Gstpar(absorber, "DCAY", 1.);
+    gMC->Gstpar(absorber, "MULS", 1.);
+    gMC->Gstpar(absorber, "PFIS", 1.);
+    gMC->Gstpar(absorber, "MUNU", 1.);
+    gMC->Gstpar(absorber, "LOSS", 1.);
+    gMC->Gstpar(absorber, "PHOT", 1.);
+    gMC->Gstpar(absorber, "COMP", 1.);
+    gMC->Gstpar(absorber, "PAIR", 1.);
+    gMC->Gstpar(absorber, "BREM", 1.);
+    gMC->Gstpar(absorber, "RAYL", 1.);
+    gMC->Gstpar(absorber, "DRAY", 1.);
+    gMC->Gstpar(absorber, "ANNI", 1.);
+    gMC->Gstpar(absorber, "HADR", 1.);
+    gMC->Gstpar(absorber, "LABS", 1.);
   }
   // **> Inside the cladding, 
   Int_t cladding = idtmed[fOdCladding - 1];
-  pMC->Gstpar(cladding, "CUTELE", cute);  // Allow beta >= 0.xx 
-  pMC->Gstpar(cladding, "CUTGAM", cutg);  // = 1.33 cutele. 
-  pMC->Gstpar(cladding, "CUTNEU", .01);   // Default. 
-  pMC->Gstpar(cladding, "CUTHAD", .01);   // Default. 
-  pMC->Gstpar(cladding, "CUTMUO", .01);   // Default. 
-  pMC->Gstpar(cladding, "BCUTE", cutg);   // = cutgam. 
-  pMC->Gstpar(cladding, "BCUTM", cutg);   // = cutgam. 
-  pMC->Gstpar(cladding, "DCUTE", cute);   // = cutele. 
-  pMC->Gstpar(cladding, "DCUTM", cute);   // = cutele. 
-  pMC->Gstpar(cladding, "PPCUTM", cutg);  // = 1.33 cutele. 
-  pMC->Gstpar(cladding, "DCAY", 1.);
-  pMC->Gstpar(cladding, "MULS", 1.);
-  pMC->Gstpar(cladding, "PFIS", 1.);
-  pMC->Gstpar(cladding, "MUNU", 1.);
-  pMC->Gstpar(cladding, "LOSS", 1.);
-  pMC->Gstpar(cladding, "PHOT", 1.);
-  pMC->Gstpar(cladding, "COMP", 1.);
-  pMC->Gstpar(cladding, "PAIR", 1.);
-  pMC->Gstpar(cladding, "BREM", 1.);
-  pMC->Gstpar(cladding, "RAYL", 1.);
-  pMC->Gstpar(cladding, "DRAY", 1.);
-  pMC->Gstpar(cladding, "ANNI", 1.);
-  pMC->Gstpar(cladding, "HADR", 1.);
-  pMC->Gstpar(cladding, "LABS", 1.);
+  gMC->Gstpar(cladding, "CUTELE", cute);  // Allow beta >= 0.xx 
+  gMC->Gstpar(cladding, "CUTGAM", cutg);  // = 1.33 cutele. 
+  gMC->Gstpar(cladding, "CUTNEU", .01);   // Default. 
+  gMC->Gstpar(cladding, "CUTHAD", .01);   // Default. 
+  gMC->Gstpar(cladding, "CUTMUO", .01);   // Default. 
+  gMC->Gstpar(cladding, "BCUTE", cutg);   // = cutgam. 
+  gMC->Gstpar(cladding, "BCUTM", cutg);   // = cutgam. 
+  gMC->Gstpar(cladding, "DCUTE", cute);   // = cutele. 
+  gMC->Gstpar(cladding, "DCUTM", cute);   // = cutele. 
+  gMC->Gstpar(cladding, "PPCUTM", cutg);  // = 1.33 cutele. 
+  gMC->Gstpar(cladding, "DCAY", 1.);
+  gMC->Gstpar(cladding, "MULS", 1.);
+  gMC->Gstpar(cladding, "PFIS", 1.);
+  gMC->Gstpar(cladding, "MUNU", 1.);
+  gMC->Gstpar(cladding, "LOSS", 1.);
+  gMC->Gstpar(cladding, "PHOT", 1.);
+  gMC->Gstpar(cladding, "COMP", 1.);
+  gMC->Gstpar(cladding, "PAIR", 1.);
+  gMC->Gstpar(cladding, "BREM", 1.);
+  gMC->Gstpar(cladding, "RAYL", 1.);
+  gMC->Gstpar(cladding, "DRAY", 1.);
+  gMC->Gstpar(cladding, "ANNI", 1.);
+  gMC->Gstpar(cladding, "HADR", 1.);
+  gMC->Gstpar(cladding, "LABS", 1.);
   
   // **> and Inside the Cherenkov fibres, 
   Int_t fiber = idtmed[fOdFiber - 1];
-  pMC->Gstpar(fiber, "CUTELE", cute);  // Allow beta >= 0.xx 
-  pMC->Gstpar(fiber, "CUTGAM", cutg);  // = 1.33 cutele. 
-  pMC->Gstpar(fiber, "CUTNEU", .01);   // Default. 
-  pMC->Gstpar(fiber, "CUTHAD", .01);   // Default. 
-  pMC->Gstpar(fiber, "CUTMUO", .01);   // Default. 
-  pMC->Gstpar(fiber, "BCUTE", cutg);   // = cutgam. 
-  pMC->Gstpar(fiber, "BCUTM", cutg);   // = cutgam. 
-  pMC->Gstpar(fiber, "DCUTE", cute);   // = cutele. 
-  pMC->Gstpar(fiber, "DCUTM", cute);   // = cutele. 
-  pMC->Gstpar(fiber, "PPCUTM", cutg);  // = 1.33 cutele. 
-  pMC->Gstpar(fiber, "DCAY", 1.);
-  pMC->Gstpar(fiber, "MULS", 1.);
-  pMC->Gstpar(fiber, "PFIS", 1.);
-  pMC->Gstpar(fiber, "MUNU", 1.);
-  pMC->Gstpar(fiber, "LOSS", 1.);
-  pMC->Gstpar(fiber, "PHOT", 1.);
-  pMC->Gstpar(fiber, "COMP", 1.);
-  pMC->Gstpar(fiber, "PAIR", 1.);
-  pMC->Gstpar(fiber, "BREM", 1.);
-  pMC->Gstpar(fiber, "RAYL", 1.);
-  pMC->Gstpar(fiber, "DRAY", 1.);
-  pMC->Gstpar(fiber, "ANNI", 1.);
-  pMC->Gstpar(fiber, "HADR", 1.);
-  pMC->Gstpar(fiber, "LABS", 1.);
+  gMC->Gstpar(fiber, "CUTELE", cute);  // Allow beta >= 0.xx 
+  gMC->Gstpar(fiber, "CUTGAM", cutg);  // = 1.33 cutele. 
+  gMC->Gstpar(fiber, "CUTNEU", .01);   // Default. 
+  gMC->Gstpar(fiber, "CUTHAD", .01);   // Default. 
+  gMC->Gstpar(fiber, "CUTMUO", .01);   // Default. 
+  gMC->Gstpar(fiber, "BCUTE", cutg);   // = cutgam. 
+  gMC->Gstpar(fiber, "BCUTM", cutg);   // = cutgam. 
+  gMC->Gstpar(fiber, "DCUTE", cute);   // = cutele. 
+  gMC->Gstpar(fiber, "DCUTM", cute);   // = cutele. 
+  gMC->Gstpar(fiber, "PPCUTM", cutg);  // = 1.33 cutele. 
+  gMC->Gstpar(fiber, "DCAY", 1.);
+  gMC->Gstpar(fiber, "MULS", 1.);
+  gMC->Gstpar(fiber, "PFIS", 1.);
+  gMC->Gstpar(fiber, "MUNU", 1.);
+  gMC->Gstpar(fiber, "LOSS", 1.);
+  gMC->Gstpar(fiber, "PHOT", 1.);
+  gMC->Gstpar(fiber, "COMP", 1.);
+  gMC->Gstpar(fiber, "PAIR", 1.);
+  gMC->Gstpar(fiber, "BREM", 1.);
+  gMC->Gstpar(fiber, "RAYL", 1.);
+  gMC->Gstpar(fiber, "DRAY", 1.);
+  gMC->Gstpar(fiber, "ANNI", 1.);
+  gMC->Gstpar(fiber, "HADR", 1.);
+  gMC->Gstpar(fiber, "LABS", 1.);
 }
 
 //_____________________________________________________________________________

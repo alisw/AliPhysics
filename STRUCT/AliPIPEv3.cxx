@@ -50,8 +50,6 @@ void AliPIPEv3::CreateGeometry()
   */
   //End_Html
 
-  AliMC* pMC = AliMC::GetMC();
-  
   Float_t tpar[3], dzmo, zpos;
   Float_t bepar[3], alpar[3],sspar[3],flange[3],vacpar[3];
   Float_t bellow[3];
@@ -74,7 +72,7 @@ void AliPIPEv3::CreateGeometry()
   tpar[1] = 10.;
   tpar[2] = 1400. / 2;
   dzmo = tpar[2];
-  pMC->Gsvolu("QQMO", "TUBE", idtmed[2015], tpar, 3);
+  gMC->Gsvolu("QQMO", "TUBE", idtmed[2015], tpar, 3);
 
 //	All beam pipe details as per the provisonal drawings given by Lars
 //	Leistam on 31.5.99 
@@ -89,10 +87,10 @@ void AliPIPEv3::CreateGeometry()
   vacpar[1]=2.9;
   vacpar[2]=bepar[2];
   //
-  pMC->Gsvolu("QQBE", "TUBE", idtmed[2004], bepar, 3);
-  pMC->Gsvolu("VAC1", "TUBE", idtmed[2015], vacpar, 3);
-  pMC->Gspos("VAC1", 1, "QQBE", 0., 0., 0., 0, "ONLY");
-  pMC->Gspos("QQBE", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
+  gMC->Gsvolu("QQBE", "TUBE", idtmed[2004], bepar, 3);
+  gMC->Gsvolu("VAC1", "TUBE", idtmed[2015], vacpar, 3);
+  gMC->Gspos("VAC1", 1, "QQBE", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("QQBE", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
   
   // now beam pipes only in negative z-part for use in PMD.
  
@@ -105,10 +103,10 @@ void AliPIPEv3::CreateGeometry()
   vacpar[1]=2.9;
   vacpar[2]=flange[2];
   //
-  pMC->Gsvolu("QFL1", "TUBE", idtmed[2018], flange, 3);
-  pMC->Gsvolu("VAC2", "TUBE", idtmed[2015], vacpar, 3);
-  pMC->Gspos("VAC2", 1, "QFL1", 0., 0., 0., 0, "ONLY");
-  pMC->Gspos("QFL1", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
+  gMC->Gsvolu("QFL1", "TUBE", idtmed[2018], flange, 3);
+  gMC->Gsvolu("VAC2", "TUBE", idtmed[2015], vacpar, 3);
+  gMC->Gspos("VAC2", 1, "QFL1", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("QFL1", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
   
   // Aluminium alloy beam pipe, 1mm thick, 230 cm long
   alpar[0]=0.0;
@@ -119,10 +117,10 @@ void AliPIPEv3::CreateGeometry()
   vacpar[0]=0.0;
   vacpar[1]=2.9;
   vacpar[2]=alpar[2];
-  pMC->Gsvolu("QQAL", "TUBE", idtmed[2003], alpar, 3);
-  pMC->Gsvolu("VAC3", "TUBE", idtmed[2015], vacpar, 3);
-  pMC->Gspos("VAC3", 1, "QQAL", 0., 0., 0., 0, "ONLY");
-  pMC->Gspos("QQAL", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
+  gMC->Gsvolu("QQAL", "TUBE", idtmed[2003], alpar, 3);
+  gMC->Gsvolu("VAC3", "TUBE", idtmed[2015], vacpar, 3);
+  gMC->Gspos("VAC3", 1, "QQAL", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("QQAL", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
 
  
   // SS tube 2.0 cm long, 0.8 mm thick, 5.96 cm OD
@@ -135,10 +133,10 @@ void AliPIPEv3::CreateGeometry()
   vacpar[0]=0.0;
   vacpar[1]=2.9;
   vacpar[2]=sspar[2];
-  pMC->Gsvolu("QSS1", "TUBE", idtmed[2018], sspar, 3);
-  pMC->Gsvolu("VAC4", "TUBE", idtmed[2015], vacpar, 3);
-  pMC->Gspos("VAC4", 1, "QSS1", 0., 0., 0., 0, "ONLY");
-  pMC->Gspos("QSS1", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
+  gMC->Gsvolu("QSS1", "TUBE", idtmed[2018], sspar, 3);
+  gMC->Gsvolu("VAC4", "TUBE", idtmed[2015], vacpar, 3);
+  gMC->Gspos("VAC4", 1, "QSS1", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("QSS1", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
 
 
  // SS Flange 3 cm thick 7.4 cm OD, 5.8 cm ID
@@ -151,10 +149,10 @@ void AliPIPEv3::CreateGeometry()
   vacpar[0]=0.0;
   vacpar[1]=2.9;
   vacpar[2]=flange[2];
-  pMC->Gsvolu("QFL2", "TUBE", idtmed[2018], flange, 3);
-  pMC->Gsvolu("VAC5", "TUBE", idtmed[2015], vacpar, 3);
-  pMC->Gspos("VAC5", 1, "QFL2", 0., 0., 0., 0, "ONLY");
-  pMC->Gspos("QFL2", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
+  gMC->Gsvolu("QFL2", "TUBE", idtmed[2018], flange, 3);
+  gMC->Gsvolu("VAC5", "TUBE", idtmed[2015], vacpar, 3);
+  gMC->Gspos("VAC5", 1, "QFL2", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("QFL2", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
 
 
   // SS tube 4.0 cm long, 0.8 mm thick, 5.96 cm OD
@@ -167,10 +165,10 @@ void AliPIPEv3::CreateGeometry()
   vacpar[0]=0.0;
   vacpar[1]=2.9;
   vacpar[2]=sspar[2];
-  pMC->Gsvolu("QSS2", "TUBE", idtmed[2018], sspar, 3);
-  pMC->Gsvolu("VAC6", "TUBE", idtmed[2015], vacpar, 3);
-  pMC->Gspos("VAC6", 1, "QSS2", 0., 0., 0., 0, "ONLY");
-  pMC->Gspos("QSS2", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
+  gMC->Gsvolu("QSS2", "TUBE", idtmed[2018], sspar, 3);
+  gMC->Gsvolu("VAC6", "TUBE", idtmed[2015], vacpar, 3);
+  gMC->Gspos("VAC6", 1, "QSS2", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("QSS2", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
 
 
   // *************
@@ -186,7 +184,7 @@ void AliPIPEv3::CreateGeometry()
 //
   bellow[2]=zundul;
   zpos = zpos - sspar[2] - bellow[2];
-  pMC->Gspos("BELO", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
+  gMC->Gspos("BELO", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
 
   // SS tube 20.0 cm long, 0.8 mm thick, 5.96 cm OD
 
@@ -198,10 +196,10 @@ void AliPIPEv3::CreateGeometry()
   vacpar[0]=0.0;
   vacpar[1]=2.9;
   vacpar[2]=sspar[2];
-  pMC->Gsvolu("QSS3", "TUBE", idtmed[2018], sspar, 3);
-  pMC->Gsvolu("VAC7", "TUBE", idtmed[2015], vacpar, 3);
-  pMC->Gspos("VAC7", 1, "QSS3", 0., 0., 0., 0, "ONLY");
-  pMC->Gspos("QSS3", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
+  gMC->Gsvolu("QSS3", "TUBE", idtmed[2018], sspar, 3);
+  gMC->Gsvolu("VAC7", "TUBE", idtmed[2015], vacpar, 3);
+  gMC->Gspos("VAC7", 1, "QSS3", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("QSS3", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
 
   // *************
   // SS Bellow 8.4 cm long, 6.5 cm ID, 7.5 cm OD
@@ -209,7 +207,7 @@ void AliPIPEv3::CreateGeometry()
   // **************
 //  
   zpos = zpos - sspar[2] - bellow[2];
-  pMC->Gspos("BELO", 2, "QQMO", 0., 0., zpos, 0, "ONLY");
+  gMC->Gspos("BELO", 2, "QQMO", 0., 0., zpos, 0, "ONLY");
 
   // SS tube 4.7 cm long, 0.8 mm thick, 
 
@@ -221,10 +219,10 @@ void AliPIPEv3::CreateGeometry()
   vacpar[0]=0.0;
   vacpar[1]=2.9;
   vacpar[2]=sspar[2];
-  pMC->Gsvolu("QSS4", "TUBE", idtmed[2018], sspar, 3);
-  pMC->Gsvolu("VAC8", "TUBE", idtmed[2015], vacpar, 3);
-  pMC->Gspos("VAC8", 1, "QSS4", 0., 0., 0., 0, "ONLY");
-  pMC->Gspos("QSS4", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
+  gMC->Gsvolu("QSS4", "TUBE", idtmed[2018], sspar, 3);
+  gMC->Gsvolu("VAC8", "TUBE", idtmed[2015], vacpar, 3);
+  gMC->Gspos("VAC8", 1, "QSS4", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("QSS4", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
 
   // SS Flange 2.2 cm thick, ID=5.8 cm, OD=9.8 cm
 
@@ -236,10 +234,10 @@ void AliPIPEv3::CreateGeometry()
   vacpar[0]=0.0;
   vacpar[1]=2.9;
   vacpar[2]=flange[2];
-  pMC->Gsvolu("QFL3", "TUBE", idtmed[2018], flange, 3);
-  pMC->Gsvolu("VAC9", "TUBE", idtmed[2015], vacpar, 3);
-  pMC->Gspos("VAC9", 1, "QFL3", 0., 0., 0., 0, "ONLY");
-  pMC->Gspos("QFL3", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
+  gMC->Gsvolu("QFL3", "TUBE", idtmed[2018], flange, 3);
+  gMC->Gsvolu("VAC9", "TUBE", idtmed[2015], vacpar, 3);
+  gMC->Gspos("VAC9", 1, "QFL3", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("QFL3", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
 
 //Total of 3150 mm from vertex on the negative side upto this point.
 
@@ -253,10 +251,10 @@ void AliPIPEv3::CreateGeometry()
   vacpar[0]=0.0;
   vacpar[1]=2.9;
   vacpar[2]=sspar[2];
-  pMC->Gsvolu("QSS5", "TUBE", idtmed[2018], sspar, 3);
-  pMC->Gsvolu("VA10", "TUBE", idtmed[2015], vacpar, 3);
-  pMC->Gspos("VA10", 1, "QSS5", 0., 0., 0., 0, "ONLY");
-  pMC->Gspos("QSS5", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
+  gMC->Gsvolu("QSS5", "TUBE", idtmed[2018], sspar, 3);
+  gMC->Gsvolu("VA10", "TUBE", idtmed[2015], vacpar, 3);
+  gMC->Gspos("VA10", 1, "QSS5", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("QSS5", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
 
 // 
   // last item, undulated SS beam pipe, pitch=0.25, length= 342.0 cm
@@ -269,9 +267,9 @@ void AliPIPEv3::CreateGeometry()
   Undulation("UNDL",pitch,thick,zundul,rundul,cn48);
   //
   zpos = zpos - sspar[2] - zundul;
-  pMC->Gspos("UNDL", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
+  gMC->Gspos("UNDL", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
 //
-  pMC->Gspos("QQMO", 1, "ALIC", 0., 0., 0.1, 0, "ONLY");
+  gMC->Gspos("QQMO", 1, "ALIC", 0., 0., 0.1, 0, "ONLY");
 
 // 	total of 6770 mm length upto this point, end of undulated beam
 //	pipe section.
@@ -287,10 +285,10 @@ void AliPIPEv3::CreateGeometry()
   vacpar[0]=0.0;
   vacpar[1]=2.9;
   vacpar[2]=flange[2];
-  pMC->Gsvolu("QFL4", "TUBE", idtmed[2018], flange, 3);
-  pMC->Gsvolu("VC11", "TUBE", idtmed[2015], vacpar, 3);
-  pMC->Gspos("VC11", 1, "QFL4", 0., 0., 0., 0, "ONLY");
-  pMC->Gspos("QFL4", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
+  gMC->Gsvolu("QFL4", "TUBE", idtmed[2018], flange, 3);
+  gMC->Gsvolu("VC11", "TUBE", idtmed[2015], vacpar, 3);
+  gMC->Gspos("VC11", 1, "QFL4", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("QFL4", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
 
 }
 
@@ -301,39 +299,37 @@ void AliPIPEv3::DrawModule()
   // Draw a shaded view of the Beam Pipe
   //
 
-  AliMC* pMC = AliMC::GetMC();
-
   // Set everything unseen
-  pMC->Gsatt("*", "seen", -1);
+  gMC->Gsatt("*", "seen", -1);
   // 
   // Set ALIC mother transparent
-  pMC->Gsatt("ALIC","SEEN",0);
+  gMC->Gsatt("ALIC","SEEN",0);
   //
   // Set the volumes visible
-  pMC->Gsatt("QQMO","seen",1);
-  pMC->Gsatt("QQBE","seen",1);
-  pMC->Gsatt("QFL1","seen",1);
-  pMC->Gsatt("QQAL","seen",1);
-  pMC->Gsatt("QSS1","seen",1);
-  pMC->Gsatt("QFL2","seen",1);
-  pMC->Gsatt("QSS2","seen",1);
-  pMC->Gsatt("QSS3","seen",1);
-  pMC->Gsatt("QSS4","seen",1);
-  pMC->Gsatt("QFL3","seen",1);
-  pMC->Gsatt("QSS5","seen",1);
-  pMC->Gsatt("BELO","seen",1);
-  pMC->Gsatt("UNDL","seen",1);
+  gMC->Gsatt("QQMO","seen",1);
+  gMC->Gsatt("QQBE","seen",1);
+  gMC->Gsatt("QFL1","seen",1);
+  gMC->Gsatt("QQAL","seen",1);
+  gMC->Gsatt("QSS1","seen",1);
+  gMC->Gsatt("QFL2","seen",1);
+  gMC->Gsatt("QSS2","seen",1);
+  gMC->Gsatt("QSS3","seen",1);
+  gMC->Gsatt("QSS4","seen",1);
+  gMC->Gsatt("QFL3","seen",1);
+  gMC->Gsatt("QSS5","seen",1);
+  gMC->Gsatt("BELO","seen",1);
+  gMC->Gsatt("UNDL","seen",1);
   //
-  pMC->Gdopt("hide", "on");
-  pMC->Gdopt("shad", "on");
-  pMC->Gsatt("*", "fill", 7);
-  pMC->SetClipBox(".");
-  pMC->SetClipBox("*", 0, 3000, -3000, 3000, -6000, 6000);
-  pMC->DefaultRange();
-  pMC->Gdraw("alic", 40, 30, 0, 3, 5, .04, .04);
-  pMC->Gdhead(1111, "Beam Pipe");
-  pMC->Gdman(16, 6, "MAN");
-  pMC->Gdopt("hide","off");
+  gMC->Gdopt("hide", "on");
+  gMC->Gdopt("shad", "on");
+  gMC->Gsatt("*", "fill", 7);
+  gMC->SetClipBox(".");
+  gMC->SetClipBox("*", 0, 3000, -3000, 3000, -6000, 6000);
+  gMC->DefaultRange();
+  gMC->Gdraw("alic", 40, 30, 0, 3, 5, .04, .04);
+  gMC->Gdhead(1111, "Beam Pipe");
+  gMC->Gdman(16, 6, "MAN");
+  gMC->Gdopt("hide","off");
 }
 
 //_____________________________________________________________________________
@@ -414,8 +410,6 @@ void AliPIPEv3::Undulation(char *undul, Float_t pitch, Float_t thick,
   const Float_t const1 = .293;
   const Float_t const2 = .707;
 
-  AliMC* pMC = AliMC::GetMC();
-
   // Local variables
   Int_t j, nwave;
   Float_t dcone1[5], dcone2[5], dcone3[5], dcone4[5], dcone5[5],
@@ -472,22 +466,22 @@ void AliPIPEv3::Undulation(char *undul, Float_t pitch, Float_t thick,
   dcone8[3] = dcone5[1];
   dcone8[4] = dcone5[2];
 
-  pMC->Gsvolu(cone[0], "CONE", idtmed[2015], dcone1, 5);
-  pMC->Gsvolu(cone[1], "CONE", idtmed[2015], dcone2, 5);
-  pMC->Gsvolu(cone[2], "CONE", idtmed[2015], dcone3, 5);
-  pMC->Gsvolu(cone[3], "CONE", idtmed[2015], dcone4, 5);
-  pMC->Gsvolu(cone[4], "CONE", idtmed[2015], dcone5, 5);
-  pMC->Gsvolu(cone[5], "CONE", idtmed[2015], dcone6, 5);
-  pMC->Gsvolu(cone[6], "CONE", idtmed[2015], dcone7, 5);
-  pMC->Gsvolu(cone[7], "CONE", idtmed[2015], dcone8, 5);
-  pMC->Gsatt(cone[0], "SEEN", 0);
-  pMC->Gsatt(cone[1], "SEEN", 0);
-  pMC->Gsatt(cone[2], "SEEN", 0);
-  pMC->Gsatt(cone[3], "SEEN", 0);
-  pMC->Gsatt(cone[4], "SEEN", 0);
-  pMC->Gsatt(cone[5], "SEEN", 0);
-  pMC->Gsatt(cone[6], "SEEN", 0);
-  pMC->Gsatt(cone[7], "SEEN", 0);
+  gMC->Gsvolu(cone[0], "CONE", idtmed[2015], dcone1, 5);
+  gMC->Gsvolu(cone[1], "CONE", idtmed[2015], dcone2, 5);
+  gMC->Gsvolu(cone[2], "CONE", idtmed[2015], dcone3, 5);
+  gMC->Gsvolu(cone[3], "CONE", idtmed[2015], dcone4, 5);
+  gMC->Gsvolu(cone[4], "CONE", idtmed[2015], dcone5, 5);
+  gMC->Gsvolu(cone[5], "CONE", idtmed[2015], dcone6, 5);
+  gMC->Gsvolu(cone[6], "CONE", idtmed[2015], dcone7, 5);
+  gMC->Gsvolu(cone[7], "CONE", idtmed[2015], dcone8, 5);
+  gMC->Gsatt(cone[0], "SEEN", 0);
+  gMC->Gsatt(cone[1], "SEEN", 0);
+  gMC->Gsatt(cone[2], "SEEN", 0);
+  gMC->Gsatt(cone[3], "SEEN", 0);
+  gMC->Gsatt(cone[4], "SEEN", 0);
+  gMC->Gsatt(cone[5], "SEEN", 0);
+  gMC->Gsatt(cone[6], "SEEN", 0);
+  gMC->Gsatt(cone[7], "SEEN", 0);
 
   // DEFINE AN IMAGINARY TUBE VOLUME FOR UNDULATED CHAMBER, FILL WITH VACUUM
 
@@ -496,27 +490,27 @@ void AliPIPEv3::Undulation(char *undul, Float_t pitch, Float_t thick,
   dundul[1] = rundul + pitch + thick * 2;
   //
   dundul[0] = 1e-4;
-  pMC->Gsvolu(undul, "TUBE", idtmed[2015], dundul, 3);
+  gMC->Gsvolu(undul, "TUBE", idtmed[2015], dundul, 3);
 
   xc = 0;
   yc = 0;
   zc = -dundul[2] + dcone1[0];
   for (j = 1; j <= nwave; ++j) {
-    pMC->Gspos(cone[0], j, undul, xc, yc, zc, 0, "ONLY");
+    gMC->Gspos(cone[0], j, undul, xc, yc, zc, 0, "ONLY");
     zc = zc + dcone1[0] + dcone2[0];
-    pMC->Gspos(cone[1], j, undul, xc, yc, zc, 0, "ONLY");
+    gMC->Gspos(cone[1], j, undul, xc, yc, zc, 0, "ONLY");
     zc = zc + dcone2[0] + dcone3[0];
-    pMC->Gspos(cone[2], j, undul, xc, yc, zc, 0, "ONLY");
+    gMC->Gspos(cone[2], j, undul, xc, yc, zc, 0, "ONLY");
     zc = zc + dcone3[0] + dcone4[0];
-    pMC->Gspos(cone[3], j, undul, xc, yc, zc, 0, "ONLY");
+    gMC->Gspos(cone[3], j, undul, xc, yc, zc, 0, "ONLY");
     zc = zc + dcone4[0] + dcone5[0];
-    pMC->Gspos(cone[4], j, undul, xc, yc, zc, 0, "ONLY");
+    gMC->Gspos(cone[4], j, undul, xc, yc, zc, 0, "ONLY");
     zc = zc + dcone5[0] + dcone6[0];
-    pMC->Gspos(cone[5], j, undul, xc, yc, zc, 0, "ONLY");
+    gMC->Gspos(cone[5], j, undul, xc, yc, zc, 0, "ONLY");
     zc = zc + dcone6[0] + dcone7[0];
-    pMC->Gspos(cone[6], j, undul, xc, yc, zc, 0, "ONLY");
+    gMC->Gspos(cone[6], j, undul, xc, yc, zc, 0, "ONLY");
     zc = zc + dcone7[0] + dcone8[0];
-    pMC->Gspos(cone[7], j, undul, xc, yc, zc, 0, "ONLY");
+    gMC->Gspos(cone[7], j, undul, xc, yc, zc, 0, "ONLY");
     zc = zc + dcone8[0] + dcone1[0];
   }
 }

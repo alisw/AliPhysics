@@ -135,7 +135,6 @@ void AliGenParam::Generate()
 // the desired theta, phi and momentum windows; Gaussian smearing 
 // on the vertex is done if selected
 
-  AliMC* pMC = AliMC::GetMC();
 
   Float_t polar[3]= {0,0,0};
   //
@@ -152,7 +151,7 @@ void AliGenParam::Generate()
   Float_t random[6];
   for (j=0;j<3;j++) origin0[j]=fOrigin[j];
   if(fVertexSmear==perEvent) {
-      pMC->Rndm(random,6);
+      gMC->Rndm(random,6);
       for (j=0;j<3;j++) {
 	  origin0[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 	      TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
@@ -165,7 +164,7 @@ void AliGenParam::Generate()
 	  Int_t Ipart = fIpParaFunc();
 	  fChildWeight=(fPythia->GetBraPart(Ipart))*fParentWeight;	  
 	  Float_t am=fPythia->GetPMAS(fPythia->LuComp(Ipart),1);
-	  pMC->Rndm(random,2);
+	  gMC->Rndm(random,2);
 //
 // phi
 	  phi=fPhiMin+random[0]*(fPhiMax-fPhiMin);
@@ -194,7 +193,7 @@ void AliGenParam::Generate()
 	  p[1]=pt*TMath::Sin(phi);
 	  p[2]=pl;
 	  if(fVertexSmear==perTrack) {
-	      pMC->Rndm(random,6);
+	      gMC->Rndm(random,6);
 	      for (j=0;j<3;j++) {
 		  origin0[j]=
 		      fOrigin[j]+fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*

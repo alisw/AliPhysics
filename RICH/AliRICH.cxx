@@ -321,11 +321,10 @@ void AliRICH::StepManager()
   // Called at every step in the RICH
   //
 
-  AliMC* pMC = AliMC::GetMC();
-  TGeant3 *geant3 = (TGeant3*) pMC;
+  TGeant3 *geant3 = (TGeant3*) gMC;
 
   const Float_t xshift[3] = { 41.3, 0, -41.3 };
-  static Float_t polar[3] = {0, 0, 0};
+  static Float_t momentum[3];
   const Int_t nrooth = 25;
   
   static Int_t ixold=-1, iyold=-1;
@@ -386,8 +385,8 @@ void AliRICH::StepManager()
 	  if (geant3->Gcking()->kcase == lcase) {
 	    i1 = geant3->Gcking()->ngkine;
 	    for (i = 1; i <= i1; ++i) {
-	      pMC->Gmtod(geant3->Gckin3()->gpos[i-1], vxloc, 1);
-	      pMC->Gmtod(geant3->Gcking()->gkin[i-1], dir, 2);
+	      gMC->Gmtod(geant3->Gckin3()->gpos[i-1], vxloc, 1);
+	      gMC->Gmtod(geant3->Gcking()->gkin[i-1], dir, 2);
 	      if (geant3->Gcking()->gkin[i-1][4] == 8. || 
 		  geant3->Gcking()->gkin[i-1][4] == 9.) {
 		++nmult;
@@ -435,8 +434,8 @@ void AliRICH::StepManager()
       //     update the impact point only 
       if (geant3->Gctrak()->istory == 1) {
 	//     Direction of incidence and where did it hit ? 
-	pMC->Gmtod(geant3->Gctrak()->vect, sVloc, 1);
-	pMC->Gmtod(&geant3->Gctrak()->vect[3], dir, 2);
+	gMC->Gmtod(geant3->Gctrak()->vect, sVloc, 1);
+	gMC->Gmtod(&geant3->Gctrak()->vect[3], dir, 2);
 	phiangle = TMath::ATan2(dir[2], dir[0]);
 	if (phiangle < 0.) phiangle += 2*TMath::Pi();
 	i1 = nrooth;
@@ -494,8 +493,8 @@ void AliRICH::StepManager()
 	  }
 	  
 	  //        Direction of incidence and where did it hit ? 
-	  pMC->Gmtod(geant3->Gctrak()->vect, sVloc, 1);
-	  pMC->Gmtod(&geant3->Gctrak()->vect[3], dir, 2);
+	  gMC->Gmtod(geant3->Gctrak()->vect, sVloc, 1);
+	  gMC->Gmtod(&geant3->Gctrak()->vect[3], dir, 2);
 	  // Computing 2nd power 
 	  r1 = dir[0];
 	  // Computing 2nd power 
@@ -542,8 +541,8 @@ void AliRICH::StepManager()
       }
       
       //        Signal generation in methane gap 
-      pMC->Gmtod(geant3->Gctrak()->vect, sVloc, 1);
-      pMC->Gmtod(geant3->Gckine()->vert, vxloc, 1);
+      gMC->Gmtod(geant3->Gctrak()->vect, sVloc, 1);
+      gMC->Gmtod(geant3->Gckine()->vert, vxloc, 1);
       ix = (Int_t) ((sVloc[0] + sDlx) /  sDxp);
       iy = (Int_t) ((sVloc[2] + sDly) /  sDyp);
       
@@ -613,9 +612,19 @@ void AliRICH::StepManager()
 	stwght = geant3->Gctrak()->upwght;
 	geant3->Gctrak()->upwght = (Float_t) sNphoton;
 	geant3->Gskpho(i);
-	gAlice->SetTrack(0, gAlice->CurrentTrack(), 20000050, 
-			 &geant3->Gckin2()->xphot[i-1][3],geant3->Gckin2()->xphot[i-1],
-			 polar,geant3->Gctrak()->tofg,"Cherenkov", ncher);
+	momentum[0]=geant3->Gckin2()->xphot[i-1][3]*
+	  geant3->Gckin2()->xphot[i-1][6];
+	momentum[1]=geant3->Gckin2()->xphot[i-1][4]*
+	  geant3->Gckin2()->xphot[i-1][6];
+	momentum[2]=geant3->Gckin2()->xphot[i-1][5]*
+	  geant3->Gckin2()->xphot[i-1][6];
+	gAlice->SetTrack(0, gAlice->CurrentTrack(),
+			 gMC->PDGFromId(50), 
+			 momentum, //momentum
+			 geant3->Gckin2()->xphot[i-1],     //position
+			 &geant3->Gckin2()->xphot[i-1][7], //polarisation
+			 geant3->Gckin2()->xphot[i-1][10], //time of flight
+			 "Cherenkov", ncher);
 	sMckov[sNphoton - 1] = ncher;
 	geant3->Gctrak()->upwght = stwght;
       }
@@ -640,8 +649,8 @@ void AliRICH::StepManager()
       sZsox = geant3->Gckine()->vert[2];
       
       //        Where did it hit ? 
-      pMC->Gmtod(geant3->Gctrak()->vect, sVloc, 1);
-      pMC->Gmtod(&geant3->Gctrak()->vect[3], dir, 2);
+      gMC->Gmtod(geant3->Gctrak()->vect, sVloc, 1);
+      gMC->Gmtod(&geant3->Gctrak()->vect[3], dir, 2);
       ysx = sVloc[2] + sDly;
       if (geant3->Gctmed()->numed == idtmed[1004-1]) {
 	nmodsx = geant3->Gcvolu()->number[geant3->Gcvolu()->nlevel - 4];
@@ -704,7 +713,7 @@ void AliRICH::StepManager()
   
   //        Current particle is cherenkov photon 
   if (geant3->Gckine()->ipart == 50) {
-    pMC->Gmtod(geant3->Gctrak()->vect, sVloc, 1);
+    gMC->Gmtod(geant3->Gctrak()->vect, sVloc, 1);
     //         WRITE(6,* ) UPWGHT, VLOC(2), NUMED, DESTEP 
     //        Photon crosses ch4-csi boundary 
     //           take into account fresnel losses with complex refraction index
@@ -715,10 +724,10 @@ void AliRICH::StepManager()
       //            CALL FRESNELCSI 
       //            IF (ISTOP .EQ. 2) RETURN 
       //        Put transmission of electrodes in by hand 
-      pMC->Gmtod(&geant3->Gctrak()->vect[3], dir, 2);
+      gMC->Gmtod(&geant3->Gctrak()->vect[3], dir, 2);
       cophi = TMath::Cos(TMath::ATan2(dir[0], dir[1]));
       t = (1. - .025 / cophi) * (1. - .05 /  cophi);
-      pMC->Rndm(ranf, 1);
+      gMC->Rndm(ranf, 1);
       if (ranf[0] > t) {
 	if (geant3->Gctrak()->upwght && Int_t(geant3->Gctrak()->upwght+0.5)<MAXPH) 
 	  sIloss[Int_t(geant3->Gctrak()->upwght+0.5) - 1] = 15;
@@ -744,7 +753,7 @@ void AliRICH::StepManager()
       // new 
       // copied from miphit in Freon or Quartz 
       //        Where did it hit ? 
-      pMC->Gmtod(&geant3->Gctrak()->vect[3], dir, 2);
+      gMC->Gmtod(&geant3->Gctrak()->vect[3], dir, 2);
       
       //        Momentum and direction of incidence 
       for (ll = 0; ll < nrooth; ++ll) rrhh[ll]=0;
@@ -837,8 +846,7 @@ void AliRICH::RichIntegration()
   // Integrates over RICH pads
   //
 
-  AliMC* pMC = AliMC::GetMC();
-  TGeant3 *geant3 = (TGeant3*) pMC;
+  TGeant3 *geant3 = (TGeant3*) gMC;
   
   Int_t i1, i2;
   Float_t r1;
@@ -879,7 +887,7 @@ void AliRICH::RichIntegration()
     //sQint[0] = qtot;
   }
   //
-  pMC->Gmtod(sVectIn, sVloc, 1);
+  gMC->Gmtod(sVectIn, sVloc, 1);
   if (TMath::Abs(sVloc[0]) >= sDlx) return;
   
   if (TMath::Abs(sVloc[2]) >= sDly) return;
@@ -1009,7 +1017,7 @@ void AliRICH::RichIntegration()
   source[0] = x0 - sDlx;
   source[1] = sVloc[1] - .2;
   source[2] = y0a - sDly;
-  pMC->Gdtom(source, source, 1);
+  gMC->Gdtom(source, source, 1);
   FeedBack(source, qtot);
   return;
 }
@@ -1047,7 +1055,6 @@ void AliRICH::GetChargeMip(Float_t &qtot)
   // Calculates the charge deposited by a MIP
   //
 
-  AliMC* pMC = AliMC::GetMC();
 
   Int_t i1;
   
@@ -1063,7 +1070,7 @@ void AliRICH::GetChargeMip(Float_t &qtot)
   if (!nel) nel = 1;
   i1 = nel;
   for (i = 1; i <= i1; ++i) {
-    pMC->Rndm(ranf, 1);
+    gMC->Rndm(ranf, 1);
     qtot -= fChslope * TMath::Log(ranf[0]);
   }
 } 
@@ -1075,11 +1082,10 @@ void AliRICH::GetCharge(Float_t &qtot)
   // Charge deposited
   //
 
-  AliMC* pMC = AliMC::GetMC();
 
   Float_t ranf[1];
   
-  pMC->Rndm(ranf, 1);
+  gMC->Rndm(ranf, 1);
   qtot = -fChslope * TMath::Log(ranf[0]);
 } 
 
@@ -1090,8 +1096,7 @@ void AliRICH::FeedBack(Float_t *source, Float_t qtot)
   // Generate FeedBack photons
   //
 
-  AliMC* pMC = AliMC::GetMC();
-  TGeant3 *geant3 = (TGeant3*) pMC;
+  TGeant3 *geant3 = (TGeant3*) gMC;
 
   Int_t i1, j;
   Float_t r1, r2;
@@ -1119,7 +1124,7 @@ void AliRICH::FeedBack(Float_t *source, Float_t qtot)
   for (i = 1; i <= i1; ++i) {
     
     //     DIRECTION 
-    pMC->Rndm(ranf, 2);
+    gMC->Rndm(ranf, 2);
     cthf = ranf[0] * 2. - 1.;
     if (cthf < 0.)  continue;
     sthf = TMath::Sqrt((1. - cthf) * (cthf + 1.));
@@ -1136,7 +1141,7 @@ void AliRICH::FeedBack(Float_t *source, Float_t qtot)
       geant3->Gckin2()->xphot[geant3->Gckin2()->ngphot-1][j]=source[j];
     
     //     ENERGY 
-    pMC->Rndm(&random, 1);
+    gMC->Rndm(&random, 1);
     if (random <= .57) {
       enfp = 7.5e-9;
     } else if (random > .57 && random <= .7) {
@@ -1148,7 +1153,7 @@ void AliRICH::FeedBack(Float_t *source, Float_t qtot)
     dir[0] = sthf * TMath::Sin(phif);
     dir[1] = cthf;
     dir[2] = sthf * TMath::Cos(phif);
-    pMC->Gdtom(dir, &geant3->Gckin2()->xphot[geant3->Gckin2()->ngphot-1][3], 2);
+    gMC->Gdtom(dir, &geant3->Gckin2()->xphot[geant3->Gckin2()->ngphot-1][3], 2);
     
     //     POLARISATION 
     e1[0] = 0.;
@@ -1188,12 +1193,12 @@ void AliRICH::FeedBack(Float_t *source, Float_t qtot)
     vmod=TMath::Sqrt(1/vmod);
     for(j=0;j<3;j++) e2[j]*=vmod;
     
-    pMC->Rndm(ranf, 1);
+    gMC->Rndm(ranf, 1);
     phi = ranf[0] * 2 * TMath::Pi();
     r1 = TMath::Sin(phi);
     r2 = TMath::Cos(phi);
     for(j=0;j<3;j++) pol[j]=e1[j]*r1+e2[j]*r2;
-    pMC->Gdtom(pol, &geant3->Gckin2()->xphot[geant3->Gckin2()->ngphot-1][7], 2);
+    gMC->Gdtom(pol, &geant3->Gckin2()->xphot[geant3->Gckin2()->ngphot-1][7], 2);
     
     //     TIME OF FLIGHT 
     geant3->Gckin2()->xphot[geant3->Gckin2()->ngphot-1][10] = 0.;
@@ -1449,7 +1454,6 @@ void AliRICHv1::CreateGeometry()
   */
   //End_Html
 
-  AliMC* pMC = AliMC::GetMC();
 
   Int_t *idtmed = fIdtmed->GetArray()-999;
   
@@ -1463,116 +1467,116 @@ void AliRICHv1::CreateGeometry()
   par[0] = 71.1;
   par[1] = 11.5;
   par[2] = 73.15;
-  pMC->Gsvolu("RICH", "BOX ", idtmed[1009], par, 3);
+  gMC->Gsvolu("RICH", "BOX ", idtmed[1009], par, 3);
   
   //     Sensitive part of the whole RICH 
   par[0] = 64.8;
   par[1] = 11.5;
   par[2] = 66.55;
-  pMC->Gsvolu("SRIC", "BOX ", idtmed[1000], par, 3);
+  gMC->Gsvolu("SRIC", "BOX ", idtmed[1000], par, 3);
   
   //     Honeycomb 
   par[0] = 63.1;
   par[1] = .188;
   par[2] = 66.55;
-  pMC->Gsvolu("HONE", "BOX ", idtmed[1001], par, 3);
+  gMC->Gsvolu("HONE", "BOX ", idtmed[1001], par, 3);
   
   //     Aluminium sheet 
   par[0] = 63.1;
   par[1] = .025;
   par[2] = 66.55;
-  pMC->Gsvolu("ALUM", "BOX ", idtmed[1009], par, 3);
+  gMC->Gsvolu("ALUM", "BOX ", idtmed[1009], par, 3);
   
   //     Quartz 
   par[0] = 63.1;
   par[1] = .25;
   par[2] = 65.5;
-  pMC->Gsvolu("QUAR", "BOX ", idtmed[1002], par, 3);
+  gMC->Gsvolu("QUAR", "BOX ", idtmed[1002], par, 3);
   
   //     Spacers (cylinders) 
   par[0] = 0.;
   par[1] = .5;
   par[2] = .5;
-  pMC->Gsvolu("SPAC", "TUBE", idtmed[1002], par, 3);
+  gMC->Gsvolu("SPAC", "TUBE", idtmed[1002], par, 3);
   
   //     Opaque quartz 
   par[0] = 61.95;
   par[1] = .2;
   par[2] = 66.5;
-  pMC->Gsvolu("OQUA", "BOX ", idtmed[1007], par, 3);
+  gMC->Gsvolu("OQUA", "BOX ", idtmed[1007], par, 3);
   
   //     Frame of opaque quartz 
   par[0] = 20.65;
   par[1] = .5;
   par[2] = 66.5;
-  pMC->Gsvolu("OQUF", "BOX ", idtmed[1007], par, 3);
+  gMC->Gsvolu("OQUF", "BOX ", idtmed[1007], par, 3);
   
   //     Little bar of opaque quartz 
   par[0] = 63.1;
   par[1] = .25;
   par[2] = .275;
-  pMC->Gsvolu("BARR", "BOX ", idtmed[1007], par, 3);
+  gMC->Gsvolu("BARR", "BOX ", idtmed[1007], par, 3);
   
   //     Freon 
   par[0] = 20.15;
   par[1] = .5;
   par[2] = 65.5;
-  pMC->Gsvolu("FREO", "BOX ", idtmed[1003], par, 3);
+  gMC->Gsvolu("FREO", "BOX ", idtmed[1003], par, 3);
   
   //     Methane 
   par[0] = 64.8;
   par[1] = 5.;
   par[2] = 64.8;
-  pMC->Gsvolu("META", "BOX ", idtmed[1004], par, 3);
+  gMC->Gsvolu("META", "BOX ", idtmed[1004], par, 3);
   
   //     Methane gap 
   par[0] = 64.8;
   par[1] = .2;
   par[2] = 64.8;
-  pMC->Gsvolu("GAP ", "BOX ", idtmed[1008], par, 3);
+  gMC->Gsvolu("GAP ", "BOX ", idtmed[1008], par, 3);
   
   //     CsI photocathode 
   par[0] = 64.8;
   par[1] = .25;
   par[2] = 64.8;
-  pMC->Gsvolu("CSI ", "BOX ", idtmed[1005], par, 3);
+  gMC->Gsvolu("CSI ", "BOX ", idtmed[1005], par, 3);
   
   //     Anode grid 
   par[0] = 0.;
   par[1] = .0025;
   par[2] = 20.;
-  pMC->Gsvolu("GRID", "TUBE", idtmed[1006], par, 3);
+  gMC->Gsvolu("GRID", "TUBE", idtmed[1006], par, 3);
   
   // --- Places the detectors defined with GSVOLU 
   //     Place material inside RICH 
-  pMC->Gspos("SRIC", 1, "RICH", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("SRIC", 1, "RICH", 0., 0., 0., 0, "ONLY");
   
-  pMC->Gspos("ALUM", 1, "SRIC", 0., -6.075, 0., 0, "ONLY");
-  pMC->Gspos("HONE", 1, "SRIC", 0., -5.862, 0., 0, "ONLY");
-  pMC->Gspos("ALUM", 2, "SRIC", 0., -5.649, 0., 0, "ONLY");
-  pMC->Gspos("OQUA", 1, "SRIC", 0., -5.424, 0., 0, "ONLY");
+  gMC->Gspos("ALUM", 1, "SRIC", 0., -6.075, 0., 0, "ONLY");
+  gMC->Gspos("HONE", 1, "SRIC", 0., -5.862, 0., 0, "ONLY");
+  gMC->Gspos("ALUM", 2, "SRIC", 0., -5.649, 0., 0, "ONLY");
+  gMC->Gspos("OQUA", 1, "SRIC", 0., -5.424, 0., 0, "ONLY");
   
   AliMatrix(idrotm[1019], 0., 0., 90., 0., 90., 90.);
   
   for (i = 1; i <= 9; ++i) {
     zs = (5 - i) * 14.4;
-    pMC->Gspos("SPAC", i, "FREO", 6.7, 0., zs, idrotm[1019], "ONLY");
+    gMC->Gspos("SPAC", i, "FREO", 6.7, 0., zs, idrotm[1019], "ONLY");
   }
   for (i = 10; i <= 18; ++i) {
     zs = (14 - i) * 14.4;
-    pMC->Gspos("SPAC", i, "FREO", -6.7, 0., zs, idrotm[1019], "ONLY");
+    gMC->Gspos("SPAC", i, "FREO", -6.7, 0., zs, idrotm[1019], "ONLY");
   }
   
-  pMC->Gspos("FREO", 1, "OQUF", 0., 0., 0., 0, "ONLY");
-  pMC->Gspos("OQUF", 1, "SRIC", 41.3, -4.724, 0., 0, "ONLY");
-  pMC->Gspos("OQUF", 2, "SRIC", 0., -4.724, 0., 0, "ONLY");
-  pMC->Gspos("OQUF", 3, "SRIC", -41.3, -4.724, 0., 0, "ONLY");
-  pMC->Gspos("BARR", 1, "QUAR", 0., 0., -21.65, 0, "ONLY");
-  pMC->Gspos("BARR", 2, "QUAR", 0., 0., 21.65, 0, "ONLY");
-  pMC->Gspos("QUAR", 1, "SRIC", 0., -3.974, 0., 0, "ONLY");
-  pMC->Gspos("GAP ", 1, "META", 0., 4.8, 0., 0, "ONLY");
-  pMC->Gspos("META", 1, "SRIC", 0., 1.276, 0., 0, "ONLY");
-  pMC->Gspos("CSI ", 1, "SRIC", 0., 6.526, 0., 0, "ONLY");
+  gMC->Gspos("FREO", 1, "OQUF", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("OQUF", 1, "SRIC", 41.3, -4.724, 0., 0, "ONLY");
+  gMC->Gspos("OQUF", 2, "SRIC", 0., -4.724, 0., 0, "ONLY");
+  gMC->Gspos("OQUF", 3, "SRIC", -41.3, -4.724, 0., 0, "ONLY");
+  gMC->Gspos("BARR", 1, "QUAR", 0., 0., -21.65, 0, "ONLY");
+  gMC->Gspos("BARR", 2, "QUAR", 0., 0., 21.65, 0, "ONLY");
+  gMC->Gspos("QUAR", 1, "SRIC", 0., -3.974, 0., 0, "ONLY");
+  gMC->Gspos("GAP ", 1, "META", 0., 4.8, 0., 0, "ONLY");
+  gMC->Gspos("META", 1, "SRIC", 0., 1.276, 0., 0, "ONLY");
+  gMC->Gspos("CSI ", 1, "SRIC", 0., 6.526, 0., 0, "ONLY");
   
   //     Place RICH inside ALICE apparatus 
   
@@ -1584,13 +1588,13 @@ void AliRICHv1::CreateGeometry()
   AliMatrix(idrotm[1005], 90., 0., 109.31, 90., 19.31, 90.);
   AliMatrix(idrotm[1006], 90., 20., 108.2, 110., 18.2, 110.);
   
-  pMC->Gspos("RICH", 1, "ALIC", 0., 471.9, 165.26,     idrotm[1000], "ONLY");
-  pMC->Gspos("RICH", 2, "ALIC", 171., 470., 0.,        idrotm[1001], "ONLY");
-  pMC->Gspos("RICH", 3, "ALIC", 0., 500., 0.,          idrotm[1002], "ONLY");
-  pMC->Gspos("RICH", 4, "ALIC", -171., 470., 0.,       idrotm[1003], "ONLY");
-  pMC->Gspos("RICH", 5, "ALIC", 161.4, 443.4, -165.3,  idrotm[1004], "ONLY");
-  pMC->Gspos("RICH", 6, "ALIC", 0., 471.9, -165.3,     idrotm[1005], "ONLY");
-  pMC->Gspos("RICH", 7, "ALIC", -161.4, 443.4, -165.3, idrotm[1006], "ONLY");
+  gMC->Gspos("RICH", 1, "ALIC", 0., 471.9, 165.26,     idrotm[1000], "ONLY");
+  gMC->Gspos("RICH", 2, "ALIC", 171., 470., 0.,        idrotm[1001], "ONLY");
+  gMC->Gspos("RICH", 3, "ALIC", 0., 500., 0.,          idrotm[1002], "ONLY");
+  gMC->Gspos("RICH", 4, "ALIC", -171., 470., 0.,       idrotm[1003], "ONLY");
+  gMC->Gspos("RICH", 5, "ALIC", 161.4, 443.4, -165.3,  idrotm[1004], "ONLY");
+  gMC->Gspos("RICH", 6, "ALIC", 0., 471.9, -165.3,     idrotm[1005], "ONLY");
+  gMC->Gspos("RICH", 7, "ALIC", -161.4, 443.4, -165.3, idrotm[1006], "ONLY");
   
 }
 
@@ -1601,31 +1605,30 @@ void AliRICHv1::DrawModule()
   // Draw a shaded view of the Ring Imaging Cherenkov
   //
 
-  AliMC* pMC = AliMC::GetMC();
-  TGeant3 *geant3 = (TGeant3*) pMC;
+  TGeant3 *geant3 = (TGeant3*) gMC;
 
   // Set everything unseen
-  pMC->Gsatt("*", "seen", -1);
+  gMC->Gsatt("*", "seen", -1);
   // 
   // Set ALIC mother transparent
-  pMC->Gsatt("ALIC","SEEN",0);
+  gMC->Gsatt("ALIC","SEEN",0);
   //
   // Set the volumes visible
 
-  pMC->Gsatt("RICH","seen",0);
-  pMC->Gsatt("SRIC","seen",0);
-  pMC->Gsatt("HONE","seen",1);
-  pMC->Gsatt("ALUM","seen",1);
-  pMC->Gsatt("QUAR","seen",1);
-  pMC->Gsatt("SPAC","seen",1);
-  pMC->Gsatt("OQUA","seen",1);
-  pMC->Gsatt("OQUF","seen",1);
-  pMC->Gsatt("BARR","seen",1);
-  pMC->Gsatt("FREO","seen",1);
-  pMC->Gsatt("META","seen",1);
-  pMC->Gsatt("GAP ","seen",1);
-  pMC->Gsatt("CSI ","seen",1);
-  pMC->Gsatt("GRID","seen",1);
+  gMC->Gsatt("RICH","seen",0);
+  gMC->Gsatt("SRIC","seen",0);
+  gMC->Gsatt("HONE","seen",1);
+  gMC->Gsatt("ALUM","seen",1);
+  gMC->Gsatt("QUAR","seen",1);
+  gMC->Gsatt("SPAC","seen",1);
+  gMC->Gsatt("OQUA","seen",1);
+  gMC->Gsatt("OQUF","seen",1);
+  gMC->Gsatt("BARR","seen",1);
+  gMC->Gsatt("FREO","seen",1);
+  gMC->Gsatt("META","seen",1);
+  gMC->Gsatt("GAP ","seen",1);
+  gMC->Gsatt("CSI ","seen",1);
+  gMC->Gsatt("GRID","seen",1);
   
   //
   geant3->Gdopt("hide", "on");
@@ -1638,7 +1641,7 @@ void AliRICHv1::DrawModule()
   geant3->SetClipBox(".");
   //  geant3->SetClipBox("*", 0, 2000, -2000, 2000, -2000, 2000);
   geant3->DefaultRange();
-  pMC->Gdraw("alic", 60, 50, 0, 10, 0, .03, .03);
+  gMC->Gdraw("alic", 60, 50, 0, 10, 0, .03, .03);
   geant3->Gdhead(1111, "Ring Imaging Cherenkov version 1");
   geant3->Gdman(16, 6, "MAN");
   geant3->Gdopt("hide", "off");
@@ -1697,8 +1700,7 @@ void AliRICHv1::CreateMaterials()
   
   Int_t *idtmed = fIdtmed->GetArray()-999;
   
-  AliMC* pMC = AliMC::GetMC();
-  TGeant3 *geant3 = (TGeant3*) pMC;
+  TGeant3 *geant3 = (TGeant3*) gMC;
 
   // --- Photon energy (GeV) 
   // --- Refraction indexes 
@@ -1812,21 +1814,21 @@ void AliRICHv1::CreateMaterials()
   
   //     Switch on delta-ray production in the methane and freon gaps 
   
-  pMC->Gstpar(idtmed[1002], "LOSS", 1.);
-  pMC->Gstpar(idtmed[1003], "LOSS", 1.);
-  pMC->Gstpar(idtmed[1004], "LOSS", 1.);
-  pMC->Gstpar(idtmed[1008], "LOSS", 1.);
-  pMC->Gstpar(idtmed[1005], "LOSS", 1.);
-  pMC->Gstpar(idtmed[1002], "HADR", 1.);
-  pMC->Gstpar(idtmed[1003], "HADR", 1.);
-  pMC->Gstpar(idtmed[1004], "HADR", 1.);
-  pMC->Gstpar(idtmed[1008], "HADR", 1.);
-  pMC->Gstpar(idtmed[1005], "HADR", 1.);
-  pMC->Gstpar(idtmed[1002], "DCAY", 1.);
-  pMC->Gstpar(idtmed[1003], "DCAY", 1.);
-  pMC->Gstpar(idtmed[1004], "DCAY", 1.);
-  pMC->Gstpar(idtmed[1008], "DCAY", 1.);
-  pMC->Gstpar(idtmed[1005], "DCAY", 1.);
+  gMC->Gstpar(idtmed[1002], "LOSS", 1.);
+  gMC->Gstpar(idtmed[1003], "LOSS", 1.);
+  gMC->Gstpar(idtmed[1004], "LOSS", 1.);
+  gMC->Gstpar(idtmed[1008], "LOSS", 1.);
+  gMC->Gstpar(idtmed[1005], "LOSS", 1.);
+  gMC->Gstpar(idtmed[1002], "HADR", 1.);
+  gMC->Gstpar(idtmed[1003], "HADR", 1.);
+  gMC->Gstpar(idtmed[1004], "HADR", 1.);
+  gMC->Gstpar(idtmed[1008], "HADR", 1.);
+  gMC->Gstpar(idtmed[1005], "HADR", 1.);
+  gMC->Gstpar(idtmed[1002], "DCAY", 1.);
+  gMC->Gstpar(idtmed[1003], "DCAY", 1.);
+  gMC->Gstpar(idtmed[1004], "DCAY", 1.);
+  gMC->Gstpar(idtmed[1008], "DCAY", 1.);
+  gMC->Gstpar(idtmed[1005], "DCAY", 1.);
   geant3->Gsckov(idtmed[1000], 14, ppckov, absco_methane, effic_all, rindex_methane);
   geant3->Gsckov(idtmed[1001], 14, ppckov, absco_methane, effic_all, rindex_methane);
   geant3->Gsckov(idtmed[1002], 14, ppckov, absco_quarz, effic_all,rindex_quarz);

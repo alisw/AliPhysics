@@ -109,8 +109,6 @@ void AliTRD::CreateMaterials()
   // Origin Y.Foka
   //
 
-  AliMC* pMC = AliMC::GetMC();
-  
   Int_t   ISXFLD = gAlice->Field()->Integ();
   Float_t SXMGMX = gAlice->Field()->Max();
   
@@ -184,9 +182,9 @@ void AliTRD::CreateMaterials()
   char namate[21];
   // Xe/CO2-mixture
   // Get properties of Xe 
-  pMC->Gfmate((*fIdmate)[4], namate, agm[0], zgm[0], d, radl, absl, buf, nbuf);
+  gMC->Gfmate((*fIdmate)[4], namate, agm[0], zgm[0], d, radl, absl, buf, nbuf);
   // Get properties of CO2 
-  pMC->Gfmate((*fIdmate)[8], namate, agm[1], zgm[1], d, radl, absl, buf, nbuf);
+  gMC->Gfmate((*fIdmate)[8], namate, agm[1], zgm[1], d, radl, absl, buf, nbuf);
   // Create gas mixture 
   wgm[0] = fxc;
   wgm[1] = 1. - fxc;
@@ -194,9 +192,9 @@ void AliTRD::CreateMaterials()
   AliMixture(10, "Gas mixture 1$", agm, zgm, dgm,  2, wgm);
   // Xe/Isobutane-mixture
   // Get properties of Xe 
-  pMC->Gfmate((*fIdmate)[4], namate, agm[0], zgm[0], d, radl, absl, buf, nbuf);
+  gMC->Gfmate((*fIdmate)[4], namate, agm[0], zgm[0], d, radl, absl, buf, nbuf);
   // Get properties of Isobutane
-  pMC->Gfmate((*fIdmate)[9], namate, agm[1], zgm[1], d, radl, absl, buf, nbuf);
+  gMC->Gfmate((*fIdmate)[9], namate, agm[1], zgm[1], d, radl, absl, buf, nbuf);
   // Create gas mixture 
   wgm[0] = fxi;
   wgm[1] = 1. - fxi;

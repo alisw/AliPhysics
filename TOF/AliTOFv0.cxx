@@ -48,8 +48,6 @@ void AliTOFv0::CreateGeometry()
   //End_Html
   //
 
-  AliMC* pMC = AliMC::GetMC();
-  
   Float_t fil_rich;
   Int_t lmax;
   Float_t phos_phi, zcor2, zcor3, ztof0, ztof1, ztof2;
@@ -92,9 +90,9 @@ void AliTOFv0::CreateGeometry()
   par[0] = rp1;
   par[1] = rp2;
   par[2] = zl / 2.;
-  pMC->Gsvolu("FBAR", "TUBE", idtmed[500], par, 3);
-  pMC->Gspos("FBAR", 1, "ALIC", 0., 0., 0., 0, "ONLY");
-  pMC->Gsatt("FBAR", "SEEN", 0);
+  gMC->Gsvolu("FBAR", "TUBE", idtmed[500], par, 3);
+  gMC->Gspos("FBAR", 1, "ALIC", 0., 0., 0., 0, "ONLY");
+  gMC->Gsatt("FBAR", "SEEN", 0);
   // First Block
   par[0] = (rp1+rp2-ysz)/2.;
   par[1] = (rp1+rp2+ysz)/2.;
@@ -102,24 +100,24 @@ void AliTOFv0::CreateGeometry()
   par[3] = 90. - fil_min;
   par[4] = 90. - fil_rich;
   fil0 = 180. - (par[3] + par[4]);
-  pMC->Gsvolu("FBT1", "TUBS", idtmed[507], par, 5);
+  gMC->Gsvolu("FBT1", "TUBS", idtmed[507], par, 5);
   AliMatrix(idrotm[1], 90., fil0, 90., fil0 + 90., 0., 0.);
-  pMC->Gspos("FBT1", 0, "FBAR", 0., 0., 0., 0, "ONLY");
-  pMC->Gspos("FBT1", 1, "FBAR", 0., 0., 0., idrotm[1], "ONLY");
+  gMC->Gspos("FBT1", 0, "FBAR", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("FBT1", 1, "FBAR", 0., 0., 0., idrotm[1], "ONLY");
   // --- Second block 
   par[2] = ztof1 / 2.;
   par[3] = 90. - fil_max;
   par[4] = 90. - fil_min;
-  pMC->Gsvolu("FBT2", "TUBS", idtmed[507], par, 5);
-  pMC->Gspos("FBT2", 0, "FBAR", 0., 0., zcor2, 0, "ONLY");
-  pMC->Gspos("FBT2", 1, "FBAR", 0., 0.,-zcor2, 0, "ONLY");
+  gMC->Gsvolu("FBT2", "TUBS", idtmed[507], par, 5);
+  gMC->Gspos("FBT2", 0, "FBAR", 0., 0., zcor2, 0, "ONLY");
+  gMC->Gspos("FBT2", 1, "FBAR", 0., 0.,-zcor2, 0, "ONLY");
   // --- Third block 
   par[2] = ztof2 / 2.;
   par[3] = 90. - fil_rich;
   par[4] = fil_rich + 90.;
-  pMC->Gsvolu("FBT3", "TUBS", idtmed[507], par, 5);
-  pMC->Gspos("FBT3", 0, "FBAR", 0., 0., zcor3, 0, "ONLY");
-  pMC->Gspos("FBT3", 1, "FBAR", 0., 0., -zcor3, 0, "ONLY");
+  gMC->Gsvolu("FBT3", "TUBS", idtmed[507], par, 5);
+  gMC->Gspos("FBT3", 0, "FBAR", 0., 0., zcor3, 0, "ONLY");
+  gMC->Gspos("FBT3", 1, "FBAR", 0., 0., -zcor3, 0, "ONLY");
 }
  
 //_____________________________________________________________________________
@@ -130,31 +128,29 @@ void AliTOFv0::DrawModule()
   // for versions 2 and 3
   //
 
-  AliMC* pMC = AliMC::GetMC();
-  
   // Set everything unseen
-  pMC->Gsatt("*", "seen", -1);
+  gMC->Gsatt("*", "seen", -1);
   // 
   // Set ALIC mother transparent
-  pMC->Gsatt("ALIC","SEEN",0);
+  gMC->Gsatt("ALIC","SEEN",0);
   //
   // Set the volumes visible
-  pMC->Gsatt("FBAR","SEEN",0);
-  pMC->Gsatt("FBT1","SEEN",1);
-  pMC->Gsatt("FBT2","SEEN",1);
-  pMC->Gsatt("FBT3","SEEN",1);
+  gMC->Gsatt("FBAR","SEEN",0);
+  gMC->Gsatt("FBT1","SEEN",1);
+  gMC->Gsatt("FBT2","SEEN",1);
+  gMC->Gsatt("FBT3","SEEN",1);
   //
-  pMC->Gdopt("hide", "on");
-  pMC->Gdopt("shad", "on");
-  pMC->Gsatt("*", "fill", 7);
+  gMC->Gdopt("hide", "on");
+  gMC->Gdopt("shad", "on");
+  gMC->Gsatt("*", "fill", 7);
   //
-  pMC->SetClipBox(".");
-  pMC->SetClipBox("*", 0, 1000, -1000, 1000, -1000, 1000);
-  pMC->DefaultRange();
-  pMC->Gdraw("alic", 40, 30, 0, 12, 9.5, .02, .02);
-  pMC->Gdhead(1111, "Time Of Flight");
-  pMC->Gdman(18, 4, "MAN");
-  pMC->Gdopt("hide","off");
+  gMC->SetClipBox(".");
+  gMC->SetClipBox("*", 0, 1000, -1000, 1000, -1000, 1000);
+  gMC->DefaultRange();
+  gMC->Gdraw("alic", 40, 30, 0, 12, 9.5, .02, .02);
+  gMC->Gdhead(1111, "Time Of Flight");
+  gMC->Gdman(18, 4, "MAN");
+  gMC->Gdopt("hide","off");
 }
 
 //_____________________________________________________________________________
@@ -173,11 +169,9 @@ void AliTOFv0::Init()
   // Initialise detector after that it has been built
   //
 
-  AliMC* pMC = AliMC::GetMC();
-  
   AliTOF::Init();
-  fIdFBT2=pMC->VolId("FBT2");
-  fIdFBT3=pMC->VolId("FBT3");
+  fIdFBT2=gMC->VolId("FBT2");
+  fIdFBT3=gMC->VolId("FBT3");
 }
  
 //_____________________________________________________________________________
@@ -190,22 +184,21 @@ void AliTOFv0::StepManager()
   Int_t copy, id;
   //
   // Get the pointer to the MonteCarlo
-  AliMC *pMC= AliMC::GetMC();
   Int_t *idtmed = fIdtmed->GetArray()-499;
-  if(pMC->GetMedium()==idtmed[510-1] && 
-     pMC->TrackEntering() && pMC->TrackCharge()
-     && (id=pMC->CurrentVol(0,copy))==fIdSens) {
+  if(gMC->GetMedium()==idtmed[510-1] && 
+     gMC->TrackEntering() && gMC->TrackCharge()
+     && (id=gMC->CurrentVol(0,copy))==fIdSens) {
     TClonesArray &lhits = *fHits;
     //
     // Record only charged tracks at entrance
     vol[2]=copy;
-    vol[1]=pMC->CurrentVolOff(1,0,copy);
+    vol[1]=gMC->CurrentVolOff(1,0,copy);
     if(id==fIdFBT2) copy+=2; else 
       if(id==fIdFBT2) copy+=4;
     vol[0]=1;
-    pMC->TrackPosition(hits);
-    pMC->TrackMomentum(&hits[3]);
-    hits[7]=pMC->TrackTime();
+    gMC->TrackPosition(hits);
+    gMC->TrackMomentum(&hits[3]);
+    hits[7]=gMC->TrackTime();
     new(lhits[fNhits++]) AliTOFhit(fIshunt,gAlice->CurrentTrack(),vol,hits);
   }
 }

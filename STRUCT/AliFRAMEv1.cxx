@@ -48,8 +48,7 @@ void AliFRAMEv1::CreateGeometry()
     <img src="picts/AliFRAMETree.gif">
   */
   //End_Html
-  AliMC* pMC = AliMC::GetMC();
-  
+
   Int_t *idtmed = fIdtmed->GetArray()-1199;
 
   Float_t dphi, dz_small, zpos, ddphi;
@@ -78,7 +77,7 @@ void AliFRAMEv1::CreateGeometry()
   par[0] = r_in;
   par[1] = r_ou;
   par[2] = z_ou;
-  pMC->Gsvolu("BFMO", "TUBE", idtmed[1214], par, 3);
+  gMC->Gsvolu("BFMO", "TUBE", idtmed[1214], par, 3);
   
   //     Rings perpendicular to the beam 
   
@@ -87,15 +86,15 @@ void AliFRAMEv1::CreateGeometry()
   par[0] = r_in;
   par[1] = r_ou;
   par[2] = dz;
-  pMC->Gsvolu("BRO1", "TUBE", idtmed[1218], par, 3);
+  gMC->Gsvolu("BRO1", "TUBE", idtmed[1218], par, 3);
   par[0] = r_in +dr;
   par[1] = r_ou -dr;
   par[2] = dz - dr;
-  pMC->Gsvolu("BRI1", "TUBE", idtmed[1214], par, 3);
-  pMC->Gspos("BRI1", 1, "BRO1", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("BRI1", "TUBE", idtmed[1214], par, 3);
+  gMC->Gspos("BRI1", 1, "BRO1", 0., 0., 0., 0, "ONLY");
   zpos = z_ou - dz;
-  pMC->Gspos("BRO1", 1, "BFMO", 0., 0.,-zpos, 0, "ONLY");
-  pMC->Gspos("BRO1", 2, "BFMO", 0., 0., zpos, 0, "ONLY");
+  gMC->Gspos("BRO1", 1, "BFMO", 0., 0.,-zpos, 0, "ONLY");
+  gMC->Gspos("BRO1", 2, "BFMO", 0., 0., zpos, 0, "ONLY");
   
   //     space for the HMPID 
   
@@ -104,15 +103,15 @@ void AliFRAMEv1::CreateGeometry()
   tspar[2] = dz;
   tspar[3] = -240.;
   tspar[4] = 60.;
-  pMC->Gsvolu("BRO2", "TUBS", idtmed[1218], tspar, 5);
+  gMC->Gsvolu("BRO2", "TUBS", idtmed[1218], tspar, 5);
   tspar[0] = r_in + dr;
   tspar[1] = r_ou - dr;
   tspar[2] = dz - dr;
-  pMC->Gsvolu("BRI2", "TUBS", idtmed[1214], tspar, 5);
-  pMC->Gspos("BRI2", 1, "BRO2", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("BRI2", "TUBS", idtmed[1214], tspar, 5);
+  gMC->Gspos("BRI2", 1, "BRO2", 0., 0., 0., 0, "ONLY");
   zpos = z_in + dz;
-  pMC->Gspos("BRO2", 1, "BFMO", 0., 0.,-zpos, 0, "ONLY");
-  pMC->Gspos("BRO2", 2, "BFMO", 0., 0., zpos, 0, "ONLY");
+  gMC->Gspos("BRO2", 1, "BFMO", 0., 0.,-zpos, 0, "ONLY");
+  gMC->Gspos("BRO2", 2, "BFMO", 0., 0., zpos, 0, "ONLY");
   
   
   
@@ -121,15 +120,15 @@ void AliFRAMEv1::CreateGeometry()
   tspar[2] = dz;
   tspar[3] = 60.;
   tspar[4] = 120.;
-  pMC->Gsvolu("BRO3", "TUBS", idtmed[1218], tspar, 5);
+  gMC->Gsvolu("BRO3", "TUBS", idtmed[1218], tspar, 5);
   tspar[0] = r_in + dr;
   tspar[1] = r_ou - dr;
   tspar[2] = dz - dr;
-  pMC->Gsvolu("BRI3", "TUBS", idtmed[1214], tspar, 5);
-  pMC->Gspos("BRI3", 1, "BRO3", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("BRI3", "TUBS", idtmed[1214], tspar, 5);
+  gMC->Gspos("BRI3", 1, "BRO3", 0., 0., 0., 0, "ONLY");
   zpos = 245.;
-  pMC->Gspos("BRO3", 1, "BFMO", 0., 0.,-zpos, 0, "ONLY");
-  pMC->Gspos("BRO3", 2, "BFMO", 0., 0., zpos, 0, "ONLY");
+  gMC->Gspos("BRO3", 1, "BFMO", 0., 0.,-zpos, 0, "ONLY");
+  gMC->Gspos("BRO3", 2, "BFMO", 0., 0., zpos, 0, "ONLY");
   
   //     longitudinal beams 
   
@@ -147,20 +146,20 @@ void AliFRAMEv1::CreateGeometry()
   
   tsparl[3] = -240.;
   tsparl[4] = 60.;
-  pMC->Gsvolu("BLO1", "TUBS", idtmed[1214], tsparl, 5);
-  pMC->Gsdvt("BLD1", "BLO1", 20., 2, idtmed[1214], 15);
+  gMC->Gsvolu("BLO1", "TUBS", idtmed[1214], tsparl, 5);
+  gMC->Gsdvt("BLD1", "BLO1", 20., 2, idtmed[1214], 15);
   
   //     central, leaving space for rich and phos 
   
   tsparl[2] = dz_long;
   tsparl[3] = -20.;
   tsparl[4] = 60.;
-  pMC->Gsvolu("BLO2", "TUBS", idtmed[1214], tsparl, 5);
-  pMC->Gsdvt("BLD2", "BLO2", 20., 2, idtmed[1214], 5);
+  gMC->Gsvolu("BLO2", "TUBS", idtmed[1214], tsparl, 5);
+  gMC->Gsdvt("BLD2", "BLO2", 20., 2, idtmed[1214], 5);
   tsparl[3] = 120.;
   tsparl[4] = 200.;
-  pMC->Gsvolu("BLO3", "TUBS", idtmed[1214], tsparl, 5);
-  pMC->Gsdvt("BLD3", "BLO3", 20., 2, idtmed[1214], 5);
+  gMC->Gsvolu("BLO3", "TUBS", idtmed[1214], tsparl, 5);
+  gMC->Gsdvt("BLD3", "BLO3", 20., 2, idtmed[1214], 5);
   
   //     real elements 
   
@@ -171,14 +170,14 @@ void AliFRAMEv1::CreateGeometry()
   tspar[2] = dz_small;
   tspar[3] = 10. - dphi;
   tspar[4] = 10.;
-  pMC->Gsvolu("BL01", "TUBS", idtmed[1218], tspar, 5);
+  gMC->Gsvolu("BL01", "TUBS", idtmed[1218], tspar, 5);
   
   tspar[0] = tsparl[0] + dr;
   tspar[1] = tsparl[1] - dr;
   tspar[3] = 10. - dphi + ddphi;
   tspar[4] = 10. - ddphi;
-  pMC->Gsvolu("BL02", "TUBS", idtmed[1214], tspar, 5);
-  pMC->Gspos("BL02", 1, "BL01", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("BL02", "TUBS", idtmed[1214], tspar, 5);
+  gMC->Gspos("BL02", 1, "BL01", 0., 0., 0., 0, "ONLY");
   
 
   tspar[0] = tsparl[0];
@@ -186,24 +185,24 @@ void AliFRAMEv1::CreateGeometry()
   tspar[2] = dz_long;
   tspar[3] = 10. - dphi;
   tspar[4] = 10.;
-  pMC->Gsvolu("BL11", "TUBS", idtmed[1218], tspar, 5);
+  gMC->Gsvolu("BL11", "TUBS", idtmed[1218], tspar, 5);
   
   tspar[0] = tsparl[0] + dr;
   tspar[1] = tsparl[1] - dr;
   tspar[3] = 10. - dphi + ddphi;
   tspar[4] = 10. - ddphi;
-  pMC->Gsvolu("BL12", "TUBS", idtmed[1214], tspar, 5);
-  pMC->Gspos("BL12", 1, "BL11", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("BL12", "TUBS", idtmed[1214], tspar, 5);
+  gMC->Gspos("BL12", 1, "BL11", 0., 0., 0., 0, "ONLY");
   
-  pMC->Gspos("BL01", 1, "BLD1", 0., 0., 0., 0, "ONLY");
-  pMC->Gspos("BL11", 1, "BLD2", 0., 0., 0., 0, "ONLY");
-  pMC->Gspos("BL11", 2, "BLD3", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("BL01", 1, "BLD1", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("BL11", 1, "BLD2", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("BL11", 2, "BLD3", 0., 0., 0., 0, "ONLY");
   
   zpos = z_in +2*dz + dz_small;
-  pMC->Gspos("BLO1", 1, "BFMO", 0., 0.,-zpos, 0, "ONLY");
-  pMC->Gspos("BLO1", 2, "BFMO", 0., 0., zpos, 0, "ONLY");
-  pMC->Gspos("BLO2", 1, "BFMO", 0., 0.,   0., 0, "ONLY");
-  pMC->Gspos("BLO3", 1, "BFMO", 0., 0.,   0., 0, "ONLY");
+  gMC->Gspos("BLO1", 1, "BFMO", 0., 0.,-zpos, 0, "ONLY");
+  gMC->Gspos("BLO1", 2, "BFMO", 0., 0., zpos, 0, "ONLY");
+  gMC->Gspos("BLO2", 1, "BFMO", 0., 0.,   0., 0, "ONLY");
+  gMC->Gspos("BLO3", 1, "BFMO", 0., 0.,   0., 0, "ONLY");
   
   //     PHI=60-120 (RICH) 
   
@@ -212,30 +211,30 @@ void AliFRAMEv1::CreateGeometry()
   tsparl[2] = (z_ou - z_ri -4*dz)/2;
   tsparl[3] = 60.;
   tsparl[4] = 120.;
-  pMC->Gsvolu("BLO4", "TUBS", idtmed[1214], tsparl, 5);
-  pMC->Gsdvt("BLD4", "BLO4", 20., 2, idtmed[1214], 3);
+  gMC->Gsvolu("BLO4", "TUBS", idtmed[1214], tsparl, 5);
+  gMC->Gsdvt("BLD4", "BLO4", 20., 2, idtmed[1214], 3);
   tspar[0] = tsparl[0];
   tspar[1] = tsparl[1];
   tspar[2] = tsparl[2];
   tspar[3] = 10. - dphi;
   tspar[4] = 10.;
-  pMC->Gsvolu("BL03", "TUBS", idtmed[1218], tspar, 5);
+  gMC->Gsvolu("BL03", "TUBS", idtmed[1218], tspar, 5);
   
   tspar[0] = tsparl[0] + dr;
   tspar[1] = tsparl[1] - dr;
   tspar[2] = tsparl[2];
   tspar[3] = 10. - dphi + ddphi;
   tspar[4] = 10. - ddphi;
-  pMC->Gsvolu("BL04", "TUBS", idtmed[1214], tspar, 5);
-  pMC->Gspos("BL04", 1, "BL03", 0., 0., 0., 0, "ONLY");
+  gMC->Gsvolu("BL04", "TUBS", idtmed[1214], tspar, 5);
+  gMC->Gspos("BL04", 1, "BL03", 0., 0., 0., 0, "ONLY");
   
-  pMC->Gspos("BL03", 1, "BLD4", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("BL03", 1, "BLD4", 0., 0., 0., 0, "ONLY");
   
-  pMC->Gspos("BLO4", 1, "BFMO", 0., 0., 293.125, 0, "ONLY");
-  pMC->Gspos("BLO4", 2, "BFMO", 0., 0.,-293.125, 0, "ONLY");
+  gMC->Gspos("BLO4", 1, "BFMO", 0., 0., 293.125, 0, "ONLY");
+  gMC->Gspos("BLO4", 2, "BFMO", 0., 0.,-293.125, 0, "ONLY");
   
-  pMC->Gspos("BFMO", 1, "ALIC", 0., 0., 0., 0, "ONLY");
-  pMC->Gsatt("BFMO", "SEEN", 0);
+  gMC->Gspos("BFMO", 1, "ALIC", 0., 0., 0., 0, "ONLY");
+  gMC->Gsatt("BFMO", "SEEN", 0);
 }
 
 //_____________________________________________________________________________
@@ -245,45 +244,43 @@ void AliFRAMEv1::DrawModule()
   // Draw a shaded view of the space frame
   //
 
-  AliMC* pMC = AliMC::GetMC();
-  
   // Set everything unseen
-  pMC->Gsatt("*", "seen", -1);
+  gMC->Gsatt("*", "seen", -1);
   // 
   // Set ALIC mother transparent
-  pMC->Gsatt("ALIC","SEEN",0);
+  gMC->Gsatt("ALIC","SEEN",0);
   //
   // Set the volumes visible
-  pMC->Gsatt("BFMO","seen",0);
-  pMC->Gsatt("BRO1","seen",1);
-  pMC->Gsatt("BRI1","seen",0);
-  pMC->Gsatt("BRO2","seen",1);
-  pMC->Gsatt("BRI2","seen",0);
-  pMC->Gsatt("BRO3","seen",1);
-  pMC->Gsatt("BRI3","seen",0);
-  pMC->Gsatt("BLO1","seen",0);
-  pMC->Gsatt("BLD1","seen",0);
-  pMC->Gsatt("BLO2","seen",0);
-  pMC->Gsatt("BLD2","seen",0);
-  pMC->Gsatt("BLO3","seen",0);
-  pMC->Gsatt("BLD3","seen",0);
-  pMC->Gsatt("BL01","seen",1);
-  pMC->Gsatt("BL02","seen",1);
-  pMC->Gsatt("BL11","seen",1);
-  pMC->Gsatt("BL12","seen",1);
-  pMC->Gsatt("BLO4","seen",0);
-  pMC->Gsatt("BLD4","seen",0);
-  pMC->Gsatt("BL03","seen",1);
-  pMC->Gsatt("BL04","seen",1);
+  gMC->Gsatt("BFMO","seen",0);
+  gMC->Gsatt("BRO1","seen",1);
+  gMC->Gsatt("BRI1","seen",0);
+  gMC->Gsatt("BRO2","seen",1);
+  gMC->Gsatt("BRI2","seen",0);
+  gMC->Gsatt("BRO3","seen",1);
+  gMC->Gsatt("BRI3","seen",0);
+  gMC->Gsatt("BLO1","seen",0);
+  gMC->Gsatt("BLD1","seen",0);
+  gMC->Gsatt("BLO2","seen",0);
+  gMC->Gsatt("BLD2","seen",0);
+  gMC->Gsatt("BLO3","seen",0);
+  gMC->Gsatt("BLD3","seen",0);
+  gMC->Gsatt("BL01","seen",1);
+  gMC->Gsatt("BL02","seen",1);
+  gMC->Gsatt("BL11","seen",1);
+  gMC->Gsatt("BL12","seen",1);
+  gMC->Gsatt("BLO4","seen",0);
+  gMC->Gsatt("BLD4","seen",0);
+  gMC->Gsatt("BL03","seen",1);
+  gMC->Gsatt("BL04","seen",1);
   //
-  pMC->Gdopt("hide", "on");
-  pMC->Gdopt("shad", "on");
-  pMC->Gsatt("*", "fill", 7);
-  pMC->SetClipBox(".");
-  pMC->DefaultRange();
-  pMC->Gdraw("alic", 40, 30, 0, 10, 10, .015, .015);
-  pMC->Gdhead(1111, "Space Frame");
-  pMC->Gdman(18, 4, "MAN");
+  gMC->Gdopt("hide", "on");
+  gMC->Gdopt("shad", "on");
+  gMC->Gsatt("*", "fill", 7);
+  gMC->SetClipBox(".");
+  gMC->DefaultRange();
+  gMC->Gdraw("alic", 40, 30, 0, 10, 10, .015, .015);
+  gMC->Gdhead(1111, "Space Frame");
+  gMC->Gdman(18, 4, "MAN");
 }
 
 //_____________________________________________________________________________
