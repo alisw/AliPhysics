@@ -30,7 +30,7 @@ public:
   Float_t  Calibrate(Int_t amp)const {return (amp - fA)/fB ; }
   Int_t    Digitize(Float_t Energy)const { return (Int_t ) ( fA + Energy*fB); }
   
-  void TestTowerID(void) ;
+  // void TestTowerID(void) ;
   virtual void  Exec(Option_t *option); 
   
   Float_t  GetPedestalParameter()const {return fA;}
@@ -52,10 +52,13 @@ private:
 private:
   Float_t fA ;              //Pedestal parameter
   Float_t fB ;              //Slope Digitizition parameters
-  Float_t fLayerRatio ;     //Factor that takes into account difference in light collection between 2 first layers and rest of layers
+  Float_t fPhotonElectronFactor ;  // number of photon electrons per GeV
+  // should be calculated independently for each layer as : 
+  // LightYield*LightCollectionEfficiency*LightAttenuation*APDPhotoElectronEfficiency*APDGain
 
   Int_t   fNevents ;        // Number of events to digitize
-  Float_t fPrimThreshold ;  // To store primary if Elos > threshold
+  Float_t fTowerPrimThreshold ;  // To store primary in Tower if Elos > threshold
+  Float_t fPreShowerPrimThreshold ;  // To store primary if Pre Shower Elos > threshold
   TString fSDigitsTitle ;   // title of SDigits branch
   TString fHeadersFile ;    //input file
   Bool_t         fIsInitialized ; 
