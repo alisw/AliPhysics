@@ -5,27 +5,13 @@
 # Author: Anders Vestbo   #                    
 ###########################
 
-ifndef USEPACKAGE
-#USEPACKAGE = ROOT
-USEPACKAGE = ALIROOT
-endif
-
-#used if USEPACKAGE=anything else
-DEFSTR = -Dno_root
-
-CXX         = g++
-LD          = g++
-CXXFLAGS    = -O2 -Wall -fPIC
-LDFLAGS     = -O2
-SOFLAGS     = -shared
-
 ifndef TOPDIR
-TOPDIR = $(HOME)/level3code
+TOPDIR = `pwd`/..
 endif
-ifndef LIBDIR
-LIBDIR = $(LEVEL3)/lib_$(USERNAME)
-endif
-OBJDIR = lib
+
+include $(TOPDIR)/Makefile.conf
+
+DEFSTR = -Dno_root
 
 ifeq ($(USEPACKAGE),ROOT) 
 INCLUDES = -I$(ROOTSYS)/include -I$(TOPDIR)/hough -I$(TOPDIR)/src -I$(TOPDIR)/comp
@@ -38,10 +24,10 @@ INCLUDES = -I$(ROOTSYS)/include -I$(TOPDIR)/hough -I$(TOPDIR)/src -I$(TOPDIR)/co
 DEFSTR = -Duse_aliroot
 endif
 
-#Save the particle id's
-#DEFSTR += -Ddo_mc
+ifdef DO_MC
+DEFSTR += -Ddo_mc
+endif
 
-#Use logging classes
 ifndef NOLOGGING
 DEFSTR += -Duse_logging
 endif

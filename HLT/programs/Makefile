@@ -5,25 +5,13 @@
 # Author: Constantin Loizides #                    
 ###############################
 
-ifndef USEPACKAGE
-#USEPACKAGE = ROOT
-USEPACKAGE = ALIROOT
-endif
-
-#used if USEPACKAGE=anything else
-DEFSTR = -Dno_root
-
-CXX      = g++
-LD       = g++
-CXXFLAGS = -O2 -Wall
-LDFLAGS  = -O2
-
 ifndef TOPDIR
-TOPDIR = $(HOME)/level3code
+TOPDIR = `pwd`/..
 endif
-ifndef LIBDIR
-LIBDIR = $(LEVEL3)/lib_$(USERNAME)
-endif
+
+include $(TOPDIR)/Makefile.conf
+
+DEFSTR = -Dno_root
 
 ROOTCFLAGS := $(shell root-config --cflags)
 ROOTLIBS   := $(shell root-config --libs)
