@@ -3,6 +3,7 @@
 
 #include <Rtypes.h>
 
+const Int_t NPatches = 6;
 const Int_t NRowsSlice = 175;
 const Int_t NRows[6][2] = {{0,31},{32,63},{64,91},{92,119},{120,143},{144,175}};
 //const Int_t NRows[5][2] = {{ 0, 45},{46,77},{78,109},{110,141},{142,173}};
