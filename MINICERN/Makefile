@@ -286,7 +286,11 @@ OBJS	= $(FOBJ) $(COBJ) $(CXXOBJ)
 SLIBRARY	= $(ALICE_ROOT)/lib/libminicern.$(SL)
 ALIBRARY	= $(ALICE_ROOT)/lib/libminicern.a
 
-default:	$(SLIBRARY)
+ifeq ($(PLATFORM),alpha)
+	default:	$(ALIBRARY)
+else
+	default:	$(SLIBRARY)
+endif
 
 $(ALICE_ROOT)/lib/libminicern.$(SL):  $(OBJS)
 $(ALICE_ROOT)/lib/libminicern.a:  $(OBJS)
