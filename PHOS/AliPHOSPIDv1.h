@@ -46,16 +46,17 @@ class  AliPHOSPIDv1 : public AliPHOSPID {
   //Get files that contain the PCA
   const TString GetPrincipalFile( )const {return fFileName ;}
   const TString GetPrincipalFilePar( )const {return fFileNamePar ;}
-  
+
+  //To turn on or off the Pi0 analysis
+  const Bool_t GetPi0Analysis(){return fPi0Analysis;}
+  void  SetPi0Analysis(Bool_t turnonoff){ fPi0Analysis = turnonoff; }
   // Set and Get all parameters necessary in the PID depending on the 
-  // custer energy and Purity-Efficiency point (possible options "HIGH 
-  // EFFICIENCY" "MEDIUM EFFICIENCY" "LOW EFFICIENCY" and 3 more options 
-  // changing EFFICIENCY by PURITY)
-  void SetCpvtoEmcDistanceCut(Float_t Cluster_En, TString Eff_Pur, Float_t cut)  ; 
-  void SetTimeGate(Float_t Cluster_En, TString Eff_Pur, Float_t gate)  ; 
+  // custer energy and Purity-Efficiency point 
+  void SetCpvtoEmcDistanceCutParameters(Float_t Cluster_En, Int_t Eff_Pur, TString Axis,Float_t cut)  ; 
+  void SetTimeGate(Int_t Eff_Pur, Float_t gate)  ; 
  
-  const Double_t GetCpvtoEmcDistanceCut(const Float_t Cluster_En, const TString Eff_Pur) const ;
-  const Double_t GetTimeGate(const Float_t Cluster_En, const TString Eff_Pur)  const;
+  const Float_t GetCpvtoEmcDistanceCut(const Float_t e, const TString Axis ) const ;
+  const Double_t GetTimeGate(const Int_t Eff_Pur)  const;
  
   void SetEllipseParameter(TString Param, Int_t i, Double_t par)  ;    
   const Double_t GetParameterToCalculateEllipse(const TString Param, const Int_t i) const  ;     
@@ -78,13 +79,10 @@ class  AliPHOSPIDv1 : public AliPHOSPID {
   void     MakeRecParticles(void ) ;
   // Relative Distance CPV-EMC
   const Float_t  GetDistance(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv, Option_t * Axis)const ; 
-  const Int_t    GetPrincipalSign(const Double_t* P, const Int_t eff_pur, const Float_t E)const ; //Principal cut
+  const Int_t    GetCPVBit(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv,const Int_t EffPur, const Float_t e) const;
+  const Int_t    GetPrincipalBit(const Double_t* P, const Int_t eff_pur, const Float_t E)const ; //Principal cut
   TVector3 GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv)const ;
   void     PrintRecParticles(Option_t * option) ;
-  // Gives in wich cluster energy range is the event
-  const Int_t     GetClusterOption(const Float_t Cluster_En) const;
-  // Gives the Efficiency-Purity point.
-  const Int_t    GetEffPurOption(const TString Eff_Pur)const ;
   virtual  void WriteRecParticles(Int_t event) ; 
   void     SetParameters() ; //Fills the matrix of parameters
   
@@ -106,6 +104,8 @@ class  AliPHOSPIDv1 : public AliPHOSPID {
   //  AliPHOSClusterizer *       fClusterizer ;       //! clusterizer
   //  AliPHOSTrackSegmentMaker * fTSMaker ;           //! track segment maker
 
+
+  Bool_t                     fPi0Analysis;        //! Pi0 analysis on or off  
   TPrincipal *               fPrincipal ;         //! TPrincipal from pca file 
   Double_t *                 fX ;                 //! Principal data 
   Double_t *                 fP ;                 //! Principal eigenvalues

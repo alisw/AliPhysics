@@ -23,9 +23,9 @@
 //     - PCA: Principal Components Analysis..
 // The identified particle has an identification number corresponding 
 // to a 9 bits number:
-//     -Bit 0 to 2: bit set if RCPV > fCpvEmcDistance (each bit corresponds
+//     -Bit 0 to 2: bit set if RCPV > CpvEmcDistance (each bit corresponds
 //      to a different efficiency-purity point of the photon identification) 
-//     -Bit 3 to 5: bit set if TOF  < fTimeGate (each bit corresponds
+//     -Bit 3 to 5: bit set if TOF  < TimeGate (each bit corresponds
 //      to a different efficiency-purity point of the photon identification) 
 //     -Bit 6 to 9: bit set if Principal Components are 
 //      inside an ellipse defined by the parameters a, b, c, x0 and y0.
@@ -33,17 +33,17 @@
 //      photon identification)
 //      The PCA (Principal components analysis) needs a file that contains
 //      a previous analysis of the correlations between the particles. This 
-//      file is $ALICE_ROOT/PHOS/PCA8pa15_0.5-100.root. Analysis don for 
+//      file is $ALICE_ROOT/PHOS/PCA8pa15_0.5-100.root. Analysis done for 
 //      energies between 0.5 and 100 GeV.
 //      A calibrated energy is calculated. The energy of the reconstructed
 //      cluster is corrected with the formula A + B * E  + C * E^2, whose 
-//      parameters where obtained thourgh the study of the reconstructed 
+//      parameters where obtained through the study of the reconstructed 
 //      energy distribution of monoenergetic photons. 
 //
-//      All the parameters (RCPV(6 rows-3 columns),TOF(6r-3c),PCA(5r-4c) 
+//      All the parameters (RCPV(2 rows-3 columns),TOF(1r-3c),PCA(5r-4c) 
 //      and calibration(1r-3c))are stored in a file called 
 //      $ALICE_ROOT/PHOS/Parameters.dat. Each time that AliPHOSPIDv1 is 
-//      initialized, this parameters are copied to a Matrix (18,4), a 
+//      initialized, this parameters are copied to a Matrix (9,4), a 
 //      TMatrixD object.  
 //
 // use case:
@@ -71,7 +71,7 @@
 //            The way of using the PCA has changed. Instead of 2
 //            files with the PCA, each one with different energy ranges 
 //            of application, we use the wide one (0.5-100 GeV), and instead
-//            of fixing 3 elipses for different ranges of energy, it has been
+//            of fixing 3 ellipses for different ranges of energy, it has been
 //            studied the dependency of the ellipses parameters with the 
 //            energy, and they are implemented in the code as a funtion 
 //            of the energy. 
@@ -142,9 +142,6 @@ AliPHOSPIDv1::~AliPHOSPIDv1()
 
   delete [] fX ; // Principal input 
   delete [] fP ; // Principal components
-//  delete fParameters ; // Matrix of Parameters 
-
- 
 
   if (!fDefaultInit) {  
 //    AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
@@ -247,39 +244,38 @@ void AliPHOSPIDv1::InitParameters()
   pidName.Append(":") ; 
   pidName.Append(Version()) ; 
   SetName(pidName) ;
+  fPi0Analysis = kFALSE ;
   SetParameters() ; // fill the parameters matrix from parameters file
 }
 
 //____________________________________________________________________________
-const Double_t  AliPHOSPIDv1::GetCpvtoEmcDistanceCut(const Float_t Cluster_En, const TString Eff_Pur) const
+const Float_t  AliPHOSPIDv1::GetCpvtoEmcDistanceCut(const Float_t e, const TString Axis) const
 {
-  // Get CpvtoEmcDistanceCut parameter depending on the cluster energy and 
-  // Purity-Efficiency point (possible options "HIGH EFFICIENCY" 
-  // "MEDIUM EFFICIENCY" "LOW EFFICIENCY" and 3 more options changing 
-  // EFFICIENCY by PURITY)
-  
-  Int_t eff_pur = GetEffPurOption(Eff_Pur);
-  Int_t cluster = GetClusterOption(Cluster_En) ;
-  if((cluster!= -1)&&(eff_pur != -1))
-    return (*fParameters)(cluster,eff_pur) ;
+  // Get CpvtoEmcDistance Cut depending on the cluster energy, axis and 
+  // Purity-Efficiency point 
+
+  Int_t i = -1;
+  if(Axis.Contains("X"))i = 0;
+  else if(Axis.Contains("Z"))i = 1;
   else
-    return 0.0;
+    Error("GetCpvtoEmcDistanceCut"," Invalid axis option ");
+   
+  Float_t a = (*fParameters)(i,0) ;
+  Float_t b = (*fParameters)(i,1) ;
+  Float_t c = (*fParameters)(i,2) ;
+
+  Float_t sig = a + TMath::Exp(b-c*e);
+  return sig;
 }
 //____________________________________________________________________________
 
-const Double_t  AliPHOSPIDv1::GetTimeGate(const Float_t Cluster_En, const TString Eff_Pur) const
+const Double_t  AliPHOSPIDv1::GetTimeGate(const Int_t Eff_Pur) const
 {
-  // Get TimeGate parameter depending on the cluster energy and 
-  // Purity-Efficiency point (possible options "HIGH EFFICIENCY" 
-  // "MEDIUM EFFICIENCY" "LOW EFFICIENCY" and 3 more options changing 
-  // EFFICIENCY by PURITY)
+  // Get TimeGate parameter depending on Purity-Efficiency point 
  
-  Int_t eff_pur = GetEffPurOption(Eff_Pur);
-  Int_t cluster = GetClusterOption(Cluster_En) ;
-  if((cluster!= -1)&&(eff_pur != -1))
-    return (*fParameters)(cluster+6,eff_pur) ; 
-  else
-    return 0.0;
+   if(Eff_Pur>2 || Eff_Pur<0)
+    Error("GetTimeGate","Invalid Efficiency-Purity choice %d",Eff_Pur);
+    return (*fParameters)(2,Eff_Pur) ; 
 
 }
 //_____________________________________________________________________________
@@ -310,6 +306,24 @@ const Float_t  AliPHOSPIDv1::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSRecPoin
   }
   return 100000000 ;
 }
+//____________________________________________________________________________
+const Int_t  AliPHOSPIDv1::GetCPVBit(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cpv,const Int_t EffPur, const Float_t e) const
+{
+  if(EffPur>2 || EffPur<0)
+    Error("GetCPVBit","Invalid Efficiency-Purity choice %d",EffPur);
+  
+  Float_t sigX = GetCpvtoEmcDistanceCut(e,"X");
+  Float_t sigZ = GetCpvtoEmcDistanceCut(e,"Z");
+  
+  Float_t deltaX = TMath::Abs(GetDistance(emc, cpv,  "X"));
+  Float_t deltaZ = TMath::Abs(GetDistance(emc, cpv,  "Z"));
+       
+  if((deltaX>sigX*(EffPur+1))|(deltaZ>sigZ*(EffPur+1)))
+    return 1;//Neutral
+  else
+    return 0;//Charged
+  
+}
 
 //____________________________________________________________________________
 const Double_t  AliPHOSPIDv1::GetCalibratedEnergy(const Float_t e) const
@@ -322,13 +336,13 @@ const Double_t  AliPHOSPIDv1::GetCalibratedEnergy(const Float_t e) const
  
   Double_t p[]={0.,0.,0.};
   Int_t i;
-  for(i=0;i<3;i++) p[i]= (*fParameters)(17,i);
+  for(i=0;i<3;i++) p[i]= (*fParameters)(8,i);
   Double_t  enerec = p[0] +  p[1]* e+ p[2] * e * e;
   return enerec ;
 
 }
 //____________________________________________________________________________
-const Int_t  AliPHOSPIDv1::GetPrincipalSign(const Double_t* P,const Int_t eff_pur, const Float_t E)const
+const Int_t  AliPHOSPIDv1::GetPrincipalBit(const Double_t* P,const Int_t eff_pur, const Float_t E)const
 {
   //Is the particle inside de PCA ellipse?
 
@@ -354,33 +368,31 @@ const Int_t  AliPHOSPIDv1::GetPrincipalSign(const Double_t* P,const Int_t eff_pu
 }
 
 //_____________________________________________________________________________
-void  AliPHOSPIDv1::SetCpvtoEmcDistanceCut(Float_t Cluster_En, TString Eff_Pur, Float_t cut) 
+void  AliPHOSPIDv1::SetCpvtoEmcDistanceCutParameters(Float_t e, Int_t Eff_Pur, TString Axis,Float_t cut) 
 {
+  // Set the parameters to calculate Cpvto EmcDistanceCut depending on the cluster energy and 
+  // Purity-Efficiency point 
 
-  // Set the parameter Cpvto EmcDistanceCut depending on the cluster energy and 
-  // Purity-Efficiency point (possible options "HIGH EFFICIENCY" 
-  // "MEDIUM EFFICIENCY" "LOW EFFICIENCY" and 3 more options changing 
-  // EFFICIENCY by PURITY)
+  if(Eff_Pur>2 || Eff_Pur<0)
+     Error("SetCpvtoEmcDistanceCutParameters","Invalid Efficiency-Purity choice %d",Eff_Pur);
 
-
-  Int_t eff_pur = GetEffPurOption(Eff_Pur);
-  Int_t cluster = GetClusterOption(Cluster_En) ;
-  if((cluster!= -1)&&(eff_pur != -1))
-    (*fParameters)(cluster,eff_pur) = cut ;
+  Int_t i = -1;
+  if(Axis.Contains("X"))i = 0;
+  else if(Axis.Contains("Z"))i = 1;
+  else
+    Error("SetCpvtoEmcDistanceCutParameters"," Invalid axis option");
+  
+  (*fParameters)(i,Eff_Pur) = cut ;
 }
 //_____________________________________________________________________________
-void  AliPHOSPIDv1::SetTimeGate(Float_t Cluster_En, TString Eff_Pur, Float_t gate) 
+void  AliPHOSPIDv1::SetTimeGate(Int_t Eff_Pur, Float_t gate) 
 {
-
   // Set the parameter TimeGate depending on the cluster energy and 
-  // Purity-Efficiency point (possible options "HIGH EFFICIENCY" 
-  // "MEDIUM EFFICIENCY" "LOW EFFICIENCY" and 3 more options changing 
-  // EFFICIENCY by PURITY)
-    
-  Int_t eff_pur = GetEffPurOption(Eff_Pur);
-  Int_t cluster = GetClusterOption(Cluster_En) ;
-  if((cluster!= -1)&&(eff_pur != -1))
-    (*fParameters)(cluster+6,eff_pur) = gate ;
+  // Purity-Efficiency point 
+  if(Eff_Pur>2 || Eff_Pur<0)
+    Error("SetTimeGate","Invalid Efficiency-Purity choice %d",Eff_Pur);
+  
+    (*fParameters)(2,Eff_Pur)= gate ; 
 } 
 //_____________________________________________________________________________
 void  AliPHOSPIDv1::SetParameters() 
@@ -390,91 +402,54 @@ void  AliPHOSPIDv1::SetParameters()
   fX         = new double[7]; // Data for the PCA 
   fP         = new double[7]; // Eigenvalues of the PCA
   
-  // Open principal and parameters files to be used
+  // Open principal file 
   
-  fFileName  = "$ALICE_ROOT/PHOS/PCA8pa15_0.5-100.root" ;
-  fFileNamePar = gSystem->ExpandPathName("$ALICE_ROOT/PHOS/Parameters.dat"); 
+  fFileName  = "$ALICE_ROOT/PHOS/PCA8pa15_0.5-100.root" ; 
   TFile f( fFileName.Data(), "read" ) ;
   fPrincipal = dynamic_cast<TPrincipal*> (f.Get("principal")) ; 
   f.Close() ; 
   
-  // Initialization of the Parameters matrix. In the File Parameters.dat
-  // are all the parameters. These are introduced in a matrix of 18x4  
+  // Open parameters file and initialization of the Parameters matrix. 
+  // In the File Parameters.dat are all the parameters. These are introduced 
+  // in a matrix of 9x4  
   // 
   // All the parameters defined in this file are, in order of row: 
-  // CpvtoEmcDistanceCut (6 rows, each one depends on the energy range of the 
-  // particle, and 3 columns, each one depending on the efficiency-purity 
-  // point), TimeGate (the same) and the parameters of the functions that 
+  // -CpvtoEmcDistanceCut (2 row (x and z) and 3 columns, each one depending 
+  // on the parameter of the funtion that sets the cut in x or z.   
+  // -TimeGate, 1 row and 3 columns (3 efficiency-purty cuts) 
+  // -PCA, parameters of the functions that 
   // calculate the ellipse parameters, x0,y0,a, b, c. These 5 parameters 
-  // (5 rows) depend on 4 parameters (columns). Finally there is a row with 
-  // the energy calibration parameters, 3 parameters. 
+  // (5 rows) depend on 4 parameters (columns). 
+  // -Finally there is a row with the energy calibration parameters, 
+  // 3 parameters. 
+
+  fFileNamePar = gSystem->ExpandPathName("$ALICE_ROOT/PHOS/Parameters.dat");
+  fParameters = new TMatrixD(9,4) ;
   
-  fParameters = new TMatrixD(18,4) ;
-  
-  ifstream paramFile(fFileNamePar) ; 
-  Int_t h,n;
-  for(h = 0; h< 18; h++){
-    for(n = 0; n< 4; n++){
-      paramFile >> (*fParameters)(h,n) ;
-    }
+  FILE *par = fopen(fFileNamePar,"r");
+  for(int i = 0;i<9;i++){
+    fscanf(par, "%lf %lf %lf %lf", &(*fParameters)(i,0), 
+	   &(*fParameters)(i,1), 
+	   &(*fParameters)(i,2), &(*fParameters)(i,3));
   }
-  paramFile.close();
+  fclose(par);
+   //fParameters->Print();
 }
-//_____________________________________________________________________________
-const Int_t  AliPHOSPIDv1::GetClusterOption(const Float_t Cluster_En) const
-{
-  // Gives the cluster energy range, for each range there is associated a TOF or RCPV
-  // parameter.
-  Int_t cluster = -1;
-  if((Cluster_En > 0.0 )&&(Cluster_En <= 2.0 )) cluster = 0 ;
-  if((Cluster_En > 2.0 )&&(Cluster_En <= 5.0 )) cluster = 1 ;
-  if((Cluster_En > 5.0 )&&(Cluster_En <= 10.0)) cluster = 2 ;
-  if((Cluster_En > 10.0)&&(Cluster_En <= 20.0)) cluster = 3 ;
-  if((Cluster_En > 20.0)&&(Cluster_En <= 30.0)) cluster = 4 ;
-  if( Cluster_En > 30.0)                        cluster = 5 ;
-  
-  return cluster;
-}
-//____________________________________________________________________________
-const Int_t  AliPHOSPIDv1::GetEffPurOption(const TString Eff_Pur) const
-{
 
-  // Looks for the Purity-Efficiency point (possible options "HIGH EFFICIENCY" 
-  // "MEDIUM EFFICIENCY" "LOW EFFICIENCY" and 3 more options changing 
-  // EFFICIENCY by PURITY)
 
-  Int_t eff_pur = -1 ;
-
-  if(Eff_Pur.Contains("HIGH EFFICIENCY") ||Eff_Pur.Contains("LOW PURITY") )
-    eff_pur = 0 ;
-  else if(Eff_Pur.Contains("MEDIUM EFFICIENCY") ||Eff_Pur.Contains("MEDIUM PURITY") ) 
-    eff_pur = 1 ;
-  else if(Eff_Pur.Contains("LOW EFFICIENCY")||Eff_Pur.Contains("HIGH PURITY") ) 
-    eff_pur = 2 ;
-  else{
-    eff_pur = -1;
-    TString message ; 
-    message  = "Invalid Efficiency-Purity option\n";
-    message += "Possible options: HIGH EFFICIENCY =    LOW PURITY\n" ;
-    message += "                MEDIUM EFFICIENCY = MEDIUM PURITY\n" ;
-    message += "                   LOW EFFICIENCY =   HIGH PURITY\n" ;
-  }
-
-  return eff_pur;
-}
 //________________________________________________________________________
 void  AliPHOSPIDv1::SetEllipseParameter(TString Param, Int_t i, Double_t par) 
 {  
   // Set the parameter "i" that is needed to calculate the ellipse 
   // parameter "Param".
-
+  
   Int_t p= -1;
   
-  if(Param.Contains("a"))p=12; 
-  if(Param.Contains("b"))p=13; 
-  if(Param.Contains("c"))p=14; 
-  if(Param.Contains("x0"))p=15; 
-  if(Param.Contains("y0"))p=16;
+  if(Param.Contains("a")) p=3; 
+  if(Param.Contains("b")) p=4; 
+  if(Param.Contains("c")) p=5; 
+  if(Param.Contains("x0"))p=6; 
+  if(Param.Contains("y0"))p=7;
   if((i>4)||(i<0))
     Error("SetEllipseParameter", "No parameter with index %d", i) ; 
   else if(p==-1)
@@ -491,11 +466,11 @@ const Double_t  AliPHOSPIDv1::GetParameterToCalculateEllipse(const TString Param
   Int_t p= -1;
   Double_t par = -1;
 
-  if(Param.Contains("a"))p=12; 
-  if(Param.Contains("b"))p=13; 
-  if(Param.Contains("c"))p=14; 
-  if(Param.Contains("x0"))p=15; 
-  if(Param.Contains("y0"))p=16;
+  if(Param.Contains("a")) p=3; 
+  if(Param.Contains("b")) p=4; 
+  if(Param.Contains("c")) p=5; 
+  if(Param.Contains("x0"))p=6; 
+  if(Param.Contains("y0"))p=7;
 
   if((i>4)||(i<0))
     Error("GetParameterToCalculateEllipse", "No parameter with index", i) ; 
@@ -515,35 +490,37 @@ void  AliPHOSPIDv1::SetCalibrationParameter(Int_t i,Double_t param)
 //____________________________________________________________________________
 const Double_t  AliPHOSPIDv1::GetCalibrationParameter(const Int_t i) const 
 {
-  Float_t param = (*fParameters)(17,i);
+  Float_t param = (*fParameters)(8,i);
   return param;
 }
 //____________________________________________________________________________
 const Double_t  AliPHOSPIDv1::GetEllipseParameter(const TString Param,Float_t E) const 
 {
+  // Calculates the parameter Param of the ellipse
+  
   Double_t p[4]={0.,0.,0.,0.};
   Double_t value = 0.0;
   Int_t i;
 
   if(Param.Contains("a")){
-    for(i=0;i<4;i++)p[i]=(*fParameters)(12,i);
+    for(i=0;i<4;i++)p[i]=(*fParameters)(3,i);
     if(E>70.)E=70.;
   }
   
   if(Param.Contains("b")){
-    for(i=0;i<4;i++)p[i]=(*fParameters)(13,i);
+    for(i=0;i<4;i++)p[i]=(*fParameters)(4,i);
     if(E>70.)E=70.;
   }
   
   if(Param.Contains("c"))
-    for(i=0;i<4;i++)p[i]=(*fParameters)(14,i);
+    for(i=0;i<4;i++)p[i]=(*fParameters)(5,i);
   
   if(Param.Contains("x0")){
-    for(i=0;i<4;i++)p[i]=(*fParameters)(15,i);
+    for(i=0;i<4;i++)p[i]=(*fParameters)(6,i);
     if(E<1.)E=1.1;
   }
   if(Param.Contains("y0"))
-    for(i=0;i<4;i++)p[i]=(*fParameters)(16,i);
+    for(i=0;i<4;i++)p[i]=(*fParameters)(7,i);
   
   value = p[0]/TMath::Sqrt(E)+p[1]*E+p[2]*E*E+p[3];
   return value;
@@ -640,7 +617,6 @@ void  AliPHOSPIDv1::MakeRecParticles(){
   }
   TClonesArray * recParticles  = gime->RecParticles() ; 
   recParticles->Clear();
- 
 
   TIter next(trackSegments) ; 
   AliPHOSTrackSegment * ts ; 
@@ -669,21 +645,21 @@ void  AliPHOSPIDv1::MakeRecParticles(){
     if (!emc) {
       Fatal("MakeRecParticles", "-> emc(%d) = %d", ts->GetEmcIndex(), emc ) ;
     }
-    Float_t    e = emc->GetEnergy() ;   
-    Int_t cluster = GetClusterOption(e) ;// Gives value to cluster that defines the energy range parameter to be used in de RCPV, TOF and used in the PCA.
-    if(cluster== -1) continue ;
 
+    Float_t    e = emc->GetEnergy() ;   
+    
     Float_t  lambda[2] ;
     emc->GetElipsAxis(lambda) ;
     
     if((lambda[0]>0.01) && (lambda[1]>0.01)){
       // Looking PCA. Define and calculate the data (X),
-      // introduce in the function 
-      // X2P that gives the components (P).  
+      // introduce in the function X2P that gives the components (P).  
+
       Float_t  Spher = 0. ;
       Float_t  Emaxdtotal = 0. ; 
       
-      if((lambda[0]+lambda[1])!=0) Spher=fabs(lambda[0]-lambda[1])/(lambda[0]+lambda[1]); 
+      if((lambda[0]+lambda[1])!=0) 
+	Spher=fabs(lambda[0]-lambda[1])/(lambda[0]+lambda[1]); 
       
       Emaxdtotal=emc->GetMaximalEnergy()/emc->GetEnergy(); 
       
@@ -704,25 +680,25 @@ void  AliPHOSPIDv1::MakeRecParticles(){
     
     Float_t time =emc->GetTime() ;
     
-    // Loop of Efficiency-Purity (the 3 points of purity or efficiency are taken 
-    // into account to set the particle identification)
+    // Loop of Efficiency-Purity (the 3 points of purity or efficiency 
+    // are taken into account to set the particle identification)
     for(Int_t eff_pur = 0; eff_pur < 3 ; eff_pur++){
       
-      // Looking at the CPV detector. If RCPV greater than CpvEmcDistance, 1st, 
-      // 2nd or 3rd bit (depending on the efficiency-purity point )is set to 1 . 
-      
-      if(GetDistance(emc, cpv,  "R") > (*fParameters)(cluster,eff_pur) )  
+      // Looking at the CPV detector. If RCPV greater than CpvEmcDistance, 
+      // 1st,2nd or 3rd bit (depending on the efficiency-purity point )
+      // is set to 1
+      if(GetCPVBit(emc, cpv, eff_pur,e) == 1 )  
 	rp->SetPIDBit(eff_pur) ;
       
       // Looking the TOF. If TOF smaller than gate,  4th, 5th or 6th 
       // bit (depending on the efficiency-purity point )is set to 1             
-      if(time< (*fParameters)(cluster+6,eff_pur)) {
+      if(time< (*fParameters)(2,eff_pur)) {
 	rp->SetPIDBit(eff_pur+3) ;		    
       }
       
       //If we are inside the ellipse, 7th, 8th or 9th 
       // bit (depending on the efficiency-purity point )is set to 1 
-      if(GetPrincipalSign(fP,eff_pur,e) == 1) 
+      if(GetPrincipalBit(fP,eff_pur,e) == 1) 
 	rp->SetPIDBit(eff_pur+6) ;
     }
       
@@ -748,14 +724,15 @@ void  AliPHOSPIDv1::MakeRecParticles(){
 void  AliPHOSPIDv1:: Print()
 {
   // Print the parameters used for the particle type identification
+
   TString message ; 
     message  = "\n=============== AliPHOSPID1 ================\n" ;
     message += "Making PID\n";
     message += "    Pricipal analysis file from 0.5 to 100 %s\n" ; 
     message += "    Name of parameters file     %s\n" ;
-    message += "    Matrix of Parameters: 18x4\n" ;
-    message += "        RCPV 6x3 [High Eff-Low Pur,Medium Eff-Pur, Low Eff-High Pur]\n" ;
-    message += "        TOF  6x3 [High Eff-Low Pur,Medium Eff-Pur, Low Eff-High Pur]\n" ;
+    message += "    Matrix of Parameters: 9x4\n" ;
+    message += "        RCPV 2x3 rows x and z, columns function cut parameters\n" ;
+    message += "        TOF  1x3 [High Eff-Low Pur,Medium Eff-Pur, Low Eff-High Pur]\n" ;
     message += "        PCA  5x4 [5 ellipse parametres and 4 parametres to calculate them: A/Sqrt(E) + B* E + C * E^2 + D]\n" ;
     message += "        Energy Calibration  1x3 [3 parametres to calibrate energy: A + B* E + C * E^2]\n" ;
     Info("Print", message.Data(), fFileName.Data(), fFileNamePar.Data() ) ; 
