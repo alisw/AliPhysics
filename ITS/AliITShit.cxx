@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.3.4.7  2000/10/02 15:54:49  barbera
+Automatic streamer used and forward declarations added
+
+Revision 1.8  2000/09/22 12:35:21  nilsen
+Traps placed incase it is used without a properly initilized AliITSgeom class.
+
 Revision 1.7  2000/07/10 16:07:18  fca
 Release version of ITS code
 
@@ -456,6 +462,7 @@ TParticle * AliITShit::GetParticle(){
     TClonesArray *parts = gAlice->Particles();
     return ((TParticle*)parts->UncheckedAt(this->GetTrack()));
 }
+/*
 //___________________________________________________________________________
 void AliITShit::Streamer(TBuffer &R__b){
 ////////////////////////////////////////////////////////////////////////
@@ -491,3 +498,4 @@ void AliITShit::Streamer(TBuffer &R__b){
       R__b << fTof;
    } // end if R__b.IsReading()
 }
+*/
