@@ -2573,7 +2573,7 @@ AliTPCParam* AliTPC::LoadTPCParam(TFile *file) {
   sprintf(paramName,"75x40_100x60_150x60");
   AliTPCParam *paramTPC=(AliTPCParam*)file->Get(paramName);
   if (paramTPC) {
-    cout<<"TPC parameters "<<paramName<<" found."<<endl;
+    //    cout<<"TPC parameters "<<paramName<<" found."<<endl;
   } else {
     cerr<<"TPC parameters not found. Create new (they may be incorrect)."
 	<<endl;    

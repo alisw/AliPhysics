@@ -354,25 +354,25 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 // 1 maximum is initialised with the maximum of the combination found (X->cathode 2, Y->cathode 1)
 // 1 maximum is initialised with the other maximum of the first cathode  
 	    if (accepted[0]){
-		fprintf(stderr,"ico=0\n");
+		if (fDebugLevel) fprintf(stderr,"ico=0\n");
 		fXInit[0]=xm[0][1];
 		fYInit[0]=ym[0][0];
 		fXInit[1]=xm[3][0];
 		fYInit[1]=ym[3][0];
 	    } else if (accepted[1]){
-		fprintf(stderr,"ico=1\n");
+		if (fDebugLevel) fprintf(stderr,"ico=1\n");
 		fXInit[0]=xm[1][1];
 		fYInit[0]=ym[1][0];
 		fXInit[1]=xm[2][0];
 		fYInit[1]=ym[2][0];
 	    } else if (accepted[2]){
-		fprintf(stderr,"ico=2\n");
+		if (fDebugLevel) fprintf(stderr,"ico=2\n");
 		fXInit[0]=xm[2][1];
 		fYInit[0]=ym[2][0];
 		fXInit[1]=xm[1][0];
 		fYInit[1]=ym[1][0];
 	    } else if (accepted[3]){
-		fprintf(stderr,"ico=3\n");
+		if (fDebugLevel) fprintf(stderr,"ico=3\n");
 		fXInit[0]=xm[3][1];
 		fYInit[0]=ym[3][0];
 		fXInit[1]=xm[0][0];
@@ -396,25 +396,25 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 // 1 maximum is initialised with the maximum of the combination found (X->cathode 2, Y->cathode 1)
 // 1 maximum is initialised with the other maximum of the second cathode  
 		if (accepted[0]){
-		    fprintf(stderr,"ico=0\n");
+		    if (fDebugLevel) fprintf(stderr,"ico=0\n");
 		    fXInit[0]=xm[0][1];
 		    fYInit[0]=ym[0][0];
 		    fXInit[1]=xm[3][1];
 		    fYInit[1]=ym[3][1];
 		} else if (accepted[1]){
-		    fprintf(stderr,"ico=1\n");
+		    if (fDebugLevel) fprintf(stderr,"ico=1\n");
 		    fXInit[0]=xm[1][1];
 		    fYInit[0]=ym[1][0];
 		    fXInit[1]=xm[2][1];
 		    fYInit[1]=ym[2][1];
 		} else if (accepted[2]){
-		    fprintf(stderr,"ico=2\n");
+		    if (fDebugLevel) fprintf(stderr,"ico=2\n");
 		    fXInit[0]=xm[2][1];
 		    fYInit[0]=ym[2][0];
 		    fXInit[1]=xm[1][1];
 		    fYInit[1]=ym[1][1];
 		} else if (accepted[3]){
-		    fprintf(stderr,"ico=3\n");
+		    if (fDebugLevel) fprintf(stderr,"ico=3\n");
 		    fXInit[0]=xm[3][1];
 		    fYInit[0]=ym[3][0];
 		    fXInit[1]=xm[0][1];
@@ -449,8 +449,10 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 				    cnew.SetIndex(i, cath, c->GetIndex(i,cath));
 				    fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
 				}
-				fprintf(stderr,"\nRawCluster %d cath %d\n",ico,cath);
-				fprintf(stderr,"mult_av %d\n",c->GetMultiplicity(cath));
+				if (fDebugLevel) {
+				  fprintf(stderr,"\nRawCluster %d cath %d\n",ico,cath);
+				  fprintf(stderr,"mult_av %d\n",c->GetMultiplicity(cath));
+				}
 				FillCluster(&cnew,cath);
 			    } 
 			    cnew.SetClusterType(cnew.PhysicsContribution());
@@ -467,7 +469,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	if (iacc==2) {
 // Was the same maximum taken twice
 	    if ((accepted[0]&&accepted[1]) || (accepted[2]&&accepted[3])) {
-		fprintf(stderr,"\n Maximum taken twice !!!\n");
+		if (fDebugLevel) fprintf(stderr,"\n Maximum taken twice !!!\n");
 
 // Have a try !! with that
 		if (accepted[0]&&accepted[3]) {
@@ -733,8 +735,10 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 			    cnew.SetIndex(i, cath, c->GetIndex(i, cath));
 			    fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
 			}
-			fprintf(stderr,"\nRawCluster %d cath %d\n",ico,cath);
-			fprintf(stderr,"mult_av %d\n",c->GetMultiplicity(cath));
+			if (fDebugLevel){
+			  fprintf(stderr,"\nRawCluster %d cath %d\n",ico,cath);
+			  fprintf(stderr,"mult_av %d\n",c->GetMultiplicity(cath));
+			}
 			FillCluster(&cnew,cath);
 		    } 
 		    cnew.SetClusterType(cnew.PhysicsContribution());
@@ -794,7 +798,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	    if ((dx <= dpx) && (dy <= dpy+eps)) {
 		// consistent
 		accepted[ico]=kTRUE;
-		fprintf(stderr,"ico %d\n",ico);
+		if (fDebugLevel) fprintf(stderr,"ico %d\n",ico);
 		iacc++;
 	    } else {
 		// reject
@@ -871,8 +875,10 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 			    cnew.SetIndex(i, cath, c->GetIndex(i, cath));
 			    fSeg[cath]->SetPad(fIx[i][cath], fIy[i][cath]);
 			}
-			fprintf(stderr,"\nRawCluster %d cath %d\n",ico,cath);
-			fprintf(stderr,"mult_av %d\n",c->GetMultiplicity(cath));
+			if (fDebugLevel) {
+			  fprintf(stderr,"\nRawCluster %d cath %d\n",ico,cath);
+			  fprintf(stderr,"mult_av %d\n",c->GetMultiplicity(cath));
+			}
 			FillCluster(&cnew,cath);
 		    } 
 		    cnew.SetClusterType(cnew.PhysicsContribution());
@@ -1358,6 +1364,7 @@ void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONR
 
     c.SetMultiplicity(cath, c.GetMultiplicity(cath)+1);
     if (c.GetMultiplicity(cath) >= 50 ) {
+      if (fDebugLevel)
 	printf("FindCluster - multiplicity >50  %d \n",c.GetMultiplicity(0));
 	c.SetMultiplicity(cath, 49);
     }
