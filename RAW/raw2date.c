@@ -79,8 +79,12 @@ int handleArgs( const int argc, char * const * const argv ) {
       perror( "malloc failed " );
       return FALSE;
     }
-    if ( (fileNames[ numFiles-1 ] = strdup( argv[arg] )) == NULL ) {
-      perror( "strdup failed " );
+    if ( (fileNames[ numFiles-1 ] = malloc( strlen(argv[arg])+1 )) == NULL ) {
+      perror( "malloc failed " );
+      return FALSE;
+    }
+    if ( (strcpy( fileNames[ numFiles-1 ], argv[arg] )) == NULL ) {
+      perror( "strcpy failed " );
       return FALSE;
     }
   }
