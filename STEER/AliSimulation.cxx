@@ -76,9 +76,20 @@
 //                                                                           //
 //   sim.SetWriteRawData("MUON");   // write raw data for MUON               //
 //                                                                           //
+// The default output format of the raw data are DDL files. They are         //
+// converted to a DATE file, if a file name is given as second argument.     //
+// For this conversion the program "dateStream" is required. If the file     //
+// name has the extension ".root", the DATE file is converted to a root      //
+// file. The program "alimdc" is used for this purpose. For the conversion   //
+// to DATE and root format the two conversion programs have to be installed. //
+// Only the raw data in the final format is kept if the third argument is    //
+// kTRUE.                                                                    //
+//                                                                           //
 // The methods RunSimulation, RunSDigitization, RunDigitization,             //
 // RunHitsDigitization and WriteRawData can be used to run only parts of     //
-// the full simulation chain.                                                //
+// the full simulation chain. The creation of raw data DDL files and their   //
+// conversion to the DATE or root format can be run directly by calling      //
+// the methods WriteRawFiles, ConvertRawFilesToDate and ConvertDateToRoot.   //
 //                                                                           //
 // The default number of events per file, which is usually set in the        //
 // config file, can be changed for individual detectors and data types       //
@@ -121,6 +132,8 @@ AliSimulation::AliSimulation(const char* configFileName,
   fMakeDigits("ALL"),
   fMakeDigitsFromHits(""),
   fWriteRawData(""),
+  fRawDataFileName(""),
+  fDeleteIntermediateFiles(kFALSE),
   fStopOnError(kFALSE),
 
   fNEvents(1),
@@ -146,6 +159,8 @@ AliSimulation::AliSimulation(const AliSimulation& sim) :
   fMakeDigits(sim.fMakeDigits),
   fMakeDigitsFromHits(sim.fMakeDigitsFromHits),
   fWriteRawData(sim.fWriteRawData),
+  fRawDataFileName(""),
+  fDeleteIntermediateFiles(kFALSE),
   fStopOnError(sim.fStopOnError),
 
   fNEvents(sim.fNEvents),
@@ -288,7 +303,8 @@ Bool_t AliSimulation::Run(Int_t nEvents)
 
   // digits -> raw data
   if (!fWriteRawData.IsNull()) {
-    if (!WriteRawData(fWriteRawData)) {
+    if (!WriteRawData(fWriteRawData, fRawDataFileName, 
+		      fDeleteIntermediateFiles)) {
       if (fStopOnError) return kFALSE;
     }
   }
@@ -531,18 +547,70 @@ Bool_t AliSimulation::RunHitsDigitization(const char* detectors)
 }
 
 //_____________________________________________________________________________
-Bool_t AliSimulation::WriteRawData(const char* detectors)
+Bool_t AliSimulation::WriteRawData(const char* detectors, 
+				   const char* fileName,
+				   Bool_t deleteIntermediateFiles)
 {
 // convert the digits to raw data
+// First DDL raw data files for the given detectors are created.
+// If a file name is given, the DDL files are then converted to a DATE file.
+// If deleteIntermediateFiles is true, the DDL raw files are deleted 
+// afterwards.
+// If the file name has the extension ".root", the DATE file is converted
+// to a root file.
+// If deleteIntermediateFiles is true, the DATE file is deleted afterwards.
 
   TStopwatch stopwatch;
   stopwatch.Start();
 
-  AliRunLoader* runLoader = LoadRun();
+  if (!WriteRawFiles(detectors)) {
+    if (fStopOnError) return kFALSE;
+  }
+
+  TString dateFileName(fileName);
+  if (!dateFileName.IsNull()) {
+    Bool_t rootOutput = dateFileName.EndsWith(".root");
+    if (rootOutput) dateFileName += ".date";
+    if (!ConvertRawFilesToDate(dateFileName)) {
+      if (fStopOnError) return kFALSE;
+    }
+    if (deleteIntermediateFiles) {
+      AliRunLoader* runLoader = LoadRun("READ");
+      if (runLoader) for (Int_t iEvent = 0; 
+			  iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
+	char command[256];
+	sprintf(command, "rm -r raw%d", iEvent);
+	gSystem->Exec(command);
+      }
+    }
+
+    if (rootOutput) {
+      if (!ConvertDateToRoot(dateFileName, fileName)) {
+	if (fStopOnError) return kFALSE;
+      }
+      if (deleteIntermediateFiles) {
+	gSystem->Unlink(dateFileName);
+      }
+    }
+  }
+
+  Info("WriteRawData", "execution time:");
+  stopwatch.Print();
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliSimulation::WriteRawFiles(const char* detectors)
+{
+// convert the digits to raw data DDL files
+
+  AliRunLoader* runLoader = LoadRun("READ");
   if (!runLoader) return kFALSE;
 
+  // write raw data to DDL files
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
-    Info("WriteRawData", "processing event %d", iEvent);
+    Info("WriteRawFiles", "processing event %d", iEvent);
     runLoader->GetEvent(iEvent);
     TString baseDir = gSystem->WorkingDirectory();
     char dirName[256];
@@ -574,23 +642,136 @@ Bool_t AliSimulation::WriteRawData(const char* detectors)
   }
 
   delete runLoader;
-
-  Info("WriteRawData", "execution time:");
-  stopwatch.Print();
-
   return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName)
+{
+// convert raw data DDL files to a DATE file with the program "dateStream"
+
+  // DATE setup
+  const Int_t kNDetectors = 16;
+  const char* kDetectors[kNDetectors] = {"TPC", "ITSSPD", "ITSSDD", "ITSSSD", 
+                                         "TRD", "TOF", "PHOS", "RICH", 
+                                         "EMCAL", "MUON", "FMD", "ZDC", 
+                                         "PMD", "START", "VZERO", "CRT"};
+  const Int_t kDetectorDDLs[kNDetectors]   = {216, 20, 12, 16, 
+                                              18, 5, 10, 5, 
+                                              1, 7, 1, 1, 
+                                              6, 1, 1, 1};
+  const Float_t kDetectorLDCs[kNDetectors] = {46, 2, 2, 1, 
+                                              4, 2, 1, 2, 
+                                              1, 2, 0.5, 0.5,
+                                              1, 0.5, 0.5, 1};
+
+  char* path = gSystem->Which(gSystem->Getenv("PATH"), "dateStream");
+  if (!path) {
+    Error("ConvertRawFilesToDate", "the program dateStream was not found");
+    if (fStopOnError) return kFALSE;
+  } else {
+    delete[] path;
+  }
+
+  AliRunLoader* runLoader = LoadRun("READ");
+  if (!runLoader) return kFALSE;
+
+  Info("ConvertRawFilesToDate", 
+       "converting raw data DDL files to DATE file %s", dateFileName);
+  char command[256];
+  sprintf(command, "dateStream -o %s -# %d", 
+	  dateFileName, runLoader->GetNumberOfEvents());
+  FILE* pipe = gSystem->OpenPipe(command, "w");
+
+  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
+    fprintf(pipe, "GDC\n");
+    Float_t ldc = 0;
+    Int_t prevLDC = -1;
+
+    // loop over detectors and DDLs
+    for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+      for (Int_t iDDL = 0; iDDL < kDetectorDDLs[iDet]; iDDL++) {
+
+        Int_t ddlID = 0x100*iDet + iDDL;
+        Int_t ldcID = Int_t(ldc + 0.0001);
+        ldc += kDetectorLDCs[iDet] / kDetectorDDLs[iDet];
+
+        char rawFileName[256];
+        sprintf(rawFileName, "raw%d/%s_%d.ddl", 
+                iEvent, kDetectors[iDet], ddlID);
+
+	// check existence and size of raw data file
+        FILE* file = fopen(rawFileName, "rb");
+        if (!file) continue;
+        fseek(file, 0, SEEK_END);
+        unsigned long size = ftell(file);
+        fseek(file, 0, SEEK_SET);
+        if (!size) {
+          fclose(file);
+          continue;
+        }
+
+        if (ldcID != prevLDC) {
+          fprintf(pipe, " LDC Id %d\n", ldcID);
+          prevLDC = ldcID;
+        }
+        fprintf(pipe, "  Equipment Id %d Payload %s\n", ddlID, rawFileName);
+      }
+    }
+  }
+
+  Int_t result = gSystem->ClosePipe(pipe);
+
+  delete runLoader;
+  return (result == 0);
+}
+
+//_____________________________________________________________________________
+Bool_t AliSimulation::ConvertDateToRoot(const char* dateFileName,
+					const char* rootFileName)
+{
+// convert a DATE file to a root file with the program "alimdc"
+
+  // ALIMDC setup
+  const Int_t kDBSize = 1000000000;
+  const Bool_t kFilter = kFALSE;
+  const Int_t kCompression = 1;
+
+  char* path = gSystem->Which(gSystem->Getenv("PATH"), "alimdc");
+  if (!path) {
+    Error("ConvertDateToRoot", "the program alimdc was not found");
+    if (fStopOnError) return kFALSE;
+  } else {
+    delete[] path;
+  }
+
+  Info("ConvertDateToRoot", "converting DATE file %s to root file %s", 
+       dateFileName, rootFileName);
+
+  gSystem->Exec("rm -rf /tmp/mdc1");
+  gSystem->Exec("rm -rf /tmp/mdc2");
+  char command[256];
+  sprintf(command, "alimdc %d %d %d %s", 
+	  kDBSize, kFilter, kCompression, dateFileName);
+  Int_t result = gSystem->Exec(command);
+  sprintf(command, "mv /tmp/mdc1/*.root %s", rootFileName);
+  gSystem->Exec(command);
+  gSystem->Exec("rm -rf /tmp/mdc1");
+  gSystem->Exec("rm -rf /tmp/mdc2");
+
+  return (result == 0);
 }
 
 
 //_____________________________________________________________________________
-AliRunLoader* AliSimulation::LoadRun() const
+AliRunLoader* AliSimulation::LoadRun(const char* mode) const
 {
 // delete existing run loaders, open a new one and load gAlice
 
   while (AliRunLoader::GetRunLoader()) delete AliRunLoader::GetRunLoader();
   AliRunLoader* runLoader = 
     AliRunLoader::Open(fGAliceFileName.Data(), 
-		       AliConfig::GetDefaultEventFolderName(), "UPDATE");
+		       AliConfig::GetDefaultEventFolderName(), mode);
   if (!runLoader) {
     Error("LoadRun", "no run loader found in file %s", 
 	  fGAliceFileName.Data());

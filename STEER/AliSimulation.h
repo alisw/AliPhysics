@@ -45,8 +45,11 @@ public:
                    {fMakeDigits = detectors;};
   void           SetMakeDigitsFromHits(const char* detectors)
                    {fMakeDigitsFromHits = detectors;};
-  void           SetWriteRawData(const char* detectors)
-                   {fWriteRawData = detectors;};
+  void           SetWriteRawData(const char* detectors, 
+				 const char* fileName = NULL,
+				 Bool_t deleteIntermediateFiles = kFALSE)
+                   {fWriteRawData = detectors; fRawDataFileName = fileName;
+		   fDeleteIntermediateFiles = deleteIntermediateFiles;};
 
   virtual Bool_t Run(Int_t nEvents = 0);
 
@@ -55,10 +58,16 @@ public:
   virtual Bool_t RunDigitization(const char* detectors = "ALL",
 				 const char* excludeDetectors = "");
   virtual Bool_t RunHitsDigitization(const char* detectors = "ALL");
-  virtual Bool_t WriteRawData(const char* detectors = "ALL");
+  virtual Bool_t WriteRawData(const char* detectors = "ALL",
+			      const char* fileName = NULL,
+			      Bool_t deleteIntermediateFiles = kFALSE);
+  virtual Bool_t WriteRawFiles(const char* detectors = "ALL");
+  virtual Bool_t ConvertRawFilesToDate(const char* dateFileName = "raw.date");
+  virtual Bool_t ConvertDateToRoot(const char* dateFileName = "raw.date",
+				   const char* rootFileName = "raw.root");
 
 private:
-  AliRunLoader*  LoadRun() const;
+  AliRunLoader*  LoadRun(const char* mode = "UPDATE") const;
   Int_t          GetNSignalPerBkgrd(Int_t nEvents = 0) const;
   Bool_t         IsSelected(TString detName, TString& detectors) const;
 
@@ -68,6 +77,8 @@ private:
   TString        fMakeDigits;         // create digits for these detectors
   TString        fMakeDigitsFromHits; // create digits from hits for these detectors
   TString        fWriteRawData;       // write raw data for these detectors
+  TString        fRawDataFileName;    // file name for the raw data file
+  Bool_t         fDeleteIntermediateFiles; // delete intermediate raw data files
   Bool_t         fStopOnError;        // stop or continue on errors
 
   Int_t          fNEvents;            // number of events
@@ -79,7 +90,7 @@ private:
   Bool_t         fUseBkgrdVertex;     // use vertex from background in case of merging
   Bool_t         fRegionOfInterest;   // digitization in region of interest
 
-  ClassDef(AliSimulation, 1)  // class for running generation, simulation and digitization
+  ClassDef(AliSimulation, 2)  // class for running generation, simulation and digitization
 };
 
 #endif
