@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.45  2001/05/01 22:35:48  nilsen
+Remove/commented a number of cout<< statements. and made change needed by
+SSD code.
+
 Revision 1.44  2001/04/26 22:44:01  nilsen
 Removed dependence on layer 5/6 in AliITS::HitsToDigits. This will be
 done properly in AliITSv???.cxx via SetDefaults.
@@ -1118,7 +1122,7 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size, Option_t *optio
    // initialised for all versions - for the moment it is only for v5 !
    // 7 is the SDD beam test version  
    Int_t ver = this->IsVersion(); 
-   if(ver!=5 && ver!=7) return; 
+   if(ver!=5 && ver!=7 && ver!=8 && ver!=9) return; 
 
    const char *all = strstr(opt,"All");
    const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),strstr(opt,"SSD")};
