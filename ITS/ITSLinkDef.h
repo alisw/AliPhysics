@@ -14,9 +14,9 @@
 // Standard ITS classes 
  
 #pragma link C++ class  AliITS-;
-#pragma link C++ class  AliITSv1-;
-#pragma link C++ class  AliITSv3-;
-#pragma link C++ class  AliITSv5-;
+#pragma link C++ class  AliITSv1+;
+#pragma link C++ class  AliITSv3+;
+#pragma link C++ class  AliITSv5+;
 #pragma link C++ class  AliITShit+;
 #pragma link C++ class  AliITSdigit+;
 #pragma link C++ class  AliITSdigitSPD+;
@@ -64,8 +64,10 @@
 #pragma link C++ class  AliITSstatistics2+;
 // SDD simulation
 #pragma link C++ class  AliITSRawData+;
+// These streamers must be formatted according to the raw data fromat
 #pragma link C++ class  AliITSInStream-;
 #pragma link C++ class  AliITSOutStream-;
+//
 #pragma link C++ class  AliITSHNode+;
 #pragma link C++ class  AliITSHTable+;
 #pragma link C++ class  AliITSetfSDD+;
