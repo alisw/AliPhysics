@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.1  2000/04/19 13:32:48  morsch
+  Data classes for RICH (completely updated) (JB,AM)
+
 */
 
 
@@ -69,6 +72,7 @@ AliRICHCerenkov::AliRICHCerenkov(Int_t shunt, Int_t track, Int_t *vol, Float_t *
     fMomX=hits[14];
     fMomY=hits[15];
     fMomZ=hits[16];
+    fCerenkovAngle=hits[17];
 }
 
 //___________________________________________

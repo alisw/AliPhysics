@@ -57,6 +57,7 @@ class AliRICHCerenkov: public AliHit {
     Float_t   fMomX;            // Local Momentum
     Float_t   fMomY;            // Local Momentum
     Float_t   fMomZ;            // Local Momentum
+    Float_t   fCerenkovAngle;   // Cerenkov Angle
  public:
     AliRICHCerenkov() {}
     AliRICHCerenkov(Int_t fIshunt, Int_t track, Int_t *vol, Float_t *Cerenkovs);
