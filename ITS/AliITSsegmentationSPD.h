@@ -62,7 +62,7 @@ public AliITSsegmentation {
     //
     // Get next neighbours 
     virtual void Neighbours
-    (Int_t iX,Int_t iZ,Int_t* Nlist,Int_t Xlist[10],Int_t Zlist[10]);
+       (Int_t iX,Int_t iZ,Int_t* Nlist,Int_t Xlist[10],Int_t Zlist[10]);
 
   protected:
 
