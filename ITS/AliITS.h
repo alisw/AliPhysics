@@ -84,6 +84,7 @@ class AliITS : public AliDetector {
     void HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size,
                  Option_t *add, Option_t *det, Text_t *filename);
     // Reconstruct hits
+    void Digits2Reco();
     void DigitsToRecPoints(Int_t evNumber,Int_t lastEntry,Option_t *det);
     // Fast simulation of space points from hits
     void HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
@@ -146,7 +147,6 @@ class AliITS : public AliDetector {
     Bool_t      fEuclidOut;    // Flag to write geometry in euclid format
     Int_t       fIdN;          // the number of layers
     Int_t      *fIdSens;       //[fIdN] layer identifier
-//    TObjArray  *fIdName;       // array of volume Id names
     TString    *fIdName;       //[fIdN] layer identifier
     //
     Int_t          fNDetTypes;   // Number of detector types
