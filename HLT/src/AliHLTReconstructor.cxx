@@ -158,7 +158,11 @@ void AliHLTReconstructor::ReconstructWithHoughTransform(AliRunLoader* runLoader,
 
   Float_t zvertex = 0;
   TArrayF mcVertex(3); 
-  runLoader->GetHeader()->GenEventHeader()->PrimaryVertex(mcVertex);
+  AliHeader * header = runLoader->GetHeader();
+  if (header) {
+    AliGenEventHeader * genHeader = header->GenEventHeader();
+    if (genHeader) genHeader->PrimaryVertex(mcVertex);
+  }
   zvertex = mcVertex[2];
 
   LOG(AliL3Log::kInformational,"AliHLTReconstructor::Reconstruct","HoughTransform")
