@@ -432,7 +432,7 @@ Int_t good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const Int_t event) {
       gt[nt].lab=i;
       gt[nt].code=p->GetPdgCode();
       gt[nt].px=0.; gt[nt].py=0.; gt[nt].pz=0.;
-      gt[nt].x=0.; gt[nt].z=0.; gt[nt].z=0.;
+      gt[nt].x=0.; gt[nt].y=0.; gt[nt].z=0.;
       nt++;
       if (nt==max) {cerr<<"Too many good tracks !\n"; break;}
       cerr<<np-i<<"                \r";
