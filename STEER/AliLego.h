@@ -15,8 +15,8 @@
 
 #include "TNamed.h"
 class TH2F;
-
 class AliLegoGenerator;
+class TClonesArray;
 
 class AliLego : public TNamed  {
 
@@ -35,16 +35,22 @@ public:
   virtual void  FinishRun();
   virtual AliLego &operator=(const AliLego &lego) 
   {lego.Copy(*this);return(*this);}
-  
 private:
    AliLegoGenerator *fGener;     //Lego generator
-   Float_t    fTotRadl;          //Total Radiation length
-   Float_t    fTotAbso;          //Total absorption length
-   Float_t    fTotGcm2;          //Total G/CM2 traversed
+   Float_t    fTotRadl;          //!Total Radiation length
+   Float_t    fTotAbso;          //!Total absorption length
+   Float_t    fTotGcm2;          //!Total G/CM2 traversed
    TH2F      *fHistRadl;         //Radiation length map 
    TH2F      *fHistAbso;         //Interaction length map
    TH2F      *fHistGcm2;         //g/cm2 length map
    TH2F      *fHistReta;         //Radiation length map as a function of eta
+   TClonesArray *fVolumesFwd;    //!Volume sequence forward
+   TClonesArray *fVolumesBwd;    //!Volume sequence backward   
+   Int_t      fStepBack;         //!Flag for backstepping
+   Int_t      fStepsBackward;    //!Counts steps forward
+   Int_t      fStepsForward;     //!Counts steps backward
+   Int_t      fErrorCondition;   //!Error condition flag
+   Int_t      fDebug;            // Debug Flag
    
   ClassDef(AliLego,1) //Utility class to compute and draw Radiation Length Map
 
@@ -52,3 +58,14 @@ private:
 
 
 #endif
+
+
+
+
+
+
+
+
+
+
+
