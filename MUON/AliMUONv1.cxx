@@ -9,12 +9,15 @@
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpeateose. It is          *
+ * about the suitability of this software for any purpeateose. It is      *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
 /*
 $Log$
+Revision 1.13  2000/10/26 07:33:44  morsch
+Correct x-position of slats in station 5.
+
 Revision 1.12  2000/10/25 19:55:35  morsch
 Switches for each station individually for debug and lego.
 
@@ -185,7 +188,7 @@ void AliMUONv1::CreateGeometry()
 //   Mother volume
      tpar[0] = iChamber->RInner()-dframep1; 
      tpar[1] = (iChamber->ROuter()+dframep1)/TMath::Cos(phi);
-     tpar[2] = dstation/4;
+     tpar[2] = dstation/5;
 
      gMC->Gsvolu("C01M", "TUBE", idAir, tpar, 3);
      gMC->Gsvolu("C02M", "TUBE", idAir, tpar, 3);
@@ -331,7 +334,7 @@ void AliMUONv1::CreateGeometry()
 //   Mother volume
      tpar[0] = iChamber->RInner()-dframep; 
      tpar[1] = (iChamber->ROuter()+dframep)/TMath::Cos(phi);
-     tpar[2] = dstation/4;
+     tpar[2] = dstation/5;
 
      gMC->Gsvolu("C03M", "TUBE", idAir, tpar, 3);
      gMC->Gsvolu("C04M", "TUBE", idAir, tpar, 3);
@@ -569,7 +572,7 @@ void AliMUONv1::CreateGeometry()
 //   Mother volume
      tpar[0] = iChamber->RInner()-dframep; 
      tpar[1] = (iChamber->ROuter()+dframep)/TMath::Cos(phi);
-     tpar[2] = dstation/4;
+     tpar[2] = dstation/5;
      gMC->Gsvolu("C05M", "TUBE", idAir, tpar, 3);
      gMC->Gsvolu("C06M", "TUBE", idAir, tpar, 3);
      gMC->Gspos("C05M", 1, "ALIC", 0., 0., zpos1 , 0, "ONLY");
@@ -611,6 +614,7 @@ void AliMUONv1::CreateGeometry()
 	 spar[2] = slatWidth/2.; 
 	 // zSlat to be checked (odd downstream or upstream?)
 	 Float_t zSlat = (i%2 ==0)? -slatWidth/2. : slatWidth/2.; 
+	 zSlat*=1.01;
 	 sprintf(volNam5,"S05%d",i);
 	 gMC->Gsvolu(volNam5,"BOX",slatMaterial,spar,3);
 	 gMC->Gspos(volNam5, i*4+1,"C05M", xSlat3, ySlat31, zSlat, 0, "ONLY");
@@ -804,7 +808,7 @@ void AliMUONv1::CreateGeometry()
 //   Mother volume
      tpar[0] = iChamber->RInner()-dframep; 
      tpar[1] = (iChamber->ROuter()+dframep)/TMath::Cos(phi);
-     tpar[2] = 3.252;
+     tpar[2] = dstation/5;
 
      gMC->Gsvolu("C07M", "TUBE", idAir, tpar, 3);
      gMC->Gsvolu("C08M", "TUBE", idAir, tpar, 3);
@@ -837,6 +841,7 @@ void AliMUONv1::CreateGeometry()
 	 spar[2] = slatWidth/2.; 
 	 // zSlat to be checked (odd downstream or upstream?)
 	 Float_t zSlat = (i%2 ==0)? slatWidth/2. : -slatWidth/2.; 
+	 zSlat*=1.01;
 	 sprintf(volNam7,"S07%d",i);
 	 gMC->Gsvolu(volNam7,"BOX",slatMaterial,spar,3);
 	 gMC->Gspos(volNam7, i*4+1,"C07M", xSlat4, ySlat4, zSlat, 0, "ONLY");
@@ -1001,7 +1006,7 @@ void AliMUONv1::CreateGeometry()
 //   Mother volume
      tpar[0] = iChamber->RInner()-dframep; 
      tpar[1] = (iChamber->ROuter()+dframep)/TMath::Cos(phi);
-     tpar[2] = dstation/4;
+     tpar[2] = dstation/5;
 
      gMC->Gsvolu("C09M", "TUBE", idAir, tpar, 3);
      gMC->Gsvolu("C10M", "TUBE", idAir, tpar, 3);
@@ -1029,21 +1034,22 @@ void AliMUONv1::CreateGeometry()
        spar[2] = slatWidth/2.; 
        // zSlat to be checked (odd downstream or upstream?)
        Float_t zSlat = (i%2 ==0)? -slatWidth/2. : slatWidth/2.; 
+       zSlat*=1.01;
        sprintf(volNam9,"S09%d",i);
        gMC->Gsvolu(volNam9,"BOX",slatMaterial,spar,3);
        gMC->Gspos(volNam9, i*4+1,"C09M", xSlat5, ySlat5, zSlat, 0, "ONLY");
        gMC->Gspos(volNam9, i*4+2,"C09M",-xSlat5, ySlat5, zSlat, 0, "ONLY");
        if (i>0) { 
-	   gMC->Gspos(volNam9, i*4+3,"C09M", xSlat5,-ySlat5, zSlat, 0, "ONLY");
-	   gMC->Gspos(volNam9, i*4+4,"C09M",-xSlat5,-ySlat5, zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam9, i*4+3,"C09M", xSlat5,-ySlat5, zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam9, i*4+4,"C09M",-xSlat5,-ySlat5, zSlat, 0, "ONLY");
        }
        sprintf(volNam10,"S10%d",i);
        gMC->Gsvolu(volNam10,"BOX",slatMaterial,spar,3);
        gMC->Gspos(volNam10, i*4+1,"C10M", xSlat5, ySlat5, zSlat, 0, "ONLY");
        gMC->Gspos(volNam10, i*4+2,"C10M",-xSlat5, ySlat5, zSlat, 0, "ONLY");
        if (i>0) { 
-	   gMC->Gspos(volNam10, i*4+3,"C10M", xSlat5,-ySlat5, zSlat, 0, "ONLY");
-	   gMC->Gspos(volNam10, i*4+4,"C10M",-xSlat5,-ySlat5, zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam10, i*4+3,"C10M", xSlat5,-ySlat5, zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam10, i*4+4,"C10M",-xSlat5,-ySlat5, zSlat, 0, "ONLY");
        }
      }
 
@@ -1051,9 +1057,9 @@ void AliMUONv1::CreateGeometry()
       
      gMC->Gsvolu("S09G","BOX",sensMaterial,sensPar,3);
      gMC->Gsvolu("S10G","BOX",sensMaterial,sensPar,3);
-
+     
      // create the PCB volume 
-      
+     
      gMC->Gsvolu("S09P","BOX",pcbMaterial,pcbpar,3);
      gMC->Gsvolu("S10P","BOX",pcbMaterial,pcbpar,3);
  
@@ -1066,12 +1072,12 @@ void AliMUONv1::CreateGeometry()
   
      gMC->Gsvolu("S09C","BOX",panelMaterial,panelpar,3);
      gMC->Gsvolu("S10C","BOX",panelMaterial,panelpar,3);
-
+     
      // create the rohacell volume 
       
      gMC->Gsvolu("S09R","BOX",rohaMaterial,rohapar,3);
      gMC->Gsvolu("S10R","BOX",rohaMaterial,rohapar,3);
-
+     
      // create the vertical frame volume 
    
      gMC->Gsvolu("S09V","BOX",vFrameMaterial,vFramepar,3);
@@ -1098,7 +1104,7 @@ void AliMUONv1::CreateGeometry()
        gMC->Gspos("S10V",2*i  ,volNam10,-xvFrame, 0., 0. , 0, "ONLY");
        for (j=0; j<nPCB5[i]; j++){
 	 index++;
-	 Float_t xx = sensLength * (-nPCB5[i]/2.+j+.5); 
+	 Float_t xx = sensLength/2. * (-nPCB5[i]+2*j+1); 
 	 Float_t yy = 0.;
 	 Float_t zSens = 0.;  
 	 gMC->Gspos("S09G",index,volNam9, xx, yy, zSens , 0, "ONLY");
@@ -1162,7 +1168,7 @@ void AliMUONv1::CreateGeometry()
 
 
      // position 4 gassiplex in the nuloc
-
+     
      gMC->Gspos("S09E",1,"S09N", 0., -3 * nulocHeight/8., 0. , 0, "ONLY");
      gMC->Gspos("S09E",2,"S09N", 0.,    - nulocHeight/8., 0. , 0, "ONLY");
      gMC->Gspos("S09E",3,"S09N", 0.,      nulocHeight/8., 0. , 0, "ONLY");
@@ -1171,6 +1177,7 @@ void AliMUONv1::CreateGeometry()
      gMC->Gspos("S10E",2,"S10N", 0.,    - nulocHeight/8., 0. , 0, "ONLY");
      gMC->Gspos("S10E",3,"S10N", 0.,      nulocHeight/8., 0. , 0, "ONLY");
      gMC->Gspos("S10E",4,"S10N", 0.,  3 * nulocHeight/8., 0. , 0, "ONLY");
+     
  }
  
 
@@ -1885,6 +1892,10 @@ void AliMUONv1::StepManager()
   // Set maximum step size for gas
   // numed=gMC->GetMedium();
   //
+  gMC->TrackPosition(pos);
+  id = gMC->CurrentVolID(copy);
+  char* voln = gMC->VolName(id);
+  //    printf("\n pos: %f %f %f %s", pos[0], pos[1], pos[2],voln);
   // Only charged tracks
   if( !(gMC->TrackCharge()) ) return; 
   //
