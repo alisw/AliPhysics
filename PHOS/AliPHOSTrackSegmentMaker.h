@@ -21,6 +21,7 @@
 #include "TObjArray.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSRecPoint.h"
+#include "AliPHOSIndexToObject.h"
 #include "AliPHOSTrackSegment.h"
 
 class  AliPHOSTrackSegmentMaker : public TObject {
@@ -43,9 +44,11 @@ public:
   
  protected:
   
-  Int_t fNTrackSegments ; // number of track segments found 
-  
-  ClassDef( AliPHOSTrackSegmentMaker,1)  // Algorithm class to make PHOS track segments (Base Class)
+  Int_t                  fNTrackSegments ; // number of track segments found 
+  AliPHOSGeometry      * fGeom ;           // pointer to PHOS geometry  
+  AliPHOSIndexToObject * fPlease ;         //
+
+  ClassDef( AliPHOSTrackSegmentMaker,1)    // Algorithm class to make PHOS track segments (Base Class)
 
 };
 

@@ -34,6 +34,7 @@
 
 #include "AliPHOSTrackSegmentMaker.h"
 #include "AliPHOSTrackSegment.h"
+#include "AliPHOSIndexToObject.h"
 #include "AliPHOSLink.h"
 #include "AliPHOSv0.h"
 #include "AliRun.h"
@@ -45,6 +46,9 @@ ClassImp( AliPHOSTrackSegmentMaker)
  AliPHOSTrackSegmentMaker:: AliPHOSTrackSegmentMaker() : fNTrackSegments(0)
 {
   // ctor
+  fGeom = AliPHOSGeometry::GetInstance() ;
+  fPlease = AliPHOSIndexToObject::GetInstance() ; 
+
 }
 
 
