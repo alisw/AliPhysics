@@ -17,13 +17,7 @@
 
 #include <Riostream.h>
 
-#include <TMath.h>
-#include <TRandom.h>
-#include <TVector.h>
-#include <TGeometry.h>
-#include <TNode.h>
-#include <TTUBE.h>
-#include "TParticle.h"
+#include<TLorentzVector.h>
 
 #include "AliRun.h"
 #include "AliITS.h"
@@ -555,7 +549,7 @@ Int_t AliITShit::GetModule(){
     }
 }
 //______________________________________________________________________
-TParticle * AliITShit::GetParticle(){
+TParticle * AliITShit::GetParticle() const {
 ////////////////////////////////////////////////////////////////////////
 //     Returns the pointer to the TParticle for the particle that created
 // this hit. From the TParticle all kinds of information about this 
@@ -564,7 +558,7 @@ TParticle * AliITShit::GetParticle(){
     return gAlice->GetMCApp()->Particle(GetTrack());
 }  
 //----------------------------------------------------------------------
-void AliITShit::Print(ostream *os){
+void AliITShit::Print(ostream *os) const {
 ////////////////////////////////////////////////////////////////////////
 // Standard output format for this class.
 ////////////////////////////////////////////////////////////////////////
@@ -596,7 +590,7 @@ void AliITShit::Print(ostream *os){
     return;
 }
 //----------------------------------------------------------------------
-void AliITShit::Read(istream *is){
+void AliITShit::Read(istream *is) {
 ////////////////////////////////////////////////////////////////////////
 // Standard input format for this class.
 ////////////////////////////////////////////////////////////////////////

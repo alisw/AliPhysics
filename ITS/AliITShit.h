@@ -5,13 +5,6 @@
 
 /* $Id$ */
 
-#include "AliHit.h" 
-#include <Riostream.h>
-#include <TLorentzVector.h>
-
-class TParticle;
-
-class AliITShit : public AliHit {
 ////////////////////////////////////////////////////////////////////////
 // Version: 0
 // Written by Rene Brun, Federico Carminati, and Roberto Barbera
@@ -91,11 +84,13 @@ class AliITShit : public AliHit {
 //
 //
 ////////////////////////////////////////////////////////////////////////
-    // public;       // defined in AliHit
-    // Int_t fTrack  // defined in AliHit
-    // Float_t fX;   // defined in AliHit
-    // Float_t fY;   // defined in AliHit
-    // Float_t fZ;   // defined in AliHit
+
+#include "AliHit.h" 
+
+class TLorentzVector;
+class TParticle;
+
+class AliITShit : public AliHit {
 
  public:
     AliITShit();// Default consrtructor
@@ -209,23 +204,23 @@ class AliITShit : public AliHit {
     // Returns particle Y momentum at this hit in local coordinates.
     virtual Float_t GetPZL();
     // Returns particle Z momentum at this hit in local coordinates.
-    virtual TParticle * GetParticle(); // Returns pointer to this particle.
-    Bool_t StatusInside() {// checks if the particle is "inside"
+    virtual TParticle * GetParticle() const; // Returns ptr to this particle.
+    Bool_t StatusInside() const {// checks if the particle is "inside"
 	if((fStatus&0x0001)==0) return kFALSE;else return kTRUE;}
-    Bool_t StatusEntering() {// checks if the particle is "entering"
+    Bool_t StatusEntering() const {// checks if the particle is "entering"
 	if((fStatus&0x0002)==0) return kFALSE;else return kTRUE;}
-    Bool_t StatusExiting() {// checks if the particle is "exiting"
+    Bool_t StatusExiting() const {// checks if the particle is "exiting"
 	if((fStatus&0x0004)==0) return kFALSE;else return kTRUE;}
-    Bool_t StatusOut() {// checks if the particle is "out"
+    Bool_t StatusOut() const {// checks if the particle is "out"
 	if((fStatus&0x0008)==0) return kFALSE;else return kTRUE;}
-    Bool_t StatusDisappeared() {// checks if the particle is "disappeared"
+    Bool_t StatusDisappeared() const {// checks if the part. is "disappeared"
 	if((fStatus&0x00010)==0) return kFALSE;else return kTRUE;}
-    Bool_t StatusStop() {// checks if the particle is "stopped"
+    Bool_t StatusStop() const {// checks if the particle is "stopped"
 	if((fStatus&0x00020)==0) return kFALSE;else return kTRUE;}
-    Bool_t StatusAlive() {// checks if the particle is "alive"
+    Bool_t StatusAlive() const {// checks if the particle is "alive"
 	if((fStatus&0x00030)==0) return kFALSE;else return kTRUE;}
     // Prints out the content of this class in ASCII format.
-    void Print(ostream *os); 
+    void Print(ostream *os) const; 
     // Reads in the content of this class in the format of Print
     void Read(istream *is);
 

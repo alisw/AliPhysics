@@ -29,6 +29,7 @@
 #include <Riostream.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include<TLorentzVector.h>
 #include <TMath.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
