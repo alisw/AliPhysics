@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2003/01/14 10:50:19  alibrary
+Cleanup of STEER coding conventions
+
 Revision 1.13  2002/10/14 14:55:35  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -88,6 +91,8 @@ AliGenMC::AliGenMC()
     SetGeometryAcceptance();
     SetPdgCodeParticleforAcceptanceCut();
     SetNumberOfAcceptedParticles();
+    SetTarget();
+    SetProjectile();
 }
 
 AliGenMC::AliGenMC(Int_t npart)
@@ -108,6 +113,8 @@ AliGenMC::AliGenMC(Int_t npart)
     SetGeometryAcceptance();
     SetPdgCodeParticleforAcceptanceCut();
     SetNumberOfAcceptedParticles();
+    SetTarget();
+    SetProjectile();
 }
 
 AliGenMC::AliGenMC(const AliGenMC & mc)
@@ -333,6 +340,38 @@ Int_t AliGenMC::CheckPDGCode(Int_t pdgcode) const
   //non diffractive state -- return code unchanged
   return pdgcode;
 }
+
+void AliGenMC::Boost(Float_t dy)
+{
+//
+// Boost cms into LHC lab frame
+//
+
+    Double_t beta  = TMath::TanH(dy);
+    Double_t gamma = 1./TMath::Sqrt(1.-beta*beta);
+    Double_t gb    = gamma * beta;
+
+    printf("\n Boosting particles to lab frame %f %f %f", dy, beta, gamma);
+    
+    Int_t i;
+    Int_t np = fParticles->GetEntriesFast();
+    for (i = 0; i < np; i++) 
+    {
+	TParticle* iparticle = (TParticle*) fParticles->At(i);
+
+	Double_t e   = iparticle->Energy();
+	Double_t px  = iparticle->Px();
+	Double_t py  = iparticle->Py();
+	Double_t pz  = iparticle->Pz();
+
+	Double_t eb  = gamma * e -      gb * pz;
+	Double_t pzb =   -gb * e +   gamma * pz;
+
+	iparticle->SetMomentum(px, py, pzb, eb);
+    }
+}
+
+
 	  
 AliGenMC& AliGenMC::operator=(const  AliGenMC& rhs)
 {

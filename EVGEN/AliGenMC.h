@@ -15,8 +15,9 @@
 #include "AliGenerator.h"
 #include "AliDecayer.h"
 #include "AliGeometry.h"
-#include <TArrayI.h>    
+#include <TArrayI.h>   
 #include <TClonesArray.h>
+#include <TString.h>
 
 class TParticle;
 
@@ -51,8 +52,13 @@ class AliGenMC : public AliGenerator
     virtual void SetPdgCodeParticleforAcceptanceCut(Int_t PdgCodeParticleforAcceptanceCut=0) {fPdgCodeParticleforAcceptanceCut = PdgCodeParticleforAcceptanceCut;}
 
     virtual void SetNumberOfAcceptedParticles(Int_t NumberOfAcceptedParticles=2) {fNumberOfAcceptedParticles = NumberOfAcceptedParticles;}
-
+    
     virtual Bool_t CheckAcceptanceGeometry(Int_t np, TClonesArray* particles);
+    virtual void   SetProjectile(TString proj="A", Int_t a=208, Int_t z=82)
+	{fProjectile = proj; fAProjectile = a; fZProjectile = z;}    
+    virtual void   SetTarget(TString tar="A", Int_t a=208, Int_t z=82)
+	{fTarget = tar; fATarget = a; fZTarget = z;}    
+    virtual void Boost(Float_t dy);
 
  protected:
     // check if particle is selected as parent particle
@@ -64,6 +70,7 @@ class AliGenMC : public AliGenerator
     Int_t  CheckPDGCode(Int_t pdgcode) const;
 
  protected:
+    TClonesArray* fParticles;   //!Particle  List
     TArrayI     fParentSelect;  //!Parent particles to be selected 
     TArrayI     fChildSelect;   //!Decay products to be selected
     Int_t       fCutOnChild;    // Cuts on decay products (children)  are enabled/disabled
@@ -79,6 +86,13 @@ class AliGenMC : public AliGenerator
     Float_t     fChildYMax;     // Children maximum y
     Decay_t     fForceDecay;    // Decay channel forced
     Float_t     fMaxLifeTime;   // Maximum lifetime for unstable particles
+    Int_t       fAProjectile;   // Projectile A
+    Int_t       fZProjectile;   // Projectile Z
+    Int_t       fATarget;       // Target A
+    Int_t       fZTarget;       // Target Z
+    TString     fProjectile;    // Projectile
+    TString     fTarget;        // Target
+
     AliGeometry * fGeometryAcceptance; // Geometry to which particles must be simulated
     Int_t       fPdgCodeParticleforAcceptanceCut;  // Abs(PDG Code) of the particle to which the GeometryAcceptance must be applied
     Int_t       fNumberOfAcceptedParticles;  // Number of accepted particles in GeometryAcceptance with the right Abs(PdgCode) 
