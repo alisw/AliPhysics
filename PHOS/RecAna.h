@@ -95,7 +95,7 @@ class RecAna {
   TBranch        *b_PHOSRP_fLineWidth;
   
   RecAna() {};
-  RecAna(TString filename);
+  RecAna(char * filename);
   RecAna(TTree *tree) {};
   ~RecAna() {;}
   Int_t GetEntry(Int_t entry = 0);
@@ -110,7 +110,7 @@ class RecAna {
 #endif
 
 #ifdef RecAna_cxx
-RecAna::RecAna(TString filename)
+RecAna::RecAna(char * filename)
 {
   // connect the file used to generate this class and read the Tree.
   
