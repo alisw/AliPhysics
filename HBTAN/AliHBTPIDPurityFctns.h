@@ -153,6 +153,7 @@ class AliHBTPairPIDProbVsQInvFctn: public AliHBTOnePairFctn1D, public AliHBTCorr
    ClassDef(AliHBTPairPIDProbVsQInvFctn,1)
 };
 /*************************************************************************************/
+
 class AliHBTPairPIDProbVsQOutSQideQLongFctn: public AliHBTOnePairFctn3D, public AliHBTCorrelFunction
 {
 
@@ -171,6 +172,45 @@ class AliHBTPairPIDProbVsQOutSQideQLongFctn: public AliHBTOnePairFctn3D, public 
 
     ClassDef(AliHBTPairPIDProbVsQOutSQideQLongFctn,1)
 };
+/******************************************************************/
+
+class AliHBTTwoTrackEffFctnPtThetaPhiPerfectPID: public AliHBTTwoPairFctn3D, public AliHBTCorrelFunction
+ {
+  public:
+    AliHBTTwoTrackEffFctnPtThetaPhiPerfectPID(Int_t nXbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0,
+                                    Int_t nYbins = 100, Double_t maxYval = 0.3, Double_t minYval = 0.0,
+	                Int_t nZbins = 100, Double_t maxZval = 0.3, Double_t minZval = 0.0);
+    virtual ~AliHBTTwoTrackEffFctnPtThetaPhiPerfectPID(){}
+    void ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
+    void ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
+    
+    TH1* GetResult();
+  protected:
+    void GetValues(AliHBTPair* /*trackpair*/, AliHBTPair* /*partpair*/, Double_t& /*x*/, Double_t& /*y*/, Double_t& /*z*/) const {}
+  private:
+    ClassDef(AliHBTTwoTrackEffFctnPtThetaPhiPerfectPID,1)
+ };
+/*************************************************************************************/
+
+class AliHBTPairPIDProbVsPtThetaPhiFctn: public AliHBTOnePairFctn3D, public AliHBTCorrelFunction
+{
+
+  public:
+    AliHBTPairPIDProbVsPtThetaPhiFctn(Int_t nXbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0,
+                                      Int_t nYbins = 100, Double_t maxYval = 0.15, Double_t minYval = 0.0,
+                                      Int_t nZbins = 100, Double_t maxZval = 0.15, Double_t minZval = 0.0);
+    virtual  ~AliHBTPairPIDProbVsPtThetaPhiFctn(){}
+
+    TH1* GetResult();
+    void ProcessSameEventParticles(AliHBTPair* part);
+    void ProcessDiffEventParticles(AliHBTPair* pair);
+
+  protected:
+    void GetValues(AliHBTPair* /*pair*/, Double_t& /*x*/, Double_t& /*y*/, Double_t& /*z*/) const {}
+
+    ClassDef(AliHBTPairPIDProbVsPtThetaPhiFctn,1)
+};
+
 
 
 #endif

@@ -662,3 +662,156 @@ TH1* AliHBTPairPIDProbVsQOutSQideQLongFctn::GetResult()
  fRatio = GetRatio(Scale());
  return fRatio;
 }
+
+/******************************************************************/
+/******************************************************************/
+/******************************************************************/
+
+ClassImp(AliHBTTwoTrackEffFctnPtThetaPhiPerfectPID)
+
+AliHBTTwoTrackEffFctnPtThetaPhiPerfectPID::AliHBTTwoTrackEffFctnPtThetaPhiPerfectPID(Int_t nXbins, Double_t maxXval, Double_t minXval,
+                                                   Int_t nYbins, Double_t maxYval, Double_t minYval,
+                                                   Int_t nZbins, Double_t maxZval, Double_t minZval):
+ AliHBTTwoPairFctn3D(nXbins,maxXval,minXval,nYbins,maxYval,minYval,nZbins,maxZval,minZval)
+{
+//ctor
+//Set Axis Title
+ fWriteNumAndDen = kTRUE;
+ Rename("tteffptthetaphi","P_{t} \\theta \\phi Two Track Efficiency Function");
+ if(fNumerator)
+  {
+   fNumerator->GetXaxis()->SetTitle("\\Delta P_{t} [GeV]");
+   fNumerator->GetYaxis()->SetTitle("\\Delta \\theta [rad]");
+   fNumerator->GetZaxis()->SetTitle("\\Delta \\phi [rad]");
+  }
+
+ if(fDenominator)
+  {
+   fDenominator->GetXaxis()->SetTitle("\\Delta P_{t} [GeV]");
+   fDenominator->GetYaxis()->SetTitle("\\Delta \\theta [rad]");
+   fDenominator->GetZaxis()->SetTitle("\\Delta \\phi [rad]");
+  }
+}
+/******************************************************************/
+
+void AliHBTTwoTrackEffFctnPtThetaPhiPerfectPID::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
+{
+//Fills numerator
+  if (trackpair->Particle1()->GetPid() != partpair->Particle1()->GetPid()) return;
+  if (trackpair->Particle2()->GetPid() != partpair->Particle2()->GetPid()) return;
+
+  trackpair  = CheckPair(trackpair);
+  if (trackpair == 0x0) return;
+  partpair  = CheckPair(partpair);
+  if (partpair == 0x0) return;
+
+  Double_t x = TMath::Abs(trackpair->GetDeltaPt());
+  Double_t y = TMath::Abs(trackpair->GetDeltaTheta());
+  Double_t z = TMath::Abs(trackpair->GetDeltaPhi());
+  fNumerator->Fill(x,y,z);
+}
+/******************************************************************/
+
+void AliHBTTwoTrackEffFctnPtThetaPhiPerfectPID::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
+{
+//Fills numerator
+  if (trackpair->Particle1()->GetPid() != partpair->Particle1()->GetPid()) return;
+  if (trackpair->Particle2()->GetPid() != partpair->Particle2()->GetPid()) return;
+
+  trackpair  = CheckPair(trackpair);
+  if (trackpair == 0x0) return;
+  partpair  = CheckPair(partpair);
+  if (partpair == 0x0) return;
+
+  Double_t x = TMath::Abs(trackpair->GetDeltaPt());
+  Double_t y = TMath::Abs(trackpair->GetDeltaTheta());
+  Double_t z = TMath::Abs(trackpair->GetDeltaPhi());
+  fDenominator->Fill(x,y,z);
+}
+/******************************************************************/
+
+TH1* AliHBTTwoTrackEffFctnPtThetaPhiPerfectPID::GetResult()
+{
+//returns ratio of numerator and denominator
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ if(fRatio)
+  {
+   fRatio->GetXaxis()->SetTitle("\\Delta P_{t} [GeV]");
+   fRatio->GetYaxis()->SetTitle("\\Delta \\theta [rad]");
+   fRatio->GetZaxis()->SetTitle("\\Delta \\phi [rad]");
+  }
+ return fRatio;
+}
+/******************************************************************/
+/******************************************************************/
+/******************************************************************/
+
+ClassImp(AliHBTPairPIDProbVsPtThetaPhiFctn)
+
+AliHBTPairPIDProbVsPtThetaPhiFctn::AliHBTPairPIDProbVsPtThetaPhiFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
+                                                   Int_t nYbins, Double_t maxYval, Double_t minYval,
+                                                   Int_t nZbins, Double_t maxZval, Double_t minZval):
+ AliHBTOnePairFctn3D(nXbins,maxXval,minXval,nYbins,maxYval,minYval,nZbins,maxZval,minZval)
+{
+  //ctor
+  fWriteNumAndDen = kTRUE;//change default behaviour
+  Rename("qptthetaphipidpur","Pair PID Probablilty .vs. \\Delta P_{t}-\\Delta \\theta-\\Delta \\phi Fctn");
+  if(fNumerator)
+   {
+    fNumerator->GetXaxis()->SetTitle("\\Delta P_{t} [GeV]");
+    fNumerator->GetYaxis()->SetTitle("\\Delta \\theta [rad]");
+    fNumerator->GetZaxis()->SetTitle("\\Delta \\phi [rad]");
+   }
+
+  if(fDenominator)
+   {
+    fDenominator->GetXaxis()->SetTitle("\\Delta P_{t} [GeV]");
+    fDenominator->GetYaxis()->SetTitle("\\Delta \\theta [rad]");
+    fDenominator->GetZaxis()->SetTitle("\\Delta \\phi [rad]");
+   }
+  
+}
+/*************************************************************/
+
+void AliHBTPairPIDProbVsPtThetaPhiFctn::ProcessSameEventParticles(AliHBTPair* pair)
+{
+//Fills numerator
+  pair  = CheckPair(pair);
+  if (pair == 0x0) return;
+  Double_t weight = pair->GetPIDProb();
+  Double_t pt = TMath::Abs(pair->GetDeltaPt());
+  Double_t theta = TMath::Abs(pair->GetDeltaTheta());
+  Double_t phi = TMath::Abs(pair->GetDeltaPhi());
+  fNumerator->Fill(pt,theta,phi,weight);
+}
+/*************************************************************/
+
+void AliHBTPairPIDProbVsPtThetaPhiFctn::ProcessDiffEventParticles(AliHBTPair* pair)
+{
+//Fills numerator
+  pair  = CheckPair(pair);
+  if (pair == 0x0) return;
+  Double_t weight = pair->GetPIDProb();
+  Double_t pt = TMath::Abs(pair->GetDeltaPt());
+  Double_t phi = TMath::Abs(pair->GetDeltaTheta());
+  Double_t theta = TMath::Abs(pair->GetDeltaPhi());
+  fDenominator->Fill(pt,theta,phi,weight);
+}
+/*************************************************************/
+
+TH1* AliHBTPairPIDProbVsPtThetaPhiFctn::GetResult()
+{
+ //returns the scaled ratio
+ 
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ if(fRatio)
+  {
+   fRatio->GetXaxis()->SetTitle("\\Delta P_{t} [GeV]");
+   fRatio->GetYaxis()->SetTitle("\\Delta \\theta [rad]");
+   fRatio->GetZaxis()->SetTitle("\\Delta \\phi [rad]");
+  }
+ return fRatio;
+}
+

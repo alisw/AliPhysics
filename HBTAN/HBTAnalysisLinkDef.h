@@ -180,6 +180,8 @@
 #pragma link C++ class AliHBTQOutSQideQLongFctnPerfectPID+;
 #pragma link C++ class AliHBTPairPIDProbVsQInvFctn+;
 #pragma link C++ class AliHBTPairPIDProbVsQOutSQideQLongFctn+;
+#pragma link C++ class AliHBTTwoTrackEffFctnPtThetaPhiPerfectPID+;
+#pragma link C++ class AliHBTPairPIDProbVsPtThetaPhiFctn+;
 
 #pragma link C++ class AliHBTTwoTrackEffFctn+;
 #pragma link C++ class AliHBTTwoTrackEffFctnPtThetaPhi+;
