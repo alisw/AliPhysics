@@ -253,15 +253,19 @@ Int_t AliHBTReaderInternal::Read(AliHBTRun* particles, AliHBTRun *tracks)
         totalNevents++;
        }
 
-   /***************************/
-   /***************************/
-   /***************************/
-   currentdir++;
-   aFile->Close();
-   aFile = 0x0;
+    /***************************/
+    /***************************/
+    /***************************/
+    currentdir++;
+    delete tree;
+    aFile->Close();
+    delete aFile;
+    aFile = 0x0;
 
    }while(currentdir < Ndirs);
 
+  delete pbuffer;
+  delete tbuffer;
   fIsRead = kTRUE;
   return 0;
 }
