@@ -14,7 +14,11 @@ OPT           = -g
 SL	      = so
 
 # The options
-CXXOPTS       = $(OPT) -Wall -fPIC  -fno-rtti -fno-exceptions
+#
+# starting from root.2.22 on Linux the flags -fno-rtti -fno-exceptions are
+# not necessary any more
+#
+CXXOPTS       = $(OPT) -Wall -fPIC
 COPT	      = $(OPT)
 FOPT	      = $(OPT) -fno-second-underscore
 
