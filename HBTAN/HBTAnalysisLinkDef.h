@@ -40,6 +40,7 @@
 #pragma link C++ class AliHBTQLongLCMSCorrelFctn+;
 #pragma link C++ class AliHBTQSideLCMSCorrelFctn+;
 #pragma link C++ class AliHBTQtLCMSCorrelFctn+;
+#pragma link C++ class AliHBTQtCorrelFctn+;
 
 #pragma link C++ class AliHBTAvSeparCorrelFctn+;
 
