@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $Id: AliCollider.h,v 1.8 2004/02/13 11:08:16 nick Exp $
+// $Id: AliCollider.h,v 1.9 2004/05/04 15:33:04 nick Exp $
 
 #include "TPythia6.h"
 #include "TString.h"
@@ -38,6 +38,10 @@ class AliCollider : public TPythia6
   AliEvent* GetEvent(Int_t select=0) const;             // Provide pointer to the generated event structure
   void SetSpectatorPmin(Float_t pmin);                  // Set minimal momentum for spectator track to be stored
   Float_t GetSpectatorPmin() const;                     // Provide the minimal momentum for spectator tracks
+  void SetUserControl(Int_t flag);                      // Selection of full user control w.r.t. MC parameters. 
+  Int_t GetUserControl() const;                         // Provide the value of the user control flag.
+  void SetElastic(Int_t flag);                          // Selection flag for elastic and diffractive processes.
+  Int_t GetElastic() const;                             // Provide the value of the elastic selection flag.
 
  protected:
   Int_t fVertexmode;    // The vertex structure creation mode
@@ -59,6 +63,8 @@ class AliCollider : public TPythia6
   AliRandom fRan;       // Random number generator
   AliEvent* fEvent;     // The produced event structure
   Float_t fSpecpmin;    // The minimal momentum for spectator tracks to be stored
+  Int_t fUserctrl;      // Flag to denote the user control selection w.r.t. MC parameters
+  Int_t fElastic;       // Flag to denote inclusion of elastic and difractive processes.
 
   TFile* fOutFile;      // The user defined output data file 
   TTree* fOutTree;      // The standard ROOT output tree

@@ -15,6 +15,8 @@
 #include "AliAttrib.h"
 #include "AliObjMatrix.h"
 
+class AliDevice;
+
 class AliSignal : public TNamed,public AliPosition,public AliAttrib
 {
  public:
@@ -67,13 +69,16 @@ class AliSignal : public TNamed,public AliPosition,public AliAttrib
   void ResetLinks(TObject* obj,TString name,Int_t k=0);         // Reset link(s) to object obj for name-specified slot
   void SetSwapMode(Int_t swap=1);                               // Set swapmode flag for the link storage
   Int_t GetSwapMode() const;                                    // Provide swapmode flag for the link storage
+  void SetDevice(TObject* dev);                                 // Store pointer to the device that owns this signal
+  AliDevice* GetDevice() const;                                 // Provide pointer to the owning device 
 
  protected:
   TArrayF* fSignals;                           // Signal values
   TArrayF* fDsignals;                          // Errors on signal values
   TObjArray* fWaveforms;                       // The 1D histograms containing the signal waveforms
   AliObjMatrix* fLinks;                        // Pointers of objects related to the various slots
+  TObject* fDevice;                            // Pointer to the device that owns this signal
 
- ClassDef(AliSignal,12) // Generic handling of (extrapolated) detector signals.
+ ClassDef(AliSignal,13) // Generic handling of (extrapolated) detector signals.
 };
 #endif

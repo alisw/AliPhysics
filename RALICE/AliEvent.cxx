@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliEvent.cxx,v 1.23 2004/07/01 14:28:50 nick Exp $
+// $Id: AliEvent.cxx,v 1.24 2004/07/06 13:34:16 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
@@ -244,7 +244,7 @@
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
-//- Modified: NvE $Date: 2004/07/01 14:28:50 $ UU-SAP Utrecht
+//- Modified: NvE $Date: 2004/07/06 13:34:16 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliEvent.h"
@@ -270,6 +270,8 @@ AliEvent::AliEvent() : AliVertex()
  fDevices=0;
  fDevCopy=0;
  fHits=0;
+ fOrdered=0;
+ fDisplay=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliEvent::AliEvent(Int_t n) : AliVertex(n)
@@ -294,6 +296,8 @@ AliEvent::AliEvent(Int_t n) : AliVertex(n)
  fDevices=0;
  fDevCopy=0;
  fHits=0;
+ fOrdered=0;
+ fDisplay=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliEvent::~AliEvent()
@@ -308,6 +312,16 @@ AliEvent::~AliEvent()
  {
   delete fHits;
   fHits=0;
+ }
+ if (fOrdered)
+ {
+  delete fOrdered;
+  fOrdered=0;
+ }
+ if (fDisplay)
+ {
+  delete fDisplay;
+  fDisplay=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -326,6 +340,10 @@ AliEvent::AliEvent(const AliEvent& evt) : AliVertex(evt)
  fPnucTarg=evt.fPnucTarg;
  fIdTarg=evt.fIdTarg;
  fDevCopy=evt.fDevCopy;
+
+ fHits=0;
+ fOrdered=0;
+ fDisplay=0;
 
  fDevices=0;
  Int_t ndevs=evt.GetNdevices();
@@ -346,21 +364,6 @@ AliEvent::AliEvent(const AliEvent& evt) : AliVertex(evt)
     {
      fDevices->Add(dev);
     }
-   }
-  }
- }
-
- fHits=0;
- if (evt.fHits)
- {
-  Int_t nhits=evt.fHits->GetEntries();
-  if (nhits)
-  {
-   fHits=new TObjArray(nhits);
-   for (Int_t ih=0; ih<nhits; ih++)
-   {
-    AliSignal* sx=(AliSignal*)evt.fHits->At(ih);
-    fHits->Add(sx);
    }
   }
  }
@@ -396,6 +399,16 @@ void AliEvent::Reset()
  {
   delete fHits;
   fHits=0;
+ }
+ if (fOrdered)
+ {
+  delete fOrdered;
+  fOrdered=0;
+ }
+ if (fDisplay)
+ {
+  delete fDisplay;
+  fDisplay=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -800,11 +813,10 @@ void AliEvent::LoadHits(const char* classname)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-TObjArray* AliEvent::SortHits(TObjArray* hits,Int_t idx,Int_t mode)
+TObjArray* AliEvent::SortHits(const char* classname,Int_t idx,Int_t mode)
 {
-// Order the references to an array of hits by looping over the input array "hits"
-// and checking the signal value. The ordered array is returned as a TObjArray.
-// Note that the input array is not modified.
+// Order the references to the various hits registered to the specified
+// device class. The ordered array is returned as a TObjArray.
 // A "hit" represents an abstract object which is derived from AliSignal.
 // The user can specify the index of the signal slot to perform the sorting on.
 // By default the slotindex will be 1.
@@ -813,26 +825,29 @@ TObjArray* AliEvent::SortHits(TObjArray* hits,Int_t idx,Int_t mode)
 // The default is mode=-1.
 // Signals which were declared as "Dead" will be rejected.
 // The gain etc... corrected signals will be used in the ordering process.
+//
+// For more extended functionality see class AliDevice.
+
+ if (idx<=0 || abs(mode)!=1) return 0;
+
+ LoadHits(classname);
+
+ AliDevice dev;
+ TObjArray* ordered=dev.SortHits(idx,mode,fHits);
 
  if (fHits)
  {
   delete fHits;
   fHits=0;
  } 
-
- if (idx<=0 || abs(mode)!=1 || !hits) return fHits;
-
- AliDevice dev;
- TObjArray* ordered=dev.SortHits(idx,mode,hits);
  if (ordered) fHits=new TObjArray(*ordered);
  return fHits;
 }
 ///////////////////////////////////////////////////////////////////////////
-TObjArray* AliEvent::SortHits(TObjArray* hits,TString name,Int_t mode)
+TObjArray* AliEvent::SortHits(const char* classname,TString name,Int_t mode)
 {
-// Order the references to an array of hits by looping over the input array "hits"
-// and checking the signal value. The ordered array is returned as a TObjArray.
-// Note that the input array is not modified.
+// Order the references to the various hits registered to the specified
+// device class. The ordered array is returned as a TObjArray.
 // A "hit" represents an abstract object which is derived from AliSignal.
 // The user can specify the name of the signal slot to perform the sorting on.
 // In case no matching slotname is found, the signal will be skipped.
@@ -841,19 +856,300 @@ TObjArray* AliEvent::SortHits(TObjArray* hits,TString name,Int_t mode)
 // The default is mode=-1.
 // Signals which were declared as "Dead" will be rejected.
 // The gain etc... corrected signals will be used in the ordering process.
+//
+// For more extended functionality see class AliDevice.
+ 
+ if (abs(mode)!=1) return 0;
+
+ LoadHits(classname);
+
+ AliDevice dev;
+ TObjArray* ordered=dev.SortHits(name,mode,fHits);
 
  if (fHits)
  {
   delete fHits;
   fHits=0;
  } 
- 
- if (abs(mode)!=1 || !hits) return fHits;
-
- AliDevice dev;
- TObjArray* ordered=dev.SortHits(name,mode,hits);
  if (ordered) fHits=new TObjArray(*ordered);
  return fHits;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliEvent::GetExtremes(const char* classname,Float_t& vmin,Float_t& vmax,Int_t idx)
+{
+// Provide the min. and max. signal values of the various hits registered
+// to the specified device class.
+// The input argument "idx" denotes the index of the signal slots to be investigated.
+// The default is idx=1;
+// Signals which were declared as "Dead" will be rejected.
+// The gain etc... corrected signals will be used in the process.
+//
+// For more extended functionality see class AliDevice.
+
+ if (idx<=0) return;
+
+ LoadHits(classname);
+
+ AliDevice dev;
+ dev.GetExtremes(vmin,vmax,idx,fHits);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliEvent::GetExtremes(const char* classname,Float_t& vmin,Float_t& vmax,TString name)
+{
+// Provide the min. and max. signal values of the various hits registered
+// to the specified device class.
+// The input argument "name" denotes the name of the signal slots to be investigated.
+// Signals which were declared as "Dead" will be rejected.
+// The gain etc... corrected signals will be used in the process.
+//
+// For more extended functionality see class AliDevice.
+
+ LoadHits(classname);
+
+ AliDevice dev;
+ dev.GetExtremes(vmin,vmax,name,fHits);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliEvent::DisplayHits(const char* classname,Int_t idx,Float_t scale,Int_t dp,Int_t mstyle,Int_t mcol)
+{
+// 3D color display of the various hits registered to the specified device class.
+// The user can specify the index (default=1) of the signal slot to perform the display for.
+// The marker size will indicate the absolute value of the signal (specified by the slotindex)
+// as a percentage of the input argument "scale".
+// In case scale<0 the maximum absolute signal value encountered in the hit array will be used
+// to define the 100% scale. The default is scale=-1.
+// In case dp=1 the owning device position will be used, otherwise the hit position will
+// be used in the display. The default is dp=0.
+// Via the "mstyle" and "mcol" arguments the user can specify the marker style
+// and color (see TPolyMarker3D) respectively.
+// The defaults are mstyle="large scalable dot" and mcol=blue.
+// Signals which were declared as "Dead" will not be displayed.
+// The gain etc... corrected signals will be used to determine the marker size.
+//
+// For more extended functionality see class AliDevice.
+//
+// Note :
+// ------
+// Before any display activity, a TCanvas and a TView have to be initiated
+// first by the user like for instance
+// 
+// TCanvas* c1=new TCanvas("c1","c1");
+// TView* view=new TView(1);
+// view->SetRange(-1000,-1000,-1000,1000,1000,1000);
+// view->ShowAxis();
+
+ if (idx<=0) return;
+
+ LoadHits(classname);
+
+ AliDevice* dev=new AliDevice();
+ dev->DisplayHits(idx,scale,fHits,dp,mstyle,mcol);
+
+ if (fDisplay)
+ {
+  delete fDisplay;
+  fDisplay=0;
+ }
+ fDisplay=dev;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliEvent::DisplayHits(const char* classname,TString name,Float_t scale,Int_t dp,Int_t mstyle,Int_t mcol)
+{
+// 3D color display of the various hits registered to the specified device class.
+// The user can specify the name of the signal slot to perform the display for.
+// The marker size will indicate the absolute value of the signal (specified by the slotname)
+// as a percentage of the input argument "scale".
+// In case scale<0 the maximum absolute signal value encountered in the hit array will be used
+// to define the 100% scale. The default is scale=-1.
+// In case dp=1 the owning device position will be used, otherwise the hit position will
+// be used in the display. The default is dp=0.
+// The marker size will indicate the percentage of the maximum encountered value
+// of the absolute value of the name-specified input signal slots.
+// Via the "mstyle" and "mcol" arguments the user can specify the marker style
+// and color (see TPolyMarker3D) respectively.
+// The defaults are mstyle="large scalable dot" and mcol=blue.
+// Signals which were declared as "Dead" will not be displayed.
+// The gain etc... corrected signals will be used to determine the marker size.
+//
+// For more extended functionality see class AliDevice.
+//
+// Note :
+// ------
+// Before any display activity, a TCanvas and a TView have to be initiated
+// first by the user like for instance
+// 
+// TCanvas* c1=new TCanvas("c1","c1");
+// TView* view=new TView(1);
+// view->SetRange(-1000,-1000,-1000,1000,1000,1000);
+// view->ShowAxis();
+
+ LoadHits(classname);
+
+ AliDevice* dev=new AliDevice();
+ dev->DisplayHits(name,scale,fHits,dp,mstyle,mcol);
+
+ if (fDisplay)
+ {
+  delete fDisplay;
+  fDisplay=0;
+ }
+ fDisplay=dev;
+}
+///////////////////////////////////////////////////////////////////////////
+TObjArray* AliEvent::SortDevices(const char* classname,TString name,Int_t mode)
+{
+// Order the references to the various devices based on hit signals registered
+// to the specified device class. The ordered array is returned as a TObjArray.
+// A "hit" represents an abstract object which is derived from AliSignal.
+// The user can specify the name of the signal slot to perform the sorting on.
+// In case no matching slotname is found, the signal will be skipped.
+// Via the "mode" argument the user can specify ordering in decreasing
+// order (mode=-1) or ordering in increasing order (mode=1).
+// The default is mode=-1.
+// Signals which were declared as "Dead" will be rejected.
+// The gain etc... corrected signals will be used in the ordering process.
+//
+
+ TObjArray* ordered=SortHits(classname,name,mode);
+ 
+ if (!ordered) return 0;
+
+ TObjArray* devs=SortDevices(ordered,"*",0);
+ return devs;
+}
+///////////////////////////////////////////////////////////////////////////
+TObjArray* AliEvent::SortDevices(const char* classname,Int_t idx,Int_t mode)
+{
+// Order the references to the various devices based on hit signals registered
+// to the specified device class. The ordered array is returned as a TObjArray.
+// A "hit" represents an abstract object which is derived from AliSignal.
+// The user can specify the index of the signal slot to perform the sorting on.
+// By default the slotindex will be 1.
+// Via the "mode" argument the user can specify ordering in decreasing
+// order (mode=-1) or ordering in increasing order (mode=1).
+// The default is mode=-1.
+// Signals which were declared as "Dead" will be rejected.
+// The gain etc... corrected signals will be used in the ordering process.
+//
+
+ TObjArray* ordered=SortHits(classname,idx,mode);
+ 
+ if (!ordered) return 0;
+
+ TObjArray* devs=SortDevices(ordered,0,0);
+ return devs;
+}
+///////////////////////////////////////////////////////////////////////////
+TObjArray* AliEvent::SortDevices(TObjArray* hits,TString name,Int_t mode)
+{
+// Order the references to the various devices based on hit signals contained
+// in the input array. The ordered array is returned as a TObjArray.
+// A "hit" represents an abstract object which is derived from AliSignal.
+// The user can specify the name of the signal slot to perform the sorting on.
+// In case no matching slotname is found, the signal will be skipped.
+// Via the "mode" argument the user can specify ordering in decreasing
+// order (mode=-1), ordering in increasing order (mode=1) or no ordering (mode=0).
+// The latter option provides a means to quickly obtain an ordered devices list
+// when the hits in the array were already ordered by the user. In this case
+// the input argument "name" is irrelevant.
+// The default is mode=-1.
+// Signals which were declared as "Dead" will be rejected.
+// The gain etc... corrected signals will be used in the ordering process.
+//
+
+ if (!hits) return 0;
+
+ TObjArray* ordered=hits;
+ AliDevice dev;
+ if (mode) ordered=dev.SortHits(name,mode,hits);
+ 
+ if (!ordered) return 0;
+
+ if (fOrdered)
+ {
+  fOrdered->Clear();
+ }
+ else
+ {
+  fOrdered=new TObjArray();
+ }
+
+ Int_t nhits=ordered->GetEntries();
+ Int_t exist=0;
+ for (Int_t ih=0; ih<nhits; ih++)
+ {
+  AliSignal* sx=(AliSignal*)ordered->At(ih);
+  if (!sx) continue;
+  AliDevice* dx=sx->GetDevice();
+  exist=0;
+  for (Int_t id=0; id<fOrdered->GetEntries(); id++)
+  {
+   AliDevice* odx=(AliDevice*)fOrdered->At(id);
+   if (dx==odx)
+   {
+    exist=1;
+    break;
+   }
+  }
+  if (!exist) fOrdered->Add(dx);
+ }
+ return fOrdered;
+}
+///////////////////////////////////////////////////////////////////////////
+TObjArray* AliEvent::SortDevices(TObjArray* hits,Int_t idx,Int_t mode)
+{
+// Order the references to the various devices based on hit signals contained
+// in the input array. The ordered array is returned as a TObjArray.
+// A "hit" represents an abstract object which is derived from AliSignal.
+// The user can specify the index of the signal slot to perform the sorting on.
+// By default the slotindex will be 1.
+// Via the "mode" argument the user can specify ordering in decreasing
+// order (mode=-1), ordering in increasing order (mode=1) or no ordering (mode=0).
+// The latter option provides a means to quickly obtain an ordered devices list
+// when the hits in the array were already ordered by the user. In this case
+// the input argument "idx" is irrelevant.
+// The default is mode=-1.
+// Signals which were declared as "Dead" will be rejected.
+// The gain etc... corrected signals will be used in the ordering process.
+//
+
+ if (!hits) return 0;
+
+ TObjArray* ordered=hits;
+ AliDevice dev;
+ if (mode) ordered=dev.SortHits(idx,mode,hits);
+ 
+ if (!ordered) return 0;
+
+ if (fOrdered)
+ {
+  fOrdered->Clear();
+ }
+ else
+ {
+  fOrdered=new TObjArray();
+ }
+
+ Int_t nhits=ordered->GetEntries();
+ Int_t exist=0;
+ for (Int_t ih=0; ih<nhits; ih++)
+ {
+  AliSignal* sx=(AliSignal*)ordered->At(ih);
+  if (!sx) continue;
+  AliDevice* dx=sx->GetDevice();
+  exist=0;
+  for (Int_t id=0; id<fOrdered->GetEntries(); id++)
+  {
+   AliDevice* odx=(AliDevice*)fOrdered->At(id);
+   if (dx==odx)
+   {
+    exist=1;
+    break;
+   }
+  }
+  if (!exist) fOrdered->Add(dx);
+ }
+ return fOrdered;
 }
 ///////////////////////////////////////////////////////////////////////////
 TObject* AliEvent::Clone(const char* name) const

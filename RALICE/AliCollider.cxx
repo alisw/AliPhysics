@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliCollider.cxx,v 1.11 2004/03/12 09:18:24 nick Exp $
+// $Id: AliCollider.cxx,v 1.12 2004/05/04 15:33:04 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliCollider
@@ -108,7 +108,7 @@
 //
 //
 //--- Author: Nick van Eijndhoven 22-nov-2002 Utrecht University
-//- Modified: NvE $Date: 2004/03/12 09:18:24 $ Utrecht University
+//- Modified: NvE $Date: 2004/05/04 15:33:04 $ Utrecht University
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliCollider.h"
@@ -120,11 +120,25 @@ AliCollider::AliCollider() : TPythia6()
 {
 // Default constructor.
 // All variables initialised to default values.
+//
+// Some Pythia default MC parameters are automatically modified to provide
+// more suitable running conditions for soft processes in view of
+// nucleus-nucleus interactions and astrophysical processes.
+// The user may initialise the generator with all the default Pythia
+// parameters and obtain full user control to modify the settings by means
+// of the SetUserControl memberfunction.
+//
+// Refer to the SetElastic memberfunction for the inclusion of elastic
+// and diffractive processes.
+// By default these processes are not included.
+
  fVertexmode=0;    // No vertex structure creation
  fResolution=1e-5; // Standard resolution is 0.1 micron
  fRunnum=0;
  fEventnum=0;
  fPrintfreq=1;
+ fUserctrl=0; // Automatic optimisation of some MC parameters 
+ fElastic=0;  // No elastic and diffractive processes
 
  fEvent=0;
 
@@ -305,12 +319,69 @@ Int_t AliCollider::GetPrintFreq() const
  return fPrintfreq;
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliCollider::SetUserControl(Int_t flag)
+{
+// Set the user control flag w.r.t. disabling automatic optimisation
+// of some Pythia default MC parameters for soft interactions in view of
+// nucleus-nucleus collisions and astrophysical processes.
+// Flag = 0 : Limited user control (automatic optimisation enabled)
+//        1 : Full user control (automatic optimisation disabled)
+// By default the user control is set to 0 (i.e. automatic optimisation).
+// See the Init() memberfunctions for further details w.r.t. the optimisations.
+ fUserctrl=flag;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliCollider::GetUserControl() const
+{
+// Provide the value of the user control flag.
+ return fUserctrl;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliCollider::SetElastic(Int_t flag)
+{
+// Set the flag w.r.t. inclusion of elastic and diffractive processes.
+// By default these processes are not included.
+// Flag = 0 : Do not include elastic and diffractive processes
+//        1 : Elastic and diffractive processes will be included
+ fElastic=flag;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliCollider::GetElastic() const
+{
+// Provide the value of the control flag for elastic and diffractive processes.
+ return fElastic;
+}
+///////////////////////////////////////////////////////////////////////////
 void AliCollider::Init(char* frame,char* beam,char* target,Float_t win)
 {
 // Initialisation of the underlying Pythia generator package.
+// The event number is reset to 0.
 // This routine just invokes TPythia6::Initialize(...) and the arguments
 // have the corresponding meaning.
-// The event number is reset to 0.
+// Some Pythia default MC parameters are automatically modified to provide
+// more suitable running conditions for soft processes in view of
+// astrophysical processes.
+// The optimisations consist of : 
+// * Usage of real photons for photon beams of targets
+// * Minimum CMS energy of 3 GeV for the event
+// * Activation of the default K factor values
+//   with separate settings for ordinary and color annihilation graphs.
+// The user may initialise the generator with all the default Pythia
+// parameters and obtain full user control to modify the settings by means
+// of invoking the SetUserControl memberfunction before this initialisation.
+// Note that the inclusion of elastic and diffractive processes is controlled
+// by invokation of the SetElastic memberfunction before this initialisation,
+// irrespective of the UserControl selection.
+
+ if (!fUserctrl) // Optimisation of some MC parameters
+ {
+  SetMSTP(14,10); // Real photons for photon beams or targets
+  SetPARP(2,3.);  // Minimum CMS energy for the event
+  SetMSTP(33,2);  // Activate K factor. Separate for ordinary and color annih. graphs
+ }
+
+ if (fElastic) SetMSEL(2); // Include low-Pt, elastic and diffractive events
+
  fEventnum=0;
  fNucl=0;
  fFrame=frame;
@@ -328,13 +399,35 @@ void AliCollider::Init(char* frame,Int_t zp,Int_t ap,Int_t zt,Int_t at,Float_t w
 {
 // Initialisation of the underlying Pythia generator package for the generation
 // of nucleus-nucleus interactions.
+// The event number is reset to 0.
 // In addition to the Pythia standard arguments 'frame' and 'win', the user
 // can specify here (Z,A) values of the projectile and target nuclei.
 //
 // Note : The 'win' value denotes either the cms energy per nucleon-nucleon collision
 //        (i.e. frame="cms") or the momentum per nucleon in all other cases.
 //
-// The event number is reset to 0.
+// Some Pythia default MC parameters are automatically modified to provide
+// more suitable running conditions for soft processes in view of
+// nucleus-nucleus interactions and astrophysical processes.
+// The optimisations consist of : 
+// * Minimum CMS energy of 3 GeV for the event
+// * Activation of the default K factor values
+//   with separate settings for ordinary and color annihilation graphs.
+// The user may initialise the generator with all the default Pythia
+// parameters and obtain full user control to modify the settings by means
+// of invoking the SetUserControl memberfunction before this initialisation.
+// Note that the inclusion of elastic and diffractive processes is controlled
+// by invokation of the SetElastic memberfunction before this initialisation,
+// irrespective of the UserControl selection.
+
+ if (!fUserctrl) // Optimisation of some MC parameters
+ {
+  SetPARP(2,3.);  // Minimum CMS energy for the event
+  SetMSTP(33,2);  // Activate K factor. Separate for ordinary and color annih. graphs
+ }
+
+ if (fElastic) SetMSEL(2); // Include low-Pt, elastic and diffractive events
+
  fEventnum=0;
  fNucl=1;
  fFrame=frame;
@@ -870,7 +963,15 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
  }
 }
 
- if (mlist && !(fEventnum%fPrintfreq)) cout << endl; // Create empty output line after the event
+ if (!(fEventnum%fPrintfreq) && (mlist || fEvent))
+ {
+  if (fEvent)
+  {
+   cout << " Number of tracks in the event structure : "
+        << fEvent->GetNtracks() << endl;
+  }
+  cout << endl; // Create empty output line after the event
+ }
 
  if (fOutTree && fSelect) fOutTree->Fill();
 }

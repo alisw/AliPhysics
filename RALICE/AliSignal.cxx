@@ -57,29 +57,35 @@
 //
 // AliSignal q;    // In the example below a signal contains the
 //                 // following data : timing, ADC and dE/dx
-// q.SetName("TOF hit");
+// q.SetNameTitle("Hybrid","Test for multiple signal data");
 // q.SetPosition(pos,"car");
 // q.SetPositionErrors(err,"car");
 // signal=82.5; // e.g. signal time in ns
 // error=2.01;
 // offset=0.003;
+// q.SetSlotName("TOF");
 // q.SetSignal(signal,1);
 // q.SetSignalError(error,1);
 // q.SetOffset(offset,1);
 // signal=268.1; // e.g. ADC value of signal
 // error=3.75;
 // gain=120.78;
-// q.SetSignal(signal,2);
-// q.SetSignalError(error,2);
-// q.SetGain(gain,2);
+// // Addressing via name specification instead of index 
+// q.SetSlotName("ADC");
+// q.SetSignal(signal,"ADC");
+// q.SetSignalError(error,"ADC");
+// q.SetGain(gain,"ADC");
 // signal=23.7; // e.g. corresponding dE/dx value
 // error=0.48;
 // offset=0.2;
 // gain=150;
+// q.SetSlotName("dE/dx");
 // q.SetSignal(signal,3);
 // q.SetSignalError(error,3);
 // q.SetOffset(offset,3);
 // q.SetGain(gain,3);
+//
+// Float_t dedx=q.GetSignal("dE/dx");
 //
 //--- Author: Nick van Eijndhoven 23-jan-1999 UU-SAP Utrecht
 //- Modified: NvE $Date$ UU-SAP Utrecht
@@ -101,6 +107,7 @@ AliSignal::AliSignal() : TNamed(),AliPosition(),AliAttrib()
  fDsignals=0;
  fWaveforms=0;
  fLinks=0;
+ fDevice=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliSignal::~AliSignal()
@@ -135,6 +142,9 @@ AliSignal::AliSignal(const AliSignal& s) : TNamed(s),AliPosition(s),AliAttrib(s)
  fDsignals=0;
  fWaveforms=0;
  fLinks=0;
+
+ // Don't copy the owning device pointer for the copy
+ fDevice=0;
 
  Int_t n=s.GetNvalues();
  Double_t val;
@@ -218,6 +228,7 @@ void AliSignal::Reset(Int_t mode)
  }
 
  if (fLinks) fLinks->Reset();
+ fDevice=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::ResetSignals(Int_t mode)
@@ -541,6 +552,15 @@ void AliSignal::Data(TString f) const
  cout << endl;
  cout << "   Position";
  Ali3Vector::Data(f);
+ if (fDevice)
+ {
+  const char* devname=fDevice->GetName();
+  const char* devtitle=fDevice->GetTitle();
+  cout << "   Owned by device : " << fDevice->ClassName();
+  if (strlen(devname))  cout << " Name : " << devname;
+  if (strlen(devtitle)) cout << " Title : " << devtitle;
+  cout << endl;
+ }
 
  List(-1);
 } 
@@ -1358,6 +1378,19 @@ Int_t AliSignal::GetSwapMode() const
  Int_t swap=0; 
  if (fLinks) swap=fLinks->GetSwapMode();
  return swap;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliSignal::SetDevice(TObject* dev)
+{
+// Store the pointer to the device which owns this AliSignal object.
+// This memberfunction is meant for internal use in AliDevice.
+ fDevice=dev;
+}
+///////////////////////////////////////////////////////////////////////////
+AliDevice* AliSignal::GetDevice() const
+{
+// Provide the pointer to the device which owns this AliSignal object.
+ return (AliDevice*)fDevice;
 }
 ///////////////////////////////////////////////////////////////////////////
 TObject* AliSignal::Clone(const char* name) const

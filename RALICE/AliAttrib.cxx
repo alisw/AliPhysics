@@ -26,13 +26,15 @@
 // Example :
 // ---------
 // AliAttrib a;
-// a.SetGain(250.7);
 // a.SetSlotName("PMT amplitude in Volt");
-// a.SetGain(1340,3);
-// a.SetSlotName("PMT amplitude in ADC",3);
-// a.SetEdgeOn(3);
-// a.SetOffset(-22.5,2);
+// a.SetGain(250.7);
 // a.SetSlotName("Time of flight in ns",2);
+// a.SetOffset(-22.5,2);
+// a.SetSlotName("PMT amplitude in ADC",3);
+// a.SetGain(1340,3);
+// a.SetSlotName("TDC",4);
+// a.SetOffset(10.75,"TDC");
+// a.SetEdgeOn(3);
 // a.SetDead(1);
 // a.List();
 //

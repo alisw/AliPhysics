@@ -532,3 +532,9 @@
                 Default for AliDevice changed such that now all registered hits are by default owned
                 by the AliDevice object.
 06-oct-2004 NvE Full support for data access via slotname specification introduced in AliAttrib and AliSignal.
+07-oct-2004 NvE Docs of AliAttrib and AliSignal updated for new data access via slotname specification.
+12-oct-2004 NvE Display facility introduced in AliDevice and device backward linking updated for
+                new "owning device" in AliSignal.
+13-oct-2004 NvE Hit investigation facilities extended in AliDevice and AliEvent.
+15-oct-2004 NvE Optimisation of MC parameters for nucleus-nucleus and astrophysics processes introduced
+                in AliCollider. Also facilities added to provide full user control.

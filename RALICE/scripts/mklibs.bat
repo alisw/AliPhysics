@@ -117,4 +117,6 @@ echo *** mklibs done.
 goto end
 
 :end
+rem --- Go back to original directory
+cd scripts
 rem --- End of script ---

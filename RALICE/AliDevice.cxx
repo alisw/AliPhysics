@@ -91,6 +91,7 @@ AliDevice::AliDevice() : AliSignal()
  fHitCopy=1;
  fHits=0;
  fOrdered=0;
+ fMarkers=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliDevice::~AliDevice()
@@ -119,6 +120,12 @@ AliDevice::~AliDevice()
   delete fOrdered;
   fOrdered=0;
  }
+
+ if (fMarkers)
+ {
+  delete fMarkers;
+  fMarkers=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 AliDevice::AliDevice(const AliDevice& dev) : AliSignal(dev)
@@ -127,6 +134,7 @@ AliDevice::AliDevice(const AliDevice& dev) : AliSignal(dev)
 
  fHits=0;
  fOrdered=0;
+ fMarkers=0;
 
  fHitCopy=dev.GetHitCopy();
 
@@ -143,7 +151,7 @@ AliDevice::AliDevice(const AliDevice& dev) : AliSignal(dev)
     fHits->Add(sx->Clone());
     AliSignal* s=(AliSignal*)fHits->Last();
     s->ResetLinks((AliDevice*)&dev);
-    s->AddLink(this);
+    s->SetDevice(this);
    }
    else
    {
@@ -201,8 +209,13 @@ Int_t AliDevice::GetHitCopy() const
 void AliDevice::AddHit(AliSignal& s)
 {
 // Register an AliSignal object as a hit to this device.
-// Note : A (backward) link to this device is added to the first slot of
-//        the AliSignal if there was no link to this device already present.
+// Note : In case this device owns the AliSignal object, the pointer to
+//        this device will be stored in the special owning device
+//        pointer of the AliSignal object.
+//        In case this device does not own the AliSignal object, a (backward)
+//        link to this device is added to the first slot of the AliSignal
+//        if there was no link to this device already present.
+
  if (!fHits)
  {
   fHits=new TObjArray(1);
@@ -216,17 +229,23 @@ void AliDevice::AddHit(AliSignal& s)
   if (&s==fHits->At(i)) return; 
  }
 
- // Set the (backward) link to this device.
- Int_t nlinks=GetNlinks(this);
- if (!nlinks) s.AddLink(this);
+ // Check for existing (backward) link to this device.
+ Int_t nlinks=s.GetNlinks(this);
 
  if (fHitCopy)
  {
   fHits->Add(s.Clone());
+  // Remove unnecessary backward link(s) from the various slots
+  // and set the owning link to this device
+  AliSignal* sx=(AliSignal*)fHits->Last();
+  if (nlinks) sx->ResetLinks(this);
+  sx->SetDevice(this);
  }
  else
  {
   fHits->Add(&s);
+  // Set (backward) link to the this device
+  if (!nlinks) s.AddLink(this);
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -261,6 +280,11 @@ void AliDevice::RemoveHits()
  {
   delete fOrdered;
   fOrdered=0;
+ }
+ if (fMarkers)
+ {
+  delete fMarkers;
+  fMarkers=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -332,12 +356,99 @@ void AliDevice::Data(TString f) const
  }
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliDevice::GetExtremes(Float_t& vmin,Float_t& vmax,Int_t idx,TObjArray* hits) const
+{
+// Provide the min. and max. signal values of an array of hits.
+// The input argument "idx" denotes the index of the signal slots to be investigated.
+// The default is idx=1;
+// In case hits=0 (default), the registered hits of the current device are used. 
+// Signals which were declared as "Dead" will be rejected.
+// The gain etc... corrected signals will be used in the process.
+
+ vmin=0;
+ vmax=0;
+
+ if (!hits) hits=fHits;
+ 
+ if (idx<=0 || !hits) return;
+
+ Int_t nhits=hits->GetEntries();
+
+ Float_t sig=0;
+ for (Int_t i=0; i<nhits; i++)
+ {
+  AliSignal* sx=(AliSignal*)hits->At(i);
+
+  if (!sx) continue;
+  if (idx > sx->GetNvalues()) continue; // User specified slotindex out of range for this signal
+  if (sx->GetDeadValue(idx)) continue;  // Only take alive signals
+
+  sig=sx->GetSignal(idx,1);
+  if (i==0)
+  {
+   vmin=sig;
+   vmax=sig;
+  }
+  else
+  {
+   if (sig<vmin) vmin=sig;
+   if (sig>vmax) vmax=sig;
+  }
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliDevice::GetExtremes(Float_t& vmin,Float_t& vmax,TString name,TObjArray* hits) const
+{
+// Provide the min. and max. signal values of an array of hits.
+// The input argument "name" denotes the name of the signal slots to be investigated.
+// In case hits=0 (default), the registered hits of the current device are used. 
+// Signals which were declared as "Dead" will be rejected.
+// The gain etc... corrected signals will be used in the process.
+
+ vmin=0;
+ vmax=0;
+
+ if (!hits) hits=fHits;
+ 
+ if (!hits) return;
+
+ Int_t nhits=hits->GetEntries();
+
+ Int_t idx=0; // The signal slotindex to perform the sorting on
+
+ Float_t sig=0;
+ for (Int_t i=0; i<nhits; i++)
+ {
+  AliSignal* sx=(AliSignal*)hits->At(i);
+
+  if (!sx) continue;
+
+  // Obtain the slotindex corresponding to the user selection
+  idx=sx->GetSlotIndex(name);
+  if (!idx) continue;
+
+  if (sx->GetDeadValue(idx)) continue; // Only take alive signals
+
+  sig=sx->GetSignal(idx,1);
+  if (i==0)
+  {
+   vmin=sig;
+   vmax=sig;
+  }
+  else
+  {
+   if (sig<vmin) vmin=sig;
+   if (sig>vmax) vmax=sig;
+  }
+ }
+}
+///////////////////////////////////////////////////////////////////////////
 TObjArray* AliDevice::SortHits(Int_t idx,Int_t mode,TObjArray* hits)
 {
 // Order the references to an array of hits by looping over the input array "hits"
 // and checking the signal value. The ordered array is returned as a TObjArray.
 // In case hits=0 (default), the registered hits of the current device are used. 
-// Note that the original hit array in not modified.
+// Note that the original hit array is not modified.
 // A "hit" represents an abstract object which is derived from AliSignal.
 // The user can specify the index of the signal slot to perform the sorting on.
 // By default the slotindex will be 1.
@@ -413,7 +524,7 @@ TObjArray* AliDevice::SortHits(TString name,Int_t mode,TObjArray* hits)
 // Order the references to an array of hits by looping over the input array "hits"
 // and checking the signal value. The ordered array is returned as a TObjArray.
 // In case hits=0 (default), the registered hits of the current device are used. 
-// Note that the input array in not modified.
+// Note that the input array is not modified.
 // A "hit" represents an abstract object which is derived from AliSignal.
 // The user can specify the name of the signal slot to perform the sorting on.
 // In case no matching slotname is found, the signal will be skipped.
@@ -487,6 +598,192 @@ TObjArray* AliDevice::SortHits(TString name,Int_t mode,TObjArray* hits)
   }
  }
  return fOrdered;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliDevice::DisplayHits(Int_t idx,Float_t scale,TObjArray* hits,Int_t dp,Int_t mstyle,Int_t mcol)
+{
+// 3D color display of an array hits.
+// The user can specify the index (default=1) of the signal slot to perform the display for.
+// The marker size will indicate the absolute value of the signal (specified by the slotindex)
+// as a percentage of the input argument "scale".
+// In case scale<0 the maximum absolute signal value encountered in the hit array will be used
+// to define the 100% scale. The default is scale=-1.
+// In case hits=0 (default), the registered hits of the current device are used. 
+// Note that the input array is not modified.
+// In case dp=1 the device position will be used, otherwise the hit position will
+// be used in the display. The default is dp=0.
+// Via the "mstyle" and "mcol" arguments the user can specify the marker style
+// and color (see TPolyMarker3D) respectively.
+// The defaults are mstyle="large scalable dot" and mcol=blue.
+// Signals which were declared as "Dead" will not be displayed.
+// The gain etc... corrected signals will be used to determine the marker size.
+//
+// Note :
+// ------
+// Before any display activity, a TCanvas and a TView have to be initiated
+// first by the user like for instance
+// 
+// TCanvas* c1=new TCanvas("c1","c1");
+// TView* view=new TView(1);
+// view->SetRange(-1000,-1000,-1000,1000,1000,1000);
+// view->ShowAxis();
+
+ Int_t thisdev=0; // Indicate whether this is the owning device or not 
+ if (!hits)
+ {
+  hits=fHits;
+  thisdev=1;
+ }
+ 
+ if (idx<=0 || !hits) return;
+
+ Int_t nhits=hits->GetEntries();
+ if (!nhits) return;
+
+ Float_t sigmax=fabs(scale);
+ if (scale<0)
+ {
+  Float_t vmin,vmax;
+  GetExtremes(vmin,vmax,idx,hits);
+  sigmax=fabs(vmax);
+  if (fabs(vmin)>sigmax) sigmax=fabs(vmin);
+ }
+
+ if (sigmax <=0) return;
+
+ if (fMarkers)
+ {
+  delete fMarkers;
+  fMarkers=0;
+ }
+ fMarkers=new TObjArray(nhits);
+ fMarkers->SetOwner();
+
+ Float_t pos[3];
+ GetPosition(pos,"car");
+
+ Float_t sig=0;
+ for (Int_t ih=0; ih<nhits; ih++)
+ {
+  AliSignal* sx=(AliSignal*)hits->At(ih);
+  if (!sx) continue;
+  if (!dp)
+  {
+   sx->GetPosition(pos,"car");
+  }
+  else
+  {
+   if (!thisdev)
+   {
+    AliDevice* dev=sx->GetDevice();
+    if (dev) dev->GetPosition(pos,"car");
+   }
+  }
+  sig=sx->GetSignal(idx,1);
+  TPolyMarker3D* m=new TPolyMarker3D();
+  m->SetMarkerStyle(mstyle);
+  m->SetMarkerColor(mcol);
+  m->SetMarkerSize(100.*fabs(sig)/sigmax);
+  m->SetPoint(0,pos[0],pos[1],pos[2]);
+  fMarkers->Add(m);
+  m->Draw();
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliDevice::DisplayHits(TString name,Float_t scale,TObjArray* hits,Int_t dp,Int_t mstyle,Int_t mcol)
+{
+// 3D color display of an array hits.
+// The user can specify the name of the signal slot to perform the display for.
+// The marker size will indicate the absolute value of the signal (specified by the slotname)
+// as a percentage of the input argument "scale".
+// In case scale<0 the maximum absolute signal value encountered in the hit array will be used
+// to define the 100% scale. The default is scale=-1.
+// In case hits=0 (default), the registered hits of the current device are used. 
+// Note that the input array is not modified.
+// In case dp=1 the device position will be used, otherwise the hit position will
+// be used in the display. The default is dp=0.
+// The marker size will indicate the percentage of the maximum encountered value
+// of the absolute value of the name-specified input signal slots.
+// Via the "mstyle" and "mcol" arguments the user can specify the marker style
+// and color (see TPolyMarker3D) respectively.
+// The defaults are mstyle="large scalable dot" and mcol=blue.
+// Signals which were declared as "Dead" will not be displayed.
+// The gain etc... corrected signals will be used to determine the marker size.
+//
+// Note :
+// ------
+// Before any display activity, a TCanvas and a TView have to be initiated
+// first by the user like for instance
+// 
+// TCanvas* c1=new TCanvas("c1","c1");
+// TView* view=new TView(1);
+// view->SetRange(-1000,-1000,-1000,1000,1000,1000);
+// view->ShowAxis();
+
+ Int_t thisdev=0; // Indicate whether this is the owning device or not 
+ if (!hits)
+ {
+  hits=fHits;
+  thisdev=1;
+ }
+ 
+ if (!hits) return;
+
+ Int_t nhits=hits->GetEntries();
+
+ if (!nhits) return;
+
+ Float_t sigmax=fabs(scale);
+ if (scale<0)
+ {
+  Float_t vmin,vmax;
+  GetExtremes(vmin,vmax,name,hits);
+  sigmax=fabs(vmax);
+  if (fabs(vmin)>sigmax) sigmax=fabs(vmin);
+ }
+
+ if (sigmax <=0) return;
+
+ if (fMarkers)
+ {
+  delete fMarkers;
+  fMarkers=0;
+ }
+ fMarkers=new TObjArray(nhits);
+ fMarkers->SetOwner();
+
+ Float_t pos[3];
+ GetPosition(pos,"car");
+
+ Int_t idx=0; // The slot index corresponding to the user specified name
+ Float_t sig=0;
+ for (Int_t ih=0; ih<nhits; ih++)
+ {
+  AliSignal* sx=(AliSignal*)hits->At(ih);
+  if (!sx) continue;
+  idx=sx->GetSlotIndex(name);
+  if (!idx) continue;
+  if (!dp)
+  {
+   sx->GetPosition(pos,"car");
+  }
+  else
+  {
+   if (!thisdev)
+   {
+    AliDevice* dev=sx->GetDevice();
+    if (dev) dev->GetPosition(pos,"car");
+   }
+  }
+  sig=sx->GetSignal(idx,1);
+  TPolyMarker3D* m=new TPolyMarker3D();
+  m->SetMarkerStyle(mstyle);
+  m->SetMarkerColor(mcol);
+  m->SetMarkerSize(100.*fabs(sig)/sigmax);
+  m->SetPoint(0,pos[0],pos[1],pos[2]);
+  fMarkers->Add(m);
+  m->Draw();
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 TObject* AliDevice::Clone(const char* name) const

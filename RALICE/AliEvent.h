@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $Id: AliEvent.h,v 1.17 2004/06/29 11:29:37 nick Exp $
+// $Id: AliEvent.h,v 1.18 2004/07/06 13:34:17 nick Exp $
 
 #include <math.h>
  
@@ -54,8 +54,16 @@ class AliEvent : public AliVertex
   TObject* GetDevice(TString name) const; // Provide device with name "name"
   Int_t GetNhits(const char* classname);  // Provide number of hits for the specified device class
   TObjArray* GetHits(const char* classname); // Provide refs to all hits of the specified device class 
-  TObjArray* SortHits(TObjArray* hits,TString name,Int_t mode=-1); // Sort hits by named signal value
-  TObjArray* SortHits(TObjArray* hits,Int_t idx=1,Int_t mode=-1);  // Sort hits by indexed signal value
+  TObjArray* SortHits(const char* classname,TString name,Int_t mode=-1); // Sort hits by named signal value
+  TObjArray* SortHits(const char* classname,Int_t idx=1,Int_t mode=-1);  // Sort hits by indexed signal value
+  void GetExtremes(const char* classname,Float_t& vmin,Float_t& vmax,Int_t idx=1); // Get min. and max. signal value
+  void GetExtremes(const char* classname,Float_t& vmin,Float_t& vmax,TString name);// Get min. and max. signal value
+  void DisplayHits(const char* classname,TString name,Float_t scale=-1,Int_t dp=0,Int_t mstyle=8,Int_t mcol=4);
+  void DisplayHits(const char* classname,Int_t idx=1,Float_t scale=-1,Int_t dp=0,Int_t mstyle=8,Int_t mcol=4);
+  TObjArray* SortDevices(const char* classname,TString name,Int_t mode=-1); // Sort devices by signal value
+  TObjArray* SortDevices(const char* classname,Int_t idx=1,Int_t mode=-1);  // Sort devices by signal value
+  TObjArray* SortDevices(TObjArray* hits,TString name,Int_t mode=-1);       // Sort devices by signal value
+  TObjArray* SortDevices(TObjArray* hits,Int_t idx=1,Int_t mode=-1);        // Sort devices by signal value
 
  protected:
   TTimeStamp fDaytime;                  // The date and time stamp
@@ -73,7 +81,9 @@ class AliEvent : public AliVertex
   Int_t fDevCopy;                       // Flag to denote creation of private copies of the devices
   void LoadHits(const char* classname); // Load references to the hits registered to the specified device class
   TObjArray* fHits;                     //! Temp. array to hold references to the registered AliDevice hits
+  TObjArray* fOrdered;                  //! Temp. array to hold references to various ordered objects
+  TObject* fDisplay;                    //! Temp. pointer to hold objects which serve event displays
 
- ClassDef(AliEvent,15) // Creation and investigation of an Alice physics event.
+ ClassDef(AliEvent,16) // Creation and investigation of an Alice physics event.
 };
 #endif
