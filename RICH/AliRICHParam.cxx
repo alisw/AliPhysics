@@ -13,10 +13,22 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include "AliRICHParam.h"
+#include <TRandom.h>
 
 Bool_t   AliRICHParam::fgIsWireSag            =kTRUE;
 Bool_t   AliRICHParam::fgIsResolveClusters    =kTRUE;
 Double_t AliRICHParam::fgAngleRot             =-60;
 Int_t    AliRICHParam::fgHV                   =2150;
-
+Int_t    AliRICHParam::fgNsigmaTh             =4;
+Float_t  AliRICHParam::fgSigmaThMean          =1.5;
+Float_t  AliRICHParam::fgSigmaThSpread        =0.5;      
 ClassImp(AliRICHParam)
+
+void AliRICHParam::GenSigmaThMap()
+{
+  for(Int_t iChamber=0;iChamber<kNCH;iChamber++)
+    for(Int_t ipadX=0;ipadX<NpadsX();ipadX++)
+      for(Int_t ipadY=0;ipadY<NpadsY();ipadY++) 
+        fSigmaThMap[iChamber][ipadX][ipadY] = SigmaThMean()+(1.-2*gRandom->Rndm())*SigmaThSpread();
+  Info("GenSigmaThMap"," Threshold map generated for all RICH chambers");
+}

@@ -80,6 +80,7 @@ AliRICH::AliRICH(const char *name, const char *title)
 {//Named ctor
   if(GetDebug())Info("named ctor","Start.");
   fpParam     =   new AliRICHParam;
+  Param()->GenSigmaThMap();
   fChambers = 0;  CreateChambers();
 //AliDetector ctor deals with Hits and Digits (reset them to 0, does not create them)
   fHits=       0;     CreateHits();          gAlice->GetMCApp()->AddHitList(fHits);

@@ -165,13 +165,17 @@ void SD_D()
         else
           Info("","More then 3 sdigits for the given pad");
       }else{//new pad, add the pevious one
-        if(id!=kBad) r->AddDigit(chamber,x,y,q,tr[0],tr[1],tr[2]);//ch-xpad-ypad-qdc-tr1-2-3
+        if(id!=kBad&&r->Param()->IsOverTh(chamber,x,y,q)) {
+           
+           r->AddDigit(chamber,x,y,q,tr[0],tr[1],tr[2]);//ch-xpad-ypad-qdc-tr1-2-3
+         }
         chamber=pSdig->C();x=pSdig->X();y=pSdig->Y();q=pSdig->Q();tr[0]=pSdig->T(0);id=pSdig->Id();
         iNdigitsPerPad=1;tr[1]=tr[2]=kBad;
       }
     }//sdigits loop (sorted)
   
-    if(r->SDigits()->GetEntries())r->AddDigit(chamber,x,y,q,tr[0],tr[1],tr[2]);//add the last digit
+    if(r->SDigits()->GetEntries()&&r->Param()->IsOverTh(chamber,x,y,q))
+                  r->AddDigit(chamber,x,y,q,tr[0],tr[1],tr[2]);//add the last digit
         
     rl->TreeD()->Fill();  
     rl->WriteDigits("OVERWRITE");
@@ -226,8 +230,7 @@ void OLD_SD_D()
   r->ResetSDigits();r->ResetDigitsOld();//reset lists of sdigits and digits
   Info("SD_DOLD","Stop.");  
 }
-
-
+//__________________________________________________________________________________________________
 void Show3()
 {  
   cout<<endl;
@@ -287,6 +290,54 @@ void Show3()
   al->UnloadKinematics();
   cout<<endl;
 }//void Show()
+//__________________________________________________________________________________________________
+void ControlPlots()
+{  
+  Int_t iChamber = 1;
+  TH1F *pqclusterH1 = new TH1F("qclus","charge of clusters;Q (ADC);events",2000,0.,2000);
+
+    al->LoadHeader();  al->LoadKinematics();
+  
+  rl->LoadHits();  
+    Bool_t isSdigits=!rl->LoadSDigits();  
+      Bool_t isClusters=!rl->LoadRecPoints();
+        Bool_t isDigits=!rl->LoadDigits();//loaders
+  
+  for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
+    Int_t iNparticles=a->GetEvent(iEventN);
+    Int_t iNprims=rl->TreeH()->GetEntries();
+    
+    Int_t iTotalHits=0,iTotalCerenkovs=0,iTotalSpecials=0;
+    for(Int_t iPrimN=0;iPrimN<iNprims;iPrimN++){//prims loop
+      rl->TreeH()->GetEntry(iPrimN);      
+      iTotalHits+=r->Hits()->GetEntries();
+      iTotalCerenkovs+=r->Cerenkovs()->GetEntries();
+      iTotalSpecials+=r->Specials()->GetEntries();
+      TParticle *pPrim=al->Stack()->Particle(iPrimN);
+    }//prims loop
+    if(isSdigits){
+      rl->TreeS()->GetEntry(0);
+    }
+    if(isDigits){
+      rl->TreeD()->GetEntry(0);
+      for(int i=1;i<=7;i++);
+    }
+    if(isClusters){
+      rl->TreeR()->GetEntry(0);
+      for(Int_t iclus=0;iclus<r->Clusters(iChamber)->GetEntries();iclus++) {
+        pqclusterH1->Fill(((AliRICHcluster*)r->Clusters(iChamber)->At(iclus))->Q());
+      }
+    }
+    cout<<endl;
+  }//events loop
+  pqclusterH1->Draw();
+  rl->UnloadHits();  
+    if(isSdigits) rl->UnloadSDigits(); 
+      if(isDigits) rl->UnloadDigits(); 
+        if(isClusters) rl->UnloadRecPoints();
+  al->UnloadHeader();
+  al->UnloadKinematics();
+}//void Controlòlots()
 //__________________________________________________________________________________________________
 void DebugOFF()
 {
@@ -721,6 +772,7 @@ void menu()
   pMenu->AddButton("Test submenu",    "TestMenu()",            "Shows test submenu");
   pMenu->AddButton("Browser",         "new TBrowser;",         "Start ROOT TBrowser");
   pMenu->AddButton("Display Fast",    "DisplFast()",           "Display Fast");
+  pMenu->AddButton("Control Plots",    "ControlPlots()",           "Control Plots");
   pMenu->AddButton("Quit",            ".q",                    "Close session");
   pMenu->Show();
   a=gAlice;//for manual manipulation convinience

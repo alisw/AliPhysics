@@ -11,9 +11,9 @@ class AliRICHParam :public TObject
 {
 public:
            AliRICHParam()                    {;}
-  virtual ~AliRICHParam()                    {;}  
-  static Int_t   NpadsX()                   {return 144;}
-  static Int_t   NpadsY()                   {return 160;}   
+  virtual ~AliRICHParam()                    {;}
+  static const Int_t   NpadsX()             {return kNpadsX;}
+  static const Int_t   NpadsY()             {return kNpadsY;}   
   static Int_t   NpadsXsec()                {return NpadsX()/3;}   
   static Int_t   NpadsYsec()                {return NpadsY()/2;}   
   static Double_t DeadZone()                 {return 2.6;}
@@ -56,7 +56,7 @@ public:
     static void  SetResolveClusters(Bool_t a){fgIsResolveClusters=a;}  
     static void  SetWireSag(Bool_t status)   {fgIsWireSag=status;}  
     static void  SetHV(Int_t hv)             {fgHV       =hv;}  
-    static void  SetAngleRot(Double_t rot)   {fgAngleRot =rot;}         
+    static void  SetAngleRot(Double_t rot)   {fgAngleRot =rot;}
 
   inline static Double_t Mathieson(Double_t lx1,Double_t lx2,Double_t ly1,Double_t ly2);   
   inline static void    Loc2Area(TVector3 hitX3,Int_t &padxMin,Int_t &padyMin,Int_t &padxMax,Int_t &padyMax);
@@ -71,13 +71,20 @@ public:
          Bool_t SigGenCond(Double_t,Double_t){return kFALSE;}
   inline static Int_t   Loc2Sec(Double_t &x,Double_t &y); 
   inline static Int_t   Pad2Sec(Int_t &padx,Int_t &pady); 
-  
+  inline Bool_t IsOverTh(Int_t iChamber, Int_t x, Int_t y, Double_t q);
+  static Int_t NsigmaTh() {return fgNsigmaTh;}
+  static Float_t SigmaThMean() {return fgSigmaThMean;}
+  static Float_t SigmaThSpread() {return fgSigmaThSpread;}
+  void GenSigmaThMap();
 protected:
-  static Bool_t  fgIsWireSag;              //is wire sagitta taken into account
-  static Bool_t  fgIsResolveClusters;      //performs declustering or not
-  static Int_t   fgHV;                     //HV applied to anod wires
-  static Double_t fgAngleRot;              //rotation of RICH from up postion (0,0,490)cm
-  
+  static Bool_t  fgIsWireSag;                           //is wire sagitta taken into account
+  static Bool_t  fgIsResolveClusters;                   //performs declustering or not
+  static Int_t   fgHV;                                  //HV applied to anod wires
+  static Double_t fgAngleRot;                           //rotation of RICH from up postion (0,0,490)cm
+  Float_t fSigmaThMap[kNCH][kNpadsX][kNpadsY];          // sigma of the pedestal distributions for all pads
+  static Int_t fgNsigmaTh;                              // n. of sigmas to cut for zero suppression
+  static Float_t fgSigmaThMean;                         // sigma threshold value
+  static Float_t fgSigmaThSpread;                       // spread of sigma
   ClassDef(AliRICHParam,4)    //RICH main parameters
 };
 //__________________________________________________________________________________________________
@@ -223,5 +230,10 @@ void AliRICHParam::Loc2Area(TVector3 hitX3,Int_t &iPadXmin,Int_t &iPadYmin,Int_t
   //  hitX3.SetX(Shift2NearestWire(hitX3.X());
   Loc2Pad(hitX3.X()-MathiesonDeltaX(),hitX3.Y()-MathiesonDeltaY(),iPadXmin,iPadYmin);   
   Loc2Pad(hitX3.X()+MathiesonDeltaX(),hitX3.Y()+MathiesonDeltaY(),iPadXmax,iPadYmax);     
+}//
+//__________________________________________________________________________________________________
+Bool_t AliRICHParam::IsOverTh(Int_t iChamber, Int_t x, Int_t y, Double_t q)
+{// Calculate the new charge subtracting pedestal and if the current digit is over threshold
+  if(q>NsigmaTh()*fSigmaThMap[iChamber-1][x-1][y-1]) return kTRUE; else return kFALSE;
 }//
 #endif //AliRICHParam_h

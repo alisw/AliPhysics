@@ -1,6 +1,9 @@
 #ifndef AliRICHConst_h
 #define AliRICHConst_h
 #include <TMath.h>
+
+static const Int_t kNpadsX = 144;
+static const Int_t kNpadsY = 160;
 static const Double_t kD2r=TMath::Pi()/180;
 static const Double_t kR2d=57.2957795130823229;
 static const Double_t kDeg=TMath::Pi()/180;
