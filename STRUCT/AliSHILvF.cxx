@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/11/12 10:19:30  morsch
+Correction of uninitialized array element problem.
+
 Revision 1.8  2001/10/25 08:50:57  morsch
 New beamshield geometry with increased tolerances and insulation thickness.
 
@@ -1447,12 +1450,12 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   gMC->Gspos("YI32", 1, "YV32", 0., 0., 0., 0, "ONLY"); 
 //
 // clearance
-  cpar[1]=cpar0[2]-dProtS-dFreeS;
-  cpar[2]=cpar0[2]-dProtS;
-  cpar[3]=cpar0[4]-dProtS-dFreeS;
-  cpar[4]=cpar0[4]-dProtS;
-  gMC->Gsvolu("YP32", "CONE", idtmed[kVacuum+40], cpar, 5);
-  gMC->Gspos("YP32", 1, "YV32", 0., 0., 0., 0, "ONLY"); 
+//  cpar[1]=cpar0[2]-dProtS-dFreeS;
+//  cpar[2]=cpar0[2]-dProtS;
+//  cpar[3]=cpar0[4]-dProtS-dFreeS;
+//  cpar[4]=cpar0[4]-dProtS;
+//  gMC->Gsvolu("YP32", "CONE", idtmed[kVacuum+40], cpar, 5);
+//  gMC->Gspos("YP32", 1, "YV32", 0., 0., 0., 0, "ONLY"); 
   
   dz=dl-cpar[0];
   gMC->Gspos("YV32", 1, "YMO4", 0., 0., dz, 0, "ONLY"); 
