@@ -36,6 +36,7 @@
 
 #include "AliPHOSGeometry.h"
 #include "AliPHOSCpvRecPoint.h"
+#include "AliPHOSPpsdRecPoint.h"
 #include "AliRun.h"
 #include "AliPHOSIndexToObject.h"
 
@@ -134,37 +135,48 @@ Int_t AliPHOSCpvRecPoint::Compare(TObject * obj)
 
   Int_t rv ; 
 
-  AliPHOSCpvRecPoint * clu = (AliPHOSCpvRecPoint *)obj ; 
-
- 
-  Int_t phosmod1 = this->GetPHOSMod() ;
-  Int_t phosmod2 = clu->GetPHOSMod() ;
-
-  TVector3 locpos1; 
-  this->GetLocalPosition(locpos1) ;
-  TVector3 locpos2;  
-  clu->GetLocalPosition(locpos2) ;  
-
-  if(phosmod1 == phosmod2 ) {
-    Int_t rowdif = (Int_t)TMath::Ceil(locpos1.X()/fDelta)-(Int_t)TMath::Ceil(locpos2.X()/fDelta) ;
-    if (rowdif> 0) 
-      rv = -1 ;
-     else if(rowdif < 0) 
-       rv = 1 ;
-    else if(locpos1.Z()>locpos2.Z()) 
-      rv = -1 ;
-    else 
-      rv = 1 ; 
-     }
-
-  else {
-    if(phosmod1 < phosmod2 ) 
-      rv = -1 ;
-    else 
-      rv = 1 ;
-  }
-
-  return rv ; 
+  if( (strcmp(obj->ClassName() , "AliPHOSPpsdRecPoint" )) == 0)  // PPSD Rec Point
+    {
+      AliPHOSPpsdRecPoint * clu = (AliPHOSPpsdRecPoint *)obj ; 
+      if(this->GetPHOSMod()  < clu->GetPHOSMod() ) 
+	rv = -1 ;
+      else 
+	rv = 1 ;
+      return rv ;
+    }
+  else
+    {
+      AliPHOSCpvRecPoint * clu  = (AliPHOSCpvRecPoint *) obj ; 
+      
+      Int_t phosmod1 = this->GetPHOSMod() ;
+      Int_t phosmod2 = clu->GetPHOSMod() ;
+      
+      TVector3 locpos1; 
+      this->GetLocalPosition(locpos1) ;
+      TVector3 locpos2;  
+      clu->GetLocalPosition(locpos2) ;  
+      
+      if(phosmod1 == phosmod2 ) {
+	Int_t rowdif = (Int_t)TMath::Ceil(locpos1.X()/fDelta)-(Int_t)TMath::Ceil(locpos2.X()/fDelta) ;
+	if (rowdif> 0) 
+	  rv = -1 ;
+	else if(rowdif < 0) 
+	  rv = 1 ;
+	else if(locpos1.Z()>locpos2.Z()) 
+	  rv = -1 ;
+	else 
+	  rv = 1 ; 
+      }
+      
+      else {
+	if(phosmod1 < phosmod2 ) 
+	  rv = -1 ;
+	else 
+	  rv = 1 ;
+      }
+      
+      return rv ; 
+    }
 }
 
 //______________________________________________________________________________

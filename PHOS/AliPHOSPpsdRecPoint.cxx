@@ -34,6 +34,7 @@
 
 #include "AliPHOSGeometry.h"
 #include "AliPHOSPpsdRecPoint.h"
+#include "AliPHOSCpvRecPoint.h"
 #include "AliRun.h"
 #include "AliPHOSIndexToObject.h"
 
@@ -85,73 +86,86 @@ Int_t AliPHOSPpsdRecPoint::Compare(TObject * obj)
   
   Int_t rv ; 
   
-  AliPHOSPpsdRecPoint * clu = (AliPHOSPpsdRecPoint *)obj ; 
-  
- 
-  Float_t x1 , z1 ;
-  Float_t x2 , z2 ;
-  
-  Int_t phosmod1 ;
-  Int_t phosmod2 ;
-  
-  Int_t up1 ;
-  Int_t up2 ; 
-  
-  if(GetUp()) // upper layer
-    up1 = 0 ; 
-  else        // lower layer
-    up1 = 1 ;       
-  
-  if(clu->GetUp()) // upper layer
-    up2 = 0 ; 
-  else            // lower layer
-    up2 = 1 ;       
+  if( (strcmp(obj->ClassName() , "AliPHOSPpsdRecPoint" )) == 0)  // PPSD Rec Point
+    {
+     AliPHOSPpsdRecPoint * clu = (AliPHOSPpsdRecPoint *)obj ; 
 
-  TVector3 posloc ;
-  this->GetLocalPosition(posloc) ;
-  x1 = posloc.X() ;
-  z1 = posloc.Z() ; 
-  phosmod1 = this->GetPHOSMod();  
-  clu->GetLocalPosition(posloc) ;
-  x2 = posloc.X() ;
-  z2 = posloc.Z() ; 
-  phosmod2 = clu->GetPHOSMod();
+     Float_t x1 , z1 ;
+     Float_t x2 , z2 ;
+     
+     Int_t phosmod1 ;
+     Int_t phosmod2 ;
+     
+     Int_t up1 ;
+     Int_t up2 ; 
+  
+     if(GetUp()) // upper layer
+       up1 = 0 ; 
+     else        // lower layer
+       up1 = 1 ;       
+     
+     if(clu->GetUp()) // upper layer
+       up2 = 0 ; 
+     else            // lower layer
+       up2 = 1 ;       
 
-  if(phosmod1 == phosmod2 ) {
- 
-    if(up1 == up2 ){
-      Int_t rowdif = (Int_t)TMath::Ceil(x1/fDelta) - (Int_t) TMath::Ceil(x2/fDelta) ;
-
-      if (rowdif> 0) 
-	rv = -1 ;
+     TVector3 posloc ;
+     this->GetLocalPosition(posloc) ;
+     x1 = posloc.X() ;
+     z1 = posloc.Z() ; 
+     phosmod1 = this->GetPHOSMod();  
+     clu->GetLocalPosition(posloc) ;
+     x2 = posloc.X() ;
+     z2 = posloc.Z() ; 
+     phosmod2 = clu->GetPHOSMod();
+     
+     if(phosmod1 == phosmod2 ) {
+       
+       if(up1 == up2 ){
+	 Int_t rowdif = (Int_t)TMath::Ceil(x1/fDelta) - (Int_t) TMath::Ceil(x2/fDelta) ;
+	 
+	 if (rowdif> 0) 
+	   rv = -1 ;
       else if(rowdif < 0) 
 	rv = 1 ;
-      else if(z1>z2) 
+	 else if(z1>z2) 
+	   rv = -1 ;
+	 else 
+	   rv = 1 ; 
+       }
+       
+       else {
+	 
+	 if(up1 < up2 ) // Upper level first (up = True or False, True > False)
+	   rv = 1 ;   
+	 else 
+	   rv = - 1 ;
+       }
+       
+     } // if phosmod1 == phosmod2
+     
+     else {
+       
+       if(phosmod1 < phosmod2 ) 
+	 rv = -1 ;
+       else 
+	 rv = 1 ;
+       
+     }
+     
+     return rv ;      
+    }
+  else
+    {
+      AliPHOSCpvRecPoint * clu  = (AliPHOSCpvRecPoint *) obj ;   
+      if(this->GetPHOSMod()  < clu->GetPHOSMod() ) 
 	rv = -1 ;
       else 
-	rv = 1 ; 
+	rv = 1 ;
+      return rv ;
     }
 
-    else {
-
-      if(up1 < up2 ) // Upper level first (up = True or False, True > False)
-	rv = 1 ;   
-      else 
-	rv = - 1 ;
-    }
-    
-  } // if phosmod1 == phosmod2
-
-  else {
-
-    if(phosmod1 < phosmod2 ) 
-      rv = -1 ;
-    else 
-      rv = 1 ;
   
-}
-  
-  return rv ; 
 }
 
 //____________________________________________________________________________
