@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  1999/11/03 18:01:40  fca
+Remove non orthogonal unused matrix
+
 Revision 1.6  1999/09/29 09:24:28  fca
 Introduction of the Copyright and cvs Log
 
@@ -108,8 +111,8 @@ void AliPMDv1::CreateInside()
   Float_t sipmdl[5] = { 10.,310.,25.,90.,270. };
   Float_t sipmdr[5] = { 10.,310.,25.,270.,90. };
   
-  const Float_t root3_4 = sqrt(3)/4.;
-  const Float_t root3_2 = sqrt(3)/2.;
+  const Float_t root3_4 = TMath::Sqrt(3.)/4.;
+  const Float_t root3_2 = TMath::Sqrt(3.)/2.;
   //  Float_t xiqa[4], yiqa[4];
   Int_t i;
   //  Float_t siqad[4];
@@ -247,7 +250,7 @@ void AliPMDv1::CreatePads()
   Float_t xb, yb, zb;//, sw[3];
   Int_t number;
   Int_t ihrotm,irotdm;
-  const Float_t root3_cons = sqrt(3) /2.; 
+  const Float_t root3_cons = TMath::Sqrt(3.) /2.; 
   Int_t *idtmed = fIdtmed->GetArray()-599;
  
   AliMatrix(ihrotm, 90., 30.,   90.,  120., 0., 0.);
@@ -322,7 +325,7 @@ void AliPMDv1::CreatePads()
     xb += (hexd1[6]*2.);
   }
    xrow = xrow+1;
-    yb += (hexd1[6]*sqrt(3.));
+    yb += (hexd1[6]*TMath::Sqrt(3.));
   }
  Float_t z_ss,z_air1,z_air2,z_gas; 
 // Place other components inside super module 
