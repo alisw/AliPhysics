@@ -11,7 +11,8 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#include <iostream.h>
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <Riostream.h>
 
 // --- ROOT system ---
 
@@ -28,9 +29,10 @@
 
 // --- AliRoot header files ---
 
-#include "AliRun.h"
-#include "AliHeader.h"
-#include "AliGenEventHeader.h"
+#include "STEER/AliRun.h"
+#include "STEER/AliHeader.h"
+#include "STEER/AliGenEventHeader.h"
+#endif
 
 class AliTRDdigitizer;
 class AliPHOSSDigitizer;
