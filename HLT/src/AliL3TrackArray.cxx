@@ -310,8 +310,12 @@ void AliL3TrackArray::AddLast(AliL3Track *track)
 
 
 void AliL3TrackArray::AddTracks(AliL3TrackArray *newtrack,Bool_t remove_old){
-  if(GetTrackType() != newtrack->GetTrackType())
-    return;
+  if(GetTrackType() != newtrack->GetTrackType() && GetTrackType()!='t')
+    {
+      LOG(AliL3Log::kError,"AliL3TrackArray::AddTracks","Track types")
+	<<"Bad idea to add tracks of different types"<<ENDLOG;
+      return;
+    }
   if(fSize < fNTracks+newtrack->GetNPresent())
     SetSize(fSize+newtrack->GetSize());
   for(Int_t i =0;i<newtrack->GetNTracks();i++){
