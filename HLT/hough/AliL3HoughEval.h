@@ -3,11 +3,13 @@
 
 #include "AliL3RootTypes.h"
 
+
 class AliL3HoughTransformer;
 class AliL3Transform;
 class AliL3HoughTrack;
 class AliL3DigitRowData;
 class AliL3Histogram;
+
 
 class AliL3HoughEval : public TObject {
   
@@ -37,6 +39,7 @@ class AliL3HoughEval : public TObject {
   void GenerateLUT();
   void DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist);
   Bool_t LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Bool_t remove=kFALSE);
+  void CompareMC(AliL3TrackArray *tracks,Char_t *goodtracks="good_tracks");
   
   //Setters:
   void RemoveFoundTracks() {fRemoveFoundTracks = kTRUE;}

@@ -1,6 +1,13 @@
 //Author:        Anders Strand Vestbo
 //Last Modified: 28.6.01
 
+#include <math.h>
+#include <TTree.h>
+#include <TFile.h>
+
+#include "GetGoodParticles.h"
+#include "AliL3TrackArray.h"
+#include "AliL3Logging.h"
 #include "AliL3HoughEval.h"
 #include "AliL3HoughTransformer.h"
 #include "AliL3DigitData.h"
@@ -65,7 +72,7 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
 {
   //Look at rawdata along the road specified by the track candidates.
   //If track is good, return true, if not return false.
-    
+  
   Int_t sector,row;
   
   Int_t nrow=0,npixs=0;
@@ -95,16 +102,17 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
 	}
       
       //Look at both sides of the pad:
-      for(Int_t p=(Int_t)xyz[1]-fNumOfPadsToLook; p<=(Int_t)xyz[1]+fNumOfPadsToLook; p++)
+      for(Int_t p=(Int_t)rint(xyz[1])-fNumOfPadsToLook; p<=(Int_t)rint(xyz[1])+fNumOfPadsToLook; p++)
 	{
 	  AliL3DigitData *digPt = tempPt->fDigitData;
 	  for(UInt_t j=0; j<tempPt->fNDigit; j++)
 	    {
 	      UChar_t pad = digPt[j].fPad;
+	      
 	      if(pad < p) continue;
 	      if(pad > p) break;
 	      UShort_t time = digPt[j].fTime;
-	      Double_t eta = fTransform->GetEta(row,pad,time);
+	      Double_t eta = fTransform->GetEta(padrow,pad,time);
 	      Int_t pixel_index = (Int_t)(eta/etaslice);
 	      if(pixel_index > eta_index) continue;
 	      if(pixel_index != eta_index) break;
@@ -114,7 +122,7 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
 	    }
 	}
             
-      if(npixs > 0)
+      if(npixs > 1)//At least 2 digits on this padrow
 	{
 	  nrow++;
 	}	  
@@ -174,3 +182,78 @@ void AliL3HoughEval::DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist)
     }
   
 }
+
+void AliL3HoughEval::CompareMC(AliL3TrackArray *tracks,Char_t *trackfile)
+{
+  
+  struct GoodTrack goodtracks[15000];
+  Int_t nt=0;
+  ifstream in(trackfile);
+  if(in)
+    {
+      printf("Reading good tracks from file %s\n",trackfile);
+      while (in>>goodtracks[nt].label>>goodtracks[nt].code>>
+	     goodtracks[nt].px>>goodtracks[nt].py>>goodtracks[nt].pz>>
+	     goodtracks[nt].pt>>goodtracks[nt].eta>>goodtracks[nt].nhits) 
+	{
+	  nt++;
+	  if (nt==15000) 
+	    {
+	      cerr<<"Too many good tracks"<<endl;
+	      break;
+	    }
+	}
+      if (!in.eof())
+	{
+	  LOG(AliL3Log::kError,"AliL3HoughEval::CompareMC","Input file")
+	    <<"Error in file reading"<<ENDLOG;
+	  return;
+	}
+    }
+  else
+    {
+      LOG(AliL3Log::kError,"AliL3HoughEval::CompareMC","Input")
+	<<"No input trackfile "<<trackfile<<ENDLOG;
+    }
+  
+  Int_t *particles = new Int_t[fNEtaSegments];
+  Int_t *ftracks = new Int_t[fNEtaSegments];
+  for(Int_t i=0; i<fNEtaSegments; i++)
+    {
+      particles[i]=0;
+      ftracks[i]=0;
+    }
+
+  Double_t etaslice = (fEtaMax - fEtaMin)/fNEtaSegments;
+  for(Int_t i=0; i<tracks->GetNTracks(); i++)
+    {
+      AliL3HoughTrack *tr = (AliL3HoughTrack*)tracks->GetCheckedTrack(i);
+      if(!tr) continue;
+      Int_t trackindex = tr->GetEtaIndex();
+      if(trackindex <0 || trackindex >= fNEtaSegments) continue;
+      ftracks[trackindex]++;
+    }
+  for(Int_t i=0; i<nt; i++)
+    {
+      if(goodtracks[i].nhits < 150) continue;
+      if(goodtracks[i].pt < 0.5) continue;
+      Int_t particleindex = (Int_t)(goodtracks[i].eta/etaslice);
+      if(particleindex < 0 || particleindex >= fNEtaSegments) continue;
+      particles[particleindex]++;
+    }
+  
+  Double_t found=0;
+  Double_t good =0;
+  for(Int_t i=0; i<fNEtaSegments; i++)
+    {
+      printf("Slice %d : Found tracks %d, good tracks %d\n",i,ftracks[i],particles[i]);
+      found += ftracks[i];
+      good += particles[i];
+    }
+  printf("And the total efficiency was: %f\n",found/good);
+
+  delete [] particles;
+  delete [] ftracks;
+  
+}
+
