@@ -451,8 +451,7 @@ void AliPHOSDigitizer::WriteDigits()
 
   digitsBranch->Fill() ;      
   digitizerBranch->Fill() ;
-  
-//    gAlice->TreeD()->Fill() ;  // YK 28.05.2001
+
   gAlice->TreeD()->Write(0,kOverwrite) ;  
 
   //remove fSDigitizer before new event.  

@@ -526,7 +526,7 @@ void  AliPHOSPIDv1::WriteRecParticles()
   
   rpBranch->Fill() ;
   pidBranch->Fill() ;
-//    gAlice->TreeR()->Fill() ;    // YK 28.05.01  
+
   gAlice->TreeR()->Write(0,kOverwrite) ;  
   
 }

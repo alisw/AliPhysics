@@ -625,7 +625,7 @@ void AliPHOSClusterizerv1::WriteRecPoints()
   emcBranch->Fill() ;
   cpvBranch->Fill() ;
   clusterizerBranch->Fill() ;
-//    gAlice->TreeR()->Fill() ;    // YK 28.05.01  
+
   gAlice->TreeR()->Write(0,kOverwrite) ;  
   
 }

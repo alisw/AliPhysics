@@ -622,10 +622,9 @@ void AliPHOSTrackSegmentMakerv1::WriteTrackSegments()
     cwd->cd();
   } 
   
-
   tsBranch->Fill() ;  
   tsMakerBranch->Fill() ;
-//    gAlice->TreeR()->Fill() ;    // YK 28.05.01  
+
   gAlice->TreeR()->Write(0,kOverwrite) ;  
   
 }
