@@ -37,6 +37,10 @@ class AliPythia : public TPythia6, public AliRndm
 	(Process_t process, Float_t energy, StrucFunc_t strucfunc);
     // treat protons as inside nuclei
     virtual void    SetNuclei(Int_t a1, Int_t a2);
+    // Print particle properties
+    virtual void PrintParticles();
+    virtual void ResetDecayTable();
+    virtual void SetDecayTable();
     // return instance of the singleton
     static  AliPythia* Instance();
 
@@ -44,6 +48,8 @@ class AliPythia : public TPythia6, public AliRndm
     Process_t     fProcess;           // Process type
     Float_t       fEcms;              // Centre of mass energy
     StrucFunc_t   fStrucFunc;         // Structure function
+    Int_t         fDefMDCY[501];      //  ! Default decay switches per particle
+    Int_t         fDefMDME[2000];     //  ! Default decay switches per mode
     static AliPythia*    fgAliPythia; // Pointer to single instance
  private: 
     AliPythia();

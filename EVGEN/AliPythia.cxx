@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2001/03/09 13:03:40  morsch
+Process_t and Struc_Func_t moved to AliPythia.h
+
 Revision 1.13  2000/12/18 08:55:35  morsch
 Make AliPythia dependent generartors work with new scheme of random number generation
 
@@ -63,6 +66,7 @@ AliPythia::AliPythia()
 //
 //  Set random number
     if (!sRandom) sRandom=fRandom;
+
 }
 
 void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfunc)
@@ -144,7 +148,7 @@ void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfun
 // Proc. of the LHC Workshop, Aachen 1990, Vol. II p. 155
 //   
 //      select Pythia min. bias model
-	SetMSEL(2);
+	SetMSEL(0);
 	SetMSUB(92,1);
 	SetMSUB(93,1);
 	SetMSUB(94,1);
@@ -172,6 +176,7 @@ void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfun
     SetMSTP(41,1);
 
     Initialize("CMS","p","p",fEcms);
+
 }
 
 Int_t AliPythia::CheckedLuComp(Int_t kf)
@@ -214,6 +219,49 @@ AliPythia* AliPythia::Instance()
     }
 }
 
+void AliPythia::PrintParticles()
+{ 
+// Print list of particl properties
+    Int_t np = 0;
+    
+    for (Int_t kf=0; kf<1000000; kf++) {
+	for (Int_t c = 1;  c > -2; c-=2) {
+	    
+	    Int_t kc = Pycomp(c*kf);
+	    if (kc) {
+		Float_t mass  = GetPMAS(kc,1);
+		Float_t width = GetPMAS(kc,2);	
+		Float_t tau   = GetPMAS(kc,4);
+		
+		char*   name = new char[8];
+		Pyname(kf,name);
+	
+		np++;
+		
+		printf("\n mass, width, tau: %6d %s %10.3f %10.3e %10.3e", 
+		       c*kf, name, mass, width, tau);
+	    }
+	}
+    }
+    printf("\n Number of particles %d \n \n", np);
+}
+
+void  AliPythia::ResetDecayTable()
+{
+//  Set default values for pythia decay switches
+    Int_t i;
+    for (i = 1; i <  501; i++) SetMDCY(i,1,fDefMDCY[i]);
+    for (i = 1; i < 2001; i++) SetMDME(i,1,fDefMDME[i]);
+}
+
+void  AliPythia::SetDecayTable()
+{
+//  Set default values for pythia decay switches
+//
+    Int_t i;
+    for (i = 1; i <  501; i++) fDefMDCY[i] = GetMDCY(i,1);
+    for (i = 1; i < 2001; i++) fDefMDME[i] = GetMDME(i,1);
+}
 
 
 #ifndef WIN32
