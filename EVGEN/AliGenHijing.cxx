@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.25  2001/07/27 17:09:36  morsch
+Use local SetTrack, KeepTrack and SetHighWaterMark methods
+to delegate either to local stack or to stack owned by AliRun.
+(Piotr Skowronski, A.M.)
+
 Revision 1.24  2001/07/20 09:34:56  morsch
 Count the number of spectator neutrons and protons and add information
 to the event header. (Chiara Oppedisano)
@@ -275,10 +280,12 @@ void AliGenHijing::Generate()
 	    origin[2] = origin0[2]+iparticle->Vz()/10;
 	    tof = kconv*iparticle->T();
 	    imo = -1;
+	    TParticle* mother = 0;
 	    if (hasMother) {
 		imo = iparticle->GetFirstMother();
-		TParticle* mother = (TParticle *) particles->At(imo);
+		mother = (TParticle *) particles->At(imo);
 		imo = (mother->GetPdgCode() != 92) ? imo =* (newPos+imo) : -1;
+		
 	    }
 // Put particle on the stack ... 
 //		printf("\n set track mother: %d %d %d %d %d %d ",i,imo, kf, nt+1, selected, hasSelectedDaughters);
@@ -329,21 +336,21 @@ void AliGenHijing::Generate()
 	    origin[2] = origin0[2]+iparticle->Vz()/10;
 	    tof = kconv*iparticle->T();
 	    imo = -1;
-	    
+	    TParticle* mother = 0;
 	    if (hasMother) {
 		imo = iparticle->GetFirstMother();
-		TParticle* mother = (TParticle *) particles->At(imo);
+		mother = (TParticle *) particles->At(imo);
 		imo = (mother->GetPdgCode() != 92) ? imo=*(newPos+imo) : -1;
 	    }   
 // Put particle on the stack
 	    SetTrack(fTrackIt,imo,kf,p,origin,polar,
-			     tof,kPNoProcess,nt);
+						     tof,kPNoProcess,nt);
 	    KeepTrack(nt);
 	    *(newPos+i)=nt;
         } // selected
       } // particle loop final state
  
-      delete newPos;
+      delete[] newPos;
 
       printf("\n I've put %i particles on the stack \n",nc);
       if (nc > 0) {
@@ -477,7 +484,7 @@ Bool_t AliGenHijing::Stable(TParticle*  particle)
 //
     Int_t kf = TMath::Abs(particle->GetPdgCode());
     
-    if ( (particle->GetFirstDaughter() < 0 ) || (kf == 1000*fFlavor+122))
+    if (particle->GetFirstDaughter() < 0 )
     {
 	return kTRUE;
     } else {
