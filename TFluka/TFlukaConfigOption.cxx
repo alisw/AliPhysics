@@ -382,24 +382,25 @@ void TFlukaConfigOption::ProcessCKOV()
 		    cerenkovProp->GetMinimumWavelength(), cerenkovProp->GetMaximumWavelength(), cerenkovProp->GetMaximumWavelength(), 
 		    Float_t(idmat), Float_t(idmat), 0.0);
 	    
-	    if (cerenkovProp->IsMetal()) {
-		fprintf(fgFile, "OPT-PROP  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fMETAL\n", -100., -100., -100., 
-			Float_t(idmat), Float_t(idmat), 0.0);
-	    } else {
-		fprintf(fgFile, "OPT-PROP  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n", -100., -100., -100., 
-			Float_t(idmat), Float_t(idmat), 0.0);
-	    }
-	    
+
+	    fprintf(fgFile, "OPT-PROP  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n", -100., -100., -100., 
+		    Float_t(idmat), Float_t(idmat), 0.0);
 	    
 	    for (Int_t j = 0; j < 3; j++) {
 		fprintf(fgFile, "OPT-PROP  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f&\n", -100., -100., -100., 
 			Float_t(idmat), Float_t(idmat), 0.0);
 	    }
-	    // Photon detection efficiency user defined
-	    
+
+
+	    // Photon detection efficiency user defined	    
 	    if (cerenkovProp->IsSensitive())
 		fprintf(fgFile, "OPT-PROP  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fSENSITIV\n", -100., -100., -100., 
 			Float_t(idmat), Float_t(idmat), 0.0);
+	    // Material has a reflective surface
+	    if (cerenkovProp->IsMetal())
+		fprintf(fgFile, "OPT-PROP  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fMETAL\n", -100., -100., -100., 
+			Float_t(idmat), Float_t(idmat), 0.0);
+
 	} else {
 	    fprintf(fgFile,"OPT-PROD  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fCERE-OFF\n",0., 0., 0., fCMatMin, fCMatMax, 1.);
 	}
@@ -479,7 +480,7 @@ void TFlukaConfigOption::ProcessLOSS()
 // Restricted energy loss fluctuations 
 //
 	fprintf(fgFile,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f\n", 1., 1., stra, fCMatMin, fCMatMax);
-	fprintf(fgFile,"DELTARAY  %10.4g%10.1f%10.1f%10.1f%10.1f%10.1f\n", cutM, 0., 0., fCMatMin, fCMatMax, 1.);	
+	fprintf(fgFile,"DELTARAY  %10.4g%10.1f%10.1f%10.1f%10.1f%10.1f\n", cutM, 0., 0., fCMatMin, fCMatMax, 1.);
     } else if (fProcessFlag[kLOSS] == 4) {
 //
 // No fluctuations
@@ -539,12 +540,24 @@ void TFlukaConfigOption::ProcessCUTELE()
 void TFlukaConfigOption::ProcessCUTNEU()
 {
     // Cut on neutral hadrons
-    fprintf(fgFile,"*\n*Cut for neutal hadrons. CUTNEU = %13.4g\n", fCutValue[kCUTNEU]);
+    fprintf(fgFile,"*\n*Cut for neutral hadrons. CUTNEU = %13.4g\n", fCutValue[kCUTNEU]);
     if (fMedium == -1) {
 	Float_t cut = fCutValue[kCUTNEU];
+	//
 	// 8.0 = Neutron
 	// 9.0 = Antineutron
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut,  8.0,  9.0);
+	//
+	// If the cut is > 19.6 MeV it is assumed the low energy neutron transport is requested.
+	// In this case the cut has to coincide with the upper  limit of the first energy group.
+	//
+	Float_t neutronCut = cut;
+	if (neutronCut < 0.0196) {
+	    neutronCut = 0.0196;
+	    printf("Cut on neutron lower than upper limit if first energy group.\n");
+	    printf("Cut reset to 19.6 MeV !\n");
+	}
+	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -neutronCut,  8.0,  9.0);
+	//
 	// 12.0 = Kaon zero long
 	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 12.0, 12.0);
 	// 17.0 = Lambda, 18.0 = Antilambda
