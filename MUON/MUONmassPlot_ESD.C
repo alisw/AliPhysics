@@ -72,7 +72,6 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
   //Reset ROOT and connect tree file
   gROOT->Reset();
 
-
   // File for histograms and histogram booking
   TFile *histoFile = new TFile("MUONmassPlot.root", "RECREATE");
   TH1F *hPtMuon = new TH1F("hPtMuon", "Muon Pt (GeV/c)", 100, 0., 20.);
@@ -128,8 +127,6 @@ TH1F *hInvMassRes;
     return kFALSE;
   }
 
-  runLoader->LoadgAlice();
-  gAlice = runLoader->GetAliRun();
   if (!gAlice) {
     Error("MUONmass_ESD", "no galice object found");
     return kFALSE;
