@@ -229,9 +229,9 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   //HALF LENGTHS OF LAYERS  
   Float_t dzl[6]   = { 14.35,14.35,25.1,32.1,49.405,55.27 };
   //LENGTHS OF END-LADDER BOXES (ALL INCLUDED)
-  Float_t dzb[6]   = { 12.4,12.4,17.6,17.6,12.,11. };   
+  Float_t dzb[6]   = { 12.4,12.4,19.,19.,12.,11. };   
   //THICKNESSES OF END-LADDER BOXES (ALL INCLUDED)
-  Float_t drb[6]   = { rl[1]-rl[0],0.2,5.,5.,3.,3. };    
+  Float_t drb[6]   = { rl[1]-rl[0],0.2,5.,5.,3.,3. };        
 
  
   Float_t dits[3], rlim, zmax;
@@ -328,7 +328,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   //     invisible 
   
   gMC->Gspos("ITSD", 1, "ITSV", 0., 0., 0., 0, "ONLY");
-  gMC->Gsatt("ITSD", "SEEN", 0);
+  //gMC->Gsatt("ITSD", "SEEN", 0);
   
   //     ITS LAYERS (SILICON) 
   
@@ -404,6 +404,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
     gMC->Gsposp("IEL3", i+1+6, "ITSD", 0., 0.,-zpos, 0, "ONLY", dits, 3);
   }    
     
+
   //    DEFINE THERMAL SCREEN FOR SPD
   
   pcits[0] = 8.3;
@@ -412,7 +413,6 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   gMC->Gsvolu("ICY1", "TUBE", idtmed[274], pcits, 3);   
   gMC->Gspos("ICY1", 1, "ITSD", 0., 0., 0., 0, "ONLY");
 
-
   //    DEFINE END CONES FOR SDD
   
   pcits[0] = 0.;
@@ -420,14 +420,14 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   pcits[2] = 2.;
   pcits[3] = 42.5;
   pcits[4] = 8.5;
-  pcits[5] = 8.5+3.0;   
-  pcits[6] = 59.0;
+  pcits[5] = 8.5+3.0;  
+  pcits[6] = 59.;
   pcits[7] = 28.;
   pcits[8] = 28.+3.0;	  
-  gMC->Gsvolu("ICO1", "PCON", idtmed[238], pcits, 9);    
+  gMC->Gsvolu("ICO1", "PCON", idtmed[274], pcits, 9);    
+  AliMatrix(idrotm[200], 90., 0., 90., 90., 180., 0.);
   gMC->Gspos("ICO1", 1, "ITSD", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("ICO1", 2, "ITSD", 0., 0., 0., idrotm[274], "ONLY");
-
+  gMC->Gspos("ICO1", 2, "ITSD", 0., 0., 0., idrotm[200], "ONLY");
 
   //    DEFINE CYLINDER BETWEEN SDD AND SSD
   
@@ -435,8 +435,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   pcits[1] = (59.5+0.13/2.)/2.;
   pcits[2] = 57.;
   gMC->Gsvolu("ICY2", "TUBE", idtmed[274], pcits, 3);   
-  gMC->Gspos("ICY2", 1, "ITSD", 0., 0., 0., 0, "ONLY");
-
+  gMC->Gspos("ICY2", 1, "ITSD", 0., 0., 0., 0, "ONLY"); 
 
   //    DEFINE END CONES FOR SSD
   
@@ -445,18 +444,18 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   pcits[2] = 2.;
   pcits[3] = 59.;
   pcits[4] = 28.0;
-  pcits[5] = 28.0+4.0;   // check thickness !!
+  pcits[5] = 28.0+4.0;   
   pcits[6] = 74.0;
   pcits[7] = 47.;
-  pcits[8] = 47.+4.0;	  // check thickness !!
-  gMC->Gsvolu("ICO2", "PCON", idtmed[264], pcits, 9);    
+  pcits[8] = 47.+4.0;	  
+  gMC->Gsvolu("ICO2", "PCON", idtmed[274], pcits, 9);    
   gMC->Gspos("ICO2", 1, "ITSD", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("ICO2", 2, "ITSD", 0., 0., 0., idrotm[274], "ONLY");
-
+  gMC->Gspos("ICO2", 2, "ITSD", 0., 0., 0., idrotm[200], "ONLY");
   
+
   // SERVICES
   
-  
+    
   // --- Define cables at the end of the ITS cones - copper part
   
   dgh[0] = 45.;
