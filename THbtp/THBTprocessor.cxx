@@ -163,8 +163,10 @@ void THBTprocessor::Initialize()
   MESH.pz_max           = 3.6;                          //OK
   
 /*********************************************/
+
+  Int_t i; //loop variable
   
-  for (Int_t i =0; i<TRK_MAXLEN;i++)
+  for (i =0; i<TRK_MAXLEN;i++)
    {
     TRACK1.trk_id[i] = 0;
     TRACK1.trk_px_sec[i] = 0; 
@@ -189,7 +191,7 @@ void THBTprocessor::Initialize()
   
 /*********************************************/
 
-  for (Int_t i =0; i<TRK2_MAXLEN;i++)
+  for (i =0; i<TRK2_MAXLEN;i++)
    {
     TRACK2.trk2_id[i] = 0;
     TRACK2.trk2_px_sec[i] = 0; 
@@ -214,7 +216,7 @@ void THBTprocessor::Initialize()
 
 /*********************************************/
 
-  for (Int_t i =0; i<SEC_MAXLEN;i++)
+  for (i =0; i<SEC_MAXLEN;i++)
    {
     SEC_TRK_MAP.stm_sec_id [i] = 0;
     SEC_TRK_MAP.stm_n_trk_sec[i] = 0; 
@@ -226,7 +228,7 @@ void THBTprocessor::Initialize()
 
 /*********************************************/
 
-  for (Int_t i =0; i<SEC_MAXLEN2;i++)
+  for (i =0; i<SEC_MAXLEN2;i++)
    {
     SEC_TRK_MAP2.stm_sec_id2[i] = 0;
     SEC_TRK_MAP2.stm_n_trk_sec2[i] = 0; 
@@ -238,7 +240,7 @@ void THBTprocessor::Initialize()
 
 /*********************************************/
 
-  for (Int_t i =0; i<PART_MAXLEN;i++)
+  for (i =0; i<PART_MAXLEN;i++)
    {
      PARTICLE.part_id[i] = 0;
      PARTICLE.part_charge[i] = 0;
@@ -248,7 +250,7 @@ void THBTprocessor::Initialize()
 
 
 /*********************************************/
-  for (Int_t i =0; i<MAX_C2_1D;i++)
+  for (i =0; i<MAX_C2_1D;i++)
    {
      CORRELATIONS.c2mod_like_1d[i] = 0; 
      CORRELATIONS.c2mod_unlike_1d[i] = 0;
@@ -258,7 +260,7 @@ void THBTprocessor::Initialize()
      CORRELATIONS.c2err_unlike_1d[i] = 0;
    }
 /*********************************************/
-  for (Int_t i =0; i<MAX_C2_3D;i++)
+  for (i =0; i<MAX_C2_3D;i++)
    for (Int_t j =0; j<MAX_C2_3D;j++)
     for (Int_t k =0; k<MAX_C2_3D;k++)
      {
@@ -304,7 +306,7 @@ void THBTprocessor::Initialize()
    EVENT_SUMMARY.chi_u1d_mean = 0.0;
    EVENT_SUMMARY.chi_u1d_rms = 0.0;
 
- for (Int_t i =0; i<MAX_EVENTS;i++) 
+ for (i =0; i<MAX_EVENTS;i++) 
   {
     EVENT_SUMMARY.n_part_used_1_store[i] = 0.0; 
     EVENT_SUMMARY.n_part_used_2_store[i] = 0.0; 
@@ -317,7 +319,7 @@ void THBTprocessor::Initialize()
     EVENT_SUMMARY.chisq_unlike_1d_store[i] = 0.0;       
   } 
 /*********************************************/
- for (Int_t i =0; i<MAX_C2_COUL;i++) 
+ for (i =0; i<MAX_C2_COUL;i++) 
   {
       COULMB.c2_coul_like[i] = 0.0;
       COULMB.c2_coul_unlike[i] = 0.0;
@@ -325,7 +327,7 @@ void THBTprocessor::Initialize()
  
   }
 /*********************************************/
- for (Int_t i =0; i<MAX_H_1D;i++) 
+ for (i =0; i<MAX_H_1D;i++) 
    {  
       HISTOGRAMS.hist1_pt_1[i] = 0;
       HISTOGRAMS.hist1_phi_1[i] = 0;
@@ -361,7 +363,7 @@ void THBTprocessor::Initialize()
       HISTOGRAMS.hinc_unlike_1d[i] = 0;
   }
 
- for (Int_t i =0; i<MAX_H_3D;i++) 
+ for (i =0; i<MAX_H_3D;i++) 
    for (Int_t j =0; j<MAX_H_3D;j++) 
      for (Int_t k =0; k<MAX_H_3D;k++) 
        {
