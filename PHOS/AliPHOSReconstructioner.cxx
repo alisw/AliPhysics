@@ -88,6 +88,7 @@ ClassImp(AliPHOSReconstructioner)
   fTSMaker     = 0 ;
   fPID         = 0 ; 
   fSDigitizer  = 0 ;
+  fHeaderFileName = "galice.root" ;
 
   fIsInitialized = kFALSE ;
 
