@@ -6,12 +6,9 @@ RICHdetect (Int_t evNumber1=0,Int_t evNumber2=0) {
 	loadlibs();
     }
     else {
-      delete gAlice;
+      //delete gAlice;
       gAlice = 0;
     }
-    
-    galice=0;
-
 // Connect the Root Galice file containing Geometry, Kine and Hits
     
     TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
@@ -37,7 +34,7 @@ RICHdetect (Int_t evNumber1=0,Int_t evNumber2=0) {
     //printf ("I'm after gAlice \n");
     
     AliRICH *RICH  = (AliRICH*) gAlice->GetDetector("RICH"); 
-    
+
     // Create Recontruction algorithm object
     AliRICHDetect *detect = new AliRICHDetect("RICH reconstruction algorithm","Reconstruction");
     
@@ -50,7 +47,7 @@ RICHdetect (Int_t evNumber1=0,Int_t evNumber2=0) {
       printf("\nParticles       : %d\n",nparticles);
       if (nev < evNumber1) continue;
       if (nparticles <= 0) return;
-      if (RICH) detect->Detect();
+      if (RICH) detect->Detect(nev);
       char hname[30];
       sprintf(hname,"TreeR%d",nev);
       gAlice->TreeR()->Write(hname);
