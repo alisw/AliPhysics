@@ -30,6 +30,9 @@ class AliEventCut: public TObject
     void           AddBasePartCut(AliEventBaseCut* ebcut);
 
     void           SetNChargedRange(Int_t min,Int_t max, Double_t etamin = -10.0,Double_t etamax = 10.0);
+    void           SetVertexXRange(Int_t min,Int_t max);
+    void           SetVertexYRange(Int_t min,Int_t max);
+    void           SetVertexZRange(Int_t min,Int_t max);
     
   protected:
     AliEventBaseCut* FindCut(AliEventBaseCut::EEventCutProperty prop);

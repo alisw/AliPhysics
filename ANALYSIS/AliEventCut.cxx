@@ -107,7 +107,33 @@ void AliEventCut::SetNChargedRange(Int_t min,Int_t max,Double_t etamin,Double_t 
    }  
   else fBaseCuts.Add(new AliNChargedCut(min,max,etamin,etamax));
 }
+/*********************************************************/
 
+void AliEventCut::SetVertexXRange(Int_t min,Int_t max)
+{
+  //Sets range of z coordinate of a primary vertex
+  AliEventBaseCut* cut = FindCut(AliEventBaseCut::kPrimVertexXCut);
+  if (cut) cut->SetRange(min,max);
+  else fBaseCuts.Add(new AliPrimVertexXCut(min,max));
+}
+/*********************************************************/
+
+void AliEventCut::SetVertexYRange(Int_t min,Int_t max)
+{
+  //Sets range of z coordinate of a primary vertex
+  AliEventBaseCut* cut = FindCut(AliEventBaseCut::kPrimVertexYCut);
+  if (cut) cut->SetRange(min,max);
+  else fBaseCuts.Add(new AliPrimVertexYCut(min,max));
+}
+/*********************************************************/
+
+void AliEventCut::SetVertexZRange(Int_t min,Int_t max)
+{
+  //Sets range of z coordinate of a primary vertex
+  AliEventBaseCut* cut = FindCut(AliEventBaseCut::kPrimVertexZCut);
+  if (cut) cut->SetRange(min,max);
+  else fBaseCuts.Add(new AliPrimVertexZCut(min,max));
+}
 /*********************************************************/
 /*********************************************************/
 /*********************************************************/
