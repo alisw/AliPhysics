@@ -327,3 +327,9 @@
 11-dec-2002 NvE Copyright notice added into AliCollider.h and AliCollider.cxx.
                 Also small (integer division) modification made in AliCollider.cxx
                 to prevent an innocent warning of the g++ compiler under Linux.
+08-jan-2003 NvE Delete statements for fMatrix[i] and fPositions[i] added in the dtor of
+                AliCalorimeter to fix a memory leak.
+09-jan-2003 NvE Different modes introduced for AliCalorimeter::Reset() to prevent memory
+                leaks in reading back AliCalorimeter objects from a data file.
+                Also unnecessary "LoadMatrix()" statement removed in AliCalorimeter::Reset().
+                Irrelevant cout statement removed from AliEvent constructor.

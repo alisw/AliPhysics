@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliEvent.cxx,v 1.7 2002/06/25 09:38:28 nick Exp $
+// $Id: AliEvent.cxx,v 1.8 2002/12/02 15:10:37 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
@@ -189,7 +189,7 @@
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
-//- Modified: NvE $Date: 2002/06/25 09:38:28 $ UU-SAP Utrecht
+//- Modified: NvE $Date: 2002/12/02 15:10:37 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliEvent.h"
@@ -220,7 +220,6 @@ AliEvent::AliEvent(Int_t n): AliVertex(n)
 {
 // Create an event to hold initially a maximum of n tracks
 // All variables initialised to default values
- cout << "AliEvent init with n = " << n << endl;
  fDaytime.Set();
  fRun=0;
  fEvent=0;

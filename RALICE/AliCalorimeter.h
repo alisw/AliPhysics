@@ -30,7 +30,7 @@ class AliCalorimeter : public TObject
   void AddSignal(Int_t row,Int_t col,Float_t s);   // Add signal to a certain module
   void AddSignal(AliCalmodule* m);                 // Add module signal to current calorimeter
   void Reset(Int_t row,Int_t col);                 // Reset signal for a certain module
-  void Reset();                                    // Reset the complete calorimeter
+  void Reset(Int_t mode=0);                        // Reset the complete calorimeter
   Float_t GetSignal(Int_t row,Int_t col);          // Provide signal of a certain module
   Int_t GetNsignals();                             // Return number of modules with a signal
   void Group(Int_t n);                             // Group modules into clusters (n rings)
@@ -81,6 +81,6 @@ class AliCalorimeter : public TObject
   AliPosition ***fPositions;                 //! Matrix of module position pointers for internal use
   TString fName;                             // Name of the calorimeter system
  
- ClassDef(AliCalorimeter,2) // Description of a modular calorimeter system.
+ ClassDef(AliCalorimeter,3) // Description of a modular calorimeter system.
 };
 #endif

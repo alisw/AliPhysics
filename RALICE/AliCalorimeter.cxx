@@ -80,7 +80,7 @@ AliCalorimeter::AliCalorimeter()
 ///////////////////////////////////////////////////////////////////////////
 AliCalorimeter::~AliCalorimeter()
 {
-// Destructor to delete memory allocated to the various arrays and matrix
+// Destructor to delete memory allocated to the various arrays and matrices
  if (fModules)
  {
   delete fModules;
@@ -106,15 +106,20 @@ AliCalorimeter::~AliCalorimeter()
   delete fHclusters;
   fHclusters=0;
  }
+
+ // Free memory allocated for (internal) module and position matrices.
+ // The modules have already been deleted via the fModules I/O array,
+ // so they shouldn't be deleted here anymore.
  if (fMatrix || fPositions)
  {
   for (Int_t i=0; i<fNrows; i++)
   {
    for (Int_t j=0; j<fNcolumns; j++)
    {
-    fMatrix[i][j]=0;
     if (fPositions[i][j]) delete fPositions[i][j];
    }
+   if (fPositions[i]) delete [] fPositions[i];
+   if (fMatrix[i]) delete [] fMatrix[i];
   }
   if (fMatrix)
   {
@@ -323,26 +328,32 @@ void AliCalorimeter::Reset(Int_t row,Int_t col)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliCalorimeter::Reset()
+void AliCalorimeter::Reset(Int_t mode)
 {
-// Reset the signals for the complete calorimeter
-// Normally this is done to prepare for the data of the next event
-// Note : Module gains, edge and dead flags remain unchanged
- 
- if (!fMatrix) LoadMatrix(); // Restore matrix data in case of reading input
+// Reset the signals for the complete calorimeter.
+// Normally this is done to prepare for the data of the next event.
+//
+// mode = 0 : Module positions, gains, edge and dead flags remain unchanged.
+//        1 : Module positions, gains, edge and dead flags are cleared.
+//
+// The default is mode=0.
+//
+// Note : In the case of reading AliCalorimeter objects from a data file,
+//        one has to reset the AliCalorimeter object with mode=1
+//        (or explicitly delete it) before reading-in the next object
+//        in order to prevent memory leaks.
+
+ if (mode<0 || mode>1)
+ {
+  cout << " *AliCalorimeter::Reset* Wrong argument. mode = " << mode << endl;
+  return;
+ }
 
  fNsignals=0;
  if (fModules)
  {
   delete fModules;
   fModules=0;
- }
- for (Int_t i=0; i<fNrows; i++)
- {
-  for (Int_t j=0; j<fNcolumns; j++)
-  {
-   fMatrix[i][j]=0;
-  }
  }
 
  fNclusters=0;
@@ -357,6 +368,64 @@ void AliCalorimeter::Reset()
  {
   delete fVetos;
   fVetos=0;
+ }
+
+ if (fMatrix || fPositions)
+ {
+  for (Int_t i=0; i<fNrows; i++)
+  {
+   for (Int_t j=0; j<fNcolumns; j++)
+   {
+    if (mode==0)
+    {
+     fMatrix[i][j]=0;
+    }
+    else
+    {
+     if (fPositions[i][j]) delete fPositions[i][j];
+    }
+   }
+   if (mode==1)
+   {
+    if (fPositions[i]) delete [] fPositions[i];
+    if (fMatrix[i]) delete [] fMatrix[i];
+   }
+  }
+ }
+
+ // Free memory allocated for various arrays and matrices.
+ if (mode==1)
+ {
+  if (fMatrix)
+  {
+   delete [] fMatrix;
+   fMatrix=0;
+  }
+  if (fPositions)
+  {
+   delete [] fPositions;
+   fPositions=0;
+  }
+  if (fGains)
+  {
+   delete fGains;
+   fGains=0;
+  }
+  if (fAttributes)
+  {
+   delete fAttributes;
+   fAttributes=0;
+  }
+  if (fHmodules)
+  {
+   delete fHmodules;
+   fHmodules=0;
+  }
+  if (fHclusters)
+  {
+   delete fHclusters;
+   fHclusters=0;
+  }
  }
 }
 ///////////////////////////////////////////////////////////////////////////
