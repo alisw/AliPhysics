@@ -33,7 +33,7 @@ AliITStrackV2Pid pidtmp;
 AliITSPid* pid = new AliITSPid(1000);
   TTree itsTree("ITSf","Tree with PID");
   AliITStrackV2Pid *outpid=&pidtmp;
-  itsTree.Branch("pids","AliITStrackV2Pid",&outpid,32000,0);
+  itsTree.Branch("pids","AliITStrackV2Pid",&outpid,32000,1);
 Float_t signal,pmom;
 Double_t xv,par[5];
 AliITStrackV2* track;
