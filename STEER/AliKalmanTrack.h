@@ -52,6 +52,15 @@ public:
   }
   Double_t GetMagneticField() const {return 100/0.299792458/fgConvConst;}
 
+  // Time integration
+  void   StartTimeIntegral();
+  Bool_t IsStartedTimeIntegral() const {return fStartTimeIntegral;}
+  void     AddTimeStep(Double_t length);
+  Double_t GetIntegratedTime(Int_t pdg) const;
+  Double_t GetIntegratedLength() const {return fIntegratedLength;}
+  void PrintTime() const;
+  
+
 protected:
   void SetChi2(Double_t chi2) {fChi2=chi2;} 
   void SetMass(Double_t mass) {fMass=mass;}
@@ -65,7 +74,13 @@ private:
 
   static Double_t fgConvConst; //conversion constant cm -> GeV/c
 
-  ClassDef(AliKalmanTrack,1)    // Reconstructed track
+  // variables for time integration
+  static const Int_t fTypes = 5; 
+  Bool_t  fStartTimeIntegral;       // indicator wether integrate time
+  Float_t fIntegratedTime[5];       // intgrated time
+  Float_t fIntegratedLength;
+  
+  ClassDef(AliKalmanTrack,2)    // Reconstructed track
 };
 
 #endif

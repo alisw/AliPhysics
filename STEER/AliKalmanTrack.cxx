@@ -22,6 +22,9 @@
 //-------------------------------------------------------------------------
 
 #include "AliKalmanTrack.h"
+#include "AliPDG.h"
+#include "TPDGCode.h"
+#include "TDatabasePDG.h"
 
 ClassImp(AliKalmanTrack)
 
@@ -39,6 +42,10 @@ AliKalmanTrack::AliKalmanTrack():
   //
     if (fgConvConst==0) 
       Fatal("AliKalmanTrack()","The magnetic field has not been set !\n"); 
+    
+    fStartTimeIntegral = kFALSE;
+    fIntegratedLength = 0;
+    for(Int_t i=0; i<5; i++) fIntegratedTime[i] = 0;
 }
 
 //_______________________________________________________________________
@@ -55,5 +62,124 @@ AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack &t):
   if (fgConvConst==0) 
     Fatal("AliKalmanTrack(const AliKalmanTrack&)",
           "The magnetic field has not been set !\n"); 
+
+  fStartTimeIntegral = t.fStartTimeIntegral;
+  fIntegratedLength = t.fIntegratedLength;
+  
+  for (Int_t i=0; i<5; i++) 
+    fIntegratedTime[i] = t.fIntegratedTime[i];
 }
+//_______________________________________________________________________
+void AliKalmanTrack::StartTimeIntegral() 
+{
+  //
+  // Start time integration
+  // To be called at Vertex by ITS tracker
+  //
+  
+  //if (fStartTimeIntegral) 
+  //  Warning("StartTimeIntegral", "Reseting Recorded Time.");
+
+  fStartTimeIntegral = kTRUE;
+  for(Int_t i=0; i<fTypes; i++) fIntegratedTime[i] = 0;  
+  fIntegratedLength = 0;
+}
+//_______________________________________________________________________
+void AliKalmanTrack:: AddTimeStep(Double_t length) 
+{
+  // 
+  // Add step to integrated time
+  // this method should be called by a sublasses at the end
+  // of the PropagateTo function or by a tracker
+  // each time step is made.
+  //
+  // If integration not started function does nothing
+  //
+  // Formula
+  // dt = dl * sqrt(p^2 + m^2) / p
+  // p = pT * (1 + tg^2 (lambda) )
+  //
+  // pt = 1/external parameter [4]
+  // tg lambda = external parameter [3]
+  //
+  //
+  // Sylwester Radomski, GSI
+  // S.Radomski@gsi.de
+  // 
+  
+  static const Double_t cc = 2.99792458e-2;
+
+  if (!fStartTimeIntegral) return;
+  
+  fIntegratedLength += length;
+
+  static Int_t pdgCode[fTypes]  = {kElectron, kMuonMinus, kPiPlus, kKPlus, kProton};
+  TDatabasePDG *db = TDatabasePDG::Instance();
+
+  Double_t xr, param[5];
+  Double_t pt, tgl;
+  
+  GetExternalParameters(xr, param);
+  pt =  1/param[4] ;
+  tgl = param[3];
+
+  Double_t p = TMath::Abs(pt * TMath::Sqrt(1+tgl*tgl));
+
+  if (length > 100) return;
+
+  for (Int_t i=0; i<fTypes; i++) {
+    
+    Double_t mass = db->GetParticle(pdgCode[i])->Mass();
+    Double_t correction = TMath::Sqrt( pt*pt * (1 + tgl*tgl) + mass * mass ) / p;
+    Double_t time = length * correction / cc;
+
+    //cout << mass << "\t" << pt << "\t" << p << "\t" 
+    //     << correction << endl;
+
+    fIntegratedTime[i] += time;
+  }
+}
+
+//_______________________________________________________________________
+
+Double_t AliKalmanTrack::GetIntegratedTime(Int_t pdg) const 
+{
+  //
+  // Return integrated time hypothesis for a given particle
+  // type assumption.
+  //
+  // Input parameter:
+  // pdg - Pdg code of a particle type
+  //
+
+
+  if (!fStartTimeIntegral) {
+    Warning("GetIntegratedTime","Time integration not started");
+    return 0.;
+  }
+
+  static Int_t pdgCode[fTypes] = {kElectron, kMuonMinus, kPiPlus, kKPlus, kProton};
+
+  for (Int_t i=0; i<fTypes; i++)
+    if (pdgCode[i] == TMath::Abs(pdg)) return fIntegratedTime[i];
+
+  Warning(":GetIntegratedTime","Particle type [%d] not found", pdg);
+  return 0;
+}
+//_______________________________________________________________________
+
+void AliKalmanTrack::PrintTime() const
+{
+  // For testing
+  // Prints time for all hypothesis
+  //
+
+  static Int_t pdgCode[fTypes] = {kElectron, kMuonMinus, kPiPlus, kKPlus, kProton};
+
+  for (Int_t i=0; i<fTypes; i++)
+    printf("%d: %.2f  ", pdgCode[i], fIntegratedTime[i]);
+  printf("\n");  
+}
+
+//_______________________________________________________________________
 
