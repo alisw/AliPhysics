@@ -40,7 +40,7 @@ class AliTPCseed : public AliTPCtrack {
      AliTPCseed(const AliTPCtrack &t);
      AliTPCseed(const AliKalmanTrack &t, Double_t a);
      Int_t Compare(const TObject *o) const;
-
+     void Reset();
      Int_t GetProlongation(Double_t xr, Double_t &y, Double_t & z) const;
      virtual Double_t GetPredictedChi2(const AliTPCclusterMI *cluster) const;
      virtual Int_t Update(const AliTPCclusterMI* c, Double_t chi2, UInt_t i);
@@ -56,6 +56,7 @@ class AliTPCseed : public AliTPCtrack {
      void CookdEdx(Double_t low=0.05, Double_t up=0.70);
      Bool_t IsActive(){ return !(fRemoval);}
      void Desactivate(Int_t reason){ fRemoval = reason;} 
+     //     Float_t GetRadius(){ return (1-fP2)/fP4;}  
      Int_t fRelativeSector;  // ! index of current relative sector
      Int_t   fClusterIndex[200];  //array of cluster indexes
     
@@ -78,6 +79,7 @@ class AliTPCseed : public AliTPCtrack {
      Int_t   fLastPoint;     // last  cluster position     
      Int_t   fNShared;       // number of shared points
      Bool_t  fIsSeeding;     //indicates if it is proces of seeading
+     Bool_t  fStopped;      // indicate that track cann't be prolongate anymore (for secondaries)
    private:
      Float_t fSdEdx;           // sigma of dedx
      Float_t fMAngular;        // mean angular factor
@@ -130,6 +132,7 @@ public:
      const AliTPCclusterMI* operator[](Int_t i) const {return fClusters[i];}
      UInt_t GetIndex(Int_t i) const {return fIndex[i];}
      Int_t Find(Double_t z) const; 
+     AliTPCclusterMI *  FindNearest(Double_t y, Double_t z, Double_t roady, Double_t roadz) const;
      void SetX(Double_t x) {fX=x;}
      Double_t GetX() const {return fX;}
      AliTPCclusterTracks *  GetClusterTracks(Int_t index){ return ( (index<fN) && fClusterTracks!=0)? &(fClusterTracks[index]):0;}
@@ -210,6 +213,8 @@ private:
    Float_t  GetSigmaZ(AliTPCseed * seed);
 
    void MakeSeeds(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2);
+   void MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2);
+
    TObjArray * MakeSeedsSectors(Int_t sec1, Int_t sec2);   // make seeds from all sectors
    void MakeSeedsAll();
    Int_t FollowProlongation(AliTPCseed& t, Int_t rf=0);

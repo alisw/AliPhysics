@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2002/10/23 13:45:00  hristov
+Fatal if no magnetic field set for the reconstruction (Y.Belikov)
+
 Revision 1.13  2002/10/23 07:17:34  alibrary
 Introducing Riostream.h
 
@@ -192,9 +195,9 @@ Int_t AliTPCtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho) {
   //-----------------------------------------------------------------
   // This function propagates a track to a reference plane x=xk.
   //-----------------------------------------------------------------
-  if (TMath::Abs(fP4*xk - fP2) >= 0.99999) {
-    Int_t n=GetNumberOfClusters();
-    if (n>4) cerr<<n<<" AliTPCtrack warning: Propagation failed !\n";
+  if (TMath::Abs(fP4*xk - fP2) >= 0.9) {
+    //    Int_t n=GetNumberOfClusters();
+    //if (n>4) cerr<<n<<" AliTPCtrack warning: Propagation failed !\n";
     return 0;
   }
 
@@ -295,9 +298,9 @@ Int_t AliTPCtrack::Update(const AliCluster *c, Double_t chisq, UInt_t index) {
 
   Double_t dy=c->GetY() - fP0, dz=c->GetZ() - fP1;
   Double_t cur=fP4 + k40*dy + k41*dz, eta=fP2 + k20*dy + k21*dz;
-  if (TMath::Abs(cur*fX-eta) >= 0.99999) {
-    Int_t n=GetNumberOfClusters();
-    if (n>4) cerr<<n<<" AliTPCtrack warning: Filtering failed !\n";
+  if (TMath::Abs(cur*fX-eta) >= 0.9) {
+    //    Int_t n=GetNumberOfClusters();
+    //if (n>4) cerr<<n<<" AliTPCtrack warning: Filtering failed !\n";
     return 0;
   }
 

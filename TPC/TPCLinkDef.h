@@ -72,6 +72,7 @@
 #pragma link C++ class  AliTPCclusterLMI+;
 #pragma link C++ class  AliTPCtrackerMI+;
 #pragma link C++ class  AliTPCseed+;
+#pragma link C++ class  AliTPCpolyTrack+;
 
 
 
