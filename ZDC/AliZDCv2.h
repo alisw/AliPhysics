@@ -23,7 +23,7 @@ public:
   Int_t         Digitize(Int_t Det, Int_t Quad, Int_t Light);
   virtual void  SDigits2Digits();
   virtual void  Hits2Digits(Int_t ntracks = 0);
-  virtual void  MakeBranch(Option_t* opt, char *file=0);
+  virtual void  MakeBranch(Option_t* opt, const char *file=0);
   virtual Int_t IsVersion() const {return 1;}
   virtual void  DrawModule();
   virtual void  Init();
