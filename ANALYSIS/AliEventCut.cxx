@@ -67,7 +67,7 @@ void AliEventCut::AddBasePartCut(AliEventBaseCut* ebcut)
     return;
   }
  
- if (ebcut->GetProperty() != kNone)
+ if (ebcut->GetProperty() != AliEventBaseCut::kNone)
   {
     if (FindCut(ebcut->GetProperty()))
      {
@@ -80,7 +80,7 @@ void AliEventCut::AddBasePartCut(AliEventBaseCut* ebcut)
 }
 /*********************************************************/
 
-AliEventBaseCut* AliEventCut::FindCut(EEventCutProperty prop)
+AliEventBaseCut* AliEventCut::FindCut(AliEventBaseCut::EEventCutProperty prop)
 {
 //Finds and returns pointer to the cut with given property
  Int_t n = fBaseCuts.GetEntries();
@@ -99,7 +99,7 @@ AliEventBaseCut* AliEventCut::FindCut(EEventCutProperty prop)
 void AliEventCut::SetNChargedRange(Int_t min,Int_t max,Double_t etamin,Double_t etamax)
 {
  //Sets renge of number of charged particles
-  AliNChargedCut* cut = dynamic_cast<AliNChargedCut*>(FindCut(kNChargedCut));
+  AliNChargedCut* cut = dynamic_cast<AliNChargedCut*>(FindCut(AliEventBaseCut::kNChargedCut));
   if(cut) 
    { 
      cut->SetRange(min,max);

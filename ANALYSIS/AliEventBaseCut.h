@@ -15,18 +15,14 @@
 
 class AliAOD;
 
-enum EEventCutProperty
- {
-   kPrimVertexXCut,
-   kPrimVertexYCut,
-   kPrimVertexZCut,
-   kNChargedCut,
-   kNone
- };
-
 class AliEventBaseCut: public TObject
 {
   public: 
+    enum EEventCutProperty {
+       kPrimVertexXCut,kPrimVertexYCut,kPrimVertexZCut,
+       kNChargedCut,kNone
+     };
+
     AliEventBaseCut();
     AliEventBaseCut(Double_t min,Double_t max, EEventCutProperty prop = kNone);
     virtual ~AliEventBaseCut(){}

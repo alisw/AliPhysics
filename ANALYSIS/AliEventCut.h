@@ -17,7 +17,7 @@
 #include "AliEventBaseCut.h"
 
 class AliAOD;
-enum EEventCutProperty;
+enum AliEventBaseCut::EEventCutProperty;
 
 class AliEventCut: public TObject
 {
@@ -32,7 +32,7 @@ class AliEventCut: public TObject
     void           SetNChargedRange(Int_t min,Int_t max, Double_t etamin = -10.0,Double_t etamax = 10.0);
     
   protected:
-    AliEventBaseCut* FindCut(EEventCutProperty prop);
+    AliEventBaseCut* FindCut(AliEventBaseCut::EEventCutProperty prop);
     
     TObjArray fBaseCuts;
   private:
@@ -45,7 +45,7 @@ class AliEventEmptyCut: public TObject
     AliEventEmptyCut(){}
     virtual ~AliEventEmptyCut(){}
     
-    Bool_t Rejected(AliAOD* aod) const {return kFALSE;}//always accept
+    Bool_t Rejected(AliAOD* /*aod*/) const {return kFALSE;}//always accept
     
   protected:
   private:
