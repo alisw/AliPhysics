@@ -45,6 +45,7 @@ ClassImp(AliPHOSDigit)
   fIndexInList = -1 ; 
   fNprimary    = 0 ;  
   fNMaxPrimary = 5 ; 
+  fShiftOffset = 10000000 ;
 }
 
 //____________________________________________________________________________
@@ -57,6 +58,7 @@ AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t digEnergy, Float_t tim
   fTime        = time ;
   fId          = id ;
   fIndexInList = index ; 
+  fShiftOffset = 10000000 ;
   if( primary != -1){
     fNprimary    = 1 ; 
     fPrimary[0]  = primary ;
@@ -78,6 +80,7 @@ AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit)
 
   fNMaxPrimary = digit.fNMaxPrimary ;  
   Int_t i ;
+  fShiftOffset = 10000000 ;
   for ( i = 0; i < fNMaxPrimary ; i++)
     fPrimary[i]  = digit.fPrimary[i] ;
   fAmp         = digit.fAmp ;
@@ -122,7 +125,7 @@ Int_t AliPHOSDigit::GetPrimary(Int_t index) const
 {
   // retrieves the primary particle number given its index in the list 
   Int_t rv = -1 ;
-  if ( index <= fNprimary ){
+  if ( index <= fNprimary && index > 0){
     rv = fPrimary[index-1] ;
   } 
 
@@ -140,7 +143,7 @@ void AliPHOSDigit::ShiftPrimary(Int_t shift)
   //shifts primary number to BIG offset, to separate primary in different TreeK
   Int_t index  ;
   for(index = 0; index <fNprimary; index ++ ){
-    fPrimary[index] = fPrimary[index]+ shift * 10000000   ;
+    fPrimary[index] = fPrimary[index]+ shift * fShiftOffset ;
   } 
 }
 //____________________________________________________________________________

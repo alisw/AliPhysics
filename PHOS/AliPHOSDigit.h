@@ -53,14 +53,15 @@ class AliPHOSDigit : public AliDigitNew {
     // sets the amplitude data member 
     fAmp=Amp ; } 
   void    SetTime(Float_t Time) {fTime = Time ;}
-  void ShiftPrimary(Int_t shift); // shift to semarate different TreeK in merging
+  void ShiftPrimary(Int_t shift); // shift to separate different TreeK in merging
 
  private:
 
-  Int_t fNprimary ;     // Number of primaries
-  Int_t fNMaxPrimary ;  //! Max Number of primaries
-  Int_t fPrimary[5] ;   // Array of primaries      
-  Float_t fTime ; 
+  Int_t fNprimary ;         // Number of primaries
+  Int_t fNMaxPrimary ;      //! Max Number of primaries
+  Int_t fPrimary[5] ;       // Array of primaries      
+  Int_t fShiftOffset ;      // offset to be applied to the primary article numbering in case of event mixing
+  Float_t fTime ;           // Calculcated time 
     
   ClassDef(AliPHOSDigit,1)   // Digit in PHOS 
 
