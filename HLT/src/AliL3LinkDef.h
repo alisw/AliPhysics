@@ -29,7 +29,8 @@
 #pragma link C++ class AliL3FileHandler;
 #pragma link C++ class AliL3Evaluate; 
 #pragma link C++ class AliL3Display; 
-#pragma link C++ class AliL3ClustFinderNew; 
+#pragma link C++ class AliL3ClustFinderNew;
+#pragma link C++ class AliL3Fitter; 
 
 #endif
 
