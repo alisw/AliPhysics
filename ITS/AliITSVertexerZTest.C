@@ -19,7 +19,7 @@ void AliITSVertexerZTest(Float_t delphi=0.05,Float_t window=3.,Float_t initx=0.,
   TH1F *diff1 = new TH1F("diff1","Zfound - Ztrue(#mu m)",100,-500,500);
   delete gAlice;
   gAlice = 0;
-  TFile *in = new TFile("galice.root");
+  TFile *in = new TFile(FileWithKine.Data());
   gAlice = (AliRun*)in->Get("gAlice");
   if(FileWithKine != FileWithRecP)gAlice->SetTreeRFileName(FileWithRecP);
   TFile *fo = new TFile("vertici.root","recreate");
