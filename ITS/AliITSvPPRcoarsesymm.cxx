@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2001/04/04 07:02:16  barbera
+Position of the cylinders holding rails corrected
+
 Revision 1.20  2001/03/29 22:01:53  barbera
 New flag added to change the material for some service supports as asked by the PMD people. Some changes to the services due to the new drawings from the engineers
 
@@ -282,29 +285,29 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   rails = GetRails();
   
   if(rails != 0 && rails != 1) {
-     cout << "WARNING: the switch for rails is not set neither to 0 (rails out) nor to 1 (rails in)." 
+     cout << "ITS - WARNING: the switch for rails is not set neither to 0 (rails out) nor to 1 (rails in)." 
      " The default value of 1 (rails in) will be used." << endl;
   }  
   
   if (rails == 0 ) {
-     cout << "Rails are out." << endl; 
+     cout << "ITS: Rails are out." << endl; 
   } else {
-     cout << "Rails are in." << endl;
+     cout << "ITS: Rails are in." << endl;
   }      
   
   suppmat = GetSupportMaterial();   
   
   if (suppmat != 0 && suppmat != 1 && suppmat != 2) {
-     cout << "WARNING: the flag for the material of services supports is not set neither to 0 (copper) nor to 1 (aluminum) nor to 2 (carbon)." 
+     cout << "ITS - WARNING: the flag for the material of services supports is not set neither to 0 (copper) nor to 1 (aluminum) nor to 2 (carbon)." 
      " The default value of 0 (copper) will be used." << endl;
   }  
   
   if (suppmat == 0) {
-     cout << "The material of the services supports is copper." << endl; 
+     cout << "ITS: The material of the services supports is copper." << endl; 
   } else if (suppmat == 1){
-     cout << "The material of the services supports is aluminum." << endl;
+     cout << "ITS: The material of the services supports is aluminum." << endl;
   } else {
-     cout << "The material of the services supports is carbon." << endl;
+     cout << "ITS: The material of the services supports is carbon." << endl;
   }      
   
 
@@ -317,7 +320,7 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
     
   //     FIELD CAGE HALF LENGTH 
   
-  rlim  = 56.;
+  rlim  = 50.;
   zmax  = 74.;
   ztpc = 284.;
     
@@ -338,34 +341,34 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   dgh[11] = 62+4.;
   dgh[12] = -97.5;
   dgh[13] = 46;
-  dgh[14] = rlim+0.1;
+  dgh[14] = rlim+6;
   dgh[15] = -zmax;
   dgh[16] = 46;
-  dgh[17] = rlim+0.1;
+  dgh[17] = rlim+6;
   dgh[18] = -48;
   dgh[19] = 6;
-  dgh[20] = rlim+0.1; 
+  dgh[20] = rlim+6; 
   dgh[21] = -28.6;
   dgh[22] = 6;
-  dgh[23] = rlim+0.1;
+  dgh[23] = rlim+6;
   dgh[24] = -27.6;
   dgh[25] = 3.295;
-  dgh[26] = rlim+0.1;
+  dgh[26] = rlim+6;
   dgh[27] = 27.6;
   dgh[28] = 3.295;
-  dgh[29] = rlim+0.1;
+  dgh[29] = rlim+6;
   dgh[30] = 28.6;
   dgh[31] = 6;
-  dgh[32] = rlim+0.1;
+  dgh[32] = rlim+6;
   dgh[33] = 48;
   dgh[34] = 6;
-  dgh[35] = rlim+0.1;
+  dgh[35] = rlim+6;
   dgh[36] = zmax;
   dgh[37] = 46;
-  dgh[38] = rlim+0.1;
+  dgh[38] = rlim+6;
   dgh[39] = 97.5;
   dgh[40] = 46;
-  dgh[41] = rlim+0.1;
+  dgh[41] = rlim+6;
   dgh[42] = ztpc;
   dgh[43] = 62;
   dgh[44] = 62+4.;

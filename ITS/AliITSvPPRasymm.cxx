@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.33  2001/05/01 22:40:42  nilsen
+Partical update of SetDefault.
+
 Revision 1.32  2001/04/22 13:48:09  barbera
 New values of media parameters and thickness of SPD end-ladder electronics as given by Fabio Formenti
 
@@ -336,25 +339,25 @@ void AliITSvPPRasymm::CreateGeometry(){
   dchip2 = GetThicknessChip2();    
 
   if(ddet1 < 100. || ddet1 > 300.) {
-     cout << "WARNING: the detector thickness for layer 1 is outside the range of [100,300] microns."
+     cout << "ITS - WARNING: the detector thickness for layer 1 is outside the range of [100,300] microns."
 	  " The default value of 300 microns will be used." << endl;
 	  ddet1=300.;
   }
   
   if(ddet2 < 100. || ddet2 > 300.) {
-     cout << "WARNING: the detector thickness for layer 2 is outside the range of [100,300] microns."
+     cout << "ITS - WARNING: the detector thickness for layer 2 is outside the range of [100,300] microns."
 	  " The default value of 300 microns will be used." << endl;
 	  ddet2=300.;
   }
   
   if(dchip1 < 150. || dchip1 > 300.) {
-     cout << "WARNING: the chip thickness for layer 1 is outside the range of [150,300] microns."
+     cout << "ITS - WARNING: the chip thickness for layer 1 is outside the range of [150,300] microns."
 	  " The default value of 300 microns will be used." << endl;
 	  dchip1=300.;
   }
   
   if(dchip2 < 150. || dchip2 > 300.) {
-     cout << "WARNING: the chip thickness for layer 2 is outside the range of [150,300] microns."
+     cout << "ITS - WARNING: the chip thickness for layer 2 is outside the range of [150,300] microns."
 	  " The default value of 300 microns will be used." << endl;
 	  dchip2=300.;
   }      
@@ -368,29 +371,29 @@ void AliITSvPPRasymm::CreateGeometry(){
   fluid = GetCoolingFluid();
 
   if(rails != 0 && rails != 1) {
-     cout << "WARNING: the switch for rails is not set neither to 0 (rails out) nor to 1 (rails in)." 
+     cout << "ITS - WARNING: the switch for rails is not set neither to 0 (rails out) nor to 1 (rails in)." 
      " The default value of 1 (rails in) will be used." << endl;
      	
   }  
   
   if(fluid != 0 && fluid != 1) {
-     cout << "WARNING: the switch for cooling fluid is not set neither to 0 (freon) nor to 1 (water)." 
+     cout << "ITS - WARNING: the switch for cooling fluid is not set neither to 0 (freon) nor to 1 (water)." 
      " The default value of 1 (water) will be used." << endl;  
   }       
    
-  cout << "Detector thickness on layer 1 is set to " << ddet1 << " microns." << endl;
-  cout << "Chip thickness on layer 1 is set to " << dchip1 << " microns." << endl;
-  cout << "Detector thickness on layer 2 is set to " << ddet2 << " microns." << endl;
-  cout << "Chip thickness on layer 2 is set to " << dchip2 << " microns." << endl;
+  cout << "ITS: Detector thickness on layer 1 is set to " << ddet1 << " microns." << endl;
+  cout << "ITS: Chip thickness on layer 1 is set to " << dchip1 << " microns." << endl;
+  cout << "ITS: Detector thickness on layer 2 is set to " << ddet2 << " microns." << endl;
+  cout << "ITS: Chip thickness on layer 2 is set to " << dchip2 << " microns." << endl;
   if(rails == 0 ) {
-     cout << "Rails are out." << endl; 
+     cout << "ITS: Rails are out." << endl; 
   } else {
-     cout << "Rails are in." << endl;
+     cout << "ITS: Rails are in." << endl;
   }   
   if(fluid == 0 ) {
-     cout << "The cooling fluid is freon." << endl; 
+     cout << "ITS: The cooling fluid is freon." << endl; 
   } else {
-     cout << "The cooling fluid is water." << endl;
+     cout << "ITS: The cooling fluid is water." << endl;
   }   
 
   ddet1  = ddet1*0.0001/2.; // conversion from tot length in um to half in cm
@@ -914,7 +917,7 @@ void AliITSvPPRasymm::CreateGeometry(){
     
   //     FIELD CAGE HALF LENGTH 
   
-  rlim  = 56.;
+  rlim  = 50.;
   zmax  = 74.;
   ztpc = 284.;
   
@@ -932,37 +935,37 @@ void AliITSvPPRasymm::CreateGeometry(){
   dgh[8] = 85.;
   dgh[9] = -ztpc;
   dgh[10] = 46;  
-  dgh[11] = rlim+0.1;
+  dgh[11] = rlim+6;
   dgh[12] = -97.5;
   dgh[13] = 46;  
-  dgh[14] = rlim+0.1;
+  dgh[14] = rlim+6;
   dgh[15] = -zmax;
   dgh[16] = 46;  
-  dgh[17] = rlim+0.1;
+  dgh[17] = rlim+6;
   dgh[18] = -48;   
   dgh[19] = 6;
-  dgh[20] = rlim+0.1;
+  dgh[20] = rlim+6;
   dgh[21] = -28.6;   
   dgh[22] = 6;
-  dgh[23] = rlim+0.1;    
+  dgh[23] = rlim+6;    
   dgh[24] = -27.6;  
   dgh[25] = 3.295;
-  dgh[26] = rlim+0.1; 
+  dgh[26] = rlim+6; 
   dgh[27] = 27.6;   
   dgh[28] = 3.295;
-  dgh[29] = rlim+0.1;
+  dgh[29] = rlim+6;
   dgh[30] = 28.6;   
   dgh[31] = 6;
-  dgh[32] = rlim+0.1;
+  dgh[32] = rlim+6;
   dgh[33] = 48;   
   dgh[34] = 6;
-  dgh[35] = rlim+0.1;  
+  dgh[35] = rlim+6;  
   dgh[36] = zmax;
   dgh[37] = 46;
-  dgh[38] = rlim+0.1;
+  dgh[38] = rlim+6;
   dgh[39] = 97.5;
   dgh[40] = 46;  
-  dgh[41] = rlim+0.1;
+  dgh[41] = rlim+6;
   dgh[42] = ztpc;
   dgh[43] = 62;     
   dgh[44] = 62+4.;  
