@@ -74,11 +74,15 @@ AliPHOSAnalyze::AliPHOSAnalyze(Text_t * name)
     cout << " AliPHOSAnalyze > Error opening " << name << endl ; 
   }
   else { 
-    gAlice = (AliRun*) fRootFile->Get("gAlice");
-    fPHOS  = (AliPHOSv1 *)gAlice->GetDetector("PHOS") ;
-    fGeom  = AliPHOSGeometry::GetInstance( fPHOS->GetGeometry()->GetName(), fPHOS->GetGeometry()->GetTitle() ) ;
-   
-    fEvt = -999 ; 
+      //========== Get AliRun object from file 
+      gAlice = (AliRun*) fRootFile->Get("gAlice") ;
+      //=========== Get the PHOS object and associated geometry from the file      
+      fPHOS  = (AliPHOSv1 *)gAlice->GetDetector("PHOS") ;
+      fGeom  = AliPHOSGeometry::GetInstance( fPHOS->GetGeometry()->GetName(), fPHOS->GetGeometry()->GetTitle() );
+      //========== Initializes the Index to Object converter
+      fObjGetter = AliPHOSIndexToObject::GetInstance(fPHOS) ; 
+      //========== Current event number 
+      fEvt = -999 ; 
   }
 }
 
@@ -176,11 +180,6 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
     cout << "AnalyzeManyEvents > " << "Root File not openned" << endl ;  
   else
     {
-      //========== Get AliRun object from file 
-      gAlice = (AliRun*) fRootFile->Get("gAlice") ;
-      //=========== Get the PHOS object and associated geometry from the file      
-      fPHOS  = (AliPHOSv1 *)gAlice->GetDetector("PHOS") ;
-      fGeom  = AliPHOSGeometry::GetInstance( fPHOS->GetGeometry()->GetName(), fPHOS->GetGeometry()->GetTitle() );
       //========== Booking Histograms
       cout << "AnalyzeManyEvents > " << "Booking Histograms" << endl ; 
       BookingHistograms();
@@ -193,24 +192,26 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
       AliPHOSRecParticle * recparticle;
       for ( ievent=0; ievent<Nevents; ievent++)
 	{  
-          if (ievent==0)  cout << "AnalyzeManyEvents > " << "Starting Analyzing " << endl ; 
-	  //========== Create the Clusterizer
-	  fClu = new AliPHOSClusterizerv1() ; 
-	  fClu->SetEmcEnergyThreshold(0.05) ; 
-	  fClu->SetEmcClusteringThreshold(0.50) ; 
-	  fClu->SetPpsdEnergyThreshold    (0.0000002) ; 
-	  fClu->SetPpsdClusteringThreshold(0.0000001) ; 
-	  fClu->SetLocalMaxCut(0.03) ;
-	  fClu->SetCalibrationParameters(0., 0.00000001) ;  
-	  //========== Creates the track segment maker
-	  fTrs = new AliPHOSTrackSegmentMakerv1()  ;
-	  //	  fTrs->UnsetUnfoldFlag() ; 
-	  //========== Creates the particle identifier
-	  fPID = new AliPHOSPIDv1() ;
-	  fPID->SetShowerProfileCuts(0.3, 1.8, 0.3, 1.8 ) ; 
-	  fPID->Print() ; 	    
-	  //========== Creates the Reconstructioner  
-	  fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ; 
+          if (ievent==0) {
+	    cout << "AnalyzeManyEvents > " << "Starting Analyzing " << endl ; 
+	    //========== Create the Clusterizer
+	    fClu = new AliPHOSClusterizerv1() ; 
+	    fClu->SetEmcEnergyThreshold(0.05) ; 
+	    fClu->SetEmcClusteringThreshold(0.50) ; 
+	    fClu->SetPpsdEnergyThreshold    (0.0000002) ; 
+	    fClu->SetPpsdClusteringThreshold(0.0000001) ; 
+	    fClu->SetLocalMaxCut(0.03) ;
+	    fClu->SetCalibrationParameters(0., 0.00000001) ;  
+	    //========== Creates the track segment maker
+	    fTrs = new AliPHOSTrackSegmentMakerv1()  ;
+	    //	  fTrs->UnsetUnfoldFlag() ; 
+	    //========== Creates the particle identifier
+	    fPID = new AliPHOSPIDv1() ;
+	    fPID->SetShowerProfileCuts(0.3, 1.8, 0.3, 1.8 ) ; 
+	    fPID->Print() ; 	    
+	    //========== Creates the Reconstructioner  
+	    fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ;
+	  }
 	  //========== Event Number>         
 	  if ( ( log10((Float_t)(ievent+1)) - (Int_t)(log10((Float_t)(ievent+1))) ) == 0. ) 
 	    cout <<  "AnalyzeManyEvents > " << "Event is " << ievent << endl ;  
@@ -223,11 +224,11 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 	  while( ( digit = (AliPHOSDigit *)nextdigit() ) )
 	    {
 	      fGeom->AbsToRelNumbering(digit->GetId(), relid) ;         
-	      if (fClu->IsInEmc(digit)) fhEmcDigit->Fill(fClu->Calibrate(digit->GetAmp())) ; 
-	      else    
+	      //	      if (fClu->IsInEmc(digit)) fhEmcDigit->Fill(fClu->Calibrate(digit->GetAmp())) ; 
+	      //else    
 		{  
-		  if (relid[1]<17) fhVetoDigit->Fill(fClu->Calibrate(digit->GetAmp())); 
-		  if (relid[1]>16) fhConvertorDigit->Fill(fClu->Calibrate(digit->GetAmp()));
+		  //	  if (relid[1]<17) fhVetoDigit->Fill(fClu->Calibrate(digit->GetAmp())); 
+		  //if (relid[1]>16) fhConvertorDigit->Fill(fClu->Calibrate(digit->GetAmp()));
 		}
 	    }
 	  //=========== Do the reconstruction
@@ -314,11 +315,6 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 // 		    }
 		}
 	    }
-	  // Deleting fClu, fTrs, fPID et fRec
-	  fClu->Delete();
-	  fTrs->Delete();
-	  fPID->Delete();
-	  fRec->Delete();
 
 	}   // endfor
       SavingHistograms();
@@ -340,7 +336,6 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
       //=========== Get the PHOS object and associated geometry from the file      
       fPHOS  = (AliPHOSv1 *)gAlice->GetDetector("PHOS") ;
       fGeom  = AliPHOSGeometry::GetInstance( fPHOS->GetGeometry()->GetName(), fPHOS->GetGeometry()->GetTitle() );
-
       //========== Initializes the Index to Object converter
       fObjGetter = AliPHOSIndexToObject::GetInstance(fPHOS) ; 
 
@@ -351,32 +346,32 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
       Int_t ievent;
       for ( ievent=0; ievent<Nevents; ievent++)
 	{  
-          if (ievent==0)  cout << "AnalyzeResolutions > " << "Starting Analyzing " << endl ; 
-
-	  //========== Create the Clusterizer
-	  fClu = new AliPHOSClusterizerv1() ; 
-	  fClu->SetEmcEnergyThreshold(0.05) ; 
-	  fClu->SetEmcClusteringThreshold(0.50) ; 
-	  fClu->SetPpsdEnergyThreshold    (0.0000002) ; 
-	  fClu->SetPpsdClusteringThreshold(0.0000001) ; 
-	  fClu->SetLocalMaxCut(0.03) ;
-	  fClu->SetCalibrationParameters(0., 0.00000001) ; 
- 
-	  //========== Creates the track segment maker
-	  fTrs = new AliPHOSTrackSegmentMakerv1()  ;
-	  //	  fTrs->UnsetUnfoldFlag() ; 
-
-	  //========== Creates the particle identifier
-	  fPID = new AliPHOSPIDv1() ;
-	  fPID->SetShowerProfileCuts(0.3, 1.8, 0.3, 1.8 ) ; 
+          if (ievent==0) {
+	    cout << "AnalyzeResolutions > " << "Starting Analyzing " << endl ; 
+	    //========== Create the Clusterizer
+	    fClu = new AliPHOSClusterizerv1() ; 
+	    fClu->SetEmcEnergyThreshold(0.05) ; 
+	    fClu->SetEmcClusteringThreshold(0.50) ; 
+	    fClu->SetPpsdEnergyThreshold    (0.0000002) ; 
+	    fClu->SetPpsdClusteringThreshold(0.0000001) ; 
+	    fClu->SetLocalMaxCut(0.03) ;
+	    fClu->SetCalibrationParameters(0., 0.00000001) ; 
 	    
-	  //========== Creates the Reconstructioner  
-	  fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ; 
-
+	    //========== Creates the track segment maker
+	    fTrs = new AliPHOSTrackSegmentMakerv1()  ;
+	    //	  fTrs->UnsetUnfoldFlag() ; 
+	    
+	    //========== Creates the particle identifier
+	    fPID = new AliPHOSPIDv1() ;
+	    fPID->SetShowerProfileCuts(0.3, 1.8, 0.3, 1.8 ) ; 
+	    
+	    //========== Creates the Reconstructioner  
+	    fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ; 
+	  }
 	  //========== Event Number>         
 	  if ( ( log10((Float_t)(ievent+1)) - (Int_t)(log10((Float_t)(ievent+1))) ) == 0. ) 
 	    cout <<  "AnalyzeResolutions > " << "Event is " << ievent << endl ;  
-
+	  
 	  //=========== Connects the various Tree's for evt
 	  gAlice->GetEvent(ievent);
 
@@ -467,11 +462,6 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 		}
 	    }
 
-	  // Deleting fClu, fTrs, fPID et fRec
-	  fClu->Delete();
-	  fTrs->Delete();
-	  fPID->Delete();
-	  fRec->Delete();
 	  PrimaryList->Delete() ;
 
 	}   // endfor
@@ -485,21 +475,14 @@ void  AliPHOSAnalyze::BookingHistograms()
 {
   // Books the histograms where the results of the analysis are stored (to be changed)
 
-  if (fhEmcDigit )         
-    delete fhEmcDigit  ;
-  if (fhVetoDigit )     
-    delete fhVetoDigit  ;
-  if (fhConvertorDigit ) 
-    delete fhConvertorDigit   ;
-  if (fhEmcCluster   )  
-    delete  fhEmcCluster   ;
-  if (fhVetoCluster )     
-    delete fhVetoCluster   ;
-  if (fhConvertorCluster )
-    delete fhConvertorCluster  ;
-  if (fhConvertorEmc )    
-    delete fhConvertorEmc  ;
- 
+  delete fhEmcDigit  ;
+  delete fhVetoDigit  ;
+  delete fhConvertorDigit   ;
+  delete  fhEmcCluster   ;
+  delete fhVetoCluster   ;
+  delete fhConvertorCluster  ;
+  delete fhConvertorEmc  ;
+  
 //   fhEmcDigit                = new TH1F("hEmcDigit",      "hEmcDigit",         1000,  0. ,  25.);
 //   fhVetoDigit               = new TH1F("hVetoDigit",     "hVetoDigit",         500,  0. ,  3.e-5);
 //   fhConvertorDigit          = new TH1F("hConvertorDigit","hConvertorDigit",    500,  0. ,  3.e-5);
@@ -607,11 +590,6 @@ Bool_t AliPHOSAnalyze::Init(Int_t evt)
   
   if ( ok ) {
     
-
-    //========== Initializes the Index to Object converter
-
-    fObjGetter = AliPHOSIndexToObject::GetInstance(fPHOS) ; 
-
     //========== Create the Clusterizer
 
     fClu =  new AliPHOSClusterizerv1() ; 
