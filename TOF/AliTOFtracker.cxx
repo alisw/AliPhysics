@@ -184,10 +184,11 @@ void AliTOFtracker::CollectESD() {
 
     // TRD good tracks, already propagated at 371 cm
 
-    if (
-	((t->GetStatus()&AliESDtrack::kTRDout)!=0) && 
-	((t->GetStatus()&AliESDtrack::kTRDStop)==0)){
-      AliTOFtrack *track = new AliTOFtrack(*t); 
+    AliTOFtrack *track = new AliTOFtrack(*t); // New
+    Double_t x = track->GetX(); //New
+
+    if (((t->GetStatus()&AliESDtrack::kTRDout)!=0 ) && 
+	 ( x >= AliTOFGeometry::RinTOF()) ){
       track->SetSeedIndex(i);
       t->UpdateTrackParams(track,AliESDtrack::kTOFout);    
       new(aTOFTrack[fNseedsTOF]) AliTOFtrack(*track);
@@ -198,7 +199,6 @@ void AliTOFtracker::CollectESD() {
     // Propagate the rest of TPCbp  
 
     else {
-      AliTOFtrack *track = new AliTOFtrack(*t);
       if(track->PropagateToInnerTOF(fHoles)){ // temporary solution
 	//      if(track->PropagateToInnerTOF(fGeom->GetHoles())){
       	track->SetSeedIndex(i);
