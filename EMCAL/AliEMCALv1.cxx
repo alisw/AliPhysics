@@ -62,6 +62,8 @@ ClassImp(AliEMCALv1)
 //______________________________________________________________________
 AliEMCALv1::AliEMCALv1():AliEMCALv0(){
   // ctor
+    fLightYieldMean = 0 ; 
+    fIntrinsicAPDEfficiency = fLightFactor = fLightYieldAttenuation =   fAPDFactor = fAPDGain = fRecalibrationFactor = fAPDFactor = 0. ; 
 }
 
 //______________________________________________________________________
@@ -74,6 +76,30 @@ AliEMCALv1::AliEMCALv1(const char *name, const char *title):
 
     fNhits = 0;
     fIshunt     =  2; // All hits are associated with particles entering the calorimeter
+
+    //Photoelectron statistics:
+    // The light yield is a poissonian distribution of the number of
+    // photons created in a plastic layer, calculated using following formula
+    // NumberOfPhotons = EnergyLost * LightYieldMean* APDEfficiency *
+    //              exp (-LightYieldAttenuation * DistanceToPINdiodeFromTheHit)
+    // LightYieldMean is parameter calculated to be over 100000 photons per GeV (a guess)
+    // APDEfficiency is 0.02655
+    // fLightYieldAttenuation is 0.0045 a guess
+    // TO BE FIXED
+    //***** Need a method in geometry to retrieve the fiber length corresponding to each layer
+    //***** See the step manager for the light attenuation calculation 
+    // The number of electrons created in the APD is
+    // NumberOfElectrons = APDGain * LightYield
+    // The APD Gain is 300
+    
+    fLightYieldMean         = 10000000.;  // This is a guess
+    fIntrinsicAPDEfficiency = 0.02655 ;
+    fLightFactor            = fLightYieldMean * fIntrinsicAPDEfficiency ; 
+    fLightYieldAttenuation  = 0.0045 ; // an other guess 
+    fAPDGain                = 300. ;
+    fRecalibrationFactor    = 13.418/ fLightYieldMean ;
+    fAPDFactor              = (fRecalibrationFactor/100.) * fAPDGain ; 
+
 }
 
 //______________________________________________________________________
@@ -134,7 +160,6 @@ void AliEMCALv1::StepManager(void){
   static Int_t iparent = 0;
   static Float_t ienergy = 0;
   Int_t copy = 0;
-
   
   if(gMC->IsTrackEntering() && (strcmp(gMC->CurrentVolName(),"XALU") == 0)){ // This Particle in enterring the Calorimeter
     gMC->TrackPosition(pos) ;
@@ -158,23 +183,37 @@ void AliEMCALv1::StepManager(void){
   }
   if(gMC->CurrentVolID(copy) == gMC->VolId("XPHI") ) { // We are in a Scintillator Layer 
     
-    gMC->CurrentVolOffID(1, id[0]); // get the POLY copy number;
-    gMC->CurrentVolID(id[1]); // get the phi number inside the layer
-    primary = gAlice->GetPrimary(tracknumber);
-    gMC->TrackPosition(pos);
-    gMC->TrackMomentum(mom);
-    xyzte[0] = pos[0];
-    xyzte[1] = pos[1];
-    xyzte[2] = pos[2];
-    xyzte[3] = gMC->TrackTime() ; 
-    xyzte[4] = gMC->Edep(); 
-    pmom[0] = mom[0];
-    pmom[1] = mom[1];
-    pmom[2] = mom[2];
-    pmom[3] = mom[3];
+    Float_t depositedEnergy ; 
     
-    if(xyzte[4] > 0.){// Track is inside a scintillator and deposits some energy
+    if( (depositedEnergy = gMC->Edep()) > 0.){// Track is inside a scintillator and deposits some energy
+      
+      gMC->TrackPosition(pos);
+      xyzte[0] = pos[0];
+      xyzte[1] = pos[1];
+      xyzte[2] = pos[2];
+      xyzte[3] = gMC->TrackTime() ;       
+      
+      gMC->TrackMomentum(mom);
+      pmom[0] = mom[0];
+      pmom[1] = mom[1];
+      pmom[2] = mom[2];
+      pmom[3] = mom[3];
+      
+      gMC->CurrentVolOffID(1, id[0]); // get the POLY copy number;
+      gMC->CurrentVolID(id[1]); // get the phi number inside the layer
       absid = (id[0]-1)*(fGeom->GetNPhi()) + id[1];
+      
+      //Calculates the light yield, the number of photons produced in the
+      //plastic layer 
+      // Here we need to know the fiber lebgth to calculate the attenuation
+     
+      Float_t lengthOfFiber = 0. ;// should be retrieved from the geometry
+
+      Float_t lightYield = gRandom->Poisson(fLightFactor * depositedEnergy *
+					    exp(-fLightYieldAttenuation * lengthOfFiber)) ;
+      xyzte[4] = fAPDFactor * lightYield  ;
+   
+      primary = gAlice->GetPrimary(tracknumber);
       AddHit(fIshunt, primary,tracknumber, iparent, ienergy, absid, xyzte, pmom);
     } // there is deposited energy
   }
