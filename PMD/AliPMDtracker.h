@@ -12,12 +12,8 @@
 //-----------------------------------------------------//
 
 class TClonesArray;
-class TFile;
 class TObjArray;
 class TTree;
-class TNtuple;
-class TMath;
-class TBranch;
 
 class AliPMDcluster;
 class AliPMDclupid;
@@ -25,7 +21,6 @@ class AliPMDrecpoint1;
 class AliPMDUtility;
 class AliPMDDiscriminator;
 
-class AliESDPmdTrack;
 class AliESD;
 
 class AliPMDtracker

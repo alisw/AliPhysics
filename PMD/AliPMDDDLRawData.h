@@ -10,15 +10,10 @@
 //                                                     //
 //-----------------------------------------------------//
 
+#include <TObject.h>
 
 class TClonesArray;
-class TFile;
 class TTree;
-class TBranch;
-class TMath;
-
-class AliLoader;
-class AliRunLoader;
 
 class AliPMDdigit;
 

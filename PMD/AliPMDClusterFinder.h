@@ -13,22 +13,11 @@
 
 class TClonesArray;
 class TFile;
-class TObjArray;
 class TTree;
-class TNtuple;
-class TMath;
 
 class AliLoader;
 class AliRunLoader;
-class AliRun;
-class AliDetector;
-class AliHeader;
 class AliRawReader;
-
-class AliPMDdigit;
-class AliPMDClustering;
-class AliPMDcluster;
-class AliPMDrecpoint1;
 
 class AliPMDClusterFinder
 {
