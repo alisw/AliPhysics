@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2002/07/25 12:52:34  morsch
+AddHit call only if hit has been defined.
+
 Revision 1.4  2002/07/12 12:57:29  gamez
 Division of CRT1 corrected
 
@@ -383,52 +386,40 @@ void AliCRTv0::Init()
 void AliCRTv0::StepManager()
 {
   //
-  // Called for every step in the CRT Detector
+  // Called for every step in the Cosmic Ray Trigger
   //
-  Float_t hits[12];
-  Int_t   vol[5];
+  static Int_t   vol[5];
+  Int_t          ipart;
+  TLorentzVector pos;
+  TLorentzVector mom;
 
-  // Check if this is the last step of the track in the current volume
-  Bool_t laststepvol = gMC->IsTrackEntering();
-  // Obtain the medium
-  TLorentzVector xyz;
-  gMC->TrackPosition(xyz);
-  TLorentzVector pxyz;
-  gMC->TrackMomentum(pxyz);
+  static Float_t hits[12];
 
-  if ( laststepvol && (strcmp(gMC->CurrentVolName(),"CRT1") == 0) ) {
-      if ( gMC->TrackCharge() != 0 || gMC->TrackPid() == kGamma ) {
-	  Float_t vert[3];
-	  
-	  hits[0] = fMucur++;
-	  
-	  if ( (gMC->TrackPid() != kMuonPlus) 
-	       && (gMC->TrackPid() != kMuonMinus)) {
-	      hits[1] = -(Float_t)gMC->TrackPid();
-	  } else {
-	      hits[1] = (Float_t)gMC->TrackPid();
-	  }
-	  
-	  TLorentzVector xyz;
-	  gMC->TrackPosition(xyz);
-	  TLorentzVector pxyz;
-	  gMC->TrackMomentum(pxyz);
-	  
-	  hits[2]  = xyz[0];  // X pit
-	  hits[3]  = xyz[1];  // Y pit
-	  hits[4]  = xyz[2];  // Z pit
-	  hits[5]  = pxyz[0]; // pxug
-	  hits[6]  = pxyz[1]; // pyug
-	  hits[7]  = pxyz[2]; // pzug
-	  
-	  hits[8]  = gMC->GetMedium(); // layer
-	  hits[9]  = vert[0]; // xver
-	  hits[10] = vert[1]; // yver
-	  hits[11] = vert[2]; // zver
-	  // Store the hit.
-	  AddHit(gAlice->CurrentTrack(),vol, hits);
-      }
+  // Get current particle id (ipart), track position (pos) and momentum (mom)
+  gMC->TrackPosition(pos);
+  gMC->TrackMomentum(mom);
+
+  ipart = gMC->TrackPid();
+
+
+  if (gMC->IsTrackEntering() && (strcmp(gMC->CurrentVolName(),"CRT3") == 0) ) {
+
+    hits[0]  = 0.f; //                 (fnmou)
+    hits[1]  = (Float_t)ipart; //      (fId)
+
+    hits[2]  = pos[0]; // X coordinate (fX)
+    hits[3]  = pos[1]; // Y coordinate (fY)
+    hits[4]  = pos[2]; // Z coordinate (fZ)
+    hits[5]  = mom[0]; // Px           (fpxug)
+    hits[6]  = mom[1]; // Py           (fpyug)
+    hits[7]  = mom[2]; // Pz           (fpzug)
+    
+    hits[8]  = gMC->GetMedium();//layer(flay)
+    hits[9]  = 0.f; // xver            (fxver)
+    hits[10] = 0.f; // yver            (fyver)
+    hits[11] = 0.f; // zver            (fzver)
+
+    AddHit(gAlice->CurrentTrack(),vol, hits);
   }
+
 }
-
-
