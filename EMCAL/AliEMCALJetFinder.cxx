@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2002/03/12 01:06:23  pavlinov
+Testin output from generator
+
 Revision 1.19  2002/02/27 00:46:33  pavlinov
 Added method FillFromParticles()
 
@@ -265,7 +268,7 @@ void AliEMCALJetFinder::Init()
     fPhiMax  = geom->GetArm1PhiMax()*TMath::Pi()/180.;
     fEtaMin  = geom->GetArm1EtaMin();
     fEtaMax  = geom->GetArm1EtaMax();
-    fDphi    = (fPhiMax-fPhiMin)/fNbinEta;
+    fDphi    = (fPhiMax-fPhiMin)/fNbinPhi;
     fDeta    = (fEtaMax-fEtaMin)/fNbinEta;
     fNtot    = fNbinPhi*fNbinEta;
 //
