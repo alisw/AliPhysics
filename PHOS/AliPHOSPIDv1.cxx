@@ -329,6 +329,12 @@ void  AliPHOSPIDv1::MakeRecParticles(){
     
     Int_t type = showerprofile + 2 * slow  + 4 * cpvdetector ;
     rp->SetType(type) ; 
+    rp->SetProductionVertex(0,0,0,0);
+    rp->SetFirstMother(-1);
+    rp->SetLastMother(-1);
+    rp->SetFirstDaughter(-1);
+    rp->SetLastDaughter(-1);
+    rp->SetPolarisation(0,0,0);
     index++ ; 
   }
   
