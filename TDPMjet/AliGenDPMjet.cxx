@@ -83,6 +83,10 @@ AliGenDPMjet::AliGenDPMjet(Int_t npart)
     AliDpmJetRndm::SetDpmJetRandom(GetRandom());
 }
 
+AliGenDPMjet::AliGenDPMjet(const AliGenDPMjet &/*Dpmjet*/)
+:AliGenMC()
+{
+}
 
 //______________________________________________________________________________
 AliGenDPMjet::~AliGenDPMjet()
@@ -108,6 +112,8 @@ void AliGenDPMjet::Init()
     // fICentr<-99 -> fraction of x-sec. = XSFRAC		  
     // fICentr=-1. -> evaporation/fzc suppressed		  
     // fICentr<-1. -> evaporation/fzc suppressed		  
+    if (fAProjectile == 1 && fZProjectile == 1) fDPMjet->SetfIdp(1);
+    
     fDPMjet->SetfFCentr(fICentr);  
     fDPMjet->SetbRange(fMinImpactParam,fMaxImpactParam); 
     
@@ -267,7 +273,7 @@ void AliGenDPMjet::Generate()
       for (i = 0; i<np; i++) {
 	  TParticle *  iparticle = (TParticle *) fParticles->At(i);
 	  Bool_t  hasMother   = (iparticle->GetFirstMother()>=0);
-	  Bool_t  hasDaughter = (iparticle->GetFirstDaughter()>=0);
+//	  Bool_t  hasDaughter = (iparticle->GetFirstDaughter()>=0);
 
 	  if (pSelected[i]) {
 	      
@@ -544,7 +550,7 @@ void AliGenDPMjet::MakeHeader()
 
 
 //______________________________________________________________________________
-AliGenDPMjet& AliGenDPMjet::operator=(const  AliGenDPMjet& rhs)
+AliGenDPMjet& AliGenDPMjet::operator=(const  AliGenDPMjet& /*rhs*/)
 {
 // Assignment operator
     return *this;

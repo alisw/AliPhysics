@@ -35,6 +35,11 @@ AliIonPDGCodes::AliIonPDGCodes()
 
 }
 
+AliIonPDGCodes::AliIonPDGCodes(const AliIonPDGCodes &/*PDGCodes*/)
+    :TObject()
+{
+}
+
 //______________________________________________________________________________
 void AliIonPDGCodes::AddParticlesToPdgDataBase()
 {

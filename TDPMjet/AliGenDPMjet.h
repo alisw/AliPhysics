@@ -22,7 +22,7 @@ class AliGenDPMjet : public AliGenMC
  public:
     AliGenDPMjet();
     AliGenDPMjet(Int_t npart);
-    AliGenDPMjet(const AliGenDPMjet &Dpmjet){;}
+    AliGenDPMjet(const AliGenDPMjet &Dpmjet);
     virtual ~AliGenDPMjet(); 
     virtual void    Generate();
     virtual void    Init();
@@ -51,8 +51,8 @@ class AliGenDPMjet : public AliGenMC
 			{a = fATarget; z = fZTarget;}    
     virtual void    GetImpactParameterRange(Float_t& bmin, Float_t& bmax)
 			{bmin = fMinImpactParam; bmax = fMaxImpactParam;}
-    virtual Int_t   GetSpectators(Int_t spects=1)        {return fSpectators;}
-    virtual Int_t   GetFlavor(Int_t flag=0)              {return fFlavor;}
+    virtual Int_t   GetSpectators()        {return fSpectators;}
+    virtual Int_t   GetFlavor()            {return fFlavor;}
 
     // Temporeaneo!?!
     virtual void    SetGenImpPar(Float_t bValue) {fGenImpPar=bValue;}
