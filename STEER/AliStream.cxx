@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2001/12/03 07:10:13  jchudoba
+Default ctor cannot create new objects, create dummy default ctor which leaves object in not well defined state - to be used only by root for I/O
+
 Revision 1.3  2001/10/15 17:31:56  jchudoba
 Bug correction
 
@@ -40,6 +43,7 @@ Class to manage input filenames, used by AliRunDigitizer
 #include <iostream.h>
 
 #include "TTree.h"
+#include "TROOT.h"
 
 #include "AliStream.h"
 
@@ -77,7 +81,7 @@ AliStream::~AliStream()
 }
 
 ////////////////////////////////////////////////////////////////////////
-void AliStream::AddFile(char *fileName)
+void AliStream::AddFile(const char *fileName)
 {
 // stores the name of the file
   TObjString *name = new TObjString(fileName);
@@ -127,14 +131,19 @@ Bool_t AliStream::OpenNextFile()
     return kFALSE;
   }
 
+  const char * filename = 
+    static_cast<TObjString*>(fFileNames->At(fCurrentFileIndex))->GetName();
+
+// check if the file was already opened by some other code
+  TFile *f = (TFile *)(gROOT->GetListOfFiles()->FindObject(filename));
+  if (f) f->Close();
+
   if (fCurrentFile) {
     if (fCurrentFile->IsOpen()) {
       fCurrentFile->Close();
     }
   }
 
-  const char * filename = 
-    static_cast<TObjString*>(fFileNames->At(fCurrentFileIndex))->GetName();
   fCurrentFile = TFile::Open(filename,fMode.Data());
   if (!fCurrentFile) {
 // cannot open file specified on input. Do not skip it silently.

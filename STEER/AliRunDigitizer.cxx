@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2002/04/04 09:28:04  jchudoba
+Change default names of TPC trees. Use update instead of recreate for the output file. Overwrite the AliRunDigitizer object in the output if it exists.
+
 Revision 1.13  2002/02/13 09:03:32  jchudoba
 Pass option to subtasks. Delete input TTrees. Use gAlice from memory if it is present (user must delete the default one created by aliroot if he/she wants to use gAlice from the input file!). Add new data member to store name of the special TPC TTrees.
 
@@ -232,7 +235,7 @@ void AliRunDigitizer::AddDigitizer(AliDigitizer *digitizer)
   this->Add(digitizer);
 }
 ////////////////////////////////////////////////////////////////////////
-void AliRunDigitizer::SetInputStream(Int_t i, char *inputFile)
+void AliRunDigitizer::SetInputStream(Int_t i, const char *inputFile)
 {
   if (i > fInputStreams->GetLast()) {
     Error("SetInputStream","Input stream number too high");

@@ -28,7 +28,7 @@ public:
   AliStream();
   AliStream(Option_t *option);
   virtual ~AliStream();
-  void AddFile(char *fileName);
+  void AddFile(const char *fileName);
   Bool_t NextEventInStream(Int_t &eventNr);
   Bool_t OpenNextFile();
   Bool_t ImportgAlice();
@@ -41,7 +41,7 @@ private:
   Int_t fCurrentFileIndex;
   Int_t fEvents;                //! nr. of events in the current file
   TString fMode;                  // = 0 for READONLY, = 1 for READWRITE
-  TFile *fCurrentFile;
+  TFile *fCurrentFile;          //! pointer to current open file
   TObjArray * fFileNames;
   
   ClassDef(AliStream,1)

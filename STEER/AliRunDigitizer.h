@@ -40,7 +40,7 @@ public:
   TString   GetOutputFile() const {return fOutputFileName;}
   void      SetOutputDir(TString dn) {fOutputDirName = dn;}
   TString   GetOutputDir() const {return fOutputDirName;}
-  void      SetInputStream(Int_t stream, char *inputName);
+  void      SetInputStream(Int_t stream, const char *inputName);
   void      SetFirstOutputEventNr(Int_t i) {fEvent = i;}
   void      SetNrOfEventsToWrite(Int_t i) {fNrOfEventsToWrite = i;}
   void      SetCopyTreesFromInput(Int_t i) {fCopyTreesFromInput = i;}
