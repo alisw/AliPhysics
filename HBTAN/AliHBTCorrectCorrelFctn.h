@@ -46,7 +46,7 @@
     void     MakeMeasCF();
   protected:
     virtual void BuildHistos(Int_t nbins, Float_t max, Float_t min);
-    Double_t GetCoulombCorrection(AliHBTPair* pair){return 1.0;}
+    Double_t GetCoulombCorrection(AliHBTPair* /*pair*/){return 1.0;}
     Double_t GetValue(AliHBTPair * pair){return pair->GetQInv();}
     void Smear(AliHBTPair* pair,AliHBTPair& smeared);
     void Smear(AliHBTParticle* part, AliHBTParticle* smeared);
