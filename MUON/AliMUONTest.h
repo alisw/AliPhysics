@@ -14,15 +14,13 @@
 
 #include <TObject.h>
 
-#include "AliDetector.h"
-#include "AliMUONData.h"
-#include "AliMUONChamber.h"
-
-class TVector;
-class TFile;
-class TTree;
+class TCanvas;
 class AliMUONGeometrySegmentation;
 
+enum AliMUONTests {
+  kPrintPads,
+  kDrawPads
+};  
 
 class AliMUONTest : public  TObject 
 {
@@ -31,15 +29,56 @@ class AliMUONTest : public  TObject
     AliMUONTest();
     virtual ~AliMUONTest();
    
-    // tests
+    // create segmentation
+    AliMUONGeometrySegmentation* CreateSegmentation(
+                                       Int_t chamberId, Int_t cath);
+                                                          
+    // other tests
+    //
     void DetElemTransforms();
-    void PrintPadPositions1();
-    void PrintPadPositions2();
-    void St3SlatSegmentation();
-    void DrawSegmentation(Int_t chamber, AliMUONGeometrySegmentation *seg);
+    void PrintPadPositionsOld();
+
+
+    // selected tests
+    //							  
+    void ForWhole(AliMUONTests test);
+    void ForSegmentation(
+                  AliMUONTests test,
+                  AliMUONGeometrySegmentation* segmentation);
+    void ForDetElement(
+                  AliMUONTests test,
+                  Int_t detElemId,
+                  AliMUONGeometrySegmentation* segmentation);
+    void Before(AliMUONTests test);
+    void After(AliMUONTests test);
+ 
+    // tests per pad
+    //
+    void PrintPad(Int_t& counter, 
+                  Int_t detElemId, Int_t ix, Int_t iy,
+                  AliMUONGeometrySegmentation* segmentation);
+    void DrawPad(Int_t& counter, 
+                  Int_t detElemId, Int_t ix, Int_t iy,
+                  AliMUONGeometrySegmentation* segmentation);
+ 
+
+    void DrawSegmentation(Int_t chamber, 
+                          AliMUONGeometrySegmentation *seg);
+             // TBR			  
+			  
+
   protected:
     AliMUONTest(const AliMUONTest& rhs);
     AliMUONTest& operator = (const AliMUONTest& rhs);
+
+  private:
+    AliMUONGeometrySegmentation* CreateSt1Segmentation(
+                                       Int_t chamberId, Int_t cathod);
+    AliMUONGeometrySegmentation* CreateSlatSegmentation(
+                                       Int_t chamberId, Int_t cathod);
+				       
+    // data members
+    TCanvas* fCanvas; // The canvas for drawing				       
 
     ClassDef(AliMUONTest,0)  // MUON class for tests
 };

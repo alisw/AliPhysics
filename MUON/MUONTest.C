@@ -33,9 +33,10 @@ void MUONTest(Int_t testNumber)
 
   AliMUONTest test("./Config_MUON_test.C");
   switch (testNumber) {
-    case 1: test.DetElemTransforms();       break;
-    case 2: test.PrintPadPositions1(); break; 
-    case 3: test.PrintPadPositions2(); break;
+    case 1: test.DetElemTransforms();  break;
+    case 2: test.ForWhole(kPrintPads); break; 
+    case 3: test.ForWhole(kDrawPads);  break; 
+    case 4: test.PrintPadPositions2(); break;
     default: ;
   }    
 }  
