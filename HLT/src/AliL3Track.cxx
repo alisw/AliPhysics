@@ -153,7 +153,7 @@ void AliL3Track::CalculateHelix(){
   //
   
   fRadius = fPt / (BFACT*BField);
-  if(fRadius) fKappa = 1./fRadius;
+  if(fRadius) fKappa = -fQ*1./fRadius;
   else fRadius = 999999;  //just zero
   Double_t trackPhi0 = fPsi + fQ *0.5 * pi;
 
