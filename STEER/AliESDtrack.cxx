@@ -30,15 +30,47 @@ ClassImp(AliESDtrack)
 
 //_______________________________________________________________________
 AliESDtrack::AliESDtrack() : 
-fFlags(0), 
+fFlags(0),
+fLabel(0),
+fTrackLength(0),
+fStopVertex(0),
+fRalpha(0),
+fRx(0),
+fITSchi2(0),
 fITSncls(0),
+fITSsignal(0),
+fVertexX(0),
+fVertexY(0),
+fVertexZ(0),
+fVertexPx(0),
+fVertexPy(0),
+fVertexPz(0),
+fVertex(kFALSE),
+fTPCchi2(0),
 fTPCncls(0),
-fVertex(kFALSE)
+fTPCsignal(0),
+fTRDchi2(0),
+fTRDncls(0),
+fTRDsignal(0),
+fTOFchi2(0),
+fTOFindex(0),
+fTOFsignal(0)
 {
   //
   // The default ESD constructor 
   //
-  for (Int_t i=0; i<kSPECIES; i++) fR[i]=0.;
+  for (Int_t i=0; i<kSPECIES; i++) {
+    fTrackTime[i]=0;
+    fR[i]=0;
+    fITSr[i]=0;
+    fTPCr[i]=0;
+    fTRDr[i]=0;
+    fTOFr[i]=0;
+  }
+  for (Int_t i=0; i<5; fRp[i++]);
+  for (Int_t i=0; i<15; fRc[i++]);
+  for (Int_t i=0; i<6; fITSindex[i++]);
+  for (Int_t i=0; i<180; fTPCindex[i++]);
 }
 
 //_______________________________________________________________________
