@@ -653,7 +653,11 @@ void AliZDCv2::CreateZDC()
   gMC->Gspos("ZNF4", 1, "ZNG4", 0., 0., 0., 0, "ONLY");
   
   // --- Position the neutron calorimeter in ZDC 
-  gMC->Gspos("ZNEU", 1, "ZDC ", fPosZN[0], fPosZN[1], fPosZN[2]-fDimZN[2], 0, "ONLY");
+  // -- Rotation of ZDCs
+  Int_t irotzdc;
+  gMC->Matrix(irotzdc, 90., 180., 90., 90., 180., 0.);
+  //
+  gMC->Gspos("ZNEU", 1, "ZDC ", fPosZN[0], fPosZN[1], fPosZN[2]-fDimZN[2], irotzdc, "ONLY");
   //Ch debug
   //printf("\n ZN -> %f < z < %f cm\n",fPosZN[2],fPosZN[2]-2*fDimZN[2]);
 
@@ -701,7 +705,7 @@ void AliZDCv2::CreateZDC()
   
 
   // --- Position the proton calorimeter in ZDC 
-  gMC->Gspos("ZPRO", 1, "ZDC ", fPosZP[0], fPosZP[1], fPosZP[2]-fDimZP[2], 0, "ONLY");
+  gMC->Gspos("ZPRO", 1, "ZDC ", fPosZP[0], fPosZP[1], fPosZP[2]-fDimZP[2], irotzdc, "ONLY");
   //Ch debug
   //printf("\n ZP -> %f < z < %f cm\n",fPosZP[2],fPosZP[2]-2*fDimZP[2]);
     
@@ -1194,7 +1198,8 @@ void AliZDCv2::StepManager()
   //
     
   Int_t j, vol[2], ibeta=0, ialfa, ibe, nphe;
-  Float_t x[3], xdet[3], destep, hits[10], m, ekin, um[3], ud[3], be, radius, out;
+  Float_t x[3], xdet[3], destep, hits[10], m, ekin, um[3], ud[3], be, out;
+  //Float_t radius;
   Float_t xalic[3], z, guiEff, guiPar[4]={0.31,-0.0004,0.0197,0.7958};
   TLorentzVector s, p;
   const char *knamed;
@@ -1354,21 +1359,11 @@ void AliZDCv2::StepManager()
        Float_t ptot=TMath::Sqrt(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
        if(p[3] > 0.00001) beta =  ptot/p[3];
        else return;
-       if(beta<0.67){
-         return;
-       }
-       else if((beta>=0.67) && (beta<=0.75)){
-         ibeta = 0;
-       }
-       if((beta>0.75)  && (beta<=0.85)){
-         ibeta = 1;
-       }
-       if((beta>0.85)  && (beta<=0.95)){
-         ibeta = 2;
-       }
-       if(beta>0.95){
-         ibeta = 3;
-       }
+       if(beta<0.67)return;
+       else if((beta>=0.67) && (beta<=0.75)) ibeta = 0;
+       else if((beta>0.75)  && (beta<=0.85)) ibeta = 1;
+       else if((beta>0.85)  && (beta<=0.95)) ibeta = 2;
+       else if(beta>0.95) ibeta = 3;
  
        // Angle between particle trajectory and fibre axis
        // 1 -> Momentum directions
@@ -1380,6 +1375,7 @@ void AliZDCv2::StepManager()
        Double_t alfar = TMath::ACos(ud[2]);
        Double_t alfa = alfar*kRaddeg;
        if(alfa>=110.) return;
+       //
        ialfa = Int_t(1.+alfa/2.);
  
        // Distance between particle trajectory and fibre axis
@@ -1396,13 +1392,9 @@ void AliZDCv2::StepManager()
          be = TMath::Abs(ud[0]);
        }
  
-       if((vol[0]==1)){
-         radius = fFibZN[1];
-       }
-       else if((vol[0]==2)){
-         radius = fFibZP[1];
-       }
        ibe = Int_t(be*1000.+1);
+       //if((vol[0]==1))      radius = fFibZN[1];
+       //else if((vol[0]==2)) radius = fFibZP[1];
  
        //Looking into the light tables 
        Float_t charge = gMC->TrackCharge();
@@ -1411,6 +1403,9 @@ void AliZDCv2::StepManager()
          if(ibe>fNben) ibe=fNben;
          out =  charge*charge*fTablen[ibeta][ialfa][ibe];
 	 nphe = gRandom->Poisson(out);
+	 // Ch. debug
+         //if(ibeta==3) printf("\t %f \t %f \t %f\n",alfa, be, out);
+	 //printf("\t ibeta = %d, ialfa = %d, ibe = %d -> nphe = %d\n\n",ibeta,ialfa,ibe,nphe);
 	 if(gMC->GetMedium() == fMedSensF1){
 	   hits[7] = nphe;  	//fLightPMQ
 	   hits[8] = 0;
