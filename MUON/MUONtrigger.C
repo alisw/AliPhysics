@@ -36,13 +36,22 @@ void MUONtrigger (char* filename="galice.root",
 
   MUONLoader->LoadDigits("READ");
   MUONLoader->LoadRecPoints("UPDATE");
+
+
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   if (evNumber2>nevents) evNumber2=nevents;
    for (Int_t ievent=evNumber1; ievent<evNumber2; ievent++) { // event loop
        printf("event %d\n",ievent);
        RunLoader->GetEvent(ievent);       
-       if (MUONLoader->TreeR() == 0x0) { 
-	 MUONLoader->MakeTree("R");
+       // Test if rawcluster has already been done before
+       if (MUONLoader->TreeR() == 0x0) 
+	 MUONLoader->MakeRecPointsContainer();
+       else {
+	 if (muondata->IsTriggerBranchesInTree()){ // Test if rawcluster has already been done before
+	   MUONLoader->MakeRecPointsContainer();  // Redoing clusterisation
+	   Info("RecPointsContainer","Recreating RecPointsContainer and deleting previous ones");
+	 }
        }
        muondata->MakeBranch("GLT");
        muondata->SetTreeAddress("D,GLT");

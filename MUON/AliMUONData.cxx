@@ -219,7 +219,7 @@ void AliMUONData::Fill(Option_t* option)
  //
   // filling trigger 
   if ( TreeR()  && cGLT) {
-    if (IsTriggerBranchesInTree()) {
+    if (IsRawClusterBranchesInTree()) {
       // Branch per branch filling
       sprintf(branchname,"%sLocalTrigger",GetName());
       branch = TreeR()->GetBranch(branchname); 

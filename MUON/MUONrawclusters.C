@@ -70,7 +70,10 @@ void MUONrawclusters (char* filename="galice.root", Int_t evNumber1=0,Int_t evNu
     //	RecModel->SetTracks(266,267);    
     RecModel->SetGhostChi2Cut(10);
     MUON->SetReconstructionModel(i,RecModel);
-  }
+  } 
+
+  MUONLoader->LoadDigits("READ");
+  MUONLoader->LoadRecPoints("UPDATE");
 //
 //   Loop over events              
   //
@@ -81,15 +84,22 @@ void MUONrawclusters (char* filename="galice.root", Int_t evNumber1=0,Int_t evNu
     for(Int_t ievent=evNumber1; ievent<evNumber2; ievent++) {
       printf("event %d\n",ievent);
       RunLoader->GetEvent(ievent);
-      MUONLoader->LoadDigits("read");
-      if (MUONLoader->TreeR() == 0x0) MUONLoader->MakeTree("R");
+
+      // Test if rawcluster has already been done before
+      if (MUONLoader->TreeR() == 0x0) 
+	MUONLoader->MakeRecPointsContainer();
+      else {
+	if (muondata->IsRawClusterBranchesInTree()){ // Test if rawcluster has already been done before
+	  MUONLoader->MakeRecPointsContainer();  // Redoing clusterisation
+	  Info("RecPointsContainer","Recreating RecPointsContainer and deleting previous ones");
+	}
+      }
       muondata->MakeBranch("RC");
       muondata->SetTreeAddress("D,RC");
       MUON->Digits2Reco(); 
-      MUONLoader->UnloadDigits();
-      MUONLoader->UnloadRecPoints();
     }
-
+    MUONLoader->UnloadDigits();
+    MUONLoader->UnloadRecPoints();
 }
 
 
