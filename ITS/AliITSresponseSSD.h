@@ -63,9 +63,9 @@ public:
   // Type of data - real or simulated
     fDataType=data;
   }
-  virtual const char  *DataType() {
+  virtual char  *DataType() {
     // Get data type
-    return fDataType.Data();
+    return fDataType;
   } 
   
   virtual void    SetSigmaSpread(Float_t p1=3., Float_t p2=2.) {
@@ -92,7 +92,7 @@ protected:
   Option_t *fOption1;       // Simulate invalid strips option
   Option_t *fOption2;       // Not used for the moment
   
-  TString  fDataType;       // Type of data - real or simulated
+  char*  fDataType;       // Type of data - real or simulated
   
   ClassDef(AliITSresponseSSD,1) //Response class for SSD 
 

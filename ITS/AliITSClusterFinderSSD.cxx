@@ -77,7 +77,7 @@ AliITSClusterFinderSSD::AliITSClusterFinderSSD(AliITSsegmentation *seg, TClonesA
     fSegmentation->Angles(StereoP,StereoN);
     fTanP=TMath::Tan(StereoP);
     fTanN=TMath::Tan(StereoN);
-
+    fPNsignalRatio=7./8.;         // warning: hard-wired number
 }
 
 //-------------------------------------------------------
@@ -945,12 +945,12 @@ ie:
   posClusterN = GetClusterZ(clusterN);
   posErrorClusterN = clusterN->GetPositionError();
   pkg->DelCluster(clusterIndex,SIDEP);
-  sigClusterN = ps/PNsignalRatio;
+  sigClusterN = ps/fPNsignalRatio;
   // there is no sonse to check how signal ratio is far from perfect 
   // matching line if the if below it is true
   if (ns < sigClusterN) {
       sigClusterN=ns;
-      if (debug) cout<<"n1 < p1/PNsignalRatio";
+      if (debug) cout<<"n1 < p1/fPNsignalRatio";
       if (debug) cout<<"Attempting to del cluster N "<<clusterIdx<<" ... \n";
       pkg->DelClusterOI(clusterIdx,SIDEN);
   } else {
@@ -1014,12 +1014,12 @@ ResolveNClusterWithOneCross(AliITSpackageSSD *pkg, Int_t clusterIndex)
   posClusterP = GetClusterZ(clusterP);
   posErrorClusterP = clusterP->GetPositionError();
   pkg->DelCluster(clusterIndex,SIDEN);
-  sigClusterP=ns*PNsignalRatio;
+  sigClusterP=ns*fPNsignalRatio;
   // there is no sonse to check how signal ratio is far from perfect 
   // matching line if the if below it is true
   if (ps < sigClusterP) {
       sigClusterP = ps;
-      if (debug) cout<<"ps < ns*PNsignalRatio";
+      if (debug) cout<<"ps < ns*fPNsignalRatio";
       if (debug) cout<<"Attempting to del cluster P "<<clusterIdx<<" ... \n";
       pkg->DelClusterOI(clusterIdx,SIDEP);
   } else {
@@ -1443,8 +1443,8 @@ ResolveTwoForTwoPackage(AliITSpackageSSD *pkg)
        if (debug) cout<<"\nWe decided to take 3rd point"; 
        if (clusterP1->GetCrossNo()==1) {
 	  if (debug) cout<<"...  P1 has one cross\n"; 
-	  n1sig = p1sig/PNsignalRatio;
-	  p2sig = n2sig*PNsignalRatio;
+	  n1sig = p1sig/fPNsignalRatio;
+	  p2sig = n2sig*fPNsignalRatio;
               
 	  clusterN1->CutTotalSignal(n1sig);
 	  clusterP2->CutTotalSignal(p2sig);
@@ -1457,8 +1457,8 @@ ResolveTwoForTwoPackage(AliITSpackageSSD *pkg)
        } else {
  	  if (debug) cout<<"...  N1 has one cross\n";
 	      
-	  n2sig=p2sig/PNsignalRatio;
-	  p1sig=n1sig*PNsignalRatio;
+	  n2sig=p2sig/fPNsignalRatio;
+	  p1sig=n1sig*fPNsignalRatio;
 
 	  clusterN2->CutTotalSignal(n2sig);
 	  clusterP1->CutTotalSignal(p1sig);
@@ -1857,7 +1857,7 @@ void AliITSClusterFinderSSD::ReconstructNotConsumedClusters()
             {
               sig = cluster->GetTotalSignal();
               
-              sig += sig/PNsignalRatio;
+              sig += sig/fPNsignalRatio;
               
               sigerr = cluster->GetTotalSignalError();
               x1 = -Dx/2 + pos *fPitch;
@@ -1916,7 +1916,7 @@ void AliITSClusterFinderSSD::ReconstructNotConsumedClusters()
             {
               sig = cluster->GetTotalSignal();
               
-              sig += sig*PNsignalRatio;
+              sig += sig*fPNsignalRatio;
               
               sigerr = cluster->GetTotalSignalError();
               

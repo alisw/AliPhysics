@@ -77,9 +77,9 @@ public:
     // Type of data - real or simulated
     fDataType=data;
   }
-  virtual const char  *DataType() {
+  virtual char  *DataType() {
     // Get data type
-    return fDataType.Data();
+    return fDataType;
   } 
   
   virtual void SetParamOptions(Option_t *opt1="same",Option_t *opt2="same"){
@@ -121,7 +121,7 @@ public:
     // Set filenames - input, output, parameters ....
     fFileName1=f1; fFileName2=f2; fFileName3=f3;
   }
-  virtual void   Filenames(const char*&input,const char*&baseline,const char*&param) {
+  virtual void   Filenames(const char*input,const char*baseline,const char*param) {
     // Filenames
     input=fFileName1; baseline=fFileName2; param=fFileName3;
   }     
@@ -190,10 +190,10 @@ protected:
   Option_t   *fParam1;       // Read baselines from file option
   Option_t   *fParam2;       // Read compression algo thresholds from file 
   
-  TString         fDataType;         // input keys : run, module #
-  TString         fFileName1;        // input keys : run, module #
-  TString         fFileName2;        // baseline & noise val or output coded                                        // signal or monitored bgr.
-  TString         fFileName3;        // param values or output coded signal 
+  char*         fDataType;         // input keys : run, module #
+  char*         fFileName1;        // input keys : run, module #
+  char*         fFileName2;        // baseline & noise val or output coded                                        // signal or monitored bgr.
+  char*         fFileName3;        // param values or output coded signal 
   
   ClassDef(AliITSresponseSDD,1) // SDD response 
     

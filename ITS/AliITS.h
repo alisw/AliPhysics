@@ -104,7 +104,7 @@ class AliITS : public AliDetector {
     // Set reconstruction 
     virtual void   SetReconstructionModel(Int_t id, AliITSClusterFinder *rec);
     // Set class names for digit and rec point 
-    virtual void   SetClasses(Int_t id, TString digit, TString cluster);
+    virtual void   SetClasses(Int_t id, char* digit, char* cluster);
 
 
     // Getters

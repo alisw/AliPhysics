@@ -46,9 +46,9 @@ public:
     // Type of data - real or simulated
     fDataType=data;
   }
-  virtual const char  *DataType() {
+  virtual char  *DataType() {
     // Get data typer
-    return fDataType.Data();
+    return fDataType;
   } 
   
   ClassDef(AliITSresponseSPD,1) // SPD response
@@ -60,7 +60,7 @@ public:
   Float_t fBaseline;        // Baseline value
   Int_t fThreshold;         // Zero-Suppression threshold
   
-  TString fDataType;        // Type of data - real or simulated
+  char* fDataType;        // Type of data - real or simulated
 };
 
 #endif

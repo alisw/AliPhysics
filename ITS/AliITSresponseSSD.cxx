@@ -105,37 +105,3 @@ void AliITSresponseSSD::GetDetParam(Float_t  *par)
     par[i]=fDetPar[i];
   }
 }
-
-//______________________________________________________________________________
-void AliITSresponseSSD::Streamer(TBuffer &R__b)
-{
-   // Stream an object of class AliITSresponseSSD.
-
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      AliITSresponse::Streamer(R__b);
-      R__b >> fNPar;
-      //R__b.ReadArray(fDetPar); // Not to be printed out?
-      R__b >> fNoiseP;
-      R__b >> fNoiseN;
-      R__b >> fSigmaP;
-      R__b >> fSigmaN;
-      R__b >> fDiffCoeff;
-      //R__b.ReadArray(fOption1); // Not to be printed out?
-      //R__b.ReadArray(fOption2); // Not to be printed out?
-      fDataType.Streamer(R__b);
-   } else {
-      R__b.WriteVersion(AliITSresponseSSD::IsA());
-      AliITSresponse::Streamer(R__b);
-      R__b << fNPar;
-      //R__b.WriteArray(fDetPar, __COUNTER__); // Not to be printed out?
-      R__b << fNoiseP;
-      R__b << fNoiseN;
-      R__b << fSigmaP;
-      R__b << fSigmaN;
-      R__b << fDiffCoeff;
-      //R__b.WriteArray(fOption1, __COUNTER__); // Not to be printed out?
-      //R__b.WriteArray(fOption2, __COUNTER__); // Not to be printed out?
-      fDataType.Streamer(R__b);
-   }
-}

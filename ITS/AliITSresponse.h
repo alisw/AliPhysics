@@ -42,7 +42,7 @@ public TObject {
     // Type of data - real or simulated
     virtual void    SetDataType(char *data)        =0;
     // Get data type
-    virtual const char  *DataType()                =0; 
+    virtual char  *DataType()                =0; 
 
 
  
@@ -74,7 +74,7 @@ public TObject {
     // Set filenames
     virtual void   SetFilenames(char *,char *,char *) {}
     // Filenames
-    virtual void   Filenames(const char*&,const char*&,const char*&) {}
+    virtual void   Filenames(const char *, const char *,const char *) {}
 
 
     virtual Float_t DriftSpeed() {return 0.;}

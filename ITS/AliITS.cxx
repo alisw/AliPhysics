@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2000/06/13 15:32:44  nilsen
+fix compilation error on HP and DEC unix.
+
 Revision 1.12  2000/06/12 23:43:16  nilsen
 New ITS code replacing the old structure and simulations code.
 
@@ -284,7 +287,7 @@ AliITSDetType* AliITS::DetType(Int_t id)
 
 }
 //___________________________________________
-void AliITS::SetClasses(Int_t id, TString digit, TString cluster)
+void AliITS::SetClasses(Int_t id, char* digit, char* cluster)
 {
   //set the digit and cluster classes to be used for the id detector type
     ((AliITSDetType*) (*fDetTypes)[id])->ClassNames(digit,cluster);
@@ -671,8 +674,8 @@ void AliITS::MakeBranch(Option_t* option){
    fNctype = new Int_t[fNDetTypes];
    fCtype = new TObjArray(fNDetTypes);
 
-   const char *kDigclass;
-   const char *kClclass;
+   char *kDigclass;
+   char *kClclass;
 
    Int_t i;
    for(i=0; i<fNDetTypes ;i++) {

@@ -138,11 +138,11 @@ public:
   Float_t falpha1; 
   Float_t falpha2;
   Float_t falpha3;
-
+  Float_t fPNsignalRatio;
     
   static const Bool_t SIDEP=kTRUE;
   static const Bool_t SIDEN=kFALSE;
-  static const Float_t PNsignalRatio = 0.875; // 7./8.;
+
   Int_t fSFF;              //forward stepping factor 
   Int_t fSFB;              //backward stepping factor 
 

@@ -43,8 +43,8 @@
 #pragma link C++ class  AliITSsegmentationSSD;
 #pragma link C++ class  AliITSresponse;
 #pragma link C++ class  AliITSresponseSPD;
-#pragma link C++ class  AliITSresponseSDD-;
-#pragma link C++ class  AliITSresponseSSD-;
+#pragma link C++ class  AliITSresponseSDD;
+#pragma link C++ class  AliITSresponseSSD;
 #pragma link C++ class  AliITSsimulation;
 #pragma link C++ class  AliITSsimulationSPD;
 #pragma link C++ class  AliITSsimulationSDD-;

@@ -47,7 +47,7 @@ class AliITSDetType:public TObject
 // Configure reconstruction model
       fReconst = thisReconstruction;
   }
-  void    ClassNames(TString digit, TString cluster) { 
+  void    ClassNames(char * digit, char * cluster) { 
     // Set class names for digits and clusters
     fDigClassName=digit; fClustClassName=cluster; 
   } 
@@ -70,7 +70,7 @@ class AliITSDetType:public TObject
   }
   //  
   
-  void GetClassNames(const char *&digit, const char *&cluster) 
+  void GetClassNames(char* &digit, char*  &cluster) 
     { 
       // Get class names for digits and rec points
       digit=fDigClassName; cluster=fClustClassName; 
@@ -83,8 +83,8 @@ protected:
   AliITSresponse       *fResponse;         // response
   AliITSsegmentation   *fSegmentation;     // segmentation
   
-  TString              fDigClassName;      // string
-  TString              fClustClassName;    // string
+  char*              fDigClassName;      // string
+  char*              fClustClassName;    // string
   
   ClassDef(AliITSDetType,1)
     
