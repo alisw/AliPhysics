@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.26  2001/03/23 00:12:23  nilsen
+Set Reading of AliITSgeom data from Geant3 common blocks as the default and
+not a .det file. Removed redundent calls to BuildGeometry.
+
 Revision 1.25  2001/03/20 19:22:51  barbera
 Flags for the rails and the cooling fluid added. Some changes in the volumes of the SSD cones after the meeting with the engineers in Torino.
 
@@ -910,7 +914,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   dgh[15] = -zmax;
   dgh[16] = 46;  
   dgh[17] = rlim+0.1;
-  dgh[18] = -42;   
+  dgh[18] = -48;   
   dgh[19] = 6;
   dgh[20] = rlim+0.1;
   dgh[21] = -28;   
@@ -925,7 +929,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   dgh[30] = 28;   
   dgh[31] = 6;
   dgh[32] = rlim+0.1;
-  dgh[33] = 42;   
+  dgh[33] = 48;   
   dgh[34] = 6;
   dgh[35] = rlim+0.1;  
   dgh[36] = zmax;
@@ -961,7 +965,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   dgh[3] = -zmax;  
   dgh[4] = 46.;
   dgh[5] = rlim;
-  dgh[6] = -41.5;    
+  dgh[6] = -47.5;    
   dgh[7] = 6.005;
   dgh[8] = rlim;
   dgh[9] = -28.5;    
@@ -976,7 +980,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   dgh[18] = 28.5;    
   dgh[19] = 6.005;
   dgh[20] = rlim;
-  dgh[21] = 41.5;    
+  dgh[21] = 47.5;    
   dgh[22] = 6.005;
   dgh[23] = rlim;
   dgh[24] = zmax;    
@@ -1217,13 +1221,22 @@ void AliITSvPPRasymm::CreateGeometry(){
      dits[4] = 180;
      gMC->Gsvolu("I114", "TUBS", idtmed[264], dits, 5);  
 
-     dits[0] = 0;
-     dits[1] = 0.025;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 180;
-     gMC->Gsvolu("I115", "TUBS", idtmed[211], dits, 5);   
-
+     if (fluid == 1) {
+        dits[0] = 0;
+        dits[1] = 0.025;
+        dits[2] = 24;
+        dits[3] = 0;
+        dits[4] = 180;
+        gMC->Gsvolu("I115", "TUBS", idtmed[211], dits, 5); // set water as cooling fluid   
+     } else {
+        dits[0] = 0;
+        dits[1] = 0.025;
+        dits[2] = 24;
+        dits[3] = 0;
+        dits[4] = 180;
+        gMC->Gsvolu("I115", "TUBS", idtmed[212], dits, 5); // set freon as cooling fluid       
+     }
+     
      dits[0] = 0.063;
      dits[1] = 0.035;
      dits[2] = 24;
@@ -1249,10 +1262,17 @@ void AliITSvPPRasymm::CreateGeometry(){
      di1d1[2] = 3.536;
      gMC->Gsvolu("I1D1", "BOX ", idtmed[250], di1d1, 3);   // contains detector 
                                                            // layer 2
-     dits[0] = 0.063;
-     dits[1] = 0.025;
-     dits[2] = 24;
-     gMC->Gsvolu("I117", "BOX ", idtmed[211], dits, 3);  
+     if (fluid == 1) {
+        dits[0] = 0.063;
+        dits[1] = 0.025;
+        dits[2] = 24;
+        gMC->Gsvolu("I117", "BOX ", idtmed[211], dits, 3); // set water as cooling fuid
+     } else {
+        dits[0] = 0.063;
+        dits[1] = 0.025;
+        dits[2] = 24;
+        gMC->Gsvolu("I117", "BOX ", idtmed[212], dits, 3); // set freon as cooling fluid
+     }
 
      dits1[0] = 0.64;
      dits1[1] = ddet1;
@@ -1310,37 +1330,85 @@ void AliITSvPPRasymm::CreateGeometry(){
      dits[2] = 0.55;
      gMC->Gsvolu("I678", "TUBE", idtmed[263], dits, 3); // was I178 in old geom.
 
-     dits[0] = 0;
-     dits[1] = 0.3;
-     dits[2] = 1.5;
-     gMC->Gsvolu("I677", "TUBE", idtmed[211], dits, 3); // was I177 in old geom.
-
+     if (fluid == 1) {
+        dits[0] = 0;
+        dits[1] = 0.3;
+        dits[2] = 1.5;
+        gMC->Gsvolu("I677", "TUBE", idtmed[211], dits, 3); // set water as cooling fluid
+	                                                   // was I177 in old geom.
+     } else {
+         dits[0] = 0;
+        dits[1] = 0.3;
+        dits[2] = 1.5;
+        gMC->Gsvolu("I677", "TUBE", idtmed[212], dits, 3); // set freon as cooling fluid
+	                                                   // was I177 in old geom.    
+     }
+     
      dits[0] = 0.07;
      dits[1] = 0.125;
      dits[2] = 0.3;
      gMC->Gsvolu("I675", "TUBE", idtmed[263], dits, 3); // was I175 in old geom.
 
-     dits[0] = 0;
-     dits[1] = 0.1;
-     dits[2] = 0.8;
-     gMC->Gsvolu("I674", "TUBE", idtmed[211], dits, 3); // was I174 in old geom.
+     if (fluid == 1) {
+        dits[0] = 0;
+        dits[1] = 0.1;
+        dits[2] = 0.8;
+        gMC->Gsvolu("I674", "TUBE", idtmed[211], dits, 3); // set water as cooling fluid
+	                                                   // was I174 in old geom.
+     } else {
+        dits[0] = 0;
+        dits[1] = 0.1;
+        dits[2] = 0.8;
+        gMC->Gsvolu("I674", "TUBE", idtmed[212], dits, 3); // set freon as cooling fluid
+	                                                   // was I174 in old geom.     
+     }
+     
+     if (fluid == 1) {
+        dits[0] = 0;
+        dits[1] = 0.1;
+        dits[2] = 3;
+        gMC->Gsvolu("I672", "TUBE", idtmed[211], dits, 3); // set water as cooling fluid
+	                                                   // was I172 in old geom.
+     } else {
+        dits[0] = 0;
+        dits[1] = 0.1;
+        dits[2] = 3;
+        gMC->Gsvolu("I672", "TUBE", idtmed[212], dits, 3); // set freon as cooling fluid
+	                                                   // was I172 in old geom.        
+     }
+     
+     if (fluid == 1) {     
+        dits[0] = 0;
+        dits[1] = 0.0746;
+        dits[2] = 0.8;
+        gMC->Gsvolu("I670", "TUBE", idtmed[211], dits, 3); // set water as cooling fluid
+	                                                   // was I170 in old geom.
+     } else {
+        dits[0] = 0;
+        dits[1] = 0.0746;
+        dits[2] = 0.8;
+        gMC->Gsvolu("I670", "TUBE", idtmed[212], dits, 3); // set freon as cooling fluid
+	                                                   // was I170 in old geom.     
+     }
+     
+     if (fluid == 1) {     
+        dits[0] = 3.7;
+        dits[1] = 5.4;
+        dits[2] = 0.35;
+        dits[3] = 2;
+        dits[4] = 36;
+        gMC->Gsvolu("I668", "TUBS", idtmed[211], dits, 5); // set water as cooling fluid
+	                                                   // was I168 in old geom.
+     } else {
+        dits[0] = 3.7;
+        dits[1] = 5.4;
+        dits[2] = 0.35;
+        dits[3] = 2;
+        dits[4] = 36;
+        gMC->Gsvolu("I668", "TUBS", idtmed[212], dits, 5); // set freon as cooling fluid
+	                                                   // was I168 in old geom.
+     }
 
-     dits[0] = 0;
-     dits[1] = 0.1;
-     dits[2] = 3;
-     gMC->Gsvolu("I672", "TUBE", idtmed[211], dits, 3); // was I172 in old geom.
-
-     dits[0] = 0;
-     dits[1] = 0.0746;
-     dits[2] = 0.8;
-     gMC->Gsvolu("I670", "TUBE", idtmed[211], dits, 3); // was I170 in old geom.
-
-     dits[0] = 3.7;
-     dits[1] = 5.4;
-     dits[2] = 0.35;
-     dits[3] = 2;
-     dits[4] = 36;
-     gMC->Gsvolu("I668", "TUBS", idtmed[211], dits, 5); // was I168 in old geom.
 
   }
 
@@ -1576,13 +1644,22 @@ void AliITSvPPRasymm::CreateGeometry(){
      dits[4] = 180;
      gMC->Gsvolu("I114", "TUBS", idtmed[264], dits, 5);  
 
-     dits[0] = 0;
-     dits[1] = 0.025;
-     dits[2] = 24;
-     dits[3] = 0;
-     dits[4] = 180;
-     gMC->Gsvolu("I115", "TUBS", idtmed[211], dits, 5);   
-
+     if (fluid == 1) {
+        dits[0] = 0;
+        dits[1] = 0.025;
+        dits[2] = 24;
+        dits[3] = 0;
+        dits[4] = 180;
+        gMC->Gsvolu("I115", "TUBS", idtmed[211], dits, 5);  // set water as cooling fluid   
+     } else {
+        dits[0] = 0;
+        dits[1] = 0.025;
+        dits[2] = 24;
+        dits[3] = 0;
+        dits[4] = 180;
+        gMC->Gsvolu("I115", "TUBS", idtmed[212], dits, 5);  // set freon as cooling fluid
+     }
+     
      dits[0] = 0.063;
      dits[1] = 0.035;
      dits[2] = 24;
@@ -1608,10 +1685,18 @@ void AliITSvPPRasymm::CreateGeometry(){
      di1d1[2] = 3.536;
      gMC->Gsvolu("I1D1", "BOX ", idtmed[250], di1d1, 3);  // contains detector  
                                                           // layer 2
-     dits[0] = 0.063;
-     dits[1] = 0.025;
-     dits[2] = 24;
-     gMC->Gsvolu("I117", "BOX ", idtmed[211], dits, 3);  
+   
+     if (fluid == 1) {
+        dits[0] = 0.063;
+        dits[1] = 0.025;
+        dits[2] = 24;
+        gMC->Gsvolu("I117", "BOX ", idtmed[211], dits, 3); // set water as cooling fluid
+     } else {
+        dits[0] = 0.063;
+        dits[1] = 0.025;
+        dits[2] = 24;
+        gMC->Gsvolu("I117", "BOX ", idtmed[212], dits, 3); // set freon as cooling fluid
+     }
 
      dits1[0] = 0.64;
      dits1[1] = ddet1;
@@ -1669,37 +1754,85 @@ void AliITSvPPRasymm::CreateGeometry(){
      dits[2] = 0.55;
      gMC->Gsvolu("I678", "TUBE", idtmed[263], dits, 3); // was I178 in old geom.
 
-     dits[0] = 0;
-     dits[1] = 0.3;
-     dits[2] = 1.5;
-     gMC->Gsvolu("I677", "TUBE", idtmed[211], dits, 3); // was I177 in old geom.
+     if (fluid == 1) {
+        dits[0] = 0;
+        dits[1] = 0.3;
+        dits[2] = 1.5;
+        gMC->Gsvolu("I677", "TUBE", idtmed[211], dits, 3); //set water as cooling fluid
+	                                                   // was I177 in old geom.
+     } else {
+        dits[0] = 0;
+        dits[1] = 0.3;
+        dits[2] = 1.5;
+        gMC->Gsvolu("I677", "TUBE", idtmed[212], dits, 3); //set freon as cooling fluid
+	                                                   // was I177 in old geom.     
+     }
 
      dits[0] = 0.07;
      dits[1] = 0.125;
      dits[2] = 0.3;
      gMC->Gsvolu("I675", "TUBE", idtmed[263], dits, 3); // was I175 in old geom.
 
-     dits[0] = 0;
-     dits[1] = 0.1;
-     dits[2] = 0.8;
-     gMC->Gsvolu("I674", "TUBE", idtmed[211], dits, 3); // was I174 in old geom.
-
-     dits[0] = 0;
-     dits[1] = 0.1;
-     dits[2] = 3;
-     gMC->Gsvolu("I672", "TUBE", idtmed[211], dits, 3); // was I172 in old geom.
-
-     dits[0] = 0;
-     dits[1] = 0.0746;
-     dits[2] = 0.8;
-     gMC->Gsvolu("I670", "TUBE", idtmed[211], dits, 3); // was I170 in old geom.
-
-     dits[0] = 3.7;
-     dits[1] = 5.4;
-     dits[2] = 0.35;
-     dits[3] = 2;
-     dits[4] = 36;
-     gMC->Gsvolu("I668", "TUBS", idtmed[211], dits, 5); // was I168 in old geom.
+     if (fluid == 1) {
+        dits[0] = 0;
+        dits[1] = 0.1;
+        dits[2] = 0.8;
+        gMC->Gsvolu("I674", "TUBE", idtmed[211], dits, 3); //set water as cooling fluid
+	                                                   // was I174 in old geom.
+     } else {
+        dits[0] = 0;
+        dits[1] = 0.1;
+        dits[2] = 0.8;
+        gMC->Gsvolu("I674", "TUBE", idtmed[212], dits, 3); //set freon as cooling fluid
+	                                                   // was I174 in old geom.     
+     }
+     
+     if (fluid == 1) {
+        dits[0] = 0;
+        dits[1] = 0.1;
+        dits[2] = 3;
+        gMC->Gsvolu("I672", "TUBE", idtmed[211], dits, 3); //set water as cooling fluid
+	                                                   // was I172 in old geom.
+     } else {
+        dits[0] = 0;
+        dits[1] = 0.1;
+        dits[2] = 3;
+        gMC->Gsvolu("I672", "TUBE", idtmed[212], dits, 3); //set freon as cooling fluid
+	                                                   // was I172 in old geom.     
+     }
+     
+     if (fluid == 1) {
+        dits[0] = 0;
+        dits[1] = 0.0746;
+        dits[2] = 0.8;
+        gMC->Gsvolu("I670", "TUBE", idtmed[211], dits, 3); //set water as cooling fluid
+	                                                   // was I170 in old geom.
+     } else {
+        dits[0] = 0;
+        dits[1] = 0.0746;
+        dits[2] = 0.8;
+        gMC->Gsvolu("I670", "TUBE", idtmed[212], dits, 3); //set freon as cooling fluid
+	                                                   // was I170 in old geom.     
+     }
+     
+     if (fluid == 1) {
+        dits[0] = 3.7;
+        dits[1] = 5.4;
+        dits[2] = 0.35;
+        dits[3] = 2;
+        dits[4] = 36;
+        gMC->Gsvolu("I668", "TUBS", idtmed[211], dits, 5); //set water as cooling fluid
+	                                                   // was I168 in old geom.
+     } else {
+        dits[0] = 3.7;
+        dits[1] = 5.4;
+        dits[2] = 0.35;
+        dits[3] = 2;
+        dits[4] = 36;
+        gMC->Gsvolu("I668", "TUBS", idtmed[212], dits, 5); //set freon as cooling fluid
+	                                                   // was I168 in old geom.     
+     }
+     
 
   }
 
@@ -1714,23 +1847,23 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[1] = 360;
   dits[2] = 6;
   dits[3] = -34.6;
-  dits[4] = 23.495;
-  dits[5] = 28.5;
+  dits[4] = 23.49;
+  dits[5] = 28;
   dits[6] = -27.35; 
-  dits[7] = 23.495;
-  dits[8] = 28.5;
+  dits[7] = 23.49;
+  dits[8] = 28;
   dits[9] = -27.35;  
-  dits[10] = 14.595; 
-  dits[11] = 28.5;
+  dits[10] = 14.59; 
+  dits[11] = 28;
   dits[12] = 27.35;   
-  dits[13] = 14.595;
-  dits[14] = 28.5;
+  dits[13] = 14.59;
+  dits[14] = 28;
   dits[15] = 27.35;    
-  dits[16] = 23.495;
-  dits[17] = 28.5;
-  dits[18] = 34.65;
-  dits[19] = 23.495;
-  dits[20] = 28.5;
+  dits[16] = 23.49;
+  dits[17] = 28;
+  dits[18] = 34.6;
+  dits[19] = 23.49;
+  dits[20] = 28;
   gMC->Gsvolu("IT34", "PCON", idtmed[209], dits, 21);  
 
   // block of the SDD electronics and related ladder frame 
@@ -1874,12 +2007,20 @@ void AliITSvPPRasymm::CreateGeometry(){
   I031dits[2] = I024dits[2];
   gMC->Gsvolu("I031", "TUBE", idtmed[264], I031dits, 3);  
 
-  // cooling water for the end ladder - F.T. March,7-2001
-  I032dits[0] = 0;
-  I032dits[1] = I031dits[0];
-  I032dits[2] = I024dits[2];
-  gMC->Gsvolu("I032", "TUBE", idtmed[211], I032dits, 3);  
-
+  if (fluid == 1) {
+     // cooling water for the end ladder - F.T. March,7-2001
+     I032dits[0] = 0;
+     I032dits[1] = I031dits[0];
+     I032dits[2] = I024dits[2];
+     gMC->Gsvolu("I032", "TUBE", idtmed[211], I032dits, 3);  
+  } else {
+     // cooling freon for the end ladder - R.B. March,21-2001
+     I032dits[0] = 0;
+     I032dits[1] = I031dits[0];
+     I032dits[2] = I024dits[2];
+     gMC->Gsvolu("I032", "TUBE", idtmed[212], I032dits, 3);    
+  }
+  
   // -- block of the SDD ladder frame holding the electronics
 
   // edge of the ladder frame - part 1
@@ -1947,12 +2088,19 @@ void AliITSvPPRasymm::CreateGeometry(){
   I037dits[2] = I018dits[2];
   gMC->Gsvolu("I037", "TUBE", idtmed[264], I037dits, 3);
 
-  // cooling water - F.T. March,7-2001
-  I038dits[0] = 0;
-  I038dits[1] = I037dits[0];
-  I038dits[2] = I018dits[2];
-  gMC->Gsvolu("I038", "TUBE", idtmed[211], I038dits, 3);  
-
+  if (fluid == 1) {
+     // cooling water - F.T. March,7-2001
+     I038dits[0] = 0;
+     I038dits[1] = I037dits[0];
+     I038dits[2] = I018dits[2];
+     gMC->Gsvolu("I038", "TUBE", idtmed[211], I038dits, 3);  
+  } else {
+     // cooling freon - R.B. March,21-2001
+     I038dits[0] = 0;
+     I038dits[1] = I037dits[0];
+     I038dits[2] = I018dits[2];
+     gMC->Gsvolu("I038", "TUBE", idtmed[212], I038dits, 3);    
+  }
   // -- block of the SDD electronics (heat bridge, chips, hybrid, anode microcable)
 
   // SDD heat bridge - F.T. March,7-2001
@@ -2033,23 +2181,23 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[0] = 0;
   dits[1] = 360;
   dits[2] = 6;
-  dits[3] = -57.5;
-  dits[4] = 43.5;
+  dits[3] = -57.45;
+  dits[4] = 43.6;
   dits[5] = 48;  
-  dits[6] = -47.2; 
-  dits[7] = 43.5;
+  dits[6] = -49.15; 
+  dits[7] = 43.6;
   dits[8] = 48;  
-  dits[9] = -47.2;  
-  dits[10] = 36.7;
+  dits[9] = -49.15;  
+  dits[10] = 36.9;
   dits[11] = 48;  
-  dits[12] = 47.2;  
-  dits[13] = 36.7;
+  dits[12] = 50.55;  
+  dits[13] = 36.9;
   dits[14] = 48;  
-  dits[15] = 47.2;  
-  dits[16] = 43.5;
+  dits[15] = 50.55;  
+  dits[16] = 43.6;
   dits[17] = 48;  
-  dits[18] = 56.96;
-  dits[19] = 43.5;
+  dits[18] = 57.45;
+  dits[19] = 43.6;
   dits[20] = 48;   
   gMC->Gsvolu("IT56", "PCON", idtmed[220], dits, 21);   
   
@@ -2103,10 +2251,17 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[2] = 2.1;
   gMC->Gsvolu("I562", "BOX ", idtmed[206], dits, 3);   
   
-  dits[0] = 0;
-  dits[1] = 0.07;
-  dits[2] = 3.15;
-  gMC->Gsvolu("I559", "TUBE", idtmed[211], dits, 3);  
+  if (fluid == 1) {
+     dits[0] = 0;
+     dits[1] = 0.07;
+     dits[2] = 3.15;
+     gMC->Gsvolu("I559", "TUBE", idtmed[211], dits, 3);  // set water as cooling fluid
+  } else {
+     dits[0] = 0;
+     dits[1] = 0.07;
+     dits[2] = 3.15;
+     gMC->Gsvolu("I559", "TUBE", idtmed[212], dits, 3);  // set freon as cooling fluid
+  }
   
   dits[0] = 0.07;
   dits[1] = 0.1;
@@ -2176,10 +2331,17 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[2] = 1.955;
   gMC->Gsvolu("I542", "TUBE", idtmed[210], dits, 3);  
   
-  dits[0] = 0;
-  dits[1] = 0.07;
-  dits[2] = 1.955;
-  gMC->Gsvolu("I541", "TUBE", idtmed[211], dits, 3);  
+  if (fluid == 1) {
+     dits[0] = 0;
+     dits[1] = 0.07;
+     dits[2] = 1.955;
+     gMC->Gsvolu("I541", "TUBE", idtmed[211], dits, 3);  // set water as cooling fluid 
+  } else {
+     dits[0] = 0;
+     dits[1] = 0.07;
+     dits[2] = 1.955;
+     gMC->Gsvolu("I541", "TUBE", idtmed[212], dits, 3);  // set freon as cooling fluid
+  }
   
   dits[0] = 0.3;
   dits[1] = 0.15;
@@ -2228,10 +2390,17 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[2] = 2;
   gMC->Gsvolu("ITS6", "BOX ", idtmed[200], dits, 3);  
   
-  dits[0] = 0;
-  dits[1] = 0.07;
-  dits[2] = 3.15;
-  gMC->Gsvolu("I550", "TUBE", idtmed[211], dits, 3);  
+  if (fluid == 1) {
+     dits[0] = 0;
+     dits[1] = 0.07;
+     dits[2] = 3.15;
+     gMC->Gsvolu("I550", "TUBE", idtmed[211], dits, 3);  // set water as cooling fluid
+  } else {
+     dits[0] = 0;
+     dits[1] = 0.07;
+     dits[2] = 3.15;
+     gMC->Gsvolu("I550", "TUBE", idtmed[212], dits, 3);  // set freon as cooling fluid
+  }
   
   dits[0] = 0.07;
   dits[1] = 0.1;
@@ -2333,10 +2502,17 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[3] = 0.08;
   gMC->Gsvolu("I517", "TRD1", idtmed[203], dits, 4);  
   
-  dits[0] = 0;
-  dits[1] = 0.07;
-  dits[2] = 1.955;
-  gMC->Gsvolu("I531", "TUBE", idtmed[211], dits, 3);  
+  if (fluid == 1) {
+     dits[0] = 0;
+     dits[1] = 0.07;
+     dits[2] = 1.955;
+     gMC->Gsvolu("I531", "TUBE", idtmed[211], dits, 3);  // set water as cooling fluid
+  } else {
+     dits[0] = 0;
+     dits[1] = 0.07;
+     dits[2] = 1.955;
+     gMC->Gsvolu("I531", "TUBE", idtmed[212], dits, 3);  // set freon as cooling fluid
+  }
      
   dits[0] = 0.07;
   dits[1] = 0.1;
@@ -2354,6 +2530,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   gMC->Gsvolu("ITS5", "BOX ", idtmed[200], dits, 3);  
 
 
+
   // --- Define volumes of shield of SPD ----------------
 
 
@@ -2368,19 +2545,18 @@ void AliITSvPPRasymm::CreateGeometry(){
   gMC->Gsvolu("IC02", "TUBE", idtmed[289], dits, 3);    
   
  
-   // --- Define volumes of first cylinder between SPD and SDD --------------
+  // --- Define volume of first cylinder between SPD and SDD --------------
   
-    
   dits[0] = (21.-0.128)/2.;      
-  dits[1] = 21.;
+  dits[1] = 21./2.;
   dits[2] = 39.4;      
   gMC->Gsvolu("ICY1", "TUBE", idtmed[208], dits, 3);
          
-   // --- Define volumes of second cylinder between SDD and SSD --------------
+  // --- Define volume of second cylinder between SDD and SSD --------------
 
   dits[0] = (59.5-0.128)/2.;      
   dits[1] = 59.5/2.;
-  dits[2] = 56.2;      // deve essere 57
+  dits[2] = 56.2;      // was 57
   gMC->Gsvolu("ICY2", "TUBE", idtmed[208], dits, 3);
 
   // --- Define volumes of SDD cone ---------------------------------- 
@@ -2390,13 +2566,13 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[2] = 12;
   dits[3] = -59.7;
   dits[4] = 27;
-  dits[5] = 28;
+  dits[5] = 28.6;
   dits[6] = -42.7;
   dits[7] = 10;
-  dits[8] = 28;
+  dits[8] = 28.6;
   dits[9] = -34.65;
   dits[10] = 10;
-  dits[11] = 28;
+  dits[11] = 28.6;
   dits[12] = -34.65;
   dits[13] = 10;
   dits[14] = 23.495;
@@ -2417,42 +2593,42 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[29] = 23.495;
   dits[30] = 34.65;
   dits[31] = 10;
-  dits[32] = 28;
+  dits[32] = 28.6;
   dits[33] = 42.6263;
   dits[34] = 10;
-  dits[35] = 28;
+  dits[35] = 28.6;
   dits[36] = 59.7;
   dits[37] = 27.2637;
-  dits[38] = 28;             
+  dits[38] = 28.6;             
   gMC->Gsvolu("IS02", "PCON", idtmed[204], dits, 39);
   
   dits[0] = 0;
   dits[1] = 360;
   dits[2] = 6;
-  dits[3] = 39.4;
-  dits[4] = 10;    
-  dits[5] = 10.25;      
-  dits[6] = 40.66;
-  dits[7] = 10;
-  dits[8] = 13.96;
-  dits[9] = 40.66;
-  dits[10] = 12.1781;
+  dits[3] = 38.65;
+  dits[4] = 10.75;    
+  dits[5] = 12.25;      
+  dits[6] = 40.15;
+  dits[7] = 10.75;
+  dits[8] = 13.96;   //13.25
+  dits[9] = 40.15;
+  dits[10] = 12.46;  //12.46
   dits[11] = 13.96;
-  dits[12] = 54.7;
-  dits[13] = 26.2181;
-  dits[14] = 28;
-  dits[15] = 55.2219;
-  dits[16] = 27.7;
-  dits[17] = 28;
-  dits[18] = 57.4;
-  dits[19] = 27.7;
-  dits[20] = 29.5;       
+  dits[12] = 55.75;
+  dits[13] = 27;
+  dits[14] = 28.5;
+  dits[15] = 55.75;
+  dits[16] = 27;
+  dits[17] = 28.5;
+  dits[18] = 57.25;
+  dits[19] = 27;
+  dits[20] = 28.5;       
   gMC->Gsvolu("I093", "PCON", idtmed[272], dits, 21);  // SDD cone
 
   dits[0] = 0;
   dits[1] = 50;
   dits[2] = 3;
-  dits[3] = 23.7;  
+  dits[3] = 35;  
   dits[4] = 14;
   dits[5] = 18.75;
   dits[6] = 46.7-3;
@@ -2466,7 +2642,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[0] = 0;
   dits[1] = 25;
   dits[2] = 3;
-  dits[3] = 34.65;
+  dits[3] = 40;
   dits[4] = 23.4;
   dits[5] = 26.4;
   dits[6] = 56.1-3;
@@ -2529,34 +2705,34 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[4] = 46;         
   dits[5] = 49.25;       
   dits[6] = -61.2;
-  dits[7] = 28.5;
+  dits[7] = 28.7;
   dits[8] = 49.25;       
   dits[9] = -57.5;
-  dits[10] = 28.5;
+  dits[10] = 28.7;
   dits[11] = 49.25;      
   dits[12] = -57.5;
-  dits[13] = 28.5;
+  dits[13] = 28.7;
   dits[14] = 43.5;
   dits[15] = -49.2;
-  dits[16] = 28.5;
+  dits[16] = 28.7;
   dits[17] = 43.5;
   dits[18] = -49.2;
-  dits[19] = 28.5;
+  dits[19] = 28.7;
   dits[20] = 36.85;
   dits[21] = 50.6;
-  dits[22] = 28.5;
+  dits[22] = 28.7;
   dits[23] = 36.85;
   dits[24] = 50.6;
-  dits[25] = 28.5;
+  dits[25] = 28.7;
   dits[26] = 43.5;
   dits[27] = 57.5;
-  dits[28] = 28.5;
+  dits[28] = 28.7;
   dits[29] = 43.5;
   dits[30] = 57.5;
-  dits[31] = 28.5;
+  dits[31] = 28.7;
   dits[32] = 49.25;      
   dits[33] = 61.2;
-  dits[34] = 28.5;
+  dits[34] = 28.7;
   dits[35] = 49.25;      
   dits[36] = zmax;
   dits[37] = 46;      
@@ -2578,12 +2754,12 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[12] = -57.25;   // was 58.5 
   dits[13] = 32.9681;
   dits[14] = 34.75;
-  dits[15] = -57.25;  // was 58.5   
+  dits[15] = -57.25;   // was 58.5   
   dits[16] = 30;
   dits[17] = 34.75;
-  dits[18] = -55.75;  // was 57 
+  dits[18] = -55.75;   // was 57 
   dits[19] = 30;     
-  dits[20] = 32.25;   // was 31.5 
+  dits[20] = 32.25;    // was 31.5 
   gMC->Gsvolu("I212", "PCON", idtmed[272], dits, 21);  // SSD cone
   
   dits[0] = 28.75;          
@@ -3803,8 +3979,8 @@ void AliITSvPPRasymm::CreateGeometry(){
   
   // --- Place volumes of cylinders between SPD and SDD and SDD and SSD 
   
-  gMC->Gspos("ICY1",1,"ITSD",0.0,0.0,0.,0,"ONLY");    // deve essere 
-  gMC->Gspos("ICY2",1,"ITSD",0.0,0.0,-0.7,0,"ONLY");    // deve essere 0
+  gMC->Gspos("ICY1",1,"ITSD",0.0,0.0,0.,0,"ONLY");    
+  gMC->Gspos("ICY2",1,"ITSD",0.0,0.0,0.,0,"ONLY");    
   
 
   // --- Place volumes of SDD cone ---------------------------------- 
@@ -3812,24 +3988,24 @@ void AliITSvPPRasymm::CreateGeometry(){
   
   gMC->Gspos("I093",1,"IS02",0.0,0.0,0.0,0,"MANY");
   gMC->Gspos("I093",2,"IS02",0.0,0.0,0.0,idrotm[856],"MANY");
-  gMC->Gspos("I099",4,"IS02",0.0,0.0,0.0,idrotm[857],"ONLY");
-  gMC->Gspos("I099",3,"IS02",0.0,0.0,0.0,idrotm[858],"ONLY");
-  gMC->Gspos("I099",5,"IS02",0.0,0.0,0.0,idrotm[859],"ONLY");
-  gMC->Gspos("I099",6,"IS02",0.0,0.0,0.0,idrotm[860],"ONLY");
-  gMC->Gspos("I099",7,"IS02",0.0,0.0,0.0,idrotm[861],"ONLY");
-  gMC->Gspos("I099",2,"IS02",0.0,0.0,0.0,idrotm[862],"ONLY");
-  gMC->Gspos("I200",4,"IS02",0.0,0.0,0.0,idrotm[863],"ONLY");
-  gMC->Gspos("I200",3,"IS02",0.0,0.0,0.0,idrotm[864],"ONLY");
-  gMC->Gspos("I200",2,"IS02",0.0,0.0,0.0,idrotm[865],"ONLY");
-  gMC->Gspos("I200",13,"IS02",0.0,0.0,0.0,idrotm[867],"ONLY");
-  gMC->Gspos("I200",12,"IS02",0.0,0.0,0.0,idrotm[869],"ONLY");
-  gMC->Gspos("I200",11,"IS02",0.0,0.0,0.0,idrotm[870],"ONLY");
-  gMC->Gspos("I200",10,"IS02",0.0,0.0,0.0,idrotm[871],"ONLY");
-  gMC->Gspos("I200",9,"IS02",0.0,0.0,0.0,idrotm[872],"ONLY");
-  gMC->Gspos("I200",8,"IS02",0.0,0.0,0.0,idrotm[873],"ONLY");
-  gMC->Gspos("I200",7,"IS02",0.0,0.0,0.0,idrotm[874],"ONLY");
-  gMC->Gspos("I200",6,"IS02",0.0,0.0,0.0,idrotm[875],"ONLY");
-  gMC->Gspos("I200",5,"IS02",0.0,0.0,0.0,idrotm[876],"ONLY");
+  gMC->Gspos("I099",4,"IS02",0.0,0.0,0.0,idrotm[857],"MANY");
+  gMC->Gspos("I099",3,"IS02",0.0,0.0,0.0,idrotm[858],"MANY");
+  gMC->Gspos("I099",5,"IS02",0.0,0.0,0.0,idrotm[859],"MANY");
+  gMC->Gspos("I099",6,"IS02",0.0,0.0,0.0,idrotm[860],"MANY");
+  gMC->Gspos("I099",7,"IS02",0.0,0.0,0.0,idrotm[861],"MANY");
+  gMC->Gspos("I099",2,"IS02",0.0,0.0,0.0,idrotm[862],"MANY");
+  gMC->Gspos("I200",4,"IS02",0.0,0.0,0.0,idrotm[863],"MANY");
+  gMC->Gspos("I200",3,"IS02",0.0,0.0,0.0,idrotm[864],"MANY");
+  gMC->Gspos("I200",2,"IS02",0.0,0.0,0.0,idrotm[865],"MANY");
+  gMC->Gspos("I200",13,"IS02",0.0,0.0,0.0,idrotm[867],"MANY");
+  gMC->Gspos("I200",12,"IS02",0.0,0.0,0.0,idrotm[869],"MANY");
+  gMC->Gspos("I200",11,"IS02",0.0,0.0,0.0,idrotm[870],"MANY");
+  gMC->Gspos("I200",10,"IS02",0.0,0.0,0.0,idrotm[871],"MANY");
+  gMC->Gspos("I200",9,"IS02",0.0,0.0,0.0,idrotm[872],"MANY");
+  gMC->Gspos("I200",8,"IS02",0.0,0.0,0.0,idrotm[873],"MANY");
+  gMC->Gspos("I200",7,"IS02",0.0,0.0,0.0,idrotm[874],"MANY");
+  gMC->Gspos("I200",6,"IS02",0.0,0.0,0.0,idrotm[875],"MANY");
+  gMC->Gspos("I200",5,"IS02",0.0,0.0,0.0,idrotm[876],"MANY");
   gMC->Gspos("I090",2,"IS02",0.0,0.0,-39.4,0,"ONLY");    
   gMC->Gspos("I090",1,"IS02",0.0,0.0,39.4,idrotm[856],"ONLY");  
   gMC->Gspos("I099",9,"IS02",0.0,0.0,0.0,idrotm[877],"ONLY");
@@ -4219,7 +4395,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   
      dgh[0] = 2.;          
      dgh[1] = 8.;           
-     dgh[2] = 190.;          // se possibile 200 se no 190 va bene
+     dgh[2] = 190.;         
      gMC->Gsvolu("IRA1", "BOX ", idtmed[210], dgh, 3);
      gMC->Gspos("IRA1", 1, "ITSV", 53.5, 0., -69.5, 0, "ONLY");   
      gMC->Gsvolu("IRA2", "BOX ", idtmed[210], dgh, 3);    
@@ -4227,7 +4403,7 @@ void AliITSvPPRasymm::CreateGeometry(){
 
      dgh[0] = 2.-0.5531;    // 0.5531 was determined in such a way that the aluminum area is 20.9 cm^2      
      dgh[1] = 8.-0.5531;    // 0.5531 was determined in such a way that the aluminum area is 20.9 cm^2       
-     dgh[2] = 190.;         // se possibile 200 se no 190 va bene   
+     dgh[2] = 190.;         
      gMC->Gsvolu("IRA3", "BOX ", idtmed[205], dgh, 3);   
      gMC->Gspos("IRA3", 1, "IRA1", 0., 0., 0., 0, "ONLY");   
      gMC->Gsvolu("IRA4", "BOX ", idtmed[205], dgh, 3);     
