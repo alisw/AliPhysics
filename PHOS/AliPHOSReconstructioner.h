@@ -6,7 +6,7 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-//  Supervising class for reconstruction
+//  Wrapping class for reconstruction
 //*--
 //*-- Author: Gines Martinez & Yves Schutz (SUBATECH) 
 //*--         Dmitri Peressounko (SUBATECH & Kurchatov Institute)
@@ -49,10 +49,11 @@ public:
   void Print(Option_t * option)const ;
   
   void SetBranchTitle(const char* branch,const char * title) ;
-            // Sets files, to which branch will be written 
+            // Sets the branch titles to separate different reconstruction flows 
 
-  void StartFrom(Option_t * option = "AliPHOSSDigitizer") ;
-            // From wich step reconstruction begins
+  void StartFrom(char * module = "SDigitizer",char * title = 0) ;
+            // From wich step reconstruction begins, 
+            // title to be set to all reconstructed branches
 
   AliPHOSReconstructioner & operator = (const AliPHOSReconstructioner & rvalue)  {
     // assignement operator requested by coding convention but not needed

@@ -16,38 +16,46 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-//  Algorithm class for the reconstruction: 
-//                                          
-//                                          
 //*--
 //*-- Author: Gines Martinez & Yves Schutz (SUBATECH) 
 //*-- Complitely redisigned by Dmitri Peressounko (SUBATECH & RRC KI) March 2001
 /////////////////////////////////////////////////////////////////////////////////////
-//  Wrapping class for reconstruction
-//  use case: 
+//  Wrapping class for reconstruction. Allows to produce reconstruction from 
+//  different steps: from previously produced hits,sdigits, etc. Each new reconstruction
+//  flow (e.g. gigits, made from them RecPoints, made from them TrackSegments, made from 
+//  them RecParticles) are distinguished by the title of created branches. One can 
+//  use this title as a comment, see user case below. Thanks to getters, one can set 
+//  parameters to reconstruction bricks. The full set of parameters is saved in the 
+//  correspoinding branch: e.g. parameters of clusterizer are stored in branch 
+//  TreeR::AliPHOSClusterizer with the same title as the branch contaning RecPoints 
+//  themself. TTree does not support overwriting, therefore one can not produce several 
+//  branches with the same names and titles - use different titles.
+//
+//  User case: 
 //
 //  root [0] AliPHOSReconstructioner * r = new AliPHOSReconstructioner("galice.root")
 //              //  Set the header file
 //  root [1] r->ExecuteTask() 
+//              //  Make full cheine of reconstruction
 //
 //              // One can specify the title for each branch 
 //  root [2] r->SetBranchFileName("RecPoints","RecPoints1") ;
-//             // By default branches are stored in galice.root (in non-split mode)
-//             // or PHOS.SDigits.root, PHOS.Digits.root etc.
 //      
-//             // One can specify the starting point of the reconstruction
-//  root [3] r->StartFrom("AliPHOSClusterizer") 
-//             // means that SDigits and Digits will not be regenerated, only RecPoints, 
-//             // TS and RecParticles
+//             // One can change parameters of reconstruction algorithms
+//  root [3] r->GetClusterizer()->SetEmcLocalMaxCut(0.02)
+//
+//             // One can specify the starting point of the reconstruction and title of all 
+//             // branches produced in this pass
+//  root [4] r->StartFrom("AliPHOSClusterizer","Local max cut 0.02") 
+//             // means that will use already generated Digits and produce only RecPoints, 
+//             // TS and RecParticles 
 //
 //             // And finally one can call ExecuteTask() with the following options
-//  root [4] r->ExecuteTask("debug all timing")
+//  root [5] r->ExecuteTask("debug all timing")
 //             // deb     - prints the numbers of produced SDigits, Digits etc.
 //             // deb all - prints in addition list of made SDigits, digits etc.
 //             // timing  - prints benchmarking results
-
-
-
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
 
@@ -435,28 +443,79 @@ void AliPHOSReconstructioner::SetBranchTitle(const char* branch, const char * ti
   
 }
 //____________________________________________________________________________
-void AliPHOSReconstructioner::StartFrom(Option_t * module){
-  //in the next ExecuteTask() reconstruction starts from the module "module"
+void AliPHOSReconstructioner::StartFrom(char * module,char* title){
+  // in the next pass of reconstruction (call ExecuteTask()) reconstruction will 
+  // start from the module "module", and in the case of nonsero title all 
+  // pruduced branches will have title "title". Recognize the following "modules"
+  // "SD" - AliPHOSSDigitizer,
+  // "D"  - AliPHOSDigitizer
+  // "C"  - AliPHOSClusterizer
+  // "TS" - AliPHOSTrackSegmentMaker
+  // "RP" - AliPHOSPID
 
   if(!fIsInitialized)
-    Init() ;  
+    Init() ;
+
+  char * moduleName = new char[30];
+  if(strstr(module,"SD"))
+    sprintf(moduleName,"AliPHOSSDigitizer") ;
+  else
+    if(strstr(module,"D") )
+      sprintf(moduleName,"AliPHOSDigitizer") ;
+    else
+      if(strstr(module,"C") || strstr(module,"RecPoint") )
+	sprintf(moduleName,"AliPHOSClusterizer") ;
+      else
+	if(strstr(module,"TS") || strstr(module,"Track") )
+	  sprintf(moduleName,"AliPHOSTrackSegmentMaker") ;
+	else
+	  if(strstr(module,"PID") || strstr(module,"Particle") || strstr(module,"RP") )
+	    sprintf(moduleName,"AliPHOSPID") ;
+	  else{
+	    cout << "Do not know such a module / Rec Object " << endl;
+	    return ;
+	  }
+  
   TIter next(fTasks);
   TTask *task;
   Bool_t active = kFALSE ;
   while((task=(TTask*)next())){ 
-    if (strcmp(module,task->GetName())==0)  
+    if (strcmp(moduleName,task->GetName())==0)  
       active = kTRUE;
     task->SetActive(active) ;
+    if(active && title){ // set title to branches
+      switch(strlen(task->GetName()) ) {
+      case 17:   // "AliPHOSSDigitizer"
+	fSDigitizer->SetSDigitsBranch(title) ;
+	fDigitizer->SetSDigitsBranch(title) ;
+	fSDigitsBranch = title ;
+	break ;
+      case 16:   //"AliPHOSDigitizer"
+	fDigitizer->SetDigitsBranch(title) ;
+	fClusterizer->SetDigitsBranch(title) ;
+	fDigitsBranch = title ;
+	break ;
+      case 18:   //"AliPHOSClusterizer"
+	fClusterizer->SetRecPointsBranch(title) ;
+	fTSMaker->SetRecPointsBranch(title) ;
+	fRecPointBranch = title ;
+	break ;
+      case 24:   //"AliPHOSTrackSegmentMaker"
+	fTSMaker->SetTrackSegmentsBranch(title) ;
+	fPID->SetTrackSegmentsBranch(title) ;
+	fTSBranch = title ;
+	break ;
+      case 10:   // "AliPHOSPID"
+	fPID->SetRecParticlesBranch(title) ;
+	fRecPartBranch = title ;
+	break ;
+      }
+      
+    }
   }
-  if(!active){
-    cout << "There is no task " <<module<< endl ;
-    cout << "Available tasks are: " << endl ;
-    next.Reset() ;
-    while((task=(TTask*)next()))
-      cout<<"                    " << task->GetName() << endl ;
-  }
+  
+  delete moduleName;
 }
-
 //____________________________________________________________________________
 void AliPHOSReconstructioner::Print(Option_t * option)const {
   
