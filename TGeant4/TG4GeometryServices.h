@@ -57,6 +57,7 @@ class TG4GeometryServices : public TG4Verbose
     void PrintLimits(const G4String& name) const;
     void PrintVolumeLimits(const G4String& volumeName) const;
     void PrintStatistics(G4bool open, G4bool close) const;
+    void PrintLogicalVolumeStore() const;
 
     // set methods
     void SetWorld(G4VPhysicalVolume* world);
