@@ -20,25 +20,25 @@ class AliPHOSRecEmcManager : public AliPHOSRecManager {
 
 
   void AG(Float_t E, Float_t dx, Float_t dy, Float_t& A, Float_t& grad_x, Float_t& grad_y );
-  Float_t Dispersion(Float_t Etot, Float_t Ai, Float_t Ei);
+  Float_t Dispersion(Float_t Etot, Float_t Ai, Float_t Ei) const;
 
   Float_t OneGamChi2(Float_t Ai, Float_t Ei, Float_t Etot, Float_t& Gi);
-  Float_t TwoGamChi2(Float_t Ai, Float_t Ei, Float_t Etot, Float_t& Gi);
+  Float_t TwoGamChi2(Float_t Ai, Float_t Ei, Float_t Etot, Float_t& Gi)const;
 
-  Float_t OneGamChisqCut() { return fOneGamChisqCut; }
-  Float_t OneGamInitialStep() { return fOneGamInitialStep; }
-  Float_t OneGamChisqMin() { return fOneGamChisqMin; }
-  Float_t OneGamStepMin() { return fOneGamStepMin; }
-  Int_t OneGamNumOfIterations() { return fOneGamNumOfIterations; }
+  Float_t OneGamChisqCut() const{ return fOneGamChisqCut; }
+  Float_t OneGamInitialStep() const{ return fOneGamInitialStep; }
+  Float_t OneGamChisqMin() const{ return fOneGamChisqMin; }
+  Float_t OneGamStepMin() const{ return fOneGamStepMin; }
+  Int_t OneGamNumOfIterations() const{ return fOneGamNumOfIterations; }
 
-  Float_t TwoGamInitialStep() { return fTwoGamInitialStep; }
-  Float_t TwoGamChisqMin() { return fTwoGamChisqMin; }
-  Float_t TwoGamEmin() { return fTwoGamEmin; }
-  Float_t TwoGamStepMin() { return fTwoGamStepMin; } 
-  Int_t TwoGamNumOfIterations() { return fTwoGamNumOfIterations; }
+  Float_t TwoGamInitialStep() const{ return fTwoGamInitialStep; }
+  Float_t TwoGamChisqMin() const{ return fTwoGamChisqMin; }
+  Float_t TwoGamEmin() const{ return fTwoGamEmin; }
+  Float_t TwoGamStepMin() const{ return fTwoGamStepMin; } 
+  Int_t TwoGamNumOfIterations() const{ return fTwoGamNumOfIterations; }
 
-  Float_t KillGamMinEnergy() { return fThr0; } 
-  Float_t MergeGammasMinDistanceCut() { return fSqdCut; } 
+  Float_t KillGamMinEnergy() const{ return fThr0; } 
+  Float_t MergeGammasMinDistanceCut() const{ return fSqdCut; } 
 
   void SetTwoPointsMinDistance(Float_t dist) { fSqdCut=dist; }
   void SetPointMinEnergy(Float_t emin) { fThr0=emin; }

@@ -62,7 +62,7 @@ ClassImp(AliPHOSRecEmcManager)
 
 AliPHOSRecEmcManager::~AliPHOSRecEmcManager(void) {}
 
-Float_t AliPHOSRecEmcManager::Dispersion(Float_t Etot, Float_t Ai, Float_t Ei)
+Float_t AliPHOSRecEmcManager::Dispersion(Float_t Etot, Float_t Ai, Float_t Ei) const
 {
   //"Dispresion" of energy deposition in the cell.
   // Etot is the total shower energy, Ai is the
@@ -85,7 +85,7 @@ Float_t AliPHOSRecEmcManager::OneGamChi2(Float_t Ai, Float_t Ei, Float_t Etot, F
 
 }
 
-Float_t AliPHOSRecEmcManager::TwoGamChi2(Float_t Ai, Float_t Ei, Float_t Etot, Float_t& Gi)
+Float_t AliPHOSRecEmcManager::TwoGamChi2(Float_t Ai, Float_t Ei, Float_t Etot, Float_t& Gi) const
 {
 
   Float_t da = Ai - Ei;
