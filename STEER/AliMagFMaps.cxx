@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2002/02/22 14:00:20  morsch
+Protection against replication of fieldmap data in gAlice.
+
 Revision 1.3  2002/02/21 09:23:41  morsch
 Create dummy field map for L3 in case no detailed map is needed.
 
@@ -41,7 +44,8 @@ ClassImp(AliMagFMaps)
 
 //________________________________________
 AliMagFMaps::AliMagFMaps(const char *name, const char *title, const Int_t integ, 
-		     const Float_t factor, const Float_t fmax, const Int_t map)
+			 const Float_t factor, const Float_t fmax, const Int_t map, 
+			 const Int_t l3)
   : AliMagF(name,title,integ,factor,fmax)
 {
   //
@@ -54,7 +58,7 @@ AliMagFMaps::AliMagFMaps(const char *name, const char *title, const Int_t integ,
   fMap = map;
   TFile* file = 0;
   if (fMap == k2kG) {
-      if (integ) {
+      if (l3) {
 	  fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/L3B02.root");
 	  file = new TFile(fname);
 	  fFieldMap[0] = (AliFieldMap*) file->Get("L3B02");
@@ -74,7 +78,7 @@ AliMagFMaps::AliMagFMaps(const char *name, const char *title, const Int_t integ,
       delete file;
       fSolenoid = 2.;
   } else if (fMap == k4kG) {
-      if (integ) {
+      if (l3) {
 	  fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/L3B04.root");
 	  file = new TFile(fname);
 	  fFieldMap[0] = (AliFieldMap*) file->Get("L3B04");
@@ -95,7 +99,7 @@ AliMagFMaps::AliMagFMaps(const char *name, const char *title, const Int_t integ,
       delete file;
       fSolenoid = 4.;
   } else if (fMap == k5kG) {
-      if (integ) {
+      if (l3) {
 	  fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/L3B05.root");
 	  file = new TFile(fname);
 	  fFieldMap[0] = (AliFieldMap*) file->Get("L3B05");
@@ -118,7 +122,7 @@ AliMagFMaps::AliMagFMaps(const char *name, const char *title, const Int_t integ,
       fSolenoid = 5.;
   }
 
-  if (!integ) {
+  if (!l3) {
 //
 // Dummy L3 map
       fFieldMap[0] = new AliFieldMap();
@@ -129,7 +133,7 @@ AliMagFMaps::AliMagFMaps(const char *name, const char *title, const Int_t integ,
 // Don't replicate field information in gAlice
   for (Int_t i = 0; i < 3; i++)  fFieldMap[i]->SetWriteEnable(0);
 //
-  SetL3ConstField(0);
+  fL3Option = l3;
 }
 
 //________________________________________
@@ -175,7 +179,7 @@ void AliMagFMaps::Field(Float_t *x, Float_t *b)
   AliFieldMap* map = 0;
   if (fFieldMap[0]->Inside(x[0], x[1], x[2])) {
       map = fFieldMap[0];
-      if (fL3Option) {
+      if (!fL3Option) {
 //
 //     Constant L3 field, if this option was selected
 //
@@ -239,6 +243,8 @@ void AliMagFMaps::Field(Float_t *x, Float_t *b)
       b[1]*=fFactor;
       b[2]*=fFactor;
   }
+  b[0]*=1.1;
+  
 }
 
 //________________________________________
