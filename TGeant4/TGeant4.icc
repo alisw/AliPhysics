@@ -193,7 +193,12 @@ inline void  TGeant4::GetSecondary(Int_t isec, Int_t& particleId,
   fStepManager->GetSecondary(isec, particleId, position, momentum); 
 } 
 
-inline AliMCProcess TGeant4::ProdProcess() const 
+inline AliMCProcess TGeant4::ProdProcess(Int_t isec) const 
 { 
-  return fStepManager->ProdProcess(); 
+  return fStepManager->ProdProcess(isec); 
+} 
+
+inline Int_t TGeant4::StepProcesses(TArrayI &proc) const
+{ 
+  return fStepManager->StepProcesses(proc); 
 } 
