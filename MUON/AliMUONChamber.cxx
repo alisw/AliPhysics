@@ -60,11 +60,11 @@ AliMUONChamber::~AliMUONChamber()
   }
 }
 
-AliMUONChamber::AliMUONChamber(const AliMUONChamber& rChamber)
-{
-// Dummy copy constructor
-    ;
-}
+// AliMUONChamber::AliMUONChamber(const AliMUONChamber& rChamber):TObject(const AliMUONChamber& rChamber)
+//  {
+//  // Dummy copy constructor
+//      ;
+// // }
 
 
 void AliMUONChamber::Init()
@@ -130,7 +130,7 @@ else
     fCurrentCorrel = TMath::Exp(gRandom->Gaus(0,fResponse->ChargeCorrel()/2));
 }
 
-void AliMUONChamber::DisIntegration(Float_t eloss, Float_t tof, 
+void AliMUONChamber::DisIntegration(Float_t eloss, Float_t /*tof*/, 
 				    Float_t xhit, Float_t yhit, Float_t zhit,
 				    Int_t& nnew,Float_t newclust[6][500]) 
 {
@@ -188,7 +188,7 @@ void AliMUONChamber::DisIntegration(Float_t eloss, Float_t tof,
 
 
 
-void AliMUONChamber::InitGeo(Float_t zpos)
+void AliMUONChamber::InitGeo(Float_t /*zpos*/)
 {
 //    sensitive gas gap
       fdGas= 0.5;
@@ -197,7 +197,7 @@ void AliMUONChamber::InitGeo(Float_t zpos)
 }
 
 
-AliMUONChamber & AliMUONChamber::operator =(const AliMUONChamber& rhs)
+AliMUONChamber & AliMUONChamber::operator =(const AliMUONChamber& /*rhs*/)
 {
 // Dummy assignment operator
     return *this;

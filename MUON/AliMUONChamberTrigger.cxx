@@ -39,7 +39,7 @@ AliMUONChamberTrigger::AliMUONChamberTrigger(Int_t id) : AliMUONChamber(id)
 }
 
 //-------------------------------------------
-void AliMUONChamberTrigger::DisIntegration(Float_t eloss, Float_t tof, 
+void AliMUONChamberTrigger::DisIntegration(Float_t /*eloss*/, Float_t tof, 
 					   Float_t xhit, Float_t yhit, Float_t zhit, 
 					   Int_t& nnew,
 					   Float_t newclust[6][500]) 
