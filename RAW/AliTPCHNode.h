@@ -23,12 +23,12 @@ class AliTPCHNode: public TObject  {
   Int_t   Compare(const TObject *obj) const;
   void    SetLeft(AliTPCHNode* point){fLeft=point;}
   void    SetRight(AliTPCHNode* point){fRight=point;}
-  AliTPCHNode* GetRight()const{return fRight;}
-  AliTPCHNode* GetLeft()const{return fLeft;}
+  inline AliTPCHNode* GetRight()const{return fRight;}
+  inline AliTPCHNode* GetLeft()const{return fLeft;}
   void     SetSymbol(Int_t sym){fSymbol=sym;}
   void     SetFrequency(Double_t freq){fFrequency=freq;}
   Double_t GetFrequency()const{return fFrequency;}
-  Int_t    GetSymbol()const{return fSymbol;}
+  inline Int_t    GetSymbol()const{return fSymbol;}
 
  private:
   Int_t         fSymbol;       // Symbols

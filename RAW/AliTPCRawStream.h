@@ -23,20 +23,21 @@ class AliTPCRawStream: public TObject {
     AliTPCRawStream(const AliTPCRawStream& stream);
     AliTPCRawStream& operator = (const AliTPCRawStream& stream);
     virtual ~AliTPCRawStream();
+    void Reset();
 
     virtual Bool_t   Next();
 
-    Int_t            GetSector() const {return fSector;};
-    Int_t            GetPrevSector() const {return fPrevSector;};
-    Bool_t           IsNewSector() const {return fSector != fPrevSector;};
-    Int_t            GetRow() const {return fRow;};
-    Int_t            GetPrevRow() const {return fPrevRow;};
-    Bool_t           IsNewRow() const {return (fRow != fPrevRow) || IsNewSector();};
-    Int_t            GetPad() const {return fPad;};
-    Int_t            GetPrevPad() const {return fPrevPad;};
-    Bool_t           IsNewPad() const {return (fPad != fPrevPad) || IsNewRow();};
-    Int_t            GetTime() const {return fTime;};
-    Int_t            GetSignal() const {return fSignal;};
+    inline Int_t            GetSector() const {return fSector;};
+    inline Int_t            GetPrevSector() const {return fPrevSector;};
+    inline Bool_t           IsNewSector() const {return fSector != fPrevSector;};
+    inline Int_t            GetRow() const {return fRow;};
+    inline Int_t            GetPrevRow() const {return fPrevRow;};
+    inline Bool_t           IsNewRow() const {return (fRow != fPrevRow) || IsNewSector();};
+    inline Int_t            GetPad() const {return fPad;};
+    inline Int_t            GetPrevPad() const {return fPrevPad;};
+    inline Bool_t           IsNewPad() const {return (fPad != fPrevPad) || IsNewRow();};
+    inline Int_t            GetTime() const {return fTime;};
+    inline Int_t            GetSignal() const {return fSignal;};
 
   protected :
     UShort_t         Get10BitWord(UChar_t* buffer, Int_t position) const;

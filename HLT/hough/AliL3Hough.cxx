@@ -32,6 +32,8 @@
 #include "AliL3HoughTrack.h"
 #include "AliL3DDLDataFileHandler.h"
 
+#include "TThread.h"
+
 #if __GNUC__ == 3
 using namespace std;
 #endif
@@ -80,6 +82,7 @@ AliL3Hough::AliL3Hough()
   
   fNEtaSegments     = 0;
   fNPatches         = 0;
+  fLastPatch        =-1;
   fVersion          = 0;
   fCurrentSlice     = 0;
   fEvent            = 0;
@@ -100,6 +103,7 @@ AliL3Hough::AliL3Hough()
     fRunLoader = 0;
 #endif
 #endif
+  fThread = 0;
 }
 
 AliL3Hough::AliL3Hough(Char_t *path,Bool_t binary,Int_t netasegments,Bool_t bit8,Int_t tv,Char_t *infile,Char_t *ptr)
@@ -136,6 +140,7 @@ AliL3Hough::AliL3Hough(Char_t *path,Bool_t binary,Int_t netasegments,Bool_t bit8
     fRunLoader = 0;
 #endif
 #endif
+  fThread = 0;
 }
 
 AliL3Hough::~AliL3Hough()
@@ -161,6 +166,11 @@ AliL3Hough::~AliL3Hough()
   if(fGlobalTracks)
     delete fGlobalTracks;
   //cout << "Cleaned class globaltracks " << endl;
+  if(fThread) {
+    //    fThread->Delete();
+    delete fThread;
+    fThread = 0;
+  }
 }
 
 void AliL3Hough::CleanUp()
@@ -224,7 +234,6 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
   fAddHistograms = addhists;
 
   fNPatches = AliL3Transform::GetNPatches();
-  
   fHoughTransformer = new AliL3HoughBaseTransformer*[fNPatches];
   fMemHandler = new AliL3MemHandler*[fNPatches];
 
@@ -233,6 +242,8 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
   
   fGlobalTracks = new AliL3TrackArray("AliL3HoughTrack");
   
+  AliL3HoughBaseTransformer *lasttransformer = 0;
+
   for(Int_t i=0; i<fNPatches; i++)
     {
       switch (fVersion){ //choose Transformer
@@ -252,6 +263,8 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
 	fHoughTransformer[i] = new AliL3HoughTransformer(0,i,fNEtaSegments,kFALSE,kFALSE);
       }
 
+      fHoughTransformer[i]->SetLastTransformer(lasttransformer);
+      lasttransformer = fHoughTransformer[i];
       //      fHoughTransformer[i]->CreateHistograms(fNBinX[i],fLowPt[i],fNBinY[i],-fPhi[i],fPhi[i]);
       fHoughTransformer[i]->CreateHistograms(fNBinX[i],-fLowPt[i],fLowPt[i],fNBinY[i],-fPhi[i],fPhi[i]);
       //fHoughTransformer[i]->CreateHistograms(fLowPt[i],fUpperPt[i],fPtRes[i],fNBinY[i],fPhi[i]);
@@ -508,6 +521,9 @@ void AliL3Hough::ReadData(Int_t slice,Int_t eventnr)
 #endif
 	}
 
+      //Set the pointer to the TPCRawStream in case of fast raw data reading
+      fHoughTransformer[i]->SetTPCRawStream(fMemHandler[i]->GetTPCRawStream());
+
       //set input data and init transformer
       fHoughTransformer[i]->SetInputData(ndigits,digits);
       fHoughTransformer[i]->Init(slice,i,fNEtaSegments);
@@ -523,17 +539,33 @@ void AliL3Hough::Transform(Int_t *rowrange)
   
   Double_t initTime,cpuTime;
   initTime = GetCpuTime();
+  Int_t patchorder[6] = {5,2,0,1,3,4}; //The order in which patches are processed
+  //  Int_t patchorder[6] = {0,1,2,3,4,5}; //The order in which patches are processed
+  //  Int_t patchorder[6] = {5,4,3,2,1,0}; //The order in which patches are processed
+  //  Int_t patchorder[6] = {5,2,4,3,1,0}; //The order in which patches are processed
+  fLastPatch=-1;
   for(Int_t i=0; i<fNPatches; i++)
     {
       // In case of Row transformer reset the arrays only once
-      if((fVersion != 4) || (i == 0)) 
-	fHoughTransformer[i]->Reset();//Reset the histograms
+      if((fVersion != 4) || (i == 0)) {
+	fBenchmark->Start("Hough Reset");
+	fHoughTransformer[0]->Reset();//Reset the histograms
+	fBenchmark->Stop("Hough Reset");
+      }
       fBenchmark->Start("Hough Transform");
-      if(!rowrange)
-	fHoughTransformer[i]->TransformCircle();
+      PrepareForNextPatch(patchorder[i]);
+      if(!rowrange) {
+	char buf[256];
+	sprintf(buf,"Patch %d",patchorder[i]);
+	fBenchmark->Start(buf);
+	fHoughTransformer[patchorder[i]]->SetLastPatch(fLastPatch);
+	fHoughTransformer[patchorder[i]]->TransformCircle();
+	fBenchmark->Stop(buf);
+      }
       else
 	fHoughTransformer[i]->TransformCircleC(rowrange,1);
       fBenchmark->Stop("Hough Transform");
+      fLastPatch=patchorder[i];
     }
   cpuTime = GetCpuTime() - initTime;
   LOG(AliL3Log::kInformational,"AliL3Hough::Transform()","Timing")
@@ -690,13 +722,12 @@ void AliL3Hough::AddAllHistogramsRows()
   initTime = GetCpuTime();
   fBenchmark->Start("Add HistogramsRows");
 
-  UChar_t *tracknrows = ((AliL3HoughTransformerRow *)fHoughTransformer[0])->GetTrackNRows();
-  UChar_t *trackfirstrow = ((AliL3HoughTransformerRow *)fHoughTransformer[0])->GetTrackFirstRow();
+  UChar_t lastpatchlastrow = AliL3Transform::GetLastRowOnDDL(fLastPatch)+1;
+
   UChar_t *tracklastrow = ((AliL3HoughTransformerRow *)fHoughTransformer[0])->GetTrackLastRow();
 
   for(Int_t i=0; i<fNEtaSegments; i++)
     {
-      UChar_t *rowcount = ((AliL3HoughTransformerRow *)fHoughTransformer[0])->GetRowCount(i);
       UChar_t *gapcount = ((AliL3HoughTransformerRow *)fHoughTransformer[0])->GetGapCount(i);
       UChar_t *currentrowcount = ((AliL3HoughTransformerRow *)fHoughTransformer[0])->GetCurrentRowCount(i);
 
@@ -705,18 +736,25 @@ void AliL3Hough::AddAllHistogramsRows()
       Int_t xmax = hist->GetLastXbin();
       Int_t ymin = hist->GetFirstYbin();
       Int_t ymax = hist->GetLastYbin();
+      Int_t nxbins = hist->GetNbinsX()+2;
 
       for(Int_t ybin=ymin; ybin<=ymax; ybin++)
 	{
 	  for(Int_t xbin=xmin; xbin<=xmax; xbin++)
 	    {
-	      Int_t bin = hist->GetBin(xbin,ybin);
-	      if(tracklastrow[bin] > (currentrowcount[bin] + 1))
-		 gapcount[bin]++;
-	      if(gapcount[bin] < MAX_N_GAPS)
-		if(rowcount[bin] >= MIN_TRACK_LENGTH)
-		  if(((Int_t)rowcount[bin] + (Int_t)gapcount[bin])>=((Int_t)tracknrows[bin]-MAX_MISS_ROWS))
-		    hist->AddBinContent(bin,(rowcount[bin]+trackfirstrow[bin]+159-tracklastrow[bin]));
+	      Int_t bin = xbin + ybin*nxbins; //Int_t bin = hist->GetBin(xbin,ybin);
+	      if(gapcount[bin] < MAX_N_GAPS) {
+		if(tracklastrow[bin] > lastpatchlastrow) {
+		  if(lastpatchlastrow > currentrowcount[bin])
+		    gapcount[bin] += (lastpatchlastrow-currentrowcount[bin]-1);
+		}
+		else {
+		  if(tracklastrow[bin] > currentrowcount[bin])
+		    gapcount[bin] += (tracklastrow[bin]-currentrowcount[bin]-1);
+		}
+		if(gapcount[bin] < MAX_N_GAPS)
+		  hist->AddBinContent(bin,(159-gapcount[bin]));
+	      }
 	    }
 	}
     }
@@ -726,6 +764,112 @@ void AliL3Hough::AddAllHistogramsRows()
   cpuTime = GetCpuTime() - initTime;
   LOG(AliL3Log::kInformational,"AliL3Hough::AddAllHistogramsRows()","Timing")
     <<"Adding histograms in "<<cpuTime*1000<<" ms"<<ENDLOG;
+}
+
+void AliL3Hough::PrepareForNextPatch(Int_t nextpatch)
+{
+  char buf[256];
+  sprintf(buf,"Prepare For Patch %d",nextpatch);
+  fBenchmark->Start(buf);
+
+  UChar_t lastpatchlastrow;
+  if(fLastPatch == -1)
+    lastpatchlastrow = 0;
+  else
+    lastpatchlastrow = AliL3Transform::GetLastRowOnDDL(fLastPatch)+1;
+  UChar_t nextpatchfirstrow;
+  if(nextpatch==0)
+    nextpatchfirstrow = 0;
+  else
+    nextpatchfirstrow = AliL3Transform::GetFirstRowOnDDL(nextpatch)-1;
+
+  UChar_t *trackfirstrow = ((AliL3HoughTransformerRow *)fHoughTransformer[0])->GetTrackFirstRow();
+  UChar_t *tracklastrow = ((AliL3HoughTransformerRow *)fHoughTransformer[0])->GetTrackLastRow();
+
+  for(Int_t i=0; i<fNEtaSegments; i++)
+    {
+      UChar_t *gapcount = ((AliL3HoughTransformerRow *)fHoughTransformer[0])->GetGapCount(i);
+      UChar_t *currentrowcount = ((AliL3HoughTransformerRow *)fHoughTransformer[0])->GetCurrentRowCount(i);
+      UChar_t *prevbin = ((AliL3HoughTransformerRow *)fHoughTransformer[0])->GetPrevBin(i);
+      UChar_t *nextbin = ((AliL3HoughTransformerRow *)fHoughTransformer[0])->GetNextBin(i);
+      UChar_t *nextrow = ((AliL3HoughTransformerRow *)fHoughTransformer[0])->GetNextRow(i);
+
+      AliL3Histogram *hist = fHoughTransformer[0]->GetHistogram(i);
+      Int_t xmin = hist->GetFirstXbin();
+      Int_t xmax = hist->GetLastXbin();
+      Int_t ymin = hist->GetFirstYbin();
+      Int_t ymax = hist->GetLastYbin();
+      Int_t nxbins = hist->GetNbinsX()+2;
+
+      UChar_t lastyvalue = 0;
+      Int_t endybin = ymin - 1;
+      for(Int_t ybin=ymin; ybin<=ymax; ybin++)
+	{
+	  UChar_t lastxvalue = 0;
+	  UChar_t maxvalue = 0;
+	  Int_t endxbin = xmin - 1;
+	  for(Int_t xbin=xmin; xbin<=xmax; xbin++)
+	    {
+	      Int_t bin = xbin + ybin*nxbins;
+	      UChar_t value = 0;
+	      if(gapcount[bin] < MAX_N_GAPS) {
+		value = 1;
+		maxvalue = 1;
+		if(tracklastrow[bin] > lastpatchlastrow) {
+		  if(lastpatchlastrow > currentrowcount[bin])
+		    gapcount[bin] += (lastpatchlastrow-currentrowcount[bin]-1);
+		}
+		else {
+		  if(tracklastrow[bin] > currentrowcount[bin])
+		    gapcount[bin] += (tracklastrow[bin]-currentrowcount[bin]-1);
+		}
+		if(trackfirstrow[bin] < nextpatchfirstrow)
+		  currentrowcount[bin] = nextpatchfirstrow;
+		else
+		  currentrowcount[bin] = trackfirstrow[bin];
+	      }
+	      if(fLastPatch != -1) {
+		if(value > 0)
+		  {
+		    nextbin[xbin + ybin*nxbins] = (UChar_t)xbin;
+		    prevbin[xbin + ybin*nxbins] = (UChar_t)xbin;
+		    if(value > lastxvalue)
+		      {
+			UChar_t *tempnextbin = nextbin + endxbin + 1 + ybin*nxbins;
+			memset(tempnextbin,(UChar_t)xbin,xbin-endxbin-1);
+		      }
+		    endxbin = xbin;
+		  }
+		else
+		  {
+		    prevbin[xbin + ybin*nxbins] = (UChar_t)endxbin;
+		  }
+		lastxvalue = value;
+	      }
+	    }
+	  if(fLastPatch != -1) {
+	    UChar_t *tempnextbin = nextbin + endxbin + 1 + ybin*nxbins;
+	    memset(tempnextbin,(UChar_t)(xmax+1),xmax-endxbin);
+	    if(maxvalue > 0)
+	      {
+		nextrow[ybin] = (UChar_t)ybin;
+		if(maxvalue > lastyvalue)
+		  {
+		    UChar_t *tempnextrow = nextrow + endybin + 1;
+		    memset(tempnextrow,(UChar_t)ybin,ybin-endybin-1);
+		  }
+		endybin = ybin;
+	      }
+	    lastyvalue = maxvalue;
+	  }
+	}
+      if(fLastPatch != -1) {
+	UChar_t *tempnextrow = nextrow + endybin + 1;
+	memset(tempnextrow,(UChar_t)(ymax+1),ymax-endybin);
+      }
+    }
+
+  fBenchmark->Stop(buf);
 }
 
 void AliL3Hough::AddTracks()
@@ -780,6 +924,7 @@ void AliL3Hough::FindTrackCandidatesRow()
 	  if(hist->GetNEntries()==0) continue;
 	  fPeakFinder->SetHistogram(hist);
 	  fPeakFinder->SetEtaSlice(j);
+	  fPeakFinder->SetTrackLUTs(((AliL3HoughTransformerRow *)tr)->fTrackNRows,((AliL3HoughTransformerRow *)tr)->fTrackFirstRow,((AliL3HoughTransformerRow *)tr)->fTrackLastRow);
 #ifdef do_mc
 	  LOG(AliL3Log::kInformational,"AliL3Hough::FindTrackCandidates()","")
 	    <<"Starting "<<j<<" etaslice"<<ENDLOG;
@@ -792,7 +937,7 @@ void AliL3Hough::FindTrackCandidatesRow()
   
       for(Int_t k=0; k<fPeakFinder->GetEntries(); k++)
 	{
-	  //	  if(fPeakFinder->GetWeight(k) < 0) continue;
+	  if(fPeakFinder->GetWeight(k) < 0) continue;
 	  AliL3HoughTrack *track = (AliL3HoughTrack*)fTracks[i]->NextTrack();
 	  Float_t psi = atan((fPeakFinder->GetXPeak(k)-fPeakFinder->GetYPeak(k))/(AliL3HoughTransformerRow::GetBeta1()-AliL3HoughTransformerRow::GetBeta2()));
 	  Float_t kappa = 2.0*(fPeakFinder->GetXPeak(k)*cos(psi)-AliL3HoughTransformerRow::GetBeta1()*sin(psi));
@@ -814,7 +959,7 @@ void AliL3Hough::FindTrackCandidatesRow()
 #endif
 	}
       LOG(AliL3Log::kInformational,"AliL3Hough::FindTrackCandidates()","")
-	<<"Found "<<fTracks[i]->GetNTracks()<<" tracks in patch "<<i<<ENDLOG;
+	<<"Found "<<fTracks[i]->GetNTracks()<<" tracks in slice "<<fCurrentSlice<<ENDLOG;
       fTracks[i]->QSort();
     }
   fBenchmark->Stop("Find Maxima");
@@ -1090,3 +1235,36 @@ Double_t AliL3Hough::GetCpuTime()
  return tv.tv_sec+(((Double_t)tv.tv_usec)/1000000.);
 }
 
+void *AliL3Hough::ProcessInThread(void *args)
+{
+  AliL3Hough *instance = (AliL3Hough *)args;
+  Int_t minslice = instance->GetMinSlice();
+  Int_t maxslice = instance->GetMaxSlice();
+  for(Int_t i=minslice; i<=maxslice; i++)
+    {
+      instance->ReadData(i,0);
+      instance->Transform();
+      instance->AddAllHistogramsRows();
+      instance->FindTrackCandidatesRow();
+      instance->AddTracks();
+    }
+  return (void *)0;
+}
+
+void AliL3Hough::StartProcessInThread(Int_t minslice,Int_t maxslice)
+{
+  if(!fThread) {
+    char buf[255];
+    sprintf(buf,"houghtrans_%d_%d",minslice,maxslice);
+    SetMinMaxSlices(minslice,maxslice);
+    //    fThread = new TThread(buf,(void (*) (void *))&ProcessInThread,(void *)this);
+    fThread = new TThread(buf,&ProcessInThread,(void *)this);
+    fThread->Run();
+  }
+  return;
+}
+
+Int_t AliL3Hough::WaitForThreadFinish()
+{
+  return TThread::Join(fThread->GetId());
+}

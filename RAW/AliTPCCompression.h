@@ -79,9 +79,12 @@ class AliTPCCompression:public TObject{
   //this method is used to read a specified number of bits from the compressed file
   UInt_t  ReadWordBuffer(Int_t NumberOfBit);
   //this method is used to read a specified number of bits from the compressed memory buffer
+  inline UInt_t ReadBitFromWordBuffer();
   void    ReadTrailer(Int_t &WordsNumber,Int_t &PadNumber,Int_t &RowNumber,Int_t &SecNumberr,Bool_t Memory);
   //This method is used to read the trailer 
-  UInt_t GetDecodedWord(AliTPCHNode* root,Bool_t Memory);
+  inline UInt_t GetDecodedWordBuffer(AliTPCHNode* root);
+  //This method is used to get a decoded word from the compressed file
+  inline UInt_t GetDecodedWord(AliTPCHNode* root);
   //This method is used to get a decoded word from the compressed file
 
   fstream f;                  // f is the logical name for the compressed and uncompressed file
@@ -93,7 +96,7 @@ class AliTPCCompression:public TObject{
   UInt_t  fPos;               // current file position
   Int_t   fVerbose;           // verbose level (0 silent, !=0 output messages)
   UInt_t  fFillWords;         // Number of hexadecimally words (2AA pattern) inside a pad data block 
-  char*   fPointBuffer;       //pointer to the compressed raw data
+  UInt_t* fPointBuffer;       //pointer to the compressed raw data
   ClassDef(AliTPCCompression,1)
 };
 #endif

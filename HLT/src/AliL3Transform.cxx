@@ -1314,6 +1314,43 @@ Int_t AliL3Transform::GetLastRow(Int_t patch)
     return fgRows[patch][1];
 }
 
+Int_t AliL3Transform::GetFirstRowOnDDL(Int_t patch)
+{
+  //get first row per patch
+
+  if(patch==-1)
+    return 0;
+  else if(patch < -1 || patch >= 6)
+    {
+      LOG(AliL3Log::kError,"AliL3Transform::GetFirstRow","Patch")
+	<<AliL3Log::kDec<<"Wrong patch "<<patch<<ENDLOG;
+      return 0;
+    }
+  else
+    {
+      if(patch==1) return fgRows[patch][0]+1;
+      return fgRows[patch][0];
+    }
+}
+
+Int_t AliL3Transform::GetLastRowOnDDL(Int_t patch)
+{
+  //get last row per patch
+  if(patch==-1)
+    return fgRows[5][1];
+  else if(patch < -1 || patch >= 6)
+    {
+      LOG(AliL3Log::kError,"AliL3Transform::GetLastRow","Patch")
+	<<AliL3Log::kDec<<"Wrong patch "<<patch<<ENDLOG;
+      return 0;
+    }
+  else
+    {
+      if(patch==2 || patch==4) return fgRows[patch][1]-1;
+      return fgRows[patch][1];
+    }
+}
+
 Int_t AliL3Transform::GetNRows(Int_t patch)
 {
   //get number of rows per patch

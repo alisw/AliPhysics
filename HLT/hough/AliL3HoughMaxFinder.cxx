@@ -707,7 +707,9 @@ void AliL3HoughMaxFinder::FindAdaptedRowPeaks(Int_t kappawindow,Int_t xsize,Int_
   Int_t xmax = hist->GetLastXbin();
   Int_t ymin = hist->GetFirstYbin();
   Int_t ymax = hist->GetLastYbin();
-  
+  Int_t nxbins = hist->GetNbinsX()+2;
+  Int_t *content = hist->GetContentArray();
+
   //Start by looking for pre-peaks:
   
   AliL3PreYPeak **localmaxima = new AliL3PreYPeak*[hist->GetNbinsY()];
@@ -716,13 +718,13 @@ void AliL3HoughMaxFinder::FindAdaptedRowPeaks(Int_t kappawindow,Int_t xsize,Int_
   Int_t lastvalue=0,value=0;
   for(Int_t ybin=ymin; ybin<=ymax; ybin++)
     {
-      localmaxima[ybin-ymin] = new AliL3PreYPeak[hist->GetNbinsX()];
+      localmaxima[ybin-ymin] = new AliL3PreYPeak[nxbins-2];
       nmaxs[ybin-ymin] = 0;
       lastvalue = 0;
       Bool_t found = 0;
       for(Int_t xbin=xmin; xbin<=xmax; xbin++)
 	{
-	  value = hist->GetBinContent(hist->GetBin(xbin,ybin));
+	  value = content[xbin + nxbins*ybin]; //value = hist->GetBinContent(xbin + nxbins*ybin); //value = hist->GetBinContent(hist->GetBin(xbin,ybin));
 	  if(value > 0)
 	    {
 	      if((value - lastvalue) > 1)
@@ -862,7 +864,6 @@ void AliL3HoughMaxFinder::FindAdaptedRowPeaks(Int_t kappawindow,Int_t xsize,Int_
     }
 
   //remove fake tracks
-  Int_t nxbins = hist->GetNbinsX()+2;
   
   for(Int_t i = 0; i < (nmaxima - 1); i++)
     {
@@ -891,10 +892,10 @@ void AliL3HoughMaxFinder::FindAdaptedRowPeaks(Int_t kappawindow,Int_t xsize,Int_
 	      }
 	    }
 	  }
-	  Int_t firstrow1 = AliL3HoughTransformerRow::GetTrackFirstRow()[xtrack1 + nxbins*ytrack1];
-	  Int_t lastrow1 = AliL3HoughTransformerRow::GetTrackLastRow()[xtrack1 + nxbins*ytrack1];
-	  Int_t firstrow2 = AliL3HoughTransformerRow::GetTrackFirstRow()[xtrack1 + nxbins*ytrack1];
-	  Int_t lastrow2 = AliL3HoughTransformerRow::GetTrackLastRow()[xtrack1 + nxbins*ytrack1];
+	  Int_t firstrow1 = fTrackFirstRow[xtrack1 + nxbins*ytrack1];
+	  Int_t lastrow1 = fTrackLastRow[xtrack1 + nxbins*ytrack1];
+	  Int_t firstrow2 = fTrackFirstRow[xtrack1 + nxbins*ytrack1];
+	  Int_t lastrow2 = fTrackLastRow[xtrack1 + nxbins*ytrack1];
 	  Int_t firstrow,lastrow;
 	  if(firstrow1 < firstrow2)
 	    firstrow = firstrow2;
@@ -1005,7 +1006,7 @@ void AliL3HoughMaxFinder::FindAdaptedRowPeaks(Int_t kappawindow,Int_t xsize,Int_
   fN2PeaksPrevEtaSlice = fNPeaks;
 
   for(Int_t i=0; i<hist->GetNbinsY(); i++)
-    delete [] localmaxima[i];
+    delete localmaxima[i];
 
   delete [] localmaxima;
   delete [] nmaxs;

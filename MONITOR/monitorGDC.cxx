@@ -34,10 +34,14 @@
 #include "AliRawReaderDate.h"
 #include "event.h"
 #include "monitor.h"
-#include <AliLevel3.h>
+#include <AliL3StandardIncludes.h>
 #include <AliL3Transform.h>
 #include <AliL3MemHandler.h>
 #include <AliL3TrackArray.h>
+#include <AliL3HoughMaxFinder.h>
+#include <AliL3HoughBaseTransformer.h>
+#include <AliL3Hough.h>
+#include <AliL3Benchmark.h>
 #endif
 
 
@@ -68,6 +72,7 @@ int main(int argc, char** argv)
 
   // open a log file
   FILE* file = fopen("monitorGDC.log", "w");
+
   TDatime time;
 
   // get data from a file or online from this node
@@ -111,21 +116,11 @@ int main(int argc, char** argv)
       continue;
     }
 
-    // read run, event, detector, DDL numbers and data size
     AliRawReaderDate rawReader(ptr);
-    time.Set();
-    printf("\n%s\n", time.AsString());
-    printf("run: %d  event: %d %d\n", rawReader.GetRunNumber(), 
-	   rawReader.GetEventId()[0], rawReader.GetEventId()[1]);
-    while (rawReader.ReadHeader()) {
-      printf(" detector: %d   DDL: %d  size: %d\n", 
-	     rawReader.GetDetectorID(), rawReader.GetDDLID(), 
-	     rawReader.GetDataSize());
-    }
+    //    if ((rawReader.GetAttributes()[0] & 0x02) != 0) {
 
-    if ((rawReader.GetAttributes()[0] & 0x02) != 0) {
-
-      Int_t errorCode = rawReader.CheckData();
+    //      Int_t errorCode = rawReader.CheckData();
+    Int_t errorCode = 0;
       if (errorCode && (errorCode != AliRawReader::kErrSize)) {
 	time.Set();
 	if (file) fprintf(file, "%s\n", time.AsString());
@@ -137,38 +132,68 @@ int main(int argc, char** argv)
 
       } else {
 
-	// run the HLT tracker
-	AliLevel3* hlt = new AliLevel3((Char_t*)ptr);
-	hlt->Init("./", AliLevel3::kDate, 1);
+	AliL3Benchmark *fBenchmark = new AliL3Benchmark();
+	fBenchmark->Start("Overall timing");
 
-	hlt->SetClusterFinderParam(-1, -1, kTRUE);
-  
-	Int_t phiSegments = 50;
-	Int_t etaSegments = 100;
-	Int_t trackletlength = 3;
-	Int_t tracklength = 20;//40 or 5
-	Int_t rowscopetracklet = 2;
-	Int_t rowscopetrack = 10;
-	Double_t minPtFit = 0;
-	Double_t maxangle = 0.1745;
-	Double_t goodDist = 5;
-	Double_t maxphi = 0.1;
-	Double_t maxeta = 0.1;
-	Double_t hitChi2Cut = 15;//100 or 15
-	Double_t goodHitChi2 = 5;//20 or 5
-	Double_t trackChi2Cut = 10;//50 or 10
-	hlt->SetTrackerParam(phiSegments, etaSegments, 
-			     trackletlength, tracklength,
-			     rowscopetracklet, rowscopetrack,
-			     minPtFit, maxangle, goodDist, hitChi2Cut,
-			     goodHitChi2, trackChi2Cut, 50, maxphi, maxeta, 
-			     kTRUE);
-  
-	gSystem->Exec("rm -rf hlt");
-	gSystem->MakeDirectory("hlt");
-	hlt->WriteFiles("./hlt/");
-	hlt->ProcessEvent(0, 35, 0);
+	// Run the Hough Transformer
+	fBenchmark->Start("Init");
+	AliL3Hough *hough1 = new AliL3Hough();
 
+	hough1->SetThreshold(4);
+	hough1->SetTransformerParams(76,140,0.4,-1);
+	hough1->SetPeakThreshold(70,-1);
+	//	printf("Pointer is %x\n",ptr);
+	hough1->Init("./", kFALSE, 100, kFALSE,4,0,(Char_t*)ptr,3.82147);
+	hough1->SetAddHistograms();
+	fBenchmark->Stop("Init");
+
+	fBenchmark->Start("Init");
+	AliL3Hough *hough2 = new AliL3Hough();
+
+	hough2->SetThreshold(4);
+	hough2->SetTransformerParams(76,140,0.4,-1);
+	hough2->SetPeakThreshold(70,-1);
+	//	printf("Pointer is %x\n",ptr);
+	hough2->Init("./", kFALSE, 100, kFALSE,4,0,(Char_t*)ptr,3.82147);
+	hough2->SetAddHistograms();
+	fBenchmark->Stop("Init");
+
+	Int_t n_global_tracks = 0;
+	hough1->StartProcessInThread(0,17);
+	hough2->StartProcessInThread(18,35);
+
+	//	gSystem->Sleep(20000);
+	if(hough1->WaitForThreadFinish())
+	  ::Fatal("AliL3Hough::WaitForThreadFinish"," Can not join the required thread! ");
+	if(hough2->WaitForThreadFinish())
+	  ::Fatal("AliL3Hough::WaitForThreadFinish"," Can not join the required thread! ");
+
+	gSystem->MakeDirectory("hough1");
+	hough1->WriteTracks("./hough1");
+	gSystem->MakeDirectory("hough2");
+	hough2->WriteTracks("./hough2");
+
+	/*
+	for(int slice=0; slice<=35; slice++)
+	{
+	  //	  cout<<"Processing slice "<<slice<<endl;
+	  fBenchmark->Start("ReadData");
+	  hough->ReadData(slice,0);
+	  fBenchmark->Stop("ReadData");
+	  fBenchmark->Start("Transform");
+	  hough->Transform();
+	  fBenchmark->Stop("Transform");
+	  hough->AddAllHistogramsRows();
+	  hough->FindTrackCandidatesRow();
+	  fBenchmark->Start("AddTracks");
+	  hough->AddTracks();
+	  fBenchmark->Stop("AddTracks");
+
+	  AliL3TrackArray* tracks = (AliL3TrackArray*)hough->GetTracks(0);
+	  n_global_tracks += tracks->GetNTracks();
+	}
+	*/
+	fBenchmark->Stop("Overall timing");
 	time.Set();
 	if (file) fprintf(file, "%s\n", time.AsString());
 	if (file) fprintf(file, "run: %d  event: %d %d\n", 
@@ -177,39 +202,66 @@ int main(int argc, char** argv)
 			  rawReader.GetEventId()[1]);
 	if (errorCode) fprintf(file, "ERROR: %d\n", errorCode);
 
-	AliL3MemHandler memHandler;
-	if (!memHandler.SetBinaryInput("hlt/tracks_0.raw")) {
-	  if (file) fprintf(file, "no HLT tracks\n");
-	  continue;
-	}
-	AliL3TrackArray* tracks = new AliL3TrackArray;
-	memHandler.Binary2TrackArray(tracks);
-	if (file) fprintf(file, "HLT found %d tracks\n", tracks->GetNTracks());
-	delete tracks;
-	memHandler.CloseBinaryInput();
+	if (file) fprintf(file, "Hough Transformer found %d tracks\n",n_global_tracks);
 
-	hlt->DoBench("hlt");
+	hough1->DoBench("hough1");
+	hough2->DoBench("hough2");
+	fBenchmark->Analyze("overall");
 	if (file) {
-	  FILE* bench = fopen("hlt.dat", "r");
+	  FILE* bench = fopen("hough1.dat", "r");
 	  while (bench && !feof(bench)) {
 	    char buffer[256];
 	    if (!fgets(buffer, 256, bench)) break;
 	    fprintf(file, "%s", buffer);
 	  }
 	  fclose(bench);
-	  fprintf(file, "\n");
+	}
+	if (file) {
+	  FILE* bench = fopen("hough2.dat", "r");
+	  while (bench && !feof(bench)) {
+	    char buffer[256];
+	    if (!fgets(buffer, 256, bench)) break;
+	    fprintf(file, "%s", buffer);
+	  }
+	  fclose(bench);
+	}
+	if (file) {
+	  FILE* bench = fopen("overall.dat", "r");
+	  while (bench && !feof(bench)) {
+	    char buffer[256];
+	    if (!fgets(buffer, 256, bench)) break;
+	    fprintf(file, "%s", buffer);
+	  }
+	  fclose(bench);
+	  fprintf(file, "\n\n");
 	}
 
-	gSystem->Exec("rm -rf hlt");
-	delete hlt;
+	delete hough1;
+	delete hough2;
       }
+    //    }
+
+    /*
+    // read run, event, detector, DDL numbers and data size
+    AliRawReaderDate rawReader(ptr);
+    time.Set();
+    printf("\n%s\n", time.AsString());
+    printf("run: %d  event: %d %d\n", rawReader.GetRunNumber(), 
+	   rawReader.GetEventId()[0], rawReader.GetEventId()[1]);
+    while (rawReader.ReadMiniHeader()) {
+      printf(" detector: %d   DDL: %d  size: %d\n", 
+	     rawReader.GetDetectorID(), rawReader.GetDDLID(), 
+	     rawReader.GetDataSize());
     }
+
+    */
 
     gSystem->Sleep(100);   // sleep for 0.1 second
     free(ptr);
 
     gSystem->ProcessEvents();
     if (file) fflush(file);
+
   }
 
   gSystem->RemoveSignalHandler(handler);

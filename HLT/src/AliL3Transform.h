@@ -152,6 +152,8 @@ class AliL3Transform {
 
   static Int_t GetFirstRow(Int_t patch);
   static Int_t GetLastRow(Int_t patch);
+  static Int_t GetFirstRowOnDDL(Int_t patch);
+  static Int_t GetLastRowOnDDL(Int_t patch);
   static Int_t GetNRows(Int_t patch);
   static Int_t GetPatch(Int_t padrow);
   static Int_t GetNRows() {return fgNRow;}

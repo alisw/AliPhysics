@@ -18,6 +18,8 @@ typedef struct AliL3TrackIndex AliL3TrackIndex;
 class AliL3DigitRowData;
 class AliL3Histogram;
 
+#include "../RAW/AliTPCRawStream.h"
+
 class AliL3HoughBaseTransformer {
 
  public:
@@ -50,6 +52,8 @@ class AliL3HoughBaseTransformer {
   //Getters
   Int_t GetSlice() const {return fSlice;}
   Int_t GetPatch() const {return fPatch;}
+  Int_t GetLastPatch() const {return fLastPatch;}
+  AliL3HoughBaseTransformer *GetLastTransfromer() const {return fLastTransformer;}
   Int_t GetNEtaSegments() const {return fNEtaSegments;}
   Int_t GetLowerThreshold() const {return fLowerThreshold;}
   Int_t GetUpperThreshold() const {return fUpperThreshold;}
@@ -74,13 +78,22 @@ class AliL3HoughBaseTransformer {
   virtual void Init(Int_t slice=0,Int_t patch=0,Int_t netasegments=100,Int_t nsegs=-1);
   void SetLowerThreshold(Int_t i) {fLowerThreshold = i;}
   void SetUpperThreshold(Int_t i) {fUpperThreshold = i;}
+  void SetLastPatch(Int_t i) {fLastPatch = i;}
+  void SetLastTransformer(AliL3HoughBaseTransformer *transformer) {fLastTransformer = transformer;}
+
+  virtual void SetTPCRawStream(AliTPCRawStream */*rawstream*/){};
 
   virtual void Print(){};
+
+ protected:
+
+  AliL3HoughBaseTransformer *fLastTransformer;//Pointer to the previous hough transformer
   
  private:
 
   Int_t fSlice;//Index of the current slice being processed
   Int_t fPatch;//Index of the current patch being processed
+  Int_t fLastPatch;//Index of the last processed patch
   Int_t fNEtaSegments;//Number of eta slices
   Double_t fEtaMin;//Minimum allowed eta
   Double_t fEtaMax;//Maximum allowed eta

@@ -47,6 +47,7 @@ class AliL3HoughMaxFinder {
   void SetGradient(Float_t x,Float_t y) {fGradX=x; fGradY=y;}
   void SetThreshold(Int_t f) {fThreshold = f;}
   void SetHistogram(AliL3Histogram *hist) {fCurrentHisto = hist;}
+  void SetTrackLUTs(UChar_t *tracknrows, UChar_t *trackfirstrow, UChar_t *tracklastrow) {fTrackNRows = tracknrows; fTrackFirstRow = trackfirstrow; fTrackLastRow = tracklastrow;}
   void SetEtaSlice(Int_t etaslice) {fCurrentEtaSlice = etaslice;}
   
   //Getters:
@@ -64,6 +65,10 @@ class AliL3HoughMaxFinder {
   Int_t fThreshold; // Threshold for Peak Finder
   Int_t fCurrentEtaSlice; // Current eta slice being processed
   AliL3Histogram *fCurrentHisto;  //!
+
+  UChar_t *fTrackNRows; //!
+  UChar_t *fTrackFirstRow; //!
+  UChar_t *fTrackLastRow; //!
   
   Float_t fGradX; // Gradient threshold inside Peak Finder 
   Float_t fGradY; // Gradient threshold inside Peak Finder 

@@ -1,7 +1,7 @@
 // @(#) $Id$
 
-#ifndef ALIL3MEMHANDLER_H
-#define ALIL3MEMHANDLER_H
+#ifndef ALIL3_MEMHANDLER_H
+#define ALIL3_MEMHANDLER_H
 
 //_____________________________________________________________
 // AliL3MemHandler
@@ -26,21 +26,25 @@ class AliL3RandomDigitData;
 #ifdef use_newio
 class AliRunLoader;
 #endif
+class AliTPCRawStream;
 
 class AliL3MemHandler { 
 
  public:
   AliL3MemHandler();
   virtual ~AliL3MemHandler();
+  AliL3MemHandler(const AliL3MemHandler& /*m*/){};
+  AliL3MemHandler& operator=(const AliL3MemHandler& /*&m*/)
+    {return (*this);}
    
   void Reset(){CloseBinaryInput();CloseBinaryOutput();Free();}  
   void Init(Int_t s,Int_t p, Int_t *r=0);
 
-  Bool_t SetBinaryInput(Char_t *name);
+  Bool_t SetBinaryInput(char *name);
   Bool_t SetBinaryInput(FILE *file);
   void CloseBinaryInput();
   
-  Bool_t SetBinaryOutput(Char_t *name);
+  Bool_t SetBinaryOutput(char *name);
   Bool_t SetBinaryOutput(FILE *file);
   void CloseBinaryOutput();
 
@@ -107,13 +111,13 @@ class AliL3MemHandler {
   
   //virtual functions:
   virtual void FreeDigitsTree() {fDummy=0; return;}
-  virtual Bool_t SetAliInput(Char_t */*name*/){fDummy=0; return 0;}
+  virtual Bool_t SetAliInput(char */*name*/){fDummy=0; return 0;}
 #ifdef use_newio
   virtual Bool_t SetAliInput(AliRunLoader */*runloader*/){fDummy=0; return 0;}
 #endif
   virtual void CloseAliInput(){fDummy=0; return;} 
   virtual Bool_t IsDigit(Int_t /*i*/=0){fDummy=0; return 0;}
-  virtual Bool_t SetMCOutput(Char_t */*name*/){fDummy=0; return 0;}
+  virtual Bool_t SetMCOutput(char */*name*/){fDummy=0; return 0;}
   virtual Bool_t SetMCOutput(FILE */*file*/){fDummy=0; return 0;}
   virtual void CloseMCOutput(){fDummy=0; return;}
   virtual Bool_t AliDigits2Binary(Int_t /*event*/=0,Bool_t /*altro*/=kFALSE){fDummy=0; return 0;}
@@ -160,6 +164,8 @@ class AliL3MemHandler {
   virtual AliL3DigitRowData* DDLData2Memory(UInt_t &/*nrow*/,Int_t /*event*/=-1){fDummy=0; return 0;}
   virtual Bool_t DDLData2CompBinary(Int_t /*event*/=-1){fDummy=0; return 0;}
 
+  virtual AliTPCRawStream* GetTPCRawStream(){fDummy=0; return 0;}
+
  protected:
   Int_t fRowMin; //min row
   Int_t fRowMax; //max row
@@ -173,9 +179,6 @@ class AliL3MemHandler {
   FILE *fOutBinary;//!
 
  private:
-  AliL3MemHandler(const AliL3MemHandler& /*m*/){};
-  AliL3MemHandler& operator=(const AliL3MemHandler& /*&m*/)
-    {return (*this);}
   
   Byte_t *fPt;//!
   UInt_t fSize; //size of allocated data structure

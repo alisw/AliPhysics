@@ -74,7 +74,7 @@ Bool_t AliL3DDLDataFileHandler::SetReaderInput(Char_t *name,Int_t event)
     fReader=new AliRawReaderRoot(name,event);
   } else {
     fFilename="";
-    fReader=new AliRawReaderDate(name);
+    fReader=new AliRawReaderDate((void *)name);
   }
   fTPCStream=new AliTPCRawStream(fReader);
 
@@ -135,6 +135,7 @@ Bool_t AliL3DDLDataFileHandler::IsDigit(Int_t /*i*/) const
 }
 #endif
 
+#ifndef fast_raw
 AliL3DigitRowData * AliL3DDLDataFileHandler::DDLData2Memory(UInt_t &nrow,Int_t event)
 {
   // transfers the DDL data to the memory
@@ -168,7 +169,7 @@ AliL3DigitRowData * AliL3DDLDataFileHandler::DDLData2Memory(UInt_t &nrow,Int_t e
       for(Int_t j=0;j<AliL3Transform::GetNTimeBins();j++) charges[lrow][k][j]=0;
     }
   }
-  
+
   Int_t ddlsToSearch=0;
   Int_t ddls[9]={-1,-1,-1,-1,-1,-1,-1,-1,-1};
   Int_t ddlid=-1,lddlid=-1;
@@ -188,6 +189,7 @@ AliL3DigitRowData * AliL3DDLDataFileHandler::DDLData2Memory(UInt_t &nrow,Int_t e
       ddls[ddlsToSearch++]=ddlid-1;	
       lddlid=ddlid-1;
     }
+
     if((lddlid==-1)||(ddlid!=lddlid)){
       ddls[ddlsToSearch++]=ddlid;
       lddlid=ddlid;
@@ -197,56 +199,54 @@ AliL3DigitRowData * AliL3DDLDataFileHandler::DDLData2Memory(UInt_t &nrow,Int_t e
       lddlid=ddlid+1;
     }
   }
-  //for(Int_t i=0;i<ddlsToSearch;i++) cout << ddls[i] <<endl;
 
-  for(Int_t i=0;i<ddlsToSearch;i++){
+  //  for(Int_t i=0;i<ddlsToSearch;i++) cout << ddls[i] <<endl;
+
+  if(ddls[0]>ddls[ddlsToSearch-1]) {
+    Int_t tempddl = ddls[0];
+    ddls[0] = ddls[ddlsToSearch-1];
+    ddls[ddlsToSearch-1] = tempddl;
+  }
 #ifdef use_newio
     fReader->Reset();
-    fReader->Select(0,ddls[i],ddls[i]+1);
+    fReader->Select(0,ddls[0],ddls[ddlsToSearch-1]);
+    fTPCStream->Reset();
 #else
     fTPCStream->SetDDLID(ddls[i]); //ddl to read out
 #endif
+    Int_t zerosup = AliL3Transform::GetZeroSup();
+    Int_t adcsat = AliL3Transform::GetADCSat();
+    Int_t slice,srow;
+    Int_t lrow;
 
     while (fTPCStream->Next()){
-  
-      UShort_t dig=fTPCStream->GetSignal();
-      if(dig <= AliL3Transform::GetZeroSup()) continue;
-      if(dig >= AliL3Transform::GetADCSat())
-	dig = AliL3Transform::GetADCSat();
 
-      Int_t time=fTPCStream->GetTime();
-      Int_t pad=fTPCStream->GetPad();
-      Int_t sector=fTPCStream->GetSector();
-      Int_t row=fTPCStream->GetRow();
-      Int_t slice,srow;
+      if(fTPCStream->IsNewSector() || fTPCStream->IsNewRow()) {
+	Int_t sector=fTPCStream->GetSector();
+	Int_t row=fTPCStream->GetRow();
+	AliL3Transform::Sector2Slice(slice,srow,sector,row);
+	if(slice!=fSlice){
+	  LOG(AliL3Log::kError,"AliL3DDLDataFileHandler::DDLDigits2Memory","Slice")
+	    <<AliL3Log::kDec<<"Found slice "<<slice<<", expected "<<fSlice<<ENDLOG;
+	  continue;
+	}
+	lrow=srow-fRowMin;
+      }
 
       //test row criteria (patch boundaries)
-      AliL3Transform::Sector2Slice(slice,srow,sector,row);
       if((srow<fRowMin)||(srow>fRowMax))continue;
-      if(slice!=fSlice){
-	LOG(AliL3Log::kError,"AliL3DDLDataFileHandler::DDLDigits2Memory","Slice")
-	  <<AliL3Log::kDec<<"Found slice "<<slice<<", expected "<<fSlice<<ENDLOG;
-	continue;
+
+      Int_t pad=fTPCStream->GetPad();
+      if(fTPCStream->IsNewPad()) {
+	if((pad<0)||(pad>=AliL3Transform::GetNPads(srow))){
+	  LOG(AliL3Log::kError,"AliL3DDLDataFileHandler::DDLDigits2Memory","Pad")
+	    <<AliL3Log::kDec<<"Pad value out of bounds "<<pad<<" "
+	    <<AliL3Transform::GetNPads(srow)<<ENDLOG;
+	  continue;
+	}
       }
 
-      //cut out the inner cone
-      Float_t xyz[3];
-      AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
-      if(AliL3Transform::Row2X(srow)<230./250.*fabs(xyz[2]))
-	continue; // why 230???
-
-      Int_t lrow=srow-fRowMin;
-      if((lrow<0)||lrow>=nrows){
-	LOG(AliL3Log::kError,"AliL3DDLDataFileHandler::DDLDigits2Memory","Row")
-	  <<AliL3Log::kDec<<"Row value out of bounds "<<lrow<<" "<<nrows<<ENDLOG;
-	continue;
-      }
-      if((pad<0)||(pad>=AliL3Transform::GetNPads(srow))){
-	LOG(AliL3Log::kError,"AliL3DDLDataFileHandler::DDLDigits2Memory","Pad")
-	  <<AliL3Log::kDec<<"Pad value out of bounds "<<pad<<" "
-	  <<AliL3Transform::GetNPads(srow)<<ENDLOG;
-	continue;
-      }
+      Int_t time=fTPCStream->GetTime();
       if((time<0)||(time>=AliL3Transform::GetNTimeBins())){
 	LOG(AliL3Log::kError,"AliL3DDLDataFileHandler::DDLDigits2Memory","Time")
 	  <<AliL3Log::kDec<<"Time out of bounds "<<time<<" "
@@ -255,13 +255,16 @@ AliL3DigitRowData * AliL3DDLDataFileHandler::DDLData2Memory(UInt_t &nrow,Int_t e
       }
 
       //store digit
+      UShort_t dig=fTPCStream->GetSignal();
+      if(dig <= zerosup) continue;
+      if(dig >= adcsat) dig = adcsat;
+
       ndigits[lrow]++; //for this row only
       ndigitcount++;   //total number of digits to be published
 
       charges[lrow][pad][time]=dig;
     }
-  }
-  
+
   Int_t size = sizeof(AliL3DigitData)*ndigitcount
     + nrows*sizeof(AliL3DigitRowData);
 
@@ -326,7 +329,65 @@ AliL3DigitRowData * AliL3DDLDataFileHandler::DDLData2Memory(UInt_t &nrow,Int_t e
 
   return data;
 }
+#else
+AliL3DigitRowData * AliL3DDLDataFileHandler::DDLData2Memory(UInt_t &nrow,Int_t event)
+{
+  // transfers the DDL data to the memory
+#ifdef use_newio
+  if((fEvent>=0)&&(event!=fEvent)){
+    fEvent=event;
+    if(fReader) delete fReader;
+    if(fTPCStream) delete fTPCStream;
+    fReader=new AliRawReaderRoot(fFilename,event);
+    fTPCStream=new AliTPCRawStream(fReader);
+  }
+#endif
+  AliL3DigitRowData *data = 0;
+  nrow=0;
 
+  if(!fReader){
+    LOG(AliL3Log::kWarning,"AliL3DDLDataFileHandler::DDLData2Memory","File")
+    <<"No Input avalible: no object AliL3DDLRawReaderFile"<<ENDLOG;
+    return 0; 
+  }
+  
+  Int_t nrows=fRowMax-fRowMin+1;
+
+  Int_t ddlsToSearch=0;
+  Int_t ddls[9]={-1,-1,-1,-1,-1,-1,-1,-1,-1};
+  Int_t ddlid=-1,lddlid=-1;
+  for(Int_t r=fRowMin;r<=fRowMax;r++){
+
+    Int_t patch=AliL3Transform::GetPatch(r);
+    Int_t sector,row;
+    AliL3Transform::Slice2Sector(fSlice,r,sector,row);
+
+    if(sector<36) //taken from AliTPCBuffer160.cxx
+      ddlid=sector*2+patch;
+    else
+      ddlid=70+(sector-36)*4+patch;
+
+    if((lddlid==-1)||(ddlid!=lddlid)){
+      ddls[ddlsToSearch++]=ddlid;
+      lddlid=ddlid;
+    }
+  }
+
+  //  for(Int_t i=0;i<ddlsToSearch;i++) cout << ddls[i] <<endl;
+
+#ifdef use_newio
+  fReader->Reset();
+  fReader->Select(0,ddls[0],ddls[ddlsToSearch-1]);
+  fTPCStream->Reset();
+#else
+  fTPCStream->SetDDLID(ddls[i]); //ddl to read out
+#endif
+
+  nrow = (UInt_t)nrows;
+
+  return data;
+}
+#endif
 
 Bool_t AliL3DDLDataFileHandler::DDLData2CompBinary(Int_t event)
 {

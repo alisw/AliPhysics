@@ -892,8 +892,9 @@ UInt_t AliTPCCompression::ReadWord(Int_t NumberOfBit){
       f.read((char*)(&fBuffer),sizeof(UInt_t));
       fReadBits=0;
     }//end if
-    UInt_t mask=0;
-    mask=(UInt_t)TMath::Power(2,fReadBits);
+    //    UInt_t mask=0;
+    //    mask=(UInt_t)TMath::Power(2,fReadBits);
+    UInt_t mask=(UInt_t)(1<<fReadBits);
     bit=fBuffer&mask;
     bit=bit>>fReadBits;
     fReadBits++;
@@ -909,26 +910,32 @@ UInt_t AliTPCCompression::ReadWordBuffer(Int_t NumberOfBit){
   UInt_t bit=0;
   for (Int_t i=0;i<NumberOfBit;i++){
     if (fReadBits==32){
-      fPointBuffer-=8;
-      fBuffer=0;
-      for(Int_t i=0;i<4;i++){
-	UInt_t val=0;
-	val=*fPointBuffer;
-	val&=0xFF;
-	fPointBuffer++;
-	val<<=8*i;
-	fBuffer=fBuffer|val;
-      }//end for
+      fPointBuffer--;
+      fBuffer=*fPointBuffer;
       fReadBits=0;
     }//end if
-    UInt_t mask=0;
-    mask=(UInt_t)TMath::Power(2,fReadBits);
-    bit=fBuffer&mask;
-    bit=bit>>fReadBits;
-    fReadBits++;
+    bit=fBuffer&0x1;
     bit=bit<<i;
     result=result|bit;
+    fReadBits++;
+    fBuffer=fBuffer>>1;
   }//end for
+  return result;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+inline UInt_t AliTPCCompression::ReadBitFromWordBuffer(){
+  //This method retrieves a word of a specific number of bits from the file through the buffer 
+  UInt_t result=0;
+
+  if (fReadBits==32){
+    fPointBuffer--;
+    fBuffer=*fPointBuffer;
+    fReadBits=0;
+  }//end if
+  result=fBuffer&0x1;
+  fReadBits++;
+  fBuffer=fBuffer>>1;
   return result;
 }
 
@@ -936,7 +943,7 @@ UInt_t AliTPCCompression::ReadWordBuffer(Int_t NumberOfBit){
 void AliTPCCompression::ReadTrailer(Int_t &WordsNumber,Int_t &PadNumber,Int_t &RowNumber,Int_t &SecNumber,Bool_t Memory){
   //It retrieves a trailer 
   if(Memory){
-    ReadWordBuffer(1);
+    ReadBitFromWordBuffer();
     SecNumber=ReadWordBuffer(9);
     RowNumber=ReadWordBuffer(10);
     PadNumber=ReadWordBuffer(10);
@@ -952,17 +959,14 @@ void AliTPCCompression::ReadTrailer(Int_t &WordsNumber,Int_t &PadNumber,Int_t &R
   return;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
-UInt_t AliTPCCompression::GetDecodedWord(AliTPCHNode* root,Bool_t Memory){
+inline UInt_t AliTPCCompression::GetDecodedWordBuffer(AliTPCHNode* root){
   //This method retrieves a decoded word.
   AliTPCHNode *node=root;
   UInt_t symbol=0;
   Bool_t decoded=0;
+
   while(!decoded){
-    UInt_t bit=0;
-    if(Memory)
-      bit=ReadWordBuffer(1);
-    else
-      bit=ReadWord(1);
+    UInt_t bit=ReadBitFromWordBuffer();
     if(bit)
       node=node->GetRight();
     else
@@ -972,6 +976,27 @@ UInt_t AliTPCCompression::GetDecodedWord(AliTPCHNode* root,Bool_t Memory){
       decoded=1;
     }
   }//end while
+  return symbol;
+}
+
+inline UInt_t AliTPCCompression::GetDecodedWord(AliTPCHNode* root){
+  //This method retrieves a decoded word.
+  AliTPCHNode *node=root;
+  UInt_t symbol=0;
+  Bool_t decoded=0;
+
+  while(!decoded){
+    UInt_t bit=ReadWord(1);
+    if(bit)
+      node=node->GetRight();
+    else
+      node=node->GetLeft();
+    if (!(node->GetLeft())){
+      symbol=node->GetSymbol();
+      decoded=1;
+    }
+  }//end while
+
   return symbol;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1036,7 +1061,7 @@ Int_t AliTPCCompression::DecompressDataOptTables(Int_t NumTables,const char* fna
     Int_t bunchLen=0;
     Int_t count=0;
     for(Int_t i=0;i<numWords;i++){
-      UInt_t symbol=GetDecodedWord(rootNode[nextTableType],kFALSE);
+      UInt_t symbol=GetDecodedWord(rootNode[nextTableType]);
       wordsRead++;
       //Time reconstruction
       if (nextTableType==1){
@@ -1073,23 +1098,16 @@ Int_t AliTPCCompression::DecompressDataOptTables(Int_t NumTables,const char* fna
 Int_t AliTPCCompression::Decompress(AliTPCHNode *RootNode[],Int_t /*NumTables*/,char* PointBuffer,UInt_t BufferSize,UShort_t out[],UInt_t &dim){
   //This method decompress a file using separate Huffman tables
 
-  fPointBuffer=PointBuffer+BufferSize-4;
+  //  fPointBuffer=((UInt_t *)PointBuffer)+(UInt_t)(BufferSize/4)-1;
+  fPointBuffer=(UInt_t *)(PointBuffer+BufferSize-4);
   fReadBits=0;
   fBuffer=0;
   
-  for(Int_t i=0;i<4;i++){
-    UInt_t val=0;
-    val=*fPointBuffer;
-    val&=0xFF;
-    fPointBuffer++;
-    val<<=8*i;
-    fBuffer=fBuffer|val;
-  }//end for
+  fBuffer=*fPointBuffer;
   Int_t bit=0;
-  UInt_t mask=0x1;
   while(!bit){
-    bit=fBuffer&mask;
-    mask=mask<<1;
+    bit=fBuffer&0x1;
+    fBuffer=fBuffer>>1;
     fReadBits++;
   }//end while
   UInt_t packetNumber=ReadWordBuffer(sizeof(UInt_t)*8); //32 bits
@@ -1121,7 +1139,7 @@ Int_t AliTPCCompression::Decompress(AliTPCHNode *RootNode[],Int_t /*NumTables*/,
     Int_t count=0;
     Int_t timeDigit=0;
     for(Int_t i=0;i<numWords;i++){
-      UInt_t symbol=GetDecodedWord(RootNode[nextTableType],kTRUE);
+      UInt_t symbol=GetDecodedWordBuffer(RootNode[nextTableType]);
       wordsRead++;
       //Time reconstruction
       if (nextTableType==1){

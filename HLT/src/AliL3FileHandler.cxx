@@ -530,8 +530,8 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
 	  dig = AliL3Transform::GetADCSat();
       
 	AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
-	if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
-	  continue; // why 230???
+	//	if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
+	//	  continue; // why 230???
 
 	ndigits[lrow]++; //for this row only
 	ndigitcount++;   //total number of digits to be published
@@ -581,8 +581,8 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
 
 	//Exclude data outside cone:
 	AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
-	if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
-	  continue; // why 230???
+	//	if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
+	//	  continue; // why 230???
 
 	if(localcount >= ndigits[lrow])
 	  LOG(AliL3Log::kFatal,"AliL3FileHandler::AliDigits2Binary","Memory")
@@ -792,8 +792,8 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
 	    }
 
 	  AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
-	  if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
-	  continue; 
+	  //	  if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
+	  //	  continue; 
 	      
 	  ndigits[lrow]++; //for this row only
 	  ndigitcount++;   //total number of digits to be published
@@ -930,8 +930,8 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
 	    }
 	
 	  AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
-	  if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
-	    continue;
+	  //	  if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
+	  //	    continue;
 	  
 	  if(localcount >= ndigits[lrow])
 	    LOG(AliL3Log::kFatal,"AliL3FileHandler::AliAltroDigits2Binary","Memory")

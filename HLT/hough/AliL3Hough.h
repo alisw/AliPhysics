@@ -17,6 +17,8 @@ class AliL3HoughIntMerger;
 class AliL3HoughGlobalMerger;
 class AliL3Benchmark;
 
+#include "TThread.h"
+//class TThread;
 #ifdef use_newio
 #include <AliRunLoader.h>
 #endif
@@ -48,6 +50,7 @@ class AliL3Hough {
   void FindTrackCandidatesRow();
   void AddAllHistograms();
   void AddAllHistogramsRows();
+  void PrepareForNextPatch(Int_t nextpatch);
   Int_t Evaluate(Int_t roadwidth=1,Int_t nrowstomiss=1);
   void EvaluatePatch(Int_t i,Int_t roadwidth,Int_t nrowstomiss);
   void WriteTracks(Int_t slice,Char_t *path="./");
@@ -81,6 +84,14 @@ class AliL3Hough {
   AliL3HoughIntMerger *GetInterMerger() {if(!fInterMerger) return 0; return fInterMerger;}
   AliL3MemHandler *GetMemHandler(Int_t i) {if(!fMemHandler[i]) return 0; return fMemHandler[i];}
   AliL3HoughMaxFinder *GetMaxFinder() {return fPeakFinder;}
+
+  //Special methods for executing Hough Transform as a thread
+  static void *ProcessInThread(void *args);
+  void StartProcessInThread(Int_t minslice,Int_t maxslice);
+  Int_t WaitForThreadFinish();
+  void SetMinMaxSlices(Int_t minslice,Int_t maxslice) {fMinSlice = minslice; fMaxSlice = maxslice;} 
+  Int_t GetMinSlice() {return fMinSlice;}
+  Int_t GetMaxSlice() {return fMaxSlice;}
   
  private:
   Char_t *fInputFile;//!
@@ -93,8 +104,9 @@ class AliL3Hough {
   Bool_t fUse8bits; // Use 8 bits or not
   Int_t fNEtaSegments; // Number of eta slices
   Int_t fNPatches; // Number of patches
+  Int_t fLastPatch; //The index of the last processed patch
   Int_t fVersion; //which HoughTransformer to use
-  Int_t fCurrentSlice; // Current eta slice
+  Int_t fCurrentSlice; // Current TPC slice (sector)
   Int_t fEvent; // Current event number
 
   Int_t fPeakThreshold[6]; // Threshold for the peak finder
@@ -113,6 +125,9 @@ class AliL3Hough {
 
   Float_t fZVertex; // Z position of the primary vertex
 
+  Int_t fMinSlice;
+  Int_t fMaxSlice;
+
   AliL3MemHandler **fMemHandler; //!
   AliL3HoughBaseTransformer **fHoughTransformer; //!
   AliL3HoughEval **fEval; //!
@@ -130,6 +145,8 @@ class AliL3Hough {
 
   void CleanUp();
   Double_t GetCpuTime();
+
+  TThread *fThread;
 
   ClassDef(AliL3Hough,1) //Hough transform base class
 };

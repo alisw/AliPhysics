@@ -65,9 +65,11 @@ class AliL3Histogram {
   Int_t GetNbinsX() const {return fNxbins;}
   Int_t GetNbinsY() const {return fNybins;}
   Int_t GetNEntries() const {return fEntries;}
+
+  Int_t *fContent; //!
+  Int_t *GetContentArray() const {return fContent;}
     
  protected:
-  Int_t *fContent; //!
   Char_t fName[100]; // Name of the histogram
   Int_t fNxbins; // Number of bins in the histogram
   Int_t fNybins; // Number of bins in the histogram

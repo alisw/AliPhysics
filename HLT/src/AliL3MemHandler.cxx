@@ -183,7 +183,7 @@ void AliL3MemHandler::SetROI(Float_t *eta,Int_t */*slice*/)
   
 }
 
-Bool_t AliL3MemHandler::SetBinaryInput(Char_t *name)
+Bool_t AliL3MemHandler::SetBinaryInput(char *name)
 {
   //Set the input binary file.
   fInBinary = fopen(name,"r");
@@ -219,7 +219,7 @@ void AliL3MemHandler::CloseBinaryInput()
   fInBinary =0;
 }
 
-Bool_t AliL3MemHandler::SetBinaryOutput(Char_t *name)
+Bool_t AliL3MemHandler::SetBinaryOutput(char *name)
 {
   //Set the binary output file.
     fOutBinary = fopen(name,"w");
@@ -306,8 +306,8 @@ void AliL3MemHandler::Free()
 {
   //Clear the memory, if allocated.
   if(!fPt){
-    LOG(AliL3Log::kInformational,"AliL3MemHandler::Free","Memory")
-      <<"No Memory allocated - can't Free"<<ENDLOG;
+    //    LOG(AliL3Log::kInformational,"AliL3MemHandler::Free","Memory")
+    //      <<"No Memory allocated - can't Free"<<ENDLOG;
     return;
   }  
   delete[] fPt;

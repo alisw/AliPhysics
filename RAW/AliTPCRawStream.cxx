@@ -74,6 +74,15 @@ AliTPCRawStream::~AliTPCRawStream()
   delete[] fData;
 }
 
+void AliTPCRawStream::Reset()
+{
+// reset tpc raw stream params
+
+  fDataSize = fPosition = 0;
+  fCount = fBunchLength = 0;
+
+  fSector = fPrevSector = fRow = fPrevRow = fPad = fPrevPad = fTime = fSignal = -1;
+}
 
 Bool_t AliTPCRawStream::Next()
 {

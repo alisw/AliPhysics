@@ -35,6 +35,8 @@ class AliL3DDLDataFileHandler:public AliL3MemHandler{
    AliL3DigitRowData* DDLData2Memory(UInt_t &nrow,Int_t event=-1);
    Bool_t DDLData2CompBinary(Int_t event=-1);
 
+   AliTPCRawStream* GetTPCRawStream(){return fTPCStream;}
+
   private:
 #ifdef use_newio
    TString          fFilename; // IO file name
