@@ -10,7 +10,7 @@
 #define TG4_VIS_MANAGER_H
 #ifdef G4VIS_USE
 
-#include "TG3Attribute.h"
+#include "TG4G3Attribute.h"
 
 #include <G4VisManager.hh>
 #include <g4rw/tpordvec.h>
@@ -73,10 +73,10 @@ class TG4VisManager: public G4VisManager
     G4bool IsSharedVisAttributes(const G4LogicalVolume* pLV);
     
     // Set an attribute to a specific volume
-    void SetG4Attribute(G4LogicalVolume* const lv, const TG3Attribute att,
+    void SetG4Attribute(G4LogicalVolume* const lv, const TG4G3Attribute att,
 			const G4int val);
     // Set an attribute to the tree coresponding to a volume			
-    void SetAtt4Daughters(G4LogicalVolume* const lv, const TG3Attribute att,
+    void SetAtt4Daughters(G4LogicalVolume* const lv, const TG4G3Attribute att,
 			const G4int val);			    
 
     //data members

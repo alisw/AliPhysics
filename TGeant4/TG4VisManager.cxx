@@ -285,7 +285,7 @@ G4bool TG4VisManager::CaseInsensitiveEqual(const G4String string1,
  
 
 void TG4VisManager::SetAtt4Daughters(G4LogicalVolume* const lv, 
-				     const TG3Attribute att, const G4int val)
+				     const TG4G3Attribute att, const G4int val)
 {
 // Iterator for setting a visual attribute for all daughters
 // ---
@@ -337,7 +337,7 @@ G4bool TG4VisManager::IsSharedVisAttributes(const G4LogicalVolume* pLV)
 
 
 void TG4VisManager::SetG4Attribute(G4LogicalVolume* const lv,
-				   const TG3Attribute att, const G4int val)
+				   const TG4G3Attribute att, const G4int val)
 {
 // Set the G4 attribute fo volume LV accordingly to the G3 description
 //  of (att- val)    
@@ -652,7 +652,7 @@ void TG4VisManager::Gsatt(const char* name, const char* att, Int_t val)
           satt(att);		
 
  // seek for known attributes
- TG3Attribute attribute = kUNKNOWN;
+ TG4G3Attribute attribute = kUNKNOWN;
  if (CaseInsensitiveEqual(att,"WORK"))
  {
    G4String message = "TG4VisManager::Gsatt: G3Attribute ";
