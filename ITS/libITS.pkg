@@ -36,7 +36,8 @@ SRCS          = AliITS.cxx AliITSv1.cxx AliITSv3.cxx AliITSv5.cxx \
                 AliCascadeVertexer.cxx  AliITSneuralTrack.cxx \
                 AliITSneuralTracker.cxx AliITSglobalRecPoint.cxx \
                 AliITSsDigitize.cxx AliITSDigitizer.cxx AliITSreconstruction.cxx \
-	        AliITSRiemannFit.cxx 
+	        AliITSRiemannFit.cxx \
+		AliITSFDigitizer.cxx
 #		AliITSAlignmentTrack.cxx AliITSAlignmentModule.cxx \
 
 HDRS:=  $(SRCS:.cxx=.h)
