@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.29  2000/10/19 19:39:25  jbarbosa
+  Some more changes to geometry. Further correction of digitisation "per part. type"
+
   Revision 1.28  2000/10/17 20:50:57  jbarbosa
   Inversed digtise by particle type (now, only the selected particle type is not digitsed).
   Corrected several geometry minor bugs.
@@ -389,7 +392,7 @@ void AliRICH::CreateGeometry()
   geometry->SetRadiatorToPads(distance);
     
   //Opaque quartz thickness
-  Float_t oqua_thickness = .4;
+  Float_t oqua_thickness = .5;
     
     Int_t *idtmed = fIdtmed->GetArray()-999;
     
@@ -400,36 +403,36 @@ void AliRICH::CreateGeometry()
     
     // --- Define the RICH detector 
     //     External aluminium box 
-    par[0] = 71.1;
+    par[0] = 68.8;
     par[1] = 11.5;                 //Original Settings
-    par[2] = 73.15;
+    par[2] = 70.86;
     /*par[0] = 73.15;
     par[1] = 11.5;
     par[2] = 71.1;*/
     gMC->Gsvolu("RICH", "BOX ", idtmed[1009], par, 3);
     
     //     Sensitive part of the whole RICH 
-    par[0] = 64.8;
+    par[0] = 66.31;
     par[1] = 11.5;                 //Original Settings
-    par[2] = 66.55;
+    par[2] = 68.36;
     /*par[0] = 66.55;
     par[1] = 11.5;
     par[2] = 64.8;*/
     gMC->Gsvolu("SRIC", "BOX ", idtmed[1000], par, 3);
     
     //     Honeycomb 
-    par[0] = 63.1;
+    par[0] = 66.3;
     par[1] = .188;                 //Original Settings
-    par[2] = 66.55;
+    par[2] = 68.35;
     /*par[0] = 66.55;
     par[1] = .188;
     par[2] = 63.1;*/
     gMC->Gsvolu("HONE", "BOX ", idtmed[1001], par, 3);
     
     //     Aluminium sheet 
-    par[0] = 63.1;
+    par[0] = 66.3;
     par[1] = .025;                 //Original Settings
-    par[2] = 66.55;
+    par[2] = 68.35;
     /*par[0] = 66.5;
     par[1] = .025;
     par[2] = 63.1;*/
@@ -455,9 +458,12 @@ void AliRICH::CreateGeometry()
     gMC->Gsvolu("SPAC", "TUBE", idtmed[1002], par, 3);
     
     //     Opaque quartz 
-    par[0] = 61.95;
+    par[0] = geometry->GetQuartzWidth()/2;
+    par[1] = .2;
+    par[2] = geometry->GetQuartzLength()/2;
+    /*par[0] = 61.95;
     par[1] = .2;                   //Original Settings
-    par[2] = 66.5;
+    par[2] = 66.5;*/
     /*par[0] = 66.5;
     par[1] = .2;
     par[2] = 61.95;*/
@@ -477,16 +483,16 @@ void AliRICH::CreateGeometry()
     par[2] = 20.65;*/
     gMC->Gsvolu("OQF1", "BOX ", idtmed[1007], par, 3);
 
-    par[0] = geometry->GetInnerFreonWidth()/2 + oqua_thickness;
+    par[0] = geometry->GetInnerFreonWidth()/2;
     par[1] = geometry->GetFreonThickness()/2;
-    par[2] = geometry->GetInnerFreonLength()/2 + oqua_thickness; 
+    par[2] = geometry->GetInnerFreonLength()/2; 
     gMC->Gsvolu("OQF2", "BOX ", idtmed[1007], par, 3);
     
     //     Little bar of opaque quartz 
-    par[0] = .275;
-    par[1] = geometry->GetQuartzThickness()/2;
+    //par[0] = .275;
+    //par[1] = geometry->GetQuartzThickness()/2;
     //par[2] = geometry->GetInnerFreonLength()/2 - 2.4; 
-    par[2] = geometry->GetInnerFreonLength()/2;
+    //par[2] = geometry->GetInnerFreonLength()/2;
     //+ oqua_thickness;
     /*par[0] = .275;
     par[1] = .25;                   //Original Settings
@@ -494,12 +500,12 @@ void AliRICH::CreateGeometry()
     /*par[0] = 63.1;
     par[1] = .25;
     par[2] = .275;*/
-    gMC->Gsvolu("BARR", "BOX ", idtmed[1007], par, 3);
+    //gMC->Gsvolu("BARR", "BOX ", idtmed[1007], par, 3);
     
     //     Freon 
-    par[0] = geometry->GetOuterFreonWidth()/2;
+    par[0] = geometry->GetOuterFreonWidth()/2 - oqua_thickness;
     par[1] = geometry->GetFreonThickness()/2;
-    par[2] = geometry->GetOuterFreonLength()/2; 
+    par[2] = geometry->GetOuterFreonLength()/2 - 2*oqua_thickness; 
     /*par[0] = 20.15;
     par[1] = .5;                   //Original Settings
     par[2] = 65.5;*/
@@ -508,29 +514,35 @@ void AliRICH::CreateGeometry()
     par[2] = 20.15;*/
     gMC->Gsvolu("FRE1", "BOX ", idtmed[1003], par, 3);
 
-    par[0] = geometry->GetInnerFreonWidth()/2;
+    par[0] = geometry->GetInnerFreonWidth()/2 - oqua_thickness;
     par[1] = geometry->GetFreonThickness()/2;
-    par[2] = geometry->GetInnerFreonLength()/2; 
+    par[2] = geometry->GetInnerFreonLength()/2 - 2*oqua_thickness; 
     gMC->Gsvolu("FRE2", "BOX ", idtmed[1003], par, 3);
     
     //     Methane 
-    par[0] = 64.8;
+    //par[0] = 64.8;
+    par[0] = geometry->GetQuartzWidth()/2;
     par[1] = geometry->GetGapThickness()/2;
     //printf("\n\n\n\n\n\n\n\\n\n\n\n Gap Thickness: %f\n\n\n\n\n\n\n\n\n\n\n\n\n\n",par[1]);
-    par[2] = 64.8;
+    //par[2] = 64.8;
+    par[2] = geometry->GetQuartzLength()/2;
     gMC->Gsvolu("META", "BOX ", idtmed[1004], par, 3);
     
     //     Methane gap 
-    par[0] = 64.8;
+    //par[0] = 64.8;
+    par[0] = geometry->GetQuartzWidth()/2;
     par[1] = geometry->GetProximityGapThickness()/2;
     //printf("\n\n\n\n\n\n\n\\n\n\n\n Gap Thickness: %f\n\n\n\n\n\n\n\n\n\n\n\n\n\n",par[1]);
-    par[2] = 64.8;
+    //par[2] = 64.8;
+    par[2] = geometry->GetQuartzLength()/2;
     gMC->Gsvolu("GAP ", "BOX ", idtmed[1008], par, 3);
     
     //     CsI photocathode 
-    par[0] = 64.8;
+    //par[0] = 64.8;
+    par[0] = geometry->GetQuartzWidth()/2;
     par[1] = .25;
-    par[2] = 64.8;
+    //par[2] = 64.8;
+    par[2] = geometry->GetQuartzLength()/2;
     gMC->Gsvolu("CSI ", "BOX ", idtmed[1005], par, 3);
     
     //     Anode grid 
@@ -550,7 +562,8 @@ void AliRICH::CreateGeometry()
     
     AliMatrix(idrotm[1019], 0., 0., 90., 0., 90., 90.);
     
-    Int_t nspacers = (Int_t)(TMath::Abs(geometry->GetInnerFreonLength()/14.4));
+    //Int_t nspacers = (Int_t)(TMath::Abs(geometry->GetInnerFreonLength()/14.4));
+    Int_t nspacers = 9;
     //printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n Spacers:%d\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",nspacers); 
 
     //printf("Nspacers: %d", nspacers);
@@ -600,11 +613,11 @@ void AliRICH::CreateGeometry()
 
     gMC->Gspos("FRE1", 1, "OQF1", 0., 0., 0., 0, "ONLY");
     gMC->Gspos("FRE2", 1, "OQF2", 0., 0., 0., 0, "ONLY");
-    gMC->Gspos("OQF1", 1, "SRIC", geometry->GetOuterFreonWidth()/2 + geometry->GetInnerFreonWidth()/2 + 2*oqua_thickness, 1.276 - geometry->GetGapThickness()/2- geometry->GetQuartzThickness() -geometry->GetFreonThickness()/2, 0., 0, "ONLY"); //Original settings (31.3)
+    gMC->Gspos("OQF1", 1, "SRIC", geometry->GetOuterFreonWidth()/2 + geometry->GetInnerFreonWidth()/2, 1.276 - geometry->GetGapThickness()/2- geometry->GetQuartzThickness() -geometry->GetFreonThickness()/2, 0., 0, "ONLY"); //Original settings (31.3)
     gMC->Gspos("OQF2", 2, "SRIC", 0., 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()/2, 0., 0, "ONLY");          //Original settings 
-    gMC->Gspos("OQF1", 3, "SRIC", - (geometry->GetOuterFreonWidth()/2 + geometry->GetInnerFreonWidth()/2) - 2*oqua_thickness, 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()/2, 0., 0, "ONLY");       //Original settings (-31.3)
-    gMC->Gspos("BARR", 1, "QUAR", - geometry->GetInnerFreonWidth()/2 - oqua_thickness, 0., 0., 0, "ONLY");           //Original settings (-21.65) 
-    gMC->Gspos("BARR", 2, "QUAR",  geometry->GetInnerFreonWidth()/2 + oqua_thickness, 0., 0., 0, "ONLY");            //Original settings (21.65)
+    gMC->Gspos("OQF1", 3, "SRIC", - (geometry->GetOuterFreonWidth()/2 + geometry->GetInnerFreonWidth()/2), 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()/2, 0., 0, "ONLY");       //Original settings (-31.3)
+    //gMC->Gspos("BARR", 1, "QUAR", - geometry->GetInnerFreonWidth()/2 - oqua_thickness, 0., 0., 0, "ONLY");           //Original settings (-21.65) 
+    //gMC->Gspos("BARR", 2, "QUAR",  geometry->GetInnerFreonWidth()/2 + oqua_thickness, 0., 0., 0, "ONLY");            //Original settings (21.65)
     gMC->Gspos("QUAR", 1, "SRIC", 0., 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness()/2, 0., 0, "ONLY");
     gMC->Gspos("GAP ", 1, "META", 0., geometry->GetGapThickness()/2 - geometry->GetProximityGapThickness()/2 - 0.0001, 0., 0, "ONLY");
     gMC->Gspos("META", 1, "SRIC", 0., 1.276, 0., 0, "ONLY");
