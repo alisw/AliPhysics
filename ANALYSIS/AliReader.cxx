@@ -171,7 +171,7 @@ Int_t AliReader::Next()
 //moves to next event
 
   //if asked to read up to event nb. fLast, and it is overcome, report no more events
-  if ((fNEventsRead > fLast) && (fLast > 0) ) return kTRUE;
+  if ((fNEventsRead >= fLast) && (fLast > 0) ) return kTRUE;
   
   if (fTrackCounter == 0x0)//create Track Counter
    {
