@@ -179,7 +179,6 @@ void AliMUONData::AddHit(Int_t fIshunt, Int_t track, Int_t iChamber,
 			 Float_t phi, Float_t length, Float_t destep)
 {
   // Add new hit to the hit list
-    
   TClonesArray &lhits = *fHits;
   new(lhits[fNhits++]) AliMUONHit(fIshunt, track, iChamber, 
 				  idpart, X, Y, Z, 
@@ -668,7 +667,10 @@ void AliMUONData::SetTreeAddress(Option_t* option)
   //
   // Branch address for hit tree
   if ( TreeH() && cH ) {
-    if (fHits == 0x0) fHits     = new TClonesArray("AliMUONHit",1000);
+      if (fHits == 0x0) {
+	fHits     = new TClonesArray("AliMUONHit",1000);
+	gAlice->GetMCApp()->AddHitList (fHits);
+    }
     fNhits =0;
   } 
   if (TreeH() && fHits && cH) {
