@@ -32,7 +32,7 @@
 #include "STRUCT/AliFRAMEv2.h"
 #include "STRUCT/AliSHILv2.h"
 #include "STRUCT/AliPIPEv0.h"
-#include "ITS/AliITSvPPRasymm.h"
+#include "ITS/AliITSvPPRasymmFMD.h"
 #include "TPC/AliTPCv2.h"
 #include "TOF/AliTOFv4T0.h"
 #include "RICH/AliRICHv1.h"
@@ -358,7 +358,7 @@ void Config()
     //
     //AliITS *ITS  = new AliITSv5asymm("ITS","Updates ITS TDR detailed version with asymmetric services");
     //
-    AliITSvPPRasymm *ITS  = new AliITSvPPRasymm("ITS","New ITS PPR detailed version with asymmetric services");
+    AliITSvPPRasymmFMD *ITS  = new AliITSvPPRasymmFMD("ITS","New ITS PPR detailed version with asymmetric services");
     ITS->SetMinorVersion(2);                                         // don't touch this parameter if you're not an ITS developer
     ITS->SetReadDet(kFALSE);                                         // don't touch this parameter if you're not an ITS developer
     ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
@@ -581,7 +581,7 @@ AliGenPythia *PythiaHVQ(ProcessHvFl_t proc) {
     break;
   case kBeautyPbPb5500:
     comment = comment.Append(" Beauty in Pb-Pb at 5.5 TeV");
-    AliGenPythia *gener = new AliGenPythia(nEvts);
+    gener = new AliGenPythia(nEvts);
     gener->SetProcess(kPyBeautyPbPbMNR);
     gener->SetStrucFunc(kCTEQ4L);
     gener->SetPtHard(2.75,-1.0);
