@@ -74,6 +74,7 @@ Int_t iPIPE=1;
 Int_t iFMD=1;
 Int_t iMUON=1;
 Int_t iPHOS=1;
+Int_t iCPV=1;
 Int_t iPMD=1;
 Int_t iSTART=0;
 
@@ -135,8 +136,8 @@ if(iITS) {
 // understandable to the CAD system EUCLID. The default (=0) means that you 
 // dont want to use this facility.
 //
-AliITS *ITS  = new AliITSv3("ITS","normal ITS");
-ITS->SetEUCLID(1);
+AliITS *ITS  = new AliITSv5("ITS","normal ITS");
+ITS->SetEUCLID(0);
 }
 
 if(iTPC) {
@@ -574,9 +575,9 @@ AliMUON *MUON  = new AliMUONv0("MUON","normal MUON");
  MUON->SetPADSIZ(station, 1, 0.75, 0.5);
 }
  
-if(iPHOS) {
 //=================== PHOS parameters ===========================
 
+if(iPHOS) {
 AliPHOS *PHOS  = new AliPHOSv1("PHOS","normal PHOS");
 // * PHOSflags:    YES: X<>0   NO: X=0
 // * PHOSflags(1) : -----X  Create branch for TObjArray of AliPHOSCradle
@@ -586,9 +587,8 @@ PHOS->SetFlags(000001);
 PHOS->SetRadius(460); //Distance from beam to PHOS crystals.
 // (crystal_side_size,crystal_length,wrap_thikness,air_thikness,PIN_size,PIN length)
 PHOS->SetCell(2.2,          18.,         0.01,        0.01,        1.,      0.1);
-PHOS->SetCradleSize(104, 88, 4); // Nz (along beam), Nphi, Ncradles
+PHOS->SetCradleSize(48, 90, 4); // Nz (along beam), Nphi, Ncradles
 PHOS->SetCradleA(0);   //Angle between Cradles
-PHOS->SetCPV(1., 2.); //CPV thikness, CPV-PHOS distance
 // *  ===============
 // * PHOS extra parameters (contact Maxim Volkov volkov@mail.cern.ch)
 // * 1. STE_THICK         Steel cover thickness
@@ -635,6 +635,14 @@ PHOS->SetFoam(214.6,  80.,  260., 467.);
 // * KINE  700     5.    175.    0.          800. 1.5 5. 1.
 // *******************************************************************************
 }
+
+if(iCPV) {
+//=================== CPV parameters ============================
+
+  printf ("CPV in initializing\n");
+  AliCPV *CPV  = new AliCPVv0("CPV","normal CPV");
+}
+
 
 if(iPMD) {
 //=================== PMD parameters ============================

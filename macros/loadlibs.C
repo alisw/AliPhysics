@@ -1,5 +1,6 @@
 void loadlibs () 
 {
+  gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libminicern");
   gSystem->Load("$(ROOTSYS)/lib/libEG");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libSTEER");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libTGeant3Dummy");
@@ -19,4 +20,5 @@ void loadlibs ()
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libZDC");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libITS");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libCASTOR");
+  gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libCPV");
 }
