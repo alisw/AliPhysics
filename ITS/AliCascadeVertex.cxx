@@ -27,20 +27,6 @@
 ClassImp(AliCascadeVertex)
 
 
-inline Double_t det(Double_t a00, Double_t a01, Double_t a10, Double_t a11){
-  // determinant 2x2
-  return a00*a11 - a01*a10;
-}
-
-inline Double_t det (Double_t a00,Double_t a01,Double_t a02,
-                     Double_t a10,Double_t a11,Double_t a12,
-                     Double_t a20,Double_t a21,Double_t a22) {
-  // determinant 3x3
-  return 
-  a00*det(a11,a12,a21,a22)-a01*det(a10,a12,a20,a22)+a02*det(a10,a11,a20,a21);
-}
-
-
 AliCascadeVertex::AliCascadeVertex(const AliV0vertex &v,const AliITStrackV2 &t) {
   //--------------------------------------------------------------------
   // Main constructor
