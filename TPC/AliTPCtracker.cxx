@@ -29,13 +29,15 @@ Splitted from AliTPCtracking
 //   Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------
 
-#include "AliTPCtracker.h"
-#include "AliTPCcluster.h"
 #include <TObjArray.h>
 #include <TFile.h>
+#include <TTree.h>
+#include <iostream.h>
+
+#include "AliTPCtracker.h"
+#include "AliTPCcluster.h"
 #include "AliTPCClustersArray.h"
 #include "AliTPCClustersRow.h"
-#include <TTree.h>
 
 const AliTPCParam *AliTPCtracker::AliTPCSector::fgParam;
 
@@ -165,7 +167,7 @@ Int_t s, Int_t rf)
 
     if (krow) {
       for (Int_t i=krow.Find(y-road); i<krow; i++) {
-	AliTPCcluster* c=(AliTPCcluster*)(krow[i]);
+	AliTPCcluster *c=(AliTPCcluster*)(krow[i]);
 	if (c->GetY() > y+road) break;
 	if (c->IsUsed()) continue;
 	if ((c->GetZ()-z)*(c->GetZ()-z) > 16.*(t.GetSigmaZ2()+sz2)) continue;
@@ -253,26 +255,26 @@ Int_t i1, Int_t i2)
 
 	x[0]=y1;
 	x[1]=z1;
-	x[2]=f1(x1,y1,x2,y2,x3,y3);
-	if (TMath::Abs(x[2]) >= 0.0066) continue;
-	x[3]=f2(x1,y1,x2,y2,x3,y3);
-	//if (TMath::Abs(x[2]*x1-x[3]) >= 0.99999) continue;
+	x[3]=f1(x1,y1,x2,y2,x3,y3);
+	if (TMath::Abs(x[3]) >= 0.0066) continue;
+	x[2]=f2(x1,y1,x2,y2,x3,y3);
+	//if (TMath::Abs(x[3]*x1-x[2]) >= 0.99999) continue;
 	x[4]=f3(x1,y1,x2,y2,z1,z2);
 	if (TMath::Abs(x[4]) > 1.2) continue;
-	Double_t a=asin(x[3]);
-	Double_t zv=z1 - x[4]/x[2]*(a+asin(x[2]*x1-x[3]));
+	Double_t a=asin(x[2]);
+	Double_t zv=z1 - x[4]/x[3]*(a+asin(x[3]*x1-x[2]));
 	if (TMath::Abs(zv)>10.) continue; 
 
         Double_t sy1=kr1[is]->GetSigmaY2(), sz1=kr1[is]->GetSigmaZ2();
         Double_t sy2=kcl->GetSigmaY2(),     sz2=kcl->GetSigmaZ2();
 	Double_t sy3=100*0.025, sy=0.1, sz=0.1;
 
-	Double_t f20=(f1(x1,y1+sy,x2,y2,x3,y3)-x[2])/sy;
-	Double_t f22=(f1(x1,y1,x2,y2+sy,x3,y3)-x[2])/sy;
-	Double_t f24=(f1(x1,y1,x2,y2,x3,y3+sy)-x[2])/sy;
-	Double_t f30=(f2(x1,y1+sy,x2,y2,x3,y3)-x[3])/sy;
-	Double_t f32=(f2(x1,y1,x2,y2+sy,x3,y3)-x[3])/sy;
-	Double_t f34=(f2(x1,y1,x2,y2,x3,y3+sy)-x[3])/sy;
+	Double_t f30=(f1(x1,y1+sy,x2,y2,x3,y3)-x[3])/sy;
+	Double_t f32=(f1(x1,y1,x2,y2+sy,x3,y3)-x[3])/sy;
+	Double_t f34=(f1(x1,y1,x2,y2,x3,y3+sy)-x[3])/sy;
+	Double_t f20=(f2(x1,y1+sy,x2,y2,x3,y3)-x[2])/sy;
+	Double_t f22=(f2(x1,y1,x2,y2+sy,x3,y3)-x[2])/sy;
+	Double_t f24=(f2(x1,y1,x2,y2,x3,y3+sy)-x[2])/sy;
 	Double_t f40=(f3(x1,y1+sy,x2,y2,z1,z2)-x[4])/sy;
 	Double_t f41=(f3(x1,y1,x2,y2,z1+sz,z2)-x[4])/sz;
 	Double_t f42=(f3(x1,y1,x2,y2+sy,z1,z2)-x[4])/sy;
@@ -301,15 +303,15 @@ Int_t i1, Int_t i2)
 }
 
 //_____________________________________________________________________________
-void AliTPCtracker::Clusters2Tracks(const AliTPCParam *par, TFile *of) {
+Int_t AliTPCtracker::Clusters2Tracks(const AliTPCParam *par, TFile *of) {
   //-----------------------------------------------------------------
   // This is a track finder.
   //-----------------------------------------------------------------
   TDirectory *savedir=gDirectory; 
 
   if (!of->IsOpen()) {
-     cerr<<"AliTPC::Clusters2Tracks(): output file not open !\n";
-     return;
+     cerr<<"AliTPCtracker::Clusters2Tracks(): output file not open !\n";
+     return 1;
   }
 
   AliTPCClustersArray carray;
@@ -443,6 +445,8 @@ void AliTPCtracker::Clusters2Tracks(const AliTPCParam *par, TFile *of) {
   delete[] lsec;
 
   savedir->cd();
+
+  return 0;
 }
 
 //_________________________________________________________________________
