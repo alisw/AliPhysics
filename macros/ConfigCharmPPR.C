@@ -11,6 +11,9 @@ void Config()
   gRandom->SetSeed(seed);
   cerr<<"Seed for random number generation= "<<seed<<endl; 
 
+  // libraries required by geant321
+  gSystem->Load("libgeant321");
+
   new TGeant3("C++ Interface to Geant3");
 
   //=======================================================================
