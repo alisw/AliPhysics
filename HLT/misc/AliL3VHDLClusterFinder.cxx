@@ -330,7 +330,7 @@ void AliL3VHDLClusterFinder::OutputMemory()
   }
 }
 
-inline void AliL3VHDLClusterFinder::FreeSeq(UShort_t i)
+void AliL3VHDLClusterFinder::FreeSeq(UShort_t i)
 {
   ClearSeq(i);
   IncPointer(fLast,1,N_clmem);
@@ -381,11 +381,11 @@ void AliL3VHDLClusterFinder::IncPointer(UShort_t &p, Short_t add, UShort_t N){
   else p=UShort_t(pp);
 }
 
-inline void AliL3VHDLClusterFinder::IncRPointer(){
+void AliL3VHDLClusterFinder::IncRPointer(){
   IncPointer(fRP);
 }
 
-inline void AliL3VHDLClusterFinder::IncWPointer(){
+void AliL3VHDLClusterFinder::IncWPointer(){
   IncPointer(fWP);
 
   if(fWP==fOP){
@@ -394,7 +394,7 @@ inline void AliL3VHDLClusterFinder::IncWPointer(){
   }
 }
 
-inline void AliL3VHDLClusterFinder::NextFreeIndex(){
+void AliL3VHDLClusterFinder::NextFreeIndex(){
   IncPointer(fFirst,1,N_clmem);
   if(fFirst==fLast) {
     LOG(AliL3Log::kFatal,"AliL3VHDLClusterFinder::GetFreeIndex","Memory Check")

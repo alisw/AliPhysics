@@ -569,7 +569,10 @@ AliL3DigitRowData * AliL3RawDataFileHandler::RawData2Memory(UInt_t &nrow,Int_t e
   }
   
   //Read the data
-  Short_t charges[fNChannels][fNTimeBins];
+  //  Short_t charges[fNChannels][fNTimeBins];
+  Short_t ** charges = new Short_t*[fNChannels];
+  for (Int_t iii=0; iii<fNChannels; iii++)
+    charges[iii] = new Short_t[fNTimeBins];
   for(UInt_t channel = 0; channel < fNChannels; channel++){
     for(Int_t timebin = 0 ; timebin < fNTimeBins ; timebin++){
       Short_t dummy2;
@@ -588,7 +591,8 @@ AliL3DigitRowData * AliL3RawDataFileHandler::RawData2Memory(UInt_t &nrow,Int_t e
   //get data size
   Int_t nrows=0;
   Int_t ndigitcount=0;
-  Int_t ndigits[AliL3Transform::GetNRows()];
+  //  Int_t ndigits[AliL3Transform::GetNRows()];
+  Int_t * ndigits = new Int_t[AliL3Transform::GetNRows()];
   for(Int_t i=0;i<AliL3Transform::GetNRows();i++) ndigits[i]=0;
 
   //no need to search for slice/sector given by init
@@ -691,6 +695,11 @@ AliL3DigitRowData * AliL3RawDataFileHandler::RawData2Memory(UInt_t &nrow,Int_t e
   if(ndigitcount!=ndigitcounttest2)
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::RawData2Memory","Digits")
     <<AliL3Log::kDec<<"Found Inconsistency "<<ndigitcount<<" != "<<ndigitcounttest2<<ENDLOG;
+
+  delete [] ndigits;
+  for (Int_t iii=0; iii<fNChannels; iii++)
+    delete [] charges[iii];
+  delete [] charges;
 
   return data;
 }

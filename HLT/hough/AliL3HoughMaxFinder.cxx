@@ -3,6 +3,7 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
 
+#include <strings.h>
 #include "AliL3StandardIncludes.h"
 
 #ifndef no_root

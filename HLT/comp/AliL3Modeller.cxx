@@ -471,7 +471,8 @@ void AliL3Modeller::WriteRemaining()
   AliL3DigitRowData *rowPt;
   rowPt = (AliL3DigitRowData*)fRowData;
   Int_t digitcount=0;
-  Int_t ndigits[(AliL3Transform::GetNRows(fPatch))];
+  //  Int_t ndigits[(AliL3Transform::GetNRows(fPatch))];
+  Int_t * ndigits = new Int_t[(AliL3Transform::GetNRows(fPatch))];
   for(Int_t i=AliL3Transform::GetFirstRow(fPatch); i<=AliL3Transform::GetLastRow(fPatch); i++)
     {
       AliL3DigitData *digPt = (AliL3DigitData*)rowPt->fDigitData;
@@ -533,6 +534,7 @@ void AliL3Modeller::WriteRemaining()
   mem->CloseBinaryOutput();
   delete mem;
   delete [] data;
+  delete [] ndigits;
 }
 
 void AliL3Modeller::RemoveBadTracks()

@@ -24,7 +24,7 @@
 #include "AliL3Logging.h"
 #include "AliL3Transform.h"
 
-#if __GNUC__ == 3
+#if defined(__GNUC__) && __GNUC__ == 3
 using namespace std;
 #endif
 
@@ -1706,7 +1706,9 @@ void AliL3Transform::Global2HLT(Float_t *xyz,Int_t slice,Int_t slicerow)
 
 void AliL3Transform::PrintCompileOptions()
 {
+#if defined(__GNUC__)
   cout << "Compiler (g++) version used: " << __GNUC__ << endl;
+#endif
 
 #ifdef no_root
   cout << "STANDALONE version: -Dno_root was given." << endl;

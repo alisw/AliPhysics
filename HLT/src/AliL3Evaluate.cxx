@@ -1032,7 +1032,7 @@ Int_t AliL3Evaluate::FindPrimaries(Int_t nparticles)
   for(Int_t iprim = 0; iprim<nparticles; iprim++){   //loop on  tracks
     
     part = astack->Particle(iprim);
-    char *xxx=strstr(part->GetName(),"XXX");
+    const char * xxx=strstr(part->GetName(),"XXX");
     if(xxx)continue;
     
     TParticlePDG *ppdg = part->GetPDG();

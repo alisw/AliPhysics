@@ -22,7 +22,11 @@ struct AliL3TrackSegmentData
         Int_t  fTrackID;
 #endif
 	UInt_t  fNPoints;
+#if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
+	UInt_t  fPointIDs[1];
+#else
 	UInt_t  fPointIDs[0];
+#endif
     };
 
 typedef struct AliL3TrackSegmentData AliL3TrackSegmentData;

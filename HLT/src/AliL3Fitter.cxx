@@ -170,7 +170,8 @@ Int_t AliL3Fitter::FitCircle()
   
   //
   //     Loop over hits calculating average
-  Double_t fXYWeight[(fTrack->GetNHits())];
+  //  Double_t fXYWeight[(fTrack->GetNHits())];
+  Double_t * fXYWeight = new Double_t[(fTrack->GetNHits())];
   UInt_t *hitnum = fTrack->GetHitNumbers();
   for(Int_t i=0; i<fTrack->GetNHits(); i++)
     {
@@ -480,6 +481,7 @@ Int_t AliL3Fitter::FitCircle()
 //
   //if ( getPara()->getErrors ) getErrorsCircleFit ( acent, bcent, radius ) ;
 //
+  delete [] fXYWeight;
   return 0 ;
   
 }
@@ -506,7 +508,8 @@ Int_t AliL3Fitter::FitLine ( )
   //TObjArray *hits = fTrack->GetHits();
   //Int_t num_of_hits = fTrack->GetNumberOfPoints();
 
-  Double_t fS[(fTrack->GetNHits())];
+  //  Double_t fS[(fTrack->GetNHits())];
+  Double_t * fS = new Double_t[(fTrack->GetNHits())];
   Double_t *fZWeight = new Double_t[fTrack->GetNHits()];
   UInt_t *hitnum = fTrack->GetHitNumbers();
   if (0)//fVertexConstraint==kTRUE)
@@ -634,5 +637,6 @@ Int_t AliL3Fitter::FitLine ( )
   fTrack->SetTglerr(dtanl);
   fTrack->SetZ0err(dz0);
   delete [] fZWeight;
+  delete [] fS;
   return 0 ;
 } 

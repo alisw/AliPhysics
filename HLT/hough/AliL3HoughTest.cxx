@@ -57,7 +57,8 @@ Bool_t AliL3HoughTest::GenerateTrackData(Double_t pt,Double_t psi,Double_t tgl,I
   track->CalculateHelix();
 
   Int_t temp[200];
-  Int_t temp2[AliL3Transform::GetNTimeBins()];
+  //  Int_t temp2[AliL3Transform::GetNTimeBins()];
+  Int_t * temp2 = new Int_t[AliL3Transform::GetNTimeBins()];
   Int_t entries=100;
   Int_t clustercharge=100;
   Int_t hitcounter=0;
@@ -142,6 +143,7 @@ Bool_t AliL3HoughTest::GenerateTrackData(Double_t pt,Double_t psi,Double_t tgl,I
       fData[rowindex].npads=npads;
     }
   delete track;
+  delete [] temp2;
   if(hitcounter < minhits)
     return kFALSE;
   return kTRUE;

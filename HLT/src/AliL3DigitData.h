@@ -20,7 +20,11 @@ struct AliL3DigitRowData
 {
   UInt_t fNDigit;
   UInt_t fRow;
+#if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
+  AliL3DigitData fDigitData[1];
+#else
   AliL3DigitData fDigitData[0];
+#endif
 };
 typedef struct AliL3DigitRowData AliL3DigitRowData;
 

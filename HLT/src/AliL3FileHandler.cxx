@@ -470,7 +470,8 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
   Int_t nrows=0;
   Int_t ndigitcount=0;
   Int_t entries = (Int_t)fDigitsTree->GetEntries();
-  Int_t ndigits[entries];
+  //  Int_t ndigits[entries];
+  Int_t * ndigits = new Int_t[entries];
   Float_t xyz[3];
 
   for(Int_t r=fRowMin;r<=fRowMax;r++){
@@ -574,6 +575,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
     tmp += size;
     tempPt = (AliL3DigitRowData*)tmp;
   }
+  delete [] ndigits;
   return data;
 }
 
@@ -624,7 +626,8 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
   Int_t nrows=0;
   Int_t ndigitcount=0;
   Int_t entries = (Int_t)fDigitsTree->GetEntries();
-  Int_t ndigits[entries];
+  //  Int_t ndigits[entries];
+  Int_t * ndigits = new Int_t[entries];
   Int_t lslice,lrow;
   Int_t zerosupval=AliL3Transform::GetZeroSup();
   Float_t xyz[3];
@@ -918,6 +921,7 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
     tmp += size;
     tempPt = (AliL3DigitRowData*)tmp;
   }
+  delete [] ndigits;
   return data;
 }
  
