@@ -24,6 +24,7 @@
 class TString ;
 class TParticle ;
 class TTask ;
+class TFolder ; 
 
 // --- Standard library ---
 
