@@ -1,0 +1,38 @@
+// $Id$
+// Category: event
+
+// inline operators
+
+extern G4Allocator<AliTrackInformation> trackInfoAllocator;
+
+inline void* AliTrackInformation::operator new(size_t) 
+{
+// Override "new" for "G4Allocator".
+// ---
+
+  void *trackInfo;
+  trackInfo = (void *) trackInfoAllocator.MallocSingle();
+  return trackInfo;
+}
+
+inline void AliTrackInformation::operator delete(void *trackInfo)
+{ 
+// Override "delete" for "G4Allocator".
+// ---
+
+  trackInfoAllocator.FreeSingle((AliTrackInformation *) trackInfo);
+}
+
+// inline methods
+
+inline void AliTrackInformation::SetTrackParticleID(G4int trackParticleID)
+{ fTrackParticleID = trackParticleID; }
+
+inline void AliTrackInformation::SetParentParticleID(G4int parentParticleID)
+{ fParentParticleID = parentParticleID; }
+
+inline G4int AliTrackInformation::GetTrackParticleID() const
+{ return fTrackParticleID; }
+
+inline G4int AliTrackInformation::GetParentParticleID() const
+{ return fParentParticleID; }
