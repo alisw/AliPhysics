@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.10  2000/10/12 16:07:04  gosset
+StepManager:
+* SigGenCond only called for tracking chambers,
+  hence no more division by 0,
+  and may use last ALIROOT/dummies.C with exception handling;
+* "10" replaced by "AliMUONConstants::NTrackingCh()".
+
 Revision 1.9  2000/10/06 15:37:22  morsch
 Problems with variable redefinition in for-loop solved.
 Variable names starting with u-case letters changed to l-case.
@@ -479,7 +486,7 @@ void AliMUONv1::CreateGeometry()
      Int_t idRoha   = idtmed[1113];
 
      const Int_t nSlats3 = 4;  // number of slats per quadrant
-     const Int_t nPCB3[nSlats3] = {4,4,3,2}; // n PCB per slat
+     const Int_t nPCB3[nSlats3] = {3,4,3,2}; // n PCB per slat
 
       // sensitive area: 40*40 cm**2
      const Float_t sensLength = 40.; 
@@ -544,7 +551,7 @@ void AliMUONv1::CreateGeometry()
      const Int_t   gassiMaterial = idGlass; 
 
      // slat dimensions: slat is a MOTHER volume!!! made of air
-     Float_t slatLength[nSlats3]; 
+     Float_t slatLength3[nSlats3]; 
      const Float_t slatHeight = pcbHeight; 
      const Float_t slatWidth = sensWidth + 2.*(pcbWidth + insuWidth + 
 					       2.* panelWidth + rohaWidth);
@@ -554,31 +561,66 @@ void AliMUONv1::CreateGeometry()
      // create and position the slat (mother) volumes 
      Float_t spar[3];  
      char volNam5[5];
+     char volDiv5[5];
      char volNam6[5];
-     Float_t xSlat[nSlats3];
-     Float_t ySlat[nSlats3];
+     char volDiv6[5];
+     Float_t xSlat3;
      Int_t i, j;
      for (i = 0; i<nSlats3; i++){
-       slatLength[i] = pcbLength * nPCB3[i] + 2. * dSlatLength; 
-       xSlat[i] = slatLength[i]/2.; 
-       ySlat[i] = sensHeight * (i+0.5) - yOverlap * i; 
-       spar[0] = slatLength[i]/2.; 
-       spar[1] = slatHeight/2.;
-       spar[2] = slatWidth/2.; 
-       // zSlat to be checked (odd downstream or upstream?)
-       Float_t zSlat = (i%2 ==0)? -slatWidth/2. : slatWidth/2.; 
-       sprintf(volNam5,"S05%d",i);
-       gMC->Gsvolu(volNam5,"BOX",slatMaterial,spar,3);
-       gMC->Gspos(volNam5, i*4+1,"C05M", xSlat[i], ySlat[i], zSlat, 0, "ONLY");
-       gMC->Gspos(volNam5, i*4+2,"C05M",-xSlat[i], ySlat[i], zSlat, 0, "ONLY");
-       gMC->Gspos(volNam5, i*4+3,"C05M", xSlat[i],-ySlat[i],-zSlat, 0, "ONLY");
-       gMC->Gspos(volNam5, i*4+4,"C05M",-xSlat[i],-ySlat[i],-zSlat, 0, "ONLY");
-       sprintf(volNam6,"S06%d",i);
-       gMC->Gsvolu(volNam6,"BOX",slatMaterial,spar,3);
-       gMC->Gspos(volNam6, i*4+1,"C06M", xSlat[i], ySlat[i], zSlat, 0, "ONLY");
-       gMC->Gspos(volNam6, i*4+2,"C06M",-xSlat[i], ySlat[i], zSlat, 0, "ONLY");
-       gMC->Gspos(volNam6, i*4+3,"C06M", xSlat[i],-ySlat[i],-zSlat, 0, "ONLY");
-       gMC->Gspos(volNam6, i*4+4,"C06M",-xSlat[i],-ySlat[i],-zSlat, 0, "ONLY");
+	 slatLength3[i] = pcbLength * nPCB3[i] + 2. * dSlatLength; 
+	 xSlat3 = slatLength3[i]/2. - vFrameLength/2.; 
+	 if (i==0) xSlat3 += 40.;
+	 
+	 Float_t ySlat31 =  sensHeight * (i+0.5) - yOverlap * i - yOverlap/2.; 
+	 Float_t ySlat32 = -sensHeight * (i+0.5) + yOverlap * i + yOverlap/2.; 
+	 spar[0] = slatLength3[i]/2.; 
+	 spar[1] = slatHeight/2.;
+	 spar[2] = slatWidth/2.; 
+	 // zSlat to be checked (odd downstream or upstream?)
+	 Float_t zSlat = (i%2 ==0)? -slatWidth/2. : slatWidth/2.; 
+	 sprintf(volNam5,"S05%d",i);
+	 gMC->Gsvolu(volNam5,"BOX",slatMaterial,spar,3);
+	 gMC->Gspos(volNam5, i*4+1,"C05M", xSlat3, ySlat31, zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam5, i*4+2,"C05M",-xSlat3, ySlat31, zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam5, i*4+3,"C05M", xSlat3, ySlat32,-zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam5, i*4+4,"C05M",-xSlat3, ySlat32,-zSlat, 0, "ONLY");
+	 sprintf(volNam6,"S06%d",i);
+	 gMC->Gsvolu(volNam6,"BOX",slatMaterial,spar,3);
+	 gMC->Gspos(volNam6, i*4+1,"C06M", xSlat3, ySlat31, zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam6, i*4+2,"C06M",-xSlat3, ySlat31, zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam6, i*4+3,"C06M", xSlat3, ySlat32,-zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam6, i*4+4,"C06M",-xSlat3, ySlat32,-zSlat, 0, "ONLY");
+	 // 1st pcb in 1st slat made by some rectangular divisions
+/*
+	 if (i==0) {                        
+	     Int_t ndiv=8;
+	     Double_t dydiv= sensHeight/ndiv;
+	     Double_t ydiv = -dydiv; 
+	     for (Int_t idiv=0;idiv<ndiv; idiv++){ 
+		 ydiv+= dydiv;
+		 Float_t xdiv =0; 
+		 if (ydiv<30) xdiv= 30. * TMath::Sin( TMath::ACos(ydiv/30.) );
+		 spar[0] = (pcbLength-xdiv)/2.; 
+		 spar[1] = dydiv/2.;
+		 spar[2] = slatWidth/2.; 
+		 
+		 sprintf(volDiv5,"D05%d",idiv);
+		 sprintf(volDiv6,"D06%d",idiv);
+		 
+		 gMC->Gsvolu(volDiv5,"BOX",sensMaterial,spar,3);
+		 Float_t xvol=(pcbLength+xdiv)/2.;
+		 Float_t yvol=ydiv+dydiv/2.;
+		 gMC->Gspos(volDiv5, 1,"C05M", xvol, yvol, zSlat, 0, "ONLY");
+		 gMC->Gspos(volDiv5, 2,"C05M",-xvol, yvol, zSlat, 0, "ONLY");
+		 gMC->Gspos(volDiv5, 3,"C05M", xvol,-yvol,-zSlat, 0, "ONLY");
+		 gMC->Gspos(volDiv5, 4,"C05M",-xvol,-yvol,-zSlat, 0, "ONLY");
+		 gMC->Gspos(volDiv6, 1,"C06M", xvol, yvol, zSlat, 0, "ONLY");
+		 gMC->Gspos(volDiv6, 2,"C06M",-xvol, yvol, zSlat, 0, "ONLY");
+		 gMC->Gspos(volDiv6, 3,"C06M", xvol,-yvol,-zSlat, 0, "ONLY");
+		 gMC->Gspos(volDiv6, 4,"C06M",-xvol,-yvol,-zSlat, 0, "ONLY");
+	     }
+	 }
+ */
      }
 
      // create the sensitive volumes (subdivided as the PCBs),
@@ -625,7 +667,7 @@ void AliMUONv1::CreateGeometry()
      for (i = 0; i<nSlats3; i++){
        sprintf(volNam5,"S05%d",i);
        sprintf(volNam6,"S06%d",i);
-       Float_t xvFrame  = (slatLength[i] - vFrameLength)/2.;
+       Float_t xvFrame  = (slatLength3[i] - vFrameLength)/2.;
        gMC->Gspos("S05V",2*i-1,volNam5, xvFrame, 0., 0. , 0, "ONLY");
        gMC->Gspos("S05V",2*i  ,volNam5,-xvFrame, 0., 0. , 0, "ONLY");
        gMC->Gspos("S06V",2*i-1,volNam6, xvFrame, 0., 0. , 0, "ONLY");
@@ -735,8 +777,8 @@ void AliMUONv1::CreateGeometry()
      gMC->Gspos("C08M", 1, "ALIC", 0., 0., zpos2 , 0, "ONLY");
      
 
-     const Int_t nSlats4 = 7;  // number of slats per quadrant
-     const Int_t nPCB4[nSlats4] = {7,7,6,6,5,4,2}; // n PCB per slat
+     const Int_t nSlats4 = 6;  // number of slats per quadrant
+     const Int_t nPCB4[nSlats4] = {4,5,5,4,3,2}; // n PCB per slat
 
      // slat dimensions: slat is a MOTHER volume!!! made of air
      Float_t slatLength4[nSlats4];     
@@ -746,16 +788,17 @@ void AliMUONv1::CreateGeometry()
      char volNam7[5];
      char volNam8[5];
      Float_t xSlat4;
-     Float_t ySlat41, ySlat42;
+     Float_t ySlat4;
 
 
      for (i = 0; i<nSlats4; i++){
 	 slatLength4[i] = pcbLength * nPCB4[i] + 2. * dSlatLength; 
-	 xSlat4 = slatLength4[i]/2.; 
-	 if (i==0) xSlat4 += 30.;
+	 xSlat4 = slatLength4[i]/2. - vFrameLength/2.; 
+	 if (i==0) xSlat4 += 37.5;
 	 
-	 ySlat41 =  sensHeight * (i+0.5) - yOverlap *i - yOverlap/2.;
-	 ySlat42 = -sensHeight * (i+0.5) + yOverlap *i + yOverlap/2.;
+	 //	 ySlat41 =  sensHeight * (i+0.5) - yOverlap *i - yOverlap/2.;
+	 //	 ySlat42 = -sensHeight * (i+0.5) + yOverlap *i + yOverlap/2.;
+	 ySlat4 =  sensHeight * i - yOverlap *i;
 	 
 	 spar[0] = slatLength4[i]/2.; 
 	 spar[1] = slatHeight/2.;
@@ -764,16 +807,20 @@ void AliMUONv1::CreateGeometry()
 	 Float_t zSlat = (i%2 ==0)? slatWidth/2. : -slatWidth/2.; 
 	 sprintf(volNam7,"S07%d",i);
 	 gMC->Gsvolu(volNam7,"BOX",slatMaterial,spar,3);
-	 gMC->Gspos(volNam7, i*4+1,"C07M", xSlat4, ySlat41, -zSlat, 0, "ONLY");
-	 gMC->Gspos(volNam7, i*4+2,"C07M",-xSlat4, ySlat41, -zSlat, 0, "ONLY");
-	 gMC->Gspos(volNam7, i*4+3,"C07M", xSlat4, ySlat42,  zSlat, 0, "ONLY");
-	 gMC->Gspos(volNam7, i*4+4,"C07M",-xSlat4, ySlat42,  zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam7, i*4+1,"C07M", xSlat4, ySlat4, zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam7, i*4+2,"C07M",-xSlat4, ySlat4, zSlat, 0, "ONLY");
+	 if (i>0) { 
+	   gMC->Gspos(volNam7, i*4+3,"C07M", xSlat4,-ySlat4, zSlat, 0, "ONLY");
+	   gMC->Gspos(volNam7, i*4+4,"C07M",-xSlat4,-ySlat4, zSlat, 0, "ONLY");
+	 }
 	 sprintf(volNam8,"S08%d",i);
 	 gMC->Gsvolu(volNam8,"BOX",slatMaterial,spar,3);
-	 gMC->Gspos(volNam8, i*4+1,"C08M", xSlat4, ySlat41, -zSlat, 0, "ONLY");
-	 gMC->Gspos(volNam8, i*4+2,"C08M",-xSlat4, ySlat41, -zSlat, 0, "ONLY");
-	 gMC->Gspos(volNam8, i*4+3,"C08M", xSlat4, ySlat42,  zSlat, 0, "ONLY");
-	 gMC->Gspos(volNam8, i*4+4,"C08M",-xSlat4, ySlat42,  zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam8, i*4+1,"C08M", xSlat4, ySlat4, zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam8, i*4+2,"C08M",-xSlat4, ySlat4, zSlat, 0, "ONLY");
+	 if (i>0) { 
+	   gMC->Gspos(volNam8, i*4+3,"C08M", xSlat4,-ySlat4, zSlat, 0, "ONLY");
+	   gMC->Gspos(volNam8, i*4+4,"C08M",-xSlat4,-ySlat4, zSlat, 0, "ONLY");
+	 }
      }
 
      // create the sensitive volumes (subdivided as the PCBs),
@@ -929,27 +976,20 @@ void AliMUONv1::CreateGeometry()
 
 
      const Int_t nSlats5 = 7;  // number of slats per quadrant
-     const Int_t nPCB5[nSlats5] = {6,6,6,5,5,4,3}; // n PCB per slat
+     const Int_t nPCB5[nSlats5] = {7,7,6,6,5,4,2}; // n PCB per slat
 
      // slat dimensions: slat is a MOTHER volume!!! made of air
      Float_t slatLength5[nSlats5]; 
-//const Float_t slatHeight = pcbHeight; 
-//   const Float_t slatWidth = sensWidth + 2.*(pcbWidth + insuWidth + 
-// 2.* panelWidth + rohaWidth);
-//   const Int_t slatMaterial = idAir;
-//   const Float_t dSlatLength = vFrameLength; // border on left and right 
-
-     // create and position the slat (mother) volumes 
-//   Float_t spar[3];
      char volNam9[5];
      char volNam10[5];
-     Float_t xSlat5[nSlats5];
-     Float_t ySlat5[nSlats5];
+     Float_t xSlat5;
+     Float_t ySlat5;
 
      for (i = 0; i<nSlats5; i++){
        slatLength5[i] = pcbLength * nPCB5[i] + 2. * dSlatLength; 
-       xSlat5[i] = slatLength5[i]/2.; 
-       ySlat5[i] = sensHeight * (i+0.5) - yOverlap * i; 
+       xSlat5 = slatLength5[i]/2. + vFrameLength/2.; 
+       if (i==0) xSlat5 += 37.5;
+       ySlat5 = sensHeight * i - yOverlap * i; 
        spar[0] = slatLength5[i]/2.; 
        spar[1] = slatHeight/2.;
        spar[2] = slatWidth/2.; 
@@ -957,16 +997,20 @@ void AliMUONv1::CreateGeometry()
        Float_t zSlat = (i%2 ==0)? -slatWidth/2. : slatWidth/2.; 
        sprintf(volNam9,"S09%d",i);
        gMC->Gsvolu(volNam9,"BOX",slatMaterial,spar,3);
-       gMC->Gspos(volNam9, i*4+1,"C09M", xSlat5[i], ySlat5[i], zSlat, 0, "ONLY");
-       gMC->Gspos(volNam9, i*4+2,"C09M",-xSlat5[i], ySlat5[i], zSlat, 0, "ONLY");
-       gMC->Gspos(volNam9, i*4+3,"C09M", xSlat5[i],-ySlat5[i],-zSlat, 0, "ONLY");
-       gMC->Gspos(volNam9, i*4+4,"C09M",-xSlat5[i],-ySlat5[i],-zSlat, 0, "ONLY");
+       gMC->Gspos(volNam9, i*4+1,"C09M", xSlat5, ySlat5, zSlat, 0, "ONLY");
+       gMC->Gspos(volNam9, i*4+2,"C09M",-xSlat5, ySlat5, zSlat, 0, "ONLY");
+       if (i>0) { 
+	 gMC->Gspos(volNam9, i*4+3,"C09M", xSlat5,-ySlat5, zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam9, i*4+4,"C09M",-xSlat5,-ySlat5, zSlat, 0, "ONLY");
+       }
        sprintf(volNam10,"S10%d",i);
        gMC->Gsvolu(volNam10,"BOX",slatMaterial,spar,3);
-       gMC->Gspos(volNam10, i*4+1,"C10M", xSlat5[i], ySlat5[i], zSlat, 0, "ONLY");
-       gMC->Gspos(volNam10, i*4+2,"C10M",-xSlat5[i], ySlat5[i], zSlat, 0, "ONLY");
-       gMC->Gspos(volNam10, i*4+3,"C10M", xSlat5[i],-ySlat5[i],-zSlat, 0, "ONLY");
-       gMC->Gspos(volNam10, i*4+4,"C10M",-xSlat5[i],-ySlat5[i],-zSlat, 0, "ONLY");
+       gMC->Gspos(volNam10, i*4+1,"C10M", xSlat5, ySlat5, zSlat, 0, "ONLY");
+       gMC->Gspos(volNam10, i*4+2,"C10M",-xSlat5, ySlat5, zSlat, 0, "ONLY");
+       if (i>0) { 
+	 gMC->Gspos(volNam10, i*4+3,"C10M", xSlat5,-ySlat5, zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam10, i*4+4,"C10M",-xSlat5,-ySlat5, zSlat, 0, "ONLY");
+       }
      }
 
      // create the sensitive volumes (subdivided as the PCBs),
