@@ -1,32 +1,80 @@
 
-#include "AliHBTReader.h"
+#include "AliHBTReaderITSv1.h"
+#include "AliHBTEvent.h"
+#include "AliHBTRun.h"
+#include "AliHBTParticle.h"
+#include "AliHBTParticleCut.h"
+
+#include <iostream.h>
+
+#include <TROOT.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TBranch.h>
+#include <TObjArray.h>
+#include <TParticle.h>
+#include <TString.h>
+#include <TObjString.h>
+
+#include <AliRun.h>
+#include <AliMagF.h>
+#include <AliKalmanTrack.h>
+#include <AliITSIOTrack.h>
 
 ClassImp(AliHBTReaderITSv1)
+/********************************************************************/
 
-AliHBTReaderITSv1::AliHBTReaderITSv1(const Char_t* goodtracksfilename):
-                 fGoodITSTracksFileName(goodtracksfilename)
-
+AliHBTReaderITSv1::
+AliHBTReaderITSv1(const Char_t* tracksfilename,const Char_t* galicefilename):
+                 fITSTracksFileName(tracksfilename),fGAliceFileName(galicefilename)
  {
      fParticles = new AliHBTRun();
      fTracks    = new AliHBTRun();
      fIsRead = kFALSE;
  }
-AliHBTReaderITSv1::AliHBTReaderITSv1()
+/********************************************************************/
+
+AliHBTReaderITSv1::
+AliHBTReaderITSv1(TObjArray* dirs, const Char_t* tracksfilename,const Char_t* galicefilename):
+                 AliHBTReader(dirs),
+                 fITSTracksFileName(tracksfilename),fGAliceFileName(galicefilename)
+ {
+   fParticles = new AliHBTRun();
+   fTracks    = new AliHBTRun();
+   fIsRead    = kFALSE;
+ }
+/********************************************************************/
+
+AliHBTReaderITSv1::~AliHBTReaderITSv1()
 {
    delete fParticles;
    delete fTracks;
 }
+/********************************************************************/
+
 AliHBTEvent* AliHBTReaderITSv1::GetParticleEvent(Int_t n)
  {
  //returns Nth event with simulated particles
-   if (!fIsRead) Read(fParticles,fTracks);
+   if (!fIsRead) 
+    if(Read(fParticles,fTracks))
+     {
+       Error("GetParticleEvent","Error in reading");
+       return 0x0;
+     }
+
    return fParticles->GetEvent(n);
  }
 /********************************************************************/
+
 AliHBTEvent* AliHBTReaderITSv1::GetTrackEvent(Int_t n)
  {
  //returns Nth event with reconstructed tracks
-   if (!fIsRead) Read(fParticles,fTracks);
+   if (!fIsRead) 
+    if(Read(fParticles,fTracks))
+     {
+       Error("GetTrackEvent","Error in reading");
+       return 0x0;
+     }
    return fTracks->GetEvent(n);
  }
 /********************************************************************/
@@ -34,7 +82,12 @@ AliHBTEvent* AliHBTReaderITSv1::GetTrackEvent(Int_t n)
 Int_t AliHBTReaderITSv1::GetNumberOfPartEvents()
  {
  //returns number of events of particles
-   if (!fIsRead) Read(fParticles,fTracks);
+   if (!fIsRead)
+    if(Read(fParticles,fTracks))
+     {
+       Error("GetNumberOfPartEvents","Error in reading");
+       return 0;
+     }
    return fParticles->GetNumberOfEvents();
  }
 
@@ -42,147 +95,210 @@ Int_t AliHBTReaderITSv1::GetNumberOfPartEvents()
 Int_t AliHBTReaderITSv1::GetNumberOfTrackEvents()
  {
  //returns number of events of tracks
-  if (!fIsRead) Read(fParticles,fTracks);
+  if (!fIsRead) 
+    if(Read(fParticles,fTracks))
+     {
+       Error("GetNumberOfTrackEvents","Error in reading");
+       return 0;
+     }
   return fTracks->GetNumberOfEvents();
  }
 /********************************************************************/
 
 Int_t AliHBTReaderITSv1::Read(AliHBTRun* particles, AliHBTRun *tracks)
- {
-   AliGoodTracksITSv1 *goodITStracks = new AliGoodTracksITSv1(fGoodITSTracksFileName);
+{
+ Int_t Nevents = 0;
+ AliITSIOTrack *iotrack=new AliITSIOTrack;
+ Int_t currentdir = 0;
+ Int_t Ndirs;
+
+ if (fDirs)
+  {
+    Ndirs = fDirs->GetEntries();
+  }
+ else
+  {
+    Ndirs = 0;
+  }
+ 
+ do //do while is good even if 
+  {  
+   TFile* gAliceFile = OpenGAliceFile(currentdir);
+   if(gAliceFile == 0x0)
+    {
+       Error("Read","Can not open the file with gAlice");
+       delete iotrack;
+       return 1;
+    }
+   TFile *file = OpenTrackFile(currentdir);
+   if(file == 0x0)
+    {
+       Error("Read","Can not open the file with ITS tracks V1");
+       delete iotrack;
+       return 2;
+    }
    
-   if (!goodITStracks)
-    {
-     Error("AliHBTReaderITSv1::Read","Exiting due to problems with opening files. Errorcode %d",i);
-     return 1;
-    }
-   for (Int_t currentEvent = 0; currentEvent < goodITStracks->fNevents; currentEvent++)
-    {
-      for(Int_t i =0; i<goodITStracks->fGoodInEvent[currentEvent]; i++)
+   if (gAlice->TreeE())//check if tree E exists
+     {
+      Nevents = (Int_t)gAlice->TreeE()->GetEntries();//if yes get number of events in gAlice
+      cout<<"________________________________________________________\n";
+      cout<<"Found "<<Nevents<<" event(s) in directory "<<GetDirName(currentdir)<<endl;
+      cout<<"Setting Magnetic Field. Factor is "<<gAlice->Field()->Factor()<<endl;
+      AliKalmanTrack::SetConvConst(100/0.299792458/0.2/gAlice->Field()->Factor());
+     }
+    else
+     {//if not return an error
+       Error("Read","Can not find Header tree (TreeE) in gAlice");
+       delete iotrack;
+       return 4;
+     }
+
+   char tname[30];
+   Int_t totalNevents = 0;
+   for (Int_t currentEvent = 0; currentEvent < Nevents; currentEvent++)
+    { 
+      cout<<"Reading Event "<<currentEvent<<endl;
+      
+      sprintf(tname,"TreeT%d",currentEvent);
+      file->cd(); 
+      TTree *tracktree=(TTree*)file->Get(tname);
+      TBranch *tbranch=tracktree->GetBranch("ITStracks");
+      tbranch->SetAddress(&iotrack);
+      
+      gAliceFile->cd();
+      gAlice->GetEvent(currentEvent);
+      gAlice->Particles();
+
+      Int_t nentr=(Int_t)tracktree->GetEntries();
+
+      for (Int_t i=0; i<nentr; i++) 
        {
-         const struct GoodTrackITSv1 & gt = goodTPCTracks->GetTrack(currentEvent,i);
-         
-         if(Pass(gt.code)) continue;
-         
-         Double_t mass = TDatabasePDG::Instance()->GetParticle(gt.code)->Mass();
-         Double_t pEtot = TMath::Sqrt(gt.px*gt.px + gt.py*gt.py + gt.pz*gt.pz + mass*mass);
-         
-         AliHBTParticle* part = new AliHBTParticle(gt.code, gt.px, gt.py, gt.pz, pEtot, gt.x, gt.y, gt.z, 0.0);
-         if(Pass(part)) { delete part; continue;}
-         
-         Double_t tEtot = TMath::Sqrt( gt.pxg*gt.pxg + gt.pyg*gt.pyg + gt.pzg*gt.pzg + mass*mass);
-         
-         AliHBTParticle* track = new AliHBTParticle(gt.code, gt.pxg, gt.pyg , gt.pzg, tEtot, 0., 0., 0., 0.);
-         if(Pass(track)) { delete  track;continue;}
-            
-         particles->AddParticle(currentEvent,part);
-         tracks->AddParticle(currentEvent,track);
-       }
-    }
-  delete goodITStracks;
+
+        tracktree->GetEvent(i);
+        if(!iotrack) continue;       
+        Int_t label = iotrack->GetLabel();
+        if (label < 0) 
+         {
+           continue;
+           delete iotrack;
+         }
+        TParticle *p = (TParticle*)gAlice->Particle(label);
+        if(!p)
+         {
+           Warning("Read","Can not get particle with label &d",label);
+           continue;
+         }
+        if(Pass(p->GetPdgCode())) continue; //check if we are intersted with particles of this type
+                                           //if not take next partilce
+
+        AliHBTParticle* part = new AliHBTParticle(*p);
+        if(Pass(part)) { delete part; continue;}//check if meets all criteria of any of our cuts
+                                                //if it does not delete it and take next good track
+        
+        Double_t px=iotrack->GetPx();
+        Double_t py=iotrack->GetPy();
+        Double_t pz=iotrack->GetPz();
+        Double_t mass = p->GetMass();
+        Double_t tEtot = TMath::Sqrt(px*px + py*py + pz*pz + mass*mass);//total energy of the track
+ 
+        Double_t x= iotrack->GetX();
+        Double_t y= iotrack->GetY();
+        Double_t z= iotrack->GetZ();
+        
+        AliHBTParticle* track = new AliHBTParticle(p->GetPdgCode(), px, py , pz, tEtot, x, y, z, 0.);
+        if(Pass(track)) { delete  track;continue;}//check if meets all criteria of any of our cuts
+                                                  //if it does not delete it and take next good track
+
+        particles->AddParticle(totalNevents,part);//put track and particle on the run
+        tracks->AddParticle(totalNevents,track);
+       }//end loop over tracks in the event
+
+       totalNevents++;
+
+     }//end of loop over events in current directory
+    
+    gAliceFile->Close();
+    delete gAliceFile;
+    gAliceFile = 0;
+    
+    file->Close(); 
+    delete file;
+    file = 0;
+    
+   }while(currentdir < Ndirs);//end of loop over directories specified in fDirs Obj Array
+
+
+  delete iotrack;
   fIsRead = kTRUE;
   return 0;
  
  }
 /********************************************************************/
 
-/********************************************************************/
-/********************************************************************/
-/********************************************************************/
-
-
-AliGoodTracksITSv1::~AliGoodTracksITSv1()
+TFile* AliHBTReaderITSv1::OpenTrackFile(Int_t ndir)
 {
- delete [] fGoodInEvent;
- for (Int_t i = 0;i<fNevents;i++)
-   delete [] fData[i];
- delete [] fData;
-}
-/********************************************************************/
-AliGoodTracksITSv1::AliGoodTracksITSv1(const TString& infilename)
-{
-
-  cout<<"AliGoodTracksITSv1::AliGoodTracksITSv1()  ....\n";
-
-
-  fNevents = 0;
-  Int_t maxevents = 500;
-  
-  ifstream in(infilename.Data());
-
-  if(!in)
+//opens files to be read for given directoru nomber in fDirs Array
+   const TString& dirname = GetDirName(ndir); 
+   if (dirname == "")
     {
-      cerr<<"Can not open file with Good ITSv1 Tracks named:"<<infilename.Data()<<endl;
-      delete this;
-      return;
+      Error("OpenGAliceFile","Can not get directory name");
+      return 0x0;
     }
-
-  
-  fGoodInEvent = new Int_t[maxevents];
-  fData = new struct GoodTrack* [maxevents];
-
-  Int_t i;
-  Int_t lastevent = 0;
-  fGoodInEvent[0] =0;
-  fData[0] = new struct GoodTrack[50000];
-
-  Int_t evno;
-  while(in>>evno)
-   {
-    if(lastevent>evno)
-     {
-       for(i = lastevent;i<=evno;i++)
-        {
-            fGoodInEvent[i] =0;
-            fData[i] = new struct GoodTrack[50000];
-        }
-      lastevent = evno;
-     }
-    if(fGoodInEvent[evno]>=50000)
-     {
-      cerr<<"AliGoodTracksITSv1::AliGoodTracksITSv1() : Not enough place in the array\n";
-      continue;
-     }
-    in>>fData[evno][fGoodInEvent[evno]].lab;
-    in>>fData[evno][fGoodInEvent[evno]].code;
-    in>>fData[evno][fGoodInEvent[evno]].px;
-    in>>fData[evno][fGoodInEvent[evno]].py;
-    in>>fData[evno][fGoodInEvent[evno]].pz;
-    in>>fData[evno][fGoodInEvent[evno]].x;
-    in>>fData[evno][fGoodInEvent[evno]].y;
-    in>>fData[evno][fGoodInEvent[evno]].z;
-    
- /* cout<<evno<<" ";
-  cout<<fData[evno][fGoodInEvent[evno]].lab;
-  cout<<" ";cout<<fData[evno][fGoodInEvent[evno]].code;
-  cout<<" ";cout<<fData[evno][fGoodInEvent[evno]].px;
-  cout<<" ";cout<<fData[evno][fGoodInEvent[evno]].py;
-  cout<<" ";cout<<fData[evno][fGoodInEvent[evno]].pz;
-  cout<<" ";cout<<fData[evno][fGoodInEvent[evno]].x;
-  cout<<" ";cout<<fData[evno][fGoodInEvent[evno]].y;
-  cout<<" ";cout<<fData[evno][fGoodInEvent[evno]].z;
-  cout<<"\n";
- */ 
-  fGoodInEvent[evno]++;
- }
- fNevents = evno+1;
- in.close();
- cout<<"AliGoodTracksITSv1::AliGoodTracksITSv1()  ....  Done\n";
+   TString filename = dirname + "/" + fITSTracksFileName;
+   TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(filename.Data());
+   if (!file) file = new TFile(filename.Data());
+   
+   if (!file)
+    {
+      Error("Read","Can not open file %s",filename.Data());
+      return 0x0;
+    }
+   if (!file->IsOpen())
+    {
+      Error("Read","Can not open file %s",filename.Data());
+      return 0x0;
+    }
+   
+   return file;
 }
 
 
-
-const GoodTrack& AliGoodTracksITSv1::GetTrack(Int_t event, Int_t n) const
- {
+/********************************************************************/
+TFile* AliHBTReaderITSv1::OpenGAliceFile(Int_t ndir)
+{
+  const TString& dirname = GetDirName(ndir); 
+   if (dirname == "")
+    {
+      Error("OpenGAliceFile","Can not get directory name");
+      return 0x0;
+    }
   
-  if( (event>fNevents) || (event<0))
-   {
-     gROOT->Fatal("AliGoodTracksITSv1::GetTrack","No such Event %d",event);
-   }
-  if( (n>fGoodInEvent[event]) || (n<0))
-   {
-     gROOT->Fatal("AliGoodTracksITSv1::GetTrack","No such Good TPC Track %d",n);
-   }
-  return fData[event][n];
+  TString filename = dirname + "/" + fGAliceFileName;
 
- }
+  TFile* gAliceFile = TFile::Open(filename.Data());
+  if ( gAliceFile== 0x0)
+   {
+     Error("OpenFiles","Can't open file named %s",filename.Data());
+     return 0x0;
+   }
+  if (!gAliceFile->IsOpen())
+   {
+     Error("OpenFiles","Can't open file named %s",filename.Data());
+     return 0x0;
+   }
+
+  if (!(gAlice=(AliRun*)gAliceFile->Get("gAlice")))
+   {
+     Error("OpenFiles","gAlice have not been found on %s !\n",filename.Data());
+     gAliceFile->Close();
+     delete gAliceFile;
+     return 0x0;
+   }
+  
+  return gAliceFile;
+}
+
+/********************************************************************/
+/********************************************************************/
+
+
