@@ -48,6 +48,9 @@ AliDetConstruction::AliDetConstruction()
   fDetSwitchVector.Add(new AliDetSwitch("TRD",    2, 1));
   fDetSwitchVector.Add(new AliDetSwitch("ZDC",    3, 2));
 
+  // update messenger
+  fDetSwitchVector.UpdateMessenger();
+
   // instantiate LVtree browser
   AliLVTree::Instance();
 }
