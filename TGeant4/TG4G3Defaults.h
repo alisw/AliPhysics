@@ -1,5 +1,5 @@
 // $Id$
-// Category: physics
+// Category: global
 //
 // Class stores the default G3 values of the kinetic energy cuts
 // for particles and the control process parameters
