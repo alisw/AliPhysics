@@ -26,7 +26,7 @@ public:
   virtual Int_t   CurrentMaterial(Float_t &a, Float_t &z, Float_t &dens, Float_t &radl, Float_t &absl) const =0;
   virtual Int_t   CurrentVol(Text_t*, Int_t&) const =0;
   virtual Int_t   CurrentVolOff(Int_t, Text_t*, Int_t& ) const =0;
-  virtual Int_t   Nvolumes() const =0;
+  virtual Int_t   NofVolumes() const =0;
   virtual Int_t   VolId(Text_t*) const =0;
   virtual void    TrackPosition(Float_t*) const =0;
   virtual void    TrackMomentum(Float_t*) const =0;

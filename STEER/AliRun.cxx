@@ -828,9 +828,9 @@ void AliRun::Init(const char *setup)
    pMC->Ggclos();
    
    //Initialise geometry deposition table
-   sEventEnergy.Set(pMC->Nvolumes()+1);
-   sSummEnergy.Set(pMC->Nvolumes()+1);
-   sSum2Energy.Set(pMC->Nvolumes()+1);
+   sEventEnergy.Set(pMC->NofVolumes()+1);
+   sSummEnergy.Set(pMC->NofVolumes()+1);
+   sSum2Energy.Set(pMC->NofVolumes()+1);
    
    //Create the color table
    pMC->SetColors();
