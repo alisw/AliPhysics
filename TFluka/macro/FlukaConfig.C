@@ -8,28 +8,44 @@ void Config()
   
   
   // libraries required by fluka21
-  cout << "\t* Loading TFluka..." << endl;
-  gSystem->Load("libTFluka");    
+
+  char * gvmc = gSystem->ExpandPathName("$(G4VMC)/examples/macro/g4libs.C");
+  gROOT->LoadMacro(gvmc);
+  g4libs();
+
+  cout << "\t* Loading Flugg..." << endl;  
+  gSystem->Load("libFlugg");    
   
+  cout << "\t* Loading TFluka..." << endl;  
+  gSystem->Load("libTFluka");    
+    
   cout << "\t* Instantiating TFluka..." << endl;
   new  TFluka("C++ Interface to Fluka", 3/*verbositylevel*/);
   
   cout << "\t* Recreating galice.root if needed..." << endl;
-  if (!gSystem->Getenv("CONFIG_FILE")) {
-    TFile  *rootfile = new TFile("galice.root", "recreate");
-    
-    rootfile->SetCompressionLevel(2);
+  
+  if (!gSystem->Getenv("CONFIG_FILE"))
+  {
+      cout<<"Config.C: Creating Run Loader ..."<<endl;
+      AliRunLoader* rl = AliRunLoader::Open("galice.root",AliConfig::fgkDefaultEventFolderName,
+					    "recreate");
+      if (rl == 0x0)
+      {
+	  gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
+	  return;
+      }
+      rl->SetCompressionLevel(2);
+      rl->SetNumberOfEventsPerFile(3);
+      gAlice->SetRunLoader(rl);
   }
+
   
   TFluka *fluka = (TFluka *) gMC;
+  fluka->SetCoreInputFileName("corealice.inp");
   fluka->SetInputFileName("alice.inp");
-  
-  //cout << "<== Config.C..." << endl;
-  //return;
   //
   // Set External decayer
   TVirtualMCDecayer *decayer = new AliDecayerPythia();
-  
   decayer->SetForceDecay(kAll);
   decayer->Init();
   gMC->SetExternalDecayer(decayer);
@@ -37,15 +53,14 @@ void Config()
   //
   // Physics process control
   gMC ->SetProcess("DCAY",1);
-  gMC ->SetProcess("PAIR",1);
-  gMC ->SetProcess("COMP",1);
-  gMC ->SetProcess("PHOT",1);
+  gMC ->SetProcess("PAIR",0);
+  gMC ->SetProcess("COMP",0);
+  gMC ->SetProcess("PHOT",0);
   gMC ->SetProcess("PFIS",0);
   gMC ->SetProcess("DRAY",0);
-  gMC ->SetProcess("ANNI",1);
-  gMC ->SetProcess("BREM",1);
+  gMC ->SetProcess("ANNI",0);
+  gMC ->SetProcess("BREM",0);
   gMC ->SetProcess("MUNU",1);
-  //xx gMC ->SetProcess("CKOV",1);
   gMC ->SetProcess("HADR",1); //Select pure GEANH (HADR 1) or GEANH/NUCRIN (HADR 3)
   gMC ->SetProcess("LOSS",2);
   gMC ->SetProcess("MULS",1);
@@ -53,7 +68,7 @@ void Config()
 
   // Energy cuts
   // (in development)
-  Float_t cut    = 1.e-3; // 1MeV cut by default
+  Float_t cut    = 1.e-1; // 100 MeV cut by default
   Float_t tofmax = 1.e10; 
 
   gMC ->SetCut("CUTGAM",cut);
@@ -74,9 +89,10 @@ void Config()
   // --- Specify event type to be tracked through the ALICE setup
   // --- All positions are in cm, angles in degrees, and P and E in GeV
   if (gSystem->Getenv("CONFIG_NPARTICLES"))
-    int     nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
+      int     nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
   else
-    int     nParticles = 5;
+      int     nParticles = 10;
+  
   cout << "\t* Creating and configuring generator for " << nParticles 
        << " particles..." << endl;
   
@@ -85,8 +101,8 @@ void Config()
   gener->SetMomentumRange(0, 999);
   gener->SetPhiRange(0, 360);
   // Set pseudorapidity range from -8 to 8.
-  Float_t thmin = EtaToTheta(1);   // theta min. <---> eta max
-  Float_t thmax = EtaToTheta(-1);  // theta max. <---> eta min 
+  Float_t thmin = EtaToTheta( 0.1);   // theta min. <---> eta max
+  Float_t thmax = EtaToTheta(-0.1);  // theta max. <---> eta min 
   gener->SetThetaRange(thmin,thmax);
   gener->SetOrigin(0, 0, 0);  //vertex position
   gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
@@ -95,12 +111,9 @@ void Config()
   // Activate this line if you want the vertex smearing to happen
   // track by track
   //
-  //gener->SetVertexSmear(perTrack); 
 
-  cout << "\t* Setting magnetic field..." << endl; 
   gAlice->SetField(-999, 2);  //Specify maximum magnetic field in Tesla (neg. ==> default field)
-
-  cout << "\t* Defining which detectors to load..." << endl;
+  gAlice->SetDebug(10);
   
   Int_t   iABSO  = 0; //1
   Int_t   iCRT   = 0; //Not good ?
@@ -114,7 +127,7 @@ void Config()
   Int_t   iPHOS  = 0; //1
   Int_t   iPIPE  = 0; //1
   Int_t   iPMD   = 0; //Not good (too many regions)
-  Int_t   iRICH  = 0; //1. Not good (no tracking with FRAME)
+  Int_t   iRICH  = 1; //1. Not good (no tracking with FRAME)
   Int_t   iSHIL  = 0; //1. Not good (no tracking) (it works alone)
   Int_t   iSTART = 0; //1. Not good (no tracking) (it works alone)
   Int_t   iTOF   = 0; //1. Not good (no tracking) (newFlagLttc=10000 is outside array bounds if alone)
@@ -276,15 +289,13 @@ void Config()
       //
       //
       //-----------------------------------------------------------------------------
-      
+      //
       //  gROOT->LoadMacro("SetTPCParam.C");
       //  AliTPCParam *param = SetTPCParam();
-      AliTPC *TPC = new AliTPCv2("TPC", "Default");
-      
+      AliTPC *TPC = new AliTPCv1("TPC", "Default");
       // All sectors included 
       TPC->SetSecAL(-1);
       TPC->SetSecAU(-1);
-      
     }
   
   if (iTOF)
@@ -398,10 +409,6 @@ void Config()
       //=================== CRT parameters ============================
       AliVZERO *VZERO = new AliVZEROv2("VZERO", "normal VZERO");
     }
- 
-  
-  cout << "<== Config.C..." << endl;
-  cout << "<== It is me ..." << endl;
 }
 
 Float_t EtaToTheta(Float_t arg){
