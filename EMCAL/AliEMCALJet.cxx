@@ -13,7 +13,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+
+/*
+$Log$
+*/
 
 //*-- Author: Andreas Morsch (CERN)
 
@@ -43,7 +46,7 @@ AliEMCALJet::~AliEMCALJet()
 }
 
 
-void AliEMCALJet::SetTrackList(Int_t n, Float_t* pt, Float_t* eta, Float_t* phi)
+void AliEMCALJet::SetTrackList(Int_t n, Float_t* pt, Float_t* eta, Float_t* phi, Int_t* pdg)
 {
 //
 // 
@@ -52,12 +55,13 @@ void AliEMCALJet::SetTrackList(Int_t n, Float_t* pt, Float_t* eta, Float_t* phi)
 	fPtT [i]  = pt [i];
 	fEtaT[i]  = eta[i];
 	fPhiT[i]  = phi[i];
+	fPdgT[i]  = pdg[i];
     }
 }
 
 
 
-Int_t AliEMCALJet::TrackList(Float_t* pt, Float_t* eta, Float_t* phi)
+Int_t AliEMCALJet::TrackList(Float_t* pt, Float_t* eta, Float_t* phi, Int_t* pdg)
 {
 //
 // 
@@ -65,6 +69,7 @@ Int_t AliEMCALJet::TrackList(Float_t* pt, Float_t* eta, Float_t* phi)
 	pt [i] = fPtT [i];
 	eta[i] = fEtaT[i];
 	phi[i] = fPhiT[i];
+	pdg[i] = fPdgT[i];
     }
     return fNt;
 }

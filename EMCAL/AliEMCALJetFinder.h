@@ -161,12 +161,14 @@ class AliEMCALJetFinder : public TTask {
     Float_t*                       fPtT;             //! Pt   of tracks 
     Float_t*                       fEtaT;            //! Eta  of tracks
     Float_t*                       fPhiT;            //! Phi  of tracks
-
+    Int_t*                         fPdgT;            //! PDG code of tracks
+ 
     Int_t                          fNtB;             //! number of tracks in Bg
     Int_t*                         fTrackListB;      //! List of selected tracks in Bg
     Float_t*                       fPtB;             //! Pt   of tracks in Bg
     Float_t*                       fEtaB;            //! Eta  of tracks in Bg
     Float_t*                       fPhiB;            //! Phi  of tracks in Bg
+    Int_t*                         fPdgB;            //! PDG  of tracks in Bg
 
     // parameter for jet_finder_ua1
     Int_t                          fMode;            // key for BG subtraction
