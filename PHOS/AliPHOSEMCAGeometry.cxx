@@ -39,7 +39,7 @@ AliPHOSEMCAGeometry::AliPHOSEMCAGeometry()
   fNZ         = 64 ; 
 
   fXtlSize[0] =  2.2 ;
-  fXtlSize[1] = 22.0 ;
+  fXtlSize[1] = 18.0 ;
   fXtlSize[2] =  2.2 ;
 
   // all these numbers coming next are subject to changes
@@ -60,13 +60,13 @@ AliPHOSEMCAGeometry::AliPHOSEMCAGeometry()
   fIPtoCrystalSurface     = 460.0 ;  
   
   //fPinDiodeSize[0] = 1.71 ;   //Values of ame PIN diode  
-  //fPinDiodeSize[1] = 0.0280 ; // 0.0280 is the depth of active layer
+  //fPinDiodeSize[1] = 0.0280 ; // OHO 0.0280 is the depth of active layer
   //fPinDiodeSize[2] = 1.61 ;    
  
   fPinDiodeSize[0] = 0.5000 ;    // APD 5 mm side
   //fPinDiodeSize[1] = 0.0200 ;  // APD bulk thickness
   fPinDiodeSize[1] = 0.0100 ;    // APD bulk thickness
-  //According to Y. M. (cms) is it 50 micrometer I use 100 micrometers
+  //According to Y. M. (cms) is it 50 micrometer I use 100 micrometers OHO
   fPinDiodeSize[2] = 0.5000 ;    // APD 5 mm side 
  
   fUpperCoolingPlateThickness   = 0.06 ; 
