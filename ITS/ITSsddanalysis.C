@@ -433,7 +433,6 @@ void ITSsddanalysis (Int_t evNumber1=0,Int_t evNumber2=0)
 	Int_t pntmin = -1;
 
 	//printf("point loop\n");
-
 	for (Int_t pnt=0;pnt<nrecp;pnt++) {
 	  itsPnt  = (AliITSRecPoint*)ITSrec->At(pnt);
 	  if(!itsPnt) continue;
@@ -481,79 +480,81 @@ void ITSsddanalysis (Int_t evNumber1=0,Int_t evNumber2=0)
           if(TMath::Abs(adiff) < 1. && TMath::Abs(tdiff) < 100.) {
             inmatches++;
 	  }
-	  if( pntmin > -1 ) {
-	    if( flagP[pntmin] == 1) continue;
-	    flagP[pntmin] = 1;
-	    itsClu  = (AliITSRawClusterSDD*)ITSclu->At( pntmin );
-	    Float_t Pand = (Float_t) itsClu->A();
-	    Float_t Ptim = (Float_t) itsClu->T();
-	    Float_t Pwng = (Float_t) itsClu->W();
-	    Float_t sigma = itsClu->Asigma();
-	    Float_t tau = itsClu->Tsigma();
-	    Int_t pntands = itsClu->Anodes();
-	    if(Pwng == 1) Ptim *= -1.;
-	    Float_t adiff = And-Pand;
-	    Float_t tdiff = Tim-Ptim;
-	    if(Pwng == 1) tdiff *=-1.;
-	    local->Fill(adiff,tdiff);
-	    
-	    Float_t dpath = Ptim*vdrift/1000.;
-	    Float_t dpathh = Tim*vdrift/1000.;
-	    Float_t adpath = TMath::Abs(dpath);
-	    Float_t adpathh = TMath::Abs(dpathh);
-	    Float_t apdiff = adiff*apitch;
-	    Float_t tpdiff = tdiff*vdrift;
-	    aa->Fill(Pand,And);
-	    
-	    Int_t pntands = itsClu->Anodes();
-	    if(pntands == 1) {
-	      at1->Fill(adpath,apdiff);
-	      tt1->Fill(adpath,tpdiff);
-	    } 
-	    if(pntands == 2) {
-	      at2->Fill(adpath,apdiff);
-	      tt2->Fill(adpath,tpdiff);
-	    } 
-	    
-	    at->Fill(adpathh,apdiff);
-	    tt->Fill(adpathh,tpdiff);
-	    asigma->Fill(adpathh,sigma);
-	    tsigma->Fill(adpathh,tau);
-	    if(pntands == 2) asigma2->Fill(adpathh,sigma);
-	    
-	    Float_t *lP = new Float_t[3];
-	    lP[0] = itsPnt->GetX();
-	    lP[1] = 0.;
-	    lP[2] = itsPnt->GetZ();
-	    Float_t *gP = new Float_t[3];
-	    aliitsgeo->LtoG(LayerH,LadderH,DetH,lP,gP);
-	    Float_t dx = avx - gP[0];
-	    Float_t dy = avy - gP[1];
-	    Float_t dz = avz - gP[2];
-	    delete lP;
-	    delete gP;
-	    
-	    Float_t pntchrg = itsClu->Q();
-	    Float_t dq = DepEnergy/0.122 - pntchrg;
-	    Float_t rq = 0;
-	    if(pntchrg != 0) rq = DepEnergy/0.122/((Float_t) pntchrg);
-	    if(LayerH == 3) {
-	      xy3->Fill(dx,dy);
-	      xz3->Fill(dz,dx);
-	      yz3->Fill(dz,dy);
-	    } else if(LayerH == 4) {
-	      xy4->Fill(dx,dy);
-	      xz4->Fill(dz,dx);
-	      yz4->Fill(dz,dy);
-	    }
-	    chd->Fill(dq);
-	    if(rq != 0.) chr->Fill(rq); 
-	    
-	    rec_vs_time->Fill(adpathh);
-	    if(Layer==3) rec_vs_time3->Fill(adpathh);
-	    if(Layer==4) rec_vs_time4->Fill(adpathh);
+	} // loop (points)
+
+	if( pntmin > -1 ) {
+	  if( flagP[pntmin] == 1) continue;
+	  flagP[pntmin] = 1;
+	  itsClu  = (AliITSRawClusterSDD*)ITSclu->At( pntmin );
+	  Float_t Pand = (Float_t) itsClu->A();
+	  Float_t Ptim = (Float_t) itsClu->T();
+	  Float_t Pwng = (Float_t) itsClu->W();
+	  Float_t sigma = itsClu->Asigma();
+	  Float_t tau = itsClu->Tsigma();
+	  Int_t pntands = itsClu->Anodes();
+	  if(Pwng == 1) Ptim *= -1.;
+	  Float_t adiff = And-Pand;
+	  Float_t tdiff = Tim-Ptim;
+	  if(Pwng == 1) tdiff *=-1.;
+	  local->Fill(adiff,tdiff);
+	  
+	  Float_t dpath = Ptim*vdrift/1000.;
+	  Float_t dpathh = Tim*vdrift/1000.;
+	  Float_t adpath = TMath::Abs(dpath);
+	  Float_t adpathh = TMath::Abs(dpathh);
+	  Float_t apdiff = adiff*apitch;
+	  Float_t tpdiff = tdiff*vdrift;
+	  aa->Fill(Pand,And);
+	  
+	  Int_t pntands = itsClu->Anodes();
+	  if(pntands == 1) {
+	    at1->Fill(adpath,apdiff);
+	    tt1->Fill(adpath,tpdiff);
+	  } 
+	  if(pntands == 2) {
+	    at2->Fill(adpath,apdiff);
+	    tt2->Fill(adpath,tpdiff);
+	  } 
+	  
+	  at->Fill(adpathh,apdiff);
+	  tt->Fill(adpathh,tpdiff);
+	  asigma->Fill(adpathh,sigma);
+	  tsigma->Fill(adpathh,tau);
+	  if(pntands == 2) asigma2->Fill(adpathh,sigma);
+	  
+	  Float_t *lP = new Float_t[3];
+	  lP[0] = itsPnt->GetX();
+	  lP[1] = 0.;
+	  lP[2] = itsPnt->GetZ();
+	  Float_t *gP = new Float_t[3];
+	  aliitsgeo->LtoG(LayerH,LadderH,DetH,lP,gP);
+	  Float_t dx = avx - gP[0];
+	  Float_t dy = avy - gP[1];
+	  Float_t dz = avz - gP[2];
+	  delete lP;
+	  delete gP;
+	  
+	  Float_t pntchrg = itsClu->Q();
+	  Float_t dq = DepEnergy/0.122 - pntchrg;
+	  Float_t rq = 0;
+	  if(pntchrg != 0) rq = DepEnergy/0.122/((Float_t) pntchrg);
+	  if(LayerH == 3) {
+	    xy3->Fill(dx,dy);
+	    xz3->Fill(dz,dx);
+	    yz3->Fill(dz,dy);
+	  } else if(LayerH == 4) {
+	    xy4->Fill(dx,dy);
+	    xz4->Fill(dz,dx);
+	    yz4->Fill(dz,dy);
 	  }
+	  chd->Fill(dq);
+	  if(rq != 0.) chr->Fill(rq); 
+	  
+	  rec_vs_time->Fill(adpathh);
+	  if(Layer==3) rec_vs_time3->Fill(adpathh);
+	  if(Layer==4) rec_vs_time4->Fill(adpathh);
 	}
+	
 	nmatch->Fill(inmatches);
       }  // loop hits
       
