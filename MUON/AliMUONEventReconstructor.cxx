@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/06/30 12:01:06  gosset
+Correction for hit search in the right chamber (JPC)
+
 Revision 1.5  2000/06/30 10:15:48  gosset
 Changes to EventReconstructor...:
 precision fit with multiple Coulomb scattering;
@@ -1160,11 +1163,11 @@ void AliMUONEventReconstructor::FollowTracks(void)
 	trackParamVertex = *trackParam1;
 	(&trackParamVertex)->ExtrapToVertex();
 	track->SetTrackParamAtVertex(&trackParamVertex);
-      }
-      if (fPrintLevel >= 1) {
-	cout << "FollowTracks: track candidate(0..): " << trackIndex
-	     << " after extrapolation to vertex" << endl;
-	track->RecursiveDump();
+	if (fPrintLevel >= 1) {
+	  cout << "FollowTracks: track candidate(0..): " << trackIndex
+	       << " after extrapolation to vertex" << endl;
+	  track->RecursiveDump();
+	}
       }
     } // for (station = 2;...
     // go really to next track
