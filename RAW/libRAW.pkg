@@ -8,7 +8,9 @@ SRCS:=  AliRawEvent.cxx \
 
 HDRS:= $(SRCS:.cxx=.h)
 
-DHDR:= LinkDef.h
+EHDRS:=$(ROOTSYS)/include/TH1F.h
+
+DHDR:= LinkDef.h 
 
 ifdef DATE_ROOT
 EINCLUDE+= ${DATE_COMMON_DEFS}
