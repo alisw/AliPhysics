@@ -212,7 +212,7 @@ void AliZDCFragment::GenerateIMF(Int_t* fZZ, Int_t &fNalpha)
 
    // Extract randomly the charge of the fragments from the distribution
  
-   Float_t zz[fNimf];
+   Float_t * zz = new Float_t[fNimf];
    for(Int_t j=0; j<fNimf; j++){
       zz[j] =0;
    }
@@ -223,7 +223,7 @@ void AliZDCFragment::GenerateIMF(Int_t* fZZ, Int_t &fNalpha)
    delete funTau;
    
    // Sorting vector in ascending order with C function QSORT 
-   qsort((void*)zz,fNimf,sizeof(float),comp);
+   qsort((void*)zz,fNimf,sizeof(Float_t),comp);
 
    
 //   for(Int_t i=0; i<fNimf; i++){
@@ -236,6 +236,8 @@ void AliZDCFragment::GenerateIMF(Int_t* fZZ, Int_t &fNalpha)
      if(fZZ[j]<3) fZZ[j] = 3;
 //     printf("\n 	fZZ[%d] = %d \n",j,fZZ[j]);
    }
+
+   delete[] zz;
    
    // Check that the sum of the bound charges is not > than Zbound-Zalfa
    
