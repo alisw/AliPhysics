@@ -82,6 +82,7 @@ void AliTRDClusterErrAnal::SetIO(Int_t event)
   fHitTree = fTRDLoader->TreeH();
   fClusterTree = fTRDLoader->TreeR();
   fReferenceTree = fRunLoader->TreeTR();
+  fTracker->LoadClusters(fClusterTree);
   //
 }
 
@@ -97,6 +98,9 @@ void AliTRDClusterErrAnal::LoadClusters()
     Error("ReadClusters","Can't get the branch !");
     return;
   }
+  Int_t over5 =0;
+  Int_t over10=0;
+
   branch->SetAddress(&ClusterArray);
   Int_t nentries = (Int_t)fClusterTree->GetEntries();
   for (Int_t i=0;i<nentries;i++){
@@ -106,10 +110,12 @@ void AliTRDClusterErrAnal::LoadClusters()
       AliTRDcluster* c = (AliTRDcluster*)ClusterArray->UncheckedAt(iCluster);
       carray.AddLast(c);
       ClusterArray->RemoveAt(iCluster);
+      if (c->GetQ()>5)  over5++;
+      if (c->GetQ()>10) over10++;
     }
   }
   Int_t nClusters = carray.GetEntriesFast();
-  printf("Total number of clusters %d \n", nClusters);
+  printf("Total number of clusters %d\t%d\t%d\n", nClusters,over5,over10);
   //
   //
   //SORT clusters
@@ -423,6 +429,7 @@ Int_t AliTRDClusterErrAnal::Analyze(Int_t trackmax) {
       Int_t nclusters = cllocal.GetEntriesFast();
       Float_t maxdist = 10;
       AliTRDcluster * nearestcluster =0;
+      clinfo->fNClusters=0;
       //find nearest cluster to hit with given label
       for (Int_t icluster =0; icluster<nclusters; icluster++){
 	AliTRDcluster * cluster = (AliTRDcluster*)cllocal.UncheckedAt(icluster);
@@ -430,7 +437,8 @@ Int_t AliTRDClusterErrAnal::Analyze(Int_t trackmax) {
 	if ( (cluster->GetLabel(0)!= itrack) &&  (cluster->GetLabel(1)!= itrack)&&(cluster->GetLabel(2)!= itrack))
 	  continue;
 	Float_t dist = TMath::Abs(cluster->GetY()-point->fTY);
-	if (TMath::Abs(cluster->GetZ()-point->fTZ)>5.5) continue; 
+	if (TMath::Abs(cluster->GetZ()-point->fTZ)>5.5 || dist>3.) continue; 
+	clinfo->fNClusters++;
 	if (dist<maxdist){
 	  maxdist = dist;
 	  nearestcluster = cluster;

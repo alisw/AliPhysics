@@ -130,8 +130,8 @@ Float_t AliITSCI::GetExpectedQ()
 
 /*
 
-.L $ALICE_ROOT/COMPARISON/AliITSclusterComparison.C+ 
-.L $ALICE_ROOT/COMPARISON/AliGenInfo.C+ 
+.L AliITSclusterComparison.C+  
+.L AliGenInfo.C+ 
  
 AliITSClusterErrAnal anal;
 anal.SetIO(0); 

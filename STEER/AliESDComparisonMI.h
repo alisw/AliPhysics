@@ -16,7 +16,7 @@ public:
   ~AliESDRecInfo(){}
   void UpdatePoints(AliESDtrack* track);
   void Update(AliMCInfo* info,AliTPCParam * par, Bool_t reconstructed);
-  Float_t    fTPCPoints[4]; //start , biggest end points + max density
+  Float_t    fTPCPoints[10]; //start , biggest end points,max density .. density at the last 30 pad-rows
   Double_t fTPCinR0[5];   //generated position of the track at inner tpc - radius [3] and fi [4]
   Double_t fTPCinR1[5];   //reconstructed postion of the track           - radius [3] and fi [
   Double_t fTPCinP0[5];   //generated position of the track at inner tpc
@@ -78,7 +78,7 @@ public:
   Double_t       fPdr[3];    //momentum at vertex daughter  - according approx at DCA
   Double_t       fXr[3];     //rec. position according helix
   //
-  Double_t       fMinR;     // minimum radius in rphi intersection
+  Double_t       fRs[2];     // minimum radius in rphi intersection
   Double_t       fDistMinR; // distance at minimal radius
   Double_t       fPm[3];    //momentum at the vertex mother
   Double_t       fAngle[3]; //three angles
@@ -160,6 +160,7 @@ public:
   Int_t TreeTLoop();
   Int_t BuildKinkInfo0(Int_t eventNr); // build kink info 0
   Int_t BuildV0Info(Int_t eventNr); // build kink info 0
+  void  MakePoints(AliESDtrack * track, AliPointsMI &points);
   void SetFirstEventNr(Int_t i) {fFirstEventNr = i;}
   void SetNEvents(Int_t i) {fNEvents = i;}
   void SetDebug(Int_t level) {fDebug = level;}
@@ -192,17 +193,17 @@ private:
   AliRunLoader * fLoader;         //! pointer to the run loader
   //TTree *fTreeRecTracks;          //! tree with reconstructed tracks
   //
-  Int_t *fIndexRecTracks;         //! index of particle label in the TreeT_ESD
-  Int_t *fFakeRecTracks;          //! number of fake tracks
-  Int_t *fMultiRecTracks;         //! number of multiple reconstructions
+  Short_t *fIndexRecTracks;         //! index of particle label in the TreeT_ESD
+  Short_t *fFakeRecTracks;          //! number of fake tracks
+  Short_t *fMultiRecTracks;         //! number of multiple reconstructions
   //
-  Int_t *fIndexRecKinks;         //! index of particle label in treeesd
-  Int_t *fMultiRecKinks;         //! number of multiple reconstructions
-  Int_t *fSignedKinks;                //! indicator that kink was not fake
+  Short_t *fIndexRecKinks;         //! index of particle label in treeesd
+  Short_t *fMultiRecKinks;         //! number of multiple reconstructions
+  Short_t *fSignedKinks;           //! indicator that kink was not fake
   //
-  Int_t *fIndexRecV0;         //! index of particle label in treeesd
-  Int_t *fMultiRecV0;         //! number of multiple reconstructions
-  Int_t *fSignedV0;                //! indicator that kink was not fake
+  Short_t *fIndexRecV0;         //! index of particle label in treeesd
+  Short_t *fMultiRecV0;         //! number of multiple reconstructions
+  Short_t *fSignedV0;                //! indicator that kink was not fake
   //
   TObjArray *fRecArray;           // container with rec infos
   AliESD *fEvent;                 //!event

@@ -41,13 +41,17 @@ t2->Exec();
 TCut cprim("cprim","TMath::Sqrt(MC.fVDist[0]**2+MC.fVDist[1]**2)<0.01&&abs(MC.fVDist[2])<0.01")
 //TCut cprim("cprim","TMath::Sqrt(MC.fVDist[0]**2+MC.fVDist[1]**2)<0.5&&abs(MC.fVDist[2])<0.5")
 //TCut citsin("citsin","TMath::Sqrt(MC.fVDist[0]**2+MC.fVDist[1]**2)<3.9");
-TCut citsin("citsin","TMath::Sqrt(MC.fVDist[0]**2+MC.fVDist[1]**2)<15");
-
+TCut citsin("citsin","TMath::Sqrt(MC.fVDist[0]**2+MC.fVDist[1]**2)<5");
 TCut csec("csec","TMath::Sqrt(MC.fVDist[0]**2+MC.fVDist[1]**2)>0.5");
+
+
+
 
 
 TCut crec("crec","fReconstructed==1");
 TCut cteta1("cteta1","abs(MC.fParticle.Theta()/3.1415-0.5)<0.25");
+TCut cteta05("cteta05","abs(MC.fParticle.Theta()/3.1415-0.5)<0.1");
+
 TCut cpos1("cpos1","abs(MC.fParticle.fVz/sqrt(MC.fParticle.fVx*MC.fParticle.fVx+MC.fParticle.fVy*MC.fParticle.fVy))<1");
 TCut csens("csens","abs(sqrt(fVDist[0]**2+fVDist[1]**2)-170)<50");
 TCut cmuon("cmuon","abs(MC.fParticle.fPdgCode==-13)");
@@ -66,19 +70,20 @@ comp.fTree->SetAlias("direction","MC.fParticle.fVx*MC.fParticle.fPx+MC.fParticle
 comp.fTree->SetAlias("decaydir","MC.fTRdecay.fX*MC.fTRdecay.fPx+MC.fTRdecay.fY*MC.fTRdecay.fPy");
 comp.fTree->SetAlias("theta","MC.fTrackRef.Theta()");
 comp.fTree->SetAlias("primdca","sqrt(RC.fITStrack.fD[0]**2+RC.fITStrack.fD[1]**2)");
-
 comp.fTree->SetAlias("trdchi2","fTRDtrack.fChi2/fTRDtrack.fN");
+comp.fTree->SetAlias("trdchi2","fTRDtrack.fChi2/fTRDtrack.fN");
+
 
 TH1F his("his","his",100,0,20);
 TH1F hpools("hpools","hpools",100,-7,7);
 TH1F hfake("hfake","hfake",1000,0,150);
 TProfile profp0("profp0","profp0",20,-0.4,0.9)
 
-comp.DrawLogXY("fTPCinP0[3]","fTPCDelta[4]/fTPCinP1[3]","fReconstructed==1"+cprim,"1",4,0.2,1.5,-0.06,0.06)
+comp.DrawXY("fTPCinP0[3]","fTPCDelta[4]/fTPCinP1[3]","fReconstructed==1"+cprim,"1",4,0.2,1.5,-0.06,0.06)
 comp.fRes->Draw();
 comp.fMean->Draw();  
 
-comp.DrawLogXY("fITSinP0[3]","fITSDelta[4]/fITSinP1[3]","fReconstructed==1&&fITSOn"+cprim,"1",4,0.2,1.5,-0.06,0.06)
+comp.DrawXY("fITSinP0[3]","fITSDelta[4]/fITSinP1[3]","fReconstructed==1&&fITSOn"+cprim,"1",4,0.2,1.5,-0.06,0.06)
 comp.fRes->Draw();
 
 comp.Eff("fTPCinP0[3]","fRowsWithDigits>120"+cteta1+cpos1+cprim,"fTPCOn",20,0.2,1.5)
@@ -94,26 +99,36 @@ comp.fTree->Draw("fESDTrack.fITSsignal/fESDTrack.fTPCsignal","fITSOn&&fTPCOn&&fE
 TH1F his("his","his",100,0,20);
 TH1F hpools("hpools","hpools",100,-7,7);
 
-TH2F * hdedx0 = new TH2F("dEdx0","dEdx0",100, 0,2,200,0,550); hdedx0->SetMarkerColor(2);
-TH2F * hdedx1 = new TH2F("dEdx1","dEdx1",100, 0,2,200,0,550); hdedx1->SetMarkerColor(3);
-TH2F * hdedx2 = new TH2F("dEdx2","dEdx2",100, 0,2,200,0,550); hdedx2->SetMarkerColor(4);
-TH2F * hdedx3 = new TH2F("dEdx3","dEdx3",100, 0,2,200,0,550); hdedx3->SetMarkerColor(6);
+TH2F * hdedx0 = new TH2F("dEdx0","dEdx0",100, 0,2,200,0,550); hdedx0->SetMarkerColor(1);
+TH2F * hdedx1 = new TH2F("dEdx1","dEdx1",100, 0,2,200,0,550); hdedx1->SetMarkerColor(4);
+TH2F * hdedx2 = new TH2F("dEdx2","dEdx2",100, 0,2,200,0,550); hdedx2->SetMarkerColor(3);
+TH2F * hdedx3 = new TH2F("dEdx3","dEdx3",100, 0,2,200,0,550); hdedx3->SetMarkerColor(2);
 
-comp.fTree->Draw("fESDTrack.fITSsignal:MC.fParticle.P()>>dEdx0","fITSOn&&MC.fParticle.P()<2&&abs(fPdg)==211&&fITStrack.fN==6"+cprim) 
-comp.fTree->Draw("fESDTrack.fITSsignal:MC.fParticle.P()>>dEdx1","fITSOn&&MC.fParticle.P()<2&&abs(fPdg)==2212&&fITStrack.fN==6"+cprim) 
-comp.fTree->Draw("fESDTrack.fITSsignal:MC.fParticle.P()>>dEdx2","fITSOn&&MC.fParticle.P()<2&&abs(fPdg)==321&&fITStrack.fN==6"+cprim) 
-comp.fTree->Draw("fESDTrack.fITSsignal:MC.fParticle.P()>>dEdx3","fITSOn&&MC.fParticle.P()<2&&abs(fPdg)==11&&fITStrack.fN==6"+cprim) 
-
-
-comp.fTree->Draw("fESDTrack.fTRDsignal:MC.fParticle.P()>>dEdx0","fTRDOn&&MC.fParticle.P()<2&&abs(fPdg)==211&&fTRDtrack.fN>40&&abs(fESDTrack.fTRDLabel)==abs(fESDTrack.fTPCLabel)") 
-comp.fTree->Draw("fESDTrack.fTRDsignal:MC.fParticle.P()>>dEdx1","fTRDOn&&MC.fParticle.P()<2&&abs(fPdg)==2212&&fTRDtrack.fN>40&&abs(fESDTrack.fTRDLabel)==abs(fESDTrack.fTPCLabel)") 
-comp.fTree->Draw("fESDTrack.fTRDsignal:MC.fParticle.P()>>dEdx2","fTRDOn&&MC.fParticle.P()<2&&abs(fPdg)==321&&fTRDtrack.fN>40&&abs(fESDTrack.fTRDLabel)==abs(fESDTrack.fTPCLabel)") 
-comp.fTree->Draw("fESDTrack.fTRDsignal:MC.fParticle.P()>>dEdx3","fTRDOn&&MC.fParticle.P()<2&&abs(fPdg)==11&&fTRDtrack.fN>40&&abs(fESDTrack.fTRDLabel)==abs(fESDTrack.fTPCLabel)") 
+comp.fTree->Draw("fESDTrack.fITSsignal:MC.fParticle.P()>>dEdx0","fITSOn&&abs(fPdg)==211&&fITStrack.fN==6"+cprim) 
+comp.fTree->Draw("fESDTrack.fITSsignal:MC.fParticle.P()>>dEdx1","fITSOn&&abs(fPdg)==2212&&fITStrack.fN==6"+cprim) 
+comp.fTree->Draw("fESDTrack.fITSsignal:MC.fParticle.P()>>dEdx2","fITSOn&&abs(fPdg)==321&&fITStrack.fN==6"+cprim) 
+comp.fTree->Draw("fESDTrack.fITSsignal:MC.fParticle.P()>>dEdx3","fITSOn&&abs(fPdg)==11&&fITStrack.fN==6"+cprim) 
 
 
-hdedx1->Draw(); hdedx0->Draw("same"); hdedx2->Draw("same"); hdedx3->Draw("same");
+comp.fTree->Draw("fESDTrack.fTRDsignal:MC.fParticle.P()>>dEdx0","fTRDOn&&abs(fPdg)==211&&fTRDtrack.fN>40&&fStatus[2]>1") 
+comp.fTree->Draw("fESDTrack.fTRDsignal:MC.fParticle.P()>>dEdx1","fTRDOn&&abs(fPdg)==2212&&fTRDtrack.fN>40&&fStatus[2]>1") 
+comp.fTree->Draw("fESDTrack.fTRDsignal:MC.fParticle.P()>>dEdx2","fTRDOn&&abs(fPdg)==321&&fTRDtrack.fN>40&&fStatus[2]>1") 
+comp.fTree->Draw("fESDTrack.fTRDsignal:MC.fParticle.P()>>dEdx3","fTRDOn&&abs(fPdg)==11&&fTRDtrack.fN>40&&fStatus[2]>1") 
+
+comp.fTree->Draw("fESDTrack.fTPCsignal:MC.fParticle.P()>>dEdx0","fTRDOn&&abs(fPdg)==211&&fTRDtrack.fN>40&&abs(fESDTrack.fTRDLabel)==abs(fESDTrack.fTPCLabel)") 
+comp.fTree->Draw("fESDTrack.fTPCsignal:MC.fParticle.P()>>dEdx1","fTRDOn&&abs(fPdg)==2212&&fTRDtrack.fN>40&&abs(fESDTrack.fTRDLabel)==abs(fESDTrack.fTPCLabel)") 
+comp.fTree->Draw("fESDTrack.fTPCsignal:MC.fParticle.P()>>dEdx2","fTRDOn&&abs(fPdg)==321&&fTRDtrack.fN>40&&abs(fESDTrack.fTRDLabel)==abs(fESDTrack.fTPCLabel)") 
+comp.fTree->Draw("fESDTrack.fTPCsignal:MC.fParticle.P()>>dEdx3","fTRDOn&&abs(fPdg)==11&&fTRDtrack.fN>40&&abs(fESDTrack.fTRDLabel)==abs(fESDTrack.fTPCLabel)") 
+
+
+hdedx3->Draw(); hdedx1->Draw("same"); hdedx2->Draw("same"); hdedx0->Draw("same");
 
 comp.DrawXY("fITSinP0[3]","fITSPools[4]","fReconstructed==1&&fPdg==-211&&fITSOn"+cprim,"1",4,0.2,1.0,-8,8)
+
+TProfile prof("prof","prof",10,0.5,5);
+
+
+
 
 */
 
@@ -235,12 +250,36 @@ void  AliESDRecInfo::UpdatePoints(AliESDtrack*track)
     fTPCPoints[0]=i;
   }
   //
+  // Density at the last 30 padrows
+  //
+  // 
+  nall  = 0;
+  ngood = 0;
+  for (Int_t i=159;i>0;i--){
+    if (iclusters[i]==-1) continue; //dead zone
+    nall++;
+    if (iclusters[i]>0)   ngood++;
+    if (nall>20) break;
+  }
+  fTPCPoints[4] = Float_t(ngood)/Float_t(nall);
+  //
   if ((track->GetStatus()&AliESDtrack::kITSrefit)>0) fTPCPoints[0]=-1;
+  //
+  //
+  // check TRDPoints
+  /*
+  nclusters=track->GetTRDclusters(iclusters);
+  for (Int_t i=nclusters;i>0;i--){
+    
+  }
+  */
+
+
 }
 
 //
 //
-void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * par, Bool_t reconstructed)
+void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconstructed)
 {
   //
   //
@@ -315,6 +354,19 @@ void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * par, Bool_t reconstruct
     }      
   }
   //
+  if ((fESDTrack.GetStatus()&AliESDtrack::kITSout)>0){
+    fStatus[0] =2;
+  }
+  else{
+    if ((fESDTrack.GetStatus()&AliESDtrack::kITSrefit)>0){
+      fStatus[0] =1;
+    }
+    else{
+      fStatus[0]=0;
+    }      
+  }
+
+  //
   //
   if ((fESDTrack.GetStatus()&AliESDtrack::kTRDrefit)>0){
     fStatus[2] =2;
@@ -344,12 +396,15 @@ void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * par, Bool_t reconstruct
     Int_t toflabel[3];
     fESDTrack.GetTOFLabel(toflabel);
     Bool_t toffake=kTRUE;
+    Bool_t tofdaughter=kFALSE;
     for (Int_t i=0;i<3;i++){
-      if (toflabel[i]<0) continue;
+      if (toflabel[i]<0) continue;      
       if (toflabel[i]== TMath::Abs(fESDTrack.GetLabel()))  toffake=kFALSE;	
+      if (toflabel[i]==info->fParticle.GetDaughter(0) || (toflabel[i]==info->fParticle.GetDaughter(1))) tofdaughter=kTRUE;  // decay product of original particle
       fStatus[3]=1;
     }
-    if (toffake) fStatus[3] =2;
+    if (toffake) fStatus[3] =3;       //total fake
+    if (tofdaughter) fStatus[3]=2;    //fake because of decay
   }else{
     fStatus[3]=0;
   }
@@ -372,7 +427,7 @@ void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * par, Bool_t reconstruct
     Double_t cov[15], param[5],x;
     fESDTrack.GetInnerExternalCovariance(cov);
     fESDTrack.GetInnerExternalParameters(x,param);
-    //    if (x<50) return 
+    if (x<50) return ;
     //
     fTPCDelta[0] = (fTPCinR0[4]-fTPCinR1[4])*fTPCinR1[3];  //delta rfi
     fTPCPools[0] = fTPCDelta[0]/TMath::Sqrt(cov[0]);
@@ -390,11 +445,11 @@ void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * par, Bool_t reconstruct
   if (fITSOn){
     // ITS 
     Double_t param[5],x;
-    //fESDTrack.GetExternalParameters(x,param);   
-    fESDTrack.GetConstrainedExternalParameters(x,param);   
+    fESDTrack.GetExternalParameters(x,param);   
+    //    fESDTrack.GetConstrainedExternalParameters(x,param);   
     Double_t cov[15];
     fESDTrack.GetExternalCovariance(cov);
-    fESDTrack.GetConstrainedExternalCovariance(cov);
+    //fESDTrack.GetConstrainedExternalCovariance(cov);
     if (TMath::Abs(param[4])<0.0000000001) return;
 
     fESDTrack.GetXYZ(fITSinR1);
@@ -437,12 +492,27 @@ void  AliESDRecV0Info::Update(Float_t vertex[3])
     //
     Double_t xd[3],pd[3],signd;
     Double_t xm[3],pm[3],signm;
-    for (Int_t i=0;i<3;i++){
-      xd[i] = fT2.fTPCinR1[i];
-      pd[i] = fT2.fTPCinP1[i];
-      xm[i] = fT1.fTPCinR1[i];
-      pm[i] = fT1.fTPCinP1[i];
+    //
+    //
+    if (fT1.fITSOn&&fT2.fITSOn){
+      for (Int_t i=0;i<3;i++){
+	xd[i] = fT2.fITSinR1[i];
+	pd[i] = fT2.fITSinP1[i];
+	xm[i] = fT1.fITSinR1[i];
+	pm[i] = fT1.fITSinP1[i];
+      }
     }
+    else{
+      
+      for (Int_t i=0;i<3;i++){
+	xd[i] = fT2.fTPCinR1[i];
+	pd[i] = fT2.fTPCinP1[i];
+	xm[i] = fT1.fTPCinR1[i];
+	pm[i] = fT1.fTPCinP1[i];
+      }
+    }
+    //
+    //
     signd =  fT2.fSign<0 ? -1:1;
     signm =  fT1.fSign<0 ? -1:1;
 
@@ -461,10 +531,12 @@ void  AliESDRecV0Info::Update(Float_t vertex[3])
     Double_t delta1=10000,delta2=10000;  
 
     if (points==1){
-      fMinR = TMath::Sqrt(radius[0]);
+      fRs[0] = TMath::Sqrt(radius[0]);
+      fRs[1] = TMath::Sqrt(radius[0]);
     }
     if (points==2){
-      fMinR =TMath::Min(TMath::Sqrt(radius[0]),TMath::Sqrt(radius[1]));
+      fRs[0] =TMath::Min(TMath::Sqrt(radius[0]),TMath::Sqrt(radius[1]));
+      fRs[1] =TMath::Max(TMath::Sqrt(radius[0]),TMath::Sqrt(radius[1]));
     }
     
     if (points>0){
@@ -478,16 +550,19 @@ void  AliESDRecV0Info::Update(Float_t vertex[3])
       dhelix1.LinearDCA(mhelix,phase[1][0],phase[1][1],radius[1],delta2);
     }
     if (points==1){
-      fMinR = TMath::Sqrt(radius[0]);
+      fRs[0] = TMath::Sqrt(radius[0]);
+      fRs[1] = TMath::Sqrt(radius[0]);
       fDistMinR = delta1;
     }
     if (points==2){
       if (radius[0]<radius[1]){
-	fMinR = TMath::Sqrt(radius[0]);
+	fRs[0] = TMath::Sqrt(radius[0]);
+	fRs[1] = TMath::Sqrt(radius[1]);
 	fDistMinR = delta1;
       }
       else{
-	fMinR = TMath::Sqrt(radius[1]);
+	fRs[0] = TMath::Sqrt(radius[1]);
+	fRs[1] = TMath::Sqrt(radius[0]);
 	fDistMinR = delta2;
       }
     }
@@ -508,6 +583,8 @@ void  AliESDRecV0Info::Update(Float_t vertex[3])
     }
     
     distance2 = TMath::Min(delta1,delta2);
+    if (distance2>100) fDist2 =100;
+    return;
     if (delta1<delta2){
       //get V0 info
       dhelix1.Evaluate(phase[0][0],fXr);
@@ -860,14 +937,14 @@ Int_t ESDCmpTr::Exec()
     SetIO(fEventNr);
     fNParticles = gAlice->GetEvent(fEventNr);    
 
-    fIndexRecTracks = new Int_t[fNParticles*20];  //write at maximum 4 tracks corresponding to particle
-    fIndexRecKinks  = new Int_t[fNParticles*20];  //write at maximum 20 tracks corresponding to particle
-    fIndexRecV0  = new Int_t[fNParticles*20];  //write at maximum 20 tracks corresponding to particle
+    fIndexRecTracks = new Short_t[fNParticles*20];  //write at maximum 4 tracks corresponding to particle
+    fIndexRecKinks  = new Short_t[fNParticles*20];  //write at maximum 20 tracks corresponding to particle
+    fIndexRecV0  = new Short_t[fNParticles*20];  //write at maximum 20 tracks corresponding to particle
 
-    fFakeRecTracks = new Int_t[fNParticles];
-    fMultiRecTracks = new Int_t[fNParticles];
-    fMultiRecKinks = new Int_t[fNParticles];
-    fMultiRecV0 = new Int_t[fNParticles];
+    fFakeRecTracks = new Short_t[fNParticles];
+    fMultiRecTracks = new Short_t[fNParticles];
+    fMultiRecKinks = new Short_t[fNParticles];
+    fMultiRecV0 = new Short_t[fNParticles];
 
     for (Int_t i = 0; i<fNParticles; i++) {
       for (Int_t j=0;j<20;j++){
@@ -980,7 +1057,7 @@ void ESDCmpTr::CreateTreeCmp()
   //  AliITStrackMI * itsTrack = new AliITStrackMI;  
   fTreeCmp->Branch("MC","AliMCInfo",&fMCInfo);
   fTreeCmp->Branch("RC","AliESDRecInfo",&fRecInfo);
-  fTreeCmp->Branch("fESDTrack","AliESDtrack",&esdTrack);
+  //  fTreeCmp->Branch("fESDTrack","AliESDtrack",&esdTrack);
   //  fTreeCmp->Branch("ITS","AliITStrackMI",&itsTrack);
   delete esdTrack;
   //
@@ -1042,8 +1119,8 @@ Int_t ESDCmpTr::TreeTLoop()
   Int_t nEntries = (Int_t)fEvent->GetNumberOfTracks();  
   Int_t nKinks = (Int_t) fEvent->GetNumberOfKinks();
   Int_t nV0MIs = (Int_t) fEvent->GetNumberOfV0MIs();
-  fSignedKinks = new Int_t[nKinks];
-  fSignedV0    = new Int_t[nV0MIs];
+  fSignedKinks = new Short_t[nKinks];
+  fSignedV0    = new Short_t[nV0MIs];
   //
   // load kinks to the memory
   for (Int_t i=0; i<nKinks;i++){
@@ -1088,7 +1165,6 @@ Int_t ESDCmpTr::TreeTLoop()
     //
     Int_t label0 = TMath::Abs(kink->fLab[0]);
     Int_t label1 = TMath::Abs(kink->fLab[1]);
-
     Int_t absLabel = TMath::Min(label0,label1);
     if (absLabel < fNParticles) {
       if (fMultiRecKinks[absLabel]>0){
@@ -1107,18 +1183,21 @@ Int_t ESDCmpTr::TreeTLoop()
     v0MI = fEvent->GetV0MI(iEntry);
     if (!v0MI) continue;
     //
-    Int_t label0 = TMath::Abs(v0MI->fLab[0]);
-    Int_t label1 = TMath::Abs(v0MI->fLab[1]);
-
-    Int_t absLabel = TMath::Min(label0,label1);
-    if (absLabel < fNParticles) {
-      if (fMultiRecV0[absLabel]>0){
-	if (fMultiRecV0[absLabel]<20)
-	  fIndexRecV0[absLabel*20+fMultiRecV0[absLabel]] =  iEntry; 	
+    //    Int_t label0 = TMath::Abs(v0MI->fLab[0]);
+    //Int_t label1 = TMath::Abs(v0MI->fLab[1]);
+    //
+    for (Int_t i=0;i<2;i++){
+      // Int_t absLabel = TMath::Min(label0,label1);
+      Int_t absLabel =  TMath::Abs(v0MI->fLab[i]);
+      if (absLabel < fNParticles) {
+	if (fMultiRecV0[absLabel]>0){
+	  if (fMultiRecV0[absLabel]<20)
+	    fIndexRecV0[absLabel*20+fMultiRecV0[absLabel]] =  iEntry; 	
+	}
+	else      
+	  fIndexRecV0[absLabel*20] =  iEntry;
+	fMultiRecV0[absLabel]++;
       }
-      else      
-	fIndexRecV0[absLabel*20] =  iEntry;
-      fMultiRecV0[absLabel]++;
     }
   }  
 
@@ -1300,19 +1379,48 @@ Int_t ESDCmpTr::BuildKinkInfo0(Int_t eventNr)
     if (fMultiRecKinks[label]>0){
 
       //      for (Int_t j=0;j<TMath::Min(fMultiRecKinks[label],100);j++){
-      for (Int_t j=TMath::Min(fMultiRecKinks[label],20)-1;j>=0;j--){
+      for (Int_t j=TMath::Min(fMultiRecKinks[label],Short_t(20))-1;j>=0;j--){
 	Int_t index = fIndexRecKinks[label*20+j];
 	//AliESDkink *kink2  = (AliESDkink*)fKinks->At(index);
 	AliESDkink *kink2  = (AliESDkink*)fEvent->GetKink(index);
 	if (TMath::Abs(kink2->fLab[0])==label &&TMath::Abs(kink2->fLab[1])==label2) {
-	  kink =kink2;
 	  fRecKinkInfo->fKinkMultiple++;
 	  fSignedKinks[index]=1;
+	  Int_t c0=0;
+	  if (kink){
+	    //	    if (kink->fTRDOn) c0++;
+	    //if (kink->fITSOn) c0++;
+	    if (kink->GetStatus(2)>0) c0++;
+	    if (kink->GetStatus(0)>0) c0++;
+	  }
+	  Int_t c2=0;
+	  //	  if (kink2->fTRDOn) c2++;
+	  //if (kink2->fITSOn) c2++;
+	  if (kink2->GetStatus(2)>0) c2++;
+	  if (kink2->GetStatus(0)>0) c2++;
+
+	  if (c2<c0) continue;
+	  kink =kink2;
 	}
 	if (TMath::Abs(kink2->fLab[1])==label &&TMath::Abs(kink2->fLab[0])==label2) {
-	  kink =kink2;
 	  fRecKinkInfo->fKinkMultiple++;
 	  fSignedKinks[index]=1;
+	  Int_t c0=0;
+	  if (kink){
+	    //if (kink->fTRDOn) c0++;
+	    //if (kink->fITSOn) c0++;
+	    if (kink->GetStatus(2)>0) c0++;
+	    if (kink->GetStatus(0)>0) c0++;
+
+	  }
+	  Int_t c2=0;
+	  //	  if (kink2->fTRDOn) c2++;
+	  //if (kink2->fITSOn) c2++;
+	  if (kink2->GetStatus(2)>0) c2++;
+	  if (kink2->GetStatus(0)>0) c2++;
+
+	  if (c2<c0) continue;
+	  kink =kink2;
 	}
       }
     }
@@ -1352,9 +1460,36 @@ Int_t ESDCmpTr::BuildKinkInfo0(Int_t eventNr)
   return 0;
 }
 
+
+
+void   ESDCmpTr::MakePoints(AliESDtrack * track, AliPointsMI &points)
+{
+  //
+  // make points in global coordinate frame
+  //
+  return;
+  /*
+  UInt_t itscl[10];
+  Int_t nits = track->GetITSclusters(itscl);
+  Int_t tpccl[1000];
+  Int_t ntpc = track->GetTPcclusters(tpccl);
+  UInt_t trdcl[1000];
+  Int_t ntrd = track->GetTRDclusters(trdcl);
+  //
+  AliLoader *itsloader = fLoader->GetLoader("ITSLoader");
+  AliLoader *tpcloader = fLoader->GetLoader("TPCLoader");
+  AliLoader *trdloader = fLoader->GetLoader("TRDLoader");
+  //
+  AliITStrackerMI itstracker(); 
+  */
+}
+
+
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
+
+
 
 Int_t ESDCmpTr::BuildV0Info(Int_t eventNr)
 {
@@ -1458,10 +1593,10 @@ Int_t ESDCmpTr::BuildV0Info(Int_t eventNr)
     fRecV0Info->fMultiple    = fMultiRecV0[label];
     fRecV0Info->fV0Multiple=0;
     //
-    if (fMultiRecV0[label]>0){
+    if (fMultiRecV0[label]>0 || fMultiRecV0[label2]>0){
 
       //      for (Int_t j=0;j<TMath::Min(fMultiRecV0s[label],100);j++){
-      for (Int_t j=TMath::Min(fMultiRecV0[label],20)-1;j>=0;j--){
+      for (Int_t j=TMath::Min(fMultiRecV0[label],Short_t(20))-1;j>=0;j--){
 	Int_t index = fIndexRecV0[label*20+j];
 	AliESDV0MI *v0MI2  = fEvent->GetV0MI(index);
 	if (TMath::Abs(v0MI2->fLab[0])==label &&TMath::Abs(v0MI2->fLab[1])==label2) {
@@ -1503,6 +1638,7 @@ Int_t ESDCmpTr::BuildV0Info(Int_t eventNr)
 	fRecV0Info->fT2 = (*fRecInfo2);
 	fRecV0Info->fRecStatus =-1;
       }
+      fRecV0Info->Update(vertex);
       fTreeCmpV0->Fill();
     }
   }

@@ -224,7 +224,7 @@ public:
   void InitView();
   TH1F * DrawXY(const char * chx, const char *chy, const char* selection, 
 		const char * quality,Int_t nbins, Float_t minx, Float_t maxx, 
-		Float_t miny, Float_t maxy);
+		Float_t miny, Float_t maxy, Int_t nBinsRes=30);
   TH1F * DrawLogXY(const char * chx, const char *chy, const char* selection, 
 		   const char * quality, Int_t nbins,Float_t minx, Float_t maxx, 
 		   Float_t miny, Float_t maxy); 

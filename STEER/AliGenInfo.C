@@ -458,7 +458,9 @@ void AliGenV0Info::Update(Float_t vertex[3])
     (fMCPm[1]+fMCPdr[1])*(fMCPm[1]+fMCPdr[1])+
     (fMCPm[2]+fMCPdr[2])*(fMCPm[2]+fMCPdr[2]);
   
-  fInvMass = TMath::Sqrt((e1+e2)*(e1+e2)-fInvMass);
+  //  fInvMass = TMath::Sqrt((e1+e2)*(e1+e2)-fInvMass);
+  fInvMass = (e1+e2)*(e1+e2)-fInvMass;
+  if (fInvMass>0) fInvMass = TMath::Sqrt(fInvMass);
 
     
 }
@@ -1319,6 +1321,15 @@ Int_t AliGenInfoMaker::TreeTRLoop()
     for (Int_t iTrackRef = 0; iTrackRef < TPCArrayTR->GetEntriesFast(); iTrackRef++) {
       AliTrackReference *trackRef = (AliTrackReference*)TPCArrayTR->At(iTrackRef);            
       //
+      if (trackRef->TestBit(BIT(2))){  
+	//if decay 
+	if (trackRef->P()<fgTPCPtCut) continue;
+	Int_t label = trackRef->GetTrack(); 
+	AliMCInfo * info = GetInfo(label);
+	if (!info) info = MakeInfo(label);
+	info->fTRdecay = *trackRef;      
+      }
+      //
       if (trackRef->P()<fgTPCPtCut) continue;
       Int_t label = trackRef->GetTrack();      
       AliMCInfo * info = GetInfo(label);
@@ -1333,6 +1344,7 @@ Int_t AliGenInfoMaker::TreeTRLoop()
     //
     for (Int_t iTrackRef = 0; iTrackRef < ITSArrayTR->GetEntriesFast(); iTrackRef++) {
       AliTrackReference *trackRef = (AliTrackReference*)ITSArrayTR->At(iTrackRef);            
+      // 
       //
       if (trackRef->P()<fgTPCPtCut) continue;
       Int_t label = trackRef->GetTrack();      
@@ -1421,11 +1433,10 @@ Float_t AliGenInfoMaker::TR2LocalX(AliTrackReference *trackRef,
 
 
 TH1F * AliComparisonDraw::DrawXY(const char * chx, const char *chy, const char* selection, 
-		const char * quality, Int_t nbins, Float_t minx, Float_t maxx, Float_t miny, Float_t maxy)
+		const char * quality, Int_t nbins, Float_t minx, Float_t maxx, Float_t miny, Float_t maxy, Int_t nBinsRes)
 {
   //
   Double_t* bins = CreateLogBins(nbins, minx, maxx);
-  Int_t nBinsRes = 30;
   TH2F* hRes2 = new TH2F("hRes2", "residuals", nbins, minx, maxx, nBinsRes, miny, maxy);
   char cut[1000];
   sprintf(cut,"%s&&%s",selection,quality);
