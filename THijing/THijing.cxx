@@ -242,6 +242,7 @@ Int_t THijing::ImportParticles(TClonesArray *particles, Option_t *option)
   TClonesArray &Particles = *particles;
   Particles.Clear();
   Int_t numpart = HIMAIN1.natt;
+  Int_t nump = 0;
   if (!strcmp(option,"") || !strcmp(option,"Final")) {
       for (Int_t i = 0; i<=numpart; i++) {
 	  
@@ -249,10 +250,11 @@ Int_t THijing::ImportParticles(TClonesArray *particles, Option_t *option)
 //
 //  Use the common block values for the TParticle constructor
 //
-	      new(Particles[i]) TParticle(
+	    nump++;
+	    new(Particles[i]) TParticle(
 		  HIMAIN2.katt[0][i] ,
 		  HIMAIN2.katt[1][i] ,
-		  HIMAIN2.katt[2][i] ,
+		  -1 ,
 		  -1,
 		  -1,
 		  -1,
@@ -270,6 +272,7 @@ Int_t THijing::ImportParticles(TClonesArray *particles, Option_t *option)
       }
   }
   else if (!strcmp(option,"All")) {
+      nump=numpart; 
       for (Int_t i = 0; i<=numpart; i++) {
 
 	  Int_t iParent = HIMAIN2.katt[2][i]-1;
@@ -283,7 +286,7 @@ Int_t THijing::ImportParticles(TClonesArray *particles, Option_t *option)
 
 	  new(Particles[i]) TParticle(
 	      HIMAIN2.katt[0][i] ,
-	      HIMAIN2.katt[3][i] ,
+	      HIMAIN2.katt[1][i] ,
 	      iParent,
 	      -1,
 	      -1,
@@ -300,7 +303,7 @@ Int_t THijing::ImportParticles(TClonesArray *particles, Option_t *option)
 	      0);
       }
   }
-  return numpart;
+  return nump;
 }
 
 //______________________________________________________________________________
