@@ -35,9 +35,10 @@
 //  for(Int_t irecp = 0; irecp < gime->NRecParticles() ; irecp++)
 //     AliPHOSRecParticle * part = gime->RecParticle(1) ;
 //     ................
-//  please->GetEvent(event) ;    // reads new event from galice.root
+//  gime->Event(event) ;    // reads new event from galice.root
 //                  
-//*-- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko (RRC KI & SUBATECH)//*--         Completely redesigned by Dmitri Peressounko March 2001  
+//*-- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko (RRC KI & SUBATECH)
+//*--         Completely redesigned by Dmitri Peressounko March 2001  
 //
 //*-- YS June 2001 : renamed the original AliPHOSIndexToObject and make
 //*--         systematic usage of TFolders without changing the interface        
@@ -1824,7 +1825,7 @@ void AliPHOSGetter::ReadPrimaries()
 void AliPHOSGetter::Event(const Int_t event, const char* opt)
 {
   // Reads the content of all Tree's S, D and R
- 
+
   if (event >= gAlice->TreeE()->GetEntries() ) {
     cerr << "ERROR: AliPHOSGetter::Event -> " << event << " not found in TreeE!" << endl ; 
     return ; 
@@ -1843,7 +1844,7 @@ void AliPHOSGetter::Event(const Int_t event, const char* opt)
 
   if(strstr(opt,"H") )
     rvRH = ReadTreeH() ;
-  
+
   if(strstr(opt,"S") )
     rvRS = ReadTreeS(event) ;
 
@@ -1879,6 +1880,8 @@ TObject * AliPHOSGetter::ReturnO(TString what, TString name, TString file) const
     folder = dynamic_cast<TFolder *>(fPrimariesFolder->FindObject("Primaries")) ; 
     if (folder) 
       phosO  = dynamic_cast<TObject *>(folder->FindObject("Primaries")) ;  
+    else 
+      return 0 ; 
   }
   else if ( what.CompareTo("Hits") == 0 ) {
     folder = dynamic_cast<TFolder *>(fHitsFolder->FindObject("PHOS")) ; 
@@ -1948,7 +1951,7 @@ TObject * AliPHOSGetter::ReturnO(TString what, TString name, TString file) const
   }
   if (!phosO) {
     if(fDebug)
-      cerr << "ERROR : AliPHOSGetter::ReturnO -> Object " << what << " not found in " << fQAFolder->GetName() << endl ; 
+      cerr << "WARNING : AliPHOSGetter::ReturnO -> Object " << what << " not found in " << folder->GetName() << endl ; 
     return 0 ;
   }
 
@@ -2021,7 +2024,7 @@ const TTask * AliPHOSGetter::ReturnT(TString what, TString name) const
   }
   
   if(fDebug)
-    cout << "WARNING: AliPHOSGetter::ReturnT -> Task " << search << "/PHOS" << name << " not found!" << endl ; 
+    cout << "WARNING: AliPHOSGetter::ReturnT -> Task " << search << "/PHOS/" << name << " not found!" << endl ; 
   return 0 ;
 }
 
