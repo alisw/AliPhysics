@@ -21,7 +21,7 @@ public TObject {
     // Set Chamber Segmentation Parameters
     //
     // Pad size Dx*Dy 
-    virtual void    SetPadSize(Float_t p1, Float_t p2)  =0;
+    virtual void    SetPadSize(Float_t p1, Float_t p2) =0;
     // Anod Pitch
     virtual void    SetDAnod(Float_t D)                =0;
     // Transform from pad (wire) to real coordinates and vice versa
@@ -29,36 +29,36 @@ public TObject {
     // Anod wire coordinate closest to xhit
     virtual Float_t GetAnod(Float_t xhit)              =0;
     // Transform from pad to real coordinates
-    virtual void    GetPadIxy(Float_t x ,Float_t y ,Int_t   &ix,Int_t   &iy)=0;
+    virtual void    GetPadIxy(Float_t x, Float_t y, Float_t  z, Int_t   &ix, Int_t  &iy) =0;
     // Transform from real to pad coordinates
-    virtual void    GetPadCxy(Int_t   ix,Int_t   iy,Float_t &x ,Float_t &y )=0;
+    virtual void    GetPadCxy(Int_t  ix, Int_t  iy, Float_t &x, Float_t  &y, Float_t &z) =0;
     //
     // Initialisation
-    virtual void Init(AliMUONChamber*)                 =0;
+    virtual void Init(AliMUONChamber*)                           =0;
     //
     // Get member data
     //
     // Pad size in x
-    virtual Float_t Dpx()                              =0;
+    virtual Float_t Dpx()                                        =0;
     // Pad size in y 
-    virtual Float_t Dpy()                              =0;
+    virtual Float_t Dpy()                                        =0;
     // Pad size in x by Sector 
-    virtual Float_t Dpx(Int_t)                         =0;
+    virtual Float_t Dpx(Int_t)                                   =0;
     // Pad size in y by Sector 
-    virtual Float_t Dpy(Int_t)                         =0;
+    virtual Float_t Dpy(Int_t)                                   =0;
     // Maximum number of Pads in x
-    virtual Int_t    Npx()                             =0;
+    virtual Int_t    Npx()                                       =0;
     // Maximum number of Pads in y
-    virtual Int_t    Npy()                             =0;
+    virtual Int_t    Npy()                                       =0;
     // Set pad position
-    virtual void     SetPad(Int_t, Int_t)              =0;
+    virtual void     SetPad(Int_t, Int_t)                        =0;
     // Set hit position
-    virtual void     SetHit(Float_t, Float_t)          =0;
+    virtual void     SetHit(Float_t, Float_t, Float_t )          =0;
     
     //
     // Iterate over pads
     // Initialiser
-    virtual void  FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy) =0;
+    virtual void  FirstPad(Float_t xhit, Float_t yhit, Float_t zhit, Float_t dx, Float_t dy) =0;
     // Stepper
     virtual void  NextPad()                            =0;
     // Condition

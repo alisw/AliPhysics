@@ -23,6 +23,8 @@ public AliMUONSegmentationV0 {
   //       virtual void     SetPad(Int_t, Int_t);
   // Set hit position
   virtual void     SetHit(Float_t xhit, Float_t yhit);
+  virtual void     SetHit(Float_t xhit, Float_t yhit, Float_t zhit)
+      {SetHit(xhit, yhit);}
   
   ClassDef(AliMUONSegmentationTrigger,1) //Segmentation class for trigger
     protected:
