@@ -42,7 +42,6 @@ public:
    virtual void      DrawClusters();
    virtual void      DrawHits();
    virtual void      DrawCoG();
-   virtual void      DrawCoG2();
    virtual void      DrawSegmentation();
    virtual void      DrawTitle(Option_t *option="");
    virtual void      DrawView(Float_t theta, Float_t phi, Float_t psi=0);
@@ -54,13 +53,10 @@ public:
    virtual void      LoadDigits(Int_t chamber, Int_t cathode);
    virtual void      LoadHits(Int_t chamber);
    virtual void      LoadCoG(Int_t chamber, Int_t cathode);
-   virtual void      LoadCoG2(Int_t chamber, Int_t cathode);
    TPad             *Pad() {return fPad;}
    TObjArray        *Points() {return fPoints;}
    TObjArray        *Phits() {return fPhits;}
    TObjArray        *Rpoints() {return fRpoints;}
-   TObjArray        *R2points() {return fR2points;}
-   TObjArray        *Cpoints() {return fCpoints;}
    virtual void      Paint(Option_t *option="");
    virtual void      SetDrawClusters(Bool_t draw=kTRUE) {fDrawClusters=draw;}   // *MENU*
    virtual void      SetChamberAndCathode(Int_t chamber=1, Int_t cathode=1);    // *MENU*
@@ -75,8 +71,6 @@ public:
    virtual void      ResetPoints();
    virtual void      ResetPhits();
    virtual void      ResetRpoints();
-   virtual void      ResetR2points();
-   virtual void      ResetCpoints();
    virtual void      NextChamber(Int_t delta=1);
    virtual void      NextCathode();
            void      Trigger();
@@ -95,8 +89,6 @@ private:
    TObjArray        *fPoints;               //Array of points for each cathode
    TObjArray        *fPhits;                //Array of hit points for each chamber
    TObjArray        *fRpoints;              //Array of cog points for each cathode
-   TObjArray        *fR2points;             //Array of cog points for each cathode
-   TObjArray        *fCpoints;              //Array of correlated points for each first cathode
    Int_t            fNextCathode;           //Flagging next cathode
    ClassDef(AliMUONDisplay, 0)   //Utility class to display MUON events
 };

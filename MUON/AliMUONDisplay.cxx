@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2001/03/30 13:01:50  gosset
+Centroid of raw clusters displayed for each cathode plane
+
 Revision 1.12  2001/03/05 23:50:08  morsch
 Correct access to digit and recpoint data.
 
@@ -176,8 +179,6 @@ AliMUONDisplay::AliMUONDisplay()
     fPoints = 0;
     fPhits = 0;
     fRpoints = 0;
-    fR2points = 0;
-    fCpoints = 0;
     fCanvas = 0;
     fNextCathode = kFALSE; 
     fColPad = 0;
@@ -252,15 +253,12 @@ AliMUONDisplay::AliMUONDisplay(Int_t size)
     //   fRzone   = 1.e10;
     fDrawClusters  = kTRUE;
     fDrawCoG       = kTRUE;
-    fDrawCoG  = kTRUE;
     fZoomMode      = 1;
     fZooms         = 0;
     fClustersCuts  = 0;
     fPoints        = 0;
     fPhits         = 0;
     fRpoints       = 0;
-    fR2points = 0;
-    fCpoints = 0;
     // Create colors
     CreateColors();
     // Create display canvas
@@ -349,14 +347,6 @@ AliMUONDisplay::~AliMUONDisplay()
     if (fRpoints) fRpoints->Delete();
     delete fRpoints;
     fRpoints     = 0;
-//
-    if (fR2points) fR2points->Delete();
-    delete fR2points;
-    fR2points     = 0;
-//
-    if (fCpoints) fCpoints->Delete();
-    delete fCpoints;
-    fCpoints     = 0;
 }
 
 //_____________________________________________________________________________
@@ -717,32 +707,6 @@ void AliMUONDisplay::DrawCoG()
 	pm->Draw();
     }
 }
-void AliMUONDisplay::DrawCoG2()
-{
-//    Draw hits for MUON chambers
-
-    if (!fDrawCoG) return;
-    if (fChamber > 10) return;  
-
-    if (fCathode==1) {
-	LoadCoG2(fChamber,2);
-    } else if (fCathode==2) {
-	LoadCoG2(fChamber,1);
-    }
-
-    Int_t ncog, icog;
-    TObjArray *points;
-    AliMUONPoints *pm;
-    
-    points = R2points();
-    if (!points) return;
-    ncog = points->GetEntriesFast();
-    for (icog=0;icog<ncog;icog++) {
-	pm = (AliMUONPoints*)points->UncheckedAt(icog);
-	if (!pm) continue;
-	pm->Draw();
-    }
-}
 //_____________________________________________________________________________
 
 void AliMUONDisplay::DrawTitle(Option_t *option)
@@ -820,7 +784,6 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
     DrawClusters();
     DrawHits();
     DrawCoG();
-    DrawCoG2();
 //     DrawSegmentation();
     // add itself to the list (must be last)
     AppendPad();
@@ -1033,7 +996,7 @@ void AliMUONDisplay::LoadCoG(Int_t chamber, Int_t cathode)
     Int_t nent = 0;
     if (gAlice->TreeR()) {
 	nent=(Int_t)gAlice->TreeR()->GetEntries();
-	gAlice->TreeR()->GetEvent(cathode-1);
+	gAlice->TreeR()->GetEvent(0);
     }
     
     Int_t nrawcl = muonRawClusters->GetEntriesFast();
@@ -1059,55 +1022,6 @@ void AliMUONDisplay::LoadCoG(Int_t chamber, Int_t cathode)
         points->SetDigitIndex(-1);
         points->SetPoint(iraw,mRaw->fX[0],mRaw->fY[0],zpos);
     }
-}
-//___________________________________________
-void AliMUONDisplay::LoadCoG2(Int_t chamber, Int_t cathode)
-{
-// Read raw clusters info and store x,y,z info in arrays fRpoints
-// Loop on all detectors
-
-    if (chamber > 10) return;
-
-    ResetR2points();
-
-    AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
-    AliMUONChamber*  iChamber;
-    
-    TClonesArray *muonRawClusters  = pMUON->RawClustAddress(chamber-1);
-    if (muonRawClusters == 0) return;
-    
-    pMUON->ResetRawClusters();
-    
-    Int_t nent = 0;
-    if (gAlice->TreeR()) {
-	nent=(Int_t)gAlice->TreeR()->GetEntries();
-// 	gAlice->TreeR()->GetEvent(nent-2+cathode-1);
-	gAlice->TreeR()->GetEvent(cathode-1);
-    }
-    
-    Int_t nrawcl = muonRawClusters->GetEntriesFast();
-    if (nrawcl == 0) return;
-    if (fR2points == 0) fR2points = new TObjArray(nrawcl);
-    
-    iChamber = &(pMUON->Chamber(chamber-1));
-    Float_t zpos=iChamber->Z();  
-    AliMUONRawCluster  *mRaw;
-    AliMUONPoints *points = 0;
-    //
-    //loop over all raw clusters and store their position
-    points = new AliMUONPoints(nrawcl);
-    for (Int_t iraw=0;iraw<nrawcl;iraw++) {
-  	mRaw   = (AliMUONRawCluster*)muonRawClusters->UncheckedAt(iraw);
-	fR2points->AddAt(points,iraw);
-        points->SetMarkerColor(51);
-        points->SetMarkerStyle(4);
-        points->SetMarkerSize(1.3);
-        points->SetParticle(-1);
-        points->SetHitIndex(-1);
-        points->SetTrackIndex(-1);
-        points->SetDigitIndex(-1);
-        points->SetPoint(iraw,mRaw->fX[0],mRaw->fY[0],zpos);
-   }
 }
 //___________________________________________
 void AliMUONDisplay::LoadHits(Int_t chamber)
@@ -1366,31 +1280,6 @@ void AliMUONDisplay::ResetRpoints()
 	fRpoints = 0;
     }
 }
-//_____________________________________________________________________________
-void AliMUONDisplay::ResetR2points()
-{
-  //
-  // Reset array of points
-  //
-    if (fR2points) {
-	fR2points->Delete();
-	delete fR2points;
-	fR2points = 0;
-    }
-}
-//_____________________________________________________________________________
-void AliMUONDisplay::ResetCpoints()
-{
-    //
-    // Reset array of points
-    //
-  if (fCpoints) {
-      fCpoints->Delete();
-      delete fCpoints;
-      fCpoints = 0;
-  }
-}
-
 
 AliMUONDisplay & AliMUONDisplay::operator = (const AliMUONDisplay &)
 {
