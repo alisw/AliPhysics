@@ -25,7 +25,7 @@
 #include "AliITSMapA1.h"
 #include "AliITS.h"
 #include "AliITSdigit.h"
-#include "AliITSRawCluster.h"
+#include "AliITSRawClusterSPD.h"
 #include "AliITSRecPoint.h"
 #include "AliITSsegmentation.h"
 #include "AliRun.h"

@@ -26,7 +26,7 @@ class AliITSvPPRasymmFMD : public AliITS {
                                       return 10;} 
     virtual void   Init(); 
     virtual void   SetDefaults();
-    virtual void   DrawModule();
+    virtual void   DrawModule() const;
     virtual void   StepManager();
     virtual void   SetWriteDet(Bool_t det=kTRUE){ // set .det write
 	                                         fGeomDetOut = det;}
@@ -36,8 +36,6 @@ class AliITSvPPRasymmFMD : public AliITS {
 	                                        fGeomDetIn = det;}
     virtual void   SetReadDet(const char *f){ // set read file
 	                               strncpy(fRead,f,60);fGeomDetIn = kTRUE;}
-    virtual void   SetEUCLID(Bool_t euclid=kTRUE){ // set write Euclid file
-	                                          fEuclidOut = euclid;}
     virtual void   SetEUCLIDFileName(const char *f){ // set write file
 	                     fEuclidGeometry=f;fEuclidOut = kTRUE;}
     virtual void   SetMinorVersion(Int_t v=22){ // Choose between existing minor versions
@@ -66,37 +64,37 @@ class AliITSvPPRasymmFMD : public AliITS {
     virtual void SetDensityServicesByMass(){// uses services density
 	// calculation based on the Mass of the services.
 	fByThick = kFALSE;}
-    virtual Bool_t GetEUCLID(){return fEuclidOut;}// returns value Euclid flag.
+    virtual Bool_t GetEUCLID() const {return fEuclidOut;}// returns value Euclid flag.
     virtual const char  *GetEULIIDFileName() const{ // return .euc file name
 	                               return fEuclidGeometry.Data();}
-    virtual Bool_t GetWriteDet() { // returns value GeomDetOut flag.
+    virtual Bool_t GetWriteDet() const { // returns value GeomDetOut flag.
 	                          return fGeomDetOut;}
-    virtual Bool_t GetReadDet() { // returns value GeomDetIn flag.
+    virtual Bool_t GetReadDet() const { // returns value GeomDetIn flag.
 	                         return fGeomDetIn;}
     virtual char  *GetReadDetFileName(){ // return .det read file name
 	          if(fRead[0]!='\0') return fRead; else return fEuclidGeomDet;}
     virtual char  *GetWriteDetFileName(){ // return .det write file name
 	        if(fWrite[0]!='\0') return fWrite; else return fEuclidGeomDet;}
-    virtual Int_t GetMajorVersion(){// return Major Version Number
+    virtual Int_t GetMajorVersion() const {// return Major Version Number
 	return fMajorVersion;}
-    virtual Int_t GetMinorVersion(){// return Major Version Number
+    virtual Int_t GetMinorVersion() const {// return Major Version Number
 	return fMinorVersion;}
-    virtual Float_t GetThicknessDet1(){ 
+    virtual Float_t GetThicknessDet1() const { 
 	 // Get detector thickness in layer 1
 	 return fDet1;}
-    virtual Float_t GetThicknessDet2(){ 
+    virtual Float_t GetThicknessDet2() const { 
 	 // Get detector thickness in layer 2
 	 return fDet2;}
-    virtual Float_t GetThicknessChip1(){ 
+    virtual Float_t GetThicknessChip1() const { 
 	 // Get chip thickness in layer 1
 	 return fChip1;}	 	 
-    virtual Float_t GetThicknessChip2(){ 
+    virtual Float_t GetThicknessChip2()const { 
 	 // Get chip thickness in layer 2
 	 return fChip2;}
-    virtual Int_t GetRails(){
+    virtual Int_t GetRails() const {
 	 // Get flag for rails
 	 return fRails;}
-    virtual Int_t GetCoolingFluid(){ 
+    virtual Int_t GetCoolingFluid() const{ 
 	 // Get flag for cooling fluid
 	 return fFluid;}
 
@@ -104,7 +102,6 @@ class AliITSvPPRasymmFMD : public AliITS {
     void InitAliITSgeom();
 
     // TString fEuclidGeomtery,fEuclidMaterial defined in AliModule.
-    Bool_t fEuclidOut;        // Flag to write geometry in euclid format
     Bool_t fGeomDetOut;       // Flag to write .det file out
     Bool_t fGeomDetIn;        // Flag to read .det file or directly from Geat.
     Bool_t fByThick;          // Flag to use services materials by thickness
@@ -122,7 +119,7 @@ class AliITSvPPRasymmFMD : public AliITS {
     Int_t    fFluid;          // flag to switch between water (=1) and freon (=0)
     Int_t fIDMother;          //! ITS Mother Volume id.
 
-    ClassDef(AliITSvPPRasymmFMD,2)  //Hits manager for set:ITS version 8 
+    ClassDef(AliITSvPPRasymmFMD,3)  //Hits manager for set:ITS version 8 
                                  // PPR detailed Geometry asymmetric
 };
  

@@ -55,7 +55,7 @@ class AliITS : public AliDetector {
     virtual Int_t GetMinorVersion() const {return -1;}
     virtual void  GetGeometryVersion(Int_t &a,Int_t &b) 
 	                   {a = GetMajorVersion();b=GetMinorVersion();return;}
-    virtual void  SetEUCLID(Bool_t euclid=1) {fEuclidOut = euclid;}
+    virtual void  SetEUCLID(Bool_t euclid=kTRUE) {fEuclidOut = euclid;}
     //-------------------- Geometry Transformations --------------------
     // ITS geometry functions
     AliITSgeom   *GetITSgeom() const {return fITSgeom;}

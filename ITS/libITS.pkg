@@ -43,6 +43,8 @@ SRCS          = AliITS.cxx AliITSv1.cxx AliITSv5.cxx AliITSvSPD02.cxx \
 	        AliITSRiemannFit.cxx \
 		AliITSFDigitizer.cxx \
 		AliITSDDLRawData.cxx AliITSpidESD.cxx \
+                AliITSRawClusterSPD.cxx AliITSRawClusterSDD.cxx \
+		AliITSRawClusterSSD.cxx \
 #		AliITSBaseGeometry.cxx \
 #		AliITSv11.cxx \
 

@@ -15,6 +15,9 @@
 /*
   $Id$
   $Log$
+  Revision 1.34  2003/09/11 13:48:52  masera
+  Data members of AliITSdigit classes defined as protected (They were public)
+
   Revision 1.33  2003/07/21 14:20:51  masera
   Fix to track labes in SDD Rec-points
 
@@ -65,7 +68,7 @@
 #include "AliITSMapA1.h"
 #include "AliITS.h"
 #include "AliITSdigit.h"
-#include "AliITSRawCluster.h"
+#include "AliITSRawClusterSDD.h"
 #include "AliITSRecPoint.h"
 #include "AliITSsegmentation.h"
 #include "AliITSresponseSDD.h"

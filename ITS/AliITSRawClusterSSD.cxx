@@ -13,19 +13,32 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  
-/* $Id$ */
+#include "AliITSRawClusterSSD.h"
 
-#include "AliITSRawCluster.h"
 ////////////////////////////////////////////////////
 //  Cluster classes for set:ITS                   //
-//  Base class                                    //
-//  This set of classes is used for debugging     //
-//  purposes                                      //
+//  Raw Clusters for SSD                          //
+//                                                //
 ////////////////////////////////////////////////////
-ClassImp(AliITSRawCluster)
-//______________________________________________________________________
-  AliITSRawCluster::AliITSRawCluster(){
-// default constructor
-  fMultiplicity = 0;
-}
 
+ClassImp(AliITSRawClusterSSD)
+
+//______________________________________________________________________
+AliITSRawClusterSSD::AliITSRawClusterSSD(){
+  // Default constructor
+  fMultiplicityN=0;
+  fQErr=0; 
+  fSignalP=0;
+  fSignalN=0;
+  fStatus=-1;
+  fNtracks=0;
+}
+//______________________________________________________________________
+AliITSRawClusterSSD::AliITSRawClusterSSD(Float_t Prob,Int_t Sp,Int_t Sn) {  
+    // constructor
+
+    Prob = 0.0; // added to remove unused variable warning.
+    //fProbability   = Prob;
+    fMultiplicity  = Sp;
+    fMultiplicityN = Sn;
+}

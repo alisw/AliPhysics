@@ -1,11 +1,7 @@
 #ifndef ALIITSVERTEXER_H
 #define ALIITSVERTEXER_H
 
-#include <TTree.h>
-#include <TFile.h>
-#include <AliITSVertex.h>
-#include <AliRun.h>
-
+#include<TObject.h>
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
@@ -13,6 +9,10 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
+class TFile;
+class TString;
+class TTRee;
+class AliITSVertex;
 
 
 class AliITSVertexer : public TObject {
@@ -36,6 +36,12 @@ class AliITSVertexer : public TObject {
 
  
  protected:
+    // copy constructor (NO copy allowed: the constructor is protected
+    // to avoid misuse)
+    AliITSVertexer(const AliITSVertexer& vtxr);
+    // assignment operator (NO assignment allowed)
+    AliITSVertexer& operator=(const AliITSVertexer& /* vtxr */);
+
     AliITSVertex *fCurrentVertex;  //! pointer to the vertex of the current
                                    //  event
     Int_t fFirstEvent;          // First event to be processed by FindVertices

@@ -23,7 +23,7 @@
 #include "AliRun.h"
 #include "AliITS.h"
 #include "AliITSdigit.h"
-#include "AliITSRawCluster.h"
+#include "AliITSRawClusterSSD.h"
 #include "AliITSRecPoint.h"
 #include "AliITSMapA1.h"
 #include "AliITSClusterFinderSSD.h"
@@ -572,12 +572,12 @@ Bool_t AliITSClusterFinderSSD::CreateNewRecPoint(Float_t P,Float_t dP,
 	} // end if SigP>SigN
      tr = (Int_t*) clusterP->GetTracks(n);
      ntracks = clusterP->GetNTracks();
-     cnew.fSignalP=SigP;
-     cnew.fSignalN=SigN;
-     cnew.fMultiplicity=nstripsP;
-     cnew.fMultiplicityN=nstripsN;
-     cnew.fQErr=TMath::Abs(SigP-SigN);
-     cnew.fNtracks=ntracks;
+     cnew.SetSignalP(SigP);
+     cnew.SetSignalN(SigN);
+     cnew.SetMultiplicity(nstripsP);
+     cnew.SetMultN(nstripsN);
+     cnew.SetQErr(TMath::Abs(SigP-SigN));
+     cnew.SetNTrack(ntracks);
      fITS->AddCluster(2,&cnew);
      AliITSRecPoint rnew;
      rnew.SetX(P*kconv);

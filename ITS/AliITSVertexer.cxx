@@ -1,4 +1,3 @@
-#include <Riostream.h>
 #include <AliITSVertex.h>
 #include <AliITSVertexer.h>
 #include <AliRunLoader.h>
@@ -9,6 +8,8 @@ ClassImp(AliITSVertexer)
 //////////////////////////////////////////////////////////////////////
 // Base class for primary vertex reconstruction                     //
 // AliITSVertex is a class for full 3D primary vertex finding       //
+// derived classes: AliITSVertexerIons AliITSvertexerPPZ            //
+//                  AliITSVertexerTracks                            //
 //////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________
@@ -35,10 +36,10 @@ AliITSVertexer::AliITSVertexer(TString filename) {
   SetFirstEvent(0);
   SetLastEvent(0);
   rl->LoadHeader();
-  AliITSLoader* ITSloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
-  if(filename.Data()!="default")ITSloader->SetVerticesFileName(filename);
-  ITSloader->LoadVertices("recreate");
-  ITSloader->LoadRecPoints();
+  AliITSLoader* itsLoader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
+  if(filename.Data()!="default")itsLoader->SetVerticesFileName(filename);
+  itsLoader->LoadVertices("recreate");
+  itsLoader->LoadRecPoints();
   Int_t lst;
   if(rl->TreeE()){
     lst = static_cast<Int_t>(rl->TreeE()->GetEntries());
@@ -47,9 +48,24 @@ AliITSVertexer::AliITSVertexer(TString filename) {
 }
 
 //______________________________________________________________________
+AliITSVertexer::AliITSVertexer(const AliITSVertexer &vtxr) : TObject(vtxr) {
+  // Copy constructor
+  // Copies are not allowed. The method is protected to avoid misuse.
+  Error("AliITSVertexer","Copy constructor not allowed\n");
+}
+
+//______________________________________________________________________
+AliITSVertexer& AliITSVertexer::operator=(const AliITSVertexer& /* vtxr */){
+  // Assignment operator
+  // Assignment is not allowed. The method is protected to avoid misuse.
+  Error("= operator","Assignment operator not allowed\n");
+  return *this;
+}
+
+//______________________________________________________________________
 AliITSVertexer::~AliITSVertexer() {
   // Default Destructor
-  // The objects poited by the following pointers are not owned
+  // The objects pointed by the following pointers are not owned
   // by this class and are not deleted
 
     fCurrentVertex  = 0;
@@ -59,10 +75,10 @@ AliITSVertexer::~AliITSVertexer() {
 void AliITSVertexer::WriteCurrentVertex(){
   // Write the current AliVertex object to file fOutFile
   AliRunLoader *rl = AliRunLoader::GetRunLoader();
-  AliITSLoader* ITSloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
+  AliITSLoader* itsLoader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
   fCurrentVertex->SetName("Vertex");
   //  const char * name = fCurrentVertex->GetName();
-  //  ITSloader->SetVerticesContName(name);
-  Int_t rc = ITSloader->PostVertex(fCurrentVertex);
-  rc = ITSloader->WriteVertices();
+  //  itsLoader->SetVerticesContName(name);
+  Int_t rc = itsLoader->PostVertex(fCurrentVertex);
+  rc = itsLoader->WriteVertices();
 }

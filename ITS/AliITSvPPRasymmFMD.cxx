@@ -30,30 +30,30 @@
 // See AliITSvPPRasymmFMD::StepManager().
 
 #include <Riostream.h>
-#include <stdio.h>
-#include <stdlib.h>
+// #include <stdio.h>
+// #include <stdlib.h>
 
-#include <TBRIK.h>
-#include <TCanvas.h>
+// #include <TBRIK.h>
+// #include <TCanvas.h>
 #include <TClonesArray.h>
-#include <TFile.h>    // only required for Tracking function?
+// #include <TFile.h>    // only required for Tracking function?
 #include <TGeometry.h>
 #include <TLorentzVector.h>
 #include <TMath.h>
 #include <TNode.h>
-#include <TObjArray.h>
-#include <TObjString.h>
-#include <TPCON.h>
-#include <TSystem.h>
+// #include <TObjArray.h>
+// #include <TObjString.h>
+// #include <TPCON.h>
+// #include <TSystem.h>
 #include <TTUBE.h>
-#include <TTUBS.h>
-#include <TVirtualMC.h>
+// #include <TTUBS.h>
+// #include <TVirtualMC.h>
 
-#include "AliConst.h"
+// #include "AliConst.h"
 #include "AliITS.h"
-#include "AliITSClusterFinderSDD.h"
-#include "AliITSClusterFinderSPD.h"
-#include "AliITSClusterFinderSSD.h"
+// #include "AliITSClusterFinderSDD.h"
+// #include "AliITSClusterFinderSPD.h"
+// #include "AliITSClusterFinderSSD.h"
 #include "AliITSDetType.h"
 #include "AliITSGeant3Geometry.h"
 #include "AliITSgeom.h"
@@ -67,9 +67,9 @@
 #include "AliITSsegmentationSDD.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSSD.h"
-#include "AliITSsimulationSDD.h"
-#include "AliITSsimulationSPD.h"
-#include "AliITSsimulationSSD.h"
+// #include "AliITSsimulationSDD.h"
+// #include "AliITSsimulationSPD.h"
+// #include "AliITSsimulationSSD.h"
 #include "AliITSvPPRasymmFMD.h"
 #include "AliMagF.h"
 #include "AliRun.h"
@@ -410,46 +410,46 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
     Float_t sin30, cos30;
 
     // SDD electronics+services main volumes
-    Float_t I018dits[3], I024dits[3], I047dits[3], I048dits[3];
+    Float_t iI018dits[3], iI024dits[3], iI047dits[3], iI048dits[3];
 
     // SDD detector ladder
 
-    Float_t I302dits[3], I402dits[3], I004dits[3], I005dits[3];
-    Float_t Y_SDD_sep = 0.20;
+    Float_t iI302dits[3], iI402dits[3], iI004dits[3], iI005dits[3];
+    Float_t ySDDsep = 0.20;
     Float_t ySDD;
     Int_t   iSDD;
-    Float_t Z_SDD_lay3[6] = { 18.55, 10.95, 3.70, -3.70,-11.20,-18.35};
-    Float_t Z_SDD_lay4[8] = { 25.75, 18.60, 11.00, 3.70, -3.70,-11.20,
+    Float_t zSDDlay3[6] = { 18.55, 10.95, 3.70, -3.70,-11.20,-18.35};
+    Float_t zSDDlay4[8] = { 25.75, 18.60, 11.00, 3.70, -3.70,-11.20,
 			     -18.45,-26.05};
 
     // ladder foot and end-ladder (frame and cooling)
-    Float_t I028dits[3], I420dits[3], I421dits[3], I422dits[6], I423dits[3];
-    Float_t I424dits[3], xI424, yI424;
-    Float_t I425dits[3];
+    Float_t iI028dits[3], iI420dits[3], iI421dits[3], iI422dits[6], iI423dits[3];
+    Float_t iI424dits[3], xI424, yI424;
+    Float_t iI425dits[3];
     Int_t    indI425;
-    Float_t I029dits[4], I030dits[4], I031dits[3], I032dits[3];
+    Float_t iI029dits[4], iI030dits[4], iI031dits[3], iI032dits[3];
 
     // SDD ladder frame and cooling
-    Float_t SDD_CoolPipe[3] = {1.7000, -0.5500, 0.0000};
-    Float_t I035dits[3], I037dits[3], I038dits[3];
-    Float_t I039dits[3], xI039, yI039;
-    Float_t I041dits[5];
+    Float_t iSDDCoolPipe[3] = {1.7000, -0.5500, 0.0000};
+    Float_t iI035dits[3], iI037dits[3], iI038dits[3];
+    Float_t iI039dits[3], xI039, yI039;
+    Float_t iI041dits[5];
 
     // SDD hybrid, chips and capacitors
-    Float_t I050dits[3], xI050, yI050;
-    Float_t I052dits[3], xI052, yI052;
-    Float_t I042dits[3], xI042, yI042;
+    Float_t iI050dits[3], xI050, yI050;
+    Float_t iI052dits[3], xI052, yI052;
+    Float_t iI042dits[3], xI042, yI042;
     Float_t xI042space = 0.17;
-    Float_t I043dits[3], xI043, yI043;
+    Float_t iI043dits[3], xI043, yI043;
     Float_t xI043space = 0.17;
     Float_t zchip, zChipSpace;
-    Float_t I051dits[3], xI051, yI051, zI051, yI051space, xcap;
+    Float_t iI051dits[3], xI051, yI051, zI051, yI051space, xcap;
     Int_t     ichip, icap;
 
     // SDD microcables
-    Float_t I044dits[4], xI044, yI044, volI044;
+    Float_t iI044dits[4], xI044, yI044, volI044;
     Float_t xHV, yHV, zHV, xLV, yLV, zLV;
-    Char_t   HVname[5], LVname[5];
+    Char_t   nameHV[5], nameLV[5];
 
 
     // Define media off-set
@@ -1905,158 +1905,158 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   gMC->Gsvolu("IT34", "PCON", idtmed[209], dits, 21);  
 
   // block of the SDD electronics and related ladder frame 
-  I018dits[0] = 3.2;
-  I018dits[1] = 2;
-  I018dits[2] = 3.65;
-  gMC->Gsvolu("I018", "BOX ", idtmed[209], I018dits, 3);  
+  iI018dits[0] = 3.2;
+  iI018dits[1] = 2;
+  iI018dits[2] = 3.65;
+  gMC->Gsvolu("I018", "BOX ", idtmed[209], iI018dits, 3);  
 
   // block of the SDD end ladder 
-  I024dits[0] = 3.2;
-  I024dits[1] = 2;
-  I024dits[2] = 2.725;
-  gMC->Gsvolu("I024", "BOX ", idtmed[209], I024dits, 3);  
+  iI024dits[0] = 3.2;
+  iI024dits[1] = 2;
+  iI024dits[2] = 2.725;
+  gMC->Gsvolu("I024", "BOX ", idtmed[209], iI024dits, 3);  
 
   // ladder frame of layer 3 - F.T. March,7-2001
-  I047dits[0] = I018dits[0];
-  I047dits[1] = I018dits[1];
-  I047dits[2] = 6*I018dits[2] + 2*I024dits[2]; 
-  gMC->Gsvolu("I047", "BOX ", idtmed[209], I047dits, 3);  
+  iI047dits[0] = iI018dits[0];
+  iI047dits[1] = iI018dits[1];
+  iI047dits[2] = 6*iI018dits[2] + 2*iI024dits[2]; 
+  gMC->Gsvolu("I047", "BOX ", idtmed[209], iI047dits, 3);  
 
   // ladder frame of layer 4 - F.T. March,7-2001
-  I048dits[0] = I018dits[0];
-  I048dits[1] = I018dits[1];
-  I048dits[2] = 8*I018dits[2] + 2*I024dits[2]; 
-  gMC->Gsvolu("I048", "BOX ", idtmed[209], I048dits, 3);  
+  iI048dits[0] = iI018dits[0];
+  iI048dits[1] = iI018dits[1];
+  iI048dits[2] = 8*iI018dits[2] + 2*iI024dits[2]; 
+  gMC->Gsvolu("I048", "BOX ", idtmed[209], iI048dits, 3);  
 
 
   // global SDD volume (sensitive + insensitive) 
-  I302dits[0] = 3.6250;
-  I302dits[1] = 0.0150;
-  I302dits[2] = 4.3794;
-  gMC->Gsvolu("I302", "BOX ", idtmed[278], I302dits, 3);
+  iI302dits[0] = 3.6250;
+  iI302dits[1] = 0.0150;
+  iI302dits[2] = 4.3794;
+  gMC->Gsvolu("I302", "BOX ", idtmed[278], iI302dits, 3);
 
   // Like for I302 - F.T. March,7-2001
-  I402dits[0] = 3.6250;
-  I402dits[1] = 0.0150;
-  I402dits[2] = 4.3794;
-  gMC->Gsvolu("I402", "BOX ", idtmed[278], I402dits, 3);  
+  iI402dits[0] = 3.6250;
+  iI402dits[1] = 0.0150;
+  iI402dits[2] = 4.3794;
+  gMC->Gsvolu("I402", "BOX ", idtmed[278], iI402dits, 3);  
 
   // SDD ladder of layer 3 - F.T. March,7-2001
-  I004dits[0] = I302dits[0]+0.005;
-  I004dits[1] = 2*I302dits[1]+Y_SDD_sep/2.;
-  I004dits[2] = TMath::Abs(Z_SDD_lay3[0]);
-  if (I004dits[2] < TMath::Abs(Z_SDD_lay3[5])) {
-    I004dits[2] = TMath::Abs(Z_SDD_lay3[5]);
+  iI004dits[0] = iI302dits[0]+0.005;
+  iI004dits[1] = 2*iI302dits[1]+ySDDsep/2.;
+  iI004dits[2] = TMath::Abs(zSDDlay3[0]);
+  if (iI004dits[2] < TMath::Abs(zSDDlay3[5])) {
+    iI004dits[2] = TMath::Abs(zSDDlay3[5]);
   }
-  I004dits[2] = I004dits[2] + I302dits[2];
-  gMC->Gsvolu("I004", "BOX ", idtmed[209], I004dits, 3);  
+  iI004dits[2] = iI004dits[2] + iI302dits[2];
+  gMC->Gsvolu("I004", "BOX ", idtmed[209], iI004dits, 3);  
 
   // SDD ladder of layer 4 - F.T. March,7-2001
-  I005dits[0] = I402dits[0]+0.005;
-  I005dits[1] = 2*I402dits[1]+Y_SDD_sep/2.;
-  I005dits[2] = TMath::Abs(Z_SDD_lay4[0]);
-  if (I005dits[2] < TMath::Abs(Z_SDD_lay4[7])) {
-    I005dits[2] = TMath::Abs(Z_SDD_lay4[7]);
+  iI005dits[0] = iI402dits[0]+0.005;
+  iI005dits[1] = 2*iI402dits[1]+ySDDsep/2.;
+  iI005dits[2] = TMath::Abs(zSDDlay4[0]);
+  if (iI005dits[2] < TMath::Abs(zSDDlay4[7])) {
+    iI005dits[2] = TMath::Abs(zSDDlay4[7]);
   }
-  I005dits[2] = I005dits[2] + I402dits[2];
-  gMC->Gsvolu("I005", "BOX ", idtmed[209], I005dits, 3);  
+  iI005dits[2] = iI005dits[2] + iI402dits[2];
+  gMC->Gsvolu("I005", "BOX ", idtmed[209], iI005dits, 3);  
 
 
   // -- block of the SDD ladder foot and end ladder
 
   // ladder foot mother volume
-  I028dits[0] = 3.0000;
-  I028dits[1] = 0.4000;
-  I028dits[2] = 0.9000;
-  gMC->Gsvolu("I028", "BOX ", idtmed[224], I028dits, 3);  
+  iI028dits[0] = 3.0000;
+  iI028dits[1] = 0.4000;
+  iI028dits[2] = 0.9000;
+  gMC->Gsvolu("I028", "BOX ", idtmed[224], iI028dits, 3);  
 
   // positioning-box #1 at SDD end-ladder - F.T. March,7-2001
-  I420dits[0] = 0.4500;
-  I420dits[1] = 0.4000;
-  I420dits[2] = 0.4500;
-  gMC->Gsvolu("I420", "BOX ", idtmed[264], I420dits, 3);  
+  iI420dits[0] = 0.4500;
+  iI420dits[1] = 0.4000;
+  iI420dits[2] = 0.4500;
+  gMC->Gsvolu("I420", "BOX ", idtmed[264], iI420dits, 3);  
 
   // positioning-box #2 at SDD end-ladder - F.T. March,7-2001
-  I421dits[0] = 0.;
-  I421dits[1] = 0.25;
-  I421dits[2] = I420dits[1];
-  gMC->Gsvolu("I421", "TUBE", idtmed[209], I421dits, 3);  
+  iI421dits[0] = 0.;
+  iI421dits[1] = 0.25;
+  iI421dits[2] = iI420dits[1];
+  gMC->Gsvolu("I421", "TUBE", idtmed[209], iI421dits, 3);  
 
   // reference ruby-sphere at SDD end-ladder - F.T. March,7-2001 
-  I422dits[0] = 0.0000;
-  I422dits[1] = 0.2000;
-  I422dits[2] = 0.0000;
-  I422dits[3] = 180.00;
-  I422dits[4] = 0.0000;
-  I422dits[5] = 360.00;
-  gMC->Gsvolu("I422", "SPHE", idtmed[277], I422dits, 6);  
+  iI422dits[0] = 0.0000;
+  iI422dits[1] = 0.2000;
+  iI422dits[2] = 0.0000;
+  iI422dits[3] = 180.00;
+  iI422dits[4] = 0.0000;
+  iI422dits[5] = 360.00;
+  gMC->Gsvolu("I422", "SPHE", idtmed[277], iI422dits, 6);  
 
   // support for ruby-sphere (I422) - F.T. March,7-2001
-  I423dits[0] = 0.0000;
-  I423dits[1] = 0.1000;
-  I423dits[2] = (I420dits[1]-I422dits[1])/2.;
-  gMC->Gsvolu("I423", "TUBE", idtmed[264], I423dits, 3);  
+  iI423dits[0] = 0.0000;
+  iI423dits[1] = 0.1000;
+  iI423dits[2] = (iI420dits[1]-iI422dits[1])/2.;
+  gMC->Gsvolu("I423", "TUBE", idtmed[264], iI423dits, 3);  
 
   // passage for HV microcables - F.T. March,7-2001
-  I424dits[0] = 1.5000;
-  I424dits[1] = 0.1500;
-  I424dits[2] = I421dits[2];
-  gMC->Gsvolu("I424", "BOX ", idtmed[209], I424dits, 3);  
+  iI424dits[0] = 1.5000;
+  iI424dits[1] = 0.1500;
+  iI424dits[2] = iI421dits[2];
+  gMC->Gsvolu("I424", "BOX ", idtmed[209], iI424dits, 3);  
 
   // HV microcables segment at the end ladder - F.T. March,7-2001
-  I425dits[0] = 1.350000;
-  I425dits[1] = 0.015250;
-  I425dits[2] = I024dits[2];
-  gMC->Gsvolu("I425", "BOX ", idtmed[279], I425dits, 3);  
+  iI425dits[0] = 1.350000;
+  iI425dits[1] = 0.015250;
+  iI425dits[2] = iI024dits[2];
+  gMC->Gsvolu("I425", "BOX ", idtmed[279], iI425dits, 3);  
 
   // lower edge of SDD ladder frame at end-ladder - part 1
   dits[0] = 0.2;
   dits[1] = 0.1815;
-  dits[2] = I024dits[2];
+  dits[2] = iI024dits[2];
   dits[3] = 0.015;
   gMC->Gsvolu("I025", "TRD1", idtmed[208], dits, 4);  
 
   // lower edge of SDD ladder frame at end-ladder - part 2
   dits[0] = 0.183;
   dits[1] = 0.165;
-  dits[2] = I024dits[2];
+  dits[2] = iI024dits[2];
   dits[3] = 0.015;
   gMC->Gsvolu("I026", "TRD1", idtmed[208], dits, 4);  
 
   // new: for the 1st top rod of the structure 
   // at the end-ladder - F.T. March,7-2001
-  I029dits[0] = 0.2;
-  I029dits[1] = 0.1815;
-  I029dits[2] = 1.0100;
-  I029dits[3] = 0.015;
-  gMC->Gsvolu("I029", "TRD1", idtmed[208], I029dits, 4);  
+  iI029dits[0] = 0.2;
+  iI029dits[1] = 0.1815;
+  iI029dits[2] = 1.0100;
+  iI029dits[3] = 0.015;
+  gMC->Gsvolu("I029", "TRD1", idtmed[208], iI029dits, 4);  
 
   // new: for the 2nd top rod of the structure 
   // at the end-ladder - F.T. March,7-2001
-  I030dits[0] = 0.1830;
-  I030dits[1] = 0.1650;
-  I030dits[2] = 1.0100;
-  I030dits[3] = 0.0150;
-  gMC->Gsvolu("I030", "TRD1", idtmed[208], I030dits, 4);  
+  iI030dits[0] = 0.1830;
+  iI030dits[1] = 0.1650;
+  iI030dits[2] = 1.0100;
+  iI030dits[3] = 0.0150;
+  gMC->Gsvolu("I030", "TRD1", idtmed[208], iI030dits, 4);  
 
   // inox cooling tubes for the end ladder - F.T. March,7-2001
-  I031dits[0] = 0.093;
-  I031dits[1] = 0.1;
-  I031dits[2] = I024dits[2];
-  gMC->Gsvolu("I031", "TUBE", idtmed[264], I031dits, 3);  
+  iI031dits[0] = 0.093;
+  iI031dits[1] = 0.1;
+  iI031dits[2] = iI024dits[2];
+  gMC->Gsvolu("I031", "TUBE", idtmed[264], iI031dits, 3);  
 
   if (fluid == 1) {
      // cooling water for the end ladder - F.T. March,7-2001
-     I032dits[0] = 0;
-     I032dits[1] = I031dits[0];
-     I032dits[2] = I024dits[2];
-     gMC->Gsvolu("I032", "TUBE", idtmed[211], I032dits, 3);  
+     iI032dits[0] = 0;
+     iI032dits[1] = iI031dits[0];
+     iI032dits[2] = iI024dits[2];
+     gMC->Gsvolu("I032", "TUBE", idtmed[211], iI032dits, 3);  
   } else {
      // cooling freon for the end ladder - R.B. March,21-2001
-     I032dits[0] = 0;
-     I032dits[1] = I031dits[0];
-     I032dits[2] = I024dits[2];
-     gMC->Gsvolu("I032", "TUBE", idtmed[212], I032dits, 3);    
+     iI032dits[0] = 0;
+     iI032dits[1] = iI031dits[0];
+     iI032dits[2] = iI024dits[2];
+     gMC->Gsvolu("I032", "TUBE", idtmed[212], iI032dits, 3);    
   }
   
   // -- block of the SDD ladder frame holding the electronics
@@ -2109,10 +2109,10 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   gMC->Gsvolu("I034", "TUBE", idtmed[277], dits, 3);  
 
   // holders of cooling tubes
-  I035dits[0] = 0.1;
-  I035dits[1] = 0.15;
-  I035dits[2] = 0.2;
-  gMC->Gsvolu("I035", "TUBE", idtmed[208], I035dits, 3);
+  iI035dits[0] = 0.1;
+  iI035dits[1] = 0.15;
+  iI035dits[2] = 0.2;
+  gMC->Gsvolu("I035", "TUBE", idtmed[208], iI035dits, 3);
 
   // top holders of microcables
   dits[0] = 0.2;
@@ -2121,84 +2121,84 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   gMC->Gsvolu("I036", "BOX ", idtmed[208], dits, 3);  
 
   // inox cooling tubes - F.T. March,7-2001
-  I037dits[0] = 0.093;
-  I037dits[1] = 0.1;
-  I037dits[2] = I018dits[2];
-  gMC->Gsvolu("I037", "TUBE", idtmed[264], I037dits, 3);
+  iI037dits[0] = 0.093;
+  iI037dits[1] = 0.1;
+  iI037dits[2] = iI018dits[2];
+  gMC->Gsvolu("I037", "TUBE", idtmed[264], iI037dits, 3);
 
   if (fluid == 1) {
      // cooling water - F.T. March,7-2001
-     I038dits[0] = 0;
-     I038dits[1] = I037dits[0];
-     I038dits[2] = I018dits[2];
-     gMC->Gsvolu("I038", "TUBE", idtmed[211], I038dits, 3);  
+     iI038dits[0] = 0;
+     iI038dits[1] = iI037dits[0];
+     iI038dits[2] = iI018dits[2];
+     gMC->Gsvolu("I038", "TUBE", idtmed[211], iI038dits, 3);  
   } else {
      // cooling freon - R.B. March,21-2001
-     I038dits[0] = 0;
-     I038dits[1] = I037dits[0];
-     I038dits[2] = I018dits[2];
-     gMC->Gsvolu("I038", "TUBE", idtmed[212], I038dits, 3);    
+     iI038dits[0] = 0;
+     iI038dits[1] = iI037dits[0];
+     iI038dits[2] = iI018dits[2];
+     gMC->Gsvolu("I038", "TUBE", idtmed[212], iI038dits, 3);    
   }
   // -- block of the SDD electronics (heat bridge, chips, hybrid, anode microcable)
 
   // SDD heat bridge - F.T. March,7-2001
-  I039dits[0] = 1.1000;
-  I039dits[1] = 0.0087;
-  I039dits[2] = 3.2500;
-  gMC->Gsvolu("I039", "BOX ", idtmed[268], I039dits, 3);  
+  iI039dits[0] = 1.1000;
+  iI039dits[1] = 0.0087;
+  iI039dits[2] = 3.2500;
+  gMC->Gsvolu("I039", "BOX ", idtmed[268], iI039dits, 3);  
 
   // SDD clip part 1
   dits[0] = 0.25;
   dits[1] = 0.01;
-  dits[2] = I039dits[2];
+  dits[2] = iI039dits[2];
   gMC->Gsvolu("I040", "BOX ", idtmed[268], dits, 3);  
 
   // SDD clip part 2
-  I041dits[0] = 0.1;
-  I041dits[1] = 0.12;
-  I041dits[2] = I039dits[2];
-  I041dits[3] = 90;
-  I041dits[4] = 320;
-  gMC->Gsvolu("I041", "TUBS", idtmed[268], I041dits, 5);  
+  iI041dits[0] = 0.1;
+  iI041dits[1] = 0.12;
+  iI041dits[2] = iI039dits[2];
+  iI041dits[3] = 90;
+  iI041dits[4] = 320;
+  gMC->Gsvolu("I041", "TUBS", idtmed[268], iI041dits, 5);  
 
 
   // SDD PASCAL - F.T. March,7-2001
-  I042dits[0] = 0.5000;
-  I042dits[1] = 0.0175;
-  I042dits[2] = 0.5000;
-  gMC->Gsvolu("I042", "BOX ", idtmed[206], I042dits, 3);  
+  iI042dits[0] = 0.5000;
+  iI042dits[1] = 0.0175;
+  iI042dits[2] = 0.5000;
+  gMC->Gsvolu("I042", "BOX ", idtmed[206], iI042dits, 3);  
 
   // SDD AMBRA - F.T. March,7-2001
-  I043dits[0] = 0.3500;
-  I043dits[1] = 0.0175;
-  I043dits[2] = 0.5000;
-  gMC->Gsvolu("I043", "BOX ", idtmed[206], I043dits, 3);  
+  iI043dits[0] = 0.3500;
+  iI043dits[1] = 0.0175;
+  iI043dits[2] = 0.5000;
+  gMC->Gsvolu("I043", "BOX ", idtmed[206], iI043dits, 3);  
 
   // SDD capacitors - F.T. March,7-2001
-  I051dits[0] = 0.1400;
-  I051dits[1] = 0.0350;
-  I051dits[2] = 0.0625;
-  gMC->Gsvolu("I051", "BOX ", idtmed[276], I051dits, 3);  
+  iI051dits[0] = 0.1400;
+  iI051dits[1] = 0.0350;
+  iI051dits[2] = 0.0625;
+  gMC->Gsvolu("I051", "BOX ", idtmed[276], iI051dits, 3);  
 
   // SDD hybrid circuit - F.T. March,7-2001
-  I052dits[0] = 1.725000;
-  I052dits[1] = 0.003743;
-  I052dits[2] = I039dits[2];
-  gMC->Gsvolu("I052", "BOX ", idtmed[281], I052dits, 3);
+  iI052dits[0] = 1.725000;
+  iI052dits[1] = 0.003743;
+  iI052dits[2] = iI039dits[2];
+  gMC->Gsvolu("I052", "BOX ", idtmed[281], iI052dits, 3);
 
   // SDD anode microcable : changed - F.T. March,7-2001
-  I044dits[0] = I018dits[2];
-  I044dits[1] = I039dits[2];
-  I044dits[2] = 0.00084;
-  I044dits[3] = (15.189149/(I044dits[0]+I044dits[1]))/2;
-  gMC->Gsvolu("I044", "TRD1", idtmed[282], I044dits, 4);  
-  volI044 = ((2*I044dits[0] + 2*I044dits[1]) * 2*I044dits[2])/2 * 2*I044dits[3];
+  iI044dits[0] = iI018dits[2];
+  iI044dits[1] = iI039dits[2];
+  iI044dits[2] = 0.00084;
+  iI044dits[3] = (15.189149/(iI044dits[0]+iI044dits[1]))/2;
+  gMC->Gsvolu("I044", "TRD1", idtmed[282], iI044dits, 4);  
+  volI044 = ((2*iI044dits[0] + 2*iI044dits[1]) * 2*iI044dits[2])/2 * 2*iI044dits[3];
 
   // SDD electronics box - F.T. March,7-2001
-  I050dits[1] = I039dits[1]+I052dits[1]+I051dits[1]+I044dits[2];
-  I050dits[0] = I018dits[1]/cos(30.*3.14159/180.)-I050dits[1]*sin(30.*3.14159/180.);
-  I050dits[2] = I018dits[2];
-  gMC->Gsvolu("I050", "BOX ", idtmed[209], I050dits, 3);
+  iI050dits[1] = iI039dits[1]+iI052dits[1]+iI051dits[1]+iI044dits[2];
+  iI050dits[0] = iI018dits[1]/cos(30.*3.14159/180.)-iI050dits[1]*sin(30.*3.14159/180.);
+  iI050dits[2] = iI018dits[2];
+  gMC->Gsvolu("I050", "BOX ", idtmed[209], iI050dits, 3);
 
   // SDD sensitive volume
   dits[0] = 3.50850;
@@ -3279,9 +3279,9 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   // -- position SDD detectors of ladder 3 / layer 3
 
   gMC->Gspos("ITS3", 1,"I302",  0.0,      0.0,    0.0,    0,           "ONLY");
-  ySDD = Y_SDD_sep/2.+I302dits[1];
+  ySDD = ySDDsep/2.+iI302dits[1];
   for (iSDD=0; iSDD<6; iSDD++) {
-    gMC->Gspos("I302", iSDD+1, "I004",  0.0, ySDD,  Z_SDD_lay3[iSDD], 0, "ONLY");
+    gMC->Gspos("I302", iSDD+1, "I004",  0.0, ySDD,  zSDDlay3[iSDD], 0, "ONLY");
     ySDD = -ySDD;
   }
 
@@ -3304,9 +3304,9 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   // -- position SDD detectors of ladder 4 / layer 4
 
   gMC->Gspos("ITS4", 1,"I402",  0.0,      0.000,  0.0,   0,"ONLY");
-  ySDD = -(Y_SDD_sep/2.+I402dits[1]);
+  ySDD = -(ySDDsep/2.+iI402dits[1]);
   for (iSDD=0; iSDD<8; iSDD++) {
-    gMC->Gspos("I402", iSDD+1, "I005",  0.0, ySDD,  Z_SDD_lay4[iSDD], 0, "ONLY");
+    gMC->Gspos("I402", iSDD+1, "I005",  0.0, ySDD,  zSDDlay4[iSDD], 0, "ONLY");
     ySDD = -ySDD;
   }
   
@@ -3369,55 +3369,55 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   gMC->Gspos("I034", 3,"I018", -1.6,     -1.775,  1.35,   idrotm[348], "ONLY");
   gMC->Gspos("I034", 4,"I018",  1.6,     -1.775, -2.65,   idrotm[312], "ONLY");
 
-  gMC->Gspos("I035", 1,"I018",  1.7,     -0.55, I018dits[2]-I035dits[2], 0, "MANY");
-  gMC->Gspos("I035", 2,"I018", -1.7,     -0.55, I018dits[2]-I035dits[2], 0, "MANY");
+  gMC->Gspos("I035", 1,"I018",  1.7,     -0.55, iI018dits[2]-iI035dits[2], 0, "MANY");
+  gMC->Gspos("I035", 2,"I018", -1.7,     -0.55, iI018dits[2]-iI035dits[2], 0, "MANY");
 
   gMC->Gspos("I036", 1,"I018",  0.3087,   1.7191, 3.56,   idrotm[346], "ONLY");
   gMC->Gspos("I036", 2,"I018",  0.3087,   1.7191,-0.11,   idrotm[346], "ONLY");
   gMC->Gspos("I036", 3,"I018", -0.3087,   1.7191,-0.11,   idrotm[347], "ONLY");
   gMC->Gspos("I036", 4,"I018", -0.3087,   1.7191, 3.56,   idrotm[347], "ONLY");
 
-  gMC->Gspos("I037", 1,"I018",  SDD_CoolPipe[0], SDD_CoolPipe[1], SDD_CoolPipe[2], 0 , "ONLY");
-  gMC->Gspos("I037", 2,"I018", -SDD_CoolPipe[0], SDD_CoolPipe[1], SDD_CoolPipe[2], 0 , "ONLY");
+  gMC->Gspos("I037", 1,"I018",  iSDDCoolPipe[0], iSDDCoolPipe[1], iSDDCoolPipe[2], 0 , "ONLY");
+  gMC->Gspos("I037", 2,"I018", -iSDDCoolPipe[0], iSDDCoolPipe[1], iSDDCoolPipe[2], 0 , "ONLY");
 
-  gMC->Gspos("I038", 1,"I018",  SDD_CoolPipe[0], SDD_CoolPipe[1], SDD_CoolPipe[2], 0 , "ONLY");
-  gMC->Gspos("I038", 2,"I018", -SDD_CoolPipe[0], SDD_CoolPipe[1], SDD_CoolPipe[2], 0 , "ONLY");
+  gMC->Gspos("I038", 1,"I018",  iSDDCoolPipe[0], iSDDCoolPipe[1], iSDDCoolPipe[2], 0 , "ONLY");
+  gMC->Gspos("I038", 2,"I018", -iSDDCoolPipe[0], iSDDCoolPipe[1], iSDDCoolPipe[2], 0 , "ONLY");
 
   gMC->Gspos("I040", 1,"I018",  1.9204,  -0.7118, 0.0, idrotm[346],"ONLY");
   gMC->Gspos("I040", 2,"I018", -1.9204,  -0.7118, 0.0, idrotm[347],"ONLY");
-  gMC->Gspos("I041", 1,"I018",  SDD_CoolPipe[0], SDD_CoolPipe[1], SDD_CoolPipe[2], idrotm[346], "ONLY");
-  gMC->Gspos("I041", 2,"I018", -SDD_CoolPipe[0], SDD_CoolPipe[1], SDD_CoolPipe[2], idrotm[347], "ONLY");
+  gMC->Gspos("I041", 1,"I018",  iSDDCoolPipe[0], iSDDCoolPipe[1], iSDDCoolPipe[2], idrotm[346], "ONLY");
+  gMC->Gspos("I041", 2,"I018", -iSDDCoolPipe[0], iSDDCoolPipe[1], iSDDCoolPipe[2], idrotm[347], "ONLY");
 
 
   // -- build block of the SDD electronics (heat bridge, chips, hybrid, anode microcable)
 
-  xI050 = SDD_CoolPipe[0]+SDD_CoolPipe[1]*sin30+I050dits[1]/cos30+I041dits[1];
+  xI050 = iSDDCoolPipe[0]+iSDDCoolPipe[1]*sin30+iI050dits[1]/cos30+iI041dits[1];
   yI050 = 0;
-  xI039 = -SDD_CoolPipe[1]/cos30;
-  yI039 = -I050dits[1]+I039dits[1];
+  xI039 = -iSDDCoolPipe[1]/cos30;
+  yI039 = -iI050dits[1]+iI039dits[1];
   gMC->Gspos("I039", 1,"I050",  xI039, yI039, 0.0, 0, "ONLY");
-  xI042 = xI039+I039dits[0]-xI042space-I042dits[0];
-  yI042 = yI039+I039dits[1]+I042dits[1];
-  xI043 = xI039-I039dits[0]+xI043space+I043dits[0];
-  yI043 = yI039+I039dits[1]+I043dits[1];
-  zChipSpace = I042dits[2];
-  if (zChipSpace < I043dits[2]) {
-    zChipSpace = I043dits[2];
+  xI042 = xI039+iI039dits[0]-xI042space-iI042dits[0];
+  yI042 = yI039+iI039dits[1]+iI042dits[1];
+  xI043 = xI039-iI039dits[0]+xI043space+iI043dits[0];
+  yI043 = yI039+iI039dits[1]+iI043dits[1];
+  zChipSpace = iI042dits[2];
+  if (zChipSpace < iI043dits[2]) {
+    zChipSpace = iI043dits[2];
   }
   zChipSpace = zChipSpace * 2;
-  yI051space = (2*I039dits[2] - 4*zChipSpace)/5;
-  zchip = -I039dits[2] + yI051space + zChipSpace/2.;
+  yI051space = (2*iI039dits[2] - 4*zChipSpace)/5;
+  zchip = -iI039dits[2] + yI051space + zChipSpace/2.;
   for (ichip=0; ichip<4; ichip++) { 
     gMC->Gspos("I042", ichip+1, "I050", xI042, yI042, zchip, 0, "ONLY");
     gMC->Gspos("I043", ichip+1, "I050", xI043, yI043, zchip, 0, "ONLY");
     zchip += zChipSpace + yI051space;
   }
-  xcap = 2*I039dits[0]/5.;
-  yI051 = yI039+I039dits[1]+I051dits[1];
-  zI051 = -I039dits[2] + yI051space/3.;
+  xcap = 2*iI039dits[0]/5.;
+  yI051 = yI039+iI039dits[1]+iI051dits[1];
+  zI051 = -iI039dits[2] + yI051space/3.;
   icap = 1;
   for (ichip=0; ichip<5; ichip++) { 
-    xI051 = xI039-I039dits[0]+xcap;
+    xI051 = xI039-iI039dits[0]+xcap;
     gMC->Gspos("I051", icap++,"I050", xI051, yI051, zI051, 0, "ONLY");
     zI051 += yI051space/3.;
     gMC->Gspos("I051", icap++,"I050", xI051, yI051, zI051, 0, "ONLY");
@@ -3433,11 +3433,11 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
     }
     zI051 += zChipSpace + yI051space;
   }
-  xI052 = -I050dits[0]+I052dits[0];
-  yI052 = yI051+I051dits[1]+I052dits[1];
+  xI052 = -iI050dits[0]+iI052dits[0];
+  yI052 = yI051+iI051dits[1]+iI052dits[1];
   gMC->Gspos("I052", 1,"I050", xI052, yI052, 0.0, 0, "ONLY");
-  xI044 = I050dits[0]-I044dits[3];
-  yI044 = yI052+I052dits[1]+I044dits[2];
+  xI044 = iI050dits[0]-iI044dits[3];
+  yI044 = yI052+iI052dits[1]+iI044dits[2];
   gMC->Gspos("I044", 1,"I050", xI044, yI044, 0.0, idrotm[301], "ONLY");
   gMC->Gspos("I050", 1,"I018",  xI050,  yI050,  0.0, idrotm[346],"ONLY");
   gMC->Gspos("I050", 2,"I018", -xI050,  yI050,  0.0, idrotm[347],"ONLY");
@@ -3460,25 +3460,25 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   gMC->Gspos("I026", 1,"I024", -1.9782,  -1.5689, 0.0,    idrotm[342], "ONLY");
   gMC->Gspos("I026", 2,"I024",  1.8824,  -1.7349, 0.0,    idrotm[344], "ONLY");
 
-  gMC->Gspos("I029", 1,"I024", -0.087,    1.7067, I029dits[2]-I024dits[2], idrotm[342], "ONLY");
+  gMC->Gspos("I029", 1,"I024", -0.087,    1.7067, iI029dits[2]-iI024dits[2], idrotm[342], "ONLY");
 
-  gMC->Gspos("I030", 1,"I024",  0.0958,   1.6914, I030dits[2]-I024dits[2], idrotm[343], "ONLY");
+  gMC->Gspos("I030", 1,"I024",  0.0958,   1.6914, iI030dits[2]-iI024dits[2], idrotm[343], "ONLY");
 
-  gMC->Gspos("I031", 1,"I024",  SDD_CoolPipe[0], SDD_CoolPipe[1], SDD_CoolPipe[2], 0 ,"ONLY");
-  gMC->Gspos("I031", 2,"I024", -SDD_CoolPipe[0], SDD_CoolPipe[1], SDD_CoolPipe[2], 0 ,"ONLY");
+  gMC->Gspos("I031", 1,"I024",  iSDDCoolPipe[0], iSDDCoolPipe[1], iSDDCoolPipe[2], 0 ,"ONLY");
+  gMC->Gspos("I031", 2,"I024", -iSDDCoolPipe[0], iSDDCoolPipe[1], iSDDCoolPipe[2], 0 ,"ONLY");
 
-  gMC->Gspos("I032", 1,"I024",  SDD_CoolPipe[0], SDD_CoolPipe[1], SDD_CoolPipe[2], 0 ,"ONLY");
-  gMC->Gspos("I032", 2,"I024", -SDD_CoolPipe[0], SDD_CoolPipe[1], SDD_CoolPipe[2], 0 ,"ONLY");
+  gMC->Gspos("I032", 1,"I024",  iSDDCoolPipe[0], iSDDCoolPipe[1], iSDDCoolPipe[2], 0 ,"ONLY");
+  gMC->Gspos("I032", 2,"I024", -iSDDCoolPipe[0], iSDDCoolPipe[1], iSDDCoolPipe[2], 0 ,"ONLY");
 
 
-  xI424 = I028dits[0]/3.;
-  yI424 = -I028dits[1]+I424dits[1];
+  xI424 = iI028dits[0]/3.;
+  yI424 = -iI028dits[1]+iI424dits[1];
   gMC->Gspos("I422", 1,"I421", 0.0, 0.0, 0.0, 0, "ONLY");
-  gMC->Gspos("I423", 1,"I421", 0.0, 0.0, I421dits[2]-I423dits[2], 0, "ONLY");
+  gMC->Gspos("I423", 1,"I421", 0.0, 0.0, iI421dits[2]-iI423dits[2], 0, "ONLY");
   gMC->Gspos("I421", 1,"I420", 0.0, 0.0, 0.0, idrotm[312], "ONLY");
-  gMC->Gspos("I420", 1,"I028", -I028dits[0]/3., I028dits[1]-I420dits[1], 0.0, 0, "ONLY");
+  gMC->Gspos("I420", 1,"I028", -iI028dits[0]/3., iI028dits[1]-iI420dits[1], 0.0, 0, "ONLY");
   gMC->Gspos("I424", 1,"I028", xI424, yI424, 0.0, 0, "ONLY");
-  gMC->Gspos("I028", 1,"I024", 0.0, I028dits[1]-I024dits[1], I024dits[2]-I028dits[2], 0, "MANY");
+  gMC->Gspos("I028", 1,"I024", 0.0, iI028dits[1]-iI024dits[1], iI024dits[2]-iI028dits[2], 0, "MANY");
 
 
   // -- build the SDD ladder 3
@@ -3492,43 +3492,43 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   gMC->Gspos("I018", 5,"I047",  0.0,      0.0,  -10.95,  0,           "ONLY");
   gMC->Gspos("I018", 6,"I047",  0.0,      0.0,  -18.25,  0,           "ONLY");
   gMC->Gspos("I024", 2,"I047",  0.0,      0.0,  -24.625, idrotm[355], "ONLY");
-  HVname[0] = 'I';
-  HVname[1] = '3';
-  HVname[2] = '1';  
-  HVname[4] = '\0';
+  nameHV[0] = 'I';
+  nameHV[1] = '3';
+  nameHV[2] = '1';  
+  nameHV[4] = '\0';
   for (iSDD=0; iSDD<3; iSDD++) {
-    HVname[3] = (Char_t)(48+iSDD+5);
+    nameHV[3] = (Char_t)(48+iSDD+5);
     dits[0] = 1.350000;
-    dits[1] = I425dits[1];
-    dits[2] = (I047dits[2] - 2*I024dits[2] - Z_SDD_lay3[iSDD])/2.;
-    gMC->Gsvolu(HVname, "BOX ", idtmed[279], dits, 3);
+    dits[1] = iI425dits[1];
+    dits[2] = (iI047dits[2] - 2*iI024dits[2] - zSDDlay3[iSDD])/2.;
+    gMC->Gsvolu(nameHV, "BOX ", idtmed[279], dits, 3);
     xHV = 0.0;
-    yHV = -I047dits[1] + (2*iSDD+1)*dits[1];
-    zHV = I047dits[2] - 2*I024dits[2] - dits[2];
-    gMC->Gspos(HVname, 1,"I047", xHV, yHV,  zHV, 0, "ONLY");
-    gMC->Gspos(HVname, 2,"I047", xHV, yHV, -zHV, 0, "ONLY");
+    yHV = -iI047dits[1] + (2*iSDD+1)*dits[1];
+    zHV = iI047dits[2] - 2*iI024dits[2] - dits[2];
+    gMC->Gspos(nameHV, 1,"I047", xHV, yHV,  zHV, 0, "ONLY");
+    gMC->Gspos(nameHV, 2,"I047", xHV, yHV, -zHV, 0, "ONLY");
     gMC->Gspos("I425", indI425++,"I047",  xI424, yHV,   24.625, 0, "ONLY");
     gMC->Gspos("I425", indI425++,"I047", -xI424, yHV,  -24.625, 0, "ONLY");
   }
-  LVname[0] = 'I';
-  LVname[1] = '3';
-  LVname[2] = '1';  
-  LVname[4] = '\0';
+  nameLV[0] = 'I';
+  nameLV[1] = '3';
+  nameLV[2] = '1';  
+  nameLV[4] = '\0';
   for (iSDD=0; iSDD<3; iSDD++) {
-    LVname[3] = (Char_t)(48+iSDD+1);
+    nameLV[3] = (Char_t)(48+iSDD+1);
     dits[0] = 1.350000;
     dits[1] = 0.004423;
-    dits[2] = (I047dits[2] - (2*iSDD+1)*I018dits[2] - I039dits[2])/2.;
-    gMC->Gsvolu(LVname, "BOX ", idtmed[280], dits, 3);
-    yLV = I018dits[1] - dits[0]*cos30 - dits[1]*sin30;
+    dits[2] = (iI047dits[2] - (2*iSDD+1)*iI018dits[2] - iI039dits[2])/2.;
+    gMC->Gsvolu(nameLV, "BOX ", idtmed[280], dits, 3);
+    yLV = iI018dits[1] - dits[0]*cos30 - dits[1]*sin30;
     xLV = xI050 -
           fabs(yI050-yLV)*sin30/cos30 +
-          (I050dits[1]+(2*iSDD+1)*dits[1])/cos30;
-    zLV = I047dits[2] - dits[2];
-    gMC->Gspos(LVname, 1,"I047",  xLV, yLV,  zLV, idrotm[346], "ONLY");
-    gMC->Gspos(LVname, 2,"I047",  xLV, yLV, -zLV, idrotm[346], "ONLY");
-    gMC->Gspos(LVname, 3,"I047", -xLV, yLV,  zLV, idrotm[347], "ONLY");
-    gMC->Gspos(LVname, 4,"I047", -xLV, yLV, -zLV, idrotm[347], "ONLY");
+          (iI050dits[1]+(2*iSDD+1)*dits[1])/cos30;
+    zLV = iI047dits[2] - dits[2];
+    gMC->Gspos(nameLV, 1,"I047",  xLV, yLV,  zLV, idrotm[346], "ONLY");
+    gMC->Gspos(nameLV, 2,"I047",  xLV, yLV, -zLV, idrotm[346], "ONLY");
+    gMC->Gspos(nameLV, 3,"I047", -xLV, yLV,  zLV, idrotm[347], "ONLY");
+    gMC->Gspos(nameLV, 4,"I047", -xLV, yLV, -zLV, idrotm[347], "ONLY");
   }
 
 
@@ -3545,43 +3545,43 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   gMC->Gspos("I018",13,"I048", -0.0001,   0.0,  -18.25,  0,           "ONLY");
   gMC->Gspos("I018",14,"I048", -0.0001,   0.0,  -25.55,  0,           "ONLY");
   gMC->Gspos("I024", 4,"I048", -0.0001,   0.0,  -31.925, idrotm[355], "ONLY");
-  HVname[0] = 'I';
-  HVname[1] = '4';
-  HVname[2] = '1';  
-  HVname[4] = '\0';  
+  nameHV[0] = 'I';
+  nameHV[1] = '4';
+  nameHV[2] = '1';  
+  nameHV[4] = '\0';  
   for (iSDD=0; iSDD<4; iSDD++) {
-    HVname[3] = (Char_t)(48+iSDD+5);
+    nameHV[3] = (Char_t)(48+iSDD+5);
     dits[0] = 1.350000;
-    dits[1] = I425dits[1];
-    dits[2] = (I048dits[2] - 2*I024dits[2] - Z_SDD_lay4[iSDD])/2.;
-    gMC->Gsvolu(HVname, "BOX ", idtmed[279], dits, 3);
+    dits[1] = iI425dits[1];
+    dits[2] = (iI048dits[2] - 2*iI024dits[2] - zSDDlay4[iSDD])/2.;
+    gMC->Gsvolu(nameHV, "BOX ", idtmed[279], dits, 3);
     xHV = -0.0001;
-    yHV = -I048dits[1] + (2*iSDD+1)*dits[1];
-    zHV = I048dits[2] - 2*I024dits[2] - dits[2];
-    gMC->Gspos(HVname, 1,"I048", xHV, yHV,  zHV, 0, "ONLY");
-    gMC->Gspos(HVname, 2,"I048", xHV, yHV, -zHV, 0, "ONLY");
+    yHV = -iI048dits[1] + (2*iSDD+1)*dits[1];
+    zHV = iI048dits[2] - 2*iI024dits[2] - dits[2];
+    gMC->Gspos(nameHV, 1,"I048", xHV, yHV,  zHV, 0, "ONLY");
+    gMC->Gspos(nameHV, 2,"I048", xHV, yHV, -zHV, 0, "ONLY");
     gMC->Gspos("I425", indI425++,"I048",  xI424, yHV,   31.925, 0, "ONLY");
     gMC->Gspos("I425", indI425++,"I048", -xI424, yHV,  -31.925, 0, "ONLY");
   }
-  LVname[0] = 'I';
-  LVname[1] = '4';
-  LVname[2] = '1';  
-  LVname[4] = '\0';
+  nameLV[0] = 'I';
+  nameLV[1] = '4';
+  nameLV[2] = '1';  
+  nameLV[4] = '\0';
   for (iSDD=0; iSDD<4; iSDD++) {
-    LVname[3] = (Char_t)(48+iSDD+1);
+    nameLV[3] = (Char_t)(48+iSDD+1);
     dits[0] = 1.350000;
     dits[1] = 0.004423;
-    dits[2] = (I048dits[2] - (2*iSDD+1)*I018dits[2] - I039dits[2])/2.;
-    gMC->Gsvolu(LVname, "BOX ", idtmed[280], dits, 3);
-    yLV = I018dits[1] - dits[0]*cos30 - dits[1]*sin30;
+    dits[2] = (iI048dits[2] - (2*iSDD+1)*iI018dits[2] - iI039dits[2])/2.;
+    gMC->Gsvolu(nameLV, "BOX ", idtmed[280], dits, 3);
+    yLV = iI018dits[1] - dits[0]*cos30 - dits[1]*sin30;
     xLV = xI050 -
           fabs(yI050-yLV)*sin30/cos30 +
-          (I050dits[1]+(2*iSDD+1)*dits[1])/cos30;
-    zLV = I048dits[2] - dits[2];
-    gMC->Gspos(LVname, 1,"I048",  xLV, yLV,  zLV, idrotm[346], "ONLY");
-    gMC->Gspos(LVname, 2,"I048",  xLV, yLV, -zLV, idrotm[346], "ONLY");
-    gMC->Gspos(LVname, 3,"I048", -xLV, yLV,  zLV, idrotm[347], "ONLY");
-    gMC->Gspos(LVname, 4,"I048", -xLV, yLV, -zLV, idrotm[347], "ONLY");
+          (iI050dits[1]+(2*iSDD+1)*dits[1])/cos30;
+    zLV = iI048dits[2] - dits[2];
+    gMC->Gspos(nameLV, 1,"I048",  xLV, yLV,  zLV, idrotm[346], "ONLY");
+    gMC->Gspos(nameLV, 2,"I048",  xLV, yLV, -zLV, idrotm[346], "ONLY");
+    gMC->Gspos(nameLV, 3,"I048", -xLV, yLV,  zLV, idrotm[347], "ONLY");
+    gMC->Gspos(nameLV, 4,"I048", -xLV, yLV, -zLV, idrotm[347], "ONLY");
   }
 
 
@@ -4832,141 +4832,141 @@ void AliITSvPPRasymmFMD::CreateMaterials(){
     //End_Html
 
     //  AliMaterial(86,"AIRFMDSDD$",0.14610E+02,0.73000E+01,0.12050E-02,0.30423E+05,0.99900E+03);
-    Float_t A[13],Z[13],W[13],den;
+    Float_t aA[13],zZ[13],wW[13],den;
     // From Pierluigi Barberis calculations of 2SPD+1SDD October 2 2002.
-    Z[0] = 1.0; A[0] = 1.00794; // Hydrogen
-    Z[1] = 6.0; A[1] = 12.011; // Carbon
-    Z[2] = 7.0; A[2] = 14.00674; // Nitrogen
-    Z[3] = 8.0; A[3] = 15.9994; // Oxigen
-    Z[4] = 14.0; A[4] = 28.0855; // Silicon
-    Z[5] = 24.0; A[5] = 51.9961; //Cromium
-    Z[6] = 25.0; A[6] = 54.938049; // Manganese
-    Z[7] = 26.0; A[7] = 55.845; // Iron
-    Z[8] = 28.0; A[8] = 58.6934; // Nickle
-    Z[9] = 29.0; A[9] = 63.546; // Copper
-    Z[10] = 13.0; A[10] = 26.981539; // Alulminum
-    Z[11] = 47.0; A[11] = 107.8682; // Silver
-    Z[12] = 27.0; A[12] = 58.9332; // Cobolt
-    W[0] = 0.019965;
-    W[1] = 0.340961;
-    W[2] = 0.041225;
-    W[3] = 0.200352;
-    W[4] = 0.000386;
-    W[5] = 0.001467;
-    W[6] = 0.000155;
-    W[7] = 0.005113;
-    W[8] = 0.000993;
-    W[9] = 0.381262;
-    W[10] = 0.008121;
-    W[11] = 0.000000;
-    W[12] = 0.000000;
+    zZ[0] = 1.0; aA[0] = 1.00794; // Hydrogen
+    zZ[1] = 6.0; aA[1] = 12.011; // Carbon
+    zZ[2] = 7.0; aA[2] = 14.00674; // Nitrogen
+    zZ[3] = 8.0; aA[3] = 15.9994; // Oxigen
+    zZ[4] = 14.0; aA[4] = 28.0855; // Silicon
+    zZ[5] = 24.0; aA[5] = 51.9961; //Cromium
+    zZ[6] = 25.0; aA[6] = 54.938049; // Manganese
+    zZ[7] = 26.0; aA[7] = 55.845; // Iron
+    zZ[8] = 28.0; aA[8] = 58.6934; // Nickle
+    zZ[9] = 29.0; aA[9] = 63.546; // Copper
+    zZ[10] = 13.0; aA[10] = 26.981539; // Alulminum
+    zZ[11] = 47.0; aA[11] = 107.8682; // Silver
+    zZ[12] = 27.0; aA[12] = 58.9332; // Cobolt
+    wW[0] = 0.019965;
+    wW[1] = 0.340961;
+    wW[2] = 0.041225;
+    wW[3] = 0.200352;
+    wW[4] = 0.000386;
+    wW[5] = 0.001467;
+    wW[6] = 0.000155;
+    wW[7] = 0.005113;
+    wW[8] = 0.000993;
+    wW[9] = 0.381262;
+    wW[10] = 0.008121;
+    wW[11] = 0.000000;
+    wW[12] = 0.000000;
     if(fByThick){// New values seeITS_MatBudget_4B.xls
 	den = 1.5253276; // g/cm^3  Cell O370
     }else{
 	den = 2.58423412; // g/cm^3 Cell L370
     } // end if fByThick
     //den = 6161.7/(3671.58978);//g/cm^3 Volume does not exclude holes
-    AliMixture(86,"AIRFMDSDD$",A,Z,den,+11,W);
+    AliMixture(86,"AIRFMDSDD$",aA,zZ,den,+11,wW);
     AliMedium(86,"AIRFMDSDD$",86,0,ifield,fieldm,tmaxfdAir,stemaxAir,
 	      deemaxAir,epsilAir,stminAir);
 
     //AliMaterial(87,"AIRFMDSSD$",0.14610E+02,0.73000E+01,0.12050E-02,0.30423E+05,0.99900E+03);
     // From Pierluigi Barberis calculations of SSD October 2 2002.
-    W[0] = 0.019777;
-    W[1] = 0.325901;
-    W[2] = 0.031848;
-    W[3] = 0.147668;
-    W[4] = 0.030609;
-    W[5] = 0.013993;
-    W[6] = 0.001479;
-    W[7] = 0.048792;
-    W[8] = 0.009477;
-    W[9] = 0.350697;
-    W[10] = 0.014546;
-    W[11] = 0.005213;
-    W[12] = 0.000000;
+    wW[0] = 0.019777;
+    wW[1] = 0.325901;
+    wW[2] = 0.031848;
+    wW[3] = 0.147668;
+    wW[4] = 0.030609;
+    wW[5] = 0.013993;
+    wW[6] = 0.001479;
+    wW[7] = 0.048792;
+    wW[8] = 0.009477;
+    wW[9] = 0.350697;
+    wW[10] = 0.014546;
+    wW[11] = 0.005213;
+    wW[12] = 0.000000;
     if(fByThick){// New values seeITS_MatBudget_4B.xls
 	den = 1.2464275; // g/cm^3   Cell O403
     }else{
 	den = 1.28134409; // g/cm^3  Cell L403
     } // end if fByThick
     //den = 7666.3/(9753.553259); // volume does not exclude holes
-    AliMixture(87,"AIRFMDSSD$",A,Z,den,+12,W); 
+    AliMixture(87,"AIRFMDSSD$",aA,zZ,den,+12,wW); 
     AliMedium(87,"AIRFMDSSD$",87,0,ifield,fieldm,tmaxfdAir,stemaxAir,
 	      deemaxAir,epsilAir,stminAir);
 
     //AliMaterial(88,"ITS SANDW CFMDSDD$",0.12011E+02,0.60000E+01,0.41000E+00,0.90868E+02,0.99900E+03);
     // From Pierluigi Barberis calculations of 1SDD+Carbon fiber October 2 2002
-    W[0] = 0.016302;
-    W[1] = 0.461870;
-    W[2] = 0.033662;
-    W[3] = 0.163595;
-    W[4] = 0.000315;
-    W[5] = 0.001197;
-    W[6] = 0.000127;
-    W[7] = 0.004175;
-    W[8] = 0.000811;
-    W[9] = 0.311315;
-    W[10] = 0.006631;
-    W[11] = 0.000000;
-    W[12] = 0.000000;
+    wW[0] = 0.016302;
+    wW[1] = 0.461870;
+    wW[2] = 0.033662;
+    wW[3] = 0.163595;
+    wW[4] = 0.000315;
+    wW[5] = 0.001197;
+    wW[6] = 0.000127;
+    wW[7] = 0.004175;
+    wW[8] = 0.000811;
+    wW[9] = 0.311315;
+    wW[10] = 0.006631;
+    wW[11] = 0.000000;
+    wW[12] = 0.000000;
     if(fByThick){// New values seeITS_MatBudget_4B.xls
 	den = 1.9353276; // g/cm^3  Cell N370
     }else{
 	den = 3.2788626; // g/cm^3 Cell F370
     } // end if fByThick
     //den = 7667.1/(3671.58978); // Volume does not excludeholes
-    AliMixture(88,"ITS SANDW CFMDSDD$",A,Z,den,+11,W); 
+    AliMixture(88,"ITS SANDW CFMDSDD$",aA,zZ,den,+11,wW); 
     AliMedium(88,"ITS SANDW CFMDSDD$",88,0,ifield,fieldm,tmaxfd,stemax,
 	      deemax,epsil,stmin);
 
     //AliMaterial(89,"ITS SANDW CFMDSSD$",0.12011E+02,0.60000E+01,0.41000E+00,0.90868E+02,0.99900E+03);
     // From Pierluigi Barberis calculations of SSD+Carbon fiber October 2 2002.
-    W[0] = 0.014065;
-    W[1] = 0.520598;
-    W[2] = 0.022650;
-    W[3] = 0.105018;
-    W[4] = 0.021768;
-    W[5] = 0.009952;
-    W[6] = 0.001051;
-    W[7] = 0.034700;
-    W[8] = 0.006740;
-    W[9] = 0.249406;
-    W[10] = 0.010345;
-    W[11] = 0.0003707;
-    W[12] = 0.000000;
+    wW[0] = 0.014065;
+    wW[1] = 0.520598;
+    wW[2] = 0.022650;
+    wW[3] = 0.105018;
+    wW[4] = 0.021768;
+    wW[5] = 0.009952;
+    wW[6] = 0.001051;
+    wW[7] = 0.034700;
+    wW[8] = 0.006740;
+    wW[9] = 0.249406;
+    wW[10] = 0.010345;
+    wW[11] = 0.0003707;
+    wW[12] = 0.000000;
     if(fByThick){// New values seeITS_MatBudget_4B.xls
 	den = 1.6564275; // g/cm^3  Cell N304
     }else{
 	den = 1.7028296; // g/cm^3  Cell F304
     } // end if fByThick
     //den = 1166.5/(3671.58978); // Volume does not exclude holes
-    AliMixture(89,"ITS SANDW CFMDSSD$",A,Z,den,+12,W); 
+    AliMixture(89,"ITS SANDW CFMDSSD$",aA,zZ,den,+12,wW); 
     AliMedium(89,"ITS SANDW CFMDSSD$",89,0,ifield,fieldm,tmaxfd,stemax,
 	      deemax,epsil,stmin);
 
     //AliMaterial(97,"SPD SERVICES$",0.12011E+02,0.60000E+01,0.41000E+00,0.90868E+02,0.99900E+03);
     // From Pierluigi Barberis calculations of 1SPD October 2 2002.
-    W[0] = 0.005970;
-    W[1] = 0.304704;
-    W[2] = 0.042510;
-    W[3] = 0.121715;
-    W[4] = 0.001118;
-    W[5] = 0.030948;
-    W[6] = 0.003270;
-    W[7] = 0.107910;
-    W[8] = 0.020960;
-    W[9] = 0.360895;
-    W[10] = 0.000000;
-    W[11] = 0.000000;
-    W[12] = 0.000000;
+    wW[0] = 0.005970;
+    wW[1] = 0.304704;
+    wW[2] = 0.042510;
+    wW[3] = 0.121715;
+    wW[4] = 0.001118;
+    wW[5] = 0.030948;
+    wW[6] = 0.003270;
+    wW[7] = 0.107910;
+    wW[8] = 0.020960;
+    wW[9] = 0.360895;
+    wW[10] = 0.000000;
+    wW[11] = 0.000000;
+    wW[12] = 0.000000;
     if(fByThick){// New values seeITS_MatBudget_4B.xls
 	den = 80.31136576; // g/cm^3 Cell H329
     }else{
 	den = 87.13062; // g/cm^3  Cell G329
     } // end if fByThick
     //den = 1251.3/(0.05*2.0*TMath::Pi()*(7.75*7.75 - 3.7*3.7)); // g/cm^3
-    AliMixture(97,"SPD SERVICES$",A,Z,den,+10,W); 
+    AliMixture(97,"SPD SERVICES$",aA,zZ,den,+10,wW); 
     AliMedium(97,"SPD SERVICES$",97,0,ifield,fieldm,tmaxfd,stemax,
 	      deemax,epsil,stmin);
 
@@ -5012,50 +5012,50 @@ void AliITSvPPRasymmFMD::InitAliITSgeom(){
 	return;
     } // end if
     cout << "Reading Geometry transformation directly from Geant 3." << endl;
-    const Int_t nlayers = 6;
-    const Int_t ndeep = 9;
-    Int_t itsGeomTreeNames[nlayers][ndeep],lnam[20],lnum[20];
-    Int_t nlad[nlayers],ndet[nlayers];
+    const Int_t knlayers = 6;
+    const Int_t kndeep = 9;
+    Int_t itsGeomTreeNames[knlayers][kndeep],lnam[20],lnum[20];
+    Int_t nlad[knlayers],ndet[knlayers];
     Double_t t[3],r[10];
     Float_t  par[20],att[20];
     Int_t    npar,natt,idshape,imat,imed;
     AliITSGeant3Geometry *ig = new AliITSGeant3Geometry();
     Int_t mod,lay,lad,det,i,j,k;
-    Char_t names[nlayers][ndeep][4];
-    Int_t itsGeomTreeCopys[nlayers][ndeep];
+    Char_t names[knlayers][kndeep][4];
+    Int_t itsGeomTreeCopys[knlayers][kndeep];
     if(fMinorVersion == 1){ // Option A
-    Char_t *namesA[nlayers][ndeep] = {
+    Char_t *namesA[knlayers][kndeep] = {
      {"ALIC","ITSV","ITSD","IT12","I12A","I10A","I103","I101","ITS1"}, // lay=1
      {"ALIC","ITSV","ITSD","IT12","I12A","I20A","I1D3","I1D1","ITS2"}, // lay=2
      {"ALIC","ITSV","ITSD","IT34","I004","I302","ITS3","    ","    "}, // lay=3
      {"ALIC","ITSV","ITSD","IT34","I005","I402","ITS4","    ","    "}, // lay=4
      {"ALIC","ITSV","ITSD","IT56","I565","I562","ITS5","    ","    "}, // lay=5
      {"ALIC","ITSV","ITSD","IT56","I569","I566","ITS6","    ","    "}};// lay=6
-    Int_t itsGeomTreeCopysA[nlayers][ndeep]= {{1,1,1,1,10, 2, 4,1,1},// lay=1
+    Int_t itsGeomTreeCopysA[knlayers][kndeep]= {{1,1,1,1,10, 2, 4,1,1},// lay=1
 					      {1,1,1,1,10, 4, 4,1,1},// lay=2
 					      {1,1,1,1,14, 6, 1,0,0},// lay=3
 					      {1,1,1,1,22, 8, 1,0,0},// lay=4
 					      {1,1,1,1,34,22, 1,0,0},// lay=5
 					      {1,1,1,1,38,25, 1,0,0}};//lay=6
-    for(i=0;i<nlayers;i++)for(j=0;j<ndeep;j++){
+    for(i=0;i<knlayers;i++)for(j=0;j<kndeep;j++){
 	for(k=0;k<4;k++) names[i][j][k] = namesA[i][j][k];
 	itsGeomTreeCopys[i][j] = itsGeomTreeCopysA[i][j];
     } // end for i,j
     }else if(fMinorVersion == 2){ // Option B
-    Char_t *namesB[nlayers][ndeep] = {
+    Char_t *namesB[knlayers][kndeep] = {
      {"ALIC","ITSV","ITSD","IT12","I12B","I10B","I107","I101","ITS1"}, // lay=1
      {"ALIC","ITSV","ITSD","IT12","I12B","I20B","I1D7","I1D1","ITS2"}, // lay=2
      {"ALIC","ITSV","ITSD","IT34","I004","I302","ITS3","    ","    "}, // lay=3
      {"ALIC","ITSV","ITSD","IT34","I005","I402","ITS4","    ","    "}, // lay=4
      {"ALIC","ITSV","ITSD","IT56","I565","I562","ITS5","    ","    "}, // lay=5
      {"ALIC","ITSV","ITSD","IT56","I569","I566","ITS6","    ","    "}};// lay=6
-    Int_t itsGeomTreeCopysB[nlayers][ndeep]= {{1,1,1,1,10, 2, 4,1,1},// lay=1
+    Int_t itsGeomTreeCopysB[knlayers][kndeep]= {{1,1,1,1,10, 2, 4,1,1},// lay=1
 					      {1,1,1,1,10, 4, 4,1,1},// lay=2
 					      {1,1,1,1,14, 6, 1,0,0},// lay=3
 					      {1,1,1,1,22, 8, 1,0,0},// lay=4
 					      {1,1,1,1,34,22, 1,0,0},// lay=5
 					      {1,1,1,1,38,25, 1,0,0}};//lay=6
-    for(i=0;i<nlayers;i++)for(j=0;j<ndeep;j++){
+    for(i=0;i<knlayers;i++)for(j=0;j<kndeep;j++){
 	for(k=0;k<4;k++) names[i][j][k] = namesB[i][j][k];
 	itsGeomTreeCopys[i][j] = itsGeomTreeCopysB[i][j];
     } // end for i,j
@@ -5065,13 +5065,13 @@ void AliITSvPPRasymmFMD::InitAliITSgeom(){
     // tree its self.
     cout << "Reading Geometry informaton from Geant3 common blocks" << endl;
     for(i=0;i<20;i++) lnam[i] = lnum[i] = 0;
-    for(i=0;i<nlayers;i++)for(j=0;j<ndeep;j++)
+    for(i=0;i<knlayers;i++)for(j=0;j<kndeep;j++)
         strncpy((char*) &itsGeomTreeNames[i][j],names[i][j],4); 
     //	itsGeomTreeNames[i][j] = ig->StringToInt(names[i][j]);
     mod = 0;
-    for(i=0;i<nlayers;i++){
+    for(i=0;i<knlayers;i++){
 	k = 1;
-	for(j=0;j<ndeep;j++) if(itsGeomTreeCopys[i][j]!=0)
+	for(j=0;j<kndeep;j++) if(itsGeomTreeCopys[i][j]!=0)
 	    k *= TMath::Abs(itsGeomTreeCopys[i][j]);
 	mod += k;
     } // end for i
@@ -5081,9 +5081,9 @@ void AliITSvPPRasymmFMD::InitAliITSgeom(){
     ndet[0]=4;ndet[1]=4;ndet[2]=6;ndet[3]=8;ndet[4]=22;ndet[5]=25;
     fITSgeom = new AliITSgeom(0,6,nlad,ndet,mod);
     mod = -1;
-    for(lay=1;lay<=nlayers;lay++){
-	for(j=0;j<ndeep;j++) lnam[j] = itsGeomTreeNames[lay-1][j];
-	for(j=0;j<ndeep;j++) lnum[j] = itsGeomTreeCopys[lay-1][j];
+    for(lay=1;lay<=knlayers;lay++){
+	for(j=0;j<kndeep;j++) lnam[j] = itsGeomTreeNames[lay-1][j];
+	for(j=0;j<kndeep;j++) lnum[j] = itsGeomTreeCopys[lay-1][j];
 	switch (lay){
 	case 1: case 2: // layers 1 and 2 are a bit special
 	    lad = 0;
@@ -5095,7 +5095,7 @@ void AliITSvPPRasymmFMD::InitAliITSgeom(){
 		    for(det=1;det<=itsGeomTreeCopys[lay-1][6];det++){
 			lnum[6] = det;
 			mod++;
-			ig->GetGeometry(ndeep,lnam,lnum,t,r,idshape,npar,natt,
+			ig->GetGeometry(kndeep,lnam,lnum,t,r,idshape,npar,natt,
 					par,att,imat,imed);
 			fITSgeom->CreatMatrix(mod,lay,lad,det,kSPD,t,r);
 			if(!(fITSgeom->IsShapeDefined((Int_t)kSPD)))
@@ -5267,7 +5267,7 @@ void AliITSvPPRasymmFMD::SetDefaults(){
     return;
 }
 //______________________________________________________________________
-void AliITSvPPRasymmFMD::DrawModule(){
+void AliITSvPPRasymmFMD::DrawModule() const{
     //     Draw a shaded view of the FMD version 10.
     // Inputs:
     //   none.
