@@ -5,6 +5,7 @@
 ** Revision history:
 **  19/03/03 RD		Created
 */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,7 +13,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "DateEvent.h"
+#ifdef ALI_DATE
+
+#include "event.h"
 
 #ifndef TRUE
 # define TRUE (0 == 0)
@@ -260,3 +263,12 @@ int main( int argc, char **argv ) {
   createStream();
   return 0;
 }
+
+#else
+
+int main( int argc, char **argv ) {
+  fprintf( stderr, "%s was compiled without DATE\n", argv[0] );
+  return 1;
+}
+
+#endif
