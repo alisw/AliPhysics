@@ -13,7 +13,8 @@
 #pragma link C++ class  AliRICHPadHit;
 #pragma link C++ class  AliRICHTransientDigit;
 #pragma link C++ class  AliRICHRawCluster;
-#pragma link C++ class  AliRICHRecHit;
+#pragma link C++ class  AliRICHRecHit1D;
+#pragma link C++ class  AliRICHRecHit3D;
 #pragma link C++ class  AliRICHCerenkov;
 #pragma link C++ class  AliRICHSegmentationV0;
 #pragma link C++ class  AliRICHSegmentationV1;
