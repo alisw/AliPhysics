@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.28  2000/04/05 06:51:06  fca
+Workaround for an HP compiler problem
+
 Revision 1.27  2000/03/22 18:08:07  fca
 Rationalisation of the virtual MC interfaces
 
@@ -78,7 +81,7 @@ Introduction of the Copyright and cvs Log
 #include "TParticle.h"
 #include "AliRun.h"
 #include "AliDisplay.h"
-#include "AliVMC.h"
+#include "AliMC.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -87,10 +90,6 @@ Introduction of the Copyright and cvs Log
 AliRun *gAlice;
 
 static AliHeader *header;
-
-static TArrayF sEventEnergy;
-static TArrayF sSummEnergy;
-static TArrayF sSum2Energy;
 
 ClassImp(AliRun)
 
@@ -115,7 +114,7 @@ AliRun::AliRun()
   fGeometry  = 0;
   fDisplay   = 0;
   fField     = 0;
-  fVMC       = 0;
+  fMC       = 0;
   fNdets     = 0;
   fImedia    = 0;
   fTrRmax    = 1.e10;
@@ -176,7 +175,7 @@ AliRun::AliRun(const char *name, const char *title)
   // Create default mag field
   SetField();
   //
-  fVMC      = gVMC;
+  fMC      = gMC;
   //
   // Prepare the tracking medium lists
   fImedia = new TArrayI(1000);
@@ -197,7 +196,7 @@ AliRun::~AliRun()
   //
   delete fImedia;
   delete fField;
-  delete fVMC;
+  delete fMC;
   delete fGeometry;
   delete fDisplay;
   delete fGenerator;
@@ -428,11 +427,11 @@ void AliRun::FinishEvent()
   
   //Update the energy deposit tables
   Int_t i;
-  for(i=0;i<sEventEnergy.GetSize();i++) {
-    sSummEnergy[i]+=sEventEnergy[i];
-    sSum2Energy[i]+=sEventEnergy[i]*sEventEnergy[i];
+  for(i=0;i<fEventEnergy.GetSize();i++) {
+    fSummEnergy[i]+=fEventEnergy[i];
+    fSum2Energy[i]+=fEventEnergy[i]*fEventEnergy[i];
   }
-  sEventEnergy.Reset();
+  fEventEnergy.Reset();
   
   // Clean detector information
   CleanDetectors();
@@ -471,6 +470,8 @@ void AliRun::FinishEvent()
   if (fTreeD) fTreeD->Write();
   //  sprintf(hname,"TreeR%d",ievent);
   if (fTreeR) fTreeR->Write();
+
+  ++fEvent;
 }
 
 //_____________________________________________________________________________
@@ -558,19 +559,19 @@ void AliRun::EnergySummary()
   // Energy loss information
   if(ievent) {
     printf("***************** Energy Loss Information per event (GEV) *****************\n");
-    for(kn=1;kn<sEventEnergy.GetSize();kn++) {
-      ed=sSummEnergy[kn];
+    for(kn=1;kn<fEventEnergy.GetSize();kn++) {
+      ed=fSummEnergy[kn];
       if(ed>0) {
-	sEventEnergy[ndep]=kn;
+	fEventEnergy[ndep]=kn;
 	if(ievent>1) {
 	  ed=ed/ievent;
-	  ed2=sSum2Energy[kn];
+	  ed2=fSum2Energy[kn];
 	  ed2=ed2/ievent;
 	  ed2=100*TMath::Sqrt(TMath::Max(ed2-ed*ed,zero))/ed;
 	} else 
 	  ed2=99;
-	sSummEnergy[ndep]=ed;
-	sSum2Energy[ndep]=TMath::Min((Float_t) 99.,TMath::Max(ed2,zero));
+	fSummEnergy[ndep]=ed;
+	fSum2Energy[ndep]=TMath::Min((Float_t) 99.,TMath::Max(ed2,zero));
 	edtot+=ed;
 	ndep++;
       }
@@ -579,8 +580,8 @@ void AliRun::EnergySummary()
       left=ndep-kn*3;
       for(i=0;i<(3<left?3:left);i++) {
 	j=kn*3+i;
-        id=Int_t (sEventEnergy[j]+0.1);
-	printf(" %s %10.3f +- %10.3f%%;",gMC->VolName(id),sSummEnergy[j],sSum2Energy[j]);
+        id=Int_t (fEventEnergy[j]+0.1);
+	printf(" %s %10.3f +- %10.3f%%;",gMC->VolName(id),fSummEnergy[j],fSum2Energy[j]);
       }
       printf("\n");
     }
@@ -592,8 +593,8 @@ void AliRun::EnergySummary()
       left=ndep-kn*5;
       for(i=0;i<(5<left?5:left);i++) {
 	j=kn*5+i;
-        id=Int_t (sEventEnergy[j]+0.1);
-	printf(" %s %10.3f%%;",gMC->VolName(id),100*sSummEnergy[j]/edtot);
+        id=Int_t (fEventEnergy[j]+0.1);
+	printf(" %s %10.3f%%;",gMC->VolName(id),100*fSummEnergy[j]/edtot);
       }
       printf("\n");
     }
@@ -602,9 +603,9 @@ void AliRun::EnergySummary()
   }
   //
   // Reset the TArray's
-  //  sEventEnergy.Set(0);
-  //  sSummEnergy.Set(0);
-  //  sSum2Energy.Set(0);
+  //  fEventEnergy.Set(0);
+  //  fSummEnergy.Set(0);
+  //  fSum2Energy.Set(0);
 }
 
 //_____________________________________________________________________________
@@ -797,7 +798,7 @@ Int_t AliRun::GetPrimary(Int_t track)
 }
  
 //_____________________________________________________________________________
-void AliRun::Init(const char *setup)
+void AliRun::InitMC(const char *setup)
 {
   //
   // Initialize the Alice setup
@@ -813,18 +814,14 @@ void AliRun::Init(const char *setup)
   fNdets = fModules->GetLast()+1;
 
   //
-  //=================Create Materials, geometry, histograms, etc
+  //=================Create Materials and geometry
+  gMC->Init();
+
    TIter next(fModules);
    AliModule *detector;
    while((detector = (AliModule*)next())) {
       detector->SetTreeAddress();
       objlast = gDirectory->GetList()->Last();
-      
-      // Initialise detector materials, geometry, histograms,etc
-      detector->CreateMaterials();
-      detector->CreateGeometry();
-      detector->BuildGeometry();
-      detector->Init();
       
       // Add Detector histograms in Detector list of histograms
       if (objlast) objfirst = gDirectory->GetList()->After(objlast);
@@ -838,17 +835,13 @@ void AliRun::Init(const char *setup)
    
    MediaTable(); //Build the special IMEDIA table
    
-   //Terminate building of geometry
-   printf("%p\n",gVMC);
-   gVMC->FinishGeometry();
-   
    //Initialise geometry deposition table
-   sEventEnergy.Set(gMC->NofVolumes()+1);
-   sSummEnergy.Set(gMC->NofVolumes()+1);
-   sSum2Energy.Set(gMC->NofVolumes()+1);
+   fEventEnergy.Set(gMC->NofVolumes()+1);
+   fSummEnergy.Set(gMC->NofVolumes()+1);
+   fSum2Energy.Set(gMC->NofVolumes()+1);
    
    //Compute cross-sections
-   gVMC->BuildPhysics();
+   gMC->BuildPhysics();
    
    //Write Geometry object to current file.
    fGeometry->Write();
@@ -1204,7 +1197,7 @@ void AliRun::PurifyKine()
 }
 
 //_____________________________________________________________________________
-void AliRun::Reset(Int_t run, Int_t idevent)
+void AliRun::Reset()
 {
   //
   //  Reset all Detectors & kinematics & trees
@@ -1216,26 +1209,26 @@ void AliRun::Reset(Int_t run, Int_t idevent)
   ResetDigits();
 
   // Initialise event header
-  fHeader.Reset(run,idevent);
+  fHeader.Reset(fRun,fEvent);
 
   if(fTreeK) {
     fTreeK->Reset();
-    sprintf(hname,"TreeK%d",idevent);
+    sprintf(hname,"TreeK%d",fEvent);
     fTreeK->SetName(hname);
   }
   if(fTreeH) {
     fTreeH->Reset();
-    sprintf(hname,"TreeH%d",idevent);
+    sprintf(hname,"TreeH%d",fEvent);
     fTreeH->SetName(hname);
   }
   if(fTreeD) {
     fTreeD->Reset();
-    sprintf(hname,"TreeD%d",idevent);
+    sprintf(hname,"TreeD%d",fEvent);
     fTreeD->SetName(hname);
   }
   if(fTreeR) {
     fTreeR->Reset();
-    sprintf(hname,"TreeR%d",idevent);
+    sprintf(hname,"TreeR%d",fEvent);
     fTreeR->SetName(hname);
   }
 }
@@ -1280,7 +1273,7 @@ void AliRun::ResetPoints()
 }
 
 //_____________________________________________________________________________
-void AliRun::Run(Int_t nevent, const char *setup)
+void AliRun::RunMC(Int_t nevent, const char *setup)
 {
   //
   // Main function to be called to process a galice run
@@ -1290,22 +1283,14 @@ void AliRun::Run(Int_t nevent, const char *setup)
   // to be called
   //
 
-  Int_t i, todo;
   // check if initialisation has been done
-  if (!fInitDone) Init(setup);
+  if (!fInitDone) InitMC(setup);
   
   // Create the Root Tree with one branch per detector
   MakeTree("KHDER");
 
-  todo = TMath::Abs(nevent);
-  for (i=0; i<todo; i++) {
-  // Process one run (one run = one event)
-     Reset(fRun, fEvent);
-     gVMC->ProcessEvent();
-     FinishEvent();
-     fEvent++;
-  }
-  
+  gMC->ProcessRun(nevent);
+
   // End of this run, close files
   if(nevent>0) FinishRun();
 }
@@ -1354,7 +1339,7 @@ void AliRun::RunLego(const char *setup,Int_t ntheta,Float_t themin,
   //
 
   // check if initialisation has been done
-  if (!fInitDone) Init(setup);
+  if (!fInitDone) InitMC(setup);
 
   //Create Lego object  
   fLego = new AliLego("lego",ntheta,themin,themax,nphi,phimin,phimax,rmin,rmax,zmax);
@@ -1455,7 +1440,7 @@ void AliRun::KeepTrack(const Int_t track)
 }
  
 //_____________________________________________________________________________
-void AliRun::StepManager(Int_t id) const
+void AliRun::StepManager(Int_t id) 
 {
   //
   // Called at every step during transport
@@ -1468,7 +1453,7 @@ void AliRun::StepManager(Int_t id) const
   else {
     Int_t copy;
     //Update energy deposition tables
-    sEventEnergy[gMC->CurrentVolID(copy)]+=gMC->Edep();
+    AddEnergyDeposit(gMC->CurrentVolID(copy),gMC->Edep());
   
     //Call the appropriate stepping routine;
     AliModule *det = (AliModule*)fModules->At(id);
@@ -1497,7 +1482,7 @@ void AliRun::Streamer(TBuffer &R__b)
     R__b >> fModules;
     R__b >> fParticles;
     R__b >> fField; 
-    //    R__b >> fVMC;
+    //    R__b >> fMC;
     R__b >> fNdets;
     R__b >> fTrRmax;
     R__b >> fTrZmax;
@@ -1519,7 +1504,7 @@ void AliRun::Streamer(TBuffer &R__b)
     R__b << fModules;
     R__b << fParticles;
     R__b << fField;
-    //    R__b << fVMC;
+    //    R__b << fMC;
     R__b << fNdets;
     R__b << fTrRmax;
     R__b << fTrZmax;

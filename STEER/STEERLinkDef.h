@@ -27,7 +27,6 @@
 #pragma link C++ class  AliMagFC;
 #pragma link C++ class  AliMagFCM;
 #pragma link C++ class  AliMC;
-#pragma link C++ class  AliVMC;
 #pragma link C++ class  AliLego;
 #pragma link C++ class  AliLegoGenerator;
 #pragma link C++ class  AliDigitNew;

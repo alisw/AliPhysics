@@ -13,22 +13,29 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <AliVMC.h>
+#include <TGeant3.h>
 
-class AliGeant3 : public AliVMC
+class AliGeant3 : public TGeant3
 {
 
 private:
 
 public:
   AliGeant3(const char *title);
-  AliGeant3();
+  AliGeant3() {}
   virtual ~AliGeant3() {}
+
+  void   SetColors();
+
   //
   //
-  void FinishGeometry();
-  void BuildPhysics();
-  void ProcessEvent();
+  // Control Methods
+
+  virtual void Init();
+  virtual void FinishGeometry();
+  virtual void ProcessEvent();
+  virtual void ProcessRun(Int_t nevent);
+
   ClassDef(AliGeant3,1) //Generic MonteCarlo Class
 
 };

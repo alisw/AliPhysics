@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2000/02/28 21:03:57  fca
+Some additions to improve the compatibility with G4
+
 Revision 1.23  2000/02/23 16:25:25  fca
 AliVMC and AliGeant3 classes introduced
 ReadEuclid moved from AliRun to AliModule
@@ -645,6 +648,12 @@ Int_t TGeant3::NextVolUp(Text_t *name, Int_t &copy)
     else printf("GeomTree: Volume %s not found in bank\n",name);
   }
   return 0;
+}
+
+//_____________________________________________________________________________
+void TGeant3::BuildPhysics()
+{
+  Gphysi();
 }
 
 //_____________________________________________________________________________
@@ -1368,40 +1377,6 @@ Float_t TGeant3::MaxStep() const
   // Return the maximum step length in the current medium
   //
   return fGctmed->stemax;
-}
-
-//_____________________________________________________________________________
-void TGeant3::SetColors()
-{
-  //
-  // Set the colors for all the volumes
-  // this is done sequentially for all volumes
-  // based on the number of their medium
-  //
-  Int_t kv, icol;
-  Int_t jvolum=fGclink->jvolum;
-  //Int_t jtmed=fGclink->jtmed;
-  //Int_t jmate=fGclink->jmate;
-  Int_t nvolum=fGcnum->nvolum;
-  char name[5];
-  //
-  //    Now for all the volumes
-  for(kv=1;kv<=nvolum;kv++) {
-    //     Get the tracking medium
-    Int_t itm=Int_t (fZq[fZlq[jvolum-kv]+4]);
-    //     Get the material
-    //Int_t ima=Int_t (fZq[fZlq[jtmed-itm]+6]);
-    //     Get z
-    //Float_t z=fZq[fZlq[jmate-ima]+7];
-    //     Find color number
-    //icol = Int_t(z)%6+2;
-    //icol = 17+Int_t(z*150./92.);
-    //icol = kv%6+2;
-    icol = itm%6+2;
-    strncpy(name,(char*)&fZiq[jvolum+kv],4);
-    name[4]='\0';
-    Gsatt(name,"COLO",icol);
-  }
 }
 
 //_____________________________________________________________________________

@@ -16,7 +16,7 @@
 #include "AliDetector.h"
 #include "AliHeader.h"
 #include "AliMagF.h"
-#include "AliVMC.h"
+#include "AliMC.h"
 #include "AliGenerator.h"
 #include "AliLego.h"
 
@@ -45,7 +45,7 @@ protected:
   AliDisplay   *fDisplay;      //Pointer to event display
   TStopwatch    fTimer;        //Timer object
   AliMagF      *fField;        //Magnetic Field Map
-  AliVMC       *fVMC;          //pointer to MonteCarlo object
+  AliMC        *fMC;           //pointer to MonteCarlo object
   TArrayI      *fImedia;       //Array of correspondence between media and detectors
   Int_t         fNdets;        //Number of detectors
   Float_t       fTrRmax;       //Maximum radius for tracking
@@ -55,6 +55,10 @@ protected:
   AliLego      *fLego;         //pointer to aliLego object if it exists
   TDatabasePDG *fPDGDB;        //Particle factory object!
   TList        *fHitLists;     //Lists of hits to be remapped by PurifyKine
+  TArrayF       fEventEnergy;  //Energy deposit for current event
+  TArrayF       fSummEnergy;   //Energy per event in each volume
+  TArrayF       fSum2Energy;   //Energy squared per event in each volume
+
   
 public:
    // Creators - distructors
@@ -83,6 +87,8 @@ public:
    virtual  void  FinishEvent();
    virtual  void  FinishRun();
    virtual  void  FlagTrack(Int_t track);
+   void           AddEnergyDeposit(Int_t id, Float_t edep) 
+                                       {fEventEnergy[id]+=edep;}
    Int_t          GetEvNumber() const {return fEvent;}
    Int_t          GetRunNumber() const {return fRun;}
    void           SetRunNumber(Int_t run) {fRun=run;}
@@ -91,31 +97,35 @@ public:
    AliDetector   *GetDetector(const char *name);
    Int_t          GetModuleID(const char *name);
    virtual  Int_t GetEvent(Int_t event);
+  virtual  void  SetEvent(Int_t event) {fEvent=event;}
    TGeometry     *GetGeometry();
    AliHeader     *GetHeader() {return &fHeader;}
    virtual  void  GetNextTrack(Int_t &mtrack, Int_t &ipart, Float_t *pmom, Float_t &e, Float_t *vpos, Float_t *polar, Float_t &tof);
    Int_t          GetNtrack() {return fNtrack;}
    virtual  Int_t GetPrimary(Int_t track);
-   virtual  void  Init(const char *setup="Config.C");
+   virtual  void  InitMC(const char *setup="Config.C");
+   virtual  void  Init(const char *setup="Config.C") {InitMC(setup);}
    Bool_t         IsFolder() {return kTRUE;}
    virtual  void  MakeTree(Option_t *option="KH");
    TClonesArray  *Particles() {return fParticles;};
    virtual  void  PurifyKine();
    virtual  Int_t PurifyKine(Int_t lastSavedTrack, Int_t nofTracks);
-   virtual  void  Reset(Int_t run, Int_t idevent);
+   virtual  void  Reset();
    virtual  void  ResetDigits();
    virtual  void  ResetHits();
    virtual  void  ResetPoints();
    virtual  void  SetTransPar(char *filename="$(ALICE_ROOT)/data/galice.cuts");
    virtual  void  ResetStack() {fCurrent=-1;fHgwmk=0;fNtrack=0;fParticles->Clear();}
-   virtual  void  Run(Int_t nevent=1, const char *setup="Config.C");
+   virtual  void  RunMC(Int_t nevent=1, const char *setup="Config.C");
+   virtual  void  Run(Int_t nevent=1, const char *setup="Config.C") 
+  {RunMC(nevent,setup);}
    virtual  void  RunLego(const char *setup="Config.C",Int_t ntheta=60,Float_t themin=2,Float_t themax=178,
 			  Int_t nphi=60,Float_t phimin=0,Float_t phimax=360,Float_t rmin=0,
 			  Float_t rmax=570,Float_t zmax=10000);
    virtual  void  SetCurrentTrack(Int_t track);                           
    virtual  void  SetDebug(const Int_t level=1) {fDebug = level;}
    virtual  void  SetDisplay(AliDisplay *display) {fDisplay = display;}
-   virtual  void  StepManager(Int_t id) const;
+   virtual  void  StepManager(Int_t id);
    virtual  void  SetField(Int_t type=2, Int_t version=1, Float_t scale=1, Float_t maxField=10, char*filename="$(ALICE_ROOT)/data/field01.dat");
    virtual  void  SetTrack(Int_t done, Int_t parent, Int_t pdg, 
   			       Float_t *pmom, Float_t *vpos, Float_t *polar, 
@@ -132,6 +142,7 @@ public:
    virtual  void ResetGenerator(AliGenerator *generator);
    virtual  void EnergySummary();
    virtual  const TDatabasePDG* PDGDB() const {return fPDGDB;}
+
 
    TTree         *TreeD() {return fTreeD;}
    TTree         *TreeE() {return fTreeE;}

@@ -512,7 +512,7 @@ typedef struct {
 
 class TGeant3 : public AliMC { 
 
-private:
+protected:
   Int_t fNextVol;    // Iterator for GeomIter
 
 //--------------Declarations for ZEBRA--------------------- 
@@ -576,7 +576,6 @@ public:
 //                                                                   //
 ///////////////////////////////////////////////////////////////////////
 
-  void FinishGeometry();
   void  GeomIter();
   Int_t CurrentMaterial(Float_t &a, Float_t &z, Float_t &dens, Float_t &radl, Float_t &absl) const;
   Int_t NextVolUp(Text_t *name, Int_t &copy);
@@ -613,7 +612,6 @@ public:
   void   StopTrack();
   void   StopEvent();
   Float_t MaxStep() const;
-  void   SetColors();
   void  SetMaxStep(Float_t maxstep);
   void  SetMaxNStep(Int_t maxnstp);
   Int_t GetMaxNStep() const;
@@ -841,6 +839,11 @@ public:
 			const Float_t *x2, const Float_t *p2,
 			Int_t ipa,  Option_t *chopt);
         
+  // Control Methods
+
+  virtual void FinishGeometry();
+  virtual void BuildPhysics();
+
    ClassDef(TGeant3,1)  //C++ interface to Geant basic routines 
 }; 
 

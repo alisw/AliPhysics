@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2000/03/22 13:42:26  fca
+SetGenerator does not replace an existing generator, ResetGenerator does
+
 Revision 1.10  2000/02/23 16:25:22  fca
 AliVMC and AliGeant3 classes introduced
 ReadEuclid moved from AliRun to AliModule
@@ -64,7 +67,7 @@ Introduction of the Copyright and cvs Log
 #include "AliLego.h"
 #include "AliRun.h"
 #include "AliConst.h"
-#include "AliVMC.h"
+#include "AliMC.h"
 
 ClassImp(AliLego)
 
@@ -127,7 +130,7 @@ void AliLego::Run()
      fTotAbso = 0;
      fTotGcm2 = 0;
      
-     gVMC->ProcessEvent();
+     gMC->ProcessEvent();
      
      thed = fGener->CurTheta()*kRaddeg;
      phid = fGener->CurPhi()*kRaddeg;

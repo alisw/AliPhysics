@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/02/29 19:11:17  fca
+Move gucode into AliGeant3.cxx
+
 Revision 1.1  2000/02/23 16:25:25  fca
 AliVMC and AliGeant3 classes introduced
 ReadEuclid moved from AliRun to AliModule
@@ -44,34 +47,86 @@ ReadEuclid moved from AliRun to AliModule
 
 ClassImp(AliGeant3)
 
-AliGeant3::AliGeant3()
-{
-  new TGeant3();
-}
-
 AliGeant3::AliGeant3(const char *title) : 
-  AliVMC("ALICE Virtual MC for Geant3",title)
-{
-  new TGeant3(title);
-}
+  TGeant3(title) {}
 
 void AliGeant3::FinishGeometry()
 {
-  gMC->FinishGeometry();
+  TGeant3::FinishGeometry();
   //Create the color table
-  gMC->SetColors();
+  SetColors();
 }
 
-void AliGeant3::BuildPhysics()
+void AliGeant3::Init()
 {
-  ((TGeant3*)gMC)->Gphysi();
+  //
+  //=================Create Materials and geometry
+  TObjArray *modules = gAlice->Modules();
+  TIter next(modules);
+  AliModule *detector;
+  while((detector = (AliModule*)next())) {
+    // Initialise detector materials and geometry
+    detector->CreateMaterials();
+    detector->CreateGeometry();
+    detector->BuildGeometry();
+    detector->Init();
+  }
+
+  //Terminate building of geometry
+  FinishGeometry();
+}
+
+//____________________________________________________________________________
+void AliGeant3::ProcessRun(Int_t nevent)
+{
+  Int_t todo = TMath::Abs(nevent);
+  for (Int_t i=0; i<todo; i++) {
+  // Process one run (one run = one event)
+     gAlice->Reset();
+     ProcessEvent();
+     gAlice->FinishEvent();
+  }
 }
 
 void AliGeant3::ProcessEvent()
 {
-  ((TGeant3*)gMC)->Gtrigi();
-  ((TGeant3*)gMC)->Gtrigc();
-  ((TGeant3*)gMC)->Gtrig();
+  Gtrigi();
+  Gtrigc();
+  Gtrig();
+}
+
+//_____________________________________________________________________________
+void AliGeant3::SetColors()
+{
+  //
+  // Set the colors for all the volumes
+  // this is done sequentially for all volumes
+  // based on the number of their medium
+  //
+  Int_t kv, icol;
+  Int_t jvolum=fGclink->jvolum;
+  //Int_t jtmed=fGclink->jtmed;
+  //Int_t jmate=fGclink->jmate;
+  Int_t nvolum=fGcnum->nvolum;
+  char name[5];
+  //
+  //    Now for all the volumes
+  for(kv=1;kv<=nvolum;kv++) {
+    //     Get the tracking medium
+    Int_t itm=Int_t (fZq[fZlq[jvolum-kv]+4]);
+    //     Get the material
+    //Int_t ima=Int_t (fZq[fZlq[jtmed-itm]+6]);
+    //     Get z
+    //Float_t z=fZq[fZlq[jmate-ima]+7];
+    //     Find color number
+    //icol = Int_t(z)%6+2;
+    //icol = 17+Int_t(z*150./92.);
+    //icol = kv%6+2;
+    icol = itm%6+2;
+    strncpy(name,(char*)&fZiq[jvolum+kv],4);
+    name[4]='\0';
+    Gsatt(name,"COLO",icol);
+  }
 }
 
 //_____________________________________________________________________________

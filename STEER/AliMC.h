@@ -8,7 +8,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //                                                                           //
-//    Abstract Monte Carlo interface                                          //
+//   Abstract Monte Carlo interface                                          //
 //                                                                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
@@ -34,9 +34,6 @@ class AliMC : public TNamed
     // methods for building/management of geometry
     // ------------------------------------------------
     //
-
-    // functions from GBASE 
-    virtual void  FinishGeometry() = 0; 
 
     // functions from GCONS 
     virtual void  Gfmate(Int_t imat, char *name, Float_t &a, Float_t &z,  
@@ -187,6 +184,14 @@ class AliMC : public TNamed
     virtual void InitLego() = 0;
     virtual void Gfpart(Int_t, char*, Int_t&, Float_t&, Float_t&, Float_t&) = 0; 
     virtual void Gspart(Int_t, const char*, Int_t, Float_t, Float_t, Float_t) = 0; 
+
+  // Control Methods
+
+  virtual void Init() = 0;
+  virtual void FinishGeometry() = 0;
+  virtual void BuildPhysics() = 0;
+  virtual void ProcessEvent() = 0;
+  virtual void ProcessRun(Int_t nevent) = 0;
 
   private:
     static AliMC*  fgMC;
