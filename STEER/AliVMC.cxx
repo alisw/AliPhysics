@@ -15,7 +15,13 @@
 
 /*
 $Log$
+Revision 1.1  2000/02/23 16:25:22  fca
+AliVMC and AliGeant3 classes introduced
+ReadEuclid moved from AliRun to AliModule
+
 */
+
+#include <stdlib.h>
 
 #include "AliVMC.h"
 
@@ -25,14 +31,11 @@ AliVMC* AliVMC::fgVMC=0;
 
 AliVMC* gVMC;
 
-AliVMC::AliVMC()
-{
-}
-
 AliVMC::AliVMC(const char *name, const char *title) : TNamed(name,title)
 {
   if(fgVMC) {
     printf("Cannot initialise twice Alice MonteCarlo class\n");
+    exit(1);
   } else {
     fgVMC=this;
     gVMC=this;

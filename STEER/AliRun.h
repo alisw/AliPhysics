@@ -16,7 +16,7 @@
 #include "AliDetector.h"
 #include "AliHeader.h"
 #include "AliMagF.h"
-#include "AliMC.h"
+#include "AliVMC.h"
 #include "AliGenerator.h"
 #include "AliLego.h"
 
@@ -45,7 +45,7 @@ protected:
   AliDisplay   *fDisplay;      //Pointer to event display
   TStopwatch    fTimer;        //Timer object
   AliMagF      *fField;        //Magnetic Field Map
-  AliMC        *fMC;           //pointer to MonteCarlo object
+  AliVMC       *fVMC;          //pointer to MonteCarlo object
   TArrayI      *fImedia;       //Array of correspondence between media and detectors
   Int_t         fNdets;        //Number of detectors
   Float_t       fTrRmax;       //Maximum radius for tracking

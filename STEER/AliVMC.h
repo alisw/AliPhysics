@@ -15,6 +15,12 @@
 
 #include <TNamed.h>
 
+#include "AliMC.h"
+
+class AliVMC;
+
+R__EXTERN AliVMC *gVMC;
+
 class AliVMC : public TNamed 
 {
 
@@ -23,21 +29,19 @@ private:
 
 public:
   AliVMC(const char *name, const char *title);
-  AliVMC();
-  virtual ~AliVMC() {}
+  AliVMC() {}
+  ~AliVMC() {if(gMC) delete gMC; fgVMC=gVMC=0;}
   //Generic access functions
-  static inline AliVMC* GetVMC() {return fgVMC;}
+  static AliVMC* GetVMC() {return fgVMC;}
   //Generic Alice MonteCarlo Functions
   virtual void FinishGeometry() = 0;
   virtual void BuildPhysics() = 0;
   virtual void ProcessEvent() = 0;
-
+  
   //
   ClassDef(AliVMC,1) //Generic MonteCarlo Class
 
 };
-
-R__EXTERN AliVMC *gVMC;
 
 #endif
 

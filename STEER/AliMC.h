@@ -16,15 +16,19 @@
 #include <TNamed.h>
 #include <TLorentzVector.h>
 
+class AliMC;
+
+R__EXTERN AliMC *gMC;
+
 class AliMC : public TNamed 
 {
   public:
     AliMC(const char *name, const char *title);
-    AliMC();
-    virtual ~AliMC() {}
+    AliMC() {}
+    virtual ~AliMC() {fgMC=gMC=0;}
   
     // static access method
-    static inline AliMC* GetMC();
+    static AliMC* GetMC() { return fgMC; }
 
     //
     // methods for building/management of geometry
@@ -189,11 +193,6 @@ class AliMC : public TNamed
 
   ClassDef(AliMC,1)  //Geometry Interface Class
 };
-
-// inline methods
-inline AliMC* AliMC::GetMC() { return fgMC; }
-
-R__EXTERN AliMC *gMC;
 
 #endif // ALI_MC_H
 

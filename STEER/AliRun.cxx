@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2000/03/22 13:42:26  fca
+SetGenerator does not replace an existing generator, ResetGenerator does
+
 Revision 1.25  2000/02/23 16:25:22  fca
 AliVMC and AliGeant3 classes introduced
 ReadEuclid moved from AliRun to AliModule
@@ -109,7 +112,7 @@ AliRun::AliRun()
   fGeometry  = 0;
   fDisplay   = 0;
   fField     = 0;
-  fMC        = 0;
+  fVMC       = 0;
   fNdets     = 0;
   fImedia    = 0;
   fTrRmax    = 1.e10;
@@ -170,7 +173,7 @@ AliRun::AliRun(const char *name, const char *title)
   // Create default mag field
   SetField();
   //
-  fMC      = gMC;
+  fVMC      = gVMC;
   //
   // Prepare the tracking medium lists
   fImedia = new TArrayI(1000);
@@ -191,7 +194,7 @@ AliRun::~AliRun()
   //
   delete fImedia;
   delete fField;
-  delete fMC;
+  delete fVMC;
   delete fGeometry;
   delete fDisplay;
   delete fGenerator;
@@ -399,7 +402,7 @@ void AliRun::FinishPrimary()
   //  static Int_t count=0;
   //  const Int_t times=10;
   // This primary is finished, purify stack
-  gAlice->PurifyKine();
+  PurifyKine();
 
   // Write out hits if any
   if (gAlice->TreeH()) {
@@ -1287,19 +1290,19 @@ void AliRun::Run(Int_t nevent, const char *setup)
   if (!fInitDone) Init(setup);
   
   // Create the Root Tree with one branch per detector
-  gAlice->MakeTree("KHDER");
+  MakeTree("KHDER");
 
   todo = TMath::Abs(nevent);
   for (i=0; i<todo; i++) {
   // Process one run (one run = one event)
-     gAlice->Reset(fRun, fEvent);
+     Reset(fRun, fEvent);
      gVMC->ProcessEvent();
-     gAlice->FinishEvent();
+     FinishEvent();
      fEvent++;
   }
   
   // End of this run, close files
-  if(nevent>0) gAlice->FinishRun();
+  if(nevent>0) FinishRun();
 }
 
 //_____________________________________________________________________________
@@ -1355,10 +1358,10 @@ void AliRun::RunLego(const char *setup,Int_t ntheta,Float_t themin,
   fLego->Run();
   
   // Create only the Root event Tree
-  gAlice->MakeTree("E");
+  MakeTree("E");
   
   // End of this run, close files
-  gAlice->FinishRun();
+  FinishRun();
 }
 
 //_____________________________________________________________________________
@@ -1489,7 +1492,7 @@ void AliRun::Streamer(TBuffer &R__b)
     R__b >> fModules;
     R__b >> fParticles;
     R__b >> fField; 
-    //    R__b >> fMC;
+    //    R__b >> fVMC;
     R__b >> fNdets;
     R__b >> fTrRmax;
     R__b >> fTrZmax;
@@ -1511,7 +1514,7 @@ void AliRun::Streamer(TBuffer &R__b)
     R__b << fModules;
     R__b << fParticles;
     R__b << fField;
-    //    R__b << fMC;
+    //    R__b << fVMC;
     R__b << fNdets;
     R__b << fTrRmax;
     R__b << fTrZmax;

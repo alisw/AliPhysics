@@ -15,7 +15,11 @@
 
 /*
 $Log$
+Revision 1.2  1999/09/29 09:24:29  fca
+Introduction of the Copyright and cvs Log
+
 */
+#include <stdlib.h>
 
 #include "AliMC.h"
 
@@ -25,14 +29,11 @@ AliMC* AliMC::fgMC=0;
 
 AliMC* gMC;
 
-AliMC::AliMC()
-{
-}
-
 AliMC::AliMC(const char *name, const char *title) : TNamed(name,title)
 {
   if(fgMC) {
     printf("Cannot initialise twice MonteCarlo class\n");
+    exit(1);
   } else {
     fgMC=this;
     gMC=this;
