@@ -31,11 +31,11 @@ LHC/module.mk:		 LHC/libLHC.pkg
 THbtp/module.mk:	 THbtp/libTHbtp.pkg
 HBTP/module.mk:		 HBTP/libHBTP.pkg HBTP/libdummyHBTP.pkg
 HBTAN/module.mk:	 HBTAN/libHBTAN.pkg
-MICROCERN/module.mk: MICROCERN/libmicrocern.pkg
-HERWIG/module.mk:    HERWIG/libherwig.pkg HERWIG/libdummyherwig.pkg
-TFluka/module.mk:    TFluka/libTFluka.pkg
-VZERO/module.mk:     VZERO/libVZERO.pkg
-EPEMGEN/module.mk:   EPEMGEN/libepemgen.pkg
-TEPEMGEN/module.mk:  TEPEMGEN/libTEPEMGEN.pkg
+MICROCERN/module.mk:	 MICROCERN/libmicrocern.pkg
+HERWIG/module.mk:        HERWIG/libherwig.pkg HERWIG/libdummyherwig.pkg
+TFluka/module.mk:        TFluka/libTFluka.pkg
+VZERO/module.mk:         VZERO/libVZERO.pkg
+EPEMGEN/module.mk:       EPEMGEN/libEPEMGEN.pkg
+TEPEMGEN/module.mk:      TEPEMGEN/libTEPEMGEN.pkg
 
 
