@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/05/08 16:17:27  cblume
+Merge TRD-develop
+
 Revision 1.1.4.1  2000/05/08 14:55:03  cblume
 Bug fixes
 
@@ -340,4 +343,24 @@ Bool_t  AliTRDsegmentArrayBase::MakeDictionary(Int_t size)
     (*fTreeIndex)[treeIndex]=i+1; // MI 19.5. I'm sorry  -index 0 couldn't be use in AliTRDarrayI   
   }
   return kTRUE;
+}
+
+//_____________________________________________________________________________
+const AliTRDsegmentID*  AliTRDsegmentArrayBase::operator[](Int_t i)
+{
+  //
+  //return segment with given index
+  //
+  if ( (i<0) || (i>=fNSegment)) return 0; 
+  return (AliTRDsegmentID *)fSegment->At(i);
+}
+
+//_____________________________________________________________________________
+const AliTRDsegmentID*  AliTRDsegmentArrayBase::At(Int_t i)
+{
+  //
+  //return segment with given index
+  //
+  if ( (i<0) || (i>=fNSegment)) return 0; 
+  return (AliTRDsegmentID *)((*fSegment)[i]);
 }

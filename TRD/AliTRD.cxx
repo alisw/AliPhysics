@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2000/05/08 16:17:27  cblume
+Merge TRD-develop
+
 Revision 1.17.2.1  2000/05/08 14:28:59  cblume
 Introduced SetPHOShole() and SetRICHhole(). AliTRDrecPoint container is now a TObjArray
 
@@ -175,19 +178,19 @@ void AliTRD::AddRecPoint(Float_t *pos, Int_t *digits, Int_t det, Float_t amp)
 }
 
 //_____________________________________________________________________________
-void AliTRD::AddDigit(Int_t *digits)
+void AliTRD::AddDigit(Int_t *digits, Int_t *amp)
 {
   //
   // Add a digit for the TRD
   //
 
   TClonesArray &ldigits = *fDigits;
-  new(ldigits[fNdigits++]) AliTRDdigit(kFALSE,digits);
+  new(ldigits[fNdigits++]) AliTRDdigit(kFALSE,digits,amp);
 
 }
 
 //_____________________________________________________________________________
-void AliTRD::AddHit(Int_t track, Int_t det, Float_t *hits)
+void AliTRD::AddHit(Int_t track, Int_t* det, Float_t *hits)
 {
   //
   // Add a hit for the TRD

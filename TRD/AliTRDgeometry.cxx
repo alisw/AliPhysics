@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/05/08 16:17:27  cblume
+Merge TRD-develop
+
 Revision 1.1.4.1  2000/05/08 14:45:55  cblume
 Bug fix in RotateBack(). Geometry update
 
@@ -421,6 +424,7 @@ void AliTRDgeometry::GetGlobal(const AliRecPoint *p, TVector3 &pos, TMatrix &mat
   //
 
   GetGlobal(p,pos);
+  mat.Zero();
 
 }
 

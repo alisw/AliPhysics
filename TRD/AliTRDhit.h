@@ -22,7 +22,7 @@ class AliTRDhit : public AliHit {
  public:
 
   AliTRDhit() {}
-  AliTRDhit(Int_t shunt, Int_t track, Int_t det, Float_t *hits);
+  AliTRDhit(Int_t shunt, Int_t track, Int_t *det, Float_t *hits);
   virtual ~AliTRDhit() {};
  
   ClassDef(AliTRDhit,2)     // Hit for the Transition Radiation Detector

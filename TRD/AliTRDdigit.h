@@ -15,19 +15,19 @@ class AliTRDdigit : public AliDigitNew {
  public:
 
   AliTRDdigit();
-  AliTRDdigit(Bool_t isRaw, Int_t *digits);
+  AliTRDdigit(Bool_t isRaw, Int_t *digits, Int_t *amp);
   ~AliTRDdigit() {};
 
-          Int_t GetAmp()      { if (TestBit(kRawDigit))
-                                  return DecodeAmp();
-                                else
-                                  return fAmp; };
-          Int_t GetDetector() { return fId;   };
-          Int_t GetRow()      { return fRow;  };
-          Int_t GetCol()      { return fCol;  };
-          Int_t GetTime()     { return fTime; };
+          Int_t GetAmp() const    { if (TestBit(kRawDigit))
+                                      return DecodeAmp();
+                                    else
+                                      return fAmp; };
+          Int_t GetDetector()     { return fId;   };
+          Int_t GetRow()          { return fRow;  };
+          Int_t GetCol()          { return fCol;  };
+          Int_t GetTime()         { return fTime; };
 
-          Int_t DecodeAmp()   { return 0;     };
+          Int_t DecodeAmp() const { return 0;     };
 
  protected:
 

@@ -28,8 +28,8 @@ public:
   AliTRDsegmentArrayBase(Text_t *classname, Int_t n);  //
   Bool_t  SetClass(Text_t *classname);  //set class of stored object
   ~AliTRDsegmentArrayBase();
-  inline const AliTRDsegmentID * At(Int_t i); //return pointer to segment with index i 
-  inline const AliTRDsegmentID * operator[](Int_t i); //return pointer to segment with index i
+  const AliTRDsegmentID * At(Int_t i); //return pointer to segment with index i 
+  const AliTRDsegmentID * operator[](Int_t i); //return pointer to segment with index i
 
   Bool_t AddSegment(AliTRDsegmentID *segment); // add segment to array
   AliTRDsegmentID * AddSegment(Int_t index);   //create objet and set index
@@ -56,24 +56,5 @@ private:
   TClass  *   fClass;    //!class type of included objects 
   ClassDef(AliTRDsegmentArrayBase,1) 
 };
-
-
-
-const AliTRDsegmentID*  AliTRDsegmentArrayBase::operator[](Int_t i)
-{
-  //
-  //return segment with given index
-  //
-  if ( (i<0) || (i>=fNSegment)) return 0; 
-  return (AliTRDsegmentID *)fSegment->At(i);
-}
-const AliTRDsegmentID*  AliTRDsegmentArrayBase::At(Int_t i)
-{
-  //
-  //return segment with given index
-  //
-  if ( (i<0) || (i>=fNSegment)) return 0; 
-  return (AliTRDsegmentID *)((*fSegment)[i]);
-}
 
 #endif //ALISEGARRAY_H

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/05/08 16:17:27  cblume
+Merge TRD-develop
+
 Revision 1.1.4.1  2000/05/08 15:09:01  cblume
 Introduce AliTRDdigitsManager
 
@@ -145,27 +148,33 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
 
   Int_t chamBeg = 0;
   Int_t chamEnd = kNcham;
-  if (TRD->GetSensChamber() >= 0) {
+  if (TRD->GetSensChamber()  >= 0) {
     chamBeg = TRD->GetSensChamber();
     chamEnd = chamBeg + 1;
   }
   Int_t planBeg = 0;
   Int_t planEnd = kNplan;
-  if (TRD->GetSensPlane()   >= 0) {
+  if (TRD->GetSensPlane()    >= 0) {
     planBeg = TRD->GetSensPlane();
     planEnd = planBeg + 1;
   }
   Int_t sectBeg = 0;
   Int_t sectEnd = kNsect;
-  if (TRD->GetSensSector()  >= 0) {
-    sectBeg = TRD->GetSensSector();
-    sectEnd = sectBeg + 1;
-  }
 
   // *** Start clustering *** in every chamber
   for (Int_t icham = chamBeg; icham < chamEnd; icham++) {
     for (Int_t iplan = planBeg; iplan < planEnd; iplan++) {
       for (Int_t isect = sectBeg; isect < sectEnd; isect++) {
+
+        if (TRD->GetSensSector() >= 0) {
+          Int_t sens1 = TRD->GetSensSector();
+          Int_t sens2 = sens1 + TRD->GetSensSectorRange();
+          sens2 -= ((Int_t) (sens2 / kNsect)) * kNsect;
+          if (sens1 < sens2) 
+            if ((isect < sens1) || (isect >= sens2)) continue;
+          else
+            if ((isect < sens1) && (isect >= sens2)) continue;
+	}
 
         Int_t idet = Geo->GetDetector(iplan,icham,isect);
 
@@ -249,7 +258,8 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
                 // Cluster digit info
                 Int_t   clusterDigit[nClus]  = {0};
 
-                for (Int_t iPad = 0; iPad < nClus; iPad++) {
+                Int_t iPad;
+                for (iPad = 0; iPad < nClus; iPad++) {
                   clusterSignal[iPad] = digitMatrix->GetSignal(row,col-1+iPad,time);
                   clusterDigit[iPad]  = digitMatrix->GetTrack(row,col-1+iPad,time,0);
                 }
@@ -258,7 +268,7 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
                 if (col < nColMax - 2) {
                   if (maximaMatrix->GetSignal(row,col + 2,time) > 0) {
 
-                    for (Int_t iPad = 0; iPad < 5; iPad++) {
+                    for (iPad = 0; iPad < 5; iPad++) {
                       padSignal[iPad] = digitMatrix->GetSignal(row,col-1+iPad,time);
                     }
 

@@ -22,6 +22,7 @@ class AliTRDsegmentArray : public AliTRDsegmentArrayBase {
   ~AliTRDsegmentArray() { };
 
   virtual void             Delete();
+  virtual void             Delete(const char *) { Delete(); };
 
   virtual Bool_t           LoadArray(const Char_t *branchname);
   virtual Bool_t           StoreArray(const Char_t *branchname);

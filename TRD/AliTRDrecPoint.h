@@ -13,8 +13,9 @@ class AliTRDrecPoint : public AliRecPoint {
 
   AliTRDrecPoint();
   ~AliTRDrecPoint() {};
-  virtual void    Print(Option_t * opt = "void") {};
+  virtual void    Print(Option_t* ) {};
   virtual void    AddDigit(Int_t digit);
+  virtual void    AddDigit(AliDigitNew &digit) {};
 
   virtual void    SetEnergy(Float_t amp)          { fAmp      = amp; };
   virtual void    SetDetector(Int_t det)          { fDetector = det; };

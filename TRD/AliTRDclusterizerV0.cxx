@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/05/08 16:17:27  cblume
+Merge TRD-develop
+
 Revision 1.1.4.1  2000/05/08 15:08:41  cblume
 Replace AliTRDcluster by AliTRDrecPoint
 
@@ -199,8 +202,8 @@ Bool_t AliTRDclusterizerV0::MakeCluster()
           Int_t idxSave[nSave];
           Int_t iSave = 0;
 
-          const Int_t nTrack = 3;
-          Int_t tracks[nTrack];
+          const Int_t nSaveTrack = 3;
+          Int_t tracks[nSaveTrack];
           tracks[0] = RecPoint1->GetDigit(0);
 
           // Check the other cluster to see, whether there are close ones
@@ -220,7 +223,7 @@ Bool_t AliTRDclusterizerV0::MakeCluster()
               else {                              
                 idxSave[iSave]  = iClus2;
                 iSave++;
-                if (iSave < nTrack) tracks[iSave] = RecPoint2->GetDigit(0);
+                if (iSave < nSaveTrack) tracks[iSave] = RecPoint2->GetDigit(0);
 	      }
 	    }
 	  }

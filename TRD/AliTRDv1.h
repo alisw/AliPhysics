@@ -32,11 +32,13 @@ class AliTRDv1 : public AliTRD {
 
           void    SetSensPlane(Int_t iplane = 0);
           void    SetSensChamber(Int_t ichamber = 0);
-          void    SetSensSector(Int_t isector = 0);
+          void    SetSensSector(Int_t isector);
+          void    SetSensSector(Int_t isector, Int_t nsector);
 
-          Int_t   GetSensPlane()   { return fSensPlane;   };
-          Int_t   GetSensChamber() { return fSensChamber; };
-          Int_t   GetSensSector()  { return fSensSector;  };
+          Int_t   GetSensPlane()       { return fSensPlane;   };
+          Int_t   GetSensChamber()     { return fSensChamber; };
+          Int_t   GetSensSector()      { return fSensSector; };
+          Int_t   GetSensSectorRange() { return fSensSectorRange; };
 
  protected:
 
@@ -49,7 +51,8 @@ class AliTRDv1 : public AliTRD {
   Int_t        fSensSelect;             // Switch to select only parts of the detector
   Int_t        fSensPlane;              // Sensitive detector plane
   Int_t        fSensChamber;            // Sensitive detector chamber
-  Int_t        fSensSector;             // Sensitive detector sector
+  Int_t        fSensSector;             // Sensitive detector sector 
+  Int_t        fSensSectorRange;        // Sensitive detector range
 
  private:
 

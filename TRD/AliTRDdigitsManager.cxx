@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/05/08 16:17:27  cblume
+Merge TRD-develop
+
 Revision 1.1.2.1  2000/05/08 14:44:01  cblume
 Add new class AliTRDdigitsManager
 
@@ -196,3 +199,47 @@ Bool_t AliTRDdigitsManager::WriteDigits()
   return kTRUE;
 
 }
+
+//_____________________________________________________________________________
+AliTRDdigit *AliTRDdigitsManager::GetDigit(Int_t row, Int_t col
+                                         , Int_t time, Int_t det)
+{
+  // 
+  // Creates a single digit object 
+  //
+
+  Int_t digits[4];
+  Int_t amp[1];
+
+  digits[0] = det;
+  digits[1] = row;
+  digits[2] = col;
+  digits[3] = time;
+
+  amp[0]    = GetDigits(det)->GetData(row,col,time);
+  
+  return (new AliTRDdigit(fIsRaw,digits,amp));
+
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDdigitsManager::GetTrack(Int_t track
+                                  , Int_t row, Int_t col, Int_t time
+                                  , Int_t det)
+{
+  // 
+  // Returns the MC-track numbers from the dictionary.
+  //
+
+  if ((track < 0) || (track >= kNDict)) {
+    TObject::Error("GetTracks"
+                  ,"track %d out of bounds (size: %d, this: 0x%08x)"
+                  ,track,kNDict,this);
+    return -1;
+  }
+
+  // Array contains index+1 to allow data compression
+  return (GetDictionary(det,track)->GetData(row,col,time) - 1);
+
+}
+

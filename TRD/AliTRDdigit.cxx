@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/05/08 16:17:27  cblume
+Merge TRD-develop
+
 Revision 1.1.2.1  2000/05/08 14:40:29  cblume
 Introduce raw digit bit flag and DecodeAmp()
 
@@ -44,7 +47,7 @@ AliTRDdigit::AliTRDdigit():AliDigitNew()
 }
 
 //_____________________________________________________________________________
-AliTRDdigit::AliTRDdigit(Bool_t isRaw, Int_t *digits):AliDigitNew()
+AliTRDdigit::AliTRDdigit(Bool_t isRaw, Int_t *digits, Int_t *amp):AliDigitNew()
 {
   //
   // Create a TRD digit
@@ -59,7 +62,7 @@ AliTRDdigit::AliTRDdigit(Bool_t isRaw, Int_t *digits):AliDigitNew()
   fTime = digits[3];
 
   // Store the signal amplitude
-  fAmp  = digits[4];
+  fAmp  = amp[0];
 
   if (isRaw) SetBit(kRawDigit);
 

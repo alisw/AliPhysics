@@ -35,10 +35,11 @@ class AliTRDdigitsManager : public TObject {
   virtual AliTRDsegmentArray *GetDigits()            { return fDigits;        };
   virtual AliTRDsegmentArray *GetDictionary(Int_t i) { return fDictionary[i]; };
 
+          AliTRDdigit        *GetDigit(Int_t row, Int_t col, Int_t time, Int_t det);
+          Int_t               GetTrack(Int_t track, Int_t row, Int_t col, Int_t time, Int_t det);
+
   inline  AliTRDdataArrayI   *GetDigits(Int_t det);
   inline  AliTRDdataArrayI   *GetDictionary(Int_t det, Int_t i);
-  inline  AliTRDdigit        *GetDigit(Int_t row, Int_t col, Int_t time, Int_t det);
-  inline  Int_t               GetTrack(Int_t track, Int_t row, Int_t col, Int_t time, Int_t det);
   inline  Int_t               GetTrack(Int_t track, AliTRDdigit *Digit);
 
  protected:
@@ -63,7 +64,6 @@ inline AliTRDdataArrayI *AliTRDdigitsManager::GetDigits(Int_t det)
 
 }
 
-
 //_____________________________________________________________________________
 inline AliTRDdataArrayI *AliTRDdigitsManager::GetDictionary(Int_t det, Int_t i) 
 {
@@ -72,47 +72,6 @@ inline AliTRDdataArrayI *AliTRDdigitsManager::GetDictionary(Int_t det, Int_t i)
   //
 
   return (AliTRDdataArrayI *) fDictionary[i]->At(det);
-
-}
-
-//_____________________________________________________________________________
-inline AliTRDdigit *AliTRDdigitsManager::GetDigit(Int_t row, Int_t col
-                                                , Int_t time, Int_t det)
-{
-  // 
-  // Creates a single digit object 
-  //
-
-  Int_t digits[5];
-
-  digits[0] = det;
-  digits[1] = row;
-  digits[2] = col;
-  digits[3] = time;
-  digits[4] = GetDigits(det)->GetData(row,col,time);
-  
-  return (new AliTRDdigit(fIsRaw,digits));
-
-}
-
-//_____________________________________________________________________________
-inline Int_t AliTRDdigitsManager::GetTrack(Int_t track
-                                         , Int_t row, Int_t col, Int_t time
-                                         , Int_t det)
-{
-  // 
-  // Returns the MC-track numbers from the dictionary.
-  //
-
-  if ((track < 0) || (track >= kNDict)) {
-    TObject::Error("GetTracks"
-                  ,"track %d out of bounds (size: %d, this: 0x%08x)"
-                  ,track,kNDict,this);
-    return -1;
-  }
-
-  // Array contains index+1 to allow data compression
-  return (GetDictionary(det,track)->GetData(row,col,time) - 1);
 
 }
 

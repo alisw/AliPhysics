@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/05/08 16:17:27  cblume
+Merge TRD-develop
+
 Revision 1.1.2.1  2000/05/08 14:48:31  cblume
 AliTRDhit class now in separate files
 
@@ -31,7 +34,7 @@ AliTRDhit class now in separate files
 ClassImp(AliTRDhit)
  
 //_____________________________________________________________________________
-AliTRDhit::AliTRDhit(Int_t shunt, Int_t track, Int_t det, Float_t *hits)
+AliTRDhit::AliTRDhit(Int_t shunt, Int_t track, Int_t *det, Float_t *hits)
           :AliHit(shunt, track)
 {
   //
@@ -39,7 +42,7 @@ AliTRDhit::AliTRDhit(Int_t shunt, Int_t track, Int_t det, Float_t *hits)
   //
 
   // Store volume hierarchy
-  fDetector = det;
+  fDetector = det[0];
 
   // Store position and charge
   fX        = hits[0];

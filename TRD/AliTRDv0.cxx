@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2000/02/28 19:10:26  cblume
+Include the new TRD classes
+
 Revision 1.13.4.1  2000/02/28 18:01:53  cblume
 Change to new hit version and introduce geometry class
 
@@ -142,6 +145,7 @@ void AliTRDv0::StepManager()
   Int_t   iIdChamber, icChamber;
 
   Float_t hits[4];
+  Int_t   det[1];
 
   TLorentzVector p;
   TClonesArray  &lhits = *fHits;
@@ -188,9 +192,10 @@ void AliTRDv0::StepManager()
       // The plane number (0 - 5)
       pla = icChamber - TMath::Nint((Float_t) (icChamber / 7)) * 6 - 1;
 
+      det[0] = fGeometry->GetDetector(pla,cha,sec);
       new(lhits[fNhits++]) AliTRDhit(fIshunt
                                     ,gAlice->CurrentTrack()
-                                    ,fGeometry->GetDetector(pla,cha,sec)
+                                    ,det
                                     ,hits);
 
     }

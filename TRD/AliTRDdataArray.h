@@ -30,11 +30,11 @@ class AliTRDdataArray : public AliTRDsegmentID {
   virtual Int_t  GetNCol()                     { return fNcol;       };
   virtual Int_t  GetNtime()                    { return fNtime;      };
 
-  inline  Int_t  GetIndex(Int_t row, Int_t col, Int_t time);
+          Int_t  GetIndex(Int_t row, Int_t col, Int_t time);
 
  protected:
 
-  inline  Int_t  GetIdx1(Int_t row, Int_t col);
+          Int_t  GetIdx1(Int_t row, Int_t col);
   inline  Bool_t CheckBounds(const char *where, Int_t idx1, Int_t idx2);
   inline  Bool_t OutOfBoundsError(const char *where, Int_t idx1, Int_t idx2);
  
@@ -56,49 +56,6 @@ class AliTRDdataArray : public AliTRDsegmentID {
 
 };
  
-//_____________________________________________________________________________
-inline Int_t AliTRDdataArray::GetIndex(Int_t row, Int_t col, Int_t time)
-{
-  //
-  // Maps the row/column/time into one number
-  // 
-
-  if (time > fNtime) {
-    TObject::Error("GetIdx1"
-                  ,"time %d out of bounds (size: %d, this: 0x%08x)"
-                  ,time,fNtime,this);
-    return -1;
-  }  
-  
-  return time * fNrow*fNcol + GetIdx1(row,col);
-
-}
-
-//_____________________________________________________________________________
-inline Int_t AliTRDdataArray::GetIdx1(Int_t row, Int_t col)
-{
-  //
-  // Maps the two-dimensional row/column plane into an one-dimensional array.
-  //
-
-  if (row >= fNrow) {
-    TObject::Error("GetIdx1"
-                  ,"row %d out of bounds (size: %d, this: 0x%08x)"
-                  ,row,fNrow,this);
-    return -1;
-  }  
-
-  if (col >= fNcol) {
-    TObject::Error("GetIdx1"
-                  ,"col %d out of bounds (size: %d, this: 0x%08x)"
-                  ,col,fNcol,this);
-    return -1;
-  }  
-
-  return row + col * fNrow;
-
-}
-
 //_____________________________________________________________________________
 inline Bool_t AliTRDdataArray::CheckBounds(const char *where
                                           , Int_t idx1, Int_t idx2) 

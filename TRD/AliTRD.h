@@ -25,8 +25,8 @@ class AliTRD : public AliDetector {
   AliTRD();
   AliTRD(const char *name, const char *title);
   virtual           ~AliTRD();
-  virtual void       AddHit(Int_t, Int_t, Float_t*);
-  virtual void       AddDigit(Int_t*);    
+  virtual void       AddHit(Int_t, Int_t*, Float_t*);
+  virtual void       AddDigit(Int_t*, Int_t*);    
   virtual void       AddRecPoint(Float_t*, Int_t*, Int_t, Float_t);
   virtual void       BuildGeometry();
   virtual void       CreateGeometry();
@@ -42,20 +42,22 @@ class AliTRD : public AliDetector {
   virtual void       SetTreeAddress();
 
   virtual void       SetGasMix(Int_t imix = 0);
-  virtual void       SetHits(Int_t ihit = 1) {};
+  virtual void       SetHits()             {};
   virtual void       SetPHOShole()         { fGeometry->SetPHOShole(); };
   virtual void       SetRICHhole()         { fGeometry->SetRICHhole(); };
 
   AliTRDgeometry    *GetGeometry()         { return fGeometry; };
 
-  virtual void       SetSensChamber(Int_t ichamber) = 0;
-  virtual void       SetSensPlane(Int_t iplane)     = 0;
-  virtual void       SetSensSector(Int_t isector)   = 0;
+  virtual void       SetSensChamber(Int_t ichamber)              = 0;
+  virtual void       SetSensPlane(Int_t iplane)                  = 0;
+  virtual void       SetSensSector(Int_t isector)                = 0;
+  virtual void       SetSensSector(Int_t isector, Int_t nsector) = 0;
 
-  virtual Int_t      GetSensChamber() = 0;
-  virtual Int_t      GetSensPlane()   = 0;
-  virtual Int_t      GetSensSector()  = 0;
- 
+  virtual Int_t      GetSensChamber()     = 0;
+  virtual Int_t      GetSensPlane()       = 0;
+  virtual Int_t      GetSensSector()      = 0;
+  virtual Int_t      GetSensSectorRange() = 0; 
+
  protected:
 
   Int_t              fGasMix;            //  Gas mixture. 0: Xe/Isobutane 1: Xe/CO2

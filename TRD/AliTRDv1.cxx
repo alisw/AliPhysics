@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2000/05/08 16:17:27  cblume
+Merge TRD-develop
+
 Revision 1.17.2.1  2000/05/08 14:59:16  cblume
 Made inline function non-virtual. Bug fix in setting sensitive chamber
 
@@ -82,18 +85,19 @@ AliTRDv1::AliTRDv1(const char *name, const char *title)
   // Standard constructor for Transition Radiation Detector version 1
   //
 
-  fIdSens        =  0;
+  fIdSens          =  0;
 
-  fIdChamber1    =  0;
-  fIdChamber2    =  0;
-  fIdChamber3    =  0;
+  fIdChamber1      =  0;
+  fIdChamber2      =  0;
+  fIdChamber3      =  0;
 
-  fSensSelect    =  0;
-  fSensPlane     = -1;
-  fSensChamber   = -1;
-  fSensSector    = -1;
+  fSensSelect      =  0;
+  fSensPlane       = -1;
+  fSensChamber     = -1;
+  fSensSector      = -1;
+  fSensSectorRange = 0;
 
-  fDeltaE        = NULL;
+  fDeltaE          = NULL;
 
   SetBufferSize(128000);
 
@@ -150,8 +154,12 @@ void AliTRDv1::Init()
       printf("          Only plane %d is sensitive\n",fSensPlane);
     if (fSensChamber >= 0)   
       printf("          Only chamber %d is sensitive\n",fSensChamber);
-    if (fSensSector  >= 0)
-      printf("          Only sector %d is sensitive\n",fSensSector);
+    if (fSensSector  >= 0) {
+      Int_t sens1  = fSensSector;
+      Int_t sens2  = fSensSector + fSensSectorRange;
+            sens2 -= ((Int_t) (sens2 / kNsect)) * kNsect;
+      printf("          Only sectors %d - %d are sensitive\n",sens1,sens2-1);
+    }
   }
   printf("\n");
 
@@ -224,16 +232,40 @@ void AliTRDv1::SetSensSector(Int_t isector)
   // Defines the hit-sensitive sector (0-17)
   //
 
+  SetSensSector(isector,1);
+
+}
+
+//_____________________________________________________________________________
+void AliTRDv1::SetSensSector(Int_t isector, Int_t nsector)
+{
+  //
+  // Defines a range of hit-sensitive sectors. The range is defined by
+  // <isector> (0-17) as the starting point and <nsector> as the number 
+  // of sectors to be included.
+  //
+
   if ((isector < 0) || (isector > 17)) {
-    printf("Wrong input value: %d\n",isector);
+    printf("Wrong input value <isector>: %d\n",isector);
     printf("Use standard setting\n");
-    fSensSector = -1;
-    fSensSelect =  0;
+    fSensSector      = -1;
+    fSensSectorRange =  0;
+    fSensSelect      =  0;
     return;
   }
 
-  fSensSelect = 1;
-  fSensSector = isector;
+  if ((nsector < 1) || (nsector > 18)) {
+    printf("Wrong input value <nsector>: %d\n",nsector);
+    printf("Use standard setting\n");
+    fSensSector      = -1;
+    fSensSectorRange =  0;
+    fSensSelect      =  0;
+    return;
+  }
+
+  fSensSelect      = 1;
+  fSensSector      = isector;
+  fSensSectorRange = nsector;
 
 }
 
@@ -254,6 +286,8 @@ void AliTRDv1::StepManager()
   Int_t    cha = 0;
   Int_t    sec = 0;
   Int_t    iPdg;
+
+  Int_t    det[1];
 
   Float_t  hits[4];
   Float_t  random[1];
@@ -348,15 +382,26 @@ void AliTRDv1::StepManager()
       if (fSensSelect) {
         if ((fSensPlane   >= 0) && (pla != fSensPlane  )) addthishit = 0;
         if ((fSensChamber >= 0) && (cha != fSensChamber)) addthishit = 0;
-        if ((fSensSector  >= 0) && (sec != fSensSector )) addthishit = 0;
+        if (fSensSector  >= 0) {
+          Int_t sens1  = fSensSector;
+          Int_t sens2  = fSensSector + fSensSectorRange;
+                sens2 -= ((Int_t) (sens2 / kNsect)) * kNsect;
+          if (sens1 < sens2) {
+            if ((sec < sens1) || (sec >= sens2)) addthishit = 0;
+	  }
+          else {
+            if ((sec < sens1) && (sec >= sens2)) addthishit = 0;
+	  }
+	}
       }
 
       // Add this hit
       if (addthishit) {
 
+        det[0] = fGeometry->GetDetector(pla,cha,sec);
         new(lhits[fNhits++]) AliTRDhit(fIshunt
                                       ,gAlice->CurrentTrack()
-                                      ,fGeometry->GetDetector(pla,cha,sec)
+                                      ,det
                                       ,hits);
 
         // The energy loss according to Bethe Bloch

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/05/09 16:38:57  cblume
+Removed PadResponse(). Merge problem
+
 Revision 1.4  2000/05/08 15:53:45  cblume
 Resolved merge conflict
 
@@ -305,22 +308,18 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
   Int_t chamBeg = 0;
   Int_t chamEnd = kNcham;
-  if (fTRD->GetSensChamber() >= 0) {
+  if (fTRD->GetSensChamber()  >= 0) {
     chamBeg = fTRD->GetSensChamber();
     chamEnd = chamBeg + 1;
   }
   Int_t planBeg = 0;
   Int_t planEnd = kNplan;
-  if (fTRD->GetSensPlane()   >= 0) {
+  if (fTRD->GetSensPlane()    >= 0) {
     planBeg = fTRD->GetSensPlane();
     planEnd = planBeg + 1;
   }
   Int_t sectBeg = 0;
   Int_t sectEnd = kNsect;
-  if (fTRD->GetSensSector()  >= 0) {
-    sectBeg = fTRD->GetSensSector();
-    sectEnd = sectBeg + 1;
-  }
 
   Int_t count_hits = 0;
 
@@ -328,6 +327,16 @@ Bool_t AliTRDdigitizer::MakeDigits()
   for (Int_t iCham = chamBeg; iCham < chamEnd; iCham++) {
     for (Int_t iPlan = planBeg; iPlan < planEnd; iPlan++) {
       for (Int_t iSect = sectBeg; iSect < sectEnd; iSect++) {
+
+        if (fTRD->GetSensSector() >= 0) {
+          Int_t sens1 = fTRD->GetSensSector();
+          Int_t sens2 = sens1 + fTRD->GetSensSectorRange();
+          sens2 -= ((Int_t) (sens2 / kNsect)) * kNsect;
+          if (sens1 < sens2) 
+            if ((iSect < sens1) || (iSect >= sens2)) continue;
+          else
+            if ((iSect < sens1) && (iSect >= sens2)) continue;
+	}
 
         Int_t nDigits = 0;
 
