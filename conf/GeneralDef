@@ -15,7 +15,11 @@ $(ALICE_ROOT)/include/%.h : %.h
  
 tgt_$(ALICE_TARGET)/%.o : %.cxx
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
+ifeq ($(CXXVERBOSE),)
 	@$(CXX) $(CXXFLAGS) -c $*.cxx -o tgt_$(ALICE_TARGET)/$*.o
+else
+	$(CXX) $(CXXFLAGS) -c $*.cxx -o tgt_$(ALICE_TARGET)/$*.o
+endif
 
 # IRST coding rule check 
 check/%.i : %.cxx
