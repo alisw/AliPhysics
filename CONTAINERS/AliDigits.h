@@ -21,6 +21,7 @@ public:
   AliDigits(const AliDigits &digits); //copy constructor
   AliDigits &operator = (const AliDigits & digits); //assignment operator
   virtual ~AliDigits();
+  Short_t * GetDigits(){return fElements->GetArray();}   //return row  pointer to the array digits
   Short_t GetDigitFast(Int_t row, Int_t column);  //return value at given row and collumn
   void  SetDigitFast(Short_t value,Int_t row, Int_t column);  //set value at given row and collumn
   Bool_t BoundsOK(const char *where, Int_t row, Int_t col) ;  //Check If Bound Ok
@@ -95,7 +96,7 @@ inline void  AliDigits::SetDigitFast(Short_t value, Int_t row, Int_t column)
   //
   //set  digit 
   //
-  if ( (row<0) || (row>=fNrows)  || (column<0) || (column>=fNrows) ) 
+  if ( (row<0) || (row>=fNrows)  || (column<0) || (column>=fNcols) ) 
        Error("AliDigits::SetDigitFast", "row %d  col %d out of bounds (size: %d x %d, this: 0x%08x)", 
 	   row, column, fNrows, fNcols, this);
   (*fElements)[fIndex->At(column)+row]=value; 

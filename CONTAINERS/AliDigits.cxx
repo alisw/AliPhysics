@@ -16,6 +16,9 @@
 /*
 
 $Log$
+Revision 1.2  2000/12/20 09:36:46  kowal2
+Improvements in algorithms to make the code faster
+
 Revision 1.1  2000/11/01 15:57:13  kowal2
 Moved from the TPC directory
 
@@ -377,6 +380,7 @@ void AliDigits::ExpandBuffer1()
   }
   fElements->Adopt(fNelems,buf);    
 }
+
 void AliDigits::CompresBuffer1()
 {
   //
@@ -388,12 +392,16 @@ void AliDigits::CompresBuffer1()
   index.Set(fNcols);
   Int_t icurrent=-1;
   Int_t izero;
+  Short_t * cbuff = fElements->GetArray();  //MI change
+
   for (Int_t col = 0; col<fNcols; col++){      
     index[col]=icurrent+1;//set collumn pointer
     izero = 0;  //reset zer counter at the begining of the column
     for (Int_t row = 0; row< fNrows;row++){
       //if under threshold
-      if (GetDigitFast(row,col)<=fThreshold)  izero++;
+      //if (GetDigitFast(row,col)<=fThreshold)  izero++;
+      if (*cbuff<=fThreshold)  izero++;
+
       else{
 	if (izero>0) {
 	  //if we have currently izero count under threshold
@@ -404,8 +412,10 @@ void AliDigits::CompresBuffer1()
 	} //end of reseting izero
 	icurrent++;
 	if (icurrent>=buf.fN) buf.Expand(icurrent*2);
-	buf[icurrent] = GetDigitFast(row,col);	    
-      }//if signal bigger then threshold	  	
+	//buf[icurrent] = GetDigitFast(row,col);	    
+	buf[icurrent] = *cbuff;	    
+      }//if signal bigger then threshold	
+       cbuff++;
     } //end of loop over rows
     if (izero>0) {
       icurrent++;	  
@@ -431,7 +441,7 @@ Bool_t AliDigits::First0()
   fCurrentCol = -1;
   fCurrentIndex = -1;
   Int_t i;
-  for (i=0; (( i<fNelems) && (fElements->At(i)<=fThreshold));i++)
+  for (i=0; (( i<fNelems) && (fElements->At(i)<=fThreshold));i++);  //MI1211
   if (i == fNelems) return kFALSE;
   fCurrentCol =i/fNrows;
   fCurrentRow =i%fNrows;
