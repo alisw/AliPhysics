@@ -58,21 +58,15 @@
 
 ClassImp(AliITSv11)
  
-//______________________________________________________________________
-  AliITSv11::AliITSv11() :
-    AliITS("ITS","ITS geometry v11"),
-    fGeomDetOut(kFALSE),
-    fGeomDetIn(kFALSE),
-    fMajorVersion(11),
-    fMinorVersion(0) {
+
+
+AliITSv11::AliITSv11() : AliITS()
+{
   //    Standard default constructor for the ITS version 11.
-  // Inputs:
-  //   none.
-  // Outputs:
-  //   none.
-  // Return:
-  //   none.
-  
+  fGeomDetOut=kFALSE;
+  fGeomDetIn=kFALSE;
+  fMajorVersion=11;
+  fMinorVersion=0;
   Int_t i;
   for(i=0;i<60;i++) fRead[i] = '\0';
   for(i=0;i<60;i++) fWrite[i] = '\0';
@@ -90,6 +84,39 @@ ClassImp(AliITSv11)
   fIdSens    = new Int_t[fIdN];
   for(Int_t i=0; i<fIdN; i++) fIdSens[i] = 0;
 }
+
+
+//______________________________________________________________________
+AliITSv11::AliITSv11(const char *name, const char *title)
+  : AliITS("ITS", title)
+{
+  //    Standard constructor for the ITS version 11.
+
+  fGeomDetOut = kFALSE;
+  fGeomDetIn = kFALSE;
+  fMajorVersion = 11;
+  fMinorVersion = 0;
+  printf("%s\n constructor",name);
+
+  Int_t i;
+  for(i=0;i<60;i++) fRead[i] = '\0';
+  for(i=0;i<60;i++) fWrite[i] = '\0';
+  for(i=0;i<60;i++) fEuclidGeomDet[i] = '\0';
+  strncpy(fRead,"$ALICE_ROOT/ITS/ITSgeometry_vPPRasymmFMD.det",60);
+  SetEUCLID(kFALSE);
+
+//   fSPDgeom = new AliITSv11GeometrySPD();
+  fSDDgeom = new AliITSv11GeometrySDD();
+//   fSupgeom = new AliITSv11GeometrySupport();
+
+  fIdN = 1;         
+  fIdName    = new TString[fIdN];
+  fIdName[0] = fSDDgeom->GetSenstiveVolumeMame();
+  fIdSens    = new Int_t[fIdN];
+  for(Int_t i=0; i<fIdN; i++) fIdSens[i] = 0;
+}
+
+
 
 //______________________________________________________________________
 AliITSv11::AliITSv11(Int_t debugITS,Int_t debugSPD,Int_t debugSDD,
@@ -129,7 +156,7 @@ AliITSv11::AliITSv11(Int_t debugITS,Int_t debugSPD,Int_t debugSDD,
   fIdSens    = new Int_t[fIdN];
   for(Int_t i=0; i<fIdN; i++) fIdSens[i] = 0;
 
-  debugITS = (debugSPD && debugSSD && debugSUP); //remove temp. warnings
+  debugITS = (debugSPD && debugSSD && debugSUP && debugSDD); //remove temp. warnings
 }
 
 
@@ -197,8 +224,12 @@ void AliITSv11::CreateGeometry(){
   vALIC->AddNode(vITS,1,0);
 
 //   fSPDgeom->CenteralSPD(vITS);
+
+//   fSDDgeom->AddOnlyLay3Ladder(0,1);
+//   fSDDgeom->AddOnlyLay4Ladder(0,1);
   fSDDgeom->Layer3(vITS);
   fSDDgeom->Layer4(vITS);
+
 //     fSupgeom->SPDCone(vITS);
 //     fSupgeom->SPDThermalSheald(vITS);
 //     fSupgeom->SDDCone(vITS);
@@ -703,13 +734,20 @@ void AliITSv11::InitAliITSgeom(){
   // Fill fITSgeom with the 3 sub-detector geometries
   //
 
-  const Int_t knlayers = 2;             // only SDD for the moment
+  const Int_t knlayers = 6;
   Int_t nlad[knlayers],ndet[knlayers];
-  nlad[0]=14; nlad[1]=22;
-  ndet[0]=6;  ndet[1]=8;
-  Int_t mod = nlad[0]*ndet[0]+nlad[1]*ndet[1];
+  nlad[0]= 0; ndet[0]=0;
+  nlad[1]= 0; ndet[1]=0;
+  nlad[2]= fSDDgeom->GetLay3NLadders(); ndet[2]=6;
+  nlad[3]= fSDDgeom->GetLay4NLadders(); ndet[3]=8;
+  nlad[4]= 0; ndet[4]=0;
+  nlad[5]= 0; ndet[5]=0;
+  Int_t nSPD = nlad[0]*ndet[0]+nlad[1]*ndet[1];
+  Int_t nSDD = nlad[2]*ndet[2]+nlad[3]*ndet[3];
+  Int_t nSSD = nlad[4]*ndet[4]+nlad[5]*ndet[5];
+  Int_t nModTot = nSPD + nSDD + nSSD;
   if (fITSgeom) delete fITSgeom;
-  fITSgeom = new AliITSgeom(0,knlayers,nlad,ndet,mod);
+  fITSgeom = new AliITSgeom(0,knlayers,nlad,ndet,nModTot);
 
 
   //***************************************************
@@ -728,7 +766,7 @@ void AliITSv11::InitAliITSgeom(){
 			 new AliITSgeomSSD75and275(3,(Float_t *)kDxyzSSD));
 
   //*****************************************
-  fSDDgeom->ExportSensorGeometry(fITSgeom, +1, 0);  //SDD
+  fSDDgeom->ExportSensorGeometry(fITSgeom, +3, 0);  //SDD
 
   return;
 }
@@ -741,7 +779,6 @@ void AliITSv11::Init(){
   //
 
     Int_t i;
-
     for(i=0;i<20;i++) printf("*");
     printf( " ITSv%i.%i_Init ", fMajorVersion,fMinorVersion );
     for(i=0;i<20;i++) printf("*"); printf("\n");
@@ -757,7 +794,6 @@ void AliITSv11::Init(){
 
     // Initialize AliITS
     AliITS::Init();
-
     for(i=0;i<40+16;i++) printf("*"); printf("\n");
 }
 
@@ -809,18 +845,18 @@ void AliITSv11::SetDefaults(){
   
   //================================================ SDD
   iDetType=DetType(kSDD);
-  s1 = (AliITSgeomSDD*) fITSgeom->GetShape(kSDD);// Get shape info. Do it this way for now.
+  s1 = (AliITSgeomSDD*) fITSgeom->GetShape(kSDD);
   if (s1) {
-    AliITSresponseSDD *resp1=new AliITSresponseSDD("simulated");
-    SetResponseModel(kSDD,resp1);
-    AliITSsegmentationSDD *seg1=new AliITSsegmentationSDD(fITSgeom,resp1);
-    seg1->SetDetSize(s1->GetDx()*kconv, // base this on AliITSgeomSDD
-		     s1->GetDz()*2.*kconv, // for now.
-		     s1->GetDy()*2.*kconv); // x,z,y full width in microns.
-    seg1->SetNPads(256,256);// Use AliITSgeomSDD for now
-    SetSegmentationModel(kSDD,seg1);
-    const char *kData1=(iDetType->GetResponseModel())->DataType();
-    const char *kopt=iDetType->GetResponseModel()->ZeroSuppOption();
+    AliITSresponseSDD     *resp1 = new AliITSresponseSDD("simulated");
+    AliITSsegmentationSDD  *seg1 = new AliITSsegmentationSDD(fITSgeom,resp1);
+    seg1->SetDetSize(s1->GetDx()*kconv,
+		     s1->GetDz()*4*kconv,  // z in 2th and y in 3th position in
+		     s1->GetDy()*4*kconv); // AliITSsegmentation::SetDetSize()...
+    seg1->SetNPads(256, 256);
+    SetResponseModel(kSDD, resp1);
+    SetSegmentationModel(kSDD, seg1);
+    const char *kData1 = (iDetType->GetResponseModel())->DataType();
+    const char *kopt   = iDetType->GetResponseModel()->ZeroSuppOption();
     if((!strstr(kopt,"2D")) && (!strstr(kopt,"1D")) || strstr(kData1,"real") ){
       iDetType->ClassNames("AliITSdigit","AliITSRawClusterSDD");
     } else iDetType->ClassNames("AliITSdigitSDD","AliITSRawClusterSDD");
@@ -854,8 +890,6 @@ void AliITSv11::SetDefaults(){
   }// end if
   return;
 };
-
-
 
 
 //______________________________________________________________________

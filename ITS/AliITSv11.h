@@ -13,6 +13,7 @@ class AliITSv11 : public AliITS {
 
  public:
     AliITSv11();
+    AliITSv11(const char *name, const char *title);
     AliITSv11(Int_t debugITS, Int_t debugSPD = 0, Int_t debugSDD = 0,
 	     Int_t debugSSD = 0, Int_t debugSUP = 0);
     AliITSv11(const AliITSv11 &source);            // copy constructor
@@ -82,7 +83,7 @@ class AliITSv11 : public AliITS {
 
 
     //AliITSv11GeometrySPD *fSPDgeom;      //SPD Geometry
-    AliITSv11GeometrySDD *fSDDgeom;      //SDD Geometry
+    AliITSv11GeometrySDD *fSDDgeom;      //! SDD Geometry
     //AliITSv11GeometrySupport /fSupgeom;  //Support Geometry
 
     ClassDef(AliITSv11,1)  // ITS version 11 

@@ -54,12 +54,14 @@ AliITSv11GeomCable::AliITSv11GeomCable(const AliITSv11GeomCable &s) :
   fVolumeArray(s.fVolumeArray),fInitialNode(s.fInitialNode)
 {
   //     Copy Constructor 
+  printf("Copy Constructor of AliITSv11GeomCable ???\n");  
 }
 
 //________________________________________________________________________
 AliITSv11GeomCable& AliITSv11GeomCable::operator=(const AliITSv11GeomCable &s) {
   //     Assignment operator
   // Not fully inplemented yet !!!
+  printf("Assignment operator of AliITSv11GeomCable not fully inplemented yet !!!\n");  
 
   if(&s == this) return *this;
   SetName(s.GetName());
@@ -114,11 +116,7 @@ const {
   // Get the check point #iCheckPt
   //
   TVectorD *coordVector =(TVectorD *)fPointArray.UncheckedAt(iCheckPt);
-#if ROOT_VERSION_CODE < ROOT_VERSION(4,0,0)
-  CopyFrom(coord, coordVector->GetElements());
-#else
   CopyFrom(coord, coordVector->GetMatrixArray());
-#endif
   return kTRUE;
 };
 
@@ -130,11 +128,7 @@ const {
   //
 
   TVectorD *coordVector =(TVectorD *)fPointArray.UncheckedAt(iCheckPt);
-#if ROOT_VERSION_CODE < ROOT_VERSION(4,0,0)
-  CopyFrom(coord, coordVector->GetElements());
-#else
   CopyFrom(coord, coordVector->GetMatrixArray());
-#endif
   return kTRUE;
 };
 

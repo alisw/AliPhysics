@@ -55,6 +55,8 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   virtual void  SetParameters();
   TGeoVolume*   GetMotherVolume() const { return fMotherVol;};
   const char*   GetSenstiveVolumeMame() const {return fgSDDsensitiveVolName;};
+  Int_t         GetLay3NLadders() const;
+  Int_t         GetLay4NLadders() const;
 
   private:
 

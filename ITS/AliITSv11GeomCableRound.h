@@ -30,6 +30,7 @@ class AliITSv11GeomCableRound : public AliITSv11GeomCable {
   void          AddCheckPoint( TGeoVolume *vol, Int_t iCheckPt,
 			       Double_t *coord, Double_t *orthVect);
   Int_t         CreateAndInsertCableSegment(Int_t p2);
+  Int_t         CreateAndInsertTorusSegment(Int_t p2, Double_t rotation=0);
   void          PrintCheckPoints() const;
 
   void          SetNLayers(Int_t nLayers);
@@ -41,10 +42,10 @@ class AliITSv11GeomCableRound : public AliITSv11GeomCable {
  protected:
   TGeoVolume*   CreateSegment( Double_t *coord1,Double_t *coord2,
 			       Double_t *localVect1, Double_t *localVect2 );
+  TGeoVolume*   CreateTorus(  Double_t &phi, Double_t &r );
 
   Double_t   fRadius;                         // total radius
   Int_t      fNlayer;                         // number of layers
-
   Double_t   fPhiMin;                         // minimum phi
   Double_t   fPhiMax;                         // maximum phi
   Double_t   fLayThickness[fgkCableMaxLayer]; // layer thicknesses
