@@ -25,7 +25,8 @@ class AliL3VertexFinder:public AliL3VertexArray{
 
   public:
     AliL3VertexFinder(); 
-    AliL3VertexFinder(AliL3VertexFinder&){;}
+    AliL3VertexFinder(AliL3VertexFinder &vf) : AliL3VertexArray(vf)
+      {;}
     virtual ~AliL3VertexFinder();
 
     void Reset();
