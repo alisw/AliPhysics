@@ -113,12 +113,17 @@ void RICHpadtestC (Int_t evNumber1=0,Int_t evNumber2=0)
    //Int_t mothers[100000];
    //Int_t mothers2[100000];
    Float_t mom[3];
-   Float_t random;
+   //Float_t random;
    Int_t nraw=0;
    Int_t phot=0;
    Int_t feed=0;
    Int_t padmip=0;
-   Int_t pion=0, kaon=0, proton=0, electron=0, neutron=0, muon=0;
+   Int_t pion=0, kaon=0, proton=0, electron=0, positron=0, neutron=0, highneutrons=0, muon=0;
+   Int_t chargedpions=0,primarypions=0,highprimarypions=0,chargedkaons=0,primarykaons=0,highprimarykaons=0;
+   Int_t chargedmuons=0, photons=0, primaryphotons=0, highprimaryphotons=0;
+
+   TRandom random;
+
    //for (Int_t i=0;i<100;i++) mothers[i]=0;
    for (int nev=0; nev<= evNumber2; nev++) {
        Int_t nparticles = gAlice->GetEvent(nev);
@@ -220,15 +225,33 @@ void RICHpadtestC (Int_t evNumber1=0,Int_t evNumber2=0)
 	      //printf("Particle type: %d\n",current->GetPdgCode());
 	      if (TMath::Abs(particle) < 50000051)
 		{
-		  if (TMath::Abs(particle) == 50000050)
+		  //if (TMath::Abs(particle) == 50000050 || TMath::Abs(particle) == 2112)
+		  if (TMath::Abs(particle) == 2112 || TMath::Abs(particle) == 50000050)
 		    {
-		      gMC->Rndm(&random, 1);
-		      if (random < .1)
+		      //gMC->Rndm(&random, 1);
+		      if (random->Rndm() < .1)
 			production->Fill(current->Vz(),R,(float) 1);
+		      if (TMath::Abs(particle) == 50000050)
+			{
+			  photons +=1;
+			  if (R<.005)
+			    {
+			      primaryphotons +=1;
+			      if (current->Energy()>0.001)
+				highprimaryphotons +=1;
+			    }
+			}	
+		      if (TMath::Abs(particle) == 2112)
+			{
+			  neutron +=1;
+			  if (current->Energy()>0.0001)
+			    highneutrons +=1;
+			}
 		    }
 		  else 
 		    {
 		      production->Fill(current->Vz(),R,(float) 1);
+		      printf("Adding %d at %f\n",particle,R);
 		    }
 		  //mip->Fill(x,y,(float) 1);
 		}
@@ -245,6 +268,16 @@ void RICHpadtestC (Int_t evNumber1=0,Int_t evNumber2=0)
 		    }
 		  printf("Pion mass: %e\n",current->GetCalcMass());
 		  pion +=1;
+		  if (TMath::Abs(particle)==211)
+		    {
+		      chargedpions +=1;
+		      if (R<.005)
+			{
+			  primarypions +=1;
+			  if (current->Energy()>1)
+			    highprimarypions +=1;
+			}
+		    }	
 		}
 	      if (TMath::Abs(particle)==2212)
 		{
@@ -266,6 +299,16 @@ void RICHpadtestC (Int_t evNumber1=0,Int_t evNumber2=0)
 		    kaonspectra3->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
 		  printf("Kaon mass: %e\n",current->GetCalcMass());
 		  kaon +=1;
+		  if (TMath::Abs(particle)==321)
+		    {
+		      chargedkaons +=1;
+		      if (R<.005)
+			{
+			  primarykaons +=1;
+			  if (current->Energy()>1)
+			    highprimarykaons +=1;
+			}
+		    }
 		}
 	      if (TMath::Abs(particle)==11)
 		{
@@ -275,7 +318,10 @@ void RICHpadtestC (Int_t evNumber1=0,Int_t evNumber2=0)
 		  if (R>2.5 && R<4.5)
 		    electronspectra3->Fill(TMath::Log10(current->Energy() - current->GetCalcMass()),(float) 1);
 		  printf("Electron mass: %e\n",current->GetCalcMass());
-		  electron +=1;
+		  if (particle == -11)
+		    electron +=1;
+		  if (particle == 11)
+		    positron +=1;
 		}
 	      if (TMath::Abs(particle)==13)
 		{
@@ -736,15 +782,35 @@ void RICHpadtestC (Int_t evNumber1=0,Int_t evNumber2=0)
    }
    //printf("The total number of pads which give a signal: %d %d\n",Nh,Nh1);
    
-   printf("Total number of electrons:%d\n",electron);
-   printf("Total number of muons:%d\n",muon);
-   printf("Total number of pions:%d\n",pion);
-   printf("Total number of kaons:%d\n",kaon);
-   printf("Total number of protons:%d\n",proton);
-   printf("Total number of neutrons:%d\n",neutron);
+   printf("****************************************\n");
+   printf("* Particle                  * Flux(m2) *\n");
+   printf("****************************************\n");
+
+   printf("* Pions:                    *   %3.1f   *\n",pion/11.757312);
+   printf("* Charged Pions:            *   %3.1f   *\n",chargedpions/11.757312);
+   printf("* Primary Pions:            *   %3.1f   *\n",primarypions/11.757312);
+   printf("* Primary Pions (p>1GeV):   *   %3.1f   *\n",highprimarypions/11.757312);
+   printf("* Kaons:                    *   %3.1f   *\n",kaon/11.757312);
+   printf("* Charged Kaons:            *   %3.1f   *\n",chargedkaons/11.757312);
+   printf("* Primary Kaons:            *   %3.1f   *\n",primarykaons/11.757312);
+   printf("* Primary Kaons (p>1GeV):   *   %3.1f   *\n",highprimarykaons/11.757312);
+   printf("* Muons:                    *   %3.1f   *\n",muon/11.757312);
+   printf("* Electrons:                *   %3.1f   *\n",electron/11.757312);
+   printf("* Positrons:                *   %3.1f   *\n",positron/11.757312);
+   printf("* Protons:                  *   %3.1f   *\n",proton/11.757312);
+   printf("* All Charged:              *   %3.1f   *\n",(chargedpions+chargedkaons+muon+electron+positron+proton)/11.757312);
+   printf("****************************************\n");
+   printf("* Photons:                  *   %3.1f   *\n",photons/11.757312); 
+   printf("* Primary Photons:          *   %3.1f   *\n",primaryphotons/11.757312);
+   printf("* Primary Photons (p>1MeV): *   %3.1f   *\n",highprimaryphotons/11.757312);
+   printf("****************************************\n");
+   printf("* Neutrons:                 *   %3.1f   *\n",neutron);
+   printf("* Neutrons (p>100keV:       *   %3.1f   *\n",highneutrons);
+   printf("****************************************\n");
 
    printf("End of macro\n");
 }
+
 
 
 
