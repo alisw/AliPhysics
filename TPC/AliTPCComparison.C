@@ -192,7 +192,7 @@ Int_t AliTPCComparison(Float_t ptcutl=0.2, Float_t ptcuth=10., const Char_t *dir
       AliESDtrack *track=0;
       for (i=0; i<nentr; i++) {
           track=event->GetTrack(i);
-          tlab=track->GetLabel();
+          tlab=track->GetTPCLabel();
           if (lab==TMath::Abs(tlab)) break;
       }
       if (i==nentr) {
@@ -206,20 +206,20 @@ Int_t AliTPCComparison(Float_t ptcutl=0.2, Float_t ptcuth=10., const Char_t *dir
       AliESDtrack * mitrack;
       for (mi=0; mi<nentr; mi++) {
 	mitrack=event->GetTrack(mi);          
-	if (lab==TMath::Abs(mitrack->GetLabel())) micount++;
+	if (lab==TMath::Abs(mitrack->GetTPCLabel())) micount++;
       }
       if (micount>1) {
 	track_multifound[itrack_multifound]=lab;
 	track_multifound_n[itrack_multifound]=micount;
 	itrack_multifound++;
       }
-      
+      if ((track->GetStatus()&AliESDtrack::kTPCrefit)==0) continue;
       if (lab==tlab) hfound->Fill(ptg);
       else { 
 	track_fake[itrack_fake++]=lab;
 	hfake->Fill(ptg); 
       }
-
+      
       Double_t pxpypz[3]; track->GetInnerPxPyPz(pxpypz);
       Float_t phi=TMath::ATan2(pxpypz[1],pxpypz[0]);
       if (phi<-TMath::Pi()) phi+=2*TMath::Pi();
