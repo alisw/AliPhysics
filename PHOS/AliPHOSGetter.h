@@ -45,6 +45,7 @@ class AliPHOSSDigitizer ;
 class AliPHOSClusterizer ;
 class AliPHOSTrackSegmentMaker ;
 class AliPHOSPID ;
+class AliPHOSCalibrationDB ;
 
 class AliPHOSGetter : public TObject {
   
@@ -86,7 +87,7 @@ class AliPHOSGetter : public TObject {
   void   Event(const Int_t event, const char * opt = "HSDRP") ;    
   void   Track(const Int_t itrack) ;
   void   ReadTreeS(TTree * treeS,Int_t input) ; //Method to be used when 
-                                                //digitizing is under the control ofAliRunDigitizer, 
+                                                //digitizing is under the control ofAliRunDigizer, 
                                                 //which opens all files etc.
   //========== Alarms ======================
   TFolder * Alarms() const { return dynamic_cast<TFolder*>(ReturnO("Alarms", 0)) ; }
@@ -121,8 +122,10 @@ class AliPHOSGetter : public TObject {
   TClonesArray *            Digits(const char * name = 0)const  { 
     return dynamic_cast<TClonesArray*>(ReturnO("Digits", name)) ;   }
   //const AliPHOSDigit *  Digit(Int_t index) { return static_cast<const AliPHOSDigit *>(Digits()->At(index)) ;} !!! why no such method ?
-  const AliPHOSDigitizer *  Digitizer(const char * name = 0) const { 
-    return (const AliPHOSDigitizer*)(ReturnT("Digitizer", name)) ;   }
+  const TTask *           Digitizer(const char * name = 0) const { 
+    return ReturnT("Digitizer", name) ;   }
+  AliPHOSCalibrationDB * CalibrationDB(){return  fcdb; }
+  void ReadCalibrationDB(const char * name, const char * filename) ;
   
   //========== RecPoints =============
   TObjArray *                EmcRecPoints(const char * name = 0) {
@@ -232,6 +235,7 @@ private:
   TString        fSDigitsFileName ;      //!
   Bool_t         fFailed ;            //! set if file not opend or galice not found
   Int_t          fDebug ;             //! Debug level
+  AliRun *       fAlice ;             //! needed to read TreeK if in an other file than fHeaderFile
   Int_t          fNPrimaries ;        //! # of primaries  
   TObjArray *    fPrimaries ;         //! list of lists of primaries-for the case of mixing
   TFolder *      fModuleFolder ;      //!Folder that contains the modules 
@@ -242,6 +246,8 @@ private:
   TFolder *      fRecoFolder ;        //!Folder that contains the reconstructed objects (RecPoints, TrackSegments, RecParticles) 
   TFolder *      fQAFolder ;          //!Folder that contains the QA objects  
   TFolder *      fTasksFolder ;       //!Folder that contains the Tasks (sdigitizer, digitizer, reconstructioner)
+
+  AliPHOSCalibrationDB * fcdb ;       //!
    
   static AliPHOSGetter * fgObjGetter; // pointer to the unique instance of the singleton 
 

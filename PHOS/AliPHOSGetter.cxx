@@ -71,7 +71,8 @@
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSPIDv1.h" 
 #include "AliPHOSGeometry.h"
-
+#include "AliPHOSRaw2Digits.h"
+#include "AliPHOSCalibrationDB.h"
 ClassImp(AliPHOSGetter)
   
   AliPHOSGetter * AliPHOSGetter::fgObjGetter = 0 ; 
@@ -91,6 +92,7 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle, co
 
   fFailed = kFALSE ;   
   fDebug  = 0 ; 
+  fAlice  = 0 ; 
 
   fToSplit    = toSplit ;
   fHeaderFile = headerFile ; 
@@ -173,6 +175,8 @@ void AliPHOSGetter::CloseFile()
 {
   delete gAlice ;  
   gAlice = 0 ; 
+  delete fAlice ; 
+  fAlice = 0 ; 
 }
 
 //____________________________________________________________________________ 
@@ -824,12 +828,20 @@ const Bool_t AliPHOSGetter::PostDigitizer(const char * name) const
     d->Add(phos) ; 
 } 
 
-  AliPHOSDigitizer * phosd = dynamic_cast<AliPHOSDigitizer*>(phos->GetListOfTasks()->FindObject(name)) ; 
+  TTask * phosd = dynamic_cast<TTask*>(phos->GetListOfTasks()->FindObject(fDigitsTitle)) ; 
   if (!phosd) { 
-    phosd = new AliPHOSDigitizer() ;
-    phosd->SetName(fDigitsTitle) ;
-    phosd->SetTitle(fHeaderFile) ;
-    phos->Add(phosd) ;
+    if(strcmp(name, "Digitizer")==0){
+      phosd = new AliPHOSDigitizer() ;
+      phosd->SetName(fDigitsTitle) ;
+      phosd->SetTitle(fHeaderFile) ;
+      phos->Add(phosd) ;
+    } 
+    else{
+      phosd = new AliPHOSRaw2Digits() ;
+      phosd->SetName(fDigitsTitle) ;
+      phosd->SetTitle(fHeaderFile) ;
+      phos->Add(phosd) ;
+    }      
   }
   return kTRUE;  
 }
@@ -1476,9 +1488,12 @@ TTree * AliPHOSGetter::TreeK(TString filename)
 
   TFile * file = 0 ; 
   file = static_cast<TFile*>(gROOT->GetFile(filename.Data() ) ) ;
-  if (!file) {  // file not yet open 
-    file = TFile::Open(filename.Data(), "read") ;    
+  if (file && (filename != fHeaderFile) ) {  // file already open 
+    file->Close() ; 
+    delete fAlice ; 
   }    
+  file = TFile::Open(filename.Data(), "read") ; 
+  fAlice = static_cast<AliRun *>(file->Get("gAlice")) ; 
   TString treeName("TreeK") ; 
   treeName += EventNumber()  ; 
   TTree * tree = static_cast<TTree *>(file->Get(treeName.Data())) ;
@@ -1568,8 +1583,10 @@ const TParticle * AliPHOSGetter::Primary(Int_t index) const
   if(index < 0) 
     return 0 ;
   TParticle *  p = 0 ;
-
-  p = gAlice->Particle(index) ; 
+  if (fAlice) 
+    p = fAlice->Particle(index) ; 
+  else 
+    p = gAlice->Particle(index) ; 
   
   return p ; 
     
@@ -1628,19 +1645,21 @@ Int_t AliPHOSGetter::ReadTreeD(const Int_t event)
       digitsbranch = branch ; 
       phosfound = kTRUE ;
     }
-    else if ( (strcmp(branch->GetName(), "AliPHOSDigitizer")==0) && (strcmp(branch->GetTitle(), fDigitsTitle)==0) ) {
+    else if ( ((strcmp(branch->GetName(), "AliPHOSDigitizer")==0)||
+	       (strcmp(branch->GetName(), "AliPHOSRaw2Digits")==0)) &&
+	      (strcmp(branch->GetTitle(), fDigitsTitle)==0) ) {
       digitizerbranch = branch ; 
       digitizerfound = kTRUE ; 
     }
   }
-
+  
   if ( !phosfound || !digitizerfound ) {
     if (fDebug)
       cout << "WARNING: AliPHOSGetter::ReadTreeD -> Cannot find Digits and/or Digitizer with name " 
 	   << fDigitsTitle << endl ;
     return 2; 
   }   
- 
+  
   //read digits
   if(!Digits(fDigitsTitle) ) 
     PostDigits(fDigitsTitle);
@@ -1649,16 +1668,53 @@ Int_t AliPHOSGetter::ReadTreeD(const Int_t event)
   
   
   // read  the Digitizer
-  RemoveTask("D", fDigitsTitle) ; // I do not understand why I need that 
-  if(!Digitizer(fDigitsTitle))
-    PostDigitizer(fDigitsTitle) ;
+  if(Digitizer()){
+    if(strcmp(Digitizer()->IsA()->GetName(),digitizerbranch->GetName())!=0){
+      RemoveTask("D", fDigitsTitle) ;
+      if(strcmp(digitizerbranch->GetName(), "AliPHOSDigitizer")==0)
+	PostDigitizer("Digitizer") ;
+      else
+	PostDigitizer("Raw2Digits") ;
+    }
+  }
+  else{
+    if(strcmp(digitizerbranch->GetName(), "AliPHOSDigitizer")==0)
+      PostDigitizer("Digitizer") ;
+    else
+      PostDigitizer("Raw2Digits") ;
+  }
+    
+
   digitizerbranch->SetAddress(DigitizerRef(fDigitsTitle)) ;
   digitizerbranch->GetEntry(0) ;
- 
-  //  lob  ->Delete();
+  
+
+  if((!fcdb)&&(strcmp(digitizerbranch->GetName(), "AliPHOSRaw2Digits")==0))
+    ReadCalibrationDB("Primordial","beamtest.root") ;
+  
   if(gAlice->TreeD()!=treeD)
     treeD->Delete();
+
   return 0 ; 
+}
+//____________________________________________________________________________ 
+void AliPHOSGetter::ReadCalibrationDB(const char * database,const char * filename){
+
+  if(fcdb && (strcmp(database,fcdb->GetTitle())==0))
+    return ;
+
+  TFile * file = gROOT->GetFile(filename) ;
+  if(!file)
+    file = TFile::Open(filename);
+  if(!file){
+    cout << "Can not open file " << filename << endl ;
+    return ;
+  }
+  if(fcdb)
+    fcdb->Delete() ;
+  fcdb = dynamic_cast<AliPHOSCalibrationDB *>(file->Get("AliPHOSCalibrationDB")) ;
+  if(!fcdb)
+    cout << "No database " << database << " in file " << filename << endl ;
 }
 
 //____________________________________________________________________________ 
@@ -1726,7 +1782,7 @@ Int_t AliPHOSGetter::ReadTreeH()
 }
 
 //____________________________________________________________________________ 
-void AliPHOSGetter::Track(const Int_t itrack) 
+void AliPHOSGetter::Track(Int_t itrack) 
 {
   // Read the first entry of PHOS branch in hit tree gAlice->TreeH()
 
@@ -2099,6 +2155,7 @@ void AliPHOSGetter::ReadPrimaries()
     if (fDebug) 
       cout << "INFO: AliPHOSGetter::ReadPrimaries -> TreeK found in " << fHeaderFile.Data() << endl ; 
     fNPrimaries = gAlice->GetNtrack() ; 
+    fAlice = 0 ; 
   
   } else { // treeK not found in header file
     
@@ -2143,7 +2200,7 @@ void AliPHOSGetter::Event(const Int_t event, const char* opt)
   if( strstr(opt,"Q") )
     ReadTreeQA() ;
  
-  if( strstr(opt,"P"))
+  if( strstr(opt,"P") || (strcmp(opt,"")==0) )
     ReadPrimaries() ;
   
 }

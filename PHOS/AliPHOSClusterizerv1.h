@@ -25,7 +25,7 @@ class AliPHOSEmcRecPoint ;
 class AliPHOSDigit ;
 class AliPHOSDigitizer ;
 class AliPHOSGeometry ;
-
+class AliPHOSCalibrationDB ;
 
 class AliPHOSClusterizerv1 : public AliPHOSClusterizer {
   
@@ -105,7 +105,8 @@ private:
   Int_t   fNumberOfEmcClusters ;     // number of EMC clusters found 
   Int_t   fNumberOfCpvClusters ;     // number of CPV clusters found
  
-  //Calibration parameters... to be replaced by database 
+  //Calibration parameters
+  AliPHOSCalibrationDB * fCalibrationDB ; //! Calibration database if aval
   Float_t fADCchanelEmc ;           // width of one ADC channel in GeV
   Float_t fADCpedestalEmc ;         //
   Float_t fADCchanelCpv ;           // width of one ADC channel in CPV 'popugais'

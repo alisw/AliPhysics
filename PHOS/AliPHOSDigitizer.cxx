@@ -767,7 +767,7 @@ void AliPHOSDigitizer::WriteDigits(Int_t event)
   
   // -- Create Digitizer branch
   Int_t splitlevel = 0 ;
-  const AliPHOSDigitizer * d = gime->Digitizer(GetName()) ;
+  const AliPHOSDigitizer * d = dynamic_cast<const AliPHOSDigitizer *>(gime->Digitizer()) ;
   TBranch * digitizerBranch = treeD->Branch("AliPHOSDigitizer", "AliPHOSDigitizer", &d,bufferSize,splitlevel); 
   digitizerBranch->SetTitle(GetName());
 

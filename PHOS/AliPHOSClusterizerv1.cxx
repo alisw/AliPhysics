@@ -72,7 +72,7 @@
 #include <iomanip.h>
 
 // --- AliRoot header files ---
-
+#include "AliPHOSCalibrationDB.h"
 #include "AliPHOSClusterizerv1.h"
 #include "AliPHOSCpvRecPoint.h"
 #include "AliPHOSDigit.h"
@@ -124,12 +124,14 @@ const TString AliPHOSClusterizerv1::BranchName() const
 //____________________________________________________________________________
 Float_t  AliPHOSClusterizerv1::Calibrate(Int_t amp, Int_t absId) const
 { //To be replased later by the method, reading individual parameters from the database
-
-  if(absId <= fEmcCrystals) //calibrate as EMC 
-    return fADCpedestalEmc + amp*fADCchanelEmc ;    
-   
-  else //Digitize as CPV
-    return fADCpedestalCpv+ amp*fADCchanelCpv ;       
+  if(fCalibrationDB)
+    return fCalibrationDB->Calibrate(amp,absId) ;
+  else{ //simulation
+    if(absId <= fEmcCrystals) //calibrate as EMC 
+      return fADCpedestalEmc + amp*fADCchanelEmc ;        
+    else //calibrate as CPV
+      return fADCpedestalCpv+ amp*fADCchanelCpv ;       
+  }
 }
 
 //____________________________________________________________________________
@@ -283,14 +285,20 @@ Bool_t AliPHOSClusterizerv1::FindFit(AliPHOSEmcRecPoint * emcRP, AliPHOSDigit **
 void AliPHOSClusterizerv1::GetCalibrationParameters() 
 {
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
-  const AliPHOSDigitizer * dig = gime->Digitizer(BranchName()) ;
 
-  fADCchanelEmc   = dig->GetEMCchannel() ;
-  fADCpedestalEmc = dig->GetEMCpedestal();
-  
-  fADCchanelCpv   = dig->GetCPVchannel() ;
-  fADCpedestalCpv = dig->GetCPVpedestal() ; 
-  
+  const TTask * task = gime->Digitizer(BranchName()) ;
+  if(strcmp(task->IsA()->GetName(),"AliPHOSDigitizer")==0){
+    const AliPHOSDigitizer * dig = static_cast<const AliPHOSDigitizer *>(task) ;
+
+    fADCchanelEmc   = dig->GetEMCchannel() ;
+    fADCpedestalEmc = dig->GetEMCpedestal();
+    
+    fADCchanelCpv   = dig->GetCPVchannel() ;
+    fADCpedestalCpv = dig->GetCPVpedestal() ; 
+  }
+  else{
+    fCalibrationDB = gime->CalibrationDB();
+  }
 }
 
 //____________________________________________________________________________
@@ -374,6 +382,8 @@ void AliPHOSClusterizerv1::InitParameters()
   clusterizerName.Append(Version()) ; 
   SetName(clusterizerName) ;
   fRecPointsInRun          = 0 ;
+  fCalibrationDB = 0 ;
+
 
 }
 
@@ -479,7 +489,10 @@ void AliPHOSClusterizerv1::WriteRecPoints(Int_t event)
   }
   
   if(!treeR){
-    gAlice->MakeTree("R", fSplitFile);
+    if(fSplitFile)
+      gAlice->MakeTree("R", fSplitFile);
+    else
+      gAlice->MakeTree("R", gROOT->GetFile(GetTitle()));
     treeR = gAlice->TreeR() ;
   }
 
@@ -567,7 +580,6 @@ void AliPHOSClusterizerv1::MakeClusters()
 
     if (( IsInEmc (digit) && Calibrate(digit->GetAmp(),digit->GetId()) > fEmcClusteringThreshold  ) || 
         ( IsInCpv (digit) && Calibrate(digit->GetAmp(),digit->GetId()) > fCpvClusteringThreshold  ) ) {
-         
       Int_t iDigitInCluster = 0 ; 
       
       if  ( IsInEmc(digit) ) {   
