@@ -75,7 +75,7 @@ void AliDBPPR::GetEntry(Option_t * opt)
   }   
     fRUN = atoi(row->GetField(0)) ; 
     fEVENT = atoi(row->GetField(1)) ; 
-    fDATE = TDatime::TDatime(row->GetField(2)) ; 
+    fDATE = TDatime(row->GetField(2)) ; 
     fSIMULATION = row->GetField(3) ; 
     fDIGITIZATION = row->GetField(4) ; 
     fRECONSTRUCTION = row->GetField(5) ; 

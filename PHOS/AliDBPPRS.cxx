@@ -83,7 +83,7 @@ void AliDBPPRS::GetEntry(Option_t * opt)
     fEVENT = atoi(row->GetField(1)) ; 
     fWORKER = row->GetField(2) ; 
     fSTATUS = row->GetField(3) ; 
-    fDATE = TDatime::TDatime(row->GetField(4)) ; 
+    fDATE = TDatime(row->GetField(4)) ; 
     fSTORAGE = row->GetField(5) ; 
     fID = row->GetField(6) ; 
     fPOS = atoi(row->GetField(7)) ; 
