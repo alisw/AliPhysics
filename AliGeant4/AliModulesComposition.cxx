@@ -17,11 +17,11 @@
 AliModulesComposition::AliModulesComposition()
   : fAllLVSensitive(false),
     fReadGeometry(false),
-    fWriteGeometry(false)    
+    fWriteGeometry(false),
+    fMagneticField(0)    
 {
 //
   fMoreModulesConstruction = new AliMoreModulesConstruction();
-  fMagneticField = new AliMagneticField();
   fMessenger = new AliModulesCompositionMessenger(this);
 }
 
@@ -429,7 +429,11 @@ void AliModulesComposition::SetMagField(G4double fieldValue)
 {
 // Sets uniform magnetic field to specified value.
 // ---
-  if (fMagneticField)
-    fMagneticField->SetFieldValue(fieldValue);
+
+  // create fields if it does not exist
+  if (!fMagneticField) fMagneticField = new AliMagneticField();
+  
+  // set value
+  fMagneticField->SetFieldValue(fieldValue);
 }
 
