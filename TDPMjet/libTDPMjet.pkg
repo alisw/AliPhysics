@@ -5,3 +5,5 @@ HDRS= $(SRCS:.cxx=.h)
 DHDR:=TDPMjetLinkDef.h
 
 EXPORT:=TDPMjet.h AliGenDPMjetEventHeader.h AliIonPDGCodes.h
+
+EINCLUDE:=DPMJET

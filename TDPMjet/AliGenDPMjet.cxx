@@ -33,7 +33,7 @@
 #include "AliGenDPMjetEventHeader.h"
 #include "AliPythia.h"
 #include "AliRun.h"
-
+#include "AliDpmJetRndm.h"
 
  ClassImp(AliGenDPMjet)
 
@@ -45,6 +45,7 @@ AliGenDPMjet::AliGenDPMjet()
 // Constructor
     fParticles = 0;
     fDPMjet = 0;
+    AliDpmJetRndm::SetDpmJetRandom(GetRandom());
 }
 
 
@@ -71,16 +72,15 @@ AliGenDPMjet::AliGenDPMjet(Int_t npart)
     fSelectAll  =  0;
     fFlavor     =  0;
     fSpectators =  1;
-    fEventVertex.Set(3);
+    fVertex.Set(3);
         
     fParticles = new TClonesArray("TParticle",10000);    
 
     // Set random number generator   
-    if (!sRandom) sRandom = fRandom;
     fDPMjet = 0;
     // Instance AliPythia
     AliPythia::Instance(); 
-            
+    AliDpmJetRndm::SetDpmJetRandom(GetRandom());
 }
 
 
@@ -189,9 +189,9 @@ void AliGenDPMjet::Generate()
 //      Get event vertex
       
       //TParticle *iparticle = (TParticle*) fParticles->At(0);
-      fEventVertex[0] = origin0[0];
-      fEventVertex[1] = origin0[1];	
-      fEventVertex[2] = origin0[2];
+      fVertex[0] = origin0[0];
+      fVertex[1] = origin0[1];	
+      fVertex[2] = origin0[2];
       //for(int jj=0; jj<3; jj++) printf("	fEventVertex[%d] = %f\n",jj,fEventVertex[jj]);
       
 //      First select parent particles
@@ -537,7 +537,7 @@ void AliGenDPMjet::MakeHeader()
 // Bookkeeping for kinematic bias
     ((AliGenDPMjetEventHeader*) header)->SetTrials(fTrials);
 // Event Vertex
-    header->SetPrimaryVertex(fEventVertex);
+    header->SetPrimaryVertex(fVertex);
     gAlice->SetGenEventHeader(header);    
 }
 
@@ -553,36 +553,3 @@ AliGenDPMjet& AliGenDPMjet::operator=(const  AliGenDPMjet& rhs)
 
 
 //______________________________________________________________________________
-#ifndef WIN32
-# define dt_rndm_dpmjet   dt_rndm_dpmjet_
-# define dt_rndmst_dpmjet dt_rndmst_dpmjet_
-# define dt_rndmin_dpmjet dt_rndmin_dpmjet_
-# define dt_rndmou_dpmjet dt_rndmou_dpmjet_
-# define type_of_call
-#else
-# define dt_rndm_dpmjet   DT_RNDM_DPMJET
-# define dt_rndmst_dpmjet DT_RNDMST_DPMJET
-# define dt_rndmin_dpmjet DT_RNDMIN_DPMJET
-# define dt_rndmou_dpmjet DT_RNDMOU_DPMJET
-# define type_of_call _stdcall
-#endif
-
-
-extern "C" {
-  void type_of_call dt_rndmst_dpmjet(Int_t &, Int_t &, Int_t &, Int_t &)
-  {printf("Dummy version of dt_rndmst reached\n");}
-
-  void type_of_call dt_rndmin_dpmjet(Int_t &, Int_t &, Int_t &, Int_t &, Int_t &, Int_t &)
-  {printf("Dummy version of dt_rndmin reached\n");}
-
-  void type_of_call dt_rndmou_dpmjet(Int_t &, Int_t &, Int_t &, Int_t &, Int_t &, Int_t &)
-  {printf("Dummy version of dt_rndmou reached\n");}
-
-  Double_t type_of_call dt_rndm_dpmjet(Int_t &) 
-  {
-      Float_t r;
-      do r = sRandom->Rndm(); while(0 >= r || r >= 1);
-      return r;
-  }
-}
-
