@@ -53,7 +53,7 @@ class AliGenerator : public TNamed, public AliRndm
     virtual void SetAnalog(Int_t flag=1) {fAnalog=flag;}	
     virtual void SetVertexSmear(VertexSmear_t smear) {fVertexSmear = smear;}
     virtual void SetCutVertexZ(Float_t cut=999999.) {fCutVertexZ = cut;}
-    virtual void SetVertexSource(VertexSource_t smear) {fVertexSource = kInternal;}    
+    virtual void SetVertexSource(VertexSource_t) {fVertexSource = kInternal;}    
     virtual void SetTrackingFlag(Int_t flag=1) {fTrackIt=flag;}
     void Vertex();
     void VertexExternal();

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2001/10/04 15:50:23  jchudoba
+Implement non default combination
+
 Revision 1.1  2001/09/19 06:22:13  jchudoba
 Class to generate combinations for merging
 
@@ -32,32 +35,36 @@ Class to generate combinations for merging
 
 ClassImp(AliMergeCombi)
 
-AliMergeCombi::AliMergeCombi()
+//_______________________________________________________________________
+AliMergeCombi::AliMergeCombi():
+  fDim(1),
+  fSperb(1),
+  fCounter(0)
 {
-// default ctor
-  fDim = 1;
-  fSperb = 1;
-  fCounter = 0;
+  //
+  // default ctor
+  //
 }
 
-////////////////////////////////////////////////////////////////////////
-AliMergeCombi::AliMergeCombi(Int_t dim, Int_t sperb)
+//_______________________________________________________________________
+AliMergeCombi::AliMergeCombi(Int_t dim, Int_t sperb):
+  fDim(dim),
+  fSperb(sperb),
+  fCounter(0)
 {
-// default ctor
-  fDim = dim;
-  fSperb = sperb;
-  fCounter = 0;
+  //
+  // Standard ctor
+  //
 }
 
-////////////////////////////////////////////////////////////////////////
+//_______________________________________________________________________
 AliMergeCombi::~AliMergeCombi()
 {
-// default dtor
-  ;
+  // default dtor
 }
 
-////////////////////////////////////////////////////////////////////////
-Bool_t AliMergeCombi::Combination(Int_t evNumber[], Int_t delta[])
+//_______________________________________________________________________
+Bool_t AliMergeCombi::Combination(Int_t /* evNumber */ [], Int_t delta[])
 {
   delta[0] = 1;
   for (Int_t i=1; i<fDim; i++) {
@@ -70,5 +77,3 @@ Bool_t AliMergeCombi::Combination(Int_t evNumber[], Int_t delta[])
   }      
   return kTRUE;
 }
-
-////////////////////////////////////////////////////////////////////////

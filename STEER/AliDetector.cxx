@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.22  2002/10/23 07:43:00  alibrary
+Introducing some effective C++ suggestions
+
 Revision 1.21  2002/10/22 15:02:15  alibrary
 Introducing Riostream.h
 
@@ -133,6 +136,25 @@ AliDetector::AliDetector():
   //
 }
  
+//_______________________________________________________________________
+AliDetector::AliDetector(const AliDetector &det):
+  AliModule(det),
+  fTimeGate(200.e-9),
+  fIshunt(0),
+  fNhits(0),
+  fNdigits(0),
+  fBufferSize(1600),
+  fHits(0),
+  fDigits(0),
+  fDigitsFile(0),
+  fPoints(0),
+  fTrackReferences(0),
+  fMaxIterTrackRef(0),
+  fCurrentIterTrackRef(0)
+{
+  det.Copy(*this);
+}
+
 //_____________________________________________________________________________
 AliDetector::AliDetector(const char* name,const char *title):
   AliModule(name,title),
@@ -188,21 +210,21 @@ void AliDetector::Publish(const char *dir, void *address, const char *name)
   //
   // Register pointer to detector objects. 
   // 
-  TFolder *topFolder = (TFolder *)gROOT->FindObjectAny("/Folders");
+  TFolder *topFolder = dynamic_cast<TFolder *>(gROOT->FindObjectAny("/Folders"));
   if  (topFolder) { 
-    TFolder *folder = (TFolder *)topFolder->FindObjectAny(dir);
-    // TFolder *folder = (TFolder *)gROOT->FindObjectAny(dir);
+    TFolder *folder = dynamic_cast<TFolder *>(topFolder->FindObjectAny(dir));
+    // TFolder *folder = dynamic_cast<TFolder *>(gROOT->FindObjectAny(dir));
     if (!folder)  {
       cerr << "Cannot register: Missing folder: " << dir << endl;
     } else {
-      TFolder *subfolder = (TFolder *) folder->FindObjectAny(this->GetName()); 
+      TFolder *subfolder = dynamic_cast<TFolder *>(folder->FindObjectAny(this->GetName())); 
 
       if(!subfolder)
          subfolder = folder->AddFolder(this->GetName(),this->GetTitle());
       if (address) {
-        TObject **obj = (TObject **) address;
+        TObject **obj = static_cast<TObject **>(address);
         if ((*obj)->InheritsFrom(TCollection::Class())) {
-           TCollection *collection = (TCollection *) (*obj); 
+           TCollection *collection = dynamic_cast<TCollection *>(*obj); 
            if (name)
              collection->SetName(name);
         } 
@@ -246,7 +268,7 @@ TBranch* AliDetector::MakeBranchInTree(TTree *tree, const char* name,
         sprintf(outFile,"%s/%s",gAlice->GetBaseFile(),file);
         branch->SetFile(outFile);
         TIter next( branch->GetListOfBranches());
-        while ((branch=(TBranch*)next())) {
+        while ((branch=dynamic_cast<TBranch*>(next()))) {
            branch->SetFile(outFile);
         } 
        delete outFile;
@@ -256,7 +278,7 @@ TBranch* AliDetector::MakeBranchInTree(TTree *tree, const char* name,
        if (GetDebug()>1)
            printf("* MakeBranch * Diverting Branch %s to file %s\n",name,file);
     }
-    char *folder = 0;
+    const char *folder = 0;
     TString folderName(name);  
     
     if (!strncmp(tree->GetName(),"TreeE",5)) folder = "RunMC/Event/Data";
@@ -308,12 +330,12 @@ void AliDetector::Browse(TBrowser *b)
 }
 
 //_______________________________________________________________________
-void AliDetector::Copy(AliDetector &det) const
+void AliDetector::Copy(AliDetector &) const
 {
   //
   // Copy *this onto det -- not implemented
   //
-  Fatal("Copy","Not implemented~\n");
+  Fatal("Copy","Not implemented\n");
 }
 
 //_______________________________________________________________________
@@ -333,7 +355,7 @@ void AliDetector::RemapTrackReferencesIDs(Int_t *map)
   //
   if (!fTrackReferences) return;
   for (Int_t i=0;i<fTrackReferences->GetEntries();i++){
-    AliTrackReference * ref = (AliTrackReference*) fTrackReferences->UncheckedAt(i);
+    AliTrackReference * ref = dynamic_cast<AliTrackReference*>(fTrackReferences->UncheckedAt(i));
     if (ref) {
       Int_t newID = map[ref->GetTrack()];
       if (newID>=0) ref->SetTrack(newID);
@@ -360,7 +382,7 @@ AliHit* AliDetector::FirstHit(Int_t track)
   //
   sMaxIterHit=fHits->GetEntriesFast();
   sCurIterHit=0;
-  if(sMaxIterHit) return (AliHit*) fHits->UncheckedAt(0);
+  if(sMaxIterHit) return dynamic_cast<AliHit*>(fHits->UncheckedAt(0));
   else            return 0;
 }
 
@@ -382,7 +404,7 @@ AliTrackReference* AliDetector::FirstTrackReference(Int_t track)
   //
   fMaxIterTrackRef     = fTrackReferences->GetEntriesFast();
   fCurrentIterTrackRef = 0;
-  if(fMaxIterTrackRef) return (AliTrackReference*) fTrackReferences->UncheckedAt(0);
+  if(fMaxIterTrackRef) return dynamic_cast<AliTrackReference*>(fTrackReferences->UncheckedAt(0));
   else            return 0;
 }
 
@@ -394,7 +416,7 @@ AliHit* AliDetector::NextHit()
   //
   if(sMaxIterHit) {
     if(++sCurIterHit<sMaxIterHit) 
-      return (AliHit*) fHits->UncheckedAt(sCurIterHit);
+      return dynamic_cast<AliHit*>(fHits->UncheckedAt(sCurIterHit));
     else        
       return 0;
   } else {
@@ -411,7 +433,7 @@ AliTrackReference* AliDetector::NextTrackReference()
   //
   if(fMaxIterTrackRef) {
     if(++fCurrentIterTrackRef<fMaxIterTrackRef) 
-      return (AliTrackReference*) fTrackReferences->UncheckedAt(fCurrentIterTrackRef);
+      return dynamic_cast<AliTrackReference*>(fTrackReferences->UncheckedAt(fCurrentIterTrackRef));
     else        
       return 0;
   } else {
@@ -450,7 +472,7 @@ void AliDetector::LoadPoints(Int_t)
   //
   // Loop over all the hits and store their position
   for (Int_t hit=0;hit<nhits;hit++) {
-    ahit = (AliHit*)fHits->UncheckedAt(hit);
+    ahit = dynamic_cast<AliHit*>(fHits->UncheckedAt(hit));
     trk=ahit->GetTrack();
     assert(trk<=tracks);
     if(ntrk[trk]==limi[trk]) {

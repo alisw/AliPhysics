@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2002/10/14 14:57:32  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.5.6.2  2002/08/01 15:35:30  alibrary
 Updating VirtualMC
 
@@ -48,17 +51,33 @@ root files.
 
 #include <TFile.h>
 #include <TSystem.h>
+
 #include "AliFieldMap.h"
 #include "AliMagFMaps.h"
 
 
 ClassImp(AliMagFMaps)
 
-//________________________________________
+//_______________________________________________________________________
+AliMagFMaps::AliMagFMaps():
+  fSolenoid(0),
+  fL3Option(0),
+  fFieldRead(0)
+{
+  //
+  // Default constructor
+  //
+  fFieldMap[0] = fFieldMap[1] = fFieldMap[2] = 0;
+}
+
+//_______________________________________________________________________
 AliMagFMaps::AliMagFMaps(const char *name, const char *title, const Int_t integ, 
-			 const Float_t factor, const Float_t fmax, const Int_t map, 
-			 const Int_t l3)
-  : AliMagF(name,title,integ,factor,fmax)
+                         const Float_t factor, const Float_t fmax, const Int_t map, 
+                         const Int_t l3):
+  AliMagF(name,title,integ,factor,fmax),
+  fSolenoid(0),
+  fL3Option(l3),
+  fFieldRead(0)
 {
   //
   // Standard constructor
@@ -70,15 +89,18 @@ AliMagFMaps::AliMagFMaps(const char *name, const char *title, const Int_t integ,
 
   ReadField();
   fFieldRead = 1;
-//
-// Don't replicate field information in gAlice
+  //
+  // Don't replicate field information in gAlice
   for (Int_t i = 0; i < 3; i++)  fFieldMap[i]->SetWriteEnable(0);
-//
-
+  //
 }
 
-//________________________________________
-AliMagFMaps::AliMagFMaps(const AliMagFMaps &magf)
+//_______________________________________________________________________
+AliMagFMaps::AliMagFMaps(const AliMagFMaps &magf):
+  AliMagF(magf),
+  fSolenoid(0),
+  fL3Option(0),
+  fFieldRead(0)
 {
   //
   // Copy constructor
@@ -86,113 +108,113 @@ AliMagFMaps::AliMagFMaps(const AliMagFMaps &magf)
   magf.Copy(*this);
 }
 
+//_______________________________________________________________________
 AliMagFMaps::~AliMagFMaps()
 {
-//
-//  Destructor
-//
-    delete fFieldMap[0];
-    delete fFieldMap[1];
-    delete fFieldMap[2];    
+  //
+  //  Destructor
+  //
+  delete fFieldMap[0];
+  delete fFieldMap[1];
+  delete fFieldMap[2];    
 }
 
+//_______________________________________________________________________
 void AliMagFMaps::ReadField()
 {
-//  Read Field Map from file
-//
-//  don't read twice
-//
-    if (fFieldRead) return;
-    fFieldRead = 1;
-//    
-    char* fname;
-    TFile* file = 0;
-    if (fMap == k2kG) {
+  //  Read Field Map from file
+  //
+  //  don't read twice
+  //
+  if (fFieldRead) return;
+  fFieldRead = 1;
+  //    
+  char* fname;
+  TFile* file = 0;
+  if (fMap == k2kG) {
 	if (fL3Option) {
-	    fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/L3B02.root");
-	    file = new TFile(fname);
-	    fFieldMap[0] = (AliFieldMap*) file->Get("L3B02");
-	    file->Close();
-	    delete file;
+      fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/L3B02.root");
+      file = new TFile(fname);
+      fFieldMap[0] = dynamic_cast<AliFieldMap*>(file->Get("L3B02"));
+      file->Close();
+      delete file;
 	}
 	fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/DipB02.root");
 	file = new TFile(fname);
-	fFieldMap[1] = (AliFieldMap*) file->Get("DipB02");
+	fFieldMap[1] = dynamic_cast<AliFieldMap*>(file->Get("DipB02"));
 	file->Close();
 	delete file;;
 	
 	fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/ExtB02.root");
 	file = new TFile(fname);
-	fFieldMap[2] = (AliFieldMap*) file->Get("ExtB02");
+	fFieldMap[2] = dynamic_cast<AliFieldMap*>(file->Get("ExtB02"));
 	file->Close();
 	delete file;
 	fSolenoid = 2.;
-    } else if (fMap == k4kG) {
+  } else if (fMap == k4kG) {
 	if (fL3Option) {
-	    fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/L3B04.root");
-	    file = new TFile(fname);
-	    fFieldMap[0] = (AliFieldMap*) file->Get("L3B04");
-	    file->Close();
-	    delete file;
+      fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/L3B04.root");
+      file = new TFile(fname);
+      fFieldMap[0] = dynamic_cast<AliFieldMap*>(file->Get("L3B04"));
+      file->Close();
+      delete file;
 	}
 	
 	fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/DipB04.root");
 	file = new TFile(fname);
-	fFieldMap[1] = (AliFieldMap*) file->Get("DipB04");
+	fFieldMap[1] = dynamic_cast<AliFieldMap*>(file->Get("DipB04"));
 	file->Close();
-	delete file;;
+	delete file;
 	
 	fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/ExtB04.root");
 	file = new TFile(fname);
-	fFieldMap[2] = (AliFieldMap*) file->Get("ExtB04");
+	fFieldMap[2] = dynamic_cast<AliFieldMap*>(file->Get("ExtB04"));
 	file->Close();
 	delete file;
 	fSolenoid = 4.;
-    } else if (fMap == k5kG) {
+  } else if (fMap == k5kG) {
 	if (fL3Option) {
-	    fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/L3B05.root");
-	    file = new TFile(fname);
-	    fFieldMap[0] = (AliFieldMap*) file->Get("L3B05");
-	    file->Close();
-	    delete file;
+      fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/L3B05.root");
+      file = new TFile(fname);
+      fFieldMap[0] = dynamic_cast<AliFieldMap*>(file->Get("L3B05"));
+      file->Close();
+      delete file;
 	}
 	
 	fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/DipB05.root");
 	file = new TFile(fname);
-	fFieldMap[1] = (AliFieldMap*) file->Get("DipB05");
+	fFieldMap[1] = dynamic_cast<AliFieldMap*>(file->Get("DipB05"));
 	file->Close();
-	delete file;;
+	delete file;
 	
 	fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/ExtB05.root");
 	file = new TFile(fname);
-	fFieldMap[2] = (AliFieldMap*) file->Get("ExtB05");
+	fFieldMap[2] = dynamic_cast<AliFieldMap*>(file->Get("ExtB05"));
 	file->Close();
 	delete file;
 	
 	fSolenoid = 5.;
-    }
-
-    if (!fL3Option) {
-//
-// Dummy L3 map
+  }
+  
+  if (!fL3Option) {
+    //
+    // Dummy L3 map
 	fFieldMap[0] = new AliFieldMap();
 	fFieldMap[0] -> SetLimits(-800., 800., -800., 800., -700., 700.);
-    }
+  }
 }
 
-
+//_______________________________________________________________________
 Float_t AliMagFMaps::SolenoidField() const
 {
-//
-// Returns max. L3 (solenoid) field strength 
-// according to field map setting
-
-    return fSolenoid;
+  //
+  // Returns max. L3 (solenoid) field strength 
+  // according to field map setting 
+  //
+  return fSolenoid;
 }
 
-    
-
-//________________________________________
+//_______________________________________________________________________
 void AliMagFMaps::Field(Float_t *x, Float_t *b)
 {
   //
@@ -201,78 +223,78 @@ void AliMagFMaps::Field(Float_t *x, Float_t *b)
   // --- find the position in the grid ---
   
   if (!fFieldRead) ReadField();
-    
+  
   b[0]=b[1]=b[2]=0;
   AliFieldMap* map = 0;
   if (fFieldMap[0]->Inside(x[0], x[1], x[2])) {
-      map = fFieldMap[0];
-      if (!fL3Option) {
-//
-//     Constant L3 field, if this option was selected
-//
+    map = fFieldMap[0];
+    if (!fL3Option) {
+      //
+      //     Constant L3 field, if this option was selected
+      //
 	  b[2] = fSolenoid;
 	  return;
-      }
+    }
   } else if (fFieldMap[1]->Inside(x[0], x[1], x[2])) {
-      map = fFieldMap[1];
+    map = fFieldMap[1];
   } else if (fFieldMap[2]->Inside(x[0], x[1], x[2])) {
-      map = fFieldMap[2];
+    map = fFieldMap[2];
   }
   
   if(map){
-      map->Field(x,b);
+    map->Field(x,b);
   } else {
-//This is the ZDC part
-      Float_t rad2=x[0]*x[0]+x[1]*x[1];
-      if(x[2]>kCORBEG2 && x[2]<kCOREND2){
+    //This is the ZDC part
+    Float_t rad2=x[0]*x[0]+x[1]*x[1];
+    if(x[2]>kCORBEG2 && x[2]<kCOREND2){
 	  if(rad2<kCOR2RA2){
-	      b[0] = kFCORN2;
+        b[0] = kFCORN2;
 	  }
-      }
-      else if(x[2]>kZ1BEG && x[2]<kZ1END){  
+    }
+    else if(x[2]>kZ1BEG && x[2]<kZ1END){  
 	  if(rad2<kZ1RA2){
-	      b[0] = -kG1*x[1];
-	      b[1] = -kG1*x[0];
+        b[0] = -kG1*x[1];
+        b[1] = -kG1*x[0];
 	  }
-      }
-      else if(x[2]>kZ2BEG && x[2]<kZ2END){  
+    }
+    else if(x[2]>kZ2BEG && x[2]<kZ2END){  
 	  if(rad2<kZ2RA2){
-	      b[0] = kG1*x[1];
-	      b[1] = kG1*x[0];
+        b[0] = kG1*x[1];
+        b[1] = kG1*x[0];
 	  }
-      }
-      else if(x[2]>kZ3BEG && x[2]<kZ3END){  
+    }
+    else if(x[2]>kZ3BEG && x[2]<kZ3END){  
 	  if(rad2<kZ3RA2){
-	      b[0] = kG1*x[1];
-	      b[1] = kG1*x[0];
+        b[0] = kG1*x[1];
+        b[1] = kG1*x[0];
 	  }
-      }
-      else if(x[2]>kZ4BEG && x[2]<kZ4END){  
+    }
+    else if(x[2]>kZ4BEG && x[2]<kZ4END){  
 	  if(rad2<kZ4RA2){
-	      b[0] = -kG1*x[1];
-	      b[1] = -kG1*x[0];
+        b[0] = -kG1*x[1];
+        b[1] = -kG1*x[0];
 	  }
-      }
-      else if(x[2]>kD1BEG && x[2]<kD1END){ 
+    }
+    else if(x[2]>kD1BEG && x[2]<kD1END){ 
 	  if(rad2<kD1RA2){
-	      b[1] = -kFDIP;
+        b[1] = -kFDIP;
 	  }
-      }
-      else if(x[2]>kD2BEG && x[2]<kD2END){
+    }
+    else if(x[2]>kD2BEG && x[2]<kD2END){
 	  if(((x[0]-kXCEN1D2)*(x[0]-kXCEN1D2)+(x[1]-kYCEN1D2)*(x[1]-kYCEN1D2))<kD2RA2
 	     || ((x[0]-kXCEN2D2)*(x[0]-kXCEN2D2)+(x[1]-kYCEN2D2)*(x[1]-kYCEN2D2))<kD2RA2){
-	      b[1] = kFDIP;
+        b[1] = kFDIP;
 	  }
-      }
+    }
   }
   if(fFactor!=1) {
-      b[0]*=fFactor;
-      b[1]*=fFactor;
-      b[2]*=fFactor;
+    b[0]*=fFactor;
+    b[1]*=fFactor;
+    b[2]*=fFactor;
   }
 }
 
-//________________________________________
+//_______________________________________________________________________
 void AliMagFMaps::Copy(AliMagFMaps & /* magf */) const
 {
   //
@@ -281,20 +303,14 @@ void AliMagFMaps::Copy(AliMagFMaps & /* magf */) const
   Fatal("Copy","Not implemented!\n");
 }
 
-//________________________________________
-AliMagFMaps & AliMagFMaps::operator =(const AliMagFMaps &magf)
-{
-  magf.Copy(*this);
-  return *this;
-}
-
+//_______________________________________________________________________
 void AliMagFMaps::Streamer(TBuffer &R__b)
 {
-   // Stream an object of class AliMagFMaps.
-   if (R__b.IsReading()) {
-      AliMagFMaps::Class()->ReadBuffer(R__b, this);
-      fFieldRead = 0;
-   } else {
-      AliMagFMaps::Class()->WriteBuffer(R__b, this);
-   }
+  // Stream an object of class AliMagFMaps.
+  if (R__b.IsReading()) {
+    AliMagFMaps::Class()->ReadBuffer(R__b, this);
+    fFieldRead = 0;
+  } else {
+    AliMagFMaps::Class()->WriteBuffer(R__b, this);
+  }
 }

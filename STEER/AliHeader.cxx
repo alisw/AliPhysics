@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/10/09 18:00:35  hristov
+Temporary fix to provide unique event number in the simulation (J.Chudoba)
+
 Revision 1.9  2001/05/23 08:54:53  hristov
 Typo corrected
 
@@ -40,51 +43,73 @@ Introduction of the Copyright and cvs Log
  
 ClassImp(AliHeader)
 
-AliHeader::AliHeader()
+//_______________________________________________________________________
+AliHeader::AliHeader():
+  fRun(0),
+  fNvertex(0),
+  fNprimary(0),
+  fNtrack(0),
+  fEvent(0),
+  fEventNrInRun(0),
+  fStack(0),
+  fGenHeader(0)
 {
   //
   // Default constructor
   //
-  fRun=0;	
-  fNvertex=0;
-  fNprimary=0;
-  fNtrack=0;
-  fEvent=0;
-  fStack=0;
-  fGenHeader = 0;
-  fEventNrInRun=0;
 }
 
-AliHeader::AliHeader(Int_t run, Int_t event)
+//_______________________________________________________________________
+AliHeader::AliHeader(const AliHeader& head):
+  TObject(head),
+  fRun(0),
+  fNvertex(0),
+  fNprimary(0),
+  fNtrack(0),
+  fEvent(0),
+  fEventNrInRun(0),
+  fStack(0),
+  fGenHeader(0)
+{
+  //
+  // Copy constructor
+  //
+  head.Copy(*this);
+}
+
+//_______________________________________________________________________
+AliHeader::AliHeader(Int_t run, Int_t event):
+  fRun(run),
+  fNvertex(0),
+  fNprimary(0),
+  fNtrack(0),
+  fEvent(event),
+  fEventNrInRun(0),
+  fStack(0),
+  fGenHeader(0)
 {
   //
   // Standard constructor
   //
-  fRun=run;	
-  fNvertex=0;
-  fNprimary=0;
-  fNtrack=0;
-  fEvent=event;
-  fStack=0;
-  fGenHeader = 0;
 }
 
-AliHeader::AliHeader(Int_t run, Int_t event, Int_t evNumber)
+//_______________________________________________________________________
+AliHeader::AliHeader(Int_t run, Int_t event, Int_t evNumber):
+  fRun(run),
+  fNvertex(0),
+  fNprimary(0),
+  fNtrack(0),
+  fEvent(event),
+  fEventNrInRun(evNumber),
+  fStack(0),
+  fGenHeader(0)
 {
   //
   // Standard constructor
   //
-  fRun=run;	
-  fNvertex=0;
-  fNprimary=0;
-  fNtrack=0;
-  fEvent=event;
-  fEventNrInRun=evNumber;
-  fStack=0;
-  fGenHeader = 0;
 }
 
-
+//_______________________________________________________________________
 void AliHeader::Reset(Int_t run, Int_t event)
 {
   //
@@ -97,6 +122,7 @@ void AliHeader::Reset(Int_t run, Int_t event)
   fEvent=event;
 }
 
+//_______________________________________________________________________
 void AliHeader::Reset(Int_t run, Int_t event, Int_t evNumber)
 {
   //
@@ -110,7 +136,8 @@ void AliHeader::Reset(Int_t run, Int_t event, Int_t evNumber)
   fEventNrInRun=evNumber;
 }
 
-void AliHeader::Print(const char* option)
+//_______________________________________________________________________
+void AliHeader::Print(const char*) const
 {
   //
   // Dumps header content
@@ -127,30 +154,39 @@ void AliHeader::Print(const char* option)
 
 }
 
+//_______________________________________________________________________
 AliStack* AliHeader::Stack() const
 {
 // Return pointer to stack
     return fStack;
 }
 
+//_______________________________________________________________________
 void AliHeader::SetStack(AliStack* stack)
 {
 // Set pointer to stack
     fStack = stack;
 }
 
+//_______________________________________________________________________
 void AliHeader::SetGenEventHeader(AliGenEventHeader* header)
 {
 // Set pointer to header for generated event
     fGenHeader = header;
 }
 
+//_______________________________________________________________________
 AliGenEventHeader*  AliHeader::GenEventHeader() const
 {
 // Get pointer to header for generated event
     return fGenHeader;
 }
 
+//_______________________________________________________________________
+void AliHeader::Copy(AliHeader&) const
+{
+  Fatal("Copy","Not implemented\n");
+}
 
 
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/12/05 14:36:47  hristov
+The default constructor now creates no objects; destructor corrected (thanks to R.Brun).
+
 Revision 1.8  2001/10/21 18:38:43  hristov
 Several pointers were set to zero in the default constructors to avoid memory management problems
 
@@ -66,44 +69,58 @@ Y.Schutz new classes for reconstruction
 ClassImp(AliRecPoint)
 
 
-//____________________________________________________________________________
-AliRecPoint::AliRecPoint()
+//_______________________________________________________________________
+AliRecPoint::AliRecPoint():
+  fAmp(0),
+  fGeom(0),
+  fIndexInList(-1), // to be set when the point is already stored
+  fLocPos(0,0,0),
+  fLocPosM(0),
+  fMaxDigit(100),
+  fMulDigit(0),
+  fMaxTrack(5),
+  fMulTrack(0),
+  fDigitsList(0),
+  fTracksList(0)
 {
+  //
   // default ctor  
-  fGeom = 0;
-  fAmp = 0.0 ; 
-  
-  fLocPos.SetXYZ(0., 0., 0.) ;
-  fLocPosM     = 0 ;
-  fMaxDigit    = 100 ; 
-  fMulDigit    = 0 ; 
-  fDigitsList  = 0 ; 
-  fMaxTrack    = 5 ; 
-  fMulTrack    = 0 ; 
-  fTracksList  = 0 ; 
-  fIndexInList = -1 ; // to be set when the point is already stored
+  //
 }
 
-//____________________________________________________________________________
-AliRecPoint::AliRecPoint(const char * opt)
+//_______________________________________________________________________
+AliRecPoint::AliRecPoint(const char * ):
+  fAmp(0),
+  fGeom(0),
+  fIndexInList(-1), // to be set when the point is already stored
+  fLocPos(0,0,0),
+  fLocPosM(new TMatrix(3,3)),
+  fMaxDigit(100),
+  fMulDigit(0),
+  fMaxTrack(5),
+  fMulTrack(0),
+  fDigitsList(new int[fMaxDigit]),
+  fTracksList(new int[fMaxTrack])
 {
-  // ctor  
-  fGeom = 0;
-  fAmp = 0.0 ; 
-  
-  fLocPos.SetXYZ(0., 0., 0.) ;
-  fLocPosM     = new TMatrix(3,3) ;
-  fMaxDigit    = 100 ; 
-  fMulDigit    = 0 ; 
-  fDigitsList  = new int[fMaxDigit]; 
-  fMaxTrack    = 5 ; 
-  fMulTrack    = 0 ; 
-  fTracksList  = new int[fMaxTrack]; ; 
-  fIndexInList = -1 ; // to be set when the point is already stored
+  //
+  // Standard ctor  
+  //
 }
 
-//____________________________________________________________________________
-AliRecPoint::AliRecPoint(const AliRecPoint& recp)
+//_______________________________________________________________________
+AliRecPoint::AliRecPoint(const AliRecPoint& recp):
+  TObject(recp),
+  fAmp(0),
+  fGeom(0),
+  fIndexInList(-1), // to be set when the point is already stored
+  fLocPos(0,0,0),
+  fLocPosM(0),
+  fMaxDigit(100),
+  fMulDigit(0),
+  fMaxTrack(5),
+  fMulTrack(0),
+  fDigitsList(0),
+  fTracksList(0)
 {
   //
   // Copy constructor
@@ -111,7 +128,7 @@ AliRecPoint::AliRecPoint(const AliRecPoint& recp)
   recp.Copy(*this);
 }
 
-//____________________________________________________________________________
+//_______________________________________________________________________
 AliRecPoint::~AliRecPoint()
 {
   // dtor
@@ -122,7 +139,7 @@ AliRecPoint::~AliRecPoint()
   
 }
   
-//____________________________________________________________________________
+//_______________________________________________________________________
 void AliRecPoint::AddDigit(AliDigitNew & digit)
 {
   // adds a digit to the digits list
@@ -146,7 +163,7 @@ void AliRecPoint::AddDigit(AliDigitNew & digit)
   fAmp += digit.GetAmp() ; 
 }
 
-//____________________________________________________________________________
+//_______________________________________________________________________
 // void AliRecPoint::AddTrack(AliTrack & track)
 // {
 //   // adds a digit to the digits list
@@ -165,7 +182,7 @@ void AliRecPoint::AddDigit(AliDigitNew & digit)
 //   fTracksList[fMulTrack++]=  (int) &Track  ; 
 // }
 
-//____________________________________________________________________________
+//_______________________________________________________________________
 void AliRecPoint::Copy(AliRecPoint& recp) const
 {
   //
@@ -173,7 +190,7 @@ void AliRecPoint::Copy(AliRecPoint& recp) const
   //
   // Copy all first
   if(this != &recp) {
-    ((TObject*) this)->Copy((TObject&)recp);
+    ((TObject*) this)->Copy(dynamic_cast<TObject&>(recp));
     recp.fAmp = fAmp;
     recp.fGeom = fGeom;
     recp.fIndexInList = fIndexInList;
@@ -192,8 +209,8 @@ void AliRecPoint::Copy(AliRecPoint& recp) const
   }
 }
 
-//____________________________________________________________________________
-void AliRecPoint::GetCovarianceMatrix(TMatrix & mat)
+//_______________________________________________________________________
+void AliRecPoint::GetCovarianceMatrix(TMatrix & mat) const
 {
   // returns the covariant matrix for the local position
   
@@ -210,14 +227,6 @@ void AliRecPoint::GetLocalPosition(TVector3 & pos) const
 
  
 }
-
-//____________________________________________________________________________
-AliRecPoint & AliRecPoint::operator= (const AliRecPoint &recp)
-{
-  recp.Copy(*this);
-  return (*this);
-}
-
 
 //____________________________________________________________________________
 void AliRecPoint::GetGlobalPosition(TVector3 & gpos, TMatrix & gmat) const

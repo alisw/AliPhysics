@@ -6,6 +6,9 @@
 /* $Id$ */
 /* 
  * $Log$
+ * Revision 1.6  2002/10/22 15:02:15  alibrary
+ * Introducing Riostream.h
+ *
  * Revision 1.5  2002/10/14 14:57:32  hristov
  * Merging the VirtualMC branch to the main development branch (HEAD)
  *
@@ -60,19 +63,19 @@ private:
   enum {kFolders=8, kTasks=5};
   AliConfig(const char * name, const char * title);
   AliConfig(const AliConfig&);
-  void  AddInFolder (char * dir, TObject *obj);
+  void  AddInFolder (const char * dir, TObject *obj);
   void  AddSubFolder(char * dir[], TObject *obj);
   void  AddSubTask(char * dir[], TObject *obj);
-  TObject* FindInFolder (char *dir, const char *name);
+  TObject* FindInFolder (const char *dir, const char *name);
   AliConfig& operator = (const AliConfig&) {return *this;}
   
   TFolder  *fTopFolder;
   AliTasks *fTasks;
   // folders
-  char*  fPDGFolder ; 
-  char*  fGeneratorFolder ; 
-  char*  fMCFolder ; 
-  char*  fModuleFolder ; 
+  const char*  fPDGFolder ; 
+  const char*  fGeneratorFolder ; 
+  const char*  fMCFolder ; 
+  const char*  fModuleFolder ; 
   char** fDetectorFolder ; 
   char** fDetectorTask ; 
 

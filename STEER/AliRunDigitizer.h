@@ -14,26 +14,29 @@
 ////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
-#include "TNamed.h"
-#include "TObjString.h"
-#include "TArrayI.h"
-#include "TClonesArray.h"
-#include "TTree.h"
-#include "TParticle.h"
-#include "TTask.h"
 
-const Int_t kMaxStreamsToMerge = 4;
+#include "TArrayI.h"
+#include "TTask.h"
+class TClonesArray;
+class TFile;
+class TParticle;
+class TTree;
 
 // --- AliRoot header files ---
 
 class AliDigitizer;
 class AliMergeCombi;
 
+const Int_t kMaxStreamsToMerge = 4;
+
 class AliRunDigitizer: public TTask {
 
 public:
   AliRunDigitizer();
   AliRunDigitizer(Int_t nInputStreams, Int_t sperb=1);
+  AliRunDigitizer(const AliRunDigitizer& dig);
+  AliRunDigitizer& operator=(const AliRunDigitizer& dig)
+    {dig.Copy(*this); return (*this);}
   virtual ~AliRunDigitizer();
   void      AddDigitizer(AliDigitizer *digitizer);
   void      SetOutputFile(TString fn);
@@ -97,6 +100,14 @@ public:
   void      SetDebug(Int_t level) {fDebug = level;}
   
 private:
+  void Copy(AliRunDigitizer& dig) const;
+  Bool_t            ConnectInputTrees();
+  Bool_t            InitGlobal();
+  Bool_t            InitOutputGlobal();
+  void              InitEvent();
+  void              FinishEvent();
+  void              FinishGlobal();
+
   Int_t             fkMASK[kMaxStreamsToMerge];  //! masks for track ids from
                                               //  different source files
   Int_t             fkMASKSTEP;           // step to increase MASK for
@@ -127,12 +138,6 @@ private:
   TArrayI           fCombination;         //! combination of events from
   TString           fCombinationFileName; // fn with combinations (used
                                           // with type 2 of comb.)
-  Bool_t            ConnectInputTrees();
-  Bool_t            InitGlobal();
-  Bool_t            InitOutputGlobal();
-  void              InitEvent();
-  void              FinishEvent();
-  void              FinishGlobal();
   Int_t             fDebug;                //! specifies debug level, 0 is min
   
   ClassDef(AliRunDigitizer,4)

@@ -6,12 +6,14 @@
 /* $Id$ */
 
 #include <TObject.h>
+
 class AliStack;
 class AliGenEventHeader;
  
 class AliHeader : public TObject {
 public:
   AliHeader();
+  AliHeader(const AliHeader& head);
   AliHeader(Int_t run, Int_t event);
   AliHeader(Int_t run, Int_t eventSerialNr, Int_t evNrInRun);
   virtual ~AliHeader() {}
@@ -44,9 +46,15 @@ public:
   virtual  void SetGenEventHeader(AliGenEventHeader* header);
   virtual  AliGenEventHeader*  GenEventHeader() const;
 
-  virtual void Print(const char *opt=0);
+  virtual void Print(const char *opt=0) const;
+
+  AliHeader& operator=(AliHeader& head) 
+    {head.Copy(*this); return *this;}
   
 protected:
+
+  void Copy(AliHeader& head) const;
+
   Int_t         fRun;         //Run number
   Int_t         fNvertex;     //Number of vertices
   Int_t         fNprimary;    //Number of primary tracks

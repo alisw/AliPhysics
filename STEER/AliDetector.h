@@ -18,7 +18,7 @@ public:
   // Creators - distructors
   AliDetector(const char* name, const char *title);
   AliDetector();
-  AliDetector(const AliDetector &det) {det.Copy(*this);}
+  AliDetector(const AliDetector &det);
   virtual ~AliDetector();
 
   // Inline functions

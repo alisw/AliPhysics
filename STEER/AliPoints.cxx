@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/01/26 19:58:48  hristov
+Major upgrade of AliRoot code
+
 Revision 1.6  2000/10/02 21:28:14  fca
 Removal of useless dependecies via forward declarations
 
@@ -39,27 +42,31 @@ Introduction of the Copyright and cvs Log
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "TPad.h"
+#include "TParticle.h"
+#include "TView.h"
+
+#include "AliDetector.h"
 #include "AliPoints.h"
 #include "AliRun.h"
-#include "AliDetector.h"
-#include "TPad.h"
-#include "TView.h"
-#include "TParticle.h"
  
 ClassImp(AliPoints)
 
-//_____________________________________________________________________________
-AliPoints::AliPoints()
+//_______________________________________________________________________
+AliPoints::AliPoints():
+  fDetector(0),
+  fIndex(0)
 {
   //
   // Default constructor
   //
-  fDetector = 0;	
-  fIndex    = 0;
 }
 
-//_____________________________________________________________________________
-AliPoints::AliPoints(const AliPoints &pts)
+//_______________________________________________________________________
+AliPoints::AliPoints(const AliPoints &pts):
+  TPolyMarker3D(pts),
+  fDetector(0),
+  fIndex(0)
 {
   //
   // Copy constructor
@@ -67,36 +74,34 @@ AliPoints::AliPoints(const AliPoints &pts)
   pts.Copy(*this);
 }
 
-//_____________________________________________________________________________
-AliPoints::AliPoints(Int_t nhits)
-  :TPolyMarker3D(nhits)
+//_______________________________________________________________________
+AliPoints::AliPoints(Int_t nhits):
+  TPolyMarker3D(nhits),
+  fDetector(0),
+  fIndex(0)
 {
   //
   // Standard constructor
   //
-  fDetector = 0;	
-  fIndex    = 0;
   ResetBit(kCanDelete);
 }
 	 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 AliPoints::~AliPoints()
 {
   //
-  // Default constructor
+  // Default destructor
   //
-  fDetector = 0;	
-  fIndex    = 0;
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliPoints::Copy(AliPoints &pts) const
 {
   //
   // Copy *this onto pts
   //
   if(this != &pts) {
-    ((TPolyMarker3D*)this)->Copy((TPolyMarker3D&)pts);
+    ((TPolyMarker3D*)this)->Copy(dynamic_cast<TPolyMarker3D&>(pts));
     pts.fGLList = fGLList;
     pts.fLastPoint = fLastPoint;
     pts.fDetector = fDetector;
@@ -104,8 +109,7 @@ void AliPoints::Copy(AliPoints &pts) const
   }
 }
 
-
-//_____________________________________________________________________________
+//_______________________________________________________________________
 Int_t AliPoints::DistancetoPrimitive(Int_t px, Int_t py)
 {
   //
@@ -125,7 +129,7 @@ Int_t AliPoints::DistancetoPrimitive(Int_t px, Int_t py)
   return TPolyMarker3D::DistancetoPrimitive(px,py);
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliPoints::DumpParticle()
 {
   //
@@ -135,7 +139,7 @@ void AliPoints::DumpParticle()
   if (particle) particle->Dump();
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliPoints::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 {
   //
@@ -154,7 +158,7 @@ void AliPoints::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 const Text_t *AliPoints::GetName() const
 {
   //
@@ -165,8 +169,8 @@ const Text_t *AliPoints::GetName() const
   return particle->GetName();
 }
 
-//_____________________________________________________________________________
-Text_t *AliPoints::GetObjectInfo(Int_t, Int_t)
+//_______________________________________________________________________
+Text_t *AliPoints::GetObjectInfo(Int_t, Int_t) const
 {
   //
   //   Redefines TObject::GetObjectInfo.
@@ -178,7 +182,7 @@ Text_t *AliPoints::GetObjectInfo(Int_t, Int_t)
   return info;
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 TParticle *AliPoints::GetParticle() const
 {
   //
@@ -188,7 +192,7 @@ TParticle *AliPoints::GetParticle() const
   else return gAlice->Particle(fIndex);
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliPoints::InspectParticle()
 {
   //
@@ -198,17 +202,7 @@ void AliPoints::InspectParticle()
   if (particle) particle->Inspect();
 }
 
-//_____________________________________________________________________________
-AliPoints & AliPoints::operator=(const AliPoints &pts)
-{
-  //
-  // Assignment operator
-  //
-  pts.Copy(*this);
-  return (*this);
-}
-
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliPoints::Propagate()
 {
   //
@@ -220,13 +214,13 @@ void AliPoints::Propagate()
   //  
   TIter next(gAlice->Detectors());
   AliDetector *detector;
-  while((detector = (AliDetector*)next())) {
+  while((detector = dynamic_cast<AliDetector*>(next()))) {
     if (!detector->IsActive()) continue;
     points = detector->Points();
     if (!points) continue;
     ntracks = points->GetEntriesFast();
     for (track=0;track<ntracks;track++) {
-      pm = (AliPoints*)points->UncheckedAt(track);
+      pm = dynamic_cast<AliPoints*>(points->UncheckedAt(track));
       if (!pm) continue;
       if (fIndex == pm->GetIndex()) {
 	pm->SetMarkerColor(GetMarkerColor());

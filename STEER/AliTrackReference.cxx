@@ -20,11 +20,18 @@
 
 ClassImp(AliTrackReference)
 
-AliTrackReference::AliTrackReference()
+//_______________________________________________________________________
+ AliTrackReference::AliTrackReference():
+   fTrack(0),
+   fX(0),
+   fY(0),
+   fZ(0),
+   fPx(0),
+   fPy(0),
+   fPz(0),
+   fLength(0)
 {
   //
   // Default constructor
   //
-  fTrack = 0;
-  fX = fY = fZ = fPx = fPy = fPz = fLength = 0.;
 }

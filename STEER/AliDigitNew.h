@@ -17,8 +17,8 @@ typedef TClonesArray DigitsList ;
 class AliDigitNew : public TObject {
 
  public: 
-  AliDigitNew() ;   
-  ~AliDigitNew() {;}
+  AliDigitNew();   
+  ~AliDigitNew() {}
   Int_t   GetAmp() const { return fAmp  ; } 
   Int_t   GetId() const  { return fId ; }      
   Int_t   GetIndexInList() const { return fIndexInList ; } 

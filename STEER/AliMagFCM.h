@@ -13,7 +13,7 @@ class AliMagFCM : public AliMagF
   //Alice Magnetic Field with constan mesh
 
 public:
-  AliMagFCM(){fB=0;}
+  AliMagFCM();
   AliMagFCM(const char *name, const char *title, const Int_t integ,
 	   const Float_t factor, const Float_t fmax);
   AliMagFCM(const AliMagFCM &mag);
@@ -24,7 +24,8 @@ public:
   virtual Float_t SolenoidField() const {return fSolenoid;}
   
   void Copy(AliMagFCM &magf) const;
-  virtual AliMagFCM & operator=(const AliMagFCM &magf);
+  virtual AliMagFCM & operator=(const AliMagFCM &magf)
+    {magf.Copy(*this); return *this;}
 
   Float_t Bx(const Int_t ix, const Int_t iy, const Int_t iz) {
     return (*fB)(3*(iz*(fXn*fYn)+iy*fXn+ix));

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2001/12/19 14:46:26  morsch
+Add possibility to disable StepManager() for each module separately.
+
 Revision 1.17  2001/08/29 14:28:33  morsch
 Use visibility flags -1 and 3 instead of 0 and 1.
 
@@ -79,35 +82,45 @@ Introduction of the Copyright and cvs Log
 
 ClassImp(AliModule)
  
-//_____________________________________________________________________________
-AliModule::AliModule()
+//_______________________________________________________________________
+AliModule::AliModule():
+  fEuclidMaterial(""),
+  fEuclidGeometry(""),
+  fIdtmed(0),
+  fIdmate(0),
+  fLoMedium(0),
+  fHiMedium(0),
+  fActive(0),
+  fHistograms(0),
+  fNodes(0),
+  fDebug(0),
+  fEnable(1)
 {
   //
   // Default constructor for the AliModule class
   //
-  fHistograms = 0;
-  fNodes      = 0;
-  fIdtmed     = 0;
-  fIdmate     = 0;
-  fDebug      = 0;
-  fEnable     = 1;
 }
  
-//_____________________________________________________________________________
-AliModule::AliModule(const char* name,const char *title):TNamed(name,title)
+//_______________________________________________________________________
+AliModule::AliModule(const char* name,const char *title):
+  TNamed(name,title),
+  fEuclidMaterial(""),
+  fEuclidGeometry(""),
+  fIdtmed(new TArrayI(100)),
+  fIdmate(new TArrayI(100)),
+  fLoMedium(65536),
+  fHiMedium(0),
+  fActive(0),
+  fHistograms(new TList()),
+  fNodes(new TList()),
+  fDebug(0),
+  fEnable(1)
 {
   //
   // Normal constructor invoked by all Modules.
   // Create the list for Module specific histograms
   // Add this Module to the global list of Modules in Run.
   //
-  //
-  // Initialises the histogram list
-  fHistograms = new TList();
-  //
-  // Initialises the list of ROOT TNodes
-  fNodes      = new TList();
-  //  
   // Get the Module numeric ID
   Int_t id = gAlice->GetModuleID(name);
   if (id>=0) {
@@ -122,24 +135,32 @@ AliModule::AliModule(const char* name,const char *title):TNamed(name,title)
   //
   SetMarkerColor(3);
   //
-  // Allocate space for tracking media and material indexes
-  fIdtmed = new TArrayI(100);
-  fIdmate  = new TArrayI(100);
+  // Clear space for tracking media and material indexes
+
   for(Int_t i=0;i<100;i++) (*fIdmate)[i]=(*fIdtmed)[i]=0;
-  //
-  // Prepare to find the tracking media range
-  fLoMedium = 65536;
-  fHiMedium = 0;
 
   AliConfig::Instance()->Add(this);    
     
   SetDebug(gAlice->GetDebug());
-
-  fEnable     = 1;
 }
  
-//_____________________________________________________________________________
-AliModule::AliModule(const AliModule &mod)
+//_______________________________________________________________________
+AliModule::AliModule(const AliModule &mod):
+  TNamed(mod),
+  TAttLine(mod),
+  TAttMarker(mod),
+  AliRndm(mod),
+  fEuclidMaterial(""),
+  fEuclidGeometry(""),
+  fIdtmed(0),
+  fIdmate(0),
+  fLoMedium(0),
+  fHiMedium(0),
+  fActive(0),
+  fHistograms(0),
+  fNodes(0),
+  fDebug(0),
+  fEnable(0)
 {
   //
   // Copy constructor
@@ -147,14 +168,13 @@ AliModule::AliModule(const AliModule &mod)
   mod.Copy(*this);
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 AliModule::~AliModule()
 {
   //
   // Destructor
   //
-  fHistograms = 0;
-  //
+
   // Delete ROOT geometry
   if(fNodes) {
     fNodes->Clear();
@@ -166,7 +186,7 @@ AliModule::~AliModule()
   delete fIdmate;
 }
  
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliModule::Copy(AliModule & /* mod */) const
 {
   //
@@ -175,7 +195,7 @@ void AliModule::Copy(AliModule & /* mod */) const
   Fatal("Copy","Not implemented!\n");
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliModule::Disable()
 {
   //
@@ -187,12 +207,12 @@ void AliModule::Disable()
   //
   // Loop through geometry to disable all
   // nodes for this Module
-  while((node = (TNode*)next())) {
+  while((node = dynamic_cast<TNode*>(next()))) {
     node->SetVisibility(-1);
   }   
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 Int_t AliModule::DistancetoPrimitive(Int_t, Int_t)
 {
   //
@@ -202,7 +222,7 @@ Int_t AliModule::DistancetoPrimitive(Int_t, Int_t)
   return 9999;
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliModule::Enable()
 {
   //
@@ -214,15 +234,15 @@ void AliModule::Enable()
   //
   // Loop through geometry to enable all
   // nodes for this Module
-  while((node = (TNode*)next())) {
+  while((node = dynamic_cast<TNode*>(next()))) {
     node->SetVisibility(3);
   }   
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliModule::AliMaterial(Int_t imat, const char* name, Float_t a, 
-			      Float_t z, Float_t dens, Float_t radl,
-			      Float_t absl, Float_t *buf, Int_t nwbuf) const
+                            Float_t z, Float_t dens, Float_t radl,
+                            Float_t absl, Float_t *buf, Int_t nwbuf) const
 {
   //
   // Store the parameters for a material
@@ -242,10 +262,10 @@ void AliModule::AliMaterial(Int_t imat, const char* name, Float_t a,
   (*fIdmate)[imat]=kmat;
 }
   
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliModule::AliGetMaterial(Int_t imat, char* name, Float_t &a, 
-			      Float_t &z, Float_t &dens, Float_t &radl,
-			      Float_t &absl)
+                               Float_t &z, Float_t &dens, Float_t &radl,
+                               Float_t &absl)
 {
   //
   // Store the parameters for a material
@@ -268,10 +288,10 @@ void AliModule::AliGetMaterial(Int_t imat, char* name, Float_t &a,
 }
   
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliModule::AliMixture(Int_t imat, const char *name, Float_t *a,
-			     Float_t *z, Float_t dens, Int_t nlmat,
-			     Float_t *wmat) const
+                           Float_t *z, Float_t dens, Int_t nlmat,
+                           Float_t *wmat) const
 { 
   //
   // Defines mixture or compound imat as composed by 
@@ -297,12 +317,12 @@ void AliModule::AliMixture(Int_t imat, const char *name, Float_t *a,
   (*fIdmate)[imat]=kmat;
 } 
  
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliModule::AliMedium(Int_t numed, const char *name, Int_t nmat,
-			    Int_t isvol, Int_t ifield, Float_t fieldm,
-			    Float_t tmaxfd, Float_t stemax, Float_t deemax,
-			    Float_t epsil, Float_t stmin, Float_t *ubuf,
-			    Int_t nbuf) const
+                          Int_t isvol, Int_t ifield, Float_t fieldm,
+                          Float_t tmaxfd, Float_t stemax, Float_t deemax,
+                          Float_t epsil, Float_t stmin, Float_t *ubuf,
+                          Int_t nbuf) const
 { 
   //
   // Store the parameters of a tracking medium
@@ -331,10 +351,10 @@ void AliModule::AliMedium(Int_t numed, const char *name, Int_t nmat,
   (*fIdtmed)[numed]=kmed;
 } 
  
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliModule::AliMatrix(Int_t &nmat, Float_t theta1, Float_t phi1,
-			    Float_t theta2, Float_t phi2, Float_t theta3,
-			    Float_t phi3) const
+                          Float_t theta2, Float_t phi2, Float_t theta3,
+                          Float_t phi3) const
 {
   // 
   // Define a rotation matrix. Angles are in degrees.
@@ -350,26 +370,19 @@ void AliModule::AliMatrix(Int_t &nmat, Float_t theta1, Float_t phi1,
   gMC->Matrix(nmat, theta1, phi1, theta2, phi2, theta3, phi3); 
 } 
 
-//_____________________________________________________________________________
-AliModule& AliModule::operator=(const AliModule &mod)
-{
-  mod.Copy(*this);
-  return (*this);
-}
-
-//_____________________________________________________________________________
+//_______________________________________________________________________
 Float_t AliModule::ZMin() const
 {
   return -500;
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 Float_t AliModule::ZMax() const
 {
   return 500;
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliModule::SetEuclidFile(char* material, char* geometry)
 {
   //
@@ -387,7 +400,7 @@ void AliModule::SetEuclidFile(char* material, char* geometry)
   }
 }
  
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliModule::ReadEuclid(const char* filnam, char* topvol)
 {
   //                                                                     
@@ -560,7 +573,7 @@ void AliModule::ReadEuclid(const char* filnam, char* topvol)
   Error("ReadEuclid","reading error or premature end of file\n");
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliModule::ReadEuclidMedia(const char* filnam)
 {
   //                                                                     

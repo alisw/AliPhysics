@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2001/05/28 14:10:35  morsch
+SetSolenoidField method to set the L3 field strength. 2 kG is default.
+
 Revision 1.11  2001/02/08 13:18:00  hristov
 Print removed (J.Gosset)
 
@@ -60,16 +63,77 @@ Coding convention corrections + few minor bug fixes
 
 #include <stdlib.h>
 
-#include "AliMagFDM.h"
 #include "TSystem.h"
+
+#include "AliMagFDM.h"
     
 
 ClassImp(AliMagFDM)
 
-//________________________________________
+//_______________________________________________________________________
+AliMagFDM::AliMagFDM():
+  fSolenoid(0),
+  fInd(0),
+  fZmin(0),
+  fZmax(0),
+  fYmax(0),
+  fYmin(0),
+  fZpmx(0),
+  fZpmn(0),
+  fRmax(0),
+  fRmin(0),
+  fXdel(0),
+  fYdel(0),
+  fZdel(0),
+  fRdel(0),
+  fPhid(0),
+  fZpdl(0),
+  fCx1(0),
+  fCx2(0),
+  fAx1(0),
+  fAx2(0),
+  fXl(0),
+  fYl(0),
+  fZl(0),    
+  fRn(0),
+  fPhin(0),
+  fZpl(0)  
+{
+  //
+  // Default constructor for the Dipole field
+  //
+}
+
+//_______________________________________________________________________
 AliMagFDM::AliMagFDM(const char *name, const char *title, const Int_t integ,
-          const Float_t factor, const Float_t fmax)
-  : AliMagF(name,title,integ,factor,fmax)
+                     const Float_t factor, const Float_t fmax):
+  AliMagF(name,title,integ,factor,fmax),
+  fSolenoid(0),
+  fInd(0),
+  fZmin(0),
+  fZmax(0),
+  fYmax(0),
+  fYmin(0),
+  fZpmx(0),
+  fZpmn(0),
+  fRmax(0),
+  fRmin(0),
+  fXdel(0),
+  fYdel(0),
+  fZdel(0),
+  fRdel(0),
+  fPhid(0),
+  fZpdl(0),
+  fCx1(0),
+  fCx2(0),
+  fAx1(0),
+  fAx2(0),
+  fXl(0),
+  fYl(0),
+  fZl(0),    
+  fRn(0),
+  fPhin(0),
+  fZpl(0)  
 {
   //
   // Standard constructor for the Dipole field
@@ -78,38 +142,39 @@ AliMagFDM::AliMagFDM(const char *name, const char *title, const Int_t integ,
   fMap  = 3;
   SetSolenoidField();
   
- printf("Field Map for Muon Arm from IP till muon filter %s created: map= %d, integ= %d, factor= %f, file=%s\n",fName.Data(), fMap ,integ,factor,fTitle.Data());
+  Info("ctor",
+       "Field Map for Muon Arm from IP till muon filter %s created: map= %d, integ= %d, factor= %f, file=%s\n",
+       fName.Data(), fMap ,integ,factor,fTitle.Data());
  
 }
 
-//________________________________________
-
+//_______________________________________________________________________
 void AliMagFDM::Field(Float_t *xfi, Float_t *b)
 {
   //
   // Main routine to compute the field in a point
   //
-  static  const Double_t keps=0.1E-06;
-  static  const Double_t PI2=2.*TMath::Pi();
-  static  const Double_t kone=1;
-
-  static  const    Int_t  kiip=33; 
-  static  const    Int_t  kmiip=0;    
-  static  const    Int_t  kliip=0;
-
-  static  const    Int_t  kiic=0;
-  static  const    Int_t  kmiic=0;    
-  static  const    Int_t  kliic=0;       
-
-  static  const Double_t    kfZbg=502.92;  // Start of Map using in z
-  static  const Double_t    kfZL3=600;  // Beginning of L3 door in z
+  const Double_t keps=0.1E-06;
+  const Double_t PI2=2.*TMath::Pi();
+  const Double_t kone=1;
+  
+  const    Int_t  kiip=33; 
+  const    Int_t  kmiip=0;    
+  const    Int_t  kliip=0;
+  
+  const    Int_t  kiic=0;
+  const    Int_t  kmiic=0;    
+  const    Int_t  kliic=0;       
+  
+  const Double_t    kfZbg=502.92;  // Start of Map using in z
+  const Double_t    kfZL3=600;  // Beginning of L3 door in z
 
   Double_t   x[3];   
   Double_t   xL3[3]; 
   Double_t   bint[3]; 
   
   Double_t r0;
-    Int_t iKvar,jb;
+  Int_t iKvar,jb;
 
   Double_t zp1, zp2,xp1,xp2,yp1,yp2; 
   Double_t zz1, zz2,yy1,yy2,x2,x1; 
@@ -349,9 +414,9 @@ if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2]
   }
 }
 
-//_____________________  FZ ____________________
-
-Int_t AliMagFDM::FZ(Double_t temp, Float_t  *Ar, Float_t delu,Int_t ik,Int_t nk)
+//_______________________________________________________________________
+Int_t AliMagFDM::FZ(Double_t temp, Float_t *Ar, 
+                    Float_t delu, Int_t ik,Int_t nk)
 {
   //
   // Quest of a point position at x,y,z (Cartensian) and R,Phi,z (Polar) axises
@@ -381,9 +446,10 @@ Int_t AliMagFDM::FZ(Double_t temp, Float_t  *Ar, Float_t delu,Int_t ik,Int_t nk)
     return kf;
   }
 
-/*---------------------Ba------------------*/
-
-Double_t AliMagFDM::Ba(Int_t kaai,Double_t zaa1, Double_t zaa2, Double_t alf1, Double_t alf2, Double_t alf3, Int_t kaa, Int_t maa)
+//_______________________________________________________________________
+Double_t AliMagFDM::Ba(Int_t kaai,Double_t zaa1, Double_t zaa2, 
+                       Double_t alf1, Double_t alf2, Double_t alf3, 
+                       Int_t kaa, Int_t maa)
 {
   //
   // Calculation of field componet for case (keps <r0<= fRdel) at a given axis
@@ -429,9 +495,9 @@ Double_t AliMagFDM::Ba(Int_t kaai,Double_t zaa1, Double_t zaa2, Double_t alf1, D
 }
 
   
-/*------------------------Bb--------------------------*/
-
-Double_t AliMagFDM::Bb(Double_t z1,Double_t z2, Double_t y1,Double_t y2, Double_t x1,Double_t x2, Int_t kv, Int_t k, Int_t l, Int_t m)
+//_______________________________________________________________________
+Double_t AliMagFDM::Bb(Double_t z1,Double_t z2, Double_t y1,Double_t y2, 
+                       Double_t x1,Double_t x2, Int_t kv, Int_t k, Int_t l, Int_t m)
 {  
   //
   // Calculation of field componet at a given axis (general case)
@@ -540,8 +606,8 @@ Double_t AliMagFDM::Bb(Double_t z1,Double_t z2, Double_t y1,Double_t y2, Double_
   return bbi;
   
 }     
-//____________________________________________
 
+//_______________________________________________________________________
 void AliMagFDM::ReadField()
 {
   //
@@ -704,4 +770,3 @@ printf("fZpdl %e, fPhid %e, fRdel %e, fZpmx %e, fZpmn %e,fRmax %e,fRmin %e \n", 
     exit(1);
   }
 }
-//________________________________  

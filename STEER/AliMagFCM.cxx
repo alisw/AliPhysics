@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/09/04 15:05:13  hristov
+Pointer fB is initialised to 0 in the default constructor
+
 Revision 1.8  2001/05/28 14:10:35  morsch
 SetSolenoidField method to set the L3 field strength. 2 kG is default.
 
@@ -50,26 +53,79 @@ Coding convention corrections + few minor bug fixes
 
 ClassImp(AliMagFCM)
 
-//________________________________________
-AliMagFCM::AliMagFCM(const char *name, const char *title, const Int_t integ, 
-		     const Float_t factor, const Float_t fmax)
-  : AliMagF(name,title,integ,factor,fmax)
+//_______________________________________________________________________
+AliMagFCM::AliMagFCM():
+  fXbeg(0),
+  fYbeg(0),
+  fZbeg(0),
+  fXdel(0),
+  fYdel(0),
+  fZdel(0),
+  fSolenoid(0),
+  fXdeli(0),
+  fYdeli(0),
+  fZdeli(0),
+  fXn(0),
+  fYn(0),
+  fZn(0),
+  fB(0)
 {
   //
   // Standard constructor
   //
-  fB=0;
+  fType = kConMesh;
+  fMap  = 2;
+  SetSolenoidField();
+}
+
+//_______________________________________________________________________
+AliMagFCM::AliMagFCM(const char *name, const char *title, const Int_t integ, 
+                     const Float_t factor, const Float_t fmax):
+  AliMagF(name,title,integ,factor,fmax),
+  fXbeg(0),
+  fYbeg(0),
+  fZbeg(0),
+  fXdel(0),
+  fYdel(0),
+  fZdel(0),
+  fSolenoid(0),
+  fXdeli(0),
+  fYdeli(0),
+  fZdeli(0),
+  fXn(0),
+  fYn(0),
+  fZn(0),
+  fB(0)
+{
+  //
+  // Standard constructor
+  //
   fType = kConMesh;
   fMap  = 2;
   SetSolenoidField();
 
-  if(fDebug>-1) printf("%s: Constant Mesh Field %s created: map= %d, factor= %f, file= %s\n",
+  if(fDebug>-1) Info("ctor",
+     "%s: Constant Mesh Field %s created: map= %d, factor= %f, file= %s\n",
 	 ClassName(),fName.Data(), fMap, factor,fTitle.Data());
-  
 }
 
-//________________________________________
-AliMagFCM::AliMagFCM(const AliMagFCM &magf)
+//_______________________________________________________________________
+AliMagFCM::AliMagFCM(const AliMagFCM &magf):
+  AliMagF(magf),
+  fXbeg(0),
+  fYbeg(0),
+  fZbeg(0),
+  fXdel(0),
+  fYdel(0),
+  fZdel(0),
+  fSolenoid(0),
+  fXdeli(0),
+  fYdeli(0),
+  fZdeli(0),
+  fXn(0),
+  fYn(0),
+  fZn(0),
+  fB(0)
 {
   //
   // Copy constructor
@@ -77,7 +133,7 @@ AliMagFCM::AliMagFCM(const AliMagFCM &magf)
   magf.Copy(*this);
 }
 
-//________________________________________
+//_______________________________________________________________________
 void AliMagFCM::Field(Float_t *x, Float_t *b)
 {
   //
@@ -206,7 +262,7 @@ void AliMagFCM::Field(Float_t *x, Float_t *b)
   }
 }
 
-//________________________________________
+//_______________________________________________________________________
 void AliMagFCM::ReadField()
 {
   // 
@@ -248,7 +304,7 @@ void AliMagFCM::ReadField()
   }
 }
 
-//________________________________________
+//_______________________________________________________________________
 void AliMagFCM::Copy(AliMagFCM & /* magf */) const
 {
   //
@@ -257,9 +313,3 @@ void AliMagFCM::Copy(AliMagFCM & /* magf */) const
   Fatal("Copy","Not implemented!\n");
 }
 
-//________________________________________
-AliMagFCM & AliMagFCM::operator =(const AliMagFCM &magf)
-{
-  magf.Copy(*this);
-  return *this;
-}

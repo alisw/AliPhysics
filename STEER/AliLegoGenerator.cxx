@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/05/16 14:57:22  alibrary
+New files for folders and Stack
+
 Revision 1.4  2000/11/30 07:12:49  alibrary
 Introducing new Rndm and QA classes
 
@@ -66,42 +69,63 @@ Introduction of the Copyright and cvs Log
 
 ClassImp(AliLegoGenerator)
 
-//___________________________________________
-
-AliLegoGenerator::AliLegoGenerator()
+//_______________________________________________________________________
+AliLegoGenerator::AliLegoGenerator():
+  fRadMin(0),
+  fRadMax(0),
+  fZMax(0),
+  fNCoor1(0),
+  fNCoor2(0),
+  fCoor1Min(0),
+  fCoor1Max(0),
+  fCoor2Min(0),
+  fCoor2Max(0),
+  fCoor1Bin(-1),
+  fCoor2Bin(-1),
+  fCurCoor1(0),
+  fCurCoor2(0)
 {
   //
   // Default Constructor
   //
   SetName("Lego");
-
-  fCoor1Bin  =  fCoor2Bin = -1;
-  fCurCoor1  =  fCurCoor2 =  0;
 }
 
+//_______________________________________________________________________
 AliLegoGenerator::AliLegoGenerator(Int_t nc1, Float_t c1min,
-				   Float_t c1max, Int_t nc2, 
-				   Float_t c2min, Float_t c2max,
-				   Float_t rmin, Float_t rmax, Float_t zmax) :
-  AliGenerator(0), fRadMin(rmin), fRadMax(rmax), fZMax(zmax), fNCoor1(nc1),
-  fNCoor2(nc2), fCoor1Bin(nc1), fCoor2Bin(-1), fCurCoor1(0), fCurCoor2(0)
-  
+                                   Float_t c1max, Int_t nc2, 
+                                   Float_t c2min, Float_t c2max,
+                                   Float_t rmin, Float_t rmax, Float_t zmax):
+  AliGenerator(0), 
+  fRadMin(rmin),
+  fRadMax(rmax),
+  fZMax(zmax),
+  fNCoor1(nc1),
+  fNCoor2(nc2),
+  fCoor1Min(0),
+  fCoor1Max(0),
+  fCoor2Min(0),
+  fCoor2Max(0),
+  fCoor1Bin(nc1),
+  fCoor2Bin(-1),
+  fCurCoor1(0),
+  fCurCoor2(0)
 {
   //
   // Standard generator for Lego rays
   //
+  SetName("Lego");
   SetCoor1Range(nc1, c1min, c1max);
   SetCoor2Range(nc2, c2min, c2max);
-  SetName("Lego");
 }
 
-//___________________________________________
+//_______________________________________________________________________
 void AliLegoGenerator::Generate()
 {
-// Create a geantino with kinematics corresponding to the current bins
-// Here: Coor1 =  theta 
-//       Coor2 =  phi.
-   
+  // Create a geantino with kinematics corresponding to the current bins
+  // Here: Coor1 =  theta 
+  //       Coor2 =  phi.
+  
   //
   // Rootinos are 0
    const Int_t kMpart = 0;
@@ -147,11 +171,13 @@ void AliLegoGenerator::Generate()
    
 }
 
-//___________________________________________
-Float_t AliLegoGenerator::PropagateCylinder(Float_t *x, Float_t *v, Float_t r, Float_t z)
+//_______________________________________________________________________
+Float_t AliLegoGenerator::PropagateCylinder(Float_t *x, Float_t *v, Float_t r, 
+                                            Float_t z)
 {
-// Propagate to cylinder from inside
-
+  //
+  // Propagate to cylinder from inside
+  //
    Double_t hnorm, sz, t, t1, t2, t3, sr;
    Double_t d[3];
    const Float_t kSmall  = 1e-8;

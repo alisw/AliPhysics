@@ -21,6 +21,7 @@
 // Rep. Prog. Phys. 43 (1980) 1145-1189. 
 // M.Masera 15.03.2001 9:30 - modified on 26.02.2002 17:40
 ////////////////////////////////////////////////////////////////////////
+
 #include <Riostream.h>
 #include <TArrayD.h>
 #include <TMatrixD.h>
@@ -29,20 +30,24 @@
 
 ClassImp(AliGausCorr)
 
-//________________________________________________________
-AliGausCorr::AliGausCorr()
+//_______________________________________________________________________
+AliGausCorr::AliGausCorr():
+  fSize(0),
+  fCv(0)
 {
+  //
   // Default constructor
-  fSize = 0;
-  fCv = 0;
+  //
 }
 
-//________________________________________________________
-AliGausCorr::AliGausCorr(const TMatrixD & vec, Int_t size) 
+//_______________________________________________________________________
+AliGausCorr::AliGausCorr(const TMatrixD & vec, Int_t size):
+  fSize(size),
+  fCv(new TMatrixD(fSize,fSize))
 {
+  //
   // Standard constructor
-  fSize = size;
-  fCv = new TMatrixD(fSize,fSize);
+  //
   for(Int_t j=0;j<fSize;j++){
     double accum = 0;
     for(Int_t k=0;k<j;k++){
@@ -59,26 +64,28 @@ AliGausCorr::AliGausCorr(const TMatrixD & vec, Int_t size)
   }
 }
 
-//________________________________________________________
-AliGausCorr::AliGausCorr(const AliGausCorr & tgcorr)
+//_______________________________________________________________________
+AliGausCorr::AliGausCorr(const AliGausCorr & tgcorr):
+  TObject(tgcorr),
+  fSize(tgcorr.fSize),
+  fCv(new TMatrixD(fSize,fSize))
 {
+  //
   // Copy contructor
-
-  fSize = tgcorr.fSize;
-  fCv = new TMatrixD(fSize,fSize);
+  //
   for(Int_t i=0;i<fSize;i++){
     for(Int_t j=0;j<fSize;j++)(*fCv)(i,j)=(*tgcorr.fCv)(i,j);
   }
 }
 
-//________________________________________________________
+//_______________________________________________________________________
 AliGausCorr::~AliGausCorr()
 {
   // Destructor
   delete fCv;
 }
 
-//________________________________________________________
+//_______________________________________________________________________
 void AliGausCorr::GetGaussN(TArrayD &vec) const
 {
   // return fSize correlated gaussian numbers
@@ -102,7 +109,7 @@ void AliGausCorr::GetGaussN(TArrayD &vec) const
 
 }
 
-//________________________________________________________
+//_______________________________________________________________________
 void AliGausCorr::PrintCv() const
 {
   // Printout of the "square root" cov. matrix 
@@ -121,7 +128,7 @@ void AliGausCorr::PrintCv() const
   printf("\n");
 }
 
-//________________________________________________________
+//_______________________________________________________________________
 AliGausCorr & AliGausCorr::operator=(const AliGausCorr & tgcorr)
 {
   if(&tgcorr != this && tgcorr.fSize!=fSize){
@@ -137,8 +144,3 @@ AliGausCorr & AliGausCorr::operator=(const AliGausCorr & tgcorr)
 
   return *this;
 }
-
-
-
-
-

@@ -15,11 +15,10 @@
 
 // --- ROOT system ---
 #include "TNamed.h"
-#include "TObjString.h"
 #include "TString.h"
-#include "TArrayI.h"
-#include "TClonesArray.h"
-#include "TFile.h"
+
+class TFile;
+class TObjArray;
 
 // --- AliRoot header files ---
 
@@ -28,6 +27,9 @@ class AliStream: public TNamed {
 public:
   AliStream();
   AliStream(Option_t *option);
+  AliStream(const AliStream&);
+  AliStream & operator=(const AliStream& str) 
+    {str.Copy(*this); return (*this);}
   virtual ~AliStream();
   void AddFile(const char *fileName);
   Bool_t NextEventInStream(Int_t &eventNr);
@@ -39,6 +41,8 @@ public:
   TString GetFileName(const Int_t order) const; 
   
 private:  
+  void Copy(AliStream& str) const;
+
   Int_t fLastEventSerialNr;
   Int_t fLastEventNr;
   Int_t fCurrentFileIndex;

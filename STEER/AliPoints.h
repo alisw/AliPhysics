@@ -15,7 +15,6 @@ public:
   AliPoints(const AliPoints& pts);
   AliPoints(Int_t nhits);
   virtual ~AliPoints();
-  void          Copy(AliPoints &pts) const;
   virtual Int_t         DistancetoPrimitive(Int_t px, Int_t py);
   virtual void          ExecuteEvent(Int_t event, Int_t px, Int_t py);
   AliDetector          *GetDetector() const {return fDetector;}
@@ -24,15 +23,18 @@ public:
   virtual const Text_t *GetName() const;
   virtual void          InspectParticle(); // *MENU*
   virtual void          DumpParticle(); // *MENU*
-  virtual Text_t       *GetObjectInfo(Int_t px, Int_t py);
-  AliPoints &           operator=(const AliPoints &pts);
+  virtual Text_t       *GetObjectInfo(Int_t px, Int_t py) const;
+  AliPoints &           operator=(const AliPoints &pts)
+    {pts.Copy(*this); return (*this);}
   virtual void          Propagate(); // *MENU*
   virtual void          SetDetector(AliDetector *det) {fDetector = det;}
   virtual void          SetParticle(Int_t index) {fIndex = index;}
   
 protected:
-   AliDetector     *fDetector;    //Pointer to AliDetector object
-   Int_t            fIndex;       //Particle number in AliRun::fParticles
+  void Copy(AliPoints &pts) const;
+
+  AliDetector     *fDetector;    //Pointer to AliDetector object
+  Int_t            fIndex;       //Particle number in AliRun::fParticles
 
   ClassDef(AliPoints,1) //Class to draw detector hits (is PolyMarker3D)
 };

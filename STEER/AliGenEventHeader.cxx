@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/10/16 07:44:38  morsch
+Initialize  fVertex in all constructors.
+
 Revision 1.2  2001/09/25 11:28:48  morsch
 Possibility to store and retrieve primary vertex position added.
 
@@ -40,25 +43,30 @@ Proposal for an event header class for generated events.
 ClassImp(AliGenEventHeader)
 
 
-//_____________________________________________________________________________
-AliGenEventHeader::AliGenEventHeader()
+//_______________________________________________________________________
+AliGenEventHeader::AliGenEventHeader():
+  fNProduced(-1),
+  fImpactParameter(-1),
+  fVertex(3)
 {
-// Constructor
-    fNProduced      = -1;      
-    fImpactParameter= -1.;
-    fVertex.Set(3);
+  //
+  // Constructor
+  //
 }
 
-
-AliGenEventHeader::AliGenEventHeader(const char * name)
-    :TNamed(name, "Event Header")
+//_______________________________________________________________________
+AliGenEventHeader::AliGenEventHeader(const char * name):
+  TNamed(name, "Event Header"),
+  fNProduced(-1),
+  fImpactParameter(-1),
+  fVertex(3)
 {
-// Constructor
-    fNProduced      = -1;      
-    fImpactParameter= -1.;
-    fVertex.Set(3);
+  //
+  // Constructor
+  //
 }
 
+//_______________________________________________________________________
 void AliGenEventHeader::SetPrimaryVertex(const TArrayF &o)
 {
     //
@@ -69,6 +77,7 @@ void AliGenEventHeader::SetPrimaryVertex(const TArrayF &o)
     fVertex[2]=o.At(2);
 }
 
+//_______________________________________________________________________
 void  AliGenEventHeader::PrimaryVertex(TArrayF &o) const
 {
     //

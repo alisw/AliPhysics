@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2002/10/22 15:02:15  alibrary
+Introducing Riostream.h
+
 Revision 1.3  2002/10/14 14:57:33  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -55,34 +58,44 @@ Classes to create and store tracks maps - correcpondence between track label and
 
 ClassImp(AliTrackMapper)
 
-////////////////////////////////////////////////////////////////////////
-void AliTrackMapper::CreateMap(Int_t nEvents, Int_t firstEventNr,
-			    const char* fnMap, const char* fnHits)
+//_______________________________________________________________________
+AliTrackMapper::AliTrackMapper(): 
+  fDEBUG(0)
 {
-//
-// method to create a track map for a given number of events starting 
-// from event firstEventNr. This method just opens and closes files and
-// loops over events, the creation of map is delegated to 
-// CreateMap(Int_t eventNr, TFile* fileMap) method
-//
+  //
+  // Default ctor
+  //
+}
+
+
+//_______________________________________________________________________
+void AliTrackMapper::CreateMap(Int_t nEvents, Int_t firstEventNr,
+                               const char* fnMap, const char* fnHits)
+{
+  //
+  // method to create a track map for a given number of events starting 
+  // from event firstEventNr. This method just opens and closes files and
+  // loops over events, the creation of map is delegated to 
+  // CreateMap(Int_t eventNr, TFile* fileMap) method
+  //
   TStopwatch timer;
   timer.Start();
   
   TFile *fileMap=TFile::Open(fnMap,"new");
   if (!fileMap->IsOpen()) {cerr<<"Can't open output file "<<fnMap<<"!\n"; return;}
-
+  
   TFile *fileHits=TFile::Open(fnHits);
   if (!fileHits->IsOpen()) {cerr<<"Can't open input file "<<fnHits<<"!\n"; return;}
-  if (!(gAlice=(AliRun*)fileHits->Get("gAlice"))) {
+  if (!(gAlice=dynamic_cast<AliRun*>(fileHits->Get("gAlice")))) {
     cerr<<"gAlice have not been found on galice.root !\n";
     return;
   }
-
+  
   for (Int_t eventNr = firstEventNr; eventNr < firstEventNr+nEvents;
        eventNr++) {
     CreateMap(eventNr,fileMap);
   } // end loop over events
-
+  
   delete gAlice;
   gAlice = 0;
   fileHits->Close();
@@ -93,13 +106,13 @@ void AliTrackMapper::CreateMap(Int_t nEvents, Int_t firstEventNr,
   if (fDEBUG > 0) timer.Print();
 }
 
-////////////////////////////////////////////////////////////////////////
-Int_t  AliTrackMapper::CreateMap(Int_t eventNr, TFile* fileMap) {
-//
-// create an AliTrackMap for a given event
-// correct gAlice must be already present in memory
-//
-
+//_______________________________________________________________________
+Int_t  AliTrackMapper::CreateMap(Int_t eventNr, TFile* fileMap) 
+{
+  //
+  // create an AliTrackMap for a given event
+  // correct gAlice must be already present in memory
+  //
   Int_t nGenPrimPlusSecParticles = gAlice->GetEvent(eventNr);
   if (fDEBUG > 1) cout<<"nGenPrimPlusSecParticles = "<<nGenPrimPlusSecParticles<<endl;
   if (nGenPrimPlusSecParticles < 1) {
@@ -124,7 +137,6 @@ Int_t  AliTrackMapper::CreateMap(Int_t eventNr, TFile* fileMap) {
   Int_t treeHEntries = static_cast<Int_t>(treeH->GetEntries());
   if (fDEBUG > 1) cout<<"treeHEntries "<<treeHEntries<<endl;
 
-
   TObjArray *modules = gAlice->Detectors();
   if (!modules) {
     cerr<<"TObjArray with modules not found."<<endl;
@@ -138,12 +150,12 @@ Int_t  AliTrackMapper::CreateMap(Int_t eventNr, TFile* fileMap) {
     for (Int_t iModule = 0; iModule < nModules; iModule++) {
       AliDetector * detector = dynamic_cast<AliDetector*>(modules->At(iModule));
       if (!detector) continue;
-// process only detectors with shunt = 0
+      // process only detectors with shunt = 0
       if (detector->GetIshunt()) continue; 
 
-      hit=(AliHit*)detector->FirstHit(-1);
+      hit=dynamic_cast<AliHit*>(detector->FirstHit(-1));
       Int_t lastLabel=-1, label;
-      for( ; hit; hit=(AliHit*)detector->NextHit() ) {
+      for( ; hit; hit=dynamic_cast<AliHit*>(detector->NextHit()) ) {
 	label=hit->Track();	
 	if (lastLabel != label) {
 	  if (label < 0 || label >= nAllParticles) {
@@ -180,37 +192,37 @@ Int_t  AliTrackMapper::CreateMap(Int_t eventNr, TFile* fileMap) {
   return 0;
 }
   
-////////////////////////////////////////////////////////////////////////
+//_______________________________________________________________________
 AliTrackMap* AliTrackMapper::LoadTrackMap(Int_t eventNr, const char* fnMap, TFile* &fileMap) {
-//
-// read an AliTrackMap object for the given event eventNr from 
-// the file fileMap
-//
+  //
+  // read an AliTrackMap object for the given event eventNr from 
+  // the file fileMap
+  //
   fileMap=TFile::Open(fnMap);
   if (!fileMap->IsOpen()) {cerr<<"Can't open file "<<fnMap<<" with map!\n"; return 0;}
   char mapName[20];
   sprintf(mapName,"AliTrackMap_%5.5d",eventNr);
-  AliTrackMap* trackMapObject = (AliTrackMap*)fileMap->Get(mapName);
+  AliTrackMap* trackMapObject = dynamic_cast<AliTrackMap*>(fileMap->Get(mapName));
   if (!trackMapObject) {
     cerr<<"Error: map named "<<mapName<<" not found."<<endl;
     return 0;
   }
   return trackMapObject;
 }
-////////////////////////////////////////////////////////////////////////
+
+//_______________________________________________________________________
 void AliTrackMapper::CheckTrackMap(Int_t eventNr, const char* fnMap) {
-//
-// 
-//
+  //
+  // 
+  //
   TFile *fileMap;
   AliTrackMap* trackMapObject = LoadTrackMap(eventNr, fnMap, fileMap);
   if (!trackMapObject) return;
-
+  
   trackMapObject->PrintValues();
-
+  
   delete trackMapObject;
   fileMap->Close();
   delete fileMap;
 }
-////////////////////////////////////////////////////////////////////////
 

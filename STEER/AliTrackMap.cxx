@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2002/10/22 15:02:15  alibrary
+Introducing Riostream.h
+
 Revision 1.2  2002/10/14 14:57:33  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -54,69 +57,89 @@ Classes to create and store tracks maps - correcpondence between track label and
 
 ClassImp(AliTrackMap)
 
-////////////////////////////////////////////////////////////////////////
-AliTrackMap::AliTrackMap()
+//_______________________________________________________________________
+AliTrackMap::AliTrackMap():
+  fSize(0),
+  fArray(0)
 {
-//
-// default ctor
-//
-  fArray=0; 
-  fSize = 0;
+  //
+  // default ctor
+  //
 }
-////////////////////////////////////////////////////////////////////////
-AliTrackMap::AliTrackMap(Int_t size, Int_t *array) : 
-  TNamed("AliTrackMap", "AliTrackMap")
-{
-//
-// ctor
-//
 
-  fSize = size;
-  fArray = new Int_t[fSize];
+//_______________________________________________________________________
+AliTrackMap::AliTrackMap(const AliTrackMap& trm):
+  TNamed(trm),
+  fSize(0),
+  fArray(0)
+{
+  //
+  // default ctor
+  //
+  trm.Copy(*this);
+}
+
+//_______________________________________________________________________
+AliTrackMap::AliTrackMap(Int_t size, Int_t *array): 
+  TNamed("AliTrackMap", "AliTrackMap"),
+  fSize(size),
+  fArray(new Int_t[fSize])
+{
+  //
+  // ctor
+  //
   for (Int_t i = 0; i < fSize; i++) fArray[i] = array[i];
 }
-////////////////////////////////////////////////////////////////////////
+
+//_______________________________________________________________________
+void AliTrackMap::Copy(AliTrackMap& ) const
+{
+  Fatal("Copy","Not implemented\n");
+}
+
+//_______________________________________________________________________
 AliTrackMap::~AliTrackMap()
 {
-//
-// dtor
-//
-
+  //
+  // dtor
+  //
   delete [] fArray;
 }
 
-////////////////////////////////////////////////////////////////////////
-Int_t AliTrackMap::At(Int_t label)
+//_______________________________________________________________________
+Int_t AliTrackMap::At(Int_t label) const
 {
-//
-// returns entry number in the TreeH corresponding to particle with 
-// label label
-//
+  //
+  // returns entry number in the TreeH corresponding to particle with 
+  // label label
+  //
   if (label < 0 || label >= fSize) {
     cerr<<"AliTrackMap::At: label "<<label<<" out of range, fSize = "<<fSize<<endl;
     return kOutOfBounds;
   }
   return fArray[label];
 }
-////////////////////////////////////////////////////////////////////////
+
+//_______________________________________________________________________
 void AliTrackMap::SetEventNr(Int_t eventNr) 
 {
-//
-// map is identified by it's name, event number is part of it
-//
+  //
+  // map is identified by it's name, event number is part of it
+  //
   char name[20];
   sprintf(name,"AliTrackMap_%5.5d",eventNr);
   SetName(name);  
 }
-////////////////////////////////////////////////////////////////////////
-void AliTrackMap::PrintValues() 
+
+//_______________________________________________________________________
+void AliTrackMap::PrintValues() const
 {
-//
-// method for debugging
-//
+  //
+  // method for debugging
+  //
   cout<<this->GetName()<<" contains these values: "<<endl;
   for (Int_t i = 0; i < fSize; i++) {
     cout<<i<<"\t"<<fArray[i]<<"\n";
   }
 }
-////////////////////////////////////////////////////////////////////////
+

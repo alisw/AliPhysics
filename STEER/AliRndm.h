@@ -18,8 +18,11 @@ static TRandom *sRandom;
 class AliRndm 
 {
 public:
-  AliRndm() {SetRandom();}
+  AliRndm();
+  AliRndm(const AliRndm &);
   virtual ~AliRndm() {fRandom=sRandom=0;}
+  AliRndm & operator=(const AliRndm& rn) 
+    {rn.Copy(*this); return (*this);}
   
   // Random number generator bit
   virtual void SetRandom(TRandom *ran=0)
@@ -38,12 +41,11 @@ public:
   virtual void WriteRandom(const char *filename) const;
   virtual void ReadRandom(const char *filename);
 
-  protected:
+protected:
   TRandom *fRandom;       // Pointer to the random number generator
 
-  private:
-  AliRndm(const AliRndm &) {}
-  AliRndm & operator=(const AliRndm &) {return (*this);}
+private:
+  void Copy(AliRndm &rn) const;
 
   ClassDef(AliRndm,1)  //Random Number generator wrapper
 };

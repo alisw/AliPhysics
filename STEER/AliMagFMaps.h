@@ -18,7 +18,7 @@ class AliMagFMaps : public AliMagF
 
 public:
     enum constants {k2kG, k4kG, k5kG};
-    AliMagFMaps(){fFieldMap[0] = fFieldMap[1] = fFieldMap[2] = 0; fFieldRead = 0;}
+    AliMagFMaps();
     AliMagFMaps(const char *name, const char *title, const Int_t integ,
 		const Float_t factor, const Float_t fmax, const Int_t map = k2kG,
 		const Int_t l3 = 1);
@@ -30,9 +30,12 @@ public:
     virtual Float_t SolenoidField() const;
     virtual void    SetL3ConstField(Int_t flag = 0) {fL3Option = flag;}
     
-    void Copy(AliMagFMaps &magf) const;
-    virtual AliMagFMaps & operator=(const AliMagFMaps &magf);
+    virtual AliMagFMaps & operator=(const AliMagFMaps &magf)
+      {magf.Copy(*this); return *this;}
+
 protected:
+    void Copy(AliMagFMaps &magf) const;
+
     AliFieldMap* fFieldMap[3];     // Field maps
     Float_t      fSolenoid;        // Solenoid field setting
     Int_t        fL3Option;        // Option for field inside L3

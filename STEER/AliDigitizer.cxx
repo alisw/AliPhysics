@@ -23,6 +23,9 @@
 
 /*
 $Log$
+Revision 1.6  2002/10/22 15:02:15  alibrary
+Introducing Riostream.h
+
 Revision 1.5  2002/10/14 14:57:32  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -54,35 +57,58 @@ ABC for detector digits merging/digitization
 
 ClassImp(AliDigitizer)
 
-AliDigitizer::AliDigitizer(const Text_t* name, const Text_t* title)
-  :TTask(name,title) 
+//_______________________________________________________________________
+AliDigitizer::AliDigitizer(const Text_t* name, const Text_t* title):
+  TTask(name,title),
+  fManager(0)
+
 {
-//
-// dummy default ctor with name and title
-//
-  fManager = 0;
+  //
+  // Default ctor with name and title
+  //
 }
 
+//_______________________________________________________________________
+AliDigitizer::AliDigitizer(const AliDigitizer &dig):
+  TTask(dig.GetName(),dig.GetTitle()),
+  fManager(0)
+{
+  //
+  // Copy ctor with
+  //
+  dig.Copy(*this);
+}
+
+//_______________________________________________________________________
+void AliDigitizer::Copy(AliDigitizer &) const
+{
+  Fatal("Copy","Not yet implemented\n");
+}
+
+//_______________________________________________________________________
 AliDigitizer::AliDigitizer(AliRunDigitizer *manager, 
-			   const Text_t* name, const Text_t* title)
-  :TTask(name,title)
+                           const Text_t* name, const Text_t* title):
+  TTask(name,title),
+  fManager(manager)
 {
-//
-// ctor with name and title
-//
-  fManager = manager;
-  manager->AddDigitizer(this);
+  //
+  // ctor with name and title
+  //
+  fManager->AddDigitizer(this);
 }
 
+//_______________________________________________________________________
+AliDigitizer::~AliDigitizer() 
+{
+  delete fManager;
+}
 
-
-AliDigitizer::~AliDigitizer() {;}
-////////////////////////////////////////////////////////////////////////
+//_______________________________________________________________________
 Int_t AliDigitizer::GetNInputStreams() const
 {
-//
-// return number of input streams
-//
+  //
+  // return number of input streams
+  //
   Int_t nInputStreams = 0 ;
   if (fManager)
     nInputStreams = fManager->GetNinputs() ;

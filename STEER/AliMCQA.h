@@ -21,6 +21,7 @@ class AliMCQA : public TObject
 public:
   AliMCQA();
   AliMCQA(Int_t ndets);
+  AliMCQA(const AliMCQA &);
   virtual ~AliMCQA();
   Bool_t  IsFolder() const {return kTRUE;}
   virtual  void  Browse(TBrowser *b);
@@ -30,7 +31,8 @@ public:
   void AddModuleName();
   void DrawVolumeName();
   void AddVolumeName();
-
+  AliMCQA & operator=(const AliMCQA &qa) 
+    {qa.Copy(*this); return (*this);}
 
   // QA step manager
   virtual void StepManager(Int_t id);
@@ -48,13 +50,11 @@ protected:
   TPaveLabel *fVPaveLabel;  //! PaveLabel for the Volumes
 
 private:
-  AliMCQA(const AliMCQA &) {}
-  AliMCQA & operator=(const AliMCQA &) {return (*this);}
   void DrawPaveLabel(TPaveLabel *&pv);
   Int_t GetHBin(const char* hname);
+  void Copy(AliMCQA& qa) const;
 
   ClassDef(AliMCQA,1)  //Quality Assurance class for the MC
 };
 
 #endif 
-

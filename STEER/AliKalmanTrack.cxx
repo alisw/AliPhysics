@@ -25,3 +25,27 @@ ClassImp(AliKalmanTrack)
 
 Double_t AliKalmanTrack::fConvConst;
 
+//_______________________________________________________________________
+AliKalmanTrack::AliKalmanTrack():
+  fLab(-3141593),
+  fChi2(0),
+  fMass(0.13957),
+  fN(0)
+{
+    if (fConvConst==0) 
+      Fatal("AliKalmanTrack()","The magnetic field has not been set !\n"); 
+}
+
+//_______________________________________________________________________
+AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack &t):
+  TObject(t),
+  fLab(t.fLab),
+  fChi2(t.fChi2),
+  fMass(t.fMass),
+  fN(t.fN)
+{
+  if (fConvConst==0) 
+    Fatal("AliKalmanTrack(const AliKalmanTrack&)",
+          "The magnetic field has not been set !\n"); 
+}
+

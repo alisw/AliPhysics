@@ -5,20 +5,18 @@
 
 /* $Id$ */
 
-#include <TObject.h>
 #include <TArrayI.h>
+#include <TMCProcess.h>
+#include <TObject.h>
 #include <TStopwatch.h>
 #include <TVirtualMCStack.h>
-#include <TMCProcess.h>
 
-class TObjArray;
-class TClonesArray;
-class TParticle;
 class AliHeader;
+class TClonesArray;
 class TFile;
+class TObjArray;
+class TParticle;
 class TTree;
-
-
 
 class AliStack : public TVirtualMCStack
 {
@@ -26,7 +24,10 @@ class AliStack : public TVirtualMCStack
     // creators, destructors
     AliStack(Int_t size);
     AliStack();
+    AliStack(const AliStack& st);
     virtual ~AliStack();
+    AliStack& operator=(const AliStack& st)
+      {st.Copy(*this); return(*this);}
 
     // methods
     virtual void  SetTrack(Int_t done, Int_t parent, Int_t pdg, 
@@ -78,6 +79,8 @@ class AliStack : public TVirtualMCStack
     Bool_t KeepPhysics(TParticle* part);
     
   private:
+    void Copy(AliStack &st) const;
+
     // data members
     TClonesArray  *fParticles;         //! Pointer to list of particles
     TObjArray     *fParticleMap;       //! Map of particles in the supporting TClonesArray

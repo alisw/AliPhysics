@@ -27,13 +27,18 @@ class AliDigitizer: public TTask {
     AliDigitizer(AliRunDigitizer *manager,
 		 const Text_t* name="AliDigitizer",
 		 const Text_t* title="AliDigitizer");
+// Copy ctor needed because there is a pointer
+    AliDigitizer(const AliDigitizer &dig);
+    AliDigitizer& operator=(AliDigitizer &dig)
+      {dig.Copy(*this);return *this;}
       
     virtual ~AliDigitizer();
     virtual Bool_t Init() {return kTRUE;}
 //    virtual void Digitize() = 0;
 
- protected:
+protected:
     Int_t GetNInputStreams() const;
+    void Copy(AliDigitizer &dig) const;
 
     AliRunDigitizer *fManager;
     

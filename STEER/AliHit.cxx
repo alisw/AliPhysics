@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2002/01/10 09:32:06  hristov
+New fIshunt=2 option that allows to associate to a hit the particle that first entered in the cell where the hit occurred (Y.Schutz)
+
 Revision 1.6  2001/01/26 19:58:48  hristov
 Major upgrade of AliRoot code
 
@@ -29,21 +32,31 @@ Introduction of the Copyright and cvs Log
 
 */
 
-#include "AliHit.h"
 #include "TParticle.h"
+
+#include "AliHit.h"
 #include "AliRun.h"
 
 ClassImp(AliHit)
 
-AliHit::AliHit()
+//_______________________________________________________________________
+AliHit::AliHit():
+  fTrack(0),
+  fX(0),
+  fY(0),
+  fZ(0)
 {
   //
   // Default constructor
   //
-  fTrack=0;	
 }
 
-AliHit::AliHit(Int_t shunt, Int_t track)
+//_______________________________________________________________________
+AliHit::AliHit(Int_t shunt, Int_t track):
+  fTrack(0),
+  fX(0),
+  fY(0),
+  fZ(0)
 {
   //
   // Standard constructor
@@ -77,5 +90,3 @@ AliHit::AliHit(Int_t shunt, Int_t track)
     gAlice->FlagTrack(fTrack);
   }
 }
-
-	 

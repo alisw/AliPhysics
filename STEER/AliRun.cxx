@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.90  2002/10/22 15:02:15  alibrary
+Introducing Riostream.h
+
 Revision 1.89  2002/10/17 16:26:39  hristov
 Definition of additional particles moved to VMC (I.Hrivnacova)
 
@@ -301,55 +304,153 @@ AliRun *gAlice;
 
 ClassImp(AliRun)
 
-//_____________________________________________________________________________
-AliRun::AliRun()
-  : TVirtualMCApplication()
+//_______________________________________________________________________
+AliRun::AliRun():
+  fRun(0),
+  fEvent(0),
+  fEventNrInRun(0),
+  fEventsPerRun(0),
+  fDebug(0),
+  fHeader(0),
+  fTreeD(0),
+  fTreeS(0),
+  fTreeH(0),
+  fTreeTR(0),
+  fTreeE(0),
+  fTreeR(0),
+  fModules(0),
+  fGeometry(0),
+  fDisplay(0),
+  fTimer(),
+  fField(0),
+  fMC(0),
+  fImedia(0),
+  fNdets(0),
+  fTrRmax(1.e10),
+  fTrZmax(1.e10),
+  fGenerator(0),
+  fInitDone(kFALSE),
+  fLego(0),
+  fPDGDB(0),  //Particle factory object
+  fHitLists(0),
+  fEventEnergy(0),
+  fSummEnergy(0),
+  fSum2Energy(0),
+  fConfigFunction("\0"),
+  fRandom(0),
+  fMCQA(0),
+  fTransParName("\0"),
+  fBaseFileName("\0"),
+  fStack(0),
+  fTreeDFileName(""),
+  fTreeDFile(0),
+  fTreeSFileName(""),
+  fTreeSFile(0),
+  fTreeRFileName(""),
+  fTreeRFile(0)
 {
   //
   // Default constructor for AliRun
   //
-  fHeader    = 0;
-  fRun       = 0;
-  fEvent     = 0;
-  fEventNrInRun = 0;
-  fStack     = 0;
-  fModules   = 0;
-  fGenerator = 0;
-  fTreeD     = 0;
-  fTreeH     = 0;
-  fTreeTR    = 0;
-  fTreeE     = 0;
-  fTreeR     = 0;
-  fTreeS     = 0;
-  fGeometry  = 0;
-  fDisplay   = 0;
-  fField     = 0;
-  fMC        = 0;
-  fNdets     = 0;
-  fImedia    = 0;
-  fTrRmax    = 1.e10;
-  fTrZmax    = 1.e10;
-  fInitDone  = kFALSE;
-  fLego      = 0;
-  fPDGDB     = 0;        //Particle factory object!
-  fHitLists  = 0;
-  fConfigFunction    = "\0";
-  fRandom = 0;
-  fMCQA = 0;
-  fTransParName = "\0";
-  fBaseFileName = ".\0";
-  fDebug        = 0;
-  fTreeDFile = 0;
-  fTreeSFileName = "";
-  fTreeSFile = 0;
-  fTreeSFileName = "";
-  fTreeRFile = 0;
-  fTreeRFileName = "";
+}
+
+//_______________________________________________________________________
+AliRun::AliRun(const AliRun& arun):
+  TVirtualMCApplication(arun),
+  fRun(0),
+  fEvent(0),
+  fEventNrInRun(0),
+  fEventsPerRun(0),
+  fDebug(0),
+  fHeader(0),
+  fTreeD(0),
+  fTreeS(0),
+  fTreeH(0),
+  fTreeTR(0),
+  fTreeE(0),
+  fTreeR(0),
+  fModules(0),
+  fGeometry(0),
+  fDisplay(0),
+  fTimer(),
+  fField(0),
+  fMC(0),
+  fImedia(0),
+  fNdets(0),
+  fTrRmax(1.e10),
+  fTrZmax(1.e10),
+  fGenerator(0),
+  fInitDone(kFALSE),
+  fLego(0),
+  fPDGDB(0),  //Particle factory object
+  fHitLists(0),
+  fEventEnergy(0),
+  fSummEnergy(0),
+  fSum2Energy(0),
+  fConfigFunction("\0"),
+  fRandom(0),
+  fMCQA(0),
+  fTransParName("\0"),
+  fBaseFileName("\0"),
+  fStack(0),
+  fTreeDFileName(""),
+  fTreeDFile(0),
+  fTreeSFileName(""),
+  fTreeSFile(0),
+  fTreeRFileName(""),
+  fTreeRFile(0)
+{
+  //
+  // Copy constructor for AliRun
+  //
+  arun.Copy(*this);
 }
 
 //_____________________________________________________________________________
-AliRun::AliRun(const char *name, const char *title)
-  : TVirtualMCApplication(name,title)
+AliRun::AliRun(const char *name, const char *title):
+  TVirtualMCApplication(name,title),
+  fRun(0),
+  fEvent(0),
+  fEventNrInRun(0),
+  fEventsPerRun(0),
+  fDebug(0),
+  fHeader(new AliHeader()),
+  fTreeD(0),
+  fTreeS(0),
+  fTreeH(0),
+  fTreeTR(0),
+  fTreeE(0),
+  fTreeR(0),
+  fModules(new TObjArray(77)), // Support list for the Detectors
+  fGeometry(0),
+  fDisplay(0),
+  fTimer(),
+  fField(0),
+  fMC(gMC),
+  fImedia(new TArrayI(1000)),
+  fNdets(0),
+  fTrRmax(1.e10),
+  fTrZmax(1.e10),
+  fGenerator(0),
+  fInitDone(kFALSE),
+  fLego(0),
+  fPDGDB(TDatabasePDG::Instance()),        //Particle factory object!
+  fHitLists(new TList()),                  // Create HitLists list
+  fEventEnergy(0),
+  fSummEnergy(0),
+  fSum2Energy(0),
+  fConfigFunction("Config();"),
+  fRandom(new TRandom3()),
+  fMCQA(0),
+  fTransParName("\0"),
+  fBaseFileName("\0"),
+  fStack(new AliStack(10000)),        //Particle stack
+  fTreeDFileName(""),
+  fTreeDFile(0),
+  fTreeSFileName(""),
+  fTreeSFile(0),
+  fTreeRFileName(""),
+  fTreeRFile(0)
 {
   //
   //  Constructor for the main processor.
@@ -357,79 +458,37 @@ AliRun::AliRun(const char *name, const char *title)
   //  Creates the list of Detectors.
   //  Creates the list of particles.
   //
-  Int_t i;
-  
+
   gAlice     = this;
-  fTreeD     = 0;
-  fTreeH     = 0;
-  fTreeTR    = 0;
-  fTreeE     = 0;
-  fTreeR     = 0;
-  fTreeS     = 0;
-  fTrRmax    = 1.e10;
-  fTrZmax    = 1.e10;
-  fGenerator = 0;
-  fInitDone  = kFALSE;
-  fLego      = 0;
-  fField     = 0;
-  fConfigFunction    = "Config();";
-  fTreeDFile = 0;
-  fTreeSFileName = "";
-  fTreeSFile = 0;
-  fTreeSFileName = "";
-  fTreeRFile = 0;
-  fTreeRFileName = "";
 
   // Set random number generator
-  gRandom = fRandom = new TRandom3();
+  gRandom = fRandom;
 
   if (gSystem->Getenv("CONFIG_SEED")) {
-     gRandom->SetSeed((UInt_t)atoi(gSystem->Getenv("CONFIG_SEED")));
+     gRandom->SetSeed(static_cast<UInt_t>(atoi(gSystem->Getenv("CONFIG_SEED"))));
   }
-  
+
+  // Add to list of browsable  
   gROOT->GetListOfBrowsables()->Add(this,name);
-  //
-  // Particle stack
-  fStack = new AliStack(10000);
-  // create the support list for the various Detectors
-  fModules = new TObjArray(77);
-  //
+
   // Create the TNode geometry for the event display
-  
   BuildSimpleGeometry();
   
-  fHeader    = new AliHeader();
-  fRun       = 0;
-  fEvent     = 0;
-  fEventNrInRun = 0;
-  //
-  fDisplay = 0;
-  //
   // Create default mag field
   SetField();
-  //
-  fMC      = gMC;
-  //
-  // Prepare the tracking medium lists
-  fImedia = new TArrayI(1000);
-  for(i=0;i<1000;i++) (*fImedia)[i]=-99;
-  //
-  // Make particles
-  fPDGDB     = TDatabasePDG::Instance();        //Particle factory object!
 
+  // Prepare the tracking medium lists
+  for(Int_t i=0;i<1000;i++) (*fImedia)[i]=-99;
+
+  // Add particle list to configuration
   AliConfig::Instance()->Add(fPDGDB); 
-  //
-  // Create HitLists list
-  fHitLists  = new TList();
-  //
+
+  // Set transport parameters
   SetTransPar();
-  fBaseFileName = ".\0";
-  //
-  fDebug        = 0;
 }
 
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 AliRun::~AliRun()
 {
   //
@@ -485,27 +544,33 @@ AliRun::~AliRun()
   gAlice=0;
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
+void AliRun::Copy(AliRun &) const
+{
+  Fatal("Copy","Not implemented!\n");
+}
+
+//_______________________________________________________________________
 void AliRun::AddHit(Int_t id, Int_t track, Int_t *vol, Float_t *hits) const
 {
   //
   //  Add a hit to detector id
   //
   TObjArray &dets = *fModules;
-  if(dets[id]) ((AliModule*) dets[id])->AddHit(track,vol,hits);
+  if(dets[id]) dynamic_cast<AliModule*>(dets[id])->AddHit(track,vol,hits);
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::AddDigit(Int_t id, Int_t *tracks, Int_t *digits) const
 {
   //
   // Add digit to detector id
   //
   TObjArray &dets = *fModules;
-  if(dets[id]) ((AliModule*) dets[id])->AddDigit(tracks,digits);
+  if(dets[id]) dynamic_cast<AliModule*>(dets[id])->AddDigit(tracks,digits);
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::Browse(TBrowser *b)
 {
   //
@@ -526,13 +591,13 @@ void AliRun::Browse(TBrowser *b)
   
   TIter next(fModules);
   AliModule *detector;
-  while((detector = (AliModule*)next())) {
+  while((detector = dynamic_cast<AliModule*>(next()))) {
     b->Add(detector,detector->GetName());
   }
   b->Add(fMCQA,"AliMCQA");
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::Build()
 {
   //
@@ -541,7 +606,7 @@ void AliRun::Build()
   //
 }
  
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::BuildSimpleGeometry()
 {
   //
@@ -556,7 +621,7 @@ void AliRun::BuildSimpleGeometry()
   new TNode("alice","alice","S_alice");
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::CleanDetectors()
 {
   //
@@ -564,12 +629,12 @@ void AliRun::CleanDetectors()
   //
   TIter next(fModules);
   AliModule *detector;
-  while((detector = (AliModule*)next())) {
+  while((detector = dynamic_cast<AliModule*>(next()))) {
     detector->FinishEvent();
   }
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 Int_t AliRun::DistancetoPrimitive(Int_t, Int_t)
 {
   //
@@ -579,7 +644,7 @@ Int_t AliRun::DistancetoPrimitive(Int_t, Int_t)
   return 9999;
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::DumpPart (Int_t i) const
 {
   //
@@ -588,7 +653,7 @@ void AliRun::DumpPart (Int_t i) const
     fStack->DumpPart(i);
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::DumpPStack () const
 {
   //
@@ -597,7 +662,7 @@ void AliRun::DumpPStack () const
     fStack->DumpPStack();
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void  AliRun::SetField(AliMagF* magField)
 {
     // Set Magnetic Field Map
@@ -605,7 +670,7 @@ void  AliRun::SetField(AliMagF* magField)
     fField->ReadField();
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::SetField(Int_t type, Int_t version, Float_t scale,
 		      Float_t maxField, char* filename)
 {
@@ -632,7 +697,7 @@ void AliRun::SetField(Int_t type, Int_t version, Float_t scale,
   }
 }
  
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::FinishRun()
 {
   //
@@ -645,7 +710,7 @@ void AliRun::FinishRun()
   // Clean detector information
   TIter next(fModules);
   AliModule *detector;
-  while((detector = (AliModule*)next())) {
+  while((detector = dynamic_cast<AliModule*>(next()))) {
     detector->FinishRun();
   }
   
@@ -689,7 +754,7 @@ void AliRun::FinishRun()
   file->Write();
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::FlagTrack(Int_t track)
 {
   // Delegate to stack
@@ -697,7 +762,7 @@ void AliRun::FlagTrack(Int_t track)
     fStack->FlagTrack(track);
 }
  
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::EnergySummary()
 {
   //
@@ -726,7 +791,7 @@ void AliRun::EnergySummary()
 	} else 
 	  ed2=99;
 	fSummEnergy[ndep]=ed;
-	fSum2Energy[ndep]=TMath::Min((Float_t) 99.,TMath::Max(ed2,kzero));
+	fSum2Energy[ndep]=TMath::Min(static_cast<Float_t>(99.),TMath::Max(ed2,kzero));
 	edtot+=ed;
 	ndep++;
       }
@@ -763,25 +828,25 @@ void AliRun::EnergySummary()
   //  fSum2Energy.Set(0);
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 AliModule *AliRun::GetModule(const char *name) const
 {
   //
   // Return pointer to detector from name
   //
-  return (AliModule*)fModules->FindObject(name);
+  return dynamic_cast<AliModule*>(fModules->FindObject(name));
 }
  
-//_____________________________________________________________________________
+//_______________________________________________________________________
 AliDetector *AliRun::GetDetector(const char *name) const
 {
   //
   // Return pointer to detector from name
   //
-  return (AliDetector*)fModules->FindObject(name);
+  return dynamic_cast<AliDetector*>(fModules->FindObject(name));
 }
  
-//_____________________________________________________________________________
+//_______________________________________________________________________
 Int_t AliRun::GetModuleID(const char *name) const
 {
   //
@@ -793,7 +858,7 @@ Int_t AliRun::GetModuleID(const char *name) const
   return i;
 }
  
-//_____________________________________________________________________________
+//_______________________________________________________________________
 Int_t AliRun::GetEvent(Int_t event)
 {
   //
@@ -848,20 +913,20 @@ Int_t AliRun::GetEvent(Int_t event)
 
   // Get Hits Tree header from file
   sprintf(treeName,"TreeH%d",event);
-  fTreeH = (TTree*)gDirectory->Get(treeName);
+  fTreeH = dynamic_cast<TTree*>(gDirectory->Get(treeName));
   if (!fTreeH) {
       Warning("GetEvent","cannot find Hits Tree for event:%d\n",event);
   }
 
   // Get TracReferences Tree header from file
   sprintf(treeName,"TreeTR%d",event);
-  fTreeTR = (TTree*)gDirectory->Get(treeName);
+  fTreeTR = dynamic_cast<TTree*>(gDirectory->Get(treeName));
   if (!fTreeTR) {
     Warning("GetEvent","cannot find TrackReferences Tree for event:%d\n",event);
   }
 
   // get current file name and compare with names containing trees S,D,R
-  TString curfilname=(TString)fTreeE->GetCurrentFile()->GetName();
+  TString curfilname=static_cast<TString>(fTreeE->GetCurrentFile()->GetName());
   if(fTreeDFileName==curfilname)fTreeDFileName="";
   if(fTreeSFileName==curfilname)fTreeSFileName="";
   if(fTreeRFileName==curfilname)fTreeRFileName="";
@@ -873,9 +938,9 @@ Int_t AliRun::GetEvent(Int_t event)
     InitTreeFile("D",fTreeDFileName);
   }    
   if (fTreeDFile) {    
-    fTreeD = (TTree*)fTreeDFile->Get(treeName);
+    fTreeD = dynamic_cast<TTree*>(fTreeDFile->Get(treeName));
   } else {
-    fTreeD = (TTree*)file->Get(treeName);
+    fTreeD = dynamic_cast<TTree*>(file->Get(treeName));
   }
   if (!fTreeD) {
     // Warning("GetEvent","cannot find Digits Tree for event:%d\n",event);
@@ -899,9 +964,9 @@ Int_t AliRun::GetEvent(Int_t event)
     InitTreeFile("S",fTreeSFileName);
   } 
   if (fTreeSFile) {
-    fTreeS = (TTree*)fTreeSFile->Get(treeName);
+    fTreeS = dynamic_cast<TTree*>(fTreeSFile->Get(treeName));
   } else {
-    fTreeS = (TTree*)gDirectory->Get(treeName);
+    fTreeS = dynamic_cast<TTree*>(gDirectory->Get(treeName));
   }
   if (!fTreeS) {
     // Warning("GetEvent","cannot find SDigits Tree for event:%d\n",event);
@@ -922,9 +987,9 @@ Int_t AliRun::GetEvent(Int_t event)
     InitTreeFile("R",fTreeRFileName);
   } 
   if(fTreeRFile) {
-    fTreeR = (TTree*)fTreeRFile->Get(treeName);
+    fTreeR = dynamic_cast<TTree*>(fTreeRFile->Get(treeName));
   } else {
-    fTreeR = (TTree*)gDirectory->Get(treeName);
+    fTreeR = dynamic_cast<TTree*>(gDirectory->Get(treeName));
   }
   if (!fTreeR) {
     //    printf("WARNING: cannot find Reconstructed Tree for event:%d\n",event);
@@ -935,7 +1000,7 @@ Int_t AliRun::GetEvent(Int_t event)
   // Set Trees branch addresses
   TIter next(fModules);
   AliModule *detector;
-  while((detector = (AliModule*)next())) {
+  while((detector = dynamic_cast<AliModule*>(next()))) {
     detector->SetTreeAddress();
   }
 
@@ -944,14 +1009,14 @@ Int_t AliRun::GetEvent(Int_t event)
   return fHeader->GetNtrack();
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 TGeometry *AliRun::GetGeometry()
 {
   //
   // Import Alice geometry from current file
   // Return pointer to geometry object
   //
-  if (!fGeometry) fGeometry = (TGeometry*)gDirectory->Get("AliceGeom");
+  if (!fGeometry) fGeometry = dynamic_cast<TGeometry*>(gDirectory->Get("AliceGeom"));
   //
   // Unlink and relink nodes in detectors
   // This is bad and there must be a better way...
@@ -959,12 +1024,12 @@ TGeometry *AliRun::GetGeometry()
   
   TIter next(fModules);
   AliModule *detector;
-  while((detector = (AliModule*)next())) {
+  while((detector = dynamic_cast<AliModule*>(next()))) {
     TList *dnodes=detector->Nodes();
     Int_t j;
     TNode *node, *node1;
     for ( j=0; j<dnodes->GetSize(); j++) {
-      node = (TNode*) dnodes->At(j);
+      node = dynamic_cast<TNode*>(dnodes->At(j));
       node1 = fGeometry->GetNode(node->GetName());
       dnodes->Remove(node);
       dnodes->AddAt(node1,j);
@@ -973,7 +1038,7 @@ TGeometry *AliRun::GetGeometry()
   return fGeometry;
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 Int_t AliRun::GetPrimary(Int_t track) const
 {
   //
@@ -982,7 +1047,7 @@ Int_t AliRun::GetPrimary(Int_t track) const
     return fStack->GetPrimary(track);
 }
  
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::MediaTable()
 {
   //
@@ -997,7 +1062,7 @@ void AliRun::MediaTable()
   // For all detectors
   for (kz=0;kz<fNdets;kz++) {
     // If detector is defined
-    if((det=(AliModule*) dets[kz])) {
+    if((det=dynamic_cast<AliModule*>(dets[kz]))) {
         TArrayI &idtmed = *(det->GetIdtmed()); 
         for(nz=0;nz<100;nz++) {
 	// Find max and min material number
@@ -1028,7 +1093,7 @@ void AliRun::MediaTable()
   for(i=0;i<(fNdets-1)/6+1;i++) {
     for(k=0;k< (6<fNdets-i*6?6:fNdets-i*6);k++) {
       ind=i*6+k;
-      det=(AliModule*)dets[ind];
+      det=dynamic_cast<AliModule*>(dets[ind]);
       if(det)
 	printf(" %6s: %3d -> %3d;",det->GetName(),det->LoMedium(),
 	       det->HiMedium());
@@ -1039,7 +1104,7 @@ void AliRun::MediaTable()
   }
 }
 
-//____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::SetGenerator(AliGenerator *generator)
 {
   //
@@ -1048,7 +1113,7 @@ void AliRun::SetGenerator(AliGenerator *generator)
   if(!fGenerator) fGenerator = generator;
 }
 
-//____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::ResetGenerator(AliGenerator *generator)
 {
   //
@@ -1064,19 +1129,19 @@ void AliRun::ResetGenerator(AliGenerator *generator)
   fGenerator = generator;
 }
 
-//____________________________________________________________________________
-void AliRun::SetTransPar(char *filename)
+//_______________________________________________________________________
+void AliRun::SetTransPar(const char *filename)
 {
   fTransParName = filename;
 }
 
-//____________________________________________________________________________
-void AliRun::SetBaseFile(char *filename)
+//_______________________________________________________________________
+void AliRun::SetBaseFile(const char *filename)
 {
   fBaseFileName = filename;
 }
 
-//____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::ReadTransPar()
 {
   //
@@ -1187,7 +1252,7 @@ void AliRun::ReadTransPar()
 }
 
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::MakeTree(Option_t *option, const char *file)
 {
   //
@@ -1218,7 +1283,7 @@ void AliRun::MakeTree(Option_t *option, const char *file)
     //    branch = fTreeE->Branch("Header", "AliHeader", &fHeader, 4000, 0);         
     branch = fTreeE->Branch("Header", "AliHeader", &fHeader, 4000, 0);         
     branch->SetAutoDelete(kFALSE);	     
-    TFolder *folder = (TFolder *)gROOT->FindObjectAny("/Folders/RunMC/Event/Header");
+    TFolder *folder = dynamic_cast<TFolder *>(gROOT->FindObjectAny("/Folders/RunMC/Event/Header"));
     if (folder) folder->Add(fHeader);
 //    branch = fTreeE->Branch("Stack","AliStack", &fStack, 4000, 0);
 //    branch->SetAutoDelete(kFALSE);	     
@@ -1231,7 +1296,7 @@ void AliRun::MakeTree(Option_t *option, const char *file)
     sprintf(outFile,"%s/%s",GetBaseFile(),file);
     branch->SetFile(outFile);
     TIter next( branch->GetListOfBranches());
-    while ((branch=(TBranch*)next())) {
+    while ((branch=dynamic_cast<TBranch*>(next()))) {
        branch->SetFile(outFile);
     } 
     if (GetDebug()>1)
@@ -1276,19 +1341,19 @@ void AliRun::MakeTree(Option_t *option, const char *file)
   // will be in turn a subbranch of the detector master branch
   TIter next(fModules);
   AliModule *detector;
-  while((detector = (AliModule*)next())) {
+  while((detector = dynamic_cast<AliModule*>(next()))) {
      if (oH) detector->MakeBranch(option,file);
      if (oTR) detector->MakeBranchTR(option,file);
   }
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 TParticle* AliRun::Particle(Int_t i)
 {
     return fStack->Particle(i);
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::ResetDigits()
 {
   //
@@ -1296,12 +1361,12 @@ void AliRun::ResetDigits()
   //
   TIter next(fModules);
   AliModule *detector;
-  while((detector = (AliModule*)next())) {
+  while((detector = dynamic_cast<AliModule*>(next()))) {
      detector->ResetDigits();
   }
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::ResetSDigits()
 {
   //
@@ -1309,12 +1374,12 @@ void AliRun::ResetSDigits()
   //
   TIter next(fModules);
   AliModule *detector;
-  while((detector = (AliModule*)next())) {
+  while((detector = dynamic_cast<AliModule*>(next()))) {
      detector->ResetSDigits();
   }
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::ResetHits()
 {
   //
@@ -1322,12 +1387,12 @@ void AliRun::ResetHits()
   //
   TIter next(fModules);
   AliModule *detector;
-  while((detector = (AliModule*)next())) {
+  while((detector = dynamic_cast<AliModule*>(next()))) {
      detector->ResetHits();
   }
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::ResetTrackReferences()
 {
   //
@@ -1335,12 +1400,12 @@ void AliRun::ResetTrackReferences()
   //
   TIter next(fModules);
   AliModule *detector;
-  while((detector = (AliModule*)next())) {
+  while((detector = dynamic_cast<AliModule*>(next()))) {
      detector->ResetTrackReferences();
   }
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::ResetPoints()
 {
   //
@@ -1348,12 +1413,12 @@ void AliRun::ResetPoints()
   //
   TIter next(fModules);
   AliModule *detector;
-  while((detector = (AliModule*)next())) {
+  while((detector = dynamic_cast<AliModule*>(next()))) {
      detector->ResetPoints();
   }
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::InitMC(const char *setup)
 {
   //
@@ -1388,7 +1453,7 @@ void AliRun::InitMC(const char *setup)
 
    TIter next(fModules);
    AliModule *detector;
-   while((detector = (AliModule*)next())) {
+   while((detector = dynamic_cast<AliModule*>(next()))) {
       detector->SetTreeAddress();
       objlast = gDirectory->GetList()->Last();
       
@@ -1425,7 +1490,7 @@ void AliRun::InitMC(const char *setup)
    Write();
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::RunMC(Int_t nevent, const char *setup)
 {
   //
@@ -1456,7 +1521,7 @@ void AliRun::RunMC(Int_t nevent, const char *setup)
   if(nevent>0) FinishRun();
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::RunReco(const char *selected, Int_t first, Int_t last)
 {
   //
@@ -1464,7 +1529,7 @@ void AliRun::RunReco(const char *selected, Int_t first, Int_t last)
   // 
    cout << "Found "<< gAlice->TreeE()->GetEntries() << "events" << endl;
    Int_t nFirst = first;
-   Int_t nLast  = (last < 0)? (Int_t) gAlice->TreeE()->GetEntries() : last;
+   Int_t nLast  = (last < 0)? static_cast<Int_t>(gAlice->TreeE()->GetEntries()) : last;
    
    for (Int_t nevent = nFirst; nevent <= nLast; nevent++) {
      cout << "Processing event "<< nevent << endl;
@@ -1474,7 +1539,7 @@ void AliRun::RunReco(const char *selected, Int_t first, Int_t last)
    }
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 
 void AliRun::Hits2Digits(const char *selected)
 {
@@ -1490,7 +1555,7 @@ void AliRun::Hits2Digits(const char *selected)
 }
 
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 
 void AliRun::Tree2Tree(Option_t *option, const char *selected)
 {
@@ -1520,7 +1585,7 @@ void AliRun::Tree2Tree(Option_t *option, const char *selected)
 
    char outFile[32];
    
-   while((detector = (AliDetector*)next())) {
+   while((detector = dynamic_cast<AliDetector*>(next()))) {
      if (selected) 
        if (strcmp(detector->GetName(),selected)) continue;
      if (detector->IsActive()){ 
@@ -1562,7 +1627,7 @@ void AliRun::Tree2Tree(Option_t *option, const char *selected)
 }
 
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::RunLego(const char *setup, Int_t nc1, Float_t c1min,
 		     Float_t c1max,Int_t nc2,Float_t c2min,Float_t c2max,
 		     Float_t rmin,Float_t rmax,Float_t zmax, AliLegoGenerator* gener)
@@ -1643,7 +1708,7 @@ void AliRun::RunLego(const char *setup, Int_t nc1, Float_t c1min,
   delete fLego; fLego=0;
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::SetConfigFunction(const char * config) 
 {
   //
@@ -1653,7 +1718,7 @@ void AliRun::SetConfigFunction(const char * config)
   fConfigFunction=config;
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::SetCurrentTrack(Int_t track)
 { 
   //
@@ -1662,7 +1727,7 @@ void AliRun::SetCurrentTrack(Int_t track)
     fStack->SetCurrentTrack(track); 
 }
  
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
 		      Float_t *vpos, Float_t *polar, Float_t tof,
 		      AliMCProcess mech, Int_t &ntr, Float_t weight, Int_t is)
@@ -1674,7 +1739,7 @@ void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
  		     mech, ntr, weight, is);
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg,
   	              Double_t px, Double_t py, Double_t pz, Double_t e,
   		      Double_t vx, Double_t vy, Double_t vz, Double_t tof,
@@ -1688,7 +1753,7 @@ void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg,
     
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::SetHighWaterMark(const Int_t nt)
 {
     //
@@ -1696,7 +1761,7 @@ void AliRun::SetHighWaterMark(const Int_t nt)
     fStack->SetHighWaterMark(nt);
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::KeepTrack(const Int_t track)
 { 
   //
@@ -1709,7 +1774,7 @@ void AliRun::KeepTrack(const Int_t track)
 // MC Application
 // 
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void  AliRun::ConstructGeometry() 
 {
   //
@@ -1720,7 +1785,7 @@ void  AliRun::ConstructGeometry()
     TIter next(fModules);
     AliModule *detector;
     printf("Geometry creation:\n");
-    while((detector = (AliModule*)next())) {
+    while((detector = dynamic_cast<AliModule*>(next()))) {
       stw.Start();
       // Initialise detector materials and geometry
       detector->CreateMaterials();
@@ -1730,7 +1795,7 @@ void  AliRun::ConstructGeometry()
     }
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void  AliRun::InitGeometry()
 { 
   //
@@ -1741,7 +1806,7 @@ void  AliRun::InitGeometry()
     TStopwatch stw;
     TIter next(fModules);
     AliModule *detector;
-    while((detector = (AliModule*)next())) {
+    while((detector = dynamic_cast<AliModule*>(next()))) {
       stw.Start();
       // Initialise detector and display geometry
       detector->Init();
@@ -1752,7 +1817,7 @@ void  AliRun::InitGeometry()
  
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void  AliRun::GeneratePrimaries()
 { 
   //
@@ -1762,7 +1827,7 @@ void  AliRun::GeneratePrimaries()
   Generator()->Generate();
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::BeginEvent()
 {
     // Clean-up previous event
@@ -1830,7 +1895,7 @@ void AliRun::BeginEvent()
   }
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::BeginPrimary()
 {
   //
@@ -1843,20 +1908,20 @@ void AliRun::BeginPrimary()
 
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::PreTrack()
 {
      TObjArray &dets = *fModules;
      AliModule *module;
 
      for(Int_t i=0; i<=fNdets; i++)
-       if((module = (AliModule*)dets[i]))
+       if((module = dynamic_cast<AliModule*>(dets[i])))
 	 module->PreTrack();
 
      fMCQA->PreTrack();
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::Stepping() 
 {
   //
@@ -1876,7 +1941,7 @@ void AliRun::Stepping()
     AddEnergyDeposit(gMC->CurrentVolID(copy),gMC->Edep());
   
     //Call the appropriate stepping routine;
-    AliModule *det = (AliModule*)fModules->At(id);
+    AliModule *det = dynamic_cast<AliModule*>(fModules->At(id));
     if(det && det->StepManagerIsEnabled()) {
       fMCQA->StepManager(id);
       det->StepManager();
@@ -1884,18 +1949,18 @@ void AliRun::Stepping()
   }
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::PostTrack()
 {
      TObjArray &dets = *fModules;
      AliModule *module;
 
      for(Int_t i=0; i<=fNdets; i++)
-       if((module = (AliModule*)dets[i]))
+       if((module = dynamic_cast<AliModule*>(dets[i])))
 	 module->PostTrack();
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::FinishPrimary()
 {
   //
@@ -1909,7 +1974,7 @@ void AliRun::FinishPrimary()
 
   TIter next(fModules);
   AliModule *detector;
-  while((detector = (AliModule*)next())) {
+  while((detector = dynamic_cast<AliModule*>(next()))) {
     detector->FinishPrimary();
   }
 
@@ -1927,7 +1992,7 @@ void AliRun::FinishPrimary()
   //  if(++count%times==1) gObjectTable->Print();
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::FinishEvent()
 {
   //
@@ -1972,7 +2037,7 @@ void AliRun::FinishEvent()
   ++fEventNrInRun;
 }
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::Field(const Double_t* x, Double_t *b) const
 {
    Float_t xfloat[3];
@@ -1994,7 +2059,7 @@ void AliRun::Field(const Double_t* x, Double_t *b) const
 // End of MC Application
 // 
 
-//_____________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::Streamer(TBuffer &R__b)
 {
   // Stream an object of class AliRun.
@@ -2006,7 +2071,7 @@ void AliRun::Streamer(TBuffer &R__b)
     //
     gROOT->GetListOfBrowsables()->Add(this,"Run");
 
-    fTreeE = (TTree*)gDirectory->Get("TE");
+    fTreeE = dynamic_cast<TTree*>(gDirectory->Get("TE"));
     if (fTreeE) {
 	  fTreeE->SetBranchAddress("Header", &fHeader);
     }      
@@ -2020,7 +2085,7 @@ void AliRun::Streamer(TBuffer &R__b)
 }
 
 
-//___________________________________________________________________________
+//_______________________________________________________________________
 Int_t AliRun::CurrentTrack() const {
   //
   // Returns current track
@@ -2028,7 +2093,7 @@ Int_t AliRun::CurrentTrack() const {
   return fStack->CurrentTrack();
 }
 
-//___________________________________________________________________________
+//_______________________________________________________________________
 Int_t AliRun::GetNtrack() const {
   //
   // Returns number of tracks in stack
@@ -2036,7 +2101,7 @@ Int_t AliRun::GetNtrack() const {
   return fStack->GetNtrack();
 }
 
-//___________________________________________________________________________
+//_______________________________________________________________________
 TObjArray* AliRun::Particles() {
   //
   // Returns pointer to Particles array
@@ -2044,7 +2109,7 @@ TObjArray* AliRun::Particles() {
   return fStack->Particles();
 }
 
-//___________________________________________________________________________
+//_______________________________________________________________________
 TTree* AliRun::TreeK() {
   //
   // Returns pointer to the TreeK array
@@ -2053,13 +2118,13 @@ TTree* AliRun::TreeK() {
 }
 
 
-//___________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::SetGenEventHeader(AliGenEventHeader* header)
 {
     fHeader->SetGenEventHeader(header);
 }
 
-//___________________________________________________________________________
+//_______________________________________________________________________
 TFile* AliRun::InitFile(TString fileName)
 {
 // 
@@ -2075,7 +2140,7 @@ TFile* AliRun::InitFile(TString fileName)
   return file;
 }
 
-//___________________________________________________________________________
+//_______________________________________________________________________
 TFile* AliRun::InitTreeFile(Option_t *option, TString fileName)
 {
   //
@@ -2198,7 +2263,7 @@ TFile* AliRun::InitTreeFile(Option_t *option, TString fileName)
   return 0;
 }
 
-//___________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::PrintTreeFile()
 {
   //
@@ -2207,7 +2272,7 @@ void AliRun::PrintTreeFile()
   cout<<"===================================================\n";
   TFile *file = fTreeE->GetCurrentFile();
   TString curfilname="";
-  if(file)curfilname=(TString)file->GetName();
+  if(file)curfilname=static_cast<TString>(file->GetName());
   cout<<" Current tree file name: "<<curfilname<<endl;
   cout<<"Pointer: "<<file<<endl;
   cout<<" Tree S File name: "<<fTreeSFileName<<endl;
@@ -2218,7 +2283,7 @@ void AliRun::PrintTreeFile()
   cout<<"Pointer: "<<fTreeRFile<<endl<<endl;
   cout<<"===================================================\n";
 }
-//___________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::CloseTreeFile(Option_t *option)
 {
   // 
@@ -2265,7 +2330,7 @@ void AliRun::CloseTreeFile(Option_t *option)
   }
 }
 
-//___________________________________________________________________________
+//_______________________________________________________________________
 void AliRun::MakeTree(Option_t *option, TFile *file)
 {
   //

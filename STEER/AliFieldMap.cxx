@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2002/10/14 14:57:32  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.3.6.1  2002/07/24 10:08:13  alibrary
 Updating VirtualMC
 
@@ -43,37 +46,89 @@ root files.
 
 ClassImp(AliFieldMap)
 
-//________________________________________
-AliFieldMap::AliFieldMap()
+//_______________________________________________________________________
+AliFieldMap::AliFieldMap():
+  fXbeg(0),
+  fYbeg(0),
+  fZbeg(0),
+  fXend(0),
+  fYend(0),
+  fZend(0),
+  fXdel(0),
+  fYdel(0),
+  fZdel(0),
+  fXdeli(0),
+  fYdeli(0),
+  fZdeli(0),
+  fXn(0),
+  fYn(0),
+  fZn(0),
+  fWriteEnable(0),
+  fB(0)
 {
   //
   // Standard constructor
   //
-  fB = 0;
   SetWriteEnable();
 }
 
-AliFieldMap::AliFieldMap(const char *name, const char *title)
-    : TNamed(name,title)
+//_______________________________________________________________________
+AliFieldMap::AliFieldMap(const char *name, const char *title):
+  TNamed(name,title),
+  fXbeg(0),
+  fYbeg(0),
+  fZbeg(0),
+  fXend(0),
+  fYend(0),
+  fZend(0),
+  fXdel(0),
+  fYdel(0),
+  fZdel(0),
+  fXdeli(0),
+  fYdeli(0),
+  fZdeli(0),
+  fXn(0),
+  fYn(0),
+  fZn(0),
+  fWriteEnable(0),
+  fB(0)
 {
   //
   // Standard constructor
   //
-  fB = 0;
   ReadField();
   SetWriteEnable();
 }
 
+//_______________________________________________________________________
 AliFieldMap::~AliFieldMap()
 {
-//
-// Destructor
-//  
+  //
+  // Destructor
+  //  
   delete fB;
 }
 
-//________________________________________
-AliFieldMap::AliFieldMap(const AliFieldMap &map)
+//_______________________________________________________________________
+AliFieldMap::AliFieldMap(const AliFieldMap &map):
+  TNamed(map),
+  fXbeg(0),
+  fYbeg(0),
+  fZbeg(0),
+  fXend(0),
+  fYend(0),
+  fZend(0),
+  fXdel(0),
+  fYdel(0),
+  fZdel(0),
+  fXdeli(0),
+  fYdeli(0),
+  fZdeli(0),
+  fXn(0),
+  fYn(0),
+  fZn(0),
+  fWriteEnable(0),
+  fB(0)
 {
   //
   // Copy constructor
@@ -81,15 +136,15 @@ AliFieldMap::AliFieldMap(const AliFieldMap &map)
   map.Copy(*this);
 }
 
-//________________________________________
+//_______________________________________________________________________
 void AliFieldMap::ReadField()
 {
   // 
   // Method to read the magnetic field map from file
   //
   FILE* magfile;
-//  FILE* endf = fopen("end.table", "r");
-//  FILE* out  = fopen("out", "w");
+  //  FILE* endf = fopen("end.table", "r");
+  //  FILE* out  = fopen("out", "w");
   
   Int_t   ix, iy, iz, ipx, ipy, ipz;
   Float_t bx, by, bz;
@@ -113,7 +168,7 @@ void AliFieldMap::ReadField()
   
   Int_t nDim   = fXn*fYn*fZn;
 
-//  Float_t x,y,z,b;
+  //  Float_t x,y,z,b;
 
   fB = new TVector(3*nDim);
   if (magfile) {
@@ -167,17 +222,18 @@ void AliFieldMap::ReadField()
   } // if mafile
 }
 
+//_______________________________________________________________________
 void AliFieldMap::Field(Float_t *x, Float_t *b)
 {
-//
-// Use simple interpolation to obtain field at point x
-//
+  //
+  // Use simple interpolation to obtain field at point x
+  //
     Double_t ratx, raty, ratz, hix, hiy, hiz, ratx1, raty1, ratz1, 
 	bhyhz, bhylz, blyhz, blylz, bhz, blz, xl[3];
     const Double_t kone=1;
     Int_t ix, iy, iz;
     b[0]=b[1]=b[2]=0;
-//
+    //
     
     xl[0]=TMath::Abs(x[0])-fXbeg;
     xl[1]=TMath::Abs(x[1])-fYbeg;
@@ -224,7 +280,7 @@ void AliFieldMap::Field(Float_t *x, Float_t *b)
     b[2]  = blz               *ratz1+bhz               *ratz;
 }
 
-//________________________________________
+//_______________________________________________________________________
 void AliFieldMap::Copy(AliFieldMap & /* magf */) const
 {
   //
@@ -233,13 +289,14 @@ void AliFieldMap::Copy(AliFieldMap & /* magf */) const
   Fatal("Copy","Not implemented!\n");
 }
 
-//________________________________________
+//_______________________________________________________________________
 AliFieldMap & AliFieldMap::operator =(const AliFieldMap &magf)
 {
   magf.Copy(*this);
   return *this;
 }
 
+//_______________________________________________________________________
 void AliFieldMap::Streamer(TBuffer &R__b)
 {
    // Stream an object of class AliFieldMap.

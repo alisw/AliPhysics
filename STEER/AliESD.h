@@ -57,7 +57,7 @@ protected:
   Float_t   fPIDprobE;           // PID probability for e
 
 private:
-  AliESDTrack(const AliESDTrack &) {}
+  AliESDTrack(const AliESDTrack &);
   AliESDTrack & operator=(const AliESDTrack &) {return (*this);}
   
   ClassDef(AliESDTrack,1)  //ESDTrack 
@@ -78,7 +78,7 @@ protected:
   Float_t      fEffectiveMass;          // Effective Mass
   Float_t      fEffectiveMassError;     // Effective Mass Error
 private:
-  AliESDVertex(const AliESDVertex &) {}
+  AliESDVertex(const AliESDVertex &);
   AliESDVertex & operator=(const AliESDVertex &) {return (*this);}
   
   ClassDef(AliESDVertex,1)  //ESDVertex 
@@ -137,7 +137,7 @@ protected:
   TObjArray    fPMDCluster;             // List of PMD clusters
 
 private:
-  AliESD(const AliESD &) {}
+  AliESD(const AliESD &);
   AliESD & operator=(const AliESD &) {return (*this);}
   
   ClassDef(AliESD,1)  //ESD 

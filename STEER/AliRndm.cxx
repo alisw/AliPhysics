@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/12/21 15:30:18  fca
+Correcting coding convention violations
+
 Revision 1.2  2000/12/01 08:40:48  alibrary
 Correction of a small bug - sRandom can be used now
 
@@ -28,13 +31,40 @@ Introducing new Rndm and QA classes
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "TSystem.h"
 #include "TFile.h"
+#include "TError.h"
+#include "TRandom3.h"
+#include "TSystem.h"
 
 #include "AliRndm.h"
-#include "TRandom3.h"
 
 ClassImp(AliRndm)
+
+//_______________________________________________________________________
+AliRndm::AliRndm():
+  fRandom(0)
+{
+  // 
+  // Default ctor
+  //
+  SetRandom();
+}
+
+//_______________________________________________________________________
+AliRndm::AliRndm(const AliRndm& rn):
+  fRandom(0)
+{
+  //
+  // Copy constructor
+  //
+  rn.Copy(*this);
+}
+
+//_______________________________________________________________________
+void AliRndm::Copy(AliRndm&) const
+{
+  ::Fatal("Copy","Not implemented\n");
+}
 
 
 //_____________________________________________________________________________

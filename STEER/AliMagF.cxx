@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/05/16 14:57:22  alibrary
+New files for folders and Stack
+
 Revision 1.8  2000/12/18 10:44:01  morsch
 Possibility to set field map by passing pointer to objet of type AliMagF via
 SetField().
@@ -43,49 +46,55 @@ Introduction of the Copyright and cvs Log
 
 #include "AliMagF.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-
-
 ClassImp(AliMagF)
 
-//________________________________________
+//_______________________________________________________________________
+AliMagF::AliMagF():
+  fMap(0),
+  fType(0),
+  fInteg(0),
+  fFactor(0),
+  fMax(0),
+  fDebug(0)
+{
+  //
+  // Default constructor
+  //
+}
+
+//_______________________________________________________________________
 AliMagF::AliMagF(const char *name, const char *title, const Int_t integ, 
-		 const Float_t factor, const Float_t fmax)
-  : TNamed(name,title)
+                 const Float_t factor, const Float_t fmax):
+  TNamed(name,title),
+  fMap(0),
+  fType(0),
+  fInteg(0),
+  fFactor(factor),
+  fMax(fmax),
+  fDebug(0)
 {
   //
   // Standard constructor
   //
     if(integ<0 || integ > 2) {
-	Warning("SetField",
-		"Invalid magnetic field flag: %5d; Helix tracking chosen instead\n"
-		,integ);
-	fInteg = 2;
+      Warning("SetField",
+              "Invalid magnetic field flag: %5d; Helix tracking chosen instead\n"
+              ,integ);
+      fInteg = 2;
     } else {
-	fInteg = integ;
+      fInteg = integ;
     }
     fType = kUndef;
-    fFactor = factor;
-    fMax = fmax;
     //
     fDebug = 0;
 }
 
-//________________________________________
+//_______________________________________________________________________
 void AliMagF::Field(Float_t*, Float_t *b)
 {
   //
   // Method to return the field in one point -- dummy in this case
   //
-  printf("Undefined MagF Field called, returning 0\n");
+  Warning("Field","Undefined MagF Field called, returning 0\n");
   b[0]=b[1]=b[2]=0;
 }
-      
-
-
-  
-
-
-
-

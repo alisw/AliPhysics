@@ -5,36 +5,35 @@
 
 /* $Id$ */
 
-class TBrowser;
-class TList;
-class TTree;
-class TBranch;
-class TGeometry;
-class TDatabasePDG;
-class TRandom;
-class TParticle;
-class TFile;
-#include <TArrayI.h>
-#include "TClonesArray.h"
+#include <TClonesArray.h>
 #include <TArrayF.h>
+#include <TArrayI.h>
 #include <TStopwatch.h>
 #include <TVirtualMCApplication.h>
+class TBranch;
+class TBrowser;
+class TDatabasePDG;
+class TFile;
+class TGeometry;
+class TList;
+class TParticle;
+class TRandom;
+class TTree;
 
 #include "AliMC.h"
-class AliDetector;
-class AliModule;
-class AliMagF;
-//class AliMC;
-class AliLego;
-class AliDisplay;
-class AliLegoGenerator;
-class AliHeader;
-class AliGenerator;
-class AliLegoGenerator;
 #include "AliMCProcess.h"
-class AliMCQA;
-class AliStack;
+class AliDetector;
+class AliDisplay;
 class AliGenEventHeader;
+class AliGenerator;
+class AliHeader;
+class AliLego;
+class AliLegoGenerator;
+class AliLegoGenerator;
+class AliMCQA;
+class AliMagF;
+class AliModule;
+class AliStack;
 
 
 enum {kKeepBit=1, kDaughtersBit=2, kDoneBit=4};
@@ -45,8 +44,11 @@ public:
    // Creators - distructors
    AliRun();
    AliRun(const char *name, const char *title);
+   AliRun(const AliRun &arun);
    virtual ~AliRun();
 
+   AliRun& operator = (const AliRun &arun) 
+     {arun.Copy(*this); return (*this);}
    virtual  void  AddHit(Int_t id, Int_t track, Int_t *vol, Float_t *hits) const;
    virtual  void  AddDigit(Int_t id, Int_t *tracks, Int_t *digits) const;
    virtual  void  AddHitList(TCollection *hitList) {fHitLists->Add(hitList);}
@@ -108,8 +110,8 @@ public:
    virtual  void  ResetHits();
    virtual  void  ResetTrackReferences();
    virtual  void  ResetPoints();
-   virtual  void  SetTransPar(char *filename="$(ALICE_ROOT)/data/galice.cuts");
-   virtual  void  SetBaseFile(char *filename="galice.root");
+   virtual  void  SetTransPar(const char *filename="$(ALICE_ROOT)/data/galice.cuts");
+   virtual  void  SetBaseFile(const char *filename="galice.root");
    virtual  void  ReadTransPar();
    virtual  void  RunMC(Int_t nevent=1, const char *setup="Config.C");
    virtual  void  Run(Int_t nevent=1, const char *setup="Config.C") 
@@ -236,11 +238,9 @@ protected:
   TFile*         fTreeRFile;         //!  file with TreeR
 
 private:
+  void Copy(AliRun &arun) const;
 
-   AliRun(const AliRun &right) 
-     {}  
-   AliRun& operator = (const AliRun &) {return *this;}
-   ClassDef(AliRun,7)      //Supervisor class for all Alice detectors
+  ClassDef(AliRun,7)      //Supervisor class for all Alice detectors
 };
  
 R__EXTERN  AliRun *gAlice;

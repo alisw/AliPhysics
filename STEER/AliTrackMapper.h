@@ -29,8 +29,8 @@ class AliTrackMap;
 class AliTrackMapper {
 
 public:
-  AliTrackMapper(){fDEBUG=0;}
-  virtual ~AliTrackMapper(){;}
+  AliTrackMapper();
+  virtual ~AliTrackMapper(){}
   void CreateMap(Int_t nEvents, Int_t firstEventNr,
 	    const char* fnMap = "trackMap.root",
 	    const char* fnHits   ="rfio:galice.root");

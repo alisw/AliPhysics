@@ -26,15 +26,19 @@ class AliTrackMap: public TNamed {
 public:
   AliTrackMap();
   AliTrackMap(Int_t size, Int_t *array);
+  AliTrackMap(const AliTrackMap& trm);
+  AliTrackMap& operator=(const AliTrackMap& trm)
+    {trm.Copy(*this); return(*this);}
   ~AliTrackMap();
-  Int_t At(Int_t label);
-  Int_t Size(){return fSize;}
+  Int_t At(Int_t label) const;
+  Int_t Size() const {return fSize;}
   void SetEventNr(Int_t eventNr);
-  void PrintValues();
+  void PrintValues() const;
 
 private:
-  Int_t fSize;             // size of the array
+  void Copy(AliTrackMap &trm) const;
 
+  Int_t fSize;             // size of the array
   Int_t *fArray;           //[fSize] actual map
 
   ClassDef(AliTrackMap,1)  // connection between track label and TreeH indeces

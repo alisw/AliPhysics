@@ -26,18 +26,18 @@ public:
 	  Float_t themax, Int_t nphi, Float_t phimin,
 	  Float_t phimax,Float_t rmin,Float_t rmax,Float_t zmax);
   AliLego(const char *title, AliLegoGenerator* generator);
-  AliLego(const AliLego &lego) {lego.Copy(*this);}
+  AliLego(const AliLego &lego);
   virtual ~AliLego();
-  void  Copy(AliLego &lego) const;
   virtual void  StepManager();
   virtual void  BeginEvent();
   virtual void  FinishEvent();
   virtual void  FinishRun();
   virtual AliLego &operator=(const AliLego &lego) 
   {lego.Copy(*this);return(*this);}
- private:
+
+private:
+  void Copy(AliLego &lego) const;
   void DumpVolumes();
-  
   
 private:
    AliLegoGenerator *fGener;     //Lego generator

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2002/10/23 07:43:00  alibrary
+Introducing some effective C++ suggestions
+
 Revision 1.1  2001/05/11 13:21:16  morsch
 Geom. volume data class. Can be used during lego run for debugging.
 
@@ -57,7 +60,7 @@ AliDebugVolume::AliDebugVolume(const char *name, Int_t copy, Float_t step,
 
 
 //_______________________________________________________________________
-Bool_t  AliDebugVolume::IsEqual(const char* name, const Int_t copy) const
+Bool_t  AliDebugVolume::IsVEqual(const char* name, const Int_t copy) const
 {
   return (copy == fCopy && strcmp(name, fName) == 0);
 }

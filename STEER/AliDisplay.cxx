@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2002/10/14 14:57:32  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.17.6.1  2002/06/10 14:43:06  hristov
 Merged with v3-08-02
 
@@ -71,28 +74,28 @@ Introduction of the Copyright and cvs Log
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include <TTree.h>
+#include <TArc.h>
 #include <TButton.h>
 #include <TCanvas.h>
-#include <TView.h>
+#include <TDiamond.h>
+#include <TGaxis.h>
+#include <TMath.h>
 #include <TPaveLabel.h>
 #include <TPaveText.h>
-#include <TDiamond.h>
-#include <TArc.h>
 #include <TSlider.h>
 #include <TSliderBox.h>
-#include <TGaxis.h>
+#include <TTree.h>
+#include <TView.h>
 #include <TVirtualX.h>
-#include <TMath.h>
 
-#include "AliRun.h"
-#include "AliStack.h"
 #include "AliDetector.h"
 #include "AliDisplay.h"
-#include "AliPoints.h"
-#include "TParticle.h"
-#include "TGeometry.h"
 #include "AliHeader.h"
+#include "AliPoints.h"
+#include "AliRun.h"
+#include "AliStack.h"
+#include "TGeometry.h"
+#include "TParticle.h"
 
 static const Float_t kptcutmax  = 2;
 static const Float_t ketacutmax = 1.5;
@@ -100,220 +103,282 @@ static const Float_t ketacutmax = 1.5;
 ClassImp(AliDisplay)
 
 
-//_____________________________________________________________________________
-AliDisplay::AliDisplay()
+//_______________________________________________________________________
+AliDisplay::AliDisplay():
+  fZoomMode(0),
+  fDrawAllViews(0),
+  fDrawParticles(0),
+  fDrawHits(0),
+  fPTcut(0),
+  fTheta(0),
+  fPhi(0),
+  fPsi(0),
+  fRrange(0),
+  fZrange(0),
+  fZooms(0),
+  fHitsCuts(0),
+  fCanvas(0),
+  fTrigPad(0),
+  fCutPad(0),
+  fEtaPad(0),
+  fButtons(0),
+  fPad(0),
+  fCutSlider(0),
+  fEtaSlider(0),
+  fRangeSlider(0),
+  fPickButton(0),
+  fZoomButton(0),
+  fArcButton(0),
+  fFruits(0),
+  fTracksToDisplay(0),
+  fNTracksToDisplay(0)
 {
   //
   // Default constructor
   //
-  fCanvas = 0;
-  fTrigPad = 0;
-  fCutPad = 0;
-  fEtaPad = 0;
-  fButtons = 0;
-  fPad = 0;
-  fCutSlider = 0;
-  fEtaSlider = 0;
-  fRangeSlider = 0;
-  fPickButton = 0;
-  fZoomButton = 0;
-  fArcButton = 0;
-  fFruits = 0;
-  fTracksToDisplay =0;
-  fNTracksToDisplay =0;
 }
 
-//_____________________________________________________________________________
-AliDisplay::AliDisplay(Int_t size)
+//_______________________________________________________________________
+AliDisplay::AliDisplay(Int_t size):
+  fZoomMode(1),
+  fDrawAllViews(kFALSE),
+  fDrawParticles(kTRUE),
+  fDrawHits(kTRUE),
+  fPTcut(0),
+  fTheta(0),
+  fPhi(-90),
+  fPsi(0),
+  fRrange(0),
+  fZrange(0),
+  fZooms(1),
+  fHitsCuts(0),
+  fCanvas(0),
+  fTrigPad(0),
+  fCutPad(0),
+  fEtaPad(0),
+  fButtons(0),
+  fPad(0),
+  fCutSlider(0),
+  fEtaSlider(0),
+  fRangeSlider(0),
+  fPickButton(0),
+  fZoomButton(0),
+  fArcButton(0),
+  fFruits(0),
+  fTracksToDisplay(0),
+  fNTracksToDisplay(0)
 {
-// Create an event display object.
-// A canvas named "edisplay" is created with a vertical size in pixels
-//
-//    A QUICK Overview of the Event Display functions
-//    ===============================================
-//
-//  The event display can ve invoked by executing the macro "display.C"
-// A canvas like in the picture below will appear.
-//
-//  On the left side of the canvas, the following buttons appear:
-//   *Next*       to move to the next event
-//   *Previous*   to move to the previous event
-//   *Top View*   to display a top view of the current event
-//   *Side View*  to display a side view of the current event
-//   *Front View* to display a front view of the current event
-//   *All Views*  to display front/side/top/30-30 views of the current event
-//   *OpenGL*     to use OpenGl to view the current event.
-//                Note that OpenGL cannot be used across the network.
-//                Before using OpenGL, load the GL libraries
-//                by executing the macro GL.C (in $ROOTSYS/macros/GL.C.
-//                Once in GL, click the HELP button of the GL canvas.
-//   *X3D*        to use X3D to view the current event (Unix only).
-//                Once in X3D, type M to see the list of all possible options.
-//                for example type J to zoom, K to unzoom
-//                use the mouse to rotate.
-//   *Pick*       Select this option to be able to point on a track with the
-//                mouse. Once on the track, use the right button to select
-//                an action. For example, select SetMarkerAttributes to
-//                change the marker type/color/size for the track.
-//   *Zoom*       Select this option (default) if you want to zoom.
-//                To zoom, simply select the selected area with the left button.
-//   *UnZoom*     To revert to the previous picture size.
-//
-//   slider R     On the left side, the vertical slider can be used to
-//                set the default picture size.
-//   slider pcut  At the top of the canvas, a slider can be used to change
-//                the momentum cut (or range) to display tracks.
-//   slider eta   On the right side of the canvas, a vertical slider can be used
-//                to specify a rapidity range for the tracks.
-//
-//    When you are in Zoom mode, you can click on the black part of the canvas
-//  to select special options with the right mouse button.
-//  This will display a pop-up menu with items like:
-//     *Disable detector* 
-//     *Enable detector*, etc.
-//  For example select "Disable detector". You get a dialog box.
-//  Diable detector TRD for example.
-//
-//  When you are in pick mode, you can "Inspect" the object pointed by the mouse.
-//  When you are on a track, select the menu item "InspectParticle"
-//  to display the current particle attributes.
-//
-//  You can activate the Root browser by selecting the Inspect menu
-//  in the canvas tool bar menu. Then select "Start Browser"
-//  This will open a new canvas with the browser. At this point, you may want
-//  to display some histograms (from the Trees). Go to the "File" menu
-//  of the browser and click on "New canvas".
-//  In the browser, click on item "ROOT files" in the left pane.
-//  Click on galice.root.
-//  Click on TH
-//  Click on TPC for example
-//  Click on any variable (eg TPC.fX) to histogram the variable.
-//
-//   If you are lost, you can click on HELP in any Root canvas or browser.
-//Begin_Html
-/*
-<img src="picts/alidisplay.gif">
-*/
-//End_Html
+  // Create an event display object.
+  // A canvas named "edisplay" is created with a vertical size in pixels
+  //
+  //    A QUICK Overview of the Event Display functions
+  //    ===============================================
+  //
+  //  The event display can ve invoked by executing the macro "display.C"
+  // A canvas like in the picture below will appear.
+  //
+  //  On the left side of the canvas, the following buttons appear:
+  //   *Next*       to move to the next event
+  //   *Previous*   to move to the previous event
+  //   *Top View*   to display a top view of the current event
+  //   *Side View*  to display a side view of the current event
+  //   *Front View* to display a front view of the current event
+  //   *All Views*  to display front/side/top/30-30 views of the current event
+  //   *OpenGL*     to use OpenGl to view the current event.
+  //                Note that OpenGL cannot be used across the network.
+  //                Before using OpenGL, load the GL libraries
+  //                by executing the macro GL.C (in $ROOTSYS/macros/GL.C.
+  //                Once in GL, click the HELP button of the GL canvas.
+  //   *X3D*        to use X3D to view the current event (Unix only).
+  //                Once in X3D, type M to see the list of all possible options.
+  //                for example type J to zoom, K to unzoom
+  //                use the mouse to rotate.
+  //   *Pick*       Select this option to be able to point on a track with the
+  //                mouse. Once on the track, use the right button to select
+  //                an action. For example, select SetMarkerAttributes to
+  //                change the marker type/color/size for the track.
+  //   *Zoom*       Select this option (default) if you want to zoom.
+  //                To zoom, simply select the selected area with the left button.
+  //   *UnZoom*     To revert to the previous picture size.
+  //
+  //   slider R     On the left side, the vertical slider can be used to
+  //                set the default picture size.
+  //   slider pcut  At the top of the canvas, a slider can be used to change
+  //                the momentum cut (or range) to display tracks.
+  //   slider eta   On the right side of the canvas, a vertical slider can be used
+  //                to specify a rapidity range for the tracks.
+  //
+  //  When you are in Zoom mode, you can click on the black part of the canvas
+  //  to select special options with the right mouse button.
+  //  This will display a pop-up menu with items like:
+  //     *Disable detector* 
+  //     *Enable detector*, etc.
+  //  For example select "Disable detector". You get a dialog box.
+  //  Diable detector TRD for example.
+  //
+  //  When you are in pick mode, you can "Inspect" the object pointed by the mouse.
+  //  When you are on a track, select the menu item "InspectParticle"
+  //  to display the current particle attributes.
+  //
+  //  You can activate the Root browser by selecting the Inspect menu
+  //  in the canvas tool bar menu. Then select "Start Browser"
+  //  This will open a new canvas with the browser. At this point, you may want
+  //  to display some histograms (from the Trees). Go to the "File" menu
+  //  of the browser and click on "New canvas".
+  //  In the browser, click on item "ROOT files" in the left pane.
+  //  Click on galice.root.
+  //  Click on TH
+  //  Click on TPC for example
+  //  Click on any variable (eg TPC.fX) to histogram the variable.
+  //
+  //   If you are lost, you can click on HELP in any Root canvas or browser.
+  //Begin_Html
+  /*
+    <img src="picts/alidisplay.gif">
+  */
+  //End_Html
+  
+  gAlice->SetDisplay(this);
    
-   fPad = 0;
-   gAlice->SetDisplay(this);
-   
-   // Initialize display default parameters
-   SetRange();
-   SetPTcut();
+  // Initialize display default parameters
+  SetRange();
+  SetPTcut();
+  
+  // Set front view by default
+  
+  // Create display canvas
+  Int_t ysize = size;
+  if (ysize < 100) ysize = 750;
+  Int_t xsize = Int_t(size*830./ysize);
+  fCanvas = new TCanvas("Canvas", "ALICE Event Display",14,47,xsize,ysize);
+  fCanvas->ToggleEventStatus();
+  
+  // Create main display pad
+  fPad = new TPad("viewpad", "Alice display",0.15,0,0.97,0.96);
+  fPad->Draw();
+  fPad->Modified();
+  fPad->SetFillColor(1);
+  fPad->SetBorderSize(2);
+  
+  // Create user interface control pad
+  DisplayButtons();
+  fCanvas->cd();
+  
+  // Create Range and mode pad
+  Float_t dxtr     = 0.15;
+  Float_t dytr     = 0.45;
+  fTrigPad = new TPad("trigger", "range and mode pad",0,0,dxtr,dytr);
+  fTrigPad->Draw();
+  fTrigPad->cd();
+  fTrigPad->SetFillColor(22);
+  fTrigPad->SetBorderSize(2);
 
-   // Set front view by default
-   fTheta = 0;
-   fPhi   = -90;
-   fPsi   = 0;
-   fDrawAllViews  = kFALSE;
-   fDrawHits      = kTRUE;
-   fDrawParticles = kTRUE;
-   fZoomMode      = 1;
-   fZooms         = 0;
-   fHitsCuts      = 0;
-   
-   // Create display canvas
-   Int_t ysize = size;
-   if (ysize < 100) ysize = 750;
-   Int_t xsize = Int_t(size*830./ysize);
-   fCanvas = new TCanvas("Canvas", "ALICE Event Display",14,47,xsize,ysize);
-   fCanvas->ToggleEventStatus();
-   
-   // Create main display pad
-   fPad = new TPad("viewpad", "Alice display",0.15,0,0.97,0.96);
-   fPad->Draw();
-   fPad->Modified();
-   fPad->SetFillColor(1);
-   fPad->SetBorderSize(2);
+  fRangeSlider = new TSlider("range","range",0.7,0.42,0.9,0.98);
+  fRangeSlider->SetObject(this);
+  char pickmode[] = "gAlice->Display()->SetPickMode()";
+  Float_t db = 0.09;
 
-   // Create user interface control pad
-   DisplayButtons();
-   fCanvas->cd();
+  fPickButton = new TButton("Pick",pickmode,0.05,0.32,0.65,0.32+db);
+  fPickButton->SetFillColor(38);
+  fPickButton->Draw();
+  char zoommode[] = "gAlice->Display()->SetZoomMode()";
+  fZoomButton = new TButton("Zoom",zoommode,0.05,0.21,0.65,0.21+db);
+  fZoomButton->SetFillColor(38);
+  fZoomButton->Draw();
+  fArcButton = new TArc(.8,fZoomButton->GetYlowNDC()+0.5*db,0.33*db);
+  fArcButton->SetFillColor(kGreen);
+  fArcButton->Draw();
+  char butUnzoom[] = "gAlice->Display()->UnZoom()";
+  TButton *button = new TButton("UnZoom",butUnzoom,0.05,0.05,0.95,0.15);
+  button->SetFillColor(38);
+  button->Draw();
+  AppendPad(); // append display object as last object to force selection
+  
+  // Create momentum cut slider pad
+  fCanvas->cd();
+  fCutPad = new TPad("cutSlider", "pcut slider pad",dxtr,.96,1,1);
+  fCutPad->Draw();
+  fCutPad->cd();
+  fCutPad->SetFillColor(22);
+  fCutPad->SetBorderSize(2);
 
-   // Create Range and mode pad
-   Float_t dxtr     = 0.15;
-   Float_t dytr     = 0.45;
-   fTrigPad = new TPad("trigger", "range and mode pad",0,0,dxtr,dytr);
-   fTrigPad->Draw();
-   fTrigPad->cd();
-   fTrigPad->SetFillColor(22);
-   fTrigPad->SetBorderSize(2);
-   fRangeSlider = new TSlider("range","range",0.7,0.42,0.9,0.98);
-   fRangeSlider->SetObject(this);
-   char pickmode[] = "gAlice->Display()->SetPickMode()";
-   Float_t db = 0.09;
-   fPickButton = new TButton("Pick",pickmode,0.05,0.32,0.65,0.32+db);
-   fPickButton->SetFillColor(38);
-   fPickButton->Draw();
-   char zoommode[] = "gAlice->Display()->SetZoomMode()";
-   fZoomButton = new TButton("Zoom",zoommode,0.05,0.21,0.65,0.21+db);
-   fZoomButton->SetFillColor(38);
-   fZoomButton->Draw();
-   fArcButton = new TArc(.8,fZoomButton->GetYlowNDC()+0.5*db,0.33*db);
-   fArcButton->SetFillColor(kGreen);
-   fArcButton->Draw();
-   char butUnzoom[] = "gAlice->Display()->UnZoom()";
-   TButton *button = new TButton("UnZoom",butUnzoom,0.05,0.05,0.95,0.15);
-   button->SetFillColor(38);
-   button->Draw();
-   AppendPad(); // append display object as last object to force selection
+  fCutSlider = new TSlider("pcut","Momentum cut",0,0,1,1);
+  fCutSlider->SetRange(fPTcut/kptcutmax,1);
+  fCutSlider->SetObject(this);
+  fCutSlider->SetFillColor(45);
+  TSliderBox *sbox = dynamic_cast<TSliderBox*>(fCutSlider->GetListOfPrimitives()->First());
+  sbox->SetFillColor(46);
+  fCutSlider->cd();
+  TGaxis *cutaxis = new TGaxis(0.02,0.8,0.98,0.8,0,kptcutmax,510,"");
+  cutaxis->SetLabelSize(0.5);
+  cutaxis->SetTitleSize(0.6);
+  cutaxis->SetTitleOffset(0.5);
+  cutaxis->SetTitle("pcut .  ");
+  fCutSlider->GetListOfPrimitives()->AddFirst(cutaxis);
+  
+  // Create rapidity cut slider pad
+  fCanvas->cd();
 
-   // Create momentum cut slider pad
-   fCanvas->cd();
-   fCutPad = new TPad("cutSlider", "pcut slider pad",dxtr,.96,1,1);
-   fCutPad->Draw();
-   fCutPad->cd();
-   fCutPad->SetFillColor(22);
-   fCutPad->SetBorderSize(2);
-   fCutSlider   = new TSlider("pcut","Momentum cut",0,0,1,1);
-   fCutSlider->SetRange(fPTcut/kptcutmax,1);
-   fCutSlider->SetObject(this);
-   fCutSlider->SetFillColor(45);
-   TSliderBox *sbox = (TSliderBox*)fCutSlider->GetListOfPrimitives()->First();
-   sbox->SetFillColor(46);
-   fCutSlider->cd();
-   TGaxis *cutaxis = new TGaxis(0.02,0.8,0.98,0.8,0,kptcutmax,510,"");
-   cutaxis->SetLabelSize(0.5);
-   cutaxis->SetTitleSize(0.6);
-   cutaxis->SetTitleOffset(0.5);
-   cutaxis->SetTitle("pcut .  ");
-   fCutSlider->GetListOfPrimitives()->AddFirst(cutaxis);
+  fEtaPad = new TPad("EtaSlider", "Eta slider pad",0.97,0,1,0.96);
+  fEtaPad->Draw();
+  fEtaPad->cd();
+  fEtaPad->SetFillColor(22);
+  fEtaPad->SetBorderSize(2);
 
-      // Create rapidity cut slider pad
-   fCanvas->cd();
-   fEtaPad = new TPad("EtaSlider", "Eta slider pad",0.97,0,1,0.96);
-   fEtaPad->Draw();
-   fEtaPad->cd();
-   fEtaPad->SetFillColor(22);
-   fEtaPad->SetBorderSize(2);
-   fEtaSlider   = new TSlider("etacut","Rapidity cut",0,0,1,1);
-   fEtaSlider->SetObject(this);
-   fEtaSlider->SetFillColor(45);
-   TSliderBox *sbox2 = (TSliderBox*)fEtaSlider->GetListOfPrimitives()->First();
-   sbox2->SetFillColor(46);
-   fEtaSlider->cd();
-   TGaxis *etaaxis = new TGaxis(0.9,0.02,0.9,0.98,-ketacutmax,ketacutmax,510,"");
-   etaaxis->SetLabelSize(0.5);
-   etaaxis->SetTitleSize(0.6);
-   etaaxis->SetTitleOffset(0.2);
-   cutaxis->SetTitle("Etacut .  ");
-   fEtaSlider->GetListOfPrimitives()->AddFirst(etaaxis);
-   fCanvas->cd();
-
-   fTrigPad->SetEditable(kFALSE);
-   fButtons->SetEditable(kFALSE);
-   fTracksToDisplay =0;
-   fNTracksToDisplay =0;   
-
-   fCanvas->cd();
-   fCanvas->Update();
+  fEtaSlider = new TSlider("etacut","Rapidity cut",0,0,1,1);
+  fEtaSlider->SetObject(this);
+  fEtaSlider->SetFillColor(45);
+  TSliderBox *sbox2 = dynamic_cast<TSliderBox*>(fEtaSlider->GetListOfPrimitives()->First());
+  sbox2->SetFillColor(46);
+  fEtaSlider->cd();
+  TGaxis *etaaxis = new TGaxis(0.9,0.02,0.9,0.98,-ketacutmax,ketacutmax,510,"");
+  etaaxis->SetLabelSize(0.5);
+  etaaxis->SetTitleSize(0.6);
+  etaaxis->SetTitleOffset(0.2);
+  cutaxis->SetTitle("Etacut .  ");
+  fEtaSlider->GetListOfPrimitives()->AddFirst(etaaxis);
+  fCanvas->cd();
+  
+  fTrigPad->SetEditable(kFALSE);
+  fButtons->SetEditable(kFALSE);
+  fTracksToDisplay =0;
+  fNTracksToDisplay =0;   
+  
+  fCanvas->cd();
+  fCanvas->Update();
 }
 
 
-//_____________________________________________________________________________
-AliDisplay::AliDisplay(const AliDisplay &disp)
+//_______________________________________________________________________
+AliDisplay::AliDisplay(const AliDisplay &disp):
+  TObject(disp),
+  fZoomMode(0),
+  fDrawAllViews(0),
+  fDrawParticles(0),
+  fDrawHits(0),
+  fPTcut(0),
+  fTheta(0),
+  fPhi(0),
+  fPsi(0),
+  fRrange(0),
+  fZrange(0),
+  fZooms(0),
+  fHitsCuts(0),
+  fCanvas(0),
+  fTrigPad(0),
+  fCutPad(0),
+  fEtaPad(0),
+  fButtons(0),
+  fPad(0),
+  fCutSlider(0),
+  fEtaSlider(0),
+  fRangeSlider(0),
+  fPickButton(0),
+  fZoomButton(0),
+  fArcButton(0),
+  fFruits(0),
+  fTracksToDisplay(0),
+  fNTracksToDisplay(0)
 {
   //
   // Copy constructor
@@ -336,7 +401,7 @@ void AliDisplay::Clear(Option_t *)
 }
 
 //_____________________________________________________________________________
-void AliDisplay::Copy(AliDisplay &disp) const
+void AliDisplay::Copy(AliDisplay &) const
 {
   //
   // Copy *this onto disp -- not implemented
@@ -350,11 +415,11 @@ void AliDisplay::ShowTrack(Int_t idx)
   //
   // Display track idx
   //
-   AliDetector *mTPC=(AliDetector*)gAlice->GetModule("TPC");
+   AliDetector *mTPC=dynamic_cast<AliDetector*>(gAlice->GetModule("TPC"));
    TObjArray *points=mTPC->Points();
    int ntracks=points->GetEntriesFast();
    for (int track=0;track<ntracks;track++) {
-      AliPoints *pm = (AliPoints*)points->UncheckedAt(track);
+      AliPoints *pm = dynamic_cast<AliPoints*>(points->UncheckedAt(track));
       if (!pm) continue;
       if (idx == pm->GetIndex()) {
          pm->SetMarkerColor(2);
@@ -380,11 +445,11 @@ void AliDisplay::HideTrack(Int_t idx) {
   //
   // Hide track on display
   //
-   AliDetector *mTPC=(AliDetector*)gAlice->GetModule("TPC");
+   AliDetector *mTPC=dynamic_cast<AliDetector*>(gAlice->GetModule("TPC"));
    TObjArray *points=mTPC->Points();
    int ntracks=points->GetEntriesFast();
    for (int track=0;track<ntracks;track++) {
-      AliPoints *pm = (AliPoints*)points->UncheckedAt(track);
+      AliPoints *pm = dynamic_cast<AliPoints*>(points->UncheckedAt(track));
       if (!pm) continue;
       if (idx == pm->GetIndex()) {
          pm->SetMarkerColor(5);
@@ -402,7 +467,7 @@ void AliDisplay::DisableDetector(const char *name)
 {
 //    Disable detector name from graphics views
    
-   AliModule *module = (AliModule*)gAlice->Modules()->FindObject(name);
+   AliModule *module = dynamic_cast<AliModule*>(gAlice->Modules()->FindObject(name));
    if (!module) return;
    module->Disable();
    Draw();
@@ -594,13 +659,13 @@ void AliDisplay::DrawHits()
    TIter next(gAlice->Modules());
    AliModule *module;
    fHitsCuts = 0;
-   while((module = (AliModule*)next())) {
+   while((module = dynamic_cast<AliModule*>(next()))) {
       if (!module->IsActive()) continue;
       points = module->Points();
       if (!points) continue;
       ntracks = points->GetEntriesFast();
       for (track=0;track<ntracks;track++) {
-         pm = (AliPoints*)points->UncheckedAt(track);
+         pm = dynamic_cast<AliPoints*>(points->UncheckedAt(track));
          if (!pm) continue;
          particle = pm->GetParticle();
          if (!particle) continue;
@@ -687,7 +752,7 @@ void AliDisplay::DrawViewGL()
 {
 //    Draw current view using OPENGL
 
-   TPad *pad = (TPad*)gPad->GetPadSave();
+   TPad *pad = dynamic_cast<TPad*>(gPad->GetPadSave());
    pad->cd();
    TView *view = pad->GetView();
    if (!view) return;
@@ -699,7 +764,7 @@ void AliDisplay::DrawViewX3D()
 {
 //    Draw current view using X3D
 
-   TPad *pad = (TPad*)gPad->GetPadSave();
+   TPad *pad = dynamic_cast<TPad*>(gPad->GetPadSave());
    pad->cd();
    TView *view = pad->GetView();
    if (!view) return;
@@ -711,7 +776,7 @@ void AliDisplay::EnableDetector(const char *name)
 {
 //    Enable detector name in graphics views
    
-   AliModule *module = (AliModule*)gAlice->Modules()->FindObject(name);
+   AliModule *module = dynamic_cast<AliModule*>(gAlice->Modules()->FindObject(name));
    if (!module) return;
    module->Enable();
    Draw();
@@ -811,7 +876,7 @@ void AliDisplay::LoadPoints()
      for (Int_t track=0; track<fNTracksToDisplay;track++) {
       gAlice->ResetHits();
       gAlice->TreeH()->GetEvent(nprim-1-gAlice->GetPrimary(fTracksToDisplay[track]));
-      while((module = (AliModule*)next())) {
+      while((module = dynamic_cast<AliModule*>(next()))) {
 	module->LoadPoints(nprim-1-gAlice->GetPrimary(fTracksToDisplay[track]));
       }
       next.Reset();
@@ -821,7 +886,7 @@ void AliDisplay::LoadPoints()
      for (Int_t track=0; track<ntracks;track++) {
        gAlice->ResetHits();
        gAlice->TreeH()->GetEvent(track);
-       while((module = (AliModule*)next())) {
+       while((module = dynamic_cast<AliModule*>(next()))) {
          module->LoadPoints(track);
        }
        next.Reset();
@@ -930,7 +995,7 @@ void AliDisplay::UnZoom()
   //
   if (fZooms <= 0) return;
   fZooms--;
-  TPad *pad = (TPad*)gPad->GetPadSave();
+  TPad *pad = dynamic_cast<TPad*>(gPad->GetPadSave());
   pad->Range(fZoomX0[fZooms],fZoomY0[fZooms], fZoomX1[fZooms],fZoomY1[fZooms]);
   pad->Modified();
 }

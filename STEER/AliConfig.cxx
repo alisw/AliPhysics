@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2002/10/23 07:43:00  alibrary
+Introducing some effective C++ suggestions
+
 Revision 1.6  2002/10/22 15:02:15  alibrary
 Introducing Riostream.h
 
@@ -88,7 +91,8 @@ AliConfig::AliConfig():
 }
 
 //____________________________________________________________________________
-AliConfig::AliConfig(const AliConfig&):
+AliConfig::AliConfig(const AliConfig& conf):
+  TNamed(conf),
   fTopFolder(0),
   fTasks(0),
   fPDGFolder(0),
@@ -244,7 +248,7 @@ AliConfig::~AliConfig()
 }
 
 //____________________________________________________________________________
-void AliConfig::AddInFolder (char *dir, TObject *obj)
+void AliConfig::AddInFolder (const char *dir, TObject *obj)
 {
   TFolder *folder =
     dynamic_cast<TFolder *>(fTopFolder->FindObject(dir));
@@ -287,7 +291,7 @@ void    AliConfig::AddSubTask(char * dir[], TObject *obj)
 }
 
 //____________________________________________________________________________
-TObject* AliConfig::FindInFolder (char *dir, const char *name)
+TObject* AliConfig::FindInFolder (const char *dir, const char *name)
 {
   if(!name) return(fTopFolder->FindObject(name));
   TFolder * folder = dynamic_cast<TFolder *>(fTopFolder->FindObject(dir));
@@ -370,8 +374,8 @@ void    AliConfig::Add (char *list)
       while ((obj = next ()))
 	{
 	  TString dir(obj->GetName());
-	  TString path  = dir + "/" + token;
-	  TString macro = path + ".C";
+	  TString tpath  = dir + "/" + token;
+	  TString macro = tpath + ".C";
 	  if (!gSystem->AccessPathName (macro.Data()))	{
 	    gInterpreter->ExecuteMacro (macro.Data());				   
 	    found = "(" + macro + ")";
@@ -385,11 +389,11 @@ void    AliConfig::Add (char *list)
 	    }
 	    break;
 	  } else {
-	    TString macroDefault = path + "/Default.C";
+	    TString macroDefault = tpath + "/Default.C";
 	    if (!gSystem->AccessPathName (macroDefault.Data()))	{
 	      gInterpreter->ExecuteMacro (macroDefault.Data());
 	      found = "(" + macro + ")";
-	      TString macroConfigure = path + "/Configure.C";
+	      TString macroConfigure = tpath + "/Configure.C";
 	      if (!gSystem->AccessPathName (macroConfigure.Data()))	{
 		gInterpreter->ExecuteMacro (macroConfigure.Data());				    
 		found += " => Configured";
