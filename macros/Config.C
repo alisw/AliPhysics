@@ -1,4 +1,10 @@
 static Int_t    eventsPerRun = 100;
+enum PprGeo_t 
+{
+    kHoles, kNoHoles
+};
+static PprGeo_t geo = kHoles;
+
 void Config()
 {
     // 7-DEC-2000 09:00
