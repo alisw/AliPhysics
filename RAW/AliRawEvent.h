@@ -267,13 +267,14 @@ public:
             Bool_t create = kTRUE);
    ~AliRawDB() { Close(); }
 
-   virtual Bool_t Create();
-   virtual void   Close();
-   void           Fill() { fTree->Fill(); }
-   Bool_t         FileFull() { return (fRawDB->GetBytesWritten() > fMaxSize) ?
-                               kTRUE : kFALSE; }
+   virtual const char *GetOpenOption() const { return "RECREATE"; }
+   virtual Bool_t      Create();
+   virtual void        Close();
+   void                Fill() { fTree->Fill(); }
+   Bool_t              FileFull() { return (fRawDB->GetBytesWritten() > fMaxSize) ?
+                                    kTRUE : kFALSE; }
 
-   Bool_t      NextFile();
+   Bool_t       NextFile();
 
    Double_t     GetBytesWritten() const { return fRawDB->GetBytesWritten(); }
    TFile       *GetDB() const { return fRawDB; }
@@ -311,7 +312,8 @@ public:
    AliRawCastorDB(AliRawEvent *event, Double_t maxsize, Int_t compress);
    ~AliRawCastorDB() { Close(); }
 
-   void Close();
+   const char *GetOpenOption() const { return "-RECREATE"; }
+   void        Close();
 
    ClassDef(AliRawCastorDB,0)  // Raw DB via CASTOR and rootd
 };

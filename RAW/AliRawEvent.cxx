@@ -480,7 +480,7 @@ again:
    const char *fname = GetFileName();
    if (!fname) return kFALSE;
 
-   fRawDB = TFile::Open(fname, "NEW",
+   fRawDB = TFile::Open(fname, GetOpenOption(),
                         Form("ALICE MDC%d raw DB", kMDC), fCompress);
    if (!fRawDB) {
       Error("Create", "failure to open file %s", fname);
