@@ -34,10 +34,6 @@ class AliPMDDDLRawData:public TObject
 		       Int_t & totword, UInt_t *buffer);
   void GetMCMCh(Int_t ddlno, Int_t um, Int_t row, Int_t col,
 		UInt_t &mcmno, UInt_t &chno);
-  void PackWord(UInt_t startbit, UInt_t stopbit, UInt_t dataword, 
-		UInt_t &packedword);
-  void UnpackWord(UInt_t startbit, UInt_t stopbit, UInt_t &dataword, 
-		  UInt_t packedword);
 
 
  protected:

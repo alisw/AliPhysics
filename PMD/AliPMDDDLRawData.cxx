@@ -20,6 +20,7 @@
 #include <TMath.h>
 
 #include "AliRawDataHeader.h"
+#include "AliBitPacking.h"
 #include "AliPMDdigit.h"
 #include "AliPMDRawStream.h"
 #include "AliPMDDDLRawData.h"
@@ -147,7 +148,7 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule, Int_t ium,
 				       UInt_t *buffer)
 {
 
-  UInt_t dataword, baseword;
+  UInt_t baseword;
 
   UInt_t mcmno, chno;
   UInt_t adc;
@@ -211,18 +212,11 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule, Int_t ium,
       GetMCMCh(ddlno, ium, irownew, icolnew, mcmno, chno);
 
       baseword = 0;
-      dataword = adc;
-      PackWord(0, 11,dataword,baseword);
-      dataword = chno;
-      PackWord(12,17,dataword,baseword);
-      dataword = mcmno;
-      PackWord(18,28,dataword,baseword);
-      dataword = 0;
-      PackWord(29,29,dataword,baseword);
-      dataword = 0;
-      PackWord(30,30,dataword,baseword);
-      dataword = 1;
-      PackWord(31,31,dataword,baseword);
+      AliBitPacking::PackWord(adc,baseword,0,11);
+      AliBitPacking::PackWord(chno,baseword,12,17);
+      AliBitPacking::PackWord(mcmno,baseword,18,28);
+      AliBitPacking::PackWord(0,baseword,29,30);
+      AliBitPacking::PackWord(1,baseword,31,31);
       
       buffer[ient] = baseword;
       
@@ -297,50 +291,6 @@ void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t um,
 	}
       chno  = kCh[irownew][icolnew];
     }
-
-}
-//____________________________________________________________________________
-
-void AliPMDDDLRawData::PackWord(UInt_t startbit, UInt_t stopbit, 
-				UInt_t dataword, UInt_t &packedword)
-{
-  UInt_t bitLength  = stopbit - startbit + 1;
-  UInt_t bitContent = (UInt_t) (TMath::Power(2,bitLength) - 1);
-  if(bitContent < dataword)
-    {
-      cout << " *** ERROR *** bitContent is less than the dataword" << endl;
-      return;
-    }
-  UInt_t packedBits = 0;
-  if (packedword != 0)
-    packedBits = (UInt_t) (TMath::Log(packedword)/TMath::Log(2));
-
-  UInt_t counter;
-  if (packedBits <= stopbit)
-    {
-      counter   = 31 - stopbit;
-    }
-  else
-    {
-      counter   = 31 - packedBits;
-    }
-  UInt_t dummyword = 0xFFFFFFFF;
-  dummyword >>= counter;
-  UInt_t lword = dataword << startbit;
-  UInt_t nword = lword | packedword;
-  packedword = dummyword & nword;
-
-
-}
-//____________________________________________________________________________
-void AliPMDDDLRawData::UnpackWord(UInt_t startbit, UInt_t stopbit, 
-				UInt_t &dataword, UInt_t packedword)
-{
-  UInt_t bitLength  = stopbit - startbit + 1;
-  UInt_t bitContent = (UInt_t) (TMath::Power(2,bitLength) - 1);
-  bitContent <<= startbit;
-  dataword = packedword & bitContent;
-  dataword >>= startbit;
 
 }
 //____________________________________________________________________________
