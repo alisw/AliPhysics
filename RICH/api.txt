@@ -7,3 +7,42 @@ AliStack::GetNtrack() or AliRun::GetEvent()
 
 total amount of primiry particles in stack for a given event:
 AliStack::GetNprimary() or TreeH()::GetEntries()
+
+to open session 
+AliRunLoader::Open(
+
+
+Hits a stored on primiry by primiry basis. To retrieve all hits one needs to do:
+
+initialise the root tree and containers:    AliLoader::LoadHits() 
+read number of primiries in current event:
+loop on the list of primiries:
+
+
+
+How to retrive sdigits? Sdigits stored in tree S with the branch of TClonesArray, all sdigits in a single TClonesArray
+                        So the tree has only one entry.
+                        One needs to say:
+                        pRich->GetLoader()->LoadSDigits(); this one open file, get the tree and invoke AliRICH::SetTreeAddress()    
+
+
+
+gAlice->GetMCApp()->GetCurrentTrackNumber()
+
+
+Debug staff:
+
+AliModule::GetDebug() 
+AliModule::SetDebug()
+AliRun::GetDebug()
+AliRun::SetDebug()
+
+
+
+
+
+
+pointer to gAlice
+
+
+

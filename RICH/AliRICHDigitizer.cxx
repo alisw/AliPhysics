@@ -14,10 +14,6 @@
  **************************************************************************/
 
 
-//Piotr.Skowronski@cern.ch :
-//Corrections applied in order to compile (only) with new I/O and folder structure
-//To be implemented correctly by responsible
-
 #include <Riostream.h> 
 
 #include <TTree.h> 
@@ -44,17 +40,22 @@ AliRICHDigitizer::AliRICHDigitizer()
 //__________________________________________________________________________________________________
 AliRICHDigitizer::AliRICHDigitizer(AliRunDigitizer *pManager) 
                  :AliDigitizer(pManager)
-{//main ctor which should be used
+{
+//main ctor which should be used
+  if(GetDebug())Info("main ctor","Start.");
+  fRich=(AliRICH*)gAlice->GetDetector("RICH");
 }//main ctor
 //__________________________________________________________________________________________________
 AliRICHDigitizer::~AliRICHDigitizer()
-{//dtor
-  if(fManager->GetDebug())Info("dtor","Start.");
+{
+//dtor
+  if(GetDebug())Info("dtor","Start.");
 }//dtor
 //__________________________________________________________________________________________________
 void AliRICHDigitizer::Exec(Option_t*)
 {
-
+  if(GetDebug())Info("Exec","Start with %i input(s) and %i",fManager->GetNinputs(),fManager->GetOutputEventNr());
+  
   AliRunLoader *pInAL, *pOutAL;//in and out Run loaders
   AliLoader    *pInRL, *pOutRL;//in and out RICH loaders
  
@@ -71,8 +72,8 @@ void AliRICHDigitizer::Exec(Option_t*)
   for(Int_t inputFile=0;inputFile<fManager->GetNinputs();inputFile++){//files loop
     pInAL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
     pInRL = pInAL->GetLoader("RICHLoader");
-    
-    
+    pInRL->LoadSDigits();
+    pInRL->TreeD()->GetEntries(0);
   }//files loop
 
       
@@ -86,4 +87,6 @@ void AliRICHDigitizer::Exec(Option_t*)
 
   pOutRL->UnloadHits();
   pOutRL->UnloadDigits();
+  if(GetDebug())Info("Exec","Stop");
 }//Exec()
+//__________________________________________________________________________________________________

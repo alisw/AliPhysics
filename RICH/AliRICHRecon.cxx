@@ -153,14 +153,9 @@ void AliRICHRecon::StartProcessEvent()
       SetTrackEta(trackEta);
       SetTrackCharge(q);
 
-      TVector3 pGlob(pHit->MomFreoX(),pHit->MomFreoY(),pHit->MomFreoZ());
-      TVector3 pLocal = Rich()->C(pHit->Chamber())->Glob2Loc(pGlob,1);
+      TVector3 pLocal(0,0,0);//?????
       
-      Float_t primGlobalX = pHit->X();
-      Float_t primGlobalY = pHit->Y();
-      Float_t primGlobalZ = pHit->Z();
-      TVector3 primGlobal(primGlobalX,primGlobalY,primGlobalZ);
-      TVector3 primLocal = Rich()->C(pHit->Chamber())->Glob2Loc(primGlobal);
+      TVector2 primLocal =Rich()->C(pHit->C())->Glob2Loc(pHit->InX3());
       
 //      Float_t pmodFreo = pLocal.Mag();
       Float_t trackTheta = pLocal.Theta();
@@ -201,8 +196,8 @@ void AliRICHRecon::StartProcessEvent()
       SetMipIndex(maxInd);
       SetTrackIndex(i);
 
-      Float_t shiftX = primLocal.X()/primLocal.Z()*(fRadiatorWidth+fQuartzWidth+fGapWidth) + primLocal.X();
-      Float_t shiftY = primLocal.Y()/primLocal.Z()*(fRadiatorWidth+fQuartzWidth+fGapWidth) + primLocal.Y();
+      Float_t shiftX = 0;//primLocal.X()/primLocal.Z()*(fRadiatorWidth+fQuartzWidth+fGapWidth) + primLocal.X(); ????? 
+      Float_t shiftY = 0;//primLocal.Y()/primLocal.Z()*(fRadiatorWidth+fQuartzWidth+fGapWidth) + primLocal.Y(); ?????
       
       SetShiftX(shiftX);
       SetShiftY(shiftY);

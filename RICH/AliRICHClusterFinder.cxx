@@ -65,7 +65,8 @@ void AliRICHClusterFinder::FindLocalMaxima()
       }
     }
     if(iNotMax==0) {
-      AliRICHParam::Pad2Loc(padX1,padY1,fLocalX[fNlocals],fLocalY[fNlocals]);
+      TVector2 x2=AliRICHParam::Pad2Loc(padX1,padY1);
+      fLocalX[fNlocals]=x2.X();fLocalY[fNlocals]=x2.Y();
       fLocalQ[fNlocals] = (Double_t)padQ1;
       fLocalC[fNlocals] = padC1;
       fNlocals++;
@@ -142,8 +143,8 @@ void AliRICHClusterFinder::FindClusters(Int_t iChamber)
 //__________________________________________________________________________________________________
 void AliRICHClusterFinder::FindClusterContribs(AliRICHcluster *pCluster)
 {
-  //finds CombiPid for a given cluster
-//  Info("FindClusterContribs","Start");
+// finds CombiPid for a given cluster
+// Info("FindClusterContribs","Start");
   
   TObjArray *pDigits = pCluster->Digits();
   Int_t iNmips=0,iNckovs=0,iNfeeds=0;
@@ -169,12 +170,12 @@ void AliRICHClusterFinder::FindClusterContribs(AliRICHcluster *pCluster)
   pCluster->SetCombiPid(iNckovs,iNfeeds,iNmips);
 //  pCluster->Print();
   delete [] pindex; 
-}// FindClusterContribs()
+}//FindClusterContribs()
 //__________________________________________________________________________________________________
 void  AliRICHClusterFinder::FormRawCluster(Int_t i, Int_t j)
 {
-  // Builder of the final Raw Cluster (before deconvolution)  
-//  Info("FormRawCluster","Start with digit(%i,%i)",i,j);
+// Builder of the final Raw Cluster (before deconvolution)  
+  if(GetDebug()) Info("FormRawCluster","Start with digit(%i,%i)",i,j);
   
   fRawCluster.AddDigit((AliRICHdigit*) fHitMap->GetHit(i,j));
   fHitMap->FlagHit(i,j);// Flag hit as taken  
@@ -183,13 +184,12 @@ void  AliRICHClusterFinder::FormRawCluster(Int_t i, Int_t j)
   for (Int_t iNeighbour=0;iNeighbour<Rich()->Param()->PadNeighbours(i,j,listX,listY);iNeighbour++)
     if(fHitMap->TestHit(listX[iNeighbour],listY[iNeighbour])==kUnused) 
                       FormRawCluster(listX[iNeighbour],listY[iNeighbour]);    
-}//AddDigit2Cluster()
+}//FormRawCluster()
 //__________________________________________________________________________________________________
 void AliRICHClusterFinder::ResolveCluster()
 {// Decluster algorithm
-//  Info("ResolveCluster","Start.");    
+  if(GetDebug()) {Info("ResolveCluster","Start."); fRawCluster.Print();}
   
-//  fRawCluster.Print();
   switch (fRawCluster.Size()) {
   
   case 1:                     // nothing to decluster: cluster size = 1
@@ -311,12 +311,12 @@ void RICHMinMathieson(Int_t &npar, Double_t *, Double_t &chi2, Double_t *par, In
   
   AliRICHcluster *pRawCluster = ((AliRICHClusterFinder*)gMinuit->GetObjectFit())->GetRawCluster();
 
-  TVector3 centroid[50];
+  TVector2 centroid[50];
   Double_t q[50];
   Int_t nFunctions = (npar+1)/3;
   Double_t qfract = 0;
   for(Int_t i=0;i<nFunctions;i++) {
-    centroid[i].SetX(par[3*i]);centroid[i].SetY(par[3*i+1]);centroid[i].SetZ(0);
+    centroid[i].Set(par[3*i],par[3*i+1]);
     if(i==nFunctions-1) break;
     q[i]=par[3*i+2];
     qfract+=q[i];
@@ -331,8 +331,8 @@ void RICHMinMathieson(Int_t &npar, Double_t *, Double_t &chi2, Double_t *par, In
     Double_t padQ = ((AliRICHdigit *)pRawCluster->Digits()->At(i))->Q();
     Double_t qfracpar=0;
     for(Int_t j=0;j<nFunctions;j++) {
-      qfracpar += q[j]*AliRICHParam::Loc2PadFrac(centroid[j],padX,padY);
-//      cout << " function n. " << j+1 << " q " << q[j] << " fracMat " << AliRICHParam::Loc2PadFrac(centroid[j],padX,padY) 
+      qfracpar += q[j]*AliRICHParam::FracQdc(centroid[j],padX,padY);
+//      cout << " function n. " << j+1 << " q " << q[j] << " fracMat " << AliRICHParam::FracQdc(centroid[j],padX,padY) 
 //           << " xpar " << centroid[j].X() << " ypar " << centroid[j].Y() << endl;
     }
     chi2 += TMath::Power((qtot*qfracpar-padQ),2)/padQ;

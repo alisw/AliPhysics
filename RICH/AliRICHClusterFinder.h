@@ -17,7 +17,7 @@ public:
   
   AliRICH *Rich() {return fRICH;}                                             //Pointer to RICH  
   void     Exec();                                                            //Loop on events and chambers  
-  void     FindClusters(Int_t iChamber);                                      //Find raw clusters
+  void     FindClusters(Int_t iChamber);                                      //Find all clusters for a given chamber
   void     FindClusterContribs(AliRICHcluster *pCluster);                     //Find CombiPid for the current cluster
   void     FormRawCluster(Int_t i, Int_t j);                                  //form a raw cluster
   void     FindLocalMaxima();                                                 //Find local maxima in a cluster
@@ -26,6 +26,7 @@ public:
   void     WriteRawCluster();                                                 //write in the list of cluster  
   void     WriteResolvedCluster();                                            //write in the list of cluster  
   AliRICHcluster *GetRawCluster() {return &fRawCluster;}                      //Return pointer to the current raw cluster
+  Bool_t   GetDebug()            const {return fRICH->GetDebug();}            //is debug printout needed?
 protected:
   AliRICH                *fRICH;                         //Pointer to RICH
   AliHitMap              *fHitMap;                       //Hit Map with digit positions

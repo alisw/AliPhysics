@@ -68,7 +68,6 @@ void AliRICHDisplFast::Exec()
    
      pHitsH2->Reset();     pDigitsH2->Reset();     pClustersH2->Reset();
 
-     Double_t xpad,ypad;
 
       for(Int_t i=0;i<nPrimaries;i++){//prims loop
         pRich->GetLoader()->TreeH()->GetEntry(i);
@@ -77,7 +76,7 @@ void AliRICHDisplFast::Exec()
           AliRICHhit *pHit = (AliRICHhit*)Hits[i].At(j);
           if(pHit->C()==iChamber){
             TVector3 xyzhit(pHit->X(),pHit->Y(),pHit->Z());
-            TVector3 hitlocal = pRich->C(iChamber)->Glob2Loc(xyzhit);
+            TVector2 hitlocal = pRich->C(iChamber)->Glob2Loc(xyzhit);
             pHitsH2->Fill(hitlocal.X(),hitlocal.Y(),200);
           }//if
         }//hits loop         
@@ -85,8 +84,8 @@ void AliRICHDisplFast::Exec()
      
       for(Int_t j=0;j<nDigits;j++){//digits loop
         AliRICHdigit *pDigit = (AliRICHdigit*)pRich->Digits(iChamber)->At(j);
-	AliRICHParam::Pad2Loc(pDigit->X(),pDigit->Y(),xpad,ypad);
-	pDigitsH2->Fill(xpad,ypad,100);
+	TVector2 x2=AliRICHParam::Pad2Loc(pDigit->X(),pDigit->Y());
+	pDigitsH2->Fill(x2.X(),x2.Y(),100);
       }//digits loop
         
       for(Int_t j=0;j<nClusters;j++){//clusters loop

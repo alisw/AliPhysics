@@ -181,10 +181,11 @@ void KirConfig::CreateConfigFile()
 //RICH  
   if(fRichTopChkBtn->GetState()==kButtonDown) fprintf(fp,"  AliRICHParam::AngleRot(0);\n");
   switch(fRichVersionCombo->GetSelected()){//RICH
-    case 0:   fprintf(fp,"  pRICH=new AliRICHv0(\"RICH\",\"RICH version 0\");\n\n"); break;   
-    case 1:   fprintf(fp,"  pRICH=new AliRICHv1(\"RICH\",\"RICH version 1\");\n\n"); break;   
-    case 3:   fprintf(fp,"  pRICH=new AliRICHv3(\"RICH\",\"RICH version 3\");\n\n"); break;   
+    case 0:   fprintf(fp,"  pRICH=new AliRICHv0(\"RICH\",\"RICH version 0\");\n"); break;   
+    case 1:   fprintf(fp,"  pRICH=new AliRICHv1(\"RICH\",\"RICH version 1\");\n"); break;   
+    case 3:   fprintf(fp,"  pRICH=new AliRICHv3(\"RICH\",\"RICH version 3\");\n"); break;   
   }
+  fprintf(fp,"  ::Info(\"RICH private config\",\"version %i\");\n\n",fRichVersionCombo->GetSelected()); 
 //Generator
   switch(fGenTypeCombo->GetSelected()){
     case kHijingPara: 

@@ -4,7 +4,9 @@
  * See cxx source for full Copyright notice                               */
 
 
-#include "AliDigitizer.h"
+#include <AliDigitizer.h>
+#include <AliRunDigitizer.h>
+#include <AliRun.h>
 
 class AliRICHDigitizer : public AliDigitizer 
 {
@@ -14,7 +16,9 @@ public:
   virtual ~AliRICHDigitizer();
         
   void   Exec(Option_t* option=0);                //virtual
+  Bool_t GetDebug() const {return gAlice->GetDebug();}
 protected:
+  AliRICH* fRich; //pointer to main RICH object
   ClassDef(AliRICHDigitizer,0)
 };    
 #endif

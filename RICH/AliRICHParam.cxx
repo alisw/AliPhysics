@@ -13,12 +13,13 @@
 //  * provided "as is" without express or implied warranty.                  *
 //  **************************************************************************
 #include "AliRICHParam.h"
+#include <iostream.h>
 
 ClassImp(AliRICHParam)
 Bool_t   AliRICHParam::fgIsWireSag            =kTRUE;
 Bool_t   AliRICHParam::fgIsResolveClusters    =kTRUE;
 Double_t AliRICHParam::fgAngleRot             =-60;
-Int_t    AliRICHParam::fgHV                   =2150;
+Int_t    AliRICHParam::fgHV[kNsectors]        ={2150,2100,2050,2000,2150,2150};
 Int_t    AliRICHParam::fgNsigmaTh             =4;
 Float_t  AliRICHParam::fgSigmaThMean          =1.5;
 Float_t  AliRICHParam::fgSigmaThSpread        =0.5;      
@@ -33,3 +34,12 @@ void AliRICHParam::GenSigmaThMap()
         fSigmaThMap[iChamber][ipadX][ipadY] = SigmaThMean()+(1.-2*gRandom->Rndm())*SigmaThSpread();
   Info("GenSigmaThMap"," Threshold map generated for all RICH chambers");
 }
+//__________________________________________________________________________________________________
+void AliRICHParam::Print()
+{
+  cout<<"\nPads in chamber ("<<NpadsX()<<','<<NpadsY()<<") in sector ("<<NpadsXsec()<<','<<NpadsYsec()<<')'<<endl;
+  cout<<"PC size ("<<PcSizeX()<<','<<PcSizeY()<<") sector size ("<<SectorSizeX()<<','<<SectorSizeY()<<") pad size ("<<PadSizeX()<<','
+      <<PadSizeY()<<") Dead zone "<<DeadZone()<<endl;
+  cout<<"Anode wire pitch "<<WirePitch()<<" Anode-Cathode gap "<<AnodeCathodeGap()<<" Protection wires-cathode gap "<<ProximityGap()<<endl<<endl;
+}
+//__________________________________________________________________________________________________

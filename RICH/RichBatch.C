@@ -1,15 +1,14 @@
 void RichBatch(const Int_t iNevents,const Bool_t isDebug,const char *sConfigFileName)
 {
-  if(isDebug)
-    gAlice->SetDebug(1);
+  if(isDebug) gAlice->SetDebug(1);
 
-  Info("my/AliceBatch.C","%i event(s) requested, debug %i",iNevents,isDebug);  
+  Info("my/RichBatch.C","%i event(s) requested, debug %i,config file %s",iNevents,isDebug,sConfigFileName);  
   TStopwatch sw;TDatime time;	
 
-  gAlice->Run(iNevents,sConfigFileName);
+  AliSimulation a;  a.Run(iNevents);
    
-  cout<<"\nInfo in <my/AliceBatch.C>: Start time: ";time.Print();
-  cout<<"Info in <my/AliceBatch.C>: Stop  time: ";time.Set();  time.Print();
-  cout<<"Info in <my/AliceBatch.C>: Time  used: ";sw.Print();
-  gSystem->Exec("touch ZZZfinishedZZZ");
+  cout<<"\nInfo in <my/RichBatch.C>: Start time: ";time.Print();
+    cout<<"Info in <my/RichBatch.C>: Stop  time: ";time.Set();  time.Print();
+    cout<<"Info in <my/RichBatch.C>: Time  used: ";sw.Print();
+  gSystem->Exec("touch ZZZ______finished_______ZZZ");
 }

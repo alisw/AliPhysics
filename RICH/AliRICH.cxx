@@ -23,6 +23,8 @@
 #include <TFile.h>
 #include <TNode.h> 
 #include <TObjArray.h>
+#include <TParticle.h>
+#include <AliStack.h>
 #include <AliMagF.h>
 #include <AliRun.h>
 #include <AliRunDigitizer.h>
@@ -33,18 +35,16 @@ ClassImp(AliRICHhit)
 //__________________________________________________________________________________________________
 void AliRICHhit::Print(Option_t*)const
 {
-  TVector3 glob(fX,fY,fZ);
-  AliRICH *pRich = (AliRICH*)gAlice->GetDetector("RICH");
-  TVector3 loc = pRich->C(fChamber)->Glob2Loc(glob);
-  ::Info("hit","chamber=%2i, PID=%9i, TID=%6i, eloss=%9.3f eV, XYz(%7.2f,%7.2f,%7.2f)",fChamber,fPid,fTrack,fEloss*1e9,loc.X(),loc.Y(),loc.Z());
+  ::Info("hit","Ch=%1i, TID=%6i, eloss=%9.3f eV, in-out dist=%9.4f, OUT(%7.2f,%7.2f,%7.2f)"
+      ,fChamber,fTrack,fEloss*1e9,Length(),fOutX3.X(),fOutX3.Y(),fOutX3.Z());
 }
 //__________________________________________________________________________________________________
 ClassImp(AliRICHdigit)
 //__________________________________________________________________________________________________
 void AliRICHdigit::Print(Option_t*)const
 {
-  ::Info("digit","ID=%6i, PID=%9i, c=%2i, x=%3i, y=%3i, q=%8.2f, TID1=%5i, TID2=%5i, TID3=%5i",
-           Id(),   fCombiPid,fChamber,fPadX,fPadY,fQdc,fTracks[0],fTracks[1],fTracks[2]);
+  ::Info("digit","csxy=%6i, cfm=%9i, c=%2i, x=%3i, y=%3i, q=%8.3f, TID1=%5i, TID2=%5i, TID3=%5i",
+                  Id(),fCombiPid,fChamber,fPadX,fPadY,fQdc,fTracks[0],fTracks[1],fTracks[2]);
 }
 //__________________________________________________________________________________________________
 ClassImp(AliRICHcluster)
@@ -129,10 +129,41 @@ AliRICH::~AliRICH()
 //__________________________________________________________________________________________________
 void AliRICH::Hits2SDigits()
 {
-//Create a list of sdigits corresponding to list of hits. Every hit generates one or more sdigits.
+// Create a list of sdigits corresponding to list of hits. Every hit generates one or more sdigits.
+//   
   if(GetDebug()) Info("Hit2SDigits","Start.");
+  for(Int_t iEventN=0;iEventN<GetLoader()->GetRunLoader()->GetAliRun()->GetEventsPerRun();iEventN++){//events loop
+    GetLoader()->GetRunLoader()->GetEvent(iEventN);
+  
+    if(!GetLoader()->TreeH()) GetLoader()->LoadHits();    GetLoader()->GetRunLoader()->LoadHeader(); 
+                                                          GetLoader()->GetRunLoader()->LoadKinematics();//from
+    if(!GetLoader()->TreeS()) GetLoader()->MakeTree("S"); MakeBranch("S");//to
+          
+    for(Int_t iPrimN=0;iPrimN<GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop
+      GetLoader()->TreeH()->GetEntry(iPrimN);
+      for(Int_t iHitN=0;iHitN<Hits()->GetEntries();iHitN++){//hits loop 
+        AliRICHhit *pHit=(AliRICHhit*)Hits()->At(iHitN);                
+        TVector2 x2 = Param()->ShiftToWirePos(C(pHit->C())->Glob2Loc(pHit->OutX3()));                
+        Int_t iTotQdc=Param()->TotQdc(x2,pHit->Eloss());
+        
+        Int_t iPadXmin,iPadXmax,iPadYmin,iPadYmax;
+        Param()->Loc2Area(x2,iPadXmin,iPadYmin,iPadXmax,iPadYmax);//determine affected pads
+        if(GetDebug()) Info("Hits2SDigits","left-down=(%i,%i) right-up=(%i,%i)",iPadXmin,iPadYmin,iPadXmax,iPadYmax);
+        for(Int_t iPadY=iPadYmin;iPadY<=iPadYmax;iPadY++)//affected pads loop
+          for(Int_t iPadX=iPadXmin;iPadX<=iPadXmax;iPadX++){
+            Double_t padQdc=iTotQdc*Param()->FracQdc(x2,iPadX,iPadY);
+            if(padQdc>0.1) AddSDigit(pHit->C(),iPadX,iPadY,padQdc,
+              GetLoader()->GetRunLoader()->Stack()->Particle(pHit->GetTrack())->GetPdgCode(),pHit->GetTrack());
+          }//affected pads loop 
+      }//hits loop
+    }//prims loop
+    GetLoader()->TreeS()->Fill();
+    GetLoader()->WriteSDigits("OVERWRITE");
+  }//events loop  
+  GetLoader()->UnloadHits(); GetLoader()->GetRunLoader()->UnloadHeader(); GetLoader()->GetRunLoader()->UnloadKinematics();
+  GetLoader()->UnloadSDigits();  
   if(GetDebug()) Info("Hit2SDigits","Stop.");
-}//void AliRICH::Hits2SDigits()
+}//Hits2SDigits()
 //__________________________________________________________________________________________________
 void AliRICH::SDigits2Digits()
 {
@@ -484,7 +515,7 @@ void AliRICH::CreateGeometry()
 //Methane 
   par[0]=pcX/2;par[1]=Param()->GapThickness()/2;par[2]=pcY/2;         gMC->Gsvolu("META","BOX ",idtmed[1004], par, 3);
 //Methane gap 
-  par[0]=pcX/2;par[1]=Param()->ProximityGapThickness()/2;par[2]=pcY/2;gMC->Gsvolu("GAP ","BOX ",(*fIdtmed)[kGAP],par,3);
+  par[0]=pcX/2;par[1]=Param()->ProximityGap()/2;par[2]=pcY/2;gMC->Gsvolu("GAP ","BOX ",(*fIdtmed)[kGAP],par,3);
 //CsI PC
   par[0]=pcX/2;par[1]=.25;par[2]=pcY/2;  gMC->Gsvolu("CSI ", "BOX ", (*fIdtmed)[kCSI], par, 3);
 //Anode grid 
@@ -603,11 +634,11 @@ void AliRICH::CreateGeometry()
   gMC->Gspos("OQF2", 2, "SRIC", 0., 1.276 - Param()->GapThickness()/2 - Param()->QuartzThickness() - Param()->FreonThickness()/2, 0., 0, "ONLY");          //Original settings 
   gMC->Gspos("OQF1", 3, "SRIC", - (Param()->OuterFreonWidth()/2 + Param()->InnerFreonWidth()/2) - 2, 1.276 - Param()->GapThickness()/2 - Param()->QuartzThickness() - Param()->FreonThickness()/2, 0., 0, "ONLY");       //Original settings (-31.3)
   gMC->Gspos("QUAR", 1, "SRIC", 0., 1.276 - Param()->GapThickness()/2 - Param()->QuartzThickness()/2, 0., 0, "ONLY");
-  gMC->Gspos("GAP ", 1, "META", 0., Param()->GapThickness()/2 - Param()->ProximityGapThickness()/2 - 0.0001, 0., 0, "ONLY");
+  gMC->Gspos("GAP ", 1, "META", 0., Param()->GapThickness()/2 - Param()->ProximityGap()/2 - 0.0001, 0., 0, "ONLY");
   gMC->Gspos("META", 1, "SRIC", 0., 1.276, 0., 0, "ONLY");
   gMC->Gspos("CSI ", 1, "SRIC", 0., 1.276 + Param()->GapThickness()/2 + .25, 0., 0, "ONLY");
 //Wire support placing
-  gMC->Gspos("WSG2", 1, "GAP ", 0., Param()->ProximityGapThickness()/2 - .1, 0., 0, "ONLY");
+  gMC->Gspos("WSG2", 1, "GAP ", 0., Param()->ProximityGap()/2 - .1, 0., 0, "ONLY");
   gMC->Gspos("WSG1", 1, "CSI ", 0., 0., 0., 0, "ONLY");
   gMC->Gspos("WSMe", 1, "SRIC ", 0., 1.276 + Param()->GapThickness()/2 + .5 + 1.05, 0., 0, "ONLY");
 //Backplane placing
@@ -644,18 +675,20 @@ void AliRICH::CreateChambers()
 //__________________________________________________________________________________________________
 void AliRICH::GenerateFeedbacks(Int_t iChamber,Float_t eloss)
 {
-// Generate FeedBack photons
-//Determine number of feedback photons
+// Generate FeedBack photons 
+// eloss=0 means photon so only pulse height distribution is to be analysed. This one is done in AliRICHParam::TotQdc()
+  
   TLorentzVector x4;
   gMC->TrackPosition(x4);  
-  Int_t sector;
-  Int_t iTotQdc=Param()->Loc2TotQdc(C(iChamber)->Glob2Loc(x4),eloss,gMC->TrackPid(),sector);
+  TVector2 x2=C(iChamber)->Glob2Loc(x4);
+  Int_t sector=Param()->Sector(x2);
+  Int_t iTotQdc=Param()->TotQdc(x2,eloss);
   Int_t iNphotons=gMC->GetRandom()->Poisson(P()->AlphaFeedback(sector)*iTotQdc);    
   if(GetDebug())Info("GenerateFeedbacks","N photons=%i",iNphotons);
   Int_t j;
   Float_t cthf, phif, enfp = 0, sthf, e1[3], e2[3], e3[3], vmod, uswop,dir[3], phi,pol[3], mom[4];
 //Generate photons
-  for(Int_t i=0;i<iNphotons;i++){//feddbacks loop
+  for(Int_t i=0;i<iNphotons;i++){//feedbacks loop
     Double_t ranf[2];
     gMC->GetRandom()->RndmArray(2,ranf);    //Sample direction
     cthf=ranf[0]*2-1.0;

@@ -16,7 +16,7 @@ public:
   virtual Int_t  IsVersion()                                                    const{return 1;}
   
   virtual void   StepManager();
-          Bool_t IsFresnelLoss(); 
+          Bool_t IsLostByFresnel(); 
 private:
   ClassDef(AliRICHv1,1)//RICH full version for simulation
 };

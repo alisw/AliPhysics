@@ -270,8 +270,8 @@ void SD_D()
         combiPid+=pSdig->CombiPid();
         if(iNdigitsPerPad<=3)
           tid[iNdigitsPerPad-1]=pSdig->Tid(0);
-//        else
-//          Info("","More then 3 sdigits for the given pad");
+        else
+          Warning("SDigits2Digits","More then 3 sdigits for the given pad");
       }else{//new pad, add the pevious one
         if(id!=kBad&&r->Param()->IsOverTh(chamber,x,y,q)) {
            r->AddDigit(chamber,x,y,q,combiPid,tid);
@@ -390,81 +390,6 @@ Bool_t ReadAlice()
   return kTRUE;
 }
 //__________________________________________________________________________________________________
-void PrintGeo(Float_t rotDeg=0)
-{
-  AliRICHParam *p=new AliRICHParam;  
-  Double_t r=p->Offset();
-  Double_t kP=p->AngleXY();
-  Double_t kT=p->AngleYZ();
-  Double_t kRot;
-  
-  if(rotDeg==0)
-    kRot=p->AngleRot();
-  else
-    kRot=rotDeg*deg;
-        
-  cout<<endl;
-  Double_t  phi=90*deg+kRot+kP,theta=90*deg+kT;
-  Info("   menu for          1","r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
-                                 r,      theta*r2d,  phi*r2d,  
-                                                               r*sin(theta)*cos(phi),
-                                                                       r*sin(theta)*sin(phi),
-                                                                               r*cos(theta));
-  
-  phi=90*deg+kRot+kP,theta=90*deg;
-  Info("   menu for          2","r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
-                                 r,      theta*r2d,  phi*r2d,  
-                                                               r*sin(theta)*cos(phi),
-                                                                       r*sin(theta)*sin(phi),
-                                                                               r*cos(theta));
-  
-  phi=90*deg+kRot,theta=90*deg-kT;    
-  Info("   menu for          3","r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
-                                 r,      theta*r2d,  phi*r2d,  
-                                                               r*sin(theta)*cos(phi),
-                                                                       r*sin(theta)*sin(phi),
-                                                                               r*cos(theta));
-  
-  
-  phi=90*deg+kRot,theta=90*deg;
-  Info("   menu for          4","r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
-                                 r,      theta*r2d,  phi*r2d,  
-                                                               r*sin(theta)*cos(phi),
-                                                                       r*sin(theta)*sin(phi),
-                                                                               r*cos(theta));
-
-  
-  phi=90*deg+kRot,theta=90*deg+kT;
-  Info("   menu for          5","r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
-                                 r,      theta*r2d,  phi*r2d,  
-                                                                r*sin(theta)*cos(phi),
-                                                                       r*sin(theta)*sin(phi),
-                                                                               r*cos(theta));
-  
-  
-  phi=90*deg+kRot-kP,theta=90*deg;
-  Info("   menu for          6","r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
-                                 r,      theta*r2d,  phi*r2d,  
-                                                               r*sin(theta)*cos(phi),
-                                                                       r*sin(theta)*sin(phi),
-                                                                               r*cos(theta));
-  
-  phi=90*deg+kRot-kP,theta=90*deg+kT;
-  Info("   menu for          7","r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f",
-                                 r,      theta*r2d,  phi*r2d,  
-                                                               r*sin(theta)*cos(phi),
-                                                                       r*sin(theta)*sin(phi),
-                                                                               r*cos(theta));
-
-  delete p;
-}//PrintGeo()
-//__________________________________________________________________________________________________
-
-Double_t Gain(Double_t *x,Double_t *par)
-{
-  return AliRICHParam::GainSag(x[0],par[0]);
-}
-
 void TestResponse()
 {
   TCanvas *pC=new TCanvas("c","Amplification test",900,800);

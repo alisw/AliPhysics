@@ -95,8 +95,8 @@ void AliRICHv0::StepManager()
     gMC->CurrentVolOffID(2,iChamber);
     TVector3 x3=C(iChamber)->G2L(x4);
     Info("","loc(%+8.3f,%+8.3f,%8.3f) by G2L",         x3.X(),x3.Y(),x3.Z());  
-    x3=C(iChamber)->Glob2Loc(x4);
-    Info("","loc(%+8.3f,%+8.3f,%8.3f) by Global2Local",         x3.X(),x3.Y(),x3.Z());  
+    TVector2 x2=C(iChamber)->Glob2Loc(x4);
+    Info("","loc(%+8.3f,%+8.3f) by Global2Local",      x2.X(),x2.Y());  
   }
   Info("","end of current step\n");
 }//StepManager()
