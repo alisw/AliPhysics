@@ -40,7 +40,7 @@ AliMagFC::AliMagFC(const char *name, const char *title, Int_t integ,
 }
 
 //________________________________________
-void AliMagFC::Field(Float_t *x, Float_t *b)
+void AliMagFC::Field(Float_t *x, Float_t *b) const
 {
   //
   // Method to return the field in a point
@@ -70,7 +70,7 @@ void AliMagFC::Field(Float_t *x, Float_t *b)
 }
 
 
-void AliMagFC::ZDCField(Float_t *x, Float_t *b)
+void AliMagFC::ZDCField(Float_t *x, Float_t *b) const
 {
 //This is the ZDC part
     Float_t rad2=x[0]*x[0]+x[1]*x[1];

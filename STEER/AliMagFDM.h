@@ -22,13 +22,13 @@ public:
   AliMagFDM(const char *name, const char *title, Int_t integ,
 	    Float_t factor, Float_t fmax);
   virtual ~AliMagFDM(){} 
-  virtual void Field(Float_t *x, Float_t *b);
+  virtual void Field(Float_t *x, Float_t *b) const;
   virtual void ReadField(); 
   virtual void SetSolenoidField(Float_t field = 2.) {fSolenoid = field;}
   virtual Float_t SolenoidField() const {return fSolenoid;}
-  Int_t FZ(Double_t u, Float_t *Ar, Float_t du, Int_t ki, Int_t nu) const;
-  Double_t Ba(Int_t kai, Double_t za1, Double_t za2, Double_t al1, Double_t al2, Double_t al3, Int_t ka, Int_t ma);
-  Double_t Bb(Double_t z1, Double_t z2, Double_t y1, Double_t y2, Double_t x1, Double_t x2, Int_t kvr, Int_t k, Int_t l, Int_t m); 
+  Int_t FZ(Double_t u, const Float_t *Ar, const Float_t du, Int_t ki, const Int_t nu) const;
+  Double_t Ba(Int_t kai, Double_t za1, Double_t za2, Double_t al1, Double_t al2, Double_t al3, Int_t ka, Int_t ma) const;
+  Double_t Bb(Double_t z1, Double_t z2, Double_t y1, Double_t y2, Double_t x1, Double_t x2, Int_t kvr, Int_t k, Int_t l, Int_t m) const; 
 
 
 protected:

@@ -67,7 +67,7 @@ AliMagF::AliMagF(const char *name, const char *title, Int_t integ,
 }
 
 //_______________________________________________________________________
-void AliMagF::Field(Float_t*, Float_t *b)
+void AliMagF::Field(Float_t*, Float_t *b) const
 {
   //
   // Method to return the field in one point -- dummy in this case

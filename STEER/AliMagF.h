@@ -22,7 +22,7 @@ public:
   AliMagF(const char *name, const char *title, Int_t integ, 
 	  Float_t factor = 1., Float_t fmax = 10.);
   virtual ~AliMagF() {}
-  virtual void Field(Float_t *x, Float_t *b);
+  virtual void Field(Float_t *x, Float_t *b) const;
   virtual Int_t Type() const {return fType;}
   virtual Float_t Max() const {return fMax;}
   virtual Int_t Map() const {return fMap;}

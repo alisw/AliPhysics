@@ -175,7 +175,7 @@ Float_t AliMagFMaps::SolenoidField() const
 }
 
 //_______________________________________________________________________
-void AliMagFMaps::Field(Float_t *x, Float_t *b)
+void AliMagFMaps::Field(Float_t *x, Float_t *b) const
 {
   //
   // Method to calculate the magnetic field
@@ -184,7 +184,7 @@ void AliMagFMaps::Field(Float_t *x, Float_t *b)
   
 
     
-    if (!fFieldRead) ReadField();
+ //    if (!fFieldRead) ReadField();
 
   //
   // Field Maps have been calculated for the coordinate system in which 

@@ -106,7 +106,7 @@ AliMagFDM::AliMagFDM(const char *name, const char *title, Int_t integ,
 }
 
 //_______________________________________________________________________
-void AliMagFDM::Field(Float_t *xfi, Float_t *b)
+void AliMagFDM::Field(Float_t *xfi, Float_t *b) const
 {
   //
   // Main routine to compute the field in a point
@@ -334,8 +334,8 @@ if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2]
 }
 
 //_______________________________________________________________________
-Int_t AliMagFDM::FZ(Double_t temp, Float_t *Ar, 
-                    Float_t delu, Int_t ik,Int_t nk) const
+Int_t AliMagFDM::FZ(Double_t temp, const Float_t *Ar, 
+                    const Float_t delu, Int_t ik, const Int_t nk) const
 {
   //
   // Quest of a point position at x,y,z (Cartensian) and R,Phi,z (Polar) axises
@@ -368,7 +368,7 @@ Int_t AliMagFDM::FZ(Double_t temp, Float_t *Ar,
 //_______________________________________________________________________
 Double_t AliMagFDM::Ba(Int_t kaai,Double_t zaa1, Double_t zaa2, 
                        Double_t alf1, Double_t alf2, Double_t alf3, 
-                       Int_t kaa, Int_t maa)
+                       Int_t kaa, Int_t maa) const
 {
   //
   // Calculation of field componet for case (keps <r0<= fRdel) at a given axis
@@ -415,7 +415,7 @@ Double_t AliMagFDM::Ba(Int_t kaai,Double_t zaa1, Double_t zaa2,
   
 //_______________________________________________________________________
 Double_t AliMagFDM::Bb(Double_t z1,Double_t z2, Double_t y1,Double_t y2, 
-                       Double_t x1,Double_t x2, Int_t kv, Int_t k, Int_t l, Int_t m)
+                       Double_t x1,Double_t x2, Int_t kv, Int_t k, Int_t l, Int_t m) const
 {  
   //
   // Calculation of field componet at a given axis (general case)
