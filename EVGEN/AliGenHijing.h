@@ -99,6 +99,9 @@ class AliGenHijing : public AliGenerator
     void   AdjustWeights();
     // check seleted daughters
     Bool_t DaughtersSelection(TParticle* iparticle, TClonesArray* particles);
+    // check if stable
+    Bool_t Stable(TParticle*  particle);
+    
     ClassDef(AliGenHijing,1) // AliGenerator interface to Hijing
 };
 #endif

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2000/10/17 15:10:20  morsch
+Write first all the parent particles to the stack and then the final state particles.
+
 Revision 1.9  2000/10/17 13:38:59  morsch
 Protection against division by zero in EvaluateCrossSection() and KinematicSelection(..)     (FCA)
 
@@ -175,9 +178,8 @@ void AliGenHijing::Generate()
 
 	for (i = 0; i<np; i++) {
 	    TParticle *  iparticle       = (TParticle *) particles->At(i);
-	    Bool_t  hasDaughter          =  (iparticle->GetFirstDaughter() >=0);
 // Is this a parent particle ?
-	    if (!hasDaughter) continue;
+	    if (Stable(iparticle)) continue;
 //
 	    Bool_t  hasMother            =  (iparticle->GetFirstMother()   >=0);
 	    Bool_t  selected             =  kTRUE;
@@ -185,6 +187,9 @@ void AliGenHijing::Generate()
 	    
 	    
 	    kf        = iparticle->GetPdgCode();
+	    ks        = iparticle->GetStatusCode();
+	    if (kf == 92) continue;
+	    
 	    if (!fSelectAll) selected = KinematicSelection(iparticle)&&SelectFlavor(kf);
 	    hasSelectedDaughters = DaughtersSelection(iparticle, particles);
 //
@@ -192,7 +197,6 @@ void AliGenHijing::Generate()
 //
 	    if (selected || hasSelectedDaughters) {
 		nc++;
-		ks        = iparticle->GetStatusCode();
 		p[0]=iparticle->Px();
 		p[1]=iparticle->Py();
 		p[2]=iparticle->Pz();
@@ -203,9 +207,12 @@ void AliGenHijing::Generate()
 		imo=-1;
 		if (hasMother) {
 		    imo=iparticle->GetFirstMother();
-		    imo=*(newPos+imo);
+		    TParticle* mother= (TParticle *) particles->At(imo);
+		    imo = (mother->GetPdgCode() != 92) ? imo=*(newPos+imo) : -1;
 		}
 // Put particle on the stack ... 
+		printf("\n set track mother: %d %d %d %d %d %d ",i,imo, kf, nt+1, selected, hasSelectedDaughters);
+
 		gAlice->SetTrack(0,imo,kf,p,origin,polar,
 				 tof,"Primary",nt);
 // ... and keep it there
@@ -220,10 +227,8 @@ void AliGenHijing::Generate()
 
 	for (i = 0; i<np; i++) {
 	    TParticle *  iparticle       = (TParticle *) particles->At(i);
-
-	    Bool_t  hasDaughter          =  (iparticle->GetFirstDaughter() >=0);		
 // Is this a final state particle ?
-	    if (hasDaughter) continue;
+	    if (!Stable(iparticle)) continue;
 //	    
 	    Bool_t  hasMother            =  (iparticle->GetFirstMother()   >=0);
 	    Bool_t  selected             =  kTRUE;
@@ -243,13 +248,18 @@ void AliGenHijing::Generate()
 		origin[2]=origin0[2]+iparticle->Vz()/10;
 		tof=kconv*iparticle->T();
 		imo=-1;
+
 		if (hasMother) {
 		    imo=iparticle->GetFirstMother();
-		    imo=*(newPos+imo);
+		    TParticle* mother= (TParticle *) particles->At(imo);
+		    imo = (mother->GetPdgCode() != 92) ? imo=*(newPos+imo) : -1;
 		}
 // Put particle on the stack
 		gAlice->SetTrack(fTrackIt,imo,kf,p,origin,polar,
 				 tof,"Secondary",nt);
+
+		printf("\n set track final: %d %d %d",imo, kf, nt);
+		gAlice->KeepTrack(nt);
 		*(newPos+i)=nt;
 	    } // selected
 	} // particle loop final state
@@ -396,7 +406,10 @@ Bool_t AliGenHijing::DaughtersSelection(TParticle* iparticle, TClonesArray* part
 	for (i=imin; i<= imax; i++){
 	    TParticle *  jparticle       = (TParticle *) particles->At(i);	
 	    Int_t ip=jparticle->GetPdgCode();
-	    if (KinematicSelection(jparticle)&&SelectFlavor(ip)) {selected=kTRUE; break;}
+	    if (KinematicSelection(jparticle)&&SelectFlavor(ip)) {
+		printf("\n selected ip %d %d %d ", ip, imin, imax);
+		selected=kTRUE; break;
+	    }
 	    if (DaughtersSelection(jparticle, particles)) {selected=kTRUE; break; }
 	}
     } else {
@@ -417,9 +430,20 @@ Bool_t AliGenHijing::SelectFlavor(Int_t pid)
     
     Int_t ifl=TMath::Abs(pid/100);
     if (ifl > 10) ifl/=10;
-    return ((fFlavor==4 && (ifl==4 || ifl==5))  || 
-	    (fFlavor==5 &&  ifl==5));
+    return (fFlavor == ifl);
+}
 
+Bool_t AliGenHijing::Stable(TParticle*  particle)
+{
+    Int_t kf = TMath::Abs(particle->GetPdgCode());
+    
+    if ( (particle->GetFirstDaughter() < 0 ) || (kf == 1000*fFlavor+122))
+	 
+    {
+	return kTRUE;
+    } else {
+	return kFALSE;
+    }
 }
 
 void AliGenHijing::MakeHeader()
@@ -445,3 +469,16 @@ AliGenHijing& AliGenHijing::operator=(const  AliGenHijing& rhs)
 // Assignment operator
     return *this;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
