@@ -990,7 +990,9 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
       mat = (TGeoMaterial*)listfluka->At(i);
       out << setw(10) << "MATERIAL  ";
       out.setf(static_cast<std::ios::fmtflags>(0),std::ios::floatfield);
-      matname = mat->GetName();
+//      matname = mat->GetName();
+      objstr = (TObjString*)listflukanames->At(i);
+      matname = objstr->GetString();
       ToFlukaString(matname);
       zmat = mat->GetZ();
       if (zmat-Int_t(zmat)>0.01) {
@@ -1099,13 +1101,16 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
       vol = gGeoManager->GetVolume(i);
       mat = vol->GetMedium()->GetMaterial();
       idmat = mat->GetIndex();
-      flagfield = (vol->GetField())?1.:0.;
+//      flagfield = (vol->GetField())?1.:0.;
+      flagfield = 0.;
       out << setw(10) << "ASSIGNMAT ";
       out.setf(static_cast<std::ios::fmtflags>(0),std::ios::floatfield);
       out << setw(10) << setiosflags(ios::fixed) << Double_t(idmat);
       out << setw(10) << setiosflags(ios::fixed) << Double_t(i);
       out << setw(10) << "0.0";
+      out << setw(10) << "0.0";
       out << setw(10) << setiosflags(ios::fixed) << flagfield;
+      out << setw(10) << "0.0";
       out << endl;
    }
    delete listfluka;
