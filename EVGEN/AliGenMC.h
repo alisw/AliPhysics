@@ -36,7 +36,7 @@ class AliGenMC : public AliGenerator
 	{fChildPMin = pmin; fChildPMax = pmax;}
     virtual void SetChildPtRange(Float_t ptmin = 0, Float_t ptmax = 20.)
 	{fChildPtMin = ptmin; fChildPtMax = ptmax;}
-    virtual void SetChildPhiRange(Float_t phimin = -180., Float_t phimax = 180)
+    virtual void SetChildPhiRange(Float_t phimin = 0., Float_t phimax = 360.)
 	{fChildPhiMin = TMath::Pi()*phimin/180;
 	fChildPhiMax  = TMath::Pi()*phimax/180;}
     virtual void SetChildThetaRange(Float_t thetamin = 0, Float_t thetamax = 180)
