@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2000/10/02 21:28:17  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.15  2000/05/18 14:33:01  vicinanz
 Modified to be full HP compliant
 
@@ -778,7 +781,7 @@ void AliTOFdigit::AddTrack(Int_t track)
   }else if (fTracks[2]==0){
      fTracks[2] = track;
   }else{
-     printf("AliTOFdigit::AddTrack ERROR: Too many Tracks (>3) \n");
+  //   printf("AliTOFdigit::AddTrack ERROR: Too many Tracks (>3) \n");
   }
 }
 
