@@ -136,7 +136,10 @@ $(@PACKAGE@LIB):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
 ifndef ALIQUIET
 	  @echo "***** Linking library $@ *****"
 endif
-	  $(MUTE)$(SHLD) $(SOFLAGS) $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS)  -o $@ $(@PACKAGE@O) $(@PACKAGE@DO) $(SHLIB)
+	  $(MUTE)export TMPDIR=$(shell mktemp -d /tmp/$$$$.XXXXXX) ;\
+	  cd $$TMPDIR ; find $(CURDIR)/@MODULE@/tgt_$(ALICE_TARGET) -name '*.o' -exec ln -s {} . \; ;\
+	  $(SHLD) $(SOFLAGS) $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS)  -o $(CURDIR)/$@ $(notdir $(@PACKAGE@O) $(@PACKAGE@DO)) $(SHLIB) ;\
+      cd $(CURDIR) ; rm -rf $$TMPDIR
  
 $(@PACKAGE@BIN):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
 ifndef ALIQUIET
