@@ -423,6 +423,7 @@ AliESDtrack::GetConstrainedExternalCovariance(Double_t c[15]) const {
 Double_t AliESDtrack::GetP() const {
   //---------------------------------------------------------------------
   // This function returns the track momentum
+  // Results for (nearly) straight tracks are meaningless !
   //---------------------------------------------------------------------
   if (TMath::Abs(fRp[4])<=0) return 0;
   Double_t pt=1./TMath::Abs(fRp[4]);
@@ -432,45 +433,109 @@ Double_t AliESDtrack::GetP() const {
 void AliESDtrack::GetConstrainedPxPyPz(Double_t *p) const {
   //---------------------------------------------------------------------
   // This function returns the constrained global track momentum components
+  // Results for (nearly) straight tracks are meaningless !
   //---------------------------------------------------------------------
   if (TMath::Abs(fCp[4])<=0) {
     p[0]=p[1]=p[2]=0;
     return;
   }
-  Double_t phi=TMath::ASin(fCp[2]) + fCalpha;
+  if (TMath::Abs(fCp[2]) > 0.999999) {
+     p[0]=p[1]=p[2]=0;
+     return;
+  }
   Double_t pt=1./TMath::Abs(fCp[4]);
-  p[0]=pt*TMath::Cos(phi); p[1]=pt*TMath::Sin(phi); p[2]=pt*fCp[3]; 
+  Double_t cs=TMath::Cos(fCalpha), sn=TMath::Sin(fCalpha);
+  Double_t r=TMath::Sqrt(1-fCp[2]*fCp[2]);
+  p[0]=pt*(r*cs - fCp[2]*sn); p[1]=pt*(fCp[2]*cs + r*sn); p[2]=pt*fCp[3];
 }
+
 void AliESDtrack::GetConstrainedXYZ(Double_t *xyz) const {
   //---------------------------------------------------------------------
   // This function returns the global track position
   //---------------------------------------------------------------------
-  Double_t phi=TMath::ATan2(fCp[0],fCx) + fCalpha;
-  Double_t r=TMath::Sqrt(fCx*fCx + fCp[0]*fCp[0]);
-  xyz[0]=r*TMath::Cos(phi); xyz[1]=r*TMath::Sin(phi); xyz[2]=fCp[1]; 
+  Double_t cs=TMath::Cos(fCalpha), sn=TMath::Sin(fCalpha);
+  xyz[0]=fCx*cs - fCp[0]*sn; xyz[1]=fCx*sn + fCp[0]*cs; xyz[2]=fCp[1];
 }
 
 void AliESDtrack::GetPxPyPz(Double_t *p) const {
   //---------------------------------------------------------------------
   // This function returns the global track momentum components
+  // Results for (nearly) straight tracks are meaningless !
   //---------------------------------------------------------------------
   if (TMath::Abs(fRp[4])<=0) {
-    p[0]=p[1]=p[2]=0;
-    return;
+     p[0]=p[1]=p[2]=0;
+     return;
   }
-  Double_t phi=TMath::ASin(fRp[2]) + fRalpha;
+  if (TMath::Abs(fRp[2]) > 0.999999) {
+     p[0]=p[1]=p[2]=0;
+     return;
+  }
   Double_t pt=1./TMath::Abs(fRp[4]);
-  p[0]=pt*TMath::Cos(phi); p[1]=pt*TMath::Sin(phi); p[2]=pt*fRp[3]; 
+  Double_t cs=TMath::Cos(fRalpha), sn=TMath::Sin(fRalpha);
+  Double_t r=TMath::Sqrt(1-fRp[2]*fRp[2]);
+  p[0]=pt*(r*cs - fRp[2]*sn); p[1]=pt*(fRp[2]*cs + r*sn); p[2]=pt*fRp[3];
 }
+
 void AliESDtrack::GetXYZ(Double_t *xyz) const {
   //---------------------------------------------------------------------
   // This function returns the global track position
   //---------------------------------------------------------------------
-  Double_t phi=TMath::ATan2(fRp[0],fRx) + fRalpha;
-  Double_t r=TMath::Sqrt(fRx*fRx + fRp[0]*fRp[0]);
-  xyz[0]=r*TMath::Cos(phi); xyz[1]=r*TMath::Sin(phi); xyz[2]=fRp[1]; 
+  Double_t cs=TMath::Cos(fRalpha), sn=TMath::Sin(fRalpha);
+  xyz[0]=fRx*cs - fRp[0]*sn; xyz[1]=fRx*sn + fRp[0]*cs; xyz[2]=fRp[1];
 }
 
+void AliESDtrack::GetCovariance(Double_t cv[21]) const {
+  //---------------------------------------------------------------------
+  // This function returns the global covariance matrix of the track params
+  // 
+  // Cov(x,x) ... :   cv[0]
+  // Cov(y,x) ... :   cv[1]  cv[2]
+  // Cov(z,x) ... :   cv[3]  cv[4]  cv[5]
+  // Cov(px,x)... :   cv[6]  cv[7]  cv[8]  cv[9]
+  // Cov(py,y)... :   cv[10] cv[11] cv[12] cv[13] cv[14]
+  // Cov(pz,z)... :   cv[15] cv[16] cv[17] cv[18] cv[19] cv[20]
+  //
+  // Results for (nearly) straight tracks are meaningless !
+  //---------------------------------------------------------------------
+  if (TMath::Abs(fRp[4])<=0) {
+     for (Int_t i=0; i<21; i++) cv[i]=0.;
+     return;
+  }
+  if (TMath::Abs(fRp[2]) > 0.999999) {
+     for (Int_t i=0; i<21; i++) cv[i]=0.;
+     return;
+  }
+  Double_t pt=1./TMath::Abs(fRp[4]);
+  Double_t cs=TMath::Cos(fRalpha), sn=TMath::Sin(fRalpha);
+  Double_t r=TMath::Sqrt(1-fRp[2]*fRp[2]);
+
+  Double_t m00=-sn, m10=cs;
+  Double_t m23=-pt*(sn + fRp[2]*cs/r), m43=-pt*pt*(r*cs - fRp[2]*sn);
+  Double_t m24= pt*(cs - fRp[2]*sn/r), m44=-pt*pt*(r*sn + fRp[2]*cs);
+  Double_t m35=pt, m45=-pt*pt*fRp[3];
+
+  cv[0]=fRc[0]*m00*m00;
+  cv[1]=fRc[0]*m00*m10; 
+  cv[2]=fRc[0]*m10*m10;
+  cv[3]=fRc[1]*m00; 
+  cv[4]=fRc[1]*m10; 
+  cv[5]=fRc[2];
+  cv[6]=m00*(fRc[3]*m23+fRc[10]*m43); 
+  cv[7]=m10*(fRc[3]*m23+fRc[10]*m43); 
+  cv[8]=fRc[4]*m23+fRc[11]*m43; 
+  cv[9]=m23*(fRc[5]*m23+fRc[12]*m43)+m43*(fRc[12]*m23+fRc[14]*m43);
+  cv[10]=m00*(fRc[3]*m24+fRc[10]*m44); 
+  cv[11]=m10*(fRc[3]*m24+fRc[10]*m44); 
+  cv[12]=fRc[4]*m24+fRc[11]*m44; 
+  cv[13]=m23*(fRc[5]*m24+fRc[12]*m44)+m43*(fRc[12]*m24+fRc[14]*m44);
+  cv[14]=m24*(fRc[5]*m24+fRc[12]*m44)+m44*(fRc[12]*m24+fRc[14]*m44);
+  cv[15]=m00*(fRc[6]*m35+fRc[10]*m45); 
+  cv[16]=m10*(fRc[6]*m35+fRc[10]*m45); 
+  cv[17]=fRc[7]*m35+fRc[11]*m45; 
+  cv[18]=m23*(fRc[8]*m35+fRc[12]*m45)+m43*(fRc[13]*m35+fRc[14]*m45);
+  cv[19]=m24*(fRc[8]*m35+fRc[12]*m45)+m44*(fRc[13]*m35+fRc[14]*m45); 
+  cv[20]=m35*(fRc[9]*m35+fRc[13]*m45)+m45*(fRc[13]*m35+fRc[14]*m45);
+}
 
 void AliESDtrack::GetInnerPxPyPz(Double_t *p) const {
   //---------------------------------------------------------------------
