@@ -1,5 +1,5 @@
 // $Id$ //
-// Category: geometry
+// Category: digits+hits
 //
 // See the class description in the header file.
 
@@ -8,6 +8,7 @@
 
 G4int TG4VSensitiveDetector::fgSDCounter = 0;
 
+//_____________________________________________________________________________
 TG4VSensitiveDetector::TG4VSensitiveDetector(G4String sdName)
   : G4VSensitiveDetector(sdName),
     fStepManager(TG4StepManager::Instance())
@@ -16,6 +17,7 @@ TG4VSensitiveDetector::TG4VSensitiveDetector(G4String sdName)
   fID = ++fgSDCounter;
 }
 
+//_____________________________________________________________________________
 TG4VSensitiveDetector::TG4VSensitiveDetector(G4String sdName, G4int id)
   : G4VSensitiveDetector(sdName),
     fID(id),
@@ -26,6 +28,7 @@ TG4VSensitiveDetector::TG4VSensitiveDetector(G4String sdName, G4int id)
   ++fgSDCounter;
 }
 
+//_____________________________________________________________________________
 TG4VSensitiveDetector::TG4VSensitiveDetector(
                                     const TG4VSensitiveDetector& right)
   : G4VSensitiveDetector(right)
@@ -37,18 +40,21 @@ TG4VSensitiveDetector::TG4VSensitiveDetector(
   ++fgSDCounter;;
 }
 
+//_____________________________________________________________________________
 TG4VSensitiveDetector::TG4VSensitiveDetector()
   : G4VSensitiveDetector("") 
 {
 //
 }
 
+//_____________________________________________________________________________
 TG4VSensitiveDetector::~TG4VSensitiveDetector() {
 //
 }
 
 // operators
 
+//_____________________________________________________________________________
 TG4VSensitiveDetector& TG4VSensitiveDetector::operator=(
                                     const TG4VSensitiveDetector &right)
 {
@@ -66,6 +72,7 @@ TG4VSensitiveDetector& TG4VSensitiveDetector::operator=(
 
 // public methods
 
+//_____________________________________________________________________________
 G4bool TG4VSensitiveDetector::ProcessHits(G4Step* step, G4TouchableHistory*)
 {
 // Calls StepManager of associated AliModule.
@@ -78,6 +85,7 @@ G4bool TG4VSensitiveDetector::ProcessHits(G4Step* step, G4TouchableHistory*)
   return true;
 }
 
+//_____________________________________________________________________________
 G4bool TG4VSensitiveDetector::ProcessHitsOnBoundary(G4Step* step)
 {
 // Calls StepManager of associated AliModule
