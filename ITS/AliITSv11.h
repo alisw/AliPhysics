@@ -12,9 +12,8 @@
 /////////////////////////////////////////////////////////////////////////
  
 #include "AliITS.h"
-class AliITSGeometryITSV;
-class AliITSGeometrySSDCone;
-//class AliITSGeometrySDDCone;
+class TGeoVolume;
+class TGeoPcon;
  
 class AliITSv11 : public AliITS {
 
@@ -100,6 +99,25 @@ class AliITSv11 : public AliITS {
 	 	 
  private:
     void InitAliITSgeom();
+    void SPDCone(TGeoVolume *Moth);
+    void SDDCone(TGeoVolume *Moth);
+    void SSDCone(TGeoVolume *Moth);
+    Double_t RmaxFrom2Points(TGeoPcon *p,Int_t i1,Int_t i2,Double_t z);
+    Double_t RminFrom2Points(TGeoPcon *p,Int_t i1,Int_t i2,Double_t z);
+    Double_t RFrom2Points(Double_t *p,Double_t *Z,Int_t i1,Int_t i2,Double_t z);
+    Double_t Zfrom2MinPoints(TGeoPcon *p,Int_t i1,Int_t i2,Double_t r);
+    Double_t Zfrom2MaxPoints(TGeoPcon *p,Int_t i1,Int_t i2,Double_t r);
+    Double_t Zfrom2Points(Double_t *Z,Double_t *p,Int_t i1,Int_t i2,Double_t r);
+    Double_t RmaxFromZpCone(TGeoPcon *p,Double_t tc,Double_t z,Double_t th=0.0);
+    Double_t RmaxFromZpCone(Double_t *Rmax,Double_t *Z,Double_t tc,Double_t z,Double_t th=0.0);
+    Double_t RminFromZpCone(TGeoPcon *p,Double_t tc,Double_t z,Double_t th=0.0);
+    Double_t RminFromZpCone(Double_t *Rmin,Double_t *Z,Double_t tc,Double_t z,Double_t th=0.0);
+    Double_t ZFromRmaxpCone(TGeoPcon *p,Double_t tc,Double_t r,Double_t th=0.0);
+    Double_t ZFromRmaxpCone(Double_t *GetRmax,Double_t *GetZ,Double_t tc,Double_t r,Double_t th=0.0);
+    Double_t ZFromRminpCone(TGeoPcon *p,Double_t tc,Double_t r,Double_t th=0.0);
+    void RadiusOfCurvature(Double_t rc,Double_t theta0,Double_t z0,
+			   Double_t r0,Double_t theta1,Double_t &z1,
+			   Double_t &r1);
 
     // TString fEuclidGeomtery,fEuclidMaterial defined in AliModule.
     Bool_t fEuclidOut;        // Flag to write geometry in euclid format
@@ -116,10 +134,6 @@ class AliITSv11 : public AliITS {
     Float_t  fChip2;	      // thickness of chip in SPD layer 2   
     Int_t    fRails;          // switch rails on (=1) and off (=0)
     Int_t    fFluid;          // switch between water(=1) and freon(=0)
-    //
-    AliITSGeometryITSV    *fITSV;  //! ITS Mother Volume.
-    AliITSGeometrySSDCone *fcS;    //! ITS SSD Cone geometry.
-//    AliITSGeometrySDDCone *fcD;    //! ITS SDD Cone geometry.
 
     ClassDef(AliITSv11,1)  //Hits manager for set:ITS version 11
 };
