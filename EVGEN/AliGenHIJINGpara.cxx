@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2001/05/16 14:57:10  alibrary
+New files for folders and Stack
+
 Revision 1.5  2000/12/21 16:24:06  morsch
 Coding convention clean-up
 
@@ -214,28 +217,36 @@ void AliGenHIJINGpara::Init()
 	TMath::Min((Double_t)fThetaMax/2,TMath::Pi()/2-1.e-10)));
     Float_t etaMax = -TMath::Log(TMath::Tan(
 	TMath::Max((Double_t)fThetaMin/2,1.e-10)));
-    fPtpi = new TF1("ptpi",&ptpi,0,20,0);
-    fPtka = new TF1("ptka",&ptka,0,20,0);
+    fPtpi   = new TF1("ptpi",&ptpi,0,20,0);
+    fPtka   = new TF1("ptka",&ptka,0,20,0);
     fETApic = new TF1("etapic",&etapic,etaMin,etaMax,0);
     fETAkac = new TF1("etakac",&etakac,etaMin,etaMax,0);
+
     TF1 *etaPic0 = new TF1("etapic",&etapic,-7,7,0);
     TF1 *etaKac0 = new TF1("etakac",&etakac,-7,7,0);
+
+    TF1 *ptPic0  = new TF1("ptpi",&ptpi,0.,15.,0);
+    TF1 *ptKac0  = new TF1("ptka",&ptka,0.,15.,0);
+
     Float_t intETApi  = etaPic0->Integral(-0.5, 0.5);
     Float_t intETAka  = etaKac0->Integral(-0.5, 0.5);
-    Float_t scalePi=7316/(intETApi/1.5);
-    Float_t scaleKa= 684/(intETAka/2.0);
-    
-    Float_t intPt  = (0.877*etaPic0->Integral(0, 15)+
-		      0.123*etaKac0->Integral(0, 15));
-    Float_t intPtSel = (0.877*etaPic0->Integral(fPtMin, fPtMax)+
-			0.123*etaKac0->Integral(fPtMin, fPtMax));
-    Float_t ptFrac = intPtSel/intPt;
-    
-    
+    Float_t scalePi   = 7316/(intETApi/1.5);
+    Float_t scaleKa   =  684/(intETAka/2.0);
+
+//  Fraction of events corresponding to the selected pt-range    
+    Float_t intPt    = (0.877*ptPic0->Integral(0, 15)+
+			0.123*ptKac0->Integral(0, 15));
+    Float_t intPtSel = (0.877*ptPic0->Integral(fPtMin, fPtMax)+
+			0.123*ptKac0->Integral(fPtMin, fPtMax));
+    Float_t ptFrac   = intPtSel/intPt;
+
+//  Fraction of events corresponding to the selected eta-range    
     Float_t intETASel  = (scalePi*etaPic0->Integral(etaMin, etaMax)+
 			  scaleKa*etaKac0->Integral(etaMin, etaMax));
-    Float_t phiFrac = (fPhiMax-fPhiMin)/2/TMath::Pi();
-    fParentWeight = Float_t(fNpart)/intETASel*ptFrac*phiFrac;
+//  Fraction of events corresponding to the selected phi-range    
+    Float_t phiFrac    = (fPhiMax-fPhiMin)/2/TMath::Pi();
+
+    fParentWeight = Float_t(fNpart)/(intETASel*ptFrac*phiFrac);
     
     printf("%s: The number of particles in the selected kinematic region corresponds to %f percent of a full event\n ", 
 	   ClassName(),100.*fParentWeight);
