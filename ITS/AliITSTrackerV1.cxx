@@ -493,7 +493,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
 		 //if(fPtref<0.1 ) fChi2max=5.;	
    
 				 	  
-  //cout << "\n Pt = " << fPtref <<"\n";  //stampa
+  cout << "\n Pt = " << fPtref <<"\n";  //stampa
   RecursiveTracking(list);   
   list->Delete();
   delete list;
@@ -527,11 +527,11 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
     // cout<<" progressive track number = "<<j<<"\r";
    // cout<<j<<"\r";
     Int_t numOfCluster=(*fresult).GetNumClust();  
-   // cout<<" progressive track number = "<<j<<"\n";    // stampa
+    cout<<" progressive track number = "<<j<<"\n";    // stampa
     Long_t labITS=(*fresult).GetLabel();
-    //cout << " ITS track label = " << labITS << "\n"; 	// stampa	    
+    cout << " ITS track label = " << labITS << "\n"; 	// stampa	    
     int lab=track->GetLabel();		    
-    //cout << " TPC track label = " << lab <<"\n";      // stampa
+    cout << " TPC track label = " << lab <<"\n";      // stampa
 	 
 	     
 //propagation to vertex
@@ -616,7 +616,8 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile
       for (il=0;il<6;il++) {
         idpoint=(*fresult).GetIdPoint(il);
         idmodule=(*fresult).GetIdModule(il);
-	*(fvettid[idmodule]+idpoint)=1; 
+	//*(fvettid[idmodule]+idpoint)=1; 
+	if(idmodule>0.) *(fvettid[idmodule]+idpoint)=1;  //modificata angela	
 	ioTrack->SetIdPoint(il,idpoint);
         ioTrack->SetIdModule(il,idmodule);
       }

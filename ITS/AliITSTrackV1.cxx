@@ -30,9 +30,12 @@ AliITSTrackV1::AliITSTrackV1() {
   fErrorVertex.ResizeTo(3);
   fLayer = -1; 
   fClusterInTrack = new TMatrix(6,9);
-  Int_t i;
-  for(i=0; i<6; i++) (*fClusterInTrack)(i,6)=(*fClusterInTrack)(i,7)=
-                           (*fClusterInTrack)(i,8)=-1.;
+  Int_t i,j;
+  //for(i=0; i<6; i++) (*fClusterInTrack)(i,6)=(*fClusterInTrack)(i,7)=
+  //                         (*fClusterInTrack)(i,8)=-1.;
+  for(i=0; i<6; i++){
+  for(j=4; j<9; j++) (*fClusterInTrack)(i,j)=-1.;   //modificata angela
+  } 
   frtrack=0.;
   fnoclust=0;     
   fd2.ResizeTo(6);
@@ -56,9 +59,12 @@ AliITSTrackV1::AliITSTrackV1(const AliITSTrackV1 &cobj) {
 // copy constructor    
 
   fClusterInTrack = new TMatrix(6,9);
-  Int_t i;
-  for(i=0; i<6; i++) (*fClusterInTrack)(i,6)=(*fClusterInTrack)(i,7)=
-                           (*fClusterInTrack)(i,8)=-1.;
+  Int_t i,j;
+  //for(i=0; i<6; i++) (*fClusterInTrack)(i,6)=(*fClusterInTrack)(i,7)=
+  //                         (*fClusterInTrack)(i,8)=-1.;
+  for(i=0; i<6; i++){
+  for(j=4; j<9; j++) (*fClusterInTrack)(i,j)=-1.;   //modificata angela
+  }  
   flistCluster = new TObjArray; 
   fVertex.ResizeTo(3); 
   fErrorVertex.ResizeTo(3);
@@ -130,9 +136,12 @@ AliITSTrackV1::AliITSTrackV1(AliTPCtrack &obj)
   //fmCovariance = new TMatrix(5,5);
   fClusterInTrack = new TMatrix(6,9);
   
-  Int_t i;
-  for(i=0; i<6; i++) (*fClusterInTrack)(i,6)=(*fClusterInTrack)(i,7)=
-                           (*fClusterInTrack)(i,8)=-1.;
+  Int_t i,j;
+  //for(i=0; i<6; i++) (*fClusterInTrack)(i,6)=(*fClusterInTrack)(i,7)=
+  //                         (*fClusterInTrack)(i,8)=-1.;
+  for(i=0; i<6; i++){
+  for(j=4; j<9; j++) (*fClusterInTrack)(i,j)=-1.;   //modificata angela
+  }  
   flistCluster = new TObjArray; 
   fNumClustInTrack = 0;
   fnoclust=0;        
