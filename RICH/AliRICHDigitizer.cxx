@@ -38,6 +38,10 @@
 ClassImp(AliRICHDigitizer)
 
 //__________________________________________________________________________________________________
+AliRICHDigitizer::AliRICHDigitizer() 
+{//default constructor
+}//default ctor
+//__________________________________________________________________________________________________
 AliRICHDigitizer::AliRICHDigitizer(AliRunDigitizer *pManager) 
                  :AliDigitizer(pManager)
 {//main ctor which should be used
