@@ -85,24 +85,25 @@ fhPartonPT =0;// new TH1F("hPartonPT","Parton P_{T} Distribution",200,0,1);
 fhJetPT2 =0;// new TH1F("hJetPT","P_{T} Distribution",200,0,200);
 fhPartonPT2 =0;// new TH1F("hPartonPT","Parton P_{T} Distribution",200,0,1);
 fhRecoBinFragmFcn =0;//new TH1F("fhRecoBinFragmFcn","Reconstructed Frag. Fcn",100,0,1);
+fhRecoBinFragmFcnNoBg =0;//new TH1F("fhRecoBinFragmFcn","Reconstructed Frag. Fcn",100,0,1);
 fhRecoBinPartonFragmFcn =0;// new TH1F("fhRecoBinPartonFragmFcn","Input Bin Fragm Fcn Distribution",100,0,1);
 fhJetInvE=0;// = new TH1F("fhJetInvE","#frac{1}{E_{R}}",100,0,1);
 fhJetInvE2=0;// = new TH1F("fhJetInvE","#frac{1}{E_{R}}",100,0,1);
-
-
+fScaleFactor = 1.0/0.6731;
+fhBackHisto=0;
 
 }
 
 void AliEMCALJetFinderPlots::InitPlots()
 {
 //========================= CASE 1 =======================================	
-    fhFragmFcn = new TH1F("hFragmFcn","Fragmentation Function",100,0,1);
+    fhFragmFcn = new TH1F("hFragmFcn","Fragmentation Function",200,0,2);
     fhFragmFcn->Sumw2();
     fhJetPT = new TH1F("hJetPT","P_{T} Distribution",200,0,200);
     fhJetPT->Sumw2();
-    fhPartonPT = new TH1F("hPartonPT","Parton P_{T} Distribution",200,0,1);
+    fhPartonPT = new TH1F("hPartonPT","Parton P_{T} Distribution",200,0,200);
     fhPartonPT->Sumw2();
-    fhPartonFragmFcn = new TH1F("hPartonFragmFcn","Parton Fragmentation Function",100,0,1);
+    fhPartonFragmFcn = new TH1F("hPartonFragmFcn","Parton Fragmentation Function",200,0,2);
     fhPartonFragmFcn->Sumw2();
     fhPartonJT = new TH1F("hPartonJT","Track Momentum Perpendicular to Parton Axis",100,0.,10.);
     fhPartonJT->Sumw2();
@@ -114,6 +115,8 @@ void AliEMCALJetFinderPlots::InitPlots()
     fhJetPL->Sumw2();
     fhJetEt = new TH1F("hJetEt","E_{T}^{reco}",250,0.,250.);
     fhJetEt->Sumw2();
+    fhJetEtDiff = new TH1F("hJetEtDiff","E_{T}^{reco}-E_{T}^{Parton}",250,-124.,125.);
+    fhJetEtDiff->Sumw2();
     fhJetEta = new	TH1F("hJetEta","#eta_{jet}^{reco}",180,-0.9,0.9);
     fhJetEta->Sumw2();
     fhJetPhi = new 	TH1F("hJetPhi","#phi_{jet}^{reco}",62,0.,3.1);
@@ -169,13 +172,13 @@ void AliEMCALJetFinderPlots::InitPlots()
 //======================= CASE 2 ======================================
   
 
-fhFragmFcn2 		= new TH1F("hFragmFcn2","Fragmentation Function",100,0,1);
+fhFragmFcn2 		= new TH1F("hFragmFcn2","Fragmentation Function",200,0,2);
 fhFragmFcn2->Sumw2();
     fhJetPT2 = new TH1F("hJetPT2","P_{T} Distribution",200,0,200);
     fhJetPT2->Sumw2();
     fhPartonPT2 = new TH1F("hPartonPT2","Parton P_{T} Distribution",200,0,1);
     fhPartonPT2->Sumw2();
-fhPartonFragmFcn2 	= new TH1F("hPartonFragmFcn2","Parton Fragmentation Function",100,0,1);
+fhPartonFragmFcn2 	= new TH1F("hPartonFragmFcn2","Parton Fragmentation Function",200,0,2);
 fhPartonFragmFcn2->Sumw2();
 fhPartonJT2 		= new TH1F("hPartonJT2","Track Momentum Perpendicular to Parton Axis",100,0.,10.);
 fhPartonJT2->Sumw2();
@@ -187,6 +190,8 @@ fhJetPL2			= new TH1F("hJetPL2","Track Momentum Parallel to Jet Axis ",100,0.,10
 fhJetPL2->Sumw2();
 fhJetEt2			= new TH1F("hJetEt2","E_{T}^{reco}",250,0.,250.);
 fhJetEt2->Sumw2();
+    fhJetEtDiff2 = new TH1F("hJetEtDiff2","E_{T}^{reco}-E_{T}^{Parton}",250,-124.,125.);
+    fhJetEtDiff2->Sumw2();
 fhJetEta2		= new TH1F("hJetEta2","#eta_{jet}^{reco}",180,-0.9,0.9);
 fhJetEta2->Sumw2();
 fhJetPhi2		= new TH1F("hJetPhi2","#phi_{jet}^{reco}",62,0.,3.1);
@@ -218,9 +223,11 @@ fhRecoBinPt =new TH1F("fhRecoBinPt","Reconstructed Pt Distribution",200,0,200);
 fhRecoBinPt->Sumw2();
 fhRecoBinPartonPt = new TH1F("fhRecoBinPartonPt","Input Pt Distribution",200,0,200);
 fhRecoBinPartonPt->Sumw2();
-fhRecoBinFragmFcn =new TH1F("fhRecoBinFragmFcn","Reconstructed Frag. Fcn",100,0,1);
+fhRecoBinFragmFcn =new TH1F("fhRecoBinFragmFcn","Reconstructed Frag. Fcn",200,0,2);
 fhRecoBinFragmFcn->Sumw2();
-fhRecoBinPartonFragmFcn = new TH1F("fhRecoBinPartonFragmFcn","Input Bin Fragm Fcn Distribution",100,0,1);
+fhRecoBinFragmFcnNoBg =new TH1F("fhRecoBinFragmFcnNoBg","Reconstructed Frag. Fcn With Background Removed",200,0,2);
+fhRecoBinFragmFcnNoBg->Sumw2();
+fhRecoBinPartonFragmFcn = new TH1F("fhRecoBinPartonFragmFcn","Input Bin Fragm Fcn Distribution",200,0,2);
 fhRecoBinPartonFragmFcn->Sumw2();
 fhRecoBinJetEt = new TH1F("fhRecoJetEt","E_{T}^{reco}",250,0.,250.);
 fhRecoBinJetEt->Sumw2();
@@ -249,6 +256,7 @@ delete    fhPartonPL;// = new TH1F("hPartonPL","Track Momentum Parallel to Parto
 delete    fhJetJT;// = new TH1F("hJetJT","Track Momentum Perpendicular to Jet Axis",100,0.,10.);
 delete    fhJetPL;// = new TH1F("hJetPL","Track Momentum Parallel to Jet Axis ",100,0.,100.);
 delete    fhJetEt;// = new TH1F("hJetEt","E_{T}^{reco}",250,0.,250.);
+delete	fhJetEtDiff;	// ("hJetEt2","E_{T}^{reco}",250,0.,250.);
 delete    fhJetEta;// = new       TH1F("hJetEta","#eta_{jet}^{reco}",180,-0.9,0.9);
 delete    fhJetPhi;// = new       TH1F("hJetPhi","#phi_{jet}^{reco}",62,0.,3.1);
 delete    fhPartonEta;// = new    TH1F("hPartonEta","#eta_{Parton}",180,-0.9,0.9);
@@ -265,6 +273,7 @@ delete 	  fhEtaPhiSpread;
 	delete				fhJetJT2;	// ("hJetJT2","Track Momentum Perpendicular to Jet Axis",100,0.,10.);
 	delete				fhJetPL2;	// ("hJetPL2","Track Momentum Parallel to Jet Axis ",100,0.,100.);
 	delete				fhJetEt2;	// ("hJetEt2","E_{T}^{reco}",250,0.,250.);
+	delete				fhJetEtDiff2;	// ("hJetEt2","E_{T}^{reco}",250,0.,250.);
 	delete				fhJetEta2;	// ("hJetEta2","#eta_{jet}^{reco}",180,-0.9,0.9);
 	delete				fhJetPhi2;	// ("hJetPhi2","#phi_{jet}^{reco}",62,0.,3.1);
 	delete				fhPartonEta2;	// ("hPartonEta2","#eta_{Parton}",180,-0.9,0.9);
@@ -288,6 +297,7 @@ delete 	  fhEtaPhiSpread;
  	delete fhJetPT2 ;// new TH1F("hJetPT","P_{T} Distribution",200,0,200);
 	delete fhPartonPT2 ;// new TH1F("hPartonPT","Parton P_{T} Distribution",200,0,1);
 	delete fhRecoBinFragmFcn;//new TH1F("fhRecoBinFragmFcn","Reconstructed Frag. Fcn",100,0,1);
+	delete fhRecoBinFragmFcnNoBg;//new TH1F("fhRecoBinFragmFcn","Reconstructed Frag. Fcn",100,0,1);
 	delete fhRecoBinPartonFragmFcn;// new TH1F("fhRecoBinPartonFragmFcn","Input Bin Fragm Fcn Distribution",100,0,1);
     delete fhJetInvE;// = new TH1F("fhJetInvE","#frac{1}{E_{R}}",100,0,1);
     delete fhJetInvE2;// = new TH1F("fhJetInvE","#frac{1}{E_{R}}",100,0,1);
@@ -329,10 +339,11 @@ if (!fInitialised) InitPlots();
   }
 	
   
+Float_t et=0;
 if (numappjet >=1)
 {
 	Float_t theta = 2.0*atan(exp(-fOutput->GetParton(0)->Eta()));
-	Float_t et    = fOutput->GetParton(0)->Energy() * TMath::Sin(theta);
+	et    = fOutput->GetParton(0)->Energy() * TMath::Sin(theta);
 	if (fOutput->GetNJets()>1)
 	{
 	      	for (Int_t counter = 0; counter<numappjet;counter++)  
@@ -372,10 +383,10 @@ if (numappjet >=1)
 		}
 						
 	}
-	if ( 95.0 < jethighest->Energy() && jethighest->Energy() < 105.0  )
+	if ( 95.0 < jethighest->Energy()*fScaleFactor && jethighest->Energy()*fScaleFactor < 105.0  )
 	{
 		doesJetMeetBinCriteria = 1;
-		fhRecoBinJetEt->Fill(jethighest->Energy());
+		fhRecoBinJetEt->Fill(jethighest->Energy()*fScaleFactor);
 		fhRecoBinInputJetEt->Fill(et);
 	}
 	fhInputOutput->Fill(et,jethighest->Energy());
@@ -390,8 +401,9 @@ if (numappjet > 1)
   AliEMCALParton* parton;
 
   // End finding highest and second highest and continue
-  fhJetEt2->Fill(jethighest->Energy());
-  fhJetInvE2->Fill(1.0/jethighest->Energy());
+  fhJetEt2->Fill(jethighest->Energy()*fScaleFactor);
+  fhJetEtDiff2->Fill(jethighest->Energy()*fScaleFactor-et);
+  fhJetInvE2->Fill(1.0/(jethighest->Energy()*fScaleFactor));
   fhJetEta2->Fill(jethighest->Eta()  );
   fhJetPhi2->Fill(jethighest->Phi() );
   if (nPartons ==0) return;
@@ -404,7 +416,7 @@ if (numappjet > 1)
   fhEtaDiff2->Fill( jethighest->Eta() - parton->Eta() );
   fhPhiDiff2->Fill( jethighest->Phi() - parton->Phi() );
   fhEtaPhiSpread2->Fill(jethighest->Eta()-parton->Eta(),jethighest->Phi() - parton->Phi());
-  fhJetEtSecond2->Fill(jetsecond->Energy()); 
+  fhJetEtSecond2->Fill(jetsecond->Energy()*fScaleFactor); 
   fhJetEtRatio2->Fill(jetsecond->Energy()/jethighest->Energy()); 
   fhEtaPhiDist2->Fill( TMath::Sqrt((jethighest->Eta() - jetsecond->Eta())*(jethighest->Eta() - jetsecond->Eta())
 		      + (jethighest->Phi() - jetsecond->Phi())*(jethighest->Phi() - jetsecond->Phi())	  ));  
@@ -499,7 +511,7 @@ if (numappjet > 1)
 		  fhJetJT2->Fill( correctp*sin(alpha));
 	  fhJetPT2->Fill(correctp*sin(tt));
 	  if (fNominalEnergy==0.0){
-		  fhFragmFcn2->Fill(  correctp*sin(tt)/jethighest->Energy()  );
+		  fhFragmFcn2->Fill(  correctp*sin(tt)/(jethighest->Energy()*fScaleFactor)  );
 	  } else
 	  {
                   fhFragmFcn2->Fill(  correctp*sin(tt)/fNominalEnergy );
@@ -507,6 +519,8 @@ if (numappjet > 1)
     	  if (doesJetMeetBinCriteria)
     	  {
 	  	  fhRecoBinPt->Fill(correctp*sin(tt));          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+		  fhRecoBinFragmFcn->Fill(  correctp*sin(tt)/(jethighest->Energy()*fScaleFactor)  ); // This is the jet fragmentation function
+		  fhRecoBinFragmFcnNoBg->Fill(  correctp*sin(tt)/(jethighest->Energy()*fScaleFactor)  ); // This is the jet fragmentation function
     	  }
   }// loop over tracks
   }
@@ -520,8 +534,9 @@ if (numappjet > 1)
   AliEMCALParton* parton;
   AliEMCALJet* jet; 
   jet = jethighest;//fOutput->GetJet(0);
-  fhJetEt->Fill(jet->Energy());
-  fhJetInvE->Fill(1.0/jethighest->Energy());
+  fhJetEt->Fill(jet->Energy()*fScaleFactor);
+  fhJetEtDiff->Fill(jethighest->Energy()*fScaleFactor-et);
+  fhJetInvE->Fill(1.0/(jethighest->Energy()*fScaleFactor));
   fhJetEta->Fill(jet->Eta()  );
   fhJetPhi->Fill(jet->Phi() );
   if (nPartons ==0) return;
@@ -625,7 +640,7 @@ if (numappjet > 1)
 		  fhJetJT->Fill( correctp*sin(alpha));
 	  fhJetPT->Fill(correctp*sin(tt));
 	  if (fNominalEnergy==0.0){
-		  fhFragmFcn->Fill(  correctp*sin(tt)/jet->Energy()  ); // This is the jet fragmentation function
+		  fhFragmFcn->Fill(  correctp*sin(tt)/(jet->Energy()*fScaleFactor)  ); // This is the jet fragmentation function
 	  } else
 	  {
                   fhFragmFcn->Fill(  correctp*sin(tt)/fNominalEnergy );
@@ -633,9 +648,21 @@ if (numappjet > 1)
     	  if (doesJetMeetBinCriteria)
     	  {
 	  	  fhRecoBinPt->Fill(correctp*sin(tt));          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+		  fhRecoBinFragmFcn->Fill(  correctp*sin(tt)/(jet->Energy()*fScaleFactor)  ); // This is the jet fragmentation function
+		  fhRecoBinFragmFcnNoBg->Fill(  correctp*sin(tt)/(jet->Energy()*fScaleFactor)  ); // This is the jet fragmentation function
     	  }
   }// loop over tracks
   }
+
+if (numappjet>=1 && fhBackHisto != 0)
+  {
+    for (Int_t count=1;count<=100;count++)
+    {
+	fhRecoBinFragmFcnNoBg->AddBinContent(count,fhBackHisto->GetBinContent(count));
+    } 
+  }
+
+
 }
 
 

@@ -30,6 +30,7 @@ class AliEMCALJetFinderPlots : public TObject
 	void SetConeRadius(Float_t coneradius){fConeRadius = coneradius;}
 	void SetNominalEnergy(Float_t energy){fNominalEnergy = energy;}
 	void SetDebug(Int_t debug){fDebug = debug;}
+	void SetBackHisto(TH1F* histo){fhBackHisto=histo;}
 	void FillFromOutput(AliEMCALJetFinderOutput* output);
 	//========================== CASE 1 ========================
 	// Only consider events with only 1 jet
@@ -42,6 +43,7 @@ class AliEMCALJetFinderPlots : public TObject
 	TH1F* GetJetPL(){return fhJetPL;}
 	TH1F* GetPartonPL(){return fhPartonPL;}
 	TH1F* GetJetEt(){return fhJetEt;}
+	TH1F* GetJetEtDiff(){return fhJetEtDiff;}
 	TH1F* GetJetEta(){return fhJetEta;}
 	TH1F* GetPartonEta(){return fhPartonEta;}
 	TH1F* GetPartonPhi(){return fhPartonPhi;}
@@ -62,6 +64,7 @@ class AliEMCALJetFinderPlots : public TObject
 	TH1F* GetJetPL2(){return fhJetPL2;}
 	TH1F* GetPartonPL2(){return fhPartonPL2;}
 	TH1F* GetJetEt2(){return fhJetEt2;}
+	TH1F* GetJetEtDiff2(){return fhJetEtDiff2;}
 	TH1F* GetJetEta2(){return fhJetEta2;}
 	TH1F* GetPartonEta2(){return fhPartonEta2;}
 	TH1F* GetPartonPhi2(){return fhPartonPhi2;}
@@ -80,6 +83,7 @@ class AliEMCALJetFinderPlots : public TObject
         TH1F* GetJetPt2(){return 	fhJetPT2;}
         TH1F* GetPartonPt2(){return fhPartonPT2;}
         TH1F* GetRecoBinFragmFcn() {return fhRecoBinFragmFcn;}
+        TH1F* GetRecoBinFragmFcnNoBg() {return fhRecoBinFragmFcnNoBg;}
         TH1F* GetRecoBinPartonFragmFcn() {return	fhRecoBinPartonFragmFcn;}
 
 	//============================== ALL CASES ============================================
@@ -107,6 +111,7 @@ class AliEMCALJetFinderPlots : public TObject
 	TH1F				*fhJetJT;	// ("hJetJT","Track Momentum Perpendicular to Jet Axis",100,0.,10.);
 	TH1F				*fhJetPL;	// ("hJetPL","Track Momentum Parallel to Jet Axis ",100,0.,100.);
 	TH1F				*fhJetEt;	// ("hJetEt","E_{T}^{reco}",250,0.,250.);
+	TH1F				*fhJetEtDiff;	// ("hJetEt","E_{T}^{reco}",250,0.,250.);
 	TH1F				*fhJetEta;	// ("hJetEta","#eta_{jet}^{reco}",180,-0.9,0.9);
 	TH1F				*fhJetPhi;	// ("hJetPhi","#phi_{jet}^{reco}",62,0.,3.1);
 	TH1F				*fhPartonEta;	// ("hPartonEta","#eta_{Parton}",180,-0.9,0.9);
@@ -126,6 +131,7 @@ class AliEMCALJetFinderPlots : public TObject
 	TH1F				*fhJetJT2;	// ("hJetJT2","Track Momentum Perpendicular to Jet Axis",100,0.,10.);
 	TH1F				*fhJetPL2;	// ("hJetPL2","Track Momentum Parallel to Jet Axis ",100,0.,100.);
 	TH1F				*fhJetEt2;	// ("hJetEt2","E_{T}^{reco}",250,0.,250.);
+	TH1F				*fhJetEtDiff2;	// ("hJetEt","E_{T}^{reco}",250,0.,250.);
 	TH1F				*fhJetEta2;	// ("hJetEta2","#eta_{jet}^{reco}",180,-0.9,0.9);
 	TH1F				*fhJetPhi2;	// ("hJetPhi2","#phi_{jet}^{reco}",62,0.,3.1);
 	TH1F				*fhPartonEta2;	// ("hPartonEta2","#eta_{Parton}",180,-0.9,0.9);
@@ -154,11 +160,14 @@ class AliEMCALJetFinderPlots : public TObject
     TH1F* 				fhJetPT2 ;// new TH1F("hJetPT","P_{T} Distribution",200,0,200);
     TH1F* 				fhPartonPT2 ;// new TH1F("hPartonPT","Parton P_{T} Distribution",200,0,1);
     TH1F* 				fhRecoBinFragmFcn;//new TH1F("fhRecoBinFragmFcn","Reconstructed Frag. Fcn",100,0,1);
+    TH1F* 				fhRecoBinFragmFcnNoBg;//new TH1F("fhRecoBinFragmFcn","Reconstructed Frag. Fcn",100,0,1);
     TH1F* 				fhRecoBinPartonFragmFcn;// new TH1F("fhRecoBinPartonFragmFcn","Input Bin Fragm Fcn Distribution",100,0,1);
         
 	TH1F* 				fhJetInvE;// new TH1F("fhJetInvE","#frac{1}{E_{R}}",100,0,1);
 	TH1F* 				fhJetInvE2;// new TH1F("fhJetInvE2","#frac{1}{E_{R}}",100,0,1);
-	
+ 
+	TH1F*				fhBackHisto;
+	Float_t				fScaleFactor; //Scaling to get back to correct energy
 	Bool_t				fInitialised; // have histograms been initialised
 		
 	
