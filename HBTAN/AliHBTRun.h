@@ -28,10 +28,10 @@ class AliHBTRun: public TObject
     virtual ~AliHBTRun();
 
     void            AddParticle(Int_t event, AliHBTParticle* part); //inerface to AliHBTEvent::AddParticle(AliHBTParticle*) 
-    void            AddParticle(Int_t event, TParticle* part);//inerface to AliHBTEvent::AddParticle(TParticle*) 
+    void            AddParticle(Int_t event, TParticle* part, Int_t idx);//inerface to AliHBTEvent::AddParticle(TParticle*) 
     
     //inerface to AliHBTEvent::AddParticle(Int_t.Double_t,Double_t,Double_t,Double_t,Double_t,Double_t,Double_t,Double_t,Double_t)
-    void            AddParticle(Int_t event, Int_t pdg, 
+    void            AddParticle(Int_t event, Int_t pdg, Int_t idx,
                                 Double_t px, Double_t py, Double_t pz, Double_t etot,
                                 Double_t vx, Double_t vy, Double_t vz, Double_t time); 
     

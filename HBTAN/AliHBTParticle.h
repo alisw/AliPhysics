@@ -18,20 +18,32 @@ class AliHBTParticle : public TObject
 public:
                                 // ****** constructors and destructor
   AliHBTParticle();
-
-  AliHBTParticle(Int_t pdg, Double_t px, Double_t py, Double_t pz, Double_t etot,
+  AliHBTParticle(const AliHBTParticle& in); 
+ 
+  AliHBTParticle(Int_t pdg, Int_t idx, Double_t px, Double_t py, Double_t pz, Double_t etot,
                  Double_t vx, Double_t vy, Double_t vz, Double_t time);
 
-  AliHBTParticle(const TParticle& p);
+  AliHBTParticle(Int_t pdg, Float_t prob, Int_t idx, Double_t px, Double_t py, Double_t pz, Double_t etot,
+                 Double_t vx, Double_t vy, Double_t vz, Double_t time);
+
+  AliHBTParticle(const TParticle& p,Int_t idx);
 
   virtual ~AliHBTParticle(){};
 
-
-  Int_t          GetPdgCode      () const { return fPdgCode; }
+  void           SetPIDprobability(Int_t pdg, Float_t prob = 1.0);
+  Float_t        GetPIDprobability(Int_t pdg);
+  
+  Int_t          GetPdgCode      () const { return (fPids)?fPids[fPdgIdx]:0;}
+  Int_t          GetPid          () const { return GetPdgCode();}
+  Float_t        GetPidProb      () const { return (fPidProb)?fPidProb[fPdgIdx]:0;}
+  
+  Int_t          GetUID          () const { return fIdxInEvent;}
+    
+  void           SetPdgCode(Int_t pdg, Float_t prob = 1.0);
   Double_t       GetCalcMass     () const { return fCalcMass; }
-  Double_t       GetMass         ()       { return GetPDG()->Mass();}
+  Double_t       GetMass         ()       { return (GetPDG())?GetPDG()->Mass():-1.;}
 
-  TParticlePDG*  GetPDG          (){return TDatabasePDG::Instance()->GetParticle(fPdgCode);}
+  TParticlePDG*  GetPDG          (){return TDatabasePDG::Instance()->GetParticle(GetPdgCode());}
 
   Int_t          Beauty          ()  { return GetPDG()->Beauty(); }
   Int_t          Charm           ()  { return GetPDG()->Charm(); }
@@ -81,10 +93,22 @@ public:
   void           SetProductionVertex(const TLorentzVector& v)
                              {SetProductionVertex(v.X(),v.Y(),v.Z(),v.T());}
   const Char_t*  GetName() const;
+  void           Print() const;
+
+  static void    SetDebug(Int_t dbg=1){fgDebug=dbg;}
+  static Int_t   GetDebug(){return fgDebug;}
+  static Int_t   fgDebug; //debug printout level
   
 protected:
+  Int_t          GetPidSlot(Int_t pdg) const;//returns position of the given PID in fPids (and fPidProb) array.
 
-  Int_t          fPdgCode;              // PDG code of the particle
+private:
+  Char_t         fPdgIdx;               // index of PDG code of the particle in fPids
+  Int_t          fIdxInEvent;           // index of a particle: the same particle can appear in the event
+                                        //  many times with different pid's. Idx allows to check that they are the same particles
+  Char_t         fNPids;                // number of non-zero proboble Pids
+  Int_t         *fPids;                 //[fNPids]
+  Float_t       *fPidProb;              //[fNPids]
   Double_t       fCalcMass;             // Calculated mass
 
   Double_t       fPx;                   // x component of momentum
@@ -97,7 +121,6 @@ protected:
   Double_t       fVz;                   // z of production vertex
   Double_t       fVt;                   // t of production vertex
 
-public:
   ClassDef(AliHBTParticle,1)  // TParticle vertex particle information
 };
 

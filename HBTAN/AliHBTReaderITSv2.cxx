@@ -256,7 +256,7 @@ Int_t AliHBTReaderITSv2::Read(AliHBTRun* particles, AliHBTRun *tracks)
           if(Pass(p->GetPdgCode())) continue; //check if we are intersted with particles of this type 
                                               //if not take next partilce
             
-          AliHBTParticle* part = new AliHBTParticle(*p);
+          AliHBTParticle* part = new AliHBTParticle(*p,i);
           if(Pass(part)) { delete part; continue;}//check if meets all criteria of any of our cuts
                                                   //if it does not delete it and take next good track
 
@@ -278,7 +278,7 @@ Int_t AliHBTReaderITSv2::Read(AliHBTRun* particles, AliHBTRun *tracks)
           Double_t mass = p->GetMass();
           Double_t tEtot = TMath::Sqrt( tpx*tpx + tpy*tpy + tpz*tpz + mass*mass);//total energy of the track
             
-          AliHBTParticle* track = new AliHBTParticle(p->GetPdgCode(), tpx, tpy , tpz, tEtot, 0., 0., 0., 0.);
+          AliHBTParticle* track = new AliHBTParticle(p->GetPdgCode(), i, tpx, tpy , tpz, tEtot, 0., 0., 0., 0.);
           if(Pass(track))//check if meets all criteria of any of our cuts
                          //if it does not delete it and take next good track
            { 

@@ -50,21 +50,21 @@ void AliHBTRun::AddParticle(Int_t event, AliHBTParticle* part)
 }
 /**************************************************************************/
 
-void AliHBTRun::AddParticle(Int_t event, TParticle* part)
+void AliHBTRun::AddParticle(Int_t event, TParticle* part, Int_t idx)
 {
  //if there is no event of this number, crate it and add to the collection
  if(!GetEvent(event))  fEvents->AddAtAndExpand(new AliHBTEvent, event);
- GetEvent(event)->AddParticle(part);
+ GetEvent(event)->AddParticle(part,idx);
 }
 /**************************************************************************/
 
-void AliHBTRun::AddParticle(Int_t event, Int_t pdg, 
+void AliHBTRun::AddParticle(Int_t event, Int_t pdg, Int_t idx,
                             Double_t px, Double_t py, Double_t pz, Double_t etot,
                             Double_t vx, Double_t vy, Double_t vz, Double_t time)
 {
  //if there is no event of this number, crate it and add to the collection
  if(!GetEvent(event))  fEvents->AddAtAndExpand(new AliHBTEvent, event);
- GetEvent(event)->AddParticle(pdg,px,py,pz,etot,vx,vy,vz,time);
+ GetEvent(event)->AddParticle(pdg,idx,px,py,pz,etot,vx,vy,vz,time);
 }
 
 /**************************************************************************/ 

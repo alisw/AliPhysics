@@ -226,7 +226,7 @@ Int_t AliHBTReaderPPprod::Read(AliHBTRun* particles, AliHBTRun *tracks)
             Double_t mass = TDatabasePDG::Instance()->GetParticle(gt.code)->Mass();
             Double_t pEtot = TMath::Sqrt(gt.px*gt.px + gt.py*gt.py + gt.pz*gt.pz + mass*mass);
             
-            AliHBTParticle* part = new AliHBTParticle(gt.code, gt.px, gt.py, gt.pz, pEtot, gt.x, gt.y, gt.z, 0.0);
+            AliHBTParticle* part = new AliHBTParticle(gt.code, i, gt.px, gt.py, gt.pz, pEtot, gt.x, gt.y, gt.z, 0.0);
             if(Pass(part)) continue;
             
          
@@ -244,7 +244,7 @@ Int_t AliHBTReaderPPprod::Read(AliHBTRun* particles, AliHBTRun *tracks)
             
             Double_t tEtot = TMath::Sqrt( tpx*tpx + tpy*tpy + tpz*tpz + mass*mass);
             
-            AliHBTParticle* track = new AliHBTParticle(gt.code, tpx, tpy , tpz, tEtot, 0., 0., 0., 0.);
+            AliHBTParticle* track = new AliHBTParticle(gt.code, i, tpx, tpy , tpz, tEtot, 0., 0., 0., 0.);
             if(Pass(track)) continue;
             
             particles->AddParticle(currentEvent,part);

@@ -135,7 +135,7 @@ Read(AliHBTRun* particles, AliHBTRun *tracks)
          if(Pass(p->GetPdgCode())) continue; //check if we are intersted with particles of this type 
                                               //if not take next partilce
          
-         AliHBTParticle* part = new AliHBTParticle(*p);
+         AliHBTParticle* part = new AliHBTParticle(*p,i);
          if(Pass(part)) { delete part; continue;}//check if meets all criteria of any of our cuts
                                                   //if it does not delete it and take next good track
          particles->AddParticle(totalNevents,part);//put track and particle on the run
