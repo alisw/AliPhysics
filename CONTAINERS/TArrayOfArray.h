@@ -22,11 +22,11 @@ public:
 };
 
 
-class TArrayOfArray_vStack: public TArrayOfArray{
+class TArrayOfArrayVStack: public TArrayOfArray{
 public:  
-  TArrayOfArray_vStack();   
-  TArrayOfArray_vStack(const char *classname);
-  ~TArrayOfArray_vStack(); 
+  TArrayOfArrayVStack();   
+  TArrayOfArrayVStack(const char *classname);
+  ~TArrayOfArrayVStack(); 
   Bool_t SetClass(const char * classname);
   virtual void Clear(Option_t * opt="");
   void * Unchecked1DArray(UInt_t index){return fIndex->Unchecked1DAt(index);}
@@ -45,18 +45,18 @@ public:
 private:
   AliObjectArray * fIndex;
   AliObjectArray * fArray;
-  ClassDef(TArrayOfArray_vStack,1) 
+  ClassDef(TArrayOfArrayVStack,1) 
 };
 
-class TArrayOfArray_vList: public TArrayOfArray{
+class TArrayOfArrayVList: public TArrayOfArray{
 protected:
   AliObjectArray  fIndex;
   AliObjectArray  fSecondaryIndexes;
   AliObjectArray  fArray;
-  ClassDef(TArrayOfArray_vList,1) 
+  ClassDef(TArrayOfArrayVList,1) 
 };
 
-inline void * TArrayOfArray_vStack::Unchecked1DAt(UInt_t index0, UInt_t index1)
+inline void * TArrayOfArrayVStack::Unchecked1DAt(UInt_t index0, UInt_t index1)
 {
   // unchecked return
   return fArray->Unchecked1DAt(((UInt_t*)fIndex->GetArray())[index0]+index1);

@@ -12,8 +12,8 @@
 #pragma link C++ class AliObjectArray-;
 #pragma link C++ class TArrayOfArray;
 
-#pragma link C++ class TArrayOfArray_vStack;
-#pragma link C++ class TArrayOfArray_vList;
+#pragma link C++ class TArrayOfArrayVStack;
+#pragma link C++ class TArrayOfArrayVList;
 
 
 #pragma link C++ class AliArraySubBranch;

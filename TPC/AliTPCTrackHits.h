@@ -90,7 +90,7 @@ public:
   void FlushHitStack2(Int_t index1, Int_t index2);   //
   AliObjectArray * fTrackHitsInfo;  //quick information about track
   AliObjectArray * fTrackHitsParam;  //hit information  
-  TArrayOfArray_vStack * fHitsPosAndQ;  //position information
+  TArrayOfArrayVStack * fHitsPosAndQ;  //position information
 
   Double_t fPrecision;  // required precision
   Double_t fStep;       //unit step size

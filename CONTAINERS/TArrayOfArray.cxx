@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/11/01 16:01:26  kowal2
+Classes for handling the new hits structures
+
 */
 #include "TArrayOfArray.h"
 #include "iostream.h"
@@ -23,17 +26,17 @@ $Log$
 
 
 ClassImp(TArrayOfArray)
-ClassImp(TArrayOfArray_vStack)
-ClassImp(TArrayOfArray_vList)
+ClassImp(TArrayOfArrayVStack)
+ClassImp(TArrayOfArrayVList)
  
 
-TArrayOfArray_vStack::TArrayOfArray_vStack()
+TArrayOfArrayVStack::TArrayOfArrayVStack()
 { 
   fIndex = 0;
   fArray = 0;
 }     
   
-TArrayOfArray_vStack::TArrayOfArray_vStack(const char *classname)
+TArrayOfArrayVStack::TArrayOfArrayVStack(const char *classname)
 {
   fIndex = 0;
   fArray = 0;
@@ -41,13 +44,13 @@ TArrayOfArray_vStack::TArrayOfArray_vStack(const char *classname)
 } 
 
   
-TArrayOfArray_vStack::~TArrayOfArray_vStack()  
+TArrayOfArrayVStack::~TArrayOfArrayVStack()  
 {
   if (fIndex) delete fIndex;
   if (fArray) delete fArray;
 } 
 
-Bool_t TArrayOfArray_vStack::SetClass(const char * classname)
+Bool_t TArrayOfArrayVStack::SetClass(const char * classname)
 {
   //
   //set class
@@ -58,18 +61,18 @@ Bool_t TArrayOfArray_vStack::SetClass(const char * classname)
 }
 
 
-void  TArrayOfArray_vStack::Clear(Option_t *)
+void  TArrayOfArrayVStack::Clear(Option_t *)
 {
   //
   // clear contents
-  //if (fIndex) fIndex->Clear();
-  //if (fArray) fArray->Clear();
-  if (fIndex) fIndex->Resize(0);
-  if (fArray) fArray->Resize(0);
+  if (fIndex) fIndex->Clear();
+  if (fArray) fArray->Clear();
+  //if (fIndex) fIndex->Resize(0);
+  //if (fArray) fArray->Resize(0);
   
 }
 
-void * TArrayOfArray_vStack::At(UInt_t index0, UInt_t index1)
+void * TArrayOfArrayVStack::At(UInt_t index0, UInt_t index1)
 {
   //get pointer to the object
   if ( (fIndex!=0) && (index0+1<fIndex->GetSize()) 
@@ -79,7 +82,7 @@ void * TArrayOfArray_vStack::At(UInt_t index0, UInt_t index1)
   else 
     return 0;
 }
-void  TArrayOfArray_vStack::Dump(UInt_t index0, UInt_t index1)
+void  TArrayOfArrayVStack::Dump(UInt_t index0, UInt_t index1)
 {
   void * p = At(index0,index1);
   if ( (p) && fArray->GetClassInfo()) fArray->GetClassInfo()->ObjectDump(p); 
@@ -90,7 +93,7 @@ void  TArrayOfArray_vStack::Dump(UInt_t index0, UInt_t index1)
   
 }
 
-Int_t TArrayOfArray_vStack::Resize(Int_t index, UInt_t newsize)
+Int_t TArrayOfArrayVStack::Resize(Int_t index, UInt_t newsize)
 { 
   //expand array with index index to newsize
   if (index<0) index = fIndex->GetSize()-2;
@@ -105,7 +108,7 @@ Int_t TArrayOfArray_vStack::Resize(Int_t index, UInt_t newsize)
   return 0;
 }
 
-UInt_t TArrayOfArray_vStack::Push(UInt_t size)
+UInt_t TArrayOfArrayVStack::Push(UInt_t size)
 {
   //make new array with size  - return starting index
   if ( (fIndex==0) || (fArray==0)) return 0;
@@ -125,7 +128,7 @@ UInt_t TArrayOfArray_vStack::Push(UInt_t size)
   return index1-1;
 }
 
-Int_t TArrayOfArray_vStack::ArraySize(UInt_t index)
+Int_t TArrayOfArrayVStack::ArraySize(UInt_t index)
 {
   //size if subarray with index index
   if ( (fIndex) && fIndex->GetSize()>index+1) 

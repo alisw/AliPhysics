@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/11/02 10:22:50  kowal2
+Logs added
+
 */
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -279,7 +282,7 @@ AliTPCTrackHits::AliTPCTrackHits()
   fTempInfo =0;
   fTrackHitsInfo = new AliObjectArray("AliTrackHitsInfo"); 
   fTrackHitsParam = new AliObjectArray("AliTrackHitsParam");
-  fHitsPosAndQ = new TArrayOfArray_vStack("AliHitInfo");
+  fHitsPosAndQ = new TArrayOfArrayVStack("AliHitInfo");
   fCurrentHit = new AliTPCCurrentHit;
   fgCounter1++;
   fgCounter2++;
@@ -303,11 +306,10 @@ void AliTPCTrackHits::Clear()
 {
   //
   //clear object 
-  //  fTrackHitsInfo->Clear();
-  //fTrackHitsParam->Clear();
-  
-  fTrackHitsInfo->Resize(0);
-  fTrackHitsParam->Resize(0);
+  fTrackHitsInfo->Clear();
+  fTrackHitsParam->Clear();  
+  //fTrackHitsInfo->Resize(0);
+  //fTrackHitsParam->Resize(0);
   fHitsPosAndQ->Clear();
 
   if (fTempInfo){
