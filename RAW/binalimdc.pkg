@@ -22,9 +22,16 @@ EINCLUDE+=TPC CONTAINERS ITS RAW HLT/src HLT/hough HLT/comp
 
 ELIBS:=ESD RAW MDC STEER TPCbase TPCsim TPCrec CONTAINERS AliL3Src AliL3Misc AliL3Hough AliL3Comp pythia6 pdf microcern
 
+ifneq (,$(findstring macosx,$(ALICE_TARGET)))
+# On MacOS X we need g2c
+ELIBS+=g2c
+endif
+
 ifdef DATE_ROOT
 
 ELIBSDIR:=${DATE_MONITOR_DIR}/${DATE_SYS}
 EINCLUDE+= ${DATE_COMMON_DEFS} ${DATE_MONITOR_DIR}
 
 endif
+
+
