@@ -11,15 +11,9 @@ void loadlibs ()
   gSystem->Load("libSTEER");
   gSystem->Load("libEVGEN");
   gSystem->Load("libEGPythia6");
-  gSystem->Load("libdummypythia6");
-  gSystem->Load("libdummyhijing");
-  gSystem->Load("libTHijing");
-  gSystem->Load("libdummyHBTP");
-  gSystem->Load("libTHbtp");
-  gSystem->Load("libdummymevsim");
-  gSystem->Load("libTMEVSIM");
-  gSystem->Load("libdummyepemgen");
-  gSystem->Load("libTEPEMGEN");
+  gSystem->Load("libpdf");
+  gSystem->Load("libpythia6");
+  gSystem->Load("libAliPythia6");
 
   gSystem->Load("libPhysics");
 
@@ -39,6 +33,4 @@ void loadlibs ()
   gSystem->Load("libSTART");
 //  gSystem->Load("libEMCAL");
   gSystem->Load("libVZERO");
-  gSystem->Load("libdummyherwig");
-  gSystem->Load("libTHerwig");
 }
