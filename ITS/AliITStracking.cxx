@@ -165,7 +165,8 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
 	  if((!recp)  )  break;	
 	  TVector cluster(3),vecclust(9);
 	  vecclust(6)=vecclust(7)=vecclust(8)=-1.;
-	  Double_t sigma[2];                  
+	  Double_t sigma[2];
+	    //modificata 8-3-2001                
 	  // set veclust in global
 	  Float_t global[3], local[3];
 	  local[0]=recp->GetX();
@@ -176,10 +177,18 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
           Int_t plad = TMath::Nint(Touclad(iriv));   
           Int_t pdet = TMath::Nint(Toucdet(iriv)); 		
           g1->LtoG(play,plad,pdet,local,global); 
-	
+	  
           vecclust(0)=global[0];
           vecclust(1)=global[1];
-          vecclust(2)=global[2];	  	  	  	     
+          vecclust(2)=global[2];
+	  
+	  /*
+	  ////  modificato 8-3-2001
+          vecclust(0)=recp->GetRhit();;
+          vecclust(1)=recp->Getphi();
+          vecclust(2)=recp->GetZglobal();
+	  */
+	  	  	  	  	  	     
           vecclust(3) = (float)recp->fTracks[0]; 
           vecclust(4) = (float)indlist[ind];
           vecclust(5) = (float)index;
@@ -188,11 +197,19 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
           vecclust(8) = (float)recp->fTracks[2];
      
           sigma[0] = (Double_t)  recp->GetSigmaX2();	   
-			 sigma[1] = (Double_t) recp->GetSigmaZ2(); 		 
+	  sigma[1] = (Double_t) recp->GetSigmaZ2();
+	   //commentato 8-3-2001		 
          //now we are in r,phi,z in global
           cluster(0) = TMath::Sqrt(vecclust(0)*vecclust(0)+vecclust(1)*vecclust(1));//r hit
           cluster(1) = PhiDef(vecclust(0),vecclust(1));    // phi hit
+          cluster(2) = vecclust(2);                   // z hit
+	  
+	  /*
+	 //modificato 8-3-2001
+          cluster(0) = vecclust(0);//r hit
+          cluster(1) = vecclust(1);    // phi hit
           cluster(2) = vecclust(2);                   // z hit	
+	  */	  	
 	 // cout<<" layer = "<<play<<"\n";
 	 // cout<<" cluster prima = "<<vecclust(0)<<" "<<vecclust(1)<<" "
 	 // <<vecclust(2)<<"\n"; getchar();    
@@ -234,8 +251,7 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
 	  Double_t sigmanew[2];
 	  sigmanew[0]= sigmaphi;
 	  sigmanew[1]=sigma[1];
-	  //cout<<" Chiamo Kalman \n"; getchar();
-	  
+
 	  if(flagvert) 	 
 	    KalmanFilterVert(newTrack,cluster,sigmanew);  
 	  else		    	  		 		  
@@ -266,7 +282,7 @@ AliITStracking::AliITStracking(TList *trackITSlist, AliITStrack *reference,
  	        
 
     //gObjectTable->Print();   // stampa memoria
-
+	 
     AliITStracking(&listoftrack, reference, aliITS, rpoints,Ptref,vettid,flagvert,rl);          
     listoftrack.Delete();
   } // end of for on tracks
@@ -412,58 +428,103 @@ void AliITStracking::KalmanFilter(AliITStrack *newTrack,TVector &cluster,Double_
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
 // Kalman filter without vertex constraint
 
-  TMatrix H(2,5); H.UnitMatrix(); 
-  TMatrix Ht(TMatrix::kTransposed, H);
-
 
   ////////////////////////////// Evaluation of the measurement vector /////////////////////////////////////  
 
-  TVector m(2);
+  Double_t m[2];
   Double_t rk,phik,zk;
   rk=cluster(0);   phik=cluster(1);  zk=cluster(2);
-  m(0)=phik;    m(1)=zk;
-  // cout<<" r and m = "<<rk<<" "<<m(0)<<" "<<m(1)<<"\n";       
+  m[0]=phik;    m[1]=zk; 
+       
   ///////////////////////////////////// Evaluation of the error matrix V  ///////////////////////////////          
 
-  TMatrix V(2,2);
-  V(0,1)=0.; V(1,0)=0.;  
-  V(0,0)=sigma[0];
-  V(1,1)=sigma[1];  
+  Double_t V00=sigma[0];
+  Double_t V11=sigma[1];
+  
   ///////////////////////////////////////////////////////////////////////////////////////////
   
-  TMatrix C=newTrack->GetCMatrix();
-  TMatrix tmp(H,TMatrix::kMult,C);
-  TMatrix R(tmp,TMatrix::kMult,Ht); R+=V;
   
-  R.Invert();
-  // cout<<" R prima = \n";
-  // R.Print(); getchar();
+  Double_t Cin00,Cin10,Cin20,Cin30,Cin40,Cin11,Cin21,Cin31,Cin41,Cin22,Cin32,Cin42,Cin33,Cin43,Cin44;
+			    
+  newTrack->GetCElements(Cin00,Cin10,Cin11,Cin20,Cin21,Cin22,Cin30,Cin31,Cin32,Cin33,Cin40,
+                         Cin41,Cin42,Cin43,Cin44); //get C matrix
+  			  
+  Double_t Rold00=Cin00+V00;
+  Double_t Rold10=Cin10;
+  Double_t Rold11=Cin11+V11;
   
-  TMatrix K(C,TMatrix::kMult,Ht); K*=R;
+//////////////////////////////////// R matrix inversion  ///////////////////////////////////////////////
   
-  TVector  x=newTrack->GetVector();
+  Double_t det=Rold00*Rold11-Rold10*Rold10;
+  Double_t R00=Rold11/det;
+  Double_t R10=-Rold10/det;
+  Double_t R11=Rold00/det;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////			    
+
+  Double_t K00=Cin00*R00+Cin10*R10;
+  Double_t K01=Cin00*R10+Cin10*R11;
+  Double_t K10=Cin10*R00+Cin11*R10;  
+  Double_t K11=Cin10*R10+Cin11*R11;
+  Double_t K20=Cin20*R00+Cin21*R10;  
+  Double_t K21=Cin20*R10+Cin21*R11;  
+  Double_t K30=Cin30*R00+Cin31*R10;  
+  Double_t K31=Cin30*R10+Cin31*R11;  
+  Double_t K40=Cin40*R00+Cin41*R10;
+  Double_t K41=Cin40*R10+Cin41*R11;
   
-  TVector savex=x;
-  x*=H; x-=m;
-  x*=-1.; x*=K; x+=savex;  
-  TMatrix saveC=C;
-  C.Mult(K,tmp); C-=saveC; C*=-1;  
-  newTrack->GetVector()=x;
-  newTrack->GetCMatrix()=C;   
+  Double_t X0,X1,X2,X3,X4;
+  newTrack->GetXElements(X0,X1,X2,X3,X4);     // get the state vector
   
-  TVector res= newTrack->GetVector(); 
-  //cout<<" res = "<<res(0)<<" "<<res(1)<<" "<<res(2)<<" "<<res(3)<<" "<<res(4)<<"\n"; 
-  res*=H; res-=m;  res*=-1.;  
-  TMatrix Cn=newTrack->GetCMatrix();
-  TMatrix tmpn(H,TMatrix::kMult,Cn);
-  TMatrix Rn(tmpn,TMatrix::kMult,Ht);  Rn-=V; Rn*=-1.;  
+  Double_t savex0=X0, savex1=X1;
   
-  Rn.Invert();	 
-  TVector r=res;    res*=Rn;
-  //cout<<" R dopo = \n";
-  //Rn.Print(); getchar();
-  Double_t chi2= r*res;	
-  //cout<<"chi2 ="<<chi2<<"\n";  getchar();
+  X0+=K00*(m[0]-savex0)+K01*(m[1]-savex1);
+  X1+=K10*(m[0]-savex0)+K11*(m[1]-savex1);
+  X2+=K20*(m[0]-savex0)+K21*(m[1]-savex1);
+  X3+=K30*(m[0]-savex0)+K31*(m[1]-savex1);
+  X4+=K40*(m[0]-savex0)+K41*(m[1]-savex1);
+  
+  Double_t C00,C10,C20,C30,C40,C11,C21,C31,C41,C22,C32,C42,C33,C43,C44;
+  
+  C00=Cin00-K00*Cin00-K01*Cin10;
+  C10=Cin10-K00*Cin10-K01*Cin11;
+  C20=Cin20-K00*Cin20-K01*Cin21;
+  C30=Cin30-K00*Cin30-K01*Cin31;
+  C40=Cin40-K00*Cin40-K01*Cin41;
+  
+  C11=Cin11-K10*Cin10-K11*Cin11;
+  C21=Cin21-K10*Cin20-K11*Cin21;
+  C31=Cin31-K10*Cin30-K11*Cin31;
+  C41=Cin41-K10*Cin40-K11*Cin41;
+  
+  C22=Cin22-K20*Cin20-K21*Cin21;
+  C32=Cin32-K20*Cin30-K21*Cin31;
+  C42=Cin42-K20*Cin40-K21*Cin41;
+
+  C33=Cin33-K30*Cin30-K31*Cin31;
+  C43=Cin43-K30*Cin40-K31*Cin41;
+  
+  C44=Cin44-K40*Cin40-K41*Cin41;
+  
+  newTrack->PutXElements(X0,X1,X2,X3,X4);               // put the new state vector
+   
+  newTrack->PutCElements(C00,C10,C11,C20,C21,C22,C30,C31,C32,C33,C40,C41,C42,C43,C44); // put in track the
+                                                                                       // new cov matrix  
+  Double_t VMCold00=V00-C00;
+  Double_t VMCold10=-C10;
+  Double_t VMCold11=V11-C11;
+  
+///////////////////////////////////// Matrix VMC inversion  ////////////////////////////////////////////////
+  
+  det=VMCold00*VMCold11-VMCold10*VMCold10;
+  Double_t VMC00=VMCold11/det;
+  Double_t VMC10=-VMCold10/det;
+  Double_t VMC11=VMCold00/det;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  Double_t chi2=(m[0]-X0)*( VMC00*(m[0]-X0) + 2.*VMC10*(m[1]-X1) ) +                    
+                (m[1]-X1)*VMC11*(m[1]-X1);	 
    	 
   newTrack->SetChi2(newTrack->GetChi2()+chi2);
    
@@ -473,72 +534,270 @@ void AliITStracking::KalmanFilter(AliITStrack *newTrack,TVector &cluster,Double_
 void AliITStracking::KalmanFilterVert(AliITStrack *newTrack,TVector &cluster,Double_t sigma[2]){
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it 
 // Kalman filter with vertex constraint
-  TMatrix H(4,5); H.UnitMatrix(); 
-  TMatrix Ht(TMatrix::kTransposed, H);
 
-  ////////////////////////////// Evaluation of the measurement vector /////////////////////////////////////  
+  ////////////////////////////// Evaluation of the measurement vector m ///////////////  
 
-  TVector m(4);
+  Double_t m[4];
   Double_t rk,phik,zk;
   rk=cluster(0);   phik=cluster(1);  zk=cluster(2);
-  m(0)=phik;    m(1)=zk;
+  m[0]=phik;    m[1]=zk;
  
   Double_t CC=(*newTrack).GetC();
   Double_t Zv=(*newTrack).GetZv(); 
   Double_t Dv=(*newTrack).GetDv();
-  // cout<<" Dv e Zv = "<<Dv<<" "<<Zv<<"\n";
   Double_t Cy=CC/2.;
   Double_t tgl= (zk-Zv)*Cy/TMath::ASin(Cy*rk);
-  m(2)=Dv;    m(3)=tgl;
-  // cout<<" m = \n";
-  // cout<<m(0)<<" "<<m(1)<<" "<<m(2)<<" "<<m(3)<<"\n";      
-  ///////////////////////////////////// Evaluation of the error matrix V  ///////////////////////////////          
+  m[2]=Dv;    m[3]=tgl;
 
-  TMatrix V(4,4);
-  V(0,1)=0.; V(1,0)=0.;  
+  ///////////////////////////////////// Evaluation of the error matrix V  //////////////
   Int_t Layer=newTrack->GetLayer();
-  V(0,0)=sigma[0];
-  V(1,1)=sigma[1];
-  V(1,3)=sigma[1]/rk;    V(3,1)=V(1,3);
+  Double_t V00=sigma[0];
+  Double_t V11=sigma[1];
+  Double_t V31=sigma[1]/rk;
   Double_t sigmaDv=newTrack->GetsigmaDv();
-  V(2,2)=sigmaDv*sigmaDv  + newTrack->Getd2(Layer-1);
-  V(2,3)=newTrack->Getdtgl(Layer-1);  V(3,2)=V(2,3);
+  Double_t V22=sigmaDv*sigmaDv  + newTrack->Getd2(Layer-1);
+  Double_t V32=newTrack->Getdtgl(Layer-1);
   Double_t sigmaZv=newTrack->GetsigmaZv();  
-  V(3,3)=(sigma[1]+sigmaZv*sigmaZv)/(rk*rk) + newTrack->Gettgl2(Layer-1);
-  ///////////////////////////////////////////////////////////////////////////////////////////
- 
-  //cout<<" d2 tgl2 dtgl = "<<newTrack->Getd2(Layer-1)<<" "<<newTrack->Gettgl2(Layer-1)<<" "<<newTrack->Getdtgl(Layer-1)<<"\n";
-  // cout<<" V = \n";
-  // V.Print();  getchar();
+  Double_t V33=(sigma[1]+sigmaZv*sigmaZv)/(rk*rk) + newTrack->Gettgl2(Layer-1);
+  ///////////////////////////////////////////////////////////////////////////////////////
   
-  TMatrix C=newTrack->GetCMatrix();
+  Double_t Cin00,Cin10,Cin11,Cin20,Cin21,Cin22,Cin30,Cin31,Cin32,Cin33,Cin40,Cin41,Cin42,Cin43,Cin44;
+			    
+  newTrack->GetCElements(Cin00,Cin10,Cin11,Cin20,Cin21,Cin22,Cin30,Cin31,Cin32,Cin33,Cin40,
+                         Cin41,Cin42,Cin43,Cin44); //get C matrix
+			  
+  Double_t R[4][4];
+  R[0][0]=Cin00+V00;
+  R[1][0]=Cin10;
+  R[2][0]=Cin20;
+  R[3][0]=Cin30;
+  R[1][1]=Cin11+V11;
+  R[2][1]=Cin21;
+  R[3][1]=Cin31+sigma[1]/rk;
+  R[2][2]=Cin22+sigmaDv*sigmaDv+newTrack->Getd2(Layer-1);
+  R[3][2]=Cin32+newTrack->Getdtgl(Layer-1);
+  R[3][3]=Cin33+(sigma[1]+sigmaZv*sigmaZv)/(rk*rk) + newTrack->Gettgl2(Layer-1);
+  
+  R[0][1]=R[1][0]; R[0][2]=R[2][0]; R[0][3]=R[3][0]; R[1][2]=R[2][1]; R[1][3]=R[3][1]; 
+  R[2][3]=R[3][2];
+
+/////////////////////  Matrix R inversion ////////////////////////////////////////////
+ 
+  Int_t n=4;
+  Double_t big, hold;
+  Double_t d=1.;
+  Int_t ll[n],mm[n];
+  
+  for(Int_t k=0; k<n; k++) {
+    ll[k]=k;
+    mm[k]=k;
+    big=R[k][k];
+    for(Int_t j=k; j<n ; j++) {
+      for (Int_t i=j; i<n; i++) {
+        if(TMath::Abs(big) < TMath::Abs(R[i][j]) ) { big=R[i][j]; ll[k]=i; mm[k]=j; }
+      }
+    }    
+//
+    Int_t j= ll[k];
+    if(j > k) {
+      for(Int_t i=0; i<n; i++) { hold=-R[k][i]; R[k][i]=R[j][i]; R[j][i]=hold; }
+      
+    }
+//
+    Int_t i=mm[k];
+    if(i > k ) { 
+      for(int j=0; j<n; j++) { hold=-R[j][k]; R[j][k]=R[j][i]; R[j][i]=hold; }
+    }
+//
+    if(!big) {
+      d=0.;
+      cout << "Singular matrix\n"; 
+    }
+    for(Int_t i=0; i<n; i++) {
+      if(i == k) { continue; }    
+      R[i][k]=R[i][k]/(-big);
+    }   
+//
+    for(Int_t i=0; i<n; i++) {
+      hold=R[i][k];
+      for(Int_t j=0; j<n; j++) {
+        if(i == k || j == k) { continue; }
+	R[i][j]=hold*R[k][j]+R[i][j];
+      }
+    }
+//  
+    for(Int_t j=0; j<n; j++) {
+      if(j == k) { continue; }
+      R[k][j]=R[k][j]/big;
+    }
+//
+    d=d*big;
+//
+    R[k][k]=1./big;        
+  } 
+//  
+  for(Int_t k=n-1; k>=0; k--) {
+    Int_t i=ll[k];
+    if(i > k) {
+      for (Int_t j=0; j<n; j++) {hold=R[j][k]; R[j][k]=-R[j][i]; R[j][i]=hold;}
+    }  
+    Int_t j=mm[k];
+    if(j > k) {
+      for (Int_t i=0; i<n; i++) {hold=R[k][i]; R[k][i]=-R[j][i]; R[j][i]=hold;}
+      }
+  }
+//////////////////////////////////////////////////////////////////////////////////
+
+
+  Double_t K00=Cin00*R[0][0]+Cin10*R[1][0]+Cin20*R[2][0]+Cin30*R[3][0];
+  Double_t K01=Cin00*R[1][0]+Cin10*R[1][1]+Cin20*R[2][1]+Cin30*R[3][1];
+  Double_t K02=Cin00*R[2][0]+Cin10*R[2][1]+Cin20*R[2][2]+Cin30*R[3][2];
+  Double_t K03=Cin00*R[3][0]+Cin10*R[3][1]+Cin20*R[3][2]+Cin30*R[3][3];
+  Double_t K10=Cin10*R[0][0]+Cin11*R[1][0]+Cin21*R[2][0]+Cin31*R[3][0];  
+  Double_t K11=Cin10*R[1][0]+Cin11*R[1][1]+Cin21*R[2][1]+Cin31*R[3][1];
+  Double_t K12=Cin10*R[2][0]+Cin11*R[2][1]+Cin21*R[2][2]+Cin31*R[3][2];
+  Double_t K13=Cin10*R[3][0]+Cin11*R[3][1]+Cin21*R[3][2]+Cin31*R[3][3];
+  Double_t K20=Cin20*R[0][0]+Cin21*R[1][0]+Cin22*R[2][0]+Cin32*R[3][0];  
+  Double_t K21=Cin20*R[1][0]+Cin21*R[1][1]+Cin22*R[2][1]+Cin32*R[3][1];  
+  Double_t K22=Cin20*R[2][0]+Cin21*R[2][1]+Cin22*R[2][2]+Cin32*R[3][2];
+  Double_t K23=Cin20*R[3][0]+Cin21*R[3][1]+Cin22*R[3][2]+Cin32*R[3][3];
+  Double_t K30=Cin30*R[0][0]+Cin31*R[1][0]+Cin32*R[2][0]+Cin33*R[3][0];  
+  Double_t K31=Cin30*R[1][0]+Cin31*R[1][1]+Cin32*R[2][1]+Cin33*R[3][1];  
+  Double_t K32=Cin30*R[2][0]+Cin31*R[2][1]+Cin32*R[2][2]+Cin33*R[3][2];  
+  Double_t K33=Cin30*R[3][0]+Cin31*R[3][1]+Cin32*R[3][2]+Cin33*R[3][3];
+  Double_t K40=Cin40*R[0][0]+Cin41*R[1][0]+Cin42*R[2][0]+Cin43*R[3][0];
+  Double_t K41=Cin40*R[1][0]+Cin41*R[1][1]+Cin42*R[2][1]+Cin43*R[3][1];
+  Double_t K42=Cin40*R[2][0]+Cin41*R[2][1]+Cin42*R[2][2]+Cin43*R[3][2];  
+  Double_t K43=Cin40*R[3][0]+Cin41*R[3][1]+Cin42*R[3][2]+Cin43*R[3][3];
+  
+  Double_t X0,X1,X2,X3,X4;
+  newTrack->GetXElements(X0,X1,X2,X3,X4);     // get the state vector
+  
+  Double_t savex0=X0, savex1=X1, savex2=X2, savex3=X3;
+  
+  X0+=K00*(m[0]-savex0)+K01*(m[1]-savex1)+K02*(m[2]-savex2)+
+      K03*(m[3]-savex3);
+  X1+=K10*(m[0]-savex0)+K11*(m[1]-savex1)+K12*(m[2]-savex2)+
+      K13*(m[3]-savex3);
+  X2+=K20*(m[0]-savex0)+K21*(m[1]-savex1)+K22*(m[2]-savex2)+
+      K23*(m[3]-savex3);
+  X3+=K30*(m[0]-savex0)+K31*(m[1]-savex1)+K32*(m[2]-savex2)+
+      K33*(m[3]-savex3);
+  X4+=K40*(m[0]-savex0)+K41*(m[1]-savex1)+K42*(m[2]-savex2)+
+      K43*(m[3]-savex3);       
+
+  Double_t C00,C10,C20,C30,C40,C11,C21,C31,C41,C22,C32,C42,C33,C43,C44;
+  
+  C00=Cin00-K00*Cin00-K01*Cin10-K02*Cin20-K03*Cin30;
+  C10=Cin10-K00*Cin10-K01*Cin11-K02*Cin21-K03*Cin31;
+  C20=Cin20-K00*Cin20-K01*Cin21-K02*Cin22-K03*Cin32;
+  C30=Cin30-K00*Cin30-K01*Cin31-K02*Cin32-K03*Cin33;
+  C40=Cin40-K00*Cin40-K01*Cin41-K02*Cin42-K03*Cin43;
+  
+  C11=Cin11-K10*Cin10-K11*Cin11-K12*Cin21-K13*Cin31;
+  C21=Cin21-K10*Cin20-K11*Cin21-K12*Cin22-K13*Cin32;
+  C31=Cin31-K10*Cin30-K11*Cin31-K12*Cin32-K13*Cin33;
+  C41=Cin41-K10*Cin40-K11*Cin41-K12*Cin42-K13*Cin43;
+  
+  C22=Cin22-K20*Cin20-K21*Cin21-K22*Cin22-K23*Cin32;
+  C32=Cin32-K20*Cin30-K21*Cin31-K22*Cin32-K23*Cin33;
+  C42=Cin42-K20*Cin40-K21*Cin41-K22*Cin42-K23*Cin43;
+
+  C33=Cin33-K30*Cin30-K31*Cin31-K32*Cin32-K33*Cin33;
+  C43=Cin43-K30*Cin40-K31*Cin41-K32*Cin42-K33*Cin43;
+  
+  C44=Cin44-K40*Cin40-K41*Cin41-K42*Cin42-K43*Cin43;
+  
+  newTrack->PutXElements(X0,X1,X2,X3,X4);               // put the new state vector
+  
+  newTrack->PutCElements(C00,C10,C11,C20,C21,C22,C30,C31,C32,C33,C40,C41,C42,C43,C44); // put in track the
+                                                                                       // new cov matrix
+  
+  Double_t VMC[4][4];
+  
+  VMC[0][0]=V00-C00; VMC[1][0]=-C10; VMC[2][0]=-C20; VMC[3][0]=-C30;
+  VMC[1][1]=V11-C11; VMC[2][1]=-C21; VMC[3][1]=V31-C31;
+  VMC[2][2]=V22-C22; VMC[3][2]=V32-C32;
+  VMC[3][3]=V33-C33;
+  
+  VMC[0][1]=VMC[1][0]; VMC[0][2]=VMC[2][0]; VMC[0][3]=VMC[3][0];
+  VMC[1][2]=VMC[2][1]; VMC[1][3]=VMC[3][1];
+  VMC[2][3]=VMC[3][2];
   
 
+/////////////////////// VMC matrix inversion ///////////////////////////////////  
+ 
+  n=4;
+  d=1.;
   
-  TMatrix tmp(H,TMatrix::kMult,C);
-  TMatrix R(tmp,TMatrix::kMult,Ht); R+=V;
-  
-  R.Invert();  
-  TMatrix K(C,TMatrix::kMult,Ht); K*=R;  
-  TVector  x=newTrack->GetVector();
-  TVector savex=x;
-  x*=H; x-=m;
-  x*=-1; x*=K; x+=savex;  
-  TMatrix saveC=C;
-  C.Mult(K,tmp); C-=saveC; C*=-1;
-    
-  newTrack->GetVector()=x;
-  newTrack->GetCMatrix()=C;     
-  TVector res= newTrack->GetVector(); 
-  //cout<<" res = "<<res(0)<<" "<<res(1)<<" "<<res(2)<<" "<<res(3)<<" "<<res(4)<<"\n"; 
-  res*=H; res-=m;   res*=-1.;  
-  TMatrix Cn=newTrack->GetCMatrix();
-  TMatrix tmpn(H,TMatrix::kMult,Cn);
-  TMatrix Rn(tmpn,TMatrix::kMult,Ht);   Rn-=V; Rn*=-1.;
-  
-  Rn.Invert();	 
-  TVector r=res;    res*=Rn;
-  Double_t chi2= r*res;	
+  for(Int_t k=0; k<n; k++) {
+    ll[k]=k;
+    mm[k]=k;
+    big=VMC[k][k];
+    for(Int_t j=k; j<n ; j++) {
+      for (Int_t i=j; i<n; i++) {
+        if(TMath::Abs(big) < TMath::Abs(VMC[i][j]) ) { big=VMC[i][j]; ll[k]=i; mm[k]=j; }
+      }
+    }    
+//
+    Int_t j= ll[k];
+    if(j > k) {
+      for(Int_t i=0; i<n; i++) { hold=-VMC[k][i]; VMC[k][i]=VMC[j][i]; VMC[j][i]=hold; }
+      
+    }
+//
+    Int_t i=mm[k];
+    if(i > k ) { 
+      for(int j=0; j<n; j++) { hold=-VMC[j][k]; VMC[j][k]=VMC[j][i]; VMC[j][i]=hold; }
+    }
+//
+    if(!big) {
+      d=0.;
+      cout << "Singular matrix\n"; 
+    }
+    for(Int_t i=0; i<n; i++) {
+      if(i == k) { continue; }    
+      VMC[i][k]=VMC[i][k]/(-big);
+    }   
+//
+    for(Int_t i=0; i<n; i++) {
+      hold=VMC[i][k];
+      for(Int_t j=0; j<n; j++) {
+        if(i == k || j == k) { continue; }
+	VMC[i][j]=hold*VMC[k][j]+VMC[i][j];
+      }
+    }
+//  
+    for(Int_t j=0; j<n; j++) {
+      if(j == k) { continue; }
+      VMC[k][j]=VMC[k][j]/big;
+    }
+//
+    d=d*big;
+//
+    VMC[k][k]=1./big;        
+  } 
+//  
+  for(Int_t k=n-1; k>=0; k--) {
+    Int_t i=ll[k];
+    if(i > k) {
+      for (Int_t j=0; j<n; j++) {hold=VMC[j][k]; VMC[j][k]=-VMC[j][i]; VMC[j][i]=hold;}
+    }  
+    Int_t j=mm[k];
+    if(j > k) {
+      for (Int_t i=0; i<n; i++) {hold=VMC[k][i]; VMC[k][i]=-VMC[j][i]; VMC[j][i]=hold;}
+      }
+  }
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+  Double_t chi2=(m[0]-X0)*( VMC[0][0]*(m[0]-X0) + 2.*VMC[1][0]*(m[1]-X1) + 
+                   2.*VMC[2][0]*(m[2]-X2)+ 2.*VMC[3][0]*(m[3]-X3) ) +
+                (m[1]-X1)* ( VMC[1][1]*(m[1]-X1) + 2.*VMC[2][1]*(m[2]-X2)+ 
+		   2.*VMC[3][1]*(m[3]-X3) ) +
+                (m[2]-X2)* ( VMC[2][2]*(m[2]-X2)+ 2.*VMC[3][2]*(m[3]-X3) ) +
+                (m[3]-X3)*VMC[3][3]*(m[3]-X3);	
  	 
   newTrack->SetChi2(newTrack->GetChi2()+chi2);
    

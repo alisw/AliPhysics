@@ -18,7 +18,11 @@ class AliITSiotrack : public TObject {
   Int_t   GetIdPoint(Int_t i) const {return fIdPoints[i];}   // get the identification number for the point
   Int_t   GetIdModule(Int_t i) const {return fIdModules[i];} // get the module number for the point
   //Double_t * GetStateVector();            // get the state vector (5 elements)
-  Double_t * GetCovMatrix();              // get the covariance matrix as 15 elements array
+  //Double_t * GetCovMatrix();              // get the covariance matrix as 15 elements array
+ void GetCovMatrix(Double_t &C00, Double_t &C10, Double_t &C11, Double_t &C20,
+                   Double_t &C21, Double_t &C22, Double_t &C30, Double_t &C31,
+		   Double_t &C32, Double_t &C33, Double_t &C40, Double_t &C41,
+		   Double_t &C42, Double_t &C43, Double_t &C44);
   Double_t GetStatePhi() const {return fStateVPhi;}  // gets the Phi angle of the state vector
   Double_t GetStateZ() const {return fStateVZ;}      // gets the Z cohordinate of the state vector
   Double_t GetStateD() const {return fStateVD;}      // gets the radial impact parameter of the state vector
@@ -33,7 +37,11 @@ class AliITSiotrack : public TObject {
   Float_t GetPy() const {return fPy;}   // gets the y momentum component at the found vertex 
   Float_t GetPz()const {return fPz;}    // gets the z momentum component at the found vertex 
  
-  void SetCovMatrix(TMatrix *cov);      // sets the covariance matrix
+  //void SetCovMatrix(TMatrix *cov);      // sets the covariance matrix
+  void SetCovMatrix(Double_t C00, Double_t C10, Double_t C11, Double_t C20, Double_t C21, 
+       Double_t C22, Double_t C30, Double_t C31, Double_t C32, Double_t C33, Double_t C40, 
+       Double_t C41, Double_t C42, Double_t C43, Double_t C44);
+  
   void SetLabel(Int_t lab) {fLab=lab;}  // sets the track label
   void SetIdPoint(Int_t i,Int_t pnt) {fIdPoints[i]=pnt;}   // set the identification number for the point
   void SetIdModule(Int_t i,Int_t mod) {fIdModules[i]=mod;} // set the module number for the point
@@ -77,7 +85,7 @@ class AliITSiotrack : public TObject {
   Int_t     fCharge;             //  particle charge  
 
 //  Covariance matrix
-  Double_t  fcovar[25];              //! Elements of Covariance matrix below
+//Double_t  fcovar[25];              //! Elements of Covariance matrix below
   Double_t  fC00;
   Double_t  fC10, fC11;
   Double_t  fC20, fC21, fC22;

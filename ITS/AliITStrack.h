@@ -20,20 +20,18 @@ public:
   AliITStrack(const AliITStrack &cobj);
   AliITStrack &operator=(AliITStrack obj);
   ~AliITStrack();
-  Float_t &operator()(Int_t i) const {  return fvTrack(i);}
-  Float_t &operator()(Int_t r, Int_t c) const {return (*fmCovariance)(r,c);}
   Int_t GetNumClust() { return fNumClustInTrack;}
   void AddClustInTrack() { fNumClustInTrack++;}
   TObjArray *GetListOfCluster() { return flistCluster;}
   void SetChi2(Double_t chi2) { fChi2 = chi2;}
   Double_t GetChi2() { return fChi2;}
-  Double_t GetZ() const {return fvTrack(1);}
-  Double_t GetTgl() const {return fvTrack(3);}   
+  Double_t GetZ() const {return fX1;}
+  Double_t GetTgl() const {return fX3;}   
   Double_t Getrtrack() const{return rtrack;}
-  Double_t Getphi()  const{return fvTrack(0);}
-  Double_t GetC() const {return fvTrack(4);}
-  Double_t GetD() const{return fvTrack(2);} 
-  Double_t GetPt() const {return 0.299792458*0.2/(fvTrack(4)*100.);}            
+  Double_t Getphi()  const{return fX0;}
+  Double_t GetC() const {return fX4;}
+  Double_t GetD() const{return fX2;} 
+  Double_t GetPt() const {return 0.299792458*0.2/(fX4*100.);}            
   void SetVertex(TVector &vert) { for(Int_t i=0;i<3;i++) fVertex(i) = vert(i);}
   void SetErrorVertex(TVector &evert) {for(Int_t i=0;i<3;i++) fErrorVertex(i) = evert(i);}
 
@@ -43,8 +41,19 @@ public:
   Long_t  GetLabel() { return flabel;}
   void SetLabel(Long_t label) { flabel = label;}
   Int_t  GetLayer() { return fLayer;}
-  TMatrix &GetCMatrix() { return *fmCovariance;}
-  TVector &GetVector() { return fvTrack;}
+  
+
+  void PutCElements(Double_t C00, Double_t C10, Double_t C11, Double_t C20, Double_t C21, 
+  Double_t C22, Double_t C30, Double_t C31, Double_t C32, Double_t C33, Double_t C40, 
+  Double_t C41, Double_t C42, Double_t C43, Double_t C44);
+  
+  void GetCElements(Double_t &C00, Double_t &C10, Double_t &C11, Double_t &C20, Double_t &C21, 
+  Double_t &C22, Double_t &C30, Double_t &C31, Double_t &C32, Double_t &C33, Double_t &C40, 
+  Double_t &C41, Double_t &C42, Double_t &C43, Double_t &C44);
+   
+  void GetXElements(Double_t &X0, Double_t &X1, Double_t &X2, Double_t &X3, Double_t &X4);
+  void PutXElements(Double_t X0, Double_t X1, Double_t X2, Double_t X3, Double_t X4);
+    
   void SetLayer(Int_t layer) { fLayer = layer;}
   AliTPCtrack *GetTPCtrack() { return fTPCtrack;}
 
@@ -56,6 +65,7 @@ public:
   Int_t GetLabTPC() {return (*fTPCtrack).GetLabel();}
   Int_t GetIdPoint(Int_t lay) {return ((Int_t) (*ClusterInTrack)(lay,4));}
   Int_t GetIdModule(Int_t lay) {return ((Int_t) (*ClusterInTrack)(lay,5));}
+  Float_t GetIdParticle(Int_t lay) {return (*ClusterInTrack)(lay,3);}
       
 
   Int_t DoNotCross(Double_t rk) const;
@@ -65,8 +75,8 @@ public:
   Double_t argC(Double_t rk) const;             
   void  Propagation(Double_t rk) ;
 
-  Double_t GetSigmaphi() const{return ((Double_t)(*fmCovariance)(0,0));}
-  Double_t GetSigmaZ() const{return ((Double_t)(*fmCovariance)(1,1));}
+  Double_t GetSigmaphi() const{return fC00;}
+  Double_t GetSigmaZ() const{return  fC11;}
   void AddEL(AliITSRad *rl,Double_t signdE,  Bool_t flagtot, Double_t mass=0.1396); 
   void AddMS(AliITSRad *rl);
   void Correct(Double_t rk); 
@@ -89,17 +99,23 @@ public:
   Double_t Gettgl2(Int_t i){return (Double_t)tgl2(i);}
   Double_t Getdtgl(Int_t i){return (Double_t)dtgl(i);}
   Double_t GetxoTPC() {return xoTPC;} 
- // Double_t PhiDef(Double_t x, Double_t y); 
- // Double_t  Getalphaprov(){return alphaprov;}  //provvirio      	        
+  Double_t PhiDef(Double_t x, Double_t y); 
+  //Int_t  Getfreq(){return freq;}  //provvisorio 
+  // void  Setfreq(Int_t xfreq){freq=xfreq;}  //provvisorio        	        
 //////////////////////////////////////////////////////////////////////////////////////// 
 
  private:  
    
   AliTPCtrack     *fTPCtrack;           // reference to TPC track
-   
-  TVector         fvTrack;              // state vector: |phi/z/D/tgl/C 
+
+  Double_t        fX0,fX1,fX2,fX3,fX4;  // state vector: |phi/z/D/tgl/C 
   Double_t        rtrack;               // radius of courrent layer     
-  TMatrix         *fmCovariance;        // Covariance Matrix
+  
+  Double_t        fC00, fC10, fC11,     // Covariance Matrix
+                  fC20, fC21, fC22,     //      "       "
+						fC30, fC31, fC32,     //      "       " 
+						fC33, fC40, fC41,     //      "       " 
+						fC42, fC43, fC44;     //      "       "
       
   Double_t        fChi2;                // fChi^2 of track         
   TObjArray       *flistCluster;        // list of clusters of the track
@@ -123,7 +139,7 @@ public:
 
   Double_t          xoTPC;
   		   
-  //Double_t alphaprov;  //provviosorio		   
+ // Int_t freq; //provvisorio	   
 
  
   ClassDef(AliITStrack, 1)
