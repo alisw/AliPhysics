@@ -21,13 +21,11 @@
 #include <Randomize.hh>
 
 #include <TParticle.h>
-#include <TClonesArray.h>
 
 AliPrimaryGeneratorAction::AliPrimaryGeneratorAction()
   : fGenerator(kAliGenerator),
     fNofGunParticles(1),
-    fVerboseLevel(0),
-    fParticleArray(0)
+    fVerboseLevel(0)
 {
 //
   fParticleGun = new AliParticleGun();
@@ -68,7 +66,6 @@ void AliPrimaryGeneratorAction::ConstructGenerator()
 // Constructs selected generator.
 // ---
 
-  fParticleArray = 0;
   switch (fGenerator) { 
     case kGun:
       // gun is constructed interactively      
@@ -147,9 +144,8 @@ void AliPrimaryGeneratorAction::ConstructAliGenerator()
     text = text + "   No AliGenerator is defined in gAlice.";
     AliGlobals::Exception(text);
   }  
-  // fill AliRun::fParticles array 
+  // fill AliRun::fParticleMap array 
   generator->Generate();
-  fParticleArray = gAlice->Particles();
 }
 
 void AliPrimaryGeneratorAction::GenerateAliGeneratorPrimaries(G4Event* event)
@@ -167,20 +163,9 @@ void AliPrimaryGeneratorAction::GenerateAliGeneratorPrimaries(G4Event* event)
   //G4cout << " nofParticles: " <<  nofParticles << G4endl;
   for( G4int i=0; i<nofParticles; i++ ) {    
   
-    // get particle from TClonesArray
-    TObject* particleTObject
-      = fParticleArray->UncheckedAt(i);      
-    TParticle* particle
-      = dynamic_cast<TParticle*>(particleTObject);
+    // get the particle from AliRun stack
+    TParticle* particle = gAlice->Particle(i);
 
-    // check particle type
-    if (!particle) {
-      G4String text =
-        "AliPrimaryGeneratorAction::GenerateAliGeneratorPrimaries\n";
-      text = text + "Unknown particle type";    	
-      AliGlobals::Exception(text);
-    }  
-     
     // get particle definition from G4ParticleTable
     G4int pdgEncoding = particle->GetPdgCode();
     G4ParticleTable* particleTable 
@@ -259,7 +244,7 @@ void AliPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
   ConstructGenerator();
   
   // generate primary vertices
-  if (fParticleArray)  {
+  if (fGenerator == kAliGenerator)  {
     // use AliGenerator if set
     GenerateAliGeneratorPrimaries(event);
 
