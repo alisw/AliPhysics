@@ -1,10 +1,10 @@
 SECTOR_SPECIAL_DATA
   
-MOTIF 1  32  m 
-MOTIF 1  35  p  
-MOTIF 1  34  u  
-MOTIF 1  33  n  
-MOTIF 1  39  t  
+MOTIF 1  32  m1 
+MOTIF 1  35  p1  
+MOTIF 1  34  u1  
+MOTIF 1  33  n1  
+MOTIF 1  39  t1  
 MOTIF 1  41  v1  
 MOTIF 1  42  v2 
 MOTIF 1  43  v3 

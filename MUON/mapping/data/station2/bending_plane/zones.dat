@@ -1,6 +1,6 @@
 SECTOR_DATA
        3 13 Y
-
+  
 ZONE 1  7.5   5.0
 	SUBZONE 7        A  
 		ROW_SEGMENT 36  0  0  9   1018  -1
