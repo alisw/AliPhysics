@@ -158,7 +158,7 @@ void AliRecPoint::Copy(TObject& recp) const
   // Copy *this onto pts
   //
   // Copy all first
-  if(this != &recp) {
+  if((TObject*)this != &recp) {
     ((TObject*) this)->Copy(recp);
     (dynamic_cast<AliRecPoint&>(recp)).fAmp = fAmp;
     (dynamic_cast<AliRecPoint&>(recp)).fGeom = fGeom;

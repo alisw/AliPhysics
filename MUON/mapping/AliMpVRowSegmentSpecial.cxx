@@ -204,7 +204,7 @@ Bool_t AliMpVRowSegmentSpecial::HasMotif(const AliMpVMotif* motif) const
 
 #ifdef WITH_ROOT
   for (Int_t i=0; i<fMotifs.GetEntriesFast(); i++)
-    if (fMotifs[i] == motif) return true;
+    if (fMotifs[i] == (const TObject*)motif) return true;
 #endif
 
   return false;	 
