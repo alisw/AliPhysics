@@ -12,6 +12,7 @@
 #include <G4LogicalVolumeStore.hh>
 #include <G4LogicalVolume.hh>
 #include <G4Material.hh>
+#include <G4UserLimits.hh>
 #include <G3toG4.hh> 
 
 TG4GeometryServices* TG4GeometryServices::fgInstance = 0;
@@ -106,7 +107,6 @@ G4String TG4GeometryServices::CutName(const char* name) const
   return cutName;
 }  
 
-
 void TG4GeometryServices::G4ToG3VolumeName(G4String& name) const
 {
 // Cuts _copyNo extension added to logical volume name in case 
@@ -117,6 +117,32 @@ void TG4GeometryServices::G4ToG3VolumeName(G4String& name) const
   name = name(0,name.first(gSeparator));
 }
 
+G4int TG4GeometryServices::SetUserLimits(G4UserLimits* userLimits, 
+                                         G4LogicalVolume* lv)
+{
+// Sets user limits to all logical volumes corresponding to 
+// the same G3 volume as the volume with specified name.
+// Returns the number of updated logical volumes.
+// ---  
+
+  G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
+
+  G4String volName = lv->GetName();
+  G4ToG3VolumeName(volName);
+
+  G4int counter = 0;
+  for (G4int i=0; i<pLVStore->entries(); i++) {
+    G4LogicalVolume* lv = (*pLVStore)[i];
+    G4String name = lv->GetName();
+    G4ToG3VolumeName(name);
+    if (name == volName) {
+      lv->SetUserLimits(userLimits);
+      counter++;
+    }  
+  }
+  
+  return counter;
+}
 
 G4Material* TG4GeometryServices::MixMaterials(G4String name, G4double density, 
         TG4StringVector* matNames, TG4doubleVector* matWeights)

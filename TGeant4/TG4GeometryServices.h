@@ -22,6 +22,7 @@ class TG4GeometryOutputManager;
 class G4Material;
 class G4VPhysicalVolume;
 class G4LogicalVolume;
+class G4UserLimits;
 
 class TG4GeometryServices
 {
@@ -39,6 +40,7 @@ class TG4GeometryServices
     G4double* CreateG4doubleArray(Float_t* array, G4int size) const;
     G4String  CutName(const char* name) const;
     void G4ToG3VolumeName(G4String& name) const;
+    G4int SetUserLimits(G4UserLimits* userLimits, G4LogicalVolume* lv);		     
     G4Material* MixMaterials(G4String name, G4double density,
                      TG4StringVector* matNames, TG4doubleVector* matWeights);
 
