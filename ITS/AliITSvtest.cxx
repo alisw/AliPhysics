@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/05/30 16:15:47  fca
+Correct comparison wiht AliGeant3::Class() introduced. Thanks to I.Hrivnacova
+
 Revision 1.10  2001/05/30 15:55:35  hristov
 Strings compared instead of pointers
 
@@ -83,6 +86,8 @@ $Id$
 ///////////////////////////////////////////////////////////////////////////////
 #include <stdio.h>
 #include <stdlib.h>
+#include <iomanip.h>
+#include <fstream.h>
 #include <TMath.h>
 #include <TGeometry.h>
 #include <TNode.h>
