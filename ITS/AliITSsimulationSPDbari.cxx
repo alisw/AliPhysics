@@ -260,7 +260,7 @@ void AliITSsimulationSPDbari::ChargeSharing(Float_t x1l,Float_t z1l,Float_t x2l,
   //
   //Begin_Html
   /*
-  <img src="model_2.gif">
+  <img src="picts/ITS/barimodel_2.gif">
   </pre>
   <br clear=left>
   <font size=+2 color=red>
@@ -409,7 +409,7 @@ void AliITSsimulationSPDbari::SetCoupling(Int_t row, Int_t col, Int_t ntrack,
    //
    //Begin_Html
    /*
-   <img src="model_3.gif">
+   <img src="picts/ITS/barimodel_3.gif">
    </pre>
    <br clear=left>
    <font size=+2 color=red>
@@ -611,7 +611,7 @@ void AliITSsimulationSPDbari::SetFluctuations(Float_t **pList) {
   //
   //Begin_Html
   /*
-  <img src="model_1.gif">
+  <img src="picts/ITS/barimodel_1.gif">
   </pre>
   <br clear=left>
   <font size=+2 color=red>
