@@ -39,6 +39,7 @@
 #include <TGeometry.h>
 #include <TMarker3DBox.h>
 #include <TParticle.h>
+#include <TPolyLine3D.h>
 
 #include "AliMUONDisplay.h"
 #include "AliRun.h"
