@@ -1,12 +1,12 @@
 FSRCS= PartEloss/integralgauss.f  PartEloss/read.f PartEloss/readca3.f
 SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
-		AliGenCocktail.cxx AliGenCocktailAfterBurner.cxx AliGenFLUKAsource.cxx \
-		AliGenLib.cxx \
+                AliGenCocktail.cxx AliGenCocktailAfterBurner.cxx AliGenFLUKAsource.cxx \
+                AliGenLib.cxx \
                 AliGenMUONlib.cxx AliGenParam.cxx\
                 AliDimuCombinator.cxx AliGenHalo.cxx \
                 AliGenHaloProtvino.cxx \
                 AliGenExtFile.cxx AliGenScan.cxx AliGenPHOSlib.cxx \
-		AliGenDoubleScan.cxx AliGenCocktailEntry.cxx \
+                AliGenDoubleScan.cxx AliGenCocktailEntry.cxx \
 		AliGenGSIlib.cxx AliGenPMDlib.cxx\
 	        AliGenMC.cxx\
 		AliGenReader.cxx AliGenReaderCwn.cxx AliGenReaderTreeK.cxx \
@@ -18,7 +18,7 @@ SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
 		AliStructFuncType.cxx AliGenSlowNucleons.cxx \
   	        AliGenGeVSimEventHeader.cxx\
 		AliSlowNucleonModel.cxx AliSlowNucleonModelExp.cxx \
-		AliGenMUONCocktail.cxx
+		AliGenMUONCocktail.cxx AliGenHBTosl.cxx 
 
 # Headerfiles for this particular package (Path respect to own directory)
 HDRS= $(SRCS:.cxx=.h) 

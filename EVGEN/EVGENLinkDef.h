@@ -51,6 +51,7 @@
 #pragma link C++ class  AliGenSlowNucleons+;
 #pragma link C++ class  AliSlowNucleonModel+;
 #pragma link C++ class  AliSlowNucleonModelExp+;
+#pragma link C++ class  AliGenHBTosl+;
 #pragma link C++ class  AliGenMUONCocktail+;
 #endif
 
