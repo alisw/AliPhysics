@@ -16,7 +16,7 @@
 
 #include "TObject.h"
 #include "TParticle.h"
-#include "TMCParticle.h"
+#include "TMCParticle6.h"
 #include "TClonesArray.h"
 #include "AliEMCALParton.h"
 #include "AliEMCALDigit.h"
