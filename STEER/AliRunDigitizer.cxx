@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/12/03 07:10:13  jchudoba
+Default ctor cannot create new objects, create dummy default ctor which leaves object in not well defined state - to be used only by root for I/O
+
 Revision 1.10  2001/11/15 11:07:25  jchudoba
 Set to zero new pointers to TPC and TRD special trees in the default ctor. Add const to all Get functions. Remove unused constant, rename constant according coding rules.
 
@@ -236,15 +239,15 @@ void AliRunDigitizer::Digitize(Option_t* option)
 // get a new combination of inputs, connect input trees and loop 
 // over all digitizers
 
-  if (!InitGlobal()) {
-    cerr<<"False from InitGlobal"<<endl;
-    return;
-  }
 // take gAlice from the first input file. It is needed to access
 //  geometry data
   if (!static_cast<AliStream*>(fInputStreams->At(0))->ImportgAlice()) {
     cerr<<"gAlice object not found in the first file of "
 	<<"the 1st stream"<<endl;
+    return;
+  }
+  if (!InitGlobal()) {
+    cerr<<"False from InitGlobal"<<endl;
     return;
   }
   Int_t eventsCreated = 0;
