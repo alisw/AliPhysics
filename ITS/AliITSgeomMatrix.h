@@ -11,7 +11,7 @@
 // By Bjorn S. Nilsen
 ////////////////////////////////////////////////////////////////////////
 
-class AliITSgeomMatrix{
+class AliITSgeomMatrix : public TObject {
  public:
 	AliITSgeomMatrix(); // Default constructor
 	AliITSgeomMatrix(const Int_t idt,const Int_t id[3],
@@ -24,9 +24,10 @@ class AliITSgeomMatrix{
 	AliITSgeomMatrix(const AliITSgeomMatrix &source);
 	void operator=(const AliITSgeomMatrix &sourse); // copy
 	virtual ~AliITSgeomMatrix(){};
-	void print(ostream *os);
+	void PrintComment(ostream *os);
+	void Print(ostream *os);
 	void PrintTitles(ostream *os);
-	void read(istream *is);
+	void Read(istream *is);
 
 	void SetAngles(const Double_t rot[3]){// [radians]
               for(Int_t i=0;i<3;i++)frot[i] = rot[i];this->MatrixFromAngle();}
@@ -72,7 +73,7 @@ class AliITSgeomMatrix{
  private: // Data members.
 	Int_t    fDetectorIndex; // Detector type index (like fShapeIndex was)
 	Int_t    fid[3];         // layer, ladder, detector numbers.
-	Double_t frot[3];        // vector of rotations about x,y,z [radians].
+	Double_t frot[3];        //! vector of rotations about x,y,z [radians].
 	Double_t ftran[3];       // Translation vector of module x,y,z.
 	Double_t fm[3][3];       // Rotation matrix based on frot.
 

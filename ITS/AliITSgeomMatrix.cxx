@@ -41,6 +41,7 @@ A new class to hold the matrix information needed by AliITSgeom.
 
 */
 #include <iostream.h>
+#include <iomanip.h>
 #include <TMath.h>
 #include <TBuffer.h>
 
@@ -608,22 +609,36 @@ void AliITSgeomMatrix::PrintTitles(ostream *os){
     return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::print(ostream *os){
+void AliITSgeomMatrix::PrintComment(ostream *os){
+////////////////////////////////////////////////////////////////////////
+//  output format used by Print..
+////////////////////////////////////////////////////////////////////////
+    *os << "fDetectorIndex fid[0] fid[1] fid[2] ftran[0] ftran[1] ftran[2] ";
+    *os << "fm[0][0]  fm[0][1]  fm[0][2]  fm[1][0]  fm[1][1]  fm[1][2]  ";
+    *os << "fm[2][0]  fm[2][1]  fm[2][2] ";
+    return;
+}
+//----------------------------------------------------------------------
+void AliITSgeomMatrix::Print(ostream *os){
 ////////////////////////////////////////////////////////////////////////
 // Standard output format for this class.
 ////////////////////////////////////////////////////////////////////////
     Int_t i,j;
+    ios::fmtflags fmt;
 
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
     *os << fDetectorIndex << " ";
     for(i=0;i<3;i++) *os << fid[i]   << " ";
-    for(i=0;i<3;i++) *os << frot[i]  << " ";
-    for(i=0;i<3;i++) *os << ftran[i] << " ";
-    for(i=0;i<3;i++)for(j=0;j<3;j++)  *os << fm[i][j] << " ";
+//    for(i=0;i<3;i++) *os << frot[i]  << " ";  // Redundant with fm[][].
+    for(i=0;i<3;i++) *os << setprecision(16) << ftran[i] << " ";
+    for(i=0;i<3;i++)for(j=0;j<3;j++)  *os << setprecision(16) << 
+					  fm[i][j] << " ";
     *os << endl;
+    os->flags(fmt); // reset back to old formating.
     return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::read(istream *is){
+void AliITSgeomMatrix::Read(istream *is){
 ////////////////////////////////////////////////////////////////////////
 // Standard input format for this class.
 ////////////////////////////////////////////////////////////////////////
@@ -631,9 +646,10 @@ void AliITSgeomMatrix::read(istream *is){
 
     *is >> fDetectorIndex;
     for(i=0;i<3;i++) *is >> fid[i];
-    for(i=0;i<3;i++) *is >> frot[i];
+//    for(i=0;i<3;i++) *is >> frot[i]; // Redundant with fm[][].
     for(i=0;i<3;i++) *is >> ftran[i];
     for(i=0;i<3;i++)for(j=0;j<3;j++)  *is >> fm[i][j];
+    AngleFromMatrix(); // compute angles frot[].
     return;
 }
 //----------------------------------------------------------------------
@@ -642,7 +658,7 @@ ostream &operator<<(ostream &os,AliITSgeomMatrix &p){
 // Standard output streaming function.
 ////////////////////////////////////////////////////////////////////////
 
-    p.print(&os);
+    p.Print(&os);
     return os;
 }
 //----------------------------------------------------------------------
@@ -651,6 +667,7 @@ istream &operator>>(istream &is,AliITSgeomMatrix &r){
 // Standard input streaming function.
 ////////////////////////////////////////////////////////////////////////
 
-    r.read(&is);
+    r.Read(&is);
     return is;
 }
+//----------------------------------------------------------------------
