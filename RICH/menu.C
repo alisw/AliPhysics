@@ -1,9 +1,13 @@
+
+Double_t r2d = TMath::RadToDeg();
+Double_t d2r = TMath::DegToRad();
+
 void Digits2Recos()
 {
   AliRICHRecon *detect = new AliRICHRecon("RICH patrec algorithm","Reconstruction");
     
 
-  for (int nev=0; nev<= a->GetEventsPerRun(); nev++) {    // Event Loop
+  for (int nev=0; nev< a->GetEventsPerRun(); nev++) {    // Event Loop
     al->GetEvent(nev);
     cout <<endl<< "Processing event:" <<nev<<endl;
     detect->StartProcessEvent();

@@ -227,6 +227,8 @@ void AliRICHRecon::StartProcessEvent()
   
   SetFreonScaleFactor(0.994);
 
+  InitRecon();
+  
   if(kDISPLAY) 
     {
       DrawEvent(0);
@@ -252,16 +254,19 @@ void AliRICHRecon::StartProcessEvent()
         clusX[ich][k] = pCluster->fX;
         clusY[ich][k] = pCluster->fY;
         clusQ[ich][k] = pCluster->fQ;
-        pCluster->Print();
+//        pCluster->Print();
       }
     }
         
     Int_t nPrimaries = (Int_t)Rich()->GetLoader()->TreeH()->GetEntries();
-    
+
+    cout << " N. primaries " << nPrimaries << endl;
+        
     for(Int_t i=0;i<nPrimaries;i++){
       
       Rich()->GetLoader()->TreeH()->GetEntry(i);
 
+      Rich()->Hits()->Print();
       Int_t iPrim = 0;
 
       AliRICHhit* pHit=0;
@@ -269,34 +274,43 @@ void AliRICHRecon::StartProcessEvent()
       for(Int_t j=0;j<Rich()->Hits()->GetEntries();j++) {
 
         pHit = (AliRICHhit*)Rich()->Hits()->At(j);
-        if(pHit->GetTrack() > nPrimaries) continue;
+        if(pHit->GetTrack() < nPrimaries) break;
         iPrim++;
       }
 
-      if(iPrim>1) Fatal("StartProcessEvent"," more than 1 prim to hit!!! = %3i", iPrim);
+      cout << " iPrim " << iPrim << endl;
+//      if(iPrim==0) return;
+//      if(iPrim>1) Fatal("StartProcessEvent"," problems with prim to hit!!! = %3i", iPrim);
+      
       TParticle *pParticle = gAlice->GetRunLoader()->Stack()->Particle(pHit->GetTrack());
       Float_t pmod     = pParticle->P();
       Float_t pt       = pParticle->Pt();
       Float_t TrackEta = pParticle->Eta();
       Int_t q          = (Int_t)TMath::Sign(1.,pParticle->GetPDG()->Charge());        
 
+      pParticle->Print();
+      
+      cout << " pmod " << pmod << " pt " << pt << " Eta " << TrackEta << " charge " << q << endl;
+      
       SetTrackMomentum(pmod); 
       SetTrackPt(pt);
       SetTrackEta(TrackEta);
       SetTrackCharge(q);
 
       TVector3 pGlob(pHit->MomFreoX(),pHit->MomFreoY(),pHit->MomFreoZ());
-      TVector3 pLocal = Rich()->C(pHit->Chamber())->G2Lvector(pGlob);
+      TVector3 pLocal = Rich()->C(pHit->Chamber())->Global2Local(pGlob,1);
       
       Float_t primGlobalX = pHit->X();
       Float_t primGlobalY = pHit->Y();
       Float_t primGlobalZ = pHit->Z();
       TVector3 primGlobal(primGlobalX,primGlobalY,primGlobalZ);
-      TVector3 primLocal = Rich()->C(pHit->Chamber())->G2L(primGlobal);
+      TVector3 primLocal = Rich()->C(pHit->Chamber())->Global2Local(primGlobal);
       
 //      Float_t pmodFreo = pLocal.Mag();
       Float_t TrackTheta = pLocal.Theta();
       Float_t TrackPhi = pLocal.Phi();
+
+      cout << " TrackTheta " << TrackTheta << " TrackPhi " << TrackPhi << endl;
       
       SetTrackTheta(TrackTheta);
       SetTrackPhi(TrackPhi);
@@ -304,11 +318,16 @@ void AliRICHRecon::StartProcessEvent()
       Int_t MaxInd = 0;
       Float_t MinDist =  999.;
 
-      for(Int_t j=0;j<nClusters[pHit->Chamber()];j++)
+      cout << " n Clusters " << nClusters[pHit->Chamber()-1] << " for chamber n. " << pHit->Chamber() << endl;
+      
+      for(Int_t j=0;j<nClusters[pHit->Chamber()-1];j++)
 	{
-	  Float_t diffx = primLocal.X() - clusX[pHit->Chamber()][j];
-	  Float_t diffy = primLocal.Y() - clusY[pHit->Chamber()][j];
+	  Float_t diffx = primLocal.X() - clusX[pHit->Chamber()-1][j];
+	  Float_t diffy = primLocal.Y() - clusY[pHit->Chamber()-1][j];
 
+          cout << " cluster x " << clusX[pHit->Chamber()-1][j] << " hit track x " << primLocal.X();
+          cout << " cluster y " << clusY[pHit->Chamber()-1][j] << " hit track y " << primLocal.Y() << endl;
+          
           Float_t diff = sqrt(diffx*diffx + diffy*diffy);
 
 	  if(diff < MinDist)
@@ -319,9 +338,11 @@ void AliRICHRecon::StartProcessEvent()
 
 	}
 
-      Float_t diffx = primLocal.X() - clusX[pHit->Chamber()][MaxInd];
-      Float_t diffy = primLocal.Y() - clusY[pHit->Chamber()][MaxInd];
+      Float_t diffx = primLocal.X() - clusX[pHit->Chamber()-1][MaxInd];
+      Float_t diffy = primLocal.Y() - clusY[pHit->Chamber()-1][MaxInd];
 
+      cout << " diffx " << diffx << " diffy " << diffy << endl;
+      
       if(q>0)
       {
          h2_diffpos->Fill(diffx,diffy);
@@ -338,14 +359,14 @@ void AliRICHRecon::StartProcessEvent()
       SetShiftX(ShiftX);
       SetShiftY(ShiftY);
 
-      Float_t *pclusX = &clusX[pHit->Chamber()][0];
-      Float_t *pclusY = &clusY[pHit->Chamber()][0];
+      Float_t *pclusX = &clusX[pHit->Chamber()-1][0];
+      Float_t *pclusY = &clusY[pHit->Chamber()-1][0];
       
       SetCandidatePhotonX(pclusX);
       SetCandidatePhotonY(pclusY);
-      SetCandidatePhotonsNumber(nClusters[pHit->Chamber()]);
+      SetCandidatePhotonsNumber(nClusters[pHit->Chamber()-1]);
 
-      Int_t qch = clusQ[pHit->Chamber()][MaxInd];
+      Int_t qch = clusQ[pHit->Chamber()-1][MaxInd];
 
       if(MinDist < 3.0 && qch > 120 && MaxInd !=0) 
 	{
