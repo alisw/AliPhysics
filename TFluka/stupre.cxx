@@ -1,6 +1,5 @@
 #include <Riostream.h>
 #include "AliRun.h"
-#include "TFluka.h"
 #ifndef WIN32
 # define stupre stupre_
 #else
@@ -17,6 +16,7 @@
 #include "Ftrackr.h"  //(TRACKR) fluka common
 
 //Virtual MC
+
 #ifndef WITH_ROOT
 #include "TFluka.h"
 #else
@@ -64,7 +64,9 @@ void stupre()
   }
 
 // Get the pointer to the VMC
-  TVirtualMC* fluka = TFluka::GetMC();
+  TFluka* fluka =  (TFluka*) gMC;
+  fluka->SetTrackIsNew(kTRUE);
+//  TVirtualMC* fluka = TFluka::GetMC();
 // Get the stack produced from the generator
   TVirtualMCStack* cppstack = fluka->GetStack();
   

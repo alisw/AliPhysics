@@ -293,7 +293,7 @@ class TFluka : public TVirtualMC {
   // in the case of sodraw fIcode=0
 
   Int_t GetMreg() const {return fCurrentFlukaRegion;}
-  void SetMreg(Int_t l) {fCurrentFlukaRegion = l;}
+  void SetMreg(Int_t l);
 
   Int_t GetNewreg() const {return iNewreg;}
   void SetNewreg(Int_t l) {iNewreg = l;}
@@ -314,8 +314,9 @@ class TFluka : public TVirtualMC {
   Int_t GetCurrentFlukaRegion() const {return fCurrentFlukaRegion;}
 
   void SetTrackIsEntering(){fTrackIsEntering = kTRUE; fTrackIsExiting = kFALSE;}
-  void SetTrackIsExiting() {fTrackIsExiting  = kTRUE;}
+  void SetTrackIsExiting() {fTrackIsExiting  = kTRUE; fTrackIsEntering = kFALSE;}
   void SetTrackIsInside()  {fTrackIsExiting  = kFALSE; fTrackIsEntering = kFALSE;}
+  void SetTrackIsNew(Bool_t flag=kTRUE) {fTrackIsNew = flag;}
   
   //
   // test
@@ -342,6 +343,7 @@ class TFluka : public TVirtualMC {
   Double_t fZsco;   //Fluka Draw procedures formal parameter
   Bool_t   fTrackIsEntering;  // Flag for track entering
   Bool_t   fTrackIsExiting;   // Flag for track exiting  
+  Bool_t   fTrackIsNew;       // Flag for new track
 
   //variables for SetProcess and SetCut
   Int_t    iNbOfProc;

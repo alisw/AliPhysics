@@ -32,15 +32,12 @@ void bxdraw(Int_t& icode, Int_t& mreg, Int_t& newreg,
     fluka->SetCaller(12);
     fluka->SetMreg(mreg);
     (TVirtualMCApplication::Instance())->Stepping(); 
+    printf("bxdraw (en) \n");
     fluka->SetCaller(11);
     fluka->SetTrackIsEntering();
-    printf("bxdraw (en) mreg=%d newreg=%d \n",mreg,newreg);
     fluka->SetMreg(newreg);
     (TVirtualMCApplication::Instance())->Stepping();
-//    fluka->SetCaller(1);
-//    fluka->SetTrackIsInside();
-//    printf("bxdraw (st) \n");
-//    (TVirtualMCApplication::Instance())->Stepping();
+    fluka->SetTrackIsNew(kFALSE);
 } // end of bxdraw
 } // end of extern "C"
 

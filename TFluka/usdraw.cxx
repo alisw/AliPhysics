@@ -18,13 +18,16 @@ extern "C" {
 void usdraw(Int_t& icode, Int_t& mreg, 
             Double_t& xsco, Double_t& ysco, Double_t& zsco)
 {
-  ((TFluka*) gMC)->SetCaller(6);
-  ((TFluka*) gMC)->SetIcode(icode);
-  ((TFluka*) gMC)->SetMreg(mreg);
-  ((TFluka*) gMC)->SetXsco(xsco);
-  ((TFluka*) gMC)->SetYsco(ysco);
-  ((TFluka*) gMC)->SetZsco(zsco);
+  TFluka *fluka = (TFluka*)gMC;
+  fluka->SetCaller(6);
+  fluka->SetIcode(icode);
+  fluka->SetMreg(mreg);
+  fluka->SetXsco(xsco);
+  fluka->SetYsco(ysco);
+  fluka->SetZsco(zsco);
   (TVirtualMCApplication::Instance())->Stepping();
+  fluka->SetTrackIsNew(kFALSE);
+  
 } // end of usdraw
 } // end of extern "C"
 

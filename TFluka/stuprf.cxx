@@ -1,7 +1,6 @@
 #include <Riostream.h>
 #include "AliRun.h"
 #include "AliStack.h"
-#include "TFluka.h"
 #ifndef WIN32
 # define stuprf stuprf_
 #else
@@ -19,7 +18,12 @@
 #include "Ffinuc.h"   //(FINUC)  fluka common
 
 //Virtual MC
+#ifndef WITH_ROOT
 #include "TFluka.h"
+#else
+#include "TFlukaGeo.h"
+#endif
+
 #include "TVirtualMCStack.h"
 #include "TVirtualMCApplication.h"
 #include "TParticle.h"
@@ -56,7 +60,9 @@ extern "C" {
   }  
  
 // Get the pointer to the VMC
-  TVirtualMC* fluka = TFluka::GetMC();
+  TFluka* fluka =  (TFluka*) gMC;
+  fluka->SetTrackIsNew(kTRUE);
+//  TVirtualMC* fluka = TFluka::GetMC();
 // Get the stack produced from the generator
   TVirtualMCStack* cppstack = fluka->GetStack();
   

@@ -30,6 +30,7 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
     return;
   }
   (TVirtualMCApplication::Instance())->Stepping();
+  fluka->SetTrackIsNew(kFALSE);
 } // end of endraw
 } // end of extern "C"
 
