@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/07/17 09:50:21  morsch
+Index on media and material arrays corrected
+
 Revision 1.2  2001/07/09 11:46:08  morsch
 Conversion code moved to AliG3toRoot
 
@@ -802,12 +805,9 @@ Bool_t AliGuiGeomMain::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 	    
 	case kCM_MENU:
 	    switch (parm1) {
-		
 	    case kFileOpen:
 	    {
-		TGFileInfo fi;
-		fi.fFileTypes = (char **)kFileTypes;
-		new TGFileDialog(gClient->GetRoot(), this, kFDOpen,&fi);
+		printf("kFileOpen not yet implemented \n");
 	    }
 	    break;
 	    
@@ -817,10 +817,11 @@ Bool_t AliGuiGeomMain::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 		break;
 		
 	    case kFileSave:
-		printf("kFileSave\n");
+		printf("kFileSave not yet implemented \n");
 		break;
 		
 	    case kFileExit:
+//		printf("kFileExit not yet implemented \n");
 		CloseWindow();   // this also terminates theApp
 		break;
 	    default:
