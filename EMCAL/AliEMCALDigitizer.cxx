@@ -458,7 +458,7 @@ Bool_t AliEMCALDigitizer::Init()
 void AliEMCALDigitizer::InitParameters()
 {
   fMeanPhotonElectron = 18200 ; // electrons per GeV
-  fPinNoise           = 0.1 ; // noise equivalent GeV (random choice)
+  fPinNoise           = 0.003 ; // noise equivalent GeV (random choice)
   if (fPinNoise == 0. ) 
     Warning("InitParameters", "No noise added\n") ; 
   fDigitThreshold     = fPinNoise * 3; //2 sigma

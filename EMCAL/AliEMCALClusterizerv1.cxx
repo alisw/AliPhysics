@@ -291,7 +291,7 @@ void AliEMCALClusterizerv1::InitParameters()
 { 
   // Initializes the parameters for the Clusterizer
   fNumberOfECAClusters = 0;
-  fECAClusteringThreshold   = 0.0045;  // must be adjusted according to the noise leve set by digitizer
+  fECAClusteringThreshold   = 0.0135;  // must be adjusted according to the noise leve set by digitizer
   fECALocMaxCut = 0.03 ;
   fECAW0     = 4.5 ;
   fTimeGate = 1.e-8 ; 
