@@ -80,7 +80,7 @@ void AliHBTAnalysis::Process(Option_t* option)
  //
  if (!fReader) 
   {
-   Error("AliHBTAnalysis::Process","The reader is not set");
+   Error("Process","The reader is not set");
    return;
   }
  
@@ -92,18 +92,18 @@ void AliHBTAnalysis::Process(Option_t* option)
   { 
     if (fReader->GetNumberOfPartEvents() <1)
      {
-       Error("AliHBTAnalysis::Process","There is no Particles. Maybe change the option?");
+       Error("Process","There is no Particles. Maybe change the option?");
        return;
      }
     if (fReader->GetNumberOfTrackEvents() <1)
      {
-       Error("AliHBTAnalysis::Process","There is no Tracks. Maybe change the option?");
+       Error("Process","There is no Tracks. Maybe change the option?");
        return;
      }
     
     if ( RunCoherencyCheck() )
       {
-        Error("AliHBTAnalysis::Process",
+        Error("Process",
               "Coherency check not passed. Maybe change the option?\n");
         return;
       }
