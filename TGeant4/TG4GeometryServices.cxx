@@ -4,11 +4,9 @@
 // See the class description in the header file.
 
 #include "TG4GeometryServices.h"
-#include "TG4VSensitiveDetector.h"
 #include "TG4Globals.h"
 #include "TG4G3Units.h"
 
-#include <G4VSensitiveDetector.hh>
 #include <G4LogicalVolumeStore.hh>
 #include <G4LogicalVolume.hh>
 #include <G4Material.hh>
@@ -17,6 +15,7 @@
 
 TG4GeometryServices* TG4GeometryServices::fgInstance = 0;
 
+//_____________________________________________________________________________
 TG4GeometryServices::TG4GeometryServices(TG4intVector* mediumIdVector, 
                                          TG4NameMap* nameMap) 
 {
@@ -32,6 +31,7 @@ TG4GeometryServices::TG4GeometryServices(TG4intVector* mediumIdVector,
   fgInstance = this;
 }
 
+//_____________________________________________________________________________
 TG4GeometryServices::TG4GeometryServices() {
 // 
   TG4Globals::Exception(
@@ -39,6 +39,7 @@ TG4GeometryServices::TG4GeometryServices() {
 }
 
 
+//_____________________________________________________________________________
 TG4GeometryServices::TG4GeometryServices(const TG4GeometryServices& right) {
 // 
   TG4Globals::Exception(
@@ -46,6 +47,7 @@ TG4GeometryServices::TG4GeometryServices(const TG4GeometryServices& right) {
 }
 
 
+//_____________________________________________________________________________
 TG4GeometryServices::~TG4GeometryServices() {
 //
 }
@@ -56,6 +58,7 @@ TG4GeometryServices::~TG4GeometryServices() {
 //
 //=============================================================================
 
+//_____________________________________________________________________________
 TG4GeometryServices& 
 TG4GeometryServices::operator=(const TG4GeometryServices& right)
 {
@@ -75,7 +78,7 @@ TG4GeometryServices::operator=(const TG4GeometryServices& right)
 //
 //=============================================================================
 
-
+//_____________________________________________________________________________
 G4double* TG4GeometryServices::CreateG4doubleArray(Float_t* array, 
                G4int size) const
 {
@@ -94,7 +97,7 @@ G4double* TG4GeometryServices::CreateG4doubleArray(Float_t* array,
   return doubleArray;
 }
 
-
+//_____________________________________________________________________________
 G4String TG4GeometryServices::CutName(const char* name) const
 {
 // Removes spaces after the name if present.
@@ -107,6 +110,7 @@ G4String TG4GeometryServices::CutName(const char* name) const
   return cutName;
 }  
 
+//_____________________________________________________________________________
 void TG4GeometryServices::G4ToG3VolumeName(G4String& name) const
 {
 // Cuts _copyNo extension added to logical volume name in case 
@@ -117,6 +121,7 @@ void TG4GeometryServices::G4ToG3VolumeName(G4String& name) const
   name = name(0,name.first(gSeparator));
 }
 
+//_____________________________________________________________________________
 G4int TG4GeometryServices::SetUserLimits(G4UserLimits* userLimits, 
                                          G4LogicalVolume* lv)
 {
@@ -144,6 +149,7 @@ G4int TG4GeometryServices::SetUserLimits(G4UserLimits* userLimits,
   return counter;
 }
 
+//_____________________________________________________________________________
 G4Material* TG4GeometryServices::MixMaterials(G4String name, G4double density, 
         TG4StringVector* matNames, TG4doubleVector* matWeights)
 {
@@ -180,8 +186,8 @@ G4Material* TG4GeometryServices::MixMaterials(G4String name, G4double density,
   return mixture;
 }  
 
-
- Int_t TG4GeometryServices::NofG3Volumes() const
+//_____________________________________________________________________________
+Int_t TG4GeometryServices::NofG3Volumes() const
 {
 // Returns the total number of logical volumes corresponding
 // to G3 volumes. (
@@ -200,7 +206,7 @@ G4Material* TG4GeometryServices::MixMaterials(G4String name, G4double density,
   return counter;  
 }
 
-
+//_____________________________________________________________________________
 Int_t TG4GeometryServices::NofG4LogicalVolumes() const
 {
 // Returns the total number of logical volumes in the geometry.
@@ -210,7 +216,7 @@ Int_t TG4GeometryServices::NofG4LogicalVolumes() const
   return pLVStore->size();
 }
 
-
+//_____________________________________________________________________________
 Int_t TG4GeometryServices::NofG4PhysicalVolumes() const
 {
 // Returns the total number of physical volumes in the geometry.
@@ -226,133 +232,7 @@ Int_t TG4GeometryServices::NofG4PhysicalVolumes() const
   return counter;  
 }
 
-
-Int_t TG4GeometryServices::NofSensitiveDetectors() const
-{
-// Returns the total number of sensitive detectors.
-// ---
-
-  return TG4VSensitiveDetector::GetTotalNofSensitiveDetectors();
-}
-
- 
-G4int TG4GeometryServices::GetVolumeID(const G4String& volName) const
-{ 
-// Returns the sensitive detector identifier.
-// !! Gives exception in case logical volume is not associated with 
-// a sensitive detector.
-// ---
-
-  G4String g4VolName = CutName(volName);
-  G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
-  
-  for (G4int i=0; i<pLVStore->size(); i++) {
-    G4LogicalVolume* lv = (*pLVStore)[i];
-    G4VSensitiveDetector* sd = lv->GetSensitiveDetector();
-  
-    if ((sd) && (sd->GetName()==g4VolName)) {
-      TG4VSensitiveDetector* tsd = dynamic_cast<TG4VSensitiveDetector*>(sd);
-      if (tsd)
-        return tsd->GetID();
-      else {
-        TG4Globals::Exception(
-          "TG4GeometryServices::GetVolumeID: Unknown sensitive detector type");
-        return 0;
-      }
-    }   
-  }
-
-  G4String text = "TG4GeometryServices::VolId: Sensitive detector ";
-  text = text + g4VolName;
-  text = text + " is not defined.\n"; 
-  TG4Globals::Warning(text);
-  return 0;
-}
-
-
-G4int TG4GeometryServices::GetVolumeID(G4LogicalVolume* logicalVolume) const 
-{
-// Returns the sensitive detector ID of the specified
-// logical volume.
-// ---
- 
-  // sensitive detector ID
-  G4VSensitiveDetector* sd
-    = logicalVolume->GetSensitiveDetector();
-  if (sd) {
-    TG4VSensitiveDetector* tsd = dynamic_cast<TG4VSensitiveDetector*>(sd);
-    if (tsd)
-      return tsd->GetID();
-    else {
-      TG4Globals::Exception(
-        "TG4GeometryServices::GetVolumeID: Unknown sensitive detector type");
-      return 0;
-    }   	
-  }  
-  else {
-    G4String text = "TG4GeometryServices::GetVolumeID: \n";
-    text = text + "    Volume " + logicalVolume->GetName();
-    text = text + " has not a sensitive detector.";
-    //TG4Globals::Exception(text);
-    TG4Globals::Warning(text);
-    return 0;
-  }      	
-} 
-
-
-G4String TG4GeometryServices::GetVolumeName(G4int volumeId) const
-{
-// Returns the name of the sensitive detector with the given identifier.
-// Gives a warning in case logical volume is not associated with 
-// a sensitive detector.
-// ---
-
-  G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
-  
-  for (G4int i=0; i<pLVStore->size(); i++) {
-    G4LogicalVolume* lv = (*pLVStore)[i];
-    G4VSensitiveDetector* sd = lv->GetSensitiveDetector();
-    
-    if (sd) {
-      G4int sdID;
-      TG4VSensitiveDetector* tsd = dynamic_cast<TG4VSensitiveDetector*>(sd);
-      if (tsd)
-        sdID = tsd->GetID();
-      else {
-        TG4Globals::Exception(
-          "TG4GeometryServices::VolId: Unknown sensitive detector type");
-        return "";
-      }
-      if (sdID == volumeId) return sd->GetName();
-    }  
-  }
-
-  G4String text = "TG4GeometryServices::VolName:\n";
-  text = text + "    Sensitive detector with given id is not defined. \n";
-  TG4Globals::Warning(text);
-  return "";	       	         
-}
-
-
-G4LogicalVolume* TG4GeometryServices::GetLogicalVolume(G4int volumeId) const 
-{
-// Finds the first logical volume with specified volumeId 
-// (sensitive detector ID) in G4LogicalVolumeStore.
-// ---
-
-  G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
-  
-  for (G4int i=0; i<pLVStore->size(); i++) {
-    G4LogicalVolume* lv = (*pLVStore)[i];
-    if (GetVolumeID(lv) == volumeId) return lv;
-  }
-  
-  G4String text = "TG4GeometryServices::GetLogicalVolume: \n";
-  text = text + "    Logical volume with given ID does not exist.";
-  return 0;	       	         
-}  
-
-
+//_____________________________________________________________________________
 G4bool TG4GeometryServices::IsG3Volume(const G4String& lvName) const
 {
 // Returns true if the logical volume of given volumeName
@@ -366,7 +246,7 @@ G4bool TG4GeometryServices::IsG3Volume(const G4String& lvName) const
     return true;   
 }
 
-
+//_____________________________________________________________________________
 const G4String& TG4GeometryServices::GetMapSecond(const G4String& name)
 { 
 // Returns the second string associated with the name in
@@ -377,6 +257,7 @@ const G4String& TG4GeometryServices::GetMapSecond(const G4String& name)
 }
 
 
+//_____________________________________________________________________________
 G4int TG4GeometryServices::GetMediumId(G4Material* material) const
 {
 // Returns the second index for materials (having its origin in
@@ -386,20 +267,7 @@ G4int TG4GeometryServices::GetMediumId(G4Material* material) const
   return (*fMediumIdVector)[material->GetIndex()];
 }  
 
-
-Int_t TG4GeometryServices::GetMediumId(G4int volumeId)  const
-{
-// Return the material number for a given volume id
-// ---
-
-  G4LogicalVolume* logicalVolume = GetLogicalVolume(volumeId);
-    
-  G4Material* material = logicalVolume->GetMaterial();  
-
-  return GetMediumId(material);	       	         
-}
- 
-
+//_____________________________________________________________________________
 G4double TG4GeometryServices::GetEffA(G4Material* material) const
 {
 // Returns A or effective A=sum(pi*Ai) (if compound/mixture)
@@ -427,7 +295,7 @@ G4double TG4GeometryServices::GetEffA(G4Material* material) const
   return a;
 }
 
-
+//_____________________________________________________________________________
 G4double TG4GeometryServices::GetEffZ(G4Material* material) const
 {
 // Returns Z or effective Z=sum(pi*Zi) (if compound/mixture)
