@@ -72,25 +72,25 @@ Int_t AliRunAnalysis::Run()
  
  while (fReader->Next() == kFALSE)
   {
-   AliAOD* eventsim = fReader->GetEventSim();
-   AliAOD* eventrec = fReader->GetEventRec();
-   
-      /******************************/ 
-      /*  Event Cut                 */ 
-      /******************************/ 
-      if ( Rejected(eventrec,eventsim) )
-       {
-         if (AliVAODParticle::GetDebug()) Info("Run","Event rejected by Event Cut");
-         continue; //Did not pass the 
-       }
-      /******************************/ 
-      /*  Process Event             */ 
-      /******************************/ 
-      for (Int_t an = 0; an < fAnalysies.GetEntries(); an++)
-       {
-           AliAnalysis* analysis = (AliAnalysis*)fAnalysies.At(an);
-           analysis->ProcessEvent(eventrec,eventsim);
-       }
+     AliAOD* eventrec = fReader->GetEventRec();
+     AliAOD* eventsim = fReader->GetEventSim();
+
+     /******************************/ 
+     /*  Event Cut                 */ 
+     /******************************/ 
+     if ( Rejected(eventrec,eventsim) )
+      {
+        if (AliVAODParticle::GetDebug()) Info("Run","Event rejected by Event Cut");
+        continue; //Did not pass the 
+      }
+     /******************************/ 
+     /*  Process Event             */ 
+     /******************************/ 
+     for (Int_t an = 0; an < fAnalysies.GetEntries(); an++)
+      {
+          AliAnalysis* analysis = (AliAnalysis*)fAnalysies.At(an);
+          analysis->ProcessEvent(eventrec,eventsim);
+      }
     
   }//end of loop over events
 
