@@ -59,8 +59,8 @@ FFLAGS      = $(FOPT)
  
 # Target
 
-SLIBRARY	= $(LIBDIR)/libTHBTprocessor.$(SL)
-ALIBRARY	= $(LIBDIR)/libTHBTprocessor.a
+SLIBRARY	= $(LIBDIR)/libTHbtp.$(SL)
+ALIBRARY	= $(LIBDIR)/libTHbtp.a
 
 default:	$(SLIBRARY)
 

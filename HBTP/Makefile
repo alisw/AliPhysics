@@ -48,8 +48,8 @@ FFLAGS      = $(FOPT) $(CLIBFOPT) $(CLIBDEFS)
  
 # Target
 
-SLIBRARY	= $(LIBDIR)/libhbtprocessor.$(SL) $(LIBDIR)/libdummyhbtproc.$(SL)
-ALIBRARY	= $(LIBDIR)/libhbtprocessor.a $(LIBDIR)/dummyhbtprocessor.a
+SLIBRARY	= $(LIBDIR)/libHBTP.$(SL) $(LIBDIR)/libdummyHBTP.$(SL)
+ALIBRARY	= $(LIBDIR)/libHBTP.a $(LIBDIR)/libdummyHBTP.a
 
 default:	$(SLIBRARY)
 
