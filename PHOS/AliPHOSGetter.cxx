@@ -158,9 +158,11 @@ AliPHOSGetter::~AliPHOSGetter(){
   while ( (folder = static_cast<TFolder*>(next())) ) 
     phosF->Remove(folder) ; 
 
-  fFile->Close() ;  
-  delete fFile ;
-  fFile = 0 ;
+  if (fFile) { 
+    fFile->Close() ;  
+    delete fFile ;
+    fFile = 0 ;
+  }
     
 }
 
