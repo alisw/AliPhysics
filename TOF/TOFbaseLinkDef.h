@@ -10,6 +10,4 @@
  
 #pragma link C++ class  AliTOFGeometry+;
 
-#pragma link C++ class  AliTOFdigit+;
-
 #endif

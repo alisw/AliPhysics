@@ -16,6 +16,7 @@
 #pragma link C++ class  AliTOFHitMap+;
 #pragma link C++ class  AliTOFSDigit+;
 #pragma link C++ class  AliTOFSDigitizer+;
+#pragma link C++ class  AliTOFdigit+;
 #pragma link C++ class  AliTOFDigitizer+;
 
 #pragma link C++ class  AliTOFDigitMap+;

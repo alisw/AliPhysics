@@ -149,8 +149,8 @@ void AliTOFSDigitizer::InitParameters()
   fEffBoundary    = 0.65;
   fEff2Boundary   = 0.90;
   fEff3Boundary   = 0.08;
-  fAddTRes        = 68. ; // \sqrt{2x20^2 + 15^2 + 2x10^2 + 30^2 + 50^2} (Pb-Pb)
-  //fAddTRes      = 48. ; // \sqrt{2x20^2 + 15^2 + 2x10^2 + 30^2 + 15^2} (p-p)
+  fAddTRes        = 68. ; // \sqrt{2x20^2 + 15^2 + 2x10^2 + 30^2 + 50^2} (p-p)
+  //fAddTRes      = 48. ; // \sqrt{2x20^2 + 15^2 + 2x10^2 + 30^2 + 15^2} (Pb-Pb)
   // 30^2+20^2+40^2+50^2+50^2+50^2 = 10400 ps^2 (very old value)
   fResCenter      = 35. ; //50. ; // OLD
   fResBoundary    = 70. ;
