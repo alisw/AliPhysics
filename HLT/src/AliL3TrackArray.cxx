@@ -305,7 +305,7 @@ void AliL3TrackArray::AddLast(AliL3Track *track)
 {
   AliL3Track *tpt = NextTrack();
   tpt->Set(track);
-  delete track;
+  
 }
 
 
