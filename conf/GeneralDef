@@ -49,7 +49,7 @@ BINDIR = $(ALICE_ROOT)/bin/tgt_$(ALICE_TARGET)
 
 # Current Version
 
-VERSION		= 3.02
+VERSION		= 3.03pre
  
 # Which makedepend
 MAKEDEPEND    = $(ROOTSYS)/bin/rmkdepend

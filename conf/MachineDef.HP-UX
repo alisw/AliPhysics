@@ -13,8 +13,11 @@ OPT	      = -O
 # Shared library suffix
 SL	      = sl
 
+# AWK
+AWK	      = /usr/xpg4/bin/awk
+
 # The options
-CXXOPTS       = $(OPT) +a1 +z  
+CXXOPTS       = $(OPT) +a1 +z
 COPT          = $(OPT)
 FOPT          = $(OPT) +ppu +Z
 

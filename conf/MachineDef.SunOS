@@ -14,6 +14,9 @@ OPT           = -O
 # Shared library suffix
 SL	      = so
 
+# AWK
+AWK	      = /usr/xpg4/bin/awk
+
 # The options
 CXXOPTS       = $(OPT) +w -KPIC
 COPT	      = $(OPT) -KPIC -erroff=%none
@@ -28,7 +31,7 @@ CLIBFOPT      =
 
 # Additional directories for dependencies
 
-DEPINC        = -I/opt/SUNWspro/SC4.0/include/CC -I/opt/SUNWspro/SC4.0/include/cc
+DEPINC        = -I/opt/SUNWspro/SC4.2/include/CC -I/opt/SUNWspro/SC4.2/include/cc
 		
 LD            = /opt/SUNWspro/bin/CC
 LDFLAGS       = $(OPT) -Qoption ld -t

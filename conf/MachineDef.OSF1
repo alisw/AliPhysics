@@ -8,22 +8,25 @@ CXX           = cxx
 F77	      = f77
 
 # Global optimisation
-OPT	      = -O
+OPT	      = -O2
 
 # Shared library suffix
 SL	      = so
 
+# AWK
+AWK	      = awk
+
 # The options
-CXXOPTS       = $(OPT) -I/usr/include
+CXXOPTS       = $(OPT) -nostdnew -nortti -I/usr/include
 COPT          = $(OPT)
-FOPT          = $(OPT) -nofor_main
+FOPT          = $(OPT) -nofor_main -warn noinformational
 
 # CERNLIB defines
 
 CLIBDEFS      = -DCERNLIB_DECS -DCERNLIB_BLDLIB -DCERNLIB_CZ
 CLIBCXXOPTS   =
 CLIBCOPT      = 
-CLIBFOPT      = -I.
+CLIBFOPT      = -I. -warn noinformational
 
 # Additional directories for dependencies
 
@@ -32,12 +35,11 @@ DEPINC	      = -I/usr/include/cxx
 LD            = cxx
 LDFLAGS       =
 
-SHLD          = ld
-SOFLAGS       = -L/usr/lib/cmplrs/cxx -rpath /usr/lib/cmplrs/cxx -expect_unresolved \
-	-g0 -O1 -msym -shared /usr/lib/cmplrs/cc/crt0.o /usr/lib/cmplrs/cxx/_main.o
-SHLIB        = -lcxxstd -lcxx -lexc -lots -lc -lUfor -lfor -lFutil -lm
+SHLD          = cxx
+SOFLAGS       = -shared -Wl,-expect_unresolved,*,-soname,$(notdir $@)
+SHLIB        = -lUfor -lfor -lFutil
 
-LIBS          = $(ROOTLIBS) -lNew -lm
-GLIBS         = $(ROOTLIBS) $(ROOTGLIBS)  -lXm -lXt -lX11 -lm -lPW -lUfor -lfor -lFutil -lm -lots
+LIBS          = $(ROOTLIBS)
+GLIBS         = $(ROOTLIBS) -lXm -lXt -lX11 -lm -lPW -lUfor -lfor -lFutil -lots
 
 CLIBS         = $(LIBDIR)/libminicern.a

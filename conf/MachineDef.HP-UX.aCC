@@ -13,6 +13,9 @@ OPT	      = -O
 # Shared library suffix
 SL	      = sl
 
+# AWK
+AWK	      = awk
+
 # The options
 CXXOPTS       = $(OPT) +Z -z +W70,495,740,749,823,829
 COPT          = $(OPT)
