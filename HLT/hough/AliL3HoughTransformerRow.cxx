@@ -803,7 +803,7 @@ void AliL3HoughTransformerRow::TransformCircleFromDigitArray()
 	      etaclust[etaindex].fEndPad = pad;
 	      etaclust[etaindex].fIsFound = 1;
 #ifdef do_mc
-	      FillClusterMCLabels(digPt[j],etaclust[etaindex]);
+	      FillClusterMCLabels(digPt[j],&etaclust[etaindex]);
 #endif
 	      continue;
 	    }
@@ -813,7 +813,7 @@ void AliL3HoughTransformerRow::TransformCircleFromDigitArray()
 		{
 		  etaclust[etaindex].fEndPad = pad;
 #ifdef do_mc
-		  FillClusterMCLabels(digPt[j],etaclust[etaindex]);
+		  FillClusterMCLabels(digPt[j],&etaclust[etaindex]);
 #endif
 		}
 	      else
@@ -825,7 +825,7 @@ void AliL3HoughTransformerRow::TransformCircleFromDigitArray()
 
 #ifdef do_mc
 		  memset(etaclust[etaindex].fMcLabels,0,MaxTrack);
-		  FillClusterMCLabels(digPt[j],etaclust[etaindex]);
+		  FillClusterMCLabels(digPt[j],&etaclust[etaindex]);
 #endif
 		}
 	    }
@@ -1269,7 +1269,7 @@ inline void AliL3HoughTransformerRow::FillCluster(UChar_t i,Int_t etaindex,AliL3
 }
 
 #ifdef do_mc
-inline void AliL3HoughTransformerRow::FillClusterMCLabels(AliL3DigitData digpt,AliL3EtaRow etaclust)
+inline void AliL3HoughTransformerRow::FillClusterMCLabels(AliL3DigitData digpt,AliL3EtaRow *etaclust)
 {
   for(Int_t t=0; t<3; t++)
     {
@@ -1277,10 +1277,10 @@ inline void AliL3HoughTransformerRow::FillClusterMCLabels(AliL3DigitData digpt,A
       if(label < 0) break;
       UInt_t c;
       for(c=0; c<(MaxTrack-1); c++)
-	if(etaclust.fMcLabels[c] == label || etaclust.fMcLabels[c] == 0)
+	if(etaclust->fMcLabels[c] == label || etaclust->fMcLabels[c] == 0)
 	  break;
 
-      etaclust.fMcLabels[c] = label;
+      etaclust->fMcLabels[c] = label;
     }
 }
 #endif

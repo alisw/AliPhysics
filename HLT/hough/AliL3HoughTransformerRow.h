@@ -103,7 +103,7 @@ class AliL3HoughTransformerRow : public AliL3HoughBaseTransformer {
 			     );
   inline void FillCluster(UChar_t i,Int_t etaindex,AliL3EtaRow *etaclust,Int_t ilastpatch,Int_t firstbinx,Int_t lastbinx,Int_t nbinx,Int_t firstbiny);
 #ifdef do_mc
-  inline void FillClusterMCLabels(AliL3DigitData digpt,AliL3EtaRow etaclust);
+  inline void FillClusterMCLabels(AliL3DigitData digpt,AliL3EtaRow *etaclust);
 #endif
 
   static Float_t fgBeta1,fgBeta2; // Two curves which define the Hough space
