@@ -32,7 +32,6 @@
 // --- AliRoot header files ---
 
 #include "AliPHOSvFast.h"
-#include "AliPHOSReconstructioner.h"
 #include "AliRun.h"
 #include "AliConst.h"
 
@@ -41,7 +40,7 @@ ClassImp(AliPHOSvFast)
 //____________________________________________________________________________
 AliPHOSvFast::AliPHOSvFast()
 {
-  fRecParticles = 0 ; 
+  fFastRecParticles = 0 ; 
   fNRecParticles = 0 ; 
 }
 
@@ -63,24 +62,29 @@ AliPHOSvFast::AliPHOSvFast(const char *name, const char *title):
   SetBigBox(2, fGeom->GetOuterBoxSize(0) ); 
 
   fNRecParticles = 0 ; 
+  fFastRecParticles = new FastRecParticlesList("AliPHOSFastRecParticle", 100) ;
+
+  fResPara1 = 30.0 ; 
+  fResPara2 = 0.03 ; 
+  fResPara3 = 0.01 ; 
+
 }
 
 //____________________________________________________________________________
 AliPHOSvFast::~AliPHOSvFast()
 {
  
-  fRecParticles->Delete() ; 
-  delete fRecParticles ;
-  fRecParticles = 0 ; 
+  fFastRecParticles->Delete() ; 
+  delete fFastRecParticles ;
+  fFastRecParticles = 0 ; 
 
 }
 
 //____________________________________________________________________________
-void AliPHOSvFast::AddRecParticle(Int_t primary)
-{
-   TClonesArray * particlelist = gAlice->Particles() ;
-   TParticle * part = (TParticle *)particlelist->At(primary) ;  
-   cout <<  " AliPHOSvFast::AddRecParticle " << part->GetName() << endl ; 
+void AliPHOSvFast::AddRecParticle(const AliPHOSFastRecParticle & rp)
+{  
+   new( (*fFastRecParticles)[fNRecParticles] ) AliPHOSFastRecParticle(rp) ;
+   fNRecParticles++ ; 
 }
 
 //____________________________________________________________________________
@@ -218,12 +222,44 @@ void AliPHOSvFast::MakeBranch(Option_t* opt)
   
   char branchname[10];
   sprintf(branchname,"%s",GetName());
-  char *cd = strstr(opt,"D");
+  char *cd = strstr(opt,"R");
   
-  if (fDigits && gAlice->TreeD() && cd) {
-    gAlice->TreeD()->Branch(branchname, &fRecParticles, fBufferSize);
-    //    printf("* AliPHOS::MakeBranch * Making Branch %s for RecParticles \n",branchname);
+  if (fFastRecParticles && gAlice->TreeR() && cd) {
+    gAlice->TreeR()->Branch(branchname, &fFastRecParticles, fBufferSize);
   }
+}
+
+//____________________________________________________________________________
+Double_t AliPHOSvFast::MakeEnergy(const Double_t energy)
+{  
+  Double_t sigma  = SigmaE(energy*1000.) ; 
+  return  fRan.Gaus(energy*1000., sigma)/1000. ;   
+}
+
+//____________________________________________________________________________
+void AliPHOSvFast::MakeRecParticle(AliPHOSFastRecParticle & rp)
+{
+
+  // get the detected type of particle
+  Int_t type = MakeType( rp.GetName() ) ;
+  rp.SetType(type) ;
+
+  
+  // get the detected energy
+
+  TLorentzVector momentum ;  
+  rp.Momentum(momentum) ; 
+  Double_t kineticenergy = TMath::Sqrt( TMath::Power(momentum.E(), 2) - TMath::Power(rp.GetMass(), 2) ) ; 
+  Double_t modifiedkineticenergy = MakeEnergy(kineticenergy ) ;
+  cout << modifiedkineticenergy << endl ; 
+  //  rp.SetMomentum(tempo) ; 
+ }
+
+//____________________________________________________________________________
+Int_t AliPHOSvFast::MakeType(const Text_t * name)
+{
+  Int_t rv =  kUNDEFINED ;
+  return rv ;
 }
 
 //___________________________________________________________________________
@@ -245,16 +281,39 @@ void AliPHOSvFast::SetBigBox(Int_t index, Float_t value)
 }
 
 //____________________________________________________________________________
+Double_t AliPHOSvFast::SigmaE(Double_t energy)
+{
+  Double_t rv = -1 ; 
+  
+  rv = TMath::Sqrt( TMath::Power(fResPara1/energy, 2) 
+	       + TMath::Power(fResPara2/TMath::Sqrt(energy), 2) 
+	       + TMath::Power(fResPara3, 2) ) ;  
+
+  return rv * energy ; 
+}
+
+//____________________________________________________________________________
 void AliPHOSvFast::StepManager(void)
 {
 
   Int_t primary =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
-  TString name = fGeom->GetName() ; 
-
-  // add the primary particle to the RecParticles list
+  TLorentzVector lv ; 
+  gMC->TrackPosition(lv) ;
   
-  AddRecParticle(primary);
-  fNRecParticles++ ; 
+  // Makes a reconstructed particle from the primary particle
+
+  TClonesArray * particlelist = gAlice->Particles() ;
+  TParticle * part = (TParticle *)particlelist->At(primary) ;  
+
+  AliPHOSFastRecParticle rp(*part) ;
+
+  // Adds the response of PHOS to the particle
+  MakeRecParticle(rp) ;
+  
+  // add the primary particle to the FastRecParticles list
+  AddRecParticle(rp) ;
+
+  // stop the track as soon PHOS is reached
   gMC->StopTrack() ; 
 
 }

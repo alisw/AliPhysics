@@ -15,12 +15,13 @@
 
 // --- ROOT system ---
 #include "TClonesArray.h"
+#include "TRandom.h"
 
 // --- AliRoot header files ---
 #include "AliPHOS.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSPID.h"
-
+#include "AliPHOSFastRecParticle.h"
 
 class AliPHOSvFast : public AliPHOS {
 
@@ -30,26 +31,35 @@ public:
   AliPHOSvFast(const char *name, const char *title="") ;
   virtual ~AliPHOSvFast(void) ;
 
-  void           AddRecParticle(Int_t primary) ;                    // adds primary particle to the RecParticles list
-  virtual void   BuildGeometry(void) ;                              // creates the geometry for the ROOT display
-  virtual void   CreateGeometry(void) ;                             // creates the geometry for GEANT
+  void           AddRecParticle(const AliPHOSFastRecParticle & rp) ; // adds primary particle to the RecParticles list
+  virtual void   BuildGeometry(void) ;                               // creates the geometry for the ROOT display
+  virtual void   CreateGeometry(void) ;                              // creates the geometry for GEANT
   Float_t        GetBigBox(Int_t index) ;                             
   virtual AliPHOSGeometry * GetGeometry() { return fGeom ; }  
-  virtual void   Init(void) ;                                       // does nothing
+  virtual void   Init(void) ;                                        // does nothing
   Int_t   IsVersion(void) const { return -1 ; }
-  void           MakeBranch(Option_t* opt) ;
-  RecParticlesList * RecParticles() { return fRecParticles ; }      // gets TClonesArray of reconstructed particles
+  void    MakeBranch(Option_t* opt) ;
+  Double_t MakeEnergy(const Double_t energy) ;                       // makes the detected energy    
+  void MakeRecParticle(AliPHOSFastRecParticle & rp) ;                // makes a reconstructes particle from primary
+  Int_t   MakeType(const Text_t * name) ;                            // gets the detected type of particle
+  FastRecParticlesList * FastRecParticles() { return fFastRecParticles ; } // gets TClonesArray of reconstructed particles
   void           SetBigBox(Int_t index, Float_t value) ;                             
-  virtual void   StepManager(void) ;                                // does the tracking through PHOS and a preliminary digitalization
+  Double_t       SigmaE(Double_t energy) ;    // calulates the energy resolution at a given Energy                           
+  virtual void   StepManager(void) ;          // does the tracking through PHOS and a preliminary digitalization
   
 private:
   
-  Float_t fBigBoxX ;                    // main box containing all PHOS (EMC+PPSD)
-  Float_t fBigBoxY ;                    // main box containing all PHOS (EMC+PPSD)
-  Float_t fBigBoxZ ;                    // main box containing all PHOS (EMC+PPSD)
-  AliPHOSGeometry * fGeom ;             // geometry definition
-  Int_t fNRecParticles ;                // number of detected particles
-  RecParticlesList * fRecParticles ;    // list of detected particles 
+  Float_t fBigBoxX ;                         // main box containing all PHOS (EMC+PPSD)
+  Float_t fBigBoxY ;                         // main box containing all PHOS (EMC+PPSD)
+  Float_t fBigBoxZ ;                         // main box containing all PHOS (EMC+PPSD)
+  FastRecParticlesList * fFastRecParticles ; // list of particles modified by the response function 
+  AliPHOSGeometry * fGeom ;                  // geometry definition
+  Int_t fNRecParticles ;                     // number of detected particles
+  TRandom fRan ;                             // random number generator
+  Double_t fResPara1 ;                       // parameter for the energy resolution dependence ; 
+  Double_t fResPara2 ;                       // parameter for the energy resolution dependence ; 
+  Double_t fResPara3 ;                       // parameter for the energy resolution dependence ; 
+
 
   ClassDef(AliPHOSvFast,1)  // PHOS main class , version for fast simulation
 

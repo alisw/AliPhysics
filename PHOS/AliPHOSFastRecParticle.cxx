@@ -14,7 +14,7 @@
  **************************************************************************/
 
 //_________________________________________________________________________
-// Reconstructed Particle
+// Particle modified by PHOS response to be used by AliPHOSvFast
 //*-- Y. Schutz:   SUBATECH 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -22,68 +22,77 @@
 
 // --- Standard library ---
 
+#include <iostream>
+
 // --- AliRoot header files ---
 
-#include "AliPHOSRecParticle.h"
+#include "AliPHOSFastRecParticle.h"
 #include "TPad.h"
+#include "TPaveText.h"
 
-ClassImp(AliPHOSRecParticle)
-
+ClassImp(AliPHOSFastRecParticle)
 
 //____________________________________________________________________________
- AliPHOSRecParticle::AliPHOSRecParticle(AliPHOSTrackSegment * ts)
+ AliPHOSFastRecParticle::AliPHOSFastRecParticle(const AliPHOSFastRecParticle & rp)
 {
-  // ctor
- 
-  fPHOSTrackSegment = new AliPHOSTrackSegment(*ts) ; 
-  fE                = ts->GetEnergy() ; 
-  TVector3 momdir   = ts->GetMomentumDirection() ;
-  fPx               = fE * momdir.X() ; 
-  fPy               = fE * momdir.Y() ; 
-  fPz               = fE * momdir.Z() ; 
-  fType             = kUNDEFINED ;  
-                           
+  fType        = rp.fType ; 
+//   fPdgCode     = rp.fPdgCode;
+//   fStatusCode  = rp.fStatusCode;
+//   fMother[0]   = rp.fMother[0];
+//   fMother[1]   = rp.fMother[1];
+//   fDaughter[0] = rp.fDaughter[0];
+//   fDaughter[1] = rp.fDaughter[1];
+//   fWeight      = rp.fWeight;
+//   fCalcMass    = rp.fCalcMass;
+//   fPx          = rp.fPx;
+//   fPy          = rp.fPy;
+//   fPz          = rp.fPz;
+//   fE           = rp.fE;
+//   fVx          = rp.fVx;
+//   fVy          = rp.fVy;
+//   fVz          = rp.fVz;
+//   fVt          = rp.fVt;
+//   fPolarTheta  = rp.fPolarTheta;
+//   fPolarPhi    = rp.fPolarPhi;
+//   fParticlePDG = rp.fParticlePDG; 
 }
 
 //____________________________________________________________________________
- AliPHOSRecParticle::AliPHOSRecParticle(const AliPHOSRecParticle & rp)
+ AliPHOSFastRecParticle::AliPHOSFastRecParticle(const TParticle & pp)
 {
-  fPHOSTrackSegment = new AliPHOSTrackSegment( *( rp.GetPHOSTrackSegment()) ) ; 
-  fType             = rp.fType ; 
-  fPdgCode     = rp.fPdgCode;
-  fStatusCode  = rp.fStatusCode;
-  fMother[0]   = rp.fMother[0];
-  fMother[1]   = rp.fMother[1];
-  fDaughter[0] = rp.fDaughter[0];
-  fDaughter[1] = rp.fDaughter[1];
-  fWeight      = rp.fWeight;
-  fCalcMass    = rp.fCalcMass;
-  fPx          = rp.fPx;
-  fPy          = rp.fPy;
-  fPz          = rp.fPz;
-  fE           = rp.fE;
-  fVx          = rp.fVx;
-  fVy          = rp.fVy;
-  fVz          = rp.fVz;
-  fVt          = rp.fVt;
-  fPolarTheta  = rp.fPolarTheta;
-  fPolarPhi    = rp.fPolarPhi;
-  fParticlePDG = rp.fParticlePDG; 
+  TParticle & pnoconst = const_cast<TParticle &>(pp) ;
+  AliPHOSFastRecParticle & p = static_cast<AliPHOSFastRecParticle&>(pnoconst) ;
+
+  fPdgCode     = p.fPdgCode;
+  fStatusCode  = p.fStatusCode;
+  fMother[0]   = p.fMother[0];
+  fMother[1]   = p.fMother[1];
+  fDaughter[0] = p.fDaughter[0];
+  fDaughter[1] = p.fDaughter[1];
+  fWeight      = p.fWeight;
+  fCalcMass    = p.fCalcMass;
+  fPx          = p.fPx;
+  fPy          = p.fPy;
+  fPz          = p.fPz;
+  fE           = p.fE;
+  fVx          = p.fVx;
+  fVy          = p.fVy;
+  fVz          = p.fVz;
+  fVt          = p.fVt;
+  fPolarTheta  = p.fPolarTheta;
+  fPolarPhi    = p.fPolarPhi;
+  fParticlePDG = p.fParticlePDG; 
 }
 
 //____________________________________________________________________________
- AliPHOSRecParticle::~AliPHOSRecParticle()
+ AliPHOSFastRecParticle::~AliPHOSFastRecParticle()
 {
-  if(!fPHOSTrackSegment) {
-    delete fPHOSTrackSegment ;
-    fPHOSTrackSegment = 0 ; 
-  } 
 }
 
 //____________________________________________________________________________
-Int_t AliPHOSRecParticle::DistancetoPrimitive(Int_t px, Int_t py)
+Int_t AliPHOSFastRecParticle::DistancetoPrimitive(Int_t px, Int_t py)
 {
-  //  Compute distance from point px,py to a AliPHOSRecParticle considered as a Tmarker
+  //  Compute distance from point px,py to a AliPHOSFastRecParticle considered as a Tmarker
   //  Compute the closest distance of approach from point px,py to this marker.
   //  The distance is computed in pixels units.
 
@@ -100,18 +109,18 @@ Int_t AliPHOSRecParticle::DistancetoPrimitive(Int_t px, Int_t py)
 }
 
 //___________________________________________________________________________
- void AliPHOSRecParticle::Draw(Option_t *option)
+ void AliPHOSFastRecParticle::Draw(Option_t *option)
  {
-   // Draw this AliPHOSRecParticle with its current attributes
+   // Draw this AliPHOSFastRecParticle with its current attributes
     
    AppendPad(option);
  }
 
 //______________________________________________________________________________
-void AliPHOSRecParticle::ExecuteEvent(Int_t event, Int_t px, Int_t py)
+void AliPHOSFastRecParticle::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 {
   //  Execute action corresponding to one event
-  //  This member function is called when a AliPHOSRecParticle is clicked with the locator
+  //  This member function is called when a AliPHOSFastRecParticle is clicked with the locator
   //
     
   if (!gPad->IsEditable()) 
@@ -148,7 +157,7 @@ void AliPHOSRecParticle::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 
 }
 //____________________________________________________________________________
-TString AliPHOSRecParticle::Name()
+TString AliPHOSFastRecParticle::Name()
 {
   TString  name ; 
   switch (fType) {
@@ -179,7 +188,7 @@ TString AliPHOSRecParticle::Name()
 }
 
 //______________________________________________________________________________
-void AliPHOSRecParticle::Paint(Option_t *)
+void AliPHOSFastRecParticle::Paint(Option_t *)
 {
 // Paint this ALiRecParticle in theta,phi coordinate as a TMarker  with its current attributes
 
@@ -200,9 +209,9 @@ void AliPHOSRecParticle::Paint(Option_t *)
 }
 
 //____________________________________________________________________________
-void AliPHOSRecParticle::Print()
+void AliPHOSFastRecParticle::Print()
 {
-  cout << "AliPHOSRecParticle > " << "type is  " << Name() << endl 
+  cout << "AliPHOSFastRecParticle > " << "type is  " << Name() << endl 
        << "                     " << "Energy = " << fE << endl 
        << "                     " << "Px     = " << fPx << endl 
        << "                     " << "Py     = " << fPy << endl 

@@ -22,6 +22,7 @@
 // --- AliRoot header files ---
 
 #include "AliPHOSTrackSegment.h"
+#include <cassert>
 
 const static Int_t kUNDEFINED     = -1; 
 const static Int_t kGAMMA         = 0 ; 
@@ -39,13 +40,15 @@ public:
   
   AliPHOSRecParticle() {};          // ctor
   AliPHOSRecParticle(AliPHOSTrackSegment * ts) ;  // ctor
+  AliPHOSRecParticle(const AliPHOSRecParticle & rp) ;  // ctor
+  AliPHOSRecParticle& operator= (const AliPHOSRecParticle& rp) { assert(0==1) ; } // forbidden
 
-  virtual ~AliPHOSRecParticle(){} ; // dtor
+  virtual ~AliPHOSRecParticle() ; // dtor
 
   virtual Int_t DistancetoPrimitive(Int_t px, Int_t py) ; 
-  virtual void Draw(Option_t *option) ; 
+  virtual void Draw(Option_t *option) ;  
   virtual void ExecuteEvent(Int_t event, Int_t px, Int_t py) ; 
-  AliPHOSTrackSegment * GetPHOSTrackSegment() { return fPHOSTrackSegment ; } 
+  AliPHOSTrackSegment * GetPHOSTrackSegment() const { return fPHOSTrackSegment ; } 
   Int_t GetType() { return fType ; } 
   TString Name() ; 
   virtual void Paint(Option_t * option="");
