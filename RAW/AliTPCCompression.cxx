@@ -27,7 +27,7 @@
 #include <Riostream.h>
 #include <TMath.h>
 #include <TSystem.h>
-#include "AliTPCBuffer160.h"
+#include "AliAltroBuffer.h"
 #include "AliTPCHNode.h"
 #include "AliTPCHTable.h"
 #include "AliTPCCompression.h"
@@ -129,7 +129,7 @@ void AliTPCCompression::NextTable(Int_t Val,Int_t &NextTableType,Int_t &BunchLen
 
 Int_t AliTPCCompression::FillTables(const char* fSource,AliTPCHTable* table[],Int_t /*NumTables*/){
   //This method is used to compute the frequencies of the symbols in the source file
-  AliTPCBuffer160 buff(fSource,0);
+  AliAltroBuffer buff(fSource,0);
   UInt_t countWords=0;
   UInt_t countTrailer=0;
   Int_t numWords,padNum,rowNum,secNum=0;
@@ -137,7 +137,7 @@ Int_t AliTPCCompression::FillTables(const char* fSource,AliTPCHTable* table[],In
   UInt_t stat[5]={0,0,0,0,0};
   Int_t endFill=0;
   Int_t end=1;
-  while(buff.ReadTrailerBackward(numWords,padNum,rowNum,secNum) !=-1 ){
+  while(buff.ReadTrailerBackward(numWords,padNum,rowNum,secNum)){
     if(end){
       endFill=buff.GetFillWordsNum();
       end=0;
@@ -615,7 +615,7 @@ Int_t AliTPCCompression::CompressDataOptTables(Int_t NumTable,const char* fSourc
   f.open(fDest,ios::out);
 #endif
   // Source file is open
-  AliTPCBuffer160 buff(fSource,0);
+  AliAltroBuffer buff(fSource,0);
   //coded words are written into a file
   Int_t numWords,padNum,rowNum,secNum=0;
   UInt_t  storedWords=0;
@@ -630,7 +630,7 @@ Int_t AliTPCCompression::CompressDataOptTables(Int_t NumTable,const char* fSourc
   fStat<<endl;
   fStat<<"-------------------COMPRESSION STATISTICS----------"<<endl;
   Int_t end=1;
-  while(buff.ReadTrailerBackward(numWords,padNum,rowNum,secNum) !=-1 ){
+  while(buff.ReadTrailerBackward(numWords,padNum,rowNum,secNum)){
     if(end){
       fillWords=buff.GetFillWordsNum();
       end=0;
@@ -1022,7 +1022,7 @@ Int_t AliTPCCompression::DecompressDataOptTables(Int_t NumTables,const char* fna
   if(fVerbose){
     cout<<"Number of Packect: "<<packetNumber<<endl;
   }
-  AliTPCBuffer160 bufferFile(fDest,1);
+  AliAltroBuffer bufferFile(fDest,1);
   UInt_t k=0;
   UInt_t wordsRead=0; //number of read coded words 
   while(k<packetNumber){
@@ -1175,11 +1175,11 @@ void AliTPCCompression::ReadAltroFormat(char* fileOut,char* fileIn)const{
   //Time bin of the last amplitude sample in the bunch, amplitude values)
   //It is used mainly for debugging
   ofstream ftxt(fileOut);
-  AliTPCBuffer160 buff(fileIn,0);
+  AliAltroBuffer buff(fileIn,0);
   Int_t numWords,padNum,rowNum,secNum=0;
   Int_t value=0;
   if (fVerbose) cout<<"Creating a txt file from an Altro Format file"<<endl;
-  while(buff.ReadTrailerBackward(numWords,padNum,rowNum,secNum) !=-1 ){
+  while(buff.ReadTrailerBackward(numWords,padNum,rowNum,secNum)){
     ftxt<<"S:"<<secNum<<" R:"<<rowNum<<" P:"<<padNum<<" W:"<<numWords<<endl;
     if (numWords%4){
       for(Int_t j=0;j<(4-numWords%4);j++){

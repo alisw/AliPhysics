@@ -22,10 +22,13 @@
 #pragma link C++ class AliRawReaderFile+;
 #pragma link C++ class AliRawReaderRoot+;
 #pragma link C++ class AliRawReaderDate+;
+#pragma link C++ class AliBitPacking+;
+#pragma link C++ class AliAltroBuffer+;
 #pragma link C++ class AliTPCBuffer160+;
 #pragma link C++ class AliTPCCompression+;
 #pragma link C++ class AliTPCHNode+;
 #pragma link C++ class AliTPCHTable+;
+#pragma link C++ class AliAltroRawStream+;
 #pragma link C++ class AliTPCRawStream+;
 #pragma link C++ class AliITSRawStream+;
 #pragma link C++ class AliITSRawStreamSPD+;

@@ -6,9 +6,10 @@ SRCS:=  AliRawEventHeader.cxx AliRawEquipmentHeader.cxx \
 	AliRunDB.cxx AliMDC.cxx \
 	AliRawReader.cxx AliRawReaderFile.cxx AliRawReaderRoot.cxx \
 	AliRawReaderDate.cxx \
+	AliBitPacking.cxx AliAltroBuffer.cxx \
 	AliTPCBuffer160.cxx AliTPCCompression.cxx \
 	AliTPCHNode.cxx AliTPCHTable.cxx \
-	AliTPCRawStream.cxx \
+	AliAltroRawStream.cxx AliTPCRawStream.cxx \
 	AliITSRawStream.cxx AliITSRawStreamSPD.cxx \
 	AliITSRawStreamSDD.cxx AliITSRawStreamSSD.cxx \
 	AliITSRawStreamSDDv2.cxx AliVMERawStream.cxx
@@ -16,6 +17,8 @@ SRCS:=  AliRawEventHeader.cxx AliRawEquipmentHeader.cxx \
 HDRS:= $(SRCS:.cxx=.h)
 
 EHDRS:=$(ROOTSYS)/include/TH1F.h
+
+EDEFINE:= -DUSE_RDM
 
 DHDR:= LinkDef.h 
 

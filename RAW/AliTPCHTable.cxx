@@ -24,7 +24,7 @@
 
 #include <TObjArray.h>
 #include <TMath.h>
-#include "AliTPCBuffer160.h"
+#include "AliAltroBuffer.h"
 #include "AliTPCHNode.h"
 #include "AliTPCHTable.h"
 
@@ -176,7 +176,7 @@ void AliTPCHTable::ClearTable(){
 
 Int_t  AliTPCHTable::GetFrequencies(const char *fname){
   //It fills the "fCode" array with the frequencies of the symbols read from the file
-  AliTPCBuffer160 buff(fname,0);
+  AliAltroBuffer buff(fname,0);
   UInt_t numberOfWords=0;
   Int_t val;
   while((val=buff.GetNext())!=-1){
