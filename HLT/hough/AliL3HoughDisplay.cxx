@@ -1,3 +1,5 @@
+//$Id$
+
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
 
@@ -15,7 +17,6 @@
 #include "AliL3HoughTrack.h"
 #include "AliL3TrackArray.h"
 #include "AliL3HoughDisplay.h"
-#include "AliL3Defs.h"
 #include "AliL3MemHandler.h"
 
 //_____________________________________________________________
@@ -32,33 +33,40 @@ AliL3HoughDisplay::AliL3HoughDisplay()
   fNDigitRowData = 0;
   fShowSlice = -1;
   fPatch = -1;
-  Init();
 }
 
 AliL3HoughDisplay::~AliL3HoughDisplay()
 {
+  if(fTracks)
+    delete fTracks;
 }
 
-void AliL3HoughDisplay::Init()
+void AliL3HoughDisplay::Init(Char_t *trackfile)
 {
   TFile *file = TFile::Open("$(LEVEL3)/GEO/alice.geom");
   if(!file->IsOpen())
     cerr<<"AliL3HoughDisplay::AliL3HoughDisplay : Geometry file alice.geom does not exist"<<endl;
   fGeom = (TGeometry*)file->Get("AliceGeom");
   file->Close();
+  
+  fTracks = new AliL3TrackArray();
+  AliL3MemHandler *tfile = new AliL3MemHandler();
+  tfile->SetBinaryInput(trackfile);
+  tfile->Binary2TrackArray(fTracks);
+  tfile->CloseBinaryInput();
+  delete tfile;
 }
 
 
-void AliL3HoughDisplay::GenerateHits(AliL3HoughTrack *track,Float_t *x,Float_t *y,Float_t *z,Int_t &n)
+void AliL3HoughDisplay::GenerateHits(AliL3Track *track,Float_t *x,Float_t *y,Float_t *z,Int_t &n)
 {
   n=0;
   Float_t xyz[3];
-  Int_t slice = track->GetSlice();
-  for(Int_t i=track->GetFirstRow(); i<track->GetLastRow(); i++)
+  for(Int_t i=AliL3Transform::GetFirstRow(0); i<AliL3Transform::GetLastRow(5); i++)
     {
       if(track->GetCrossingPoint(i,xyz))
 	{
-	  AliL3Transform::Local2Global(xyz,slice);
+	  AliL3Transform::Local2Global(xyz,0);
 	  x[n] = xyz[0];
 	  y[n] = xyz[1];
 	  z[n] = xyz[2];
@@ -79,7 +87,7 @@ TPolyMarker3D *AliL3HoughDisplay::LoadDigits()
       return 0;
     }
   
-  Int_t nrows = NRows[fPatch][1] - NRows[fPatch][0] + 1;
+  UInt_t nrows = AliL3Transform::GetNRows(fPatch);
   Int_t count=0;
   for(UInt_t i=0; i<nrows; i++)
     {
@@ -115,7 +123,7 @@ void AliL3HoughDisplay::DisplayEvent()
   
   if(!fTracks)
     {
-      printf("AliL3HoughDisplay::DisplayTracks() : No tracks\n");
+      cerr<<"AliL3HoughDisplay::DisplayTracks() : No tracks"<<endl;
       return;
     }
   
@@ -137,18 +145,20 @@ void AliL3HoughDisplay::DisplayEvent()
   Float_t x[176],y[176],z[176];
   for(Int_t j=0; j<ntracks; j++)
     {
-      AliL3HoughTrack *track = (AliL3HoughTrack*)fTracks->GetCheckedTrack(j); 
+      AliL3Track *track = fTracks->GetCheckedTrack(j); 
       if(!track) continue;        
+      track->CalculateHelix();
       GenerateHits(track,x,y,z,n);
       TPolyMarker3D *pm = new TPolyMarker3D(n);
+      
       for(Int_t h=0; h<n; h++)
 	pm->SetPoint(h,x[h],y[h],z[h]);
       
-      pm->SetMarkerColor(1);
+      pm->SetMarkerColor(2);
       pm->Draw();
       TPolyLine3D *current_line = &(line[j]);
       current_line = new TPolyLine3D(n,x,y,z,"");
-      current_line->SetLineColor(1);
+      current_line->SetLineColor(4);
       current_line->Draw("same");
       
     }
@@ -160,6 +170,8 @@ void AliL3HoughDisplay::DisplayEvent()
       pm->Draw("same");
     }
   
+  cout<<"Displaying...."<<endl;
   fGeom->Draw("same");
-  c1->x3d();
+  //c1->x3d();
 }
+  

@@ -57,7 +57,7 @@ SRCS	= AliL3HoughTransformer.cxx AliL3Hough.cxx AliL3HoughTrack.cxx\
 	  AliL3HoughMaxFinder.cxx AliL3HoughEval.cxx AliL3HoughMerger.cxx \
 	  AliL3Histogram.cxx AliL3Histogram1D.cxx AliL3HoughBaseTransformer.cxx \
 	  AliL3HoughIntMerger.cxx AliL3HoughGlobalMerger.cxx \
-	  AliL3HoughTransformerVhdl.cxx
+	  AliL3HoughTransformerVhdl.cxx AliL3HoughDisplay.cxx
 
 DICT = AliL3HoughCint.cxx
 DICTH = AliL3HoughCint.h

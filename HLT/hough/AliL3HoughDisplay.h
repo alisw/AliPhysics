@@ -7,7 +7,7 @@ class TGeometry;
 class AliL3TrackArray;
 class AliL3DigitRowData;
 class TPolyMarker3D;
-class AliL3HoughTrack;
+class AliL3Track;
 
 class AliL3HoughDisplay {
 
@@ -20,16 +20,16 @@ class AliL3HoughDisplay {
   Int_t fShowSlice; 
   Int_t fPatch;
   
-  void GenerateHits(AliL3HoughTrack *track,Float_t *x,Float_t *y,Float_t *z,Int_t &n);
-  void Init();
+  void GenerateHits(AliL3Track *track,Float_t *x,Float_t *y,Float_t *z,Int_t &n);
+  
   TPolyMarker3D *LoadDigits();
 
  public:
   AliL3HoughDisplay();
   virtual ~AliL3HoughDisplay();
-
+  
+  void Init(Char_t *trackfile);
   void DisplayEvent();
-  void SetTracks(AliL3TrackArray *tracks) {fTracks = tracks;}
   void ShowData(AliL3DigitRowData *data,UInt_t size,Int_t slice,Int_t patch);
 
   ClassDef(AliL3HoughDisplay,1) 
