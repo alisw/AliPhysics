@@ -1226,12 +1226,12 @@ const TParticle * AliPHOSGetter::Secondary(TParticle* p, Int_t index) const
 }
 
 //____________________________________________________________________________ 
-void AliPHOSGetter::ReadTreeD()
+Int_t AliPHOSGetter::ReadTreeD()
 {
   // Read the digit tree gAlice->TreeD()  
   if(gAlice->TreeD()== 0){
-    cerr <<   "ERROR: AliPHOSGetter::ReadTreeD: can not read TreeD " << endl ;
-  return ;
+    cerr <<   "WARNING: AliPHOSGetter::ReadTreeD: can not read TreeD " << endl ;
+  return 1;
   }
   
   TObjArray * lob = static_cast<TObjArray*>(gAlice->TreeD()->GetListOfBranches()) ;
@@ -1256,7 +1256,7 @@ void AliPHOSGetter::ReadTreeD()
     if (fDebug)
       cout << "WARNING: AliPHOSGetter::ReadTreeD -> Cannot find Digits and/or Digitizer with name " 
 	   << fDigitsTitle << endl ;
-    return ; 
+    return 2; 
   }   
  
   //read digits
@@ -1272,24 +1272,24 @@ void AliPHOSGetter::ReadTreeD()
   digitizerbranch->SetAddress(DigitizerRef(fDigitsTitle)) ;
   digitizerbranch->GetEntry(0) ;
  
-  
+  return 0 ; 
 }
 
 //____________________________________________________________________________ 
-void AliPHOSGetter::ReadTreeH()
+Int_t AliPHOSGetter::ReadTreeH()
 {
   // Read the first entry of PHOS branch in hit tree gAlice->TreeH()
 
   if(gAlice->TreeH()== 0){
-    cerr <<   "ERROR: AliPHOSGetter::ReadTreeH: -> Cannot read TreeH " << endl ;
-    return ;
+    cerr <<   "WARNING: AliPHOSGetter::ReadTreeH: -> Cannot read TreeH " << endl ;
+    return 1;
   }
   
   TBranch * hitsbranch = static_cast<TBranch*>(gAlice->TreeH()->GetBranch("PHOS")) ;
   if ( !hitsbranch ) {
     if (fDebug)
       cout << "WARNING:  AliPHOSGetter::ReadTreeH -> Cannot find branch PHOS" << endl ; 
-    return ;
+    return 2;
   }
   if(!Hits())
     PostHits() ;
@@ -1315,6 +1315,7 @@ void AliPHOSGetter::ReadTreeH()
     hitsbranch->SetAddress(HitsRef()) ;
     hitsbranch->GetEntry(0) ;
   }
+  return 0 ; 
 }
 
 //____________________________________________________________________________ 
@@ -1375,13 +1376,13 @@ void AliPHOSGetter::ReadTreeQA()
 }
 
 //____________________________________________________________________________ 
-void AliPHOSGetter::ReadTreeR()
+Int_t AliPHOSGetter::ReadTreeR()
 {
   // Read the reconstrunction tree gAlice->TreeR()
 
   if(gAlice->TreeR()== 0){
-    cerr <<   "ERROR: AliPHOSGetter::ReadTreeR: can not read TreeR " << endl ;
-    return ;
+    cerr <<   "WARNING: AliPHOSGetter::ReadTreeR: can not read TreeR " << endl ;
+    return 1;
   }
   
   // RecPoints 
@@ -1413,19 +1414,19 @@ void AliPHOSGetter::ReadTreeR()
     if (fDebug)
       cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find EmcRecPoints with title " 
 	   << fRecPointsTitle << endl ;
-    return ; 
+    return 2 ; 
   }   
   if ( !phoscpvrpfound ) {
     if (fDebug)
       cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find CpvRecPoints with title " 
 	   << fRecPointsTitle << endl ;
-    return ; 
+    return 3; 
   }   
   if ( !clusterizerfound ) {
     if (fDebug)
       cout << "WARNING: AliPHOSGetter::ReadTreeR -> Can not find Clusterizer with title " 
 	   << fRecPointsTitle << endl ;
-    return ; 
+    return 4; 
   }   
   
   // Read and Post the RecPoints
@@ -1467,7 +1468,7 @@ void AliPHOSGetter::ReadTreeR()
     if (fDebug)
       cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find TrackSegments and/or TrackSegmentMaker with name "
 	   << fTrackSegmentsTitle << endl ;
-    return ; 
+    return 5; 
   } 
   
   // Read and Post the TrackSegments
@@ -1507,7 +1508,7 @@ void AliPHOSGetter::ReadTreeR()
     if (fDebug)
       cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find RecParticles and/or PID with name " 
 	   << fRecParticlesTitle << endl ;
-    return ; 
+    return 6; 
   } 
   
   // Read and Post the RecParticles
@@ -1524,11 +1525,11 @@ void AliPHOSGetter::ReadTreeR()
   pidbranch->SetAddress(PIDRef(fRecParticlesTitle)) ;
   pidbranch->GetEntry(0) ;
   
-  
+  return 0 ; 
 }
 
 //____________________________________________________________________________ 
-void AliPHOSGetter::ReadTreeS(Int_t event)
+Int_t AliPHOSGetter::ReadTreeS(Int_t event)
 {
   // Read the summable digits tree gAlice->TreeS()  
   
@@ -1566,8 +1567,8 @@ void AliPHOSGetter::ReadTreeS(Int_t event)
       treeS = dynamic_cast<TTree*>(gDirectory->Get(treeName.Data()));
     }
     if(treeS==0){
-      cerr << "ERROR: AliPHOSGetter::ReadTreeS There is no SDigit Tree" << endl;
-      return ;
+      cerr << "WARNING: AliPHOSGetter::ReadTreeS There is no SDigit Tree" << endl;
+      return 1;
     }
     
     //set address of the SDigits and SDigitizer
@@ -1593,7 +1594,7 @@ void AliPHOSGetter::ReadTreeS(Int_t event)
       if (fDebug)
 	cout << "WARNING: AliPHOSDigitizer::ReadSDigits -> Digits and/or Digitizer branch with name " << GetName() 
 	     << " not found" << endl ;
-      return ; 
+      return 2; 
     }   
     
     if ( !folder->FindObject(fSDigitsTitle) )  
@@ -1623,7 +1624,7 @@ void AliPHOSGetter::ReadTreeS(Int_t event)
     file   = static_cast<TFile*>(gROOT->GetFile(fileName)); 
     file   ->cd() ;
   }
-  
+  return 0 ; 
 }
 //____________________________________________________________________________ 
 void AliPHOSGetter::ReadTreeS(TTree * treeS, Int_t input)
@@ -1710,23 +1711,29 @@ void AliPHOSGetter::Event(const Int_t event, const char* opt)
   }
   gAlice->GetEvent(event) ; 
 
+  Int_t rvRH = 0 ;
+  Int_t rvRS = 0 ;
+  Int_t rvRD = 0 ;
+  Int_t rvRR = 0 ;
+
   if(strstr(opt,"H") )
-    ReadTreeH() ;
+    rvRH = ReadTreeH() ;
   
   if(strstr(opt,"S") )
-    ReadTreeS(event) ;
+    rvRS = ReadTreeS(event) ;
 
   if( strstr(opt,"D") )
-    ReadTreeD() ;
+    rvRD = ReadTreeD() ;
 
   if( strstr(opt,"R") )
-    ReadTreeR() ;
+    rvRR = ReadTreeR() ;
 
   if( strstr(opt,"Q") )
     ReadTreeQA() ;
 
   if( strstr(opt,"P") || (strcmp(opt,"")==0) )
-    ReadPrimaries() ;
+    if ( gAlice->Stack() ) 
+      ReadPrimaries() ;
 
 }
 

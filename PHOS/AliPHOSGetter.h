@@ -190,10 +190,10 @@ private:
   TObject * ReturnO(TString what, TString name=0, TString file=0) const ; 
   const TTask * ReturnT(TString what,TString name=0) const ; 
   void DefineBranchTitles(char* branch, char* branchTitle) ;
-  void ReadTreeD() ;
-  void ReadTreeH() ;
-  void ReadTreeR() ;
-  void ReadTreeS(Int_t event) ;
+  Int_t ReadTreeD() ;
+  Int_t ReadTreeH() ;
+  Int_t ReadTreeR() ;
+  Int_t ReadTreeS(Int_t event) ;
   void ReadTreeQA() ;
   void ReadPrimaries() ;
 
