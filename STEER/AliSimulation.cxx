@@ -315,7 +315,11 @@ Bool_t AliSimulation::RunSDigitization(const char* detectors)
     if (IsSelected(det->GetName(), detStr)) {
       Info("RunSDigitization", "creating summable digits for %s", 
 	   det->GetName());
+      TStopwatch stopwatchDet;
+      stopwatchDet.Start();
       det->Hits2SDigits();
+      Info("RunSDigitization", "execution time for %s:", det->GetName());
+      stopwatchDet.Print();
     }
   }
 
