@@ -312,7 +312,7 @@ void AliITSgeomMatrix::MatrixFromAngle(){
 
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::GtoLPosition(const Double_t g0[3],Double_t l[3]){
+void AliITSgeomMatrix::GtoLPosition(const Double_t g0[3],Double_t l[3]) const {
 ////////////////////////////////////////////////////////////////////////
 // Returns the local coordinates given the global coordinates [cm].
 ////////////////////////////////////////////////////////////////////////
@@ -328,7 +328,7 @@ void AliITSgeomMatrix::GtoLPosition(const Double_t g0[3],Double_t l[3]){
 	return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::LtoGPosition(const Double_t l[3],Double_t g[3]){
+void AliITSgeomMatrix::LtoGPosition(const Double_t l[3],Double_t g[3]) const {
 ////////////////////////////////////////////////////////////////////////
 // Returns the global coordinates given the local coordinates [cm].
 ////////////////////////////////////////////////////////////////////////
@@ -343,7 +343,7 @@ void AliITSgeomMatrix::LtoGPosition(const Double_t l[3],Double_t g[3]){
 	return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::GtoLMomentum(const Double_t g[3],Double_t l[3]){
+void AliITSgeomMatrix::GtoLMomentum(const Double_t g[3],Double_t l[3]) const{
 ////////////////////////////////////////////////////////////////////////
 // Returns the local coordinates of the momentum given the global
 // coordinates of the momentum. It transforms just like GtoLPosition
@@ -359,7 +359,7 @@ void AliITSgeomMatrix::GtoLMomentum(const Double_t g[3],Double_t l[3]){
 	return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::LtoGMomentum(const Double_t l[3],Double_t g[3]){
+void AliITSgeomMatrix::LtoGMomentum(const Double_t l[3],Double_t g[3]) const {
 ////////////////////////////////////////////////////////////////////////
 // Returns the Global coordinates of the momentum given the local
 // coordinates of the momentum. It transforms just like LtoGPosition
@@ -376,7 +376,7 @@ void AliITSgeomMatrix::LtoGMomentum(const Double_t l[3],Double_t g[3]){
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::GtoLPositionError(      Double_t g[3][3],
-                                               Double_t l[3][3]){
+                                               Double_t l[3][3]) const {
 ////////////////////////////////////////////////////////////////////////
 // Given an Uncertainty matrix in Global coordinates it is rotated so that 
 // its representation in local coordinates can be returned. There is no
@@ -394,7 +394,7 @@ void AliITSgeomMatrix::GtoLPositionError(      Double_t g[3][3],
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::LtoGPositionError(      Double_t l[3][3],
-                                               Double_t g[3][3]){
+                                               Double_t g[3][3]) const {
 ////////////////////////////////////////////////////////////////////////
 // Given an Uncertainty matrix in Local coordinates it is rotated so that 
 // its representation in global coordinates can be returned. There is no
@@ -412,7 +412,7 @@ void AliITSgeomMatrix::LtoGPositionError(      Double_t l[3][3],
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::GtoLPositionTracking(const Double_t g0[3],
-					    Double_t l[3]){
+					    Double_t l[3]) const {
 ////////////////////////////////////////////////////////////////////////
 // A slightly different coordinate system is used when tracking.
 // This coordinate system is only relevant when the geometry represents
@@ -443,7 +443,7 @@ void AliITSgeomMatrix::GtoLPositionTracking(const Double_t g0[3],
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::LtoGPositionTracking(const Double_t l[3],
-					    Double_t g[3]){
+					    Double_t g[3]) const {
 ////////////////////////////////////////////////////////////////////////
 // A slightly different coordinate system is used when tracking.
 // This coordinate system is only relevant when the geometry represents
@@ -474,7 +474,7 @@ void AliITSgeomMatrix::LtoGPositionTracking(const Double_t l[3],
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::GtoLMomentumTracking(const Double_t g[3],
-					    Double_t l[3]){
+					    Double_t l[3]) const {
 ////////////////////////////////////////////////////////////////////////
 // A slightly different coordinate system is used when tracking.
 // This coordinate system is only relevant when the geometry represents
@@ -505,7 +505,7 @@ void AliITSgeomMatrix::GtoLMomentumTracking(const Double_t g[3],
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::LtoGMomentumTracking(const Double_t l[3],
-					    Double_t g[3]){
+					    Double_t g[3]) const {
 ////////////////////////////////////////////////////////////////////////
 // A slightly different coordinate system is used when tracking.
 // This coordinate system is only relevant when the geometry represents
@@ -536,7 +536,7 @@ void AliITSgeomMatrix::LtoGMomentumTracking(const Double_t l[3],
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::GtoLPositionErrorTracking(     Double_t g[3][3],
-						 Double_t l[3][3]){
+						 Double_t l[3][3]) const {
 ////////////////////////////////////////////////////////////////////////
 // A slightly different coordinate system is used when tracking.
 // This coordinate system is only relevant when the geometry represents
@@ -569,7 +569,7 @@ void AliITSgeomMatrix::GtoLPositionErrorTracking(     Double_t g[3][3],
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::LtoGPositionErrorTracking( Double_t l[3][3],
-						 Double_t g[3][3]){
+						 Double_t g[3][3]) const {
 ////////////////////////////////////////////////////////////////////////
 // A slightly different coordinate system is used when tracking.
 // This coordinate system is only relevant when the geometry represents
@@ -601,7 +601,7 @@ void AliITSgeomMatrix::LtoGPositionErrorTracking( Double_t l[3][3],
 	return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::PrintTitles(ostream *os){
+void AliITSgeomMatrix::PrintTitles(ostream *os) const {
 ////////////////////////////////////////////////////////////////////////
 // Standard output format for this class but it includes variable
 // names and formatting that makes it easer to read.
@@ -620,7 +620,7 @@ void AliITSgeomMatrix::PrintTitles(ostream *os){
     return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::PrintComment(ostream *os){
+void AliITSgeomMatrix::PrintComment(ostream *os) const {
 ////////////////////////////////////////////////////////////////////////
 //  output format used by Print..
 ////////////////////////////////////////////////////////////////////////
@@ -692,6 +692,15 @@ void AliITSgeomMatrix::Streamer(TBuffer &R__b){
       AliITSgeomMatrix::Class()->WriteBuffer(R__b, this);
    }
 }
+//______________________________________________________________________
+void AliITSgeomMatrix::SetTranslation(const Double_t tran[3]){
+  // Sets the translation vector and computes fCylR and fCylPhi.
+  for(Int_t i=0;i<3;i++) ftran[i] = tran[i];
+  fCylR   = TMath::Sqrt(ftran[0]*ftran[0]+ftran[1]*ftran[1]);
+  fCylPhi = TMath::ATan2(ftran[1],ftran[0]);
+  if(fCylPhi<0.0) fCylPhi += TMath::Pi();
+}
+
 //----------------------------------------------------------------------
 ostream &operator<<(ostream &os,AliITSgeomMatrix &p){
 ////////////////////////////////////////////////////////////////////////

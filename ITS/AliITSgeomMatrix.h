@@ -32,12 +32,12 @@ class AliITSgeomMatrix : public TObject {
 	void operator=(const AliITSgeomMatrix &sourse); // copy
 	virtual ~AliITSgeomMatrix(){}; // default constructor.
 	// Prints a line describing the output format of the function Print.
-	void PrintComment(ostream *os);
+	void PrintComment(ostream *os) const;
 	// Prints out the content of this class in ASCII format.
 	void Print(ostream *os);
 	// Prints out the content of this class in ASCII format but includes
 	// formating and strings that make it more humanly readable.
-	void PrintTitles(ostream *os);
+	void PrintTitles(ostream *os) const;
 	// Reads in the content of this class in the format of Print
 	void Read(istream *is);
 
@@ -46,12 +46,7 @@ class AliITSgeomMatrix : public TObject {
 	void SetAngles(const Double_t rot[3]){// [radians]
               for(Int_t i=0;i<3;i++)frot[i] = rot[i];this->MatrixFromAngle();}
 	// Sets the translation vector and computes fCylR and fCylPhi.
-	void SetTranslation(const Double_t tran[3]){
-	                    for(Int_t i=0;i<3;i++) ftran[i] = tran[i];
-			    fCylR   = TMath::Sqrt(ftran[0]*ftran[0]+
-						  ftran[1]*ftran[1]);
-			    fCylPhi = TMath::ATan2(ftran[1],ftran[0]);
-			    if(fCylPhi<0.0) fCylPhi += TMath::Pi();}
+	void SetTranslation(const Double_t tran[3]);
 	// sets the rotation matrix and computes the rotation angles [radians]
 	void SetMatrix(Double_t matrix[3][3]){ for(Int_t i=0;i<3;i++)
 	 for(Int_t j=0;j<3;j++) fm[i][j]=matrix[i][j];this->AngleFromMatrix();}
@@ -61,24 +56,24 @@ class AliITSgeomMatrix : public TObject {
 	void SetIndex(const Int_t id[3]){
 	                   for(Int_t i=0;i<3;i++) fid[i] = id[i];}
 	// Returns the rotation angles [radians]
-	void GetAngles(Double_t rot[3]){// [radians]
+	void GetAngles(Double_t rot[3]) const {// [radians]
 	                   for(Int_t i=0;i<3;i++)  rot[i] = frot[i];}
 	// Returns the translation vector [cm]
-	void GetTranslation(Double_t tran[3]){
+	void GetTranslation(Double_t tran[3]) const {
 	                    for(Int_t i=0;i<3;i++) tran[i] = ftran[i];}
 	// Returns the translation vector in cylindrical
 	// coordinates [cm,radians]
-	void GetTranslationCylinderical(Double_t tran[3]){
+	void GetTranslationCylinderical (Double_t tran[3]) const {
 	                    tran[0] = fCylR;
 			    tran[1] = fCylPhi;
 			    tran[2] = ftran[2];}
 	// Returns the values of the rotation matrix
-	void GetMatrix(Double_t matrix[3][3]){for(Int_t i=0;i<3;i++)
+	void GetMatrix(Double_t matrix[3][3]) const {for(Int_t i=0;i<3;i++)
 		         for(Int_t j=0;j<3;j++) matrix[i][j] = fm[i][j];}
 	// Returns the detector index value.
 	Int_t GetDetectorIndex() const {return fDetectorIndex;}
 	// returns the modules index layer, ladder, detector
-	void  GetIndex(Int_t id[3]){for(Int_t i=0;i<3;i++) id[i] = fid[i];}
+	void  GetIndex(Int_t id[3]) const {for(Int_t i=0;i<3;i++) id[i] = fid[i];}
 	// Sets the rotation matrix based on the 6 GEANT rotation
 	// angles [radian]
 	void  MatrixFromSixAngles(const Double_t *ang);
@@ -89,52 +84,52 @@ class AliITSgeomMatrix : public TObject {
 	// Given a position in Cartesian ALICE global coordinates [cm]
 	// returns the position in Cartesian detector/module local
 	//coordinates [cm]
-	void GtoLPosition(const Double_t g[3],Double_t l[3]);
+	void GtoLPosition(const Double_t g[3],Double_t l[3]) const;
 	// Given a position in Cartesian detector/module local coordinates [cm]
 	// returns the position in Cartesian ALICE global
 	//coordinates [cm]
-	void LtoGPosition(const Double_t l[3],Double_t g[3]);
+	void LtoGPosition(const Double_t l[3],Double_t g[3]) const;
 	// Given a momentum in Cartesian ALICE global coordinates
 	// returns the momentum in Cartesian detector/module local
 	//coordinates
-	void GtoLMomentum(const Double_t g[3],Double_t l[3]);
+	void GtoLMomentum(const Double_t g[3],Double_t l[3]) const;
 	// Given a momentum in Cartesian detector/module local coordinates 
 	// returns the momentum in Cartesian ALICE global coordinates
-	void LtoGMomentum(const Double_t l[3],Double_t g[3]);
+	void LtoGMomentum(const Double_t l[3],Double_t g[3]) const;
 	// given a position error matrix in ALICE Cartesian global
 	// coordinates [cm] returns a position error matrix in detector/
 	// module local Cartesian local coordinates [cm]
-	void GtoLPositionError(Double_t g[3][3],Double_t l[3][3]);
+	void GtoLPositionError(Double_t g[3][3],Double_t l[3][3]) const;
 	// given a position error matrix in detector/module Cartesian local
 	// coordinates [cm] returns a position error matrix in ALICE
 	// Cartesian global coordinates [cm]
-	void LtoGPositionError(Double_t l[3][3],Double_t g[3][3]);
+	void LtoGPositionError(Double_t l[3][3],Double_t g[3][3]) const;
 	// Tracking Related Routines
-	void GtoLPositionTracking(const Double_t g[3],Double_t l[3]);
+	void GtoLPositionTracking(const Double_t g[3],Double_t l[3]) const;
 	// Given a position in Cartesian Tracking global coordinates [cm]
 	// returns the position in Cartesian detector/module local
 	// coordinates [cm]
-	void LtoGPositionTracking(const Double_t l[3],Double_t g[3]);
+	void LtoGPositionTracking(const Double_t l[3],Double_t g[3]) const;
 	// Given a position in Cartesian detector/module local coordinates [cm]
 	// returns the position in Cartesian Tracking global
 	//coordinates [cm]
-	void GtoLMomentumTracking(const Double_t g[3],Double_t l[3]);
+	void GtoLMomentumTracking(const Double_t g[3],Double_t l[3]) const;
 	// Given a momentum in Cartesian detector/module local coordinates 
 	// returns the momentum in Cartesian Tracking global coordinates
-	void LtoGMomentumTracking(const Double_t l[3],Double_t g[3]);
+	void LtoGMomentumTracking(const Double_t l[3],Double_t g[3]) const;
 	// given a position error matrix in Tracking Cartesian global
 	// coordinates [cm] returns a position error matrix in detector/
 	// module local Cartesian local coordinates [cm]
 	void GtoLPositionErrorTracking(Double_t g[3][3],
-				       Double_t l[3][3]);
+				       Double_t l[3][3]) const;
 	// given a position error matrix in detector/module Cartesian local
 	// coordinates [cm] returns a position error matrix in Tracking
 	// Cartesian global coordinates [cm]
 	void LtoGPositionErrorTracking(Double_t l[3][3],
-				       Double_t g[3][3]);
+				       Double_t g[3][3]) const;
 	// Computes the distance squared [cm^2] between a point t[3] and
 	// this module/detector
-	Double_t Distance2(const Double_t t[3]){Double_t d=0.0,q;
+	Double_t Distance2(const Double_t t[3]) const {Double_t d=0.0,q;
                  for(Int_t i=0;i<3;i++){q = t[i]-ftran[i]; d += q*q;}
                  return d;}
  private: // private functions
