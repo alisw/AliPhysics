@@ -747,7 +747,7 @@ void AliMUONDisplay::DrawTitle(Option_t *option)
 void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
 {
 //    Draw a view of MUON clusters
-    printf("\n Draw View\n");
+    AliInfo(" Draw View");
     
     gPad->SetCursor(kWatch);
     // gPad->SetFillColor(39);
