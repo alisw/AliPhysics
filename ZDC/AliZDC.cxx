@@ -709,7 +709,7 @@ void AliZDCv1::CreateGeometry()
 }
  
 //_____________________________________________________________________________
-void AliZDCv1::DrawDetector()
+void AliZDCv1::DrawModule()
 {
   //
   // Draw a shaded view of the Zero Degree Calorimeter version 1

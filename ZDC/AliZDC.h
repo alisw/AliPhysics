@@ -41,7 +41,7 @@ public:
   virtual void  CreateGeometry();
   virtual void  CreateMaterials();
   virtual Int_t IsVersion() const {return 1;}
-  virtual void  DrawDetector();
+  virtual void  DrawModule();
  
    ClassDef(AliZDCv1,1)  // Zero Degree Calorimeter version 1
 };
