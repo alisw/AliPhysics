@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  1999/11/09 07:38:48  fca
+Changes for compatibility with version 2.23 of ROOT
+
 Revision 1.13  1999/11/04 11:30:31  fca
 Correct the logics for SetForceDecay
 
@@ -57,6 +60,10 @@ AliGenParam::AliGenParam()
   fParam  = jpsi_p;
   fAnalog = analog;
   SetCutOnChild();
+  SetChildMomentumRange();
+  SetChildPtRange();
+  SetChildPhiRange();
+  SetChildThetaRange();  
 }
 
 //____________________________________________________________
@@ -78,6 +85,10 @@ AliGenParam::AliGenParam(Int_t npart, Param_t param) :AliGenerator(npart)
   for (Int_t i=0; i<5; i++) fChildSelect[i]=0;
   SetForceDecay();
   SetCutOnChild();
+  SetChildMomentumRange();
+  SetChildPtRange();
+  SetChildPhiRange();
+  SetChildThetaRange();  
 }
 
 AliGenParam::AliGenParam(Int_t npart, Param_t param,
@@ -188,11 +199,12 @@ void AliGenParam::Generate()
 // Kaons, Etas, Omegas) and Baryons (proton, antiprotons, neutrons and 
 // antineutrons in the the desired theta, phi and momentum windows; 
 // Gaussian smearing on the vertex is done if selected. 
-// The decay of heavy mesons is done using lujet, and the childern particle are tracked by GEANT
-// However, light mesons are directly tracked by GEANT setting fForceDecay = nodecay (SetForceDecay(nodecay)) 
+// The decay of heavy mesons is done using lujet, 
+//    and the childern particle are tracked by GEANT
+// However, light mesons are directly tracked by GEANT 
+// setting fForceDecay = nodecay (SetForceDecay(nodecay)) 
 //
 
-// printf("Generate !!!!!!!!!!!!!\n");
 
   Float_t polar[3]= {0,0,0};  // Polarisation of the parent particle (for GEANT tracking)
   Float_t origin0[3];         // Origin of the generated parent particle (for GEANT tracking)
@@ -222,7 +234,7 @@ void AliGenParam::Generate()
   Int_t ipa=0;
 // Generating fNpart particles
   while (ipa<fNpart) {
-    while(1) {
+      while(1) {
 //
 // particle type
 	  Int_t Ipart = fIpParaFunc();
@@ -250,8 +262,10 @@ void AliGenParam::Generate()
 	  xmt=sqrt(pt*pt+am*am);
 	  pl=xmt*ty/sqrt(1.-ty*ty);
 	  theta=TMath::ATan2(pt,pl);
+// Cut on theta
 	  if(theta<fThetaMin || theta>fThetaMax) continue;
 	  ptot=TMath::Sqrt(pt*pt+pl*pl);
+// Cut on momentum
 	  if(ptot<fPMin || ptot>fPMax) continue;
 	  p[0]=pt*TMath::Cos(phi);
 	  p[1]=pt*TMath::Sin(phi);
@@ -266,23 +280,19 @@ void AliGenParam::Generate()
 	  }
 	  
 // Looking at fForceDecay : 
-//                          if fForceDecay != none Primary particle decays using 
-//                             AliPythia  and children are tracked by GEANT
+// if fForceDecay != none Primary particle decays using 
+// AliPythia and children are tracked by GEANT
 //
-//                          if fForceDecay == none Primary particle is tracked by GEANT 
-//                          (In the latest, make sure that GEANT actually does all the decays you want)	  
+// if fForceDecay == none Primary particle is tracked by GEANT 
+// (In the latest, make sure that GEANT actually does all the decays you want)	  
 //
 	  if (fForceDecay != nodecay) {
 // Using lujet to decay particle
 	      Float_t energy=TMath::Sqrt(ptot*ptot+am*am);
 	      fPythia->DecayParticle(Ipart,energy,theta,phi);
-	      //	  fPythia->LuList(1);
-	      //printf("origin0 %f %f %f\n",origin0[0],origin0[1],origin0[2]);
-	      //printf("fCutOnChild %d \n",fCutOnChild);
 //
-// select muons
+// select decay particles
 	      Int_t np=fPythia->ImportParticles(particles,"All");
-	      //printf("np     %d \n",np);
 	      Int_t ncsel=0;
 	      for (i = 1; i<np; i++) {
 		  TParticle *  iparticle = (TParticle *) particles->At(i);
@@ -303,10 +313,10 @@ void AliGenParam::Generate()
 			  Float_t ThetaChild=TMath::ATan2(PtChild,pc[2]);
 			  Float_t PhiChild=TMath::ATan2(pc[1],pc[0])+TMath::Pi();
 			  Bool_t childok = 
-			      ((PtChild   > fPtMin   && PtChild   <fPtMax)      &&
-			       (PChild    > fPMin    && PChild    <fPMax)       &&
-			       (ThetaChild>fThetaMin && ThetaChild<fThetaMax)   &&
-			       (PhiChild  >  fPhiMin && PhiChild  <fPhiMax));
+			      ((PtChild    > fChildPtMin    && PtChild    <fChildPtMax)      &&
+			       (PChild     > fChildPMin     && PChild     <fChildPMax)       &&
+			       (ThetaChild > fChildThetaMin && ThetaChild <fChildThetaMax)   &&
+			       (PhiChild   > fChildPhiMin   && PhiChild   <fChildPhiMax));
 			  if(childok)
 			  {
 			      pch[ncsel][0]=pc[0];
