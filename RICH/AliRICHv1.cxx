@@ -221,7 +221,7 @@ void AliRICHv1::StepManager()
     Float_t        theta,phi;
     Float_t        destep, step;
     Double_t        ranf[2];
-    Int_t          nPads;
+    Int_t          nPads=-1;
     Float_t        coscerenkov;
     static Float_t eloss, xhit, yhit, tlength;
     const  Float_t kBig=1.e10;

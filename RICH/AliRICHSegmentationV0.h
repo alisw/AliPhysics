@@ -37,7 +37,7 @@ public AliSegmentation {
 	{z=0; GetPadC(ix, iy, x , y);}
     //
     // Initialisation
-    virtual void Init(Int_t id);
+    virtual void Init(Int_t i);
     //
     // Get member data
     //

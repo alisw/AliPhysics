@@ -41,7 +41,7 @@ void AliRICHSegmentationV0::Init(Int_t id)
   //printf("*           Initialising SegmentationV0 (no dead zones) in chamber %d            *\n",id+1);
 
   // parametrised definition
-  
+  id++;//to remove warning  
   Float_t csi_length = fNpy*fDpy + fDeadZone;
   Float_t csi_width = fNpx*fDpx + 2*fDeadZone;
   

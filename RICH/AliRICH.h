@@ -206,10 +206,10 @@ class AliRICH : public AliDetector
 public:
             AliRICH();                                            
             AliRICH(const char *name, const char *title);         
-            AliRICH(const AliRICH& RICH) : AliDetector(RICH) {}   
+            AliRICH(const AliRICH& RICH):AliDetector(RICH) {;}   
   virtual  ~AliRICH();                                            
           
-  AliRICH& operator=(const AliRICH& rhs) { return *this;}
+  AliRICH&  operator=(const AliRICH&)                 {return *this;}
   virtual Int_t  IsVersion() const =0;
           
   inline  void  AddHit(Int_t track, Int_t *vol, Float_t *hits);//virtual
@@ -225,7 +225,7 @@ public:
           void  ResetRawClusters();
           void  ResetRecHits1D();
           void  ResetRecHits3D();
-  virtual void  FindClusters(Int_t nev,Int_t lastEntry);
+  virtual void  FindClusters(Int_t nev);
           void  Hits2SDigits(); //virtual 
           void  Hits2SDigits(Int_t iEventN);
           void  Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss,Int_t id, ResponseType res);
@@ -239,7 +239,7 @@ public:
   virtual void    CreateGeometry();  //GEANT volumes tree for simulation  
   virtual void    StepManager()=0;
    
-          Int_t    DistancetoPrimitive(Int_t px, Int_t py)      {return 9999;}
+          Int_t    DistancetoPrimitive(Int_t /*px*/, Int_t /*py*/)      {return 9999;}
    
   virtual void   MakeBranch(Option_t *opt=" ");
   virtual void   MakeBranchInTreeD(TTree *treeD, const char *file=0);

@@ -263,7 +263,7 @@ void AliRICH::Digits2Reco()
 
   int nparticles = gAlice->GetNtrack();
   cout << "Particles (RICH):" <<nparticles<<endl;
-  if (nparticles > 0) FindClusters(0,0);
+  if (nparticles > 0) FindClusters(0);
 
 }//void AliRICH::Digits2Reco()  
 
@@ -1606,7 +1606,7 @@ void AliRICH::ResetRecHits3D()
   }
 }
 //______________________________________________________________________________
-void AliRICH::FindClusters(Int_t nev,Int_t lastEntry)
+void AliRICH::FindClusters(Int_t nev /*kir,Int_t lastEntry*/)
 {
 
 //
@@ -1657,7 +1657,7 @@ void AliRICH::FindClusters(Int_t nev,Int_t lastEntry)
     gAlice->TreeR()->Write(hname,kOverwrite,0);
     gAlice->TreeR()->Reset();    
     //gObjectTable->Print();
-}//void AliRICH::FindClusters(Int_t nev,Int_t lastEntry)
+}//void AliRICH::FindClusters(Int_t nev)
 //______________________________________________________________________________
 AliRICHSDigit* AliRICH::FirstPad(AliRICHhit*  hit,TClonesArray *clusters ) 
 {// Initialise the pad iterator Return the address of the first sdigit for hit
