@@ -3,9 +3,8 @@
 // Author: Constantin Loizides <mailto: loizides@ikf.physik.uni-frankfurt.de>
 // *-- Copyright & copy CL
 
-#include <iostream.h>
-#include <stdio.h>
-#include <string.h>
+#include "AliL3StandardIncludes.h"
+
 #include "AliL3AltroMemHandler.h"
 #include "AliL3Logging.h"
 

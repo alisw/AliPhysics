@@ -12,10 +12,16 @@
 //</pre>
 */
 
+
 #include "AliL3Stopwatch.h"
 
 #ifdef no_root
-#include <stream.h>
+
+#include "AliL3StandardIncludes.h"
+
+#if GCCVERSION == 3
+using namespace std;
+#endif
 
 ClassImp(AliL3Stopwatch)
 
@@ -132,7 +138,7 @@ Double_t AliL3Stopwatch::GetCPUTime()
 }
 
 //______________________________________________________________________________
-void AliL3Stopwatch::Print(Char_t *opt="") const
+void AliL3Stopwatch::Print(Char_t *opt) const
 {
    // Print the real and cpu time passed between the start and stop events.
    // and the number of times (slices) this TStopwatch was called

@@ -3,13 +3,13 @@
 // Author: Constantin Loizides <mailto:loizides@ikf.physik.uni-frankfurt.de>
 //*-- Copyright & copy CL
 
-#include <math.h>
-#include <time.h>
-#include <iostream.h>
-#include <stdio.h>
-#include <string.h>
+#include "AliL3StandardIncludes.h"
 
 #include "AliL3VHDLClusterFinder.h"
+
+#if GCCVERSION == 3
+using namespace std;
+#endif
 
 /** \class AliL3VHDLClusterFinder
 //<pre>
