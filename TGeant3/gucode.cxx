@@ -467,6 +467,7 @@ void gustep()
   Float_t r;
   Int_t ipp, jk, id, nt;
   Float_t polar[3]={0,0,0};
+  Float_t mom[3];
   char chproc[11];
   
   // --- Standard GEANT debug routine 
@@ -491,7 +492,20 @@ void gustep()
       }
     }
   }
-
+  // Cherenkov photons here
+  if ( geant3->Gckin2()->ngphot ) {
+    for (jk = 0; jk < geant3->Gckin2()->ngphot; ++jk) {
+      mom[0]=geant3->Gckin2()->xphot[jk][3]*geant3->Gckin2()->xphot[jk][6];
+      mom[1]=geant3->Gckin2()->xphot[jk][4]*geant3->Gckin2()->xphot[jk][6];
+      mom[2]=geant3->Gckin2()->xphot[jk][5]*geant3->Gckin2()->xphot[jk][6];
+      gAlice->SetTrack(1, gAlice->CurrentTrack(), gMC->PDGFromId(50),
+		       mom,                             //momentum
+		       geant3->Gckin2()->xphot[jk],     //position
+		       &geant3->Gckin2()->xphot[jk][7], //polarisation
+		       geant3->Gckin2()->xphot[jk][10], //time of flight
+		       "Cherenkov", nt);
+      }
+  }
   // --- Particle leaving the setup ?
   if (!gMC->IsTrackOut()) 
     if ((id=gAlice->DetFromMate(geant3->Gctmed()->numed)) >= 0) gAlice->StepManager(id);

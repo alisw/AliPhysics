@@ -324,7 +324,6 @@ void AliRICH::StepManager()
   TGeant3 *geant3 = (TGeant3*) gMC;
 
   const Float_t xshift[3] = { 41.3, 0, -41.3 };
-  static Float_t momentum[3];
   const Int_t nrooth = 25;
   
   static Int_t ixold=-1, iyold=-1;
@@ -343,7 +342,6 @@ void AliRICH::StepManager()
   //Int_t iprimx;
   Int_t ix, iy;
   Float_t stwght;
-  Int_t ncher;
   Float_t cophi;
   Float_t dir[3];
   Int_t ihitrak;
@@ -611,27 +609,14 @@ void AliRICH::StepManager()
 	sYphit[sNphoton - 1] = 0.;
 	stwght = geant3->Gctrak()->upwght;
 	geant3->Gctrak()->upwght = (Float_t) sNphoton;
-	geant3->Gskpho(i);
-	momentum[0]=geant3->Gckin2()->xphot[i-1][3]*
-	  geant3->Gckin2()->xphot[i-1][6];
-	momentum[1]=geant3->Gckin2()->xphot[i-1][4]*
-	  geant3->Gckin2()->xphot[i-1][6];
-	momentum[2]=geant3->Gckin2()->xphot[i-1][5]*
-	  geant3->Gckin2()->xphot[i-1][6];
-	gAlice->SetTrack(0, gAlice->CurrentTrack(),
-			 gMC->PDGFromId(50), 
-			 momentum, //momentum
-			 geant3->Gckin2()->xphot[i-1],     //position
-			 &geant3->Gckin2()->xphot[i-1][7], //polarisation
-			 geant3->Gckin2()->xphot[i-1][10], //time of flight
-			 "Cherenkov", ncher);
-	sMckov[sNphoton - 1] = ncher;
+	//	geant3->Gskpho(i);
+	sMckov[sNphoton - 1] = gAlice->CurrentTrack()+i;
 	geant3->Gctrak()->upwght = stwght;
       }
     } else {
       stwght = geant3->Gctrak()->upwght;
       geant3->Gctrak()->upwght = 0.;
-      geant3->Gskpho(0);
+      //      geant3->Gskpho(0);
       geant3->Gctrak()->upwght = stwght;
     }
     
@@ -1213,7 +1198,7 @@ void AliRICH::FeedBack(Float_t *source, Float_t qtot)
     } else {
       geant3->Gctrak()->upwght = 5200.;
     }
-    geant3->Gskpho(geant3->Gckin2()->ngphot);
+    //    geant3->Gskpho(geant3->Gckin2()->ngphot);
     geant3->Gctrak()->upwght = supwght;
     
   }

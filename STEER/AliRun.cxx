@@ -1666,7 +1666,8 @@ void AliRun::Streamer(TBuffer &R__b)
 //_____________________________________________________________________________
 
 extern "C" void type_of_call  rxgtrak (Int_t &mtrack, Int_t &ipart, Float_t *pmom, 
-				       Float_t &e, Float_t *vpos, Float_t &tof)
+				       Float_t &e, Float_t *vpos, Float_t *polar,
+				       Float_t &tof)
 {
   //
   //     Fetches next track from the ROOT stack for transport. Called by the
@@ -1681,7 +1682,6 @@ extern "C" void type_of_call  rxgtrak (Int_t &mtrack, Int_t &ipart, Float_t *pmo
   //      vpos[3] Particle position
   //      tof     Particle time of flight in seconds
   //
-  Float_t polar[3];
   Int_t pdg;
   gAlice->GetNextTrack(mtrack, pdg, pmom, e, vpos, polar, tof);
   ipart = gMC->IdFromPDG(pdg);

@@ -2,6 +2,10 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1  1999/06/03 16:38:16  fca
+* First version of gtreve_root, special version of gtreve for AliRoot to be
+* called from gutrev.
+*
 * Revision 1.1.1.1  1999/05/18 15:55:21  fca
 * AliRoot sources
 *
@@ -29,6 +33,7 @@ C.
 #include "geant321/gcbank.inc"
 #include "geant321/gcflag.inc"
 #include "geant321/gckine.inc"
+#include "geant321/gcking.inc"
 #include "geant321/gcnum.inc"
 #include "geant321/gcstak.inc"
 #include "geant321/gctmed.inc"
@@ -38,7 +43,7 @@ C.
       REAL UBUF(2)
       EQUIVALENCE (UBUF(1),WS(1))
       LOGICAL   BTEST
-      DIMENSION PMOM(3),VPOS(3)
+      DIMENSION PMOM(3),VPOS(3),VPOLA(3)
 C.
 C.    ------------------------------------------------------------------
       NTMSTO = 0
@@ -57,7 +62,7 @@ C.    ------------------------------------------------------------------
 *
       MTRACK=-999
  10   MTROLD=MTRACK
-      CALL RXGTRAK(MTRACK,IPART,PMOM,E,VPOS,TTOF)
+      CALL RXGTRAK(MTRACK,IPART,PMOM,E,VPOS,VPOLA,TTOF)
       IF(MTROLD.LT.0) THEN
          MPRIMA=MTRACK
       ENDIF
@@ -74,22 +79,40 @@ C --- Output root hits tree only for each primary MTRACK
          ENDIF
       ENDIF
       IF(MTRACK.LE.0) GOTO 999
+      ITRTYP = NINT(Q(LQ(JPART-IPART)+6))
+      IF(ITRTYP.EQ.7) THEN
+* This is a cherenkov photon, more complicated...
+         NGPHOT=1
+         XPHOT(7,1) = SQRT(VPOLA(1)**2+VPOLA(2)**2+VPOLA(3)**2)
+         DO KK=1,3
+            XPHOT(KK  ,1) = VPOS(KK)
+            XPHOT(KK+3,1) = PMOM(KK)/XPHOT(7,1)
+            XPHOT(KK+7,1) = VPOLA(KK)
+         ENDDO
+         XPHOT(11,1) = TTOF
+         CALL GSKPHO(1)
+* Just make sure that the track, whatever that is, is NOT transported
+         IQ(LQ(JKINE-1)) = IBSET(IQ(LQ(JKINE-1)),0)
+      ELSE
 * Set the vertex
-      JV=LQ(JVERTX-1)
-      Q(JV + 1) = VPOS(1)
-      Q(JV + 2) = VPOS(2)
-      Q(JV + 3) = VPOS(3)
-      Q(JV + 4) = TTOF
-      Q(JV + 5) = 0
-      Q(JV + 6) = 0
+         JV=LQ(JVERTX-1)
+         Q(JV + 1) = VPOS(1)
+         Q(JV + 2) = VPOS(2)
+         Q(JV + 3) = VPOS(3)
+         Q(JV + 4) = TTOF
+         Q(JV + 5) = 0
+         Q(JV + 6) = 0
 * Set the track
-      JK=LQ(JKINE-1)
-      Q(JK + 1) = PMOM(1)
-      Q(JK + 2) = PMOM(2)
-      Q(JK + 3) = PMOM(3)
-      Q(JK + 4) = E
-      Q(JK + 5) = IPART
-      Q(JK + 6) = 1
+         JK=LQ(JKINE-1)
+         Q(JK + 1) = PMOM(1)
+         Q(JK + 2) = PMOM(2)
+         Q(JK + 3) = PMOM(3)
+         Q(JK + 4) = E
+         Q(JK + 5) = IPART
+         Q(JK + 6) = 1
+* Make sure the track IS transported
+         IQ(LQ(JKINE-1)) = IBCLR(IQ(LQ(JKINE-1)),0)
+      ENDIF
 * Now transport
 C      CALL GPVERT(0)
 C      CALL GPKINE(0)
