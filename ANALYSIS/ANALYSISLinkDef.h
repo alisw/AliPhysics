@@ -27,8 +27,8 @@
 #pragma link C++ class AliFlowAnalysis+;
 
 #pragma link C++ class AliEventCut+;
-#pragma link C++ class AliEmptyEventCut+;
-#pragma link C++ class AliBaseEventCut+;
+#pragma link C++ class AliEventEmptyCut+;
+#pragma link C++ class AliEventBaseCut+;
 
 #pragma link C++ class AliPrimVertexXCut+;
 #pragma link C++ class AliPrimVertexYCut+;
@@ -36,8 +36,8 @@
 #pragma link C++ class AliNChargedCut+;
 
 #pragma link C++ class AliAODParticleCut-;
-#pragma link C++ class AliAODEmptyParticleCut-;
-#pragma link C++ class AliAODBaseCut+;
+#pragma link C++ class AliAODParticleEmptyCut-;
+#pragma link C++ class AliAODParticleBaseCut+;
 
 #pragma link C++ class AliAODMomentumCut+;
 #pragma link C++ class AliAODPtCut+;
@@ -59,8 +59,8 @@
 
 
 #pragma link C++ class AliAODPairCut-;
-#pragma link C++ class AliAODEmptyPairCut-;
-#pragma link C++ class AliAODBasePairCut+;
+#pragma link C++ class AliAODPairEmptyCut-;
+#pragma link C++ class AliAODPairBaseCut+;
 
 #pragma link C++ class AliAODQInvCut+;
 #pragma link C++ class AliAODKtCut+;

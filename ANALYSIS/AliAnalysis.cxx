@@ -22,7 +22,7 @@ AliAnalysis::AliAnalysis():
  fEventCut(0x0),
  fCutOnSim(kTRUE),
  fCutOnRec(kTRUE),
- fPairCut(new AliAODEmptyPairCut()),//empty cut - accepts all particles
+ fPairCut(new AliAODPairEmptyCut()),//empty cut - accepts all particles
  fkPass(&AliAnalysis::PassPartAndTrack), //by default perform cut on both track and particle pair 
  fkPass1(&AliAnalysis::PassPartAndTrack1), //used onluy by ProcessTracksAndParticles
  fkPass2(&AliAnalysis::PassPartAndTrack2),
@@ -37,7 +37,7 @@ AliAnalysis::AliAnalysis(const char* name,const char* title):
  fEventCut(0x0),
  fCutOnSim(kTRUE),
  fCutOnRec(kTRUE),
- fPairCut(new AliAODEmptyPairCut()),//empty cut - accepts all particles
+ fPairCut(new AliAODPairEmptyCut()),//empty cut - accepts all particles
  fkPass(&AliAnalysis::PassPartAndTrack), //by default perform cut on both track and particle pair 
  fkPass1(&AliAnalysis::PassPartAndTrack1), //used onluy by ProcessTracksAndParticles
  fkPass2(&AliAnalysis::PassPartAndTrack2),

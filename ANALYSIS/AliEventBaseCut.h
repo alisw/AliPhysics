@@ -1,9 +1,9 @@
-#ifndef ALIBASEEVENTCUT_H
-#define ALIBASEEVENTCUT_H
+#ifndef ALIEVENTBASECUT_H
+#define ALIEVENTBASECUT_H
 //________________________________
 ///////////////////////////////////////////////////////////
 //
-// class AliBaseEventCut
+// class AliEventBaseCut
 //
 // Base class for cauts that checks only one event property
 //
@@ -23,12 +23,12 @@ enum AliEventCutProperty
    kNChargedCut
  };
 
-class AliBaseEventCut: public TObject
+class AliEventBaseCut: public TObject
 {
   public: 
-    AliBaseEventCut();
-    AliBaseEventCut(Double_t min,Double_t max);
-    virtual ~AliBaseEventCut(){}
+    AliEventBaseCut();
+    AliEventBaseCut(Double_t min,Double_t max);
+    virtual ~AliEventBaseCut(){}
     
     virtual Bool_t Pass(AliAOD* aod) const;//returns kTRUE if rejected
   protected:
@@ -37,16 +37,16 @@ class AliBaseEventCut: public TObject
     Double_t fMin;//Minimum value
     Double_t fMax;//Maximum value
   private:
-    ClassDef(AliBaseEventCut,1)
+    ClassDef(AliEventBaseCut,1)
 };
 
 /************************************************************/
 
-class AliPrimVertexXCut: public AliBaseEventCut
+class AliPrimVertexXCut: public AliEventBaseCut
 {
  public: 
    AliPrimVertexXCut(){}
-   AliPrimVertexXCut(Double_t min,Double_t max):AliBaseEventCut(min,max){}
+   AliPrimVertexXCut(Double_t min,Double_t max):AliEventBaseCut(min,max){}
    virtual ~AliPrimVertexXCut(){}
  protected:
    Double_t GetValue(AliAOD* aod) const;
@@ -56,11 +56,11 @@ class AliPrimVertexXCut: public AliBaseEventCut
 };
 /************************************************************/
 
-class AliPrimVertexYCut: public AliBaseEventCut
+class AliPrimVertexYCut: public AliEventBaseCut
 {
  public: 
    AliPrimVertexYCut(){}
-   AliPrimVertexYCut(Double_t min,Double_t max):AliBaseEventCut(min,max){}
+   AliPrimVertexYCut(Double_t min,Double_t max):AliEventBaseCut(min,max){}
    virtual ~AliPrimVertexYCut(){}
    
  protected:
@@ -71,11 +71,11 @@ class AliPrimVertexYCut: public AliBaseEventCut
 };
 /************************************************************/
 
-class AliPrimVertexZCut: public AliBaseEventCut
+class AliPrimVertexZCut: public AliEventBaseCut
 {
  public: 
    AliPrimVertexZCut(){}
-   AliPrimVertexZCut(Double_t min,Double_t max):AliBaseEventCut(min,max){}
+   AliPrimVertexZCut(Double_t min,Double_t max):AliEventBaseCut(min,max){}
    virtual ~AliPrimVertexZCut(){}
  protected:
    Double_t GetValue(AliAOD* aod) const;
@@ -87,12 +87,12 @@ class AliPrimVertexZCut: public AliBaseEventCut
 
 /************************************************************/
 
-class AliNChargedCut: public AliBaseEventCut
+class AliNChargedCut: public AliEventBaseCut
 {
  public: 
    AliNChargedCut(){}
    AliNChargedCut(Double_t min, Double_t max, Double_t etamin = -10.0, Double_t etamax = 10.0):
-       AliBaseEventCut(min,max),fEtaMin(etamin),fEtaMax(etamax){}
+       AliEventBaseCut(min,max),fEtaMin(etamin),fEtaMax(etamax){}
    virtual ~AliNChargedCut(){}
  protected:
    Double_t GetValue(AliAOD* aod) const;

@@ -44,21 +44,21 @@ Zbigniew.Chajecki@cern.ch
 ClassImp( AliHBTMonitorFunction )
 
 AliHBTMonitorFunction::AliHBTMonitorFunction():
- fParticleCut(new AliAODEmptyParticleCut())
+ fParticleCut(new AliAODParticleEmptyCut())
 {
   //ctor
 }
 /******************************************************************/
 AliHBTMonitorFunction::AliHBTMonitorFunction(const char* name,const char* title):
  TNamed(name,title),
- fParticleCut(new AliAODEmptyParticleCut())
+ fParticleCut(new AliAODParticleEmptyCut())
 {
   //ctor
 }
 /******************************************************************/
 AliHBTMonitorFunction::AliHBTMonitorFunction(const AliHBTMonitorFunction& /*in*/):
  TNamed(),
- fParticleCut(new AliAODEmptyParticleCut())
+ fParticleCut(new AliAODParticleEmptyCut())
 {
   //cpy ctor
   // We cannot copy because it is a mess with names (histogram and functions)

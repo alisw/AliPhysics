@@ -27,9 +27,9 @@
 #include "AliVAODParticle.h"
 
 
-class AliAODEmptyParticleCut;
+class AliAODParticleEmptyCut;
 class AliAODParticleCut;
-class AliAODBaseCut;
+class AliAODParticleBaseCut;
 
 
 /******************************************************************/
@@ -73,7 +73,7 @@ class AliAODParticleCut: public TObject
     virtual Bool_t Pass(AliVAODParticle* p) const;
     Bool_t IsEmpty() const {return kFALSE;}
     
-    void AddBasePartCut(AliAODBaseCut* basecut);
+    void AddBasePartCut(AliAODParticleBaseCut* basecut);
     
     Int_t GetPID() const { return fPID;}
     void SetPID(Int_t pid){fPID=pid;}
@@ -96,9 +96,9 @@ class AliAODParticleCut: public TObject
     void Print(void) const;
   protected:
      
-    AliAODBaseCut* FindCut(AliAODCutProperty property);
+    AliAODParticleBaseCut* FindCut(AliAODCutProperty property);
 
-    AliAODBaseCut ** fCuts;//! Array with cuts
+    AliAODParticleBaseCut ** fCuts;//! Array with cuts
     Int_t fNCuts; //number of base cuts stored in fCuts
 
     Int_t fPID; //particle PID  - if=0 (rootino) all pids are accepted
@@ -112,18 +112,18 @@ class AliAODParticleCut: public TObject
 /******************************************************************/
 /******************************************************************/
 
-class AliAODEmptyParticleCut:  public AliAODParticleCut
+class AliAODParticleEmptyCut:  public AliAODParticleCut
 {
 //Empty - it passes possitively all particles - it means returns always False
 //Class describing cut on particles
   public:
-    AliAODEmptyParticleCut(){};
-    virtual ~AliAODEmptyParticleCut(){};
+    AliAODParticleEmptyCut(){};
+    virtual ~AliAODParticleEmptyCut(){};
     
     Bool_t Pass(AliVAODParticle*) const {return kFALSE;} //accept everything
     Bool_t IsEmpty() const {return kTRUE;}
 
-    ClassDef(AliAODEmptyParticleCut,1)
+    ClassDef(AliAODParticleEmptyCut,1)
  
 };
 
@@ -131,17 +131,17 @@ class AliAODEmptyParticleCut:  public AliAODParticleCut
 /******************************************************************/
 /******************************************************************/
 
-class AliAODBaseCut: public TObject
+class AliAODParticleBaseCut: public TObject
  {
    //This class defines the range of some property - pure virtual
    //Property is coded by AliAODCutTypes type
    
    public:
      
-     AliAODBaseCut(Double_t min = 0.0, Double_t max = 0.0,AliAODCutProperty prop = kAODNone):
+     AliAODParticleBaseCut(Double_t min = 0.0, Double_t max = 0.0,AliAODCutProperty prop = kAODNone):
                    fProperty(prop),fMin(min),fMax(max){}
 
-     virtual           ~AliAODBaseCut(){}
+     virtual           ~AliAODParticleBaseCut(){}
      
      virtual Bool_t    Pass(AliVAODParticle *p) const;
      
@@ -165,12 +165,12 @@ class AliAODBaseCut: public TObject
      
    private:
      void PrintProperty(void) const;
-     ClassDef(AliAODBaseCut,1)
+     ClassDef(AliAODParticleBaseCut,1)
    
  };
 
 inline Bool_t
-AliAODBaseCut::Pass(AliVAODParticle *p) const
+AliAODParticleBaseCut::Pass(AliVAODParticle *p) const
 {
   //cjecks if particle property fits in range
   if ( (GetValue(p) < fMin) || (GetValue(p) > fMax ) ) return kTRUE; //rejected
@@ -181,20 +181,20 @@ AliAODBaseCut::Pass(AliVAODParticle *p) const
 /******************************************************************/
 
  
-class AliAODMomentumCut: public AliAODBaseCut
+class AliAODMomentumCut: public AliAODParticleBaseCut
  {
   public: 
-    AliAODMomentumCut(Double_t min = 0.0, Double_t max = 0.0):AliAODBaseCut(min,max,kAODP){}
+    AliAODMomentumCut(Double_t min = 0.0, Double_t max = 0.0):AliAODParticleBaseCut(min,max,kAODP){}
     virtual ~AliAODMomentumCut(){}
   protected:
     Double_t  GetValue(AliVAODParticle * p)const{return p->P();}
     ClassDef(AliAODMomentumCut,1)
  };
 
-class AliAODPtCut: public AliAODBaseCut
+class AliAODPtCut: public AliAODParticleBaseCut
  {
   public: 
-    AliAODPtCut(Double_t min = 0.0, Double_t max = 0.0):AliAODBaseCut(min,max,kAODPt){}
+    AliAODPtCut(Double_t min = 0.0, Double_t max = 0.0):AliAODParticleBaseCut(min,max,kAODPt){}
     virtual ~AliAODPtCut(){}
   protected:
     Double_t  GetValue(AliVAODParticle * p)const{return p->Pt();}
@@ -202,50 +202,50 @@ class AliAODPtCut: public AliAODBaseCut
  };
 
 
-class AliAODEnergyCut: public AliAODBaseCut
+class AliAODEnergyCut: public AliAODParticleBaseCut
  {
   public: 
-    AliAODEnergyCut(Double_t min = 0.0, Double_t max = 0.0):AliAODBaseCut(min,max,kAODE){}
+    AliAODEnergyCut(Double_t min = 0.0, Double_t max = 0.0):AliAODParticleBaseCut(min,max,kAODE){}
     virtual ~AliAODEnergyCut(){}
   protected:
     Double_t  GetValue(AliVAODParticle * p)const {return p->E();}
     ClassDef(AliAODEnergyCut,1)
  };
 
-class AliAODRapidityCut: public AliAODBaseCut
+class AliAODRapidityCut: public AliAODParticleBaseCut
  {
   public: 
-    AliAODRapidityCut(Double_t min = 0.0, Double_t max = 0.0):AliAODBaseCut(min,max,kAODRapidity){}
+    AliAODRapidityCut(Double_t min = 0.0, Double_t max = 0.0):AliAODParticleBaseCut(min,max,kAODRapidity){}
     virtual ~AliAODRapidityCut(){}
   protected:
     Double_t  GetValue(AliVAODParticle * p)const{return p->Y();}
     ClassDef(AliAODRapidityCut,1)
  };
 
-class AliAODPseudoRapidityCut: public AliAODBaseCut
+class AliAODPseudoRapidityCut: public AliAODParticleBaseCut
  {
   public: 
-    AliAODPseudoRapidityCut(Double_t min = 0.0, Double_t max = 0.0):AliAODBaseCut(min,max,kAODPseudoRapidity){}
+    AliAODPseudoRapidityCut(Double_t min = 0.0, Double_t max = 0.0):AliAODParticleBaseCut(min,max,kAODPseudoRapidity){}
     virtual ~AliAODPseudoRapidityCut(){}
   protected:
     Double_t  GetValue(AliVAODParticle * p)const{return p->Eta();}
     ClassDef(AliAODPseudoRapidityCut,1)
  };
 
-class AliAODPxCut: public AliAODBaseCut
+class AliAODPxCut: public AliAODParticleBaseCut
  {
   public: 
-    AliAODPxCut(Double_t min = 0.0, Double_t max = 0.0):AliAODBaseCut(min,max,kAODPx){}
+    AliAODPxCut(Double_t min = 0.0, Double_t max = 0.0):AliAODParticleBaseCut(min,max,kAODPx){}
     virtual ~AliAODPxCut(){}
   protected:
     Double_t  GetValue(AliVAODParticle * p)const{return p->Px();}
     ClassDef(AliAODPxCut,1)
  };
 
-class AliAODPyCut: public AliAODBaseCut
+class AliAODPyCut: public AliAODParticleBaseCut
  {
   public: 
-    AliAODPyCut(Double_t min = 0.0, Double_t max = 0.0):AliAODBaseCut(min,max,kAODPy){}
+    AliAODPyCut(Double_t min = 0.0, Double_t max = 0.0):AliAODParticleBaseCut(min,max,kAODPy){}
     virtual ~AliAODPyCut(){}
   protected:
     Double_t  GetValue(AliVAODParticle * p)const{return p->Py();}
@@ -253,20 +253,20 @@ class AliAODPyCut: public AliAODBaseCut
  };
 
 
-class AliAODPzCut: public AliAODBaseCut
+class AliAODPzCut: public AliAODParticleBaseCut
  {
   public: 
-    AliAODPzCut(Double_t min = 0.0, Double_t max = 0.0):AliAODBaseCut(min,max,kAODPz){}
+    AliAODPzCut(Double_t min = 0.0, Double_t max = 0.0):AliAODParticleBaseCut(min,max,kAODPz){}
     virtual ~AliAODPzCut(){}
   protected:
     Double_t  GetValue(AliVAODParticle * p)const{return p->Pz();}
     ClassDef(AliAODPzCut,1)
  };
 
-class AliAODPhiCut: public AliAODBaseCut
+class AliAODPhiCut: public AliAODParticleBaseCut
  {
   public: 
-    AliAODPhiCut(Double_t min = 0.0, Double_t max = 0.0):AliAODBaseCut(min,max,kAODPhi){}
+    AliAODPhiCut(Double_t min = 0.0, Double_t max = 0.0):AliAODParticleBaseCut(min,max,kAODPhi){}
     virtual ~AliAODPhiCut(){}
   protected:
     Double_t  GetValue(AliVAODParticle * p)const{return p->Phi();}
@@ -274,10 +274,10 @@ class AliAODPhiCut: public AliAODBaseCut
   
  };
 
-class AliAODThetaCut: public AliAODBaseCut
+class AliAODThetaCut: public AliAODParticleBaseCut
  {
   public: 
-    AliAODThetaCut(Double_t min = 0.0, Double_t max = 0.0):AliAODBaseCut(min,max,kAODTheta){}
+    AliAODThetaCut(Double_t min = 0.0, Double_t max = 0.0):AliAODParticleBaseCut(min,max,kAODTheta){}
     virtual ~AliAODThetaCut(){}
   protected:
     Double_t  GetValue(AliVAODParticle * p)const{return p->Theta();}
@@ -285,11 +285,11 @@ class AliAODThetaCut: public AliAODBaseCut
   
  };
 
-class AliAODVxCut: public AliAODBaseCut
+class AliAODVxCut: public AliAODParticleBaseCut
  {
  //Cut of the X coAnddinate of the vertex position
   public: 
-    AliAODVxCut(Double_t min = 0.0, Double_t max = 0.0):AliAODBaseCut(min,max,kAODVx){}
+    AliAODVxCut(Double_t min = 0.0, Double_t max = 0.0):AliAODParticleBaseCut(min,max,kAODVx){}
     virtual ~AliAODVxCut(){}
   protected:
     Double_t  GetValue(AliVAODParticle * p)const{return p->Vx();} //retruns value of the vertex
@@ -298,11 +298,11 @@ class AliAODVxCut: public AliAODBaseCut
  };
 
 
-class AliAODVyCut: public AliAODBaseCut
+class AliAODVyCut: public AliAODParticleBaseCut
  {
  //Cut of the X coAnddinate of the vertex position
   public: 
-    AliAODVyCut(Double_t min = 0.0, Double_t max = 0.0):AliAODBaseCut(min,max,kAODVy){}
+    AliAODVyCut(Double_t min = 0.0, Double_t max = 0.0):AliAODParticleBaseCut(min,max,kAODVy){}
     virtual ~AliAODVyCut(){}
   protected:
     Double_t  GetValue(AliVAODParticle * p)const{return p->Vy();} //retruns value of the vertex
@@ -310,11 +310,11 @@ class AliAODVyCut: public AliAODBaseCut
   
  };
 
-class AliAODVzCut: public AliAODBaseCut
+class AliAODVzCut: public AliAODParticleBaseCut
  {
  //Cut of the X coAnddinate of the vertex position
   public: 
-    AliAODVzCut(Double_t min = 0.0, Double_t max = 0.0):AliAODBaseCut(min,max,kAODVz){}
+    AliAODVzCut(Double_t min = 0.0, Double_t max = 0.0):AliAODParticleBaseCut(min,max,kAODVz){}
     virtual ~AliAODVzCut(){}
   protected:
     Double_t  GetValue(AliVAODParticle * p)const{return p->Vz();} //retruns value of the vertex
@@ -323,11 +323,11 @@ class AliAODVzCut: public AliAODBaseCut
   
  };
 
-class AliAODPIDCut:  public AliAODBaseCut
+class AliAODPIDCut:  public AliAODParticleBaseCut
  {
    public:
-     AliAODPIDCut():AliAODBaseCut(0.0,0.0,kAODPid),fPID(0){}
-     AliAODPIDCut(Int_t pid, Double_t min = 0.0, Double_t max = 1.0):AliAODBaseCut(min,max,kAODPid),fPID(pid){}
+     AliAODPIDCut():AliAODParticleBaseCut(0.0,0.0,kAODPid),fPID(0){}
+     AliAODPIDCut(Int_t pid, Double_t min = 0.0, Double_t max = 1.0):AliAODParticleBaseCut(min,max,kAODPid),fPID(pid){}
      virtual ~AliAODPIDCut(){}
      
      void SetPID(Int_t pid){fPID = pid;}
@@ -346,19 +346,19 @@ class AliAODPIDCut:  public AliAODBaseCut
 // logical operations on cuts                      //
 //                                                 //
 /////////////////////////////////////////////////////
-class AliAODLogicalOperCut:  public AliAODBaseCut
+class AliAODLogicalOperCut:  public AliAODParticleBaseCut
  {
    public:
      AliAODLogicalOperCut();
-     AliAODLogicalOperCut(AliAODBaseCut* first, AliAODBaseCut* second);
+     AliAODLogicalOperCut(AliAODParticleBaseCut* first, AliAODParticleBaseCut* second);
      virtual   ~AliAODLogicalOperCut();
    protected:
      Double_t  GetValue(AliVAODParticle * /*part*/) const {MayNotUse("GetValue");return 0.0;}
      
-     AliAODBaseCut* fFirst;   //second cut
-     AliAODBaseCut* fSecond;  //first cut
+     AliAODParticleBaseCut* fFirst;   //second cut
+     AliAODParticleBaseCut* fSecond;  //first cut
    private:  
-    class  AliAODDummyBaseCut: public AliAODBaseCut 
+    class  AliAODDummyBaseCut: public AliAODParticleBaseCut 
      {
        Double_t  GetValue(AliVAODParticle * /*part*/) const {return 0.0;}
        Bool_t    Pass(AliVAODParticle* /*part*/) const;
@@ -371,7 +371,7 @@ class AliAODOrCut: public AliAODLogicalOperCut
 {
    public:
      AliAODOrCut(){}
-     AliAODOrCut(AliAODBaseCut* first, AliAODBaseCut* second):AliAODLogicalOperCut(first,second){}
+     AliAODOrCut(AliAODParticleBaseCut* first, AliAODParticleBaseCut* second):AliAODLogicalOperCut(first,second){}
      virtual   ~AliAODOrCut(){}
      Bool_t    Pass(AliVAODParticle *p) const;
      ClassDef(AliAODOrCut,1)
@@ -381,7 +381,7 @@ class AliAODAndCut: public AliAODLogicalOperCut
 {
    public:
      AliAODAndCut(){}
-     AliAODAndCut(AliAODBaseCut* first, AliAODBaseCut* second):AliAODLogicalOperCut(first,second){}
+     AliAODAndCut(AliAODParticleBaseCut* first, AliAODParticleBaseCut* second):AliAODLogicalOperCut(first,second){}
      virtual   ~AliAODAndCut(){}
      Bool_t    Pass(AliVAODParticle *p) const;
      ClassDef(AliAODAndCut,1)

@@ -41,7 +41,7 @@
 ClassImp( AliHBTFunction )
 
 AliHBTFunction::AliHBTFunction():
- fPairCut(new AliAODEmptyPairCut()), //dummy cut  
+ fPairCut(new AliAODPairEmptyCut()), //dummy cut  
  fWriteNumAndDen(kFALSE)
 {
 //Default constructor
@@ -50,7 +50,7 @@ AliHBTFunction::AliHBTFunction():
 
 AliHBTFunction::AliHBTFunction(const char* name,const char* title):
  TNamed(name,title),
- fPairCut(new AliAODEmptyPairCut()), //dummy cut  
+ fPairCut(new AliAODPairEmptyCut()), //dummy cut  
  fWriteNumAndDen(kFALSE)
 {
 //Constructor  

@@ -12,7 +12,7 @@
 #include "AliAODPair.h"
 
 class AliAODParticleCut;
-class AliAODBasePairCut;
+class AliAODPairBaseCut;
 
 enum AliAODPairCutProperty
 {
@@ -51,7 +51,7 @@ class AliAODPairCut: public TNamed
   
   void SetPartCut(AliAODParticleCut* cut);//sets the the same cut on both particles
   
-  virtual void AddBasePairCut(AliAODBasePairCut* cut);
+  virtual void AddBasePairCut(AliAODPairBaseCut* cut);
   
   virtual void Print();
   
@@ -72,11 +72,11 @@ class AliAODPairCut: public TNamed
   AliAODParticleCut*      fFirstPartCut;//cut on first particle in pair
   AliAODParticleCut*      fSecondPartCut;//cut on second particle in pair
   
-  AliAODBasePairCut** fCuts; //! array of poiters to base cuts
+  AliAODPairBaseCut** fCuts; //! array of poiters to base cuts
   Int_t fNCuts;//Number of cuts in fCuts array
   
   
-  AliAODBasePairCut* FindCut(AliAODPairCutProperty cut);
+  AliAODPairBaseCut* FindCut(AliAODPairCutProperty cut);
  private:
   static const Int_t fgkMaxCuts; // Max number of cuts
   ClassDef(AliAODPairCut,2)
@@ -85,19 +85,19 @@ class AliAODPairCut: public TNamed
 /******************************************************************/
 /******************************************************************/
 
-class AliAODEmptyPairCut:  public AliAODPairCut
+class AliAODPairEmptyCut:  public AliAODPairCut
 {
   //Empty - it passes possitively all particles - it means returns always False
   //Class describing cut on pairs of particles
  public:
-  AliAODEmptyPairCut(){};
-  AliAODEmptyPairCut(const AliAODEmptyPairCut& in):AliAODPairCut(in){};
-  virtual ~AliAODEmptyPairCut(){};
+  AliAODPairEmptyCut(){};
+  AliAODPairEmptyCut(const AliAODPairEmptyCut& in):AliAODPairCut(in){};
+  virtual ~AliAODPairEmptyCut(){};
   
   Bool_t Pass(AliAODPair*) const {return kFALSE;} //accpept everything
   Bool_t IsEmpty() const {return kTRUE;}
   
-  ClassDef(AliAODEmptyPairCut,1)
+  ClassDef(AliAODPairEmptyCut,1)
 };
 
 
@@ -106,17 +106,17 @@ class AliAODEmptyPairCut:  public AliAODPairCut
 /******************************************************************/
 /******************************************************************/
 
-class AliAODBasePairCut: public TObject
+class AliAODPairBaseCut: public TObject
 {
   //This class defines the range of some property - pure virtual
   //Property is coded by AliAODCutTypes type
    
  public:
      
-  AliAODBasePairCut(Double_t min = 0.0, Double_t max = 0.0, AliAODPairCutProperty prop= kHbtPairCutPropNone):
+  AliAODPairBaseCut(Double_t min = 0.0, Double_t max = 0.0, AliAODPairCutProperty prop= kHbtPairCutPropNone):
     fMin(min),fMax(max),fProperty(prop){}
   
-  virtual   ~AliAODBasePairCut(){}
+  virtual   ~AliAODPairBaseCut(){}
      
   virtual Bool_t    Pass(AliAODPair* pair) const;
   
@@ -138,12 +138,12 @@ class AliAODBasePairCut: public TObject
   
   AliAODPairCutProperty fProperty; // The property itself
   
-  ClassDef(AliAODBasePairCut,1)
+  ClassDef(AliAODPairBaseCut,1)
  
  };
 /******************************************************************/
 
-inline Bool_t AliAODBasePairCut::Pass(AliAODPair* pair) const
+inline Bool_t AliAODPairBaseCut::Pass(AliAODPair* pair) const
 {
   //checks if pair proprty is in range
   //null pointer check is made by AliAODPairCut, so here is unnecesary
@@ -156,10 +156,10 @@ inline Bool_t AliAODBasePairCut::Pass(AliAODPair* pair) const
 /******************************************************************/
 /******************************************************************/
 
-class AliAODQInvCut: public AliAODBasePairCut
+class AliAODQInvCut: public AliAODPairBaseCut
 {
  public:
-  AliAODQInvCut(Double_t min = 0.0, Double_t max = 0.0):AliAODBasePairCut(min,max,kHbtPairCutPropQInv){}
+  AliAODQInvCut(Double_t min = 0.0, Double_t max = 0.0):AliAODPairBaseCut(min,max,kHbtPairCutPropQInv){}
   virtual ~AliAODQInvCut(){}
  protected:
   virtual Double_t  GetValue(AliAODPair* pair) const {return pair->GetQInv();}
@@ -168,9 +168,9 @@ class AliAODQInvCut: public AliAODBasePairCut
  };
 /******************************************************************/
 
-class AliAODKtCut: public AliAODBasePairCut {
+class AliAODKtCut: public AliAODPairBaseCut {
  public:
-  AliAODKtCut(Double_t min = 0.0, Double_t max = 0.0):AliAODBasePairCut(min,max,kHbtPairCutPropKt){}
+  AliAODKtCut(Double_t min = 0.0, Double_t max = 0.0):AliAODPairBaseCut(min,max,kHbtPairCutPropKt){}
   virtual ~AliAODKtCut(){}
  protected:
   virtual Double_t  GetValue(AliAODPair* pair) const {return pair->GetKt();}
@@ -179,10 +179,10 @@ class AliAODKtCut: public AliAODBasePairCut {
  };
 /******************************************************************/
 
-class AliAODKStarCut: public AliAODBasePairCut
+class AliAODKStarCut: public AliAODPairBaseCut
 {
  public:
-  AliAODKStarCut(Double_t min = 0.0, Double_t max = 0.0):AliAODBasePairCut(min,max,kHbtPairCutPropKStar){}
+  AliAODKStarCut(Double_t min = 0.0, Double_t max = 0.0):AliAODPairBaseCut(min,max,kHbtPairCutPropKStar){}
   virtual ~AliAODKStarCut(){}
  protected:
   virtual Double_t  GetValue(AliAODPair* pair) const {return pair->GetKStar();}
@@ -191,11 +191,11 @@ class AliAODKStarCut: public AliAODBasePairCut
 };
 /******************************************************************/
 
-class AliAODQSideLCMSCut: public AliAODBasePairCut
+class AliAODQSideLCMSCut: public AliAODPairBaseCut
 {
  public:
   AliAODQSideLCMSCut(Double_t min = 0.0, Double_t max = 0.0):
-    AliAODBasePairCut(min,max,kHbtPairCutPropQSideLCMS){}
+    AliAODPairBaseCut(min,max,kHbtPairCutPropQSideLCMS){}
   virtual ~AliAODQSideLCMSCut(){}
  protected:
   virtual Double_t  GetValue(AliAODPair* pair) const 
@@ -206,11 +206,11 @@ class AliAODQSideLCMSCut: public AliAODBasePairCut
 /******************************************************************/
 
 
-class AliAODQOutLCMSCut: public AliAODBasePairCut
+class AliAODQOutLCMSCut: public AliAODPairBaseCut
 {
  public:
   AliAODQOutLCMSCut(Double_t min = 0.0, Double_t max = 0.0):
-    AliAODBasePairCut(min,max,kHbtPairCutPropQOutLCMS){}
+    AliAODPairBaseCut(min,max,kHbtPairCutPropQOutLCMS){}
   virtual ~AliAODQOutLCMSCut(){}
  protected:
   virtual Double_t  GetValue(AliAODPair* pair) const 
@@ -220,11 +220,11 @@ class AliAODQOutLCMSCut: public AliAODBasePairCut
 };
 /******************************************************************/
 
-class AliAODQLongLCMSCut: public AliAODBasePairCut
+class AliAODQLongLCMSCut: public AliAODPairBaseCut
 {
  public:
   AliAODQLongLCMSCut(Double_t min = 0.0, Double_t max = 0.0):
-    AliAODBasePairCut(min,max,kHbtPairCutPropQLongLCMS){}
+    AliAODPairBaseCut(min,max,kHbtPairCutPropQLongLCMS){}
   virtual ~AliAODQLongLCMSCut(){}
  protected:
   virtual Double_t  GetValue(AliAODPair* pair) const 
@@ -234,11 +234,11 @@ class AliAODQLongLCMSCut: public AliAODBasePairCut
 };
 /******************************************************************/
 
-class AliAODDeltaPhiCut: public AliAODBasePairCut
+class AliAODDeltaPhiCut: public AliAODPairBaseCut
 {
  public:
   AliAODDeltaPhiCut(Double_t min = 0.0, Double_t max = 0.0):
-    AliAODBasePairCut(min,max,kHbtPairCutPropDeltaPhi){}
+    AliAODPairBaseCut(min,max,kHbtPairCutPropDeltaPhi){}
   virtual ~AliAODDeltaPhiCut(){}
  protected:
   virtual Double_t  GetValue(AliAODPair* pair) const 
@@ -248,11 +248,11 @@ class AliAODDeltaPhiCut: public AliAODBasePairCut
 };
 /******************************************************************/
 
-class AliAODDeltaThetaCut: public AliAODBasePairCut
+class AliAODDeltaThetaCut: public AliAODPairBaseCut
 {
  public:
   AliAODDeltaThetaCut(Double_t min = 0.0, Double_t max = 0.0):
-    AliAODBasePairCut(min,max,kHbtPairCutPropDeltaTheta){}
+    AliAODPairBaseCut(min,max,kHbtPairCutPropDeltaTheta){}
   virtual ~AliAODDeltaThetaCut(){}
  protected:
   virtual Double_t  GetValue(AliAODPair* pair) const 
@@ -262,11 +262,11 @@ class AliAODDeltaThetaCut: public AliAODBasePairCut
 };
 /******************************************************************/
 
-class AliAODCluterOverlapCut: public AliAODBasePairCut
+class AliAODCluterOverlapCut: public AliAODPairBaseCut
 {
  public:
   AliAODCluterOverlapCut(Double_t min = 0.0, Double_t max = 1e5):
-    AliAODBasePairCut(min,max,kHbtPairCutPropClOverlap){}
+    AliAODPairBaseCut(min,max,kHbtPairCutPropClOverlap){}
   virtual ~AliAODCluterOverlapCut(){}
 
  protected:
@@ -275,11 +275,11 @@ class AliAODCluterOverlapCut: public AliAODBasePairCut
 };
 /******************************************************************/
   
-class AliAODAvSeparationCut: public AliAODBasePairCut
+class AliAODAvSeparationCut: public AliAODPairBaseCut
 {
  public:
   AliAODAvSeparationCut(Double_t min = 0.0, Double_t max = 1e5):
-    AliAODBasePairCut(min,max,kHbtPairCutPropAvSepar){}
+    AliAODPairBaseCut(min,max,kHbtPairCutPropAvSepar){}
   virtual ~AliAODAvSeparationCut(){}
   
  protected:
@@ -288,11 +288,11 @@ class AliAODAvSeparationCut: public AliAODBasePairCut
 };
 /******************************************************************/
   
-class AliAODSeparationCut: public AliAODBasePairCut
+class AliAODSeparationCut: public AliAODPairBaseCut
 {
  public:
   AliAODSeparationCut(Double_t min = 0.0, Double_t max = 1e5, Int_t point = 0):
-    AliAODBasePairCut(min,max,kHbtPairCutPropSepar),fPoint(point){}
+    AliAODPairBaseCut(min,max,kHbtPairCutPropSepar),fPoint(point){}
   virtual ~AliAODSeparationCut(){}
   
  protected:
@@ -302,12 +302,12 @@ class AliAODSeparationCut: public AliAODBasePairCut
 };
 /******************************************************************/
   
-class AliAODITSSeparationCut: public AliAODBasePairCut
+class AliAODITSSeparationCut: public AliAODPairBaseCut
 {
 //Anti merging cut for the first layer of pixels
  public:
   AliAODITSSeparationCut(Int_t layer = 0, Double_t deltarphi = 0.01, Double_t deltaz = 0.08):
-    AliAODBasePairCut(deltarphi,deltaz,kHbtPairCutPropPixelSepar),fLayer(layer){}
+    AliAODPairBaseCut(deltarphi,deltaz,kHbtPairCutPropPixelSepar),fLayer(layer){}
   virtual ~AliAODITSSeparationCut(){}
   Bool_t   Pass(AliAODPair* pair) const;
   Int_t    GetLayer() const {return fLayer;}
@@ -318,7 +318,7 @@ class AliAODITSSeparationCut: public AliAODBasePairCut
 };
 /******************************************************************/
 
-class AliAODOutSideSameSignCut: public AliAODBasePairCut
+class AliAODOutSideSameSignCut: public AliAODPairBaseCut
 {
  public:
   AliAODOutSideSameSignCut(){}
@@ -330,7 +330,7 @@ class AliAODOutSideSameSignCut: public AliAODBasePairCut
 };
 /******************************************************************/
 
-class AliAODOutSideDiffSignCut: public AliAODBasePairCut
+class AliAODOutSideDiffSignCut: public AliAODPairBaseCut
 {
  public:
   AliAODOutSideDiffSignCut(){}
@@ -342,19 +342,19 @@ class AliAODOutSideDiffSignCut: public AliAODBasePairCut
 };
 /******************************************************************/
 
-class AliAODLogicalOperPairCut:  public AliAODBasePairCut
+class AliAODLogicalOperPairCut:  public AliAODPairBaseCut
  {
    public:
      AliAODLogicalOperPairCut();
-     AliAODLogicalOperPairCut(AliAODBasePairCut* first, AliAODBasePairCut* second);
+     AliAODLogicalOperPairCut(AliAODPairBaseCut* first, AliAODPairBaseCut* second);
      virtual   ~AliAODLogicalOperPairCut();
    protected:
      Double_t  GetValue(AliAODPair * /*pair*/) const {MayNotUse("GetValue");return 0.0;}
 
-     AliAODBasePairCut* fFirst;   //second cut
-     AliAODBasePairCut* fSecond;  //first cut
+     AliAODPairBaseCut* fFirst;   //second cut
+     AliAODPairBaseCut* fSecond;  //first cut
    private:
-    class  AliAODDummyBasePairCut: public AliAODBasePairCut
+    class  AliAODDummyBasePairCut: public AliAODPairBaseCut
      {
        Double_t  GetValue(AliAODPair* /*pair*/) const {return 0.0;}
        Bool_t    Pass(AliAODPair* /*pair*/) const;
@@ -368,7 +368,7 @@ class AliAODOrPairCut: public AliAODLogicalOperPairCut
 {
    public:
      AliAODOrPairCut(){}
-     AliAODOrPairCut(AliAODBasePairCut* first, AliAODBasePairCut* second):AliAODLogicalOperPairCut(first,second){}
+     AliAODOrPairCut(AliAODPairBaseCut* first, AliAODPairBaseCut* second):AliAODLogicalOperPairCut(first,second){}
      virtual   ~AliAODOrPairCut(){}
      Bool_t    Pass(AliAODPair *p) const;
      ClassDef(AliAODOrPairCut,1)
@@ -379,7 +379,7 @@ class AliAODAndPairCut: public AliAODLogicalOperPairCut
 {
    public:
      AliAODAndPairCut(){}
-     AliAODAndPairCut(AliAODBasePairCut* first, AliAODBasePairCut* second):AliAODLogicalOperPairCut(first,second){}
+     AliAODAndPairCut(AliAODPairBaseCut* first, AliAODPairBaseCut* second):AliAODLogicalOperPairCut(first,second){}
      virtual   ~AliAODAndPairCut(){}
      Bool_t    Pass(AliAODPair *p) const;
      ClassDef(AliAODAndPairCut,1)

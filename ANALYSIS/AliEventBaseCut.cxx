@@ -1,8 +1,8 @@
-#include "AliBaseEventCut.h"
+#include "AliEventBaseCut.h"
 //________________________________
 ///////////////////////////////////////////////////////////
 //
-// class AliBaseEventCut
+// class AliEventBaseCut
 //
 //
 //
@@ -10,9 +10,9 @@
 ///////////////////////////////////////////////////////////
 
 #include <AliAOD.h>
-ClassImp(AliBaseEventCut)
+ClassImp(AliEventBaseCut)
 
-AliBaseEventCut::AliBaseEventCut():
+AliEventBaseCut::AliEventBaseCut():
  fMin(0.0),
  fMax(0.0)
 {
@@ -20,7 +20,7 @@ AliBaseEventCut::AliBaseEventCut():
 }
 /**********************************************************/
 
-AliBaseEventCut::AliBaseEventCut(Double_t min, Double_t max):
+AliEventBaseCut::AliEventBaseCut(Double_t min, Double_t max):
  fMin(min),
  fMax(max)
 {
@@ -28,7 +28,7 @@ AliBaseEventCut::AliBaseEventCut(Double_t min, Double_t max):
 }
 /**********************************************************/
 
-Bool_t AliBaseEventCut::Pass(AliAOD* aod) const
+Bool_t AliEventBaseCut::Pass(AliAOD* aod) const
 {
   if ( (GetValue(aod) < fMin) || (GetValue(aod) > fMax) ) return kTRUE;
   return kFALSE;

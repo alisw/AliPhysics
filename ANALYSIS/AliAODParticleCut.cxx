@@ -29,7 +29,7 @@ const Int_t AliAODParticleCut::fgkMaxCuts = 50;
 /******************************************************************/
 
 AliAODParticleCut::AliAODParticleCut():
- fCuts(new AliAODBaseCut* [fgkMaxCuts]),//last property in the property enum => defines number of properties
+ fCuts(new AliAODParticleBaseCut* [fgkMaxCuts]),//last property in the property enum => defines number of properties
  fNCuts(0),
  fPID(0)
 {
@@ -41,13 +41,13 @@ AliAODParticleCut::AliAODParticleCut(const AliAODParticleCut& in):
  TObject(in)
 {
   //cpy ctor
-  fCuts = new AliAODBaseCut* [fgkMaxCuts];//last property in the property
+  fCuts = new AliAODParticleBaseCut* [fgkMaxCuts];//last property in the property
                                          //property enum => defines number of properties
   fNCuts = in.fNCuts;
   fPID  = in.fPID;
   for (Int_t i = 0;i<fNCuts;i++)
    {
-     fCuts[i] = (AliAODBaseCut*)in.fCuts[i]->Clone();//create new object (clone) and rember pointer to it
+     fCuts[i] = (AliAODParticleBaseCut*)in.fCuts[i]->Clone();//create new object (clone) and rember pointer to it
    }
 }
 /******************************************************************/
@@ -64,7 +64,7 @@ AliAODParticleCut& AliAODParticleCut::operator=(const AliAODParticleCut& in)
   fPID  = in.fPID;
   for (Int_t i = 0;i<fNCuts;i++)
    {
-     fCuts[i] = (AliAODBaseCut*)in.fCuts[i]->Clone();//create new object (clone) and rember pointer to it
+     fCuts[i] = (AliAODParticleBaseCut*)in.fCuts[i]->Clone();//create new object (clone) and rember pointer to it
    }
   return *this;
 }    
@@ -105,7 +105,7 @@ Bool_t AliAODParticleCut::Pass(AliVAODParticle* p) const
 }
 /******************************************************************/
 
-void AliAODParticleCut::AddBasePartCut(AliAODBaseCut* basecut)
+void AliAODParticleCut::AddBasePartCut(AliAODParticleBaseCut* basecut)
 {
   //adds the base pair cut (cut on one value)
  
@@ -120,7 +120,7 @@ void AliAODParticleCut::AddBasePartCut(AliAODBaseCut* basecut)
 }
 
 /******************************************************************/
-AliAODBaseCut* AliAODParticleCut::FindCut(AliAODCutProperty property)
+AliAODParticleBaseCut* AliAODParticleCut::FindCut(AliAODCutProperty property)
 {
  //returns pointer to the cut checking the given property
  for (Int_t i = 0;i<fNCuts;i++)
@@ -167,7 +167,7 @@ void AliAODParticleCut::SetEnergyRange(Double_t min, Double_t max)
 void AliAODParticleCut::SetRapidityRange(Double_t min, Double_t max)
 {
   //name self descriptive
-  AliAODBaseCut* cut = FindCut(kAODRapidity);
+  AliAODParticleBaseCut* cut = FindCut(kAODRapidity);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliAODRapidityCut(min,max);
 
@@ -177,7 +177,7 @@ void AliAODParticleCut::SetRapidityRange(Double_t min, Double_t max)
 void AliAODParticleCut::SetPseudoRapidityRange(Double_t min, Double_t max)
 {
   //name self descriptive
-  AliAODBaseCut* cut = FindCut(kAODPseudoRapidity);
+  AliAODParticleBaseCut* cut = FindCut(kAODPseudoRapidity);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliAODPseudoRapidityCut(min,max);
  
@@ -187,7 +187,7 @@ void AliAODParticleCut::SetPseudoRapidityRange(Double_t min, Double_t max)
 void AliAODParticleCut::SetPxRange(Double_t min, Double_t max)
 {
   //name self descriptive
-  AliAODBaseCut* cut = FindCut(kAODPx);
+  AliAODParticleBaseCut* cut = FindCut(kAODPx);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliAODPxCut(min,max);
 }
@@ -196,7 +196,7 @@ void AliAODParticleCut::SetPxRange(Double_t min, Double_t max)
 void AliAODParticleCut::SetPyRange(Double_t min, Double_t max)
 {  
   //name self descriptive
-  AliAODBaseCut* cut = FindCut(kAODPy);
+  AliAODParticleBaseCut* cut = FindCut(kAODPy);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliAODPyCut(min,max);
 }
@@ -205,7 +205,7 @@ void AliAODParticleCut::SetPyRange(Double_t min, Double_t max)
 void AliAODParticleCut::SetPzRange(Double_t min, Double_t max)
 {
   //name self descriptive
-  AliAODBaseCut* cut = FindCut(kAODPz);
+  AliAODParticleBaseCut* cut = FindCut(kAODPz);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliAODPzCut(min,max);
 }
@@ -214,7 +214,7 @@ void AliAODParticleCut::SetPzRange(Double_t min, Double_t max)
 void AliAODParticleCut::SetPhiRange(Double_t min, Double_t max)
 {
   //name self descriptive
-  AliAODBaseCut* cut = FindCut(kAODPhi);
+  AliAODParticleBaseCut* cut = FindCut(kAODPhi);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliAODPhiCut(min,max);
 }
@@ -223,7 +223,7 @@ void AliAODParticleCut::SetPhiRange(Double_t min, Double_t max)
 void AliAODParticleCut::SetThetaRange(Double_t min, Double_t max)
 {
   //name self descriptive
-  AliAODBaseCut* cut = FindCut(kAODTheta);
+  AliAODParticleBaseCut* cut = FindCut(kAODTheta);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliAODThetaCut(min,max);
 }
@@ -232,7 +232,7 @@ void AliAODParticleCut::SetThetaRange(Double_t min, Double_t max)
 void AliAODParticleCut::SetVxRange(Double_t min, Double_t max)
 {
   //name self descriptive
-  AliAODBaseCut* cut = FindCut(kAODVx);
+  AliAODParticleBaseCut* cut = FindCut(kAODVx);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliAODVxCut(min,max);
 }
@@ -241,7 +241,7 @@ void AliAODParticleCut::SetVxRange(Double_t min, Double_t max)
 void AliAODParticleCut::SetVyRange(Double_t min, Double_t max)
 {
   //name self descriptive
-  AliAODBaseCut* cut = FindCut(kAODVy);
+  AliAODParticleBaseCut* cut = FindCut(kAODVy);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliAODVyCut(min,max);
 }
@@ -250,7 +250,7 @@ void AliAODParticleCut::SetVyRange(Double_t min, Double_t max)
 void AliAODParticleCut::SetVzRange(Double_t min, Double_t max)
 {
   //name self descriptive
-  AliAODBaseCut* cut = FindCut(kAODVz);
+  AliAODParticleBaseCut* cut = FindCut(kAODVz);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliAODVzCut(min,max);
 }
@@ -306,8 +306,8 @@ void AliAODParticleCut::Print(void) const
 /******************************************************************/
 /******************************************************************/
 
-ClassImp(AliAODEmptyParticleCut)
-void AliAODEmptyParticleCut::Streamer(TBuffer &b)
+ClassImp(AliAODParticleEmptyCut)
+void AliAODParticleEmptyCut::Streamer(TBuffer &b)
  {
   //stramer
   AliAODParticleCut::Streamer(b);
@@ -320,8 +320,8 @@ void AliAODEmptyParticleCut::Streamer(TBuffer &b)
 /******************************************************************/
 /******************************************************************/
 
-ClassImp(AliAODBaseCut)
-void AliAODBaseCut::Print(void) const
+ClassImp(AliAODParticleBaseCut)
+void AliAODParticleBaseCut::Print(void) const
 {
   // prints the information anout the base cut to stdout
   cout<<"fMin="<<fMin <<", fMax=" <<fMax<<"    ";
@@ -329,7 +329,7 @@ void AliAODBaseCut::Print(void) const
 }
 /******************************************************************/
 
-void AliAODBaseCut::PrintProperty(void) const
+void AliAODParticleBaseCut::PrintProperty(void) const
 {
  //prints the property name 
  switch (fProperty)
@@ -389,13 +389,13 @@ ClassImp( AliAODPIDCut )
 void AliAODPIDCut::Print(void) const
 {
   cout<<"PID "<<fPID<<" ";
-  AliAODBaseCut::Print();
+  AliAODParticleBaseCut::Print();
 }
 
 ClassImp( AliAODLogicalOperCut )
 
 AliAODLogicalOperCut::AliAODLogicalOperCut():
- AliAODBaseCut(-10e10,10e10,kAODNone),
+ AliAODParticleBaseCut(-10e10,10e10,kAODNone),
  fFirst(new AliAODDummyBaseCut),
  fSecond(new AliAODDummyBaseCut)
 {
@@ -403,10 +403,10 @@ AliAODLogicalOperCut::AliAODLogicalOperCut():
 }
 /******************************************************************/
 
-AliAODLogicalOperCut::AliAODLogicalOperCut(AliAODBaseCut* first, AliAODBaseCut* second):
- AliAODBaseCut(-10e10,10e10,kAODNone),
- fFirst((first)?(AliAODBaseCut*)first->Clone():0x0),
- fSecond((second)?(AliAODBaseCut*)second->Clone():0x0)
+AliAODLogicalOperCut::AliAODLogicalOperCut(AliAODParticleBaseCut* first, AliAODParticleBaseCut* second):
+ AliAODParticleBaseCut(-10e10,10e10,kAODNone),
+ fFirst((first)?(AliAODParticleBaseCut*)first->Clone():0x0),
+ fSecond((second)?(AliAODParticleBaseCut*)second->Clone():0x0)
 {
   //ctor
   if ( (fFirst && fSecond) == kFALSE) 

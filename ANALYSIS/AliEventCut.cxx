@@ -12,7 +12,7 @@
 #include <TObjArray.h>
 //#include <TIter.h>
 
-#include "AliBaseEventCut.h"
+#include "AliEventBaseCut.h"
 
 ClassImp(AliEventCut)
 
@@ -50,8 +50,8 @@ Bool_t AliEventCut::Pass(AliAOD* aod) const
    }
    
   TIter iter(&fBaseCuts);
-  AliBaseEventCut* becut;
-  while (( becut = (AliBaseEventCut*)iter() ))
+  AliEventBaseCut* becut;
+  while (( becut = (AliEventBaseCut*)iter() ))
    {
      if (becut->Pass(aod)) return kTRUE;
    }
@@ -62,4 +62,4 @@ Bool_t AliEventCut::Pass(AliAOD* aod) const
 /*********************************************************/
 /*********************************************************/
 
-ClassImp(AliEmptyEventCut)
+ClassImp(AliEventEmptyCut)

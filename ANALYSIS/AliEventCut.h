@@ -14,7 +14,7 @@
 
 #include <TObject.h>
 #include <TObjArray.h>
-#include "AliBaseEventCut.h"
+#include "AliEventBaseCut.h"
 
 class AliAOD;
 
@@ -26,7 +26,7 @@ class AliEventCut: public TObject
     virtual ~AliEventCut();
     
     virtual Bool_t Pass(AliAOD* aod) const;//returns kTRUE if rejected
-    void AddBasePartCut(AliBaseEventCut* ebcut){fBaseCuts.Add(ebcut);}
+    void AddBasePartCut(AliEventBaseCut* ebcut){fBaseCuts.Add(ebcut);}
     
   protected:
     TObjArray fBaseCuts;
@@ -34,17 +34,17 @@ class AliEventCut: public TObject
     ClassDef(AliEventCut,1)
 };
 
-class AliEmptyEventCut: public TObject
+class AliEventEmptyCut: public TObject
 {
   public: 
-    AliEmptyEventCut(){}
-    virtual ~AliEmptyEventCut(){}
+    AliEventEmptyCut(){}
+    virtual ~AliEventEmptyCut(){}
     
     Bool_t Pass(AliAOD* aod) const {return kFALSE;}//always accept
     
   protected:
   private:
-    ClassDef(AliEmptyEventCut,1)
+    ClassDef(AliEventEmptyCut,1)
 };
 
 #endif

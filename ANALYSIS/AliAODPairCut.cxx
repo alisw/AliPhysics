@@ -23,10 +23,10 @@ AliAODPairCut::AliAODPairCut():
   fNCuts(0)
 {
   //constructor
-  fFirstPartCut = new AliAODEmptyParticleCut(); //empty cuts
-  fSecondPartCut= new AliAODEmptyParticleCut(); //empty cuts
+  fFirstPartCut = new AliAODParticleEmptyCut(); //empty cuts
+  fSecondPartCut= new AliAODParticleEmptyCut(); //empty cuts
     
-  fCuts = new AliAODBasePairCut*[fgkMaxCuts];
+  fCuts = new AliAODPairBaseCut*[fgkMaxCuts];
   for (Int_t i = 0;i<fNCuts;i++)
    {
      fCuts[i] = 0x0;
@@ -38,7 +38,7 @@ AliAODPairCut::AliAODPairCut(const AliAODPairCut& in):
  TNamed(in)
 {
   //copy constructor
-  fCuts = new AliAODBasePairCut*[fgkMaxCuts];
+  fCuts = new AliAODPairBaseCut*[fgkMaxCuts];
   fNCuts = in.fNCuts;
 
   fFirstPartCut = (AliAODParticleCut*)in.fFirstPartCut->Clone();
@@ -46,7 +46,7 @@ AliAODPairCut::AliAODPairCut(const AliAODPairCut& in):
  
   for (Int_t i = 0;i<fNCuts;i++)
     {
-      fCuts[i] = (AliAODBasePairCut*)in.fCuts[i]->Clone();//create new object (clone) and rember pointer to it
+      fCuts[i] = (AliAODPairBaseCut*)in.fCuts[i]->Clone();//create new object (clone) and rember pointer to it
     }
 }
 /**********************************************************/
@@ -54,7 +54,7 @@ AliAODPairCut::AliAODPairCut(const AliAODPairCut& in):
 AliAODPairCut&  AliAODPairCut::operator=(const AliAODPairCut& in)
 {
   //assignment operator
-  fCuts = new AliAODBasePairCut*[fgkMaxCuts];
+  fCuts = new AliAODPairBaseCut*[fgkMaxCuts];
   fNCuts = in.fNCuts;
 
   fFirstPartCut = (AliAODParticleCut*)in.fFirstPartCut->Clone();
@@ -62,7 +62,7 @@ AliAODPairCut&  AliAODPairCut::operator=(const AliAODPairCut& in)
  
   for (Int_t i = 0;i<fNCuts;i++)
     {
-      fCuts[i] = (AliAODBasePairCut*)in.fCuts[i]->Clone();//create new object (clone) and rember pointer to it
+      fCuts[i] = (AliAODPairBaseCut*)in.fCuts[i]->Clone();//create new object (clone) and rember pointer to it
     }
   return * this;
 }
@@ -86,7 +86,7 @@ AliAODPairCut::~AliAODPairCut()
 
 /**********************************************************/
 
-void AliAODPairCut::AddBasePairCut(AliAODBasePairCut* basecut)
+void AliAODPairCut::AddBasePairCut(AliAODPairBaseCut* basecut)
 {
   //adds the base pair cut (cut on one value)
   
@@ -247,7 +247,7 @@ void AliAODPairCut::SetKStarRange(Double_t min, Double_t max)
 void AliAODPairCut::SetAvSeparationRange(Double_t min, Double_t max)
 {
   //sets avarage separation cut ->Anti-Merging cut
-  AliAODBasePairCut* cut= FindCut(kHbtPairCutPropAvSepar);
+  AliAODPairBaseCut* cut= FindCut(kHbtPairCutPropAvSepar);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliAODAvSeparationCut(min,max);
 }
@@ -280,13 +280,13 @@ void AliAODPairCut::SetClusterOverlapRange(Double_t min,Double_t max)
   // splitted track: one particle that is recontructed twise
   // STAR uses range from -0.5 to 0.6 
   
-  AliAODBasePairCut* cut= FindCut(kHbtPairCutPropClOverlap);
+  AliAODPairBaseCut* cut= FindCut(kHbtPairCutPropClOverlap);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliAODCluterOverlapCut(min,max);
 }
 /**********************************************************/
 
-AliAODBasePairCut* AliAODPairCut::FindCut(AliAODPairCutProperty property)
+AliAODPairBaseCut* AliAODPairCut::FindCut(AliAODPairCutProperty property)
 {
   // Find the cut corresponding to "property"
   for (Int_t i = 0;i<fNCuts;i++)
@@ -346,16 +346,16 @@ void AliAODPairCut::Streamer(TBuffer &b)
 }
 /******************************************************************/
 
-ClassImp(AliAODEmptyPairCut)
+ClassImp(AliAODPairEmptyCut)
   
-void AliAODEmptyPairCut::Streamer(TBuffer &b)
+void AliAODPairEmptyCut::Streamer(TBuffer &b)
 {
 //streamer for empty pair cut
   AliAODPairCut::Streamer(b);
 }
 /******************************************************************/
 
-ClassImp(AliAODBasePairCut)
+ClassImp(AliAODPairBaseCut)
 ClassImp(AliAODQInvCut)
 ClassImp(AliAODKtCut)
 ClassImp(AliAODQSideLCMSCut)
@@ -520,7 +520,7 @@ Bool_t AliAODOutSideDiffSignCut::Pass(AliAODPair *p) const
 ClassImp( AliAODLogicalOperPairCut )
 
 AliAODLogicalOperPairCut::AliAODLogicalOperPairCut():
- AliAODBasePairCut(-10e10,10e10,kHbtPairCutPropNone),
+ AliAODPairBaseCut(-10e10,10e10,kHbtPairCutPropNone),
  fFirst(new AliAODDummyBasePairCut),
  fSecond(new AliAODDummyBasePairCut)
 {
@@ -528,10 +528,10 @@ AliAODLogicalOperPairCut::AliAODLogicalOperPairCut():
 }
 /******************************************************************/
 
-AliAODLogicalOperPairCut::AliAODLogicalOperPairCut(AliAODBasePairCut* first, AliAODBasePairCut* second):
- AliAODBasePairCut(-10e10,10e10,kHbtPairCutPropNone),
- fFirst((first)?(AliAODBasePairCut*)first->Clone():0x0),
- fSecond((second)?(AliAODBasePairCut*)second->Clone():0x0)
+AliAODLogicalOperPairCut::AliAODLogicalOperPairCut(AliAODPairBaseCut* first, AliAODPairBaseCut* second):
+ AliAODPairBaseCut(-10e10,10e10,kHbtPairCutPropNone),
+ fFirst((first)?(AliAODPairBaseCut*)first->Clone():0x0),
+ fSecond((second)?(AliAODPairBaseCut*)second->Clone():0x0)
 {
   //ctor
   //note that base cuts are copied, not just pointers assigned
