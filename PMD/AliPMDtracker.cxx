@@ -111,6 +111,7 @@ void AliPMDtracker::Clusters2Tracks(AliESD *event)
   Float_t clusdata[5];
 
   TBranch *branch = fTreeR->GetBranch("PMDRecpoint");
+  if (!branch) return;
   branch->SetAddress(&fRecpoints);  
   
   Int_t   nmodules = (Int_t) fTreeR->GetEntries();
