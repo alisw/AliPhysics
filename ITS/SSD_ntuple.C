@@ -60,7 +60,7 @@ gPad->SetFillColor(33);
       ntuple->Draw("dz","lay == 6 && hitprim == 1&&abs(dz)<5000");
 
 
-      /*
+/*
 c2->cd(1);
 gPad->SetFillColor(33);
       ntuple1->SetFillColor(42);
@@ -77,7 +77,7 @@ c2->cd(4);
 gPad->SetFillColor(33);
       ntuple1->SetFillColor(46);
       ntuple1->Draw("nxN","lay == 6 && noverprim>=0");
-      */
+*/
 
 /*
 c2->cd(1);
@@ -104,12 +104,12 @@ gPad->SetFillColor(33);
       /*
 c2->cd(1);
 gPad->SetFillColor(33);
-      adcPadcN5all->SetFillColor(42);
-      adcPadcN5all->Draw();
+      ntuple1->SetFillColor(42);
+      ntuple1->Draw("qclP","noverprim>=0");
 c2->cd(2);
 gPad->SetFillColor(33);
-      adcPadcN6all->SetFillColor(46);
-      adcPadcN6all->Draw();
+      ntuple1->SetFillColor(42);
+      ntuple1->Draw("qclN","noverprim>=0");
 c2->cd(3);
 gPad->SetFillColor(33);
       adcPadcN5cut->SetFillColor(42);

@@ -20,7 +20,7 @@ public:
   virtual ~AliITSClusterFinderSSD();
 
 
-  void FindRawClusters();    
+  void FindRawClusters(Int_t mod);
 
   /*
   void SetAlpha1(Float_t a) {fAlpha1 =a;}

@@ -17,8 +17,8 @@ public AliITSsegmentation {
 
 
     // Detector size: x,z,y 
-    virtual void   SetDetSize(Float_t p1=72960.,Float_t p2=40000.,
-			      Float_t p3= 300.) 
+    virtual void    SetDetSize(Float_t p1=72960.,Float_t p2=40000.,
+			       Float_t p3= 300.) 
                         {fDx=p1; fDz=p2; fDy=p3;}
 
     // Strip size  
@@ -34,7 +34,14 @@ public AliITSsegmentation {
 
     // Set stereo angles Pside-Nside 
     virtual void    SetAngles(Float_t pa=0.0175, Float_t na=0.0175) 
-                         {fStereoP=pa; fStereoN=na;}
+                         {fStereoPl5=pa; fStereoNl5=na;
+			 fStereoPl6=na; fStereoNl6=pa;}
+
+    virtual void    SetAnglesLay5(Float_t pa=0.0075, Float_t na=0.0275) 
+                         {fStereoPl5=pa; fStereoNl5=na;}
+
+    virtual void    SetAnglesLay6(Float_t pa=0.0275, Float_t na=0.0075) 
+                         {fStereoPl6=pa; fStereoNl6=na;}
 
     // Set stereo angles Pside-Nside 
     // Transform from real coordinates to strips
@@ -59,7 +66,7 @@ public AliITSsegmentation {
     // their correxlation matrix c[2][2].
     virtual Bool_t  GetCrossing(Int_t iP,Int_t iN,Float_t &x,Float_t &z,
 				Float_t c[2][2]);
-    //
+
     virtual void Init();
 
     // Detector type geometry
@@ -79,15 +86,26 @@ public AliITSsegmentation {
     // Maximum number of Strips in z
     virtual Int_t    Npz(){return 1;}
 
+    // Angles : Pside stereo angle-Nside stereo angle
+     virtual void Angles(Float_t &aP,Float_t &aN);
+     virtual void SetLayer(Int_t l);
+     virtual Int_t GetLayer() const {return fLayer;}
+
   protected:
 
   Int_t      fNstrips;       // Number of strips in x 
   Float_t    fStereoP;       // Stereo angle for Pside (rad)
   Float_t    fStereoN;       // Stereo angle for Nside (rad)
-  Float_t    fPitch;         // Pitch of the strips (microns)
+  Float_t    fPitch;         // Pitch of the strips
   Float_t    fDz;            // Full width of the detector (z axis)- microns
   Float_t    fDx;            // Full length of the detector (x axis)- microns
-  Float_t    fDy;            // Full thickness of the detector (y axis) -um
+  Float_t    fDy;            // Full thickness of the detector (y axis) -um 
+  
+  Float_t    fStereoPl5;       // Stereo angle for Pside
+  Float_t    fStereoNl5;       // Stereo angle for Nside
+  Float_t    fStereoPl6;       // Stereo angle for Pside
+  Float_t    fStereoNl6;       // Stereo angle for Nside
+  Int_t      fLayer;
 
   AliITSgeom *fGeom;         //! pointer to the geometry class
   TF1*       fCorr;          // correction function

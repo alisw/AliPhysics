@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.9  2001/04/27 14:16:50  nilsen
+Remove dead and/or unused code and printout lines. i.e. cleaned it up a bit.
+
 */
 
 #include <TMath.h>
@@ -25,37 +28,42 @@ $Log$
 ClassImp(AliITSsegmentationSSD)
 AliITSsegmentationSSD::AliITSsegmentationSSD(){
     // default constructor
-    fGeom=0;
-    fCorr=0;
+    fGeom  = 0;
+    fCorr  = 0;
+    fLayer = 0;
 }
 //----------------------------------------------------------------------
 AliITSsegmentationSSD::AliITSsegmentationSSD(AliITSgeom *geom){
     // constuctor
-    fGeom=geom;
-    fCorr=0;
+    fGeom = geom;
+    fCorr = 0;
     SetDetSize();
     SetPadSize();
     SetNPads();
-    Init();
-
+    SetAngles();
+    fLayer = 0;
 }
 //______________________________________________________________________
 AliITSsegmentationSSD& AliITSsegmentationSSD::operator=(
-                                      AliITSsegmentationSSD &source){
-    // Operator =
+                                             AliITSsegmentationSSD &source){
+// Operator =
     if(this==&source) return *this;
     this->fNstrips = source.fNstrips;
     this->fStereoP = source.fStereoP;
     this->fStereoN = source.fStereoN;
+    this->fStereoPl5 = source.fStereoPl5;
+    this->fStereoNl5 = source.fStereoNl5;
+    this->fStereoPl6 = source.fStereoPl6;
+    this->fStereoNl6 = source.fStereoNl6;
+    this->fLayer   = source.fLayer;
     this->fPitch   = source.fPitch;
     this->fDz      = source.fDz;
     this->fDx      = source.fDx;
     this->fDy      = source.fDy;
+    this->fLayer   = source.fLayer;
     this->fGeom    = source.fGeom; // copy only the pointer
-    // make a proper copy
-    if(source.fCorr!=0) this->fCorr = new TF1(*(source.fCorr));
-    else this->fCorr    = 0;
-    return *this;
+    this->fCorr    = new TF1(*(source.fCorr)); // make a proper copy
+    return *this;     
 }
 //______________________________________________________________________
 AliITSsegmentationSSD::AliITSsegmentationSSD(AliITSsegmentationSSD &source){
@@ -69,6 +77,24 @@ void AliITSsegmentationSSD::Init(){
     SetPadSize();
     SetNPads();
     SetAngles();
+}
+//----------------------------------------------------------------------
+void AliITSsegmentationSSD::Angles(Float_t &aP,Float_t &aN){
+
+    if (fLayer == 5){
+	aP = fStereoPl5;
+	aN = fStereoNl5;
+    } // end if
+    if (fLayer == 6){
+	aP = fStereoPl6;
+	aN = fStereoNl6;
+    } // end if
+}
+//----------------------------------------------------------------------
+void AliITSsegmentationSSD::SetLayer(Int_t l){
+
+    if (l==5) fLayer =5;
+    if (l==6) fLayer =6;
 }
 //----------------------------------------------------------------------
 void AliITSsegmentationSSD::GetPadTxz(Float_t &x,Float_t &z){
@@ -106,7 +132,7 @@ void AliITSsegmentationSSD::GetPadTxz(Float_t &x,Float_t &z){
 }
 //----------------------------------------------------------------------
 void AliITSsegmentationSSD::GetPadIxz(Float_t x,Float_t z,Int_t &iP,Int_t &iN){
-    // returns P and N sided strip numbers for a given location.
+  // returns P and N sided strip numbers for a given location.
     /*                       _-  Z
                     + angle /    ^
         fNstrips           v     |   N-Side        ...0
@@ -129,37 +155,47 @@ void AliITSsegmentationSSD::GetPadIxz(Float_t x,Float_t z,Int_t &iP,Int_t &iN){
     // expects x, z in microns
   */ 
 
-    this->GetPadTxz(x,z);  // use existing routine.
-    iP = (Int_t) x;
+    Float_t StereoP, StereoN;
+    Angles(StereoP,StereoN);
+    Float_t tanP=TMath::Tan(StereoP);
+    Float_t tanN=TMath::Tan(StereoN);
+    Float_t x1=x,z1=z;
+    x1 += fDx/2;
+    z1 += fDz/2;
+    Float_t  ldX = x1 - z1*tanP;          // distance from left-down edge 
+    iP = (Int_t)(ldX/fPitch);
     iP = (iP<0)? -1: iP;      
     iP = (iP>fNstrips)? -1: iP;
-    iN = (Int_t) z;
+
+    ldX = x1 - tanN*(fDz - z1);
+    iN = (Int_t)(ldX/fPitch);
     iN = (iN<0)? -1: iN;
     iN = (iN>fNstrips)? -1: iN;
+
 }
-//----------------------------------------------------------------------
+//-------------------------------------------------------
 void AliITSsegmentationSSD::GetPadCxz(Int_t iP,Int_t iN,Float_t &x,Float_t &z){
     // actually this is the GetCrossing(Float_t &,Float_t &)
-    // returns x, z  in microns !
+    // returns local x, z  in microns !
 
-    Float_t flag=2*fDx;
-    Float_t tanP=TMath::Tan(fStereoP);
-    Float_t tanN=TMath::Tan(fStereoN);
-    Float_t dx = 0.1;
+    Float_t Dx = fDx; // detector size in x direction, microns
+    Float_t Dz = fDz; // detector size in z direction, microns
+    Float_t xP; // x coordinate in the P side from the first P strip
+    Float_t xN; // x coordinate in the N side from the first N strip
+    Float_t StereoP, StereoN;
+    Angles(StereoP,StereoN);
+    Float_t kP=TMath::Tan(StereoP);
+    Float_t kN=TMath::Tan(StereoN);
 
-    x = iP*fPitch;
-    z = iN*fPitch; 
-
-    if(tanP + tanN  == 0) {x=z=flag; return ;}
-
-    z = (z - x + tanN * fDz) / (tanP + tanN);    
-    x = x + tanP * z;                         
-
-    x -= fDx/2;
-    z -= fDz/2;
-
-    if ( ( z < -(fDz/2+dx) ) || ( z > (fDz/2+dx) ) ) {x=z=flag; return ;}
-    if ( ( x < -(fDx/2+dx) ) || ( x > (fDx/2+dx) ) ) {x=z=flag; return ;}
+    xP=iP*fPitch;
+    xN=iN*fPitch; 
+    x = xP + kP*(Dz*kN-xP+xN)/(kP+kN);
+    z = (Dz*kN-xP+xN)/(kP+kN); 
+    x -= Dx/2;
+    z -= Dz/2;
+    if(TMath::Abs(z) > Dz/2) cout<<"Warning, wrong z local ="<<z<<endl; 
+    // Check that zL is inside the detector for the 
+    // correspondent xP and xN coordinates
 
     return;   
 }

@@ -229,7 +229,8 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
      printf("det type %d first2, last2 %d %d \n",2,first2,last2);
 
      // module loop for the SSD
-     for (mod=first2; mod<last2+1; mod++) {
+     for (mod=first2; mod<last2+1; mod++) {  // for the "ALL" option
+     //for (mod=0; mod<last2-first2+1; mod++) { //for the "SSD" option
 
        TTree *TR = gAlice->TreeR();
        Int_t nentrec=TR->GetEntries();
@@ -248,16 +249,21 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
        Int_t nrecp = ITSrec->GetEntries();
        totpoints += nrecp;
        if (nrecp) printf("Found %d rec points for module %d\n",nrecp,mod);
-       if (!nrecp) continue;
+       //if (!nrecp) continue;
        Int_t nclusters = ITSclu->GetEntries();
        totclust += nclusters;
        //if (nclusters) printf("Found %d clusters for module %d\n",nrecc,mod);
        
+       //AliITSmodule *Mod = (AliITSmodule *)fITSmodules->At(mod+first2);
+       // for the "SSD" option
+
        AliITSmodule *Mod = (AliITSmodule *)fITSmodules->At(mod);
+       // for the "ALL" option
+
        //       printf("Mod: %X\n",Mod);
        Int_t nhits = Mod->GetNhits();
        Float_t epart = 0;
-       cout <<" module,nrecp,nclusters,nhits ="<<mod<<","<<nrecp<<","<<nclusters<<","<<nhits<< endl;
+       //cout <<" module,nrecp,nclusters,nhits ="<<mod<<","<<nrecp<<","<<nclusters<<","<<nhits<< endl;
 
        // ---------------- cluster/hit analysis ---------------------
 
@@ -377,18 +383,19 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
 
 
 	  // x,z resolution colculation
-          if((hitstat == 68 || hitsat == 33) && parent < 0)  {
+          if(hitstat == 68 || hitsat == 33) {
   	     Float_t xmed = (xhit + xhit0)/2;
 	     Float_t zmed = (zhit + zhit0)/2;
 	     Float_t xdif = xmed - xrec;
 	     Float_t zdif = zmed - zrec;
 
-	     hitprim = 1; // hitprim=1 for the primery particles
-
-	     noverprim += 1;
-
+            if(parent < 0)  {
+	      hitprim = 1; // hitprim=1 for the primery particles
+	      noverprim += 1;
+	    }
 	     pathInSSD = TMath::Sqrt((xhit0-xhit)*(xhit0-xhit)+(yhit0-yhit)*(yhit0-yhit)+(zhit0-zhit)*(zhit0-zhit));
 
+	     //cout<<"lay,pnt,hit,xmed,xrec,xdif,zmed,zrec,zdif ="<<hitlayer<<","<<pnt<<","<<hit<<","<<xmed<<","<<xrec<<","<<xdif<<","<<zmed<<","<<zrec<<","<<zdif<<endl;
 
 	 // fill ntuple
              ntuple_st.lay = hitlayer;
@@ -402,14 +409,17 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
              ntuple_st.dz = zdif;
              ntuple_st.pmod = pmod;
 
-             if(qcut < 0.18) ntuple->Fill();
+             //if(qcut < 0.18) ntuple->Fill();
+             ntuple->Fill();
 
-	    if(hitlayer == 5 && qcut < 0.18) {
+	     //if(hitlayer == 5 && qcut < 0.18) {
+	    if(hitlayer == 5 ) {
              Xres5->Fill(xdif);
              Zres5->Fill(zdif);
              Path5->Fill(pathInSSD);
-            }
-            if(hitlayer == 6 && qcut < 0.18) {
+	    }
+            //if(hitlayer == 6 && qcut < 0.18) {
+            if(hitlayer == 6) {
              Xres6->Fill(xdif);
              Zres6->Fill(zdif);
              Path6->Fill(pathInSSD);
@@ -442,7 +452,8 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
 	  ntuple1_st.noverlaps = noverlaps;
 	  ntuple1_st.noverprim = noverprim;
 
-	  if(qcut < 0.18) ntuple1->Fill();
+	  //if(qcut < 0.18) ntuple1->Fill();
+	  ntuple1->Fill();
 
           Float_t de = dedx*300./pathInSSD;
           dEdX->Fill(de);
