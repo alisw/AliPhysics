@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.46  2003/02/11 16:54:07  hristov
+Updated AliTrackReference class (S.Radomski)
+
 Revision 1.45  2003/01/14 10:50:20  alibrary
 Cleanup of STEER coding conventions
 
@@ -514,13 +517,13 @@ void AliTPCv2::CreateGeometry()
 
   dm[15]=250.6;
   dm[16]=258.;
-  dm[17]=275.5;
+  dm[17]=269.6;
 
   //
 
   dm[18]=253.6;
   dm[19]=258.;
-  dm[20]=275.5;
+  dm[20]=269.6;
 
   gMC->Gsvolu("TOFC","PCON",idtmed[4],dm,21);
 
@@ -555,7 +558,8 @@ void AliTPCv2::CreateGeometry()
   gMC->Gspos("TSA7",1,"TSA6",0.,0.,0.,0,"ONLY"); 
   gMC->Gspos("TSA6",1,"TOFC",0.,0.,0.,0,"ONLY");
 
-  // TOFC->TOIN
+  // TOFC->TOIN 
+  // TOFC overlaps with 
 
   gMC->Gspos("TOFC",1,"TOIN",0.,0.,0.,0,"ONLY");
 

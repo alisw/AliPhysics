@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.29  2002/11/21 22:43:32  alibrary
+Removing AliMC and AliMCProcess
+
 Revision 1.28  2002/10/23 07:17:34  alibrary
 Introducing Riostream.h
 
@@ -420,13 +423,13 @@ void AliTPCv0::CreateGeometry()
 
   dm[15]=250.6;
   dm[16]=258.;
-  dm[17]=275.5;
+  dm[17]=269.6;
 
   //
 
   dm[18]=253.6;
   dm[19]=258.;
-  dm[20]=275.5;
+  dm[20]=269.6;
 
   gMC->Gsvolu("TOFC","PCON",idtmed[4],dm,21);
 
