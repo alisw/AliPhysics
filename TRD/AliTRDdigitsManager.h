@@ -20,6 +20,8 @@ class AliTRDdigitsManager : public TObject {
 
  public:
 
+  enum { kNDict = 3 };
+
   AliTRDdigitsManager();
   AliTRDdigitsManager(const AliTRDdigitsManager &m);
   virtual ~AliTRDdigitsManager();
@@ -48,7 +50,6 @@ class AliTRDdigitsManager : public TObject {
 
  protected:
 
-  enum { kNDict = 3 };
   static const Int_t  fgkNDict;            //  Number of track dictionary arrays
 
   AliTRDsegmentArray *fDigits;             //! Digits data Array

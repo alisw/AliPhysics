@@ -11,6 +11,8 @@ class AliTRDgeometry : public AliGeometry {
 
  public:
 
+  enum { kNplan = 6, kNcham = 5, kNsect = 18, kNdet = 540 };
+
   AliTRDgeometry();
   virtual ~AliTRDgeometry();
 
@@ -76,7 +78,6 @@ class AliTRDgeometry : public AliGeometry {
 
  protected:
 
-  enum { kNplan = 6, kNcham = 5, kNsect = 18, kNdet = 540 };
   static const Int_t   fgkNsect;                            // Number of sectors in the full detector (18)
   static const Int_t   fgkNplan;                            // Number of planes of the TRD (6)
   static const Int_t   fgkNcham;                            // Number of chambers in z-direction (5)

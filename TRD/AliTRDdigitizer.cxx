@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2000/11/01 14:53:20  cblume
+Merge with TRD-develop
+
 Revision 1.1.4.9  2000/10/26 17:00:22  cblume
 Fixed bug in CheckDetector()
 
@@ -503,7 +506,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
   const Int_t kNpad  = 3;
 
   // Number of track dictionary arrays
-  const Int_t kNDict = AliTRDdigitsManager::NDict();
+  const Int_t kNDict = AliTRDdigitsManager::kNDict;
 
   Int_t   iRow, iCol, iTime;
   Int_t   iDict;
@@ -614,6 +617,9 @@ Bool_t AliTRDdigitizer::MakeDigits()
               ,row0,col0,time0);
       }
        
+      // Don't analyze test hits with amplitude 0.
+      if (((Int_t) q) == 0) continue;
+
       // Get different container if the detector has changed
       if (detector != detectorOld) {
         if (fVerbose > 1) {
@@ -672,7 +678,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
       // The driftlength
       Float_t driftlength = time0 - rot[0];
       if ((driftlength < 0) || 
-          (driftlength > AliTRDgeometry::DrThick())) break;
+          (driftlength > AliTRDgeometry::DrThick())) continue;
       Float_t driftlengthL = driftlength;
       if (fExBOn) driftlengthL /= TMath::Sqrt(fLorentzFactor);
 
@@ -869,7 +875,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
           Float_t signalAmp = signals->GetData(iRow,iCol,iTime);
 
           // Add the noise
-          signalAmp  = TMath::Max((Float_t) gRandom->Gaus(signalAmp,fNoise),0.0);
+          signalAmp  = TMath::Max((Double_t) gRandom->Gaus(signalAmp,fNoise),0.0);
 	  // Convert to fC
           signalAmp *= kEl2fC;
           // Convert to mV

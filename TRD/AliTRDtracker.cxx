@@ -15,6 +15,9 @@
                                                       
 /*
 $Log$
+Revision 1.3  2000/10/15 23:40:01  cblume
+Remove AliTRDconst
+
 Revision 1.2  2000/10/06 16:49:46  cblume
 Made Getters const
 
@@ -337,7 +340,7 @@ void AliTRDtracker::SetUpSectors(AliTRDtrackingSector *sec)
   // Note that the numbering scheme for the TRD tracking_sectors 
   // differs from that of TRD sectors
 
-  for (Int_t i=0; i<AliTRDgeometry::Nsect(); i++) sec[i].SetUp();
+  for (Int_t i=0; i<AliTRDgeometry::kNsect; i++) sec[i].SetUp();
 
   //  Sort clusters into AliTRDtimeBin's within AliTRDtrackSector's 
 
@@ -352,7 +355,7 @@ void AliTRDtracker::SetUpSectors(AliTRDtrackingSector *sec)
     Int_t sector=fGeom->GetSector(detector);
 
     Int_t tracking_sector=sector;
-    if(sector > 0) tracking_sector = AliTRDgeometry::Nsect() - sector;
+    if(sector > 0) tracking_sector = AliTRDgeometry::kNsect - sector;
 
     Int_t tb=sec[sector].GetTimeBin(detector,local_time_bin); 
     index=ncl;
@@ -371,13 +374,13 @@ void AliTRDtracker::MakeSeeds(Int_t inner, Int_t outer)
 
   if (!fClusters) return; 
 
-  AliTRDtrackingSector fTrSec[AliTRDgeometry::Nsect()];
+  AliTRDtrackingSector fTrSec[AliTRDgeometry::kNsect];
   SetUpSectors(fTrSec);
 
   // find seeds
 
   Double_t x[5], c[15];
-  Int_t max_sec=AliTRDgeometry::Nsect();
+  Int_t max_sec=AliTRDgeometry::kNsect;
 
   Double_t alpha=AliTRDgeometry::GetAlpha();
   Double_t shift=AliTRDgeometry::GetAlpha()/2.;
@@ -501,7 +504,7 @@ void AliTRDtracker::FindTracks()
 {
   if (!fClusters) return; 
 
-  AliTRDtrackingSector fTrSec[AliTRDgeometry::Nsect()];
+  AliTRDtrackingSector fTrSec[AliTRDgeometry::kNsect];
   SetUpSectors(fTrSec);
 
   // find tracks
@@ -520,7 +523,7 @@ void AliTRDtracker::FindTracks()
 
     if (alpha > 2.*TMath::Pi()) alpha -= 2.*TMath::Pi();
     if (alpha < 0.            ) alpha += 2.*TMath::Pi();
-    Int_t ns=Int_t(alpha/AliTRDgeometry::GetAlpha())%AliTRDgeometry::Nsect();
+    Int_t ns=Int_t(alpha/AliTRDgeometry::GetAlpha())%AliTRDgeometry::kNsect;
 
     if (FindProlongation(t,fTrSec,ns)) {
       cerr<<"No of clusters in the track = "<<t.GetNclusters()<<endl; 
@@ -637,7 +640,8 @@ Int_t AliTRDtracker::WriteTracks() {
 
 
 //_____________________________________________________________________________
-void AliTRDtracker::ReadClusters(TObjArray *array, const Char_t *filename, Int_t nEvent = 0, Int_t option = 1)
+void AliTRDtracker::ReadClusters(TObjArray *array, const Char_t *filename
+                               , Int_t nEvent, Int_t option)
 {
   //
   // Reads AliTRDclusters (option >= 0) or AliTRDrecPoints (option < 0) 
