@@ -196,7 +196,7 @@ endif
 #Different targets for the module
 
 ifeq ($(TYPE),lib)
-all-@PACKAGE@: $(@PACKAGE@LIB) $(@PACKAGE@ALIB)
+all-@PACKAGE@: $(@PACKAGE@LIB)
 else
 all-@PACKAGE@: $(@PACKAGE@BIN)
 endif
