@@ -1,0 +1,7 @@
+SRCS= THerwig6.cxx
+
+HDRS= THerwig6.h
+
+DHDR:=THerwigLinkDef.h
+
+EXPORT:=THerwig6.h
