@@ -1,8 +1,11 @@
+//$Id$
+
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
 
 #include <math.h>
 
+#include "AliL3Defs.h"
 #include "AliL3Logging.h"
 #include "AliL3ConfMapFit.h"
 #include "AliL3Vertex.h"
@@ -24,7 +27,6 @@ AliL3ConfMapFit::AliL3ConfMapFit(AliL3ConfMapTrack *track,AliL3Vertex *vertex)
   fTrack = track;
   fVertex = vertex;
   BFACT = 0.0029980;
-  bField = 0.2;
   
 }
 
@@ -371,7 +373,7 @@ Int_t AliL3ConfMapFit::FitCircle()
   psi  = psi + q * 0.5F * pi ;
   if ( psi < 0 ) psi = psi + 2*pi;
   
-  pt   = (Double_t)(BFACT * bField * radius ) ;
+  pt   = (Double_t)(BFACT * BField * radius ) ;
   fTrack->SetPsi(psi);
   fTrack->SetPt(pt);
 
@@ -401,7 +403,7 @@ Int_t AliL3ConfMapFit::FitLine ( )
   //find sum , sums ,sumz, sumss 
   // 
   Double_t dx, dy ;
-  Double_t radius = (Double_t)(fTrack->GetPt() / ( BFACT * bField ) ) ;
+  Double_t radius = (Double_t)(fTrack->GetPt() / ( BFACT * BField ) ) ;
 
   //TObjArray *hits = fTrack->GetHits();
   //Int_t num_of_hits = fTrack->GetNumberOfPoints();
