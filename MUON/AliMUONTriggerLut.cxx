@@ -13,9 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 /*
-
-
+$Log$
 */
+
 #include "AliMUONTriggerLut.h"
 #include "TTree.h"
 #include "AliRun.h"
@@ -148,7 +148,7 @@ Int_t AliMUONTriggerLut::GetMask(Int_t ystrip){
   Int_t mask=0;
   tabMask[ystrip]=1;
   for (Int_t i=0; i<16; i++) {          
-    mask=mask+Int_t(tabMask[i]*pow(2,i));   
+    mask=mask+Int_t(tabMask[i]*TMath::Power(2,i));   
   }
   return mask;
 }
@@ -206,18 +206,18 @@ void AliMUONTriggerLut::LoadLut(){
 	  Float_t pt=triggerCircuit->PtCal(istripX,idev,istripY);
 	  
 	  if (pt>lptTreshold) {
-	    if (idev<15)       iLptMinu=iLptMinu+Int_t(pow(2,istripY));
-	    else if (idev==15) iLptUnde=iLptUnde+Int_t(pow(2,istripY));
-	    else if (idev>15)  iLptPlus=iLptPlus+Int_t(pow(2,istripY));
+	    if (idev<15)       iLptMinu=iLptMinu+Int_t(TMath::Power(2,istripY));
+	    else if (idev==15) iLptUnde=iLptUnde+Int_t(TMath::Power(2,istripY));
+	    else if (idev>15)  iLptPlus=iLptPlus+Int_t(TMath::Power(2,istripY));
 	  }
 	  if (pt>hptTreshold) {
-	    if (idev<15)       iHptMinu=iHptMinu+Int_t(pow(2,istripY));
-	    else if (idev==15) iHptUnde=iHptUnde+Int_t(pow(2,istripY));
-	    else if (idev>15)  iHptPlus=iHptPlus+Int_t(pow(2,istripY));
+	    if (idev<15)       iHptMinu=iHptMinu+Int_t(TMath::Power(2,istripY));
+	    else if (idev==15) iHptUnde=iHptUnde+Int_t(TMath::Power(2,istripY));
+	    else if (idev>15)  iHptPlus=iHptPlus+Int_t(TMath::Power(2,istripY));
 	  }
-	  if (idev<15) 	     iAptMinu=iAptMinu+Int_t(pow(2,istripY));
-	  else if (idev==15) iAptUnde=iAptUnde+Int_t(pow(2,istripY));
-	  else if (idev>15)  iAptPlus=iAptPlus+Int_t(pow(2,istripY));
+	  if (idev<15) 	     iAptMinu=iAptMinu+Int_t(TMath::Power(2,istripY));
+	  else if (idev==15) iAptUnde=iAptUnde+Int_t(TMath::Power(2,istripY));
+	  else if (idev>15)  iAptPlus=iAptPlus+Int_t(TMath::Power(2,istripY));
 
 	} // loop on istripY
 
