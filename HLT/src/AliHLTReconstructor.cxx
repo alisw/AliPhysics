@@ -51,7 +51,8 @@ void AliHLTReconstructor::Reconstruct(AliRunLoader* runLoader) const
 
   Bool_t isinit=AliL3Transform::Init(runLoader);
   if(!isinit){
-    cerr << "Could not create transform settings, please check log for error messages!" << endl;
+    LOG(AliL3Log::kError,"AliHLTReconstructor::Reconstruct","Transformer")
+     << "Could not create transform settings, please check log for error messages!" << ENDLOG;
     return;
   }
 
@@ -60,8 +61,8 @@ void AliHLTReconstructor::Reconstruct(AliRunLoader* runLoader) const
   for(Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
     runLoader->GetEvent(iEvent);
 
-    ReconstructWithConformalMapping(runLoader,iEvent);
-    ReconstructWithHoughTransform(runLoader,iEvent);
+    if(fDoTracker) ReconstructWithConformalMapping(runLoader,iEvent);
+    if(fDoHough) ReconstructWithHoughTransform(runLoader,iEvent);
   }
 }
 
@@ -93,10 +94,15 @@ void AliHLTReconstructor::ReconstructWithConformalMapping(AliRunLoader* runLoade
 			rowscopetracklet, rowscopetrack,
 			minPtFit, maxangle, goodDist, hitChi2Cut,
 			goodHitChi2, trackChi2Cut, 50, maxphi, maxeta, kTRUE);
+  fHLT->SetTrackerParam(phiSegments, etaSegments, 
+			trackletlength, tracklength,
+			rowscopetracklet, rowscopetrack,
+			minPtFit, maxangle, goodDist, hitChi2Cut,
+			goodHitChi2, trackChi2Cut, 50, maxphi, maxeta, kFALSE);
   fHLT->SetMergerParameters(2,3,0.003,0.1,0.05);
   fHLT->DoMc();
+  fHLT->DoNonVertexTracking(); /*2 tracking passes, last without vertex contraint.*/
   fHLT->WriteFiles("./hlt/");  
-
   fHLT->ProcessEvent(0, 35, iEvent);
 
   char filename[256];
@@ -104,7 +110,6 @@ void AliHLTReconstructor::ReconstructWithConformalMapping(AliRunLoader* runLoade
   fHLT->DoBench(filename);
 
   delete fHLT;
-
 }
 
 void AliHLTReconstructor::ReconstructWithHoughTransform(AliRunLoader* runLoader,Int_t iEvent) const
@@ -116,7 +121,8 @@ void AliHLTReconstructor::ReconstructWithHoughTransform(AliRunLoader* runLoader,
   runLoader->GetHeader()->GenEventHeader()->PrimaryVertex(mcVertex);
   zvertex = mcVertex[2];
 
-  cout<<" Hough Tranform will run with ptmin="<<ptmin<<" and zvertex="<<zvertex<<endl;
+  LOG(AliL3Log::kInformational,"AliHLTReconstructor::Reconstruct","HoughTransform")
+    <<" Hough Transform will run with ptmin="<<ptmin<<" and zvertex="<<zvertex<<ENDLOG;
 
   AliL3Hough *hough = new AliL3Hough();
     
@@ -127,14 +133,14 @@ void AliHLTReconstructor::ReconstructWithHoughTransform(AliRunLoader* runLoader,
   hough->Init("./", kFALSE, 100, kFALSE,4,0,0,zvertex);
   hough->SetAddHistograms();
 
-  for(int slice=0; slice<=35; slice++)
+  for(Int_t slice=0; slice<=35; slice++)
     {
-      //     cout<<"Processing slice "<<slice<<endl;
+      //cout<<"Processing slice "<<slice<<endl;
       hough->ReadData(slice,iEvent);
       hough->Transform();
       hough->AddAllHistogramsRows();
       hough->FindTrackCandidatesRow();
-      //     hough->WriteTracks(slice,"./hough");
+      //hough->WriteTracks(slice,"./hough");
       hough->AddTracks();
     }
   hough->WriteTracks("./hough");
@@ -151,19 +157,29 @@ void AliHLTReconstructor::FillESD(AliRunLoader* runLoader,
 {
   Int_t iEvent = runLoader->GetEventNumber();
 
-  FillESDforConformalMapping(esd,iEvent);
-  FillESDforHoughTransform(esd,iEvent);
+  if(fDoTracker) FillESDforConformalMapping(esd,iEvent);
+  if(fDoHough) FillESDforHoughTransform(esd,iEvent);
+
+#if 0
+  char name[256];
+  gSystem->Exec("rm -rf hlt");
+  sprintf(name, "rm -f confmap_%d.root confmap_%d.dat",iEvent,iEvent);
+  gSystem->Exec(name);
+  gSystem->Exec("rm -rf hough");
+  sprintf(name, "rm -f hough_%d.root hough_%d.dat",iEvent,iEvent);
+  gSystem->Exec(name);
+#endif
 }
 
 void AliHLTReconstructor::FillESDforConformalMapping(AliESD* esd,Int_t iEvent) const
 {
   //Assign MC labels for found tracks
-  int slicerange[2]={0,35};
-  int good = (int)(0.4*AliL3Transform::GetNRows());
-  int nclusters = (int)(0.4*AliL3Transform::GetNRows());
-  float ptmin = 0.;
-  float ptmax = 0.;
-  float maxfalseratio = 0.1;
+  Int_t slicerange[2]={0,35};
+  Int_t good = (int)(0.4*AliL3Transform::GetNRows());
+  Int_t nclusters = (int)(0.4*AliL3Transform::GetNRows());
+  Float_t ptmin = 0.;
+  Float_t ptmax = 0.;
+  Float_t maxfalseratio = 0.1;
   
   AliL3Evaluate *fHLTEval = new AliL3Evaluate("./hlt",nclusters,good,ptmin,ptmax,slicerange);
   fHLTEval->SetMaxFalseClusters(maxfalseratio);
@@ -195,7 +211,6 @@ void AliHLTReconstructor::FillESDforConformalMapping(AliESD* esd,Int_t iEvent) c
       esd->AddHLTConfMapTrack(esdtrack);
       delete esdtrack;
     }
-
   delete fHLTEval;
 }
 
