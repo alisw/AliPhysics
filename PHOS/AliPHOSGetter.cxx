@@ -101,29 +101,28 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
   fRecoFolder      = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Event/RecData")); 
   fQAFolder        = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Conditions/QA")); 
   fTasksFolder     = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Tasks")) ; 
-
-  fFailed = kFALSE ; 
+  
+  fFailed = kFALSE ;   
 
   if ( fHeaderFile != "aliroot"  ) { // to call the getter without a file
-
     //open headers file
     fFile = static_cast<TFile*>(gROOT->GetFile(fHeaderFile.Data() ) ) ;
+    
     if(!fFile) {    //if file was not opened yet, read gAlice
       if ( fHeaderFile.Contains("_") ) {
 	cerr << "AliPHOSGetter::AliPHOSGetter -> Invalid file name (_ not allowed) " << fHeaderFile.Data() << endl ;
 	abort() ; 
-      }
-      fFile = TFile::Open(fHeaderFile.Data(),"update") ;
-      
+     }
+      fFile = TFile::Open(fHeaderFile.Data(),"update") ; 
       if (!fFile->IsOpen()) {
 	cerr << "ERROR : AliPHOSGetter::AliPHOSGetter -> Cannot open " << fHeaderFile.Data() << endl ; 
 	fFailed = kTRUE ;
         return ;  
       }
-      gAlice = static_cast<AliRun *>(fFile->Get("gAlice")) ;
-    } 
+    }       
+    gAlice = static_cast<AliRun *>(fFile->Get("gAlice")) ;
   }
-
+  
   if (!gAlice) {
     cerr << "ERROR : AliPHOSGetter::AliPHOSGetter -> Cannot find gAlice in " << fHeaderFile.Data() << endl ; 
     fFailed = kTRUE ;
@@ -131,14 +130,14 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
   }
   if (!PHOS()) {
     if (fDebug)
-      cout << "INFO: AliPHOSGetter -> Posting PHOS to Folders" << endl ; 
+      cout << "INFO: AliPHOSGetter:AliPHOSGetter -> Posting PHOS to Folders" << endl ; 
     if (gAlice->GetDetector("PHOS")) {
       AliConfig * conf = AliConfig::Instance() ; 
       conf->Add(static_cast<AliDetector*>(gAlice->GetDetector("PHOS"))) ; 
       conf->Add(static_cast<AliModule*>(gAlice->GetDetector("PHOS"))) ; 
     }
     else 
-      cerr << "ERROR: AliPHOSGetter -> detector PHOS not found" << endl ;  
+      cerr << "ERROR: AliPHOSGetter:AliPHOSGetter -> detector PHOS not found" << endl ;  
   }
   
   fDebug=0;
@@ -178,6 +177,9 @@ AliPHOSGetter * AliPHOSGetter::GetInstance()
   else
     cout << "AliPHOSGetter::GetInstance ERROR: not yet initialized" << endl ;
 
+  fFile->cd() ;  
+
+  gAlice = static_cast<AliRun *>(fFile->Get("gAlice")) ;
   return rv ;
 }
 
@@ -201,7 +203,6 @@ AliPHOSGetter * AliPHOSGetter::GetInstance(const char* headerFile,
 
   if (fgObjGetter->HasFailed() ) 
     fgObjGetter = 0 ; 
-  
   
   // Posts a few item to the white board (folders)
   // fgObjGetter->CreateWhiteBoard() ;
@@ -536,12 +537,12 @@ Bool_t AliPHOSGetter::PostSDigitizer(const char * name, const char * file) const
   
  // the hierarchy is //Folders/Tasks/SDigitizer/PHOS/sdigitsname
 
-
   TTask * sd  = dynamic_cast<TTask*>(fTasksFolder->FindObject("SDigitizer")) ; 
   if ( !sd ) {
     cerr << "ERROR: AliPHOSGetter::Post Ser -> Task //" << fTasksFolder << "/SDigitizer not found!" << endl;
     return kFALSE ;
   }        
+  cout << "AliPHOSGetter::PostSDigitizer3 " << endl ; 
 
   TTask * phos = dynamic_cast<TTask*>(sd->GetListOfTasks()->FindObject("PHOS")) ; 
   if ( !phos )  {
@@ -560,7 +561,7 @@ Bool_t AliPHOSGetter::PostSDigitizer(const char * name, const char * file) const
   AliPHOSSDigitizer * phossd  = dynamic_cast<AliPHOSSDigitizer *>(phos->GetListOfTasks()->FindObject( sdname )); 
   if (!phossd) {
     phossd = new AliPHOSSDigitizer() ;  
-    //Note, we can not call constructor with parameters: it will call Getter and scrud up everething
+    //Note, we can not call constructor with parameters: it will call Getter and scew up everething
     phossd->SetName(sdname) ;
     phossd->SetTitle(file) ;
     phos->Add(phossd) ;	
