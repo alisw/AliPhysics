@@ -50,6 +50,7 @@ ClassImp(AliDetector)
  
 //_______________________________________________________________________
 AliDetector::AliDetector():
+  AliModule(),
   fTimeGate(200.e-9),
   fIshunt(0),
   fNhits(0),
