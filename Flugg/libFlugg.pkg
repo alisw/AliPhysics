@@ -25,7 +25,7 @@ HDRS:=  $(FLUGGDUMMYHDRS) $(FLUGGWRAPHDRS) $(FLUGGOTHERHDRS)
 # Extra includes and libraries
 EINCLUDE:= Flugg $(G4INSTALL)/include $(CLHEP_BASE_DIR)/include
 ELIBSDIR:= $(G4INSTALL)/lib/$(G4SYSTEM)
-ELIBS   := G4brep G4csg G4geomBoolean G4geometrymng G4geomver G4globman \
+ELIBS   := G4brep G4csg G4geomBoolean G4geometrymng  G4globman \
 	   G4graphics_reps G4hepnumerics G4intercoms G4magneticfield \
 	   G4materials G4specsolids G4volumes
 
