@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2000/06/09 20:34:07  morsch
+All coding rule violations except RS3 corrected
+
 Revision 1.16  2000/05/15 15:04:20  morsch
 The full event is written for fNtrack = -1
 Coding rule violations corrected.
@@ -161,7 +164,8 @@ void AliGenPythia::Generate()
     Float_t origin[3]=   {0,0,0};
     Float_t originP[3]= {0,0,0};
     Float_t origin0[3]=  {0,0,0};
-    Float_t p[3], pP[4], random[6];
+    Float_t p[3], pP[4];
+//    Float_t random[6];
     static TClonesArray *particles;
 //  converts from mm/c to s
     const Float_t kconv=0.001/2.999792458e8;
@@ -178,18 +182,14 @@ void AliGenPythia::Generate()
     fTrials=0;
     for (j=0;j<3;j++) origin0[j]=fOrigin[j];
     if(fVertexSmear==perEvent) {
-	gMC->Rndm(random,6);
+	fPythia->SetMSTP(151,1);
 	for (j=0;j<3;j++) {
-	    origin0[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
-		TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
-	    fPythia->SetMSTP(151,0);
+	    fPythia->SetPARP(151+j, fOsigma[j]/10.);
 	}
     } else if (fVertexSmear==perTrack) {
 	fPythia->SetMSTP(151,0);
-	for (j=0;j<3;j++) {
-	    fPythia->SetPARP(151+j, fOsigma[j]*10.);
-	}
     }
+    
     while(1)
     {
 	fPythia->Pyevnt();
@@ -236,9 +236,9 @@ void AliGenPythia::Generate()
 			p[0]=iparticle->Px();
 			p[1]=iparticle->Py();
 			p[2]=iparticle->Pz();
-			origin[0]=origin0[0]+iparticle->Vx()/10;
-			origin[1]=origin0[1]+iparticle->Vy()/10;
-			origin[2]=origin0[2]+iparticle->Vz()/10;
+			origin[0]=origin0[0]+iparticle->Vx()*10.;
+			origin[1]=origin0[1]+iparticle->Vy()*10.;
+			origin[2]=origin0[2]+iparticle->Vz()*10.;
 
 			Int_t ifch=iparticle->GetFirstDaughter();
 			Int_t ilch=iparticle->GetLastDaughter();	
@@ -259,9 +259,9 @@ void AliGenPythia::Generate()
 //
 // 
 				if (ChildSelected(TMath::Abs(kf))) {
-				    origin[0]=ichild->Vx();
-				    origin[1]=ichild->Vy();
-				    origin[2]=ichild->Vz();		
+				    origin[0]=origin0[0]+ichild->Vx()*10.;
+				    origin[1]=origin0[1]+ichild->Vy()*10.;
+				    origin[2]=origin0[2]+ichild->Vz()*10.;		
 				    p[0]=ichild->Px();
 				    p[1]=ichild->Py();
 				    p[2]=ichild->Pz();
@@ -289,9 +289,9 @@ void AliGenPythia::Generate()
 			p[0]=iparticle->Px();
 			p[1]=iparticle->Py();
 			p[2]=iparticle->Pz();
-			origin[0]=origin0[0]+iparticle->Vx()/10;
-			origin[1]=origin0[1]+iparticle->Vy()/10;
-			origin[2]=origin0[2]+iparticle->Vz()/10;
+			origin[0]=origin0[0]+iparticle->Vx()*10;
+			origin[1]=origin0[1]+iparticle->Vy()*10;
+			origin[2]=origin0[2]+iparticle->Vz()*10;
 			Float_t tof=kconv*iparticle->T();
 			gAlice->SetTrack(fTrackIt,-1,kf,p,origin,polar,
 					 tof,"Primary",nt);
