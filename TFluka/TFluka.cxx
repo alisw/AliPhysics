@@ -1102,7 +1102,7 @@ void TFluka::SetMaxStep(Double_t step)
     
     Int_t mreg, latt;
     fGeom->GetCurrentRegion(mreg, latt);
-//    STEPSZ.stepmx[mreg - 1] = step;
+    STEPSZ.stepmx[mreg - 1] = step;
 }
 
 
