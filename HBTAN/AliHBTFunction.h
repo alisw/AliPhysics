@@ -13,12 +13,12 @@
 ///////////////////////////////////////////////////////
 
 #include <TH1.h>
+#include <TH2D.h>
+#include <TH3D.h>
 
 #include "AliHBTPairCut.h"
 #include "AliHBTPair.h"
 
-class TH2D;
-class TH3D;
 
 class AliHBTAnalysis;
 class AliHBTParticleCut;

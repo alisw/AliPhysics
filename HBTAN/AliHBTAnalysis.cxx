@@ -1,3 +1,5 @@
+#include "TH2D.h"
+#include "TH3D.h"
 #include "AliHBTAnalysis.h"
 #include "AliHBTRun.h"
 #include "AliHBTEvent.h"
