@@ -333,7 +333,7 @@ void AliMUONFactory::BuildStation4()
 			   0,0,0,3,
 			   0,0,0,2};
 	Float_t xpos7[13]   = {2., 2., 2., 2., 2., 2., 40.5, 2., 2., 2., 2., 2., 2.};
-	Float_t ypos7       = -(20.+5.*(40.-2.*shift));
+	Float_t ypos7       = -(20.+6.*(40.-2.*shift));  
 	
 	seg71->SetNSlats(13);  
 	seg71->SetShift(shift);  
@@ -349,7 +349,7 @@ void AliMUONFactory::BuildStation4()
 	AliMUONSegmentationSlatN *seg72=new AliMUONSegmentationSlatN(4);
 	
 	fMUON->SetSegmentationModel(chamber-1, 2, seg72);
-	seg72->SetNSlats(11);  
+	seg72->SetNSlats(13);  
 	seg72->SetShift(shift);   
 	seg72->SetNPCBperSector(npcb7); 
 	seg72->SetSlatXPositions(xpos7);
@@ -380,7 +380,7 @@ void AliMUONFactory::BuildStation4()
 	AliMUONSegmentationSlat *seg82=new AliMUONSegmentationSlatN(4);
 	
 	fMUON->SetSegmentationModel(chamber-1, 2, seg82);
-	seg82->SetNSlats(11);  
+	seg82->SetNSlats(13);  
 	seg82->SetShift(shift);  
 	seg82->SetNPCBperSector(npcb7); 
 	seg82->SetSlatXPositions(xpos7);

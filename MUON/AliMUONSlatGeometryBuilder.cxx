@@ -197,7 +197,6 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 
     Int_t* fStations = new Int_t[5];
     for (Int_t i=0; i<5; i++) fStations[i] = 1;
-    fStations[2] = 1;
 
     if (fStations[2])
     {
@@ -773,32 +772,33 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 //      // position the volumes approximating the circular section of the pipe
      Float_t yoffs = kSensHeight/2. - kYoverlap; 
      Float_t epsilon = 0.001; 
-     Int_t ndiv = 6;
+     Int_t ndiv = 10;
      Double_t divpar[3];
      Double_t dydiv= kSensHeight/ndiv;
      Double_t ydiv = yoffs -dydiv;
      Int_t imax=0; 
      imax = 1; 
-     Float_t rmin = 40.;
+     Float_t rmin = 39.5;
+     Float_t shiftR = 0.;
      for (Int_t idiv = 0; idiv < ndiv; idiv++){ 
        ydiv += dydiv;
        Float_t xdiv = 0.; 
        if (ydiv < rmin) xdiv = rmin * TMath::Sin( TMath::ACos(ydiv/rmin) );
-       divpar[0] = (kPcbLength-xdiv)/2.; 
+       divpar[0] = (kPcbLength-xdiv-shiftR)/2.; 
        divpar[1] = dydiv/2. - epsilon;
        divpar[2] = kSensWidth/2.; 
-       Float_t xvol = (kPcbLength+xdiv)/2.+1.999;
+       Float_t xvol = (kPcbLength+xdiv)/2.+shiftR;
        Float_t yvol = ydiv + dydiv/2.;
-
+       
        for (Int_t quadrant=1; quadrant<=4; quadrant++) {
 	 sprintf(idSlatCh7,"LC%d",ConvertSlatNum(1,quadrant,kNslats4-1));
 	 sprintf(idSlatCh8,"LD%d",ConvertSlatNum(1,quadrant,kNslats4-1));
-
+	 
 	 GetChamber(6)->GetGeometry()->AddEnvelopeConstituentParam("S07G",idSlatCh7, quadrant*100+imax+4*idiv+1,
-			TGeoTranslation(xvol-kPcbLength * kNPCB4[1]/2.,yvol-kPcbLength+kYoverlap,0.),3,divpar);
-
+								   TGeoTranslation(xvol-kPcbLength * kNPCB4[1]/2.,yvol-kPcbLength+kYoverlap,0.),3,divpar);
+	 
 	 GetChamber(7)->GetGeometry()->AddEnvelopeConstituentParam("S08G", idSlatCh8, quadrant*100+imax+4*idiv+1,
-			TGeoTranslation(xvol-kPcbLength * kNPCB4[1]/2.,yvol-kPcbLength+kYoverlap,0.),3,divpar);
+								   TGeoTranslation(xvol-kPcbLength * kNPCB4[1]/2.,yvol-kPcbLength+kYoverlap,0.),3,divpar);
        }
      }
      cout << "Geometry for Station 4...... done" << endl;
@@ -806,7 +806,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     }
     
     if (fStations[4]) {
-	
+      
 
 // //********************************************************************
 // //                            Station 5                             **
@@ -1009,22 +1009,23 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
      //      // position the volumes approximating the circular section of the pipe
      Float_t yoffs = kSensHeight/2. - kYoverlap; 
      Float_t epsilon = 0.001; 
-     Int_t ndiv = 6;
+     Int_t ndiv = 10;
      Double_t divpar[3];
      Double_t dydiv = kSensHeight/ndiv;
      Double_t ydiv = yoffs -dydiv;
      Int_t imax = 0; 
      //     for (Int_t islat=0; islat<kNslats3; islat++) imax += kNPCB3[islat]; 
      imax = 1; 
-     Float_t rmin = 40.; 
+     Float_t rmin = 40.;
+     Float_t shiftR = 0.;
      for (Int_t idiv = 0;idiv < ndiv; idiv++){ 
        ydiv += dydiv;
        Float_t xdiv = 0.; 
        if (ydiv < rmin) xdiv = rmin * TMath::Sin( TMath::ACos(ydiv/rmin) );
-       divpar[0] = (kPcbLength-xdiv)/2.; 
+       divpar[0] = (kPcbLength-xdiv-shiftR)/2.; 
        divpar[1] = dydiv/2. - epsilon;
        divpar[2] = kSensWidth/2.; 
-       Float_t xvol = (kPcbLength+xdiv)/2.+ 1.999;
+       Float_t xvol = (kPcbLength+xdiv)/2.+ shiftR;
        Float_t yvol = ydiv + dydiv/2.;
 
        for (Int_t quadrant = 1; quadrant <= 4; quadrant++) {
@@ -1032,10 +1033,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	 sprintf(idSlatCh10,"LF%d",ConvertSlatNum(1,quadrant,kNslats5-1));
 
 	 GetChamber(8)->GetGeometry()->AddEnvelopeConstituentParam("S09G", idSlatCh9, quadrant*100+imax+4*idiv+1,
-			TGeoTranslation(xvol-kPcbLength * kNPCB5[1]/2.,yvol-kPcbLength+kYoverlap,0.),3,divpar);
+								   TGeoTranslation(xvol-kPcbLength * kNPCB5[1]/2.,yvol-kPcbLength+kYoverlap,0.),3,divpar);
 
 	 GetChamber(9)->GetGeometry()->AddEnvelopeConstituentParam("S10G", idSlatCh10,  quadrant*100+imax+4*idiv+1,
-		        TGeoTranslation(xvol-kPcbLength * kNPCB5[1]/2.,yvol-kPcbLength+kYoverlap,0.),3,divpar);
+								   TGeoTranslation(xvol-kPcbLength * kNPCB5[1]/2.,yvol-kPcbLength+kYoverlap,0.),3,divpar);
        }
      }
      cout << "Geometry for Station 5...... done" << endl;
