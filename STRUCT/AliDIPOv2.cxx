@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2001/03/16 15:34:37  morsch
+Mothervolume defined MANY because overlap with station 3 mothervolume not avoidable (A. de Falco)
+
 Revision 1.14  2000/12/21 16:37:23  morsch
 Use Al for coil and cable material. The materials used before cause the dipole to
 have hydrogene on the outer surface leading to unrealistic gamma rates due to
@@ -88,9 +91,20 @@ AliDIPOv2::AliDIPOv2(const char *name, const char *title)
    SetMarkerStyle(2);
    SetMarkerSize(0.4);
 }
- 
-//_____________________________________________________________________________
+
 void AliDIPOv2::CreateGeometry()
+{
+  //
+  // Creation of the geometry of the magnetic DIPOLE version 2
+  //
+
+    CreateSpectrometerDipole();
+    CreateCompensatorDipole();
+}
+
+
+//_____________________________________________________________________________
+void AliDIPOv2::CreateSpectrometerDipole()
 {
   //
   // Creation of the geometry of the magnetic DIPOLE version 2
@@ -641,6 +655,107 @@ void AliDIPOv2::CreateGeometry()
 //  gMC->Gsatt("DC4 ", "SEEN", 0);
 }
 
+
+void AliDIPOv2::CreateCompensatorDipole()
+{
+    //
+    //  Geometry of the compensator Dipole MBWMD (was MCB @ SPS)
+    // 
+    Int_t *idtmed = fIdtmed->GetArray()-1799;
+    Int_t idrotm[1899];
+//
+    Float_t pbox[3] = {62.5, 62.5, 170.};
+    
+//  Mother volumes
+    gMC->Gsvolu("DCM0", "BOX", idtmed[1814], pbox, 3);
+//
+//  Mother volume constaining lower coil
+    pbox[0] = 58.5/2.;
+    pbox[1] = 30.0;
+    gMC->Gsvolu("DCML", "BOX", idtmed[1809], pbox, 3);
+//
+// Base
+    pbox[0] = 62.5;
+    pbox[1] = 15.0;
+    gMC->Gsvolu("DCBA", "BOX", idtmed[1809], pbox, 3);
+
+
+//
+// Coil: straight sections, horizontal
+    pbox[0] =   6.;
+    pbox[1] =  11.;
+    pbox[2] = 148.;
+    gMC->Gsvolu("DCH1", "BOX", idtmed[1816], pbox, 3);
+//
+// Coil: straight sections, horizontal
+    pbox[0] =   6.;
+    pbox[1] =  11.;
+    pbox[2] = 135.;
+    gMC->Gsvolu("DCH2", "BOX", idtmed[1816], pbox, 3);
+
+//
+// Mother volume containing upper coil
+    pbox[0] =    8.0;
+    pbox[1] =   17.5;
+    pbox[2] =  135.0;
+    gMC->Gsvolu("DCMU", "BOX", idtmed[1809], pbox, 3);
+
+//
+// Coil: straight sections, vertical
+    pbox[0] =  6.;
+    pbox[1] = 27.;
+    pbox[2] = 11.;
+    
+    gMC->Gsvolu("DCCV", "BOX", idtmed[1816], pbox, 3);
+//
+// Coil: circular section 
+
+    Float_t ptubs[5];
+    ptubs[0] =  0.;
+    ptubs[1] = 35.;
+    ptubs[2] =  8.;
+    ptubs[3] =  0.;
+    ptubs[4] = 90.;
+    gMC->Gsvolu("DCC1", "TUBS", idtmed[1809], ptubs, 5);
+    ptubs[0] = 13.;
+    ptubs[1] = 35.;
+    ptubs[2] =  6.;
+    gMC->Gsvolu("DCC2", "TUBS", idtmed[1816], ptubs, 5);
+
+//
+// Assemble all
+//
+    AliMatrix(idrotm[1811], -90., 0., 90., 90.,   0., 0.);
+    AliMatrix(idrotm[1812],   0., 0., 90., 90.,  90., 0.);
+    AliMatrix(idrotm[1813], 180., 0., 90., 90.,  90., 0.);
+
+    gMC->Gspos("DCH1", 1, "DCML", 23.25, -13., 0., 0, "ONLY");
+    gMC->Gspos("DCCV", 1, "DCML", 23.25, 3,  159., 0, "ONLY");
+    gMC->Gspos("DCCV", 2, "DCML", 23.25, 3, -159., 0, "ONLY");
+
+    gMC->Gspos("DCML", 1, "DCM0", -33.25, -2.5, 0., 0, "ONLY");
+    gMC->Gspos("DCML", 2, "DCM0",  33.25, -2.5, 0., idrotm[1811], "ONLY");
+
+
+    gMC->Gspos("DCH2", 1, "DCMU", 0., 6.5, 0., 0, "ONLY");
+    gMC->Gspos("DCMU", 1, "DCM0", -12., 45., 0., 0, "ONLY");
+    gMC->Gspos("DCMU", 2, "DCM0",  12., 45., 0., idrotm[1811], "ONLY");
+
+    gMC->Gspos("DCC2", 1, "DCC1", 0., 0., 0., 0, "ONLY");
+    
+    gMC->Gspos("DCC1", 1, "DCM0", -12., 27.5,  135., idrotm[1812], "ONLY");
+    gMC->Gspos("DCC1", 2, "DCM0",  12., 27.5,  135., idrotm[1812], "ONLY");
+    gMC->Gspos("DCC1", 3, "DCM0", -12., 27.5, -135., idrotm[1813], "ONLY");
+    gMC->Gspos("DCC1", 4, "DCM0",  12., 27.5, -135., idrotm[1813], "ONLY");
+
+
+    gMC->Gspos("DCBA", 1, "DCM0",  0., -47.5 , 0., 0, "ONLY");
+
+    gMC->Gspos("DCM0", 1, "ALIC",  0., -6.75, -975., 0, "ONLY");
+
+
+}
+
 //_____________________________________________________________________________
 void AliDIPOv2::DrawModule()
 {
@@ -688,6 +803,9 @@ void AliDIPOv2::DrawModule()
   gMC->Gdman(16, 4, "MAN");
 }
 
+
+
+
 //_____________________________________________________________________________
 void AliDIPOv2::CreateMaterials()
 {
@@ -723,7 +841,7 @@ void AliDIPOv2::CreateMaterials()
   
   // --- Define the various materials for GEANT --- 
   //     Aluminum 
-  AliMaterial(9, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
+  AliMaterial( 9, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
   AliMaterial(29, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
   AliMaterial(49, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
   
@@ -731,8 +849,11 @@ void AliDIPOv2::CreateMaterials()
   AliMaterial(10, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
   AliMaterial(30, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
   AliMaterial(50, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
-  
-  //     Air 
+  //     Copper
+  AliMaterial(17, "COPPER$   ", 63.55, 29., 8.96, 1.43, 15.1);
+  AliMaterial(37, "COPPER$   ", 63.55, 29., 8.96, 1.43, 15.1);
+  AliMaterial(57, "COPPER$   ", 63.55, 29., 8.96, 1.43, 15.1);
+    //     Air 
   AliMaterial(15, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500);
   AliMaterial(35, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500);
   AliMaterial(55, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500);
@@ -822,6 +943,13 @@ void AliDIPOv2::CreateMaterials()
   AliMedium(12, "AlCond_C0         ", 12, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(32, "AlCond_C1         ", 32, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(52, "AlCond_C2         ", 52, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+
+  //
+  //    Copper
+  AliMedium(17, "Cu_C0            ", 17, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(37, "Cu_C1            ", 37, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(57, "Cu_C2            ", 57, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+
 }
 
 

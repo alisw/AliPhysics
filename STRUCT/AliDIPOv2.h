@@ -21,6 +21,9 @@ public:
   virtual void  CreateMaterials();
   virtual Int_t IsVersion() const {return 2;}
   virtual void  DrawModule();
+ private:
+  virtual void  CreateSpectrometerDipole();
+  virtual void  CreateCompensatorDipole();
   
   ClassDef(AliDIPOv2,1)  //Class manager for magnetic dipole version 2
 };
