@@ -939,7 +939,7 @@ UInt_t AliTPCCompression::GetDecodedWord(AliTPCHNode* root,Bool_t Memory){
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-Int_t AliTPCCompression::DecompressDataOptTables(Int_t NumTables,const char* fname,char* fDest){
+Int_t AliTPCCompression::DecompressDataOptTables(Int_t NumTables,const char* fname, const char* fDest){
   //This method decompress a file using separate Huffman tables
   if(fVerbose){
     cout<<"   DECOMPRESSION:"<<endl;

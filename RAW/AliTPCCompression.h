@@ -27,7 +27,7 @@ class AliTPCCompression:public TObject{
   Int_t  CompressDataOptTables(Int_t NumTable,const char* fSource,const char* fDest);
   //This method is used to compress an Altro file using a set of general table previously calculated  and
   //stored as a sequence of txt file. 
-  Int_t  DecompressDataOptTables(Int_t NumTables,const char* fname,char* fDest="SourceDecompressed.dat");
+  Int_t  DecompressDataOptTables(Int_t NumTables,const char* fname,const char* fDest="SourceDecompressed.dat");
   //This method is used to decompress a file compressed using the CompressDataOptTable method
   //It expects a set of table used for compressing the file in the same directory of the compressed file
   Int_t  Decompress(AliTPCHNode *RootNode[],Int_t NumTables,char* PointBuffer,UInt_t BufferSize,UShort_t out[],UInt_t &dim);
