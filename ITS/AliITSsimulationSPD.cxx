@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2001/11/23 13:04:07  barbera
+Some protection added in case of high multiplicity
+
 Revision 1.13  2001/11/13 11:13:24  barbera
 A protection against tracks with the same entrance and exit has been made more strict
 
@@ -64,6 +67,7 @@ AliITSsimulationSPD::AliITSsimulationSPD(){
     fSegmentation = 0;
     fHis          = 0;
     fMapA2        = 0;
+
 /*
     fThresh       = 0.;
     fSigma        = 0.;
@@ -79,6 +83,7 @@ AliITSsimulationSPD::AliITSsimulationSPD(AliITSsegmentation *seg,
     fSegmentation = 0;
     fHis          = 0;
     fMapA2        = 0;
+
 /*
     fThresh       = 0.;
     fSigma        = 0.;
@@ -94,7 +99,8 @@ void AliITSsimulationSPD::Init(AliITSsegmentationSPD *seg,
     fHis = 0;
     fResponse     = resp;
     fSegmentation = seg;
-    fMapA2 = new AliITSMapA2(fSegmentation);
+    fMapA2  = new AliITSMapA2(fSegmentation);
+    fpList  = new AliITSpList(GetNPixelsZ()+1,GetNPixelsX()+1);
 /*
     fResponse->Thresholds(fThresh,fSigma);
     fResponse->GetNoiseParam(fCouplCol,fCouplRow);
@@ -107,6 +113,7 @@ AliITSsimulationSPD::~AliITSsimulationSPD() {
     // destructor
 
     delete fMapA2;
+//    delete fpList;
 
     if (fHis) {
 	fHis->Delete(); 
@@ -149,6 +156,34 @@ AliITSsimulationSPD& AliITSsimulationSPD::operator=(const AliITSsimulationSPD
     this->fNPixelsZ = source.fNPixelsZ;
 */
     return *this;
+} 
+//______________________________________________________________________
+void AliITSsimulationSPD::InitSimulationModule(Int_t module,Int_t event){
+    // Creates maps to build the list of tracks for each sumable digit
+    // Inputs:
+    //   Int_t module    // Module number to be simulated
+    //   Int_t event     // Event number to be simulated
+    // Outputs:
+    //   none.
+    // Return
+    //    none.
+ 
+    fModule = module;
+    fEvent  = event;
+    fMapA2->ClearMap();
+    fpList->ClearMap();
+}
+//______________________________________________________________________
+void AliITSsimulationSPD::FinishSDigitiseModule(){
+    // Does the Sdigits to Digits work
+    // Inputs:
+    //   none.
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+
+    SDigitsToDigits(fModule,fpList);
 }
 //______________________________________________________________________
 void AliITSsimulationSPD::SDigitiseModule(AliITSmodule *mod, Int_t dummy0,
@@ -160,20 +195,21 @@ void AliITSsimulationSPD::SDigitiseModule(AliITSmodule *mod, Int_t dummy0,
     Int_t    *fcolpixel = new Int_t[number];
     Double_t *fenepixel = new Double_t[number];
 
+    fModule = mod->GetIndex();
+
     // Array of pointers to store the track index of the digits
     // leave +1, otherwise pList crashes when col=256, row=192
-    AliITSpList *pList = new AliITSpList(GetNPixelsZ()+1,GetNPixelsX()+1);
 
-    HitsToAnalogDigits(mod,frowpixel,fcolpixel,fenepixel,pList);
+    HitsToAnalogDigits(mod,frowpixel,fcolpixel,fenepixel,fpList);
 
-    WriteSDigits(pList);
+    WriteSDigits(fpList);
 
     // clean memory
     delete[] frowpixel;
     delete[] fcolpixel;
     delete[] fenepixel;
     fMapA2->ClearMap();
-    delete pList;
+    fpList->ClearMap();
 }
 //______________________________________________________________________
 void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t dummy0,
@@ -184,42 +220,49 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t dummy0,
     Int_t    *frowpixel = new Int_t[number];
     Int_t    *fcolpixel = new Int_t[number];
     Double_t *fenepixel = new Double_t[number];
-    Int_t    module     = mod->GetIndex();
 
     // Array of pointers to store the track index of the digits
-    // leave +1, otherwise pList crashes when col=256, row=192 
-    AliITSpList *pList = new AliITSpList(GetNPixelsZ()+1,GetNPixelsX()+1);
-
+    // leave +1, otherwise pList crashes when col=256, row=192
+    fModule = mod->GetIndex();
     // noise setting
-    SetFluctuations(pList,module);
+    SetFluctuations(fpList,fModule);
 
-    HitsToAnalogDigits(mod,frowpixel,fcolpixel,fenepixel,pList);
+    HitsToAnalogDigits(mod,frowpixel,fcolpixel,fenepixel,fpList);
 
     // apply mask to SPD module
     SetMask();
 
-    CreateDigit(module,pList);
+    CreateDigit(fModule,fpList);
 
     // clean memory
     delete[] frowpixel;
     delete[] fcolpixel;
     delete[] fenepixel;
     fMapA2->ClearMap();
-    delete pList;
+    fpList->ClearMap();
 }
 //______________________________________________________________________
 void AliITSsimulationSPD::SDigitsToDigits(Int_t module,AliITSpList *pList) {
     // sum digits to Digits.
-
-    FillMapFrompList(pList);
+//    cout << "Entering AliITSsimulatinSPD::SDigitsToDigits for module=";
+//    cout << module << endl;
+    fModule = module;
 
     // noise setting
     SetFluctuations(pList,module);
+
+    fMapA2->ClearMap(); // since noise is in pList aready. Zero Map so that
+    // noise is not doubled when calling FillMapFrompList.
+
+    FillMapFrompList(pList);
 
     // apply mask to SPD module
     SetMask();
 
     CreateDigit(module,pList);
+
+    fMapA2->ClearMap();
+    pList->ClearMap();
 }
 //______________________________________________________________________
 void AliITSsimulationSPD::UpdateMapSignal(Int_t row,Int_t col,Int_t trk,
@@ -539,8 +582,12 @@ void AliITSsimulationSPD::CreateDigit(Int_t module,AliITSpList *pList) {
 		    hits[j1]   = pList->GetHit(r,c,j1);
 		    charges[j1] = 0;
 		} // end for j1
-		Float_t phys = 0;        
+		Float_t phys = 0;
 		aliITS->AddSimDigit(0,phys,digits,tracks,hits,charges);
+//		cout << " CreateSPDDigit mod=" << fModule << " r,c=" << r;
+//		cout <<","<<c<< " sig=" << fpList->GetSignalOnly(r,c);
+//		cout << " noise=" << fpList->GetNoise(r,c);
+//		cout << " Msig="<< signal << " Thres=" << GetThreshold()<<endl;
 	    } // end if of threshold condition
 	} // for c
     }// end do on pixels
@@ -639,6 +686,9 @@ void AliITSsimulationSPD::WriteSDigits(AliITSpList *pList){
 	if(pList->GetSignalOnly(i,j)>0.0){
 	    aliITS->AddSumDigit(*(pList->GetpListItem(i,j)));
 //	    cout << "pListSPD: " << *(pList->GetpListItem(i,j)) << endl;
+//	    cout << " CreateSPDSDigit mod=" << fModule << " r,c=";
+//	    cout << i  <<","<< j << " sig=" << fpList->GetSignalOnly(i,j);
+//	    cout << " noise=" << fpList->GetNoise(i,j) <<endl;
 	} // end if
     } // end for i,j
     return;
@@ -646,9 +696,9 @@ void AliITSsimulationSPD::WriteSDigits(AliITSpList *pList){
 //______________________________________________________________________
 void AliITSsimulationSPD::FillMapFrompList(AliITSpList *pList){
     // Fills fMap2A from the pList of Summable digits
-    Int_t k,ix;
+    Int_t ix,iz;
 
-    for(k=0;k<GetNPixelsZ();k++)for(ix=0;ix<GetNPixelsX();ix++) 
-        fMapA2->AddSignal(k,ix,pList->GetSignal(k,ix));
+    for(iz=0;iz<GetNPixelsZ();iz++)for(ix=0;ix<GetNPixelsX();ix++) 
+        fMapA2->AddSignal(iz,ix,pList->GetSignal(iz,ix));
     return;
 }

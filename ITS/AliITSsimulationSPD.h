@@ -30,6 +30,12 @@ class AliITSsimulationSPD : public AliITSsimulation {
     void Init(AliITSsegmentationSPD *seg, AliITSresponseSPD *resp);
 
     // Sum digitize module
+    // Create maps to build the lists of tracks for each summable digit
+    void InitSimulationModule(Int_t module,Int_t events);
+//    // Add summable digits to module maps.
+//    void AddSDigitsToModule(TClonesArray *sdig,Int_t mask);
+    // Digitize module from the sum of summable digits.
+    void FinishSDigitiseModule();
     void SDigitiseModule(AliITSmodule *mod, Int_t dummy0,Int_t dummy1);
     // digitize module. Also need to digitize modules with only noise.
     void DigitiseModule(AliITSmodule *mod,Int_t dummy0, Int_t dummy1);
@@ -115,6 +121,9 @@ class AliITSsimulationSPD : public AliITSsimulation {
     Int_t        fNPixelsX; //! NPixelsX from fSegmentation
     Int_t        fNPixelsZ; //! NPixelsZ from fSegmentation
 */
+//    AliITSpList  *fList;    //! Internal map and sdigits
+//    Int_t         fModule;  //! Module number being simulated
+//    Int_t         fEvent;   //! Event number being simulated
     AliITSMapA2  *fMapA2;   //! MapA2 for Local internal use only
     TObjArray    *fHis;     //! just in case for histogramming for Local
                             // internal use only
