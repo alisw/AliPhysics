@@ -136,10 +136,10 @@ void AliParticleGun::GeneratePrimaryVertex(G4Event* event)
   fGunParticlesVector.clearAndDestroy();
 
   // add verbose
-  G4cout << "AliParticleGun::GeneratePrimaryVertex:" << endl;
+  G4cout << "AliParticleGun::GeneratePrimaryVertex:" << G4endl;
   G4cout << "   " 
          << event->GetNumberOfPrimaryVertex() << " of primary vertices,"
-         << "   " << nofGunParticles << " of primary particles " << endl;  
+         << "   " << nofGunParticles << " of primary particles " << G4endl;  
 }
 
 void AliParticleGun::Reset()
@@ -157,16 +157,16 @@ void AliParticleGun::List()
 
   G4int nofGunParticles = fGunParticlesVector.entries();
 
-  G4cout << "Particle Gun: " << endl;
+  G4cout << "Particle Gun: " << G4endl;
 
   if (nofGunParticles==0)
-  { G4cout << "   No particles are defined." << endl; }
+  { G4cout << "   No particles are defined." << G4endl; }
   else
   {
     for (G4int i=0; i<nofGunParticles; i++)
     {
-      G4cout << i << " th particle properties: " << endl;
-      G4cout << "============================" << endl;
+      G4cout << i << " th particle properties: " << G4endl;
+      G4cout << "============================" << G4endl;
       fGunParticlesVector[i]->Print();
     }
   }

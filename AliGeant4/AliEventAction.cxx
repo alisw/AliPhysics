@@ -68,7 +68,7 @@ void AliEventAction::DisplayEvent(const G4Event* event) const
   
   if (fVerboseLevel>0) {
     G4cout << "    " << nofTrajectories; 
-    G4cout << " trajectories stored." << endl;
+    G4cout << " trajectories stored." << G4endl;
   }  
 
   G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
@@ -84,9 +84,9 @@ void AliEventAction::DisplayEvent(const G4Event* event) const
         AliGlobals::Exception(
 	  "AliEventAction::DisplayEvent: Unknown trajectory type.");
       }
-      else if ( (fDrawFlag == "ALL") ||
-               ((fDrawFlag == "CHARGED") && (trajectory->GetCharge() != 0.))){	       
-	trajectory->DrawTrajectory(50); 
+      if ( (fDrawFlag == "ALL") ||
+          ((fDrawFlag == "CHARGED") && (trajectory->GetCharge() != 0.))){
+	 trajectory->DrawTrajectory(50); 
 	    // the argument number defines the size of the step points
 	    // use 2000 to make step points well visible
       }	
@@ -110,7 +110,7 @@ void AliEventAction::BeginOfEventAction(const G4Event* event)
   trackingAction->PrepareNewEvent();   
 
   if (fVerboseLevel>0)
-    G4cout << ">>> Event " << event->GetEventID() << endl;
+    G4cout << ">>> Event " << event->GetEventID() << G4endl;
 }
 
 void AliEventAction::EndOfEventAction(const G4Event* event)
@@ -127,7 +127,7 @@ void AliEventAction::EndOfEventAction(const G4Event* event)
   if (fVerboseLevel>0) {
     G4int nofPrimaryTracks = trackingAction->GetNofPrimaryTracks();
     G4cout  << "    " << nofPrimaryTracks << 
-               " primary tracks processed." << endl;
+               " primary tracks processed." << G4endl;
   }	       
 
   // display event

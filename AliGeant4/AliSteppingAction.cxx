@@ -56,45 +56,45 @@ void AliSteppingAction::PrintTrackInfo(const G4Track* track) const
 // ---
 
   // print track info
-  G4cout << endl;
+  G4cout << G4endl;
   G4cout << "*******************************************************"
          << "**************************************************"
-         << endl;
+         << G4endl;
   G4cout << "* G4Track Information: " 
          << "  Particle = " << track->GetDefinition()->GetParticleName() 
          << "," 
 	 << "   Track ID = " << track->GetTrackID() 
          << "," 
 	 << "   Parent ID = " << track->GetParentID() 
-         << endl;
+         << G4endl;
   G4cout << "*******************************************************"
          << "**************************************************"
-         << endl;
-  G4cout << endl;
+         << G4endl;
+  G4cout << G4endl;
       
   // print header    
 #ifdef G4_USE_G4BESTUNIT_FOR_VERBOSE
-    G4cout << setw( 5) << "Step#"  << " "
-           << setw( 8) << "X"      << "     "
-	   << setw( 8) << "Y"      << "     "  
-	   << setw( 8) << "Z"      << "     "
-	   << setw( 9) << "KineE"  << "     "
-	   << setw( 8) << "dE"     << "     "  
-	   << setw(12) << "StepLeng"   << " "  
-	   << setw(12) << "TrackLeng"  << " "
-	   << setw(12) << "NextVolume" << " "
-	   << setw( 8) << "ProcName"   << endl;	     
+    G4cout << G4std::setw( 5) << "Step#"  << " "
+           << G4std::setw( 8) << "X"      << "     "
+	   << G4std::setw( 8) << "Y"      << "     "  
+	   << G4std::setw( 8) << "Z"      << "     "
+	   << G4std::setw( 9) << "KineE"  << "     "
+	   << G4std::setw( 8) << "dE"     << "     "  
+	   << G4std::setw(12) << "StepLeng"   << " "  
+	   << G4std::setw(12) << "TrackLeng"  << " "
+	   << G4std::setw(12) << "NextVolume" << " "
+	   << G4std::setw( 8) << "ProcName"   << G4endl;	     
 #else
-    G4cout << setw( 5) << "Step#"      << " "
-	   << setw( 8) << "X(mm)"      << " "
-	   << setw( 8) << "Y(mm)"      << " "  
-	   << setw( 8) << "Z(mm)"      << " "
-	   << setw( 9) << "KinE(MeV)"  << " "
-	   << setw( 8) << "dE(MeV)"    << " "  
-	   << setw( 8) << "StepLeng"   << " "  
-	   << setw( 9) << "TrackLeng"  << " "
-	   << setw(11) << "NextVolume" << " "
-	   << setw( 8) << "ProcName"   << endl;	     
+    G4cout << G4std::setw( 5) << "Step#"      << " "
+	   << G4std::setw( 8) << "X(mm)"      << " "
+	   << G4std::setw( 8) << "Y(mm)"      << " "  
+	   << G4std::setw( 8) << "Z(mm)"      << " "
+	   << G4std::setw( 9) << "KinE(MeV)"  << " "
+	   << G4std::setw( 8) << "dE(MeV)"    << " "  
+	   << G4std::setw( 8) << "StepLeng"   << " "  
+	   << G4std::setw( 9) << "TrackLeng"  << " "
+	   << G4std::setw(11) << "NextVolume" << " "
+	   << G4std::setw( 8) << "ProcName"   << G4endl;	     
 #endif
 }
 
@@ -144,7 +144,7 @@ void AliSteppingAction::UserSteppingAction(const G4Step* step)
 
       // print looping info
       if (fLoopVerboseLevel > 0) {
-        G4cout << "*** Particle is looping. ***" << endl;
+        G4cout << "*** Particle is looping. ***" << G4endl;
 	if (fStandardVerboseLevel == 0) PrintTrackInfo(track);
       }	
       // set loop verbose level 

@@ -230,7 +230,7 @@ void AliMoreModulesConstruction::Construct()
   
     // print current total number of logical volumes
     G4cout << "Current total number of sensitive volumes: "
-           << pGeometryManager->NofVolumes() << endl;
+           << pGeometryManager->NofVolumes() << G4endl;
 
 #ifdef ALICE_VISUALIZE
     // set visualization attributes

@@ -20,6 +20,9 @@ class AliSDManager;
 
 class AliMoreModulesConstruction
 {  
+  typedef G4std::vector<AliSingleModuleConstruction*>  
+                                   AliSingleModuleConstructionPtrVector;
+
   public:
     AliMoreModulesConstruction();
     AliMoreModulesConstruction(const AliMoreModulesConstruction& right);
@@ -45,7 +48,7 @@ class AliMoreModulesConstruction
     void CreateSensitiveDetectors2();
 
     // data members
-    vector<AliSingleModuleConstruction*>  fModuleConstructionVector;        //.
+    AliSingleModuleConstructionPtrVector  fModuleConstructionVector; //..
                                 //vector of AliSingleModuleConstruction
     AliSDManager*  fSDManager;  //AliSDManager						   
 };						   

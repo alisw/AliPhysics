@@ -26,8 +26,8 @@ void AliGlobals::Exception(const char* s)
 // ---
 
   if (s)
-  {  cerr << endl << "    " << s << endl; }
-  cerr << "*** AliceException: Aborting execution ***" << endl;   
+  {  G4cerr << G4endl << "    " << s << G4endl; }
+  G4cerr << "*** AliceException: Aborting execution ***" << G4endl;   
   exit(1);
 }
 
@@ -36,10 +36,10 @@ void AliGlobals::Warning(const char* s)
 // Prints warning message.
 // ---
 
-  cerr << "+++ Alice Warning: +++" << endl;   
+  G4cerr << "+++ Alice Warning: +++" << G4endl;   
   if (s)
-  {  cerr  << "    " << s << endl; }
-  cerr << "++++++++++++++++++++++" << endl;   
+  {  G4cerr  << "    " << s << G4endl; }
+  G4cerr << "++++++++++++++++++++++" << G4endl;   
 }
 
 #ifdef G4USE_STL
@@ -80,7 +80,7 @@ void AliGlobals::AppendNumberToString(G4String& s, G4int a)
     a=b;        
   } while (a>0);
   s.append(q);
-};
+}
 
 G4int AliGlobals::StringToInt(G4String s)
 {

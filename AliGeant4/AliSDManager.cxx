@@ -92,7 +92,7 @@ void AliSDManager::CreateLegoSD(G4LogicalVolume* lv, AliLego* lego) const
     pSDManager->AddNewDetector(legoSD);
     // add verbose
     G4cout << "Lego sensitive detector " << sdName 
-         << ") has been created." << endl;
+         << ") has been created." << G4endl;
     legoVSD = legoSD;  
   }	  
   lv->SetSensitiveDetector(legoVSD);	     
@@ -154,7 +154,7 @@ void AliSDManager::CreateSD(G4LogicalVolume* lv, AliModule* module) const
     pSDManager->AddNewDetector(asd);
     // add verbose
     G4cout << "Sensitive detector " << sdName << "(" 
-           << asd->GetID() << ") has been created." << endl;
+           << asd->GetID() << ") has been created." << G4endl;
     sd = asd;  
   }	
   lv->SetSensitiveDetector(sd);	     

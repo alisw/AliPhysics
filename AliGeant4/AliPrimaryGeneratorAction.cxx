@@ -129,7 +129,7 @@ void AliPrimaryGeneratorAction::ConstructGeantinoGenerator(G4bool isCharged)
     fParticleGun->AddParticle(gunParticle);     
   } 
   if (fVerboseLevel>1) { 
-    G4cout << "Geantino generator has been built." << endl; 
+    G4cout << "Geantino generator has been built." << G4endl; 
   }
 } 
             
@@ -163,7 +163,7 @@ void AliPrimaryGeneratorAction::GenerateAliGeneratorPrimaries(G4Event* event)
 
   G4int nofParticles = gAlice->GetNtrack();
   // add verbose
-  //G4cout << " nofParticles: " <<  nofParticles << endl;
+  //G4cout << " nofParticles: " <<  nofParticles << G4endl;
   for( G4int i=0; i<nofParticles; i++ ) {    
   
     // get particle from TClonesArray
@@ -194,7 +194,7 @@ void AliPrimaryGeneratorAction::GenerateAliGeneratorPrimaries(G4Event* event)
     }	
   
     if (particleDefinition==0) {
-      G4cout << "pdgEncoding: " << pdgEncoding << endl;
+      G4cout << "pdgEncoding: " << pdgEncoding << G4endl;
       G4String text = 
         "AliPrimaryGeneratorAction::GenerateAliGeneratorPrimaries:\n";
       text = text + "   G4ParticleTable::FindParticle() failed.";

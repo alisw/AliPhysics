@@ -137,7 +137,7 @@ void AliTrackingAction::PostUserTrackingAction(const G4Track* aTrack)
     = aTrack->GetDynamicParticle()->GetDefinition()->GetParticleName();
   if (particleName == "opticalphoton") {
     G4cout << "$$$ Track " <<  aTrack->GetTrackID()
-           << " is optical photon." << endl;
+           << " is optical photon." << G4endl;
   }	                
 }
 
@@ -152,13 +152,13 @@ void AliTrackingAction::SaveAndDestroyTrack()
   if (fPrimaryTrackID>0)
   {
      if (fVerboseLevel == 3) { 
-       G4cout << "$$$ Primary track " << fPrimaryTrackID << endl;
+       G4cout << "$$$ Primary track " << fPrimaryTrackID << G4endl;
      } 
      else if ( fVerboseLevel == 2 &&  fPrimaryTrackID % 10 == 0 ) {
-         G4cout << "$$$ Primary track " << fPrimaryTrackID  << endl;
+         G4cout << "$$$ Primary track " << fPrimaryTrackID  << G4endl;
      } 
      else if ( fVerboseLevel == 1 &&  fPrimaryTrackID % 100 == 0 ) {
-         G4cout << "$$$ Primary track " << fPrimaryTrackID  << endl;
+         G4cout << "$$$ Primary track " << fPrimaryTrackID  << G4endl;
      } 
      
      // aliroot

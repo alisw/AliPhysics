@@ -232,9 +232,9 @@ void AliSingleModuleConstruction::Construct()
 
   // print default element table
   // const G4ElementTable* table = G4Element::GetElementTable();
-  // G4cout << "Default elemnt table: " << endl;
+  // G4cout << "Default elemnt table: " << G4endl;
   // for (G4int i=0; i<table->entries(); i++) {
-  //   G4cout << *(*table)[i] << endl;
+  //   G4cout << *(*table)[i] << G4endl;
   // }  
 
   Configure();
@@ -284,7 +284,7 @@ void AliSingleModuleConstruction::Construct()
   
   // print current total number of logical volumes
   G4cout << "Current total number of sensitive volumes: "
-         << pGeometryManager->NofVolumes() << endl;
+         << pGeometryManager->NofVolumes() << G4endl;
 
 #ifdef ALICE_VISUALIZE
   if (GetDetFrame()) {

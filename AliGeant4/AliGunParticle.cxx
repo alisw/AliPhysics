@@ -104,15 +104,15 @@ void AliGunParticle::Print() const
 // ---
 
   G4cout << "    particle name: ";
-  G4cout << fParticleDefinition->GetParticleName() << endl;
+  G4cout << fParticleDefinition->GetParticleName() << G4endl;
   G4cout << "    particle momentum: ";
-  G4cout << fParticleMomentum << endl;
+  G4cout << fParticleMomentum << G4endl;
   G4cout << "    particle position: ";
-  G4cout << fPosition << " mm" << endl;
+  G4cout << fPosition << " mm" << G4endl;
   G4cout << "    particle time: ";
-  G4cout << fTime     << " s" << endl;
+  G4cout << fTime     << " s" << G4endl;
   G4cout << "    particle polarization: ";
-  G4cout << fPolarization << endl;
+  G4cout << fPolarization << G4endl;
 }  
 
 void AliGunParticle::SetKineticEnergy(G4double kinEnergy)

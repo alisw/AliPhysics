@@ -118,7 +118,7 @@ void AliDetConstruction::BuildDetectors()
     AddMoreModuleConstruction(modName, modVersion);
 
     G4cout << "Created module construction for " 
-           << modName << "v" << modVersion << "." << endl;   
+           << modName << "v" << modVersion << "." << G4endl;   
   }
   
   // do not process Config.C 

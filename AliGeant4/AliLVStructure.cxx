@@ -152,7 +152,7 @@ void AliLVStructure::AddNewVolume(G4LogicalVolume* lv,
     G4LogicalVolume* targetLV = GetVolume(lv->GetName());
     if (targetLV != 0) {
       // G4cout << lv->GetName() << " had already stored in "
-      //        << fPathName << endl;
+      //        << fPathName << G4endl;
     }
     else {
       fLogicalVolumes.insert(lv);
@@ -213,7 +213,7 @@ void AliLVStructure::ListTree() const
 
   for (G4int i=0; i<fLogicalVolumes.entries(); i++) {
     G4LogicalVolume* lv = fLogicalVolumes(i);
-    G4cout << fPathName << lv->GetName() << endl;
+    G4cout << fPathName << lv->GetName() << G4endl;
   }
   for (G4int j=0; j<fStructures.entries(); j++) { 
     fStructures(j)->ListTree(); 
@@ -229,7 +229,7 @@ void AliLVStructure::ListTreeLong() const
   for (G4int i=0; i<fLogicalVolumes.entries(); i++) {
     G4LogicalVolume* lv = fLogicalVolumes(i);
     G4cout << fPathName << lv->GetName() 
-           << " (" << lv->GetNoDaughters() << ")" << endl;
+           << " (" << lv->GetNoDaughters() << ")" << G4endl;
   }
   for (G4int j=0; j<fStructures.entries(); j++) { 
     fStructures(j)->ListTreeLong(); 

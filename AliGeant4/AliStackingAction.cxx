@@ -91,7 +91,7 @@ void AliStackingAction::NewStage()
   if (fVerboseLevel>0) 
   {
     G4cout << "AliStackingAction::NewStage " << fStage 
-           << " has been started." << endl;
+           << " has been started." << G4endl;
   }
 
   G4int nofUrgent = stackManager->GetNUrgentTrack();
