@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/10/27 13:03:08  barbera
+Small changes in the SPD volumes and materials
+
 Revision 1.6  2000/10/16 14:45:37  barbera
 Mother volume ITSD modified to avoid some overlaps
 
@@ -456,7 +459,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   // SERVICES
   
     
-  // --- Define cables at the end of the ITS cones - copper part
+  // --- DEFINE CABLES AT THE END OF THE ITS CONES - COPPER PART
   
   dgh[0] = 45.;
   dgh[1] = 45.+1.0;
@@ -466,7 +469,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   gMC->Gspos("ICCU", 1, "ITSV", 0., 0., 86.7, 0, "ONLY");
   gMC->Gspos("ICCU", 2, "ITSV", 0., 0., -86.7, idrotm[200], "ONLY");
   
-  // --- Define cables at the end of the ITS cones - carbon part
+  // --- DEFINE CABLES AT THE END OF THE ITS CONES - CARBON PART
   
   dgh[0] = 45.+1.0;
   dgh[1] = 45.+1.0+1.5;
@@ -476,7 +479,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   gMC->Gspos("ICCC", 1, "ITSV", 0., 0., 86.7, 0, "ONLY");
   gMC->Gspos("ICCC", 2, "ITSV", 0., 0., -86.7, idrotm[200], "ONLY");  
   
-  // --- Define patch panels at the end of the ITS cones
+  // --- DEFINE PATCH PANELS AT THE END OF THE ITS CONES
   
   dgh[0] = 45.;
   dgh[1] = 56.;
@@ -486,7 +489,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   gMC->Gspos("IPAN", 1, "ITSV", 0., 0., 98.45, 0, "ONLY");  
   gMC->Gspos("IPAN", 2, "ITSV", 0., 0., -98.45, idrotm[200], "ONLY"); 
   
-  // --- Define cables/cooling below the TPC on the absorber side - copper part
+  // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE ABSORBER SIDE - COPPER PART
   
   dgh[0] = 0.;
   dgh[1] = 360.;
@@ -500,7 +503,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   gMC->Gsvolu("ICU1", "PCON", idtmed[279], dgh, 9);   
   gMC->Gspos("ICU1", 1, "ITSV", 0., 0., 0., 0, "ONLY");  
   
-  // --- Define cables/cooling below the TPC on the absorber side - carbon part
+  // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE ABSORBER SIDE - CARBON PART
   
   dgh[0] = 0.;
   dgh[1] = 360.;
@@ -515,7 +518,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   gMC->Gspos("ICC1", 1, "ITSV", 0., 0., 0., 0, "ONLY");    
   
   
-  // --- Define cables/cooling behind the TPC on the absorber side - copper part
+  // --- DEFINE CABLES/COOLING BEHIND THE TPC ON THE ABSORBER SIDE - COPPER PART
   
   dgh[0] = 0.;
   dgh[1] = 360.;
@@ -529,7 +532,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   gMC->Gsvolu("ICU2", "PCON", idtmed[279], dgh, 9);   
   gMC->Gspos("ICU2", 1, "ITSV", 0., 0., 0., 0, "ONLY");  
   
-  // --- Define cables/cooling behind the TPC on the absorber side - carbon part
+  // --- DEFINE CABLES/COOLING BEHIND THE TPC ON THE ABSORBER SIDE - CARBON PART
   
   dgh[0] = 0.;
   dgh[1] = 360.;
@@ -543,8 +546,8 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   gMC->Gsvolu("ICC2", "PCON", idtmed[274], dgh, 9);   
   gMC->Gspos("ICC2", 1, "ITSV", 0., 0., 0., 0, "ONLY");    
   
-  // --- Define cables/cooling below the TPC on the other side w.r.t. 
-  //     the absorber - copper part
+  // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
+  //     THE ABSORBER - COPPER PART
   
   dgh[0] = 45.;
   dgh[1] = 45.+1.0;
@@ -552,8 +555,8 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   gMC->Gsvolu("ICU3", "TUBE", idtmed[279], dgh, 3);   
   gMC->Gspos("ICU3", 1, "ITSV", 0., 0., -100.7-dgh[2], 0, "ONLY");  
   
-  // --- Define cables/cooling below the TPC on the other side w.r.t. 
-  //     the absorber - carbon part
+  // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
+  //     THE ABSORBER - CARBON PART
   
   dgh[0] = 45.+1.0;
   dgh[1] = 45.+1.0+1.5;
@@ -562,8 +565,8 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   gMC->Gspos("ICC3", 1, "ITSV", 0., 0., -100.7-dgh[2], 0, "ONLY");    
 
   
-  // --- Define cables/cooling behind the TPC on other side w.r.t. the absorber
-  // copper part
+  // --- DEFINE CABLES/COOLING BEHIND THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
+  //     COPPER PART
   
   dgh[0] = 0.;
   dgh[1] = 360.;
@@ -577,8 +580,8 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   gMC->Gsvolu("ICU4", "PCON", idtmed[279], dgh, 9);   
   gMC->Gspos("ICU4", 1, "ITSV", 0., 0., 0., 0, "ONLY");  
   
-  // --- Define cables/cooling behind the TPC on other side w.r.t. the absorber
-  // carbon part
+  // --- DEFINE CABLES/COOLING BEHIND THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
+  //     CARBON PART
   
   dgh[0] = 0.;
   dgh[1] = 360.;
@@ -592,7 +595,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   gMC->Gsvolu("ICC4", "PCON", idtmed[274], dgh, 9);   
   gMC->Gspos("ICC4", 1, "ITSV", 0., 0., 0., 0, "ONLY");    
     
-  // --- Define hook to the TPC on other side w.r.t. the absorber
+  // --- DEFINE HOOK TO THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
   
   dgh[0] = 74.5;
   dgh[1] = 79.5;
@@ -600,6 +603,15 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   gMC->Gsvolu("IHOK", "TUBE", idtmed[284], dgh, 3);  
   gMC->Gspos("IHOK", 1, "ITSV", 0., 0., -xltpc-dgh[2], 0, "ONLY");    
   
+  // --- DEFINE RAILS BETWEEN THE ITS AND THE TPC
+  
+  dgh[0] = 0.85;
+  dgh[1] = 10.;
+  dgh[2] = 145.;  // actual half length is 190. but clashes with services !
+  gMC->Gsvolu("IRAI", "BOX ", idtmed[285], dgh, 3);   
+  gMC->Gspos("IRAI", 1, "ITSV", 53., 0., 0., 0, "ONLY");
+  gMC->Gspos("IRAI", 2, "ITSV", -53., 0., 0., 0, "ONLY");        
+
   
   // --- Outputs the geometry tree in the EUCLID/CAD format 
   
