@@ -4,6 +4,7 @@
 //                                                                           //
 // class for HLT reconstruction                                              //
 // <Cvetan.Cheshkov@cern.ch>                                                 //
+// <loizides@ikf.uni-frankfurt.de>                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 // very ugly but it has to work fast
@@ -104,10 +105,11 @@ void AliHLTReconstructor::ReconstructWithConformalMapping(AliRunLoader* runLoade
   fHLT->DoNonVertexTracking(); /*2 tracking passes, last without vertex contraint.*/
   fHLT->WriteFiles("./hlt/");  
   fHLT->ProcessEvent(0, 35, iEvent);
-
-  char filename[256];
-  sprintf(filename, "confmap_%d",iEvent);
-  fHLT->DoBench(filename);
+  if(fDoBench){
+    char filename[256];
+    sprintf(filename, "confmap_%d",iEvent);
+    fHLT->DoBench(filename);
+  }
 
   delete fHLT;
 }
@@ -145,10 +147,11 @@ void AliHLTReconstructor::ReconstructWithHoughTransform(AliRunLoader* runLoader,
     }
   hough->WriteTracks("./hough");
   
-  char filename[256];
-  sprintf(filename, "hough_%d",iEvent);
-  hough->DoBench(filename);
-
+  if(fDoBench){
+    char filename[256];
+    sprintf(filename, "hough_%d",iEvent);
+    hough->DoBench(filename);
+  }
   delete hough;
 }
 
@@ -160,15 +163,15 @@ void AliHLTReconstructor::FillESD(AliRunLoader* runLoader,
   if(fDoTracker) FillESDforConformalMapping(esd,iEvent);
   if(fDoHough) FillESDforHoughTransform(esd,iEvent);
 
-#if 0
-  char name[256];
-  gSystem->Exec("rm -rf hlt");
-  sprintf(name, "rm -f confmap_%d.root confmap_%d.dat",iEvent,iEvent);
-  gSystem->Exec(name);
-  gSystem->Exec("rm -rf hough");
-  sprintf(name, "rm -f hough_%d.root hough_%d.dat",iEvent,iEvent);
-  gSystem->Exec(name);
-#endif
+  if(fDoCleanUp){
+    char name[256];
+    gSystem->Exec("rm -rf hlt");
+    sprintf(name, "rm -f confmap_%d.root confmap_%d.dat",iEvent,iEvent);
+    gSystem->Exec(name);
+    gSystem->Exec("rm -rf hough");
+    sprintf(name, "rm -f hough_%d.root hough_%d.dat",iEvent,iEvent);
+    gSystem->Exec(name);
+  }
 }
 
 void AliHLTReconstructor::FillESDforConformalMapping(AliESD* esd,Int_t iEvent) const
@@ -183,11 +186,14 @@ void AliHLTReconstructor::FillESDforConformalMapping(AliESD* esd,Int_t iEvent) c
   
   AliL3Evaluate *fHLTEval = new AliL3Evaluate("./hlt",nclusters,good,ptmin,ptmax,slicerange);
   fHLTEval->SetMaxFalseClusters(maxfalseratio);
-
   fHLTEval->LoadData(iEvent,kTRUE);
   fHLTEval->AssignPIDs();
   fHLTEval->AssignIDs();
   AliL3TrackArray *fTracks = fHLTEval->GetTracks();
+  if(!fTracks){
+    delete fHLTEval;
+    return;
+  }
   for(Int_t i=0; i<fTracks->GetNTracks(); i++)
     {
       AliL3Track *tpt = (AliL3Track *)fTracks->GetCheckedTrack(i);
@@ -221,7 +227,8 @@ void AliHLTReconstructor::FillESDforHoughTransform(AliESD* esd,Int_t iEvent) con
   
   AliL3FileHandler *tfile = new AliL3FileHandler();
   if(!tfile->SetBinaryInput(filename)){
-    Error("FillESD","Inputfile ",filename," does not exist");
+    LOG(AliL3Log::kError,"AliHLTReconstructor::FillESDforHoughTransform","Input file")
+      <<" Missing file "<<filename<<ENDLOG;
     return;
   }
   
@@ -229,7 +236,7 @@ void AliHLTReconstructor::FillESDforHoughTransform(AliESD* esd,Int_t iEvent) con
   tfile->Binary2TrackArray(fTracks);
   tfile->CloseBinaryInput();
   delete tfile;
-  
+  if(!fTracks) return; 
   for(Int_t i=0; i<fTracks->GetNTracks(); i++)
     {
       AliL3HoughTrack *tpt = (AliL3HoughTrack *)fTracks->GetCheckedTrack(i);
@@ -258,5 +265,4 @@ void AliHLTReconstructor::FillESDforHoughTransform(AliESD* esd,Int_t iEvent) con
 
   delete fTracks;
 }
-
 #endif
