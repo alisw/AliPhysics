@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.31  2001/11/06 12:30:34  morsch
+Add Boost() method to boost all particles to LHC lab frame. Needed for asymmetric collision systems.
+
 Revision 1.30  2001/10/21 18:35:56  hristov
 Several pointers were set to zero in the default constructors to avoid memory management problems
 
@@ -156,6 +159,8 @@ AliGenHijing::AliGenHijing(Int_t npart)
     SetTarget();
     SetProjectile();
     SetBoostLHC();
+    SetJetEtaRange();
+    
     fKeep       =  0;
     fQuench     =  1;
     fShadowing  =  1;
@@ -268,8 +273,13 @@ void AliGenHijing::Generate()
 // --------------------------------------------------------------------------
       fHijing->GenerateEvent();
       fTrials++;
+      if (fTrigger != kNoTrigger) {
+	  if (!CheckTrigger()) continue;
+      }
+
       fHijing->ImportParticles(particles,"All");
       if (fLHC) Boost(particles);
+      
       
       Int_t np = particles->GetEntriesFast();
       printf("\n **************************************************%d\n",np);
@@ -600,11 +610,36 @@ void AliGenHijing::MakeHeader()
 					      fHijing->GetHINT1(38),
 					      fHijing->GetHINT1(39));
     ((AliGenHijingEventHeader*) header)->SetJets(jet1, jet2, jet3, jet4);
+    ((AliGenHijingEventHeader*) header)->SetTrials(fTrials);
 // Event Vertex
     header->SetPrimaryVertex(fEventVertex);
     gAlice->SetGenEventHeader(header);    
 }
 
+Bool_t AliGenHijing::CheckTrigger()
+{
+// Check the kinematic trigger condition
+// 
+    TLorentzVector* jet1 = new TLorentzVector(fHijing->GetHINT1(26), 
+					      fHijing->GetHINT1(27),
+					      fHijing->GetHINT1(28),
+					      fHijing->GetHINT1(29));
+
+    TLorentzVector* jet2 = new TLorentzVector(fHijing->GetHINT1(36), 
+					      fHijing->GetHINT1(37),
+					      fHijing->GetHINT1(38),
+					      fHijing->GetHINT1(39));
+    Double_t eta1      = jet1->Eta();
+    Double_t eta2      = jet2->Eta();
+    Bool_t   triggered = kFALSE;
+    
+    if ((eta1 < fEtaMaxJet && eta1 > fEtaMinJet) ||
+	(eta2 < fEtaMaxJet && eta2 > fEtaMinJet))
+    {
+	triggered = kTRUE;
+    }
+    return triggered;
+}
 
 AliGenHijing& AliGenHijing::operator=(const  AliGenHijing& rhs)
 {

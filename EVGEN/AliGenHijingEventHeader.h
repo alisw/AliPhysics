@@ -27,6 +27,9 @@ class AliGenHijingEventHeader : public AliGenEventHeader
   Int_t   NNw()   {return fNNwColl;}
   Int_t   NwN()   {return fNwNColl;}
   Int_t   NwNw()  {return fNwNwColl;}
+  Int_t   Trials() {return fTrials;}
+  
+	  
   // Setters
   void SetTotalEnergy(Float_t energy)  {fTotalEnergy=energy;}
   void SetHardScatters(Int_t n)  {fNHardScatters=n;}
@@ -42,6 +45,8 @@ class AliGenHijingEventHeader : public AliGenEventHeader
   void GetJets(TLorentzVector& jet1, TLorentzVector& jet2,
 	       TLorentzVector& jet3, TLorentzVector& jet4)  
       {jet1 = fJet1; jet2 = fJet2; jet3 = fJetFsr1; jet4 = fJetFsr2;}
+  void SetTrials(Int_t trials) {fTrials = trials;}
+	  
 protected:
   Float_t fTotalEnergy;              // Total energy of produced particles
   Int_t   fNHardScatters;            // Number of hard scatterings
@@ -53,12 +58,14 @@ protected:
   Int_t   fNwNwColl;                 // Number of Nwounded-Nwounded collisions
   Int_t   fSpecn;                    // Number of spectators neutrons
   Int_t   fSpecp;                    // Number of spectators protons
+  Int_t   fTrials;                   // Number of trials to fulfill trigger condition
+  
   TLorentzVector  fJet1;             // 4-Momentum-Vector of first   triggered jet  
   TLorentzVector  fJet2;             // 4-Momentum-Vector of second  triggered jet     
   TLorentzVector  fJetFsr1;          // 4-Momentum-Vector of first   triggered jet  
   TLorentzVector  fJetFsr2;          // 4-Momentum-Vector of second  triggered jet     
   
-  ClassDef(AliGenHijingEventHeader,3) // Event header for hijing event
+  ClassDef(AliGenHijingEventHeader,4) // Event header for hijing event
 };
 
 #endif

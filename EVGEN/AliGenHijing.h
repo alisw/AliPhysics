@@ -59,6 +59,8 @@ class AliGenHijing : public AliGenMC
     virtual void    SetRadiation(Int_t flag=3)        {fRadiation  = flag;}    
     virtual void    SetSpectators(Int_t spects=1)     {fSpectators = spects;}
     virtual void    SetPtMinJet(Float_t ptmin)        {fPtMinJet   = ptmin;}
+    virtual void    SetJetEtaRange(Float_t etamin = -20., Float_t etamax = 20.)
+	{fEtaMinJet = etamin; fEtaMaxJet = etamax;}
     virtual void    SetBoostLHC(Int_t flag=0)         {fLHC        = flag;}
     
 	    
@@ -67,7 +69,9 @@ class AliGenHijing : public AliGenMC
     virtual void EvaluateCrossSections();
     virtual void Boost(TClonesArray* particles);
     virtual TGraph* CrossSection()     {return fDsigmaDb;}
-    virtual TGraph* BinaryCollisions() {return fDnDb;}    
+    virtual TGraph* BinaryCollisions() {return fDnDb;}
+    virtual Bool_t  CheckTrigger();
+    
  protected:
     Bool_t SelectFlavor(Int_t pid);
     void   MakeHeader();
@@ -103,6 +107,8 @@ class AliGenHijing : public AliGenMC
     TGraph*     fDsigmaDb;       // dSigma/db for the system
     TGraph*     fDnDb;           // dNBinaryCollisions/db
     Float_t     fPtMinJet;       // Minimum Pt of triggered Jet
+    Float_t     fEtaMinJet;      // Minimum eta of triggered Jet
+    Float_t     fEtaMaxJet;      // Maximum eta of triggered Jet
     Int_t       fRadiation;      // Flag to switch on/off initial and final state radiation
     
 // ZDC proposal (by Chiara) to store num. of SPECTATORS protons and neutrons
