@@ -1,19 +1,5 @@
 void MUONcombi (Int_t evNumber=0) 
 {
-/////////////////////////////////////////////////////////////////////////
-//   This macro is a small example of a ROOT macro
-//   illustrating how to read the output of GALICE
-//   and fill some histograms.
-//   
-//     Root > .L anal.C   //this loads the macro in memory
-//     Root > anal();     //by default process first event   
-//     Root > anal(2);    //process third event
-//Begin_Html
-/*
-<img src="gif/anal.gif">
-*/
-//End_Html
-/////////////////////////////////////////////////////////////////////////
 // Dynamically link some shared libs
    if (gClassTable->GetID("AliRun") < 0) {
       gROOT->LoadMacro("loadlibs.C");
@@ -43,14 +29,14 @@ void MUONcombi (Int_t evNumber=0)
 //
 //
    TH1F *dmass = new TH1F("dmass","Dimuon-Mass Distribution"
-			 ,25,0.,5.);
+			  ,25,0.,5.);
    TH1F *dmassc = new TH1F("dmassc","Dimuon-Mass Distribution"
-			 ,50,0.,10.);
+			   ,50,0.,10.);
    TH1F *dmassd = new TH1F("dmassd","Dimuon-Mass Distribution"
-			 ,50,0.,10.);
+			   ,50,0.,10.);
 
-   TH1F *pt    = new TH1F("pt","pT-single"
-			 ,50,0.,10.);
+   TH1F *pt     = new TH1F("pt","pT-single"
+			   ,50,0.,10.);
 //
 //  Generator Loop
 //
@@ -67,7 +53,7 @@ void MUONcombi (Int_t evNumber=0)
 //                   Pairs of Generators
 //
 // Initialize Combinator 
-   AliDimuCombinator* Combinator = new AliDimuCombinator(PartArray);
+   AliDimuCombinator* Combinator = new AliDimuCombinator();
    Combinator->SetEtaCut(-5, 5);
    Combinator->SetPtMin(0.0);   
 
@@ -83,22 +69,23 @@ void MUONcombi (Int_t evNumber=0)
        Muon; 
        Muon=Combinator->NextMuon()) {
 //
-       Int_t chfirst= Muon->GetFirstDaughter();
-       Int_t chlast = Muon->GetLastDaughter();
-       Int_t parent = Muon->GetFirstMother();
-       Float_t ptm  = Muon->Pt();
-       Float_t eta  = Muon->Eta();
+       Int_t chfirst = Muon->GetFirstDaughter();
+       Int_t chlast  = Muon->GetLastDaughter();
+       Int_t parent  = Muon->GetFirstMother();
+       Float_t ptm   = Muon->Pt();
+       Float_t eta   = Muon->Eta();
        
        printf("\n Particle %d Parent %d first child %d last child %d",
 	      i,parent, chfirst, chlast);
-       printf("\n Particle pt, eta: %f , %f ",pt,eta);
+       printf("\n Particle pt, eta: %f , %f ", ptm, eta);
        i++;       
    }
 //
 // Di-Muon Loop
 
    Float_t pt1,pt2;
-   TParticle* Muon1, *Muon2;
+   TParticle* Muon1;
+   TParticle* Muon2;
 
    Combinator->ResetRange();
 /*
@@ -106,13 +93,13 @@ void MUONcombi (Int_t evNumber=0)
 	(Muon1 && Muon2);
 	Combinator->NextMuonPairSelected(Muon1,Muon2))
    {
-       pt1=Muon1->Pt();
-       pt2=Muon2->Pt();       
-       Float_t mass=Combinator->Mass(Muon1, Muon2);
-       Float_t wgt =Combinator->Weight(Muon1, Muon2);
+       pt1 = Muon1->Pt();
+       pt2 = Muon2->Pt();       
+       Float_t mass = Combinator->Mass(Muon1, Muon2);
+       Float_t wgt  = Combinator->Weight(Muon1, Muon2);
        pt->Fill(pt1, wgt);
        pt->Fill(pt2, wgt);
-       Float_t smeared_mass=mass;
+       Float_t smeared_mass = mass;
        Combinator->SmearGauss(0.05*mass, smeared_mass);
        if (Combinator->Correlated(Muon1, Muon2)) {
 	   dmassc->Fill(mass, wgt);
@@ -139,17 +126,17 @@ void MUONcombi (Int_t evNumber=0)
 	    (Muon1 && Muon2);
 	    Combinator->NextMuonPairSelected(Muon1,Muon2))
        {
-	   pt1=Muon1->Pt();
-	   pt2=Muon2->Pt();       
-	   Float_t mass=Combinator->Mass(Muon1, Muon2);
-	   Float_t wgt =Combinator->Weight(Muon1, Muon2);
+	   pt1 = Muon1->Pt();
+	   pt2 = Muon2->Pt();       
+	   Float_t mass = Combinator->Mass(Muon1, Muon2);
+	   Float_t wgt  = Combinator->Weight(Muon1, Muon2);
 	   pt->Fill(pt1, wgt);
 	   pt->Fill(pt2, wgt);
-	   Float_t smeared_mass=mass;
+	   Float_t smeared_mass = mass;
 	   Combinator->SmearGauss(0.05*mass, smeared_mass);
-	   Float_t DecayWeight=
-	       Combinator->Decay_Prob(Muon2)*
-	       Combinator->Decay_Prob(Muon2);
+	   Float_t DecayWeight =
+	       Combinator->DecayProbability(Muon2)*
+	       Combinator->DecayProbability(Muon2);
 //	   if (TMath::Min(pt1,pt2) > -0.5*TMath::Max(pt1,pt2)+2.) {
 	       if (Combinator->Correlated(Muon1, Muon2)) {
 		   dmassc->Fill(smeared_mass, wgt);
