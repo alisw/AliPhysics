@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/06/22 12:02:20  morsch
+Ring locations matching TRD module positions.
+
 Revision 1.2  2001/05/25 07:59:54  morsch
 Initialization print-out in debug mode only.
 
@@ -94,10 +97,10 @@ void AliFRAMEv2::CreateGeometry()
   Float_t dwl    = 3.14;
   Float_t dwh    = 0.96;
 
-// old
-//  Float_t dymod[3] = {70., 224., 341.};
-//  new
-  Float_t dymod[3] = {59.5, 178.5, 341.};
+// 
+  Float_t dymod[3] = {70., 224., 341.};
+//  new ?
+//  Float_t dymod[3] = {59.5, 178.5, 341.};
 
 //
 // Frame mother volume
