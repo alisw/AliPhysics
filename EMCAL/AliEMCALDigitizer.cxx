@@ -204,7 +204,12 @@ void AliEMCALDigitizer::Digitize(const Int_t event)
 
   //Put Noise contribution
   for(absID = 1; absID <= nEMC; absID++){
-    Float_t noise = gRandom->Gaus(0., fPinNoise); 
+    Float_t seed ; 
+    if ( absID > geom->GetNPhi()*geom->GetNZ() ) // its a pre shower
+      seed =  fPinNoise / 12. ; 
+    else 
+      seed =  fPinNoise ; 
+    Float_t noise = gRandom->Gaus(0., fPinNoise);
     new((*digits)[absID-1]) AliEMCALDigit( -1, -1, absID,sDigitizer->Digitize(noise), TimeOfNoise() ) ;
     //look if we have to add signal?
     digit = (AliEMCALDigit *) digits->At(absID-1) ;
@@ -506,7 +511,7 @@ void AliEMCALDigitizer::InitParameters()
   fTowerDigitThreshold = 0.001 ;
   fTimeResolution     = 0.5e-9 ;
   fTimeSignalLength   = 1.0e-9 ;
-  fPreShowerDigitThreshold = fTowerDigitThreshold/25. ;
+  fPreShowerDigitThreshold = fTowerDigitThreshold/12 ;
   fADCchannelTower = 0.000220;       // width of one ADC channel in GeV
   fADCpedestalTower = 0.005 ;      // GeV
   fNADCTower = (Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC
