@@ -32,7 +32,9 @@ SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
                AliMUONTriggerCircuit.cxx AliMUONTriggerLut.cxx \
                AliMUONGlobalTrigger.cxx AliMUONLocalTrigger.cxx \
                AliMUONTriggerConstants.cxx  AliMUONConstants.cxx \
-	       AliMUONClusterInput.cxx     
+	       AliMUONClusterInput.cxx  \
+	       AliMUONSegmentationSlatModule.cxx AliMUONSegmentationSlatModuleN.cxx \
+	       AliMUONSegmentationSlat.cxx AliMUONSegmentationSlatN.cxx 
 
 # C++ Headers
 
