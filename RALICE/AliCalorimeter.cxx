@@ -200,23 +200,19 @@ AliCalorimeter::AliCalorimeter(AliCalorimeter& c) : TObject(c)
  }
 
  Int_t size=0;
- Int_t n=0;
- if (c.fAttributes)
- {
-  size=c.fAttributes->GetSize();
-  n=c.fAttributes->GetEntries();
- }
+ if (c.fAttributes) size=c.fAttributes->GetSize();
  if (size)
  {
   fAttributes=new TObjArray(size);
   fAttributes->SetOwner();
-  for (Int_t ia=0; ia<n; ia++)
+  for (Int_t ia=0; ia<size; ia++)
   {
    AliAttribObj* a=(AliAttribObj*)(c.fAttributes->At(ia));
-   if (a) fAttributes->Add(new AliAttribObj(*a));
+   if (a) fAttributes->AddAt(new AliAttribObj(*a),ia);
   }
  }
 
+ Int_t n=0;
  n=c.GetNclusters();
  if (n)
  {
@@ -1690,5 +1686,17 @@ Int_t AliCalorimeter::GetSwapMode()
 // Provide the swap mode for the module and position matrices.
 // For further details see the documentation of AliObjMatrix.
  return fSwap;
+}
+///////////////////////////////////////////////////////////////////////////
+AliCalorimeter* AliCalorimeter::MakeCopy(AliCalorimeter& c)
+{
+// Make a deep copy of the input object and provide the pointer to the copy.
+// This memberfunction enables automatic creation of new objects of the
+// correct type depending on the argument type, a feature which may be very useful
+// for containers like AliEvent when adding objects in case the
+// container owns the objects.
+
+ AliCalorimeter* cal=new AliCalorimeter(c);
+ return cal;
 }
 ///////////////////////////////////////////////////////////////////////////

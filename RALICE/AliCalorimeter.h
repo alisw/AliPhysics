@@ -26,6 +26,7 @@ class AliCalorimeter : public TObject
   AliCalorimeter(Int_t nrow,Int_t ncol);           // Create a calorimeter matrix
   virtual ~AliCalorimeter();                       // Destructor
   AliCalorimeter(AliCalorimeter& c);               // Copy constructor
+  virtual AliCalorimeter* MakeCopy(AliCalorimeter& c); // Make a deep copy and provide pointer of the copy
   Int_t GetNrows();                                // Return number of rows of the matrix
   Int_t GetNcolumns();                             // Return number of columns of the matrix
   void SetSignal(Int_t row,Int_t col,Float_t s);   // Set signal for a certain module
@@ -85,6 +86,6 @@ class AliCalorimeter : public TObject
   AliObjMatrix* fPositions;                  //! The matrix of module position pointers
   TString fName;                             // Name of the calorimeter system
  
- ClassDef(AliCalorimeter,4) // Description of a modular calorimeter system.
+ ClassDef(AliCalorimeter,5) // Description of a modular calorimeter system.
 };
 #endif

@@ -398,3 +398,4 @@
                 all the derived classes (e.g. AliPosition, AliSignal, AliTrack, etc...).
                 Therefore the Load() memberfunction has been removed from AliPositionObj.
 03-oct-2003 NvE Typos fixed in AliCalorimeter.cxx.
+                Also memberfunction MakeCopy introduced in class AliCalorimeter.
