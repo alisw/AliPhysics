@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.60  2002/06/12 14:56:56  kowal2
+Added track length to the reference hits
+
 Revision 1.59  2002/06/05 15:37:31  kowal2
 Added cross-talk from the wires beyond the first and the last rows
 
@@ -1895,7 +1898,7 @@ void AliTPC::Hits2DigitsSector(Int_t isec)
    
        } // end of the sector digitization
 
-      for(i=0;i<nrows;i++){
+      for(i=0;i<nrows+2;i++){
         row[i]->Delete();  
         delete row[i];   
       }
