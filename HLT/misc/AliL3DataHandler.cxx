@@ -39,9 +39,7 @@
 // and then comes the ADC-values on that pad. When a serie of zeros occure, a zero
 // is written followed by the number of zeros. If the number of zeros is more than
 // 255 (8 bit), another 8 bit word is written for the remaining. At the end of one 
-// pad, 2 zeros are written.
-//
-// Example:
+// pad, 2 zeros are written. Example:
 //
 // ROW PAD 0 NZEROS ADC ADC ADC ADC 0 NZEROS ADC ADC 0 0
 //
@@ -259,7 +257,7 @@ Bool_t AliL3DataHandler::Memory2CompMemory(UInt_t nrow,AliL3DigitRowData *data,B
 		charge = fBitTransformer->Get0to1(charge); //Transform 10 to 8 bit.
 	      
 	      //Check for saturation:
-	      if(charge>=255)
+	      if(charge>255)
 		{
 		  LOG(AliL3Log::kWarning,"AliL3DataHandler::Memory2CompMemory","Digit")
 		    <<"ADC-value saturated : "<<charge<<ENDLOG;
@@ -437,7 +435,7 @@ UInt_t AliL3DataHandler::CompMemory2Memory(UInt_t nrow,AliL3DigitRowData *data,B
   
   AliL3DigitRowData *rowPt = data;
   UInt_t index=0;
-  
+
   UShort_t pad,time,charge;
   for(UInt_t i=0; i<nrow; i++)
     {
@@ -445,16 +443,18 @@ UInt_t AliL3DataHandler::CompMemory2Memory(UInt_t nrow,AliL3DigitRowData *data,B
       
       //Read the row:
       rowPt->fRow = Read(comp,index);
-      
+
       //Read the number of pads:
       UShort_t npads = Read(comp,index);
-      cout<<"Read npads "<<npads<<endl;
+      
       for(UShort_t p=0; p<npads; p++)
 	{
 	  //Read the current pad:
 	  pad = Read(comp,index);
 	  
 	  time = 0;
+	  
+	  //Check for zeros:
 	  if(Test(comp,index) == 0) //Zeros
 	    {
 	      //Read the first zero
@@ -504,7 +504,7 @@ UInt_t AliL3DataHandler::GetMemorySize(UInt_t nrow,Byte_t *comp)
 
   UInt_t index=0;
   Int_t outsize=0;
-
+  
   for(UInt_t i=0; i<nrow; i++)
     {
       UInt_t ndigit=0;//Digits on this row.
@@ -513,6 +513,7 @@ UInt_t AliL3DataHandler::GetMemorySize(UInt_t nrow,Byte_t *comp)
       Read(comp,index);
       
       UShort_t npad = Read(comp,index);
+      
       for(UShort_t pad=0; pad<npad; pad++)
 	{
 	  //Read the pad number:
@@ -527,24 +528,26 @@ UInt_t AliL3DataHandler::GetMemorySize(UInt_t nrow,Byte_t *comp)
 		  Read(comp,index); //This was the end of pad.
 		  continue; 
 		}
-	      if(Read(comp,index)==255) //There can be up to 3 bytes with zero coding.
-		if(Read(comp,index)==255)
+	      if(Read(comp,index) == 255) //There can be up to 3 bytes with zero coding.
+		if(Read(comp,index) == 255)
+		  Read(comp,index);
+	    }
+	  
+	  while(1)
+	    {
+	      while(Read(comp,index) != 0) ndigit++;
+	      
+	      if(Test(comp,index) == 0)
+		{
+		  Read(comp,index); //2 zeros = end of pad.
+		  break;
+		}
+	      if(Read(comp,index) == 255) //There can be up to 3 bytes with zero coding.
+		if(Read(comp,index) == 255)
 		  Read(comp,index);
 	      
-	      while(1)
-		{
-		  while(Read(comp,index) != 0) ndigit++;
-		  
-		  if(Test(comp,index) == 0)
-		    {
-		      Read(comp,index); //2 zeros = end of pad.
-		      break;
-		    }
-		  if(Read(comp,index)==255) //There can be up to 3 bytes with zero coding.
-		    if(Read(comp,index)==255)
-		      Read(comp,index);
-		}
 	    }
+	  
 	}
       Int_t size = sizeof(AliL3DigitData)*ndigit + sizeof(AliL3DigitRowData);
       outsize += size;
