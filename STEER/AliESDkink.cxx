@@ -32,14 +32,43 @@ AliESDkink::AliESDkink(){
   //
   //Dafault constructor
   //
-  fDist1  =-1;
-  fDist2  =-1;
-  fRr     =-1;
+  fID = -1;
+  fDist1  = -1;
+  fDist2  = -1;
+  fPdr[0] = 0;
+  fPdr[1] = 0;
+  fPdr[2] = 0;
+  fXr[0] = 0;
+  fXr[1] = 0;
+  fXr[2] = 0;
+  fPm[0] = 0;
+  fPm[1] = 0;
+  fPm[2] = 0;
+  fAngle[0] = 0;
+  fAngle[1] = 0;
+  fAngle[2] = 0;
+  fRr     = -1;
+  fLab[0] = -1;
+  fLab[1] = -1;
+  fIndex[0] = -1;
+  fIndex[1] = -1;
   fStatus = 0;
-  fRow0   =-1;
+  fTPCdensity[0][0]=-1;
+  fTPCdensity[0][1]=-1;
+  fTPCdensity[1][0]=-1;
+  fTPCdensity[1][1]=-1;
   fTPCdensity2[0][0]=-1;
   fTPCdensity2[0][1]=-1;
-
+  fTPCdensity2[1][0]=-1;
+  fTPCdensity2[1][1]=-1;
+  fShapeFactor = 0;
+  fRow0   =-1;
+  fMultiple[0] = 0;
+  fMultiple[1] = 0;
+  fZm[0] = 0;
+  fZm[1] = 0;
+  fFi[0] = 0;
+  fFi[1] = 0;
 }
 
 void AliESDkink::SetMother(const AliExternalTrackParam & pmother)  {
