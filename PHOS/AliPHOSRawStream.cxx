@@ -29,17 +29,111 @@
 /// root > while (input.Next()) ..... 
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "TClonesArray.h"
+#include "TClass.h"
+
+
+
 #include "AliPHOSRawStream.h"
 #include "AliRawReader.h"
+#include "AliPHOSConTableDB.h"
+#include "AliPHOSDigit.h"
+
+#ifdef ALI_DATE
+#include "event.h"
+#else
+#include "AliPHOSevent.h"
+#endif
 
 ClassImp(AliPHOSRawStream)
 
-
 //_____________________________________________________________________________
-AliPHOSRawStream::AliPHOSRawStream(AliRawReader* rawReader) :
-  AliAltroRawStream(rawReader)
+AliPHOSRawStream::AliPHOSRawStream(AliRawReader* rawReader) : TObject()
 {
-// create an object to read PHOS raw digits
-
-  fRawReader->Select(6);
+  fRawReader = rawReader ;
+  fctdb = 0 ;
 }
+//_____________________________________________________________________________
+Bool_t AliPHOSRawStream::ReadDigits(TClonesArray * digits){
+
+  Bool_t isOK = kFALSE ;
+  if(!fctdb){
+    Error("ReadDigits","Connection table not set") ;
+    return kFALSE ;
+  }
+
+  if(!digits){
+    Error("ReadDigits","Output array not created") ;
+    return kFALSE ;
+  }
+
+  if(!(digits->GetClass()->InheritsFrom("AliPHOSDigit"))){
+    Error("ReadDigits","Digits contanier made for %s, not AliPHOSDigits",digits->GetClass()->GetName()) ;
+    return kFALSE ;
+  }
+
+  digits->Clear() ;
+
+  //Check, if current event - PHYSICS event
+  if(!((fRawReader->GetType() & EVENT_TYPE_MASK)==PHYSICS_EVENT)){
+    return kFALSE ;
+  }
+
+  //Scan subevents until subevent with digits
+  while(fRawReader->ReadNextData(fData)){    
+    switch (fRawReader->GetEquipmentType()){
+    case kPattUnitMarker:
+      if(fRawReader->GetEquipmentId() == kPattUnitEquipId){ //Read PHOS trigger
+	Int_t * patt = (Int_t *)fData;
+	if(fRawReader->GetEquipmentSize() >= (Int_t)sizeof(Int_t))
+	  fTrig = patt[0];
+	else
+	  fTrig = 0 ;
+      }
+      break;
+    case kPhosAdcMarker:
+      if(fRawReader->GetEquipmentId() == kPhosAdcEquipId){
+	Int_t ndigits = fRawReader->GetEquipmentSize()/sizeof(Int_t);      
+	digits->Expand(ndigits) ;
+	for(Int_t i=0; i<ndigits; i++){
+	  Int_t * amps = (Int_t *)fData ;
+	  Int_t absID = fctdb->Raw2AbsId(i) ;
+	  Int_t time = 0;
+	  if(absID>0) //Only real digits are filled, last ADC numbers (if any) are scipped
+	    new((*digits)[i]) AliPHOSDigit( -1, absID, amps[i], time) ;
+	}
+	digits->Sort() ;
+	digits->Compress() ;  
+	digits->Expand(digits->GetEntriesFast()) ;
+
+	//Set indexes in list of digits and make true digitization of the energy
+	for (Int_t id = 0 ; id < digits->GetEntriesFast() ; id++) { 
+	  AliPHOSDigit * digit = dynamic_cast<AliPHOSDigit*>( digits->At(id) ) ; 
+	  digit->SetIndexInList(id) ;     
+	}
+
+	isOK = kTRUE ;
+      }
+      break;
+    case kTdcMarker:
+      if(fRawReader->GetEquipmentId() == kTdcEquipId){
+	// Probably sometime we will need to handle these data 
+      }
+      break;
+    case kChargeAdcMarker:
+      if(fRawReader->GetEquipmentId() == kChargeAdcEquipId){
+	//Probably sometime we will need to handle these data 
+      }
+      break;
+    case kScalerMarker:
+      if(fRawReader->GetEquipmentId() == kScalerEquipId){
+	//Probably sometime we will need to handle these data 
+      }
+      break;
+    default:
+      break;
+    }
+  }
+  return isOK ;
+}
+
