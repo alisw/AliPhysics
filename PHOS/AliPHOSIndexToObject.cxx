@@ -161,7 +161,7 @@ AliRecPoint * AliPHOSIndexToObject::GimeRecPoint(Int_t index, TString type)
 
   fReconstruct = gAlice->TreeR() ; 
   
-  if (!emcentries || !ppsdentries) {
+  if (!emcentries && !ppsdentries) {
     fReconstruct->SetBranchAddress("PHOSEmcRP",&emclist);
     fReconstruct->SetBranchAddress("PHOSPpsdRP",&ppsdlist);
     fReconstruct->GetEvent(0) ;
