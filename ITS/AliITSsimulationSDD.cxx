@@ -150,13 +150,7 @@ AliITSsimulationSDD::AliITSsimulationSDD(){
     fNofMaps       = 0;
     fMaxNofSamples = 0;
     fITS           = 0;
-    fTreeB        = 0;
-    fD.Set(0);
-    fT1.Set(0);
-    fT2.Set(0);
-    fTol.Set(0);
-    fNoise.Set(0);
-    fBaseline.Set(0);
+    fTreeB         = 0;
     SetScaleFourier();
     SetPerpendTracksFlag();
     SetDoFFT();
