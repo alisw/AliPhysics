@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2001/05/25 15:59:59  morsch
+Overlaps corrected. (R. Barbera)
+
 Revision 1.22  2001/05/16 08:17:49  hristov
 Bug fixed in the StepManager to account for the difference in the geometry tree for the ITS pixels. This fixes both the funny distribution of pixel coordinates and the missing hits/digits/points in many sectors of the ITS pixel barrel. Also included is a patch to properly get and use the detector dimensions through out the ITS code. (B.Nilsen)
 
@@ -4706,7 +4709,7 @@ void AliITSvPPRsymm::InitAliITSgeom(){
 //     Based on the geometry tree defined in Geant 3.21, this
 // routine initilizes the Class AliITSgeom from the Geant 3.21 ITS geometry
 // sturture.
-    if(!(dynamic_cast<TGeant3*>(gMC))) {
+    if(gMC->IsA()!=TGeant3::Class()) {
 	Error("InitAliITSgeom",
 		"Wrong Monte Carlo. InitAliITSgeom uses TGeant3 calls");
 	return;

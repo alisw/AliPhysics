@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2001/05/25 06:47:16  hristov
+Bug fix in the creation of the AliITSgeom::fShape entry for SPD. Now there is both a proper shape entry and a default, should there be future changes. This bug was related to fMinorVersion=3 was not antisipated. (B.Nilsen)
+
 Revision 1.14  2001/05/16 14:57:16  alibrary
 New files for folders and Stack
 
@@ -656,7 +659,7 @@ void AliITSv5asymm::InitAliITSgeom(){
 //     Based on the geometry tree defined in Geant 3.21, this
 // routine initilizes the Class AliITSgeom from the Geant 3.21 ITS geometry
 // sturture.
-    if(!(dynamic_cast<TGeant3*>(gMC))) {
+    if(gMC->IsA()!=TGeant3::Class()) {
 	Error("InitAliITSgeom",
 		"Wrong Monte Carlo. InitAliITSgeom uses TGeant3 calls");
 	return;

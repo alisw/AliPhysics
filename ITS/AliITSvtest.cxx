@@ -15,6 +15,14 @@
 
 /*
 $Log$
+Revision 1.8  2001/02/13 16:53:35  nilsen
+Fixed a but when trying to use GEANT4. Needed to replace
+if(!((TGeant3*)gMC)) with if(!(dynamic_casst<TGeant3*>(gMC)))
+because just casting gMC to be TGeant3* even when it realy is a TGeant3 pointer
+did not result in a zero value. For AliITSv5asymm and AliITSv5symm, needed
+to fix a bug in the initilizers and a bug in BuildGeometry. This is now done
+in the same way as in AliITSv5.cxx.
+
 Revision 1.7  2001/02/09 20:06:26  nilsen
 Fixed bug in distructor. Can't distroy fixxed length arrays. Thanks Peter.
 
@@ -230,7 +238,7 @@ void AliITSvtest::InitAliITSgeom(){
 //     Based on the geometry tree defined in Geant 3.21, this
 // routine initilizes the Class AliITSgeom from the Geant 3.21 ITS geometry
 // sturture.
-    if(!(dynamic_cast<TGeant3*>(gMC))) {
+    if(gMC->IsA()!=TGeant3::Class()) {
 	Error("InitAliITSgeom",
 		"Wrong Monte Carlo. InitAliITSgeom uses TGeant3 calls");
 	return;
