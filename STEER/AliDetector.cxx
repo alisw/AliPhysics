@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/11/30 07:12:48  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.7  2000/10/02 21:28:14  fca
 Removal of useless dependecies via forward declarations
 
@@ -43,6 +46,8 @@ Introduction of the Copyright and cvs Log
 //End_Html
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+
+#include <assert.h>
 
 #include <TTree.h>
 #include "TBrowser.h"
@@ -212,6 +217,7 @@ void AliDetector::LoadPoints(Int_t)
   for (Int_t hit=0;hit<nhits;hit++) {
     ahit = (AliHit*)fHits->UncheckedAt(hit);
     trk=ahit->GetTrack();
+    assert(trk<=tracks);
     if(ntrk[trk]==limi[trk]) {
       //
       // Initialise a new track
