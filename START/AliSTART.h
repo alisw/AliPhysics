@@ -22,7 +22,7 @@ public:
   virtual Int_t  IsVersion() const =0;
   virtual void   Init();
   virtual void   MakeBranch(Option_t *opt=" ");
-  virtual void   DrawDetector()=0;
+  virtual void   DrawModule()=0;
   virtual void   StepManager()=0;
   
  protected:

@@ -265,7 +265,7 @@ void AliSTARTv0::CreateMaterials()
 
 }
 //---------------------------------------------------------------------
-void AliSTARTv0::DrawDetector()
+void AliSTARTv0::DrawModule()
 {
 //
 // Draw a shaded view of the Forward multiplicity detector version 0

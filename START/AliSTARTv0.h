@@ -14,7 +14,7 @@ public:
   virtual       ~AliSTARTv0() {}
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
-  virtual void   DrawDetector();
+  virtual void   DrawModule();
   virtual void   Init();
   virtual Int_t  IsVersion() const {return 0;}
   virtual void   StepManager();
