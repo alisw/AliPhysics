@@ -32,25 +32,24 @@ class TTask ;
 
 #include "AliRun.h"
 #include "AliPHOS.h" 
+#include "AliPHOSHit.h" 
+#include "AliPHOSDigit.h"
+#include "AliPHOSEmcRecPoint.h"
+#include "AliPHOSCpvRecPoint.h"
+#include "AliPHOSTrackSegment.h"
+#include "AliPHOSRecParticle.h"
 class AliPHOSGeometry ;
-class AliPHOSHit ;
-class AliPHOSDigit ;
 class AliPHOSDigitizer ;
 class AliPHOSSDigitizer ;
-class AliPHOSEmcRecPoint ;
-class AliPHOSCpvRecPoint ;
 class AliPHOSClusterizer ;
-class AliPHOSTrackSegment ;
 class AliPHOSTrackSegmentMaker ;
-class AliPHOSRecParticle ;
 class AliPHOSPID ;
 
 class AliPHOSGetter : public TObject {
   
  public:
   
-  AliPHOSGetter(){ 
-    // ctor: this is a singleton, the ctor should never be called but cint needs it as public
+  AliPHOSGetter(){    // ctor: this is a singleton, the ctor should never be called but cint needs it as public
     cerr << "ERROR: AliPHOGetter is a singleton default ctor not callable" << endl ;
     abort() ; 
   } 
@@ -62,6 +61,7 @@ class AliPHOSGetter : public TObject {
   
   virtual ~AliPHOSGetter() ; 
   
+  Bool_t PostPrimaries(void ) const ;  
   Bool_t PostHits(void ) const ;  
   Bool_t PostSDigits(      const char * name,  const char * file = 0) const ;  
   Bool_t PostDigits(       const char * name ) const ;  
@@ -82,7 +82,7 @@ class AliPHOSGetter : public TObject {
   Bool_t PostQA   (void) const ;
   
 
-  void   Event(const Int_t event, const char * opt = "HSDRQ") ;    
+  void   Event(const Int_t event, const char * opt = "HSDRQP") ;    
   void   Track(Int_t itrack) ;
 
   //Method to be used when digitizing under AliRunDigitizer, who opens all files etc.
@@ -103,49 +103,78 @@ class AliPHOSGetter : public TObject {
   // QA Tasks
   TTask * QATasks(const char * name = 0) const { return (TTask*)(ReturnT("QATasks", name)) ; }
 
+  // Primaries
+  TClonesArray *  Primaries(void) const { return (TClonesArray*)(ReturnO("Primaries")) ; }
   // Hits
-        TClonesArray *  Hits(void) const { return (TClonesArray*)(ReturnO("Hits")) ; }
-
+  const TClonesArray *  Hits(void) { return static_cast<const TClonesArray*>(ReturnO("Hits")) ; }
+  const AliPHOSHit * Hit(Int_t index)  { return static_cast<const AliPHOSHit*>(Hits()->At(index) );}
+  
   // SDigits
-        TClonesArray *  SDigits(const char * name = 0, const char * file=0) const 
-	                              { return (TClonesArray*)(ReturnO("SDigits", name, file)) ; }
-
-   AliPHOSSDigitizer *  SDigitizer(const char * name =0) const 
-                                      { return ((AliPHOSSDigitizer*)(ReturnT("SDigitizer", name))) ; }
-
+  TClonesArray *  SDigits(const char * name = 0, const char * file=0) { 
+    return static_cast<TClonesArray*>(ReturnO("SDigits", name, file)) ; 
+  }
+  const AliPHOSDigit *  SDigit(Int_t index) { return static_cast<const AliPHOSDigit*>(SDigits()->At(index)) ;}
+  
+  AliPHOSSDigitizer *  SDigitizer(const char * name =0) const { 
+    return ((AliPHOSSDigitizer*)(ReturnT("SDigitizer", name))) ; 
+  }
+  
   // Digits
-        TClonesArray *  Digits(const char * name = 0)   const 
-                             { return (TClonesArray*)(ReturnO("Digits", name)) ; }
-    AliPHOSDigitizer *  Digitizer(const char * name =0) const 
-                             { return (AliPHOSDigitizer*)(ReturnT("Digitizer", name)) ; }
-
+  TClonesArray *  Digits(const char * name = 0)const  { 
+    return static_cast<TClonesArray*>(ReturnO("Digits", name)) ; 
+  }
+  const AliPHOSDigit *  Digit(Int_t index) { return static_cast<const AliPHOSDigit *>(Digits()->At(index)) ;}
+  AliPHOSDigitizer *  Digitizer(const char * name =0) const { 
+    return (AliPHOSDigitizer*)(ReturnT("Digitizer", name)) ; 
+  }
+  
   // RecPoints
-  TObjArray * EmcRecPoints(const char * name = 0) const { 
-              return (TObjArray*)(ReturnO("EmcRecPoints", name)) ; }
-  TObjArray * CpvRecPoints(const char * name = 0) const { 
-              return (TObjArray*)(ReturnO("CpvRecPoints", name)) ; }
-
-  AliPHOSClusterizer * Clusterizer (const char * name =0) const 
-              { return (AliPHOSClusterizer*)(ReturnT("Clusterizer", name)) ; }
-
+  TObjArray * EmcRecPoints(const char * name = 0) { 
+    return static_cast<TObjArray*>(ReturnO("EmcRecPoints", name)) ; 
+  }
+  TObjArray * CpvRecPoints(const char * name = 0) { 
+    return static_cast<TObjArray*>(ReturnO("CpvRecPoints", name)) ; 
+  }
+  const AliPHOSEmcRecPoint * EmcRecPoint(Int_t index) { 
+    return static_cast<const AliPHOSEmcRecPoint *>(EmcRecPoints()->At(index)) ;
+  }
+  const AliPHOSCpvRecPoint * CpvRecPoint(Int_t index) { 
+    return static_cast<const AliPHOSCpvRecPoint *>(CpvRecPoints()->At(index)) ;  
+  }
+    
+  AliPHOSClusterizer * Clusterizer (const char * name =0) const { 
+    return (AliPHOSClusterizer*)(ReturnT("Clusterizer", name)) ; 
+  }
+  
   // TrackSegments
-  TClonesArray * TrackSegments(const char * name = 0) const 
-                   { return (TClonesArray*)(ReturnO("TrackSegments", name)) ; }
-  AliPHOSTrackSegmentMaker * TrackSegmentMaker (const char * name =0) const 
-                   { return (AliPHOSTrackSegmentMaker*)(ReturnT("TrackSegmentMaker", name)) ; }
-
+  TClonesArray * TrackSegments(const char * name = 0) { 
+    return static_cast<TClonesArray*>(ReturnO("TrackSegments", name)) ; 
+  }
+  const AliPHOSTrackSegment * TrackSegment(Int_t index) { 
+    return static_cast<const AliPHOSTrackSegment*>(TrackSegments()->At(index)) ; 
+  }
+  AliPHOSTrackSegmentMaker * TrackSegmentMaker (const char * name =0) const { 
+    return (AliPHOSTrackSegmentMaker*)(ReturnT("TrackSegmentMaker", name)) ; 
+  }
+  
   // RecParticles
-  TClonesArray * RecParticles(const char * name = 0) const  
-                   { return (TClonesArray*)(ReturnO("RecParticles", name)) ; }
-    AliPHOSPID * PID(const char * name =0) const 
-                   { return (AliPHOSPID*)(ReturnT("PID", name)) ; }
-
+  TClonesArray * RecParticles(const char * name = 0) { 
+    return static_cast<TClonesArray*>(ReturnO("RecParticles", name)) ; 
+  }
+  const AliPHOSRecParticle * RecParticle(Int_t index) { 
+    return static_cast<const AliPHOSRecParticle*>(RecParticles()->At(index)) ; 
+  }
+  AliPHOSPID * PID(const char * name =0) const { 
+    return (AliPHOSPID*)(ReturnT("PID", name)) ; 
+  }
+  
   // Primaries
   const TParticle *           Primary(Int_t index) const ;
   const Int_t                 NPrimaries()const { return fNPrimaries; }
-
+  const TParticle *           Secondary(TParticle * p, Int_t index=1) const ;
+  
   void  SetDebug(Int_t level) {fDebug = level;} // Set debug level
-
+  
   AliPHOSGetter & operator = (const AliPHOSGetter & ) {
     // assignement operator requested by coding convention, but not needed
     abort() ;
@@ -153,12 +182,12 @@ class AliPHOSGetter : public TObject {
   }
   
   TFolder * SDigitsFolder() { return dynamic_cast<TFolder*>(fSDigitsFolder->FindObject("PHOS")) ; }
-
- private:
-
+  
+private:
+  
   AliPHOSGetter(const char* headerFile, const char* branchTitle ="Default") ; 
   void CreateWhiteBoard() const ; 
-  const TObject * ReturnO(TString what, TString name=0, TString file=0) const ; 
+  TObject * ReturnO(TString what, TString name=0, TString file=0) const ; 
   const TTask * ReturnT(TString what,TString name=0) const ; 
   void DefineBranchTitles(char* branch, char* branchTitle) ;
   void ReadTreeD() ;
@@ -168,6 +197,7 @@ class AliPHOSGetter : public TObject {
   void ReadTreeQA() ;
   void ReadPrimaries() ;
 
+  void * PrimariesRef(void) const ;
   void * HitsRef(void) const ;
   void * SDigitsRef(const char * name, const char * file = 0 ) const;
   void * DigitsRef (const char * name)   const ;
@@ -200,6 +230,7 @@ class AliPHOSGetter : public TObject {
   TObjArray *    fPrimaries ;         //! list of lists of primaries-for the case of mixing
 
   TFolder *      fModuleFolder ;      //!Folder that contains the modules 
+  TFolder *      fPrimariesFolder ;   //!Folder that contains the Primary Particles 
   TFolder *      fHitsFolder ;        //!Folder that contains the Hits 
   TFolder *      fSDigitsFolder ;     //!Folder that contains the SDigits 
   TFolder *      fDigitsFolder ;      //!Folder that contains the Digits 

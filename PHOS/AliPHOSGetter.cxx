@@ -52,6 +52,7 @@
 #include "TROOT.h"
 #include "TObjString.h"
 #include "TFolder.h"
+#include "TParticle.h"
 
 // --- Standard library ---
 #include <iostream.h>
@@ -92,13 +93,14 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
 
   fPrimaries = new TObjArray(1) ;
 
-  fModuleFolder  = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Configuration/Modules")); 
-  fHitsFolder    = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/RunMC/Event/Data/Hits")); 
-  fSDigitsFolder = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/RunMC/Event/Data/SDigits")); 
-  fDigitsFolder  = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Event/Data")); 
-  fRecoFolder    = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Event/RecData")); 
-  fQAFolder      = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Conditions/QA")); 
-  fTasksFolder   = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Tasks")) ; 
+  fModuleFolder    = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Configuration/Modules")); 
+  fPrimariesFolder = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/RunMC/Event/Data")); 
+  fHitsFolder      = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/RunMC/Event/Data/Hits")); 
+  fSDigitsFolder   = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/RunMC/Event/Data/SDigits")); 
+  fDigitsFolder    = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Event/Data")); 
+  fRecoFolder      = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Event/RecData")); 
+  fQAFolder        = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Conditions/QA")); 
+  fTasksFolder     = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Tasks")) ; 
 
   if ( fHeaderFile != "aliroot"  ) { // to call the getter without a file
 
@@ -201,6 +203,53 @@ const AliPHOSGeometry * AliPHOSGetter::PHOSGeometry()
     rv =  PHOS()->GetGeometry() ;
   return rv ; 
 } 
+
+//____________________________________________________________________________ 
+Bool_t AliPHOSGetter::PostPrimaries(void) const 
+{  //------- Primaries ----------------------
+
+  // the hierarchy is //Folders/RunMC/Event/Data/Primaries
+  
+  TFolder * primariesFolder = dynamic_cast<TFolder*>(fPrimariesFolder->FindObject("Primaries")) ; 
+  if ( !primariesFolder ) {
+    if (fDebug) {
+      cout << "WARNING: AliPHOSGetter::Post Primaries -> Folder //" << fPrimariesFolder << "/Primaries/ not found!" << endl;
+      cout << "INFO:    AliPHOSGetter::Post Primaries -> Adding Folder //" << fPrimariesFolder << "/Primaries/"  << endl;
+    }
+    primariesFolder = fPrimariesFolder->AddFolder("Primaries", "Primaries particles from TreeK") ; 
+  }    
+  TClonesArray *primaries=  new TClonesArray("TParticle",1000) ;
+  primaries->SetName("Primaries") ;
+  primariesFolder->Add(primaries) ; 
+  
+  return kTRUE;
+} 
+
+//____________________________________________________________________________ 
+void * AliPHOSGetter::PrimariesRef(void) const 
+{  //------- Primaries ----------------------
+
+  
+  // the hierarchy is //Folders/RunMC/Event/Data/Primaries
+  if ( !fPrimariesFolder ) {
+    cerr << "ERROR: AliPHOSGetter::Post PrimariesRef -> Folder //" << fPrimariesFolder << " not found!" << endl;
+    return 0;
+  }    
+ 
+  TFolder * primariesFolder = dynamic_cast<TFolder *>(fPrimariesFolder->FindObject("Primaries")) ;
+  if ( !primariesFolder ) {
+    cerr << "ERROR: AliPHOSGetter::Post PrimariesRef -> Folder //" << fPrimariesFolder << "/Primaries/ not found!" << endl;  
+    return 0;
+  }
+ 
+  TObject * p = primariesFolder->FindObject("Primaries") ;
+  if(!p) {
+    cerr << "ERROR: AliPHOSGetter::PrimariesRef -> " << primariesFolder->GetName() << "/Primaries not found !" << endl ; 
+    return 0 ;
+  }
+  else
+    return static_cast<void *>(primariesFolder->GetListOfFolders()->GetObjectRef(p)) ;
+}
 
 //____________________________________________________________________________ 
 Bool_t AliPHOSGetter::PostHits(void) const 
@@ -1132,20 +1181,44 @@ const TParticle * AliPHOSGetter::Primary(Int_t index) const
 
   if(index < 0) 
     return 0 ;
-  
-  Int_t primaryIndex = index % 10000000 ; 
-  Int_t primaryList = (Int_t ) ((index-primaryIndex)/10000000.)  ;
-  
-  if ( primaryList > 0  ) {
-    if (fDebug) {
-      cout << " Getter does not support currently Mixing of primary " << endl ;
-      cout << "   can not return primary: " << index<< " (list "<< primaryList<< " primary # " << primaryIndex << " )"<<endl ;
-    }
-    return 0;
+  TParticle *  p = gAlice->Particle(index) ; 
+  if (p->GetFirstMother() != -1 ) {
+    cout << "AliPHOSGetter::Primary : Not a primary " << endl ; 
   }
+  return p ; 
   
-  return gAlice->Particle(primaryIndex) ;
   
+//   Int_t primaryIndex = index % 10000000 ; 
+//   Int_t primaryList = (Int_t ) ((index-primaryIndex)/10000000.)  ;
+  
+//   if ( primaryList > 0  ) {
+//     if (fDebug) {
+//       cout << " Getter does not support currently Mixing of primary " << endl ;
+//       cout << "   can not return primary: " << index<< " (list "<< primaryList<< " primary # " << primaryIndex << " )"<<endl ;
+//     }
+//     return 0;
+//   }
+  
+//   return gAlice->Particle(primaryIndex) ;
+  
+}
+
+//____________________________________________________________________________ 
+const TParticle * AliPHOSGetter::Secondary(TParticle* p, Int_t index) const
+{
+  // Return first (index=1) or second (index=2) secondary particle of primary particle p 
+
+  if(index <= 0) 
+    return 0 ;
+  if(index > 2)
+    return 0 ;
+
+  if(p) {
+  Int_t daughterIndex = p->GetDaughter(index-1) ; 
+  return  gAlice->Particle(daughterIndex) ; 
+  }
+  else
+    return 0 ;
 }
 
 //____________________________________________________________________________ 
@@ -1573,16 +1646,47 @@ void AliPHOSGetter::ReadTreeS(TTree * treeS, Int_t input)
 //____________________________________________________________________________ 
 void AliPHOSGetter::ReadPrimaries()
 {
+
+  
+  // Read the first entry of PHOS branch in hit tree gAlice->TreeH()
+  TTree * particleTree = gAlice->TreeK()  ; 
+  if( ! particleTree ){
+    cerr <<   "ERROR: AliPHOSGetter::ReadTreePrimaries: -> Cannot read TreeK " << endl ;
+    return ;
+  }
+  
+  TBranch * particlesbranch = static_cast<TBranch*>(particleTree->GetBranch("Particles")) ;
+  if ( !particlesbranch ) {
+    if (fDebug)
+      cout << "WARNING:  AliPHOSGetter::ReadTreePrimaries -> Cannot find branch Particles" << endl ; 
+    return ;
+  }
+
+  TParticle * particle = 0; 
+  TClonesArray * ar ; 
+  if(! (ar = Primaries()) ) { 
+    PostPrimaries() ;
+    ar = Primaries() ; 
+  }
+  ar->Delete() ; 
+  particlesbranch->SetAddress(&particle) ;
+  
+  Int_t index = 0 ; 
+  for (index = 0 ; index < particleTree->GetEntries(); index++) { 
+    particlesbranch->GetEntry(index) ;
+    new ((*ar)[index]) TParticle(*particle);
+  }
+  fNPrimaries= ar->GetEntries() ; 
+  
   // Reads specific branches of primaries
+  // fNPrimaries = gAlice->GetNtrack();
   
-  fNPrimaries = gAlice->GetNtrack();
-  
-  //   //Check, is it necessary to open new files
-  //   TArrayI* events = fDigitizer->GetCurrentEvents() ; 
-  //   TClonesArray * filenames = fDigitizer->GetHeadersFiles() ;
+  //Check, is it necessary to open new files
+ //  TArrayI* events = fDigitizer->GetCurrentEvents() ; 
+//   TClonesArray * filenames = fDigitizer->GetHeadersFiles() ;
 //   Int_t input ;
 //   for(input = 0; input < filenames->GetEntriesFast(); input++){
-
+    
 //     TObjString * filename = (TObjString *) filenames->At(input) ;
 
 //     //Test, if this file already open
@@ -1592,59 +1696,59 @@ void AliPHOSGetter::ReadPrimaries()
 //     file->cd() ;
     
 //     // Get Kine Tree from file
-// //     char treeName[20];
-// //     sprintf(treeName,"TreeK%d",events->At(input));
-// //     TTree * treeK = (TTree*)gDirectory->Get(treeName);
-// //     if (treeK) 
-// //       treeK->SetBranchAddress("Particles", &fParticleBuffer);
-// //     else    
-// //       cout << "AliPHOSGetter: cannot find Kine Tree for event:" << events->At(input) << endl;
+//     char treeName[20];
+//     sprintf(treeName,"TreeK%d",events->At(input));
+//     TTree * treeK = (TTree*)gDirectory->Get(treeName);
+//     if (treeK) 
+//       treeK->SetBranchAddress("Particles", &fParticleBuffer);
+//     else    
+//       cout << "AliPHOSGetter: cannot find Kine Tree for event:" << events->At(input) << endl;
 
-// //     // Create the particle stack
-// //     if(!fParticles) fParticles = new TClonesArray("TParticle",1000);
-// //     // Build the pointer list
-// //     if(fParticleMap) {     <----
-// //       fParticleMap->Clear();
-// //       fParticleMap->Expand(treeK->GetEntries());
-// //     } else
-// //       fParticleMap = new TObjArray(treeK->GetEntries());
+//     // Create the particle stack
+//     if(!fParticles) fParticles = new TClonesArray("TParticle",1000);
+//     // Build the pointer list
+//     if(fParticleMap) {     <----
+//       fParticleMap->Clear();
+//       fParticleMap->Expand(treeK->GetEntries());
+//     } else
+//       fParticleMap = new TObjArray(treeK->GetEntries());
     
 //     // From gAlice->Particle(i) 
 
 
-// //   if(!(*fParticleMap)[i]) {
-// //     Int_t nentries = fParticles->GetEntries();
+//   if(!(*fParticleMap)[i]) {
+//     Int_t nentries = fParticles->GetEntries();
     
-// //     // algorithmic way of getting entry index
-// //     // (primary particles are filled after secondaries)
-// //     Int_t entry;
-// //     if (i<fHeader.GetNprimary())
-// //       entry = i+fHeader.GetNsecondary();
-// //     else 
-// //       entry = i-fHeader.GetNprimary();
+//     // algorithmic way of getting entry index
+//     // (primary particles are filled after secondaries)
+//     Int_t entry;
+//     if (i<fHeader.GetNprimary())
+//       entry = i+fHeader.GetNsecondary();
+//     else 
+//       entry = i-fHeader.GetNprimary();
       
-// //     // only check the algorithmic way and give
-// //     // the fatal error if it is wrong
-// //     if (entry != fParticleFileMap[i]) {
-// //       Fatal("Particle",
-// //         "!!!! The algorithmic way is WRONG: !!!\n entry: %d map: %d",
-// // 	entry, fParticleFileMap[i]); 
-// //     }  
+//     // only check the algorithmic way and give
+//     // the fatal error if it is wrong
+//     if (entry != fParticleFileMap[i]) {
+//       Fatal("Particle",
+//         "!!!! The algorithmic way is WRONG: !!!\n entry: %d map: %d",
+// 	entry, fParticleFileMap[i]); 
+//     }  
       
-// //     fTreeK->GetEntry(fParticleFileMap[i]);
-// //     new ((*fParticles)[nentries]) TParticle(*fParticleBuffer);
-// //     fParticleMap->AddAt((*fParticles)[nentries],i);
-// //   }
-// //   return (TParticle *) (*fParticleMap)[i];
+//     fTreeK->GetEntry(fParticleFileMap[i]);
+//     new ((*fParticles)[nentries]) TParticle(*fParticleBuffer);
+//     fParticleMap->AddAt((*fParticles)[nentries],i);
+//   }
+//   return (TParticle *) (*fParticleMap)[i];
 
    
     
-//   }
+// //   }
 
 
-//   //scan over opened files and read corresponding TreeK##
+// //   //scan over opened files and read corresponding TreeK##
 
-  return ;
+//   return ;
 }
 //____________________________________________________________________________ 
 void AliPHOSGetter::Event(const Int_t event, const char* opt)
@@ -1655,8 +1759,8 @@ void AliPHOSGetter::Event(const Int_t event, const char* opt)
     cerr << "ERROR: AliPHOSGetter::Event -> " << event << " not found in TreeE!" << endl ; 
     return ; 
   }
-  gAlice->GetEvent(event) ;
-
+  gAlice->GetEvent(event) ; 
+ 
   if(strstr(opt,"H") )
     ReadTreeH() ;
   
@@ -1672,13 +1776,13 @@ void AliPHOSGetter::Event(const Int_t event, const char* opt)
   if( strstr(opt,"Q") )
     ReadTreeQA() ;
 
-  if( strstr(opt,"P") || (strcmp(opt,"")==0) )
-    ReadPrimaries() ;
+  //  if( strstr(opt,"P") || (strcmp(opt,"")==0) )
+  //  ReadPrimaries() ;
 
 }
 
 //____________________________________________________________________________ 
-const TObject * AliPHOSGetter::ReturnO(TString what, TString name, TString file) const 
+TObject * AliPHOSGetter::ReturnO(TString what, TString name, TString file) const 
 {
   // get the object named "what" from the folder
   // folders are named like //Folders
@@ -1690,7 +1794,12 @@ const TObject * AliPHOSGetter::ReturnO(TString what, TString name, TString file)
   TObject * phosO  = 0 ; 
 
   //  if ( name.IsNull() ) {
-  if ( what.CompareTo("Hits") == 0 ) {
+  if ( what.CompareTo("Primaries") == 0 ) {
+    folder = dynamic_cast<TFolder *>(fPrimariesFolder->FindObject("Primaries")) ; 
+    if (folder) 
+      phosO  = dynamic_cast<TObject *>(folder->FindObject("Primaries")) ;  
+  }
+  else if ( what.CompareTo("Hits") == 0 ) {
     folder = dynamic_cast<TFolder *>(fHitsFolder->FindObject("PHOS")) ; 
     if (folder) 
       phosO  = dynamic_cast<TObject *>(folder->FindObject("Hits")) ;  
@@ -1760,6 +1869,7 @@ const TObject * AliPHOSGetter::ReturnO(TString what, TString name, TString file)
       cerr << "ERROR : AliPHOSGetter::ReturnO -> Object " << what << " not found in " << folder->GetName() << endl ; 
     return 0 ;
   }
+
   return phosO ;
 }
   
