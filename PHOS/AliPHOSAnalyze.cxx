@@ -606,13 +606,15 @@ void AliPHOSAnalyze::DisplayRecPoints()
       Float_t etot=0.;
       Int_t relid[4]; Int_t nDigits = 0 ;
       AliPHOSDigit * digit ; 
+
+      // Making 2D histogram of the EMC module
       while((digit = (AliPHOSDigit *)next())) 
 	{  
 	  fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
-	  if (relid[0] == module)  
+	  if (relid[0] == module && relid[1] == 0)  
 	    {  
 	      energy = fClu->Calibrate(digit->GetAmp()) ;
-	      if (energy > 0.025 ){
+	      if (energy >  fClu->GetEmcEnergyThreshold()  ){
 		nDigits++ ;
 		etot += energy ; 
 		fGeom->RelPosInModule(relid,y,z) ;   
