@@ -86,6 +86,7 @@ Int_t AliJetParticlesReader::Next()
 	fTree->Branch("particles","AliJetEventParticles",&fEventParticles,32000,1);
 	fNewTree=0;
       }
+      fEventParticles->SetEventNr(fNEventsRead);
       fTree->Fill();
   }
   return kTRUE;

@@ -31,7 +31,8 @@ AliJetEventParticles::AliJetEventParticles(Int_t size) :
   fYJet(-1),
   fImpact(0.),
   fNHardScatters(0),
-  fNwNwColl(0)
+  fNwNwColl(0),
+  fEventNr(0)
 {
   // Default Constructor
   for (Int_t i = 0; i < 4; i++) fZquench[i] = 0.;
@@ -61,7 +62,8 @@ AliJetEventParticles::AliJetEventParticles(const AliJetEventParticles& source) :
   fYJet(source.GetXJet()),
   fImpact(source.GetImpact()),
   fNHardScatters(source.GetNhard()),
-  fNwNwColl(source.GetNpart())
+  fNwNwColl(source.GetNpart()),
+  fEventNr(source.GetEventNr())
 {
   //copy constructor
   for(Int_t i =0; i<fNParticles; i++)
@@ -105,6 +107,7 @@ void AliJetEventParticles::Set(const AliJetEventParticles& source)
   fImpact=source.GetImpact();
   fNHardScatters=source.GetNhard();
   fNwNwColl=source.GetNpart();
+  fEventNr=source.GetEventNr();
 
   for(Int_t i =0; i<fNParticles; i++)
     {
@@ -155,6 +158,7 @@ void  AliJetEventParticles::Reset(Int_t size)
   fImpact=0.;
   fNHardScatters=0;
   fNwNwColl=0;
+  fEventNr=0;
   for (Int_t i = 0; i < 4; i++) fZquench[i] = 0.;
   for (Int_t i = 0; i < 10; i++) 
     for (Int_t j = 0; j < 4; j++) {
@@ -451,6 +455,7 @@ void AliJetEventParticles::Print(Option_t* /*t*/) const
 {
   cout << "--- AliJetEventParticles ---" << endl;
   if(fHeader.Length()) cout << fHeader.Data() << endl;
+  cout << "Event Number: " << fEventNr << endl;
   cout << "Particles in Event: " << fNParticles << endl;
   if(fNUQJets){
     cout << "Unquenched Jets: " << fNUQJets << endl;
@@ -482,5 +487,4 @@ void AliJetEventParticles::Print(Option_t* /*t*/) const
       cout << i << " " << et << " " << etaj << " " << phj << endl;
     }
   }
-
 }
