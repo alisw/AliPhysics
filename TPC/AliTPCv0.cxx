@@ -60,7 +60,7 @@ void AliTPCv0::CreateGeometry()
   Int_t *idtmed = fIdtmed->GetArray();
 
   Float_t dm[21];
-  Int_t idrotm[100];
+  Int_t idrotm[120];
 
   Int_t nRotMat = 0;
 

@@ -55,7 +55,7 @@ void AliTPCv2::CreateGeometry()
   Int_t *idtmed = fIdtmed->GetArray();
 
   Float_t dm[21];
-  Int_t idrotm[100];
+  Int_t idrotm[120];
 
   Int_t nRotMat = 0;
 
@@ -363,7 +363,7 @@ void AliTPCv2::CreateGeometry()
 
     }    
 
-    gMC->Gsord("TLGA", 4);
+        gMC->Gsord("TLGA", 4);
 
   } // if strips selected
 
@@ -987,9 +987,9 @@ void AliTPCv2::StepManager()
   //
   // parameters used for the energy loss calculations
   //
-   const Float_t prim = 14.35; // number of primary collisions per 1 cm
-   const Float_t poti = 20.77e-9; // first ionization potential for Ne/CO2
-   const Float_t w_ion = 35.97e-9; // energy for the ion-electron pair creation 
+  const Float_t prim = 14.35; // number of primary collisions per 1 cm
+  const Float_t poti = 20.77e-9; // first ionization potential for Ne/CO2
+  const Float_t w_ion = 35.97e-9; // energy for the ion-electron pair creation 
 
   //  const Float_t prim = 17.65;
   //  const Float_t poti = 19.02e-9;

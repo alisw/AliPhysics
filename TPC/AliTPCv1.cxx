@@ -62,7 +62,7 @@ void AliTPCv1::CreateGeometry()
   Int_t *idtmed = fIdtmed->GetArray();
 
   Float_t dm[21];
-  Int_t idrotm[100];
+  Int_t idrotm[120];
 
   Int_t nRotMat = 0;
 
@@ -337,6 +337,7 @@ void AliTPCv1::CreateGeometry()
     phi1 = (Float_t)TMath::Nint(phi1);
 
     if (phi1 > 360.) phi1 -= 360.;
+
       
     theta1 = 90.;
     phi2   = 90.;
