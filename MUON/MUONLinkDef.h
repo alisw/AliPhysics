@@ -42,6 +42,7 @@
 #pragma link C++ class  AliMUONHitForRec+;
 #pragma link C++ class  AliMUONSegment+;
 #pragma link C++ class  AliMUONTrack+;
+#pragma link C++ class  AliMUONTriggerTrack+;
 #pragma link C++ class  AliMUONTrackHit+;
 #pragma link C++ class  AliMUONTrackParam+;
 #pragma link C++ class  AliMUONTriggerConstants+;

@@ -23,7 +23,8 @@ SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
                AliMUONEventReconstructor.cxx \
 	       AliMUONTriggerDecision.cxx \
                AliMUONHitForRec.cxx AliMUONSegment.cxx \
-               AliMUONTrack.cxx AliMUONTrackHit.cxx AliMUONTrackParam.cxx \
+               AliMUONTrack.cxx AliMUONTriggerTrack.cxx \
+               AliMUONTrackHit.cxx AliMUONTrackParam.cxx \
                AliMUONTriggerCircuit.cxx AliMUONTriggerLut.cxx \
                AliMUONGlobalTrigger.cxx AliMUONLocalTrigger.cxx \
                AliMUONTriggerConstants.cxx  AliMUONConstants.cxx \
