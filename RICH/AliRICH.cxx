@@ -15,6 +15,12 @@
 
 /*
   $Log$
+  Revision 1.61  2002/10/29 15:00:08  morsch
+  - Diagnostics updated.
+  - RecHits structure synchronized.
+  - Digitizer method using AliRICHDigitizer.
+  (J. Barbosa)
+
   
   Revision 1.60  2002/10/22 16:28:21  alibrary
   Introducing Riostream.h
@@ -2114,8 +2120,9 @@ void AliRICH::StepManager()
     // Only gas gap inside chamber
     // Tag chambers and record hits when track enters 
     
-    idvol=-1;
+ 
     id=gMC->CurrentVolID(copy);
+    idvol = copy-1;
     Float_t cherenkovLoss=0;
     //gAlice->KeepTrack(gAlice->CurrentTrack());
     
@@ -2191,12 +2198,13 @@ void AliRICH::StepManager()
 			mom[1]=momentum(1);
 			mom[2]=momentum(2);
 			mom[3]=momentum(3);
+			Chamber(idvol).GlobaltoLocal(mom,localMom);
 			// Z-position for hit
 			
 			
 			/**************** Photons lost in second grid have to be calculated by hand************/ 
 			
-			Float_t cophi = TMath::Cos(TMath::ATan2(mom[0], mom[1]));
+			Float_t cophi = TMath::Cos(TMath::ATan2(localMom[0], localMom[1]));
 			Float_t t = (1. - .025 / cophi) * (1. - .05 /  cophi);
 			//gMC->Rndm(ranf, 1);
 			gMC->GetRandom()->RndmArray(1,ranf);
@@ -2221,11 +2229,11 @@ void AliRICH::StepManager()
 			mom[1]=momentum(1);
 			mom[2]=momentum(2);
 			mom[3]=momentum(3);
-			
+			Chamber(idvol).GlobaltoLocal(mom,localMom);
 			/********* Photons lost by Fresnel reflection have to be calculated by hand********/ 
 			/***********************Cerenkov phtons (always polarised)*************************/
 			
-			Float_t cophi = TMath::Cos(TMath::ATan2(mom[0], mom[1]));
+			Float_t cophi = TMath::Cos(TMath::ATan2(localMom[0], localMom[1]));
 			Float_t t = Fresnel(ckovEnergy*1e9,cophi,1);
 			//gMC->Rndm(ranf, 1);
 			gMC->GetRandom()->RndmArray(1,ranf);
