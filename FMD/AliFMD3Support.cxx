@@ -75,7 +75,7 @@ AliFMD3Support::SetupGeometry(Int_t    airId,
 			      Double_t innerZl, 
 			      Double_t innerZh, 
 			      Double_t innerRl, 
-			      Double_t outerZl, 
+			      Double_t /* outerZl */, 
 			      Double_t outerZh, 
 			      Double_t outerRl)
 {
@@ -142,10 +142,6 @@ AliFMD3Support::SetupGeometry(Int_t    airId,
 
   // The volume 
   gMC->Gsvolu(mother, "PCON", airId, p, 27);
-  if (outerZh - fZ < p[24]) 
-    Warning("SetupGeometry", "Outer ring back is at %f (%f), "
-	    "but support ends %f", outerZh, outerZl,
-	    p[24] + fZ);
   
   // ------------- Support Structures --------------------------------
   fRotations.Set(fNBeam + fNFlange);
