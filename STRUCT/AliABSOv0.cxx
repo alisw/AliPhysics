@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/01/12 15:39:30  morsch
+Standar version of ABSO
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -198,7 +201,7 @@ void AliABSOv0::CreateGeometry()
   cpar[1] = zr * TMath::Tan(theta_r);
   cpar[2] = zr * TMath::Tan(acc_max);
   cpar[3] = cpar[1] + TMath::Tan(acc_min) * 5;
-  cpar[4] = cpar[2] + TMath::Tan(theta_r) * 5;
+  cpar[4] = cpar[2] + TMath::Tan(acc_max) * 5;
   gMC->Gsvolu("ARPB", "CONE", idtmed[1632], cpar, 5);
   dz=(abs_l-abs_d)/2.-cpar[0];
   gMC->Gspos("ARPB", 1, "AITR", 0., 0., dz, 0, "ONLY");
