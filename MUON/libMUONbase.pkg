@@ -1,0 +1,24 @@
+SRCS:=  AliMUON.cxx \
+        AliMUONConstants.cxx \
+        AliMUONTriggerConstants.cxx \
+        AliMUONData.cxx \
+        AliMUONDataInterface.cxx \
+        AliMUONLoader.cxx \
+        AliMUONSegmentationDetectionElement.cxx \
+        AliMUONSegmentIndex.cxx \
+        AliMUONSegmentManuIndex.cxx \
+        AliMUONSegmentPosition.cxx\
+        AliMUONChamber.cxx \
+        AliMUONChamberTrigger.cxx \
+        AliMUONTriggerCircuit.cxx \
+        AliMUONDisplay.cxx \
+        AliMUONPoints.cxx \
+        AliMUONRecoDisplay.cxx \
+        AliMUONRecoCheck.cxx
+
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR:= MUONbaseLinkDef.h
+
+EINCLUDE:= RAW
+
