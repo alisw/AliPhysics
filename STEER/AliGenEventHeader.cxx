@@ -65,6 +65,7 @@ void  AliGenEventHeader::PrimaryVertex(TArrayF &o) const
     //
     // Return the primary vertex for the event
     //
+    o.Set(3);
     o[0] = fVertex.At(0);
     o[1] = fVertex.At(1);
     o[2] = fVertex.At(2);    
