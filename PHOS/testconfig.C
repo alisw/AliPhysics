@@ -70,10 +70,10 @@ void Config()
   
   gener->SetPart(22) ;
   gener->SetPtRange(9.99, 10.00);
-  gener->SetPhiRange(250, 290); //(220, 320);
+  gener->SetPhiRange(220, 320);
   // Set pseudorapidity range from -8 to 8.
-  Float_t thmin = EtaToTheta(0.02); //(0.12);   // 220 theta min. <---> eta max
-  Float_t thmax = EtaToTheta(-0.02); //(-0.12);  // 320 theta max. <---> eta min 
+  Float_t thmin = EtaToTheta(0.12);   // 220 theta min. <---> eta max
+  Float_t thmax = EtaToTheta(-0.12);  // 320 theta max. <---> eta min 
  
   gener->SetThetaRange(thmin, thmax);
   gener->SetOrigin(0, 0, 0);  //vertex position

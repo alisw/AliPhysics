@@ -12,7 +12,7 @@ PACKAGE = PHOS
 SRCS          =  AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx \
                  AliPHOSvFast.cxx AliPHOSvImpacts.cxx \
                  AliPHOSImpact.cxx \
-                 AliPHOSHit.cxx \
+                 AliPHOSHit.cxx AliPHOSTick.cxx\
                  AliPHOSGeometry.cxx \
 		 AliPHOSEMCAGeometry.cxx \
 		 AliPHOSCPVGeometry.cxx AliPHOSCPVBaseGeometry.cxx \
@@ -29,10 +29,7 @@ SRCS          =  AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx \
                  AliPHOSGetter.cxx AliPHOSTick.cxx \
 		 AliPHOSQAVirtualCheckable.cxx AliPHOSQAIntCheckable.cxx \
                  AliPHOSQAFloatCheckable.cxx\
-                 AliPHOSQAObjectCheckable.cxx AliPHOSQAChecker.cxx AliPHOSQAMeanChecker.cxx AliPHOSQAAlarm.cxx \
-                 AliPHOSIhepAnalyze.cxx AliPHOSEvalRecPoint.cxx \
-                 AliPHOSRecManager.cxx AliPHOSRecCpvManager.cxx AliPHOSRecEmcManager.cxx \
-                 AliPHOSClusterizerv2.cxx
+                 AliPHOSQAObjectCheckable.cxx AliPHOSQAChecker.cxx AliPHOSQAMeanChecker.cxx AliPHOSQAAlarm.cxx
 
 # C++ Headers
 
@@ -80,18 +77,26 @@ include $(ALICE_ROOT)/conf/GeneralMacros
 
 -include tgt_$(ALICE_TARGET)/Make-depend 
 
+
 test:	
 		@echo " ____________________________________________________________ "
 		@echo " "
 		@echo " Starting the test of the simulation/reconstruction software. Please don't take the warning messages into account. "
 		@echo " ____________________________________________________________ "
-		@aliroot -b -q testsim.C > out
+		@aliroot -b -q "testsim.C(100)" > out
 		@aliroot -b -q testsimglobal.C > out
 		@rm out
 		@rm testPHOS.root
 
-
-
+test10:	
+		@echo " ____________________________________________________________ "
+		@echo " "
+		@echo " Starting the test of the simulation/reconstruction software. Please don't take the warning messages into account. "
+		@echo " ____________________________________________________________ "
+		@aliroot -b -q "testsim.C(10)" > out
+		@aliroot -b -q testsimglobal.C > out
+		@rm out
+		@rm testPHOS.root
 
 
 
