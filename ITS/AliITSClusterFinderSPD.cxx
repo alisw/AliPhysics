@@ -15,6 +15,8 @@
 
 
 #include "AliITSClusterFinderSPD.h"
+#include "AliITSMapA1.h"
+#include "AliITS.h"
 #include "AliRun.h"
 
 
@@ -44,13 +46,21 @@ AliITSClusterFinderSPD::AliITSClusterFinderSPD()
   fDigits=0;
   fClusters=0;
   fNclusters=0;
+  fMap=0;
   SetDx();
   SetDz();
-  SetMap();
   SetNCells();
   
 }
 
+//_____________________________________________________________________________
+AliITSClusterFinderSPD::~AliITSClusterFinderSPD()
+{
+  // destructor
+  if (fMap) delete fMap;
+
+
+}
 //__________________________________________________________________________
 AliITSClusterFinderSPD::AliITSClusterFinderSPD(const AliITSClusterFinderSPD &source){
   //     Copy Constructor 
@@ -122,13 +132,13 @@ void AliITSClusterFinderSPD::Find1DClusters()
 	id = it+m;
 	if(id >= fMaxNofSamples) break;    // ! no possible for the fadc 
 	
-	if(fMap->GetHitIndex(k,id)) {   // start of the cluster
+	if(fMap->TestHit(k,id) == kUnused) {   // start of the cluster
 	  lclx += 1;
 	  if(lclx == 1) xstart = id;
 	  
 	}
 	
-	if(lclx > 0 && !fMap->GetHitIndex(k,id)) {  
+	if(lclx > 0 && fMap->TestHit(k,id) == kEmpty) {  
 	  // end of cluster if a gap exists
 	  xstop = id-1;
 	  ilcl = 1;
@@ -143,14 +153,14 @@ void AliITSClusterFinderSPD::Find1DClusters()
       if(id >= fMaxNofSamples && lclx == 0) break; // the x row finished
       
       if(id < fMaxNofSamples && ilcl == 0 && lclx > 0) {  
-	// cluster end is outside of the window,
+	                           // cluster end is outside of the window,
 	mmax += 5;                 // increase mmax and repeat the cluster
-	// finding
+	                           // finding
 	it -= 1;
       }
       
       if(id >= fMaxNofSamples && lclx > 0) {  // the x row finished but
-	xstop = fMaxNofSamples - 1;          // the end cluster exists
+	xstop = fMaxNofSamples - 1;           // the end cluster exists
 	ilcl = 1;
       } 
       
@@ -161,11 +171,10 @@ void AliITSClusterFinderSPD::Find1DClusters()
 	mmax = 10;
 	    nofFoundClusters++;
 	    Float_t clusterCharge = 0.;
-            // get this from segmentation when this will be implemented
             Float_t zpitch = fSegmentation->Dpz(k+1); 
 	    Float_t clusterZ, dummyX; 
             Int_t dummy=0;
-            fSegmentation->GetCellCxz(dummy,k,dummyX,clusterZ);
+            fSegmentation->GetPadCxz(dummy,k,dummyX,clusterZ);
             Float_t zstart = clusterZ - 0.5*zpitch;
             Float_t zstop = clusterZ + 0.5*zpitch;
 	    Float_t clusterX = 0.;
@@ -177,7 +186,7 @@ void AliITSClusterFinderSPD::Find1DClusters()
             Int_t its;
 	    for(its=xstart; its<=xstop; its++) {
               Int_t firedpixel=0;
-              if (fMap->GetHitIndex(k,its)) firedpixel=1; 
+              if (fMap->GetHitIndex(k,its)>=0) firedpixel=1; 
 	      clusterCharge += firedpixel;
               clusterX +=its + 0.5;
 	    }
@@ -204,6 +213,8 @@ void AliITSClusterFinderSPD::Find1DClusters()
       }    // new cluster (ilcl=1)
     } // X direction loop (it)
   } // Z direction loop (k)
+
+  //fMap->ClearMap();
   return;
   
 }
@@ -217,12 +228,11 @@ void  AliITSClusterFinderSPD::GroupClusters()
   // get number of clusters for this module
   Int_t nofClusters = fClusters->GetEntriesFast();
   nofClusters -= fNclusters;
-  //printf("Group: fNclusters nofClusters %d %d\n",fNclusters, nofClusters);
   
   AliITSRawClusterSPD *clusterI;
   AliITSRawClusterSPD *clusterJ;
   
-  Int_t *label = new Int_t [nofClusters];  // activate this for DEC machines
+  Int_t *label=new Int_t[nofClusters];  
   Int_t i,j;
   for(i=0; i<nofClusters; i++) label[i] = 0;
   for(i=0; i<nofClusters; i++) {
@@ -237,8 +247,8 @@ void  AliITSClusterFinderSPD::GroupClusters()
 	//    if((clusterI->XStop() == clusterJ->XStart()-1)||(clusterI->XStart()==clusterJ->XStop()+1)) cout<<"!! Diagonal cluster"<<endl;
 	/*    
 	      cout << "clusters " << i << "," << j << " before grouping" << endl;
-	      clusterI->Print();
-	      clusterJ->Print();
+	      clusterI->PrintInfo();
+	      clusterJ->PrintInfo();
 	*/    
 	clusterI->Add(clusterJ);
 	//        cout << "remove cluster " << j << endl;
@@ -246,7 +256,7 @@ void  AliITSClusterFinderSPD::GroupClusters()
 	fClusters->RemoveAt(j);
 	/*
 	  cout << "cluster  " << i << " after grouping" << endl;
-	  clusterI->Print();
+	  clusterI->PrintInfo();
 	*/
       }  // pair
     } // J clusters  
@@ -257,7 +267,7 @@ void  AliITSClusterFinderSPD::GroupClusters()
   //cout << " Nomber of clusters at the group end ="<< totalNofClusters<<endl;
   
   delete [] label;
-  
+
   return;
   
   
@@ -272,25 +282,34 @@ void AliITSClusterFinderSPD::GetRecPoints()
   // get number of clusters for this module
   Int_t nofClusters = fClusters->GetEntriesFast();
   nofClusters -= fNclusters;
-  //printf("GetRecP: fNclusters nofClusters %d %d\n",fNclusters, nofClusters);
+
   
   const Float_t kconv = 1.0e-4;
   const Float_t kRMSx = 12.0*kconv; // microns -> cm ITS TDR Table 1.3
   const Float_t kRMSz = 70.0*kconv; // microns -> cm ITS TDR Table 1.3
 
-  Int_t i;
+  Float_t spdLength = fSegmentation->Dz();
+  Float_t spdWidth = fSegmentation->Dx();
+
+  Int_t i, ix, iz;
   for(i=0; i<nofClusters; i++) { 
     AliITSRawClusterSPD *clusterI = (AliITSRawClusterSPD*) fClusters->At(i);
+    fSegmentation->GetPadIxz(clusterI->X(),clusterI->Z(),ix,iz);
+    AliITSdigitSPD *dig = (AliITSdigitSPD*)fMap->GetHit(iz-1,ix-1);
     AliITSRecPoint rnew;
-    rnew.SetX(clusterI->X()*kconv);
-    rnew.SetZ(clusterI->Z()*kconv);
+    rnew.SetX((clusterI->X() - spdWidth/2)*kconv);
+    rnew.SetZ((clusterI->Z() - spdLength/2)*kconv);
     rnew.SetQ(1.);
     rnew.SetdEdX(0.);
     rnew.SetSigmaX2(kRMSx*kRMSx);
     rnew.SetSigmaZ2(kRMSz*kRMSz);
-    rnew.SetProbability(1.);
+    rnew.fTracks[0]=dig->fTracks[0];
+    rnew.fTracks[1]=dig->fTracks[1];
+    rnew.fTracks[2]=dig->fTracks[2];
     iTS->AddRecPoint(rnew);
   } // I clusters
+
+  fMap->ClearMap();
   
 }
 //_____________________________________________________________________________
@@ -301,5 +320,6 @@ void AliITSClusterFinderSPD::FindRawClusters()
   Find1DClusters();
   GroupClusters();
   GetRecPoints();
+
 }
 

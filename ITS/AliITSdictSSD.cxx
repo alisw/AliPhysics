@@ -1,22 +1,15 @@
 
 #include <stdio.h>
-#include <TObjArray.h>
 
-#include "AliITSsegmentationSSD.h"
-#include "AliITSresponseSSD.h"
-#include "AliITSsimulationSSD.h"
 #include "AliITSdictSSD.h"
-#include "AliITSdcsSSD.h"
-#include "AliITS.h"
-#include "AliRun.h"
 
 
 void AliITSdictSSD::AddTrack(Int_t track) {
   // add track
     if (fTracks > 9) return;
-    Int_t exist = 0,i;
+    Int_t exist = 0;
     
-    for(i=0; i<10; i++) 
+    for(Int_t i=0; i<10; i++) 
      {
        if(track == fTrack[i]) 
         {

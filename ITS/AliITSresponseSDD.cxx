@@ -13,14 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include <TMath.h>
-
-#include "AliITSgeom.h"
 #include "AliITSresponseSDD.h"
-#include "AliITS.h"
-#include "AliRun.h"
 
-class AliITS;
 
 //___________________________________________
 ClassImp(AliITSresponseSDD)	
@@ -30,8 +24,8 @@ AliITSresponseSDD::AliITSresponseSDD()
   // constructor
    SetMaxAdc();
    SetDiffCoeff();
-   SetQref();
    SetDriftSpeed();
+   SetNSigmaIntegration();
    // SetClock();
    SetNoiseParam();
    SetMagicValue();
@@ -47,17 +41,18 @@ AliITSresponseSDD::AliITSresponseSDD()
 //__________________________________________________________________________
 AliITSresponseSDD::AliITSresponseSDD(const AliITSresponseSDD &source){
   //     Copy Constructor 
-  Int_t i;
   if(&source == this) return;
+  Int_t i;
   for(i=0;i<8;i++){this->fCPar[i] = source.fCPar[i];}
   this->fNoise = source.fNoise;
   this->fBaseline = source.fBaseline;
   this->fTopValue = source.fTopValue;
   this->fTemperature = source.fTemperature;
   this->fDriftSpeed = source.fDriftSpeed;
+  this->fNsigmas = source.fNsigmas;
   this->fMaxAdc = source.fMaxAdc;
   this->fDiffCoeff = source.fDiffCoeff;
-  this->fQref = source.fQref;
+  this->fDiffCoeff1 = source.fDiffCoeff1;
   this->fZeroSuppFlag = source.fZeroSuppFlag;
   this->fMinVal = source.fMinVal;
   this->fWrite = source.fWrite;
@@ -70,17 +65,18 @@ AliITSresponseSDD::AliITSresponseSDD(const AliITSresponseSDD &source){
 AliITSresponseSDD& 
   AliITSresponseSDD::operator=(const AliITSresponseSDD &source) {
   //    Assignment operator
-  Int_t i;
   if(&source == this) return *this;
+  Int_t i;
   for(i=0;i<8;i++){this->fCPar[i] = source.fCPar[i];}
   this->fNoise = source.fNoise;
   this->fBaseline = source.fBaseline;
   this->fTopValue = source.fTopValue;
   this->fTemperature = source.fTemperature;
   this->fDriftSpeed = source.fDriftSpeed;
+  this->fNsigmas = source.fNsigmas;
   this->fMaxAdc = source.fMaxAdc;
   this->fDiffCoeff = source.fDiffCoeff;
-  this->fQref = source.fQref;
+  this->fDiffCoeff1 = source.fDiffCoeff1;
   this->fZeroSuppFlag = source.fZeroSuppFlag;
   this->fMinVal = source.fMinVal;
   this->fWrite = source.fWrite;
@@ -92,8 +88,9 @@ AliITSresponseSDD&
 void AliITSresponseSDD::SetCompressParam(Int_t  cp[8])
 {
   // set compression param
+
     Int_t i;
-    for(i=0; i<8; i++) {
+    for (i=0; i<8; i++) {
 	fCPar[i]=cp[i];
 	//printf("\n CompressPar %d %d \n",i,fCPar[i]);
 	
@@ -102,8 +99,9 @@ void AliITSresponseSDD::SetCompressParam(Int_t  cp[8])
 void AliITSresponseSDD::GiveCompressParam(Int_t  cp[8])
 {
   // give compression param
+
     Int_t i;
-    for(i=0; i<8; i++) {
+    for (i=0; i<8; i++) {
 	cp[i]=fCPar[i];
     }
 }

@@ -15,16 +15,6 @@
 
 /*
 $Log$
-Revision 1.14.4.9  2000/06/12 19:14:51  barbera
-Remove partical transision to new Config.C calling convension. Bug Found.
-
-Revision 1.14.4.8  2000/06/12 18:15:52  barbera
-fixed posible compilation errors on HP unix. Modifided default constructor
-for use with new calling requirements.
-
-Revision 1.14.4.7  2000/06/11 20:37:59  barbera
-coding convenstion update.
-
 Revision 1.14.4.4  2000/05/19 10:10:21  nilsen
 fix for bug with HP and Sun unix + fix for event display in ITS-working branch
 
@@ -91,22 +81,22 @@ Introduction of the Copyright and cvs Log
 ClassImp(AliITSv5)
  
 //_____________________________________________________________________________
-  AliITSv5::AliITSv5()/*:AliITS("ITS","TDR version")*/{
+AliITSv5::AliITSv5() {
 ////////////////////////////////////////////////////////////////////////
 //    Standard default constructor for the ITS version 5.
 ////////////////////////////////////////////////////////////////////////
-    fId5N = 6;
-    fId5Name = new char*[fId5N];
-    fId5Name[0] = "ITS1";
-    fId5Name[1] = "ITS2";
-    fId5Name[2] = "ITS3";
-    fId5Name[3] = "ITS4";
-    fId5Name[4] = "ITS5";
-    fId5Name[5] = "ITS6";
 
-    fEuclidMaterial = "$ALICE_ROOT/Euclid/ITSgeometry_5.tme";
-    fEuclidGeometry = "$ALICE_ROOT/Euclid/ITSgeometry_5.euc";
-    printf("Created ITS TDR Detailed version reading geometry from file\n");
+    fIdN = 6;
+    fIdName = new TString[fIdN];
+    fIdName[0] = "ITS1";
+    fIdName[1] = "ITS2";
+    fIdName[2] = "ITS3";
+    fIdName[3] = "ITS4";
+    fIdName[4] = "ITS5";
+    fIdName[5] = "ITS6";
+    fIdSens    = new Int_t[fIdN];
+    for (Int_t i=0;i<fIdN;i++) fIdSens[i]=fIdName[i].Length();
+    fMajorVersion = 5;
 }
 //____________________________________________________________________________
 AliITSv5::AliITSv5(const AliITSv5 &source){
@@ -114,10 +104,7 @@ AliITSv5::AliITSv5(const AliITSv5 &source){
 //     Copy Constructor for ITS version 5.
 ////////////////////////////////////////////////////////////////////////
     if(&source == this) return;
-    this->fId5N = source.fId5N;
-    this->fId5Name = new char*[fId5N];
-    Int_t i;
-    for(i=0;i<6;i++) strcpy(this->fId5Name[i],source.fId5Name[i]);
+    printf("Not allowed to copy AliITSv5\n");
     return;
 }
 //_____________________________________________________________________________
@@ -125,37 +112,37 @@ AliITSv5& AliITSv5::operator=(const AliITSv5 &source){
 ////////////////////////////////////////////////////////////////////////
 //    Assignment operator for the ITS version 1.
 ////////////////////////////////////////////////////////////////////////
-  if(&source == this) return *this;
-  this->fId5N = source.fId5N;
-  this->fId5Name = new char*[fId5N];
-  Int_t i;
-  for(i=0;i<6;i++) strcpy(this->fId5Name[i],source.fId5Name[i]);
-  return *this;
+
+    if(&source == this) return *this;
+    printf("Not allowed to copy AliITSv3\n");
+    return *this;
+
 }
 //_____________________________________________________________________________
 AliITSv5::~AliITSv5() {
 ////////////////////////////////////////////////////////////////////////
 //    Standard destructor for the ITS version 5.
 ////////////////////////////////////////////////////////////////////////
-  delete [] fId5Name;
 }
 //_____________________________________________________________________________
 AliITSv5::AliITSv5(const char *name, const char *title) : AliITS(name, title){
 ////////////////////////////////////////////////////////////////////////
 //    Standard constructor for the ITS version 5.
 ////////////////////////////////////////////////////////////////////////
-    fId5N = 6;
-    fId5Name = new char*[fId5N];
-    fId5Name[0] = "ITS1";
-    fId5Name[1] = "ITS2";
-    fId5Name[2] = "ITS3";
-    fId5Name[3] = "ITS4";
-    fId5Name[4] = "ITS5";
-    fId5Name[5] = "ITS6";
+    fIdN = 6;
+    fIdName = new TString[fIdN];
+    fIdName[0] = "ITS1";
+    fIdName[1] = "ITS2";
+    fIdName[2] = "ITS3";
+    fIdName[3] = "ITS4";
+    fIdName[4] = "ITS5";
+    fIdName[5] = "ITS6";
+    fIdSens    = new Int_t[fIdN];
+    for (Int_t i=0;i<fIdN;i++) fIdSens[i]=fIdName[i].Length();
+    fMajorVersion = 5;
 
     fEuclidMaterial = "$ALICE_ROOT/Euclid/ITSgeometry_5.tme";
     fEuclidGeometry = "$ALICE_ROOT/Euclid/ITSgeometry_5.euc";
-    printf("Created ITS TDR Detailed version reading geometry from file\n");
 }
 //_____________________________________________________________________________
 void AliITSv5::BuildGeometry(){
@@ -169,9 +156,9 @@ void AliITSv5::BuildGeometry(){
 
   TNode *top;
   TNode *nd;
-  //const Int_t kColorITSSPD=kRed;
-  //const Int_t kColorITSSDD=kGreen;
-  const Int_t kColorITSSSD=kBlue;
+  //const int kColorITSSPD=kRed;
+  //const int kColorITSSDD=kGreen;
+  const int kColorITSSSD=kBlue;
   //
   top=gAlice->GetGeometry()->GetNode("alice");
   AliITSgeom  *gm = this->GetITSgeom();
@@ -583,17 +570,6 @@ void AliITSv5::Init(){
 ////////////////////////////////////////////////////////////////////////
 //     Initialise the ITS after it has been created.
 ////////////////////////////////////////////////////////////////////////
-    Int_t i,j,l;
-
-    fIdN    = fId5N;
-    fIdName = new char*[fId5N];
-    fIdSens = new Int_t[fId5N];
-    for(i=0;i<fId5N;i++) {
-	l = strlen(fId5Name[i]);
-	fIdName[i] = new char[l+1];
-	for(j=0;j<l;j++) fIdName[i][j] = fId5Name[i][j];
-	fIdName[i][l] = '\0'; // Null terminate this string.
-    } // end for i
 
     AliITS::Init();
     fMajorVersion = 5;
@@ -769,25 +745,15 @@ void AliITSv5::Streamer(TBuffer &R__b){
 // dosen't contain any "real" data to be saved, it doesn't.
 ////////////////////////////////////////////////////////////////////////
 
-  //    printf("AliITSv5Streamer Starting\n");
    if (R__b.IsReading()) {
       Version_t R__v = R__b.ReadVersion(); 
       if (R__v==1) {
 	  AliITS::Streamer(R__b);
-	  // This information does not need to be read. It is "hard wired"
-	  // into this class via its creators.
-	  //R__b >> fId5N;
-	  //R__b.ReadArray(fId5Name);
       }else{
+	  AliITS::Streamer(R__b);
       } // end if R__v==1
    } else {
       R__b.WriteVersion(AliITSv5::IsA());
       AliITS::Streamer(R__b);
-      // This information does not need to be saved. It is "hard wired"
-      // into this class via its creators.
-      //R__b << fId5N;
-      //R__b.WriteArray(fId5Name, __COUNTER__);
    } // end if R__b.IsReading()
-   //    printf("AliITSv5Streamer Finishing\n");
 }
-

@@ -9,10 +9,8 @@
 //     Manager and hits classes for  ITS version 5
 ////////////////////////////////////////////////////////////////////////
 
-#include "TString.h"
 #include "TBRIK.h"
 #include "AliITS.h"
-#include "AliITSgeom.h"
 
 class AliITSv5 : public AliITS {
 
@@ -27,16 +25,10 @@ class AliITSv5 : public AliITS {
     virtual void  CreateMaterials();
     virtual void  Init();   
     virtual Int_t IsVersion() const {
-	                                  // returns the ITS version number
-	                                  return 5;
-												}
+      // returns the ITS version number
+      return 5;
+    }
     virtual void  StepManager();
-
- private:
-    Int_t fId5N; // The number of layers for geometry version 5
-                 // The name of the layers as defined in the Geant tree.
-    char  **fId5Name; // They are the names of the sensitive volumes
-
 
 
     ClassDef(AliITSv5,1)//Hits manager for ITS version 5 Official detailed geometry

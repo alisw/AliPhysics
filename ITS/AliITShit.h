@@ -8,7 +8,6 @@
 #include "AliDetector.h"
 #include "TParticle.h"
 #include "AliHit.h" 
-#include "AliDigit.h"
 #include "AliITSgeom.h"
 
 

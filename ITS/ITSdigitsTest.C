@@ -54,7 +54,7 @@ void ITSdigitsTest (Int_t evNumber1=0,Int_t evNumber2=0)
    AliITS *ITS  = (AliITS*)gAlice->GetModule("ITS");
    TClonesArray *Particles = gAlice->Particles();
    TTree *TD = gAlice->TreeD();
-   TD->Print();
+   //TD->Print();
    Int_t nent=TD->GetEntries();
    printf("Found %d entries in the tree (must be one per module per event!)\n",nent);
    if (ITS) {
@@ -72,7 +72,7 @@ void ITSdigitsTest (Int_t evNumber1=0,Int_t evNumber2=0)
 	    //Int_t nmodules=2269;
 	    //for (Int_t mod=nent-nmodules; mod<nent; mod++) {
               ITS->ResetDigits();
-              nbytes += TD->GetEvent(mod);
+              nbytes += TD->GetEvent(mod+1);
               //nbytes += branch->GetEvent(mod); this works as well
 	      Int_t ndigits = ITSdigits->GetEntries();
 	      if (ndigits) printf("Found %d digits for module %d in det type %d \n",ndigits,mod,ich+1);
@@ -90,7 +90,7 @@ void ITSdigitsTest (Int_t evNumber1=0,Int_t evNumber2=0)
 	      */
 	      for (Int_t digit=0;digit<ndigits;digit++) {
 		ITSdigit   = (AliITSdigitSSD*)ITSdigits->UncheckedAt(digit);
-		printf("%d %d %d %d \n",ITSdigit->fCoord1,ITSdigit->fCoord2,ITSdigit->fSignal,ITSdigit->fTracks[0]);
+		printf("%d %d %d %d %d %d \n",ITSdigit->fCoord1,ITSdigit->fCoord2,ITSdigit->fSignal,ITSdigit->fTracks[0],ITSdigit->fTracks[1],ITSdigit->fTracks[2]);
 
 	      }
 	  }        

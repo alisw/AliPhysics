@@ -17,8 +17,7 @@ AliITSRawClusterSDD::AliITSRawClusterSDD(Int_t wing, Float_t Anode,Float_t Time,
   fNanodes = 1;
   fNsamples = Samples;
   Int_t sign = 1;
-  Int_t i;
-  for(i=0;i<fWing; i++) sign*=(-1);
+  for(Int_t i=0;i<fWing; i++) sign*=(-1);
   fX = DriftPath*sign/10000.;
   fZ = AnodeOffset/10000.;
 }
@@ -48,7 +47,7 @@ Bool_t AliITSRawClusterSDD::Brother(AliITSRawClusterSDD* cluster,Float_t danode,
 }
 
 //--------------------------------------
-void AliITSRawClusterSDD::Print() {
+void AliITSRawClusterSDD::PrintInfo() {
   // print
   cout << ", Anode " << fAnode << ", Time: " << fTime << ", Charge: " << fQ;
   cout << ", Samples: " << fNsamples;
@@ -124,7 +123,7 @@ Bool_t AliITSRawClusterSPD::Brother(AliITSRawClusterSPD* cluster,Float_t dz,Floa
 }
 
 //--------------------------------------
-void AliITSRawClusterSPD::Print() 
+void AliITSRawClusterSPD::PrintInfo() 
 {
   // print
   cout << ", Z: " << fZ << ", X: " << fX << ", Charge: " << fQ<<endl;

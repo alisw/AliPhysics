@@ -4,6 +4,8 @@
 
 #include <TObject.h>
 #include <TF1.h>
+#include <TString.h>
+
 #include "AliITSsegmentation.h"
 
 class AliITSgeom;
@@ -15,6 +17,9 @@ class AliITSgeom;
 class AliITSresponse :
 public TObject {
  public:
+
+
+    virtual ~AliITSresponse() {}
     //
     // Configuration methods
     //
@@ -24,46 +29,46 @@ public TObject {
     // Get maximum Adc-count value
     virtual Float_t MaxAdc()  {return 0.;}                       
 
-    // Set maximum Adc-magic value
+    // Set maximum Adc-top value
     virtual void    SetMagicValue(Float_t p1) {}
-    // Get maximum Adc-magic value
+    // Get maximum Adc-top value
     virtual Float_t MagicValue()  {return 0.0;}                       
 
     // Diffusion coefficient
-    virtual void    SetDiffCoeff(Float_t)                     =0;
-    // Get diffusion coefficient
-    virtual Float_t DiffCoeff()                               =0;
-    virtual Float_t Qref() {return 0.;}
+    virtual void    SetDiffCoeff(Float_t, Float_t) {}
+    // Get diffusion coefficients
+    virtual void    DiffCoeff(Float_t &,Float_t &) {}
 
     // Temperature
     virtual void    SetTemperature(Float_t) {}
     // Get temperature
     virtual Float_t Temperature() {return 0.;}  
     // Type of data - real or simulated
-    virtual void    SetDataType(char *data)        =0;
+    virtual void    SetDataType(const char *data) {}
     // Get data type
-    virtual char  *DataType()                =0; 
+    virtual const char  *DataType() const {return "";} 
 
 
  
-    // parameters: "same" or read from "file" or "SetInvalid" or ...
-    virtual void    SetParamOptions(Option_t *opt1, Option_t *opt2) {}
-    virtual  void   SetNoiseParam(Float_t, Float_t) {}
-    // gain, coupling ...
+    // Set parameters options: "same" or read from "file" or "SetInvalid" or ...
+    virtual void   SetParamOptions(const char* opt1,const char* opt2) {}
+    // Set noise parameters 
+    virtual void   SetNoiseParam(Float_t, Float_t) {}
     // Number of parameters to be set
     virtual  void   SetNDetParam(Int_t) {}
+    // Set detector parameters: gain, coupling ...
     virtual  void   SetDetParam(Float_t *) {}
 
     // Parameters options
-    virtual void   ParamOptions(Option_t *&, Option_t *&) {}
+    virtual void   ParamOptions(char *,char*) {}
     virtual Int_t  NDetParam() {return 0;}
     virtual void   GetDetParam(Float_t *) {} 
     virtual void   GetNoiseParam(Float_t&, Float_t&) {}
 
-    // Zero-suppression option - could be 1D, 2D or non-ZS 
-    virtual void   SetZeroSupp(Option_t *opt) {}
+    // Zero-suppression option - could be 1D, 2D or non-ZeroSuppressed 
+    virtual void   SetZeroSupp(const char* opt) {}
     // Get zero-suppression option
-    virtual Option_t   *ZeroSuppOption() {return "";}
+    virtual const char *ZeroSuppOption() const {return "";}
      // Set thresholds
     virtual void   SetThresholds(Float_t, Float_t) {}
     virtual void   Thresholds(Float_t &, Float_t &) {}
@@ -72,9 +77,9 @@ public TObject {
     virtual Int_t  MinVal() {return 0;};
 
     // Set filenames
-    virtual void   SetFilenames(char *,char *,char *) {}
+    virtual void   SetFilenames(const char *f1,const char *f2,const char *f3) {}
     // Filenames
-    virtual void   Filenames(const char *, const char *,const char *) {}
+    virtual void   Filenames(char*,char*,char*) {}
 
 
     virtual Float_t DriftSpeed() {return 0.;}

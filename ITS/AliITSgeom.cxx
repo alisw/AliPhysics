@@ -15,12 +15,6 @@
 
 /*
 $Log$
-Revision 1.4.4.10  2000/06/12 18:09:49  barbera
-fixed posible compilation errors on HP unix
-
-Revision 1.4.4.9  2000/06/11 20:29:22  barbera
-Minore modifications.
-
 Revision 1.4.4.5  2000/03/04 23:42:39  nilsen
 Updated the comments/documentations and improved the maintainability of the
 code.
@@ -241,32 +235,32 @@ pixel coordinate system.
 // Int_t GetStartSPD()
 //     This functions returns the starting module index number for the
 // silicon pixels detectors (SPD). Typically this is zero. To loop over all
-// of the pixel detectors do: for(i=GetStartSPD();i<=GetLastSPD();i++)
+// of the pixel detectors do: for(Int_t i=GetStartSPD();i<=GetLastSPD();i++)
 //
 // Int_t GetLastSPD()
 //     This functions returns the last module index number for the
 // silicon pixels detectors (SPD). To loop over all of the pixel detectors 
-// do: for(i=GetStartSPD();i<=GetLastSPD();i++)
+// do: for(Int_t i=GetStartSPD();i<=GetLastSPD();i++)
 //
 // Int_t GetStartSDD()
 //     This functions returns the starting module index number for the
 // silicon drift detectors (SDD). To loop over all of the drift detectors 
-// do: for(i=GetStartSDD();i<=GetLastSDD();i++)
+// do: for(Int_t i=GetStartSDD();i<=GetLastSDD();i++)
 //
 // Int_t GetLastSDD()
 //     This functions returns the last module index number for the
 // silicon drift detectors (SDD). To loop over all of the drift detectors 
-// do: for(i=GetStartSDD();i<=GetLastSDD();i++)
+// do: for(Int_t i=GetStartSDD();i<=GetLastSDD();i++)
 //
 // Int_t GetStartSSD()
 //     This functions returns the starting module index number for the
 // silicon strip detectors (SSD). To loop over all of the strip detectors 
-// do: for(i=GetStartSSD();i<=GetLastSSD();i++)
+// do: for(Int_t i=GetStartSSD();i<=GetLastSSD();i++)
 //
 // Int_t GetStartSSD()
 //     This functions returns the last module index number for the
 // silicon strip detectors (SSD). To loop over all of the strip detectors 
-// do: for(i=GetStartSSD();i<=GetLastSSD();i++)
+// do: for(Int_t i=GetStartSSD();i<=GetLastSSD();i++)
 //
 // TObject *GetShape(Int_t lay,Int_t lad,Int_t det)
 //     This functions returns the shape object AliITSgeomSPD, AliITSgeomSDD,
@@ -277,9 +271,10 @@ pixel coordinate system.
 ////////////////////////////////////////////////////////////////////////
 
 #include <iostream.h>
-#include <fstream.h>
 #include <iomanip.h>
 #include <stdio.h>
+
+
 #include "AliITSgeom.h"
 #include "AliITSgeomSPD300.h"
 #include "AliITSgeomSPD425.h"
@@ -314,9 +309,8 @@ AliITSgeom::~AliITSgeom(){
 ////////////////////////////////////////////////////////////////////////
   // Default destructor.
   // if arrays exist delete them. Then set everything to zero.
-   Int_t i;
    if(fGm!=0){
-      for(i=0;i<fNlayers;i++) delete[] fGm[i];
+      for(Int_t i=0;i<fNlayers;i++) delete[] fGm[i];
       delete[] fGm;
    } // end if fGm!=0
    if(fNlad!=0) delete[] fNlad;
@@ -340,6 +334,7 @@ AliITSgeom::AliITSgeom(const char *filename){
    Int_t    l,a,d;
    Float_t  x,y,z,o,p,q,r,s,t;
    Double_t oor,pr,qr,rr,sr,tr; // Radians
+   Double_t ppr,rrr;       // Added by S. Vanadia for tracking rotation matrix;
    Double_t lr[9];
    Double_t si; // sin(angle)
    Double_t pi = TMath::Pi(), byPI = pi/180.;
@@ -392,12 +387,46 @@ AliITSgeom::AliITSgeom(const char *filename){
       i = d + a*fNdet[l]; // position of this detector
       g = &(fGm[l][i]);
 
+      //part coming from the tracking
+      g->angles[0] = o;	// Added 25-05-00 S. Vanadia
+      g->angles[1] = p;
+      g->angles[2] = q;
+      g->angles[3] = r;
+      g->angles[4] = s;
+      g->angles[5] = t;
+      //printf("angles from file: %f %f %f %f %f %f\n",o,p,q,r,s,t);
+      //printf("constructor angles: %f %f %f %f %f %f\n", g->angles[0], g->angles[1], g->angles[2], g->angles[3], g->angles[4], g->angles[5]);
+      // end part coming from tracking
+
       oor = byPI*o;
       pr = byPI*p;
       qr = byPI*q;
       rr = byPI*r;
       sr = byPI*s;
       tr = byPI*t;
+
+      // Tracking rotation matrix 25-5-2000
+      if (l==0) { 
+                  ppr = (Double_t)(p+90.0)*byPI;
+                  rrr = (Double_t)(r+90.0)*byPI; 
+		}
+	   else { 
+	          ppr = (Double_t)(p-90.0)*byPI;
+	          rrr = (Double_t)(r-90.0)*byPI;
+		}
+		 
+
+      g->rottrack[0][0]=TMath::Sin(oor)*TMath::Cos(ppr);
+      g->rottrack[1][0]=TMath::Sin(oor)*TMath::Sin(ppr);
+      g->rottrack[2][0]=TMath::Cos(oor);
+      g->rottrack[0][1]=TMath::Sin(qr)*TMath::Cos(rrr);
+      g->rottrack[1][1]=TMath::Sin(qr)*TMath::Sin(rrr);
+      g->rottrack[2][1]=TMath::Cos(qr);
+      g->rottrack[0][2]=TMath::Sin(sr)*TMath::Cos(tr);
+      g->rottrack[1][2]=TMath::Sin(sr)*TMath::Sin(tr);
+      g->rottrack[2][2]=TMath::Cos(sr);
+      // End tracking rotation matrix
+
 
       g->fx0   = x;
       g->fy0   = y;
@@ -516,6 +545,7 @@ AliITSgeom& AliITSgeom::operator=(const AliITSgeom &source){
 // class is then modified by introducing some misalignment.
 ////////////////////////////////////////////////////////////////////////
    Int_t i,j,k;
+   Int_t ii,jj;
 
    if(this == &source) return *this; // don't assign to ones self.
 
@@ -544,10 +574,70 @@ AliITSgeom& AliITSgeom::operator=(const AliITSgeom &source){
 	  fGm[i][j].frx = source.fGm[i][j].frx;
 	  fGm[i][j].fry = source.fGm[i][j].fry;
 	  fGm[i][j].frz = source.fGm[i][j].frz;
+
+	  fGm[i][j].angles[0] = source.fGm[i][j].angles[0];	// Added S.Vanadia
+	  fGm[i][j].angles[1] = source.fGm[i][j].angles[1];
+	  fGm[i][j].angles[2] = source.fGm[i][j].angles[2];
+	  fGm[i][j].angles[3] = source.fGm[i][j].angles[3];
+	  fGm[i][j].angles[4] = source.fGm[i][j].angles[4];
+	  fGm[i][j].angles[5] = source.fGm[i][j].angles[5];
+
 	  for(k=0;k<9;k++) fGm[i][j].fr[k] = source.fGm[i][j].fr[k];
+	  for (ii=0;ii<3;ii++)					// Added S. Vanadia
+	     for (jj=0;jj<3;jj++)
+	         fGm[i][j].rottrack[ii][jj] = source.fGm[i][j].rottrack[ii][jj];
       } // end for j
    } // end for i
    return *this;
+}
+//________________________________________________________________________
+void AliITSgeom::GtoLtracking(Int_t lay,Int_t lad,Int_t det,
+                              const Double_t *g,Double_t *l){
+////////////////////////////////////////////////////////////////////////
+// Added by S. Vanadia 25-5-2000
+////////////////////////////////////////////////////////////////////////
+   Double_t x,y,z;
+   AliITSgeomS *gl;
+   
+   lay--;lad--;det--;  
+   
+   gl = &(fGm[lay][fNdet[lay]*lad+det]);
+	
+   x    = g[0] - gl->fx0;
+   y    = g[1] - gl->fy0;
+   z    = g[2] - gl->fz0;
+   
+   l[0] = gl->rottrack[0][0]*x + gl->rottrack[1][0]*y + gl->rottrack[2][0]*z;
+   l[1] = gl->rottrack[0][1]*x + gl->rottrack[1][1]*y + gl->rottrack[2][1]*z;
+   l[2] = gl->rottrack[0][2]*x + gl->rottrack[1][2]*y + gl->rottrack[2][2]*z;
+	
+   return;
+}
+//________________________________________________________________________
+void AliITSgeom::LtoGtracking(Int_t lay,Int_t lad,Int_t det,
+                              const Double_t *l,Double_t *g){
+////////////////////////////////////////////////////////////////////////
+// Added by S. Vanadia 25-5-2000
+////////////////////////////////////////////////////////////////////////
+
+   Double_t xx,yy,zz;
+   AliITSgeomS *gl;
+   
+   lay--;lad--;det--;  
+   
+   gl = &(fGm[lay][fNdet[lay]*lad+det]);
+  
+   xx    = gl->rottrack[0][0]*l[0] + gl->rottrack[0][1]*l[1] + gl->rottrack[0][2]*l[2];
+   yy    = gl->rottrack[1][0]*l[0] + gl->rottrack[1][1]*l[1] + gl->rottrack[1][2]*l[2];
+   zz    = gl->rottrack[2][0]*l[0] + gl->rottrack[2][1]*l[1] + gl->rottrack[2][2]*l[2];
+
+
+   g[0] = xx + gl->fx0;
+   g[1] = yy + gl->fy0;
+   g[2] = zz + gl->fz0;
+      
+
+   return;
 }
 //________________________________________________________________________
 void AliITSgeom::GtoL(Int_t lay,Int_t lad,Int_t det,
@@ -1274,6 +1364,7 @@ ofstream & AliITSgeom::PrintGeom(ofstream &lRb){
 ////////////////////////////////////////////////////////////////////////
    // Stream an object of class AliITSgeom.
     Int_t i,j,k;
+    Int_t ii, jj;
 
     lRb.setf(ios::scientific);
     lRb << fNlayers << " ";
@@ -1287,8 +1378,17 @@ ofstream & AliITSgeom::PrintGeom(ofstream &lRb){
 	lRb <<setprecision(16) << fGm[i][j].frx << " ";
 	lRb <<setprecision(16) << fGm[i][j].fry << " ";
 	lRb <<setprecision(16) << fGm[i][j].frz << "\n";
+	lRb <<setprecision(32) << fGm[i][j].angles[0] << " ";
+	lRb <<setprecision(32) << fGm[i][j].angles[1] << " ";
+	lRb <<setprecision(32) << fGm[i][j].angles[2] << " ";
+	lRb <<setprecision(32) << fGm[i][j].angles[3] << " ";
+	lRb <<setprecision(32) << fGm[i][j].angles[4] << " ";
+	lRb <<setprecision(32) << fGm[i][j].angles[5] << "\n";
 	for(k=0;k<9;k++) lRb <<setprecision(16) << fGm[i][j].fr[k] << " ";
 	lRb << "\n";
+	for (ii=0;ii<3;ii++)					// Added S. Vanadia
+	     for (jj=0;jj<3;jj++)
+	         lRb <<setprecision(64) << fGm[i][j].rottrack[ii][jj] << " ";
       } // end for i,j
 //      lRb << fShape;
       return lRb;
@@ -1305,6 +1405,7 @@ ifstream & AliITSgeom::ReadGeom(ifstream &lRb){
 ////////////////////////////////////////////////////////////////////////
    // Stream an object of class AliITSgeom.
     Int_t i,j,k;
+    Int_t ii, jj;
 
       lRb >> fNlayers;
       if(fNlad!=0) delete[] fNlad;
@@ -1328,7 +1429,16 @@ ifstream & AliITSgeom::ReadGeom(ifstream &lRb){
 	      lRb >> fGm[i][j].frx;
 	      lRb >> fGm[i][j].fry;
 	      lRb >> fGm[i][j].frz;
+	      lRb >> fGm[i][j].angles[0];
+	      lRb >> fGm[i][j].angles[1];
+	      lRb >> fGm[i][j].angles[2];
+	      lRb >> fGm[i][j].angles[3];
+	      lRb >> fGm[i][j].angles[4];
+	      lRb >> fGm[i][j].angles[5];
 	      for(k=0;k<9;k++) lRb >> fGm[i][j].fr[k];
+	      for (ii=0;ii<3;ii++)					// Added S. Vanadia
+		for (jj=0;jj<3;jj++)
+		  lRb >> fGm[i][j].rottrack[ii][jj];
 	  } // end for j
       } // end for i
 //      lRb >> fShape;
@@ -1692,28 +1802,29 @@ void AliITSgeom::Streamer(TBuffer &lRb){
 ////////////////////////////////////////////////////////////////////////
    // Stream an object of class AliITSgeom.
     Int_t i,j,k,n;
+    Int_t ii,jj;
 
 
-    //   printf("AliITSgeomStreamer starting\n");
+    //printf("AliITSgeomStreamer starting\n");
    if (lRb.IsReading()) {
       Version_t lRv = lRb.ReadVersion(); if (lRv) { }
       TObject::Streamer(lRb);
-//      printf("AliITSgeomStreamer reading fNlayers\n");
+      //printf("AliITSgeomStreamer reading fNlayers\n");
       lRb >> fNlayers;
       if(fNlad!=0) delete[] fNlad;
       if(fNdet!=0) delete[] fNdet;
       fNlad = new Int_t[fNlayers];
       fNdet = new Int_t[fNlayers];
-//      printf("AliITSgeomStreamer fNlad\n");
+      //printf("AliITSgeomStreamer fNlad\n");
       for(i=0;i<fNlayers;i++) lRb >> fNlad[i];
-//      printf("AliITSgeomStreamer fNdet\n");
+      //printf("AliITSgeomStreamer fNdet\n");
       for(i=0;i<fNlayers;i++) lRb >> fNdet[i];
       if(fGm!=0){
 	  for(i=0;i<fNlayers;i++) delete[] fGm[i];
 	  delete[] fGm;
       } // end if fGm!=0
       fGm = new AliITSgeomS*[fNlayers];
-//      printf("AliITSgeomStreamer AliITSgeomS\n");
+      // printf("AliITSgeomStreamer AliITSgeomS\n");
       for(i=0;i<fNlayers;i++){
 	  n     = fNlad[i]*fNdet[i];
 	  fGm[i] = new AliITSgeomS[n];
@@ -1725,7 +1836,16 @@ void AliITSgeom::Streamer(TBuffer &lRb){
 	      lRb >> fGm[i][j].frx;
 	      lRb >> fGm[i][j].fry;
 	      lRb >> fGm[i][j].frz;
+	      lRb >> fGm[i][j].angles[0];
+	      lRb >> fGm[i][j].angles[1];
+	      lRb >> fGm[i][j].angles[2];
+	      lRb >> fGm[i][j].angles[3];
+	      lRb >> fGm[i][j].angles[4];
+	      lRb >> fGm[i][j].angles[5];
 	      for(k=0;k<9;k++) lRb >> fGm[i][j].fr[k];
+	      for (ii=0;ii<3;ii++)		      // Added S. Vanadia
+	         for (jj=0;jj<3;jj++)
+	             lRb >> fGm[i][j].rottrack[ii][jj];
 	  } // end for j
       } // end for i
       /*
@@ -1750,10 +1870,19 @@ void AliITSgeom::Streamer(TBuffer &lRb){
 	  lRb << fGm[i][j].frx;
 	  lRb << fGm[i][j].fry;
 	  lRb << fGm[i][j].frz;
+	  lRb << fGm[i][j].angles[0];
+	  lRb << fGm[i][j].angles[1];
+	  lRb << fGm[i][j].angles[2];
+	  lRb << fGm[i][j].angles[3];
+	  lRb << fGm[i][j].angles[4];
+	  lRb << fGm[i][j].angles[5];
 	  for(k=0;k<9;k++) lRb << fGm[i][j].fr[k];
+	  for (ii=0;ii<3;ii++)					// Added S. Vanadia
+	     for (jj=0;jj<3;jj++)
+	         lRb << fGm[i][j].rottrack[ii][jj];
       } // end for i,j
       // lRb << fShape;
       //if (fShape) fShape->Streamer(lRb);
    } // end if reading
-   //   printf("AliITSgeomStreamer Finished\n");
+   //printf("AliITSgeomStreamer Finished\n");
 }

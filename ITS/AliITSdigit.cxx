@@ -33,7 +33,7 @@ ClassImp(AliITSdigitSPD)
 }
 
 //_____________________________________________________________________________
-AliITSdigitSPD::AliITSdigitSPD(Int_t *digits,Int_t *tracks) {  
+AliITSdigitSPD::AliITSdigitSPD(Int_t *digits,Int_t *tracks,Int_t *hits) {  
   //
   // Creates a simulated SPD digit object 
   //
@@ -42,16 +42,16 @@ AliITSdigitSPD::AliITSdigitSPD(Int_t *digits,Int_t *tracks) {
   fCoord2        = digits[1];
   fSignal        = digits[2];
   
-  Int_t i;
-  for(i=0; i<3; i++) {
+  for(Int_t i=0; i<3; i++) {
     fTracks[i]    = tracks[i];
+    fHits[i]      = hits[i];
   }
 }
 
 
 ClassImp(AliITSdigitSDD)
   //________________________________________________________________________
-  AliITSdigitSDD::AliITSdigitSDD(Float_t phys,Int_t *digits) {
+AliITSdigitSDD::AliITSdigitSDD(Float_t phys,Int_t *digits) {
   //
   // Creates a simulated SDD digit object to be updated
   //
@@ -62,7 +62,7 @@ ClassImp(AliITSdigitSDD)
 }
 
 //_____________________________________________________________________________
-AliITSdigitSDD::AliITSdigitSDD(Float_t phys,Int_t *digits,Int_t *tracks, Float_t *charges) {
+AliITSdigitSDD::AliITSdigitSDD(Float_t phys,Int_t *digits,Int_t *tracks,Int_t *hits,Float_t *charges) {
   //
   // Creates a simulated SDD digit object 
   //
@@ -71,17 +71,17 @@ AliITSdigitSDD::AliITSdigitSDD(Float_t phys,Int_t *digits,Int_t *tracks, Float_t
   fSignal        = digits[2];
   fPhysics       = phys;
   
-  Int_t i;
-  for(i=0; i<3; i++) {
+  for(Int_t i=0; i<3; i++) {
     fTcharges[i]  = charges[i];
     fTracks[i]    = tracks[i];
+    fHits[i]      = hits[i];
   }
 }
 
 
 ClassImp(AliITSTransientDigit)
   //_______________________________________________________________________
-  AliITSTransientDigit::AliITSTransientDigit(Float_t phys,Int_t *digits): 
+AliITSTransientDigit::AliITSTransientDigit(Float_t phys,Int_t *digits): 
     AliITSdigitSDD(phys,digits) {
   //
   // Creates a digit object in a list of digits to be updated
@@ -108,7 +108,7 @@ AliITSTransientDigit&
 
 ClassImp(AliITSdigitSSD)
   //__________________________________________________________________________
-  AliITSdigitSSD::AliITSdigitSSD(Int_t *digits) {
+AliITSdigitSSD::AliITSdigitSSD(Int_t *digits) {
   //
   // Creates a real SSD digit object 
   //
@@ -120,7 +120,7 @@ ClassImp(AliITSdigitSSD)
 }
 
 //_____________________________________________________________________________
-AliITSdigitSSD::AliITSdigitSSD(Int_t *digits,Int_t *tracks) {
+AliITSdigitSSD::AliITSdigitSSD(Int_t *digits,Int_t *tracks,Int_t *hits) {
   //
   // Creates a simulated SSD digit object 
   // 
@@ -128,10 +128,10 @@ AliITSdigitSSD::AliITSdigitSSD(Int_t *digits,Int_t *tracks) {
   fCoord1        = digits[0];
   fCoord2        = digits[1];
   fSignal        = digits[2];
-
-  Int_t i;
-  for(i=0; i<3; i++) {
+  
+  for(Int_t i=0; i<3; i++) {
     fTracks[i]    = tracks[i];
+    fHits[i]      = hits[i];
   }
 }
 

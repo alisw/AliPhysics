@@ -7,8 +7,10 @@
 
 #include <TObject.h>
 #include "TBRIK.h"
-#include "AliITSgeom.h"
-// temporarily - to be able to compile the code
+//#include "AliITSgeom.h"
+
+
+class AliITSgeom;
 
 class AliITSgeomSSD: public TObject {
 

@@ -18,7 +18,9 @@
 // a specialized structure for ease of implementation.
 /////////////////////////////////////////////////////////////////////////
 #include <fstream.h>
-#include "TObjArray.h"
+#include <TObjArray.h>
+#include <TVector.h>
+
 #include "AliITSgeomSPD.h"
 #include "AliITSgeomSDD.h"
 #include "AliITSgeomSSD.h"
@@ -29,6 +31,8 @@ struct AliITSgeomS {
     Float_t fx0,fy0,fz0; // Translation vector
     Float_t frx,fry,frz; // Rotation about axis, angle radians
     Float_t fr[9];       // the rotation matrix
+    Float_t angles[6];   // module center, theta and phi
+    Double_t rottrack[3][3]; // the tracking rotation matrix
 };
 
 //_______________________________________________________________________
@@ -136,6 +140,21 @@ class AliITSgeom : public TObject {
     // This allocates and fills gt with the geometry transforms between the
     // global coordinate system to the local coordinate system used to do
     // tracking.
+
+    void GtoLtracking(Int_t lay,Int_t lad,Int_t det,const Double_t *g,Double_t *l);
+    void LtoGtracking(Int_t lay,Int_t lad,Int_t det,const Double_t *l,Double_t *g);
+    void GetCenterThetaPhi(Int_t lay,Int_t lad,Int_t det, TVector &x) const {
+                       x(0) = fGm[lay-1][fNdet[lay-1]*(lad-1)+det-1].fx0;
+		       x(1) = fGm[lay-1][fNdet[lay-1]*(lad-1)+det-1].fy0;
+		       x(2) = fGm[lay-1][fNdet[lay-1]*(lad-1)+det-1].fz0;	                         		 
+		       x(3) = fGm[lay-1][fNdet[lay-1]*(lad-1)+det-1].angles[0];
+		       x(4) = fGm[lay-1][fNdet[lay-1]*(lad-1)+det-1].angles[1];
+		       x(5) = fGm[lay-1][fNdet[lay-1]*(lad-1)+det-1].angles[2];
+		       x(6) = fGm[lay-1][fNdet[lay-1]*(lad-1)+det-1].angles[3];
+		       x(7) = fGm[lay-1][fNdet[lay-1]*(lad-1)+det-1].angles[4];
+		       x(8) = fGm[lay-1][fNdet[lay-1]*(lad-1)+det-1].angles[5];
+
+}
 
  private:
     Int_t        fNlayers; // The number of layers.

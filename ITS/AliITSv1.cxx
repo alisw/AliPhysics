@@ -15,17 +15,6 @@
 
 /*
 $Log$
-Revision 1.14.2.6  2000/06/12 19:14:32  barbera
-Remove partical transision to new Config.C calling convension. Bug Found.
-
-Revision 1.14.2.5  2000/06/12 18:15:13  barbera
-fixed posible compilation errors on HP unix. Modifided default constructor
-for use with new calling requirements. Removed creation of hits from this
-cource geometry.
-
-Revision 1.14.2.4  2000/06/11 20:37:26  barbera
-coding convenstion update.
-
 Revision 1.14.2.2  2000/05/19 10:09:21  nilsen
 fix for bug with HP and Sun unix + fix for event display in ITS-working branch
 
@@ -96,34 +85,39 @@ Introduction of the Copyright and cvs Log
 ClassImp(AliITSv1)
  
 //_____________________________________________________________________________
-  AliITSv1::AliITSv1()/*:AliITS("ITS","TDR cource version")*/ {
+AliITSv1::AliITSv1() {
 ////////////////////////////////////////////////////////////////////////
 //    Standard default constructor for the ITS version 1.
 ////////////////////////////////////////////////////////////////////////
-    fId1N = 6;
-    fId1Name = new char*[fId1N];
-    fId1Name[0] = "ITS1";
-    fId1Name[1] = "ITS2";
-    fId1Name[2] = "ITS3";
-    fId1Name[3] = "ITS4";
-    fId1Name[4] = "ITS5";
-    fId1Name[5] = "ITS6";
-    printf("Created ITS TDR Cource version\n");
+
+  fIdN = 6;
+  fIdName = new TString[fIdN];
+  fIdName[0] = "ITS1";
+  fIdName[1] = "ITS2";
+  fIdName[2] = "ITS3";
+  fIdName[3] = "ITS4";
+  fIdName[4] = "ITS5";
+  fIdName[5] = "ITS6";
+  fIdSens    = new Int_t[fIdN];
+  for (Int_t i=0;i<fIdN;i++) fIdSens[i]=fIdName[i].Length();
 }
 //_____________________________________________________________________________
 AliITSv1::AliITSv1(const char *name, const char *title) : AliITS(name, title){
 ////////////////////////////////////////////////////////////////////////
 //    Standard constructor for the ITS version 1.
 ////////////////////////////////////////////////////////////////////////
-    fId1N = 6;
-    fId1Name = new char*[fId1N];
-    fId1Name[0] = "ITS1";
-    fId1Name[1] = "ITS2";
-    fId1Name[2] = "ITS3";
-    fId1Name[3] = "ITS4";
-    fId1Name[4] = "ITS5";
-    fId1Name[5] = "ITS6";
-    printf("Created ITS TDR Cource version\n");
+
+  fIdN = 6;
+  fIdName = new TString[fIdN];
+  fIdName[0] = "ITS1";
+  fIdName[1] = "ITS2";
+  fIdName[2] = "ITS3";
+  fIdName[3] = "ITS4";
+  fIdName[4] = "ITS5";
+  fIdName[5] = "ITS6";
+  fIdSens    = new Int_t[fIdN];
+  for (Int_t i=0;i<fIdN;i++) fIdSens[i]=fIdName[i].Length();
+
 }
 //____________________________________________________________________________
 AliITSv1::AliITSv1(const AliITSv1 &source){
@@ -131,10 +125,7 @@ AliITSv1::AliITSv1(const AliITSv1 &source){
 //     Copy Constructor for ITS version 1.
 ////////////////////////////////////////////////////////////////////////
     if(&source == this) return;
-    this->fId1N = source.fId1N;
-    this->fId1Name = new char*[fId1N];
-    Int_t i;
-    for(i=0;i<6;i++) strcpy(this->fId1Name[i],source.fId1Name[i]);
+    printf("Not allowed to copy AliITSv1\n");
     return;
 }
 //_____________________________________________________________________________
@@ -143,10 +134,7 @@ AliITSv1& AliITSv1::operator=(const AliITSv1 &source){
 //    Assignment operator for the ITS version 1.
 ////////////////////////////////////////////////////////////////////////
   if(&source == this) return *this;
-  this->fId1N = source.fId1N;
-  this->fId1Name = new char*[fId1N];
-  Int_t i;
-  for(i=0;i<6;i++) strcpy(this->fId1Name[i],source.fId1Name[i]);
+    printf("Not allowed to copy AliITSv1\n");
   return *this;
 }
 //_____________________________________________________________________________
@@ -154,14 +142,15 @@ AliITSv1::~AliITSv1() {
 ////////////////////////////////////////////////////////////////////////
 //    Standard destructor for the ITS version 1.
 ////////////////////////////////////////////////////////////////////////
-  delete [] fId1Name;
-}//__________________________________________________________________________
+}
+
+//__________________________________________________________________________
 void AliITSv1::BuildGeometry(){
 ////////////////////////////////////////////////////////////////////////
 //    Geometry builder for the ITS version 1.
 ////////////////////////////////////////////////////////////////////////
     TNode *node, *top;
-    const Int_t kColorITS=kYellow;
+    const int kColorITS=kYellow;
     //
     top = gAlice->GetGeometry()->GetNode("alice");
 
@@ -232,7 +221,7 @@ void AliITSv1::CreateGeometry(){
   Int_t *idtmed = fIdtmed->GetArray()-199;
   
   //     CONVERT INTO CM (RL(SI)=9.36 CM) 
-  for(i = 0; i < 6; ++i) {
+  for (i = 0; i < 6; ++i) {
     drl[i] = drl[i] / 100. * 9.36;
   }
   
@@ -266,7 +255,7 @@ void AliITSv1::CreateGeometry(){
   
   //     PARAMETERS FOR SMALL (1/2) ITS 
 
-  for(i = 0; i < 6; ++i) {
+  for (i = 0; i < 6; ++i) {
     dzl[i] /= 2.;
     dzb[i] /= 2.;
   }
@@ -283,7 +272,7 @@ void AliITSv1::CreateGeometry(){
   
   //     EQUAL DISTRIBUTION INTO THE 6 LAYERS 
   rstep = drcatpc / 6.;
-  for(i = 0; i < 6; ++i) {
+  for (i = 0; i < 6; ++i) {
     drcac[i] = (i+1) * rstep;
   }
 
@@ -294,7 +283,7 @@ void AliITSv1::CreateGeometry(){
   //     PACK IN PHI AS MUCH AS POSSIBLE 
   //     NOW PACK USING THICKNESS 
   
-  for(i = 0; i < 6; ++i) {
+  for (i = 0; i < 6; ++i) {
     
 //     PACKING FACTOR 
     fp = rl[5] / rl[i];
@@ -363,7 +352,7 @@ void AliITSv1::CreateGeometry(){
   //     PCB (layer #3 and #4) 
   
   gMC->Gsvolu("IPCB", "TUBE", idtmed[233], dits, 0);
-  for(i = 2; i < 4; ++i) {
+  for (i = 2; i < 4; ++i) {
     dits[0] = rl[i];
     dits[1] = dits[0] + drpcb[i];
     dits[2] = dzb[i] / 2.;
@@ -375,7 +364,7 @@ void AliITSv1::CreateGeometry(){
   //     COPPER (layer #3 and #4) 
   
   gMC->Gsvolu("ICO2", "TUBE", idtmed[234], dits, 0);
-  for(i = 2; i < 4; ++i) {
+  for (i = 2; i < 4; ++i) {
     dits[0] = rl[i] + drpcb[i];
     dits[1] = dits[0] + drcu[i];
     dits[2] = dzb[i] / 2.;
@@ -387,7 +376,7 @@ void AliITSv1::CreateGeometry(){
   //     CERAMICS (layer #3 and #4) 
   
   gMC->Gsvolu("ICER", "TUBE", idtmed[235], dits, 0);
-  for(i = 2; i < 4; ++i) {
+  for (i = 2; i < 4; ++i) {
     dits[0] = rl[i] + drpcb[i] + drcu[i];
     dits[1] = dits[0] + drcer[i];
     dits[2] = dzb[i] / 2.;
@@ -399,7 +388,7 @@ void AliITSv1::CreateGeometry(){
   //     SILICON (layer #3 and #4) 
   
   gMC->Gsvolu("ISI2", "TUBE", idtmed[226], dits, 0);
-  for(i = 2; i < 4; ++i) {
+  for (i = 2; i < 4; ++i) {
     dits[0] = rl[i] + drpcb[i] + drcu[i] + drcer[i];
     dits[1] = dits[0] + drsi[i];
     dits[2] = dzb[i] / 2.;
@@ -411,7 +400,7 @@ void AliITSv1::CreateGeometry(){
   //     PLASTIC (G10FR4) (layer #5 and #6) 
   
   gMC->Gsvolu("IPLA", "TUBE", idtmed[262], dits, 0);
-  for(i = 4; i < 6; ++i) {
+  for (i = 4; i < 6; ++i) {
     dits[0] = rl[i];
     dits[1] = dits[0] + drpla[i];
     dits[2] = dzb[i] / 2.;
@@ -423,7 +412,7 @@ void AliITSv1::CreateGeometry(){
   //     COPPER (layer #5 and #6) 
   
   gMC->Gsvolu("ICO3", "TUBE", idtmed[259], dits, 0);
-  for(i = 4; i < 6; ++i) {
+  for (i = 4; i < 6; ++i) {
     dits[0] = rl[i] + drpla[i];
     dits[1] = dits[0] + drcu[i];
     dits[2] = dzb[i] / 2.;
@@ -435,7 +424,7 @@ void AliITSv1::CreateGeometry(){
   //     EPOXY (layer #5 and #6) 
   
   gMC->Gsvolu("IEPX", "TUBE", idtmed[262], dits, 0);
-  for(i = 4; i < 6; ++i) {
+  for (i = 4; i < 6; ++i) {
     dits[0] = rl[i] + drpla[i] + drcu[i];
     dits[1] = dits[0] + drepx[i];
     dits[2] = dzb[i] / 2.;
@@ -447,7 +436,7 @@ void AliITSv1::CreateGeometry(){
   //     SILICON (layer #5 and #6) 
   
   gMC->Gsvolu("ISI3", "TUBE", idtmed[251], dits, 0);
-  for(i = 4; i < 6; ++i) {
+  for (i = 4; i < 6; ++i) {
     dits[0] = rl[i] + drpla[i] + drcu[i] + drepx[i];
     dits[1] = dits[0] + drsi[i];
     dits[2] = dzb[i] / 2.;
@@ -459,7 +448,7 @@ void AliITSv1::CreateGeometry(){
   //    SUPPORT 
   
   gMC->Gsvolu("ISUP", "TUBE", idtmed[274], dits, 0);
-  for(i = 0; i < 6; ++i) {
+  for (i = 0; i < 6; ++i) {
     dits[0] = rl[i];
     if (i < 5) dits[1] = rl[i+1];
     else       dits[1] = rlim;
@@ -472,7 +461,7 @@ void AliITSv1::CreateGeometry(){
   // CABLES (HORIZONTAL) 
   
   gMC->Gsvolu("ICHO", "TUBE", idtmed[278], dits, 0);
-  for(i = 0; i < 6; ++i) {
+  for (i = 0; i < 6; ++i) {
     dits[0] = rl[i];
     dits[1] = dits[0] + drca;
     dits[2] = (rzcone + TMath::Tan(acone) * (rl[i] - rl[0]) - (dzl[i]+ dzb[i] + drsu)) / 2.;
@@ -505,7 +494,7 @@ void AliITSv1::CreateGeometry(){
   
   pcits[2] = 2.;
   gMC->Gsvolu("ICCO", "PCON", idtmed[278], pcits, 0);
-  for(i = 1; i < 6; ++i) {
+  for (i = 1; i < 6; ++i) {
     pcits[0] = -dphi[i] / 2.;
     pcits[1] = dphi[i];
     if (i < 5) {
@@ -560,7 +549,7 @@ void AliITSv1::CreateGeometry(){
   r0 = rend;
   z0 = zend;
   dz = (xltpc - zend) / 9.;
-  for(i = 0; i < 9; ++i) {
+  for (i = 0; i < 9; ++i) {
     zi = z0 + i*dz + dz / 2.;
     ri = r0 + (zi - z0) * TMath::Tan(acable * kDegrad);
     dphii = dphi[5] * r0 / ri;
@@ -770,17 +759,7 @@ void AliITSv1::Init(){
 ////////////////////////////////////////////////////////////////////////
 //     Initialise the ITS after it has been created.
 ////////////////////////////////////////////////////////////////////////
-    Int_t i,j,l;
 
-    fIdN       = fId1N;;
-    fIdName    = new char*[fIdN];
-    fIdSens    = new Int_t[fIdN];
-    for(i=0;i<fId1N;i++) {
-	l = strlen(fId1Name[i]);
-	fIdName[i] = new char[l+1];
-	for(j=0;j<l;j++) fIdName[i][j] = fId1Name[i][j];
-	fIdName[i][l] = '\0'; // Null terminate this string.
-    } // end for i
     //
     AliITS::Init();
     fMajorVersion = 1;
@@ -842,8 +821,6 @@ void AliITSv1::StepManager(){
 //    Called for every step in the ITS, then calles the AliITShit class
 // creator with the information to be recoreded about that hit.
 ////////////////////////////////////////////////////////////////////////
-  /*
-  We no longer generate hits from the cource version.
   Int_t         copy, id;
   Float_t       hits[8];
   Int_t         vol[4];
@@ -908,9 +885,6 @@ void AliITSv1::StepManager(){
     hits[6]=gMC->Edep();
     hits[7]=gMC->TrackTime();
     new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,hits);
-    we no longer generate hit from the cource version.
-  */
-  return;
 }
 //____________________________________________________________________________
 void AliITSv1::Streamer(TBuffer &R__b){
@@ -920,21 +894,11 @@ void AliITSv1::Streamer(TBuffer &R__b){
 // dosen't contain any "real" data to be saved, it doesn't.
 ////////////////////////////////////////////////////////////////////////
 
-    printf("AliITSv1Streamer Starting\n");
    if (R__b.IsReading()) {
       Version_t R__v = R__b.ReadVersion(); if (R__v) { }
       AliITS::Streamer(R__b);
-      // This information does not need to be read. It is "hard wired"
-      // into this class via its creators.
-      //R__b >> fId1N;
-      //R__b.ReadArray(fId1Name);
    } else {
       R__b.WriteVersion(AliITSv1::IsA());
       AliITS::Streamer(R__b);
-      // This information does not need to be saved. It is "hard wired"
-      // into this class via its creators.
-      //R__b << fId1N;
-      //R__b.WriteArray(fId1Name, __COUNTER__);
    } // end if R__b.IsReading()
-    printf("AliITSv1Streamer Finishing\n");
 }

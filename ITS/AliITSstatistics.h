@@ -21,39 +21,24 @@ class AliITSstatistics : public TObject {
   virtual ~AliITSstatistics();
   void Reset();
   void AddValue(Double_t x,Double_t w);
-  void AddValue(Double_t x){
-                            // Default weight of 1
-                            AddValue(x,1.0);
-									 } 
-  void AddValue(Float_t x,Float_t w){
-                                     //float
-                                     AddValue((Double_t)x,(Double_t)w);
-												 } 
-  void AddValue(Float_t x){
-                           // floats default weight of 1
-                           AddValue((Double_t)x,(Double_t)1.0);} 
+  void AddValue(Double_t x){ Double_t weight=1.0; AddValue(x,weight);} // Default weight of 1
+  void AddValue(Float_t x,Float_t w){AddValue((Double_t)x,(Double_t)w);} //float
+  void AddValue(Float_t x){Float_t weight=1.0; AddValue(x,weight);} // floats default weight of 1
   Double_t GetNth(Int_t order);
-  Double_t GetMean() {
-                      // returns the mean
-                      return GetNth(1);
-							};
-  Int_t GetN(){
-               // returns the number of entries
-               return fN;
-              };
-  Int_t GetOrder(){
-                   // returns the order of the moment of the distribution
-                   return 
-						 fOrder;
-                  };
-  Double_t GetXN(Int_t order){
-                              // returns X^N
-                              return fx[order-1];
-                              };
-  Double_t GetWN(Int_t order){
-                              // returns W^N
-                              return fw[order-1];
-                             };
+  Double_t GetMean() {// returns the mean
+    return GetNth(1);};
+  Int_t GetN(){// returns the number of entries
+    return fN;
+  };
+  Int_t GetOrder(){// returns the order of the moment of the distribution
+    return fOrder;
+  };
+  Double_t GetXN(Int_t order){// returns X^N
+    return fx[order-1];
+  };
+  Double_t GetWN(Int_t order){// returns W^N
+    return fw[order-1];
+  };
   Double_t GetRMS();
   Double_t GetErrorMean();
   Double_t GetErrorRMS();

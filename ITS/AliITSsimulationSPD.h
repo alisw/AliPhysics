@@ -22,7 +22,7 @@ public:
 
   void DigitiseModule(AliITSmodule *mod,Int_t module,Int_t dummy);
   void ChargeToSignal(Float_t **pList);
-  void GetList(Int_t track, Float_t **pList, Int_t *IndexRange);
+  void GetList(Int_t track, Int_t hit, Float_t **pList, Int_t *IndexRange);
 
   void CreateHistograms();
   void ResetHistograms();

@@ -16,13 +16,13 @@ public:
   AliITSresponseSSD(const AliITSresponseSSD &source); // copy constructor
   AliITSresponseSSD& operator=(const AliITSresponseSSD &source); // ass. op.
   
-  virtual void    SetDiffCoeff(Float_t p1=0.) {
+  virtual void    SetDiffCoeff(Float_t p1=0.,Float_t dummy=0.) {
     // Diffusion coefficient
     fDiffCoeff=p1;
   }
-  virtual Float_t DiffCoeff() {
+  virtual void    DiffCoeff(Float_t &diffc,Float_t &dummy) {
     // Get diffusion coefficient
-    return fDiffCoeff;
+    diffc= fDiffCoeff;
   }
   
   virtual  void   SetNoiseParam(Float_t np=420., Float_t nn=625.) {
@@ -34,13 +34,13 @@ public:
     np=fNoiseP; nn=fNoiseN;
   }
   
-  virtual void    SetParamOptions(Option_t *opt1="", Option_t *opt2="") {
+  virtual void    SetParamOptions(const char *opt1="", const char *opt2="") {
     // parameters: "SetInvalid" to simulate the invalid strips
     fOption1=opt1; fOption2=opt2;
   }
-  virtual void    ParamOptions(Option_t *&opt1,Option_t *&opt2) {
+  virtual void    ParamOptions(char *opt1,char *opt2) {
     // options
-    opt1=fOption1; opt2=fOption2;
+     strcpy(opt1,fOption1.Data());  strcpy(opt2,fOption2.Data());
   }
   
   // Number of parameters to be set
@@ -59,13 +59,13 @@ public:
   }
   virtual void    GetDetParam(Float_t *dpar); 
 
-  virtual void    SetDataType(char *data="simulated") {
+  virtual void    SetDataType(const char *data="simulated") {
   // Type of data - real or simulated
     fDataType=data;
   }
-  virtual char  *DataType() {
+  virtual const char  *DataType() const {
     // Get data type
-    return fDataType;
+    return fDataType.Data();
   } 
   
   virtual void    SetSigmaSpread(Float_t p1=3., Float_t p2=2.) {
@@ -80,8 +80,7 @@ public:
   
 protected:
   Int_t   fNPar;            // Number of detector param 
-  Float_t *fDetPar;         //!
-                            // Array of parameters 
+  Float_t *fDetPar;         //[fNPar] Array of parameters 
   
   Float_t fNoiseP;          // Noise on Pside
   Float_t fNoiseN;          // Noise on Nside
@@ -90,13 +89,10 @@ protected:
   Float_t fSigmaN;          // Sigma charge spread on Nside
   Float_t fDiffCoeff;       // Diffusion Coefficient
   
-  Option_t *fOption1;       //!
-                            // Simulate invalid strips option
-  Option_t *fOption2;       //! 
-                            // Not used for the moment
+  TString fOption1;         // Simulate invalid strips option
+  TString fOption2;         // Not used for the moment
   
-  char*  fDataType;         //!
-                            // Type of data - real or simulated
+  TString  fDataType;       // Type of data - real or simulated
   
   ClassDef(AliITSresponseSSD,1) //Response class for SSD 
 

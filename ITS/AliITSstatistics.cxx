@@ -34,8 +34,7 @@ AliITSstatistics::AliITSstatistics(Int_t order) : TObject(){
     fOrder = order;
     fx = new Double_t[order];
     fw = new Double_t[order];
-    Int_t i;
-    for(i=0;i<order;i++) {fx[i] = 0.0; fw[i] = 0.0;}
+    for(Int_t i=0;i<order;i++) {fx[i] = 0.0; fw[i] = 0.0;}
     fN = 0;
     return;
 }
@@ -55,68 +54,70 @@ AliITSstatistics::~AliITSstatistics(){
 AliITSstatistics& AliITSstatistics::operator=(AliITSstatistics &source){
 // operator =
 
-     Int_t i;
      if(this==&source) return *this;
-     if(source.fOrder!=0){
-       this->fOrder = source.fOrder;
-       this->fN = source.fN;
-       this->fx = new Double_t[this->fOrder];
-       this->fw = new Double_t[this->fOrder];
-       for(i=0;i<source.fOrder;i++){
-	 this->fx[i] = source.fx[i];
-	 this->fw[i] = source.fw[i];
-       } // end for i
-     }else{
-       this->fx = 0;
-       this->fw = 0;
-       this->fN = 0;
-       this->fOrder = 0;
-     }// end if source.fOrder!=0
-     return *this;
+	  if(source.fOrder!=0){
+	       this->fOrder = source.fOrder;
+			 this->fN = source.fN;
+			 this->fx = new Double_t[this->fOrder];
+			 this->fw = new Double_t[this->fOrder];
+			 for(Int_t i=0;i<source.fOrder;i++){
+			      this->fx[i] = source.fx[i];
+					this->fw[i] = source.fw[i];
+			 } // end for i
+	  }else{
+	       this->fx = 0;
+			 this->fw = 0;
+			 this->fN = 0;
+			 this->fOrder = 0;
+	  }// end if source.fOrder!=0
+	  return *this;
 }
 //_______________________________________________________________
 AliITSstatistics::AliITSstatistics(AliITSstatistics &source){
 // Copy constructor
 
-  Int_t i;
-  if(this==&source) return;
-  if(source.fOrder!=0){
-    this->fOrder = source.fOrder;
-    this->fN = source.fN;
-    this->fx = new Double_t[this->fOrder];
-    this->fw = new Double_t[this->fOrder];
-    for(i=0;i<source.fOrder;i++){
-      this->fx[i] = source.fx[i];
-      this->fw[i] = source.fw[i];
-    } // end for i
-  }else{
-    this->fx = 0;
-    this->fw = 0;
-    this->fN = 0;
-    this->fOrder = 0;
-  }// end if source.fOrder!=0
+     if(this==&source) return;
+	  if(source.fOrder!=0){
+	       this->fOrder = source.fOrder;
+			 this->fN = source.fN;
+			 this->fx = new Double_t[this->fOrder];
+			 this->fw = new Double_t[this->fOrder];
+			 for(Int_t i=0;i<source.fOrder;i++){
+			      this->fx[i] = source.fx[i];
+					this->fw[i] = source.fw[i];
+			 } // end for i
+	  }else{
+	       this->fx = 0;
+			 this->fw = 0;
+			 this->fN = 0;
+			 this->fOrder = 0;
+	  }// end if source.fOrder!=0
 }
 //_______________________________________________________________
 void AliITSstatistics::Reset(){
 //
 // reset all values to zero
 //
-    Int_t i;
-    for(i=0;i<fOrder;i++) {fx[i] = 0.0; fw[i] = 0.0;}
+    for(Int_t i=0;i<fOrder;i++) {fx[i] = 0.0; fw[i] = 0.0;}
     fN = 0;
     return;
 }
 
-void AliITSstatistics::AddValue(Double_t x,Double_t w=1.0){
+//_______________________________________________________________
+void AliITSstatistics::AddValue(Double_t x,Double_t w){
 //
 // accumulate element x with weight w.
 //
+
+  //it was AddValue(Double_t x,Double_t w=1.0);
+
     Double_t y=1.0,z=1.0;
+
     Int_t i;
+    const Double_t kBig=1.0e+38;
 
+    if(y>kBig || x>kBig || w>kBig) return;
 
-    if(isinf(y)!=0||isinf(x)!=0||isinf(w)!=0) return;
-    if(isnan(y)!=0||isnan(x)!=0||isnan(w)!=0) return;
     fN++;
     for(i=0;i<fOrder;i++){
 	y *= x;

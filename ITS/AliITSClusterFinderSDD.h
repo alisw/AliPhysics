@@ -7,6 +7,8 @@
 
 #include "AliITSClusterFinder.h"
 
+class AliITSMapA2;
+
 class AliITSClusterFinderSDD :
  public AliITSClusterFinder
 
@@ -16,14 +18,12 @@ public:
   (AliITSsegmentation *seg, 
    AliITSresponse *response, TClonesArray *digits,TClonesArray *recpoints);
   AliITSClusterFinderSDD();
-  virtual ~AliITSClusterFinderSDD(){
-    // destructor
-  }
+  virtual ~AliITSClusterFinderSDD();
   AliITSClusterFinderSDD(const AliITSClusterFinderSDD &source); // copy constructor
   AliITSClusterFinderSDD& operator=(const AliITSClusterFinderSDD &source); // assignment operator
   
   virtual void SetMap();
-  virtual void SetCutAmplitude(Float_t thres=1.2) {
+  virtual void SetCutAmplitude(Float_t thres=0.0) {
     // set cut amplitude
     fCutAmplitude=thres;
   }
@@ -39,12 +39,10 @@ public:
     // SetMinPeak
     fMinPeak=minpeak;
   }
-  virtual void SetNCells(Int_t minc=4) {
+  virtual void SetNCells(Int_t minc=5) {
     // setNCells
     fMinNCells=minc;
   }
-  
-  void FillMap();
   
   // Search for clusters
   virtual void FindRawClusters();
@@ -57,14 +55,13 @@ private:
   
   TClonesArray       *fClusters;      // clusters
   Int_t               fNclusters;     // num of clusters
-  AliITSMapA2        *fMap;           // map
+  AliITSMapA2        *fMapA2;         // signal map
   Float_t             fCutAmplitude;  // cut amplitude
   Float_t             fDAnode;        // fDanode
   Float_t             fDTime;         // fDtime
   
   Int_t               fMinPeak;       // min peak
   Int_t               fMinNCells;     // min num of cells
-  
   
   ClassDef(AliITSClusterFinderSDD,1) // SDD clustering - Piergiorgio C. algo
     };

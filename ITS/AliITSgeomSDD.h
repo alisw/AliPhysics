@@ -7,9 +7,9 @@
 
 #include <TObject.h>
 #include "TBRIK.h"
-#include "AliITSgeom.h"
+//#include "AliITSgeom.h"
 
-// temporary 
+class AliITSgeom;
 
 class AliITSgeomSDD: public TObject {
  public:

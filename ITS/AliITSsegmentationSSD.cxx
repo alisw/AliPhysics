@@ -25,8 +25,8 @@ AliITSsegmentationSSD::AliITSsegmentationSSD(){
    fGeom=0;
    fCorr=0;
    SetDetSize();
-   SetCellSize();
-   SetNCells();
+   SetPadSize();
+   SetNPads();
    SetAngles();
 }
 //------------------------------
@@ -35,8 +35,8 @@ AliITSsegmentationSSD::AliITSsegmentationSSD(AliITSgeom *geom){
    fGeom=geom;
    fCorr=0;
    SetDetSize();
-   SetCellSize();
-   SetNCells();
+   SetPadSize();
+   SetNPads();
    SetAngles();
    //Init(); 
 }
@@ -70,13 +70,13 @@ void AliITSsegmentationSSD::Init(){
     fDx = 2.*kconv*gssd->GetDx();
     fDz = 2.*kconv*gssd->GetDz();
     fDy = 2.*kconv*gssd->GetDy();
-    SetCellSize();
-    SetNCells();
+    SetPadSize();
+    SetNPads();
     SetAngles();
 
 }
 //-------------------------------------------------------
-void AliITSsegmentationSSD::GetCellIxz(Float_t &x,Float_t &z,Int_t &iP,Int_t &iN)
+void AliITSsegmentationSSD::GetPadIxz(Float_t x,Float_t z,Int_t &iP,Int_t &iN)
 {
   // returns P and N sided strip numbers for a given location.
 
@@ -102,7 +102,7 @@ void AliITSsegmentationSSD::GetCellIxz(Float_t &x,Float_t &z,Int_t &iP,Int_t &iN
 
 }
 //-------------------------------------------------------
-void AliITSsegmentationSSD::GetCellCxz(Int_t iP,Int_t iN,Float_t &x,Float_t &z)
+void AliITSsegmentationSSD::GetPadCxz(Int_t iP,Int_t iN,Float_t &x,Float_t &z)
 {
     // actually this is the GetCrossing(Float_t &,Float_t &) 
 

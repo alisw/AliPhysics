@@ -22,25 +22,27 @@ public AliITSsegmentation {
     //
     // Detector size : x,z,y
   virtual  void   SetDetSize
-          (Float_t p1=35000., Float_t p2=76800., Float_t p3= 300.) 
+          (Float_t p1=35000., Float_t p2=75264., Float_t p3= 300.) 
           {fDx=p1; fDz=p2; fDy=p3;}
 
     // Cell size dz*dx  
-    virtual void    SetCellSize(Float_t pitch=200., Float_t clock=40.) 
+    virtual void    SetPadSize(Float_t pitch=294., Float_t clock=40.) 
                          {fPitch=pitch;fTimeStep=1000./clock;}
 
     // Maximum number of cells along the two coordinates z,x (anodes,samples) 
-    virtual void    SetNCells(Int_t p1=384, Int_t p2=256) 
+    virtual void    SetNPads(Int_t p1=256, Int_t p2=256) 
                          {fNanodes=2*p1;fNsamples=p2;}
 
     // Transform from real local to cell coordinates
-    virtual void    GetCellIxz(Float_t &x ,Float_t &z ,Int_t   &ix,Int_t   &iz);
+    virtual void    GetPadIxz(Float_t x ,Float_t z ,Int_t   &ix,Int_t   &iz);
     // Transform from cell to real local coordinates
-    virtual void    GetCellCxz(Int_t   ix,Int_t   iz,Float_t &x ,Float_t &z );
+    virtual void    GetPadCxz(Int_t   ix,Int_t   iz,Float_t &x ,Float_t &z );
     // Transform from real global to local coordinates
     virtual void    GetLocal(Int_t module,Float_t *g ,Float_t *l);
     // Transform from real local to global coordinates
     virtual void    GetGlobal(Int_t module,Float_t *l ,Float_t *g);
+    // Get anode and time bucket as floats - numbering from 0
+    virtual void    GetPadTxz(Float_t &x ,Float_t &z);
     //
     // Initialisation
     virtual void Init();
@@ -78,12 +80,12 @@ public AliITSsegmentation {
     //
     // Iterate over cells 
     // Initialiser
-    virtual void  FirstCell
+    virtual void  FirstPad
           (Float_t xhit, Float_t zhit, Float_t dx, Float_t dz) {}
     // Stepper
-    virtual void  NextCell() {}
+    virtual void  NextPad() {}
     // Condition
-    virtual Int_t MoreCells() {return 0;}
+    virtual Int_t MorePads() {return 0;}
     //
     // Current cell cursor during disintegration
     // x-coordinate
@@ -116,7 +118,7 @@ public AliITSsegmentation {
     Float_t    fDz    ;        // Length of half-detector (z axis) - microns
     Float_t    fDy;            // Full thickness of the detector (y axis)
 
-    AliITSgeom *fGeom;         // pointer to the geometry class
+    AliITSgeom *fGeom;         //! pointer to the geometry class
     AliITSresponse *fResponse; // pointer to the response class
    
     TF1*       fCorr;          // correction function

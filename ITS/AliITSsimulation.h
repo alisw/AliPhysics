@@ -6,6 +6,7 @@
 class AliITSresponse;
 class AliITSsegmentation;
 class AliITSmodule;
+class TRandom;
 
 //___________________________________________________
 
@@ -24,7 +25,7 @@ public:
     // digitize module
   }
 
-  virtual void CreateFastRecPoints(AliITSmodule *mod) {
+  virtual void CreateFastRecPoints(AliITSmodule *mod,Int_t module,TRandom *rndm) {
     // create fast rec points
   }
 

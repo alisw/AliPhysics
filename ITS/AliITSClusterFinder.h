@@ -3,17 +3,22 @@
 
 
 ////////////////////////////////////////////////
-//  ITS Cluster Finder Class                 //
+//  ITS Cluster Finder Class                  //
 ////////////////////////////////////////////////
 
-#include "AliITSMap.h"
+#include <TObject.h>
+#include <TClonesArray.h>
+
+class AliITSMap;
+class AliITSresponse;
+class AliITSsegmentation;
+class AliITSRawCluster;
+class AliITS;
 
 //---------------------------------------------------------------
 class AliITSClusterFinder :public TObject
 {
 public:
-  TClonesArray           *fDigits;      // digits
-  Int_t                   fNdigits;     // num of digits
   
   AliITSClusterFinder(AliITSsegmentation *seg, AliITSresponse *resp, TClonesArray *digits);
   AliITSClusterFinder();
@@ -97,6 +102,11 @@ public:
   }
   
   // set the fitting methods in the derived classes 
+
+  // data members
+
+  TClonesArray           *fDigits;      // digits
+  Int_t                   fNdigits;     // num of digits
   
 protected:
   AliITSresponse         *fResponse;      // response

@@ -18,14 +18,6 @@ class AliITSInStream;
 class AliITSHNode: public TObject  {
 
  public:
-
-  UChar_t    fSymbol;        // comment to be written
-  ULong_t    fFrequency;     // comment to be written
-  AliITSHNode     *fLeft;    // comment to be written
-  AliITSHNode     *fRight;   // comment to be written
-  AliITSHNode     *fFather;  // not used
-  
- public:
   AliITSHNode();
   AliITSHNode(UChar_t symbol, ULong_t freq);
   virtual   ~AliITSHNode() {
@@ -41,7 +33,15 @@ class AliITSHNode: public TObject  {
   Int_t Compare(TObject *obj);
   
   ClassDef(AliITSHNode,1)     //HuffT node object for set:ITS
-    };
+
+ public:
+
+  UChar_t    fSymbol;        // comment to be written
+  ULong_t    fFrequency;     // comment to be written
+  AliITSHNode     *fLeft;    // comment to be written
+  AliITSHNode     *fRight;   // comment to be written
+  AliITSHNode     *fFather;  // not used
+};
 
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //  Attention! Next class has kept deliberaty in 
@@ -79,15 +79,15 @@ public:
   void BuildHTable();   
   Bool_t SpanTree(AliITSHNode*start, ULong_t code, UChar_t len);
   void ResetHNodes();
-  void Clear();
+  void ClearTable();
   
  protected:
 
   Int_t          fSize;     // size of the arrays
-  UChar_t       *fCodeLen;  //[fSize] number of bits array
-  ULong_t       *fCode;     //[fSize] coded symbols array
+  UChar_t       *fCodeLen;  //![fSize] number of bits array
+  ULong_t       *fCode;     //![fSize] coded symbols array
   
-  Short_t       *fSym;      //[fSize] array of input symbols
+  Short_t       *fSym;      //![fSize] array of input symbols
   TObjArray     *fHNodes;   // array of nodes
   Int_t          fNnodes;   // number of nodes
 

@@ -24,20 +24,12 @@ class AliITSv1 : public AliITS {
     virtual void   CreateMaterials();
     virtual void   Init(); 
     virtual Int_t  IsVersion() const {
-	                                   // returns the ITS version number 
-	                                   return 1;
-												 } 
+      // returns the ITS version number 
+      return 1;
+    } 
     virtual void   DrawModule();
     virtual void   StepManager();
 
- private:
-    Int_t fId1N; // The number of layers for geometry version 5
-                 // The name of the layers as defined in the Geant tree.
-
-	 char **fId1Name; // They are the names of the sensitive volumes
- 
-
-  
     ClassDef(AliITSv1,1)  //Hits manager for set:ITS version 1 cource Geometry
 };
  

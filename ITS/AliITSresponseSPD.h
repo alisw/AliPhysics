@@ -1,8 +1,8 @@
 #ifndef ALIITSRESPONSESPD_H
 #define ALIITSRESPONSESPD_H
 
-#include "AliITSsegmentation.h"
 #include "AliITSresponse.h"
+
 //----------------------------------------------
 //
 // ITS response class for SPD
@@ -18,23 +18,23 @@ public:
   //
   // Configuration methods
   //
-  virtual void    SetDiffCoeff(Float_t p1=0.00433) {
+  virtual void    SetDiffCoeff(Float_t p1=0.00433,Float_t dummy=0.) {
     // Diffusion coefficient
     fDiffCoeff=p1;
   }
-  virtual Float_t DiffCoeff() {
+  virtual void DiffCoeff(Float_t &diffc,Float_t &dummy) {
     // Get diffusion coefficient
-    return fDiffCoeff;
+    diffc= fDiffCoeff;
   }
-  virtual  void   SetNoiseParam(Float_t n=0., Float_t b=0.) {
-    // set noise
+  virtual  void   SetNoiseParam(Float_t n=200., Float_t b=0.) {
+    // set noise and baseline
     fNoise=n; fBaseline=b;
   }   
   virtual  void   GetNoiseParam(Float_t &n, Float_t &b) {
-    // get noise
+    // get noise and baseline
     n=fNoise; b=fBaseline;
   }   
-  virtual void     SetMinVal(Int_t p1=0) {
+  virtual void     SetMinVal(Int_t p1=2000) {
     // Zero-suppression option threshold 
     fThreshold=p1;
   }
@@ -42,13 +42,13 @@ public:
     // Get zero-suppression threshold
     return fThreshold;
   }
-  virtual void    SetDataType(char *data="simulated") {
+  virtual void    SetDataType(const char *data="simulated") {
     // Type of data - real or simulated
     fDataType=data;
   }
-  virtual char  *DataType() {
+  virtual const char  *DataType() const {
     // Get data typer
-    return fDataType;
+    return fDataType.Data();
   } 
   
   ClassDef(AliITSresponseSPD,1) // SPD response
@@ -60,8 +60,7 @@ public:
   Float_t fBaseline;        // Baseline value
   Int_t fThreshold;         // Zero-Suppression threshold
   
-  char* fDataType;          //!
-                            // Type of data - real or simulated
+  TString fDataType;        // Type of data - real or simulated
 };
 
 #endif

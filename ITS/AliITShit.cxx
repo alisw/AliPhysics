@@ -15,9 +15,6 @@
 
 /*
 $Log$
-Revision 1.3.4.4  2000/06/11 20:31:37  barbera
-Coding conventions update.
-
 Revision 1.3.4.2  2000/03/04 23:43:57  nilsen
 Fixed up the comments/documentation.
 

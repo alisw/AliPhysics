@@ -4,16 +4,14 @@
  * See cxx source for full Copyright notice                               */
 
 
-#include <TObject.h>
 #include <TArrayS.h>
-#include <TClonesArray.h>
 #include <TRandom.h>
 #include <TMath.h>
 
-#include "AliITS.h"
-#include "AliITSclusterSSD.h"
-#include "AliITSpackageSSD.h"
 #include "AliITSClusterFinder.h"
+
+class AliITSclusterSSD;
+class AliITSpackageSSD;
 
 
 class AliITSClusterFinderSSD: public AliITSClusterFinder 
@@ -139,9 +137,10 @@ public:
   Float_t falpha2;
   Float_t falpha3;
   Float_t fPNsignalRatio;
+
     
-  static const Bool_t SIDEP=kTRUE;
-  static const Bool_t SIDEN=kFALSE;
+  static const Bool_t fgkSIDEP=kTRUE;
+  static const Bool_t fgkSIDEN=kFALSE;
 
   Int_t fSFF;              //forward stepping factor 
   Int_t fSFB;              //backward stepping factor 

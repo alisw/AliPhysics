@@ -1,12 +1,16 @@
 #include <iostream.h>
 #include <TRandom.h>
 #include <TH1.h>
+#include <TMath.h>
+
+
 
 #include "AliRun.h"
-#include "AliITSMap.h"    // "AliITSMapA2.h"
+#include "AliITS.h"
+#include "AliITSMapA2.h" 
 #include "AliITSsimulationSPD.h"
-#include "AliITSsegmentation.h"
-#include "AliITSresponse.h"
+
+
 
 ClassImp(AliITSsimulationSPD)
 ////////////////////////////////////////////////////////////////////////
@@ -15,30 +19,33 @@ ClassImp(AliITSsimulationSPD)
 // December 20 1999
 //
 // AliITSsimulationSPD is the simulation of SPDs
-//
 //________________________________________________________________________
 
-AliITSsimulationSPD::AliITSsimulationSPD(){
+
+AliITSsimulationSPD::AliITSsimulationSPD()
+{
   // constructor
-  fResponse     = 0;
+  fResponse = 0;
   fSegmentation = 0;
-  fHis          = 0;
-  fNoise        = 0.;
-  fBaseline     = 0.;
+  fHis = 0;
+  fNoise=0.;
+  fBaseline=0.;
 }
+
+
 //_____________________________________________________________________________
 
 AliITSsimulationSPD::AliITSsimulationSPD(AliITSsegmentation *seg, AliITSresponse *resp) {
-  // constructor
+  // standard constructor
+
       fResponse = resp;
       fSegmentation = seg;
 
       fResponse->GetNoiseParam(fNoise,fBaseline);
 
- 
       fMapA2 = new AliITSMapA2(fSegmentation);
-   
-      // 
+
+      //
       fNPixelsZ=fSegmentation->Npz();
       fNPixelsX=fSegmentation->Npx();
 
@@ -56,6 +63,7 @@ AliITSsimulationSPD::~AliITSsimulationSPD() {
      delete fHis;     
   }                
 }
+
 
 //__________________________________________________________________________
 AliITSsimulationSPD::AliITSsimulationSPD(const AliITSsimulationSPD &source){
@@ -85,21 +93,26 @@ AliITSsimulationSPD&
   }
 //_____________________________________________________________________________
 
-void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t dummy) {
+void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t dummy)
+{
   // digitize module
-    const Float_t kEntoEl = 2.778e+8; // GeV->charge in electrons 
+
+    const Float_t kEnToEl = 2.778e+8; // GeV->charge in electrons 
                                       // for 3.6 eV/pair 
     const Float_t kconv = 10000.;     // cm -> microns
 
-    Float_t spdLenght = fSegmentation->Dz();
+    Float_t spdLength = fSegmentation->Dz();
     Float_t spdWidth = fSegmentation->Dx();
 
-    Float_t difCoef = fResponse->DiffCoeff();  
+    Float_t difCoef, dum; 
+    fResponse->DiffCoeff(difCoef,dum); 
 
     Float_t zPix0 = 1e+6;
     Float_t xPix0 = 1e+6;
     Float_t yPix0 = 1e+6;
-    Float_t yPrev = 1e+6;
+    Float_t yPrev = 1e+6;   
+    Float_t zP0 = 100.;
+    Float_t xP0 = 100.;
 
     Float_t zPitch = fSegmentation->Dpz(0);
     Float_t xPitch = fSegmentation->Dpx(0);
@@ -115,70 +128,57 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t 
 
   //  Array of pointers to the label-signal list
 
-    Int_t maxNdigits = fNPixelsX*fNPixelsZ; 
-    Float_t  **pList = new Float_t* [maxNdigits]; 
-    memset(pList,0,sizeof(Float_t*)*maxNdigits);
+    Int_t maxNDigits = fNPixelsX*fNPixelsZ + fNPixelsX ;; 
+    Float_t  **pList = new Float_t* [maxNDigits]; 
+    memset(pList,0,sizeof(Float_t*)*maxNDigits);
     Int_t indexRange[4] = {0,0,0,0};
 
     // Fill detector maps with GEANT hits
     // loop over hits in the module
-
-    Int_t layer,idtrack,status,trdown,ndZ,ndX,nsteps,iZi,nZpix,nXpix;
-    Int_t jzmin,jzmax,jxmin,jxmax,jx,jz,lz,lx,index;
-    Float_t zArg1,zArg2,xArg1,xArg2;
-    Float_t zProb1,zProb2,xProb1,xProb2;
-    Float_t dZCharge,dXCharge;
-    Double_t signal;
-    Float_t projDif;  // RMS of xDif and zDif
-    Float_t dProjn;  // RMS of dXn and dZn
-    Float_t depEnergy; // The deposited energy from this hit
-    Float_t zPix; // hit position in microns
-    Float_t xPix; // hit position in microns
-    Float_t yPix; // hit position in microns
-    Float_t zPixn; // hit position in microns
-    Float_t xPixn; // hit position in microns
-    Float_t charge,dCharge;// charge in e-
-    Float_t drPath;   
-    Float_t tAng,dZ,dX,dXn,dZn;
-    Float_t sigmaDif;
-    Float_t dZright,dZleft;
-    Float_t dXright,dXleft;
-    Float_t dZprev,dZnext,dXprev,dXnext;
-
     static Bool_t first=kTRUE;
-    Int_t lasttrack = -2,hit;
-    for(hit=0;hit<nhits;hit++) {
+    Int_t lasttrack=-2;
+    Int_t hit, iZi, jz, jx;
+    for (hit=0;hit<nhits;hit++) {
         AliITShit *iHit = (AliITShit*) fHits->At(hit);
-	layer = iHit->GetLayer();
+	Int_t layer = iHit->GetLayer();
+
 
 	// work with the idtrack=entry number in the TreeH
-	// Int_t idtrack=mod->GetHitTrackIndex(ii);  
+	Int_t idhit,idtrack;
+	mod->GetHitTrackAndHitIndex(hit,idtrack,idhit);    
+	//Int_t idtrack=mod->GetHitTrackIndex(hit);  
         // or store straight away the particle position in the array
 	// of particles : 
-        idtrack = iHit->GetTrack();
-
-	//if(module==11 || module==157) {
-	  // Int_t track = iHit->fTrack;
-	  // Int_t primary = gAlice->GetPrimary(track);
-	  // Int_t parent = iHit->GetParticle()->GetFirstMother();
-	  // printf("module,hit,track,primary,parent  %d %d %d %d %d \n",
-	  //                                   md,hit,track,primary,parent);
-	//}
+        Int_t itrack = iHit->GetTrack();
    
 	//  Get hit z and x(r*phi) cordinates for each module (detector)
 	//  in local system.
 
-	zPix = kconv*iHit->GetZL(); // Geant cm to microns
-	xPix = kconv*iHit->GetXL(); // Geant cm to micron
-        yPix = kconv*iHit->GetYL(); // Geant cm to micron
+	Float_t zPix = kconv*iHit->GetZL();
+	Float_t xPix = kconv*iHit->GetXL();
+	Float_t yPix = kconv*iHit->GetYL();
 
 	// Get track status
-	status = iHit->GetTrackStatus();      
-	if(status != 66 && status != 68) {
-	  printf("!!!!! no order status  %d\n",status);
-	}
+	Int_t status = iHit->GetTrackStatus();      
+      
+	// Check boundaries
+	if(TMath::Abs(zPix) > spdLength/2.) {
+	  printf("!! Zpix outside = %f\n",zPix);
+	  if(status == 66) zP0=100;
+	  continue;
+	} 
 
-	trdown = 0;
+
+	if (TMath::Abs(xPix) > spdWidth/2.) {
+	  printf("!! Xpix outside = %f\n",xPix);
+	  if (status == 66) xP0=100;
+	  continue;
+	}  
+
+	Float_t zP = (zPix + spdLength/2.)/1000.;  
+	Float_t xP = (xPix + spdWidth/2.)/1000.;  
+
+	Int_t trdown = 0;
 
 	// enter Si or after event in Si
 	if (status == 66 ) {  
@@ -189,14 +189,21 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t 
 	// enter Si only
 	if (layer == 1 && status == 66 && yPix > 71.) {     
              yPix0 = yPix;
+             zP0 = zP;
+             xP0 = xP;
 	}
 	// enter Si only
 	if (layer == 2 && status == 66 && yPix < -71.) {    
              yPix0 = yPix;
-	}
-	depEnergy = iHit->GetIonization();
+             zP0 = zP;
+             xP0 = xP;
+	}       
+	Float_t depEnergy = iHit->GetIonization();
 	// skip if the input point to Si       
-	if(depEnergy <= 0.) continue;  
+	if(depEnergy <= 0.) continue;        
+	// skip if the input point is outside of Si, but the next
+	// point is inside of Si
+	if(zP0 > 90 || xP0 > 90) continue; 
 	// if track returns to the opposite direction:
 	if (layer == 1 && yPix > yPrev) {
 	    yPix0 = yPrev;
@@ -205,7 +212,7 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t 
 	if (layer == 2 && yPix < yPrev) {
             yPix0 = yPrev;
             trdown = 1;
-	}
+	} 
 
 	// take into account the holes diffusion inside the Silicon
 	// the straight line between the entrance and exit points in Si is
@@ -216,82 +223,85 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t 
 
 	//  ---------- the diffusion in Z (beam) direction -------
 
-	charge = depEnergy*kEntoEl;         // charge in e-
-	drPath = 0.;   
-	tAng = 0.;
-	sigmaDif = 0.; 
-	Float_t zDif = zPix - zPix0;
-	Float_t xDif = xPix - xPix0;
-	Float_t yDif = yPix - yPix0;
+	Float_t charge = depEnergy*kEnToEl;         // charge in e-
+	Float_t drPath = 0.;   
+	Float_t tang = 0.;
+	Float_t sigmaDif = 0.; 
+	Float_t zdif = zPix - zPix0;
+	Float_t xdif = xPix - xPix0;
+	Float_t ydif = yPix - yPix0;
 
-	if(TMath::Abs(yDif) < 0.1) continue; // yDif is not zero
+	if(TMath::Abs(ydif) < 0.1) continue; // Ydif is not zero
 
-
-	projDif = sqrt(xDif*xDif + zDif*zDif);
-	ndZ = (Int_t)TMath::Abs(zDif/zPitch) + 1;
-	ndX = (Int_t)TMath::Abs(xDif/xPitch) + 1; 
+	Float_t projDif = sqrt(xdif*xdif + zdif*zdif);
+	Int_t ndZ = (Int_t)TMath::Abs(zdif/zPitch) + 1;
+	Int_t ndX = (Int_t)TMath::Abs(xdif/xPitch) + 1; 
 
 	// number of the steps along the track:
-	nsteps = ndZ;
+	Int_t nsteps = ndZ;
 	if(ndX > ndZ) nsteps = ndX;
 	if(nsteps < 6) nsteps = 6;  // minimum number of the steps 
 
-	if(TMath::Abs(projDif) > 5.0) tAng = yDif/projDif;
-	dCharge = charge/nsteps;       // charge in e- for one step
-	dZ = zDif/nsteps;
-	dX = xDif/nsteps;
+	if(TMath::Abs(projDif) > 5.0) tang = ydif/projDif;
+	Float_t dCharge = charge/nsteps;       // charge in e- for one step
+	Float_t dZ = zdif/nsteps;
+	Float_t dX = xdif/nsteps;
 
 	if (TMath::Abs(projDif) < 5.0 ) {
-	   drPath = yDif*1.e-4;  
+	   drPath = ydif*1.e-4;  
            drPath = TMath::Abs(drPath);        // drift path in cm
 	   sigmaDif = difCoef*sqrt(drPath);    // sigma diffusion in cm        
 	}  
 
-	for(iZi = 1;iZi <= nsteps;iZi++) {
-            dZn = iZi*dZ;
-	    dXn = iZi*dX;
-	    zPixn = zPix0 + dZn;
-	    xPixn = xPix0 + dXn;
+	for (iZi = 1;iZi <= nsteps;iZi++) {
+            Float_t dZn = iZi*dZ;
+	    Float_t dXn = iZi*dX;
+	    Float_t zPixn = zPix0 + dZn;
+	    Float_t xPixn = xPix0 + dXn;
 
 	    if(TMath::Abs(projDif) >= 5.) {
-	      dProjn = sqrt(dZn*dZn+dXn*dXn);
+	      Float_t dProjn = sqrt(dZn*dZn+dXn*dXn);
 	      if(trdown == 0) {
-		drPath = dProjn*tAng*1.e-4; // drift path for iZi step in cm 
+		drPath = dProjn*tang*1.e-4; // drift path for iZi step in cm 
 		drPath = TMath::Abs(drPath);
 	      }
 	      if(trdown == 1) {
-		dProjn = projDif/nsteps; 
-		drPath = (projDif-(iZi-1)*dProjn)*tAng*1.e-4;
+		Float_t dProjn = projDif/nsteps; 
+		drPath = (projDif-(iZi-1)*dProjn)*tang*1.e-4;
 		drPath = TMath::Abs(drPath);
 	      }
 	      sigmaDif = difCoef*sqrt(drPath);    
 	      sigmaDif = sigmaDif*kconv;         // sigma diffusion in microns
 	    }
-	    zPixn = (zPixn + spdLenght/2.);  
-	    xPixn = (xPixn + spdWidth/2.);
-            fSegmentation->GetCellIxz(xPixn,zPixn,nXpix,nZpix);
+	    zPixn = (zPixn + spdLength/2.);  
+	    xPixn = (xPixn + spdWidth/2.);  
+            Int_t nZpix, nXpix;
+            fSegmentation->GetPadIxz(xPixn,zPixn,nXpix,nZpix);
 	    zPitch = fSegmentation->Dpz(nZpix);
+            fSegmentation->GetPadTxz(xPixn,zPixn);
 	    // set the window for the integration
-	    jzmin = 1;
-	    jzmax = 3; 
+	    Int_t jzmin = 1;  
+	    Int_t jzmax = 3; 
 	    if(nZpix == 1) jzmin =2;
 	    if(nZpix == fNPixelsZ) jzmax = 2; 
 
-	    jxmin = 1;  
-	    jxmax = 3; 
+	    Int_t jxmin = 1;  
+	    Int_t jxmax = 3; 
 	    if(nXpix == 1) jxmin =2;
 	    if(nXpix == fNPixelsX) jxmax = 2; 
 
-	    zPix    = nZpix;
-	    dZright = zPitch*(zPix - zPixn);
-	    dZleft  = zPitch - dZright;
-	    xPix    = nXpix;
-	    dXright = xPitch*(xPix - xPixn);
-	    dXleft  = xPitch - dXright;
-	    dZprev  = 0.;
-	    dZnext  = 0.;
-	    dXprev  = 0.;
-	    dXnext  = 0.;
+	    Float_t zpix = nZpix; 
+	    Float_t dZright = zPitch*(zpix - zPixn);
+	    Float_t dZleft = zPitch - dZright;
+
+	    Float_t xpix = nXpix; 
+	    Float_t dXright = xPitch*(xpix - xPixn);
+	    Float_t dXleft = xPitch - dXright;
+
+	    Float_t dZprev = 0.;
+	    Float_t dZnext = 0.;
+	    Float_t dXprev = 0.;
+	    Float_t dXnext = 0.;
 
 	    for(jz=jzmin; jz <=jzmax; jz++) {
 	        if(jz == 1) {
@@ -306,16 +316,15 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t 
 		  dZprev = dZright;
 		  dZnext = dZright + zPitch;
 		} 
-		// lz changes from 1 to the fNofPixels(270)
-		lz = nZpix + jz -2; 
+		// kz changes from 1 to the fNofPixels(270)  
+		Int_t kz = nZpix + jz -2; 
 
-		zArg1 = dZprev/sigmaDif;
-		zArg2 = dZnext/sigmaDif;
-		zProb1 = TMath::Erfc(zArg1);
-		zProb2 = TMath::Erfc(zArg2);
-		dZCharge =0.5*(zProb1-zProb2)*dCharge; 
+		Float_t zArg1 = dZprev/sigmaDif;
+		Float_t zArg2 = dZnext/sigmaDif;
+		Float_t zProb1 = TMath::Erfc(zArg1);
+		Float_t zProb2 = TMath::Erfc(zArg2);
+		Float_t dZCharge =0.5*(zProb1-zProb2)*dCharge; 
 
-		//printf("dZCharge %f \n",dZCharge);
 
 		// ----------- holes diffusion in X(r*phi) direction  --------
 
@@ -333,32 +342,32 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t 
 		       dXprev = dXright;
 		       dXnext = dXright + xPitch;
 		     } 
-		     lx = nXpix + jx -2;  
+		     Int_t kx = nXpix + jx -2;  
 
-		     xArg1    = dXprev/sigmaDif;
-		     xArg2    = dXnext/sigmaDif;
-		     xProb1   = TMath::Erfc(xArg1);
-		     xProb2   = TMath::Erfc(xArg2);
-		     dXCharge =0.5*(xProb1-xProb2)*dZCharge; 
-
-		     //printf("dXCharge %f \n",dXCharge);
+		     Float_t xArg1 = dXprev/sigmaDif;
+		     Float_t xArg2 = dXnext/sigmaDif;
+		     Float_t xProb1 = TMath::Erfc(xArg1);
+		     Float_t xProb2 = TMath::Erfc(xArg2);
+		     Float_t dXCharge =0.5*(xProb1-xProb2)*dZCharge; 
 
 		     if(dXCharge > 1.) {
-		       index = lz-1;
+		       Int_t index = kz-1;
+
 		       if (first) {
                           indexRange[0]=indexRange[1]=index;
-                          indexRange[2]=indexRange[3]=lx-1;
+                          indexRange[2]=indexRange[3]=kx-1;
                           first=kFALSE;
 		       }
 
-                       indexRange[0]=TMath::Min(indexRange[0],lz-1);
-                       indexRange[1]=TMath::Max(indexRange[1],lz-1);
-                       indexRange[2]=TMath::Min(indexRange[2],lx-1);
-                       indexRange[3]=TMath::Max(indexRange[3],lx-1);
+                       indexRange[0]=TMath::Min(indexRange[0],kz-1);
+                       indexRange[1]=TMath::Max(indexRange[1],kz-1);
+                       indexRange[2]=TMath::Min(indexRange[2],kx-1);
+                       indexRange[3]=TMath::Max(indexRange[3],kx-1);
+
 		       // build the list of digits for this module	
-                       signal=fMapA2->GetSignal(index,lx-1);
+                       Double_t signal=fMapA2->GetSignal(index,kx-1);
                        signal+=dXCharge;
-                       fMapA2->SetHit(index,lx-1,(double)signal);
+                       fMapA2->SetHit(index,kx-1,(double)signal);
 		     }      // dXCharge > 1 e-
 		  }       // jx loop
 		}       // dZCharge > 1 e-
@@ -371,11 +380,12 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t 
         }
 	yPrev = yPix;  //ch
 
-	if (lasttrack != idtrack || hit==(nhits-1)) {
-            GetList(idtrack,pList,indexRange);
+	if (lasttrack != itrack || hit==(nhits-1)) {
+            GetList(itrack,idhit,pList,indexRange);
             first=kTRUE;
 	}
-	lasttrack=idtrack;
+
+	lasttrack=itrack;
     }   // hit loop inside the module
 
    
@@ -390,47 +400,55 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t 
 } 
 
 //---------------------------------------------
-void AliITSsimulationSPD::GetList(Int_t label,Float_t **pList,Int_t *indexRange) {
-  // loop over nonzero digits
+void AliITSsimulationSPD::GetList(Int_t label,Int_t idhit,Float_t **pList,Int_t *indexRange)
+{
+  // lop over nonzero digits
 
-  Int_t ix,iz,globalIndex;
-  Float_t signal;
-  Float_t highest,middle,lowest;
+   
+  //set protection
+  for(int k=0;k<4;k++) {
+     if (indexRange[k] < 0) indexRange[k]=0;
+  }
 
-  for(iz=indexRange[0];iz<indexRange[1]+1;iz++){
-    for(ix=indexRange[2];ix<indexRange[3]+1;ix++){
-      
-      signal=fMapA2->GetSignal(iz,ix);
+  for(Int_t iz=indexRange[0];iz<indexRange[1]+1;iz++){
+    for(Int_t ix=indexRange[2];ix<indexRange[3]+1;ix++){
 
-        globalIndex = iz*fNPixelsX+ix; // globalIndex starts from 0!
+        Float_t signal=fMapA2->GetSignal(iz,ix);
+	if (!signal) continue;
+
+        Int_t globalIndex = iz*fNPixelsX+ix; // GlobalIndex starts from 0!
         if(!pList[globalIndex]){
         
            // 
-	   // Create new list (6 elements - 3 signals and 3 tracks + total sig)
+	   // Create new list (9 elements - 3 signals and 3 tracks + 3 hits)
 	   //
 
-           pList[globalIndex] = new Float_t [6];
+           pList[globalIndex] = new Float_t [9];
 
-	   // set list to -2 
+	   // set list to -3 
 
-	   *pList[globalIndex] = -2.;
-	   *(pList[globalIndex]+1) = -2.;
-	   *(pList[globalIndex]+2) = -2.;
+	   *pList[globalIndex] = -3.;
+	   *(pList[globalIndex]+1) = -3.;
+	   *(pList[globalIndex]+2) = -3.;
 	   *(pList[globalIndex]+3) =  0.;
 	   *(pList[globalIndex]+4) =  0.;
 	   *(pList[globalIndex]+5) =  0.;
+	   *(pList[globalIndex]+6) = -1.;
+	   *(pList[globalIndex]+7) = -1.;
+	   *(pList[globalIndex]+8) = -1.;
 
 
 	   *pList[globalIndex] = (float)label;
 	   *(pList[globalIndex]+3) = signal;
+	   *(pList[globalIndex]+6) = (float)idhit;
         }
         else{
 
 	  // check the signal magnitude
 
-          highest = *(pList[globalIndex]+3);
-          middle = *(pList[globalIndex]+4);
-          lowest = *(pList[globalIndex]+5);
+          Float_t highest = *(pList[globalIndex]+3);
+          Float_t middle = *(pList[globalIndex]+4);
+          Float_t lowest = *(pList[globalIndex]+5);
 
           signal -= (highest+middle+lowest);
 
@@ -448,6 +466,10 @@ void AliITSsimulationSPD::GetList(Int_t label,Float_t **pList,Int_t *indexRange)
             *(pList[globalIndex]+2) = *(pList[globalIndex]+1);
             *(pList[globalIndex]+1) = *pList[globalIndex];
             *pList[globalIndex] = label;
+
+            *(pList[globalIndex]+8) = *(pList[globalIndex]+7);
+            *(pList[globalIndex]+7) = *(pList[globalIndex]+6);
+            *(pList[globalIndex]+6) = idhit;
 	  }
           else if (signal>middle){
             *(pList[globalIndex]+5) = middle;
@@ -455,10 +477,14 @@ void AliITSsimulationSPD::GetList(Int_t label,Float_t **pList,Int_t *indexRange)
 
             *(pList[globalIndex]+2) = *(pList[globalIndex]+1);
             *(pList[globalIndex]+1) = label;
+
+            *(pList[globalIndex]+8) = *(pList[globalIndex]+7);
+            *(pList[globalIndex]+7) = idhit;
 	  }
           else{
             *(pList[globalIndex]+5) = signal;
             *(pList[globalIndex]+2) = label;
+            *(pList[globalIndex]+8) = idhit;
 	  }
         }
     } // end of loop pixels in x
@@ -469,8 +495,10 @@ void AliITSsimulationSPD::GetList(Int_t label,Float_t **pList,Int_t *indexRange)
 
 
 //---------------------------------------------
-void AliITSsimulationSPD::ChargeToSignal(Float_t **pList) {
-  // charge to signal  
+void AliITSsimulationSPD::ChargeToSignal(Float_t **pList)
+{
+  // add noise and electronics, perform the zero suppression and add the
+  // digit to the list
 
   AliITS *aliITS = (AliITS*)gAlice->GetModule("ITS");
   
@@ -478,48 +506,54 @@ void AliITSsimulationSPD::ChargeToSignal(Float_t **pList) {
   TRandom *random = new TRandom(); 
   Float_t threshold = (float)fResponse->MinVal();
 
-  Int_t digits[3], tracks[3],gi,j1;
+  Int_t digits[3], tracks[3], hits[3],gi,j1;
   Float_t charges[3];
   Float_t electronics;
   Float_t signal,phys;
-  Int_t iz,ix;
-  for(iz=0;iz<fNPixelsZ;iz++){
-    for(ix=0;ix<fNPixelsX;ix++){
+  for(Int_t iz=0;iz<fNPixelsZ;iz++){
+    for(Int_t ix=0;ix<fNPixelsX;ix++){
       electronics = fBaseline + fNoise*random->Gaus();
       signal = (float)fMapA2->GetSignal(iz,ix);
       signal += electronics;
+      gi =iz*fNPixelsX+ix; // global index
       if (signal > threshold) {
 	 digits[0]=iz;
 	 digits[1]=ix;
 	 digits[2]=1;
-	 gi =iz*fNPixelsX+ix; // global index
 	 for(j1=0;j1<3;j1++){
-	   tracks[j1] = (Int_t)(*(pList[gi]+j1));
+	   if (pList[gi]) {
+	     tracks[j1] = (Int_t)(*(pList[gi]+j1));
+	     hits[j1] = (Int_t)(*(pList[gi]+j1+6));
+	   }else {
+	     tracks[j1]=-2; //noise
+	     hits[j1] = -1;
+	   }
 	   charges[j1] = 0;
 	 }
          phys=0;
-	 aliITS->AddDigit(0,phys,digits,tracks,charges);
-         if(pList[gi]) delete [] pList[gi];
+	 aliITS->AddSimDigit(0,phys,digits,tracks,hits,charges);
       }
+      if(pList[gi]) delete [] pList[gi];
     }
   }
   delete [] pList;
-
 
 }
 
 
 //____________________________________________
 
-void AliITSsimulationSPD::CreateHistograms() {
-  // CreateHistograms
+void AliITSsimulationSPD::CreateHistograms()
+{
+  // create 1D histograms for tests
 
-      Int_t i;
-      for(i=0;i<fNPixelsZ;i++) {
+      printf("SPD - create histograms\n");
+
+      for (Int_t i=0;i<fNPixelsZ;i++) {
 	   TString *spdname = new TString("spd_");
-	   Char_t candnum[4];
-	   sprintf(candnum,"%d",i+1);
-	   spdname->Append(candnum);
+	   Char_t pixelz[4];
+	   sprintf(pixelz,"%d",i+1);
+	   spdname->Append(pixelz);
 	   (*fHis)[i] = new TH1F(spdname->Data(),"SPD maps",
                               fNPixelsX,0.,(Float_t) fNPixelsX);
 	   delete spdname;
@@ -529,13 +563,22 @@ void AliITSsimulationSPD::CreateHistograms() {
 
 //____________________________________________
 
-void AliITSsimulationSPD::ResetHistograms() {
+void AliITSsimulationSPD::ResetHistograms()
+{
     //
     // Reset histograms for this detector
     //
-    Int_t i;
-    for(i=0;i<fNPixelsZ;i++ ) {
+    for ( int i=0;i<fNPixelsZ;i++ ) {
 	if ((*fHis)[i])    ((TH1F*)(*fHis)[i])->Reset();
     }
 
 }
+
+
+
+
+
+
+
+
+

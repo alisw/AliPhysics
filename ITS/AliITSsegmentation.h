@@ -14,30 +14,34 @@ class AliITSgeom;
 class AliITSsegmentation :
 public TObject {
  public:
+
+    virtual ~AliITSsegmentation() {}
     // Set Detector Segmentation Parameters
     //
     // Detector size  
     virtual void    SetDetSize(Float_t Dx, Float_t Dz, Float_t Dy) {}
 
     // Cell size   
-    virtual void    SetCellSize(Float_t p1, Float_t p2) {}
+    virtual void    SetPadSize(Float_t p1, Float_t p2) {}
 
     // Maximum number of cells along the two coordinates  
-    virtual void    SetNCells(Int_t p1, Int_t p2) {}
+    virtual void    SetNPads(Int_t p1, Int_t p2) {}
 
     // Set angles - find a generic name fit for other detectors as well
     // might be useful for beam test setups (3 angles ?)
     virtual void    SetAngles(Float_t p1, Float_t p2) {}
 
     // Transform from real to cell coordinates
-    virtual void    GetCellIxz(Float_t &x ,Float_t &z ,Int_t &ix,Int_t &iz)=0;
+    virtual void    GetPadIxz(Float_t x ,Float_t z ,Int_t &ix,Int_t &iz) {}
     // Transform from cell to real coordinates
-    virtual void    GetCellCxz(Int_t ix, Int_t iz, Float_t &x ,Float_t &z )=0;
+    virtual void    GetPadCxz(Int_t ix, Int_t iz, Float_t &x ,Float_t &z ) {}
     // Transform from real global to local coordinates
-    virtual void    GetLocal(Int_t module,Float_t *g ,Float_t *l)  =0;
+    virtual void    GetLocal(Int_t module,Float_t *g ,Float_t *l) {}
     // Transform from real local to global coordinates
-    virtual void    GetGlobal(Int_t module,Float_t *l ,Float_t *g) =0;
-    //
+    virtual void    GetGlobal(Int_t module,Float_t *l ,Float_t *g) {}
+    // Local transformation of real local coordinates -
+    virtual void    GetPadTxz(Float_t &x ,Float_t &z) {}
+     //
     // Initialisation
     virtual void Init() {}
     //
@@ -46,20 +50,20 @@ public TObject {
     // Detector type geometry
     virtual AliITSgeom* Geometry() {return 0;}
     // Detector length
-    virtual Float_t Dx()                               =0;
+    virtual Float_t Dx() {return 0.;}
     // Detector width
-    virtual Float_t Dz()                               =0;
+    virtual Float_t Dz() {return 0.;}
     // Detector thickness
-    virtual Float_t Dy()                               =0;
+    virtual Float_t Dy() {return 0.;}
     // Cell size in x
-    virtual Float_t Dpx(Int_t)                         =0;
+    virtual Float_t Dpx(Int_t) {return 0.;}
     // Cell size in z 
-    virtual Float_t Dpz(Int_t)                         =0;
+    virtual Float_t Dpz(Int_t) {return 0.;}
 
     // Maximum number of Cells in x
-    virtual Int_t    Npx()                             =0;
+    virtual Int_t    Npx() {return 0;}
     // Maximum number of Cells in z
-    virtual Int_t    Npz()                             =0;
+    virtual Int_t    Npz() {return 0;}
 
     // Angles 
     virtual void Angles(Float_t &, Float_t&) {}
@@ -72,12 +76,12 @@ public TObject {
     //
     // Iterate over cells 
     // Initialiser
-    virtual void  FirstCell
+    virtual void  FirstPad
           (Float_t xhit, Float_t zhit, Float_t dx, Float_t dz) {}
     // Stepper
-    virtual void  NextCell() {}
+    virtual void  NextPad() {}
     // Condition
-    virtual Int_t MoreCells() {return 0;}
+    virtual Int_t MorePads() {return 0;}
     //
     // Get next neighbours 
     virtual void Neighbours

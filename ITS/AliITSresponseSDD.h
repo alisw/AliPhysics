@@ -19,7 +19,7 @@ public:
   AliITSresponseSDD(const AliITSresponseSDD &source); // copy constructor
   AliITSresponseSDD& operator=(const AliITSresponseSDD &source); // ass. op.
   
-  virtual void    SetMaxAdc(Float_t p1=1023) {
+  virtual void    SetMaxAdc(Float_t p1=1024) {
     // Adc-count saturation value
     fMaxAdc=p1;
   }
@@ -28,32 +28,26 @@ public:
     return fMaxAdc;
   }                       
   
-  virtual void    SetMagicValue(Float_t p1=450.) {
-    // Set maximum Adc-magic value
+  virtual void    SetMagicValue(Float_t p1=1024) {
+    // Set maximum Adc-top value
     fTopValue=p1;
+    //it was 96.95
   }
   virtual Float_t MagicValue()  {
-    // Get maximum Adc-magic value
+    // Get maximum Adc-top value
     return fTopValue;
   }                       
   
-  virtual void    SetDiffCoeff(Float_t p1=5.) {
-    // Diffusion coefficient
+  virtual void    SetDiffCoeff(Float_t p1=2.8,Float_t p2=28.) {
+    // Diffusion coefficients
     fDiffCoeff=p1;
+    fDiffCoeff1=p2;
   }
-  virtual Float_t DiffCoeff() {
-    // Get diffusion coefficient
-    return fDiffCoeff;
+  virtual void DiffCoeff(Float_t&diff,Float_t&diff1) {
+    // Get diffusion coefficients
+    diff = fDiffCoeff;
+    diff1 = fDiffCoeff1;
   } 
-  
-  virtual void    SetQref(Float_t p1=120.) {
-    // Coulomb repulsion
-    fQref=p1;
-  }
-  virtual Float_t Qref() {
-    // qref
-    return fQref;
-  }
   
   virtual void    SetDriftSpeed(Float_t p1=7.5) {
     // Drift velocity
@@ -73,25 +67,25 @@ public:
     return fTemperature;
   } 
   
-  virtual void    SetDataType(char *data="simulated") {
+  virtual void    SetDataType(const char *data="simulated") {
     // Type of data - real or simulated
     fDataType=data;
   }
-  virtual char  *DataType() {
+  virtual const char  *DataType() const {
     // Get data type
-    return fDataType;
+    return fDataType.Data();
   } 
   
-  virtual void SetParamOptions(Option_t *opt1="same",Option_t *opt2="same"){
+  virtual void SetParamOptions(const char *opt1="same",const char *opt2="same"){
     // Parameters: "same" or read from "file" 
     fParam1=opt1; fParam2=opt2;
   }
-  virtual void   ParamOptions(Option_t *&opt1,Option_t *&opt2) {
+  virtual void   ParamOptions(char *opt1,char *opt2) {
     // options
-    opt1=fParam1; opt2=fParam2;
+    strcpy(opt1,fParam1.Data()); strcpy(opt2,fParam2.Data());
   }
   
-  virtual  void  SetNoiseParam(Float_t n=3., Float_t b=20.){
+  virtual  void  SetNoiseParam(Float_t n=1.8, Float_t b=20.){
     // Noise and baseline
     fNoise=n; fBaseline=b;
   }   
@@ -100,13 +94,13 @@ public:
     n=fNoise; b=fBaseline;
   }   
   
-  virtual void    SetZeroSupp(Option_t *opt="2D") {
+  virtual void    SetZeroSupp (const char *opt="2D") {
     // Zero-suppression option - could be 1D, 2D or non-ZS 
     fOption=opt;
   }
-  virtual Option_t *ZeroSuppOption() {
+  virtual const char *ZeroSuppOption() const {
     // Get zero-suppression option
-    return fOption;
+    return fOption.Data();
   }
   virtual  void  SetMinVal(Int_t mv=4) {
     // Min value used in 2D - could be used as a threshold setting
@@ -117,13 +111,14 @@ public:
     return fMinVal;
   }
   
-  virtual void   SetFilenames(char *f1=0,char *f2=0, char *f3=0) {
+  virtual void   SetFilenames(const char *f1="",const char *f2="",const char *f3="") {
     // Set filenames - input, output, parameters ....
     fFileName1=f1; fFileName2=f2; fFileName3=f3;
   }
-  virtual void   Filenames(const char*input,const char*baseline,const char*param) {
+  virtual void   Filenames(char *input,char *baseline,char *param) {
     // Filenames
-    input=fFileName1; baseline=fFileName2; param=fFileName3;
+   strcpy(input,fFileName1.Data());  strcpy(baseline,fFileName2.Data());  
+   strcpy(param,fFileName3.Data());
   }     
   
   
@@ -142,12 +137,13 @@ public:
   
   //  
   // Detector type response methods
-  virtual void    SetNSigmaIntegration(Float_t p1) {
+  virtual void    SetNSigmaIntegration(Float_t p1=4.) {
     // Set number of sigmas over which cluster disintegration is performed
+    fNsigmas=p1;
   }
   virtual Float_t NSigmaIntegration() {
     // Get number of sigmas over which cluster disintegration is performed
-    return 0.;
+    return fNsigmas;
   }
   virtual void    SetSigmaSpread(Float_t p1, Float_t p2) {
     // Set sigmas of the charge spread function
@@ -169,8 +165,6 @@ public:
 protected:
   
   Int_t     fCPar[8];        // Hardware compression parameters
-  //Int_t     fNDetPar;        // Number of detector param 
-  //Float_t   fDetPar[fNDetPar];  
   
   Float_t   fNoise;          // Noise
   Float_t   fBaseline;       // Baseline
@@ -179,28 +173,23 @@ protected:
   Float_t   fDriftSpeed;     // Drift velocity
   
   Float_t    fMaxAdc;        // Adc saturation value
-  Float_t    fDiffCoeff;     // Diffusion Coefficient
-  Float_t    fQref;          // Coulomb repulsion
+  Float_t    fDiffCoeff;     // Diffusion Coefficient (scaling the time)
+  Float_t    fDiffCoeff1;    // Diffusion Coefficient (constant term)
+  Float_t    fNsigmas;       // Number of sigmas over which charge disintegration 
+                             // is performed 
   
   Int_t      fZeroSuppFlag;  // Zero-suppression flag
   Int_t      fMinVal;        // Min value used in 2D zero-suppression algo
   
   Bool_t     fWrite;         // Write option for the compression algorithms
-  Option_t   *fOption;       //! 
-                             // Zero-suppresion option (1D, 2D or none)
-  Option_t   *fParam1;       //! 
-                             //Read baselines from file option
-  Option_t   *fParam2;       //! 
-                             //Read compression algo thresholds from file 
+  TString    fOption;        // Zero-suppresion option (1D, 2D or none)
+  TString    fParam1;        // Read baselines from file option
+  TString    fParam2;        // Read compression algo thresholds from file 
   
-  char*         fDataType;         //!
-				   // input keys : run, module #
-  char*         fFileName1;        //!
-                                   // input keys : run, module #
-  char*         fFileName2;        //!
-                                   // baseline & noise val or output coded                                        // signal or monitored bgr.
-  char*         fFileName3;        //!
-                                   // param values or output coded signal 
+  TString         fDataType;         // data type - real or simulated
+  TString         fFileName1;        // input keys : run, module #
+  TString         fFileName2;        // baseline & noise val or output coded                                                 // signal or monitored bgr.
+  TString         fFileName3;        // param values or output coded signal 
   
   ClassDef(AliITSresponseSDD,1) // SDD response 
     

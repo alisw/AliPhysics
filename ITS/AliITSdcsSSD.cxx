@@ -29,7 +29,7 @@ AliITSdcsSSD::AliITSdcsSSD(AliITSsegmentation *seg, AliITSresponse *resp)
        npar=6;
     }
 
-    Float_t *detpar = new Float_t [npar];
+    Float_t *detpar= new Float_t[npar];
     resp->GetDetParam(detpar);
 
     fNInvalid = detpar[0];
@@ -41,12 +41,11 @@ AliITSdcsSSD::AliITSdcsSSD(AliITSsegmentation *seg, AliITSresponse *resp)
     fCouplingNL = detpar[5]; 
 
 
-    Option_t *opt,*dummy;
+    char opt[30],dummy[20];
     resp->ParamOptions(opt,dummy);
     if (strstr(opt,"SetInvalid")) SetInvalidMC(fNInvalid,fISigma);
-	 
-	 delete [] detpar;
 
+    delete [] detpar;
 }
 
 //_____________________________________________________________________
@@ -169,8 +168,8 @@ void AliITSdcsSSD::GetInvalidParam(Float_t &mean, Float_t &sigma) {
 Bool_t AliITSdcsSSD::IsValidP(Int_t strip) {
   // isvalidP
     Int_t nElem = fInvalidP->GetSize();
-    Int_t i;
-    for(i = 0; i<nElem; i++)
+    //printf("IsValidP: nElem %d\n",nElem);
+    for(Int_t i = 0; i<nElem; i++)
        if(fInvalidP->At(i) == strip) return kFALSE;
     return kTRUE;
 }
@@ -180,8 +179,8 @@ Bool_t AliITSdcsSSD::IsValidP(Int_t strip) {
 Bool_t AliITSdcsSSD::IsValidN(Int_t strip) {
   // is valid N
     Int_t nElem = fInvalidN->GetSize();
-    Int_t i;
-    for(i = 0; i<nElem; i++)
+    //printf("IsValidN: nElem %d\n",nElem);
+    for(Int_t i = 0; i<nElem; i++)
        if(fInvalidN->At(i) == strip) return kFALSE;
     return kTRUE;
 }

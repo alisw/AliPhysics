@@ -14,42 +14,40 @@ class AliITSetfSDD : public TObject {
 //
 // AliITSetfSDD is the class describing the electronics for the ITS SDDs. 
 //
-// Data members:
-//
 ////////////////////////////////////////////////////////////////////////
+  
+ public:
+    
+  AliITSetfSDD() {};                 // default constructor
+  AliITSetfSDD(Double_t timestep);
+  ~AliITSetfSDD() {;}  
+  Double_t GetWeightReal(Int_t n) { return fWR[n]; }
+  Double_t GetWeightImag(Int_t n) { return fWI[n]; }
+  Double_t GetTraFunReal(Int_t n) { return fTfR[n]; }
+  Double_t GetTraFunImag(Int_t n) { return fTfI[n]; }
+  Int_t GetSamples() { return fkMaxNofSamples; }
+  void PrintElectronics();          // Print Electronics parameters  
 
  private:
+
+  static const Int_t fkMaxNofPoles = 5;
+  static const Int_t fkMaxNofSamples = 1024;
   
   Double_t fSamplingTime;      //
   Double_t fT0;                //
   Double_t fDf;                //
   Double_t fA0;                //
-  static const Int_t fMaxNofPoles = 5;
-  Double_t fZero_M[fMaxNofPoles];  // 
-  Double_t fZero_R[fMaxNofPoles];  // 
-  Double_t fZero_I[fMaxNofPoles];  // 
-  Double_t fPole_M[fMaxNofPoles];  // 
-  Double_t fPole_R[fMaxNofPoles];  // 
-  Double_t fPole_I[fMaxNofPoles];  // 
-  static const Int_t fMaxNofSamples = 256;
-  Double_t fTf_R[fMaxNofSamples];     // Transfer function (real part)
-  Double_t fTf_I[fMaxNofSamples];     // Transfer function (imaginary part)
-  Double_t fW_R[fMaxNofSamples];     // Fourier Weights (real part)
-  Double_t fW_I[fMaxNofSamples];     // Fourier Weights (imaginary part)
+  Double_t fZeroM[fkMaxNofPoles];  // 
+  Double_t fZeroR[fkMaxNofPoles];  // 
+  Double_t fZeroI[fkMaxNofPoles];  // 
+  Double_t fPoleM[fkMaxNofPoles];  // 
+  Double_t fPoleR[fkMaxNofPoles];  // 
+  Double_t fPoleI[fkMaxNofPoles];  // 
+  Double_t fTfR[fkMaxNofSamples];     // Transfer function (real part)
+  Double_t fTfI[fkMaxNofSamples];     // Transfer function (imaginary part)
+  Double_t fWR[fkMaxNofSamples];     // Fourier Weights (real part)
+  Double_t fWI[fkMaxNofSamples];     // Fourier Weights (imaginary part)
   
- public:
-    
-  AliITSetfSDD() {};                 // default constructor
-  AliITSetfSDD(Double_t);
-  ~AliITSetfSDD() {;}  
-  Double_t GetWeightReal(Int_t n) { return fW_R[n]; }
-  Double_t GetWeightImag(Int_t n) { return fW_I[n]; }
-  Double_t GetTraFunReal(Int_t n) { return fTf_R[n]; }
-  Double_t GetTraFunImag(Int_t n) { return fTf_I[n]; }
-  Int_t GetSamples() { return fMaxNofSamples; }
-  void Print();          // Print Electronics parameters  
-  
-  friend class AliITSmapSDD;
   ClassDef(AliITSetfSDD,1)  // Class for SDD electornics
     };
     

@@ -3,9 +3,7 @@
 
 #include <TArrayF.h>
 
-#include "AliITSdcsSSD.h"
 #include "AliITSsimulation.h"
-#include "AliITSdictSSD.h"
 
 
 class AliITSdictSSD;
@@ -24,22 +22,12 @@ public:
   void DigitiseModule(AliITSmodule *mod, Int_t module, Int_t dummy);  
   void HitToDigit(Int_t &hit,Int_t idtrack,Int_t nhits,TObjArray *hits);            
 
-  TArrayF* GetSignalP() {
-                         // return the signal of P strip
-                         return fP;
-								}
-  TArrayF* GetSignalN() {
-                         // return the signal of N strip
-                         return fN;
-								}
+  // return the pointer to the signal array of P strip
+  TArrayF* GetSignalP() {return fP;}
+  // return the pointer to the signal array of N strip
+  TArrayF* GetSignalN() {return fN;}
 
 protected:
-  
-  Int_t IntegrateGaussian(Double_t par, Double_t av, Double_t sigma, 
-			  Double_t inf, Double_t sup);
-  void  NormalizeCharge(Int_t k, Double_t pair);
-  Int_t NumOfSteps(Double_t x, Double_t y, Double_t z,
-		   Double_t &dex,Double_t &dey,Double_t &dez);
   void  ApplyNoise();
   void  ApplyCoupling();
   void  ApplyThreshold();
@@ -68,7 +56,7 @@ protected:
   ClassDef(AliITSsimulationSSD,1)
     
     
-    };
+};
 
 
 #endif

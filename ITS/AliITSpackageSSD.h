@@ -7,11 +7,10 @@
 //
 #include "TObject.h"
 #include "TArrayI.h"
-#include "TClonesArray.h"
-#include "AliITS.h"
 
 #include "AliITSclusterSSD.h"
 
+class AliITS;
 
 class AliITSpackageSSD : public TObject
 {
@@ -82,8 +81,9 @@ protected:
   Int_t    fNclustersP;
   TArrayI *fClusterNIndexes;
   TArrayI *fClusterPIndexes;
-  static const Bool_t SIDEP=kTRUE;
-  static const Bool_t SIDEN=kFALSE;
+
+  static const Bool_t fgkSIDEP=kTRUE;
+  static const Bool_t fgkSIDEN=kFALSE;
 
 
 /***************/

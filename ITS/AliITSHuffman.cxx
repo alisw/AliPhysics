@@ -27,7 +27,7 @@ AliITSHNode::AliITSHNode()
 
 AliITSHNode::AliITSHNode(UChar_t sym, ULong_t freq)
 {
-  // constructor
+  // standard constructor
     fSymbol=sym;
     fFrequency=freq;
     fLeft=0;
@@ -104,10 +104,10 @@ AliITSHTable::AliITSHTable(Int_t size)
   fHNodes = new TObjArray;
   fNnodes=0;
   fSym= new Short_t[fSize];
-  for(Short_t i=0;i<fSize;i++) {
+  for (Short_t i=0;i<fSize;i++) {
        fSym[i]=i;
   }
-  Clear(); 
+  ClearTable(); 
 
 }
 
@@ -145,8 +145,7 @@ void AliITSHTable::GetFrequencies(Int_t len, UChar_t *stream)
   printf("Get Frequencies: sym %p \n",fSym);
 
   // use temporarily the fCode array to store the frequencies
-  Int_t i;
-  for(i=0; i< len; i++) {
+  for (Int_t i=0; i< len; i++) {
       Int_t idx=TMath::BinarySearch(fSize,fSym,(Short_t)stream[i]);
       if (idx == (Int_t)stream[i]) fCode[idx]++;
       // test
@@ -163,8 +162,7 @@ void AliITSHTable::BuildHTable()
 {
   // build Htable
 
-  Int_t i;
-  for(i=0; i< fSize; i++) {
+  for (Int_t i=0; i< fSize; i++) {
     //printf("i,fCode[i] %d %d\n",i,(Int_t)fCode[i]);
      if (fCode[i] > 0) {
         fNnodes++;
@@ -197,7 +195,7 @@ void AliITSHTable::BuildHTable()
 
     }
 
-    Clear();
+    ClearTable();
 
     AliITSHNode *start= (AliITSHNode*)fHNodes->UncheckedAt(0);
     SpanTree(start,0,0);
@@ -205,8 +203,7 @@ void AliITSHTable::BuildHTable()
     // check the Huffman table
 
     cout << "...Done, Huffman Table is: \n";
-    Int_t c;
-    for(c=0; c <= 255; c++) {
+    for (int c=0; c <= 255; c++) {
       if (fCodeLen[c] > 0) cout << "Symbol " << c << " Coded as " << fCode[c] << " and long " << (int) fCodeLen[c] << " bits.\n"; 
     }
 
@@ -263,36 +260,10 @@ void AliITSHTable::ResetHNodes()
 }
 
 //_____________________________________________________________________________
-void AliITSHTable::Clear()
+void AliITSHTable::ClearTable()
 {
   // clear
     memset(fCodeLen,0,sizeof(UChar_t)*fSize);
     memset(fCode,0,sizeof(ULong_t)*fSize);
-}
-
-//___________________________________________________________________________
-void AliITSHTable::Streamer(TBuffer &R__b)
-{
-   // Stream an object of class AliITSHTable.
-
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      TObject::Streamer(R__b);
-      R__b >> fSize;
-      R__b.ReadArray(fCodeLen);
-      R__b.ReadArray(fCode);
-      R__b.ReadArray(fSym);
-      R__b >> fHNodes;
-      R__b >> fNnodes;
-   } else {
-      R__b.WriteVersion(AliITSHTable::IsA());
-      TObject::Streamer(R__b);
-      R__b << fSize;
-      R__b.WriteArray(fCodeLen, fSize);
-      R__b.WriteArray(fCode, fSize);
-      R__b.WriteArray(fSym, fSize);
-      R__b << fHNodes;
-      R__b << fNnodes;
-   }
 }
 

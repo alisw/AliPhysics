@@ -57,7 +57,8 @@ class AliITSRecPoint : public TObject {
     Float_t   fSigmaX2;   //Sigma X square of cluster
     Float_t   fSigmaZ2;   //Sigma Z square of cluster
 
-    Float_t   fProbability; // only temporary solution! - The probability 
+    Float_t   fProbability; // only temporary solution! - it will be out  
+                            // The probability 
                             // that this is a "real" point in SSD 
 
   ClassDef(AliITSRecPoint,1)  // AliITSRecPoint class

@@ -1,23 +1,7 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
 
 #include <stdio.h>
 #include <TObjArray.h>
 
-#include "AliITSsegmentationSSD.h"
-#include "AliITSresponseSSD.h"
 #include "AliITSsimulationSSD.h"
 #include "AliITSdictSSD.h"
 #include "AliITSdcsSSD.h"
@@ -38,17 +22,16 @@ AliITSsimulationSSD::AliITSsimulationSSD(AliITSsegmentation *seg,
     fNstrips = fSegmentation->Npx();
     fPitch = fSegmentation->Dpx(0);
     
-    fP = new TArrayF(fNstrips); 
-    fN = new TArrayF(fNstrips);
+    fP = new TArrayF(fNstrips+1); 
+    fN = new TArrayF(fNstrips+1);
      
-    fTracksP = new AliITSdictSSD[fNstrips];
-    fTracksN = new AliITSdictSSD[fNstrips];
+    fTracksP = new AliITSdictSSD[fNstrips+1];
+    fTracksN = new AliITSdictSSD[fNstrips+1];
+
     
     fSteps  = 10;   // still hard-wired - set in SetDetParam and get it via  
                      // fDCS together with the others eventually    
 
-
-    //printf("SSD ctor: fNstrips fPitch %d %f\n",fNstrips, fPitch);
 }
 //___________________________________________________________________________
 AliITSsimulationSSD& AliITSsimulationSSD::operator=(AliITSsimulationSSD 
@@ -74,7 +57,7 @@ AliITSsimulationSSD::AliITSsimulationSSD(AliITSsimulationSSD &source){
 //____________________________________________________________________________
 AliITSsimulationSSD::~AliITSsimulationSSD() {
   // anihilator    
-    
+
     if(fP) delete fP;
     if(fN) delete fN;
     
@@ -94,7 +77,6 @@ void AliITSsimulationSSD::DigitiseModule(AliITSmodule *mod,Int_t module,
     
     TObjArray *hits = mod->GetHits();
     Int_t nhits = hits->GetEntriesFast();
-    //printf("SSD: nhits %d\n",nhits);
     if (!nhits) return;
 
     Int_t i;
@@ -111,6 +93,7 @@ void AliITSsimulationSSD::DigitiseModule(AliITSmodule *mod,Int_t module,
     }
  
    
+
     ApplyNoise();
     ApplyCoupling();    
     ApplyThreshold();
@@ -129,9 +112,9 @@ void AliITSsimulationSSD::HitToDigit(Int_t & hitNo,Int_t idtrack,
     Float_t    dsP, dsN;
     Float_t    sP, sN;
     Float_t    eP, eN;
-    Float_t    arrayEP[10];
+    Float_t    arrayEP[10];         // hard-wired number of steps
     Float_t    arrayEN[10];
-    Int_t      track = 0;
+    Int_t      track = -1;
        
     Float_t    ionization = 0;
     Float_t    signal;
@@ -157,7 +140,7 @@ void AliITSsimulationSSD::HitToDigit(Int_t & hitNo,Int_t idtrack,
     
         
     if (hitI->GetTrack() == hitE->GetTrack()) 
-      //track = idtrack;
+       //track = idtrack;
        track = hitI->GetTrack();
     else 
        printf("!!! Emergency !!!\n");
@@ -170,8 +153,6 @@ void AliITSsimulationSSD::HitToDigit(Int_t & hitNo,Int_t idtrack,
     Float_t xI, yI, zI;
     hitI->GetPositionL(xI, yI, zI);
     
-    //Float_t zI =  hitI->GetZL();
-
     xI *= kconvm;
     yI *= kconvm;
     zI *= kconvm;
@@ -179,8 +160,6 @@ void AliITSsimulationSSD::HitToDigit(Int_t & hitNo,Int_t idtrack,
     Float_t xE, yE, zE;
     hitE->GetPositionL(xE, yE, zE);
     
-    //Float_t zE =  hitE->GetZL();
-  
     xE *= kconvm;
     yE *= kconvm;
     zE *= kconvm;
@@ -191,7 +170,7 @@ void AliITSsimulationSSD::HitToDigit(Int_t & hitNo,Int_t idtrack,
     
     // Debuging
     /*
-    fSegmentation->GetCellIxz(xI,zI,stripP,stripN);
+    fSegmentation->GetPadIxz(xI,zI,stripP,stripN);
    
        printf("%5d %8.3f %8.3f %8.3f %8.3f %d %d  %d\n", 
              hitNo, xI, zI, dx, dz, 
@@ -204,9 +183,8 @@ void AliITSsimulationSSD::HitToDigit(Int_t & hitNo,Int_t idtrack,
     
     eP=0;
     eN=0;
-    //fNparticles++;
     
-    for(i=0; i<fSteps; i++) {
+    for (i=0; i<fSteps; i++) {
         
       //        arrayEP[i] = gRandom->Landau(ionization/fSteps, ionization/(4*fSteps));
       //        arrayEN[i] = gRandom->Landau(ionization/fSteps, ionization/(4*fSteps));
@@ -242,8 +220,8 @@ void AliITSsimulationSSD::HitToDigit(Int_t & hitNo,Int_t idtrack,
         
         Int_t j;
        
-        fSegmentation->GetCellIxz(xI,zI,stripP,stripN);
-        //printf("i xI zI stripP stripN %d %f %f %d %d\n",i,xI, zI, stripP, stripN);
+        fSegmentation->GetPadIxz(xI,zI,stripP,stripN);
+        //printf("hitNo %d i xI zI stripP stripN %d %f %f %d %d\n",hitNo,i,xI, zI, stripP, stripN);
         dsP    = Get2Strip(1,stripP,xI, zI); // Between 0-1
         dsN    = Get2Strip(0,stripN,xI, zI); // Between 0-1
 
@@ -257,13 +235,8 @@ void AliITSsimulationSSD::HitToDigit(Int_t & hitNo,Int_t idtrack,
         sP = (i==2 && dsP>0.4 && dsP<0.6)? 15. : sP;  // square of (microns) 
         sN = (i==8 && dsN>0.4 && dsN<0.6)? 15. : sN;  // square of (microns)        
         
-        
-	//printf("i=%d SigmaP SigmaN sP sN %f %f %e %e\n",i,sigmaP, sigmaN,sP,sN);
-        
-        for(j=-1; j<2; j++) {
-            
+        for (j=-1; j<2; j++) {
             if (stripP+j<0 || stripP+j>fNstrips) continue;
-            
             signal = arrayEP[i] * TMath::Abs( (F(j+0.5-dsP,sP)-F(j-0.5-dsP,sP)) );
             //printf("SimSSD::HitsToDigits:%d arrayEP[%d]=%e signal=%e\n",j,i,arrayEP[i],signal);
 	    if (signal > noiseP/fSteps) {
@@ -272,10 +245,9 @@ void AliITSsimulationSSD::HitToDigit(Int_t & hitNo,Int_t idtrack,
                (*dict).AddTrack(track);
             } 
 	}  // end for j loop over neighboring strips
-        for(j=-1; j<2; j++) {
-            
+
+        for (j=-1; j<2; j++) {
             if (stripN+j<0 || stripN+j>fNstrips) continue;
-            
             signal = arrayEN[i] * TMath::Abs( (F(j+0.5-dsN,sN)-F(j-0.5-dsN,sN)) );
             //printf("SimSSD::HitsToDigits:%d arrayEN[%d]=%e signal=%e\n",j,i,arrayEN[i],signal);
             if (signal > noiseN/fSteps) {
@@ -315,7 +287,6 @@ void AliITSsimulationSSD::ApplyNoise() {
 
 void AliITSsimulationSSD::ApplyCoupling() {
   // Apply the effecto of electronic coupling between channels    
-
     Int_t i;
     for(i = 1; i<fNstrips-1; i++) {
       (*fP)[i] += (*fP)[i-1]*fDCS->GetCouplingPL() + (*fP)[i+1]*fDCS->GetCouplingPR();
@@ -336,7 +307,6 @@ void AliITSsimulationSSD::ApplyThreshold() {
     for(i=0; i<fNstrips; i++) {
        (*fP)[i] = ((*fP)[i] > noiseP*4) ? (*fP)[i] : 0;
        (*fN)[i] = ((*fN)[i] > noiseN*4) ? (*fN)[i] : 0; 
-       //printf("SSD:(*fP)[i] (*fN)[i] %f %f \n",(*fP)[i], (*fN)[i]);
     }
         
 }
@@ -350,52 +320,53 @@ void AliITSsimulationSSD::ApplyDAQ() {
     Float_t noiseP, noiseN;
     fResponse->GetNoiseParam(noiseP,noiseN);
 
-    // Set signal = 0 if invalid strip
+    char opt[30],dummy[20];
+    fResponse->ParamOptions(opt,dummy);
+
     Int_t i,j;
-    for(i=0; i<fNstrips; i++) {
-       if (!(fDCS->IsValidP(i))) (*fP)[i] = 0;
-       if (!(fDCS->IsValidN(i))) (*fN)[i] = 0;
+    if (strstr(opt,"SetInvalid")) {
+      // Set signal = 0 if invalid strip
+      for(i=0; i<fNstrips; i++) {
+         if (!(fDCS->IsValidP(i))) (*fP)[i] = 0;
+	 if (!(fDCS->IsValidN(i))) (*fN)[i] = 0;
+      }
     }
     
-    Int_t digits[3], tracks[3];
+    Int_t digits[3], tracks[3], hits[3];
     Float_t charges[3];
     Float_t phys=0;
+    for(i=0;i<3;i++) tracks[i]=0;
     for(i=0; i<fNstrips; i++) { 
-       if ((*fP)[i] < noiseP*4) continue;
+       if( (strstr(opt,"SetInvalid") && (*fP)[i] < noiseP*4) || !(*fP)[i]) continue;
           digits[0]=1;
           digits[1]=i;
           digits[2]=(int)(*fP)[i];
           for(j=0; j<(fTracksP+i)->GetNTracks(); j++) {
-             if(j>2) continue;
-             tracks[j] = (fTracksP+i)->GetTrack(j);
-             charges[j] = 0;
+            if(j>2) continue;
+	    if((fTracksP+i)->GetNTracks()) tracks[j]=(fTracksP+i)->GetTrack(j);
+	    else tracks[j]=-2;
+	    charges[j] = 0;
+	    hits[j] = -1;
           }
-          its->AddDigit(2,phys,digits,tracks,charges);
+          its->AddSimDigit(2,phys,digits,tracks,hits,charges);
           
-          //cout << (fTracksP+i)->GetNTracks(); 
-          //
-	  //if ((fTracksP+i)->GetNTracks() == 0) {
-          //   cout << d.fCoord2 << " " << d.fSignal << "\n"; 
-          //}
     }
     
     
     for(i=0; i<fNstrips; i++) {
-       if ((*fN)[i] < noiseN*4) continue;
+       if( (strstr(opt,"SetInvalid") && (*fN)[i] < noiseN*4)|| !(*fN)[i]) continue;
           digits[0]=0;
           digits[1]=i;
           digits[2]=(int)(*fN)[i];
-          for(j=0; j<(fTracksN+i)->GetNTracks(); j++) {
-             if(j>2) continue;
-             tracks[j] = (fTracksN+i)->GetTrack(j); 
-             charges[j] = 0;
+          for( j=0; j<(fTracksN+i)->GetNTracks(); j++) {
+            if(j>2) continue;
+            if((fTracksN+i)->GetNTracks()) tracks[j]=(fTracksN+i)->GetTrack(j);
+	    else tracks[j]=-2;
+            charges[j] = 0;
+	    hits[j] = -1;
           }
-          its->AddDigit(2,phys,digits,tracks,charges);
+          its->AddSimDigit(2,phys,digits,tracks,hits,charges);
           
-          //cout << (fTracksN+i)->GetNTracks();
-          //if ((fTracksN+i)->GetNTracks() == 0) {
-          //   cout << d.fCoord2 << " " << d.fSignal << "\n"; 
-          //}
     }
     
 }
@@ -405,6 +376,7 @@ void AliITSsimulationSSD::ApplyDAQ() {
 
 Float_t AliITSsimulationSSD::F(Float_t x, Float_t s) {
   // Computes the integral of a gaussian at the mean valuse x with sigma s.
+
     //printf("SDD:F(%e,%e)\n",x,s);
     return 0.5*TMath::Erf(x * fPitch / s) ;
 } 

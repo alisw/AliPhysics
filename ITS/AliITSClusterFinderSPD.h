@@ -7,6 +7,8 @@
 
 #include "AliITSClusterFinder.h"
 
+class AliITSMapA1;
+
 class AliITSClusterFinderSPD :
   public AliITSClusterFinder
 
@@ -16,9 +18,7 @@ public:
   (AliITSsegmentation *segmentation,
    TClonesArray *digits, TClonesArray *recpoints);
   AliITSClusterFinderSPD();
-  virtual ~AliITSClusterFinderSPD(){
-    // destructor
-  }
+  virtual ~AliITSClusterFinderSPD();
   AliITSClusterFinderSPD(const AliITSClusterFinderSPD &source); // copy constructor
   AliITSClusterFinderSPD& operator=(const AliITSClusterFinderSPD &source); // assignment operator
   
@@ -49,14 +49,13 @@ private:
   
   TClonesArray       *fClusters;      // clusters
   Int_t               fNclusters;     // num of clusters
-  AliITSMapA1        *fMap;           // map
   Float_t             fDz;            // dz
   Float_t             fDx;            // dx
   
-  Int_t               fMinNCells;     // min num of cells
+  Int_t               fMinNCells;     // min num of cells in the cluster
   
   ClassDef(AliITSClusterFinderSPD,1)  // SPD clustering - Boris B. algo based
-    // on Piergiorgio's algo
+                                      // on Piergiorgio's algo
     };
 #endif
 

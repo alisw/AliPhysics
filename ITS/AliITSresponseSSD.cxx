@@ -91,7 +91,7 @@ void AliITSresponseSSD::SetDetParam(Float_t  *par)
 {
   // set det param
   Int_t i;
-  for(i=0; i<fNPar; i++) {
+  for (i=0; i<fNPar; i++) {
     fDetPar[i]=par[i];
     //printf("\n CompressPar %d %d \n",i,fCPar[i]);
     
@@ -99,9 +99,9 @@ void AliITSresponseSSD::SetDetParam(Float_t  *par)
 }
 void AliITSresponseSSD::GetDetParam(Float_t  *par)
 {
-  // get det param
+  // get det param  
   Int_t i;  
-  for(i=0; i<fNPar; i++) {
+  for (i=0; i<fNPar; i++) {
     par[i]=fDetPar[i];
   }
 }

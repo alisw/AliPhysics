@@ -21,18 +21,6 @@ class AliITSstatistics2 : public TObject {
     virtual ~AliITSstatistics2();
     void Reset();
     void AddValue(Double_t y,Double_t x,Double_t w);
-    void AddValue(Double_t y,Double_t x){
-	                                      // default weight
-	                                      AddValue(y,x,1.0);
-													  } 
-    void AddValue(Float_t y,Float_t x,Float_t w){
-	                                              // Floating point version
-                                                 AddValue((Double_t)y,(Double_t)x,(Double_t)w);
-																 } 
-    void AddValue(Float_t y,Float_t x){
-	                                    // default weight F.
-	                                    AddValue((Double_t)y,(Double_t)x,(Double_t)1.0);
-												  }
     Double_t GetXNth (Int_t order);
     Double_t GetYNth (Int_t order);
     Double_t GetYXNth(Int_t order);
@@ -85,11 +73,11 @@ class AliITSstatistics2 : public TObject {
 
  private:
     Double_t *fx;    // array of sums of x^n
-	 Double_t *fyx;   // array of sums of (xy)^n
-	 Double_t *fy;    // array of sums of y^n
-	 Double_t *fw;    // array of sums of w^n (weights)
+    Double_t *fyx;   // array of sums of (xy)^n
+    Double_t *fy;    // array of sums of y^n
+    Double_t *fw;    // array of sums of w^n (weights)
     Int_t  fN;       // number of enetries
-	 Int_t  fOrder;   // maximum moment of distributions (^n)
+    Int_t  fOrder;   // maximum moment of distributions (^n)
 
 
     ClassDef(AliITSstatistics2,1)  //

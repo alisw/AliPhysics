@@ -79,7 +79,7 @@ Float_t ColFromZ(Float_t z) {
   } else if( z < 83600) {  
     col = 161 + (z - 70425)/pitchz;
   }   
-  return col;
+  return TMath::Abs(col);
 }
 
 //_____________________________________________________________________________
@@ -160,12 +160,12 @@ AliITSsegmentationSPD::AliITSsegmentationSPD(AliITSgeom *gm){
 //____________________________________________________________________________
 AliITSsegmentationSPD& AliITSsegmentationSPD::operator=(AliITSsegmentationSPD &source){
    // = operator
-   Int_t i;
    if(this==&source) return *this;
    this->fNpx  = source.fNpx;
    this->fNpz  = source.fNpz;
    this->fDx   = source.fDx;
    this->fDy   = source.fDy;
+   Int_t i;
    for(i=0;i<256;i++) this->fCellSizeX[i] = source.fCellSizeX[i];
    for(i=0;i<280;i++) this->fCellSizeZ[i] = source.fCellSizeZ[i];
    this->fCorr = new TF1(*(source.fCorr));// make a proper copy of the function
@@ -184,8 +184,8 @@ void AliITSsegmentationSPD::Init300(){
 // long. It has 256  50 micron pixels in x and 279 300 micron size
 // pixels in z.
 
-    Int_t i;
     //const Float_t kconv=10000.;
+    Int_t i;
     fNpx = 256; // The number of X pixel Cell same as in fCellSizeX array size
     fNpz = 279; // The number of Z pixel Cell same as in fCellSizeZ array size
     for(i=0;i<fNpx;i++) fCellSizeX[i] = 50.0; // microns all the same
@@ -205,8 +205,8 @@ void AliITSsegmentationSPD::Init(){
 // long. It has 256  50 micron pixels in x and 197 mostly 425 micron size
 // pixels in z. The two pixels between each readout chip are 625 microns long.
 
-    Int_t i;
     //const Float_t kconv=10000.;
+    Int_t i;
     fNpx = 256; // The number of X pixel Cell same as in fCellSizeX array size
     fNpz = 192; // The number of Z pixel Cell same as in fCellSizeZ array size
     for(i=0;i<fNpx;i++) fCellSizeX[i] = 50.0; // microns all the same
@@ -217,11 +217,11 @@ void AliITSsegmentationSPD::Init(){
     fDz = 0;
     for(i=0;i<fNpz;i++) fDz += fCellSizeZ[i];
     fDy = 300.0; //microns  SPD sensitive layer thickness
-    printf(" AliITSsegmentationSPD - Init: fNpx fNpz fDx fDz %d %d %f %f\n",fNpx, fNpz, fDx, fDz);
+    //printf(" AliITSsegmentationSPD - Init: fNpx fNpz fDx fDz %d %d %f %f\n",fNpx, fNpz, fDx, fDz);
 
 }
 //------------------------------
-void AliITSsegmentationSPD::SetNCells(Int_t p1, Int_t p2){
+void AliITSsegmentationSPD::SetNPads(Int_t p1, Int_t p2){
   // for SPD this function should be used ONLY when a beam test setup 
   // configuration is studied
 
@@ -250,7 +250,7 @@ Float_t AliITSsegmentationSPD::Dpz(Int_t i){
    return ZpitchFromCol(i);
 }
 //------------------------------
-void AliITSsegmentationSPD::GetCellIxz(Float_t &x,Float_t &z,Int_t &ix,Int_t &iz){
+void AliITSsegmentationSPD::GetPadIxz(Float_t x,Float_t z,Int_t &ix,Int_t &iz){
 //  Returns pixel coordinates (ix,iz) for given real local coordinates (x,z)
 //
 
@@ -262,12 +262,9 @@ void AliITSsegmentationSPD::GetCellIxz(Float_t &x,Float_t &z,Int_t &ix,Int_t &iz
     // different segmentation on z
     iz = (Int_t)(ColFromZ(z) + 1);
 
-    x /= dpx;
-    z = ColFromZ(z);
 
     if (iz >  fNpz) iz= fNpz;
     if (ix >  fNpx) ix= fNpx;
-
     /*
     if (iz < -fNpz) iz= -fNpz;
     if (ix < -fNpx) ix=-fNpx;
@@ -275,7 +272,21 @@ void AliITSsegmentationSPD::GetCellIxz(Float_t &x,Float_t &z,Int_t &ix,Int_t &iz
 }
 
 //------------------------------
-void AliITSsegmentationSPD::GetCellCxz(Int_t ix,Int_t iz,Float_t &x,Float_t&z){
+void AliITSsegmentationSPD::GetPadTxz(Float_t &x,Float_t &z){
+//  local transformation of real local coordinates (x,z)
+//
+
+    // expects x, z in microns
+
+    // same segmentation on x
+    Float_t dpx=Dpx(0);
+
+    x /= dpx;
+    z = ColFromZ(z);
+
+}
+//------------------------------
+void AliITSsegmentationSPD::GetPadCxz(Int_t ix,Int_t iz,Float_t &x,Float_t&z){
     // Transform from pixel to real local coordinates
 
     // returns x, z in microns

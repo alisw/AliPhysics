@@ -4,10 +4,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include <TObject.h>
-#include <TArrayS.h>
-#include <TRandom.h>
-
 //____________________________________________________________________
 //
 //  Class AliITSdcsSSD 
@@ -26,6 +22,9 @@
 //___________________________________________________________________
 //
 
+#include <TObject.h>
+#include <TArrayS.h>
+#include <TRandom.h>
 
 class AliITSsegmentation;
 class AliITSresponse;

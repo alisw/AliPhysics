@@ -1,5 +1,6 @@
 #include <iostream.h>
 
+#include "AliITSdigit.h"
 #include "AliITSclusterSSD.h"
 
 ClassImp(AliITSclusterSSD)
@@ -7,7 +8,7 @@ ClassImp(AliITSclusterSSD)
 AliITSclusterSSD::AliITSclusterSSD()
 {
   // default constructor
-	fSide        = true;
+	fSide        = kTRUE;
 	fDigits      = 0;
 	fNDigits     = 0;
 	fDigitsIndex = 0;
@@ -63,11 +64,11 @@ AliITSclusterSSD::AliITSclusterSSD(const AliITSclusterSSD &OneSCluster)
   fNCrosses = OneSCluster.fNCrosses;
   fConsumed = OneSCluster.fConsumed;
   Int_t i;
-  for(i = 0; i< fNCrosses ; i++)
+  for (i = 0; i< fNCrosses ; i++)
    {
      fCrossedClusterIndexes[i] = OneSCluster.fCrossedClusterIndexes[i];
    }
-  for(i = 0; i< fNDigits ; i++)
+  for (i = 0; i< fNDigits ; i++)
   {
     fDigitsIndex[i]=OneSCluster.fDigitsIndex[i];
   }
@@ -90,11 +91,11 @@ AliITSclusterSSD& AliITSclusterSSD::operator=(const AliITSclusterSSD & OneSClust
   fNCrosses = OneSCluster.fNCrosses;
   fConsumed = OneSCluster.fConsumed;
   Int_t i;
-  for(i = 0; i< fNCrosses ; i++)
+  for (i = 0; i< fNCrosses ; i++)
    {
      fCrossedClusterIndexes[i] = OneSCluster.fCrossedClusterIndexes[i];
    }
-  for(i = 0; i< fNDigits ; i++)
+  for (i = 0; i< fNDigits ; i++)
   {
     fDigitsIndex[i]=OneSCluster.fDigitsIndex[i];
   }
@@ -115,8 +116,7 @@ Int_t AliITSclusterSSD::SplitCluster(Int_t where, Int_t *outdigits)
   Int_t ind = 0;
     outdigits[ind++]=(*fDigitsIndex)[where];
                      //coping border strip (it is shared by this two clusters)
-    Int_t i;
-    for(i = (where+1); i < tmp; i++)
+    for (Int_t i = (where+1); i < tmp; i++)
      {
        outdigits[ind++]=(*fDigitsIndex)[i];  //"moving" strips from this to the new one 
        (*fDigitsIndex)[i]=-1;   
@@ -172,8 +172,8 @@ Double_t AliITSclusterSSD::CentrOfGravity()
   
   if (fRightNeighbour) ret+=(GetDigitStripNo(fNDigits -1)*0.5*GetDigitSignal(fNDigits -1));
       else ret+=(GetDigitStripNo(fNDigits -1)*GetDigitSignal(fNDigits-1));
-  Int_t i;
-  for(i=1;i<fNDigits-1;i++)
+      
+  for (Int_t i=1;i<fNDigits-1;i++)
     {
       ret +=GetDigitStripNo(i)*GetDigitSignal(i);
     }
@@ -203,8 +203,8 @@ Float_t AliITSclusterSSD::GetTotalSignal()
       if (fRightNeighbour) fTotalSignal += (Float_t)(0.5*GetDigitSignal(fNDigits -1));
       else fTotalSignal += (Float_t)GetDigitSignal(fNDigits-1);
       //printf("GetTotalSignal :i  DigitSignal %d %d \n",fNDigits -1,GetDigitSignal(fNDigits -1)); 
-      Int_t i;		
-      for(i = 1;i<fNDigits -1;i++) 
+				
+      for (Int_t i = 1;i<fNDigits -1;i++) 
         {
       	  fTotalSignal += (Float_t)GetDigitSignal(i);
 	  //printf("GetTotalSignal :i  DigitSignal %d %d \n",i,GetDigitSignal(i)); 
@@ -219,8 +219,7 @@ Float_t  AliITSclusterSSD::GetTotalSignalError()
 {
   // comment to be written
   Float_t err =0;
-  Int_t i;
-  for(i =1; i<fNDigits -1; i++)
+  for (Int_t i =1; i<fNDigits -1; i++)
     {
       err+=0.1*GetDigitSignal(i);   
     } 
@@ -251,11 +250,11 @@ void AliITSclusterSSD::DelCross(Int_t index)
   // comment to be written
 Int_t i,j; //iterators
 
-for(i =0;i<fNCrosses;i++)
+for (i =0;i<fNCrosses;i++)
  {
   if ((*fCrossedClusterIndexes)[i] == index)
    {
-     for(j=i;j<fNCrosses-1;j++)
+     for (j=i;j<fNCrosses-1;j++)
       {
         (*fCrossedClusterIndexes)[j]=(*fCrossedClusterIndexes)[j+1];
       }
@@ -277,28 +276,26 @@ Int_t  *AliITSclusterSSD::GetTracks(Int_t &nt)
   
    
    fNTrack =0;
-   for(i=0;i<10;i++)
+   for (i=0;i<10;i++)
     {
      fTrack[i] = 0;
     }
    
    tidx=GetDigit(0)->GetTracks();
 	 
-   for(i = 0; i<3;i++)
+   for (i = 0; i<3;i++)
    {
     fTrack[i]=tidx[i];
     if (fTrack[i] != 0) fNTrack++;
    }
-   for(i = 1; i<fNDigits; i++)
+   for (i = 1; i<fNDigits; i++)
    {
     tidx=GetDigit(i)->GetTracks();
-    Int_t j;
-    for(j = 0; j<3;j++)
+    for (Int_t j = 0; j<3;j++)
     {
      bit = 1;
      if (tidx[j]==0) break;
-     Int_t k;
-     for(k = 0; k < fNTrack;k++)
+     for (Int_t k = 0; k < fNTrack;k++)
       {
        if (tidx[j]==fTrack[k]) bit =0;
       }
@@ -380,8 +377,7 @@ Double_t  AliITSclusterSSD::GetPositionError()
 Bool_t AliITSclusterSSD::IsCrossingWith(Int_t idx)
 {
   // comment to be written
- Int_t i;
- for(i =0; i< fNCrosses;i++)
+ for (Int_t i =0; i< fNCrosses;i++)
   {
     if (GetCross(i) == idx) return kTRUE;
   }

@@ -30,18 +30,19 @@ AliITSsegmentationSDD::AliITSsegmentationSDD(AliITSgeom* geom, AliITSresponse *r
    fResponse=resp;
    fCorr=0;
    SetDetSize();
-   SetCellSize();
-   SetNCells();
+   SetPadSize();
+   SetNPads();
 
 }
 //_____________________________________________________________________________
 AliITSsegmentationSDD::AliITSsegmentationSDD(){
+  // standard constructor
    fGeom=0;
    fResponse=0;  
    fCorr=0;
    SetDetSize();
-   SetCellSize();
-   SetNCells();
+   SetPadSize();
+   SetNPads();
 
 }
 //_____________________________________________________________________________
@@ -69,6 +70,9 @@ AliITSsegmentationSDD::AliITSsegmentationSDD(AliITSsegmentationSDD &source){
 void AliITSsegmentationSDD::Init(){
   // Standard initilisation routine
 
+   if(!fGeom) {
+        fGeom = ((AliITS*)gAlice->GetModule("ITS"))->GetITSgeom();
+   }
    AliITSgeomSDD *gsdd = (AliITSgeomSDD *) (fGeom->GetShape(3,1,1));
 
    const Float_t kconv=10000.;
@@ -82,6 +86,8 @@ void AliITSsegmentationSDD::
 Neighbours(Int_t iX, Int_t iZ, Int_t* Nlist, Int_t Xlist[4], Int_t Zlist[4]){
   // returns neighbers for use in Cluster Finder routines and the like
 
+    if(iX >= fNanodes) printf("iX > fNanodes %d %d\n",iX,fNanodes);
+    if(iZ >= fNsamples) printf("iZ > fNsamples %d %d\n",iZ,fNsamples);
     *Nlist=4;
     Xlist[0]=Xlist[1]=iX;
     if(iX) Xlist[2]=iX-1;
@@ -96,7 +102,7 @@ Neighbours(Int_t iX, Int_t iZ, Int_t* Nlist, Int_t Xlist[4], Int_t Zlist[4]){
 
 }
 //------------------------------
-void AliITSsegmentationSDD::GetCellIxz(Float_t &x,Float_t &z,Int_t &timebin,Int_t &anode){
+void AliITSsegmentationSDD::GetPadIxz(Float_t x,Float_t z,Int_t &timebin,Int_t &anode){
 //  Returns cell coordinates (time sample,anode) for given real local coordinates (x,z)
 
     // expects x, z in cm
@@ -107,7 +113,7 @@ void AliITSsegmentationSDD::GetCellIxz(Float_t &x,Float_t &z,Int_t &timebin,Int_
     Int_t na = fNanodes/2;
     Float_t driftpath=fDx-TMath::Abs(kconv*x);
     timebin=(Int_t)(driftpath/speed/fTimeStep);
-    anode=(Int_t)(kconv*z/fPitch + na/2);
+    anode=(Int_t)(kconv*z/fPitch) + na/2;
     if (x > 0) anode += na;
 
     timebin+=1;
@@ -116,7 +122,7 @@ void AliITSsegmentationSDD::GetCellIxz(Float_t &x,Float_t &z,Int_t &timebin,Int_
 }
 
 //------------------------------
-void AliITSsegmentationSDD::GetCellCxz(Int_t timebin,Int_t anode,Float_t &x ,Float_t &z){
+void AliITSsegmentationSDD::GetPadCxz(Int_t timebin,Int_t anode,Float_t &x ,Float_t &z){
     // Transform from cell to real local coordinates
   
     // returns x, z in cm
@@ -133,6 +139,22 @@ void AliITSsegmentationSDD::GetCellCxz(Int_t timebin,Int_t anode,Float_t &x ,Flo
 
 }
 
+//------------------------------
+void AliITSsegmentationSDD::GetPadTxz(Float_t &x,Float_t &z){
+    // Get anode and time bucket as floats - numbering from 0
+
+    // expects x, z in cm
+
+    const Float_t kconv=10000;  // cm->um
+
+    Float_t speed=fResponse->DriftSpeed();
+    Int_t na = fNanodes/2;
+    Float_t driftpath=fDx-TMath::Abs(kconv*x);
+    x=driftpath/speed/fTimeStep;
+    z=kconv*z/fPitch + (float)na/2;
+    if (x > 0) x += (float)na;
+
+}
 //------------------------------
 void AliITSsegmentationSDD::GetLocal(Int_t module,Float_t *g ,Float_t *l){
   // returns local coordinates from global

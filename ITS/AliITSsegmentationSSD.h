@@ -22,11 +22,11 @@ public AliITSsegmentation {
                         {fDx=p1; fDz=p2; fDy=p3;}
 
     // Strip size  
-    virtual void    SetCellSize(Float_t pitch=95., Float_t dummy=1.) 
+    virtual void    SetPadSize(Float_t pitch=95., Float_t dummy=1.) 
                          {fPitch=pitch;}
 
     // Maximum number of strips along the two coordinates  
-    virtual void    SetNCells(Int_t p1=768, Int_t dummy=1) 
+    virtual void    SetNPads(Int_t p1=768, Int_t dummy=1) 
                          {fNstrips=p1;}
 
 
@@ -35,10 +35,10 @@ public AliITSsegmentation {
                          {fStereoP=pa; fStereoN=na;}
 
     // Transform from real coordinates to strips
-    virtual void    GetCellIxz
-    (Float_t &x ,Float_t &z ,Int_t   &iP,Int_t  &iN);
+    virtual void    GetPadIxz
+    (Float_t x ,Float_t z ,Int_t   &iP,Int_t  &iN);
     // Transform from strips to real coordinates
-    virtual void    GetCellCxz
+    virtual void    GetPadCxz
     (Int_t iP, Int_t iN, Float_t &x , Float_t &z);
 
     // Transform from real global to local coordinates
@@ -79,7 +79,7 @@ public AliITSsegmentation {
   Float_t    fDx;            // Full length of the detector (x axis)- microns
   Float_t    fDy;            // Full thickness of the detector (y axis) -um 
   
-  AliITSgeom *fGeom;         // pointer to the geometry class
+  AliITSgeom *fGeom;         //! pointer to the geometry class
   TF1*       fCorr;          // correction function
   
   ClassDef(AliITSsegmentationSSD,1) //Segmentation class for SSD 

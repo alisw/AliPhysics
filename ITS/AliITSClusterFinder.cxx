@@ -13,18 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
 #include "AliITSClusterFinder.h"
-#include "TTree.h"
 #include "AliRun.h"
-#include <TCanvas.h>
-#include <TH1.h>
-#include <TPad.h>
-#include <TGraph.h> 
-#include <TPostScript.h> 
-#include <TMinuit.h> 
-
-class AliITSRecPointNew;
+#include "AliITS.h"
 
 //----------------------------------------------------------
 

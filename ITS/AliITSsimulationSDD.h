@@ -9,16 +9,17 @@
 #include <TVector.h>
 #include <TArrayI.h>
 
-
-#include "AliITSMap.h"
 #include "AliITSsimulation.h"
-#include "AliITSRawData.h"
 
 //___________________________________________________
 
 
-
+class AliITS;
+class AliITSMap;
+class AliITSMapA1;
+class AliITSMapA2;
 class AliITSetfSDD;
+class AliITSInStream;
 
 //___________________________________________________
 
@@ -35,6 +36,12 @@ public:
   // get the address of the array mapping the signal or pointers to arrays
   virtual AliITSMap*  HitMap(Int_t i);
 
+  // set the scale size factor for the smples in FFT
+  virtual void SetScaleFourier(Int_t scale=4) {fScaleSize=scale;}
+  Int_t ScaleFourier() {return fScaleSize;}
+  // set perpendicular tracks flag
+  virtual void SetPerpendTracksFlag(Bool_t flag=1) {fFlag=1;}
+  Bool_t PerpendTracksFlag() {return fFlag;} 
   // set compression parameters for 2D or 1D via response functions
   void SetCompressParam();
   // retrieve compression parameters for 2D or 1D
@@ -43,7 +50,7 @@ public:
 
   virtual Int_t Convert10to8(Int_t signal);
   virtual Int_t Convert8to10(Int_t signal);
-  virtual void ZeroSuppression(Option_t *opt);
+  virtual void ZeroSuppression(const char *opt);
   virtual void Init2D();
   virtual void Compress2D();
   virtual void Init1D();
@@ -60,21 +67,21 @@ public:
   // input from Torino after they have a look at the code 
   virtual Int_t Tolerance(Int_t i) {return fTol[i];}
   virtual Int_t Disable(Int_t i) {return fT2[i];}
+  // Set the output file name - for 1D encoding 
   virtual void SetFileName(const char *filnam) {fFileName=filnam;}
 
   void ChargeToSignal();
   void DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev);
-  void SortTracks(Int_t *tracks,Float_t *charges,Int_t ntracks);
+  void SortTracks(Int_t *tracks,Float_t *charges,Int_t *hits,Int_t ntracks);
   void ListOfFiredCells(Int_t *arg,Double_t timeAmplitude,TObjArray *list,
                         TClonesArray *padr);
-  Int_t Module() {return fModule;}
-  Int_t Event()  {return fEvent;}
 
   void CreateHistograms();
   void ResetHistograms();
+  // Get the pointer to the array of histograms
   TObjArray*  GetHistArray() {return fHis;}
 
-  // create a separate tree for background monitoring (2D) -easy to do
+  // create a separate tree for background monitoring (2D) 
   virtual  void  MakeTreeB(Option_t *option="B") 
       { fTreeB = new TNtuple("ntuple","2D backgr","nz:nl:nh:low:anode");}
   void           GetTreeB(Int_t) { }
@@ -100,21 +107,27 @@ private:
   TArrayI             fTol;          // tolerance
   TArrayF             fBaseline;     // Baseline
   TArrayF             fNoise;        // Noise value
-  TNtuple              *fTreeB;      // Background info tree for 2D
-  Option_t             *fParam;      // Compresion algorithm options
-  TString              fFileName;    // File name for possible options above
+  TNtuple            *fTreeB;        // Background info tree for 2D
+  TString             fParam;        // Compresion algorithm options
+  TString             fFileName;     // File name for possible options above
 
+  Bool_t fFlag;         // Flag to simulate perpendicular tracks
   Int_t fNofMaps;       // Number of anodes used ( 1 - 2*nanodes per wing )
   Int_t fMaxNofSamples; // Number of time samples
+  Int_t fScaleSize;     // scale size factor for the samples in FFT
   Int_t fModule;  // in case bgr, noise, param change module-by-module
   Int_t fEvent;   // solely for output from bgr monitoring of 2D
 
   TObjArray *fHis;             // just in case for histogramming
 
-  Double_t            *fInZR; // input of the real part of FFT
-  Double_t            *fInZI; // input of the imaginary part of FFT
-  Double_t            *fOutZR; // output of the real part of FFT
-  Double_t            *fOutZI; // output of the imaginary part of FFT
+  Double_t            *fInZR;  // ! [fScaleSize*fMaxNofSamples]  
+                               // input of the real part of FFT
+  Double_t            *fInZI;  // ! [fScaleSize*fMaxNofSamples] 
+                               // input of the imaginary part of FFT
+  Double_t            *fOutZR; // ! [fScaleSize*fMaxNofSamples] 
+                               // output of the real part of FFT
+  Double_t            *fOutZI; // ! [fScaleSize*fMaxNofSamples] 
+                               // output of the imaginary part of FFT
 
   ClassDef(AliITSsimulationSDD,1)  // Simulation of SDD clusters
     

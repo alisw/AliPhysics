@@ -15,12 +15,6 @@
 
 /*
 $Log$
-Revision 1.1.2.6  2000/06/12 18:10:18  barbera
-fixed posible compilation errors on HP unix
-
-Revision 1.1.2.5  2000/06/11 20:30:56  barbera
-Minore changes.
-
 Revision 1.4  2000/06/10 20:34:22  nilsen
 Fixed compilation warning with HP unix.
 

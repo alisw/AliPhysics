@@ -15,7 +15,7 @@ public:
   
   Int_t fCoord1;  // Cell number on Z axis (SPD+SDD) , flag for side type (SSD)
   Int_t fCoord2 ; // Cell number on X axis (SPD+SDD) , strip number (SSD)
-  Int_t fSignal;  // Signal 
+  Int_t fSignal;  // Signal in ADC counts
   
 public:
   AliITSdigit() {
@@ -23,7 +23,7 @@ public:
     fSignal=fCoord1=fCoord2=0;
   }
   AliITSdigit(Int_t *digits);
-  virtual   ~AliITSdigit() {
+  virtual ~AliITSdigit() {
     // destructor
   }
   
@@ -37,18 +37,21 @@ public:
   
     // debugging  -- goes to the dictionary
   Int_t       fTracks[3];         // tracks making this digit 
+  Int_t       fHits[3];           // hits associated to the tracks 
+                                  // 3 hits temporarily - it will be only 1
   
 public:
   AliITSdigitSPD() {
     // constructor
     fSignal=fCoord1=fCoord2=0;
-    fTracks[0]=fTracks[1]=fTracks[2]=0;
+    fTracks[0]=fTracks[1]=fTracks[2]=-3;
+    fHits[0]=fHits[1]=fHits[2]=-1;
   }
   
   AliITSdigitSPD(Int_t *digits);
-  AliITSdigitSPD(Int_t *digits, Int_t *tracks);
+  AliITSdigitSPD(Int_t *digits, Int_t *tracks, Int_t *hits);
   
-  virtual   ~AliITSdigitSPD(){
+  virtual ~AliITSdigitSPD(){
     // destructor
   }
   virtual int *GetTracks() {
@@ -66,6 +69,8 @@ public:
   
   // debugging  -- goes to the dictionary
   Int_t       fTracks[3];         // tracks making this digit 
+  Int_t       fHits[3];           // hits associated to the tracks
+                                  // 3 hits temporarily - it will be only 1
   Float_t     fTcharges[3];       // charge per track making this digit 
   Float_t     fPhysics;           // signal particles contribution to signal
   
@@ -73,14 +78,15 @@ public:
   AliITSdigitSDD() {
     // constructor
     fSignal=fCoord1=fCoord2=0;
-    fTracks[0]=fTracks[1]=fTracks[2]=0;
+    fTracks[0]=fTracks[1]=fTracks[2]=-3;
+    fHits[0]=fHits[1]=fHits[2]=-1;
     fPhysics=0; fTcharges[0]=fTcharges[1]=fTcharges[2]=0;
   }
   
   AliITSdigitSDD(Float_t phys,Int_t *digits);
-  AliITSdigitSDD( Float_t phys, Int_t *digits, Int_t *tracks, Float_t *charges);
+  AliITSdigitSDD( Float_t phys, Int_t *digits, Int_t *tracks, Int_t *hits, Float_t *charges);
   
-  virtual   ~AliITSdigitSDD(){
+  virtual ~AliITSdigitSDD(){
     // destructor
   }
   virtual int *GetTracks() {
@@ -123,18 +129,21 @@ public:
   
   // debugging  -- goes to the dictionary
   Int_t       fTracks[3];         // tracks making this digit 
+  Int_t       fHits[3];           // hits associated to the tracks
+                                  // 3 hits temporarily - it will be only 1
   
 public:
   AliITSdigitSSD() {
     // constructor
     fSignal=fCoord1=fCoord2=0;
-    fTracks[0]=fTracks[1]=fTracks[2]=0;
+    fTracks[0]=fTracks[1]=fTracks[2]=-3;
+    fHits[0]=fHits[1]=fHits[2]=-1;
   }
   
   AliITSdigitSSD(Int_t *digits);
-  AliITSdigitSSD(Int_t *digits, Int_t *tracks);
+  AliITSdigitSSD(Int_t *digits, Int_t *tracks, Int_t *hits);
   
-  virtual   ~AliITSdigitSSD(){
+  virtual ~AliITSdigitSSD(){
     // destructor
   }
   

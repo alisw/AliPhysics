@@ -3,9 +3,9 @@
 
 #include "TObject.h"
 #include "TArrayI.h"
-#include "AliITSdigit.h"
 #include "TClonesArray.h"
 
+class AliITSdigitSSD;
 
 class AliITSclusterSSD : public TObject
 {

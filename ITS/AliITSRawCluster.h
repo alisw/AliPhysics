@@ -17,14 +17,14 @@ class AliITSRawCluster : public TObject {
 public:
   
   AliITSRawCluster() {
+    fMultiplicity=0;
     /*
       for (int k=0;k<100;k++) {
-      fIndexMap[k]=-1;
+          fIndexMap[k]=-1;
       }
       fNcluster[0]=fNcluster[1]=-1;
       fChi2=-1; 
     */
-    fMultiplicity=0;
   }
   
   virtual ~AliITSRawCluster() {
@@ -37,7 +37,7 @@ public:
   
 public:
 
-  Int_t       fMultiplicity;      // cluster multiplicity
+  Int_t       fMultiplicity;        // cluster multiplicity
   //Int_t       fIndexMap[100];     // indices of digits
   //Int_t       fNcluster[2];
   //Float_t     fChi2;
@@ -69,7 +69,7 @@ public:
   
   void Add(AliITSRawClusterSPD* clJ); 
   Bool_t Brother(AliITSRawClusterSPD* cluster,Float_t dz,Float_t dx);
-  void Print();
+  void PrintInfo();
   // Getters
   Float_t Q() const {
     // Q
@@ -160,7 +160,7 @@ public:
   
   void Add(AliITSRawClusterSDD* clJ); 
   Bool_t Brother(AliITSRawClusterSDD* cluster,Float_t dz,Float_t dx);
-  void Print();
+  void PrintInfo();
   // Getters
   Float_t X() const {
     //X
@@ -220,16 +220,16 @@ class AliITSRawClusterSSD : public AliITSRawCluster {
 public:
   
   AliITSRawClusterSSD() {
+    fMultiplicityN=0;
+    fQErr=0; 
+    fStatus=-1;
     /*
       for (int k=0;k<100;k++) {
-      fIndexMapN[k]=-1;
+         fIndexMapN[k]=-1;
       }
+      fProbability=0;
+      fChi2N=-1;
     */
-    fMultiplicityN=0;
-    // fProbability=0;
-    fQErr=0; 
-    //fChi2N=-1;
-    fStatus=-1;
   }
   AliITSRawClusterSSD(Float_t Prob,Int_t Sp,Int_t Sn);
   virtual ~AliITSRawClusterSSD() {
@@ -247,20 +247,18 @@ public:
 
    
 public:
-  // Float_t fProbability;    // The probability that this is a "real" point
-  //Int_t   fIndexMapN[100];  // indices of digits for Nside - the corresponding
-                                // info for P side is carried in the base class
-  //Float_t fChi2N;
-  
   Int_t   fMultiplicityN;  // The number of N side strips involved 
-  // in this point calculations
-  Int_t   fStatus;         // Flag status : 0 - real point
-  //               1 - ghost 
-  //               2 - EIC ? 
-  //               3 - single side 
-  
+                           // in this point calculations
   Float_t fQErr;           // Total charge error
- 
+  Int_t   fStatus;         // Flag status : 0 - real point
+                           //               1 - ghost 
+                           //               2 - EIC ? 
+                           //               3 - single side 
+  
+  // Float_t fProbability;    // The probability that this is a "real" point
+  // Int_t  fIndexMapN[100];  // indices of digits for Nside - the corresponding
+                                // info for P side is carried in the base class
+  // Float_t fChi2N;
   ClassDef(AliITSRawClusterSSD,1)  // AliITSRawCluster class for SSD
 
 };

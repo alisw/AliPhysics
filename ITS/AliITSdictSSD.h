@@ -3,10 +3,6 @@
 
 #include <TArrayF.h>
 
-#include "AliITSdcsSSD.h"
-
-class AliITSdcsSSD;
-
 class AliITSdictSSD  {
 
 public:

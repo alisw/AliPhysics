@@ -15,15 +15,6 @@
 
 /*
 $Log$
-Revision 1.4  2000/06/12 23:49:02  nilsen
-New ITS code replacing the old structure and simulations code.
-
-Revision 1.3.4.4  2000/06/12 18:10:32  barbera
-fixed posible compilation errors on HP unix
-
-Revision 1.3.4.3  2000/06/11 20:34:20  barbera
-Update class for the new structures.
-
 Revision 1.3.4.2  2000/03/02 21:42:29  nilsen 
 Linked AliDetector::fDigit to AliITSmodule::fDigitsM and AliITS::fITSRecPoints
 to AliITSmodule::fRecPointsM. Renamed AliITSmodule::fPointsM to fRecPointsM.
@@ -46,11 +37,9 @@ Introduction of the Copyright and cvs Log
 
 */
 
-#include "AliITSmodule.h"
 
 #include "AliRun.h"
 #include "AliITS.h"
-#include "AliITShit.h"
 
 ClassImp(AliITSmodule)
 
@@ -92,9 +81,8 @@ AliITSmodule::~AliITSmodule() {
     // we must first destroy all of it's members.
 
     fIndex   = 0;
-    Int_t i;
     if(fHitsM){
-	for(i=0;i<fHitsM->GetEntriesFast();i++) 
+	for(Int_t i=0;i<fHitsM->GetEntriesFast();i++) 
 	    delete ((AliITShit *)(fHitsM->At(i)));
 	// must delete each object in the TObjArray.
 	delete fHitsM;
@@ -119,7 +107,7 @@ AliITSmodule& AliITSmodule::operator=(const AliITSmodule &source){
 ////////////////////////////////////////////////////////////////////////
   printf("AliITSmodule error: AliITSmodule class has not to be copied! Exit.\n");
   exit(1);
-  return *this;
+  return *this; // fake return neded on Sun
 } 
 
 //_________________________________________________________________________
@@ -129,19 +117,18 @@ AliITSmodule& AliITSmodule::operator=(const AliITSmodule &source){
 Int_t AliITSmodule::AddHit(AliITShit* hit,Int_t t,Int_t h) {
 // Hits management
 
-    Int_t i;
     fHitsM->AddLast(new AliITShit(*hit));
     Int_t fNhitsM = fHitsM->GetEntriesFast();
     if(fNhitsM-1>=fTrackIndex->GetSize()){ // need to expand the TArrayI
 	TArrayI *p = new TArrayI(fNhitsM+64);
-	for(i=0;i<fTrackIndex->GetSize();i++) 
+	for(Int_t i=0;i<fTrackIndex->GetSize();i++) 
 	    (*p)[i] = fTrackIndex->At(i);
 	delete fTrackIndex;
 	fTrackIndex = p;
     } // end if
     if(fNhitsM-1>=fHitIndex->GetSize()){ // need to expand the TArrayI
 	TArrayI *p = new TArrayI(fNhitsM+64);
-	for(i=0;i<fHitIndex->GetSize();i++) 
+	for(Int_t i=0;i<fHitIndex->GetSize();i++) 
 	    (*p)[i] = fHitIndex->At(i);
 	delete fHitIndex;
 	fHitIndex = p;
