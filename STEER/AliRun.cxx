@@ -5,7 +5,7 @@
 //  The object is created in main program aliroot                            //
 //  and is pointed by the global gAlice.                                     //
 //                                                                           //
-//   -Supports the list of all Alice Detectors (fDetectors).                 //
+//   -Supports the list of all Alice Detectors (fModules).                 //
 //   -Supports the list of particles (fParticles).                           //
 //   -Supports the Trees.                                                    //
 //   -Supports the geometry.                                                 //
@@ -33,7 +33,7 @@
 
 #include "GParticle.h"
 #include "AliRun.h"
-#include "AliDetector.h"
+#include "AliModule.h"
 #include "AliDisplay.h"
 
 #include "AliCallf77.h" 
@@ -80,7 +80,7 @@ AliRun::AliRun()
   fRun       = 0;
   fEvent     = 0;
   fCurrent   = -1;
-  fDetectors = 0;
+  fModules = 0;
   fGenerator = 0;
   fTreeD     = 0;
   fTreeK     = 0;
@@ -128,7 +128,7 @@ AliRun::AliRun(const char *name, const char *title)
   gROOT->GetListOfBrowsables()->Add(this,name);
   //
   // create the support list for the various Detectors
-  fDetectors = new TObjArray(77);
+  fModules = new TObjArray(77);
   //
   // Create the TNode geometry for the event display
   
@@ -204,9 +204,9 @@ AliRun::~AliRun()
   delete fTreeH;
   delete fTreeE;
   delete fTreeR;
-  if (fDetectors) {
-    fDetectors->Delete();
-    delete fDetectors;
+  if (fModules) {
+    fModules->Delete();
+    delete fModules;
   }
   if (fParticles) {
     fParticles->Delete();
@@ -220,8 +220,8 @@ void AliRun::AddHit(Int_t id, Int_t track, Int_t *vol, Float_t *hits) const
   //
   //  Add a hit to detector id
   //
-  TObjArray &dets = *fDetectors;
-  if(dets[id]) ((AliDetector*) dets[id])->AddHit(track,vol,hits);
+  TObjArray &dets = *fModules;
+  if(dets[id]) ((AliModule*) dets[id])->AddHit(track,vol,hits);
 }
 
 //_____________________________________________________________________________
@@ -230,8 +230,8 @@ void AliRun::AddDigit(Int_t id, Int_t *tracks, Int_t *digits) const
   //
   // Add digit to detector id
   //
-  TObjArray &dets = *fDetectors;
-  if(dets[id]) ((AliDetector*) dets[id])->AddDigit(tracks,digits);
+  TObjArray &dets = *fModules;
+  if(dets[id]) ((AliModule*) dets[id])->AddDigit(tracks,digits);
 }
 
 //_____________________________________________________________________________
@@ -248,9 +248,9 @@ void AliRun::Browse(TBrowser *b)
   if (fTreeE) b->Add(fTreeE,fTreeE->GetName());
   if (fTreeR) b->Add(fTreeR,fTreeR->GetName());
   
-  TIter next(fDetectors);
-  AliDetector *detector;
-  while((detector = (AliDetector*)next())) {
+  TIter next(fModules);
+  AliModule *detector;
+  while((detector = (AliModule*)next())) {
     b->Add(detector,detector->GetName());
   }
 }
@@ -285,9 +285,9 @@ void AliRun::CleanDetectors()
   //
   // Clean Detectors at the end of event
   //
-  TIter next(fDetectors);
-  AliDetector *detector;
-  while((detector = (AliDetector*)next())) {
+  TIter next(fModules);
+  AliModule *detector;
+  while((detector = (AliModule*)next())) {
     detector->FinishEvent();
   }
 }
@@ -471,9 +471,9 @@ void AliRun::FinishRun()
   //
 
   // Clean detector information
-  TIter next(fDetectors);
-  AliDetector *detector;
-  while((detector = (AliDetector*)next())) {
+  TIter next(fModules);
+  AliModule *detector;
+  while((detector = (AliModule*)next())) {
     detector->FinishRun();
   }
   
@@ -601,16 +601,16 @@ void AliRun::EnergySummary()
 }
 
 //_____________________________________________________________________________
-AliDetector *AliRun::GetDetector(const char *name)
+AliModule *AliRun::GetModule(const char *name)
 {
   //
   // Return pointer to detector from name
   //
-  return (AliDetector*)fDetectors->FindObject(name);
+  return (AliModule*)fModules->FindObject(name);
 }
  
 //_____________________________________________________________________________
-Int_t AliRun::GetDetectorID(const char *name)
+Int_t AliRun::GetModuleID(const char *name)
 {
   //
   // Return galice internal detector identifier from name
@@ -674,9 +674,9 @@ Int_t AliRun::GetEvent(Int_t event)
   }
  
   // Set Trees branch addresses
-  TIter next(fDetectors);
-  AliDetector *detector;
-  while((detector = (AliDetector*)next())) {
+  TIter next(fModules);
+  AliModule *detector;
+  while((detector = (AliModule*)next())) {
     detector->SetTreeAddress();
   }
   
@@ -701,9 +701,9 @@ TGeometry *AliRun::GetGeometry()
   TNode *alice=(TNode*)tnodes->At(0);
   TList *gnodes=alice->GetListOfNodes();
   
-  TIter next(fDetectors);
-  AliDetector *detector;
-  while((detector = (AliDetector*)next())) {
+  TIter next(fModules);
+  AliModule *detector;
+  while((detector = (AliModule*)next())) {
     detector->SetTreeAddress();
     TList *dnodes=detector->Nodes();
     Int_t j;
@@ -800,9 +800,9 @@ void AliRun::Init(const char *setup)
 
   //
   //=================Create Materials, geometry, histograms, etc
-   TIter next(fDetectors);
-   AliDetector *detector;
-   while((detector = (AliDetector*)next())) {
+   TIter next(fModules);
+   AliModule *detector;
+   while((detector = (AliModule*)next())) {
       detector->SetTreeAddress();
       objlast = gDirectory->GetList()->Last();
       
@@ -853,12 +853,12 @@ void AliRun::MediaTable()
   //
   Int_t kz, ibeg, nz, idt, lz, i, k, ind;
   TObjArray &dets = *gAlice->Detectors();
-  AliDetector *det;
+  AliModule *det;
   //
   // For all detectors
   for (kz=0;kz<fNdets;kz++) {
     // If detector is defined
-    if((det=(AliDetector*) dets[kz])) {
+    if((det=(AliModule*) dets[kz])) {
       ibeg=100*kz-1;
       for(nz=ibeg==-1?1:0;nz<100;nz++) {
 	// Find max and min material number
@@ -888,7 +888,7 @@ void AliRun::MediaTable()
   for(i=0;i<(fNdets-1)/6+1;i++) {
     for(k=0;k< (6<fNdets-i*6?6:fNdets-i*6);k++) {
       ind=i*6+k;
-      det=(AliDetector*)dets[ind];
+      det=(AliModule*)dets[ind];
       if(det)
 	printf(" %6s: %3d -> %3d;",det->GetName(),det->LoMedium(),
 	       det->HiMedium());
@@ -1029,9 +1029,9 @@ void AliRun::MakeTree(Option_t *option)
   // Create a branch for hits/digits for each detector
   // Each branch is a TClonesArray. Each data member of the Hits classes
   // will be in turn a subbranch of the detector master branch
-  TIter next(fDetectors);
-  AliDetector *detector;
-  while((detector = (AliDetector*)next())) {
+  TIter next(fModules);
+  AliModule *detector;
+  while((detector = (AliModule*)next())) {
      if (H || D || R) detector->MakeBranch(option);
   }
   //  Create a branch for particles
@@ -1115,9 +1115,9 @@ void AliRun::PurifyKine()
   }
   
   // Now loop on all detectors and reset the hits
-  TIter next(fDetectors);
-  AliDetector *detector;
-  while((detector = (AliDetector*)next())) {
+  TIter next(fModules);
+  AliModule *detector;
+  while((detector = (AliModule*)next())) {
     if (!detector->Hits()) continue;
     TClonesArray &vHits=*(detector->Hits());
     if(vHits.GetEntries() != detector->GetNhits())
@@ -1158,9 +1158,9 @@ void AliRun::ResetDigits()
   //
   //  Reset all Detectors digits
   //
-  TIter next(fDetectors);
-  AliDetector *detector;
-  while((detector = (AliDetector*)next())) {
+  TIter next(fModules);
+  AliModule *detector;
+  while((detector = (AliModule*)next())) {
      detector->ResetDigits();
   }
 }
@@ -1171,9 +1171,9 @@ void AliRun::ResetHits()
   //
   //  Reset all Detectors hits
   //
-  TIter next(fDetectors);
-  AliDetector *detector;
-  while((detector = (AliDetector*)next())) {
+  TIter next(fModules);
+  AliModule *detector;
+  while((detector = (AliModule*)next())) {
      detector->ResetHits();
   }
 }
@@ -1184,9 +1184,9 @@ void AliRun::ResetPoints()
   //
   // Reset all Detectors points
   //
-  TIter next(fDetectors);
-  AliDetector *detector;
-  while((detector = (AliDetector*)next())) {
+  TIter next(fModules);
+  AliModule *detector;
+  while((detector = (AliModule*)next())) {
      detector->ResetPoints();
   }
 }
@@ -1382,7 +1382,7 @@ void AliRun::StepManager(Int_t id) const
   sEventEnergy[pMC->CurrentVol(0,copy)]+=pMC->Edep();
   
   //Call the appropriate stepping routine;
-  AliDetector *det = (AliDetector*)fDetectors->At(id);
+  AliModule *det = (AliModule*)fModules->At(id);
   if(det) det->StepManager();
 }
 
@@ -1419,14 +1419,14 @@ void AliRun::ReadEuclid(const char* filnam, Int_t id_det, const char* topvol)
   Float_t xo, yo, zo;
   Int_t idrot[5000],istop[7000];
   FILE *lun;
-  AliDetector *det;
+  AliModule *det;
   //
-  TObjArray &dets = *fDetectors;
+  TObjArray &dets = *fModules;
   if(!dets[id_det]) {
     printf(" *** GREUTMED *** Detector %d not defined\n",id_det);
     return;
   } else {
-    det = (AliDetector*) dets[id_det];
+    det = (AliModule*) dets[id_det];
   }
   //
   // *** The input filnam name will be with extension '.euc'
@@ -1561,14 +1561,14 @@ void AliRun::ReadEuclidMedia(const char* filnam, Int_t id_det)
   Int_t imate;
   Int_t nwbuf, isvol, ifield, nmat;
   Float_t a, z, dens, radl, absl, fieldm, tmaxfd, stemax, deemax, epsil, stmin;
-  AliDetector* det;
+  AliModule* det;
 //
-  TObjArray &dets = *fDetectors;
+  TObjArray &dets = *fModules;
   if(!dets[id_det]) {
     printf(" *** GREUTMED *** Detector %d not defined\n",id_det);
     return;
   } else {
-    det = (AliDetector*) dets[id_det];
+    det = (AliModule*) dets[id_det];
   }
   end=strlen(filnam);
   for(i=0;i<end;i++) if(filnam[i]=='.') {
@@ -1654,7 +1654,7 @@ void AliRun::Streamer(TBuffer &R__b)
     R__b >> fHgwmk;
     R__b >> fDebug;
     fHeader.Streamer(R__b);
-    R__b >> fDetectors;
+    R__b >> fModules;
     R__b >> fParticles;
     R__b >> fField; 
     //    R__b >> fMC;
@@ -1669,7 +1669,7 @@ void AliRun::Streamer(TBuffer &R__b)
     R__b << fHgwmk;
     R__b << fDebug;
     fHeader.Streamer(R__b);
-    R__b << fDetectors;
+    R__b << fModules;
     R__b << fParticles;
     R__b << fField;
     //    R__b << fMC;

@@ -245,7 +245,7 @@ void AliDisplay::Clear(Option_t *)
 
 //----------------------------------------------------------------------------
 void AliDisplay::ShowTrack(Int_t idx) {
-   AliDetector *TPC=(AliDetector*)gAlice->GetDetector("TPC");
+   AliDetector *TPC=(AliDetector*)gAlice->GetModule("TPC");
    TObjArray *points=TPC->Points();
    int ntracks=points->GetEntriesFast();
    for (int track=0;track<ntracks;track++) {
@@ -271,7 +271,7 @@ void AliDisplay::ShowTrack(Int_t idx) {
 
 //----------------------------------------------------------------------------
 void AliDisplay::HideTrack(Int_t idx) {
-   AliDetector *TPC=(AliDetector*)gAlice->GetDetector("TPC");
+   AliDetector *TPC=(AliDetector*)gAlice->GetModule("TPC");
    TObjArray *points=TPC->Points();
    int ntracks=points->GetEntriesFast();
    for (int track=0;track<ntracks;track++) {
@@ -293,9 +293,9 @@ void AliDisplay::DisableDetector(const char *name)
 {
 //    Disable detector name from graphics views
    
-   AliDetector *detector = (AliDetector*)gAlice->Detectors()->FindObject(name);
-   if (!detector) return;
-   detector->Disable();
+   AliModule *module = (AliModule*)gAlice->Modules()->FindObject(name);
+   if (!module) return;
+   module->Disable();
    Draw();
 }
 
@@ -482,12 +482,12 @@ void AliDisplay::DrawHits()
    if (smin < 0.02) etamin = -1000;
    if (smax > 0.98) etamax =  1000;
       
-   TIter next(gAlice->Detectors());
-   AliDetector *detector;
+   TIter next(gAlice->Modules());
+   AliModule *module;
    fHitsCuts = 0;
-   while((detector = (AliDetector*)next())) {
-      if (!detector->IsActive()) continue;
-      points = detector->Points();
+   while((module = (AliModule*)next())) {
+      if (!module->IsActive()) continue;
+      points = module->Points();
       if (!points) continue;
       ntracks = points->GetEntriesFast();
       for (track=0;track<ntracks;track++) {
@@ -602,9 +602,9 @@ void AliDisplay::EnableDetector(const char *name)
 {
 //    Enable detector name in graphics views
    
-   AliDetector *detector = (AliDetector*)gAlice->Detectors()->FindObject(name);
-   if (!detector) return;
-   detector->Enable();
+   AliModule *module = (AliModule*)gAlice->Modules()->FindObject(name);
+   if (!module) return;
+   module->Enable();
    Draw();
 }
 
@@ -685,14 +685,14 @@ void AliDisplay::LoadPoints()
 // Loop on all detectors
  
    gAlice->ResetPoints();
-   TIter next(gAlice->Detectors());
-   AliDetector *detector;
+   TIter next(gAlice->Modules());
+   AliModule *module;
    Int_t ntracks = gAlice->GetNtrack();
    for (Int_t track=0; track<ntracks;track++) {
       gAlice->ResetHits();
       gAlice->TreeH()->GetEvent(track);
-      while((detector = (AliDetector*)next())) {
-         detector->LoadPoints(track);
+      while((module = (AliModule*)next())) {
+         module->LoadPoints(track);
       }
       next.Reset();
    }

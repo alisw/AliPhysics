@@ -19,7 +19,6 @@
 #include "AliRun.h"
 #include "AliHit.h"
 #include "AliPoints.h"
-#include "AliMC.h"
 #include <TClass.h>
 #include <TNode.h>
 #include <TRandom.h>
@@ -38,18 +37,15 @@ AliDetector::AliDetector()
   //
   fNhits      = 0;
   fNdigits    = 0;
-  fHistograms = 0;
-  fNodes      = 0;
   fPoints     = 0;
   fHits       = 0;
   fDigits     = 0;
   fTimeGate   = 200.e-9;
-  fActive     = kTRUE;
   fBufferSize = 16000;
 }
  
 //_____________________________________________________________________________
-AliDetector::AliDetector(const char* name,const char *title):TNamed(name,title)
+AliDetector::AliDetector(const char* name,const char *title):AliModule(name,title)
 {
   //
   // Normal constructor invoked by all Detectors.
@@ -65,35 +61,6 @@ AliDetector::AliDetector(const char* name,const char *title):TNamed(name,title)
   fNdigits    = 0;
   fPoints     = 0;
   fBufferSize = 16000;
-  //
-  // Initialises the histogram list
-  fHistograms = new TList();
-  //
-  // Initialises the list of ROOT TNodes
-  fNodes      = new TList();
-  //  
-  // Get the detector numeric ID
-  Int_t id = gAlice->GetDetectorID(name);
-  if (id < 0) {
-    // Unknown detector !
-     printf(" * AliRun::Ctor * ERROR Unknown detector: %s\n",name);
-     return;
-  }
-  //
-  // Add this detector to the list of detectors
-  gAlice->Detectors()->AddAtAndExpand(this,id);
-  //
-  //
-  SetMarkerColor(3);
-  //
-  // Allocate space for tracking media and material indexes
-  fIdtmed = new TArrayI(100);
-  fIdmate  = new TArrayI(100);
-  for(Int_t i=0;i<100;i++) (*fIdmate)[i]=(*fIdtmed)[i]=0;
-  //
-  // Prepare to find the tracking media range
-  fLoMedium = 65536;
-  fHiMedium = 0;
 }
  
 //_____________________________________________________________________________
@@ -104,20 +71,11 @@ AliDetector::~AliDetector()
   //
   fNhits      = 0;
   fNdigits    = 0;
-  fHistograms = 0;
-  //
-  // Delete ROOT geometry
-  fNodes->Clear();
-  delete fNodes;
   //
   // Delete space point structure
   if (fPoints) fPoints->Delete();
   delete fPoints;
   fPoints     = 0;
-  //
-  // Delete TArray objects
-  delete fIdtmed;
-  delete fIdmate;
 }
  
 //_____________________________________________________________________________
@@ -137,50 +95,6 @@ void AliDetector::Browse(TBrowser *b)
     sprintf(name,"%s_%d",obj->GetName(),i);
     b->Add(obj, &name[0]);
   }
-}
-
-//_____________________________________________________________________________
-void AliDetector::Disable()
-{
-  //
-  // Disable detector on viewer
-  //
-  fActive = kFALSE;
-  TIter next(fNodes);
-  TNode *node;
-  //
-  // Loop through geometry to disable all
-  // nodes for this detector
-  while((node = (TNode*)next())) {
-    node->SetVisibility(0);
-  }   
-}
-
-//_____________________________________________________________________________
-Int_t AliDetector::DistancetoPrimitive(Int_t, Int_t)
-{
-  //
-  // Return distance from mouse pointer to object
-  // Dummy routine for the moment
-  //
-  return 9999;
-}
-
-//_____________________________________________________________________________
-void AliDetector::Enable()
-{
-  //
-  // Enable detector on the viewver
-  //
-  fActive = kTRUE;
-  TIter next(fNodes);
-  TNode *node;
-  //
-  // Loop through geometry to enable all
-  // nodes for this detector
-  while((node = (TNode*)next())) {
-    node->SetVisibility(1);
-  }   
 }
 
 //_____________________________________________________________________________
@@ -284,113 +198,6 @@ void AliDetector::MakeBranch(Option_t *option)
 }
 
 //_____________________________________________________________________________
-void AliDetector::AliMaterial(Int_t imat, const char* name, Float_t a, 
-			      Float_t z, Float_t dens, Float_t radl,
-			      Float_t absl, Float_t *buf, Int_t nwbuf) const
-{
-  //
-  // Store the parameters for a material
-  //
-  // imat        the material index will be stored in (*fIdmate)[imat]
-  // name        material name
-  // a           atomic mass
-  // z           atomic number
-  // dens        density
-  // radl        radiation length
-  // absl        absorbtion length
-  // buf         adress of an array user words
-  // nwbuf       number of user words
-  //
-  Int_t kmat;
-  AliMC::GetMC()->Material(kmat, name, a, z, dens, radl, absl, buf, nwbuf);
-  (*fIdmate)[imat]=kmat;
-}
-  
-
-//_____________________________________________________________________________
-void AliDetector::AliMixture(Int_t imat, const char *name, Float_t *a,
-			     Float_t *z, Float_t dens, Int_t nlmat,
-			     Float_t *wmat) const
-{ 
-  //
-  // Defines mixture or compound imat as composed by 
-  // nlmat materials defined by arrays a, z and wmat
-  // 
-  // If nlmat > 0 wmat contains the proportion by
-  // weights of each basic material in the mixture  
-  // 
-  // If nlmat < 0 wmat contains the number of atoms 
-  // of eack kind in the molecule of the compound
-  // In this case, wmat is changed on output to the relative weigths.
-  //
-  // imat        the material index will be stored in (*fIdmate)[imat]
-  // name        material name
-  // a           array of atomic masses
-  // z           array of atomic numbers
-  // dens        density
-  // nlmat       number of components
-  // wmat        array of concentrations
-  //
-  Int_t kmat;
-  AliMC::GetMC()->Mixture(kmat, name, a, z, dens, nlmat, wmat);
-  (*fIdmate)[imat]=kmat;
-} 
- 
-//_____________________________________________________________________________
-void AliDetector::AliMedium(Int_t numed, const char *name, Int_t nmat,
-			    Int_t isvol, Int_t ifield, Float_t fieldm,
-			    Float_t tmaxfd, Float_t stemax, Float_t deemax,
-			    Float_t epsil, Float_t stmin, Float_t *ubuf,
-			    Int_t nbuf) const
-{ 
-  //
-  // Store the parameters of a tracking medium
-  //
-  // numed       the medium number is stored into (*fIdtmed)[numed-1]
-  // name        medium name
-  // nmat        the material number is stored into (*fIdmate)[nmat]
-  // isvol       sensitive volume if isvol!=0
-  // ifield      magnetic field flag (see below)
-  // fieldm      maximum magnetic field
-  // tmaxfd      maximum deflection angle due to magnetic field
-  // stemax      maximum step allowed
-  // deemax      maximum fractional energy loss in one step
-  // epsil       tracking precision in cm
-  // stmin       minimum step due to continuous processes
-  //
-  // ifield =  0       no magnetic field
-  //        = -1       user decision in guswim
-  //        =  1       tracking performed with Runge Kutta
-  //        =  2       tracking performed with helix
-  //        =  3       constant magnetic field along z
-  //  
-  Int_t kmed;
-  Int_t *idtmed = gAlice->Idtmed();
-  AliMC::GetMC()->Medium(kmed,name, (*fIdmate)[nmat], isvol, ifield, fieldm,
-			 tmaxfd, stemax, deemax, epsil,	stmin, ubuf, nbuf); 
-  idtmed[numed-1]=kmed;
-} 
- 
-//_____________________________________________________________________________
-void AliDetector::AliMatrix(Int_t &nmat, Float_t theta1, Float_t phi1,
-			    Float_t theta2, Float_t phi2, Float_t theta3,
-			    Float_t phi3) const
-{
-  // 
-  // Define a rotation matrix. Angles are in degrees.
-  //
-  // nmat        on output contains the number assigned to the rotation matrix
-  // theta1      polar angle for axis I
-  // phi1        azimuthal angle for axis I
-  // theta2      polar angle for axis II
-  // phi2        azimuthal angle for axis II
-  // theta3      polar angle for axis III
-  // phi3        azimuthal angle for axis III
-  //
-  AliMC::GetMC()->Matrix(nmat, theta1, phi1, theta2, phi2, theta3, phi3); 
-} 
-
-//_____________________________________________________________________________
 void AliDetector::ResetDigits()
 {
   //
@@ -423,34 +230,6 @@ void AliDetector::ResetPoints()
   }
 }
 
-  
-//_____________________________________________________________________________
-void AliDetector::StepManager()
-{
-  //
-  // Procedure called at every step inside the detector
-  //
-  printf("* AliDetector::StepManager * Generic Step Manager called for Detector: %s\n",fName.Data());
-}
-
-//_____________________________________________________________________________
-void AliDetector::SetEuclidFile(char* material, char* geometry)
-{
-  //
-  // Sets the name of the Euclid file
-  //
-  fEuclidMaterial=material;
-  if(geometry) {
-    fEuclidGeometry=geometry;
-  } else {
-    char* name = new char[strlen(material)];
-    strcpy(name,material);
-    strcpy(&name[strlen(name)-4],".euc");
-    fEuclidGeometry=name;
-    delete [] name;
-  }
-}
- 
 //_____________________________________________________________________________
 void AliDetector::SetTreeAddress()
 {
@@ -487,17 +266,12 @@ void AliDetector::Streamer(TBuffer &R__b)
     TNamed::Streamer(R__b);
     TAttLine::Streamer(R__b);
     TAttMarker::Streamer(R__b);
-    fEuclidMaterial.Streamer(R__b);
-    fEuclidGeometry.Streamer(R__b);
+    AliModule::Streamer(R__b);
     R__b >> fTimeGate;
-    R__b >> fActive;
     R__b >> fIshunt;
     //R__b >> fNhits;
-    R__b >> fHistograms;
     //
     // Stream the pointers but not the TClonesArrays
-    R__b >> fNodes; // diff
-
     R__b >> fHits; // diff
     R__b >> fDigits; // diff
     
@@ -506,17 +280,12 @@ void AliDetector::Streamer(TBuffer &R__b)
     TNamed::Streamer(R__b);
     TAttLine::Streamer(R__b);
     TAttMarker::Streamer(R__b);
-    fEuclidMaterial.Streamer(R__b);
-    fEuclidGeometry.Streamer(R__b);
+    AliModule::Streamer(R__b);
     R__b << fTimeGate;
-    R__b << fActive;
     R__b << fIshunt;
     //R__b << fNhits;
-    R__b << fHistograms;
     //
     // Stream the pointers but not the TClonesArrays
-    R__b << fNodes; // diff
-    
     R__b << fHits; // diff
     R__b << fDigits; // diff
   }

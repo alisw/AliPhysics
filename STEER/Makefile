@@ -12,7 +12,7 @@ PACKAGE = STEER
 SRCS          = AliDetector.cxx  AliHeader.cxx    AliMagF.cxx GParticle.cxx \
                 AliDigit.cxx     AliHit.cxx       AliPoints.cxx \
                 AliDisplay.cxx   AliMC.cxx        AliRun.cxx AliGenerator.cxx \
-		AliLego.cxx
+		AliLego.cxx AliModule.cxx
 
 
 # C++ Headers
