@@ -105,14 +105,14 @@ void AliModulesComposition::ConstructModules()
   G4int nofDets = fModuleConstructionVector.entries();
   for (G4int i=0; i<nofDets; i++) {
     G4cout << "Module " << fModuleConstructionVector[i]->GetDetName()
-           << " will be constructed now." << endl;
+           << " will be constructed now." << G4endl;
     fModuleConstructionVector[i]->Construct();
   }  
     
   // more modules construction
   G4int nofModules = fMoreModulesConstruction->GetNofModules();
   if (nofModules>0) {
-    G4cout << "Dependent modules will be constructed now." << endl;
+    G4cout << "Dependent modules will be constructed now." << G4endl;
     fMoreModulesConstruction->Construct();
   }  
 }  
@@ -165,16 +165,8 @@ void AliModulesComposition::SetAllLVSensitiveToModules(G4bool allSensitive)
   // single module constructions
   G4int nofDets = fModuleConstructionVector.entries();
   G4int i;
-  for (i=0; i<nofDets; i++) {
-    AliSingleModuleConstruction* moduleConstruction
-      = dynamic_cast<AliSingleModuleConstruction*>(fModuleConstructionVector[i]);
-    if (!moduleConstruction) {
-      G4String text = "AliModulesComposition::SetProcessConfig: \n";
-      text = text + "    Unknown module construction type.";
-      AliGlobals::Exception(text);
-    }      
-    moduleConstruction->SetAllLVSensitive(allSensitive);
-  }  
+  for (i=0; i<nofDets; i++)
+    fModuleConstructionVector[i]->SetAllLVSensitive(allSensitive);
 
   // more modules construction
   nofDets = fMoreModulesConstruction->GetNofModules();
@@ -193,16 +185,8 @@ void AliModulesComposition::SetProcessConfigToModules(G4bool processConfig)
   // single module constructions
   G4int nofDets = fModuleConstructionVector.entries();
   G4int i;
-  for (i=0; i<nofDets; i++) {
-    AliSingleModuleConstruction* moduleConstruction
-      = dynamic_cast<AliSingleModuleConstruction*>(fModuleConstructionVector[i]);
-    if (!moduleConstruction) {
-      G4String text = "AliModulesComposition::SetProcessConfig: \n";
-      text = text + "    Unknown module construction type.";
-      AliGlobals::Exception(text);
-    }      
-    moduleConstruction->SetProcessConfig(processConfig);
-  }  
+  for (i=0; i<nofDets; i++)
+    fModuleConstructionVector[i]->SetProcessConfig(processConfig);
   
   // more modules construction
   nofDets = fMoreModulesConstruction->GetNofModules();
@@ -312,9 +296,9 @@ void AliModulesComposition::PrintSwitchedDets() const
 
   G4String svList = GetSwitchedDetsList();
     
-  G4cout << "Switched Alice detectors: " << endl;
-  G4cout << "--------------------------" << endl;
-  G4cout << svList << endl;
+  G4cout << "Switched Alice detectors: " << G4endl;
+  G4cout << "--------------------------" << G4endl;
+  G4cout << svList << G4endl;
 }
 
 void AliModulesComposition::PrintAvailableDets() const
@@ -324,9 +308,9 @@ void AliModulesComposition::PrintAvailableDets() const
 
   G4String avList = GetAvailableDetsList();
     
-  G4cout << "Available Alice detectors: " << endl;
-  G4cout << "---------------------------" << endl;
-  G4cout << avList << endl;
+  G4cout << "Available Alice detectors: " << G4endl;
+  G4cout << "---------------------------" << G4endl;
+  G4cout << avList << G4endl;
 }
 
 G4String AliModulesComposition::GetSwitchedDetsList() const

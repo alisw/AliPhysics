@@ -8,7 +8,7 @@
 #ifndef ALI_MODULES_COMPOSITION_H
 #define ALI_MODULES_COMPOSITION_H
 
-#include "AliModuleConstruction.h"
+#include "AliSingleModuleConstruction.h"
 #include "AliDetSwitch.h"
 #include "AliModuleType.h"
 
@@ -25,8 +25,9 @@ class G4VPhysicalVolume;
 
 class AliModulesComposition : public G4VUserDetectorConstruction
 {
-  typedef G4RWTPtrOrderedVector<AliDetSwitch>          AliDetSwitchVector;
-  typedef G4RWTPtrOrderedVector<AliModuleConstruction> AliModuleConstructionVector; 
+  typedef G4RWTPtrOrderedVector<AliDetSwitch>  AliDetSwitchRWVector;
+  typedef G4RWTPtrOrderedVector<AliSingleModuleConstruction>
+                                AliSingleModuleConstructionRWVector; 
 
   public:
     AliModulesComposition();
@@ -80,16 +81,19 @@ class AliModulesComposition : public G4VUserDetectorConstruction
     void SetAllLVSensitiveToModules(G4bool allSensitive);
 
     // data members
-    AliDetSwitchVector           fDetSwitchVector;          //vector of AliDetSwitch
-    AliModuleConstructionVector  fModuleConstructionVector; //vector of 
-						            //AliModuleConstruction 
-    AliMoreModulesConstruction*  fMoreModulesConstruction;  //AliMoreModulesConstruction
+    AliDetSwitchRWVector                fDetSwitchVector;          //..         
+                                          //vector of AliDetSwitch
+    AliSingleModuleConstructionRWVector fModuleConstructionVector; //..
+				          //vector of 
+					  //AliSingleModuleConstruction 
+    AliMoreModulesConstruction*         fMoreModulesConstruction;  //..
+                                          //AliMoreModulesConstruction
 
     AliMagneticField*                fMagneticField;  //magnetic field
     AliModulesCompositionMessenger*  fMessenger;      //messenger
-    G4bool                           fAllLVSensitive; //option applied to all modules
-    G4bool                           fReadGeometry;   //option applied to all modules
-    G4bool                           fWriteGeometry;  //option applied to all modules  
+    G4bool  fAllLVSensitive; //option applied to all modules
+    G4bool  fReadGeometry;   //option applied to all modules
+    G4bool  fWriteGeometry;  //option applied to all modules  
 };
 
 // inline methods
