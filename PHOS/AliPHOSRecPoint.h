@@ -40,7 +40,7 @@ public:
   virtual Int_t   GetPHOSMod(void) ;
   virtual void    GetPrimaries(Int_t & number, Int_t * list) ;
   virtual Bool_t  IsEmc(void){return kTRUE ;} 
-  virtual  void   Paint(Option_t * option="");
+  virtual void    Paint(Option_t * option="");
   virtual void    Print(Option_t * opt = "void") {} 
 
   virtual Int_t   Compare(TObject * obj) {  assert(0==1) ; }   

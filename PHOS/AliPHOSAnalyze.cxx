@@ -489,7 +489,7 @@ void AliPHOSAnalyze::DisplayKineEvent(Int_t evt)
 void AliPHOSAnalyze::DisplayRecParticles()
 {
   if (fEvt == -999) {
-    cout << "DisplayRecPoints > Analyze an event first ... (y/n) " ; 
+    cout << "DisplayRecParticles > Analyze an event first ... (y/n) " ; 
     Text_t answer[1] ; 
     cin >> answer ; cout << answer ; 
     if ( answer == "y" ) 
@@ -498,7 +498,7 @@ void AliPHOSAnalyze::DisplayRecParticles()
     if (fEvt != -999) {
       
       Int_t module ; 
-      cout <<  "DisplayRecPoints > which module (1-5,  -1: all) ? " ; 
+      cout <<  "DisplayRecParticles > which module (1-5,  -1: all) ? " ; 
       cin >> module ; cout << module << endl ;
       Text_t histoname[80] ; 
       sprintf(histoname,"Event %d: Reconstructed particles in module %d", fEvt, module) ; 
@@ -535,6 +535,14 @@ void AliPHOSAnalyze::DisplayRecParticles()
 	}
       }
       histoRparticle->Draw("color") ; 
+
+      nextRecPart.Reset() ; 
+      while ( (rp = (AliPHOSRecParticle *)nextRecPart() ) ) {
+	AliPHOSTrackSegment * ts = rp->GetPHOSTrackSegment() ; 
+	if ( ts->GetPHOSMod() == module )  
+	  rp->Draw("P") ; 
+      }
+
       Text_t text[80] ; 
       sprintf(text, "reconstructed particles: %d", nRecParticlesInModule) ;
       TPaveText *  pavetext = new TPaveText(292, 100, 300, 101); 

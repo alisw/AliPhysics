@@ -40,9 +40,6 @@ public:
   virtual void SetUnfoldFlag() = 0 ;
   virtual void UnsetUnfoldFlag() = 0 ;
 
- protected:
-
-
   ClassDef( AliPHOSTrackSegmentMaker,1)  // subtracking implementation , version 1
 
 };

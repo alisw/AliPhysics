@@ -42,9 +42,13 @@ public:
 
   virtual ~AliPHOSRecParticle(){} ; // dtor
 
+  virtual Int_t DistancetoPrimitive(Int_t px, Int_t py) ; 
+  virtual void Draw(Option_t *option) ; 
+  virtual void ExecuteEvent(Int_t event, Int_t px, Int_t py) ; 
   AliPHOSTrackSegment * GetPHOSTrackSegment() { return fPHOSTrackSegment ; } 
   Int_t GetType() { return fType ; } 
   TString Name() ; 
+  virtual void Paint(Option_t * option="");
   void Print() ; 
   void SetType(Int_t type) { fType = type ; } 
 

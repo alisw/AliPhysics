@@ -49,6 +49,7 @@ AliPHOSRecPoint::~AliPHOSRecPoint()
 {
   // dtor
 }
+
 //____________________________________________________________________________
 Int_t AliPHOSRecPoint::DistancetoPrimitive(Int_t px, Int_t py)
 {
