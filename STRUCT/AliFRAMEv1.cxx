@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  1999/11/01 20:42:42  fca
+FRAME version 1 is now the symmetric one.
+
 Revision 1.6  1999/09/29 09:24:30  fca
 Introduction of the Copyright and cvs Log
 
@@ -72,7 +75,7 @@ void AliFRAMEv1::CreateGeometry()
   if(file) {
     fclose(file);
     printf(" Reading FRAME geometry\n");
-    gAlice->ReadEuclid(fEuclidGeometry.Data(),this,topvol);
+    ReadEuclid(fEuclidGeometry.Data(),topvol);
   } else {
     Warning("CreateGeometry","The Euclid file %s does not exist!\n",
 	    fEuclidGeometry.Data());
@@ -100,7 +103,7 @@ void AliFRAMEv1::CreateMaterials()
   delete [] filetmp;
   if(file) {
     fclose(file);
-    gAlice->ReadEuclidMedia(fEuclidMaterial.Data(),this);
+    ReadEuclidMedia(fEuclidMaterial.Data());
   } else {
     Warning("CreateMaterials","The material file %s does not exist!\n",
 	    fEuclidMaterial.Data());

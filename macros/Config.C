@@ -1,7 +1,7 @@
 void Config()
 {
 
-new TGeant3("C++ Interface to Geant3");
+new AliGeant3("C++ Interface to Geant3");
 
 //=======================================================================
 //  Create the output file
@@ -584,7 +584,9 @@ AliMUON *MUON  = new AliMUONv0("MUON","normal MUON");
 //=================== PHOS parameters ===========================
 
 if(iPHOS) {
-AliPHOS *PHOS  = new AliPHOSv0("PHOS","normal PHOS");
+  AliPHOS *PHOS  = new AliPHOSv0("PHOS","normal PHOS");
+  AliPHOSGeometry *geom = new AliPHOSGeometry("default");
+  geom->Init();
 }
 
 

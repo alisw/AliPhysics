@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  1999/09/29 09:24:30  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ////////////////////////////////////////////////
@@ -72,7 +75,7 @@ void AliPIPEv0::CreateGeometry()
   if(file) {
     fclose(file);
     printf(" Reading PIPE \n");
-    gAlice->ReadEuclid(pipename,this,topvol);
+    ReadEuclid(pipename,topvol);
   } else {
     printf(" THE GEOM FILE %s DOES NOT EXIST !\n",pipename);
     exit(1);
@@ -85,7 +88,7 @@ void AliPIPEv0::CreateGeometry()
   if(file) {
     fclose(file);
     printf(" Reading PUMP \n");
-    gAlice->ReadEuclid(pumpname,this,topvol);
+    ReadEuclid(pumpname,topvol);
   } else {
     printf(" THE GEOM FILE %s DOES NOT EXIST !\n",pumpname);
     exit(1);
@@ -124,7 +127,7 @@ void AliPIPEv0::CreateMaterials()
   delete [] filtmp;
   if(file) {
     fclose(file);
-    gAlice->ReadEuclidMedia(name,this);
+    ReadEuclidMedia(name);
   } else {
     printf(" THE MEDIA FILE %s DOES NOT EXIST !\n",name);
     exit(1);

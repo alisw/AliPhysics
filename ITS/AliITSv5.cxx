@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  1999/10/22 08:16:49  fca
+Correct destructors, thanks to I.Hrivnacova
+
 Revision 1.13  1999/10/06 10:15:19  fca
 Correct bug in allocation of layer name and add destructor
 
@@ -102,8 +105,8 @@ void AliITSv5::CreateMaterials(){
   FILE *file = fopen(filtmp,"r");
   if(file) {
     fclose(file);
-//    gAlice->ReadEuclidMedia(fEuclidMaterial.Data(),this);
-    gAlice->ReadEuclidMedia(filtmp,this);
+//    ReadEuclidMedia(fEuclidMaterial.Data());
+    ReadEuclidMedia(filtmp);
   } else {
     Error("CreateMaterials"," THE MEDIA FILE %s DOES NOT EXIST !",
 //	  fEuclidMaterial.Data());
@@ -284,7 +287,7 @@ void AliITSv5::CreateGeometry(){
   if(file) {
     fclose(file);
     printf("Ready to read Euclid geometry file\n");
-    gAlice->ReadEuclid(fEuclidGeometry.Data(),this,topvol);
+    ReadEuclid(fEuclidGeometry.Data(),topvol);
     printf("Read in euclid geometries\n");
   } else {
     Error("CreateGeometry"," THE GEOM FILE %s DOES NOT EXIST !",

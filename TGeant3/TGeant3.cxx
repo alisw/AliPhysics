@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.22  2000/01/18 15:40:13  morsch
+Interface to GEANT3 routines GFTMAT, GBRELM and GPRELM added
+Define geant particle type 51: Feedback Photon with Cherenkov photon properties.
+
 Revision 1.21  2000/01/17 19:41:17  fca
 Add SetERAN function
 
@@ -612,6 +616,13 @@ void TGeant3::GeomIter()
   fNextVol=fGcvolu->nlevel;
 }
 
+//____________________________________________________________________________ 
+void TGeant3::FinishGeometry()
+{
+  //Close the geometry structure
+  Ggclos();
+}
+  
 //____________________________________________________________________________ 
 Int_t TGeant3::NextVolUp(Text_t *name, Int_t &copy)
 {

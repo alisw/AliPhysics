@@ -29,6 +29,7 @@ public:
   //Generic access functions
   static inline AliMC* GetMC() {return fgMC;}
   //
+  virtual void    FinishGeometry() = 0;
   virtual Int_t   CurrentMaterial(Float_t &a, Float_t &z, Float_t &dens, Float_t &radl, Float_t &absl) const =0;
   virtual Int_t   CurrentVolID(Int_t&) const =0;
   virtual Int_t   CurrentVolOffID(Int_t, Int_t& ) const =0;
@@ -113,14 +114,9 @@ public:
   virtual  void  Gdhead(Int_t, const char*, Float_t=0)=0;   
   virtual  void  Gdman(Float_t, Float_t, const char*)=0;
   virtual  void  Gsord(const char *name, Int_t iax)=0;
-  virtual  void  Ggclos()=0;
   virtual  void  SetColors()=0;
-  virtual  void  Gphysi()=0;
-  virtual  void  Gtrigi()=0;
   virtual  void  Gtreve()=0;
   virtual  void  Gtreve_root()=0;
-  virtual  void  Gtrigc()=0;
-  virtual  void  Gtrig()=0;
   virtual  void  Gckmat(Int_t, char*)=0;
   virtual  void  InitLego()=0;
   virtual  void  Gfpart(Int_t, char*, Int_t&, Float_t&, Float_t&, Float_t&)=0; 

@@ -576,6 +576,7 @@ public:
 //                                                                   //
 ///////////////////////////////////////////////////////////////////////
 
+  void FinishGeometry();
   void  GeomIter();
   Int_t CurrentMaterial(Float_t &a, Float_t &z, Float_t &dens, Float_t &radl, Float_t &absl) const;
   Int_t NextVolUp(Text_t *name, Int_t &copy);

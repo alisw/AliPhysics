@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2000/01/19 17:17:20  fca
+Introducing a list of lists of hits -- more hits allowed for detector now
+
 Revision 1.23  1999/12/03 11:14:31  fca
 Fixing previous wrong checking
 
@@ -65,9 +68,8 @@ Introduction of the Copyright and cvs Log
 #include "TParticle.h"
 #include "AliRun.h"
 #include "AliDisplay.h"
+#include "AliVMC.h"
 
-#include "AliCallf77.h" 
- 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -75,20 +77,6 @@ Introduction of the Copyright and cvs Log
 AliRun *gAlice;
 
 static AliHeader *header;
-
-#ifndef WIN32
-
-# define rxgtrak rxgtrak_
-# define rxstrak rxstrak_
-# define rxkeep  rxkeep_ 
-# define rxouth  rxouth_
-#else
-
-# define rxgtrak RXGTRAK 
-# define rxstrak RXSTRAK 
-# define rxkeep  RXKEEP  
-# define rxouth  RXOUTH
-#endif
 
 static TArrayF sEventEnergy;
 static TArrayF sSummEnergy;
@@ -517,7 +505,6 @@ void AliRun::FinishRun()
   
   // Close output file
   File->Write();
-  File->Close();
 }
 
 //_____________________________________________________________________________
@@ -605,9 +592,9 @@ void AliRun::EnergySummary()
   }
   //
   // Reset the TArray's
-  sEventEnergy.Set(0);
-  sSummEnergy.Set(0);
-  sSum2Energy.Set(0);
+  //  sEventEnergy.Set(0);
+  //  sSummEnergy.Set(0);
+  //  sSum2Energy.Set(0);
 }
 
 //_____________________________________________________________________________
@@ -841,19 +828,17 @@ void AliRun::Init(const char *setup)
    
    MediaTable(); //Build the special IMEDIA table
    
-   //Close the geometry structure
-   gMC->Ggclos();
+   //Terminate building of geometry
+   printf("%p\n",gVMC);
+   gVMC->FinishGeometry();
    
    //Initialise geometry deposition table
    sEventEnergy.Set(gMC->NofVolumes()+1);
    sSummEnergy.Set(gMC->NofVolumes()+1);
    sSum2Energy.Set(gMC->NofVolumes()+1);
    
-   //Create the color table
-   gMC->SetColors();
-   
    //Compute cross-sections
-   gMC->Gphysi();
+   gVMC->BuildPhysics();
    
    //Write Geometry object to current file.
    fGeometry->Write();
@@ -924,7 +909,10 @@ void AliRun::SetGenerator(AliGenerator *generator)
   //
   // Load the event generator
   //
-  if(!fGenerator) fGenerator = generator;
+  if(fGenerator)
+    Warning("SetGenerator","Replacing generator %s with %s\n",
+	    fGenerator->GetName(),generator->GetName());
+  fGenerator = generator;
 }
 
 //____________________________________________________________________________
@@ -1041,6 +1029,7 @@ void AliRun::MakeTree(Option_t *option)
   //  Loop on all detectors to create the Root branch (if any)
   //
 
+  char hname[30];
   //
   // Analyse options
   char *K = strstr(option,"K");
@@ -1049,12 +1038,30 @@ void AliRun::MakeTree(Option_t *option)
   char *D = strstr(option,"D");
   char *R = strstr(option,"R");
   //
-  if (K && !fTreeK) fTreeK = new TTree("TreeK0","Kinematics");
-  if (H && !fTreeH) fTreeH = new TTree("TreeH0","Hits");
-  if (D && !fTreeD) fTreeD = new TTree("TreeD0","Digits");
-  if (E && !fTreeE) fTreeE = new TTree("TE","Header");
-  if (R && !fTreeR) fTreeR = new TTree("TreeR0","Reconstruction");
-  if (fTreeH) fTreeH->SetAutoSave(1000000000); //no autosave
+  if (K && !fTreeK) {
+    sprintf(hname,"TreeK%d",fEvent);
+    fTreeK = new TTree(hname,"Kinematics");
+    //  Create a branch for particles
+    fTreeK->Branch("Particles",&fParticles,4000);
+  }
+  if (H && !fTreeH) {
+    sprintf(hname,"TreeH%d",fEvent);
+    fTreeH = new TTree(hname,"Hits");
+    fTreeH->SetAutoSave(1000000000); //no autosave
+  }
+  if (D && !fTreeD) {
+    sprintf(hname,"TreeD%d",fEvent);
+    fTreeD = new TTree(hname,"Digits");
+  }
+  if (R && !fTreeR) {
+    sprintf(hname,"TreeR%d",fEvent);
+    fTreeR = new TTree(hname,"Reconstruction");
+  }
+  if (E && !fTreeE) {
+    fTreeE = new TTree("TE","Header");
+    //  Create a branch for Header
+    fTreeE->Branch("Header","AliHeader",&header,4000);
+  }
   //
   // Create a branch for hits/digits for each detector
   // Each branch is a TClonesArray. Each data member of the Hits classes
@@ -1064,11 +1071,6 @@ void AliRun::MakeTree(Option_t *option)
   while((detector = (AliModule*)next())) {
      if (H || D || R) detector->MakeBranch(option);
   }
-  //  Create a branch for particles
-  if (fTreeK && K) fTreeK->Branch("Particles",&fParticles,4000);
-  
-  //  Create a branch for Header
-  if (fTreeE && E) fTreeE->Branch("Header","AliHeader",&header,4000);
 }
 
 //_____________________________________________________________________________
@@ -1093,7 +1095,6 @@ void AliRun::PurifyKine()
   TClonesArray &particles = *fParticles;
   int nkeep=fHgwmk+1, parent, i;
   TParticle *part, *partnew, *father;
-  AliHit *OneHit;
   int *map = new int[particles.GetEntries()];
 
   // Save in Header total number of tracks before compression
@@ -1148,6 +1149,7 @@ void AliRun::PurifyKine()
   
 #ifdef old
   // Now loop on all detectors and reset the hits
+  AliHit *OneHit;
   TIter next(fModules);
   AliModule *detector;
   while((detector = (AliModule*)next())) {
@@ -1272,17 +1274,13 @@ void AliRun::Run(Int_t nevent, const char *setup)
   if (!fInitDone) Init(setup);
   
   // Create the Root Tree with one branch per detector
-  if(!fEvent) {
-    gAlice->MakeTree("KHDER");
-  }
+  gAlice->MakeTree("KHDER");
 
   todo = TMath::Abs(nevent);
   for (i=0; i<todo; i++) {
   // Process one run (one run = one event)
      gAlice->Reset(fRun, fEvent);
-     gMC->Gtrigi();
-     gMC->Gtrigc();
-     gMC->Gtrig();
+     gVMC->ProcessEvent();
      gAlice->FinishEvent();
      fEvent++;
   }
@@ -1336,9 +1334,11 @@ void AliRun::RunLego(const char *setup,Int_t ntheta,Float_t themin,
 
   // check if initialisation has been done
   if (!fInitDone) Init(setup);
-  
-  fLego = new AliLego("lego","lego");
-  fLego->Init(ntheta,themin,themax,nphi,phimin,phimax,rmin,rmax,zmax);
+
+  //Create Lego object  
+  fLego = new AliLego("lego",ntheta,themin,themax,nphi,phimin,phimax,rmin,rmax,zmax);
+
+  //Run Lego Object
   fLego->Run();
   
   // Create only the Root event Tree
@@ -1440,287 +1440,21 @@ void AliRun::StepManager(Int_t id) const
   // Called at every step during transport
   //
 
-  Int_t copy;
   //
   // --- If lego option, do it and leave 
-  if (fLego) {
+  if (fLego)
     fLego->StepManager();
-    return;
-  }
-  //Update energy deposition tables
-  sEventEnergy[gMC->CurrentVolID(copy)]+=gMC->Edep();
+  else {
+    Int_t copy;
+    //Update energy deposition tables
+    sEventEnergy[gMC->CurrentVolID(copy)]+=gMC->Edep();
   
-  //Call the appropriate stepping routine;
-  AliModule *det = (AliModule*)fModules->At(id);
-  if(det) det->StepManager();
+    //Call the appropriate stepping routine;
+    AliModule *det = (AliModule*)fModules->At(id);
+    if(det) det->StepManager();
+  }
 }
 
-//_____________________________________________________________________________
-void AliRun::ReadEuclid(const char* filnam, const AliModule *det, char* topvol)
-{
-  //                                                                     
-  //       read in the geometry of the detector in euclid file format    
-  //                                                                     
-  //        id_det : the detector identification (2=its,...)            
-  //        topvol : return parameter describing the name of the top    
-  //        volume of geometry.                                          
-  //                                                                     
-  //            author : m. maire                                        
-  //                                                                     
-  //     28.07.98
-  //     several changes have been made by miroslav helbich
-  //     subroutine is rewrited to follow the new established way of memory
-  //     booking for tracking medias and rotation matrices.
-  //     all used tracking media have to be defined first, for this you can use
-  //     subroutine  greutmed.
-  //     top volume is searched as only volume not positioned into another 
-  //
-
-  Int_t i, nvol, iret, itmed, irot, numed, npar, ndiv, iaxe;
-  Int_t ndvmx, nr, flag;
-  char key[5], card[77], natmed[21];
-  char name[5], mother[5], shape[5], konly[5], volst[7000][5];
-  char *filtmp;
-  Float_t par[50];
-  Float_t teta1, phi1, teta2, phi2, teta3, phi3, orig, step;
-  Float_t xo, yo, zo;
-  const Int_t maxrot=5000;
-  Int_t idrot[maxrot],istop[7000];
-  FILE *lun;
-  //
-  // *** The input filnam name will be with extension '.euc'
-  filtmp=gSystem->ExpandPathName(filnam);
-  lun=fopen(filtmp,"r");
-  delete [] filtmp;
-  if(!lun) {
-    Error("ReadEuclid","Could not open file %s\n",filnam);
-    return;
-  }
-  //* --- definition of rotation matrix 0 ---  
-  TArrayI &idtmed = *(det->GetIdtmed());
-  for(i=1; i<maxrot; ++i) idrot[i]=-99;
-  idrot[0]=0;
-  nvol=0;
- L10:
-  for(i=0;i<77;i++) card[i]=0;
-  iret=fscanf(lun,"%77[^\n]",card);
-  if(iret<=0) goto L20;
-  fscanf(lun,"%*c");
-  //*
-  strncpy(key,card,4);
-  key[4]='\0';
-  if (!strcmp(key,"TMED")) {
-    sscanf(&card[5],"%d '%[^']'",&itmed,natmed);
-    if( itmed<0 || itmed>=100 ) {
-      Error("ReadEuclid","TMED illegal medium number %d for %s\n",itmed,natmed);
-      exit(1);
-    }
-    //Pad the string with blanks
-    i=-1;
-    while(natmed[++i]);
-    while(i<20) natmed[i++]=' ';
-    natmed[i]='\0';
-    //
-    if( idtmed[itmed]<=0 ) {
-      Error("ReadEuclid","TMED undefined medium number %d for %s\n",itmed,natmed);
-      exit(1);
-    }
-    gMC->Gckmat(idtmed[itmed],natmed);
-    //*
-  } else if (!strcmp(key,"ROTM")) {
-    sscanf(&card[4],"%d %f %f %f %f %f %f",&irot,&teta1,&phi1,&teta2,&phi2,&teta3,&phi3);
-    if( irot<=0 || irot>=maxrot ) {
-      Error("ReadEuclid","ROTM rotation matrix number %d illegal\n",irot);
-      exit(1);
-    }
-    det->AliMatrix(idrot[irot],teta1,phi1,teta2,phi2,teta3,phi3);
-    //*
-  } else if (!strcmp(key,"VOLU")) {
-    sscanf(&card[5],"'%[^']' '%[^']' %d %d", name, shape, &numed, &npar);
-    if (npar>0) {
-      for(i=0;i<npar;i++) fscanf(lun,"%f",&par[i]);
-      fscanf(lun,"%*c");
-    }
-    gMC->Gsvolu( name, shape, idtmed[numed], par, npar);
-    //*     save the defined volumes
-    strcpy(volst[++nvol],name);
-    istop[nvol]=1;
-    //*
-  } else if (!strcmp(key,"DIVN")) {
-    sscanf(&card[5],"'%[^']' '%[^']' %d %d", name, mother, &ndiv, &iaxe);
-    gMC->Gsdvn  ( name, mother, ndiv, iaxe );
-    //*
-  } else if (!strcmp(key,"DVN2")) {
-    sscanf(&card[5],"'%[^']' '%[^']' %d %d %f %d",name, mother, &ndiv, &iaxe, &orig, &numed);
-    gMC->Gsdvn2( name, mother, ndiv, iaxe, orig,idtmed[numed]);
-    //*
-  } else if (!strcmp(key,"DIVT")) {
-    sscanf(&card[5],"'%[^']' '%[^']' %f %d %d %d", name, mother, &step, &iaxe, &numed, &ndvmx);
-    gMC->Gsdvt ( name, mother, step, iaxe, idtmed[numed], ndvmx);
-    //*
-  } else if (!strcmp(key,"DVT2")) {
-    sscanf(&card[5],"'%[^']' '%[^']' %f %d %f %d %d", name, mother, &step, &iaxe, &orig, &numed, &ndvmx);
-    gMC->Gsdvt2 ( name, mother, step, iaxe, orig, idtmed[numed], ndvmx );
-    //*
-  } else if (!strcmp(key,"POSI")) {
-    sscanf(&card[5],"'%[^']' %d '%[^']' %f %f %f %d '%[^']'", name, &nr, mother, &xo, &yo, &zo, &irot, konly);
-    if( irot<0 || irot>=maxrot ) {
-      Error("ReadEuclid","POSI %s#%d rotation matrix number %d illegal\n",name,nr,irot);
-      exit(1);
-    }
-    if( idrot[irot] == -99) {
-      Error("ReadEuclid","POSI %s#%d undefined matrix number %d\n",name,nr,irot);
-      exit(1);
-    }
-    //*** volume name cannot be the top volume
-    for(i=1;i<=nvol;i++) {
-      if (!strcmp(volst[i],name)) istop[i]=0;
-    }
-    //*
-    gMC->Gspos  ( name, nr, mother, xo, yo, zo, idrot[irot], konly );
-    //*
-  } else if (!strcmp(key,"POSP")) {
-    sscanf(&card[5],"'%[^']' %d '%[^']' %f %f %f %d '%[^']' %d", name, &nr, mother, &xo, &yo, &zo, &irot, konly, &npar);
-    if( irot<0 || irot>=maxrot ) {
-      Error("ReadEuclid","POSP %s#%d rotation matrix number %d illegal\n",name,nr,irot);
-      exit(1);
-    }
-    if( idrot[irot] == -99) {
-      Error("ReadEuclid","POSP %s#%d undefined matrix number %d\n",name,nr,irot);
-      exit(1);
-    }
-    if (npar > 0) {
-      for(i=0;i<npar;i++) fscanf(lun,"%f",&par[i]);
-      fscanf(lun,"%*c");
-    }
-    //*** volume name cannot be the top volume
-    for(i=1;i<=nvol;i++) {
-      if (!strcmp(volst[i],name)) istop[i]=0;
-    }
-    //*
-    gMC->Gsposp ( name, nr, mother, xo,yo,zo, idrot[irot], konly, par, npar);
-  }
-  //*
-  if (strcmp(key,"END")) goto L10;
-  //* find top volume in the geometry
-  flag=0;
-  for(i=1;i<=nvol;i++) {
-    if (istop[i] && flag) {
-      Warning("ReadEuclid"," %s is another possible top volume\n",volst[i]);
-    }
-    if (istop[i] && !flag) {
-      strcpy(topvol,volst[i]);
-      printf(" *** GREUCL *** volume %s taken as a top volume\n",topvol);
-      flag=1;
-    }
-  }
-  if (!flag) {
-    Warning("ReadEuclid","top volume not found\n");
-  }
-  fclose (lun);
-  //*
-  //*     commented out only for the not cernlib version
-  printf(" *** GREUCL *** file: %s is now read in\n",filnam);
-  //
-  return;
-  //*
-  L20:
-  Error("ReadEuclid","reading error or premature end of file\n");
-}
-
-//_____________________________________________________________________________
-void AliRun::ReadEuclidMedia(const char* filnam, const AliModule *det)
-{
-  //                                                                     
-  //       read in the materials and tracking media for the detector     
-  //                   in euclid file format                             
-  //                                                                     
-  //       filnam: name of the input file                                
-  //       id_det: id_det is the detector identification (2=its,...)     
-  //                                                                     
-  //            author : miroslav helbich                                
-  //
-  Float_t sxmgmx = gAlice->Field()->Max();
-  Int_t   isxfld = gAlice->Field()->Integ();
-  Int_t end, i, iret, itmed;
-  char key[5], card[130], natmed[21], namate[21];
-  Float_t ubuf[50];
-  char* filtmp;
-  FILE *lun;
-  Int_t imate;
-  Int_t nwbuf, isvol, ifield, nmat;
-  Float_t a, z, dens, radl, absl, fieldm, tmaxfd, stemax, deemax, epsil, stmin;
-  //
-  end=strlen(filnam);
-  for(i=0;i<end;i++) if(filnam[i]=='.') {
-    end=i;
-    break;
-  }
-  //
-  // *** The input filnam name will be with extension '.euc'
-  printf("The file name is %s\n",filnam); //Debug
-  filtmp=gSystem->ExpandPathName(filnam);
-  lun=fopen(filtmp,"r");
-  delete [] filtmp;
-  if(!lun) {
-    Warning("ReadEuclidMedia","Could not open file %s\n",filnam);
-    return;
-  }
-  //
-  // Retrieve Mag Field parameters
-  Int_t ISXFLD=gAlice->Field()->Integ();
-  Float_t SXMGMX=gAlice->Field()->Max();
-  //  TArrayI &idtmed = *(det->GetIdtmed());
-  //
- L10:
-  for(i=0;i<130;i++) card[i]=0;
-  iret=fscanf(lun,"%4s %[^\n]",key,card);
-  if(iret<=0) goto L20;
-  fscanf(lun,"%*c");
-  //*
-  //* read material
-  if (!strcmp(key,"MATE")) {
-    sscanf(card,"%d '%[^']' %f %f %f %f %f %d",&imate,namate,&a,&z,&dens,&radl,&absl,&nwbuf);
-    if (nwbuf>0) for(i=0;i<nwbuf;i++) fscanf(lun,"%f",&ubuf[i]);
-    //Pad the string with blanks
-    i=-1;
-    while(namate[++i]);
-    while(i<20) namate[i++]=' ';
-    namate[i]='\0';
-    //
-    det->AliMaterial(imate,namate,a,z,dens,radl,absl,ubuf,nwbuf);
-    //* read tracking medium
-  } else if (!strcmp(key,"TMED")) {
-    sscanf(card,"%d '%[^']' %d %d %d %f %f %f %f %f %f %d",
-	   &itmed,natmed,&nmat,&isvol,&ifield,&fieldm,&tmaxfd,
-	   &stemax,&deemax,&epsil,&stmin,&nwbuf);
-    if (nwbuf>0) for(i=0;i<nwbuf;i++) fscanf(lun,"%f",&ubuf[i]);
-    if (ifield<0) ifield=isxfld;
-    if (fieldm<0) fieldm=sxmgmx;
-    //Pad the string with blanks
-    i=-1;
-    while(natmed[++i]);
-    while(i<20) natmed[i++]=' ';
-    natmed[i]='\0';
-    //
-    det->AliMedium(itmed,natmed,nmat,isvol,ISXFLD,SXMGMX,tmaxfd,
-		   stemax,deemax,epsil,stmin,ubuf,nwbuf);
-    //    (*fImedia)[idtmed[itmed]-1]=id_det;
-    //*
-  }
-  //*
-  if (strcmp(key,"END")) goto L10;
-  fclose (lun);
-  //*
-  //*     commented out only for the not cernlib version
-  Warning("ReadEuclidMedia","file: %s is now read in\n",filnam);
-  //*
-  return;
-  //*
- L20:
-  Warning("ReadEuclidMedia","reading error or premature end of file\n");
-} 
- 
 //_____________________________________________________________________________
 void AliRun::Streamer(TBuffer &R__b)
 {
@@ -1772,98 +1506,3 @@ void AliRun::Streamer(TBuffer &R__b)
     R__b << fPDGDB;        //Particle factory object!
   }
 } 
-
-
-//_____________________________________________________________________________
-//
-//                 Interfaces to Fortran
-//
-//_____________________________________________________________________________
-
-extern "C" void type_of_call  rxgtrak (Int_t &mtrack, Int_t &ipart, Float_t *pmom, 
-				       Float_t &e, Float_t *vpos, Float_t *polar,
-				       Float_t &tof)
-{
-  //
-  //     Fetches next track from the ROOT stack for transport. Called by the
-  //     modified version of GTREVE.
-  //
-  //              Track number in the ROOT stack. If MTRACK=0 no
-  //      mtrack  more tracks are left in the stack to be
-  //              transported.
-  //      ipart   Particle code in the GEANT conventions.
-  //      pmom[3] Particle momentum in GeV/c
-  //      e       Particle energy in GeV
-  //      vpos[3] Particle position
-  //      tof     Particle time of flight in seconds
-  //
-  Int_t pdg;
-  gAlice->GetNextTrack(mtrack, pdg, pmom, e, vpos, polar, tof);
-  ipart = gMC->IdFromPDG(pdg);
-  mtrack++;
-}
-
-//_____________________________________________________________________________
-extern "C" void type_of_call 
-#ifndef WIN32
-rxstrak (Int_t &keep, Int_t &parent, Int_t &ipart, Float_t *pmom, 
-	       Float_t *vpos, Float_t &tof, const char* cmech, Int_t &ntr, const int cmlen)
-#else
-rxstrak (Int_t &keep, Int_t &parent, Int_t &ipart, Float_t *pmom,
-	 Float_t *vpos, Float_t &tof, const char* cmech, const int cmlen,
-	 Int_t &ntr)
-#endif
-{
-  //
-  //     Fetches next track from the ROOT stack for transport. Called by GUKINE
-  //     and GUSTEP.
-  //
-  //              Status of the track. If keep=0 the track is put
-  //      keep    on the ROOT stack but it is not fetched for
-  //              transport.
-  //      parent  Parent track. If parent=0 the track is a primary.
-  //              In GUSTEP the routine is normally called to store
-  //              secondaries generated by the current track whose
-  //              ROOT stack number is MTRACK (common SCKINE.
-  //      ipart   Particle code in the GEANT conventions.
-  //      pmom[3] Particle momentum in GeV/c
-  //      vpos[3] Particle position
-  //      tof     Particle time of flight in seconds
-  //
-  //      cmech   (CHARACTER*10) Particle origin. This field is user
-  //              defined and it is not used inside the GALICE code.
-  //      ntr     Number assigned to the particle in the ROOT stack.
-  //
-  char mecha[11];
-  Float_t polar[3]={0.,0.,0.};
-  for(int i=0; i<10 && i<cmlen; i++) mecha[i]=cmech[i];
-  mecha[10]=0;
-  Int_t pdg=gMC->PDGFromId(ipart);
-  gAlice->SetTrack(keep, parent-1, pdg, pmom, vpos, polar, tof, mecha, ntr);
-  ntr++;
-}
-
-//_____________________________________________________________________________
-extern "C" void type_of_call  rxkeep(const Int_t &n)
-{
-  if( NULL==gAlice ) exit(1);
-  
-  if( n<=0 || n>gAlice->Particles()->GetEntries() )
-    {
-      printf("  Bad index n=%d must be 0<n<=%d\n",
-	     n,gAlice->Particles()->GetEntries());
-      exit(1);
-    }
-  
-  ((TParticle*)(gAlice->Particles()->UncheckedAt(n-1)))->SetBit(Keep_Bit);
-}
-
-//_____________________________________________________________________________
-extern "C" void type_of_call  rxouth ()
-{
-  //
-  // Called by Gtreve at the end of each primary track
-  //
-  gAlice->FinishPrimary();
-}
-

@@ -6,6 +6,7 @@
 /* $Id$ */
 
 #include <TNamed.h>
+#include <TSystem.h>
 #include <TClonesArray.h>
 #include <TBrowser.h>
 #include <TAttLine.h>
@@ -98,6 +99,8 @@ public:
   //virtual AliHit*     NextHit() {return 0;}
   virtual void        SetBufferSize(Int_t) {}  
   virtual void        SetEuclidFile(char*,char*geometry=0);
+  virtual void ReadEuclid(const char*, char*);
+  virtual void ReadEuclidMedia(const char*);
  
   ClassDef(AliModule,1)  //Base class for ALICE Modules
 };

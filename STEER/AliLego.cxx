@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  1999/12/03 10:54:01  fca
+Fix lego summary
+
 Revision 1.8  1999/10/01 09:54:33  fca
 Correct logics for Lego StepManager
 
@@ -57,6 +60,7 @@ Introduction of the Copyright and cvs Log
 #include "AliLego.h"
 #include "AliRun.h"
 #include "AliConst.h"
+#include "AliVMC.h"
 
 ClassImp(AliLego)
 
@@ -71,13 +75,30 @@ AliLego::AliLego()
 }
 
 //___________________________________________
-AliLego::AliLego(const char *name, const char *title) 
-        : TNamed(name,title)
+AliLego::AliLego(const char *title, Int_t ntheta, Float_t themin, Float_t themax,
+		 Int_t nphi, Float_t phimin, Float_t phimax,
+		 Float_t rmin, Float_t rmax, Float_t zmax)
+  : TNamed("Lego Generator",title)
 {
-   fHistRadl = 0;
-   fHistAbso = 0;
-   fHistGcm2 = 0;
-   fHistReta = 0;
+// specify the angular limits and the size of the rectangular box
+   
+   fGener = new AliLegoGenerator(ntheta, themin, themax,
+		       nphi, phimin, phimax, rmin, rmax, zmax);
+   
+   gAlice->SetGenerator(fGener);
+
+   Float_t etamin = -TMath::Log(TMath::Tan(TMath::Min((Double_t)themax*kDegrad/2,TMath::Pi()/2-1.e-10)));
+   Float_t etamax = -TMath::Log(TMath::Tan(TMath::Max((Double_t)themin*kDegrad/2,              1.e-10)));
+
+   fHistRadl = new TH2F("hradl","Radiation length map",    
+			nphi,phimin,phimax,ntheta,themin,themax);
+   fHistAbso = new TH2F("habso","Interaction length map",  
+			nphi,phimin,phimax,ntheta,themin,themax);
+   fHistGcm2 = new TH2F("hgcm2","g/cm2 length map",        
+			nphi,phimin,phimax,ntheta,themin,themax);
+   fHistReta = new TH2F("hetar","Radiation length vs. eta",
+			nphi,phimin,phimax,ntheta,etamin,etamax);
+
 }
 
 //___________________________________________
@@ -89,8 +110,108 @@ AliLego::~AliLego()
    delete fHistReta;
 }
 
+
 //___________________________________________
-void AliLego::GenerateKinematics()
+void AliLego::Run()
+{
+   // loop on phi,theta bins
+   gMC->InitLego();
+   Float_t thed, phid, eta;
+   for (Int_t i=0; i<=fGener->Nphi()*fGener->Ntheta(); ++i) {
+// --- Set to 0 radiation length, absorption length and g/cm2 ---
+     fTotRadl = 0;
+     fTotAbso = 0;
+     fTotGcm2 = 0;
+     
+     gVMC->ProcessEvent();
+     
+     thed = fGener->CurTheta()*kRaddeg;
+     phid = fGener->CurPhi()*kRaddeg;
+     eta  = -TMath::Log(TMath::Tan(TMath::Max(
+	     TMath::Min((Double_t)(fGener->CurTheta())/2,
+			TMath::Pi()/2-1.e-10),1.e-10)));
+
+     fHistRadl->Fill(phid,thed,fTotRadl);
+     fHistAbso->Fill(phid,thed,fTotAbso);
+     fHistGcm2->Fill(phid,thed,fTotGcm2);
+     fHistReta->Fill(phid,eta,fTotRadl);
+     gAlice->FinishEvent();
+   }
+   // store histograms in current Root file
+   fHistRadl->Write();
+   fHistAbso->Write();
+   fHistGcm2->Write();
+   fHistReta->Write();
+}
+
+//___________________________________________
+void AliLego::StepManager()
+{
+// called from AliRun::Stepmanager from gustep.
+// Accumulate the 3 parameters step by step
+  
+   static Float_t t;
+   Float_t a,z,dens,radl,absl;
+   Int_t i;
+   
+   Float_t step  = gMC->TrackStep();
+       
+   Float_t vect[3], dir[3];
+   TLorentzVector pos, mom;
+
+   gMC->TrackPosition(pos);  
+   gMC->TrackMomentum(mom);
+   gMC->CurrentMaterial(a,z,dens,radl,absl);
+   
+   if (z < 1) return;
+   
+// --- See if we have to stop now
+   if (TMath::Abs(pos[2]) > fGener->ZMax()  || 
+       pos[0]*pos[0] +pos[1]*pos[1] > fGener->RadMax()*fGener->RadMax()) {
+     if (gMC->TrackLength()) {
+       // Not the first step, add past contribution
+       fTotAbso += t/absl;
+       fTotRadl += t/radl;
+       fTotGcm2 += t*dens;
+     }
+     gMC->StopTrack();
+     return;
+   }
+
+// --- See how long we have to go
+   for(i=0;i<3;++i) {
+     vect[i]=pos[i];
+     dir[i]=mom[i];
+   }
+
+   t  = fGener->PropagateCylinder(vect,dir,fGener->RadMax(),fGener->ZMax());
+
+   if(step) {
+     fTotAbso += step/absl;
+     fTotRadl += step/radl;
+     fTotGcm2 += step*dens;
+   }
+}
+
+ClassImp(AliLegoGenerator)
+
+//___________________________________________
+AliLegoGenerator::AliLegoGenerator(Int_t ntheta, Float_t themin,
+				   Float_t themax, Int_t nphi, 
+				   Float_t phimin, Float_t phimax,
+				   Float_t rmin, Float_t rmax, Float_t zmax) :
+  AliGenerator(0), fRadMin(rmin), fRadMax(rmax), fZMax(zmax), fNtheta(ntheta),
+  fNphi(nphi), fThetaBin(ntheta), fPhiBin(-1), fCurTheta(0), fCurPhi(0)
+  
+{
+  SetPhiRange(phimin,phimax);
+  SetThetaRange(themin,themax);
+  SetName("Lego");
+}
+
+
+//___________________________________________
+void AliLegoGenerator::Generate()
 {
 // Create a geantino with kinematics corresponding to the current
 // bins in theta and phi.
@@ -101,66 +222,47 @@ void AliLego::GenerateKinematics()
    Float_t orig[3], pmom[3];
    Float_t t, cost, sint, cosp, sinp;
    
-// --- Set to 0 radiation length, absorption length and g/cm2 ---
-   fTotRadl = 0;
-   fTotAbso = 0;
-   fTotGcm2 = 0;
+   // Prepare for next step
+   if(fThetaBin>=fNtheta-1)
+     if(fPhiBin>=fNphi-1) {
+       Warning("Generate","End of Lego Generation");
+       return;
+     } else { 
+       fPhiBin++;
+       printf("Generating rays in phi bin:%d\n",fPhiBin);
+       fThetaBin=0;
+     } else fThetaBin++;
 
-   fCurTheta = (fThetaMin+(fThetaBin-0.5)*(fThetaMax-fThetaMin)/fNtheta)*kDegrad;
-   fCurPhi   = (fPhiMin+(fPhiBin-0.5)*(fPhiMax-fPhiMin)/fNphi)*kDegrad;
+   fCurTheta = (fThetaMin+(fThetaBin+0.5)*(fThetaMax-fThetaMin)/fNtheta);
+   fCurPhi   = (fPhiMin+(fPhiBin+0.5)*(fPhiMax-fPhiMin)/fNphi);
    cost      = TMath::Cos(fCurTheta);
    sint      = TMath::Sin(fCurTheta);
    cosp      = TMath::Cos(fCurPhi);
    sinp      = TMath::Sin(fCurPhi);
-
+   
    pmom[0] = cosp*sint;
    pmom[1] = sinp*sint;
    pmom[2] = cost;
-
-// --- Where to start
+   
+   // --- Where to start
    orig[0] = orig[1] = orig[2] = 0;
    Float_t dalicz = 3000;
    if (fRadMin > 0) {
-      t = PropagateCylinder(orig,pmom,fRadMin,dalicz);
-      orig[0] = pmom[0]*t;
-      orig[1] = pmom[1]*t;
-      orig[2] = pmom[2]*t;
-      if (TMath::Abs(orig[2]) > fZMax) return;
+     t = PropagateCylinder(orig,pmom,fRadMin,dalicz);
+     orig[0] = pmom[0]*t;
+     orig[1] = pmom[1]*t;
+     orig[2] = pmom[2]*t;
+     if (TMath::Abs(orig[2]) > fZMax) return;
    }
-
-// --- We do start here
+   
    Float_t polar[3]={0.,0.,0.};
    Int_t ntr;
    gAlice->SetTrack(1, 0, mpart, pmom, orig, polar, 0, "LEGO ray", ntr);
-}
-
-//___________________________________________
-void AliLego::Init(Int_t ntheta,Float_t themin,Float_t themax,
-          Int_t nphi,Float_t phimin,Float_t phimax,Float_t rmin,Float_t rmax,
-		  Float_t zmax)
-{
-// specify the angular limits and the size of the rectangular box
-   fNtheta   = ntheta;
-   fThetaMin = themin;
-   fThetaMax = themax;
-   fNphi     = nphi;
-   fPhiMin   = phimin;
-   fPhiMax   = phimax;
-   fRadMin   = rmin;
-   fRadMax   = rmax;
-   fZMax     = zmax;
-   Float_t etamin = -TMath::Log(TMath::Tan(TMath::Min((Double_t)fThetaMax*kDegrad/2,TMath::Pi()/2-1.e-10)));
-   Float_t etamax = -TMath::Log(TMath::Tan(TMath::Max((Double_t)fThetaMin*kDegrad/2,              1.e-10)));
-
-   fHistRadl = new TH2F("hradl","Radiation length map",    nphi,phimin,phimax,ntheta,themin,themax);
-   fHistAbso = new TH2F("habso","Interaction length map",  nphi,phimin,phimax,ntheta,themin,themax);
-   fHistGcm2 = new TH2F("hgcm2","g/cm2 length map",        nphi,phimin,phimax,ntheta,themin,themax);
-   fHistReta = new TH2F("hetar","Radiation length vs. eta",nphi,phimin,phimax,ntheta,etamin,etamax);
 
 }
 
 //___________________________________________
-Float_t AliLego::PropagateCylinder(Float_t *x, Float_t *v, Float_t r, Float_t z)
+Float_t AliLegoGenerator::PropagateCylinder(Float_t *x, Float_t *v, Float_t r, Float_t z)
 {
 // Propagate to cylinder from inside
 
@@ -204,84 +306,5 @@ Float_t AliLego::PropagateCylinder(Float_t *x, Float_t *v, Float_t r, Float_t z)
       t  = TMath::Min(sz,sr);
    }
    return t;
-}
-
-//___________________________________________
-void AliLego::Run()
-{
-   // loop on phi,theta bins
-   gMC->InitLego();
-   Float_t thed, phid, eta;
-   for (fPhiBin=1; fPhiBin<=fNphi; fPhiBin++) {
-      printf("AliLego Generating rays in phi bin:%d\n",fPhiBin);
-      for (fThetaBin=1; fThetaBin<=fNtheta; fThetaBin++) {
-         gMC->Gtrigi();
-         gMC->Gtrigc();
-         GenerateKinematics();
-         gMC->Gtreve_root();
-
-         thed = fCurTheta*kRaddeg;
-         phid = fCurPhi*kRaddeg;
-	 eta  = -TMath::Log(TMath::Tan(TMath::Max(
-                     TMath::Min((Double_t)fCurTheta/2,TMath::Pi()/2-1.e-10),1.e-10)));
-         fHistRadl->Fill(phid,thed,fTotRadl);
-         fHistAbso->Fill(phid,thed,fTotAbso);
-         fHistGcm2->Fill(phid,thed,fTotGcm2);
-	 fHistReta->Fill(phid,eta,fTotRadl);
-         gAlice->FinishEvent();
-      }
-   }
-   // store histograms in current Root file
-   fHistRadl->Write();
-   fHistAbso->Write();
-   fHistGcm2->Write();
-   fHistReta->Write();
-}
-
-//___________________________________________
-void AliLego::StepManager()
-{
-// called from AliRun::Stepmanager from gustep.
-// Accumulate the 3 parameters step by step
-  
-   static Float_t t;
-   Float_t a,z,dens,radl,absl;
-   Int_t i;
-   
-   Float_t step  = gMC->TrackStep();
-       
-   Float_t vect[3], dir[3];
-   TLorentzVector pos, mom;
-
-   gMC->TrackPosition(pos);  
-   gMC->TrackMomentum(mom);
-   gMC->CurrentMaterial(a,z,dens,radl,absl);
-   
-   if (z < 1) return;
-   
-// --- See if we have to stop now
-   if (TMath::Abs(pos[2]) > fZMax  || 
-       pos[0]*pos[0] +pos[1]*pos[1] > fRadMax*fRadMax) {
-     if (gMC->TrackLength()) {
-       // Not the first step, add past contribution
-       fTotAbso += t/absl;
-       fTotRadl += t/radl;
-       fTotGcm2 += t*dens;
-     }
-     gMC->StopTrack();
-     return;
-   }
-
-// --- See how long we have to go
-   for(i=0;i<3;++i) {
-     vect[i]=pos[i];
-     dir[i]=mom[i];
-   }
-
-   t  = PropagateCylinder(vect,dir,fRadMax,fZMax);
-
-   fTotAbso += step/absl;
-   fTotRadl += step/radl;
-   fTotGcm2 += step*dens;
 }
 

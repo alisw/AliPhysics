@@ -132,12 +132,6 @@ public:
    virtual  void EnergySummary();
    virtual  const TDatabasePDG* PDGDB() const {return fPDGDB;}
 
-  // Functions from GEOCAD
-  //_______________________________________________________________________
-  
-   virtual void ReadEuclid(const char*, const AliModule*, char*);
-   virtual void ReadEuclidMedia(const char*, const AliModule*);
-
    TTree         *TreeD() {return fTreeD;}
    TTree         *TreeE() {return fTreeE;}
    TTree         *TreeH() {return fTreeH;}

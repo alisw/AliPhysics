@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2000/01/18 16:27:18  morsch
+Dummy definition of Gftmat, Gbrelm and Gprelm added.
+
 Revision 1.15  2000/01/17 19:41:17  fca
 Add SetERAN function
 
@@ -58,6 +61,7 @@ void TGeant3::LoadAddress() {}
 //=======================functions from GBASE
 
 //___________________________________________
+void    TGeant3::FinishGeometry() {}
 void    TGeant3::Gfile(const char*, const char*) {}
 void    TGeant3::GeomIter() {}
 Int_t   TGeant3::CurrentMaterial(Float_t &, Float_t &, Float_t &, Float_t &, Float_t &) const {return 0;}
