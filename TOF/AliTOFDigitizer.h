@@ -13,6 +13,8 @@
 #include "TTask.h"
 #include "TString.h"
 
+class AliTOFDigitizer ;
+
 class AliTOFDigitizer: public TTask {
 
 public:

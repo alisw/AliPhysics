@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.22  2001/08/28 08:45:58  vicinanz
+TTask and TFolder structures implemented
+
 Revision 1.21  2001/05/16 14:57:24  alibrary
 New files for folders and Stack
 
@@ -99,7 +102,7 @@ Introduction of the Copyright and cvs Log
 #include "TBRIK.h"
 #include "TNode.h"
 #include "TObject.h"
-#include "TRandom.h"
+#include "TSystem.h"
 #include "TTree.h"
 #include "TFile.h"
 #include "TFolder.h"
@@ -596,8 +599,6 @@ void AliTOF::Hits2Digits()
   Int_t    vol[5];       // dummy location for digit
   Float_t  digit[2];     // TOF digit variables
   
-  TRandom* rnd = new TRandom();
-
 
   // Get pointers to Alice detectors and Hits containers
   AliDetector* TOF  = gAlice->GetDetector("TOF");
@@ -646,13 +647,13 @@ void AliTOF::Hits2Digits()
         Float_t idealtime = tofHit->GetTof(); // unit s
         idealtime *= 1.E+12;  // conversion from s to ps
                               // fTimeRes is given usually in ps
-        Float_t tdctime   = rnd->Gaus(idealtime, fTimeRes);	
+        Float_t tdctime   = gRandom->Gaus(idealtime, fTimeRes);	
         digit[0] = tdctime;
 
         // typical Landau Distribution to be inserted here
         // instead of Gaussian Distribution
         Float_t idealcharge = tofHit->GetEdep();
-        Float_t adccharge = rnd->Gaus(idealcharge, fChrgRes);
+        Float_t adccharge = gRandom->Gaus(idealcharge, fChrgRes);
         digit[1] = adccharge;
         Int_t tracknum = tofHit -> GetTrack();
         tracks[0] = tracknum;
@@ -675,9 +676,6 @@ void AliTOF::Hits2Digits()
 
 } // close if( ntracks > 0)
 
-// free used memory for TRandom object
-   delete rnd;
-   rnd = 0;
 
 // fill and write the branch
 

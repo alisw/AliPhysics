@@ -51,11 +51,12 @@
 #include "TROOT.h"
 #include "TFolder.h"
 #include "TBenchmark.h"
-#include "TRandom.h"
+#include "TObjString.h"
 
 #include <iomanip.h>
 
 #include "AliRun.h"
+#include "AliTOF.h"
 #include "AliTOFdigit.h"
 #include "AliTOFhit.h"
 #include "AliTOFDigitizer.h"
@@ -141,8 +142,6 @@ void AliTOFDigitizer::Exec(Option_t *option)
   Int_t    vol[5];       // dummy location for digit
   Float_t  digit[2];     // TOF digit variables
 
-  TRandom* rnd = new TRandom();
-
   // Collects all hits in the same active volume into digit
   
   if(!fIsInitialized)
@@ -203,11 +202,11 @@ void AliTOFDigitizer::Exec(Option_t *option)
         Float_t idealtime = hit->GetTof(); // unit s
         idealtime *= 1.E+12;  // conversion from s to ps  
                               // fTimeRes is given usually in ps
-        Float_t tdctime   = rnd->Gaus(idealtime, fTimeRes);
+        Float_t tdctime   = gRandom->Gaus(idealtime, fTimeRes);
         digit[0] = tdctime;
         // typical Landau Distribution to be inserted here
         Float_t idealcharge = hit->GetEdep();
-        Float_t adccharge = rnd->Gaus(idealcharge, fChrgRes);
+        Float_t adccharge = gRandom->Gaus(idealcharge, fChrgRes);
         digit[1] = adccharge;
         // to be added a check for overlaps
         new((*fDigits)[ndigits]) AliTOFdigit(tracks, vol, digit);
@@ -216,9 +215,6 @@ void AliTOFDigitizer::Exec(Option_t *option)
       
     } // end loop over tracks
 
-    delete rnd;
-    rnd = 0;
-    
     ndigits = fDigits->GetEntriesFast() ;
     printf("AliTOFDigitizer: Total number of digits %d\n",ndigits);
 
