@@ -386,7 +386,6 @@ void AliPHOS::WriteQA()
 {
 
   // Make TreeQA in the output file. 
-
   if(fTreeQA == 0)
     fTreeQA = new TTree("TreeQA", "QA Alarms") ;    
   // Create Alarms branches
