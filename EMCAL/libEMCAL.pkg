@@ -1,4 +1,4 @@
-FSRCS= jet_finder_ua1.F
+FSRCS= jet_finder_ua1.F sgpdge.F
 
 SRCS= \
 AliEMCAL.cxx \
