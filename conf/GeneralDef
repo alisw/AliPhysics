@@ -7,7 +7,6 @@
 # IRST coding rule check
 export IRST_INSTALLDIR=$(ALICE)/local/IRST
 export CLASSPATH=$(IRST_INSTALLDIR)
-STRIP=$(IRST_INSTALLDIR)/syntax/strip-cpp.prl
 CODE_CHECK=java rules.RuleChecker
 REV_ENG=$(IRST_INSTALLDIR)/scripts/revEng.sh
 # This is to avoid a problem with the declaration of .SECONDARY in the 
@@ -32,12 +31,8 @@ check/%.i : %.cxx
 	@$(CXX) -E $(CXXFLAGS) $*.cxx > check/$*.i
 
 # IRST coding rule check
-check/%.ii : check/%.i
-	@$(STRIP) check/$*.i > check/$*.ii
-
-# IRST coding rule check
-check/%.viol : check/%.ii
-	@$(CODE_CHECK) check/$*.ii ./ > check/$*.viol
+check/%.viol : check/%.i
+	@$(CODE_CHECK) check/$*.i ./ > check/$*.viol
 
 tgt_$(ALICE_TARGET)/%.o : %.c
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
