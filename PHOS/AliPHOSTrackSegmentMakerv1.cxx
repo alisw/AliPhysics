@@ -145,7 +145,6 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
   toofar = kTRUE ;
   if(emcClu->GetPHOSMod() == cpvClu->GetPHOSMod()){ 
 
-    Info("GetDistanceInPHOSPlane","%z",fESD);
     if (fESD != 0x0) {
       // Extrapolate the global track direction if any to CPV and find the closest track
       Int_t nTracks = fESD->GetNumberOfTracks();

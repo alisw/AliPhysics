@@ -215,6 +215,8 @@ void  AliPHOSPIDv1::Exec(Option_t *option)
       fRecParticlesInRun += gime->RecParticles()->GetEntriesFast() ; 
     }
   }
+  if(strstr(option,"deb"))
+      PrintRecParticles(option);
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSPID");
     Info("Exec", "took %f seconds for PID %f seconds per event", 
