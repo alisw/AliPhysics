@@ -1,5 +1,5 @@
 // $Id$
-// Category: geometry
+// Category: digits+hits
 //
 // Sensitive detector class,
 // that implements G4VSensitiveDetector::ProcessHits()
