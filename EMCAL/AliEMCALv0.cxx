@@ -163,7 +163,7 @@ void AliEMCALv0::CreateGeometry()
 
     gMC->Gspos("XEN1", 1, "ALIC", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
     
-    if (fDebug) 
+    if (fDebug==2) 
       Info("CreateGeometry","rXEN1 = %f, %f\n", envelopA[5], envelopA[6]); 
 
     // Create mini-envelopes which will contain the PreShower scintillator-Lead-scintillator-lead (XU0) 
@@ -187,7 +187,7 @@ void AliEMCALv0::CreateGeometry()
   
     gMC->Gspos(label.Data(), 1, "XEN1", 0.0, 0.0, 0.0, idrotm, "ONLY");
 
-    if (fDebug) 
+    if (fDebug==2) 
       Info("CreateGeometry","rXU0 = %f, %f\n", envelopA[5], envelopA[6]); 
 
     // Create mini-envelopes which will contain the Tower scintillator-Lead-scintillator-lead (XU1 -> XU9)
@@ -213,7 +213,7 @@ void AliEMCALv0::CreateGeometry()
 	
 	gMC->Gspos(label.Data(), 1, "XEN1", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
 
-	if (fDebug) 
+	if (fDebug==2) 
 	  Info("CreateGeometry","rXEN%d = %f, %f\n", i, envelopA[5], envelopA[6]); 
 
     } // end  i
@@ -239,7 +239,8 @@ void AliEMCALv0::CreateGeometry()
   
     gMC->Gspos(label.Data(), 1, "XEN1", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
   
-    Info("CreateGeometry","rXEN%d = %f, %f\n", i, envelopA[5], envelopA[6]); 
+    if (fDebug==2) 
+      Info("CreateGeometry","rXEN%d = %f, %f\n", i, envelopA[5], envelopA[6]); 
   
     // Create the shapes of active material (LEAD/Aluminium/Scintillator)
     // to be placed
