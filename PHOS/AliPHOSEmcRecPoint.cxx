@@ -318,12 +318,12 @@ void  AliPHOSEmcRecPoint::GetElipsAxis(Float_t * lambda)
 
   AliPHOSIndexToObject * please =  AliPHOSIndexToObject::GetInstance() ; 
 
-  Float_t wtot = 0. ;
-  Float_t x    = 0.;
-  Float_t z    = 0.;
-  Float_t dxx  = 0.;
-  Float_t dzz  = 0.;
-  Float_t dxz  = 0.;
+  Double_t wtot = 0. ;
+  Double_t x    = 0.;
+  Double_t z    = 0.;
+  Double_t dxx  = 0.;
+  Double_t dzz  = 0.;
+  Double_t dxz  = 0.;
 
   AliPHOSDigit * digit ;
   AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
@@ -336,7 +336,7 @@ void  AliPHOSEmcRecPoint::GetElipsAxis(Float_t * lambda)
     Float_t zi ;
     phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
     phosgeom->RelPosInModule(relid, xi, zi);
-    Float_t w = TMath::Max(0.,fW0+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
+    Double_t w = TMath::Max(0.,fW0+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
     dxx  += w * xi * xi ;
     x    += w * xi ;
     dzz  += w * zi * zi ;
@@ -344,7 +344,6 @@ void  AliPHOSEmcRecPoint::GetElipsAxis(Float_t * lambda)
     dxz  += w * xi * zi ; 
     wtot += w ;
   }
-
   dxx /= wtot ;
   x   /= wtot ;
   dxx -= x * x ;
@@ -354,8 +353,15 @@ void  AliPHOSEmcRecPoint::GetElipsAxis(Float_t * lambda)
   dxz /= wtot ;
   dxz -= x * z ;
 
-  lambda[0] = TMath::Sqrt( 0.5 * (dxx + dzz) + TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz ) ) ;
-  lambda[1] = TMath::Sqrt( 0.5 * (dxx + dzz) - TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz ) ) ;
+  lambda[0] =  0.5 * (dxx + dzz) + TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
+  if(lambda[0] > 0)
+    lambda[0] = TMath::Sqrt(lambda[0]) ;
+
+  lambda[1] =  0.5 * (dxx + dzz) - TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
+  if(lambda[1] > 0) //To avoid exception if numerical errors lead to negative lambda.
+    lambda[1] = TMath::Sqrt(lambda[1]) ;
+  else
+    lambda[1]= 0. ;
 }
 
 //____________________________________________________________________________
