@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/02/14 14:06:23  nilsen
+Wrong default .det file name for old .det file format.
+
 Revision 1.7  2001/02/13 16:53:35  nilsen
 Fixed a but when trying to use GEANT4. Needed to replace
 if(!((TGeant3*)gMC)) with if(!(dynamic_casst<TGeant3*>(gMC)))
@@ -167,7 +170,7 @@ AliITSv5asymm::AliITSv5asymm(const char *name, const char *title) : AliITS(name,
 
     fEuclidMaterial = "$ALICE_ROOT/Euclid/ITSgeometry_5asymm.tme";
     fEuclidGeometry = "$ALICE_ROOT/Euclid/ITSgeometry_5asymm.euc";
-    strncpy(fEuclidGeomDet,"$ALICE_ROOT/ITS/ITSgeometry_v5.det",60);
+    strncpy(fEuclidGeomDet,"$ALICE_ROOT/ITS/ITSgeometry_5.det",60);
     strncpy(fRead,fEuclidGeomDet,60);
     strncpy(fWrite,fEuclidGeomDet,60);
 }
