@@ -31,8 +31,6 @@ SRCS          =    AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx \
 
 HDRS:= $(SRCS:.cxx=.h) 
 
-EHDRS:=$(ROOTSYS)/include/TTree.h
-
 DHDR= PHOSLinkDef.h
 
 

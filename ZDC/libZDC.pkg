@@ -4,6 +4,4 @@ SRCS= AliZDC.cxx AliZDCv1.cxx AliZDCv2.cxx AliZDCHit.cxx AliZDCDigit.cxx \
 
 HDRS= $(SRCS:.cxx=.h) 
 
-EHDRS = $(ROOTSYS)/include/TClonesArray.h
-
 DHDR:=ZDCLinkDef.h

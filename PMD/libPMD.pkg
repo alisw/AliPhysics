@@ -2,6 +2,4 @@ SRCS:= AliPMD.cxx AliPMDv0.cxx AliPMDv1.cxx AliPMDhit.cxx AliPMDRecPoint.cxx Ali
 
 HDRS:= $(SRCS:.cxx=.h) 
 
-EHDRS:=$(ROOTSYS)/include/TClonesArray.h 
-
 DHDR:=PMDLinkDef.h

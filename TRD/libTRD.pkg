@@ -44,10 +44,4 @@ SRCS= AliTRD.cxx \
 
 HDRS= $(SRCS:.cxx=.h)                
 
-EHDRS   :=   $(ROOTSYS)/include/TF1.h       \
-      	     $(ROOTSYS)/include/TFile.h     \
-             $(ROOTSYS)/include/TObjArray.h \
-             $(ROOTSYS)/include/TLorentzVector.h
-
-
 DHDR= TRDLinkDef.h

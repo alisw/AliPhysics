@@ -25,10 +25,6 @@ HDRS= $(SRCS:.cxx=.h)
 
 # Headerfiles otherwise needed (Full pathname required)
 
-EHDRS = $(ROOTSYS)/include/TF1.h\
-$(ROOTSYS)/include/TChain.h\
-$(ROOTSYS)/include/TParticle.h
-
 DHDR:=EVGENLinkDef.h
 
 EXPORT:=AliDecayer.h AliGenMC.h AliStructFuncType.h AliGenCocktailAfterBurner.h AliGenCocktail.h
