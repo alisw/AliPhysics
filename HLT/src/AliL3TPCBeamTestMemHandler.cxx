@@ -40,7 +40,7 @@ AliL3TPCBeamTestMemHandler::AliL3TPCBeamTestMemHandler(Char_t *fPathToMappingFil
   ifstream *in = new ifstream();
   in->open(fPathToMappingFile); 
 #if defined(__HP_aCC) || defined(__DECCXX)
-  if(!in.rdbuf()->is_open()){
+  if(!in->rdbuf()->is_open()){
 #else
   if(!in->is_open()){
 #endif
