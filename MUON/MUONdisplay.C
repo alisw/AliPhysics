@@ -58,6 +58,7 @@ void MUONdisplay (Int_t nevent=0, TString fileName="galice.root") {
   MUONLoader->LoadHits("READ");
   MUONLoader->LoadDigits("READ");
   MUONLoader->LoadRecPoints("READ");
+  MUONLoader->LoadTracks("READ");
 
 
   // Create Event Display object

@@ -19,6 +19,7 @@
 
 class AliLoader;
 class AliMUONData;
+class AliMUONTrack;
 class TCanvas;
 class TPad;
 class TList;
@@ -38,13 +39,19 @@ public:
    virtual void      CreateColors() const;
    virtual void      DisplayColorScale();
    virtual Int_t     DistancetoPrimitive(Int_t px, Int_t py);
+   virtual void      DrawReco(Option_t *option="");
+   virtual void      PrintTrack(Int_t iRecTracks, AliMUONTrack *recTrack); 
+   virtual void      PrintKinematics(); 
    virtual void      Draw(Option_t *option="");
+   virtual void      DrawChamber();
    virtual void      DrawClusters();
    virtual void      DrawHits();
    virtual void      DrawCoG();
+   virtual void      DrawTracks();
    virtual void      DrawSegmentation();
    virtual void      DrawTitle(Option_t *option="");
    virtual void      DrawView(Float_t theta, Float_t phi, Float_t psi=0);
+   virtual void      DrawGlobalView(Float_t theta, Float_t phi, Float_t psi=0);
    virtual void      DrawP(Float_t,Float_t,Float_t,Float_t,Float_t,Int_t){}
    virtual void      ExecuteEvent(Int_t event, Int_t px, Int_t py);
    Int_t             GetZoomMode() const {return fZoomMode;}
@@ -57,6 +64,7 @@ public:
    virtual void      LoadDigits(Int_t chamber, Int_t cathode);
    virtual void      LoadHits(Int_t chamber);
    virtual void      LoadCoG(Int_t chamber, Int_t cathode);
+   virtual void      LoadTracks();
    TPad             *Pad() {return fPad;}
    TObjArray        *Points() {return fPoints;}
    TObjArray        *Phits() {return fPhits;}
@@ -65,6 +73,7 @@ public:
    virtual void      SetDrawClusters(Bool_t draw=kTRUE) {fDrawClusters=draw;}   // *MENU*
    virtual void      SetChamberAndCathode(Int_t chamber=1, Int_t cathode=1);    // *MENU*
    virtual void      SetDrawCoG(Bool_t draw=kTRUE) {fDrawCoG=draw;}             // *MENU*
+   virtual void      SetDrawTracks(Bool_t draw=kTRUE) {fDrawTracks=draw;}       // *MENU*
    virtual void      SetRange(Float_t rrange=250., Float_t zrange=1050.);       // *MENU*
    virtual void      SetEvent(Int_t newevent=0);                                // *MENU*   
    virtual void      SetView(Float_t theta=0, Float_t phi=-90, Float_t psi=0);
@@ -90,7 +99,8 @@ private:
    Int_t             fCathode;              // Current cathode plane
    Bool_t            fDrawClusters;         //Flag True if Clusters to be drawn
    Bool_t            fDrawCoG;              //Flag True if CoG to be drawn
-                                            //to be drawn
+   Bool_t            fDrawTracks;           //Flag True if tracks to be drawn
+                                           
    Int_t             fClustersCuts;         //Number of clusters surviving cuts
    TPad             *fColPad;               //Pointer to the colors pad 
    TObjArray        *fPoints;               //Array of points for each cathode

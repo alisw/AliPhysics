@@ -38,6 +38,7 @@
 #include <TMath.h>
 #include <TGeometry.h>
 #include <TMarker3DBox.h>
+#include <TParticle.h>
 
 #include "AliMUONDisplay.h"
 #include "AliRun.h"
@@ -49,6 +50,8 @@
 #include "AliMUONHit.h"
 #include "AliMUONDigit.h"
 #include "AliMUONRawCluster.h"
+#include "AliMUONTrack.h"
+#include "AliMUONTrackParam.h"
 
 #include "AliSegmentation.h"
 #include "AliMUONResponse.h"
@@ -145,6 +148,7 @@ AliMUONDisplay::AliMUONDisplay(Int_t size, AliLoader * loader)
     //   fRzone   = 1.e10;
     fDrawClusters  = kTRUE;
     fDrawCoG       = kTRUE;
+    fDrawTracks    = kFALSE;
     fZoomMode      = 1;
     fZooms         = 0;
     fClustersCuts  = 0;
@@ -157,7 +161,7 @@ AliMUONDisplay::AliMUONDisplay(Int_t size, AliLoader * loader)
     Int_t ysize = size;
     if (ysize < 100) ysize = 750;
     Int_t xsize = Int_t(size*830./ysize);
-    fCanvas = new TCanvas("Canvas", "MUON Clusters Display",14,47,xsize,ysize);
+    fCanvas = new TCanvas("Canvas", "MUON Display",14,47,xsize,ysize);
     fCanvas->ToggleEventStatus();
     
    // Create main display pad
@@ -317,6 +321,12 @@ void AliMUONDisplay::DisplayButtons()
     button->SetFillColor(38);
     button->Draw();
     
+    y -= dbutton + dy;
+    char but8[] = "((AliMUONDisplay*)(gAlice->Display()))->DrawReco()";
+    button = new TButton("Tracking", but8, x0, y - dbutton, x1, y);
+    button->SetFillColor(38);
+    button->Draw();
+
    // display logo
     TDiamond *diamond = new TDiamond(0.05,0.015,0.95,0.22);
     diamond->SetFillColor(50);
@@ -465,12 +475,73 @@ void AliMUONDisplay::Draw(Option_t *)
 {
 //    Display current event
 
-    fPad->cd();
+    if (!fDrawTracks) 
+      DrawChamber();   
+    else 
+      DrawReco();
+    
+}
+//_____________________________________________________________________________
+void AliMUONDisplay::DrawChamber()
+{
 
-    DrawView(fTheta, fPhi, fPsi);   
+  fDrawTracks = kFALSE;
+  fPad->cd();
+  DrawView(fTheta, fPhi, fPsi);   
+  // Display the event number and title
+  fPad->cd();
+  DrawTitle();
+ 
+}
+//_____________________________________________________________________________
+void AliMUONDisplay::DrawReco(Option_t *)
+{
+//    Display current event
+
+  fDrawTracks = kTRUE;
+  // print kinematics of generated particles
+    PrintKinematics();
+    // Draw global view of muon system
+    fPad->cd();
+    DrawGlobalView(135, -50, -140); 
+  
     // Display the event number and title
     fPad->cd();
     DrawTitle();
+}
+
+//_____________________________________________________________________________
+void AliMUONDisplay::PrintKinematics()
+{
+  AliRunLoader * runLoader;
+  TParticle *particle = new TParticle();
+  Int_t nPart;
+  Float_t vertex[3], momentum[3];
+
+  if (fLoader)
+    runLoader = fLoader->GetRunLoader();
+  else
+    runLoader = 0x0;
+  
+  printf("******  Event # %d ******\n",runLoader->GetEventNumber());
+  runLoader->TreeK()->GetBranch("Particles")->SetAddress(&particle);
+  nPart = (Int_t)runLoader->TreeK()->GetEntries();
+  for(Int_t iPart = 0; iPart < nPart; iPart++) {
+    runLoader->TreeK()->GetEvent(iPart);
+    vertex[0] = particle->Vx();
+    vertex[1] = particle->Vy();
+    vertex[2] = particle->Vz();
+    momentum[0] = particle->Px();
+    momentum[1] = particle->Py();
+    momentum[2] = particle->Pz();
+    
+    printf("===================================================\n");
+    printf(" Generated particle # %d \n",iPart);
+    printf(" name: %s \n",particle->GetName());
+    printf(" vertex x,y,z (cm): %f %f %f \n",vertex[0],vertex[1],vertex[2]); 
+    printf(" momentum Px,Py,Pz (GeV/c): %f %f %f \n",momentum[0],momentum[1],momentum[2]);
+  }
+  delete particle;    
 }
 
 void AliMUONDisplay::DrawSegmentation()
@@ -608,6 +679,26 @@ void AliMUONDisplay::DrawCoG()
     }
 }
 //_____________________________________________________________________________
+void AliMUONDisplay::DrawTracks()
+{
+//    Draw tracks
+    if (!fDrawTracks) return;
+    LoadTracks();
+    
+    Int_t nTrack, iTrack;
+    TObjArray *points;
+    TPolyLine3D *pm;
+
+    points = Rpoints();
+    if (!points) return;
+    nTrack = points->GetEntriesFast();
+    for ( iTrack = 0; iTrack < nTrack; iTrack++) {
+	pm = (TPolyLine3D*)points->UncheckedAt(iTrack);
+	if (!pm) continue;
+	pm->Draw();
+    }
+}
+//_____________________________________________________________________________
 
 void AliMUONDisplay::DrawTitle(Option_t *option)
 {
@@ -697,6 +788,55 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
     view->SetView(phi, theta, psi, iret);
 }
 
+//_____________________________________________________________________________
+void AliMUONDisplay::DrawGlobalView(Float_t theta, Float_t phi, Float_t psi)
+{
+//    Draw a view of muons chambers with tracks
+    
+    gPad->SetCursor(kWatch);
+    // gPad->SetFillColor(39);
+    gPad->SetFillColor(1);
+    gPad->Clear();
+    // gPad->SetFillColor(39);
+    gPad->SetFillColor(1);
+    
+
+    Int_t iret=0;
+    TView *view = new TView(1);
+    
+    Float_t range = fRrange*fRangeSlider->GetMaximum()*3.;
+    view->SetRange(-range,-range,-range,range,range,range);
+
+// Display all MUON Chambers segmentation
+    char nodeName[7];
+    TNode *node1;
+    sprintf(nodeName,"alice");
+    
+    node1=gAlice->GetGeometry()->GetNode(nodeName);
+    if (node1) node1->Draw("same"); 
+     
+      
+// Draw clusters for all chambers
+    Int_t chamberSave = fChamber;
+    for (fChamber = 1; fChamber <= 10; fChamber++){
+      DrawCoG();
+    }
+    fChamber = chamberSave;
+// Draw reconstructed tracks
+    DrawTracks();
+
+    AppendPad();
+
+    Float_t zoom = 2.;
+    Float_t shift = 0.9;
+    Float_t x0 = (-1+shift)/zoom;
+    Float_t y0 = (-1+shift)/zoom;
+    Float_t x1 = (1+shift)/zoom;
+    Float_t y1 = (1+shift)/zoom;
+    gPad->Range(x0,y0,x1,y1);
+    view->SetView(phi, theta, psi, iret);
+
+}
 
 //______________________________________________________________________________
 void AliMUONDisplay::ExecuteEvent(Int_t event, Int_t px, Int_t py)
@@ -773,7 +913,6 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
 // Loop on all detectors
 
     if (chamber > 14) return;
-    printf(" chamber %d \n",chamber);
     fChamber = chamber;
     fCathode = cathode;
     
@@ -794,7 +933,6 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
  
    if (GetLoader()->TreeD()) {
      nent = (Int_t) GetLoader()->TreeD()->GetEntries();
-     printf(" entries %d \n", nent);
      //     gAlice->TreeD()->GetEvent(nent-2+cathode-1);
      GetMUONData()->GetCathode(cathode-1);
     }
@@ -934,6 +1072,98 @@ void AliMUONDisplay::LoadCoG(Int_t chamber, Int_t /*cathode*/)
 	//	printf("%f and %f and %f\n",mRaw->GetX(0),mRaw->GetY(0),mRaw->GetZ(0));
     }
 }
+
+//___________________________________________
+void AliMUONDisplay::LoadTracks()
+{
+// Load tracks
+  AliMUONTrack* recTrack = 0;
+  AliMUONTrackParam* trackParam = 0;
+  TClonesArray *  trackParamAtHit = 0;   
+
+  ResetRpoints();
+
+  GetMUONData()->SetTreeAddress("RT");
+  TClonesArray* recTracksArray = GetMUONData()->RecTracks();
+  if (recTracksArray == NULL) return;
+  GetMUONData()->GetRecTracks();
+
+  Int_t nRecTracks = 0;
+  if (recTracksArray)
+    nRecTracks = (Int_t) recTracksArray->GetEntriesFast();
+
+
+  if (fRpoints == 0) fRpoints = new TObjArray(nRecTracks);
+
+  for (Int_t iRecTracks = 0; iRecTracks <  nRecTracks;  iRecTracks++) {
+    // reading info from tracks
+    recTrack = (AliMUONTrack*) recTracksArray->At(iRecTracks);
+
+    Int_t nTrackHits = recTrack->GetNTrackHits();
+
+    if (nTrackHits == 0) continue;
+
+    Int_t iPoint = 0;
+    TPolyLine3D *points = new TPolyLine3D(nTrackHits+1); 
+    points->SetLineColor(6);
+    points->SetLineWidth(1);
+    fRpoints->AddAt(points,iRecTracks);
+
+    Float_t xRec=0;
+    Float_t yRec=0;
+    Float_t zRec=0;
+
+    trackParam = recTrack->GetTrackParamAtVertex(); 
+    xRec  = trackParam->GetNonBendingCoor();
+    yRec  = trackParam->GetBendingCoor();
+    zRec  = trackParam->GetZ();
+    points->SetPoint(iPoint,xRec,yRec,zRec);
+    iPoint++;	
+
+    for (Int_t iHit = 0; iHit < nTrackHits; iHit++){
+      trackParamAtHit = recTrack->GetTrackParamAtHit();
+      trackParam = (AliMUONTrackParam*) trackParamAtHit->At(iHit); 
+      xRec  = trackParam->GetNonBendingCoor();
+      yRec  = trackParam->GetBendingCoor();
+      zRec  = trackParam->GetZ();
+      points->SetPoint(iPoint,xRec,yRec,zRec);
+      iPoint++;	
+    } // end loop rec. hits
+    PrintTrack(iRecTracks,recTrack);
+  } // end loop tracks
+  
+
+}
+
+void AliMUONDisplay::PrintTrack(Int_t iRecTracks, AliMUONTrack *recTrack)
+{
+  AliMUONTrackParam *trackParam;
+  Float_t vertex[3], momentum[3];
+  Float_t pYZ, bendingSlope, nonBendingSlope, chi2dof;
+  Int_t charge;
+
+  trackParam = recTrack->GetTrackParamAtVertex();
+  vertex[0] = trackParam->GetNonBendingCoor();
+  vertex[1] = trackParam->GetBendingCoor();
+  vertex[2] = trackParam->GetZ();
+  pYZ =  1./TMath::Abs(trackParam->GetInverseBendingMomentum());
+  bendingSlope = trackParam->GetBendingSlope();
+  nonBendingSlope = trackParam->GetNonBendingSlope();
+  momentum[2] = -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);
+  momentum[0] = momentum[2] * nonBendingSlope;
+  momentum[1] = momentum[2] * bendingSlope;
+  charge = Int_t(TMath::Sign(1.,trackParam->GetInverseBendingMomentum()));
+  chi2dof = recTrack->GetFitFMin()/(2.0 * recTrack->GetNTrackHits() - 5.);
+  
+  printf("===================================================\n");
+  printf(" Reconstructed track # %d \n",iRecTracks);
+  printf(" charge: %d \n",charge);
+  printf(" vertex x,y,z (cm): %f %f %f \n",vertex[0],vertex[1],vertex[2]); 
+  printf(" momentum Px,Py,Pz (GeV/c): %f %f %f \n",momentum[0],momentum[1],momentum[2]);
+  printf(" track chi2/dof: %f \n",chi2dof); 
+  
+}
+
 //___________________________________________
 void AliMUONDisplay::LoadHits(Int_t chamber)
 {
@@ -1041,7 +1271,7 @@ void AliMUONDisplay::NextChamber(Int_t delta)
     if (!fPad) return;
     fPad->Clear();
     LoadDigits(fChamber, fCathode);
-    Draw();
+    DrawChamber();
 }
 
 //_____________________________________________________________________________
@@ -1056,7 +1286,7 @@ void AliMUONDisplay::NextCathode()
 	LoadDigits(fChamber, 1);
     }
     fNextCathode = kTRUE; // to keep the same zoom
-    Draw();
+    DrawChamber();
     fNextCathode = kFALSE;
     TPad *pad = (TPad*)gPad->GetPadSave();
     pad->Range(fZoomX0[fZooms], fZoomY0[fZooms],
@@ -1132,7 +1362,7 @@ void AliMUONDisplay::SetChamberAndCathode(Int_t chamber, Int_t cathode)
    if (!fPad) return;
    fPad->Clear();
    LoadDigits(chamber,cathode);
-   Draw();
+   DrawChamber();
 }
 
 void AliMUONDisplay::SetEvent(Int_t newevent)
