@@ -102,11 +102,11 @@ void MUONocc (Int_t evNumber1=0,Int_t evNumber2=0, Int_t ic=1)
 		   mHit;
 		   mHit=(AliMUONHit*)MUON->NextHit()) 
 	       {
-		   Int_t   nch   = mHit->fChamber;  // chamber number
-		   Float_t x     = mHit->fX;        // x-pos of hit
-		   Float_t y     = mHit->fY;        // y-pos
-		   Float_t Eloss = mHit->fEloss;
-		   Float_t Theta = mHit->fTheta;
+		   Int_t   nch   = mHit->Chamber();  // chamber number
+		   Float_t x     = mHit->X();        // x-pos of hit
+		   Float_t y     = mHit->Y();        // y-pos
+		   Float_t Eloss = mHit->Eloss();
+		   Float_t Theta = mHit->Theta();
 		   theta->Fill(Theta,(float) 1);
 		   if (nch >10) continue;
 		   if (nch ==1) EvMult++;
@@ -148,8 +148,8 @@ void MUONocc (Int_t evNumber1=0,Int_t evNumber2=0, Int_t ic=1)
 	       for (Int_t ndig=0; ndig<Ndigits; ndig++) 
 	       {
 		   dig = (AliMUONDigit*)MUONDigits->UncheckedAt(ndig); 
-		   Int_t i=dig->fPadX;
-		   Int_t j=dig->fPadY;
+		   Int_t i=dig->PadX();
+		   Int_t j=dig->PadY();
 		   Float_t x,y;
 		   seg->GetPadCxy(i,j,x,y);
 		   Int_t isec = seg->Sector(i,j);

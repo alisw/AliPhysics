@@ -129,22 +129,22 @@ void MUONhits (Int_t evNumber1=0,Int_t evNumber2=0, Int_t ic=1)
 		    mHit;
 		    mHit=(AliMUONHit*)MUON->NextHit()) 
 		{
-		    Int_t   nch   =    mHit->fChamber;  // chamber number
-		    Float_t x     =    mHit->fX;        // x-pos of hit
-		    Float_t y     =    mHit->fY;        // y-pos
-		    Float_t Eloss =    mHit->fEloss;
-		    Float_t Theta =    mHit->fTheta;
-		    Float_t Particle = mHit->fParticle;
+		    Int_t   nch   =    mHit->Chamber();  // chamber number
+		    Float_t x     =    mHit->X();        // x-pos of hit
+		    Float_t y     =    mHit->Y();        // y-pos
+		    Float_t Eloss =    mHit->Eloss();
+		    Float_t Theta =    mHit->Theta();
+		    Float_t Particle = mHit->Particle();
 		    Float_t P    =     
-			TMath::Sqrt(mHit->fCxHit*mHit->fCxHit+
-				    mHit->fCyHit*mHit->fCyHit+
-				    mHit->fCzHit*mHit->fCzHit);
+			TMath::Sqrt(mHit->Cx()*mHit->Cx()+
+				    mHit->Cy()*mHit->Cy()+
+				    mHit->Cz()*mHit->Cz());
 		    TParticlePDG* Part = DataBase->GetParticle(Particle);
 		    Double_t mass = Part->Mass();
 		    
 		    if (nch >13) continue;
 		    if (nch ==1) EvMult++;
-		    if (mHit->fAge > 5.e-6) continue;
+		    if (mHit->Age() > 5.e-6) continue;
 		   
 		    Float_t r=TMath::Sqrt(x*x+y*y);
 		    if (nch ==0) continue;
