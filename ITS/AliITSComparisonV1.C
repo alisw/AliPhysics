@@ -137,8 +137,8 @@
 	  Double_t x=iotrack->GetX();
 	  Double_t y=iotrack->GetY();
 	  Double_t z= iotrack->GetZ(); 
-	  Double_t Dz=z;   //non e' vero bisogna levare vertice
-	  Double_t Dtot= TMath::Sqrt(Dr*Dr+Dz*Dz);
+	//  Double_t Dz=z;   //non e' vero bisogna levare vertice
+	 // Double_t Dtot= TMath::Sqrt(Dr*Dr+Dz*Dz);
 	  
      // cout<<" track label = "<<label<<"\n";
      // cout<<" phi z D tanl C = "<<phistate<<" "<<Zstate<<" "<<Dr<<" "<<tgl<<" "<<C<<"\n"; 	  
@@ -146,7 +146,8 @@
   //  Int_t ilab=TMath::Abs(iotrack->GetLabel());
     Int_t flaglab=0;   
     Int_t iii=0;
-   Double_t ptg=0.,pxg=0.,pyg=0.,pzg=0.; 
+   Double_t ptg=0.,pxg=0.,pyg=0.,pzg=0.;
+	Double_t xo=0., yo=0., zo=0.;  	 
 
     Int_t mingood=0, maxgood=0, jj=0;
     if(nev==evNumber1) mingood=0;
@@ -163,7 +164,10 @@
 	ptg=gt[iii].ptg; 
 	pxg=gt[iii].pxg;
 	pyg=gt[iii].pyg;
-	pzg=gt[iii].pzg;	
+	pzg=gt[iii].pzg;
+	xo=gt[iii].x;
+	yo=gt[iii].y;
+	zo=gt[iii].z;			
 	break;
       }
     }   
@@ -191,7 +195,8 @@
      if(phi<0.) phi+=duepi;      
       Double_t signC=0.; 
       if(c>0) signC=1.; else signC=-1.;
-        
+ 	  Double_t Dz=z-zo;   // vertex subtraction
+	  Double_t Dtot= TMath::Sqrt(Dr*Dr+Dz*Dz);       
       Double_t difphi = (phi - phig)*1000.;
       dataOut(kkk)=difphi; kkk++;
       dataOut(kkk)=Dtot*1.e4; kkk++;

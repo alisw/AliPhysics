@@ -1,5 +1,9 @@
 #ifndef __CINT__
 #include "AliITSgeom.h"
+#include "TParticle.h"
+  cerr<<"Reading tp good tracks...\n";
+  while (in>>gt[ngood].lab>>gt[ngood].code
+  >>gt[ngood].px >>gt[ngood].py>>gt[ngood].pz
 #endif
 
 struct GoodTrack {
@@ -170,6 +174,8 @@ Int_t ITStracks(Int_t evNumber1=0,Int_t evNumber2=0,Int_t nclust=5) {
     if (out) {
      // for (Int_t ngd=0; ngd<ngood; ngd++) {
       for(Int_t ngd=mingood; ngd<maxgood; ngd++){
+      TParticle *p = (TParticle*)gAlice->Particle(TMath::Abs(gt[ngd].lab));  //aggiunto 27-9	
+		gt[ngd].x=p->Vx(); gt[ngd].y=p->Vy(); 	gt[ngd].z=p->Vz(); 		
 	     if(gt[ngd].flag) {
 	       out<<gt[ngd].fEventN<<' '<<gt[ngd].lab<<' '<<gt[ngd].code<<' '
 		    <<gt[ngd].px <<' '<<gt[ngd].py<<' '<<gt[ngd].pz<<' '
