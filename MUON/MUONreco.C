@@ -7,6 +7,7 @@
 //   FileName (for signal) (default "galice.root")
 //   BkgGeantFileName (for background),
 //      needed only if RecGeantHits = 1 and background to be added
+#include <iostream.h>
 void MUONreco (Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t RecGeantHits = 0, Text_t *FileName = "galice.root", Text_t *BkgGeantFileName = "")
 {
   //
@@ -44,19 +45,23 @@ void MUONreco (Int_t FirstEvent = 0, Int_t LastEvent = 0, Int_t RecGeantHits = 0
   // Initializations
   // AliMUON *MUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
   AliMUONEventReconstructor *Reco = new AliMUONEventReconstructor();
+  //Reco->SetTrackMethod(2); //AZ - use Kalman
   Reco->SetRecGeantHits(RecGeantHits);
 
   // The right place for changing AliMUONEventReconstructor parameters
   // with respect to the default ones
 //   Reco->SetMaxSigma2Distance(100.0);
-  Reco->SetPrintLevel(10);
+  //Reco->SetPrintLevel(10);
+  //Reco->SetPrintLevel(2);
+  //Reco-> SetChamberThicknessInX0(0.05);
+  //Reco->SetEfficiency(1.); //0.95);
   cout << "AliMUONEventReconstructor: actual parameters" << endl;
   Reco->Dump();
 
   // Loop over events
   for (Int_t event = FirstEvent; event <= LastEvent; event++) {
     cout << "Event: " << event << endl;
-    AliMUON *MUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
+    //    AliMUON *MUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
     Int_t nparticles = gAlice->GetEvent(event);
     cout << "nparticles: " << nparticles << endl;
     // prepare background file and/or event if necessary

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2001/02/05 14:49:29  hristov
+Compare() declared const (R.Brun)
+
 Revision 1.5  2001/01/26 21:46:33  morsch
 Use access functions to MUONHit, ... data members.
 
@@ -122,6 +125,7 @@ AliMUONHitForRec & AliMUONHitForRec::operator=(const AliMUONHitForRec& MUONHitFo
     return *this;
 }
   //__________________________________________________________________________
+/*AZ
 Int_t AliMUONHitForRec::Compare(const TObject* Hit) const
 {
   // "Compare" function to sort with increasing chamber number.
@@ -129,6 +133,17 @@ Int_t AliMUONHitForRec::Compare(const TObject* Hit) const
   // is smaller than (equal to, larger than) ChamberNumber of Hit
   if (fChamberNumber <  ((AliMUONHitForRec*)Hit)->fChamberNumber) return(-1);
   else if (fChamberNumber == ((AliMUONHitForRec*)Hit)->fChamberNumber) return( 0);
+  else return(+1);
+}
+*/
+  //__________________________________________________________________________
+Int_t AliMUONHitForRec::Compare(const TObject* Hit) const
+{
+  // "Compare" function to sort with increasing Z-coordinate.
+  // Returns -1 (0, +1) if Z-coordinate of current HitForRec
+  // is smaller than (equal to, larger than) Z-coordinate of Hit
+  if (fZ <  ((AliMUONHitForRec*)Hit)->fZ) return(-1);
+  else if (fZ == ((AliMUONHitForRec*)Hit)->fZ) return( 0);
   else return(+1);
 }
 

@@ -85,10 +85,14 @@ class AliMUONEventReconstructor : public TObject {
   void EventReconstruct(void);
   void EventDump(void);  // dump reconstructed event
   void FillEvent();      // fill and write tree of reconstructed events
-
+  void SetTrackMethod(Int_t TrackMethod) {fTrackMethod = TrackMethod;} //AZ
+  Int_t GetTrackMethod(void) const {return fTrackMethod;} //AZ
+  Int_t fMuons; // AZ - number of muons within acceptance - just for tests
  protected:
 
  private:
+
+  Int_t fTrackMethod; // AZ - tracking method
 
   // Parameters for event reconstruction
   Double_t fMinBendingMomentum; // minimum value (GeV/c) of momentum in bending plane
@@ -164,6 +168,15 @@ class AliMUONEventReconstructor : public TObject {
   void MakeTrackCandidates(void);
   void FollowTracks(void);
   void RemoveDoubleTracks(void);
+
+
+
+  //AZ - for Kalman Filter
+  void MakeTrackCandidatesK(void);
+  void FollowTracksK(void);
+  void RemoveDoubleTracksK(void);
+  void GoToVertex(void);
+  Bool_t CheckCandidateK(Int_t icand, Int_t nSeeds);
 
   ClassDef(AliMUONEventReconstructor, 0) // MUON event reconstructor in ALICE
     };

@@ -15,6 +15,10 @@
 
 /*
 $Log$
+
+Revision 1.7  2002/10/23 07:24:56  alibrary
+Introducing Riostream.h
+
 Revision 1.6  2001/05/16 14:57:17  alibrary
 New files for folders and Stack
 
@@ -30,6 +34,9 @@ RN3 violations corrected
 Revision 1.2  2000/11/23 10:09:38  gosset
 Bug correction in AliMUONRecoDisplay.
 Copyright, $Log$
+Copyright, Revision 1.7  2002/10/23 07:24:56  alibrary
+Copyright, Introducing Riostream.h
+Copyright,
 Copyright, Revision 1.6  2001/05/16 14:57:17  alibrary
 Copyright, New files for folders and Stack
 Copyright,
@@ -43,6 +50,7 @@ Copyright, Revision 1.3  2000/12/21 17:51:54  morsch
 Copyright, RN3 violations corrected
 Copyright,, $Id$, comments at the right place for automatic documentation,
 in AliMUONRecoEvent and AliMUONRecoDisplay
+
 
 */
 
@@ -83,8 +91,15 @@ in AliMUONRecoEvent and AliMUONRecoDisplay
 #include <AliRun.h>
 #include <TClonesArray.h>
 #include <TClass.h>
+
+#include <TFile.h>
+#include <TMatrixD.h>
+#include <TParticle.h>
+
 #include "AliMUONRecoEvent.h"
+#include "AliMUONEventReconstructor.h"
 #include "AliMUONTrack.h"
+#include "AliMUONTrackK.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONHitForRec.h"
 #include "AliMUONTrackHit.h"
@@ -161,16 +176,19 @@ void AliMUONRecoEvent::EventInfo()
 }
 
 //-------------------------------------------------------------------
-Bool_t AliMUONRecoEvent::MakeDumpTracks(TClonesArray *tracksPtr)
+Bool_t AliMUONRecoEvent::MakeDumpTracks(Int_t muons, TClonesArray *tracksPtr, 
+  AliMUONEventReconstructor *EventReco)
 {
 // This method takes the pointer of the list of reconstructed tracks from
 // AliMUONEventReconstructor and fill the reconstructed AliMUONRecoEvent
 // fields.
+
 	cout << "Enter MakeDumpTracks..." << endl;
    Int_t nTracks = tracksPtr->GetEntriesFast();
+   cout << "nTracks = "<< nTracks << endl;
    if (nTracks == 0) {
       cout << "AliMUONRecoEvent::MakeDumpTracks: Number of tracks is zero !" << endl;
-      return kFALSE;
+      //AZ return kFALSE;
    }
    cout << tracksPtr << endl;
    if (!tracksPtr) {
@@ -179,47 +197,129 @@ Bool_t AliMUONRecoEvent::MakeDumpTracks(TClonesArray *tracksPtr)
    }
 	// Get event number
    Int_t noEvent = gAlice->GetHeader()->GetEvent();
+   cout << "noEvent = "<< nTracks << endl;
    tracksPtr->Compress();  // simple loop
    AliMUONRecoTrack *currentTrack;
-   Int_t trackIndex = 0, nTrackHits = 0;
-   Double_t z,bendingSlope, nonBendingSlope, pYZ;
+   Int_t trackIndex, nTrackHits = 0;
+   Double_t z, pYZ, bendingSlope, nonBendingSlope;
    Double_t pX, pY, pZ;			// reconstructed momentum components
-   Int_t isign;					// charge sign
+   Int_t isign, flag=0;       	// charge sign, flag of reconstructed track
+   Double_t alpha, beta;
+   TObjArray *hitsOnTrack = 0;
+   AliMUONTrackHit *trackHit = 0;
    AliMUONTrack *track = 0;
+   AliMUONTrackK *trackK = 0;
+   TMatrixD *trackParamK; //AZnon
    AliMUONTrackParam *trackParam = 0;
    // Fill event number and number of tracks
    fNevr = noEvent;
+   fMuons = muons; //AZ - number of muons within acceptance
    // Loop over reconstructed tracks
    for (trackIndex=0; trackIndex<nTracks; trackIndex++) {
+      cout << " trackIndex = " << trackIndex << endl;
       currentTrack = AddEmptyTrack();
-      track = (AliMUONTrack*) ((*tracksPtr)[trackIndex]);
-      nTrackHits = track->GetNTrackHits();
-      trackParam = track->GetTrackParamAtVertex();
-      bendingSlope = trackParam->GetBendingSlope();
-      nonBendingSlope = trackParam->GetNonBendingSlope();
-      z = trackParam->GetZ();
-      pYZ = 1/TMath::Abs(trackParam->GetInverseBendingMomentum());
-      pZ = pYZ/TMath::Sqrt(1+bendingSlope*bendingSlope);
-      pX = pZ * nonBendingSlope;
-      pY = pZ * bendingSlope;
-      if (trackParam->GetInverseBendingMomentum()<0) isign=-1; else isign=1;
-      currentTrack->SetVertexPos(z);
-      currentTrack->SetMomReconstr(pX,pY,pZ);
-      currentTrack->SetSign(isign);
-//	   currentTrack->SetChi2r(trackParam->GetChi2());
-      currentTrack->SetChi2r(0);
-      AliMUONTrackHit *trackHit;
-      Double_t xhit,yhit,zhit;
-	  // Loop over track hits
-      for (Int_t trackHitIndex = 0; trackHitIndex < nTrackHits; trackHitIndex++) {
-         trackHit = (AliMUONTrackHit*) (*(track->GetTrackHitsPtr()))[trackHitIndex];
-         xhit = trackHit->GetHitForRecPtr()->GetNonBendingCoor();
-         yhit = trackHit->GetHitForRecPtr()->GetBendingCoor();
-         zhit = trackHit->GetHitForRecPtr()->GetZ();
-         if (trackHitIndex >= 0 && trackHitIndex < 10) {
-            currentTrack->SetHitPosition(trackHitIndex,xhit,yhit,zhit);
-         } else { cout << "track " << trackIndex << " hit out of range" << endl;} 
+      cout << " currentTrack = " << currentTrack << endl;
+
+      if (EventReco->GetTrackMethod() == 2) { // Kalman
+
+        trackK = (AliMUONTrackK*) ((*tracksPtr)[trackIndex]);
+	nTrackHits = trackK->GetNTrackHits();
+	trackParamK = trackK->GetTrackParameters();
+	isign = Int_t(TMath::Sign(1., (*trackParamK)(4,0)));
+	z = trackK->GetZ();
+	alpha = (*trackParamK)(2,0);
+	beta = (*trackParamK)(3,0);
+	pYZ = TMath::Cos(beta)/TMath::Abs((*trackParamK)(4,0));
+	pZ = pYZ/TMath::Cos(alpha);
+	pX = TMath::Sin(beta)/TMath::Abs((*trackParamK)(4,0));
+	pY = pYZ*TMath::Sin(alpha);
+
+	currentTrack->SetVertexPos(z);
+	currentTrack->SetMomReconstr(pX,pY,pZ);
+	currentTrack->SetSign(isign);
+	currentTrack->SetChi2r(trackK->GetTrackQuality());
+
+	// Check hits on the track
+	hitsOnTrack = trackK->GetHitOnTrack();
+	Float_t signal = 0;
+	Float_t tht = 0;
+	for (int ihit = 0; ihit < nTrackHits; ihit++) {
+	  signal += ((AliMUONHitForRec*)((*hitsOnTrack)[ihit]))->GetGeantSignal();
+	  tht += TMath::Min (1,((AliMUONHitForRec*)((*hitsOnTrack)[ihit]))->GetTHTrack());
+	}
+	signal /= nTrackHits;
+	tht /= nTrackHits;
+	flag = 0;
+	if (TMath::Nint(signal) > 0) { // signal muon
+	  for (int ihit = 0; ihit < nTrackHits ; ihit++) {
+	    if (((AliMUONHitForRec*)((*hitsOnTrack)[ihit]))->GetTHTrack() != TMath::Nint(tht)) flag++;
+	  }
+	} else flag = -9; // background track
+	//cout << TMath::Nint(signal) << " " << TMath::Nint(tht) << " " << recTrackNt->fFlag << endl;
+      	currentTrack->SetFlag(flag);
+      } else { // default tracking
+
+        track = (AliMUONTrack*) ((*tracksPtr)[trackIndex]);
+	nTrackHits = track->GetNTrackHits();
+	// track parameters at Vertex
+	trackParam = track->GetTrackParamAtVertex();
+	bendingSlope = trackParam->GetBendingSlope();
+	nonBendingSlope = trackParam->GetNonBendingSlope();
+
+	z = trackParam->GetZ();
+	pYZ = 1/TMath::Abs(trackParam->GetInverseBendingMomentum());
+	pZ = pYZ/TMath::Sqrt(1+bendingSlope*bendingSlope);
+	pX = pZ * nonBendingSlope;
+	pY = pZ * bendingSlope;
+	
+	if (trackParam->GetInverseBendingMomentum()<0) isign=-1; else isign=1;
+	currentTrack->SetVertexPos(z);
+	currentTrack->SetMomReconstr(pX,pY,pZ);
+	currentTrack->SetSign(isign);
+	//         currentTrack->SetChi2r(trackParam->GetChi2());
+	currentTrack->SetChi2r(0);
+
+	// Check hits on the track
+	hitsOnTrack = track->GetTrackHitsPtr();
+	Float_t signal = 0;
+	Float_t tht = 0;
+	AliMUONHitForRec *hitForRec = 0;
+	for (int ihit = 0; ihit < nTrackHits; ihit++) {
+	  hitForRec = ((AliMUONTrackHit*)(*hitsOnTrack)[ihit])->GetHitForRecPtr();
+	  signal += hitForRec->GetGeantSignal();
+	  tht += TMath::Min (1,hitForRec->GetTHTrack());
+	}
+	signal /= nTrackHits;
+	tht /= nTrackHits;
+	flag = 0;
+	if (TMath::Nint(signal) > 0) { // signal muon
+	  for (int ihit = 0; ihit < nTrackHits ; ihit++) {
+	    hitForRec = ((AliMUONTrackHit*)(*hitsOnTrack)[ihit])->GetHitForRecPtr();
+	    if (hitForRec->GetTHTrack() != TMath::Nint(tht)) flag++;
+	  }
+	} else flag = -9; // background track
+	//cout << TMath::Nint(signal) << " " << TMath::Nint(tht) << " " << recTrackNt->fFlag << endl;
+      	currentTrack->SetFlag(flag);
       }
+     
+      Double_t xhit,yhit,zhit;
+      // Loop over track hits
+      for (Int_t trackHitIndex = 0; trackHitIndex < nTrackHits; trackHitIndex++) {
+	if (EventReco->GetTrackMethod() == 2) { // Kalman
+	  xhit = ((AliMUONHitForRec*)((*hitsOnTrack)[trackHitIndex]))->GetNonBendingCoor();
+	  yhit = ((AliMUONHitForRec*)((*hitsOnTrack)[trackHitIndex]))->GetBendingCoor();
+	  zhit = ((AliMUONHitForRec*)((*hitsOnTrack)[trackHitIndex]))->GetZ();    
+	} else {
+	  trackHit = (AliMUONTrackHit*) (*(track->GetTrackHitsPtr()))[trackHitIndex];
+	  xhit = trackHit->GetHitForRecPtr()->GetNonBendingCoor();
+	  yhit = trackHit->GetHitForRecPtr()->GetBendingCoor();
+	  zhit = trackHit->GetHitForRecPtr()->GetZ();
+	}
+	if (trackHitIndex >= 0 && trackHitIndex < 10) {
+	  currentTrack->SetHitPosition(trackHitIndex,xhit,yhit,zhit);
+	} else { cout << "track " << trackIndex << " hit out of range" << endl;} 
+      }
+   
    }
    cout << "Leave MakeDumpTracks..." << endl;
    return kTRUE;

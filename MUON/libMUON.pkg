@@ -28,7 +28,7 @@ SRCS         =   AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
 	       AliMUONSegmentationSlat.cxx AliMUONSegmentationSlatN.cxx \
 	       AliMUONRecoEvent.cxx AliMUONRecoDisplay.cxx \
                AliMUONMerger.cxx AliMUONFactory.cxx AliMUONDigitizer.cxx \
-               AliMUONClusterFinderAZ.cxx AliMUONPixel.cxx
+               AliMUONTrackK.cxx AliMUONClusterFinderAZ.cxx AliMUONPixel.cxx
 
 
 HDRS         =  $(SRCS:.cxx=.h) 

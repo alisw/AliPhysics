@@ -14,6 +14,7 @@
 #include <TParticle.h>
 #include <AliDetector.h>
 #include "AliMUONHit.h"
+class AliMUONEventReconstructor;
 
 class AliMUONRecoTrack;
 
@@ -33,9 +34,10 @@ class AliMUONRecoTrack;
 class AliMUONRecoEvent:public TObject {
 
 private:
-   Int_t             fNevr;               // event number
-   Int_t             fNtracks;            // number of tracks
-   TClonesArray      *fTracks;            //-> list of AliMUONRecoTracks
+   Int_t             fNevr;          // event number
+   Int_t             fNtracks;       // number of tracks
+   Int_t             fMuons;         // number of muons within acceptance
+   TClonesArray      *fTracks;      //-> list of AliMUONRecoTracks
    
 public:
                      AliMUONRecoEvent(Int_t eventNo = 0);
@@ -45,9 +47,12 @@ public:
    void              EventInfo();
    Int_t             GetNoEvent()  const {return fNevr;}
    Int_t             GetNoTracks() const {return fNtracks;}
-   Bool_t            MakeDumpTracks(TClonesArray *tracksPtr);
+   Bool_t            MakeDumpTracks(Int_t muons, TClonesArray *tracksPtr, AliMUONEventReconstructor *MuonReco);
    void              SetNoEvent(Int_t event) 	{fNevr = event;}
    void              SetNoTracks(Int_t ntracks) {fNtracks = ntracks;} 
+
+   void              SetNoMuons(Int_t muons) {fMuons = muons;} 
+
    TClonesArray*     TracksPtr() {return fTracks;}
 
    ClassDef(AliMUONRecoEvent,1)	// Reconstructed event for MUON module
@@ -65,6 +70,7 @@ class AliMUONRecoTrack:public TObject {
 
 private:
     Int_t       fSign;                  // charge sign
+    Int_t       fFlag;                  //  flag of reconstructed track (0-"good", >0-"bad") 
     Double_t 	fZvr;                   // z of track vertex point
     Double_t 	fChi2r;	                // chi squared for reco. track
     Double_t 	fPr[3];	                // reconstr. momentum (same as in vertex)
@@ -90,6 +96,8 @@ public:
     void           SetMomReconstr(Double_t px, Double_t py, Double_t pz);
     void           SetSign(Int_t sign) {fSign = sign;};
     void           SetVertexPos(Double_t zvr) {fZvr = zvr;};
+    void           SetFlag(Int_t flag)  {fFlag = flag;};
+
     const Double_t Theta();
     void           TrackInfo();
     ClassDef(AliMUONRecoTrack,1)	// A reconstructed muon track
