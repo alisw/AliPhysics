@@ -34,6 +34,22 @@ public:
     return 0;
   } 
 
+  virtual Double_t GetDCA(const AliKalmanTrack *,Double_t &,Double_t &) const; 
+  virtual 
+  Double_t PropagateToDCA(AliKalmanTrack *, Double_t d=0., Double_t x0=0.); 
+  virtual Double_t GetAlpha() const {
+    Warning("GetAlpha()","Method must be overloaded !\n");
+    return 0.;
+  }
+  virtual Double_t GetSigmaY2() const {
+    Warning("GetSigmaY2()","Method must be overloaded !\n");
+    return 0.;
+  }
+  virtual Double_t GetSigmaZ2() const {
+    Warning("GetSigmaZ2()","Method must be overloaded !\n");
+    return 0.;
+  }
+
   virtual Int_t Compare(const TObject *) const {return 0;} 
 
   virtual void GetExternalParameters(Double_t &/*xr*/, Double_t /*x*/[5]) const {}
@@ -52,7 +68,7 @@ public:
   }
   Double_t GetMagneticField() const {return 100/0.299792458/fgConvConst;}
 
-  // Time integration
+  // Time integration (S.Radomski@gsi.de)
   void   StartTimeIntegral();
   Bool_t IsStartedTimeIntegral() const {return fStartTimeIntegral;}
   void     AddTimeStep(Double_t length);
@@ -74,7 +90,7 @@ private:
 
   static Double_t fgConvConst; //conversion constant cm -> GeV/c
 
-  // variables for time integration
+  // variables for time integration (S.Radomski@gsi.de)
   static const Int_t fgkTypes = 5;  // Number of track types (e,mu,pi,k,p)
   Bool_t  fStartTimeIntegral;       // indicator wether integrate time
   Float_t fIntegratedTime[5];       // intgrated time
