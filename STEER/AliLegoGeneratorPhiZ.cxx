@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/05/16 14:57:22  alibrary
+New files for folders and Stack
+
 Revision 1.4  2001/01/12 09:23:17  morsch
 Correct order of phi and z.
 
@@ -55,7 +58,7 @@ void AliLegoGeneratorPhiZ::Generate()
        return;
      } else { 
        fCoor2Bin++;
-       printf("Generating rays in z-bin:%d\n",fCoor2Bin);
+       printf("Generating rays in Phi-bin:%d\n",fCoor2Bin);
        fCoor1Bin=0;
      } else fCoor1Bin++;
 
