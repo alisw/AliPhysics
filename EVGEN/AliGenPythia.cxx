@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.53  2002/03/25 14:51:13  morsch
+New stack-fill and count options introduced (N. Carrer).
+
 Revision 1.51  2002/03/06 08:46:57  morsch
 - Loop until np-1
 - delete dyn. alloc. arrays (N. Carrer)
@@ -488,6 +491,7 @@ void AliGenPythia::Generate()
 		    if (!pSelected[i]) continue;
 		    TParticle *  iparticle = (TParticle *) fParticles->At(i);
 		    kf = CheckPDGCode(iparticle->GetPdgCode());
+		    Int_t ks = iparticle->GetStatusCode();  
 		    p[0] = iparticle->Px();
 		    p[1] = iparticle->Py();
 		    p[2] = iparticle->Pz();
@@ -498,7 +502,7 @@ void AliGenPythia::Generate()
 		    Int_t ipa     = iparticle->GetFirstMother()-1;
 		    Int_t iparent = (ipa > -1) ? pParent[ipa] : -1;
 		    SetTrack(fTrackIt*trackIt[i] ,
-				     iparent, kf, p, origin, polar, tof, kPPrimary, nt, 1.);
+				     iparent, kf, p, origin, polar, tof, kPPrimary, nt, 1., ks);
 		    pParent[i] = nt;
 		    KeepTrack(nt); 
 		} //  SetTrack loop
@@ -543,6 +547,9 @@ void AliGenPythia::Generate()
 
 Int_t  AliGenPythia::GenerateMB()
 {
+//
+// Min Bias selection and other global selections
+//
     Int_t i, kf, nt, iparent;
     Int_t nc = 0;
     Float_t p[3];
@@ -587,7 +594,7 @@ Int_t  AliGenPythia::GenerateMB()
 	    origin[2] = fOrigin[2]+iparticle->Vz()/10.;
 	    Float_t tof=kconv*iparticle->T();
 	    SetTrack(fTrackIt*trackIt, iparent, kf, p, origin, polar,
-			 tof, kPPrimary, nt);
+			 tof, kPPrimary, nt, 1., ks);
 	    KeepTrack(nt);
 	    pParent[i] = nt;
 	} // select particle
@@ -637,7 +644,7 @@ void AliGenPythia::MakeHeader()
 }
 	
 
-Bool_t AliGenPythia::CheckTrigger(TParticle* jet1, TParticle* jet2)
+Bool_t AliGenPythia::CheckTrigger(TParticle* jet1, TParticle* jet2) const
 {
 // Check the kinematic trigger condition
 //
