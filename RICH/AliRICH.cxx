@@ -860,7 +860,7 @@ void AliRICH::FillESD(AliESD *pESD)const
     
     for(Int_t iPart=4;iPart>=0;iPart--){
       Double_t cosThetaTh = TMath::Sqrt(masses[iPart]*masses[iPart]+pmod*pmod)/(refIndex*pmod);
-      if(cosThetaTh>=1) {pTrack->ResetRICH(); break;}
+      if(cosThetaTh>=1) {break;}
       thetaTh[iPart] = TMath::ACos(cosThetaTh);
       sinThetaThNorm = TMath::Sin(thetaTh[iPart])/TMath::Sqrt(1-1/(refIndex*refIndex));
       sigmaThetaTh[iPart] = (0.014*(1/sinThetaThNorm-1) + 0.0043)*1.25;
