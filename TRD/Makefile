@@ -21,19 +21,19 @@ HDRS          = $(SRCS:.cxx=.h) TRDLinkDef.h
 
 DICT          = TRDCint.cxx
 DICTH         = $(DICT:.cxx=.h)
-DICTO         = $(DICT:.cxx=.o)
+DICTO         = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(DICT))
 
 # FORTRAN Objectrs
 
-FOBJS         = $(FSRCS:.f=.o)
+FOBJS         = $(patsubst %.f,$(ALICE_TARGET)/%.o,$(FSRCS))
 
 # C Objects
 
-COBJS         = $(CSRCS:.c=.o)
+COBJS         = $(patsubst %.c,$(ALICE_TARGET)/%.o,$(CSRCS))
 
 # C++ Objects
 
-OBJS          = $(SRCS:.cxx=.o) $(DICTO)
+OBJS          = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # C++ compilation flags
 
@@ -47,12 +47,12 @@ FFLAGS      = $(FOPT)
  
 # Target
 
-SLIBRARY	= $(ALICE_ROOT)/lib/libTRD.$(SL)
-ALIBRARY	= $(ALICE_ROOT)/lib/libTRD.a
+SLIBRARY	= $(LIBDIR)/libTRD.$(SL)
+ALIBRARY	= $(LIBDIR)/libTRD.a
 
 default:	$(SLIBRARY)
 
-$(ALICE_ROOT)/lib/libTRD.$(SL):	$(OBJS)
+$(LIBDIR)/libTRD.$(SL):	$(OBJS)
 
 TRDCint.cxx:			$(HDRS)
 

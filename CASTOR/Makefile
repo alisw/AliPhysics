@@ -19,7 +19,7 @@ HDRS          = $(SRCS:.cxx=.h) CASTORLinkDef.h
 
 DICT          = CASTORCint.cxx
 DICTH         = $(DICT:.cxx=.h)
-DICTO         = $(DICT:.cxx=.o)
+DICTO         = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(DICT))
 
 # FORTRAN Objectrs
 
@@ -27,11 +27,11 @@ FOBJS         = $(FSRCS:.f=.o)
 
 # C Objects
 
-COBJS         = $(CSRCS:.c=.o)
+COBJS         = $(patsubst %.c,$(ALICE_TARGET)/%.o,$(CSRCS))
 
 # C++ Objects
 
-OBJS          = $(SRCS:.cxx=.o) $(DICTO)
+OBJS          = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # C++ compilation flags
 
@@ -45,12 +45,12 @@ FFLAGS      = $(FOPT)
  
 # Target
 
-SLIBRARY	= $(ALICE_ROOT)/lib/libCASTOR.$(SL)
-ALIBRARY	= $(ALICE_ROOT)/lib/libCASTOR.a
+SLIBRARY	= $(LIBDIR)/libCASTOR.$(SL)
+ALIBRARY	= $(LIBDIR)/libCASTOR.a
 
 default:	$(SLIBRARY)
 
-$(ALICE_ROOT)/lib/libCASTOR.$(SL):		$(OBJS)
+$(LIBDIR)/libCASTOR.$(SL):		$(OBJS)
 
 $(DICT):				$(HDRS)
 

@@ -15,14 +15,14 @@ SRCS          =
 FSRCS	= $(filter-out %pdfset.F,$(filter-out %structm.F,$(wildcard pythia/*.F))) \
           $(wildcard jetset/*.F)
 
-FOBJS	= $(FSRCS:.F=.o)
+FOBJS	= $(patsubst %.F,$(ALICE_TARGET)/%.o,$(FSRCS))
 
 SRCS	= $(FSRCS)
 OBJS	= $(FOBJS)
 
 DSRCS	= dummypythia.F
 
-DOBJS	= $(DSRCS:.F=.o)
+DOBJS	= $(patsubst %.F,$(ALICE_TARGET)/%.o,$(DSRCS))
 
 # C++ compilation flags
 
@@ -40,13 +40,13 @@ FFLAGS      = $(FOPT) $(CLIBFOPT) $(CLIBDEFS)
  
 # Target
 
-SLIBRARY	= $(ALICE_ROOT)/lib/libpythia.$(SL) $(ALICE_ROOT)/lib/libdummypythia.$(SL)
-ALIBRARY	= $(ALICE_ROOT)/lib/libpythia.a
+SLIBRARY	= $(LIBDIR)/libpythia.$(SL) $(LIBDIR)/libdummypythia.$(SL)
+ALIBRARY	= $(LIBDIR)/libpythia.a
 
 default:	$(SLIBRARY)
 
-$(ALICE_ROOT)/lib/libpythia.$(SL):  $(OBJS)
-$(ALICE_ROOT)/lib/libdummypythia.$(SL):  $(DOBJS)
+$(LIBDIR)/libpythia.$(SL):  $(OBJS)
+$(LIBDIR)/libdummypythia.$(SL):  $(DOBJS)
 
 depend:			$(SRCS) $(DSRCS)
 

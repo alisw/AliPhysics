@@ -23,19 +23,19 @@ HDRS          = $(SRCS:.cxx=.h) ITSLinkDef.h
 
 DICT          = ITSCint.cxx
 DICTH         = $(DICT:.cxx=.h)
-DICTO         = $(DICT:.cxx=.o)
+DICTO         = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(DICT))
 
 # FORTRAN Objectrs
 
-FOBJS         = $(FSRCS:.F=.o)
+FOBJS         = $(patsubst %.F,$(ALICE_TARGET)/%.o,$(FSRCS))
 
 # C Objects
 
-COBJS         = $(CSRCS:.c=.o)
+COBJS         = $(patsubst %.c,$(ALICE_TARGET)/%.o,$(CSRCS))
 
 # C++ Objects
 
-OBJS          = $(SRCS:.cxx=.o) $(DICTO)
+OBJS          = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # C++ compilation flags
 
@@ -49,12 +49,12 @@ FFLAGS      = $(FOPT) -I$(ALICE_ROOT)/GEANT321
  
 # Target
 
-SLIBRARY	= $(ALICE_ROOT)/lib/libITS.$(SL)
-ALIBRARY	= $(ALICE_ROOT)/lib/libITS.a
+SLIBRARY	= $(LIBDIR)/libITS.$(SL)
+ALIBRARY	= $(LIBDIR)/libITS.a
 
 default:	$(SLIBRARY)
 
-$(ALICE_ROOT)/lib/libITS.$(SL):	$(OBJS) $(FOBJS)
+$(LIBDIR)/libITS.$(SL):		$(OBJS)
 
 $(DICT):			$(HDRS)
 

@@ -23,19 +23,19 @@ HDRS          = $(SRCS:.cxx=.h) AliPDG.h STEERLinkDef.h
 
 DICT          = STEERCint.cxx
 DICTH         = $(DICT:.cxx=.h)
-DICTO         = $(DICT:.cxx=.o)
+DICTO         = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(DICT))
 
 # FORTRAN Objectrs
 
-FOBJS         = $(FSRCS:.f=.o)
+FOBJS         = $(patsubst %.F,$(ALICE_TARGET)/%.o,$(FSRCS))
 
 # C Objects
 
-COBJS         = $(CSRCS:.c=.o)
+COBJS         = $(patsubst %.c,$(ALICE_TARGET)/%.o,$(CSRCS))
 
 # C++ Objects
 
-OBJS          = $(SRCS:.cxx=.o) $(DICTO)
+OBJS          = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # C++ compilation flags
 
@@ -49,12 +49,12 @@ FFLAGS      = $(FOPT)
  
 # Target
 
-SLIBRARY	= $(ALICE_ROOT)/lib/libSTEER.$(SL)
-ALIBRARY	= $(ALICE_ROOT)/lib/libSTEER.a
+SLIBRARY	= $(LIBDIR)/libSTEER.$(SL)
+ALIBRARY	= $(LIBDIR)/lib/libSTEER.a
 
 default:	$(SLIBRARY)
 
-$(ALICE_ROOT)/lib/libSTEER.$(SL):		$(OBJS)
+$(LIBDIR)/libSTEER.$(SL):		$(OBJS)
 
 $(DICT):				$(HDRS)
 

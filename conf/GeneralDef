@@ -1,15 +1,31 @@
 ##### RULES #####
  
-.SUFFIXES: .cxx
+.SUFFIXES: .cxx .h
+
+$(ALICE_ROOT)/include/%.h : %.h
+	@[ -d $(dir $@) ] || mkdir $(dir $@)
+	@cp -p $? $(ALICE_ROOT)/include
  
-.cxx.o:
-	@$(CXX) $(CXXFLAGS) -c $*.cxx -o $*.o
-.c.o:
-	@$(CC) $(CFLAGS) -c $*.c -o $*.o
-.f.o:
-	@$(F77) $(FFLAGS) -c $*.f -o $*.o
-.F.o:
-	@$(F77) $(FFLAGS) -c $*.F -o $*.o
+$(ALICE_TARGET)/%.o : %.cxx
+	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
+	@$(CXX) $(CXXFLAGS) -c $*.cxx -o $(ALICE_TARGET)/$*.o
+
+$(ALICE_TARGET)/%.o : %.c
+	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
+	@$(CC) $(CFLAGS) -c $*.c -o $(ALICE_TARGET)/$*.o
+
+$(ALICE_TARGET)/%.o : %.f
+	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
+	@$(F77) $(FFLAGS) -c $*.f -o $(ALICE_TARGET)/$*.o
+
+$(ALICE_TARGET)/%.o : %.F
+	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
+	@$(F77) $(FFLAGS) -c $*.F -o $(ALICE_TARGET)/$*.o
+
+# Needed binary directories
+LIBDIR = $(ALICE_ROOT)/lib/$(ALICE_TARGET)
+BINDIR = $(ALICE_ROOT)/bin/$(ALICE_TARGET)
+
 
 # Current Version
 
@@ -26,7 +42,7 @@ ROOTLIBS      = -L$(ROOTSYS)/lib -lBase -lCint -lClib -lCont -lFunc -lGraf \
 
 # Alice libraries
 
-ALILIBS	      = -L$(ALICE_ROOT)/lib -lMUON -lTPC -lPMD -lTRD -lFMD -lTOF \
+ALILIBS	      = -L$(LIBDIR) -lMUON -lTPC -lPMD -lTRD -lFMD -lTOF \
                 -lITS -lPHOSdummy -lPHOS -lCASTOR -lRICH -lZDC -lSTRUCT \
                 -lTGeant3 -lEVGEN -lSTEER
 
@@ -39,4 +55,3 @@ ROOTGLIBS     = -lGpad -lGui -lGX11 -lX3d  -lXpm
 CLIBS         = -lminicern
 G3LIBS        = -lgeant321
 
- 

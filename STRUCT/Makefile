@@ -24,19 +24,19 @@ HDRS          = $(SRCS:.cxx=.h) STRUCTLinkDef.h
 
 DICT          = STRUCTCint.cxx
 DICTH         = $(DICT:.cxx=.h)
-DICTO         = $(DICT:.cxx=.o)
+DICTO         = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(DICT))
 
 # FORTRAN Objectrs
 
-FOBJS         = $(FSRCS:.f=.o)
+FOBJS         = $(patsubst %.f,$(ALICE_TARGET)/%.o,$(FSRCS))
 
 # C Objects
 
-COBJS         = $(CSRCS:.c=.o)
+COBJS         = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(CSRCS))
 
 # C++ Objects
 
-OBJS          = $(SRCS:.cxx=.o) $(DICTO)
+OBJS          = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # C++ compilation flags
 
@@ -50,12 +50,12 @@ FFLAGS      = $(FOPT)
  
 # Target
 
-SLIBRARY	= $(ALICE_ROOT)/lib/libSTRUCT.$(SL)
-ALIBRARY	= $(ALICE_ROOT)/lib/libSTRUCT.a
+SLIBRARY	= $(LIBDIR)/libSTRUCT.$(SL)
+ALIBRARY	= $(LIBDIR)/libSTRUCT.a
 
 default:	$(SLIBRARY)
 
-$(ALICE_ROOT)/lib/libSTRUCT.$(SL):		$(OBJS)
+$(LIBDIR)/libSTRUCT.$(SL):		$(OBJS)
 
 $(DICT):				$(HDRS)
 

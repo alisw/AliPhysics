@@ -23,23 +23,23 @@ GHDRS          = $(filter-out gucode.h,$(GSRCS:.cxx=.h)) TGeant3LinkDef.h
 
 GDICT          = TGeant3Cint.cxx
 GDICTH         = $(GDICT:.cxx=.h)
-GDICTO         = $(GDICT:.cxx=.o)
+GDICTO         = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(GDICT))
 
 # Geant Objects
 
-GOBJS          = $(GSRCS:.cxx=.o) $(FOBJS) $(GDICTO)
+GOBJS          = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(GSRCS)) $(FOBJS) $(GDICTO)
 
 # FORTRAN Objectrs
 
-FOBJS         = $(FSRCS:.F=.o)
+FOBJS         = $(patsubst %.F,$(ALICE_TARGET)/%.o,$(FSRCS))
 
 # C Objects
 
-COBJS         = $(CSRCS:.c=.o)
+COBJS         = $(patsubst %.c,$(ALICE_TARGET)/%.o,$(CSRCS))
 
 # C++ Objects
 
-OBJS          = $(SRCS:.cxx=.o) $(DICTO)
+OBJS          = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # Dummy Geant321 class
 
@@ -55,16 +55,16 @@ DHDRS          = TGeant3.h TGeant3LinkDef.h
 
 DDICT          = TGeant3DummyCint.cxx
 DDICTH         = $(DDICT:.cxx=.h)
-DDICTO         = $(DDICT:.cxx=.o)
+DDICTO         = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(DDICT))
 
 # Geant Objects
 
-DOBJS          = $(DSRCS:.cxx=.o) $(DDICTO)
+DOBJS          = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(DSRCS)) $(DDICTO)
 
 # Dummy Routines in Geant321
 
 JSRCS		= G3Dummy.cxx
-JOBJS		= G3Dummy.o
+JOBJS		= $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(JSRCS))
 
 # C++ compilation flags
 
@@ -78,18 +78,18 @@ FFLAGS      = $(FOPT) -I$(ALICE_ROOT)/GEANT321
  
 # Target
 
-SLIBRARY	= $(ALICE_ROOT)/lib/libTGeant3.$(SL) \
-		  $(ALICE_ROOT)/lib/libG3Dummy.$(SL) \
-		  $(ALICE_ROOT)/lib/libTGeant3Dummy.$(SL) 
-ALIBRARY	= $(ALICE_ROOT)/lib/libTGeant3.a
+SLIBRARY	= $(LIBDIR)/libTGeant3.$(SL) \
+		  $(LIBDIR)/libG3Dummy.$(SL) \
+		  $(LIBDIR)/libTGeant3Dummy.$(SL) 
+ALIBRARY	= $(LIBDIR)/libTGeant3.a
 
 default:	$(SLIBRARY)
 
-$(ALICE_ROOT)/lib/libTGeant3.$(SL):		$(GOBJS)
+$(LIBDIR)/libTGeant3.$(SL):		$(GOBJS)
 
-$(ALICE_ROOT)/lib/libG3Dummy.$(SL):		$(JOBJS)
+$(LIBDIR)/libG3Dummy.$(SL):		$(JOBJS)
 
-$(ALICE_ROOT)/lib/libTGeant3Dummy.$(SL):	$(DOBJS)
+$(LIBDIR)/libTGeant3Dummy.$(SL):	$(DOBJS)
 
 $(GDICT):				$(GHDRS)
 
@@ -98,8 +98,6 @@ $(DDICT):				$(DHDRS)
 DICT	=		$(GDICT) $(DDICT)
 
 DEPINC	+= -I$(ALICE_ROOT)/GEANT321
-
-HEADERS 	=	$(filter-out %LinkDef.h,$(GHDRS))
 
 depend:			$(GSRCS) $(FSRCS)
 

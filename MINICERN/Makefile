@@ -33,6 +33,7 @@ FSRCS	= dummies.F hbcdf.F fzdummies.F \
 	  mathlib/gen/d/gauss.F \
 	  mathlib/gen/d/gauss128.F \
 	  mathlib/gen/d/gauss64.F \
+	  mathlib/gen/g/prob.F \
 	  mathlib/gen/n/mtlprt.F \
 	  mathlib/gen/n/mtlset.F \
 	  mathlib/gen/v/ranlux.F \
@@ -272,9 +273,9 @@ endif
 
 CXXSRC	=
 
-FOBJ	= $(FSRC:.F=.o)
-COBJ	= $(CSRC:.c=.o)
-CXXOBJ	= $(CXXSRC:.cxx=.o)
+FOBJ	= $(patsubst %.F,$(ALICE_TARGET)/%.o,$(FSRC))
+COBJ	= $(patsubst %.c,$(ALICE_TARGET)/%.o,$(CSRC))
+CXXOBJ	= $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(CXXSRC))
 
 SRCS	= $(FSRC) $(CSRC) $(CXXSRC)
 OBJS	= $(FOBJ) $(COBJ) $(CXXOBJ)
@@ -283,8 +284,8 @@ OBJS	= $(FOBJ) $(COBJ) $(CXXOBJ)
  
 # Target
 
-SLIBRARY	= $(ALICE_ROOT)/lib/libminicern.$(SL)
-ALIBRARY	= $(ALICE_ROOT)/lib/libminicern.a
+SLIBRARY	= $(LIBDIR)/libminicern.$(SL)
+ALIBRARY	= $(LIBDIR)/libminicern.a
 
 ifeq ($(PLATFORM),alpha)
         default:	$(ALIBRARY)
@@ -292,8 +293,8 @@ else
         default:	$(SLIBRARY)
 endif
 
-$(ALICE_ROOT)/lib/libminicern.$(SL):  $(OBJS)
-$(ALICE_ROOT)/lib/libminicern.a:  $(OBJS)
+$(LIBDIR)/libminicern.$(SL):  $(OBJS)
+$(LIBDIR)/libminicern.a:  $(OBJS)
 
 depend:			$(SRCS)
 

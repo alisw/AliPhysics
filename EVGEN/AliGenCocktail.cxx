@@ -1,6 +1,5 @@
 #include "AliGenerator.h"
 #include "AliGenCocktail.h"
-#include "TGeant3.h"
 #include "AliRun.h"
 #include <TDirectory.h>
 #include <TFile.h>

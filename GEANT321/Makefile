@@ -23,17 +23,17 @@ GCSRC	= $(wildcard $(patsubst %,%/*.c,$(GDIRS)))
 GCXXSRC	= $(wildcard $(patsubst %,%/*.cxx,$(GDIRS))) 
 
 GSRC	= $(GFSRC) $(GCSRC)
-GFOBJ	= $(GFSRC:.F=.o)
-GCOBJ	= $(GCSRC:.c=.o)
-GCXXOBJ	= $(GCXXSRC:.cxx=.o)
+GFOBJ	= $(patsubst %.F,$(ALICE_TARGET)/%.o,$(GFSRC))
+GCOBJ	= $(patsubst %.c,$(ALICE_TARGET)/%.o,$(GCSRC))
+GCXXOBJ	= $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(GCXXSRC))
 GOBJ	= $(GFOBJ) $(GCOBJ) $(GCXXOBJ)
 
 XFSRC	= $(wildcard $(patsubst %,%/*.F,$(XDIRS))) 
 XCSRC	= $(wildcard $(patsubst %,%/*.c,$(XDIRS))) 
 
 XSRC	= $(XFSRC) $(XCSRC) $(XCXXSRC)
-XFOBJ	= $(XFSRC:.F=.o)
-XCOBJ	= $(XCSRC:.c=.o)
+XFOBJ	= $(patsubst %.F,$(ALICE_TARGET)/%.o,$(XFSRC))
+XCOBJ	= $(patsubst %.c,$(ALICE_TARGET)/%.o,$(XCSRC))
 XOBJ	= $(XFOBJ) $(XCOBJ) $(XCXXOBJ)
 
 SRCS	= $(GSRC) $(XSRC)
@@ -60,8 +60,8 @@ FFLAGS      = $(FOPT) $(CLIBFOPT) $(CLIBDEFS) -I.
  
 # Target
 
-SLIBRARY	= $(ALICE_ROOT)/lib/libgeant321.$(SL) $(ALICE_ROOT)/lib/libgxint321.$(SL)
-ALIBRARY	= $(ALICE_ROOT)/lib/libgeant321.a $(ALICE_ROOT)/lib/libgxint321.a
+SLIBRARY	= $(LIBDIR)/libgeant321.$(SL) $(LIBDIR)/libgxint321.$(SL)
+ALIBRARY	= $(LIBDIR)/libgeant321.a $(LIBDIR)/libgxint321.a
 
 ifeq ($(PLATFORM),alpha)
         default:	$(ALIBRARY)
@@ -69,8 +69,8 @@ else
         default:	$(SLIBRARY)
 endif
 
-$(ALICE_ROOT)/lib/libgeant321.$(SL) $(ALICE_ROOT)/lib/libgeant321.a:  $(GOBJ)
-$(ALICE_ROOT)/lib/libgxint321.$(SL) $(ALICE_ROOT)/lib/libgxint321.$(SL):  $(XOBJ)
+$(LIBDIR)/libgeant321.$(SL) $(LIBDIR)/libgeant321.a:  $(GOBJ)
+$(LIBDIR)/libgxint321.$(SL) $(LIBDIR)/libgxint321.$(SL):  $(XOBJ)
 
 depend:			$(SRCS)
 

@@ -27,19 +27,19 @@ HDRS          = $(SRCS:.cxx=.h) ZDCLinkDef.h
 
 DICT          = ZDCCint.cxx
 DICTH         = $(DICT:.cxx=.h)
-DICTO         = $(DICT:.cxx=.o)
+DICTO         = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(DICT))
 
 # FORTRAN Objectrs
 
-FOBJS         = $(FSRCS:.F=.o)
+FOBJS         = $(patsubst %.F,$(ALICE_TARGET)/%.o,$(FSRCS))
 
 # C Objects
 
-COBJS         = $(CSRCS:.c=.o)
+COBJS         = $(patsubst %.c,$(ALICE_TARGET)/%.o,$(CSRCS)
 
 # C++ Objects
 
-OBJS          = $(SRCS:.cxx=.o) $(DICTO)
+OBJS          = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # Global Macros
 
@@ -57,12 +57,12 @@ FFLAGS      = $(FOPT) -I$(ALICE_ROOT)/GEANT321
  
 # Target
 
-SLIBRARY	= $(ALICE_ROOT)/lib/libZDC.$(SL)
-ALIBRARY	= $(ALICE_ROOT)/lib/libZDC.a
+SLIBRARY	= $(LIBDIR)/libZDC.$(SL)
+ALIBRARY	= $(LIBDIR)/libZDC.a
 
 default:	$(SLIBRARY)
 
-$(ALICE_ROOT)/lib/libZDC.$(SL):	$(OBJS) $(FOBJS)
+$(LIBDIR)/libZDC.$(SL):	$(OBJS) $(FOBJS)
 
 $(DICT):			$(HDRS)
 

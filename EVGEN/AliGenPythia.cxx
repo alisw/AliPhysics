@@ -1,6 +1,5 @@
 #include "AliGenerator.h"
 #include "AliGenPythia.h"
-#include "TGeant3.h"
 #include "AliRun.h"
 #include "AliPythia.h"
 #include <TDirectory.h>

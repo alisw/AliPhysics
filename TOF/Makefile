@@ -19,19 +19,19 @@ HDRS          = $(SRCS:.cxx=.h) TOFLinkDef.h
 
 DICT          = TOFCint.cxx
 DICTH         = $(DICT:.cxx=.h)
-DICTO         = $(DICT:.cxx=.o)
+DICTO         = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(DICT))
 
 # FORTRAN Objectrs
 
-FOBJS         = $(FSRCS:.f=.o)
+FOBJS         = $(patsubst %.f,$(ALICE_TARGET)/%.o,$(FSRCS))
 
 # C Objects
 
-COBJS         = $(CSRCS:.c=.o)
+COBJS         = $(patsubst %.c,$(ALICE_TARGET)/%.o,$(CSRCS))
 
 # C++ Objects
 
-OBJS          = $(SRCS:.cxx=.o) $(DICTO)
+OBJS          = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # C++ compilation flags
 
@@ -45,12 +45,12 @@ FFLAGS      = $(FOPT)
  
 # Target
 
-SLIBRARY	= $(ALICE_ROOT)/lib/libTOF.$(SL)
-ALIBRARY	= $(ALICE_ROOT)/lib/libTOF.a
+SLIBRARY	= $(LIBDIR)/libTOF.$(SL)
+ALIBRARY	= $(LIBDIR)/libTOF.a
 
 default:	$(SLIBRARY)
 
-$(ALICE_ROOT)/lib/libTOF.$(SL):	$(OBJS)
+$(LIBDIR)/libTOF.$(SL):	$(OBJS)
 
 $(DICT):			$(HDRS)
 

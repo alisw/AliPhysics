@@ -1,7 +1,6 @@
 #include "AliGenParam.h"
 #include "AliGenMUONlib.h"
 #include "AliRun.h"
-#include "TGeant3.h"
 #include "AliPythia.h"
 #include <TDirectory.h>
 #include <TFile.h>

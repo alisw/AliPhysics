@@ -19,23 +19,26 @@ HDRS          = $(SRCS:.cxx=.h) RICHLinkDef.h
 
 DICT          = RICHCint.cxx
 DICTH         = $(DICT:.cxx=.h)
-DICTO         = $(DICT:.cxx=.o)
+DICTO         = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(DICT))
 
 # FORTRAN Objectrs
 
-FOBJS         = $(FSRCS:.f=.o)
+FOBJS         = $(patsubst %.f,$(ALICE_TARGET)/%.o,$(FSRCS))
 
 # C Objects
 
-COBJS         = $(CSRCS:.c=.o)
+COBJS         = $(patsubst %.c,$(ALICE_TARGET)/%.o,$(CSRCS))
 
 # C++ Objects
 
-OBJS          = $(SRCS:.cxx=.o) $(DICTO)
+OBJS          = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # C++ compilation flags
 
 CXXFLAGS      = $(CXXOPTS) -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include/
+
+CXXFLAGS      += -I$(ALICE_ROOT)/TGeant3
+DEPINC        += -I$(ALICE_ROOT)/TGeant3
  
 # FORTRAN compilation flags
 
@@ -45,12 +48,12 @@ FFLAGS      = $(FOPT)
  
 # Target
 
-SLIBRARY	= $(ALICE_ROOT)/lib/libRICH.$(SL)
-ALIBRARY	= $(ALICE_ROOT)/lib/libRICH.a
+SLIBRARY	= $(LIBDIR)/libRICH.$(SL)
+ALIBRARY	= $(LIBDIR)/libRICH.a
 
 default:	$(SLIBRARY)
 
-$(ALICE_ROOT)/lib/libRICH.$(SL):		$(OBJS)
+$(LIBDIR)/libRICH.$(SL):		$(OBJS)
 
 $(DICT):				$(HDRS)
 

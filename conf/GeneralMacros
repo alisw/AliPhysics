@@ -2,32 +2,32 @@
 
 $(SLIBRARY):
 		@echo "Generating $@ for $(PACKAGE)..."
+		@[ -d $(dir $@) ] || mkdir $(dir $@)
 		@rm -f $@
                 ifeq ($(PLATFORM),aix)
-		   @$(SHLD) -o $@ $(LIBS) -p 0 $^
+		   @$(SHLD) -o $@ $(LIBS) -p 0 $(filter-out dirs,$^)
                 else
-		   @$(SHLD) $(SOFLAGS) $(LDFLAGS) $^ $(SHLIB) -o $@
+		   @$(SHLD) $(SOFLAGS) $(LDFLAGS) $(filter-out dirs,$^) $(SHLIB) -o $@
                 endif
 		@chmod 555 $@
 		@echo "$@ done"
 
 
-$(ALIBRARY):
+$(ALIBRARY):	
 		@echo "Generating $@ for $(PACKAGE)..."
+		@[ -d $(dir $@) ] || mkdir $(dir $@)
 		@rm -f $@
 		@ar rv $@ $^
 		@echo "$@ done"
  
-$(PROGRAM):
+$(PROGRAM):	
 		@echo "Generating $@ for $(PACKAGE)..."
+		@[ -d $(dir $@) ] || mkdir $(dir $@)
 		@rm -f $@
 		@$(LD) $(LDFLAGS) $^ $(LIBS) -o $@
 		@echo "$@ done"
  
 headers:	$(patsubst %,$(ALICE_ROOT)/include/%,$(HEADERS))
-
-$(patsubst %,$(ALICE_ROOT)/include/%,$(HEADERS)) : $(ALICE_ROOT)/include/% : %
-		@cp -p $^ $@
 
 $(DICT):
 		@echo "Generating $@ for $(PACKAGE)..."

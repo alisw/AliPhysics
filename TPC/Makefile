@@ -20,7 +20,7 @@ HDRS          = $(SRCS:.cxx=.h) AliTPCSecGeo.h TPCLinkDef.h
 
 DICT          = TPCCint.cxx
 DICTH         = $(DICT:.cxx=.h)
-DICTO         = $(DICT:.cxx=.o)
+DICTO         = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(DICT))
 
 # FORTRAN Objectrs
 
@@ -32,7 +32,7 @@ COBJS         = $(CSRCS:.c=.o)
 
 # C++ Objects
 
-OBJS          = $(SRCS:.cxx=.o) $(DICTO)
+OBJS          = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # C++ compilation flags
 
@@ -46,11 +46,11 @@ FFLAGS      = $(FOPT)
  
 # Target
 
-SLIBRARY	= $(ALICE_ROOT)/lib/libTPC.$(SL)
+SLIBRARY	= $(LIBDIR)/libTPC.$(SL)
 
 default:	$(SLIBRARY)
 
-$(ALICE_ROOT)/lib/libTPC.$(SL):  $(OBJS)
+$(LIBDIR)/libTPC.$(SL):  $(OBJS)
 
 $(DICT):		$(HDRS)
 

@@ -21,19 +21,19 @@ HDRS          = $(SRCS:.cxx=.h) EVGENLinkDef.h
 
 DICT          = EVGENCint.cxx
 DICTH         = $(DICT:.cxx=.h)
-DICTO         = $(DICT:.cxx=.o)
+DICTO         = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(DICT))
 
 # FORTRAN Objectrs
 
-FOBJS         = $(FSRCS:.F=.o)
+FOBJS         = $(patsubst %.F,$(ALICE_TARGET)/%.o,$(FSRCS))
 
 # C Objects
 
-COBJS         = $(CSRCS:.c=.o)
+COBJS         = $(patsubst %.c,$(ALICE_TARGET)/%.o,$(CSRCS))
 
 # C++ Objects
 
-OBJS          = $(SRCS:.cxx=.o) $(DICTO)
+OBJS          = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # C++ compilation flags
 
@@ -47,12 +47,12 @@ FFLAGS      = $(FOPT)
  
 # Target
 
-SLIBRARY	= $(ALICE_ROOT)/lib/libEVGEN.$(SL)
-ALIBRARY	= $(ALICE_ROOT)/lib/libEVGEN.a
+SLIBRARY	= $(LIBDIR)/libEVGEN.$(SL)
+ALIBRARY	= $(LIBDIR)/libEVGEN.a
 
 default:	$(SLIBRARY)
 
-$(ALICE_ROOT)/lib/libEVGEN.$(SL):		$(OBJS)
+$(LIBDIR)/libEVGEN.$(SL):		$(OBJS)
 
 $(DICT):				$(HDRS)
 

@@ -20,7 +20,7 @@ HDRS          = $(SRCS:.cxx=.h) AliMUONConst.h MUONLinkDef.h
 
 DICT          = MUONCint.cxx
 DICTH         = $(DICT:.cxx=.h)
-DICTO         = $(DICT:.cxx=.o)
+DICTO         = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(DICT))
 
 # Fortran sources
 
@@ -28,15 +28,15 @@ FSRCS	      = algo.F
 
 # FORTRAN Objectrs
 
-FOBJS         = $(FSRCS:.F=.o)
+FOBJS         = $(patsubst %.F,$(ALICE_TARGET)/%.o,$(FSRCS))
 
 # C Objects
 
-COBJS         = $(CSRCS:.c=.o)
+COBJS         = $(patsubst %.c,$(ALICE_TARGET)/%.o,$(CSRCS))
 
 # C++ Objects
 
-OBJS          = $(SRCS:.cxx=.o) $(DICTO)
+OBJS          = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # C++ compilation flags
 
@@ -50,12 +50,12 @@ FFLAGS      = $(FOPT)
  
 # Target
 
-SLIBRARY	= $(ALICE_ROOT)/lib/libMUON.$(SL)
-ALIBRARY	= $(ALICE_ROOT)/lib/libMUON.a
+SLIBRARY	= $(LIBDIR)/libMUON.$(SL)
+ALIBRARY	= $(LIBDIR)/libMUON.a
 
 default:	$(SLIBRARY)
 
-$(ALICE_ROOT)/lib/libMUON.$(SL):	$(OBJS) $(FOBJS)
+$(LIBDIR)/libMUON.$(SL):	$(OBJS) $(FOBJS)
 
 $(DICT):			$(HDRS)
 
