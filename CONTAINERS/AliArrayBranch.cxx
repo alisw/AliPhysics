@@ -340,7 +340,7 @@ AliArrayBranch::AliArrayBranch(const Text_t *name, void *pointer, TTree * tree, 
    }
    else if (clinfo->IsA()->InheritsFrom("AliDataType")){ //branch for basic type
      Int_t type = (((AliDataType*)clinfo)->GetDataType())->GetType();
-     char *itype = 0;
+     const char *itype = 0;
      if (type <=0) 
        Warning("BranchClones","Cannot process member:%s",clinfo->GetName());       
      else{
@@ -662,37 +662,37 @@ void AliArrayBranch::Import(TLeaf * leaf, Int_t n)
   Int_t j = 0;
   char *clone;
   Int_t len    = leaf->GetLenStatic();
-  Int_t fOffset = leaf->GetOffset();
+  Int_t offset = leaf->GetOffset();
   void *value  = leaf->GetValuePointer();
   //
   for (Int_t i=0;i<n;i++) {
     clone = (char*)fList->UncheckedAt(i);
     //8bit int
     if (leaf->IsA()==TLeafB::Class()){  
-      memcpy(&((Char_t*)value)[j],clone + fOffset, len);
+      memcpy(&((Char_t*)value)[j],clone + offset, len);
     }
     //var size
     if (leaf->IsA()==TLeafC::Class()){  
-      memcpy(&((Char_t*)value)[j],clone + fOffset, 1);
+      memcpy(&((Char_t*)value)[j],clone + offset, 1);
     }
     //double
     if (leaf->IsA()==TLeafD::Class()){  
-      if (clone) memcpy(&((Double_t*)value)[j],clone + fOffset, 8*len);
+      if (clone) memcpy(&((Double_t*)value)[j],clone + offset, 8*len);
       else       memcpy(&((Double_t*)value)[j],&kIntUndefined,  8*len);      
     }
     //float
     if (leaf->IsA()==TLeafF::Class()){   
-      if (clone) memcpy(&((Float_t*)value)[j],clone + fOffset, 4*len);
+      if (clone) memcpy(&((Float_t*)value)[j],clone + offset, 4*len);
       else       memcpy(&((Float_t*)value)[j],&kIntUndefined,  4*len);     
     }    
     //int
     if (leaf->IsA()==TLeafI::Class()){  
-      if (clone) memcpy(&((Int_t*)value)[j],clone + fOffset, 4*len);
+      if (clone) memcpy(&((Int_t*)value)[j],clone + offset, 4*len);
       else       memcpy(&((Int_t*)value)[j],&kIntUndefined,  4*len);
     }
    //short
     if (leaf->IsA()==TLeafS::Class()){  
-      if (clone) memcpy(&((Short_t*)value)[j],clone + fOffset, 2*len);
+      if (clone) memcpy(&((Short_t*)value)[j],clone + offset, 2*len);
       else       memcpy(&((Short_t*)value)[j],&kIntUndefined,  2*len);
     }     
     j += len;  
