@@ -725,12 +725,8 @@ void AliL3HoughMaxFinder::FindAdaptedRowPeaks(Int_t kappawindow,Int_t xsize,Int_
 	  value = hist->GetBinContent(hist->GetBin(xbin,ybin));
 	  if(value > 0)
 	    {
-	      if(abs(value - lastvalue) > 1)
+	      if((value - lastvalue) > 1)
 		{
-		  if(found) {
-		    localmaxima[ybin-ymin][nmaxs[ybin-ymin]].fRightValue = value;
-		    nmaxs[ybin-ymin]++;
-		  }
 		  localmaxima[ybin-ymin][nmaxs[ybin-ymin]].fStartPosition = xbin;
 		  localmaxima[ybin-ymin][nmaxs[ybin-ymin]].fEndPosition = xbin;
 		  localmaxima[ybin-ymin][nmaxs[ybin-ymin]].fMinValue = value;
@@ -741,18 +737,36 @@ void AliL3HoughMaxFinder::FindAdaptedRowPeaks(Int_t kappawindow,Int_t xsize,Int_
 		}
 	      if(abs(value - lastvalue) <= 1)
 		{
+		  if(found) {
 		    localmaxima[ybin-ymin][nmaxs[ybin-ymin]].fEndPosition = xbin;
 		    if(value>localmaxima[ybin-ymin][nmaxs[ybin-ymin]].fMaxValue)
 		      localmaxima[ybin-ymin][nmaxs[ybin-ymin]].fMaxValue = value;
 		    if(value<localmaxima[ybin-ymin][nmaxs[ybin-ymin]].fMinValue)
 		      localmaxima[ybin-ymin][nmaxs[ybin-ymin]].fMinValue = value;
+		  }
 		}
+	      if((value - lastvalue) < -1)
+		{
+		  if(found) {
+		    localmaxima[ybin-ymin][nmaxs[ybin-ymin]].fRightValue = value;
+		    nmaxs[ybin-ymin]++;
+		    found = 0;
+		  }
+		}
+	    }
+	  else
+	    {
+	      if(found) {
+		localmaxima[ybin-ymin][nmaxs[ybin-ymin]].fRightValue = value;
+		nmaxs[ybin-ymin]++;
+		found = 0;
+	      }
 	    }
 	  lastvalue = value;
 	      
 	}
       if(found) {
-	localmaxima[ybin-ymin][nmaxs[ybin-ymin]].fRightValue = value;
+	localmaxima[ybin-ymin][nmaxs[ybin-ymin]].fRightValue = 0;
 	nmaxs[ybin-ymin]++;
       }
     }
@@ -790,8 +804,7 @@ void AliL3HoughMaxFinder::FindAdaptedRowPeaks(Int_t kappawindow,Int_t xsize,Int_
 		{
 		  if( (localmaxima[localy-ymin][j].fStartPosition <= (tempxend + kappawindow)) && (localmaxima[localy-ymin][j].fEndPosition >= (tempxstart - kappawindow))) 
 		    {
-		      if(((localmaxima[localy-ymin][j].fMinValue <= localmaxvalue) && (localmaxima[localy-ymin][j].fMinValue >= localminvalue)) ||
-			 ((localmaxima[localy-ymin][j].fMaxValue >= localminvalue) && (localmaxima[localy-ymin][j].fMaxValue <= localmaxvalue)))
+		      if((localmaxima[localy-ymin][j].fMinValue <= localmaxvalue) && (localmaxima[localy-ymin][j].fMaxValue >= localminvalue))
 			{
 			  if(localmaxima[localy-ymin][j].fEndPosition > localxend)
 			    localxend = localmaxima[localy-ymin][j].fEndPosition;
