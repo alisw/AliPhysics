@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.35  2000/09/12 14:27:10  morsch
+No instance of AliDecayer created to initialize fDecayer.
+
 Revision 1.34  2000/09/07 12:12:01  morsch
 Comment inside comment removed.
 
@@ -192,6 +195,7 @@ Introduction of the Copyright and cvs Log
 # define gfpara  gfpara_
 # define gckpar  gckpar_
 # define gckmat  gckmat_
+# define glvolu  glvolu_
 # define geditv  geditv_
 # define mzdrop  mzdrop_
 
@@ -290,6 +294,7 @@ Introduction of the Copyright and cvs Log
 # define gfpara  GFPARA
 # define gckpar  GCKPAR
 # define gckmat  GCKMAT
+# define glvolu  GLVOLU
 # define geditv  GEDITV
 # define mzdrop  MZDROP 
 
@@ -471,6 +476,8 @@ extern "C"
   void type_of_call gckpar(Int_t&, Int_t&, Float_t*);
 
   void type_of_call gckmat(Int_t&, DEFCHARD DEFCHARL);
+
+  void type_of_call glvolu(Int_t&, Int_t*, Int_t*, Int_t&);
 
   void type_of_call gprint(DEFCHARD,const int& DEFCHARL); 
 
@@ -2911,6 +2918,31 @@ void TGeant3::Gckmat(Int_t itmed, char* natmed)
   // Check the parameters of a tracking medium
   //
   gckmat(itmed, PASSCHARD(natmed) PASSCHARL(natmed));
+}
+
+//_____________________________________________________________________________
+Int_t TGeant3::Glvolu(Int_t nlev, Int_t *lnam,Int_t *lnum) 
+{ 
+  //
+  //  nlev   number of leveles deap into the volume tree
+  //         size of the arrays lnam and lnum
+  //  lnam   an integer array whos 4 bytes contain the askii code for the
+  //         volume names
+  //  lnum   an integer array containing the copy numbers for that specific
+  //         volume
+  //
+  //  This routine fills the volulme paramters in common /gcvolu/ for a
+  //  physical tree, specified by the list lnam and lnum of volume names
+  //  and numbers, and for all its ascendants up to level 1. This routine
+  //  is optimsed and does not re-compute the part of the history already
+  //  available in GCVOLU. This means that if it is used in user programs
+  //  outside the usual framwork of the tracking, the user has to initilise
+  //  to zero NLEVEL in the common GCVOLU. It return 0 if there were no
+  //  problems in make the call.
+  //
+  Int_t ier;
+  glvolu(nlev, lnam, lnum, ier); 
+  return ier;
 }
 
 //_____________________________________________________________________________

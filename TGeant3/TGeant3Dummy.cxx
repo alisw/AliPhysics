@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2000/07/12 08:56:32  fca
+Coding convention correction and warning removal
+
 Revision 1.22  2000/07/11 18:25:00  fca
 Coding convention corrections + few minor bug fixes
 
@@ -237,6 +240,7 @@ void  TGeant3::Gsatt(const char*, const char*, Int_t) {}
 void  TGeant3::Gfpara(const char*, Int_t, Int_t, Int_t&, Int_t&, Float_t*, Float_t*) {}
 void  TGeant3::Gckpar(Int_t, Int_t, Float_t*) {}
 void  TGeant3::Gckmat(Int_t, char*) {}
+Int_t TGeant3::Glvolu(Int_t, Int_t*, Int_t*) {return 0;}
 void  TGeant3::BuildPhysics() {}
 
 //______________________________________________________________________________
