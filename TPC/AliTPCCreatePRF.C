@@ -19,7 +19,7 @@ void AliTPCCreatePRF()
   prf.Write("prf_10006_Gati_047051_d03");
 
   prf.SetPad(0.6,1.5);
-  prf.SetChevron(1.,0,0);
+  prf.SetChevron(1.5,0,0);
   prf.SetGati(0.47,0.51,0.3);
   prf.SetY(-1.125,1.125,10);
   prf.Update();
