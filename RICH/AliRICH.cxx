@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.23  2000/09/13 10:42:14  hristov
+  Minor corrections for HP, DEC and Sun; strings.h included
+
   Revision 1.22  2000/09/12 18:11:13  fca
   zero hits area before using
 
@@ -97,9 +100,12 @@ AliRICH::AliRICH()
     fNcerenkovs = 0;
     fDchambers  = 0;
     fCerenkovs  = 0;
-    fNdch       = 0;
-    fNrawch   = 0;
-    fNrechits = 0;
+    for (Int_t i=0; i<7; i++)
+      {
+	fNdch[i]       = 0;
+	fNrawch[i]   = 0;
+	fNrechits[i] = 0;
+      }
 }
 
 //___________________________________________
@@ -122,7 +128,7 @@ AliRICH::AliRICH(const char *name, const char *title)
     fNcerenkovs = 0;
     fIshunt     = 0;
     
-    fNdch      = new Int_t[kNCH];
+    //fNdch      = new Int_t[kNCH];
     
     fDchambers = new TObjArray(kNCH);
 
@@ -135,7 +141,7 @@ AliRICH::AliRICH(const char *name, const char *title)
 	fNdch[i]=0;
     }
 
-    fNrawch      = new Int_t[kNCH];
+    //fNrawch      = new Int_t[kNCH];
     
     fRawClusters = new TObjArray(kNCH);
     //printf("Created fRwClusters with adress:%p",fRawClusters);
@@ -145,7 +151,7 @@ AliRICH::AliRICH(const char *name, const char *title)
       fNrawch[i]=0;
     }
 
-    fNrechits      = new Int_t[kNCH];
+    //fNrechits      = new Int_t[kNCH];
     
     for (i=0; i<kNCH ;i++) {
 	(*fRecHits)[i] = new TClonesArray("AliRICHRecHit",1000); 
@@ -808,7 +814,7 @@ void AliRICH::CreateMaterials()
     
     ahon    = 12.01;
     zhon    = 6.;
-    denshon = 2.265;
+    denshon = 0.1;
     radlhon = 18.8;
     
     // --- Parameters to include in GSMIXT, relative to Quarz (SiO2) 
@@ -1500,7 +1506,7 @@ void AliRICH::StepManager()
 		      if (gMC->CurrentVolID(copy) == gMC->VolId("QUAR")) 
 			ckovData[13]=2;
 		      //geant3->StopTrack();
-		      AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
+		      //AddCerenkov(gAlice->CurrentTrack(),vol,ckovData);
 		    } //reflection question
 		    
 		    
@@ -1884,9 +1890,9 @@ void AliRICH::Streamer(TBuffer &R__b)
 	R__b >> fRawClusters;
 	R__b >> fRecHits;  //diff
 	R__b >> fDebugLevel;  //diff
-	R__b.ReadArray(fNdch);
-	R__b.ReadArray(fNrawch);
-	R__b.ReadArray(fNrechits);
+	R__b.ReadStaticArray(fNdch);
+	R__b.ReadStaticArray(fNrawch);
+	R__b.ReadStaticArray(fNrechits);
 //
 	R__b >> fChambers;
 // Stream chamber related information
@@ -2335,9 +2341,9 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 
       //printf("Pedestal:%d\n",pedestal);
       //Int_t pedestal=0;
-      Float_t treshold = (pedestal + 4*1.7);
+      Float_t treshold = (pedestal + 4*2.2);
       
-      Float_t meanNoise = gRandom->Gaus(1.7, 0.25);
+      Float_t meanNoise = gRandom->Gaus(2.2, 0.3);
       Float_t noise     = gRandom->Gaus(0, meanNoise);
       q+=(Int_t)(noise + pedestal);
       //q+=(Int_t)(noise);
