@@ -201,6 +201,9 @@ void TFluka::Init() {
        printf("== Number of volumes: %i\n ==", fNVolumes);
        cout << "\t* InitPhysics() - Prepare input file to be called" << endl; 
     }
+
+    fApplication->InitGeometry();
+    
 }
 
 
@@ -321,7 +324,6 @@ Bool_t TFluka::ProcessRun(Int_t nevent) {
     cout << "\t* Calling flukam again..." << endl;
   }
 
-  fApplication->InitGeometry();
   Int_t todo = TMath::Abs(nevent);
   for (Int_t ev = 0; ev < todo; ev++) {
       fApplication->BeginEvent();
