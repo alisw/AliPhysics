@@ -37,22 +37,24 @@ AliL3Modeller::~AliL3Modeller()
 
 }
 
-void AliL3Modeller::Init(Int_t slice,Int_t patch,Char_t *path)
+void AliL3Modeller::Init(Int_t slice,Int_t patch,Char_t *trackdata,Char_t *path)
 {
   fSlice = slice;
   fPatch = patch;
-  fPadOverlap=4;
-  fTimeOverlap=4;
+  fPadOverlap=6;
+  fTimeOverlap=8;
   fTrackThreshold=10;
   sprintf(fPath,"%s",path);
   
   fTransform = new AliL3Transform();
   fTracks = new AliL3TrackArray("AliL3ModelTrack");
-
+  
+  Char_t fname[100];
   AliL3MemHandler *file = new AliL3MemHandler();
-  if(!file->SetBinaryInput("tracks.raw"))
+  sprintf(fname,"%s/tracks.raw",trackdata);
+  if(!file->SetBinaryInput(fname))
     {
-      cerr<<"AliL3Modeller::Init : Error opening trackfile"<<endl;
+      cerr<<"AliL3Modeller::Init : Error opening trackfile: "<<fname<<endl;
       return;
     }
   file->Binary2TrackArray(fTracks);
@@ -73,7 +75,6 @@ void AliL3Modeller::Init(Int_t slice,Int_t patch,Char_t *path)
   CheckForOverlaps();
 
   fMemHandler = new AliL3MemHandler();
-  Char_t fname[100];
   sprintf(fname,"%sdigits_%d_%d.raw",fPath,fSlice,fPatch);
   if(!fMemHandler->SetBinaryInput(fname))
     {
@@ -153,7 +154,7 @@ void AliL3Modeller::FindClusters()
 	    {
 	      if(pad < 0 || pad >= fTransform->GetNPads(i)) 
 		{
-		  //cout<<"Pad<0 on row "<<i<<endl;
+		  //cout<<"Pad = "<<pad<<" on row "<<i<<endl;
 		  FillCluster(track,&cluster,i);
 		  break;
 		}
@@ -193,7 +194,10 @@ void AliL3Modeller::FindClusters()
 			  continue;
 			}
 		      else
-			break;
+			{
+			  //cerr<<"Breaking off at pad "<<pad<<" and time "<<time<<endl;
+			  break;
+			}
 		    }
 		  
 		  //cout<<"Doing pad "<<pad<<" time "<<time<<" charge "<<charge<<endl;
@@ -216,7 +220,7 @@ void AliL3Modeller::FindClusters()
 		{
 		  if(padsign==-1) 
 		    {
-		      if(cluster.fCharge==0 && abs(pad-hitpad) <= fPadOverlap/2)
+		      if(cluster.fCharge==0 && abs(pad-hitpad) <= fPadOverlap/2 && pad > 0)
 			{
 			  pad--; //In this case, we haven't found anything yet, 
 			}        //so we will try to expand our search within the natural boundaries.
@@ -230,7 +234,7 @@ void AliL3Modeller::FindClusters()
 		  
 		  else if(padsign==1)
 		    {
-		      if(cluster.fCharge==0 && abs(pad-hitpad) <= fPadOverlap/2)
+		      if(cluster.fCharge==0 && abs(pad-hitpad) <= fPadOverlap/2 && pad < fTransform->GetNPads(i)-2)
 			{
 			  pad++;     //In this case, we haven't found anything yet, 
 			  continue;  //so we will try to expand our search within the natural boundaries.
@@ -317,6 +321,7 @@ void AliL3Modeller::WriteRemaining()
       for(UInt_t j=0; j<rowPt->fNDigit; j++)
 	{
 	  if(digPt[j].fCharge==0) continue;
+	  
 	  digitcount++;
 	  ndigits[(i-NRows[fPatch][0])]++;
 	}

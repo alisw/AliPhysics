@@ -21,6 +21,7 @@ AliL3ModelTrack::AliL3ModelTrack()
   fTime=0;
   fClusterCharge=0;
   fTrackModel=0;
+  fTransform = 0;
 }
 
 
@@ -36,6 +37,8 @@ AliL3ModelTrack::~AliL3ModelTrack()
     delete [] fOverlap;
   if(fTrackModel)
     delete fTrackModel;
+  if(fTransform)
+    delete fTransform;
 }
 
 void AliL3ModelTrack::Init(Int_t slice,Int_t patch)
@@ -57,13 +60,13 @@ void AliL3ModelTrack::Init(Int_t slice,Int_t patch)
   for(Int_t i=0; i<nrows; i++)
     fOverlap[i]=-1;
 
+  fTransform = new AliL3Transform();
   fClusterCharge = 260;
-  AliL3Transform transform;
   
-  fXYResidualQ = 0.1/transform.GetPadPitchWidth(patch);
-  fZResidualQ = 0.1/transform.GetPadPitchWidth(patch);
   
-
+  fXYResidualQ = 0.1/fTransform->GetPadPitchWidth(patch);
+  fZResidualQ = 0.1/fTransform->GetPadPitchWidth(patch);
+  
   fXYWidthQ = 0.01;
   fZWidthQ = 0.01;
 }
@@ -139,7 +142,6 @@ void AliL3ModelTrack::FillTrack()
   
   CalculateHelix();
   
-  AliL3Transform transform;
   Float_t hit[3];
   Int_t sector,row;
   for(Int_t i=NRows[fPatch][0]; i<=NRows[fPatch][1]; i++)
@@ -147,8 +149,8 @@ void AliL3ModelTrack::FillTrack()
       AliL3ClusterModel *cl = GetClusterModel(i);
       if(!cl) continue;
       GetCrossingPoint(i,hit);
-      transform.Slice2Sector(fSlice,i,sector,row);
-      transform.Local2Raw(hit,sector,row);
+      fTransform->Slice2Sector(fSlice,i,sector,row);
+      fTransform->Local2Raw(hit,sector,row);
       SetPadHit(i,hit[1]);
       SetTimeHit(i,hit[2]);
     }
@@ -317,13 +319,23 @@ void AliL3ModelTrack::Print()
 
 //----------Code below taken from AliTPCTracker.cxx-----------------------
 //Functions that give the expected cluster errors based on track parameters.
-Double_t AliL3ModelTrack::GetParSigmaY2(Double_t r)//, Double_t tgl, Double_t pt)
+Double_t AliL3ModelTrack::GetParSigmaY2(Int_t row)//Double_t r)//, Double_t tgl, Double_t pt)
 {
   
   //
   // Parametrised error of the cluster reconstruction (pad direction)   
   //
   // Sigma rphi
+  
+  Float_t pad,time;
+  if(!GetTime(row,time) || !GetPad(row,pad))
+    return -1;
+  
+  Float_t xyz[3];
+  Int_t sector,padrow;
+  fTransform->Slice2Sector(fSlice,row,sector,padrow);
+  fTransform->Raw2Local(xyz,sector,padrow,pad,time);
+  Double_t r = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
   
   Double_t tgl = GetTgl();
   Double_t pt = GetPt();
@@ -343,12 +355,22 @@ Double_t AliL3ModelTrack::GetParSigmaY2(Double_t r)//, Double_t tgl, Double_t pt
   return s;
 }
 
-Double_t AliL3ModelTrack::GetParSigmaZ2(Double_t r)//, Double_t tgl) 
+Double_t AliL3ModelTrack::GetParSigmaZ2(Int_t row)//Double_t r)//, Double_t tgl) 
 {
   //
   // Parametrised error of the cluster reconstruction (drift direction)
   //
   // Sigma z
+  
+  Float_t pad,time;
+  if(!GetTime(row,time) || !GetPad(row,pad))
+    return -1;
+  
+  Float_t xyz[3];
+  Int_t sector,padrow;
+  fTransform->Slice2Sector(fSlice,row,sector,padrow);
+  fTransform->Raw2Local(xyz,sector,padrow,pad,time);
+  Double_t r = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
   
   Double_t tgl = GetTgl();
 

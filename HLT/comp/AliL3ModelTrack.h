@@ -5,6 +5,8 @@
 #include "AliL3Models.h"
 #include "AliL3Defs.h"
 
+class AliL3Transform;
+
 class AliL3ModelTrack : public AliL3Track {
 
  private:
@@ -12,6 +14,7 @@ class AliL3ModelTrack : public AliL3Track {
   Short_t fClusterCharge; //Average cluster charge
   AliL3ClusterModel *fClusters; //!
   AliL3TrackModel *fTrackModel; //!
+  AliL3Transform *fTransform; //!
   Short_t fNClusters;
   Int_t *fOverlap; //!
   Float_t fXYResidualQ; //Quantization steps.
@@ -58,8 +61,8 @@ class AliL3ModelTrack : public AliL3Track {
   Bool_t GetTimeResidual(Int_t row,Float_t &res);
   Int_t GetNClusters() {return fNClusters;}
   
-  Double_t GetParSigmaY2(Double_t r);
-  Double_t GetParSigmaZ2(Double_t r);
+  Double_t GetParSigmaY2(Int_t row);
+  Double_t GetParSigmaZ2(Int_t row);
   
   ClassDef(AliL3ModelTrack,1)
 

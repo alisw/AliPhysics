@@ -45,7 +45,8 @@ class AliL3Compress {
   void WriteRestoredData();
   void WriteRootFile(Char_t *digitsfile,Char_t *rootfile);
   void PrintDigits();
-
+  void PrintCompRatio();
+  
   AliL3TrackArray *GetTracks() {return fTracks;}
   
   ClassDef(AliL3Compress,1) 

@@ -15,7 +15,9 @@
 #include "AliL3ModelTrack.h"
 #include "AliL3Transform.h"
 #include "AliL3MemHandler.h"
+#ifdef use_aliroot
 #include "AliL3FileHandler.h"
+#endif
 #include "bitio.h"
 
 //_____________________________________________________________
@@ -177,6 +179,7 @@ void AliL3Compress::CompressFile()
       
       if(output->mask != 0x80) //Write the current byte to file.
 	{
+	  //cerr<<"\nAliL3Compress::CompressFile() : Writing overhead bits!!!"<<endl;
 	  if(putc(output->rack,output->file )!=output->rack)
 	    cerr<<"AliL3Compress::ComressFile : Error writing to bitfile"<<endl;
 	  output->mask=0x80;
@@ -200,13 +203,13 @@ void AliL3Compress::CompressFile()
 	    OutputBit(output,0);
 	  else
 	    OutputBit(output,1);
-	  power = 1<<fNumTimeBits;
+	  power = 1<<(fNumTimeBits-1);
 	  if(abs(temp)>=power)
 	    {
 	      timeo++;
 	      temp=power - 1;
 	    }
-	  OutputBits(output,abs(temp),fNumTimeBits);
+	  OutputBits(output,abs(temp),(fNumTimeBits-1));
 	  
 	  //Write pad information:
 	  temp = (Int_t)cluster.fDPad;
@@ -214,13 +217,13 @@ void AliL3Compress::CompressFile()
 	    OutputBit(output,0);
 	  else
 	    OutputBit(output,1);
-	  power = 1<<fNumPadBits;
+	  power = 1<<(fNumPadBits-1);
 	  if(abs(temp)>=power)
 	    {
 	      pado++;
 	      temp=power - 1;
 	    }
-	  OutputBits(output,abs(temp),fNumPadBits);
+	  OutputBits(output,abs(temp),(fNumPadBits-1));
 	  
 	  //Write charge information:
 	  temp = (Int_t)cluster.fDCharge;
@@ -228,14 +231,14 @@ void AliL3Compress::CompressFile()
 	    OutputBit(output,0);
 	  else
 	    OutputBit(output,1);
-	  power = 1<<fNumChargeBits;
+	  power = 1<<(fNumChargeBits-1);
 	  if(abs(temp)>=power)
 	    {
 	      chargeo++;
 	      temp=power - 1;
 	    }
-	  OutputBits(output,abs(temp),fNumChargeBits);
-	  
+	  OutputBits(output,abs(temp),(fNumChargeBits-1));
+	  	  
 	  //Write shape information:
 	  temp = (Int_t)cluster.fDSigmaY2;
 	  power = 1<<fNumShapeBits;
@@ -314,21 +317,21 @@ void AliL3Compress::ExpandFile()
 	  
 	  //Read time information:
 	  sign=InputBit(input);
-	  temp = InputBits(input,fNumTimeBits);
+	  temp = InputBits(input,(fNumTimeBits-1));
 	  if(!sign)
 	    temp*=-1;
 	  clusters[i].fDTime = temp;
 	  
 	  //Read pad information:
 	  sign=InputBit(input);
-	  temp = InputBits(input,fNumPadBits);
+	  temp = InputBits(input,(fNumPadBits-1));
 	  if(!sign)
 	    temp*=-1;
 	  clusters[i].fDPad = temp;
 	  
 	  //Read charge information:
 	  sign = InputBit(input);
-	  temp=InputBits(input,fNumChargeBits);
+	  temp=InputBits(input,(fNumChargeBits-1));
 	  if(!sign)
 	    temp*=-1;
 	  clusters[i].fDCharge = temp;
@@ -375,6 +378,7 @@ void AliL3Compress::RestoreData()
   Int_t charge;
   for(Int_t j=NRows[fPatch][0]; j<=NRows[fPatch][1]; j++)
     {
+      cout<<"Building clusters on row "<<j<<endl;
       for(Int_t i=0; i<fTracks->GetNTracks(); i++)
 	{
 	  AliL3ModelTrack *track = (AliL3ModelTrack*)fTracks->GetCheckedTrack(i);
@@ -515,7 +519,7 @@ void AliL3Compress::CreateDigits(Int_t row,Float_t pad,Float_t time,Int_t charge
   AliL3Transform *tr = new AliL3Transform();
   TRandom *random = new TRandom();
   
-  Int_t entries=10000;
+  Int_t entries=1000;
   TH1F *hist1 = new TH1F("hist1","",tr->GetNPads(row),0,tr->GetNPads(row)-1);
   TH1F *hist2 = new TH1F("hist2","",tr->GetNTimeBins(),0,tr->GetNTimeBins()-1);
   TH2F *hist3 = new TH2F("hist3","",tr->GetNPads(row),0,tr->GetNPads(row)-1,tr->GetNTimeBins(),0,tr->GetNTimeBins()-1);
@@ -542,7 +546,8 @@ void AliL3Compress::CreateDigits(Int_t row,Float_t pad,Float_t time,Int_t charge
   
   if(sigmaY2 <= 0 || sigmaZ2 <= 0)
     {
-      cerr<<"AliL3Compress::CreateDigits() : Wrong sigmas : "<<sigmaY2<<" "<<sigmaZ2<<endl;
+      cerr<<"AliL3Compress::CreateDigits() : Wrong sigmas : "<<sigmaY2<<" "<<sigmaZ2;
+      cerr<<" on row "<<row<<" pad "<<pad<<" time "<<time<<endl;
       return;
     }
   
@@ -605,6 +610,58 @@ void AliL3Compress::CreateDigits(Int_t row,Float_t pad,Float_t time,Int_t charge
   delete tr;
 }
 
+void AliL3Compress::PrintCompRatio()
+{
+  Char_t fname[100];
+  sprintf(fname,"%s/remains_%d_%d.raw",fPath,fSlice,fPatch);
+  AliL3MemHandler *mem = new AliL3MemHandler();
+  if(!mem->SetBinaryInput(fname))
+    {
+      cerr<<"AliL3Compress::PrintCompRatio(): Error opening file: "<<fname<<endl;
+      return;
+    } 
+  UInt_t ndigits;
+  AliL3DigitRowData *rowPt = (AliL3DigitRowData*)mem->CompBinary2Memory(ndigits);
+  mem->CloseBinaryInput();
+
+  Int_t digit_counter=0;
+  for(Int_t i=NRows[fPatch][0]; i<=NRows[fPatch][1]; i++)
+    {
+      digit_counter += rowPt->fNDigit;
+      mem->UpdateRowPointer(rowPt);
+    }
+  delete mem;
+  
+  sprintf(fname,"%s/tracks_c_%d_%d.raw",fPath,fSlice,fPatch);
+  FILE *file1 = fopen(fname,"r");
+  if(!file1)
+    {
+      cerr<<"AliL3Compress::PrintCompRatio(): Error opening file: "<<fname<<endl;
+      return;
+    }
+  fseek(file1,0,SEEK_END);
+  UInt_t filesize1 = (UInt_t)ftell(file1);
+  fclose(file1);
+  
+  sprintf(fname,"%s/digits_%d_%d.raw",fPath,fSlice,fPatch);
+  FILE *file2 = fopen(fname,"r");
+  if(!file2)
+    {
+      cerr<<"AliL3Compress::PrintCompRatio(): Error opening file: "<<fname<<endl;
+      return;
+    }
+  fseek(file2,0,SEEK_END);
+  UInt_t filesize2 = (UInt_t)ftell(file2);
+  fclose(file2);
+  
+  cout<<"----------------------"<<endl;
+  cout<<"Original file size   : "<<filesize2<<endl;
+  cout<<"Compressed file size : "<<filesize1<<endl;
+  cout<<"Remaining digits     : "<<digit_counter<<endl;
+  cout<<"Compression ratio    : "<<(Float_t)(filesize1 + (10*digit_counter)/8)/(Float_t)(filesize2)<<endl;
+  
+}
+
 void AliL3Compress::QSort(AliL3RandomDigitData **a, Int_t first, Int_t last)
 {
   
@@ -650,6 +707,7 @@ void AliL3Compress::QSort(AliL3RandomDigitData **a, Int_t first, Int_t last)
 
 void AliL3Compress::WriteRootFile(Char_t *digitsfile,Char_t *rootfile)
 {
+#ifdef use_aliroot
   Char_t fname[100];
   AliL3MemHandler *mem = new AliL3MemHandler();
   sprintf(fname,"%s/restored_%d_%d.raw",fPath,fSlice,fPatch);
@@ -670,4 +728,7 @@ void AliL3Compress::WriteRootFile(Char_t *digitsfile,Char_t *rootfile)
 
   delete mem;
   delete file;
+#endif
+
+  return;
 }

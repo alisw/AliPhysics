@@ -52,7 +52,7 @@ class AliL3Modeller {
   AliL3Modeller();
   virtual ~AliL3Modeller();
   
-  void Init(Int_t slice,Int_t patch,Char_t *path="./");
+  void Init(Int_t slice,Int_t patch,Char_t *trackdata,Char_t *path);
   void FindClusters();
   void CheckForOverlaps();
   void CalculateCrossingPoints();
